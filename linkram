@@ -1,0 +1,90 @@
+/*  linkcmds
+ *
+ *  $Id: linkcmds,v 1.8.2.1 2000/05/24 17:06:38 joel Exp $
+ */
+
+OUTPUT_ARCH(sparc)
+__DYNAMIC  =  0;
+ENTRY(_hardreset)
+
+/*
+ * The memory map looks like this:
+ * +--------------------+ <- low memory
+ * | .text              |
+ * |        etext       |
+ * |        ctor list   | the ctor and dtor lists are for
+ * |        dtor list   | C++ support
+ * |        _endtext    |
+ * +--------------------+
+ * | .data              | initialized data goes here
+ * |        _sdata      |
+ * |        _edata      |
+ * +--------------------+
+ * | .bss               |
+ * |        __bss_start | start of bss, cleared by crt0
+ * |        _end        | start of heap, used by sbrk()
+ * +--------------------+
+ * |    heap space      |
+ * |        _ENDHEAP    |
+ * |    stack space     |
+ * |        __stack     | top of stack
+ * +--------------------+ <- high memory
+ */
+
+
+/*
+ * User modifiable values:
+ *
+ * _CLOCK_SPEED               in Mhz (used to program the counter/timers)
+ *
+ * _RAM_SIZE                  size of RAM (permissible values are 256K, 512K,
+ *                               1M, 2M, 4M, 8M, 16M, and 32M)
+ *
+ */
+
+/* these are the maximum values */
+
+MEMORY
+{
+  rom     : ORIGIN = 0x00000000, LENGTH = 64K
+  ram     : ORIGIN = 0x10000000, LENGTH = 32K
+  sdram   : ORIGIN = 0x40000000, LENGTH = 128K
+}
+
+/*
+ * stick everything in ram (of course)
+ */
+SECTIONS
+{
+  .text :
+  {
+  	_hardreset = .;
+    _text_start = .;
+    *(.text)
+    . = ALIGN (0x10);
+
+    *(.eh_frame)
+    . = ALIGN (0x10);
+
+    *(.rodata*)
+    . = ALIGN(0x10);
+
+    data_image_start = .;
+  } > sdram
+
+  .data :
+  {
+    data_start = .;
+    *(.data)
+    . = ALIGN(0x10);
+
+	*(.rel*)
+    . = ALIGN(0x10);
+
+	*(.bss)
+    *(COMMON)
+    . = ALIGN(0x10);
+
+    data_end = .;
+  } > sdram
+}
