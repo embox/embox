@@ -3,6 +3,7 @@ ROOT_DIR := $(CURDIR)
 
 BIN_DIR:=$(ROOT_DIR)/bin
 OBJ_DIR:=$(ROOT_DIR)/obj
+OBJ_DIR_SIM:=$(OBJ_DIR)/sim
 SRC_DIR:=$(ROOT_DIR)/src
 
 #name of target
@@ -17,14 +18,18 @@ OC_TOOL :=$(CC_PACKET)-objcopy
 
 #compiler flags (+optimiz +debug_info)
 CCFLAGS := -Wall -msoft-float -c -MD -O0 -DLEON3
+CCFLAGS_RELEASE = $(CCFLAGS)-DRELEASE
 #link flags
 LDFLAGS:= -Wl -N -nostdlib
 
 OBJS:=
+OBJS_SIM :=
 
 all:
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(OBJ_DIR)
+	mkdir -p $(OBJ_DIR)/sim
+
 	declare -x MAKEOP=all; make --directory=src all
 
 clean:

@@ -8,7 +8,7 @@ OBJS:=
 
 #VPATH := $(SUBDIRS)
 
-all: release
+all: simulation release
 
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKEOP) LOCAL_DIR=$(ROOT_DIR)/$@
@@ -20,6 +20,13 @@ release:$(SUBDIRS)
 	$(CC) $(LDFLAGS) -T $(ROOT_DIR)/linkrom  -o $(BIN_DIR)/$(TARGET)_rom \
 	$(OBJ_DIR)/traps.o $(filter-out $(OBJ_DIR)/traps.o, $(wildcard $(OBJ_DIR)/*.o))
 	$(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_ram > $(BIN_DIR)/$(TARGET)_ram.dis
+
+
+simulation:$(SUBDIRS)
+	#TODO have to set entry point in linker skript now importen link order
+	$(CC) $(LDFLAGS) -T $(ROOT_DIR)/linkrom  -o $(BIN_DIR)/$(TARGET)_sim \
+	$(OBJ_DIR)/traps.o $(filter-out $(OBJ_DIR_SIM)/traps.o, $(wildcard $(OBJ_DIR_SIM)/*.o))
+	$(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_sim > $(BIN_DIR)/$(TARGET)_sim.dis
 
 
 clean:$(SUBDIRS)
