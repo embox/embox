@@ -18,5 +18,4 @@ extern volatile BOOL chproc_abort_accept;
 void test_run(WORD pfunc);
 
 
-
 #endif //_TEST_H_

@@ -38,8 +38,8 @@ _hardreset:
   TRAP(irq_handler);            ! 19 interrupt level  9   ! IRQ_Timer2
   BAD_TRAP;                     ! 1A interrupt level 10   ! IRQ_SecIRQ
   BAD_TRAP;                     ! 1B interrupt level 11   ! IRQ_DSU
-  TRAP(irq_handler);            ! 1C interrupt level 12   ! IRQ_EthMAC
-  TRAP(mem_hang);               ! 1D interrupt level 13   ! IRQ_Hang
+  TRAP(irq_handler);            ! 1C interrupt level 12   !
+  TRAP(irq_handler);            ! 1D interrupt level 13   !
   TRAP(irq_handler);            !BAD_TRAP;! 1E interrupt level 14   ! IRQ_PCI
   TRAP(halt_trap);              ! 1F interrupt level 15   ! IRQ_Halt
 

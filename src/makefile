@@ -27,6 +27,7 @@ simulation:$(SUBDIRS)
 	$(CC) $(LDFLAGS) -T $(ROOT_DIR)/linkrom  -o $(BIN_DIR)/$(TARGET)_sim \
 	$(OBJ_DIR)/traps.o $(filter-out $(OBJ_DIR_SIM)/traps.o, $(wildcard $(OBJ_DIR_SIM)/*.o))
 	$(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_sim > $(BIN_DIR)/$(TARGET)_sim.dis
+	$(OC_TOOL) -O srec $(BIN_DIR)/$(TARGET)_sim $(BIN_DIR)/prom.srec
 
 
 clean:$(SUBDIRS)

@@ -75,7 +75,6 @@ register_window_clean:
 	nop;
 	nop;
 
-
 	call	main
 	nop
 

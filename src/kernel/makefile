@@ -1,4 +1,4 @@
-OBJS:=traps.o boot.o main.o mem_traps.o irq.o test.o mul_div.o urem.o
+OBJS:=traps.o boot.o main.o mem_traps.o irq.o test.o mul_div.o urem.o tests_iterator.o
 
 all:$(OBJS)
 
