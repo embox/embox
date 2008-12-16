@@ -110,6 +110,7 @@ static void irq_func_tmr2 ()
 
 void timers_init()
 {
+#ifndef RELEASE
 	int i;
 	for (i = 0; i < sizeof (sys_timers)/sizeof(sys_timers[0]); i ++)
 		sys_timers[i].f_enable=FALSE;
@@ -126,6 +127,8 @@ void timers_init()
 	irq_set_handler(IRQ_Timer2, irq_func_tmr2);
 //	irq_set_handler(IRQ_Timer1, irq_func_tmr1);
 	cnt_sys_time = 0;
+#endif
+
 }
 
 

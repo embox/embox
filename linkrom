@@ -67,6 +67,9 @@ SECTIONS
     *(.rodata*)
     . = ALIGN(0x10);
 
+    *(.const)
+    . = ALIGN (0x10);
+
     data_image_start = .;
   } > rom
 

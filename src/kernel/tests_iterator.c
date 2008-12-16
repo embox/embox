@@ -12,11 +12,11 @@
 typedef int (*EXPRESS_TEST_FUNC)(void);
 typedef struct _EXPRESS_TEST_DESCRIPTION
 {
-	char *name;
-	EXPRESS_TEST_FUNC handler;
+	const char *name;
+	const EXPRESS_TEST_FUNC handler;
 }EXPRESS_TEST_DESCRIPTION;
 
-EXPRESS_TEST_DESCRIPTION express_tests_desc[] =
+EXPRESS_TEST_DESCRIPTION const express_tests_desc[] =
 {
 #include "tests_table.inc"
 };
@@ -29,7 +29,7 @@ typedef struct _EXPRESS_TEST_STRUCT
 
 
 #define QUANTITY_TESTS (sizeof (express_tests_desc)/ sizeof (express_tests_desc[0]))
-EXPRESS_TEST_STRUCT express_tests [QUANTITY_TESTS];
+static EXPRESS_TEST_STRUCT const express_tests [QUANTITY_TESTS];
 static int cur_test_number = 0;
 
 void *express_test_get_next()

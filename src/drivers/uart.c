@@ -35,6 +35,7 @@ UART_STRUCT *const uart = (UART_STRUCT *)UART_BASE;
 
 void uart_init ()
 {
+#ifndef RELEASE
 	//disabled uart
 	uart->ctrl = 0x0;
 	uart->scaler = UART_SCALER_VAL;
@@ -44,6 +45,7 @@ void uart_init ()
 	//clear uart
 	while (UART_RX_READY & uart->status)
 		uart->data;
+#endif
 }
 
 BOOL uart_is_empty ()
