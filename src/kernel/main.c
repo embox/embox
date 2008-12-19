@@ -18,7 +18,7 @@ int init() {
 	uart_init();
 
 //	con_init();
-	timers_init();
+//	timers_init();
 	cache_data_enable(FALSE);
 	cache_instr_enable(TRUE);
 	return 0;

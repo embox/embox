@@ -1,4 +1,5 @@
 #include "types.h"
+#include "irq.h"
 #include "leon_config.h"
 #include "memory_map.h"
 #include "uart.h"
@@ -33,6 +34,10 @@ typedef struct _UART_STRUCT
 
 UART_STRUCT *const uart = (UART_STRUCT *)UART_BASE;
 
+static void irq_func_uart()
+{
+	char ch = uart_getc();
+}
 void uart_init ()
 {
 #ifndef RELEASE
@@ -45,6 +50,7 @@ void uart_init ()
 	//clear uart
 	while (UART_RX_READY & uart->status)
 		uart->data;
+	//irq_set_handler(IRQ_UART1, irq_func_uart);
 #endif
 }
 
