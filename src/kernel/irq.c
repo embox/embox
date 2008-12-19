@@ -5,7 +5,7 @@
 #include "common.h"
 #include "memory_map.h"
 
-IRQ_REGS *const irq_regs = (PVOID) IRQ_REGS_BASE;
+IRQ_REGS *const irq_regs = (IRQ_REGS *const) IRQ_REGS_BASE;
 // Current free place in irq buffers
 int irq_current;
 
@@ -51,6 +51,7 @@ void irq_manager()
 void irq_init_handlers()
 {
 	int i;
+	irq_regs->level = 0;
 	irq_regs->mask = 0;
 	irq_regs->pend = 0;
 	irq_regs->force = 0;
