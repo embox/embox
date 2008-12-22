@@ -14,7 +14,7 @@ _hardreset:
   BAD_TRAP;                     ! 04 fp_disabled
   TRAP(window_overflow);        ! 05 window_overflow
   TRAP(window_underflow);       ! 06 window_underflow
-  TRAP(trap_handler);           ! 07 memory_address_not_aligned
+  TRAP(trap_dispatcher);        ! 07 memory_address_not_aligned
   BAD_TRAP;                     ! 08 fp_exception
   SRMMU_DFAULT                  ! 09 data_access_exception
   BAD_TRAP;                     ! 0A tag_overflow
@@ -29,18 +29,18 @@ _hardreset:
   /* Interrupt entries */
   BAD_TRAP;                     ! 11 interrupt level  1   ! IRQ_AHB_error
   BAD_TRAP;                     ! 12 interrupt level  2   ! IRQ_UART2
-  TRAP(irq_handler);            ! 13 interrupt level  3   ! IRQ_UART1
+  TRAP(irq_dispatcher);         ! 13 interrupt level  3   ! IRQ_UART1
   BAD_TRAP;                     ! 14 interrupt level  4   !
-  TRAP(irq_handler);            ! 15 interrupt level  5   ! from_dsp
+  TRAP(irq_dispatcher);         ! 15 interrupt level  5   ! from_dsp
   BAD_TRAP;                     ! 16 interrupt level  6   !
-  TRAP(irq_handler);            ! 17 interrupt level  7   ! IRQ_DMA
-  TRAP(irq_handler);            ! 18 interrupt level  8   ! IRQ_Timer1
-  TRAP(irq_handler);            ! 19 interrupt level  9   ! IRQ_Timer2
+  TRAP(irq_dispatcher);         ! 17 interrupt level  7   ! IRQ_DMA
+  TRAP(irq_dispatcher);         ! 18 interrupt level  8   ! IRQ_Timer1
+  TRAP(irq_dispatcher);         ! 19 interrupt level  9   ! IRQ_Timer2
   BAD_TRAP;                     ! 1A interrupt level 10   ! IRQ_SecIRQ
   BAD_TRAP;                     ! 1B interrupt level 11   ! IRQ_DSU
-  TRAP(irq_handler);            ! 1C interrupt level 12   !
-  TRAP(irq_handler);            ! 1D interrupt level 13   !
-  TRAP(irq_handler);            !BAD_TRAP;! 1E interrupt level 14   ! IRQ_PCI
+  TRAP(irq_dispatcher);         ! 1C interrupt level 12   !
+  TRAP(irq_dispatcher);         ! 1D interrupt level 13   !
+  TRAP(irq_dispatcher);         !BAD_TRAP;! 1E interrupt level 14   ! IRQ_PCI
   TRAP(halt_trap);              ! 1F interrupt level 15   ! IRQ_Halt
 
 
@@ -49,7 +49,7 @@ _hardreset:
   BAD_TRAP; BAD_TRAP; BAD_TRAP;                 ! 25 - 27 undefined
   BAD_TRAP;                                     ! 28 cp_exception
   BAD_TRAP; BAD_TRAP;                 ! 29 - 2A undefined
-  TRAP(trap_handler);                           ! 2B data_store_error
+  TRAP(trap_dispatcher);                           ! 2B data_store_error
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 2C - 2F undefined
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 30 - 33 undefined
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 34 - 37 undefined

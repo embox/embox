@@ -102,7 +102,7 @@ static void inc_sys_timers ()
 
 static void irq_func_tmr2 ()
 {
-	//printf ("tmr2\n");
+	printf ("in irq_func_tmr2()\n");
 	cnt_ms_sleep ++;
 	cnt_sys_time ++;
 	inc_sys_timers();
@@ -122,11 +122,15 @@ void timers_init()
 	timers->timer_cnt2 = 0;
 
 	timers->timer_ld1 = 0x002710;//0x00030d40;
-	timers->timer_ld2 = 0x002710;//0x00989680;
+	timers->timer_ld2 = 0x027100;//0x00989680;
 	timers->timer_ctrl1 = 0xf;
 	timers->timer_ctrl2 = 0xf;
 	irq_set_handler(IRQ_Timer2, irq_func_tmr2);
+
 //	irq_set_handler(IRQ_Timer1, irq_func_tmr2);
+
+
+
 	cnt_sys_time = 0;
 #endif
 

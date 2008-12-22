@@ -22,8 +22,8 @@ struct programm_context
 {
 	UINT32 irqmask;
     UINT32 cache_ctrl;
-	IRQ_HANDLER_DESCR irq_handlers_table[IRQ_HTBL_SIZE];
-	SYS_TMR sys_timers[MAX_QUANTITY_SYS_TIMERS];
+    IRQ_HANDLER user_trap_handlers[ALLOWED_TRAPS_AMOUNT];
+    SYS_TMR sys_timers[MAX_QUANTITY_SYS_TIMERS];
 }context;
 
 
@@ -32,7 +32,7 @@ void save_context()
 	context.irqmask = irq_regs->mask;
     context.cache_ctrl = l_regs->cachectrl;
 
-	memcpy (context.irq_handlers_table, irq_handlers_table, sizeof (irq_handlers_table));
+	memcpy (context.user_trap_handlers, user_trap_handlers, sizeof (user_trap_handlers));
 	memcpy (context.sys_timers, sys_timers, sizeof (sys_timers));
 }
 
@@ -41,9 +41,8 @@ void restore_context ()
 	int i;
 	irq_regs->mask           = 0x00000000;
 	irq_regs->clear          = 0xFFFFFFFF;
-	irq_current = 0;
 
-	memcpy (irq_handlers_table, context.irq_handlers_table, sizeof (irq_handlers_table));
+	memcpy (user_trap_handlers, context.user_trap_handlers, sizeof (user_trap_handlers));
 	memcpy (sys_timers, context.sys_timers, sizeof (sys_timers));
 	irq_regs->mask = context.irqmask;
     l_regs->cachectrl = context.cache_ctrl;

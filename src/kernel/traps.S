@@ -2,29 +2,22 @@
 
 #include "traps.inc"
 
-
-
 ! skip instruction
 skip:
-        flush
-        jmpl    %l2, %g0
-        rett    %l2 + 4
-        nop
-        nop
+	flush
+	jmpl    %l2, %g0
+	rett    %l2 + 4
+	nop
+	nop
 
 irq_empty:
-
-        jmpl %l1,%g0 ! old PC
-        rett %l2 ! old nPC
-        nop
-        nop
-
-
-
+	jmp		%l1	! old PC
+	 rett	%l2	! old nPC
+	nop
+	nop
 
   /* Window overflow trap handler. */
         .global window_overflow
-
 window_overflow:
 
         mov  %wim, %l3                  ! Calculate next WIM
@@ -119,7 +112,7 @@ flush_windows:
 
 
 
-! вытеснение
+! пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 spil:
         mov     %psr, %l4
         srl     %l4, 8, %l5
@@ -132,7 +125,7 @@ spil:
         jmpl    %l2, %g0
         rett    %l2 + 4
 
-! сохраняем признак будильника
+! пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 rtc_trap:
         !set     io_rtc_alarm, %l4
         !set     0x01, %l5
@@ -142,7 +135,7 @@ rtc_trap:
          rett    %l2
 
 
-! выход в пульт по нажатию останов
+! пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 .global halt_trap
 halt_trap:
   !      flush
@@ -152,193 +145,71 @@ halt_trap:
         jmp   %g1
         nop
 
+trap_dispatcher:
+	! store previous nPC as PC
+	mov		%l2, %l1
+	! store previous nPC+4 as nPC
+	add     %l2, 4, %l2
 
-! обработчик trap-ов через менеджер прерываний
-trap_handler:
-  ! if (irq_current < IRQ_BUFFER_SIZE)
-        set     irq_current, %l3
-       	ld      [%l3], %l4
-       	cmp     %l4, IRQ_BUFFER_SIZE
-       	bge     trap_handler_ret       ! if queue full, then skip irq
-        nop
-  ! {
-        ! calculate position in buffer
-        set     irq_current, %l3
-        ld      [%l3], %l5
-        ! irq_current++;
-        add     %l5, 1, %l4
-        st      %l4, [%l3]
-        sll     %l5, 2, %l5
+irq_dispatcher:
 
-        ! store psr (irq_tbl_psr[irq_current] = psr) (%psr in %l0)
-        mov     %l0, %l4
-        set     0xF00F00, %l3
-        and     %l4, %l3, %l4
-        set     irq_tbl_psr, %l3
-        st      %l4, [%l3+%l5]
+	set		irq_ignore, %l5
+	ld		[%l5], %l4
+	cmp		%l4, TRUE
+	be		irq_return
+	 nop
 
-        ! calculate trap type
-        mov     %tbr, %l4
-        srl     %l4, 4, %l4
-        and     %l4, 0xFF, %l4
-        ! store tbr.tt (irq_tbl_tt[irq_current] = tbr.tt)
-        set     irq_tbl_tt, %l3
-        st      %l4, [%l3+%l5]
+	set		irq_psr, %l4
+	st		%l0, [%l4]
+	set		irq_pc, %l4
+	st		%l1, [%l4]
+	set		irq_npc, %l4
+	st		%l2, [%l4]
+	set		irq_tbr, %l4
+	st		%l3, [%l4]
 
-        ! set new PIL (correct only for traps!!!)
-        set     0xF00, %l3
-        mov     %psr, %l4
-        andn    %l4, 0xF00, %l4
-        or      %l4, %l3, %l4
-        mov     %l4, %psr
+		! set ignore flag
+		set		irq_ignore, %l5
+		set		TRUE, %l4
+		st		%l4, [%l5]
 
-        ! store previous nPC as PC
-        set     irq_tbl_pc, %l3
-        st      %l2, [%l3+%l5]
-        ! store previous nPC+4 as nPC
-        set     irq_tbl_npc, %l3
-        add     %l2, 4, %l2
-        st      %l2, [%l3+%l5]
+			! because of windows overflow/underflow possibility
+			! during dispatch_trap invokation
+			! we must enable traps in PSR
 
-        ! run manager
-        set     irq_manager_caller, %l2
-        jmpl    %l2, %g0
-         rett   %l2+4
-  ! }
-  ! else
-  trap_handler_ret:
-        jmpl    %l1, %g0
-         rett   %l2
+			! TODO write comment
 
-! обработчик прерываний через менеджер
-irq_handler:
-  ! if (irq_current < IRQ_BUFFER_SIZE)
-        set     irq_current, %l3
-       	ld      [%l3], %l4
-       	cmp     %l4, IRQ_BUFFER_SIZE
-       	bge     irq_handler_ret       ! if queue full, then skip irq
-        nop
-  ! {
-        ! calculate position in buffer
-        set     irq_current, %l3
-        ld      [%l3], %l5
-        ! irq_current++;
-        add     %l5, 1, %l4
-        st      %l4, [%l3]
-        sll     %l5, 2, %l5
+			mov		%psr, %l0
+ 			or		%l0, 0x20, %l0	! set PSR.ET (enable traps)
+!			andn	%l0, 0x80, %l0	! clear PSR.S (disable supervisor mode)
+			mov		%l0, %psr
 
-        ! store psr (irq_tbl_psr[irq_current] = psr) (%psr in %l0)
-        mov     %l0, %l4
-        set     0xF00F00, %l3
-        and     %l4, %l3, %l4
-        set     irq_tbl_psr, %l3
-        st      %l4, [%l3+%l5]
+				call	dispatch_trap
+				 nop
 
-        ! calculate trap type
-        mov     %tbr, %l4
-        srl     %l4, 4, %l4
-        and     %l4, 0xFF, %l4
-        ! store tbr.tt (irq_tbl_tt[irq_current] = tbr.tt)
-        set     irq_tbl_tt, %l3
-        st      %l4, [%l3+%l5]
+			mov		%psr, %l0
+!			or		%l0, 0x80, %l0	! set PSR.S (enable supervisor mode)
+			andn	%l0, 0x20, %l0	! clear PSR.ET (disable traps)
+			mov		%l0, %psr
 
+		! clear ignore flag
+		set		irq_ignore, %l5
+		set		FALSE, %l4
+		st		%l4, [%l5]
 
-        ! set new PIL (correct only for interrupts!!!)
-        !set     0xF00, %l3
-        sub     %l4, 0x10, %l3
-        and     %l3, 0xF, %l3
-        sll     %l3, 8, %l3
+	set		irq_psr, %l4
+	ld		[%l4], %l5
+	mov		%l5, %psr
 
-        mov     %psr, %l4
-        andn    %l4, 0xF00, %l4
-        or      %l4, %l3, %l4
-        mov     %l4, %psr
+	set		irq_pc, %l4
+	ld		[%l4], %l1
+	set		irq_npc, %l4
+	ld		[%l4], %l2
 
-        ! store previous PC
-        set     irq_tbl_pc, %l3
-        st      %l1, [%l3+%l5]
-        ! store previous nPC
-        set     irq_tbl_npc, %l3
-        st      %l2, [%l3+%l5]
+irq_return:
 
-        ! run manager
-        set     irq_manager_caller, %l2
-        jmpl    %l2, %g0
-         rett   %l2+4
-  ! }
-  ! else
-  irq_handler_ret:
-        jmpl    %l1, %g0
-         rett   %l2
-
-irq_manager_caller:
-        save  %sp, -104, %sp
-
-        call    irq_manager
-        nop
-
-        restore
-        save  %sp, -104, %sp
-
-        ! Simutale returning from trap
-        mov     %psr, %g4
-        or      %g4, 0x080, %g4    ! set PSR.S (supervisor mode)
-        andn    %g4, 0x020, %g4    ! disable traps
-        mov     %g4, %psr
-
-        ! calculate position in buffer
-        set     irq_current, %l3
-        ld      [%l3], %l4
-        add     %l4, -1, %l4
-        ! irq_current--;
-        st      %l4, [%l3]
-        sll     %l4, 2, %l5
-        ! restore PSR (PIL&ICC)
-        mov     %psr, %l4
-        set     0xF00F00, %l3
-        andn    %l4, %l3, %l4
-        set     irq_tbl_psr, %l3
-        ld      [%l3+%l5], %l3
-        or      %l4, %l3, %l4
-        mov     %l4, %psr
-
-        ! проверяем подтверждение прерывания процесса
-        set     chproc_abort_accept, %g1
-        ld      [%g1], %g2
-        cmp     %g2, TRUE
-        bne     _cont_program
-        nop
-
-        set     sys_chproc_do_abort, %g1
-        add     %g1, 4, %g2
-
-        jmpl    %g1, %g0
-        rett   %g2
-
-    _cont_program:
-        ! restore PSR (PIL&ICC)
-        mov     %psr, %l4
-        set     0xF00F00, %l3
-        andn    %l4, %l3, %l4
-        set     irq_tbl_psr, %l3
-        ld      [%l3+%l5], %l3
-        or      %l4, %l3, %l4
-        mov     %l4, %psr
-
-        ! load ret PC
-        set     irq_tbl_pc, %l3
-        ld      [%l3+%l5], %g1
-
-        ! load ret nPC
-        set     irq_tbl_npc, %l3
-        ld      [%l3+%l5], %g2
-
-        jmpl    %g1, %g0
-         rett   %g2
-
-
-
-
+	jmp		%l1		! old PC
+	 rett	%l2		! old nPC
 
         .global start_child_process
 start_child_process:
@@ -349,11 +220,11 @@ start_child_process:
         set   TRUE, %o2
         st    %o2, [%o1]
 
-        ! сохраняем frame pointer
+        ! пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ frame pointer
         set   chproc_fp, %o1
         st    %fp, [%o1]
 
-        ! вызываем указанный тест
+        ! пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         ld    [%fp+0x44], %l0
         call  %l0
          nop
@@ -372,7 +243,7 @@ sys_chproc_do_abort:
         set   chproc_fp, %g1
         ld    [%g1], %g2
 
- ! цикл отката по стэку
+ ! пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
  _sys_restore_loop_start:
         cmp   %fp, %g2
         be     _sys_restore_loop_end

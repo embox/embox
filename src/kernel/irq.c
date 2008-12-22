@@ -5,51 +5,72 @@
 #include "common.h"
 #include "memory_map.h"
 
-IRQ_REGS *const irq_regs = (IRQ_REGS *const) IRQ_REGS_BASE;
-// Current free place in irq buffers
-int irq_current;
+IRQ_REGS * const irq_regs = (IRQ_REGS * const ) IRQ_REGS_BASE;
 
-// Interrupt buffers
-WORD irq_tbl_pc[IRQ_BUFFER_SIZE];   // return PC
-WORD irq_tbl_npc[IRQ_BUFFER_SIZE];  // return nPC
-WORD irq_tbl_psr[IRQ_BUFFER_SIZE];  // return PSR
-WORD irq_tbl_tt[IRQ_BUFFER_SIZE];   // trap type
+/*
+ * some registers to restore after user handler has completed
+ */
+typedef struct {
 
-// Irq handler table
-IRQ_HANDLER_DESCR irq_handlers_table[IRQ_HTBL_SIZE];
+	WORD psr;
+	WORD pc;
+	WORD npc;
+	WORD tbr;
 
+} IRQ_RESTORE_INFO;
 
+//int irq_current_pointer;
 
-void irq_manager()
-{
+// PSR register
+WORD irq_psr;
+// PC register
+WORD irq_pc;
+// nPC register
+WORD irq_npc;
+// trap base register
+WORD irq_tbr;
+
+// user trap handlers table
+IRQ_HANDLER user_trap_handlers[ALLOWED_TRAPS_AMOUNT];
+
+// if this flag is enabled then skip IRQ dispatching
+// and do not enter dispatch_trap()
+BOOL irq_ignore;
+
+/*
+ * Saves irq_psr, irq_pc, irq_npc and irq_tbr global variables to the locals.
+ * Then runs user defined handler (if one has been enabled).
+ * After all restores these global variables and returns.
+ */
+void dispatch_trap() {
+	IRQ_RESTORE_INFO restore_info;
 	BYTE tt;
-	int i;
 
-	//assert(irq_current > 0);
-	if (!(irq_current > 0))
-		return;
-	// get irq type
-	tt = (BYTE)irq_tbl_tt[irq_current-1];
-	// find irq handler
-	for (i = 0; i < IRQ_HTBL_SIZE; i++)
-	{
-		if (irq_handlers_table[i].tt == tt)
-		{
-			// run irq handler
-			if (irq_handlers_table[i].pfunc != NULL)
-				irq_handlers_table[i].pfunc();
+	restore_info.npc = irq_npc;
+	restore_info.pc = irq_pc;
+	restore_info.psr = irq_psr;
+	restore_info.tbr = irq_tbr;
 
-			// check if child process running
-			if (!chproc_started)
-				chproc_abort_accept = FALSE;
+	tt = (irq_tbr >> 4) & 0xFF;
 
-			return;
-		}
+	// interrupts are enabled while user handler is being performed
+	irq_ignore = FALSE;
+
+	if (user_trap_handlers[tt] != NULL) {
+		// fire user handler!
+		user_trap_handlers[tt]();
 	}
+
+	irq_ignore = TRUE;
+
+	irq_npc = restore_info.npc;
+	irq_pc = restore_info.pc;
+	irq_psr = restore_info.psr;
+	irq_tbr = restore_info.tbr;
+
 }
 
-void irq_init_handlers()
-{
+void irq_init_handlers() {
 	int i;
 	irq_regs->level = 0;
 	irq_regs->mask = 0;
@@ -57,72 +78,75 @@ void irq_init_handlers()
 	irq_regs->force = 0;
 	irq_regs->clear = 0xFFFFFFFF;
 
-	for (i = 0; i < IRQ_HTBL_SIZE; i++)
-		irq_handlers_table[i].tt = IRQ_NO_TRAP;
+	for (i = 0; i < ALLOWED_TRAPS_AMOUNT; i++) {
+		user_trap_handlers[i] = NULL;
+	}
 
-	chproc_started = FALSE;
+	irq_ignore = FALSE;
 }
 
-BOOL irq_set_trap_handler(BYTE tt, IRQ_HANDLER pfunc)
-{
-	int i;
-	// find free place (or tt place) in table
-	for (i = 0; i < IRQ_HTBL_SIZE
-	              && irq_handlers_table[i].tt != tt
-	              && irq_handlers_table[i].tt != IRQ_NO_TRAP;
-	              i++)
-		;
-	if (i < IRQ_HTBL_SIZE)
-	{
+/*
+ * set trap handler
+ */
+BOOL irq_set_trap_handler(BYTE tt, IRQ_HANDLER pfunc) {
+
+	if (NULL == user_trap_handlers[tt]) {
 		// set handler
-		irq_handlers_table[i].tt = tt;
-		irq_handlers_table[i].pfunc = pfunc;
+		user_trap_handlers[tt] = pfunc;
 		return TRUE;
 	}
+
 	return FALSE;
 }
 
-// set interrupt handler
-BOOL irq_set_handler(BYTE nirq, IRQ_HANDLER pfunc)
-{
-	int tt;
+/*
+ * remove trap handler
+ */
+BOOL irq_remove_trap_handler(BYTE tt) {
 
-	// check irq number
-	if (nirq > 15)
-		return FALSE;
-	//assert(nirq > 0 && nirq < 16);
-
-	// calculate trap type
-	tt = IRQ_TRAP_TYPE(nirq);
-	if (irq_set_trap_handler(tt, pfunc))
-	{
-		// enable interrupt
-		SetBit(irq_regs->mask, nirq);
-		return TRUE;
-	}
-	return FALSE;
-}
-// remove interrupt handler
-void irq_remove_handler(BYTE nirq)
-{
-	int i, tt;
-	// check irq number
-	if (nirq > 15)
-		return;
-//	assert(nirq > 0 && nirq < 16);
-	// calculate trap type
-	tt = IRQ_TRAP_TYPE(nirq);
-	// find free place (or tt place) in table
-	for (i = 0; i < IRQ_HTBL_SIZE
-				&& irq_handlers_table[i].tt != tt;
-				i++)
-		;
-
-	if (i < IRQ_HTBL_SIZE)
-	{
+	if (NULL != user_trap_handlers[tt]) {
 		// remove handler
-		irq_handlers_table[i].tt = IRQ_NO_TRAP;
-		// disable interrupt
-		ClearBit(irq_regs->mask, nirq);
+		user_trap_handlers[tt] = NULL;
+		return TRUE;
 	}
+
+	return FALSE;
+}
+
+/*
+ * set interrupt handler
+ */
+BOOL irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
+
+	// check IRQ number
+	if (irq_number != irq_number & 0xF) {
+		return FALSE;
+	}
+
+	if (irq_set_trap_handler(IRQ_TRAP_TYPE(irq_number),pfunc)) {
+		// enable interrupt
+		SetBit(irq_regs->mask, irq_number);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+/*
+ * remove interrupt handler
+ */
+BOOL irq_remove_handler(BYTE irq_number) {
+
+	// check IRQ number
+	if (irq_number != irq_number & 0xF) {
+		return FALSE;
+	}
+
+	if (irq_remove_trap_handler(IRQ_TRAP_TYPE(irq_number))) {
+		// disable interrupt
+		ClearBit(irq_regs->mask, irq_number);
+		return TRUE;
+	}
+
+	return FALSE;
 }
