@@ -102,7 +102,7 @@ static void inc_sys_timers ()
 
 static void irq_func_tmr2 ()
 {
-	printf ("in irq_func_tmr2()\n");
+	//printf ("in irq_func_tmr2()\n");
 	cnt_ms_sleep ++;
 	cnt_sys_time ++;
 	inc_sys_timers();
