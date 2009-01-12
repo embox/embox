@@ -48,7 +48,7 @@ window_overflow:
         restore                         ! Go back to trap window.
         mov  %l7, %g1
         jmp  %l1                        ! Re-execute save.
-        rett %l2
+         rett %l2
 
   /* Window underflow trap handler.  */
 
@@ -152,64 +152,130 @@ trap_dispatcher:
 	add     %l2, 4, %l2
 
 irq_dispatcher:
+	add		%fp, -64, %sp
 
-	set		irq_ignore, %l5
-	ld		[%l5], %l4
-	cmp		%l4, TRUE
-	be		irq_return
+	mov		%psr, %l4
+	and		%l4, 0x1F, %l4
+	mov		%wim, %l7
+	srl		%l7, %l4, %l7
+	and		%l7, 0x1, %l7
+	cmp		%l7, 0x1			! test WIM for possible window overflow
+
+	bne		irq_overflow_test_ok
 	 nop
 
-	set		irq_psr, %l4
-	st		%l0, [%l4]
-	set		irq_pc, %l4
-	st		%l1, [%l4]
-	set		irq_npc, %l4
-	st		%l2, [%l4]
-	set		irq_tbr, %l4
-	st		%l3, [%l4]
+		! handle window overflow
+		mov  %wim, %l5			! Calculate next WIM
+		mov  %g1, %l7
+		srl  %l5, 1, %g1
+		sll  %l5, CORE_NWINDOWS-1 , %l4
+		or   %l4, %g1, %g1
 
-		! set ignore flag
-		set		irq_ignore, %l5
-		set		TRUE, %l4
-		st		%l4, [%l5]
+		save					! Get into window to be saved.
+		mov  %g1, %wim
+		nop; nop; nop			! wait for delayed-write
+		st		%l0, [%sp + 0];
+		st		%l1, [%sp + 4];
+		st		%l2, [%sp + 8];
+		st		%l3, [%sp + 12];
+		st		%l4, [%sp + 16];
+		st		%l5, [%sp + 20];
+		st		%l6, [%sp + 24];
+		st		%l7, [%sp + 28];
+		st		%i0, [%sp + 32];
+		st		%i1, [%sp + 36];
+		st		%i2, [%sp + 40];
+		st		%i3, [%sp + 44];
+		st		%i4, [%sp + 48];
+		st		%i5, [%sp + 52];
+		st		%i6, [%sp + 56];
+		st		%i7, [%sp + 60];
+		restore					! Go back to trap window.
+		mov		%l7, %g1
 
-			! because of windows overflow/underflow possibility
-			! during dispatch_trap invokation
-			! we must enable traps in PSR
+	irq_overflow_test_ok:
+	srl		%l3, 4, %l5
+	and 	%l5, 0xFF, %o0		! pass TT as parameter
 
-			! TODO write comment
+		mov		%psr, %l5
+		or		%l5, 0x20, %l5	! set PSR.ET (enable traps)
+		mov		%l5, %psr
 
-			mov		%psr, %l0
- 			or		%l0, 0x20, %l0	! set PSR.ET (enable traps)
-!			andn	%l0, 0x80, %l0	! clear PSR.S (disable supervisor mode)
-			mov		%l0, %psr
+			call	dispatch_trap
+			 nop
 
-				call	dispatch_trap
-				 nop
+		mov		%psr, %l5
+		andn	%l5, 0x20, %l5	! clear PSR.ET (disable traps)
+		mov		%l5, %psr
 
-			mov		%psr, %l0
-!			or		%l0, 0x80, %l0	! set PSR.S (enable supervisor mode)
-			andn	%l0, 0x20, %l0	! clear PSR.ET (disable traps)
-			mov		%l0, %psr
+	! handle possible window underflow when executing RETT
+	mov		%psr, %l4
+	and		%l4, 0x1F, %l4		! calculate current CWP
+	mov		%wim, %l7
+	srl		%l7, 1, %l5
+	sll		%l7, CORE_NWINDOWS-1 , %l6
+	or		%l5, %l6, %l7
+	srl		%l7, %l4, %l7
+	and		%l7, 0x1, %l7
+	cmp		%l7, 0x1			! test WIM value after RETT for window underflow
 
-		! clear ignore flag
-		set		irq_ignore, %l5
-		set		FALSE, %l4
-		st		%l4, [%l5]
+	bne		irq_underflow_test_ok
+	 nop
 
-	set		irq_psr, %l4
-	ld		[%l4], %l5
-	mov		%l5, %psr
+		! handle window underflow
+		mov		%wim, %l3                  ! Calculate next WIM
+		sll		%l3, 1, %l4
+		srl		%l3, CORE_NWINDOWS-1, %l5
+		or		%l5, %l4, %l5
+		mov		%l5, %wim
+		nop; nop; nop			! wait for delayed-write
 
-	set		irq_pc, %l4
-	ld		[%l4], %l1
-	set		irq_npc, %l4
-	ld		[%l4], %l2
+		restore					! get into the window to be restore
+		ld		[%sp + 0], %l0;
+		ld		[%sp + 4], %l1;
+		ld		[%sp + 8], %l2;
+		ld		[%sp + 12], %l3;
+		ld		[%sp + 16], %l4;
+		ld		[%sp + 20], %l5;
+		ld		[%sp + 24], %l6;
+		ld		[%sp + 28], %l7;
+		ld		[%sp + 32], %i0;
+		ld		[%sp + 36], %i1;
+		ld		[%sp + 40], %i2;
+		ld		[%sp + 44], %i3;
+		ld		[%sp + 48], %i4;
+		ld		[%sp + 52], %i5;
+		ld		[%sp + 56], %i6;
+		ld		[%sp + 60], %i7;
+		save                            ! Get back to the trap window.
 
-irq_return:
+	irq_underflow_test_ok:
+return_from_trap:
+    ! restore PIL&ICC fields of old PSR (in %l0)
+	mov		%psr, %l4
+	set		0xF00F00, %l3
+	andn	%l4, %l3, %l4
+	and		%l0, %l3, %l0
+	or		%l4, %l0, %l4
+	mov		%l4, %psr
+	nop; nop; nop			! wait for PSR delayed-write
 
 	jmp		%l1		! old PC
 	 rett	%l2		! old nPC
+
+bad_trap_dispatcher:
+	mov		%tbr, %l3
+	srl		%l3, 4, %l5
+	and 	%l5, 0xFF, %o0		! pass TT as parameter
+	mov		%l1, %o1
+	mov		%l2, %o2
+	mov		%psr, %o3
+	mov		%psr, %l5
+	or		%l5, 0x20, %l5	! set PSR.ET (enable traps)
+	or		%l5, 0xF00, %l5
+	mov		%l5, %psr
+	call	dispatch_bad_trap
+	 nop
 
         .global start_child_process
 start_child_process:

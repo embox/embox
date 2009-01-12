@@ -4,26 +4,6 @@
 
 #ifndef __ASSEMBLER__
 
-inline static void asm_enable_traps() {
-
-	asm volatile(
-			"mov	%psr, %l0		\n\t"
-			"or		%l0, 0x10, %l0	\n\t" // set ET bit of PSR
-			"mov	%l0, %psr		\n\t"
-	);
-
-}
-
-inline static void asm_disable_traps() {
-
-	asm volatile(
-			"mov	%psr, %l0		\n\t"
-			"andn	%l0, 0x10, %l0	\n\t" // clear ET bit of PSR
-			"mov	%l0, %psr		\n\t"
-	);
-
-}
-
 #ifdef LEON2
 typedef struct _IRQ_REGS
 {
@@ -70,7 +50,7 @@ extern IRQ_REGS * const irq_regs;
 typedef void (*IRQ_HANDLER)();
 
 // traps handlers table size
-#define ALLOWED_TRAPS_AMOUNT     sizeof(BYTE)
+#define ALLOWED_TRAPS_AMOUNT     0xFF
 
 // user trap handlers table
 extern IRQ_HANDLER user_trap_handlers[ALLOWED_TRAPS_AMOUNT];

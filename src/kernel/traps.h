@@ -11,7 +11,7 @@
 #define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
 
 /* Unexpected trap will halt the processor by forcing it to error state */
-#define BAD_TRAP ta 0; nop; nop; nop;
+#define BAD_TRAP TRAP(bad_trap_dispatcher)
 
 /* Software trap. Treat as BAD_TRAP */
 #define SOFT_TRAP BAD_TRAP

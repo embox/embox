@@ -7,67 +7,22 @@
 
 IRQ_REGS * const irq_regs = (IRQ_REGS * const ) IRQ_REGS_BASE;
 
-/*
- * some registers to restore after user handler has completed
- */
-typedef struct {
-
-	WORD psr;
-	WORD pc;
-	WORD npc;
-	WORD tbr;
-
-} IRQ_RESTORE_INFO;
-
-//int irq_current_pointer;
-
-// PSR register
-WORD irq_psr;
-// PC register
-WORD irq_pc;
-// nPC register
-WORD irq_npc;
-// trap base register
-WORD irq_tbr;
-
 // user trap handlers table
 IRQ_HANDLER user_trap_handlers[ALLOWED_TRAPS_AMOUNT];
 
-// if this flag is enabled then skip IRQ dispatching
-// and do not enter dispatch_trap()
-BOOL irq_ignore;
-
 /*
- * Saves irq_psr, irq_pc, irq_npc and irq_tbr global variables to the locals.
- * Then runs user defined handler (if one has been enabled).
- * After all restores these global variables and returns.
+ * Runs user defined handler (if one has been enabled).
  */
-void dispatch_trap() {
-	IRQ_RESTORE_INFO restore_info;
-	BYTE tt;
-
-	restore_info.npc = irq_npc;
-	restore_info.pc = irq_pc;
-	restore_info.psr = irq_psr;
-	restore_info.tbr = irq_tbr;
-
-	tt = (irq_tbr >> 4) & 0xFF;
-
-	// interrupts are enabled while user handler is being performed
-	irq_ignore = FALSE;
-
+void dispatch_trap(BYTE tt) {
 	if (user_trap_handlers[tt] != NULL) {
 		// fire user handler!
 		user_trap_handlers[tt]();
 	}
+}
 
-	irq_ignore = TRUE;
-
-	irq_npc = restore_info.npc;
-	irq_pc = restore_info.pc;
-	irq_psr = restore_info.psr;
-	irq_tbr = restore_info.tbr;
-
+void dispatch_bad_trap(int tt, int pc, int npc, int psr) {
+	printf("! tt: %x, pc: %x, npc: %x, psr: %x\n", tt, pc, npc, psr);
+	while(1);
 }
 
 void irq_init_handlers() {
@@ -82,7 +37,6 @@ void irq_init_handlers() {
 		user_trap_handlers[i] = NULL;
 	}
 
-	irq_ignore = FALSE;
 }
 
 /*
