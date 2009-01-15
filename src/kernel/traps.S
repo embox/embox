@@ -2,6 +2,10 @@
 
 #include "traps.inc"
 
+#define SA(x)		(((x)+7)&(~0x07))	/* rounds "x" up to doubleword boundary */
+#define KERNEL_FRAME	(16*4)			/* size of frame containing only %i and %l registers */
+#define USER_FRAME	((16+1+6)*4)		/* minimum size frame by regular software considerations */
+
 ! skip instruction
 skip:
 	flush
@@ -16,74 +20,58 @@ irq_empty:
 	nop
 	nop
 
-  /* Window overflow trap handler. */
-        .global window_overflow
+/* Window overflow trap handler. */
+		.global window_overflow
 window_overflow:
+	mov	%g1, %l7		! Remember previous value of %g1 to restore it later
 
-        mov  %wim, %l3                  ! Calculate next WIM
-        mov  %g1, %l7
-        srl  %l3, 1, %g1
-        sll  %l3, CORE_NWINDOWS-1 , %l4
-        or   %l4, %g1, %g1
+	mov	%wim, %g1		! Calculate new WIM
+	srl	%g1, 1, %l3
+	sll	%g1, CORE_NWINDOWS-1 , %g1
+	or	%l3, %g1, %g1	! Circular right shifting by 1 bit
 
-        save                              ! Get into window to be saved.
-        mov  %g1, %wim
-        nop; nop; nop
-        st   %l0, [%sp + 0];
-        st   %l1, [%sp + 4];
-        st   %l2, [%sp + 8];
-        st   %l3, [%sp + 12];
-        st   %l4, [%sp + 16];
-        st   %l5, [%sp + 20];
-        st   %l6, [%sp + 24];
-        st   %l7, [%sp + 28];
-        st   %i0, [%sp + 32];
-        st   %i1, [%sp + 36];
-        st   %i2, [%sp + 40];
-        st   %i3, [%sp + 44];
-        st   %i4, [%sp + 48];
-        st   %i5, [%sp + 52];
-        st   %i6, [%sp + 56];
-        st   %i7, [%sp + 60];
-        restore                         ! Go back to trap window.
-        mov  %l7, %g1
-        jmp  %l1                        ! Re-execute save.
-         rett %l2
+	save		! Get into window to be saved
+	mov	%g1, %wim	! Write new WIM value that has been just calculated
+	std	%l0, [%sp + 0x00];
+	std	%l2, [%sp + 0x08];
+	std	%l4, [%sp + 0x10];
+	std	%l6, [%sp + 0x18];
+	std	%i0, [%sp + 0x20];
+	std	%i2, [%sp + 0x28];
+	std	%i4, [%sp + 0x30];
+	std	%i6, [%sp + 0x38];
+	restore		! Go back to trap window
 
-  /* Window underflow trap handler.  */
+	mov	%l7, %g1	! Restore saved %g1
+	jmp	%l1		! Re-execute save
+	 rett	%l2
 
-        .global  window_underflow
-
+/* Window underflow trap handler.  */
+		.global  window_underflow
 window_underflow:
 
-        mov  %wim, %l3                  ! Calculate next WIM
-        sll  %l3, 1, %l4
-        srl  %l3, CORE_NWINDOWS-1, %l5
-        or   %l5, %l4, %l5
-        mov  %l5, %wim
-        nop; nop; nop
-        restore                         ! Two restores to get into the
-        restore                         ! window to restore
-        ld   [%sp + 0], %l0;            ! Restore window from the stack
-        ld   [%sp + 4], %l1;
-        ld   [%sp + 8], %l2;
-        ld   [%sp + 12], %l3;
-        ld   [%sp + 16], %l4;
-        ld   [%sp + 20], %l5;
-        ld   [%sp + 24], %l6;
-        ld   [%sp + 28], %l7;
-        ld   [%sp + 32], %i0;
-        ld   [%sp + 36], %i1;
-        ld   [%sp + 40], %i2;
-        ld   [%sp + 44], %i3;
-        ld   [%sp + 48], %i4;
-        ld   [%sp + 52], %i5;
-        ld   [%sp + 56], %i6;
-        ld   [%sp + 60], %i7;
-        save                            ! Get back to the trap window.
-        save
-        jmp  %l1                        ! Re-execute restore.
-        rett  %l2
+	mov	%wim, %l3		! Calculate new WIM
+	sll	%l3, 1, %l4
+	srl	%l3, CORE_NWINDOWS-1, %l3
+	or	%l3, %l4, %l3	! Circular left shifting by 1 bit
+	mov	%l3, %wim		! Write new WIM value
+	nop; nop; nop		! Wait for WIM delayed writing
+
+	restore		! Two restores to get into the
+	restore		! window to be restored
+	ldd	[%sp + 0x00], %l0;
+	ldd	[%sp + 0x08], %l2;
+	ldd	[%sp + 0x10], %l4;
+	ldd	[%sp + 0x18], %l6;
+	ldd	[%sp + 0x20], %i0;
+	ldd	[%sp + 0x28], %i2;
+	ldd	[%sp + 0x30], %i4;
+	ldd	[%sp + 0x38], %i6;
+	save
+	save		! Get back to trap window
+
+	jmp  %l1	! Re-execute restore
+	 rett  %l2
 
   /* Flush windows routine.  */
         .global flush_windows
@@ -112,7 +100,6 @@ flush_windows:
 
 
 
-! ����������
 spil:
         mov     %psr, %l4
         srl     %l4, 8, %l5
@@ -125,7 +112,6 @@ spil:
         jmpl    %l2, %g0
         rett    %l2 + 4
 
-! ��������� ������� ����������
 rtc_trap:
         !set     io_rtc_alarm, %l4
         !set     0x01, %l5
@@ -135,7 +121,6 @@ rtc_trap:
          rett    %l2
 
 
-! ����� � ����� �� ������� �������
 .global halt_trap
 halt_trap:
   !      flush
@@ -151,9 +136,8 @@ trap_dispatcher:
 	! store previous nPC+4 as nPC
 	add     %l2, 4, %l2
 
+/**/
 irq_dispatcher:
-	add		%fp, -64, %sp
-
 	mov		%psr, %l4
 	and		%l4, 0x1F, %l4
 	mov		%wim, %l7
@@ -173,27 +157,20 @@ irq_dispatcher:
 
 		save					! Get into window to be saved.
 		mov  %g1, %wim
-		nop; nop; nop			! wait for delayed-write
-		st		%l0, [%sp + 0];
-		st		%l1, [%sp + 4];
-		st		%l2, [%sp + 8];
-		st		%l3, [%sp + 12];
-		st		%l4, [%sp + 16];
-		st		%l5, [%sp + 20];
-		st		%l6, [%sp + 24];
-		st		%l7, [%sp + 28];
-		st		%i0, [%sp + 32];
-		st		%i1, [%sp + 36];
-		st		%i2, [%sp + 40];
-		st		%i3, [%sp + 44];
-		st		%i4, [%sp + 48];
-		st		%i5, [%sp + 52];
-		st		%i6, [%sp + 56];
-		st		%i7, [%sp + 60];
+		std	%l0, [%sp + 0x00];
+		std	%l2, [%sp + 0x08];
+		std	%l4, [%sp + 0x10];
+		std	%l6, [%sp + 0x18];
+		std	%i0, [%sp + 0x20];
+		std	%i2, [%sp + 0x28];
+		std	%i4, [%sp + 0x30];
+		std	%i6, [%sp + 0x38];
 		restore					! Go back to trap window.
 		mov		%l7, %g1
 
 	irq_overflow_test_ok:
+	add		%fp, -104, %sp
+
 	srl		%l3, 4, %l5
 	and 	%l5, 0xFF, %o0		! pass TT as parameter
 
@@ -231,23 +208,15 @@ irq_dispatcher:
 		nop; nop; nop			! wait for delayed-write
 
 		restore					! get into the window to be restore
-		ld		[%sp + 0], %l0;
-		ld		[%sp + 4], %l1;
-		ld		[%sp + 8], %l2;
-		ld		[%sp + 12], %l3;
-		ld		[%sp + 16], %l4;
-		ld		[%sp + 20], %l5;
-		ld		[%sp + 24], %l6;
-		ld		[%sp + 28], %l7;
-		ld		[%sp + 32], %i0;
-		ld		[%sp + 36], %i1;
-		ld		[%sp + 40], %i2;
-		ld		[%sp + 44], %i3;
-		ld		[%sp + 48], %i4;
-		ld		[%sp + 52], %i5;
-		ld		[%sp + 56], %i6;
-		ld		[%sp + 60], %i7;
-		save                            ! Get back to the trap window.
+		ldd	[%sp + 0x00], %l0;
+		ldd	[%sp + 0x08], %l2;
+		ldd	[%sp + 0x10], %l4;
+		ldd	[%sp + 0x18], %l6;
+		ldd	[%sp + 0x20], %i0;
+		ldd	[%sp + 0x28], %i2;
+		ldd	[%sp + 0x30], %i4;
+		ldd	[%sp + 0x38], %i6;
+		save					! Get back to the trap window.
 
 	irq_underflow_test_ok:
 return_from_trap:
@@ -286,11 +255,9 @@ start_child_process:
         set   TRUE, %o2
         st    %o2, [%o1]
 
-        ! ��������� frame pointer
         set   chproc_fp, %o1
         st    %fp, [%o1]
 
-        ! �������� ��������� ����
         ld    [%fp+0x44], %l0
         call  %l0
          nop
@@ -309,7 +276,6 @@ sys_chproc_do_abort:
         set   chproc_fp, %g1
         ld    [%g1], %g2
 
- ! ���� ������ �� �����
  _sys_restore_loop_start:
         cmp   %fp, %g2
         be     _sys_restore_loop_end
