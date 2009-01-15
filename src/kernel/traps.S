@@ -169,7 +169,7 @@ irq_dispatcher:
 		mov		%l7, %g1
 
 	irq_overflow_test_ok:
-	add		%fp, -104, %sp
+	add		%fp, -SA(KERNEL_FRAME), %sp
 
 	srl		%l3, 4, %l5
 	and 	%l5, 0xFF, %o0		! pass TT as parameter
