@@ -58,29 +58,31 @@ void print_ahb_dev() {
 	int i;
 	void *pnp_dev_addr;
 
+
 	for (i = 0; i < 128; i++) {
 		pnp_dev_addr = (void *)(PNP_MASTER_BASE + i * sizeof(WORD) * 8);
 
+
 		if (0 != COMPUTE_PNP_DEVICE_ID(*((WORD *) pnp_dev_addr))) {
+			TRACE("Vendor: ");
 			switch (COMPUTE_PNP_VENDOR_ID(*((WORD *) pnp_dev_addr))) {
-			case GAISLER_RESEARCH_ID:
-				TRACE("Vendor: Gaisler Research");
+			case VENDOR_ID_GAISLER_RESEARCH:
+				TRACE("Gaisler Research");
+				TRACE("\tDevice: ");
+				switch (COMPUTE_PNP_DEVICE_ID(*((WORD *) pnp_dev_addr))) {
+				case DEV_ID_GAISLER_TIMER:
+					TRACE("Timer\n");
+					break;
+				case DEV_ID_GAISLER_INTERRUPT_UNIT:
+					TRACE("Interrupt Unit\n");
+					break;
+				default:
+					TRACE("Unknown device. ID: 0x%X\n", COMPUTE_PNP_DEVICE_ID(*((WORD *) pnp_dev_addr)));
+				}
 				break;
 			default:
-				TRACE("Unknown vendor. ID: 0x%x\n", COMPUTE_PNP_VENDOR_ID(*((WORD *) pnp_dev_addr)));
+				TRACE("Unknown. VenID: 0x%X DevID 0x%X\n", COMPUTE_PNP_VENDOR_ID(*((WORD *) pnp_dev_addr)), COMPUTE_PNP_DEVICE_ID(*((WORD *) pnp_dev_addr)));
 			}
-
-			switch (COMPUTE_PNP_DEVICE_ID(*((WORD *) pnp_dev_addr))) {
-			case TIMER_ID:
-				TRACE("\tDevice: Timer");
-				break;
-			case INTERRUPT_UNIT_ID:
-				TRACE("\tDevice: Interrupt Unit");
-				break;
-			default:
-				TRACE("Unknown device. ID: 0x%x\n", COMPUTE_PNP_DEVICE_ID(*((WORD *) pnp_dev_addr)));
-			}
-
 		}
 	}
 

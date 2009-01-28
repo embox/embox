@@ -1,10 +1,10 @@
 #ifndef PNP_H_
 #define PNP_H_
 // Vendor ID's
-#define GAISLER_RESEARCH_ID 0x01
-
-
+#define VENDOR_ID_GAISLER_RESEARCH 0x01
 // Device ID's
-#define TIMER_ID 0x11
-#define INTERRUPT_UNIT_ID 0x0D
+#define DEV_ID_GAISLER_TIMER 			0x11
+#define DEV_ID_GAISLER_INTERRUPT_UNIT 	0x0D
+
+//dev id
 #endif

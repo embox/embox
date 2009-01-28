@@ -9,5 +9,6 @@
 #define TESTS_HEADERS_H_
 
 #include "test_cpu_context.h"
+#include "test_availability_irq.h"
 
 #endif /* TESTS_HEADERS_H_ */

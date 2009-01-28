@@ -4,8 +4,12 @@
  *  Created on: 28.01.2009
  *      Authors: abatyukov, afomin, eabysalimov
  */
+#include "types.h"
+#include "common.h"
 #include "timers.h"
-volatile BOOL tick_happened;
+#include "test_availability_irq.h"
+
+volatile static BOOL tick_happened;
 
 static void test_timer_handler(){
 	tick_happened = TRUE;

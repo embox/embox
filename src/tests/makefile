@@ -1,4 +1,4 @@
-OBJS:=test_cpu_context.o
+OBJS:=test_availability_irq.o test_cpu_context.o
 
 all:$(OBJS)
 
