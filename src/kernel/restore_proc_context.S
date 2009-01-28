@@ -73,13 +73,13 @@ register_window_restore:
 	ld [%l0 + 8],%g1
 	mov %g1, %y
 	ld [%l0 + 0xc],%g1
-	!mov %tbr, %g1
-	!nop;nop;nop
+	mov %tbr, %g1
+	nop;nop;nop
 
 
     ld [%l0 + 0x18],%g1
     ld [%l0 + 0x1C],%g2
-
+//address return from trap
 	ld [%l0 + 0x38],%l1
 	ld [%l0 + 0x3C],%l2
 
