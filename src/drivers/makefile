@@ -1,4 +1,4 @@
-OBJS:=uart.o timers.o
+OBJS:=uart.o timers.o plug_and_play.o
 
 all:$(OBJS)
 
