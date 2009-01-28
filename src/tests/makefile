@@ -1,4 +1,4 @@
-OBJS:=
+OBJS:=test_cpu_context.o
 
 all:$(OBJS)
 

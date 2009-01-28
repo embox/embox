@@ -50,6 +50,9 @@ int express_test_run (void *handler)
 	if (NULL == test_desc)
 		return FALSE;
 
+	if (NULL == test_desc->handler)
+		return FALSE;
+
 	TRACE ("start test %s\n", test_desc->name);
 	result = test_desc->handler();
 	TRACE ("result %d\n", result);
