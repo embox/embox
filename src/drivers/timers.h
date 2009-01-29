@@ -1,27 +1,17 @@
 #ifndef _TIMERS_H_
 #define _TIMERS_H_
 
-#define MAX_QUANTITY_SYS_TIMERS 0x20
-
+int timers_init ();
 typedef void (*TIMER_FUNC)(UINT32 id);
-
-typedef struct _SYS_TMR
-{
-	volatile BOOL f_enable;
-	volatile UINT32 id;
-	volatile UINT32 load;
-	volatile UINT32 cnt;
-	volatile TIMER_FUNC handle;
-}SYS_TMR;
-
-extern SYS_TMR sys_timers[MAX_QUANTITY_SYS_TIMERS];
-
-void timers_init ();
 
 BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle);
 void close_timer (UINT32 id);
 
 void sleep (int ms);
+UINT32 get_sys_time ();
+
+int timers_context_save ();
+int timers_context_restore (int context_number);
 
 #endif //_TIMERS_H_
 

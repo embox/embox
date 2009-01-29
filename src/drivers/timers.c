@@ -1,8 +1,9 @@
 #include "types.h"
 #include "leon_config.h"
-#include "memory_map.h"
-#include "timers.h"
 #include "irq.h"
+#include "plug_and_play.h"
+#include "pnp_id.h"
+#include "timers.h"
 
 
 #ifdef LEON3
@@ -38,18 +39,22 @@ typedef struct _TIMERS_STRUCT
 	volatile unsigned int dummy10;
 }TIMERS_STRUCT;
 #endif
-static TIMERS_STRUCT *const timers = (TIMERS_STRUCT *)(TIMERS_BASE);
+static TIMERS_STRUCT * timers = NULL;//(TIMERS_STRUCT *)(TIMERS_BASE);
 
+#define MAX_QUANTITY_SYS_TIMERS 	0x20
+typedef struct _SYS_TMR
+{
+	volatile BOOL f_enable;
+	volatile UINT32 id;
+	volatile UINT32 load;
+	volatile UINT32 cnt;
+	volatile TIMER_FUNC handle;
+}SYS_TMR;
 
-
-SYS_TMR sys_timers[MAX_QUANTITY_SYS_TIMERS];
-
-
-
+static SYS_TMR sys_timers[MAX_QUANTITY_SYS_TIMERS];
 
 volatile static UINT32 cnt_ms_sleep;//for sleep function
 volatile static UINT32 cnt_sys_time;//quantity ms after start system
-
 
 
 BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle)
@@ -100,40 +105,36 @@ static void inc_sys_timers ()
 	}
 }
 
-static void irq_func_tmr2 ()
+static void irq_func_tmr_1mS ()
 {
-	//printf ("in irq_func_tmr2()\n");
 	cnt_ms_sleep ++;
 	cnt_sys_time ++;
 	inc_sys_timers();
 }
 
-
-void timers_init()
+int timers_init()
 {
-//#ifndef RELEASE
+	PNP_DEV ahb_dev;
 	int i;
 	for (i = 0; i < sizeof (sys_timers)/sizeof(sys_timers[0]); i ++)
 		sys_timers[i].f_enable=FALSE;
 
+	if (!capture_ahb_dev(&ahb_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER))
+		return;//error
+
+	timers = (TIMERS_STRUCT *)((ahb_dev.bar[0].addr) << 20);
 	timers->scaler_ld = TIMER_SCALER_VAL;
 	timers->scaler_cnt = 0;
 	timers->timer_cnt1 = 0;
 	timers->timer_cnt2 = 0;
 
-	timers->timer_ld1 = 0x002710;//0x00030d40;
-	timers->timer_ld2 = 0x027100;//0x00989680;
+	timers->timer_ld1 = 0x002710;
+	timers->timer_ld2 = 0;//0x027100;
 	timers->timer_ctrl1 = 0xf;
-	timers->timer_ctrl2 = 0xf;
-	irq_set_handler(IRQ_Timer2, irq_func_tmr2);
-
-//	irq_set_handler(IRQ_Timer1, irq_func_tmr2);
-
-
+	timers->timer_ctrl2 = 0x0;//disable
+	irq_set_handler(ahb_dev.id_reg.irq, irq_func_tmr_1mS);
 
 	cnt_sys_time = 0;
-//#endif
-
 }
 
 
@@ -147,3 +148,21 @@ UINT32 get_sys_time ()
 {
 	return cnt_sys_time;
 }
+
+//TODO now save only one context
+#define MAX_SAVE_CONTEXT 2
+static SYS_TMR save_timers_buffer[MAX_QUANTITY_SYS_TIMERS][MAX_SAVE_CONTEXT];
+static int save_context_number = 0;
+int timers_context_save ()
+{
+	int context_number = 0;
+	memcpy (save_timers_buffer[context_number], sys_timers, sizeof (sys_timers));
+	return context_number;
+}
+
+int timers_context_restore (int context_number)
+{
+	memcpy (sys_timers, save_timers_buffer[context_number], sizeof (sys_timers));
+	return context_number;
+}
+
