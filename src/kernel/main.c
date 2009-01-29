@@ -9,12 +9,13 @@
 #include "leon.h"
 #include "memory_map.h"
 #include "cache.h"
+#include "plug_and_play.h"
 
 LEON_REGS * const l_regs = (PVOID) (RG_BASE);
 
 int init() {
 	irq_init_handlers();
-
+	print_ahb_dev();
 	uart_init();
 
 //	con_init();
@@ -37,4 +38,3 @@ int main() {
 
 	return 0;
 }
-

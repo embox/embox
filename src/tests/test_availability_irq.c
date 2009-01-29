@@ -2,35 +2,32 @@
  * test_availability_irq.c
  *
  *  Created on: 28.01.2009
- *      Authors: abatyukov, afomin, eabysalimov
+ *      Authors: Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
+
 #include "types.h"
 #include "common.h"
 #include "timers.h"
 #include "test_availability_irq.h"
 
-volatile static BOOL tick_happened ;
+volatile static BOOL tick_happened;
 
-static void test_timer_handler(){
+static void test_timer_handler() {
 	tick_happened = TRUE;
 }
 
 int test_availability_irq() {
-	UINT32 id,ticks;
+	UINT32 id, ticks;
 	long i;
-	//TRACE ("Testing availability_irq...   ");
-	id = 23;
+	id = 17;
 	ticks = 2;
 	// (timer value changes means ok)
 	tick_happened = FALSE;
-	set_timer(id, ticks,test_timer_handler);
-	for (i = 0 ;i<(2<<20);i++){
+	set_timer(id, ticks, test_timer_handler);
+	for (i = 0; i < (1 << 20); i++) {
 		if (tick_happened)
 			break;
 	}
 	close_timer(id);
-	//if (TRUE == tick_happened)
-	//	TRACE ("OK\n");
-	//else TRACE ("failed\n");
-	return 0;
+	return !tick_happened;
 }

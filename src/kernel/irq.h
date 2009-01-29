@@ -36,8 +36,8 @@ extern IRQ_REGS * const irq_regs;
 #define IRQ_Hang		0xD		// ��������� ��� ��������� � ������� Memory-Bus I/O
 #define IRQ_EthMAC		0xC		// ���������� �� LXT971 (Eth Phy)
 #define IRQ_DSU			0xB		// DSU trace buffer
-#define IRQ_Timer2		0x9		// Timer 2
-#define IRQ_Timer1		0x8		// Timer 1
+//#define IRQ_Timer2		0x9		// Timer 2
+//#define IRQ_Timer1		0x8		// Timer 1
 #define IRQ_UART1		0x3		//
 #define IRQ_AHB_error	0x1		//
 #define IRQ_TRAP_TYPE(nirq)   (0x10 + (nirq))

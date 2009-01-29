@@ -2,7 +2,7 @@
  * test_availability_irq.h
  *
  *  Created on: 28.01.2009
- *      Authors: abatyukov, afomin, eabusalimov
+ *      Authors: Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
 #ifndef TEST_AVAILABILITY_IRQ_H_

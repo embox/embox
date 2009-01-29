@@ -14,14 +14,12 @@
 
 #ifdef LEON2
 #define UART_BASE		0x80000070
-#define TIMERS_BASE		0x80000040
 #define IRQ_REGS_BASE	0x80000090
 #endif
 
 #ifdef LEON3
 #define UART_BASE		0x80000100
 #define IRQ_REGS_BASE	0x80000200
-#define TIMERS_BASE		0x80000300
 #endif
 
 

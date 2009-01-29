@@ -9,8 +9,8 @@
 ! skip instruction
 skip:
 	flush
-	jmpl    %l2, %g0
-	rett    %l2 + 4
+	jmp    %l2
+	 rett    %l2 + 4
 	nop
 	nop
 
@@ -73,55 +73,8 @@ window_underflow:
 	jmp  %l1	! Re-execute restore
 	 rett  %l2
 
-  /* Flush windows routine.  */
-        .global flush_windows
-flush_windows:
 
-   	mov	%psr, %g1
-	or	%g1, 0x0f00, %g2
-	restore				! enter previous frame (cannot trap)
-        wr      %g2, 0x20, %psr		! enable traps, disable interrupts
-	nop; nop; nop
-	save				! 6 save to flush all windows
-	save
-	save
-	save
-	save
-	save
-	restore				! 5 restore to enter trapped frame
-	restore
-	restore
-	restore
-	restore
-	mov      %g1, %psr		! restore %psr
-	nop; nop; nop
-  	jmp  %l2			! Jump to nPC
-  	rett  %l2 + 4
-
-
-
-spil:
-        mov     %psr, %l4
-        srl     %l4, 8, %l5
-        andn    %l4, 0x0f00, %l4
-        sll     %i0, 8, %i0
-        and     %i0, 0x0f00, %i0
-        or      %i0, %l4, %l4
-        mov     %l4, %psr
-        and     %l5, 0x0f, %i0
-        jmpl    %l2, %g0
-        rett    %l2 + 4
-
-rtc_trap:
-        !set     io_rtc_alarm, %l4
-        !set     0x01, %l5
-        !stb     %l5, [%l4]
-
-        jmpl    %l1, %g0
-         rett    %l2
-
-
-.global halt_trap
+		.global halt_trap
 halt_trap:
   !      flush
 
