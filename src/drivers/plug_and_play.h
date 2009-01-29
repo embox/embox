@@ -8,14 +8,10 @@
 #ifndef PLUG_AND_PLAY_H_
 #define PLUG_AND_PLAY_H_
 
-#define PNP_MASTER_BASE	0xFFFFF000
-#define PNP_SLAVE_BASE	0xFFFFF800
-
 typedef BYTE PNP_VENDOR_ID;
 typedef WORD PNP_DEVICE_ID;
 typedef BYTE PNP_VERSION;
 typedef BYTE PNP_IRQ;
-typedef WORD PNP_USER_DEFINED;
 
 typedef WORD BAR_ADDR;
 typedef WORD BAR_MASK;
@@ -27,7 +23,7 @@ typedef struct {
 	BOOL cacheable;
 	BAR_MASK mask;
 	BAR_TYPE type;
-} BANK_ADDRESS_REG;
+} BANK_ADDR_REG;
 
 typedef struct {
 	PNP_VENDOR_ID vendor_id;
@@ -38,19 +34,26 @@ typedef struct {
 
 typedef struct {
 	ID_REG id_reg;
-	PNP_USER_DEFINED user_defined[3];
-	BANK_ADDRESS_REG bar[4];
-} PNP_DEV;
+	WORD user_defined[3];
+	BANK_ADDR_REG bar[4];
+} AHB_DEV;
 
-BOOL pnp_dev_not_available[128];
+typedef struct {
+	ID_REG id_reg;
+	BANK_ADDR_REG bar;
+} APB_DEV;
 
-/***
- * Determine connected device
- *
+/*
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-int capture_ahb_dev(PNP_DEV *pnp_dev, BYTE vendor_id, WORD device_id);
+int capture_ahb_dev(AHB_DEV *ahb_dev, BYTE vendor_id, WORD device_id);
+
+/*
+ * pnp_dev must be allocated by caller
+ * returns 0 if ok, non-zero otherwise
+ */
+int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, WORD device_id);
 
 /***
  * Print list of all connected plug and play devices

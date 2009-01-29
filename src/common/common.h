@@ -13,12 +13,15 @@
 // Stop processor
 #define HALT     { asm ("ta 0; nop;"); }
 
+inline static int dummy() {
+	return 0;
+}
 
 #ifndef RELEASE
  #define TRACE(format, args...)   printf(format, ##args)
  #define assert(cond)             { if (!(cond)) HALT; }
 #else
- #define TRACE(format, args...)
+ #define TRACE(format, args...)		dummy()
  #define assert(cond)
 #endif  // ifndef RELEASE
 

@@ -49,7 +49,7 @@ _hardreset:
   BAD_TRAP; BAD_TRAP; BAD_TRAP;                 ! 25 - 27 undefined
   BAD_TRAP;                                     ! 28 cp_exception
   BAD_TRAP; BAD_TRAP;                 ! 29 - 2A undefined
-  TRAP(trap_dispatcher);                           ! 2B data_store_error
+  BAD_TRAP;                           ! 2B data_store_error
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 2C - 2F undefined
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 30 - 33 undefined
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 34 - 37 undefined
