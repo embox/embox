@@ -1,5 +1,5 @@
 /*
- * test_availability_irq.c
+ * plug_and_play.c
  *
  *  Created on: 28.01.2009
  *      Authors: Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
@@ -23,7 +23,7 @@ typedef struct {
 	BOOL cacheable;
 	BAR_MASK mask;
 	BAR_TYPE type;
-} BANK_ADDR_REG;
+} BA_REG;
 
 typedef struct {
 	PNP_VENDOR_ID vendor_id;
@@ -35,12 +35,12 @@ typedef struct {
 typedef struct {
 	ID_REG id_reg;
 	WORD user_defined[3];
-	BANK_ADDR_REG bar[4];
+	BA_REG ba_reg[4];
 } AHB_DEV;
 
 typedef struct {
 	ID_REG id_reg;
-	BANK_ADDR_REG bar;
+	BA_REG ba_reg;
 } APB_DEV;
 
 /*
@@ -55,7 +55,7 @@ int capture_ahb_dev(AHB_DEV *ahb_dev, BYTE vendor_id, WORD device_id);
  */
 int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, WORD device_id);
 
-/***
+/*
  * Print list of all connected plug and play devices
  */
 void print_ahb_dev();

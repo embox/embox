@@ -55,6 +55,6 @@ int express_test_run (void *handler)
 
 	TRACE ("start test %s\n", test_desc->name);
 	result = test_desc->handler();
-	TRACE ("result %d\n", result);
+	TRACE ("result ..... %s\n", result == 0 ? "OK" : "FAILED");
 	return result;
 }
