@@ -124,7 +124,7 @@ int capture_ahb_dev(AHB_DEV *ahb_dev, BYTE vendor_id, WORD device_id) {
 	ahb_entry = (AHB_ENTRY *) AHB_SLAVE_BASE;
 	for (i = 0; i < AHB_SLAVES_COUNT; i++) {
 		if ((COMPUTE_PNP_VENDOR_ID(ahb_entry->id_reg) == vendor_id) && (COMPUTE_PNP_DEVICE_ID(ahb_entry->id_reg) == device_id) && (NULL
-				== ahb_devices[AHB_MASTERS_COUNT + i])) {
+		== ahb_devices[AHB_MASTERS_COUNT + i])) {
 
 			fill_ahb_dev(ahb_dev, ahb_entry);
 			ahb_devices[AHB_MASTERS_COUNT + i] = ahb_dev;
@@ -180,14 +180,21 @@ inline static PNP_DEVICE_INFO* get_device_info(PNP_VENDOR_ID vendor_id,
 	return NULL;
 }
 
-inline static void print_table_head() {
-	//	TRACE("%c",);
+inline static void print_table_row(int n, int ven_id, int dev_id,
+		const char *ven_name, const char *dev_name, int ver, int irq) {
+	TRACE("%02x.%02x:%03x %20s %28s \t0x%02x %3d\n", n, ven_id, dev_id, ven_name, dev_name, ver, irq);
 }
 
-static void print_ahb_entries(AHB_ENTRY *base_addr, int amount) {
-	int i;
+inline static void print_table_head() {
+	TRACE("\n  %7s %20s %28s \t%4s %3s\n", "ven:dev", "Vendor Name", "Device Name","ver", "irq");
+}
+
+static int print_ahb_entries(AHB_ENTRY *base_addr, int amount) {
+	int i, count = 0;
 	AHB_ENTRY *ahb_entry = base_addr;
 	WORD vendor_id, device_id, irq;
+	char *vendor_name, *device_name;
+	const char *UNKNOWN = "unknown";
 	PNP_VENDOR_INFO* vendor_info;
 	PNP_DEVICE_INFO* device_info;
 
@@ -197,36 +204,38 @@ static void print_ahb_entries(AHB_ENTRY *base_addr, int amount) {
 			device_id = COMPUTE_PNP_DEVICE_ID(ahb_entry->id_reg);
 			irq = COMPUTE_PNP_IRQ(ahb_entry->id_reg);
 
-			// first line
-			TRACE("%02x:%03x:%02x\n", vendor_id, device_id, irq);
-			// Second line
-			//TRACE("Vendor: ");
 			if ((vendor_info = get_vendor_info(vendor_id)) != NULL) {
-				TRACE("Vendor: %16s\t", vendor_info->name);
+				vendor_name = (char *) vendor_info->name;
 				if ((device_info = get_device_info(vendor_id, device_id))
 						!= NULL) {
-					TRACE("Device: %24s\n", device_info->name);
+					device_name = (char *) device_info->name;
 				} else {
-					TRACE("Device: unknown\n");
+					device_name = (char *) UNKNOWN;
 				}
-				//break;
 			} else {
-				TRACE("Vendor: unknown         \tDevice: unknown\n");
+				vendor_name = (char *) UNKNOWN;
+				device_name = (char *) UNKNOWN;
 			}
 
-			TRACE("Version: %d", COMPUTE_PNP_VERSION(ahb_entry->id_reg));
-			TRACE("\tIRQ: 0x%02x\n", irq);
-
+			print_table_row(i, vendor_id, device_id, vendor_name, device_name,
+					COMPUTE_PNP_VERSION(ahb_entry->id_reg), irq);
+			count++;
 		}
 		ahb_entry++;
 	}
-
+	return count;
 }
 
 void print_ahb_dev() {
-	TRACE("---\tAHB - MASTER\n");
-	print_ahb_entries((AHB_ENTRY *) AHB_MASTER_BASE, AHB_MASTERS_COUNT);
-	//	TRACE("---\tAHB - SLAVE\n");
+	int count = 0;
+	TRACE("\nListing Plug'n'Play devices..\n");
+	print_table_head();
+	count
+			+= print_ahb_entries((AHB_ENTRY *) AHB_MASTER_BASE,
+					AHB_MASTERS_COUNT);
+	TRACE("\n..Total: %d\n\n", count);
+
+	//	TRACE(">>> (ahb slave)\n");
 	//	print_ahb_entries((AHB_ENTRY *)AHB_SLAVE_BASE, AHB_SLAVES_COUNT);
 
 }
