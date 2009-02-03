@@ -69,8 +69,8 @@ register_window_restore:
 	ld [%l0 + 0], %g1
 	mov %g1, %wim
 	ld [%l0 + 4], %g1
-	mov %g1,%psr
-	ld [%l0 + 8],%g1
+!	mov %g1,%psr
+!	ld [%l0 + 8],%g1
 	mov %g1, %y
 	ld [%l0 + 0xc],%g1
 	mov %tbr, %g1
