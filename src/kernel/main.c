@@ -15,7 +15,6 @@ LEON_REGS * const l_regs = (PVOID) (RG_BASE);
 
 int init() {
 	irq_init_handlers();
-	print_ahb_dev();
 	uart_init();
 
 //	con_init();
@@ -29,9 +28,12 @@ int main() {
 	void* descriptor;
 	init();
 
+	print_ahb_dev();
 	while (NULL != (descriptor = (void *) express_test_get_next())) {
 		express_test_run(descriptor);
 	}
+
+	shell_start();
 
 	while (1)
 		;

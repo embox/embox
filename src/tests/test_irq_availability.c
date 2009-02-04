@@ -1,5 +1,5 @@
 /*
- * test_availability_irq.c
+ * test_irq_availability.c
  *
  *  Created on: 28.01.2009
  *      Authors: Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
@@ -8,7 +8,7 @@
 #include "types.h"
 #include "common.h"
 #include "timers.h"
-#include "test_availability_irq.h"
+#include "test_irq_availability.h"
 
 volatile static BOOL tick_happened;
 
@@ -16,7 +16,7 @@ static void test_timer_handler() {
 	tick_happened = TRUE;
 }
 
-int test_availability_irq() {
+int test_irq_availability() {
 	UINT32 id, ticks;
 	long i;
 	id = 17;

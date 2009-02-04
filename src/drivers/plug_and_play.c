@@ -43,11 +43,11 @@ typedef struct {
 	const char *name;
 } PNP_VENDOR_INFO;
 
-PNP_VENDOR_INFO const vendors_table[] = {
+static PNP_VENDOR_INFO const vendors_table[] = {
 #include "pnp_vendors_table.inc"
 		};
 
-PNP_DEVICE_INFO const devices_table[] = {
+static PNP_DEVICE_INFO const devices_table[] = {
 #include "pnp_devices_table.inc"
 		};
 

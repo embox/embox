@@ -1,4 +1,4 @@
-OBJS:=printf.o
+OBJS:=printf.o shell.o
 
 
 all:$(OBJS)

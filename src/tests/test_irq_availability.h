@@ -1,5 +1,5 @@
 /*
- * test_availability_irq.h
+ * test_irq_availability.h
  *
  *  Created on: 28.01.2009
  *      Authors: Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
@@ -8,6 +8,6 @@
 #ifndef TEST_AVAILABILITY_IRQ_H_
 #define TEST_AVAILABILITY_IRQ_H_
 
-int test_availability_irq ();
+int test_irq_availability();
 
 #endif /* TEST_AVAILABILITY_IRQ_H_ */

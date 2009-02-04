@@ -1,3 +1,3 @@
-{"test_availability_irq",test_availability_irq},
-{"cpu_context read test ", test_cpu_context },
+{"irq availability",test_irq_availability},
+{"cpu_context read", test_cpu_context },
 {"empty", NULL}
