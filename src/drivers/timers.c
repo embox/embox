@@ -114,7 +114,7 @@ int timers_init() {
 	}
 */
 	TRY_CAPTURE_APB_DEV (&apb_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
-	timers = apb_dev.base;//(TIMERS_STRUCT *) (0x80000000 + ((apb_dev.ba_reg.addr) << 8)); // TODO 0x80000000
+	timers = (TIMERS_STRUCT *)apb_dev.base;//(TIMERS_STRUCT *) (0x80000000 + ((apb_dev.ba_reg.addr) << 8)); // TODO 0x80000000
 	timers->scaler_ld = TIMER_SCALER_VAL;
 	timers->scaler_cnt = 0;
 	timers->timer_cnt1 = 0;
