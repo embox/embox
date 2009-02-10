@@ -4,6 +4,8 @@
 
 // printf to standart output
 int printf (const char *str, ...);
+// scanf from standart output
+int scanf (const char *str, ...)
 //
 void back_cursor (int count);
 // back space
