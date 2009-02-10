@@ -17,7 +17,6 @@ int init() {
 	irq_init_handlers();
 	uart_init();
 
-//	con_init();
 	timers_init();
 	cache_data_enable(FALSE);
 	cache_instr_enable(TRUE);
@@ -27,8 +26,8 @@ int init() {
 int main() {
 	void* descriptor;
 	init();
-
 	print_ahb_dev();
+
 	while (NULL != (descriptor = (void *) express_test_get_next())) {
 		express_test_run(descriptor);
 	}

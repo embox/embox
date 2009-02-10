@@ -9,22 +9,20 @@
 	.align  4
  	.global restore_proc_context
 restore_proc_context:
+	//for testing
 	set register15, %l0
 	st %r15,[%l0 + 0]
+
 	set cpu_context, %l0
 
 	ld [%l0 + 0x10],%sp
 	ld [%l0 + 0x10],%fp
 	ld [%l0 + 0x18],%g0
-	!ld [%l0 + 0x18],%g1
-	!ld [%l0 + 0x1C],%g2
 	ld [%l0 + 0x24],%g3
 	ld [%l0 + 0x28],%g4
 	ld [%l0 + 0x2c],%g5
 	ld [%l0 + 0x30],%g6
 	ld [%l0 + 0x34],%g7
-!	ld [%l0 + 0x38],%l1
-!	ld [%l0 + 0x3C],%l2
 
 	ld [%l0 + 4],%g1
 	mov %g1,%psr

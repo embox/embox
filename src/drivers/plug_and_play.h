@@ -8,6 +8,18 @@
 #ifndef PLUG_AND_PLAY_H_
 #define PLUG_AND_PLAY_H_
 
+#define TRY_CAPTURE_AHB_DEV(dev,venID,devID) if (-1 == capture_ahb_dev(dev, venID, devID)){\
+	printf ("error : can't capture ahb dev venID=0xX, devID=0xX\n", venID, devID);\
+	return -1;\
+}
+
+#define TRY_CAPTURE_APB_DEV(dev,venID,devID) if (-1 == capture_apb_dev(dev, venID, devID)){\
+	printf ("error : can't capture apb dev venID=0xX, devID=0xX\n", venID, devID);\
+	return -1;\
+}
+
+
+
 typedef BYTE PNP_VENDOR_ID;
 typedef WORD PNP_DEVICE_ID;
 typedef BYTE PNP_VERSION;
@@ -37,10 +49,20 @@ typedef struct {
 	WORD user_defined[3];
 	BA_REG ba_reg[4];
 } AHB_DEV;
-
+/*
 typedef struct {
 	ID_REG id_reg;
 	BA_REG ba_reg;
+} APB_DEV;
+*/
+typedef struct {
+	BYTE venID;
+	UINT16 devID;
+	BYTE version;
+	BYTE irq;
+	UINT32 base;
+	BYTE mask;
+	BYTE type;
 } APB_DEV;
 
 /*

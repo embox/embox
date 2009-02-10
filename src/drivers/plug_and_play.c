@@ -94,12 +94,6 @@ inline static void fill_ahb_dev(AHB_DEV *ahb_dev, AHB_ENTRY *ahb_entry) {
 	}
 }
 
-inline static void fill_apb_dev(APB_DEV *apb_dev, APB_ENTRY *apb_entry) {
-	// Identification Register
-	fill_pnp_id_reg(&(apb_dev->id_reg), apb_entry->id_reg);
-	// Bank Address Register
-	fill_pnp_ba_reg(&(apb_dev->ba_reg), apb_entry->ba_reg);
-}
 
 int capture_ahb_dev(AHB_DEV *ahb_dev, BYTE vendor_id, WORD device_id) {
 	int i;
@@ -137,6 +131,20 @@ int capture_ahb_dev(AHB_DEV *ahb_dev, BYTE vendor_id, WORD device_id) {
 	return -1;
 }
 
+inline static void fill_apb_dev(APB_DEV *apb_dev, APB_ENTRY *apb_entry) {
+	// Identification Register
+	//fill_pnp_id_reg(&(apb_dev->id_reg), apb_entry->id_reg);
+	apb_dev->devID = COMPUTE_PNP_DEVICE_ID(apb_entry->id_reg);
+	apb_dev->venID = COMPUTE_PNP_VENDOR_ID(apb_entry->id_reg);
+	apb_dev->venID = COMPUTE_PNP_IRQ(apb_entry->id_reg);
+
+	// Bank Address Register
+	//fill_pnp_ba_reg(&(apb_dev->ba_reg), apb_entry->ba_reg);
+	apb_dev->base = 0x80000000 | (COMPUTE_PNP_BAR_ADDR (apb_entry->ba_reg) << 8);
+	apb_dev->mask = COMPUTE_PNP_BAR_MASK(apb_entry->ba_reg);
+	apb_dev->type = COMPUTE_PNP_BAR_TYPE(apb_entry->ba_reg);
+}
+
 int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, WORD device_id) {
 	int i, j;
 	APB_ENTRY *apb_entry = (APB_ENTRY *) APB_BASE;
@@ -147,10 +155,8 @@ int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, WORD device_id) {
 
 	for (i = 0; i < APB_COUNT; i++) {
 		if ((COMPUTE_PNP_VENDOR_ID(apb_entry->id_reg) == vendor_id) && (COMPUTE_PNP_DEVICE_ID(apb_entry->id_reg) == device_id) && (NULL == apb_devices[i])) {
-
 			fill_apb_dev(apb_dev, apb_entry);
 			apb_devices[i] = apb_dev;
-
 			return 0;
 		}
 		apb_entry++;
@@ -227,6 +233,10 @@ static int print_ahb_entries(AHB_ENTRY *base_addr, int amount) {
 }
 
 void print_ahb_dev() {
+#ifdef RELEASE
+	return;
+#else
+
 	int count = 0;
 	TRACE("\nListing Plug'n'Play devices..\n");
 	print_table_head();
@@ -237,5 +247,5 @@ void print_ahb_dev() {
 
 	//	TRACE(">>> (ahb slave)\n");
 	//	print_ahb_entries((AHB_ENTRY *)AHB_SLAVE_BASE, AHB_SLAVES_COUNT);
-
+#endif
 }

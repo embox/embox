@@ -23,6 +23,9 @@ irq_empty:
 /* Window overflow trap handler. */
 		.global window_overflow
 window_overflow:
+/*	call window_overflow_func
+	nop
+	*/
 	mov	%g1, %l7		! Remember previous value of %g1 to restore it later
 
 	mov	%wim, %g1		! Calculate new WIM
@@ -43,6 +46,7 @@ window_overflow:
 	restore		! Go back to trap window
 
 	mov	%l7, %g1	! Restore saved %g1
+
 	jmp	%l1		! Re-execute save
 	 rett	%l2
 
@@ -99,8 +103,11 @@ irq_dispatcher:
 	cmp		%l7, 0x1			! test WIM for possible window overflow
 
 	bne		irq_overflow_test_ok
+	nop
+/*
+	 call window_overflow_func
 	 nop
-
+*/
 		! handle window overflow
 		mov  %wim, %l5			! Calculate next WIM
 		mov  %g1, %l7
@@ -121,7 +128,7 @@ irq_dispatcher:
 		restore					! Go back to trap window.
 		mov		%l7, %g1
 
-	irq_overflow_test_ok:
+irq_overflow_test_ok:
 	add		%fp, -SA(KERNEL_FRAME), %sp
 
 	srl		%l3, 4, %l5
