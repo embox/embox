@@ -7,19 +7,18 @@
 
 #include "tty.h"
 #include "types.h"
-#include "string.h"
+#include "cmdline.h"
 
+// Escape char
 #define ESC		'\e'
 // ANSI Control Sequence Introducer
 #define CSI		'['
 
 // ANSI Control sequence final bytes
-#define STD_CODE_CURSOR_UP		'A'
+#define STD_CODE_CURSOR_UP			'A'
 #define STD_CODE_CURSOR_DOWN		'B'
-#define STD_CODE_CURSOR_FORWARD	'C'
+#define STD_CODE_CURSOR_FORWARD		'C'
 #define STD_CODE_CURSOR_BACK		'D'
-// Cursor Horizontal Absolute
-#define STD_CODE_CHA				'G'
 // Select Graphic Rendition
 #define STD_CODE_SGR				'm'
 
@@ -29,39 +28,12 @@
 #define PRV_PARAM_HOME		'2'
 #define PRV_PARAM_END		'5'
 
-// control sequence buffer size
-#define CS_BUF_SIZE			16
-
-#define ENTERED_MAX_LENGTH		64
-#define ENTERED_HISTORY_SIZE	8
-
-inline static char getc() {
+static char _getchar() {
 	return uart_getc();
 }
 
-inline static void do_putc(char ch) {
+static void _putchar(char ch) {
 	uart_putc(ch);
-}
-
-static void putc(char ch) {
-	static prev_ch = 0;
-
-	if (ch == '\n') {
-		if (prev_ch != '\r') {
-			do_putc('\r');
-		} else {
-			prev_ch = ch;
-			return;
-		}
-	}
-
-	do_putc(ch);
-
-	if (ch == '\r') {
-		do_putc('\n');
-	}
-
-	prev_ch = ch;
 }
 
 /*
@@ -69,16 +41,17 @@ static void putc(char ch) {
  *
  * param col - column to move screen cursor to
  */
-static void move_line_cursor(int col) {
+static void remote_move_cursor(int col) {
 	static char s[8];
 	int i;
-	do_putc(ESC);
-	do_putc(CSI);
+	_putchar('\r');
+	_putchar(ESC);
+	_putchar(CSI);
 	sprintf(s, "%d", col);
 	for (i = 0; s[i]; i++) {
-		putc(s[i]);
+		_putchar(s[i]);
 	}
-	do_putc(STD_CODE_CHA);
+	_putchar(STD_CODE_CURSOR_FORWARD);
 }
 
 /*
@@ -86,85 +59,121 @@ static void move_line_cursor(int col) {
  *
  * param color - new color
  */
-static void set_foreground_color(int color) {
+static void remote_set_foreground_color(int color) {
 	if (color < 0 || 9 < color) {
 		return;
 	}
-	do_putc(ESC);
-	do_putc(CSI);
+	_putchar(ESC);
+	_putchar(CSI);
 	//	Set foreground color code
-	putc('3');
-	putc(color + '0');
-	do_putc(STD_CODE_SGR);
+	_putchar('3');
+	_putchar(color + '0');
+	_putchar(STD_CODE_SGR);
 }
+
+#define PROMPT_MAX_LENGTH		64
 
 static TTY_CALLBACK callback = NULL;
 
-static char entered_history[ENTERED_HISTORY_SIZE][ENTERED_MAX_LENGTH + 1];
-static int entered_history_ptr = 0;
+static CMDLINE _cmdline;
+static CMDLINE *cmdline;
 
-static char *entered = entered_history[0];
-static int entered_cursor = 0;
-static int entered_length = 0;
+static char prompt[PROMPT_MAX_LENGTH + 1];
+static int prompt_length = 0;
 
-static char *welcome = "";
+#define REMOTE_CMDLINE_MAX_LENGTH		63
+
+static char remote_cmdline[REMOTE_CMDLINE_MAX_LENGTH + 1];
+
+inline static void move_cmdline_cursor(int col) {
+	remote_move_cursor(prompt_length + col);
+}
 
 /*
  * moves screen cursor to appropriate place
  */
-inline static void update_line_cursor() {
-	move_line_cursor(sz_length(welcome) + entered_cursor + 1);
+inline static void flush_cmdline_cursor() {
+	move_cmdline_cursor(cmdline->cursor);
 }
 
-static void refresh_entered_line(int start) {
-	int i, len;
-	int welcome_len;
-	if (start < 0) {
-		return;
-	}
-	welcome_len = sz_length(welcome);
+static void flush_cmdline() {
+	int i, cmdline_length;
+	BOOL dirty = TRUE;
 
-	move_line_cursor(welcome_len + start + 1);
-	for (i = 0; entered[i]; i++) {
-		if (i >= start) {
-			putc(entered[i]);
+	move_cmdline_cursor(0);
+
+	for (i = 0; cmdline->string[i]; i++) {
+		if (remote_cmdline[i] == '\0') {
+			dirty = FALSE;
+		}
+		if (!dirty || remote_cmdline[i] != cmdline->string[i]) {
+			_putchar(cmdline->string[i]);
+			remote_cmdline[i] = cmdline->string[i];
 		}
 	}
-	len = i;
-	for (; i < entered_length; i++) {
-		if (i >= start) {
-			putc(' ');
+	cmdline_length = i;
+
+	// TODO <ESC>[K erases from the current cursor position to the end of the current line
+	if (dirty) {
+		for (; remote_cmdline[i]; i++) {
+			_putchar(' ');
 		}
 	}
-	entered_length = len;
 
-	move_line_cursor(welcome_len + entered_cursor + 1);
+	remote_cmdline[cmdline_length] = '\0';
+
+	flush_cmdline_cursor();
 }
 
-static void refresh_full_line() {
+static void show_prompt() {
 	int i;
-	int welcome_len = 0;
 
-	move_line_cursor(1);
-	set_foreground_color(SGR_COLOR_RED);
-	for (i = 0; welcome[i]; i++) {
-		putc(welcome[i]);
+	//_putchar('\r');
+	//_putchar('\n');
+	printf("\n");
+	remote_cmdline[0] = '\0';
+
+	cmdline_history_new(cmdline);
+
+	remote_move_cursor(0);
+	remote_set_foreground_color(SGR_COLOR_RED);
+	// TODO printf
+	for (i = 0; prompt[i]; i++) {
+		_putchar(prompt[i]);
 	}
-	set_foreground_color(SGR_COLOR_BLACK);
-	welcome_len = i;
-	for (i = 0; entered[i]; i++) {
-		putc(entered[i]);
-	}
-	move_line_cursor(welcome_len + entered_cursor + 1);
+
+	remote_set_foreground_color(SGR_COLOR_BLACK);
 }
 
 static inline void fire_callback() {
 	if (NULL != callback) {
-		welcome = callback(entered);
-		entered_cursor = 0;
-		entered_length = 0;
-		entered[0] = 0;
-		refresh_full_line();
+		char buf[cmdline->length + 1];
+		sz_cpy(buf, cmdline->string);
+		callback(buf);
+		show_prompt();
+	}
+}
+
+inline static void handle_standard_command(const char code, const char *cs) {
+	switch (code) {
+	case STD_CODE_CURSOR_UP:
+		cmdline_history_backward(cmdline);
+		flush_cmdline();
+		break;
+	case STD_CODE_CURSOR_DOWN:
+		cmdline_history_forward(cmdline);
+		flush_cmdline();
+		break;
+	case STD_CODE_CURSOR_FORWARD:
+		cmdline_cursor_right(cmdline);
+		flush_cmdline_cursor();
+		break;
+	case STD_CODE_CURSOR_BACK:
+		cmdline_cursor_left(cmdline);
+		flush_cmdline_cursor();
+		break;
+	default:
+		break;
 	}
 }
 
@@ -172,51 +181,12 @@ inline static void handle_private_command(const char code, const char *cs) {
 	int param = cs[1];
 	switch (param) {
 	case PRV_PARAM_HOME:
-		entered_cursor = 0;
-		update_line_cursor();
+		cmdline_cursor_home(cmdline);
+		flush_cmdline_cursor();
 		break;
 	case PRV_PARAM_END:
-		entered_cursor = sz_length(entered);
-		update_line_cursor();
-		break;
-	default:
-		break;
-	}
-}
-
-inline static void handle_standard_command(const char code, const char *cs) {
-	switch (code) {
-	case STD_CODE_CURSOR_UP:
-//		if (entered_history_ptr) {
-//			entered_history_ptr--;
-//		} else {
-//			entered_history_ptr = ENTERED_HISTORY_SIZE - 1;
-//		}
-//		entered = entered_history[entered_history_ptr];
-//		entered_cursor = sz_length(entered);
-//		refresh_entered_line(0);
-		break;
-	case STD_CODE_CURSOR_DOWN:
-//		if (entered_history_ptr + 1 < ENTERED_HISTORY_SIZE) {
-//			entered_history_ptr++;
-//		} else {
-//			entered_history_ptr = 0;
-//		}
-//		entered = entered_history[entered_history_ptr];
-//		entered_cursor = sz_length(entered);
-//		refresh_entered_line(0);
-		break;
-	case STD_CODE_CURSOR_FORWARD:
-		if (entered[entered_cursor] && entered_cursor < ENTERED_MAX_LENGTH) {
-			entered_cursor++;
-		}
-		update_line_cursor();
-		break;
-	case STD_CODE_CURSOR_BACK:
-		if (entered_cursor) {
-			entered_cursor--;
-		}
-		update_line_cursor();
+		cmdline_cursor_end(cmdline);
+		flush_cmdline_cursor();
 		break;
 	default:
 		break;
@@ -250,68 +220,62 @@ inline static BOOL detect_control_sequence(const char *cs) {
 	return FALSE;
 }
 
+typedef struct _CHAR_HANDLER {
+	struct _CHAR_HANDLER (* call)(char ch);
+} CHAR_HANDLER;
+
+static CHAR_HANDLER regular_char_handler(char ch);
+static CHAR_HANDLER escaped_char_handler(char ch);
+
 /*
  * dispatches a regular char
+ *
  * param ch
  */
-inline static void dispatch_char(char ch) {
+static CHAR_HANDLER regular_char_handler(char ch) {
+	static CHAR_HANDLER new_handler;
+	new_handler.call = regular_char_handler;
+
 	switch (ch) {
+	case ESC:
+		new_handler.call = escaped_char_handler;
+		break;
 	case '\r':
 	case '\n':
-		putc(ch);
 		fire_callback();
 		break;
 	case '\b':
-		if (entered_cursor == 0) {
-			break;
-		}
-		int i;
-		entered_cursor--;
-		for (i = entered_cursor; entered[i]; i++) {
-			entered[i] = entered[i + 1];
-		}
-		refresh_entered_line(entered_cursor);
+		cmdline_char_backspace(cmdline);
 		break;
 	default:
-		if (sz_length(entered) == ENTERED_MAX_LENGTH) {
-			break;
-		}
-		if (entered[entered_cursor]) {
-			// we are in the middle of the string
-			int i;
-			char temp;
-			for (i = entered_cursor; entered[i]; i++) {
-				temp = entered[i];
-				entered[i] = ch;
-				ch = temp;
-			}
-			entered[i] = ch;
-			entered[i + 1] = 0;
-			refresh_entered_line(entered_cursor++);
-		} else {
-			// we are at the line end
-			entered[entered_cursor++] = ch;
-			entered[entered_cursor] = 0;
-			refresh_entered_line(entered_cursor - 1);
-		}
+		// TODO check for char range
+		cmdline_char_insert(cmdline, ch);
+		flush_cmdline();
 		break;
 	}
+
+	return new_handler;
 }
+
+// control sequence buffer size
+#define CS_BUF_SIZE			16
 
 /*
  * dispatches an escaped char
+ *
  * param ch
- * return TRUE to leave escape sequence,
- * 		FALSE to continue receiving escaped chars (e.g. sequence is not completed)
  */
-inline static BOOL dispatch_escaped_char(char ch) {
+static CHAR_HANDLER escaped_char_handler(char ch) {
+	static CHAR_HANDLER new_handler;
+	new_handler.call = regular_char_handler;
+
 	static char cs_buf[CS_BUF_SIZE];
 	static int p = 0;
 
 	if (p + 1 == CS_BUF_SIZE) {
 		// buffer overflow, ignore sequence
 		p = 0;
-		return TRUE;
+		return new_handler;
 	}
 
 	cs_buf[p] = ch;
@@ -322,55 +286,64 @@ inline static BOOL dispatch_escaped_char(char ch) {
 	if (cs_buf[0] != CSI) {
 		// bad sequence, ignore it
 		p = 0;
-		return TRUE;
+		return new_handler;
 	}
 
 	// try to detect control sequence
 	if (p && detect_control_sequence(cs_buf)) {
 		// reset control sequence buffer pointer
 		p = 0;
-		return TRUE;
+		return new_handler;
 	}
 
 	// continue populating control sequence buffer
 	p++;
-	return FALSE;
+	new_handler.call = escaped_char_handler;
+	return new_handler;
 
 }
-
-static void escaped_char_dispatcher(char ch);
-
-static void regular_char_dispatcher(char ch);
-
-static void (*char_dispatcher)(char ch);
 
 // in debug purposes
-static void debug_char_dispatcher(char ch) {
+static CHAR_HANDLER debug_char_handler(char ch) {
+	static CHAR_HANDLER new_handler;
+	new_handler.call = debug_char_handler;
+
 	printf("%c\t%d\t%x\n", ch, ch, ch);
+	return new_handler;
 }
 
-void tty_start(TTY_CALLBACK c) {
+volatile static BOOL stopped = FALSE;
+
+static void init(TTY_CALLBACK c, const char *w);
+static void main_loop();
+
+void tty_start(TTY_CALLBACK c, const char *w) {
+	init(c, w);
+
+	stopped = FALSE;
+	main_loop();
+}
+
+void tty_stop() {
+	stopped = FALSE;
+}
+
+static CHAR_HANDLER char_handler;
+
+static void main_loop() {
+	while (!stopped) {
+		char_handler = char_handler.call(_getchar());
+	}
+}
+
+static void init(TTY_CALLBACK c, const char *w) {
 	callback = c;
-	// initial handler fire
-	fire_callback();
+	prompt_length = sz_cpy(prompt, w);
 
-	char_dispatcher = regular_char_dispatcher;
-	while (1) {
-		char_dispatcher(getc());
-	}
+	cmdline = &_cmdline;
+	cmdline_init(cmdline);
 
-}
+	show_prompt();
 
-static void regular_char_dispatcher(char ch) {
-	if (ch == ESC) {
-		char_dispatcher = escaped_char_dispatcher;
-	} else {
-		dispatch_char(ch);
-	}
-}
-
-static void escaped_char_dispatcher(char ch) {
-	if (dispatch_escaped_char(ch)) {
-		char_dispatcher = regular_char_dispatcher;
-	}
+	char_handler.call = regular_char_handler;
 }

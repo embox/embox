@@ -14,12 +14,18 @@
  * callback function to be fired when command would be entered
  * (e.g. after enter has been pressed)
  *
- * param: entered - char buffer being in use
- *
- * return: new welcome prompt
+ * param: cmdline - char buffer being in use
  */
-typedef char* (*TTY_CALLBACK)(const char *entered);
+typedef void (*TTY_CALLBACK)(const char *cmdline);
 
-void tty_start(TTY_CALLBACK c);
+/*
+ * start tty interactive session
+ *
+ * param: callback - callback function to fire on "Enter"
+ * param: welcome - welcome prompt
+ */
+void tty_start(TTY_CALLBACK callback, const char *welcome);
+
+void tty_stop();
 
 #endif /* TTY_H_ */

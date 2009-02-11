@@ -11,13 +11,12 @@
 
 static const char* welcome = "monitor> ";
 
-static char* tty_callback(const char *entered) {
-	if (entered[0]) {
-		printf("Stub! You've entered: %s\n", entered);
+static void tty_callback(const char *cmdline) {
+	if (cmdline != NULL) {
+		printf("Stub! You've entered: %s\n", cmdline);
 	}
-	return (char*) welcome;
 }
 
 void shell_start() {
-	tty_start(tty_callback);
+	tty_start(tty_callback, welcome);
 }
