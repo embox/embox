@@ -16,7 +16,7 @@
  *
  * param: cmdline - char buffer being in use
  */
-typedef void (*TTY_CALLBACK)(const char *cmdline);
+typedef void (*TTY_CALLBACK)(char *cmdline);
 
 /*
  * start tty interactive session

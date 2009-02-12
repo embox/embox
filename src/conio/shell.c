@@ -11,7 +11,7 @@
 
 static const char* welcome = "monitor> ";
 
-static void tty_callback(const char *cmdline) {
+static void tty_callback(char *cmdline) {
 	if (cmdline != NULL) {
 		printf("Stub! You've entered: %s\n", cmdline);
 	}

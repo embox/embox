@@ -10,35 +10,44 @@
 #include "string.h"
 #include "common.h"
 
-#define CMDLINE_MAX_LENGTH		63
-#define HISTORY_SIZE	8
-
-static char history[HISTORY_SIZE][CMDLINE_MAX_LENGTH + 1];
-static int history_index = 0;
-
-BOOL cmdline_init(CMDLINE *cmdline) {
-	cmdline->string = history[0];
+void cmdline_init(CMDLINE *cmdline) {
+	CMDLINE_HISTORY * history = &(cmdline->history);
+	history->array[0][0] = '\0';
+	history->array[1][0] = '\0';
+	history->index = 0;
 	cmdline->string[0] = '\0';
 	cmdline->length = 0;
 	cmdline->cursor = 0;
-	cmdline->history_pos = history_index;
+	cmdline->history_cursor = 0;
 }
 
 BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
-	int new_pos = to % HISTORY_SIZE;
-	if (history[new_pos][0] == '\0' && new_pos != history_index) {
+	unsigned int new_pos;
+	CMDLINE_HISTORY * history = &(cmdline->history);
+	if (to < 0) {
+		to = to + (-to / CMDLINE_HISTORY_SIZE + 1) * CMDLINE_HISTORY_SIZE;
+	}
+	new_pos = to % CMDLINE_HISTORY_SIZE;
+	if (cmdline->history_cursor == new_pos) {
+		return FALSE;
+	}
+	if (history->array[new_pos][0] == '\0' && new_pos != history->index) {
 		return FALSE;
 	}
 
-	cmdline->history_pos = new_pos;
-	sz_cpy(cmdline->string, history[new_pos]);
+	if (cmdline->history_cursor == history->index) {
+		sz_cpy(history->array[history->index], cmdline->string);
+	}
+
+	cmdline->history_cursor = new_pos;
+	sz_cpy(cmdline->string, history->array[new_pos]);
 	cmdline->length = sz_length(cmdline->string);
 	cmdline->cursor = cmdline->length;
 	return TRUE;
 }
 
 inline BOOL cmdline_history_move_by(CMDLINE *cmdline, int by) {
-	return cmdline_history_move_to(cmdline, cmdline->history_pos + by);
+	return cmdline_history_move_to(cmdline, cmdline->history_cursor + by);
 }
 
 inline BOOL cmdline_history_backward(CMDLINE *cmdline) {
@@ -50,13 +59,23 @@ inline BOOL cmdline_history_forward(CMDLINE *cmdline) {
 }
 
 BOOL cmdline_history_new(CMDLINE *cmdline) {
-	history_index = (history_index + 1) % HISTORY_SIZE;
-	cmdline->string = history[history_index];
+	CMDLINE_HISTORY * history = &(cmdline->history);
+	if (cmdline->string[0] == '\0') {
+		return FALSE;
+	}
 
-	cmdline->history_pos = history_index;
+	sz_cpy(history->array[history->index], cmdline->string);
+
+	history->index = (history->index + 1) % CMDLINE_HISTORY_SIZE;
+	history->array[history->index][0] = '\0';
+	history->array[(history->index + 1) % CMDLINE_HISTORY_SIZE][0] = '\0';
+
+	cmdline->history_cursor = history->index;
 	cmdline->length = 0;
-	cmdline->cursor = cmdline->length;
-	cmdline->string[cmdline->length] = '\0';
+	cmdline->cursor = 0;
+	cmdline->string[0] = '\0';
+
+	return TRUE;
 }
 
 BOOL cmdline_cursor_move_to(CMDLINE *cmdline, unsigned int to) {

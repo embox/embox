@@ -27,14 +27,13 @@ int sz_length(const char * str) {
 }
 
 int sz_cpy(char * dest, const char * src) {
-	int count = 0;
-
-	if (*src == 0)
-		return 0;
-	do {
-		dest[count] = src[count];
-	} while (src[count++] != '\0');
-	return (count - 1);
+	int i = 0;
+	while (*src != '\0') {
+		*dest++ = *src++;
+		i++;
+	}
+	*dest = '\0';
+	return i;
 }
 
 int sz_append(char *dest, const char *src, char ch) {

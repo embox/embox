@@ -10,13 +10,29 @@
 
 #include "types.h"
 
+#define CMDLINE_MAX_LENGTH		63
+#define CMDLINE_HISTORY_SIZE	8
+
+/*
+ * Command line editing history
+ */
+typedef struct _CMDLINE_HISTORY {
+
+	/* history itself */
+	char array[CMDLINE_HISTORY_SIZE][CMDLINE_MAX_LENGTH + 1];
+
+	/* last entry in history */
+	unsigned int index;
+
+} CMDLINE_HISTORY;
+
 /*
  * Command line internal representation
  */
 typedef struct _CMDLINE {
 
 	/* line itself */
-	char * string;
+	char string[CMDLINE_MAX_LENGTH + 1];
 
 	/* string length */
 	unsigned int length;
@@ -24,12 +40,15 @@ typedef struct _CMDLINE {
 	/* cursor current position */
 	unsigned int cursor;
 
+	/* editing history */
+	CMDLINE_HISTORY history;
+
 	/* current position in history */
-	unsigned int history_pos;
+	unsigned int history_cursor;
 
 } CMDLINE;
 
-BOOL cmdline_init(CMDLINE *cmdline);
+void cmdline_init(CMDLINE *cmdline);
 
 BOOL cmdline_history_move_to(CMDLINE *cmdline, int to);
 

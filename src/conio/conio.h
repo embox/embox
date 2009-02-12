@@ -4,8 +4,10 @@
 
 // printf to standart output
 int printf (const char *str, ...);
+
+int sprintf(char *out, const char *format, ...);
 // scanf from standart output
-int scanf (const char *str, ...)
+int scanf (const char *str, ...);
 //
 void back_cursor (int count);
 // back space
