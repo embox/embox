@@ -18,13 +18,16 @@
  */
 typedef void (*TTY_CALLBACK)(char *cmdline);
 
+typedef int (*TTY_PROPOSALS_CALLBACK)(char *cmdline, char **proposals);
+
 /*
  * start tty interactive session
  *
  * param: callback - callback function to fire on "Enter"
  * param: welcome - welcome prompt
  */
-void tty_start(TTY_CALLBACK callback, const char *welcome);
+void tty_start(TTY_CALLBACK callback,
+		TTY_PROPOSALS_CALLBACK proposals_callback, const char *welcome);
 
 void tty_stop();
 

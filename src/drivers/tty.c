@@ -10,6 +10,7 @@
 #include "cmdline.h"
 #include "uart.h"
 #include "conio.h"
+#include "common.h"
 #include "string.h"
 
 // Escape char
@@ -81,7 +82,7 @@ static void remote_set_foreground_color(int color) {
 #define PROMPT_MAX_LENGTH		15
 
 static TTY_CALLBACK callback = NULL;
-
+static TTY_PROPOSALS_CALLBACK proposals_callback = NULL;
 static CMDLINE _cmdline;
 static CMDLINE *cmdline;
 
@@ -108,16 +109,24 @@ static void flush_cmdline() {
 	int i, cmdline_length;
 	BOOL dirty = TRUE;
 
-	move_cmdline_cursor(0);
-
 	for (i = 0; cmdline->string[i]; i++) {
-		//		if (remote_string[i] == '\0') {
-		//			dirty = FALSE;
-		//		}
-		//		if (!dirty || remote_string[i] != cmdline->string[i]) {
-		_putc(cmdline->string[i]);
-		remote_string[i] = cmdline->string[i];
-		//		}
+		if (remote_string[i] == '\0') {
+			dirty = FALSE;
+		}
+		if (!dirty || remote_string[i] != cmdline->string[i]) {
+			if (abs(i - remote_cursor) > 3) {
+				// it is more easy to move cursor by special command
+				move_cmdline_cursor(i);
+			} else if (remote_cursor < i) {
+				// rewrite a few chars
+				int j;
+				for (j = remote_cursor; j < i; ++j) {
+					_putc(cmdline->string[j]);
+				}
+			}
+			_putc(cmdline->string[i]);
+			remote_string[i] = cmdline->string[i];
+		}
 	}
 	cmdline_length = i;
 
@@ -135,10 +144,6 @@ static void flush_cmdline() {
 	remote_string[cmdline_length] = '\0';
 
 	flush_cmdline_cursor();
-}
-
-static void new_flush_cmdline() {
-
 }
 
 static void show_prompt() {
@@ -359,7 +364,8 @@ static void main_loop() {
 	}
 }
 
-static void init(TTY_CALLBACK c, const char *w) {
+static void init(TTY_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c,
+		const char *w) {
 	callback = c;
 	prompt_length = sz_cpy(prompt, w);
 
