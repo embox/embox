@@ -342,11 +342,11 @@ static CHAR_HANDLER debug_char_handler(char ch) {
 
 volatile static BOOL stopped = FALSE;
 
-static void init(TTY_CALLBACK c, const char *w);
+static void init(TTY_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c, const char *w);
 static void main_loop();
 
-void tty_start(TTY_CALLBACK c, const char *w) {
-	init(c, w);
+void tty_start(TTY_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c, const char *w) {
+	init(c,  proposals_c, w);
 
 	stopped = FALSE;
 	main_loop();
