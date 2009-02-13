@@ -216,14 +216,14 @@ static int scan(char **in, const char *fmt, va_list args) {
 				++converted;
 			}
 				continue;*/
-			case 'u': {
+			case 'o': {
 				int dst;
 				dst = scan_int(in,8,widht);
 				va_arg ( args, int ) = dst;
 				++converted;
 			}
 				continue;
-			/*case 'U': {
+			/*case 'O': {
 				double dst;
 				dst = scan_double(in,8,widht);
 				va_arg ( args, int ) = dst;
