@@ -7,6 +7,7 @@
 #include "types.h"
 #include "conio.h"
 #include "stdarg.h"
+#include "string.h"
 
 
 const int EOF = -1;
@@ -47,15 +48,15 @@ BOOL isspace(int ch) {
 	return FALSE;
 }
 
-int toupcase (int ch)
+/*int toupcase (int ch)
 {
 	if ((ch >='a') && (ch <='z')) return (ch - 32);
 	return ch;
-}
+}*/
 
 BOOL isdigit(int ch, int base) {
-	ch = toupcase(ch);
-
+	ch = (int)ch_upper((char)ch);
+	//ch = toupcase(ch);
 	switch (base) {
 		case 10:
 		{
