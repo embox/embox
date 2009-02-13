@@ -7,7 +7,7 @@
 #include "types.h"
 #include "conio.h"
 #include "stdarg.h"
-//#include "uart.h"
+
 
 const int EOF = -1;
 
@@ -48,24 +48,28 @@ BOOL isspace(int ch) {
 }
 
 BOOL isdigit(int ch, int base) {
+	//toupcase();
 	switch (base) {
-	case 10: {
-		if ((ch >= '0') && (ch <= '9'))
-			return TRUE;
-	}
-		break;
-	case 8: {
-		if ((ch >= '0') && (ch <= '7'))
-			return TRUE;
-	}
-		break;
-	case 16: {
-		if ((ch >= '0') && (ch <= '9'))
-			return TRUE;
-		if ((ch >= 'A') && (ch <= 'F'))
-			return TRUE;
-	}
-		break;
+		case 10:
+		{
+			if ((ch >= '0') && (ch <= '9'))
+				return TRUE;
+			return FALSE;
+		}
+		case 8:
+		{
+			if ((ch >= '0') && (ch <= '7'))
+				return TRUE;
+			return FALSE;
+		}
+		case 16:
+		{
+			if (((ch >= '0') && (ch <= '9')) || ((ch >= 'A') && (ch <= 'F')))
+				return TRUE;
+			return FALSE;
+		}
+		default:
+			return FALSE;
 	}
 	return FALSE;
 }
@@ -105,7 +109,7 @@ static int scan_int(char **in, int base, int widht) {
 		}
 		//for different bases
 		if (base >10)
-			dst = base*dst + (ch - '0' - 7);
+			dst = base * dst + (ch - '0' - 7);
 		else
 			dst = base * dst + (ch - '0');
 	}
@@ -147,20 +151,22 @@ static double scan_double(char **in, int base) {
 */
 
 
-static int scan(char **in,const char *fmt, va_list args) {
+static int scan(char **in, const char *fmt, va_list args) {
+	int widht;
 	int converted = 0;
 
 	while (*fmt != '\0') {
 		if (*fmt++ == '%') {
-			static int widht = 80;
+			widht = 80;
+
 
 			if (*fmt == '\0')
 				break;
 
-			if (isdigit(*fmt,10)) widht = 0;
+			if (isdigit((int)*fmt, 10)) widht = 0;
 
-			while (isdigit(*fmt++,10)) {
-				widht = widht *10 + (*fmt - 48);
+			while (isdigit((int)*fmt++, 10)) {
+				widht = widht * 10 + (*fmt - '0');
 			}
 
 			switch (*fmt) {
@@ -168,9 +174,9 @@ static int scan(char **in,const char *fmt, va_list args) {
 				char *dst = va_arg ( args, char* );
 				int ch;
 
-				trim_leading(in);
+				trim_leading(in);//???
 
-				while ((ch = scanchar(in)) != EOF && !isspace(ch) && widht--)
+				while (EOF != (ch = scanchar(in)) && !isspace(ch) && widht--)
 					*dst++ = (char) ch;
 				*dst = '\0';
 
