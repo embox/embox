@@ -12,11 +12,8 @@
 
 const int EOF = -1;
 
-int getchar() {
-	static char prev = 0;
-
-	prev = uart_getc();
-	return (int) prev;
+inline static int getchar() {
+	return (int)uart_getc();
 }
 
 static void ungetchar(int ch) {
@@ -38,49 +35,14 @@ static int scanchar(char **str) {
 		return getchar();
 	}
 }
-BOOL isspace(int ch) {
-	if (ch == ' ')
-		return TRUE;
-	if (ch == '\t')
-		return TRUE;
-	if (ch == '\n')
+BOOL is_space(int ch) {
+	if ((ch == ' ') || (ch == '\t') || (ch == '\n'))
 		return TRUE;
 	return FALSE;
 }
 
-/*int toupcase (int ch)
-{
-	if ((ch >='a') && (ch <='z')) return (ch - 32);
-	return ch;
-}*/
 
-BOOL isdigit(int ch, int base) {
-	ch = (int)ch_upper((char)ch);
-	//ch = toupcase(ch);
-	switch (base) {
-		case 10:
-		{
-			if ((ch >= '0') && (ch <= '9'))
-				return TRUE;
-			return FALSE;
-		}
-		case 8:
-		{
-			if ((ch >= '0') && (ch <= '7'))
-				return TRUE;
-			return FALSE;
-		}
-		case 16:
-		{
-			if (((ch >= '0') && (ch <= '9')) || ((ch >= 'A') && (ch <= 'F')))
-				return TRUE;
-			return FALSE;
-		}
-		default:
-			return FALSE;
-	}
-	return FALSE;
-}
+
 
 
 static int trim_leading(char **str) {
@@ -88,9 +50,10 @@ static int trim_leading(char **str) {
 
 	do {
 		ch = scanchar(str);
+		//when break
 		if (ch == EOF)
 			break;
-	} while (isspace(ch));
+	} while (is_space(ch));
 
 	ungetchar(ch);
 
@@ -103,23 +66,24 @@ static int scan_int(char **in, int base, int widht) {
 	int ch;
 	int i;
 
-	trim_leading(in);
+	if (EOF == (ch = trim_leading(in)))
+		return 0;//error
 
-	for (i = 0; (ch = scanchar(in)) != EOF; i++) {
-		if (i == 0 && (ch == '-' || ch == '+')) {
-			neg = (ch == '-');
-			continue;
-		}
+	if ((ch == '-') || (ch == '+')) {
+		neg = (ch == '-');
+	}
+	else
+		dst = ch_to_digit(ch, base);
 
-		if (!isdigit( ch , base ) || widht--) {
+	for (i = 0; (ch = (int)ch_upcase(scanchar(in))) != EOF; i++) {
+		if (!is_digit( ch , base ) || (0 == widht)) {
 			ungetchar(ch);
+			//end conversion
 			break;
 		}
-		//for different bases
-		if (base >10)
-			dst = base * dst + (ch - '0' - 7);
-		else
-			dst = base * dst + (ch - '0');
+		ungetchar(ch);
+
+		dst = base * dst + ch_to_digit(ch, base);
 	}
 
 	if (neg)
@@ -141,7 +105,7 @@ static double scan_double(char **in, int base) {
 			continue;
 		}
 
-		if (!isdigit( ch , base )) {
+		if (!is_digit( ch , base )) {
 			ungetchar(ch);
 			break;
 		}
@@ -171,10 +135,11 @@ static int scan(char **in, const char *fmt, va_list args) {
 			if (*fmt == '\0')
 				break;
 
-			if (isdigit((int)*fmt, 10)) widht = 0;
+			if (is_digit((int)*fmt, 10)) widht = 0;
 
-			while (isdigit((int)*fmt++, 10)) {
-				widht = widht * 10 + (*fmt - '0');
+			while (is_digit((int)*fmt, 10)) {
+
+				widht = widht * 10 + (*fmt++ - '0');
 			}
 
 			switch (*fmt) {
@@ -184,13 +149,13 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 				trim_leading(in);//???
 
-				while (EOF != (ch = scanchar(in)) && !isspace(ch) && widht--)
+				while (EOF != (ch = scanchar(in)) && !is_space(ch) && widht--)
 					*dst++ = (char) ch;
 				*dst = '\0';
 
 				++converted;
 			}
-				continue;
+			continue;
 			case 'c':{
 				int dst;
 
@@ -205,7 +170,10 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'd': {
 				int dst;
 				dst = scan_int(in,10,widht);
+				printf ("d%d\n", dst);
 				va_arg ( args, int ) = dst;
+				printf ("va_arg 0x%X\n", args);
+				printf ("va_arg 0x%X\n", &args);
 				++converted;
 			}
 				continue;
@@ -219,7 +187,8 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'o': {
 				int dst;
 				dst = scan_int(in,8,widht);
-				va_arg ( args, int ) = dst;
+				printf ("o%d\n", dst);
+				*va_arg ( args, int* ) = dst;
 				++converted;
 			}
 				continue;
@@ -233,7 +202,8 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'x': {
 				int dst;
 				dst = scan_int(in,16,widht);
-				va_arg ( args, int ) = dst;
+				printf ("x%d\n", dst);
+				*va_arg ( args, int* ) = dst;
 				++converted;
 			}
 				continue;
@@ -256,7 +226,10 @@ int scanf(const char *format, ...) {
 
 	va_list args;
 	int rv;
+
 	va_start ( args, format );
+	printf ("scan addr 0x%X\n", args);
+	printf ("scan addr 0x%X\n", format);
 	rv = scan( 0,format, args );
 	va_end ( args );
 
