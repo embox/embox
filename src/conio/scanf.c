@@ -7,176 +7,256 @@
 #include "types.h"
 #include "conio.h"
 #include "stdarg.h"
+//#include "uart.h"
 
-int getchar ()
-{
+const int EOF = -1;
+
+int getchar() {
 	static char prev = 0;
 
 	prev = uart_getc();
 	return (int) prev;
 }
 
-static void scanchar(char **str)
-{
-   extern int getchar();
-   if (str) {
-      **str = getchar();
-      ++(*str);
-   }
-   else (void)getchar();
+static void ungetchar(int ch) {
+	uart_putc(ch);
+}
+
+static int scanchar(char **str) {
+	extern int getchar();
+	if (str) {
+		/* **str = getchar();
+		++(*str);
+		return **str;*/
+		int ch;
+		ch = str[0][0];
+		++(*str);
+		return ch;
+
+	} else {
+		return getchar();
+	}
+}
+BOOL isspace(int ch) {
+	if (ch == ' ')
+		return TRUE;
+	if (ch == '\t')
+		return TRUE;
+	if (ch == '\n')
+		return TRUE;
+	return FALSE;
+}
+
+BOOL isdigit(int ch, int base) {
+	switch (base) {
+	case 10: {
+		if ((ch >= '0') && (ch <= '9'))
+			return TRUE;
+	}
+		break;
+	case 8: {
+		if ((ch >= '0') && (ch <= '7'))
+			return TRUE;
+	}
+		break;
+	case 16: {
+		if ((ch >= '0') && (ch <= '9'))
+			return TRUE;
+		if ((ch >= 'A') && (ch <= 'F'))
+			return TRUE;
+	}
+		break;
+	}
+	return FALSE;
 }
 
 
-#define PAD_RIGHT 1
-#define PAD_ZERO 2
+static int trim_leading(char **str) {
+	int ch;
 
-static int prints(char **in, const char *string, int width, int pad)
-{
-   int sc = 0, padchar = ' ';
-   if (width > 0) {
-      int len = 0;
-      const char *ptr;
-      for (ptr = string; *ptr; ++ptr) ++len;
-      if (len >= width) width = 0;
-      else width -= len;
-      if (pad & PAD_ZERO) padchar = '0';
-   }
-   if (!(pad & PAD_RIGHT)) {
-      for ( ; width > 0; --width) {
-     scanchar (in, padchar);
-     ++sc;
-      }
-   }
-   for ( ; *string ; ++string) {
-      scanchar (in, *string);
-      ++sc;
-   }
-   for ( ; width > 0; --width) {
-      scanchar (in, padchar);
-      ++sc;
-   }
-   return sc;
+	do {
+		ch = scanchar(str);
+		if (ch == EOF)
+			break;
+	} while (isspace(ch));
+
+	ungetchar(ch);
+
+	return ch;
+}
+
+static int scan_int(char **in, int base, int widht) {
+	int neg = 0;
+	int dst = 0;
+	int ch;
+	int i;
+
+	trim_leading(in);
+
+	for (i = 0; (ch = scanchar(in)) != EOF; i++) {
+		if (i == 0 && (ch == '-' || ch == '+')) {
+			neg = (ch == '-');
+			continue;
+		}
+
+		if (!isdigit( ch , base ) || widht--) {
+			ungetchar(ch);
+			break;
+		}
+		//for different bases
+		if (base >10)
+			dst = base*dst + (ch - '0' - 7);
+		else
+			dst = base * dst + (ch - '0');
+	}
+
+	if (neg)
+		dst = -dst;
+	return dst;
+}
+/*
+static double scan_double(char **in, int base) {
+	int neg = 0;
+	double dst = 0;
+	int ch;
+	int i;
+
+	trim_leading(in);
+
+	for (i = 0; (ch = scanchar(in)) != EOF; i++) {
+		if (i == 0 && (ch == '-' || ch == '+')) {
+			neg = (ch == '-');
+			continue;
+		}
+
+		if (!isdigit( ch , base )) {
+			ungetchar(ch);
+			break;
+		}
+		//for different bases
+		if (base >10)
+			dst = dst * base + (ch - '0' - 7);
+		else
+			dst = dst * base + (ch - '0');
+	}
+
+	if (neg)
+		dst = -dst;
+	return dst;
+}
+*/
+
+
+static int scan(char **in,const char *fmt, va_list args) {
+	int converted = 0;
+
+	while (*fmt != '\0') {
+		if (*fmt++ == '%') {
+			static int widht = 80;
+
+			if (*fmt == '\0')
+				break;
+
+			if (isdigit(*fmt,10)) widht = 0;
+
+			while (isdigit(*fmt++,10)) {
+				widht = widht *10 + (*fmt - 48);
+			}
+
+			switch (*fmt) {
+			case 's': {
+				char *dst = va_arg ( args, char* );
+				int ch;
+
+				trim_leading(in);
+
+				while ((ch = scanchar(in)) != EOF && !isspace(ch) && widht--)
+					*dst++ = (char) ch;
+				*dst = '\0';
+
+				++converted;
+			}
+				continue;
+			case 'c':{
+				int dst;
+
+				trim_leading(in);
+
+				dst = scanchar(in);
+				va_arg ( args, char) = dst;
+				++converted;
+
+			}
+				continue;
+			case 'd': {
+				int dst;
+				dst = scan_int(in,10,widht);
+				va_arg ( args, int ) = dst;
+				++converted;
+			}
+				continue;
+			/*case 'D': {
+				double dst;
+				dst = scan_double(in,10,widht);
+				va_arg ( args, int ) = dst;
+				++converted;
+			}
+				continue;*/
+			case 'u': {
+				int dst;
+				dst = scan_int(in,8,widht);
+				va_arg ( args, int ) = dst;
+				++converted;
+			}
+				continue;
+			/*case 'U': {
+				double dst;
+				dst = scan_double(in,8,widht);
+				va_arg ( args, int ) = dst;
+				++converted;
+			}
+				continue;*/
+			case 'x': {
+				int dst;
+				dst = scan_int(in,16,widht);
+				va_arg ( args, int ) = dst;
+				++converted;
+			}
+				continue;
+			/*case 'X': {
+				double dst;
+				dst = scan_double(in,16,widht);
+				va_arg ( args, int ) = dst;
+				++converted;
+			}
+				continue;*/
+			}
+		}
+	}
+
+	return converted;
 }
 
 
-/* the following should be enough for 32 bit int */
+int scanf(const char *format, ...) {
 
-#define SCAN_BUF_LEN 12
+	va_list args;
+	int rv;
+	va_start ( args, format );
+	rv = scan( 0,format, args );
+	va_end ( args );
 
-static int scani(char **in, int i, int b, int sg, int width, int pad, int letbase)
-{
-   char scan_buf[SCAN_BUF_LEN];
-   char *s;
-   int t, neg = 0, sc = 0;
-   unsigned int u = i;
-   if (i == 0) {
-      scan_buf[0] = '0';
-      scan_buf[1] = '\0';
-      return scans (out, print_buf, width, pad);
-   }
-   if (sg && b == 10 && i < 0) {
-      neg = 1;
-      u = -i;
-   }
-   s = scan_buf + SCAN_BUF_LEN-1;
-   *s = '\0';
-   while (u) {
-      t = u % b;
-      if( t >= 10 )
-     t += letbase - '0' - 10;
-      *--s = t + '0';
-      u /= b;
-   }
-   if (neg) {
-      if( width && (pad & PAD_ZERO) ) {
-     scanchar (in,'-');
-     ++sc;
-     --width;
-      }
-      else {
-     *--s = '-';
-      }
-   }
-   return sc + scans (in, s, width, pad);
+	return rv;
 }
-
-
-static int scan(char **in, int *varg)
-{
-   int width, pad;
-   int sc = 0;
-   char *format = (char *)(*varg++);
-   char scr[2];
-
-   for (; *format != 0; ++format) {
-      if (*format == '%') {
-     ++format;
-     width = pad = 0;
-     if (*format == '\0') break;
-     if (*format == '%') goto in;
-     if (*format == '-') {
-        ++format;
-        pad = PAD_RIGHT;
-     }
-     while (*format == '0') {
-        ++format;
-        pad |= PAD_ZERO;
-     }
-     for ( ; *format >= '0' && *format <= '9'; ++format) {
-        width *= 10;
-        width += *format - '0';
-     }
-     if( *format == 's' ) {
-        char *s = *((char **)varg++);
-        sc += scans (in, s?s:"(null)", width, pad);
-        continue;
-     }
-     if( *format == 'd' ) {
-        sc += scani (in, *varg++, 10, 1, width, pad, 'a');
-        continue;
-     }
-     if( *format == 'x' ) {
-        sc += scani (in, *varg++, 16, 0, width, pad, 'a');
-        continue;
-     }
-     if( *format == 'X' ) {
-        sc += scani (in, *varg++, 16, 0, width, pad, 'A');
-        continue;
-     }
-     if( *format == 'u' ) {
-        sc += scani (in, *varg++, 10, 0, width, pad, 'a');
-        continue;
-     }
-     if( *format == 'c' ) {
-/* char are converted to int then pushed on the stack */
-        scr[0] = *varg++;
-        scr[1] = '\0';
-        sc += scans (in, scr, width, pad);
-        continue;
-     }
-      }
-      else {
-    in:
-     scanchar (in, *format);
-     ++sc;
-      }
-   }
-   if (in) **in = '\0';
-   return sc;
-}
-
-
-/* assuming sizeof(void *) == sizeof(int) */
-int scanf(const char *format, ...)
-{
-   int *varg = (int *)(&format);
-   return scan(0, varg);
-}
-
 
 int sscanf(char *out, const char *format, ...)
-{
-   int *varg = (int *)(&format);
-   return scan(&out, varg);
-}
+ {
+	va_list args;
+	int rv;
+	va_start ( args, format );
+	rv = scan( &out,format, args );
+	va_end ( args );
+
+	return rv;
+ }
 

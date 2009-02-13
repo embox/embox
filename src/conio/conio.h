@@ -8,6 +8,8 @@ int printf (const char *str, ...);
 int sprintf(char *out, const char *format, ...);
 // scanf from standart output
 int scanf (const char *str, ...);
+
+int sscanf (char *out, const char *format, ...);
 //
 void back_cursor (int count);
 // back space
