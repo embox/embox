@@ -67,3 +67,12 @@ WORD atow(char *buff) {
 	}
 	return result;
 }
+
+// Determines whether beg is the beginning of the str string
+int sz_cmp_beginning(const char *beg, const char *str){
+	for (; *beg == *str || *beg == 0; beg++, str++) {
+		if (*beg == 0)
+			return TRUE;
+	}
+	return FALSE;
+}

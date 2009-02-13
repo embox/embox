@@ -11,5 +11,6 @@
 typedef int (*PSHELL_HANDLER)(int argsc, char **argsv);
 
 void shell_start();
+int shell_find_commands(char *cmdline, char **proposals);
 
 #endif /* SHELL_H_ */

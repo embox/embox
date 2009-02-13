@@ -15,3 +15,6 @@ int sz_append(char *dest, const char * src, char ch);
 
 int sz_cmp(const char *str1, const char *str2);
 
+// Determines whether beg is the beginning of the str string
+int sz_cmp_beginning(const char *beg, const char *str);
+

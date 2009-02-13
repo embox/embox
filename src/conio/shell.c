@@ -48,9 +48,18 @@ static SHELL_HANDLER_DESCR shell_handlers[] = {
 #include "shell.inc"
 		};
 
-static void skip_spaces(int *i, char *str) {
+// i becomes first non-space symbol index
+// makes spaces that skips to zeros
+static void skip_spaces_to_zeros(int *i, char *str) {
 	while (str[*i] == ' ') {
 		str[(*i)++] = 0;
+	}
+}
+
+// i becomes first non-space symbol index
+static void skip_spaces(int *i, char *str) {
+	while (str[*i] == ' ') {
+		(*i)++;
 	}
 }
 
@@ -60,10 +69,17 @@ static void tty_callback(char *cmdline) {
 	PSHELL_HANDLER phandler;
 
 	if (cmdline != NULL) {
+//		// DEBUG
+//		char *proposals[sizeof(shell_handlers)];
+//		int found = shell_find_commands(cmdline, proposals);
+//
+//		for (i = 0; i < found; i++) {
+//			printf("%s\n", proposals[i]);
+//		}
 		char *handler_args[sz_length(cmdline) / 2];
 
 		// cmdline becomes pointer to the first word
-		skip_spaces(&i, cmdline);
+		skip_spaces_to_zeros(&i, cmdline);
 		cmdline += i;
 		i = 0;
 
@@ -74,7 +90,7 @@ static void tty_callback(char *cmdline) {
 		}
 
 		// stub! - choosing correct handler
-		skip_spaces(&i, cmdline);
+		skip_spaces_to_zeros(&i, cmdline);
 
 		for (j = 0; j < sizeof(shell_handlers); j++) {
 			if (sz_cmp(cmdline, shell_handlers[j].name)) {
@@ -98,17 +114,27 @@ static void tty_callback(char *cmdline) {
 			while (cmdline[i] != 0 && cmdline[i] != ' ') {
 				i++;
 			}
-			skip_spaces(&i, cmdline);
+			skip_spaces_to_zeros(&i, cmdline);
 			cmdline += i;
 			i = 0;
 		}
-
 		phandler(handler_args_counter, handler_args);
 	}
 }
-int stub(char *cmdline, char **proposals){
-	return 0;
+int shell_find_commands(char *cmdline, char **proposals) {
+	int i = 0, commands_found = 0, j;
+	char *searching_command;
+
+	skip_spaces(&i, cmdline);
+	searching_command = cmdline + i;
+
+	for (j = 0; j < sizeof(shell_handlers); j++) {
+		if (sz_cmp_beginning(cmdline, shell_handlers[j].name)) {
+			proposals[commands_found++] = shell_handlers[j].name;
+		}
+	}
+	return commands_found;
 }
 void shell_start() {
-	tty_start(tty_callback, stub, welcome);
+	tty_start(tty_callback, shell_find_commands, welcome);
 }
