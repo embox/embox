@@ -69,13 +69,15 @@ static void tty_callback(char *cmdline) {
 	PSHELL_HANDLER phandler;
 
 	if (cmdline != NULL) {
-//		// DEBUG
-//		char *proposals[sizeof(shell_handlers)];
-//		int found = shell_find_commands(cmdline, proposals);
-//
-//		for (i = 0; i < found; i++) {
-//			printf("%s\n", proposals[i]);
-//		}
+
+		//		// DEBUG
+		//		char *proposals[sizeof(shell_handlers)];
+		//		int found = shell_find_commands(cmdline, proposals);
+		//
+		//		for (i = 0; i < found; i++) {
+		//			printf("%s\n", proposals[i]);
+		//		}
+
 		char *handler_args[sz_length(cmdline) / 2];
 
 		// cmdline becomes pointer to the first word
@@ -119,6 +121,7 @@ static void tty_callback(char *cmdline) {
 			i = 0;
 		}
 		phandler(handler_args_counter, handler_args);
+
 	}
 }
 int shell_find_commands(char *cmdline, char **proposals) {
@@ -129,7 +132,7 @@ int shell_find_commands(char *cmdline, char **proposals) {
 	searching_command = cmdline + i;
 
 	for (j = 0; j < sizeof(shell_handlers); j++) {
-		if (sz_cmp_beginning(cmdline, shell_handlers[j].name)) {
+		if (sz_cmp_beginning(searching_command, shell_handlers[j].name)) {
 			proposals[commands_found++] = shell_handlers[j].name;
 		}
 	}
