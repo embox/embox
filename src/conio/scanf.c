@@ -47,8 +47,15 @@ BOOL isspace(int ch) {
 	return FALSE;
 }
 
+int toupcase (int ch)
+{
+	if ((ch >='a') && (ch <='z')) return (ch - 32);
+	return ch;
+}
+
 BOOL isdigit(int ch, int base) {
-	//toupcase();
+	ch = toupcase(ch);
+
 	switch (base) {
 		case 10:
 		{
