@@ -8,6 +8,7 @@
 #include "shell.h"
 #include "string.h"
 #include "tty.h"
+#include "mem.h"
 
 static const char* welcome = "monitor> ";
 
@@ -124,6 +125,7 @@ static void tty_callback(char *cmdline) {
 
 	}
 }
+
 int shell_find_commands(char *cmdline, char **proposals) {
 	int i = 0, commands_found = 0, j;
 	char *searching_command;
@@ -138,6 +140,66 @@ int shell_find_commands(char *cmdline, char **proposals) {
 	}
 	return commands_found;
 }
+
 void shell_start() {
 	tty_start(tty_callback, shell_find_commands, welcome);
+}
+
+int parse_arg(int argsc, char **argsv, SHELL_KEY *keys) {
+	int i = 0, args_count = 0;
+
+	while (i < argsc) {
+		if (**(argsv + i) != '-') {
+			return -1;
+		}
+
+		if (args_count >= MAX_SHELL_KEYS) {
+			return -2;
+		}
+		// Get key name.
+		// Second symbol. Ex: -h -x (-hello == -h)
+		keys[args_count].name = *(*(argsv + i) + 1);
+		keys[args_count].value = 0x0;
+
+		// Now working with value if one exists
+		i++;
+		if (i < argsc && **(argsv + i) != '-') {
+			keys[args_count].value = *(argsv + i);
+			i++;
+		}
+		args_count++;
+	}
+
+	return args_count;
+}
+
+// Compare keys with available
+// returns TRUE if all keys presented are available, FALSE otherwise
+int check_keys(SHELL_KEY *keys, int amount, char *available_keys, int amount_of_available_keys) {
+	int i, j;
+
+	for (i = 0; i < amount; i++) {
+		for (j = 0; j < amount_of_available_keys; j++) {
+			if (keys[i].name == available_keys[j]) {
+				break;
+			}
+		}
+		if (j >= amount_of_available_keys) {
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+// Determines whether key was entered
+// returns TRUE if key is active (was entered by user) and fills value
+int get_key(char key, SHELL_KEY *keys, int keys_amount, char **value) {
+	int i;
+	for (i = 0; i < keys_amount; i++) {
+		if (keys[i].name == key) {
+			*value = keys[i].value;
+			return TRUE;
+		}
+	}
+	return FALSE;
 }

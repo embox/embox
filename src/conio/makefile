@@ -1,4 +1,4 @@
-OBJS:=printf.o scanf.o shell.o cmdline.o
+OBJS:=printf.o scanf.o shell.o cmdline.o mem.o
 
 
 all:$(OBJS)

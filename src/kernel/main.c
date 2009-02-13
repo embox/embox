@@ -28,9 +28,9 @@ int main() {
 	init();
 	print_ahb_dev();
 
-	while (NULL != (descriptor = (void *) express_test_get_next())) {
-		express_test_run(descriptor);
-	}
+//	while (NULL != (descriptor = (void *) express_test_get_next())) {
+//		express_test_run(descriptor);
+//	}
 
 	shell_start();
 
