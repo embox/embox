@@ -8,78 +8,73 @@
 #ifndef PLUG_AND_PLAY_H_
 #define PLUG_AND_PLAY_H_
 
-#define TRY_CAPTURE_AHB_DEV(dev,venID,devID) if (-1 == capture_ahb_dev(dev, venID, devID)){\
-	printf ("error : can't capture ahb dev venID=0xX, devID=0xX\n", venID, devID);\
+#define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) if (-1 == capture_ahbm_dev(dev, venID, devID)){\
+	printf ("error : can't capture ahbm dev venID=0x%X, devID=0x%X\n", venID, devID);\
+	return -1;\
+}
+#define TRY_CAPTURE_AHBSL_DEV(dev,venID,devID) if (-1 == capture_ahbsl_dev(dev, venID, devID)){\
+	printf ("error : can't capture ahbsl dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
 
 #define TRY_CAPTURE_APB_DEV(dev,venID,devID) if (-1 == capture_apb_dev(dev, venID, devID)){\
-	printf ("error : can't capture apb dev venID=0xX, devID=0xX\n", venID, devID);\
+	printf ("error : can't capture apb dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
 
 
-
-typedef BYTE PNP_VENDOR_ID;
-typedef WORD PNP_DEVICE_ID;
-typedef BYTE PNP_VERSION;
-typedef BYTE PNP_IRQ;
-
-typedef WORD BAR_ADDR;
-typedef WORD BAR_MASK;
-typedef BYTE BAR_TYPE;
-
-typedef struct {
-	BAR_ADDR addr;
+typedef struct _AMBA_BAR_INFO {
+	UINT32 start;
 	BOOL prefetchable;
 	BOOL cacheable;
-	BAR_MASK mask;
-	BAR_TYPE type;
-} BA_REG;
+	UINT32 mask;
+	BYTE type;
+	BOOL used;
+} AMBA_BAR_INFO;
 
-typedef struct {
-	PNP_VENDOR_ID vendor_id;
-	PNP_DEVICE_ID device_id;
-	PNP_VERSION version;
-	PNP_IRQ irq;
-} ID_REG;
-
-typedef struct {
-	ID_REG id_reg;
-	WORD user_defined[3];
-	BA_REG ba_reg[4];
-} AHB_DEV;
-/*
-typedef struct {
-	ID_REG id_reg;
-	BA_REG ba_reg;
-} APB_DEV;
-*/
-typedef struct {
+typedef struct _AMBA_DEV_INFO
+{
 	BYTE venID;
 	UINT16 devID;
 	BYTE version;
 	BYTE irq;
-	UINT32 base;
-	BYTE mask;
-	BYTE type;
+} AMBA_DEV_INFO;
+
+typedef struct _AHB_DEV
+{
+	AMBA_DEV_INFO dev_info;
+	UINT32 user_def[3];
+	AMBA_BAR_INFO bar [4];
+	BYTE slot;
+	BOOL is_master;
+} AHB_DEV;
+
+
+typedef struct _APB_DEV{
+	AMBA_DEV_INFO dev_info;
+	AMBA_BAR_INFO bar;
+	BYTE slot;
 } APB_DEV;
 
 /*
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-int capture_ahb_dev(AHB_DEV *ahb_dev, BYTE vendor_id, WORD device_id);
-
+int capture_ahbm_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
 /*
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, WORD device_id);
+int capture_ahbsl_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
+/*
+ * pnp_dev must be allocated by caller
+ * returns 0 if ok, non-zero otherwise
+ */
+int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, UINT16 device_id);
 
 /*
- * Print list of all connected plug and play devices
+ * Print list of all connected plug and play devices on ahb bus
  */
-void print_ahb_dev();
+void print_all_pnp_devs();
 
 #endif /* PLUG_AND_PLAY_H_ */

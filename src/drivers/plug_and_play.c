@@ -10,36 +10,25 @@
 #include "pnp_id.h"
 #include "plug_and_play.h"
 
-#define COMPUTE_PNP_VENDOR_ID(id_reg)	(0xFF & ((id_reg) >> 24))
-#define COMPUTE_PNP_DEVICE_ID(id_reg)	(0xFFF & ((id_reg) >> 12))
-#define COMPUTE_PNP_VERSION(id_reg)		(0x1F & ((id_reg)) >> 5)
-#define COMPUTE_PNP_IRQ(id_reg)			(0x1F & (id_reg))
+typedef struct _AHB_SLOT {
+	UINT32 id_reg;
+	UINT32 user_defined[3];
+	UINT32 ba_reg[4];
+} AHB_SLOT;
 
-#define COMPUTE_PNP_BAR_ADDR(bar)		(0xFFF & ((bar) >> 20))
-#define COMPUTE_PNP_BAR_P(bar)			(0x1 & ((bar) >> 17))
-#define COMPUTE_PNP_BAR_C(bar)			(0x1 & ((bar) >> 16))
-#define COMPUTE_PNP_BAR_MASK(bar)		(0xFFF & ((bar) >> 4))
-#define COMPUTE_PNP_BAR_TYPE(bar)		(0xF & (bar))
+typedef struct _APB_SLOT {
+	UINT32 id_reg;
+	UINT32 ba_reg;
+} APB_SLOT;
 
-typedef struct {
-	WORD id_reg;
-	WORD user_defined[3];
-	WORD ba_reg[4];
-} AHB_ENTRY;
-
-typedef struct {
-	WORD id_reg;
-	WORD ba_reg;
-} APB_ENTRY;
-
-typedef struct {
-	const PNP_VENDOR_ID vendor_id;
-	const PNP_DEVICE_ID device_id;
+typedef struct _PNP_DEVICE_INFO {
+	const BYTE vendor_id;
+	const UINT16 device_id;
 	const char *name;
 } PNP_DEVICE_INFO;
 
-typedef struct {
-	const PNP_VENDOR_ID vendor_id;
+typedef struct _PNP_VENDOR_INFO {
+	const BYTE vendor_id;
 	const char *name;
 } PNP_VENDOR_INFO;
 
@@ -47,140 +36,230 @@ static PNP_VENDOR_INFO const vendors_table[] = {
 #include "pnp_vendors_table.inc"
 		};
 
-static PNP_DEVICE_INFO const devices_table[] = {
+static PNP_DEVICE_INFO const devs_table[] = {
 #include "pnp_devices_table.inc"
 		};
 
 #define VENDORS_TABLE_LEN (sizeof(vendors_table) / sizeof(vendors_table[0]))
-#define DEVICES_TABLE_LEN (sizeof(devices_table) / sizeof(devices_table[0]))
+#define DEVICES_TABLE_LEN (sizeof(devs_table) / sizeof(devs_table[0]))
 
 #define AHB_MASTER_BASE	0xFFFFF000
 #define AHB_SLAVE_BASE	0xFFFFF800
 #define APB_BASE		0x800FF000
 
-#define AHB_MASTERS_COUNT	128
-#define AHB_SLAVES_COUNT	128
-static AHB_DEV *ahb_devices[AHB_MASTERS_COUNT+ AHB_SLAVES_COUNT];
-
-#define APB_COUNT		512
-static APB_DEV *apb_devices[APB_COUNT];
-
-inline static void fill_pnp_id_reg(ID_REG *id_reg, WORD entry_id_reg) {
-	id_reg->vendor_id = COMPUTE_PNP_VENDOR_ID(entry_id_reg);
-	id_reg->device_id = COMPUTE_PNP_DEVICE_ID(entry_id_reg);
-	id_reg->version = COMPUTE_PNP_VERSION(entry_id_reg);
-	id_reg->irq = COMPUTE_PNP_IRQ(entry_id_reg);
-}
-
-inline static void fill_pnp_ba_reg(BA_REG *ba_reg, WORD entry_ba_reg) {
-	ba_reg->addr = COMPUTE_PNP_BAR_ADDR(entry_ba_reg);
-	ba_reg->prefetchable = COMPUTE_PNP_BAR_P(entry_ba_reg);
-	ba_reg->cacheable = COMPUTE_PNP_BAR_C(entry_ba_reg);
-	ba_reg->mask = COMPUTE_PNP_BAR_MASK(entry_ba_reg);
-	ba_reg->type = COMPUTE_PNP_BAR_TYPE(entry_ba_reg);
-}
-
-inline static void fill_ahb_dev(AHB_DEV *ahb_dev, AHB_ENTRY *ahb_entry) {
-	int i;
-	// Identification Register
-	fill_pnp_id_reg(&(ahb_dev->id_reg), ahb_entry->id_reg);
-	// User defined x3
-	for (i = 0; i < 3; i++) {
-		ahb_dev->user_defined[i] = ahb_entry->user_defined[i];
-	}
-	// Bank Address Registers x4
-	for (i = 0; i < 4; i++) {
-		fill_pnp_ba_reg(&(ahb_dev->ba_reg[i]), ahb_entry->ba_reg[i]);
-	}
-}
-
-
-int capture_ahb_dev(AHB_DEV *ahb_dev, BYTE vendor_id, WORD device_id) {
-	int i;
-	AHB_ENTRY *ahb_entry;
-
-	if (NULL == ahb_dev) {
+#define AHB_MASTERS_QUANTITY	0x10
+#define AHB_SLAVES_QUANTITY		0x40
+#define APB_QUANTITY			0x40
+static AHB_DEV *ahb_devices[AHB_MASTERS_QUANTITY+ AHB_SLAVES_QUANTITY];
+static APB_DEV *apb_devices[APB_QUANTITY];
+inline static lock_ahbm_slot(UINT16 slot, AHB_DEV *dev) {
+	if (ahb_devices[slot])
 		return -1;
+	ahb_devices[slot] = dev;
+	return 0;
+}
+inline static lock_ahbsl_slot(UINT16 slot, AHB_DEV *dev) {
+	if (ahb_devices[AHB_MASTERS_QUANTITY + slot])
+		return -1;
+	ahb_devices[AHB_MASTERS_QUANTITY + slot] = dev;
+	return 0;
+}
+
+inline static lock_apb_slot(UINT16 slot, APB_DEV *dev) {
+	if (apb_devices[slot])
+		return -1;
+	apb_devices[slot] = dev;
+	return TRUE;
+}
+
+inline static BYTE get_ven(UINT32 id_reg) {
+	return (0xFF & ((id_reg) >> 24));
+}
+
+inline static UINT16 get_dev(UINT32 id_reg) {
+	return (0xFFF & ((id_reg) >> 12));
+}
+inline static BYTE get_irq(UINT32 id_reg) {
+	return (0x1F & (id_reg));
+}
+inline static BYTE get_version(UINT32 id_reg) {
+	return (0x1F & ((id_reg)) >> 5);
+}
+/* return slotnumber or -1*/
+inline static int find_ahbm_dev(BYTE ven_id, UINT16 dev_id) {
+	int cur_slot;
+	AHB_SLOT *pslot = ((AHB_SLOT *) AHB_MASTER_BASE);
+	for (cur_slot = 0; cur_slot < AHB_MASTERS_QUANTITY; cur_slot++) {
+		if ((ven_id == get_ven(pslot[cur_slot].id_reg)) && (dev_id == get_dev(
+				pslot[cur_slot].id_reg)))
+			return cur_slot;
 	}
-
-	ahb_entry = (AHB_ENTRY *) AHB_MASTER_BASE;
-	for (i = 0; i < AHB_MASTERS_COUNT; i++) {
-		if ((COMPUTE_PNP_VENDOR_ID(ahb_entry->id_reg) == vendor_id) && (COMPUTE_PNP_DEVICE_ID(ahb_entry->id_reg) == device_id) && (NULL == ahb_devices[i])) {
-
-			fill_ahb_dev(ahb_dev, ahb_entry);
-			ahb_devices[i] = ahb_dev;
-
-			return 0;
-		}
-		ahb_entry++;
-	}
-
-	ahb_entry = (AHB_ENTRY *) AHB_SLAVE_BASE;
-	for (i = 0; i < AHB_SLAVES_COUNT; i++) {
-		if ((COMPUTE_PNP_VENDOR_ID(ahb_entry->id_reg) == vendor_id) && (COMPUTE_PNP_DEVICE_ID(ahb_entry->id_reg) == device_id) && (NULL
-		== ahb_devices[AHB_MASTERS_COUNT + i])) {
-
-			fill_ahb_dev(ahb_dev, ahb_entry);
-			ahb_devices[AHB_MASTERS_COUNT + i] = ahb_dev;
-
-			return 0;
-		}
-		ahb_entry++;
-	}
-
 	return -1;
 }
-
-inline static void fill_apb_dev(APB_DEV *apb_dev, APB_ENTRY *apb_entry) {
-	// Identification Register
-	//fill_pnp_id_reg(&(apb_dev->id_reg), apb_entry->id_reg);
-	apb_dev->devID = COMPUTE_PNP_DEVICE_ID(apb_entry->id_reg);
-	apb_dev->venID = COMPUTE_PNP_VENDOR_ID(apb_entry->id_reg);
-	apb_dev->venID = COMPUTE_PNP_IRQ(apb_entry->id_reg);
-
-	// Bank Address Register
-	//fill_pnp_ba_reg(&(apb_dev->ba_reg), apb_entry->ba_reg);
-	apb_dev->base = 0x80000000 | (COMPUTE_PNP_BAR_ADDR (apb_entry->ba_reg) << 8);
-	apb_dev->mask = COMPUTE_PNP_BAR_MASK(apb_entry->ba_reg);
-	apb_dev->type = COMPUTE_PNP_BAR_TYPE(apb_entry->ba_reg);
-}
-
-int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, WORD device_id) {
-	int i, j;
-	APB_ENTRY *apb_entry = (APB_ENTRY *) APB_BASE;
-
-	if (NULL == apb_dev) {
-		return -1;
-	}
-
-	for (i = 0; i < APB_COUNT; i++) {
-		if ((COMPUTE_PNP_VENDOR_ID(apb_entry->id_reg) == vendor_id) && (COMPUTE_PNP_DEVICE_ID(apb_entry->id_reg) == device_id) && (NULL == apb_devices[i])) {
-			fill_apb_dev(apb_dev, apb_entry);
-			apb_devices[i] = apb_dev;
-			return 0;
-		}
-		apb_entry++;
+/* return slotnumber or -1*/
+inline static int find_ahbsl_dev(BYTE ven_id, UINT16 dev_id) {
+	int cur_slot;
+	AHB_SLOT *pslot = ((AHB_SLOT *) AHB_SLAVE_BASE);
+	for (cur_slot = 0; cur_slot < AHB_SLAVES_QUANTITY; cur_slot++) {
+		if ((ven_id == get_ven(pslot[cur_slot].id_reg)) && (dev_id == get_dev(
+				pslot[cur_slot].id_reg)))
+			return cur_slot;
 	}
 	return -1;
 }
 
-inline static PNP_VENDOR_INFO* get_vendor_info(PNP_VENDOR_ID vendor_id) {
+inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev, UINT32 id_reg) {
+	dev->venID = get_ven(id_reg);
+	dev->devID = get_dev(id_reg);
+	dev->irq = get_irq(id_reg);
+	dev->version = get_version(id_reg);
+}
+
+inline static void fill_ahb_bar_info(AMBA_BAR_INFO *bar, UINT32 ba_reg) {
+	if (ba_reg) {
+		bar->start = ba_reg & 0xFFF00000;
+		bar->prefetchable = (0x1 & ((ba_reg) >> 17));
+		bar->cacheable = (0x1 & ((ba_reg) >> 16));
+		bar->mask = (0xFFF & ((ba_reg) >> 4));
+		bar->type = (0xF & (ba_reg));
+		bar->used = TRUE;
+	} else
+		bar->used = FALSE;
+
+}
+
+inline static void fill_ahb_bar_infos(AHB_DEV *dev, AHB_SLOT *ahb_slot) {
+	int i;
+	for (i = 0; i < sizeof(dev->bar) / sizeof(dev->bar[0]); i++)
+		fill_ahb_bar_info(&dev->bar[i], ahb_slot->ba_reg[i]);
+}
+
+inline static void fill_ahbm_dev_info(AHB_DEV *dev, BYTE slot_number) {
+	AHB_SLOT *ahb_slot = ((AHB_SLOT *) AHB_MASTER_BASE) + slot_number;
+	fill_amba_dev_info((AMBA_DEV_INFO *) dev, ahb_slot->id_reg);
+	fill_ahb_bar_infos(dev, ahb_slot);
+
+	dev->is_master = TRUE;
+	dev->slot = slot_number;
+}
+
+inline static void fill_ahbsl_dev_info(AHB_DEV *dev, BYTE slot_number) {
+	AHB_SLOT *ahb_slot = ((AHB_SLOT *) AHB_SLAVE_BASE) + slot_number;
+	fill_amba_dev_info((AMBA_DEV_INFO *) dev, ahb_slot->id_reg);
+	fill_ahb_bar_infos(dev, ahb_slot);
+
+	dev->is_master = TRUE;
+	dev->slot = slot_number;
+}
+
+int capture_ahbm_dev(AHB_DEV *dev, BYTE ven_id, UINT16 dev_id) {
+	int slot_number;
+	AHB_SLOT *pslot = (AHB_SLOT *) AHB_MASTER_BASE;
+
+	if (NULL == dev) {
+		return -1;
+	}
+
+	if (-1 == find_ahbm_dev(ven_id, dev_id)) {
+		return -1;
+	}
+
+	if (-1 == lock_ahbm_slot(slot_number, dev)) {
+		return -1;//a device can be opened only once
+	}
+
+	fill_ahbm_dev_info(dev, slot_number);
+
+	return slot_number;
+}
+
+int capture_ahbsl_dev(AHB_DEV *dev, BYTE ven_id, UINT16 dev_id) {
+	int slot_number;
+	//AHB_SLOT *pslot = (AHB_SLOT *) AHB_SLAVE_BASE;
+
+	if (NULL == dev) {
+		return -1;
+	}
+
+	if (-1 == (slot_number = find_ahbsl_dev(ven_id, dev_id))) {
+		return -1;
+	}
+
+	if (-1 == lock_ahbsl_slot(slot_number, dev)) {
+		return -1;//a device can be opened only once
+	}
+
+	fill_ahbsl_dev_info(dev, slot_number);
+
+	return slot_number;
+}
+
+inline static void fill_apb_bar_info(AMBA_BAR_INFO *bar, UINT32 ba_reg) {
+	bar->start = 0x80000000;
+	bar->prefetchable = 0;
+	bar->cacheable = 0;
+	bar->mask = (0xFFF & ((ba_reg) >> 4));
+	bar->type = (0xF & (ba_reg));
+	bar->start |= ((((0xFFF & (ba_reg) >> 20)) & bar->mask) << 8);
+}
+
+inline static void fill_apb_dev_info(APB_DEV *dev, BYTE slot_number) {
+	APB_SLOT *apb_slot = ((APB_SLOT *) APB_BASE) + slot_number;
+	fill_amba_dev_info((AMBA_DEV_INFO *) dev, apb_slot->id_reg);
+	fill_apb_bar_info(&dev->bar, apb_slot->ba_reg);
+
+	dev->slot = slot_number;
+}
+
+/* return slotnumber or -1*/
+inline static int find_apb_dev(BYTE ven_id, UINT16 dev_id) {
+	int cur_slot;
+	APB_SLOT *pslot = ((APB_SLOT *) APB_BASE);
+	for (cur_slot = 0; cur_slot < APB_QUANTITY; cur_slot++) {
+		if ((ven_id == get_ven(pslot[cur_slot].id_reg)) && (dev_id == get_dev(
+				pslot[cur_slot].id_reg)))
+			return cur_slot;
+	}
+	return -1;
+}
+
+int capture_apb_dev(APB_DEV *dev, BYTE ven_id, UINT16 dev_id) {
+	int slot_number;
+	//APB_SLOT *pslot = (APB_SLOT *) APB_BASE;
+
+	if (NULL == dev) {
+		return -1;
+	}
+
+	if (-1 == (slot_number = find_apb_dev(ven_id, dev_id))) {
+		return -1;
+	}
+
+	if (-1 == lock_apb_slot(slot_number, dev)) {
+		return -1;//a device can be opened only once
+	}
+
+	fill_apb_dev_info(dev, slot_number);
+
+	return slot_number;
+}
+
+inline static const char *get_ven_name(BYTE ven_id) {
 	int i;
 	for (i = 0; i < VENDORS_TABLE_LEN; i++) {
-		if (vendors_table[i].vendor_id == vendor_id) {
-			return (PNP_VENDOR_INFO*) &(vendors_table[i]);
+		if (vendors_table[i].vendor_id == ven_id) {
+			return vendors_table[i].name;
 		}
 	}
 	return NULL;
 }
 
-inline static PNP_DEVICE_INFO* get_device_info(PNP_VENDOR_ID vendor_id,
-		PNP_DEVICE_ID device_id) {
+inline static const char* get_dev_name(BYTE ven_id, UINT16 dev_id) {
 	int i;
 	for (i = 0; i < DEVICES_TABLE_LEN; i++) {
-		if (devices_table[i].vendor_id == vendor_id
-				&& devices_table[i].device_id == device_id) {
-			return (PNP_DEVICE_INFO*) &(devices_table[i]);
+		if ((devs_table[i].vendor_id == ven_id) && (devs_table[i].device_id
+				== dev_id)) {
+			return devs_table[i].name;
 		}
 	}
 	return NULL;
@@ -194,58 +273,125 @@ inline static void print_table_row(int n, int ven_id, int dev_id,
 inline static void print_table_head() {
 	TRACE("\n  %7s %20s %28s \t%4s %3s\n", "ven:dev", "Vendor Name", "Device Name","ver", "irq");
 }
+inline static void show_bars_type(AMBA_BAR_INFO *bar) {
+	switch (bar->type) {
+	case 1:
+		TRACE("\tapb:");
+	case 2:
+		TRACE("\tahb:");
+		break;
 
-static int print_ahb_entries(AHB_ENTRY *base_addr, int amount) {
+	default:
+		TRACE("\t%X", bar->type);
+	}
+}
+inline static void show_bar_info(AMBA_BAR_INFO *bar) {
+	if (bar->used) {
+		show_bars_type(bar);
+		TRACE("%X\n", bar->start);
+	}
+}
+void show_bars_infos(AHB_DEV *dev) {
+	int i;
+
+	for (i = 0; i < sizeof(dev->bar) / sizeof(dev->bar[0]); i++) {
+		if (dev->bar[i].used) {
+			show_bars_type(&dev->bar[i]);
+			TRACE("%X\n", dev->bar[i].start);
+		}
+	}
+}
+const char UNKNOWN[] = "unknown";
+static int print_ahb_entries(AHB_SLOT *base_addr, int amount) {
 	int i, count = 0;
-	AHB_ENTRY *ahb_entry = base_addr;
-	WORD vendor_id, device_id, irq;
-	char *vendor_name, *device_name;
-	const char *UNKNOWN = "unknown";
-	PNP_VENDOR_INFO* vendor_info;
-	PNP_DEVICE_INFO* device_info;
+	AHB_SLOT *pslot = base_addr;
+
+	char* ven_name;
+	char* dev_name;
+	//AMBA_DEV_INFO dev_info;
+	AHB_DEV dev;
 
 	for (i = 0; i < amount; i++) {
-		if (0 != COMPUTE_PNP_DEVICE_ID(ahb_entry->id_reg)) {
-			vendor_id = COMPUTE_PNP_VENDOR_ID(ahb_entry->id_reg);
-			device_id = COMPUTE_PNP_DEVICE_ID(ahb_entry->id_reg);
-			irq = COMPUTE_PNP_IRQ(ahb_entry->id_reg);
-
-			if ((vendor_info = get_vendor_info(vendor_id)) != NULL) {
-				vendor_name = (char *) vendor_info->name;
-				if ((device_info = get_device_info(vendor_id, device_id))
-						!= NULL) {
-					device_name = (char *) device_info->name;
-				} else {
-					device_name = (char *) UNKNOWN;
+		if (0 != pslot[i].id_reg) {
+			fill_amba_dev_info(&dev.dev_info, pslot[i].id_reg);
+			if (NULL != (ven_name = (char *) get_ven_name(dev.dev_info.venID))) {
+				if (NULL == (dev_name = (char *) get_dev_name(
+						dev.dev_info.venID, dev.dev_info.devID))) {
+					dev_name = (char *) UNKNOWN;
 				}
 			} else {
-				vendor_name = (char *) UNKNOWN;
-				device_name = (char *) UNKNOWN;
+				ven_name = (char *) UNKNOWN;
+				dev_name = (char *) UNKNOWN;
 			}
 
-			print_table_row(i, vendor_id, device_id, vendor_name, device_name,
-					COMPUTE_PNP_VERSION(ahb_entry->id_reg), irq);
+			fill_ahb_bar_infos(&dev, &pslot[i]);
+			print_table_row(i, dev.dev_info.venID, dev.dev_info.devID,
+					ven_name, dev_name, dev.dev_info.version, dev.dev_info.irq);
+			show_bars_infos(&dev);
 			count++;
 		}
-		ahb_entry++;
 	}
 	return count;
 }
+static int print_apb_entries(APB_SLOT *base_addr, int amount) {
+	int i, count = 0;
+	APB_SLOT *pslot = base_addr;
 
-void print_ahb_dev() {
+	char* ven_name;
+	char* dev_name;
+
+	APB_DEV dev;
+
+	for (i = 0; i < amount; i++) {
+		if (0 != pslot[i].id_reg) {
+			fill_amba_dev_info(&dev.dev_info, pslot[i].id_reg);
+			if (NULL != (ven_name = (char *) get_ven_name(dev.dev_info.venID))) {
+				if (NULL == (dev_name = (char *) get_dev_name(
+						dev.dev_info.venID, dev.dev_info.devID))) {
+					dev_name = (char *) UNKNOWN;
+				}
+			} else {
+				ven_name = (char *) UNKNOWN;
+				dev_name = (char *) UNKNOWN;
+			}
+
+			//fill_ahb_bar_infos(&dev, &pslot[i]);
+			fill_apb_bar_info(&dev.bar, pslot[i].ba_reg);
+			print_table_row(i, dev.dev_info.venID, dev.dev_info.devID,
+					ven_name, dev_name, dev.dev_info.version, dev.dev_info.irq);
+			show_bar_info(&dev.bar);
+			count++;
+		}
+	}
+	return count;
+}
+void print_all_pnp_devs() {
 #ifdef RELEASE
 	return;
 #else
 
 	int count = 0;
 	TRACE("\nListing Plug'n'Play devices..\n");
+	TRACE("\nAHB masters..\n");
 	print_table_head();
 	count
-			+= print_ahb_entries((AHB_ENTRY *) AHB_MASTER_BASE,
-					AHB_MASTERS_COUNT);
+	+= print_ahb_entries((AHB_SLOT *) AHB_MASTER_BASE,
+			AHB_MASTERS_QUANTITY);
+	TRACE("\nAHB slavess..\n");
+	print_table_head();
+	count
+	+= print_ahb_entries((AHB_SLOT *) AHB_SLAVE_BASE,
+			AHB_SLAVES_QUANTITY);
 	TRACE("\n..Total: %d\n\n", count);
 
-	//	TRACE(">>> (ahb slave)\n");
-	//	print_ahb_entries((AHB_ENTRY *)AHB_SLAVE_BASE, AHB_SLAVES_COUNT);
+	TRACE("\nAHB slavess..\n");
+	print_table_head();
+	count = 0;
+	count
+	+= print_apb_entries((APB_SLOT *) APB_BASE,
+			APB_QUANTITY);
+	TRACE("\n..Total: %d\n\n", count);
+
 #endif
 }
+

@@ -1,4 +1,5 @@
 #include "types.h"
+#include "common.h"
 #include "leon_config.h"
 #include "irq.h"
 #include "plug_and_play.h"
@@ -99,7 +100,7 @@ static void irq_func_tmr_1mS() {
 }
 
 int timers_init() {
-	APB_DEV apb_dev;
+	APB_DEV dev;
 	int i;
 
 	if (timers) {
@@ -108,13 +109,10 @@ int timers_init() {
 	for (i = 0; i < sizeof(sys_timers) / sizeof(sys_timers[0]); i++)
 		sys_timers[i].f_enable = FALSE;
 
-/*	if (-1 == capture_apb_dev(&apb_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER)) {
-		printf("error capturing timer device");
-		return -1; //error
-	}
-*/
-	TRY_CAPTURE_APB_DEV (&apb_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
-	timers = (TIMERS_STRUCT *)apb_dev.base;//(TIMERS_STRUCT *) (0x80000000 + ((apb_dev.ba_reg.addr) << 8)); // TODO 0x80000000
+
+	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
+	TRACE ("open timers_ctrl base = 0x%X\tirq = %d\n", dev.bar.start, dev.dev_info.irq);
+	timers = (TIMERS_STRUCT *)dev.bar.start;
 	timers->scaler_ld = TIMER_SCALER_VAL;
 	timers->scaler_cnt = 0;
 	timers->timer_cnt1 = 0;
@@ -124,9 +122,8 @@ int timers_init() {
 	timers->timer_ld2 = 0;//0x027100;
 	timers->timer_ctrl1 = 0xf;
 	timers->timer_ctrl2 = 0x0;//disable
-	//irq_set_handler(apb_dev.id_reg.irq, irq_func_tmr_1mS);
+	irq_set_handler(dev.dev_info.irq, irq_func_tmr_1mS);
 
-	irq_set_handler(apb_dev.irq, irq_func_tmr_1mS);
 	cnt_sys_time = 0;
 
 	return 0;
