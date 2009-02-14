@@ -2,10 +2,10 @@
 #define SZMAX   64
 
 // character to upper
-char ch_upper(char ch);
+char ch_upcase(char ch);
 
 // character to integer conversion
-int ch_to_digit(char ch);
+int ch_to_digit(char ch, int base);
 
 int sz_length(const char *str);
 

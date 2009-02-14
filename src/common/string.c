@@ -1,7 +1,7 @@
 #include "types.h"
 
 // character to upper
-char ch_upper(char ch) {
+char ch_upcase(char ch) {
 	if (ch >= 'a' && ch <= 'z')
 		return (ch + 'A' - 'a');
 	else
@@ -9,14 +9,38 @@ char ch_upper(char ch) {
 }
 
 // convert HEX digit character to integer
-int ch_to_digit(char ch) {
-	ch = ch_upper(ch);
-	if (ch >= '0' && ch <= '9') {
-		return (ch - '0');
-	} else if (ch >= 'A' && ch <= 'F') {
-		return (ch - 'A' + 0x0A);
+int ch_to_digit(char ch, int base) {
+	ch = ch_upcase(ch);
+	switch (base)
+	{
+		case 0x10:
+		{
+			if (ch >= '0' && ch <= '9') {
+				return (ch - '0');
+			} else if (ch >= 'A' && ch <= 'F') {
+				return (ch - 'A' + 0x0A);
+			}
+			return -1;
+		}
+		case 10:
+		{
+			if (ch >= '0' && ch <= '9') {
+				return (ch - '0');
+			}
+			return -1;
+		}
+		case 8:
+		{
+			if (ch >= '0' && ch <= '7') {
+				return (ch - '0');
+			}
+			return -1;
+		}
+		default:
+			return -1;
 	}
-	return 0;
+
+	return -1;
 }
 
 int sz_length(const char * str) {
@@ -62,7 +86,7 @@ WORD atow(char *buff) {
 	WORD paw = 1;
 	int length = sz_length(buff) - 1;
 	for (; length >= 0; length--) {
-		result += ch_to_digit(buff[length]) * paw;
+		result += ch_to_digit(buff[length], 0x10) * paw;
 		paw = paw * 0x10;
 	}
 	return result;
@@ -73,6 +97,33 @@ int sz_cmp_beginning(const char *beg, const char *str){
 	for (; *beg == *str || *beg == 0; beg++, str++) {
 		if (*beg == 0)
 			return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL is_digit(int ch, int base) {
+	ch = (int)ch_upcase((char)ch);
+	switch (base) {
+		case 10:
+		{
+			if ((ch >= '0') && (ch <= '9'))
+				return TRUE;
+			return FALSE;
+		}
+		case 8:
+		{
+			if ((ch >= '0') && (ch <= '7'))
+				return TRUE;
+			return FALSE;
+		}
+		case 16:
+		{
+			if (((ch >= '0') && (ch <= '9')) || ((ch >= 'A') && (ch <= 'F')))
+				return TRUE;
+			return FALSE;
+		}
+		default:
+			return FALSE;
 	}
 	return FALSE;
 }
