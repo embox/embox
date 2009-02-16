@@ -170,10 +170,10 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'd': {
 				int dst;
 				dst = scan_int(in,10,widht);
-				printf ("d%d\n", dst);
+				//printf ("d%d\n", dst);
 				va_arg ( args, int ) = dst;
-				printf ("va_arg 0x%X\n", args);
-				printf ("va_arg 0x%X\n", &args);
+				//printf ("va_arg 0x%X\n", args);
+				//printf ("va_arg 0x%X\n", &args);
 				++converted;
 			}
 				continue;
@@ -187,8 +187,8 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'o': {
 				int dst;
 				dst = scan_int(in,8,widht);
-				printf ("o%d\n", dst);
-				*va_arg ( args, int* ) = dst;
+				//printf ("o%d\n", dst);
+				va_arg ( args, int ) = dst;
 				++converted;
 			}
 				continue;
@@ -202,8 +202,8 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'x': {
 				int dst;
 				dst = scan_int(in,16,widht);
-				printf ("x%d\n", dst);
-				*va_arg ( args, int* ) = dst;
+				//printf ("x%d\n", dst);
+				va_arg ( args, int ) = dst;
 				++converted;
 			}
 				continue;
@@ -228,8 +228,8 @@ int scanf(const char *format, ...) {
 	int rv;
 
 	va_start ( args, format );
-	printf ("scan addr 0x%X\n", args);
-	printf ("scan addr 0x%X\n", format);
+	//printf ("scan addr 0x%X\n", args);
+	//printf ("scan addr 0x%X\n", format);
 	rv = scan( 0,format, args );
 	va_end ( args );
 

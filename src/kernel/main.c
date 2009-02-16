@@ -23,11 +23,47 @@ int init() {
 	return 0;
 }
 
+int scanf_test()
+{
+	int d;
+	char s[10];
+	char c;
+
+	printf("Enter decimal number... ");
+	scanf ("%d", &d);
+	printf("\nYou have entered %d\n\n", d);
+
+	printf("Enter oct number... ");
+	scanf ("%o", &d);
+	printf("\nYou have entered x%o\n\n", d);
+
+	printf("Enter hex number... ");
+	scanf ("%x", &d);
+	printf("\nYou have entered 0x%x\n\n", d);
+
+	printf("Enter string... ");
+	scanf("%10s", s);
+	printf("String of first ten symbols is: %s\n\n", s);
+
+	printf("Enter char...");
+	scanf("%c", &c);
+	printf("Char you have entered is: %c\n\n", c);
+
+	int o;
+	printf("Scan string: One know  31 oct == 25 dec\n");
+	scanf("%o %d", &o , &d);
+	printf("We see %d == %d. Its true.\n", o , d);
+}
+
 int main() {
 	void* descriptor;
 	init();
-	print_ahb_dev();
+	print_all_pnp_devs();
 
+	scanf_test();
+
+	while (1)
+		;
 //	while (NULL != (descriptor = (void *) express_test_get_next())) {
 //		express_test_run(descriptor);
 //	}
