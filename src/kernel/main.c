@@ -23,36 +23,28 @@ int init() {
 	return 0;
 }
 
-int scanf_test()
+void sscanf_test()
 {
 	int d;
-	char s[10];
+	char s[35] = "We have wrote it February, 16";
+	char subs[7];
 	char c;
 
-	printf("Enter decimal number... ");
-	scanf ("%d", &d);
-	printf("\nYou have entered %d\n\n", d);
 
-	printf("Enter oct number... ");
-	scanf ("%o", &d);
-	printf("\nYou have entered x%o\n\n", d);
+	printf("String for parse: %s",s);
 
-	printf("Enter hex number... ");
-	scanf ("%x", &d);
-	printf("\nYou have entered 0x%x\n\n", d);
+	sscanf( s, "%d", &d );
+	printf("Dec number in string is %d", d);
 
-	printf("Enter string... ");
-	scanf("%10s", s);
-	printf("String of first ten symbols is: %s\n\n", s);
+	sscanf( s, "%x", &d );
+	printf("Hex number in string is %x", d);
 
-	printf("Enter char...");
-	scanf("%c", &c);
-	printf("Char you have entered is: %c\n\n", c);
+	sscanf( s, "%c", &c );
+	printf("Char in string is %c", c);
 
-	int o;
-	printf("Scan string: One know  31 oct == 25 dec\n");
-	scanf("%o %d", &o , &d);
-	printf("We see %d == %d. Its true.\n", o , d);
+	sscanf( s, "%7s", subs );
+	printf("And 7-length string is %s", subs);
+
 }
 
 int main() {
@@ -60,7 +52,7 @@ int main() {
 	init();
 	print_all_pnp_devs();
 
-	scanf_test();
+	sscanf_test();
 
 	while (1)
 		;
