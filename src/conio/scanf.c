@@ -16,8 +16,18 @@ inline static int getchar() {
 	return (int)uart_getc();
 }
 
-static void ungetchar(int ch) {
+inline static void ungetchar(int ch) {
 	uart_putc(ch);
+}
+
+static void unscanchar (char **str, int ch) {
+	extern int ungetchar();
+	if (str) {
+		*str--;
+		**str = ch;
+	} else {
+		ungetchar(ch);
+	}
 }
 
 static int scanchar(char **str) {
@@ -56,7 +66,7 @@ static int trim_leading(char **str) {
 			break;
 	} while (is_space(ch));
 
-	ungetchar(ch);
+	unscanchar( str, ch);
 
 	return ch;
 }
@@ -78,11 +88,11 @@ static int scan_int(char **in, int base, int widht) {
 
 	for (i = 0; (ch = (int)ch_upcase(scanchar(in))) != EOF; i++) {
 		if (!is_digit( ch , base ) || (0 == widht)) {
-			ungetchar(ch);
+			unscanchar( in, ch);
 			//end conversion
 			break;
 		}
-		ungetchar(ch);
+		unscanchar( in, ch);
 
 		dst = base * dst + ch_to_digit(ch, base);
 	}
