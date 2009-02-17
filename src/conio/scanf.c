@@ -23,8 +23,14 @@ inline static void ungetchar(int ch) {
 static void unscanchar (char **str, int ch) {
 	extern int ungetchar();
 	if (str) {
-		*str--;
-		**str = ch;
+	//	*str --;
+	//	**str = ch;
+
+		/*int *p;
+		p = *str - 4;
+		*p = ch;
+		*str = p;*/
+
 	} else {
 		ungetchar(ch);
 	}
@@ -35,7 +41,7 @@ static int scanchar(char **str) {
 	int ch;
 	if (str) {
 		ch = **str;
-		*str ++;
+		(*str) ++;
 		return ch;
 
 	} else {
