@@ -20,12 +20,12 @@ typedef struct {
 void shell_start();
 int shell_find_commands(char *cmdline, char **proposals);
 
-// Compare keys entered with available keys
-// returns TRUE if all keys presented are available, FALSE otherwise
-int check_keys(SHELL_KEY *keys, int amount, char *available_keys, int amount_of_available_keys);
-
-// Compare keys with available
-// returns TRUE if all keys presented are available, FALSE otherwise
-int check_keys(SHELL_KEY *keys, int amount, char *available_keys, int amount_of_available_keys);
+// parse arguments array on keys-value structures
+// RETURNS:
+// -1 wrong condition found. Arguments not in format: -<key> [<value>]
+// -2 too many keys entered
+// -3 wrong key entered
+// amount of entered keys otherwise (if everything's OK)
+int parse_arg(const char *handler_name, int argsc, char **argsv, char *available_keys,	int amount_of_available_keys, SHELL_KEY *keys);
 
 #endif /* SHELL_H_ */

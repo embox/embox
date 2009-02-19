@@ -49,93 +49,81 @@ static SHELL_HANDLER_DESCR shell_handlers[] = {
 #include "shell.inc"
 		};
 
-// i becomes first non-space symbol index
-// makes spaces that skips to zeros
-static void skip_spaces_to_zeros(int *i, char *str) {
-	while (str[*i] == ' ') {
-		str[(*i)++] = 0;
+// *str becomes pointer to first non-space character
+static void skip_spaces(char **str) {
+	while (**str == ' ') {
+		(*str)++;
 	}
 }
 
-// i becomes first non-space symbol index
-static void skip_spaces(int *i, char *str) {
-	while (str[*i] == ' ') {
-		(*i)++;
+// *str becomes pointer to first space or '\0' character
+static void skip_word(char **str) {
+	while (**str != '\0' && **str != ' ') {
+		(*str)++;
 	}
+}
+
+static int parse_str(char *cmdline, char **words) {
+	int cnt = 0;
+	while (*cmdline != '\0') {
+		if (' ' == *cmdline) {
+			*cmdline++ = '\0';
+			skip_spaces(&cmdline);
+		} else {
+			words[cnt++] = cmdline;
+			skip_word(&cmdline);
+		}
+	}
+	return cnt;
 }
 
 static void tty_callback(char *cmdline) {
-	int handler_args_counter = 0;
-	int i = 0, j;
+	int words_counter = 0;
+	int i;
 	PSHELL_HANDLER phandler;
 
-	if (cmdline != NULL) {
+	char *words[sz_length(cmdline) / 2];
 
-		//		// DEBUG
-		//		char *proposals[sizeof(shell_handlers)];
-		//		int found = shell_find_commands(cmdline, proposals);
-		//
-		//		for (i = 0; i < found; i++) {
-		//			printf("%s\n", proposals[i]);
-		//		}
-
-		char *handler_args[sz_length(cmdline) / 2];
-
-		// cmdline becomes pointer to the first word
-		skip_spaces_to_zeros(&i, cmdline);
-		cmdline += i;
-		i = 0;
-
-		// reading command
-		// cmdline points the first word, i - first space (after command name) index
-		while (cmdline[i] != 0 && cmdline[i] != ' ') {
-			i++;
-		}
-
-		// stub! - choosing correct handler
-		skip_spaces_to_zeros(&i, cmdline);
-
-		for (j = 0; j < sizeof(shell_handlers); j++) {
-			if (sz_cmp(cmdline, shell_handlers[j].name)) {
-				phandler = shell_handlers[j].phandler;
-				break;
-			}
-		}
-		// if handler not found:
-		if (j == sizeof(shell_handlers)) {
-			printf("%s: Command not found\n", cmdline);
-			return;
-		}
-
-		// make cmdline to be a pointer to the first argument if last exists
-		cmdline += i;
-		i = 0;
-
-		// reading arguments
-		while (*cmdline != 0) {
-			handler_args[handler_args_counter++] = cmdline;
-			while (cmdline[i] != 0 && cmdline[i] != ' ') {
-				i++;
-			}
-			skip_spaces_to_zeros(&i, cmdline);
-			cmdline += i;
-			i = 0;
-		}
-		phandler(handler_args_counter, handler_args);
-
+	if (0 == (words_counter = parse_str(cmdline, words))) {
+		// Only spaces were entered
+		return;
 	}
+
+	// choosing correct handler
+	for (i = 0; i < sizeof(shell_handlers); i++) {
+		if (sz_cmp(words[0], shell_handlers[i].name)) {
+			phandler = shell_handlers[i].phandler;
+			break;
+		}
+	}
+	// if handler not found:
+	if (i == sizeof(shell_handlers)) {
+		printf("%s: Command not found\n", words[0]);
+		return;
+	}
+
+	phandler(words_counter - 1, words + 1);
+
 }
 
+//int process_create()
+//{
+//	save_context();
+//	phandler(handler_args_counter, handler_args);
+//
+//	restore_context()
+//}
+
 int shell_find_commands(char *cmdline, char **proposals) {
-	int i = 0, commands_found = 0, j;
+	int i, commands_found = 0;
 	char *searching_command;
 
-	skip_spaces(&i, cmdline);
-	searching_command = cmdline + i;
+	// Skipping first spaces
+	skip_spaces(&cmdline);
 
-	for (j = 0; j < sizeof(shell_handlers); j++) {
-		if (sz_cmp_beginning(searching_command, shell_handlers[j].name)) {
-			proposals[commands_found++] = shell_handlers[j].name;
+	for (i = 0; i < sizeof(shell_handlers); i++) {
+		if (sz_cmp_beginning(searching_command, shell_handlers[i].name)) {
+			proposals[commands_found++] = shell_handlers[i].name;
 		}
 	}
 	return commands_found;
@@ -145,15 +133,28 @@ void shell_start() {
 	tty_start(tty_callback, shell_find_commands, welcome);
 }
 
-int parse_arg(int argsc, char **argsv, SHELL_KEY *keys) {
-	int i = 0, args_count = 0;
+
+// parse arguments array on keys-value structures
+// RETURNS:
+// -1 wrong condition found. Arguments not in format: -<key> [<value>]
+// -2 too many keys entered
+// -3 wrong key entered
+// amount of entered keys otherwise (if everything's OK)
+int parse_arg(const char *handler_name, int argsc, char **argsv, char *available_keys,	int amount_of_available_keys, SHELL_KEY *keys) {
+	int i, j, args_count;
+
+	i = 0;
+	args_count = 0;
 
 	while (i < argsc) {
-		if (**(argsv + i) != '-') {
+		if (*argsv[i] != '-') {
+			printf("ERROR: %s: wrong condition found. Arguments not in format: -<key> [<value>]\n", handler_name);
+
 			return -1;
 		}
 
 		if (args_count >= MAX_SHELL_KEYS) {
+			printf("ERROR: %s: wrong key entered. See help.\n", handler_name);
 			return -2;
 		}
 		// Get key name.
@@ -170,12 +171,26 @@ int parse_arg(int argsc, char **argsv, SHELL_KEY *keys) {
 		args_count++;
 	}
 
+	//return args_count;
+
+	for (i = 0; i < args_count; i++) {
+		for (j = 0; j < amount_of_available_keys; j++) {
+			if (keys[i].name == available_keys[j]) {
+				break;
+			}
+		}
+		if (j >= amount_of_available_keys) {
+			printf("ERROR: %s: incorrect key entered! See help.\n", handler_name);
+			return -3;
+		}
+	}
 	return args_count;
 }
 
 // Compare keys with available
 // returns TRUE if all keys presented are available, FALSE otherwise
-int check_keys(SHELL_KEY *keys, int amount, char *available_keys, int amount_of_available_keys) {
+int check_keys(SHELL_KEY *keys, int amount, char *available_keys,
+		int amount_of_available_keys) {
 	int i, j;
 
 	for (i = 0; i < amount; i++) {
