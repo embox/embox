@@ -27,7 +27,7 @@ all:
 	mkdir -p $(OBJ_DIR)/sim
 	rm -f objs.lst include_dirs.lst
 	declare -x MAKEOP=create_objs_lst; make --directory=src create_objs_lst
-	declare -x MAKEOP=all GOBJS=`cat objs.lst` G_DIRS=`cat include_dirs.lst`; make --directory=src all
+	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
 
 clean:
 	declare -x MAKEOP=clean; make --directory=src clean
