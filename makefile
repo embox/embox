@@ -1,6 +1,5 @@
 export
 ROOT_DIR := $(CURDIR)
-
 BIN_DIR:=$(ROOT_DIR)/bin
 OBJ_DIR:=$(ROOT_DIR)/obj
 OBJ_DIR_SIM:=$(OBJ_DIR)/sim
@@ -17,21 +16,19 @@ OD_TOOL :=$(CC_PACKET)-objdump
 OC_TOOL :=$(CC_PACKET)-objcopy
 
 #compiler flags (+optimiz +debug_info)
-CCFLAGS := -Wall -msoft-float -c -MD -mv8 -O2 -g -DLEON3 -D_TEST_SYSTEM_
+CCFLAGS := -Werror -msoft-float -c -MD -mv8 -O2 -g -DLEON3 -D_TEST_SYSTEM_
 CCFLAGS_RELEASE = $(CCFLAGS)-DRELEASE
 #link flags
 LDFLAGS:= -Wl -N -nostdlib -g
-
-OBJS:=
-OBJS_SIM :=
 
 all:
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OBJ_DIR)/sim
-
-	declare -x MAKEOP=all; make --directory=src all
+	rm -f objs.lst include_dirs.lst
+	declare -x MAKEOP=create_objs_lst; make --directory=src create_objs_lst
+	declare -x MAKEOP=all GOBJS=`cat objs.lst` G_DIRS=`cat include_dirs.lst`; make --directory=src all
 
 clean:
 	declare -x MAKEOP=clean; make --directory=src clean
-	rm -rf $(BIN_DIR) $(OBJ_DIR)
+	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst

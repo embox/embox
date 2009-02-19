@@ -26,39 +26,43 @@ int init() {
 void sscanf_test()
 {
 	int d;
-	char s[35] = "We have wrote it February, 16";
-	char subs[7];
+	char s[35] = "We have written it February, 16 ";
+	char subs[7] = "255";
 	char c;
 
+	printf("\nString for parse: %s \n",subs);
 
-	printf("String for parse: %s",s);
+	sscanf( subs, "%d", &d );
+	printf("\nDec number in string is %d \n", d);
 
-	sscanf( s, "%d", &d );
-	printf("Dec number in string is %d", d);
+	sscanf( subs, "%x", &d );
+	printf("\nHex number in string is %x\n", d);
 
-	sscanf( s, "%x", &d );
-	printf("Hex number in string is %x", d);
+	printf("\nString for parse: %s \n",s);
 
 	sscanf( s, "%c", &c );
-	printf("Char in string is %c", c);
+	printf("\nChar in string is %c\n", c);
 
 	sscanf( s, "%7s", subs );
-	printf("And 7-length string is %s", subs);
+	printf("\nAnd 7-length string is %s\n", subs);
 
 }
 
+
 int main() {
 	void* descriptor;
+
 	init();
-	print_all_pnp_devs();
+//	print_all_pnp_devs();
 
-	sscanf_test();
 
-	while (1)
-		;
-//	while (NULL != (descriptor = (void *) express_test_get_next())) {
-//		express_test_run(descriptor);
-//	}
+//	sscanf_test();
+
+//	while (1)
+//		;
+	while (NULL != (descriptor = (void *) express_test_get_next())) {
+		express_test_run(descriptor);
+	}
 
 	shell_start();
 
