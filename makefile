@@ -16,7 +16,7 @@ OD_TOOL :=$(CC_PACKET)-objdump
 OC_TOOL :=$(CC_PACKET)-objcopy
 
 #compiler flags (+optimiz +debug_info)
-CCFLAGS := -Werror -msoft-float -c -MD -mv8 -O2 -g -DLEON3 -D_TEST_SYSTEM_
+CCFLAGS := -Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_
 CCFLAGS_RELEASE = $(CCFLAGS)-DRELEASE
 #link flags
 LDFLAGS:= -Wl -N -nostdlib -g

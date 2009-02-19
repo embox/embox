@@ -3,8 +3,8 @@
 #include "traps.inc"
 
 #define SA(x)		(((x)+7)&(~0x07))	/* rounds "x" up to doubleword boundary */
-#define KERNEL_FRAME	(16*4)			/* size of frame containing only %i and %l registers */
-#define USER_FRAME	((16+1+6)*4)		/* minimum size frame by regular software considerations */
+#define KERNEL_FRAME	(0x138)			/* size of frame containing only %i and %l registers */
+//#define USER_FRAME	((16+1+6)*4)		/* minimum size frame by regular software considerations */
 
 ! skip instruction
 skip:
@@ -95,6 +95,21 @@ trap_dispatcher:
 
 /**/
 irq_dispatcher:
+	sub  %fp, 0x138, %l6
+	st  %l0, [ %l6 + 0x60 ]!psr
+	st  %l1, [ %l6 + 0x64 ]
+	st  %l2, [ %l6 + 0x68 ]
+	st  %g1, [ %l6 + 0x74 ]
+	std  %g2, [ %l6 + 0x78 ]
+	std  %g4, [ %l6 + 0x80 ]
+	std  %g6, [ %l6 + 0x88 ]
+	rd  %y, %g2
+	st  %g2, [ %l6 + 0x6c ]
+	std  %i0, [ %l6 + 0x90 ]
+	std  %i2, [ %l6 + 0x98 ]
+	std  %i4, [ %l6 + 0xa0 ]
+	std  %fp, [ %l6 + 0xa8 ]
+
 	mov		%psr, %l4
 	and		%l4, 0x1F, %l4
 	mov		%wim, %l7
@@ -104,6 +119,7 @@ irq_dispatcher:
 
 	bne		irq_overflow_test_ok
 	nop
+
 /*
 	 call window_overflow_func
 	 nop
@@ -129,8 +145,8 @@ irq_dispatcher:
 		mov		%l7, %g1
 
 irq_overflow_test_ok:
-	add		%fp, -SA(KERNEL_FRAME), %sp
-
+!	add		%fp, -SA(KERNEL_FRAME), %sp
+	mov  %l6, %sp
 	srl		%l3, 4, %l5
 	and 	%l5, 0xFF, %o0		! pass TT as parameter
 
@@ -145,6 +161,19 @@ irq_overflow_test_ok:
 		andn	%l5, 0x20, %l5	! clear PSR.ET (disable traps)
 		mov		%l5, %psr
 
+/*	ld  [ %sp + 0x6c ], %g1
+	mov  %g1, %y
+	ldd  [ %sp + 0x90 ], %i0
+	ldd  [ %sp + 0x98 ], %i2
+	ldd  [ %sp + 0xa0 ], %i4
+	ldd  [ %sp + 0xa8 ], %fp
+	ld  [ %sp + 0x74 ], %g1
+	ldd  [ %sp + 0x78 ], %g2
+	ldd  [ %sp + 0x80 ], %g4
+	ldd  [ %sp + 0x88 ], %g6
+	ld  [ %sp + 0x60 ], %l0
+	ld  [ %sp + 0x64 ], %l1
+	ld  [ %sp + 0x68 ], %l2*/
 	! handle possible window underflow when executing RETT
 	mov		%psr, %l4
 	and		%l4, 0x1F, %l4		! calculate current CWP
@@ -180,6 +209,19 @@ irq_overflow_test_ok:
 
 	irq_underflow_test_ok:
 return_from_trap:
+	ld  [ %sp + 0x6c ], %g1
+	mov  %g1, %y
+	ldd  [ %sp + 0x90 ], %i0
+	ldd  [ %sp + 0x98 ], %i2
+	ldd  [ %sp + 0xa0 ], %i4
+	ldd  [ %sp + 0xa8 ], %fp
+	ld  [ %sp + 0x74 ], %g1
+	ldd  [ %sp + 0x78 ], %g2
+	ldd  [ %sp + 0x80 ], %g4
+	ldd  [ %sp + 0x88 ], %g6
+	ld  [ %sp + 0x60 ], %l0
+	ld  [ %sp + 0x64 ], %l1
+	ld  [ %sp + 0x68 ], %l2
     ! restore PIL&ICC fields of old PSR (in %l0)
 	mov		%psr, %l4
 	set		0xF00F00, %l3

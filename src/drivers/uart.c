@@ -31,27 +31,27 @@ void uart_init() {
 	uart->ctrl = 0x0;
 	uart->scaler = UART_SCALER_VAL;
 	//enable uart
-	uart->ctrl = UART_INT_RX_ENABLED | UART_TX_ENABLE | UART_RX_ENABLE;
+	uart->ctrl = /*UART_INT_RX_ENABLED |*/ UART_TX_ENABLE | UART_RX_ENABLE;
 	while (!(UART_TX_READY & uart->status));
 	//clear uart
-	while (UART_RX_READY & uart->status)
-	uart->data;
+	while (UART_RX_READY & uart->status);
+	//uart->data;
 	//irq_set_handler(IRQ_UART1, irq_func_uart);
 #endif
 }
-
+/*
 BOOL uart_is_empty() {
 	if (UART_RX_READY & uart->status)
 		return FALSE;
 	else
 		return TRUE;
 }
-
+*/
 // write character via uart
 void uart_putc(char ch) {
 	while (!(UART_TX_READY & uart->status))
 		;
-	uart->data = ch;
+	uart->data = (UINT32)ch;
 }
 
 // read character via uart

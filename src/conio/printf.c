@@ -30,6 +30,7 @@
 #include "types.h"
 #include "conio.h"
 #include "stdarg.h"
+#include "uart.h"
 
 int puts (const char *S)
 {
@@ -44,8 +45,8 @@ int puts (const char *S)
 int putchar (int c)
 {
 	static char prev = 0;
-	if (c > 0 && c < ' ' && c != '\r' && c != '\n' && c != '\t' && c != '\b')
-		return;
+	/*if (c > 0 && c < ' ' && c != '\r' && c != '\n' && c != '\t' && c != '\b')
+		return;*/
 	if (c == '\n' && prev != '\r') uart_putc('\r');
 
 	uart_putc(c);
@@ -56,7 +57,7 @@ int putchar (int c)
 
 static void printchar(char **str, int c)
 {
-	extern int putchar(int c);
+	//extern int putchar(int c);
 
 	if (str) {
 		**str = c;

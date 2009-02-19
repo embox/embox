@@ -5,7 +5,6 @@
 // output
 void uart_putc(char ch);
 
-BOOL uart_is_empty ();
 // input
 char uart_getc();
 
