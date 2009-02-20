@@ -73,8 +73,18 @@ int capture_ahbsl_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
 int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, UINT16 device_id);
 
 /*
- * Print list of all connected plug and play devices on ahb bus
+ * Print list of all connected plug and play devices on ahb && apb buses
  */
 void print_all_pnp_devs();
+
+//Print list of all connected plug and play devices on ahb master bus
+int print_ahbm_pnp_devs();
+
+
+//Print list of all connected plug and play devices on ahb slave bus
+int print_ahbsl_pnp_devs();
+
+//Print list of all connected plug and play devices on apb bus
+int print_apb_pnp_devs();
 
 #endif /* PLUG_AND_PLAY_H_ */
