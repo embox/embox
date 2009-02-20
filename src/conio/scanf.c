@@ -145,7 +145,8 @@ static int scan(char **in, const char *fmt, va_list args) {
 	int converted = 0;
 
 	while (*fmt != '\0') {
-		if (*fmt++ == '%') {
+		if (*fmt == '%') {
+			fmt++;
 			widht = 80;
 
 
@@ -232,6 +233,10 @@ static int scan(char **in, const char *fmt, va_list args) {
 				++converted;
 			}
 				continue;*/
+			}
+		} else {
+			if (*fmt++ != *(*in)++) {
+				return converted;
 			}
 		}
 	}
