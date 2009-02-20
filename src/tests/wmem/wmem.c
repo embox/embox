@@ -14,8 +14,6 @@ char wmem_keys[] = {
 #include "wmem_keys.inc"
 		};
 
-static const WORD test_constant_value = 0x12345;
-
 int wmem_shell_handler(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	int i;
@@ -23,8 +21,6 @@ int wmem_shell_handler(int argsc, char **argsv) {
 	int keys_amount;
 	WORD *address;
 	WORD new_value;
-// DEBUG!!!!!
-	printf("%x - %x\n", &test_constant_value, test_constant_value);
 
 	keys_amount = parse_arg("wmem", argsc, argsv, wmem_keys, sizeof(wmem_keys),
 			keys);
@@ -35,7 +31,7 @@ int wmem_shell_handler(int argsc, char **argsv) {
 
 	if ((get_key('a', keys, keys_amount, &key_value))) {
 		if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &address))
-				&& (!sscanf(key_value, "%x", &address))) {
+				&& (!sscanf(key_value, "%d", (int *) &address))) {
 			printf("ERROR: wmem: hex value expected.\n");
 			return -1;
 		}
@@ -46,7 +42,8 @@ int wmem_shell_handler(int argsc, char **argsv) {
 	}
 
 	if (get_key('v', keys, keys_amount, &key_value)) {
-		if ((key_value != NULL) && (!sscanf(key_value, "%x", &new_value))) {
+		if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &new_value)) &&
+				(!sscanf(key_value, "%d", (int *)&new_value))) {
 			printf("ERROR: wmem: hex value expected.\n");
 			return -1;
 		}
@@ -59,6 +56,5 @@ int wmem_shell_handler(int argsc, char **argsv) {
 		return -1;
 	}
 	*((WORD *) address) = new_value;
-// DEBUG!!!!!
-	printf("%x - %x\n", &test_constant_value, test_constant_value);
+
 }
