@@ -10,6 +10,7 @@
 #include "memory_map.h"
 #include "cache.h"
 #include "plug_and_play.h"
+#include "shell.h"
 
 LEON_REGS * const l_regs = (PVOID) (RG_BASE);
 
@@ -25,9 +26,7 @@ int init() {
 
 int main() {
 	void* descriptor;
-
 	init();
-	print_all_pnp_devs();
 
 	while (NULL != (descriptor = (void *) express_test_get_next())) {
 		express_test_run(descriptor);

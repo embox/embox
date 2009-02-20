@@ -1,5 +1,7 @@
-SUBDIRS:=
-OBJS:=uart.o timers.o plug_and_play.o tty.o
+SUBDIRS:=terminal
+OBJS:=uart.o timers.o plug_and_play.o
+
+.PHONY: all $(SUBDIRS)
 
 create_objs_lst:$(SUBDIRS)
 	echo '$(addprefix $(CURDIR)/,$(OBJS)) \' >> $(ROOT_DIR)/objs.lst

@@ -13,7 +13,7 @@ int strcpy(char *dest, const char *src);
 
 int sz_append(char *dest, const char * src, char ch);
 
-char *strcmp(const char *str1, const char *str2);
+int strcmp(const char *str1, const char *str2);
 
 // Determines whether beg is the beginning of the str string
 int sz_cmp_beginning(const char *beg, const char *str);

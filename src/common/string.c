@@ -44,15 +44,20 @@ int ch_to_digit(char ch, int base) {
 }
 
 int strlen(const char * str) {
-	  const char *eos = str;
-	  while (*eos++);
-	  return (int) (eos - str - 1);
+	int i;
+	for (i = 0; str[i]; i++)
+		;
+	return i;
 }
 
-char *strcpy(char * dest, const char * src) {
-	  char *cp = dest;
-	  while (*cp++ = *src++);
-	  return dest;
+int strcpy(char * dest, const char * src) {
+	int i = 0;
+	while (*src != '\0') {
+		*dest++ = *src++;
+		i++;
+	}
+	*dest = '\0';
+	return i;
 }
 
 int sz_append(char *dest, const char *src, char ch) {
@@ -69,16 +74,21 @@ int sz_append(char *dest, const char *src, char ch) {
 }
 
 int strcmp(const char * str1, const char * str2) {
-	int ret = 0;
-	while (!(ret = *(unsigned char *) str1 - *(unsigned char *) str2) && *str2)
-		++str1, ++str2;
-
-	if (ret < 0)
-		ret = -1;
-	else if (ret > 0)
-		ret = 1;
-
-	return ret;
+//	int ret = 0;
+//	while (!(ret = *(unsigned char *) str1 - *(unsigned char *) str2) && *str2)
+//		++str1, ++str2;
+//
+//	if (ret < 0)
+//		ret = -1;
+//	else if (ret > 0)
+//		ret = 1;
+//
+//	return ret;
+	for (; *str1 == *str2; str1++, str2++) {
+		if (*str1 == 0)
+			return TRUE;
+	}
+	return FALSE;
 }
 
 

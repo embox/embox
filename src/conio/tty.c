@@ -12,25 +12,7 @@
 #include "conio.h"
 #include "common.h"
 #include "string.h"
-
-// Escape char
-#define ESC		'\e'
-// ANSI Control Sequence Introducer
-#define CSI		'['
-
-// ANSI Control sequence final bytes
-#define STD_CODE_CURSOR_UP			'A'
-#define STD_CODE_CURSOR_DOWN		'B'
-#define STD_CODE_CURSOR_FORWARD		'C'
-#define STD_CODE_CURSOR_BACK		'D'
-// Select Graphic Rendition
-#define STD_CODE_SGR				'm'
-
-#define SGR_COLOR_BLACK		0
-#define SGR_COLOR_RED		1
-
-#define PRV_PARAM_HOME		'2'
-#define PRV_PARAM_END		'5'
+#include "vt.h"
 
 static char _getc() {
 	return uart_getc();
@@ -45,21 +27,22 @@ static void _puts(char *str) {
 		_putc(*str++);
 	}
 }
+
 /*
- * moves screen cursor to specified column
+ * moves screen cursor by specified value
  *
- * param col - column to move screen cursor to
+ * param by - delta to move screen cursor by
  */
-static void remote_move_cursor(int col) {
-	_putc('\r');
-	if (col > 0) {
-		static char str[8];
-		_putc(ESC);
-		_putc(CSI);
-		sprintf(str, "%d", col);
-		_puts(str);
-		_putc(STD_CODE_CURSOR_FORWARD);
+static void remote_move_cursor_by(int by) {
+	static char str[8];
+	if (by == 0) {
+		return;
 	}
+	_putc(ESC);
+	_putc(CSI);
+	sprintf(str, "%d", abs(by));
+	_puts(str);
+	_putc(by > 0 ? ANSI_CODE_CUF : ANSI_CODE_CUB);
 }
 
 /*
@@ -76,84 +59,130 @@ static void remote_set_foreground_color(int color) {
 	//	Set foreground color code
 	_putc('3');
 	_putc(color + '0');
-	_putc(STD_CODE_SGR);
+	_putc(ANSI_CODE_SGR);
+}
+
+static void remote_set_line_wrap(BOOL wrap) {
+	_putc(ESC);
+	_putc(CSI);
+	_putc(ANSI_PARAM_MODE_LINE_WRAP);
+	_putc(wrap ? ANSI_CODE_SET_MODE : ANSI_CODE_RESET_MODE);
+}
+
+static void remote_erase_screen_down() {
+	_putc(ESC);
+	_putc(CSI);
+	_putc(ANSI_PARAM_ERASE_DOWN_RIGHT);
+	_putc(ANSI_CODE_ERASE_SCREEN);
+}
+
+static void remote_erase_screen() {
+	_putc(ESC);
+	_putc(CSI);
+	_putc(ANSI_PARAM_ERASE_ENTIRE);
+	_putc(ANSI_CODE_ERASE_SCREEN);
+}
+
+static void remote_init() {
+	int i;
+
+	remote_set_line_wrap(TRUE);
+//	remote_erase_screen();
+
 }
 
 #define PROMPT_MAX_LENGTH		15
 
-static TTY_CALLBACK callback = NULL;
+static TTY_EXEC_CALLBACK callback = NULL;
 static TTY_PROPOSALS_CALLBACK proposals_callback = NULL;
 static CMDLINE _cmdline;
 static CMDLINE *cmdline;
 
 static char prompt[PROMPT_MAX_LENGTH + 1];
-static int prompt_length = 0;
 
-#define REMOTE_CMDLINE_MAX_LENGTH		63
+static char remote_string[CMDLINE_MAX_LENGTH + 1];
+static int remote_cursor;
 
-static char remote_string[REMOTE_CMDLINE_MAX_LENGTH + 1];
-static unsigned int remote_cursor;
-
-inline static void move_cmdline_cursor(int col) {
-	remote_move_cursor(prompt_length + col);
+inline static void move_cmdline_cursor_to(int col) {
+	remote_move_cursor_by(col - remote_cursor);
+	remote_cursor = col;
 }
 
 /*
  * moves screen cursor to appropriate place
  */
 inline static void flush_cmdline_cursor() {
-	move_cmdline_cursor(cmdline->cursor);
+	move_cmdline_cursor_to(cmdline->cursor);
 }
 
 static void flush_cmdline() {
-	int i, cmdline_length;
-	BOOL dirty = TRUE;
+	int i;
+
+	move_cmdline_cursor_to(0);
+	remote_cursor = 0;
 
 	for (i = 0; cmdline->string[i]; i++) {
-		if (remote_string[i] == '\0') {
-			dirty = FALSE;
-		}
-		if (!dirty || remote_string[i] != cmdline->string[i]) {
-			if (abs(i - remote_cursor) > 3) {
-				// it is more easy to move cursor by special command
-				move_cmdline_cursor(i);
-			} else if (remote_cursor < i) {
-				// rewrite a few chars
-				int j;
-				for (j = remote_cursor; j < i; ++j) {
-					_putc(cmdline->string[j]);
-				}
-			}
-			_putc(cmdline->string[i]);
-			remote_string[i] = cmdline->string[i];
-		}
+		_putc(cmdline->string[i]);
+		remote_cursor++;
+		remote_string[i] = cmdline->string[i];
 	}
-	cmdline_length = i;
-
-	// TODO <ESC>[K erases from the current cursor position to the end of the current line
-	_putc(ESC);
-	_putc(CSI);
-	_putc('K');
 
 	//	if (dirty) {
-	//		for (; remote_string[i]; i++) {
-	//			_putc(' ');
-	//		}
+	_putc(' ');
+	_putc('\b');
+	remote_erase_screen_down();
 	//	}
 
-	remote_string[cmdline_length] = '\0';
+	remote_string[i] = '\0';
 
 	flush_cmdline_cursor();
 }
 
+//static void flush_cmdline() {
+//	int i;
+//	BOOL dirty = TRUE;
+//
+//	for (i = 0; cmdline->string[i]; i++) {
+//		if (remote_string[i] == '\0') {
+//			dirty = FALSE;
+//		}
+//		if (!dirty || remote_string[i] != cmdline->string[i]) {
+//			if (remote_cursor + 3 < i || i < remote_cursor) {
+//				// it is more easy to move cursor by special command
+//				move_cmdline_cursor_to(i);
+//			} else if (remote_cursor < i) {
+//				// rewrite a few chars
+//				int j;
+//				for (j = remote_cursor; j < i; ++j) {
+//					_putc(cmdline->string[j]);
+//					remote_cursor++;
+//				}
+//			}
+//			_putc(cmdline->string[i]);
+//			remote_cursor++;
+//			remote_string[i] = cmdline->string[i];
+//		}
+//	}
+//
+//	//	if (dirty) {
+//	_putc(' ');
+//	_putc('\b');
+//	remote_erase_screen_down();
+//	//	}
+//
+//	remote_string[i] = '\0';
+//
+//	flush_cmdline_cursor();
+//}
+//
 static void show_prompt() {
 
 	_puts("\r\n");
 	remote_string[0] = '\0';
+	remote_cursor = 0;
 
 	cmdline_history_new(cmdline);
 
-	remote_move_cursor(0);
 	remote_set_foreground_color(SGR_COLOR_RED);
 
 	_puts(prompt);
@@ -173,22 +202,22 @@ static inline void fire_callback() {
 
 inline static void handle_standard_command(const char code, const char *cs) {
 	switch (code) {
-	case STD_CODE_CURSOR_UP:
+	case ANSI_CODE_CUU:
 		if (cmdline_history_backward(cmdline)) {
 			flush_cmdline();
 		}
 		break;
-	case STD_CODE_CURSOR_DOWN:
+	case ANSI_CODE_CUD:
 		if (cmdline_history_forward(cmdline)) {
 			flush_cmdline();
 		}
 		break;
-	case STD_CODE_CURSOR_FORWARD:
+	case ANSI_CODE_CUF:
 		if (cmdline_cursor_right(cmdline)) {
 			flush_cmdline_cursor();
 		}
 		break;
-	case STD_CODE_CURSOR_BACK:
+	case ANSI_CODE_CUB:
 		if (cmdline_cursor_left(cmdline)) {
 			flush_cmdline_cursor();
 		}
@@ -201,6 +230,11 @@ inline static void handle_standard_command(const char code, const char *cs) {
 inline static void handle_private_command(const char code, const char *cs) {
 	int param = cs[1];
 	switch (param) {
+	case PRV_PARAM_DELETE:
+		if (cmdline_char_delete(cmdline)) {
+			flush_cmdline();
+		}
+		break;
 	case PRV_PARAM_HOME:
 		if (cmdline_cursor_home(cmdline)) {
 			flush_cmdline_cursor();
@@ -342,11 +376,13 @@ static CHAR_HANDLER debug_char_handler(char ch) {
 
 volatile static BOOL stopped = FALSE;
 
-static void init(TTY_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c, const char *w);
+static void init(TTY_EXEC_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c,
+		const char *w);
 static void main_loop();
 
-void tty_start(TTY_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c, const char *w) {
-	init(c,  proposals_c, w);
+void tty_start(TTY_EXEC_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c,
+		const char *w) {
+	init(c, proposals_c, w);
 
 	stopped = FALSE;
 	main_loop();
@@ -364,13 +400,15 @@ static void main_loop() {
 	}
 }
 
-static void init(TTY_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c,
+static void init(TTY_EXEC_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c,
 		const char *w) {
 	callback = c;
-	prompt_length = strcpy(prompt, w);
+	strcpy(prompt, w);
 
 	cmdline = &_cmdline;
 	cmdline_init(cmdline);
+
+	remote_init();
 
 	show_prompt();
 

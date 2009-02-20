@@ -1,6 +1,8 @@
 /*
  * cmdline.h
  *
+ * Internal representation of command line entity.
+ *
  *  Created on: 08.02.2009
  *      Author: Eldar Abusalimov
  */
@@ -10,7 +12,7 @@
 
 #include "types.h"
 
-#define CMDLINE_MAX_LENGTH		63
+#define CMDLINE_MAX_LENGTH		127
 #define CMDLINE_HISTORY_SIZE	8
 
 /*
@@ -22,7 +24,7 @@ typedef struct _CMDLINE_HISTORY {
 	char array[CMDLINE_HISTORY_SIZE][CMDLINE_MAX_LENGTH + 1];
 
 	/* last entry in history */
-	unsigned int index;
+	int index;
 
 } CMDLINE_HISTORY;
 
@@ -35,16 +37,16 @@ typedef struct _CMDLINE {
 	char string[CMDLINE_MAX_LENGTH + 1];
 
 	/* string length */
-	unsigned int length;
+	int length;
 
 	/* cursor current position */
-	unsigned int cursor;
+	int cursor;
 
 	/* editing history */
 	CMDLINE_HISTORY history;
 
 	/* current position in history */
-	unsigned int history_cursor;
+	int history_cursor;
 
 } CMDLINE;
 
@@ -60,7 +62,7 @@ BOOL cmdline_history_forward(CMDLINE *cmdline);
 
 BOOL cmdline_history_new(CMDLINE *cmdline);
 
-BOOL cmdline_cursor_move_to(CMDLINE *cmdline, unsigned int to);
+BOOL cmdline_cursor_move_to(CMDLINE *cmdline, int to);
 
 BOOL cmdline_cursor_move_by(CMDLINE *cmdline, int by);
 

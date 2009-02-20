@@ -1,7 +1,5 @@
 SUBDIRS:=
-OBJS:=printf.o scanf.o shell.o cmdline.o tty.o
-
-.PHONY: all $(SUBDIRS)
+OBJS:=vtparse_table.o vtparse.o vtbuild.o terminal.o
 
 create_objs_lst:$(SUBDIRS)
 	echo '$(addprefix $(CURDIR)/,$(OBJS)) \' >> $(ROOT_DIR)/objs.lst
@@ -23,3 +21,5 @@ all:$(SUBDIRS) $(OBJS)
 
 clean:
 	rm -rf $(OBJS) *.d
+
+

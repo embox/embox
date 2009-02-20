@@ -1,6 +1,8 @@
 /*
  * cmdline.c
  *
+ * Internal representation of command line entity.
+ *
  *  Created on: 08.02.2009
  *      Author: Eldar Abusalimov
  */
@@ -22,7 +24,7 @@ void cmdline_init(CMDLINE *cmdline) {
 }
 
 BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
-	unsigned int new_pos;
+	int new_pos;
 	CMDLINE_HISTORY * history = &(cmdline->history);
 	if (to < 0) {
 		to = to + (-to / CMDLINE_HISTORY_SIZE + 1) * CMDLINE_HISTORY_SIZE;
@@ -78,9 +80,11 @@ BOOL cmdline_history_new(CMDLINE *cmdline) {
 	return TRUE;
 }
 
-BOOL cmdline_cursor_move_to(CMDLINE *cmdline, unsigned int to) {
-	unsigned int old_cursor = cmdline->cursor;
-	cmdline->cursor = min(to, cmdline->length);
+BOOL cmdline_cursor_move_to(CMDLINE *cmdline, int to) {
+	int old_cursor = cmdline->cursor;
+	to = min((int)cmdline->length, to);
+	to = max(0, to);
+	cmdline->cursor = to;
 	return cmdline->cursor != old_cursor;
 }
 

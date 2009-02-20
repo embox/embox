@@ -10,6 +10,7 @@
 #include "tty.h"
 #include "mem.h"
 #include "wmem.h"
+#include "lspnp.h"
 
 static const char* welcome = "monitor> ";
 
@@ -78,12 +79,13 @@ static int parse_str(char *cmdline, char **words) {
 	return cnt;
 }
 
-static void tty_callback(char *cmdline) {
+static void tty_callback(char cmdline[]) {
 	int words_counter = 0;
 	int i;
 	PSHELL_HANDLER phandler;
 
-	char *words[strlen(cmdline) / 2];
+	// alloc at least 1 array element
+	char *words[1 + strlen(cmdline) / 2];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {
 		// Only spaces were entered
@@ -91,19 +93,17 @@ static void tty_callback(char *cmdline) {
 	}
 
 	// choosing correct handler
-	for (i = 0; i < sizeof(shell_handlers); i++) {
-		if (0 == strcmp(words[0], shell_handlers[i].name)) {
+	// XXX  / sizeof(shell_handlers[0]) !
+	// (Eldar)
+	for (i = 0; i < sizeof(shell_handlers) / sizeof(shell_handlers[0]); i++) {
+		if (strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
-			break;
+			phandler(words_counter - 1, words + 1);
+			return;
 		}
 	}
-	// if handler not found:
-	if (i == sizeof(shell_handlers)) {
-		printf("%s: Command not found\n", words[0]);
-		return;
-	}
-
-	phandler(words_counter - 1, words + 1);
+	// handler not found:
+	printf("%s: Command not found\n", words[0]);
 
 }
 
@@ -134,14 +134,14 @@ void shell_start() {
 	tty_start(tty_callback, shell_find_commands, welcome);
 }
 
-
 // parse arguments array on keys-value structures
 // RETURNS:
 // -1 wrong condition found. Arguments not in format: -<key> [<value>]
 // -2 too many keys entered
 // -3 wrong key entered
 // amount of entered keys otherwise (if everything's OK)
-int parse_arg(const char *handler_name, int argsc, char **argsv, char *available_keys,	int amount_of_available_keys, SHELL_KEY *keys) {
+int parse_arg(const char *handler_name, int argsc, char **argsv,
+		char *available_keys, int amount_of_available_keys, SHELL_KEY *keys) {
 	int i, j, args_count;
 
 	i = 0;
@@ -149,7 +149,9 @@ int parse_arg(const char *handler_name, int argsc, char **argsv, char *available
 
 	while (i < argsc) {
 		if (*argsv[i] != '-') {
-			printf("ERROR: %s: wrong condition found. Arguments not in format: -<key> [<value>]\n", handler_name);
+			printf(
+					"ERROR: %s: wrong condition found. Arguments not in format: -<key> [<value>]\n",
+					handler_name);
 
 			return -1;
 		}
@@ -181,7 +183,8 @@ int parse_arg(const char *handler_name, int argsc, char **argsv, char *available
 			}
 		}
 		if (j >= amount_of_available_keys) {
-			printf("ERROR: %s: incorrect key entered! See help.\n", handler_name);
+			printf("ERROR: %s: incorrect key entered! See help.\n",
+					handler_name);
 			return -3;
 		}
 	}

@@ -16,7 +16,7 @@
  *
  * param: cmdline - char buffer being in use
  */
-typedef void (*TTY_CALLBACK)(char *cmdline);
+typedef void (*TTY_EXEC_CALLBACK)(char *cmdline);
 
 typedef int (*TTY_PROPOSALS_CALLBACK)(char *cmdline, char **proposals);
 
@@ -26,7 +26,7 @@ typedef int (*TTY_PROPOSALS_CALLBACK)(char *cmdline, char **proposals);
  * param: callback - callback function to fire on "Enter"
  * param: welcome - welcome prompt
  */
-void tty_start(TTY_CALLBACK callback,
+void tty_start(TTY_EXEC_CALLBACK callback,
 		TTY_PROPOSALS_CALLBACK proposals_callback, const char *welcome);
 
 void tty_stop();
