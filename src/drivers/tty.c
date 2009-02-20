@@ -165,7 +165,7 @@ static inline void fire_callback() {
 	if (NULL != callback && cmdline->string[0]) {
 		char buf[cmdline->length + 1];
 		_puts("\r\n");
-		sz_cpy(buf, cmdline->string);
+		strcpy(buf, cmdline->string);
 		callback(buf);
 	}
 	show_prompt();
@@ -223,7 +223,7 @@ inline static void handle_private_command(const char code, const char *cs) {
  */
 inline static BOOL detect_control_sequence(const char *cs) {
 	char code = 0;
-	BYTE len = sz_length(cs);
+	BYTE len = strlen(cs);
 	if (len == 0) {
 		return FALSE;
 	}
@@ -367,7 +367,7 @@ static void main_loop() {
 static void init(TTY_CALLBACK c, TTY_PROPOSALS_CALLBACK proposals_c,
 		const char *w) {
 	callback = c;
-	prompt_length = sz_cpy(prompt, w);
+	prompt_length = strcpy(prompt, w);
 
 	cmdline = &_cmdline;
 	cmdline_init(cmdline);

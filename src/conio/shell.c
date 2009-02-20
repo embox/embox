@@ -83,7 +83,7 @@ static void tty_callback(char *cmdline) {
 	int i;
 	PSHELL_HANDLER phandler;
 
-	char *words[sz_length(cmdline) / 2];
+	char *words[strlen(cmdline) / 2];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {
 		// Only spaces were entered
@@ -92,7 +92,7 @@ static void tty_callback(char *cmdline) {
 
 	// choosing correct handler
 	for (i = 0; i < sizeof(shell_handlers); i++) {
-		if (sz_cmp(words[0], shell_handlers[i].name)) {
+		if (0 == strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
 			break;
 		}

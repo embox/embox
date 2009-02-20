@@ -43,21 +43,16 @@ int ch_to_digit(char ch, int base) {
 	return -1;
 }
 
-int sz_length(const char * str) {
-	int i;
-	for (i = 0; str[i]; i++)
-		;
-	return i;
+int strlen(const char * str) {
+	  const char *eos = str;
+	  while (*eos++);
+	  return (int) (eos - str - 1);
 }
 
-int sz_cpy(char * dest, const char * src) {
-	int i = 0;
-	while (*src != '\0') {
-		*dest++ = *src++;
-		i++;
-	}
-	*dest = '\0';
-	return i;
+char *strcpy(char * dest, const char * src) {
+	  char *cp = dest;
+	  while (*cp++ = *src++);
+	  return dest;
 }
 
 int sz_append(char *dest, const char *src, char ch) {
@@ -73,18 +68,26 @@ int sz_append(char *dest, const char *src, char ch) {
 	return i;
 }
 
-int sz_cmp(const char * str1, const char * str2) {
-	for (; *str1 == *str2; str1++, str2++) {
-		if (*str1 == 0)
-			return TRUE;
-	}
-	return FALSE;
+int strcmp(const char * str1, const char * str2) {
+	int ret = 0;
+	while (!(ret = *(unsigned char *) str1 - *(unsigned char *) str2) && *str2)
+		++str1, ++str2;
+
+	if (ret < 0)
+		ret = -1;
+	else if (ret > 0)
+		ret = 1;
+
+	return ret;
 }
+
+
+
 
 WORD atow(char *buff) {
 	WORD result = 0;
 	WORD paw = 1;
-	int length = sz_length(buff) - 1;
+	int length = strlen(buff) - 1;
 	for (; length >= 0; length--) {
 		result += ch_to_digit(buff[length], 0x10) * paw;
 		paw = paw * 0x10;

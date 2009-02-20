@@ -36,12 +36,12 @@ BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	}
 
 	if (cmdline->history_cursor == history->index) {
-		sz_cpy(history->array[history->index], cmdline->string);
+		strcpy(history->array[history->index], cmdline->string);
 	}
 
 	cmdline->history_cursor = new_pos;
-	sz_cpy(cmdline->string, history->array[new_pos]);
-	cmdline->length = sz_length(cmdline->string);
+	strcpy(cmdline->string, history->array[new_pos]);
+	cmdline->length = strlen(cmdline->string);
 	cmdline->cursor = cmdline->length;
 	return TRUE;
 }
@@ -64,7 +64,7 @@ BOOL cmdline_history_new(CMDLINE *cmdline) {
 		return FALSE;
 	}
 
-	sz_cpy(history->array[history->index], cmdline->string);
+	strcpy(history->array[history->index], cmdline->string);
 
 	history->index = (history->index + 1) % CMDLINE_HISTORY_SIZE;
 	history->array[history->index][0] = '\0';
