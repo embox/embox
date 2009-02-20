@@ -9,6 +9,7 @@
 #include "string.h"
 #include "tty.h"
 #include "mem.h"
+#include "wmem.h"
 
 static const char* welcome = "monitor> ";
 

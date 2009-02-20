@@ -1,13 +1,9 @@
-#TODO !!!!!!!!!!in this version folder tests must set lat in list its makefile diff from other
-SUBDIRS:=mem wmem
-OBJS:=test_irq_availability.o test_cpu_context.o
-
-.PHONY: all $(SUBDIRS)
+SUBDIRS:=
+OBJS:=wmem.o
 
 create_objs_lst:$(SUBDIRS)
 	echo '$(addprefix $(CURDIR)/,$(OBJS)) \' >> $(ROOT_DIR)/objs.lst
-#TODO !!!!!!!!!!in this version folder tests must set lat in list its makefile diff from other
-	echo ' -I$(CURDIR)' >> $(ROOT_DIR)/include_dirs.lst
+	echo ' -I$(CURDIR)\' >> $(ROOT_DIR)/include_dirs.lst
 
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKEOP)
@@ -25,4 +21,5 @@ all:$(SUBDIRS) $(OBJS)
 
 clean:
 	rm -rf $(OBJS) *.d
+
 
