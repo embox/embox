@@ -34,8 +34,6 @@ int lspnp_shell_handler(int argsc, char **argsv) {
 	int keys_amount;
 	int dev;
 
-	//key_value ="all";
-
 	keys_amount = parse_arg("lspnp", argsc, argsv, lspnp_keys, sizeof(lspnp_keys),
 				keys);
 
@@ -45,6 +43,14 @@ int lspnp_shell_handler(int argsc, char **argsv) {
 		);
 		return -1;
 	}
+
+	if (get_key('h', keys, keys_amount, &key_value)) {
+			printf(
+	#include "lspnp_help.inc"
+			);
+			return 0;
+		}
+
 	if (keys_amount == 0)
 	{
 		bus_type = ALL;
@@ -61,26 +67,38 @@ int lspnp_shell_handler(int argsc, char **argsv) {
 		{
 			if (1==sscanf(key_value,"%d", &dev)){
 				print_ahbm_pnp_dev(dev);
+				return 0;
 			}
 		}
-		else print_ahbm_pnp_devs();
+		else {
+			print_ahbm_pnp_devs();
+			return 0;
+		}
 
 	case AHBSL:
 		if (get_key('n', keys, keys_amount, &key_value))
 		{
 			if (1==sscanf(key_value,"%d", &dev)) {
 				print_ahbsl_pnp_dev(dev);
+				return 0;
 			}
 		}
-		else print_ahbsl_pnp_devs();
+		else {
+			print_ahbsl_pnp_devs();
+			return 0;
+		}
 	case APB:
 		if (get_key('n', keys, keys_amount, &key_value))
 		{
 			if (1==sscanf(key_value,"%d", &dev)) {
 				print_apb_pnp_dev(dev);
+				return 0;
 			}
 		}
-		else print_apb_pnp_devs();
+		else {
+			print_apb_pnp_devs();
+			return 0;
+		}
 	case ALL:
 		if (get_key('n', keys, keys_amount, &key_value))
 		{
@@ -88,8 +106,12 @@ int lspnp_shell_handler(int argsc, char **argsv) {
 			printf(
 #include "lspnp_help.inc"
 				);
+			return 0;
 		}
-		else print_all_pnp_devs();
+		else {
+			print_all_pnp_devs();
+			return 0;
+		}
 	default:
 		printf("ERROR: lspnp_shell_handler: unexpected token.\n");
 		printf(

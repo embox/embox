@@ -1,2 +1,2 @@
 //keys, available for lspnp command
-'b', 'n'
+'b', 'n' ,'h'
