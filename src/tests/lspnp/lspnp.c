@@ -1,3 +1,4 @@
+
 /*
  * lspnp.c
  *
@@ -22,10 +23,10 @@ static int bus_type;
 
 void set_bus_type(const char *key_value)
 {
-	if (0 == strcmp(key_value, "ahbm")) 		bus_type = AHBM;
-	else if (0 == strcmp(key_value, "ahbsl"))	bus_type = AHBSL;
-	else if (0 == strcmp(key_value, "apb"))		bus_type = APB;
-	else if (0 == strcmp(key_value, "all"))		bus_type = ALL;
+	if (strcmp(key_value, "ahbm")) 		bus_type = AHBM;
+	else if (strcmp(key_value, "ahbsl"))	bus_type = AHBSL;
+	else if (strcmp(key_value, "apb"))		bus_type = APB;
+	else if (strcmp(key_value, "all"))		bus_type = ALL;
 }
 
 int lspnp_shell_handler(int argsc, char **argsv) {
