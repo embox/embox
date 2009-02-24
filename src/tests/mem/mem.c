@@ -18,14 +18,21 @@ void print_memory(WORD *addr, long int amount) {
 	int i = 0, j;
 	addr = (WORD *) ((WORD) addr & 0xFFFFFFFC);
 	while (i < amount) {
-		printf("0x%08x:\t", (int) (addr + i));
-		for (j = 0; j < 4; j++) {
-			printf("%08x\t", *(addr + i));
-			i++;
+		if (0 == (i % 4)) {
+			printf("0x%08x:\t", (int) (addr + i));
 		}
-		printf("\n");
+		printf("0x%08x\t", *(addr + i));
+		if (3 == (i % 4)) {
+			printf("\n");
+		}
+		i++;
 	}
 
+}
+static void mem_print_help(void) {
+	printf(
+#include "mem_help.inc"
+	);
 }
 
 void test_memory(WORD *addr, long int amount) {
@@ -64,16 +71,12 @@ int mem_shell_handler(int argsc, char **argsv) {
 	int keys_amount = parse_arg("mem", argsc, argsv, mem_keys,
 			sizeof(mem_keys), keys);
 
-	if (keys_amount < 0) {
-		printf(
-#include "mem_help.inc"
-		);
+	if (keys_amount <= 0) {
+		mem_print_help();
 		return -1;
 	}
 	if (get_key('h', keys, keys_amount, &key_value)) {
-		printf(
-#include "mem_help.inc"
-		);
+		mem_print_help();
 		return 0;
 	}
 
@@ -91,23 +94,18 @@ int mem_shell_handler(int argsc, char **argsv) {
 		test_mem_func = &print_memory;
 	}
 
-
 	if (get_key('a', keys, keys_amount, &key_value)) {
 		if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &address))
 				&& (!sscanf(key_value, "%d", (int *) &address))) {
 			printf("ERROR: mem: hex value expected.\n");
-			printf(
-#include "mem_help.inc"
-			);
+			mem_print_help();
 		}
 	}
 
 	if (get_key('c', keys, keys_amount, &key_value)) {
 		if ((key_value != NULL) && (!sscanf(key_value, "%d", &amount))) {
 			printf("ERROR: mem: integer value expected.\n");
-			printf(
-#include "mem_help.inc"
-			);
+			mem_print_help();
 		}
 	}
 

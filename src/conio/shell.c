@@ -84,7 +84,6 @@ static void tty_callback(char cmdline[]) {
 	int i;
 	PSHELL_HANDLER phandler;
 
-	// alloc at least 1 array element
 	char *words[1 + strlen(cmdline) / 2];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {
@@ -93,8 +92,6 @@ static void tty_callback(char cmdline[]) {
 	}
 
 	// choosing correct handler
-	// XXX  / sizeof(shell_handlers[0]) !
-	// (Eldar)
 	for (i = 0; i < sizeof(shell_handlers) / sizeof(shell_handlers[0]); i++) {
 		if (strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
