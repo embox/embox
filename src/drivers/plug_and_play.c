@@ -416,37 +416,34 @@ void print_all_pnp_devs() {
 }
 
 void print_ahbm_pnp_dev(UINT32 id_reg) {
-	AHB_SLOT *slot;
-	slot->id_reg = id_reg;
+
 	if (id_reg >AHB_MASTERS_QUANTITY) {
 		TRACE("ERROR: print_ahbm_pnp_dev: Too big argument. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
 		return;
 	}
 	print_table_head();
-	print_ahb_entries(slot, 1);
+	print_ahb_entries((AHB_SLOT *) AHB_MASTER_BASE + id_reg*sizeof(AHB_SLOT), 1);
 //	printf("print_ahbm_pnp_dev\n");
 }
 
 void print_ahbsl_pnp_dev(UINT32 id_reg) {
-	AHB_SLOT *slot;
-	slot->id_reg = AHB_MASTERS_QUANTITY + id_reg;
+
 	if (id_reg >AHB_SLAVES_QUANTITY) {
 		TRACE("ERROR: print_ahbm_pnp_dev: Too big argument. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
 	}
 	print_table_head();
-	print_ahb_entries(slot, 1);
+	print_ahb_entries((AHB_SLOT *) AHB_SLAVE_BASE + id_reg*sizeof(AHB_SLOT), 1);
 //	printf("print_ahbsl_pnp_dev\n");
 }
 
 void print_apb_pnp_dev(UINT32 id_reg) {
-	APB_SLOT *slot;
-	slot->id_reg = id_reg;
+
 	if (id_reg >AHB_MASTERS_QUANTITY) {
 		TRACE("ERROR: print_ahbm_pnp_dev: Too big argument. The quantity of apb devices is %d\n",APB_QUANTITY);
 		return;
 	}
 	print_table_head();
-	print_apb_entries(slot, 1);
+	print_apb_entries((APB_SLOT *) APB_BASE + id_reg*sizeof(APB_SLOT), 1);
 //	printf("print_apb_pnp_dev\n");
 }
