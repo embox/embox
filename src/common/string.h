@@ -9,11 +9,15 @@ int ch_to_digit(char ch, int base);
 
 int strlen(const char *str);
 
-int strcpy(char *dest, const char *src);
+char *strcpy(char *dest, const char *src);
 
-int sz_append(char *dest, const char * src, char ch);
+char *strncpy(char *dest, const char *source, size_t count);
+
+//int sz_append(char *dest, const char * src, char ch);
 
 int strcmp(const char *str1, const char *str2);
+
+int strncmp(const char *s1, const char *s2, size_t count);
 
 // Determines whether beg is the beginning of the str string
 int sz_cmp_beginning(const char *beg, const char *str);

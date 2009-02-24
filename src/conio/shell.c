@@ -4,7 +4,7 @@
  *  Created on: 02.02.2009
  *      Author: Alexey Fomin
  */
-
+#include "types.h"
 #include "shell.h"
 #include "string.h"
 #include "tty.h"
@@ -93,7 +93,7 @@ static void tty_callback(char cmdline[]) {
 
 	// choosing correct handler
 	for (i = 0; i < sizeof(shell_handlers) / sizeof(shell_handlers[0]); i++) {
-		if (strcmp(words[0], shell_handlers[i].name)) {
+		if (0 == strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
 			phandler(words_counter - 1, words + 1);
 			return;

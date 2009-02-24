@@ -194,7 +194,8 @@ static inline void fire_callback() {
 	if (NULL != callback && cmdline->string[0]) {
 		char buf[cmdline->length + 1];
 		_puts("\r\n");
-		strcpy(buf, cmdline->string);
+		//strcpy(buf, cmdline->string);
+		memcpy(buf, cmdline->string, cmdline->length + 1);//copy with '\0'
 		callback(buf);
 	}
 	show_prompt();

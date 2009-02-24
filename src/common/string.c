@@ -1,4 +1,5 @@
 #include "types.h"
+#include "string.h"
 
 // character to upper
 char ch_upcase(char ch) {
@@ -42,14 +43,23 @@ int ch_to_digit(char ch, int base) {
 
 	return -1;
 }
-
+/*
 int strlen(const char * str) {
 	int i;
+	const char *eos = str;
 	for (i = 0; str[i]; i++)
 		;
-	return i;
+}
+*/
+int strlen(const char * str) {
+	const char *eos = str;
+
+	while (*eos++);
+
+	return (int) (eos - str - 1);
 }
 
+/*
 int strcpy(char * dest, const char * src) {
 	int i = 0;
 	while (*src != '\0') {
@@ -59,7 +69,59 @@ int strcpy(char * dest, const char * src) {
 	*dest = '\0';
 	return i;
 }
+*/
+char *strcpy(char * dest, const char * src) {
+	  char *cp = dest;
+	  while (*cp++ = *src++);
+	  return dest;
+}
 
+char *strncpy(char *dest, const char *source, size_t count) {
+	char *start = dest;
+
+	while (count && (*dest++ = *source++))
+		count--;
+	if (count)
+		while (--count)
+			*dest++ = '\0';
+	return start;
+}
+/*
+int strcmp(const char * str1, const char * str2) {
+	for (; *str1 == *str2; str1++, str2++) {
+		if (*str1 == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+*/
+int strcmp(const char * str1, const char * str2) {
+	int ret = 0;
+	while (!(ret = *(unsigned char *) str1 - *(unsigned char *) str2) && *str2)
+		++str1, ++str2;
+
+	if (ret < 0)
+		ret = -1;
+	else if (ret > 0)
+		ret = 1;
+
+	return ret;
+}
+
+int strncmp(const char *s1, const char *s2, size_t count) {
+	if (!count)
+		return 0;
+
+	while (--count && *s1 && *s1 == *s2) {
+		s1++;
+		s2++;
+	}
+
+	return *(unsigned char *) s1 - *(unsigned char *) s2;
+}
+
+
+/*
 int sz_append(char *dest, const char *src, char ch) {
 	int i;
 	for (i = 0; src[i] != 0; i++)
@@ -72,28 +134,12 @@ int sz_append(char *dest, const char *src, char ch) {
 	dest[i] = 0x0;
 	return i;
 }
-
-int strcmp(const char * str1, const char * str2) {
-//	int ret = 0;
-//	while (!(ret = *(unsigned char *) str1 - *(unsigned char *) str2) && *str2)
-//		++str1, ++str2;
-//
-//	if (ret < 0)
-//		ret = -1;
-//	else if (ret > 0)
-//		ret = 1;
-//
-//	return ret;
-	for (; *str1 == *str2; str1++, str2++) {
-		if (*str1 == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
+*/
 
 
 
 
+/*
 WORD atow(char *buff) {
 	WORD result = 0;
 	WORD paw = 1;
@@ -104,7 +150,7 @@ WORD atow(char *buff) {
 	}
 	return result;
 }
-
+*/
 // Determines whether beg is the beginning of the str string
 int sz_cmp_beginning(const char *beg, const char *str){
 	for (; *beg == *str || *beg == 0; beg++, str++) {
