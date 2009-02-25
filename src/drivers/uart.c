@@ -26,7 +26,7 @@ static void irq_func_uart() {
 	char ch = uart_getc();
 }
 void uart_init() {
-#ifndef RELEASE
+#ifndef SIMULATE
 	//disabled uart
 	uart->ctrl = 0x0;
 	uart->scaler = UART_SCALER_VAL;

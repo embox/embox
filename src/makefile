@@ -7,7 +7,7 @@ OBJS =
 
 .PHONY: all $(SUBDIRS)
 
-all: simulation release debug
+all: simulation SIMULATE debug
 
 create_objs_lst:$(SUBDIRS)
 
@@ -19,7 +19,7 @@ else
 	$(MAKE) -C $@ $(MAKEOP)
 endif
 
-release:$(SUBDIRS)
+SIMULATE:$(SUBDIRS)
 	#TODO may be use GOBJS list of objects files
 	#TODO have to set entry point in linker script now importen link order
 	#@echo gobjs $(GOBJS)

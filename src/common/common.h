@@ -16,7 +16,7 @@
 inline static int dummy() {
 	return 0;
 }
-
+/*
 #ifndef RELEASE
  #define TRACE(format, args...)   printf(format, ##args)
  #define assert(cond)             { if (!(cond)) HALT; }
@@ -24,7 +24,14 @@ inline static int dummy() {
  #define TRACE(format, args...)		dummy()
  #define assert(cond)
 #endif  // ifndef RELEASE
-
+*/
+#ifdef SIMULATE
+	#define TRACE(format, args...)		dummy()
+	#define assert(cond)
+#else
+	#define TRACE(format, args...)   printf(format, ##args)
+	#define assert(cond)             { if (!(cond)) HALT; }
+#endif  // ifndef SIMULATE
 
 // mathematics
 #define max(i, j)   (((i) > (j)) ? (i) : (j))
