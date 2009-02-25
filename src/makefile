@@ -1,5 +1,5 @@
 #TODO !!!!!!!!!!in this version folder tests must set lat in list its makefile diff from other
-SUBDIRS = kernel conio drivers common tests
+SUBDIRS = arch kernel conio drivers common tests
 OBJS =
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
 
@@ -7,7 +7,7 @@ OBJS =
 
 .PHONY: all $(SUBDIRS)
 
-all: simulation SIMULATE debug
+all: simulation release debug
 
 create_objs_lst:$(SUBDIRS)
 
@@ -19,7 +19,7 @@ else
 	$(MAKE) -C $@ $(MAKEOP)
 endif
 
-SIMULATE:$(SUBDIRS)
+release:$(SUBDIRS)
 	#TODO may be use GOBJS list of objects files
 	#TODO have to set entry point in linker script now importen link order
 	#@echo gobjs $(GOBJS)

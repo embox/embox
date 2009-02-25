@@ -1,5 +1,5 @@
 SUBDIRS:=
-OBJS:=cpu_context.o main.o mem_traps.o irq.o test.o tests_iterator.o
+OBJS:=boot.o window_overflow_func.o restore_proc_context.o save_proc_context.o traps.o mul_div.o urem.o
 
 create_objs_lst:$(SUBDIRS)
 	echo '$(addprefix $(CURDIR)/,$(OBJS)) \' >> $(ROOT_DIR)/objs.lst
@@ -21,5 +21,3 @@ all:$(SUBDIRS) $(OBJS)
 
 clean:
 	rm -rf $(OBJS) *.d
-
-
