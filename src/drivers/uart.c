@@ -1,7 +1,9 @@
 #include "types.h"
 #include "irq.h"
 #include "leon_config.h"
-#include "memory_map.h"
+//#include "memory_map.h"
+#include "plug_and_play.h"
+#include "pnp_id.h"
 #include "uart.h"
 
 typedef struct _UART_STRUCT {
@@ -20,18 +22,23 @@ typedef struct _UART_STRUCT {
 #define UART_INT_RX_ENABLED			0x00000004
 #define UART_INT_TX_ENABLED			0x00000004
 
-UART_STRUCT * const uart = (UART_STRUCT *) UART_BASE;
+static UART_STRUCT * uart = NULL; //(UART_STRUCT *) UART_BASE;
 
 static void irq_func_uart() {
 	char ch = uart_getc();
 }
-void uart_init() {
-#ifndef SIMULATE
+int uart_init() {
+	APB_DEV dev;
+	if (NULL != uart)
+		return;
+	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
+	uart = (UART_STRUCT * )dev.bar.start;
 	//disabled uart
 	uart->ctrl = 0x0;
 	uart->scaler = UART_SCALER_VAL;
 	//enable uart
 	uart->ctrl = /*UART_INT_RX_ENABLED |*/ UART_TX_ENABLE | UART_RX_ENABLE;
+#ifndef SIMULATE
 	while (!(UART_TX_READY & uart->status));
 	//clear uart
 	while (UART_RX_READY & uart->status);
@@ -49,13 +56,21 @@ BOOL uart_is_empty() {
 */
 // write character via uart
 void uart_putc(char ch) {
+	if (NULL == uart)
+		uart_init();
+
+#ifndef SIMULATE
 	while (!(UART_TX_READY & uart->status))
 		;
+#endif
 	uart->data = (UINT32)ch;
 }
 
 // read character via uart
 char uart_getc() {
+	if (NULL == uart)
+		uart_init();
+
 	while (!(UART_RX_READY & uart->status))
 		;
 	return ((char) uart->data);

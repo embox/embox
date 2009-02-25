@@ -111,7 +111,6 @@ int timers_init() {
 
 
 	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
-	TRACE ("open timers_ctrl base = 0x%X\tirq = %d\n", dev.bar.start, dev.dev_info.irq);
 	timers = (TIMERS_STRUCT *)dev.bar.start;
 	timers->scaler_ld = TIMER_SCALER_VAL;
 	timers->scaler_cnt = 0;

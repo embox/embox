@@ -1,7 +1,7 @@
 #ifndef _UART_H_
 #define _UART_H_
 
-
+int uart_init();
 // output
 void uart_putc(char ch);
 
