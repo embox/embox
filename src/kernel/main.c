@@ -14,7 +14,23 @@
 
 LEON_REGS * const l_regs = (PVOID) (RG_BASE);
 
+void copy_data_section()
+{
+	extern char _data_image_start, _data_start, _data_end;
+
+	char *src = &_data_image_start;
+
+	char *dst = &_data_start;
+
+	/* ROM has data at end of text; copy it. */
+	while (dst < &_data_end) {
+	    *dst++ = *src++;
+	}
+}
 int init() {
+	//TODO during too long time for simulation:(
+	copy_data_section();
+
 	irq_init_handlers();
 	uart_init();
 
@@ -25,8 +41,11 @@ int init() {
 }
 
 int main() {
+	extern char _data_image_start, _data_end, _data_start;
+
 	void* descriptor;
 	init();
+
 
 	while (NULL != (descriptor = (void *) express_test_get_next())) {
 		express_test_run(descriptor);

@@ -61,30 +61,27 @@ SECTIONS
     *(.text)
     . = ALIGN (0x10);
 
-    *(.eh_frame)
-    . = ALIGN (0x10);
-
     *(.rodata*)
     . = ALIGN(0x10);
 
     *(.const)
     . = ALIGN (0x10);
 
-    data_image_start = .;
+    _data_image_start = .;
   } > rom
 
-  .data : AT (data_image_start)
+  .data : AT (ADDR (.text) + SIZEOF (.text))
   {
-    data_start = .;
+    _data_start = .;
     *(.data)
     . = ALIGN(0x4);
-
-    *(.rel*)
+	_data_end = .;
+/*    *(.rel*)
     . = ALIGN(0x4);
-
+*/
     *(.bss)
     *(COMMON)
     . = ALIGN(0x4);
-    data_end = .;
+
   } > sdram
 }

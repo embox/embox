@@ -57,33 +57,31 @@ SECTIONS
 {
   .text :
   {
-  	_hardreset = .;
     _text_start = .;
     *(.text)
-    . = ALIGN (0x10);
-
-    *(.eh_frame)
     . = ALIGN (0x10);
 
     *(.rodata*)
     . = ALIGN(0x10);
 
-    data_image_start = .;
+    *(.const)
+    . = ALIGN (0x10);
+
+    _data_image_start = .;
   } > sdram
 
-  .data :
+  .data : AT (ADDR (.text) + SIZEOF (.text))
   {
-    data_start = .;
+    _data_start = .;
     *(.data)
-    . = ALIGN(0x10);
-
-	*(.rel*)
-    . = ALIGN(0x10);
-
-	*(.bss)
+    . = ALIGN(0x4);
+	_data_end = .;
+/*    *(.rel*)
+    . = ALIGN(0x4);
+*/
+    *(.bss)
     *(COMMON)
-    . = ALIGN(0x10);
+    . = ALIGN(0x4);
 
-    data_end = .;
   } > sdram
 }
