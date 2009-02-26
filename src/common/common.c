@@ -7,9 +7,9 @@ void *mem_set(UINT32 *addr, UINT32 patern, UINT32 cnt) {
 		*addr++ = patern;
 }
 
-void *memcpy(void *OUT, const void* IN, unsigned int cnt) {
-	BYTE *dest = (BYTE *) OUT;
-	BYTE *src = (BYTE *) IN;
+void *memcpy(void *destination, const void* source, unsigned int cnt) {
+	BYTE *dest = (BYTE *) destination;
+	BYTE *src = (BYTE *) source;
 
 	while (cnt--)
 		*dest++ = *src++;

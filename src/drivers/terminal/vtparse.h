@@ -11,6 +11,7 @@
 
 #include "vt.h"
 #include "vtparse_table.h"
+#include "types.h"
 
 #define MAX_INTERMEDIATE_CHARS 2
 
@@ -23,8 +24,8 @@ typedef struct _VTPARSER {
 	VTPARSE_CALLBACK cb;
 	char(*getc)(struct _VTPARSER *parser);
 	char intermediate_chars[MAX_INTERMEDIATE_CHARS + 1];
-	char ignore_flagged;
-	INT_ARRAY params[1];
+	BOOL intermediate_chars_overflow;
+	VT_PARAMS params[1];
 	void* user_data;
 } VTPARSER;
 

@@ -17,6 +17,6 @@ typedef struct _VTBUILDER {
 
 void vtbuild_init(VTBUILDER *builder, void(*putc)(VTBUILDER *builder, char ch));
 
-void vtbuild(VTBUILDER *builder, VT_ACTION action, INT_ARRAY *params, char ch);
+void vtbuild(VTBUILDER *builder, VT_ACTION action, VT_PARAMS *params, char ch);
 
 #endif /* VTBUILD_H_ */

@@ -6,13 +6,12 @@
  *  Created on: 08.02.2009
  *      Author: Eldar Abusalimov
  */
+
+#include "cmdline.h"
+
 #include "types.h"
 #include "string.h"
 #include "common.h"
-#include "cmdline.h"
-
-
-
 
 void cmdline_init(CMDLINE *cmdline) {
 	CMDLINE_HISTORY * history = &(cmdline->history);
@@ -41,7 +40,8 @@ BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
 
 	if (cmdline->history_cursor == history->index) {
 		//strcpy(history->array[history->index], cmdline->string);
-		strncpy(history->array[history->index], cmdline->string, sizeof(history->array[history->index]));
+		strncpy(history->array[history->index], cmdline->string,
+				sizeof(history->array[history->index]));
 	}
 
 	cmdline->history_cursor = new_pos;
@@ -85,7 +85,7 @@ BOOL cmdline_history_new(CMDLINE *cmdline) {
 
 BOOL cmdline_cursor_move_to(CMDLINE *cmdline, int to) {
 	int old_cursor = cmdline->cursor;
-	to = min((int)cmdline->length, to);
+	to = min(cmdline->length, to);
 	to = max(0, to);
 	cmdline->cursor = to;
 	return cmdline->cursor != old_cursor;

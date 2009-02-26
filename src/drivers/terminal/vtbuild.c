@@ -15,7 +15,26 @@ void vtbuild_init(VTBUILDER *builder, void(*putc)(VTBUILDER *builder, char ch)) 
 	builder->putc = putc;
 }
 
-void vtbuild(VTBUILDER *builder, VT_ACTION action, INT_ARRAY *params, char ch) {
+static void build_param(VTBUILDER *builder, int n) {
+	static char buf[10];
+	int i = 0;
+	BOOL neg = (n < 0);
+
+	n = abs(n);
+
+	do {
+		buf[i++] = n % 10 + '0';
+	} while ((n /= 10) > 0);
+
+	if (neg) {
+		builder->putc(builder, '-');
+	}
+	do {
+		builder->putc(builder, buf[--i]);
+	} while (i > 0);
+}
+
+void vtbuild(VTBUILDER *builder, VT_ACTION action, VT_PARAMS *params, char ch) {
 	switch (action) {
 	case VT_ACTION_PRINT:
 		builder->putc(builder, ch);
@@ -29,8 +48,13 @@ void vtbuild(VTBUILDER *builder, VT_ACTION action, INT_ARRAY *params, char ch) {
 		builder->putc(builder, CSI);
 		if (params != NULL) {
 			int i;
-			for (i = 0; i < params->length; i++) {
-				// TODO print params
+			char d;
+			if (params->length > 0) {
+				build_param(builder, params->data[0]);
+			}
+			for (i = 1; i < params->length; i++) {
+				builder->putc(builder, ';');
+				build_param(builder, params->data[i]);
 			}
 		}
 		builder->putc(builder, ch);

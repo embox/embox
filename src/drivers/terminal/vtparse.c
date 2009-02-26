@@ -20,7 +20,7 @@ void vtparse_init(VTPARSER *parser, VTPARSE_CALLBACK cb, char(*getc)(
 	parser->state = VTPARSE_STATE_GROUND;
 	parser->intermediate_chars[0] = '\0';
 	parser->params->length = 0;
-	parser->ignore_flagged = 0;
+	parser->intermediate_chars_overflow = FALSE;
 	parser->cb = cb;
 	parser->getc = getc;
 }
@@ -52,7 +52,7 @@ static void do_action(VTPARSER *parser, VT_ACTION action, char ch) {
 		int num_intermediate_chars = strlen((char*) parser->intermediate_chars);
 
 		if (num_intermediate_chars + 1 > MAX_INTERMEDIATE_CHARS)
-			parser->ignore_flagged = 1;
+			parser->intermediate_chars_overflow = TRUE;
 		else
 			parser->intermediate_chars[num_intermediate_chars++] = ch;
 
@@ -84,7 +84,7 @@ static void do_action(VTPARSER *parser, VT_ACTION action, char ch) {
 	case VT_ACTION_CLEAR:
 		parser->intermediate_chars[0] = '\0';
 		parser->params->length = 0;
-		parser->ignore_flagged = 0;
+		parser->intermediate_chars_overflow = FALSE;
 		break;
 
 	default:

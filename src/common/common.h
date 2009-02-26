@@ -1,9 +1,6 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-
-
-
 #define SetBit(rg, bit)   { (rg) |=  (1UL << (bit)); }
 #define ClearBit(rg, bit) { (rg) &= ~(1UL << (bit)); }
 #define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
@@ -16,23 +13,19 @@
 inline static int dummy() {
 	return 0;
 }
-/*
-#ifndef RELEASE
- #define TRACE(format, args...)   printf(format, ##args)
- #define assert(cond)             { if (!(cond)) HALT; }
-#else
- #define TRACE(format, args...)		dummy()
- #define assert(cond)
-#endif  // ifndef RELEASE
-*/
-#ifdef SIMULATE
-	#define TRACE(format, args...)		dummy()
-	#define assert(cond)
-#else
-	#define TRACE(format, args...)   printf(format, ##args)
-	#define assert(cond)             { if (!(cond)) HALT; }
-#endif  // ifndef SIMULATE
 
+#ifdef SIMULATE
+#define TRACE(format, args...)		dummy()
+#define assert(cond)
+#else
+#define TRACE(format, args...)   printf(format, ##args)
+#define assert(cond)	{\
+		if (!(cond)){\
+			printf("\nASSERTION FAILED at %s, line %d:" #cond "\n", __FILE__, __LINE__);\
+			HALT;\
+		}\
+}
+#endif  // ifdef SIMULATE
 // mathematics
 #define max(i, j)   (((i) > (j)) ? (i) : (j))
 #define min(i, j)   (((i) < (j)) ? (i) : (j))
@@ -48,8 +41,6 @@ inline static int dummy() {
     || between((ch),'a','f')    \
     || between((ch),'A','F') )
 
-
-void *memcpy (void *OUT, const void* IN, unsigned int size);
-
+void *memcpy(void *OUT, const void* IN, unsigned int size);
 
 #endif //_COMMON_H_

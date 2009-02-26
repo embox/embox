@@ -11,36 +11,48 @@
 #define TERMINAL_H_
 
 #include "types.h"
+#include "vt.h"
 #include "vtparse.h"
 #include "vtbuild.h"
 
+typedef VT_PARAMS TERMINAL_PARAMS;
+
 typedef enum {
-	TERMINAL_COMMAND_BACKSPACE,
-	TERMINAL_COMMAND_DELETE,
-	TERMINAL_COMMAND_ENTER,
-	TERMINAL_COMMAND_CURSOR_UP,
-	TERMINAL_COMMAND_CURSOR_DOWN,
-	TERMINAL_COMMAND_CURSOR_FORWARD,
-	TERMINAL_COMMAND_CURSOR_BACKWARD,
-	TERMINAL_COMMAND_CURSOR_SAVE,
-	TERMINAL_COMMAND_CURSOR_RESTORE,
-} TERMINAL_COMMAND;
+	TERMINAL_TOKEN_TYPE_CTRL, TERMINAL_TOKEN_TYPE_CHAR,
+} TERMINAL_TOKEN_TYPE;
 
-/*
- * Terminal callback functions
- */
-typedef struct _TERMINAL_CALLBACK {
+#define CTRL(action, code)		(((action) << 8) | (code) & 0xFF)
+#define UNCTRL_ACTION(ctrl)		((ctrl) >> 8)
+#define UNCTRL_CODE(ctrl)		((ctrl) & 0xFF)
 
-	void (*on_char)(char ch);
+typedef enum {
+	TERMINAL_TOKEN_CTRL_CURSOR_UP = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUU),
+	TERMINAL_TOKEN_CTRL_CURSOR_DOWN = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUD),
+	TERMINAL_TOKEN_CTRL_CURSOR_FORWARD = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUF),
+	TERMINAL_TOKEN_CTRL_CURSOR_BACKWARD = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUB),
+	TERMINAL_TOKEN_CTRL_CURSOR_POSITION = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUP),
+	TERMINAL_TOKEN_CTRL_CURSOR_SAVE = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_SCP),
+	TERMINAL_TOKEN_CTRL_CURSOR_RESTORE = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_RCP),
 
-	void (*on_command)(TERMINAL_COMMAND key);
+	TERMINAL_TOKEN_CTRL_CURSOR_SAVE_ATTRS = CTRL(VT_ACTION_ESC_DISPATCH, VT_CODE_ESC_SCA),
+	TERMINAL_TOKEN_CTRL_CURSOR_RESTORE_ATTRS = CTRL(VT_ACTION_ESC_DISPATCH, VT_CODE_ESC_RCA),
 
-} TERMINAL_CALLBACK;
+	//	TERMINAL_TOKEN_CTRL_DELETE = 6, // TODO check it
+	TERMINAL_TOKEN_CTRL_ENTER = CTRL(VT_ACTION_PRINT, '\n'),
+	TERMINAL_TOKEN_CTRL_BACKSPACE = CTRL(VT_ACTION_PRINT, '\b'),
+} TERMINAL_TOKEN_CTRL;
+
+typedef char TERMINAL_TOKEN_CHAR;
+
+typedef union {
+	TERMINAL_TOKEN_CHAR ch;
+	TERMINAL_TOKEN_CTRL ctrl;
+} TERMINAL_TOKEN;
 
 /*
  * Terminal input/output functions
  */
-typedef struct _TERMINAL_IO {
+typedef struct {
 
 	char (*getc)();
 
@@ -48,54 +60,41 @@ typedef struct _TERMINAL_IO {
 
 } TERMINAL_IO;
 
-struct _TERMINAL;
+/*
+ * Saves some useful but volatile information
+ * about parser state collected at callback invocation time.
+ * NOTE: This structure is tightly relies on vtparse algorithms.
+ */
+typedef struct {
+	VT_ACTION action;
+	VT_PARAMS params[1];
+	char ch;
+} VTPARSER_FOOTPRINT;
 
-typedef struct _CHAR_HANDLER {
-
-	const struct _CHAR_HANDLER * (* call)(struct _TERMINAL *terminal, char ch);
-
-} CHAR_HANDLER;
+/* NOTE: This value is tightly relies on vtparse algorithms. */
+#define VTPARSER_FOOTPRINTS_AMOUNT 3
 
 /*
  * Terminal internal representation
  */
-typedef struct _TERMINAL {
-
-	TERMINAL_CALLBACK callback[1];
+typedef struct {
 
 	TERMINAL_IO io[1];
 
-	volatile BOOL running;
+	VTBUILDER builder[1];
 
 	VTPARSER parser[1];
-
-	VTBUILDER builder[1];
+	VTPARSER_FOOTPRINT vtparser_footprint[VTPARSER_FOOTPRINTS_AMOUNT];
+	int footprint_counter;
 
 } TERMINAL;
 
-void terminal_init(TERMINAL *terminal, TERMINAL_CALLBACK *callback,
-		TERMINAL_IO *io);
+void terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
 
-void terminal_send_command(TERMINAL *terminal, TERMINAL_COMMAND command);
+BOOL terminal_receive(TERMINAL *terminal, TERMINAL_TOKEN_TYPE *type,
+		TERMINAL_TOKEN *token, TERMINAL_PARAMS *params);
 
-void terminal_send_char(TERMINAL *terminal, char ch);
-
-void terminal_start(TERMINAL *terminal);
-
-void terminal_stop(TERMINAL *terminal);
-
-//BOOL terminal_cursor_save(TERMINAL *terminal);
-//
-//BOOL terminal_cursor_restore(TERMINAL *terminal);
-//
-//BOOL terminal_get_cursor_position(TERMINAL *terminal, int *x, int *y);
-//
-//static void remote_set_foreground_color(int color);
-//
-//static void remote_set_line_wrap(BOOL wrap);
-//
-//static void remote_erase_screen_down();
-//
-//static void remote_erase_screen();
+BOOL terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN_TYPE type,
+		TERMINAL_TOKEN *token, TERMINAL_PARAMS *params);
 
 #endif /* TERMINAL_H_ */

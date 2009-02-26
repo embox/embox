@@ -42,7 +42,7 @@ static void remote_move_cursor_by(int by) {
 	_putc(CSI);
 	sprintf(str, "%d", abs(by));
 	_puts(str);
-	_putc(by > 0 ? ANSI_CODE_CUF : ANSI_CODE_CUB);
+	_putc(by > 0 ? VT_CODE_CS_CUF : VT_CODE_CS_CUB);
 }
 
 /*
@@ -87,7 +87,7 @@ static void remote_init() {
 	int i;
 
 	remote_set_line_wrap(TRUE);
-//	remote_erase_screen();
+	//	remote_erase_screen();
 
 }
 
@@ -203,22 +203,22 @@ static inline void fire_callback() {
 
 inline static void handle_standard_command(const char code, const char *cs) {
 	switch (code) {
-	case ANSI_CODE_CUU:
+	case VT_CODE_CS_CUU:
 		if (cmdline_history_backward(cmdline)) {
 			flush_cmdline();
 		}
 		break;
-	case ANSI_CODE_CUD:
+	case VT_CODE_CS_CUD:
 		if (cmdline_history_forward(cmdline)) {
 			flush_cmdline();
 		}
 		break;
-	case ANSI_CODE_CUF:
+	case VT_CODE_CS_CUF:
 		if (cmdline_cursor_right(cmdline)) {
 			flush_cmdline_cursor();
 		}
 		break;
-	case ANSI_CODE_CUB:
+	case VT_CODE_CS_CUB:
 		if (cmdline_cursor_left(cmdline)) {
 			flush_cmdline_cursor();
 		}

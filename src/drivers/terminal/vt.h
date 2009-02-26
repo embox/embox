@@ -1,8 +1,13 @@
 /*
  * vt.h
  *
- *  Created on: 20.02.2009
- *      Author: Eldar Abusalimov
+ * Provides VT/ANSI terminal control sequence constants.
+ *
+ * See: http://en.wikipedia.org/wiki/ANSI_escape_code
+ * See: http://ascii-table.com/ansi-escape-sequences-vt-100.php
+ * See: http://www.termsys.demon.co.uk/vtansi.htm
+ *
+ * Author: Eldar Abusalimov
  */
 
 #ifndef VT_H_
@@ -13,7 +18,7 @@
 typedef struct _INT_ARRAY {
 	int data[MAX_PARAMS];
 	int length;
-} INT_ARRAY;
+} VT_PARAMS;
 
 typedef enum {
 	VT_ACTION_CLEAR = 1,
@@ -32,34 +37,70 @@ typedef enum {
 	VT_ACTION_UNHOOK = 14,
 } VT_ACTION;
 
+/*
+ * Codes used as final bytes of ANSI control sequences
+ * (VT_ACTION_CSI_DISPATCH)
+ */
+typedef enum {
+
+	/* Cursor Up */
+	VT_CODE_CS_CUU = 'A',
+
+	/* Cursor Down */
+	VT_CODE_CS_CUD = 'B',
+
+	/* Cursor Forward */
+	VT_CODE_CS_CUF = 'C',
+
+	/* Cursor Backward */
+	VT_CODE_CS_CUB = 'D',
+
+	/* Cursor Position */
+	VT_CODE_CS_CUP = 'H',
+
+	/*
+	 * Clear part of the screen.
+	 * If attr is zero (or missing), clear from cursor to end of screen.
+	 * If attr is one, clear from cursor to beginning of the screen.
+	 * If attr is two, clear entire screen
+	 */
+	VT_CODE_CS_ED = 'J',
+
+	/*
+	 * Erases part of the line.
+	 * If attr is zero (or missing), clear from cursor to the end of the line.
+	 * If attr is one, clear from cursor to beginning of the line.
+	 * If attr is two, clear entire line.
+	 * Cursor position does not change
+	 */
+	VT_CODE_CS_EL = 'K',
+
+	/* Saves the cursor position. */
+	VT_CODE_CS_SCP = 's',
+
+	/* Restores the cursor position. */
+	VT_CODE_CS_RCP = 'u',
+
+} VT_CODE_CS;
+
+/*
+ * Codes used as final bytes of escape sequences
+ * (VT_ACTION_ESC_DISPATCH)
+ */
+typedef enum {
+
+	/* Saves the cursor position & attributes. */
+	VT_CODE_ESC_SCA = '7',
+
+	/* Restores the cursor position & attributes. */
+	VT_CODE_ESC_RCA = '8',
+
+} VT_CODE_ESC;
+
 // ANSI Escape
 #define ESC		'\e'
 // ANSI Control Sequence Introducer
 #define CSI		'['
-
-// Cursor Up
-#define ANSI_CODE_CUU	'A'
-// Cursor Down
-#define ANSI_CODE_CUD	'B'
-// Cursor Forward
-#define ANSI_CODE_CUF	'C'
-// Cursor Backward
-#define ANSI_CODE_CUB	'D'
-// Cursor Position
-#define ANSI_CODE_CUP	'H'
-
-// Clear part of the screen.
-// If attr is zero (or missing), clear from cursor to end of screen.
-// If attr is one, clear from cursor to beginning of the screen.
-// If attr is two, clear entire screen
-#define ANSI_CODE_ED	'J'
-
-// Erases part of the line.
-// If attr is zero (or missing), clear from cursor to the end of the line.
-// If attr is one, clear from cursor to beginning of the line.
-// If attr is two, clear entire line.
-// Cursor position does not change
-#define ANSI_CODE_EL	'K'
 
 // Select Graphic Rendition
 #define ANSI_CODE_SGR				'm'

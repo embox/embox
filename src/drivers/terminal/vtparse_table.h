@@ -22,6 +22,4 @@ typedef char state_change_t;
 extern state_change_t STATE_TABLE[15][256];
 extern VT_ACTION ENTRY_ACTIONS[15];
 extern VT_ACTION EXIT_ACTIONS[15];
-extern char *ACTION_NAMES[15];
-extern char *STATE_NAMES[15];
 
