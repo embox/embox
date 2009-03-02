@@ -8,9 +8,7 @@
 #include "shell.h"
 #include "string.h"
 #include "tty.h"
-#include "mem.h"
-#include "wmem.h"
-#include "lspnp.h"
+
 
 static const char* welcome = "monitor> ";
 
@@ -42,14 +40,16 @@ int stub_shell_handler2(int argsc, char **argsv) {
 	return 0;
 }
 
-typedef struct {
-	char *name;
-	PSHELL_HANDLER phandler;
-} SHELL_HANDLER_DESCR;
+//definition in header
+//typedef struct {
+//	char *name;
+//	PSHELL_HANDLER phandler;
+//} SHELL_HANDLER_DESCR;
 
-static SHELL_HANDLER_DESCR shell_handlers[] = {
-#include "shell.inc"
-		};
+//static SHELL_HANDLER_DESCR shell_handlers[] = {
+//#include "shell.inc"
+//		};
+
 
 // *str becomes pointer to first non-space character
 static void skip_spaces(char **str) {

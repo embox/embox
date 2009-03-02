@@ -8,6 +8,11 @@
 #ifndef SHELL_H_
 #define SHELL_H_
 
+#include "mem.h"
+#include "wmem.h"
+#include "lspnp.h"
+#include "help.h"
+
 #define MAX_SHELL_KEYS 5
 
 typedef int (*PSHELL_HANDLER)(int argsc, char **argsv);
@@ -16,6 +21,16 @@ typedef struct {
 	char name;
 	char *value;
 } SHELL_KEY;
+
+typedef struct {
+	char *name;
+	char *description;
+	PSHELL_HANDLER phandler;
+} SHELL_HANDLER_DESCR;
+
+static SHELL_HANDLER_DESCR shell_handlers[] = {
+#include "shell.inc"
+		};
 
 void shell_start();
 int shell_find_commands(char *cmdline, char **proposals);
