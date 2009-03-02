@@ -23,6 +23,7 @@ typedef struct _UART_STRUCT {
 #define UART_INT_TX_ENABLED			0x00000004
 
 static UART_STRUCT * uart = NULL; //(UART_STRUCT *) UART_BASE;
+static int irq;
 
 static void irq_func_uart() {
 	char ch = uart_getc();
@@ -33,6 +34,7 @@ int uart_init() {
 		return;
 	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
 	uart = (UART_STRUCT * )dev.bar.start;
+	irq = dev.dev_info.irq;
 	//disabled uart
 	uart->ctrl = 0x0;
 	uart->scaler = UART_SCALER_VAL;
@@ -74,4 +76,19 @@ char uart_getc() {
 	while (!(UART_RX_READY & uart->status))
 		;
 	return ((char) uart->data);
+}
+
+int uart_set_irq_handler(IRQ_HANDLER pfunc)
+{
+	if (NULL == uart)
+		uart_init();
+	uart->ctrl |= UART_INT_RX_ENABLED ;
+	irq_set_handler(irq, pfunc);
+	return 0;
+}
+
+int uart_remove_irq_handler(IRQ_HANDLER pfunc)
+{
+	irq_remove_handler(irq);
+	return 0;
 }

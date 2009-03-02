@@ -8,7 +8,6 @@ extern volatile BOOL chproc_ret_val;
 // accept or not process aborting
 extern volatile BOOL chproc_abort_accept;
 
-
 //extern volatile BOOL show_test_messages;
 
 //void test_allow_aborting();

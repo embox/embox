@@ -9,7 +9,6 @@
 #include "string.h"
 #include "tty.h"
 
-
 static const char* welcome = "monitor> ";
 
 int stub_shell_handler(int argsc, char **argsv) {
@@ -79,6 +78,25 @@ static int parse_str(char *cmdline, char **words) {
 	return cnt;
 }
 
+int shell_handler_process_create(PSHELL_HANDLER phandler, int argsc,
+		char **argsv) {
+	test_allow_aborting();
+	shell_save_proc();
+	__asm__(".global shell_handler_start\n"
+				"shell_handler_start:\n\t"
+				);
+	phandler(argsc, argsv);
+
+	__asm__(".global shell_handler_continue\n"
+			"shell_handler_continue:\n\t"
+			);
+	shell_restore_proc();
+	__asm__(".global shell_handler_exit\n"
+			"shell_handler_exit:\n\t"
+			);
+	test_disable_aborting();
+}
+
 static void tty_callback(char cmdline[]) {
 	int words_counter = 0;
 	int i;
@@ -95,7 +113,7 @@ static void tty_callback(char cmdline[]) {
 	for (i = 0; i < sizeof(shell_handlers) / sizeof(shell_handlers[0]); i++) {
 		if (0 == strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
-			phandler(words_counter - 1, words + 1);
+			shell_handler_process_create(phandler, words_counter - 1, words + 1);
 			return;
 		}
 	}
@@ -103,14 +121,6 @@ static void tty_callback(char cmdline[]) {
 	printf("%s: Command not found\n", words[0]);
 
 }
-
-//int process_create()
-//{
-//	save_context();
-//	phandler(handler_args_counter, handler_args);
-//
-//	restore_context()
-//}
 
 int shell_find_commands(char *cmdline, char **proposals) {
 	int i, commands_found = 0;

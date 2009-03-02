@@ -17,7 +17,7 @@ save_proc_context:
 //%sp (stack pointer; conventionally same as %o6)
 	st %sp,  [%l0 + 0x10]
 	st %fp, [%l0 + 0x14]
-	st %g0, [%l0 + 0x18]
+	// st %g0, [%l0 + 0x18]
 	st %g1, [%l0 + 0x1C]
 	st %g2, [%l0 + 0x20]
 	st %g3, [%l0 + 0x24]

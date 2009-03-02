@@ -28,7 +28,7 @@ _hardreset:
 
   /* Interrupt entries */
   BAD_TRAP;                     ! 11 interrupt level  1   ! IRQ_AHB_error
-  BAD_TRAP;                     ! 12 interrupt level  2   ! IRQ_UART2
+  TRAP(irq_dispatcher);                     ! 12 interrupt level  2   ! IRQ_UART2
   TRAP(irq_dispatcher);         ! 13 interrupt level  3   ! IRQ_UART1
   BAD_TRAP;                     ! 14 interrupt level  4   !
   TRAP(irq_dispatcher);         ! 15 interrupt level  5   ! from_dsp

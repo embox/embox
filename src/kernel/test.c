@@ -51,31 +51,31 @@ void restore_context ()
 }
 
 
-/*
-void test_abort_handler()
-{
+void test_abort_handler() {
 	char ch;
-
-	if (!chproc_started)
-		return;
+//	if (!chproc_started)
+//		return;
+//	printf("\nHELLO             TEST_ABORT_HANDLER            \n");
 
 	ch = uart_getc();
 	if ((ch == 'Q') || ch == 'q')
 	{
+		//printf("\nHELLO             TEST_ABORT_HANDLER            \n");
 		chproc_abort_accept = TRUE;
+
 	}
 }
 
 
 void test_allow_aborting()
 {
-	irq_set_handler(IRQ_UART1, test_abort_handler);
+	uart_set_irq_handler(test_abort_handler);
 }
 void test_disable_aborting ()
 {
-	irq_remove_handler (IRQ_UART1);
+	uart_remove_irq_handler(test_abort_handler);
 }
-*/
+
 void test_run(WORD pfunc)
 {
 	chproc_abort_accept = FALSE;

@@ -1,5 +1,5 @@
 SUBDIRS:=
-OBJS:=printf.o scanf.o shell.o cmdline.o tty.o
+OBJS:=printf.o scanf.o shell_proc.o shell.o cmdline.o tty.o
 
 .PHONY: all $(SUBDIRS)
 

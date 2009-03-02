@@ -9,6 +9,9 @@
 #define CPU_CONTEXT_H_
 
 #ifndef __ASSEMBLER__
+
+#include "types.h"
+
 typedef struct _CPU_CONTEXT
 {
 	UINT32 wim;
@@ -18,7 +21,7 @@ typedef struct _CPU_CONTEXT
 	UINT32 sp;
 	UINT32 fp;
 	UINT32 global[8];
-	UINT32 r8_31[24][8];
+	UINT32 r8_31 [8][24];
 }CPU_CONTEXT;
 
 extern CPU_CONTEXT cpu_context;
