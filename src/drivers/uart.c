@@ -89,6 +89,7 @@ int uart_set_irq_handler(IRQ_HANDLER pfunc)
 
 int uart_remove_irq_handler(IRQ_HANDLER pfunc)
 {
+	uart->ctrl &= ~UART_INT_RX_ENABLED ;
 	irq_remove_handler(irq);
 	return 0;
 }
