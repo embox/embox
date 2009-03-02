@@ -75,13 +75,16 @@ SECTIONS
     _data_start = .;
     *(.data)
     . = ALIGN(0x4);
-	_data_end = .;
+
 /*    *(.rel*)
     . = ALIGN(0x4);
 */
-    *(.bss)
-    *(COMMON)
+	_data_end = .;
+} > sdram
+	.bss :
+	{
+    _bstart = . ; *(.bss) *(COMMON) ;
     . = ALIGN(0x4);
-
+     _bend = . ;
   } > sdram
 }

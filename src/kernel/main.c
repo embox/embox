@@ -16,7 +16,7 @@ LEON_REGS * const l_regs = (PVOID) (RG_BASE);
 
 void copy_data_section()
 {
-	extern char _data_image_start, _data_start, _data_end;
+	extern char _data_image_start, _data_start, _data_end, _bstart, _bend;
 
 	char *src = &_data_image_start;
 
@@ -26,6 +26,10 @@ void copy_data_section()
 	while (dst < &_data_end) {
 	    *dst++ = *src++;
 	}
+	/* Zero bss */
+
+	for (dst = &_bstart; dst< &_bend; dst++)
+	    *dst = 0;
 }
 int init() {
 	//TODO during too long time for simulation:(
@@ -41,7 +45,6 @@ int init() {
 }
 
 int main() {
-	extern char _data_image_start, _data_end, _data_start;
 
 	void* descriptor;
 	init();
