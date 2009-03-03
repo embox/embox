@@ -6,4 +6,4 @@
  */
 "*** HELP\n"
 " - displays all possible commands\n"
-"*FORMAT: help\n"
+"*FORMAT: help"
