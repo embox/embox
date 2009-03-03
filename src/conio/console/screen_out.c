@@ -9,6 +9,7 @@
 
 #include "terminal.h"
 #include "types.h"
+#include "common.h"
 
 static void transmit_string(SCREEN *this, const char *str) {
 	while (*str) {
@@ -31,10 +32,19 @@ static void transmit_move_cursor_by(SCREEN *this, int by) {
 }
 
 static void move_cursor_to(SCREEN *this, int col) {
-	transmit_move_cursor_by(this, col - this->cursor);
-
 	// TODO range checking
-	this->cursor = col;
+
+	if (this->cursor + 3 < col || col < this->cursor) {
+		// it is more easy to move cursor by special command
+		transmit_move_cursor_by(this, col - this->cursor);
+		this->cursor = col;
+	} else if (this->cursor < col) {
+		// rewrite a few chars
+		for (; this->cursor < col; ++this->cursor) {
+			terminal_transmit(this->terminal, this->string[this->cursor], 0);
+		}
+	}
+
 }
 
 void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
@@ -42,60 +52,31 @@ void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 		return;
 	}
 
-	move_cursor_to(this, 0);
+	int i;
+	BOOL dirty = TRUE;
 
-	for (; cmdline->string[this->cursor]; this->cursor++) {
-		terminal_transmit(this->terminal, cmdline->string[this->cursor], 0);
-		this->string[this->cursor] = cmdline->string[this->cursor];
+	for (i = 0; cmdline->string[i]; i++) {
+		if (this->string[i] == '\0') {
+			dirty = FALSE;
+		}
+		if (!dirty || this->string[i] != cmdline->string[i]) {
+			move_cursor_to(this, i);
+			assert(i == this->cursor);
+			terminal_transmit(this->terminal, cmdline->string[i], 0);
+			this->cursor++;
+			this->string[i] = cmdline->string[i];
+		}
 	}
-	this->string[this->cursor] = '\0';
 
-	terminal_transmit(this->terminal, ' ', 0);
-	terminal_transmit(this->terminal, TERMINAL_TOKEN_BS, 0);
-
-	terminal_transmit(this->terminal, TERMINAL_TOKEN_ERASE_SCREEN, 1,
-			TERMINAL_TOKEN_PARAM_ERASE_DOWN_RIGHT);
+	if (dirty && this->string[i] != '\0') {
+		move_cursor_to(this, i);
+		terminal_transmit(this->terminal, TERMINAL_TOKEN_ERASE_SCREEN, 1,
+				TERMINAL_TOKEN_PARAM_ERASE_DOWN_RIGHT);
+	}
+	this->string[i] = '\0';
 
 	move_cursor_to(this, cmdline->cursor);
 }
-
-//static void flush_cmdline() {
-//	int i;
-//	BOOL dirty = TRUE;
-//
-//	for (i = 0; cmdline->string[i]; i++) {
-//		if (screen_string[i] == '\0') {
-//			dirty = FALSE;
-//		}
-//		if (!dirty || screen_string[i] != cmdline->string[i]) {
-//			if (screen_cursor + 3 < i || i < screen_cursor) {
-//				// it is more easy to move cursor by special command
-//				move_cmdline_cursor_to(i);
-//			} else if (screen_cursor < i) {
-//				// rewrite a few chars
-//				int j;
-//				for (j = screen_cursor; j < i; ++j) {
-//					_putc(cmdline->string[j]);
-//					screen_cursor++;
-//				}
-//			}
-//			_putc(cmdline->string[i]);
-//			screen_cursor++;
-//			screen_string[i] = cmdline->string[i];
-//		}
-//	}
-//
-//	//	if (dirty) {
-//	_putc(' ');
-//	_putc('\b');
-//	screen_erase_screen_down();
-//	//	}
-//
-//	screen_string[i] = '\0';
-//
-//	flush_cmdline_cursor();
-//}
-//
 
 void screen_out_puts(SCREEN *this, char *str) {
 	if (this == NULL) {

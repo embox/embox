@@ -18,7 +18,7 @@ inline static int dummy() {
 
 #ifdef SIMULATE
 #define TRACE(format, args...)		dummy()
-#define assert(cond)
+#define assert(cond)	{}
 #else
 #define TRACE(format, args...)   printf(format, ##args)
 #define assert(cond)	{\
