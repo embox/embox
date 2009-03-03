@@ -43,24 +43,20 @@ typedef struct _CMDLINE {
 	int cursor;
 
 	/* editing history */
-	CMDLINE_HISTORY history;
+	CMDLINE_HISTORY history[1];
 
 	/* current position in history */
 	int history_cursor;
 
 } CMDLINE;
 
-void cmdline_init(CMDLINE *cmdline);
-
-BOOL cmdline_history_move_to(CMDLINE *cmdline, int to);
-
-BOOL cmdline_history_move_by(CMDLINE *cmdline, int by);
+CMDLINE * cmdline_init(CMDLINE *);
 
 BOOL cmdline_history_backward(CMDLINE *cmdline);
 
 BOOL cmdline_history_forward(CMDLINE *cmdline);
 
-BOOL cmdline_history_new(CMDLINE *cmdline);
+BOOL cmdline_history_new_entry(CMDLINE *cmdline);
 
 BOOL cmdline_cursor_move_to(CMDLINE *cmdline, int to);
 
@@ -74,10 +70,10 @@ BOOL cmdline_cursor_home(CMDLINE *cmdline);
 
 BOOL cmdline_cursor_end(CMDLINE *cmdline);
 
-BOOL cmdline_char_delete(CMDLINE *cmdline);
+BOOL cmdline_chars_delete(CMDLINE *cmdline, int len);
 
-BOOL cmdline_char_backspace(CMDLINE *cmdline);
+BOOL cmdline_chars_backspace(CMDLINE *cmdline, int len);
 
-BOOL cmdline_char_insert(CMDLINE *cmdline, char ch);
+BOOL cmdline_chars_insert(CMDLINE *cmdline, char *ch, int len);
 
 #endif /* CMDLINE_H_ */

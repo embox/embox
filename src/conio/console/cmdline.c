@@ -13,20 +13,26 @@
 #include "string.h"
 #include "common.h"
 
-void cmdline_init(CMDLINE *cmdline) {
-	CMDLINE_HISTORY * history = &(cmdline->history);
+CMDLINE * cmdline_init(CMDLINE *this) {
+	if (this == NULL) {
+		return NULL;
+	}
+
+	CMDLINE_HISTORY *history = this->history;
 	history->array[0][0] = '\0';
 	history->array[1][0] = '\0';
 	history->index = 0;
-	cmdline->string[0] = '\0';
-	cmdline->length = 0;
-	cmdline->cursor = 0;
-	cmdline->history_cursor = 0;
+	this->string[0] = '\0';
+	this->length = 0;
+	this->cursor = 0;
+	this->history_cursor = 0;
+
+	return this;
 }
 
-BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
+static BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	int new_pos;
-	CMDLINE_HISTORY * history = &(cmdline->history);
+	CMDLINE_HISTORY * history = cmdline->history;
 	if (to < 0) {
 		to = to + (-to / CMDLINE_HISTORY_SIZE + 1) * CMDLINE_HISTORY_SIZE;
 	}
@@ -39,9 +45,8 @@ BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	}
 
 	if (cmdline->history_cursor == history->index) {
-		//strcpy(history->array[history->index], cmdline->string);
 		strncpy(history->array[history->index], cmdline->string,
-				sizeof(history->array[history->index]));
+				array_len(history->array[history->index]));
 	}
 
 	cmdline->history_cursor = new_pos;
@@ -51,7 +56,7 @@ BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	return TRUE;
 }
 
-inline BOOL cmdline_history_move_by(CMDLINE *cmdline, int by) {
+inline static BOOL cmdline_history_move_by(CMDLINE *cmdline, int by) {
 	return cmdline_history_move_to(cmdline, cmdline->history_cursor + by);
 }
 
@@ -63,9 +68,14 @@ inline BOOL cmdline_history_forward(CMDLINE *cmdline) {
 	return cmdline_history_move_by(cmdline, 1);
 }
 
-BOOL cmdline_history_new(CMDLINE *cmdline) {
-	CMDLINE_HISTORY * history = &(cmdline->history);
+BOOL cmdline_history_new_entry(CMDLINE *cmdline) {
+	CMDLINE_HISTORY * history = cmdline->history;
 	if (cmdline->string[0] == '\0') {
+		return FALSE;
+	}
+
+	if (0 == strcmp(cmdline->string, history->array[(history->index
+			+ CMDLINE_HISTORY_SIZE - 1) % CMDLINE_HISTORY_SIZE])) {
 		return FALSE;
 	}
 
@@ -111,40 +121,65 @@ inline BOOL cmdline_cursor_end(CMDLINE *cmdline) {
 	return cmdline_cursor_move_to(cmdline, cmdline->length);
 }
 
-BOOL cmdline_char_delete(CMDLINE *cmdline) {
-	int i;
-	if (cmdline->cursor == cmdline->length) {
+BOOL cmdline_chars_delete(CMDLINE *this, int len) {
+	if (this == NULL) {
 		return FALSE;
 	}
 
-	for (i = cmdline->cursor; i < cmdline->length; ++i) {
-		cmdline->string[i] = cmdline->string[i + 1];
+	len = min(len, this->length - this->cursor);
+	len = max(0, len);
+	if (len == 0) {
+		return FALSE;
 	}
-	cmdline->length--;
+
+	this->length -= len;
+	int i;
+	for (i = this->cursor; i < this->length; ++i) {
+		this->string[i] = this->string[i + len];
+	}
+	this->string[this->length] = '\0';
 
 	return TRUE;
 }
 
-BOOL cmdline_char_backspace(CMDLINE *cmdline) {
-	if (cmdline->cursor == 0) {
+BOOL cmdline_chars_backspace(CMDLINE *this, int len) {
+	if (this == NULL) {
 		return FALSE;
 	}
-	cmdline->cursor--;
 
-	return cmdline_char_delete(cmdline);
+	int old_cursor = this->cursor;
+	len = max(0, len);
+
+	cmdline_cursor_move_by(this, -len);
+
+	return cmdline_chars_delete(this, old_cursor - this->cursor);
 }
 
-BOOL cmdline_char_insert(CMDLINE *cmdline, char ch) {
-	int i;
-	if (cmdline->length == CMDLINE_MAX_LENGTH) {
+BOOL cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
+	if (this == NULL) {
 		return FALSE;
 	}
 
-	for (i = cmdline->length; i > cmdline->cursor; --i) {
-		cmdline->string[i] = cmdline->string[i - 1];
+	len = min(len, CMDLINE_MAX_LENGTH - this->length);
+	len = max(0, len);
+
+	int i;
+	for (i = 0; (i < len) && ch[i]; ++i) {
 	}
-	cmdline->string[cmdline->cursor++] = ch;
-	cmdline->string[++cmdline->length] = '\0';
+	len = min(len, i);
+	if (len == 0) {
+		return FALSE;
+	}
+
+	this->length += len;
+	this->cursor += len;
+
+	for (i = this->length; i >= this->cursor; --i) {
+		this->string[i] = this->string[i - len];
+	}
+	for (i = 0; i < len; ++i) {
+		this->string[this->cursor - len + i] = ch[i];
+	}
 
 	return TRUE;
 }

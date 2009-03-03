@@ -3,6 +3,10 @@
  *
  * Author: Joshua Haberman <joshua@reverberate.org>
  *
+ * Edit by Eldar Abusalimov (adaptation for using with terminal driver).
+ * As we use only Plain, ESC and CSI-based tokens all the others are ignored
+ * (in spite of the fact that the Parser is capable to handle them correctly).
+ *
  * This code is in the public domain.
  */
 
@@ -15,46 +19,41 @@
 #define ACTION(state_change) (state_change & 0x0F)
 #define STATE(state_change)  (state_change >> 4)
 
-void vtparse_init(VTPARSER *parser, VTPARSE_CALLBACK cb, char(*getc)(
-		VTPARSER *parser)) {
-	parser->state = VTPARSE_STATE_GROUND;
-	parser->intermediate_chars[0] = '\0';
-	parser->params->length = 0;
-	parser->intermediate_chars_overflow = FALSE;
-	parser->cb = cb;
-	parser->getc = getc;
+VTPARSER * vtparse_init(VTPARSER *this, VTPARSE_CALLBACK cb) {
+	if (this == NULL) {
+		return NULL;
+	}
+
+	this->state = VTPARSE_STATE_GROUND;
+	this->token->params = this->params;
+	this->token->params_len = 0;
+	this->token->attrs_len = 0;
+	this->cb = cb;
+
+	return this;
 }
 
-static void do_action(VTPARSER *parser, VT_ACTION action, char ch) {
+static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 	/* Some actions we handle internally (like parsing parameters), others
 	 * we hand to our client for processing */
+	VT_TOKEN *token = this->token;
+	token->action = action;
+	token->ch = ch;
 
 	switch (action) {
 	case VT_ACTION_PRINT:
 	case VT_ACTION_EXECUTE:
-	case VT_ACTION_HOOK:
-	case VT_ACTION_PUT:
-	case VT_ACTION_OSC_START:
-	case VT_ACTION_OSC_PUT:
-	case VT_ACTION_OSC_END:
-	case VT_ACTION_UNHOOK:
-	case VT_ACTION_CSI_DISPATCH:
+	case VT_ACTION_CS_DISPATCH:
 	case VT_ACTION_ESC_DISPATCH:
-		parser->cb(parser, action, ch);
-		break;
-
-	case VT_ACTION_IGNORE:
-		/* do nothing */
+		this->cb(this, this->token);
 		break;
 
 	case VT_ACTION_COLLECT: {
 		/* Append the character to the intermediate params */
-		int num_intermediate_chars = strlen((char*) parser->intermediate_chars);
 
-		if (num_intermediate_chars + 1 > MAX_INTERMEDIATE_CHARS)
-			parser->intermediate_chars_overflow = TRUE;
-		else
-			parser->intermediate_chars[num_intermediate_chars++] = ch;
+		if (token->attrs_len < VT_TOKEN_MAX_CHARS + 1) {
+			token->attrs[token->attrs_len++] = ch;
+		}
 
 		break;
 	}
@@ -62,29 +61,43 @@ static void do_action(VTPARSER *parser, VT_ACTION action, char ch) {
 	case VT_ACTION_PARAM: {
 		/* process the param character */
 		if (ch == ';') {
-			parser->params->length += 1;
-			parser->params->data[parser->params->length - 1] = 0;
+			this->params[token->params_len++] = 0;
 		} else {
 			/* the character is a digit */
-			int current_param;
+			int *current_param;
 
-			if (parser->params->length == 0) {
-				parser->params->length = 1;
-				parser->params->data[0] = 0;
+			if (token->params_len == 0) {
+				token->params_len = 1;
+				this->params[0] = 0;
 			}
 
-			current_param = parser->params->length - 1;
-			parser->params->data[current_param] *= 10;
-			parser->params->data[current_param] += (ch - '0');
+			current_param = &this->params[token->params_len - 1];
+			*current_param *= 10;
+			*current_param += (ch - '0');
 		}
 
 		break;
 	}
 
 	case VT_ACTION_CLEAR:
-		parser->intermediate_chars[0] = '\0';
-		parser->params->length = 0;
-		parser->intermediate_chars_overflow = FALSE;
+		token->params_len = 0;
+		token->attrs_len = 0;
+		break;
+
+	case VT_ACTION_OSC_START:
+	case VT_ACTION_OSC_PUT:
+	case VT_ACTION_OSC_END:
+		/* Operating System Command */
+		// ignore them as unused in our system
+		//  -- Eldar
+	case VT_ACTION_HOOK:
+	case VT_ACTION_PUT:
+	case VT_ACTION_UNHOOK:
+		/* device control strings */
+		// ignore them as unused in our system
+		//  -- Eldar
+	case VT_ACTION_IGNORE:
+		/* do nothing */
 		break;
 
 	default:
@@ -92,7 +105,7 @@ static void do_action(VTPARSER *parser, VT_ACTION action, char ch) {
 	}
 }
 
-static void do_state_change(VTPARSER *parser, state_change_t change, char ch) {
+static void do_state_change(VTPARSER *this, state_change_t change, char ch) {
 	/* A state change is an action and/or a new state to transition to. */
 
 	VTPARSE_STATE new_state = STATE(change);
@@ -102,41 +115,39 @@ static void do_state_change(VTPARSER *parser, state_change_t change, char ch) {
 		/* Perform up to three actions:
 		 *   1. the exit action of the old state
 		 *   2. the action associated with the transition
-		 *   3. the entry actionk of the new action
+		 *   3. the entry action of the new state
 		 */
 
-		VT_ACTION exit_action = EXIT_ACTIONS[parser->state];
+		VT_ACTION exit_action = EXIT_ACTIONS[this->state];
 		VT_ACTION entry_action = ENTRY_ACTIONS[new_state];
 
 		if (exit_action)
-			do_action(parser, exit_action, 0);
+			do_action(this, exit_action, 0);
 
 		if (action)
-			do_action(parser, action, ch);
+			do_action(this, action, ch);
 
 		if (entry_action)
-			do_action(parser, entry_action, 0);
+			do_action(this, entry_action, 0);
 
-		parser->state = new_state;
+		this->state = new_state;
 	} else {
-		do_action(parser, action, ch);
+		do_action(this, action, ch);
 	}
 }
 
-void vtparse(VTPARSER *parser) {
-	char ch;
-	state_change_t change;
-	while ((parser->getc != NULL) && (ch = parser->getc(parser))) {
+void vtparse(VTPARSER *this, unsigned char ch) {
+	static state_change_t change;
 
-		/* If a transition is defined from the "anywhere" state, always
-		 * use that.  Otherwise use the transition from the current state. */
+//	TRACE("%c : %x : %d\n", ch, ch,ch);
+	/* If a transition is defined from the "anywhere" state, always
+	 * use that.  Otherwise use the transition from the current state. */
 
-		change = STATE_TABLE[VTPARSE_STATE_ANYWHERE][ch];
+	change = STATE_TABLE[VTPARSE_STATE_ANYWHERE][ch];
 
-		if (!change)
-			change = STATE_TABLE[parser->state][ch];
+	if (!change)
+		change = STATE_TABLE[this->state][ch];
 
-		do_state_change(parser, change, ch);
-	}
+	do_state_change(this, change, ch);
 }
 

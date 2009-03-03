@@ -18,7 +18,7 @@ typedef enum {
 	VTPARSE_STATE_SOS_PM_APC_STRING = 14,
 } VTPARSE_STATE;
 
-typedef char state_change_t;
+typedef unsigned char state_change_t;
 extern state_change_t STATE_TABLE[15][256];
 extern VT_ACTION ENTRY_ACTIONS[15];
 extern VT_ACTION EXIT_ACTIONS[15];

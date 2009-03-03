@@ -12,89 +12,59 @@ char ch_upcase(char ch) {
 // convert HEX digit character to integer
 int ch_to_digit(char ch, int base) {
 	ch = ch_upcase(ch);
-	switch (base)
-	{
-		case 0x10:
-		{
-			if (ch >= '0' && ch <= '9') {
-				return (ch - '0');
-			} else if (ch >= 'A' && ch <= 'F') {
-				return (ch - 'A' + 0x0A);
-			}
-			return -1;
+	switch (base) {
+	case 0x10: {
+		if (ch >= '0' && ch <= '9') {
+			return (ch - '0');
+		} else if (ch >= 'A' && ch <= 'F') {
+			return (ch - 'A' + 0x0A);
 		}
-		case 10:
-		{
-			if (ch >= '0' && ch <= '9') {
-				return (ch - '0');
-			}
-			return -1;
+		return -1;
+	}
+	case 10: {
+		if (ch >= '0' && ch <= '9') {
+			return (ch - '0');
 		}
-		case 8:
-		{
-			if (ch >= '0' && ch <= '7') {
-				return (ch - '0');
-			}
-			return -1;
+		return -1;
+	}
+	case 8: {
+		if (ch >= '0' && ch <= '7') {
+			return (ch - '0');
 		}
-		default:
-			return -1;
+		return -1;
+	}
+	default:
+		return -1;
 	}
 
 	return -1;
 }
-/*
-int strlen(const char * str) {
-	int i;
-	const char *eos = str;
-	for (i = 0; str[i]; i++)
-		;
-}
-*/
+
 int strlen(const char * str) {
 	const char *eos = str;
 
-	while (*eos++);
+	while (*eos++)
+		;
 
 	return (int) (eos - str - 1);
 }
 
-/*
-int strcpy(char * dest, const char * src) {
-	int i = 0;
-	while (*src != '\0') {
-		*dest++ = *src++;
-		i++;
-	}
-	*dest = '\0';
-	return i;
-}
-*/
 char *strcpy(char * dest, const char * src) {
-	  char *cp = dest;
-	  while (*cp++ = *src++);
-	  return dest;
+	char *cp = dest;
+	while ((*cp++ = *src++))
+		;
+	return dest;
 }
 
 char *strncpy(char *dest, const char *source, size_t count) {
 	char *start = dest;
-
 	while (count && (*dest++ = *source++))
 		count--;
-	if (count)
-		while (--count)
-			*dest++ = '\0';
+	while (count--)
+		*dest++ = '\0';
 	return start;
 }
-/*
-int strcmp(const char * str1, const char * str2) {
-	for (; *str1 == *str2; str1++, str2++) {
-		if (*str1 == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-*/
+
 int strcmp(const char * str1, const char * str2) {
 	int ret = 0;
 	while (!(ret = *(unsigned char *) str1 - *(unsigned char *) str2) && *str2)
@@ -120,69 +90,38 @@ int strncmp(const char *s1, const char *s2, size_t count) {
 	return *(unsigned char *) s1 - *(unsigned char *) s2;
 }
 
-
-/*
-int sz_append(char *dest, const char *src, char ch) {
-	int i;
-	for (i = 0; src[i] != 0; i++)
-		dest[i] = src[i];
-
-	if (i > 0)
-		dest[i++] = '.';
-
-	dest[i++] = ch;
-	dest[i] = 0x0;
-	return i;
-}
-*/
-
-
-
-
-/*
-WORD atow(char *buff) {
-	WORD result = 0;
-	WORD paw = 1;
-	int length = strlen(buff) - 1;
-	for (; length >= 0; length--) {
-		result += ch_to_digit(buff[length], 0x10) * paw;
-		paw = paw * 0x10;
-	}
-	return result;
-}
-*/
 // Determines whether beg is the beginning of the str string
-int sz_cmp_beginning(const char *beg, const char *str){
-	for (; *beg == *str || *beg == 0; beg++, str++) {
-		if (*beg == 0)
+int str_starts_with(const char *str, const char *beg, int len) {
+	int i;
+	for (i = 0; *beg == *str || *beg == 0 || i == len; beg++, str++, i++) {
+		if (*beg == 0 || i == len) {
 			return TRUE;
+		}
 	}
 	return FALSE;
 }
 
 BOOL is_digit(int ch, int base) {
-	ch = (int)ch_upcase((char)ch);
+	ch = (int) ch_upcase((char) ch);
 	switch (base) {
-		case 10:
-		{
-			if ((ch >= '0') && (ch <= '9'))
-				return TRUE;
-			return FALSE;
-		}
-		case 8:
-		{
-			if ((ch >= '0') && (ch <= '7'))
-				return TRUE;
-			return FALSE;
-		}
-		case 16:
-		{
-			if (((ch >= '0') && (ch <= '9')) || ((ch >= 'A') && (ch <= 'F')))
-				return TRUE;
-			return FALSE;
-		}
-		default:
-			return FALSE;
+	case 10: {
+		if ((ch >= '0') && (ch <= '9'))
+			return TRUE;
+		return FALSE;
+	}
+	case 8: {
+		if ((ch >= '0') && (ch <= '7'))
+			return TRUE;
+		return FALSE;
+	}
+	case 16: {
+		if (((ch >= '0') && (ch <= '9')) || ((ch >= 'A') && (ch <= 'F')))
+			return TRUE;
+		return FALSE;
+	}
+	default:
+		return FALSE;
 	}
 	return FALSE;
 }
+

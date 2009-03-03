@@ -1,7 +1,5 @@
-SUBDIRS:=console
-OBJS:=printf.o scanf.o shell_proc.o shell.o
-
-.PHONY: all $(SUBDIRS)
+SUBDIRS:=
+OBJS:= cmdline.o screen.o console.o
 
 create_objs_lst:$(SUBDIRS)
 	echo '$(addprefix $(CURDIR)/,$(OBJS)) \' >> $(ROOT_DIR)/objs.lst
@@ -9,7 +7,6 @@ create_objs_lst:$(SUBDIRS)
 
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKEOP)
-
 
 all:$(SUBDIRS) $(OBJS)
 

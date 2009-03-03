@@ -1,6 +1,8 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include "conio.h"
+
 #define SetBit(rg, bit)   { (rg) |=  (1UL << (bit)); }
 #define ClearBit(rg, bit) { (rg) &= ~(1UL << (bit)); }
 #define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
@@ -26,6 +28,8 @@ inline static int dummy() {
 		}\
 }
 #endif  // ifdef SIMULATE
+#define array_len(array)		(sizeof(array) / sizeof(array[0]))
+
 // mathematics
 #define max(i, j)   (((i) > (j)) ? (i) : (j))
 #define min(i, j)   (((i) < (j)) ? (i) : (j))

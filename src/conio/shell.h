@@ -8,6 +8,8 @@
 #ifndef SHELL_H_
 #define SHELL_H_
 
+#include "common.h"
+
 #include "mem.h"
 #include "wmem.h"
 #include "lspnp.h"
@@ -35,8 +37,9 @@ static SHELL_HANDLER_DESCR shell_handlers[] = {
 #include "shell.inc"
 		};
 
+#define SHELL_COMMANDS_AMOUNT array_len(shell_handlers)
+
 void shell_start();
-int shell_find_commands(char *cmdline, char **proposals);
 
 // parse arguments array on keys-value structures
 // RETURNS:
@@ -45,6 +48,6 @@ int shell_find_commands(char *cmdline, char **proposals);
 // -3 wrong key entered
 // amount of entered keys otherwise (if everything's OK)
 int parse_arg(const char *handler_name, int argsc, char **argsv,
-		char *available_keys,	int amount_of_available_keys, SHELL_KEY *keys);
+		char *available_keys, int amount_of_available_keys, SHELL_KEY *keys);
 
 #endif /* SHELL_H_ */

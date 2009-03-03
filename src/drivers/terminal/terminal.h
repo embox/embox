@@ -1,10 +1,12 @@
 /*
- * terminal.h
+ * Terminal driver.
  *
- * ANSI/VT100 terminal driver
+ * Allows us to operate high-level tokens instead of simple chars.
+ * It also provides some common ANSI/VT100 terminal control sequences.
  *
- *  Created on: 02.02.2009
- *      Author: Eldar Abusalimov
+ * This entity is backed by VTParse and VTBuild modules.
+ *
+ * Author: Eldar Abusalimov
  */
 
 #ifndef TERMINAL_H_
@@ -15,39 +17,120 @@
 #include "vtparse.h"
 #include "vtbuild.h"
 
-typedef VT_PARAMS TERMINAL_PARAMS;
+typedef int TERMINAL_TOKEN;
 
-typedef enum {
-	TERMINAL_TOKEN_TYPE_CTRL, TERMINAL_TOKEN_TYPE_CHAR,
-} TERMINAL_TOKEN_TYPE;
+typedef struct {
+	int data[VT_TOKEN_MAX_PARAMS];
+	int length;
+} TERMINAL_TOKEN_PARAMS;
 
-#define CTRL(action, code)		(((action) << 8) | (code) & 0xFF)
-#define UNCTRL_ACTION(ctrl)		((ctrl) >> 8)
-#define UNCTRL_CODE(ctrl)		((ctrl) & 0xFF)
+#define ENCODE(action, char1, char2, code) 	\
+	(((action & 0xFF) ^ VT_ACTION_PRINT) << 24 \
+		| ((char1 & 0xFF) << 16) \
+		| ((char2 & 0xFF) << 8) \
+		| (code & 0xFF))
 
-typedef enum {
-	TERMINAL_TOKEN_CTRL_CURSOR_UP = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUU),
-	TERMINAL_TOKEN_CTRL_CURSOR_DOWN = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUD),
-	TERMINAL_TOKEN_CTRL_CURSOR_FORWARD = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUF),
-	TERMINAL_TOKEN_CTRL_CURSOR_BACKWARD = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUB),
-	TERMINAL_TOKEN_CTRL_CURSOR_POSITION = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_CUP),
-	TERMINAL_TOKEN_CTRL_CURSOR_SAVE = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_SCP),
-	TERMINAL_TOKEN_CTRL_CURSOR_RESTORE = CTRL(VT_ACTION_CSI_DISPATCH, VT_CODE_CS_RCP),
+#define DECODE_ACTION(token) (((token >> 24) & 0xFF) ^ VT_ACTION_PRINT)
+#define DECODE_CHAR1(token) ((token >> 16) & 0xFF)
+#define DECODE_CHAR2(token) ((token >> 8) & 0xFF)
+#define DECODE_CODE(token) ((token) & 0xFF)
 
-	TERMINAL_TOKEN_CTRL_CURSOR_SAVE_ATTRS = CTRL(VT_ACTION_ESC_DISPATCH, VT_CODE_ESC_SCA),
-	TERMINAL_TOKEN_CTRL_CURSOR_RESTORE_ATTRS = CTRL(VT_ACTION_ESC_DISPATCH, VT_CODE_ESC_RCA),
+#define ENCODE_CS_(char1, char2, code)	ENCODE(VT_ACTION_CS_DISPATCH, char1, char2, code)
+#define ENCODE_ESC_(char1, char2, code)	ENCODE(VT_ACTION_ESC_DISPATCH, char1, char2, code)
 
-	//	TERMINAL_TOKEN_CTRL_DELETE = 6, // TODO check it
-	TERMINAL_TOKEN_CTRL_ENTER = CTRL(VT_ACTION_PRINT, '\n'),
-	TERMINAL_TOKEN_CTRL_BACKSPACE = CTRL(VT_ACTION_PRINT, '\b'),
-} TERMINAL_TOKEN_CTRL;
+#define ENCODE_CS(code)		ENCODE_CS_(0, 0, code)
+#define ENCODE_ESC(code)		ENCODE_ESC_(0, 0, code)
+#define ENCODE_EXEC(code)	ENCODE(VT_ACTION_EXECUTE, 0, 0, code)
 
-typedef char TERMINAL_TOKEN_CHAR;
+#define TERMINAL_TOKEN_EMPTY ENCODE(0,0,0,0)
 
-typedef union {
-	TERMINAL_TOKEN_CHAR ch;
-	TERMINAL_TOKEN_CTRL ctrl;
-} TERMINAL_TOKEN;
+/* Cursor Up */
+#define TERMINAL_TOKEN_CURSOR_UP  ENCODE_CS('A')
+/* Cursor Down */
+#define TERMINAL_TOKEN_CURSOR_DOWN  ENCODE_CS('B')
+/* Cursor Forward */
+#define TERMINAL_TOKEN_CURSOR_RIGHT  ENCODE_CS('C')
+/* Cursor Backward */
+#define TERMINAL_TOKEN_CURSOR_LEFT  ENCODE_CS('D')
+/* Cursor Position */
+#define TERMINAL_TOKEN_CURSOR_POSITION  ENCODE_CS('H')
+/* Saves the cursor position. */
+#define TERMINAL_TOKEN_CURSOR_SAVE  ENCODE_CS('s')
+/* Restores the cursor position. */
+#define TERMINAL_TOKEN_CURSOR_RESTORE  ENCODE_CS('u')
+/* Saves the cursor position & attributes. */
+#define TERMINAL_TOKEN_CURSOR_SAVE_ATTRS  ENCODE_ESC('7')
+/* Restores the cursor position & attributes. */
+#define TERMINAL_TOKEN_CURSOR_RESTORE_ATTRS  ENCODE_ESC('8')
+/*
+ * Clear part of the screen.
+ * If param is 0 (or missing)), clear from cursor to end of screen.
+ * If param is 1), clear from cursor to beginning of the screen.
+ * If param is 2), clear entire screen
+ */
+#define TERMINAL_TOKEN_ERASE_SCREEN  ENCODE_CS('J')
+/*
+ * Erases part of the line.
+ * If param is zero (or missing)), clear from cursor to the end of the line.
+ * If param is one), clear from cursor to beginning of the line.
+ * If param is two), clear entire line.
+ * Cursor position does not change
+ */
+#define TERMINAL_TOKEN_ERASE_LINE  ENCODE_CS('K')
+/* Carriage Return */
+#define TERMINAL_TOKEN_CR  ENCODE_EXEC('\r')
+/* Line Feed */
+#define TERMINAL_TOKEN_LF  ENCODE_EXEC('\n')
+/* Horizontal Tabulation */
+#define TERMINAL_TOKEN_HT  ENCODE_EXEC('\t')
+/* Backspace */
+#define TERMINAL_TOKEN_BS  ENCODE_EXEC('\b')
+/* Delete */
+#define TERMINAL_TOKEN_DEL  ENCODE_EXEC(0x7f)
+/* Private */
+#define TERMINAL_TOKEN_PRIVATE  ENCODE_CS('~')
+/* Set Mode */
+#define TERMINAL_TOKEN_SET_MODE  ENCODE_CS('h')
+/* Reset Mode */
+#define TERMINAL_TOKEN_RESET_MODE  ENCODE_CS('l')
+/* Select Graphic Rendition */
+#define TERMINAL_TOKEN_SGR  ENCODE_CS('m')
+
+#define TERMINAL_TOKEN_PARAM_MODE_LINE_WRAP 7
+
+#define TERMINAL_TOKEN_PARAM_ERASE_DOWN_RIGHT 	0
+#define TERMINAL_TOKEN_PARAM_ERASE_UP_LEFT 	0
+#define TERMINAL_TOKEN_PARAM_ERASE_ENTIRE 	2
+
+#define TERMINAL_TOKEN_PARAM_PRIVATE_INSERT	1
+#define TERMINAL_TOKEN_PARAM_PRIVATE_HOME	2
+#define TERMINAL_TOKEN_PARAM_PRIVATE_DELETE	4
+#define TERMINAL_TOKEN_PARAM_PRIVATE_END	5
+
+#define TERMINAL_TOKEN_PARAM_SGR_RESET		0
+#define TERMINAL_TOKEN_PARAM_SGR_INTENSITY_BOLD		1
+#define TERMINAL_TOKEN_PARAM_SGR_INTENSITY_NORMAL	22
+#define TERMINAL_TOKEN_PARAM_SGR_BLINK_SLOW		5
+#define TERMINAL_TOKEN_PARAM_SGR_BLINK_OFF	25
+
+#define TERMINAL_TOKEN_PARAM_SGR_FG_BLACK	30
+#define TERMINAL_TOKEN_PARAM_SGR_FG_RED		31
+#define TERMINAL_TOKEN_PARAM_SGR_FG_GREEN	32
+#define TERMINAL_TOKEN_PARAM_SGR_FG_YELLOW	33
+#define TERMINAL_TOKEN_PARAM_SGR_FG_BLUE	34
+#define TERMINAL_TOKEN_PARAM_SGR_FG_MAGENTA	35
+#define TERMINAL_TOKEN_PARAM_SGR_FG_CYAN	36
+#define TERMINAL_TOKEN_PARAM_SGR_FG_WHITE	37
+#define TERMINAL_TOKEN_PARAM_SGR_FG_RESET	39
+
+#define TERMINAL_TOKEN_PARAM_SGR_BG_BLACK	40
+#define TERMINAL_TOKEN_PARAM_SGR_BG_RED		41
+#define TERMINAL_TOKEN_PARAM_SGR_BG_GREEN	42
+#define TERMINAL_TOKEN_PARAM_SGR_BG_YELLOW	43
+#define TERMINAL_TOKEN_PARAM_SGR_BG_BLUE	44
+#define TERMINAL_TOKEN_PARAM_SGR_BG_MAGENTA	45
+#define TERMINAL_TOKEN_PARAM_SGR_BG_CYAN	46
+#define TERMINAL_TOKEN_PARAM_SGR_BG_WHITE	47
 
 /*
  * Terminal input/output functions
@@ -61,20 +144,6 @@ typedef struct {
 } TERMINAL_IO;
 
 /*
- * Saves some useful but volatile information
- * about parser state collected at callback invocation time.
- * NOTE: This structure is tightly relies on vtparse algorithms.
- */
-typedef struct {
-	VT_ACTION action;
-	VT_PARAMS params[1];
-	char ch;
-} VTPARSER_FOOTPRINT;
-
-/* NOTE: This value is tightly relies on vtparse algorithms. */
-#define VTPARSER_FOOTPRINTS_AMOUNT 3
-
-/*
  * Terminal internal representation
  */
 typedef struct {
@@ -84,17 +153,29 @@ typedef struct {
 	VTBUILDER builder[1];
 
 	VTPARSER parser[1];
-	VTPARSER_FOOTPRINT vtparser_footprint[VTPARSER_FOOTPRINTS_AMOUNT];
-	int footprint_counter;
+
+	/* NOTE: This value is tightly relies on vtparse algorithms. */
+#define VTPARSER_TOKEN_QUEUE_AMOUNT 3
+	/*
+	 * Saves some useful but volatile information
+	 * about parser state collected at callback invocation time.
+	 * NOTE: This structure is tightly relies on vtparse algorithms.
+	 */
+	VT_TOKEN vt_token_queue[VTPARSER_TOKEN_QUEUE_AMOUNT];
+
+	int vt_token_queue_len;
+	int vt_token_queue_head;
+
+	TERMINAL_TOKEN_PARAMS default_params[1];
 
 } TERMINAL;
 
-void terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
+TERMINAL * terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
 
-BOOL terminal_receive(TERMINAL *terminal, TERMINAL_TOKEN_TYPE *type,
-		TERMINAL_TOKEN *token, TERMINAL_PARAMS *params);
+BOOL terminal_receive(TERMINAL *terminal, TERMINAL_TOKEN *token,
+		TERMINAL_TOKEN_PARAMS *params);
 
-BOOL terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN_TYPE type,
-		TERMINAL_TOKEN *token, TERMINAL_PARAMS *params);
+BOOL terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token, int params_len,
+		...);
 
 #endif /* TERMINAL_H_ */

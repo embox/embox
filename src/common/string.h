@@ -20,5 +20,5 @@ int strcmp(const char *str1, const char *str2);
 int strncmp(const char *s1, const char *s2, size_t count);
 
 // Determines whether beg is the beginning of the str string
-int sz_cmp_beginning(const char *beg, const char *str);
+int str_starts_with(const char *str, const char *beg, int len);
 

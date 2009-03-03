@@ -8,7 +8,6 @@ create_objs_lst:$(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKEOP)
 
-
 all:$(SUBDIRS) $(OBJS)
 
 %.o:%.S
@@ -21,5 +20,3 @@ all:$(SUBDIRS) $(OBJS)
 
 clean:
 	rm -rf $(OBJS) *.d
-
-

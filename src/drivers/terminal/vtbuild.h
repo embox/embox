@@ -1,8 +1,10 @@
 /*
- * vtbuild.h
+ * VTBuild - Provides VT token printing routines as opposed to VTParse module
  *
- *  Created on: 20.02.2009
- *      Author: Eldar Abusalimov
+ * As we use only Plain, ESC and CSI-based tokens
+ * all the others are ignored (the same remark concerns to VTParse too).
+ *
+ * Author: Eldar Abusalimov
  */
 
 #ifndef VTBUILD_H_
@@ -15,8 +17,8 @@ typedef struct _VTBUILDER {
 	void* user_data;
 } VTBUILDER;
 
-void vtbuild_init(VTBUILDER *builder, void(*putc)(VTBUILDER *builder, char ch));
+VTBUILDER * vtbuild_init(VTBUILDER *, void(*putc)(VTBUILDER *builder, char ch));
 
-void vtbuild(VTBUILDER *builder, VT_ACTION action, VT_PARAMS *params, char ch);
+void vtbuild(VTBUILDER *, const VT_TOKEN *token);
 
 #endif /* VTBUILD_H_ */

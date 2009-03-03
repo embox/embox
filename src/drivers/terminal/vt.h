@@ -1,29 +1,19 @@
 /*
  * vt.h
  *
- * Provides VT/ANSI terminal control sequence constants.
- *
- * See: http://en.wikipedia.org/wiki/ANSI_escape_code
- * See: http://ascii-table.com/ansi-escape-sequences-vt-100.php
- * See: http://www.termsys.demon.co.uk/vtansi.htm
- *
  * Author: Eldar Abusalimov
  */
 
 #ifndef VT_H_
 #define VT_H_
 
-#define MAX_PARAMS	16
-
-typedef struct _INT_ARRAY {
-	int data[MAX_PARAMS];
-	int length;
-} VT_PARAMS;
+#define VT_TOKEN_MAX_CHARS 2
+#define VT_TOKEN_MAX_PARAMS	8
 
 typedef enum {
 	VT_ACTION_CLEAR = 1,
 	VT_ACTION_COLLECT = 2,
-	VT_ACTION_CSI_DISPATCH = 3,
+	VT_ACTION_CS_DISPATCH = 3,
 	VT_ACTION_ESC_DISPATCH = 4,
 	VT_ACTION_EXECUTE = 5,
 	VT_ACTION_HOOK = 6,
@@ -37,92 +27,19 @@ typedef enum {
 	VT_ACTION_UNHOOK = 14,
 } VT_ACTION;
 
-/*
- * Codes used as final bytes of ANSI control sequences
- * (VT_ACTION_CSI_DISPATCH)
- */
-typedef enum {
-
-	/* Cursor Up */
-	VT_CODE_CS_CUU = 'A',
-
-	/* Cursor Down */
-	VT_CODE_CS_CUD = 'B',
-
-	/* Cursor Forward */
-	VT_CODE_CS_CUF = 'C',
-
-	/* Cursor Backward */
-	VT_CODE_CS_CUB = 'D',
-
-	/* Cursor Position */
-	VT_CODE_CS_CUP = 'H',
-
-	/*
-	 * Clear part of the screen.
-	 * If attr is zero (or missing), clear from cursor to end of screen.
-	 * If attr is one, clear from cursor to beginning of the screen.
-	 * If attr is two, clear entire screen
-	 */
-	VT_CODE_CS_ED = 'J',
-
-	/*
-	 * Erases part of the line.
-	 * If attr is zero (or missing), clear from cursor to the end of the line.
-	 * If attr is one, clear from cursor to beginning of the line.
-	 * If attr is two, clear entire line.
-	 * Cursor position does not change
-	 */
-	VT_CODE_CS_EL = 'K',
-
-	/* Saves the cursor position. */
-	VT_CODE_CS_SCP = 's',
-
-	/* Restores the cursor position. */
-	VT_CODE_CS_RCP = 'u',
-
-} VT_CODE_CS;
-
-/*
- * Codes used as final bytes of escape sequences
- * (VT_ACTION_ESC_DISPATCH)
- */
-typedef enum {
-
-	/* Saves the cursor position & attributes. */
-	VT_CODE_ESC_SCA = '7',
-
-	/* Restores the cursor position & attributes. */
-	VT_CODE_ESC_RCA = '8',
-
-} VT_CODE_ESC;
+typedef struct {
+	VT_ACTION action;
+	char attrs[VT_TOKEN_MAX_CHARS];
+	int attrs_len;
+	const int *params;
+	int params_len;
+	char ch;
+} VT_TOKEN;
 
 // ANSI Escape
 #define ESC		'\e'
 // ANSI Control Sequence Introducer
 #define CSI		'['
-
-// Select Graphic Rendition
-#define ANSI_CODE_SGR				'm'
-
-#define ANSI_CODE_SET_MODE			'h'
-#define ANSI_CODE_RESET_MODE		'l'
-
-#define ANSI_PARAM_MODE_LINE_WRAP	'7'
-
-#define ANSI_CODE_ERASE_LINE		'K'
-#define ANSI_CODE_ERASE_SCREEN		'J'
-
-#define ANSI_PARAM_ERASE_DOWN_RIGHT	'0'
-#define ANSI_PARAM_ERASE_UP_LEFT	'1'
-#define ANSI_PARAM_ERASE_ENTIRE		'2'
-
-#define SGR_COLOR_BLACK		0
-#define SGR_COLOR_RED		1
-
-#define PRV_PARAM_HOME		'2'
-#define PRV_PARAM_END		'5'
-#define PRV_PARAM_DELETE	'3'
 
 //   # Erasing
 //

@@ -1,8 +1,12 @@
 /*
- * tty.c
+ * Terminal driver.
  *
- *  Created on: 02.02.2009
- *      Author: Eldar Abusalimov
+ * Allows us to operate high-level tokens instead of simple chars.
+ * It also provides some common ANSI/VT100 terminal control sequences.
+ *
+ * This entity is backed by VTParse and VTBuild modules.
+ *
+ * Author: Eldar Abusalimov
  */
 
 #include "terminal.h"
@@ -17,89 +21,142 @@
 #include "conio.h"
 #include "common.h"
 #include "string.h"
+#include "stdarg.h"
 
-static void vtparse_callback(VTPARSER *parser, VT_ACTION action, char ch);
-
-static char default_getc() {
-	return 0;
-}
-
-static void default_putc(char ch) {
-}
-
-static char vtparse_getc(VTPARSER *parser) {
-	TERMINAL* terminal = (TERMINAL*) parser->user_data;
-	if (terminal->footprint_counter == 0) {
-		return terminal->io->getc();
-	} else {
-		return 0;
-	}
-}
+static void vtparse_callback(VTPARSER*, VT_TOKEN*);
 
 static void vtbuild_putc(VTBUILDER *builder, char ch) {
 	TERMINAL* terminal = (TERMINAL*) builder->user_data;
 	terminal->io->putc(ch);
 }
 
-void terminal_init(TERMINAL *terminal, TERMINAL_IO *io) {
-	if (terminal == NULL) {
-		return;
+TERMINAL * terminal_init(TERMINAL *this, TERMINAL_IO *io) {
+	if (this == NULL) {
+		return NULL;
 	}
 
-	if (io != NULL && io->getc != NULL) {
-		terminal->io->getc = io->getc;
+	if (io != NULL && io->getc != NULL && io->putc != NULL) {
+		this->io->getc = io->getc;
+		this->io->putc = io->putc;
 	} else {
-		terminal->io->getc = default_getc;
-	}
-	if (io != NULL && io->putc != NULL) {
-		terminal->io->putc = io->putc;
-	} else {
-		terminal->io->putc = default_putc;
+		return NULL;
 	}
 
-	terminal->builder->user_data = terminal;
-	vtbuild_init(terminal->builder, vtbuild_putc);
+	this->builder->user_data = this;
+	if (vtbuild_init(this->builder, vtbuild_putc) == NULL) {
+		return NULL;
+	}
 
-	terminal->parser->user_data = terminal;
-	vtparse_init(terminal->parser, vtparse_callback, vtparse_getc);
-	terminal->footprint_counter = 0;
+	this->parser->user_data = this;
+	vtparse_init(this->parser, vtparse_callback);
+
+	this->vt_token_queue_head = 0;
+	this->vt_token_queue_len = 0;
+
+	return this;
 }
 
-static BOOL is_ctrl_token(TERMINAL_TOKEN_CTRL ctrl) {
-	switch (ctrl) {
-	case TERMINAL_TOKEN_CTRL_CURSOR_UP:
-	case TERMINAL_TOKEN_CTRL_CURSOR_DOWN:
-	case TERMINAL_TOKEN_CTRL_CURSOR_FORWARD:
-	case TERMINAL_TOKEN_CTRL_CURSOR_BACKWARD:
+static BOOL is_valid_action(VT_ACTION action) {
+	switch (action) {
+	case VT_ACTION_PRINT:
+	case VT_ACTION_EXECUTE:
+	case VT_ACTION_CS_DISPATCH:
+	case VT_ACTION_ESC_DISPATCH:
+		/* ok */
 		return TRUE;
+	case VT_ACTION_OSC_START:
+	case VT_ACTION_OSC_PUT:
+	case VT_ACTION_OSC_END:
+		/* Operating System Command */
+		// ignore them as unused in our system
+		//  -- Eldar
+	case VT_ACTION_HOOK:
+	case VT_ACTION_PUT:
+	case VT_ACTION_UNHOOK:
+		/* device control strings */
+		// ignore them as unused in our system
+		//  -- Eldar
+	case VT_ACTION_IGNORE:
+	case VT_ACTION_COLLECT:
+	case VT_ACTION_PARAM:
+	case VT_ACTION_CLEAR:
+		// ignore as VTParser internal states
 	default:
+		/* unknown */
 		return FALSE;
 	}
 }
 
-static BOOL transmit_ctrl_token(TERMINAL *terminal, TERMINAL_TOKEN_CTRL ctrl,
-		TERMINAL_PARAMS *params) {
-	if (!is_ctrl_token(ctrl)) {
-		return FALSE;
+static VT_TOKEN *vt_from_term_token(TERMINAL_TOKEN terminal_token,
+		TERMINAL_TOKEN_PARAMS *params) {
+	static VT_TOKEN vt_token[1];
+
+	VT_ACTION action = DECODE_ACTION(terminal_token);
+	char char1 = DECODE_CHAR1(terminal_token);
+	char char2 = DECODE_CHAR2(terminal_token);
+	char code = DECODE_CODE(terminal_token);
+
+	if (!is_valid_action(action)) {
+		return NULL;
 	}
 
-	vtbuild(terminal->builder, UNCTRL_ACTION(ctrl), params, UNCTRL_CODE(ctrl));
-	return TRUE;
+	vt_token->action = action;
+
+	vt_token->attrs_len = 0;
+	if (char1) {
+		vt_token->attrs[vt_token->attrs_len++] = char1;
+	}
+	if (char2) {
+		vt_token->attrs[vt_token->attrs_len++] = char2;
+	}
+
+	vt_token->ch = code;
+	vt_token->params = params->data;
+	vt_token->params_len = params->length;
+
+	return vt_token;
 }
 
-static BOOL transmit_char_token(TERMINAL *terminal, TERMINAL_TOKEN_CHAR ch) {
-	vtbuild(terminal->builder, VT_ACTION_PRINT, NULL, ch);
-	return TRUE;
+static TERMINAL_TOKEN term_from_vt_token(VT_TOKEN *vt_token) {
+	if (vt_token == NULL) {
+		return TERMINAL_TOKEN_EMPTY;
+	}
+
+	VT_ACTION action = vt_token->action;
+	if (!is_valid_action(action)) {
+		return TERMINAL_TOKEN_EMPTY;
+	}
+
+	char *a = vt_token->attrs;
+	int a_len = vt_token->attrs_len;
+	char char1 = (a_len > 0) ? a[0] : '\0';
+	char char2 = (a_len > 1) ? a[1] : '\0';
+	char code = vt_token->ch;
+
+	return ENCODE(action,char1,char2, code);
 }
 
-static void vtparse_callback(VTPARSER *parser, VT_ACTION action, char ch) {
+static TERMINAL_TOKEN_PARAMS *terminal_prepare_params(TERMINAL *this,
+		int length, va_list args) {
+	TERMINAL_TOKEN_PARAMS *params = this->default_params;
+	if (length < 0) {
+		length = 0;
+	}
+	params->length = length;
+	int i;
+	for (i = 0; i < length; ++i) {
+		params->data[i] = va_arg(args, INT32);
+	}
+
+	return params;
+}
+
+static void vtparse_callback(VTPARSER *parser, VT_TOKEN *token) {
 	TERMINAL *terminal = (TERMINAL *) parser->user_data;
-	if (terminal->footprint_counter < VTPARSER_FOOTPRINTS_AMOUNT) {
-		VTPARSER_FOOTPRINT *footprint =
-				&terminal->vtparser_footprint[terminal->footprint_counter++];
-		footprint->action = action;
-		footprint->ch = ch;
-		*footprint->params = *parser->params;
+	int *queue_len = &terminal->vt_token_queue_len;
+	if (*queue_len < VTPARSER_TOKEN_QUEUE_AMOUNT) {
+		terminal->vt_token_queue[terminal->vt_token_queue_head + (*queue_len)++]
+				= *token;
 	} else {
 		// TODO
 		assert(FALSE);
@@ -107,62 +164,93 @@ static void vtparse_callback(VTPARSER *parser, VT_ACTION action, char ch) {
 
 }
 
-BOOL terminal_receive(TERMINAL *terminal, TERMINAL_TOKEN_TYPE *type,
-		TERMINAL_TOKEN *token, TERMINAL_PARAMS *params) {
-	int i;
-	VTPARSER_FOOTPRINT *footprint;
-	if (terminal->footprint_counter == 0) {
-		// we don't return from vtparse until
-		// callback has not been invoked at least one
-		vtparse(terminal->parser);
-	}
-	if (terminal->footprint_counter == 0) {
-		// something wrong with vtparser
-		// (callback must had been invoked at least once)
-		// TODO in fact this code must not be reached;
-		assert(FALSE);
+//static char *ACTION_NAMES[] = { "<no action>", "CLEAR", "COLLECT", "CSI_DISPATCH",
+//		"ESC_DISPATCH", "EXECUTE", "HOOK", "IGNORE", "OSC_END", "OSC_PUT",
+//		"OSC_START", "PARAM", "PRINT", "PUT", "UNHOOK", };
+
+/*
+ * Yes, this routine is rather ugly, but I have not found another way
+ * to implement synchronous token receiving
+ * without involving parser callback
+ *
+ * TODO describe this shit
+ */
+BOOL terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
+		TERMINAL_TOKEN_PARAMS *params) {
+	if (this == NULL) {
 		return FALSE;
 	}
 
-	while (terminal->footprint_counter != 0) {
-		for (i = 0; i < terminal->footprint_counter; ++i) {
-			footprint = &terminal->vtparser_footprint[i];
-			*type
-					= (footprint->action == VT_ACTION_PRINT) ? TERMINAL_TOKEN_TYPE_CHAR
-							: TERMINAL_TOKEN_TYPE_CTRL;
-			switch (*type) {
-			case TERMINAL_TOKEN_TYPE_CHAR:
-				token->ch = footprint->ch;
-				return TRUE;
-			case TERMINAL_TOKEN_TYPE_CTRL:
-				token->ctrl = CTRL(footprint->action, footprint->ch);
-				// TODO optimization: m.b. pass pointer to params?
-				if (!is_ctrl_token(token->ctrl)) {
-					// unknown footprint action/code combination
-					continue; // for loop
+	int *p_len = &this->vt_token_queue_len;
+	int *p_head = &this->vt_token_queue_head;
+	while (*p_len == 0) {
+		// we don't return from vtparse until
+		// callback has not been invoked at least one.
+		vtparse(this->parser, this->io->getc());
+		// so vt_token_queue_len is greater then 0 at this line
+		// (see vtparse_callback algorithm)
+	}
+	//	if (*p_len == 0) {
+	// something wrong with vtparser
+	// (callback must had been invoked at least once)
+	// TODO in fact this code must not be reached;
+	//		assert(FALSE);
+	//		return FALSE;
+	//	}
+
+	VT_TOKEN *vt_token;
+	// Almost surely this loop will be executed only once
+	while (*p_len != 0) {
+		for (; *p_head < *p_len; (*p_head)++) {
+			vt_token = &this->vt_token_queue[*p_head];
+			if ((*token = term_from_vt_token(vt_token)) != TERMINAL_TOKEN_EMPTY) {
+				if (params != NULL) {
+					*params->data = *vt_token->params;
+					params->length = vt_token->params_len;
 				}
-				*params = *footprint->params;
+				(*p_len)--;
+				//				TRACE("%s %d(%x,%x) %x\n", ACTION_NAMES[vt_token->action],
+				//						vt_token->attrs_len, vt_token->attrs[0],
+				//						vt_token->attrs[1], vt_token->ch);
 				return TRUE;
 			}
 		}
-		terminal->footprint_counter = 0;
-		vtparse(terminal->parser);
+		// there were no any valid tokens in the queue,
+		// so reset queue head and length indexes
+		// and run parser again
+		// in general case this code should not be reached
+		*p_head = 0;
+		*p_len = 0;
+		while (*p_len == 0) {
+			vtparse(this->parser, this->io->getc());
+		}
 	}
 
 	// TODO in fact this code must not be reached;
-	assert(FALSE);
+	//	assert(FALSE);
 	return FALSE;
 }
 
-BOOL terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN_TYPE type,
-		TERMINAL_TOKEN *token, TERMINAL_PARAMS *params) {
-	switch (type) {
-	case TERMINAL_TOKEN_TYPE_CHAR:
-		return transmit_char_token(terminal, token->ch);
-	case TERMINAL_TOKEN_TYPE_CTRL:
-		return transmit_ctrl_token(terminal, token->ctrl, params);
-	default:
+BOOL terminal_transmit(TERMINAL *this, TERMINAL_TOKEN token, int params_len,
+		...) {
+	va_list args;
+	va_start(args, params_len);
+
+	if (this == NULL) {
 		return FALSE;
 	}
+
+	TERMINAL_TOKEN_PARAMS *params = terminal_prepare_params(this, params_len,
+			args);
+
+	va_end(args);
+
+	VT_TOKEN *vt_token = vt_from_term_token(token, params);
+	if (vt_token == NULL) {
+		return FALSE;
+	}
+	vtbuild(this->builder, vt_token);
+
+	return TRUE;
 }
 

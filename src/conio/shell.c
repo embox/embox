@@ -5,9 +5,10 @@
  *      Author: Alexey Fomin
  */
 #include "types.h"
+#include "common.h"
 #include "shell.h"
 #include "string.h"
-#include "tty.h"
+#include "console.h"
 
 static const char* welcome = "monitor> ";
 
@@ -83,21 +84,21 @@ int shell_handler_process_create(PSHELL_HANDLER phandler, int argsc,
 	test_allow_aborting();
 	shell_save_proc();
 	__asm__(".global shell_handler_start\n"
-				"shell_handler_start:\n\t"
-				);
+			"shell_handler_start:\n\t"
+	);
 	phandler(argsc, argsv);
 
 	__asm__(".global shell_handler_continue\n"
 			"shell_handler_continue:\n\t"
-			);
+	);
 	shell_restore_proc();
 	__asm__(".global shell_handler_exit\n"
 			"shell_handler_exit:\n\t"
-			);
+	);
 	test_disable_aborting();
 }
 
-static void tty_callback(char cmdline[]) {
+static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
 	int words_counter = 0;
 	int i;
 	PSHELL_HANDLER phandler;
@@ -110,7 +111,7 @@ static void tty_callback(char cmdline[]) {
 	}
 
 	// choosing correct handler
-	for (i = 0; i < sizeof(shell_handlers) / sizeof(shell_handlers[0]); i++) {
+	for (i = 0; i < array_len(shell_handlers); i++) {
 		if (0 == strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
 			shell_handler_process_create(phandler, words_counter - 1, words + 1);
@@ -122,23 +123,62 @@ static void tty_callback(char cmdline[]) {
 
 }
 
-int shell_find_commands(char *cmdline, char **proposals) {
-	int i, commands_found = 0;
-	char *searching_command;
+inline static BOOL is_char(char ch) {
+	return (ch > 0x20) && (ch < 0x7F);
+}
 
-	// Skipping first spaces
-	skip_spaces(&cmdline);
+/*
+ * Guesses command using its beginning
+ *
+ * -- Eldar
+ */
+static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
+		const char* line, const int max_proposals, int *proposals_len,
+		char *proposals[], int *offset, int *common) {
+	int cursor = strlen(line);
+	int start = cursor;
+	while (start > 0 && is_char(line[start - 1])) {
+		start--;
+	}
+	line += start;
 
-	for (i = 0; i < sizeof(shell_handlers); i++) {
-		if (sz_cmp_beginning(searching_command, shell_handlers[i].name)) {
-			proposals[commands_found++] = shell_handlers[i].name;
+	*offset = cursor - start;
+	*proposals_len = 0;
+	int i;
+	for (i = 0; i < array_len(shell_handlers) && *proposals_len < max_proposals; i++) {
+		if (str_starts_with(shell_handlers[i].name, line, *offset)) {
+			proposals[(*proposals_len)++] = shell_handlers[i].name;
 		}
 	}
-	return commands_found;
+	*common = 0;
+	if (*proposals_len == 0) {
+		return;
+	}
+	char ch;
+	while (1) {
+		if ((ch = proposals[0][*offset + *common]) == '\0') {
+			return;
+		}
+		for (i = 1; i < *proposals_len; ++i) {
+			if (ch != proposals[i][*offset + *common]) {
+				return;
+			}
+		}
+		(*common)++;
+	}
 }
 
 void shell_start() {
-	tty_start(tty_callback, shell_find_commands, welcome);
+	static const char* prompt = "monitor> ";
+	static CONSOLE console[1];
+	static CONSOLE_CALLBACK callback[1];
+	callback->exec = exec_callback;
+	callback->guess = guess_callback;
+	if (console_init(console, callback) == NULL) {
+		printf("Failed to create a console");
+		return;
+	}
+	console_start(console, prompt);
 }
 
 // parse arguments array on keys-value structures
