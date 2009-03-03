@@ -34,27 +34,39 @@ static void show_help()
 typedef int (*FUNC_SHOW_BUS)(int dev_num);
 
 static int show_ahbm(int dev_num){
-	printf ("not release\n");
+//	printf ("not release\n");
 	if(dev_num < 0)
 	{
+		print_ahbm_pnp_devs();
+		return 0;
 //		get_ahbm_slot();
-		}
+	}
+	print_ahbm_pnp_dev(dev_num);
 	return 0;
 }
 static int show_ahbsl(int dev_num){
-	printf ("not release\n");
+//	printf ("not release\n");
 	if(dev_num < 0)
 	{
+		print_ahbsl_pnp_devs();
+		return 0;
 //		get_ahbsl_slot();
 	}
+	print_ahbsl_pnp_dev(dev_num);
 	return 0;
 }
 static int show_apb(int dev_num){
-	printf ("not release\n");
+//	printf ("not release\n");
+	if (dev_num < 0) {
+		print_apb_pnp_devs();
+		return 0;
+//		get_ahbsl_slot();
+	}
+	print_apb_pnp_dev(dev_num);
 	return 0;
 }
 static int show_all(int dev_num){
-	printf ("not release\n");
+//	printf ("not release\n");
 	show_ahbm(-1);
 	show_ahbsl(-1);
 	show_apb(-1);
