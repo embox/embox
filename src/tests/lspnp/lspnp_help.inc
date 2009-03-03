@@ -13,4 +13,4 @@
 "\t                               apb - APB bus\n"
 "\t                               all - AHB&APB buses\n"
 "\t              by default: all\n"
-"\t <dev_id>   - number of required device.\n"
+"\t <dev_id>   - number of required device."
