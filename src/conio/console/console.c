@@ -1,8 +1,12 @@
 /*
- * console.c
+ * Console command prompt.
  *
- *  Created on: 02.02.2009
- *      Author: Eldar Abusalimov
+ * Supports typing proposals and custom welcome messages.
+ *
+ * Implementation of MVC with passive model.
+ * This entity is controller, cmdline is model, and screen is view.
+ *
+ * Author: Eldar Abusalimov
  */
 
 #include "console.h"

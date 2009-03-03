@@ -1,8 +1,12 @@
 /*
- * console.h
+ * Console command prompt.
  *
- *  Created on: 02.02.2009
- *      Author: Eldar Abusalimov
+ * Supports typing proposals and custom welcome messages.
+ *
+ * Implementation of MVC with passive model.
+ * This entity is controller, cmdline is model, and screen is view.
+ *
+ * Author: Eldar Abusalimov
  */
 
 #ifndef CONSOLE_H_
@@ -19,7 +23,6 @@ typedef struct _CONSOLE_CALLBACK {
 	void (*exec)(struct _CONSOLE_CALLBACK *, struct _CONSOLE *console,
 			char *line);
 
-	// TODO
 	void (*guess)(struct _CONSOLE_CALLBACK *, struct _CONSOLE *console,
 			const char* line, const int max_proposals, int *proposals_len,
 			char *proposals[], int *offset, int *common);

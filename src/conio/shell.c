@@ -178,6 +178,7 @@ void shell_start() {
 		printf("Failed to create a console");
 		return;
 	}
+	printf("\nWelcome to Monitor shell and have a lot of fun...");
 	console_start(console, prompt);
 }
 
