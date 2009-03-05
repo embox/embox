@@ -2,10 +2,6 @@
 
 #include "traps.inc"
 
-#define SA(x)		(((x)+7)&(~0x07))	/* rounds "x" up to doubleword boundary */
-#define KERNEL_FRAME	(0x138)			/* size of frame containing only %i and %l registers */
-//#define USER_FRAME	((16+1+6)*4)		/* minimum size frame by regular software considerations */
-
 ! skip instruction
 skip:
 	flush
@@ -23,9 +19,6 @@ irq_empty:
 /* Window overflow trap handler. */
 		.global window_overflow
 window_overflow:
-/*	call window_overflow_func
-	nop
-	*/
 	mov	%g1, %l7		! Remember previous value of %g1 to restore it later
 
 	mov	%wim, %g1		! Calculate new WIM
@@ -46,7 +39,6 @@ window_overflow:
 	restore		! Go back to trap window
 
 	mov	%l7, %g1	! Restore saved %g1
-
 	jmp	%l1		! Re-execute save
 	 rett	%l2
 
@@ -87,29 +79,23 @@ halt_trap:
         jmp   %g1
         nop
 
+#define SA(x)		(((x)+7)&(~0x07))	/* rounds "x" up to doubleword boundary */
+#define TRAPFRAME 	((16+7+1+8)*4)		/* trap frame size (see comment below) */
+
 trap_dispatcher:
 	! store previous nPC as PC
 	mov		%l2, %l1
 	! store previous nPC+4 as nPC
 	add     %l2, 4, %l2
 
-/**/
+/*
+ * at this point we already have got:
+ * 	%psr 	in %l0
+ * 	%pc 	in %l1
+ * 	%npc 	in %l2
+ * 	%tbr 	in %l3
+ */
 irq_dispatcher:
-	sub  %fp, 0x138, %l6
-	st  %l0, [ %l6 + 0x60 ]!psr
-	st  %l1, [ %l6 + 0x64 ]
-	st  %l2, [ %l6 + 0x68 ]
-	st  %g1, [ %l6 + 0x74 ]
-	std  %g2, [ %l6 + 0x78 ]
-	std  %g4, [ %l6 + 0x80 ]
-	std  %g6, [ %l6 + 0x88 ]
-	rd  %y, %g2
-	st  %g2, [ %l6 + 0x6c ]
-	std  %i0, [ %l6 + 0x90 ]
-	std  %i2, [ %l6 + 0x98 ]
-	std  %i4, [ %l6 + 0xa0 ]
-	std  %fp, [ %l6 + 0xa8 ]
-
 	mov		%psr, %l4
 	and		%l4, 0x1F, %l4
 	mov		%wim, %l7
@@ -118,12 +104,8 @@ irq_dispatcher:
 	cmp		%l7, 0x1			! test WIM for possible window overflow
 
 	bne		irq_overflow_test_ok
-	nop
-
-/*
-	 call window_overflow_func
 	 nop
-*/
+
 		! handle window overflow
 		mov  %wim, %l5			! Calculate next WIM
 		mov  %g1, %l7
@@ -144,36 +126,52 @@ irq_dispatcher:
 		restore					! Go back to trap window.
 		mov		%l7, %g1
 
-irq_overflow_test_ok:
-!	add		%fp, -SA(KERNEL_FRAME), %sp
-	mov  %l6, %sp
-	srl		%l3, 4, %l5
-	and 	%l5, 0xFF, %o0		! pass TT as parameter
+	irq_overflow_test_ok:
+	add		%fp, -SA(TRAPFRAME), %sp
 
-		mov		%psr, %l5
-		or		%l5, 0x20, %l5	! set PSR.ET (enable traps)
-		mov		%l5, %psr
+	mov	%y, %l6
+	st	%l6, [%sp + 0x60];
+	st	%g1, [%sp + 0x64];
+	std	%g2, [%sp + 0x68];
+	std	%g4, [%sp + 0x70];
+	std	%g6, [%sp + 0x78];
+
+	srl		%l3, 4, %o0
+	and 	%o0, 0xFF, %o0		! pass TT as parameter
+
+		mov		%psr, %l6
+		or		%l6, 0x20, %l6	! set PSR.ET (enable traps)
+		mov		%l6, %psr
+		nop; nop; nop
+
+/*
+ * Few words about storing global and some other registers on the stack frame.
+ *
+ * We need 16 words at the beginning of the frame
+ * to store local and input registers as defined by software conventions.
+ * The next 1 word is used for aggregate return structure pointer.
+ * At last we need 6 words to store formal parameters.
+ * (be careful - called function may write to this memory).
+ *
+ * So we can use the frame part placed after 23 words (92 bytes).
+ *
+ * -- Eldar
+ */
 
 			call	dispatch_trap
 			 nop
 
-		mov		%psr, %l5
-		andn	%l5, 0x20, %l5	! clear PSR.ET (disable traps)
-		mov		%l5, %psr
+		mov		%psr, %l6
+		andn	%l6, 0x20, %l6	! clear PSR.ET (disable traps)
+		mov		%l6, %psr
 
-/*	ld  [ %sp + 0x6c ], %g1
-	mov  %g1, %y
-	ldd  [ %sp + 0x90 ], %i0
-	ldd  [ %sp + 0x98 ], %i2
-	ldd  [ %sp + 0xa0 ], %i4
-	ldd  [ %sp + 0xa8 ], %fp
-	ld  [ %sp + 0x74 ], %g1
-	ldd  [ %sp + 0x78 ], %g2
-	ldd  [ %sp + 0x80 ], %g4
-	ldd  [ %sp + 0x88 ], %g6
-	ld  [ %sp + 0x60 ], %l0
-	ld  [ %sp + 0x64 ], %l1
-	ld  [ %sp + 0x68 ], %l2*/
+	ld	[%sp + 0x60], %l6;
+	mov	%l6, %y
+	ld	[%sp + 0x64], %g1;
+	ldd	[%sp + 0x68], %g2;
+	ldd	[%sp + 0x70], %g4;
+	ldd	[%sp + 0x78], %g6;
+
 	! handle possible window underflow when executing RETT
 	mov		%psr, %l4
 	and		%l4, 0x1F, %l4		! calculate current CWP
@@ -189,9 +187,9 @@ irq_overflow_test_ok:
 	 nop
 
 		! handle window underflow
-		mov		%wim, %l3                  ! Calculate next WIM
-		sll		%l3, 1, %l4
-		srl		%l3, CORE_NWINDOWS-1, %l5
+		mov		%wim, %l6                  ! Calculate next WIM
+		sll		%l6, 1, %l4
+		srl		%l6, CORE_NWINDOWS-1, %l5
 		or		%l5, %l4, %l5
 		mov		%l5, %wim
 		nop; nop; nop			! wait for delayed-write
@@ -208,20 +206,6 @@ irq_overflow_test_ok:
 		save					! Get back to the trap window.
 
 	irq_underflow_test_ok:
-return_from_trap:
-	ld  [ %sp + 0x6c ], %g1
-	mov  %g1, %y
-	ldd  [ %sp + 0x90 ], %i0
-	ldd  [ %sp + 0x98 ], %i2
-	ldd  [ %sp + 0xa0 ], %i4
-	ldd  [ %sp + 0xa8 ], %fp
-	ld  [ %sp + 0x74 ], %g1
-	ldd  [ %sp + 0x78 ], %g2
-	ldd  [ %sp + 0x80 ], %g4
-	ldd  [ %sp + 0x88 ], %g6
-	ld  [ %sp + 0x60 ], %l0
-	ld  [ %sp + 0x64 ], %l1
-	ld  [ %sp + 0x68 ], %l2
     ! restore PIL&ICC fields of old PSR (in %l0)
 	mov		%psr, %l4
 	set		0xF00F00, %l3
