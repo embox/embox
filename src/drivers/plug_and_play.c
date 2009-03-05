@@ -439,7 +439,7 @@ void print_ahbsl_pnp_dev(UINT32 id_reg) {
 
 void print_apb_pnp_dev(UINT32 id_reg) {
 
-	if (id_reg >AHB_MASTERS_QUANTITY) {
+	if (id_reg >APB_QUANTITY) {
 		TRACE("ERROR: print_ahbm_pnp_dev: Too big arg. The quantity of apb devices is %d\n",APB_QUANTITY);
 		return;
 	}
