@@ -73,10 +73,10 @@ static int show_all(int dev_num){
 }
 static FUNC_SHOW_BUS set_bus_type(const char *key_value)
 {
-	if (strcmp(key_value, "ahbm")) 		return show_ahbm;
-	else if (strcmp(key_value, "ahbsl"))	return  show_ahbsl;
-	else if (strcmp(key_value, "apb"))		return  show_apb;
-	else if (strcmp(key_value, "all"))		return  show_all;
+	if (0==strcmp(key_value, "ahbm")) 		return show_ahbm;
+	else if (0==strcmp(key_value, "ahbsl"))	return  show_ahbsl;
+	else if (0==strcmp(key_value, "apb"))		return  show_apb;
+	else if (0==strcmp(key_value, "all"))		return  show_all;
 	return NULL;
 }
 
