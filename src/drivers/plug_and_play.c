@@ -420,10 +420,10 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 	if (slot >AHB_MASTERS_QUANTITY) {
 		TRACE("ERROR: print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
 		return;
-	} else if (!ahb_devices[slot]){
-		TRACE ("ERROR: print_ahbm_pnp_dev: no AHB master in %d slot",slot);
-		return;
-	}
+	} //else if (0 == ahb_devices[slot]){
+		//TRACE ("ERROR: print_ahbm_pnp_dev: no AHB master in %d slot",slot);
+		//return;
+	//}
 	print_table_head();
 	print_ahb_entries((AHB_SLOT *) AHB_MASTER_BASE + slot, 1);
 //	printf("print_ahbm_pnp_dev\n");
@@ -434,10 +434,10 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
 	if (slot >AHB_SLAVES_QUANTITY) {
 		TRACE("ERROR: print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
-	} else if (!ahb_devices[AHB_MASTERS_QUANTITY+slot]){
-		TRACE ("ERROR: print_ahbsl_pnp_dev: no AHB slave in %d slot",slot);
-		return;
-	}
+	} //else if (0 == ahb_devices[AHB_MASTERS_QUANTITY+slot]){
+		//TRACE ("ERROR: print_ahbsl_pnp_dev: no AHB slave in %d slot",slot);
+		//return;
+	//}
 	print_table_head();
 	print_ahb_entries((AHB_SLOT *) AHB_SLAVE_BASE + slot, 1);
 //	printf("print_ahbsl_pnp_dev\n");
@@ -448,10 +448,10 @@ void print_apb_pnp_dev(UINT32 slot) {
 	if (slot >APB_QUANTITY) {
 		TRACE("ERROR: print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
 		return;
-	} else if (!apb_devices[slot]){
-		TRACE ("ERROR: print_ahbm_pnp_dev: no APB slave in %d slot",slot);
-		return;
-	}
+	} //else if (0 == apb_devices[slot]){
+		//TRACE ("ERROR: print_ahbm_pnp_dev: no APB slave in %d slot",slot);
+		//return;
+	//}
 	print_table_head();
 	print_apb_entries((APB_SLOT *) APB_BASE + slot, 1);
 //	printf("print_apb_pnp_dev\n");
