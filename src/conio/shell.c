@@ -6,9 +6,12 @@
  */
 #include "types.h"
 #include "common.h"
-#include "shell.h"
 #include "string.h"
 #include "console.h"
+#include "shell.h"
+
+
+
 
 static const char* welcome = "monitor> ";
 
