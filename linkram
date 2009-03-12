@@ -47,7 +47,7 @@ ENTRY(_hardreset)
 MEMORY
 {
   rom     : ORIGIN = 0x00000000, LENGTH = 64K
-  sdram   : ORIGIN = 0x40000000, LENGTH = 128K
+  sdram   : ORIGIN = 0x40000000, LENGTH = 512K
 }
 
 /*

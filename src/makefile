@@ -1,5 +1,5 @@
 #TODO !!!!!!!!!!in this version folder tests must set lat in list its makefile diff from other
-SUBDIRS = arch kernel conio drivers common tests
+SUBDIRS = arch net kernel conio drivers common tests
 OBJS =
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
 
