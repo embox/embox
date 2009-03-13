@@ -30,8 +30,15 @@ net_device *alloc_etherdev(int inum)
 				return dev_lock(i);
 			}
 		}
+		return NULL;
 	}
+	if (!dev_is_busy(inum))
+	{
+		return dev_lock(inum);
+	}
+	return NULL;
 }
+
 net_device *find_net_device(const char * name)
 {
 	return NULL;

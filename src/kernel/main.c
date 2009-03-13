@@ -41,6 +41,7 @@ int init() {
 	timers_init();
 	cache_data_enable(FALSE);
 	cache_instr_enable(TRUE);
+	eth_init();//interfaces
 	return 0;
 }
 

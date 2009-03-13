@@ -34,9 +34,10 @@ int eth_init()
 {
 	char iname[6];
 	int cnt = 0, i;
+	TRACE("Initializing ifdevs:\n");
 	for (i = 0; i < INTERFACES_QUANTITY; i ++)
 	{
-		sprintf(iname, "eth%d", i);
+		sprintf(iname, "eth%d\n", i);
 		if (NULL != (ifs[i].net_dev = find_net_device(iname)))
 		{
 			TRACE("Found dev %s\n", iname);
