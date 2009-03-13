@@ -8,16 +8,16 @@
 #ifndef PLUG_AND_PLAY_H_
 #define PLUG_AND_PLAY_H_
 
-#define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) if (-1 == capture_ahbm_dev(dev, venID, devID)){\
+#define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, TRUE, TRUE)){\
 	printf ("error : can't capture ahbm dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
-#define TRY_CAPTURE_AHBSL_DEV(dev,venID,devID) if (-1 == capture_ahbsl_dev(dev, venID, devID)){\
+#define TRY_CAPTURE_AHBSL_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, TRUE, FALSE)){\
 	printf ("error : can't capture ahbsl dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
 
-#define TRY_CAPTURE_APB_DEV(dev,venID,devID) if (-1 == capture_apb_dev(dev, venID, devID)){\
+#define TRY_CAPTURE_APB_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, FALSE, FALSE)){\
 	printf ("error : can't capture apb dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
@@ -32,6 +32,7 @@ typedef struct _AMBA_BAR_INFO {
 	BOOL used;
 } AMBA_BAR_INFO;
 
+
 typedef struct _AMBA_DEV_INFO
 {
 	BYTE venID;
@@ -40,37 +41,56 @@ typedef struct _AMBA_DEV_INFO
 	BYTE irq;
 } AMBA_DEV_INFO;
 
-typedef struct _AHB_DEV
-{
+//typedef struct _AHB_DEV
+//{
+//	AMBA_DEV_INFO dev_info;
+//	UINT32 user_def[3];
+//	AMBA_BAR_INFO bar [4];
+//	BYTE slot;
+//	BOOL is_master;
+//	void *handler_data;
+//	char dev_name[16];
+//} AHB_DEV;
+//
+//
+//typedef struct _APB_DEV{
+//	AMBA_DEV_INFO dev_info;
+//	AMBA_BAR_INFO bar;
+//	BYTE slot;
+//	void *handler_data;
+//	char dev_name[16];
+//} APB_DEV;
+
+typedef struct _AMBA_DEV{
 	AMBA_DEV_INFO dev_info;
-	UINT32 user_def[3];
-	AMBA_BAR_INFO bar [4];
+	AMBA_BAR_INFO  bar[4];
 	BYTE slot;
+	void *handler_data;
+	char dev_name[16];
+
+	BOOL is_ahb;
+
 	BOOL is_master;
-} AHB_DEV;
+	UINT32 user_def[3];
+} AMBA_DEV;
 
-
-typedef struct _APB_DEV{
-	AMBA_DEV_INFO dev_info;
-	AMBA_BAR_INFO bar;
-	BYTE slot;
-} APB_DEV;
+typedef void (*HANDLER_DATA_FUNC)(AMBA_DEV *apb_dev);
 
 /*
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-int capture_ahbm_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
+//int capture_ahbm_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
 /*
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-int capture_ahbsl_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
+//int capture_ahbsl_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
 /*
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-int capture_apb_dev(APB_DEV *apb_dev, BYTE vendor_id, UINT16 device_id);
+int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL is_ahb, BOOL is_master);
 
 /*
  * Print list of all connected plug and play devices on ahb && apb buses

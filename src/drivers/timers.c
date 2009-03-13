@@ -98,9 +98,14 @@ static void irq_func_tmr_1mS() {
 	cnt_sys_time++;
 	inc_sys_timers();
 }
-
+//static APB_DEV dev;
+static void show_module_info(AMBA_DEV *apb_dev)
+{
+	printf("in timers show_module_info");
+	//apb_dev->dev_info.
+}
 int timers_init() {
-	APB_DEV dev;
+	AMBA_DEV dev;
 	int i;
 
 	if (timers) {
@@ -111,7 +116,7 @@ int timers_init() {
 
 
 	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
-	timers = (TIMERS_STRUCT *)dev.bar.start;
+	timers = (TIMERS_STRUCT *)dev.bar[0].start;
 	timers->scaler_ld = TIMER_SCALER_VAL;
 	timers->scaler_cnt = 0;
 	timers->timer_cnt1 = 0;
@@ -122,6 +127,9 @@ int timers_init() {
 	timers->timer_ctrl1 = 0xf;
 	timers->timer_ctrl2 = 0x0;//disable
 	irq_set_handler(dev.dev_info.irq, irq_func_tmr_1mS);
+
+	dev.handler_data= show_module_info;//(&dev);
+	//dev.dev_name=
 
 	cnt_sys_time = 0;
 

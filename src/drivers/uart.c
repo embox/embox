@@ -29,11 +29,11 @@ static void irq_func_uart() {
 	char ch = uart_getc();
 }
 int uart_init() {
-	APB_DEV dev;
+	AMBA_DEV dev;
 	if (NULL != uart)
 		return;
 	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
-	uart = (UART_STRUCT * )dev.bar.start;
+	uart = (UART_STRUCT * )dev.bar[0].start;
 	irq = dev.dev_info.irq;
 	//disabled uart
 	uart->ctrl = 0x0;
