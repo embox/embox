@@ -8,14 +8,18 @@
 #ifndef NET_DEVICE_H_
 #define NET_DEVICE_H_
 
-#include "net.h"
-struct _net_device;
+#include "arp.h"
+#include "mac.h"
+#include "ip_v4.h"
+
+
 
 typedef struct _net_packet
 {
 	struct _net_device *netdev;
 	void *ifdev;
 	void * sock;
+	unsigned short protocol;
 	union {
 		//tcphdr	*th;
 		//udphdr	*uh;
@@ -51,6 +55,7 @@ typedef struct _net_device_stats
 typedef struct _net_device
 {
 	char name[6];
+	unsigned char hw_addr[6];
 	unsigned long state;
 	unsigned char type;
 	unsigned char addr_len;

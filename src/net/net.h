@@ -7,11 +7,10 @@
 
 #ifndef NET_H_
 #define NET_H_
-#include "arp.h"
-#include "mac.h"
-#include "ip_v4.h"
+
 #include "net_device.h"
 #include "eth.h"
 
+int netif_rx(net_packet *pack);
 
 #endif /* NET_H_ */

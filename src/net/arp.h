@@ -18,7 +18,7 @@ typedef struct _arphdr
 	unsigned char tha[6];//Target hardware address
 	unsigned char tpa[4];//Target protocol address
 }arphdr;
-#define TYPE_PROTOCOL_ARP ((unsigned short)0x0806)
+#define ARP_PROTOCOL_TYPE ((unsigned short)0x0806)
 typedef struct _ARP_RESULT
 {
 	void *if_handler;
@@ -26,5 +26,7 @@ typedef struct _ARP_RESULT
 }ARP_RESULT;
 
 ARP_RESULT *arp_resolve_addr(void *ifdev, unsigned char dst_addr[4], ARP_RESULT *res);
+struct _net_packet;
+int arp_received_packet(struct _net_packet *pack);
 
 #endif /* ARP_H_ */

@@ -13,5 +13,7 @@ void *memcpy(void *destination, const void* source, unsigned int cnt) {
 
 	while (cnt--)
 		*dest++ = *src++;
+
+	return destination;
 }
 

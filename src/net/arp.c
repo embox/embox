@@ -8,8 +8,10 @@
 #include "string.h"
 #include "net.h"
 #include "arp.h"
-#include "eth.h"
 #include "net_device.h"
+#include "eth.h"
+#include "net_pack_manager.h"
+#include "net.h"
 
 
 typedef struct _ARP_ENTITY
@@ -21,7 +23,7 @@ typedef struct _ARP_ENTITY
 #define ARP_REQUEST 0x1
 ARP_ENTITY arp_table[0x100];
 #define ARP_TABLE_SIZE (sizeof(arp_table)/sizeof(arp_table[0]))
-
+/*
 typedef struct _ARP_PACKET
 {
 	unsigned char hw_dst_addr[6];// = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -35,7 +37,7 @@ typedef struct _ARP_PACKET
 	unsigned char tha[6];//Target hardware address
 	unsigned char tpa[4];//Target protocol address
 }ARP_PACKET;
-
+*/
 
 ARP_RESULT *arp_resolve_addr(void *ifdev, unsigned char dst_addr[4], ARP_RESULT *res)
 {
@@ -52,16 +54,26 @@ ARP_RESULT *arp_resolve_addr(void *ifdev, unsigned char dst_addr[4], ARP_RESULT 
 	//TODO send mac packet
 	return NULL;
 }
-int arp_received_packet(void *ifdev, net_packet *pack)
+
+int arp_received_packet(net_packet *pack)
 {
-	ARP_PACKET * arp_pack;
-	arp_pack = (ARP_PACKET *)pack->data;
-	if(ARP_REQUEST != arp_pack->oper)
+	net_packet *resp;
+	arphdr *arp = pack->nh.arph;
+
+
+	if(ARP_REQUEST != arp->oper)
 		return 0;
 
-/*	if (0 == memcmp(eth_get_ipaddr(ifdev), arp_pack->tpa, 4))
-	{
-		//TODO send arp response
-	}
-*/
+	if (0 != memcmp(eth_get_ipaddr(pack->ifdev), arp->tpa, 4))
+		return 0;
+
+	//TODO add to arp table
+	resp = net_packet_copy(pack);
+//TODO fix absolute size of mac addr
+	memcpy(resp->mac.mach->dst_addr, pack->mac.mach->src_addr, 6);
+	memcpy(resp->mac.mach->src_addr, pack->netdev->hw_addr, 6);
+	resp->nh.arph->oper = 2;
+	memcpy(resp->nh.arph->tha, pack->netdev->hw_addr, 6);
+
+	eth_send(pack);
 }

@@ -18,7 +18,10 @@ typedef struct _IPV4_HEADER
 }IPV4_HEADER;*/
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 int eth_init();
-int eth_send (void *handler, unsigned char dest_addr[4], unsigned int type, const unsigned char *data, int len_data);
+//int eth_send (void *handler, unsigned char dest_addr[4], unsigned int type, const unsigned char *data, int len_data);
+int eth_send (net_packet *pack);
 int eth_listen (void *handler, unsigned short type, ETH_LISTEN_CALLBACK callback);
 unsigned char *eth_get_ipaddr(void *handler);
+
+
 #endif /* ETH_H_ */

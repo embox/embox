@@ -15,6 +15,43 @@ typedef struct _NET_PACK_INFO
 	int is_busy;
 }NET_PACK_INFO;
 
+static NET_PACK_INFO pack_pool[0x100];
+net_packet *net_packet_alloc()
+{
+	int i;
+	for(i = 0; i < sizeof(pack_pool) / sizeof(pack_pool[0]); i ++)
+	{
+		if (0 == pack_pool[i].is_busy)
+		{
+			return &pack_pool[i].pack;
+		}
+	}
+}
+
+void net_packet_free(net_packet *pack)
+{
+	int i;
+	for(i = 0; i < sizeof(pack_pool) / sizeof(pack_pool[0]); i ++)
+	{
+		if (pack == &pack_pool[i].pack)
+		{
+			//TODO clear references
+			pack_pool[i].is_busy = 0;
+		}
+	}
+}
+net_packet *net_packet_copy(net_packet *pack)
+{
+	net_packet *new_pack;
+	if (NULL == pack)
+		return NULL;
+	if (NULL == (new_pack = net_packet_alloc()))
+		return NULL;
+//TODO fix references during copy net_pack
+	return memcpy (new_pack, pack, sizeof(pack));
+}
+
+/*
 typedef struct _NET_PACK_MANAGER
 {
 	NET_PACK_INFO packs[4];
@@ -66,3 +103,4 @@ void net_pack_manager_unlock_pack(void *manager, void *net_pack_info)
 		return ;
 	pack->is_busy = 1;
 }
+*/
