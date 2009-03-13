@@ -372,7 +372,10 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 		TRACE("ERROR: print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
 		return;
 	}
-	print_amba_entries((AMBA_SLOT *) AHB_MASTER_BASE + slot, 1, TRUE, TRUE);
+	//print_amba_entries((AMBA_SLOT *) AHB_MASTER_BASE + slot, 1, TRUE, TRUE);
+	AMBA_DEV dev;
+	fill_amba_dev(&dev, slot, TRUE, TRUE);
+	show_dev(&dev , TRUE);
 }
 
 void print_ahbsl_pnp_dev(UINT32 slot) {
@@ -381,7 +384,10 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
 		TRACE("ERROR: print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
 	}
-	print_amba_entries((AMBA_SLOT *) AHB_SLAVE_BASE + slot, 1 , TRUE, FALSE);
+	//print_amba_entries((AMBA_SLOT *) AHB_SLAVE_BASE + slot, 1 , TRUE, FALSE);
+	AMBA_DEV dev;
+	fill_amba_dev(&dev, slot, TRUE, FALSE);
+	show_dev(&dev , TRUE);
 }
 
 void print_apb_pnp_dev(UINT32 slot) {
@@ -391,5 +397,8 @@ void print_apb_pnp_dev(UINT32 slot) {
 		TRACE("ERROR: print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
 		return;
 	}
-	print_amba_entries((AMBA_SLOT *) APB_BASE + slot, 1 , FALSE, FALSE);
+	//print_amba_entries((AMBA_SLOT *) APB_BASE + slot, 1 , FALSE, FALSE);
+	AMBA_DEV dev;
+	fill_amba_dev(&dev, slot, FALSE, FALSE);
+	show_dev(&dev , TRUE);
 }

@@ -92,6 +92,10 @@ typedef void (*HANDLER_DATA_FUNC)(AMBA_DEV *apb_dev);
  */
 int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL is_ahb, BOOL is_master);
 
+
+//inline void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
+
+//void show_dev(AMBA_DEV *dev, BOOL show_user);
 /*
  * Print list of all connected plug and play devices on ahb && apb buses
  */

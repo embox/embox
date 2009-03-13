@@ -10,6 +10,7 @@
 #include "types.h"
 #include "lspnp.h"
 #include "string.h"
+#include "plug_and_play.h"
 
 #define COMMAND_NAME "lspnp"
 
@@ -34,39 +35,32 @@ static void show_help()
 typedef int (*FUNC_SHOW_BUS)(int dev_num);
 
 static int show_ahbm(int dev_num){
-//	printf ("not release\n");
 	if(dev_num < 0)
 	{
 		print_ahbm_pnp_devs();
 		return 0;
-//		get_ahbm_slot();
 	}
 	print_ahbm_pnp_dev(dev_num);
 	return 0;
 }
 static int show_ahbsl(int dev_num){
-//	printf ("not release\n");
 	if(dev_num < 0)
 	{
 		print_ahbsl_pnp_devs();
 		return 0;
-//		get_ahbsl_slot();
 	}
 	print_ahbsl_pnp_dev(dev_num);
 	return 0;
 }
 static int show_apb(int dev_num){
-//	printf ("not release\n");
 	if (dev_num < 0) {
 		print_apb_pnp_devs();
 		return 0;
-//		get_ahbsl_slot();
 	}
 	print_apb_pnp_dev(dev_num);
 	return 0;
 }
 static int show_all(int dev_num){
-//	printf ("not release\n");
 	show_ahbm(-1);
 	show_ahbsl(-1);
 	show_apb(-1);
@@ -128,66 +122,6 @@ int lspnp_shell_handler(int argsc, char **argsv) {
 	}
 
 	show_func(dev_number);
-
-	/*if (-1 == dev_number)
-		show_devs_list(bus_type);
-	else
-		show_dev_info (bus_type, dev_number);
-*/
-	/*switch (bus_type)
-	{
-	case AHBM:
-		if (get_key('n', keys, keys_amount, &key_value))
-		{
-			if (1==sscanf(key_value,"%d", &dev)){
-				print_ahbm_pnp_dev(dev);
-				return 0;
-			}
-		}
-		else {
-			print_ahbm_pnp_devs();
-			return 0;
-		}
-
-	case AHBSL:
-		if (get_key('n', keys, keys_amount, &key_value))
-		{
-			if (1==sscanf(key_value,"%d", &dev)) {
-				print_ahbsl_pnp_dev(dev);
-				return 0;
-			}
-		}
-		else {
-			print_ahbsl_pnp_devs();
-			return 0;
-		}
-	case APB:
-		if (get_key('n', keys, keys_amount, &key_value))
-		{
-			if (1==sscanf(key_value,"%d", &dev)) {
-				print_apb_pnp_dev(dev);
-				return 0;
-			}
-		}
-		else {
-			print_apb_pnp_devs();
-			return 0;
-		}
-	case ALL:
-		if (get_key('n', keys, keys_amount, &key_value))
-		{
-			printf("ERROR: lspnp_shell_handler: unexpected token.\n");
-			show_help();
-			return 0;
-		}
-		else {
-			print_all_pnp_devs();
-			return 0;
-		}
-	default:
-		printf("ERROR: lspnp_shell_handler: unexpected token.\n");
-		show_help();
-	}*/
 
 	return 0;
 }
