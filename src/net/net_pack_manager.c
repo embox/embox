@@ -23,6 +23,9 @@ net_packet *net_packet_alloc()
 	{
 		if (0 == pack_pool[i].is_busy)
 		{
+			pack_pool[i].is_busy = 1;
+			//clear all references
+			memset(&pack_pool[i].pack, 0, sizeof(pack_pool[i].pack) - sizeof(pack_pool[i].pack.data));
 			return &pack_pool[i].pack;
 		}
 	}
@@ -35,7 +38,6 @@ void net_packet_free(net_packet *pack)
 	{
 		if (pack == &pack_pool[i].pack)
 		{
-			//TODO clear references
 			pack_pool[i].is_busy = 0;
 		}
 	}
@@ -47,7 +49,17 @@ net_packet *net_packet_copy(net_packet *pack)
 		return NULL;
 	if (NULL == (new_pack = net_packet_alloc()))
 		return NULL;
-//TODO fix references during copy net_pack
+
+	//fix references during copy net_pack
+	if (NULL != pack->h.raw)
+		new_pack->h.raw = new_pack->data + (pack->h.raw - pack->data);
+
+	if (NULL != pack->nh.raw)
+			new_pack->nh.raw = new_pack->data + (pack->nh.raw - pack->data);
+
+	if (NULL != pack->mac.raw)
+			new_pack->mac.raw = new_pack->data + (pack->mac.raw - pack->data);
+
 	return memcpy (new_pack, pack, sizeof(pack));
 }
 

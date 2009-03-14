@@ -12,6 +12,8 @@ typedef struct _arphdr
 {
 	unsigned short htype;// = 0x0001;//ethernet
 	unsigned short ptype;// = 0x0800;//ip
+	unsigned char hlen;// hardware addr len
+	unsigned char plen;// protocol addr len
 	unsigned short oper;//1 req 2 resp
 	unsigned char sha[6];//Sender hardware address
 	unsigned char spa[4];//Sender protocol address

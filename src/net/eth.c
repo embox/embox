@@ -26,22 +26,40 @@ typedef struct _IF_DEVICE
 	unsigned char ipv4_addr[4];
 	net_device *net_dev;
 	CALLBACK_INFO cb_info[8];
-	//void *tx_pack_manager;
-	//void *rx_pack_manager;
 }IF_DEVICE;
 
 static IF_DEVICE ifs[INTERFACES_QUANTITY];
 
 
+int rebuild_ip_header(net_packet * pack)
+{
+	if (NULL == pack->nh.raw)
+			return -1;
+	memcpy(&pack->data[sizeof(machdr) - sizeof(pack->mac.mach->raw)], pack->nh.iph, sizeof(iphdr) - sizeof (pack->nh.iph->raw));
+
+}
+
 static int rebuild_headers(net_packet * pack)
 {
-/*	ARP_RESULT arp_res;
-	arp_res.if_handler = handler;
-	if(!arp_resolve_addr(handler, dest_addr, &arp_res))
+	if (NULL == pack->mac.raw)
+		return -1;
+	memcpy(pack->data, pack->mac.mach, sizeof(machdr) - sizeof(pack->mac.mach->raw));
+	if (NULL != pack->mac.mach->raw)
+	{
+		memcpy(pack->data, pack->mac.mach->raw, pack->len);
+		return 1;
+	}
+	if (IP_PROTOCOL_TYPE == pack->mac.mach->type)
+	{
+		if ( 1 == rebuild_ip_header(pack))
+			return 1;
+	}
+
+	if (NULL == pack->h.raw)
 		return -1;
 
-	dev->net_dev->rebuild_header(pack);
-	pack = net_packet_alloc();*/
+	//memcpy(pack->data, pack->nh.raw, sizeof());
+
 	return 0;
 }
 
@@ -57,14 +75,6 @@ int eth_init()
 		{
 			TRACE("Found dev %s\n", iname);
 			cnt ++;
-			/*if (NULL == (ifs[i].rx_pack_manager = net_pack_manager_alloc()))
-			{
-				TRACE("ERROR: ifs %d can't alloc rx_pack_manager\n", i);
-			}
-			if ((void*)NULL == (ifs[i].tx_pack_manager = net_pack_manager_alloc()))
-			{
-				TRACE("ERROR: ifs %d can't alloc tx_pack_manager\n", i);
-			}*/
 		}
 	}
 	return cnt;
@@ -82,17 +92,7 @@ void *eth_get_if(const char *if_name)
 	}
 	return NULL;
 }
-/*
-static inline net_packet * lock_free_rx_pack(IF_DEVICE *dev, const unsigned char *data, int len)
-{
-	return net_pack_manager_lock_pack(dev->rx_pack_manager, data, len);
-}
 
-static inline net_packet * lock_free_tx_pack(IF_DEVICE *dev, const unsigned char *data, int len)
-{
-	return net_pack_manager_lock_pack(dev->tx_pack_manager, data, len);
-}
-*/
 
 unsigned char *eth_get_ipaddr(void *handler)
 {
@@ -102,12 +102,19 @@ unsigned char *eth_get_ipaddr(void *handler)
 	return dev->ipv4_addr;
 }
 
-//int eth_send (void *handler, unsigned char dest_addr[4], unsigned int type, const unsigned char *data, int len)
+net_device *eth_get_netdevice(void *handler)
+{
+	IF_DEVICE *dev = (IF_DEVICE *)handler;
+	if (NULL == dev)
+		return NULL;
+	return dev->net_dev;
+}
+
 int eth_send (net_packet *pack)
 {
 	IF_DEVICE *dev = (IF_DEVICE *)pack->ifdev;
 
-	if ((NULL == pack->ifdev) || (NULL == pack))
+	if ((NULL == pack) || (NULL == pack->ifdev))
 		return -1;
 
 	if (ARP_PROTOCOL_TYPE != pack->protocol)

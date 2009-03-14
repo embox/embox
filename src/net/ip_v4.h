@@ -19,6 +19,7 @@ typedef struct _iphdr
 	unsigned short header_check_summ;
 	unsigned char src_addr[4];
 	unsigned char dst_addr[4];
+	unsigned char*raw;
 }iphdr;
 
 #endif /* IP_V4_H_ */

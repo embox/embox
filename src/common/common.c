@@ -2,18 +2,26 @@
 #include "leon.h"
 #include "common.h"
 
-void *mem_set(UINT32 *addr, UINT32 patern, UINT32 cnt) {
-	while (cnt--)
-		*addr++ = patern;
+void *memset(void *p, int c, size_t n)
+{
+  char *pb = (char *) p;
+  char *pbend = pb + n;
+  while (pb != pbend) *pb++ = c;
+  return p;
 }
 
-void *memcpy(void *destination, const void* source, unsigned int cnt) {
-	BYTE *dest = (BYTE *) destination;
-	BYTE *src = (BYTE *) source;
 
-	while (cnt--)
-		*dest++ = *src++;
+void *memcpy(void *dst, const void *src, size_t n)
+{
+  void *ret = dst;
 
-	return destination;
+  while (n--)
+  {
+    *(char *)dst = *(char *)src;
+    dst = (char *) dst + 1;
+    src = (char *) src + 1;
+  }
+
+  return ret;
 }
 

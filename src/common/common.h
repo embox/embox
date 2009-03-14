@@ -45,6 +45,6 @@ inline static int dummy() {
     || between((ch),'a','f')    \
     || between((ch),'A','F') )
 
-void *memcpy(void *OUT, const void* IN, unsigned int size);
-
+void *memcpy(void *dst, const void *src, size_t n);
+void *memset(void *p, int c, size_t n);
 #endif //_COMMON_H_

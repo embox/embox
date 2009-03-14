@@ -21,6 +21,7 @@ typedef struct _net_packet
 	void *ifdev;
 	void * sock;
 	unsigned short protocol;
+	unsigned int len;
 	union {
 		//tcphdr	*th;
 		//udphdr	*uh;
@@ -44,7 +45,6 @@ typedef struct _net_packet
 	} mac;
 
 	unsigned char data[1518];
-	unsigned int len;
 }net_packet;
 typedef struct _net_device_stats
 {
