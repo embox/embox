@@ -11,6 +11,7 @@
 #include "arp.h"
 #include "mac.h"
 #include "ip_v4.h"
+#include "icmp.h"
 
 
 
@@ -23,7 +24,7 @@ typedef struct _net_packet
 	union {
 		//tcphdr	*th;
 		//udphdr	*uh;
-		//icmphdr	*icmph;
+		icmphdr	*icmph;
 		//igmphdr	*igmph;
 		//iphdr	*ipiph;
 		//ipv6hdr	*ipv6h;
