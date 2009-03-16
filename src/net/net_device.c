@@ -41,5 +41,12 @@ net_device *alloc_etherdev(int inum)
 
 net_device *find_net_device(const char * name)
 {
+	int i;
+	for (i = 0; i < MAX_ETHDEV; i ++){
+		if (dev_is_busy(i) && (0 == strncmp(name, net_devices[i].name, sizeof (net_devices[i].name))))
+		{
+			return &net_devices[i];
+		}
+	}
 	return NULL;
 }
