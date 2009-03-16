@@ -69,7 +69,6 @@ window_underflow:
 	jmp  %l1	! Re-execute restore
 	 rett  %l2
 
-
 		.global halt_trap
 halt_trap:
   !      flush

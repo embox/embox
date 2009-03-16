@@ -28,7 +28,7 @@ _hardreset:
 
   /* Interrupt entries */
   BAD_TRAP;                     ! 11 interrupt level  1   ! IRQ_AHB_error
-  TRAP(irq_dispatcher);                     ! 12 interrupt level  2   ! IRQ_UART2
+  TRAP(irq_dispatcher);         ! 12 interrupt level  2   ! IRQ_UART2
   TRAP(irq_dispatcher);         ! 13 interrupt level  3   ! IRQ_UART1
   BAD_TRAP;                     ! 14 interrupt level  4   !
   TRAP(irq_dispatcher);         ! 15 interrupt level  5   ! from_dsp
@@ -48,8 +48,8 @@ _hardreset:
   BAD_TRAP;                                     ! 24 cp_disabled
   BAD_TRAP; BAD_TRAP; BAD_TRAP;                 ! 25 - 27 undefined
   BAD_TRAP;                                     ! 28 cp_exception
-  BAD_TRAP; BAD_TRAP;                 ! 29 - 2A undefined
-  BAD_TRAP;                           ! 2B data_store_error
+  BAD_TRAP; BAD_TRAP;                           ! 29 - 2A undefined
+  BAD_TRAP;                                     ! 2B data_store_error
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 2C - 2F undefined
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 30 - 33 undefined
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 34 - 37 undefined
