@@ -232,7 +232,7 @@ inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, B
 	}
 	*/
 	if (!is_ahb) {
-		APB_SLOT *slot = ((APB_SLOT *) base) + slot_number;
+		APB_SLOT *slot = ((APB_SLOT *) APB_BASE) + slot_number;
 		fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 		dev->slot = slot_number;
 
@@ -240,14 +240,17 @@ inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, B
 		return;
 	}
 	AHB_SLOT *slot = ((AHB_SLOT *) base) + slot_number;
+	if (!is_master) {
+		dev->is_master = FALSE;
+		slot = ((AHB_SLOT *) AHB_SLAVE_BASE) + slot_number;
+	} else {
+		dev->is_master = TRUE;
+		slot = ((AHB_SLOT *) AHB_MASTER_BASE) + slot_number;
+	}
 	fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 	dev->slot = slot_number;
 	fill_ahb_bar_infos(dev, slot);
-	if (!is_master) {
-		dev->is_master = FALSE;
-	} else {
-		dev->is_master = TRUE;
-	}
+
 }
 
 int capture_amba_dev(AMBA_DEV *dev, BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOOL is_master) {
