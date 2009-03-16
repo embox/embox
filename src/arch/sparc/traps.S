@@ -231,6 +231,7 @@ bad_trap_dispatcher:
 	call	dispatch_bad_trap
 	 nop
 
+
         .global start_child_process
 start_child_process:
         save  %sp, -112, %sp
