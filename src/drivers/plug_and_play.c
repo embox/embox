@@ -60,23 +60,24 @@ static PNP_DEVICE_INFO const devs_table[] = {
 #define AHB_MASTERS_QUANTITY	0x10
 #define AHB_SLAVES_QUANTITY		0x40
 #define APB_QUANTITY			0x40
-static AMBA_DEV *ahb_devices[AHB_MASTERS_QUANTITY+ AHB_SLAVES_QUANTITY];
+static AMBA_DEV *ahbm_devices[AHB_MASTERS_QUANTITY];
+static AMBA_DEV *ahbsl_devices[AHB_SLAVES_QUANTITY];
 static AMBA_DEV *apb_devices[APB_QUANTITY];
 
-inline static lock_ahbm_slot(UINT16 slot, AMBA_DEV *dev) {
-	if (ahb_devices[slot])
+inline static int lock_ahbm_slot(UINT16 slot, AMBA_DEV *dev) {
+	if (ahbm_devices[slot])
 		return -1;
-	ahb_devices[slot] = dev;
+	ahbm_devices[slot] = dev;
 	return 0;
 }
-inline static lock_ahbsl_slot(UINT16 slot, AMBA_DEV *dev) {
-	if (ahb_devices[AHB_MASTERS_QUANTITY + slot])
+inline static int lock_ahbsl_slot(UINT16 slot, AMBA_DEV *dev) {
+	if (ahbsl_devices[slot])
 		return -1;
-	ahb_devices[AHB_MASTERS_QUANTITY + slot] = dev;
+	ahbsl_devices[slot] = dev;
 	return 0;
 }
 
-inline static lock_apb_slot(UINT16 slot, AMBA_DEV *dev) {
+inline static int lock_apb_slot(UINT16 slot, AMBA_DEV *dev) {
 	if (apb_devices[slot])
 		return -1;
 	apb_devices[slot] = dev;
@@ -86,9 +87,11 @@ inline static lock_apb_slot(UINT16 slot, AMBA_DEV *dev) {
 inline static int lock_amba_slot (UINT16 slot, AMBA_DEV *dev, BOOL is_ahb, BOOL is_master) {
 	if (!is_ahb) {
 		if (-1 == lock_apb_slot(slot, dev)) 	 return -1;
+		return 0;
 	}
 	if (!is_master) {
 		if (-1 == lock_ahbsl_slot(slot, dev)) return -1;
+		return 0;
 	}
 
 	if (-1 == lock_ahbm_slot(slot, dev)) 	return -1;
