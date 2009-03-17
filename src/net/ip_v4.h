@@ -22,4 +22,7 @@ typedef struct _iphdr
 	unsigned char*raw;
 }iphdr;
 
+
+int ip_received_packet(net_packet *pack);
+
 #endif /* IP_V4_H_ */
