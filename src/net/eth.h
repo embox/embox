@@ -11,15 +11,7 @@
 
 
 
-#define IP_PROTOCOL_TYPE (unsigned short)0x0800
-/*
-typedef struct _IPV4_HEADER
-{
-	unsigned char dest_addr[4];
-	unsigned char flags;//broad_cast
-	unsigned char src_addr[4];
 
-}IPV4_HEADER;*/
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 int eth_init();
 int eth_send (net_packet *pack);

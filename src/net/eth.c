@@ -30,7 +30,7 @@ typedef struct _IF_DEVICE
 
 static IF_DEVICE ifs[INTERFACES_QUANTITY];
 
-
+/*
 int rebuild_ip_header(net_packet * pack)
 {
 	if (NULL == pack->nh.raw)
@@ -38,28 +38,15 @@ int rebuild_ip_header(net_packet * pack)
 	memcpy(&pack->data[sizeof(machdr) - sizeof(pack->mac.mach->raw)], pack->nh.iph, sizeof(iphdr) - sizeof (pack->nh.iph->raw));
 
 }
-
+*/
 static int rebuild_headers(net_packet * pack)
 {
-	if (NULL == pack->mac.raw)
-		return -1;
-	memcpy(pack->data, pack->mac.mach, sizeof(machdr) - sizeof(pack->mac.mach->raw));
-	if (NULL != pack->mac.mach->raw)
+
+	if (SOCK_RAW != pack->sk->sk_type)
 	{
-		memcpy(pack->data, pack->mac.mach->raw, pack->len);
-		return 1;
+		//if (arp_resolve_addr(pack));
+			return 0;
 	}
-	if (IP_PROTOCOL_TYPE == pack->mac.mach->type)
-	{
-		if ( 1 == rebuild_ip_header(pack))
-			return 1;
-	}
-
-	if (NULL == pack->h.raw)
-		return -1;
-
-	//memcpy(pack->data, pack->nh.raw, sizeof());
-
 	return 0;
 }
 
@@ -139,6 +126,24 @@ static int alloc_callback (IF_DEVICE *dev, unsigned int type, ETH_LISTEN_CALLBAC
 		}
 	}
 	return -1;
+}
+void ipaddr_print(unsigned char *addr, int len)
+{
+	int i;
+	for (i = 0; i < (len - 1); i++)
+	{
+		TRACE("%d.", addr[i]);
+	}
+	TRACE("%d", addr[i]);
+}
+void macaddr_print(unsigned char *addr, int len)
+{
+	int i;
+	for (i = 0; i < (len - 1); i++)
+	{
+		TRACE("%d:", addr[i]);
+	}
+	TRACE("%d", addr[i]);
 }
 
 int netif_rx(net_packet *pack)

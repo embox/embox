@@ -5,6 +5,7 @@
  *      Author: anton
  */
 #include "types.h"
+#include "common.h"
 #include "string.h"
 #include "net.h"
 #include "arp.h"
@@ -31,21 +32,6 @@ ARP_ENTITY arp_table[0x100];
 
 #define ARP_HARDWARE_TYPE_ETH (unsigned short)0x0001
 
-/*
-typedef struct _ARP_PACKET
-{
-	unsigned char hw_dst_addr[6];// = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-	unsigned char hw_src[6];
-	unsigned char hw_type[2];// = {0x08, 0x06};
-	unsigned short htype;// = 0x0001;//ethernet
-	unsigned short ptype;// = 0x0800;//ip
-	unsigned short oper;//1 req 2 resp
-	unsigned char sha[6];//Sender hardware address
-	unsigned char spa[4];//Sender protocol address
-	unsigned char tha[6];//Target hardware address
-	unsigned char tpa[4];//Target protocol address
-}ARP_PACKET;
-*/
 static inline int find_entity(void *ifdev, unsigned char dst_addr[4])
 {
 	int i;
@@ -78,21 +64,6 @@ static inline int add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char
 	}
 }
 
-/*
-static unsigned char arp_req [0x2a] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x01,
-		0x08, 0x06,
-		0x0, 0x01,
-		0x8,0x00,
-		0x6,
-		0x4,
-		0x0,0x1,
-		0xAA, 0xBB, 0xCC, 0xDD, 0x00, 0x01,
-		192,168,0,80,
-		0x0,0x0,0x0,0x0,0x0,0x0,
-		192,168,0,1
-		};
-		*/
 static unsigned char brodcast_mac_addr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
@@ -106,21 +77,21 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 
 	netdev = eth_get_netdevice(ifdev);
 //mac header
-	memcpy (mach.dst_addr, brodcast_mac_addr, sizeof(mach.dst_addr));
-	memcpy (mach.src_addr, netdev->hw_addr, sizeof(mach.dst_addr));
+	memcpy (mach.dst_addr, brodcast_mac_addr, MAC_ADDR_LEN);
+	memcpy (mach.src_addr, netdev->hw_addr, MAC_ADDR_LEN);
 	mach.type = ARP_PROTOCOL_TYPE;
 	mach.raw = NULL;
 	pack->mac.mach = &mach;
 //arp header
 	arph.htype = ARP_HARDWARE_TYPE_ETH;
 	arph.ptype = IP_PROTOCOL_TYPE;
-	//TODO length hardware type
-	arph.hlen = 6;
+	//TODO length hardware and logical type
+	arph.hlen = netdev->addr_len;
 	arph.plen = 4;
 	arph.oper = ARP_REQUEST;
-	memcpy (arph.sha, netdev->hw_addr, sizeof(mach.dst_addr));
+	memcpy (arph.sha, netdev->hw_addr, MAC_ADDR_LEN);
 	memcpy (arph.spa, eth_get_ipaddr(ifdev), sizeof(arph.spa));
-	memcpy (arph.tpa, eth_get_ipaddr(ifdev), sizeof(arph.tpa));
+	memcpy (arph.tpa, eth_get_ipaddr(ifdev), MAC_ADDR_LEN);
 	pack->nh.arph = &arph;
 	netdev->rebuild_header(pack);
 	return pack;
@@ -158,22 +129,27 @@ int arp_received_packet(net_packet *pack)
 	arphdr *arp = pack->nh.arph;
 
 
+
 	if(ARP_REQUEST != arp->oper)
 		return 0;
 
 	if (0 != memcmp(eth_get_ipaddr(pack->ifdev), arp->tpa, 4))
 		return 0;
 
+	TRACE ("arp received packet from ip ");
+	ipaddr_print(arp->spa, sizeof(arp->spa));
+	TRACE (" mac ");
+	macaddr_print(arp->sha, sizeof(arp->spa));
 
 	//add to arp_table
 	add_entity(pack->ifdev, arp->spa, arp->sha);
 
 	resp = net_packet_copy(pack);
-//TODO fix absolute size of mac addr
-	memcpy(resp->mac.mach->dst_addr, pack->mac.mach->src_addr, 6);
-	memcpy(resp->mac.mach->src_addr, pack->netdev->hw_addr, 6);
-	resp->nh.arph->oper = 2;
-	memcpy(resp->nh.arph->tha, pack->netdev->hw_addr, 6);
+
+	memcpy(resp->mac.mach->dst_addr, pack->mac.mach->src_addr, sizeof(resp->mac.mach->dst_addr));
+	memcpy(resp->mac.mach->src_addr, pack->netdev->hw_addr, sizeof(resp->mac.mach->src_addr));
+	resp->nh.arph->oper = ARP_RESPONSE;
+	memcpy(resp->nh.arph->tha, pack->netdev->hw_addr, sizeof(resp->nh.arph->tha));
 
 	eth_send(pack);
 }

@@ -7,10 +7,14 @@
 
 #ifndef IP_V4_H_
 #define IP_V4_H_
+
+#include "net_device.h"
+#define IP_PROTOCOL_TYPE (unsigned short)0x0800
+
 typedef struct _iphdr
 {
 	unsigned char header_size;
-	unsigned char type;
+	unsigned char tos;
 	unsigned short len;
 	unsigned short frame_id;
 	unsigned short frame_offset;
@@ -19,10 +23,9 @@ typedef struct _iphdr
 	unsigned short header_check_summ;
 	unsigned char src_addr[4];
 	unsigned char dst_addr[4];
-	unsigned char*raw;
 }iphdr;
 
 
-int ip_received_packet(net_packet *pack);
+//int ip_received_packet(net_packet *pack);
 
 #endif /* IP_V4_H_ */

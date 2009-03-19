@@ -8,6 +8,7 @@
 #ifndef MAC_H_
 #define MAC_H_
 
+
 #define MAC_ADDR_LEN 6
 typedef struct _machdr
 {
@@ -16,5 +17,8 @@ typedef struct _machdr
 	unsigned short type;
 	unsigned char * raw;
 }machdr;
+
+
+#define MAC_HEADER_SIZE (sizeof(machdr) - sizeof(pack->mac.mach->raw))
 
 #endif /* MAC_H_ */

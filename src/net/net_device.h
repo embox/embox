@@ -14,12 +14,12 @@
 #include "icmp.h"
 
 
-
+struct sock;
 typedef struct _net_packet
 {
 	struct _net_device *netdev;
 	void *ifdev;
-	void * sock;
+	struct sock *sk;
 	unsigned short protocol;
 	unsigned int len;
 	union {
