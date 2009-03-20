@@ -10,16 +10,6 @@
 #include "pnp_id.h"
 #include "plug_and_play.h"
 
-//TODO sunnya nu kak?
-/*typedef struct _AMBA_SLOT {
-	UINT32 id_reg;
-	UINT32 ba_reg[4];
-
-	BOOL is_ahb;
-
-	UINT32 user_defined[3];
-}AMBA_SLOT;
-*/
 typedef struct _AHB_SLOT {
 	UINT32 id_reg;
 	UINT32 user_defined[3];
@@ -127,27 +117,7 @@ inline static int find_amba_dev(BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOOL is
 	int cur_slot;
 	int base;
 	int quantity;
-//TODO blin Sunnya napishi normalno plizzzzzzz
-/*	if (!is_ahb) {
-		base = APB_BASE;
-		quantity = APB_QUANTITY;
-	} else if (is_ahb && is_master){
-		base = AHB_MASTER_BASE;
-		quantity = AHB_MASTERS_QUANTITY;
-	} else if (is_ahb && !is_master){
-		base = AHB_SLAVE_BASE;
-		quantity = AHB_SLAVES_QUANTITY;
-	} else {
-		return -1;
-	}
 
-	AMBA_SLOT *pslot = ((AMBA_SLOT *) base);
-	for (cur_slot = 0; cur_slot < quantity; cur_slot++) {
-		if ((ven_id == get_ven(pslot[cur_slot].id_reg)) && (dev_id == get_dev(
-				pslot[cur_slot].id_reg)))
-			return cur_slot;
-	}
-*/
 	if (!is_ahb)
 		return find_apbdev(ven_id, dev_id);
 	if (is_master)
@@ -205,35 +175,9 @@ inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev_info, UINT32 id_reg) {
 	dev_info->version = get_version(id_reg);
 }
 
-//TODO rewrite function
 inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master) {
 	int base;
-/*	if (!is_ahb) {
-		base = APB_BASE;
-	} else if (is_ahb && is_master) {
-		base = AHB_MASTER_BASE;
-	} else if (is_ahb && !is_master) {
-		base = AHB_SLAVE_BASE;
-	} else {
-		return;
-	}
 
-	AMBA_SLOT *slot = ((AMBA_SLOT *) base) + slot_number;
-	fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
-	dev->slot = slot_number;
-
-	if (!is_ahb) {
-		fill_apb_bar_info(&dev->bar[0], slot->ba_reg[0]);
-		return;
-	}
-
-	fill_ahb_bar_infos(dev, slot);
-	if (!is_master) {
-		dev->is_master = FALSE;
-	} else {
-		dev->is_master = TRUE;
-	}
-	*/
 	if (!is_ahb) {
 		APB_SLOT *slot = ((APB_SLOT *) APB_BASE) + slot_number;
 		fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
@@ -364,23 +308,30 @@ static void show_dev(AMBA_DEV *dev, BOOL show_user) {
 	return;
 
 }
-//TODO sunnya rewrite
+
 static int print_amba_entries(UINT32 *base_addr, int amount, BOOL is_ahb, BOOL is_master) {
 	int i, count = 0;
-//	AMBA_SLOT *pslot = base_addr;
-/*
-	char* ven_name;
-	char* dev_name;
-
 	AMBA_DEV dev;
 
-	for (i = 0; i < amount; i++) {
-		if (0 != pslot[i].id_reg) {
-			fill_amba_dev(&dev, pslot[i].id_reg, is_ahb, is_master);
-			show_dev(&dev, FALSE);
-			count++;
+	if (!is_ahb) {
+		APB_SLOT *pslot = (APB_SLOT *)base_addr;
+		for (i = 0; i < amount; i++) {
+			if (0 != pslot[i].id_reg) {
+				fill_amba_dev(&dev, pslot[i].id_reg, is_ahb, is_master);
+				show_dev(&dev, FALSE);
+				count++;
+			}
 		}
-	}*/
+		return;
+	}
+	AHB_SLOT *pslot = (AHB_SLOT *)base_addr;
+			for (i = 0; i < amount; i++) {
+				if (0 != pslot[i].id_reg) {
+					fill_amba_dev(&dev, pslot[i].id_reg, is_ahb, is_master);
+					show_dev(&dev, FALSE);
+					count++;
+				}
+	}
 	return count;
 }
 
@@ -439,7 +390,6 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 		TRACE("ERROR: print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
 		return;
 	}
-	//print_amba_entries((AMBA_SLOT *) AHB_MASTER_BASE + slot, 1, TRUE, TRUE);
 	AMBA_DEV dev;
 	fill_amba_dev(&dev, slot, TRUE, TRUE);
 	show_dev(&dev , TRUE);
@@ -451,7 +401,6 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
 		TRACE("ERROR: print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
 	}
-	//print_amba_entries((AMBA_SLOT *) AHB_SLAVE_BASE + slot, 1 , TRUE, FALSE);
 	AMBA_DEV dev;
 	fill_amba_dev(&dev, slot, TRUE, FALSE);
 	show_dev(&dev , TRUE);
@@ -464,7 +413,6 @@ void print_apb_pnp_dev(UINT32 slot) {
 		TRACE("ERROR: print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
 		return;
 	}
-	//print_amba_entries((AMBA_SLOT *) APB_BASE + slot, 1 , FALSE, FALSE);
 	AMBA_DEV dev;
 	fill_amba_dev(&dev, slot, FALSE, FALSE);
 	show_dev(&dev , TRUE);
