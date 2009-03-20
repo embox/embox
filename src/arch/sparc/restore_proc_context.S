@@ -10,6 +10,8 @@
  	.global restore_proc_context
 restore_proc_context:
 	//for testing
+	// Saving new r15 to return
+	// to position, where restore_proc_context was called, not save_proc_context
 	set register15, %l0
 	st %r15,[%l0 + 0]
 
@@ -17,7 +19,7 @@ restore_proc_context:
 
 	ld [%l0 + 0x10],%sp
 	ld [%l0 + 0x10],%fp
-	ld [%l0 + 0x18],%g0
+	// ld [%l0 + 0x18],%g0
 	ld [%l0 + 0x24],%g3
 	ld [%l0 + 0x28],%g4
 	ld [%l0 + 0x2c],%g5
@@ -66,15 +68,13 @@ register_window_restore:
 	//restore psr wim y tbr
 	ld [%l0 + 0], %g1
 	mov %g1, %wim
-!	ld [%l0 + 4], %g1
-!	mov %g1,%psr
-!	ld [%l0 + 8],%g1
-!	mov %g1, %y
+	ld [%l0 + 4], %g1
+	mov %g1,%psr
+	ld [%l0 + 8],%g1
+	mov %g1, %y
 	ld [%l0 + 0xc],%g1
 
-	// >> mov %tbr, %g1
 	mov %g1,	%tbr
-
 	nop;nop;nop
 
 

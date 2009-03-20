@@ -2,7 +2,7 @@
  * save_proc_context.S
  *
  *  Created on: Jan 21, 2009
- *      Author: anton
+ *      Author: anton, fomka
  */
 
 //#include "cpu_context.h"
@@ -69,10 +69,15 @@ register_window_save:
  	bg register_window_save
 	save       !
 	nop
-	set 8, %g1//NWINDOW
-	bg register_window_save
-	save       !
-	nop
+
+// restore wim
+	ld [%l0 + 0x0],	%g1
+	mov %g1,	%wim
+
+// restore g1, g2
+	set cpu_context, %l0
+	ld [%l0 + 0x20],%g1
+	ld [%l0 + 0x22],%g2
 
 	jmpl %r15 + 8,%g0 //if call without save
 	nop
