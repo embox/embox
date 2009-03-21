@@ -182,11 +182,12 @@ inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, B
 		APB_SLOT *slot = ((APB_SLOT *) APB_BASE) + slot_number;
 		fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 		dev->slot = slot_number;
+		dev->handler_data = NULL;
 
 		fill_apb_bar_info(&dev->bar[0], slot->ba_reg[0]);
 		return;
 	}
-	AHB_SLOT *slot = ((AHB_SLOT *) base) + slot_number;
+	AHB_SLOT *slot;// = ((AHB_SLOT *) base) + slot_number;
 	if (!is_master) {
 		dev->is_master = FALSE;
 		slot = ((AHB_SLOT *) AHB_SLAVE_BASE) + slot_number;
@@ -196,6 +197,7 @@ inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, B
 	}
 	fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 	dev->slot = slot_number;
+	dev->handler_data = NULL;
 	fill_ahb_bar_infos(dev, slot);
 
 }
@@ -309,28 +311,32 @@ static void show_dev(AMBA_DEV *dev, BOOL show_user) {
 
 }
 
-static int print_amba_entries(UINT32 *base_addr, int amount, BOOL is_ahb, BOOL is_master) {
+static int print_apb_entries(APB_SLOT *base_addr, int amount) {
 	int i, count = 0;
 	AMBA_DEV dev;
 
-	if (!is_ahb) {
-		APB_SLOT *pslot = (APB_SLOT *)base_addr;
-		for (i = 0; i < amount; i++) {
-			if (0 != pslot[i].id_reg) {
-				fill_amba_dev(&dev, pslot[i].id_reg, is_ahb, is_master);
-				show_dev(&dev, FALSE);
-				count++;
-			}
+	APB_SLOT *pslot = base_addr;
+	for (i = 0; i < amount; i++) {
+		if (0 != pslot[i].id_reg) {
+			fill_amba_dev(&dev, i, FALSE, FALSE);
+			show_dev(&dev, FALSE);
+			count++;
 		}
-		return;
 	}
-	AHB_SLOT *pslot = (AHB_SLOT *)base_addr;
-			for (i = 0; i < amount; i++) {
-				if (0 != pslot[i].id_reg) {
-					fill_amba_dev(&dev, pslot[i].id_reg, is_ahb, is_master);
-					show_dev(&dev, FALSE);
-					count++;
-				}
+	return count;
+}
+
+static int print_ahb_entries(AHB_SLOT *base_addr, int amount,BOOL is_master) {
+	int i, count = 0;
+	AMBA_DEV dev;
+
+	AHB_SLOT *pslot = base_addr;
+	for (i = 0; i < amount; i++) {
+		if (0 != pslot[i].id_reg) {
+			fill_amba_dev(&dev,  i, TRUE, is_master);
+			show_dev(&dev, FALSE);
+			count++;
+		}
 	}
 	return count;
 }
@@ -340,8 +346,8 @@ int print_ahbm_pnp_devs() {
 	TRACE("\nAHB masters..\n");
 	print_table_head();
 	count
-	+= print_amba_entries((UINT32 *) AHB_MASTER_BASE,
-			AHB_MASTERS_QUANTITY, TRUE, TRUE);
+	+= print_ahb_entries((AHB_SLOT *) AHB_MASTER_BASE,
+		AHB_MASTERS_QUANTITY, TRUE);
 	return count;
 }
 
@@ -350,8 +356,8 @@ int print_ahbsl_pnp_devs() {
 	TRACE("\nAHB slaves..\n");
 	print_table_head();
 	count
-	+= print_amba_entries((UINT32 *) AHB_SLAVE_BASE,
-			AHB_SLAVES_QUANTITY, TRUE, FALSE);
+	+= print_ahb_entries((AHB_SLOT *) AHB_SLAVE_BASE,
+			AHB_SLAVES_QUANTITY, FALSE);
 	return count;
 }
 
@@ -360,8 +366,8 @@ int print_apb_pnp_devs() {
 	TRACE("\nAPB slaves..\n");
 		print_table_head();
 		count
-		+= print_amba_entries((UINT32 *) APB_BASE,
-				APB_QUANTITY, FALSE, FALSE);
+		+= print_apb_entries((APB_SLOT *) APB_BASE,
+				APB_QUANTITY);
 		return count;
 }
 
@@ -391,8 +397,14 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 		return;
 	}
 	AMBA_DEV dev;
-	fill_amba_dev(&dev, slot, TRUE, TRUE);
-	show_dev(&dev , TRUE);
+	AHB_SLOT *pslot = (AHB_SLOT *)AHB_MASTER_BASE;
+	if (0 != pslot[slot].id_reg) {
+		fill_amba_dev(&dev, slot, TRUE, TRUE);
+		show_dev(&dev, TRUE);
+	}
+	else printf("No such device. \n");
+
+	//print_ahb_entries((AHB_SLOT *)AHB_MASTER_BASE, 1, TRUE);
 }
 
 void print_ahbsl_pnp_dev(UINT32 slot) {
@@ -402,8 +414,12 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
 		return;
 	}
 	AMBA_DEV dev;
-	fill_amba_dev(&dev, slot, TRUE, FALSE);
-	show_dev(&dev , TRUE);
+	AHB_SLOT *pslot = (AHB_SLOT *)AHB_SLAVE_BASE;
+	if (0 != pslot[slot].id_reg) {
+		fill_amba_dev(&dev, slot, TRUE, FALSE);
+		show_dev(&dev, TRUE);
+	}
+	else printf("No such device. \n");
 }
 
 void print_apb_pnp_dev(UINT32 slot) {
@@ -414,6 +430,10 @@ void print_apb_pnp_dev(UINT32 slot) {
 		return;
 	}
 	AMBA_DEV dev;
-	fill_amba_dev(&dev, slot, FALSE, FALSE);
-	show_dev(&dev , TRUE);
+	APB_SLOT *pslot = (APB_SLOT *)APB_BASE;
+	if (0 != pslot[slot].id_reg) {
+		fill_amba_dev(&dev, slot, FALSE, FALSE);
+		show_dev(&dev, TRUE);
+	}
+	else printf("No such device. \n");
 }
