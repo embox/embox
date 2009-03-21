@@ -9,7 +9,9 @@
 #define IP_V4_H_
 
 #include "net_device.h"
+
 #define IP_PROTOCOL_TYPE (unsigned short)0x0800
+#define ICMP_PROTO_TYPE (unsigned short)0x01
 
 typedef struct _iphdr
 {

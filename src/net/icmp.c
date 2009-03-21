@@ -4,10 +4,13 @@
  *  Created on: 14.03.2009
  *      Author: sunnya
  */
-
+#include "types.h"
+#include "net.h"
 #include "eth.h"
+#include "net_pack_manager.h"
 #include "icmp.h"
-//#include "ip_v4.h"
+#include "ip_v4.h"
+
 
 #define ICMP_TYPE_ECHO_REQ  8
 #define ICMP_TYPE_ECHO_RESP 0
@@ -21,7 +24,7 @@ typedef struct _ICMP_CALLBACK_INFO
 	unsigned char type;
 }ICMP_CALLBACK_INFO;
 ICMP_CALLBACK_INFO cb_info[0x10];
-static unsigned short ip_id;
+
 
 static int callback_alloc (	ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id, unsigned char type)
 {
@@ -82,7 +85,7 @@ static int callback_free (ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id, u
 
 typedef int (*PACKET_HANDLER)(net_packet *pack);
 
-PACKET_HANDLER received_packet_handlers[256];
+static PACKET_HANDLER received_packet_handlers[256];
 //PACKET_HANDLER send_packet_handlers[256];
 
 /*
@@ -103,9 +106,10 @@ int icmp_abort_echo_request(void *ifdev) {
 }
 static unsigned short calc_checksumm (icmphdr *hdr)
 {
-	return 0;
+	return ~ptclbsum(hdr, sizeof (icmphdr));
 }
-static inline net_packet *build_icmp_packet(net_packet *pack, unsigned char type, unsigned char code, unsigned char srcaddr[4], unsigned char dstaddr[4])
+static unsigned short ip_id;
+static inline int build_icmp_packet(net_packet *pack, unsigned char type, unsigned char code, unsigned char srcaddr[4], unsigned char dstaddr[4])
 {
 	pack->h.raw = pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2) + sizeof (iphdr);
 	memset (pack->h.raw, 0, sizeof (icmphdr));
@@ -114,28 +118,37 @@ static inline net_packet *build_icmp_packet(net_packet *pack, unsigned char type
 
 	pack->h.icmph->type = type;
 	pack->h.icmph->code = code;
-	pack->h.icmph->header_check_summ = calc_checksumm;
+	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.icmph);
 	//fill ip header
-	pack->nh.raw = pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2);
-	iphdr->header_size = sizeof (iphdr);
-	memcpy(iphdr->dst_addr, dstaddr, sizeof(iphdr->dst_addr));
-	memcpy(iphdr->src_addr, srcaddr, sizeof(iphdr->src_addr));
+	pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2);
+	pack->nh.iph->header_size = sizeof (iphdr);
+	memcpy(pack->nh.iph->dst_addr, dstaddr, sizeof(pack->nh.iph->dst_addr));
+	memcpy(pack->nh.iph->src_addr, srcaddr, sizeof(pack->nh.iph->src_addr));
+	pack->nh.iph->frame_offset = 0;
+	pack->nh.iph->header_check_summ = 0;
+	pack->nh.iph->len = sizeof (icmphdr);
+	pack->nh.iph->tos = 0;
+	pack->nh.iph->ttl = 255;
+	pack->nh.iph->proto = ICMP_PROTO_TYPE;
+	pack->nh.iph->frame_id = ip_id ++;
+	return sizeof(icmphdr) + sizeof (iphdr);
 }
 
 //implementation handlers for received msgs
-int icmp_get_echo_answer(net_packet *pack, ICMP_CALLBACK callback) { //type 0
-
+static int icmp_get_echo_answer(net_packet *pack) { //type 0
+/*
 	if (NULL == current_callback)
 		return -1;
 	current_callback(pack);
 	//unregister
 	current_callback = NULL;
+	*/
 	return 0;
 }
 
-int icmp_get_echo_request(net_packet *pack, ICMP_CALLBACK callback) { //type 8
+static int icmp_get_echo_request(net_packet *pack) { //type 8
 //TODO copy pack
-
+/*
 	icmphdr *icmphdr;
 	icmphdr->type = 0;
 	icmphdr->code = 0;
@@ -144,8 +157,9 @@ int icmp_get_echo_request(net_packet *pack, ICMP_CALLBACK callback) { //type 8
 	iphdr *iphdr = pack->nh->iph;
 	//!!change adresses
 	icmp_send_packet(icmphdr, iphdr->dst_addr, iphdr->src_addr, callback);
+	*/
+	return 0;
 }
-
 
 int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], ICMP_CALLBACK callback) { //type 8
 
@@ -155,11 +169,11 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], ICMP_CALLBACK 
 
 	pack->ifdev = ifdev;
 	pack->netdev = eth_get_netdevice(ifdev);
-	pack->len = build_icmp_packet(pack, eth_get_ipaddr(ifdev), dstaddr, type);
+	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, eth_get_ipaddr(ifdev), dstaddr);
 
-	if (callback_alloc())
-		return 0;
-	eth_send(pack);
+	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->frame_id, ICMP_TYPE_ECHO_RESP))
+		return -1;
+	return eth_send(pack);
 }
 
 //set all realized handlers
@@ -174,12 +188,11 @@ int icmp_init() {
 //receive packet
 int icmp_received_packet(net_packet *pack)
 {
-	PACKET_HANDLER func;
-	icmphdr *icmp =pack.h.icmph;
-
-	func = received_packet_handler(icmp->type);
-	//check_summ?
-	if (NULL != func) func(pack, NULL );
+	icmphdr *icmp = pack->h.icmph;
+	//TODO check summ icmp?
+	if (NULL != received_packet_handlers[icmp->type])
+		return received_packet_handlers[icmp->type](pack);
+	return -1;
 }
 
 //send packet

@@ -5,71 +5,18 @@
  *      Author: anton
  */
 
-ushort ptclcsum(Block *bp, int offset, int len) {
-	uchar *addr;
-	ulong losum, hisum;
-	ushort csum;
-	int odd, blocklen, x;
-
-	/* Correct to front of data area */
-	while (bp != nil && offset && offset >= BLEN(bp)) {
-		offset -= BLEN(bp);
-		bp = bp->next;
-	}
-	if (bp == nil)
-		return 0;
-
-	addr = bp->rp + offset;
-	blocklen = BLEN(bp) - offset;
-
-	if (bp->next == nil) {
-		if (blocklen < len)
-			len = blocklen;
-		return ~ptclbsum(addr, len) & 0xffff;
-	}
-
-	losum = 0;
-	hisum = 0;
-
-	odd = 0;
-	while (len) {
-		x = blocklen;
-		if (len < x)
-			x = len;
-
-		csum = ptclbsum(addr, x);
-		if (odd)
-			hisum += csum;
-		else
-			losum += csum;
-		odd = (odd + x) & 1;
-		len -= x;
-
-		bp = bp->next;
-		if (bp == nil)
-			break;
-		blocklen = BLEN(bp);
-		addr = bp->rp;
-	}
-
-	losum += hisum >> 8;
-	losum += (hisum & 0xff) << 8;
-	while ((csum = losum >> 16) != 0)
-		losum = csum + (losum & 0xffff);
-
-	return ~losum & 0xffff;
-}
-
-ushort ptclbsum(uchar *addr, int len) {
-	ulong losum, hisum, mdsum, x;
-	ulong t1, t2;
+#define LITTLE 0// big engian only
+unsigned short ptclbsum(unsigned char *addr, int len) {
+	unsigned long losum, hisum, mdsum, x;
+	unsigned long t1, t2;
 
 	losum = 0;
 	hisum = 0;
 	mdsum = 0;
 
 	x = 0;
-	if ((ulong) addr & 1) {
+	//if start from not odd addr
+	if ((unsigned long) addr & 1) {
 		if (len) {
 			hisum += addr[0];
 			len--;
@@ -77,28 +24,30 @@ ushort ptclbsum(uchar *addr, int len) {
 		}
 		x = 1;
 	}
+	//calc summ by 16 byte
 	while (len >= 16) {
-		t1 = *(ushort*) (addr + 0);
-		t2 = *(ushort*) (addr + 2);
+		t1 = *(unsigned short*) (addr + 0);
+		t2 = *(unsigned short*) (addr + 2);
 		mdsum += t1;
-		t1 = *(ushort*) (addr + 4);
+		t1 = *(unsigned short*) (addr + 4);
 		mdsum += t2;
-		t2 = *(ushort*) (addr + 6);
+		t2 = *(unsigned short*) (addr + 6);
 		mdsum += t1;
-		t1 = *(ushort*) (addr + 8);
+		t1 = *(unsigned short*) (addr + 8);
 		mdsum += t2;
-		t2 = *(ushort*) (addr + 10);
+		t2 = *(unsigned short*) (addr + 10);
 		mdsum += t1;
-		t1 = *(ushort*) (addr + 12);
+		t1 = *(unsigned short*) (addr + 12);
 		mdsum += t2;
-		t2 = *(ushort*) (addr + 14);
+		t2 = *(unsigned short*) (addr + 14);
 		mdsum += t1;
 		mdsum += t2;
 		len -= 16;
 		addr += 16;
 	}
+
 	while (len >= 2) {
-		mdsum += *(ushort*) addr;
+		mdsum += *(unsigned short*) addr;
 		len -= 2;
 		addr += 2;
 	}
