@@ -28,8 +28,9 @@ static int irq;
 static void irq_func_uart() {
 	char ch = uart_getc();
 }
+AMBA_DEV dev;
 int uart_init() {
-	AMBA_DEV dev;
+
 	if (NULL != uart)
 		return;
 	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);

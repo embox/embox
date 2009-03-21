@@ -60,12 +60,13 @@ typedef struct _AMBA_DEV_INFO
 //	void *handler_data;
 //	char dev_name[16];
 //} APB_DEV;
-
+struct _AMBA_DEV;
+typedef void (*HANDLER_DATA_FUNC)(struct _AMBA_DEV *dev);
 typedef struct _AMBA_DEV{
 	AMBA_DEV_INFO dev_info;
 	AMBA_BAR_INFO  bar[4];
 	BYTE slot;
-	void *handler_data;
+	HANDLER_DATA_FUNC show_info;
 	char dev_name[16];
 
 	BOOL is_ahb;
@@ -74,7 +75,7 @@ typedef struct _AMBA_DEV{
 	UINT32 user_def[3];
 } AMBA_DEV;
 
-typedef void (*HANDLER_DATA_FUNC)(AMBA_DEV *apb_dev);
+
 
 /*
  * pnp_dev must be allocated by caller

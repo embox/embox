@@ -99,11 +99,23 @@ static void irq_func_tmr_1mS() {
 	inc_sys_timers();
 }
 //static APB_DEV dev;
-static void show_module_info(AMBA_DEV *apb_dev)
+static void show_module_info(AMBA_DEV *dev)
 {
-	printf("in timers show_module_info");
-	//apb_dev->dev_info.
+	TRACE ("*** GAISLER timers ***\n");
+	TRACE ("regs:\n");
+	TRACE ("\tcnt1 0x%X\n", timers->timer_cnt1);
+	TRACE ("\tld1 0x%X\n", timers->timer_ld1);
+	TRACE ("\tctrl1 0x%X\n", timers->timer_ctrl1);
+
+	TRACE ("\tcnt2 0x%X\n", timers->timer_cnt2);
+	TRACE ("\tld2 0x%X\n", timers->timer_ld2);
+	TRACE ("\tctrl2 0x%X\n", timers->timer_ctrl2);
+
+	TRACE ("\tscaler_cnt 0x%X\n", timers->scaler_cnt);
+	TRACE ("\tscaler_ld 0x%X\n", timers->scaler_ld);
 }
+
+AMBA_DEV amba_dev;
 int timers_init() {
 	AMBA_DEV dev;
 	int i;
@@ -115,8 +127,12 @@ int timers_init() {
 		sys_timers[i].f_enable = FALSE;
 
 
-	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
-	timers = (TIMERS_STRUCT *)dev.bar[0].start;
+	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
+
+	amba_dev.show_info = show_module_info;
+
+
+	timers = (TIMERS_STRUCT *)amba_dev.bar[0].start;
 	timers->scaler_ld = TIMER_SCALER_VAL;
 	timers->scaler_cnt = 0;
 	timers->timer_cnt1 = 0;
@@ -126,9 +142,8 @@ int timers_init() {
 	timers->timer_ld2 = 0;//0x027100;
 	timers->timer_ctrl1 = 0xf;
 	timers->timer_ctrl2 = 0x0;//disable
-	irq_set_handler(dev.dev_info.irq, irq_func_tmr_1mS);
+	irq_set_handler(amba_dev.dev_info.irq, irq_func_tmr_1mS);
 
-	dev.handler_data= show_module_info;//(&dev);
 	//dev.dev_name=
 
 	cnt_sys_time = 0;

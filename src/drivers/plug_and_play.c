@@ -182,7 +182,7 @@ inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, B
 		APB_SLOT *slot = ((APB_SLOT *) APB_BASE) + slot_number;
 		fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 		dev->slot = slot_number;
-		dev->handler_data = NULL;
+		//dev->handler_data =apb_devices[slot_number]->handler_data ;
 
 		fill_apb_bar_info(&dev->bar[0], slot->ba_reg[0]);
 		return;
@@ -190,14 +190,15 @@ inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, B
 	AHB_SLOT *slot;// = ((AHB_SLOT *) base) + slot_number;
 	if (!is_master) {
 		dev->is_master = FALSE;
+		//dev->handler_data = ahbm_devices[slot_number]->handler_data;
 		slot = ((AHB_SLOT *) AHB_SLAVE_BASE) + slot_number;
 	} else {
 		dev->is_master = TRUE;
+		//dev->handler_data = ahbsl_devices[slot_number]->handler_data;
 		slot = ((AHB_SLOT *) AHB_MASTER_BASE) + slot_number;
 	}
 	fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 	dev->slot = slot_number;
-	dev->handler_data = NULL;
 	fill_ahb_bar_infos(dev, slot);
 
 }
@@ -284,12 +285,13 @@ const char UNKNOWN[] = "unknown";
 
 static void show_dev(AMBA_DEV *dev, BOOL show_user) {
 
+	HANDLER_DATA_FUNC func;
 	if (NULL == dev) return ;
 
 	char *ven_name;
 	char *dev_name;
 
-	if ((!show_user)||(NULL == dev->handler_data )) {
+	if ((!show_user)||(NULL == dev->show_info )) {
 		//standard out
 		if (NULL != (ven_name = (char *) get_ven_name(dev->dev_info.venID))) {
 			if (NULL == (dev_name = (char *) get_dev_name(dev->dev_info.venID,
@@ -300,13 +302,14 @@ static void show_dev(AMBA_DEV *dev, BOOL show_user) {
 			ven_name = (char *) UNKNOWN;
 			dev_name = (char *) UNKNOWN;
 		}
-		print_table_row(0, dev->dev_info.venID, dev->dev_info.devID, ven_name,
+		print_table_row(dev->slot, dev->dev_info.venID, dev->dev_info.devID, ven_name,
 				dev_name, dev->dev_info.version, dev->dev_info.irq);
 		show_bar_info(dev->bar);
 		return;
 	}
 	//all info out using handler
-	(HANDLER_DATA_FUNC *) dev->handler_data;
+	dev->show_info(dev);
+
 	return;
 
 }
@@ -316,7 +319,7 @@ static int print_apb_entries(APB_SLOT *base_addr, int amount) {
 	AMBA_DEV dev;
 
 	APB_SLOT *pslot = base_addr;
-	for (i = 0; i < amount; i++) {
+	for (i = 0; i < amount/4; i++) {
 		if (0 != pslot[i].id_reg) {
 			fill_amba_dev(&dev, i, FALSE, FALSE);
 			show_dev(&dev, FALSE);
@@ -396,11 +399,19 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 		TRACE("ERROR: print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
 		return;
 	}
+
+	if (NULL != ahbm_devices[slot])
+	{
+		show_dev(ahbm_devices[slot], TRUE);
+		return;
+	}
 	AMBA_DEV dev;
+	//dev.handler_data = NULL;
+
 	AHB_SLOT *pslot = (AHB_SLOT *)AHB_MASTER_BASE;
 	if (0 != pslot[slot].id_reg) {
 		fill_amba_dev(&dev, slot, TRUE, TRUE);
-		show_dev(&dev, TRUE);
+		show_dev(&dev, FALSE);
 	}
 	else printf("No such device. \n");
 
@@ -413,27 +424,36 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
 		TRACE("ERROR: print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
 	}
+	if (NULL != ahbsl_devices[slot])
+	{
+		show_dev(ahbsl_devices[slot], TRUE);
+		return;
+	}
 	AMBA_DEV dev;
 	AHB_SLOT *pslot = (AHB_SLOT *)AHB_SLAVE_BASE;
 	if (0 != pslot[slot].id_reg) {
 		fill_amba_dev(&dev, slot, TRUE, FALSE);
-		show_dev(&dev, TRUE);
+		show_dev(&dev, FALSE);
 	}
 	else printf("No such device. \n");
 }
 
 void print_apb_pnp_dev(UINT32 slot) {
-
-
 	if (slot >APB_QUANTITY) {
 		TRACE("ERROR: print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
 		return;
 	}
+	if (NULL != apb_devices[slot])
+	{
+		show_dev(apb_devices[slot], TRUE);
+		return;
+	}
 	AMBA_DEV dev;
+
 	APB_SLOT *pslot = (APB_SLOT *)APB_BASE;
 	if (0 != pslot[slot].id_reg) {
 		fill_amba_dev(&dev, slot, FALSE, FALSE);
-		show_dev(&dev, TRUE);
+		show_dev(&dev, FALSE);
 	}
 	else printf("No such device. \n");
 }
