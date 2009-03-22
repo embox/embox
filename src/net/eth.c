@@ -41,11 +41,12 @@ int rebuild_ip_header(net_packet * pack)
 */
 static int rebuild_headers(net_packet * pack)
 {
-
 	if (SOCK_RAW != pack->sk->sk_type)
 	{
-		//if (arp_resolve_addr(pack));
-			return 0;
+		if (NULL == arp_resolve_addr(pack, pack->nh.iph->dst_addr));
+			return -1;
+		memcpy (pack->mac.mach->src_addr, pack->netdev->hw_addr, sizeof(pack->mac.mach->src_addr));
+		return 0;
 	}
 	return 0;
 }
@@ -167,9 +168,19 @@ int netif_rx(net_packet *pack)
 
 	if (ARP_PROTOCOL_TYPE == pack->protocol)
 	{
+		pack->nh.raw = pack->data + sizeof(machdr);
 		arp_received_packet(pack);
 	}
 
+	if (IP_PROTOCOL_TYPE == pack->protocol)
+	{
+		pack->nh.raw = pack->data + sizeof(machdr);
+		pack->h.raw = pack->nh.raw + sizeof(iphdr);
+		if (ICMP_PROTO_TYPE == pack->nh.iph->proto)
+		{
+			icmp_received_packet(pack);
+		}
+	}
 	dev = (IF_DEVICE *)pack->ifdev;
 	for (i = 0; i < sizeof(dev->cb_info) / sizeof(dev->cb_info[0]); i ++)
 	{

@@ -13,6 +13,7 @@
 #include "eth.h"
 #include "net_pack_manager.h"
 #include "net.h"
+#include "sock.h"
 
 
 typedef struct _ARP_ENTITY
@@ -97,28 +98,28 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 	return pack;
 }
 
-//TODO don't like this interface Anton.Bondarev may be arp set field in net_packet and return NULL if error
-ARP_RESULT *arp_resolve_addr(void *ifdev, unsigned char dst_addr[4], ARP_RESULT *res)
+net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[4])
 {
 	int i;
-
-	if (NULL == ifdev)
+	void *ifdev;
+	if (NULL == pack || NULL == pack->ifdev)
 		return NULL;
 
-	if (-1 != (i = find_entity(ifdev, dst_addr)))
+	ifdev = pack->ifdev;
+	if (-1 != (i = find_entity(pack->ifdev, dst_addr)))
 	{
-		res->hw_dstaddr = arp_table[i].hw_addr;
-		res->if_handler = arp_table[i].if_handler;
-		return res;
+		pack->mac.raw = pack->data;
+		memcpy (pack->mac.mach->dst_addr, arp_table[i].hw_addr, sizeof(pack->mac.mach->dst_addr));
+		return pack;
 	}
 	//send mac packet
-	eth_send(build_arp_pack(ifdev, dst_addr));
+	eth_send(build_arp_pack(pack->ifdev, dst_addr));
 	sleep(500);
-	if (-1 != (i = find_entity(ifdev, dst_addr)))
+	if (-1 != (i = find_entity(pack->ifdev, dst_addr)))
 	{
-		res->hw_dstaddr = arp_table[i].hw_addr;
-		res->if_handler = arp_table[i].if_handler;
-		return res;
+		pack->mac.raw = pack->data;
+		memcpy (pack->mac.mach->dst_addr, arp_table[i].hw_addr, sizeof(pack->mac.mach->dst_addr));
+		return pack;
 	}
 	return NULL;
 }
@@ -127,8 +128,6 @@ int arp_received_packet(net_packet *pack)
 {
 	net_packet *resp;
 	arphdr *arp = pack->nh.arph;
-
-
 
 	if(ARP_REQUEST != arp->oper)
 		return 0;

@@ -27,8 +27,8 @@ typedef struct _ARP_RESULT
 	unsigned char *hw_dstaddr;
 }ARP_RESULT;
 
-ARP_RESULT *arp_resolve_addr(void *ifdev, unsigned char dst_addr[4], ARP_RESULT *res);
 struct _net_packet;
+struct _net_packet *arp_resolve_addr (struct _net_packet * pack, unsigned char dst_addr[4]);
 int arp_received_packet(struct _net_packet *pack);
 
 #endif /* ARP_H_ */
