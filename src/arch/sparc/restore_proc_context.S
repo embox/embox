@@ -2,7 +2,7 @@
  * restore_proc_context.S
  *
  *  Created on: Jan 27, 2009
- *      Author: anton
+ *      Author: anton, fomka
  */
 	.seg    "text"
 	.proc   0
