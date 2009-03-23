@@ -30,15 +30,7 @@ typedef struct _IF_DEVICE
 
 static IF_DEVICE ifs[INTERFACES_QUANTITY];
 
-/*
-int rebuild_ip_header(net_packet * pack)
-{
-	if (NULL == pack->nh.raw)
-			return -1;
-	memcpy(&pack->data[sizeof(machdr) - sizeof(pack->mac.mach->raw)], pack->nh.iph, sizeof(iphdr) - sizeof (pack->nh.iph->raw));
 
-}
-*/
 static int rebuild_headers(net_packet * pack)
 {
 	if (SOCK_RAW != pack->sk->sk_type)
@@ -68,17 +60,49 @@ int eth_init()
 	return cnt;
 }
 
-void *eth_get_if(const char *if_name)
+void *eth_get_ifdev_by_name(const char *if_name)
 {
 	int i;
 	for (i = 0; i < INTERFACES_QUANTITY; i ++)
 	{
-		if(0 == strcmp(if_name, ifs[i].net_dev->name))
+		if(0 == strncmp(if_name, ifs[i].net_dev->name, sizeof(ifs[i].net_dev->name)))
 		{
 			return &ifs[i];
 		}
 	}
 	return NULL;
+}
+
+unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4])
+{
+	unsigned int tmp;
+	int i, j;
+	for (i = 0; i < 3; i ++)
+	{
+		for (j = 0; j < 5; j ++)
+		{
+			if (j > 4)
+				return NULL;
+
+			if ('.' == addr[j])
+			{
+				addr [j] = 0;
+				if (1 != sscanf (addr, "%d", tmp))
+					return NULL;
+				if (tmp > 255)
+					return NULL;
+				res[i]=(unsigned char )0xFF & tmp;
+				addr += (j + 1);
+			}
+		}
+	}
+	if (1 != sscanf (addr, "%d", tmp))
+		return NULL;
+	if (tmp > 255)
+		return NULL;
+	res[4]=(unsigned char )0xFF & tmp;
+
+	return 	res;
 }
 
 void ipaddr_print(unsigned char *addr, int len)
@@ -100,8 +124,6 @@ void macaddr_print(unsigned char *addr, int len)
 	}
 	TRACE("%d", addr[i]);
 }
-}
-
 int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
 	int i;
 	for (i = 0; i < INTERFACES_QUANTITY; i++ ) {
@@ -114,6 +136,34 @@ int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
 	return -1;
 }
 
+int eth_set_ipaddr (void *ifdev, char ipaddr[4]) {
+	IF_DEVICE *dev = (IF_DEVICE *)ifdev;
+	if (NULL == ifdev)
+		return -1;
+	memcpy(dev->ipv4_addr, ipaddr, sizeof(dev->ipv4_addr));
+	return 0;
+}
+
+int eth_set_macaddr (void *ifdev, char macaddr[6]) {
+	IF_DEVICE *dev = (IF_DEVICE *)ifdev;
+	if (NULL == ifdev)
+		return -1;
+	memcpy(dev->net_dev->hw_addr, macaddr ,dev->net_dev->addr_len);
+	return 0;
+}
+/*
+int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
+	int i;
+	for (i = 0; i < INTERFACES_QUANTITY; i++ ) {
+		if (0 == strcmp(name, ifs[i].net_dev->name)) {
+			memcpy(ifs[i].ipv4_addr, ipaddr, 4 * sizeof(char));
+			memcpy(ifs[i].net_dev->hw_addr, macaddr ,6 * sizeof(char));
+			return i;
+		}
+	}
+	return -1;
+}
+*/
 unsigned char *eth_get_ipaddr(void *handler)
 {
 	IF_DEVICE *dev = (IF_DEVICE *)handler;
