@@ -81,6 +81,38 @@ void *eth_get_if(const char *if_name)
 	return NULL;
 }
 
+void ipaddr_print(unsigned char *addr, int len)
+{
+	int i;
+	for (i = 0; i < (len - 1); i++)
+	{
+		TRACE("%d.", addr[i]);
+	}
+	TRACE("%d", addr[i]);
+}
+
+void macaddr_print(unsigned char *addr, int len)
+{
+	int i;
+	for (i = 0; i < (len - 1); i++)
+	{
+		TRACE("%d:", addr[i]);
+	}
+	TRACE("%d", addr[i]);
+}
+}
+
+int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
+	int i;
+	for (i = 0; i < INTERFACES_QUANTITY; i++ ) {
+		if (0 == strcmp(name, ifs[i].net_dev->name)) {
+			memcpy(ifs[i].ipv4_addr, ipaddr, 4 * sizeof(char));
+			memcpy(ifs[i].net_dev->hw_addr, macaddr ,6 * sizeof(char));
+			return i;
+		}
+	}
+	return -1;
+}
 
 unsigned char *eth_get_ipaddr(void *handler)
 {
@@ -128,24 +160,7 @@ static int alloc_callback (IF_DEVICE *dev, unsigned int type, ETH_LISTEN_CALLBAC
 	}
 	return -1;
 }
-void ipaddr_print(unsigned char *addr, int len)
-{
-	int i;
-	for (i = 0; i < (len - 1); i++)
-	{
-		TRACE("%d.", addr[i]);
-	}
-	TRACE("%d", addr[i]);
-}
-void macaddr_print(unsigned char *addr, int len)
-{
-	int i;
-	for (i = 0; i < (len - 1); i++)
-	{
-		TRACE("%d:", addr[i]);
-	}
-	TRACE("%d", addr[i]);
-}
+
 
 int netif_rx(net_packet *pack)
 {

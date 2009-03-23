@@ -9,7 +9,7 @@
 #define ETH_H_
 #define NET_TYPE_ALL_PROTOCOL 0
 
-
+#include "net_device.h"
 
 
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
