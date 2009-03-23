@@ -14,6 +14,7 @@
 #include "wmem.h"
 #include "lspnp.h"
 #include "help.h"
+#include "ping.h"
 
 #define MAX_SHELL_KEYS 5
 #include "cpu_context.h"
