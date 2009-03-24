@@ -70,31 +70,35 @@ static unsigned char brodcast_mac_addr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
 static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 {
 	net_packet *pack;
-	machdr mach;
-	arphdr arph;
-	net_device *netdev;
+
+	if (NULL == ifdev)
+		return NULL;
+
 	if (NULL == (pack = net_packet_alloc()))
 		return NULL;
 
-	netdev = eth_get_netdevice(ifdev);
+	pack->ifdev = ifdev;
+	pack->netdev = eth_get_netdevice(ifdev);
+	pack->mac.raw = pack->data;
 //mac header
-	memcpy (mach.dst_addr, brodcast_mac_addr, MAC_ADDR_LEN);
-	memcpy (mach.src_addr, netdev->hw_addr, MAC_ADDR_LEN);
-	mach.type = ARP_PROTOCOL_TYPE;
-	mach.raw = NULL;
-	pack->mac.mach = &mach;
+	memcpy (pack->mac.mach->dst_addr, brodcast_mac_addr, MAC_ADDR_LEN);
+	memcpy (pack->mac.mach->src_addr, pack->netdev->hw_addr, MAC_ADDR_LEN);
+	pack->mac.mach->type = ARP_PROTOCOL_TYPE;
+
+	pack->nh.raw = pack->mac.raw + MAC_HEADER_SIZE;
+
 //arp header
-	arph.htype = ARP_HARDWARE_TYPE_ETH;
-	arph.ptype = IP_PROTOCOL_TYPE;
+	pack->nh.arph->htype = ARP_HARDWARE_TYPE_ETH;
+	pack->nh.arph->ptype = IP_PROTOCOL_TYPE;
 	//TODO length hardware and logical type
-	arph.hlen = netdev->addr_len;
-	arph.plen = 4;
-	arph.oper = ARP_REQUEST;
-	memcpy (arph.sha, netdev->hw_addr, MAC_ADDR_LEN);
-	memcpy (arph.spa, eth_get_ipaddr(ifdev), sizeof(arph.spa));
-	memcpy (arph.tpa, eth_get_ipaddr(ifdev), MAC_ADDR_LEN);
-	pack->nh.arph = &arph;
-	netdev->rebuild_header(pack);
+	pack->nh.arph->hlen = pack->netdev->addr_len;
+	pack->nh.arph->plen = 4;
+	pack->nh.arph->oper = ARP_REQUEST;
+	memcpy (pack->nh.arph->sha, pack->netdev->hw_addr, MAC_ADDR_LEN);
+	memcpy (pack->nh.arph->spa, eth_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
+	memcpy (pack->nh.arph->tpa, eth_get_ipaddr(ifdev), MAC_ADDR_LEN);
+
+	pack->protocol = ARP_PROTOCOL_TYPE;
 	return pack;
 }
 

@@ -21,19 +21,28 @@ int ping (char *eth_name, int cnt, unsigned char *dst)
 	void *ifdev;
 	int i;
 
-	if (NULL == (ifdev = eth_get_if(eth_name)))
+	TRACE ("ping from %s...\n", eth_name);
+	if (NULL == (ifdev = eth_get_ifdev_by_name(eth_name)))
+	{
+		TRACE ("Can't find interface %s\n see ifconfig for available intasfaces list\n", eth_name);
 		return -1;
+	}
 
 	for (i = 0; i < cnt; i ++)
 	{
 		has_responsed = FALSE;
+		TRACE ("ping from ");
+		ipaddr_print(eth_get_ipaddr (ifdev), 4);
+		TRACE (" to ");
+		ipaddr_print(dst, 4);
+
 		icmp_send_echo_request(ifdev, dst, callback);
 		sleep (1000);
 		if ( FALSE == has_responsed)
 		{
-			TRACE ("timeout\n");
+			TRACE (" ....timeout\n");
 		}
-		else TRACE("ok\n");
+		else TRACE(" ....ok\n");
 	}
 	icmp_abort_echo_request (ifdev);
 }
@@ -58,7 +67,7 @@ int ping_shell_handler (int argsc, char **argsv) {
 	int keys_amount;
 	char *eth_name;
 	int cnt;
-	unsigned char *dst;
+	unsigned char dst[4];
 
 
 	keys_amount = parse_arg(COMMAND_NAME, argsc, argsv, available_keys, sizeof(available_keys),
@@ -94,7 +103,12 @@ int ping_shell_handler (int argsc, char **argsv) {
 		printf("Parsing error: chose right destination address '-d'\n");
 		return -1;
 	}
-	dst = key_value;
+	if (NULL == ipaddr_scan(key_value, dst))
+	{
+		TRACE ("Error: wrong ip addr format %s\n", key_value);
+		return -1;
+	}
+
 
 	ping(eth_name, cnt, dst);
 	return 0;

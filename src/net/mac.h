@@ -15,10 +15,9 @@ typedef struct _machdr
 	unsigned char dst_addr[MAC_ADDR_LEN];
 	unsigned char src_addr[MAC_ADDR_LEN];
 	unsigned short type;
-	unsigned char * raw;
 }machdr;
 
 
-#define MAC_HEADER_SIZE (sizeof(machdr) - sizeof(pack->mac.mach->raw))
+#define MAC_HEADER_SIZE (sizeof(machdr))
 
 #endif /* MAC_H_ */

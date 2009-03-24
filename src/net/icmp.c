@@ -27,8 +27,8 @@ static int callback_alloc(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 	int i;
 	if (NULL == cb || NULL == ifdev)
 		return -1;
-	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info); i++) {
-		if (NULL == cb) {
+	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info[0]); i++) {
+		if (NULL == cb_info[i].cb) {
 			cb_info[i].cb = cb;
 			cb_info[i].ifdev = ifdev;
 			cb_info[i].ip_id = ip_id;
@@ -124,6 +124,8 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 	pack->nh.iph->ttl = 255;
 	pack->nh.iph->proto = ICMP_PROTO_TYPE;
 	pack->nh.iph->frame_id = ip_id++;
+	pack->nh.iph->header_check_summ = calc_checksumm(pack->nh.raw,
+			sizeof(iphdr));
 	return sizeof(icmphdr) + sizeof(iphdr);
 }
 
