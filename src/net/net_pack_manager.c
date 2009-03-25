@@ -49,6 +49,8 @@ net_packet *net_packet_copy(net_packet *pack)
 		return NULL;
 	if (NULL == (new_pack = net_packet_alloc()))
 		return NULL;
+//TODO too much copy during copy net_packets
+	memcpy (new_pack, pack, sizeof(net_packet));
 
 	//fix references during copy net_pack
 	if (NULL != pack->h.raw)
@@ -60,7 +62,7 @@ net_packet *net_packet_copy(net_packet *pack)
 	if (NULL != pack->mac.raw)
 			new_pack->mac.raw = new_pack->data + (pack->mac.raw - pack->data);
 
-	return memcpy (new_pack, pack, sizeof(pack));
+	return new_pack;
 }
 
 

@@ -38,9 +38,13 @@ static int rebuild_header(net_packet * pack)
 
 	if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type)
 	{
-		if (NULL == arp_resolve_addr(pack, pack->nh.iph->dst_addr));
+		if (NULL == arp_resolve_addr(pack, pack->nh.iph->dst_addr))
+		{
+			TRACE ("Destanation host Unreachable\n");
 			return -1;
+		}
 		memcpy (pack->mac.mach->src_addr, pack->netdev->hw_addr, sizeof(pack->mac.mach->src_addr));
+		pack->mac.mach->type=pack->protocol;
 		return 0;
 	}
 	return 0;
@@ -202,9 +206,14 @@ int eth_send (net_packet *pack)
 
 	if (ARP_PROTOCOL_TYPE != pack->protocol)
 	{
-		dev->net_dev->rebuild_header(pack);
+		if (-1 == dev->net_dev->rebuild_header(pack))
+		{
+			net_packet_free(pack);
+			return -1;
+		}
 	}
 	dev->net_dev->hard_start_xmit(pack, pack->netdev);
+	net_packet_free(pack);
 	return 0;
 }
 
@@ -248,6 +257,8 @@ int netif_rx(net_packet *pack)
 	{
 		pack->nh.raw = pack->data + sizeof(machdr);
 		arp_received_packet(pack);
+		net_packet_free(pack);
+		return;
 	}
 
 	if (IP_PROTOCOL_TYPE == pack->protocol)

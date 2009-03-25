@@ -96,8 +96,9 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 	pack->nh.arph->oper = ARP_REQUEST;
 	memcpy (pack->nh.arph->sha, pack->netdev->hw_addr, MAC_ADDR_LEN);
 	memcpy (pack->nh.arph->spa, eth_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
-	memcpy (pack->nh.arph->tpa, eth_get_ipaddr(ifdev), MAC_ADDR_LEN);
+	memcpy (pack->nh.arph->tpa, dst_addr, sizeof(pack->nh.arph->tpa));
 
+	pack->len = 0x3b;
 	pack->protocol = ARP_PROTOCOL_TYPE;
 	return pack;
 }
@@ -127,22 +128,31 @@ net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[4])
 	}
 	return NULL;
 }
+static int received_resp(net_packet *pack)
+{
+	arphdr *arp = pack->nh.arph;
+	if (0 != memcmp(eth_get_ipaddr(pack->ifdev), arp->tpa, 4))
+		return 0;
 
-int arp_received_packet(net_packet *pack)
+	TRACE ("arp received resp from ip ");
+	ipaddr_print(arp->spa, sizeof(arp->spa));
+	TRACE (" mac ");
+	macaddr_print(arp->sha, sizeof(arp->sha));
+
+	//add to arp_table
+	add_entity(pack->ifdev, arp->spa, arp->sha);
+	return 0;
+}
+
+int received_req(net_packet *pack)
 {
 	net_packet *resp;
 	arphdr *arp = pack->nh.arph;
 
-	if(ARP_REQUEST != arp->oper)
-		return 0;
-
-	if (0 != memcmp(eth_get_ipaddr(pack->ifdev), arp->tpa, 4))
-		return 0;
-
-	TRACE ("arp received packet from ip ");
+	TRACE ("arp received request from ip ");
 	ipaddr_print(arp->spa, sizeof(arp->spa));
 	TRACE (" mac ");
-	macaddr_print(arp->sha, sizeof(arp->spa));
+	macaddr_print(arp->sha, sizeof(arp->sha));
 
 	//add to arp_table
 	add_entity(pack->ifdev, arp->spa, arp->sha);
@@ -152,9 +162,36 @@ int arp_received_packet(net_packet *pack)
 	memcpy(resp->mac.mach->dst_addr, pack->mac.mach->src_addr, sizeof(resp->mac.mach->dst_addr));
 	memcpy(resp->mac.mach->src_addr, pack->netdev->hw_addr, sizeof(resp->mac.mach->src_addr));
 	resp->nh.arph->oper = ARP_RESPONSE;
-	memcpy(resp->nh.arph->tha, pack->netdev->hw_addr, sizeof(resp->nh.arph->tha));
+	memcpy(resp->nh.arph->sha, pack->netdev->hw_addr, sizeof(resp->nh.arph->sha));
+	memcpy(resp->nh.arph->tha, pack->mac.mach->src_addr, sizeof(resp->nh.arph->tha));
+	memcpy(resp->nh.arph->tpa, pack->nh.arph->spa, sizeof(resp->nh.arph->tpa));
+	memcpy(resp->nh.arph->spa, pack->nh.arph->tpa, sizeof(resp->nh.arph->spa));
 
-	eth_send(pack);
+	eth_send(resp);
+	return 0;
+}
+
+int arp_received_packet(net_packet *pack)
+{
+	arphdr *arp = pack->nh.arph;
+
+	if (0 != memcmp(eth_get_ipaddr(pack->ifdev), arp->tpa, 4))
+		return 0;
+
+	switch(arp->oper)
+	{
+	case ARP_RESPONSE:
+		return received_resp(pack);
+
+	case ARP_REQUEST:
+		return received_req(pack);
+
+	default:
+		return 0;
+	}
+
+	return 0;
+
 }
 //TODO delete_interface_from arp table
 //TODO delete_targer from arp table

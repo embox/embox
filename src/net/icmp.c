@@ -168,10 +168,14 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4],
 	pack->netdev = eth_get_netdevice(ifdev);
 	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, eth_get_ipaddr(
 			ifdev), dstaddr);
+	pack->protocol = IP_PROTOCOL_TYPE;
 
 	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->frame_id,
 			ICMP_TYPE_ECHO_RESP))
+	{
+		net_packet_free(pack);
 		return -1;
+	}
 	return eth_send(pack);
 }
 

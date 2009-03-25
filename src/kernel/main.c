@@ -42,6 +42,7 @@ int init() {
 	cache_data_enable(FALSE);
 	cache_instr_enable(TRUE);
 	eth_init();//interfaces
+	icmp_init();
 	return 0;
 }
 
