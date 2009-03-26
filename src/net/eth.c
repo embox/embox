@@ -10,6 +10,7 @@
 #include "net_device.h"
 #include "net_pack_manager.h"
 #include "arp.h"
+#include "udp.h"
 #include "net.h"
 #include "eth.h"
 
@@ -268,6 +269,10 @@ int netif_rx(net_packet *pack)
 		if (ICMP_PROTO_TYPE == pack->nh.iph->proto)
 		{
 			icmp_received_packet(pack);
+		}
+		if (UDP_PROTO_TYPE == pack->nh.iph->proto)
+		{
+			udp_received_packet(pack);
 		}
 	}
 	dev = (IF_DEVICE *)pack->ifdev;

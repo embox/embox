@@ -12,6 +12,7 @@
 
 #define IP_PROTOCOL_TYPE (unsigned short)0x0800
 #define ICMP_PROTO_TYPE (unsigned short)0x01
+#define UDP_PROTO_TYPE (unsigned short)0x11
 
 typedef struct _iphdr
 {

@@ -12,7 +12,7 @@
 #include "mac.h"
 #include "ip_v4.h"
 #include "icmp.h"
-
+#include "udp.h"
 
 struct sock;
 typedef struct _net_packet
@@ -24,7 +24,7 @@ typedef struct _net_packet
 	unsigned int len;
 	union {
 		//tcphdr	*th;
-		//udphdr	*uh;
+		udphdr	*uh;
 		icmphdr	*icmph;
 		//igmphdr	*igmph;
 		//iphdr	*ipiph;
