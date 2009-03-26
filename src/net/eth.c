@@ -123,6 +123,38 @@ unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4])
 	return 	res;
 }
 
+unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[6])
+{
+	unsigned int tmp;
+	int i,j;
+	for (i = 0; i < 5; i++)
+	{
+		for (j = 0; j < 4; j ++)
+		{
+			if (j > 3)
+				return NULL;
+			if ((':' == addr[j])||('-' == addr[j]))
+			{
+				addr[j] = 0;
+				if (1 != sscanf(addr, "%x", &tmp))
+					return 0;
+				if (tmp > 0xFF)
+					return NULL;
+				res[i] = (unsigned char) 0xFF & tmp;
+				addr += (j + 1);
+				break;
+			}
+		}
+	}
+	if (1 != sscanf (addr, "%x", &tmp))
+			return NULL;
+		if (tmp > 255)
+			return NULL;
+		res[3]=(unsigned char )0xFF & tmp;
+
+		return 	res;
+}
+
 void ipaddr_print(unsigned char *addr, int len)
 {
 	int i;
@@ -146,8 +178,8 @@ int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
 	int i;
 	for (i = 0; i < INTERFACES_QUANTITY; i++ ) {
 		if (0 == strcmp(name, ifs[i].net_dev->name)) {
-			memcpy(ifs[i].ipv4_addr, ipaddr, 4 * sizeof(char));
-			memcpy(ifs[i].net_dev->hw_addr, macaddr ,6 * sizeof(char));
+			memcpy(ifs[i].ipv4_addr, ipaddr, sizeof(ifs[i].ipv4_addr));
+			memcpy(ifs[i].net_dev->hw_addr, macaddr ,sizeof(ifs[i].net_dev->hw_addr));
 			return i;
 		}
 	}
