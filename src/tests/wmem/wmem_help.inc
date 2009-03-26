@@ -1,5 +1,5 @@
 /*
- * mem_help.inc
+ * wmem_help.inc
  *
  *  Created on: 24.02.2009
  *      Author: Alexey Fomin

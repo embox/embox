@@ -148,9 +148,9 @@ unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[6])
 	}
 	if (1 != sscanf (addr, "%x", &tmp))
 			return NULL;
-		if (tmp > 255)
+		if (tmp > 0xFF)
 			return NULL;
-		res[3]=(unsigned char )0xFF & tmp;
+		res[5]=(unsigned char )0xFF & tmp;
 
 		return 	res;
 }
