@@ -16,16 +16,16 @@
 
 typedef struct _iphdr
 {
-	unsigned char ihl:4, version:4;
+	unsigned char version:4, ihl:4;
 	unsigned char tos;
-	unsigned short len;
-	unsigned short frame_id;
-	unsigned short frame_offset;
+	unsigned short tot_len;
+	unsigned short id;
+	unsigned short frag_off;
 	unsigned char ttl;
 	unsigned char proto;
-	unsigned short header_check_summ;
-	unsigned char src_addr[4];
-	unsigned char dst_addr[4];
+	unsigned short check;
+	unsigned char saddr[4];
+	unsigned char daddr[4];
 }iphdr;
 
 

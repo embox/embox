@@ -65,7 +65,7 @@ typedef struct _net_device
 	int (*open)(struct _net_device *dev);
 	int (*stop)(struct _net_device *dev);
 	int (*hard_start_xmit) (net_packet *pack, struct _net_device *dev);
-	int (*hard_header) (net_packet *pack, struct _net_device *dev, unsigned short type, void *daddr, void *saddr, unsigned len);
+	int (*hard_header) (net_packet *pack, struct _net_device *dev, unsigned short type, void *daddr, void *saddr, unsigned tot_len);
 	int (*rebuild_header)(net_packet * pack);
 	net_device_stats *(*get_stats)(struct _net_device *dev);
 	int (*set_mac_address)(struct _net_device *dev, void *addr);

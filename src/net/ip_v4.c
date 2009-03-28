@@ -30,13 +30,13 @@ static int rebuild_ip_header(struct inet_sock *sk, struct _net_packet *pack)
 	iphdr *hdr = pack->nh.iph;
 	hdr->version = 4;
 	hdr->ihl = sizeof (iphdr) << 2;
-	memcpy(hdr->dst_addr, sk->daddr, sizeof(hdr->dst_addr));
-	hdr->len = pack->len;
+	memcpy(hdr->daddr, sk->daddr, sizeof(hdr->daddr));
+	hdr->tot_len = pack->len;
 	hdr->ttl = sk->uc_ttl;
-	hdr->frame_id = sk->id;
+	hdr->id = sk->id;
 	hdr->tos = sk->tos;
 	//TODO now ip only single frame
-	hdr->frame_offset = 0;
+	hdr->frag_off = 0;
 	hdr->proto = sk->sk->sk_protocol;
 
 	return 0;

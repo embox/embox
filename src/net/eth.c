@@ -39,13 +39,14 @@ static int rebuild_header(net_packet * pack)
 
 	if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type)
 	{
-		if (NULL == arp_resolve_addr(pack, pack->nh.iph->dst_addr))
+		if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr))
 		{
 			TRACE ("Destanation host Unreachable\n");
 			return -1;
 		}
 		memcpy (pack->mac.mach->src_addr, pack->netdev->hw_addr, sizeof(pack->mac.mach->src_addr));
 		pack->mac.mach->type=pack->protocol;
+		pack->len += sizeof(machdr);
 		return 0;
 	}
 	return 0;

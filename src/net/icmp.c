@@ -78,8 +78,7 @@ static ICMP_CALLBACK callback_find(void *ifdev, unsigned short ip_id,
 		unsigned char type) {
 	int i;
 	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info); i++) {
-		if (ifdev == cb_info[i].ifdev && cb_info[i].ip_id == ip_id
-				&& cb_info[i].type) {
+		if (ifdev == cb_info[i].ifdev && type == cb_info[i].type) {
 			return cb_info[i].cb;
 		}
 	}
@@ -116,17 +115,17 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 	//fill ip header
 	pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2);
 	pack->nh.iph->version = 4;
-	pack->nh.iph->ihl = sizeof(iphdr) << 2;
-	memcpy(pack->nh.iph->dst_addr, dstaddr, sizeof(pack->nh.iph->dst_addr));
-	memcpy(pack->nh.iph->src_addr, srcaddr, sizeof(pack->nh.iph->src_addr));
-	pack->nh.iph->frame_offset = 0;
-	pack->nh.iph->header_check_summ = 0;
-	pack->nh.iph->len = sizeof(icmphdr);
+	pack->nh.iph->ihl = sizeof(iphdr) >> 2;
+	memcpy(pack->nh.iph->daddr, dstaddr, sizeof(pack->nh.iph->daddr));
+	memcpy(pack->nh.iph->saddr, srcaddr, sizeof(pack->nh.iph->saddr));
+	pack->nh.iph->frag_off = 0;
+	pack->nh.iph->check = 0;
+	pack->nh.iph->tot_len = sizeof(icmphdr);
 	pack->nh.iph->tos = 0;
 	pack->nh.iph->ttl = 255;
 	pack->nh.iph->proto = ICMP_PROTO_TYPE;
-	pack->nh.iph->frame_id = ip_id++;
-	pack->nh.iph->header_check_summ = calc_checksumm(pack->nh.raw,
+	pack->nh.iph->id = ip_id++;
+	pack->nh.iph->check = calc_checksumm(pack->nh.raw,
 			sizeof(iphdr));
 	return sizeof(icmphdr) + sizeof(iphdr);
 }
@@ -134,12 +133,12 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 //implementation handlers for received msgs
 static int icmp_get_echo_answer(net_packet *pack) { //type 0
 	ICMP_CALLBACK cb;
-	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->frame_id,
+	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
 			ICMP_TYPE_ECHO_RESP)))
 		return -1;
 	cb(pack);
 	//unregister
-	callback_free(cb, pack->ifdev, pack->nh.iph->frame_id, ICMP_TYPE_ECHO_RESP);
+	callback_free(cb, pack->ifdev, pack->nh.iph->id, ICMP_TYPE_ECHO_RESP);
 	return 0;
 }
 
@@ -150,10 +149,10 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	//fill icmp header
 	pack->h.icmph->type = ICMP_TYPE_ECHO_RESP;
 
-	memset(pack->h.raw + pack->nh.iph->len - sizeof(iphdr) + 1, 0, 64);
+	memset(pack->h.raw + pack->nh.iph->tot_len - sizeof(iphdr) + 1, 0, 64);
 
 	TRACE("\npacket icmp\n");
-	for (i = 0; i < pack->nh.iph->len + 64; i ++)
+	for (i = 0; i < pack->nh.iph->tot_len + 64; i ++)
 	{
 		if (0 == i % 4)
 		{
@@ -164,19 +163,19 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	}
 	TRACE("%X\n",  pack->h.icmph->header_check_summ);
 	pack->h.icmph->header_check_summ = 0;
-	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,pack->nh.iph->len - sizeof(iphdr) + 1 );
+	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,pack->nh.iph->tot_len - sizeof(iphdr) + 1 );
 	TRACE("%X\n",  pack->h.icmph->header_check_summ);
 
 	//fill ip header
-	memcpy (pack->nh.iph->src_addr, recieved_pack->nh.iph->dst_addr, sizeof (pack->nh.iph->src_addr));
-	memcpy (pack->nh.iph->dst_addr, recieved_pack->nh.iph->src_addr, sizeof (pack->nh.iph->dst_addr));
-	pack->nh.iph->frame_id ++;
-	pack->nh.iph->header_check_summ = 0;
+	memcpy (pack->nh.iph->saddr, recieved_pack->nh.iph->daddr, sizeof (pack->nh.iph->saddr));
+	memcpy (pack->nh.iph->daddr, recieved_pack->nh.iph->saddr, sizeof (pack->nh.iph->daddr));
+	pack->nh.iph->id ++;
+	pack->nh.iph->check = 0;
 	pack->nh.iph->ttl = 64;
-	pack->nh.iph->frame_offset = 0;
-	pack->nh.iph->header_check_summ = calc_checksumm(pack->nh.raw, sizeof(iphdr));
+	pack->nh.iph->frag_off = 0;
+	pack->nh.iph->check = calc_checksumm(pack->nh.raw, sizeof(iphdr));
 
-	pack->len ++;
+	pack->len -= sizeof(machdr);
 	eth_send(pack);
 	return 0;
 }
@@ -193,7 +192,7 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4],
 			ifdev), dstaddr);
 	pack->protocol = IP_PROTOCOL_TYPE;
 
-	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->frame_id,
+	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->id,
 			ICMP_TYPE_ECHO_RESP))
 	{
 		net_packet_free(pack);
