@@ -5,6 +5,7 @@
  *      Author: sunnya
  */
 #include "types.h"
+#include "common.h"
 #include "net.h"
 #include "eth.h"
 #include "net_pack_manager.h"
@@ -114,7 +115,8 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 
 	//fill ip header
 	pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2);
-	pack->nh.iph->header_size = sizeof(iphdr);
+	pack->nh.iph->version = 4;
+	pack->nh.iph->ihl = sizeof(iphdr) << 2;
 	memcpy(pack->nh.iph->dst_addr, dstaddr, sizeof(pack->nh.iph->dst_addr));
 	memcpy(pack->nh.iph->src_addr, srcaddr, sizeof(pack->nh.iph->src_addr));
 	pack->nh.iph->frame_offset = 0;
@@ -143,17 +145,38 @@ static int icmp_get_echo_answer(net_packet *pack) { //type 0
 
 static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	net_packet *pack = net_packet_copy(recieved_pack);
+	int i;
+
 	//fill icmp header
 	pack->h.icmph->type = ICMP_TYPE_ECHO_RESP;
+
+	memset(pack->h.raw + pack->nh.iph->len - sizeof(iphdr) + 1, 0, 64);
+
+	TRACE("\npacket icmp\n");
+	for (i = 0; i < pack->nh.iph->len + 64; i ++)
+	{
+		if (0 == i % 4)
+		{
+			TRACE ("\t ");
+		}
+
+		TRACE("%2X",  pack->h.raw[i]);
+	}
+	TRACE("%X\n",  pack->h.icmph->header_check_summ);
 	pack->h.icmph->header_check_summ = 0;
-	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,
-			pack->nh.iph->len);
+	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,pack->nh.iph->len - sizeof(iphdr) + 1 );
+	TRACE("%X\n",  pack->h.icmph->header_check_summ);
 
 	//fill ip header
+	memcpy (pack->nh.iph->src_addr, recieved_pack->nh.iph->dst_addr, sizeof (pack->nh.iph->src_addr));
+	memcpy (pack->nh.iph->dst_addr, recieved_pack->nh.iph->src_addr, sizeof (pack->nh.iph->dst_addr));
+	pack->nh.iph->frame_id ++;
 	pack->nh.iph->header_check_summ = 0;
 	pack->nh.iph->ttl = 64;
-	calc_checksumm(pack->nh.raw, pack->nh.iph->len);
+	pack->nh.iph->frame_offset = 0;
+	pack->nh.iph->header_check_summ = calc_checksumm(pack->nh.raw, sizeof(iphdr));
 
+	pack->len ++;
 	eth_send(pack);
 	return 0;
 }

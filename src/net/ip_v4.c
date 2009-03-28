@@ -28,7 +28,8 @@ int ip_received_packet(struct _net_packet *pack)
 static int rebuild_ip_header(struct inet_sock *sk, struct _net_packet *pack)
 {
 	iphdr *hdr = pack->nh.iph;
-	hdr->header_size = sizeof (iphdr);
+	hdr->version = 4;
+	hdr->ihl = sizeof (iphdr) << 2;
 	memcpy(hdr->dst_addr, sk->daddr, sizeof(hdr->dst_addr));
 	hdr->len = pack->len;
 	hdr->ttl = sk->uc_ttl;

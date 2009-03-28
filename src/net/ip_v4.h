@@ -16,7 +16,7 @@
 
 typedef struct _iphdr
 {
-	unsigned char header_size;
+	unsigned char ihl:4, version:4;
 	unsigned char tos;
 	unsigned short len;
 	unsigned short frame_id;
