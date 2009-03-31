@@ -43,6 +43,7 @@ int init() {
 	cache_instr_enable(TRUE);
 	eth_init();//interfaces
 	icmp_init();
+	udp_init();
 	return 0;
 }
 

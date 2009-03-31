@@ -9,7 +9,6 @@
 
 struct sock;
 
-
 /** struct ip_options - IP Options
 *
 * @faddr - Saved first hop address
@@ -63,7 +62,6 @@ struct sock;
 struct inet_sock{
 	struct sock *sk;
 
-
 	unsigned char daddr [4];
 	unsigned char rcv_saddr[4];
 	unsigned char saddr [4];
@@ -76,5 +74,12 @@ struct inet_sock{
 	unsigned char tos;
 	unsigned char mc_ttl;
 };
+
+static inline struct inet_sock *inet_sk(const struct sock *sk)
+{
+        return (struct inet_sock *)sk;
+}
+
+
 #endif /* INET_SOCK_H_ */
 
