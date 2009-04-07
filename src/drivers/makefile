@@ -1,4 +1,4 @@
-SUBDIRS:=terminal
+SUBDIRS:=
 OBJS:=uart.o timers.o plug_and_play.o
 
 .PHONY: all $(SUBDIRS)
