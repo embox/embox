@@ -130,7 +130,7 @@ inline static BOOL is_char(char ch) {
 	return (ch > 0x20) && (ch < 0x7F);
 }
 
-/*
+/**
  * Guesses command using its beginning
  *
  * -- Eldar
@@ -148,8 +148,13 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	*offset = cursor - start;
 	*proposals_len = 0;
 	int i;
+//	for (i = 0; i < array_len(shell_handlers) && *proposals_len < max_proposals; i++) {
+//		if (str_starts_with(shell_handlers[i].name, line, *offset)) {
+//			proposals[(*proposals_len)++] = shell_handlers[i].name;
+//		}
+//	}
 	for (i = 0; i < array_len(shell_handlers) && *proposals_len < max_proposals; i++) {
-		if (str_starts_with(shell_handlers[i].name, line, *offset)) {
+		if (0 == strncmp(shell_handlers[i].name, line, *offset)) {
 			proposals[(*proposals_len)++] = shell_handlers[i].name;
 		}
 	}

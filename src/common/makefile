@@ -1,5 +1,5 @@
 SUBDIRS:=
-OBJS:=common.o string.o
+OBJS:=string.o
 
 create_objs_lst:$(SUBDIRS)
 	echo '$(addprefix $(CURDIR)/,$(OBJS)) \' >> $(ROOT_DIR)/objs.lst

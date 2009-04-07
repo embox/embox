@@ -45,6 +45,19 @@ inline static int dummy() {
     || between((ch),'a','f')    \
     || between((ch),'A','F') )
 
-void *memcpy(void *dst, const void *src, size_t n);
-void *memset(void *p, int c, size_t n);
+
+#ifdef _TEST_SYSTEM_
+#define OETH_REGLOAD(a)	a
+#define OETH_REGSAVE(a,v) a=v
+#define OETH_REGORIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) | (v))))
+#define OETH_REGANDIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) & (v))))
+#else
+#define TRACE(format, args...)   printk(format, ##args)
+#define OETH_REGLOAD(a)	(LEON3_BYPASS_LOAD_PA(&(a)))
+#define OETH_REGSAVE(a,v) (LEON3_BYPASS_STORE_PA(&(a),v))
+#define OETH_REGORIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) | (v))))
+#define OETH_REGANDIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) & (v))))
+#endif //_TEST_SYSTEM_
+
+
 #endif //_COMMON_H_
