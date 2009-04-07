@@ -1,7 +1,5 @@
-SUBDIRS:=amba_pnp
-OBJS:=uart.o timers.o
-
-.PHONY: all $(SUBDIRS)
+SUBDIRS:=
+OBJS:=plug_and_play.o
 
 create_objs_lst:$(SUBDIRS)
 	echo '$(addprefix $(CURDIR)/,$(OBJS)) \' >> $(ROOT_DIR)/objs.lst
@@ -23,3 +21,5 @@ all:$(SUBDIRS) $(OBJS)
 
 clean:
 	rm -rf $(OBJS) *.d
+
+
