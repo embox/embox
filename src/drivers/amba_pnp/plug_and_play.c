@@ -1,8 +1,8 @@
-/*
- * plug_and_play.c
+/**
+ * \file plug_and_play.c
  *
- *  Created on: 28.01.2009
- *      Authors: Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
+ * \date 28.01.2009
+ * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
 #include "types.h"
@@ -10,23 +10,35 @@
 #include "pnp_id.h"
 #include "plug_and_play.h"
 
+/**
+ * \struct AHB_SLOT
+ */
 typedef struct _AHB_SLOT {
 	UINT32 id_reg;
 	UINT32 user_defined[3];
 	UINT32 ba_reg[4];
 }AHB_SLOT;
 
+/**
+ * \struct APB_SLOT
+ */
 typedef struct _APB_SLOT {
 	UINT32 id_reg;
 	UINT32 ba_reg[1];
 }APB_SLOT;
 
+/**
+ * \struct PNP_DEVICE_INFO
+ */
 typedef struct _PNP_DEVICE_INFO {
 	const BYTE vendor_id;
 	const UINT16 device_id;
 	const char *name;
 } PNP_DEVICE_INFO;
 
+/**
+ * \struct PNP_VENDOR_INFO
+ */
 typedef struct _PNP_VENDOR_INFO {
 	const BYTE vendor_id;
 	const char *name;
@@ -112,7 +124,9 @@ inline static int find_apbdev(BYTE ven_id, UINT16 dev_id)
 	}
 }
 
-/* return slotnumber or -1*/
+/**
+ * @return slotnumber or -1
+ */
 inline static int find_amba_dev(BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOOL is_master) {
 	int cur_slot;
 	int base;

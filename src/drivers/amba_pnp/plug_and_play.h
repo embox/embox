@@ -1,8 +1,8 @@
-/*
- * plug_and_play.c
+/**
+ * \file plug_and_play.h
  *
- *  Created on: 28.01.2009
- *      Authors: Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
+ *  \date 28.01.2009
+ *  \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
 #ifndef PLUG_AND_PLAY_H_
@@ -22,7 +22,9 @@
 	return -1;\
 }
 
-
+/**
+ * \struct AMBA_BAR_INFO
+ */
 typedef struct _AMBA_BAR_INFO {
 	UINT32 start;
 	BOOL prefetchable;
@@ -32,7 +34,9 @@ typedef struct _AMBA_BAR_INFO {
 	BOOL used;
 } AMBA_BAR_INFO;
 
-
+/**
+ * \struct AMBA_DEV_INFO
+ */
 typedef struct _AMBA_DEV_INFO
 {
 	BYTE venID;
@@ -62,6 +66,10 @@ typedef struct _AMBA_DEV_INFO
 //} APB_DEV;
 struct _AMBA_DEV;
 typedef void (*HANDLER_DATA_FUNC)(struct _AMBA_DEV *dev);
+
+/**
+ * \struct AMBA_DEV
+ */
 typedef struct _AMBA_DEV{
 	AMBA_DEV_INFO dev_info;
 	AMBA_BAR_INFO  bar[4];
@@ -87,9 +95,9 @@ typedef struct _AMBA_DEV{
  * returns 0 if ok, non-zero otherwise
  */
 //int capture_ahbsl_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
-/*
+/**
  * pnp_dev must be allocated by caller
- * returns 0 if ok, non-zero otherwise
+ * @return 0 if ok, non-zero otherwise
  */
 int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL is_ahb, BOOL is_master);
 
@@ -97,19 +105,25 @@ int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL i
 //inline void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
 
 //void show_dev(AMBA_DEV *dev, BOOL show_user);
-/*
+/**
  * Print list of all connected plug and play devices on ahb && apb buses
  */
 void print_all_pnp_devs();
 
-//Print list of all connected plug and play devices on ahb master bus
+/**
+ * Print list of all connected plug and play devices on ahb master bus
+ */
 int print_ahbm_pnp_devs();
 
 
-//Print list of all connected plug and play devices on ahb slave bus
+/**
+ * Print list of all connected plug and play devices on ahb slave bus
+ */
 int print_ahbsl_pnp_devs();
 
-//Print list of all connected plug and play devices on apb bus
+/**
+ * Print list of all connected plug and play devices on apb bus
+ */
 int print_apb_pnp_devs();
 
 #endif /* PLUG_AND_PLAY_H_ */
