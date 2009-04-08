@@ -8,27 +8,27 @@
 
 #ifdef LEON3
 typedef struct _TIMERS_STRUCT {
-	volatile unsigned int scaler_cnt; /* 0x00 */
-	volatile unsigned int scaler_ld; /* 0x04 */
-	volatile unsigned int config_reg; /* 0x08 */
-	volatile unsigned int dummy1; /* 0x0C */
-	volatile unsigned int timer_cnt1; /* 0x10 */
-	volatile unsigned int timer_ld1; /* 0x14 */
-	volatile unsigned int timer_ctrl1; /* 0x18 */
-	volatile unsigned int dummy2; /* 0x1C */
-	volatile unsigned int timer_cnt2; /* 0x20 */
-	volatile unsigned int timer_ld2; /* 0x24 */
-	volatile unsigned int timer_ctrl2; /* 0x28 */
+	volatile unsigned int scaler_cnt; /**< 0x00 */
+	volatile unsigned int scaler_ld; /**< 0x04 */
+	volatile unsigned int config_reg; /**< 0x08 */
+	volatile unsigned int dummy1; /**< 0x0C */
+	volatile unsigned int timer_cnt1; /**< 0x10 */
+	volatile unsigned int timer_ld1; /**< 0x14 */
+	volatile unsigned int timer_ctrl1; /**< 0x18 */
+	volatile unsigned int dummy2; /**< 0x1C */
+	volatile unsigned int timer_cnt2; /**< 0x20 */
+	volatile unsigned int timer_ld2; /**< 0x24 */
+	volatile unsigned int timer_ctrl2; /**< 0x28 */
 } TIMERS_STRUCT;
 #endif
 #ifdef LEON2
 typedef struct _TIMERS_STRUCT
 {
-	volatile unsigned int timer_cnt1; // 0x40
+	volatile unsigned int timer_cnt1; /**< 0x40 */
 	volatile unsigned int timer_ld1;
 	volatile unsigned int timer_ctrl1;
 	volatile unsigned int wdog;
-	volatile unsigned int timer_cnt2; //0x50
+	volatile unsigned int timer_cnt2; /**<0x50 */
 	volatile unsigned int timer_ld2;
 	volatile unsigned int timer_ctrl2;
 	volatile unsigned int dummy8;
@@ -51,8 +51,8 @@ typedef struct _SYS_TMR {
 
 static SYS_TMR sys_timers[MAX_QUANTITY_SYS_TIMERS];
 
-volatile static UINT32 cnt_ms_sleep;//for sleep function
-volatile static UINT32 cnt_sys_time;//quantity ms after start system
+volatile static UINT32 cnt_ms_sleep;/**< for sleep function */
+volatile static UINT32 cnt_sys_time;/**< quantity ms after start system */
 
 
 BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle) {
