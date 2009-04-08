@@ -1,8 +1,8 @@
-/*
- * net_device.c
+/**
+ * \file net_device.c
  *
- *  Created on: Mar 4, 2009
- *      Author: anton
+ * \date Mar 4, 2009
+ * \author anton
  */
 #include "types.h"
 #include "net_device.h"

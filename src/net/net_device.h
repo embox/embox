@@ -1,8 +1,8 @@
-/*
- * net_device.h
+/**
+ * \file net_device.h
  *
- *  Created on: Mar 4, 2009
- *      Author: anton
+ * \date Mar 4, 2009
+ * \author anton
  */
 
 #ifndef NET_DEVICE_H_

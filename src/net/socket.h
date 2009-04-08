@@ -1,8 +1,8 @@
-/*
- * socket.h
+/**
+ * \file socket.h
  *
- *  Created on: Mar 19, 2009
- *      Author: anton
+ * \date Mar 19, 2009
+ * \author anton
  */
 
 #ifndef SOCKET_H_

@@ -1,8 +1,8 @@
-/*
- * socket.c
+/**
+ * \file socket.c
  *
- *  Created on: Mar 19, 2009
- *      Author: anton
+ * \date Mar 19, 2009
+ * \author anton
  */
 
 #include "types.h"

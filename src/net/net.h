@@ -1,8 +1,8 @@
-/*
- * net.h
+/**
+ * \file net.h
  *
- *  Created on: Mar 11, 2009
- *      Author: anton
+ * \date Mar 11, 2009
+ * \author anton
  */
 
 #ifndef NET_H_

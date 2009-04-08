@@ -1,8 +1,8 @@
-/*
- * mac.h
+/**
+ * \file mac.h
  *
- *  Created on: Mar 11, 2009
- *      Author: anton
+ * \date Mar 11, 2009
+ * \author anton
  */
 
 #ifndef MAC_H_

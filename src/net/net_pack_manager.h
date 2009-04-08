@@ -1,8 +1,8 @@
-/*
- * net_pack.h
+/**
+ * \file net_pack.h
  *
- *  Created on: Mar 7, 2009
- *      Author: anton
+ * \date Mar 7, 2009
+ * \author anton
  */
 
 #ifndef NET_PACK_H_

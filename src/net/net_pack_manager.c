@@ -1,8 +1,8 @@
-/*
- * net_pack.c
+/**
+ * \file net_pack.c
  *
- *  Created on: Mar 7, 2009
- *      Author: anton
+ * \date Mar 7, 2009
+ * \author anton
  */
 #include "types.h"
 #include "common.h"

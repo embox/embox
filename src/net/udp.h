@@ -1,8 +1,8 @@
-/*
- * udp.h
+/**
+ * \file udp.h
  *
- *  Created on: 26.03.2009
- *      Author: sikmir
+ * \date 26.03.2009
+ * \author sikmir
  */
 
 #ifndef UDP_H_

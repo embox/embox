@@ -1,8 +1,8 @@
-/*
- * sock.h
+/**
+ * \file sock.h
  *
- *  Created on: Mar 17, 2009
- *      Author: anton
+ * \date Mar 17, 2009
+ * \author anton
  */
 
 #ifndef SOCK_H_
