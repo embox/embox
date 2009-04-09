@@ -34,21 +34,28 @@ typedef struct {
 	PSHELL_HANDLER phandler;
 } SHELL_HANDLER_DESCR;
 
-static SHELL_HANDLER_DESCR shell_handlers[] = {
-#include "shell.inc"
-		};
 
-#define SHELL_COMMANDS_AMOUNT array_len(shell_handlers)
 
 void shell_start();
 
-// parse arguments array on keys-value structures
-// RETURNS:
-// -1 wrong condition found. Arguments not in format: -<key> [<value>]
-// -2 too many keys entered
-// -3 wrong key entered
-// amount of entered keys otherwise (if everything's OK)
+/**
+ * parse arguments array on keys-value structures and entered amount of entered keys otherwise (if everything's OK)
+ * @return  -1 wrong condition found. Arguments not in format: -<key> [<value>]
+ * @return  -2 too many keys entered
+ * @return -3 wrong key
+ * @return 0 if (if everything's OK)
+ */
 int parse_arg(const char *handler_name, int argsc, char **argsv,
 		char *available_keys, int amount_of_available_keys, SHELL_KEY *keys);
+
+/**
+ * @return  pointer to first element in shell command list description
+ */
+SHELL_HANDLER_DESCR *shell_get_command_list();
+
+/**
+ * @return  quantity of shell commands
+ */
+int shell_size_command_list();
 
 #endif /* SHELL_H_ */

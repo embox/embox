@@ -15,6 +15,20 @@
 
 static const char* welcome = "monitor> ";
 
+
+static SHELL_HANDLER_DESCR shell_handlers[] = {
+#include "shell.inc"
+		};
+
+SHELL_HANDLER_DESCR *shell_get_command_list(){
+	return shell_handlers;
+}
+int shell_size_command_list()
+{
+	return sizeof(shell_handlers)/ sizeof(shell_handlers[0]);
+}
+
+/*
 int stub_shell_handler(int argsc, char **argsv) {
 	int i;
 	if (argsc == 0) {
@@ -42,7 +56,7 @@ int stub_shell_handler2(int argsc, char **argsv) {
 	printf("\n");
 	return 0;
 }
-
+*/
 //definition in header
 //typedef struct {
 //	char *name;
@@ -81,7 +95,7 @@ static int parse_str(char *cmdline, char **words) {
 	}
 	return cnt;
 }
-
+//TODO move from this place to arch folders
 int shell_handler_process_create(PSHELL_HANDLER phandler, int argsc,
 		char **argsv) {
 	test_allow_aborting();
@@ -148,11 +162,7 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	*offset = cursor - start;
 	*proposals_len = 0;
 	int i;
-//	for (i = 0; i < array_len(shell_handlers) && *proposals_len < max_proposals; i++) {
-//		if (str_starts_with(shell_handlers[i].name, line, *offset)) {
-//			proposals[(*proposals_len)++] = shell_handlers[i].name;
-//		}
-//	}
+
 	for (i = 0; i < array_len(shell_handlers) && *proposals_len < max_proposals; i++) {
 		if (0 == strncmp(shell_handlers[i].name, line, *offset)) {
 			proposals[(*proposals_len)++] = shell_handlers[i].name;
@@ -190,12 +200,13 @@ void shell_start() {
 	console_start(console, prompt);
 }
 
-// parse arguments array on keys-value structures
-// RETURNS:
-// -1 wrong condition found. Arguments not in format: -<key> [<value>]
-// -2 too many keys entered
-// -3 wrong key entered
-// amount of entered keys otherwise (if everything's OK)
+/**
+ * parse arguments array on keys-value structures and entered amount of entered keys otherwise (if everything's OK)
+ * @return  -1 wrong condition found. Arguments not in format: -<key> [<value>]
+ * @return  -2 too many keys entered
+ * @return -3 wrong key
+ * @return 0 if (if everything's OK)
+ */
 int parse_arg(const char *handler_name, int argsc, char **argsv,
 		char *available_keys, int amount_of_available_keys, SHELL_KEY *keys) {
 	int i, j, args_count;

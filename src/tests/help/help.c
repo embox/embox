@@ -25,16 +25,11 @@ int help_shell_handler(int argsc, char **argsv) {
 	int keys_amount;
 	int dev;
 	int i;
+	SHELL_HANDLER_DESCR *shell_handlers;
 
 	keys_amount = parse_arg("help", argsc, argsv, help_keys, sizeof(help_keys),
 			keys);
 
-//	 old:
-//		if (keys_amount < 1) {
-//
-//	 on "help" without arguments show all commands
-//	 old version never shows commands!
-//	 .Fomka
 
 	if (keys_amount < 0) {
 		// Error state:
@@ -47,13 +42,13 @@ int help_shell_handler(int argsc, char **argsv) {
 		return 0;
 	}
 
+	if (NULL == (shell_handlers = shell_get_command_list)) {
+		printf ("Error: can't find command list\n");
+		return -1;
+	}
 	//need to display all possible commands
 	printf("Available commands: \n");
-	for (i = 0; i < sizeof(shell_handlers) / sizeof(shell_handlers[0]); i++) {
-//		old:
-//		printf("%s\t\t%s\n", shell_handlers[i].name, shell_handlers[i].description);
-//		 Put " - " in help, not in every single description
-//		 .Fomka
+	for (i = 0; i < shell_size_command_list(); i++) {
 		printf("%s\t\t - %s\n", shell_handlers[i].name, shell_handlers[i].description);
 	}
 
