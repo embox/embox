@@ -2,7 +2,6 @@
  *  \brif Contains some utils function for working with strings and memory
  *  \date Mar 23, 2009
  *  \author Anton Bondarev
- *  \details more info for file
  */
 #include "types.h"
 #include "string.h"
