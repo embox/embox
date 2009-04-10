@@ -3,4 +3,4 @@ OBJS:=uart.o timers.o
 
 .PHONY: all $(SUBDIRS)
 
-include common.mk
+include ../common.mk
