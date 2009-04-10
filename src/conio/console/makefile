@@ -1,4 +1,4 @@
 SUBDIRS:=
 OBJS:= cmdline.o screen.o console.o
 
-include ../../common.mk
+include $(SRC_DIR)/common.mk

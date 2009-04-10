@@ -1,4 +1,4 @@
 SUBDIRS:=
 OBJS:=vtparse_table.o vtparse.o vtbuild.o terminal.o
 
-include ../../common.mk
+include $(SRC_DIR)/common.mk

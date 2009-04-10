@@ -3,4 +3,4 @@ OBJS:=printf.o scanf.o shell_proc.o shell.o
 
 .PHONY: all $(SUBDIRS)
 
-include ../common.mk
+include $(SRC_DIR)/common.mk
