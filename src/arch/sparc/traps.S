@@ -16,6 +16,16 @@ irq_empty:
 	nop
 	nop
 
+//TODO halt_trap need to rewrite
+		.global halt_trap
+halt_trap:
+  !      flush
+
+ !       set   boot_start, %g1
+ !       set   boot_start+0x4, %g2
+        jmp   %g1
+        nop
+
 /* Window overflow trap handler. */
 		.global window_overflow
 window_overflow:
@@ -69,18 +79,34 @@ window_underflow:
 	jmp  %l1	! Re-execute restore
 	 rett  %l2
 
-		.global halt_trap
-halt_trap:
-  !      flush
 
- !       set   boot_start, %g1
- !       set   boot_start+0x4, %g2
-        jmp   %g1
-        nop
 
+
+/*
+ * Few words about storing global and some other registers on the stack frame.
+ *
+ * We need 16 words at the beginning of the frame
+ * to store local and input registers as defined by software conventions.
+ * The next 1 word is used for aggregate return structure pointer.
+ * At last we need 6 words to store formal parameters.
+ * (be careful - called function may write to this memory).
+ *
+ * So we can use the frame part placed after 23 words (92 bytes).
+ *
+ * -- Eldar
+ */
 #define SA(x)		(((x)+7)&(~0x07))	/* rounds "x" up to doubleword boundary */
 #define TRAPFRAME 	((16+7+1+8)*4)		/* trap frame size (see comment below) */
 
+/*
+ * at this point we already have got:
+ * 	%psr 	in %l0
+ * 	%pc 	in %l1
+ * 	%npc 	in %l2
+ * 	%tbr 	in %l3
+ * need move pc and npc to the next instruction
+ * because while traps was occure %l1 -> pc mean before instruction execute
+ */
 trap_dispatcher:
 	! store previous nPC as PC
 	mov		%l2, %l1
@@ -231,7 +257,7 @@ bad_trap_dispatcher:
 	call	dispatch_bad_trap
 	 nop
 
-
+/*
         .global start_child_process
 start_child_process:
         save  %sp, -112, %sp
@@ -274,7 +300,7 @@ sys_chproc_do_abort:
         b     _sys_run_chproc_ret
          nop
 ! end of 'chproc_abort'
-
+*/
 srmmu_fault:
 	ta  0
 	nop
@@ -283,22 +309,5 @@ srmmu_fault:
 	jmp  %l1
 	rett  %l2
 
-!!!!call copy addr in %r15(%o7)
-test_save_trap:
-	call save_proc_context
-	nop
-test_save_trap_cont:
-	call restore_proc_context
-	nop
-test_save_trap_exit:
-	jmp  %l1 + 4
-	rett  %l2 + 4
 
-
-test_restore_trap:
-	call restore_proc_context
-	nop
-	jmp  %l1 + 4
-	rett  %l2 + 4
-	//rett  %l1 + 8
 .align  32

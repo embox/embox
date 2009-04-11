@@ -75,7 +75,7 @@ void test_disable_aborting ()
 {
 	uart_remove_irq_handler(test_abort_handler);
 }
-
+/*
 void test_run(WORD pfunc)
 {
 	chproc_abort_accept = FALSE;
@@ -83,3 +83,4 @@ void test_run(WORD pfunc)
 	start_child_process(pfunc);
 	restore_context ();
 }
+*/

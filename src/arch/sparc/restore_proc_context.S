@@ -4,6 +4,13 @@
  *  Created on: Jan 27, 2009
  *      Author: anton, fomka
  */
+
+//static int register15
+ 	.pushsection ".data"
+ 	.local register15
+ 	.common register15, 4, 4
+ 	.popsection
+
 	.seg    "text"
 	.proc   0
 	.align  4
@@ -16,7 +23,7 @@ restore_proc_context:
 	st %r15,[%l0 + 0]
 
 	set cpu_context, %l0
-
+//TODO the same addrress???
 	ld [%l0 + 0x10],%sp
 	ld [%l0 + 0x10],%fp
 	// ld [%l0 + 0x18],%g0

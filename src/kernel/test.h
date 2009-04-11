@@ -14,7 +14,7 @@ extern volatile BOOL chproc_abort_accept;
 //void test_disable_abortrting ();
 //void test_enable_timing();
 //void test_timer_handler();
-void test_run(WORD pfunc);
+//void test_run(WORD pfunc);
 
 
 #endif //_TEST_H_
