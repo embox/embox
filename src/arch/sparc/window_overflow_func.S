@@ -6,7 +6,7 @@
  */
 #include "leon_config.h"
 
-   	.seg    "text"
+   	.section    "text"
 	.align  4
 	.global window_overflow_func
 

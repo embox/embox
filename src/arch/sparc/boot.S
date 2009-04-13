@@ -2,8 +2,7 @@
 #include "memory_map.h"
 
 
-	.seg    "text"
-	.proc   0
+	.section    ".text"
 	.align  4
 
 	.global boot_start, warm_start

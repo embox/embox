@@ -1,5 +1,8 @@
 #include "leon_config.h"
 
+	.section ".text"
+	.align 4
+
 #include "traps.inc"
 
 ! skip instruction
@@ -113,6 +116,7 @@ trap_dispatcher:
 	! store previous nPC+4 as nPC
 	add     %l2, 4, %l2
 
+
 /*
  * at this point we already have got:
  * 	%psr 	in %l0
@@ -121,6 +125,8 @@ trap_dispatcher:
  * 	%tbr 	in %l3
  */
 irq_dispatcher:
+
+	nop
 	mov		%psr, %l4
 	and		%l4, 0x1F, %l4
 	mov		%wim, %l7
@@ -169,6 +175,7 @@ irq_dispatcher:
 		mov		%l6, %psr
 		nop; nop; nop
 
+
 /*
  * Few words about storing global and some other registers on the stack frame.
  *
@@ -182,6 +189,7 @@ irq_dispatcher:
  *
  * -- Eldar
  */
+
 
 			call	dispatch_trap
 			 nop
@@ -308,6 +316,7 @@ srmmu_fault:
 	nop
 	jmp  %l1
 	rett  %l2
+
 
 
 .align  32
