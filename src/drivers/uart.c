@@ -22,7 +22,7 @@ typedef struct _UART_STRUCT {
 #define UART_INT_RX_ENABLED			0x00000004
 #define UART_INT_TX_ENABLED			0x00000004
 
-static UART_STRUCT * uart = NULL; //(UART_STRUCT *) UART_BASE;
+static volatile UART_STRUCT * uart = NULL; //(UART_STRUCT *) UART_BASE;
 static int irq;
 
 static void irq_func_uart() {

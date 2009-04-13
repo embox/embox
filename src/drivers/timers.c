@@ -38,7 +38,7 @@ typedef struct _TIMERS_STRUCT
 	volatile unsigned int dummy10;
 }TIMERS_STRUCT;
 #endif
-static TIMERS_STRUCT * timers = NULL;//(TIMERS_STRUCT *)(TIMERS_BASE);
+static volatile TIMERS_STRUCT * timers = NULL;//(TIMERS_STRUCT *)(TIMERS_BASE);
 
 #define MAX_QUANTITY_SYS_TIMERS 	0x20
 typedef struct _SYS_TMR {

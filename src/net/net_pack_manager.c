@@ -9,17 +9,20 @@
 #include "net_device.h"
 #include "net_pack_manager.h"
 
+#define PACK_POOL_SIZE	0x100
+
 typedef struct _NET_PACK_INFO
 {
 	net_packet pack;
 	int is_busy;
 }NET_PACK_INFO;
 
-static NET_PACK_INFO pack_pool[0x100];
+static NET_PACK_INFO pack_pool[PACK_POOL_SIZE];
+
 net_packet *net_packet_alloc()
 {
 	int i;
-	for(i = 0; i < sizeof(pack_pool) / sizeof(pack_pool[0]); i ++)
+	for(i = 0; i < PACK_POOL_SIZE; i ++)
 	{
 		if (0 == pack_pool[i].is_busy)
 		{
@@ -29,12 +32,13 @@ net_packet *net_packet_alloc()
 			return &pack_pool[i].pack;
 		}
 	}
+	return NULL;
 }
 
 void net_packet_free(net_packet *pack)
 {
 	int i;
-	for(i = 0; i < sizeof(pack_pool) / sizeof(pack_pool[0]); i ++)
+	for(i = 0; i < PACK_POOL_SIZE; i ++)
 	{
 		if (pack == &pack_pool[i].pack)
 		{

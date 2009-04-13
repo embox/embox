@@ -13,6 +13,10 @@
 
 
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
+/**
+ * Init ethernet.
+ * @return count founded devices.
+ */
 int eth_init();
 int eth_set_macaddr (void *ifdev, unsigned char macaddr[6]);
 int eth_set_ipaddr (void *ifdev, unsigned char ipaddr[4]);
