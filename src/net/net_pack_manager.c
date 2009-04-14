@@ -13,8 +13,8 @@
 
 typedef struct _NET_PACK_INFO
 {
-	net_packet pack;
-	int is_busy;
+	net_packet pack __attribute__((__aligned__));
+	int is_busy __attribute__((__aligned__));
 }NET_PACK_INFO;
 
 static NET_PACK_INFO pack_pool[PACK_POOL_SIZE];
