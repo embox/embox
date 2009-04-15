@@ -1,11 +1,12 @@
 #include "types.h"
 #include "leon.h"
+#include "irq_ctrl.h"
 #include "irq.h"
 #include "test.h"
 #include "common.h"
 #include "memory_map.h"
 
-IRQ_REGS * const irq_regs = (IRQ_REGS * const ) IRQ_REGS_BASE;
+//IRQ_REGS * const irq_regs = (IRQ_REGS * const ) IRQ_REGS_BASE;
 
 // user trap handlers table
 IRQ_HANDLER user_trap_handlers[ALLOWED_TRAPS_AMOUNT];
@@ -32,11 +33,13 @@ void dispatch_bad_trap(int tt, int pc, int npc, int psr) {
 
 void irq_init_handlers() {
 	int i;
-	irq_regs->level = 0;
-	irq_regs->mask = 0;
-	irq_regs->pend = 0;
-	irq_regs->force = 0;
-	irq_regs->clear = 0xFFFFFFFF;
+//	irq_regs->level = 0;
+//	irq_regs->mask = 0;
+//	irq_regs->pend = 0;
+//	irq_regs->force = 0;
+//	irq_regs->clear = 0xFFFFFFFF;
+
+	irq_ctrl_init();
 
 	for (i = 0; i < ALLOWED_TRAPS_AMOUNT; i++) {
 		user_trap_handlers[i] = NULL;
@@ -84,7 +87,8 @@ BOOL irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
 
 	if (irq_set_trap_handler(IRQ_TRAP_TYPE(irq_number),pfunc)) {
 		// enable interrupt
-		SetBit(irq_regs->mask, irq_number);
+		//SetBit(irq_regs->mask, irq_number);
+		irq_ctrl_enable_irq(irq_number);
 		return TRUE;
 	}
 
@@ -103,7 +107,8 @@ BOOL irq_remove_handler(BYTE irq_number) {
 
 	if (irq_remove_trap_handler(IRQ_TRAP_TYPE(irq_number))) {
 		// disable interrupt
-		ClearBit(irq_regs->mask, irq_number);
+		//ClearBit(irq_regs->mask, irq_number);
+		irq_ctrl_disable_irq(irq_number);
 		return TRUE;
 	}
 

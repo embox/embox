@@ -28,14 +28,14 @@ static int irq;
 static void irq_func_uart() {
 	char ch = uart_getc();
 }
-AMBA_DEV dev;
+static AMBA_DEV amba_dev;
 int uart_init() {
 
 	if (NULL != uart)
 		return;
-	TRY_CAPTURE_APB_DEV (&dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
-	uart = (UART_STRUCT * )dev.bar[0].start;
-	irq = dev.dev_info.irq;
+	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
+	uart = (UART_STRUCT * )amba_dev.bar[0].start;
+	irq = amba_dev.dev_info.irq;
 	//disabled uart
 	uart->ctrl = 0x0;
 	uart->scaler = UART_SCALER_VAL;
@@ -94,3 +94,4 @@ int uart_remove_irq_handler(IRQ_HANDLER pfunc)
 	irq_remove_handler(irq);
 	return 0;
 }
+

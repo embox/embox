@@ -38,7 +38,7 @@ typedef struct _TIMERS_STRUCT
 	volatile unsigned int dummy10;
 }TIMERS_STRUCT;
 #endif
-static volatile TIMERS_STRUCT * timers = NULL;//(TIMERS_STRUCT *)(TIMERS_BASE);
+static TIMERS_STRUCT * timers = NULL;//(TIMERS_STRUCT *)(TIMERS_BASE);
 
 #define MAX_QUANTITY_SYS_TIMERS 	0x20
 typedef struct _SYS_TMR {
@@ -115,7 +115,7 @@ static void show_module_info(AMBA_DEV *dev)
 	TRACE ("\tscaler_ld 0x%X\n", timers->scaler_ld);
 }
 
-AMBA_DEV amba_dev;
+static AMBA_DEV amba_dev;
 int timers_init() {
 	AMBA_DEV dev;
 	int i;
