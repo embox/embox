@@ -1,8 +1,8 @@
-/*
- * eth.c
+/**
+ * \file eth.c
  *
- *  Created on: Mar 4, 2009
- *      Author: anton
+ * \date Mar 4, 2009
+ * \author anton
  */
 #include "types.h"
 #include "common.h"
