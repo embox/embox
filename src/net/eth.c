@@ -196,6 +196,7 @@ int eth_set_ipaddr (void *ifdev, unsigned char ipaddr[4]) {
 }
 
 int eth_set_macaddr (void *ifdev, unsigned char macaddr[6]) {
+	LOGGER();
 	IF_DEVICE *dev = (IF_DEVICE *)ifdev;
 	if (NULL == ifdev)
 		return -1;

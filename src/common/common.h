@@ -16,11 +16,20 @@ inline static int dummy() {
 	return 0;
 }
 
+
 #ifdef SIMULATE
 #define TRACE(format, args...)		dummy()
+#define LOGGER()     dummy()
 #define assert(cond)	{}
 #else
 #define TRACE(format, args...)   printf(format, ##args)
+
+#ifdef _LOGGER_SYSTEM
+#define LOGGER()     TRACE("%s (%s:%d)\n", __FUNCTION__, __FILE__, __LINE__)
+#else
+#define LOGGER()     dummy()
+#endif // ifdef _LOGGER_SYSTEM
+
 #define assert(cond)	{\
 		if (!(cond)){\
 			printf("\nASSERTION FAILED at %s, line %d:" #cond "\n", __FILE__, __LINE__);\
