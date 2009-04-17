@@ -16,7 +16,7 @@
 #include "help.h"
 #include "ping.h"
 
-#define MAX_SHELL_KEYS 5
+#define MAX_SHELL_KEYS 12
 #include "cpu_context.h"
 
 CPU_CONTEXT shell_proc_state;
