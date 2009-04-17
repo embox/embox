@@ -19,8 +19,8 @@ save_proc_context:
 //	set cpu_context, %l0
 //%fp (frame pointer; conventionally same as %i6)
 //%sp (stack pointer; conventionally same as %o6)
-	st %sp,  [%o0 + CPU_CONTEXT_SP]
-	st %fp, [%o0 + CPU_CONTEXT_FP]
+	//st %sp,  [%o0 + CPU_CONTEXT_SP]
+	//st %fp, [%o0 + CPU_CONTEXT_FP]
 	// st %g0, [%o0 + 0x18]
 	st %g1, [%o0 + CPU_CONTEXT_GLOB + 0x04]
 	st %g2, [%o0 + CPU_CONTEXT_GLOB + 0x08]
@@ -30,8 +30,8 @@ save_proc_context:
 	st %g6, [%o0 + CPU_CONTEXT_GLOB + 0x18]
 	st %g7, [%o0 + CPU_CONTEXT_GLOB + 0x1C]
 	//pc + npc after trap
-	st %o1, [%o0 + CPU_CONTEXT_PC]
-	st %o2, [%o0 + CPU_CONTEXT_NPC]
+	//st %o1, [%o0 + CPU_CONTEXT_PC]
+	//st %o2, [%o0 + CPU_CONTEXT_NPC]
 
 	//pc + npc after trap
 	//st %l1, [%o0 + 0x38]

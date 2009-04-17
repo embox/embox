@@ -10,8 +10,8 @@
 //static int cpu_context_addr;
  	.section ".data"
  	.align  4
- 	.local ret_addr //static
- 	.common ret_addr, 4, 4 //name, size, alignment
+// 	.local ret_addr //static
+// 	.common ret_addr, 4, 4 //name, size, alignment
  	.local cpu_context_addr
  	.common cpu_context_addr, 4, 4
 
@@ -28,16 +28,17 @@ restore_proc_context:
 	//for testing
 	// Saving new r15 to return
 	// to position, where restore_proc_context was called, not save_proc_context
-	set ret_addr, %l0
-	st %r15,[%l0]
+//	set ret_addr, %l0
+//	st %r15,[%l0]
 
-	set cpu_context_addr, %l0
-	st %o0,[%l0]
+	//set cpu_context_addr, %l0
+	//st %o0,[%l0]
+	mov %o0, %g3
 
-	ld [%o0 + CPU_CONTEXT_SP],%sp
-	ld [%o0 + CPU_CONTEXT_FP],%fp
+//	ld [%o0 + CPU_CONTEXT_SP],%sp
+//	ld [%o0 + CPU_CONTEXT_FP],%fp
 	// ld [%o0 + 0x18],%g0
-	ld [%o0 + CPU_CONTEXT_GLOB + 0x0C],%g3
+	//ld [%o0 + CPU_CONTEXT_GLOB + 0x0C],%g3
 	ld [%o0 + CPU_CONTEXT_GLOB + 0x10],%g4
 	ld [%o0 + CPU_CONTEXT_GLOB + 0x14],%g5
 	ld [%o0 + CPU_CONTEXT_GLOB + 0x18],%g6
@@ -79,12 +80,13 @@ register_window_restore:
 	nop
 
 
-	set ret_addr, %o0
-	ld [%o0], %r15
+//	set ret_addr, %o0
+//	ld [%o0], %r15
 
-	set cpu_context_addr, %l0
-	ld [%l0],%o0
+//	set cpu_context_addr, %g2
+//	ld [%g2],%o0
 
+	mov %g3,%o0
 	//restore psr wim y tbr
 	ld [%o0 + CPU_CONTEXT_WIM], %g1
 	mov %g1, %wim
@@ -99,13 +101,14 @@ register_window_restore:
 
     ld [%o0 + CPU_CONTEXT_GLOB + 4],%g1
     ld [%o0 + CPU_CONTEXT_GLOB + 8],%g2
+    ld [%o0 + CPU_CONTEXT_GLOB + 0x0C],%g3
 //TODO may be not need
 //address return from trap
 //	ld [%o0 + 0x38],%l1
 //	ld [%o0 + 0x3C],%l2
 
-	ld [%o0 + CPU_CONTEXT_PC],%o1
-	ld [%o0 + CPU_CONTEXT_NPC],%o2
+//	ld [%o0 + CPU_CONTEXT_PC],%o1
+//	ld [%o0 + CPU_CONTEXT_NPC],%o2
 //	jmpl %r15 + 8,%g0 // function is without instruction "save"
 //	nop
 	jmp %o1
