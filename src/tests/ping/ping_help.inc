@@ -6,8 +6,8 @@
  */
 "*** PING\n"
 " - test whether a particular host is reachable\n"
-"*FORMAT: ping -i <eth_name> [-c <count>] -d <destination>\n"
-"\t <eth_name>   - name of network interface.\n"
-"\t <count>      - number of packets.\n"
-"\t              by default: 4\n"
+"*FORMAT: ping -i <eth_name> -d <destination> [-c <count>]\n"
+"\t <eth_name>   - network interface's name.\n"
 "\t <destination>- ip address of host.\n"
+"\t <count>      - packets quantity.\n"
+"\t              by default: -1 (infinity)"
