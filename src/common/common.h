@@ -1,6 +1,8 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#ifdef _TEST_SYSTEM_
+
 #include "conio.h"
 
 #define SetBit(rg, bit)   { (rg) |=  (1UL << (bit)); }
@@ -11,6 +13,7 @@
 
 // Stop processor
 #define HALT     { asm ("ta 0; nop;"); }
+#endif //_TEST_SYSTEM_
 
 inline static int dummy() {
 	return 0;
@@ -69,6 +72,5 @@ inline static int dummy() {
 #define OETH_REGORIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) | (v))))
 #define OETH_REGANDIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) & (v))))
 #endif //_TEST_SYSTEM_
-
 
 #endif //_COMMON_H_
