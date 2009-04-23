@@ -92,11 +92,11 @@ int ping_shell_handler(int argsc, char **argsv) {
 
 	//get interface
 	if (!get_key('i', keys, keys_amount, &key_value)) {
-		printf("ERROR: choose right interface name '-i'\n");
-		show_help();
-		return -1;
-	}
-	if (NULL == (ifdev = eth_get_ifdev_by_name(key_value))) {
+//		printf("ERROR: choose right interface name '-i'\n");
+//		show_help();
+//		return -1;
+		ifdev = eth_get_ifdev_by_name("eth0");
+	} else if (NULL == (ifdev = eth_get_ifdev_by_name(key_value))) {
 		TRACE ("ERROR: Can't find interface %s\n see ifconfig for available interfaces list\n", key_value);
 		show_help();
 		return -1;
@@ -106,8 +106,7 @@ int ping_shell_handler(int argsc, char **argsv) {
 		printf("ERROR: you must choose right destination address '-d'\n");
 		show_help();
 		return -1;
-	}
-	if (NULL == ipaddr_scan(key_value, dst)) {
+	} else if (NULL == ipaddr_scan(key_value, dst)) {
 		TRACE ("ERROR: wrong ip addr format (%s)\n", key_value);
 		show_help();
 		return -1;
