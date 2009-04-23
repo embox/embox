@@ -1,8 +1,8 @@
-/*
- * ping_help.inc
+/**
+ * \file ping_help.inc
  *
- * Created on: 23.03.2009
- *      Author: abatyukov
+ * \date 23.03.2009
+ * \author abatyukov
  */
 "*** PING\n"
 " - test whether a particular host is reachable\n"
@@ -10,6 +10,6 @@
 "\t <eth_name>   - network interface's name.\n"
 "\t <destination>- ip address of host.\n"
 "\t <count>      - packets quantity.\n"
-"\t              by default: -1 (infinity)\n"
+"\t              by default: 10 (-1 infinity)\n"
 "\t <timeout>    - time to wait for a response\n"
 "\t              by default: 1000"

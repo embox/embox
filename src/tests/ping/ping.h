@@ -1,8 +1,8 @@
-/*
- * ping.h
+/**
+ * \file ping.h
  *
- *  Created on: 23.03.2009
- *      Author: sunnya
+ * \date 23.03.2009
+ * \author sunnya
  */
 
 #ifndef PING_H_

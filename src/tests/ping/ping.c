@@ -2,7 +2,7 @@
  * \file ping.c
  *
  * \date Mar 20, 2009
- * \author: anton
+ * \author anton
  */
 #include "types.h"
 #include "icmp.h"
@@ -30,7 +30,7 @@ static void callback(net_packet *pack) {
 
 static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
 	TRACE("PING %d.%d.%d.%d\n", dst[0], dst[1], dst[2], dst[3]);
-	int cnt_resp, cnt_err;
+	int cnt_resp = 0, cnt_err = 0;
 
 	if (0 == cnt)
 		return 0;
@@ -40,23 +40,24 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
 			break;
 
 		has_responsed = FALSE;
-		TRACE ("ping from ");
-		ipaddr_print(eth_get_ipaddr(ifdev), 4);
-		TRACE (" to ");
+		TRACE ("from ");
+//		ipaddr_print(eth_get_ipaddr(ifdev), 4);
+//		TRACE (" to ");
 		ipaddr_print(dst, 4);
 
 		icmp_send_echo_request(ifdev, dst, callback);
 		sleep(timeout);
 		if (FALSE == has_responsed) {
 			TRACE (" ....timeout\n");
-			cnt_resp++;
+			cnt_err++;
 		} else {
 			TRACE(" ....ok\n");
-			cnt_err++;
+			cnt_resp++;
 		}
 	}
 	TRACE("--- %d.%d.%d.%d ping statistics ---\n", dst[0], dst[1], dst[2], dst[3]);
-	TRACE ("good answer = %d\n missed packet = %d\n", cnt_resp, cnt_err);
+	TRACE("%d packets transmitted, %d received, %d% packet loss", cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp));
+//	TRACE ("good answer = %d\n missed packet = %d\n", cnt_resp, cnt_err);
 	icmp_abort_echo_request(ifdev);
 	return 0;
 }
