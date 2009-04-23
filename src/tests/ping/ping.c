@@ -28,14 +28,15 @@ static void callback(net_packet *pack) {
 	has_responsed = TRUE;
 }
 
-static int ping(void *ifdev, unsigned char *dst, int cnt) {
+static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
+	TRACE("PING %d.%d.%d.%d\n", dst[0], dst[1], dst[2], dst[3]);
 	int cnt_resp, cnt_err;
 
 	if (0 == cnt)
 		return 0;
 
 	while (1) {
-		if ((0 <= cnt) && (cnt--))
+		if ((0 <= cnt) && !(cnt--))
 			break;
 
 		has_responsed = FALSE;
@@ -45,7 +46,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt) {
 		ipaddr_print(dst, 4);
 
 		icmp_send_echo_request(ifdev, dst, callback);
-		sleep(1000);
+		sleep(timeout);
 		if (FALSE == has_responsed) {
 			TRACE (" ....timeout\n");
 			cnt_resp++;
@@ -54,6 +55,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt) {
 			cnt_err++;
 		}
 	}
+	TRACE("--- %d.%d.%d.%d ping statistics ---\n", dst[0], dst[1], dst[2], dst[3]);
 	TRACE ("good answer = %d\n missed packet = %d\n", cnt_resp, cnt_err);
 	icmp_abort_echo_request(ifdev);
 	return 0;
@@ -69,6 +71,7 @@ int ping_shell_handler(int argsc, char **argsv) {
 	int keys_amount;
 	//	char *eth_name;
 	int cnt;
+	int timeout;
 	unsigned char dst[4];
 	void *ifdev;
 
@@ -111,14 +114,22 @@ int ping_shell_handler(int argsc, char **argsv) {
 
 	//get ping cnt
 	if (!get_key('c', keys, keys_amount, &key_value)) {
-		cnt = -1;
+		cnt = 10;
 	} else if (1 != sscanf(key_value, "%d", &cnt)) {
 		printf("ERROR: enter validly cnt '-c'\n");
 		show_help();
 		return -1;
 	}
+        //get ping timeout
+        if (!get_key('W', keys, keys_amount, &key_value)) {
+                timeout = 1000;
+        } else if (1 != sscanf(key_value, "%d", &timeout)) {
+                printf("ERROR: enter validly timeout '-W'\n");
+                show_help();
+                return -1;
+        }
 
 	//carry out command
-	ping(ifdev, dst, cnt);
+	ping(ifdev, dst, cnt, timeout);
 	return 0;
 }
