@@ -19,9 +19,6 @@ inline static int dummy() {
 	return 0;
 }
 
-
-#define CHECK3(X)	if(X!=1 && X!=2 && X!=3) return -1;
-
 #ifdef SIMULATE
 #define TRACE(format, args...)		dummy()
 #define LOGGER()     dummy()

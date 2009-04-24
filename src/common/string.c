@@ -1,5 +1,5 @@
 /** \file string.c
- *  \brif Contains some utils function for working with strings and memory
+ *  \brief Contains some utils function for working with strings and memory
  *  \date Mar 23, 2009
  *  \author Anton Bondarev
  */

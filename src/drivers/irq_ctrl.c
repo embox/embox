@@ -2,8 +2,8 @@
  * \file irq_ctrl.c
  *
  * \date Apr 14, 2009
- * \uthor: anton
- * \brif Realize hal layer interupt ctrl for leon 3 processor
+ * \author anton
+ * \brief Realize hal layer interupt ctrl for leon 3 processor
  */
 #include "types.h"
 #include "common.h"
