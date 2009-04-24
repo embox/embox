@@ -44,7 +44,7 @@ static int interface_abort(void *ifdev) {
 	int i;
 	if (NULL == ifdev)
 		return -1;
-	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info); i++) {
+	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info[0]); i++) {
 		if (cb_info[i].ifdev == ifdev) {
 			cb_info[i].cb = 0;
 			cb_info[i].ifdev = 0;
@@ -61,9 +61,8 @@ static int callback_free(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 	int i;
 	if (NULL == cb)
 		return -1;
-	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info); i++) {
-		if (cb_info[i].cb == cb && ifdev == cb_info[i].ifdev
-				&& cb_info[i].ip_id == ip_id && cb_info[i].type) {
+	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info[0]); i++) {
+		if (cb_info[i].cb == cb && ifdev == cb_info[i].ifdev) {
 			cb_info[i].cb = 0;
 			cb_info[i].ifdev = 0;
 			cb_info[i].ip_id = 0;
@@ -77,7 +76,7 @@ static int callback_free(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 static ICMP_CALLBACK callback_find(void *ifdev, unsigned short ip_id,
 		unsigned char type) {
 	int i;
-	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info); i++) {
+	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info[0]); i++) {
 		if (ifdev == cb_info[i].ifdev && type == cb_info[i].type) {
 			return cb_info[i].cb;
 		}

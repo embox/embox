@@ -40,7 +40,7 @@ int init() {
 
 	timers_init();
 	cache_data_enable(FALSE);
-	cache_instr_enable(TRUE);
+	cache_instr_enable(FALSE);
 	eth_init();//interfaces
 	icmp_init();
 	udp_init();

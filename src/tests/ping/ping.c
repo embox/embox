@@ -29,7 +29,10 @@ static void callback(net_packet *pack) {
 }
 
 static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
-	TRACE("PING %d.%d.%d.%d\n", dst[0], dst[1], dst[2], dst[3]);
+	TRACE("PING to ");
+	ipaddr_print(dst, 4);
+	TRACE("\n");
+
 	int cnt_resp = 0, cnt_err = 0;
 
 	if (0 == cnt)
@@ -41,14 +44,15 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
 
 		has_responsed = FALSE;
 		TRACE ("from ");
-//		ipaddr_print(eth_get_ipaddr(ifdev), 4);
-//		TRACE (" to ");
+		ipaddr_print(eth_get_ipaddr(ifdev), 4);
+		TRACE (" to ");
 		ipaddr_print(dst, 4);
 
 		icmp_send_echo_request(ifdev, dst, callback);
 		sleep(timeout);
 		if (FALSE == has_responsed) {
 			TRACE (" ....timeout\n");
+			icmp_abort_echo_request(ifdev);
 			cnt_err++;
 		} else {
 			TRACE(" ....ok\n");
@@ -57,7 +61,6 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
 	}
 	TRACE("--- %d.%d.%d.%d ping statistics ---\n", dst[0], dst[1], dst[2], dst[3]);
 	TRACE("%d packets transmitted, %d received, %d% packet loss", cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp));
-//	TRACE ("good answer = %d\n missed packet = %d\n", cnt_resp, cnt_err);
 	icmp_abort_echo_request(ifdev);
 	return 0;
 }
