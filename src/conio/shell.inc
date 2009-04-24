@@ -2,4 +2,5 @@
 {"wmem", "write to memory", wmem_shell_handler},
 {"lspnp", "show list of plug and play devices", lspnp_shell_handler},
 {"help", "display all possible commands", help_shell_handler},
-{"ping", "test whether a particular host is reachable", ping_shell_handler}
+{"ping", "test whether a particular host is reachable", ping_shell_handler},
+{"arp", "arp table", arp_shell_handler}

@@ -1,5 +1,5 @@
 #TODO !!!!!!!!!!in this version folder tests must set lat in list its makefile diff from other
-SUBDIRS:=mem wmem lspnp help ping
+SUBDIRS:=mem wmem lspnp help ping arp
 OBJS:=test_irq_availability.o test_cpu_context.o
 
 .PHONY: all $(SUBDIRS)

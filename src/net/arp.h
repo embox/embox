@@ -1,8 +1,8 @@
-/*
- * arp.h
+/**
+ * \file arp.h
  *
- *  Created on: Mar 11, 2009
- *      Author: anton
+ * \date Mar 11, 2009
+ * \author: anton
  */
 
 #ifndef ARP_H_
@@ -30,5 +30,20 @@ typedef struct _ARP_RESULT
 struct _net_packet;
 struct _net_packet *arp_resolve_addr (struct _net_packet * pack, unsigned char dst_addr[4]);
 int arp_received_packet(struct _net_packet *pack);
+
+/**
+ * Set up a new ARP table entry
+ */
+int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6]);
+
+/**
+ * Delete a ARP table entry
+ */
+int arp_delete_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6]);
+
+/**
+ * Print ARP table
+ */
+int print_arp_cache();
 
 #endif /* ARP_H_ */

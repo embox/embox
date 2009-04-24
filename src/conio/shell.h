@@ -15,6 +15,7 @@
 #include "lspnp.h"
 #include "help.h"
 #include "ping.h"
+#include "arpc.h"
 
 #define MAX_SHELL_KEYS 12
 #include "cpu_context.h"

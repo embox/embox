@@ -1,8 +1,8 @@
-/*
- * arp.c
+/**
+ * \file arp.c
  *
- *  Created on: Mar 11, 2009
- *      Author: anton
+ * \date Mar 11, 2009
+ * \author anton
  */
 #include "types.h"
 #include "common.h"
@@ -15,19 +15,20 @@
 #include "net.h"
 #include "sock.h"
 
+#define ARP_CACHE_SIZE 0x100
 
 typedef struct _ARP_ENTITY
 {
-	unsigned char hw_addr[6];
-	unsigned char pw_addr[4];//protocol addr
-	void *if_handler;
+	unsigned char hw_addr[6];/**< hardware addr */
+	unsigned char pw_addr[4];/**< protocol addr */
+	void *if_handler;      /**< net_device */
 	unsigned char is_busy;
 }ARP_ENTITY;
 
 #define ARP_REQUEST    0x1
 #define ARP_RESPONSE   0x2
 
-ARP_ENTITY arp_table[0x100];
+ARP_ENTITY arp_table[ARP_CACHE_SIZE];
 
 #define ARP_TABLE_SIZE (sizeof(arp_table)/sizeof(arp_table[0]))
 
@@ -46,8 +47,8 @@ static inline int find_entity(void *ifdev, unsigned char dst_addr[4])
 	return -1;
 }
 
-static inline int add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6])
-{
+int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6]) {
+	LOGGER();
 	int i;
 	if (-1 != (i = find_entity(ifdev,ipaddr)))
 		return i;
@@ -140,7 +141,7 @@ static int received_resp(net_packet *pack)
 	macaddr_print(arp->sha, sizeof(arp->sha));
 
 	//add to arp_table
-	add_entity(pack->ifdev, arp->spa, arp->sha);
+	arp_add_entity(pack->ifdev, arp->spa, arp->sha);
 	return 0;
 }
 
@@ -155,7 +156,7 @@ int received_req(net_packet *pack)
 	macaddr_print(arp->sha, sizeof(arp->sha));
 
 	//add to arp_table
-	add_entity(pack->ifdev, arp->spa, arp->sha);
+	arp_add_entity(pack->ifdev, arp->spa, arp->sha);
 
 	resp = net_packet_copy(pack);
 
@@ -193,5 +194,36 @@ int arp_received_packet(net_packet *pack)
 	return 0;
 
 }
-//TODO delete_interface_from arp table
-//TODO delete_targer from arp table
+
+int arp_delete_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6]) {
+	LOGGER();
+        int i;
+        for (i = 0; i < ARP_TABLE_SIZE; i++) {
+                if(0 == memcmp(arp_table[i].pw_addr, ipaddr, 4)) {
+                        arp_table[i].is_busy = 0;
+                }
+                if(0 == memcmp(arp_table[i].hw_addr, macaddr, 6)) {
+            		arp_table[i].is_busy = 0;
+            	}
+            	if(ifdev == arp_table[i].if_handler) {
+            		arp_table[i].is_busy = 0;
+            	}
+        }
+}
+
+int print_arp_cache() {
+	LOGGER();
+	int i;
+	net_device *net_dev;
+	for(i=0; i<ARP_CACHE_SIZE; i++) {
+		if(arp_table[i].is_busy == 1) {
+			net_dev = eth_get_netdevice(arp_table[i].if_handler);
+			ipaddr_print(arp_table[i].pw_addr, 4);
+			printf("\t\t%d\t", eth_get_netdevice(arp_table[i].if_handler)->type);
+			macaddr_print(arp_table[i].hw_addr, 6);
+			printf("\t%d", net_dev->flags);
+			printf("\t%s\n", net_dev->name);
+		}
+	}
+	return 0;
+}
