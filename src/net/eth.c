@@ -66,10 +66,10 @@ int eth_init()
 		if (NULL != (ifs[i].net_dev = find_net_device(iname)))
 		{
 			def_ip[3] = 80 + i;
-			eth_set_ipaddr(&ifs[i], def_ip);
 			def_mac[5] = 1 + i;
-			eth_set_macaddr(&ifs[i], def_mac);
 			ifs[i].net_dev->rebuild_header = rebuild_header;
+			eth_set_ipaddr(&ifs[i], def_ip);
+			eth_set_macaddr(&ifs[i], def_mac);
 			TRACE("Found dev %s\n", iname);
 			cnt ++;
 		}
