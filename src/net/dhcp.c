@@ -1,8 +1,8 @@
-/*
- * dhcp.c
+/**
+ * \file dhcp.c
  *
- *  Created on: 27.03.2009
- *      Author: fomka
+ * \date 27.03.2009
+ * \author fomka
  */
 
 #include "types.h"

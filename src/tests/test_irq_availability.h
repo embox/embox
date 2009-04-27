@@ -1,8 +1,8 @@
-/*
- * test_irq_availability.h
+/**
+ * \file test_irq_availability.h
  *
- *  Created on: 28.01.2009
- *      Authors: Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
+ * \date 28.01.2009
+ * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
 #ifndef TEST_AVAILABILITY_IRQ_H_

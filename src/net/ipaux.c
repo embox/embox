@@ -1,8 +1,8 @@
-/*
- * ipaux.c
+/**
+ * \file ipaux.c
  *
- *  Created on: Mar 20, 2009
- *      Author: anton
+ * \date Mar 20, 2009
+ * \author anton
  */
 
 #define LITTLE 0// big engian only

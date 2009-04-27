@@ -1,8 +1,8 @@
-/*
- * test_cpu_context.h
+/**
+ * \file test_cpu_context.h
  *
- *  Created on: Jan 26, 2009
- *      Author: anton
+ * \date Jan 26, 2009
+ * \author anton
  */
 
 #ifndef TEST_CPU_CONTEXT_H_

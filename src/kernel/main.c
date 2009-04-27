@@ -1,8 +1,8 @@
-/*
- * main.c
+/**
+ * \file main.c
  *
- *  Created on: Nov 27, 2008
- *      Author: anton
+ * \date Nov 27, 2008
+ * \author anton
  */
 
 #include "types.h"

@@ -1,8 +1,8 @@
-/*
- * tests_headers.h
+/**
+ * \file tests_headers.h
  *
- *  Created on: Dec 9, 2008
- *      Author: anton
+ * \date Dec 9, 2008
+ * \author anton
  */
 
 #ifndef TESTS_HEADERS_H_

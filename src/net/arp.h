@@ -2,7 +2,7 @@
  * \file arp.h
  *
  * \date Mar 11, 2009
- * \author: anton
+ * \author anton
  */
 
 #ifndef ARP_H_

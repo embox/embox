@@ -1,8 +1,8 @@
-/*
- * ip_v4.c
+/**
+ * \file ip_v4.c
  *
- *  Created on: 17.03.2009
- *      Author: sunnya
+ * \date 17.03.2009
+ * \author sunnya
  */
 #include "types.h"
 #include "net.h"

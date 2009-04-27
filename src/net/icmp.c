@@ -1,8 +1,8 @@
-/*
- * icmp.c
+/**
+ * \file icmp.c
  *
- *  Created on: 14.03.2009
- *      Author: sunnya
+ * \date 14.03.2009
+ * \author sunnya
  */
 #include "types.h"
 #include "common.h"

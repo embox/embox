@@ -1,8 +1,8 @@
-/*
- * eth.h
+/**
+ * \file eth.h
  *
- *  Created on: Mar 5, 2009
- *      Author: anton
+ * \date Mar 5, 2009
+ * \author anton
  */
 
 #ifndef ETH_H_

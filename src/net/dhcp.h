@@ -1,8 +1,8 @@
-/*
- * dhcp.h
+/**
+ * \file dhcp.h
  *
- *  Created on: 27.03.2009
- *      Author: fomka
+ * \date 27.03.2009
+ * \author fomka
  */
 
 #ifndef DHCP_H_

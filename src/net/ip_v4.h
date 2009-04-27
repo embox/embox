@@ -1,8 +1,8 @@
-/*
- * ip_v4.h
+/**
+ * \file ip_v4.h
  *
- *  Created on: Mar 11, 2009
- *      Author: anton
+ * \date Mar 11, 2009
+ * \author anton
  */
 
 #ifndef IP_V4_H_

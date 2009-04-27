@@ -2,7 +2,7 @@
  * \file test_cpu_context.c
  *
  *  \date Jan 26, 2009
- *  \author: Anton Bondarev
+ *  \author Anton Bondarev
  */
 #include "types.h"
 #include "common.h"

@@ -1,8 +1,8 @@
-/*
- * tests_contaner.c
+/**
+ * \file tests_contaner.c
  *
- *  Created on: Dec 4, 2008
- *      Author: anton
+ * \date Dec 4, 2008
+ * \author anton
  */
 #include "types.h"
 #include "common.h"

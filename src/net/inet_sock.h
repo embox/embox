@@ -1,8 +1,8 @@
-/*
- * ip_sock.h
+/**
+ * \file ip_sock.h
  *
- *  Created on: Mar 18, 2009
- *      Author: anton
+ * \date Mar 18, 2009
+ * \author anton
  */
 #ifndef INET_SOCK_H_
 #define INET_SOCK_H_

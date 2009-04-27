@@ -1,8 +1,8 @@
-/*
- * irq_ctrl.h
+/**
+ * \file irq_ctrl.h
  *
- *  Created on: Apr 14, 2009
- *      Author: anton
+ * \date Apr 14, 2009
+ * \author anton
  */
 
 #ifndef IRQ_CTRL_H_

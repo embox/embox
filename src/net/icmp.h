@@ -1,8 +1,8 @@
-/*
- * icmp.h
+/**
+ * \file icmp.h
  *
- *  Created on: 14.03.2009
- *      Author: sunnya
+ * \date 14.03.2009
+ * \author sunnya
  */
 
 #ifndef ICMP_H_
