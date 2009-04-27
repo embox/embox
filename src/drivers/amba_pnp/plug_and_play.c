@@ -201,13 +201,12 @@ inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, B
 		fill_apb_bar_info(&dev->bar[0], slot->ba_reg[0]);
 		return;
 	}
+	dev->is_master = is_master;
 	AHB_SLOT *slot;// = ((AHB_SLOT *) base) + slot_number;
 	if (!is_master) {
-		dev->is_master = FALSE;
 		//dev->handler_data = ahbm_devices[slot_number]->handler_data;
 		slot = ((AHB_SLOT *) AHB_SLAVE_BASE) + slot_number;
 	} else {
-		dev->is_master = TRUE;
 		//dev->handler_data = ahbsl_devices[slot_number]->handler_data;
 		slot = ((AHB_SLOT *) AHB_MASTER_BASE) + slot_number;
 	}

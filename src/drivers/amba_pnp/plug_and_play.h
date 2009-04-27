@@ -76,14 +76,10 @@ typedef struct _AMBA_DEV{
 	BYTE slot;
 	HANDLER_DATA_FUNC show_info;
 	char dev_name[16];
-
 	BOOL is_ahb;
-
 	BOOL is_master;
 	UINT32 user_def[3];
 } AMBA_DEV;
-
-
 
 /*
  * pnp_dev must be allocated by caller
