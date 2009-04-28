@@ -48,13 +48,13 @@ int wmem_shell_handler(int argsc, char **argsv) {
 	if ((get_key('a', keys, keys_amount, &key_value))) {
 		if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &address))
 				&& (!sscanf(key_value, "%d", (int *) &address))) {
-			printf("ERROR: wmem: hex value expected.\n");
+			ERROR("wmem: hex value expected.\n");
 			wmem_print_help();
 			return -1;
 		}
 
 	} else {
-		printf("ERROR: wmem: -a key expected!\n");
+		ERROR("wmem: -a key expected!\n");
 		wmem_print_help();
 		return -1;
 	}
@@ -62,16 +62,16 @@ int wmem_shell_handler(int argsc, char **argsv) {
 	if (get_key('v', keys, keys_amount, &key_value)) {
 		if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &new_value))
 				&& (!sscanf(key_value, "%d", (int *) &new_value))) {
-			printf("ERROR: wmem: hex value expected.\n");
+			ERROR("wmem: hex value expected.\n");
 			wmem_print_help();
 			return -1;
 		}
 	} else {
-		printf("ERROR: wmem: -v key expected!\n");
+		ERROR("wmem: -v key expected!\n");
 	}
 
 	if (address != address & 0xFFFFFFFC) {
-		printf("ERROR: wmem: address in wrong format (last 2 bits must be 0)\n");
+		ERROR("wmem: address in wrong format (last 2 bits must be 0)\n");
 		wmem_print_help();
 		return -1;
 	}

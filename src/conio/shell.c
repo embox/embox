@@ -216,15 +216,14 @@ int parse_arg(const char *handler_name, int argsc, char **argsv,
 
 	while (i < argsc) {
 		if (*argsv[i] != '-') {
-			printf(
-					"ERROR: %s: wrong condition found. Arguments not in format: -<key> [<value>]\n",
+			ERROR("%s: wrong condition found. Arguments not in format: -<key> [<value>]\n",
 					handler_name);
 
 			return -1;
 		}
 
 		if (args_count >= MAX_SHELL_KEYS) {
-			printf("ERROR: %s: wrong key entered. See help.\n", handler_name);
+			ERROR("%s: wrong key entered. See help.\n", handler_name);
 			return -2;
 		}
 		// Get key name.
@@ -250,7 +249,7 @@ int parse_arg(const char *handler_name, int argsc, char **argsv,
 			}
 		}
 		if (j >= amount_of_available_keys) {
-			printf("ERROR: %s: incorrect key entered! See help.\n",
+			ERROR("%s: incorrect key entered! See help.\n",
 					handler_name);
 			return -3;
 		}

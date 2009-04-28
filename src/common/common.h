@@ -21,16 +21,10 @@ inline static int dummy() {
 
 #ifdef SIMULATE
 #define TRACE(format, args...)		dummy()
-#define LOGGER()     dummy()
 #define assert(cond)	{}
 #else
 #define TRACE(format, args...)   printf(format, ##args)
 
-#ifdef _LOGGER_SYSTEM
-#define LOGGER()     TRACE("%s (%s:%d)\n", __FUNCTION__, __FILE__, __LINE__)
-#else
-#define LOGGER()     dummy()
-#endif // ifdef _LOGGER_SYSTEM
 
 #define assert(cond)	{\
 		if (!(cond)){\
@@ -39,6 +33,25 @@ inline static int dummy() {
 		}\
 }
 #endif  // ifdef SIMULATE
+
+#ifdef _ERROR
+#define ERROR(format, args...)	printf("ERROR: "format, ##args)
+#else
+#define ERROR(format, args...)	dummy()
+#endif
+#ifdef _WARN
+#define WARN(format, args...)	printf("WARN: "format, ##args)
+#else
+#define WARN(format, args...)	dummy()
+#endif
+#ifdef _DEBUG
+#define LOGGER()     printf("%s (%s:%d)\n", __FUNCTION__, __FILE__, __LINE__)
+#define DEBUG(format, args...)  LOGGER(); printf("DEBUG: "format, ##args)
+#else
+#define LOGGER() 		dummy()
+#define DEBUG(format, args...)	dummy()
+#endif
+
 #define array_len(array)		(sizeof(array) / sizeof(array[0]))
 
 // mathematics

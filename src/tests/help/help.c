@@ -43,7 +43,7 @@ int help_shell_handler(int argsc, char **argsv) {
 	}
 
 	if (NULL == (shell_handlers = shell_get_command_list())) {
-		printf ("Error: can't find command list\n");
+		ERROR("can't find command list\n");
 		return -1;
 	}
 	//need to display all possible commands

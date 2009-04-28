@@ -409,7 +409,7 @@ void print_all_pnp_devs() {
 void print_ahbm_pnp_dev(UINT32 slot) {
 
 	if (slot >AHB_MASTERS_QUANTITY) {
-		TRACE("ERROR: print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
+		ERROR("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
 		return;
 	}
 
@@ -434,7 +434,7 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 void print_ahbsl_pnp_dev(UINT32 slot) {
 
 	if (slot >AHB_SLAVES_QUANTITY) {
-		TRACE("ERROR: print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
+		ERROR("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
 	}
 	if (NULL != ahbsl_devices[slot])
@@ -453,7 +453,7 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
 
 void print_apb_pnp_dev(UINT32 slot) {
 	if (slot >APB_QUANTITY) {
-		TRACE("ERROR: print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
+		ERROR("print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
 		return;
 	}
 	if (NULL != apb_devices[slot])

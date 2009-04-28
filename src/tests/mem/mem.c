@@ -97,14 +97,14 @@ int mem_shell_handler(int argsc, char **argsv) {
 	if (get_key('a', keys, keys_amount, &key_value)) {
 		if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &address))
 				&& (!sscanf(key_value, "%d", (int *) &address))) {
-			printf("ERROR: mem: hex value expected.\n");
+			ERROR("mem: hex value expected.\n");
 			mem_print_help();
 		}
 	}
 
 	if (get_key('c', keys, keys_amount, &key_value)) {
 		if ((key_value != NULL) && (!sscanf(key_value, "%d", &amount))) {
-			printf("ERROR: mem: integer value expected.\n");
+			ERROR("mem: integer value expected.\n");
 			mem_print_help();
 		}
 	}

@@ -29,9 +29,9 @@ static void callback(net_packet *pack) {
 }
 
 static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
-	TRACE("PING to ");
+	printf("PING to ");
 	ipaddr_print(dst, 4);
-	TRACE("\n");
+	printf("\n");
 
 	int cnt_resp = 0, cnt_err = 0;
 
@@ -43,24 +43,24 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
 			break;
 
 		has_responsed = FALSE;
-		TRACE ("from ");
+		printf("from ");
 		ipaddr_print(eth_get_ipaddr(ifdev), 4);
-		TRACE (" to ");
+		printf(" to ");
 		ipaddr_print(dst, 4);
 
 		icmp_send_echo_request(ifdev, dst, callback);
 		sleep(timeout);
 		if (FALSE == has_responsed) {
-			TRACE (" ....timeout\n");
+			printf(" ....timeout\n");
 			icmp_abort_echo_request(ifdev);
 			cnt_err++;
 		} else {
-			TRACE(" ....ok\n");
+			printf(" ....ok\n");
 			cnt_resp++;
 		}
 	}
-	TRACE("--- %d.%d.%d.%d ping statistics ---\n", dst[0], dst[1], dst[2], dst[3]);
-	TRACE("%d packets transmitted, %d received, %d% packet loss", cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp));
+	printf("--- %d.%d.%d.%d ping statistics ---\n", dst[0], dst[1], dst[2], dst[3]);
+	printf("%d packets transmitted, %d received, %d% packet loss", cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp));
 	icmp_abort_echo_request(ifdev);
 	return 0;
 }
@@ -83,7 +83,7 @@ int ping_shell_handler(int argsc, char **argsv) {
 			sizeof(available_keys), keys);
 
 	if (keys_amount < 0) {
-		TRACE("ERROR: during parsing params\n");
+		ERROR("during parsing params\n");
 		show_help();
 		return -1;
 	}
@@ -95,22 +95,22 @@ int ping_shell_handler(int argsc, char **argsv) {
 
 	//get interface
 	if (!get_key('i', keys, keys_amount, &key_value)) {
-//		printf("ERROR: choose right interface name '-i'\n");
+//		ERROR("choose right interface name '-i'\n");
 //		show_help();
 //		return -1;
 		ifdev = eth_get_ifdev_by_name("eth0");
 	} else if (NULL == (ifdev = eth_get_ifdev_by_name(key_value))) {
-		TRACE ("ERROR: Can't find interface %s\n see ifconfig for available interfaces list\n", key_value);
+		ERROR("Can't find interface %s\n see ifconfig for available interfaces list\n", key_value);
 		show_help();
 		return -1;
 	}
 	//get destanation addr
 	if (!get_key('d', keys, keys_amount, &key_value)) {
-		printf("ERROR: you must choose right destination address '-d'\n");
+		ERROR("you must choose right destination address '-d'\n");
 		show_help();
 		return -1;
 	} else if (NULL == ipaddr_scan(key_value, dst)) {
-		TRACE ("ERROR: wrong ip addr format (%s)\n", key_value);
+		ERROR("wrong ip addr format (%s)\n", key_value);
 		show_help();
 		return -1;
 	}
@@ -119,7 +119,7 @@ int ping_shell_handler(int argsc, char **argsv) {
 	if (!get_key('c', keys, keys_amount, &key_value)) {
 		cnt = 10;
 	} else if (1 != sscanf(key_value, "%d", &cnt)) {
-		printf("ERROR: enter validly cnt '-c'\n");
+		ERROR("enter validly cnt '-c'\n");
 		show_help();
 		return -1;
 	}
@@ -127,7 +127,7 @@ int ping_shell_handler(int argsc, char **argsv) {
         if (!get_key('W', keys, keys_amount, &key_value)) {
                 timeout = 1000;
         } else if (1 != sscanf(key_value, "%d", &timeout)) {
-                printf("ERROR: enter validly timeout '-W'\n");
+                ERROR("enter validly timeout '-W'\n");
                 show_help();
                 return -1;
         }
