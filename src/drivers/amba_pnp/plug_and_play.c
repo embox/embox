@@ -113,43 +113,34 @@ inline static BYTE get_irq(UINT32 id_reg) {
 inline static BYTE get_version(UINT32 id_reg) {
 	return (0x1F & ((id_reg)) >> 5);
 }
-inline static int find_apbdev(BYTE ven_id, UINT16 dev_id)
-{
-	int cur_slot;
-	APB_SLOT *pslot = ((APB_SLOT *) APB_BASE);
-	for (cur_slot = 0; cur_slot < APB_QUANTITY; cur_slot++) {
-		if ((ven_id == get_ven(pslot[cur_slot].id_reg)) && (dev_id == get_dev(
-			pslot[cur_slot].id_reg)))
-			return cur_slot;
-	}
+
+/**
+ * @return slotnumber or -1
+ */
+inline static int find_apbdev_slotnum(BYTE ven_id, UINT16 dev_id) {
+	APB_SLOT *pslotbase = ((APB_SLOT *) APB_BASE);
+
+	int cur_slotnum;
+	for (cur_slotnum = 0; cur_slotnum < APB_QUANTITY; cur_slotnum++)
+		if ( (ven_id == get_ven(pslotbase[cur_slotnum].id_reg))
+				&& (dev_id == get_dev(pslotbase[cur_slotnum].id_reg)) )
+			return cur_slotnum;
+
+	return -1;
 }
 
 /**
  * @return slotnumber or -1
  */
-inline static int find_amba_dev(BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOOL is_master) {
-	int cur_slot;
-	int base;
-	int quantity;
+inline static int find_ahbdev_slotnum(BYTE ven_id, UINT16 dev_id, BOOL is_master) {
+	AHB_SLOT *pslotbase = (AHB_SLOT *) (is_master ? AHB_MASTER_BASE : AHB_SLAVE_BASE);
+	int maxdevs = is_master ? AHB_MASTERS_QUANTITY : AHB_SLAVES_QUANTITY;
 
-	if (!is_ahb)
-		return find_apbdev(ven_id, dev_id);
-	if (is_master)
-	{
-		base = AHB_MASTER_BASE;
-		quantity = AHB_MASTERS_QUANTITY;
-	}
-	else
-	{
-		base = AHB_SLAVE_BASE;
-		quantity = AHB_SLAVES_QUANTITY;
-	}
-	AHB_SLOT *pslot = ((AHB_SLOT *) base);
-	for (cur_slot = 0; cur_slot < quantity; cur_slot++) {
-		if ((ven_id == get_ven(pslot[cur_slot].id_reg)) && (dev_id == get_dev(
-				pslot[cur_slot].id_reg)))
-			return cur_slot;
-	}
+	int cur_slotnum;
+	for (cur_slotnum = 0; cur_slotnum < maxdevs; cur_slotnum++)
+		if ( (ven_id == get_ven(pslotbase[cur_slotnum].id_reg))
+				&& (dev_id == get_dev(pslotbase[cur_slotnum].id_reg)) )
+			return cur_slotnum;
 
 	return -1;
 }
@@ -219,13 +210,16 @@ inline static void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, B
 int capture_amba_dev(AMBA_DEV *dev, BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOOL is_master) {
 	int slot_number;
 
-	if (NULL == dev) {
+	if (dev == NULL)
 		return -1;
-	}
 
-	if (-1 == (slot_number = find_amba_dev(ven_id, dev_id, is_ahb, is_master))) {
+	if (is_ahb)
+		slot_number = find_ahbdev_slotnum(ven_id, dev_id, is_master);
+	else
+		slot_number = find_apbdev_slotnum(ven_id, dev_id);
+
+	if (slot_number == -1)
 		return -1;
-	}
 
 	if (-1 == lock_amba_slot(slot_number, dev, is_ahb, is_master)) {
 		return -1;//a device can be opened only once
