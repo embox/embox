@@ -145,6 +145,37 @@ static int printi(char **out, int i, int b, int sg, int width, int pad, int letb
 	return pc + prints (out, s, width, pad);
 }
 
+#define PRINTB_BUF_LEN 64
+
+static int printb(char **out, int i, int width, int dot)
+{
+	char print_buf[PRINTB_BUF_LEN];
+	register char *s;
+	register unsigned int u = i;
+	register int k;
+	register int dc = 0;
+
+
+	s = print_buf + PRINTB_BUF_LEN-1;
+	*s = '\0';
+
+	for (k=0; k<width;) {
+		*--s = ((u & 1) ? '1' : '0');
+		u >>= 1;
+		k++;
+
+		if (dot && !(k & 0x03)) {
+			*--s = ' ';
+			dc++;
+		}
+	}
+	if (*s == ' ') {
+		++s;
+		dc--;
+	}
+	return prints (out, s, width + dc, 0);
+}
+
 static int print(char **out, const char *format, va_list args )
 {
 	register int width, pad;
@@ -188,6 +219,14 @@ static int print(char **out, const char *format, va_list args )
 			}
 			if( *format == 'u' ) {
 				pc += printi (out, va_arg( args, int ), 10, 0, width, pad, 'a');
+				continue;
+			}
+			if( *format == 'b' ) {
+				pc += printb (out, va_arg( args, int ), width, 0);
+				continue;
+			}
+			if( *format == 'B' ) {
+				pc += printb (out, va_arg( args, int ), width, 1);
 				continue;
 			}
 			if( *format == 'c' ) {
