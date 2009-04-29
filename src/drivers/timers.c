@@ -113,6 +113,9 @@ static void show_module_info(AMBA_DEV *dev)
 
 	TRACE ("\tscaler_cnt 0x%X\n", timers->scaler_cnt);
 	TRACE ("\tscaler_ld 0x%X\n", timers->scaler_ld);
+	TRACE ("system resurses\n");
+	TRACE ("\tcnt_ms_sleep 0x%X\n",cnt_ms_sleep);
+	TRACE ("\tcnt_sys_time 0x%X\n",cnt_sys_time);
 }
 
 static AMBA_DEV amba_dev;
@@ -133,6 +136,9 @@ int timers_init() {
 
 
 	timers = (TIMERS_STRUCT *)amba_dev.bar[0].start;
+	timers->timer_ctrl1 = 0x0;
+	timers->timer_ctrl2 = 0x0;//disable
+
 	timers->scaler_ld = TIMER_SCALER_VAL;
 	timers->scaler_cnt = 0;
 	timers->timer_cnt1 = 0;
@@ -143,8 +149,6 @@ int timers_init() {
 	timers->timer_ctrl1 = 0xf;
 	timers->timer_ctrl2 = 0x0;//disable
 	irq_set_handler(amba_dev.dev_info.irq, irq_func_tmr_1mS);
-
-	//dev.dev_name=
 
 	cnt_sys_time = 0;
 
@@ -174,5 +178,11 @@ int timers_context_save() {
 int timers_context_restore(int context_number) {
 	memcpy(sys_timers, save_timers_buffer[context_number], sizeof(sys_timers));
 	return context_number;
+}
+
+void timers_off (){
+	timers->timer_ctrl1 = 0x0;
+	timers->timer_ctrl2 = 0x0;//disable
+	show_module_info(&amba_dev);
 }
 
