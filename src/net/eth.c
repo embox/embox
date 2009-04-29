@@ -188,18 +188,18 @@ int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
 }
 
 int eth_set_ipaddr (void *ifdev, unsigned char ipaddr[4]) {
+        if (NULL == ifdev)
+                return -1;
 	IF_DEVICE *dev = (IF_DEVICE *)ifdev;
-	if (NULL == ifdev)
-		return -1;
 	memcpy(dev->ipv4_addr, ipaddr, sizeof(dev->ipv4_addr));
 	return 0;
 }
 
 int eth_set_macaddr (void *ifdev, unsigned char macaddr[6]) {
 	LOGGER();
+        if (NULL == ifdev)
+                return -1;
 	IF_DEVICE *dev = (IF_DEVICE *)ifdev;
-	if (NULL == ifdev)
-		return -1;
 	memcpy(dev->net_dev->hw_addr, macaddr ,dev->net_dev->addr_len);
 	return 0;
 }
