@@ -30,8 +30,11 @@
 #define DATA_BASE   RAM_BASE    // stack in SDRAM
 #endif //SIMULATE
 /* Data base address  */
+#ifndef SIMULATE
 #define DATA_SIZE   0x20000
-
+#else
+#define DATA_SIZE   0x80000 - 4
+#endif //SIMULATE
 /* Stack base address (stack grows down form base) */
 #define STACK_BASE  DATA_BASE + DATA_SIZE
 
