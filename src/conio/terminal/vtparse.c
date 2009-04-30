@@ -101,7 +101,7 @@ static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 		break;
 
 	default:
-		TRACE("Internal error, unknown action %d", action);
+		ERROR("Internal error, unknown action %d", action);
 	}
 }
 

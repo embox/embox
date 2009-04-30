@@ -15,6 +15,9 @@
 #include "eth.h"
 
 #define INTERFACES_QUANTITY 4
+static unsigned char def_ip [4] = {192, 168, 0, 80};
+static unsigned char def_mac [6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x00};
+
 typedef struct _CALLBACK_INFO
 {
 	int is_busy;
@@ -41,7 +44,7 @@ static int rebuild_header(net_packet * pack)
 	{
 		if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr))
 		{
-			TRACE ("Destanation host Unreachable\n");
+			WARN("Destanation host Unreachable\n");
 			return -1;
 		}
 		memcpy (pack->mac.mach->src_addr, pack->netdev->hw_addr, sizeof(pack->mac.mach->src_addr));
@@ -51,9 +54,6 @@ static int rebuild_header(net_packet * pack)
 	}
 	return 0;
 }
-
-static unsigned char def_ip [4] = {192, 168, 0, 80};
-static unsigned char def_mac [6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x00};
 
 int eth_init()
 {
@@ -332,5 +332,3 @@ int eth_listen (void *handler, unsigned short type, ETH_LISTEN_CALLBACK callback
 
 	return alloc_callback(dev, type, callback);
 }
-
-

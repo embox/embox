@@ -420,7 +420,7 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 		fill_amba_dev(&dev, slot, TRUE, TRUE);
 		show_dev(&dev, FALSE);
 	}
-	else printf("No such device. \n");
+	else ERROR("No such device. \n");
 
 	//print_ahb_entries((AHB_SLOT *)AHB_MASTER_BASE, 1, TRUE);
 }
