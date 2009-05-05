@@ -60,7 +60,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
 		}
 	}
 	printf("--- %d.%d.%d.%d ping statistics ---\n", dst[0], dst[1], dst[2], dst[3]);
-	printf("%d packets transmitted, %d received, %d% packet loss", cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp));
+	printf("%d packets transmitted, %d received, %d%% packet loss", cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp));
 	icmp_abort_echo_request(ifdev);
 	return 0;
 }

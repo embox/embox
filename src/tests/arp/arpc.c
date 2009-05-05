@@ -65,7 +65,7 @@ int arp_shell_handler(int argsc, char **argsv) {
 		show_help();
 		return 0;
 	}
-	TRACE("Address\t\tHWtype\tHWaddress\t\tFlags\tIface\n");
+	printf("Address\t\t\tHWtype\tHWaddress\t\tFlags\tIface\n");
 	print_arp_cache();
 	return 0;
 }
