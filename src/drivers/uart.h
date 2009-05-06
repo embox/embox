@@ -1,6 +1,15 @@
 #ifndef _UART_H_
 #define _UART_H_
 
+
+typedef struct _UART_STRUCT {
+	volatile UINT32 data; //0x70
+	volatile UINT32 status;
+	volatile UINT32 ctrl;
+	volatile UINT32 scaler;
+} UART_STRUCT;
+
+
 int uart_init();
 // output
 void uart_putc(char ch);
