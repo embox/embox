@@ -54,6 +54,9 @@ static SYS_TMR sys_timers[MAX_QUANTITY_SYS_TIMERS];
 volatile static UINT32 cnt_ms_sleep;/**< for sleep function */
 volatile static UINT32 cnt_sys_time;/**< quantity ms after start system */
 
+#define DEFAULT_SLEEP_COUNTER	3470
+volatile static UINT32 sleep_cnt_const = DEFAULT_SLEEP_COUNTER; /**< for sleep function (loop-based) */
+
 
 BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle) {
 	UINT32 i;
@@ -155,11 +158,61 @@ int timers_init() {
 	return 0;
 }
 
-void sleep(int ms) {
+void sleep_1ms_irq(int ms) {
 	cnt_ms_sleep = 0;
 	while (ms > cnt_ms_sleep)
 		;
 }
+
+inline void sleep(int ms) {
+	register UINT32 cnt;
+	for(; ms; ms--) {
+		for (cnt = sleep_cnt_const; cnt; cnt--) {}
+	}
+}
+
+void calibrate_sleep () {
+
+	int t_prev, dt;
+	int cnt=0;
+
+        DEBUG("Start sleep counter calibration ... ");
+	// 1. test for proper work of irq_func_tmr_1mS()
+	cnt_ms_sleep = 0;
+	for (cnt=0; cnt<100000; cnt++) {}
+	if (0 == cnt_ms_sleep) {
+		// irq_func_tmr_1mS() not worked.
+		// we can't calibrate sleep
+		// use nearest experimental-based value for 50Mhz CPU freq
+		sleep_cnt_const = DEFAULT_SLEEP_COUNTER;
+	        DEBUG("failed. Assumed default value %d for 50Mhz CPU.\n", sleep_cnt_const);
+		return;
+	}
+
+	// now calibrate volatile int counter for 1ms loop
+	sleep_cnt_const = t_prev = 0;
+	dt = 256;
+	while (dt > 0) {
+		// do time-alignment for timer IRQ
+		cnt_ms_sleep = 0;
+		while (cnt_ms_sleep < 1) {}
+	       	// now cnt_ms_sleep == 1
+
+		// test delay
+		sleep(10);
+
+		if (cnt_ms_sleep > 10) {
+			sleep_cnt_const = t_prev;
+			dt /= 2;
+		} else {
+			t_prev = sleep_cnt_const;
+			sleep_cnt_const += dt;
+		}
+	}
+
+        DEBUG("done. Assumed %d for sleep(1ms)\n", sleep_cnt_const);
+}
+
 
 UINT32 get_sys_time() {
 	return cnt_sys_time;

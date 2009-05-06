@@ -39,6 +39,7 @@ int init() {
 	uart_init();
 
 	timers_init();
+	calibrate_sleep();
 	cache_data_enable(FALSE);
 	cache_instr_enable(FALSE);
 	eth_init();//interfaces
