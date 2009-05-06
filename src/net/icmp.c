@@ -14,6 +14,7 @@
 
 #define ICMP_TYPE_ECHO_REQ  8
 #define ICMP_TYPE_ECHO_RESP 0
+#define CB_INFO_SIZE	0x10
 
 typedef struct _ICMP_CALLBACK_INFO {
 	ICMP_CALLBACK cb;
@@ -21,14 +22,15 @@ typedef struct _ICMP_CALLBACK_INFO {
 	unsigned short ip_id;
 	unsigned char type;
 } ICMP_CALLBACK_INFO;
-ICMP_CALLBACK_INFO cb_info[0x10];
+
+ICMP_CALLBACK_INFO cb_info[CB_INFO_SIZE];
 
 static int callback_alloc(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 		unsigned char type) {
 	int i;
 	if (NULL == cb || NULL == ifdev)
 		return -1;
-	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info[0]); i++) {
+	for (i = 0; i < array_len(cb_info); i++) {
 		if (NULL == cb_info[i].cb) {
 			cb_info[i].cb = cb;
 			cb_info[i].ifdev = ifdev;
@@ -44,7 +46,7 @@ static int interface_abort(void *ifdev) {
 	int i;
 	if (NULL == ifdev)
 		return -1;
-	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info[0]); i++) {
+	for (i = 0; i < array_len(cb_info); i++) {
 		if (cb_info[i].ifdev == ifdev) {
 			cb_info[i].cb = 0;
 			cb_info[i].ifdev = 0;
@@ -61,7 +63,7 @@ static int callback_free(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 	int i;
 	if (NULL == cb)
 		return -1;
-	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info[0]); i++) {
+	for (i = 0; i < array_len(cb_info); i++) {
 		if (cb_info[i].cb == cb && ifdev == cb_info[i].ifdev) {
 			cb_info[i].cb = 0;
 			cb_info[i].ifdev = 0;
@@ -76,7 +78,7 @@ static int callback_free(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 static ICMP_CALLBACK callback_find(void *ifdev, unsigned short ip_id,
 		unsigned char type) {
 	int i;
-	for (i = 0; i < sizeof(cb_info) / sizeof(cb_info[0]); i++) {
+	for (i = 0; i < array_len(cb_info); i++) {
 		if (ifdev == cb_info[i].ifdev && type == cb_info[i].type) {
 			return cb_info[i].cb;
 		}

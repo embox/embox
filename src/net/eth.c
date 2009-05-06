@@ -279,7 +279,7 @@ int netif_rx(net_packet *pack)
 
 	pack->nh.raw = (void *)pack->data + sizeof(machdr);
 
-	for(i = 0; i < sizeof(ifs)/ sizeof (ifs[0]); i ++)
+	for(i = 0; i < INTERFACES_QUANTITY; i ++)
 	{
 		if (ifs[i].net_dev == pack->netdev)
 		{

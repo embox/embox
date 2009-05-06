@@ -44,6 +44,6 @@ int arp_delete_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macadd
 /**
  * Print ARP table
  */
-int print_arp_cache();
+int print_arp_cache(void *ifdev);
 
 #endif /* ARP_H_ */

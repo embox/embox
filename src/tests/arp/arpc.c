@@ -66,6 +66,6 @@ int arp_shell_handler(int argsc, char **argsv) {
 		return 0;
 	}
 	printf("Address\t\t\tHWtype\tHWaddress\t\tFlags\tIface\n");
-	print_arp_cache();
+	print_arp_cache(ifdev);
 	return 0;
 }

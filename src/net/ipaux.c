@@ -5,7 +5,8 @@
  * \author anton
  */
 
-#define LITTLE 0// big engian only
+#define LITTLE 0// big endian only
+
 unsigned short ptclbsum(unsigned char *addr, int len) {
 
 	register long sum;
@@ -97,4 +98,27 @@ unsigned short ptclbsum(unsigned char *addr, int len) {
 	//losum += 0x37;
 	return losum & 0xffff;
 	*/
+}
+
+/**
+ * Name  : CRC-16 CCITT
+ * Poly  : 0x1021	x^16 + x^12 + x^5 + 1
+ * Init  : 0xFFFF
+ * Revert: false
+ * XorOut: 0x0000
+ * Check : 0x29B1 ("123456789")
+ * MaxLen: 4095 byte (32767 bit)
+ */
+unsigned short Crc16( unsigned char *pcBlock, unsigned short len ) {
+        unsigned short crc = 0xFFFF;
+	unsigned char i;
+
+	while( len-- ) {
+    		crc ^= *pcBlock++ << 8;
+
+    		for( i = 0; i < 8; i++ ) {
+    			crc = crc & 0x8000 ? ( crc << 1 ) ^ 0x1021 : crc << 1;
+    		}
+        }
+	return crc;
 }

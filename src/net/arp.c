@@ -30,8 +30,9 @@ typedef struct _ARP_ENTITY
 
 ARP_ENTITY arp_table[ARP_CACHE_SIZE];
 
-#define ARP_TABLE_SIZE (sizeof(arp_table)/sizeof(arp_table[0]))
+static unsigned char brodcast_mac_addr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+#define ARP_TABLE_SIZE (sizeof(arp_table)/sizeof(arp_table[0]))
 #define ARP_HARDWARE_TYPE_ETH (unsigned short)0x0001
 
 static inline int find_entity(void *ifdev, unsigned char dst_addr[4])
@@ -65,8 +66,6 @@ int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6
 		}
 	}
 }
-
-static unsigned char brodcast_mac_addr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 {
@@ -211,12 +210,13 @@ int arp_delete_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macadd
         }
 }
 
-int print_arp_cache() {
+int print_arp_cache(void *ifdev) {
 	LOGGER();
 	int i;
 	net_device *net_dev;
 	for(i=0; i<ARP_CACHE_SIZE; i++) {
-		if(arp_table[i].is_busy == 1) {
+		if((arp_table[i].is_busy == 1) &&
+		   (ifdev == NULL || ifdev == arp_table[i].if_handler)) {
 			net_dev = eth_get_netdevice(arp_table[i].if_handler);
 			ipaddr_print(arp_table[i].pw_addr, 4);
 			printf("\t\t%d\t", eth_get_netdevice(arp_table[i].if_handler)->type);
