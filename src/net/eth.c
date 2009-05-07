@@ -332,3 +332,14 @@ int eth_listen (void *handler, unsigned short type, ETH_LISTEN_CALLBACK callback
 
 	return alloc_callback(dev, type, callback);
 }
+
+int find_interface_by_addr(unsigned char ipaddr[4]) {
+	int i;
+	for (i = 0; i < INTERFACES_QUANTITY; i ++) {
+		if(0 == memcmp(ifs[i].ipv4_addr, ipaddr, 4)) {
+			return 0;
+		}
+	}
+	return -1;
+}
+

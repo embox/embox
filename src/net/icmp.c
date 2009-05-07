@@ -145,6 +145,10 @@ static int icmp_get_echo_answer(net_packet *pack) { //type 0
 
 static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	net_packet *pack = net_packet_copy(recieved_pack);
+	if(find_interface_by_addr(pack->nh.iph->daddr)) {
+		return 0;
+	}
+
 	int i;
 
 	//fill icmp header

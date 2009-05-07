@@ -50,5 +50,6 @@ int eth_send (net_packet *pack);
 int eth_listen (void *handler, unsigned short type, ETH_LISTEN_CALLBACK callback);
 unsigned char *eth_get_ipaddr(void *handler);
 net_device *eth_get_netdevice(void *handler);
+int find_interface_by_addr(unsigned char ipaddr[4]);
 
 #endif /* ETH_H_ */
