@@ -28,7 +28,7 @@ static void callback(net_packet *pack) {
 	has_responsed = TRUE;
 }
 
-static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
+static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl) {
 	printf("PING to ");
 	ipaddr_print(dst, 4);
 	printf("\n");
@@ -47,8 +47,8 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout) {
 		ipaddr_print(eth_get_ipaddr(ifdev), 4);
 		printf(" to ");
 		ipaddr_print(dst, 4);
-
-		icmp_send_echo_request(ifdev, dst, callback);
+		printf(" ttl=%d ", ttl);
+		icmp_send_echo_request(ifdev, dst, ttl, callback);
 		sleep(timeout);
 		if (FALSE == has_responsed) {
 			printf(" ....timeout\n");
@@ -76,6 +76,7 @@ int ping_shell_handler(int argsc, char **argsv) {
 	//	char *eth_name;
 	int cnt;
 	int timeout;
+	int ttl;
 	unsigned char dst[4];
 	void *ifdev;
 
@@ -123,6 +124,16 @@ int ping_shell_handler(int argsc, char **argsv) {
 		show_help();
 		return -1;
 	}
+
+        //get icmp ttl
+        if (!get_key('t', keys, keys_amount, &key_value)) {
+                ttl = 64;
+        } else if (1 != sscanf(key_value, "%d", &ttl)) {
+                ERROR("enter validly ttl '-t'\n");
+                show_help();
+                return -1;
+        }
+
         //get ping timeout
         if (!get_key('W', keys, keys_amount, &key_value)) {
                 timeout = 1000;
@@ -133,6 +144,6 @@ int ping_shell_handler(int argsc, char **argsv) {
         }
 
 	//carry out command
-	ping(ifdev, dst, cnt, timeout);
+	ping(ifdev, dst, cnt, timeout, ttl);
 	return 0;
 }

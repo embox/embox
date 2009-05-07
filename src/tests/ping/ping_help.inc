@@ -6,7 +6,7 @@
  */
 "*** PING\n"
 " - test whether a particular host is reachable\n"
-"*FORMAT: ping -i <eth_name> -d <destination> [-c <count>] [-W <timeout>]\n"
+"*FORMAT: ping -i <eth_name> -d <destination> [-c <count>] [-W <timeout>] [-t <ttl>]\n"
 "\t <eth_name>   - network interface's name.\n"
 "\t              by default: eth0\n"
 "\t <destination>- ip address of host.\n"

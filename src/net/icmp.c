@@ -102,7 +102,7 @@ static unsigned short calc_checksumm(unsigned char *hdr, int size) {
 static unsigned short ip_id;
 
 static inline int build_icmp_packet(net_packet *pack, unsigned char type,
-		unsigned char code, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
+		unsigned char code, int ttl, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
 	pack->h.raw = pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2)
 			+ sizeof(iphdr);
 	memset(pack->h.raw, 0, sizeof(icmphdr));
@@ -123,7 +123,7 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 	pack->nh.iph->check = 0;
 	pack->nh.iph->tot_len = sizeof(icmphdr);
 	pack->nh.iph->tos = 0;
-	pack->nh.iph->ttl = 255;
+	pack->nh.iph->ttl = ttl;
 	pack->nh.iph->proto = ICMP_PROTO_TYPE;
 	pack->nh.iph->id = ip_id++;
 	pack->nh.iph->check = calc_checksumm(pack->nh.raw,
@@ -185,7 +185,7 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	return 0;
 }
 
-int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4],
+int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		ICMP_CALLBACK callback) { //type 8
 	net_packet *pack = net_packet_alloc();
 	if (pack == 0)
@@ -193,7 +193,7 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4],
 
 	pack->ifdev = ifdev;
 	pack->netdev = eth_get_netdevice(ifdev);
-	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, eth_get_ipaddr(
+	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, ttl, eth_get_ipaddr(
 			ifdev), dstaddr);
 	pack->protocol = IP_PROTOCOL_TYPE;
 
