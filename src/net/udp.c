@@ -5,6 +5,7 @@
  * \author sikmir
  */
 #include "types.h"
+#include "common.h"
 #include "net.h"
 #include "eth.h"
 #include "net_pack_manager.h"
@@ -13,6 +14,7 @@
 #include "socket.h"
 
 int udp_received_packet(net_packet *pack) {
+	TRACE("udp packet received\n");
 	udpsock_push(pack);
 	return 0;
 }

@@ -13,7 +13,7 @@
 #define MAX_SOCK_NUM 0x10
 
 int socket(sk_type type, sk_proto protocol);
-int bind(int s, int port);
+int bind(int s, unsigned char ipaddr[4], int port);
 int send(int s, const void *buf, int len);
 int recv(int s, void *buf, int len);
 void close(int s);

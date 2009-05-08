@@ -16,6 +16,7 @@
 #include "help.h"
 #include "ping.h"
 #include "arpc.h"
+#include "udpd.h"
 
 #define MAX_SHELL_KEYS 12
 #include "cpu_context.h"

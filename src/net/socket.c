@@ -6,6 +6,7 @@
  */
 
 #include "types.h"
+#include "common.h"
 #include "socket.h"
 #include "udp.h"
 #include "net_pack_manager.h"
@@ -55,8 +56,8 @@ void fill_sock(struct udp_sock *sk, sk_type type, sk_proto proto)
 	sk->inet.sk->sk_type = type;
 }
 
-void udpsock_push(net_packet *pack)
-{
+void udpsock_push(net_packet *pack) {
+	TRACE("push packet to udp socket\n");
 	//TODO:
 	int i;
 	struct udp_sock *usk;
@@ -79,8 +80,8 @@ void udpsock_push(net_packet *pack)
 	net_packet_free(pack);
 }
 
-int socket(sk_type type, sk_proto protocol)
-{
+int socket(sk_type type, sk_proto protocol) {
+	TRACE("create socket\n");
 	struct udp_sock *sk;
 	sk = socket_alloc();
 	fill_sock(sk, type, protocol);
@@ -96,10 +97,10 @@ int socket(sk_type type, sk_proto protocol)
         return -1;
 }
 
-int bind(int s, int port)
-{
+int bind(int s, unsigned char ipaddr[4], int port) {
+	TRACE("bind socket\n");
 	sks[s].sk.inet.sport = port;
-	return 0;
+	return -1;
 }
 
 void close(int s)
