@@ -2,7 +2,7 @@
  * \file socket.c
  *
  * \date Mar 19, 2009
- * \author anton
+ * \author anton, sikmir
  */
 
 #include "types.h"
@@ -20,8 +20,8 @@ typedef struct _SOCK_INFO{
 
 static SOCK_INFO sks[MAX_SOCK_NUM];
 
-struct udp_sock* socket_alloc()
-{
+struct udp_sock* socket_alloc() {
+	DEBUG("socket_alloc");
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++)
         {
@@ -36,8 +36,8 @@ struct udp_sock* socket_alloc()
         return NULL;
 }
 
-void socket_free(struct udp_sock *sk)
-{
+void socket_free(struct udp_sock *sk) {
+	DEBUG("socket_free");
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++)
         {
@@ -49,26 +49,23 @@ void socket_free(struct udp_sock *sk)
         }
 }
 
-void fill_sock(struct udp_sock *sk, sk_type type, sk_proto proto)
-{
+void fill_sock(struct udp_sock *sk, sk_type type, sk_proto proto) {
+	DEBUG("fill_sock");
 	//TODO:
-	sk->inet.sk->sk_protocol = proto;
-	sk->inet.sk->sk_type = type;
+//	sk->inet.sk->sk_protocol = proto;
+//	sk->inet.sk->sk_type = type;
 }
 
 void udpsock_push(net_packet *pack) {
-	TRACE("push packet to udp socket\n");
-	//TODO:
+	DEBUG("push packet to udp socket");
 	int i;
 	struct udp_sock *usk;
 	udphdr *uh = pack->h.uh;
 	iphdr *iph = pack->nh.iph;
 	for(i=0; i< MAX_SOCK_NUM; i++) {
 		usk = &sks[i].sk;
-		if(uh->source == usk->inet.dport &&
-		   uh->dest == usk->inet.sport &&
-		   iph->saddr == usk->inet.daddr &&
-		   iph->daddr == usk->inet.saddr) {
+		if(uh->dest == usk->inet.sport &&
+		   (0 == memcmp(iph->daddr, usk->inet.saddr, 4))) {
 			if(sks[i].new_pack == 0) {
 			    sks[i].queue = pack;
 			    sks[i].new_pack = 1;
@@ -81,16 +78,19 @@ void udpsock_push(net_packet *pack) {
 }
 
 int socket(sk_type type, sk_proto protocol) {
-	TRACE("create socket\n");
+	DEBUG("create socket");
 	struct udp_sock *sk;
-	sk = socket_alloc();
+	if((sk = socket_alloc()) == NULL) {
+		ERROR("Can't alloc socket.");
+		return -1;
+	}
 	fill_sock(sk, type, protocol);
 	int i;
         for(i = 0; i < MAX_SOCK_NUM; i++)
         {
                 if (sk == &sks[i].sk)
                 {
-            		sk->inet.id = i;
+            		DEBUG("socket id=%d", i);
                         return i;
                 }
         }
@@ -98,18 +98,20 @@ int socket(sk_type type, sk_proto protocol) {
 }
 
 int bind(int s, unsigned char ipaddr[4], int port) {
-	TRACE("bind socket\n");
+	DEBUG("bind socket");
+	memcpy(&sks[s].sk.inet.saddr, ipaddr, sizeof(ipaddr));
 	sks[s].sk.inet.sport = port;
-	return -1;
+	DEBUG("socket binded at port=%d, ip=", sks[s].sk.inet.sport); ipaddr_print(sks[s].sk.inet.saddr, 4);
+	return 0;
 }
 
-void close(int s)
-{
+void close(int s) {
+	DEBUG("close");
 	socket_free(&sks[s].sk);
 }
 
-int send(int s, const void *buf, int len)
-{
+int send(int s, const void *buf, int len) {
+	DEBUG("send");
 	net_packet *pack;
         pack = net_packet_alloc();
 	memcpy(pack->data, buf, len);
@@ -117,9 +119,9 @@ int send(int s, const void *buf, int len)
         udp_trans(&sks[s].sk, pack);
 }
 
-int recv(int s, void *buf, int len)
-{
+int recv(int s, void *buf, int len) {
 	if(sks[s].new_pack == 1) {
+		DEBUG("recv");
 		memcpy(buf, sks[s].queue->data, len);
 		net_packet_free(sks[s].queue);
 		sks[s].new_pack = 0;

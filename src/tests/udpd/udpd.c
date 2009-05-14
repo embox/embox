@@ -32,12 +32,12 @@ int udpd_shell_handler(int argsc, char **argsv) {
 	keys_amount = parse_arg(COMMAND_NAME, argsc, argsv, available_keys,
 			sizeof(available_keys), keys);
 
-	if (get_key('a', keys, keys_amount, &key_value)) {
-		if (NULL == ipaddr_scan(key_value, addr)) {
-	                ERROR("wrong ip addr format (%s)\n", key_value);
-	                show_help();
-	                return -1;
-	        }
+	if (!get_key('a', keys, keys_amount, &key_value)) {
+		ipaddr_scan("192.168.0.80", addr);
+	} else if (NULL == ipaddr_scan(key_value, addr)) {
+	        ERROR("wrong ip addr format (%s)\n", key_value);
+	        show_help();
+	        return -1;
 	}
         if (!get_key('p', keys, keys_amount, &key_value)) {
                 port = 666;
@@ -51,7 +51,7 @@ int udpd_shell_handler(int argsc, char **argsv) {
 		return 0;
 	}
 	int sk, n;
-	char buf[1024];
+	char buf[1];
 	sk = socket(SOCK_DGRAM, UDP);
 	if(sk < 0) {
 		ERROR("opening socket\n");
@@ -62,8 +62,11 @@ int udpd_shell_handler(int argsc, char **argsv) {
 		return -1;
 	}
 	while (1) {
-		n = recv(sk, buf, 1024);
-		if(n) break;
+		n = recv(sk, buf, sizeof(char));
+		if(n) {
+		    printf("buf=%d\n", buf);
+		    break;
+		}
 		sleep(1);
 	}
 	close(sk);

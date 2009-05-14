@@ -10,7 +10,7 @@
 
 #include "sock.h"
 
-#define MAX_SOCK_NUM 0x10
+#define MAX_SOCK_NUM 4
 
 int socket(sk_type type, sk_proto protocol);
 int bind(int s, unsigned char ipaddr[4], int port);
