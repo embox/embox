@@ -119,6 +119,7 @@ int timers_init() {
 	timers->timer_ld2 = 0;//0x027100;
 	timers->timer_ctrl1 = 0xf;
 	timers->timer_ctrl2 = 0x0;//disable
+	timers->config_reg = 0x1000;
 	irq_set_handler(amba_dev.dev_info.irq, irq_func_tmr_1mS);
 
 	cnt_sys_time = 0;
