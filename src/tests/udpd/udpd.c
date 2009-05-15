@@ -51,7 +51,7 @@ int udpd_shell_handler(int argsc, char **argsv) {
 		return 0;
 	}
 	int sk, n;
-	char buf[1];
+	char buf[64];
 	sk = socket(SOCK_DGRAM, UDP);
 	if(sk < 0) {
 		ERROR("opening socket\n");
@@ -62,9 +62,9 @@ int udpd_shell_handler(int argsc, char **argsv) {
 		return -1;
 	}
 	while (1) {
-		n = recv(sk, buf, sizeof(char));
+		n = recv(sk, buf, sizeof(buf));
 		if(n) {
-		    printf("buf=%d\n", buf);
+		    printf("buf=%s\n", buf);
 		    break;
 		}
 		sleep(1);

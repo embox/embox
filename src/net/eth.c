@@ -34,6 +34,7 @@ typedef struct _IF_DEVICE
 
 static IF_DEVICE ifs[INTERFACES_QUANTITY];
 
+void packet_dump(net_packet *);
 
 static int rebuild_header(net_packet * pack)
 {
@@ -291,6 +292,7 @@ int netif_rx(net_packet *pack)
 	if (ARP_PROTOCOL_TYPE == pack->protocol)
 	{
 		pack->nh.raw = pack->data + sizeof(machdr);
+//		packet_dump(pack);
 		arp_received_packet(pack);
 		net_packet_free(pack);
 		return;
@@ -302,10 +304,12 @@ int netif_rx(net_packet *pack)
 		pack->h.raw = pack->nh.raw + sizeof(iphdr);
 		if (ICMP_PROTO_TYPE == pack->nh.iph->proto)
 		{
+//			packet_dump(pack);
 			icmp_received_packet(pack);
 		}
 		if (UDP_PROTO_TYPE == pack->nh.iph->proto)
 		{
+			packet_dump(pack);
 			udp_received_packet(pack);
 		}
 	}
@@ -343,3 +347,46 @@ int find_interface_by_addr(unsigned char ipaddr[4]) {
 	return -1;
 }
 
+void packet_dump(net_packet *pack) {
+	TRACE("--------dump-----------------\n");
+	TRACE("protocol=0x%X\n", pack->protocol);
+	TRACE("len=%d\n", pack->len);
+	TRACE("mac.mach.type=%d\n", pack->mac.mach->type);
+	TRACE("mac.mach.src_addr="); macaddr_print(pack->mac.mach->src_addr, 6);
+	TRACE("\nmac.mach.dst_addr="); macaddr_print(pack->mac.mach->dst_addr, 6);
+	if(pack->protocol == ARP_PROTOCOL_TYPE) {
+		TRACE("\nnh.arph.htype=%d\n", pack->nh.arph->htype);
+		TRACE("nh.arph.ptype=%d\n", pack->nh.arph->ptype);
+		TRACE("nh.arph.hlen=%d\n", pack->nh.arph->hlen);
+		TRACE("nh.arph.plen=%d\n", pack->nh.arph->plen);
+		TRACE("nh.arph.oper=%d\n", pack->nh.arph->oper);
+		TRACE("nh.arph.sha="); macaddr_print(pack->nh.arph->sha, 6);
+		TRACE("\nnh.arph.spa="); ipaddr_print(pack->nh.arph->spa, 4);
+		TRACE("\nnh.arph.tha="); macaddr_print(pack->nh.arph->tha, 6);
+		TRACE("\nnh.arph.tpa="); ipaddr_print(pack->nh.arph->tpa, 4);
+		TRACE("\n");
+	} else if(pack->protocol == IP_PROTOCOL_TYPE) {
+    		TRACE("\nnh.iph.tos=%d\n", pack->nh.iph->tos);
+    		TRACE("nh.iph.tot_len=%d\n", pack->nh.iph->tot_len);
+    		TRACE("nh.iph.id=%d\n", pack->nh.iph->id);
+    		TRACE("nh.iph.frag_off=%d\n", pack->nh.iph->frag_off);
+    		TRACE("nh.iph.ttl=%d\n", pack->nh.iph->ttl);
+    		TRACE("nh.iph.proto=0x%X\n", pack->nh.iph->proto);
+    		TRACE("nh.iph.check=%d\n", pack->nh.iph->check);
+    		TRACE("nh.iph.saddr="); ipaddr_print(pack->nh.iph->saddr, 4);
+    		TRACE("\nnh.iph.daddr="); ipaddr_print(pack->nh.iph->daddr, 4);
+    		if( pack->nh.iph->proto == ICMP_PROTO_TYPE) {
+    			TRACE("\nh.icmph.type=%d\n", pack->h.icmph->type);
+    			TRACE("h.icmph.code=%d\n", pack->h.icmph->code);
+    			TRACE("h.icmph.header_check_summ=%d\n", pack->h.icmph->header_check_summ);
+    			TRACE("h.icmph.data=0x%X\n", pack->h.icmph->data);
+    		} else if( pack->nh.iph->proto == UDP_PROTO_TYPE) {
+    			TRACE("\nh.uh.source=%d\n", pack->h.uh->source);
+    			TRACE("h.uh.dest=%d\n", pack->h.uh->dest);
+    			TRACE("h.uh.len=%d\n", pack->h.uh->len);
+    			TRACE("h.uh.check=%d\n", pack->h.uh->check);
+    		}
+        }
+	TRACE("data=0x%X\n", pack->data);
+	TRACE("---------------end-----------------\n");
+}
