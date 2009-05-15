@@ -4,6 +4,7 @@
  * \date May 15, 2009
  * \author afomin
  */
+
  	.section    ".text"
 	.align  4
 
@@ -35,9 +36,9 @@ bubble_sort:
 
 	set 0, %l3 		// size = 0;
 count_size:
-	ld [%l3 + TRIPLE_TRACE_BUF], %l4
+	ld [%l3 + %o0], %l4
 	cmp %l4, 0
-	bne flv
+	bne count_size
 	 inc %l3
 
 	dec %l3		// Now %l3 = size
@@ -52,17 +53,17 @@ count_size:
 outer_for:
 	mov %l5, %l6 			// j = i (i > 0)
 inner_for:
-	ld [TRIPLE_TRACE_BUF + %l6], %l7
+	ld [%o0 + %l6], %l7
 	dec %l6
-	ld [TRIPLE_TRACE_BUF + %l6], %l4
+	ld [%o0 + %l6], %l4
 	inc %l6
 
 	cmp %l4, %l7			// if (TTB[j - 2] <= TTB[j - 1])
 	ble dont_swap			//   Don't swap
 	 nop
-	st %l4, [TRIPLE_TRACE_BUF + %l6] // swapping
+	st %l4, [%o0 + %l6] // swapping
 	dec %l6
-	st %l7, [TRIPLE_TRACE_BUF + %l6]
+	st %l7, [%o0 + %l6]
 	inc %l6
 dont_swap:
 	dec %l6 				// j--
