@@ -15,7 +15,7 @@ typedef struct _udphdr {
         unsigned short dest;
         unsigned short len;
         unsigned short check;
-	unsigned char data[256];
+//	unsigned char data[256];
 }udphdr;
 
 struct udp_sock{

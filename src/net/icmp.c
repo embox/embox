@@ -156,20 +156,20 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 
 	memset(pack->h.raw + pack->nh.iph->tot_len - sizeof(iphdr) + 1, 0, 64);
 
-	TRACE("\npacket icmp\n");
+	DEBUG("\npacket icmp\n");
 	for (i = 0; i < pack->nh.iph->tot_len + 64; i ++)
 	{
 		if (0 == i % 4)
 		{
-			TRACE ("\t ");
+			DEBUG("\t ");
 		}
 
-		TRACE("%2X",  pack->h.raw[i]);
+		DEBUG("%2X",  pack->h.raw[i]);
 	}
-	TRACE("%X\n",  pack->h.icmph->header_check_summ);
+	DEBUG("%X\n",  pack->h.icmph->header_check_summ);
 	pack->h.icmph->header_check_summ = 0;
 	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,pack->nh.iph->tot_len - sizeof(iphdr) + 1 );
-	TRACE("%X\n",  pack->h.icmph->header_check_summ);
+	DEBUG("%X\n",  pack->h.icmph->header_check_summ);
 
 	//fill ip header
 	memcpy (pack->nh.iph->saddr, recieved_pack->nh.iph->daddr, sizeof (pack->nh.iph->saddr));

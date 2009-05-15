@@ -122,7 +122,8 @@ int send(int s, const void *buf, int len) {
 int recv(int s, void *buf, int len) {
 	if(sks[s].new_pack == 1) {
 		DEBUG("recv");
-		memcpy(buf, sks[s].queue->h.uh->data, len);
+		//memcpy(buf, sks[s].queue->h.uh->data, len);
+		memcpy(buf, sks[s].queue->data + sizeof(machdr) + sizeof(iphdr) + sizeof(udphdr), len);
 		net_packet_free(sks[s].queue);
 		sks[s].new_pack = 0;
 	        return len;
