@@ -308,7 +308,7 @@ sys_chproc_do_abort:
         b     _sys_run_chproc_ret
          nop
 ! end of 'chproc_abort'
-*/
+
 srmmu_fault:
 	ta  0
 	nop
@@ -317,6 +317,6 @@ srmmu_fault:
 	jmp  %l1
 	rett  %l2
 
-
+*/
 
 .align  32

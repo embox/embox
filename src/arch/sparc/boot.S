@@ -19,8 +19,13 @@ boot_start:
 	mov %g0, %y
 
 	nop;nop;nop
-!	flush                           ! flush caches
 
+	flush                           ! flush caches
+	nop
+	nop
+	nop
+	set 0x81000f, %g1
+	sta %g1, [%g0] 2
 !clear global register
 	clr %g1
 	clr %g2
@@ -55,6 +60,14 @@ register_window_clean:
 	save       !
 	nop
 
+
+!set autorefresh for synchronize DDR ctrl
+	set		0xfff00100, %g1
+	set		0x100,%g2
+	srl		%g2, 18, %g2
+	ld		[%g1],%g3
+	or		%g2,%g3,%g3
+	st		%g3, [%g1]
 
 	set     STACK_BASE-0x10, %g1
 	mov     %g1, %fp                  ! set frame pointer

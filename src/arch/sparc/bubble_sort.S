@@ -4,7 +4,6 @@
  * \date May 15, 2009
  * \author afomin
  */
-
  	.section    ".text"
 	.align  4
 
@@ -38,6 +37,7 @@ bubble_sort:
 count_size:
 	ld [%l3 + %o0], %l4
 	cmp %l4, 0
+
 	bne count_size
 	 inc %l3
 
