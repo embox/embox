@@ -3,11 +3,9 @@ SUBDIRS = arch net kernel conio drivers common tests
 OBJS =
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
 
-
-
 .PHONY: all $(SUBDIRS)
 
-all: simulation release debug
+all: debug release
 
 create_objs_lst:$(SUBDIRS)
 
@@ -45,6 +43,8 @@ simulation:$(SUBDIRS)
 	$(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_sim > $(BIN_DIR)/$(TARGET)_sim.dis
 	$(OC_TOOL) -O srec $(BIN_DIR)/$(TARGET)_sim $(BIN_DIR)/prom.srec
 
+docs:
+	cd .. && doxygen
 
 clean:$(SUBDIRS)
 
