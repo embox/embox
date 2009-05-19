@@ -10,13 +10,7 @@
 
 #include "common.h"
 
-#include "mem.h"
-#include "wmem.h"
-#include "lspnp.h"
-#include "help.h"
-#include "ping.h"
-#include "arpc.h"
-#include "udpd.h"
+#include "tests.inc"
 
 #define MAX_SHELL_KEYS 12
 #include "cpu_context.h"
