@@ -59,24 +59,40 @@ def build_subdirs():
     subdirs.close()
 
 def repl_arch(m):
-    return "CPU_ARCH:=" + arch[arc_v.get()][0]
+    return "CPU_ARCH:= " + arch[arc_v.get()][0]
 
 def repl_compil(m):
-    return "CC_PACKET:=" + cmpl.get()
+    return "CC_PACKET:= " + cmpl.get()
 
 def repl_target(m):
-    return "TARGET:=" + trg.get()
+    return "TARGET:= " + trg.get()
 
 def repl_all(m):
-    repl = "all:= "
-    print debug.get()
+    print m
+    repl = "all: "
     if debug.get() == 1:
 	repl += "debug "
     if release.get() == 1:
-	repl += "release"
+	repl += "release "
     if simulation.get() == 1:
 	repl += "simulation"
-    print repl
+    return repl
+
+def repl_cflag(m):
+    print m
+    repl = "CCFLAGS:= -Werror -msoft-float -c -MD -mv8 -O0 -g "
+    if leon3_level.get() == 1:
+	repl += "-DLEON3 "
+    if test_system_level.get() == 1:
+	repl += "-D_TEST_SYSTEM_ "
+    if error_level.get() == 1:
+	repl += "-D_ERROR "
+    if trace_level.get() == 1:
+	repl += "-D_TRACE "
+    if warn_level.get() == 1:
+	repl += "-D_WARN "
+    if debug_level.get() == 1:
+	repl += "-D_DEBUG "
     return repl
 
 def build_makefile():
@@ -85,16 +101,17 @@ def build_makefile():
     with open('makefile', 'r+') as mk:
 	content = mk.read()
     mk.close()
-    content = re.sub('CPU_ARCH:=(\w+)', repl_arch, content)
-    content = re.sub('CC_PACKET:=(\w+(-\w+)?)', repl_compil, content)
-    content = re.sub('TARGET:=(\w+)', repl_target, content)
+    content = re.sub('CPU_ARCH:= (\w+)', repl_arch, content)
+    content = re.sub('CC_PACKET:= (\w+(-\w+)?)', repl_compil, content)
+    content = re.sub('TARGET:= (\w+)', repl_target, content)
+    content = re.sub('CCFLAGS:= ([A-Za-z0-9_\-# ]+)', repl_cflag, content)
     with open('makefile', 'w+') as mk:
 	mk.write(content)
     mk.close()
 
     with open('src/makefile', 'r+') as mk:
 	content = mk.read()
-    content = re.sub('all: (\w+) (\w+) (\w+)', repl_all, content)
+    content = re.sub('all: ([a-z ]+)', repl_all, content)
     mk.close()
     with open('src/makefile', 'w+') as mk:
         mk.write(content)

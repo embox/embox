@@ -1,30 +1,29 @@
 export
 ROOT_DIR := $(CURDIR)
-BIN_DIR:=$(ROOT_DIR)/bin
-OBJ_DIR:=$(ROOT_DIR)/obj
-OBJ_DIR_SIM:=$(OBJ_DIR)/sim
-SRC_DIR:=$(ROOT_DIR)/src
+BIN_DIR:= $(ROOT_DIR)/bin
+OBJ_DIR:= $(ROOT_DIR)/obj
+OBJ_DIR_SIM:= $(OBJ_DIR)/sim
+SRC_DIR:= $(ROOT_DIR)/src
 
 #name of target
-TARGET := monitor
+TARGET:= monitor
 #compiler
-CC_PACKET := sparc-elf
+CC_PACKET:= sparc-elf
 #tools
-CC :=$(CC_PACKET)-gcc
+CC:= $(CC_PACKET)-gcc
 
-OD_TOOL :=$(CC_PACKET)-objdump
-OC_TOOL :=$(CC_PACKET)-objcopy
+OD_TOOL:= $(CC_PACKET)-objdump
+OC_TOOL:= $(CC_PACKET)-objcopy
 
 #compiler flags (+optimiz +debug_info)
-CCFLAGS := -Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_ -D_ERROR -D_TRACE #-D_WARN -D_DEBUG
+CCFLAGS:= -Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_ -D_ERROR -D_TRACE #-D_WARN -D_DEBUG
 #CCFLAGS_SIMULATE = $(CCFLAGS)-DSIMULATE
 #link flags
 LDFLAGS:= -Wl -N -nostdlib -g
 
 ifndef CPU_ARCH
-CPU_ARCH:=sparc
+CPU_ARCH:= sparc
 endif
-
 
 all:
 	mkdir -p $(BIN_DIR)
