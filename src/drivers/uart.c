@@ -59,13 +59,17 @@ BOOL uart_is_empty() {
 
 // write character via uart
 void uart_putc(char ch) {
+	volatile int i;
 	if (NULL == dev_regs)
 		uart_init();
-
+/*
 #ifndef SIMULATE
 	while (!(UART_TX_READY & dev_regs->status))
 		;
 #endif
+*/
+	for (i=0;i < 0x1000; i ++);
+
 	dev_regs->data = (UINT32)ch;
 }
 

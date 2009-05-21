@@ -69,6 +69,16 @@ register_window_clean:
 	or		%g2,%g3,%g3
 	st		%g3, [%g1]
 
+	//clear mem
+	set		_bend, %g1
+	set		STACK_BASE+0x10, %g2
+clean_mem_loop:
+	st		%g0, [%g1]
+	subcc	%g2, %g1, %g0
+	bge		clean_mem_loop
+	add		%g1, 4, %g1
+
+
 	set     STACK_BASE-0x10, %g1
 	mov     %g1, %fp                  ! set frame pointer
 	sub     %g1, 0x60, %sp            ! set stack pointer
