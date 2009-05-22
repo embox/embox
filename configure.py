@@ -129,7 +129,8 @@ def write_config(fileconf):
 
 def reload_config(fileconf):
         """ Reload config """
-	read_config(fileconf)
+	pass
+#	read_config(fileconf)
 	#TODO:
 
 def onPress(ar, i, j):
