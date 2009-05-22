@@ -1,5 +1,8 @@
 SUBDIRS:= \
+arp \
+help \
 lspnp \
 mem \
 ping \
+udpd \
 wmem

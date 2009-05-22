@@ -9,7 +9,7 @@
 #include "leon.h"
 #include "memory_map.h"
 #include "cache.h"
-#include "plug_and_play.h"
+#include "amba_pnp.h"
 #include "shell.h"
 
 LEON_REGS * const l_regs = (PVOID) (RG_BASE);
