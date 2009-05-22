@@ -2,8 +2,7 @@
 #include "common.h"
 #include "leon_config.h"
 #include "irq.h"
-#include "plug_and_play.h"
-#include "pnp_id.h"
+#include "amba_pnp.h"
 #include "timers.h"
 
 static TIMERS_STRUCT * timers = NULL;//(TIMERS_STRUCT *)(TIMERS_BASE);

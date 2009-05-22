@@ -2,19 +2,18 @@
 #include "irq.h"
 #include "leon_config.h"
 //#include "memory_map.h"
-#include "plug_and_play.h"
-#include "pnp_id.h"
+#include "amba_pnp.h"
 #include "uart.h"
+#include "common.h"
 
-
-#define UART_RX_READY           	0x00000001      //
-#define UART_TX_READY           	0x00000004      // hold register empty
+#define UART_RX_READY                   0x00000001      //
+#define UART_TX_READY                   0x00000004      // hold register empty
 // control register bit masks
-#define UART_DISABLE_ALL			0x00000000      // disable all
-#define UART_RX_ENABLE				0x00000001      // reciever enable
-#define UART_TX_ENABLE				0x00000002      // transmitter enable
-#define UART_INT_RX_ENABLED			0x00000004
-#define UART_INT_TX_ENABLED			0x00000004
+#define UART_DISABLE_ALL                0x00000000      // disable all
+#define UART_RX_ENABLE                  0x00000001      // reciever enable
+#define UART_TX_ENABLE                  0x00000002      // transmitter enable
+#define UART_INT_RX_ENABLED             0x00000004
+#define UART_INT_TX_ENABLED             0x00000004
 
 static volatile UART_STRUCT * dev_regs = NULL;
 

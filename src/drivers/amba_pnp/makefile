@@ -1,4 +1,4 @@
 SUBDIRS:=
-OBJS:=plug_and_play.o
+OBJS:=amba_pnp.o
 
 include $(SRC_DIR)/common.mk

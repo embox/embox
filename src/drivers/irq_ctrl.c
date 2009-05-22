@@ -8,10 +8,7 @@
 #include "types.h"
 #include "common.h"
 #include "irq_ctrl.h"
-#include "plug_and_play.h"
-#include "pnp_id.h"
-
-
+#include "amba_pnp.h"
 
 static IRQ_REGS * dev_regs = NULL;
 

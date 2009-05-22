@@ -1,8 +1,8 @@
-/*
- * lspnp.h
+/**
+ * \file lspnp.h
  *
- *  Created on: 20.02.2009
- *      Author: abatyukov
+ * \date 20.02.2009
+ * \author abatyukov
  */
 
 #ifndef LSPNP_H_
