@@ -1,0 +1,124 @@
+{
+	"leon3_level": 1,
+	"tests_inc": "src/conio/tests.inc",
+	"tests_table_inc": "src/tests/tests_table.inc",
+	"debug_level": 0,
+	"ldflags": "-Wl -N -nostdlib -g",
+	"shell_inc": "src/conio/shell.inc",
+	"drivers": [
+		[
+			"irq_controller",
+			1,
+			1,
+			"particular logical device"
+		],
+		[
+			"timer",
+			1,
+			1,
+			"particular logical device"
+		],
+		[
+			"uart",
+			1,
+			1,
+			"particular logical device"
+		]
+	],
+	"subdirs": "src/tests/subdirs",
+	"error_level": 1,
+	"cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
+	"tests": [
+		[
+			"irq availability",
+			1,
+			1,
+			"test_irq_availability"
+		],
+		[
+			"cpu_context save/restore",
+			1,
+			1,
+			"test_cpu_context"
+		]
+	],
+	"docs": 0,
+	"release": 1,
+	"trace_level": 1,
+	"arch": [
+		[
+			"sparc",
+			0
+		],
+		[
+			"x86",
+			1
+		]
+	],
+	"compiler": "sparc-elf",
+	"commands": [
+		[
+			"arp",
+			"arp",
+			1,
+			1,
+			"arp table"
+		],
+		[
+			"help",
+			"help",
+			1,
+			1,
+			"display all possible commands"
+		],
+		[
+			"lspnp",
+			"lspnp",
+			1,
+			1,
+			"show list of plug and play devices"
+		],
+		[
+			"mem",
+			"mem",
+			1,
+			1,
+			"read from memory or test memory"
+		],
+		[
+			"mmu_probe",
+			"mmu_probe",
+			0,
+			0,
+			"mmu_probe"
+		],
+		[
+			"ping",
+			"ping",
+			1,
+			1,
+			"test whether a particular host is reachable"
+		],
+		[
+			"udpd",
+			"udpd",
+			1,
+			1,
+			"test udp socket"
+		],
+		[
+			"wmem",
+			"wmem",
+			1,
+			1,
+			"write to memory"
+		]
+	],
+	"target": "monitor",
+	"warn_level": 0,
+	"simulation": 1,
+	"test_system_level": 1,
+	"debug": 1,
+	"arch_num": 0,
+	"dis": 1
+}

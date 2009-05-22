@@ -16,7 +16,7 @@ OD_TOOL:= $(CC_PACKET)-objdump
 OC_TOOL:= $(CC_PACKET)-objcopy
 
 #compiler flags (+optimiz +debug_info)
-CCFLAGS:= -Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_ -D_ERROR -D_TRACE #-D_WARN -D_DEBUG
+CCFLAGS:= -Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_ -D_ERROR -D_TRACE
 #CCFLAGS_SIMULATE = $(CCFLAGS)-DSIMULATE
 #link flags
 LDFLAGS:= -Wl -N -nostdlib -g
@@ -36,3 +36,6 @@ all:
 clean:
 	declare -x MAKEOP=clean; make --directory=src clean
 	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst
+
+xconfig:
+	configure.py

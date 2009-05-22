@@ -1,0 +1,124 @@
+{
+	"commands": [
+		[
+			"arp",
+			"arp",
+			1,
+			1,
+			"arp table"
+		],
+		[
+			"help",
+			"help",
+			1,
+			1,
+			"display all possible commands"
+		],
+		[
+			"lspnp",
+			"lspnp",
+			1,
+			1,
+			"show list of plug and play devices"
+		],
+		[
+			"mem",
+			"mem",
+			1,
+			1,
+			"read from memory or test memory"
+		],
+		[
+			"mmu_probe",
+			"mmu_probe",
+			0,
+			0,
+			"mmu_probe"
+		],
+		[
+			"ping",
+			"ping",
+			1,
+			1,
+			"test whether a particular host is reachable"
+		],
+		[
+			"udpd",
+			"udpd",
+			1,
+			1,
+			"test udp socket"
+		],
+		[
+			"wmem",
+			"wmem",
+			1,
+			1,
+			"write to memory"
+		]
+	],
+	"tests": [
+		[
+			"irq availability",
+			1,
+			1,
+			"test_irq_availability"
+		],
+		[
+			"cpu_context save/restore",
+			1,
+			1,
+			"test_cpu_context"
+		]
+	],
+	"drivers": [
+		[
+			"irq_controller",
+			1,
+			1,
+			"particular logical device"
+		],
+		[
+			"timer",
+			1,
+			1,
+			"particular logical device"
+		],
+		[
+			"uart",
+			1,
+			1,
+			"particular logical device"
+		]
+	],
+	"arch": [
+		[
+			"sparc",
+			0
+		],
+		[
+			"x86",
+			1
+		]
+	],
+	"compiler": "sparc-elf",
+	"target": "monitor",
+	"arch_num": 0,
+	"shell_inc": "src/conio/shell.inc",
+	"tests_inc": "src/conio/tests.inc",
+	"subdirs": "src/tests/subdirs",
+	"tests_table_inc": "src/tests/tests_table.inc",
+	"error_level": 1,
+	"trace_level": 1,
+	"warn_level": 0,
+	"debug_level": 0,
+	"test_system_level": 1,
+	"leon3_level": 1,
+	"debug": 1,
+	"release": 1,
+	"simulation": 1,
+	"docs": 0,
+	"dis": 1,
+	"cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
+	"ldflags": "-Wl -N -nostdlib -g"
+}
