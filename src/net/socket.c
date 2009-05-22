@@ -21,7 +21,7 @@ typedef struct _SOCK_INFO{
 static SOCK_INFO sks[MAX_SOCK_NUM];
 
 struct udp_sock* socket_alloc() {
-	DEBUG("socket_alloc");
+	LOG_DEBUG("socket_alloc");
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++)
         {
@@ -37,7 +37,7 @@ struct udp_sock* socket_alloc() {
 }
 
 void socket_free(struct udp_sock *sk) {
-	DEBUG("socket_free");
+	LOG_DEBUG("socket_free");
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++)
         {
@@ -50,14 +50,14 @@ void socket_free(struct udp_sock *sk) {
 }
 
 void fill_sock(struct udp_sock *sk, sk_type type, sk_proto proto) {
-	DEBUG("fill_sock");
+	LOG_DEBUG("fill_sock");
 	//TODO:
 //	sk->inet.sk->sk_protocol = proto;
 //	sk->inet.sk->sk_type = type;
 }
 
 void udpsock_push(net_packet *pack) {
-	DEBUG("push packet to udp socket");
+	LOG_DEBUG("push packet to udp socket");
 	int i;
 	struct udp_sock *usk;
 	udphdr *uh = pack->h.uh;
@@ -78,10 +78,10 @@ void udpsock_push(net_packet *pack) {
 }
 
 int socket(sk_type type, sk_proto protocol) {
-	DEBUG("create socket");
+	LOG_DEBUG("create socket");
 	struct udp_sock *sk;
 	if((sk = socket_alloc()) == NULL) {
-		ERROR("Can't alloc socket.");
+		LOG_ERROR("Can't alloc socket.");
 		return -1;
 	}
 	fill_sock(sk, type, protocol);
@@ -90,7 +90,7 @@ int socket(sk_type type, sk_proto protocol) {
         {
                 if (sk == &sks[i].sk)
                 {
-            		DEBUG("socket id=%d", i);
+            		LOG_DEBUG("socket id=%d", i);
                         return i;
                 }
         }
@@ -98,20 +98,20 @@ int socket(sk_type type, sk_proto protocol) {
 }
 
 int bind(int s, unsigned char ipaddr[4], int port) {
-	DEBUG("bind socket");
+	LOG_DEBUG("bind socket");
 	memcpy(&sks[s].sk.inet.saddr, ipaddr, sizeof(ipaddr));
 	sks[s].sk.inet.sport = port;
-	DEBUG("socket binded at port=%d, ip=", sks[s].sk.inet.sport); ipaddr_print(sks[s].sk.inet.saddr, 4);
+	LOG_DEBUG("socket binded at port=%d, ip=", sks[s].sk.inet.sport); ipaddr_print(sks[s].sk.inet.saddr, 4);
 	return 0;
 }
 
 void close(int s) {
-	DEBUG("close");
+	LOG_DEBUG("close");
 	socket_free(&sks[s].sk);
 }
 
 int send(int s, const void *buf, int len) {
-	DEBUG("send");
+	LOG_DEBUG("send");
 	net_packet *pack;
         pack = net_packet_alloc();
 	memcpy(pack->data, buf, len);
@@ -121,7 +121,7 @@ int send(int s, const void *buf, int len) {
 
 int recv(int s, void *buf, int len) {
 	if(sks[s].new_pack == 1) {
-		DEBUG("recv");
+		LOG_DEBUG("recv");
 		//memcpy(buf, sks[s].queue->h.uh->data, len);
 		memcpy(buf, sks[s].queue->data + sizeof(machdr) + sizeof(iphdr) + sizeof(udphdr), len);
 		net_packet_free(sks[s].queue);

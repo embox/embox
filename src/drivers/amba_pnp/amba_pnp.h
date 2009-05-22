@@ -1,8 +1,9 @@
 /**
  * \file amba_pnp.h
  *
- *  \date 28.01.2009
- *  \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
+ * \date 28.01.2009
+ * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
+ * \details Driver for devices founded on the Amba Plug&Play bus (Advanced Microcontroller Bus Architecture)
  */
 
 #ifndef AMBA_PNP_H_
@@ -12,16 +13,16 @@
 #include "common.h"
 
 #define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, TRUE, TRUE)){\
-	ERROR("can't capture ahbm dev venID=0x%X, devID=0x%X\n", venID, devID);\
+	LOG_ERROR("can't capture ahbm dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
 #define TRY_CAPTURE_AHBSL_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, TRUE, FALSE)){\
-	ERROR("can't capture ahbsl dev venID=0x%X, devID=0x%X\n", venID, devID);\
+	LOG_ERROR("can't capture ahbsl dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
 
 #define TRY_CAPTURE_APB_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, FALSE, FALSE)){\
-	ERROR("can't capture apb dev venID=0x%X, devID=0x%X\n", venID, devID);\
+	LOG_ERROR("can't capture apb dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
 

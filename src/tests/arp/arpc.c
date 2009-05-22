@@ -36,20 +36,20 @@ int arp_shell_handler(int argsc, char **argsv) {
 
         if (get_key('i', keys, keys_amount, &key_value)) {
                 if (NULL == (ifdev = eth_get_ifdev_by_name(key_value))) {
-                        ERROR("can't find interface %s\n", key_value);
+                        LOG_ERROR("can't find interface %s\n", key_value);
                         return -1;
                 }
         }
 	if (get_key('a', keys, keys_amount, &key_value)) {
 		if (NULL == ipaddr_scan(key_value, addr)) {
-	                ERROR("wrong ip addr format (%s)\n", key_value);
+	                LOG_ERROR("wrong ip addr format (%s)\n", key_value);
 	                show_help();
 	                return -1;
 	        }
 	}
         if (get_key('m', keys, keys_amount, &key_value)) {
                 if (NULL == macaddr_scan(key_value, hwaddr)) {
-                        ERROR("wrong mac addr format %s\n", key_value);
+                        LOG_ERROR("wrong mac addr format %s\n", key_value);
                         return -1;
                 }
         }

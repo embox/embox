@@ -45,7 +45,7 @@ static int rebuild_header(net_packet * pack)
 	{
 		if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr))
 		{
-			WARN("Destanation host Unreachable\n");
+			LOG_WARN("Destanation host Unreachable\n");
 			return -1;
 		}
 		memcpy (pack->mac.mach->src_addr, pack->netdev->hw_addr, sizeof(pack->mac.mach->src_addr));

@@ -183,7 +183,7 @@ void print_all_pnp_devs() {
 
 void print_ahbm_pnp_dev(UINT32 slot) {
         if (slot >AHB_MASTERS_QUANTITY) {
-    		ERROR("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
+    		LOG_ERROR("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
     		return;
         }
 
@@ -199,14 +199,14 @@ void print_ahbm_pnp_dev(UINT32 slot) {
                 fill_amba_dev(&dev, slot, TRUE, TRUE);
                 show_dev(&dev, FALSE);
         } else {
-                ERROR("No such device.\n");
+                LOG_ERROR("No such device.\n");
         }
         //print_ahb_entries((AHB_SLOT *)AHB_MASTER_BASE, 1, TRUE);
 }
 
 void print_ahbsl_pnp_dev(UINT32 slot) {
         if (slot >AHB_SLAVES_QUANTITY) {
-                ERROR("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
+                LOG_ERROR("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
                 return;
         }
         if (NULL != ahbsl_devices[slot]) {
@@ -219,13 +219,13 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
                 fill_amba_dev(&dev, slot, TRUE, FALSE);
                 show_dev(&dev, FALSE);
         } else {
-                ERROR("No such device.\n");
+                LOG_ERROR("No such device.\n");
         }
 }
 
 void print_apb_pnp_dev(UINT32 slot) {
         if (slot >APB_QUANTITY) {
-                ERROR("print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
+                LOG_ERROR("print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
                 return;
         }
         if (NULL != apb_devices[slot]) {
@@ -238,7 +238,7 @@ void print_apb_pnp_dev(UINT32 slot) {
                 fill_amba_dev(&dev, slot, FALSE, FALSE);
                 show_dev(&dev, FALSE);
         } else {
-                ERROR("No such device.\n");
+                LOG_ERROR("No such device.\n");
         }
 }
 //-------------------------------------------------------------------------
@@ -316,19 +316,19 @@ int lspnp_shell_handler(int argsc, char **argsv) {
 		key_value = "all";
 	}
 	if (NULL == (show_func = set_bus_type(key_value))){
-		ERROR("Parsing: chose right bus type '-b'\n");
+		LOG_ERROR("Parsing: chose right bus type '-b'\n");
 		show_help();
 		return -1;
 	}
 
 	if (get_key('n', keys, keys_amount, &key_value)) {
 		if (show_all == show_func) {
-			ERROR("Parsing: chose bus type '-b'\n");
+			LOG_ERROR("Parsing: chose bus type '-b'\n");
 			show_help();
 			return -1;
 		}
 		if (1!=sscanf(key_value,"%d", &dev_number)) {
-			ERROR("parsing: enter validly dev_number '-b'\n");
+			LOG_ERROR("parsing: enter validly dev_number '-b'\n");
 			show_help();
 			return -1;
 		}

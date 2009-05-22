@@ -144,7 +144,7 @@ void calibrate_sleep () {
 	int t_prev, dt;
 	int cnt=0;
 
-        DEBUG("Start sleep counter calibration ... ");
+        LOG_DEBUG("Start sleep counter calibration ... ");
 	// 1. test for proper work of irq_func_tmr_1mS()
 	cnt_ms_sleep = 0;
 	for (cnt=0; cnt<100000; cnt++) {}
@@ -153,7 +153,7 @@ void calibrate_sleep () {
 		// we can't calibrate sleep
 		// use nearest experimental-based value for 50Mhz CPU freq
 		sleep_cnt_const = DEFAULT_SLEEP_COUNTER;
-	        DEBUG("failed. Assumed default value %d for 50Mhz CPU.\n", sleep_cnt_const);
+	        LOG_DEBUG("failed. Assumed default value %d for 50Mhz CPU.\n", sleep_cnt_const);
 		return;
 	}
 
@@ -178,7 +178,7 @@ void calibrate_sleep () {
 		}
 	}
 
-        DEBUG("done. Assumed %d for sleep(1ms)\n", sleep_cnt_const);
+        LOG_DEBUG("done. Assumed %d for sleep(1ms)\n", sleep_cnt_const);
 }
 
 

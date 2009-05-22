@@ -76,15 +76,15 @@ int tftp_send_rrq_request(void *ifdev, unsigned char dstaddr[4], char *filename,
 }
 
 int tftp_received_type_error() {
-	DEBUG("TFTP session error. Impossible message type\n");
-	DEBUG("Session closed\n");
+	LOG_DEBUG("TFTP session error. Impossible message type\n");
+	LOG_DEBUG("Session closed\n");
 }
 
 int tftp_received_error_handler(net_packet *pack){
 	TFTP_ERR_PACKET *data = (TFTP_ERR_PACKET *) (pack->data);
-	DEBUG("TFTP session error. Error by server\n");
-	DEBUG("Error code %d, message %s\n", data->errcode, data->msg);
-	DEBUG("Session closed\n");
+	LOG_DEBUG("TFTP session error. Error by server\n");
+	LOG_DEBUG("Error code %d, message %s\n", data->errcode, data->msg);
+	LOG_DEBUG("Session closed\n");
 }
 
 int tftp_received_data_handler(net_packet *pack) {
@@ -101,7 +101,7 @@ int tftp_received_data_handler(net_packet *pack) {
 
 	if ((pack->h.uh->len) < (sizeof(udphdr) + TFTP_FULL_PACKET_LENGTH )) {
 		//last packet
-		DEBUG("File transfer finished. Session closed\n");
+		LOG_DEBUG("File transfer finished. Session closed\n");
 		offset = 0;
 	}
 }

@@ -14,7 +14,7 @@
 #include "socket.h"
 
 int udp_received_packet(net_packet *pack) {
-	DEBUG("udp packet received\n");
+	LOG_DEBUG("udp packet received\n");
 	udpsock_push(pack);
 	return 0;
 }
@@ -25,7 +25,7 @@ int udp_init(void) {
 }
 
 int udp_trans(struct inet_sock *sk, net_packet *pack) {
-	DEBUG("udp_trans");
+	LOG_DEBUG("udp_trans");
 	//TODO: build udp header
 //        pack->nh.mac = pack->data;
 //        pack->nh.raw = pack->data + sizeof(machdr);

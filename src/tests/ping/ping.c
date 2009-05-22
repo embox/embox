@@ -84,7 +84,7 @@ int ping_shell_handler(int argsc, char **argsv) {
 			sizeof(available_keys), keys);
 
 	if (keys_amount < 0) {
-		ERROR("during parsing params\n");
+		LOG_ERROR("during parsing params\n");
 		show_help();
 		return -1;
 	}
@@ -96,22 +96,22 @@ int ping_shell_handler(int argsc, char **argsv) {
 
 	//get interface
 	if (!get_key('i', keys, keys_amount, &key_value)) {
-//		ERROR("choose right interface name '-i'\n");
+//		LOG_ERROR("choose right interface name '-i'\n");
 //		show_help();
 //		return -1;
 		ifdev = eth_get_ifdev_by_name("eth0");
 	} else if (NULL == (ifdev = eth_get_ifdev_by_name(key_value))) {
-		ERROR("Can't find interface %s\n see ifconfig for available interfaces list\n", key_value);
+		LOG_ERROR("Can't find interface %s\n see ifconfig for available interfaces list\n", key_value);
 		show_help();
 		return -1;
 	}
 	//get destanation addr
 	if (!get_key('d', keys, keys_amount, &key_value)) {
-		ERROR("you must choose right destination address '-d'\n");
+		LOG_ERROR("you must choose right destination address '-d'\n");
 		show_help();
 		return -1;
 	} else if (NULL == ipaddr_scan(key_value, dst)) {
-		ERROR("wrong ip addr format (%s)\n", key_value);
+		LOG_ERROR("wrong ip addr format (%s)\n", key_value);
 		show_help();
 		return -1;
 	}
@@ -120,7 +120,7 @@ int ping_shell_handler(int argsc, char **argsv) {
 	if (!get_key('c', keys, keys_amount, &key_value)) {
 		cnt = 10;
 	} else if (1 != sscanf(key_value, "%d", &cnt)) {
-		ERROR("enter validly cnt '-c'\n");
+		LOG_ERROR("enter validly cnt '-c'\n");
 		show_help();
 		return -1;
 	}
@@ -129,7 +129,7 @@ int ping_shell_handler(int argsc, char **argsv) {
         if (!get_key('t', keys, keys_amount, &key_value)) {
                 ttl = 64;
         } else if (1 != sscanf(key_value, "%d", &ttl)) {
-                ERROR("enter validly ttl '-t'\n");
+                LOG_ERROR("enter validly ttl '-t'\n");
                 show_help();
                 return -1;
         }
@@ -138,7 +138,7 @@ int ping_shell_handler(int argsc, char **argsv) {
         if (!get_key('W', keys, keys_amount, &key_value)) {
                 timeout = 1000;
         } else if (1 != sscanf(key_value, "%d", &timeout)) {
-                ERROR("enter validly timeout '-W'\n");
+                LOG_ERROR("enter validly timeout '-W'\n");
                 show_help();
                 return -1;
         }

@@ -18,23 +18,23 @@ inline static int dummy() {
 }
 
 #ifdef _ERROR
-    #define ERROR(format, args...)  printf("ERROR: "format, ##args)
+    #define LOG_ERROR(format, args...)  printf("ERROR: "format, ##args)
 #else
-    #define ERROR(format, args...)  dummy()
+    #define LOG_ERROR(format, args...)  dummy()
 #endif //_ERROR
 
 #ifdef _WARN
-    #define WARN(format, args...)   printf("WARN: "format, ##args)
+    #define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
 #else
-    #define WARN(format, args...)   dummy()
+    #define LOG_WARN(format, args...)   dummy()
 #endif //_WARN
 
 #ifdef _DEBUG
     #define LOGGER()		    printf("%s (%s:%d)\n", __FUNCTION__, __FILE__, __LINE__)
-    #define DEBUG(format, args...)  LOGGER(); printf("DEBUG: "format, ##args)
+    #define LOG_DEBUG(format, args...)  LOGGER(); printf("DEBUG: "format, ##args)
 #else
     #define LOGGER()                dummy()
-    #define DEBUG(format, args...)  dummy()
+    #define LOG_DEBUG(format, args...)  dummy()
 #endif //_DEBUG
 
 #if defined(_TRACE) && !defined(SIMULATE)
