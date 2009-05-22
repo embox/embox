@@ -77,15 +77,15 @@ inline static int dummy() {
 
 
 #ifdef _TEST_SYSTEM_
-    #define OETH_REGLOAD(a)	a
-    #define OETH_REGSAVE(a,v) a=v
-    #define OETH_REGORIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) | (v))))
-    #define OETH_REGANDIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) & (v))))
+    #define REG_LOAD(a)	a
+    #define REG_STORE(a,v) a=v
+    #define REG_ORIN(a,v) (REG_STORE(a,(REG_LOAD(a) | (v))))
+    #define REG_ANDIN(a,v) (REG_STORE(a,(REG_LOAD(a) & (v))))
 #else
-    #define OETH_REGLOAD(a)	(LEON3_BYPASS_LOAD_PA(&(a)))
-    #define OETH_REGSAVE(a,v) (LEON3_BYPASS_STORE_PA(&(a),v))
-    #define OETH_REGORIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) | (v))))
-    #define OETH_REGANDIN(a,v) (OETH_REGSAVE(a,(OETH_REGLOAD(a) & (v))))
+    #define REG_LOAD(a)	(LEON3_BYPASS_LOAD_PA(&(a)))
+    #define REG_STORE(a,v) (LEON3_BYPASS_STORE_PA(&(a),v))
+    #define REG_ORIN(a,v) (REG_STORE(a,(REG_LOAD(a) | (v))))
+    #define REG_ANDIN(a,v) (REG_STORE(a,(REG_LOAD(a) & (v))))
 #endif //_TEST_SYSTEM_
 
 #endif //_COMMON_H_
