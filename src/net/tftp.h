@@ -8,7 +8,7 @@
 #ifndef TFTP_H_
 #define TFTP_H_
 
-#define TFTP_PPQ	0x1
+#define TFTP_RRQ	0x1
 #define TFTP_WRQ	0x2
 #define TFTP_DATA	0x3
 #define TFTP_ACK	0x4
@@ -20,9 +20,9 @@ typedef struct {
 	// Message type
 	HWRD op;
 	// File name. Zero ending string.
-	char filename[64];
+	char *filename;
 	// Mode. Zero ending string.
-	char mode[64];
+	char *mode;
 }TFTP_RQ_PACKET;
 
 typedef struct {
@@ -47,7 +47,7 @@ typedef struct {
 	// Error number
 	HWRD errcode;
 	// Error message. Zero ending string.
-	char msg[64];
+	char *msg;
 }TFTP_ERR_PACKET;
 
 #endif /* TFTP_H_ */
