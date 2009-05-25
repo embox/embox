@@ -26,9 +26,9 @@
 	return -1;\
 }
 
-#define AHB_MASTER_BASE          0xFFFFF000
-#define AHB_SLAVE_BASE           0xFFFFF800
-#define APB_BASE                 0x800FF000
+#define AHB_MASTER_BASE          0xFFFFF000 // max: 64 devices
+#define AHB_SLAVE_BASE           0xFFFFF800 // max: 64 devices
+#define APB_BASE                 0x800FF000 // max: 512 devices
 
 #define AHB_MASTERS_QUANTITY     0x10
 #define AHB_SLAVES_QUANTITY      0x40
@@ -36,6 +36,8 @@
 
 /**
  * \struct AMBA_BAR_INFO
+ * Amba Bank Address Register Info.
+ * BAR0-BAR3 registers are presented.
  */
 typedef struct _AMBA_BAR_INFO {
 	UINT32 start;
@@ -110,20 +112,21 @@ typedef struct _APB_SLOT {
 //} APB_DEV;
 
 struct _AMBA_DEV;
+// each device must have handler
 typedef void (*HANDLER_DATA_FUNC)(struct _AMBA_DEV *dev);
 
 /**
  * \struct AMBA_DEV
  */
 typedef struct _AMBA_DEV{
-	AMBA_DEV_INFO      dev_info;
+	AMBA_DEV_INFO      dev_info;     /**< VendorID, DeviceID, version, IRQ */
 	AMBA_BAR_INFO      bar[4];
-	BYTE               slot;
-	HANDLER_DATA_FUNC  show_info;
-	char               dev_name[16];
+	BYTE               slot;         /**< information about location */
+	HANDLER_DATA_FUNC  show_info;    /**< show brief description */
+	char               dev_name[16]; /**< logical name */
 	BOOL               is_ahb;
 	BOOL               is_master;
-	UINT32             user_def[3];
+	UINT32             user_def[3];  /**< info from user registers */
 } AMBA_DEV;
 
 static AMBA_DEV *ahbm_devices[AHB_MASTERS_QUANTITY];

@@ -54,6 +54,13 @@ inline static int lock_amba_slot (UINT16 slot, AMBA_DEV *dev, BOOL is_ahb, BOOL 
 	return (-1 == lock_ahbm_slot(slot, dev)) ? -1 : 0;
 }
 
+/**
+ * id_reg
+ *  _________________________________________
+ * |31____24|23____12|11_10|9______5|4______0|
+ * |vendor  |device  |00   |version |irq     |
+ * |________|________|_____|________|________|
+ */
 inline static BYTE get_ven(UINT32 id_reg) {
 	return (0xFF & ((id_reg) >> 24));
 }
@@ -108,6 +115,18 @@ inline static int find_ahbdev_slotnum(BYTE ven_id, UINT16 dev_id, BOOL is_master
 	return -1;
 }
 
+/**
+ * Fill AHB info.
+ * @param bar amba bar info
+ * @param ba_reg Bank Address Register
+ *  _____________________________________
+ * |31_____20|19|18|17|16|15______4|3___0|
+ * |address  |0 |0 |0 |0 |mask     |type |
+ * |_________|__|__|__|__|_________|_____|
+ * type: 0001 - APB I/O space
+ *       0010 - AHB Memory space
+ *       0011 - AHB I/O space
+ */
 inline static void fill_ahb_bar_info(AMBA_BAR_INFO *bar, UINT32 ba_reg) {
 	if (ba_reg) {
 		bar->start = ba_reg & 0xFFF00000;
@@ -128,6 +147,11 @@ inline static void fill_ahb_bar_infos(AMBA_DEV *dev, AHB_SLOT *ahb_slot) {
 	}
 }
 
+/**
+ * Fill APB info.
+ * @param bar amba bar info
+ * @param ba_reg Bank Address Register
+ */
 inline static void fill_apb_bar_info(AMBA_BAR_INFO *bar, UINT32 ba_reg) {
 	bar->start = 0x80000000;
 	bar->prefetchable = 0;
@@ -179,10 +203,12 @@ int capture_amba_dev(AMBA_DEV *dev, BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOO
 		slot_number = find_apbdev_slotnum(ven_id, dev_id);
 	}
 	if (slot_number == -1) {
+		LOG_WARN("can't find slot\n");
 		return -1;
 	}
 	if (-1 == lock_amba_slot(slot_number, dev, is_ahb, is_master)) {
-		return -1;//a device can be opened only once
+		LOG_WARN("a device can be opened only once\n");
+		return -1;
 	}
 	fill_amba_dev(dev, slot_number, is_ahb, is_master);
 	return slot_number;
