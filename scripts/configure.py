@@ -207,8 +207,6 @@ def build_tests():
 		for desc, inc, status, test in tabs['Tests']:
 			if inc == True:
 				ftest.write("{\"" + desc + "\", " + test + "},\n")
-			else:
-				ftest.write("{\"" + desc + "\", NULL},\n")
 		ftest.write("{\"empty\", NULL}\n")
 	ftest.close()
 
