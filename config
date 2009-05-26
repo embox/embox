@@ -1,62 +1,30 @@
 {
-	"leon3_level": 1,
-	"tests_inc": "src/conio/tests.inc",
-	"tests_table_inc": "src/tests/tests_table.inc",
-	"debug_level": 0,
-	"ldflags": "-Wl -N -nostdlib -g",
-	"shell_inc": "src/conio/shell.inc",
-	"drivers": [
-		[
-			"irq_controller",
-			1,
-			1,
-			"particular logical device"
-		],
-		[
-			"timer",
-			1,
-			1,
-			"particular logical device"
-		],
-		[
-			"uart",
-			1,
-			1,
-			"particular logical device"
-		]
+	"menu": [
+		"Common",
+		"Drivers",
+		"Tests",
+		"Commands",
+		"Levels",
+		"Build"
 	],
-	"subdirs": "src/tests/subdirs",
-	"error_level": 1,
-	"cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
-	"tests": [
-		[
-			"irq availability",
-			1,
-			1,
-			"test_irq_availability"
+	"Common": {
+		"Title": "Monitor Configurator",
+		"Arch": [
+			[
+				"sparc",
+				0
+			],
+			[
+				"x86",
+				1
+			]
 		],
-		[
-			"cpu_context save/restore",
-			1,
-			1,
-			"test_cpu_context"
-		]
-	],
-	"docs": 0,
-	"release": 1,
-	"trace_level": 1,
-	"arch": [
-		[
-			"sparc",
-			0
-		],
-		[
-			"x86",
-			1
-		]
-	],
-	"compiler": "sparc-elf",
-	"commands": [
+		"Compiler": "sparc-elf",
+		"Target": "monitor",
+		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
+		"Ldflags": "-Wl -N -nostdlib -g"
+	},
+	"Commands": [
 		[
 			"arp",
 			"arp",
@@ -88,8 +56,8 @@
 		[
 			"mmu_probe",
 			"mmu_probe",
-			1,
-			1,
+			0,
+			0,
 			"mmu_probe"
 		],
 		[
@@ -114,11 +82,64 @@
 			"write to memory"
 		]
 	],
-	"target": "monitor",
-	"warn_level": 0,
-	"simulation": 1,
-	"test_system_level": 1,
-	"debug": 1,
+	"Tests": [
+		[
+			"irq availability",
+			1,
+			1,
+			"test_irq_availability"
+		],
+		[
+			"cpu_context save/restore",
+			1,
+			1,
+			"test_cpu_context"
+		]
+	],
+	"Drivers": [
+		[
+			"irq_controller",
+			1,
+			1,
+			"particular logical device"
+		],
+		[
+			"timer",
+			1,
+			1,
+			"particular logical device"
+		],
+		[
+			"uart",
+			1,
+			1,
+			"particular logical device"
+		]
+	],
+	"Levels": [
+		"Error",
+		"Trace",
+		"Warn",
+		"Debug",
+		"Test system",
+		"Leon3"
+	],
+	"Build": {
+		"Debug": 1,
+		"Release": 1,
+		"Simulation": 1,
+		"Disassemble": 1,
+		"Doxygen": 0
+	},
 	"arch_num": 0,
-	"dis": 1
+	"shell_inc": "src/conio/shell.inc",
+	"tests_inc": "src/conio/tests.inc",
+	"subdirs": "src/tests/subdirs",
+	"tests_table_inc": "src/tests/tests_table.inc",
+	"error_level": 1,
+	"trace_level": 1,
+	"warn_level": 0,
+	"debug_level": 0,
+	"test_system_level": 1,
+	"leon3_level": 1
 }

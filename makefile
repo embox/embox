@@ -38,4 +38,4 @@ clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst
 
 xconfig:
-	./configure.py
+	./scripts/configure.py

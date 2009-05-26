@@ -1,5 +1,30 @@
 {
-	"commands": [
+	"menu": [
+		"Common",
+		"Drivers",
+		"Tests",
+		"Commands",
+		"Levels",
+		"Build"
+	],
+	"Common": {
+		"Title": "Monitor Configurator",
+		"Arch": [
+			[
+				"sparc",
+				0
+			],
+			[
+				"x86",
+				1
+			]
+		],
+		"Compiler": "sparc-elf",
+		"Target": "monitor",
+		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
+		"Ldflags": "-Wl -N -nostdlib -g"
+	},
+	"Commands": [
 		[
 			"arp",
 			"arp",
@@ -31,8 +56,8 @@
 		[
 			"mmu_probe",
 			"mmu_probe",
-			1,
-			1,
+			0,
+			0,
 			"mmu_probe"
 		],
 		[
@@ -57,7 +82,7 @@
 			"write to memory"
 		]
 	],
-	"tests": [
+	"Tests": [
 		[
 			"irq availability",
 			1,
@@ -71,7 +96,7 @@
 			"test_cpu_context"
 		]
 	],
-	"drivers": [
+	"Drivers": [
 		[
 			"irq_controller",
 			1,
@@ -91,18 +116,21 @@
 			"particular logical device"
 		]
 	],
-	"arch": [
-		[
-			"sparc",
-			0
-		],
-		[
-			"x86",
-			1
-		]
+	"Levels": [
+		"Error",
+		"Trace",
+		"Warn",
+		"Debug",
+		"Test system",
+		"Leon3"
 	],
-	"compiler": "sparc-elf",
-	"target": "monitor",
+	"Build": {
+		"Debug": 1,
+		"Release": 1,
+		"Simulation": 1,
+		"Disassemble": 1,
+		"Doxygen": 0
+	},
 	"arch_num": 0,
 	"shell_inc": "src/conio/shell.inc",
 	"tests_inc": "src/conio/tests.inc",
@@ -113,12 +141,5 @@
 	"warn_level": 0,
 	"debug_level": 0,
 	"test_system_level": 1,
-	"leon3_level": 1,
-	"debug": 1,
-	"release": 1,
-	"simulation": 1,
-	"docs": 0,
-	"dis": 1,
-	"cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
-	"ldflags": "-Wl -N -nostdlib -g"
+	"leon3_level": 1
 }
