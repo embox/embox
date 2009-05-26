@@ -102,16 +102,17 @@ static inline void srmmu_set_mmureg(unsigned long regval)
         asm volatile("sta %0, [%%g0] %1\n\t" : :
 		     "r" (regval), "i" (ASI_M_MMUREGS) : "memory");
 }
-
-static inline UINT32 get_asi_reg8 ()
+/*
+static inline UINT32 get_asi_reg (unsigned char asi_idx)
 {
 	register int retval;
 	asm volatile("lda [%%g0] %1, %0\n\t" :
 		     "=r" (retval) :
-		     "i" (0X8));
+		     "r" (asi_idx));
 	return retval;
 }
-
+*/
+/*
 static inline UINT32 get_asi_reg9 ()
 {
 	register int retval;
@@ -120,7 +121,7 @@ static inline UINT32 get_asi_reg9 ()
 		     "i" (0X9));
 	return retval;
 }
-
+*/
 static inline unsigned long srmmu_get_mmureg(unsigned long addr_reg)
 {
 	register int retval;
@@ -246,7 +247,7 @@ int srmmu_nocache_used;
 //spinlock_t srmmu_nocache_spinlock;
 
 /* This makes sense. Honest it does - Anton */
-#define __nocache_pa(VADDR) VADDR // (((unsigned long)VADDR) - SRMMU_NOCACHE_VADDR + __pa((unsigned long)srmmu_nocache_pool))
+#define __nocache_pa(VADDR) VADDR  //(((unsigned long)VADDR) - SRMMU_NOCACHE_VADDR + __pa((unsigned long)srmmu_nocache_pool))
 #define __nocache_va(PADDR) PADDR // (__va((unsigned long)PADDR) - (unsigned long)srmmu_nocache_pool + SRMMU_NOCACHE_VADDR)
 #define __nocache_fix(VADDR) VADDR // __va(__nocache_pa(VADDR))
 

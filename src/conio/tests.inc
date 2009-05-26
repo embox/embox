@@ -4,6 +4,7 @@
 #include "help.h"
 #include "lspnp.h"
 #include "mem.h"
+#include "mmu_probe.h"
 #include "ping.h"
 #include "udpd.h"
 #include "wmem.h"
