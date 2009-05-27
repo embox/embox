@@ -30,7 +30,7 @@ inline static int dummy() {
 #endif //_WARN
 
 #ifdef _DEBUG
-    #define LOGGER()		    printf("%s (%s:%d)\n", __FUNCTION__, __FILE__, __LINE__)
+    #define LOGGER()		    printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
     #define LOG_DEBUG(format, args...)  LOGGER(); printf("DEBUG: "format, ##args)
 #else
     #define LOGGER()                dummy()

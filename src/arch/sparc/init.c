@@ -35,5 +35,9 @@ int init() {
 	uart_init();
 	timers_init();
 
+	eth_init();//interfaces
+	icmp_init();
+	udp_init();
+
 	return 0;
 }
