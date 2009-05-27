@@ -24,13 +24,19 @@ int udp_init(void) {
 	return 0;
 }
 
-int udp_trans(struct inet_sock *sk, net_packet *pack) {
-	LOG_DEBUG("udp_trans");
-	//TODO: build udp header
+void build_udp_packet(net_packet *pack, net_device *netdev, void *ifdev, const void *buf, int len) {
+        pack->netdev = netdev;
+        pack->ifdev = ifdev;
+        //TODO: build udp header
 //        pack->nh.mac = pack->data;
 //        pack->nh.raw = pack->data + sizeof(machdr);
 //        pack->h.raw = pack->nh.raw + sizeof(iphdr);
 //        buff = pack->h.raw + sizeof(udp);
-	ip_send_packet(sk, pack);
+}
+
+int udp_trans(struct inet_sock *sk, net_packet *pack) {
+	LOG_DEBUG("udp_trans\n");
+	//ip_send_packet(sk, pack);
+	eth_send(pack);
 	return 0;
 }

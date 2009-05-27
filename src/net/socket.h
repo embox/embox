@@ -2,7 +2,7 @@
  * \file socket.h
  *
  * \date Mar 19, 2009
- * \author anton
+ * \author anton, sikmir
  */
 
 #ifndef SOCKET_H_
@@ -17,6 +17,6 @@ int bind(int s, unsigned char ipaddr[4], int port);
 int send(int s, const void *buf, int len);
 int recv(int s, void *buf, int len);
 void close(int s);
-void udpsock_push(net_packet *pack);
+int udpsock_push(net_packet *pack);
 
 #endif /* SOCKET_H_ */
