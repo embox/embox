@@ -28,16 +28,12 @@ void copy_data_section()
 int init() {
 	//TODO during too long time for simulation:(
 	copy_data_section();
-	cache_data_enable(TRUE);
-	cache_instr_enable(TRUE);
+	cache_data_enable(FALSE);
+	cache_instr_enable(FALSE);
 
 	irq_init_handlers();
 	uart_init();
 	timers_init();
-
-	eth_init();//interfaces
-	icmp_init();
-	udp_init();
 
 	return 0;
 }

@@ -102,26 +102,7 @@ static inline void srmmu_set_mmureg(unsigned long regval)
         asm volatile("sta %0, [%%g0] %1\n\t" : :
 		     "r" (regval), "i" (ASI_M_MMUREGS) : "memory");
 }
-/*
-static inline UINT32 get_asi_reg (unsigned char asi_idx)
-{
-	register int retval;
-	asm volatile("lda [%%g0] %1, %0\n\t" :
-		     "=r" (retval) :
-		     "r" (asi_idx));
-	return retval;
-}
-*/
-/*
-static inline UINT32 get_asi_reg9 ()
-{
-	register int retval;
-	asm volatile("lda [%%g0] %1, %0\n\t" :
-		     "=r" (retval) :
-		     "i" (0X9));
-	return retval;
-}
-*/
+
 static inline unsigned long srmmu_get_mmureg(unsigned long addr_reg)
 {
 	register int retval;
