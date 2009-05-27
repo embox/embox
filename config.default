@@ -85,16 +85,16 @@
 	],
 	"Tests": [
 		[
-			"irq availability",
+			"test_irq_availability",
 			1,
 			1,
-			"test_irq_availability"
+			"irq availability"
 		],
 		[
-			"cpu_context save/restore",
+			"test_cpu_context",
 			1,
 			1,
-			"test_cpu_context"
+			"cpu_context save/restore"
 		]
 	],
 	"Drivers": [

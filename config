@@ -1,16 +1,16 @@
 {
 	"Tests": [
 		[
-			"irq availability",
+			"test_irq_availability",
 			1,
 			1,
-			"test_irq_availability"
+			"irq availability"
 		],
 		[
-			"cpu_context save/restore",
+			"test_cpu_context",
 			1,
 			1,
-			"test_cpu_context"
+			"cpu_context save/restore"
 		]
 	],
 	"shell_inc": "src/conio/shell.inc",
@@ -132,8 +132,8 @@
 	"Build": {
 		"Debug": 1,
 		"Release": 1,
-		"Disassemble": 1,
+		"Simulation": 1,
 		"Doxygen": 0,
-		"Simulation": 1
+		"Disassemble": 1
 	}
 }
