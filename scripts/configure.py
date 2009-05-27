@@ -14,67 +14,56 @@ import re
 import json
 import shutil
 
+root, menu_frame, info_frame = (None, None, None)
+frame = { "0" : 0 }
 menu = None
 tabs = { "0" : 0 }
-error_level, trace_level, warn_level, debug_level, test_system_level, leon3_level = (None, None, None, None, None, None)
-error_level_var, trace_level_var, warn_level_var, debug_level_var, test_system_level_var, leon3_level_var = (None, None, None, None, None, None)
-root, menu_frame, info_frame = (None, None, None)
 build_var = { "0": 0 }
-arch_num = None
-comiler_var, target_var, arch_num_var, cflags_var, ldflags_var = (None, None, None, None, None)
+level_var = { "0" : 0 }
+common_var = { "0": 0 }
 shell_inc, tests_inc, subdirs, tests_table_inc = (None, None, None, None)
 
 def read_config(fileconf):
 	""" Read config file """
-        global error_level, trace_level, warn_level, debug_level, test_system_level, leon3_level
-        global arch_num
         global shell_inc, tests_inc, subdirs, tests_table_inc
         global menu, tabs
         with open(fileconf, 'r') as conf:
                 config = conf.read()
                 json_conf = json.loads(config)
-                menu = json_conf['menu']
+                menu = json_conf['Menu']
                 for tab in menu:
             		tabs[str(tab)] = json_conf[str(tab)]
-                arch_num = json_conf['arch_num']
+            	#-- Files for generate
                 shell_inc = json_conf['shell_inc']
                 tests_inc = json_conf['tests_inc']
                 subdirs = json_conf['subdirs']
                 tests_table_inc = json_conf['tests_table_inc']
-                error_level = json_conf['error_level']
-                trace_level = json_conf['trace_level']
-                warn_level = json_conf['warn_level']
-                debug_level = json_conf['debug_level']
-                test_system_level = json_conf['test_system_level']
-                leon3_level = json_conf['leon3_level']
         conf.close()
 
 def write_config(fileconf):
 	""" Write config file """
-        global error_level_var, trace_level_var, warn_level_var, debug_level_var, test_system_level_var, leon3_level_var
-	global build_var, compiler_var, target_var, arch_num_var
+	global build_var, common_var, level_var
         global shell_inc, tests_inc, subdirs, tests_table_inc
         with open(fileconf, 'w+') as conf:
                 tmp = {'shell_inc' : "src/conio/shell.inc", 'tests_inc' : "src/conio/tests.inc", \
                         'subdirs' : "src/tests/subdirs", 'tests_table_inc' : "src/tests/tests_table.inc" }
-		tmp['menu'] = menu
-                tmp['Tests'] = tabs['Tests']
-                tmp['Commands'] = tabs['Commands']
-                tmp['Drivers'] = tabs['Drivers']
-                tmp['Levels'] = tabs['Levels']
-                tmp['Build'] = tabs['Build']
-                tmp['Common'] = tabs['Common']
-                tmp["Common"]["Compiler"] = compiler_var.get()
-                tmp["Common"]["Target"] = target_var.get()
-                tmp["Common"]["Cflags"] = cflags_var.get()
-                tmp["Common"]["Ldflags"] = ldflags_var.get()
-                tmp["arch_num"] = arch_num_var.get()
-                tmp["error_level"] = error_level_var.get()
-                tmp["trace_level"] = trace_level_var.get()
-                tmp["warn_level"] = warn_level_var.get()
-                tmp["debug_level"] = debug_level_var.get()
-                tmp["test_system_level"] = test_system_level_var.get()
-                tmp["leon3_level"] = leon3_level_var.get()
+		tmp['Menu'] = menu
+		for i in range( len(menu) ):
+			tmp[menu[i]] = tabs[menu[i]]
+                #-- Common
+                tmp["Common"]["Compiler"] = common_var["Compiler"].get()
+                tmp["Common"]["Target"] = common_var["Target"].get()
+                tmp["Common"]["Cflags"] = common_var["Cflags"].get()
+                tmp["Common"]["Ldflags"] = common_var["Ldflags"].get()
+                tmp["Common"]["Arch_num"] = common_var["Arch_num"].get()
+                #-- Levels
+                tmp["Levels"]["Error"] = level_var["Error"].get()
+                tmp["Levels"]["Trace"] = level_var["Trace"].get()
+                tmp["Levels"]["Warn"] = level_var["Warn"].get()
+                tmp["Levels"]["Debug"] = level_var["Debug"].get()
+                tmp["Levels"]["Test_system"] = level_var["Test_system"].get()
+                tmp["Levels"]["Leon3"] = level_var["Leon3"].get()
+                #-- Build
                 tmp["Build"]["Debug"] = build_var["Debug"].get()
                 tmp["Build"]["Release"] = build_var["Release"].get()
                 tmp["Build"]["Simulation"] = build_var["Simulation"].get()
@@ -138,13 +127,13 @@ def build_commands():
 	fsubdirs.close()
 
 def repl_arch(m):
-	return "CPU_ARCH:= " + tabs['Common']['Arch'][arch_num_var.get()][0]
+	return "CPU_ARCH:= " + tabs['Common']['Arch'][common_var["Arch_num"].get()][0]
 
 def repl_compil(m):
-	return "CC_PACKET:= " + compiler_var.get()
+	return "CC_PACKET:= " + common_var["Compiler"].get()
 
 def repl_target(m):
-	return "TARGET:= " + target_var.get()
+	return "TARGET:= " + common_var["Target"].get()
 
 def repl_all(m):
 	repl = "all: "
@@ -159,23 +148,23 @@ def repl_all(m):
 	return repl
 
 def repl_cflag(m):
-	repl = "CCFLAGS:= " + cflags_var.get()
-	if leon3_level_var.get() == 1:
+	repl = "CCFLAGS:= " + common_var["Cflags"].get()
+	if level_var["Leon3"].get() == 1:
 		repl += " -DLEON3"
-	if test_system_level_var.get() == 1:
+	if level_var["Test_system"].get() == 1:
 		repl += " -D_TEST_SYSTEM_"
-	if error_level_var.get() == 1:
+	if level_var["Error"].get() == 1:
 		repl += " -D_ERROR"
-	if trace_level_var.get() == 1:
+	if level_var["Trace"].get() == 1:
 		repl += " -D_TRACE"
-	if warn_level_var.get() == 1:
+	if level_var["Warn"].get() == 1:
 		repl += " -D_WARN"
-	if debug_level_var.get() == 1:
+	if level_var["Debug"].get() == 1:
 		repl += " -D_DEBUG"
 	return repl
 
 def repl_ldflag(m):
-        repl = "LDFLAGS:= " + ldflags_var.get()
+        repl = "LDFLAGS:= " + common_var["Ldflags"].get()
         return repl
 
 def build_makefile():
@@ -260,126 +249,111 @@ def main():
 	main_frame = conf_tab(info_frame, LEFT)
 
 	#-- Common frame
-	common_frame = Tkinter.Frame(main_frame())
-	Label(common_frame, text=tabs['Common']['Title'], width=25, background="green").grid(row=0, column=0)
-	Label(common_frame, text="", width=35, background="green").grid(row=0, column=1)
-	Label(common_frame, text="Программа предназначенная для началь-", width=35).grid(row=1, column=1)
-	Label(common_frame, text="ной инициализации и тестирования ап-", width=35).grid(row=2, column=1)
-	Label(common_frame, text="паратуры. А так же для ее отладки. А", width=35).grid(row=3, column=1)
-	Label(common_frame, text="так же для отладки системного кода для", width=35).grid(row=4, column=1)
-	Label(common_frame, text=" дальнейшего переноса кода в Линукс ", width=35).grid(row=5, column=1)
-	#-- Arch
-	global arch_num_var
-	arch_num_var = IntVar()
-	Label(common_frame, text="Arch", width=25, background="lightblue").grid(row=1, column=0)
+	frame["Common"] = Tkinter.Frame(main_frame())
+	Label(frame["Common"], text=tabs['Common']['Title'], width=25, background="green").grid(row=0, column=0)
+	Label(frame["Common"], text="", width=35, background="green").grid(row=0, column=1)
+	Label(frame["Common"], text="Программа предназначенная для началь-", width=35).grid(row=1, column=1)
+	Label(frame["Common"], text="ной инициализации и тестирования ап-", width=35).grid(row=2, column=1)
+	Label(frame["Common"], text="паратуры. А так же для ее отладки. А", width=35).grid(row=3, column=1)
+	Label(frame["Common"], text="так же для отладки системного кода для", width=35).grid(row=4, column=1)
+	Label(frame["Common"], text=" дальнейшего переноса кода в Линукс ", width=35).grid(row=5, column=1)
+	global common_var
+	#-- Arch subframe
+	common_var["Arch_num"] = IntVar()
+	Label(frame["Common"], text="Arch", width=25, background="lightblue").grid(row=1, column=0)
 	for ar, value in tabs['Common']['Arch']:
-		Radiobutton(common_frame, text=ar, value=value, variable=arch_num_var, anchor=W).grid(row=value+2, column=0, sticky=W)
-	arch_num_var.set(arch_num)
-	#-- Compiler
-	global compiler_var
-	Label(common_frame, text="Compiler", width=25, background="lightblue").grid(row=5, column=0)
-	compiler_var = StringVar()
-	Entry(common_frame, width=25, textvariable=compiler_var).grid(row=6, column=0)
-	compiler_var.set(tabs["Common"]["Compiler"])
-	#-- LDFLAGS
-	global ldflags_var
-	Label(common_frame, text="LDFLAGS", width=25, background="lightblue").grid(row=7, column=0)
-	ldflags_var = StringVar()
-	Entry(common_frame, width=25, textvariable=ldflags_var).grid(row=8, column=0)
-	ldflags_var.set(tabs["Common"]["Ldflags"])
-	#-- CFLAGS
-	global cflags_var
-	Label(common_frame, text="CFLAGS", width=25, background="lightblue").grid(row=9, column=0)
-	cflags_var = StringVar()
-	Entry(common_frame, width=25, textvariable=cflags_var).grid(row=10, column=0)
-	cflags_var.set(tabs["Common"]["Cflags"])
-	#-- Target
-	global target_var
-	Label(common_frame, text="Target", width=25, background="lightblue").grid(row=11, column=0)
-	target_var = StringVar()
-	Entry(common_frame, width=25, textvariable=target_var).grid(row=12, column=0)
-	target_var.set(tabs["Common"]["Target"])
+		Radiobutton(frame["Common"], text=ar, value=value, variable=common_var["Arch_num"], anchor=W).grid(row=value+2, column=0, sticky=W)
+	common_var["Arch_num"].set(tabs["Common"]["Arch_num"])
+	#-- Compiler subframe
+	Label(frame["Common"], text="Compiler", width=25, background="lightblue").grid(row=5, column=0)
+	common_var["Compiler"] = StringVar()
+	Entry(frame["Common"], width=25, textvariable=common_var["Compiler"]).grid(row=6, column=0)
+	common_var["Compiler"].set(tabs["Common"]["Compiler"])
+	#-- LDFLAGS subframe
+	Label(frame["Common"], text="LDFLAGS", width=25, background="lightblue").grid(row=7, column=0)
+	common_var["Ldflags"] = StringVar()
+	Entry(frame["Common"], width=25, textvariable=common_var["Ldflags"]).grid(row=8, column=0)
+	common_var["Ldflags"].set(tabs["Common"]["Ldflags"])
+	#-- CFLAGS subframe
+	Label(frame["Common"], text="CFLAGS", width=25, background="lightblue").grid(row=9, column=0)
+	common_var["Cflags"] = StringVar()
+	Entry(frame["Common"], width=25, textvariable=common_var["Cflags"]).grid(row=10, column=0)
+	common_var["Cflags"].set(tabs["Common"]["Cflags"])
+	#-- Target subframe
+	Label(frame["Common"], text="Target", width=25, background="lightblue").grid(row=11, column=0)
+	common_var["Target"] = StringVar()
+	Entry(frame["Common"], width=25, textvariable=common_var["Target"]).grid(row=12, column=0)
+	common_var["Target"].set(tabs["Common"]["Target"])
 
 	#-- Drivers frame
-	drivers_frame = Tkinter.Frame(main_frame())
-	Label(drivers_frame, text="Driver", width=25, background="lightblue").grid(row=0, column=0)
-	Label(drivers_frame, text="Description", width=35, background="lightblue").grid(row=0, column=1)
+	frame["Drivers"] = Tkinter.Frame(main_frame())
+	Label(frame["Drivers"], text="Driver", width=25, background="lightblue").grid(row=0, column=0)
+	Label(frame["Drivers"], text="Description", width=35, background="lightblue").grid(row=0, column=1)
 	vard = IntVar()
 	row = 1
 	for driver, inc, status, desc in tabs['Drivers']:
 		setattr(vard, driver, IntVar())
-		Checkbutton(drivers_frame, text=driver, state=getStatus(status), anchor=W,
-			variable = getattr(vard, driver), command=(lambda row=row: onPress(tabs['Drivers'], row-1, 1))).grid(row=row, column=0, sticky=W)
+		Checkbutton(frame["Drivers"], text=driver, state=getStatus(status), anchor=W, variable = getattr(vard, driver), \
+			    command=(lambda row=row: onPress(tabs['Drivers'], row-1, 1))).grid(row=row, column=0, sticky=W)
 		getattr(vard, driver).set(inc)
-		Label(drivers_frame, text=desc, state=getStatus(status), width=35, anchor=W).grid(row=row, column=1, sticky=W)
+		Label(frame["Drivers"], text=desc, state=getStatus(status), width=35, anchor=W).grid(row=row, column=1, sticky=W)
 		row = row + 1
 
 	#-- Tests frame
-	test_frame = Tkinter.Frame(main_frame())
-	Label(test_frame, text="Start testing", width=25, background="lightblue").grid(row=0, column=0)
-	Label(test_frame, text="Description", width=35, background="lightblue").grid(row=0, column=1)
+	frame["Tests"] = Tkinter.Frame(main_frame())
+	Label(frame["Tests"], text="Start testing", width=25, background="lightblue").grid(row=0, column=0)
+	Label(frame["Tests"], text="Description", width=35, background="lightblue").grid(row=0, column=1)
 	vart = IntVar()
 	row = 1
 	for desc, inc, status, test_name in tabs['Tests']:
 		setattr(vart, test_name, IntVar())
-		Checkbutton(test_frame, text=test_name, state=getStatus(status), anchor=W,
-			variable = getattr(vart, test_name), command=(lambda row=row: onPress(tabs['Tests'], row-1, 1))).grid(row=row, column=0, sticky=W)
+		Checkbutton(frame["Tests"], text=test_name, state=getStatus(status), anchor=W, variable = getattr(vart, test_name), \
+			    command=(lambda row=row: onPress(tabs['Tests'], row-1, 1))).grid(row=row, column=0, sticky=W)
 		getattr(vart, test_name).set(inc)
-		Label(test_frame, text=desc, state=getStatus(status), width=35, anchor=W).grid(row=row, column=1, sticky=W)
+		Label(frame["Tests"], text=desc, state=getStatus(status), width=35, anchor=W).grid(row=row, column=1, sticky=W)
 		row = row + 1
 
-	#-- Commands shell frame
-	command_frame = Tkinter.Frame(main_frame())
-	Label(command_frame, text="Shell commands", width=25, background="lightblue").grid(row=0, column=0)
-        Label(command_frame, text="Description", width=35, background="lightblue").grid(row=0, column=1)
+	#-- Commands frame
+	frame["Commands"] = Tkinter.Frame(main_frame())
+	Label(frame["Commands"], text="Shell commands", width=25, background="lightblue").grid(row=0, column=0)
+        Label(frame["Commands"], text="Description", width=35, background="lightblue").grid(row=0, column=1)
         varc = IntVar()
 	row = 1
 	for cmd, pack, inc, status, desc in tabs['Commands']:
 		setattr(varc, cmd, IntVar())
-    		Checkbutton(command_frame, text=cmd, state=getStatus(status), anchor=W,
-			variable = getattr(varc, cmd), command=(lambda row=row: onPress(tabs['Commands'], row-1, 2))).grid(row=row, column=0, sticky=W)
+    		Checkbutton(frame["Commands"], text=cmd, state=getStatus(status), anchor=W, variable = getattr(varc, cmd), \
+    			    command=(lambda row=row: onPress(tabs['Commands'], row-1, 2))).grid(row=row, column=0, sticky=W)
 		getattr(varc, cmd).set(inc)
-		Label(command_frame, text=desc, state=getStatus(status), width=35, anchor=W).grid(row=row, column=1, sticky=W)
+		Label(frame["Commands"], text=desc, state=getStatus(status), width=35, anchor=W).grid(row=row, column=1, sticky=W)
 		row = row + 1
 
 	#-- Level frame
-	global error_level_var, trace_level_var, warn_level_var, debug_level_var, test_system_level_var, leon3_level_var
-	level_frame = Tkinter.Frame(main_frame())
-	Label(level_frame, text="Verbous level", width=25, background="lightblue").grid(row=0, column=0)
-	Label(level_frame, text="", width=35).grid(row=0, column=1)
-	error_level_var, trace_level_var, warn_level_var, debug_level_var, test_system_level_var, leon3_level_var = (IntVar(), IntVar(), IntVar(), IntVar(), IntVar(), IntVar())
-	Checkbutton(level_frame, text=tabs['Levels'][0], state=NORMAL, anchor=W, variable = error_level_var).grid(row=1, column=0, sticky=W)
-	error_level_var.set(error_level)
-	Checkbutton(level_frame, text=tabs['Levels'][1], state=NORMAL, anchor=W, variable = trace_level_var).grid(row=2, column=0, sticky=W)
-	trace_level_var.set(trace_level)
-	Checkbutton(level_frame, text=tabs['Levels'][2], state=NORMAL, anchor=W, variable = warn_level_var).grid(row=3, column=0, sticky=W)
-	warn_level_var.set(warn_level)
-	Checkbutton(level_frame, text=tabs['Levels'][3], state=NORMAL, anchor=W, variable = debug_level_var).grid(row=4, column=0, sticky=W)
-	debug_level_var.set(debug_level)
-	Checkbutton(level_frame, text=tabs['Levels'][4], state=NORMAL, anchor=W, variable = test_system_level_var).grid(row=5, column=0, sticky=W)
-	test_system_level_var.set(test_system_level)
-	Checkbutton(level_frame, text=tabs['Levels'][5], state=NORMAL, anchor=W, variable = leon3_level_var).grid(row=6, column=0, sticky=W)
-	leon3_level_var.set(leon3_level)
+	global level_var
+	frame["Levels"] = Tkinter.Frame(main_frame())
+	Label(frame["Levels"], text="Verbous level", width=25, background="lightblue").grid(row=0, column=0)
+	Label(frame["Levels"], text="", width=35).grid(row=0, column=1)
+	for i in range( len(tabs['Levels'].keys()) ):
+		name = str(tabs['Levels'].keys()[i])
+		level_var[name] = IntVar()
+		Checkbutton(frame["Levels"], text=tabs['Levels'].keys()[i], state=NORMAL, anchor=W, \
+			    variable = level_var[name]).grid(row=i+1, column=0, sticky=W)
+		level_var[name].set(tabs["Levels"][name])
 
 	#-- Build frame
 	global build_var
-	build_frame = Tkinter.Frame(main_frame())
-	Label(build_frame, text="Build", width=25, background="lightblue").grid(row=0, column=0)
-	Label(build_frame, text="", width=35).grid(row=0, column=1)
+	frame["Build"] = Tkinter.Frame(main_frame())
+	Label(frame["Build"], text="Build", width=25, background="lightblue").grid(row=0, column=0)
+	Label(frame["Build"], text="", width=35).grid(row=0, column=1)
 	for i in range( len(tabs['Build'].keys()) ):
 		name = str(tabs['Build'].keys()[i])
 		build_var[name] = IntVar()
-		Checkbutton(build_frame, text=tabs['Build'].keys()[i], state=NORMAL, anchor=W, \
+		Checkbutton(frame["Build"], text=tabs['Build'].keys()[i], state=NORMAL, anchor=W, \
 			variable = build_var[name]).grid(row=i+1, column=0, sticky=W)
 		build_var[name].set(tabs["Build"][name])
 
 	#-- build tabs
-	main_frame.add_screen(common_frame, menu[0])
-	main_frame.add_screen(drivers_frame, menu[1])
-	main_frame.add_screen(test_frame, menu[2])
-	main_frame.add_screen(command_frame, menu[3])
-	main_frame.add_screen(level_frame, menu[4])
-	main_frame.add_screen(build_frame, menu[5])
+	for i in range( len(menu) ):
+		main_frame.add_screen(frame[menu[i]], menu[i])
 
 	root.mainloop()
 

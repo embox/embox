@@ -1,5 +1,20 @@
 {
-	"menu": [
+	"Tests": [
+		[
+			"irq availability",
+			1,
+			1,
+			"test_irq_availability"
+		],
+		[
+			"cpu_context save/restore",
+			1,
+			1,
+			"test_cpu_context"
+		]
+	],
+	"shell_inc": "src/conio/shell.inc",
+	"Menu": [
 		"Common",
 		"Drivers",
 		"Tests",
@@ -7,8 +22,43 @@
 		"Levels",
 		"Build"
 	],
+	"Drivers": [
+		[
+			"irq_controller",
+			1,
+			1,
+			"particular logical device"
+		],
+		[
+			"timer",
+			1,
+			1,
+			"particular logical device"
+		],
+		[
+			"uart",
+			1,
+			1,
+			"particular logical device"
+		]
+	],
+	"tests_inc": "src/conio/tests.inc",
+	"subdirs": "src/tests/subdirs",
+	"tests_table_inc": "src/tests/tests_table.inc",
+	"Levels": {
+		"Trace": 1,
+		"Leon3": 1,
+		"Test_system": 1,
+		"Warn": 0,
+		"Error": 1,
+		"Debug": 0
+	},
 	"Common": {
+		"Target": "monitor",
+		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
 		"Title": "Monitor Configurator",
+		"Ldflags": "-Wl -N -nostdlib -g",
+		"Arch_num": 0,
 		"Arch": [
 			[
 				"sparc",
@@ -19,10 +69,7 @@
 				1
 			]
 		],
-		"Compiler": "sparc-elf",
-		"Target": "monitor",
-		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
-		"Ldflags": "-Wl -N -nostdlib -g"
+		"Compiler": "sparc-elf"
 	},
 	"Commands": [
 		[
@@ -82,64 +129,11 @@
 			"write to memory"
 		]
 	],
-	"Tests": [
-		[
-			"irq availability",
-			1,
-			1,
-			"test_irq_availability"
-		],
-		[
-			"cpu_context save/restore",
-			1,
-			1,
-			"test_cpu_context"
-		]
-	],
-	"Drivers": [
-		[
-			"irq_controller",
-			1,
-			1,
-			"particular logical device"
-		],
-		[
-			"timer",
-			1,
-			1,
-			"particular logical device"
-		],
-		[
-			"uart",
-			1,
-			1,
-			"particular logical device"
-		]
-	],
-	"Levels": [
-		"Error",
-		"Trace",
-		"Warn",
-		"Debug",
-		"Test system",
-		"Leon3"
-	],
 	"Build": {
 		"Debug": 1,
 		"Release": 1,
-		"Simulation": 1,
 		"Disassemble": 1,
-		"Doxygen": 0
-	},
-	"arch_num": 0,
-	"shell_inc": "src/conio/shell.inc",
-	"tests_inc": "src/conio/tests.inc",
-	"subdirs": "src/tests/subdirs",
-	"tests_table_inc": "src/tests/tests_table.inc",
-	"error_level": 1,
-	"trace_level": 1,
-	"warn_level": 0,
-	"debug_level": 0,
-	"test_system_level": 1,
-	"leon3_level": 1
+		"Doxygen": 0,
+		"Simulation": 1
+	}
 }

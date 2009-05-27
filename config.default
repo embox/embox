@@ -1,5 +1,5 @@
 {
-	"menu": [
+	"Menu": [
 		"Common",
 		"Drivers",
 		"Tests",
@@ -22,7 +22,8 @@
 		"Compiler": "sparc-elf",
 		"Target": "monitor",
 		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
-		"Ldflags": "-Wl -N -nostdlib -g"
+		"Ldflags": "-Wl -N -nostdlib -g",
+		"Arch_num": 0
 	},
 	"Commands": [
 		[
@@ -116,14 +117,14 @@
 			"particular logical device"
 		]
 	],
-	"Levels": [
-		"Error",
-		"Trace",
-		"Warn",
-		"Debug",
-		"Test system",
-		"Leon3"
-	],
+	"Levels": {
+		"Error": 1,
+		"Trace": 1,
+		"Warn": 0,
+		"Debug": 0,
+		"Test_system": 1,
+		"Leon3": 1
+	},
 	"Build": {
 		"Debug": 1,
 		"Release": 1,
@@ -131,15 +132,8 @@
 		"Disassemble": 1,
 		"Doxygen": 0
 	},
-	"arch_num": 0,
 	"shell_inc": "src/conio/shell.inc",
 	"tests_inc": "src/conio/tests.inc",
 	"subdirs": "src/tests/subdirs",
-	"tests_table_inc": "src/tests/tests_table.inc",
-	"error_level": 1,
-	"trace_level": 1,
-	"warn_level": 0,
-	"debug_level": 0,
-	"test_system_level": 1,
-	"leon3_level": 1
+	"tests_table_inc": "src/tests/tests_table.inc"
 }
