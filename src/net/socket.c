@@ -100,8 +100,9 @@ int bind(int s, unsigned char ipaddr[4], int port) {
 	LOG_DEBUG("bind socket\n");
 	memcpy(&sks[s].sk.inet.saddr, ipaddr, sizeof(ipaddr));
 	sks[s].sk.inet.sport = port;
-	LOG_DEBUG("socket binded at port=%d, ip=", sks[s].sk.inet.sport); ipaddr_print(sks[s].sk.inet.saddr, 4);
-	LOG_DEBUG("\n");
+	char ip[15];
+	ipaddr_print(ip, sks[s].sk.inet.saddr);
+	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[s].sk.inet.sport, ip);
 	return 0;
 }
 
@@ -114,7 +115,7 @@ int send(int s, const void *buf, int len) {
 	LOG_DEBUG("send\n");
 	net_packet *pack;
         pack = net_packet_alloc();
-	build_udp_packet(pack, sks[s].queue->netdev, sks[s].queue->ifdev, buf, len);
+	build_udp_packet(pack, sks[s].queue->ifdev, buf, len);
         udp_trans(&sks[s].sk.inet, pack);
 }
 

@@ -31,6 +31,7 @@ all:
 	mkdir -p $(OBJ_DIR)/sim
 	rm -f objs.lst include_dirs.lst
 	declare -x MAKEOP=create_objs_lst; make --directory=src create_objs_lst
+	echo ' ' >> $(ROOT_DIR)/include_dirs.lst
 	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
 
 clean:
@@ -38,4 +39,7 @@ clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst
 
 xconfig:
-	./scripts/configure.py
+	@./scripts/configure.py
+
+config:
+	@echo "Oops! Try edit config file by hand or use \"make xconfig\" and have a lot of fun."

@@ -24,9 +24,13 @@ int udp_init(void) {
 	return 0;
 }
 
-void build_udp_packet(net_packet *pack, net_device *netdev, void *ifdev, const void *buf, int len) {
-        pack->netdev = netdev;
+void build_udp_packet(net_packet *pack, void *ifdev, const void *buf, int len) {
+	if( pack == NULL) {
+		return;
+	}
+        pack->netdev = eth_get_netdevice(ifdev);
         pack->ifdev = ifdev;
+        pack->mac.raw = pack->data;
         //TODO: build udp header
 //        pack->nh.mac = pack->data;
 //        pack->nh.raw = pack->data + sizeof(machdr);

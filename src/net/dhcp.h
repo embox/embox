@@ -16,7 +16,7 @@
 int dhcpDiscover();
 
 typedef struct {
-	/* Message type
+	/** Message type
 	 * 2 possible values:
 	 * BOOTREQUEST (from client to server)
 	 * BOOTREPLY (from server to client)
@@ -38,21 +38,21 @@ typedef struct {
 	WORD siaddr;
 	WORD giaddr;
 
-	/* hardware address
+	/** hardware address
 	 * Regularly MAC-address
 	 */
 	WORD chaddr[4];
-	/* Server name. (optional)
+	/** Server name. (optional)
 	 * Zero-ending string
 	 */
 	char sname[64];
 
-	/* File name (for remote access)
+	/** File name (for remote access)
 	 * Zero-ending string.
 	 */
 	char file[128];
 
-	/* Other options (optional)
+	/** Other options (optional)
 	 * we don't use
 	 */
 	// _type options;

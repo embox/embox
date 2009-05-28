@@ -132,8 +132,10 @@
 		"Disassemble": 1,
 		"Doxygen": 0
 	},
-	"shell_inc": "src/conio/shell.inc",
-	"tests_inc": "src/conio/tests.inc",
-	"subdirs": "src/tests/subdirs",
-	"tests_table_inc": "src/tests/tests_table.inc"
+	"Files": {
+		"shell_inc": "src/conio/shell.inc",
+		"tests_inc": "src/conio/tests.inc",
+		"subdirs": "src/user/subdirs",
+		"tests_table_inc": "src/tests/tests_table.inc"
+	}
 }

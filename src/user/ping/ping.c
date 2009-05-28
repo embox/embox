@@ -29,9 +29,9 @@ static void callback(net_packet *pack) {
 }
 
 static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl) {
-	printf("PING to ");
-	ipaddr_print(dst, 4);
-	printf("\n");
+	char ip[15];
+	ipaddr_print(ip, dst);
+	printf("PING to %s\n", ip);
 
 	int cnt_resp = 0, cnt_err = 0;
 
@@ -43,10 +43,10 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl) 
 			break;
 
 		has_responsed = FALSE;
-		printf("from ");
-		ipaddr_print(eth_get_ipaddr(ifdev), 4);
-		printf(" to ");
-		ipaddr_print(dst, 4);
+		ipaddr_print(ip, eth_get_ipaddr(ifdev));
+		printf("from %s", ip);
+		ipaddr_print(ip, dst);
+		printf(" to %s", ip);
 		printf(" ttl=%d ", ttl);
 		icmp_send_echo_request(ifdev, dst, ttl, callback);
 		sleep(timeout);

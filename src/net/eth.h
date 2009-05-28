@@ -11,13 +11,17 @@
 
 #include "net_device.h"
 
-
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
+
 /**
  * Init ethernet.
  * @return count founded devices.
  */
 int eth_init();
+
+/**
+ * Get ifdev by name
+ */
 void *eth_get_ifdev_by_name(const char *if_name);
 
 /**
@@ -35,13 +39,8 @@ int eth_set_macaddr (void *ifdev, unsigned char macaddr[6]);
 int eth_set_ipaddr (void *ifdev, unsigned char ipaddr[4]);
 
 /**
- * Print IP address
+ * Show all eth interfaces (IP/MAC address)
  */
-
-/**
- * Print MAC-address
- */
-void macaddr_print(unsigned char *addr, int len);
 
 /**
  * Send Ethernet packet

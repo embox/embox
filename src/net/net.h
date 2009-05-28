@@ -10,9 +10,7 @@
 
 #include "net_device.h"
 #include "eth.h"
-
 #include "sock.h"
-
 
 int netif_rx(net_packet *pack);
 

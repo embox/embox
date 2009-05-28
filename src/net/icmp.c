@@ -61,8 +61,9 @@ static int interface_abort(void *ifdev) {
 static int callback_free(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 		unsigned char type) {
 	int i;
-	if (NULL == cb)
+	if (NULL == cb) {
 		return -1;
+	}
 	for (i = 0; i < array_len(cb_info); i++) {
 		if (cb_info[i].cb == cb && ifdev == cb_info[i].ifdev) {
 			cb_info[i].cb = 0;
@@ -126,8 +127,7 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 	pack->nh.iph->ttl = ttl;
 	pack->nh.iph->proto = ICMP_PROTO_TYPE;
 	pack->nh.iph->id = ip_id++;
-	pack->nh.iph->check = calc_checksumm(pack->nh.raw,
-			sizeof(iphdr));
+	pack->nh.iph->check = calc_checksumm(pack->nh.raw, sizeof(iphdr));
 	return sizeof(icmphdr) + sizeof(iphdr);
 }
 
@@ -153,17 +153,13 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 
 	//fill icmp header
 	pack->h.icmph->type = ICMP_TYPE_ECHO_RESP;
-
 	memset(pack->h.raw + pack->nh.iph->tot_len - sizeof(iphdr) + 1, 0, 64);
 
 	LOG_DEBUG("\npacket icmp\n");
-	for (i = 0; i < pack->nh.iph->tot_len + 64; i ++)
-	{
-		if (0 == i % 4)
-		{
+	for (i = 0; i < pack->nh.iph->tot_len + 64; i ++) {
+		if (0 == i % 4) {
 			LOG_DEBUG("\t ");
 		}
-
 		LOG_DEBUG("%2X",  pack->h.raw[i]);
 	}
 	LOG_DEBUG("%X\n",  pack->h.icmph->header_check_summ);
@@ -188,18 +184,17 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		ICMP_CALLBACK callback) { //type 8
 	net_packet *pack = net_packet_alloc();
-	if (pack == 0)
+	if (pack == 0) {
 		return -1;
-
+	}
 	pack->ifdev = ifdev;
 	pack->netdev = eth_get_netdevice(ifdev);
-	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, ttl, eth_get_ipaddr(
-			ifdev), dstaddr);
+	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, ttl,
+					eth_get_ipaddr(ifdev), dstaddr);
 	pack->protocol = IP_PROTOCOL_TYPE;
 
 	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->id,
-			ICMP_TYPE_ECHO_RESP))
-	{
+			ICMP_TYPE_ECHO_RESP)) {
 		net_packet_free(pack);
 		return -1;
 	}
@@ -217,8 +212,9 @@ int icmp_init() {
 int icmp_received_packet(net_packet *pack) {
 	icmphdr *icmp = pack->h.icmph;
 	//TODO check summ icmp?
-	if (NULL != received_packet_handlers[icmp->type])
+	if (NULL != received_packet_handlers[icmp->type]) {
 		return received_packet_handlers[icmp->type](pack);
+	}
 	return -1;
 }
 

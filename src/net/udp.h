@@ -24,8 +24,7 @@ struct udp_sock{
 	unsigned short len;
 };
 
-static inline struct udp_sock *udp_sk(const struct sock *sk)
-{
+static inline struct udp_sock *udp_sk(const struct sock *sk) {
         return (struct udp_sock *)sk;
 }
 

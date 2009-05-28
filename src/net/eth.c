@@ -4,8 +4,7 @@
  * \date Mar 4, 2009
  * \author anton
  */
-#include "types.h"
-#include "common.h"
+#include "misc.h"
 #include "string.h"
 #include "net_device.h"
 #include "net_pack_manager.h"
@@ -15,18 +14,17 @@
 #include "eth.h"
 
 #define INTERFACES_QUANTITY 4
+
 static unsigned char def_ip [4] = {192, 168, 0, 80};
 static unsigned char def_mac [6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x00};
 
-typedef struct _CALLBACK_INFO
-{
+typedef struct _CALLBACK_INFO {
 	int is_busy;
 	unsigned short type;
 	ETH_LISTEN_CALLBACK func;
 }CALLBACK_INFO;
 
-typedef struct _IF_DEVICE
-{
+typedef struct _IF_DEVICE {
 	unsigned char ipv4_addr[4];
 	net_device *net_dev;
 	CALLBACK_INFO cb_info[8];
@@ -36,16 +34,13 @@ static IF_DEVICE ifs[INTERFACES_QUANTITY];
 
 void packet_dump(net_packet *);
 
-static int rebuild_header(net_packet * pack)
-{
-	if (NULL == pack)
+static int rebuild_header(net_packet * pack) {
+	if (NULL == pack) {
 		return -1;
-
-	if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type)
-	{
-		if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr))
-		{
-			LOG_WARN("Destanation host Unreachable\n");
+	}
+	if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
+		if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr)) {
+			LOG_WARN("Destanation host is unreachable\n");
 			return -1;
 		}
 		memcpy (pack->mac.mach->src_addr, pack->netdev->hw_addr, sizeof(pack->mac.mach->src_addr));
@@ -56,16 +51,13 @@ static int rebuild_header(net_packet * pack)
 	return 0;
 }
 
-int eth_init()
-{
+int eth_init() {
 	char iname[6];
 	int cnt = 0, i;
 	TRACE("Initializing ifdevs:\n");
-	for (i = 0; i < INTERFACES_QUANTITY; i ++)
-	{
+	for (i = 0; i < INTERFACES_QUANTITY; i ++) {
 		sprintf(iname, "eth%d", i);
-		if (NULL != (ifs[i].net_dev = find_net_device(iname)))
-		{
+		if (NULL != (ifs[i].net_dev = find_net_device(iname))) {
 			def_ip[3] = 80 + i;
 			def_mac[5] = 1 + i;
 			ifs[i].net_dev->rebuild_header = rebuild_header;
@@ -78,104 +70,17 @@ int eth_init()
 	return cnt;
 }
 
-void *eth_get_ifdev_by_name(const char *if_name)
-{
+void *eth_get_ifdev_by_name(const char *if_name) {
 	int i;
-	for (i = 0; i < INTERFACES_QUANTITY; i ++)
-	{
+	for (i = 0; i < INTERFACES_QUANTITY; i ++) {
 		TRACE ("ifname %s, net_dev 0x%X\n", if_name, ifs[i].net_dev);
-		if(0 == strncmp(if_name, ifs[i].net_dev->name, sizeof(ifs[i].net_dev->name)))
-		{
+		if(0 == strncmp(if_name, ifs[i].net_dev->name, sizeof(ifs[i].net_dev->name))) {
 			return &ifs[i];
 		}
 	}
 	return NULL;
 }
 
-unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4])
-{
-	unsigned int tmp;
-	int i, j;
-	for (i = 0; i < 3; i ++)
-	{
-		for (j = 0; j < 5; j ++)
-		{
-			if (j > 4)
-				return NULL;
-
-			if ('.' == addr[j])
-			{
-				addr [j] = 0;
-				if (1 != sscanf (addr, "%d", &tmp))
-					return NULL;
-				if (tmp > 255)
-					return NULL;
-				res[i]=(unsigned char )0xFF & tmp;
-				addr += (j + 1);
-				break;
-			}
-		}
-	}
-	if (1 != sscanf (addr, "%d", &tmp))
-		return NULL;
-	if (tmp > 255)
-		return NULL;
-	res[3]=(unsigned char )0xFF & tmp;
-
-	return 	res;
-}
-
-unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[6])
-{
-	unsigned int tmp;
-	int i,j;
-	for (i = 0; i < 5; i++)
-	{
-		for (j = 0; j < 4; j ++)
-		{
-			if (j > 3)
-				return NULL;
-			if ((':' == addr[j])||('-' == addr[j]))
-			{
-				addr[j] = 0;
-				if (1 != sscanf(addr, "%x", &tmp))
-					return 0;
-				if (tmp > 0xFF)
-					return NULL;
-				res[i] = (unsigned char) 0xFF & tmp;
-				addr += (j + 1);
-				break;
-			}
-		}
-	}
-	if (1 != sscanf (addr, "%x", &tmp))
-			return NULL;
-		if (tmp > 0xFF)
-			return NULL;
-		res[5]=(unsigned char )0xFF & tmp;
-
-		return 	res;
-}
-
-void ipaddr_print(unsigned char *addr, int len)
-{
-	int i;
-	for (i = 0; i < (len - 1); i++)
-	{
-		TRACE("%d.", addr[i]);
-	}
-	TRACE("%d", addr[i]);
-}
-
-void macaddr_print(unsigned char *addr, int len)
-{
-	int i;
-	for (i = 0; i < (len - 1); i++)
-	{
-		TRACE("%2X:", addr[i]);
-	}
-	TRACE("%X", addr[i]);
-}
 int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
 	int i;
 	for (i = 0; i < INTERFACES_QUANTITY; i++ ) {
@@ -270,27 +175,23 @@ static int alloc_callback (IF_DEVICE *dev, unsigned int type, ETH_LISTEN_CALLBAC
 }
 
 
-int netif_rx(net_packet *pack)
-{
+int netif_rx(net_packet *pack) {
 	int i;
 
 	IF_DEVICE *dev;
-	if((NULL == pack) || (NULL == pack->netdev))
+	if((NULL == pack) || (NULL == pack->netdev)) {
 		return -1;
-
+	}
 	pack->nh.raw = (void *)pack->data + sizeof(machdr);
 
-	for(i = 0; i < INTERFACES_QUANTITY; i ++)
-	{
-		if (ifs[i].net_dev == pack->netdev)
-		{
+	for(i = 0; i < INTERFACES_QUANTITY; i ++) {
+		if (ifs[i].net_dev == pack->netdev) {
 			pack->ifdev = &ifs[i];
 			break;
 		}
 	}
 
-	if (ARP_PROTOCOL_TYPE == pack->protocol)
-	{
+	if (ARP_PROTOCOL_TYPE == pack->protocol) {
 		pack->nh.raw = pack->data + sizeof(machdr);
 //		packet_dump(pack);
 		arp_received_packet(pack);
@@ -298,28 +199,23 @@ int netif_rx(net_packet *pack)
 		return;
 	}
 
-	if (IP_PROTOCOL_TYPE == pack->protocol)
-	{
+	if (IP_PROTOCOL_TYPE == pack->protocol) {
 		pack->nh.raw = pack->data + sizeof(machdr);
 		pack->h.raw = pack->nh.raw + sizeof(iphdr);
-		if (ICMP_PROTO_TYPE == pack->nh.iph->proto)
-		{
+		if (ICMP_PROTO_TYPE == pack->nh.iph->proto) {
 //			packet_dump(pack);
 			icmp_received_packet(pack);
 		}
-		if (UDP_PROTO_TYPE == pack->nh.iph->proto)
-		{
+		if (UDP_PROTO_TYPE == pack->nh.iph->proto) {
 			packet_dump(pack);
 			udp_received_packet(pack);
 		}
 	}
 	dev = (IF_DEVICE *)pack->ifdev;
-	for (i = 0; i < sizeof(dev->cb_info) / sizeof(dev->cb_info[0]); i ++)
-	{
-		if(1 == dev->cb_info[i].is_busy)
-		{
-			if ((NET_TYPE_ALL_PROTOCOL == dev->cb_info[i].type) || (dev->cb_info[i].type == pack->protocol))
-			{
+	for (i = 0; i < array_len(dev->cb_info); i ++) {
+		if(1 == dev->cb_info[i].is_busy) {
+			if ((NET_TYPE_ALL_PROTOCOL == dev->cb_info[i].type) ||
+			    (dev->cb_info[i].type == pack->protocol)) {
 				//may be copy pack for different protocols
 				dev->cb_info[i].func(pack);
 			}
@@ -328,12 +224,11 @@ int netif_rx(net_packet *pack)
 	net_packet_free(pack);
 }
 
-int eth_listen (void *handler, unsigned short type, ETH_LISTEN_CALLBACK callback)
-{
+int eth_listen (void *handler, unsigned short type, ETH_LISTEN_CALLBACK callback) {
 	IF_DEVICE *dev = (IF_DEVICE *)handler;
-	if (NULL == dev)
+	if (NULL == dev) {
 		return -1;
-
+	}
 	return alloc_callback(dev, type, callback);
 }
 
@@ -348,33 +243,41 @@ int find_interface_by_addr(unsigned char ipaddr[4]) {
 }
 
 void packet_dump(net_packet *pack) {
+	char ip[15], mac[18];
 	TRACE("--------dump-----------------\n");
 	TRACE("protocol=0x%X\n", pack->protocol);
 	TRACE("len=%d\n", pack->len);
 	TRACE("mac.mach.type=%d\n", pack->mac.mach->type);
-	TRACE("mac.mach.src_addr="); macaddr_print(pack->mac.mach->src_addr, 6);
-	TRACE("\nmac.mach.dst_addr="); macaddr_print(pack->mac.mach->dst_addr, 6);
+	macaddr_print(mac, pack->mac.mach->src_addr);
+	TRACE("mac.mach.src_addr=%s\n", mac);
+	macaddr_print(mac, pack->mac.mach->dst_addr);
+	TRACE("mac.mach.dst_addr=%s\n", mac);
 	if(pack->protocol == ARP_PROTOCOL_TYPE) {
-		TRACE("\nnh.arph.htype=%d\n", pack->nh.arph->htype);
+		TRACE("nh.arph.htype=%d\n", pack->nh.arph->htype);
 		TRACE("nh.arph.ptype=%d\n", pack->nh.arph->ptype);
 		TRACE("nh.arph.hlen=%d\n", pack->nh.arph->hlen);
 		TRACE("nh.arph.plen=%d\n", pack->nh.arph->plen);
 		TRACE("nh.arph.oper=%d\n", pack->nh.arph->oper);
-		TRACE("nh.arph.sha="); macaddr_print(pack->nh.arph->sha, 6);
-		TRACE("\nnh.arph.spa="); ipaddr_print(pack->nh.arph->spa, 4);
-		TRACE("\nnh.arph.tha="); macaddr_print(pack->nh.arph->tha, 6);
-		TRACE("\nnh.arph.tpa="); ipaddr_print(pack->nh.arph->tpa, 4);
-		TRACE("\n");
+		macaddr_print(mac, pack->nh.arph->sha);
+		TRACE("nh.arph.sha=%s\n", mac);
+		ipaddr_print(ip, pack->nh.arph->spa);
+		TRACE("nh.arph.spa=%s\n", ip);
+		macaddr_print(mac, pack->nh.arph->tha);
+		TRACE("nh.arph.tha=%s\n", mac);
+		ipaddr_print(ip, pack->nh.arph->tpa);
+		TRACE("nh.arph.tpa=%s\n", ip);
 	} else if(pack->protocol == IP_PROTOCOL_TYPE) {
-    		TRACE("\nnh.iph.tos=%d\n", pack->nh.iph->tos);
+    		TRACE("nh.iph.tos=%d\n", pack->nh.iph->tos);
     		TRACE("nh.iph.tot_len=%d\n", pack->nh.iph->tot_len);
     		TRACE("nh.iph.id=%d\n", pack->nh.iph->id);
     		TRACE("nh.iph.frag_off=%d\n", pack->nh.iph->frag_off);
     		TRACE("nh.iph.ttl=%d\n", pack->nh.iph->ttl);
     		TRACE("nh.iph.proto=0x%X\n", pack->nh.iph->proto);
     		TRACE("nh.iph.check=%d\n", pack->nh.iph->check);
-    		TRACE("nh.iph.saddr="); ipaddr_print(pack->nh.iph->saddr, 4);
-    		TRACE("\nnh.iph.daddr="); ipaddr_print(pack->nh.iph->daddr, 4);
+    		ipaddr_print(ip, pack->nh.iph->saddr);
+    		TRACE("nh.iph.saddr=");
+    		ipaddr_print(ip, pack->nh.iph->daddr);
+    		TRACE("\nnh.iph.daddr=");
     		if( pack->nh.iph->proto == ICMP_PROTO_TYPE) {
     			TRACE("\nh.icmph.type=%d\n", pack->h.icmph->type);
     			TRACE("h.icmph.code=%d\n", pack->h.icmph->code);

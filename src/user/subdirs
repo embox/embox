@@ -3,7 +3,6 @@ arp \
 help \
 lspnp \
 mem \
-mmu_probe \
 ping \
 udpd \
 wmem

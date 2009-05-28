@@ -109,10 +109,11 @@ int tftp_received_packet(net_packet *pack) {
 	//watch first 2 bytes to find message type
 	HWRD type;
 	type = *(HWRD *)(pack->data);
-	if 		( 0x5 == type ) 	//error-message
+	if ( 0x5 == type ) {	//error-message
 		tftp_received_error_handler(pack);
-	else if ( 0x3 == type )		//data-message
+	} else if ( 0x3 == type ) {	//data-message
 		tftp_received_data_handler(pack);
-	else						//session error
+	} else {						//session error
 		tftp_received_type_error();
+	}
 }

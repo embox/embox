@@ -75,11 +75,9 @@ struct inet_sock{
 	unsigned char mc_ttl;
 };
 
-static inline struct inet_sock *inet_sk(const struct sock *sk)
-{
+static inline struct inet_sock *inet_sk(const struct sock *sk) {
         return (struct inet_sock *)sk;
 }
-
 
 #endif /* INET_SOCK_H_ */
 

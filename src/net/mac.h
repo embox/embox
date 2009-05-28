@@ -8,15 +8,13 @@
 #ifndef MAC_H_
 #define MAC_H_
 
-
 #define MAC_ADDR_LEN 6
-typedef struct _machdr
-{
+
+typedef struct _machdr {
 	unsigned char dst_addr[MAC_ADDR_LEN];
 	unsigned char src_addr[MAC_ADDR_LEN];
 	unsigned short type;
 }machdr;
-
 
 #define MAC_HEADER_SIZE (sizeof(machdr))
 

@@ -1,5 +1,4 @@
-#TODO !!!!!!!!!!in this version folder tests must set lat in list its makefile diff from other
-SUBDIRS = arch net kernel conio drivers common tests
+SUBDIRS = arch net kernel conio drivers common misc user tests
 OBJS =
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
 
@@ -25,7 +24,6 @@ release:$(SUBDIRS)
 	$(OBJ_DIR)/traps.o $(filter-out $(OBJ_DIR)/traps.o, $(wildcard $(OBJ_DIR)/*.o))
 	$(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_rom > $(BIN_DIR)/$(TARGET)_rom.dis
 
-
 debug:$(SUBDIRS)
 	#TODO may be use GOBJS list of objects files
 	#TODO have to set entry point in linker script now importen link order
@@ -47,4 +45,3 @@ docs:
 	cd .. && doxygen
 
 clean:$(SUBDIRS)
-

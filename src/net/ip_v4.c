@@ -9,24 +9,21 @@
 #include "sock.h"
 #include "inet_sock.h"
 
-static inline int rebuild_ip_header_offset( net_packet *pack)
-{
+static inline int rebuild_ip_header_offset( net_packet *pack) {
 	pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2);
 	return 0;
 }
-int ip_received_packet(struct _net_packet *pack)
-{
+
+int ip_received_packet(struct _net_packet *pack) {
 	iphdr *header = pack->nh.iph;
-	/*if (ICMP_PROTOCOL_TYPE == header->proto)
-	{
+	/*if (ICMP_PROTOCOL_TYPE == header->proto) {
 		return;
 	}*/
 	//TODO release ip proto
 	return;
 }
 
-static int rebuild_ip_header(struct inet_sock *sk, struct _net_packet *pack)
-{
+static int rebuild_ip_header(struct inet_sock *sk, struct _net_packet *pack) {
 	iphdr *hdr = pack->nh.iph;
 	hdr->version = 4;
 	hdr->ihl = sizeof (iphdr) << 2;
@@ -42,8 +39,7 @@ static int rebuild_ip_header(struct inet_sock *sk, struct _net_packet *pack)
 	return 0;
 }
 
-int ip_send_packet(struct inet_sock *sk, struct _net_packet *pack)
-{
+int ip_send_packet(struct inet_sock *sk, struct _net_packet *pack) {
 	rebuild_ip_header_offset(pack);
 	rebuild_ip_header(sk, pack);
 	pack->len += sizeof (iphdr);

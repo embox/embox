@@ -14,7 +14,9 @@ static PNP_VENDOR_INFO const vendors_table[] = {
 };
 
 static PNP_DEVICE_INFO const devs_table[] = {
-	#include "pnp_devices_table.inc"
+	#include "gaisler_pnp_devices_table.inc"
+	,
+	#include "esa_pnp_devices_table.inc"
 };
 
 #define VENDORS_TABLE_LEN        array_len(vendors_table)
