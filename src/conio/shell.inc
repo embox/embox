@@ -4,6 +4,7 @@
 {"help", "display all possible commands", help_shell_handler},
 {"lspnp", "show list of plug and play devices", lspnp_shell_handler},
 {"mem", "read from memory or test memory", mem_shell_handler},
+{"mmu_probe", "mmu_probe", mmu_probe_shell_handler},
 {"ping", "test whether a particular host is reachable", ping_shell_handler},
 {"udpd", "test udp socket", udpd_shell_handler},
 {"wmem", "write to memory", wmem_shell_handler}
