@@ -99,14 +99,14 @@ constant MMCTRL_TLBDIS : integer := 31;
 
 static inline void srmmu_set_mmureg(unsigned long regval)
 {
-        asm volatile("sta %0, [%%g0] %1\n\t" : :
+        __asm__ __volatile__("sta %0, [%%g0] %1\n\t" : :
 		     "r" (regval), "i" (ASI_M_MMUREGS) : "memory");
 }
 
 static inline unsigned long srmmu_get_mmureg(unsigned long addr_reg)
 {
 	register int retval;
-	asm volatile("lda [%1] %2, %0\n\t" :
+	__asm__ __volatile__("lda [%1] %2, %0\n\t" :
 		     "=r" (retval) :
 		     "r" (addr_reg),
 		     "i" (ASI_M_MMUREGS));
@@ -116,7 +116,7 @@ static inline unsigned long srmmu_get_mmureg(unsigned long addr_reg)
 static inline void srmmu_set_ctable_ptr(unsigned long paddr)
 {
 	paddr = ((paddr >> 4) & SRMMU_CTX_PMASK);
-	asm volatile("sta %0, [%1] %2\n\t" : :
+	__asm__ __volatile__("sta %0, [%1] %2\n\t" : :
 		     "r" (paddr), "r" (SRMMU_CTXTBL_PTR),
 		     "i" (ASI_M_MMUREGS) :
 		     "memory");
@@ -125,7 +125,7 @@ static inline void srmmu_set_ctable_ptr(unsigned long paddr)
 static inline unsigned long srmmu_get_ctable_ptr(void)
 {
 	unsigned int retval;
-	asm volatile("lda [%1] %2, %0\n\t" :
+	__asm__ __volatile__("lda [%1] %2, %0\n\t" :
 		     "=r" (retval) :
 		     "r" (SRMMU_CTXTBL_PTR),
 		     "i" (ASI_M_MMUREGS));
@@ -134,7 +134,7 @@ static inline unsigned long srmmu_get_ctable_ptr(void)
 
 static inline void srmmu_set_context(int context)
 {
-	asm volatile("sta %0, [%1] %2\n\t" : :
+	__asm__ __volatile__("sta %0, [%1] %2\n\t" : :
 		     "r" (context), "r" (SRMMU_CTX_REG),
 		     "i" (ASI_M_MMUREGS) : "memory");
 }
@@ -142,7 +142,7 @@ static inline void srmmu_set_context(int context)
 static inline int srmmu_get_context(void)
 {
 	register int retval;
-	asm volatile("lda [%1] %2, %0\n\t" :
+	__asm__ __volatile__("lda [%1] %2, %0\n\t" :
 		     "=r" (retval) :
 		     "r" (SRMMU_CTX_REG),
 		     "i" (ASI_M_MMUREGS));
@@ -156,11 +156,6 @@ static inline void srmmu_flush_whole_tlb(void)
 			     "i" (ASI_M_FLUSH_PROBE) : "memory");
 
 }
-
-
-
-
-
 
 typedef unsigned long pte_t;
 typedef unsigned long iopte_t;

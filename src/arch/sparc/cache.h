@@ -11,7 +11,7 @@ inline static void cache_enable (BOOL enable)
     else
         l_regs->cachectrl &= ~0xF;
 
-    asm ("flush");
+    __asm__ ("flush");
 }
 
 inline static void cache_instr_enable (BOOL enable)
@@ -21,7 +21,7 @@ inline static void cache_instr_enable (BOOL enable)
     else
         l_regs->cachectrl &= ~0x3;
 
-    asm ("flush");
+    __asm__ ("flush");
 }
 
 
@@ -33,6 +33,6 @@ inline static void cache_data_enable (BOOL enable)
     else
         l_regs->cachectrl &= ~0xC;
 
-    asm ("flush");
+    __asm__ ("flush");
 }
 #endif // ifndef __CACHE_H__

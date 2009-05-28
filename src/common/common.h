@@ -10,7 +10,7 @@
 
     #define BMASK(nbit)  (0x00000001 << (nbit))
     // Stop processor
-    #define HALT     { asm ("ta 0; nop;"); }
+    #define HALT     { __asm__ ("ta 0; nop;"); }
 #endif //_TEST_SYSTEM_
 
 inline static int dummy() {

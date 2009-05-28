@@ -167,8 +167,8 @@ static BOOL mmu_probe() {
 
   /* close your eyes and pray ... */
   srmmu_set_mmureg(0x00000001);
-  asm(" flush "); //iflush
-  asm(" sta  %g0, [%g0] 0x11 "); //dflush
+  __asm__(" flush "); //iflush
+  __asm__(" sta  %g0, [%g0] 0x11 "); //dflush
 
 
 
@@ -211,7 +211,7 @@ static BOOL mmu_probe() {
 			MMU_RETURN (FALSE);
 		}
 	}
-	asm(" sta  %g0, [%g0] 0x11 "); //dflush
+	__asm__(" sta  %g0, [%g0] 0x11 "); //dflush
 	for (j = 0, i = 3; i < TLBNUM+3; i++) {
 		pteval = (((((unsigned long) &page2) + (((i - 3) % 3) * PAGE_SIZE))
 				>> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
