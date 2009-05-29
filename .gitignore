@@ -3,3 +3,6 @@
 /include_dirs.lst
 /obj
 /objs.lst
+
+*.pyc
+

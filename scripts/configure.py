@@ -246,7 +246,7 @@ def main():
 
 	#-- Create the info frame and fill with initial contents
 	frame["Info"] = Tkinter.Frame(root)
-	frame["Info"].pack(fill=Tkinter.X, side=Tkinter.BOTTOM, pady=1)
+	frame["Info"].pack(fill=Tkinter.X, side=Tkinter.TOP, pady=1)
 
 	#-- Tabs frame
 	frame["Main"] = conf_tab(frame["Info"], LEFT)
