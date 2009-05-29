@@ -32,6 +32,8 @@ all:
 	rm -f objs.lst include_dirs.lst
 	declare -x MAKEOP=create_objs_lst; make --directory=src create_objs_lst
 	echo ' ' >> $(ROOT_DIR)/include_dirs.lst
+	uniq src/user/subdirs > src/user/.subdirs
+	mv src/user/.subdirs src/user/subdirs
 	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
 
 clean:
