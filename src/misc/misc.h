@@ -6,7 +6,7 @@
  */
 
 #ifndef MISC_H_
-#define MIS_H_
+#define MISC_H_
 
 #include "common.h"
 #include "types.h"

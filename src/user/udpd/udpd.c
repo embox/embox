@@ -64,11 +64,11 @@ int udpd_shell_handler(int argsc, char **argsv) {
 	while (1) {
 		n = recv(sk, buf, sizeof(buf));
 		if(n) {
-		    printf("buf=%s\n", buf);
-		    if(send(sk, buf, sizeof(buf))) {
-			    LOG_ERROR("can't send\n");
-		    }
-		    break;
+			printf("buf=%s\n", buf);
+			if(send(sk, buf, sizeof(buf))) {
+				LOG_ERROR("can't send\n");
+			}
+//			break;
 		}
 		sleep(1);
 	}

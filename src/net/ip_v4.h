@@ -15,7 +15,7 @@
 #define UDP_PROTO_TYPE (unsigned short)0x11
 
 typedef struct _iphdr {
-	unsigned char version:4, ihl:4;
+	__extension__ unsigned char version:4, ihl:4;
 	unsigned char tos;
 	unsigned short tot_len;
 	unsigned short id;
