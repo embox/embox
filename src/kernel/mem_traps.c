@@ -3,25 +3,25 @@
 void mem_not_aligned()
 {
 //	mem_access_error = true;
-	printf("\n адрес не выровнен\n");
+	printf("\n address isn't alligned\n");
 }
 
 void mem_access_exception()
 {
 //	mem_access_error = true;
-	printf("\n ошибка доступа к памяти\n");
+	printf("\n error memory access\n");
 }
 
 void mem_store_error()
 {
 //	mem_access_error = true;
-	printf("\n ошибка записи\n");
+	printf("\n writing error\n");
 }
 
 void mem_hang()
 {
 //	mem_access_error = true;
-	printf("\n зависание\n");
+	printf("\n hand-up\n");
 }
 
 BOOL con_init()

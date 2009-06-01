@@ -24,23 +24,31 @@ int udp_init(void) {
 	return 0;
 }
 
-void build_udp_packet(net_packet *pack, void *ifdev, const void *buf, int len) {
-	if( pack == NULL) {
+void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
+	LOG_DEBUG("rebuild_udp_packet\n");
+	if( pack == NULL ||
+	    ifdev == NULL ||
+	    sk ==NULL) {
 		return;
 	}
-        pack->netdev = eth_get_netdevice(ifdev);
-        pack->ifdev = ifdev;
-        pack->mac.raw = pack->data;
-        //TODO: build udp header
-//        pack->nh.mac = pack->data;
-//        pack->nh.raw = pack->data + sizeof(machdr);
-//        pack->h.raw = pack->nh.raw + sizeof(iphdr);
-//        buff = pack->h.raw + sizeof(udp);
+	pack->ifdev = ifdev;
+	pack->netdev = eth_get_netdevice(ifdev);
+	pack->protocol = UDP_PROTO_TYPE;
+	pack->len = UDP_HEADER_SIZE;
+	pack->h.raw = pack->nh.raw + MAC_HEADER_SIZE + IP_HEADER_SIZE;
+	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
+	pack->h.uh->source = sk->inet.sport;
+	pack->h.uh->dest = sk->inet.dport;
+	pack->h.uh->len = UDP_HEADER_SIZE;
+	pack->h.uh->check = 0;
+	memcpy(pack->h.uh->data, buf, len);
 }
 
-int udp_trans(struct inet_sock *sk, net_packet *pack) {
+int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	LOG_DEBUG("udp_trans\n");
-	//ip_send_packet(sk, pack);
-	eth_send(pack);
+	net_packet *pack;
+        pack = net_packet_alloc();
+	rebuild_udp_packet(pack, sk, ifdev, buf, len);
+	ip_send_packet(sk, pack);
 	return 0;
 }

@@ -17,4 +17,6 @@ typedef struct _icmphdr {
 	unsigned char data[0x40];
 }icmphdr;
 
+#define ICMP_HEADER_SIZE	(sizeof(icmphdr))
+
 #endif /* ICMP_H_ */

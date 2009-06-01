@@ -68,7 +68,7 @@ int udpd_shell_handler(int argsc, char **argsv) {
 			if(send(sk, buf, sizeof(buf))) {
 				LOG_ERROR("can't send\n");
 			}
-//			break;
+			break;
 		}
 		sleep(1);
 	}

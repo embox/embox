@@ -47,9 +47,9 @@ void socket_free(struct udp_sock *sk) {
 
 void fill_sock(struct udp_sock *sk, sk_type type, sk_proto proto) {
 	LOG_DEBUG("fill_sock\n");
-	//TODO:
 //	sk->inet.sk->sk_protocol = proto;
 //	sk->inet.sk->sk_type = type;
+//	sk->inet.sk->netdev = find_net_device("eth0");
 }
 
 int udpsock_push(net_packet *pack) {
@@ -98,8 +98,9 @@ int socket(sk_type type, sk_proto protocol) {
 
 int bind(int s, unsigned char ipaddr[4], int port) {
 	LOG_DEBUG("bind socket\n");
-	memcpy(&sks[s].sk.inet.saddr, ipaddr, sizeof(ipaddr));
+	memcpy(&sks[s].sk.inet.saddr, ipaddr, IP_HEADER_SIZE);
 	sks[s].sk.inet.sport = port;
+	sks[s].sk.inet.dport = port;
 	char ip[15];
 	ipaddr_print(ip, sks[s].sk.inet.saddr);
 	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[s].sk.inet.sport, ip);
@@ -113,16 +114,13 @@ void close(int s) {
 
 int send(int s, const void *buf, int len) {
 	LOG_DEBUG("send\n");
-	net_packet *pack;
-        pack = net_packet_alloc();
-	build_udp_packet(pack, sks[s].queue->ifdev, buf, len);
-        udp_trans(&sks[s].sk.inet, pack);
+        udp_trans(&sks[s].sk, sks[s].queue->ifdev, buf, len);
 }
 
 int recv(int s, void *buf, int len) {
 	if(sks[s].new_pack == 1) {
 		LOG_DEBUG("recv\n");
-		memcpy(buf, sks[s].queue->data + sizeof(machdr) + sizeof(iphdr) + sizeof(udphdr), len);
+		memcpy(buf, sks[s].queue->data + MAC_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE - 24, len);
 		net_packet_free(sks[s].queue);
 		sks[s].new_pack = 0;
 	        return len;

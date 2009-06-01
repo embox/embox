@@ -15,7 +15,10 @@ typedef struct _udphdr {
         unsigned short dest;
         unsigned short len;
         unsigned short check;
+	unsigned char data[24];
 }udphdr;
+
+#define UDP_HEADER_SIZE	(sizeof(udphdr))
 
 struct udp_sock{
         struct inet_sock inet;

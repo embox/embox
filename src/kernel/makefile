@@ -5,4 +5,4 @@ OBJS:= main.o \
        test.o \
        tests_iterator.o
 
-include $(SRC_DIR)//common.mk
+include $(SRC_DIR)/common.mk

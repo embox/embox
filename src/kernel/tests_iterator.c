@@ -28,7 +28,7 @@ typedef struct _EXPRESS_TEST_STRUCT
 }EXPRESS_TEST_STRUCT;
 
 
-#define QUANTITY_TESTS (sizeof (express_tests_desc)/ sizeof (express_tests_desc[0]))
+#define QUANTITY_TESTS array_len(express_tests_desc)
 static EXPRESS_TEST_STRUCT const express_tests [QUANTITY_TESTS];
 static int cur_test_number = 0;
 

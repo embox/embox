@@ -72,7 +72,7 @@ unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[6]) {
 }
 
 void ipaddr_print(char *buf, unsigned char *addr) {
-        sprintf(buf, "%d.%d.%d.%d", addr[0], addr[1], addr[3], addr[3]);
+        sprintf(buf, "%d.%d.%d.%d", addr[0], addr[1], addr[2], addr[3]);
 }
 
 void macaddr_print(char *buf, unsigned char *addr) {

@@ -102,7 +102,6 @@ int eth_set_ipaddr (void *ifdev, unsigned char ipaddr[4]) {
 }
 
 int eth_set_macaddr (void *ifdev, unsigned char macaddr[6]) {
-	LOGGER();
         if (NULL == ifdev)
                 return -1;
 	IF_DEVICE *dev = (IF_DEVICE *)ifdev;
@@ -122,33 +121,32 @@ int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
 	return -1;
 }
 */
-unsigned char *eth_get_ipaddr(void *handler)
-{
+unsigned char *eth_get_ipaddr(void *handler) {
 	IF_DEVICE *dev = (IF_DEVICE *)handler;
 	if (NULL == dev)
 		return NULL;
 	return dev->ipv4_addr;
 }
 
-net_device *eth_get_netdevice(void *handler)
-{
+net_device *eth_get_netdevice(void *handler) {
+//	LOG_DEBUG("eth_get_netdevice\n");
 	IF_DEVICE *dev = (IF_DEVICE *)handler;
-	if (NULL == dev)
+	if (NULL == dev) {
+		LOG_ERROR("handler is NULL\n");
 		return NULL;
+	}
 	return dev->net_dev;
 }
 
-int eth_send (net_packet *pack)
-{
+int eth_send (net_packet *pack) {
+//	LOG_DEBUG("eth_send\n");
 	IF_DEVICE *dev = (IF_DEVICE *)pack->ifdev;
 
 	if ((NULL == pack) || (NULL == pack->ifdev))
 		return -1;
 
-	if (ARP_PROTOCOL_TYPE != pack->protocol)
-	{
-		if (-1 == dev->net_dev->rebuild_header(pack))
-		{
+	if (ARP_PROTOCOL_TYPE != pack->protocol) {
+		if (-1 == dev->net_dev->rebuild_header(pack)) {
 			net_packet_free(pack);
 			return -1;
 		}
@@ -176,6 +174,7 @@ static int alloc_callback (IF_DEVICE *dev, unsigned int type, ETH_LISTEN_CALLBAC
 
 
 int netif_rx(net_packet *pack) {
+//	LOG_DEBUG("netif_rx\n");
 	int i;
 
 	IF_DEVICE *dev;
@@ -201,13 +200,7 @@ int netif_rx(net_packet *pack) {
 	if (IP_PROTOCOL_TYPE == pack->protocol) {
 		pack->nh.raw = pack->data + sizeof(machdr);
 		pack->h.raw = pack->nh.raw + sizeof(iphdr);
-		if (ICMP_PROTO_TYPE == pack->nh.iph->proto) {
-			icmp_received_packet(pack);
-		}
-		if (UDP_PROTO_TYPE == pack->nh.iph->proto) {
-			packet_dump(pack);
-			udp_received_packet(pack);
-		}
+		ip_received_packet(pack);
 	}
 	dev = (IF_DEVICE *)pack->ifdev;
 	for (i = 0; i < array_len(dev->cb_info); i ++) {
@@ -273,16 +266,16 @@ void packet_dump(net_packet *pack) {
     		LOG_DEBUG("nh.iph.proto=0x%X\n", pack->nh.iph->proto);
     		LOG_DEBUG("nh.iph.check=%d\n", pack->nh.iph->check);
     		ipaddr_print(ip, pack->nh.iph->saddr);
-    		LOG_DEBUG("nh.iph.saddr=");
+    		LOG_DEBUG("nh.iph.saddr=%s\n", ip);
     		ipaddr_print(ip, pack->nh.iph->daddr);
-    		LOG_DEBUG("\nnh.iph.daddr=");
+    		LOG_DEBUG("nh.iph.daddr=%s\n", ip);
     		if( pack->nh.iph->proto == ICMP_PROTO_TYPE) {
-    			LOG_DEBUG("\nh.icmph.type=%d\n", pack->h.icmph->type);
+    			LOG_DEBUG("h.icmph.type=%d\n", pack->h.icmph->type);
     			LOG_DEBUG("h.icmph.code=%d\n", pack->h.icmph->code);
     			LOG_DEBUG("h.icmph.header_check_summ=%d\n", pack->h.icmph->header_check_summ);
     			LOG_DEBUG("h.icmph.data=0x%X\n", pack->h.icmph->data);
     		} else if( pack->nh.iph->proto == UDP_PROTO_TYPE) {
-    			LOG_DEBUG("\nh.uh.source=%d\n", pack->h.uh->source);
+    			LOG_DEBUG("h.uh.source=%d\n", pack->h.uh->source);
     			LOG_DEBUG("h.uh.dest=%d\n", pack->h.uh->dest);
     			LOG_DEBUG("h.uh.len=%d\n", pack->h.uh->len);
     			LOG_DEBUG("h.uh.check=%d\n", pack->h.uh->check);

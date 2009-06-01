@@ -105,30 +105,30 @@ static unsigned short ip_id;
 static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 		unsigned char code, int ttl, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
 	pack->h.raw = pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2)
-			+ sizeof(iphdr);
-	memset(pack->h.raw, 0, sizeof(icmphdr));
+			+ IP_HEADER_SIZE;
+	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
 
 	//fill icmp header
 	pack->h.icmph->type = type;
 	pack->h.icmph->code = code;
 	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,
-			sizeof(icmphdr));
+			ICMP_HEADER_SIZE);
 
 	//fill ip header
 	pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2);
 	pack->nh.iph->version = 4;
-	pack->nh.iph->ihl = sizeof(iphdr) >> 2;
+	pack->nh.iph->ihl = IP_HEADER_SIZE >> 2;
 	memcpy(pack->nh.iph->daddr, dstaddr, sizeof(pack->nh.iph->daddr));
 	memcpy(pack->nh.iph->saddr, srcaddr, sizeof(pack->nh.iph->saddr));
 	pack->nh.iph->frag_off = 0;
 	pack->nh.iph->check = 0;
-	pack->nh.iph->tot_len = sizeof(icmphdr);
+	pack->nh.iph->tot_len = ICMP_HEADER_SIZE;
 	pack->nh.iph->tos = 0;
 	pack->nh.iph->ttl = ttl;
 	pack->nh.iph->proto = ICMP_PROTO_TYPE;
 	pack->nh.iph->id = ip_id++;
-	pack->nh.iph->check = calc_checksumm(pack->nh.raw, sizeof(iphdr));
-	return sizeof(icmphdr) + sizeof(iphdr);
+	pack->nh.iph->check = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
+	return ICMP_HEADER_SIZE + IP_HEADER_SIZE;
 }
 
 //implementation handlers for received msgs
@@ -153,9 +153,9 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 
 	//fill icmp header
 	pack->h.icmph->type = ICMP_TYPE_ECHO_RESP;
-	memset(pack->h.raw + pack->nh.iph->tot_len - sizeof(iphdr) + 1, 0, 64);
+	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
 
-	LOG_DEBUG("\npacket icmp\n");
+/*	LOG_DEBUG("\npacket icmp\n");
 	for (i = 0; i < pack->nh.iph->tot_len + 64; i ++) {
 		if (0 == i % 4) {
 			LOG_DEBUG("\t ");
@@ -163,9 +163,9 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 		LOG_DEBUG("%2X",  pack->h.raw[i]);
 	}
 	LOG_DEBUG("%X\n",  pack->h.icmph->header_check_summ);
-	pack->h.icmph->header_check_summ = 0;
-	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,pack->nh.iph->tot_len - sizeof(iphdr) + 1 );
-	LOG_DEBUG("%X\n",  pack->h.icmph->header_check_summ);
+*/	pack->h.icmph->header_check_summ = 0;
+	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,pack->nh.iph->tot_len - IP_HEADER_SIZE + 1 );
+//	LOG_DEBUG("%X\n",  pack->h.icmph->header_check_summ);
 
 	//fill ip header
 	memcpy (pack->nh.iph->saddr, recieved_pack->nh.iph->daddr, sizeof (pack->nh.iph->saddr));
@@ -174,9 +174,9 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	pack->nh.iph->check = 0;
 	pack->nh.iph->ttl = 64;
 	pack->nh.iph->frag_off = 0;
-	pack->nh.iph->check = calc_checksumm(pack->nh.raw, sizeof(iphdr));
+	pack->nh.iph->check = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
 
-	pack->len -= sizeof(machdr);
+	pack->len -= MAC_HEADER_SIZE;
 	eth_send(pack);
 	return 0;
 }
