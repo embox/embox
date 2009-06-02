@@ -12,6 +12,7 @@
 #include "udp.h"
 #include "ip_v4.h"
 #include "socket.h"
+#include "mac.h"
 
 int udp_received_packet(net_packet *pack) {
 	LOG_DEBUG("udp packet received\n");
@@ -35,12 +36,12 @@ void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifdev, cons
 	pack->netdev = eth_get_netdevice(ifdev);
 	pack->protocol = UDP_PROTO_TYPE;
 	pack->len = UDP_HEADER_SIZE;
-	pack->h.raw = pack->nh.raw + MAC_HEADER_SIZE + IP_HEADER_SIZE;
+	pack->h.raw = pack->data + MAC_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
 	pack->h.uh->source = sk->inet.sport;
 	pack->h.uh->dest = sk->inet.dport;
 	pack->h.uh->len = UDP_HEADER_SIZE;
-	pack->h.uh->check = 0;
+	pack->h.uh->check = Crc16(pack->h.uh, UDP_HEADER_SIZE);
 	memcpy(pack->h.uh->data, buf, len);
 }
 

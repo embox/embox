@@ -140,6 +140,7 @@ net_device *eth_get_netdevice(void *handler) {
 
 int eth_send (net_packet *pack) {
 //	LOG_DEBUG("eth_send\n");
+	packet_dump(pack);
 	IF_DEVICE *dev = (IF_DEVICE *)pack->ifdev;
 
 	if ((NULL == pack) || (NULL == pack->ifdev))

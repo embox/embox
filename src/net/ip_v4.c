@@ -9,9 +9,10 @@
 #include "net.h"
 #include "sock.h"
 #include "inet_sock.h"
+#include "mac.h"
 
 static inline int rebuild_ip_header_offset( net_packet *pack) {
-	pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2);
+	pack->nh.raw = pack->data + MAC_HEADER_SIZE;
 	return 0;
 }
 

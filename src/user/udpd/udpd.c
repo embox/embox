@@ -5,8 +5,7 @@
  * \author sikmir
  */
 
-#include "types.h"
-#include "common.h"
+#include "misc.h"
 #include "udpd.h"
 #include "shell.h"
 #include "socket.h"
@@ -33,7 +32,7 @@ int udpd_shell_handler(int argsc, char **argsv) {
 			sizeof(available_keys), keys);
 
 	if (!get_key('a', keys, keys_amount, &key_value)) {
-		ipaddr_scan("192.168.0.80", addr);
+		addr[0] = 192; addr[1] = 168; addr[2] = 0; addr[3] = 80;
 	} else if (NULL == ipaddr_scan(key_value, addr)) {
 	        LOG_ERROR("wrong ip addr format (%s)\n", key_value);
 	        show_help();

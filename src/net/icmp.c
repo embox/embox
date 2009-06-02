@@ -11,6 +11,7 @@
 #include "net_pack_manager.h"
 #include "icmp.h"
 #include "ip_v4.h"
+#include "mac.h"
 
 #define ICMP_TYPE_ECHO_REQ  8
 #define ICMP_TYPE_ECHO_RESP 0
@@ -104,8 +105,7 @@ static unsigned short ip_id;
 
 static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 		unsigned char code, int ttl, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
-	pack->h.raw = pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2)
-			+ IP_HEADER_SIZE;
+	pack->h.raw = pack->nh.raw = pack->data + MAC_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
 
 	//fill icmp header
@@ -115,7 +115,7 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 			ICMP_HEADER_SIZE);
 
 	//fill ip header
-	pack->nh.raw = pack->data + (pack->netdev->addr_len * 2 + 2);
+	pack->nh.raw = pack->data + MAC_HEADER_SIZE;
 	pack->nh.iph->version = 4;
 	pack->nh.iph->ihl = IP_HEADER_SIZE >> 2;
 	memcpy(pack->nh.iph->daddr, dstaddr, sizeof(pack->nh.iph->daddr));
