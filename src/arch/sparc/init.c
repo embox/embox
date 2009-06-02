@@ -1,8 +1,8 @@
-/*
- * init.c
+/**
+ * \file init.c
  *
- *  Created on: May 21, 2009
- *      Author: anton
+ * \date May 21, 2009
+ * \author anton
  */
 #include "types.h"
 #include "cache.h"
