@@ -1,5 +1,6 @@
 export
 ROOT_DIR := $(CURDIR)
+
 BIN_DIR:= $(ROOT_DIR)/bin
 OBJ_DIR:= $(ROOT_DIR)/obj
 OBJ_DIR_SIM:= $(OBJ_DIR)/sim
