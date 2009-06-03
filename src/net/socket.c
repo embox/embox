@@ -50,6 +50,9 @@ void fill_sock(struct udp_sock *sk, sk_type type, sk_proto proto) {
 //	sk->inet.sk->sk_protocol = proto;
 //	sk->inet.sk->sk_type = type;
 //	sk->inet.sk->netdev = find_net_device("eth0");
+	sk->inet.tos = 0;
+	sk->inet.uc_ttl = 12;
+	sk->inet.id = 0;
 }
 
 int udpsock_push(net_packet *pack) {
@@ -66,6 +69,8 @@ int udpsock_push(net_packet *pack) {
 			    LOG_DEBUG("packet pushed\n");
 			    sks[i].queue = net_packet_copy(pack);
 			    sks[i].new_pack = 1;
+			    sks[i].sk.inet.dport = uh->source;
+			    memcpy(sks[i].sk.inet.daddr, iph->saddr, sizeof(iph->saddr));
 			    return 0;
 			} else {
 			    LOG_DEBUG("queue is busy\n");
@@ -100,7 +105,6 @@ int bind(int s, unsigned char ipaddr[4], int port) {
 	LOG_DEBUG("bind socket\n");
 	memcpy(&sks[s].sk.inet.saddr, ipaddr, IP_HEADER_SIZE);
 	sks[s].sk.inet.sport = port;
-	sks[s].sk.inet.dport = port;
 	char ip[15];
 	ipaddr_print(ip, sks[s].sk.inet.saddr);
 	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[s].sk.inet.sport, ip);

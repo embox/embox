@@ -34,7 +34,7 @@ void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifdev, cons
 	}
 	pack->ifdev = ifdev;
 	pack->netdev = eth_get_netdevice(ifdev);
-	pack->protocol = UDP_PROTO_TYPE;
+	pack->protocol = IP_PROTOCOL_TYPE;
 	pack->len = UDP_HEADER_SIZE;
 	pack->h.raw = pack->data + MAC_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
@@ -50,6 +50,6 @@ int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	net_packet *pack;
         pack = net_packet_alloc();
 	rebuild_udp_packet(pack, sk, ifdev, buf, len);
-	ip_send_packet(sk, pack);
+	ip_send_packet(&sk->inet, pack);
 	return 0;
 }

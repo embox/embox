@@ -44,10 +44,16 @@ int tftp_send_ack (void *ifdev, unsigned char dstaddr[4], int block_number) {
 	pack->protocol = IP_PROTOCOL_TYPE;
 
 	//inet_sock??
-
-	//udp_trans??
+	//udp_trans??   <<-- NO, tftp is application layer, not transport.
 
 	return eth_send(pack) /*right?*/;
+	/*TODO: it's something wrong.
+	 inside tftp_send(args) and tftp_receive(args):
+	         create udp socket
+	         ..todo..
+	         close socket
+	 and use tftphdr insist of TFTP_RQ_PACKET, etc.
+	*/
 }
 
 int tftp_send_rrq_request(void *ifdev, unsigned char dstaddr[4], char *filename, char *mode) {

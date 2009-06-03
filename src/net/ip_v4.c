@@ -33,7 +33,8 @@ static int rebuild_ip_header(struct inet_sock *sk, struct _net_packet *pack) {
 	LOG_DEBUG("rebuild_ip_header\n");
 	iphdr *hdr = pack->nh.iph;
 	hdr->version = 4;
-	hdr->ihl = IP_HEADER_SIZE << 2;
+	hdr->ihl = IP_HEADER_SIZE >> 2;
+	memcpy(hdr->saddr, sk->saddr, sizeof(hdr->saddr));
 	memcpy(hdr->daddr, sk->daddr, sizeof(hdr->daddr));
 	hdr->tot_len = pack->len;
 	hdr->ttl = sk->uc_ttl;
@@ -41,7 +42,7 @@ static int rebuild_ip_header(struct inet_sock *sk, struct _net_packet *pack) {
 	hdr->tos = sk->tos;
 	//TODO now ip only single frame
 	hdr->frag_off = 0;
-	hdr->proto = sk->sk->sk_protocol;
+	hdr->proto = UDP_PROTO_TYPE;//sk->sk->sk_protocol;
 
 	return 0;
 }

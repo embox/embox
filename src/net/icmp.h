@@ -15,7 +15,7 @@ typedef struct _icmphdr {
 	unsigned char code;
 	unsigned short header_check_summ;
 	unsigned char data[0x40];
-}icmphdr;
+} __attribute__((packed)) icmphdr;
 
 #define ICMP_HEADER_SIZE	(sizeof(icmphdr))
 

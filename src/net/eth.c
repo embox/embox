@@ -140,7 +140,6 @@ net_device *eth_get_netdevice(void *handler) {
 
 int eth_send (net_packet *pack) {
 //	LOG_DEBUG("eth_send\n");
-	packet_dump(pack);
 	IF_DEVICE *dev = (IF_DEVICE *)pack->ifdev;
 
 	if ((NULL == pack) || (NULL == pack->ifdev))
@@ -152,6 +151,7 @@ int eth_send (net_packet *pack) {
 			return -1;
 		}
 	}
+	packet_dump(pack);
 	dev->net_dev->hard_start_xmit(pack, pack->netdev);
 	net_packet_free(pack);
 	return 0;

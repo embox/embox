@@ -18,7 +18,7 @@ typedef struct _arphdr {
 	unsigned char spa[4];   /**< Sender protocol address */
 	unsigned char tha[6];   /**< Target hardware address */
 	unsigned char tpa[4];   /**< Target protocol address */
-}arphdr;
+} __attribute__((packed)) arphdr;
 
 #define ARP_PROTOCOL_TYPE ((unsigned short)0x0806)
 
