@@ -134,7 +134,7 @@
 	},
 	"Files": {
 		"shell_inc": "src/conio/shell.inc",
-		"tests_inc": "src/conio/tests.inc",
+		"users_inc": "src/conio/users.inc",
 		"subdirs": "src/user/subdirs",
 		"tests_table_inc": "src/tests/tests_table.inc"
 	}

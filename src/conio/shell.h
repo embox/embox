@@ -1,8 +1,8 @@
-/*
- * shell.h
+/**
+ * \file shell.h
  *
- *  Created on: 02.02.2009
- *      Author: Alexey Fomin
+ * \date 02.02.2009
+ * \author Alexey Fomin
  */
 
 #ifndef SHELL_H_
@@ -10,7 +10,7 @@
 
 #include "common.h"
 
-#include "tests.inc"
+#include "users.inc"
 
 #define MAX_SHELL_KEYS 12
 #include "cpu_context.h"

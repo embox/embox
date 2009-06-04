@@ -1,8 +1,8 @@
-/*
- * shell.c
+/**
+ * \file shell.c
  *
- *  Created on: 02.02.2009
- *      Author: Alexey Fomin
+ * \date 02.02.2009
+ * \author Alexey Fomin
  */
 #include "types.h"
 #include "common.h"
@@ -10,22 +10,17 @@
 #include "console.h"
 #include "shell.h"
 
-
-
-
 static const char* welcome = "monitor> ";
 
-
 static SHELL_HANDLER_DESCR shell_handlers[] = {
-#include "shell.inc"
-		};
+	#include "shell.inc"
+};
 
 SHELL_HANDLER_DESCR *shell_get_command_list(){
 	return shell_handlers;
 }
-int shell_size_command_list()
-{
-	return sizeof(shell_handlers)/ sizeof(shell_handlers[0]);
+int shell_size_command_list() {
+	return array_len(shell_handlers);
 }
 
 /*

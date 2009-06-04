@@ -1,4 +1,4 @@
 SUBDIRS:=
-OBJS:= misc.o
+OBJS:= misc.o string.o
 
 include $(SRC_DIR)/common.mk
