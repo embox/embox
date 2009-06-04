@@ -9,18 +9,24 @@
 #include "common.h"
 #include "amba_pnp.h"
 
-static PNP_VENDOR_INFO const vendors_table[] = {
-	#include "pnp_vendors_table.inc"
-};
 
-static PNP_DEVICE_INFO const devs_table[] = {
-	#include "gaisler_pnp_devices_table.inc"
-	,
-	#include "esa_pnp_devices_table.inc"
-};
+/**
+ * \struct AHB_SLOT
+ */
+typedef struct _AHB_SLOT {
+	UINT32 id_reg;
+	UINT32 user_defined[3];
+	UINT32 ba_reg[4];
+}AHB_SLOT;
 
-#define VENDORS_TABLE_LEN        array_len(vendors_table)
-#define DEVICES_TABLE_LEN        array_len(devs_table)
+/**
+ * \struct APB_SLOT
+ */
+typedef struct _APB_SLOT {
+	UINT32 id_reg;
+	UINT32 ba_reg[1];
+}APB_SLOT;
+
 
 inline static int lock_ahbm_slot(UINT16 slot, AMBA_DEV *dev) {
 	if (ahbm_devices[slot]) {
@@ -170,25 +176,32 @@ inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev_info, UINT32 id_reg) {
 	dev_info->version = get_version(id_reg);
 }
 
-void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master) {
+/**
+ * @return TRUE (1) if successed
+ * @return FALSE (0) slot is empty
+ */
+BOOL fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master) {
 	int base;
 	if (!is_ahb) {
 		APB_SLOT *slot = ((APB_SLOT *) APB_BASE) + slot_number;
+		if (0 == slot->id_reg)
+			return FALSE;
 		fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 		dev->slot = slot_number;
-		//dev->handler_data =apb_devices[slot_number]->handler_data ;
+
 		fill_apb_bar_info(&dev->bar[0], slot->ba_reg[0]);
 		return;
 	}
 	dev->is_master = is_master;
-	AHB_SLOT *slot;// = ((AHB_SLOT *) base) + slot_number;
+	AHB_SLOT *slot;
 	if (!is_master) {
-		//dev->handler_data = ahbm_devices[slot_number]->handler_data;
 		slot = ((AHB_SLOT *) AHB_SLAVE_BASE) + slot_number;
 	} else {
-		//dev->handler_data = ahbsl_devices[slot_number]->handler_data;
 		slot = ((AHB_SLOT *) AHB_MASTER_BASE) + slot_number;
 	}
+	if (0 == slot->id_reg)
+		FALSE;
+
 	fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 	dev->slot = slot_number;
 	fill_ahb_bar_infos(dev, slot);
@@ -216,23 +229,3 @@ int capture_amba_dev(AMBA_DEV *dev, BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOO
 	return slot_number;
 }
 
-const char* amba_get_ven_name(BYTE ven_id) {
-	int i;
-	for (i = 0; i < VENDORS_TABLE_LEN; i++) {
-		if (vendors_table[i].vendor_id == ven_id) {
-			return vendors_table[i].name;
-		}
-	}
-	return NULL;
-}
-
-const char* amba_get_dev_name(BYTE ven_id, UINT16 dev_id) {
-	int i;
-	for (i = 0; i < DEVICES_TABLE_LEN; i++) {
-		if ((devs_table[i].vendor_id == ven_id) &&
-		    (devs_table[i].device_id == dev_id)) {
-			return devs_table[i].name;
-		}
-	}
-	return NULL;
-}

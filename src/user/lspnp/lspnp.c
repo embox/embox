@@ -4,12 +4,12 @@
  * \date 20.02.2009
  * \author abatyukov
  */
-
-#include "shell.h"
 #include "types.h"
-#include "lspnp.h"
 #include "string.h"
+#include "shell.h"
 #include "amba_pnp.h"
+#include "pnp_id.h"
+#include "lspnp.h"
 
 #define COMMAND_NAME "lspnp"
 
@@ -31,6 +31,78 @@ static void show_help() {
 }
 
 //-------------Utils---------------------------------------------------
+
+
+#define REGISTER_DEVICES(dev_table) dev_table, (sizeof(dev_table)/sizeof(dev_table[0]))
+/**
+ * \struct PNP_DEVICE_INFO
+ */
+typedef struct _PNP_DEVICE_INFO {
+	const BYTE vendor_id;
+	const UINT16 device_id;
+	const char *name;
+} PNP_DEVICE_INFO;
+
+PNP_DEVICE_INFO gaisler_pnp_devices_table [] = {
+	#include "gaisler_pnp_devices_table.inc"
+};
+PNP_DEVICE_INFO esa_pnp_devices_table [] = {
+	#include "esa_pnp_devices_table.inc"
+};
+
+/**
+ * \struct PNP_VENDOR_INFO
+ */
+typedef struct _PNP_VENDOR_INFO {
+	const BYTE vendor_id;
+	const char *name;
+	PNP_DEVICE_INFO *dev_table ;
+	int size;
+} PNP_VENDOR_INFO;
+
+
+static PNP_VENDOR_INFO const vendors_table[] = {
+	#include "pnp_vendors_table.inc"
+};
+
+static PNP_DEVICE_INFO const devs_table[] = {
+	#include "gaisler_pnp_devices_table.inc"
+	,
+	#include "esa_pnp_devices_table.inc"
+};
+
+#define VENDORS_TABLE_LEN        array_len(vendors_table)
+#define DEVICES_TABLE_LEN        array_len(devs_table)
+
+/**
+ * Get vendor name of amba pnp device.
+ * @param ven_id vendor ID
+ */
+inline static const char* amba_get_ven_name(BYTE ven_id) {
+	int i;
+	for (i = 0; i < VENDORS_TABLE_LEN; i++) {
+		if (vendors_table[i].vendor_id == ven_id) {
+			return vendors_table[i].name;
+		}
+	}
+	return NULL;
+}
+/**
+ * Get device name of amba pnp device.
+ * @param ven_id vendor ID
+ * @param dev_id device ID
+ */
+inline static const char* amba_get_dev_name(BYTE ven_id, UINT16 dev_id) {
+	int i;
+	for (i = 0; i < DEVICES_TABLE_LEN; i++) {
+		if ((devs_table[i].vendor_id == ven_id) &&
+		    (devs_table[i].device_id == dev_id)) {
+			return devs_table[i].name;
+		}
+	}
+	return NULL;
+}
+
 inline static void print_table_row(int n, int ven_id, int dev_id,
                 const char *ven_name, const char *dev_name, int ver, int irq) {
         TRACE("%02x.%02x:%03x %20s %28s \t0x%02x %3d\n", n, ven_id, dev_id, ven_name, dev_name, ver, irq);
@@ -99,13 +171,13 @@ static void show_dev(AMBA_DEV *dev, BOOL show_user) {
         return;
 }
 
-static int print_apb_entries(APB_SLOT *base_addr, int amount) {
+static int print_apb_entries(int amount) {
         int i, count = 0;
         AMBA_DEV dev;
-        APB_SLOT *pslot = base_addr;
+        //APB_SLOT *pslot = base_addr;
         for (i = 0; i < amount/4; i++) {
-                if (0 != pslot[i].id_reg) {
-                        fill_amba_dev(&dev, i, FALSE, FALSE);
+                //if (0 != pslot[i].id_reg) {
+                if(fill_amba_dev(&dev, i, FALSE, FALSE)){
                         show_dev(&dev, FALSE);
                         count++;
                 }
@@ -113,15 +185,16 @@ static int print_apb_entries(APB_SLOT *base_addr, int amount) {
         return count;
 }
 
-static int print_ahb_entries(AHB_SLOT *base_addr, int amount,BOOL is_master) {
+//static int print_ahb_entries(AHB_SLOT *base_addr, int amount,BOOL is_master) {
+static int print_ahb_entries(int amount, BOOL is_master) {
         int i, count = 0;
         AMBA_DEV dev;
-        AHB_SLOT *pslot = base_addr;
+        //AHB_SLOT *pslot = base_addr;
         for (i = 0; i < amount; i++) {
-                if (0 != pslot[i].id_reg) {
-                        fill_amba_dev(&dev,  i, TRUE, is_master);
-                        show_dev(&dev, FALSE);
-                        count++;
+                //if (0 != pslot[i].id_reg) {
+                if(fill_amba_dev(&dev,  i, TRUE, is_master)){
+                	show_dev(&dev, FALSE);
+                	count++;
                 }
         }
         return count;
@@ -134,8 +207,7 @@ int print_ahbm_pnp_devs() {
         int count = 0;
         TRACE("\nAHB masters..\n");
         print_table_head();
-        count += print_ahb_entries((AHB_SLOT *) AHB_MASTER_BASE,
-    			            AHB_MASTERS_QUANTITY, TRUE);
+        count += print_ahb_entries(AHB_MASTERS_QUANTITY, TRUE);
         return count;
 }
 
@@ -146,8 +218,7 @@ int print_ahbsl_pnp_devs() {
         int count = 0;
         TRACE("\nAHB slaves..\n");
         print_table_head();
-        count += print_ahb_entries((AHB_SLOT *) AHB_SLAVE_BASE,
-			            AHB_SLAVES_QUANTITY, FALSE);
+        count += print_ahb_entries(AHB_SLAVES_QUANTITY, FALSE);
 	return count;
 }
 
@@ -158,8 +229,7 @@ int print_apb_pnp_devs() {
         int count = 0;
         TRACE("\nAPB slaves..\n");
         print_table_head();
-        count += print_apb_entries((APB_SLOT *) APB_BASE,
-			            APB_QUANTITY);
+        count += print_apb_entries(APB_QUANTITY);
         return count;
 }
 
@@ -194,9 +264,9 @@ void print_ahbm_pnp_dev(UINT32 slot) {
         AMBA_DEV dev;
         //dev.handler_data = NULL;
 
-        AHB_SLOT *pslot = (AHB_SLOT *)AHB_MASTER_BASE;
-        if (0 != pslot[slot].id_reg) {
-                fill_amba_dev(&dev, slot, TRUE, TRUE);
+        //AHB_SLOT *pslot = (AHB_SLOT *)AHB_MASTER_BASE;
+        //if (0 != pslot[slot].id_reg) {
+        if(fill_amba_dev(&dev, slot, TRUE, TRUE)){
                 show_dev(&dev, FALSE);
         } else {
                 LOG_ERROR("No such device.\n");
@@ -214,9 +284,9 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
                 return;
         }
         AMBA_DEV dev;
-        AHB_SLOT *pslot = (AHB_SLOT *)AHB_SLAVE_BASE;
-        if (0 != pslot[slot].id_reg) {
-                fill_amba_dev(&dev, slot, TRUE, FALSE);
+        //AHB_SLOT *pslot = (AHB_SLOT *)AHB_SLAVE_BASE;
+        //if (0 != pslot[slot].id_reg) {
+        if (fill_amba_dev(&dev, slot, TRUE, FALSE)){
                 show_dev(&dev, FALSE);
         } else {
                 LOG_ERROR("No such device.\n");
@@ -233,9 +303,10 @@ void print_apb_pnp_dev(UINT32 slot) {
                 return;
         }
         AMBA_DEV dev;
-        APB_SLOT *pslot = (APB_SLOT *)APB_BASE;
-        if (0 != pslot[slot].id_reg) {
-                fill_amba_dev(&dev, slot, FALSE, FALSE);
+        //APB_SLOT *pslot = (APB_SLOT *)APB_BASE;
+        //if (0 != pslot[slot].id_reg) {
+
+        if (fill_amba_dev(&dev, slot, FALSE, FALSE)){
                 show_dev(&dev, FALSE);
         } else {
                 LOG_ERROR("No such device.\n");

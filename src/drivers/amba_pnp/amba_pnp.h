@@ -58,58 +58,6 @@ typedef struct _AMBA_DEV_INFO {
 	BYTE   irq;
 } AMBA_DEV_INFO;
 
-/**
- * \struct PNP_DEVICE_INFO
- */
-typedef struct _PNP_DEVICE_INFO {
-	const BYTE vendor_id;
-        const UINT16 device_id;
-        const char *name;
-} PNP_DEVICE_INFO;
-
-/**
- * \struct PNP_VENDOR_INFO
- */
-typedef struct _PNP_VENDOR_INFO {
-        const BYTE vendor_id;
-        const char *name;
-} PNP_VENDOR_INFO;
-
-/**
- * \struct AHB_SLOT
- */
-typedef struct _AHB_SLOT {
-        UINT32 id_reg;
-        UINT32 user_defined[3];
-        UINT32 ba_reg[4];
-}AHB_SLOT;
-
-/**
- * \struct APB_SLOT
- */
-typedef struct _APB_SLOT {
-	UINT32 id_reg;
-        UINT32 ba_reg[1];
-}APB_SLOT;
-
-//typedef struct _AHB_DEV
-//{
-//	AMBA_DEV_INFO dev_info;
-//	UINT32 user_def[3];
-//	AMBA_BAR_INFO bar [4];
-//	BYTE slot;
-//	BOOL is_master;
-//	void *handler_data;
-//	char dev_name[16];
-//} AHB_DEV;
-
-//typedef struct _APB_DEV{
-//	AMBA_DEV_INFO dev_info;
-//	AMBA_BAR_INFO bar;
-//	BYTE slot;
-//	void *handler_data;
-//	char dev_name[16];
-//} APB_DEV;
 
 struct _AMBA_DEV;
 // each device must have handler
@@ -161,20 +109,10 @@ int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL i
  * @param slot_number slot number
  * @param is_ahb ahb/not ahb
  * @param is_master master/slave
+ * @return TRUE (1) if successed
+ * @return FALSE (0) slot is empty
  */
-void fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
+BOOL fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
 
-/**
- * Get vendor name of amba pnp device.
- * @param ven_id vendor ID
- */
-const char* amba_get_ven_name(BYTE ven_id);
-
-/**
- * Get device name of amba pnp device.
- * @param ven_id vendor ID
- * @param dev_id device ID
- */
-const char* amba_get_dev_name(BYTE ven_id, UINT16 dev_id);
 
 #endif /* AMBA_PNP_H_ */
