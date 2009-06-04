@@ -5,6 +5,7 @@
  * \author abatyukov
  */
 #include "types.h"
+#include "common.h"
 #include "string.h"
 #include "shell.h"
 #include "amba_pnp.h"
@@ -33,7 +34,7 @@ static void show_help() {
 //-------------Utils---------------------------------------------------
 
 
-#define REGISTER_DEVICES(dev_table) dev_table, (sizeof(dev_table)/sizeof(dev_table[0]))
+#define REGISTER_DEVICES(dev_table) dev_table, array_len(dev_table)
 /**
  * \struct PNP_DEVICE_INFO
  */
@@ -79,6 +80,7 @@ static PNP_DEVICE_INFO const devs_table[] = {
  * @param ven_id vendor ID
  */
 inline static const char* amba_get_ven_name(BYTE ven_id) {
+	LOG_DEBUG("amba_get_ven_name: ven_id=0x%X\n", ven_id);
 	int i;
 	for (i = 0; i < VENDORS_TABLE_LEN; i++) {
 		if (vendors_table[i].vendor_id == ven_id) {
@@ -93,6 +95,7 @@ inline static const char* amba_get_ven_name(BYTE ven_id) {
  * @param dev_id device ID
  */
 inline static const char* amba_get_dev_name(BYTE ven_id, UINT16 dev_id) {
+	LOG_DEBUG("amba_get_dev_name: ven_id=0x%X, dev_id=0x%X\n", ven_id, dev_id);
 	int i;
 	for (i = 0; i < DEVICES_TABLE_LEN; i++) {
 		if ((devs_table[i].vendor_id == ven_id) &&
@@ -144,6 +147,7 @@ void show_bars_infos(AMBA_DEV *dev) {
 const char UNKNOWN[] = "unknown";
 
 static void show_dev(AMBA_DEV *dev, BOOL show_user) {
+	LOG_DEBUG("show_dev\n");
         HANDLER_DATA_FUNC func;
         if (NULL == dev) return;
 
@@ -172,6 +176,7 @@ static void show_dev(AMBA_DEV *dev, BOOL show_user) {
 }
 
 static int print_apb_entries(int amount) {
+	LOG_DEBUG("print_apb_entries: %d\n", amount);
         int i, count = 0;
         AMBA_DEV dev;
         //APB_SLOT *pslot = base_addr;
@@ -187,6 +192,7 @@ static int print_apb_entries(int amount) {
 
 //static int print_ahb_entries(AHB_SLOT *base_addr, int amount,BOOL is_master) {
 static int print_ahb_entries(int amount, BOOL is_master) {
+	LOG_DEBUG("print_ahb_entries: %d\n", amount);
         int i, count = 0;
         AMBA_DEV dev;
         //AHB_SLOT *pslot = base_addr;
@@ -204,6 +210,7 @@ static int print_ahb_entries(int amount, BOOL is_master) {
  * Print list of all connected plug and play devices on ahb master bus
  */
 int print_ahbm_pnp_devs() {
+	LOG_DEBUG("print_ahbm_pnp_devs\n");
         int count = 0;
         TRACE("\nAHB masters..\n");
         print_table_head();
@@ -215,6 +222,7 @@ int print_ahbm_pnp_devs() {
  * Print list of all connected plug and play devices on ahb slave bus
  */
 int print_ahbsl_pnp_devs() {
+	LOG_DEBUG("print_ahbsl_pnp_devs\n");
         int count = 0;
         TRACE("\nAHB slaves..\n");
         print_table_head();
@@ -226,6 +234,7 @@ int print_ahbsl_pnp_devs() {
  * Print list of all connected plug and play devices on apb bus
  */
 int print_apb_pnp_devs() {
+	LOG_DEBUG("print_apb_pnp_devs\n");
         int count = 0;
         TRACE("\nAPB slaves..\n");
         print_table_head();
@@ -237,6 +246,7 @@ int print_apb_pnp_devs() {
  * Print list of all connected plug and play devices on ahb && apb buses
  */
 void print_all_pnp_devs() {
+	LOG_DEBUG("print_all_pnp_devs\n");
 #ifdef RELEASE
         return;
 #else
@@ -252,6 +262,7 @@ void print_all_pnp_devs() {
 }
 
 void print_ahbm_pnp_dev(UINT32 slot) {
+	LOG_DEBUG("print_ahbm_pnp_dev: %d\n", slot);
         if (slot >AHB_MASTERS_QUANTITY) {
     		LOG_ERROR("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
     		return;
@@ -275,6 +286,7 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 }
 
 void print_ahbsl_pnp_dev(UINT32 slot) {
+	LOG_DEBUG("print_ahbsl_pnp_dev: %d\n", slot);
         if (slot >AHB_SLAVES_QUANTITY) {
                 LOG_ERROR("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
                 return;
@@ -294,6 +306,7 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
 }
 
 void print_apb_pnp_dev(UINT32 slot) {
+	LOG_DEBUG("print_apb_pnp_dev: %d\n", slot);
         if (slot >APB_QUANTITY) {
                 LOG_ERROR("print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
                 return;

@@ -114,5 +114,9 @@ int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL i
  */
 BOOL fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
 
+/**
+ * Free amba device.
+ */
+int free_amba_dev(AMBA_DEV *dev);
 
 #endif /* AMBA_PNP_H_ */

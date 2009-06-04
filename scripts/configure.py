@@ -347,7 +347,11 @@ def main():
 
 if __name__=='__main__':
 	try:
-		read_config(".config")
+		if os.path.exists(".config"):
+			read_config(".config")
+		else:
+			read_config(".config.default")
+			shutil.copyfile(".config.default", ".config")
 		shutil.copyfile(".config", ".config.old")
     		main()
 	except:
