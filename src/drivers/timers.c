@@ -27,7 +27,7 @@ volatile static UINT32 sleep_cnt_const = DEFAULT_SLEEP_COUNTER; /**< for sleep f
 
 BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle) {
 	UINT32 i;
-	for (i = 0; i < sizeof(sys_timers) / sizeof(sys_timers[0]); i++) {
+	for (i = 0; i < array_len(sys_timers); i++) {
 		if (!sys_timers[i].f_enable) {
 			sys_timers[i].handle = handle;
 			sys_timers[i].load = ticks;
@@ -42,7 +42,7 @@ BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle) {
 
 void close_timer(UINT32 id) {
 	UINT32 i;
-	for (i = 0; i < sizeof(sys_timers) / sizeof(sys_timers[0]); i++) {
+	for (i = 0; i < array_len(sys_timers); i++) {
 		if (id == sys_timers[i].id) {
 			sys_timers[i].f_enable = FALSE;
 			sys_timers[i].handle = NULL;
@@ -52,7 +52,7 @@ void close_timer(UINT32 id) {
 
 static void inc_sys_timers() {
 	UINT32 i;
-	for (i = 0; i < sizeof(sys_timers) / sizeof(sys_timers[0]); i++) {
+	for (i = 0; i < array_len(sys_timers); i++) {
 		if (sys_timers[i].f_enable) {
 			if (!(sys_timers[i].cnt--)) {
 				sys_timers[i].cnt = sys_timers[i].load;
@@ -96,7 +96,7 @@ int timers_init() {
 	if (timers) {
 		return -1;
 	}
-	for (i = 0; i < sizeof(sys_timers) / sizeof(sys_timers[0]); i++)
+	for (i = 0; i < array_len(sys_timers); i++)
 		sys_timers[i].f_enable = FALSE;
 
 

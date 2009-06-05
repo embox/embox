@@ -14,6 +14,10 @@ static IRQ_REGS * dev_regs = NULL;
 
 static AMBA_DEV amba_dev;
 
+#include "amba_drivers_helper.h"
+#undef module_init
+#define module_init() irq_ctrl_init()
+
 /**
  * init hardware irq ctrl
  * Caprute APB dev
@@ -36,15 +40,13 @@ int irq_ctrl_init(){
 }
 
 int irq_ctrl_enable_irq(int irq_num){
-	if (NULL == dev_regs)
-		irq_ctrl_init();
+	CHECK_INIT_MODULE();
 	SetBit(dev_regs->mask, irq_num);
 	return 0;
 }
 
 int irq_ctrl_disable_irq(int irq_num){
-	if (NULL == dev_regs)
-		irq_ctrl_init();
+	CHECK_INIT_MODULE();
 	ClearBit(dev_regs->mask, irq_num);
 	return 0;
 }
