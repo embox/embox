@@ -31,34 +31,34 @@
 typedef struct  _tftphdr {
         short   th_opcode;                   /* packet type */
         union {
-                unsigned short  tu_block;    /* block # */
-                short   tu_code;             /* error code */
-                char    tu_stuff[1];         /* request packet stuff */
+                unsigned short  tu_block;    /* block # */                  //in data, ack
+                short   tu_code;             /* error code */               //in error
+                char    tu_stuff[1];         /* request packet stuff */     //?
         } th_u;
-        char    th_data[1];                  /* data or error string */
+        char    th_data[1];                  /* data or error string */     //data
 } __attribute__((packed)) tftphdr;
 
-typedef struct {
-	HWRD op;        /**< Message type */
-	char *filename; /**< File name. Zero ending string */
-	char *mode;     /**< Mode. Zero ending string. */
-}TFTP_RQ_PACKET;
-
-typedef struct {
-	HWRD op;        /**< Message type */
-	HWRD block;     /**< Block number */
-	char data[512]; /**< Data */
-}TFTP_DATA_PACKET;
-
-typedef struct {
-	HWRD op;        /**< Message type */
-	HWRD block;     /**< Block number */
-}TFTP_ACK_PACKET;
-
-typedef struct {
-	HWRD op;        /**< Message type */
-	HWRD errcode;   /**< Error number */
-	char *msg;      /**< Error message. Zero ending string. */
-}TFTP_ERR_PACKET;
+//typedef struct {
+//	HWRD op;        /**< Message type */
+//	char *filename; /**< File name. Zero ending string */
+//	char *mode;     /**< Mode. Zero ending string. */
+//}TFTP_RQ_PACKET;
+//
+//typedef struct {
+//	HWRD op;        /**< Message type */
+//	HWRD block;     /**< Block number */
+//	char data[512]; /**< Data */
+//}TFTP_DATA_PACKET;
+//
+//typedef struct {
+//	HWRD op;        /**< Message type */
+//	HWRD block;     /**< Block number */
+//}TFTP_ACK_PACKET;
+//
+//typedef struct {
+//	HWRD op;        /**< Message type */
+//	HWRD errcode;   /**< Error number */
+//	char *msg;      /**< Error message. Zero ending string. */
+//}TFTP_ERR_PACKET;
 
 #endif /* TFTP_H_ */
