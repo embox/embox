@@ -4,7 +4,7 @@ OBJS =
 
 .PHONY: all $(SUBDIRS)
 
-all: debug release simulation
+all: debug release
 
 create_objs_lst:$(SUBDIRS)
 

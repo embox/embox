@@ -16,4 +16,4 @@
 
 #define DEV_ID_ESA_LEON2_MEM_CTRLR              0x00F
 
-#endif //PNP_H_
+#endif /* PNP_H_ */
