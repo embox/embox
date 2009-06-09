@@ -181,7 +181,7 @@ inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev_info, UINT32 id_reg) {
  * @return FALSE (0) slot is empty
  */
 BOOL fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master) {
-	LOG_DEBUG("fill_amba_dev: %d\n", slot_number);
+	/* ATTENTION! DON'T USE ANY printf IN THIS FUNCTION */
 	int base;
 	if (!is_ahb) {
 		APB_SLOT *slot = ((APB_SLOT *) APB_BASE) + slot_number;
