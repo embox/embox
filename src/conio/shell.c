@@ -9,59 +9,20 @@
 #include "string.h"
 #include "console.h"
 #include "shell.h"
+#include "sys.h"
 
 static const char* welcome = "monitor> ";
 
 static SHELL_HANDLER_DESCR shell_handlers[] = {
-	#include "shell.inc"
-};
+#include "shell.inc"
+		};
 
-SHELL_HANDLER_DESCR *shell_get_command_list(){
+SHELL_HANDLER_DESCR *shell_get_command_list() {
 	return shell_handlers;
 }
 int shell_size_command_list() {
 	return array_len(shell_handlers);
 }
-
-/*
-int stub_shell_handler(int argsc, char **argsv) {
-	int i;
-	if (argsc == 0) {
-		printf("Stub! Handler started with no arguments.\n");
-		return 0;
-	}
-	printf("Stub! Handler started with arguments: ");
-	for (i = 0; i < argsc; i++) {
-		printf("%s%c ", argsv[i], i + 1 == argsc ? '.' : ',');
-	}
-	printf("\n");
-	return 0;
-}
-
-int stub_shell_handler2(int argsc, char **argsv) {
-	int i;
-	if (argsc == 0) {
-		printf("Stub2! Handler started with no arguments.\n");
-		return 0;
-	}
-	printf("Stub2! Handler started with arguments: ");
-	for (i = 0; i < argsc; i++) {
-		printf("%s%c ", argsv[i], i + 1 == argsc ? '.' : ',');
-	}
-	printf("\n");
-	return 0;
-}
-*/
-//definition in header
-//typedef struct {
-//	char *name;
-//	PSHELL_HANDLER phandler;
-//} SHELL_HANDLER_DESCR;
-
-//static SHELL_HANDLER_DESCR shell_handlers[] = {
-//#include "shell.inc"
-//		};
-
 
 // *str becomes pointer to first non-space character
 static void skip_spaces(char **str) {
@@ -90,25 +51,6 @@ static int parse_str(char *cmdline, char **words) {
 	}
 	return cnt;
 }
-//TODO move from this place to arch folders
-int shell_handler_process_create(PSHELL_HANDLER phandler, int argsc,
-		char **argsv) {
-	test_allow_aborting();
-	shell_save_proc();
-	__asm__(".global shell_handler_start\n"
-			"shell_handler_start:\n\t"
-	);
-	phandler(argsc, argsv);
-
-	__asm__(".global shell_handler_continue\n"
-			"shell_handler_continue:\n\t"
-	);
-	shell_restore_proc();
-	__asm__(".global shell_handler_exit\n"
-			"shell_handler_exit:\n\t"
-	);
-	test_disable_aborting();
-}
 
 static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
 	int words_counter = 0;
@@ -126,7 +68,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	for (i = 0; i < array_len(shell_handlers); i++) {
 		if (0 == strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
-			shell_handler_process_create(phandler, words_counter - 1, words + 1);
+			sys_exec(phandler, words_counter - 1, words + 1);
 			return;
 		}
 	}

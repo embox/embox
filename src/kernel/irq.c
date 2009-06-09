@@ -19,11 +19,6 @@ void dispatch_trap(BYTE tt) {
 		// fire user handler!
 		user_trap_handlers[tt]();
 	}
-	if (chproc_abort_accept) {
-		chproc_abort_accept = FALSE;
-		__asm__("call shell_handler_continue\n\t");
-		__asm__("nop");
-	}
 }
 
 void dispatch_bad_trap(int tt, int pc, int npc, int psr) {
