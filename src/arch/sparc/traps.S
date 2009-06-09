@@ -1,3 +1,17 @@
+/**
+ * \file traps.S
+ *
+ * \brief Low-level traps dispatching
+ *
+ * \author Eldar Abusalimov
+ * \author Anton Bondarev
+ * \author Alexey Fomin
+ * \author Alexandr Batyukov
+ */
+
+#include "traps.h"
+#include "sparc_regs.h"
+#include "windows.h"
 #include "leon_config.h"
 
 	.section ".text"
@@ -29,227 +43,156 @@ halt_trap:
         jmp   %g1
         nop
 
-/* Window overflow trap handler. */
-		.global window_overflow
-window_overflow:
-	mov	%g1, %l7		! Remember previous value of %g1 to restore it later
 
-	mov	%wim, %g1		! Calculate new WIM
-	srl	%g1, 1, %l3
-	sll	%g1, CORE_NWINDOWS-1 , %g1
-	or	%l3, %g1, %g1	! Circular right shifting by 1 bit
+/* rounds "x" up to doubleword boundary */
+#define SA(x) (((x)+7)&(~0x07))
+/* trap frame size */
+#define TRAPFRAME_SZ (STACKFRAME_SZ + TRAP_CONTEXT_SZ)
 
-	save		! Get into window to be saved
-	mov	%g1, %wim	! Write new WIM value that has been just calculated
-	std	%l0, [%sp + 0x00];
-	std	%l2, [%sp + 0x08];
-	std	%l4, [%sp + 0x10];
-	std	%l6, [%sp + 0x18];
-	std	%i0, [%sp + 0x20];
-	std	%i2, [%sp + 0x28];
-	std	%i4, [%sp + 0x30];
-	std	%i6, [%sp + 0x38];
-	restore		! Go back to trap window
+/* check whether WIM[CWP] == 1 or not */
+#define CWP_WIM_TEST(t_psr, t_wim, scratch) \
+	and %t_psr, PSR_CWP, %scratch; \
+	srl %t_wim, %scratch, %scratch;\
+	andcc %scratch, 0x1, %g0;
 
-	mov	%l7, %g1	! Restore saved %g1
-	jmp	%l1		! Re-execute save
-	 rett	%l2
-
-/* Window underflow trap handler.  */
-		.global  window_underflow
-window_underflow:
-
-	mov	%wim, %l3		! Calculate new WIM
-	sll	%l3, 1, %l4
-	srl	%l3, CORE_NWINDOWS-1, %l3
-	or	%l3, %l4, %l3	! Circular left shifting by 1 bit
-	mov	%l3, %wim		! Write new WIM value
-	nop; nop; nop		! Wait for WIM delayed writing
-
-	restore		! Two restores to get into the
-	restore		! window to be restored
-	ldd	[%sp + 0x00], %l0;
-	ldd	[%sp + 0x08], %l2;
-	ldd	[%sp + 0x10], %l4;
-	ldd	[%sp + 0x18], %l6;
-	ldd	[%sp + 0x20], %i0;
-	ldd	[%sp + 0x28], %i2;
-	ldd	[%sp + 0x30], %i4;
-	ldd	[%sp + 0x38], %i6;
-	save
-	save		! Get back to trap window
-
-	jmp  %l1	! Re-execute restore
-	 rett  %l2
-
-
-
+#define t_sp t_2
 
 /*
- * Few words about storing global and some other registers on the stack frame.
- *
- * We need 16 words at the beginning of the frame
- * to store local and input registers as defined by software conventions.
- * The next 1 word is used for aggregate return structure pointer.
- * At last we need 6 words to store formal parameters.
- * (be careful - called function may write to this memory).
- *
- * So we can use the frame part placed after 23 words (92 bytes).
- *
- * -- Eldar
- */
-#define SA(x)		(((x)+7)&(~0x07))	/* rounds "x" up to doubleword boundary */
-#define TRAPFRAME 	((16+7+1+8)*4)		/* trap frame size (see comment below) */
-
-/*
- * at this point we already have got:
- * 	%psr 	in %l0
- * 	%pc 	in %l1
- * 	%npc 	in %l2
- * 	%tbr 	in %l3
  * need move pc and npc to the next instruction
  * because while traps was occure %l1 -> pc mean before instruction execute
  */
 trap_dispatcher:
 	! store previous nPC as PC
-	mov		%l2, %l1
+	mov		%t_npc, %t_pc
 	! store previous nPC+4 as nPC
-	add     %l2, 4, %l2
+	add     %t_npc, 4, %t_npc
 
-
-/*
- * at this point we already have got:
- * 	%psr 	in %l0
- * 	%pc 	in %l1
- * 	%npc 	in %l2
- * 	%tbr 	in %l3
- */
 irq_dispatcher:
+interrupting_trap:
 
-	nop
-	mov		%psr, %l4
-	and		%l4, 0x1F, %l4
-	mov		%wim, %l7
-	srl		%l7, %l4, %l7
-	and		%l7, 0x1, %l7
-	cmp		%l7, 0x1			! test WIM for possible window overflow
+	/*
+	 * First of all, we allocate a new stack frame,
+	 * and write the cpu state (globals, psr, pc, npc, y, ...) to it.
+	 *
+	 * Note that we do not update the real sp register,
+	 * we'll do it a bit later after cheking for possible window overflow.
+	 * (we use local t_sp instead,
+	 * be careful and do not change it until moving to the real sp)
+	 */
 
-	bne		irq_overflow_test_ok
-	 nop
+	add %fp, -SA(TRAPFRAME_SZ), %t_sp
+	// leave a space for STACKFRAME structure
+	STORE_PT_ALL(t_sp, t_psr, t_pc, t_npc, t_0)
 
-		! handle window overflow
-		mov  %wim, %l5			! Calculate next WIM
-		mov  %g1, %l7
-		srl  %l5, 1, %g1
-		sll  %l5, CORE_NWINDOWS-1 , %l4
-		or   %l4, %g1, %g1
+	/*
+	 * Traps are still disabled at this line,
+	 * and the cpu state has just been stored in the memory.
+	 * Therefore we can quietly use globals until reenabling traps
+	 * and doing the callback into an arbitrary code.
+	 */
 
-		save					! Get into window to be saved.
-		mov  %g1, %wim
-		std	%l0, [%sp + 0x00];
-		std	%l2, [%sp + 0x08];
-		std	%l4, [%sp + 0x10];
-		std	%l6, [%sp + 0x18];
-		std	%i0, [%sp + 0x20];
-		std	%i2, [%sp + 0x28];
-		std	%i4, [%sp + 0x30];
-		std	%i6, [%sp + 0x38];
-		restore					! Go back to trap window.
-		mov		%l7, %g1
+	/* test CWP for possible window overflow occurred when entering trap */
+	CWP_WIM_TEST(t_psr, t_wim, t_0)
 
-	irq_overflow_test_ok:
-	add		%fp, -SA(TRAPFRAME), %sp
+	bz trap_wof_test_ok
+	 nop/*
+		 * Handle window overflow.
+		 * Just do the same as the corresponding trap handler routine.
+		 * (See windows.S)
+		 */
 
-	mov	%y, %l6
-	st	%l6, [%sp + 0x60];
-	st	%g1, [%sp + 0x64];
-	std	%g2, [%sp + 0x68];
-	std	%g4, [%sp + 0x70];
-	std	%g6, [%sp + 0x78];
+		// Calculate new WIM
+		WIM_SHIFT_RIGHT(t_wim, g1, t_0)
 
-	srl		%l3, 4, %o0
-	and 	%o0, 0xFF, %o0		! pass TT as parameter
+		save	// Get into the window to be saved
 
-		mov		%psr, %l6
-		or		%l6, 0x20, %l6	! set PSR.ET (enable traps)
-		mov		%l6, %psr
-		nop; nop; nop
+		mov	%g1, %wim
+		 // do not wait for delayed write
 
+		STORE_WINDOW(sp, 0)
 
-/*
- * Few words about storing global and some other registers on the stack frame.
- *
- * We need 16 words at the beginning of the frame
- * to store local and input registers as defined by software conventions.
- * The next 1 word is used for aggregate return structure pointer.
- * At last we need 6 words to store formal parameters.
- * (be careful - called function may write to this memory).
- *
- * So we can use the frame part placed after 23 words (92 bytes).
- *
- * -- Eldar
- */
+		restore	// Go back to trap window
 
+	trap_wof_test_ok:
+	/*
+	 * OK, let's update the real stack pointer
+	 */
+	mov %t_sp, %sp
+
+	// pass trap type as parameter
+	mov %tbr, %o0
+	and %o0, TBR_TT, %o0
+	srl %o0, 4, %o0
+
+		// enable traps
+		mov %psr, %g1
+		or  %g1, PSR_ET, %g1
+		mov %g1, %psr
+		 nop; nop; nop	// WRPSR delayed write
 
 			call	dispatch_trap
 			 nop
 
-		mov		%psr, %l6
-		andn	%l6, 0x20, %l6	! clear PSR.ET (disable traps)
-		mov		%l6, %psr
+		// disable traps
+		mov %psr, %g1
+		andn  %g1, PSR_ET, %g1
+		mov %g1, %psr
+		 // do not wait for delayed write
 
-	ld	[%sp + 0x60], %l6;
-	mov	%l6, %y
-	ld	[%sp + 0x64], %g1;
-	ldd	[%sp + 0x68], %g2;
-	ldd	[%sp + 0x70], %g4;
-	ldd	[%sp + 0x78], %g6;
+	/*
+	 * We do not need trap-time WIM initial value anymore.
+	 * So read _new_ value of WIM to %t_wim
+	 * (just for code readability).
+	 */
+	mov %wim, %t_wim;
 
-	! handle possible window underflow when executing RETT
-	mov		%psr, %l4
-	and		%l4, 0x1F, %l4		! calculate current CWP
-	mov		%wim, %l7
-	srl		%l7, 1, %l5
-	sll		%l7, CORE_NWINDOWS-1 , %l6
-	or		%l5, %l6, %l7
-	srl		%l7, %l4, %l7
-	and		%l7, 0x1, %l7
-	cmp		%l7, 0x1			! test WIM value after RETT for window underflow
+	/* test CWP for possible window underflow when executing RETT */
+	WIM_SHIFT_RIGHT(t_wim, g2, t_0)
+	CWP_WIM_TEST(g1, g2, t_0)	// PSR is in %g1
 
-	bne		irq_underflow_test_ok
-	 nop
+	bz trap_wuf_test_ok
+	 nop/*
+		 * Handle window underflow.
+		 * Just do the same as the corresponding trap handler routine.
+		 * (See windows.S)
+		 */
 
-		! handle window underflow
-		mov		%wim, %l6                  ! Calculate next WIM
-		sll		%l6, 1, %l4
-		srl		%l6, CORE_NWINDOWS-1, %l5
-		or		%l5, %l4, %l5
-		mov		%l5, %wim
-		nop; nop; nop			! wait for delayed-write
+		/* Calculate new WIM */
+		WIM_SHIFT_LEFT(t_wim, g1, t_0)
 
-		restore					! get into the window to be restore
-		ldd	[%sp + 0x00], %l0;
-		ldd	[%sp + 0x08], %l2;
-		ldd	[%sp + 0x10], %l4;
-		ldd	[%sp + 0x18], %l6;
-		ldd	[%sp + 0x20], %i0;
-		ldd	[%sp + 0x28], %i2;
-		ldd	[%sp + 0x30], %i4;
-		ldd	[%sp + 0x38], %i6;
-		save					! Get back to the trap window.
+		mov %g1, %wim
+		 nop; nop; nop	// wait for delayed-write before RESTORE
 
-	irq_underflow_test_ok:
-    ! restore PIL&ICC fields of old PSR (in %l0)
-	mov		%psr, %l4
-	set		0xF00F00, %l3
-	andn	%l4, %l3, %l4
-	and		%l0, %l3, %l0
-	or		%l4, %l0, %l4
-	mov		%l4, %psr
-	nop; nop; nop			! wait for PSR delayed-write
+		restore	// get into the window to be restored
 
-	jmp		%l1		! old PC
-	 rett	%l2		! old nPC
+		LOAD_WINDOW(sp, 0)
+
+		save	// Get back to the trap window
+
+	trap_wuf_test_ok:
+	/*
+	 * OK, now we feel sure that RETT will not cause any trap
+	 */
+
+	LOAD_PT_ALL(sp, t_psr, t_pc, t_npc, t_0)
+
+	/*
+	 * Be careful here, do not damage context (globals in particular)
+	 * that has been just restored.
+	 */
+
+    /* restore PIL&ICC fields of old PSR */
+	mov %psr, %t_0
+	set PSR_PIL || PSR_ICC, %t_1
+	andn %t_0, %t_1, %t_0
+	and %t_psr, %t_1, %t_1
+	or  %t_0, %t_1, %t_0
+	mov %t_0, %psr
+	 nop; nop; nop	// wait for PSR delayed-write
+
+	/* tata! */
+	jmp %t_pc
+	 rett %t_npc
 
 bad_trap_dispatcher:
 	mov		%tbr, %l3
@@ -264,59 +207,5 @@ bad_trap_dispatcher:
 	mov		%l5, %psr
 	call	dispatch_bad_trap
 	 nop
-
-/*
-        .global start_child_process
-start_child_process:
-        save  %sp, -112, %sp
-        st    %i0, [%fp+0x44]
-
-        set   chproc_started, %o1
-        set   TRUE, %o2
-        st    %o2, [%o1]
-
-        set   chproc_fp, %o1
-        st    %fp, [%o1]
-
-        ld    [%fp+0x44], %l0
-        call  %l0
-         nop
- _sys_run_chproc_ret:
-        set   chproc_started, %o1
-        set   FALSE, %o2
-        st    %o2, [%o1]
-        set   chproc_ret_val, %o3
-        st    %o0, [%o3]
-        ret
-         restore
-! end of 'run_test'
-
-
-sys_chproc_do_abort:
-        set   chproc_fp, %g1
-        ld    [%g1], %g2
-
- _sys_restore_loop_start:
-        cmp   %fp, %g2
-        be     _sys_restore_loop_end
-         nop
-        restore
-
-        b     _sys_restore_loop_start
-         nop
- _sys_restore_loop_end:
-        b     _sys_run_chproc_ret
-         nop
-! end of 'chproc_abort'
-
-srmmu_fault:
-	ta  0
-	nop
-	nop
-	nop
-	jmp  %l1
-	rett  %l2
-
-*/
 
 .align  32

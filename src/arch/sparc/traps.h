@@ -1,11 +1,44 @@
 #ifndef _TRAPS_H_
 #define _TRAPS_H_
 
-/* The traptable has to be the first code in a boot PROM. */
+#include "types.h"
+#include "windows.h"
+
+#ifdef __ASSEMBLER__
+
+/*
+ * Holds PSR value.
+ * Written each time when trap occurs
+ * (first instruction of most trap entries).
+ */
+#define t_psr   l0
+/* PC to return from trap. Filled by the hardware. */
+#define t_pc    l1
+/* nPC to return from trap. Filled by the hardware. */
+#define t_npc   l2
+/* WIM is written each time when trap occurs. */
+#define t_wim   l3
+/* local register used in trap context as return address instead of i7/o7. */
+#define t_retpc l7
+
+/* scratch locals used in trap context. */
+#define t_0     l4
+#define t_1     l5
+#define t_2     l6
 
 /* Entry for traps which jump to a programmer-specified trap handler.  */
-#define TRAP(H)  mov %psr, %l0; sethi %hi(H), %l4; jmp %l4+%lo(H); mov %tbr, %l3;
-#define TRAPL(H)  mov %g0, %l0; sethi %hi(H), %l4; jmp %l4+%lo(H); nop;
+#define TRAP(H) \
+	mov %psr, %t_psr; \
+	sethi %hi(H), %t_0; \
+	 jmp %t_0 + %lo(H); \
+	mov %wim, %t_wim;
+
+#define TRAPL(H) \
+	mov %g0, %t_psr; \
+	sethi %hi(H), %t_0; \
+	 jmp %t_0 + %lo(H); \
+	mov %wim, %t_wim;
+
 /*for mmu*/
 #define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %l7;
 #define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
@@ -15,5 +48,104 @@
 
 /* Software trap. Treat as BAD_TRAP */
 #define SOFT_TRAP BAD_TRAP
+
+#endif /* __ASSEMBLER__ */
+
+#ifndef __ASSEMBLER__
+
+/*
+ * Stack frame structure
+ */
+typedef struct _STACKFRAME {
+	/* register window */
+	REG_WINDOW reg_window;
+	/* aggregate return structure pointer */
+	WORD structptr[1];
+	/* formal parameters */
+	WORD xargs[6];
+	/* TODO I don't know. -- Eldar */
+	WORD xxargs[1];
+} STACKFRAME;
+
+/*
+ * Basic set of registers to save when trap occurs
+ */
+typedef struct _TRAP_CONTEXT {
+	/* processor state register */
+	WORD psr;
+	/* program counter */
+	WORD pc;
+	/* next program counter */
+	WORD npc;
+	/* mul/div */
+	WORD y;
+	/* global registers */
+	WORD globals[8];
+} TRAP_CONTEXT;
+
+#define STACKFRAME_SZ     sizeof(STACKFRAME)
+#define TRAP_CONTEXT_SZ   sizeof(TRAP_CONTEXT)
+
+#else /* __ASSEMBLER__ */
+
+/* compute sizes by hand */
+#define STACKFRAME_SZ     (REG_WINDOW_SZ + (1+6+1)*4)
+#define TRAP_CONTEXT_SZ   ((1+1+1+1+8)*4)
+
+/* Offsets for trap context structure  */
+#define PT_PSR    0x0
+#define PT_PC     0x4
+#define PT_NPC    0x8
+#define PT_Y      0xc
+#define PT_G0     0x10
+#define PT_G1     0x14
+#define PT_G2     0x18
+#define PT_G3     0x1c
+#define PT_G4     0x20
+#define PT_G5     0x24
+#define PT_G6     0x28
+#define PT_G7     0x2c
+
+#define LOAD_PT_GLOBALS(base_reg) \
+	ld      [%base_reg + STACKFRAME_SZ + PT_G1], %g1; \
+	ldd     [%base_reg + STACKFRAME_SZ + PT_G2], %g2; \
+	ldd     [%base_reg + STACKFRAME_SZ + PT_G4], %g4; \
+	ldd     [%base_reg + STACKFRAME_SZ + PT_G6], %g6;
+
+#define LOAD_PT_YREG(base_reg, scratch) \
+	ld      [%base_reg + STACKFRAME_SZ + PT_Y], %scratch; \
+	wr      %scratch, 0x0, %y;
+
+#define LOAD_PT_PRIV(base_reg, pt_psr, pt_pc, pt_npc) \
+	ld      [%base_reg + STACKFRAME_SZ + PT_PSR], %pt_psr; \
+	ld      [%base_reg + STACKFRAME_SZ + PT_PC], %pt_pc; \
+	ld      [%base_reg + STACKFRAME_SZ + PT_NPC], %pt_npc;
+
+#define LOAD_PT_ALL(base_reg, pt_psr, pt_pc, pt_npc, g_scratch) \
+	LOAD_PT_YREG(base_reg, g_scratch) \
+	LOAD_PT_GLOBALS(base_reg) \
+	LOAD_PT_PRIV(base_reg, pt_psr, pt_pc, pt_npc)
+
+#define STORE_PT_GLOBALS(base_reg) \
+	st      %g1, [%base_reg + STACKFRAME_SZ + PT_G1]; \
+	std     %g2, [%base_reg + STACKFRAME_SZ + PT_G2]; \
+	std     %g4, [%base_reg + STACKFRAME_SZ + PT_G4]; \
+	std     %g6, [%base_reg + STACKFRAME_SZ + PT_G6];
+
+#define STORE_PT_YREG(base_reg, scratch) \
+	rd      %y, %scratch; \
+	st      %scratch, [%base_reg + STACKFRAME_SZ + PT_Y];
+
+#define STORE_PT_PRIV(base_reg, pt_psr, pt_pc, pt_npc) \
+	st      %pt_psr, [%base_reg + STACKFRAME_SZ + PT_PSR]; \
+	st      %pt_pc,  [%base_reg + STACKFRAME_SZ + PT_PC]; \
+	st      %pt_npc, [%base_reg + STACKFRAME_SZ + PT_NPC];
+
+#define STORE_PT_ALL(base_reg, reg_psr, reg_pc, reg_npc, g_scratch) \
+	STORE_PT_PRIV(base_reg, reg_psr, reg_pc, reg_npc) \
+	STORE_PT_GLOBALS(base_reg) \
+	STORE_PT_YREG(base_reg, g_scratch) \
+
+#endif /* __ASSEMBLER__ */
 
 #endif // _TRAPS_H_
