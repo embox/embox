@@ -1,5 +1,6 @@
-SUBDIRS:= amba_pnp \
-          gaisler
+SUBDIRS:= timer \
+          uart \
+          irq_ctrl
 OBJS:=
 
 .PHONY: all $(SUBDIRS)

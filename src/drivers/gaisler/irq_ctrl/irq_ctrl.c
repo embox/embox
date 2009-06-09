@@ -12,8 +12,6 @@
 
 static IRQ_REGS * dev_regs = NULL;
 
-static AMBA_DEV amba_dev;
-
 #include "amba_drivers_helper.h"
 #undef module_init
 #define module_init() irq_ctrl_init()
