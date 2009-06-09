@@ -128,7 +128,7 @@
 	"Build": {
 		"Debug": 1,
 		"Release": 1,
-		"Simulation": 1,
+		"Simulation": 0,
 		"Disassemble": 1,
 		"Doxygen": 0
 	},

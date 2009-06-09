@@ -39,9 +39,9 @@ int init() {
 	irq_init_handlers();
 	uart_init();
 	timers_init();
-//	eth_init();//interfaces
-//	icmp_init();
-//	udp_init();
+	eth_init();//interfaces
+	icmp_init();
+	udp_init();
 
 	return 0;
 }
