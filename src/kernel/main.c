@@ -14,9 +14,9 @@ int main() {
 
 	init();
 
-//	while (NULL != (descriptor = (void *) express_test_get_next())) {
-//		express_test_run(descriptor);
-//	}
+	while (NULL != (descriptor = (void *) express_test_get_next())) {
+		express_test_run(descriptor);
+	}
 
 	shell_start();
 
