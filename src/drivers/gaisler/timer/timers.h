@@ -1,3 +1,7 @@
+/**
+ * \file timers.h
+ */
+
 #ifndef _TIMERS_H_
 #define _TIMERS_H_
 
@@ -22,8 +26,7 @@ typedef struct _TIMERS_STRUCT {
 #endif
 
 #ifdef LEON2
-typedef struct _TIMERS_STRUCT
-{
+typedef struct _TIMERS_STRUCT {
 	volatile unsigned int timer_cnt1; /**< 0x40 */
 	volatile unsigned int timer_ld1;
 	volatile unsigned int timer_ctrl1;

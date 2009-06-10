@@ -1,3 +1,7 @@
+/**
+ * \file uart.c
+ */
+
 #include "types.h"
 #include "irq.h"
 #include "leon_config.h"
@@ -27,8 +31,6 @@ static void irq_func_uart() {
 	char ch = uart_getc();
 }
 
-static AMBA_DEV amba_dev;
-
 int uart_init() {
 	if (NULL != dev_regs)
 		return -1;
@@ -36,10 +38,10 @@ int uart_init() {
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
 	dev_regs = (UART_STRUCT * )amba_dev.bar[0].start;
 	irq = amba_dev.dev_info.irq;
-	//disabled uart
+	/**< disabled uart */
 	dev_regs->ctrl = 0x0;
 	dev_regs->scaler = UART_SCALER_VAL;
-	//enable uart
+	/**< enable uart */
 	dev_regs->ctrl = /*UART_INT_RX_ENABLED |*/ UART_TX_ENABLE | UART_RX_ENABLE;
 #ifndef SIMULATE
 	while (!(UART_TX_READY & dev_regs->status));
@@ -58,7 +60,6 @@ BOOL uart_is_empty() {
 }
 */
 
-// write character via uart
 void uart_putc(char ch) {
 	volatile int i;
 	if (NULL == dev_regs)
@@ -74,7 +75,6 @@ void uart_putc(char ch) {
 	dev_regs->data = (UINT32)ch;
 }
 
-// read character via uart
 char uart_getc() {
 	CHECK_INIT_MODULE();
 
