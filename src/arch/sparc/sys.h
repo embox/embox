@@ -1,8 +1,8 @@
-/*
- * sys.h
+/**
+ * \file sys.h
  *
- *  Created on: 09.06.2009
- *      Author: Eldar Abusalimov
+ * \date 09.06.2009
+ * \author Eldar Abusalimov
  */
 
 #ifndef SYS_H_

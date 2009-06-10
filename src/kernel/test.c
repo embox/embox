@@ -6,6 +6,7 @@
 #include "common.h"
 #include "timers.h"
 #include "uart.h"
+#include "sys.h"
 
 void test_abort_handler() {
 	char ch = uart_getc();
