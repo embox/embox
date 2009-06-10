@@ -84,6 +84,14 @@ def reload_config():
 def onPress(ar, i, j):
 	ar[i][j] = not ar[i][j]
 
+def onPress_dep(item, i, j):
+	tabs[menu[1]][item][i][j] = not tabs[menu[1]][item][i][j]
+	if item == "common":
+		if tabs[menu[1]][item][i][0] == "gaisler":
+			for k in range( len(tabs[menu[1]]["gaisler"]) ):
+				tabs[menu[1]]["gaisler"][k][2] = not tabs[menu[1]]["gaisler"][k][2]
+				getattr(vard, tabs[menu[1]]["gaisler"][k][0]).set(tabs[menu[1]]["gaisler"][k][2])
+
 def getStatus(i):
 	if i == 1:
 		return "normal"
@@ -301,7 +309,7 @@ def main():
 		for driver, inc, status, desc in tabs[menu[1]][item]:
 			setattr(vard, driver, IntVar())
 			Checkbutton(frame[menu[1]], text=driver, state=getStatus(status), anchor=W, variable = getattr(vard, driver), \
-			    	    command=(lambda tmp=tmp, item=item: onPress(tabs[menu[1]][item], tmp-1, 1))).grid(row=row, column=0, sticky=W)
+			    	    command=(lambda tmp=tmp, item=item: onPress_dep(item, tmp-1, 1))).grid(row=row, column=0, sticky=W)
 			getattr(vard, driver).set(inc)
 			Label(frame[menu[1]], text=desc, state=getStatus(status), width=55, anchor=W).grid(row=row, column=1, sticky=W)
 			row += 1
