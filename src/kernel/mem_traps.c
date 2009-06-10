@@ -3,6 +3,7 @@
  */
 
 #include "irq.h"
+#include "common.h"
 
 void mem_not_aligned()
 {
