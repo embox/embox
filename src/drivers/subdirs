@@ -1,0 +1,3 @@
+SUBDIRS:= \
+amba_pnp \
+gaisler \

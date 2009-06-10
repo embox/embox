@@ -1,5 +1,4 @@
-SUBDIRS:= amba_pnp \
-          gaisler
+include subdirs
 OBJS:=
 
 .PHONY: all $(SUBDIRS)

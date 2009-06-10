@@ -1,0 +1,4 @@
+SUBDIRS:= \
+irq_ctrl \
+timer \
+uart \

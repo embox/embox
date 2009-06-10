@@ -97,26 +97,42 @@
 			"cpu_context save/restore"
 		]
 	],
-	"Drivers": [
-		[
-			"irq_controller",
-			1,
-			1,
-			"particular logical device"
+	"Drivers": {
+		"common": [
+			[
+				"amba_pnp",
+				1,
+				1,
+				"AMBA plug & play"
+			],
+			[
+				"gaisler",
+				1,
+				1,
+				"gaisler amba devices"
+			]
 		],
-		[
-			"timer",
-			1,
-			1,
-			"particular logical device"
-		],
-		[
-			"uart",
-			1,
-			1,
-			"particular logical device"
+		"gaisler": [
+			[
+				"irq_ctrl",
+				1,
+				1,
+				"interrupt unit"
+			],
+			[
+				"timer",
+				1,
+				1,
+				"timer"
+			],
+			[
+				"uart",
+				1,
+				1,
+				"uart"
+			]
 		]
-	],
+	},
 	"Levels": {
 		"Error": 1,
 		"Trace": 1,
@@ -129,7 +145,6 @@
 		"Debug": 1,
 		"Release": 1,
 		"Simulation": 0,
-		"Disassemble": 1,
 		"Doxygen": 0
 	},
 	"Files": {

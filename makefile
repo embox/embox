@@ -39,7 +39,7 @@ all:
 
 clean:
 	declare -x MAKEOP=clean; make --directory=src clean
-	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst
+	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old
 
 xconfig:
 	@./scripts/configure.py

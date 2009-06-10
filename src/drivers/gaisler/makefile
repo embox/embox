@@ -1,6 +1,4 @@
-SUBDIRS:= timer \
-          uart \
-          irq_ctrl
+include subdirs
 OBJS:=
 
 .PHONY: all $(SUBDIRS)

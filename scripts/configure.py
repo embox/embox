@@ -59,7 +59,6 @@ def write_config(fileconf):
                 tmp["Build"]["Release"] = build_var["Release"].get()
                 tmp["Build"]["Simulation"] = build_var["Simulation"].get()
                 tmp["Build"]["Doxygen"] = build_var["Doxygen"].get()
-                tmp["Build"]["Disassemble"] = build_var["Disassemble"].get()
                 conf.write(json.dumps(tmp))
         conf.close()
 
@@ -74,8 +73,9 @@ def reload_config():
         for i in range( len(tabs[menu[5]].keys()) ):
                 name = str(tabs[menu[5]].keys()[i])
                 build_var[name].set(tabs[menu[5]][name])
-        for driver, inc, status, desc in tabs[menu[1]]:
-                getattr(vard, driver).set(inc)
+        for item in tabs[menu[1]].keys():
+    		for driver, inc, status, desc in tabs[menu[1]][item]:
+            		getattr(vard, driver).set(inc)
         for test_name, inc, status, desc in tabs[menu[2]]:
                 getattr(vart, test_name).set(inc)
         for cmd, pack, inc, status, desc in tabs[menu[3]]:
@@ -203,7 +203,19 @@ def build_tests():
 	ftest.close()
 
 def build_drivers():
-	pass
+	for item in tabs[menu[1]].keys():
+		path = "src/drivers/"
+		if item == "common":
+			path += "subdirs"
+		else:
+			path += item + "/subdirs"
+		with open(path, 'w+') as fsubdirs:
+		        fsubdirs.write("SUBDIRS:= \\\n")
+    			for driver, inc, status, desc in tabs[menu[1]][item]:
+				if inc == True:
+					fsubdirs.write(str(driver) + " \\\n")
+			fsubdirs.write(" ")
+		fsubdirs.close()
 
 #-----------------------------GUI------------------------------
 def About():
@@ -278,16 +290,25 @@ def main():
 	#-- Drivers frame
 	frame[menu[1]] = Tkinter.Frame(frame["Main"]())
 	Label(frame[menu[1]], text=menu[1], width=25, background="lightblue").grid(row=0, column=0)
-	Label(frame[menu[1]], text="Description", width=35, background="lightblue").grid(row=0, column=1)
+	Label(frame[menu[1]], text="Description", width=55, background="lightblue").grid(row=0, column=1)
 	vard = IntVar()
 	row = 1
-	for driver, inc, status, desc in tabs[menu[1]]:
-		setattr(vard, driver, IntVar())
-		Checkbutton(frame[menu[1]], text=driver, state=getStatus(status), anchor=W, variable = getattr(vard, driver), \
-			    command=(lambda row=row: onPress(tabs[menu[1]], row-1, 1))).grid(row=row, column=0, sticky=W)
-		getattr(vard, driver).set(inc)
-		Label(frame[menu[1]], text=desc, state=getStatus(status), width=35, anchor=W).grid(row=row, column=1, sticky=W)
-		row += 1
+	for item in tabs[menu[1]].keys():
+		if item != "common":
+			Label(frame[menu[1]], text=item, width=25, background="lightblue").grid(row=row, column=0)
+			row +=1
+		tmp = 1
+		for driver, inc, status, desc in tabs[menu[1]][item]:
+			setattr(vard, driver, IntVar())
+			Checkbutton(frame[menu[1]], text=driver, state=getStatus(status), anchor=W, variable = getattr(vard, driver), \
+			    	    command=(lambda tmp=tmp, item=item: onPress(tabs[menu[1]][item], tmp-1, 1))).grid(row=row, column=0, sticky=W)
+			getattr(vard, driver).set(inc)
+			Label(frame[menu[1]], text=desc, state=getStatus(status), width=55, anchor=W).grid(row=row, column=1, sticky=W)
+			row += 1
+			tmp += 1
+		if item != "common":
+			Label(frame[menu[1]], text="---------------------------------------", width=25).grid(row=row, column=0)
+			row += 1
 
 	#-- Tests frame
 	frame[menu[2]] = Tkinter.Frame(frame["Main"]())
