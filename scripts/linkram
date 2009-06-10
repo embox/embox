@@ -70,7 +70,7 @@ SECTIONS
     _data_image_start = .;
   } > sdram
 
-  .data : AT (ADDR (.text) + SIZEOF (.text))
+  .data : /*AT (ADDR (.text) + SIZEOF (.text))*/
   {
     _data_start = .;
     *(.data)
