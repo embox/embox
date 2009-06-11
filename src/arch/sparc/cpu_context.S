@@ -59,7 +59,7 @@ cpu_context_save:
 	store_regwin:
 		STORE_CC_REG_WINDOW(g_iter)
 		sub %g_iter, REG_WINDOW_SZ, %g_iter
-	cmp %g_base, %g_iter
+	cmp %g_iter,%g_base
 	bge store_regwin
 	 save
 
@@ -107,7 +107,7 @@ cpu_context_restore:
 	load_regwin:
 		LOAD_CC_REG_WINDOW(g_iter)
 		sub %g_iter, REG_WINDOW_SZ, %g_iter
-	cmp %g_base, %g_iter
+	cmp  %g_iter,%g_base
 	bge load_regwin
 	 save
 
