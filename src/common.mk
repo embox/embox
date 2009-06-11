@@ -1,11 +1,13 @@
-create_objs_lst:$(SUBDIRS)
-	echo '$(addprefix $(CURDIR)/,$(OBJS)) \' >> $(ROOT_DIR)/objs.lst
+.PHONY: all $(SUBDIRS-y)
+
+create_objs_lst: $(SUBDIRS-y)
+	echo '$(addprefix $(CURDIR)/,$(OBJS-y)) \' >> $(ROOT_DIR)/objs.lst
 	echo ' -I$(CURDIR)\' >> $(ROOT_DIR)/include_dirs.lst
 
-$(SUBDIRS):
+$(SUBDIRS-y):
 	$(MAKE) -C $@ $(MAKEOP)
 
-all:$(SUBDIRS) $(OBJS)
+all: $(SUBDIRS-y) $(OBJS-y)
 
 %.o:%.S
 	$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -o $(OBJ_DIR)/$@ $<
@@ -16,4 +18,4 @@ all:$(SUBDIRS) $(OBJS)
 	$(CC) $(CCFLAGS) -DSIMULATE $(INCLUDE_DIRS) -o $(OBJ_DIR_SIM)/$@ $<
 
 clean:
-	rm -rf $(OBJS) *.d
+	rm -rf $(OBJS-y) *.d

@@ -1,6 +1,7 @@
-include subdirs
-OBJS:=
+include $(SCRIPTS_DIR)/autoconf
 
-.PHONY: all $(SUBDIRS)
+SUBDIRS-$(MONITOR_DRIVERS_GAISLER_IRQ_CTRL)  += irq_ctrl
+SUBDIRS-$(MONITOR_DRIVERS_GAISLER_TIMER)     += timer
+SUBDIRS-$(MONITOR_DRIVERS_GAISLER_UART)      += uart
 
 include $(SRC_DIR)/common.mk

@@ -1,15 +1,5 @@
+include $(SCRIPTS_DIR)/autoconf
 
-.PHONY: all $(CPU_ARCH)
+SUBDIRS-$(MONITOR_ARCH_SPARC)     += sparc
 
-create_objs_lst:$(CPU_ARCH)
-	@echo cpu_arch = $(CPU_ARCH)
-
-$(CPU_ARCH):
-	$(MAKE) -C $@ $(MAKEOP)
-
-
-all:$(CPU_ARCH)
-
-
-
-clean:$(CPU_ARCH)
+include $(SRC_DIR)/common.mk

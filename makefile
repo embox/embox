@@ -1,10 +1,10 @@
 export
 ROOT_DIR := $(CURDIR)
-
 BIN_DIR:= $(ROOT_DIR)/bin
 OBJ_DIR:= $(ROOT_DIR)/obj
 OBJ_DIR_SIM:= $(OBJ_DIR)/sim
 SRC_DIR:= $(ROOT_DIR)/src
+SCRIPTS_DIR:= $(ROOT_DIR)/scripts
 
 #name of target
 TARGET:= monitor
@@ -22,10 +22,6 @@ CCFLAGS:= -Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_ -D_ERR
 #link flags
 LDFLAGS:= -Wl -N -nostdlib -g
 
-ifndef CPU_ARCH
-CPU_ARCH:= sparc
-endif
-
 all:
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(OBJ_DIR)
@@ -33,8 +29,6 @@ all:
 	rm -f objs.lst include_dirs.lst
 	declare -x MAKEOP=create_objs_lst; make --directory=src create_objs_lst
 	echo ' ' >> $(ROOT_DIR)/include_dirs.lst
-	uniq src/user/subdirs > src/user/.subdirs
-	mv src/user/.subdirs src/user/subdirs
 	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
 
 clean:
@@ -42,7 +36,10 @@ clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old
 
 xconfig:
-	@./scripts/configure.py
+	@$(SCRIPTS_DIR)/configure.py
+
+menuconfig:
+	@echo "Oops! Try edit config file by hand or use \"make xconfig\" and have a lot of fun."
 
 config:
 	@echo "Oops! Try edit config file by hand or use \"make xconfig\" and have a lot of fun."

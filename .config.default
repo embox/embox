@@ -12,11 +12,8 @@
 		"Arch": [
 			[
 				"sparc",
-				0
-			],
-			[
-				"x86",
-				1
+				0,
+				"MONITOR_ARCH_SPARC"
 			]
 		],
 		"Compiler": "sparc-elf",
@@ -28,59 +25,59 @@
 	"Commands": [
 		[
 			"arp",
-			"arp",
 			1,
 			1,
-			"arp table"
+			"arp table",
+			"MONITOR_USER_ARP"
 		],
 		[
 			"help",
-			"help",
 			1,
 			1,
-			"display all possible commands"
+			"display all possible commands",
+			"MONITOR_USER_HELP"
 		],
 		[
 			"lspnp",
-			"lspnp",
 			1,
 			1,
-			"show list of plug and play devices"
+			"show list of plug and play devices",
+			"MONITOR_USER_LSPNP"
 		],
 		[
 			"mem",
-			"mem",
 			1,
 			1,
-			"read from memory or test memory"
+			"read from memory or test memory",
+			"MONITOR_USER_MEM"
 		],
 		[
 			"mmu_probe",
+			1,
+			1,
 			"mmu_probe",
-			1,
-			1,
-			"mmu_probe"
+			"MONITOR_USER_MMU_PROBE"
 		],
 		[
 			"ping",
-			"ping",
 			1,
 			1,
-			"test whether a particular host is reachable"
+			"test whether a particular host is reachable",
+			"MONITOR_USER_PING"
 		],
 		[
 			"udpd",
-			"udpd",
 			1,
 			1,
-			"test udp socket"
+			"test udp socket",
+			"MONITOR_USER_UDPD"
 		],
 		[
 			"wmem",
-			"wmem",
 			1,
 			1,
-			"write to memory"
+			"write to memory",
+			"MONITOR_USER_WMEM"
 		]
 	],
 	"Tests": [
@@ -88,13 +85,15 @@
 			"test_irq_availability",
 			1,
 			1,
-			"irq availability"
+			"irq availability",
+			"MONITOR_TESTS_IRQ_AVAILABILITY"
 		],
 		[
 			"test_cpu_context",
 			1,
 			1,
-			"cpu_context save/restore"
+			"cpu_context save/restore",
+			"MONITOR_TESTS_CPU_CONTEXT"
 		]
 	],
 	"Drivers": {
@@ -103,13 +102,15 @@
 				"amba_pnp",
 				1,
 				1,
-				"AMBA plug & play"
+				"AMBA plug & play",
+				"MONITOR_DRIVERS_AMBA_PNP"
 			],
 			[
 				"gaisler",
 				1,
 				1,
-				"gaisler amba devices"
+				"gaisler amba devices",
+				"MONITOR_DRIVERS_GAISLER"
 			]
 		],
 		"gaisler": [
@@ -117,19 +118,22 @@
 				"irq_ctrl",
 				1,
 				1,
-				"interrupt unit"
+				"interrupt unit",
+				"MONITOR_DRIVERS_GAISLER_IRQ_CTRL"
 			],
 			[
 				"timer",
 				1,
 				1,
-				"timer"
+				"timer",
+				"MONITOR_DRIVERS_GAISLER_TIMER"
 			],
 			[
 				"uart",
 				1,
 				1,
-				"uart"
+				"uart",
+				"MONITOR_DRIVERS_GAISLER_UART"
 			]
 		]
 	},
@@ -150,7 +154,7 @@
 	"Files": {
 		"shell_inc": "src/conio/shell.inc",
 		"users_inc": "src/conio/users.inc",
-		"subdirs": "src/user/subdirs",
+		"autoconf": "scripts/autoconf",
 		"tests_table_inc": "src/tests/tests_table.inc"
 	}
 }

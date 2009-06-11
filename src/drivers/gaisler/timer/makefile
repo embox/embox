@@ -1,4 +1,3 @@
-SUBDIRS:=
-OBJS:= timers.o
+OBJS-y:= timers.o
 
 include $(SRC_DIR)/common.mk

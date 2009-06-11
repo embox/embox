@@ -1,4 +1,3 @@
-SUBDIRS:=
-OBJS:=mem.o
+OBJS-y:= mem.o
 
 include $(SRC_DIR)/common.mk

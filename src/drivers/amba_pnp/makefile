@@ -1,4 +1,3 @@
-SUBDIRS:=
-OBJS:=amba_pnp.o
+OBJS-y:= amba_pnp.o
 
 include $(SRC_DIR)/common.mk
