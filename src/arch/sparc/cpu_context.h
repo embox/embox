@@ -51,7 +51,7 @@
 /*
  * Structure holding the whole context of the CPU
  */
-typedef struct _CPU_CONTEXT {
+typedef  struct _CPU_CONTEXT {
 	/* CWP field of PSR register */
 	WORD psr_cwp;
 	/* global registers */
@@ -64,7 +64,7 @@ typedef struct _CPU_CONTEXT {
  * These registers are saved in locals of the window
  * pointed at the call time
  */
-} CPU_CONTEXT;
+} __attribute__ ((aligned (8))) CPU_CONTEXT;
 
 #define CPU_CONTEXT_SZ sizeof(CPU_CONTEXT)
 

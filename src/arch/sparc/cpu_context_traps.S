@@ -21,6 +21,8 @@ cpu_context_save_trap:
 	jmpl %t_0, %l_retpc
 	 mov %i_pcontext, %l_base
 
+	mov %t_npc, %t_pc
+	add  %t_npc, 4, %t_npc
 	jmp %t_pc
 	 rett %t_npc
 
@@ -31,6 +33,8 @@ cpu_context_restore_trap:
 	jmpl %t_0, %l_retpc
 	 mov %i_pcontext, %l_base
 
+	mov %t_npc, %t_pc
+	add  %t_npc, 4, %t_npc
 	jmp %t_pc
 	 rett %t_npc
 

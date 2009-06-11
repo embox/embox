@@ -10,43 +10,48 @@
 #include "cpu_context.h"
 #include "types.h"
 
-inline static void context_save(CPU_CONTEXT *pcontext) {
-	__asm__ __volatile__(
-			"mov %0, %%o0\n"
-			"ta 5\n" :
-			"=r" (pcontext)::"%o0");
+inline static void context_save(CPU_CONTEXT * pcontext) {
+    __asm__ __volatile__(
+            "mov %0, %%o0\n\t"
+            "ta 5\n\t"
+            "nop\n\t"::
+            "r" (pcontext):
+            "%o0");
+
 }
 
-inline static void context_restore(CPU_CONTEXT *pcontext) {
-	__asm__ __volatile__(
-			"mov %0, %%o0\n"
-			"ta 6\n" :
-			"=r" (pcontext));
+inline static void context_restore(CPU_CONTEXT * pcontext) {
+    __asm__ __volatile__(
+            "mov %0, %%o0\n\t"
+            "ta 6\n\t"
+            "nop\n\t"::
+            "r" (pcontext):
+            "%o0");
 }
 
 static CPU_CONTEXT context;
 
 int sys_exec(EXEC_FUNC f, int argc, char **argv) {
-	static BOOL started = FALSE;
-	int ret = -2;
+    static BOOL started = FALSE;
+    int ret = -2;
 
-	context_save(&context);
-	{
-		if (!started) {
-			started = TRUE;
-			ret = f(argc, argv);
-		} else {
-			return ret;
-		}
-	}
-	context_restore(&context);
+    context_save( &context);
+    {
+        if (!started) {
+            started = TRUE;
+            ret = f(argc, argv);
+        } else {
+            return ret;
+        }
+    }
+    context_restore( &context);
 
-	// we'll never reach this line
-	return ret;
+    // we'll never reach this line
+    return ret;
 }
 
 void sys_interrupt() {
-	context_restore(&context);
+    //context_restore(&context);
 }
 
 //400172dc <context_save>:
