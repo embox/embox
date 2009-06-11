@@ -55,7 +55,7 @@ halt_trap:
 	srl %t_wim, %scratch, %scratch;\
 	andcc %scratch, 0x1, %g0;
 
-#define t_sp t_2
+#define t_sp t2
 
 /*
  * need move pc and npc to the next instruction
@@ -82,7 +82,7 @@ interrupting_trap:
 
 	add %fp, -SA(TRAPFRAME_SZ), %t_sp
 	// leave a space for STACKFRAME structure
-	STORE_PT_ALL(t_sp, t_psr, t_pc, t_npc, t_0)
+	STORE_PT_ALL(t_sp, t_psr, t_pc, t_npc, t0)
 
 	/*
 	 * Traps are still disabled at this line,
@@ -92,7 +92,7 @@ interrupting_trap:
 	 */
 
 	/* test CWP for possible window overflow occurred when entering trap */
-	CWP_WIM_TEST(t_psr, t_wim, t_0)
+	CWP_WIM_TEST(t_psr, t_wim, t0)
 
 	bz trap_wof_test_ok
 	 nop/*
@@ -102,7 +102,7 @@ interrupting_trap:
 		 */
 
 		// Calculate new WIM
-		WIM_SHIFT_RIGHT(t_wim, g1, t_0)
+		WIM_SHIFT_RIGHT(t_wim, g1, t0)
 
 		save	// Get into the window to be saved
 
@@ -147,8 +147,8 @@ interrupting_trap:
 	mov %wim, %t_wim;
 
 	/* test CWP for possible window underflow when executing RETT */
-	WIM_SHIFT_RIGHT(t_wim, g2, t_0)
-	CWP_WIM_TEST(g1, g2, t_0)	// PSR is in %g1
+	WIM_SHIFT_RIGHT(t_wim, g2, t0)
+	CWP_WIM_TEST(g1, g2, t0)	// PSR is in %g1
 
 	bz trap_wuf_test_ok
 	 nop/*
@@ -158,7 +158,7 @@ interrupting_trap:
 		 */
 
 		/* Calculate new WIM */
-		WIM_SHIFT_LEFT(t_wim, g1, t_0)
+		WIM_SHIFT_LEFT(t_wim, g1, t0)
 
 		mov %g1, %wim
 		 nop; nop; nop	// wait for delayed-write before RESTORE
@@ -174,7 +174,7 @@ interrupting_trap:
 	 * OK, now we feel sure that RETT will not cause any trap
 	 */
 
-	LOAD_PT_ALL(sp, t_psr, t_pc, t_npc, t_0)
+	LOAD_PT_ALL(sp, t_psr, t_pc, t_npc, t0)
 
 	/*
 	 * Be careful here, do not damage context (globals in particular)
@@ -182,12 +182,12 @@ interrupting_trap:
 	 */
 
     /* restore PIL&ICC fields of old PSR */
-	mov %psr, %t_0
-	set PSR_PIL || PSR_ICC, %t_1
-	andn %t_0, %t_1, %t_0
-	and %t_psr, %t_1, %t_1
-	or  %t_0, %t_1, %t_0
-	mov %t_0, %psr
+	mov %psr, %t0
+	set PSR_PIL || PSR_ICC, %t1
+	andn %t0, %t1, %t0
+	and %t_psr, %t1, %t1
+	or  %t0, %t1, %t0
+	mov %t0, %psr
 	 nop; nop; nop	// wait for PSR delayed-write
 
 	/* tata! */

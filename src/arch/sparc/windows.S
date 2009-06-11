@@ -18,10 +18,10 @@ window_overflow:
 #define g_newwim g1
 
 	/* Remember previous value of %g_newwim to restore it later */
-	mov %g_newwim, %t_0
+	mov %g_newwim, %t0
 
 	/* Calculate new WIM */
-	WIM_SHIFT_RIGHT(t_wim, g_newwim, t_1)
+	WIM_SHIFT_RIGHT(t_wim, g_newwim, t1)
 	/*
 	 * at this line WIM points to the current window
 	 * so SAVE wouldn't not cause any trap
@@ -40,7 +40,7 @@ window_overflow:
 	restore	// Go back to trap window
 
 	/* Restore saved %g_newwim */
-	mov %t_0, %g_newwim
+	mov %t0, %g_newwim
 
 	jmp %t_pc	// Re-execute SAVE
 	 rett %t_npc
@@ -50,10 +50,10 @@ window_overflow:
 		.global  window_underflow
 window_underflow:
 
-#define l_newwim t_0
+#define l_newwim t0
 
 	/* Calculate new WIM */
-	WIM_SHIFT_LEFT(t_wim, l_newwim, t_1)
+	WIM_SHIFT_LEFT(t_wim, l_newwim, t1)
 
 	mov	%l_newwim, %wim	// Write new WIM value
 	 nop; nop; nop	// Wait for WIM delayed writing

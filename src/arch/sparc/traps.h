@@ -4,53 +4,6 @@
 #include "types.h"
 #include "windows.h"
 
-#ifdef __ASSEMBLER__
-
-/*
- * Holds PSR value.
- * Written each time when trap occurs
- * (first instruction of most trap entries).
- */
-#define t_psr   l0
-/* PC to return from trap. Filled by the hardware. */
-#define t_pc    l1
-/* nPC to return from trap. Filled by the hardware. */
-#define t_npc   l2
-/* WIM is written each time when trap occurs. */
-#define t_wim   l3
-/* local register used in trap context as return address instead of i7/o7. */
-#define t_retpc l7
-
-/* scratch locals used in trap context. */
-#define t_0     l4
-#define t_1     l5
-#define t_2     l6
-
-/* Entry for traps which jump to a programmer-specified trap handler.  */
-#define TRAP(H) \
-	mov %psr, %t_psr; \
-	sethi %hi(H), %t_0; \
-	 jmp %t_0 + %lo(H); \
-	mov %wim, %t_wim;
-
-#define TRAPL(H) \
-	mov %g0, %t_psr; \
-	sethi %hi(H), %t_0; \
-	 jmp %t_0 + %lo(H); \
-	mov %wim, %t_wim;
-
-/*for mmu*/
-#define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %l7;
-#define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
-
-/* Unexpected trap will halt the processor by forcing it to error state */
-#define BAD_TRAP TRAP(bad_trap_dispatcher)
-
-/* Software trap. Treat as BAD_TRAP */
-#define SOFT_TRAP BAD_TRAP
-
-#endif /* __ASSEMBLER__ */
-
 #ifndef __ASSEMBLER__
 
 /*
@@ -88,7 +41,50 @@ typedef struct _TRAP_CONTEXT {
 
 #else /* __ASSEMBLER__ */
 
-/* compute sizes by hand */
+/*
+ * Holds PSR value.
+ * Written each time when trap occurs
+ * (first instruction of most trap entries).
+ */
+#define t_psr   l0
+/* PC to return from trap. Filled by the hardware. */
+#define t_pc    l1
+/* nPC to return from trap. Filled by the hardware. */
+#define t_npc   l2
+/* WIM is written each time when trap occurs. */
+#define t_wim   l3
+/* local register used in trap context as return address instead of i7/o7. */
+#define t_retpc l7
+
+/* scratch locals used in trap context. */
+#define t0      l4
+#define t1      l5
+#define t2      l6
+
+/* Entry for traps which jump to a programmer-specified trap handler.  */
+#define TRAP(H) \
+	mov %psr, %t_psr; \
+	sethi %hi(H), %t0; \
+	 jmp %t0 + %lo(H); \
+	mov %wim, %t_wim;
+
+#define TRAPL(H) \
+	mov %g0, %t_psr; \
+	sethi %hi(H), %t0; \
+	 jmp %t0 + %lo(H); \
+	mov %wim, %t_wim;
+
+/*for mmu*/
+#define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %l7;
+#define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
+
+/* Unexpected trap will halt the processor by forcing it to error state */
+#define BAD_TRAP TRAP(bad_trap_dispatcher)
+
+/* Software trap. Treat as BAD_TRAP */
+#define SOFT_TRAP BAD_TRAP
+
+/* compute sizes by hand (see above) */
 #define STACKFRAME_SZ     (REG_WINDOW_SZ + (1+6+1)*4)
 #define TRAP_CONTEXT_SZ   ((1+1+1+1+8)*4)
 
