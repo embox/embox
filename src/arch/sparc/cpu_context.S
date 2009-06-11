@@ -47,7 +47,8 @@ cpu_context_save:
 
 	/*  reset PSR_CWP and WIM */
 	mov %g0, %wim
-	mov %psr, %g_scratch
+	/* we have psr in %l0 */
+	mov %l0, %g_scratch
 	andn %g_scratch, PSR_CWP, %g_scratch
 	mov %g_scratch, %psr
 	 nop; nop; nop
@@ -70,6 +71,10 @@ cpu_context_save:
 	mov %g_scratch, %psr
 	 nop; nop; nop
 	/* We're in the initial window pointed at the call time now */
+
+	mov %l0, %psr
+	 nop; nop; nop	// wait for PSR delayed-write
+
 
 	/* restore affected globals */
 	LOAD_CC_GLOBALS(l_base)
@@ -106,7 +111,7 @@ cpu_context_restore:
 	bge load_regwin
 	 save
 
-	LOAD_CC_PSR_CWP(l_base, g_cwp)
+	LOAD_CC_PSR_CWP(g_base, g_cwp)
 
 	/* set PSR_CWP */
 	mov %psr, %g_scratch
@@ -115,6 +120,9 @@ cpu_context_restore:
 	mov %g_scratch, %psr
 	 nop; nop; nop
 	/* We're in the window pointed at the _save_ call time now */
+
+	mov %l0, %psr
+	 nop; nop; nop	// wait for PSR delayed-write
 
 	/* write control/status registers */
 	mov %l_y, %y
