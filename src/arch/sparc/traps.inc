@@ -73,14 +73,14 @@ _hardreset:
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 7C - 7F undefined
 
   /* Software traps */
-  TRAP(test_save_trap);                         ! 80
+  SOFT_TRAP; ! TRAP(test_save_trap);                         ! 80
   SOFT_TRAP;                        ! 81
   SOFT_TRAP; SOFT_TRAP;                         ! 82 - 83
   TRAP(skip);                                   ! 84
   TRAP(cpu_context_save_trap);                  ! 85
   TRAP(cpu_context_restore_trap);               ! 86
   SOFT_TRAP;                                    ! 87
-  TRAP(test_restore_trap);                      ! 88
+  SOFT_TRAP; !   TRAP(test_restore_trap);                      ! 88
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;  ! 89 - 8B
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 8C - 8F
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 90 - 93
