@@ -105,8 +105,23 @@ def make_conf():
 	build_commands()
 	build_makefile()
 	build_tests()
+	build_link()
 	write_autoconf()
 	write_config(".config")
+
+def repl_arch(m):
+	if common_var["Arch_num"].get() == 0:
+		return "OUTPUT_ARCH(sparc)"
+
+def build_link():
+	for file in [ "linkrom", "linkram", "linksim" ]:
+		with open('scripts/' + file, 'r+') as flink:
+			content = flink.read()
+		flink.close()
+		content = re.sub('OUTPUT_ARCH\((\w+)\)', repl_arch, content)
+    		with open('scripts/' + file, 'w+') as flink:
+            		flink.write(content)
+    		flink.close()
 
 def build_commands():
 	#-- generate src/conio/shell.inc
