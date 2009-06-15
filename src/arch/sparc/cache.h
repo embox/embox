@@ -1,37 +1,71 @@
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
-#include "types.h"
-#include "leon.h"
 
+
+inline static void cache_refresh() {
+    __asm__ __volatile__ ("flush\n\t"
+                          "nop;nop;nop\n\t");
+}
 inline static void cache_enable() {
-	l_regs->cachectrl |= 0xF;
-	__asm__ ("flush");
+    register unsigned int tmp;
+    __asm__ __volatile__ ("flush\n\t"
+                          "nop;nop;nop\n\t"
+                          "lda [%%g0]0x2,%0\n\t"
+                          "or %0,0xF,%0\n\t"
+                          "sta %0,[%%g0]0x2\n\t" : : "r" (tmp)
+                          );
+
 }
 
 inline static void cache_disable() {
-	l_regs->cachectrl &= ~0xF;
-	__asm__ ("flush");
+    register unsigned int tmp;
+    __asm__ __volatile__ ("flush\n\t"
+                          "nop;nop;nop\n\t"
+                          "lda [%%g0]0x2,%0\n\t"
+                          "andn %0,0xF,%0\n\t"
+                          "sta %0,[%%g0]0x2\n\t" : : "r" (tmp)
+                          );
 }
 
 inline static void cache_instr_enable() {
-	l_regs->cachectrl |= 0x3;
-	__asm__ ("flush");
+    register unsigned int tmp;
+    __asm__ __volatile__ ("flush\n\t"
+                          "nop;nop;nop\n\t"
+                          "lda [%%g0]0x2,%0\n\t"
+                          "or %0,0x3,%0\n\t"
+                          "sta %0,[%%g0]0x2\n\t" : : "r" (tmp)
+                          );
 }
 
 inline static void cache_instr_disable() {
-	l_regs->cachectrl &= ~0x3;
-	__asm__ ("flush");
+    register unsigned int tmp;
+    __asm__ __volatile__ ("flush\n\t"
+                          "nop;nop;nop\n\t"
+                          "lda [%%g0]0x2,%0\n\t"
+                          "andn %0,0x3,%0\n\t"
+                          "sta %0,[%%g0]0x2\n\t" : : "r" (tmp)
+                          );
 }
 
 inline static void cache_data_enable() {
-	l_regs->cachectrl |= 0xC;
-	__asm__ ("flush");
+    register unsigned int tmp;
+    __asm__ __volatile__ ("flush\n\t"
+                          "nop;nop;nop\n\t"
+                          "lda [%%g0]0x2,%0\n\t"
+                          "or %0,0xC,%0\n\t"
+                          "sta %0,[%%g0]0x2\n\t" : : "r" (tmp)
+                          );
 }
 
 inline static void cache_data_disable() {
-	l_regs->cachectrl &= ~0xC;
-	__asm__ ("flush");
+    register unsigned int tmp;
+    __asm__ __volatile__ ("flush\n\t"
+                          "nop;nop;nop\n\t"
+                          "lda [%%g0]0x2,%0\n\t"
+                          "andn %0,0xC,%0\n\t"
+                          "sta %0,[%%g0]0x2\n\t" : : "r" (tmp)
+                          );
 }
 
 #endif // ifndef __CACHE_H__
