@@ -9,7 +9,7 @@
 //IRQ_REGS * const irq_regs = (IRQ_REGS * const ) IRQ_REGS_BASE;
 
 // user trap handlers table
-IRQ_HANDLER user_trap_handlers[ALLOWED_TRAPS_AMOUNT];
+static IRQ_HANDLER user_trap_handlers[ALLOWED_TRAPS_AMOUNT];
 
 /*
  * Runs user defined handler (if one has been enabled).
