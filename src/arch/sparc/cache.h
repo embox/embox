@@ -3,10 +3,18 @@
 
 
 
+inline static void cache_set_ctrl_reg(unsigned int ctrl_reg){
+    __asm__ __volatile__ ("flush\n\t"
+                          "nop;nop;nop\n\t"
+                          "sta %0,[%%g0]0x2\n\t" : : "r" (ctrl_reg)
+                          );
+}
+
 inline static void cache_refresh() {
     __asm__ __volatile__ ("flush\n\t"
                           "nop;nop;nop\n\t");
 }
+
 inline static void cache_enable() {
     register unsigned int tmp;
     __asm__ __volatile__ ("flush\n\t"
@@ -15,8 +23,8 @@ inline static void cache_enable() {
                           "or %0,0xF,%0\n\t"
                           "sta %0,[%%g0]0x2\n\t" : : "r" (tmp)
                           );
-
 }
+
 
 inline static void cache_disable() {
     register unsigned int tmp;

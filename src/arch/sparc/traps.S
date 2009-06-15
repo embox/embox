@@ -61,6 +61,7 @@ halt_trap:
  * need move pc and npc to the next instruction
  * because while traps was occure %l1 -> pc mean before instruction execute
  */
+ 	.global trap_dispatcher
 trap_dispatcher:
 	! store previous nPC as PC
 	mov		%t_npc, %t_pc
