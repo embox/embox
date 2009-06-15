@@ -1,6 +1,6 @@
 include $(SCRIPTS_DIR)/autoconf
 
-SUBDIRS-$(MONITOR_ARCH)   +=arch
+SUBDIRS-$(MONITOR_ARCH)   += arch
 SUBDIRS-$(MONITOR_NET)    += net
 SUBDIRS-$(MONITOR_KERNEL) += kernel
 SUBDIRS-$(MONITOR_CONIO)  += conio
