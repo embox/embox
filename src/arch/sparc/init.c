@@ -35,8 +35,8 @@ void copy_data_section()
 int init() {
     //TODO during too long time for simulation:(
     copy_data_section();
-    cache_data_disable();
-    cache_instr_disable();
+    cache_data_enable();
+    cache_instr_enable();
 
     irq_init_handlers();
     uart_init();
