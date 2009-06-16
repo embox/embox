@@ -1,7 +1,5 @@
-
 #ifndef _TYPES_H_
 #define _TYPES_H_
-
 
 #ifndef NULL
 #define NULL  0x00000000
@@ -26,22 +24,16 @@ typedef signed char CHAR;
 typedef unsigned char BYTE;
 typedef int BOOL;
 
-
-
-
+#ifdef _TEST_SYSTEM_
 typedef int size_t;
+#endif
 
 typedef void * PVOID;
-
-
-
-
 
 // unsigned types
 #define WORD    unsigned long
 #define HWRD    unsigned short int
 #define BYTE    unsigned char
-
 
 // volatile types
 #define VWORD   volatile WORD
@@ -49,7 +41,6 @@ typedef void * PVOID;
 #define VBYTE   volatile BYTE
 #define VCHAR   volatile char
 #define VINT    volatile int
-
 
 // volatile pointers types
 #define PVWORD                VWORD*
@@ -61,11 +52,6 @@ typedef void * PVOID;
 #define AHWRD(addr)           *((PVHWRD)(addr))
 #define ABYTE(addr)           *((PVBYTE)(addr))
 
-
-
-
-
 #endif  // ifndef __ASSEMBLER__
-
 
 #endif // _TYPES_H_
