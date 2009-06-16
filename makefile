@@ -40,6 +40,7 @@ xconfig:
 
 menuconfig:
 	@echo "Oops! Try edit config file by hand or use \"make xconfig\" and have a lot of fun."
+	@vim $(SCRIPTS_DIR)/autoconf
 
 config:
 	@echo "Oops! Try edit config file by hand or use \"make xconfig\" and have a lot of fun."
