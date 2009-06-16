@@ -13,7 +13,7 @@ SUBDIRS-$(MONITOR_TESTS)  += tests
 
 .PHONY: all $(SUBDIRS-y)
 
-all: debug release
+all: $(ALL_TARGETS)
 
 create_objs_lst: $(SUBDIRS-y)
 

@@ -5,22 +5,11 @@ OBJ_DIR:= $(ROOT_DIR)/obj
 OBJ_DIR_SIM:= $(OBJ_DIR)/sim
 SRC_DIR:= $(ROOT_DIR)/src
 SCRIPTS_DIR:= $(ROOT_DIR)/scripts
+include $(SCRIPTS_DIR)/autoconf
 
-#name of target
-TARGET:= monitor
-#compiler
-CC_PACKET:= sparc-elf
-#tools
 CC:= $(CC_PACKET)-gcc
-
 OD_TOOL:= $(CC_PACKET)-objdump
 OC_TOOL:= $(CC_PACKET)-objcopy
-
-#compiler flags (+optimiz +debug_info)
-CCFLAGS:= -Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_ -D_ERROR -D_TRACE
-#CCFLAGS_SIMULATE = $(CCFLAGS)-DSIMULATE
-#link flags
-LDFLAGS:= -Wl -N -nostdlib -g
 
 all:
 	mkdir -p $(BIN_DIR)

@@ -1,3 +1,8 @@
+TARGET=monitor
+CC_PACKET=sparc-elf
+CCFLAGS=-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_ -D_ERROR -D_TRACE
+LDFLAGS=-Wl -N -nostdlib -g
+ALL_TARGETS=debug release
 MONITOR_ARCH=y
 MONITOR_ARCH_SPARC=y
 MONITOR_CONIO=y

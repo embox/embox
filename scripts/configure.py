@@ -103,7 +103,6 @@ def getStatus(i):
 
 def make_conf():
 	build_commands()
-	build_makefile()
 	build_tests()
 	build_link()
 	write_autoconf()
@@ -146,13 +145,13 @@ def build_commands():
 	fuser_include.close()
 
 def repl_compil(m):
-	return "CC_PACKET:= " + common_var["Compiler"].get()
+	return "CC_PACKET=" + common_var["Compiler"].get()
 
 def repl_target(m):
-	return "TARGET:= " + common_var["Target"].get()
+	return "TARGET=" + common_var["Target"].get()
 
 def repl_all(m):
-	repl = "all: "
+	repl = "ALL_TARGETS="
 	if build_var["Debug"].get() == 1:
 		repl += "debug "
 	if build_var["Release"].get() == 1:
@@ -164,7 +163,7 @@ def repl_all(m):
 	return repl
 
 def repl_cflag(m):
-	repl = "CCFLAGS:= " + common_var["Cflags"].get()
+	repl = "CCFLAGS=" + common_var["Cflags"].get()
 	if level_var["Leon3"].get() == 1:
 		repl += " -DLEON3"
 	if level_var["Test_system"].get() == 1:
@@ -180,29 +179,8 @@ def repl_cflag(m):
 	return repl
 
 def repl_ldflag(m):
-        repl = "LDFLAGS:= " + common_var["Ldflags"].get()
+        repl = "LDFLAGS=" + common_var["Ldflags"].get()
         return repl
-
-def build_makefile():
-	#-- generate makefile
-	with open('makefile', 'r+') as fmk:
-		content = fmk.read()
-	fmk.close()
-	content = re.sub('CC_PACKET:= (\w+(-\w+)?)', repl_compil, content)
-	content = re.sub('TARGET:= (\w+)', repl_target, content)
-	content = re.sub('CCFLAGS:= ([A-Za-z0-9_\-# ]+)', repl_cflag, content)
-	content = re.sub('LDFLAGS:= ([A-Za-z0-9_\-# ]+)', repl_ldflag, content)
-	with open('makefile', 'w+') as fmk:
-		fmk.write(content)
-	fmk.close()
-	#-- generate src/makefile
-	with open('src/makefile', 'r+') as fmk:
-		content = fmk.read()
-	fmk.close()
-	content = re.sub('all: ([a-z ]+)', repl_all, content)
-	with open('src/makefile', 'w+') as fmk:
-		fmk.write(content)
-	fmk.close()
 
 def build_tests():
 	#-- generate src/tests/tests_table.inc
@@ -242,6 +220,16 @@ def write_autoconf():
     	for item in tabs[menu[1]].keys():
                 for driver, inc, status, desc, mdef in tabs[menu[1]][item]:
 			content = replacer(mdef, inc, content)
+	#-- Target
+	content = re.sub('TARGET=(\w+)', repl_target, content)
+	#-- Compiler
+	content = re.sub('CC_PACKET=(\w+(-\w+)?)', repl_compil, content)
+	#-- CFLAGS
+	content = re.sub('CCFLAGS=([A-Za-z0-9_\-# ]+)', repl_cflag, content)
+	#-- LDFLAGS
+	content = re.sub('LDFLAGS=([A-Za-z0-9_\-# ]+)', repl_ldflag, content)
+	#-- All targets
+	content = re.sub('ALL_TARGETS=([a-z ]+)', repl_all, content)
 	#-- write autoconf
         with open(files["autoconf"], 'w+') as faconf:
                 faconf.write(content)
