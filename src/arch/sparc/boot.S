@@ -71,7 +71,7 @@ register_window_clean:
 
 	//clear mem
 	set		_bend, %g1
-	set		0x41000000, %g2
+	set		0x44000000, %g2
 clean_mem_loop:
 	st		%g0, [%g1]
 	subcc	%g2, %g1, %g0

@@ -9,7 +9,7 @@
 #include "leon.h"
 #include "memory_map.h"
 
-LEON_REGS * const l_regs = (PVOID) (RG_BASE);
+//LEON_REGS * const l_regs = (PVOID) (RG_BASE);
 
 
 void copy_data_section()
@@ -35,6 +35,7 @@ void copy_data_section()
 int init() {
     //TODO during too long time for simulation:(
     copy_data_section();
+
     cache_data_enable();
     cache_instr_enable();
 
@@ -42,9 +43,11 @@ int init() {
     uart_init();
     timers_init();
 
+    printf ("start...\n");
     eth_init();//interfaces
     icmp_init();
     udp_init();
+
 
     return 0;
 }

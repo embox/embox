@@ -97,6 +97,15 @@ constant MMCTRL_TLBDIS : integer := 31;
 
 #ifndef __ASSEMBLER__
 
+static inline unsigned long get_sp_reg()
+{
+    register int retval;
+    __asm__ __volatile__("mov %%sp, %0\n\t" :
+             "=r" (retval)
+             );
+    return retval;
+}
+
 static inline void srmmu_set_mmureg(unsigned long regval)
 {
         __asm__ __volatile__("sta %0, [%%g0] %1\n\t" : :
