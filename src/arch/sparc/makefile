@@ -7,7 +7,8 @@ OBJS-y:= leon_irq.o \
          windows.o \
          bubble_sort.o \
          sys.o \
-         cpu_context_traps.o
+         cpu_context_traps.o \
+         srmmu_probe.o
 #         test_save_restore_traps.o \
 
 include $(SRC_DIR)/common.mk
