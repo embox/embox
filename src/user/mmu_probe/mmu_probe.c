@@ -162,17 +162,17 @@ static BOOL mmu_probe() {
     }
     flush_data_cache();
 
-  for (j = 0, i = 3; i < TLBNUM+3; i++) {
-      pteval = (((((unsigned long) &page2) + (((i - 3) % 3) * PAGE_SIZE))
-              >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
-      if ((*(p0 + i)) & (SRMMU_DIRTY| SRMMU_REF))
-          j++;
-
-      if (((*(p0 + i)) & ~(SRMMU_DIRTY| SRMMU_REF)) != (pteval
-              & ~(SRMMU_DIRTY| SRMMU_REF))) {
-          MMU_RETURN (FALSE);
-      }
-  }
+//  for (j = 0, i = 3; i < TLBNUM+3; i++) {
+//      pteval = (((((unsigned long) &page2) + (((i - 3) % 3) * PAGE_SIZE))
+//              >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
+//      if ((*(p0 + i)) & (SRMMU_DIRTY| SRMMU_REF))
+//          j++;
+//
+//      if (((*(p0 + i)) & ~(SRMMU_DIRTY| SRMMU_REF)) != (pteval
+//              & ~(SRMMU_DIRTY| SRMMU_REF))) {
+//          MMU_RETURN (FALSE);
+//      }
+//  }
   //at least one entry has to have been flushed
   if (j == 0) {
       MMU_RETURN (FALSE);
