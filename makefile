@@ -11,6 +11,8 @@ CC:= $(CC_PACKET)-gcc
 OD_TOOL:= $(CC_PACKET)-objdump
 OC_TOOL:= $(CC_PACKET)-objcopy
 
+.PHONY: all clean
+
 all:
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(OBJ_DIR)
@@ -25,12 +27,11 @@ clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old
 
 xconfig:
-	@$(SCRIPTS_DIR)/configure.py
+	@$(SCRIPTS_DIR)/configure.py --mode=x
 
 menuconfig:
-	@echo "Oops! Try edit config file by hand or use \"make xconfig\" and have a lot of fun."
 	@vim $(SCRIPTS_DIR)/autoconf
+	@$(SCRIPTS_DIR)/configure.py --mode=menu
 
 config:
-	@echo "Oops! Try edit config file by hand or use \"make xconfig\" and have a lot of fun."
-	@vim $(SCRIPTS_DIR)/autoconf
+	@echo "Oops! Try edit config file by hand or use \"make x(menu)config\" and have a lot of fun."

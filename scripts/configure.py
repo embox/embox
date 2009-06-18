@@ -8,12 +8,10 @@
 import Tkinter
 from Tkinter import *
 from conf_tab import *
-import string, os, traceback
 import tkSimpleDialog
-import re
-import json
-import shutil
+import sys, string, os, traceback, re, json, shutil, getopt
 
+mode = "x"
 root, menu, files = ( None, None, None)
 frame = { "0" : 0 }
 tabs = { "0" : 0 }
@@ -102,11 +100,13 @@ def getStatus(i):
 		return "disabled"
 
 def make_conf():
+	global mode
 	build_commands()
 	build_tests()
-	build_link()
-	write_autoconf()
-	write_config(".config")
+	if mode == "x":
+		build_link()
+		write_autoconf()
+		write_config(".config")
 
 def repl_arch(m):
 	if common_var["Arch_num"].get() == 0:
@@ -386,12 +386,26 @@ def main():
 
 if __name__=='__main__':
 	try:
+		opts, args = getopt.getopt(sys.argv[1:], "hm:", ["help", "mode="])
+		for o, a in opts:
+		        if o in ("-h", "--help"):
+		                print "Usage: configure.py [-m <mode>] [-h]\n"
+		                sys.exit()
+		        elif o in ("-m", "--mode"):
+		                mode = a
+		        else:
+		    		assert False, "unhandled option"
 		if os.path.exists(".config"):
-			read_config(".config")
+		        read_config(".config")
 		else:
-			read_config(".config.default")
-			shutil.copyfile(".config.default", ".config")
+		        read_config(".config.default")
+		        shutil.copyfile(".config.default", ".config")
 		shutil.copyfile(".config", ".config.old")
-    		main()
+		if mode == "x":
+    			main()
+    		elif mode == "menu":
+    			make_conf()
+    		else:
+    			print "Unknown mode"
 	except:
     		traceback.print_exc()
