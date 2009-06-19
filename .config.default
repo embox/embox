@@ -16,7 +16,7 @@
 				"MONITOR_ARCH_SPARC"
 			]
 		],
-		"Compiler": "sparc-elf",
+		"Compiler": "sparc-linux",
 		"Target": "monitor",
 		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
 		"Ldflags": "-Wl -N -nostdlib -g",

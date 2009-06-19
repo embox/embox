@@ -1,19 +1,20 @@
 export
-ROOT_DIR := $(CURDIR)
-BIN_DIR:= $(ROOT_DIR)/bin
-OBJ_DIR:= $(ROOT_DIR)/obj
-OBJ_DIR_SIM:= $(OBJ_DIR)/sim
-SRC_DIR:= $(ROOT_DIR)/src
-SCRIPTS_DIR:= $(ROOT_DIR)/scripts
+ROOT_DIR   := $(CURDIR)
+BIN_DIR     = $(ROOT_DIR)/bin
+OBJ_DIR     = $(ROOT_DIR)/obj
+OBJ_DIR_SIM = $(OBJ_DIR)/sim
+SRC_DIR     = $(ROOT_DIR)/src
+SCRIPTS_DIR = $(ROOT_DIR)/scripts
 include $(SCRIPTS_DIR)/autoconf
 
-CC:= $(CC_PACKET)-gcc
-OD_TOOL:= $(CC_PACKET)-objdump
-OC_TOOL:= $(CC_PACKET)-objcopy
+CC      = $(CC_PACKET)-gcc
+OD_TOOL = $(CC_PACKET)-objdump
+OC_TOOL = $(CC_PACKET)-objcopy
 
 .PHONY: all clean
 
 all:
+	@[ -e .config ] || exit 0;
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OBJ_DIR)/sim
