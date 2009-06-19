@@ -114,9 +114,17 @@ int mmu_probe_map_region(UINT32 paddr, UINT32 vaddr, UINT32 size, UINT32 flags) 
     return -1;
 }
 
-unsigned int mmu_get_page_flags() {
-
+unsigned int mmu_get_page_desc(unsigned int page_addr) {
+    pte_t *p0 = (pte_t *) &pt0;
+    int i;
+    for (i = 0; i < 0x40; i ++){
+        if ((page_addr >> 4) == (p0[i] & 0xFFFFFF00)){
+            return p0[i];
+        }
+    }
+    return 0;
 }
+
 int mmu_probe_start() {
     srmmu_set_context(0);
     srmmu_set_mmureg(0x00000001);
