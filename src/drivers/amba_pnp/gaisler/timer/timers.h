@@ -48,8 +48,8 @@ typedef void (*TIMER_FUNC)(UINT32 id);
 BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle);
 void close_timer (UINT32 id);
 
-void sleep_1ms_irq (int ms);
-inline void sleep (int ms);
+//void sleep_1ms_irq (int ms);
+void sleep (unsigned int ms);
 void calibrate_sleep ();
 UINT32 get_sys_time ();
 

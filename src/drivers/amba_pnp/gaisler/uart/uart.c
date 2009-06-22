@@ -44,9 +44,9 @@ int uart_init() {
 	/**< enable uart */
 	dev_regs->ctrl = /*UART_INT_RX_ENABLED |*/ UART_TX_ENABLE | UART_RX_ENABLE;
 #ifndef SIMULATE
-	while (!(UART_TX_READY & dev_regs->status));
+	//while (!(UART_TX_READY & dev_regs->status));
 	//clear uart
-	while (UART_RX_READY & dev_regs->status);
+	//while (UART_RX_READY & dev_regs->status);
 	//uart->data;
 	//irq_set_handler(IRQ_UART1, irq_func_uart);
 #endif
@@ -61,7 +61,7 @@ BOOL uart_is_empty() {
 */
 
 void uart_putc(char ch) {
-	volatile int i;
+	int i;
 	if (NULL == dev_regs)
 		uart_init();
 /*

@@ -27,8 +27,8 @@ typedef struct _SYS_TMR {
 
 static SYS_TMR sys_timers[MAX_QUANTITY_SYS_TIMERS];
 
-volatile static UINT32 cnt_ms_sleep;      /**< for sleep function */
-volatile static UINT32 cnt_sys_time;      /**< quantity ms after start system */
+static volatile UINT32 cnt_ms_sleep;      /**< for sleep function */
+static volatile UINT32 cnt_sys_time;      /**< quantity ms after start system */
 
 #define DEFAULT_SLEEP_COUNTER	3470
 volatile static UINT32 sleep_cnt_const = DEFAULT_SLEEP_COUNTER; /**< for sleep function (loop-based) */
@@ -72,9 +72,11 @@ static void inc_sys_timers() {
 }
 
 static void irq_func_tmr_1mS() {
-	cnt_ms_sleep++;
+    unsigned int irq = __local_irq_save();
+    cnt_ms_sleep++;
 	cnt_sys_time++;
 	inc_sys_timers();
+    local_irq_restore(irq);
 }
 
 static void show_module_info(AMBA_DEV *dev) {
@@ -117,24 +119,35 @@ int timers_init() {
 	dev_regs->timer_cnt2 = 0;
 
 	dev_regs->timer_ld1 = 0x002710;
-	dev_regs->timer_ld2 = 0;//0x027100;
+	dev_regs->timer_ld2 = 0;//0x0271000;
 	dev_regs->timer_ctrl1 = 0xf;
 	dev_regs->timer_ctrl2 = 0x0; /**<disable */
-	dev_regs->config_reg = 0x1000;
+	//dev_regs->config_reg = 0x0000;
 	irq_set_handler(amba_dev.dev_info.irq, irq_func_tmr_1mS);
 
 	cnt_sys_time = 0;
 
 	return 0;
 }
-
-void sleep_1ms_irq(int ms) {
-	cnt_ms_sleep = 0;
-	while (ms > cnt_ms_sleep)
-		;
+void temp_wait()
+{
+    int i;
+    for(i=0; i < 50; i ++);
+    return;
 }
 
-inline void sleep(int ms) {
+void sleep(volatile unsigned int ms) {
+    //static unsigned int tmp;
+    unsigned int irq = __local_irq_save();
+	cnt_ms_sleep = 0;
+	local_irq_restore(irq);
+
+	while (cnt_ms_sleep <= ms)	{
+	    //temp_wait();
+	}
+}
+/*
+void sleep(int ms) {
 	register UINT32 cnt;
 	for(; ms; ms--) {
 		for (cnt = sleep_cnt_const; cnt; cnt--) {}
@@ -181,7 +194,7 @@ void calibrate_sleep () {
         LOG_DEBUG("done. Assumed %d for sleep(1ms)\n", sleep_cnt_const);
 }
 
-
+*/
 UINT32 get_sys_time() {
 	return cnt_sys_time;
 }
