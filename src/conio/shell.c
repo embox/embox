@@ -11,8 +11,7 @@
 #include "shell.h"
 #include "sys.h"
 
-static const char* welcome = "monitor> ";
-#define START_MSG        "\nWelcome to Monitor shell and have a lot of fun..."
+static const char* welcome = PROMPT;
 
 static SHELL_HANDLER_DESCR shell_handlers[] = {
 #include "shell.inc"
@@ -125,7 +124,7 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 }
 
 void shell_start() {
-	static const char* prompt = "monitor> ";
+	static const char* prompt = PROMPT;
 	static CONSOLE console[1];
 	static CONSOLE_CALLBACK callback[1];
 	callback->exec = exec_callback;

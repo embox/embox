@@ -1,6 +1,6 @@
 TARGET=monitor
 CC_PACKET=sparc-linux
-CCFLAGS=-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_ -D_ERROR -D_TRACE
+CCFLAGS=-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_
 LDFLAGS=-Wl -N -nostdlib -g
 ALL_TARGETS=debug release
 SIMULATION=n
