@@ -72,19 +72,18 @@ SECTIONS
 
   .data : /*AT (ADDR (.text) + SIZEOF (.text))*/
   {
+    . = ALIGN(0x4);
     _data_start = .;
     *(.data)
-    . = ALIGN(0x4);
-
-/*    *(.rel*)
-    . = ALIGN(0x4);
-*/
 	_data_end = .;
 } > sdram
 	.bss :
 	{
+	. = ALIGN(0x4);
     _bstart = . ; *(.bss) *(COMMON) ;
-    . = ALIGN(0x4);
-     _bend = . ;
+
+     _bend = ALIGN(0x8);
   } > sdram
+    __stack = _bend + 0x80000;
+ PROVIDE (__stack = _bend + 0x80000);
 }

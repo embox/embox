@@ -24,7 +24,7 @@ boot_start:
 	nop
 	nop
 	nop
-	set 0x81000f, %g1
+	set 0x81000F, %g1
 	sta %g1, [%g0] 2
 !clear global register
 	clr %g1
@@ -61,6 +61,7 @@ register_window_clean:
 	nop
 
 
+#ifdef SIMULATE
 !set autorefresh for synchronize DDR ctrl
 	set		0xfff00100, %g1
 	set		0x100,%g2
@@ -77,11 +78,15 @@ clean_mem_loop:
 	subcc	%g2, %g1, %g0
 	bge		clean_mem_loop
 	add		%g1, 4, %g1
+#endif //SIMULATE
 
-
-	set     STACK_BASE-0x10, %g1
+	set		__stack, %g1
 	mov     %g1, %fp                  ! set frame pointer
 	sub     %g1, 0x60, %sp            ! set stack pointer
+
+	//set     STACK_BASE-0x10, %g1
+	//mov     %g1, %fp                  ! set frame pointer
+	//sub     %g1, 0x60, %sp            ! set stack pointer
 
 
 	set     _trap_table, %g1

@@ -47,8 +47,9 @@ ENTRY(_hardreset)
 MEMORY
 {
   rom     : ORIGIN = 0x00000000, LENGTH = 256K
-  sdram	  : ORIGIN = 0xA0000000, LENGTH = 521K
+  sdram	  : ORIGIN = 0xA0001000, LENGTH = 256K
 }
+
 
 /*
  * stick everything in ram (of course)
@@ -75,10 +76,6 @@ SECTIONS
     _data_start = .;
     *(.data)
     . = ALIGN(0x4);
-
-/*    *(.rel*)
-    . = ALIGN(0x4);
-*/
 	_data_end = .;
 } > sdram
 	.bss :
@@ -87,4 +84,6 @@ SECTIONS
     . = ALIGN(0x4);
      _bend = . ;
   } > sdram
+  __stack = _bend + 0x20000;
+ PROVIDE (__stack = _bend + 0x20000);
 }

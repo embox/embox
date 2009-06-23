@@ -87,4 +87,6 @@ SECTIONS
     . = ALIGN(0x4);
      _bend = . ;
   } > sdram
+    __stack = _bend + 0x20000;
+ PROVIDE (__stack = _bend + 0x80000);
 }
