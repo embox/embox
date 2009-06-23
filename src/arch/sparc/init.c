@@ -1,10 +1,11 @@
-/*
- * init.c
+/**
+ * \file init.c
  *
- *  Created on: May 21, 2009
- *      Author: anton
+ * \date May 21, 2009
+ * \author anton
  */
 #include "types.h"
+#include "common.h"
 #include "cache.h"
 #include "leon.h"
 #include "memory_map.h"
@@ -32,6 +33,26 @@ void copy_data_section()
     for (dst = &_bstart; dst< &_bend; dst++)
         *dst = 0;
 }
+/*
+typedef void (*INIT_MODULE_CALLBACK)();
+
+typedef struct _INIT_MODULE_INFO {
+        INIT_MODULE_CALLBACK cb;
+	int busy;
+} INIT_MODULE_INFO;
+
+INIT_MODULE_INFO modules[16];
+
+int init_module(INIT_MODULE_CALLBACK cb) {
+	int i;
+	for (i = 0; i < array_len(modules); i++) {
+		if(0 == modules[i].busy) {
+	        	modules[i].cb = cb;
+			modules[i].busy = 1;
+		}
+	}
+}
+*/
 int init() {
     //TODO during too long time for simulation:(
     copy_data_section();
@@ -39,10 +60,18 @@ int init() {
     cache_data_enable();
     cache_instr_enable();
 
+/*    INIT_MODULE_CALLBACK cb_init;
+    int i;
+    for (i = 0; i < array_len(modules); i++) {
+	    if(1 == modules[i].busy) {
+                    cb_init = modules[i].cb;
+		    cb_init();
+            }
+    }
+*/
     irq_init_handlers();
     uart_init();
     timers_init();
-
     printf ("start...\n");
     eth_init();//interfaces
     icmp_init();

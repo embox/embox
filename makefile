@@ -20,6 +20,7 @@ all:
 	mkdir -p $(OBJ_DIR)/sim
 	rm -f objs.lst include_dirs.lst
 	declare -x MAKEOP=create_objs_lst; make --directory=src create_objs_lst
+	declare -x MAKEOP=create_include_dirs_lst; make --directory=src create_include_dirs_lst
 	echo ' ' >> $(ROOT_DIR)/include_dirs.lst
 	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
 

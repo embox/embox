@@ -230,6 +230,11 @@ def write_autoconf():
 	content = re.sub('LDFLAGS=([A-Za-z0-9_\-# ]+)', repl_ldflag, content)
 	#-- All targets
 	content = re.sub('ALL_TARGETS=([a-z ]+)', repl_all, content)
+	#-- Simulation
+	if build_var["Simulation"].get() == 1:
+		content = re.sub('SIMULATION=(\w+)', "SIMULATION=y", content)
+	else:
+		content = re.sub('SIMULATION=(\w+)', "SIMULATION=n", content)
 	#-- write autoconf
         with open(files["autoconf"], 'w+') as faconf:
                 faconf.write(content)
@@ -351,7 +356,7 @@ def main():
 	for cmd, inc, status, desc, mdef in tabs[menu[3]]:
 		setattr(varc, cmd, IntVar())
     		Checkbutton(frame[menu[3]], text=cmd, state=getStatus(status), anchor=W, variable = getattr(varc, cmd), \
-    			    command=(lambda row=row: onPress(tabs[menu[3]], row-1, 2))).grid(row=row, column=0, sticky=W)
+    			    command=(lambda row=row: onPress(tabs[menu[3]], row-1, 1))).grid(row=row, column=0, sticky=W)
 		getattr(varc, cmd).set(inc)
 		Label(frame[menu[3]], text=desc, state=getStatus(status), width=35, anchor=W).grid(row=row, column=1, sticky=W)
 		row += 1

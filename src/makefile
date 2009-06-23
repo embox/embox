@@ -3,19 +3,25 @@ include $(SCRIPTS_DIR)/autoconf
 SUBDIRS-$(MONITOR_ARCH)   += arch
 SUBDIRS-$(MONITOR_NET)    += net
 SUBDIRS-$(MONITOR_KERNEL) += kernel
-SUBDIRS-$(MONITOR_CONIO)  += conio
 SUBDIRS-$(MONITOR_DRIVERS)+= drivers
 SUBDIRS-$(MONITOR_MISC)   += misc
-SUBDIRS-$(MONITOR_USER)   += user
 SUBDIRS-$(MONITOR_TESTS)  += tests
+ifeq ($(SIMULATION),n)
+SUBDIRS-$(MONITOR_CONIO)  += conio
+SUBDIRS-$(MONITOR_USER)   += user
+else
+SUBDIRS-n                 += conio
+SUBDIRS-n                 += user
+endif
 
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
 
-.PHONY: all $(SUBDIRS-y)
+.PHONY: all $(SUBDIRS-y) $(SUBDIRS-n)
 
 all: $(ALL_TARGETS)
 
 create_objs_lst: $(SUBDIRS-y)
+create_include_dirs_lst: $(SUBDIRS-y) $(SUBDIRS-n)
 
 $(SUBDIRS-y):
 ifdef G_DIRS
@@ -23,6 +29,9 @@ ifdef G_DIRS
 else
 	$(MAKE) -C $@ $(MAKEOP)
 endif
+
+$(SUBDIRS-n):
+	$(MAKE) -C $@ $(MAKEOP)
 
 release: $(SUBDIRS-y)
 	#TODO may be use GOBJS list of objects files

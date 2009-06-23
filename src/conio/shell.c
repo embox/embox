@@ -12,6 +12,7 @@
 #include "sys.h"
 
 static const char* welcome = "monitor> ";
+#define START_MSG        "\nWelcome to Monitor shell and have a lot of fun..."
 
 static SHELL_HANDLER_DESCR shell_handlers[] = {
 #include "shell.inc"
@@ -133,7 +134,7 @@ void shell_start() {
 		printf("Failed to create a console");
 		return;
 	}
-	printf("\nWelcome to Monitor shell and have a lot of fun...");
+	printf(START_MSG);
 	console_start(console, prompt);
 }
 
