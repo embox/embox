@@ -43,7 +43,7 @@ int uart_init() {
 	dev_regs->scaler = UART_SCALER_VAL;
 	/**< enable uart */
 	dev_regs->ctrl = /*UART_INT_RX_ENABLED |*/ UART_TX_ENABLE | UART_RX_ENABLE;
-#ifndef SIMULATE
+#ifndef SIMULATION_TRG
 	//while (!(UART_TX_READY & dev_regs->status));
 	//clear uart
 	//while (UART_RX_READY & dev_regs->status);
@@ -65,7 +65,7 @@ void uart_putc(char ch) {
 	if (NULL == dev_regs)
 		uart_init();
 /*
-#ifndef SIMULATE
+#ifndef SIMULATION_TRG
 	while (!(UART_TX_READY & dev_regs->status))
 		;
 #endif

@@ -104,6 +104,7 @@ def make_conf():
 	build_commands()
 	build_tests()
 	if mode == "x":
+		write_conf_h()
 		build_link()
 		write_autoconf()
 		write_config(".config")
@@ -168,14 +169,6 @@ def repl_cflag(m):
 		repl += " -DLEON3"
 	if level_var["Test_system"].get() == 1:
 		repl += " -D_TEST_SYSTEM_"
-	if level_var["Error"].get() == 1:
-		repl += " -D_ERROR"
-	if level_var["Trace"].get() == 1:
-		repl += " -D_TRACE"
-	if level_var["Warn"].get() == 1:
-		repl += " -D_WARN"
-	if level_var["Debug"].get() == 1:
-		repl += " -D_DEBUG"
 	return repl
 
 def repl_ldflag(m):
@@ -203,7 +196,7 @@ def replacer(mdef, inc, content):
         return content
 
 def write_autoconf():
-	#-- resr autoconf
+	#-- read autoconf
         with open(files["autoconf"], 'r+') as faconf:
                 content = faconf.read()
         faconf.close()
@@ -230,15 +223,42 @@ def write_autoconf():
 	content = re.sub('LDFLAGS=([A-Za-z0-9_\-# ]+)', repl_ldflag, content)
 	#-- All targets
 	content = re.sub('ALL_TARGETS=([a-z ]+)', repl_all, content)
-	#-- Simulation
-	if build_var["Simulation"].get() == 1:
-		content = re.sub('SIMULATION=(\w+)', "SIMULATION=y", content)
-	else:
-		content = re.sub('SIMULATION=(\w+)', "SIMULATION=n", content)
+	#-- Simulation, Debug, Release
+	for name, item in [["Simulation", "SIMULATION_TRG"], ["Debug", "DEBUG_TRG"], ["Release", "RELEASE_TRG"]]:
+		if build_var[name].get() == 1:
+			content = re.sub(item + '=(\w+)', item + '=y', content)
+		else:
+			content = re.sub(item + '=(\w+)', item + '=n', content)
 	#-- write autoconf
         with open(files["autoconf"], 'w+') as faconf:
                 faconf.write(content)
         faconf.close()
+
+def write_conf_h():
+        #-- read conf_h
+        with open(files["conf_h"], 'r+') as fconf:
+                content = fconf.read()
+        fconf.close()
+        for name, item in [["Error", "_ERROR"], ["Trace", "_TRACE"], ["Warn", "_WARN"], ["Debug", "_DEBUG"]]:
+		if level_var[name].get() == 1:
+			content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#define " + item + " 1", content)
+		else:
+			content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#undef " + item, content)
+	for ar, value, mdef in tabs['Common']['Arch']:
+		if value == common_var["Arch_num"].get():
+	    		content = re.sub('#(\w+) ' + mdef + '([ ]*)(\w?)', "#define " + mdef + " 1", content)
+	    	else:
+	    		content = re.sub('#(\w+) ' + mdef + '([ ]*)(\w?)', "#undef " + mdef, content)
+        #-- Simulation, Debug, Release
+        for name, item in [["Simulation", "SIMULATION_TRG"], ["Debug", "DEBUG_TRG"], ["Release", "RELEASE_TRG"]]:
+                if build_var[name].get() == 1:
+                        content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#define " + item + " 1", content)
+                else:
+                        content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#undef " + item, content)
+	#-- write conf_h
+	with open(files["conf_h"], 'w+') as fconf:
+	        fconf.write(content)
+	fconf.close()
 
 #-----------------------------GUI------------------------------
 def About():

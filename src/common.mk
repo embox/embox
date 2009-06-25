@@ -15,12 +15,14 @@ $(SUBDIRS-n):
 all: $(SUBDIRS-y) $(OBJS-y)
 
 %.o:%.S
-	$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -o $(OBJ_DIR)/$@ $<
-	$(CC) $(CCFLAGS) -DSIMULATE $(INCLUDE_DIRS) -o $(OBJ_DIR_SIM)/$@ $<
+	$(CC) $(CCFLAGS) -DDEBUG_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_DBG)/$@ $<
+	$(CC) $(CCFLAGS) -DRELEASE_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_RLS)/$@ $<
+	$(CC) $(CCFLAGS) -DSIMULATION_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_SIM)/$@ $<
 
 %.o:%.c
-	$(CC) $(CCFLAGS)  $(INCLUDE_DIRS) -o $(OBJ_DIR)/$@ $<
-	$(CC) $(CCFLAGS) -DSIMULATE $(INCLUDE_DIRS) -o $(OBJ_DIR_SIM)/$@ $<
+	$(CC) $(CCFLAGS) -DDEBUG_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_DBG)/$@ $<
+	$(CC) $(CCFLAGS) -DRELEASE_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_RLS)/$@ $<
+	$(CC) $(CCFLAGS) -DSIMULATION_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_SIM)/$@ $<
 
 clean:
 	rm -rf $(OBJS-y) *.d

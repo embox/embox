@@ -24,17 +24,17 @@
 
 
 /* KTPO data base address */
-#ifndef SIMULATE
+#ifndef SIMULATION_TRG
 #define DATA_BASE   SDRAM_BASE    // stack in SDRAM
 #else
 #define DATA_BASE   RAM_BASE    // stack in SDRAM
-#endif //SIMULATE
+#endif //SIMULATION_TRG
 /* Data base address  */
-#ifndef SIMULATE
+#ifndef SIMULATION_TRG
 #define DATA_SIZE   0x20000
 #else
 #define DATA_SIZE   0x80000 - 4
-#endif //SIMULATE
+#endif //SIMULATION_TRG
 /* Stack base address (stack grows down form base) */
 //#define STACK_BASE  DATA_BASE + DATA_SIZE
 

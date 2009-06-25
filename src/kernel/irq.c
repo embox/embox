@@ -22,7 +22,7 @@ void dispatch_trap(BYTE tt) {
 }
 
 void dispatch_bad_trap(int tt, int pc, int npc, int psr) {
-	printf("! tt: %x, pc: %x, npc: %x, psr: %x\n", tt, pc, npc, psr);
+	TRACE("! tt: %x, pc: %x, npc: %x, psr: %x\n", tt, pc, npc, psr);
 	while(1);
 }
 

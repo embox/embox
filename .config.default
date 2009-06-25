@@ -155,6 +155,7 @@
 		"shell_inc": "src/conio/shell.inc",
 		"users_inc": "src/conio/users.inc",
 		"autoconf": "scripts/autoconf",
-		"tests_table_inc": "src/tests/tests_table.inc"
+		"tests_table_inc": "src/tests/tests_table.inc",
+		"conf_h": "scripts/config.h"
 	}
 }

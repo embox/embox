@@ -3,6 +3,8 @@ ROOT_DIR   := $(CURDIR)
 BIN_DIR     = $(ROOT_DIR)/bin
 OBJ_DIR     = $(ROOT_DIR)/obj
 OBJ_DIR_SIM = $(OBJ_DIR)/sim
+OBJ_DIR_DBG = $(OBJ_DIR)/debug
+OBJ_DIR_RLS = $(OBJ_DIR)/release
 SRC_DIR     = $(ROOT_DIR)/src
 SCRIPTS_DIR = $(ROOT_DIR)/scripts
 include $(SCRIPTS_DIR)/autoconf
@@ -18,6 +20,8 @@ all:
 	mkdir -p $(BIN_DIR)
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OBJ_DIR)/sim
+	mkdir -p $(OBJ_DIR)/debug
+	mkdir -p $(OBJ_DIR)/release
 	rm -f objs.lst include_dirs.lst
 	declare -x MAKEOP=create_objs_lst; make --directory=src create_objs_lst
 	declare -x MAKEOP=create_include_dirs_lst; make --directory=src create_include_dirs_lst

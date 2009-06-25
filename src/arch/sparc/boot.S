@@ -61,25 +61,6 @@ register_window_clean:
 	nop
 
 
-#ifdef SIMULATE
-!set autorefresh for synchronize DDR ctrl
-	set		0xfff00100, %g1
-	set		0x100,%g2
-	srl		%g2, 18, %g2
-	ld		[%g1],%g3
-	or		%g2,%g3,%g3
-	st		%g3, [%g1]
-
-	//clear mem
-	set		_bend, %g1
-	set		0x44000000, %g2
-clean_mem_loop:
-	st		%g0, [%g1]
-	subcc	%g2, %g1, %g0
-	bge		clean_mem_loop
-	add		%g1, 4, %g1
-#endif //SIMULATE
-
 	set		__stack, %g1
 	mov     %g1, %fp                  ! set frame pointer
 	sub     %g1, 0x60, %sp            ! set stack pointer

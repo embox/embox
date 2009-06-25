@@ -72,11 +72,11 @@ int init() {
     irq_init_handlers();
     uart_init();
     timers_init();
-    printf ("start...\n");
+    TRACE("start...\n");
+#ifndef SIMULATION_TRG
     eth_init();//interfaces
     icmp_init();
     udp_init();
-
-
+#endif /* SIMULATION_TRG */
     return 0;
 }

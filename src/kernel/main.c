@@ -17,9 +17,9 @@ int main() {
 	while (NULL != (descriptor = (void *) express_test_get_next())) {
 		express_test_run(descriptor);
 	}
-
+#ifndef SIMULATION_TRG
 	shell_start();
-
+#endif
 	while (1)
 		;
 

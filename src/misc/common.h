@@ -19,19 +19,19 @@ inline static int dummy() {
 	return 0;
 }
 
-#ifdef _ERROR
+#if defined(_ERROR) && !defined(SIMULATION_TRG)
     #define LOG_ERROR(format, args...)  printf("ERROR: "format, ##args)
 #else
     #define LOG_ERROR(format, args...)  dummy()
 #endif //_ERROR
 
-#ifdef _WARN
+#if defined(_WARN) && !defined(SIMULATION_TRG)
     #define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
 #else
     #define LOG_WARN(format, args...)   dummy()
 #endif //_WARN
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(SIMULATION_TRG)
     #define LOGGER()		    printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
     #define LOG_DEBUG(format, args...)  LOGGER(); printf("DEBUG: "format, ##args)
 #else
@@ -39,7 +39,7 @@ inline static int dummy() {
     #define LOG_DEBUG(format, args...)  dummy()
 #endif //_DEBUG
 
-#if defined(_TRACE) && !defined(SIMULATE)
+#if defined(_TRACE) && !defined(SIMULATION_TRG)
     #ifdef _TEST_SYSTEM_
 	#define TRACE(format, args...)  printf(format, ##args)
     #else
@@ -47,9 +47,9 @@ inline static int dummy() {
     #endif //_TEST_SYSTEM_
 #else
     #define TRACE(format, args...)  dummy()
-#endif //_TRACE && !SIMULATE
+#endif //_TRACE && !SIMULATION_TRG
 
-#ifdef SIMULATE
+#ifdef SIMULATION_TRG
     #define assert(cond)	{}
 #else
     #define assert(cond)	{\
@@ -58,7 +58,7 @@ inline static int dummy() {
 			HALT;\
 		}\
 }
-#endif //SIMULATE
+#endif //SIMULATION_TRG
 
 #define array_len(array)		(sizeof(array) / sizeof(array[0]))
 

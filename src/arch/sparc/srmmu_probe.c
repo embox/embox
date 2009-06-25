@@ -6,6 +6,7 @@
  */
 
 #include "types.h"
+#include "common.h"
 #include "mmu.h"
 
 #define NODO_CLEAR
@@ -110,7 +111,7 @@ int mmu_probe_map_region(UINT32 paddr, UINT32 vaddr, UINT32 size, UINT32 flags) 
         return 0;
     }
 
-    printf("mmu brobe set region error\n");
+    TRACE("mmu brobe set region error\n");
     return -1;
 }
 
