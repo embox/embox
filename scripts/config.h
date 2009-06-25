@@ -7,6 +7,6 @@
 #define _TRACE 1
 #undef _DEBUG
 #undef _WARN
-#define SIMULATION_TRG 1
-#undef DEBUG_TRG
-#undef RELEASE_TRG
+#undef SIMULATION_TRG
+#define DEBUG_TRG 1
+#define RELEASE_TRG 1
