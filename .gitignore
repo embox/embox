@@ -3,6 +3,4 @@
 /include_dirs.lst
 /obj
 /objs.lst
-
-*.pyc
-
+scripts/link*
