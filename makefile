@@ -32,6 +32,7 @@ all:
 	echo ' ' >> $(ROOT_DIR)/include_dirs.lst
 	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
 	$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET)
+	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
 
 clean:
 	declare -x MAKEOP=clean; make --directory=src clean

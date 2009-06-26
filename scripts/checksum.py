@@ -24,32 +24,49 @@ def file_md5(file, use_system = False):
 	file.close()
 	return h.hexdigest()
 
+def build_crc32_sum():
+	global bin_dir
+        for file in [ "ram", "rom" ]:
+    		content = ""
+                flag = 0
+                with open(str(bin_dir) + '/' + file + '.objdump', 'r+') as fobj:
+                        for line in fobj.readlines():
+                                if re.search("Contents of section", line):
+                                        flag = 0
+                                if re.search(".text", line) or re.search(".data", line):
+                                        flag = 1
+                                if flag == 1:
+                                        content += line
+                fobj.close()
+                with open(str(bin_dir) + '/' + file + '.objdump', 'w+') as fobj:
+                        fobj.write(content)
+                fobj.close()
+                with open(str(bin_dir) + '/' + file + '.crc32', 'w+') as fcrc32:
+                        a = zlib.crc32(content)
+            		fcrc32.write(str(a))
+                fcrc32.close()
+                with open(str(bin_dir) + '/' + file + '.md5', 'w+') as fmd5:
+                        fmd5.write(file_md5(str(bin_dir) + '/' + file + '.objdump'))
+                fmd5.close()
+                os.remove(str(bin_dir) + '/' + file + '.objdump')
+
+def rebuild_linker():
+	for linkfile in ("linkram", "linkrom", "linksim"):
+		with open("scripts/" + linkfile, 'r+') as flink:
+		        content = flink.read()
+		flink.close()
+		#TODO:
+		content = re.sub('__checksum = (\w+);', "__checksum = " + "0x11001100" + ";", content)
+		with open("scripts/" + linkfile, 'w+') as flink:
+		        flink.write(content)
+		flink.close()
+
 def main():
 	global objdump, bin_dir, target
 	os.system(str(objdump) + " -s " + str(bin_dir) + "/" + str(target) + "_ram > " + str(bin_dir) + "/ram.objdump")
 	os.system(str(objdump) + " -s " + str(bin_dir) + "/" + str(target) + "_rom > " + str(bin_dir) + "/rom.objdump")
-	for file in [ "ram", "rom" ]:
-		content = ""
-		flag = 0
-	        with open(str(bin_dir) + '/' + file + '.objdump', 'r+') as fobj:
-			for line in fobj.readlines():
-				if re.search("Contents of section", line):
-					flag = 0
-				if re.search(".text", line) or re.search(".data", line):
-				        flag = 1
-				if flag == 1:
-					content += line
-	        fobj.close()
-#	        with open(str(bin_dir) + '/' + file + '.objdump', 'w+') as fobj:
-#                        fobj.write(content)
-#                fobj.close()
-#                with open(str(bin_dir) + '/' + file + '.crc32', 'w+') as fcrc32:
-#            		a = zlib.crc32(content)
-#            		fcrc32.write(str(a))
-#            	fcrc32.close()
-#		with open(str(bin_dir) + '/' + file + '.md5', 'w+') as fmd5:
-#                        fmd5.write(file_md5(str(bin_dir) + '/' + file + '.objdump'))
-#                fmd5.close()
+	build_crc32_sum()
+	rebuild_linker()
 
 if __name__=='__main__':
         try:
