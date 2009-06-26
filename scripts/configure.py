@@ -10,6 +10,7 @@ from Tkinter import *
 from conf_tab import *
 import tkSimpleDialog
 import sys, string, os, traceback, re, json, shutil, getopt
+from misc import *
 
 mode = "x"
 root, menu, files = ( None, None, None)
@@ -23,47 +24,44 @@ varc, vart, vard = (None, None, None)
 def read_config(fileconf):
 	""" Read config file """
         global menu, tabs, files
-        with open(fileconf, 'r') as conf:
-                config = conf.read()
-                json_conf = json.loads(config)
-                menu = json_conf['Menu']
-                files = json_conf['Files']
-                for tab in menu:
-            		tabs[str(tab)] = json_conf[str(tab)]
-        conf.close()
+        config = read_file(fileconf)
+        json_conf = json.loads(config)
+        menu = json_conf['Menu']
+        files = json_conf['Files']
+        for tab in menu:
+    		tabs[str(tab)] = json_conf[str(tab)]
 
 def write_config(fileconf):
 	""" Write config file """
 	global build_var, common_var, level_var
-        with open(fileconf, 'w+') as conf:
-		tmp = dict([('Menu', menu), ('Files', files)])
-		for i in range( len(menu) ):
-			tmp[menu[i]] = tabs[menu[i]]
-                #-- Common
-                tmp["Common"]["Compiler"] = common_var["Compiler"].get()
-                tmp["Common"]["Target"] = common_var["Target"].get()
-                tmp["Common"]["Cflags"] = common_var["Cflags"].get()
-                tmp["Common"]["Ldflags"] = common_var["Ldflags"].get()
-                tmp["Common"]["Arch_num"] = common_var["Arch_num"].get()
-                #-- Levels
-                tmp["Levels"]["Error"] = level_var["Error"].get()
-                tmp["Levels"]["Trace"] = level_var["Trace"].get()
-                tmp["Levels"]["Warn"] = level_var["Warn"].get()
-                tmp["Levels"]["Debug"] = level_var["Debug"].get()
-                tmp["Levels"]["Test_system"] = level_var["Test_system"].get()
-                tmp["Levels"]["Leon3"] = level_var["Leon3"].get()
-                #-- Build
-                tmp["Build"]["Debug"] = build_var["Debug"].get()
-                tmp["Build"]["Release"] = build_var["Release"].get()
-                tmp["Build"]["Simulation"] = build_var["Simulation"].get()
-                tmp["Build"]["Doxygen"] = build_var["Doxygen"].get()
-                conf.write(json.dumps(tmp))
-        conf.close()
+	tmp = dict([('Menu', menu), ('Files', files)])
+	for i in range( len(menu) ):
+		tmp[menu[i]] = tabs[menu[i]]
+        #-- Common
+        tmp["Common"]["Compiler"] = common_var["Compiler"].get()
+        tmp["Common"]["Target"] = common_var["Target"].get()
+        tmp["Common"]["Cflags"] = common_var["Cflags"].get()
+        tmp["Common"]["Ldflags"] = common_var["Ldflags"].get()
+        tmp["Common"]["Arch_num"] = common_var["Arch_num"].get()
+        tmp["Common"]["Sign_bin"] = common_var["Sign_bin"].get()
+        #-- Levels
+        tmp["Levels"]["Error"] = level_var["Error"].get()
+        tmp["Levels"]["Trace"] = level_var["Trace"].get()
+        tmp["Levels"]["Warn"] = level_var["Warn"].get()
+        tmp["Levels"]["Debug"] = level_var["Debug"].get()
+        tmp["Levels"]["Test_system"] = level_var["Test_system"].get()
+        tmp["Levels"]["Leon3"] = level_var["Leon3"].get()
+        #-- Build
+        tmp["Build"]["Debug"] = build_var["Debug"].get()
+        tmp["Build"]["Release"] = build_var["Release"].get()
+        tmp["Build"]["Simulation"] = build_var["Simulation"].get()
+        tmp["Build"]["Doxygen"] = build_var["Doxygen"].get()
+	write_file(fileconf, json.dumps(tmp))
 
 def reload_config():
         """ Reload config """
 	read_config(".config.default")
-        for item in [ "Compiler", "Ldflags", "Cflags", "Target", "Arch_num" ]:
+        for item in [ "Compiler", "Ldflags", "Cflags", "Target", "Arch_num", "Sign_bin" ]:
                 common_var[item].set(tabs["Common"][item])
         for i in range( len(tabs[menu[4]].keys()) ):
                 name = str(tabs[menu[4]].keys()[i])
@@ -115,13 +113,9 @@ def repl_arch(m):
 
 def build_link():
 	for file in [ "linkrom", "linkram", "linksim" ]:
-		with open('scripts/' + file, 'r+') as flink:
-			content = flink.read()
-		flink.close()
+		content = read_file('scripts/' + file)
 		content = re.sub('OUTPUT_ARCH\((\w+)\)', repl_arch, content)
-    		with open('scripts/' + file, 'w+') as flink:
-            		flink.write(content)
-    		flink.close()
+		write_file('scripts/' + file, content)
 
 def build_commands():
 	#-- generate src/conio/shell.inc
@@ -197,9 +191,7 @@ def replacer(mdef, inc, content):
 
 def write_autoconf():
 	#-- read autoconf
-        with open(files["autoconf"], 'r+') as faconf:
-                content = faconf.read()
-        faconf.close()
+	content = read_file(files["autoconf"])
         #-- Arch
         for ar, value, mdef in tabs['Common']['Arch']:
 		content = replacer(mdef, value == common_var["Arch_num"].get(), content)
@@ -223,22 +215,17 @@ def write_autoconf():
 	content = re.sub('LDFLAGS=([A-Za-z0-9_\-# ]+)', repl_ldflag, content)
 	#-- All targets
 	content = re.sub('ALL_TARGETS=([a-z ]+)', repl_all, content)
+	#-- Sign checksum
+	content = replacer('SIGN_CHECKSUM', common_var["Sign_bin"].get() == 1, content)
 	#-- Simulation, Debug, Release
 	for name, item in [["Simulation", "SIMULATION_TRG"], ["Debug", "DEBUG_TRG"], ["Release", "RELEASE_TRG"]]:
-		if build_var[name].get() == 1:
-			content = re.sub(item + '=(\w+)', item + '=y', content)
-		else:
-			content = re.sub(item + '=(\w+)', item + '=n', content)
+		content = replacer(item, build_var[name].get() == 1, content)
 	#-- write autoconf
-        with open(files["autoconf"], 'w+') as faconf:
-                faconf.write(content)
-        faconf.close()
+	write_file(files["autoconf"], content)
 
 def write_conf_h():
         #-- read conf_h
-        with open(files["conf_h"], 'r+') as fconf:
-                content = fconf.read()
-        fconf.close()
+	content = read_file(files["conf_h"])
         for name, item in [["Error", "_ERROR"], ["Trace", "_TRACE"], ["Warn", "_WARN"], ["Debug", "_DEBUG"]]:
 		if level_var[name].get() == 1:
 			content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#define " + item + " 1", content)
@@ -256,9 +243,7 @@ def write_conf_h():
                 else:
                         content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#undef " + item, content)
 	#-- write conf_h
-	with open(files["conf_h"], 'w+') as fconf:
-	        fconf.write(content)
-	fconf.close()
+	write_file(files["conf_h"], content)
 
 #-----------------------------GUI------------------------------
 def About():
@@ -329,7 +314,11 @@ def main():
 		Entry(frame["Common"], width=25, textvariable=common_var[item]).grid(row=6 + k, column=0)
 		common_var[item].set(tabs["Common"][item])
 		k += 2
-
+	#-- Sign checksum
+	common_var["Sign_bin"] = IntVar()
+	Checkbutton(frame["Common"], text="Sign checksum", state=NORMAL, anchor=W, \
+	                            variable = common_var["Sign_bin"]).grid(row=k + 5, column=0, sticky=W)
+	common_var["Sign_bin"].set(tabs["Common"]["Sign_bin"])
 	#-- Drivers frame
 	frame[menu[1]] = Tkinter.Frame(frame["Main"]())
 	Label(frame[menu[1]], text=menu[1], width=25, background="lightblue").grid(row=0, column=0)

@@ -5,6 +5,7 @@
 # author: sikmir
 
 import sys, string, os, traceback, re, getopt, zlib, hashlib, math
+from misc import *
 
 objdump, bin_dir, target = (None, None, None)
 checksum = {"0": 0}
@@ -39,28 +40,21 @@ def build_crc32_sum():
                                 if flag == 1:
                                         content += line
                 fobj.close()
-                with open(str(bin_dir) + '/' + item + '.objdump', 'w+') as fobj:
-                        fobj.write(content)
-                fobj.close()
+                write_file(str(bin_dir) + '/' + item + '.objdump', content)
 		checksum[item] = math.fabs(zlib.crc32(content))
 
 def build_md5():
 	global bin_dir
         for item in ( "ram", "rom", "sim" ):
-                with open(str(bin_dir) + '/' + item + '.md5', 'w+') as fmd5:
-                        fmd5.write(file_md5(str(bin_dir) + '/' + item + '.objdump'))
-                fmd5.close()
+                write_file(str(bin_dir) + '/' + item + '.md5', \
+            		file_md5(str(bin_dir) + '/' + item + '.objdump'))
 
 def rebuild_linker():
 	global checksum
 	for item in ("ram", "rom", "sim"):
-		with open("scripts/link" + item, 'r+') as flink:
-		        content = flink.read()
-		flink.close()
+		content = read_file("scripts/link" + item)
 		content = re.sub('__checksum = (\w+);', "__checksum = 0x%08X;" % checksum[item], content)
-		with open("scripts/link" + item, 'w+') as flink:
-		        flink.write(content)
-		flink.close()
+		write_file("scripts/link" + item, content)
 
 def main():
 	global objdump, bin_dir, target

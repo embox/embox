@@ -31,9 +31,11 @@ all:
 	declare -x MAKEOP=create_include_dirs_lst; make --directory=src create_include_dirs_lst
 	echo ' ' >> $(ROOT_DIR)/include_dirs.lst
 	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
-	$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET)
-	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
-
+	if [ $(SIGN_CHECKSUM) == y ]; \
+	then \
+	    $(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET); \
+	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all; \
+	fi;
 clean:
 	declare -x MAKEOP=clean; make --directory=src clean
 	rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old

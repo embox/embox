@@ -20,7 +20,8 @@
 		"Target": "monitor",
 		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
 		"Ldflags": "-Wl -N -nostdlib -g",
-		"Arch_num": 0
+		"Arch_num": 0,
+		"Sign_bin": 1
 	},
 	"Commands": [
 		[
