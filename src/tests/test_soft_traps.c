@@ -4,14 +4,16 @@
  *  Created on: 26.06.2009
  *      Author: sunnya
  */
-volatile static int temp;
-
+unsigned int volatile test_soft_traps_variable;
+#define TEST_SOFT_TRAP_NUMBER 0x10 //trap 0x90
 int test_soft_traps()
 {
-    temp = -1;  //%l7
-    __asm__ ("ta 0x10");
-    __asm__ ("mov %l7, %o0");
+    unsigned int temp = test_soft_traps_variable;  //%l7
+    __asm__ __volatile__  ("ta %0\n\t"::"i" (TEST_SOFT_TRAP_NUMBER));
 
-    __asm__ ("mov %o0, %l7");
-    return temp;
+    if (temp != (test_soft_traps_variable + 1)){
+        printf ("gfhgk");
+        return -1;
+    }
+    return 0;
 }
