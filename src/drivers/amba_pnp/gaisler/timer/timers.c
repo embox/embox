@@ -8,7 +8,6 @@
 #include "irq.h"
 #include "amba_pnp.h"
 #include "timers.h"
-#include "..\..\..\..\tests\test_addons_availability.h"
 
 static TIMERS_STRUCT * dev_regs = NULL;
 
@@ -110,14 +109,14 @@ int timers_init() {
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
 	amba_dev.show_info = show_module_info;
 
-	if (CORRECT_TIMERS_BASE != amba_dev.bar[0].start) {
+	if (TIMERS_BASE != amba_dev.bar[0].start) {
         TRACE("timers base is %x instead of correct value %x\n",
-                amba_dev.bar[0].start, CORRECT_TIMERS_BASE);
+                amba_dev.bar[0].start, TIMERS_BASE);
         return -1;
     }
-	if (CORRECT_TIMERS_IRQ != amba_dev.dev_info.irq) {
+	if (TIMERS_IRQ != amba_dev.dev_info.irq) {
 	    TRACE("timers irq is %d instead of correct value %d",
-	            amba_dev.dev_info.irq, CORRECT_TIMERS_IRQ);
+	            amba_dev.dev_info.irq, TIMERS_IRQ);
 	    return -1;
 	}
 	dev_regs = (TIMERS_STRUCT *)amba_dev.bar[0].start;

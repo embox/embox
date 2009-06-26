@@ -9,7 +9,6 @@
 #include "common.h"
 #include "irq_ctrl.h"
 #include "amba_pnp.h"
-#include "..\..\..\..\tests\test_addons_availability.h"
 
 static IRQ_REGS * dev_regs = NULL;
 
@@ -28,9 +27,9 @@ int irq_ctrl_init(){
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_INTERRUPT_UNIT);
 
 	amba_dev.show_info = NULL;//show_module_info;
-	if (CORRECT_INTERRUPT_BASE != amba_dev.bar[0].start) {
+	if (INTERRUPT_BASE != amba_dev.bar[0].start) {
         TRACE("irq_controller base is %x instead of correct value %x\n",
-                amba_dev.bar[0].start, CORRECT_INTERRUPT_BASE);
+                amba_dev.bar[0].start, INTERRUPT_BASE);
         return -1;
     }
 	dev_regs = (IRQ_REGS *)amba_dev.bar[0].start;

@@ -9,7 +9,6 @@
 #include "amba_pnp.h"
 #include "uart.h"
 #include "common.h"
-#include "..\..\..\..\tests\test_addons_availability.h"
 
 #define UART_RX_READY                   0x00000001
 #define UART_TX_READY                   0x00000004      /*< hold register empty */
@@ -38,14 +37,14 @@ int uart_init() {
 
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
 
-	if (CORRECT_UART_BASE != amba_dev.bar[0].start) {
+	if (UART_BASE != amba_dev.bar[0].start) {
         TRACE("uart base is %x instead of correct value %x\n",
-                amba_dev.bar[0].start, CORRECT_UART_BASE);
+                amba_dev.bar[0].start, UART_BASE);
         return -1;
     }
-    if (CORRECT_UART_IRQ != amba_dev.dev_info.irq) {
+    if (UART_IRQ != amba_dev.dev_info.irq) {
         TRACE("uart irq is %d instead of correct value %d",
-                amba_dev.dev_info.irq, CORRECT_UART_IRQ);
+                amba_dev.dev_info.irq, UART_IRQ);
         return -1;
     }
 
