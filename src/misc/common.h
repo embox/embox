@@ -1,7 +1,7 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#include "../../scripts/config.h"
+#include "../../scripts/autoconf.h"
 
 #ifdef _TEST_SYSTEM_
     #include "conio.h"

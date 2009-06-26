@@ -426,6 +426,7 @@ if __name__=='__main__':
 		        read_config(".config.default")
 		        shutil.copyfile(".config.default", ".config")
 		shutil.copyfile(".config", ".config.old")
+		shutil.copyfile("scripts/autoconf.default", "scripts/autoconf")
 		if mode == "x":
     			main()
     		elif mode == "menu":

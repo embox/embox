@@ -156,6 +156,6 @@
 		"users_inc": "src/conio/users.inc",
 		"autoconf": "scripts/autoconf",
 		"tests_table_inc": "src/tests/tests_table.inc",
-		"conf_h": "scripts/config.h"
+		"conf_h": "scripts/autoconf.h"
 	}
 }

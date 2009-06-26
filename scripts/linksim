@@ -85,5 +85,6 @@ SECTIONS
      _bend = . ;
   } > sdram
   __stack = _bend + 0x20000;
+    __checksum = 0x00000000;
  PROVIDE (__stack = _bend + 0x20000);
 }

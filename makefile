@@ -13,7 +13,7 @@ CC      = $(CC_PACKET)-gcc
 OD_TOOL = $(CC_PACKET)-objdump
 OC_TOOL = $(CC_PACKET)-objcopy
 
-.PHONY: all clean
+.PHONY: all clean config
 
 all:
 	@[ -e .config ] || exit 0;
@@ -27,6 +27,7 @@ all:
 	declare -x MAKEOP=create_include_dirs_lst; make --directory=src create_include_dirs_lst
 	echo ' ' >> $(ROOT_DIR)/include_dirs.lst
 	declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
+	$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET)
 
 clean:
 	declare -x MAKEOP=clean; make --directory=src clean
