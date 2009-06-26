@@ -83,7 +83,8 @@ _hardreset:
   SOFT_TRAP; !   TRAP(test_restore_trap);                      ! 88
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;  ! 89 - 8B
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 8C - 8F
-  SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 90 - 93
+  TRAP(test_soft_traps_func);                   ! 90
+  SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;              ! 91 - 93
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 94 - 97
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 98 - 9B
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 9C - 9F

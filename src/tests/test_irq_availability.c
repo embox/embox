@@ -29,5 +29,5 @@ int test_irq_availability() {
 			break;
 	}
 	close_timer(id);
-	return !tick_happened;
+	return -!tick_happened;
 }
