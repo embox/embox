@@ -7,6 +7,7 @@
 import sys, string, os, traceback, re, getopt, zlib, hashlib
 
 objdump, bin_dir, target = (None, None, None)
+checksum = {"0": 0}
 
 def file_md5(file, use_system = False):
 	if isinstance(file, basestring):
@@ -25,8 +26,8 @@ def file_md5(file, use_system = False):
 	return h.hexdigest()
 
 def build_crc32_sum():
-	global bin_dir
-        for file in [ "ram", "rom" ]:
+	global bin_dir, checksum
+        for file in [ "ram", "rom", "sim" ]:
     		content = ""
                 flag = 0
                 with open(str(bin_dir) + '/' + file + '.objdump', 'r+') as fobj:
@@ -41,32 +42,37 @@ def build_crc32_sum():
                 with open(str(bin_dir) + '/' + file + '.objdump', 'w+') as fobj:
                         fobj.write(content)
                 fobj.close()
-                with open(str(bin_dir) + '/' + file + '.crc32', 'w+') as fcrc32:
-                        a = zlib.crc32(content)
-            		fcrc32.write(str(a))
-                fcrc32.close()
+		checksum[file] = zlib.crc32(content)
+
+def build_md5():
+	global bin_dir
+        for file in [ "ram", "rom", "sim" ]:
                 with open(str(bin_dir) + '/' + file + '.md5', 'w+') as fmd5:
                         fmd5.write(file_md5(str(bin_dir) + '/' + file + '.objdump'))
                 fmd5.close()
-                os.remove(str(bin_dir) + '/' + file + '.objdump')
 
 def rebuild_linker():
-	for linkfile in ("linkram", "linkrom", "linksim"):
-		with open("scripts/" + linkfile, 'r+') as flink:
+	global checksum
+	for file in ("ram", "rom", "sim"):
+		with open("scripts/link" + file, 'r+') as flink:
 		        content = flink.read()
 		flink.close()
-		#TODO:
-		content = re.sub('__checksum = (\w+);', "__checksum = " + "0x11001100" + ";", content)
-		with open("scripts/" + linkfile, 'w+') as flink:
+		content = re.sub('__checksum = (\w+);', "__checksum = 0x%08X;" % checksum[file], content)
+		with open("scripts/link" + file, 'w+') as flink:
 		        flink.write(content)
 		flink.close()
 
 def main():
 	global objdump, bin_dir, target
+	#TODO:
 	os.system(str(objdump) + " -s " + str(bin_dir) + "/" + str(target) + "_ram > " + str(bin_dir) + "/ram.objdump")
 	os.system(str(objdump) + " -s " + str(bin_dir) + "/" + str(target) + "_rom > " + str(bin_dir) + "/rom.objdump")
+	os.system(str(objdump) + " -s " + str(bin_dir) + "/" + str(target) + "_sim > " + str(bin_dir) + "/sim.objdump")
 	build_crc32_sum()
+#	build_md5()
 	rebuild_linker()
+	for file in [ "ram", "rom", "sim" ]:
+		os.remove(str(bin_dir) + '/' + file + '.objdump')
 
 if __name__=='__main__':
         try:
