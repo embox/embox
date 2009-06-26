@@ -7,7 +7,11 @@ OBJ_DIR_DBG = $(OBJ_DIR)/debug
 OBJ_DIR_RLS = $(OBJ_DIR)/release
 SRC_DIR     = $(ROOT_DIR)/src
 SCRIPTS_DIR = $(ROOT_DIR)/scripts
+ifeq ($(shell find scripts -name autoconf -print), "scripts/autoconf")
 include $(SCRIPTS_DIR)/autoconf
+else
+include $(SCRIPTS_DIR)/autoconf.default
+endif
 
 CC      = $(CC_PACKET)-gcc
 OD_TOOL = $(CC_PACKET)-objdump
