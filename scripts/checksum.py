@@ -4,7 +4,7 @@
 # date: 26.06.09
 # author: sikmir
 
-import sys, string, os, traceback, re, getopt, zlib, hashlib
+import sys, string, os, traceback, re, getopt, zlib, hashlib, math
 
 objdump, bin_dir, target = (None, None, None)
 checksum = {"0": 0}
@@ -42,7 +42,7 @@ def build_crc32_sum():
                 with open(str(bin_dir) + '/' + file + '.objdump', 'w+') as fobj:
                         fobj.write(content)
                 fobj.close()
-		checksum[file] = zlib.crc32(content)
+		checksum[file] = math.fabs(zlib.crc32(content))
 
 def build_md5():
 	global bin_dir
