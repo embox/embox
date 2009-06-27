@@ -8,9 +8,9 @@
 import Tkinter
 from Tkinter import *
 from conf_tab import *
+from misc import *
 import tkSimpleDialog
 import sys, string, os, traceback, re, json, shutil, getopt
-from misc import *
 
 mode = "x"
 root, menu, files = ( None, None, None)
@@ -38,30 +38,22 @@ def write_config(fileconf):
 	for i in range( len(menu) ):
 		tmp[menu[i]] = tabs[menu[i]]
         #-- Common
-        tmp["Common"]["Compiler"] = common_var["Compiler"].get()
-        tmp["Common"]["Target"] = common_var["Target"].get()
-        tmp["Common"]["Cflags"] = common_var["Cflags"].get()
-        tmp["Common"]["Ldflags"] = common_var["Ldflags"].get()
-        tmp["Common"]["Arch_num"] = common_var["Arch_num"].get()
-        tmp["Common"]["Sign_bin"] = common_var["Sign_bin"].get()
+        for item in ("Compiler", "Target", "Cflags", "Ldflags", \
+    			"Arch_num", "Sign_bin", "Disassemble", "Prompt", "Start_msg"):
+    		tmp["Common"][item] = common_var[item].get()
         #-- Levels
-        tmp["Levels"]["Error"] = level_var["Error"].get()
-        tmp["Levels"]["Trace"] = level_var["Trace"].get()
-        tmp["Levels"]["Warn"] = level_var["Warn"].get()
-        tmp["Levels"]["Debug"] = level_var["Debug"].get()
-        tmp["Levels"]["Test_system"] = level_var["Test_system"].get()
-        tmp["Levels"]["Leon3"] = level_var["Leon3"].get()
+	for item in ("Error", "Trace", "Warn", "Debug", "Test_system", "Leon3"):
+		tmp["Levels"][item] = level_var[item].get()
         #-- Build
-        tmp["Build"]["Debug"] = build_var["Debug"].get()
-        tmp["Build"]["Release"] = build_var["Release"].get()
-        tmp["Build"]["Simulation"] = build_var["Simulation"].get()
-        tmp["Build"]["Doxygen"] = build_var["Doxygen"].get()
+	for item in ("Debug", "Release", "Simulation", "Doxygen"):
+		tmp["Build"][item] = build_var[item].get()
 	write_file(fileconf, json.dumps(tmp))
 
 def reload_config():
         """ Reload config """
 	read_config(".config.default")
-        for item in [ "Compiler", "Ldflags", "Cflags", "Target", "Arch_num", "Sign_bin" ]:
+        for item in [ "Compiler", "Ldflags", "Cflags", "Target", "Arch_num", \
+    			"Sign_bin", "Disassemble", "Prompt", "Start_msg" ]:
                 common_var[item].set(tabs["Common"][item])
         for i in range( len(tabs[menu[4]].keys()) ):
                 name = str(tabs[menu[4]].keys()[i])
@@ -80,22 +72,13 @@ def reload_config():
         for cmd, inc, status, desc, mdef in tabs[menu[3]]:
                 getattr(varc, cmd).set(inc)
 
-def onPress(ar, i, j):
-	ar[i][j] = not ar[i][j]
-
 def onPress_dep(item, i, j):
-	tabs[menu[1]][item][i][j] = not tabs[menu[1]][item][i][j]
+	onPress(tabs[menu[1]][item], i, j)
 	if item == "common":
 		if tabs[menu[1]][item][i][0] == "gaisler":
 			for k in range( len(tabs[menu[1]]["gaisler"]) ):
-				tabs[menu[1]]["gaisler"][k][1] = not tabs[menu[1]]["gaisler"][k][1]
+				onPress(tabs[menu[1]]["gaisler"], k, 1)
 				getattr(vard, tabs[menu[1]]["gaisler"][k][0]).set(tabs[menu[1]]["gaisler"][k][1])
-
-def getStatus(i):
-	if i == 1:
-		return "normal"
-	if i == 0:
-		return "disabled"
 
 def make_conf():
 	global mode
@@ -104,8 +87,18 @@ def make_conf():
 	if mode == "x":
 		write_conf_h()
 		build_link()
-		write_autoconf()
+		write_autoconf(files["autoconf"])
 		write_config(".config")
+
+def make_def_conf():
+        global mode
+        build_commands()
+        build_tests()
+        if mode == "x":
+                write_conf_h()
+                build_link()
+                write_autoconf(files["autoconf"] + ".default")
+                write_config(".config.default")
 
 def repl_arch(m):
 	if common_var["Arch_num"].get() == 0:
@@ -179,19 +172,9 @@ def build_tests():
 		ftest.write("{\"empty\", NULL}\n")
 	ftest.close()
 
-def repl_flag(pref, flag):
-	return pref + "=" + flag
-
-def replacer(mdef, inc, content):
-	if inc == True:
-                content = re.sub(mdef + '=(\w+)', repl_flag(mdef, "y"), content)
-        else:
-                content = re.sub(mdef + '=(\w+)', repl_flag(mdef, "n"), content)
-        return content
-
-def write_autoconf():
+def write_autoconf(file):
 	#-- read autoconf
-	content = read_file(files["autoconf"])
+	content = read_file(file)
         #-- Arch
         for ar, value, mdef in tabs['Common']['Arch']:
 		content = replacer(mdef, value == common_var["Arch_num"].get(), content)
@@ -217,31 +200,38 @@ def write_autoconf():
 	content = re.sub('ALL_TARGETS=([a-z ]+)', repl_all, content)
 	#-- Sign checksum
 	content = replacer('SIGN_CHECKSUM', common_var["Sign_bin"].get() == 1, content)
+	#-- Disassemble
+	content = replacer('DISASSEMBLE', common_var["Disassemble"].get() == 1, content)
 	#-- Simulation, Debug, Release
 	for name, item in [["Simulation", "SIMULATION_TRG"], ["Debug", "DEBUG_TRG"], ["Release", "RELEASE_TRG"]]:
 		content = replacer(item, build_var[name].get() == 1, content)
 	#-- write autoconf
-	write_file(files["autoconf"], content)
+	write_file(file, content)
 
 def write_conf_h():
         #-- read conf_h
 	content = read_file(files["conf_h"])
         for name, item in [["Error", "_ERROR"], ["Trace", "_TRACE"], ["Warn", "_WARN"], ["Debug", "_DEBUG"]]:
-		if level_var[name].get() == 1:
-			content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#define " + item + " 1", content)
-		else:
-			content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#undef " + item, content)
+		content = replacer_h(item, level_var[name].get() == 1, content)
 	for ar, value, mdef in tabs['Common']['Arch']:
-		if value == common_var["Arch_num"].get():
-	    		content = re.sub('#(\w+) ' + mdef + '([ ]*)(\w?)', "#define " + mdef + " 1", content)
-	    	else:
-	    		content = re.sub('#(\w+) ' + mdef + '([ ]*)(\w?)', "#undef " + mdef, content)
+		content = replacer_h(mdef, value == common_var["Arch_num"].get(), content)
+	content = re.sub('#define PROMPT "([a-zA-Z0-9._ ->#@<]+)"', '#define PROMPT "%s"' % common_var["Prompt"].get(), content)
+#	content = re.sub('#define START_MSG "([\\a-zA-Z0-9._ ->]+)"', "#define START_MSG \"\\n%s\"" % common_var["Start_msg"].get(), content)
         #-- Simulation, Debug, Release
         for name, item in [["Simulation", "SIMULATION_TRG"], ["Debug", "DEBUG_TRG"], ["Release", "RELEASE_TRG"]]:
-                if build_var[name].get() == 1:
-                        content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#define " + item + " 1", content)
-                else:
-                        content = re.sub('#(\w+) ' + item + '([ ]*)(\w?)', "#undef " + item, content)
+		content = replacer_h(item, build_var[name].get() == 1, content)
+	#-- Tests
+        for test, inc, status, desc, mdef in tabs[menu[2]]:
+                content = replacer_h(mdef, inc, content)
+        #-- Users
+        for cmd, inc, status, desc, mdef in tabs[menu[3]]:
+                content = replacer_h(mdef, inc, content)
+        #-- Drivers
+        for item in tabs[menu[1]].keys():
+                for driver, inc, status, desc, mdef in tabs[menu[1]][item]:
+            		#-- TODO: temporary hack o_O
+			if mdef != "MONITOR_DRIVERS_GAISLER":
+                    		content = replacer_h(mdef, inc, content)
 	#-- write conf_h
 	write_file(files["conf_h"], content)
 
@@ -260,6 +250,7 @@ def file_menu():
 	file_btn.pack(side=Tkinter.LEFT, padx="2m")
 	file_btn.menu = Tkinter.Menu(file_btn)
 	file_btn.menu.add_command(label="Save", underline=0, command=make_conf)
+	file_btn.menu.add_command(label="Save as default", underline=0, command=make_def_conf)
 	file_btn.menu.add_command(label="Load default", underline=0, command=reload_config)
 	file_btn.menu.add('separator')
 	file_btn.menu.add_command(label='Exit', underline=0, command=file_btn.quit)
@@ -308,17 +299,24 @@ def main():
 	common_var["Arch_num"].set(tabs["Common"]["Arch_num"])
 	#-- Compiler, Ldflags, Cflags, Target subframes
 	k = 0
-	for item in [ "Compiler", "Ldflags", "Cflags", "Target" ]:
+	for item in [ "Compiler", "Ldflags", "Cflags", "Target", "Prompt", "Start_msg" ]:
 		Label(frame["Common"], text=item, width=25, background="lightblue").grid(row=5 + k, column=0)
 		common_var[item] = StringVar()
 		Entry(frame["Common"], width=25, textvariable=common_var[item]).grid(row=6 + k, column=0)
 		common_var[item].set(tabs["Common"][item])
 		k += 2
 	#-- Sign checksum
+	k += 5
 	common_var["Sign_bin"] = IntVar()
 	Checkbutton(frame["Common"], text="Sign checksum", state=NORMAL, anchor=W, \
-	                            variable = common_var["Sign_bin"]).grid(row=k + 5, column=0, sticky=W)
+	                            variable = common_var["Sign_bin"]).grid(row=k, column=0, sticky=W)
 	common_var["Sign_bin"].set(tabs["Common"]["Sign_bin"])
+	#-- Disassemble
+	k += 1
+        common_var["Disassemble"] = IntVar()
+        Checkbutton(frame["Common"], text="Disassemble", state=NORMAL, anchor=W, \
+                                    variable = common_var["Disassemble"]).grid(row=k, column=0, sticky=W)
+        common_var["Disassemble"].set(tabs["Common"]["Disassemble"])
 	#-- Drivers frame
 	frame[menu[1]] = Tkinter.Frame(frame["Main"]())
 	Label(frame[menu[1]], text=menu[1], width=25, background="lightblue").grid(row=0, column=0)

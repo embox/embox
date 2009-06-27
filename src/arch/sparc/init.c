@@ -69,9 +69,15 @@ int init() {
             }
     }
 */
+#ifdef MONITOR_DRIVERS_GAISLER_IRQ_CTRL
     irq_init_handlers();
+#endif
+#ifdef MONITOR_DRIVERS_GAISLER_UART
     uart_init();
+#endif
+#ifdef MONITOR_DRIVERS_GAISLER_TIMER
     timers_init();
+#endif
     TRACE("start...\n");
 #ifndef SIMULATION_TRG
     eth_init();//interfaces

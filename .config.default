@@ -18,10 +18,13 @@
 		],
 		"Compiler": "sparc-linux",
 		"Target": "monitor",
+		"Start_msg": "Welcome to Monitor shell and have a lot of fun...",
+		"Prompt": "monitor> ",
 		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
 		"Ldflags": "-Wl -N -nostdlib -g",
 		"Arch_num": 0,
-		"Sign_bin": 1
+		"Sign_bin": 1,
+		"Disassemble": 0
 	},
 	"Commands": [
 		[
