@@ -1,5 +1,6 @@
 #include "leon_config.h"
 #include "memory_map.h"
+#include "sparc_regs.h"
 
 
 	.section    ".text"
@@ -10,23 +11,27 @@ boot_start:
 	! SPARC v8 initialization
 	flush                           ! flush caches
 
-	set 0xC0, %g1                 ! disable traps
+! disable traps
+	mov  %psr, %g1
+	andn %g1, PSR_ET, %g1     ! g1 = g1 & !PSR_ET
 	mov %g1, %psr
 	nop;nop;nop
 
+! zero some other regs
 	mov %g0, %wim
 	mov %g0, %tbr
 	mov %g0, %y
-
 	nop;nop;nop
 
 	flush                           ! flush caches
 	nop
 	nop
 	nop
+! turn cache on
 	set 0x81000F, %g1
 	sta %g1, [%g0] 2
-!clear global register
+
+! clear global registers
 	clr %g1
 	clr %g2
 	clr %g3
@@ -36,7 +41,7 @@ boot_start:
 	clr %g7
 
 
-	! clean all register windows
+! clean all register windows
 	set CORE_NWINDOWS, %g1
 register_window_clean:
 	mov %g0, %l0
@@ -75,10 +80,14 @@ register_window_clean:
 	nop; nop; nop;
 
 
+! why 2 ???
 	mov	2, %g1
-	mov	%g1, %wim   !
-	set 0xe0, %g1	!enable traps
-	mov %g1, %psr   !
+	mov	%g1, %wim
+
+! enable traps
+	mov  %psr, %g1
+	or %g1, PSR_ET, %g1     ! g1 = g1 | PSR_ET
+	mov %g1, %psr
 	nop;
 	nop;
 	nop;
