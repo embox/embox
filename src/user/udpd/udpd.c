@@ -57,7 +57,7 @@ int udpd_shell_handler(int argsc, char **argsv) {
 		return -1;
 	}
 	struct sockaddr saddr;
-	memcpy(addr, saddr.ipaddr, sizeof(addr));
+	memcpy(saddr.ipaddr, addr, sizeof(addr));
 	saddr.port = port;
 	if(bind(sk, &saddr, 0)) {
 		LOG_ERROR("binding socket\n");
