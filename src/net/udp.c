@@ -16,8 +16,7 @@
 
 int udp_received_packet(net_packet *pack) {
 	LOG_DEBUG("udp packet received\n");
-	udpsock_push(pack);
-	return 0;
+	return udpsock_push(pack);
 }
 
 int udp_init(void) {
@@ -25,7 +24,7 @@ int udp_init(void) {
 	return 0;
 }
 
-void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
+static void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	LOG_DEBUG("rebuild_udp_packet\n");
 	if( pack == NULL ||
 	    ifdev == NULL ||

@@ -46,7 +46,7 @@ class configure:
     		#-- Build
 		for item in self.tabs[self.menu[5]].keys():
 			tmp["Build"][item][0] = self.build_var[item].get()
-		write_file(fileconf, json.dumps(tmp))
+		write_file(fileconf, json.dumps(tmp, sort_keys=True, indent=4))
 
 	def reload_config(self):
     		""" Reload config """
@@ -130,14 +130,9 @@ class configure:
 
 	def repl_all(self, m):
 		repl = "ALL_TARGETS="
-		if self.build_var["Debug"].get() == 1:
-			repl += "debug "
-		if self.build_var["Release"].get() == 1:
-			repl += "release "
-		if self.build_var["Simulation"].get() == 1:
-			repl += "simulation "
-		if self.build_var["Doxygen"].get() == 1:
-			repl += "docs "
+		for item in self.tabs[self.menu[5]].keys():
+			if self.build_var[item].get() == 1:
+				repl += "%s " % self.tabs[self.menu[5]][item][2]
 		return repl
 
 	def repl_cflag(self, m):

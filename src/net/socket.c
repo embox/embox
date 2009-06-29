@@ -34,24 +34,26 @@ struct udp_sock* socket_alloc() {
         return NULL;
 }
 
-void socket_free(struct udp_sock *sk) {
+static int socket_free(struct udp_sock *sk) {
 	LOG_DEBUG("socket_free\n");
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++) {
                 if (sk == &sks[i].sk) {
                         sks[i].is_busy = 0;
                         net_packet_free(sks[i].queue);
+                        return 0;
                 }
         }
+        return -1;
 }
 
-void fill_sock(struct udp_sock *sk, sk_type type, sk_proto proto) {
+static void fill_sock(struct udp_sock *sk, int type, int proto) {
 	LOG_DEBUG("fill_sock\n");
 //	sk->inet.sk->sk_protocol = proto;
 //	sk->inet.sk->sk_type = type;
 //	sk->inet.sk->netdev = find_net_device("eth0");
 	sk->inet.tos = 0;
-	sk->inet.uc_ttl = 12;
+	sk->inet.uc_ttl = 64;
 	sk->inet.id = 0;
 }
 
@@ -83,7 +85,7 @@ int udpsock_push(net_packet *pack) {
 	return -1;
 }
 
-int socket(int domain, sk_type type, sk_proto protocol) {
+int socket(int domain, int type, int protocol) {
 	LOG_DEBUG("create socket\n");
 	struct udp_sock *sk;
 	if((sk = socket_alloc()) == NULL) {
@@ -111,14 +113,15 @@ int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
 	return 0;
 }
 
-void close(int sockfd) {
+int close(int sockfd) {
 	LOG_DEBUG("close\n");
-	socket_free(&sks[sockfd].sk);
+	return socket_free(&sks[sockfd].sk);
 }
 
 int send(int sockfd, const void *buf, int len, int flags) {
 	LOG_DEBUG("send\n");
         udp_trans(&sks[sockfd].sk, sks[sockfd].queue->ifdev, buf, len);
+	return len;
 }
 
 int recv(int sockfd, void *buf, int len, int flags) {

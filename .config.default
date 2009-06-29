@@ -1,81 +1,24 @@
 {
-	"Files": {
-		"tests_table_inc": "src/tests/tests_table.inc",
-		"autoconf": "scripts/autoconf",
-		"users_inc": "src/conio/users.inc",
-		"conf_h": "scripts/autoconf.h",
-		"shell_inc": "src/conio/shell.inc"
-	},
-	"Tests": [
-		[
-			"test_irq_availability",
+	"Build": {
+		"Debug": [
 			1,
-			1,
-			"irq availability",
-			"MONITOR_TESTS_IRQ_AVAILABILITY"
+			"DEBUG_TRG",
+			"debug"
 		],
-		[
-			"test_cpu_context",
-			1,
-			1,
-			"cpu_context save/restore",
-			"MONITOR_TESTS_CPU_CONTEXT"
+		"Doxygen": [
+			0,
+			"DOXYGEN_TRG",
+			"docs"
 		],
-		[
-			"test_soft_traps",
+		"Release": [
 			1,
-			1,
-			"soft traps",
-			"MONITOR_TESTS_SOFT_TRAPS"
-		]
-	],
-	"Menu": [
-		"Common",
-		"Drivers",
-		"Tests",
-		"Commands",
-		"Levels",
-		"Build"
-	],
-	"Drivers": {
-		"gaisler": [
-			[
-				"irq_ctrl",
-				1,
-				1,
-				"interrupt unit",
-				"MONITOR_DRIVERS_GAISLER_IRQ_CTRL"
-			],
-			[
-				"timer",
-				1,
-				1,
-				"timer",
-				"MONITOR_DRIVERS_GAISLER_TIMER"
-			],
-			[
-				"uart",
-				1,
-				1,
-				"uart",
-				"MONITOR_DRIVERS_GAISLER_UART"
-			]
+			"RELEASE_TRG",
+			"release"
 		],
-		"common": [
-			[
-				"amba_pnp",
-				1,
-				1,
-				"AMBA plug & play",
-				"MONITOR_DRIVERS_AMBA_PNP"
-			],
-			[
-				"gaisler",
-				1,
-				1,
-				"gaisler amba devices",
-				"MONITOR_DRIVERS_GAISLER"
-			]
+		"Simulation": [
+			0,
+			"SIMULATION_TRG",
+			"simulation"
 		]
 	},
 	"Commands": [
@@ -143,10 +86,108 @@
 			"MONITOR_USER_WMEM"
 		]
 	],
-	"Levels": {
-		"Trace": [
+	"Common": {
+		"Arch": [
+			[
+				"sparc",
+				0,
+				"MONITOR_ARCH_SPARC"
+			]
+		],
+		"Arch_num": [
+			0,
+			"ARCH_NUM"
+		],
+		"Cflags": [
+			"-Werror -msoft-float -c -MD -mv8 -O0 -g",
+			"CCFLAGS"
+		],
+		"Compiler": [
+			"sparc-linux",
+			"CC_PACKET"
+		],
+		"Disassemble": [
+			0,
+			"DISASSEMBLE"
+		],
+		"Ldflags": [
+			"-Wl -N -nostdlib -g",
+			"LDFLAGS"
+		],
+		"Prompt": [
+			"monitor> ",
+			"PROMPT"
+		],
+		"Sign_bin": [
 			1,
-			"_TRACE"
+			"SIGN_CHECKSUM"
+		],
+		"Start_msg": [
+			"Welcome to Monitor shell and have a lot of fun...",
+			"START_MSG"
+		],
+		"Target": [
+			"monitor",
+			"TARGET"
+		],
+		"Title": "Monitor Configurator"
+	},
+	"Drivers": {
+		"common": [
+			[
+				"amba_pnp",
+				1,
+				1,
+				"AMBA plug & play",
+				"MONITOR_DRIVERS_AMBA_PNP"
+			],
+			[
+				"gaisler",
+				1,
+				1,
+				"gaisler amba devices",
+				"MONITOR_DRIVERS_GAISLER"
+			]
+		],
+		"gaisler": [
+			[
+				"irq_ctrl",
+				1,
+				1,
+				"interrupt unit",
+				"MONITOR_DRIVERS_GAISLER_IRQ_CTRL"
+			],
+			[
+				"timer",
+				1,
+				1,
+				"timer",
+				"MONITOR_DRIVERS_GAISLER_TIMER"
+			],
+			[
+				"uart",
+				1,
+				1,
+				"uart",
+				"MONITOR_DRIVERS_GAISLER_UART"
+			]
+		]
+	},
+	"Files": {
+		"autoconf": "scripts/autoconf",
+		"conf_h": "scripts/autoconf.h",
+		"shell_inc": "src/conio/shell.inc",
+		"tests_table_inc": "src/tests/tests_table.inc",
+		"users_inc": "src/conio/users.inc"
+	},
+	"Levels": {
+		"Debug": [
+			0,
+			"_DEBUG"
+		],
+		"Error": [
+			1,
+			"_ERROR"
 		],
 		"Leon3": [
 			1,
@@ -156,17 +197,13 @@
 			1,
 			"_TEST_SYSTEM_"
 		],
+		"Trace": [
+			1,
+			"_TRACE"
+		],
 		"Warn": [
 			0,
 			"_WARN"
-		],
-		"Error": [
-			1,
-			"_ERROR"
-		],
-		"Debug": [
-			0,
-			"_DEBUG"
 		]
 	},
 	"Linkers": [
@@ -174,68 +211,35 @@
 		"linkram",
 		"linksim"
 	],
-	"Common": {
-		"Prompt": [
-			"monitor> ",
-			"PROMPT"
-		],
-		"Target": [
-			"monitor",
-			"TARGET"
-		],
-		"Disassemble": [
-			0,
-			"DISASSEMBLE"
-		],
-		"Title": "Monitor Configurator",
-		"Start_msg": [
-			"Welcome to Monitor shell and have a lot of fun...",
-			"START_MSG"
-		],
-		"Cflags": [
-			"-Werror -msoft-float -c -MD -mv8 -O0 -g",
-			"CCFLAGS"
-		],
-		"Ldflags": [
-			"-Wl -N -nostdlib -g",
-			"LDFLAGS"
-		],
-		"Arch_num": [
-			0,
-			"ARCH_NUM"
-		],
-		"Compiler": [
-			"sparc-linux",
-			"CC_PACKET"
-		],
-		"Arch": [
-			[
-				"sparc",
-				0,
-				"MONITOR_ARCH_SPARC"
-			]
-		],
-		"Sign_bin": [
+	"Menu": [
+		"Common",
+		"Drivers",
+		"Tests",
+		"Commands",
+		"Levels",
+		"Build"
+	],
+	"Tests": [
+		[
+			"test_irq_availability",
 			1,
-			"SIGN_CHECKSUM"
+			1,
+			"irq availability",
+			"MONITOR_TESTS_IRQ_AVAILABILITY"
+		],
+		[
+			"test_cpu_context",
+			1,
+			1,
+			"cpu_context save/restore",
+			"MONITOR_TESTS_CPU_CONTEXT"
+		],
+		[
+			"test_soft_traps",
+			1,
+			1,
+			"soft traps",
+			"MONITOR_TESTS_SOFT_TRAPS"
 		]
-	},
-	"Build": {
-		"Debug": [
-			1,
-			"DEBUG_TRG"
-		],
-		"Release": [
-			1,
-			"RELEASE_TRG"
-		],
-		"Doxygen": [
-			0,
-			"DOXYGEN_TRG"
-		],
-		"Simulation": [
-			0,
-			"SIMULATION_TRG"
-		]
-	}
+	]
 }

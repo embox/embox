@@ -10,14 +10,6 @@
 
 #include "net_device.h"
 
-typedef enum _sk_type {
-	SOCK_STREAM, SOCK_DGRAM, SOCK_RAW
-}sk_type;
-
-typedef enum _sk_proto {
-	TCP, UDP, IPPROTO_RAW
-}sk_proto;
-
 struct sock {
 	unsigned char		sk_protocol;
 	unsigned short		sk_type;

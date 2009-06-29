@@ -7,6 +7,7 @@
 
 #include "misc.h"
 #include "udpd.h"
+#include "net.h"
 #include "shell.h"
 #include "socket.h"
 
@@ -51,7 +52,7 @@ int udpd_shell_handler(int argsc, char **argsv) {
 	}
 	int sk, n;
 	char buf[64];
-	sk = socket(0, SOCK_DGRAM, UDP);
+	sk = socket(AF_INET, SOCK_DGRAM, 0);
 	if(sk < 0) {
 		LOG_ERROR("opening socket\n");
 		return -1;
@@ -67,7 +68,7 @@ int udpd_shell_handler(int argsc, char **argsv) {
 		n = recv(sk, buf, sizeof(buf), 0);
 		if(n) {
 			printf("buf=%s\n", buf);
-			if(send(sk, buf, sizeof(buf), 0)) {
+			if(send(sk, buf, sizeof(buf), 0) < 0) {
 				LOG_ERROR("can't send\n");
 			}
 			break;
