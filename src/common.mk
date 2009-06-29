@@ -28,4 +28,4 @@ all: $(SUBDIRS-y) $(OBJS-y)
 	@printf "  [M]\t$@\n"
 
 clean:
-	@rm -rf $(OBJS-y) *.d
+	@$(RM) $(OBJS-y) *.d

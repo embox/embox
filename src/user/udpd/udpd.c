@@ -51,20 +51,23 @@ int udpd_shell_handler(int argsc, char **argsv) {
 	}
 	int sk, n;
 	char buf[64];
-	sk = socket(SOCK_DGRAM, UDP);
+	sk = socket(0, SOCK_DGRAM, UDP);
 	if(sk < 0) {
 		LOG_ERROR("opening socket\n");
 		return -1;
 	}
-	if(bind(sk, addr, port)) {
+	struct sockaddr saddr;
+	memcpy(addr, saddr.ipaddr, sizeof(addr));
+	saddr.port = port;
+	if(bind(sk, &saddr, 0)) {
 		LOG_ERROR("binding socket\n");
 		return -1;
 	}
 	while (1) {
-		n = recv(sk, buf, sizeof(buf));
+		n = recv(sk, buf, sizeof(buf), 0);
 		if(n) {
 			printf("buf=%s\n", buf);
-			if(send(sk, buf, sizeof(buf))) {
+			if(send(sk, buf, sizeof(buf), 0)) {
 				LOG_ERROR("can't send\n");
 			}
 			break;

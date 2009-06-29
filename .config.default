@@ -16,15 +16,42 @@
 				"MONITOR_ARCH_SPARC"
 			]
 		],
-		"Compiler": "sparc-linux",
-		"Target": "monitor",
-		"Start_msg": "Welcome to Monitor shell and have a lot of fun...",
-		"Prompt": "monitor> ",
-		"Cflags": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
-		"Ldflags": "-Wl -N -nostdlib -g",
-		"Arch_num": 0,
-		"Sign_bin": 1,
-		"Disassemble": 0
+		"Compiler": [
+			"sparc-linux",
+			"CC_PACKET"
+		],
+		"Target": [
+			"monitor",
+			"TARGET"
+		],
+		"Start_msg": [
+			"Welcome to Monitor shell and have a lot of fun...",
+			"START_MSG"
+		],
+		"Prompt": [
+			"monitor> ",
+			"PROMPT"
+		],
+		"Cflags": [
+			"-Werror -msoft-float -c -MD -mv8 -O0 -g",
+			"CCFLAGS"
+		],
+		"Ldflags": [
+			"-Wl -N -nostdlib -g",
+			"LDFLAGS"
+		],
+		"Arch_num": [
+			0,
+			"ARCH_NUM"
+		],
+		"Sign_bin": [
+			1,
+			"SIGN_CHECKSUM"
+		],
+		"Disassemble": [
+			0,
+			"DISASSEMBLE"
+		]
 	},
 	"Commands": [
 		[
@@ -98,6 +125,13 @@
 			1,
 			"cpu_context save/restore",
 			"MONITOR_TESTS_CPU_CONTEXT"
+		],
+		[
+			"test_soft_traps",
+			1,
+			1,
+			"soft traps",
+			"MONITOR_TESTS_SOFT_TRAPS"
 		]
 	],
 	"Drivers": {
@@ -142,18 +176,48 @@
 		]
 	},
 	"Levels": {
-		"Error": 1,
-		"Trace": 1,
-		"Warn": 0,
-		"Debug": 0,
-		"Test_system": 1,
-		"Leon3": 1
+		"Error": [
+			1,
+			"_ERROR"
+		],
+		"Trace": [
+			1,
+			"_TRACE"
+		],
+		"Warn": [
+			0,
+			"_WARN"
+		],
+		"Debug": [
+			0,
+			"_DEBUG"
+		],
+		"Test_system": [
+			1,
+			"_TEST_SYSTEM_"
+		],
+		"Leon3": [
+			1,
+			"LEON3"
+		]
 	},
 	"Build": {
-		"Debug": 1,
-		"Release": 1,
-		"Simulation": 0,
-		"Doxygen": 0
+		"Debug": [
+			1,
+			"DEBUG_TRG"
+		],
+		"Release": [
+			1,
+			"RELEASE_TRG"
+		],
+		"Simulation": [
+			0,
+			"SIMULATION_TRG"
+		],
+		"Doxygen": [
+			0,
+			"DOXYGEN_TRG"
+		]
 	},
 	"Files": {
 		"shell_inc": "src/conio/shell.inc",
@@ -161,5 +225,10 @@
 		"autoconf": "scripts/autoconf",
 		"tests_table_inc": "src/tests/tests_table.inc",
 		"conf_h": "scripts/autoconf.h"
-	}
+	},
+	"Linkers": [
+		"linkrom",
+		"linkram",
+		"linksim"
+	]
 }

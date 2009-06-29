@@ -7,11 +7,17 @@ OBJ_DIR_DBG = $(OBJ_DIR)/debug
 OBJ_DIR_RLS = $(OBJ_DIR)/release
 SRC_DIR     = $(ROOT_DIR)/src
 SCRIPTS_DIR = $(ROOT_DIR)/scripts
-ifeq ($(shell find scripts -name autoconf -print), "scripts/autoconf")
-include $(SCRIPTS_DIR)/autoconf
+RM          = rm -rf
+EDITOR      = vim
+
+ifeq ($(shell [ -f scripts/autoconf ] && echo YES),YES)
+    DEFAULT_CONF =
 else
-include $(SCRIPTS_DIR)/autoconf.default
+    DEFAULT_CONF = .default
 endif
+
+include $(SCRIPTS_DIR)/autoconf$(DEFAULT_CONF)
+
 ifeq ($(SIMULATION_TRG),y)
 BUILD += --sim
 endif
@@ -55,17 +61,20 @@ checksum:
 	then \
 	    $(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) $(BUILD); \
 	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all; \
+	else \
+	    $(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) $(BUILD) --clean; \
 	fi;
 
 clean:
 	@declare -x MAKEOP=clean; make --directory=src clean
-	@rm -rf $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old
+	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old
+	@$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --sim --debug --release --clean
 
 xconfig:
 	@$(SCRIPTS_DIR)/configure.py --mode=x
 
 menuconfig:
-	@vim $(SCRIPTS_DIR)/autoconf
+	@$(EDITOR) $(SCRIPTS_DIR)/autoconf
 	@$(SCRIPTS_DIR)/configure.py --mode=menu
 
 config:

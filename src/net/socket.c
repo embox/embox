@@ -83,7 +83,7 @@ int udpsock_push(net_packet *pack) {
 	return -1;
 }
 
-int socket(sk_type type, sk_proto protocol) {
+int socket(int domain, sk_type type, sk_proto protocol) {
 	LOG_DEBUG("create socket\n");
 	struct udp_sock *sk;
 	if((sk = socket_alloc()) == NULL) {
@@ -101,32 +101,32 @@ int socket(sk_type type, sk_proto protocol) {
         return -1;
 }
 
-int bind(int s, unsigned char ipaddr[4], int port) {
+int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
 	LOG_DEBUG("bind socket\n");
-	memcpy(&sks[s].sk.inet.saddr, ipaddr, IP_HEADER_SIZE);
-	sks[s].sk.inet.sport = port;
+	memcpy(&sks[sockfd].sk.inet.saddr, addr->ipaddr, IP_HEADER_SIZE);
+	sks[sockfd].sk.inet.sport = addr->port;
 	char ip[15];
-	ipaddr_print(ip, sks[s].sk.inet.saddr);
-	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[s].sk.inet.sport, ip);
+	ipaddr_print(ip, sks[sockfd].sk.inet.saddr);
+	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[sockfd].sk.inet.sport, ip);
 	return 0;
 }
 
-void close(int s) {
+void close(int sockfd) {
 	LOG_DEBUG("close\n");
-	socket_free(&sks[s].sk);
+	socket_free(&sks[sockfd].sk);
 }
 
-int send(int s, const void *buf, int len) {
+int send(int sockfd, const void *buf, int len, int flags) {
 	LOG_DEBUG("send\n");
-        udp_trans(&sks[s].sk, sks[s].queue->ifdev, buf, len);
+        udp_trans(&sks[sockfd].sk, sks[sockfd].queue->ifdev, buf, len);
 }
 
-int recv(int s, void *buf, int len) {
-	if(sks[s].new_pack == 1) {
+int recv(int sockfd, void *buf, int len, int flags) {
+	if(sks[sockfd].new_pack == 1) {
 		LOG_DEBUG("recv\n");
-		memcpy(buf, sks[s].queue->data + MAC_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE - 24, len);
-		net_packet_free(sks[s].queue);
-		sks[s].new_pack = 0;
+		memcpy(buf, sks[sockfd].queue->data + MAC_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE - 24, len);
+		net_packet_free(sks[sockfd].queue);
+		sks[sockfd].new_pack = 0;
 	        return len;
 	}
 	return 0;

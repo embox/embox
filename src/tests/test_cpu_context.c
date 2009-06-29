@@ -26,16 +26,16 @@ static int flag_restored_context = 0;
 int test_cpu_context ()
 {
 /*	__asm__ ("ta 0");
-	printf ("save context done\n");
+	TRACE("save context done\n");
 
 	if (!flag_restored_context) {
 		flag_restored_context ++;
-		printf ("restore context start\n");
+		TRACE("restore context start\n");
 		restore_proc_context(&test_cpu_context_buff);
 //		__asm__ ("ta 8");
-		printf ("restore context failt\n");
+		TRACE("restore context failt\n");
 	} else {
-		printf ("restore context done\n");
+		TRACE("restore context done\n");
 	}
 */	return 0;
 }

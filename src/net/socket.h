@@ -12,11 +12,36 @@
 
 #define MAX_SOCK_NUM 4
 
-int socket(sk_type type, sk_proto protocol);
-int bind(int s, unsigned char ipaddr[4], int port);
-int send(int s, const void *buf, int len);
-int recv(int s, void *buf, int len);
-void close(int s);
+struct sockaddr {
+	unsigned char ipaddr[4];
+	int port;
+};
+
+/**
+ * create an endpoint for communication.
+ */
+int socket(int domain, sk_type type, sk_proto protocol);
+
+/**
+ * bind a name to a socket.
+ */
+int bind(int sockfd, const struct sockaddr *addr, int addrlen);
+
+/**
+ * send a message on a socket.
+ */
+int send(int sockfd, const void *buf, int len, int flags);
+
+/**
+ * receive a message from a socket.
+ */
+int recv(int sockfd, void *buf, int len, int flags);
+
+/**
+ * close a socket descriptor
+ */
+void close(int sockfd);
+
 int udpsock_push(net_packet *pack);
 
 #endif /* SOCKET_H_ */

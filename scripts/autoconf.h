@@ -21,6 +21,7 @@
 #undef SIMULATION_TRG
 #define DEBUG_TRG 1
 #define RELEASE_TRG 1
+#undef DOXYGEN_TRG
 
 /* Conio */
 #define MONITOR_CONIO 1
@@ -48,6 +49,7 @@
 #define MONITOR_TESTS 1
 #define MONITOR_TESTS_CPU_CONTEXT 1
 #define MONITOR_TESTS_IRQ_AVAILABILITY 1
+#define MONITOR_TESTS_SOFT_TRAPS 1
 
 /* Drivers */
 #define MONITOR_DRIVERS 1
