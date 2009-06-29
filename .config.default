@@ -1,4 +1,34 @@
 {
+	"Files": {
+		"tests_table_inc": "src/tests/tests_table.inc",
+		"autoconf": "scripts/autoconf",
+		"users_inc": "src/conio/users.inc",
+		"conf_h": "scripts/autoconf.h",
+		"shell_inc": "src/conio/shell.inc"
+	},
+	"Tests": [
+		[
+			"test_irq_availability",
+			1,
+			1,
+			"irq availability",
+			"MONITOR_TESTS_IRQ_AVAILABILITY"
+		],
+		[
+			"test_cpu_context",
+			1,
+			1,
+			"cpu_context save/restore",
+			"MONITOR_TESTS_CPU_CONTEXT"
+		],
+		[
+			"test_soft_traps",
+			1,
+			1,
+			"soft traps",
+			"MONITOR_TESTS_SOFT_TRAPS"
+		]
+	],
 	"Menu": [
 		"Common",
 		"Drivers",
@@ -7,50 +37,45 @@
 		"Levels",
 		"Build"
 	],
-	"Common": {
-		"Title": "Monitor Configurator",
-		"Arch": [
+	"Drivers": {
+		"gaisler": [
 			[
-				"sparc",
-				0,
-				"MONITOR_ARCH_SPARC"
+				"irq_ctrl",
+				1,
+				1,
+				"interrupt unit",
+				"MONITOR_DRIVERS_GAISLER_IRQ_CTRL"
+			],
+			[
+				"timer",
+				1,
+				1,
+				"timer",
+				"MONITOR_DRIVERS_GAISLER_TIMER"
+			],
+			[
+				"uart",
+				1,
+				1,
+				"uart",
+				"MONITOR_DRIVERS_GAISLER_UART"
 			]
 		],
-		"Compiler": [
-			"sparc-linux",
-			"CC_PACKET"
-		],
-		"Target": [
-			"monitor",
-			"TARGET"
-		],
-		"Start_msg": [
-			"Welcome to Monitor shell and have a lot of fun...",
-			"START_MSG"
-		],
-		"Prompt": [
-			"monitor> ",
-			"PROMPT"
-		],
-		"Cflags": [
-			"-Werror -msoft-float -c -MD -mv8 -O0 -g",
-			"CCFLAGS"
-		],
-		"Ldflags": [
-			"-Wl -N -nostdlib -g",
-			"LDFLAGS"
-		],
-		"Arch_num": [
-			0,
-			"ARCH_NUM"
-		],
-		"Sign_bin": [
-			1,
-			"SIGN_CHECKSUM"
-		],
-		"Disassemble": [
-			0,
-			"DISASSEMBLE"
+		"common": [
+			[
+				"amba_pnp",
+				1,
+				1,
+				"AMBA plug & play",
+				"MONITOR_DRIVERS_AMBA_PNP"
+			],
+			[
+				"gaisler",
+				1,
+				1,
+				"gaisler amba devices",
+				"MONITOR_DRIVERS_GAISLER"
+			]
 		]
 	},
 	"Commands": [
@@ -97,6 +122,13 @@
 			"MONITOR_USER_PING"
 		],
 		[
+			"run",
+			1,
+			1,
+			"run image",
+			"MONITOR_USER_RUN"
+		],
+		[
 			"udpd",
 			1,
 			1,
@@ -111,94 +143,81 @@
 			"MONITOR_USER_WMEM"
 		]
 	],
-	"Tests": [
-		[
-			"test_irq_availability",
-			1,
-			1,
-			"irq availability",
-			"MONITOR_TESTS_IRQ_AVAILABILITY"
-		],
-		[
-			"test_cpu_context",
-			1,
-			1,
-			"cpu_context save/restore",
-			"MONITOR_TESTS_CPU_CONTEXT"
-		],
-		[
-			"test_soft_traps",
-			1,
-			1,
-			"soft traps",
-			"MONITOR_TESTS_SOFT_TRAPS"
-		]
-	],
-	"Drivers": {
-		"common": [
-			[
-				"amba_pnp",
-				1,
-				1,
-				"AMBA plug & play",
-				"MONITOR_DRIVERS_AMBA_PNP"
-			],
-			[
-				"gaisler",
-				1,
-				1,
-				"gaisler amba devices",
-				"MONITOR_DRIVERS_GAISLER"
-			]
-		],
-		"gaisler": [
-			[
-				"irq_ctrl",
-				1,
-				1,
-				"interrupt unit",
-				"MONITOR_DRIVERS_GAISLER_IRQ_CTRL"
-			],
-			[
-				"timer",
-				1,
-				1,
-				"timer",
-				"MONITOR_DRIVERS_GAISLER_TIMER"
-			],
-			[
-				"uart",
-				1,
-				1,
-				"uart",
-				"MONITOR_DRIVERS_GAISLER_UART"
-			]
-		]
-	},
 	"Levels": {
-		"Error": [
-			1,
-			"_ERROR"
-		],
 		"Trace": [
 			1,
 			"_TRACE"
 		],
-		"Warn": [
-			0,
-			"_WARN"
-		],
-		"Debug": [
-			0,
-			"_DEBUG"
+		"Leon3": [
+			1,
+			"LEON3"
 		],
 		"Test_system": [
 			1,
 			"_TEST_SYSTEM_"
 		],
-		"Leon3": [
+		"Warn": [
+			0,
+			"_WARN"
+		],
+		"Error": [
 			1,
-			"LEON3"
+			"_ERROR"
+		],
+		"Debug": [
+			0,
+			"_DEBUG"
+		]
+	},
+	"Linkers": [
+		"linkrom",
+		"linkram",
+		"linksim"
+	],
+	"Common": {
+		"Prompt": [
+			"monitor> ",
+			"PROMPT"
+		],
+		"Target": [
+			"monitor",
+			"TARGET"
+		],
+		"Disassemble": [
+			0,
+			"DISASSEMBLE"
+		],
+		"Title": "Monitor Configurator",
+		"Start_msg": [
+			"Welcome to Monitor shell and have a lot of fun...",
+			"START_MSG"
+		],
+		"Cflags": [
+			"-Werror -msoft-float -c -MD -mv8 -O0 -g",
+			"CCFLAGS"
+		],
+		"Ldflags": [
+			"-Wl -N -nostdlib -g",
+			"LDFLAGS"
+		],
+		"Arch_num": [
+			0,
+			"ARCH_NUM"
+		],
+		"Compiler": [
+			"sparc-linux",
+			"CC_PACKET"
+		],
+		"Arch": [
+			[
+				"sparc",
+				0,
+				"MONITOR_ARCH_SPARC"
+			]
+		],
+		"Sign_bin": [
+			1,
+			"SIGN_CHECKSUM"
 		]
 	},
 	"Build": {
@@ -210,25 +229,13 @@
 			1,
 			"RELEASE_TRG"
 		],
-		"Simulation": [
-			0,
-			"SIMULATION_TRG"
-		],
 		"Doxygen": [
 			0,
 			"DOXYGEN_TRG"
+		],
+		"Simulation": [
+			0,
+			"SIMULATION_TRG"
 		]
-	},
-	"Files": {
-		"shell_inc": "src/conio/shell.inc",
-		"users_inc": "src/conio/users.inc",
-		"autoconf": "scripts/autoconf",
-		"tests_table_inc": "src/tests/tests_table.inc",
-		"conf_h": "scripts/autoconf.h"
-	},
-	"Linkers": [
-		"linkrom",
-		"linkram",
-		"linksim"
-	]
+	}
 }

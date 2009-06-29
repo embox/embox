@@ -93,7 +93,7 @@ class configure:
     		if self.mode == "x":
             		self.write_conf_h()
             		self.build_link()
-            		self.write_autoconf(files["autoconf"] + ".default")
+            		self.write_autoconf(self.files["autoconf"] + ".default")
             		self.write_config(".config.default")
 
 	def repl_arch(self, m):
