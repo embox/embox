@@ -7,10 +7,8 @@
  */
 
 #include "sys.h"
-#include "cpu_context.h"
-#include "types.h"
 
-inline static void context_save(CPU_CONTEXT * pcontext) {
+void context_save(CPU_CONTEXT * pcontext) {
 	// TODO see disassembler output
 	__asm__ __volatile__(
 			"mov %0, %%o0\n\t"
@@ -21,7 +19,7 @@ inline static void context_save(CPU_CONTEXT * pcontext) {
 
 }
 
-inline static void context_restore(CPU_CONTEXT * pcontext) {
+void context_restore(CPU_CONTEXT * pcontext) {
 	__asm__ __volatile__(
 			"mov %0, %%o0\n\t"
 			"ta 6\n\t"
