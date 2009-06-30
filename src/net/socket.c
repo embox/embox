@@ -105,8 +105,11 @@ int socket(int domain, int type, int protocol) {
 
 int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
 	LOG_DEBUG("bind socket\n");
-	memcpy(&sks[sockfd].sk.inet.saddr, &(addr->sa_data[1]), IP_ADDR_LEN);
-	sks[sockfd].sk.inet.sport = addr->sa_data[0];
+        if(sks[sockfd].is_busy == 0) {
+    		return -1;
+        }
+	memcpy(&sks[sockfd].sk.inet.saddr, &(addr->sa_data[2]), IP_ADDR_LEN);
+	memcpy(&sks[sockfd].sk.inet.sport, &(addr->sa_data[0]), sizeof(short));
 	char ip[15];
 	ipaddr_print(ip, sks[sockfd].sk.inet.saddr);
 	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[sockfd].sk.inet.sport, ip);
@@ -120,17 +123,25 @@ int close(int sockfd) {
 
 int send(int sockfd, const void *buf, int len, int flags) {
 	LOG_DEBUG("send\n");
+	if(sks[sockfd].is_busy == 0) {
+	        return -1;
+	}
         udp_trans(&sks[sockfd].sk, sks[sockfd].queue->ifdev, buf, len);
 	return len;
 }
 
 int recv(int sockfd, void *buf, int len, int flags) {
-	if(sks[sockfd].new_pack == 1) {
-		LOG_DEBUG("recv\n");
-		memcpy(buf, sks[sockfd].queue->data + MAC_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE - 24, len);
-		net_packet_free(sks[sockfd].queue);
-		sks[sockfd].new_pack = 0;
-	        return len;
+	LOG_DEBUG("recv\n");
+	if(sks[sockfd].is_busy == 0) {
+		return -1;
 	}
-	return -1;
+	while(1) {
+		if(sks[sockfd].new_pack == 1) {
+			LOG_DEBUG("received packet\n");
+			memcpy(buf, sks[sockfd].queue->data + MAC_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE - 24, len);
+			net_packet_free(sks[sockfd].queue);
+			sks[sockfd].new_pack = 0;
+	    		return len;
+		}
+	}
 }

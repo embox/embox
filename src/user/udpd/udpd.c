@@ -68,6 +68,7 @@ int udpd_shell_handler(int argsc, char **argsv) {
 	server.sin_addr.s_addr=ip_addr;
 	server.sin_port=htons(port);
 
+	printf("ip=0x%X, port=%d\n", ip_addr, port);
 	if(bind(sock, (struct sockaddr *)&server, length)) {
 		LOG_ERROR("binding socket\n");
 		return -1;
@@ -83,7 +84,6 @@ int udpd_shell_handler(int argsc, char **argsv) {
 		if(n < 0) {
 			LOG_ERROR("can't send\n");
 		}
-		sleep(1);
 	}
 	close(sock);
 	return 0;

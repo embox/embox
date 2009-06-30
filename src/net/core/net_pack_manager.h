@@ -8,8 +8,19 @@
 #ifndef NET_PACK_H_
 #define NET_PACK_H_
 
+/**
+ * Allocate net_packet on the pool.
+ */
 net_packet *net_packet_alloc();
+
+/**
+ * Free net_packet on the pool.
+ */
 void net_packet_free(net_packet *pack);
+
+/**
+ * Copy net_packet on the pool.
+ */
 net_packet *net_packet_copy(net_packet *pack);
 /*
 int net_packet_manager_init();

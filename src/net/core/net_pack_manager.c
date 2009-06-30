@@ -39,6 +39,7 @@ void net_packet_free(net_packet *pack) {
 		}
 	}
 }
+
 net_packet *net_packet_copy(net_packet *pack) {
 	net_packet *new_pack;
 	if (NULL == pack ||

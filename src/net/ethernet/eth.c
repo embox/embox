@@ -151,7 +151,7 @@ int eth_send (net_packet *pack) {
 			return -1;
 		}
 	}
-	packet_dump(pack);
+//	packet_dump(pack);
 	dev->net_dev->hard_start_xmit(pack, pack->netdev);
 	net_packet_free(pack);
 	return 0;
