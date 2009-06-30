@@ -52,6 +52,5 @@ int ip_send_packet(struct inet_sock *sk, struct _net_packet *pack) {
 	rebuild_ip_header_offset(pack);
 	rebuild_ip_header(sk, pack);
 	pack->len += IP_HEADER_SIZE;
-	eth_send(pack);
-	return 0;
+	return eth_send(pack);
 }

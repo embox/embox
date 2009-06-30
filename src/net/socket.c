@@ -68,15 +68,15 @@ int udpsock_push(net_packet *pack) {
 		if(uh->dest == usk->inet.sport &&
 		   (0 == memcmp(iph->daddr, usk->inet.saddr, 4))) {
 			if(sks[i].new_pack == 0) {
-			    LOG_DEBUG("packet pushed\n");
-			    sks[i].queue = net_packet_copy(pack);
-			    sks[i].new_pack = 1;
-			    sks[i].sk.inet.dport = uh->source;
-			    memcpy(sks[i].sk.inet.daddr, iph->saddr, sizeof(iph->saddr));
-			    return 0;
+				LOG_DEBUG("packet pushed\n");
+				sks[i].queue = net_packet_copy(pack);
+				sks[i].new_pack = 1;
+				sks[i].sk.inet.dport = uh->source;
+				memcpy(sks[i].sk.inet.daddr, iph->saddr, sizeof(iph->saddr));
+				return 0;
 			} else {
-			    LOG_DEBUG("queue is busy\n");
-			    return -1;
+				LOG_DEBUG("queue is busy\n");
+				return -1;
 			}
 		}
 	}
@@ -105,8 +105,8 @@ int socket(int domain, int type, int protocol) {
 
 int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
 	LOG_DEBUG("bind socket\n");
-	memcpy(&sks[sockfd].sk.inet.saddr, addr->ipaddr, IP_HEADER_SIZE);
-	sks[sockfd].sk.inet.sport = addr->port;
+	memcpy(&sks[sockfd].sk.inet.saddr, &(addr->sa_data[1]), IP_ADDR_LEN);
+	sks[sockfd].sk.inet.sport = addr->sa_data[0];
 	char ip[15];
 	ipaddr_print(ip, sks[sockfd].sk.inet.saddr);
 	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[sockfd].sk.inet.sport, ip);
@@ -132,5 +132,5 @@ int recv(int sockfd, void *buf, int len, int flags) {
 		sks[sockfd].new_pack = 0;
 	        return len;
 	}
-	return 0;
+	return -1;
 }

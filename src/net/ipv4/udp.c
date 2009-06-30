@@ -49,6 +49,5 @@ int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	net_packet *pack;
         pack = net_packet_alloc();
 	rebuild_udp_packet(pack, sk, ifdev, buf, len);
-	ip_send_packet(&sk->inet, pack);
-	return 0;
+	return ip_send_packet(&sk->inet, pack);
 }
