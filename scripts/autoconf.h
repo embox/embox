@@ -30,6 +30,7 @@
 
 #define MONITOR_KERNEL 1
 #define MONITOR_MISC 1
+#undef MONITOR_FS
 
 /* Net */
 #define MONITOR_NET 1

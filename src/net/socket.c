@@ -49,8 +49,8 @@ static int socket_free(struct udp_sock *sk) {
 
 static void fill_sock(struct udp_sock *sk, int type, int proto) {
 	LOG_DEBUG("fill_sock\n");
-//	sk->inet.sk->sk_protocol = proto;
-//	sk->inet.sk->sk_type = type;
+	sk->inet.sk->sk_protocol = proto;
+	sk->inet.sk->sk_type = type;
 //	sk->inet.sk->netdev = find_net_device("eth0");
 	sk->inet.tos = 0;
 	sk->inet.uc_ttl = 64;
@@ -66,7 +66,8 @@ int udpsock_push(net_packet *pack) {
 	for(i=0; i< MAX_SOCK_NUM; i++) {
 		usk = &sks[i].sk;
 		if(uh->dest == usk->inet.sport &&
-		   (0 == memcmp(iph->daddr, usk->inet.saddr, 4))) {
+		   ((0 == memcmp(iph->daddr, usk->inet.saddr, 4)) ||
+		    (0 == inet_addr(usk->inet.saddr)))) {
 			if(sks[i].new_pack == 0) {
 				LOG_DEBUG("packet pushed\n");
 				sks[i].queue = net_packet_copy(pack);
@@ -135,7 +136,7 @@ int recv(int sockfd, void *buf, int len, int flags) {
 	if(sks[sockfd].is_busy == 0) {
 		return -1;
 	}
-	while(1) {
+	while(sks[sockfd].is_busy == 1) {
 		if(sks[sockfd].new_pack == 1) {
 			LOG_DEBUG("received packet\n");
 			memcpy(buf, sks[sockfd].queue->data + MAC_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE - 24, len);
@@ -144,4 +145,5 @@ int recv(int sockfd, void *buf, int len, int flags) {
 	    		return len;
 		}
 	}
+	return -1;
 }

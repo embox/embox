@@ -42,7 +42,7 @@ static int rebuild_ip_header(struct inet_sock *sk, struct _net_packet *pack) {
 	hdr->tos = sk->tos;
 	//TODO now ip only single frame
 	hdr->frag_off = 0;
-	hdr->proto = UDP_PROTO_TYPE;//sk->sk->sk_protocol;
+	hdr->proto = sk->sk->sk_protocol; //UDP_PROTO_TYPE
 
 	return 0;
 }
