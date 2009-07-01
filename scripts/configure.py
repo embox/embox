@@ -137,10 +137,9 @@ class configure:
 
 	def repl_cflag(self, m):
 		repl = "CCFLAGS=" + self.common_var["Cflags"].get()
-		if self.level_var["Leon3"].get() == 1:
-			repl += " -DLEON3"
-		if self.level_var["Test_system"].get() == 1:
-			repl += " -D_TEST_SYSTEM_"
+		for item in ("Leon3", "Test_system"):
+			if self.level_var[item].get() == 1:
+				repl += " -D" + self.tabs[self.menu[4]][item][1]
 		return repl
 
 	def build_tests(self):
@@ -226,7 +225,7 @@ class configure:
 	    		shutil.copyfile(".config.default", ".config")
 	        self.read_config(".config")
 	        shutil.copyfile(".config", ".config.old")
-	        shutil.copyfile("scripts/autoconf.default", "scripts/autoconf")
+	        shutil.copyfile(self.files["autoconf"] + ".default", self.files["autoconf"])
 
 	def main(self):
 		if self.mode == "x":
