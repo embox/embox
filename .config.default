@@ -1,4 +1,5 @@
 {
+	"Title": "Monitor Configurator",
 	"Arch": {
 		"Arch_num": 0,
 		"sparc": {
@@ -116,49 +117,43 @@
 		"Target": [
 			"monitor",
 			"TARGET"
-		],
-		"Title": "Monitor Configurator"
+		]
 	},
 	"Drivers": {
-		"common": [
-			[
-				"amba_pnp",
+		"common": {
+			"amba_pnp": [
 				1,
 				1,
 				"AMBA plug & play",
 				"MONITOR_DRIVERS_AMBA_PNP"
 			],
-			[
-				"gaisler",
+			"gaisler": [
 				1,
 				1,
 				"gaisler amba devices",
 				"MONITOR_DRIVERS_GAISLER"
 			]
-		],
-		"gaisler": [
-			[
-				"irq_ctrl",
+		},
+		"gaisler": {
+			"irq_ctrl": [
 				1,
 				1,
 				"interrupt unit",
 				"MONITOR_DRIVERS_GAISLER_IRQ_CTRL"
 			],
-			[
-				"timer",
+			"timer": [
 				1,
 				1,
 				"timer",
 				"MONITOR_DRIVERS_GAISLER_TIMER"
 			],
-			[
-				"uart",
+			"uart": [
 				1,
 				1,
 				"uart",
 				"MONITOR_DRIVERS_GAISLER_UART"
 			]
-		]
+		}
 	},
 	"Files": {
 		"autoconf": "scripts/autoconf",
@@ -224,6 +219,38 @@
 			1,
 			"soft traps",
 			"MONITOR_TESTS_SOFT_TRAPS"
+		]
+	},
+	"Net": {
+		"udp": [
+			1,
+			1,
+			"udp proto",
+			"MONITOR_NET_UDP"
+		],
+		"tftp": [
+			1,
+			1,
+			"tftp proto",
+			"MONITOR_NET_TFTP"
+		],
+		"dhcp": [
+			1,
+			1,
+			"dhcp proto",
+			"MONITOR_NET_DHCP"
+		],
+		"icmp": [
+			1,
+			1,
+			"icmp proto",
+			"MONITOR_NET_ICMP"
+		],
+		"ipv4": [
+			1,
+			1,
+			"ipv4 proto",
+			"MONITOR_NET_IP_V4"
 		]
 	}
 }

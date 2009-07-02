@@ -13,14 +13,11 @@ class configure:
 	def __init__(self, mode="x"):
 		self.mode = mode
 		self.files = None
-		self.menu = ("Common", "Drivers", "Tests", "Commands", "Levels", "Build")
+		self.menu = ("Common", "Drivers", "Tests", "Commands", "Levels", "Build", "Net")
 		self.tabs = { "0" : 0 }
-		self.build_var = { "0": 0 }
-		self.level_var = { "0" : 0 }
-		self.common_var = { "0": 0 }
-		self.arch_var = { "0": 0 }
-		self.varc, self.vart, self.vard = (None, None, None)
-		self.common_items = ("Target", "Sign_bin", "Disassemble", "Prompt", "Start_msg")
+		self.var = dict([('Common', { "0" : 0 }), ('Arch', { "0" : 0 }), \
+				 ('Levels', { "0" : 0 }), ('Build', { "0" : 0 }), \
+				 ('Commands', None ), ('Tests', None ), ('Drivers', None ), ('Net', None )])
 		self.linkers = None
 
 	def read_config(self, fileconf):
@@ -30,67 +27,55 @@ class configure:
     		self.files = json_conf['Files']
     		self.linkers = json_conf['Linkers']
     		self.archs = json_conf['Arch']
+    		self.tabs["Title"] = json_conf["Title"]
     		for tab in self.menu:
     			self.tabs[tab] = json_conf[tab]
 
 	def write_config(self, fileconf):
 		""" Write config file """
 		tmp = dict([('Menu', self.menu), ('Files', self.files), ('Linkers', self.linkers)])
+		tmp["Title"] = self.tabs["Title"]
 		for i in range( len(self.menu) ):
 			tmp[self.menu[i]] = self.tabs[self.menu[i]]
 		#-- Arch
 		tmp["Arch"] = self.archs
-		tmp["Arch"]["Arch_num"] = self.arch_var["Arch_num"].get()
+		tmp["Arch"]["Arch_num"] = self.var['Arch']["Arch_num"].get()
 		for item in ("Cflags", "Ldflags", "Compiler"):
-			tmp["Arch"][self.get_arch()][item][0] = self.arch_var[item].get()
-    		#-- Common
-    		for item in self.common_items:
-    			tmp["Common"][item][0] = self.common_var[item].get()
-    		#-- Levels
-		for item in self.tabs[self.menu[4]].keys():
-			tmp["Levels"][item][0] = self.level_var[item].get()
-    		#-- Build
-		for item in self.tabs[self.menu[5]].keys():
-			tmp["Build"][item][0] = self.build_var[item].get()
+			tmp["Arch"][self.get_arch()][item][0] = self.var['Arch'][item].get()
+    		#-- Common, Levels, Build
+    		for mod_name in ("Common", "Levels", "Build"):
+    			for item in self.tabs[mod_name].keys():
+    				tmp[mod_name][item][0] = self.var[mod_name][item].get()
 		write_file(fileconf, json.dumps(tmp, sort_keys=True, indent=4))
 
 	def reload_config(self):
     		""" Reload config """
 		self.read_config(".config.default")
-    		for item in self.common_items:
-            		self.common_var[item].set(self.tabs["Common"][item][0])
-            	self.arch_var["Arch_num"].set(self.archs["Arch_num"])
+    		for item in self.tabs["Common"].keys():
+            		self.var["Common"][item].set(self.tabs["Common"][item][0])
+            	self.var['Arch']["Arch_num"].set(self.archs["Arch_num"])
             	for item in ("Cflags", "Ldflags", "Compiler"):
-            		self.arch_var[item].set(self.archs[self.get_arch()][item][0])
-    		for i in range( len(self.tabs[self.menu[4]].keys()) ):
-            		name = str(self.tabs[self.menu[4]].keys()[i])
-            		self.level_var[name].set(self.tabs[self.menu[4]][name][0])
-    		for i in range( len(self.tabs[self.menu[5]].keys()) ):
-            		name = str(self.tabs[self.menu[5]].keys()[i])
-            		self.build_var[name].set(self.tabs[self.menu[5]][name][0])
+            		self.var['Arch'][item].set(self.archs[self.get_arch()][item][0])
+    		for i in range( len(self.tabs["Levels"].keys()) ):
+            		name = str(self.tabs["Levels"].keys()[i])
+            		self.var["Levels"][name].set(self.tabs["Levels"][name][0])
+    		for i in range( len(self.tabs["Build"].keys()) ):
+            		name = str(self.tabs["Build"].keys()[i])
+            		self.var["Build"][name].set(self.tabs["Build"][name][0])
     		#-- Drivers
-    		for item in self.tabs[self.menu[1]].keys():
-    			for driver, inc, status, desc, mdef in self.tabs["Drivers"][item]:
-            			getattr(self.vard, driver).set(inc)
-    		#-- Tests
-    		mod_name = "Tests"
-    		for test_name in self.tabs[mod_name].keys():
-    			inc = self.tabs[mod_name][test_name][0]
-            		getattr(self.vart, test_name).set(inc)
-    		#-- Users
-    		for cmd in self.tabs["Commands"].keys():
-    			inc = self.tabs["Commands"][cmd][0]
-            		getattr(self.varc, cmd).set(inc)
+    		mod_name = "Drivers"
+    		for item in self.tabs[mod_name].keys():
+    			for driver in self.tabs[mod_name][item].keys():
+    				inc = self.tabs[mod_name][item][driver][0]
+            			getattr(self.var[mod_name], driver).set(inc)
+    		#-- Tests, Users, Net
+    		for mod_name in ("Tests", "Commands", "Net"):
+    			for item in self.tabs[mod_name].keys():
+    				inc = self.tabs[mod_name][item][0]
+            			getattr(self.var[mod_name], item).set(inc)
 
-	def onPress_dep(self, item, i, j):
-		onPress(self.tabs[self.menu[1]][item], i, j)
-		if item == "common":
-			if self.tabs[self.menu[1]][item][i][0] == "gaisler":
-				for k in range( len(self.tabs[self.menu[1]]["gaisler"]) ):
-					onPress(self.tabs[self.menu[1]]["gaisler"], k, 1)
-					getattr(self.vard, self.tabs[self.menu[1]]["gaisler"][k][0]).set(self.tabs[self.menu[1]]["gaisler"][k][1])
 	def get_arch(self):
-		if self.arch_var["Arch_num"].get() == 0:
+		if self.var['Arch']["Arch_num"].get() == 0:
 			return "sparc"
 
 	def make_conf(self):
@@ -135,6 +120,7 @@ class configure:
 			for cmd in self.tabs[mod_name].keys():
 				inc = self.tabs[mod_name][cmd][0]
 				if inc == True:
+					# TODO: temporary hack
 					if cmd != "arp":
 						fuser_include.write("#include \"" + cmd + ".h\"\n")
 					else:
@@ -144,14 +130,14 @@ class configure:
 	def repl_all(self, m):
 		repl = "ALL_TARGETS="
 		for item in self.tabs["Build"].keys():
-			if self.build_var[item].get() == 1:
+			if self.var["Build"][item].get() == 1:
 				repl += "%s " % self.tabs["Build"][item][2]
 		return repl
 
 	def repl_cflag(self, m):
-		repl = "CCFLAGS=" + self.arch_var["Cflags"].get()
+		repl = "CCFLAGS=" + self.var['Arch']["Cflags"].get()
 		for item in ("Leon3", "Test_system"):
-			if self.level_var[item].get() == 1:
+			if self.var["Levels"][item].get() == 1:
 				repl += " -D" + self.tabs["Levels"][item][1]
 		return repl
 
@@ -173,75 +159,69 @@ class configure:
 		content = read_file(file)
     		#-- Arch
     		for ar in ("sparc",):
-			content = replacer( self.archs[ar]["mdef"], self.archs[ar]["num"] == self.arch_var["Arch_num"].get(), content)
-    		#-- Tests
-    		mod_name = 'Tests'
-    		for test_name in self.tabs[mod_name].keys():
-    			inc = self.tabs[mod_name][test_name][0]
-    			mdef = self.tabs[mod_name][test_name][3]
-    			content = replacer(mdef, inc, content)
-    		#-- Users
-    		mod_name = "Commands"
-    		for cmd in self.tabs[mod_name].keys():
-    			inc = self.tabs[mod_name][cmd][0]
-    			mdef = self.tabs[mod_name][cmd][3]
-			content = replacer(mdef, inc, content)
+			content = replacer( self.archs[ar]["mdef"], self.archs[ar]["num"] == self.var['Arch']["Arch_num"].get(), content)
+    		#-- Tests, Users, Net
+    		for mod_name in ("Tests", "Commands", "Net"):
+    			for item in self.tabs[mod_name].keys():
+    				inc = self.tabs[mod_name][item][0]
+    				mdef = self.tabs[mod_name][item][3]
+    				content = replacer(mdef, inc, content)
     		#-- Drivers
-    		for item in self.tabs[self.menu[1]].keys():
-            		for driver, inc, status, desc, mdef in self.tabs["Drivers"][item]:
+    		mod_name = "Drivers"
+    		for item in self.tabs[mod_name].keys():
+            		for driver in self.tabs[mod_name][item].keys():
+            			inc = self.tabs[mod_name][item][driver][0]
+            			mdef = self.tabs[mod_name][item][driver][3]
 				content = replacer(mdef, inc, content)
 		#-- Target
 		content = re.sub(self.tabs["Common"]["Target"][1] + '=(\w+)', \
-				 self.tabs["Common"]["Target"][1] + "=" + self.common_var["Target"].get(), content)
+				 self.tabs["Common"]["Target"][1] + "=" + self.var["Common"]["Target"].get(), content)
 		#-- Compiler
 		content = re.sub( self.archs[self.get_arch()]["Compiler"][1] + '=(\w+(-\w+)?)', \
-				  self.archs[self.get_arch()]["Compiler"][1] + "=" + self.arch_var["Compiler"].get(), content)
+				  self.archs[self.get_arch()]["Compiler"][1] + "=" + self.var['Arch']["Compiler"].get(), content)
 		#-- CFLAGS
 		content = re.sub( self.archs[self.get_arch()]["Cflags"][1] + '=([A-Za-z0-9_\-# ]+)', self.repl_cflag, content)
 		#-- LDFLAGS
 		content = re.sub( self.archs[self.get_arch()]["Ldflags"][1] + '=([A-Za-z0-9_\-# ]+)', \
-				  self.archs[self.get_arch()]["Ldflags"][1] + "=" + self.arch_var["Ldflags"].get(), content)
+				  self.archs[self.get_arch()]["Ldflags"][1] + "=" + self.var['Arch']["Ldflags"].get(), content)
 		#-- All targets
 		content = re.sub('ALL_TARGETS=([a-z ]+)', self.repl_all, content)
-		#-- Sign checksum
-		content = replacer(self.tabs["Common"]["Sign_bin"][1], self.common_var["Sign_bin"].get() == 1, content)
-		#-- Disassemble
-		content = replacer(self.tabs["Common"]["Disassemble"][1], self.common_var["Disassemble"].get() == 1, content)
+		#-- Sign checksum, Disassemble
+		for item in ("Sign_bin", "Disassemble"):
+			content = replacer(self.tabs["Common"][item][1], self.var["Common"][item].get() == 1, content)
 		#-- Simulation, Debug, Release
 		for name in self.tabs[self.menu[5]].keys():
-			content = replacer(self.tabs[self.menu[5]][name][1], self.build_var[name].get() == 1, content)
+			content = replacer(self.tabs[self.menu[5]][name][1], self.var["Build"][name].get() == 1, content)
 		#-- write autoconf
 		write_file(file, content)
 
 	def write_conf_h(self):
     		#-- read conf_h
 		content = read_file(self.files["conf_h"])
-    		for name in self.tabs[self.menu[4]].keys():
-			content = replacer_h(self.tabs[self.menu[4]][name][1], self.level_var[name].get() == 1, content)
+    		for name in self.tabs["Levels"].keys():
+			content = replacer_h(self.tabs["Levels"][name][1], self.var["Levels"][name].get() == 1, content)
 		for ar in ("sparc",):
-			content = replacer_h(self.archs[ar]['mdef'], self.archs[ar]["num"] == self.arch_var["Arch_num"].get(), content)
+			content = replacer_h(self.archs[ar]['mdef'], self.archs[ar]["num"] == self.var['Arch']["Arch_num"].get(), content)
 		content = re.sub('#define PROMPT "([a-zA-Z0-9._ ->#@<]+)"', '#define PROMPT "%s"' % \
-								    self.common_var["Prompt"].get(), content)
-#		content = re.sub('#define START_MSG "([\\a-zA-Z0-9._ ->]+)"', "#define START_MSG \"\\n%s\"" % common_var["Start_msg"].get(), content)
+								    self.var["Common"]["Prompt"].get(), content)
+#		content = re.sub('#define START_MSG "([\\a-zA-Z0-9._ ->]+)"', "#define START_MSG \"\\n%s\"" % var["Common"]["Start_msg"].get(), content)
     		#-- Simulation, Debug, Release
-    		for name in self.tabs[self.menu[5]].keys():
-			content = replacer_h(self.tabs["Build"][name][1], \
-					     self.build_var[name].get() == 1, content)
-		#-- Tests
-		mod_name = "Tests"
-    		for test_name in self.tabs[mod_name].keys():
-    			inc = self.tabs[mod_name][test_name][0]
-    			mdef = self.tabs[mod_name][test_name][3]
-            		content = replacer_h(mdef, inc, content)
-    		#-- Users
-    		mod_name = "Commands"
-    		for cmd in self.tabs[mod_name].keys():
-    			inc = self.tabs[mod_name][cmd][0]
-    			mdef = self.tabs[mod_name][cmd][3]
-            		content = replacer_h(mdef, inc, content)
+    		mod_name = "Build"
+    		for name in self.tabs[mod_name].keys():
+			content = replacer_h(self.tabs[mod_name][name][1], \
+					     self.var[mod_name][name].get() == 1, content)
+		#-- Tests, Users, Net
+		for mod_name in ("Tests", "Commands", "Net"):
+    			for item in self.tabs[mod_name].keys():
+    				inc = self.tabs[mod_name][item][0]
+    				mdef = self.tabs[mod_name][item][3]
+            			content = replacer_h(mdef, inc, content)
     		#-- Drivers
-    		for item in self.tabs[self.menu[1]].keys():
-            		for driver, inc, status, desc, mdef in self.tabs[self.menu[1]][item]:
+    		mod_name = "Drivers"
+    		for item in self.tabs[mod_name].keys():
+            		for driver in self.tabs[mod_name][item].keys():
+            			inc = self.tabs[mod_name][item][driver][0]
+            			mdef = self.tabs[mod_name][item][driver][3]
             			#-- TODO: temporary hack o_O
 				if mdef != "MONITOR_DRIVERS_GAISLER":
                     			content = replacer_h(mdef, inc, content)
@@ -259,17 +239,19 @@ class configure:
 		if self.mode == "x":
 			gui = configure_gui(self)
 			#-- Common frame
-			gui.show_common()
+			gui.show_common(self.tabs['Title'])
 			#-- Drivers frame
-			gui.show_drivers()
+			gui.show_drivers("Drivers")
 			#-- Tests frame
-			gui.show_tests()
+			gui.show_table("Tests", "Tests")
 			#-- Commands frame
-			gui.show_users()
+			gui.show_table("Commands", "Commands")
 			#-- Level frame
-			gui.show_levels()
+			gui.show_list("Levels", "Verbous level")
 			#-- Build frame
-			gui.show_build()
+			gui.show_list("Build", "Build")
+			#-- Net frame
+			gui.show_table("Net", "Network")
 			#-- main loop
 			gui.main()
 		elif obj.mode == "menu":

@@ -33,8 +33,8 @@ def replacer_h(mdef, inc, content):
         	content = re.sub(mask, "#undef " + mdef, content)
         return content
 
-def onPress(ar, i, j):
-        ar[i][j] = not ar[i][j]
+def onPress(ar, item, j):
+        ar[item][j] = not ar[item][j]
 
 def getStatus(i):
         if i == 1:
