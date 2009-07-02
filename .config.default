@@ -1,4 +1,23 @@
 {
+	"Arch": {
+		"Arch_num": 0,
+		"sparc": {
+			"Cflags": [
+				"-Werror -msoft-float -c -MD -mv8 -O0 -g",
+				"CCFLAGS"
+			],
+			"Compiler": [
+				"sparc-linux",
+				"CC_PACKET"
+			],
+			"Ldflags": [
+				"-Wl -N -nostdlib -g",
+				"LDFLAGS"
+			],
+			"mdef": "MONITOR_ARCH_SPARC",
+			"num": 0
+		}
+	},
 	"Build": {
 		"Debug": [
 			1,
@@ -21,98 +40,66 @@
 			"simulation"
 		]
 	},
-	"Commands": [
-		[
-			"arp",
+	"Commands": {
+		"arp": [
 			1,
 			1,
 			"arp table",
 			"MONITOR_USER_ARP"
 		],
-		[
-			"help",
+		"help": [
 			1,
 			1,
 			"display all possible commands",
 			"MONITOR_USER_HELP"
 		],
-		[
-			"lspnp",
+		"lspnp": [
 			1,
 			1,
 			"show list of plug and play devices",
 			"MONITOR_USER_LSPNP"
 		],
-		[
-			"mem",
+		"mem": [
 			1,
 			1,
 			"read from memory or test memory",
 			"MONITOR_USER_MEM"
 		],
-		[
-			"mmu_probe",
+		"mmu_probe": [
 			1,
 			1,
 			"mmu_probe",
 			"MONITOR_USER_MMU_PROBE"
 		],
-		[
-			"ping",
+		"ping": [
 			1,
 			1,
 			"test whether a particular host is reachable",
 			"MONITOR_USER_PING"
 		],
-		[
-			"run",
+		"run": [
 			1,
 			1,
 			"run image",
 			"MONITOR_USER_RUN"
 		],
-		[
-			"udpd",
+		"udpd": [
 			1,
 			1,
 			"test udp socket",
 			"MONITOR_USER_UDPD"
 		],
-		[
-			"wmem",
+		"wmem": [
 			1,
 			1,
 			"write to memory",
 			"MONITOR_USER_WMEM"
 		]
-	],
+	},
 	"Common": {
-		"Arch": [
-			[
-				"sparc",
-				0,
-				"MONITOR_ARCH_SPARC"
-			]
-		],
-		"Arch_num": [
-			0,
-			"ARCH_NUM"
-		],
-		"Cflags": [
-			"-Werror -msoft-float -c -MD -mv8 -O0 -g",
-			"CCFLAGS"
-		],
-		"Compiler": [
-			"sparc-linux",
-			"CC_PACKET"
-		],
 		"Disassemble": [
 			0,
 			"DISASSEMBLE"
-		],
-		"Ldflags": [
-			"-Wl -N -nostdlib -g",
-			"LDFLAGS"
 		],
 		"Prompt": [
 			"monitor> ",
@@ -219,27 +206,24 @@
 		"Levels",
 		"Build"
 	],
-	"Tests": [
-		[
-			"test_irq_availability",
-			1,
-			1,
-			"irq availability",
-			"MONITOR_TESTS_IRQ_AVAILABILITY"
-		],
-		[
-			"test_cpu_context",
+	"Tests": {
+		"test_cpu_context": [
 			1,
 			1,
 			"cpu_context save/restore",
 			"MONITOR_TESTS_CPU_CONTEXT"
 		],
-		[
-			"test_soft_traps",
+		"test_irq_availability": [
+			1,
+			1,
+			"irq availability",
+			"MONITOR_TESTS_IRQ_AVAILABILITY"
+		],
+		"test_soft_traps": [
 			1,
 			1,
 			"soft traps",
 			"MONITOR_TESTS_SOFT_TRAPS"
 		]
-	]
+	}
 }
