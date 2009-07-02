@@ -9,5 +9,6 @@ SUBDIRS-$(MONITOR_USER_PING)     += ping
 SUBDIRS-$(MONITOR_USER_RUN)      += run
 SUBDIRS-$(MONITOR_USER_UDPD)     += udpd
 SUBDIRS-$(MONITOR_USER_WMEM)     += wmem
+SUBDIRS-$(MONITOR_USER_LS)       += ls
 
 include $(SRC_DIR)/common.mk

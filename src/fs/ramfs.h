@@ -7,6 +7,7 @@
 #ifndef RAMFS_H_
 #define RAMFS_H_
 
+#define MAX_LENCTH_FILE_NAME 0x10
 typedef struct _RAMFS_CREATE_PARAM {
     unsigned int start_addr;
     unsigned int size;

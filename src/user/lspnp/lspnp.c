@@ -18,11 +18,6 @@ static char available_keys[] = {
 	#include "lspnp_keys.inc"
 };
 
-#define AMBA_BT_AHBM  1
-#define AMBA_BT_AHBSL 2
-#define AMBA_BT_APB   3
-#define AMBA_BT_ALL   0
-
 //static int bus_type;
 
 static void show_help() {
@@ -30,6 +25,12 @@ static void show_help() {
 	#include "lspnp_help.inc"
 	);
 }
+
+
+#define AMBA_BT_AHBM  1
+#define AMBA_BT_AHBSL 2
+#define AMBA_BT_APB   3
+#define AMBA_BT_ALL   0
 
 //-------------Utils---------------------------------------------------
 

@@ -4,5 +4,5 @@
  * \author: anton
  */
 
-{ ramfs, &ramfs_fsop},
+{ "ramfs", &ramfs_fsop},
 
