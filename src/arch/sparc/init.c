@@ -10,19 +10,16 @@
 #include "leon.h"
 #include "memory_map.h"
 
-//LEON_REGS * const l_regs = (PVOID) (RG_BASE);
-
-
 void copy_data_section()
 {
-    extern char _data_image_start, _data_start, _data_end, _bstart, _bend;
+    extern char _endtext, _data_start, _data_end, _bstart, _bend;
 
-    char *src = &_data_image_start;
+    char *src = &_endtext;
 
     char *dst = &_data_start;
 
 
-    if (0x40000000 >= (unsigned int)&_data_image_start ){
+    if (0x40000000 >= (unsigned int)&_endtext ){
     /* ROM has data at end of text; copy it. */
     while (dst < &_data_end) {
         *dst++ = *src++;
