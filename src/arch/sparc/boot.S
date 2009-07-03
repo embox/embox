@@ -80,18 +80,33 @@ register_window_clean:
 	nop; nop; nop;
 
 
-! why 2 ???
-// why not? =) --Eldar
-	mov	2, %g1
+/*
+ * At the boot time we are in an arbitrary register window.
+ * Therefore we reset CWP field of PSR to zero
+ * and mark the _previous_ window as invalid (set WIM to 1 << 1).
+ * So it is possible to do (CORE_NWINDOWS - 1) SAVEs
+ * before the WOF trap will occure for the first time.
+ *
+ * WIM layout:
+ *
+ * <-- restore, rett                 trap, save -->
+ *  ----------------------------------------------
+ *  | win# | ... | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+ *  | bits |     |   |   |   |   |   |   | * |   |
+ *  ----------------------------------------------
+ *                                             ^-CWP
+ *
+ * --Eldar
+ */
+	set	(1 << 1), %g1
 	mov	%g1, %wim
 
 ! enable traps
 	mov  %psr, %g1
-	or %g1, PSR_ET, %g1     ! g1 = g1 | PSR_ET
-	mov %g1, %psr
-	nop;
-	nop;
-	nop;
+	or   %g1, PSR_ET, %g1     ! g1 = g1 | PSR_ET
+	andn %g1, PSR_CWP, %g1     ! g1 = g1 & ~PSR_CWP
+	mov  %g1, %psr
+	nop; nop; nop;
 
 	call	main
 	nop
