@@ -10,6 +10,7 @@
 
 #include "ramfs.h"
 
+
 typedef struct _FS_DESCRIPTION {
      const char * name;
     const FSOP_DESCRIPTION *fsop;
@@ -44,7 +45,7 @@ int rootfs_init(){
     rootfs_op.get_file_list_iterator = get_file_list_iterator;
     return 0;
 }
-
+#define FS_MAX_DISK_NAME_LENGTH 0x10
 //for parsing filename
 typedef struct _FILE_NAME_STRUCT{
     char fs_name[FS_MAX_DISK_NAME_LENGTH];//fs name (flash ramdisc and so on)
@@ -57,7 +58,7 @@ static FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT
         return NULL;
     }
 
-    for (i = 0; i < FS_MAX_DISK_NAME_LENGTH; i ++){
+    for (i = 0; i < array_len(file_name_struct->fs_name); i ++){
         if ('/' == file_name[i+1]){
             file_name_struct->fs_name[i] = 0;
             file_name_struct->file_name = (char *)&file_name[i+1];

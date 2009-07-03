@@ -185,13 +185,8 @@ static int get_descriptors_info(void *params){
     return 0;
 }
 
-FSOP_DESCRIPTION ramfsop = {init,
-    open_file,
-    get_file_list_iterator
-};
 
-/*
-FSOP_DESCRIPTION ramfs_fsop = {init,
+FSOP_DESCRIPTION ramfsop = {init,
     open_file,
     create_file,
     resize_file,
@@ -201,7 +196,7 @@ FSOP_DESCRIPTION ramfs_fsop = {init,
     get_descriptors_info,
     get_file_list_iterator
 };
-*/
+
 static void *fopen (const char *file_name, char *mode){
     TRACE("file %s was opened\n", file_name);
     return NULL;

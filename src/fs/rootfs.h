@@ -27,7 +27,7 @@ typedef void *(*FS_OPEN_FILE_FUNC) (const char *file_name, char *mode);
 typedef int (*FS_CREATE_FUNC) (void *params);
 typedef int (*FS_RESIZE_FUNC) (void *params);
 typedef int (*FS_DELETE_FUNC) (const char *file_name);
-typedef int (*FS_FGETCAPACITY_FUNC) (const char *file_name);
+typedef int (*FS_GETCAPACITY_FUNC) (const char *file_name);
 typedef int (*FS_GETFREESPACE_FUNC) (const char *file_name);
 typedef int (*FS_GETDESCRIPTORSINFO_FUNC) (void *params);
 typedef int (*FS_INIT_FUNC) (void);
@@ -36,21 +36,18 @@ typedef FS_FILE_ITERATOR (*FS_GETFILELISTITERATOR_FUNC) (void);
 typedef struct _FSOP_DESCRIPTION {
     FS_INIT_FUNC init;
     FS_OPEN_FILE_FUNC open_file;
-   // FS_FCREATE_FUNC create_file;
-    //FS_FRESIZE_FUNC resize_file;
-    //FS_FDELETE_FUNC delete_file;
- /*   FS_FGETCAPACITY_FUNC get_capacity;
-    //FS_FGETFREESPACE_FUNC get_freespace;
+    FS_CREATE_FUNC create_file;
+    FS_RESIZE_FUNC resize_file;
+    FS_DELETE_FUNC delete_file;
+    FS_GETCAPACITY_FUNC get_capacity;
+    FS_GETFREESPACE_FUNC get_freespace;
     FS_GETDESCRIPTORSINFO_FUNC get_descriptors_info;
-    */
     FS_GETFILELISTITERATOR_FUNC get_file_list_iterator;
-
 }FSOP_DESCRIPTION;
-#define FS_MAX_DISK_NAME_LENGTH 0x10
 
 
 int rootfs_init();
-
+FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name);
 
 
 #endif /* ROOTFS_H_ */
