@@ -67,8 +67,8 @@ SECTIONS
 
     *(.const)
     . = ALIGN (0x10);
-
-    _data_image_start = .;
+	_endtext = .;
+    /*_data_image_start = .;*/
   } > rom
 
   .data : AT (ADDR (.text) + SIZEOF (.text))
