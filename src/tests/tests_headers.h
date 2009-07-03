@@ -11,5 +11,6 @@
 #include "test_cpu_context.h"
 #include "test_irq_availability.h"
 #include "test_soft_traps.h"
+#include "test_checksum.h"
 
 #endif /* TESTS_HEADERS_H_ */

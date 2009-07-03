@@ -14,7 +14,7 @@ int test_soft_traps()
     unsigned int temp = test_soft_traps_variable;
     __asm__ __volatile__  ("ta %0\n\t"::"i" (TEST_SOFT_TRAP_NUMBER));
 
-    if (temp != (test_soft_traps_variable + 1)){
+    if (temp != (test_soft_traps_variable - 1)){
         TRACE("Incorrect software traps handling\n");
         return -1;
     }
