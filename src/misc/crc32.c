@@ -7,8 +7,7 @@
 
 #include "crc32.h"
 
-int check_crc32(unsigned char *addr, unsigned char *end_addr, unsigned long checksum)
-{
+unsigned long count_crc32(unsigned char *addr, unsigned char *end_addr) {
     unsigned long crc_table[256];
     unsigned long crc;
     int i, j;
@@ -24,10 +23,5 @@ int check_crc32(unsigned char *addr, unsigned char *end_addr, unsigned long chec
     while (addr < end_addr)
         crc = crc_table[(crc ^ *addr++) & 0xFF] ^ (crc >> 8);
 
-    if ((crc ^ 0xFFFFFFFFUL) != checksum) {
-    	return -1;
-    }
-    return 0;
-
-
+    return crc ^ 0xFFFFFFFFUL;
 }

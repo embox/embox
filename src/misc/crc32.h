@@ -8,6 +8,6 @@
 #ifndef CRC32_H_
 #define CRC32_H_
 
-int check_crc32(unsigned char *start_addr, unsigned char *end_addr, unsigned long checksum);
+unsigned long count_crc32(unsigned char *start_addr, unsigned char *end_addr);
 
 #endif
