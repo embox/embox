@@ -81,6 +81,7 @@ register_window_clean:
 
 
 ! why 2 ???
+// why not? =) --Eldar
 	mov	2, %g1
 	mov	%g1, %wim
 
