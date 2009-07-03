@@ -12,5 +12,6 @@
 #include "test_irq_availability.h"
 #include "test_soft_traps.h"
 #include "test_checksum.h"
+#include "test_mmu.h"
 
 #endif /* TESTS_HEADERS_H_ */
