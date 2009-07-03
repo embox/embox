@@ -4,3 +4,6 @@
 /obj
 /objs.lst
 scripts/link*
+
+*.pyc
+
