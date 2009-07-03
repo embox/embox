@@ -15,6 +15,7 @@ typedef struct _RAMFS_CREATE_PARAM {
     unsigned int mode;
 }RAMFS_CREATE_PARAM;
 
-extern FSOP_DESCRIPTION ramfs_fsop;
+extern FSOP_DESCRIPTION ramfsop;
+
 
 #endif /* RAMFS_H_ */

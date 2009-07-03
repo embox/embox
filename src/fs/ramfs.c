@@ -185,10 +185,11 @@ static int get_descriptors_info(void *params){
     return 0;
 }
 
-FSOP_DESCRIPTION ramfs_fsop = {init,
+FSOP_DESCRIPTION ramfsop = {init,
     open_file,
     get_file_list_iterator
 };
+
 /*
 FSOP_DESCRIPTION ramfs_fsop = {init,
     open_file,

@@ -48,10 +48,6 @@ typedef struct _FSOP_DESCRIPTION {
 }FSOP_DESCRIPTION;
 #define FS_MAX_DISK_NAME_LENGTH 0x10
 
-typedef struct _FS_DESCRIPTION {
-    unsigned char name[FS_MAX_DISK_NAME_LENGTH];
-    FSOP_DESCRIPTION *fsop;
-}FS_DESCRIPTION;
 
 int rootfs_init();
 
