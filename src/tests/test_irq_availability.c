@@ -9,6 +9,7 @@
 #include "common.h"
 #include "timers.h"
 #include "test_irq_availability.h"
+#include "express_tests.h"
 
 volatile static BOOL tick_happened;
 
@@ -31,3 +32,5 @@ int test_irq_availability() {
 	close_timer(id);
 	return -!tick_happened;
 }
+static EXPRESS_TEST_HANDLER exp_handler;
+REGISTER_EXPRESS_TEST(&exp_handler);

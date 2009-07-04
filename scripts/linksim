@@ -68,6 +68,10 @@ SECTIONS
     *(.const)
     . = ALIGN (0x10);
 	_endtext = .;
+		. = ALIGN(0x4);
+    __express_tests_start = . ;
+    *(.express_tests)
+     __express_tests_end = .;
     /*_data_image_start = .;*/
   } > rom
 

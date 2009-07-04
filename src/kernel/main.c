@@ -10,13 +10,18 @@
 #include "shell.h"
 
 int main() {
-	void* descriptor;
 
 	init();
 
-	while (NULL != (descriptor = (void *) express_test_get_next())) {
-		express_test_run(descriptor);
+//#ifdef EXPRESS_TEST_EXECUTE
+	if (0 != express_tests_execute()){
+	    printf ("express tests fault\n halt system\n");
+	    sys_halt();
+	    while (1)
+	         ;
 	}
+//#endif //EXPRESS_TEST_EXECUTE
+
 #ifndef SIMULATION_TRG
 	shell_start();
 #endif

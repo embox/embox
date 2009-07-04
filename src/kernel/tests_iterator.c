@@ -54,3 +54,14 @@ int express_test_run (void *handler) {
 	TRACE ("result ..... %s\n", result == 0 ? "OK" : "FAILED");
 	return result;
 }
+int express_tests_execute(){
+    void* descriptor;
+    while (NULL != (descriptor = (void *) express_test_get_next())) {
+            express_test_run(descriptor);
+        }
+    return 0;
+}
+
+int express_test_execute_new(){
+    extern char __express_tests_start, __express_tests_end;
+}
