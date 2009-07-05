@@ -174,24 +174,25 @@ class configure:
             			mdef = self.tabs[mod_name][item][driver][3]
 				content = replacer(mdef, inc, content)
 		#-- Target
+		arch = self.get_arch()
 		content = re.sub(self.tabs["Common"]["Target"][1] + '=(\w+)', \
 				 self.tabs["Common"]["Target"][1] + "=" + self.var["Common"]["Target"].get(), content)
 		#-- Compiler
-		content = re.sub( self.archs[self.get_arch()]["Compiler"][1] + '=(\w+(-\w+)?)', \
-				  self.archs[self.get_arch()]["Compiler"][1] + "=" + self.var['Arch']["Compiler"].get(), content)
+		content = re.sub( self.archs[arch]["Compiler"][1] + '=(\w+(-\w+)?)', \
+				  self.archs[arch]["Compiler"][1] + "=" + self.var['Arch']["Compiler"].get(), content)
 		#-- CFLAGS
-		content = re.sub( self.archs[self.get_arch()]["Cflags"][1] + '=([A-Za-z0-9_\-# ]+)', self.repl_cflag, content)
+		content = re.sub( self.archs[arch]["Cflags"][1] + '=([A-Za-z0-9_\-# ]+)', self.repl_cflag, content)
 		#-- LDFLAGS
-		content = re.sub( self.archs[self.get_arch()]["Ldflags"][1] + '=([A-Za-z0-9_\-# ]+)', \
-				  self.archs[self.get_arch()]["Ldflags"][1] + "=" + self.var['Arch']["Ldflags"].get(), content)
+		content = re.sub( self.archs[arch]["Ldflags"][1] + '=([A-Za-z0-9_\-# ]+)', \
+				  self.archs[arch]["Ldflags"][1] + "=" + self.var['Arch']["Ldflags"].get(), content)
 		#-- All targets
 		content = re.sub('ALL_TARGETS=([a-z ]+)', self.repl_all, content)
 		#-- Sign checksum, Disassemble
 		for item in ("Sign_bin", "Disassemble"):
 			content = replacer(self.tabs["Common"][item][1], self.var["Common"][item].get() == 1, content)
 		#-- Simulation, Debug, Release
-		for name in self.tabs[self.menu[5]].keys():
-			content = replacer(self.tabs[self.menu[5]][name][1], self.var["Build"][name].get() == 1, content)
+		for name in self.tabs["Build"].keys():
+			content = replacer(self.tabs["Build"][name][1], self.var["Build"][name].get() == 1, content)
 		#-- write autoconf
 		write_file(file, content)
 
@@ -242,12 +243,14 @@ class configure:
 	def restore_config(self):
 	        if not os.path.exists(".config"):
 	    		shutil.copyfile(".config.default", ".config")
+	    	if not os.path.exists("scripts/autoconf"):
+	    	       shutil.copyfile("scripts/autoconf.default", "scripts/autoconf")
 	    	if not self.config_cmp(".config", ".config.default"):
 	    		print ".config and .config.default have sharp distinction, maybe .config is out of date?"
 	    		shutil.copyfile(".config.default", ".config")
+	    		shutil.copyfile("scripts/autoconf.default", "scripts/autoconf")
 	    	self.read_config(".config")
 	        shutil.copyfile(".config", ".config.old")
-	        shutil.copyfile(self.files["autoconf"] + ".default", self.files["autoconf"])
 
 	def main(self):
 		if self.mode == "x":
