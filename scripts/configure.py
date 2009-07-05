@@ -228,10 +228,24 @@ class configure:
 		#-- write conf_h
 		write_file(self.files["conf_h"], content)
 
+	def config_cmp(self, fconf1, fconf2):
+		""" some verification """
+		config1, config2 = read_file(fconf1), read_file(fconf2)
+		json1, json2 = json.loads(config1), json.loads(config2)
+		if not json1.keys().sort() == json2.keys().sort():
+			return False
+		for item in self.menu:
+			if not json1[item].keys().sort() == json2[item].keys().sort():
+				return False
+		return True
+
 	def restore_config(self):
 	        if not os.path.exists(".config"):
 	    		shutil.copyfile(".config.default", ".config")
-	        self.read_config(".config")
+	    	if not self.config_cmp(".config", ".config.default"):
+	    		print ".config and .config.default have sharp distinction, maybe .config is out of date?"
+	    		shutil.copyfile(".config.default", ".config")
+	    	self.read_config(".config")
 	        shutil.copyfile(".config", ".config.old")
 	        shutil.copyfile(self.files["autoconf"] + ".default", self.files["autoconf"])
 

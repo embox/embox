@@ -199,14 +199,6 @@
 		"linkram",
 		"linksim"
 	],
-	"Menu": [
-		"Common",
-		"Drivers",
-		"Tests",
-		"Commands",
-		"Levels",
-		"Build"
-	],
 	"Tests": {
 		"test_cpu_context": [
 			1,
