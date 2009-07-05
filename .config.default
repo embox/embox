@@ -3,162 +3,179 @@
 	"Arch": {
 		"Arch_num": 0,
 		"sparc": {
-			"Cflags": [
-				"-Werror -msoft-float -c -MD -mv8 -O0 -g",
-				"CCFLAGS"
-			],
-			"Compiler": [
-				"sparc-linux",
-				"CC_PACKET"
-			],
-			"Ldflags": [
-				"-Wl -N -nostdlib -g",
-				"LDFLAGS"
-			],
+			"Cflags": {
+				"inc": "-Werror -msoft-float -c -MD -mv8 -O0 -g",
+				"mdef": "CCFLAGS"
+			},
+			"Compiler": {
+				"inc": "sparc-linux",
+				"mdef": "CC_PACKET"
+			},
+			"Ldflags": {
+				"inc": "-Wl -N -nostdlib -g",
+				"mdef": "LDFLAGS"
+			},
 			"mdef": "MONITOR_ARCH_SPARC",
 			"num": 0
 		}
 	},
 	"Build": {
-		"Debug": [
-			1,
-			"DEBUG_TRG",
-			"debug"
-		],
-		"Doxygen": [
-			0,
-			"DOXYGEN_TRG",
-			"docs"
-		],
-		"Release": [
-			1,
-			"RELEASE_TRG",
-			"release"
-		],
-		"Simulation": [
-			0,
-			"SIMULATION_TRG",
-			"simulation"
-		]
+		"Debug": {
+			"inc": 1,
+			"mdef": "DEBUG_TRG",
+			"desc": "debug"
+		},
+		"Doxygen": {
+			"inc": 0,
+			"mdef": "DOXYGEN_TRG",
+			"desc": "docs"
+		},
+		"Release": {
+			"inc": 1,
+			"mdef": "RELEASE_TRG",
+			"desc": "release"
+		},
+		"Simulation": {
+			"inc": 0,
+			"mdef": "SIMULATION_TRG",
+			"desc": "simulation"
+		}
 	},
 	"Commands": {
-		"arp": [
-			1,
-			1,
-			"arp table",
-			"MONITOR_USER_ARP"
-		],
-		"goto": [
-			1,
-			1,
-			"start execution from specified address",
-			"MONITOR_USER_GOTO"
-		],
-		"help": [
-			1,
-			1,
-			"display all possible commands",
-			"MONITOR_USER_HELP"
-		],
-		"ldimg": [
-			1,
-			1,
-			"copy text image from ROM into RAM",
-			"MONITOR_USER_LDIMG"
-		],
-		"lspnp": [
-			1,
-			1,
-			"show list of plug and play devices",
-			"MONITOR_USER_LSPNP"
-		],
-		"mem": [
-			1,
-			1,
-			"read from memory or test memory",
-			"MONITOR_USER_MEM"
-		],
-		"mmu_probe": [
-			1,
-			1,
-			"mmu_probe",
-			"MONITOR_USER_MMU_PROBE"
-		],
-		"ping": [
-			1,
-			1,
-			"test whether a particular host is reachable",
-			"MONITOR_USER_PING"
-		],
-		"udpd": [
-			1,
-			1,
-			"test udp socket",
-			"MONITOR_USER_UDPD"
-		],
-		"wmem": [
-			1,
-			1,
-			"write to memory",
-			"MONITOR_USER_WMEM"
-		]
+		"arp": {
+			"inc": 1,
+			"status": 1,
+			"desc": "arp table",
+			"mdef": "MONITOR_USER_ARP"
+		},
+		"goto": {
+			"inc": 1,
+			"status": 1,
+			"desc": "start execution from specified address",
+			"mdef": "MONITOR_USER_GOTO"
+		},
+		"help": {
+			"inc": 1,
+			"status": 1,
+			"desc": "display all possible commands",
+			"mdef": "MONITOR_USER_HELP"
+		},
+		"ldimg": {
+			"inc": 1,
+			"status": 1,
+			"desc": "copy text image from ROM into RAM",
+			"mdef": "MONITOR_USER_LDIMG"
+		},
+		"lspnp": {
+			"inc": 1,
+			"status": 1,
+			"desc": "show list of plug and play devices",
+			"mdef": "MONITOR_USER_LSPNP"
+		},
+		"mem": {
+			"inc": 1,
+			"status": 1,
+			"desc": "read from memory or test memory",
+			"mdef": "MONITOR_USER_MEM"
+		},
+		"mmu_probe": {
+			"inc": 1,
+			"status": 1,
+			"desc": "mmu_probe",
+			"mdef": "MONITOR_USER_MMU_PROBE"
+		},
+		"ping": {
+			"inc": 1,
+			"status": 1,
+			"desc": "test whether a particular host is reachable",
+			"mdef": "MONITOR_USER_PING"
+		},
+		"udpd": {
+			"inc": 1,
+			"status": 1,
+			"desc": "test udp socket",
+			"mdef": "MONITOR_USER_UDPD"
+		},
+		"wmem": {
+			"inc": 1,
+			"status": 1,
+			"desc": "write to memory",
+			"mdef": "MONITOR_USER_WMEM"
+		}
 	},
 	"Common": {
-		"Disassemble": [
-			0,
-			"DISASSEMBLE"
-		],
-		"Prompt": [
-			"monitor> ",
-			"PROMPT"
-		],
-		"Sign_bin": [
-			1,
-			"SIGN_CHECKSUM"
-		],
-		"Start_msg": [
-			"Welcome to Monitor shell and have a lot of fun...",
-			"START_MSG"
-		],
-		"Target": [
-			"monitor",
-			"TARGET"
-		]
+		"Disassemble": {
+			"inc": 0,
+			"desc": "Disassemble",
+			"mdef": "DISASSEMBLE"
+		},
+		"Prompt": {
+			"inc": "monitor> ",
+			"mdef": "PROMPT"
+		},
+		"Sign_bin": {
+			"inc": 1,
+			"desc": "Sign checksum",
+			"mdef": "SIGN_CHECKSUM"
+		},
+		"Start_msg": {
+			"inc": "Welcome to Monitor shell and have a lot of fun...",
+			"mdef": "START_MSG"
+		},
+		"Target": {
+			"inc": "monitor",
+			"mdef": "TARGET"
+		}
 	},
 	"Drivers": {
 		"common": {
-			"amba_pnp": [
-				1,
-				1,
-				"AMBA plug & play",
-				"MONITOR_DRIVERS_AMBA_PNP"
-			],
-			"gaisler": [
-				1,
-				1,
-				"gaisler amba devices",
-				"MONITOR_DRIVERS_GAISLER"
-			]
+			"amba_pnp": {
+				"inc": 1,
+				"status": 1,
+				"desc": "AMBA plug & play",
+				"mdef": "MONITOR_DRIVERS_AMBA_PNP",
+				"dep": [
+					""
+				]
+			},
+			"gaisler": {
+				"inc": 1,
+				"status": 1,
+				"desc": "gaisler amba devices",
+				"mdef": "MONITOR_DRIVERS_GAISLER",
+				"dep": [
+					""
+				]
+			}
 		},
 		"gaisler": {
-			"irq_ctrl": [
-				1,
-				1,
-				"interrupt unit",
-				"MONITOR_DRIVERS_GAISLER_IRQ_CTRL"
-			],
-			"timer": [
-				1,
-				1,
-				"timer",
-				"MONITOR_DRIVERS_GAISLER_TIMER"
-			],
-			"uart": [
-				1,
-				1,
-				"uart",
-				"MONITOR_DRIVERS_GAISLER_UART"
-			]
+			"irq_ctrl": {
+				"inc": 1,
+				"status": 1,
+				"desc": "interrupt unit",
+				"mdef": "MONITOR_DRIVERS_GAISLER_IRQ_CTRL",
+				"dep": [
+					"test_irq_availability"
+				]
+			},
+			"timer": {
+				"inc": 1,
+				"status": 1,
+				"desc": "timer",
+				"mdef": "MONITOR_DRIVERS_GAISLER_TIMER",
+				"dep": [
+					""
+				]
+			},
+			"uart": {
+				"inc": 1,
+				"status": 1,
+				"desc": "uart",
+				"mdef": "MONITOR_DRIVERS_GAISLER_UART",
+				"dep": [
+					""
+				]
+			}
 		}
 	},
 	"Files": {
@@ -169,30 +186,30 @@
 		"users_inc": "src/conio/users.inc"
 	},
 	"Levels": {
-		"Debug": [
-			0,
-			"_DEBUG"
-		],
-		"Error": [
-			1,
-			"_ERROR"
-		],
-		"Leon3": [
-			1,
-			"LEON3"
-		],
-		"Test_system": [
-			1,
-			"_TEST_SYSTEM_"
-		],
-		"Trace": [
-			1,
-			"_TRACE"
-		],
-		"Warn": [
-			0,
-			"_WARN"
-		]
+		"Debug": {
+			"inc": 0,
+			"mdef": "_DEBUG"
+		},
+		"Error": {
+			"inc": 1,
+			"mdef": "_ERROR"
+		},
+		"Leon3": {
+			"inc": 1,
+			"mdef": "LEON3"
+		},
+		"Test_system": {
+			"inc": 1,
+			"mdef": "_TEST_SYSTEM_"
+		},
+		"Trace": {
+			"inc": 1,
+			"mdef": "_TRACE"
+		},
+		"Warn": {
+			"inc": 0,
+			"mdef": "_WARN"
+		}
 	},
 	"Linkers": [
 		"linkrom",
@@ -200,55 +217,55 @@
 		"linksim"
 	],
 	"Tests": {
-		"test_cpu_context": [
-			1,
-			1,
-			"cpu_context save/restore",
-			"MONITOR_TESTS_CPU_CONTEXT"
-		],
-		"test_irq_availability": [
-			1,
-			1,
-			"irq availability",
-			"MONITOR_TESTS_IRQ_AVAILABILITY"
-		],
-		"test_soft_traps": [
-			1,
-			1,
-			"soft traps",
-			"MONITOR_TESTS_SOFT_TRAPS"
-		]
+		"test_cpu_context": {
+			"inc": 1,
+			"status": 1,
+			"desc": "cpu_context save/restore",
+			"mdef": "MONITOR_TESTS_CPU_CONTEXT"
+		},
+		"test_irq_availability": {
+			"inc": 1,
+			"status": 1,
+			"desc": "irq availability",
+			"mdef": "MONITOR_TESTS_IRQ_AVAILABILITY"
+		},
+		"test_soft_traps": {
+			"inc": 1,
+			"status": 1,
+			"desc": "soft traps",
+			"mdef": "MONITOR_TESTS_SOFT_TRAPS"
+		}
 	},
 	"Net": {
-		"udp": [
-			1,
-			1,
-			"udp proto",
-			"MONITOR_NET_UDP"
-		],
-		"tftp": [
-			1,
-			1,
-			"tftp proto",
-			"MONITOR_NET_TFTP"
-		],
-		"dhcp": [
-			1,
-			1,
-			"dhcp proto",
-			"MONITOR_NET_DHCP"
-		],
-		"icmp": [
-			1,
-			1,
-			"icmp proto",
-			"MONITOR_NET_ICMP"
-		],
-		"ipv4": [
-			1,
-			1,
-			"ipv4 proto",
-			"MONITOR_NET_IP_V4"
-		]
+		"udp": {
+			"inc": 1,
+			"status": 1,
+			"desc": "udp proto",
+			"mdef": "MONITOR_NET_UDP"
+		},
+		"tftp": {
+			"inc": 1,
+			"status": 1,
+			"desc": "tftp proto",
+			"mdef": "MONITOR_NET_TFTP"
+		},
+		"dhcp": {
+			"inc": 1,
+			"status": 1,
+			"desc": "dhcp proto",
+			"mdef": "MONITOR_NET_DHCP"
+		},
+		"icmp": {
+			"inc": 1,
+			"status": 1,
+			"desc": "icmp proto",
+			"mdef": "MONITOR_NET_ICMP"
+		},
+		"ipv4": {
+			"inc": 1,
+			"status": 1,
+			"desc": "ipv4 proto",
+			"mdef": "MONITOR_NET_IP_V4"
+		}
 	}
 }

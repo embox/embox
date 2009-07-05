@@ -9,7 +9,7 @@ import Tkinter
 from Tkinter import *
 from conf_tab import *
 from misc import *
-import tkSimpleDialog
+import tkSimpleDialog, re
 
 class configure_gui:
 	def __init__(self, conf_obj):
@@ -74,7 +74,7 @@ class configure_gui:
 	def change_arch(self):
 		for item in [ "Compiler", "Ldflags", "Cflags" ]:
 			arch = self.conf_obj.get_arch()
-			self.conf_obj.var['Arch'][item].set(self.conf_obj.archs[arch][item][0])
+		        self.conf_obj.var['Arch'][item].set(self.conf_obj.archs[arch][item]["inc"])
 
 	def show_common(self, text):
 		mod_name = "Common"
@@ -93,54 +93,69 @@ class configure_gui:
 		self.conf_obj.var['Arch']["Arch_num"].set(self.conf_obj.archs['Arch_num'])
 		#-- Compiler, Ldflags, Cflags subframes
 		for item in [ "Compiler", "Ldflags", "Cflags" ]:
-			Label(self.frame[mod_name], text=item, width=25, background="lightblue").grid(row = k, column=0)
-			self.conf_obj.var['Arch'][item] = StringVar()
-			Entry(self.frame[mod_name], width=25, textvariable=self.conf_obj.var['Arch'][item]).grid(row = 1 + k, column=0)
-			self.conf_obj.var['Arch'][item].set(self.conf_obj.archs[self.conf_obj.get_arch()][item][0])
-			k += 2
+		        Label(self.frame[mod_name], text=item, width=25, background="lightblue").grid(row = k, column=0)
+		    	self.conf_obj.var['Arch'][item] = StringVar()
+		        Entry(self.frame[mod_name], width=25, textvariable=self.conf_obj.var['Arch'][item]).grid(row = 1 + k, column=0)
+	    		self.conf_obj.var['Arch'][item].set(self.conf_obj.archs[self.conf_obj.get_arch()][item]["inc"])
+		        k += 2
 		#-- Prompt, Start_msg, Target subframes
 		for item in [ "Prompt", "Start_msg", "Target" ]:
-			Label(self.frame[mod_name], text=item, width=25, background="lightblue").grid(row = k, column=0)
-			self.conf_obj.var["Common"][item] = StringVar()
-			Entry(self.frame[mod_name], width=25, textvariable=self.conf_obj.var["Common"][item]).grid(row = 1 + k, column=0)
-			self.conf_obj.var["Common"][item].set(self.tabs[mod_name][item][0])
-			k += 2
+		        Label(self.frame[mod_name], text=item, width=25, background="lightblue").grid(row = k, column=0)
+		        self.conf_obj.var["Common"][item] = StringVar()
+		        Entry(self.frame[mod_name], width=25, textvariable=self.conf_obj.var["Common"][item]).grid(row = 1 + k, column=0)
+		        self.conf_obj.var["Common"][item].set(self.tabs[mod_name][item]["inc"])
+		        k += 2
 		#-- Sign checksum, Disassemble
-		for item, desc in [("Sign_bin", "Sign checksum"), ("Disassemble", "Disassemble")]:
+		for item in ["Sign_bin", "Disassemble"]:
 			self.conf_obj.var["Common"][item] = IntVar()
-			Checkbutton(self.frame[mod_name], text=desc, state=NORMAL, anchor=W, \
+			Checkbutton(self.frame[mod_name], text=self.tabs[mod_name][item]["desc"], state=NORMAL, anchor=W, \
 				variable = self.conf_obj.var["Common"][item]).grid(row=k, column=0, sticky=W)
-			self.conf_obj.var["Common"][item].set(self.tabs[mod_name][item][0])
+			self.conf_obj.var["Common"][item].set(self.tabs[mod_name][item]["inc"])
 			k += 1
+
+	def onPress_dep(self, ar, item, inc):
+		onPress(ar, item, inc)
+		for dep in ar[item]["dep"]:
+			if not dep == "":
+				if re.match("test_", dep) == None:
+					if self.tabs["Commands"][dep]["inc"] == 1:
+						onPress(self.tabs["Commands"], dep, "inc")
+						inc = self.tabs["Commands"][dep]["inc"]
+						getattr(self.conf_obj.var["Commands"], dep).set(inc)
+				else:
+					if self.tabs["Tests"][dep]["inc"] == 1:
+						onPress(self.tabs["Tests"], dep, "inc")
+						inc = self.tabs["Tests"][dep]["inc"]
+						getattr(self.conf_obj.var["Tests"], dep).set(inc)
 
 	def show_drivers(self, text):
 		mod_name = "Drivers"
-		Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
-		Label(self.frame[mod_name], text="Description", width=55, background="lightblue").grid(row=0, column=1)
-		self.conf_obj.var[mod_name] = IntVar()
-		row = 1
-		for item in self.tabs[mod_name].keys():
-			if item != "common":
-				Label(self.frame[mod_name], text=item, width=25, background="lightblue").grid(row=row, column=0)
-				row +=1
-			for driver in self.tabs[mod_name][item].keys():
-				inc = self.tabs[mod_name][item][driver][0]
-				status = self.tabs[mod_name][item][driver][1]
-				desc = self.tabs[mod_name][item][driver][2]
-				mdef = self.tabs[mod_name][item][driver][3]
-				setattr(self.conf_obj.var[mod_name], driver, IntVar())
-				Checkbutton(self.frame[mod_name], text=driver, state=getStatus(status), anchor=W, \
-					variable = getattr(self.conf_obj.var[mod_name], driver), \
-					command=(lambda item=item, driver=driver: \
-					onPress(self.tabs[mod_name][item], driver, 0))).grid(row=row, column=0, sticky=W)
-				getattr(self.conf_obj.var[mod_name], driver).set(inc)
-				Label(self.frame[mod_name], text=desc, state=getStatus(status), \
-					width=55, anchor=W).grid(row=row, column=1, sticky=W)
-				row += 1
-			if item != "common":
-				Label(self.frame[mod_name], text="---------------------------------------", \
-					width=25).grid(row=row, column=0)
-				row += 1
+	        Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
+	        Label(self.frame[mod_name], text="Description", width=55, background="lightblue").grid(row=0, column=1)
+	        self.conf_obj.var[mod_name] = IntVar()
+	        row = 1
+	        for item in self.tabs[mod_name].keys():
+	                if item != "common":
+	                        Label(self.frame[mod_name], text=item, width=25, background="lightblue").grid(row=row, column=0)
+	                        row +=1
+	                for driver in self.tabs[mod_name][item].keys():
+	            		inc = self.tabs[mod_name][item][driver]["inc"]
+	            		status = self.tabs[mod_name][item][driver]["status"]
+	            		desc = self.tabs[mod_name][item][driver]["desc"]
+	            		mdef = self.tabs[mod_name][item][driver]["mdef"]
+	                        setattr(self.conf_obj.var[mod_name], driver, IntVar())
+	                        Checkbutton(self.frame[mod_name], text=driver, state=getStatus(status), anchor=W, \
+	                    		variable = getattr(self.conf_obj.var[mod_name], driver), \
+	                        	command=(lambda item=item, driver=driver: \
+	                        	self.onPress_dep(self.tabs[mod_name][item], driver, "inc"))).grid(row=row, column=0, sticky=W)
+	                        getattr(self.conf_obj.var[mod_name], driver).set(inc)
+	                        Label(self.frame[mod_name], text=desc, state=getStatus(status), \
+	                    					width=55, anchor=W).grid(row=row, column=1, sticky=W)
+	                        row += 1
+	                if item != "common":
+	                        Label(self.frame[mod_name], text="---------------------------------------", \
+	                    							    width=25).grid(row=row, column=0)
+	                        row += 1
 
 	def show_table(self, mod_name, text):
 		Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
@@ -148,25 +163,25 @@ class configure_gui:
 		self.conf_obj.var[mod_name] = IntVar()
 		row = 1
 		for item in self.tabs[mod_name].keys():
-			inc = self.tabs[mod_name][item][0]
-			status = self.tabs[mod_name][item][1]
-			desc = self.tabs[mod_name][item][2]
+			inc = self.tabs[mod_name][item]["inc"]
+			status = self.tabs[mod_name][item]["status"]
+			desc = self.tabs[mod_name][item]["desc"]
 			setattr(self.conf_obj.var[mod_name], item, IntVar())
 			Checkbutton(self.frame[mod_name], text=item, state=getStatus(status), anchor=W, \
-				variable = getattr(self.conf_obj.var[mod_name], item), \
-				command=(lambda item_name=item: onPress(self.tabs[mod_name], \
-				item, 0))).grid(row=row, column=0, sticky=W)
+				    variable = getattr(self.conf_obj.var[mod_name], item), \
+				    command=(lambda item_name=item: onPress(self.tabs[mod_name], \
+							item, "inc"))).grid(row=row, column=0, sticky=W)
 			getattr(self.conf_obj.var[mod_name], item).set(inc)
 			Label(self.frame[mod_name], text=desc, state=getStatus(status), \
 				width=35, anchor=W).grid(row=row, column=1, sticky=W)
 			row += 1
 
 	def show_list(self, mod_name, text):
-		Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
-		Label(self.frame[mod_name], text="", width=35).grid(row=0, column=1)
-		for i in range( len(self.tabs[mod_name].keys()) ):
-			name = str(self.tabs[mod_name].keys()[i])
-			self.conf_obj.var[mod_name][name] = IntVar()
-			Checkbutton(self.frame[mod_name], text=self.tabs[mod_name].keys()[i], state=NORMAL, anchor=W, \
-				variable = self.conf_obj.var[mod_name][name]).grid(row=i+1, column=0, sticky=W)
-			self.conf_obj.var[mod_name][name].set(self.tabs[mod_name][name][0])
+	        Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
+	        Label(self.frame[mod_name], text="", width=35).grid(row=0, column=1)
+	        for i in range( len(self.tabs[mod_name].keys()) ):
+	                name = str(self.tabs[mod_name].keys()[i])
+	                self.conf_obj.var[mod_name][name] = IntVar()
+	                Checkbutton(self.frame[mod_name], text=self.tabs[mod_name].keys()[i], state=NORMAL, anchor=W, \
+	                                        variable = self.conf_obj.var[mod_name][name]).grid(row=i+1, column=0, sticky=W)
+	                self.conf_obj.var[mod_name][name].set(self.tabs[mod_name][name]["inc"])
