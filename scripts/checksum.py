@@ -78,13 +78,15 @@ if __name__=='__main__':
                 opts, args = getopt.getopt(sys.argv[1:], "ho:d:t:srbc", ["help", "objdump=", "bin_dir=", \
             						 "taget=", "sim", "release", "debug", "clean"])
             	obj = Checksum()
+            	run = "main"
                 for o, a in opts:
                         if o in ("-h", "--help"):
-                                print "Usage: checksum.py [-o <objdump>] [-d <bin_dir>] [-t <target>] [-h]\n"
-                                sys.exit()
-                        elif o in ("-o", "--objdump"):
-                                obj.objdump = a
-                        elif o in ("-d", "--bin_dir"):
+                                run = "help"
+                        elif o in ("-c", "--clean"):
+                    		run = "clean"
+                    	elif o in ("-o", "--objdump"):
+                        	obj.objdump = a
+                    	elif o in ("-d", "--bin_dir"):
                     		obj.bin_dir = a
                     	elif o in ("-t", "--target"):
                     		obj.target = a
@@ -92,13 +94,15 @@ if __name__=='__main__':
                     		obj.builds.append("sim")
                     	elif o in ("-r", "--release"):
                     		obj.builds.append("rom")
-                        elif o in ("-b", "--debug"):
+                    	elif o in ("-b", "--debug"):
                     		obj.builds.append("ram")
-                    	elif o in ("-c", "--clean"):
-                    		obj.rebuild_linker(True)
-                    		sys.exit()
-                        else:
-			        assert False, "unhandled option"
-		obj.main()
+                    	else:
+				assert False, "unhandled option"
+		if run == "clean":
+			obj.rebuild_linker(True)
+		elif run == "main":
+			obj.main()
+		elif run == "help":
+			print "Usage: checksum.py [-o <objdump>] [-d <bin_dir>] [-t <target>] [-h]\n"
 	except:
 	        traceback.print_exc()

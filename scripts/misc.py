@@ -4,15 +4,15 @@
 # date: 26.06.09
 # author: sikmir
 
-import re
+import re, codecs, string
 
 def write_file(name, content):
-	with open(name, 'w+') as file:
+	with codecs.open(name, 'w+', "utf-8") as file:
     		file.write(content)
         file.close()
 
 def read_file(name):
-        with open(name, 'r+') as file:
+        with codecs.open(name, 'r+', "utf-8") as file:
                 content = file.read()
         file.close()
 	return content

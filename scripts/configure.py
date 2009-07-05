@@ -265,13 +265,12 @@ if __name__=='__main__':
 		for o, a in opts:
 		        if o in ("-h", "--help"):
 		                print "Usage: configure.py [-m <mode>] [-h]\n"
-		                sys.exit()
 		        elif o in ("-m", "--mode"):
 		                mode = a
+		                obj = configure(mode)
+		                obj.restore_config()
+		                obj.main()
 		        else:
 		    		assert False, "unhandled option"
-		obj = configure(mode)
-		obj.restore_config()
-    		obj.main()
 	except:
     		traceback.print_exc()
