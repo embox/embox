@@ -68,6 +68,9 @@ SECTIONS
     . = ALIGN (0x10);
 	_endtext = .;
 
+    _piggy_start = .;
+    _piggy_end = .;
+
 	. = ALIGN(0x4);
     __express_tests_start = . ;
     *(.express_tests)
@@ -90,6 +93,6 @@ SECTIONS
      _bend = ALIGN(0x8);
   } > sdram
  /*   __stack = _bend + 0x100000; */
-    __checksum = 0x156B8F7C;
+    __checksum = 0x00000000;
  PROVIDE (__stack = _bend + 0x100000);
 }

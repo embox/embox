@@ -72,6 +72,9 @@ SECTIONS
      __express_tests_end = .;
     _endtext = .;
 
+    _piggy_start = .;
+    _piggy_end = .;
+
     /*_data_image_start = .;*/
   } > rom
 
@@ -89,6 +92,6 @@ SECTIONS
    _bend = ALIGN(0x8);
   } > sdram
     __stack = _bend + 0x100000;
-    __checksum = 0x4A311514;
+    __checksum = 0x00000000;
  PROVIDE (__stack = _bend + 0x100000);
 }

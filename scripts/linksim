@@ -72,6 +72,10 @@ SECTIONS
     __express_tests_start = . ;
     *(.express_tests)
      __express_tests_end = .;
+
+    _piggy_start = .;
+    _piggy_end = .;
+
     /*_data_image_start = .;*/
   } > rom
 

@@ -48,11 +48,23 @@
 			"arp table",
 			"MONITOR_USER_ARP"
 		],
+		"goto": [
+			1,
+			1,
+			"start execution from specified address",
+			"MONITOR_USER_GOTO"
+		],
 		"help": [
 			1,
 			1,
 			"display all possible commands",
 			"MONITOR_USER_HELP"
+		],
+		"ldimg": [
+			1,
+			1,
+			"copy text image from ROM into RAM",
+			"MONITOR_USER_LDIMG"
 		],
 		"lspnp": [
 			1,
@@ -77,12 +89,6 @@
 			1,
 			"test whether a particular host is reachable",
 			"MONITOR_USER_PING"
-		],
-		"run": [
-			1,
-			1,
-			"run image",
-			"MONITOR_USER_RUN"
 		],
 		"udpd": [
 			1,
