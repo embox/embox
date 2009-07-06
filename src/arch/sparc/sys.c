@@ -9,14 +9,12 @@
 #include "sys.h"
 
 void context_save(CPU_CONTEXT * pcontext) {
-	// TODO see disassembler output
 	__asm__ __volatile__(
 			"mov %0, %%o0\n\t"
 			"ta 5\n\t"
 			"nop\n\t"::
 			"r" (pcontext):
 			"%o0");
-
 }
 
 void context_restore(CPU_CONTEXT * pcontext) {
@@ -52,5 +50,8 @@ int sys_exec(EXEC_FUNC f, int argc, char **argv) {
 
 void sys_interrupt() {
 	//context_restore(&context);
+}
+void sys_halt(){
+    //todo must be trap
 }
 
