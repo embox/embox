@@ -127,18 +127,17 @@ class configure_gui:
 					if self.tabs["Commands"][dep]["inc"] == 1:
 						onPress(self.tabs["Commands"], dep, "inc")
 						inc = self.tabs["Commands"][dep]["inc"]
-						getattr(self.conf_obj.var["Commands"], dep).set(inc)
+						self.conf_obj.var["Commands"][dep].set(inc)
 				else:
 					if self.tabs["Tests"][dep]["inc"] == 1:
 						onPress(self.tabs["Tests"], dep, "inc")
 						inc = self.tabs["Tests"][dep]["inc"]
-						getattr(self.conf_obj.var["Tests"], dep).set(inc)
+						self.conf_obj.var["Tests"][dep].set(inc)
 
 	def show_drivers(self, text):
 		mod_name = "Drivers"
 	        Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
 	        Label(self.frame[mod_name], text="Description", width=55, background="lightblue").grid(row=0, column=1)
-	        self.conf_obj.var[mod_name] = IntVar()
 	        row = 1
 	        for item in self.tabs[mod_name].keys():
 	                if item != "common":
@@ -149,12 +148,12 @@ class configure_gui:
 	            		status = self.tabs[mod_name][item][driver]["status"]
 	            		desc = self.tabs[mod_name][item][driver]["desc"]
 	            		mdef = self.tabs[mod_name][item][driver]["mdef"]
-	                        setattr(self.conf_obj.var[mod_name], driver, IntVar())
+	                        self.conf_obj.var[mod_name][driver] = IntVar()
 	                        Checkbutton(self.frame[mod_name], text=driver, state=getStatus(status), anchor=W, \
-	                    		variable = getattr(self.conf_obj.var[mod_name], driver), \
+	                    		variable = self.conf_obj.var[mod_name][driver], \
 	                        	command=(lambda item=item, driver=driver: \
 	                        	self.onPress_dep(self.tabs[mod_name][item], driver, "inc"))).grid(row=row, column=0, sticky=W)
-	                        getattr(self.conf_obj.var[mod_name], driver).set(inc)
+	                        self.conf_obj.var[mod_name][driver].set(inc)
 	                        Label(self.frame[mod_name], text=desc, state=getStatus(status), \
 	                    					width=55, anchor=W).grid(row=row, column=1, sticky=W)
 	                        row += 1
@@ -166,18 +165,17 @@ class configure_gui:
 	def show_table(self, mod_name, text):
 		Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
 		Label(self.frame[mod_name], text="Description", width=35, background="lightblue").grid(row=0, column=1)
-		self.conf_obj.var[mod_name] = IntVar()
 		row = 1
 		for item in self.tabs[mod_name].keys():
 			inc = self.tabs[mod_name][item]["inc"]
 			status = self.tabs[mod_name][item]["status"]
 			desc = self.tabs[mod_name][item]["desc"]
-			setattr(self.conf_obj.var[mod_name], item, IntVar())
+			self.conf_obj.var[mod_name][item] = IntVar()
 			Checkbutton(self.frame[mod_name], text=item, state=getStatus(status), anchor=W, \
-				    variable = getattr(self.conf_obj.var[mod_name], item), \
-				    command=(lambda item_name=item: onPress(self.tabs[mod_name], \
+				    variable = self.conf_obj.var[mod_name][item], \
+				    command=(lambda item=item: onPress(self.tabs[mod_name], \
 							item, "inc"))).grid(row=row, column=0, sticky=W)
-			getattr(self.conf_obj.var[mod_name], item).set(inc)
+			self.conf_obj.var[mod_name][item].set(inc)
 			Label(self.frame[mod_name], text=desc, state=getStatus(status), \
 				width=35, anchor=W).grid(row=row, column=1, sticky=W)
 			row += 1

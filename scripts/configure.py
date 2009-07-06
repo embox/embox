@@ -17,7 +17,7 @@ class configure:
 		self.tabs = { "0" : 0 }
 		self.var = dict([('Common', { "0" : 0 }), ('Arch', { "0" : 0 }), \
 				 ('Levels', { "0" : 0 }), ('Build', { "0" : 0 }), \
-				 ('Commands', None ), ('Tests', None ), ('Drivers', None ), ('Net', None )])
+				 ('Commands', { "0" : 0 } ), ('Tests', { "0" : 0 } ), ('Drivers', { "0" : 0 } ), ('Net', { "0" : 0 } )])
 		self.linkers = None
 
 	def read_config(self, fileconf):
@@ -73,12 +73,12 @@ class configure:
     		for item in self.tabs[mod_name].keys():
     			for driver in self.tabs[mod_name][item].keys():
     				inc = self.tabs[mod_name][item][driver]["inc"]
-            			getattr(self.var[mod_name], driver).set(inc)
+            			self.var[mod_name][driver].set(inc)
     		#-- Tests, Users, Net
     		for mod_name in ("Tests", "Commands", "Net"):
     			for item in self.tabs[mod_name].keys():
     				inc = self.tabs[mod_name][item]["inc"]
-            			getattr(self.var[mod_name], item).set(inc)
+            			self.var[mod_name][item].set(inc)
 
 	def get_arch(self):
 		if self.var['Arch']["Arch_num"].get() == 0:
