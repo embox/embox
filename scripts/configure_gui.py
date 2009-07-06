@@ -101,17 +101,23 @@ class configure_gui:
 		#-- Prompt, Start_msg, Target subframes
 		for item in [ "Prompt", "Start_msg", "Target" ]:
 		        Label(self.frame[mod_name], text=item, width=25, background="lightblue").grid(row = k, column=0)
-		        self.conf_obj.var["Common"][item] = StringVar()
+		        self.conf_obj.var[mod_name][item] = StringVar()
 		        Entry(self.frame[mod_name], width=25, textvariable=self.conf_obj.var["Common"][item]).grid(row = 1 + k, column=0)
-		        self.conf_obj.var["Common"][item].set(self.tabs[mod_name][item]["inc"])
+		        self.conf_obj.var[mod_name][item].set(self.tabs[mod_name][item]["inc"])
 		        k += 2
 		#-- Sign checksum, Disassemble
 		for item in ["Sign_bin", "Disassemble"]:
-			self.conf_obj.var["Common"][item] = IntVar()
+			self.conf_obj.var[mod_name][item] = IntVar()
 			Checkbutton(self.frame[mod_name], text=self.tabs[mod_name][item]["desc"], state=NORMAL, anchor=W, \
-				variable = self.conf_obj.var["Common"][item]).grid(row=k, column=0, sticky=W)
-			self.conf_obj.var["Common"][item].set(self.tabs[mod_name][item]["inc"])
+				variable = self.conf_obj.var[mod_name][item]).grid(row=k, column=0, sticky=W)
+			self.conf_obj.var[mod_name][item].set(self.tabs[mod_name][item]["inc"])
 			k += 1
+		#-- Express tests
+		self.conf_obj.var[mod_name]["Express"] = IntVar()
+		Checkbutton(self.frame[mod_name], text=self.tabs[mod_name]["Express"]["desc"], state=NORMAL, anchor=W, \
+		                variable = self.conf_obj.var[mod_name]["Express"]).grid(row=1, column=1, sticky=W)
+		self.conf_obj.var[mod_name]["Express"].set(self.tabs[mod_name]["Express"]["inc"])
+
 
 	def onPress_dep(self, ar, item, inc):
 		onPress(ar, item, inc)
