@@ -3,7 +3,7 @@
 		"Arch_num": 0,
 		"sparc": {
 			"Cflags": {
-				"inc": "-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3",
+				"inc": "-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_",
 				"mdef": "CCFLAGS"
 			},
 			"Compiler": {
@@ -197,10 +197,6 @@
 		"Error": {
 			"inc": 1,
 			"mdef": "_ERROR"
-		},
-		"Test_system": {
-			"inc": 1,
-			"mdef": "_TEST_SYSTEM_"
 		},
 		"Trace": {
 			"inc": 1,

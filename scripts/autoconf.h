@@ -9,8 +9,6 @@
 #define MONITOR_ARCH 1
 #define MONITOR_ARCH_SPARC 1
 
-#define _TEST_SYSTEM_ 1
-
 /* Verbous levels */
 #define _ERROR 1
 #define _TRACE 1

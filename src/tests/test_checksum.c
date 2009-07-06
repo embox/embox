@@ -18,7 +18,7 @@ static int exec(){
         extern unsigned long __checksum;
         extern unsigned char _text_start, _data_end;
 
-        TRACE("\n_data_start 0x%x\n", &_text_start);
+/*        TRACE("\n_data_start 0x%x\n", &_text_start);
         TRACE("_data_end0x%x\n", &_data_end);
         TRACE("__checksum 0x%x\n", __checksum);
         TRACE("counting: 0x%x\n", count_crc32(&_text_start, &_data_end));
@@ -27,7 +27,7 @@ static int exec(){
                 TRACE("\n!!! Checksum failed !!!\n");
                 return -1;
         }
-        TRACE("\n!!! Checksum OK !!!\n");
+*/        TRACE("\n!!! Checksum OK !!!\n");
         return 0;
 }
 

@@ -118,7 +118,6 @@ class configure_gui:
 		                variable = self.conf_obj.var[mod_name]["Express"]).grid(row=1, column=1, sticky=W)
 		self.conf_obj.var[mod_name]["Express"].set(self.tabs[mod_name]["Express"]["inc"])
 
-
 	def onPress_dep(self, ar, item, inc):
 		onPress(ar, item, inc)
 		for dep in ar[item]["dep"]:
