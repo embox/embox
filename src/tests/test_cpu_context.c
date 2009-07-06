@@ -9,8 +9,14 @@
 #include "cpu_context.h"
 #include "sys.h"
 #include "test_cpu_context.h"
+#include "express_tests.h"
 
 static CPU_CONTEXT context;
+
+#define TEST_NAME "cpu context"
+static char *get_test_name(){
+	return TEST_NAME;
+}
 
 /**
  * in this trap function contex_save takes place
@@ -18,7 +24,7 @@ static CPU_CONTEXT context;
  * then call function context_restore
  * @return 0 if success
  */
-int test_cpu_context() {
+static int exec() {
     volatile static BOOL started;
 
     started = FALSE;
@@ -35,3 +41,6 @@ int test_cpu_context() {
     // we'll never reach this line
     return -1;
 }
+
+static EXPRESS_TEST_HANDLER exp_handler = {get_test_name, exec};
+REGISTER_EXPRESS_TEST(&exp_handler);

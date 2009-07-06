@@ -7,6 +7,6 @@
 #ifndef TEST_RAM_CHECKSUM_H_
 #define TEST_RAM_CHECKSUM_H_
 
-int test_checksum();
+//int test_checksum();
 
 #endif

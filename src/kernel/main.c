@@ -8,19 +8,20 @@
 #include "types.h"
 #include "amba_pnp.h"
 #include "shell.h"
+#include "common.h"
 
 int main() {
 
 	init();
 
-//#ifdef EXPRESS_TEST_EXECUTE
+#ifdef EXPRESS_TEST_EXECUTE
 	if (0 != express_tests_execute()){
 	    printf ("express tests fault\n halt system\n");
-	    sys_halt();
-	    while (1)
-	         ;
+//	    sys_halt();
+//	    while (1)
+//	         ;
 	}
-//#endif //EXPRESS_TEST_EXECUTE
+#endif //EXPRESS_TEST_EXECUTE
 
 #ifndef SIMULATION_TRG
 	shell_start();

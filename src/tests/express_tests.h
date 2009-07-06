@@ -7,12 +7,10 @@
 #ifndef EXPRESS_TESTS_H_
 #define EXPRESS_TESTS_H_
 
-
 typedef struct _EXPRESS_TEST_HANDLER{
     char *(*get_test_name)();
     int (*exec)();
 }EXPRESS_TEST_HANDLER;
-
 
 #define REGISTER_EXPRESS_TEST(handler) static void register_express_test(){ \
     __asm__( \
@@ -21,6 +19,5 @@ typedef struct _EXPRESS_TEST_HANDLER{
             ".text\n" \
             : :"i"(handler)); \
             }
-
 
 #endif /* EXPRESS_TESTS_H_ */

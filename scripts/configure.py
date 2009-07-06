@@ -142,9 +142,8 @@ class configure:
 
 	def repl_cflag(self, m):
 		repl = "CCFLAGS=" + self.var['Arch']["Cflags"].get()
-		for item in ("Leon3", "Test_system"):
-			if self.var["Levels"][item].get() == 1:
-				repl += " -D" + self.tabs["Levels"][item]["mdef"]
+		if self.var["Levels"]["Test_system"].get() == 1:
+			repl += " -D" + self.tabs["Levels"]["Test_system"]["mdef"]
 		return repl
 
 	def build_tests(self):

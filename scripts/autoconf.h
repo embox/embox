@@ -3,12 +3,12 @@
 
 #define START_MSG "\nWelcome to Monitor shell and have a lot of fun..."
 #define PROMPT "monitor> "
+#define EXPRESS_TEST_EXECUTE 1
 
 /* Arch */
 #define MONITOR_ARCH 1
 #define MONITOR_ARCH_SPARC 1
 
-#define LEON3 1
 #define _TEST_SYSTEM_ 1
 
 /* Verbous levels */

@@ -10,6 +10,6 @@
 #include "cpu_context.h"
 extern CPU_CONTEXT test_cpu_context_buff;
 
-int test_cpu_context ();
+//int test_cpu_context ();
 
 #endif /* TEST_CPU_CONTEXT_H_ */

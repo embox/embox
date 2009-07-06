@@ -57,8 +57,6 @@ debug: $(SUBDIRS-y)
 	@if [ $(DISASSEMBLE) == y ]; \
 	then \
 	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_ram > $(BIN_DIR)/$(TARGET)_ram.dis; \
-	else \
-	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_ram > /dev/null; \
 	fi;
 
 simulation: $(SUBDIRS-y)
@@ -70,8 +68,6 @@ simulation: $(SUBDIRS-y)
 	@if [ $(DISASSEMBLE) == y ]; \
 	then \
 	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_sim > $(BIN_DIR)/$(TARGET)_sim.dis; \
-	else \
-	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_sim > /dev/null; \
 	fi;
 	@$(OC_TOOL) -O srec $(BIN_DIR)/$(TARGET)_sim $(BIN_DIR)/prom.srec
 

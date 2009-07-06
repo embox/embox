@@ -1,16 +1,21 @@
-/*
- * test_soft_traps.c
+/**
+ * \file test_soft_traps.c
  *
- *  Created on: 26.06.2009
- *      Author: sunnya
+ * \date 26.06.2009
+ * \author sunnya
  */
 #include "common.h"
+#include "express_tests.h"
 
 unsigned int volatile test_soft_traps_variable;
 #define TEST_SOFT_TRAP_NUMBER 0x10 //trap 0x90
 
-int test_soft_traps()
-{
+#define TEST_NAME "soft traps"
+static char *get_test_name(){
+    return TEST_NAME;
+}
+
+static int exec() {
     unsigned int temp = test_soft_traps_variable;
     __asm__ __volatile__  ("ta %0\n\t"::"i" (TEST_SOFT_TRAP_NUMBER));
 
@@ -20,3 +25,6 @@ int test_soft_traps()
     }
     return 0;
 }
+
+static EXPRESS_TEST_HANDLER exp_handler = {get_test_name, exec};
+REGISTER_EXPRESS_TEST(&exp_handler);
