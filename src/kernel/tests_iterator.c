@@ -6,7 +6,10 @@
  */
 #include "types.h"
 #include "common.h"
+#include "express_tests.h"
+/*
 #include "tests_headers.h"
+
 
 typedef int (*EXPRESS_TEST_FUNC)(void);
 
@@ -61,7 +64,32 @@ int express_tests_execute(){
         }
     return 0;
 }
+*/
 
-int express_test_execute_new(){
+int express_tests_execute(){
+    int retval = 0;
     extern char __express_tests_start, __express_tests_end;
+    EXPRESS_TEST_HANDLER ** handler = (EXPRESS_TEST_HANDLER **)&__express_tests_start;
+    for(; (unsigned int)handler < (unsigned int)&__express_tests_end; handler ++){
+        if (NULL == (*handler)){
+            TRACE("Error: Wrong express test handler\n");
+            return -1;
+        }
+        if (NULL == ((*handler)->get_test_name)){
+            TRACE("Error: Wrong express test handler. Can't find get_test_name function\n");
+            return -1;
+        }
+        if (NULL == ((*handler)->exec)){
+            TRACE("Error: Wrong express test handler. Can't find exec function for test %s\n", (*handler)->get_test_name());
+            return -1;
+        }
+        TRACE("start test %s ... ", (*handler)->get_test_name());
+        if (-1 == (*handler)->exec()){
+            TRACE("FAILED\n");
+            retval = -1;
+            continue;
+        }
+        TRACE("OK\n");
+    }
+    return retval;
 }

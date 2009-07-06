@@ -9,8 +9,8 @@
 
 
 typedef struct _EXPRESS_TEST_HANDLER{
-    int test;
-    int test1;
+    char *(*get_test_name)();
+    int (*exec)();
 }EXPRESS_TEST_HANDLER;
 
 

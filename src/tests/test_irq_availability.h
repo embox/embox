@@ -8,6 +8,6 @@
 #ifndef TEST_AVAILABILITY_IRQ_H_
 #define TEST_AVAILABILITY_IRQ_H_
 
-int test_irq_availability();
+//int test_irq_availability();
 
 #endif /* TEST_AVAILABILITY_IRQ_H_ */
