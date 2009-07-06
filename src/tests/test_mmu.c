@@ -13,16 +13,11 @@
 
 int test_mmu() {
 
-//  ctxd_t *c0 = (ctxd_t *) &ctx;
-//  pgd_t *g0 = (pgd_t *) &pg0;
-//  pmd_t *m0 = (pmd_t *) &pm0;
-//  pte_t *p0 = (pte_t *) &pt0;
     unsigned long pteval;
     unsigned long j, i, val;
-//  unsigned long paddr, vaddr, val;
-//  unsigned long *pthaddr = &pth_addr1;
+
     functype func = mmu_func1;
-    //int i = 0;
+
     //alloc mem for pages
     __asm__(
             ".section .data\n\t"
@@ -40,18 +35,17 @@ int test_mmu() {
     mmu_probe_init();
     mmu_flush_cache_all ();
     mmu_flush_tlb_all ();
-    printf ("mmu_test start\n");
 
 
-//  /* one-on-one mapping for context 0 */
+    /* one-on-one mapping for context 0 */
     mmu_probe_map_region(0, 0, 0x1000000, MMU_PRIV);
-//    mmu_probe_map_region(0x20000000, 0x20000000, 0x1000000, MMU_PRIV);
+//  mmu_probe_map_region(0x20000000, 0x20000000, 0x1000000, MMU_PRIV);
     mmu_probe_map_region(0x40000000, 0x40000000, 0x1000000, MMU_PRIV);
     mmu_probe_map_region(0x80000000, 0x80000000, 0x1000000, MMU_PRIV);
 
  /* testarea:
  *  map 0x40000000  at f0080000 [vaddr:(0) (240)(2)(-)] as pmd
- *  map page0       at f0041000 [vaddr:(0) (240)(1)(1)] as page SRMMU_PRIV_RDONLY
+ *  map page0       at f0041000 [vaddr:(0) (240)(1)(1)] as page MMU_PRIV_RDONLY
  *  map mmu_func1() at f0042000 [vaddr:(0) (240)(1)(2)] as page
  *  map f0043000 - f007f000 [vaddr:(0) (240)(1)(3)] - [vaddr:(0) (240)(1)(63)] as page
  * page fault test:
@@ -71,51 +65,25 @@ int test_mmu() {
     ((unsigned long *)&page0)[0] = 0;
     ((unsigned long *)&page0)[1] = 0x12345678;
 
-//  //repair table
-// *((unsigned long **)&pth_addr) =  pthaddr;
-//  /* repair info for fault (0xf1000000)*/
-//  pthaddr[0] = (unsigned long) (g0+241);
-//  pthaddr[1] = ((0x40000000 >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
-//  pthaddr[2] = 0xf1000000;
-//  /* repair info for write protection fault (0xf0041000) */
-//  pthaddr[3] = (unsigned long) (p0+1);
-//  pthaddr[4] = ((((unsigned long)&page0) >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
-//  pthaddr[5] = 0xf0041000;
-//  /* repair info for instruction page fault (0xf0042000) */
-//  pthaddr[6] = (unsigned long) (p0+2);
-//  pthaddr[7] = ((((unsigned long)func) >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
-//  pthaddr[8] = 0xf0042000;
-//  /* repair info for priviledge protection fault (0xf0041000) */
-//  pthaddr[9] = (unsigned long) (p0+1);
-//  pthaddr[10] = ((((unsigned long)&page0) >> 4) | SRMMU_ET_PTE | SRMMU_EXEC | SRMMU_WRITE);
-//  pthaddr[11] = 0xf0041000;
-
-
-
   /* close your eyes and pray ... */
   mmu_probe_start();
 
   /* do tests*/
-//page translation tast page0 in 0xf0041000 addr 0x40000000 0xf0080000
+// ==page translation test== page0 in 0xf0041000 addr 0x40000000 0xf0080000
   if ( (*((unsigned long *)0xf0041000)) != 0 ||
        (*((unsigned long *)0xf0041004)) != 0x12345678 ) { MMU_RETURN(-1); }
 
   if ( (*((unsigned long *)0xf0080000)) != (*((unsigned long *)0x40000000))) { MMU_RETURN(-1); }
 
-  /* page faults tests*/
-  //  pthaddr[0] = (unsigned long) (g0+241);
-  //  pthaddr[1] = ((0x40000000 >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
-  //  pthaddr[2] = 0xf1000000;
+  /* ==page faults tests==*/
+
   val = * ((volatile unsigned long *)0xf1000000);
   /* write protection fault */
   //  /* repair info for write protection fault (0xf0041000) */
-  //  pthaddr[3] = (unsigned long) (p0+1);
-  //  pthaddr[4] = ((((unsigned long)&page0) >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
-  //  pthaddr[5] = 0xf0041000;
   * ((volatile unsigned long *)0xf0041004) = 0x87654321;
   if ( (*((volatile unsigned long *)0xf0041004)) != 0x87654321 ) { MMU_RETURN(-1); }
 
-  //test several page for modify flags
+  //==test several page for modify flags==
     for (j = 0xf0043000, i = 3; i < TLBNUM+3; i++, j += 0x1000) {
         *((unsigned long *) j) = j;
         if (*((unsigned long*) (((unsigned long) &page2) + (((i - 3) % 3)
@@ -125,17 +93,6 @@ int test_mmu() {
     }
     flush_data_cache();
 
-//  for (j = 0, i = 3; i < TLBNUM+3; i++) {
-//      pteval = (((((unsigned long) &page2) + (((i - 3) % 3) * PAGE_SIZE))
-//              >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
-//      if ((*(p0 + i)) & (SRMMU_DIRTY| SRMMU_REF))
-//          j++;
-//
-//      if (((*(p0 + i)) & ~(SRMMU_DIRTY| SRMMU_REF)) != (pteval
-//              & ~(SRMMU_DIRTY| SRMMU_REF))) {
-//          MMU_RETURN (FALSE);
-//      }
-//  }
     for (j = 0, i = 3; i < TLBNUM+3; i++) {
         unsigned int page_addr = (((unsigned long) &page2) + (((i - 3) % 3) * PAGE_SIZE));
         unsigned int page_desc = mmu_get_page_desc(page_addr);
@@ -156,32 +113,9 @@ int test_mmu() {
   }
 
 
-    /* instruction page fault */
+    /* ==instruction page fault== */
     func = (functype) 0xf0042000;
     func();
 
-//  /* flush */
-//  srmmu_flush_whole_tlb();
-//  for (j = 0, i = 3; i < TLBNUM+3; i++) {
-//      if ((*(p0 + i)) & (SRMMU_DIRTY| SRMMU_REF))
-//          j++;
-//  }
-//  if (j != TLBNUM) {
-//      MMU_RETURN (FALSE);
-//  }
-//
-//  /* check modified & ref bit */
-// if (!srmmu_pte_dirty(p0[1]) || !srmmu_pte_young(p0[1])) {
-//      MMU_RETURN (FALSE);
-//  }
-//
-//  if (!srmmu_pte_young(m0[2])) {
-//      MMU_RETURN (FALSE);
-//  }
-//  if (!srmmu_pte_young(p0[2])) {
-//      MMU_RETURN (FALSE);
-//  }
-
-    printf ("ending mmu testing\n");
     MMU_RETURN (0);
 }
