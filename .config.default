@@ -262,7 +262,7 @@
 		},
 		"test_irq_availability": {
 			"desc": "irq availability",
-			"inc": 1,
+			"inc": 0,
 			"mdef": "MONITOR_TESTS_IRQ_AVAILABILITY",
 			"status": 1
 		},
@@ -270,6 +270,18 @@
 			"desc": "soft traps",
 			"inc": 1,
 			"mdef": "MONITOR_TESTS_SOFT_TRAPS",
+			"status": 1
+		},
+		"test_mmu": {
+			"desc": "mmu",
+			"inc": 0,
+			"mdef": "MONITOR_TESTS_MMU",
+			"status": 1
+		},
+		"test_checksum": {
+			"desc": "crc16 checksum",
+			"inc": 0,
+			"mdef": "MONITOR_TESTS_CHECKSUM",
 			"status": 1
 		}
 	},
