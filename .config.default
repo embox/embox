@@ -22,21 +22,25 @@
 		"Debug": {
 			"desc": "debug",
 			"inc": 1,
+			"status": 1,
 			"mdef": "DEBUG_TRG"
 		},
 		"Doxygen": {
 			"desc": "docs",
 			"inc": 0,
+			"status": 1,
 			"mdef": "DOXYGEN_TRG"
 		},
 		"Release": {
 			"desc": "release",
 			"inc": 1,
+			"status": 1,
 			"mdef": "RELEASE_TRG"
 		},
 		"Simulation": {
 			"desc": "simulation",
 			"inc": 0,
+			"status": 1,
 			"mdef": "SIMULATION_TRG"
 		}
 	},
@@ -192,19 +196,27 @@
 	"Levels": {
 		"Debug": {
 			"inc": 0,
-			"mdef": "_DEBUG"
+			"mdef": "_DEBUG",
+			"status": 1,
+			"desc": ""
 		},
 		"Error": {
 			"inc": 1,
-			"mdef": "_ERROR"
+			"mdef": "_ERROR",
+			"status": 1,
+			"desc": ""
 		},
 		"Trace": {
 			"inc": 1,
-			"mdef": "_TRACE"
+			"mdef": "_TRACE",
+			"status": 1,
+			"desc": ""
 		},
 		"Warn": {
 			"inc": 0,
-			"mdef": "_WARN"
+			"mdef": "_WARN",
+			"status": 1,
+			"desc": ""
 		}
 	},
 	"Linkers": [

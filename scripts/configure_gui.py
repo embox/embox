@@ -161,11 +161,15 @@ class configure_gui:
 	                    							    width=25).grid(row=row, column=0)
 	                        row += 1
 
-	def show_table(self, mod_name, text):
+	def show_table(self, mod_name, text, column=2):
 		Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
-		Label(self.frame[mod_name], text="Description", width=35, background="lightblue").grid(row=0, column=1)
+		if column == 2:
+			desc_text = "Description"
+		else:
+			desc_text = ""
+		Label(self.frame[mod_name], text=desc_text, width=35, background="lightblue").grid(row=0, column=1)
 		row = 1
-		for item in self.tabs[mod_name].keys():
+		for item in sorted(self.tabs[mod_name].keys()):
 			inc = self.tabs[mod_name][item]["inc"]
 			status = self.tabs[mod_name][item]["status"]
 			desc = self.tabs[mod_name][item]["desc"]
@@ -175,16 +179,7 @@ class configure_gui:
 				    command=(lambda item=item: onPress(self.tabs[mod_name], \
 							item, "inc"))).grid(row=row, column=0, sticky=W)
 			self.conf_obj.var[mod_name][item].set(inc)
-			Label(self.frame[mod_name], text=desc, state=getStatus(status), \
-				width=35, anchor=W).grid(row=row, column=1, sticky=W)
+			if column == 2:
+				Label(self.frame[mod_name], text=desc, state=getStatus(status), \
+					width=35, anchor=W).grid(row=row, column=1, sticky=W)
 			row += 1
-
-	def show_list(self, mod_name, text):
-	        Label(self.frame[mod_name], text=text, width=25, background="lightblue").grid(row=0, column=0)
-	        Label(self.frame[mod_name], text="", width=35).grid(row=0, column=1)
-	        for i in range( len(self.tabs[mod_name].keys()) ):
-	                name = str(self.tabs[mod_name].keys()[i])
-	                self.conf_obj.var[mod_name][name] = IntVar()
-	                Checkbutton(self.frame[mod_name], text=self.tabs[mod_name].keys()[i], state=NORMAL, anchor=W, \
-	                                        variable = self.conf_obj.var[mod_name][name]).grid(row=i+1, column=0, sticky=W)
-	                self.conf_obj.var[mod_name][name].set(self.tabs[mod_name][name]["inc"])
