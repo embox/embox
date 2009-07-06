@@ -7,7 +7,7 @@
 				"mdef": "CCFLAGS"
 			},
 			"Compiler": {
-				"inc": "sparc-linux",
+				"inc": "sparc-elf",
 				"mdef": "CC_PACKET"
 			},
 			"Ldflags": {
@@ -124,11 +124,6 @@
 		"Target": {
 			"inc": "monitor",
 			"mdef": "TARGET"
-		},
-		"Express": {
-			"inc": 1,
-			"desc": "Express tests",
-			"mdef": "EXPRESS_TESTS"
 		}
 	},
 	"Drivers": {
