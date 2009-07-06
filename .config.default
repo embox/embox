@@ -124,6 +124,11 @@
 		"Target": {
 			"inc": "monitor",
 			"mdef": "TARGET"
+		},
+		"Express": {
+			"inc": 1,
+			"desc": "Express tests",
+			"mdef": "EXPRESS_TEST_EXECUTE"
 		}
 	},
 	"Drivers": {
