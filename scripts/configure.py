@@ -17,7 +17,8 @@ class configure:
 		self.tabs = { "0" : 0 }
 		self.var = dict([('Common', { "0" : 0 }), ('Arch', { "0" : 0 }), \
 				 ('Levels', { "0" : 0 }), ('Build', { "0" : 0 }), \
-				 ('Commands', { "0" : 0 } ), ('Tests', { "0" : 0 } ), ('Drivers', { "0" : 0 } ), ('Net', { "0" : 0 } )])
+				 ('Commands', { "0" : 0 } ), ('Tests', { "0" : 0 } ), \
+				 ('Drivers', { "0" : 0 } ), ('Net', { "0" : 0 } )])
 		self.linkers = None
 
 	def read_config(self, fileconf):
@@ -188,7 +189,7 @@ class configure:
 		#-- All targets
 		content = re.sub('ALL_TARGETS=([a-z ]+)', self.repl_all, content)
 		#-- Sign checksum, Disassemble
-		for item in ("Sign_bin", "Disassemble"):
+		for item in ("Sign_bin", "Disassemble", "Express"):
 			content = replacer(self.tabs["Common"][item]["mdef"], self.var["Common"][item].get() == 1, content)
 		#-- Simulation, Debug, Release
 		for name in self.tabs["Build"].keys():
@@ -205,6 +206,7 @@ class configure:
 			content = replacer_h(self.archs[ar]['mdef'], self.archs[ar]["num"] == self.var['Arch']["Arch_num"].get(), content)
 		content = re.sub('#define PROMPT "([a-zA-Z0-9._ ->#@<]+)"', '#define PROMPT "%s"' % \
 								    self.var["Common"]["Prompt"].get(), content)
+		content = replacer_h(self.tabs["Common"]["Express"]["mdef"], self.var["Common"]["Express"].get() == 1, content)
 #		content = re.sub('#define START_MSG "([\\a-zA-Z0-9._ ->]+)"', "#define START_MSG \"\\n%s\"" % var["Common"]["Start_msg"].get(), content)
     		#-- Simulation, Debug, Release
     		mod_name = "Build"

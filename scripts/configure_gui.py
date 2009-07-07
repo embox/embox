@@ -115,8 +115,14 @@ class configure_gui:
 		#-- Express tests
 		self.conf_obj.var[mod_name]["Express"] = IntVar()
 		Checkbutton(self.frame[mod_name], text=self.tabs[mod_name]["Express"]["desc"], state=NORMAL, anchor=W, \
-		                variable = self.conf_obj.var[mod_name]["Express"]).grid(row=1, column=1, sticky=W)
+		                variable = self.conf_obj.var[mod_name]["Express"], \
+		                command=(lambda: self.onPress_tests())).grid(row=1, column=1, sticky=W)
 		self.conf_obj.var[mod_name]["Express"].set(self.tabs[mod_name]["Express"]["inc"])
+
+	def onPress_tests(self):
+		for test in self.tabs["Tests"]:
+			inc = self.conf_obj.var["Common"]["Express"].get()
+			self.conf_obj.var["Tests"][test].set(inc)
 
 	def onPress_dep(self, ar, item, inc):
 		onPress(ar, item, inc)
