@@ -7,7 +7,7 @@
 #include "common.h"
 #include "express_tests.h"
 
-unsigned int volatile test_soft_traps_variable;
+extern unsigned int volatile test_soft_traps_variable;
 #define TEST_SOFT_TRAP_NUMBER 0x10 //trap 0x90
 
 #define TEST_NAME "soft traps"

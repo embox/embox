@@ -1,4 +1,7 @@
 
+	.section ".data"
+	.global test_soft_traps_variable
+	.common test_soft_traps_variable, 4, 4
 	.section    ".text"
 	.align  4
 

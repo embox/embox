@@ -77,9 +77,10 @@ int init() {
 #endif
     TRACE("start...\n");
 #ifndef SIMULATION_TRG
-    eth_init();//interfaces
-    icmp_init();
-    udp_init();
 #endif /* SIMULATION_TRG */
+
+#ifdef MONITOR_FS
+    rootfs_init();
+#endif //MONITOR_FS
     return 0;
 }
