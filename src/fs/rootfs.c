@@ -25,7 +25,7 @@ FS_DESCRIPTION const fs_list[] = {
 
 static file_list_cnt;
 static FILE_INFO * file_list_iterator(FILE_INFO *finfo){
-    if (NUMBER_OF_FS  >= file_list_cnt)
+    if (NUMBER_OF_FS  <= file_list_cnt)
         return NULL;
     strncpy (finfo->file_name, fs_list[file_list_cnt].name, array_len(finfo->file_name));
     finfo->mode = FILE_MODE_RO;
@@ -40,9 +40,17 @@ static FS_FILE_ITERATOR get_file_list_iterator(){
     return file_list_iterator;
 }
 
-static FSOP_DESCRIPTION rootfs_op;
+static FSOP_DESCRIPTION rootfs_op = { get_file_list_iterator : get_file_list_iterator};
 int rootfs_init(){
-    rootfs_op.get_file_list_iterator = get_file_list_iterator;
+    int i;
+    for (i = 0; i < NUMBER_OF_FS; i++){
+        if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)){
+            TRACE("Error: during init fs fs with id has wrong operations desc\n");
+            continue;
+        }
+        fs_list[i].fsop ->init();
+    }
+
     return 0;
 }
 #define FS_MAX_DISK_NAME_LENGTH 0x10
@@ -75,7 +83,7 @@ FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name){
         return &rootfs_op;
     }
     for (i = 0; i < NUMBER_OF_FS; i++){
-        if (0 == strncmp(fs_list[i].name, fs_name, array_len(fs_list[i].name))){
+        if (0 == strncmp(fs_list[i].name, fs_name + 1, array_len(fs_list[i].name))){
             return (FSOP_DESCRIPTION *)fs_list[i].fsop;
         }
     }

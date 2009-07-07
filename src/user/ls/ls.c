@@ -50,6 +50,9 @@ int ls_shell_handler(int argsc, char **argsv) {
         printf ("Error: can't find fs %s\n", path);
         return 0;
     }
+    if (NULL == fsop->get_file_list_iterator){
+        printf ("Error: wrong fs desc %s\n", path);
+    }
     if (NULL == (iter_func = fsop->get_file_list_iterator())){
         printf ("Error: can't find iterator func for fs %s\n", path);
         return 0;

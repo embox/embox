@@ -52,16 +52,18 @@ static int file_handler_cnt;
 
 static file_list_cnt;
 static FILE_INFO * file_list_iterator(FILE_INFO *finfo){
-    if (FILE_DESC_QUANTITY  >= file_list_cnt)
+    if (FILE_DESC_QUANTITY  <= file_list_cnt)
         return NULL;
-    while (!fdesc[file_list_cnt ++].is_busy){
-        if (FILE_DESC_QUANTITY  >= file_list_cnt)
+    while (!fdesc[file_list_cnt].is_busy){
+        if (FILE_DESC_QUANTITY  <= file_list_cnt)
             return NULL;
+        file_list_cnt ++;
     }
     strncpy (finfo->file_name, fdesc[file_list_cnt].name, array_len(finfo->file_name) );
-    finfo->mode = FILE_MODE_RO;
-    finfo->size_in_bytes = 0;
+    finfo->mode = fdesc[file_list_cnt].mode;
+    finfo->size_in_bytes = fdesc[file_list_cnt].size;
     finfo->size_on_disk = 0;
+    file_list_cnt ++;
     return finfo;
 }
 
@@ -72,7 +74,7 @@ static FS_FILE_ITERATOR get_file_list_iterator(){
 
 static FILE_DESC * find_free_desc(){
     int i;
-    if (FILE_DESC_QUANTITY >= file_desc_cnt)
+    if (FILE_DESC_QUANTITY <= file_desc_cnt)
         return NULL;
 
     for (i = 0; i < FILE_DESC_QUANTITY; i ++){
@@ -112,12 +114,12 @@ static int init(){
     RAMFS_CREATE_PARAM param;
 
     //create file section_text
-    strcpy(param.name, "section_text");
+    strncpy(param.name, "section_text", array_len(param.name));
     param.size = (unsigned int )(&_endtext - &_text_start);
     param.start_addr = (unsigned int )(&_text_start);
     create_file(&param);//text
     //create file section_data
-    strcpy(param.name, "section_data");
+    strncpy(param.name, "section_data", array_len(param.name));
     param.size = (unsigned int )(&_data_end - &_data_start);
     param.start_addr = (unsigned int )(&_data_start);
     create_file(&param);//ram
@@ -158,6 +160,7 @@ static int create_file(void *params){
     fd->start_addr = par->start_addr;
     fd->size = par->size;
     fd->mode = par->mode;
+    fd->is_busy = 1;
     return 0;
 }
 
