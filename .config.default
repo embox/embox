@@ -4,15 +4,18 @@
 		"sparc": {
 			"Cflags": {
 				"inc": "-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_",
-				"mdef": "CCFLAGS"
+				"mdef": "CCFLAGS",
+				"re": "([A-Za-z0-9_\\-# ]+)"
 			},
 			"Compiler": {
 				"inc": "sparc-elf",
-				"mdef": "CC_PACKET"
+				"mdef": "CC_PACKET",
+				"re": "(\\w+(-\\w+)?)"
 			},
 			"Ldflags": {
 				"inc": "-Wl -N -nostdlib -g",
-				"mdef": "LDFLAGS"
+				"mdef": "LDFLAGS",
+				"re": "([A-Za-z0-9_\\-# ]+)"
 			},
 			"mdef": "MONITOR_ARCH_SPARC",
 			"num": 0
@@ -114,7 +117,8 @@
 		},
 		"Prompt": {
 			"inc": "monitor> ",
-			"mdef": "PROMPT"
+			"mdef": "PROMPT",
+			"re": "([a-zA-Z0-9._ ->#@<]+)"
 		},
 		"Sign_bin": {
 			"desc": "Sign checksum",
@@ -123,67 +127,61 @@
 		},
 		"Start_msg": {
 			"inc": "Welcome to Monitor shell and have a lot of fun...",
-			"mdef": "START_MSG"
+			"mdef": "START_MSG",
+			"re": "([\\a-zA-Z0-9._ ->]+)"
 		},
 		"Target": {
 			"inc": "monitor",
-			"mdef": "TARGET"
+			"mdef": "TARGET",
+			"re": "(\\w+)"
 		},
-		"Express": {
+		"Tests": {
 			"inc": 1,
 			"desc": "Express tests",
-			"mdef": "EXPRESS_TEST_EXECUTE"
+			"mdef": "MONITOR_TESTS_EXEC"
+		},
+		"Net": {
+			"inc": 1,
+			"desc": "Network",
+			"mdef": "MONITOR_NET"
 		}
 	},
 	"Drivers": {
-		"common": {
-			"amba_pnp": {
-				"dep": [
-					""
-				],
-				"desc": "AMBA plug & play",
-				"inc": 1,
-				"mdef": "MONITOR_DRIVERS_AMBA_PNP",
-				"status": 1
-			},
-			"gaisler": {
-				"dep": [
-					""
-				],
-				"desc": "gaisler amba devices",
-				"inc": 1,
-				"mdef": "MONITOR_DRIVERS_GAISLER",
-				"status": 1
-			}
+		"amba_pnp": {
+			"dep": [
+				""
+			],
+			"desc": "AMBA plug & play",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVERS_AMBA_PNP",
+			"status": 1
 		},
-		"gaisler": {
-			"irq_ctrl": {
-				"dep": [
-					"test_irq_availability"
-				],
-				"desc": "interrupt unit",
-				"inc": 1,
-				"mdef": "MONITOR_DRIVERS_GAISLER_IRQ_CTRL",
-				"status": 1
-			},
-			"timer": {
-				"dep": [
-					""
-				],
-				"desc": "timer",
-				"inc": 1,
-				"mdef": "MONITOR_DRIVERS_GAISLER_TIMER",
-				"status": 1
-			},
-			"uart": {
-				"dep": [
-					""
-				],
-				"desc": "uart",
-				"inc": 1,
-				"mdef": "MONITOR_DRIVERS_GAISLER_UART",
-				"status": 1
-			}
+		"irq_ctrl": {
+			"dep": [
+				"test_irq_availability"
+			],
+			"desc": "interrupt unit",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVERS_GAISLER_IRQ_CTRL",
+			"status": 1
+		},
+		"timer": {
+			"dep": [
+				""
+			],
+			"desc": "timer",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVERS_GAISLER_TIMER",
+			"status": 1
+		},
+		"uart": {
+			"dep": [
+				""
+			],
+			"desc": "uart",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVERS_GAISLER_UART",
+			"status": 1
 		}
 	},
 	"Files": {
@@ -223,15 +221,6 @@
 		"linkrom",
 		"linkram",
 		"linksim"
-	],
-	"Menu": [
-		"Common",
-		"Drivers",
-		"Tests",
-		"Commands",
-		"Levels",
-		"Build",
-		"Net"
 	],
 	"Net": {
 		"dhcp": {

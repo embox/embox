@@ -3,7 +3,6 @@
 
 #define START_MSG "\nWelcome to Monitor shell and have a lot of fun..."
 #define PROMPT "monitor> "
-#define EXPRESS_TEST_EXECUTE 1
 
 /* Arch */
 #define MONITOR_ARCH 1
@@ -45,7 +44,7 @@
 #define MONITOR_NET_UDP 1
 
 /* Tests */
-#define MONITOR_TESTS 1
+#define MONITOR_TESTS_EXEC 1
 #define MONITOR_TESTS_CPU_CONTEXT 1
 #undef MONITOR_TESTS_IRQ_AVAILABILITY
 #define MONITOR_TESTS_SOFT_TRAPS 1

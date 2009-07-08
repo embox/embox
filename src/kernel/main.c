@@ -14,14 +14,14 @@ int main() {
 
 	init();
 
-#ifdef EXPRESS_TEST_EXECUTE
+#ifdef MONITOR_TESTS_EXEC
 	if (0 != express_tests_execute()){
 	    printf ("express tests fault\n halt system\n");
 	    sys_halt();
 	    while (1)
 	         ;
 	}
-#endif //EXPRESS_TEST_EXECUTE
+#endif //MONITOR_TESTS_EXEC
 
 #ifndef SIMULATION_TRG
 	shell_start();
