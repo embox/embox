@@ -107,7 +107,7 @@ int uart_remove_irq_handler(IRQ_HANDLER pfunc) {
 	CHECK_INIT_MODULE();
 
 	dev_regs->ctrl &= ~UART_INT_RX_ENABLED ;
-	irq_remove_handler(irq);
+	irq_set_handler(irq, NULL);
 	return 0;
 }
 

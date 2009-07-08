@@ -49,12 +49,6 @@ halt_trap:
 /* trap frame size */
 #define TRAPFRAME_SZ (STACKFRAME_SZ + TRAP_CONTEXT_SZ)
 
-/* check whether WIM[CWP] == 1 or not */
-#define CWP_WIM_TEST(t_psr, t_wim, scratch) \
-	and %t_psr, PSR_CWP, %scratch; \
-	srl %t_wim, %scratch, %scratch;\
-	andcc %scratch, 0x1, %g0;
-
 #define t_sp t2
 
 /*
@@ -82,7 +76,6 @@ interrupting_trap:
 	 */
 
 	add %fp, -SA(TRAPFRAME_SZ), %t_sp
-	// leave a space for STACKFRAME structure
 	STORE_PT_ALL(t_sp, t_psr, t_pc, t_npc, t0)
 
 	/*
@@ -93,7 +86,7 @@ interrupting_trap:
 	 */
 
 	/* test CWP for possible window overflow occurred when entering trap */
-	CWP_WIM_TEST(t_psr, t_wim, t0)
+	PSR_CWP_WIM_TEST(t_psr, t_wim, t0)
 
 	bz trap_wof_test_ok
 	 nop/*
@@ -107,7 +100,7 @@ interrupting_trap:
 
 		save	// Get into the window to be saved
 
-		mov	%g1, %wim
+		mov %g1, %wim
 		 // do not wait for delayed write
 
 		STORE_WINDOW(sp, 0)
@@ -126,19 +119,15 @@ interrupting_trap:
 	srl %o0, 4, %o0
 
 		// enable traps
-		mov %psr, %g1
-		or  %g1, PSR_ET, %g1
-		mov %g1, %psr
-		 nop; nop; nop	// WRPSR delayed write
+		set PSR_ET, %g1
+		PSR_BIT_SET(g1, t0)
 
 			call	dispatch_trap
 			 nop
 
 		// disable traps
-		mov %psr, %g1
-		andn  %g1, PSR_ET, %g1
-		mov %g1, %psr
-		 // do not wait for delayed write
+		set PSR_ET, %g1
+		PSR_BIT_CLEAR(g1, t0)
 
 	/*
 	 * We do not need trap-time WIM initial value anymore.
@@ -149,7 +138,8 @@ interrupting_trap:
 
 	/* test CWP for possible window underflow when executing RETT */
 	WIM_SHIFT_RIGHT(t_wim, g2, t0)
-	CWP_WIM_TEST(g1, g2, t0)	// PSR is in %g1
+	mov %psr, %g1
+	PSR_CWP_WIM_TEST(g1, g2, t0)	// PSR is in %g1
 
 	bz trap_wuf_test_ok
 	 nop/*
@@ -183,13 +173,8 @@ interrupting_trap:
 	 */
 
     /* restore PIL&ICC fields of old PSR */
-	mov %psr, %t0
-	set PSR_PIL || PSR_ICC, %t1
-	andn %t0, %t1, %t0
-	and %t_psr, %t1, %t1
-	or  %t0, %t1, %t0
-	mov %t0, %psr
-	 nop; nop; nop	// wait for PSR delayed-write
+	set (PSR_PIL | PSR_ICC), %t0
+	PSR_BIT_COPY(t_psr, t0, t1, t2)
 
 	/* tata! */
 	jmp %t_pc

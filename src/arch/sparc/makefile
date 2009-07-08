@@ -10,6 +10,5 @@ OBJS-y:= leon_irq.o \
          cpu_context_traps.o \
          srmmu_probe.o \
       	 soft_trap_test.o
-#         test_save_restore_traps.o \
 
 include $(SRC_DIR)/common.mk

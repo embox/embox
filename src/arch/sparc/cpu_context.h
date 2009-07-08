@@ -44,13 +44,6 @@ typedef struct _CPU_CONTEXT {
 /* return address */
 #define l_retpc l7
 
-/* l0 for t_psr compatibility */
-#define l_psr   t_psr
-/* l1 for t_pc compatibility */
-#define l_pc    t_pc
-/* l2 for t_npc compatibility */
-#define l_npc   t_npc
-
 /* compute sizes by hand (see above) */
 #define CPU_CONTEXT_SZ (4 * 8 + REG_WINDOW_SZ * CORE_NWINDOWS)
 

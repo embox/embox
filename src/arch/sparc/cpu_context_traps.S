@@ -19,41 +19,45 @@
 cpu_context_save_trap:
 
 	/*
-	 * PSR, PC and nPC are implicitly passed
-	 * through l_psr, l_pc and l_npc registers respectively.
+	 * PSR, PC and nPC have been written
+	 * to t_psr, t_pc and t_npc registers respectively at the trap time.
 	 */
 
 	set cpu_context_save, %t0
 	jmpl %t0, %l_retpc
 	 mov %i_pcontext, %l_base
 
+    /* restore PIL&ICC fields of old PSR */
+	set (PSR_PIL | PSR_ICC), %t0
+	PSR_BIT_COPY(t_psr, t0, t1, t2)
+
+	/* skip instruction */
 	mov %t_npc, %t_pc
 	add  %t_npc, 4, %t_npc
+
 	jmp %t_pc
 	 rett %t_npc
 
 	.global cpu_context_restore_trap
 cpu_context_restore_trap:
 
+	/*
+	 * cpu_context_save time PSR, PC and nPC will be restored
+	 * to t_psr, t_pc and t_npc registers respectively.
+	 */
+
 	set cpu_context_restore, %t0
 	jmpl %t0, %l_retpc
 	 mov %i_pcontext, %l_base
 
-	/*
-	 * _save_ time PSR, PC and nPC has been returned
-	 * through l_psr, l_pc and l_npc registers respectively.
-	 * restore PIL & ICC fields of PSR.
-	 */
-	mov %psr, %t0
-	set PSR_PIL || PSR_ICC, %t1
-	andn %t0, %t1, %t0
-	and %t_psr, %t1, %t1
-	or  %t0, %t1, %t0
-	mov %t0, %psr
-	 nop; nop; nop	// wait for PSR delayed-write
+    /* restore PIL&ICC fields of old PSR */
+	set (PSR_PIL | PSR_ICC), %t0
+	PSR_BIT_COPY(t_psr, t0, t1, t2)
 
+	/* skip instruction */
 	mov %t_npc, %t_pc
 	add  %t_npc, 4, %t_npc
+
 	jmp %t_pc
 	 rett %t_npc
 

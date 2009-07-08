@@ -6,6 +6,8 @@
 
 #ifndef __ASSEMBLER__
 
+#define IRQ_TRAP_TYPE(nirq)   (0x10 + (nirq))
+
 /*
  * Stack frame structure
  */

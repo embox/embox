@@ -185,18 +185,12 @@ BOOL terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 	int *p_head = &this->vt_token_queue_head;
 	while (*p_len == 0) {
 		// we don't return from vtparse until
-		// callback has not been invoked at least one.
+		// callback has not been invoked at least once.
 		vtparse(this->parser, this->io->getc());
 		// so vt_token_queue_len is greater then 0 at this line
 		// (see vtparse_callback algorithm)
 	}
-	//	if (*p_len == 0) {
-	// something wrong with vtparser
-	// (callback must had been invoked at least once)
-	// TODO in fact this code must not be reached;
-	//		assert(FALSE);
-	//		return FALSE;
-	//	}
+	assert(*p_len != 0);
 
 	VT_TOKEN *vt_token;
 	// Almost surely this loop will be executed only once
@@ -227,7 +221,7 @@ BOOL terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 	}
 
 	// TODO in fact this code must not be reached;
-	//	assert(FALSE);
+	assert(FALSE);
 	return FALSE;
 }
 
@@ -253,4 +247,3 @@ BOOL terminal_transmit(TERMINAL *this, TERMINAL_TOKEN token, int params_len,
 
 	return TRUE;
 }
-

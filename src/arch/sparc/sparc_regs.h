@@ -50,6 +50,37 @@
 /* cpu-implementation field   */
 #define PSR_IMPL    0xf0000000
 
+#define PSR_BIT_TOGGLE(r_mask, scratch) \
+	rd %psr, %scratch;                   \
+	wr %scratch, %r_mask, %psr;          \
+	 nop; nop; nop;
+
+#define PSR_BIT_SET(r_mask, scratch) \
+	mov %psr, %scratch;               \
+	or %scratch, %r_mask, %scratch;   \
+	mov %scratch, %psr;               \
+	 nop; nop; nop;
+
+#define PSR_BIT_CLEAR(r_mask, scratch) \
+	mov %psr, %scratch;                 \
+	andn %scratch, %r_mask, %scratch;   \
+	mov %scratch, %psr;                 \
+	 nop; nop; nop;
+
+#define PSR_BIT_COPY(r_src, r_mask, scratch0, scratch1) \
+	mov  %psr, %scratch0;                 \
+	andn %scratch0, %r_mask, %scratch0;   \
+	and  %r_src, %r_mask, %scratch1;      \
+	or   %scratch0, %scratch1, %scratch0; \
+	mov  %scratch0, %psr;                 \
+	 nop; nop; nop;
+
+/* check whether WIM[CWP] == 1 or not */
+#define PSR_CWP_WIM_TEST(t_psr, t_wim, scratch) \
+	and %t_psr, PSR_CWP, %scratch;  \
+	srl %t_wim, %scratch, %scratch; \
+	andcc %scratch, 0x1, %g0;
+
 /*
  *  The SPARC v8 TBR layout.
  *

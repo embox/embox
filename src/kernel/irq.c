@@ -1,15 +1,23 @@
-#include "types.h"
-#include "leon.h"
-#include "irq_ctrl.h"
-#include "irq.h"
-#include "test.h"
-#include "common.h"
-#include "memory_map.h"
+/**
+ * \file irq.c
+ *
+ * \brief Common interrupting-related handling routines
+ *
+ * \author Eldar Abusalimov
+ * \author Anton Bondarev
+ * \author Alexey Fomin
+ * \author Alexandr Batyukov
+ */
 
-//IRQ_REGS * const irq_regs = (IRQ_REGS * const ) IRQ_REGS_BASE;
+#include "irq.h"
+
+#include "types.h"
+#include "irq_ctrl.h"
+#include "common.h"
+#include "traps.h"
 
 // user trap handlers table
-static IRQ_HANDLER user_trap_handlers[ALLOWED_TRAPS_AMOUNT];
+static IRQ_HANDLER user_trap_handlers[IRQ_TABLE_SIZE];
 
 /*
  * Runs user defined handler (if one has been enabled).
@@ -23,28 +31,21 @@ void dispatch_trap(BYTE tt) {
 
 void dispatch_bad_trap(int tt, int pc, int npc, int psr) {
 	TRACE("! tt: %x, pc: %x, npc: %x, psr: %x\n", tt, pc, npc, psr);
-	while(1);
+	while (1)
+		;
 }
 
 void irq_init_handlers() {
 	int i;
-//	irq_regs->level = 0;
-//	irq_regs->mask = 0;
-//	irq_regs->pend = 0;
-//	irq_regs->force = 0;
-//	irq_regs->clear = 0xFFFFFFFF;
 
 	irq_ctrl_init();
 
-	for (i = 0; i < ALLOWED_TRAPS_AMOUNT; i++) {
+	for (i = 0; i < IRQ_TABLE_SIZE; i++) {
 		user_trap_handlers[i] = NULL;
 	}
 
 }
 
-/*
- * set trap handler
- */
 BOOL irq_set_trap_handler(BYTE tt, IRQ_HANDLER pfunc) {
 
 	if (NULL == user_trap_handlers[tt]) {
@@ -56,9 +57,6 @@ BOOL irq_set_trap_handler(BYTE tt, IRQ_HANDLER pfunc) {
 	return FALSE;
 }
 
-/*
- * remove trap handler
- */
 BOOL irq_remove_trap_handler(BYTE tt) {
 
 	if (NULL != user_trap_handlers[tt]) {
@@ -70,42 +68,23 @@ BOOL irq_remove_trap_handler(BYTE tt) {
 	return FALSE;
 }
 
-/*
- * set interrupt handler
- */
-BOOL irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
-
+void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
 	// check IRQ number
 	if (irq_number != irq_number & 0xF) {
-		return FALSE;
+		return;
 	}
 
-	if (irq_set_trap_handler(IRQ_TRAP_TYPE(irq_number),pfunc)) {
-		// enable interrupt
-		//SetBit(irq_regs->mask, irq_number);
+	IRQ_HANDLER old = user_trap_handlers[IRQ_TRAP_TYPE(irq_number)];
+	user_trap_handlers[IRQ_TRAP_TYPE(irq_number)] = pfunc;
+
+	if (pfunc != NULL && old == NULL) {
 		irq_ctrl_enable_irq(irq_number);
-		return TRUE;
+	} else if (pfunc == NULL && old != NULL) {
+		irq_ctrl_disable_irq(irq_number);
 	}
 
-	return FALSE;
 }
 
-/*
- * remove interrupt handler
- */
-BOOL irq_remove_handler(BYTE irq_number) {
-
-	// check IRQ number
-	if (irq_number != irq_number & 0xF) {
-		return FALSE;
-	}
-
-	if (irq_remove_trap_handler(IRQ_TRAP_TYPE(irq_number))) {
-		// disable interrupt
-		//ClearBit(irq_regs->mask, irq_number);
-		irq_ctrl_disable_irq(irq_number);
-		return TRUE;
-	}
-
-	return FALSE;
+IRQ_HANDLER irq_get_handler(BYTE irq_number) {
+	return user_trap_handlers[IRQ_TRAP_TYPE(irq_number)];
 }

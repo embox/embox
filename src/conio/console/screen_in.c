@@ -8,6 +8,7 @@
 #include "screen.h"
 
 #include "types.h"
+#include "common.h"
 
 #define FIRE_CALLBACK(cb, func, view, args...)	((cb->func != NULL) ? cb->func(cb, view, ##args) : 0)
 
@@ -110,6 +111,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 			handle_ctrl_token(this, token, params);
 		}
 	}
+	assert(this->callback == NULL);
 	this->running = FALSE;
 
 }
