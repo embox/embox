@@ -3,6 +3,7 @@
 
 #define START_MSG "\nWelcome to Monitor shell and have a lot of fun..."
 #define PROMPT "monitor> "
+#define MD5_CHECKSUM "0"
 
 /* Arch */
 #define MONITOR_ARCH 1

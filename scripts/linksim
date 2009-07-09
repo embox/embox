@@ -46,8 +46,8 @@ ENTRY(_hardreset)
 
 MEMORY
 {
-  rom     : ORIGIN = 0x00000000, LENGTH = 256K
-  sdram	  : ORIGIN = 0xA0001000, LENGTH = 256K
+    rom     : ORIGIN = 0x00000000, LENGTH = 256K
+    sdram   : ORIGIN = 0xA0001000, LENGTH = 256K
 }
 
 
@@ -56,43 +56,46 @@ MEMORY
  */
 SECTIONS
 {
-  .text :
-  {
-    _text_start = .;
-    *(.text)
-    . = ALIGN (0x10);
+    .text :
+    {
+	_text_start = .;
+	*(.text)
+	. = ALIGN (0x10);
 
-    *(.rodata*)
-    . = ALIGN(0x10);
+	*(.rodata*)
+	. = ALIGN(0x10);
 
-    *(.const)
-    . = ALIGN (0x10);
+	*(.const)
+	. = ALIGN (0x10);
 	_endtext = .;
-		. = ALIGN(0x4);
-    __express_tests_start = . ;
-    *(.express_tests)
-     __express_tests_end = .;
+	. = ALIGN(0x4);
+	__express_tests_start = . ;
+	*(.express_tests)
+        __express_tests_end = .;
 
-    _piggy_start = .;
-    _piggy_end = .;
+	_piggy_start = .;
+	_piggy_end = .;
 
-    /*_data_image_start = .;*/
-  } > rom
-
-  .data : AT (ADDR (.text) + SIZEOF (.text))
-  {
-    _data_start = .;
-    *(.data)
-    . = ALIGN(0x4);
+	/*_data_image_start = .;*/
+    } > rom
+    .data : AT (ADDR (.text) + SIZEOF (.text))
+    {
+	_data_start = .;
+	*(.data)
+	. = ALIGN(0x4);
 	_data_end = .;
-} > sdram
-	.bss :
-	{
-    _bstart = . ; *(.bss) *(COMMON) ;
-    . = ALIGN(0x4);
-     _bend = . ;
-  } > sdram
-  __stack = _bend + 0x20000;
-    __checksum = 0x00000000;
- PROVIDE (__stack = _bend + 0x20000);
+    } > sdram
+    .bss :
+    {
+	_bstart = . ; *(.bss) *(COMMON) ;
+	. = ALIGN(0x4);
+	_bend = . ;
+    } > sdram
+    .checksum :
+    {
+        . = ALIGN(0x4);
+        *(.checksum)
+    } > sdram
+    __stack = _bend + 0x20000;
+    PROVIDE (__stack = _bend + 0x20000);
 }

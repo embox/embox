@@ -59,10 +59,10 @@ build:
 checksum:
 	@if [ $(SIGN_CHECKSUM) == y ]; \
 	then \
-	    $(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) $(BUILD); \
+	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) $(BUILD); \
 	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all; \
 	else \
-	    $(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) $(BUILD) --clean; \
+	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) $(BUILD) --clean; \
 	fi;
 
 clean:
