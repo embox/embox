@@ -7,24 +7,19 @@
 #include "common.h"
 #include "express_tests.h"
 
-extern unsigned int volatile test_soft_traps_variable;
-#define TEST_SOFT_TRAP_NUMBER 0x10 //trap 0x90
+DECLARE_EXPRESS_TEST("software traps", exec)
 
-#define TEST_NAME "soft traps"
-static char *get_test_name(){
-    return TEST_NAME;
-}
+extern unsigned int volatile test_soft_traps_variable;
+#define TEST_SOFT_TRAP_NUMBER 0x10
 
 static int exec() {
-    unsigned int temp = test_soft_traps_variable;
-    __asm__ __volatile__  ("ta %0\n\t"::"i" (TEST_SOFT_TRAP_NUMBER));
+	unsigned int temp = test_soft_traps_variable;
+	// TODO remove it from here -- Eldar
+	__asm__ __volatile__ ("ta %0\n\t"::"i" (TEST_SOFT_TRAP_NUMBER));
 
-    if (temp != (test_soft_traps_variable - 1)){
-        TRACE("Incorrect software traps handling\n");
-        return -1;
-    }
-    return 0;
+	if (temp != (test_soft_traps_variable - 1)) {
+		TRACE("Incorrect software traps handling\n");
+		return -1;
+	}
+	return 0;
 }
-
-static EXPRESS_TEST_HANDLER exp_handler = {get_test_name, exec};
-REGISTER_EXPRESS_TEST(&exp_handler);

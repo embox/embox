@@ -24,8 +24,6 @@
 
 // TODO cpu_context_save comments
 	.global cpu_context_save
-	.global save_proc_context
-save_proc_context:
 cpu_context_save:
 
 	/* First of all, read control/status registers to locals */
@@ -79,8 +77,6 @@ cpu_context_save:
 
 // TODO cpu_context_restore comments
 	.global cpu_context_restore
-	.global restore_proc_context
-restore_proc_context:
 cpu_context_restore:
 
 	/*

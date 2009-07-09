@@ -40,8 +40,8 @@ _hardreset:
   BAD_TRAP;                     ! 1B interrupt level 11   ! IRQ_DSU
   TRAP(irq_dispatcher);         ! 1C interrupt level 12   !
   TRAP(irq_dispatcher);         ! 1D interrupt level 13   !
-  TRAP(irq_dispatcher);         !BAD_TRAP;! 1E interrupt level 14   ! IRQ_PCI
-  TRAP(halt_trap);              ! 1F interrupt level 15   ! IRQ_Halt
+  TRAP(irq_dispatcher);         ! 1E interrupt level 14   ! IRQ_PCI
+  TRAP(halt_trap);              ! 1F interrupt level 15   ! IRQ_Halt (NMI)
 
 
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 20 - 23 undefined
@@ -73,14 +73,14 @@ _hardreset:
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 7C - 7F undefined
 
   /* Software traps */
-  SOFT_TRAP; ! TRAP(test_save_trap);                         ! 80
+  SOFT_TRAP;                                    ! 80
   SOFT_TRAP;                        ! 81
   SOFT_TRAP; SOFT_TRAP;                         ! 82 - 83
   TRAP(skip);                                   ! 84
   TRAP(cpu_context_save_trap);                  ! 85
   TRAP(cpu_context_restore_trap);               ! 86
   SOFT_TRAP;                                    ! 87
-  SOFT_TRAP; !   TRAP(test_restore_trap);                      ! 88
+  SOFT_TRAP;                                    ! 88
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;  ! 89 - 8B
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 8C - 8F
   TRAP(test_soft_traps_func);                   ! 90

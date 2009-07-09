@@ -13,6 +13,7 @@
 #include "sparc_regs.h"
 #include "windows.h"
 #include "leon_config.h"
+#include "cpu_context.h"
 
 	.section ".text"
 	.align 4
@@ -175,23 +176,74 @@ interrupting_trap:
     /* restore PIL&ICC fields of old PSR */
 	set (PSR_PIL | PSR_ICC), %t0
 	PSR_BIT_COPY(t_psr, t0, t1, t2)
+	 WRITE_PAUSE
 
 	/* tata! */
 	jmp %t_pc
 	 rett %t_npc
 
+#define i_pcontext i0
+
+	.global cpu_context_save_trap
+cpu_context_save_trap:
+
+	/*
+	 * PSR, PC and nPC have been written
+	 * to t_psr, t_pc and t_npc registers respectively at the trap time.
+	 */
+
+	set cpu_context_save, %t0
+	jmpl %t0, %l_retpc
+	 mov %i_pcontext, %l_base
+
+    /* restore PIL&ICC fields of old PSR */
+	set (PSR_PIL | PSR_ICC), %t0
+	PSR_BIT_COPY(t_psr, t0, t1, t2)
+	 WRITE_PAUSE
+
+	/* skip instruction */
+	mov %t_npc, %t_pc
+	add  %t_npc, 4, %t_npc
+
+	jmp %t_pc
+	 rett %t_npc
+
+	.global cpu_context_restore_trap
+cpu_context_restore_trap:
+
+	/*
+	 * cpu_context_save time PSR, PC and nPC will be restored
+	 * to t_psr, t_pc and t_npc registers respectively.
+	 */
+
+	set cpu_context_restore, %t0
+	jmpl %t0, %l_retpc
+	 mov %i_pcontext, %l_base
+
+    /* restore PIL&ICC fields of old PSR */
+	set (PSR_PIL | PSR_ICC), %t0
+	PSR_BIT_COPY(t_psr, t0, t1, t2)
+	 WRITE_PAUSE
+
+	/* skip instruction */
+	mov %t_npc, %t_pc
+	add  %t_npc, 4, %t_npc
+
+	jmp %t_pc
+	 rett %t_npc
+
 bad_trap_dispatcher:
-	mov		%tbr, %l3
-	srl		%l3, 4, %l5
-	and 	%l5, 0xFF, %o0		! pass TT as parameter
-	mov		%l1, %o1
-	mov		%l2, %o2
-	mov		%psr, %o3
-	mov		%psr, %l5
-	or		%l5, 0x20, %l5	! set PSR.ET (enable traps)
-	or		%l5, 0xF00, %l5
-	mov		%l5, %psr
-	call	dispatch_bad_trap
+	mov %tbr, %o0
+	srl %o0, 4, %o0
+	and %o0, 0xFF, %o0		! pass TT as parameter
+	mov %t_pc, %o1
+	mov %t_npc, %o2
+	mov %t_psr, %o3
+
+	set (PSR_ET | PSR_PIL), %t1
+	PSR_BIT_SET(t1, t0)
+	 // do not wait
+	call dispatch_bad_trap
 	 nop
 
 .align  32

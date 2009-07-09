@@ -28,30 +28,26 @@ void context_restore(CPU_CONTEXT * pcontext) {
 
 static CPU_CONTEXT context;
 
-int sys_exec(EXEC_FUNC f, int argc, char **argv) {
+int sys_exec_start(EXEC_FUNC f, int argc, char **argv) {
 	volatile static BOOL started;
 	int ret = -2;
 
 	started = FALSE;
 	context_save(&context);
-	{
-		if (!started) {
-			started = TRUE;
-			ret = f(argc, argv);
-		} else {
-			return ret;
-		}
-	}
-	context_restore(&context);
 
-	// we'll never reach this line
+	if (!started) {
+		started = TRUE;
+		ret = f(argc, argv);
+	}
+
 	return ret;
 }
 
-void sys_interrupt() {
-	//context_restore(&context);
+void sys_exec_stop() {
+	context_restore(&context);
 }
-void sys_halt(){
-    //todo must be trap
+
+void sys_halt() {
+	//todo must be trap
 }
 

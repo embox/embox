@@ -68,7 +68,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	for (i = 0; i < array_len(shell_handlers); i++) {
 		if (0 == strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
-			sys_exec(phandler, words_counter - 1, words + 1);
+			sys_exec_start(phandler, words_counter - 1, words + 1);
 			return;
 		}
 	}

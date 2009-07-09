@@ -100,7 +100,7 @@ SECTIONS
 		_data_image_start = .;
 	}> sdram
 
-	.data : AT (ADDR (.text) + SIZEOF (.text))
+	.data :
 	{
 	    . = ALIGN(0x4);
 	    _data_start = .;

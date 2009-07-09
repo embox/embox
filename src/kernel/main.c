@@ -9,21 +9,22 @@
 #include "amba_pnp.h"
 #include "shell.h"
 #include "common.h"
+#include "express_tests.h"
 
 int main() {
 
 #ifdef MONITOR_TESTS_EXEC
-	if (0 != express_tests_execute()){
-	    printf ("express tests fault\n halt system\n");
-	    sys_halt();
-	    while (1)
-	         ;
+	if (0 != express_tests_execute()) {
+		printf("express tests fault\n halt system\n");
+		sys_halt();
+		while (1)
+			;
 	}
 #endif //MONITOR_TESTS_EXEC
-
 #ifndef SIMULATION_TRG
 	shell_start();
 #endif
+
 	while (1)
 		;
 

@@ -15,7 +15,7 @@ typedef int (*EXEC_FUNC)(int argc, char **argv);
 
 void context_save(CPU_CONTEXT * pcontext);
 void context_restore(CPU_CONTEXT * pcontext);
-int sys_exec(EXEC_FUNC f, int argc, char **argv);
-void sys_interrupt();
+int sys_exec_start(EXEC_FUNC f, int argc, char **argv);
+void sys_exec_stop();
 
 #endif /* SYS_H_ */
