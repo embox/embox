@@ -3,6 +3,10 @@
 #include "sparc_regs.h"
 
 
+//	.section ".data"
+//	.align 4
+ 	.weak hardware_init_hook
+ 	.weak software_init_hook
 	.section    ".text"
 	.align  4
 
@@ -70,10 +74,6 @@ register_window_clean:
 	mov     %g1, %fp                  ! set frame pointer
 	sub     %g1, 0x60, %sp            ! set stack pointer
 
-	//set     STACK_BASE-0x10, %g1
-	//mov     %g1, %fp                  ! set frame pointer
-	//sub     %g1, 0x60, %sp            ! set stack pointer
-
 
 	set     _trap_table, %g1
 	mov     %g1, %tbr               !set trap table addr
@@ -107,6 +107,21 @@ register_window_clean:
 	andn %g1, PSR_CWP, %g1     ! g1 = g1 & ~PSR_CWP
 	mov  %g1, %psr
 	nop; nop; nop;
+
+	set hardware_init_hook, %g1
+	tst %g1
+	be	continue_after_hw_init_hook
+	nop
+	call %g1
+	nop
+continue_after_hw_init_hook:
+	set software_init_hook, %g1
+	tst %g1
+	be	continue_after_sw_init_hook
+	nop
+	call %g1
+	nop
+continue_after_sw_init_hook:
 
 	call	main
 	nop

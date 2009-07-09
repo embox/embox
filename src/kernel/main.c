@@ -12,8 +12,6 @@
 
 int main() {
 
-	init();
-
 #ifdef MONITOR_TESTS_EXEC
 	if (0 != express_tests_execute()){
 	    printf ("express tests fault\n halt system\n");

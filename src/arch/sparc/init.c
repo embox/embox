@@ -9,6 +9,8 @@
 #include "cache.h"
 #include "leon.h"
 #include "memory_map.h"
+#include "module.h"
+
 
 void copy_data_section()
 {
@@ -30,51 +32,45 @@ void copy_data_section()
     for (dst = &_bstart; dst< &_bend; dst++)
         *dst = 0;
 }
-/*
-typedef void (*INIT_MODULE_CALLBACK)();
+static int init_modules(){
+    extern char __modules_handlers_start, __modules_handlers_end;
+    MODULE_HANDLER ** handler = (MODULE_HANDLER **)&__modules_handlers_start;
+    for(; (unsigned int)handler < (unsigned int)&__modules_handlers_end; handler ++){
+        if (NULL == (*handler)){
+            TRACE("Error: Wrong module handler\n");
+            return -1;
+        }
+        if (NULL == ((*handler)->name)){
+            TRACE("Error: Wrong express test handler. Can't find get_test_name function\n");
+            return -1;
+        }
+        if (NULL == ((*handler)->init)){
+            TRACE("Error: Wrong express test handler. Can't find exec function for test %s\n", (*handler)->name);
+            return -1;
+        }
 
-typedef struct _INIT_MODULE_INFO {
-        INIT_MODULE_CALLBACK cb;
-	int busy;
-} INIT_MODULE_INFO;
+        if (-1 == (*handler)->init()){
+            continue;
+        }
+        TRACE("module %s ... was loaded\n", (*handler)->name);
 
-INIT_MODULE_INFO modules[16];
-
-int init_module(INIT_MODULE_CALLBACK cb) {
-	int i;
-	for (i = 0; i < array_len(modules); i++) {
-		if(0 == modules[i].busy) {
-	        	modules[i].cb = cb;
-			modules[i].busy = 1;
-		}
-	}
+        return 0;
+    }
 }
-*/
-int init() {
+int hardware_init_hook() {
     //TODO during too long time for simulation:(
     copy_data_section();
 
     cache_data_enable();
     cache_instr_enable();
 
-/*    INIT_MODULE_CALLBACK cb_init;
-    int i;
-    for (i = 0; i < array_len(modules); i++) {
-	    if(1 == modules[i].busy) {
-                    cb_init = modules[i].cb;
-		    cb_init();
-            }
-    }
-*/
-#ifdef MONITOR_DRIVERS_GAISLER_IRQ_CTRL
     irq_init_handlers();
-#endif
-#ifdef MONITOR_DRIVERS_GAISLER_UART
     uart_init();
-#endif
-#ifdef MONITOR_DRIVERS_GAISLER_TIMER
     timers_init();
-#endif
+
+    init_modules();
+
+
     TRACE("start...\n");
 #ifndef SIMULATION_TRG
     eth_init();//interfaces
@@ -86,5 +82,6 @@ int init() {
 #ifdef MONITOR_FS
     rootfs_init();
 #endif //MONITOR_FS
+
     return 0;
 }
