@@ -50,35 +50,6 @@
 /* cpu-implementation field   */
 #define PSR_IMPL    0xf0000000
 
-#define PSR_BIT_TOGGLE(mask, scratch) \
-	rd %psr, %scratch;                   \
-	wr %scratch, %r_mask, %psr;
-
-#define PSR_BIT_SET(r_mask, scratch) \
-	mov %psr, %scratch;               \
-	or %scratch, %r_mask, %scratch;   \
-	mov %scratch, %psr;
-
-#define PSR_BIT_CLEAR(r_mask, scratch) \
-	mov %psr, %scratch;                 \
-	andn %scratch, %r_mask, %scratch;   \
-	mov %scratch, %psr;
-
-#define PSR_BIT_COPY(r_src, r_mask, scratch0, scratch1) \
-	mov  %psr, %scratch0;                 \
-	andn %scratch0, %r_mask, %scratch0;   \
-	and  %r_src, %r_mask, %scratch1;      \
-	or   %scratch0, %scratch1, %scratch0; \
-	mov  %scratch0, %psr;
-
-/* check whether WIM[CWP] == 1 or not */
-#define PSR_CWP_WIM_TEST(t_psr, t_wim, scratch) \
-	and %t_psr, PSR_CWP, %scratch;  \
-	srl %t_wim, %scratch, %scratch; \
-	andcc %scratch, 0x1, %g0;
-
-#define WRITE_PAUSE  nop; nop; nop;
-
 /*
  *  The SPARC v8 TBR layout.
  *
@@ -94,5 +65,68 @@
 #define TBR_TT      0x00000ff0
 /* trap base address          */
 #define TBR_TBA     0xfffff000
+
+/* some useful state register macros... */
+#ifdef __ASSEMBLER__
+
+#define PSR_BIT_TOGGLE_SHORT(mask, scratch_psr) \
+	rd %psr, %scratch_psr;                       \
+	wr %scratch_psr, mask, %psr;
+
+#define PSR_BIT_TOGGLE(mask, scratch_psr, scratch_mask) \
+	rd  %psr, %scratch_psr;                        \
+	set mask, %scratch_mask;                       \
+	wr  %scratch_psr, %scratch_mask, %psr;
+
+#define PSR_BIT_SET_SHORT(mask, scratch_psr) \
+	rd  %psr, %scratch_psr;                   \
+	or  %scratch_psr, mask, %scratch_psr;     \
+	wr  %scratch_psr, %g0, %psr;
+
+#define PSR_BIT_SET(mask, scratch_psr, scratch_mask) \
+	rd  %psr, %scratch_psr;                        \
+	set mask, %scratch_mask;                       \
+	or  %scratch_psr, %scratch_mask, %scratch_psr; \
+	wr  %scratch_psr, %g0, %psr;
+
+#define PSR_BIT_CLEAR_SHORT(mask, scratch_psr) \
+	rd   %psr, %scratch_psr;                    \
+	andn %scratch_psr, mask, %scratch_psr;      \
+	wr   %scratch_psr, %g0, %psr;
+
+#define PSR_BIT_CLEAR(mask, scratch_psr, scratch_mask) \
+	rd   %psr, %scratch_psr;                       \
+	set  mask, %scratch_mask;                      \
+	andn %scratch_psr, %scratch_mask, %scratch_psr;\
+	wr   %scratch_psr, %g0, %psr;
+
+#define PSR_BIT_COPY(r_src, mask, scratch_psr, scratch_src, scratch_mask) \
+	rd   %psr, %scratch_psr;                       \
+	set  mask, %scratch_mask;                      \
+	andn %scratch_psr, %scratch_mask, %scratch_psr;      \
+	and  %r_src, %scratch_mask, %scratch_src;            \
+	or   %scratch_psr, %scratch_src, %scratch_psr; \
+	wr   %scratch_psr, %g0, %psr;
+
+/* check whether WIM[CWP] == 1 or not */
+#define PSR_CWP_WIM_TEST(r_psr, r_wim, scratch) \
+	srl %r_wim, %r_psr, %scratch;                \
+	andcc %scratch, 0x1, %g0;
+
+/** Circular right shifting by 1 bit */
+#define WIM_SHIFT_RIGHT(r_oldwim, r_newwim, scratch) \
+	srl %r_oldwim, 1, %r_newwim;                   \
+	sll %r_oldwim, CORE_NWINDOWS - 1, %scratch;    \
+	or %r_newwim, %scratch, %r_newwim;
+
+/** Circular left shifting by 1 bit */
+#define WIM_SHIFT_LEFT(r_oldwim, r_newwim, scratch)  \
+	sll %r_oldwim, 1, %r_newwim;                   \
+	srl %r_oldwim, CORE_NWINDOWS - 1, %scratch;    \
+	or %r_newwim, %scratch, %r_newwim;
+
+#define WRITE_PAUSE  nop; nop; nop;
+
+#endif /* __ASSEMBLER__ */
 
 #endif /* SPARC_REGS_H_ */

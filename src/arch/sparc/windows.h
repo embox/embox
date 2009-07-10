@@ -76,18 +76,6 @@ typedef struct _REG_WINDOW {
 	ldd	[%reg + (offset) + RW_I4], %i4; \
 	ldd	[%reg + (offset) + RW_I6], %i6;
 
-/** Circular right shifting by 1 bit */
-#define WIM_SHIFT_RIGHT(reg_old, reg_new, scratch) \
-	srl %reg_old, 1, %reg_new; \
-	sll %reg_old, CORE_NWINDOWS - 1, %scratch; \
-	or %reg_new, %scratch, %reg_new;
-
-/** Circular left shifting by 1 bit */
-#define WIM_SHIFT_LEFT(reg_old, reg_new, scratch)  \
-	sll %reg_old, 1, %reg_new; \
-	srl %reg_old, CORE_NWINDOWS - 1, %scratch; \
-	or %reg_new, %scratch, %reg_new;
-
 #endif /* __ASSEMBLER__ */
 
 #endif /* WINDOWS_H_ */

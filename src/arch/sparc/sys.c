@@ -27,23 +27,30 @@ void context_restore(CPU_CONTEXT * pcontext) {
 }
 
 static CPU_CONTEXT context;
+volatile static BOOL started = FALSE;
 
 int sys_exec_start(EXEC_FUNC f, int argc, char **argv) {
-	volatile static BOOL started;
+	if (started) {
+		return -3;
+	}
+
 	int ret = -2;
 
-	started = FALSE;
 	context_save(&context);
 
 	if (!started) {
 		started = TRUE;
 		ret = f(argc, argv);
 	}
+	started = FALSE;
 
 	return ret;
 }
 
 void sys_exec_stop() {
+	if (!started) {
+		return;
+	}
 	context_restore(&context);
 }
 

@@ -32,34 +32,35 @@ void copy_data_section() {
 
 static int init_modules() {
 	extern MODULE_DESCRIPTOR *__modules_handlers_start, *__modules_handlers_end;
-	MODULE_DESCRIPTOR ** module = &__modules_handlers_start;
-	int total = (int) ((WORD) (&__modules_handlers_end)
-			- (WORD) (&__modules_handlers_start)) / sizeof(MODULE_DESCRIPTOR*);
+	MODULE_DESCRIPTOR ** p_module = &__modules_handlers_start;
+	int i, total = (int) (&__modules_handlers_end - &__modules_handlers_start);
 
 	TRACE("\nInitializing modules (total: %d)\n\n", total);
-	do {
-		if (NULL == (*module)) {
+
+	for (i = 0; i < total; i++, p_module++) {
+		if (NULL == (*p_module)) {
 			LOG_ERROR("Missing module descriptor\n");
 			continue;
 		}
-		if (NULL == ((*module)->name)) {
+		if (NULL == ((*p_module)->name)) {
 			LOG_ERROR("Broken module descriptor. Can't find module name\n");
 			continue;
 		}
-		if (NULL == ((*module)->init)) {
-			LOG_ERROR("Broken module descriptor. Can't find init function for module %s\n", (*module)->name);
+		if (NULL == ((*p_module)->init)) {
+			LOG_ERROR("Broken module descriptor. Can't find init function for module %s\n", (*p_module)->name);
 			continue;
 		}
 
-		TRACE("Initializing %s ... ", (*module)->name);
-		if (-1 != (*module)->init()) {
+		TRACE("Initializing %s ... ", (*p_module)->name);
+		if (-1 != (*p_module)->init()) {
 			TRACE("DONE\n");
 		} else {
 			TRACE("FAILED\n");
 		}
 
-	} while (++module != &__modules_handlers_end);
-	TRACE("\n\n");
+	}
+
+	TRACE("\n");
 
 	return 0;
 }

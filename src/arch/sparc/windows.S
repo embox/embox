@@ -9,7 +9,7 @@
 
 #include "windows.h"
 #include "traps.h"
-
+#include "sparc_regs.h"
 
 /* Window overflow handling routine. */
 		.global window_overflow

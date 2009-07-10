@@ -101,7 +101,7 @@ interrupting_trap:
 
 		save	// Get into the window to be saved
 
-		mov %g1, %wim
+		wr %g1, %g0, %wim
 		 // do not wait for delayed write
 
 		STORE_WINDOW(sp, 0)
@@ -119,28 +119,40 @@ interrupting_trap:
 	and %o0, TBR_TT, %o0
 	srl %o0, 4, %o0
 
-		// enable traps
-		set PSR_ET, %g1
-		PSR_BIT_SET(g1, t0)
+		/*
+		 * enable traps
+		 */
+		PSR_BIT_TOGGLE_SHORT(PSR_ET, t0)
+		 // do not wait (PSR_ET)
 
 			call	dispatch_trap
 			 nop
 
-		// disable traps
-		set PSR_ET, %g1
-		PSR_BIT_CLEAR(g1, t0)
+		/*
+		 * disable traps
+		 *
+		 * and do not worry that the “RDPSR, WRPSR” sequence is interruptible,
+		 * our interrupts dispatcher does not corrupt PSR
+		 * and restores it to the initial value before returning from trap
+		 * (see below)
+		 */
+		PSR_BIT_TOGGLE_SHORT(PSR_ET, t0)
+		 // do not wait (PSR_ET)
 
 	/*
 	 * We do not need trap-time WIM initial value anymore.
 	 * So read _new_ value of WIM to %t_wim
 	 * (just for code readability).
 	 */
-	mov %wim, %t_wim;
+	rd %wim, %t_wim;
 
-	/* test CWP for possible window underflow when executing RETT */
+	/* Now we need to check if the RETT would land us in an invalid window */
 	WIM_SHIFT_RIGHT(t_wim, g2, t0)
-	mov %psr, %g1
-	PSR_CWP_WIM_TEST(g1, g2, t0)	// PSR is in %g1
+	/*
+	 * we are in the same window as at trap entering time
+	 * so get CWP from an old local copy of PSR
+	 */
+	PSR_CWP_WIM_TEST(t_psr, g2, t0)
 
 	bz trap_wuf_test_ok
 	 nop/*
@@ -152,8 +164,8 @@ interrupting_trap:
 		/* Calculate new WIM */
 		WIM_SHIFT_LEFT(t_wim, g1, t0)
 
-		mov %g1, %wim
-		 nop; nop; nop	// wait for delayed-write before RESTORE
+		wr %g1, %g1, %wim
+		 WRITE_PAUSE	// wait for delayed-write before RESTORE
 
 		restore	// get into the window to be restored
 
@@ -173,9 +185,9 @@ interrupting_trap:
 	 * that has been just restored.
 	 */
 
+// TODO what's about checking and restoring PS/S? -- Eldar
     /* restore PIL&ICC fields of old PSR */
-	set (PSR_PIL | PSR_ICC), %t0
-	PSR_BIT_COPY(t_psr, t0, t1, t2)
+	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1, t2)
 	 WRITE_PAUSE
 
 	/* tata! */
@@ -197,8 +209,7 @@ cpu_context_save_trap:
 	 mov %i_pcontext, %l_base
 
     /* restore PIL&ICC fields of old PSR */
-	set (PSR_PIL | PSR_ICC), %t0
-	PSR_BIT_COPY(t_psr, t0, t1, t2)
+	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1, t2)
 	 WRITE_PAUSE
 
 	/* skip instruction */
@@ -221,8 +232,7 @@ cpu_context_restore_trap:
 	 mov %i_pcontext, %l_base
 
     /* restore PIL&ICC fields of old PSR */
-	set (PSR_PIL | PSR_ICC), %t0
-	PSR_BIT_COPY(t_psr, t0, t1, t2)
+	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1, t2)
 	 WRITE_PAUSE
 
 	/* skip instruction */
@@ -240,9 +250,10 @@ bad_trap_dispatcher:
 	mov %t_npc, %o2
 	mov %t_psr, %o3
 
-	set (PSR_ET | PSR_PIL), %t1
-	PSR_BIT_SET(t1, t0)
-	 // do not wait
+	PSR_BIT_SET_SHORT(PSR_PIL, t0)
+	 WRITE_PAUSE
+	PSR_BIT_SET_SHORT(PSR_ET, t0)
+
 	call dispatch_bad_trap
 	 nop
 

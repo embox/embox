@@ -12,17 +12,17 @@ typedef struct _MODULE_HANDLER {
 	int (*init)();
 } MODULE_DESCRIPTOR;
 
-#define REGISTER_MODULE_HANDLER(handler) \
-    static void register_module(){ \
+#define REGISTER_MODULE(descr) static void _register_module(){ \
     __asm__( \
             ".section .modules_handlers\n\t" \
             ".word %0\n\t" \
             ".text\n" \
-            : :"i"(handler)); \
+            : :"i"(&descr)); \
             }
 
-#define REGISTER_MODULE(name, module_init_func) \
-    static const MODULE_DESCRIPTOR _descriptor = {name, module_init_func};\
-    REGISTER_MODULE_HANDLER(&_descriptor );
+#define DECLARE_MODULE(name, init) \
+	static int init(); \
+    static const MODULE_DESCRIPTOR _descriptor = { name, init }; \
+    REGISTER_MODULE(_descriptor);
 
 #endif /* MODULE_H_ */

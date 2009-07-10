@@ -11,14 +11,12 @@
 int express_tests_execute() {
 	extern EXPRESS_TEST_DESCRIPTOR *__express_tests_start, *__express_tests_end;
 	EXPRESS_TEST_DESCRIPTOR ** p_test = &__express_tests_start;
-	int total = (int) ((WORD) (&__express_tests_end)
-			- (WORD) (&__express_tests_start))
-			/ sizeof(EXPRESS_TEST_DESCRIPTOR*);
+	int i, total = (int) (&__express_tests_end - &__express_tests_start);
 	int passed = 0, failed = 0;
 
 	TRACE("\nRunning express tests subsystem (total tests: %d)\n\n", total);
 
-	do {
+	for (i = 0; i < total; i++, p_test++) {
 		if (NULL == (*p_test)) {
 			LOG_ERROR("Missing express test descriptor\n");
 			continue;
@@ -41,7 +39,7 @@ int express_tests_execute() {
 			failed++;
 		}
 
-	} while (++p_test != &__express_tests_end);
+	}
 
 	TRACE("\nPassed: %d\n", passed);
 	TRACE("Failed: %d\n", failed);
