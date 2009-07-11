@@ -36,7 +36,7 @@
 		},
 		"Release": {
 			"desc": "release",
-			"inc": 1,
+			"inc": 0,
 			"status": 1,
 			"mdef": "RELEASE_TRG"
 		},
@@ -47,7 +47,7 @@
 			"mdef": "SIMULATION_TRG"
 		}
 	},
-	"Commands": {
+	"Users": {
 		"arp": {
 			"desc": "arp table",
 			"inc": 1,
@@ -138,12 +138,32 @@
 		"Tests": {
 			"inc": 1,
 			"desc": "Express tests",
-			"mdef": "MONITOR_TESTS_EXEC"
+			"mdef": "MONITOR_TESTS"
 		},
 		"Net": {
 			"inc": 1,
-			"desc": "Network",
-			"mdef": "MONITOR_NET"
+			"desc": "Network support",
+			"mdef": "MONITOR_NETWORK"
+		},
+		"Users": {
+			"inc": 1,
+			"desc": "Shell commands",
+			"mdef": "MONITOR_USERS"
+		},
+		"Conio": {
+			"inc": 1,
+			"desc": "Console support",
+			"mdef": "MONITOR_CONIO"
+		},
+		"Fs": {
+			"inc": 1,
+			"desc": "File system support",
+			"mdef": "MONITOR_FS"
+		},
+		"Drivers": {
+			"inc": 1,
+			"desc": "Drivers enable",
+			"mdef": "MONITOR_DRIVERS"
 		}
 	},
 	"Drivers": {
@@ -153,7 +173,7 @@
 			],
 			"desc": "AMBA plug & play",
 			"inc": 1,
-			"mdef": "MONITOR_DRIVERS_AMBA_PNP",
+			"mdef": "MONITOR_DRIVER_AMBA_PNP",
 			"status": 1
 		},
 		"irq_ctrl": {
@@ -162,7 +182,7 @@
 			],
 			"desc": "interrupt unit",
 			"inc": 1,
-			"mdef": "MONITOR_DRIVERS_GAISLER_IRQ_CTRL",
+			"mdef": "MONITOR_DRIVER_GAISLER_IRQ_CTRL",
 			"status": 1
 		},
 		"timer": {
@@ -171,7 +191,7 @@
 			],
 			"desc": "timer",
 			"inc": 1,
-			"mdef": "MONITOR_DRIVERS_GAISLER_TIMER",
+			"mdef": "MONITOR_DRIVER_GAISLER_TIMER",
 			"status": 1
 		},
 		"uart": {
@@ -180,7 +200,7 @@
 			],
 			"desc": "uart",
 			"inc": 1,
-			"mdef": "MONITOR_DRIVERS_GAISLER_UART",
+			"mdef": "MONITOR_DRIVER_GAISLER_UART",
 			"status": 1
 		}
 	},
@@ -188,7 +208,6 @@
 		"autoconf": "scripts/autoconf",
 		"conf_h": "scripts/autoconf.h",
 		"shell_inc": "src/conio/shell.inc",
-		"tests_table_inc": "src/tests/tests_table.inc",
 		"users_inc": "src/conio/users.inc"
 	},
 	"Levels": {
@@ -196,25 +215,25 @@
 			"inc": 0,
 			"mdef": "_DEBUG",
 			"status": 1,
-			"desc": ""
+			"desc": "Debug msg level"
 		},
 		"Error": {
 			"inc": 1,
 			"mdef": "_ERROR",
 			"status": 1,
-			"desc": ""
+			"desc": "Error msg level"
 		},
 		"Trace": {
 			"inc": 1,
 			"mdef": "_TRACE",
 			"status": 1,
-			"desc": ""
+			"desc": "Trace msg level"
 		},
 		"Warn": {
 			"inc": 0,
 			"mdef": "_WARN",
 			"status": 1,
-			"desc": ""
+			"desc": "Warn msg level"
 		}
 	},
 	"Linkers": [
@@ -258,33 +277,32 @@
 		"test_cpu_context": {
 			"desc": "cpu_context save/restore",
 			"inc": 1,
-			"mdef": "MONITOR_TESTS_CPU_CONTEXT",
+			"mdef": "MONITOR_TEST_CPU_CONTEXT",
 			"status": 1
 		},
 		"test_irq_availability": {
 			"desc": "irq availability",
 			"inc": 0,
-			"mdef": "MONITOR_TESTS_IRQ_AVAILABILITY",
+			"mdef": "MONITOR_TEST_IRQ_AVAILABILITY",
 			"status": 1
 		},
 		"test_soft_traps": {
 			"desc": "soft traps",
 			"inc": 1,
-			"mdef": "MONITOR_TESTS_SOFT_TRAPS",
+			"mdef": "MONITOR_TEST_SOFT_TRAPS",
 			"status": 1
 		},
 		"test_mmu": {
 			"desc": "mmu",
 			"inc": 0,
-			"mdef": "MONITOR_TESTS_MMU",
+			"mdef": "MONITOR_TEST_MMU",
 			"status": 1
 		},
 		"test_checksum": {
 			"desc": "crc16 checksum",
 			"inc": 0,
-			"mdef": "MONITOR_TESTS_CHECKSUM",
+			"mdef": "MONITOR_TEST_CHECKSUM",
 			"status": 1
 		}
-	},
-	"Title": "Monitor Configurator"
+	}
 }

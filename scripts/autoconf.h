@@ -3,10 +3,9 @@
 
 #define START_MSG "\nWelcome to Monitor shell and have a lot of fun..."
 #define PROMPT "monitor> "
-#define MD5_CHECKSUM "77424a993fb3e26f156930904df60e07"
+#define MD5_CHECKSUM "0"
 
 /* Arch */
-#define MONITOR_ARCH 1
 #define MONITOR_ARCH_SPARC 1
 
 /* Verbous levels */
@@ -15,53 +14,48 @@
 #undef _DEBUG
 #undef _WARN
 
-/* Build targets */
+/* Build targets (only one may be chosen) */
 #undef SIMULATION_TRG
 #define DEBUG_TRG 1
-#define RELEASE_TRG 1
+#undef RELEASE_TRG
 #undef DOXYGEN_TRG
 
 /* Conio */
 #define MONITOR_CONIO 1
-#define MONITOR_CONIO_CONSOLE 1
-#define MONITOR_CONIO_TERMINAL 1
 
-#define MONITOR_KERNEL 1
+/* Misc */
 #define MONITOR_MISC 1
-#undef MONITOR_FS
 
-/* Net */
-#define MONITOR_NET 1
+/* "File system" */
+#define MONITOR_FS 1
+
+/* Network */
+#define MONITOR_NETWORK 1
 #define MONITOR_NET_ARP 1
 #define MONITOR_NET_DHCP 1
 #define MONITOR_NET_ETH 1
 #define MONITOR_NET_ICMP 1
 #define MONITOR_NET_IP_V4 1
-#define MONITOR_NET_IPAUX 1
-#define MONITOR_NET_NET_DEVICE 1
-#define MONITOR_NET_NET_PACK_MANAGER 1
-#define MONITOR_NET_SOCKET 1
 #define MONITOR_NET_TFTP 1
 #define MONITOR_NET_UDP 1
 
 /* Tests */
-#define MONITOR_TESTS_EXEC 1
-#define MONITOR_TESTS_CPU_CONTEXT 1
-#undef MONITOR_TESTS_IRQ_AVAILABILITY
-#define MONITOR_TESTS_SOFT_TRAPS 1
-#undef MONITOR_TESTS_CHECKSUM
-#undef MONITOR_TESTS_MMU
+#define MONITOR_TESTS 1
+#define MONITOR_TEST_CPU_CONTEXT 1
+#undef MONITOR_TEST_IRQ_AVAILABILITY
+#define MONITOR_TEST_SOFT_TRAPS 1
+#undef MONITOR_TEST_CHECKSUM
+#undef MONITOR_TEST_MMU
 
 /* Drivers */
 #define MONITOR_DRIVERS 1
-#define MONITOR_DRIVERS_AMBA_PNP 1
-#define MONITOR_DRIVERS_GAISLER 1
-#define MONITOR_DRIVERS_GAISLER_IRQ_CTRL 1
-#define MONITOR_DRIVERS_GAISLER_UART 1
-#define MONITOR_DRIVERS_GAISLER_TIMER 1
+#define MONITOR_DRIVER_AMBA_PNP 1
+#define MONITOR_DRIVER_GAISLER_IRQ_CTRL 1
+#define MONITOR_DRIVER_GAISLER_UART 1
+#define MONITOR_DRIVER_GAISLER_TIMER 1
 
-/* Users */
-#define MONITOR_USER 1
+/* Shell commands */
+#define MONITOR_USERS 1
 #define MONITOR_USER_ARP 1
 #define MONITOR_USER_ETH 1
 #define MONITOR_USER_GOTO 1

@@ -195,7 +195,7 @@ int print_arp_cache(void *ifdev) {
 			net_dev = eth_get_netdevice(arp_table[i].if_handler);
 			ipaddr_print(ip, arp_table[i].pw_addr);
 			macaddr_print(mac, arp_table[i].hw_addr);
-			printf("%s\t\t%d\t%s\t%d\t%s\n", ip, eth_get_netdevice(arp_table[i].if_handler)->type,
+			TRACE("%s\t\t%d\t%s\t%d\t%s\n", ip, eth_get_netdevice(arp_table[i].if_handler)->type,
 							 mac, net_dev->flags, net_dev->name);
 		}
 	}

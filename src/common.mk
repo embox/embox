@@ -16,15 +16,11 @@ $(SUBDIRS-n):
 all: $(SUBDIRS-y) $(OBJS-y)
 
 %.o:%.S
-	@$(CC) $(CCFLAGS) -DDEBUG_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_DBG)/$@ $<
-	@$(CC) $(CCFLAGS) -DRELEASE_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_RLS)/$@ $<
-	@$(CC) $(CCFLAGS) -DSIMULATION_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_SIM)/$@ $<
+	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -o $(OBJ_DIR)/$(BUILD)/$@ $<
 	@printf "  [M]\t$@\n"
 
 %.o:%.c
-	@$(CC) $(CCFLAGS) -DDEBUG_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_DBG)/$@ $<
-	@$(CC) $(CCFLAGS) -DRELEASE_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_RLS)/$@ $<
-	@$(CC) $(CCFLAGS) -DSIMULATION_TRG $(INCLUDE_DIRS) -o $(OBJ_DIR_SIM)/$@ $<
+	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -o $(OBJ_DIR)/$(BUILD)/$@ $<
 	@printf "  [M]\t$@\n"
 
 clean:

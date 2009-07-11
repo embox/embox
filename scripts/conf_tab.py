@@ -38,7 +38,6 @@ class conf_tab:
 			self.active_fr = fr
 
 		self.count += 1
-
                 return b
 
 	def display(self, fr):

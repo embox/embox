@@ -2,9 +2,6 @@ export
 ROOT_DIR   := $(CURDIR)
 BIN_DIR     = $(ROOT_DIR)/bin
 OBJ_DIR     = $(ROOT_DIR)/obj
-OBJ_DIR_SIM = $(OBJ_DIR)/sim
-OBJ_DIR_DBG = $(OBJ_DIR)/debug
-OBJ_DIR_RLS = $(OBJ_DIR)/release
 SRC_DIR     = $(ROOT_DIR)/src
 SCRIPTS_DIR = $(ROOT_DIR)/scripts
 RM          = rm -rf
@@ -19,13 +16,13 @@ endif
 include $(SCRIPTS_DIR)/autoconf$(DEFAULT_CONF)
 
 ifeq ($(SIMULATION_TRG),y)
-BUILD += --sim
+BUILD = sim
 endif
 ifeq ($(DEBUG_TRG),y)
-BUILD += --debug
+BUILD = debug
 endif
 ifeq ($(RELEASE_TRG),y)
-BUILD += --release
+BUILD = release
 endif
 
 CC      = $(CC_PACKET)-gcc
@@ -43,11 +40,9 @@ mkdir:
 	else \
 	    echo "Try make x(menu)config before"; exit 1;\
 	fi;
-	@test -d $(BIN_DIR) || mkdir -p $(BIN_DIR)
-	@test -d $(OBJ_DIR) || mkdir -p $(OBJ_DIR)
-	@test -d $(OBJ_DIR)/sim || mkdir -p $(OBJ_DIR)/sim
-	@test -d $(OBJ_DIR)/debug || mkdir -p $(OBJ_DIR)/debug
-	@test -d $(OBJ_DIR)/release || mkdir -p $(OBJ_DIR)/release
+	@test -d $(BIN_DIR)          || mkdir -p $(BIN_DIR)
+	@test -d $(OBJ_DIR)          || mkdir -p $(OBJ_DIR)
+	@test -d $(OBJ_DIR)/$(BUILD) || mkdir -p $(OBJ_DIR)/$(BUILD)
 
 build:
 	@rm -f objs.lst include_dirs.lst
@@ -59,16 +54,16 @@ build:
 checksum:
 	@if [ $(SIGN_CHECKSUM) == y ]; \
 	then \
-	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) $(BUILD); \
+	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
 	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all; \
 	else \
-	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) $(BUILD) --clean; \
+	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean; \
 	fi;
 
 clean:
 	@declare -x MAKEOP=clean; make --directory=src clean
 	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old
-	@$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --sim --debug --release --clean
+	@$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
 xconfig:
 	@$(SCRIPTS_DIR)/configure.py --mode=x

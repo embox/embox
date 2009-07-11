@@ -11,8 +11,8 @@ from subprocess import Popen
 class Checksum:
 	def __init__(self):
 		self.objcopy, self.bin_dir, self.target = (None, None, None)
-		self.checksum = {"0": 0}
-		self.builds = []
+		self.checksum = 0
+		self.build = None
 
 	def file_md5(self, file, use_system = False):
 		if isinstance(file, basestring):
@@ -34,32 +34,31 @@ class Checksum:
 		return h.hexdigest()
 
 	def build_md5(self):
-    		for item in self.builds:
-    			self.checksum[item] = self.file_md5(str(self.bin_dir) + '/' + item + '.objcopy', use_system = True)
-            		write_file(str(self.bin_dir) + '/' + str(self.target) + "_" + item + '.md5', self.checksum[item])
+		ObjFileName = str(self.bin_dir) + '/' + self.build + '.objcopy'
+		Md5FileName = str(self.bin_dir) + '/' + str(self.target) + "_" + self.build + '.md5'
+    		self.checksum = self.file_md5(ObjFileName, use_system = True)
+        	write_file(Md5FileName, self.checksum)
 
-	def rebuild_linker(self, iszero):
-		for item in self.builds:
-			content = read_file('scripts/autoconf.h')
-			if iszero == True:
-				content = re.sub('#define MD5_CHECKSUM "(\w+)"', '#define MD5_CHECKSUM "0"', content)
-			else:
-				content = re.sub('#define MD5_CHECKSUM "(\w+)"', '#define MD5_CHECKSUM "%s"' % self.checksum["ram"], content)
-			write_file('scripts/autoconf.h', content)
+	def rebuild_autoconf_h(self, iszero):
+		content = read_file('scripts/autoconf.h')
+		mdef = '#define MD5_CHECKSUM "(\w+)"'
+		if iszero == True:
+			content = re.sub(mdef, '#define MD5_CHECKSUM "0"', content)
+		else:
+			content = re.sub(mdef, '#define MD5_CHECKSUM "%s"' % self.checksum, content)
+		write_file('scripts/autoconf.h', content)
 
 	def main(self):
-		for item in self.builds:
-			os.system(str(self.objcopy) + " -j .data -j .text " + str(self.bin_dir) + "/" + str(self.target) + "_" + \
-					    item + " " + str(self.bin_dir) + "/" + item + ".objcopy")
+		os.system(str(self.objcopy) + " -j .data -j .text " + str(self.bin_dir) + "/" + str(self.target) + "_" + \
+				    self.build + " " + str(self.bin_dir) + "/" + self.build + ".objcopy")
 		self.build_md5()
-		self.rebuild_linker(False)
-		for item in self.builds:
-			os.remove(str(self.bin_dir) + '/' + item + '.objcopy')
+		self.rebuild_autoconf_h(False)
+		os.remove(str(self.bin_dir) + '/' + self.build + '.objcopy')
 
 if __name__=='__main__':
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "ho:d:t:srbac", ["help", "objcopy=", "bin_dir=", \
-            						 "taget=", "sim", "release", "debug", "clean"])
+                opts, args = getopt.getopt(sys.argv[1:], "ho:d:t:b:c", ["help", "objcopy=", "bin_dir=", \
+            						 "taget=", "build=", "clean"])
             	obj = Checksum()
             	run = "main"
                 for o, a in opts:
@@ -73,20 +72,18 @@ if __name__=='__main__':
                     		obj.bin_dir = a
                     	elif o in ("-t", "--target"):
                     		obj.target = a
-                    	elif o in ("-s", "--sim"):
-                    		obj.builds.append("sim")
-                    	elif o in ("-r", "--release"):
-                    		obj.builds.append("rom")
-                    	elif o in ("-b", "--debug"):
-                    		obj.builds.append("ram")
+                    	elif o in ("-b", "--build"):
+                    		if a == "debug":
+                    			obj.build = "ram"
+                    		elif a == "release":
+                    			obj.build = "rom"
                     	else:
 				assert False, "unhandled option"
 		if run == "clean":
-			pass
-			obj.rebuild_linker(True)
+			obj.rebuild_autoconf_h(True)
 		elif run == "main":
 			obj.main()
 		elif run == "help":
-			print "Usage: checksum.py [-o <objdump>] [-d <bin_dir>] [-t <target>] [-h]\n"
+			print "Usage: checksum.py [-o <objcopy>] [-d <bin_dir>] [-t <target>] [-hc] [-b <build>]\n"
 	except:
 	        traceback.print_exc()

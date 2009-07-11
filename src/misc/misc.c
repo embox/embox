@@ -75,6 +75,15 @@ void ipaddr_print(char *buf, unsigned char *addr) {
         sprintf(buf, "%d.%d.%d.%d", addr[0], addr[1], addr[2], addr[3]);
 }
 
+unsigned long inet_addr(const unsigned char *cp) {
+        unsigned long tmp = 0x00000000;
+        int i;
+        for(i=0; i<4; i++) {
+                tmp += ((0xFF & cp[i]) << (3-i)*8);
+        }
+        return tmp;
+}
+
 void macaddr_print(char *buf, unsigned char *addr) {
         sprintf(buf, "%2X:%2X:%2X:%2X:%2X:%2X", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 }
