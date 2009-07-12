@@ -1,5 +1,4 @@
 #include "traps.h"
-#include "irq.h"
 
         .global _trap_table     !
         .global _hardreset      !
