@@ -15,7 +15,7 @@ int main() {
 
 #ifdef MONITOR_TESTS
 	if (0 != express_tests_execute()) {
-		printf("express tests fault\n halt system\n");
+		TRACE("express tests fault\n halt system\n");
 		sys_halt();
 		while (1)
 			;

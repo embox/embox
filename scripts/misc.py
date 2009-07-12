@@ -33,6 +33,11 @@ def replacer_h(mdef, inc, content):
         	content = re.sub(mask, "#undef " + mdef, content)
         return content
 
+def replacer_value(mdef, reg, val, content):
+	mask = '#define([ \t]+)' + mdef + '([ \t]*)' + reg
+	content = re.sub(mask, "#define " + mdef + " " + val, content)
+	return content
+
 def onPress(ar, item, j):
         ar[item][j] = not ar[item][j]
 

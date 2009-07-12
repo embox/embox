@@ -11,7 +11,7 @@
 #include "shell.h"
 #include "sys.h"
 
-static const char* welcome = PROMPT;
+static const char* welcome = MONITOR_PROMPT;
 
 static SHELL_HANDLER_DESCR shell_handlers[] = {
 #include "shell.inc"
@@ -124,7 +124,7 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 }
 
 void shell_start() {
-	static const char* prompt = PROMPT;
+	static const char* prompt = MONITOR_PROMPT;
 	static CONSOLE console[1];
 	static CONSOLE_CALLBACK callback[1];
 	callback->exec = exec_callback;
@@ -133,7 +133,7 @@ void shell_start() {
 		printf("Failed to create a console");
 		return;
 	}
-	printf(START_MSG);
+	printf(MONITOR_START_MSG);
 	console_start(console, prompt);
 }
 

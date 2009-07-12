@@ -1,10 +1,11 @@
 include $(SCRIPTS_DIR)/autoconf
 
-SUBDIRS-y += console
-SUBDIRS-y += terminal
+SUBDIRS-$(MONITOR_CONIO) += console
+SUBDIRS-$(MONITOR_CONIO) += terminal
 
 OBJS-y:= printf.o \
-         scanf.o \
-         shell.o
+         scanf.o
+
+OBJS-$(MONITOR_CONIO)    += shell.o
 
 include $(SRC_DIR)/common.mk

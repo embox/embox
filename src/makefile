@@ -3,22 +3,12 @@ include $(SCRIPTS_DIR)/autoconf
 SUBDIRS-y                      += arch
 SUBDIRS-y                      += kernel
 SUBDIRS-$(MONITOR_DRIVERS)     += drivers
-ifeq ($(MONITOR_CONIO),y)
-SUBDIRS-$(MONITOR_MISC)        += misc
-else
-SUBDIRS-n                      += misc
-endif
+SUBDIRS-y                      += misc
 SUBDIRS-$(MONITOR_TESTS)       += tests
 SUBDIRS-$(MONITOR_FS)          += fs
-ifeq ($(SIMULATION_TRG),n)
 SUBDIRS-$(MONITOR_CONIO)       += conio
 SUBDIRS-$(MONITOR_USERS)       += user
 SUBDIRS-$(MONITOR_NETWORK)     += net
-else
-SUBDIRS-n                      += conio
-SUBDIRS-n                      += user
-SUBDIRS-n                      += net
-endif
 
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
 

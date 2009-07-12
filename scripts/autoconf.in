@@ -1,9 +1,6 @@
 # Common params
 
 TARGET=monitor
-CC_PACKET=sparc-elf
-CCFLAGS=-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_
-LDFLAGS=-Wl -N -nostdlib -g
 
 SIGN_CHECKSUM=y
 DISASSEMBLE=n
@@ -18,6 +15,9 @@ DOXYGEN_TRG=n
 # Arch (only one may be chosen)
 
 MONITOR_ARCH_SPARC=y
+CC_PACKET=sparc-elf
+CCFLAGS=-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_
+LDFLAGS=-Wl -N -nostdlib -g
 
 # Conio
 
@@ -29,7 +29,7 @@ MONITOR_MISC=y
 
 # "File system" support
 
-MONITOR_FS=n
+MONITOR_FS=y
 
 # Network
 
@@ -49,7 +49,7 @@ MONITOR_TEST_CPU_CONTEXT=y
 MONITOR_TEST_CHECKSUM=n
 MONITOR_TEST_IRQ_AVAILABILITY=n
 MONITOR_TEST_SOFT_TRAPS=y
-MONITOR_TEST_MMU=y
+MONITOR_TEST_MMU=n
 
 # Drivers
 

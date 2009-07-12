@@ -10,7 +10,7 @@ EDITOR      = vim
 ifeq ($(shell [ -f scripts/autoconf ] && echo YES),YES)
     DEFAULT_CONF =
 else
-    DEFAULT_CONF = .default
+    DEFAULT_CONF = .in
 endif
 
 include $(SCRIPTS_DIR)/autoconf$(DEFAULT_CONF)
@@ -23,6 +23,9 @@ BUILD = debug
 endif
 ifeq ($(RELEASE_TRG),y)
 BUILD = release
+endif
+ifeq ($(DOXYGEN_TRG),y)
+BUILD = docs
 endif
 
 CC      = $(CC_PACKET)-gcc
@@ -62,8 +65,11 @@ checksum:
 
 clean:
 	@declare -x MAKEOP=clean; make --directory=src clean
-	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old
+	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old docs/
 	@$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
+
+clean_all: clean
+	rm -f .config $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h src/conio/shell.inc src/conio/users.inc
 
 xconfig:
 	@$(SCRIPTS_DIR)/configure.py --mode=x

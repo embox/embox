@@ -1,8 +1,6 @@
 #ifndef _AUTOCONF_H_
 #define _AUTOCONF_H_
 
-#define START_MSG "\nWelcome to Monitor shell and have a lot of fun..."
-#define PROMPT "monitor> "
 #define MD5_CHECKSUM "0"
 
 /* Arch */
@@ -22,6 +20,9 @@
 
 /* Conio */
 #define MONITOR_CONIO 1
+#define MONITOR_START_MSG "\nWelcome to Monitor shell and have a lot of fun..."
+#define MONITOR_PROMPT "monitor> "
+#define MONITOR_PROMPT_MAX_LENGTH 15
 
 /* Misc */
 #define MONITOR_MISC 1
