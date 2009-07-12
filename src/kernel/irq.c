@@ -9,12 +9,11 @@
  * \author Alexandr Batyukov
  */
 
-#include "irq.h"
-
 #include "types.h"
-#include "irq_ctrl.h"
 #include "common.h"
+#include "irq_ctrl.h"
 #include "traps.h"
+#include "irq.h"
 
 // user trap handlers table
 static IRQ_HANDLER user_trap_handlers[IRQ_TABLE_SIZE];

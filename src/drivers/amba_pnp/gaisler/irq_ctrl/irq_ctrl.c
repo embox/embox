@@ -2,13 +2,24 @@
  * \file irq_ctrl.c
  *
  * \date Apr 14, 2009
- * \author anton
+ * \author Anton Bondarev
  * \brief Realize hal layer interupt ctrl for leon 3 processor
  */
 #include "types.h"
 #include "common.h"
 #include "irq_ctrl.h"
 #include "amba_pnp.h"
+
+
+typedef struct _IRQ_REGS {
+    volatile unsigned int level;    /* 0x00 */
+    volatile unsigned int pend;     /* 0x04 */
+    volatile unsigned int force;    /* 0x08 */
+    volatile unsigned int clear;    /* 0x0C */
+    volatile unsigned int mpstatus; /* 0x10 */
+    volatile unsigned int dummy[11];/* 0x14 - 0x3C */
+    volatile unsigned int mask;     /* 0x40 */
+} IRQ_REGS;
 
 static IRQ_REGS * dev_regs = NULL;
 
