@@ -1,29 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Monitor configurator
+# Monitor configurator:
+# === Config-Core ===
 # date: 19.05.09
 # author: sikmir
 # requirement: python >= 2.6
 
 from misc import *
 from configure_gui import *
+from configure_gen import *
 import sys, string, os, traceback, re, json, shutil, getopt
 
 class configure:
 	def __init__(self, mode="x"):
 		self.mode = mode
 		self.files, self.linkers, self.menu = ( None, None, None )
-		self.tabs = { "0" : 0 }
-		self.var = { "0" : 0 }
+		self.tabs, self.var = ({ "0" : 0 }, { "0" : 0 })
 
 	def read_config(self, fileconf):
 		""" Read config file """
-    		config = read_file(fileconf)
-    		json_conf = json.loads(config)
-    		self.files = json_conf['Files']
+    		config       = read_file(fileconf)
+    		json_conf    = json.loads(config)
+    		self.files   = json_conf['Files']
     		self.linkers = json_conf['Linkers']
-    		self.menu = json_conf['Menu']
-    		for tab in self.menu:
+    		self.menu    = json_conf['Menu']
+    		for tab in self.menu.keys():
     			self.tabs[tab] = json_conf[tab]
 
 	def write_config(self, fileconf):
@@ -31,24 +32,27 @@ class configure:
 		tmp = dict([('Files', self.files), \
 			    ('Linkers', self.linkers), \
 			    ('Menu', self.menu)])
-		for item in sorted(self.menu):
+		for item in sorted(self.menu.keys()):
 			tmp[item] = self.tabs[item]
 		#-- Arch
 		mod_name = "Arch"
-		tmp[mod_name] = self.tabs[mod_name]
-		tmp[mod_name]["Arch_num"] = self.var[mod_name]["Arch_num"].get()
 		for item in ("Cflags", "Ldflags", "Compiler"):
 			arch = self.get_arch()
 			tmp[mod_name][arch][item]["inc"] = self.var[mod_name][item].get()
-    		#-- Common, Levels, Build
-    		for mod_name in ("Common", "Levels", "Build"):
-    			for item in self.tabs[mod_name].keys():
-    				tmp[mod_name][item]["inc"] = self.var[mod_name][item].get()
-		write_file(fileconf, json.dumps(tmp, sort_keys=True, indent=4))
+    		#-- Common
+    		mod_name = "Common"
+    		item     = "Target"
+    		tmp[mod_name][item]["inc"] = self.var[mod_name][item].get()
+    		#-- Conio
+    		mod_name = "Conio"
+    		for item in ("Prompt", "Prompt_max_lenght", "Start_msg"):
+    			tmp[mod_name][item]["inc"] = self.var[mod_name][item].get()
+		write_file(fileconf, json.dumps(tmp, sort_keys = True, indent = 4))
 
 	def reload_config(self):
     		""" Reload config """
-		self.read_config(".config.default")
+		self.read_config(".config.in")
+		#-- Arch
 		mod_name     = "Arch"
 		cur_arch_num = self.tabs[mod_name]["Arch_num"]
             	self.var[mod_name]["Arch_num"].set(cur_arch_num)
@@ -56,132 +60,37 @@ class configure:
             		arch = self.get_arch()
             		inc  = self.tabs[mod_name][arch][item]["inc"]
             		self.var[mod_name][item].set(inc)
-    		#-- Common, Build, Levels, Tests, Users, Net, Drivers
-    		for mod_name in ("Common", "Drivers", "Tests", "Users", "Levels", "Build", "Net", "Conio"):
-    			for item in self.tabs[mod_name].keys():
-    				inc = self.tabs[mod_name][item]["inc"]
-    				status = self.tabs[mod_name][item]["status"]
-            			self.var[mod_name][item].set(inc)
-            			self.gui.widgets[mod_name][item].configure(state = getStatus(status))
+    		#-- Subframes
+    		for mod_name in self.menu:
+    			if mod_name != "Arch":
+    				for item in self.tabs[mod_name].keys():
+    					inc    = self.tabs[mod_name][item]["inc"]
+    					status = self.tabs[mod_name][item]["status"]
+            				self.var[mod_name][item].set(inc)
+            				self.gui.widgets[mod_name][item].configure(state = getStatus(status))
 
 	def get_arch(self):
-		if self.var["Arch"]["Arch_num"].get() == 0:
+		mod_name = "Arch"
+		if self.var[mod_name]["Arch_num"].get() == 0:
 			return "sparc"
 
 	def make_conf(self):
-		self.build_commands()
+		code_gen = configure_gen(self)
+		code_gen.build_commands(self.files["shell_inc"], self.files["users_inc"])
 		if self.mode == "x":
-			self.write_conf_h()
-			self.build_link()
-			self.write_autoconf(self.files["autoconf"])
+			code_gen.write_autoconf_h(self.files["autoconf_h"])
+			code_gen.build_link(self.linkers)
+			code_gen.write_autoconf(self.files["autoconf"])
 			self.write_config(".config")
 
 	def make_def_conf(self):
-    		self.build_commands()
+		code_gen = configure_gen(self)
+    		code_gen.build_commands(self.files["shell_inc"], self.files["users_inc"])
     		if self.mode == "x":
-            		self.write_conf_h()
-            		self.build_link()
-            		self.write_autoconf(self.files["autoconf"] + ".in")
-            		self.write_config(".config.default")
-
-	def build_link(self):
-		for file in self.linkers:
-			content = read_file('scripts/' + file)
-			content = re.sub('OUTPUT_ARCH\((\w+)\)', "OUTPUT_ARCH({0})".format(self.get_arch()), content)
-			write_file('scripts/' + file, content)
-
-	def build_commands(self):
-		mod_name = 'Users'
-		#-- generate src/conio/shell.inc
-		with open(self.files["shell_inc"], 'w+') as fshell:
-			fshell.write("".join(["//Don't edit! ", self.files["shell_inc"], ": auto-generated by configure.py\n\n"]))
-			for cmd in self.tabs[mod_name].keys():
-				inc    = self.tabs[mod_name][cmd]["inc"]
-				status = self.tabs[mod_name][cmd]["status"]
-				desc   = self.tabs[mod_name][cmd]["desc"]
-				if inc == True and status == True:
-					fshell.write('{"%s", "%s", %s_shell_handler},\n' % (cmd, desc, cmd))
-			fshell.write('{" ", " ", NULL}\n')
-		fshell.close()
-		#-- generate src/conio/tests.inc
-		with open(self.files["users_inc"], 'w+') as fuser_include:
-			fuser_include.write("".join(["//Don't edit! ", self.files["users_inc"], ": auto-generated by configure.py\n\n"]))
-			for cmd in self.tabs[mod_name].keys():
-				inc    = self.tabs[mod_name][cmd]["inc"]
-				status = self.tabs[mod_name][cmd]["status"]
-				if inc == True and status == True:
-					# TODO: temporary hack
-					if cmd != "arp":
-						fuser_include.write("#include \"{0}.h\"\n".format(cmd))
-					else:
-						fuser_include.write("#include \"{0}c.h\"\n".format(cmd))
-		fuser_include.close()
-
-	def write_autoconf(self, file):
-		#-- read autoconf
-		content = read_file(file)
-    		#-- Arch:
-    		mod_name = "Arch"
-    		for item in ("sparc",):
-    			mdef    = self.tabs[mod_name][item]["mdef"]
-    			inc     = (self.tabs[mod_name][item]["num"] == self.var[mod_name]["Arch_num"].get())
-			content = replacer( mdef, inc, content)
-		#-- Compiler, CFLAGS, LDFLAGS
-		arch = self.get_arch()
-		for item in ("Compiler", "Cflags", "Ldflags"):
-			content = re.sub( self.tabs[mod_name][arch][item]["mdef"] + '=' + self.tabs[mod_name][arch][item]["re"], \
-		    		          self.tabs[mod_name][arch][item]["mdef"] + "=" + self.var[mod_name][item].get(), content)
-    		#-- Tests, Users, Net, Drivers, Build:
-    		for mod_name in ("Tests", "Users", "Net", "Drivers", "Build"):
-    			for item in self.tabs[mod_name].keys():
-    				inc     = self.tabs[mod_name][item]["inc"]
-    				mdef    = self.tabs[mod_name][item]["mdef"]
-    				content = replacer(mdef, inc, content)
-		#-- Common: Target
-		mod_name = "Common"
-		content = re.sub(self.tabs[mod_name]["Target"]["mdef"] + '=' + self.tabs[mod_name]["Target"]["re"], \
-				 self.tabs[mod_name]["Target"]["mdef"] + "=" + self.var[mod_name]["Target"].get(), content)
-		#-- Sign checksum, Disassemble, ...
-		for item in ("Sign_bin", "Disassemble", "Tests", "Drivers", "Users", "Fs", "Conio", "Net", "Misc"):
-			mdef    = self.tabs[mod_name][item]["mdef"]
-			inc     = (self.var[mod_name][item].get() == 1)
-			content = replacer(mdef, inc, content)
-		#-- write autoconf
-		write_file(file, content)
-
-	def write_conf_h(self):
-    		#-- read conf_h
-		content = read_file(self.files["conf_h"])
-		#-- Arch
-		mod_name = "Arch"
-		for item in ("sparc",):
-			mdef    = self.tabs[mod_name][item]['mdef']
-			inc     = (self.tabs[mod_name][item]["num"] == self.var[mod_name]["Arch_num"].get())
-			content = replacer_h(mdef, inc, content)
-		#-- Conio
-		mod_name = "Conio"
-		for item in ("Prompt", "Start_msg"):
-			mdef = self.tabs[mod_name][item]["mdef"]
-			re   = self.tabs[mod_name][item]["re"]
-#			content = replacer_value(mdef, re, '"{0}"'.format(self.var[mod_name][item].get()), content)
-		item = "Prompt_max_lenght"
-		mdef = self.tabs[mod_name][item]["mdef"]
-		re   = self.tabs[mod_name][item]["re"]
-		content = replacer_value(mdef, re, self.var[mod_name][item].get(), content)
-		#-- Common
-		mod_name = "Common"
-		for item in ("Tests", "Drivers", "Users", "Conio", "Fs", "Net"):
-			mdef    = self.tabs[mod_name][item]["mdef"]
-			inc     = (self.var[mod_name][item].get() == 1)
-			content = replacer_h(mdef, inc, content)
-    		#-- Tests, Users, Net, Drivers, Levels, Build
-    		for mod_name in ("Tests", "Users", "Net", "Drivers", "Build", "Levels"):
-    			for item in self.tabs[mod_name].keys():
-        			inc     = self.tabs[mod_name][item]["inc"]
-            			mdef    = self.tabs[mod_name][item]["mdef"]
-                		content = replacer_h(mdef, inc, content)
-		#-- write conf_h
-		write_file(self.files["conf_h"], content)
+            		code_gen.write_autoconf_h(self.files["autoconf_h"] + ".in")
+            		code_gen.build_link(self.linkers)
+            		code_gen.write_autoconf(self.files["autoconf"] + ".in")
+            		self.write_config(".config.in")
 
 	def config_cmp(self, fconf1, fconf2):
 		""" some verification """
@@ -189,24 +98,21 @@ class configure:
 		json1, json2 = json.loads(config1), json.loads(config2)
 		if not json1.keys().sort() == json2.keys().sort():
 			return False
-		for item in json1["Menu"]:
+		for item in json1["Menu"].keys():
 			if not json1[item].keys().sort() == json2[item].keys().sort():
 				return False
 		return True
 
 	def restore_config(self):
-	        if not os.path.exists(".config"):
-	    		shutil.copyfile(".config.default", ".config")
-	    	if not os.path.exists("scripts/autoconf"):
-	    		shutil.copyfile("scripts/autoconf.in", "scripts/autoconf")
-	    	if not os.path.exists("scripts/autoconf.h"):
-	    		shutil.copyfile("scripts/autoconf.h.in", "scripts/autoconf.h")
-	    	if not self.config_cmp(".config", ".config.default"):
-	    		print ".config and .config.default have sharp distinction, maybe .config is out of date?"
-	    		shutil.copyfile(".config.default", ".config")
+	    	for file in (".config", "scripts/autoconf", "scripts/autoconf.h"):
+	    		if not os.path.exists(file):
+	    			shutil.copyfile(file + ".in", file)
+	    	if not self.config_cmp(".config", ".config.in"):
+	    		print ".config and .config.in have sharp distinction, maybe .config is out of date?"
+	    		shutil.copyfile(".config.in", ".config")
 	    		shutil.copyfile("scripts/autoconf.in", "scripts/autoconf")
 	    	self.read_config(".config")
-	    	for tab in self.menu:
+	    	for tab in self.menu.keys():
 	    	        self.var[tab] = { "0" : 0 }
 	        shutil.copyfile(".config", ".config.old")
 
@@ -214,7 +120,7 @@ class configure:
 		if self.mode == "x":
 			self.gui = configure_gui(self)
 			#-- Common frame
-			self.gui.show_common("Monitor Configurator")
+			self.gui.show_common("Common")
 			#-- Arch frame
 			self.gui.show_arch("Arch")
 			#-- Drivers frame

@@ -25,29 +25,22 @@
 		"Debug": {
 			"desc": "debug",
 			"inc": 1,
-			"status": 1,
 			"mdef": "DEBUG_TRG",
-			"dep": {}
+			"status": 1
 		},
 		"Doxygen": {
 			"desc": "docs",
 			"inc": 0,
-			"status": 1,
 			"mdef": "DOXYGEN_TRG",
-			"dep": {}
+			"status": 1
 		},
 		"Release": {
 			"desc": "release",
 			"inc": 0,
-			"status": 1,
 			"mdef": "RELEASE_TRG",
-			"dep": {}
+			"status": 1
 		},
 		"Simulation": {
-			"desc": "simulation",
-			"inc": 0,
-			"status": 1,
-			"mdef": "SIMULATION_TRG",
 			"dep": {
 				"Common": [
 					"Users",
@@ -62,7 +55,260 @@
 					"Trace",
 					"Error"
 				]
-			}
+			},
+			"desc": "simulation",
+			"inc": 0,
+			"mdef": "SIMULATION_TRG",
+			"status": 1
+		}
+	},
+	"Common": {
+		"Conio": {
+			"desc": "Console support",
+			"inc": 1,
+			"mdef": "MONITOR_CONIO",
+			"status": 1
+		},
+		"Disassemble": {
+			"desc": "Disassemble",
+			"inc": 0,
+			"mdef": "DISASSEMBLE",
+			"status": 1
+		},
+		"Drivers": {
+			"desc": "Drivers enable",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVERS",
+			"status": 1
+		},
+		"Fs": {
+			"desc": "File system support",
+			"inc": 1,
+			"mdef": "MONITOR_FS",
+			"status": 1
+		},
+		"Misc": {
+			"desc": "Miscellaneous",
+			"inc": 1,
+			"mdef": "MONITOR_MISC",
+			"status": 1
+		},
+		"Net": {
+			"desc": "Network support",
+			"inc": 1,
+			"mdef": "MONITOR_NETWORK",
+			"status": 1
+		},
+		"Sign_bin": {
+			"desc": "Sign checksum",
+			"inc": 1,
+			"mdef": "SIGN_CHECKSUM",
+			"status": 1
+		},
+		"Target": {
+			"inc": "monitor",
+			"mdef": "TARGET",
+			"re": "(\\w+)",
+			"status": 1
+		},
+		"Tests": {
+			"desc": "Express tests",
+			"inc": 1,
+			"mdef": "MONITOR_TESTS",
+			"status": 1
+		},
+		"Users": {
+			"desc": "Shell commands",
+			"inc": 1,
+			"mdef": "MONITOR_USERS",
+			"status": 1
+		}
+	},
+	"Conio": {
+		"Prompt": {
+			"inc": "monitor> ",
+			"mdef": "MONITOR_PROMPT",
+			"re": "([a-zA-Z0-9._ ->#@<]+)",
+			"status": 1
+		},
+		"Prompt_max_lenght": {
+			"inc": "15",
+			"mdef": "MONITOR_PROMPT_MAX_LENGTH",
+			"re": "([0-9]+)",
+			"status": 1
+		},
+		"Start_msg": {
+			"inc": "Welcome to Monitor shell and have a lot of fun...",
+			"mdef": "MONITOR_START_MSG",
+			"re": "([\\a-zA-Z0-9._ ->]+)",
+			"status": 1
+		}
+	},
+	"Drivers": {
+		"amba_pnp": {
+			"dep": {
+				"Drivers": [
+					"irq_ctrl",
+					"timer",
+					"uart"
+				]
+			},
+			"desc": "AMBA plug & play",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVER_AMBA_PNP",
+			"status": 1
+		},
+		"irq_ctrl": {
+			"dep": {
+				"Tests": [
+					"test_irq_availability"
+				]
+			},
+			"desc": "interrupt unit",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVER_GAISLER_IRQ_CTRL",
+			"status": 1
+		},
+		"timer": {
+			"desc": "timer",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVER_GAISLER_TIMER",
+			"status": 1
+		},
+		"uart": {
+			"dep": {
+				"Common": [
+					"Conio",
+					"Users",
+					"Misc"
+				],
+				"Levels": [
+					"Debug",
+					"Error",
+					"Warn",
+					"Trace"
+				]
+			},
+			"desc": "uart",
+			"inc": 1,
+			"mdef": "MONITOR_DRIVER_GAISLER_UART",
+			"status": 1
+		}
+	},
+	"Files": {
+		"autoconf": "scripts/autoconf",
+		"autoconf_h": "scripts/autoconf.h",
+		"shell_inc": "src/conio/shell.inc",
+		"users_inc": "src/conio/users.inc"
+	},
+	"Fs": {},
+	"Levels": {
+		"Debug": {
+			"desc": "Debug msg level",
+			"inc": 0,
+			"mdef": "_DEBUG",
+			"status": 1
+		},
+		"Error": {
+			"desc": "Error msg level",
+			"inc": 1,
+			"mdef": "_ERROR",
+			"status": 1
+		},
+		"Trace": {
+			"desc": "Trace msg level",
+			"inc": 1,
+			"mdef": "_TRACE",
+			"status": 1
+		},
+		"Warn": {
+			"desc": "Warn msg level",
+			"inc": 0,
+			"mdef": "_WARN",
+			"status": 1
+		}
+	},
+	"Linkers": [
+		"linkrom",
+		"linkram",
+		"linksim"
+	],
+	"Menu": {
+		"Arch": 0,
+		"Build": 0,
+		"Common": 0,
+		"Conio": 1,
+		"Drivers": 1,
+		"Fs": 1,
+		"Levels": 0,
+		"Misc": 1,
+		"Net": 1,
+		"Tests": 1,
+		"Users": 1
+	},
+	"Misc": {},
+	"Net": {
+		"dhcp": {
+			"desc": "dhcp proto",
+			"inc": 1,
+			"mdef": "MONITOR_NET_DHCP",
+			"status": 1
+		},
+		"icmp": {
+			"desc": "icmp proto",
+			"inc": 1,
+			"mdef": "MONITOR_NET_ICMP",
+			"status": 1
+		},
+		"ipv4": {
+			"desc": "ipv4 proto",
+			"inc": 1,
+			"mdef": "MONITOR_NET_IP_V4",
+			"status": 1
+		},
+		"tftp": {
+			"desc": "tftp proto",
+			"inc": 1,
+			"mdef": "MONITOR_NET_TFTP",
+			"status": 1
+		},
+		"udp": {
+			"desc": "udp proto",
+			"inc": 1,
+			"mdef": "MONITOR_NET_UDP",
+			"status": 1
+		}
+	},
+	"Tests": {
+		"test_checksum": {
+			"desc": "crc16 checksum",
+			"inc": 0,
+			"mdef": "MONITOR_TEST_CHECKSUM",
+			"status": 1
+		},
+		"test_cpu_context": {
+			"desc": "cpu_context save/restore",
+			"inc": 1,
+			"mdef": "MONITOR_TEST_CPU_CONTEXT",
+			"status": 1
+		},
+		"test_irq_availability": {
+			"desc": "irq availability",
+			"inc": 0,
+			"mdef": "MONITOR_TEST_IRQ_AVAILABILITY",
+			"status": 1
+		},
+		"test_mmu": {
+			"desc": "mmu",
+			"inc": 0,
+			"mdef": "MONITOR_TEST_MMU",
+			"status": 1
+		},
+		"test_soft_traps": {
+			"desc": "soft traps",
+			"inc": 1,
+			"mdef": "MONITOR_TEST_SOFT_TRAPS",
+			"status": 1
 		}
 	},
 	"Users": {
@@ -126,254 +372,5 @@
 			"mdef": "MONITOR_USER_WMEM",
 			"status": 1
 		}
-	},
-	"Conio": {
-		"Prompt": {
-			"inc": "monitor> ",
-			"mdef": "MONITOR_PROMPT",
-			"re": "([a-zA-Z0-9._ ->#@<]+)",
-			"status": 1
-		},
-		"Prompt_max_lenght": {
-			"inc": "15",
-			"mdef": "MONITOR_PROMPT_MAX_LENGTH",
-			"re": "([0-9]+)",
-			"status": 1
-		},
-		"Start_msg": {
-			"inc": "Welcome to Monitor shell and have a lot of fun...",
-			"mdef": "MONITOR_START_MSG",
-			"re": "([\\a-zA-Z0-9._ ->]+)",
-			"status": 1
-		}
-	},
-	"Common": {
-		"Disassemble": {
-			"desc": "Disassemble",
-			"inc": 0,
-			"mdef": "DISASSEMBLE",
-			"status": 1
-		},
-		"Sign_bin": {
-			"desc": "Sign checksum",
-			"inc": 1,
-			"mdef": "SIGN_CHECKSUM",
-			"status": 1
-		},
-		"Target": {
-			"inc": "monitor",
-			"mdef": "TARGET",
-			"re": "(\\w+)",
-			"status": 1
-		},
-		"Tests": {
-			"inc": 1,
-			"desc": "Express tests",
-			"mdef": "MONITOR_TESTS",
-			"status": 1
-		},
-		"Net": {
-			"inc": 1,
-			"desc": "Network support",
-			"mdef": "MONITOR_NETWORK",
-			"status": 1
-		},
-		"Users": {
-			"inc": 1,
-			"desc": "Shell commands",
-			"mdef": "MONITOR_USERS",
-			"status": 1
-		},
-		"Conio": {
-			"inc": 1,
-			"desc": "Console support",
-			"mdef": "MONITOR_CONIO",
-			"status": 1
-		},
-		"Fs": {
-			"inc": 1,
-			"desc": "File system support",
-			"mdef": "MONITOR_FS",
-			"status": 1
-		},
-		"Drivers": {
-			"inc": 1,
-			"desc": "Drivers enable",
-			"mdef": "MONITOR_DRIVERS",
-			"status": 1
-		},
-		"Misc": {
-			"inc": 1,
-			"desc": "Miscellaneous",
-			"mdef": "MONITOR_MISC",
-			"status": 1
-		}
-	},
-	"Fs": {},
-	"Misc": {},
-	"Drivers": {
-		"amba_pnp": {
-			"dep": {
-				"Drivers": [
-					"irq_ctrl",
-					"timer",
-					"uart"
-				]
-			},
-			"desc": "AMBA plug & play",
-			"inc": 1,
-			"mdef": "MONITOR_DRIVER_AMBA_PNP",
-			"status": 1
-		},
-		"irq_ctrl": {
-			"dep": {
-				"Tests": [
-					"test_irq_availability"
-				]
-			},
-			"desc": "interrupt unit",
-			"inc": 1,
-			"mdef": "MONITOR_DRIVER_GAISLER_IRQ_CTRL",
-			"status": 1
-		},
-		"timer": {
-			"desc": "timer",
-			"inc": 1,
-			"mdef": "MONITOR_DRIVER_GAISLER_TIMER",
-			"status": 1
-		},
-		"uart": {
-			"dep": {
-				"Common": [
-					"Conio",
-					"Users",
-					"Misc"
-				],
-				"Levels": [
-					"Debug",
-					"Error",
-					"Warn",
-					"Trace"
-				]
-			},
-			"desc": "uart",
-			"inc": 1,
-			"mdef": "MONITOR_DRIVER_GAISLER_UART",
-			"status": 1
-		}
-	},
-	"Files": {
-		"autoconf": "scripts/autoconf",
-		"conf_h": "scripts/autoconf.h",
-		"shell_inc": "src/conio/shell.inc",
-		"users_inc": "src/conio/users.inc"
-	},
-	"Levels": {
-		"Debug": {
-			"inc": 0,
-			"mdef": "_DEBUG",
-			"status": 1,
-			"desc": "Debug msg level"
-		},
-		"Error": {
-			"inc": 1,
-			"mdef": "_ERROR",
-			"status": 1,
-			"desc": "Error msg level"
-		},
-		"Trace": {
-			"inc": 1,
-			"mdef": "_TRACE",
-			"status": 1,
-			"desc": "Trace msg level"
-		},
-		"Warn": {
-			"inc": 0,
-			"mdef": "_WARN",
-			"status": 1,
-			"desc": "Warn msg level"
-		}
-	},
-	"Linkers": [
-		"linkrom",
-		"linkram",
-		"linksim"
-	],
-	"Net": {
-		"dhcp": {
-			"desc": "dhcp proto",
-			"inc": 1,
-			"mdef": "MONITOR_NET_DHCP",
-			"status": 1
-		},
-		"icmp": {
-			"desc": "icmp proto",
-			"inc": 1,
-			"mdef": "MONITOR_NET_ICMP",
-			"status": 1
-		},
-		"ipv4": {
-			"desc": "ipv4 proto",
-			"inc": 1,
-			"mdef": "MONITOR_NET_IP_V4",
-			"status": 1
-		},
-		"tftp": {
-			"desc": "tftp proto",
-			"inc": 1,
-			"mdef": "MONITOR_NET_TFTP",
-			"status": 1
-		},
-		"udp": {
-			"desc": "udp proto",
-			"inc": 1,
-			"mdef": "MONITOR_NET_UDP",
-			"status": 1
-		}
-	},
-	"Tests": {
-		"test_cpu_context": {
-			"desc": "cpu_context save/restore",
-			"inc": 1,
-			"mdef": "MONITOR_TEST_CPU_CONTEXT",
-			"status": 1
-		},
-		"test_irq_availability": {
-			"desc": "irq availability",
-			"inc": 0,
-			"mdef": "MONITOR_TEST_IRQ_AVAILABILITY",
-			"status": 1
-		},
-		"test_soft_traps": {
-			"desc": "soft traps",
-			"inc": 1,
-			"mdef": "MONITOR_TEST_SOFT_TRAPS",
-			"status": 1
-		},
-		"test_mmu": {
-			"desc": "mmu",
-			"inc": 0,
-			"mdef": "MONITOR_TEST_MMU",
-			"status": 1
-		},
-		"test_checksum": {
-			"desc": "crc16 checksum",
-			"inc": 0,
-			"mdef": "MONITOR_TEST_CHECKSUM",
-			"status": 1
-		}
-	},
-	"Menu": [
-		"Common",
-		"Arch",
-		"Drivers",
-		"Net",
-		"Tests",
-		"Users",
-		"Conio",
-		"Fs",
-		"Misc",
-		"Levels",
-		"Build"
-	]
+	}
 }

@@ -77,6 +77,8 @@ if __name__=='__main__':
                     			obj.build = "ram"
                     		elif a == "release":
                     			obj.build = "rom"
+                    		elif a == "sim":
+                    			obj.build = "sim"
                     	else:
 				assert False, "unhandled option"
 		if run == "clean":
