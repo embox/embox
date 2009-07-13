@@ -58,7 +58,6 @@
 /* Shell commands */
 #define MONITOR_USERS 1
 #define MONITOR_USER_ARP 1
-#define MONITOR_USER_ETH 1
 #define MONITOR_USER_GOTO 1
 #define MONITOR_USER_HELP 1
 #define MONITOR_USER_LDIMG 1
