@@ -7,7 +7,7 @@
 # requirement: python >= 2.6
 
 from misc import *
-import string, re, json, shutil
+import string, re
 
 class configure_gen:
 	def __init__(self, core_obj):
@@ -101,7 +101,7 @@ class configure_gen:
 			content = replacer_h(mdef, inc, content)
 		#-- Conio ----------------------------------------------------------------------
 		mod_name = "Conio"
-		for item in ("Prompt", "Start_msg"):
+		for item in ["Prompt", "Start_msg"]:
 			mdef = self.tabs[mod_name][item]["mdef"]
 			re   = self.tabs[mod_name][item]["re"]
 #			content = replacer_value(mdef, re, '"{0}"'.format(self.var[mod_name][item].get()), content)

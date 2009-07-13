@@ -138,7 +138,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 
 	static const char * default_prompt = "";
 	strncpy(this->prompt, (prompt != NULL) ? prompt : default_prompt,
-			PROMPT_MAX_LENGTH);
+			MONITOR_PROMPT_MAX_LENGTH);
 
 	screen_out_show_prompt(this->view, this->prompt);
 

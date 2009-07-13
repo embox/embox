@@ -15,6 +15,7 @@
 #include "types.h"
 #include "cmdline.h"
 #include "screen.h"
+#include "common.h"
 
 struct _CONSOLE;
 
@@ -39,8 +40,7 @@ typedef struct _CONSOLE {
 
 	SCREEN view[1];
 
-#define PROMPT_MAX_LENGTH		15
-	char prompt[PROMPT_MAX_LENGTH + 1];
+	char prompt[MONITOR_PROMPT_MAX_LENGTH + 1];
 
 } CONSOLE;
 

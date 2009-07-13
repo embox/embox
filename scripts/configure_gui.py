@@ -10,7 +10,7 @@ import Tkinter
 from Tkinter import *
 from conf_tab import *
 from misc import *
-import tkSimpleDialog, re
+import tkSimpleDialog
 
 class configure_gui:
 	def __init__(self, core_obj):

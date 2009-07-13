@@ -9,7 +9,7 @@
 from misc import *
 from configure_gui import *
 from configure_gen import *
-import sys, string, os, traceback, re, json, shutil, getopt
+import sys, string, os, traceback, json, shutil, getopt
 
 class configure:
 	def __init__(self, mode="x"):
