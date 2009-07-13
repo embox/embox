@@ -46,8 +46,9 @@ ENTRY(_hardreset)
 
 MEMORY
 {
-    rom     : ORIGIN = 0x00000000, LENGTH = 256K
-    sdram   : ORIGIN = 0xA0001000, LENGTH = 256K
+  rom     : ORIGIN = 0x00000000, LENGTH = 64K
+  sdram	  : ORIGIN = 0xA001000, LENGTH = 256K
+  sram    : ORIGIN = 0xA0000000, LENGTH = 1K
 }
 
 /*
@@ -64,58 +65,64 @@ PROVIDE (software_init_hook = 0);
 PROVIDE (_software_init_hook = 0);
 
 /*
- * stick everything in ram (of course)
+ *
  */
 SECTIONS
 {
-    .text :
-    {
-	_text_start = .;
-	*(.text)
-	. = ALIGN (0x10);
+	.text :
+	{
+		_text_start = .;
+		*(.text)
+		. = ALIGN (0x4);
+		*(.rodata*)
+		. = ALIGN(0x4);
+		*(.const)
+		. = ALIGN(0x4);
 
-	*(.rodata*)
-	. = ALIGN(0x10);
+		__express_tests_start = . ;
+	    *(.express_tests)
+	    __express_tests_end = .;
 
-	*(.const)
-	. = ALIGN (0x10);
-	_endtext = .;
-	. = ALIGN(0x4);
-	__express_tests_start = . ;
-	*(.express_tests)
-        __express_tests_end = .;
+	    . = ALIGN(0x4);
+	    __modules_handlers_start = .;
+	    *(.modules_handlers)
+	    __modules_handlers_end = .;
 
-        . = ALIGN(0x4);
-        __modules_handlers_start = .;
-        *(.modules_handlers)
-        __modules_handlers_end = .;
-
-	_piggy_start = .;
-	_piggy_end = .;
+	    . = ALIGN(0x4);
+	    _piggy_start = .;
+	    _piggy_end = .;
+	    . = ALIGN(0x4);
 
         *(.checksum)
         . = ALIGN(0x4);
+		_endtext = .;
 
-	/*_data_image_start = .;*/
-    } > rom
-    .data : AT (ADDR (.text) + SIZEOF (.text))
-    {
-	_data_start = .;
-	*(.data)
-	. = ALIGN(0x4);
-	_data_end = .;
-    } > sdram
-    .bss :
-    {
-	_bstart = . ; *(.bss) *(COMMON) ;
-	. = ALIGN(0x4);
-	_bend = . ;
-    } > sdram
-    .checksum :
-    {
-        . = ALIGN(0x4);
-        *(.checksum)
-    } > sdram
-    __stack = _bend + 0x20000;
-    PROVIDE (__stack = _bend + 0x20000);
+		_data_image_start = .;
+	}> rom
+
+	.data : AT (ADDR (.text) + SIZEOF (.text))
+	{
+	    . = ALIGN(0x4);
+	    _data_start = .;
+	    *(.data)
+		_data_end = .;
+	} > sdram
+
+	.bss :
+	{
+		. = ALIGN(0x4);
+	    _bstart = . ; *(.bss) *(COMMON) ;
+	    _bend = ALIGN(0x8);
+	} > sdram
+    _stack = _bend + 0x100000;
+    __checksum = 0x00000000;
+	PROVIDE (__stack = _bend + 0x100000);
+	.internal_mem :
+	{
+		. = ALIGN(0x8);
+		_internal_start = .;
+		*(.internal_mem)
+		_internal_end = .;
+	}>sram
 }
+
