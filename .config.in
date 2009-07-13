@@ -348,7 +348,7 @@
 		"lspnp": {
 			"desc": "show list of plug and play devices",
 			"inc": 1,
-			"mdef": "MONITOR_USER_LSPNP",
+			"mdef": "MONITOR_USER_PNPLS",
 			"status": 1
 		},
 		"mem": {
