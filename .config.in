@@ -151,6 +151,9 @@
 					"irq_ctrl",
 					"timer",
 					"uart"
+				],
+				"Users": [
+					"lspnp"
 				]
 			},
 			"desc": "AMBA plug & play",
@@ -189,7 +192,7 @@
 					"Trace"
 				]
 			},
-			"desc": "uart",
+			"desc": "Universal Asynchronous Receiver/Transmitter",
 			"inc": 1,
 			"mdef": "MONITOR_DRIVER_GAISLER_UART",
 			"status": 1
@@ -334,6 +337,12 @@
 			"desc": "copy text image from ROM into RAM",
 			"inc": 1,
 			"mdef": "MONITOR_USER_LDIMG",
+			"status": 1
+		},
+		"ls": {
+			"desc": "list directory contents",
+			"inc": 1,
+			"mdef": "MONITOR_USER_LS",
 			"status": 1
 		},
 		"lspnp": {

@@ -68,5 +68,6 @@
 #define MONITOR_USER_PING 1
 #define MONITOR_USER_UDPD 1
 #define MONITOR_USER_WMEM 1
+#define MONITOR_USER_LS 1
 
 #endif /* _AUTOCONF_H_ */
