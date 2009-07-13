@@ -5,19 +5,23 @@
 			"Cflags": {
 				"inc": "-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_",
 				"mdef": "CCFLAGS",
+				"status": 1,
 				"re": "([A-Za-z0-9_\\-# ]+)"
 			},
 			"Compiler": {
 				"inc": "sparc-elf",
 				"mdef": "CC_PACKET",
+				"status": 1,
 				"re": "(\\w+(-\\w+)?)"
 			},
 			"Ldflags": {
 				"inc": "-Wl -N -nostdlib -g",
 				"mdef": "LDFLAGS",
+				"status": 1,
 				"re": "([A-Za-z0-9_\\-# ]+)"
 			},
 			"mdef": "MONITOR_ARCH_SPARC",
+			"status": 1,
 			"num": 0
 		}
 	},
@@ -132,7 +136,7 @@
 		},
 		"Prompt_max_lenght": {
 			"inc": "15",
-			"mdef": "MONITOR_PROMPT_MAX_LENGTH",
+			"mdef": "MONITOR_MAX_PROMPT_LENGTH",
 			"re": "([0-9]+)",
 			"status": 1
 		},

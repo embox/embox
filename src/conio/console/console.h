@@ -40,7 +40,7 @@ typedef struct _CONSOLE {
 
 	SCREEN view[1];
 
-	char prompt[MONITOR_PROMPT_MAX_LENGTH + 1];
+	char prompt[MONITOR_MAX_PROMPT_LENGTH + 1];
 
 } CONSOLE;
 

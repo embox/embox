@@ -81,9 +81,9 @@ int hardware_init_hook() {
 
 	TRACE("\nStarting Monitor...\n");
 #ifndef SIMULATION_TRG
-	//    eth_init();//interfaces
-	//    icmp_init();
-	//    udp_init();
+	    eth_init();//interfaces
+	    icmp_init();
+	    udp_init();
 
 #endif /* SIMULATION_TRG */
 

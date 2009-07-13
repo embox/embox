@@ -107,11 +107,13 @@ class configure_gui:
 		for item in [ "Compiler", "Ldflags", "Cflags" ]:
 		        Label(frame, text = item, width = 25, background = "lightblue").grid(row = k, column = 0)
 		    	self.var[mod_name][item] = StringVar()
+		    	current_arch = self.core.get_arch()
+		    	inc = self.tabs[mod_name][current_arch][item]["inc"]
+		    	status = self.tabs[mod_name][current_arch][item]["status"]
 		        self.widgets[mod_name][item] = Entry( frame, width = 25, \
+		    					      state        = getStatus(status), \
 		    					      textvariable = self.var[mod_name][item])
 		        self.widgets[mod_name][item].grid(row = 1 + k, column = 0)
-		        current_arch = self.core.get_arch()
-		        inc = self.tabs[mod_name][current_arch][item]["inc"]
 	    		self.var[mod_name][item].set(inc)
 		        k += 2
 

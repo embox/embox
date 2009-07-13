@@ -133,7 +133,7 @@ void shell_start() {
 		printf("Failed to create a console");
 		return;
 	}
-	printf(MONITOR_START_MSG);
+	printf("\n%s", MONITOR_START_MSG);
 	console_start(console, prompt);
 }
 
