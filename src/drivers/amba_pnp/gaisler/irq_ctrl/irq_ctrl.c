@@ -55,6 +55,7 @@ int irq_ctrl_init(){
 
 int irq_ctrl_enable_irq(int irq_num){
 	CHECK_INIT_MODULE();
+	LOG_DEBUG("irq=%d enable!\n", irq_num);
 	SetBit(dev_regs->mask, irq_num);
 	return 0;
 }

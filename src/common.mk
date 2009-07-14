@@ -8,7 +8,6 @@ create_include_dirs_lst: $(SUBDIRS-y) $(SUBDIRS-n)
 
 $(SUBDIRS-y):
 	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
-	@printf "  [D]\t$@\n"
 
 $(SUBDIRS-n):
 	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)

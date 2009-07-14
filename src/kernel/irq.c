@@ -68,6 +68,7 @@ BOOL irq_remove_trap_handler(BYTE tt) {
 }
 
 void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
+	LOG_DEBUG("set irq=%d\n", irq_number);
 	// check IRQ number
 	if (irq_number != irq_number & 0xF) {
 		return;
