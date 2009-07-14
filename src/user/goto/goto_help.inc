@@ -1,11 +1,15 @@
-/**
- * \file goto_help.inc
- *
- * \date 02.07.2009
- * \author kse
- */
-"*** GOTO\n"
-" - start execution at <addr> without initialisation\n"
-"*FORMAT: goto -a <addr>\n"
-"\t <addr> - entry point address.\n"
-
+"NAME                                                 \n"
+"    goto - start execution.                          \n"
+"SYNOPSIS                                             \n"
+"    goto [-a addr] [-h]                              \n"
+"DESCRIPTION                                          \n"
+"    Start execution at <addr> without initialisation.\n"
+"OPTIONS                                              \n"
+"    -a addr  - entry point address.                  \n"
+"    -h       - show this help.                       \n"
+"EXAMPLES                                             \n"
+"    goto -a 0x666                                    \n"
+"SEE ALSO                                             \n"
+"    ldimg                                            \n"
+"AUTHORS                                              \n"
+"    Kse                                              \n"

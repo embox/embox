@@ -1,8 +1,8 @@
-/*
- * mem.c
+/**
+ * \file mem.c
  *
- *  Created on: 13.02.2009
- *      Author: Alexey Fomin
+ * \date 13.02.2009
+ * \author Alexey Fomin
  */
 
 #include "shell.h"

@@ -1,8 +1,8 @@
-/*
- * mem.h
+/**
+ * \file mem.h
  *
- *  Created on: 13.02.2009
- *      Author: Alexey Fomin
+ * \date 13.02.2009
+ * \author Alexey Fomin
  */
 #ifndef MEM_H_
 #define MEM_H_

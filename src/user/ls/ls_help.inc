@@ -1,10 +1,15 @@
-/**
- * \file ls_help.inc
- * \date Jul 1, 2009
- * \author anton
- * \details
- */
-"*** LS                                         \n"
-" - view file info.             \n"
-"*FORMAT: ls [-p path]\n"
-"	-p path of directory defaults '/' (root dir). Path format is /dir/filename"
+"NAME                                    \n"
+"    ls - list directory contents.       \n"
+"SYNOPSIS                                \n"
+"    ls [-p path] [-h]                   \n"
+"DESCRIPTION                             \n"
+"    List information about the FILEs    \n"
+"    (the current directory by default). \n"
+"OPTIONS                                 \n"
+"    -p -  path of directory.            \n"
+"          defaults '/' (root dir).      \n"
+"          Path format is /dir/filename. \n"
+"SEE ALSO                                \n"
+"    rm                                  \n"
+"AUTHORS                                 \n"
+"    Anton                               \n"
