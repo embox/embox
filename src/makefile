@@ -21,13 +21,13 @@ create_include_dirs_lst: $(SUBDIRS-y) $(SUBDIRS-n)
 
 $(SUBDIRS-y):
 ifdef G_DIRS
-	@declare -x INCLUDE_DIRS=$(filter-out '\\','$(G_DIRS)'); $(MAKE) -C $@ $(MAKEOP)
+	@declare -x INCLUDE_DIRS=$(filter-out '\\','$(G_DIRS)'); $(MAKE) --no-print-directory -C $@ $(MAKEOP)
 else
-	@$(MAKE) -C $@ $(MAKEOP)
+	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
 endif
 
 $(SUBDIRS-n):
-	@$(MAKE) -C $@ $(MAKEOP)
+	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
 
 release: $(SUBDIRS-y)
 	@#TODO may be use GOBJS list of objects files

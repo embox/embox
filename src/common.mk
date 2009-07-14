@@ -7,11 +7,11 @@ create_include_dirs_lst: $(SUBDIRS-y) $(SUBDIRS-n)
 	@echo ' -I$(CURDIR)\' >> $(ROOT_DIR)/include_dirs.lst
 
 $(SUBDIRS-y):
-	@$(MAKE) -C $@ $(MAKEOP)
+	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
 	@printf "  [D]\t$@\n"
 
 $(SUBDIRS-n):
-	@$(MAKE) -C $@ $(MAKEOP)
+	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
 
 all: $(SUBDIRS-y) $(OBJS-y)
 

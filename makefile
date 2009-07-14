@@ -49,22 +49,22 @@ mkdir:
 
 build:
 	@rm -f objs.lst include_dirs.lst
-	@declare -x MAKEOP=create_objs_lst; make --directory=src create_objs_lst
-	@declare -x MAKEOP=create_include_dirs_lst; make --directory=src create_include_dirs_lst
+	@declare -x MAKEOP=create_objs_lst; $(MAKE) --no-print-directory --directory=src create_objs_lst
+	@declare -x MAKEOP=create_include_dirs_lst; $(MAKE) --no-print-directory --directory=src create_include_dirs_lst
 	@echo ' ' >> $(ROOT_DIR)/include_dirs.lst
-	@declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all
+	@declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --no-print-directory --directory=src all
 
 checksum:
 	@if [ $(SIGN_CHECKSUM) == y ]; \
 	then \
 	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
-	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; make --directory=src all; \
+	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --no-print-directory --directory=src all; \
 	else \
 	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean; \
 	fi;
 
 clean:
-	@declare -x MAKEOP=clean; make --directory=src clean
+	@declare -x MAKEOP=clean; $(MAKE) --no-print-directory --directory=src clean
 	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old docs/
 	@$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
