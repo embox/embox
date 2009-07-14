@@ -1,16 +1,14 @@
-/*
- * lspnp_help.inc
- *
- * Created on: 20.02.2009
- *      Author: abatyukov
- */
-"*** LSPNP\n"
-" - show list of plan and play devices\n"
-"*FORMAT: lspnp [-b <bus_type> [-n <dev_id>]]\n"
-"\t <bus_type> - type of the bus of plag and play device.\n"
-"\t              Possible values: ahbm - AHB bus, master\n"
-"\t                               ahbsl - AHB bus, slave\n"
-"\t                               apb - APB bus\n"
-"\t                               all - AHB&APB buses\n"
-"\t              by default: all\n"
-"\t <dev_id>   - number of required device."
+"NAME                                             \n"
+"    lspnp - show list of plug and play devices   \n"
+"SYNOPSIS                                         \n"
+"    lspnp [-b <bus_type> [-n <dev_id>]           \n"
+"OPTIONS                                          \n"
+"    -b bus_type  - type of the bus of P&P device.\n"
+"        Possible values: ahbm  - AHB bus, master \n"
+"                         ahbsl - AHB bus, slave  \n"
+"                         apb   - APB bus         \n"
+"                         all   - AHB&APB buses   \n"
+"        by default: all                          \n"
+"    -n dev_id    - number of required device.    \n"
+"AUTHORS                                          \n"
+"    Abatyukov                                    \n"
