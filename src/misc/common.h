@@ -4,7 +4,7 @@
 #include "../../scripts/autoconf.h"
 
 #ifdef _TEST_SYSTEM_
-#include "conio.h"
+//#include "conio.h"
 
 #define SetBit(rg, bit)   { (rg) |=  (1UL << (bit)); }
 #define ClearBit(rg, bit) { (rg) &= ~(1UL << (bit)); }
