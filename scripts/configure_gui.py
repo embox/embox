@@ -208,7 +208,8 @@ class configure_gui:
 
 	def onPress_dep(self, mod_name, item):
 		onPress(self.tabs[mod_name], item, "inc")
-		if not "dep" in self.tabs[mod_name][item].keys():
+		if not "dep" in self.tabs[mod_name][item].keys() or \
+		   self.widgets[mod_name][item]["state"] == getStatus(0):
 			return
 		for mod in self.tabs[mod_name][item]["dep"].keys():
                         for obj in self.tabs[mod_name][item]["dep"][mod]:
@@ -252,12 +253,14 @@ class configure_gui:
 			if item != entry:
 				self.tabs[mod_name][entry]["inc"] = 0
 				self.var[mod_name][entry].set(0)
-		if not "dep" in self.tabs[mod_name][item].keys():
+		if not "dep" in self.tabs[mod_name][item].keys() or \
+		   self.widgets[mod_name][item]["state"] == getStatus(0):
 			return
 		for mod in self.tabs[mod_name][item]["dep"].keys():
 			for obj in self.tabs[mod_name][item]["dep"][mod]:
-				self.widgets[mod][obj].select()
-				self.widgets[mod][obj].invoke()
+				if self.widgets[mod][obj]["state"] == getStatus(1) and \
+				   self.var[mod][obj].get() == 1:
+					self.widgets[mod][obj].invoke()
 
 	def show_list(self, mod_name):
 		""" List widget """

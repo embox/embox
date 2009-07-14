@@ -95,7 +95,7 @@ int ping_shell_handler(int argsc, char **argsv) {
 	}
 
 	//get interface
-	if (!get_key('i', keys, keys_amount, &key_value)) {
+	if (!get_key('I', keys, keys_amount, &key_value)) {
 //		LOG_ERROR("choose right interface name '-i'\n");
 //		show_help();
 //		return -1;

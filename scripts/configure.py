@@ -18,7 +18,7 @@ class configure:
 		self.tabs, self.var = ({ "0" : 0 }, { "0" : 0 })
 
 	def read_config(self, fileconf):
-		""" Read config file """
+		""" Read .config/.config.in file """
     		config       = read_file(fileconf)
     		json_conf    = json.loads(config)
     		self.files   = json_conf['Files']
@@ -28,7 +28,7 @@ class configure:
     			self.tabs[tab] = json_conf[tab]
 
 	def write_config(self, fileconf):
-		""" Write config file """
+		""" Write .config/.config.in file """
 		tmp = dict([('Files', self.files), \
 			    ('Linkers', self.linkers), \
 			    ('Menu', self.menu)])
@@ -75,6 +75,7 @@ class configure:
 			return "sparc"
 
 	def make_conf(self):
+		""" Generate code """
 		code_gen = configure_gen(self)
 		code_gen.build_commands(self.files["shell_inc"], self.files["users_inc"])
 		if self.mode == "x":
@@ -84,6 +85,7 @@ class configure:
 			self.write_config(".config")
 
 	def make_def_conf(self):
+		""" Generate default code """
 		code_gen = configure_gen(self)
     		code_gen.build_commands(self.files["shell_inc"], self.files["users_inc"])
     		if self.mode == "x":
@@ -104,6 +106,7 @@ class configure:
 		return True
 
 	def restore_config(self):
+		""" Restore files from default if not exist and read .config """
 	    	for file in (".config", "scripts/autoconf", "scripts/autoconf.h"):
 	    		if not os.path.exists(file):
 	    			shutil.copyfile(file + ".in", file)
@@ -117,6 +120,7 @@ class configure:
 	        shutil.copyfile(".config", ".config.old")
 
 	def main(self):
+		""" Main: TIP: add self.gui.show_<item>(<name>) for new tabs here after declaration in configure_gui.py"""
 		if self.mode == "x":
 			self.gui = configure_gui(self)
 			#-- Common frame

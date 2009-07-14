@@ -17,6 +17,7 @@ class configure_gen:
 		self.var  = core_obj.var
 
     	def build_commands(self, shell_file, users_file):
+    		""" Generate users.inc and shell.inc """
     	        mod_name = 'Users'
     	        #-- generate src/conio/shell.inc
     	        with open(shell_file, 'w+') as fshell:
@@ -44,12 +45,14 @@ class configure_gen:
     	        fuser_include.close()
 
 	def build_link(self, files):
+		""" Edit link scripts """
 	        for file in files:
 	                content = read_file('scripts/' + file)
 	                content = re.sub('OUTPUT_ARCH\((\w+)\)', "OUTPUT_ARCH({0})".format(self.core.get_arch()), content)
 	                write_file('scripts/' + file, content)
 
 	def write_autoconf(self, file):
+		""" Generate autoconf """
 	        #-- read autoconf
 	        content = read_file(file)
 		#-- Arch ------------------------------------------------------------------------
@@ -91,6 +94,7 @@ class configure_gen:
                 write_file(file, content)
 
 	def write_autoconf_h(self, file):
+		""" Generate autoconf.h """
 		#-- read conf_h
 		content = read_file(file)
 		#-- Arch ------------------------------------------------------------------------
