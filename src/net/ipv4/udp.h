@@ -15,16 +15,16 @@ typedef struct _udphdr {
         unsigned short dest;
         unsigned short len;
         unsigned short check;
-	unsigned char data[24];
+	unsigned char  data[24];
 } __attribute__((packed)) udphdr;
 
 #define UDP_HEADER_SIZE	(sizeof(udphdr))
 
 struct udp_sock{
         struct inet_sock inet;
-        int pending;
-        unsigned int corkflag;
-	unsigned short len;
+        int              pending;
+        unsigned int     corkflag;
+	unsigned short   len;
 };
 
 static inline struct udp_sock *udp_sk(const struct sock *sk) {

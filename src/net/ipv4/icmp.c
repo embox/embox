@@ -18,10 +18,10 @@
 #define CB_INFO_SIZE	0x10
 
 typedef struct _ICMP_CALLBACK_INFO {
-	ICMP_CALLBACK cb;
-	void *ifdev;
-	unsigned short ip_id;
-	unsigned char type;
+	ICMP_CALLBACK      cb;
+	void               *ifdev;
+	unsigned short     ip_id;
+	unsigned char      type;
 } ICMP_CALLBACK_INFO;
 
 ICMP_CALLBACK_INFO cb_info[CB_INFO_SIZE];

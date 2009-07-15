@@ -20,15 +20,6 @@ struct sockaddr_in {
         char             sin_zero[8];  /* zero this if you want to */
 };
 
-/*unsigned long inet_addr(const unsigned char *cp) {
-	unsigned long tmp = 0x00000000;
-	int i;
-	for(i=0; i<4; i++) {
-		tmp += ((0xFF & cp[i]) << (3-i)*8);
-	}
-	return tmp;
-}*/
-
 #define htons(n)            n
 
 /* Address to accept any incoming messages. */

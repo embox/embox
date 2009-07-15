@@ -6,5 +6,6 @@ SUBDIRS-y   += core
 
 OBJS-y      += ipaux.o
 OBJS-y      += socket.o
+OBJS-y      += net.o
 
 include $(SRC_DIR)/common.mk

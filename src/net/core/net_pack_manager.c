@@ -12,16 +12,20 @@
 #define PACK_POOL_SIZE	0x100
 
 typedef struct _NET_PACK_INFO {
-	net_packet pack __attribute__((__aligned__));
-	int is_busy __attribute__((__aligned__));
+	net_packet    pack    __attribute__((__aligned__));
+	int           is_busy __attribute__((__aligned__));
 }NET_PACK_INFO;
 
 static NET_PACK_INFO pack_pool[PACK_POOL_SIZE];
 
+static inline int net_pack_is_busy(int num) {
+        return pack_pool[num].is_busy;
+}
+
 net_packet *net_packet_alloc() {
 	int i;
 	for(i = 0; i < PACK_POOL_SIZE; i ++) {
-		if (0 == pack_pool[i].is_busy) {
+		if (!net_pack_is_busy(i)) {
 			pack_pool[i].is_busy = 1;
 			//clear all references
 			memset(&pack_pool[i].pack, 0, sizeof(pack_pool[i].pack) - sizeof(pack_pool[i].pack.data));

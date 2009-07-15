@@ -20,9 +20,9 @@
 static unsigned char brodcast_mac_addr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 typedef struct _ARP_ENTITY {
-	unsigned char hw_addr[6];/**< hardware addr */
-	unsigned char pw_addr[4];/**< protocol addr */
-	void *if_handler;      /**< net_device */
+	unsigned char hw_addr[6];   /**< hardware addr */
+	unsigned char pw_addr[4];   /**< protocol addr */
+	void          *if_handler;  /**< net_device */
 	unsigned char is_busy;
 }ARP_ENTITY;
 

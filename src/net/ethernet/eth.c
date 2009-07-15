@@ -1,6 +1,5 @@
 /**
  * \file eth.c
- *
  * \date Mar 4, 2009
  * \author anton
  */
@@ -15,19 +14,16 @@
 
 #define INTERFACES_QUANTITY 4
 
-static unsigned char def_ip [4] = {192, 168, 0, 80};
-static unsigned char def_mac [6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x00};
-
 typedef struct _CALLBACK_INFO {
-	int is_busy;
-	unsigned short type;
+	int                 is_busy;
+	unsigned short      type;
 	ETH_LISTEN_CALLBACK func;
 }CALLBACK_INFO;
 
 typedef struct _IF_DEVICE {
-	unsigned char ipv4_addr[4];
-	net_device *net_dev;
-	CALLBACK_INFO cb_info[8];
+	unsigned char       ipv4_addr[4];
+	net_device          *net_dev;
+	CALLBACK_INFO       cb_info[8];
 }IF_DEVICE;
 
 static IF_DEVICE ifs[INTERFACES_QUANTITY];
@@ -51,28 +47,34 @@ static int rebuild_header(net_packet * pack) {
 	return 0;
 }
 
-int eth_init() {
+int eth_up(int i, unsigned char ipaddr[4], unsigned char hwaddr[6]) {
 	char iname[6];
-	int cnt = 0, i;
-	TRACE("Initializing ifdevs:\n");
-	for (i = 0; i < INTERFACES_QUANTITY; i ++) {
-		sprintf(iname, "eth%d", i);
-		if (NULL != (ifs[i].net_dev = find_net_device(iname))) {
-			def_ip[3] = 80 + i;
-			def_mac[5] = 1 + i;
-			ifs[i].net_dev->rebuild_header = rebuild_header;
-			eth_set_ipaddr(&ifs[i], def_ip);
-			eth_set_macaddr(&ifs[i], def_mac);
-			TRACE("Found dev %s\n", iname);
-			cnt ++;
-		}
-	}
-	return cnt;
+        sprintf(iname, "eth%d", i);
+        // eth_dev_open(i);
+        if (NULL != (ifs[i].net_dev = find_net_device(iname))) {
+                ifs[i].net_dev->rebuild_header = rebuild_header;
+                eth_set_interface(iname, ipaddr, hwaddr);
+                TRACE("Found dev %s\n", iname);
+                return 0;
+        }
+        return -1;
+}
+
+int eth_down(int i) {
+	char iname[6];
+        sprintf(iname, "eth%d", i);
+    	// eth_dev_close(i);
+	return 0;
+}
+
+int eth_init() {
+
+	return 0;
 }
 
 void *eth_get_ifdev_by_name(const char *if_name) {
 	int i;
-	for (i = 0; i < INTERFACES_QUANTITY; i ++) {
+	for (i = 0; i < INTERFACES_QUANTITY; i++) {
 		TRACE ("ifname %s, net_dev 0x%X\n", if_name, ifs[i].net_dev);
 		if(0 == strncmp(if_name, ifs[i].net_dev->name, sizeof(ifs[i].net_dev->name))) {
 			return &ifs[i];
@@ -85,8 +87,10 @@ int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
 	int i;
 	for (i = 0; i < INTERFACES_QUANTITY; i++ ) {
 		if (0 == strcmp(name, ifs[i].net_dev->name)) {
-			memcpy(ifs[i].ipv4_addr, ipaddr, sizeof(ifs[i].ipv4_addr));
-			memcpy(ifs[i].net_dev->hw_addr, macaddr ,sizeof(ifs[i].net_dev->hw_addr));
+			//memcpy(ifs[i].ipv4_addr, ipaddr, sizeof(ifs[i].ipv4_addr));
+			eth_set_ipaddr(&ifs[i], ipaddr);
+			//memcpy(ifs[i].net_dev->hw_addr, macaddr ,sizeof(ifs[i].net_dev->hw_addr));
+			eth_set_macaddr(&ifs[i], macaddr);
 			return i;
 		}
 	}
@@ -108,19 +112,7 @@ int eth_set_macaddr (void *ifdev, unsigned char macaddr[6]) {
 	memcpy(dev->net_dev->hw_addr, macaddr ,dev->net_dev->addr_len);
 	return 0;
 }
-/*
-int eth_set_interface (char *name, char *ipaddr, char *macaddr) {
-	int i;
-	for (i = 0; i < INTERFACES_QUANTITY; i++ ) {
-		if (0 == strcmp(name, ifs[i].net_dev->name)) {
-			memcpy(ifs[i].ipv4_addr, ipaddr, 4 * sizeof(char));
-			memcpy(ifs[i].net_dev->hw_addr, macaddr ,6 * sizeof(char));
-			return i;
-		}
-	}
-	return -1;
-}
-*/
+
 unsigned char *eth_get_ipaddr(void *handler) {
 	IF_DEVICE *dev = (IF_DEVICE *)handler;
 	if (NULL == dev)

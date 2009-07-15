@@ -1,18 +1,18 @@
-/*
- * wmem_help.inc
- *
- *  Created on: 24.02.2009
- *      Author: Alexey Fomin
- */
+"NAME                                     \n"
+"     wmem - writes to memory             \n"
+"SYNOPSIS                                 \n"
+"     wmem [-h] -a addr -v value          \n"
+"OPTIONS                                  \n"
+"    -h       - to see this page          \n"
+"    -a addr  - address where to write    \n"
+"    -v value - value that will be written\n"
+"               two last bits must be zero\n"
+"EXAMPLES                                 \n"
+"    wmem -a 0x1111 -v 0x2211             \n"
+"    wmem -a 1111 -v 2211                 \n"
+"SEE ALSO                                 \n"
+"    mem                                  \n"
+"AUTHORS                                  \n"
+"    Alexey Fomin                         \n"
 
-"*** WMEM\n"
-" - writes to memory\n"
-"* FORMAT: wmem [-h] -a <addr> -v <value>\n"
-"\t -h ------ to see this page\n"
-"\t <addr> -- address where to write\n"
-"\t <value> - value that will be written\n"
-"\t				two last bits must be zero\n"
-"Data format (for <value> and <address>):\n"
-"\t 0x1111 - in hex\n"
-"\t   1111 - in decimal"
 

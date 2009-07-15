@@ -1,8 +1,8 @@
-/*
- * wmem.h
+/**
+ * \file wmem.h
  *
- *  Created on: 20.02.2009
- *      Author: Alexey Fomin
+ * \date 20.02.2009
+ * \author Alexey Fomin
  */
 #ifndef WMEM_H_
 #define WMEM_H_

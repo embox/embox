@@ -11,10 +11,10 @@
 struct _net_packet;
 typedef void (*ICMP_CALLBACK)(struct _net_packet* response);
 typedef struct _icmphdr {
-	unsigned char type;
-	unsigned char code;
+	unsigned char  type;
+	unsigned char  code;
 	unsigned short header_check_summ;
-	unsigned char data[0x40];
+	unsigned char  data[0x40];
 } __attribute__((packed)) icmphdr;
 
 #define ICMP_HEADER_SIZE	(sizeof(icmphdr))

@@ -1,8 +1,8 @@
-/*
- * wmem.c
+/**
+ * \file wmem.c
  *
- *  Created on: 20.02.2009
- *      Author: Alexey Fomin
+ * \date 20.02.2009
+ * \author Alexey Fomin
  */
 
 #include "shell.h"

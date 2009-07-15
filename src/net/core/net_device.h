@@ -17,30 +17,30 @@
 struct sock;
 
 typedef struct _net_packet {
-	struct _net_device *netdev;
-	void *ifdev;
-	struct sock *sk;
-	unsigned short protocol;
-	unsigned int len;
+	struct _net_device      *netdev;
+	void                    *ifdev;
+	struct sock             *sk;
+	unsigned short          protocol;
+	unsigned int            len;
 	union {
 		//tcphdr	*th;
-		udphdr	*uh;
-		icmphdr	*icmph;
+		udphdr	        *uh;
+		icmphdr	        *icmph;
 		//igmphdr	*igmph;
-		//iphdr	*ipiph;
+		//iphdr	        *ipiph;
 		//ipv6hdr	*ipv6h;
 		unsigned char	*raw;
 	} h;
 
 	union {
-		iphdr	*iph;
-		//struct ipv6hdr	*ipv6h;
-		arphdr	*arph;
+		iphdr	        *iph;
+		//ipv6hdr       *ipv6h;
+		arphdr	        *arph;
 		unsigned char	*raw;
 	} nh;
 
 	union {
-		machdr *mach;
+		machdr          *mach;
 	  	unsigned char 	*raw;
 	} mac;
 
@@ -55,7 +55,7 @@ typedef struct _net_device_stats {
 }net_device_stats;
 
 typedef struct _net_device {
-	char name[6];
+	char          name[6];
 	unsigned char hw_addr[6];
 	unsigned long state;
 	unsigned char type;
@@ -71,7 +71,8 @@ typedef struct _net_device {
 	int (*set_mac_address)(struct _net_device *dev, void *addr);
 }net_device;
 
-net_device *find_net_device(const char * name);
-net_device *alloc_etherdev(int inum);
+net_device *find_net_device(const char *name);
+net_device *alloc_etherdev();
+void free_etherdev(net_device *dev);
 
 #endif /* NET_DEVICE_H_ */
