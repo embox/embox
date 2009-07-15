@@ -63,6 +63,7 @@ int eth_up(int i, unsigned char ipaddr[4], unsigned char hwaddr[6]) {
 int eth_down(int i) {
 	char iname[6];
         sprintf(iname, "eth%d", i);
+    	ifs[i].net_dev = NULL;
     	// eth_dev_close(i);
 	return 0;
 }
