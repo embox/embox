@@ -19,19 +19,19 @@ class configure:
 
 	def read_config(self, fileconf):
 		""" Read .config/.config.in file """
-    		config       = read_file(fileconf)
-    		json_conf    = json.loads(config)
-    		self.files   = json_conf['Files']
-    		self.linkers = json_conf['Linkers']
-    		self.menu    = json_conf['Menu']
-    		for tab in self.menu.keys():
-    			self.tabs[tab] = json_conf[tab]
+		config       = read_file(fileconf)
+		json_conf    = json.loads(config)
+		self.files   = json_conf['Files']
+		self.linkers = json_conf['Linkers']
+		self.menu    = json_conf['Menu']
+		for tab in self.menu.keys():
+			self.tabs[tab] = json_conf[tab]
 
 	def write_config(self, fileconf):
 		""" Write .config/.config.in file """
 		tmp = dict([('Files', self.files), \
-			    ('Linkers', self.linkers), \
-			    ('Menu', self.menu)])
+			   ('Linkers', self.linkers), \
+			   ('Menu', self.menu)])
 		for item in sorted(self.menu.keys()):
 			tmp[item] = self.tabs[item]
 		#-- Arch
@@ -39,35 +39,35 @@ class configure:
 		for item in ("Cflags", "Ldflags", "Compiler"):
 			arch = self.get_arch()
 			tmp[mod_name][arch][item]["inc"] = self.var[mod_name][item].get()
-    		#-- Common
-    		mod_name = "Common"
-    		item     = "Target"
-    		tmp[mod_name][item]["inc"] = self.var[mod_name][item].get()
-    		#-- Conio
-    		mod_name = "Conio"
-    		for item in ("Prompt", "Prompt_max_lenght", "Start_msg"):
-    			tmp[mod_name][item]["inc"] = self.var[mod_name][item].get()
+		#-- Common
+		mod_name = "Common"
+		item     = "Target"
+		tmp[mod_name][item]["inc"] = self.var[mod_name][item].get()
+		#-- Conio
+		mod_name = "Conio"
+		for item in ("Prompt", "Prompt_max_lenght", "Start_msg"):
+			tmp[mod_name][item]["inc"] = self.var[mod_name][item].get()
 		write_file(fileconf, json.dumps(tmp, sort_keys = True, indent = 4))
 
 	def reload_config(self):
-    		""" Reload config """
+		""" Reload config """
 		self.read_config(".config.in")
 		#-- Arch
 		mod_name     = "Arch"
 		cur_arch_num = self.tabs[mod_name]["Arch_num"]
-            	self.var[mod_name]["Arch_num"].set(cur_arch_num)
-            	for item in ("Cflags", "Ldflags", "Compiler"):
-            		arch = self.get_arch()
-            		inc  = self.tabs[mod_name][arch][item]["inc"]
-            		self.var[mod_name][item].set(inc)
-    		#-- Subframes
-    		for mod_name in self.menu:
-    			if mod_name != "Arch":
-    				for item in self.tabs[mod_name].keys():
-    					inc    = self.tabs[mod_name][item]["inc"]
-    					status = self.tabs[mod_name][item]["status"]
-            				self.var[mod_name][item].set(inc)
-            				self.gui.widgets[mod_name][item].configure(state = getStatus(status))
+		self.var[mod_name]["Arch_num"].set(cur_arch_num)
+		for item in ("Cflags", "Ldflags", "Compiler"):
+			arch = self.get_arch()
+			inc  = self.tabs[mod_name][arch][item]["inc"]
+			self.var[mod_name][item].set(inc)
+		#-- Subframes
+		for mod_name in self.menu:
+			if mod_name != "Arch":
+			      for item in self.tabs[mod_name].keys():
+				       inc    = self.tabs[mod_name][item]["inc"]
+				       status = self.tabs[mod_name][item]["status"]
+				       self.var[mod_name][item].set(inc)
+				       self.gui.widgets[mod_name][item].configure(state = getStatus(status))
 
 	def get_arch(self):
 		mod_name = "Arch"
@@ -87,12 +87,12 @@ class configure:
 	def make_def_conf(self):
 		""" Generate default code """
 		code_gen = configure_gen(self)
-    		code_gen.build_commands(self.files["shell_inc"], self.files["users_inc"])
-    		if self.mode == "x":
-            		code_gen.write_autoconf_h(self.files["autoconf_h"] + ".in")
-            		code_gen.build_link(self.linkers)
-            		code_gen.write_autoconf(self.files["autoconf"] + ".in")
-            		self.write_config(".config.in")
+		code_gen.build_commands(self.files["shell_inc"], self.files["users_inc"])
+		if self.mode == "x":
+			code_gen.write_autoconf_h(self.files["autoconf_h"] + ".in")
+			code_gen.build_link(self.linkers)
+			code_gen.write_autoconf(self.files["autoconf"] + ".in")
+			self.write_config(".config.in")
 
 	def config_cmp(self, fconf1, fconf2):
 		""" some verification """
@@ -107,17 +107,17 @@ class configure:
 
 	def restore_config(self):
 		""" Restore files from default if not exist and read .config """
-	    	for file in (".config", "scripts/autoconf", "scripts/autoconf.h"):
-	    		if not os.path.exists(file):
-	    			shutil.copyfile(file + ".in", file)
-	    	if not self.config_cmp(".config", ".config.in"):
-	    		print ".config and .config.in have sharp distinction, maybe .config is out of date?"
-	    		shutil.copyfile(".config.in", ".config")
-	    		shutil.copyfile("scripts/autoconf.in", "scripts/autoconf")
-	    	self.read_config(".config")
-	    	for tab in self.menu.keys():
-	    	        self.var[tab] = { "0" : 0 }
-	        shutil.copyfile(".config", ".config.old")
+		for file in (".config", "scripts/autoconf", "scripts/autoconf.h"):
+			if not os.path.exists(file):
+			      shutil.copyfile(file + ".in", file)
+		if not self.config_cmp(".config", ".config.in"):
+			print ".config and .config.in have sharp distinction, maybe .config is out of date?"
+			shutil.copyfile(".config.in", ".config")
+			shutil.copyfile("scripts/autoconf.in", "scripts/autoconf")
+		self.read_config(".config")
+		for tab in self.menu.keys():
+			self.var[tab] = { "0" : 0 }
+		shutil.copyfile(".config", ".config.old")
 
 	def main(self):
 		""" Main: TIP: add self.gui.show_<item>(<name>) for new tabs here after declaration in configure_gui.py"""
@@ -150,20 +150,20 @@ class configure:
 		elif obj.mode == "menu":
 			self.make_conf()
 		else:
-		        print "Unknown mode"
+			print "Unknown mode"
 
 if __name__=='__main__':
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "hm:", ["help", "mode="])
 		for o, a in opts:
-		        if o in ("-h", "--help"):
-		                print "Usage: configure.py [-m <mode>] [-h]\n"
-		        elif o in ("-m", "--mode"):
-		                mode = a
-		                obj = configure(mode)
-		                obj.restore_config()
-		                obj.main()
-		        else:
-		    		assert False, "unhandled option"
+			if o in ("-h", "--help"):
+				print "Usage: configure.py [-m <mode>] [-h]\n"
+			elif o in ("-m", "--mode"):
+				mode = a
+				obj = configure(mode)
+				obj.restore_config()
+				obj.main()
+			else:
+				assert False, "unhandled option"
 	except:
-    		traceback.print_exc()
+		traceback.print_exc()
