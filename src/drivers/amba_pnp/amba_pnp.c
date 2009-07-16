@@ -180,18 +180,18 @@ inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev_info, UINT32 id_reg) {
  * @return TRUE (1) if successed
  * @return FALSE (0) slot is empty
  */
-BOOL fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master) {
+int fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master) {
 	/* ATTENTION! DON'T USE ANY printf IN THIS FUNCTION */
 	int base;
 	if (!is_ahb) {
 		APB_SLOT *slot = ((APB_SLOT *) APB_BASE) + slot_number;
 		if (0 == slot->id_reg)
-			return FALSE;
+			return -1;
 		fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 		dev->slot = slot_number;
 
 		fill_apb_bar_info(&dev->bar[0], slot->ba_reg[0]);
-		return;
+		return 0;
 	}
 	dev->is_master = is_master;
 	AHB_SLOT *slot;
@@ -201,11 +201,12 @@ BOOL fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master)
 		slot = ((AHB_SLOT *) AHB_MASTER_BASE) + slot_number;
 	}
 	if (0 == slot->id_reg)
-		FALSE;
+		return -1;
 
 	fill_amba_dev_info((AMBA_DEV_INFO *) dev, slot->id_reg);
 	dev->slot = slot_number;
 	fill_ahb_bar_infos(dev, slot);
+	return 0;
 }
 
 int capture_amba_dev(AMBA_DEV *dev, BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOOL is_master) {

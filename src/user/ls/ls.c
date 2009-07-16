@@ -42,19 +42,18 @@ int ls_shell_handler(int argsc, char **argsv) {
 
     if (get_key('p', keys, keys_amount, &key_value)) {
         path = key_value;
-    }
-    else {
+    } else {
         path = "/";
     }
     if (NULL == (fsop = rootfs_get_fsopdesc(path))){
-        printf ("Error: can't find fs %s\n", path);
+        LOG_ERROR("can't find fs %s\n", path);
         return 0;
     }
     if (NULL == fsop->get_file_list_iterator){
-        printf ("Error: wrong fs desc %s\n", path);
+        LOG_ERROR("wrong fs desc %s\n", path);
     }
     if (NULL == (iter_func = fsop->get_file_list_iterator())){
-        printf ("Error: can't find iterator func for fs %s\n", path);
+        LOG_ERROR("can't find iterator func for fs %s\n", path);
         return 0;
     }
     printf("%16s | %8s | %10s | %10s\n", "name", "mode", "size", "size on disk");

@@ -112,7 +112,7 @@ int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL i
  * @return TRUE (1) if successed
  * @return FALSE (0) slot is empty
  */
-BOOL fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
+int fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
 
 /**
  * Free amba device.

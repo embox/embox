@@ -18,7 +18,7 @@ def read_file(name):
 	return content
 
 def replacer(mdef, inc, content):
-	mask = mdef + '(\s*)=(\s*)(\w*)'
+	mask = '{0}(\s*)=(\s*)(\w*)'.format(mdef)
         if inc == True:
     		content = re.sub(mask, mdef + "=y", content)
         else:
@@ -28,14 +28,14 @@ def replacer(mdef, inc, content):
 def replacer_h(mdef, inc, content):
 	mask = '#([undefi]{5,6})([ \t]+)' + mdef + '([ \t]*)[1]?'
         if inc == True:
-                content = re.sub(mask, "#define " + mdef + " 1", content)
+                content = re.sub(mask, '#define {0} 1'.format(mdef), content)
         else:
-        	content = re.sub(mask, "#undef " + mdef, content)
+        	content = re.sub(mask, '#undef {0}'.format(mdef), content)
         return content
 
 def replacer_value(mdef, reg, val, content):
-	mask = '#define([ \t]+)' + mdef + '([ \t]*)' + reg
-	content = re.sub(mask, "#define " + mdef + " " + val, content)
+	mask = '#define([ \t]+){0}([ \t]*){1}'.format(mdef, reg)
+	content = re.sub(mask, '#define {0} {1}'.format(mdef, val), content)
 	return content
 
 def onPress(ar, item, j):
