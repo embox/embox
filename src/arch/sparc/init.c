@@ -80,10 +80,6 @@ int hardware_init_hook() {
 
 
 	TRACE("\nStarting Monitor...\n");
-#ifndef SIMULATION_TRG
-	    net_init();
-
-#endif /* SIMULATION_TRG */
 
 #ifdef MONITOR_FS
 	rootfs_init();

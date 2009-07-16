@@ -5,24 +5,24 @@
 			"Cflags": {
 				"inc": "-Werror -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_",
 				"mdef": "CCFLAGS",
-				"status": 1,
-				"re": "([A-Za-z0-9_\\-# ]+)"
+				"re": "([A-Za-z0-9_\\-# ]+)",
+				"status": 1
 			},
 			"Compiler": {
 				"inc": "sparc-elf",
 				"mdef": "CC_PACKET",
-				"status": 1,
-				"re": "(\\w+(-\\w+)?)"
+				"re": "(\\w+(-\\w+)?)",
+				"status": 1
 			},
 			"Ldflags": {
 				"inc": "-Wl -N -nostdlib -g",
 				"mdef": "LDFLAGS",
-				"status": 1,
-				"re": "([A-Za-z0-9_\\-# ]+)"
+				"re": "([A-Za-z0-9_\\-# ]+)",
+				"status": 1
 			},
 			"mdef": "MONITOR_ARCH_SPARC",
-			"status": 1,
-			"num": 0
+			"num": 0,
+			"status": 1
 		}
 	},
 	"Build": {
@@ -162,7 +162,7 @@
 			"desc": "AMBA plug & play",
 			"inc": 1,
 			"mdef": "MONITOR_DRIVER_AMBA_PNP",
-			"status": 1
+			"status": 0
 		},
 		"irq_ctrl": {
 			"dep": {
@@ -173,13 +173,13 @@
 			"desc": "interrupt unit",
 			"inc": 1,
 			"mdef": "MONITOR_DRIVER_GAISLER_IRQ_CTRL",
-			"status": 1
+			"status": 0
 		},
 		"timer": {
 			"desc": "timer",
 			"inc": 1,
 			"mdef": "MONITOR_DRIVER_GAISLER_TIMER",
-			"status": 1
+			"status": 0
 		},
 		"uart": {
 			"dep": {
@@ -198,7 +198,7 @@
 			"desc": "Universal Asynchronous Receiver/Transmitter",
 			"inc": 1,
 			"mdef": "MONITOR_DRIVER_GAISLER_UART",
-			"status": 1
+			"status": 0
 		}
 	},
 	"Files": {

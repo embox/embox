@@ -241,8 +241,11 @@ class configure_gui:
 							 command  = (lambda item = item: self.onPress_dep(mod_name, item)))
 			self.widgets[mod_name][item].grid(row = row, column = 0, sticky = W)
 			self.var[mod_name][item].set(inc)
-			Label(frame, text   = desc, state  = NORMAL, \
-				     width  = 45, anchor = W).grid(row = row, column = 1, sticky = W)
+			Label(frame, \
+				text   = desc, \
+				state  = getStatus(status), \
+				width  = 45, \
+				anchor = W).grid(row = row, column = 1, sticky = W)
 			row += 1
 
 	#-- LIST TEMPLATE FRAME --------------------------------------------------------------------------------------------
