@@ -113,6 +113,10 @@ interrupting_trap:
 	 * OK, let's update the real stack pointer
 	 */
 	mov %t_sp, %sp
+	/*
+	 * and prepare it as parameter
+	 */
+	 mov %t_sp, %o1
 
 	// pass trap type as parameter
 	mov %tbr, %o0
@@ -131,7 +135,7 @@ interrupting_trap:
 		/*
 		 * disable traps
 		 *
-		 * and do not worry that the ‚ÄúRDPSR, WRPSR‚Äù sequence is interruptible,
+		 * and do not worry that the aà?RDPSR, WRPSRaà? sequence is interruptible,
 		 * our interrupts dispatcher does not corrupt PSR
 		 * and restores it to the initial value before returning from trap
 		 * (see below)
@@ -160,11 +164,11 @@ interrupting_trap:
 		 * Just do the same as the corresponding trap handler routine.
 		 * (See windows.S)
 		 */
-
+	rd %wim, %t_wim;
 		/* Calculate new WIM */
 		WIM_SHIFT_LEFT(t_wim, g1, t0)
 
-		wr %g1, %g1, %wim
+		wr %g1, %g0, %wim
 		 WRITE_PAUSE	// wait for delayed-write before RESTORE
 
 		restore	// get into the window to be restored

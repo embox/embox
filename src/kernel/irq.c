@@ -21,7 +21,7 @@ static IRQ_HANDLER user_trap_handlers[IRQ_TABLE_SIZE];
 /*
  * Runs user defined handler (if one has been enabled).
  */
-void dispatch_trap(BYTE tt) {
+void dispatch_trap(BYTE tt, UINT32 *sp) {
 	if (user_trap_handlers[tt] != NULL) {
 		// fire user handler!
 		user_trap_handlers[tt]();
