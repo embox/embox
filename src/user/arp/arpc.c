@@ -9,8 +9,10 @@
 #include "common.h"
 #include "arpc.h"
 #include "shell.h"
-#include "arp.h"
-#include "eth.h"
+#include "net.h"
+#include "ethernet/eth.h"
+#include "if_device.h"
+#include "ipv4/arp.h"
 
 #define COMMAND_NAME "arp"
 static char available_keys[] = {
@@ -35,7 +37,7 @@ int arp_shell_handler(int argsc, char **argsv) {
 			sizeof(available_keys), keys);
 
         if (get_key('i', keys, keys_amount, &key_value)) {
-                if (NULL == (ifdev = eth_get_ifdev_by_name(key_value))) {
+             if (NULL == (ifdev = ifdev_find_by_name(key_value))) {
                         LOG_ERROR("can't find interface %s\n", key_value);
                         return -1;
                 }

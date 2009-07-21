@@ -22,6 +22,7 @@ int main() {
 	}
 #endif //MONITOR_TESTS
 #if !defined(SIMULATION_TRG) && defined(MONITOR_CONIO)
+	net_config();
 	shell_start();
 #endif
 

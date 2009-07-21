@@ -5,16 +5,17 @@
  * \author anton
  */
 #include "types.h"
+#include "net.h"
 #include "net_device.h"
 
-#define MAX_ETHDEV 8
+
 
 typedef struct _NET_DEV_INFO {
 	net_device   dev;
 	int          is_busy;
 } NET_DEV_INFO;
 
-static NET_DEV_INFO net_devices[MAX_ETHDEV];
+static NET_DEV_INFO net_devices[NET_DEVICES_QUANTITY];
 
 static inline int dev_is_busy(int num) {
 	return net_devices[num].is_busy;
@@ -31,7 +32,7 @@ static inline void dev_unlock(int num) {
 
 net_device *alloc_etherdev() {
 	int i;
-	for (i = 0; i < MAX_ETHDEV; i++) {
+	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (!dev_is_busy(i)) {
 			return dev_lock(i);
 		}
@@ -41,7 +42,7 @@ net_device *alloc_etherdev() {
 
 void free_etherdev(net_device *dev) {
         int i;
-	for(i = 0; i < MAX_ETHDEV; i++) {
+	for(i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (dev == &net_devices[i].dev) {
     			dev_unlock(i);
     		}
@@ -50,7 +51,7 @@ void free_etherdev(net_device *dev) {
 
 net_device *find_net_device(const char *name) {
 	int i;
-	for (i = 0; i < MAX_ETHDEV; i++) {
+	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (dev_is_busy(i) &&
 		   (0 == strncmp(name, net_devices[i].dev.name, sizeof (net_devices[i].dev.name)))) {
 			return &net_devices[i].dev;

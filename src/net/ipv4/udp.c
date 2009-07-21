@@ -7,8 +7,9 @@
 #include "types.h"
 #include "common.h"
 #include "net.h"
-#include "eth.h"
-#include "net_pack_manager.h"
+#include "ethernet/eth.h"
+#include "if_device.h"
+#include "core/net_pack_manager.h"
 #include "udp.h"
 #include "ip_v4.h"
 #include "socket.h"
@@ -32,7 +33,7 @@ static void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifde
 		return;
 	}
 	pack->ifdev = ifdev;
-	pack->netdev = eth_get_netdevice(ifdev);
+	pack->netdev = ifdev_get_netdevice(ifdev);
 	pack->protocol = IP_PROTOCOL_TYPE;
 	pack->len = UDP_HEADER_SIZE;
 	pack->h.raw = pack->data + MAC_HEADER_SIZE + IP_HEADER_SIZE;

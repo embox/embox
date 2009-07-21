@@ -6,73 +6,80 @@
  */
 
 #include "misc.h"
+#include "conio.h"
 
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {
-        unsigned int tmp;
-        int i, j;
-        for (i = 0; i < 3; i ++) {
-                for (j = 0; j < 5; j ++) {
-                        if (j > 4) {
-                                return NULL;
-                        }
-                        if ('.' == addr[j]) {
-                                addr [j] = 0;
-                                if (1 != sscanf (addr, "%d", &tmp)) {
-                                        return NULL;
-                                }
-                                if (tmp > 255) {
-                                        return NULL;
-                                }
-                                res[i]=(unsigned char )0xFF & tmp;
-                                addr += (j + 1);
-                                break;
-                        }
-                }
+    unsigned char symbol_str[4];
+    int i,j;
+    int cur = 0;
+    int tmp;
+    for(i = 0; i < (sizeof(res) - 1); i ++){
+        symbol_str[0]='\0';
+        for (j = 0; j < array_len(symbol_str); j ++ ){
+            if ('.' == addr[cur + j]){
+                memcpy(symbol_str, &addr[cur], j );
+                symbol_str[j] = '\0';
+                break;
+            }
         }
-        if (1 != sscanf (addr, "%d", &tmp)) {
-                return NULL;
+        if ('\0' == symbol_str[0]){
+            return NULL;
         }
-        if (tmp > 255) {
-                return NULL;
+        if (1 != sscanf (symbol_str, "%d", &tmp)) {
+            return NULL;
         }
-        res[3]=(unsigned char )0xFF & tmp;
-        return  res;
+        if (tmp > 0xFF)
+            return NULL;
+        res[i] = tmp;
+        cur += j + 1;
+    }
+    strncpy(symbol_str, &addr[cur], array_len(symbol_str));
+    if (1 != sscanf (symbol_str, "%d", &tmp)) {
+        return NULL;
+    }
+    if (tmp > 0xFF)
+        return NULL;
+    res[i] = tmp;
+    return res;
 }
 
 unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[6]) {
-        unsigned int tmp;
-        int i,j;
-        for (i = 0; i < 5; i++) {
-                for (j = 0; j < 4; j ++) {
-                        if (j > 3) {
-                                return NULL;
-                        }
-                        if ((':' == addr[j])||('-' == addr[j])) {
-                                addr[j] = 0;
-                                if (1 != sscanf(addr, "%x", &tmp)) {
-                                        return 0;
-                                }
-                                if (tmp > 0xFF) {
-                                        return NULL;
-                                }
-                                res[i] = (unsigned char) 0xFF & tmp;
-                                addr += (j + 1);
-                                break;
-                        }
-                }
+    unsigned char symbol_str[4];
+    int i,j;
+    int cur = 0;
+    int tmp;
+    for(i = 0; i < 5; i ++){
+        symbol_str[0]='\0';
+        for (j = 0; j < array_len(symbol_str); j ++ ){
+            if (':' == addr[cur + j]){
+                memcpy(symbol_str, &addr[cur], j );
+                symbol_str[j] = '\0';
+                break;
+            }
         }
-        if (1 != sscanf (addr, "%x", &tmp)) {
-                return NULL;
+        if ('\0' == symbol_str[0]){
+            return NULL;
         }
-        if (tmp > 0xFF) {
-                return NULL;
+        if (1 != sscanf (symbol_str, "%x", &tmp)) {
+            return NULL;
         }
-        res[5]=(unsigned char )0xFF & tmp;
-        return  res;
+        if (tmp > 0xFF)
+            return NULL;
+        res[i] = tmp;
+        cur += j + 1;
+    }
+    strncpy(symbol_str, &addr[cur], array_len(symbol_str));
+    if (1 != sscanf (symbol_str, "%x", &tmp)) {
+        return NULL;
+    }
+    if (tmp > 0xFF)
+        return NULL;
+    res[i] = tmp;
+    return res;
 }
 
-void ipaddr_print(char *buf, unsigned char *addr) {
-        sprintf(buf, "%d.%d.%d.%d", addr[0], addr[1], addr[2], addr[3]);
+void ipaddr_print(const char *buf, const unsigned char *addr) {
+        sprintf((char *)buf, "%d.%d.%d.%d", addr[0], addr[1], addr[2], addr[3]);
 }
 
 unsigned long inet_addr(const unsigned char *cp) {
@@ -84,6 +91,6 @@ unsigned long inet_addr(const unsigned char *cp) {
         return tmp;
 }
 
-void macaddr_print(char *buf, unsigned char *addr) {
-        sprintf(buf, "%2X:%2X:%2X:%2X:%2X:%2X", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+void macaddr_print(const char *buf, const unsigned char *addr) {
+        sprintf((char *)buf, "%2X:%2X:%2X:%2X:%2X:%2X", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 }

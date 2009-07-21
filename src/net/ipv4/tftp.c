@@ -12,9 +12,10 @@
 #include "common.h"
 #include "tftp.h"
 #include "net.h"
-#include "eth.h"
+#include "ethernet/eth.h"
+#include "if_device.h"
 #include "inet_sock.h"
-#include "net_pack_manager.h"
+#include "core/net_pack_manager.h"
 #include "ip_v4.h"
 
 #define TFTP_ADDRESS_TO_SAVE	0x80000000
@@ -29,7 +30,7 @@ int tftp_send_ack (void *ifdev, unsigned char srcaddr[4], unsigned char dstaddr[
 	if (pack == 0)
 		return -1;
 	pack->ifdev = ifdev;
-	pack->netdev = eth_get_netdevice(ifdev);
+	pack->netdev = (struct _net_device *)ifdev_get_netdevice(ifdev);
 
 	tftphdr header;
 	header.th_opcode  = TFTP_ACK;
@@ -65,7 +66,7 @@ int tftp_send_rrq_request(void *ifdev, unsigned char srcaddr[4], unsigned char d
 	if (pack == 0)
 		return -1;
 	pack->ifdev = ifdev;
-	pack->netdev = eth_get_netdevice(ifdev);
+	pack->netdev = ifdev_get_netdevice(ifdev);
 
 	tftphdr header;
 	header.th_opcode = TFTP_RRQ;

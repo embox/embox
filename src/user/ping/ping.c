@@ -5,10 +5,12 @@
  * \author anton
  */
 #include "types.h"
-#include "icmp.h"
+#include "ipv4/icmp.h"
 #include "shell.h"
 #include "ping.h"
 #include "net.h"
+#include "ethernet/eth.h"
+#include "if_device.h"
 
 #define COMMAND_NAME "ping"
 
@@ -43,7 +45,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl) 
 			break;
 
 		has_responsed = FALSE;
-		ipaddr_print(ip, eth_get_ipaddr(ifdev));
+		ipaddr_print(ip, ifdev_get_ipaddr(ifdev));
 		printf("from %s", ip);
 		ipaddr_print(ip, dst);
 		printf(" to %s", ip);
@@ -99,8 +101,8 @@ int ping_shell_handler(int argsc, char **argsv) {
 //		LOG_ERROR("choose right interface name '-i'\n");
 //		show_help();
 //		return -1;
-		ifdev = eth_get_ifdev_by_name("eth0");
-	} else if (NULL == (ifdev = eth_get_ifdev_by_name(key_value))) {
+		ifdev = ifdev_find_by_name("eth0");
+	} else if (NULL == (ifdev = ifdev_find_by_name(key_value))) {
 		LOG_ERROR("Can't find interface %s\n see ifconfig for available interfaces list\n", key_value);
 		show_help();
 		return -1;

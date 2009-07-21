@@ -8,9 +8,11 @@
 #include "common.h"
 #include "string.h"
 #include "arp.h"
-#include "net_device.h"
-#include "eth.h"
-#include "net_pack_manager.h"
+#include "core/net_device.h"
+#include "net.h"
+#include "if_device.h"
+#include "ethernet/eth.h"
+#include "core/net_pack_manager.h"
 
 #define ARP_CACHE_SIZE         0x100
 #define ARP_REQUEST            0x1
@@ -67,7 +69,7 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 	}
 
 	pack->ifdev = ifdev;
-	pack->netdev = eth_get_netdevice(ifdev);
+	pack->netdev = ifdev_get_netdevice(ifdev);
 	pack->mac.raw = pack->data;
 //mac header
 	memcpy (pack->mac.mach->dst_addr, brodcast_mac_addr, MAC_ADDR_LEN);
@@ -84,7 +86,7 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 	pack->nh.arph->plen = 4;
 	pack->nh.arph->oper = ARP_REQUEST;
 	memcpy (pack->nh.arph->sha, pack->netdev->hw_addr, MAC_ADDR_LEN);
-	memcpy (pack->nh.arph->spa, eth_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
+	memcpy (pack->nh.arph->spa, ifdev_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
 	memcpy (pack->nh.arph->tpa, dst_addr, sizeof(pack->nh.arph->tpa));
 
 	pack->len = 0x3b;
@@ -116,7 +118,7 @@ net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[4]) {
 
 static int received_resp(net_packet *pack) {
 	arphdr *arp = pack->nh.arph;
-	if (0 != memcmp(eth_get_ipaddr(pack->ifdev), arp->tpa, 4)) {
+	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, 4)) {
 		return -1;
 	}
 	char ip[15], mac[18];
@@ -157,7 +159,7 @@ int received_req(net_packet *pack) {
 int arp_received_packet(net_packet *pack) {
 	arphdr *arp = pack->nh.arph;
 
-	if (0 != memcmp(eth_get_ipaddr(pack->ifdev), arp->tpa, 4)) {
+	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, 4)) {
 		return 0;
 	}
 	switch(arp->oper) {
@@ -192,10 +194,10 @@ int print_arp_cache(void *ifdev) {
 	for(i=0; i<ARP_CACHE_SIZE; i++) {
 		if((arp_table[i].is_busy == 1) &&
 		   (ifdev == NULL || ifdev == arp_table[i].if_handler)) {
-			net_dev = eth_get_netdevice(arp_table[i].if_handler);
+			net_dev = ifdev_get_netdevice(arp_table[i].if_handler);
 			ipaddr_print(ip, arp_table[i].pw_addr);
 			macaddr_print(mac, arp_table[i].hw_addr);
-			TRACE("%s\t\t%d\t%s\t%d\t%s\n", ip, eth_get_netdevice(arp_table[i].if_handler)->type,
+			TRACE("%s\t\t%d\t%s\t%d\t%s\n", ip, ifdev_get_netdevice(arp_table[i].if_handler)->type,
 							 mac, net_dev->flags, net_dev->name);
 		}
 	}

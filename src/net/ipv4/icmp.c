@@ -7,8 +7,9 @@
 #include "types.h"
 #include "common.h"
 #include "net.h"
-#include "eth.h"
-#include "net_pack_manager.h"
+#include "if_device.h"
+#include "ethernet/eth.h"
+#include "core/net_pack_manager.h"
 #include "icmp.h"
 #include "ip_v4.h"
 #include "mac.h"
@@ -145,7 +146,7 @@ static int icmp_get_echo_answer(net_packet *pack) { //type 0
 
 static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	net_packet *pack = net_packet_copy(recieved_pack);
-	if(find_interface_by_addr(pack->nh.iph->daddr)) {
+	if(ifdev_find_by_ip(pack->nh.iph->daddr)) {
 		return 0;
 	}
 
@@ -188,9 +189,9 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		return -1;
 	}
 	pack->ifdev = ifdev;
-	pack->netdev = eth_get_netdevice(ifdev);
+	pack->netdev = (struct _net_device *)ifdev_get_netdevice(ifdev);
 	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, ttl,
-					eth_get_ipaddr(ifdev), dstaddr);
+					ifdev_get_ipaddr(ifdev), dstaddr);
 	pack->protocol = IP_PROTOCOL_TYPE;
 
 	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->id,
