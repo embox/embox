@@ -1,10 +1,16 @@
+/**
+ * @file boot.S
+ *
+ * @brief Low-level boot code.
+ *
+ * @author Anton Bondarev
+ * @author Eldar Abusalimov
+ */
+
 #include "leon_config.h"
 #include "memory_map.h"
 #include "sparc_regs.h"
 
-
-//	.section ".data"
-//	.align 4
  	.weak hardware_init_hook
  	.weak software_init_hook
 	.section    ".text"
@@ -12,42 +18,33 @@
 
 	.global boot_start, warm_start
 boot_start:
-	! SPARC v8 initialization
-	flush                           ! flush caches
+	/* setup trap table address */
+	set _trap_table, %g1
+	wr  %g1, %g0, %tbr
+	 WRITE_PAUSE
 
-! disable traps
-	mov  %psr, %g1
-	andn %g1, PSR_ET, %g1     ! g1 = g1 & !PSR_ET
-	mov %g1, %psr
-	nop;nop;nop
+	/* clear wim to iterate over the windows */
+	wr %g0, %g0, %wim
+	 WRITE_PAUSE
+	/* reset pil, icc and jump into window #0 */
+	PSR_BIT_CLEAR((PSR_PIL | PSR_ICC | PSR_CWP), t0, t1)
+	 WRITE_PAUSE
 
-! zero some other regs
-	mov %g0, %wim
-	mov %g0, %tbr
-	mov %g0, %y
-	nop;nop;nop
+	/* clean all register windows */
+	save // get into the last window
+		rd %psr, %g1
+	restore // return to window #0
+	and	%g1, PSR_CWP, %g1
 
-	flush                           ! flush caches
-	nop
-	nop
-	nop
-! turn cache on
-	set 0x81000F, %g1
-	sta %g1, [%g0] 2
-
-! clear global registers
-	clr %g1
-	clr %g2
-	clr %g3
-	clr %g4
-	clr %g5
-	clr %g6
-	clr %g7
-
-
-! clean all register windows
-	set CORE_NWINDOWS, %g1
 register_window_clean:
+	mov %g0, %i0
+	mov %g0, %i1
+	mov %g0, %i2
+	mov %g0, %i3
+	mov %g0, %i4
+	mov %g0, %i5
+	mov %g0, %i6
+	mov %g0, %i7
 	mov %g0, %l0
 	mov %g0, %l1
 	mov %g0, %l2
@@ -56,29 +53,9 @@ register_window_clean:
 	mov %g0, %l5
 	mov %g0, %l6
 	mov %g0, %l7
-	mov %g0, %o0
-	mov %g0, %o1
-	mov %g0, %o2
-	mov %g0, %o3
-	mov %g0, %o4
-	mov %g0, %o5
-	mov %g0, %o6
-	mov %g0, %o7
 	deccc %g1
  	bg register_window_clean
-	save       !
-	nop
-
-
-	set		__stack, %g1
-	mov     %g1, %fp                  ! set frame pointer
-	sub     %g1, 0x60, %sp            ! set stack pointer
-
-
-	set     _trap_table, %g1
-	mov     %g1, %tbr               !set trap table addr
-	nop; nop; nop;
-
+	 save
 
 /*
  * At the boot time we are in an arbitrary register window.
@@ -95,39 +72,90 @@ register_window_clean:
  *  | bits |     |   |   |   |   |   |   | * |   |
  *  ----------------------------------------------
  *                                             ^-CWP
- *
- * --Eldar
  */
-	set	(1 << 1), %g1
-	mov	%g1, %wim
+	/* setup wim*/
+	mov (1 << 1), %g1
+	wr %g1, %g0, %wim
 
-! enable traps
-	mov  %psr, %g1
-	or   %g1, PSR_ET, %g1     ! g1 = g1 | PSR_ET
-	andn %g1, PSR_CWP, %g1     ! g1 = g1 & ~PSR_CWP
-	mov  %g1, %psr
-	nop; nop; nop;
+	/* clear global registers. TODO what for? x_0 -- Eldar */
+	mov %g0, %g1
+	mov %g0, %g2
+	mov %g0, %g3
+	mov %g0, %g4
+	mov %g0, %g5
+	mov %g0, %g6
+	mov %g0, %g7
+
+	/* reset some control regs */
+	wr %g0, %g0, %y
+	 WRITE_PAUSE
+
+	flush
+	 nop;nop;nop
+	/* turn cache on */
+	set 0x81000F, %g1 // TODO wtf? -- Eldar
+	sta %g1, [%g0] 2
+
+#define src g1
+#define dst g2
+#define end g3
+#define tmp0 g4
+#define tmp1 g5
+	/* copy data sections */
+	set _endtext, %src
+	set _data_start, %dst
+	set _data_end, %end
+	cmp %dst, %end
+	bge 2f
+	 nop
+
+1:	ldd [%src], %tmp0
+	std %tmp0, [%dst]
+	add %dst, 8, %dst
+	cmp %dst, %end
+	bl  1b
+	 add %src, 8, %src
+
+	/* Zero bss */
+2:	set _bstart, %dst
+	set _bend, %end
+	mov %g0, %tmp0
+	mov %g0, %tmp1
+	cmp %dst, %end
+	bge 2f
+	 sub %end, 8, %end
+
+1:	std %tmp0, [%dst]
+	cmp %dst, %end
+	bl  1b
+	 add %dst, 8, %dst
+
+2:
+
+	/* give us a stack! */
+	set __stack, %g1
+	mov %g1, %fp
+	sub %g1, 0x60, %sp
+
+	PSR_BIT_TOGGLE_SHORT(PSR_ET, t0)
+	 WRITE_PAUSE
 
 	set hardware_init_hook, %g1
 	tst %g1
-	be	continue_after_hw_init_hook
-	nop
+	be  1f
+	 nop
 	call %g1
-	nop
-continue_after_hw_init_hook:
+1:	 nop
+
 	set software_init_hook, %g1
 	tst %g1
-	be	continue_after_sw_init_hook
-	nop
+	be  1f
+	 nop
 	call %g1
-	nop
-continue_after_sw_init_hook:
+1:	 nop
 
-	call	main
-	nop
+	call main
+	 nop
 
-
-    nop
-    ta 0
-    nop
-
+	ta 0  // die
+	 nop
