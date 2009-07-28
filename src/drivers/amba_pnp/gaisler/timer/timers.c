@@ -142,8 +142,8 @@ int timers_init() {
 	dev_regs->timer_cnt1 = 0;
 	dev_regs->timer_cnt2 = 0;
 
-	dev_regs->timer_ld1 = 0x002710;
-	dev_regs->timer_ld2 = 0;//0x0271000;
+	dev_regs->timer_ld1 = 1000000/1000 - 1;
+	dev_regs->timer_ld2 = 0;
 	dev_regs->timer_ctrl1 = 0xf;
 	dev_regs->timer_ctrl2 = 0x0; /**<disable */
 	//dev_regs->config_reg = 0x0000;
@@ -153,21 +153,20 @@ int timers_init() {
 
 	return 0;
 }
+/*
 void temp_wait()
 {
     int i;
     for(i=0; i < 50; i ++);
     return;
 }
-
+*/
 void sleep(volatile unsigned int ms) {
-    //static unsigned int tmp;
     unsigned int irq = __local_irq_save();
 	cnt_ms_sleep = 0;
 	local_irq_restore(irq);
 
-	while (cnt_ms_sleep <= ms)	{
-	    //temp_wait();
+	while (cnt_ms_sleep < ms)	{
 	}
 }
 /*
@@ -242,6 +241,25 @@ int timers_context_restore(int context_number) {
 void timers_off (){
 	dev_regs->timer_ctrl1 = 0x0;
 	dev_regs->timer_ctrl2 = 0x0;//disable
-	show_module_info(&amba_dev);
+//	show_module_info(&amba_dev);
 }
 
+//void timers_align (){
+//	dev_regs->timer_ctrl1 = 0x0;
+//	dev_regs->timer_ctrl2 = 0x0;//disable
+//
+//	cnt_sys_time = 0;
+//	cnt_ms_sleep = 0;
+//
+//
+//	dev_regs->scaler_ld = TIMER_SCALER_VAL;
+//	dev_regs->scaler_cnt = 0;
+//	dev_regs->timer_cnt1 = 0;
+//	dev_regs->timer_cnt2 = 0;
+//
+//
+//	dev_regs->timer_ld1 = 0x002710;
+//	dev_regs->timer_ld2 = 0;//0x027100;
+//	dev_regs->timer_ctrl1 = 0xf;
+//	dev_regs->timer_ctrl2 = 0x0;//disable
+//}

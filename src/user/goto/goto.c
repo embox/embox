@@ -27,6 +27,8 @@ void go_to(unsigned int addr)
 	printf("Try goto 0x%08X\n", addr);
 	/*__asm__ __volatile__("jmpl %0, %%g0\nnop\n"::"rI"(addr));
     */
+	timers_off();
+	irq_ctrl_disable_all();
 	((IMAGE_ENTRY)addr)();
 }
 

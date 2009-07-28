@@ -18,6 +18,11 @@
 
 	.global boot_start, warm_start
 boot_start:
+
+	/* first of all disanle trap */
+	PSR_BIT_CLEAR_SHORT(PSR_ET, l3)
+	 WRITE_PAUSE
+
 	/* setup trap table address */
 	set _trap_table, %g1
 	wr  %g1, %g0, %tbr
@@ -27,7 +32,7 @@ boot_start:
 	wr %g0, %g0, %wim
 	 WRITE_PAUSE
 	/* reset pil, icc and jump into window #0 */
-	PSR_BIT_CLEAR((PSR_PIL | PSR_ICC | PSR_CWP), t0, t1)
+	PSR_BIT_CLEAR((PSR_PIL | PSR_ICC | PSR_CWP), l3, l4)
 	 WRITE_PAUSE
 
 	/* clean all register windows */
@@ -137,7 +142,7 @@ register_window_clean:
 	mov %g1, %fp
 	sub %g1, 0x60, %sp
 
-	PSR_BIT_TOGGLE_SHORT(PSR_ET, t0)
+	PSR_BIT_TOGGLE_SHORT(PSR_ET, l3)
 	 WRITE_PAUSE
 
 	set hardware_init_hook, %g1

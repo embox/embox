@@ -12,7 +12,7 @@
 
 #define UART_SCALER_VAL  ((((CORE_FREQ*10) / (8 * UART_BAUD_RATE))-5)/10)
 /* Timing Calculation */
-#define TIMER_SCALER_VAL (CORE_FREQ/10000000 - 1)
+#define TIMER_SCALER_VAL (CORE_FREQ/1000000 - 1)
 
 /*LEON control registers */
 #define	PREGS	0x80000000

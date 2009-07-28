@@ -66,3 +66,8 @@ int irq_ctrl_disable_irq(int irq_num){
 	return 0;
 }
 
+int irq_ctrl_disable_all(){
+    CHECK_INIT_MODULE();
+    dev_regs->mask = 0;
+    return 0;
+}
