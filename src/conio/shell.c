@@ -19,13 +19,13 @@ static SHELL_HANDLER_DESCR shell_handlers_old[] = {
 
 static SHELL_HANDLER_DESCR shell_handlers[64];
 
-static int CurShellHandlersCount = 0;
+static int cur_shellhandlers_count = 0;
 
-void InsertShellHandler(char* name, char* descr, PSHELL_HANDLER func) {
-	shell_handlers[CurShellHandlersCount].name = name;
-	shell_handlers[CurShellHandlersCount].description = descr;
-	shell_handlers[CurShellHandlersCount].phandler = func;
-	CurShellHandlersCount++;
+void insert_shell_handler(char* name, char* descr, PSHELL_HANDLER func) {
+	shell_handlers[cur_shellhandlers_count].name = name;
+	shell_handlers[cur_shellhandlers_count].description = descr;
+	shell_handlers[cur_shellhandlers_count].phandler = func;
+	cur_shellhandlers_count++;
 }
 
 SHELL_HANDLER_DESCR *shell_get_command_list() {
@@ -33,7 +33,7 @@ SHELL_HANDLER_DESCR *shell_get_command_list() {
 }
 
 int shell_size_command_list() {
-	return CurShellHandlersCount; //array_len(shell_handlers);
+	return cur_shellhandlers_count; //array_len(shell_handlers);
 }
 
 // *str becomes pointer to first non-space character
@@ -77,7 +77,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	}
 
 	// choosing correct handler
-	for (i = 0; i < CurShellHandlersCount; i++) { //array_len(shell_handlers); i++) {
+	for (i = 0; i < cur_shellhandlers_count; i++) { //array_len(shell_handlers); i++) {
 		if (0 == strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
 			sys_exec_start(phandler, words_counter - 1, words + 1);
@@ -140,11 +140,11 @@ void shell_start() {
 	static CONSOLE console[1];
 	static CONSOLE_CALLBACK callback[1];
 
-	printf("CurShellHandlersCount :%d \n",CurShellHandlersCount);
+	printf("cur_shellhandlers_count :%d \n",cur_shellhandlers_count);
 	int i;
 	for (i=0; i<array_len(shell_handlers_old); i++) {
-		shell_handlers[CurShellHandlersCount] = shell_handlers_old[i];
-		CurShellHandlersCount++;
+		shell_handlers[cur_shellhandlers_count] = shell_handlers_old[i];
+		cur_shellhandlers_count++;
 	}
 
 	callback->exec = exec_callback;

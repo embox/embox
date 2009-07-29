@@ -22,7 +22,7 @@ static void show_help() {
 
 
 
-DECLARE_MODULE("helpcommand", module_init)
+DECLARE_MODULE("help_command", module_init)
 
 
 int help_shell_handler(int argsc, char **argsv) {
@@ -63,5 +63,5 @@ int help_shell_handler(int argsc, char **argsv) {
 
 
 static int module_init() {
-	InsertShellHandler("help", "displays help", (PSHELL_HANDLER) help_shell_handler);
+	insert_shell_handler("help", "displays help", (PSHELL_HANDLER) help_shell_handler);
 }
