@@ -33,7 +33,7 @@ typedef struct {
 
 
 void shell_start();
-
+void InsertShellHandler(char* name, char* descr, PSHELL_HANDLER func);
 /**
  * parse arguments array on keys-value structures and entered amount of entered keys otherwise (if everything's OK)
  * @return  -1 wrong condition found. Arguments not in format: -<key> [<value>]

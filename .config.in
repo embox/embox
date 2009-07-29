@@ -330,12 +330,6 @@
 			"mdef": "MONITOR_USER_GOTO",
 			"status": 1
 		},
-		"help": {
-			"desc": "display all possible commands",
-			"inc": 1,
-			"mdef": "MONITOR_USER_HELP",
-			"status": 1
-		},
 		"ldimg": {
 			"desc": "copy text image from ROM into RAM",
 			"inc": 1,

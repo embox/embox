@@ -2,7 +2,7 @@ include $(SCRIPTS_DIR)/autoconf
 
 SUBDIRS-$(MONITOR_USER_ARP)       += arp
 SUBDIRS-$(MONITOR_USER_GOTO)      += goto
-SUBDIRS-$(MONITOR_USER_HELP)      += help
+SUBDIRS-y      += help
 SUBDIRS-$(MONITOR_USER_LDIMG)     += ldimg
 SUBDIRS-$(MONITOR_USER_PNPLS)     += lspnp
 SUBDIRS-$(MONITOR_USER_MEM)       += mem

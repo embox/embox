@@ -13,15 +13,27 @@
 
 static const char* welcome = MONITOR_PROMPT;
 
-static SHELL_HANDLER_DESCR shell_handlers[] = {
+static SHELL_HANDLER_DESCR shell_handlers_old[] = {
 #include "shell.inc"
 		};
+
+static SHELL_HANDLER_DESCR shell_handlers[64];
+
+static int CurShellHandlersCount = 0;
+
+void InsertShellHandler(char* name, char* descr, PSHELL_HANDLER func) {
+	shell_handlers[CurShellHandlersCount].name = name;
+	shell_handlers[CurShellHandlersCount].description = descr;
+	shell_handlers[CurShellHandlersCount].phandler = func;
+	CurShellHandlersCount++;
+}
 
 SHELL_HANDLER_DESCR *shell_get_command_list() {
 	return shell_handlers;
 }
+
 int shell_size_command_list() {
-	return array_len(shell_handlers);
+	return CurShellHandlersCount; //array_len(shell_handlers);
 }
 
 // *str becomes pointer to first non-space character
@@ -65,7 +77,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	}
 
 	// choosing correct handler
-	for (i = 0; i < array_len(shell_handlers); i++) {
+	for (i = 0; i < CurShellHandlersCount; i++) { //array_len(shell_handlers); i++) {
 		if (0 == strcmp(words[0], shell_handlers[i].name)) {
 			phandler = shell_handlers[i].phandler;
 			sys_exec_start(phandler, words_counter - 1, words + 1);
@@ -127,6 +139,14 @@ void shell_start() {
 	static const char* prompt = MONITOR_PROMPT;
 	static CONSOLE console[1];
 	static CONSOLE_CALLBACK callback[1];
+
+	printf("CurShellHandlersCount :%d \n",CurShellHandlersCount);
+	int i;
+	for (i=0; i<array_len(shell_handlers_old); i++) {
+		shell_handlers[CurShellHandlersCount] = shell_handlers_old[i];
+		CurShellHandlersCount++;
+	}
+
 	callback->exec = exec_callback;
 	callback->guess = guess_callback;
 	if (console_init(console, callback) == NULL) {

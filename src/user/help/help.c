@@ -8,6 +8,7 @@
 #include "conio.h"
 #include "shell.h"
 #include "help.h"
+#include "module.h"
 
 static char help_keys[] = {
 #include "help_keys.inc"
@@ -18,6 +19,11 @@ static void show_help() {
 #include "help_help.inc"
 	);
 }
+
+
+
+DECLARE_MODULE("helpcommand", module_init)
+
 
 int help_shell_handler(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
@@ -53,4 +59,9 @@ int help_shell_handler(int argsc, char **argsv) {
 	}
 
 	return 0;
+}
+
+
+static int module_init() {
+	InsertShellHandler("help", "displays help", (PSHELL_HANDLER) help_shell_handler);
 }
