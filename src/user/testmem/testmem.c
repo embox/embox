@@ -1,7 +1,7 @@
 /**
  * \file testmem.c
  * \date Jul 24, 2009
- * \author anton
+ * \author afomin
  * \details
  */
 
@@ -35,103 +35,6 @@ static void testmem_print_help(void) {
 	);
 }
 
-void test_memory_run1(WORD *base_addr, long int amount) {
-	WORD *addr, *non_zero_addr, end_addr = base_addr + amount;
-	int i, j;
-	WORD non_zero_value;
-
-	for (non_zero_addr = base_addr; non_zero_addr < end_addr; non_zero_addr++) {
-		non_zero_value = 0x1;
-		while (non_zero_value != 0) {
-			// Writing
-			for (addr = base_addr; addr < non_zero_addr; addr++) {
-				*addr = 0;
-			}
-			*non_zero_addr = non_zero_value;
-			for (addr = non_zero_addr + 1; addr < end_addr; addr++) {
-				*addr = 0;
-			}
-
-			// Checking
-			for (addr = base_addr; addr < non_zero_addr; addr++) {
-				if (*addr != 0) {
-					TRACE("FAILED!\n");
-					return;
-				}
-			}
-			if (*non_zero_addr != non_zero_value) {
-				TRACE("FAILED!\n");
-				return;
-			}
-			for (addr = non_zero_addr + 1; addr < end_addr; addr++) {
-				if (*addr != 0) {
-					TRACE("FAILED!\n");
-					return ;
-				}
-			}
-			non_zero_value << 1;
-		}
-	}
-	return;
-}
-
-void test_memory_run0(WORD *base_addr, long int amount) {
-	WORD *addr, *non_zero_addr, end_addr = base_addr + amount;
-	int i, j;
-	WORD non_zero_value;
-
-	for (non_zero_addr = base_addr; non_zero_addr < end_addr; non_zero_addr++) {
-		non_zero_value = 0x1;
-		while (non_zero_value != ~0) {
-			// Writing
-			for (addr = base_addr; addr < non_zero_addr; addr++) {
-				*addr = ~0;
-			}
-			*non_zero_addr = ~non_zero_value;
-			for (addr = non_zero_addr + 1; addr < end_addr; addr++) {
-				*addr = ~0;
-			}
-
-			// Checking
-			for (addr = base_addr; addr < non_zero_addr; addr++) {
-				if (*addr != ~0) {
-					TRACE("FAILED!\n");
-					return;
-				}
-			}
-			if (*non_zero_addr != ~non_zero_value) {
-				TRACE("FAILED!\n");
-				return;
-			}
-			for (addr = non_zero_addr + 1; addr < end_addr; addr++) {
-				if (*addr != ~0) {
-					TRACE("FAILED!\n");
-					return;
-				}
-			}
-			non_zero_value << 1;
-		}
-	}
-	return 0;
-}
-
-void test_memory_loop(WORD *base_addr, long int amount) {
-	WORD value = 0x55;
-	WORD *addr, *end_addr = base_addr + amount;
-	while (TRUE) {
-		for (addr = base_addr; addr < end_addr; addr++) {
-			*addr = value;
-		}
-		for (addr = base_addr; addr < end_addr; addr++) {
-			if (*addr != value) {
-				TRACE("FAILED!\n");
-				return;
-			}
-		}
-		value = ~value;
-
-	}
-}
 
 void test_memory(WORD *addr, long int amount) {
 	int i = 0, percent_complited = 0;
@@ -174,6 +77,33 @@ int mem_shell_handler(int argsc, char **argsv) {
 		mem_print_help();
 		return -1;
 	}
+
+	if (get_key('t', keys, keys_amount, &key_value)) {
+		// In test mode
+		switch(key_value) {
+		case "runzero":
+			test_mem_func = &test_memory_run0;
+			break;
+		case "runone":
+			test_mem_func = &test_memory_run1;
+			break;
+		case "loop":
+			amount = 0;
+			test_mem_func = &test_memory_loop;
+			break;
+		default:
+			LOG_ERROR("mem: test name expected.\n");
+			mem_print_help();
+		}
+
+	} else {
+		// In read memory mode
+
+		address = 0x0;
+		amount = 50;
+		test_mem_func = &print_memory;
+	}
+
 	if (get_key('h', keys, keys_amount, &key_value)) {
 		mem_print_help();
 		return 0;
@@ -192,7 +122,7 @@ int mem_shell_handler(int argsc, char **argsv) {
 
 	}
 
-	if (get_key('c', keys, keys_amount, &key_value)) {
+	if (get_key('n', keys, keys_amount, &key_value)) {
 		if ((key_value == NULL) || // amount empty
 				((!sscanf(key_value, "0x%x", &address)) // amount not in hex
 				&& (!sscanf(key_value, "%d", (int *) &address)))) { // amount not in decimal
@@ -206,30 +136,6 @@ int mem_shell_handler(int argsc, char **argsv) {
 	}
 
 
-	if (get_key('t', keys, keys_amount, &key_value)) {
-		// In test mode
-		switch(key_value) {
-		case "runzero":
-			test_mem_func = &test_memory_run0;
-			break;
-		case "runone":
-			test_mem_func = &test_memory_run1;
-			break;
-		case "loop":
-			test_mem_func = &test_memory_loop;
-			break;
-		default:
-			LOG_ERROR("mem: test name expected.\n");
-			mem_print_help();
-		}
-
-	} else {
-		// In read memory mode
-
-		address = 0x0;
-		amount = 50;
-		test_mem_func = &print_memory;
-	}
 
 	cache_disable();
 	(*test_mem_func)(address, amount);
