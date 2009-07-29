@@ -18,8 +18,9 @@ inline static int dummy() {
 	return 0;
 }
 
+#define LOGGER()		    printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
 #if defined(_ERROR) && !defined(SIMULATION_TRG)
-#define LOG_ERROR(format, args...)  printf("ERROR: "format, ##args)
+#define LOG_ERROR(format, args...)  do {LOGGER(); printf("ERROR: "format, ##args);} while(0)
 #else
 #define LOG_ERROR(format, args...)  dummy()
 #endif //_ERROR
@@ -31,10 +32,8 @@ inline static int dummy() {
 #endif //_WARN
 
 #if defined(_DEBUG) && !defined(SIMULATION_TRG)
-#define LOGGER()		    printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
-#define LOG_DEBUG(format, args...)  LOGGER(); printf("DEBUG: "format, ##args)
+#define LOG_DEBUG(format, args...)  do {LOGGER(); printf("DEBUG: "format, ##args);} while(0)
 #else
-#define LOGGER()                dummy()
 #define LOG_DEBUG(format, args...)  dummy()
 #endif //_DEBUG
 

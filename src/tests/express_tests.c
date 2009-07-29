@@ -2,7 +2,9 @@
  * \file express_tests.c
  *
  * \date Dec 4, 2008
- * \author anton
+ *
+ * \author Anton Bondarev
+ * \author Eldar Abusalimov
  */
 #include "types.h"
 #include "common.h"
@@ -22,21 +24,29 @@ int express_tests_execute() {
 			continue;
 		}
 		if (NULL == ((*p_test)->name)) {
-			LOG_ERROR("Broken express test descriptor. Can't find test name\n");
+			LOG_ERROR("Broken express test descriptor: can't find test name\n");
 			continue;
 		}
 		if (NULL == ((*p_test)->exec)) {
-			LOG_ERROR("Broken express test descriptor. Can't find exec function for test %s\n", (*p_test)->name);
+			LOG_ERROR("Broken express test descriptor: can't find exec function for test %s\n", (*p_test)->name);
 			continue;
 		}
 
 		TRACE("Testing %s ... ", (*p_test)->name);
-		if (-1 != (*p_test)->exec()) {
-			TRACE("PASSED\n");
-			passed++;
-		} else {
+		// TODO magic constants
+		int result = sys_exec_start((*p_test)->exec);
+		if (result == -1) {
 			TRACE("FAILED\n");
 			failed++;
+		} else if (result == -2) {
+			TRACE("INTERRUPTED\n");
+			failed++;
+		} else if (result == -3) {
+			TRACE("UNABLE TO START\n");
+			failed++;
+		} else {
+			TRACE("PASSED\n");
+			passed++;
 		}
 
 	}
@@ -44,6 +54,6 @@ int express_tests_execute() {
 	TRACE("\nPassed: %d\n", passed);
 	TRACE("Failed: %d\n", failed);
 
-	return (passed + failed == total) ? 0 : -1;
+	return (passed == total) ? 0 : -1;
 
 }

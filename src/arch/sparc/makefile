@@ -3,7 +3,8 @@ OBJS-y:= leon_irq.o \
          mmu_asm.o \
          boot.o \
          cpu_context.o \
-         traps.o \
+         entry.o \
+         trap_setup.o \
          windows.o \
          bubble_sort.o \
          sys.o \

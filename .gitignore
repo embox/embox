@@ -3,6 +3,8 @@
 /include_dirs.lst
 /obj
 /objs.lst
+scripts/autoconf
+scripts/autoconf.h
 scripts/link*
 
 *.pyc

@@ -38,11 +38,6 @@ void irq_init_handlers() {
 	int i;
 
 	irq_ctrl_init();
-
-	for (i = 0; i < IRQ_TABLE_SIZE; i++) {
-		user_trap_handlers[i] = NULL;
-	}
-
 }
 
 BOOL irq_set_trap_handler(BYTE tt, IRQ_HANDLER pfunc) {

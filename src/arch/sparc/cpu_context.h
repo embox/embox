@@ -35,17 +35,12 @@ typedef struct _CPU_CONTEXT {
  */
 }__attribute__ ((aligned (8))) CPU_CONTEXT;
 
-#define CPU_CONTEXT_SZ sizeof(CPU_CONTEXT)
-
 #else /* __ASSEMBLER__ */
 
 /* base address to save (restore) context to (from) */
 #define l_base  l6
 /* return address */
 #define l_retpc l7
-
-/* compute sizes by hand (see above) */
-#define CPU_CONTEXT_SZ (4 * 8 + REG_WINDOW_SZ * CORE_NWINDOWS)
 
 /* Offsets for trap context structure  */
 #define CC_PSR_CWP 0x00

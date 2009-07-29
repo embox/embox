@@ -106,7 +106,7 @@ static void show_module_info(AMBA_DEV *dev) {
 
 	TRACE ("\tscaler_cnt 0x%X\n", dev_regs->scaler_cnt);
 	TRACE ("\tscaler_ld 0x%X\n", dev_regs->scaler_ld);
-	TRACE ("system resurses\n");
+	TRACE ("system resources\n");
 	TRACE ("\tcnt_ms_sleep 0x%X\n",cnt_ms_sleep);
 	TRACE ("\tcnt_sys_time 0x%X\n",cnt_sys_time);
 }
@@ -116,23 +116,16 @@ int timers_init() {
 	if (dev_regs) {
 		return -1;
 	}
+#ifndef SIMULATION_TRG
 	for (i = 0; i < array_len(sys_timers); i++)
 		sys_timers[i].f_enable = FALSE;
 
-
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
-	amba_dev.show_info = show_module_info;
+#else
+	amba_dev.bar[0].start = TIMERS_BASE;
+	amba_dev.dev_info.irq = TIMERS_IRQ;
+#endif
 
-	if (TIMERS_BASE != amba_dev.bar[0].start) {
-        TRACE("timers base is %x instead of correct value %x\n",
-                amba_dev.bar[0].start, TIMERS_BASE);
-        return -1;
-    }
-	if (TIMERS_IRQ != amba_dev.dev_info.irq) {
-	    TRACE("timers irq is %d instead of correct value %d",
-	            amba_dev.dev_info.irq, TIMERS_IRQ);
-	    return -1;
-	}
 	dev_regs = (TIMERS_STRUCT *)amba_dev.bar[0].start;
 	dev_regs->timer_ctrl1 = 0x0;
 	dev_regs->timer_ctrl2 = 0x0; /**< disable */
@@ -153,14 +146,7 @@ int timers_init() {
 
 	return 0;
 }
-/*
-void temp_wait()
-{
-    int i;
-    for(i=0; i < 50; i ++);
-    return;
-}
-*/
+
 void sleep(volatile unsigned int ms) {
     unsigned int irq = __local_irq_save();
 	cnt_ms_sleep = 0;
@@ -169,55 +155,7 @@ void sleep(volatile unsigned int ms) {
 	while (cnt_ms_sleep < ms)	{
 	}
 }
-/*
-void sleep(int ms) {
-	register UINT32 cnt;
-	for(; ms; ms--) {
-		for (cnt = sleep_cnt_const; cnt; cnt--) {}
-	}
-}
 
-void calibrate_sleep () {
-	int t_prev, dt;
-	int cnt=0;
-
-        LOG_DEBUG("Start sleep counter calibration ... ");
-	// 1. test for proper work of irq_func_tmr_1mS()
-	cnt_ms_sleep = 0;
-	for (cnt=0; cnt<100000; cnt++) {}
-	if (0 == cnt_ms_sleep) {
-		// irq_func_tmr_1mS() not worked.
-		// we can't calibrate sleep
-		// use nearest experimental-based value for 50Mhz CPU freq
-		sleep_cnt_const = DEFAULT_SLEEP_COUNTER;
-	        LOG_DEBUG("failed. Assumed default value %d for 50Mhz CPU.\n", sleep_cnt_const);
-		return;
-	}
-
-	// now calibrate volatile int counter for 1ms loop
-	sleep_cnt_const = t_prev = 0;
-	dt = 256;
-	while (dt > 0) {
-		// do time-alignment for timer IRQ
-		cnt_ms_sleep = 0;
-		while (cnt_ms_sleep < 1) {}
-	       	// now cnt_ms_sleep == 1
-
-		// test delay
-		sleep(10);
-
-		if (cnt_ms_sleep > 10) {
-			sleep_cnt_const = t_prev;
-			dt /= 2;
-		} else {
-			t_prev = sleep_cnt_const;
-			sleep_cnt_const += dt;
-		}
-	}
-        LOG_DEBUG("done. Assumed %d for sleep(1ms)\n", sleep_cnt_const);
-}
-
-*/
 UINT32 get_sys_time() {
 	return cnt_sys_time;
 }
@@ -243,23 +181,3 @@ void timers_off (){
 	dev_regs->timer_ctrl2 = 0x0;//disable
 //	show_module_info(&amba_dev);
 }
-
-//void timers_align (){
-//	dev_regs->timer_ctrl1 = 0x0;
-//	dev_regs->timer_ctrl2 = 0x0;//disable
-//
-//	cnt_sys_time = 0;
-//	cnt_ms_sleep = 0;
-//
-//
-//	dev_regs->scaler_ld = TIMER_SCALER_VAL;
-//	dev_regs->scaler_cnt = 0;
-//	dev_regs->timer_cnt1 = 0;
-//	dev_regs->timer_cnt2 = 0;
-//
-//
-//	dev_regs->timer_ld1 = 0x002710;
-//	dev_regs->timer_ld2 = 0;//0x027100;
-//	dev_regs->timer_ctrl1 = 0xf;
-//	dev_regs->timer_ctrl2 = 0x0;//disable
-//}

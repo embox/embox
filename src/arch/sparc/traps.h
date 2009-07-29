@@ -86,6 +86,17 @@ typedef struct _TRAP_CONTEXT {
 /* Software trap. Treat as BAD_TRAP */
 #define SOFT_TRAP BAD_TRAP
 
+#define SAVE_ALL \
+	sethi %hi(trap_entry_begin), %t0;            \
+	jmpl  %t0 + %lo(trap_entry_begin), %t_retpc; \
+	 nop;
+
+#define RESTORE_ALL \
+	sethi %hi(trap_entry_end), %t0;       \
+	jmpl  %t0 + %lo(trap_entry_end), %g0; \
+	 nop;
+
+
 /* compute sizes by hand (see above) */
 #define STACKFRAME_SZ     (REG_WINDOW_SZ + (1+6+1)*4)
 #define TRAP_CONTEXT_SZ   ((1+1+1+1+8)*4)

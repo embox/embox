@@ -16,11 +16,31 @@
 	.section    ".text"
 	.align  4
 
+/*
+ * At the boot time we are in an arbitrary register window.
+ * Therefore we reset CWP field of PSR to zero
+ * and mark the _previous_ window as invalid (set WIM to 1 << 1).
+ * So it is possible to do (CORE_NWINDOWS - 1) SAVEs
+ * before the WOF trap will occure for the first time.
+ *
+ * WIM layout:
+ *
+ * <-- restore, rett                 trap, save -->
+ *  ----------------------------------------------
+ *  | win# | ... | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+ *  | bits |     |   |   |   |   |   |   | * |   |
+ *  ----------------------------------------------
+ *                                             ^-CWP
+ */
 	.global boot_start, warm_start
 boot_start:
+	/* set PSR initial value */
+	set	(PSR_PS | PSR_S | PSR_PIL | PSR_EF), %g1
+	wr	%g1, %g0, %psr
+	 WRITE_PAUSE
 
-	/* first of all disanle trap */
-	PSR_BIT_CLEAR_SHORT(PSR_ET, l3)
+	/* clear wim to iterate over the windows */
+	wr %g0, %g0, %wim
 	 WRITE_PAUSE
 
 	/* setup trap table address */
@@ -28,12 +48,18 @@ boot_start:
 	wr  %g1, %g0, %tbr
 	 WRITE_PAUSE
 
-	/* clear wim to iterate over the windows */
-	wr %g0, %g0, %wim
+	/* reset some control regs */
+	wr %g0, %g0, %y
 	 WRITE_PAUSE
-	/* reset pil, icc and jump into window #0 */
-	PSR_BIT_CLEAR((PSR_PIL | PSR_ICC | PSR_CWP), l3, l4)
-	 WRITE_PAUSE
+
+	/* clear global registers. */
+	mov %g0, %g1
+	mov %g0, %g2
+	mov %g0, %g3
+	mov %g0, %g4
+	mov %g0, %g5
+	mov %g0, %g6
+	mov %g0, %g7
 
 	/* clean all register windows */
 	save // get into the last window
@@ -62,38 +88,25 @@ register_window_clean:
  	bg register_window_clean
 	 save
 
-/*
- * At the boot time we are in an arbitrary register window.
- * Therefore we reset CWP field of PSR to zero
- * and mark the _previous_ window as invalid (set WIM to 1 << 1).
- * So it is possible to do (CORE_NWINDOWS - 1) SAVEs
- * before the WOF trap will occure for the first time.
- *
- * WIM layout:
- *
- * <-- restore, rett                 trap, save -->
- *  ----------------------------------------------
- *  | win# | ... | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
- *  | bits |     |   |   |   |   |   |   | * |   |
- *  ----------------------------------------------
- *                                             ^-CWP
- */
 	/* setup wim*/
 	mov (1 << 1), %g1
 	wr %g1, %g0, %wim
 
-	/* clear global registers. TODO what for? x_0 -- Eldar */
-	mov %g0, %g1
-	mov %g0, %g2
-	mov %g0, %g3
-	mov %g0, %g4
-	mov %g0, %g5
-	mov %g0, %g6
-	mov %g0, %g7
-
-	/* reset some control regs */
-	wr %g0, %g0, %y
-	 WRITE_PAUSE
+	/* setup MMU */
+// TODO move somewhere -- Eldar
+#define MMU_CTRL_REG            0x000
+#define MMU_CTXTBL_PTR          0x100
+#define MMU_CTX_REG             0x200
+#define MMU_FSR                 0x300
+#define MMU_FAR                 0x400
+	mov MMU_CTRL_REG, %g1
+	sta %g0, [%g1] 0x19
+	mov MMU_CTXTBL_PTR, %g1
+	sta %g0, [%g1] 0x19
+	mov MMU_CTX_REG, %g1
+	sta %g0, [%g1] 0x19
+	mov	MMU_FSR, %g1
+	lda	[%g1] 0x19, %g0 /* reset FSR */
 
 	flush
 	 nop;nop;nop
@@ -142,7 +155,7 @@ register_window_clean:
 	mov %g1, %fp
 	sub %g1, 0x60, %sp
 
-	PSR_BIT_TOGGLE_SHORT(PSR_ET, l3)
+	PSR_BIT_TOGGLE_SHORT(PSR_ET, g1)
 	 WRITE_PAUSE
 
 	set hardware_init_hook, %g1

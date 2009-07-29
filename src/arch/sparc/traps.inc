@@ -18,7 +18,7 @@ _hardreset:
   SRMMU_DFAULT                  ! 09 data_access_exception
   BAD_TRAP;                     ! 0A tag_overflow
 
-  TRAP(skip);                   ! 0B watchpoint_exception
+  BAD_TRAP;                     ! 0B watchpoint_exception
   BAD_TRAP;                     ! 0C undefined
   BAD_TRAP;                     ! 0D undefined
   BAD_TRAP;                     ! 0E undefined
@@ -40,7 +40,7 @@ _hardreset:
   TRAP(irq_dispatcher);         ! 1C interrupt level 12   !
   TRAP(irq_dispatcher);         ! 1D interrupt level 13   !
   TRAP(irq_dispatcher);         ! 1E interrupt level 14   ! IRQ_PCI
-  TRAP(halt_trap);              ! 1F interrupt level 15   ! IRQ_Halt (NMI)
+  BAD_TRAP; !TRAP(halt_trap);              ! 1F interrupt level 15   ! IRQ_Halt (NMI)
 
 
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 20 - 23 undefined
@@ -75,14 +75,14 @@ _hardreset:
   SOFT_TRAP;                                    ! 80
   SOFT_TRAP;                        ! 81
   SOFT_TRAP; SOFT_TRAP;                         ! 82 - 83
-  TRAP(skip);                                   ! 84
+  SOFT_TRAP;                                    ! 84
   TRAP(cpu_context_save_trap);                  ! 85
   TRAP(cpu_context_restore_trap);               ! 86
   SOFT_TRAP;                                    ! 87
   SOFT_TRAP;                                    ! 88
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;  ! 89 - 8B
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 8C - 8F
-  TRAP(test_soft_traps_func);                   ! 90
+  SOFT_TRAP; !TRAP(test_soft_traps_func);                   ! 90
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;              ! 91 - 93
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 94 - 97
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 98 - 9B
