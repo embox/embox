@@ -122,7 +122,7 @@ trap_entry_end:
 
 // TODO what's about checking and restoring PS/S? -- Eldar
 	/* restore PIL&ICC fields of old PSR */
-	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1, t2)
+	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1)
 	 WRITE_PAUSE
 
 	/* tata! */

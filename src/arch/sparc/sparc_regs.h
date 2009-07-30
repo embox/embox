@@ -100,11 +100,11 @@
 	andn %scratch_psr, %scratch_mask, %scratch_psr;\
 	wr   %scratch_psr, %g0, %psr;
 
-#define PSR_BIT_COPY(r_src, mask, scratch_psr, scratch_src, scratch_mask) \
+#define PSR_BIT_COPY(r_src, mask, scratch_psr, scratch_src) \
 	rd   %psr, %scratch_psr;                       \
-	set  mask, %scratch_mask;                      \
-	andn %scratch_psr, %scratch_mask, %scratch_psr;      \
-	and  %r_src, %scratch_mask, %scratch_src;            \
+	set  mask, %scratch_src;                       \
+	andn %scratch_psr, %scratch_src, %scratch_psr; \
+	and  %r_src, %scratch_src, %scratch_src;       \
 	or   %scratch_psr, %scratch_src, %scratch_psr; \
 	wr   %scratch_psr, %g0, %psr;
 

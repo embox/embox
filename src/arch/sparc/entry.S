@@ -75,7 +75,7 @@ cpu_context_save_trap:
 	 mov %i_pcontext, %l_base
 
     /* restore PIL&ICC fields of old PSR */
-	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1, t2)
+	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1)
 	 WRITE_PAUSE
 
 	/* skip instruction */
@@ -98,7 +98,7 @@ cpu_context_restore_trap:
 	 mov %i_pcontext, %l_base
 
     /* restore PIL&ICC fields of old PSR */
-	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1, t2)
+	PSR_BIT_COPY(t_psr, (PSR_PIL | PSR_ICC), t0, t1)
 	 WRITE_PAUSE
 
 	/* skip instruction */

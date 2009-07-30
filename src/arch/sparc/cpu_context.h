@@ -21,29 +21,29 @@
  * Structure holding the whole context of the CPU
  */
 typedef struct _CPU_CONTEXT {
-	/* CWP field of PSR register */
-	WORD psr_cwp;
 	/* global registers */
-	WORD globals[7];
+	WORD globals[8];
+	/* some control registers */
+	WORD y, tbr, psr, wim;
 	/* all register windows */
 	REG_WINDOW reg_windows[CORE_NWINDOWS];
 /*
  * We do not explicitly define space
- * for PSR, PC, nPC, Y, WIM and TBR registers.
+ * for PC and nPC registers.
  * These registers are saved in locals of the window
- * pointed at the call time
+ * pointed at the call time. (see traps.h)
  */
 }__attribute__ ((aligned (8))) CPU_CONTEXT;
 
 #else /* __ASSEMBLER__ */
 
 /* base address to save (restore) context to (from) */
-#define l_base  l6
+#define l_base  t2
 /* return address */
-#define l_retpc l7
+#define l_retpc t_retpc
 
 /* Offsets for trap context structure  */
-#define CC_PSR_CWP 0x00
+#define CC_G0      0x00
 #define CC_G1      0x04
 #define CC_G2      0x08
 #define CC_G3      0x0c
@@ -51,10 +51,22 @@ typedef struct _CPU_CONTEXT {
 #define CC_G5      0x14
 #define CC_G6      0x18
 #define CC_G7      0x1c
-#define CC_REG_WINDOWS 0x20
+#define CC_YREG    0x20
+#define CC_TBR     0x24
+#define CC_PSR     0x28
+#define CC_WIM     0x2c
+#define CC_REG_WINDOWS 0x30
 
-#define LOAD_CC_PSR_CWP(base_reg,  cwp_reg) \
-	ld      [%base_reg + CC_PSR_CWP], %cwp_reg;
+#define LOAD_CC_PRIV(base_reg, scratch) \
+	ld      [%base_reg + CC_YREG], %scratch;\
+	wr      %scratch, %g0, %y;              \
+	ld      [%base_reg + CC_TBR], %scratch; \
+	wr      %scratch, %g0, %tbr;            \
+	ld      [%base_reg + CC_WIM], %scratch; \
+	wr      %scratch, %g0, %wim;            \
+	ld      [%base_reg + CC_PSR], %scratch; \
+	wr      %scratch, %g0, %psr;            \
+	 WRITE_PAUSE;
 
 #define LOAD_CC_GLOBALS(base_reg) \
 	ld      [%base_reg + CC_G1], %g1; \
@@ -65,8 +77,15 @@ typedef struct _CPU_CONTEXT {
 #define LOAD_CC_REG_WINDOW(base_reg) \
 	LOAD_WINDOW(base_reg, CC_REG_WINDOWS);
 
-#define STORE_CC_PSR_CWP(base_reg, cwp_reg) \
-	st      %cwp_reg, [%base_reg + CC_PSR_CWP];
+#define STORE_CC_PRIV(base_reg, scratch) \
+	rd      %psr, %scratch;                 \
+	st      %scratch, [%base_reg + CC_PSR]; \
+	rd      %y, %scratch;                   \
+	st      %scratch, [%base_reg + CC_YREG];\
+	rd      %tbr, %scratch;                 \
+	st      %scratch, [%base_reg + CC_TBR]; \
+	rd      %wim, %scratch;                 \
+	st      %scratch, [%base_reg + CC_WIM];
 
 #define STORE_CC_GLOBALS(base_reg) \
 	st      %g1, [%base_reg + CC_G1]; \
