@@ -11,5 +11,6 @@ SUBDIRS-$(MONITOR_USER_PING)      += ping
 SUBDIRS-$(MONITOR_USER_UDPD)      += udpd
 SUBDIRS-$(MONITOR_USER_WMEM)      += wmem
 SUBDIRS-$(MONITOR_USER_LS)        += ls
+SUBDIRS-$(MONITOR_USER_TESTMEM)   += testmem
 
 include $(SRC_DIR)/common.mk
