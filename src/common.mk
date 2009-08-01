@@ -15,11 +15,11 @@ $(SUBDIRS-n):
 all: $(SUBDIRS-y) $(OBJS-y)
 
 %.o:%.S
-	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -o $(OBJ_DIR)/$(BUILD)/$@ $<
+	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $(OBJ_DIR)/$(BUILD)/$@ $<
 	@printf "  [M]\t$@\n"
 
 %.o:%.c
-	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -o $(OBJ_DIR)/$(BUILD)/$@ $<
+	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $(OBJ_DIR)/$(BUILD)/$@ $<
 	@printf "  [M]\t$@\n"
 
 clean:

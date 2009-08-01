@@ -4,6 +4,7 @@ BIN_DIR     = $(ROOT_DIR)/bin
 OBJ_DIR     = $(ROOT_DIR)/obj
 SRC_DIR     = $(ROOT_DIR)/src
 SCRIPTS_DIR = $(ROOT_DIR)/scripts
+INCLUDE_DIR = $(ROOT_DIR)/include
 RM          = rm -rf
 EDITOR      = vim
 
