@@ -183,18 +183,20 @@ int ifdev_down(const char *iname){
 /* iterator functions */
 static int iterator_cnt;
 IF_DEVICE * ifdev_get_fist_used(){
-    for(iterator_cnt = 0; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt ++){
-        if (0 == status_handlers[iterator_cnt]){
-            status_handlers[iterator_cnt] = 1;
+    for(iterator_cnt = 0; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
+        if (1 == status_handlers[iterator_cnt]){
+            //status_handlers[iterator_cnt] = 1;
+            iterator_cnt++;
             return &ifs[iterator_cnt];
         }
     }
     return NULL;
 }
 IF_DEVICE * ifdev_get_next_used(){
-    for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt ++){
-        if (0 == status_handlers[iterator_cnt]){
-            status_handlers[iterator_cnt] = 1;
+    for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
+        if (1 == status_handlers[iterator_cnt]){
+            //status_handlers[iterator_cnt] = 1;
+            iterator_cnt++;
             return &ifs[iterator_cnt];
         }
     }
