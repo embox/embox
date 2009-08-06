@@ -16,6 +16,8 @@
 
 struct sock;
 
+#define ETHERNET_V2_FRAME_SIZE 1518
+
 typedef struct _net_packet {
 	struct _net_device      *netdev;
 	void                    *ifdev;
@@ -44,7 +46,7 @@ typedef struct _net_packet {
 	  	unsigned char 	*raw;
 	} mac;
 
-	unsigned char data[1518];
+	unsigned char data[ETHERNET_V2_FRAME_SIZE];
 }net_packet;
 
 typedef struct _net_device_stats {
@@ -71,8 +73,21 @@ typedef struct _net_device {
 	int (*set_mac_address)(struct _net_device *dev, void *addr);
 }net_device;
 
+/**
+ * Find ethernet device by name
+ * @param name device name
+ */
 net_device *find_net_device(const char *name);
+
+/**
+ * Allocate ethernet device
+ */
 net_device *alloc_etherdev();
+
+/**
+ * Free ethernet device
+ * @param dev net_device handler
+ */
 void free_etherdev(net_device *dev);
 
 #endif /* NET_DEVICE_H_ */

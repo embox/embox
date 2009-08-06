@@ -52,12 +52,12 @@ int net_config() {
     char macbuff[0x20];
     for (k = 0; k < array_len(eth_ifs); k++) {
         if (NULL == ipaddr_scan(eth_ifs[k].ip, ipaddr)) {
-            TRACE("Error: parsing ipadd\n");
+            LOG_ERROR("parsing ipadd\n");
             continue;
         }
 
         if (NULL == macaddr_scan(eth_ifs[k].mac, hwaddr)) {
-            TRACE("Error: parsing mac\n");
+            LOG_ERROR("parsing mac\n");
             continue;
         }
         ifdev_up(eth_ifs[k].iname);

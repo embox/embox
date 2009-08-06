@@ -294,13 +294,13 @@
 		},
 		"test_cpu_context": {
 			"desc": "cpu_context save/restore",
-			"inc": 1,
+			"inc": 0,
 			"mdef": "MONITOR_TEST_CPU_CONTEXT",
 			"status": 1
 		},
 		"test_irq_availability": {
 			"desc": "irq availability",
-			"inc": 0,
+			"inc": 1,
 			"mdef": "MONITOR_TEST_IRQ_AVAILABILITY",
 			"status": 1
 		},
@@ -312,7 +312,7 @@
 		},
 		"test_soft_traps": {
 			"desc": "soft traps",
-			"inc": 1,
+			"inc": 0,
 			"mdef": "MONITOR_TEST_SOFT_TRAPS",
 			"status": 1
 		}

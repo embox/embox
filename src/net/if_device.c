@@ -152,16 +152,16 @@ static int rebuild_header(net_packet * pack) {
 int ifdev_up(const char *iname){
     IF_DEVICE *ifhandler;
     if (NULL == (ifhandler = find_free_handler ())){
-        TRACE("Error ifdev up: can't find find free handler\n");
+        LOG_ERROR("ifdev up: can't find find free handler\n");
         return -1;
     }
     if (NULL == (ifhandler->net_dev = find_net_device(iname))){
-        TRACE("Error ifdev up: can't find net_device with name\n", iname);
+        LOG_ERROR("ifdev up: can't find net_device with name\n", iname);
         return -1;
     }
     ifhandler->net_dev->rebuild_header = rebuild_header;
     if (NULL == ifhandler->net_dev->open) {
-        TRACE("Error ifdev up: can't find open function in net_device with name\n", iname);
+        LOG_ERROR("ifdev up: can't find open function in net_device with name\n", iname);
         return -1;
     }
     return ifhandler->net_dev->open(ifhandler->net_dev);
@@ -170,15 +170,15 @@ int ifdev_up(const char *iname){
 int ifdev_down(const char *iname){
     IF_DEVICE *ifhandler;
     if (NULL == (ifhandler = ifdev_find_by_name(iname))){
-            TRACE("Error ifdev down: can't find ifdev with name\n", iname);
+            LOG_ERROR("ifdev down: can't find ifdev with name\n", iname);
             return -1;
         }
     if (NULL == (ifhandler->net_dev)){
-            TRACE("Error ifdev down: can't find net_device with name\n", iname);
+            LOG_ERROR("ifdev down: can't find net_device with name\n", iname);
             return -1;
         }
     if (NULL == ifhandler->net_dev->stop) {
-        TRACE("Error ifdev down: can't find stop function in net_device with name\n", iname);
+        LOG_ERROR("ifdev down: can't find stop function in net_device with name\n", iname);
         return -1;
     }
     free_handler(ifhandler);
@@ -191,7 +191,7 @@ IF_DEVICE * ifdev_get_fist_used(){
     for(iterator_cnt = 0; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
         if (1 == ifs[iterator_cnt].is_busy){
             iterator_cnt++;
-            return &ifs[iterator_cnt].dev;
+            return &ifs[iterator_cnt - 1].dev;
         }
     }
     return NULL;
@@ -201,7 +201,7 @@ IF_DEVICE * ifdev_get_next_used(){
     for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
         if (1 == ifs[iterator_cnt].is_busy){
             iterator_cnt++;
-            return &ifs[iterator_cnt].dev;
+            return &ifs[iterator_cnt - 1].dev;
         }
     }
     return NULL;
