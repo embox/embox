@@ -1,19 +1,13 @@
 #ifndef FILE_H_
 #define FILE_H_
 
-typedef void * (*FILEOP_OPEN) (const char *file_name, char *mode);
-typedef int (*FILEOP_CLOSE) (void * file);
-typedef size_t (*FILEOP_READ) (const void *buf, size_t size, size_t count, void *file);
-typedef size_t (*FILEOP_WRITE) (const void *buf, size_t size, size_t count, void *file);
-typedef int (*FILEOP_FSEEK) (void *file, long offset, int whence);
 
-typedef struct _FILEOP{
-    FILEOP_OPEN fopen;
-    FILEOP_CLOSE close;
-    FILEOP_READ read;
-    FILEOP_WRITE write;
-    FILEOP_FSEEK fseek;
-}FILEOP;
+void *fopen (const char *file_name, char *mode);
 
+size_t fwrite (const void *buf, size_t size, size_t count, void *file);
+
+size_t fread (const void *buf, size_t size, size_t count, void *file);
+
+void fclose (void *file);
 
 #endif /*FILE_H_*/

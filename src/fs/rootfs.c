@@ -69,7 +69,7 @@ static FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT
     for (i = 0; i < array_len(file_name_struct->fs_name); i ++){
         if ('/' == file_name[i+1]){
             file_name_struct->fs_name[i] = 0;
-            file_name_struct->file_name = (char *)&file_name[i+1];
+            file_name_struct->file_name = (char *)&file_name[i + 1 + 1];
             return file_name_struct;
         }
         file_name_struct->fs_name[i] = file_name[i+1];
@@ -97,14 +97,15 @@ void *rootfs_fopen(const char *file_name, char *mode){
         TRACE("can't parse file name %s\n (may be wrong format)\n", file_name);
         return NULL;
     }
-    if (NULL == (fsop = rootfs_get_fsopdesc(fname_struct.fs_name))){
-        TRACE("can't find file system description for file %s\n (may be file ", file_name);
+    TRACE("try open: disk %s\tfile %s\n", fname_struct.fs_name, fname_struct.file_name);
+    if (NULL == (fsop = rootfs_get_fsopdesc((char*)file_name))){
+        TRACE("can't find file system description for file %s\n (may be file %s didn't create)\n", file_name);
         return NULL;
     }
     if (NULL == fsop->open_file){
         TRACE("can't find open_file function wrong fs operation descriptor for file %s\n", file_name);
         return NULL;
     }
-    return fsop->open_file(file_name, mode);
+    return fsop->open_file(fname_struct.file_name, mode);
 }
 

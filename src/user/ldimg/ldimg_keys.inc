@@ -1,2 +1,2 @@
 //keys, available for help command
-'h'
+'a', 'f', 'h'

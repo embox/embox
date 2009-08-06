@@ -61,7 +61,7 @@ int goto_shell_handler(int argsc, char **argsv) {
 			return 0;
 		}
 
-		LOG_ERROR("goto: invalid value \"%s\".\n\thex number expected.\n", key_value);
+		LOG_ERROR("goto: invalid value \"%s\".\n\the number expected.\n", key_value);
 		return -1;
 	}
 
