@@ -21,10 +21,6 @@ static void show_help() {
 }
 
 
-
-DECLARE_MODULE("help_command", module_init)
-
-
 int help_shell_handler(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	char *key_value;
@@ -62,6 +58,3 @@ int help_shell_handler(int argsc, char **argsv) {
 }
 
 
-static int module_init() {
-	insert_shell_handler("help", "displays help", (PSHELL_HANDLER) help_shell_handler);
-}
