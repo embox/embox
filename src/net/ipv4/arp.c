@@ -68,17 +68,17 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 		return NULL;
 	}
 
-	pack->ifdev = ifdev;
-	pack->netdev = ifdev_get_netdevice(ifdev);
+	pack->ifdev   = ifdev;
+	pack->netdev  = ifdev_get_netdevice(ifdev);
 	pack->mac.raw = pack->data;
-//mac header
+	/* mac header */
 	memcpy (pack->mac.mach->dst_addr, brodcast_mac_addr, MAC_ADDR_LEN);
 	memcpy (pack->mac.mach->src_addr, pack->netdev->hw_addr, MAC_ADDR_LEN);
 	pack->mac.mach->type = ARP_PROTOCOL_TYPE;
 
 	pack->nh.raw = pack->mac.raw + MAC_HEADER_SIZE;
 
-//arp header
+	/* arp header */
 	pack->nh.arph->htype = ARP_HARDWARE_TYPE_ETH;
 	pack->nh.arph->ptype = IP_PROTOCOL_TYPE;
 	//TODO length hardware and logical type
@@ -116,6 +116,9 @@ net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[4]) {
 	return NULL;
 }
 
+/**
+ * receive ARP response, update ARP table
+ */
 static int received_resp(net_packet *pack) {
 	arphdr *arp = pack->nh.arph;
 	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, 4)) {
@@ -131,7 +134,10 @@ static int received_resp(net_packet *pack) {
 	return 0;
 }
 
-int received_req(net_packet *pack) {
+/**
+ * receive ARP request, send ARP response
+ */
+static int received_req(net_packet *pack) {
 	net_packet *resp;
 	arphdr *arp = pack->nh.arph;
 	char ip[15], mac[18];

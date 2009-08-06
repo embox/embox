@@ -14,9 +14,7 @@
 #include "ip_v4.h"
 #include "mac.h"
 
-#define ICMP_TYPE_ECHO_REQ  8
-#define ICMP_TYPE_ECHO_RESP 0
-#define CB_INFO_SIZE	0x10
+#define CB_INFO_SIZE        0x10
 
 typedef struct _ICMP_CALLBACK_INFO {
 	ICMP_CALLBACK      cb;
@@ -133,14 +131,36 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 }
 
 //implementation handlers for received msgs
-static int icmp_get_echo_answer(net_packet *pack) { //type 0
+static int icmp_get_echo_reply(net_packet *pack) { //type 0
 	ICMP_CALLBACK cb;
 	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
-			ICMP_TYPE_ECHO_RESP)))
+			ICMP_TYPE_ECHO_REPLY)))
 		return -1;
 	cb(pack);
 	//unregister
-	callback_free(cb, pack->ifdev, pack->nh.iph->id, ICMP_TYPE_ECHO_RESP);
+	callback_free(cb, pack->ifdev, pack->nh.iph->id, ICMP_TYPE_ECHO_REPLY);
+	return 0;
+}
+
+static int icmp_get_dest_unreachable(net_packet *pack) { //type 3
+	//TODO:
+	LOG_WARN("icmp type=3, code=%d\n", pack->h.icmph->code);
+	/*
+	0 	Destination network unreachable
+	1 	Destination host unreachable
+	2 	Destination protocol unreachable
+	3 	Destination port unreachable
+	4 	Fragmentation required, and DF flag set
+	5 	Source route failed
+	6 	Destination network unknown
+	7 	Destination host unknown
+	8 	Source host isolated
+	9 	Network administratively prohibited
+	10 	Host administratively prohibited
+	11 	Network unreachable for TOS
+	12 	Host unreachable for TOS
+	13 	Communication administratively prohibited
+	*/
 	return 0;
 }
 
@@ -153,7 +173,7 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	int i;
 
 	//fill icmp header
-	pack->h.icmph->type = ICMP_TYPE_ECHO_RESP;
+	pack->h.icmph->type = ICMP_TYPE_ECHO_REPLY;
 	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
 
 /*	LOG_DEBUG("\npacket icmp\n");
@@ -195,7 +215,7 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 	pack->protocol = IP_PROTOCOL_TYPE;
 
 	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->id,
-			ICMP_TYPE_ECHO_RESP)) {
+			ICMP_TYPE_ECHO_REPLY)) {
 		net_packet_free(pack);
 		return -1;
 	}
@@ -204,8 +224,10 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 
 //set all realized handlers
 int icmp_init() {
-	received_packet_handlers[0] = icmp_get_echo_answer;
-	received_packet_handlers[8] = icmp_get_echo_request;
+	received_packet_handlers[ICMP_TYPE_ECHO_REPLY]       = icmp_get_echo_reply;
+	received_packet_handlers[ICMP_TYPE_DEST_UNREACHABLE] = icmp_get_dest_unreachable;
+	received_packet_handlers[ICMP_TYPE_ECHO_REQ]         = icmp_get_echo_request;
+	//TODO: other types
 	return 0;
 }
 
