@@ -114,46 +114,13 @@ register_window_clean:
 	set 0x81000F, %g1 // TODO wtf? -- Eldar
 	sta %g1, [%g0] 2
 
-#define src g1
-#define dst g2
-#define end g3
-#define tmp0 g4
-#define tmp1 g5
-	/* copy data sections */
-	set _endtext, %src
-	set _data_start, %dst
-	set _data_end, %end
-	cmp %dst, %end
-	bge 2f
-	 nop
-
-1:	ldd [%src], %tmp0
-	std %tmp0, [%dst]
-	add %dst, 8, %dst
-	cmp %dst, %end
-	bl  1b
-	 add %src, 8, %src
-
-	/* Zero bss */
-2:	set _bstart, %dst
-	set _bend, %end
-	mov %g0, %tmp0
-	mov %g0, %tmp1
-	cmp %dst, %end
-	bge 2f
-	 sub %end, 8, %end
-
-1:	std %tmp0, [%dst]
-	cmp %dst, %end
-	bl  1b
-	 add %dst, 8, %dst
-
-2:
-
 	/* give us a stack! */
 	set __stack, %g1
 	mov %g1, %fp
 	sub %g1, 0x60, %sp
+
+	PSR_BIT_CLEAR_SHORT(PSR_PIL, g1)
+	 WRITE_PAUSE
 
 	PSR_BIT_TOGGLE_SHORT(PSR_ET, g1)
 	 WRITE_PAUSE
