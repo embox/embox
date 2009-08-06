@@ -94,7 +94,7 @@ SECTIONS
 	    . = ALIGN(0x4);
 
         *(.checksum)
-        . = ALIGN(0x8);
+        . = ALIGN(0x4);
 		_endtext = .;
 
 		_data_image_start = .;
