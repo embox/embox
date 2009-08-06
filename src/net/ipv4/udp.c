@@ -21,7 +21,16 @@ int udp_received_packet(net_packet *pack) {
 }
 
 int udp_init(void) {
-	//TODO:
+	return 0;
+}
+
+static int rebuild_udp_header(net_packet *pack, unsigned short source, unsigned short dest) {
+	LOG_DEBUG("rebuild udp header\n");
+	udphdr *hdr = pack->h.uh;
+	hdr->source = source;
+	hdr->dest   = dest;
+	hdr->len    = UDP_HEADER_SIZE;
+	hdr->check  = Crc16(hdr, UDP_HEADER_SIZE);
 	return 0;
 }
 
@@ -34,14 +43,11 @@ static void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifde
 	}
 	pack->ifdev = ifdev;
 	pack->netdev = ifdev_get_netdevice(ifdev);
-	pack->protocol = IP_PROTOCOL_TYPE;
 	pack->len = UDP_HEADER_SIZE;
+
 	pack->h.raw = pack->data + MAC_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
-	pack->h.uh->source = sk->inet.sport;
-	pack->h.uh->dest = sk->inet.dport;
-	pack->h.uh->len = UDP_HEADER_SIZE;
-	pack->h.uh->check = Crc16(pack->h.uh, UDP_HEADER_SIZE);
+	rebuild_udp_header(pack, sk->inet.sport, sk->inet.dport);
 	memcpy(pack->h.uh->data, buf, len);
 }
 
