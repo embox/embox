@@ -8,8 +8,6 @@
 #include "net.h"
 #include "net_device.h"
 
-
-
 typedef struct _NET_DEV_INFO {
 	net_device   dev;
 	int          is_busy;

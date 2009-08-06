@@ -2,21 +2,20 @@
  * \file if_device.h
  * \date Jul 18, 2009
  * \author Anton Bondarev
- * \details
  */
 #ifndef IF_DEVICE_H_
 #define IF_DEVICE_H_
 
 typedef struct _CALLBACK_INFO {
-    int is_busy;
-    unsigned short type;
+    int                 is_busy;
+    unsigned short      type;
     ETH_LISTEN_CALLBACK func;
 } CALLBACK_INFO;
 
 
 typedef struct _IF_DEVICE {
     unsigned char ipv4_addr[IPV4_ADDR_LENGTH];
-    net_device *net_dev;
+    net_device    *net_dev;
     CALLBACK_INFO cb_info[8];
     unsigned char ipv4_addr_length;
 } IF_DEVICE;
@@ -26,8 +25,7 @@ int ifdev_init();
 /**
  * get pointer on net_device struct linked with pointed interface
  * @param interface handler
- * @return NULL if error
- * @return pointer on net_device struct
+ * @return pointer on net_device struct, NULL if error
  */
 net_device *ifdev_get_netdevice(void *handler);
 
@@ -52,17 +50,28 @@ void *ifdev_find_by_name(const char *if_name);
 
 /**
  * set all config value for pointed interface
- * @param
+ * @param name - interface name
+ * @param ipaddr - ip devices address
+ * @param macaddr - MAC devices address
  */
 int ifdev_set_interface(char *name, char *ipaddr, char *macaddr);
 
 /**
  * Set IP address (sw)
+ * @param ipaddr - ip devices address
  */
 int ifdev_set_ipaddr(void *ifdev, const unsigned char *ipaddr);
 
+/**
+ * Set MAC address
+ * @param macaddr - MAC devices address
+ */
 int ifdev_set_macaddr(void *ifdev, const unsigned char *macaddr);
 
+/**
+ * Get interface's IP address
+ * @param handler interface handler
+ */
 unsigned char *ifdev_get_ipaddr(void *handler);
 
 /* iterator functions */

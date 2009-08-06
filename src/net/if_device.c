@@ -9,37 +9,43 @@
 #include "net.h"
 #include "if_device.h"
 
-static IF_DEVICE ifs[NET_INTERFACES_QUANTITY];
+typedef struct _IF_DEV_INFO {
+        IF_DEVICE dev;
+        int       is_busy;
+} IF_DEV_INFO;
 
-static char status_handlers [NET_INTERFACES_QUANTITY];
+static IF_DEV_INFO ifs[NET_INTERFACES_QUANTITY];
+
 static IF_DEVICE * find_free_handler(){
     int i;
     for(i = 0; i < NET_INTERFACES_QUANTITY; i ++){
-        if (0 == status_handlers[i]){
-            status_handlers[i] = 1;
-            return &ifs[i];
+        if (0 == ifs[i].is_busy){
+            ifs[i].is_busy = 1;
+            return &ifs[i].dev;
         }
     }
     return NULL;
 }
+
 static int free_handler(IF_DEVICE * handler){
     int i;
     for(i = 0; i < NET_INTERFACES_QUANTITY; i ++){
-        if ((1 == status_handlers[i]) && (&ifs[i] == handler)){
-            status_handlers[i] = 0;
+        if ((1 == ifs[i].is_busy) && (&ifs[i].dev == handler)){
+            ifs[i].is_busy = 0;
             return 0;
         }
     }
     return -1;
 }
+
 static int alloc_callback(IF_DEVICE *dev, unsigned int type,
                           ETH_LISTEN_CALLBACK callback) {
     int i;
     for (i = 0; i < array_len(dev->cb_info); i++) {
         if (0 == dev->cb_info[i].is_busy) {
             dev->cb_info[i].is_busy = 1;
-            dev->cb_info[i].type = type;
-            dev->cb_info[i].func = callback;
+            dev->cb_info[i].type    = type;
+            dev->cb_info[i].func    = callback;
             return i;
         }
     }
@@ -48,7 +54,6 @@ static int alloc_callback(IF_DEVICE *dev, unsigned int type,
 
 int ifdev_init() {
     return 0;
-
 }
 
 net_device *ifdev_get_netdevice(void *handler) {
@@ -72,7 +77,7 @@ int ifdev_listen(void *handler, unsigned short type,
 int ifdev_find_by_ip(const unsigned char *ipaddr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-        if (0 == memcmp(ifs[i].ipv4_addr, ipaddr, 4)) {
+        if (0 == memcmp(ifs[i].dev.ipv4_addr, ipaddr, 4)) {
             return 0;
         }
     }
@@ -82,10 +87,10 @@ int ifdev_find_by_ip(const unsigned char *ipaddr) {
 void *ifdev_find_by_name(const char *if_name) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-        TRACE("ifname %s, net_dev 0x%X\n", if_name, ifs[i].net_dev);
-        if (0 == strncmp(if_name, ifs[i].net_dev->name,
-                sizeof(ifs[i].net_dev->name))) {
-            return &ifs[i];
+        TRACE("ifname %s, net_dev 0x%X\n", if_name, ifs[i].dev.net_dev);
+        if (0 == strncmp(if_name, ifs[i].dev.net_dev->name,
+                sizeof(ifs[i].dev.net_dev->name))) {
+            return &ifs[i].dev;
         }
     }
     return NULL;
@@ -94,9 +99,9 @@ void *ifdev_find_by_name(const char *if_name) {
 int ifdev_set_interface(char *name, char *ipaddr, char *macaddr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-        if (0 == strncmp(name, ifs[i].net_dev->name, array_len(ifs[i].net_dev->name))) {
-            ifdev_set_ipaddr(&ifs[i], ipaddr);
-            ifdev_set_macaddr(&ifs[i], macaddr);
+        if (0 == strncmp(name, ifs[i].dev.net_dev->name, array_len(ifs[i].dev.net_dev->name))) {
+            ifdev_set_ipaddr(&ifs[i].dev, ipaddr);
+            ifdev_set_macaddr(&ifs[i].dev, macaddr);
             return i;
         }
     }
@@ -184,20 +189,19 @@ int ifdev_down(const char *iname){
 static int iterator_cnt;
 IF_DEVICE * ifdev_get_fist_used(){
     for(iterator_cnt = 0; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
-        if (1 == status_handlers[iterator_cnt]){
-            //status_handlers[iterator_cnt] = 1;
+        if (1 == ifs[iterator_cnt].is_busy){
             iterator_cnt++;
-            return &ifs[iterator_cnt];
+            return &ifs[iterator_cnt].dev;
         }
     }
     return NULL;
 }
+
 IF_DEVICE * ifdev_get_next_used(){
     for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
-        if (1 == status_handlers[iterator_cnt]){
-            //status_handlers[iterator_cnt] = 1;
+        if (1 == ifs[iterator_cnt].is_busy){
             iterator_cnt++;
-            return &ifs[iterator_cnt];
+            return &ifs[iterator_cnt].dev;
         }
     }
     return NULL;

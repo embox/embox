@@ -13,26 +13,19 @@
 #include "eth.h"
 #include "if_device.h"
 
-
-
-
-
 void packet_dump(net_packet *);
 
 int eth_init() {
     return 0;
 }
 
-/**
- * send packet into define eth interface
- * @param network packet which want send
- */
 int eth_send(net_packet *pack) {
-    IF_DEVICE *dev = (IF_DEVICE *) pack->ifdev;
+    IF_DEVICE *dev;
 
     if ((NULL == pack) || (NULL == pack->ifdev))
         return -1;
 
+    dev = (IF_DEVICE *) pack->ifdev;
     if (ARP_PROTOCOL_TYPE != pack->protocol) {
         if (-1 == dev->net_dev->rebuild_header(pack)) {
             net_packet_free(pack);
@@ -45,38 +38,35 @@ int eth_send(net_packet *pack) {
     return 0;
 }
 
-
 /**
  * function must call from net drivers when packet was received
- * and need transmit one throw protool's stack
+ * and need transmit one throw protocol's stack
  * @param net_packet *pack struct of network packet
+ * @return on success, returns 0, on error, -1 is returned
  */
 int netif_rx(net_packet *pack) {
     int i;
-
     IF_DEVICE *dev;
     if ((NULL == pack) || (NULL == pack->netdev)) {
         return -1;
     }
     pack->nh.raw = (void *) pack->data + sizeof(machdr);
-
     if (NULL == (pack->ifdev = ifdev_find_by_name(pack->netdev->name))){
-        TRACE("Error: wrong interface name during receiving packet\n");
+        LOG_ERROR("wrong interface name during receiving packet\n");
         net_packet_free(pack);
-        return 0;
+        return -1;
     }
     if (ARP_PROTOCOL_TYPE == pack->protocol) {
         pack->nh.raw = pack->data + sizeof(machdr);
         arp_received_packet(pack);
     }
-
     if (IP_PROTOCOL_TYPE == pack->protocol) {
-        pack->nh.raw = pack->data + sizeof(machdr);
-        pack->h.raw = pack->nh.raw + sizeof(iphdr);
+        pack->nh.raw = pack->data   + sizeof(machdr);
+        pack->h.raw  = pack->nh.raw + sizeof(iphdr);
         ip_received_packet(pack);
     }
 
-    //if there are some callback handlers for packet's protocol
+    /* if there are some callback handlers for packet's protocol */
     dev = (IF_DEVICE *) pack->ifdev;
     for (i = 0; i < array_len(dev->cb_info); i++) {
         if (1 == dev->cb_info[i].is_busy) {
@@ -91,8 +81,6 @@ int netif_rx(net_packet *pack) {
     net_packet_free(pack);
     return 0;
 }
-
-
 
 void packet_dump(net_packet *pack) {
     char ip[15], mac[18];

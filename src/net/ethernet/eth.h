@@ -16,21 +16,23 @@ typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 
 /**
  * Init ethernet.
- * @return count founded devices.
  */
 int eth_init();
 
 /**
  * Show interace (IP/MAC address)
+ * @param ifdev interface handler
  */
-
 
 /**
  * Show all eth interfaces (IP/MAC address)
  */
 
 /**
- * Send Ethernet packet
+ * Send Ethernet packet.
+ * send packet into define eth interface
+ * @param pack network packet which want send
+ * @return on success, returns 0, on error, -1 is returned
  */
 int eth_send (net_packet *pack);
 
