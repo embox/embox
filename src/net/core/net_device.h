@@ -13,41 +13,9 @@
 #include "ip_v4.h"
 #include "icmp.h"
 #include "udp.h"
+#include "net_packet.h"
 
-struct sock;
-
-#define ETHERNET_V2_FRAME_SIZE 1518
-
-typedef struct _net_packet {
-	struct _net_device      *netdev;
-	void                    *ifdev;
-	struct sock             *sk;
-	unsigned short          protocol;
-	unsigned int            len;
-	union {
-		//tcphdr	*th;
-		udphdr	        *uh;
-		icmphdr	        *icmph;
-		//igmphdr	*igmph;
-		//iphdr	        *ipiph;
-		//ipv6hdr	*ipv6h;
-		unsigned char	*raw;
-	} h;
-
-	union {
-		iphdr	        *iph;
-		//ipv6hdr       *ipv6h;
-		arphdr	        *arph;
-		unsigned char	*raw;
-	} nh;
-
-	union {
-		machdr          *mach;
-	  	unsigned char 	*raw;
-	} mac;
-
-	unsigned char data[ETHERNET_V2_FRAME_SIZE];
-}net_packet;
+#define NET_DEVICES_QUANTITY        0x4
 
 typedef struct _net_device_stats {
 	int rx_count;
@@ -57,8 +25,8 @@ typedef struct _net_device_stats {
 }net_device_stats;
 
 typedef struct _net_device {
-	char          name[6];
-	unsigned char hw_addr[6];
+	char          name[6];    /* eth0, l0, etc. */
+	unsigned char hw_addr[6]; /* MAC address    */
 	unsigned long state;
 	unsigned char type;
 	unsigned char addr_len;

@@ -63,7 +63,6 @@ BOOL irq_remove_trap_handler(BYTE tt) {
 }
 
 void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
-	LOG_DEBUG("set irq=%d\n", irq_number);
 	// check IRQ number
 	if (irq_number != irq_number & 0xF) {
 		return;
@@ -73,11 +72,11 @@ void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
 	user_trap_handlers[IRQ_TRAP_TYPE(irq_number)] = pfunc;
 
 	if (pfunc != NULL && old == NULL) {
+		LOG_DEBUG("set irq=%d\n", irq_number);
 		irq_ctrl_enable_irq(irq_number);
 	} else if (pfunc == NULL && old != NULL) {
 		irq_ctrl_disable_irq(irq_number);
 	}
-
 }
 
 IRQ_HANDLER irq_get_handler(BYTE irq_number) {

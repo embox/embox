@@ -1,6 +1,5 @@
 /**
  * \file net_pack.h
- *
  * \date Mar 7, 2009
  * \author anton
  */
@@ -10,16 +9,20 @@
 
 /**
  * Allocate net_packet on the pool.
+ * @return net_packet
  */
 net_packet *net_packet_alloc();
 
 /**
  * Free net_packet on the pool.
+ * @param pack
  */
 void net_packet_free(net_packet *pack);
 
 /**
  * Copy net_packet on the pool.
+ * @param pack
+ * @return net_packet
  */
 net_packet *net_packet_copy(net_packet *pack);
 /*

@@ -14,7 +14,6 @@
 
 #define NET_INTERFACES_QUANTITY     0x4
 #define IPV4_ADDR_LENGTH            0x4
-#define NET_DEVICES_QUANTITY        0x4
 
 enum sock_type {
         SOCK_STREAM     = 1,  /* TCP */

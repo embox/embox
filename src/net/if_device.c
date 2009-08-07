@@ -87,7 +87,7 @@ int ifdev_find_by_ip(const unsigned char *ipaddr) {
 void *ifdev_find_by_name(const char *if_name) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-        TRACE("ifname %s, net_dev 0x%X\n", if_name, ifs[i].dev.net_dev);
+        LOG_DEBUG("ifname %s, net_dev 0x%X\n", if_name, ifs[i].dev.net_dev);
         if (0 == strncmp(if_name, ifs[i].dev.net_dev->name,
                 sizeof(ifs[i].dev.net_dev->name))) {
             return &ifs[i].dev;

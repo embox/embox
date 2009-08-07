@@ -33,8 +33,8 @@ int irq_ctrl_init() {
 	dev_regs = (IRQ_REGS *) amba_dev.bar[0].start;
 
 	dev_regs->level = 0;
-	dev_regs->mask = 0;
-	dev_regs->pend = 0;
+	dev_regs->mask  = 0;
+	dev_regs->pend  = 0;
 	dev_regs->force = 0;
 	dev_regs->clear = 0xFFFFFFFF;
 	return 0;
