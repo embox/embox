@@ -8,7 +8,7 @@
 #ifndef UDP_H_
 #define UDP_H_
 
-#include "inet_sock.h"
+#include "net/inet_sock.h"
 
 typedef struct _udphdr {
         unsigned short source;

@@ -6,7 +6,7 @@
  */
 
 #include "types.h"
-#include "dhcp.h"
+#include "net/dhcp.h"
 
 int dhcpDiscover() {
 	DHCP_PACKET packet;

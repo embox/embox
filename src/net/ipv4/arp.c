@@ -7,7 +7,6 @@
 #include "types.h"
 #include "common.h"
 #include "string.h"
-#include "arp.h"
 #include "core/net_device.h"
 #include "net.h"
 #include "if_device.h"
@@ -15,16 +14,13 @@
 #include "core/net_pack_manager.h"
 
 #define ARP_CACHE_SIZE         0x100
-#define ARP_REQUEST            0x1
-#define ARP_RESPONSE           0x2
-#define ARP_HARDWARE_TYPE_ETH  (unsigned short)0x0001
 
-static unsigned char brodcast_mac_addr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static unsigned char brodcast_mac_addr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 typedef struct _ARP_ENTITY {
-	unsigned char hw_addr[6];   /**< hardware addr */
-	unsigned char pw_addr[4];   /**< protocol addr */
-	void          *if_handler;  /**< net_device */
+	unsigned char hw_addr[ETH_ALEN];   /**< hardware addr */
+	unsigned char pw_addr[4];          /**< protocol addr */
+	void          *if_handler;         /**< net_device */
 	unsigned char is_busy;
 }ARP_ENTITY;
 
@@ -79,12 +75,12 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 	pack->nh.raw = pack->mac.raw + ETH_HEADER_SIZE;
 
 	/* arp header */
-	pack->nh.arph->htype = ARP_HARDWARE_TYPE_ETH;
+	pack->nh.arph->htype = ARPHRD_ETHER;
 	pack->nh.arph->ptype = ETH_P_IP;
 	//TODO length hardware and logical type
 	pack->nh.arph->hlen = pack->netdev->addr_len;
 	pack->nh.arph->plen = 4;
-	pack->nh.arph->oper = ARP_REQUEST;
+	pack->nh.arph->oper = ARPOP_REQUEST;
 	memcpy (pack->nh.arph->sha, pack->netdev->hw_addr, ETH_ALEN);
 	memcpy (pack->nh.arph->spa, ifdev_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
 	memcpy (pack->nh.arph->tpa, dst_addr, sizeof(pack->nh.arph->tpa));
@@ -152,7 +148,7 @@ static int received_req(net_packet *pack) {
 
 	memcpy(resp->mac.ethh->dst_addr, pack->mac.ethh->src_addr, sizeof(resp->mac.ethh->dst_addr));
 	memcpy(resp->mac.ethh->src_addr, pack->netdev->hw_addr, sizeof(resp->mac.ethh->src_addr));
-	resp->nh.arph->oper = ARP_RESPONSE;
+	resp->nh.arph->oper = ARPOP_REPLY;
 	memcpy(resp->nh.arph->sha, pack->netdev->hw_addr, sizeof(resp->nh.arph->sha));
 	memcpy(resp->nh.arph->tha, pack->mac.ethh->src_addr, sizeof(resp->nh.arph->tha));
 	memcpy(resp->nh.arph->tpa, pack->nh.arph->spa, sizeof(resp->nh.arph->tpa));
@@ -169,10 +165,10 @@ int arp_received_packet(net_packet *pack) {
 		return 0;
 	}
 	switch(arp->oper) {
-	case ARP_RESPONSE:
+	case ARPOP_REPLY:
 		return received_resp(pack);
 
-	case ARP_REQUEST:
+	case ARPOP_REQUEST:
 		return received_req(pack);
 
 	default:

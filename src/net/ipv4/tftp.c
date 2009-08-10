@@ -10,13 +10,13 @@
 //	 +(error?): DEBUGs
 
 #include "common.h"
-#include "tftp.h"
+#include "net/tftp.h"
 #include "net.h"
 #include "ethernet/eth.h"
 #include "if_device.h"
-#include "inet_sock.h"
+#include "net/inet_sock.h"
 #include "core/net_pack_manager.h"
-#include "ip_v4.h"
+#include "net/ip.h"
 
 #define TFTP_ADDRESS_TO_SAVE	0x80000000
 

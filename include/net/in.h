@@ -21,6 +21,7 @@ struct sockaddr_in {
 };
 
 #define htons(n)            n
+#define ntohs(n)            n
 
 /* Address to accept any incoming messages. */
 #define INADDR_ANY          ((unsigned long int) 0x00000000)

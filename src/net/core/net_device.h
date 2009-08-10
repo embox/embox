@@ -8,11 +8,11 @@
 #ifndef NET_DEVICE_H_
 #define NET_DEVICE_H_
 
-#include "arp.h"
+#include "net/arp.h"
 #include "net/if_ether.h"
-#include "ip_v4.h"
-#include "icmp.h"
-#include "udp.h"
+#include "net/ip.h"
+#include "net/icmp.h"
+#include "net/udp.h"
 #include "net/net_packet.h"
 
 #define NET_DEVICES_QUANTITY     0x4

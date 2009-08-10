@@ -5,7 +5,7 @@
  * \author anton
  */
 #include "types.h"
-#include "ipv4/icmp.h"
+#include "net/icmp.h"
 #include "shell.h"
 #include "ping.h"
 #include "net.h"

@@ -10,11 +10,12 @@
 #include "if_device.h"
 #include "ethernet/eth.h"
 #include "core/net_pack_manager.h"
-#include "icmp.h"
-#include "ip_v4.h"
+#include "net/ip.h"
 #include "net/if_ether.h"
 
 #define CB_INFO_SIZE        0x10
+
+typedef void (*ICMP_CALLBACK)(struct _net_packet* response);
 
 typedef struct _ICMP_CALLBACK_INFO {
 	ICMP_CALLBACK      cb;
@@ -125,19 +126,21 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 	return ICMP_HEADER_SIZE + IP_HEADER_SIZE;
 }
 
-//implementation handlers for received msgs
-static int icmp_get_echo_reply(net_packet *pack) { //type 0
+/**
+ * implementation handlers for received msgs
+ */
+static int icmp_get_echo_reply(net_packet *pack) {
 	ICMP_CALLBACK cb;
 	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
-			ICMP_TYPE_ECHO_REPLY)))
+			ICMP_ECHOREPLY)))
 		return -1;
 	cb(pack);
 	//unregister
-	callback_free(cb, pack->ifdev, pack->nh.iph->id, ICMP_TYPE_ECHO_REPLY);
+	callback_free(cb, pack->ifdev, pack->nh.iph->id, ICMP_ECHOREPLY);
 	return 0;
 }
 
-static int icmp_get_dest_unreachable(net_packet *pack) { //type 3
+static int icmp_get_dest_unreachable(net_packet *pack) {
 	//TODO:
 	LOG_WARN("icmp type=3, code=%d\n", pack->h.icmph->code);
 	/*
@@ -159,14 +162,14 @@ static int icmp_get_dest_unreachable(net_packet *pack) { //type 3
 	return 0;
 }
 
-static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
+static int icmp_get_echo_request(net_packet *recieved_pack) {
 	net_packet *pack = net_packet_copy(recieved_pack);
 	if(ifdev_find_by_ip(pack->nh.iph->daddr)) {
 		return 0;
 	}
 
 	//fill icmp header
-	pack->h.icmph->type = ICMP_TYPE_ECHO_REPLY;
+	pack->h.icmph->type = ICMP_ECHOREPLY;
 	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
 
 /*	LOG_DEBUG("\npacket icmp\n");
@@ -206,33 +209,60 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 	}
 	pack->ifdev = ifdev;
 	pack->netdev = (struct _net_device *)ifdev_get_netdevice(ifdev);
-	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, ttl,
+	pack->len = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
 					ifdev_get_ipaddr(ifdev), dstaddr);
 	pack->protocol = ETH_P_IP;
 
 	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->id,
-			ICMP_TYPE_ECHO_REPLY)) {
+			ICMP_ECHOREPLY)) {
 		net_packet_free(pack);
 		return -1;
 	}
 	return eth_send(pack);
 }
 
-//set all realized handlers
 int icmp_init() {
-	received_packet_handlers[ICMP_TYPE_ECHO_REPLY]       = icmp_get_echo_reply;
-	received_packet_handlers[ICMP_TYPE_DEST_UNREACHABLE] = icmp_get_dest_unreachable;
-	received_packet_handlers[ICMP_TYPE_ECHO_REQ]         = icmp_get_echo_request;
+	received_packet_handlers[ICMP_ECHOREPLY]    = icmp_get_echo_reply;
+	received_packet_handlers[ICMP_DEST_UNREACH] = icmp_get_dest_unreachable;
+	received_packet_handlers[ICMP_ECHO]         = icmp_get_echo_request;
 	//TODO: other types
 	return 0;
 }
 
-//receive packet
 int icmp_received_packet(net_packet *pack) {
-	icmphdr *icmp = pack->h.icmph;
-	//TODO check summ icmp?
-	if (NULL != received_packet_handlers[icmp->type]) {
-		return received_packet_handlers[icmp->type](pack);
+	icmphdr *icmph = pack->h.icmph;
+	/**
+	 * 18 is the highest 'known' ICMP type. Anything else is a mystery
+	 * RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently
+	 *                discarded.
+	 */
+	if (icmph->type > NR_ICMP_TYPES) {
+		LOG_ERROR("unknown type of ICMP packet\n");
+		return -1;
+	}
+	/*
+	 * RFC 1122: 3.2.2.6 An ICMP_ECHO to broadcast MAY be
+	 *        silently ignored.
+	 * RFC 1122: 3.2.2.8 An ICMP_TIMESTAMP MAY be silently
+	 *        discarded if to broadcast/multicast.
+	 */
+        if ( 1 == 0 /* TODO: BROADCAST or MULTICAST */) {
+    		if (icmph->type == ICMP_ECHO ||
+            	    icmph->type == ICMP_TIMESTAMP) {
+    			return -1;
+    		}
+    		if (icmph->type != ICMP_ECHO &&
+            	    icmph->type != ICMP_TIMESTAMP &&
+            	    icmph->type != ICMP_ADDRESS &&
+            	    icmph->type != ICMP_ADDRESSREPLY) {
+    			return -1;
+    		}
+        }
+
+	//TODO: check summ icmp? not need, if ip checksum is ok.
+
+	if (NULL != received_packet_handlers[icmph->type]) {
+		return received_packet_handlers[icmph->type](pack);
 	}
 	return -1;
 }

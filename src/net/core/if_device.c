@@ -131,24 +131,6 @@ unsigned char *ifdev_get_ipaddr(void *handler) {
     return dev->ipv4_addr;
 }
 
-static int rebuild_header(net_packet * pack) {
-    if (NULL == pack) {
-        return -1;
-    }
-    if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
-        if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr)) {
-            LOG_WARN("Destanation host is unreachable\n");
-            return -1;
-        }
-        memcpy(pack->mac.ethh->src_addr, pack->netdev->hw_addr,
-                sizeof(pack->mac.ethh->src_addr));
-        pack->mac.ethh->type = pack->protocol;
-        pack->len += ETH_HEADER_SIZE;
-        return 0;
-    }
-    return 0;
-}
-
 int ifdev_up(const char *iname){
     IF_DEVICE *ifhandler;
     if (NULL == (ifhandler = find_free_handler ())){
@@ -159,7 +141,6 @@ int ifdev_up(const char *iname){
         LOG_ERROR("ifdev up: can't find net_device with name\n", iname);
         return -1;
     }
-    ifhandler->net_dev->rebuild_header = rebuild_header;
     if (NULL == ifhandler->net_dev->open) {
         LOG_ERROR("ifdev up: can't find open function in net_device with name\n", iname);
         return -1;

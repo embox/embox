@@ -12,7 +12,7 @@
 #include "net.h"
 #include "ethernet/eth.h"
 #include "if_device.h"
-#include "ipv4/arp.h"
+#include "net/arp.h"
 
 #define COMMAND_NAME "arp"
 static char available_keys[] = {

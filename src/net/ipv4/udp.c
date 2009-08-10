@@ -10,8 +10,8 @@
 #include "ethernet/eth.h"
 #include "if_device.h"
 #include "core/net_pack_manager.h"
-#include "udp.h"
-#include "ip_v4.h"
+#include "net/udp.h"
+#include "net/ip.h"
 #include "socket.h"
 #include "net/if_ether.h"
 

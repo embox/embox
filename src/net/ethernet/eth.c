@@ -7,8 +7,8 @@
 #include "string.h"
 #include "core/net_device.h"
 #include "core/net_pack_manager.h"
-#include "ipv4/arp.h"
-#include "ipv4/udp.h"
+#include "net/arp.h"
+#include "net/udp.h"
 #include "net.h"
 #include "eth.h"
 #include "if_device.h"
@@ -17,6 +17,45 @@ void packet_dump(net_packet *);
 
 int eth_init() {
     return 0;
+}
+
+int eth_rebuild_header(net_packet *pack) {
+    if (NULL == pack) {
+        return -1;
+    }
+    ethhdr     *eth = (ethhdr*)pack->data;
+    net_device *dev = pack->netdev;
+    if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
+        if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr)) {
+            LOG_WARN("Destanation host is unreachable\n");
+            return -1;
+        }
+        memcpy(eth->src_addr, dev->hw_addr, sizeof(eth->src_addr));
+        eth->type = pack->protocol;
+        pack->len += ETH_HEADER_SIZE;
+        return 0;
+    }
+    return 0;
+}
+
+void ether_setup(net_device *dev) {
+    dev->rebuild_header     = eth_rebuild_header;
+    /*TODO:
+    dev->hard_header        = ...;
+    dev->set_mac_address    = ...;*/
+
+    dev->type               = ARPHRD_ETHER;
+    dev->addr_len           = ETH_ALEN;
+//    dev->flags              = IFF_BROADCAST|IFF_MULTICAST;
+
+    memset(dev->broadcast, 0xFF, ETH_ALEN);
+}
+
+net_device *alloc_etherdev(int num) {
+    net_device *dev = alloc_netdev();
+    sprintf(dev->name, "eth%d", num);
+    ether_setup(dev);
+    return dev;
 }
 
 int eth_send(net_packet *pack) {

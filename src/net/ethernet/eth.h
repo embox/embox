@@ -20,6 +20,24 @@ typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 int eth_init();
 
 /**
+ * rebuild the Ethernet MAC header.
+ * @param pack net packet to update
+ */
+int eth_rebuild_header(net_packet * pack);
+
+/**
+ * ether_setup - setup Ethernet network device
+ * @param dev network device
+ * Fill in the fields of the device structure with Ethernet-generic values.
+ */
+void ether_setup(net_device *dev);
+
+/**
+ * Allocates and sets up an Ethernet device
+ */
+net_device *alloc_etherdev(int num);
+
+/**
  * Show interace (IP/MAC address)
  * @param ifdev interface handler
  */
