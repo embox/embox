@@ -6,8 +6,8 @@
  */
 #include "types.h"
 #include "common.h"
-#include "net.h"
-#include "if_device.h"
+#include "net/net.h"
+#include "net/if_device.h"
 
 typedef struct _IF_DEV_INFO {
         IF_DEVICE dev;

@@ -7,10 +7,10 @@
 
 #include "misc.h"
 #include "udpd.h"
-#include "net.h"
+#include "net/net.h"
 #include "net/in.h"
 #include "shell.h"
-#include "socket.h"
+#include "net/socket.h"
 
 #define COMMAND_NAME "udpd"
 static char available_keys[] = {

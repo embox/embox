@@ -6,8 +6,8 @@
  */
 #include "types.h"
 #include "common.h"
-#include "net_device.h"
-#include "net_pack_manager.h"
+#include "net/net_device.h"
+#include "net/net_pack_manager.h"
 
 #define PACK_POOL_SIZE	0x100
 

@@ -5,8 +5,8 @@
  * \author anton
  */
 #include "types.h"
-#include "net.h"
-#include "net_device.h"
+#include "net/net.h"
+#include "net/net_device.h"
 
 typedef struct _NET_DEV_INFO {
 	net_device   dev;

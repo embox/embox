@@ -5,13 +5,12 @@
  */
 #include "misc.h"
 #include "string.h"
-#include "core/net_device.h"
-#include "core/net_pack_manager.h"
+#include "net/net_pack_manager.h"
 #include "net/arp.h"
 #include "net/udp.h"
-#include "net.h"
-#include "eth.h"
-#include "if_device.h"
+#include "net/net.h"
+#include "net/eth.h"
+#include "net/if_device.h"
 
 void packet_dump(net_packet *);
 

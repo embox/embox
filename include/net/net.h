@@ -8,8 +8,8 @@
 #ifndef NET_H_
 #define NET_H_
 
-#include "net_device.h"
-#include "eth.h"
+#include "net/net_device.h"
+#include "net/eth.h"
 #include "net/sock.h"
 
 #define NET_INTERFACES_QUANTITY     0x4

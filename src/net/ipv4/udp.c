@@ -6,13 +6,13 @@
  */
 #include "types.h"
 #include "common.h"
-#include "net.h"
-#include "ethernet/eth.h"
-#include "if_device.h"
-#include "core/net_pack_manager.h"
+#include "net/net.h"
+#include "net/eth.h"
+#include "net/if_device.h"
+#include "net/net_pack_manager.h"
 #include "net/udp.h"
 #include "net/ip.h"
-#include "socket.h"
+#include "net/socket.h"
 #include "net/if_ether.h"
 
 int udp_received_packet(net_packet *pack) {

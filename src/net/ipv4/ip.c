@@ -6,7 +6,7 @@
  */
 #include "types.h"
 #include "common.h"
-#include "net.h"
+#include "net/net.h"
 #include "net/in.h"
 #include "net/sock.h"
 #include "net/inet_sock.h"

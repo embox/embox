@@ -6,10 +6,10 @@
  */
 #include "types.h"
 #include "common.h"
-#include "net.h"
-#include "if_device.h"
-#include "ethernet/eth.h"
-#include "core/net_pack_manager.h"
+#include "net/net.h"
+#include "net/if_device.h"
+#include "net/eth.h"
+#include "net/net_pack_manager.h"
 #include "net/ip.h"
 #include "net/if_ether.h"
 

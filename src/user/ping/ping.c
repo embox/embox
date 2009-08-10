@@ -8,9 +8,9 @@
 #include "net/icmp.h"
 #include "shell.h"
 #include "ping.h"
-#include "net.h"
-#include "ethernet/eth.h"
-#include "if_device.h"
+#include "net/net.h"
+#include "net/eth.h"
+#include "net/if_device.h"
 
 #define COMMAND_NAME "ping"
 

@@ -38,6 +38,8 @@ typedef struct _net_device {
 	unsigned char type;                    /**< interface hardware type      */
 	unsigned char addr_len;                /**< hardware address length      */
 	unsigned char flags;                   /**< interface flags (a la BSD)   */
+	unsigned      mtu;                     /**< interface MTU value          */
+	unsigned long tx_queue_len;            /**< Max frames per queue allowed */
 
 	int (*open)(struct _net_device *dev);
 	int (*stop)(struct _net_device *dev);
@@ -53,17 +55,17 @@ typedef struct _net_device {
  * @param name name to find
  * @return NULL is returned if no matching device is found.
  */
-net_device *netdev_get_by_name(const char *name);
+extern net_device *netdev_get_by_name(const char *name);
 
 /**
  * Allocate network device
  */
-net_device *alloc_netdev();
+extern net_device *alloc_netdev();
 
 /**
  * Free network device
  * @param dev net_device handler
  */
-void free_netdev(net_device *dev);
+extern void free_netdev(net_device *dev);
 
 #endif /* NET_DEVICE_H_ */

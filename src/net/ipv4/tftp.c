@@ -11,11 +11,11 @@
 
 #include "common.h"
 #include "net/tftp.h"
-#include "net.h"
-#include "ethernet/eth.h"
-#include "if_device.h"
+#include "net/net.h"
+#include "net/eth.h"
+#include "net/if_device.h"
 #include "net/inet_sock.h"
-#include "core/net_pack_manager.h"
+#include "net/net_pack_manager.h"
 #include "net/ip.h"
 
 #define TFTP_ADDRESS_TO_SAVE	0x80000000

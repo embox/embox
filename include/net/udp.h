@@ -31,6 +31,6 @@ static inline struct udp_sock *udp_sk(const struct sock *sk) {
         return (struct udp_sock *)sk;
 }
 
-int udp_init(void);
+extern int udp_init(void);
 
 #endif /* UDP_H_ */
