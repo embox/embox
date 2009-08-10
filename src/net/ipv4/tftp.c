@@ -42,7 +42,7 @@ int tftp_send_ack (void *ifdev, unsigned char srcaddr[4], unsigned char dstaddr[
 		pack->data[i] = data[i];
 	}
 	pack->len += strlen(data);
-	pack->protocol = IP_PROTOCOL_TYPE;
+	pack->protocol = ETH_P_IP;
 
 	memcpy(pack->nh.iph->daddr, dstaddr, sizeof(pack->nh.iph->daddr));
 	memcpy(pack->nh.iph->saddr, srcaddr, sizeof(pack->nh.iph->saddr));
@@ -84,7 +84,7 @@ int tftp_send_rrq_request(void *ifdev, unsigned char srcaddr[4], unsigned char d
 		pack->data[i] = data[i];
 	}
 	pack->len = strlen(data);
-	pack->protocol = IP_PROTOCOL_TYPE;
+	pack->protocol = ETH_P_IP;
 
 	memcpy(pack->nh.iph->daddr, dstaddr, sizeof(pack->nh.iph->daddr));
 	memcpy(pack->nh.iph->saddr, srcaddr, sizeof(pack->nh.iph->saddr));

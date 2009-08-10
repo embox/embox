@@ -10,7 +10,7 @@
 
 #include "net_device.h"
 #include "eth.h"
-#include "sock.h"
+#include "net/sock.h"
 
 #define NET_INTERFACES_QUANTITY     0x4
 #define IPV4_ADDR_LENGTH            0x4

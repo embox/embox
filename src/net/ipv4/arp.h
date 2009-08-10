@@ -19,8 +19,6 @@ typedef struct _arphdr {
 	unsigned char  tpa[4];  /**< Target protocol address */
 } __attribute__((packed)) arphdr;
 
-#define ARP_PROTOCOL_TYPE ((unsigned short)0x0806)
-
 /*typedef struct _ARP_RESULT {
 	void          *if_handler;
 	unsigned char *hw_dstaddr;

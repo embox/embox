@@ -7,9 +7,9 @@
 #include "types.h"
 #include "common.h"
 #include "net.h"
-#include "sock.h"
+#include "net/sock.h"
 #include "inet_sock.h"
-#include "mac.h"
+#include "net/if_ether.h"
 
 int ip_received_packet(net_packet *pack) {
 	iphdr *header = pack->nh.iph;
@@ -44,7 +44,7 @@ int rebuild_ip_header(net_packet *pack, unsigned char ttl, unsigned char proto,
 }
 
 static int build_ip_packet(struct inet_sock *sk, net_packet *pack) {
-	pack->nh.raw = pack->data + MAC_HEADER_SIZE;
+	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
 	rebuild_ip_header(pack, sk->uc_ttl, sk->sk->sk_protocol,
 			  sk->id, pack->len, sk->saddr, sk->daddr);
 	return 0;
@@ -53,7 +53,7 @@ static int build_ip_packet(struct inet_sock *sk, net_packet *pack) {
 int ip_send_packet(struct inet_sock *sk, net_packet *pack) {
 	LOG_DEBUG("ip_send_packet\n");
 	build_ip_packet(sk, pack);
-	pack->protocol = IP_PROTOCOL_TYPE;
+	pack->protocol = ETH_P_IP;
 	pack->len += IP_HEADER_SIZE;
 	return eth_send(pack);
 }

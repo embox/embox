@@ -13,7 +13,7 @@
 #include "udp.h"
 #include "ip_v4.h"
 #include "socket.h"
-#include "mac.h"
+#include "net/if_ether.h"
 
 int udp_received_packet(net_packet *pack) {
 	LOG_DEBUG("udp packet received\n");
@@ -45,7 +45,7 @@ static void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifde
 	pack->netdev = ifdev_get_netdevice(ifdev);
 	pack->len = UDP_HEADER_SIZE;
 
-	pack->h.raw = pack->data + MAC_HEADER_SIZE + IP_HEADER_SIZE;
+	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
 	rebuild_udp_header(pack, sk->inet.sport, sk->inet.dport);
 	memcpy(pack->h.uh->data, buf, len);

@@ -28,7 +28,7 @@ static inline void dev_unlock(int num) {
 	net_devices[num].is_busy = 0;
 }
 
-net_device *alloc_etherdev() {
+net_device *alloc_netdev() {
 	int i;
 	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (!dev_is_busy(i)) {
@@ -38,7 +38,7 @@ net_device *alloc_etherdev() {
 	return NULL;
 }
 
-void free_etherdev(net_device *dev) {
+void free_netdev(net_device *dev) {
         int i;
 	for(i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (dev == &net_devices[i].dev) {
@@ -47,7 +47,7 @@ void free_etherdev(net_device *dev) {
 	}
 }
 
-net_device *find_net_device(const char *name) {
+net_device *netdev_get_by_name(const char *name) {
 	int i;
 	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (dev_is_busy(i) &&

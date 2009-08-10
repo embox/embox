@@ -8,7 +8,7 @@
 #ifndef SOCKET_H_
 #define SOCKET_H_
 
-#include "sock.h"
+#include "net/sock.h"
 
 #define MAX_SOCK_NUM 4
 

@@ -140,10 +140,10 @@ static int rebuild_header(net_packet * pack) {
             LOG_WARN("Destanation host is unreachable\n");
             return -1;
         }
-        memcpy(pack->mac.mach->src_addr, pack->netdev->hw_addr,
-                sizeof(pack->mac.mach->src_addr));
-        pack->mac.mach->type = pack->protocol;
-        pack->len += sizeof(machdr);
+        memcpy(pack->mac.ethh->src_addr, pack->netdev->hw_addr,
+                sizeof(pack->mac.ethh->src_addr));
+        pack->mac.ethh->type = pack->protocol;
+        pack->len += ETH_HEADER_SIZE;
         return 0;
     }
     return 0;
@@ -155,7 +155,7 @@ int ifdev_up(const char *iname){
         LOG_ERROR("ifdev up: can't find find free handler\n");
         return -1;
     }
-    if (NULL == (ifhandler->net_dev = find_net_device(iname))){
+    if (NULL == (ifhandler->net_dev = netdev_get_by_name(iname))){
         LOG_ERROR("ifdev up: can't find net_device with name\n", iname);
         return -1;
     }

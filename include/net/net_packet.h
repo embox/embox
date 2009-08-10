@@ -10,7 +10,7 @@ struct sock;
 
 #define ETHERNET_V2_FRAME_SIZE 1518
 
-typedef struct _net_packet {
+typedef struct _net_packet { /* = struct sk_buff in Linux */
         struct _net_device      *netdev;
         void                    *ifdev;
         struct sock             *sk;
@@ -32,7 +32,7 @@ typedef struct _net_packet {
                 unsigned char   *raw;
         } nh;
         union {
-                machdr          *mach;
+                ethhdr          *ethh;
                 unsigned char   *raw;
         } mac;
         unsigned char data[ETHERNET_V2_FRAME_SIZE];

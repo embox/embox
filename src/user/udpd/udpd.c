@@ -8,7 +8,7 @@
 #include "misc.h"
 #include "udpd.h"
 #include "net.h"
-#include "in.h"
+#include "net/in.h"
 #include "shell.h"
 #include "socket.h"
 

@@ -26,7 +26,7 @@ int eth_send(net_packet *pack) {
         return -1;
 
     dev = (IF_DEVICE *) pack->ifdev;
-    if (ARP_PROTOCOL_TYPE != pack->protocol) {
+    if (ETH_P_ARP != pack->protocol) {
         if (-1 == dev->net_dev->rebuild_header(pack)) {
             net_packet_free(pack);
             return -1;
@@ -50,18 +50,18 @@ int netif_rx(net_packet *pack) {
     if ((NULL == pack) || (NULL == pack->netdev)) {
         return -1;
     }
-    pack->nh.raw = (void *) pack->data + sizeof(machdr);
+    pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
     if (NULL == (pack->ifdev = ifdev_find_by_name(pack->netdev->name))){
         LOG_ERROR("wrong interface name during receiving packet\n");
         net_packet_free(pack);
         return -1;
     }
-    if (ARP_PROTOCOL_TYPE == pack->protocol) {
-        pack->nh.raw = pack->data + sizeof(machdr);
+    if (ETH_P_ARP == pack->protocol) {
+        pack->nh.raw = pack->data + ETH_HEADER_SIZE;
         arp_received_packet(pack);
     }
-    if (IP_PROTOCOL_TYPE == pack->protocol) {
-        pack->nh.raw = pack->data   + sizeof(machdr);
+    if (ETH_P_IP == pack->protocol) {
+        pack->nh.raw = pack->data   + ETH_HEADER_SIZE;
         pack->h.raw  = pack->nh.raw + sizeof(iphdr);
         ip_received_packet(pack);
     }
@@ -87,12 +87,12 @@ void packet_dump(net_packet *pack) {
     LOG_DEBUG("--------dump-----------------\n");
     LOG_DEBUG("protocol=0x%X\n", pack->protocol);
     LOG_DEBUG("len=%d\n", pack->len);
-    LOG_DEBUG("mac.mach.type=%d\n", pack->mac.mach->type);
-    macaddr_print(mac, pack->mac.mach->src_addr);
-    LOG_DEBUG("mac.mach.src_addr=%s\n", mac);
-    macaddr_print(mac, pack->mac.mach->dst_addr);
-    LOG_DEBUG("mac.mach.dst_addr=%s\n", mac);
-    if (pack->protocol == ARP_PROTOCOL_TYPE) {
+    LOG_DEBUG("mac.mach.type=%d\n", pack->mac.ethh->type);
+    macaddr_print(mac, pack->mac.ethh->src_addr);
+    LOG_DEBUG("mac.ethh.src_addr=%s\n", mac);
+    macaddr_print(mac, pack->mac.ethh->dst_addr);
+    LOG_DEBUG("mac.ethh.dst_addr=%s\n", mac);
+    if (pack->protocol == ETH_P_ARP) {
         LOG_DEBUG("nh.arph.htype=%d\n", pack->nh.arph->htype);
         LOG_DEBUG("nh.arph.ptype=%d\n", pack->nh.arph->ptype);
         LOG_DEBUG("nh.arph.hlen=%d\n", pack->nh.arph->hlen);
@@ -106,7 +106,7 @@ void packet_dump(net_packet *pack) {
         LOG_DEBUG("nh.arph.tha=%s\n", mac);
         ipaddr_print(ip, pack->nh.arph->tpa);
         LOG_DEBUG("nh.arph.tpa=%s\n", ip);
-    } else if (pack->protocol == IP_PROTOCOL_TYPE) {
+    } else if (pack->protocol == ETH_P_IP) {
         LOG_DEBUG("nh.iph.tos=%d\n", pack->nh.iph->tos);
         LOG_DEBUG("nh.iph.tot_len=%d\n", pack->nh.iph->tot_len);
         LOG_DEBUG("nh.iph.id=%d\n", pack->nh.iph->id);

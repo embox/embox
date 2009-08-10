@@ -9,28 +9,35 @@
 #define NET_DEVICE_H_
 
 #include "arp.h"
-#include "mac.h"
+#include "net/if_ether.h"
 #include "ip_v4.h"
 #include "icmp.h"
 #include "udp.h"
-#include "net_packet.h"
+#include "net/net_packet.h"
 
-#define NET_DEVICES_QUANTITY        0x4
+#define NET_DEVICES_QUANTITY     0x4
+#define IFNAMSIZ                 6
 
 typedef struct _net_device_stats {
-	int rx_count;
-	int tx_count;
-	int rx_err;
-	int tx_err;
+	unsigned long rx_packets;  /* total packets received       */
+	unsigned long tx_packets;  /* total packets transmitted    */
+        unsigned long rx_bytes;    /* total bytes received         */
+        unsigned long tx_bytes;    /* total bytes transmitted      */
+	unsigned long rx_err;      /* bad packets received         */
+	unsigned long tx_err;      /* packet transmit problems     */
+        unsigned long rx_dropped;  /* no space in pool             */
+        unsigned long tx_dropped;  /* no space available in pool   */
+        unsigned long multicast;   /* multicast packets received   */
 }net_device_stats;
 
 typedef struct _net_device {
-	char          name[6];    /* eth0, l0, etc. */
-	unsigned char hw_addr[6]; /* MAC address    */
+	char          name[IFNAMSIZ];          /**< It is the name the interface.*/
+	unsigned char hw_addr[ETH_ALEN];       /**< hw address                   */
+	unsigned char broadcast[ETH_ALEN];     /**< hw bcast address             */
 	unsigned long state;
-	unsigned char type;
-	unsigned char addr_len;
-	unsigned char flags;
+	unsigned char type;                    /**< interface hardware type      */
+	unsigned char addr_len;                /**< hardware address length      */
+	unsigned char flags;                   /**< interface flags (a la BSD)   */
 
 	int (*open)(struct _net_device *dev);
 	int (*stop)(struct _net_device *dev);
@@ -42,20 +49,21 @@ typedef struct _net_device {
 }net_device;
 
 /**
- * Find ethernet device by name
- * @param name device name
+ * Find an network device by its name
+ * @param name name to find
+ * @return NULL is returned if no matching device is found.
  */
-net_device *find_net_device(const char *name);
+net_device *netdev_get_by_name(const char *name);
 
 /**
- * Allocate ethernet device
+ * Allocate network device
  */
-net_device *alloc_etherdev();
+net_device *alloc_netdev();
 
 /**
- * Free ethernet device
+ * Free network device
  * @param dev net_device handler
  */
-void free_etherdev(net_device *dev);
+void free_netdev(net_device *dev);
 
 #endif /* NET_DEVICE_H_ */

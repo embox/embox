@@ -12,7 +12,7 @@
 #include "core/net_pack_manager.h"
 #include "icmp.h"
 #include "ip_v4.h"
-#include "mac.h"
+#include "net/if_ether.h"
 
 #define CB_INFO_SIZE        0x10
 
@@ -114,11 +114,11 @@ static unsigned short ip_id;
 
 static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 		unsigned char code, unsigned char ttl, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
-	pack->h.raw = pack->nh.raw = pack->data + MAC_HEADER_SIZE + IP_HEADER_SIZE;
+	pack->h.raw = pack->nh.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
 	rebuild_icmp_header(pack, type, code);
 
-	pack->nh.raw = pack->data + MAC_HEADER_SIZE;
+	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
 	ip_id++;
 	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, ip_id, ICMP_HEADER_SIZE, srcaddr, dstaddr);
 
@@ -193,7 +193,7 @@ static int icmp_get_echo_request(net_packet *recieved_pack) { //type 8
 	pack->nh.iph->frag_off = 0;
 	pack->nh.iph->check = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
 
-	pack->len -= MAC_HEADER_SIZE;
+	pack->len -= ETH_HEADER_SIZE;
 	eth_send(pack);
 	return 0;
 }
@@ -208,7 +208,7 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 	pack->netdev = (struct _net_device *)ifdev_get_netdevice(ifdev);
 	pack->len = build_icmp_packet(pack, ICMP_TYPE_ECHO_REQ, 0, ttl,
 					ifdev_get_ipaddr(ifdev), dstaddr);
-	pack->protocol = IP_PROTOCOL_TYPE;
+	pack->protocol = ETH_P_IP;
 
 	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->id,
 			ICMP_TYPE_ECHO_REPLY)) {
