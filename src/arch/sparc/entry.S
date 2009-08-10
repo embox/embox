@@ -109,17 +109,18 @@ cpu_context_restore_trap:
 	 rett %t_npc
 
 bad_trap_dispatcher:
-	mov %tbr, %o0
-	srl %o0, 4, %o0
-	and %o0, 0xFF, %o0		! pass TT as parameter
-	mov %t_pc, %o1
-	mov %t_npc, %o2
-	mov %t_psr, %o3
+	SAVE_ALL
+
+	mov %tbr, %o1
+	srl %o1, 4, %o1
+	and %o1, 0xFF, %o1		! pass TT as parameter
 
 	PSR_BIT_SET_SHORT(PSR_PIL, t0)
 	 WRITE_PAUSE
-	PSR_BIT_SET_SHORT(PSR_ET, t0)
+	PSR_BIT_TOGGLE_SHORT(PSR_ET, t0)
+	 WRITE_PAUSE
 
 	call dispatch_bad_trap
-	 nop
+	 add %sp, STACKFRAME_SZ, %o0
 
+	RESTORE_ALL
