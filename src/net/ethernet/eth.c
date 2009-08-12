@@ -103,7 +103,6 @@ int netif_rx(net_packet *pack) {
         pack->h.raw  = pack->nh.raw + sizeof(iphdr);
         ip_received_packet(pack);
     }
-
     /* if there are some callback handlers for packet's protocol */
     dev = (IF_DEVICE *) pack->ifdev;
     for (i = 0; i < array_len(dev->cb_info); i++) {
@@ -122,45 +121,45 @@ int netif_rx(net_packet *pack) {
 
 void packet_dump(net_packet *pack) {
     char ip[15], mac[18];
-    LOG_DEBUG("--------dump-----------------\n");
-    LOG_DEBUG("protocol=0x%X\n", pack->protocol);
-    LOG_DEBUG("len=%d\n", pack->len);
-    LOG_DEBUG("mac.mach.type=%d\n", pack->mac.ethh->type);
+    TRACE("--------dump-----------------\n");
+    TRACE("protocol=0x%X\n", pack->protocol);
+    TRACE("len=%d\n", pack->len);
+    TRACE("mac.mach.type=%d\n", pack->mac.ethh->type);
     macaddr_print(mac, pack->mac.ethh->src_addr);
-    LOG_DEBUG("mac.ethh.src_addr=%s\n", mac);
+    TRACE("mac.ethh.src_addr=%s\n", mac);
     macaddr_print(mac, pack->mac.ethh->dst_addr);
-    LOG_DEBUG("mac.ethh.dst_addr=%s\n", mac);
+    TRACE("mac.ethh.dst_addr=%s\n", mac);
     if (pack->protocol == ETH_P_ARP) {
-        LOG_DEBUG("nh.arph.htype=%d\n", pack->nh.arph->htype);
-        LOG_DEBUG("nh.arph.ptype=%d\n", pack->nh.arph->ptype);
-        LOG_DEBUG("nh.arph.hlen=%d\n", pack->nh.arph->hlen);
-        LOG_DEBUG("nh.arph.plen=%d\n", pack->nh.arph->plen);
-        LOG_DEBUG("nh.arph.oper=%d\n", pack->nh.arph->oper);
+        TRACE("nh.arph.htype=%d\n", pack->nh.arph->htype);
+        TRACE("nh.arph.ptype=%d\n", pack->nh.arph->ptype);
+        TRACE("nh.arph.hlen=%d\n", pack->nh.arph->hlen);
+        TRACE("nh.arph.plen=%d\n", pack->nh.arph->plen);
+        TRACE("nh.arph.oper=%d\n", pack->nh.arph->oper);
         macaddr_print(mac, pack->nh.arph->sha);
-        LOG_DEBUG("nh.arph.sha=%s\n", mac);
+        TRACE("nh.arph.sha=%s\n", mac);
         ipaddr_print(ip, pack->nh.arph->spa);
-        LOG_DEBUG("nh.arph.spa=%s\n", ip);
+        TRACE("nh.arph.spa=%s\n", ip);
         macaddr_print(mac, pack->nh.arph->tha);
-        LOG_DEBUG("nh.arph.tha=%s\n", mac);
+        TRACE("nh.arph.tha=%s\n", mac);
         ipaddr_print(ip, pack->nh.arph->tpa);
-        LOG_DEBUG("nh.arph.tpa=%s\n", ip);
+        TRACE("nh.arph.tpa=%s\n", ip);
     } else if (pack->protocol == ETH_P_IP) {
-        LOG_DEBUG("nh.iph.tos=%d\n", pack->nh.iph->tos);
-        LOG_DEBUG("nh.iph.tot_len=%d\n", pack->nh.iph->tot_len);
-        LOG_DEBUG("nh.iph.id=%d\n", pack->nh.iph->id);
-        LOG_DEBUG("nh.iph.frag_off=%d\n", pack->nh.iph->frag_off);
-        LOG_DEBUG("nh.iph.ttl=%d\n", pack->nh.iph->ttl);
-        LOG_DEBUG("nh.iph.proto=0x%X\n", pack->nh.iph->proto);
-        LOG_DEBUG("nh.iph.check=%d\n", pack->nh.iph->check);
+        TRACE("nh.iph.tos=%d\n", pack->nh.iph->tos);
+        TRACE("nh.iph.tot_len=%d\n", pack->nh.iph->tot_len);
+        TRACE("nh.iph.id=%d\n", pack->nh.iph->id);
+        TRACE("nh.iph.frag_off=%d\n", pack->nh.iph->frag_off);
+        TRACE("nh.iph.ttl=%d\n", pack->nh.iph->ttl);
+        TRACE("nh.iph.proto=0x%X\n", pack->nh.iph->proto);
+        TRACE("nh.iph.check=%d\n", pack->nh.iph->check);
         ipaddr_print(ip, pack->nh.iph->saddr);
-        LOG_DEBUG("nh.iph.saddr=%s\n", ip);
+        TRACE("nh.iph.saddr=%s\n", ip);
         ipaddr_print(ip, pack->nh.iph->daddr);
-        LOG_DEBUG("nh.iph.daddr=%s\n", ip);
+        TRACE("nh.iph.daddr=%s\n", ip);
         if (pack->nh.iph->proto == ICMP_PROTO_TYPE) {
-            LOG_DEBUG("h.icmph.type=%d\n", pack->h.icmph->type);
-            LOG_DEBUG("h.icmph.code=%d\n", pack->h.icmph->code);
-            LOG_DEBUG("h.icmph.header_check_summ=%d\n", pack->h.icmph->header_check_summ);
-            LOG_DEBUG("h.icmph.data=0x%X\n", pack->h.icmph->data);
+            TRACE("h.icmph.type=%d\n", pack->h.icmph->type);
+            TRACE("h.icmph.code=%d\n", pack->h.icmph->code);
+            TRACE("h.icmph.header_check_summ=%d\n", pack->h.icmph->header_check_summ);
+            TRACE("h.icmph.data=0x%X\n", pack->h.icmph->data);
         } else if (pack->nh.iph->proto == UDP_PROTO_TYPE) {
             LOG_DEBUG("h.uh.source=%d\n", pack->h.uh->source);
             LOG_DEBUG("h.uh.dest=%d\n", pack->h.uh->dest);
@@ -168,6 +167,6 @@ void packet_dump(net_packet *pack) {
             LOG_DEBUG("h.uh.check=%d\n", pack->h.uh->check);
         }
     }
-    LOG_DEBUG("data=0x%X\n", pack->data);
-    LOG_DEBUG("---------------end-----------------\n");
+    TRACE("data=0x%X\n", pack->data);
+    TRACE("---------------end-----------------\n");
 }

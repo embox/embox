@@ -40,7 +40,7 @@ static inline int find_entity(void *ifdev, unsigned char dst_addr[4]) {
 	return -1;
 }
 
-int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6]) {
+int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[ETH_ALEN]) {
 	int i;
 	if (-1 != (i = find_entity(ifdev,ipaddr))) {
 		return i;
@@ -178,11 +178,11 @@ int arp_received_packet(net_packet *pack) {
 	return 0;
 }
 
-int arp_delete_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6]) {
+int arp_delete_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[ETH_ALEN]) {
         int i;
         for (i = 0; i < ARP_TABLE_SIZE; i++) {
                 if(0 == memcmp(arp_table[i].pw_addr, ipaddr, 4) ||
-            	   0 == memcmp(arp_table[i].hw_addr, macaddr, 6) ||
+            	   0 == memcmp(arp_table[i].hw_addr, macaddr, ETH_ALEN) ||
             	   ifdev == arp_table[i].if_handler) {
                         arp_table[i].is_busy = 0;
                 }

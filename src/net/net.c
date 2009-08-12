@@ -33,6 +33,7 @@ int net_init() {
     eth_init();
     ifdev_init();
 
+    //TODO: inet_add_protocol
     icmp_init();
     udp_init();
     return 0;
@@ -41,13 +42,12 @@ int net_init() {
 /**
  * set default config for net interfaces
  * default config load from ifconfig.inc
- *
  */
 int net_config() {
     TRACE("Initializing ifdevs:\n");
     int i, k;
     unsigned char ipaddr[4];
-    unsigned char hwaddr[6];
+    unsigned char hwaddr[ETH_ALEN];
     char ipbuff[0x20];
     char macbuff[0x20];
     for (k = 0; k < array_len(eth_ifs); k++) {

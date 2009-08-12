@@ -6,5 +6,6 @@ OBJS-$(MONITOR_NET_ICMP)             += icmp.o
 OBJS-$(MONITOR_NET_UDP)              += udp.o
 OBJS-$(MONITOR_NET_TFTP)             += tftp.o
 OBJS-$(MONITOR_NET_DHCP)             += dhcp.o
+#OBJS-y                               += protocol.o
 
 include $(SRC_DIR)/common.mk

@@ -10,8 +10,6 @@
 
 #include "net/sock.h"
 
-#define MAX_SOCK_NUM 4
-
 struct sockaddr {
         unsigned short    sa_family;    /* address family, AF_xxx */
 	char              sa_data[14];  /* 14 bytes of protocol address */
@@ -31,35 +29,35 @@ struct sockaddr {
  * @return On success, a file descriptor for the new socket is returned.
  * 	On error, -1 is returned.
  */
-int socket(int domain, int type, int protocol);
+extern int socket(int domain, int type, int protocol);
 
 /**
  * bind a name to a socket.
  * @return 0 on success.  On error, -1.
  */
-int bind(int sockfd, const struct sockaddr *addr, int addrlen);
+extern int bind(int sockfd, const struct sockaddr *addr, int addrlen);
 
 /**
  * send a message on a socket.
  * @return the number of characters sent. On error, -1.
  */
-int send(int sockfd, const void *buf, int len, int flags);
+extern int send(int sockfd, const void *buf, int len, int flags);
 
 /**
  * receive a message from a socket.
  * @return the number of bytes received, or -1 if an error occurred.
  */
-int recv(int sockfd, void *buf, int len, int flags);
+extern int recv(int sockfd, void *buf, int len, int flags);
 
 /**
  * close a socket descriptor
  * @return 0 on success. On error, -1.
  */
-int close(int sockfd);
+extern int close(int sockfd);
 
 /**
  * Push packet received from udp_received_packet into socket.
  */
-int udpsock_push(net_packet *pack);
+extern int udpsock_push(net_packet *pack);
 
 #endif /* SOCKET_H_ */

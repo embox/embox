@@ -11,43 +11,7 @@
 #include "net/udp.h"
 #include "net/net_pack_manager.h"
 
-typedef struct _SOCK_INFO{
-        struct udp_sock sk;
-        net_packet *queue; //stub
-        int new_pack;
-        int is_busy;
-}SOCK_INFO;
-
-static SOCK_INFO sks[MAX_SOCK_NUM];
-
-struct udp_sock* socket_alloc() {
-	LOG_DEBUG("socket_alloc\n");
-        int i;
-        for(i = 0; i < MAX_SOCK_NUM; i++) {
-                if (0 == sks[i].is_busy) {
-                        sks[i].is_busy = 1;
-                        sks[i].new_pack = 0;
-                        memset(&sks[i].sk, 0, sizeof(sks[i].sk));
-                        return &sks[i].sk;
-                }
-        }
-        return NULL;
-}
-
-static int socket_free(struct udp_sock *sk) {
-	LOG_DEBUG("socket_free\n");
-        int i;
-        for(i = 0; i < MAX_SOCK_NUM; i++) {
-                if (sk == &sks[i].sk) {
-                        sks[i].is_busy = 0;
-                        net_packet_free(sks[i].queue);
-                        return 0;
-                }
-        }
-        return -1;
-}
-
-static void fill_sock(struct udp_sock *sk, int type, int proto) {
+void fill_sock(struct udp_sock *sk, int type, int proto) {
 	LOG_DEBUG("fill_sock\n");
 	sk->inet.sk->sk_protocol = proto;
 	sk->inet.sk->sk_type = type;
@@ -89,7 +53,7 @@ int udpsock_push(net_packet *pack) {
 int socket(int domain, int type, int protocol) {
 	LOG_DEBUG("create socket\n");
 	struct udp_sock *sk;
-	if((sk = socket_alloc()) == NULL) {
+	if((sk = (struct udp_sock *)sk_alloc()) == NULL) {
 		LOG_ERROR("Can't alloc socket.\n");
 		return -1;
 	}
@@ -119,7 +83,8 @@ int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
 
 int close(int sockfd) {
 	LOG_DEBUG("close\n");
-	return socket_free(&sks[sockfd].sk);
+	sk_free(&sks[sockfd].sk);
+	return 0;
 }
 
 int send(int sockfd, const void *buf, int len, int flags) {

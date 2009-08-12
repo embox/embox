@@ -3,6 +3,7 @@
  *
  * \date Mar 18, 2009
  * \author anton
+ * \brief Definitions for inet_sock.
  */
 #ifndef INET_SOCK_H_
 #define INET_SOCK_H_
@@ -60,11 +61,13 @@ struct ip_options {
 */
 
 struct inet_sock{
+	/* sk have to be the first member of inet_sock */
 	struct sock *sk;
 
 	unsigned char daddr [4];
 	unsigned char rcv_saddr[4];
 	unsigned char saddr [4];
+	struct ip_options  *opt;
 	unsigned short sport;
 	unsigned char uc_ttl;
 	unsigned char num;

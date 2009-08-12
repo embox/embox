@@ -13,6 +13,7 @@
 #include "net/if_ether.h"
 
 int ip_received_packet(net_packet *pack) {
+	LOG_DEBUG("ip packet received\n");
 	iphdr *iph = pack->nh.iph;
 	/**
 	 *   RFC1122: 3.1.2.2 MUST silently discard any IP frame that fails the checksum.
@@ -39,7 +40,7 @@ int ip_received_packet(net_packet *pack) {
                 icmp_received_packet(pack);
         }
         if (UDP_PROTO_TYPE == iph->proto) {
-                packet_dump(pack);
+//                packet_dump(pack);
                 udp_received_packet(pack);
         }
 	return 0;

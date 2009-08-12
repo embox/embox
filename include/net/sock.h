@@ -11,6 +11,8 @@
 #include "net/net_device.h"
 #include "net/net_packet.h"
 
+#define MAX_SOCK_NUM 4
+
 /**
  * struct sock_common - minimal network layer representation of sockets
  */
@@ -48,5 +50,20 @@ struct sock {
 	int (* sk_backlog_rcv) (struct sock *sk, net_packet*pack);
 	void (* sk_destruct) (struct sock *sk);
 };
+
+typedef struct _SOCK_INFO{
+        struct udp_sock sk;
+        net_packet *queue; //TODO: stub
+        int new_pack;
+        int is_busy;
+}SOCK_INFO;
+
+extern SOCK_INFO sks[MAX_SOCK_NUM];
+
+/**
+ * All socket objects are allocated here
+ */
+extern struct udp_sock* sk_alloc();
+extern void sk_free(struct udp_sock *sk);
 
 #endif /* SOCK_H_ */
