@@ -1,2 +1,2 @@
 // keys, available for mem command
-'a', 'c', 't', 'h'
+'a', 'n', 'h'

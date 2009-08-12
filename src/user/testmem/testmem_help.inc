@@ -7,7 +7,7 @@
 "NAME\n"
 "\ttestmem - set of memory tests\n"
 "SYNOPSIS\n"
-"\tmem [-h] [-a <addr>] [-c <count>] [-t <type of test]\n"
+"\tmem [-h] [-a <addr>] [-n <number>] [-t <type of test]\n"
 "DESCRIPTION\n"
 "\tRead from memory or test memory.\n"
 "OPTION\n"
