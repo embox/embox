@@ -4,9 +4,8 @@
  *  \date Jan 26, 2009
  *  \author Anton Bondarev
  */
-#include "types.h"
 #include "common.h"
-#include "cpu_context.h"
+#include "asm/cpu_context.h"
 #include "sys.h"
 #include "express_tests.h"
 

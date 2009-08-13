@@ -4,7 +4,7 @@
  * \date 03.07.2009
  * \author kse
  */
-#include "types.h"
+#include "asm/types.h"
 #include "conio.h"
 #include "shell.h"
 #include "ldimg.h"

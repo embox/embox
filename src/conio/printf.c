@@ -27,7 +27,7 @@
 */
 
 //void outbyte(int c);
-#include "types.h"
+#include "asm/types.h"
 #include "conio.h"
 #include "stdarg.h"
 #include "uart.h"

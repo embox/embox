@@ -9,7 +9,6 @@
 #define MISC_H_
 
 #include "common.h"
-#include "types.h"
 
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]);
 unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[6]);

@@ -5,7 +5,6 @@
  * \author sikmir
  */
 
-#include "types.h"
 #include "common.h"
 #include "arpc.h"
 #include "shell.h"

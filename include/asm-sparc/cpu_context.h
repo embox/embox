@@ -10,10 +10,10 @@
 #ifndef CPU_CONTEXT_H_
 #define CPU_CONTEXT_H_
 
-#include "leon_config.h"
-#include "traps.h"
-#include "types.h"
-#include "windows.h"
+#include "asm/leon_config.h"
+#include "asm/traps.h"
+#include "asm/types.h"
+#include "asm/windows.h"
 
 #ifndef __ASSEMBLER__
 

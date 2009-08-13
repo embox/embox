@@ -4,10 +4,10 @@
  * \author anton
  * \details
  */
-#include "types.h"
-#include "leon.h"
+#include "asm/types.h"
+#include "asm/leon.h"
 #include "shell.h"
-#include "mmu.h"
+#include "asm/mmu.h"
 #include "mmu_probe.h"
 
 /**

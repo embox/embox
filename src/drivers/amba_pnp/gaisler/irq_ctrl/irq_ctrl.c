@@ -5,7 +5,6 @@
  * \author Anton Bondarev
  * \brief Realize hal layer interupt ctrl for leon 3 processor
  */
-#include "types.h"
 #include "common.h"
 #include "irq_ctrl.h"
 #include "amba_pnp.h"

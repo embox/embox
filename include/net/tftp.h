@@ -8,7 +8,7 @@
 #ifndef TFTP_H_
 #define TFTP_H_
 
-#include "types.h"
+#include "asm/types.h"
 
 #define TFTP_RRQ	0x1
 #define TFTP_WRQ	0x2

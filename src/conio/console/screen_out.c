@@ -8,7 +8,6 @@
 #include "screen.h"
 
 #include "terminal.h"
-#include "types.h"
 #include "common.h"
 
 static void transmit_string(SCREEN *this, const char *str) {

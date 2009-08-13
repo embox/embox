@@ -4,7 +4,7 @@
  * \date Mar 4, 2009
  * \author anton
  */
-#include "types.h"
+#include "asm/types.h"
 #include "net/net.h"
 #include "net/net_device.h"
 

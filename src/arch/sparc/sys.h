@@ -8,8 +8,8 @@
 #ifndef SYS_H_
 #define SYS_H_
 
-#include "cpu_context.h"
-#include "types.h"
+#include "asm/cpu_context.h"
+#include "asm/types.h"
 
 typedef int (*EXEC_FUNC)(int argc, char **argv);
 

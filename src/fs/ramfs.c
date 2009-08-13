@@ -4,7 +4,6 @@
  * \author anton
  * \details realize file operation function in line address space
  */
-#include "types.h"
 #include "common.h"
 #include "rootfs.h"
 #include "ramfs.h"

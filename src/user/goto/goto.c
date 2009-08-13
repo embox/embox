@@ -5,7 +5,7 @@
  * \author kse
  */
 
-#include "types.h"
+#include "asm/types.h"
 #include "conio.h"
 #include "shell.h"
 #include "goto.h"

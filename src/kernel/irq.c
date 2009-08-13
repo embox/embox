@@ -9,10 +9,9 @@
  * \author Alexandr Batyukov
  */
 
-#include "types.h"
 #include "common.h"
 #include "irq_ctrl.h"
-#include "traps.h"
+#include "asm/traps.h"
 #include "irq.h"
 
 // user trap handlers table

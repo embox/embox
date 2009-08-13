@@ -13,7 +13,7 @@
 #include "users.inc"
 
 #define MAX_SHELL_KEYS 12
-#include "cpu_context.h"
+#include "asm/cpu_context.h"
 
 CPU_CONTEXT shell_proc_state;
 

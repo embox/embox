@@ -5,7 +5,7 @@
  * \author fomka
  */
 
-#include "types.h"
+#include "asm/types.h"
 #include "net/dhcp.h"
 
 int dhcpDiscover() {

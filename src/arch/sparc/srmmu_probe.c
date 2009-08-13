@@ -5,9 +5,8 @@
  * \details
  */
 
-#include "types.h"
 #include "common.h"
-#include "mmu.h"
+#include "asm/mmu.h"
 
 #define NODO_CLEAR
 int mmu_probe_init() {

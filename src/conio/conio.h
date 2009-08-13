@@ -1,7 +1,7 @@
 #ifndef _CONIO_H_
 #define _CONIO_H_
 
-#include "types.h"
+#include "asm/types.h"
 
 // printf to standart output
 int printf (const char *str, ...);

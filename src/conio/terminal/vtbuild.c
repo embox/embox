@@ -10,7 +10,6 @@
 #include "vtbuild.h"
 
 #include "vt.h"
-#include "types.h"
 #include "common.h"
 
 VTBUILDER * vtbuild_init(VTBUILDER *this, void(*putc)(VTBUILDER *builder,

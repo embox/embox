@@ -10,7 +10,6 @@
  */
 
 #include "console.h"
-#include "types.h"
 #include "cmdline.h"
 #include "uart.h"
 #include "conio.h"

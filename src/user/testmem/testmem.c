@@ -5,9 +5,8 @@
  * \details
  */
 
-#include "types.h"
 #include "conio.h"
-#include "cache.h"
+#include "asm/cache.h"
 #include "common.h"
 #include "shell.h"
 #include "testmem.h"

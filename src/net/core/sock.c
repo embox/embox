@@ -5,7 +5,6 @@
  * \details Generic socket support routines.
  */
 
-#include "types.h"
 #include "common.h"
 #include "net/sock.h"
 #include "net/udp.h"

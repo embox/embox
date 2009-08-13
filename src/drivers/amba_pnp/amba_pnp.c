@@ -4,11 +4,8 @@
  * \date 28.01.2009
  * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
-
-#include "types.h"
 #include "common.h"
 #include "amba_pnp.h"
-
 
 /**
  * \struct AHB_SLOT

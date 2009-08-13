@@ -13,7 +13,6 @@
 #include "vtparse.h"
 
 #include "vt.h"
-#include "types.h"
 #include "common.h"
 
 #define ACTION(state_change) (state_change & 0x0F)

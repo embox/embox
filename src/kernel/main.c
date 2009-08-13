@@ -5,7 +5,6 @@
  * \author anton
  */
 
-#include "types.h"
 #include "amba_pnp.h"
 #include "shell.h"
 #include "common.h"

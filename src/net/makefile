@@ -5,6 +5,6 @@ SUBDIRS-y   += ethernet
 SUBDIRS-y   += core
 
 OBJS-y      += socket.o
-OBJS-y      += net.o
+OBJS-y      += ipconfig.o
 
 include $(SRC_DIR)/common.mk

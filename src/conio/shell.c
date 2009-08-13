@@ -4,7 +4,6 @@
  * \date 02.02.2009
  * \author Alexey Fomin
  */
-#include "types.h"
 #include "common.h"
 #include "string.h"
 #include "console.h"

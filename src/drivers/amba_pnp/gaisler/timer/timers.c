@@ -2,9 +2,8 @@
  * \file timers.c
  */
 
-#include "types.h"
 #include "common.h"
-#include "leon_config.h"
+#include "asm/leon_config.h"
 #include "irq.h"
 #include "amba_pnp.h"
 #include "timers.h"

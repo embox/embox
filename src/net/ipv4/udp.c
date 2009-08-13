@@ -4,7 +4,6 @@
  * \date 26.03.2009
  * \author sikmir
  */
-#include "types.h"
 #include "common.h"
 #include "net/net.h"
 #include "net/eth.h"

@@ -8,7 +8,7 @@
 #include "screen.h"
 
 #include "cmdline.h"
-#include "types.h"
+#include "asm/types.h"
 
 SCREEN * screen_init(SCREEN *this, SCREEN_IO *io) {
 	if (this == NULL || io == NULL) {

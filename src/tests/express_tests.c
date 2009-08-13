@@ -6,7 +6,6 @@
  * \author Anton Bondarev
  * \author Eldar Abusalimov
  */
-#include "types.h"
 #include "common.h"
 #include "express_tests.h"
 

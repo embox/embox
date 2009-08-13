@@ -11,7 +11,7 @@
 
 #ifndef _IRQ_H_
 #define _IRQ_H_
-#include "types.h"
+#include "asm/types.h"
 
 // Not for assembler
 #ifndef __ASSEMBLER__

@@ -7,9 +7,9 @@
  * \author Eldar Abusalimov
  */
 
-#include "windows.h"
-#include "traps.h"
-#include "sparc_regs.h"
+#include "asm/windows.h"
+#include "asm/traps.h"
+#include "asm/sparc_regs.h"
 
 /* Window overflow handling routine. */
 		.global window_overflow

@@ -1,9 +1,10 @@
 /**
- * \file net.c
+ * \file ipconfig.c
  * \date 15.07.09
  * \author sikmir
+ * \details  Automatic Configuration of IP -- use DHCP, BOOTP, or
+ *  user-supplied information to configure own IP address.
  */
-#include "types.h"
 #include "conio.h"
 #include "common.h"
 #include "net/net.h"
@@ -50,6 +51,7 @@ int net_config() {
     unsigned char hwaddr[ETH_ALEN];
     char ipbuff[0x20];
     char macbuff[0x20];
+    //TODO: bring loopback device up first ("l0" not realized)
     for (k = 0; k < array_len(eth_ifs); k++) {
         if (NULL == ipaddr_scan(eth_ifs[k].ip, ipaddr)) {
             LOG_ERROR("parsing ipadd\n");

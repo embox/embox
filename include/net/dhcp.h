@@ -11,7 +11,7 @@
 #define BOOTREQUEST 0x1 // not sure
 #define BOOTREPLY 0x2   // not sure
 
-#include "types.h"
+#include "asm/types.h"
 
 int dhcpDiscover();
 

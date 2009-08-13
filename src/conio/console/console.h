@@ -12,7 +12,6 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#include "types.h"
 #include "cmdline.h"
 #include "screen.h"
 #include "common.h"

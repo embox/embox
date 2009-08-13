@@ -4,11 +4,10 @@
  * \date May 21, 2009
  * \author anton
  */
-#include "types.h"
 #include "common.h"
-#include "cache.h"
-#include "leon.h"
-#include "memory_map.h"
+#include "asm/cache.h"
+#include "asm/leon.h"
+#include "asm/memory_map.h"
 #include "module.h"
 
 void copy_data_section() {

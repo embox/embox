@@ -7,6 +7,7 @@
 #include "string.h"
 #include "net/net_pack_manager.h"
 #include "net/net_packet.h"
+#include "net/net_device.h"
 #include "net/arp.h"
 #include "net/udp.h"
 #include "net/net.h"
@@ -48,7 +49,7 @@ void ether_setup(net_device *dev) {
 
     dev->type               = ARPHRD_ETHER;
     dev->addr_len           = ETH_ALEN;
-//    dev->flags              = IFF_BROADCAST|IFF_MULTICAST;
+    dev->flags              = IFF_BROADCAST|IFF_MULTICAST;
 
     memset(dev->broadcast, 0xFF, ETH_ALEN);
 }

@@ -15,7 +15,7 @@
 
 #include "vt.h"
 #include "vtparse_table.h"
-#include "types.h"
+#include "asm/types.h"
 
 struct _VTPARSER;
 

@@ -1,8 +1,8 @@
 #ifndef _TRAPS_H_
 #define _TRAPS_H_
 
-#include "types.h"
-#include "windows.h"
+#include "asm/types.h"
+#include "asm/windows.h"
 
 #ifndef __ASSEMBLER__
 

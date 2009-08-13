@@ -3,7 +3,6 @@
  *  \date Mar 23, 2009
  *  \author Anton Bondarev
  */
-#include "types.h"
 #include "string.h"
 
 /**

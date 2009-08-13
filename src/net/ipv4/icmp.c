@@ -4,7 +4,6 @@
  * \date 14.03.2009
  * \author sunnya
  */
-#include "types.h"
 #include "common.h"
 #include "net/net.h"
 #include "net/if_device.h"
@@ -250,7 +249,7 @@ int icmp_received_packet(net_packet *pack) {
 	 * RFC 1122: 3.2.2.8 An ICMP_TIMESTAMP MAY be silently
 	 *        discarded if to broadcast/multicast.
 	 */
-        if ( 1 == 0 /* TODO: BROADCAST or MULTICAST */) {
+        if ( 1 == 0 /* (IFF_BROADCAST | IFF_MULTICAST) */) {
     		if (icmph->type == ICMP_ECHO ||
             	    icmph->type == ICMP_TIMESTAMP) {
     			return -1;

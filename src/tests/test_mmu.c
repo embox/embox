@@ -4,9 +4,8 @@
  * \author anton
  * \details
  */
-#include "types.h"
-#include "leon.h"
-#include "mmu.h"
+#include "asm/leon.h"
+#include "asm/mmu.h"
 #include "express_tests.h"
 
 DECLARE_EXPRESS_TEST("MMU", exec)

@@ -4,7 +4,6 @@
  * \author Anton Bondarev
  * \details
  */
-#include "types.h"
 #include "common.h"
 #include "rootfs.h"
 

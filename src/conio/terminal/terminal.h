@@ -12,7 +12,7 @@
 #ifndef TERMINAL_H_
 #define TERMINAL_H_
 
-#include "types.h"
+#include "asm/types.h"
 #include "vt.h"
 #include "vtparse.h"
 #include "vtbuild.h"

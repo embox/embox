@@ -1,4 +1,3 @@
-#include "types.h"
 #include "common.h"
 #include "file.h"
 #include "rootfs.h"

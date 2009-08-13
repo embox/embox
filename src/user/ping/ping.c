@@ -4,7 +4,7 @@
  * \date Mar 20, 2009
  * \author anton
  */
-#include "types.h"
+#include "asm/types.h"
 #include "net/icmp.h"
 #include "shell.h"
 #include "ping.h"

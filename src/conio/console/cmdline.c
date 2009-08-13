@@ -9,7 +9,6 @@
 
 #include "cmdline.h"
 
-#include "types.h"
 #include "string.h"
 #include "common.h"
 

@@ -7,7 +7,7 @@
 
 #include "shell.h"
 //#include "conio.h"
-#include "types.h"
+#include "asm/types.h"
 #include "mem.h"
 
 char mem_keys[] = {

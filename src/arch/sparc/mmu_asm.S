@@ -1,4 +1,4 @@
-#include "mmu.h"
+#include "asm/mmu.h"
 	.seg	"text"
 	.proc	0
 	.align PAGE_SIZE

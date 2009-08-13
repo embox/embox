@@ -1,4 +1,4 @@
-#include "traps.h"
+#include "asm/traps.h"
 
         .global _trap_table     !
         .global _hardreset      !

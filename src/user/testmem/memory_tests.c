@@ -5,7 +5,6 @@
  * \details
  */
 
-#include "types.h"
 #include "common.h"
 #include "string.h"
 #include "memory_tests.h"

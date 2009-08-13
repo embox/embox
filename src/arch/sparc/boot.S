@@ -7,9 +7,9 @@
  * @author Eldar Abusalimov
  */
 
-#include "leon_config.h"
-#include "memory_map.h"
-#include "sparc_regs.h"
+#include "asm/leon_config.h"
+#include "asm/memory_map.h"
+#include "asm/sparc_regs.h"
 
  	.weak hardware_init_hook
  	.weak software_init_hook

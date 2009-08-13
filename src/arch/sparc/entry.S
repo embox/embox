@@ -9,11 +9,11 @@
  * @author Alexandr Batyukov
  */
 
-#include "traps.h"
-#include "sparc_regs.h"
-#include "windows.h"
-#include "leon_config.h"
-#include "cpu_context.h"
+#include "asm/traps.h"
+#include "asm/sparc_regs.h"
+#include "asm/windows.h"
+#include "asm/leon_config.h"
+#include "asm/cpu_context.h"
 
 	.section ".text"
 	.align 16

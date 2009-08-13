@@ -4,10 +4,10 @@
  * \author Anton Bondarev
  * \details realizing interface if_device struct (interface device)
  */
-#include "types.h"
 #include "common.h"
 #include "net/net.h"
 #include "net/if_device.h"
+#include "net/net_device.h"
 
 typedef struct _IF_DEV_INFO {
         IF_DEVICE dev;
@@ -145,6 +145,7 @@ int ifdev_up(const char *iname){
         LOG_ERROR("ifdev up: can't find open function in net_device with name\n", iname);
         return -1;
     }
+    ifhandler->net_dev->flags |= (IFF_UP|IFF_RUNNING);
     return ifhandler->net_dev->open(ifhandler->net_dev);
 }
 
@@ -163,6 +164,7 @@ int ifdev_down(const char *iname){
         return -1;
     }
     free_handler(ifhandler);
+    ifhandler->net_dev->flags &= ~(IFF_UP|IFF_RUNNING);
     return ifhandler->net_dev->stop(ifhandler->net_dev);
 }
 

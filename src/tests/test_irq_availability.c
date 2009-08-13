@@ -5,7 +5,6 @@
  * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
-#include "types.h"
 #include "common.h"
 #include "timers.h"
 #include "express_tests.h"

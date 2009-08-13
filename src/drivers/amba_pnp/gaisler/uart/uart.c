@@ -2,10 +2,9 @@
  * \file uart.c
  */
 
-#include "types.h"
 #include "irq.h"
-#include "leon_config.h"
-//#include "memory_map.h"
+#include "asm/leon_config.h"
+//#include "asm/memory_map.h"
 #include "amba_pnp.h"
 #include "uart.h"
 #include "common.h"

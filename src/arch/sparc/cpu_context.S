@@ -5,8 +5,8 @@
  * @author Eldar Abusalimov
  */
 
-#include "cpu_context.h"
-#include "sparc_regs.h"
+#include "asm/cpu_context.h"
+#include "asm/sparc_regs.h"
 
 	.section ".text"
 	.align 4

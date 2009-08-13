@@ -49,8 +49,8 @@ inline static int dummy() {
 #ifdef SIMULATION_TRG
 #define assert(cond)	{}
 #else
-#include "sparc_regs.h"
-#include "types.h"
+#include "asm/sparc_regs.h"
+#include "asm/types.h"
 
 //extern unsigned long old_psr;
 //extern unsigned long new_psr;

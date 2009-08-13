@@ -5,7 +5,6 @@
  * \author anton, sikmir
  */
 
-#include "types.h"
 #include "common.h"
 #include "net/socket.h"
 #include "net/udp.h"
