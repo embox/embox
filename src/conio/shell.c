@@ -90,7 +90,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 }
 
 inline static BOOL is_char(char ch) {
-	return (ch > 0x20) && (ch < 0x7F);
+	return ((ch > 0x20) && (ch < 0x7F));
 }
 
 /**
@@ -135,6 +135,17 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	}
 }
 
+static void shell_start_script( void ) {
+	char *script_commands[] = {
+#include "start_script.inc"
+	};
+	int len = sizeof(script_commands) / sizeof(char *);
+	int i;
+	for (i = 0; i < len; i++) {
+		exec_callback(NULL, NULL, script_commands[i]);
+	}
+}
+
 void shell_start() {
 	static const char* prompt = MONITOR_PROMPT;
 	static CONSOLE console[1];
@@ -153,9 +164,13 @@ void shell_start() {
 		printf("Failed to create a console");
 		return;
 	}
+	printf("\nStarting script...\n");
+	shell_start_script();
+
 	printf("\n%s", MONITOR_START_MSG);
 	console_start(console, prompt);
 }
+
 
 /**
  * parse arguments array on keys-value structures and entered amount of entered keys otherwise (if everything's OK)
