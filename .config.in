@@ -354,6 +354,12 @@
 			"mdef": "MONITOR_USER_MEM",
 			"status": 1
 		},
+		"help": {
+			"desc": "help system",
+			"inc": 1,
+			"mdef": "MONITOR_USER_HELP",
+			"status": 1
+		},
 		"mmu_probe": {
 			"desc": "mmu_probe",
 			"inc": 1,

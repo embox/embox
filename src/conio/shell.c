@@ -164,10 +164,10 @@ void shell_start() {
 		printf("Failed to create a console");
 		return;
 	}
-	printf("\nStarting script...\n");
+	printf("\nStarting script...\n\n");
 	shell_start_script();
 
-	printf("\n%s", MONITOR_START_MSG);
+	printf("\n\n%s", MONITOR_START_MSG);
 	console_start(console, prompt);
 }
 
