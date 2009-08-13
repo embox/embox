@@ -6,12 +6,13 @@
 #ifndef IF_DEVICE_H_
 #define IF_DEVICE_H_
 
+#include "net/eth.h"
+
 typedef struct _CALLBACK_INFO {
     int                 is_busy;
     unsigned short      type;
     ETH_LISTEN_CALLBACK func;
 } CALLBACK_INFO;
-
 
 typedef struct _IF_DEVICE {
     unsigned char ipv4_addr[IPV4_ADDR_LENGTH];

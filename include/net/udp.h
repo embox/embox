@@ -10,6 +10,8 @@
 
 #include "net/inet_sock.h"
 
+struct sock;
+
 typedef struct _udphdr {
         unsigned short source;
         unsigned short dest;
@@ -31,6 +33,6 @@ static inline struct udp_sock *udp_sk(const struct sock *sk) {
         return (struct udp_sock *)sk;
 }
 
-extern int udp_init(void);
+extern int udp_init();
 
 #endif /* UDP_H_ */

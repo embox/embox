@@ -8,15 +8,12 @@
 #ifndef NET_DEVICE_H_
 #define NET_DEVICE_H_
 
-#include "net/arp.h"
 #include "net/if_ether.h"
-#include "net/ip.h"
-#include "net/icmp.h"
-#include "net/udp.h"
-#include "net/net_packet.h"
 
 #define NET_DEVICES_QUANTITY     0x4
 #define IFNAMSIZ                 6
+
+struct _net_packet;
 
 typedef struct _net_device_stats {
 	unsigned long rx_packets;  /* total packets received       */
@@ -43,9 +40,9 @@ typedef struct _net_device {
 
 	int (*open)(struct _net_device *dev);
 	int (*stop)(struct _net_device *dev);
-	int (*hard_start_xmit) (net_packet *pack, struct _net_device *dev);
-	int (*hard_header) (net_packet *pack, struct _net_device *dev, unsigned short type, void *daddr, void *saddr, unsigned tot_len);
-	int (*rebuild_header)(net_packet * pack);
+	int (*hard_start_xmit) (struct _net_packet *pack, struct _net_device *dev);
+	int (*hard_header) (struct _net_packet *pack, struct _net_device *dev, unsigned short type, void *daddr, void *saddr, unsigned tot_len);
+	int (*rebuild_header)(struct _net_packet *pack);
 	net_device_stats *(*get_stats)(struct _net_device *dev);
 	int (*set_mac_address)(struct _net_device *dev, void *addr);
 }net_device;

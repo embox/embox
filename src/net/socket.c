@@ -9,12 +9,15 @@
 #include "common.h"
 #include "net/socket.h"
 #include "net/udp.h"
+#include "net/ip.h"
+#include "net/if_ether.h"
 #include "net/net_pack_manager.h"
+#include "net/net_packet.h"
 
 void fill_sock(struct udp_sock *sk, int type, int proto) {
 	LOG_DEBUG("fill_sock\n");
-	sk->inet.sk->sk_protocol = proto;
-	sk->inet.sk->sk_type = type;
+	sk->inet.sk.sk_protocol = proto;
+	sk->inet.sk.sk_type = type;
 //	sk->inet.sk->netdev = netdev_get_by_name("eth0");
 	sk->inet.tos = 0;
 	sk->inet.uc_ttl = 64;
@@ -28,7 +31,7 @@ int udpsock_push(net_packet *pack) {
 	udphdr *uh = pack->h.uh;
 	iphdr *iph = pack->nh.iph;
 	for(i=0; i< MAX_SOCK_NUM; i++) {
-		usk = &sks[i].sk;
+		usk = sks[i].sk;
 		if(uh->dest == usk->inet.sport &&
 		   ((0 == memcmp(iph->daddr, usk->inet.saddr, 4)) ||
 		    (0 == inet_addr(usk->inet.saddr)))) {
@@ -36,8 +39,8 @@ int udpsock_push(net_packet *pack) {
 				LOG_DEBUG("packet pushed\n");
 				sks[i].queue = net_packet_copy(pack);
 				sks[i].new_pack = 1;
-				sks[i].sk.inet.dport = uh->source;
-				memcpy(sks[i].sk.inet.daddr, iph->saddr, sizeof(iph->saddr));
+				sks[i].sk->inet.dport = uh->source;
+				memcpy(sks[i].sk->inet.daddr, iph->saddr, sizeof(iph->saddr));
 				return 0;
 			} else {
 				LOG_DEBUG("queue is busy\n");
@@ -57,10 +60,10 @@ int socket(int domain, int type, int protocol) {
 		LOG_ERROR("Can't alloc socket.\n");
 		return -1;
 	}
-	fill_sock(sk, type, protocol);
+	fill_sock(sk, type, UDP_PROTO_TYPE);
 	int i;
         for(i = 0; i < MAX_SOCK_NUM; i++) {
-                if (sk == &sks[i].sk) {
+                if (sk == sks[i].sk) {
             		LOG_DEBUG("socket id=%d\n", i);
                         return i;
                 }
@@ -73,17 +76,17 @@ int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
         if(sks[sockfd].is_busy == 0) {
     		return -1;
         }
-	memcpy(&sks[sockfd].sk.inet.saddr, &(addr->sa_data[2]), IP_ADDR_LEN);
-	memcpy(&sks[sockfd].sk.inet.sport, &(addr->sa_data[0]), sizeof(short));
+	memcpy(&sks[sockfd].sk->inet.saddr, &(addr->sa_data[2]), IP_ADDR_LEN);
+	memcpy(&sks[sockfd].sk->inet.sport, &(addr->sa_data[0]), sizeof(short));
 	char ip[15];
-	ipaddr_print(ip, sks[sockfd].sk.inet.saddr);
-	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[sockfd].sk.inet.sport, ip);
+	ipaddr_print(ip, sks[sockfd].sk->inet.saddr);
+	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[sockfd].sk->inet.sport, ip);
 	return 0;
 }
 
 int close(int sockfd) {
 	LOG_DEBUG("close\n");
-	sk_free(&sks[sockfd].sk);
+	sk_free(sks[sockfd].sk);
 	return 0;
 }
 
@@ -92,7 +95,7 @@ int send(int sockfd, const void *buf, int len, int flags) {
 	if(sks[sockfd].is_busy == 0) {
 	        return -1;
 	}
-        udp_trans(&sks[sockfd].sk, sks[sockfd].queue->ifdev, buf, len);
+        udp_trans(sks[sockfd].sk, sks[sockfd].queue->ifdev, buf, len);
 	return len;
 }
 

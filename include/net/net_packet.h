@@ -6,8 +6,6 @@
 #ifndef NET_PACKET_H_
 #define NET_PACKET_H_
 
-struct sock;
-
 #define ETHERNET_V2_FRAME_SIZE 1518
 
 typedef struct _net_packet { /* = struct sk_buff in Linux */
@@ -18,21 +16,21 @@ typedef struct _net_packet { /* = struct sk_buff in Linux */
         unsigned int            len;
         union {
                 //tcphdr        *th;
-                udphdr          *uh;
-                icmphdr         *icmph;
+                struct _udphdr  *uh;
+                struct _icmphdr *icmph;
                 //igmphdr       *igmph;
                 //iphdr         *ipiph;
                 //ipv6hdr       *ipv6h;
     	        unsigned char   *raw;
         } h;
         union {
-                iphdr           *iph;
+                struct _iphdr   *iph;
         	//ipv6hdr       *ipv6h;
-                arphdr          *arph;
+                struct _arphdr  *arph;
                 unsigned char   *raw;
         } nh;
         union {
-                ethhdr          *ethh;
+                struct _ethhdr  *ethh;
                 unsigned char   *raw;
         } mac;
         unsigned char data[ETHERNET_V2_FRAME_SIZE];

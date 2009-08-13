@@ -6,10 +6,13 @@
 #include "misc.h"
 #include "string.h"
 #include "net/net_pack_manager.h"
+#include "net/net_packet.h"
 #include "net/arp.h"
 #include "net/udp.h"
 #include "net/net.h"
 #include "net/eth.h"
+#include "net/ip.h"
+#include "net/icmp.h"
 #include "net/if_device.h"
 
 void packet_dump(net_packet *);
@@ -70,7 +73,7 @@ int eth_send(net_packet *pack) {
             return -1;
         }
     }
-    //	packet_dump(pack);
+//    packet_dump(pack);
     dev->net_dev->hard_start_xmit(pack, pack->netdev);
     net_packet_free(pack);
     return 0;

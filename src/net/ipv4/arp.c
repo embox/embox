@@ -12,6 +12,7 @@
 #include "net/if_device.h"
 #include "net/eth.h"
 #include "net/net_pack_manager.h"
+#include "net/if_arp.h"
 
 #define ARP_CACHE_SIZE         0x100
 
@@ -159,6 +160,7 @@ static int received_req(net_packet *pack) {
 }
 
 int arp_received_packet(net_packet *pack) {
+	LOG_WARN("arp packet received\n");
 	arphdr *arp = pack->nh.arph;
 
 	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, 4)) {

@@ -7,7 +7,7 @@
 #include "types.h"
 #include "common.h"
 #include "net/net_device.h"
-#include "net/net_pack_manager.h"
+#include "net/net_packet.h"
 
 #define PACK_POOL_SIZE	0x100
 
@@ -32,6 +32,7 @@ net_packet *net_packet_alloc() {
 			return &pack_pool[i].pack;
 		}
 	}
+	LOG_ERROR("pack pool is full\n");
 	return NULL;
 }
 

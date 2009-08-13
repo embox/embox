@@ -8,9 +8,10 @@
 #include "common.h"
 #include "net/net.h"
 #include "net/in.h"
-#include "net/sock.h"
+#include "net/ip.h"
 #include "net/inet_sock.h"
 #include "net/if_ether.h"
+#include "net/net_packet.h"
 
 int ip_received_packet(net_packet *pack) {
 	LOG_DEBUG("ip packet received\n");
@@ -35,12 +36,12 @@ int ip_received_packet(net_packet *pack) {
 		LOG_ERROR("invalide IPv4 header length\n");
 		return -1;
 	}
+//	packet_dump(pack);
 
 	if (ICMP_PROTO_TYPE == iph->proto) {
                 icmp_received_packet(pack);
         }
         if (UDP_PROTO_TYPE == iph->proto) {
-//                packet_dump(pack);
                 udp_received_packet(pack);
         }
 	return 0;
@@ -65,7 +66,7 @@ int rebuild_ip_header(net_packet *pack, unsigned char ttl, unsigned char proto,
 
 static int build_ip_packet(struct inet_sock *sk, net_packet *pack) {
 	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
-	rebuild_ip_header(pack, sk->uc_ttl, sk->sk->sk_protocol,
+	rebuild_ip_header(pack, sk->uc_ttl, sk->sk.sk_protocol,
 			  sk->id, pack->len, sk->saddr, sk->daddr);
 	return 0;
 }

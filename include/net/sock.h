@@ -8,10 +8,11 @@
 #ifndef SOCK_H_
 #define SOCK_H_
 
-#include "net/net_device.h"
-#include "net/net_packet.h"
-
 #define MAX_SOCK_NUM 4
+
+struct _net_device;
+struct _net_packet;
+struct udp_sock;
 
 /**
  * struct sock_common - minimal network layer representation of sockets
@@ -41,19 +42,19 @@ struct sock {
 	unsigned long 		sk_flags;
 	//TODO: implement queue
 	struct socket           *sk_socket;
-	net_device		*netdev;
+	struct _net_device	*netdev;
 
 	void (* sk_state_change) (struct sock *sk);
 	void (* sk_data_ready) (struct sock *sk, int bytes);
 	void (* sk_write_space) (struct sock *sk);
 	void (* sk_error_report) (struct sock *sk);
-	int (* sk_backlog_rcv) (struct sock *sk, net_packet*pack);
+	int (* sk_backlog_rcv) (struct sock *sk, struct _net_packet *pack);
 	void (* sk_destruct) (struct sock *sk);
 };
 
 typedef struct _SOCK_INFO{
-        struct udp_sock sk;
-        net_packet *queue; //TODO: stub
+        struct udp_sock *sk;
+        struct _net_packet *queue; //TODO: stub
         int new_pack;
         int is_busy;
 }SOCK_INFO;

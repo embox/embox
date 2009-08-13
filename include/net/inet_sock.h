@@ -8,7 +8,7 @@
 #ifndef INET_SOCK_H_
 #define INET_SOCK_H_
 
-struct sock;
+#include "net/sock.h"
 
 /** struct ip_options - IP Options
 *
@@ -62,7 +62,7 @@ struct ip_options {
 
 struct inet_sock{
 	/* sk have to be the first member of inet_sock */
-	struct sock *sk;
+	struct sock sk;
 
 	unsigned char daddr [4];
 	unsigned char rcv_saddr[4];

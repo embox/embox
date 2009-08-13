@@ -63,8 +63,9 @@ int tftp_send_ack (void *ifdev, unsigned char srcaddr[4], unsigned char dstaddr[
 
 int tftp_send_rrq_request(void *ifdev, unsigned char srcaddr[4], unsigned char dstaddr[4], char *filename, char *mode) {
 	net_packet *pack = net_packet_alloc();
-	if (pack == 0)
+	if (pack == NULL) {
 		return -1;
+	}
 	pack->ifdev = ifdev;
 	pack->netdev = ifdev_get_netdevice(ifdev);
 

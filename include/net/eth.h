@@ -11,8 +11,11 @@
 #define NET_TYPE_ALL_PROTOCOL 0
 
 #include "net/net_device.h"
+#include "net/net_packet.h"
 
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
+
+struct _net_packet;
 
 /**
  * Functions provided by eth.c
@@ -27,7 +30,7 @@ extern int eth_init();
  * rebuild the Ethernet MAC header.
  * @param pack net packet to update
  */
-extern int eth_rebuild_header(net_packet * pack);
+extern int eth_rebuild_header(struct _net_packet * pack);
 
 /**
  * ether_setup - setup Ethernet network device
@@ -56,6 +59,6 @@ extern net_device *alloc_etherdev(int num);
  * @param pack network packet which want send
  * @return on success, returns 0, on error, -1 is returned
  */
-extern int eth_send (net_packet *pack);
+extern int eth_send (struct _net_packet *pack);
 
 #endif /* ETH_H_ */

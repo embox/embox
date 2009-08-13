@@ -9,6 +9,7 @@
 #include "net/net.h"
 #include "net/if_device.h"
 #include "net/eth.h"
+#include "net/icmp.h"
 #include "net/net_pack_manager.h"
 #include "net/ip.h"
 #include "net/if_ether.h"
@@ -163,6 +164,7 @@ static int icmp_get_dest_unreachable(net_packet *pack) {
 }
 
 static int icmp_get_echo_request(net_packet *recieved_pack) {
+	LOG_WARN("icmp get echo request\n");
 	net_packet *pack = net_packet_copy(recieved_pack);
 	if(ifdev_find_by_ip(pack->nh.iph->daddr)) {
 		return 0;
@@ -203,8 +205,9 @@ static int icmp_get_echo_request(net_packet *recieved_pack) {
 
 int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		ICMP_CALLBACK callback) { //type 8
+	LOG_WARN("icnp send echo request\n");
 	net_packet *pack = net_packet_alloc();
-	if (pack == 0) {
+	if ( pack == NULL ) {
 		return -1;
 	}
 	pack->ifdev = ifdev;
@@ -230,6 +233,7 @@ int icmp_init() {
 }
 
 int icmp_received_packet(net_packet *pack) {
+	LOG_WARN("icmp packet received\n");
 	icmphdr *icmph = pack->h.icmph;
 	/**
 	 * 18 is the highest 'known' ICMP type. Anything else is a mystery

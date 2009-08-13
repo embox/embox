@@ -16,11 +16,11 @@
 #include "net/if_ether.h"
 
 int udp_received_packet(net_packet *pack) {
-	LOG_DEBUG("udp packet received\n");
+	LOG_WARN("udp packet received\n");
 	return udpsock_push(pack);
 }
 
-int udp_init(void) {
+int udp_init() {
 	return 0;
 }
 
@@ -55,6 +55,9 @@ int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	LOG_DEBUG("udp_trans\n");
 	net_packet *pack;
         pack = net_packet_alloc();
+        if( pack == NULL) {
+    		return -1;
+        }
 	rebuild_udp_packet(pack, sk, ifdev, buf, len);
 	return ip_send_packet(&sk->inet, pack);
 }

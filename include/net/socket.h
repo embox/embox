@@ -8,7 +8,7 @@
 #ifndef SOCKET_H_
 #define SOCKET_H_
 
-#include "net/sock.h"
+struct _net_packet;
 
 struct sockaddr {
         unsigned short    sa_family;    /* address family, AF_xxx */
@@ -58,6 +58,6 @@ extern int close(int sockfd);
 /**
  * Push packet received from udp_received_packet into socket.
  */
-extern int udpsock_push(net_packet *pack);
+extern int udpsock_push(struct _net_packet *pack);
 
 #endif /* SOCKET_H_ */

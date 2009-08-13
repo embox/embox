@@ -8,12 +8,10 @@
 #ifndef NET_H_
 #define NET_H_
 
-#include "net/net_device.h"
-#include "net/eth.h"
-#include "net/sock.h"
-
 #define NET_INTERFACES_QUANTITY     0x4
 #define IPV4_ADDR_LENGTH            0x4
+
+struct _net_packet;
 
 enum sock_type {
         SOCK_STREAM     = 1,  /* TCP */
@@ -35,6 +33,6 @@ int net_init();
  */
 int net_config();
 
-int netif_rx(net_packet *pack);
+int netif_rx(struct _net_packet *pack);
 
 #endif /* NET_H_ */
