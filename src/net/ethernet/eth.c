@@ -50,7 +50,9 @@ void ether_setup(net_device *dev) {
     dev->type               = ARPHRD_ETHER;
     dev->addr_len           = ETH_ALEN;
     dev->flags              = IFF_BROADCAST|IFF_MULTICAST;
-
+    dev->irq                = 12;
+    dev->base_addr          = 0xCF000000;
+    dev->tx_queue_len       = 1000;
     memset(dev->broadcast, 0xFF, ETH_ALEN);
 }
 
@@ -63,6 +65,7 @@ net_device *alloc_etherdev(int num) {
 
 int eth_send(net_packet *pack) {
     IF_DEVICE *dev;
+    net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
 
     if ((NULL == pack) || (NULL == pack->ifdev))
         return -1;
@@ -71,11 +74,15 @@ int eth_send(net_packet *pack) {
     if (ETH_P_ARP != pack->protocol) {
         if (-1 == dev->net_dev->rebuild_header(pack)) {
             net_packet_free(pack);
+            stats->tx_err += 1;
             return -1;
         }
     }
 //    packet_dump(pack);
     dev->net_dev->hard_start_xmit(pack, pack->netdev);
+    /* update statistic */
+    stats->tx_packets += 1;
+    stats->tx_bytes   += pack->len;
     net_packet_free(pack);
     return 0;
 }
@@ -118,6 +125,10 @@ int netif_rx(net_packet *pack) {
             }
         }
     }
+    /* update device statistic */
+    net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
+    stats->rx_packets += 1;
+    stats->rx_bytes   += pack->len;
     //free packet
     net_packet_free(pack);
     return 0;

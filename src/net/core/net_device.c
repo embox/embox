@@ -9,8 +9,9 @@
 #include "net/net_device.h"
 
 typedef struct _NET_DEV_INFO {
-	net_device   dev;
-	int          is_busy;
+	net_device       dev;
+	net_device_stats stats;
+	int              is_busy;
 } NET_DEV_INFO;
 
 static NET_DEV_INFO net_devices[NET_DEVICES_QUANTITY];
@@ -56,4 +57,13 @@ net_device *netdev_get_by_name(const char *name) {
 		}
 	}
 	return NULL;
+}
+
+net_device_stats *get_eth_stat(net_device *dev) {
+        int i;
+        for(i = 0; i < NET_DEVICES_QUANTITY; i++) {
+                if (dev == &net_devices[i].dev) {
+                        return &net_devices[i].stats;
+                }
+	}
 }

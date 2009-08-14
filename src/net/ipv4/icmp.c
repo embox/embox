@@ -234,6 +234,7 @@ int icmp_init() {
 int icmp_received_packet(net_packet *pack) {
 	LOG_WARN("icmp packet received\n");
 	icmphdr *icmph = pack->h.icmph;
+	net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
 	/**
 	 * 18 is the highest 'known' ICMP type. Anything else is a mystery
 	 * RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently
@@ -241,6 +242,7 @@ int icmp_received_packet(net_packet *pack) {
 	 */
 	if (icmph->type > NR_ICMP_TYPES) {
 		LOG_ERROR("unknown type of ICMP packet\n");
+		stats->rx_err += 1;
 		return -1;
 	}
 	/*
@@ -249,7 +251,7 @@ int icmp_received_packet(net_packet *pack) {
 	 * RFC 1122: 3.2.2.8 An ICMP_TIMESTAMP MAY be silently
 	 *        discarded if to broadcast/multicast.
 	 */
-        if ( 1 == 0 /* (IFF_BROADCAST | IFF_MULTICAST) */) {
+        if ( 0 /* (IFF_BROADCAST | IFF_MULTICAST) */) {
     		if (icmph->type == ICMP_ECHO ||
             	    icmph->type == ICMP_TIMESTAMP) {
     			return -1;

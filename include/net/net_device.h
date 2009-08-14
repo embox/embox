@@ -28,6 +28,9 @@
 
 struct _net_packet;
 
+/**
+ * Network device statistics.
+ */
 typedef struct _net_device_stats {
 	unsigned long rx_packets;  /* total packets received       */
 	unsigned long tx_packets;  /* total packets transmitted    */
@@ -38,6 +41,22 @@ typedef struct _net_device_stats {
         unsigned long rx_dropped;  /* no space in pool             */
         unsigned long tx_dropped;  /* no space available in pool   */
         unsigned long multicast;   /* multicast packets received   */
+        unsigned long collisions;
+
+        /* detailed rx_errors: */
+        unsigned long   rx_length_errors;
+        unsigned long   rx_over_errors;         /* receiver ring buff overflow  */
+        unsigned long   rx_crc_errors;          /* recved pkt with crc error    */
+        unsigned long   rx_frame_errors;        /* recv'd frame alignment error */
+        unsigned long   rx_fifo_errors;         /* recv'r fifo overrun          */
+        unsigned long   rx_missed_errors;       /* receiver missed packet       */
+
+        /* detailed tx_errors */
+        unsigned long   tx_aborted_errors;
+        unsigned long   tx_carrier_errors;
+        unsigned long   tx_fifo_errors;
+        unsigned long   tx_heartbeat_errors;
+        unsigned long   tx_window_errors;
 }net_device_stats;
 
 typedef struct _net_device {
@@ -50,6 +69,8 @@ typedef struct _net_device {
 	unsigned int  flags;                   /**< interface flags (a la BSD)   */
 	unsigned      mtu;                     /**< interface MTU value          */
 	unsigned long tx_queue_len;            /**< Max frames per queue allowed */
+	unsigned long base_addr;               /**< device I/O address           */
+        unsigned int  irq;                     /**< device IRQ number            */
 
 	int (*open)(struct _net_device *dev);
 	int (*stop)(struct _net_device *dev);
@@ -77,5 +98,10 @@ extern net_device *alloc_netdev();
  * @param dev net_device handler
  */
 extern void free_netdev(net_device *dev);
+
+/**
+ * Get RX/TX stats
+ */
+extern net_device_stats *get_eth_stat(net_device *dev);
 
 #endif /* NET_DEVICE_H_ */
