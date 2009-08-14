@@ -32,23 +32,23 @@ int ip_received_packet(net_packet *pack) {
 	}
 
 	if (0/* TODO: check checksumm */) {
-		stats->rx_err += 1;
+		stats->rx_crc_errors += 1;
 		return -1;
 	}
 
 	unsigned int len = ntohs(iph->tot_len);
 	if (pack->len < len || len < (iph->ihl*4)) {
 		LOG_ERROR("invalide IPv4 header length\n");
-		stats->rx_err += 1;
+		stats->rx_length_errors += 1;
 		return -1;
 	}
 //	packet_dump(pack);
 
 	if (ICMP_PROTO_TYPE == iph->proto) {
-                icmp_received_packet(pack);
+                icmp_rcv(pack);
         }
         if (UDP_PROTO_TYPE == iph->proto) {
-                udp_received_packet(pack);
+                udp_rcv(pack);
         }
 	return 0;
 }

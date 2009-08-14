@@ -67,6 +67,8 @@ extern int icmp_init();
 /**
  * receive packet
  */
-extern int icmp_received_packet(struct _net_packet *pack);
+extern int icmp_rcv(struct _net_packet *pack);
+
+extern void icmp_send(struct _net_packet *pack, int type, int code);
 
 #endif /* ICMP_H_ */

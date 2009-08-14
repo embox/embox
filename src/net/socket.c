@@ -23,35 +23,6 @@ void fill_sock(struct udp_sock *sk, int type, int proto) {
 	sk->inet.id = 0;
 }
 
-int udpsock_push(net_packet *pack) {
-	LOG_DEBUG("push packet to udp socket\n");
-	int i;
-	struct udp_sock *usk;
-	udphdr *uh = pack->h.uh;
-	iphdr *iph = pack->nh.iph;
-	for(i=0; i< MAX_SOCK_NUM; i++) {
-		usk = sks[i].sk;
-		if(uh->dest == usk->inet.sport &&
-		   ((0 == memcmp(iph->daddr, usk->inet.saddr, 4)) ||
-		    (0 == inet_addr(usk->inet.saddr)))) {
-			if(sks[i].new_pack == 0) {
-				LOG_DEBUG("packet pushed\n");
-				sks[i].queue = net_packet_copy(pack);
-				sks[i].new_pack = 1;
-				sks[i].sk->inet.dport = uh->source;
-				memcpy(sks[i].sk->inet.daddr, iph->saddr, sizeof(iph->saddr));
-				return 0;
-			} else {
-				LOG_DEBUG("queue is busy\n");
-				return -1;
-			}
-		}
-	}
-	LOG_DEBUG("destination socket not found\n");
-	//TODO: send icmp unsuccess response
-	return -1;
-}
-
 int socket(int domain, int type, int protocol) {
 	LOG_DEBUG("create socket\n");
 	struct udp_sock *sk;

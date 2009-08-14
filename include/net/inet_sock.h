@@ -62,20 +62,20 @@ struct ip_options {
 
 struct inet_sock{
 	/* sk have to be the first member of inet_sock */
-	struct sock sk;
+	struct sock    sk;
 
-	unsigned char daddr [4];
-	unsigned char rcv_saddr[4];
-	unsigned char saddr [4];
+	unsigned char  daddr [4];
+	unsigned char  rcv_saddr[4];
+	unsigned char  saddr [4];
 	struct ip_options  *opt;
 	unsigned short sport;
-	unsigned char uc_ttl;
-	unsigned char num;
+	unsigned char  uc_ttl;
+	unsigned char  num;
 
 	unsigned short dport;
 	unsigned short id;
-	unsigned char tos;
-	unsigned char mc_ttl;
+	unsigned char  tos;
+	unsigned char  mc_ttl;
 };
 
 static inline struct inet_sock *inet_sk(const struct sock *sk) {

@@ -90,7 +90,7 @@ static ICMP_CALLBACK callback_find(void *ifdev, unsigned short ip_id,
 
 typedef int (*PACKET_HANDLER)(net_packet *pack);
 
-static PACKET_HANDLER received_packet_handlers[256];
+static PACKET_HANDLER received_packet_handlers[NR_ICMP_TYPES];
 
 int icmp_abort_echo_request(void *ifdev) {
 	interface_abort(ifdev);
@@ -140,29 +140,38 @@ static int icmp_get_echo_reply(net_packet *pack) {
 	return 0;
 }
 
-static int icmp_get_dest_unreachable(net_packet *pack) {
-	//TODO:
-	LOG_WARN("icmp type=3, code=%d\n", pack->h.icmph->code);
-	/*
-	0 	Destination network unreachable
-	1 	Destination host unreachable
-	2 	Destination protocol unreachable
-	3 	Destination port unreachable
-	4 	Fragmentation required, and DF flag set
-	5 	Source route failed
-	6 	Destination network unknown
-	7 	Destination host unknown
-	8 	Source host isolated
-	9 	Network administratively prohibited
-	10 	Host administratively prohibited
-	11 	Network unreachable for TOS
-	12 	Host unreachable for TOS
-	13 	Communication administratively prohibited
-	*/
+/**
+ * Handle ICMP_DEST_UNREACH.
+ */
+static int icmp_unreach(net_packet *pack) {
+	iphdr *iph;
+	icmphdr *icmph;
+	icmph = pack->h.icmph;
+	iph   = (iphdr*)pack->data;
+	if (iph->ihl < 5)
+		return -1;
+
+	if (icmph->type == ICMP_DEST_UNREACH) {
+		switch (icmph->code & 15) {
+		case ICMP_NET_UNREACH:
+		case ICMP_HOST_UNREACH:
+		case ICMP_PROT_UNREACH:
+		case ICMP_PORT_UNREACH:
+		        break;
+		//TODO:
+		default:
+		        break;
+		}
+		if (icmph->code > NR_ICMP_UNREACH)
+		        return -1;
+	}
 	return 0;
 }
 
-static int icmp_get_echo_request(net_packet *recieved_pack) {
+/**
+ * Handle ICMP_ECHO ("ping") requests.
+ */
+static int icmp_echo(net_packet *recieved_pack) {
 	LOG_WARN("icmp get echo request\n");
 	net_packet *pack = net_packet_copy(recieved_pack);
 	if(ifdev_find_by_ip(pack->nh.iph->daddr)) {
@@ -223,15 +232,24 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 	return eth_send(pack);
 }
 
+void icmp_send(net_packet *pack, int type, int code) {
+	//TODO:
+	switch(type) {
+	case ICMP_ECHO:
+	case ICMP_DEST_UNREACH:
+		break;
+	}
+}
+
 int icmp_init() {
 	received_packet_handlers[ICMP_ECHOREPLY]    = icmp_get_echo_reply;
-	received_packet_handlers[ICMP_DEST_UNREACH] = icmp_get_dest_unreachable;
-	received_packet_handlers[ICMP_ECHO]         = icmp_get_echo_request;
+	received_packet_handlers[ICMP_DEST_UNREACH] = icmp_unreach;
+	received_packet_handlers[ICMP_ECHO]         = icmp_echo;
 	//TODO: other types
 	return 0;
 }
 
-int icmp_received_packet(net_packet *pack) {
+int icmp_rcv(net_packet *pack) {
 	LOG_WARN("icmp packet received\n");
 	icmphdr *icmph = pack->h.icmph;
 	net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
@@ -271,4 +289,3 @@ int icmp_received_packet(net_packet *pack) {
 	}
 	return -1;
 }
-

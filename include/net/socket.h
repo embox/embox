@@ -56,7 +56,7 @@ extern int recv(int sockfd, void *buf, int len, int flags);
 extern int close(int sockfd);
 
 /**
- * Push packet received from udp_received_packet into socket.
+ * Push packet received from udp_rcv into socket.
  */
 extern int udpsock_push(struct _net_packet *pack);
 
