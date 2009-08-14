@@ -120,9 +120,6 @@ register_window_clean:
 	mov %g1, %fp
 	sub %g1, 0x60, %sp
 
-	PSR_BIT_CLEAR_SHORT(PSR_PIL, g1)
-	 WRITE_PAUSE
-
 	PSR_BIT_TOGGLE_SHORT(PSR_ET, g1)
 	 WRITE_PAUSE
 
