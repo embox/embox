@@ -298,6 +298,12 @@
 			"mdef": "MONITOR_TEST_CPU_CONTEXT",
 			"status": 1
 		},
+		"test_recursion": {
+			"desc": "proper stack usage",
+			"inc": 0,
+			"mdef": "MONITOR_TEST_RECURSION",
+			"status": 1
+		},
 		"test_irq_availability": {
 			"desc": "irq availability",
 			"inc": 1,

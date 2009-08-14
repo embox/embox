@@ -10,6 +10,7 @@
 #include "asm/leon_config.h"
 #include "asm/memory_map.h"
 #include "asm/sparc_regs.h"
+#include "../../scripts/autoconf.h"
 
  	.weak hardware_init_hook
  	.weak software_init_hook
@@ -35,7 +36,7 @@
 	.global boot_start, warm_start
 boot_start:
 	/* set PSR initial value */
-	set	(PSR_PS | PSR_S | PSR_PIL | PSR_EF), %g1
+	set	(PSR_PS | PSR_S), %g1
 	wr	%g1, %g0, %psr
 	 WRITE_PAUSE
 

@@ -72,7 +72,7 @@ BOOL uart_is_empty() {
 */
 
 void uart_putc(char ch) {
-	int i;
+	volatile int i;
 	if (NULL == dev_regs)
 		uart_init();
 /*

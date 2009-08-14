@@ -86,7 +86,7 @@ cpu_context_restore:
 	bge load_regwin
 	 save
 
-	LOAD_CC_PRIV(l_base, g_scratch)
+	LOAD_CC_PRIV(g_base, g_scratch)
 	/* We're in the window pointed at the _save_ call time now */
 
 	/* restore arguments */

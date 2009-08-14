@@ -95,7 +95,7 @@ trap_entry_end:
 		 * Just do the same as the corresponding trap handler routine.
 		 * (See windows.S)
 		 */
-	rd %wim, %t_wim;
+
 		/* Calculate new WIM */
 		WIM_SHIFT_LEFT(t_wim, g1, t0)
 
