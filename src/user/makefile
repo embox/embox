@@ -1,5 +1,7 @@
 include $(SCRIPTS_DIR)/autoconf
 
+OBJS-y:=shell_command.o
+
 SUBDIRS-$(MONITOR_USER_ARP)       += arp
 SUBDIRS-$(MONITOR_USER_GOTO)      += goto
 SUBDIRS-y                         += help

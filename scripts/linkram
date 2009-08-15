@@ -89,6 +89,11 @@ SECTIONS
 	    __modules_handlers_end = .;
 
 	    . = ALIGN(0x4);
+	    __shell_commands_start = .;
+	    *(.shell_commands)
+	    __shell_commands_end = .;
+
+	    . = ALIGN(0x4);
 	    _piggy_start = .;
 	    _piggy_end = .;
 	    . = ALIGN(0x4);
