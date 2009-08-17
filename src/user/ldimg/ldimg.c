@@ -73,7 +73,7 @@ int ldimg_shell_handler(int argsc, char **argsv) {
 	int keys_amount;
 	int dev;
 	int i;
-	SHELL_HANDLER_DESCR *shell_handlers;
+	//SHELL_HANDLER_DESCR *shell_handlers;
     RAMFS_CREATE_PARAM param;
 	char *file_name;
 	unsigned int base_addr;

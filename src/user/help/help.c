@@ -35,7 +35,7 @@ static int exec(int argsc, char **argsv) {
 	int keys_amount;
 	int dev;
 	int i;
-	SHELL_HANDLER_DESCR *shell_handlers;
+//	SHELL_HANDLER_DESCR *shell_handlers;
 
 	keys_amount = parse_arg("help", argsc, argsv, help_keys, sizeof(help_keys),
 			keys);

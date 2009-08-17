@@ -10,7 +10,7 @@
 
 #include "common.h"
 
-#include "users.inc"
+//#include "users.inc"
 
 #define MAX_SHELL_KEYS 12
 #include "asm/cpu_context.h"
