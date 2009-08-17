@@ -13,9 +13,9 @@
 
 static const char* welcome = MONITOR_PROMPT;
 
-static SHELL_HANDLER_DESCR shell_handlers[] = {
-#include "shell.inc"
-		};
+//static SHELL_HANDLER_DESCR shell_handlers[] = {
+//#include "shell.inc"
+//		};
 //static SHELL_HANDLER_DESCR shell_handlers_old[] = {
 //#include "shell.inc"
 //		};
@@ -90,7 +90,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 //		}
 //	}
 	SHELL_COMMAND_DESCRIPTOR *c_desc;
-	if(NULL == (c_desc = shell_command_find_descriptor(words[0]))){
+	if(NULL == (c_desc = shell_command_descriptor_find_first(words[0], strlen(words[0])))){
 		// handler not found:
 		printf("%s: Command not found\n", words[0]);
 		return;
@@ -134,7 +134,9 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 //		}
 //	}
 	SHELL_COMMAND_DESCRIPTOR * shell_desc;
-	for(shell_desc = shell_command_iterate_start((char*)line, *offset); NULL != shell_desc; shell_command_iterate_next(shell_desc, (char *)line, *offset)){
+	for(shell_desc = shell_command_descriptor_find_first((char*)line, *offset);
+			NULL != shell_desc;
+			shell_desc = shell_command_descriptor_find_next(shell_desc, (char *)line, *offset)){
 		proposals[(*proposals_len)++] = (char *)shell_desc->name;
 	}
 	*common = 0;

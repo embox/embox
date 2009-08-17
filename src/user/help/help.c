@@ -6,7 +6,6 @@
  */
 #include "conio.h"
 #include "shell.h"
-#include "help.h"
 #include "shell_command.h"
 
 
@@ -17,7 +16,7 @@ static const char *help_msg =
 	;
 #define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG)
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
 static char help_keys[] = {
 #include "help_keys.inc"
@@ -65,8 +64,10 @@ static int exec(int argsc, char **argsv) {
 
 	printf("Available commands: \n");
 	SHELL_COMMAND_DESCRIPTOR * shell_desc;
-	for(shell_desc = shell_command_iterate_start((char *)NULL, 0); NULL != shell_desc; shell_command_iterate_next(shell_desc, (char *)NULL, 0)){
-		printf("%s\t\t - %s\n", shell_desc->name, shell_desc->description);
+	for(shell_desc = shell_command_descriptor_find_first((char *)NULL, 0);
+			NULL != shell_desc;
+			shell_desc = shell_command_descriptor_find_next(shell_desc, (char *)NULL, 0)){
+		printf("%10s\t - %s\n", shell_desc->name, shell_desc->description);
 	}
 	return 0;
 }
