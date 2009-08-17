@@ -7,6 +7,7 @@
 #include "asm/types.h"
 #include "conio.h"
 #include "shell.h"
+#include "shell_command.h"
 #include "ldimg.h"
 
 #include "rootfs.h"
@@ -22,6 +23,15 @@ static void show_help() {
 #include "ldimg_help.inc"
 	);
 }
+#define COMMAND_NAME "load"
+#define COMMAND_DESC_MSG "load image file"
+static const char *help_msg =
+	#include "ldimg_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
 
 #define ENTRY_PTR 0x40000000
 
@@ -67,7 +77,8 @@ int copy_image(file_name)
 }
 
 
-int ldimg_shell_handler(int argsc, char **argsv) {
+//int ldimg_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv){
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	char *key_value;
 	int keys_amount;
