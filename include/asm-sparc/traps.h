@@ -78,15 +78,20 @@ typedef struct _TRAP_CONTEXT {
 	 jmp %t0 + %lo(H); \
 	mov %wim, %t_wim;
 
-/*for mmu*/
-#define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %l7;
-#define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
-
 /* Unexpected trap will halt the processor by forcing it to error state */
 #define BAD_TRAP TRAP(bad_trap_dispatcher)
 
 /* Software trap. Treat as BAD_TRAP */
 #define SOFT_TRAP BAD_TRAP
+
+/*for mmu*/
+#if 0
+#define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %l7;
+#define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
+#else
+#define SRMMU_TFAULT BAD_TRAP
+#define SRMMU_DFAULT BAD_TRAP
+#endif
 
 #define SAVE_ALL \
 	sethi %hi(trap_entry_begin), %t0;            \

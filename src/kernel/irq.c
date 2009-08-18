@@ -30,7 +30,7 @@ void dispatch_trap(BYTE tt, UINT32 *sp) {
 void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
 	REG_WINDOW *rw;
 
-	TRACE("BAD TRAP (%02x)\n", tt);
+	TRACE("BAD TRAP (0x%02x)\n", tt);
 
 	TRACE("PSR: %08x PC: %08x NPC: %08x Y: %08x\n",
 	       r->psr, r->pc, r->npc, r->y);

@@ -158,13 +158,15 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 }
 
 static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback ) {
-	char *script_commands[] = {
+	static char *script_commands[] = {
 #include "start_script.inc"
 	};
-	int len = sizeof(script_commands) / sizeof(char *);
+	char buf[CMDLINE_MAX_LENGTH + 1];
 	int i;
-	for (i = 0; i < len; i++) {
-		exec_callback(callback, console, script_commands[i]);
+	for (i = 0; i < array_len(script_commands); i++) {
+		strncpy(buf, script_commands[i], sizeof(buf));
+		printf("> %s \n", buf);
+		exec_callback(callback, console, buf);
 	}
 }
 
@@ -186,8 +188,8 @@ void shell_start() {
 		printf("Failed to create a console");
 		return;
 	}
-	printf("\nStarting script...\n\n");
-	shell_start_script(console, callback);
+//	printf("\nStarting script...\n\n");
+//	shell_start_script(console, callback);
 
 	printf("\n\n%s", MONITOR_START_MSG);
 	console_start(console, prompt);

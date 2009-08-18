@@ -15,7 +15,7 @@ _hardreset:
   BAD_TRAP;                     ! 04 fp_disabled
   TRAP(window_overflow);        ! 05 window_overflow
   TRAP(window_underflow);       ! 06 window_underflow
-  TRAP(trap_dispatcher);        ! 07 memory_address_not_aligned
+  BAD_TRAP;                     !   TRAP(trap_dispatcher);        ! 07 memory_address_not_aligned
   BAD_TRAP;                     ! 08 fp_exception
   SRMMU_DFAULT                  ! 09 data_access_exception
   BAD_TRAP;                     ! 0A tag_overflow
