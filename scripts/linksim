@@ -71,6 +71,13 @@ SECTIONS
 {
 	.text :
 	{
+		. = ALIGN (0x1000);
+		_trap_table = .;
+		*(.trap_table)
+
+		. = ALIGN (0x800);
+		*(.recovery_section)
+
 		_text_start = .;
 		*(.text)
 		. = ALIGN (0x4);

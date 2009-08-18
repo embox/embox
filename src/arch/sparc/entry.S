@@ -15,10 +15,11 @@
 #include "asm/leon_config.h"
 #include "asm/cpu_context.h"
 
-	.section ".text"
-	.align 16
 
 #include "traps.inc"
+
+	.section ".text"
+	.align 16
 
 trap_dispatcher:
 	! store previous nPC as PC

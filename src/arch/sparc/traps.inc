@@ -2,8 +2,10 @@
 
         .global _trap_table     !
         .global _hardreset      !
+    .section ".trap_table"
+    .align 0x1000
 
-_trap_table:
+
 _hardreset:
 
   TRAPL(boot_start);            ! 00 reset trap
