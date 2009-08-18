@@ -52,6 +52,8 @@ inline static int dummy() {
 #include "asm/sparc_regs.h"
 #include "asm/types.h"
 
+#define PRINTREG32_BIN(reg) int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);
+
 //extern unsigned long old_psr;
 //extern unsigned long new_psr;
 //			printf("\nold_psr_icc: %x\nnew_psr_icc: %x", old_psr & PSR_ICC, new_psr & PSR_ICC);
