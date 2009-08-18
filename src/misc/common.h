@@ -52,7 +52,7 @@ inline static int dummy() {
 #include "asm/sparc_regs.h"
 #include "asm/types.h"
 
-#define PRINTREG32_BIN(reg) int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);
+#define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}
 
 //extern unsigned long old_psr;
 //extern unsigned long new_psr;
