@@ -78,6 +78,7 @@ SECTIONS
 		. = ALIGN (0x800);
 		*(.recovery_section)
 
+		. = ALIGN (0x1000);
 		_text_start = .;
 		*(.text)
 		. = ALIGN (0x4);
