@@ -7,5 +7,5 @@
  * \details
  */
 // TODO
-"load -f piggy -a 0x40000000",
-"exec -a 0x40000000"
+// "load -f piggy -a 0x40000000",
+// "exec -a 0x40000000"

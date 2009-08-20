@@ -116,12 +116,15 @@ int ifdev_set_ipaddr(void *ifdev, const unsigned char *ipaddr) {
     return 0;
 }
 
+
+
 int ifdev_set_macaddr(void *ifdev, const unsigned char *macaddr) {
-    if (NULL == ifdev)
+    if (NULL == ifdev || NULL == macaddr)
         return -1;
-    IF_DEVICE *dev = (IF_DEVICE *) ifdev;
-    memcpy(dev->net_dev->hw_addr, macaddr, dev->net_dev->addr_len);
-    return 0;
+    net_device *dev = ((IF_DEVICE*)ifdev)->net_dev;
+    if (NULL == dev)
+        return -1;
+    return dev->set_mac_address(dev, (void*)macaddr);
 }
 
 unsigned char *ifdev_get_ipaddr(void *handler) {
