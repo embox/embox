@@ -59,7 +59,8 @@ int copy_image(file_name)
     void *ramfile;
     char romfname[0x40];
     char ramfname[0x40];
-    char buff[1];
+    char buff[0x1000];
+
 
     sprintf(romfname, "%s%s", "/ramfs/", file_name);
     if (NULL == (romfile = fopen(romfname, "r"))){
