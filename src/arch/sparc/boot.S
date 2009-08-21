@@ -116,9 +116,8 @@ register_window_clean:
 	sta %g1, [%g0] 2
 
 	/* give us a stack! */
-	set __stack, %g1
-	mov %g1, %fp
-	sub %g1, 0x60, %sp
+	set __stack, %fp
+	sub %fp, 0x60, %sp
 
 	PSR_BIT_TOGGLE_SHORT(PSR_ET, g1)
 	 WRITE_PAUSE
