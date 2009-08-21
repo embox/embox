@@ -14,7 +14,7 @@ char mem_keys[] = {
 #include "mem_keys.inc"
 		};
 
-static inline void print_memory(WORD *addr, long int amount) {
+void mem_print(WORD *addr, long int amount) {
 	long i = 0;
 	addr = (WORD *) ((WORD) addr & 0xFFFFFFFC);
 	while (i < amount) {
@@ -79,7 +79,7 @@ int mem_shell_handler(int argsc, char **argsv) {
 		}
 	}
 
-	print_memory(address, amount);
+	mem_print(address, amount);
 	return 0;
 }
 

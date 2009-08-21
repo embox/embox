@@ -8,5 +8,6 @@
 #define MEM_H_
 
 int mem_shell_handler(int argsc, char **argsv);
+void mem_print(WORD *addr, long int amount);
 
 #endif
