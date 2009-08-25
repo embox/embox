@@ -3,8 +3,7 @@
  */
 
 #include "irq.h"
-#include "asm/leon_config.h"
-//#include "asm/memory_map.h"
+#include "cpu_conf.h"
 #include "amba_pnp.h"
 #include "uart.h"
 #include "common.h"

@@ -2,11 +2,13 @@
  * \file timers.c
  */
 
+#include "asm/types.h"
+#include "cpu_conf.h"
 #include "common.h"
-#include "asm/leon_config.h"
 #include "irq.h"
-#include "amba_pnp.h"
+#include "drivers/amba_pnp/amba_pnp.h"
 #include "timers.h"
+#include "string.h"
 
 typedef struct _TIMERS_STRUCT {
     volatile unsigned int scaler_cnt;  /**< 0x00 */

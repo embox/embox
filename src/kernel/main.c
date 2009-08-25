@@ -5,10 +5,10 @@
  * \author anton
  */
 
-#include "amba_pnp.h"
-#include "shell.h"
+#include "drivers/amba_pnp/amba_pnp.h"
+#include "conio/shell.h"
 #include "common.h"
-#include "express_tests.h"
+#include "tests/express_tests.h"
 
 int main() {
 

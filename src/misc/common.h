@@ -49,7 +49,7 @@ inline static int dummy() {
 #ifdef SIMULATION_TRG
 #define assert(cond)	{}
 #else
-#include "asm/sparc_regs.h"
+
 #include "asm/types.h"
 
 #define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}

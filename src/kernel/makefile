@@ -1,7 +1,6 @@
 #CCFLAGS += -Wa,-a,-ad
 
 OBJS-y:= main.o \
-         mem_traps.o \
          irq.o
 
 
