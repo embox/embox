@@ -110,10 +110,10 @@ register_window_clean:
 	lda	[%g1] 0x19, %g0 /* reset FSR */
 
 	flush
-	 nop;nop;nop
+	 nop; nop; nop; nop; nop;
 	/* turn cache on */
-	set 0x81000F, %g1 // TODO wtf? -- Eldar
-	sta %g1, [%g0] 2
+	set 0x81000f, %g1 // TODO wtf? -- Eldar
+	sta %g1, [%g0] 0x2
 
 	/* give us a stack! */
 	set __stack, %fp
