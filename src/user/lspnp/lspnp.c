@@ -8,7 +8,8 @@
 #include "common.h"
 #include "string.h"
 #include "shell.h"
-#include "amba_pnp.h"
+#include "conio/conio.h"
+#include "drivers/amba_pnp/amba_pnp.h"
 #include "pnp_id.h"
 #include "lspnp.h"
 

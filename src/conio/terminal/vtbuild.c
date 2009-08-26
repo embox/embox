@@ -29,6 +29,7 @@ static void build_param(VTBUILDER *this, int n) {
 
 	static char buf[10];
 	int i = 0;
+
 	do {
 		buf[i++] = n % 10 + '0';
 	} while ((n /= 10) > 0);
@@ -36,6 +37,7 @@ static void build_param(VTBUILDER *this, int n) {
 	do {
 		this->putc(this, buf[--i]);
 	} while (i > 0);
+
 }
 
 void vtbuild(VTBUILDER *this, const VT_TOKEN *token) {

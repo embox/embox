@@ -4,6 +4,7 @@
  * \date 02.02.2009
  * \author Alexey Fomin
  */
+#include "conio/conio.h"
 #include "common.h"
 #include "string.h"
 #include "console.h"

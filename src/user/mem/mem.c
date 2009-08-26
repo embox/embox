@@ -6,7 +6,7 @@
  */
 
 #include "shell.h"
-//#include "conio.h"
+#include "conio/conio.h"
 #include "asm/types.h"
 #include "mem.h"
 

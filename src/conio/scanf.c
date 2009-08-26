@@ -5,8 +5,8 @@
  *      Author: abatyukov
  */
 #include "asm/types.h"
-#include "conio.h"
-#include "stdarg.h"
+#include "conio/conio.h"
+#include "asm/stdarg.h"
 #include "string.h"
 
 const int EOF = -1;
@@ -20,7 +20,7 @@ inline static void ungetchar(int ch) {
 }
 
 static void unscanchar(char **str, int ch) {
-	extern int ungetchar();
+     /*	extern int ungetchar();*/
 	if (str) {
 		//	*str --;
 		//	**str = ch;

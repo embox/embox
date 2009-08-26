@@ -4,7 +4,7 @@
  * \author afomin
  * \details
  */
-
+#include "conio/conio.h"
 #include "common.h"
 #include "string.h"
 #include "memory_tests.h"

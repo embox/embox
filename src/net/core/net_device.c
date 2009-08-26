@@ -4,6 +4,8 @@
  * \date Mar 4, 2009
  * \author anton
  */
+#include "conio/conio.h"
+#include "string.h"
 #include "asm/types.h"
 #include "net/net.h"
 #include "net/net_device.h"

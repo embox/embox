@@ -4,7 +4,7 @@
  * \author sikmir
  * \details Generic socket support routines.
  */
-
+#include "string.h"
 #include "common.h"
 #include "net/sock.h"
 #include "net/udp.h"

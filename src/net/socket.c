@@ -5,6 +5,8 @@
  * \author anton, sikmir
  */
 
+#include "conio/conio.h"
+#include "string.h"
 #include "common.h"
 #include "net/socket.h"
 #include "net/udp.h"

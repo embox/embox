@@ -4,6 +4,8 @@
  * \author Anton Bondarev
  * \details realizing interface if_device struct (interface device)
  */
+#include "conio/conio.h"
+#include "string.h"
 #include "common.h"
 #include "net/net.h"
 #include "net/if_device.h"

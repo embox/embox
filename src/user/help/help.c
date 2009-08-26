@@ -4,7 +4,7 @@
  *  Created on: 02.03.2009
  *      Author: abatyukov
  */
-#include "conio.h"
+#include "conio/conio.h"
 #include "shell.h"
 #include "shell_command.h"
 

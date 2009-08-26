@@ -5,6 +5,7 @@
  * \author sikmir
  */
 
+#include "conio/conio.h"
 #include "common.h"
 #include "arpc.h"
 #include "shell.h"

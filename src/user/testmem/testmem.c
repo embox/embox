@@ -5,7 +5,7 @@
  * \details
  */
 
-#include "conio.h"
+#include "conio/conio.h"
 #include "asm/cache.h"
 #include "common.h"
 #include "shell.h"

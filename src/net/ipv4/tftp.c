@@ -9,6 +9,8 @@
 //	 how they are linked with udp)
 //	 +(error?): DEBUGs
 
+#include "string.h"
+#include "conio/conio.h"
 #include "common.h"
 #include "net/tftp.h"
 #include "net/net.h"

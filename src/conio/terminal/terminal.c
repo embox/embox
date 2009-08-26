@@ -15,6 +15,7 @@
 #include "vtparse.h"
 #include "vtbuild.h"
 
+#include "asm/stdarg.h"
 #include "cmdline.h"
 #include "uart.h"
 #include "conio/conio.h"

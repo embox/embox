@@ -4,6 +4,8 @@
  * \date 17.03.2009
  * \author sunnya
  */
+#include "string.h"
+#include "conio/conio.h"
 #include "common.h"
 #include "net/net.h"
 #include "net/in.h"

@@ -5,6 +5,8 @@
  * \author sikmir
  * \details The User Datagram Protocol (UDP).
  */
+#include "string.h"
+#include "conio/conio.h"
 #include "common.h"
 #include "net/net.h"
 #include "net/eth.h"
