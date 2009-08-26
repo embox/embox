@@ -17,7 +17,7 @@
 
 #include "cmdline.h"
 #include "uart.h"
-#include "conio.h"
+#include "conio/conio.h"
 #include "common.h"
 #include "string.h"
 #include "stdarg.h"

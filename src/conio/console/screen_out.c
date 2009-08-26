@@ -9,6 +9,7 @@
 
 #include "terminal.h"
 #include "common.h"
+#include "conio/conio.h"
 
 static void transmit_string(SCREEN *this, const char *str) {
 	while (*str) {

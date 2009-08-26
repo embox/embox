@@ -7,6 +7,7 @@
 
 #include "screen.h"
 
+#include "conio/conio.h"
 #include "common.h"
 
 #define FIRE_CALLBACK(cb, func, view, args...)	((cb->func != NULL) ? cb->func(cb, view, ##args) : 0)

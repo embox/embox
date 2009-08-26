@@ -4,6 +4,7 @@
  * \date 20.02.2009
  * \author abatyukov
  */
+#include "asm/types.h"
 #include "common.h"
 #include "string.h"
 #include "shell.h"

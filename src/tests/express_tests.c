@@ -6,6 +6,7 @@
  * \author Anton Bondarev
  * \author Eldar Abusalimov
  */
+#include "conio/conio.h"
 #include "common.h"
 #include "express_tests.h"
 

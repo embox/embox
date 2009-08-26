@@ -4,6 +4,8 @@
  * \author Anton Bondarev
  * \details
  */
+#include "conio/conio.h"
+#include "string.h"
 #include "common.h"
 #include "rootfs.h"
 

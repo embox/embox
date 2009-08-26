@@ -7,6 +7,7 @@
 #include "asm/types.h"
 #include "drivers/amba_pnp/amba_pnp.h"
 #include "conio/shell.h"
+#include "conio/conio.h"
 #include "common.h"
 #include "tests/express_tests.h"
 
