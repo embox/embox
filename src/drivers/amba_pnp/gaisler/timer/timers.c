@@ -4,6 +4,7 @@
 
 #include "asm/types.h"
 #include "cpu_conf.h"
+#include "conio/conio.h"
 #include "common.h"
 #include "irq.h"
 #include "drivers/amba_pnp/amba_pnp.h"

@@ -2,9 +2,11 @@
  * \file uart.c
  */
 
+#include "asm/types.h"
 #include "irq.h"
 #include "cpu_conf.h"
-#include "amba_pnp.h"
+#include "conio/conio.h"
+#include "drivers/amba_pnp/amba_pnp.h"
 #include "uart.h"
 #include "common.h"
 

@@ -5,9 +5,11 @@
  * \author Anton Bondarev
  * \brief Realize hal layer interupt ctrl for leon 3 processor
  */
+#include "asm/types.h"
 #include "common.h"
+#include "conio/conio.h"
+#include "drivers/amba_pnp/amba_pnp.h"
 #include "irq_ctrl.h"
-#include "amba_pnp.h"
 
 static IRQ_REGS * dev_regs = NULL;
 
