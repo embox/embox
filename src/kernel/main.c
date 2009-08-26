@@ -4,7 +4,7 @@
  * \date Nov 27, 2008
  * \author anton
  */
-
+#include "asm/types.h"
 #include "drivers/amba_pnp/amba_pnp.h"
 #include "conio/shell.h"
 #include "common.h"
