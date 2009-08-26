@@ -26,7 +26,7 @@ void dispatch_trap(BYTE tt, UINT32 *sp) {
 		user_trap_handlers[tt]();
 	}
 }
-/*
+
 void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
 
 	REG_WINDOW *rw;
@@ -54,7 +54,7 @@ void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
 	while (1)
 		;
 }
-*/
+
 void irq_init_handlers() {
 	int i;
 
