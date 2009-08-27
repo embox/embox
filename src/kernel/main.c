@@ -5,7 +5,7 @@
  * \author anton
  */
 #include "asm/types.h"
-#include "drivers/amba_pnp/amba_pnp.h"
+#include "asm/cpu_context.h"
 #include "conio/shell.h"
 #include "conio/conio.h"
 #include "common.h"
