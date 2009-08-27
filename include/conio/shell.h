@@ -8,12 +8,12 @@
 #ifndef SHELL_H_
 #define SHELL_H_
 
-#include "common.h"
+//#include "common.h"
 
 //#include "users.inc"
 
 #define MAX_SHELL_KEYS 12
-#include "asm/cpu_context.h"
+//#include "asm/cpu_context.h"
 
 CPU_CONTEXT shell_proc_state;
 
