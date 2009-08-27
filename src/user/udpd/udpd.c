@@ -4,7 +4,9 @@
  * \date 08.05.09
  * \author sikmir
  */
-
+#include "asm/types.h"
+#include "conio/conio.h"
+#include "string.h"
 #include "misc.h"
 #include "udpd.h"
 #include "net/net.h"
