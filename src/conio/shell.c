@@ -9,7 +9,7 @@
 #include "string.h"
 #include "console.h"
 #include "shell.h"
-#include "sys.h"
+#include "kernel/sys.h"
 #include "shell_command.h"
 
 static const char* welcome = MONITOR_PROMPT;

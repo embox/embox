@@ -6,7 +6,7 @@
  * \author Alexey Fomin
  */
 
-#include "sys.h"
+#include "kernel/sys.h"
 
 void context_save(CPU_CONTEXT * pcontext) {
 	__asm__ __volatile__(
