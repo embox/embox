@@ -9,6 +9,17 @@
 #include "shell.h"
 #include "asm/mmu.h"
 #include "mmu_probe.h"
+#include "shell_command.h"
+
+#define COMMAND_NAME "mmu_probe"
+#define COMMAND_DESC_MSG "testing mmu module"
+static const char *help_msg =
+	#include "mmu_probe_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
 
 /**
  * show MMU register
@@ -210,7 +221,6 @@ static BOOL mmu_probe() {
 
 
 
-#define COMMAND_NAME "mmu_probe"
 
 static char available_keys[] = {
 #include "mmu_probe_key.inc"
@@ -227,7 +237,7 @@ static void show_help() {
  * return 0 if successed
  * return -1 another way
  */
-BOOL mmu_probe_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
     SHELL_KEY keys[MAX_SHELL_KEYS];
     char *key_value;
     int keys_amount;

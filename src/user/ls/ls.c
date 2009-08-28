@@ -4,8 +4,18 @@
 #include "shell.h"
 #include "rootfs.h"
 #include "ls.h"
+#include "shell_command.h"
 
 #define COMMAND_NAME "ls"
+#define COMMAND_DESC_MSG "list directory contents"
+static const char *help_msg =
+	#include "ls_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
+
 
 static char available_keys[] = {
 #include "ls_keys.inc"
@@ -17,7 +27,7 @@ static void show_help() {
     );
 }
 
-int ls_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
     SHELL_KEY keys[MAX_SHELL_KEYS];
     char *key_value;
     int keys_amount;

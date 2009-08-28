@@ -11,6 +11,17 @@
 #include "shell.h"
 #include "testmem.h"
 #include "memory_tests.h"
+#include "shell_command.h"
+
+#define COMMAND_NAME "testmem"
+#define COMMAND_DESC_MSG "set of memory tests"
+static const char *help_msg =
+	#include "testmem_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
 
 static char testmem_keys[] = {
 #include "testmem_keys.inc"
@@ -24,7 +35,7 @@ static void testmem_print_help(void) {
 
 typedef void TEST_MEM_FUNC(WORD *addr, long int amount);
 
-int testmem_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	int i;
 	char *key_value;

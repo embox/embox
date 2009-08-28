@@ -14,6 +14,7 @@
 #include "ramfs.h"
 #include "file.h"
 
+
 static char ldimg_keys[] = {
 #include "ldimg_keys.inc"
 		};

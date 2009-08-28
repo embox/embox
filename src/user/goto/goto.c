@@ -9,8 +9,17 @@
 #include "conio/conio.h"
 #include "shell.h"
 #include "shell_command.h"
-
 #include "goto.h"
+
+#define COMMAND_NAME "exec"
+#define COMMAND_DESC_MSG "execute image file"
+static const char *help_msg =
+	#include "goto_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
 
 static char goto_keys[] = {
 #include "goto_keys.inc"
@@ -21,14 +30,6 @@ static void show_help() {
 #include "goto_help.inc"
 	);
 }
-#define COMMAND_NAME "exec"
-#define COMMAND_DESC_MSG "execute image file"
-static const char *help_msg =
-	#include "goto_help.inc"
-	;
-#define HELP_MSG help_msg
-
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
 typedef void (*IMAGE_ENTRY)();
 

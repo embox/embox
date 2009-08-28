@@ -9,6 +9,17 @@
 #include "conio/conio.h"
 #include "asm/types.h"
 #include "mem.h"
+#include "shell_command.h"
+
+#define COMMAND_NAME "wmem"
+#define COMMAND_DESC_MSG "writes to memory"
+static const char *help_msg =
+	#include "wmem_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
 
 char wmem_keys[] = {
 #include "wmem_keys.inc"
@@ -19,7 +30,7 @@ void wmem_print_help(void) {
 #include "wmem_help.inc"
 			);
 }
-int wmem_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	int i;
 	char *key_value;

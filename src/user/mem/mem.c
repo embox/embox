@@ -9,10 +9,27 @@
 #include "conio/conio.h"
 #include "asm/types.h"
 #include "mem.h"
+#include "shell_command.h"
+
+#define COMMAND_NAME "mem"
+#define COMMAND_DESC_MSG "read from memory"
+static const char *help_msg =
+	#include "mem_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
 
 char mem_keys[] = {
 #include "mem_keys.inc"
 		};
+
+static inline void mem_print_help(void) {
+	printf(
+#include "mem_help.inc"
+	);
+}
 
 void mem_print(WORD *addr, long int amount) {
 	long i = 0;
@@ -29,15 +46,10 @@ void mem_print(WORD *addr, long int amount) {
 	}
 
 }
-static inline void mem_print_help(void) {
-	printf(
-#include "mem_help.inc"
-	);
-}
 
 typedef void TEST_MEM_FUNC(WORD *addr, long int amount);
 
-int mem_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	char *key_value;
 	WORD *address = (WORD *) 0x70000000L;

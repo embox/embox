@@ -13,6 +13,17 @@
 #include "net/in.h"
 #include "shell.h"
 #include "net/socket.h"
+#include "shell_command.h"
+
+#define COMMAND_NAME "udpd"
+#define COMMAND_DESC_MSG "test udp socket"
+static const char *help_msg =
+	#include "udpd_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
 
 #define COMMAND_NAME "udpd"
 static char available_keys[] = {
@@ -25,7 +36,7 @@ static void show_help() {
 	);
 }
 
-int udpd_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	char *key_value;
 	int keys_amount;

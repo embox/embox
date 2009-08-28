@@ -12,8 +12,17 @@
 #include "drivers/amba_pnp/amba_pnp.h"
 #include "pnp_id.h"
 #include "lspnp.h"
+#include "shell_command.h"
 
 #define COMMAND_NAME "lspnp"
+#define COMMAND_DESC_MSG "show list of plug and play devices"
+static const char *help_msg =
+	#include "lspnp_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
 
 static char available_keys[] = {
 	#include "lspnp_keys.inc"
@@ -377,7 +386,7 @@ static FUNC_SHOW_BUS set_bus_type(const char *key_value) {
 	return NULL;
 }
 
-int lspnp_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	char *key_value;
 	int keys_amount;

@@ -12,8 +12,18 @@
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"
+#include "shell_command.h"
 
 #define COMMAND_NAME "ping"
+#define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
+static const char *help_msg =
+	#include "ping_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
+
 
 static char available_keys[] = {
 #include "ping_keys.inc"
@@ -72,7 +82,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl) 
  * @param argsc - quantity of params
  * @param argsv - list of arguments
  */
-int ping_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	char *key_value;
 	int keys_amount;

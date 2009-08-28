@@ -14,7 +14,19 @@
 #include "net/if_device.h"
 #include "net/arp.h"
 
+#include "shell_command.h"
+
+
 #define COMMAND_NAME "arp"
+#define COMMAND_DESC_MSG "manipulate the system ARP cache"
+static const char *help_msg =
+	#include "arp_help.inc"
+	;
+#define HELP_MSG help_msg
+
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+
+
 static char available_keys[] = {
 #include "arp_keys.inc"
 };
@@ -25,7 +37,7 @@ static void show_help() {
 	);
 }
 
-int arp_shell_handler(int argsc, char **argsv) {
+static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	char *key_value;
 	int keys_amount;
