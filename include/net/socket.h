@@ -50,6 +50,12 @@ extern int send(int sockfd, const void *buf, int len, int flags);
 extern int recv(int sockfd, void *buf, int len, int flags);
 
 /**
+ * check message in a socket
+ * @return 1 if there isn't a message in socket, 0 otherwise or -1 if an error occurred.
+ */
+extern int empty_socket(int sockfd);
+
+/**
  * close a socket descriptor
  * @return 0 on success. On error, -1.
  */

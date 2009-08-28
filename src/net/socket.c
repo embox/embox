@@ -87,3 +87,12 @@ int recv(int sockfd, void *buf, int len, int flags) {
 	}
 	return -1;
 }
+
+int empty_socket(int sockfd) {
+	LOG_DEBUG("recv\n");
+        if(sks[sockfd].is_busy == 0) {
+                return -1;
+        }
+	return (1 - sks[sockfd].new_pack);
+}
+

@@ -11,6 +11,8 @@
 #define NET_INTERFACES_QUANTITY     0x4
 #define IPV4_ADDR_LENGTH            0x4
 
+typedef unsigned char enet_addr_t[6];
+
 struct _net_packet;
 
 enum sock_type {

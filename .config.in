@@ -260,6 +260,12 @@
 			"mdef": "MONITOR_NET_DHCP",
 			"status": 1
 		},
+		"bootp": {
+			"desc": "bootp proto",
+			"inc": 1,
+			"mdef": "MONITOR_NET_BOOTP",
+			"status": 1
+		},
 		"icmp": {
 			"desc": "icmp proto",
 			"inc": 1,

@@ -21,6 +21,8 @@
 #define IP_MF           0x2000          /* Flag: "More Fragments"   */
 #define IP_OFFSET       0x1FFF          /* "Fragment Offset" part   */
 
+typedef unsigned char ip_addr_t[4];
+
 typedef struct _iphdr {
 #if defined(__LITTLE_ENDIAN)
         __extension__ unsigned char ihl:4,     /* ihl = 5 */
@@ -52,6 +54,7 @@ typedef struct _iphdr {
  */
 
 struct inet_sock;
+struct _net_packet;
 
 /**
  * Handle IP packet
