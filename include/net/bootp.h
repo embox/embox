@@ -183,9 +183,9 @@ ip_addr_t* const get_ip_mask ();
 ip_addr_t* const get_ip_gate ();
 
 
-#define HOSTNAME "monitor"
-#define DHCP_SUPPORT 1
-#define DNS_SUPPORT 1
+//#define HOSTNAME "monitor"
+//#define DHCP_SUPPORT 1
+//#define DNS_SUPPORT 1
 
 #endif // __BOOTP_H__
 

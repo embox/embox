@@ -33,7 +33,6 @@
 /* Network */
 #define MONITOR_NETWORK 1
 #define MONITOR_NET_ARP 1
-#define MONITOR_NET_DHCP 1
 #define MONITOR_NET_BOOTP 1
 #define MONITOR_NET_ETH 1
 #define MONITOR_NET_ICMP 1

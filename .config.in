@@ -254,14 +254,8 @@
 	},
 	"Misc": {},
 	"Net": {
-		"dhcp": {
-			"desc": "dhcp proto",
-			"inc": 1,
-			"mdef": "MONITOR_NET_DHCP",
-			"status": 1
-		},
 		"bootp": {
-			"desc": "bootp proto",
+			"desc": "bootp/dhcp proto",
 			"inc": 1,
 			"mdef": "MONITOR_NET_BOOTP",
 			"status": 1
