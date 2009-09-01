@@ -151,11 +151,6 @@ struct bootp_header_t {
 #define DHCP_MESS_TYPE_NAK       ((unsigned char) 6)
 #define DHCP_MESS_TYPE_RELEASE   ((unsigned char) 7)
 
-//typedef struct {
-//	ip_addr_t ip;
-//	enet_addr_t enet;
-//} ip_route_t;
-
 #define RETRY_COUNT 8
 
 #define SHOULD_BE_RANDOM  0x12345555
@@ -171,6 +166,26 @@ int bootp_discover (void* ifdev);
  * Return current bootp info
  */
 const struct bootp_header_t const* get_bootp_info ();
+
+/**
+ * Return ip address obtained from bootp/dhcp
+ */
+ip_addr_t* const get_ip_addr ();
+
+/**
+ * Return network mask obtained from bootp/dhcp
+ */
+ip_addr_t* const get_ip_mask ();
+
+/**
+ * Return gateway obtained from bootp/dhcp
+ */
+ip_addr_t* const get_ip_gate ();
+
+
+#define HOSTNAME "monitor"
+#define DHCP_SUPPORT 1
+#define DNS_SUPPORT 1
 
 #endif // __BOOTP_H__
 
