@@ -22,9 +22,10 @@ struct bootp_header_t {
     unsigned char    chaddr[16];             /* client hardware address */
     char             sname[64];              /* server host name */
     char             file[128];              /* boot file name */
-    unsigned char    vend[64];               /* vendor-specific area */
+    unsigned char    options[64];
 };
 
+#define BOOTP_HEADER_SIZE sizeof(struct bootp_header_t)
 
 // UDP port numbers, server and client.
 #define PORT_BOOTP_SERVER           67
@@ -65,11 +66,8 @@ struct bootp_header_t {
 #define HTYPE_SERIAL_LINE     20
 #define HTYPE_ATM3            21
 
-
-
 // Vendor magic cookie's (v_magic)
-#define VM_CMU          "CMU"
-#define VM_RFC1048      { 99, 130, 83, 99 }
+#define VM_RFC1048      0x63825363
 
 /*
  * Tag values used to specify what information is being supplied in
@@ -153,40 +151,14 @@ struct bootp_header_t {
 #define DHCP_MESS_TYPE_NAK       ((unsigned char) 6)
 #define DHCP_MESS_TYPE_RELEASE   ((unsigned char) 7)
 
-/*
- * "vendor" data permitted for CMU bootp clients.
- */
-typedef struct {
-        char            v_magic[4];     /* magic number */
-        unsigned int    v_flags;        /* flags/opcodes, etc. */
-        ip_addr_t       v_smask;        /* Subnet mask */
-        ip_addr_t       v_dgate;        /* Default gateway */
-        ip_addr_t       v_dns1;
-        ip_addr_t       v_dns2; /* Domain name servers */
-        ip_addr_t       v_ins1;
-        ip_addr_t       v_ins2; /* IEN-116 name servers */
-        ip_addr_t       v_ts1;
-        ip_addr_t       v_ts2;   /* Time servers */
-        int             v_unused[6];    /* currently unused */
-} cmu_vend_t;
-
-/* v_flags values */
-#define VF_SMASK        1       /* Subnet mask field contains valid data */
-
-typedef struct {
-	ip_addr_t ip;
-	enet_addr_t enet;
-} ip_route_t;
+//typedef struct {
+//	ip_addr_t ip;
+//	enet_addr_t enet;
+//} ip_route_t;
 
 #define RETRY_COUNT 8
 
 #define SHOULD_BE_RANDOM  0x12345555
-
-/*
- * Request an IP address via BOOTP protocol on given interface.
- * Return 0 if success, 1 otherwise.
- */
-//int bootp_request (const char* inetrface, struct bootp_header_t* recv);
 
 /**
  * Discovet an IP address with BOOTP protocol.
@@ -194,6 +166,11 @@ typedef struct {
  * @return 1 if bootp success, 0 if there isn't bootp servers near.
  */
 int bootp_discover (void* ifdev);
+
+/**
+ * Return current bootp info
+ */
+const struct bootp_header_t const* get_bootp_info ();
 
 #endif // __BOOTP_H__
 

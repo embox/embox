@@ -40,18 +40,21 @@ typedef enum {
 static dhcp_state_t dhcp_state = DHCP_NONE;
 #endif*/
 
-static struct bootp_header_t* bootp_info;
+struct bootp_header_t bootp_info;
+
+const struct bootp_header_t const* get_bootp_info ()
+{
+	return &bootp_info;
+}
 
 static ip_addr_t local_ip_addr;
 
 int bootp_discover (void* ifdev)
 {
-	/*udphdr*/
         int             udp_skt;
 	int             srv_skt;
 	struct bootp_header_t  b;
-	ip_route_t      r;
-//	int             retry;
+//	ip_route_t      r;
         unsigned long   start;
 	unsigned char   *p;
 	ip_addr_t       saved_ip_addr;
@@ -80,13 +83,13 @@ int bootp_discover (void* ifdev)
 #endif
 #endif*/
 
-//	bootp_info = info;
 	// save current local address
 	memcpy (saved_ip_addr, local_ip_addr, sizeof (ip_addr_t));
 
-	memset (r.ip, sizeof (ip_addr_t), 0xff);
-	memset (r.enet, sizeof (enet_addr_t), 0xff);
+//	memset (r.ip, sizeof (ip_addr_t), 0xff);
+//	memset (r.enet, sizeof (enet_addr_t), 0xff);
 
+	// create socket to DHCP/BOOTP server
 	memset(&addr, 0, sizeof(struct sockaddr_in));
 	addr.sin_family  = AF_INET;
 	addr.sin_port    = htons (PORT_BOOTP_CLIENT);
@@ -106,16 +109,17 @@ int bootp_discover (void* ifdev)
 
 	for (;retry > 0; retry--)
 	{
+		// fill bootp packet
 		memset (&b, 0, sizeof (b));
 		b.op = BOOTPREQUEST;
 		b.htype = HTYPE_ETHERNET;
 		b.hlen = 6;
 		b.xid = xid++;
+		*(UINT32*)b.options = VM_RFC1048;
 		memcpy (b.chaddr, enet, ETH_ALEN);
 		memset (local_ip_addr, 0, sizeof (ip_addr_t));
 
-//		srv_skt = socket
-//		send 'b' to 'srv_skt'
+		// create 'raw' socket
 		net_packet* pack = net_packet_alloc ();
 		if (pack == 0)
 		{
@@ -125,27 +129,32 @@ int bootp_discover (void* ifdev)
 		pack->ifdev = ifdev;
 		pack->netdev = dev;
 		pack->protocol = ETH_P_IP;
-		pack->len = sizeof(struct bootp_header_t) + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE;
+		pack->len = BOOTP_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE;
+		pack->mac.ethh = (struct _ethhdr*)pack->data;
 		memset(pack->mac.ethh->dst_addr, 0xff, sizeof(pack->mac.ethh->dst_addr));
 	        memcpy(pack->mac.ethh->src_addr, enet, sizeof(pack->mac.ethh->src_addr));
+		pack->mac.ethh->type = ETH_P_IP;
 
-		udphdr uhdr;
-		uhdr.source = htons(PORT_BOOTP_CLIENT);
-		uhdr.dest = htons (PORT_BOOTP_SERVER);
-		uhdr.len = sizeof(struct bootp_header_t);
-		uhdr.check = calc_checksumm (&uhdr, UDP_HEADER_SIZE);
-		pack->h.uh = &uhdr;
+                pack->nh.iph = (struct _iphdr*)(pack->data + ETH_HEADER_SIZE);
+                ip_addr_t addr;
+                memset (addr, 0xff, sizeof (ip_addr_t));
+                rebuild_ip_header(pack, 100, AF_INET, 0, sizeof(struct bootp_header_t) + UDP_HEADER_SIZE, enet, addr);
 
-		iphdr ihdr;
-		pack->nh.iph = &ihdr;
-		ip_addr_t addr;
-		memset (addr, 0xff, sizeof (ip_addr_t));
-		rebuild_ip_header(pack, 100, AF_INET, 0, sizeof(struct bootp_header_t) + UDP_HEADER_SIZE, enet, addr);
+		pack->h.uh = (struct _udphdr*)(pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE);
+		pack->h.uh->source = htons(PORT_BOOTP_CLIENT);
+		pack->h.uh->dest = htons (PORT_BOOTP_SERVER);
+		pack->h.uh->len = sizeof(struct bootp_header_t);
+		pack->h.uh->check = calc_checksumm (pack->h.uh, UDP_HEADER_SIZE);
+
+		memcpy (pack->data + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE, &b, BOOTP_HEADER_SIZE);
 
 		eth_send (pack);
 		net_packet_free (pack);
-//
+
+		// wait a bit
 		sleep (100);
+
+		// try to read reply
 		if (!empty_socket (udp_skt))
 		{
 			if (recv (udp_skt, (void*)&b, sizeof(struct bootp_header_t), 0) != -1)
