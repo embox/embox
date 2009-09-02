@@ -9,7 +9,7 @@
 #ifndef AMBA_PNP_H_
 #define AMBA_PNP_H_
 
-#include "pnp_id.h"
+#include "drivers/amba_pnp/pnp_id.h"
 //#include "common.h"
 
 #define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, TRUE, TRUE)){\
@@ -101,7 +101,7 @@ static AMBA_DEV *apb_devices[APB_QUANTITY];
  * @param is_master master/slave
  * @return slot number or -1 if error
  */
-int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL is_ahb, BOOL is_master);
+extern int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL is_ahb, BOOL is_master);
 
 /**
  * Fill amba device.
@@ -112,11 +112,11 @@ int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL i
  * @return TRUE (1) if successed
  * @return FALSE (0) slot is empty
  */
-int fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
+extern int fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
 
 /**
  * Free amba device.
  */
-int free_amba_dev(AMBA_DEV *dev);
+extern int free_amba_dev(AMBA_DEV *dev);
 
 #endif /* AMBA_PNP_H_ */

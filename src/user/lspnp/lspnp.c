@@ -10,7 +10,7 @@
 #include "shell.h"
 #include "conio/conio.h"
 #include "drivers/amba_pnp/amba_pnp.h"
-#include "pnp_id.h"
+#include "drivers/amba_pnp/pnp_id.h"
 #include "lspnp.h"
 #include "shell_command.h"
 

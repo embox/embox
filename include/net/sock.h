@@ -32,6 +32,9 @@ struct sock_common {
 
 /**
  * struct sock - network layer representation of sockets
+ * @param sk_type socket type
+ * @param sk_rcvbuf size of receive buffer in bytes
+ * @param sk_sndbuf size of send buffer in bytes
  */
 struct sock {
 	struct sock_common      __sk_common;
@@ -41,6 +44,9 @@ struct sock {
 	int			sk_sndbuf;
 	unsigned long 		sk_flags;
 	//TODO: implement queue
+	//struct sk_buff_head     sk_receive_queue;
+	//struct sk_buff_head     sk_write_queue;
+
 	struct socket           *sk_socket;
 	struct _net_device	*netdev;
 

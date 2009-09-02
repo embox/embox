@@ -53,7 +53,7 @@ static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	char *key_value;
 	WORD *address = (WORD *) 0x70000000L;
-	long int amount = 1000L;
+	long int amount = 100L;
 	int keys_amount = parse_arg("mem", argsc, argsv, mem_keys,
 			sizeof(mem_keys), keys);
 
