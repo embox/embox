@@ -12,6 +12,7 @@
 
 #define MAX_QUANTITY_SYS_TIMERS   0x20
 #define DEFAULT_SLEEP_COUNTER     3470
+#define MAX_SAVE_CONTEXT          2
 
 typedef struct _TIMERS_STRUCT
 {
@@ -126,7 +127,6 @@ get_sys_time ()
 }
 
 //TODO now save only one context
-#define MAX_SAVE_CONTEXT 2
 static SYS_TMR save_timers_buffer[MAX_QUANTITY_SYS_TIMERS][MAX_SAVE_CONTEXT];
 static int save_context_number = 0;
 
@@ -150,5 +150,4 @@ timers_off ()
 {
     dev_regs->timer_ctrl1 = 0x0;
     dev_regs->timer_ctrl2 = 0x0;	//disable
-//      show_module_info(&amba_dev);
 }
