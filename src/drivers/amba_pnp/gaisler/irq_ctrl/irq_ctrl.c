@@ -9,7 +9,17 @@
 #include "common.h"
 #include "conio/conio.h"
 #include "drivers/amba_pnp/amba_pnp.h"
-#include "irq_ctrl.h"
+#include "kernel/irq_ctrl.h"
+
+typedef struct _IRQ_REGS {
+        volatile unsigned int level;     /* 0x00 */
+        volatile unsigned int pend;      /* 0x04 */
+        volatile unsigned int force;     /* 0x08 */
+        volatile unsigned int clear;     /* 0x0C */
+        volatile unsigned int mpstatus;  /* 0x10 */
+        volatile unsigned int dummy[11]; /* 0x14 - 0x3C */
+        volatile unsigned int mask;      /* 0x40 */
+} IRQ_REGS;
 
 static IRQ_REGS * dev_regs = NULL;
 
@@ -17,13 +27,6 @@ static IRQ_REGS * dev_regs = NULL;
 #undef module_init
 #define module_init() irq_ctrl_init()
 
-/**
- * init hardware irq ctrl
- * Caprute APB dev
- * init pointer to struct regs
- * @return 0 if success
- * @return -1 another way
- */
 int irq_ctrl_init() {
 #ifndef SIMULATION_TRG
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_INTERRUPT_UNIT);
@@ -53,7 +56,7 @@ int irq_ctrl_disable_irq(int irq_num) {
 	return 0;
 }
 
-int irq_ctrl_disable_all(){
+int irq_ctrl_disable_all() {
     CHECK_INIT_MODULE();
     dev_regs->mask = 0;
     return 0;

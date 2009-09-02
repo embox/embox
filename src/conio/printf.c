@@ -30,7 +30,7 @@
 #include "asm/types.h"
 #include "conio/conio.h"
 #include "asm/stdarg.h"
-#include "uart.h"
+#include "kernel/uart.h"
 
 int puts (const char *S)
 {

@@ -11,7 +11,7 @@
 
 #include "console.h"
 #include "cmdline.h"
-#include "uart.h"
+#include "kernel/uart.h"
 #include "conio/conio.h"
 #include "common.h"
 #include "string.h"

@@ -10,7 +10,7 @@
  */
 
 #include "common.h"
-#include "irq_ctrl.h"
+#include "kernel/irq_ctrl.h"
 #include "asm/traps.h"
 #include "irq.h"
 
