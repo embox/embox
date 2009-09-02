@@ -8,7 +8,7 @@
 #include "conio/conio.h"
 #include "drivers/amba_pnp/amba_pnp.h"
 #include "kernel/uart.h"
-#include "uart_struct.h"
+//#include "uart_struct.h"
 #include "common.h"
 
 #define UART_RX_READY                   0x00000001
@@ -19,6 +19,13 @@
 #define UART_TX_ENABLE                  0x00000002	/*< transmitter enable */
 #define UART_INT_RX_ENABLED             0x00000004
 #define UART_INT_TX_ENABLED             0x00000004
+
+typedef struct _UART_STRUCT {
+        volatile UINT32 data; //0x70
+        volatile UINT32 status;
+        volatile UINT32 ctrl;
+        volatile UINT32 scaler;
+} UART_STRUCT;
 
 static volatile UART_STRUCT *dev_regs = NULL;
 
