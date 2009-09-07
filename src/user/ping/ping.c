@@ -131,7 +131,7 @@ static int exec(int argsc, char **argsv) {
 
 	//get ping cnt
 	if (!get_key('c', keys, keys_amount, &key_value)) {
-		cnt = 10;
+		cnt = 4;
 	} else if (1 != sscanf(key_value, "%d", &cnt)) {
 		LOG_ERROR("enter validly cnt '-c'\n");
 		show_help();
