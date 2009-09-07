@@ -132,6 +132,7 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
  * implementation handlers for received msgs
  */
 static int icmp_get_echo_reply(net_packet *pack) {
+	LOG_DEBUG("icmp get echo reply\n");
 	ICMP_CALLBACK cb;
 	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
 			ICMP_ECHOREPLY)))
@@ -174,7 +175,7 @@ static int icmp_unreach(net_packet *pack) {
  * Handle ICMP_ECHO ("ping") requests.
  */
 static int icmp_echo(net_packet *recieved_pack) {
-	LOG_WARN("icmp get echo request\n");
+	LOG_DEBUG("icmp get echo request\n");
 	net_packet *pack = net_packet_copy(recieved_pack);
 	if(ifdev_find_by_ip(pack->nh.iph->daddr)) {
 		return 0;
@@ -206,6 +207,7 @@ static int icmp_echo(net_packet *recieved_pack) {
 	pack->nh.iph->check    = 0;
 	pack->nh.iph->ttl      = 64;
 	pack->nh.iph->frag_off = 0;
+	pack->nh.iph->check = 0;
 	pack->nh.iph->check = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
 
 	pack->len -= ETH_HEADER_SIZE;
@@ -215,7 +217,7 @@ static int icmp_echo(net_packet *recieved_pack) {
 
 int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		ICMP_CALLBACK callback) { //type 8
-	LOG_WARN("icnp send echo request\n");
+	LOG_DEBUG("icmp send echo request\n");
 	net_packet *pack = net_packet_alloc();
 	if ( pack == NULL ) {
 		return -1;
@@ -252,7 +254,7 @@ int icmp_init() {
 }
 
 int icmp_rcv(net_packet *pack) {
-	LOG_WARN("icmp packet received\n");
+	LOG_DEBUG("icmp packet received\n");
 	icmphdr *icmph = pack->h.icmph;
 	net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
 	/**

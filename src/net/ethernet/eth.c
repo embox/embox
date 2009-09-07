@@ -107,11 +107,9 @@ int netif_rx(net_packet *pack) {
         return -1;
     }
     if (ETH_P_ARP == pack->protocol) {
-		 pack->nh.raw = pack->data + ETH_HEADER_SIZE;
         arp_received_packet(pack);
     }
     if (ETH_P_IP == pack->protocol) {
-		 pack->nh.raw = pack->data + ETH_HEADER_SIZE;
         pack->h.raw  = pack->nh.raw + IP_HEADER_SIZE;
         ip_received_packet(pack);
     }

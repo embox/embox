@@ -68,6 +68,7 @@ int rebuild_ip_header(net_packet *pack, unsigned char ttl, unsigned char proto,
         hdr->tos      = 0;
         hdr->frag_off = 0;
         hdr->proto    = proto;
+        hdr->check    = 0;
         hdr->check    = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
 	return 0;
 }
