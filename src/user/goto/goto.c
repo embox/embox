@@ -7,7 +7,6 @@
 
 #include "asm/types.h"
 #include "conio/conio.h"
-#include "shell.h"
 #include "shell_command.h"
 #include "goto.h"
 

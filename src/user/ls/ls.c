@@ -1,7 +1,6 @@
 #include "conio/conio.h"
 #include "common.h"
 #include "string.h"
-#include "shell.h"
 #include "rootfs.h"
 #include "ls.h"
 #include "shell_command.h"

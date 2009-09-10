@@ -7,7 +7,6 @@
 #include "asm/types.h"
 #include "conio/conio.h"
 #include "net/icmp.h"
-#include "shell.h"
 #include "ping.h"
 #include "net/net.h"
 #include "net/eth.h"

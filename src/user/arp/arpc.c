@@ -7,7 +7,6 @@
 
 #include "conio/conio.h"
 #include "common.h"
-#include "shell.h"
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"

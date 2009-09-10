@@ -11,7 +11,6 @@
 #include "udpd.h"
 #include "net/net.h"
 #include "net/in.h"
-#include "shell.h"
 #include "net/socket.h"
 #include "shell_command.h"
 

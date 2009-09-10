@@ -6,7 +6,6 @@
  */
 #include "asm/types.h"
 #include "asm/leon.h"
-#include "shell.h"
 #include "asm/mmu.h"
 #include "mmu_probe.h"
 #include "shell_command.h"

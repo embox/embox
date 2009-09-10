@@ -8,7 +8,7 @@
 
 #include "asm/types.h"
 #include "common.h"
-#include "conio.h"
+#include "conio/conio.h"
 #include "shell_command.h"
 
 /**

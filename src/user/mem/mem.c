@@ -5,7 +5,6 @@
  * \author Alexey Fomin
  */
 
-#include "shell.h"
 #include "conio/conio.h"
 #include "asm/types.h"
 #include "mem.h"

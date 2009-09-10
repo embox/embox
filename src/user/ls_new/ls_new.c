@@ -1,6 +1,5 @@
 #include "common.h"
 #include "string.h"
-#include "shell.h"
 #include "shell_command.h"
 
 #include "file_new.h"

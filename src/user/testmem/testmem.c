@@ -8,7 +8,6 @@
 #include "conio/conio.h"
 #include "asm/cache.h"
 #include "common.h"
-#include "shell.h"
 #include "testmem.h"
 #include "memory_tests.h"
 #include "shell_command.h"

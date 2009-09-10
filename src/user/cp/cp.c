@@ -6,8 +6,7 @@
  */
 
 #include "common.h"
-#include "conio.h"
-#include "shell.h"
+#include "conio/conio.h"
 #include "shell_command.h"
 
 #include "file_new.h"

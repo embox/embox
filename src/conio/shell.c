@@ -8,7 +8,7 @@
 #include "common.h"
 #include "string.h"
 #include "console.h"
-#include "shell.h"
+#include "conio/shell.h"
 #include "kernel/sys.h"
 #include "shell_command.h"
 
