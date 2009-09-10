@@ -21,7 +21,7 @@
 #include "conio/conio.h"
 #include "common.h"
 #include "string.h"
-#include "stdarg.h"
+#include "asm/stdarg.h"
 
 static void vtparse_callback(VTPARSER*, VT_TOKEN*);
 

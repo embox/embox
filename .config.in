@@ -203,9 +203,7 @@
 	},
 	"Files": {
 		"autoconf": "scripts/autoconf",
-		"autoconf_h": "scripts/autoconf.h",
-		"shell_inc": "src/conio/shell.inc",
-		"users_inc": "src/conio/users.inc"
+		"autoconf_h": "scripts/autoconf.h"
 	},
 	"Fs": {},
 	"Levels": {

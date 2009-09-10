@@ -11,7 +11,7 @@
 #endif /* not __need___va_list */
 #undef __need___va_list
 
-#include "va-sparc.h"
+#include "asm/va-sparc.h"
 
 #ifdef _STDARG_H
 /* Define va_list, if desired, from __gnuc_va_list. */
