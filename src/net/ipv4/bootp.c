@@ -9,6 +9,7 @@
 #include "net/net_packet.h"
 #include "net/net_pack_manager.h"
 #include "string.h"
+#include "conio/conio.h"
 
 #ifdef DHCP_SUPPORT
 static const unsigned char dhcp_cookie[] = {99,130,83,99};

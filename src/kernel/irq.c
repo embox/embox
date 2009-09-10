@@ -28,7 +28,7 @@ void dispatch_trap(BYTE tt, UINT32 *sp) {
 }
 
 void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
-
+#ifdef MONITOR_ARCH_SPARC
 	REG_WINDOW *rw;
 
 	TRACE("BAD TRAP (0x%02x)\n", tt);
@@ -50,7 +50,7 @@ void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
 	TRACE("%%I: %08x %08x  %08x %08x  %08x %08x  %08x %08x\n",
 	       rw->ins[0], rw->ins[1], rw->ins[2], rw->ins[3],
 	       rw->ins[4], rw->ins[5], rw->ins[6], rw->ins[7]);
-
+#endif /* MONITOR_ARCH_SPARC */
 	while (1)
 		;
 }

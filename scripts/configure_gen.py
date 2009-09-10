@@ -7,7 +7,7 @@
 # requirement: python >= 2.6
 
 from misc import *
-import string, re
+import string, re, os
 
 class configure_gen:
 	def __init__(self, core_obj):
@@ -50,6 +50,8 @@ class configure_gen:
 	                content = read_file('scripts/' + file)
 	                content = re.sub('OUTPUT_ARCH\((\w+)\)', "OUTPUT_ARCH({0})".format(self.core.get_arch()), content)
 	                write_file('scripts/' + file, content)
+	        os.remove("include/asm")
+	        os.symlink("asm-{0}".format(self.core.get_arch()), "include/asm")
 
 	def write_autoconf(self, file):
 		""" Generate autoconf """

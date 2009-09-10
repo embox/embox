@@ -389,6 +389,12 @@
 			"inc": 1,
 			"mdef": "MONITOR_USER_WMEM",
 			"status": 1
+		},
+		"testmem": {
+			"desc": "test memory",
+			"inc": 1,
+			"mdef": "MONITOR_USER_TESTMEM",
+			"status": 1
 		}
 	}
 }
