@@ -3,10 +3,10 @@
  */
 
 #include "asm/types.h"
-#include "irq.h"
+#include "kernel/irq.h"
 #include "cpu_conf.h"
 #include "conio/conio.h"
-#include "drivers/amba_pnp/amba_pnp.h"
+#include "drivers/amba_pnp.h"
 #include "kernel/uart.h"
 //#include "uart_struct.h"
 #include "common.h"

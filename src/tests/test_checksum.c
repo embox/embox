@@ -7,7 +7,7 @@
 
 #include "crc32.h"
 #include "common.h"
-#include "express_tests.h"
+#include "tests/express_tests.h"
 
 DECLARE_EXPRESS_TEST("checksum", exec)
 

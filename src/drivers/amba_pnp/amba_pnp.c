@@ -6,7 +6,7 @@
  */
 #include "asm/types.h"
 #include "common.h"
-#include "drivers/amba_pnp/amba_pnp.h"
+#include "drivers/amba_pnp.h"
 
 /**
  * \struct AHB_SLOT

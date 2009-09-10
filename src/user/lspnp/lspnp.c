@@ -7,8 +7,8 @@
 #include "asm/types.h"
 #include "common.h"
 #include "string.h"
-#include "drivers/amba_pnp/amba_pnp.h"
-#include "drivers/amba_pnp/pnp_id.h"
+#include "drivers/amba_pnp.h"
+#include "drivers/pnp_id.h"
 #include "lspnp.h"
 #include "shell_command.h"
 

@@ -7,7 +7,7 @@
 #include "common.h"
 #include "asm/cpu_context.h"
 #include "kernel/sys.h"
-#include "express_tests.h"
+#include "tests/express_tests.h"
 
 DECLARE_EXPRESS_TEST("CPU context", exec)
 

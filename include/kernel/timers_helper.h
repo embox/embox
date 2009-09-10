@@ -6,7 +6,7 @@
 #include "cpu_conf.h"
 #include "conio/conio.h"
 #include "common.h"
-#include "irq.h"
+#include "kernel/irq.h"
 #include "kernel/timers.h"
 #include "string.h"
 

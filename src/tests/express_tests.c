@@ -8,7 +8,7 @@
  */
 #include "conio/conio.h"
 #include "common.h"
-#include "express_tests.h"
+#include "tests/express_tests.h"
 
 int express_tests_execute() {
 	extern EXPRESS_TEST_DESCRIPTOR *__express_tests_start, *__express_tests_end;

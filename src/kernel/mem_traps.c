@@ -2,7 +2,7 @@
  * \file mem_traps.c
  */
 
-#include "irq.h"
+#include "kernel/irq.h"
 #include "common.h"
 
 void mem_not_aligned()

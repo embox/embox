@@ -3,7 +3,7 @@
  */
 
 #include "asm/types.h"
-#include "drivers/amba_pnp/amba_pnp.h"
+#include "drivers/amba_pnp.h"
 #include "kernel/timers_helper.h"
 
 #include "amba_drivers_helper.h"

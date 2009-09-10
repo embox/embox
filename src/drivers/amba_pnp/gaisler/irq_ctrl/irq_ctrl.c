@@ -8,7 +8,7 @@
 #include "asm/types.h"
 #include "common.h"
 #include "conio/conio.h"
-#include "drivers/amba_pnp/amba_pnp.h"
+#include "drivers/amba_pnp.h"
 #include "kernel/irq_ctrl.h"
 
 typedef struct _IRQ_REGS {

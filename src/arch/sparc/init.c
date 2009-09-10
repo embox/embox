@@ -8,7 +8,7 @@
 #include "asm/cache.h"
 #include "asm/leon.h"
 #include "asm/memory_map.h"
-#include "module.h"
+#include "kernel/module.h"
 
 void copy_data_section() {
 	extern char _endtext, _data_start, _data_end, _bstart, _bend;
