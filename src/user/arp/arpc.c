@@ -5,7 +5,6 @@
  * \author sikmir
  */
 
-#include "conio/conio.h"
 #include "common.h"
 #include "net/net.h"
 #include "net/eth.h"

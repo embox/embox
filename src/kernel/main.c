@@ -22,7 +22,9 @@ int main() {
 	}
 #endif //MONITOR_TESTS
 #if !defined(SIMULATION_TRG) && defined(MONITOR_CONIO)
+#ifdef MONITOR_NETWORK
 	net_config();
+#endif /* MONITOR_NETWORK */
 	shell_start();
 #endif
 

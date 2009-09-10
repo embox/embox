@@ -7,7 +7,6 @@
 #include "asm/types.h"
 #include "common.h"
 #include "string.h"
-#include "conio/conio.h"
 #include "drivers/amba_pnp/amba_pnp.h"
 #include "drivers/amba_pnp/pnp_id.h"
 #include "lspnp.h"

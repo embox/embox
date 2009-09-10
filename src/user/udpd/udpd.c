@@ -5,7 +5,6 @@
  * \author sikmir
  */
 #include "asm/types.h"
-#include "conio/conio.h"
 #include "string.h"
 #include "misc.h"
 #include "udpd.h"

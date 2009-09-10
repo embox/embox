@@ -4,9 +4,7 @@
  *  Created on: 02.03.2009
  *      Author: abatyukov
  */
-#include "conio/conio.h"
 #include "shell_command.h"
-
 
 #define COMMAND_NAME "help"
 #define COMMAND_DESC_MSG "show all available command"

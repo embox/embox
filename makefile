@@ -70,7 +70,8 @@ clean:
 	@$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
 clean_all: clean
-	rm -f .config $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h src/conio/shell.inc src/conio/users.inc
+	@$(RM) .config $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h src/conio/shell.inc src/conio/users.inc
+	@ln -sf -T asm-sparc include/asm
 
 xconfig:
 	@$(SCRIPTS_DIR)/configure.py --mode=x

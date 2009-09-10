@@ -2,6 +2,7 @@
 #define USER_HANDLER_H_
 
 #include "conio/shell.h"
+#include "conio/conio.h"
 
 #define SHELL_COMMAND_NAME_MAX_LEN 0x20
 typedef struct _SHELL_COMMAND_DESCRIPTOR {

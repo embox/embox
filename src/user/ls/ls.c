@@ -1,4 +1,3 @@
-#include "conio/conio.h"
 #include "common.h"
 #include "string.h"
 #include "rootfs.h"
