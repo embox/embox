@@ -158,6 +158,8 @@ void packet_dump(net_packet *pack) {
         ipaddr_print(ip, pack->nh.arph->tpa);
         TRACE("nh.arph.tpa=%s\n", ip);
     } else if (pack->protocol == ETH_P_IP) {
+	TRACE("nh.iph.ihl=%d\n", pack->nh.iph->ihl);
+	TRACE("nh.iph.version=%d\n", pack->nh.iph->version);
         TRACE("nh.iph.tos=%d\n", pack->nh.iph->tos);
         TRACE("nh.iph.tot_len=%d\n", pack->nh.iph->tot_len);
         TRACE("nh.iph.id=%d\n", pack->nh.iph->id);

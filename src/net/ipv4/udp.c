@@ -69,6 +69,12 @@ int udpsock_push(net_packet *pack) {
         if (ulen > pack->len) {
     		return -1;
 	}
+	unsigned short tmp = uh->check;
+	uh->check          = 0;
+	if ( tmp !=  calc_checksumm(uh, UDP_HEADER_SIZE)) {
+		LOG_ERROR("bad udp checksum\n");
+		return -1;
+	}
         sk = __udp_lookup(saddr, uh->source, daddr, uh->dest);
 	if (sk != NULL) {
 		return udp_queue_rcv_pack(sk, pack);
@@ -88,7 +94,8 @@ static int rebuild_udp_header(net_packet *pack, unsigned short source, unsigned 
 	hdr->source = source;
 	hdr->dest   = dest;
 	hdr->len    = UDP_HEADER_SIZE;
-	hdr->check  = Crc16(hdr, UDP_HEADER_SIZE);
+	hdr->check  = 0;
+	hdr->check  = calc_checksumm(hdr, UDP_HEADER_SIZE);
 	return 0;
 }
 

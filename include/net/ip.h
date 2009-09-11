@@ -35,11 +35,11 @@ typedef struct _iphdr {
 	unsigned short    tot_len;             /**< packet length */
 	unsigned short    id;                  /**< for packet fragmentation */
 	/** ________________________________________________________________
-	 * |15____________3|2__________________|1__________________|0_______|
-	 * |fragment offset|MF (more fragments)|DF (don’t fragment)|always 0|
-	 * |_______________|___________________|___________________|________|
+	 * |15_________________|14_________________|13______|12____________0|
+	 * |MF (more fragments)|DF (don’t fragment)|always 0|fragment offset|
+	 * |___________________|___________________|________|_______________|
 	 */
-	unsigned short    frag_off;
+	unsigned short    frag_off;         /**< flags + position of the fragment in the data flow */
 	unsigned char     ttl;              /**< Time to live */
 	unsigned char     proto;            /**< next header */
 	unsigned short    check;            /**< header's checksum */

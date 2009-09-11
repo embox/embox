@@ -218,6 +218,7 @@ int bootp_discover (void* ifdev)
 		pack->h.uh->source = htons(PORT_BOOTP_CLIENT);
 		pack->h.uh->dest = htons (PORT_BOOTP_SERVER);
 		pack->h.uh->len = sizeof(struct bootp_header_t);
+		pack->h.uh->check = 0;
 		pack->h.uh->check = calc_checksumm (pack->h.uh, UDP_HEADER_SIZE);
 
 		memcpy (pack->data + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE, &b, BOOTP_HEADER_SIZE);

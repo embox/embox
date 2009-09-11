@@ -35,10 +35,10 @@ static int callback_alloc(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 		return -1;
 	for (i = 0; i < array_len(cb_info); i++) {
 		if (NULL == cb_info[i].cb) {
-			cb_info[i].cb = cb;
+			cb_info[i].cb    = cb;
 			cb_info[i].ifdev = ifdev;
 			cb_info[i].ip_id = ip_id;
-			cb_info[i].type = type;
+			cb_info[i].type  = type;
 			return i;
 		}
 	}
@@ -51,10 +51,10 @@ static int interface_abort(void *ifdev) {
 		return -1;
 	for (i = 0; i < array_len(cb_info); i++) {
 		if (cb_info[i].ifdev == ifdev) {
-			cb_info[i].cb = 0;
+			cb_info[i].cb    = 0;
 			cb_info[i].ifdev = 0;
 			cb_info[i].ip_id = 0;
-			cb_info[i].type = 0;
+			cb_info[i].type  = 0;
 			return i;
 		}
 	}
@@ -69,10 +69,10 @@ static int callback_free(ICMP_CALLBACK cb, void *ifdev, unsigned short ip_id,
 	}
 	for (i = 0; i < array_len(cb_info); i++) {
 		if (cb_info[i].cb == cb && ifdev == cb_info[i].ifdev) {
-			cb_info[i].cb = 0;
+			cb_info[i].cb    = 0;
 			cb_info[i].ifdev = 0;
 			cb_info[i].ip_id = 0;
-			cb_info[i].type = 0;
+			cb_info[i].type  = 0;
 			return i;
 		}
 	}
@@ -109,11 +109,10 @@ static int rebuild_icmp_header(net_packet *pack, unsigned char type, unsigned ch
 	icmphdr *hdr = pack->h.icmph;
 	hdr->type    = type;
 	hdr->code    = code;
+	hdr->header_check_summ = 0;
 	hdr->header_check_summ = calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE);
 	return 0;
 }
-
-static unsigned short ip_id;
 
 static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 		unsigned char code, unsigned char ttl, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
@@ -122,8 +121,7 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 	rebuild_icmp_header(pack, type, code);
 
 	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
-	ip_id++;
-	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, ip_id, ICMP_HEADER_SIZE, srcaddr, dstaddr);
+	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, 0, ICMP_HEADER_SIZE, srcaddr, dstaddr);
 
 	return ICMP_HEADER_SIZE + IP_HEADER_SIZE;
 }
@@ -195,7 +193,7 @@ static int icmp_echo(net_packet *recieved_pack) {
 	}
 	LOG_DEBUG("%X\n",  pack->h.icmph->header_check_summ);
 */	pack->h.icmph->header_check_summ = 0;
-	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw,pack->nh.iph->tot_len - IP_HEADER_SIZE + 1 );
+	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE );
 
 	//fill ip header
 //	rebuild_ip_header(pack, 64, ICMP_PROTO_TYPE, pack->nh.iph->id++, pack->nh.iph->len,
@@ -204,11 +202,10 @@ static int icmp_echo(net_packet *recieved_pack) {
 	memcpy (pack->nh.iph->saddr, recieved_pack->nh.iph->daddr, sizeof (pack->nh.iph->saddr));
 	memcpy (pack->nh.iph->daddr, recieved_pack->nh.iph->saddr, sizeof (pack->nh.iph->daddr));
 	pack->nh.iph->id ++;
-	pack->nh.iph->check    = 0;
 	pack->nh.iph->ttl      = 64;
 	pack->nh.iph->frag_off = 0;
-	pack->nh.iph->check = 0;
-	pack->nh.iph->check = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
+	pack->nh.iph->check    = 0;
+	pack->nh.iph->check    = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
 
 	pack->len -= ETH_HEADER_SIZE;
 	eth_send(pack);
@@ -222,9 +219,9 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 	if ( pack == NULL ) {
 		return -1;
 	}
-	pack->ifdev = ifdev;
+	pack->ifdev  = ifdev;
 	pack->netdev = (struct _net_device *)ifdev_get_netdevice(ifdev);
-	pack->len = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
+	pack->len    = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
 					ifdev_get_ipaddr(ifdev), dstaddr);
 	pack->protocol = ETH_P_IP;
 
@@ -287,7 +284,12 @@ int icmp_rcv(net_packet *pack) {
         }
 
 	//TODO: check summ icmp? not need, if ip checksum is ok.
-
+	unsigned short tmp = icmph->header_check_summ;
+	icmph->header_check_summ = 0;
+	if( tmp !=  calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE)) {
+		LOG_ERROR("bad icmp checksum\n");
+		return -1;
+	}
 	if (NULL != received_packet_handlers[icmph->type]) {
 		return received_packet_handlers[icmph->type](pack);
 	}

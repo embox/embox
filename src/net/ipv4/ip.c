@@ -32,8 +32,10 @@ int ip_received_packet(net_packet *pack) {
 		stats->rx_err += 1;
 		return -1;
 	}
-
-	if (0/* TODO: check checksumm */) {
+	unsigned short tmp = iph->check;
+	iph->check         = 0;
+	if ( tmp != calc_checksumm(pack->nh.raw, IP_HEADER_SIZE)) {
+		LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors += 1;
 		return -1;
 	}
@@ -66,7 +68,7 @@ int rebuild_ip_header(net_packet *pack, unsigned char ttl, unsigned char proto,
         hdr->ttl      = ttl;
         hdr->id       = id;
         hdr->tos      = 0;
-        hdr->frag_off = 0;
+        hdr->frag_off = IP_DF;
         hdr->proto    = proto;
         hdr->check    = 0;
         hdr->check    = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
