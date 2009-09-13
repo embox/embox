@@ -8,7 +8,6 @@
 #include "conio/conio.h"
 #include "drivers/amba_pnp.h"
 #include "kernel/uart.h"
-//#include "uart_struct.h"
 #include "common.h"
 
 #define UART_RX_READY                   0x00000001
@@ -116,3 +115,4 @@ uart_remove_irq_handler (IRQ_HANDLER pfunc)
     irq_set_handler (irq, NULL);
     return 0;
 }
+
