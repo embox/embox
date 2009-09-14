@@ -34,7 +34,7 @@
 
 int puts (const char *S)
 {
-	char *ptr;
+	char *ptr = (char*)S;
 	while (0 != (*ptr))	uart_putc (*ptr++);
 	uart_putc ('\r');
 	uart_putc ('\n');
