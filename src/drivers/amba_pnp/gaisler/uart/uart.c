@@ -17,7 +17,7 @@
 #define UART_RX_ENABLE                  0x00000001	/*< reciever enable */
 #define UART_TX_ENABLE                  0x00000002	/*< transmitter enable */
 #define UART_INT_RX_ENABLED             0x00000004
-#define UART_INT_TX_ENABLED             0x00000004
+#define UART_INT_TX_ENABLED             0x00000008
 
 typedef struct _UART_STRUCT {
         volatile UINT32 data; //0x70
