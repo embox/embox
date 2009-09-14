@@ -108,6 +108,9 @@ register_window_clean:
 	sta %g0, [%g1] 0x19
 	mov	MMU_FSR, %g1
 	lda	[%g1] 0x19, %g0 /* reset FSR */
+	/* Flush MMU TLB. */
+	set 0x400, %g1
+	sta %g0, [%g1] 0x18
 
 	flush
 	 nop; nop; nop; nop; nop;
