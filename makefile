@@ -77,6 +77,10 @@ xconfig:
 	@$(SCRIPTS_DIR)/configure.py --mode=x
 
 menuconfig:
+	@if [ ! -e $(SCRIPTS_DIR)/autoconf ]; \
+	then \
+	    cp $(SCRIPTS_DIR)/autoconf.in $(SCRIPTS_DIR)/autoconf; \
+	fi;
 	@$(EDITOR) $(SCRIPTS_DIR)/autoconf
 	@$(SCRIPTS_DIR)/configure.py --mode=menu
 
