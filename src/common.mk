@@ -25,5 +25,5 @@ all: $(SUBDIRS-y) $(OBJS-y) copy_objs
 copy_objs:
 	  if [ ! -z "$(OBJS-y)" ]; then  cp -f $(OBJS-y) $(OBJ_DIR)/$(BUILD); fi
 
-clean:
+clean: $(SUBDIRS-y)
 	rm -f  $(OBJS-y)
