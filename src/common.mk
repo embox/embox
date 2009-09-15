@@ -23,7 +23,11 @@ all: $(SUBDIRS-y) $(OBJS-y) copy_objs
 	@printf "  [M]\t$@\n"
 
 copy_objs:
-	  if [ ! -z "$(OBJS-y)" ]; then  cp -f $(OBJS-y) $(OBJ_DIR)/$(BUILD); fi
+	@if [ ! -z "$(OBJS-y)" ]; \
+	then \
+	    cp -f $(OBJS-y) $(OBJ_DIR)/$(BUILD); \
+	fi
 
 clean: $(SUBDIRS-y)
-	rm -f  $(OBJS-y)
+	@rm -f  $(OBJS-y)
+	@printf "  [R]\t$(SUBDIRS-y) $(OBJS-y)\n"
