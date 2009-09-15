@@ -80,8 +80,10 @@ menuconfig:
 	@if [ ! -e $(SCRIPTS_DIR)/autoconf ]; \
 	then \
 	    cp $(SCRIPTS_DIR)/autoconf.in $(SCRIPTS_DIR)/autoconf; \
+	    cp $(SCRIPTS_DIR)/autoconf.h.in $(SCRIPTS_DIR)/autoconf.h; \
 	fi;
 	@$(EDITOR) $(SCRIPTS_DIR)/autoconf
+	@$(EDITOR) $(SCRIPTS_DIR)/autoconf.h
 	@$(SCRIPTS_DIR)/configure.py --mode=menu
 
 config:
