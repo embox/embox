@@ -42,7 +42,9 @@ mkdir:
 	then \
 	    echo Start; \
 	else \
-	    echo "Try make x(menu)config before"; exit 1;\
+	    echo "Building default configuration (try 'make x[menu]config')"; \
+	    cp $(SCRIPTS_DIR)/autoconf.in $(SCRIPTS_DIR)/autoconf; \
+	    cp $(SCRIPTS_DIR)/autoconf.h.in $(SCRIPTS_DIR)/autoconf.h; \
 	fi;
 	@test -d $(BIN_DIR)          || mkdir -p $(BIN_DIR)
 	@test -d $(OBJ_DIR)          || mkdir -p $(OBJ_DIR)
