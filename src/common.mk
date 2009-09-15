@@ -1,4 +1,4 @@
-.PHONY: all $(SUBDIRS-y) $(SUBDIRS-n)
+.PHONY: all $(SUBDIRS-y) $(SUBDIRS-n) copy_objs
 
 create_objs_lst: $(SUBDIRS-y)
 	@echo '$(addprefix $(CURDIR)/,$(OBJS-y)) \' >> $(ROOT_DIR)/objs.lst
@@ -12,15 +12,18 @@ $(SUBDIRS-y):
 $(SUBDIRS-n):
 	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
 
-all: $(SUBDIRS-y) $(OBJS-y)
+all: $(SUBDIRS-y) $(OBJS-y) copy_objs
 
 %.o:%.S
-	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $(OBJ_DIR)/$(BUILD)/$@ $<
+	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $@ $<
 	@printf "  [M]\t$@\n"
 
 %.o:%.c
-	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $(OBJ_DIR)/$(BUILD)/$@ $<
+	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $@ $<
 	@printf "  [M]\t$@\n"
 
+copy_objs:
+	  if [ ! -z "$(OBJS-y)" ]; then  cp -f $(OBJS-y) $(OBJ_DIR)/$(BUILD); fi
+
 clean:
-	@$(RM) $(OBJS-y) *.d
+	rm -f  $(OBJS-y)
