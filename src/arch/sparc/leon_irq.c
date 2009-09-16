@@ -11,7 +11,7 @@
 #define SMP_NOP3
 
 /**
- * disable interrupt for atpmic poperation
+ * disable interrupt for atomic operation
  * return old psr reg
  */
 unsigned long __local_irq_save(void)

@@ -102,8 +102,10 @@ int ifdev_set_interface(char *name, char *ipaddr, char *macaddr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
         if (0 == strncmp(name, ifs[i].dev.net_dev->name, array_len(ifs[i].dev.net_dev->name))) {
-            ifdev_set_ipaddr(&ifs[i].dev, ipaddr);
-            ifdev_set_macaddr(&ifs[i].dev, macaddr);
+            if( (-1 == ifdev_set_ipaddr(&ifs[i].dev, ipaddr)) ||
+                (-1 == ifdev_set_macaddr(&ifs[i].dev, macaddr)) ) {
+        	return -1;
+    	    }
             return i;
         }
     }
