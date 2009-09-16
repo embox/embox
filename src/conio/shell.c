@@ -75,7 +75,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	int i;
 	PSHELL_HANDLER phandler;
 
-	char *words[1 + strlen(cmdline) / 2];
+	char *words[CMDLINE_MAX_LENGTH + 1];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {
 		// Only spaces were entered

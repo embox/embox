@@ -89,7 +89,7 @@ static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
 	if (this->callback != NULL && this->callback->exec != NULL
 			&& *this->model->string) {
 		screen_out_puts(this->view, NULL);
-		char buf[this->model->length + 1];
+		char buf[CMDLINE_MAX_LENGTH + 1];
 		strcpy(buf, this->model->string);
 		this->callback->exec(this->callback, this, buf);
 	}
