@@ -80,7 +80,11 @@ int eth_send(net_packet *pack) {
         }
     }
 //    packet_dump(pack);
-    dev->net_dev->hard_start_xmit(pack, pack->netdev);
+    if (-1 == dev->net_dev->hard_start_xmit(pack, pack->netdev)) {
+	net_packet_free(pack);
+	stats->tx_err += 1;
+	return -1;
+    }
     /* update statistic */
     stats->tx_packets += 1;
     stats->tx_bytes   += pack->len;
