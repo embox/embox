@@ -191,7 +191,7 @@ static int print_apb_entries(int amount) {
         //APB_SLOT *pslot = base_addr;
         for (i = 0; i < amount/4; i++) {
                 //if (0 != pslot[i].id_reg) {
-                if(fill_amba_dev(&dev, i, FALSE, FALSE)){
+                if(-1 != fill_amba_dev(&dev, i, FALSE, FALSE)){
                         show_dev(&dev, FALSE);
                         count++;
                 }
@@ -207,7 +207,7 @@ static int print_ahb_entries(int amount, BOOL is_master) {
         //AHB_SLOT *pslot = base_addr;
         for (i = 0; i < amount; i++) {
                 //if (0 != pslot[i].id_reg) {
-                if(fill_amba_dev(&dev,  i, TRUE, is_master)){
+                if(-1 != fill_amba_dev(&dev,  i, TRUE, is_master)){
                 	show_dev(&dev, FALSE);
                 	count++;
                 }
@@ -286,7 +286,7 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 
         //AHB_SLOT *pslot = (AHB_SLOT *)AHB_MASTER_BASE;
         //if (0 != pslot[slot].id_reg) {
-        if(fill_amba_dev(&dev, slot, TRUE, TRUE)){
+        if(-1 != fill_amba_dev(&dev, slot, TRUE, TRUE)){
                 show_dev(&dev, FALSE);
         } else {
                 LOG_ERROR("No such device.\n");
@@ -307,7 +307,7 @@ void print_ahbsl_pnp_dev(UINT32 slot) {
         AMBA_DEV dev;
         //AHB_SLOT *pslot = (AHB_SLOT *)AHB_SLAVE_BASE;
         //if (0 != pslot[slot].id_reg) {
-        if (fill_amba_dev(&dev, slot, TRUE, FALSE)){
+        if (-1 != fill_amba_dev(&dev, slot, TRUE, FALSE)){
                 show_dev(&dev, FALSE);
         } else {
                 LOG_ERROR("No such device.\n");
@@ -328,7 +328,7 @@ void print_apb_pnp_dev(UINT32 slot) {
         //APB_SLOT *pslot = (APB_SLOT *)APB_BASE;
         //if (0 != pslot[slot].id_reg) {
 
-        if (fill_amba_dev(&dev, slot, FALSE, FALSE)){
+        if (-1 != fill_amba_dev(&dev, slot, FALSE, FALSE)){
                 show_dev(&dev, FALSE);
         } else {
                 LOG_ERROR("No such device.\n");
