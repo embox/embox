@@ -9,7 +9,6 @@
 #include "string.h"
 #include "drivers/amba_pnp.h"
 #include "drivers/pnp_id.h"
-#include "lspnp.h"
 #include "shell_command.h"
 
 #define COMMAND_NAME "lspnp"
@@ -128,6 +127,7 @@ inline static void show_bars_type(AMBA_BAR_INFO *bar) {
         switch (bar->type) {
         case 1:
         	TRACE("\tapb:");
+        	break;
         case 2:
                 TRACE("\tahb:");
     		break;
@@ -153,7 +153,7 @@ void show_bars_infos(AMBA_DEV *dev) {
         }
 }
 
-const char UNKNOWN[] = "unknown";
+const char UNKNOWN[] = "<unknown>";
 
 static void show_dev(AMBA_DEV *dev, BOOL show_user) {
 	LOG_DEBUG("show_dev\n");
