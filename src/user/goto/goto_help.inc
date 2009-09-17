@@ -12,4 +12,4 @@
 "SEE ALSO                                             \n"
 "    ldimg                                            \n"
 "AUTHORS                                              \n"
-"    Kse                                              \n"
+"    Kse                                              "

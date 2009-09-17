@@ -3,4 +3,4 @@
 "SYNOPSIS                                 \n"
 "    help                                 \n"
 "AUTHORS                                  \n"
-"    Abatyukov                            \n"
+"    Abatyukov                            "

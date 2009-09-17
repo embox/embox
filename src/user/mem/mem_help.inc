@@ -17,4 +17,4 @@
 "SEE ALSO                                          \n"
 "    wmem, testmem                                 \n"
 "AUTHORS                                           \n"
-"    Alexey Fomin                                  \n"
+"    Alexey Fomin                                  "

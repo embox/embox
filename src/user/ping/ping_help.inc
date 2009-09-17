@@ -28,4 +28,4 @@
 "SEE ALSO                                                  \n"
 "    ifconfig                                              \n"
 "AUTHORS                                                   \n"
-"    Abatyukov, Anton, Sannya                              \n"
+"    Abatyukov, Anton, Sannya                              "

@@ -7,4 +7,4 @@
 "SEE ALSO                                      \n"
 "    goto                                      \n"
 "AUTHORS                                       \n"
-"    Kse                                       \n"
+"    Kse                                       "

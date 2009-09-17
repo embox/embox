@@ -12,4 +12,4 @@
 "SEE ALSO                                \n"
 "    rm                                  \n"
 "AUTHORS                                 \n"
-"    Anton                               \n"
+"    Anton                               "

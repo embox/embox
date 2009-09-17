@@ -11,4 +11,4 @@
 "        by default: all                          \n"
 "    -n dev_id    - number of required device.    \n"
 "AUTHORS                                          \n"
-"    Abatyukov                                    \n"
+"    Abatyukov                                    "

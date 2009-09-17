@@ -8,4 +8,4 @@
 "    -v  - show version mmu hardware info\n"
 "          1111 - in decimal             \n"
 "AUTHORS                                 \n"
-"    Anton Bondarev                      \n"
+"    Anton Bondarev                      "

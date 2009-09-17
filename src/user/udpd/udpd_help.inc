@@ -7,4 +7,4 @@
 "SEE ALSO                                        \n"
 "    ifconfig                                    \n"
 "AUTHORS                                         \n"
-"    Sikmir                                      \n"
+"    Sikmir                                      "
