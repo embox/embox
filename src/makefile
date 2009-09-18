@@ -44,6 +44,7 @@ release: $(SUBDIRS-y)
 	else \
 	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_rom > /dev/null; \
 	fi;
+	@$(OC_TOOL) -O srec $(BIN_DIR)/$(TARGET)_rom $(BIN_DIR)/prom.srec
 
 debug: $(SUBDIRS-y)
 	@#TODO may be use GOBJS list of objects files
@@ -55,6 +56,7 @@ debug: $(SUBDIRS-y)
 	then \
 	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_ram > $(BIN_DIR)/$(TARGET)_ram.dis; \
 	fi;
+	@$(OC_TOOL) -O srec $(BIN_DIR)/$(TARGET)_ram $(BIN_DIR)/prom.srec
 
 sim: $(SUBDIRS-y)
 	@#TODO may be use GOBJS list of objects files
