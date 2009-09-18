@@ -35,7 +35,7 @@ OC_TOOL = $(CC_PACKET)-objcopy
 
 .PHONY: mkdir build checksum all clean config xconfig menuconfig
 
-all: mkdir build checksum
+all: mkdir build
 
 mkdir:
 	@if [ -e .config ]; \
