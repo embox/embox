@@ -31,17 +31,17 @@ _hardreset:
   BAD_TRAP;                     ! 11 interrupt level  1   ! IRQ_AHB_error
   TRAP(irq_dispatcher);         ! 12 interrupt level  2   ! IRQ_UART2
   TRAP(irq_dispatcher);         ! 13 interrupt level  3   ! IRQ_UART1
-  BAD_TRAP;                     ! 14 interrupt level  4   !
-  TRAP(irq_dispatcher);         ! 15 interrupt level  5   ! from_dsp
-  BAD_TRAP;                     ! 16 interrupt level  6   !
-  TRAP(irq_dispatcher);         ! 17 interrupt level  7   ! IRQ_DMA
+  TRAP(irq_dispatcher);                     ! 14 interrupt level  4   !
+  TRAP(irq_dispatcher);         ! 15 interrupt level  5   !
+  TRAP(irq_dispatcher);         ! 16 interrupt level  6   !
+  TRAP(irq_dispatcher);         ! 17 interrupt level  7   !
   TRAP(irq_dispatcher);         ! 18 interrupt level  8   ! IRQ_Timer1
   TRAP(irq_dispatcher);         ! 19 interrupt level  9   ! IRQ_Timer2
-  BAD_TRAP;                     ! 1A interrupt level 10   ! IRQ_SecIRQ
+  TRAP(irq_dispatcher);         ! 1A interrupt level 10   !
   BAD_TRAP;                     ! 1B interrupt level 11   ! IRQ_DSU
   TRAP(irq_dispatcher);         ! 1C interrupt level 12   !
-  TRAP(irq_dispatcher);         ! 1D interrupt level 13   !
-  TRAP(irq_dispatcher);         ! 1E interrupt level 14   ! IRQ_PCI
+  BAD_TRAP;                       !TRAP(irq_dispatcher);         ! 1D interrupt level 13   !
+  BAD_TRAP; ! TRAP(irq_dispatcher);         ! 1E interrupt level 14   ! IRQ_PCI
   BAD_TRAP; !TRAP(halt_trap);              ! 1F interrupt level 15   ! IRQ_Halt (NMI)
 
 
