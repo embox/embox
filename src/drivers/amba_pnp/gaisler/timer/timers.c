@@ -4,15 +4,71 @@
 
 #include "asm/types.h"
 #include "drivers/amba_pnp.h"
-#include "kernel/timers_helper.h"
+#include "kernel/timers.h"
+#include "cpu_conf.h"
+#include "common.h"
+
+typedef struct _TIMERS_STRUCT {
+        volatile unsigned int scaler_cnt;
+                                       /**< 0x00 */
+        volatile unsigned int scaler_ld;
+                                       /**< 0x04 */
+        volatile unsigned int config_reg;
+                                       /**< 0x08 */
+        volatile unsigned int dummy1;  /**< 0x0C */
+        volatile unsigned int timer_cnt1;
+                                       /**< 0x10 */
+        volatile unsigned int timer_ld1;
+                                       /**< 0x14 */
+        volatile unsigned int timer_ctrl1;
+                                       /**< 0x18 */
+        volatile unsigned int dummy2;  /**< 0x1C */
+        volatile unsigned int timer_cnt2;
+                                       /**< 0x20 */
+        volatile unsigned int timer_ld2;
+                                       /**< 0x24 */
+        volatile unsigned int timer_ctrl2;
+                                       /**< 0x28 */
+} TIMERS_STRUCT;
+
+static TIMERS_STRUCT *dev_regs = NULL;
 
 #include "amba_drivers_helper.h"
 #undef module_init
 #define module_init() timers_init()
 
-static void
-show_module_info (AMBA_DEV * dev)
-{
+static volatile UINT32 cnt_ms_sleep;  /**< for sleep function */
+static volatile UINT32 cnt_sys_time;  /**< quantity ms after start system */
+
+volatile static UINT32 sleep_cnt_const = DEFAULT_SLEEP_COUNTER; /**< for sleep function (loop-based) */
+
+void platform_timers_off () {
+        dev_regs->timer_ctrl1 = 0x0;
+        dev_regs->timer_ctrl2 = 0x0;    //disable
+}
+
+static void irq_func_tmr_1mS () {
+        unsigned int irq = __local_irq_save ();
+        cnt_ms_sleep++;
+        cnt_sys_time++;
+        inc_sys_timers ();
+        local_irq_restore (irq);
+}
+
+void sleep (volatile unsigned int ms) {
+        unsigned int irq = __local_irq_save ();
+        cnt_ms_sleep = 0;
+        local_irq_restore (irq);
+
+        while (cnt_ms_sleep < ms) {
+        }
+}
+
+UINT32 get_ms_sleep () {
+        return cnt_ms_sleep;
+}
+
+static void show_module_info (AMBA_DEV * dev) {
     TRACE ("*** GAISLER timers ***\n");
     TRACE ("regs:\n");
     TRACE ("\tcnt1 0x%X\n", dev_regs->timer_cnt1);
@@ -30,17 +86,15 @@ show_module_info (AMBA_DEV * dev)
     TRACE ("\tcnt_sys_time 0x%X\n", cnt_sys_time);
 }
 
-int
-timers_init ()
-{
+int timers_init () {
     int i;
-    if (dev_regs)
-    {
+    if (dev_regs) {
 	return -1;
     }
 #ifndef SIMULATION_TRG
-    for (i = 0; i < array_len (sys_timers); i++)
-	sys_timers[i].f_enable = FALSE;
+    for (i = 0; i < /*array_len (sys_timers)*/MAX_QUANTITY_SYS_TIMERS; i++)
+	set_sys_timer_enable (i, FALSE);
+//	sys_timers[i].f_enable = FALSE;
 
     TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
 #else
@@ -67,3 +121,4 @@ timers_init ()
 
     return 0;
 }
+

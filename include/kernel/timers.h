@@ -7,6 +7,11 @@
 
 #ifndef __ASSEMBLER__
 
+#define MAX_QUANTITY_SYS_TIMERS   0x20
+#define DEFAULT_SLEEP_COUNTER     3470
+#define MAX_SAVE_CONTEXT          2
+
+
 /**
  * Initialization of timers subsystem
  */
