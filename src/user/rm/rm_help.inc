@@ -1,0 +1,8 @@
+"NAME                                \n"
+"    rm - remove files or directories\n"
+"SYNOPSIS                            \n"
+"    rm FILE                         \n"
+"DESCRIPTION                         \n"
+"    rm removes each specified file  \n"
+"AUTHOR                              \n"
+"    zoomer                          "

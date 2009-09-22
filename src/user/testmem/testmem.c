@@ -7,7 +7,6 @@
 
 #include "asm/cache.h"
 #include "common.h"
-#include "testmem.h"
 #include "memory_tests.h"
 #include "shell_command.h"
 

@@ -7,7 +7,6 @@
 
 #include "asm/types.h"
 #include "shell_command.h"
-#include "goto.h"
 
 #define COMMAND_NAME "exec"
 #define COMMAND_DESC_MSG "execute image file"

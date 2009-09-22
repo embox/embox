@@ -7,7 +7,6 @@
 #include "asm/types.h"
 #include "string.h"
 #include "misc.h"
-#include "udpd.h"
 #include "net/net.h"
 #include "net/in.h"
 #include "net/socket.h"

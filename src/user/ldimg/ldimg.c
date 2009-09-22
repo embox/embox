@@ -6,7 +6,6 @@
  */
 #include "asm/types.h"
 #include "shell_command.h"
-#include "ldimg.h"
 
 #include "rootfs.h"
 #include "ramfs.h"

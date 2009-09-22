@@ -1,7 +1,6 @@
 #include "common.h"
 #include "string.h"
 #include "rootfs.h"
-#include "ls.h"
 #include "shell_command.h"
 
 #define COMMAND_NAME "ls"

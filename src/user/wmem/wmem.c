@@ -6,7 +6,6 @@
  */
 
 #include "asm/types.h"
-#include "mem.h"
 #include "shell_command.h"
 
 #define COMMAND_NAME "wmem"

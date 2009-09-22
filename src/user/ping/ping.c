@@ -6,7 +6,6 @@
  */
 #include "asm/types.h"
 #include "net/icmp.h"
-#include "ping.h"
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"
@@ -91,7 +90,7 @@ static int exec(int argsc, char **argsv) {
 	unsigned char dst[4];
 	void *ifdev;
 
-	keys_amount = parse_arg(COMMAND_NAME, argsc, argsv, available_keys,
+	keys_amount = parse_arg(COMMAND_NAME, argsc - 1, argsv, available_keys,
 			sizeof(available_keys), keys);
 
 	if (keys_amount < 0) {
@@ -116,17 +115,6 @@ static int exec(int argsc, char **argsv) {
 		show_help();
 		return -1;
 	}
-	//get destanation addr
-	if (!get_key('d', keys, keys_amount, &key_value)) {
-		LOG_ERROR("you must choose right destination address '-d'\n");
-		show_help();
-		return -1;
-	} else if (NULL == ipaddr_scan(key_value, dst)) {
-		LOG_ERROR("wrong ip addr format (%s)\n", key_value);
-		show_help();
-		return -1;
-	}
-
 	//get ping cnt
 	if (!get_key('c', keys, keys_amount, &key_value)) {
 		cnt = 4;
@@ -153,7 +141,12 @@ static int exec(int argsc, char **argsv) {
                 show_help();
                 return -1;
         }
-
+        //get destanation addr
+        if (NULL == ipaddr_scan(argsv[argsc - 1], dst)) {
+                LOG_ERROR("wrong ip addr format (%s)\n", argsv[argsc - 1]);
+                show_help();
+                return -1;
+        }
 	//carry out command
 	ping(ifdev, dst, cnt, timeout, ttl);
 	return 0;

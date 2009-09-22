@@ -20,11 +20,18 @@ static void show_help() {
 
 #define COMMAND_NAME "cp"
 #define COMMAND_DESC_MSG "cp file"
-static const char *help_msg = "cp";
+static const char *help_msg =
+	    #include "cp_help.inc"
+	    ;
 #define HELP_MSG help_msg
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
+static void show_help() {
+        printf(
+                #include "cp_help.inc"
+        );
+}
 
 static int exec(int argsc, char **argsv)
 {

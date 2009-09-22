@@ -1,0 +1,8 @@
+"NAME                                \n"
+"    cp - copy files and directories \n"
+"SYNOPSIS                            \n"
+"    cp SOURCE DEST                  \n"
+"DESCRIPTION                         \n"
+"    Copy SOURCE to DEST             \n"
+"AUTHOR                              \n"
+"    zoomer                          "
