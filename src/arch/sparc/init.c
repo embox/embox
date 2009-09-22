@@ -5,6 +5,12 @@
  * \author anton
  */
 #include "common.h"
+#include "conio/conio.h"
+#include "kernel/irq.h"
+#include "kernel/uart.h"
+#include "kernel/timers.h"
+#include "net/net.h"
+#include "rootfs.h"
 #include "asm/cache.h"
 #include "asm/leon.h"
 #include "asm/memory_map.h"

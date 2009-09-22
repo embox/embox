@@ -1,7 +1,7 @@
 #ifndef _MMU_H
 #define _MMU_H
 
-#include "srmmu_probe.h"
+#include "asm/srmmu_probe.h"
 
 #define mmu_flush_cache_all()   leon_flush_tlb_all()
 #define mmu_flush_tlb_all()     leon_flush_tlb_all()
