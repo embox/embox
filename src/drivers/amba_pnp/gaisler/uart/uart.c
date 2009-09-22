@@ -34,27 +34,21 @@ static volatile UART_STRUCT *dev_regs = NULL;
 
 static int irq;
 
-static void
-irq_func_uart ()
-{
+static void irq_func_uart () {
     char ch = uart_getc ();
 }
 
-int
-uart_init ()
-{
+int uart_init () {
     if (NULL != dev_regs)
 	return -1;
 
     TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
 
-    if (UART_BASE != amba_dev.bar[0].start)
-    {
+    if (UART_BASE != amba_dev.bar[0].start) {
 	TRACE ("uart base is %x instead of correct value %x\n", amba_dev.bar[0].start, UART_BASE);
 	return -1;
     }
-    if (UART_IRQ != amba_dev.dev_info.irq)
-    {
+    if (UART_IRQ != amba_dev.dev_info.irq) {
 	TRACE ("uart irq is %d instead of correct value %d", amba_dev.dev_info.irq, UART_IRQ);
 	return -1;
     }
@@ -75,20 +69,33 @@ uart_init ()
 #endif
 }
 
-void
-uart_putc (char ch)
-{
+/*
+BOOL uart_is_empty() {
+	if (UART_RX_READY & uart->status)
+		return FALSE;
+	else
+		return TRUE;
+}
+*/
+
+void uart_putc (char ch) {
     volatile int i;
     if (NULL == dev_regs)
 	uart_init ();
+
+/*
+#ifndef SIMULATION_TRG
+	while (!(UART_TX_READY & dev_regs->status))
+		;
+#endif
+*/
+
     for (i = 0; i < 0x1000; i++);
 
     dev_regs->data = (UINT32) ch;
 }
 
-char
-uart_getc ()
-{
+char uart_getc () {
     CHECK_INIT_MODULE ();
 
     while (!(UART_RX_READY & dev_regs->status))
@@ -96,9 +103,7 @@ uart_getc ()
     return ((char) dev_regs->data);
 }
 
-int
-uart_set_irq_handler (IRQ_HANDLER pfunc)
-{
+int uart_set_irq_handler (IRQ_HANDLER pfunc) {
     CHECK_INIT_MODULE ();
 
     dev_regs->ctrl |= UART_INT_RX_ENABLED;
@@ -106,9 +111,7 @@ uart_set_irq_handler (IRQ_HANDLER pfunc)
     return 0;
 }
 
-int
-uart_remove_irq_handler (IRQ_HANDLER pfunc)
-{
+int uart_remove_irq_handler (IRQ_HANDLER pfunc) {
     CHECK_INIT_MODULE ();
 
     dev_regs->ctrl &= ~UART_INT_RX_ENABLED;
