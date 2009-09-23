@@ -5,10 +5,9 @@
  * \details
  */
 
-#include "asm/cache.h"
-#include "common.h"
-#include "memory_tests.h"
 #include "shell_command.h"
+#include "asm/cache.h"
+#include "memory_tests.h"
 
 #define COMMAND_NAME "testmem"
 #define COMMAND_DESC_MSG "set of memory tests"
@@ -19,16 +18,9 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
 static char testmem_keys[] = {
-#include "testmem_keys.inc"
-		};
-
-static void testmem_print_help(void) {
-	printf(
-#include "testmem_help.inc"
-	);
-}
+	'a', 'n', 't', 'h'
+};
 
 typedef void TEST_MEM_FUNC(WORD *addr, long int amount);
 
@@ -43,12 +35,12 @@ static int exec(int argsc, char **argsv) {
 			sizeof(testmem_keys), keys);
 
 	if (keys_amount <= 0) {
-		testmem_print_help();
+		show_help();
 		return -1;
 	}
 
 	if (get_key('h', keys, keys_amount, &key_value)) {
-		testmem_print_help();
+		show_help();
 		return 0;
 	}
 
@@ -68,15 +60,15 @@ static int exec(int argsc, char **argsv) {
 		} else if (strcmp(key_value, "address") == 0) {
 			test_mem_func = &memory_test_address;
 		} else if (strcmp(key_value, "chess") == 0) {
-					test_mem_func = &memory_test_chess;
+			test_mem_func = &memory_test_chess;
 		} else {
 			LOG_ERROR("testmem: %s: no such test.\n", key_value);
-			testmem_print_help();
+			show_help();
 			return -1;
 		}
 	} else {
 		LOG_ERROR("testmem: test name expected.\n");
-		testmem_print_help();
+		show_help();
 		return -1;
 	}
 
@@ -87,7 +79,7 @@ static int exec(int argsc, char **argsv) {
 				((!sscanf(key_value, "0x%x", &address)) // addr not in hex
 						&& (!sscanf(key_value, "%d", (int *) &address)))) { // addr not in decimal
 			LOG_ERROR("testmem: -a: address value in hex or in decimal expected.\n");
-			testmem_print_help();
+			show_help();
 			return -1;
 		}
 		// TODO remove next
@@ -101,13 +93,13 @@ static int exec(int argsc, char **argsv) {
 	if (get_key('n', keys, keys_amount, &key_value)) {
 		if (key_value == NULL) { // amount empty
 			LOG_ERROR("testmem: -n: amount value in hex or in decimal expected.\n");
-			testmem_print_help();
+			show_help();
 			return -1;
 		}
 		if (!sscanf(key_value, "0x%x", &amount)) { // amount not in hex
 			if (!sscanf(key_value, "%d", (int *) &amount)) { // amount not in decimal
 				LOG_ERROR("testmem: -n: amount value in hex or in decimal expected.\n");
-				testmem_print_help();
+				show_help();
 				return -1;
 			}
 		}

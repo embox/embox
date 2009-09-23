@@ -6,9 +6,6 @@
  *          wich can be call from shell
  */
 
-#include "asm/types.h"
-#include "common.h"
-#include "conio/conio.h"
 #include "shell_command.h"
 
 /**
@@ -46,15 +43,12 @@
 //	return NULL;
 //}
 
-/**
- * start exec shell command with pointed descriptor
- */
 int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
 		char **argsv) {
 	if ((NULL != descriptor) && (NULL != descriptor->exec)) {
 		return sys_exec_start(descriptor->exec, argsc, argsv);
 	}
-	printf("Error shell command: wrong command descriptor\n");
+	LOG_ERROR("Error shell command: wrong command descriptor\n");
 	return -1;
 }
 

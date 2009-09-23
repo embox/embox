@@ -16,15 +16,8 @@ static const char *help_msg =
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
 static char help_keys[] = {
-#include "help_keys.inc"
-		};
-
-static void show_help() {
-	printf(
-#include "help_help.inc"
-	);
-}
-
+	'h'
+};
 
 static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
@@ -68,7 +61,3 @@ static int exec(int argsc, char **argsv) {
 	}
 	return 0;
 }
-
-
-
-

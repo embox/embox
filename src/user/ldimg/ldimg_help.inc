@@ -3,7 +3,7 @@
 "DESCRIPTION                                   \n"
 "    copy text image from ROM to RAM:0x40000000\n"
 "SYNOPSIS                                      \n"
-"    ldimg                                     \n"
+"    ldimg [-a addr] [-f filename] [-h]        \n"
 "SEE ALSO                                      \n"
 "    goto                                      \n"
 "AUTHORS                                       \n"

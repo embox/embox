@@ -4,10 +4,9 @@
  * \author anton
  * \details
  */
-#include "asm/types.h"
+#include "shell_command.h"
 #include "asm/leon.h"
 #include "asm/mmu.h"
-#include "shell_command.h"
 
 #define COMMAND_NAME "mmu_probe"
 #define COMMAND_DESC_MSG "testing mmu module"
@@ -18,6 +17,9 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
+static char available_keys[] = {
+    'i', 'v', 'h'
+};
 
 /**
  * show MMU register
@@ -213,20 +215,6 @@ static BOOL mmu_probe() {
 
     printf ("ending mmu testing");
     MMU_RETURN (TRUE);
-}
-
-
-
-
-
-
-static char available_keys[] = {
-#include "mmu_probe_key.inc"
-        };
-static void show_help() {
-    printf(
-#include "mmu_probe_help.inc"
-    );
 }
 
 /**

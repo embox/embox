@@ -4,23 +4,11 @@
  * \date 03.07.2009
  * \author kse
  */
-#include "asm/types.h"
 #include "shell_command.h"
-
 #include "rootfs.h"
 #include "ramfs.h"
 #include "file.h"
 
-
-static char ldimg_keys[] = {
-#include "ldimg_keys.inc"
-		};
-
-static void show_help() {
-	printf(
-#include "ldimg_help.inc"
-	);
-}
 #define COMMAND_NAME "load"
 #define COMMAND_DESC_MSG "load image file"
 static const char *help_msg =
@@ -30,12 +18,13 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
+static char ldimg_keys[] = {
+	'a', 'f', 'h'
+};
 
 #define ENTRY_PTR 0x40000000
 
-
-int copy_image(file_name)
-{
+int copy_image(file_name) {
 
 //    extern char _piggy_start, _piggy_end, _data_start;
 //

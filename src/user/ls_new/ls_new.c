@@ -1,17 +1,10 @@
-#include "common.h"
-#include "string.h"
+/**
+ * \file ls_new.c
+ */
 #include "shell_command.h"
-
+#include "string.h"
 #include "file_new.h"
 #include "memseg.h"
-
-
-static void show_help() {
-    printf(
-#include "ls_help.inc"
-    );
-}
-
 
 #define COMMAND_NAME "ls.new"
 #define COMMAND_DESC_MSG "lists files or segments"
@@ -22,11 +15,9 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
 #define MAX_NITEMS 100
 
-static int exec(int argsc, char **argsv)
-{
+static int exec(int argsc, char **argsv) {
 	if (argsc < 1) {
 		show_help();
 		return -1;

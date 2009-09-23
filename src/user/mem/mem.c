@@ -4,10 +4,8 @@
  * \date 13.02.2009
  * \author Alexey Fomin
  */
-
-#include "asm/types.h"
-#include "mem.h"
 #include "shell_command.h"
+#include "mem.h"
 
 #define COMMAND_NAME "mem"
 #define COMMAND_DESC_MSG "read from memory"
@@ -18,16 +16,9 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
 char mem_keys[] = {
-#include "mem_keys.inc"
-		};
-
-static inline void mem_print_help(void) {
-	printf(
-#include "mem_help.inc"
-	);
-}
+	'a', 'n', 'h'
+};
 
 void mem_print(WORD *addr, long int amount) {
 	long i = 0;
@@ -56,35 +47,35 @@ static int exec(int argsc, char **argsv) {
 			sizeof(mem_keys), keys);
 
 	if (keys_amount <= 0) {
-		mem_print_help();
+		show_help();
 		return -1;
 	}
 	if (get_key('h', keys, keys_amount, &key_value)) {
-		mem_print_help();
+		show_help();
 		return 0;
 	}
 
 	if (get_key('a', keys, keys_amount, &key_value)) {
 		if (key_value == NULL) {
 			LOG_ERROR("mem: -a: hex value for address expected.\n");
-			mem_print_help();
+			show_help();
 		}
 		if (!sscanf(key_value, "0x%x", &address)) {
 			LOG_ERROR("mem: -a: hex value for address expected.\n");
-			mem_print_help();
+			show_help();
 		}
 	}
 
 	if (get_key('n', keys, keys_amount, &key_value)) {
 		if (key_value == NULL) {
 			LOG_ERROR("mem: -n: hex or integer value for number of bytes expected.\n");
-			mem_print_help();
+			show_help();
 		}
 
 		if (!sscanf(key_value, "0x%x", amount)) {
 			if (!sscanf(key_value, "%d", &amount)) {
 				LOG_ERROR("mem: -n: hex or integer value for number of bytes expected.\n");
-				mem_print_help();
+				show_help();
 			}
 		}
 	}
@@ -92,4 +83,3 @@ static int exec(int argsc, char **argsv) {
 	mem_print(address, amount);
 	return 0;
 }
-

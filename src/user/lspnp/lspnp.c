@@ -4,12 +4,10 @@
  * \date 20.02.2009
  * \author abatyukov
  */
-#include "asm/types.h"
-#include "common.h"
+#include "shell_command.h"
 #include "string.h"
 #include "drivers/amba_pnp.h"
 #include "drivers/pnp_id.h"
-#include "shell_command.h"
 
 #define COMMAND_NAME "lspnp"
 #define COMMAND_DESC_MSG "show list of plug and play devices"
@@ -20,19 +18,11 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
 static char available_keys[] = {
-	#include "lspnp_keys.inc"
+	'b', 'n', 'h'
 };
 
 //static int bus_type;
-
-static void show_help() {
-	printf(
-	#include "lspnp_help.inc"
-	);
-}
-
 
 #define AMBA_BT_AHBM  1
 #define AMBA_BT_AHBSL 2

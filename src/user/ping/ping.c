@@ -4,12 +4,11 @@
  * \date Mar 20, 2009
  * \author anton
  */
-#include "asm/types.h"
+#include "shell_command.h"
 #include "net/icmp.h"
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"
-#include "shell_command.h"
 
 #define COMMAND_NAME "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
@@ -20,17 +19,9 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
-
 static char available_keys[] = {
-#include "ping_keys.inc"
-		};
-
-static void show_help() {
-	printf(
-#include "ping_help.inc"
-	);
-}
+	'I', 'c', 'W', 't', 'h'
+};
 
 static int has_responsed;
 static void callback(net_packet *pack) {

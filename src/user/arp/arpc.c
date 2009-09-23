@@ -1,20 +1,15 @@
 /**
  * \file arpc.c
- *
  * \date 24.04.09
  * \author sikmir
  */
-
-#include "common.h"
+#include "shell_command.h"
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"
 #include "net/arp.h"
 
-#include "shell_command.h"
-
-
-#define COMMAND_NAME "arp"
+#define COMMAND_NAME     "arp"
 #define COMMAND_DESC_MSG "manipulate the system ARP cache"
 static const char *help_msg =
 	#include "arp_help.inc"
@@ -23,16 +18,9 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
 static char available_keys[] = {
-#include "arp_keys.inc"
+	'd', 's', 'i', 'a', 'm', 'h'
 };
-
-static void show_help() {
-	printf(
-#include "arp_help.inc"
-	);
-}
 
 static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];

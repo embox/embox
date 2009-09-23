@@ -160,7 +160,7 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 
 static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback ) {
 	static char *script_commands[] = {
-#include "start_script.inc"
+	#include "start_script.inc"
 	};
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	int i;
@@ -186,7 +186,7 @@ void shell_start() {
 	callback->exec = exec_callback;
 	callback->guess = guess_callback;
 	if (console_init(console, callback) == NULL) {
-		printf("Failed to create a console");
+		LOG_ERROR("Failed to create a console");
 		return;
 	}
 	printf("\nStarting script...\n\n");
@@ -194,94 +194,4 @@ void shell_start() {
 
 	printf("\n\n%s", MONITOR_START_MSG);
 	console_start(console, prompt);
-}
-
-
-/**
- * parse arguments array on keys-value structures and entered amount of entered keys otherwise (if everything's OK)
- * @return  -1 wrong condition found. Arguments not in format: -<key> [<value>]
- * @return  -2 too many keys entered
- * @return -3 wrong key
- * @return 0 if (if everything's OK)
- */
-int parse_arg(const char *handler_name, int argsc, char **argsv,
-		char *available_keys, int amount_of_available_keys, SHELL_KEY *keys) {
-	int i, j, args_count;
-
-	i = 0;
-	args_count = 0;
-
-	while (i < argsc) {
-		if (*argsv[i] != '-') {
-			LOG_ERROR("%s: wrong condition found. Arguments not in format: -<key> [<value>]\n",
-					handler_name);
-
-			return -1;
-		}
-
-		if (args_count >= MAX_SHELL_KEYS) {
-			LOG_ERROR("%s: wrong key entered. See help.\n", handler_name);
-			return -2;
-		}
-		// Get key name.
-		// Second symbol. Ex: -h -x (-hello == -h)
-		keys[args_count].name = *(*(argsv + i) + 1);
-		keys[args_count].value = 0x0;
-
-		// Now working with value if one exists
-		i++;
-		if (i < argsc && **(argsv + i) != '-') {
-			keys[args_count].value = *(argsv + i);
-			i++;
-		}
-		args_count++;
-	}
-
-	//return args_count;
-
-	for (i = 0; i < args_count; i++) {
-		for (j = 0; j < amount_of_available_keys; j++) {
-			if (keys[i].name == available_keys[j]) {
-				break;
-			}
-		}
-		if (j >= amount_of_available_keys) {
-			LOG_ERROR("%s: incorrect key entered! See help.\n",
-					handler_name);
-			return -3;
-		}
-	}
-	return args_count;
-}
-
-// Compare keys with available
-// returns TRUE if all keys presented are available, FALSE otherwise
-int check_keys(SHELL_KEY *keys, int amount, char *available_keys,
-		int amount_of_available_keys) {
-	int i, j;
-
-	for (i = 0; i < amount; i++) {
-		for (j = 0; j < amount_of_available_keys; j++) {
-			if (keys[i].name == available_keys[j]) {
-				break;
-			}
-		}
-		if (j >= amount_of_available_keys) {
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
-// Determines whether key was entered
-// returns TRUE if key is active (was entered by user) and fills value
-int get_key(char key, SHELL_KEY *keys, int keys_amount, char **value) {
-	int i;
-	for (i = 0; i < keys_amount; i++) {
-		if (keys[i].name == key) {
-			*value = keys[i].value;
-			return TRUE;
-		}
-	}
-	return FALSE;
 }

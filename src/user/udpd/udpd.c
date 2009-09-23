@@ -4,13 +4,12 @@
  * \date 08.05.09
  * \author sikmir
  */
-#include "asm/types.h"
+#include "shell_command.h"
 #include "string.h"
 #include "misc.h"
 #include "net/net.h"
 #include "net/in.h"
 #include "net/socket.h"
-#include "shell_command.h"
 
 #define COMMAND_NAME "udpd"
 #define COMMAND_DESC_MSG "test udp socket"
@@ -21,17 +20,9 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
-#define COMMAND_NAME "udpd"
 static char available_keys[] = {
-    #include "udpd_keys.inc"
+	'a', 'p', 'h'
 };
-
-static void show_help() {
-	printf(
-    #include "udpd_help.inc"
-	);
-}
 
 static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];

@@ -4,7 +4,8 @@ SUBDIRS-$(MONITOR_CONIO) += console
 SUBDIRS-$(MONITOR_CONIO) += terminal
 
 OBJS-y:= printf.o \
-         scanf.o
+         scanf.o \
+         getopt.o
 
 OBJS-$(MONITOR_CONIO)    += shell.o
 

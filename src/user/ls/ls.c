@@ -1,7 +1,9 @@
-#include "common.h"
+/**
+ * \file ls.c
+ */
+#include "shell_command.h"
 #include "string.h"
 #include "rootfs.h"
-#include "shell_command.h"
 
 #define COMMAND_NAME "ls"
 #define COMMAND_DESC_MSG "list directory contents"
@@ -12,17 +14,9 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
-
 static char available_keys[] = {
-#include "ls_keys.inc"
-        };
-
-static void show_help() {
-    printf(
-#include "ls_help.inc"
-    );
-}
+    'p', 'h'
+};
 
 static int exec(int argsc, char **argsv) {
     SHELL_KEY keys[MAX_SHELL_KEYS];

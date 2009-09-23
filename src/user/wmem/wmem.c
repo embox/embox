@@ -4,8 +4,6 @@
  * \date 20.02.2009
  * \author Alexey Fomin
  */
-
-#include "asm/types.h"
 #include "shell_command.h"
 
 #define COMMAND_NAME "wmem"
@@ -17,16 +15,10 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
+static char wmem_keys[] = {
+	'a', 'v', 'h'
+};
 
-char wmem_keys[] = {
-#include "wmem_keys.inc"
-		};
-
-void wmem_print_help(void) {
-	printf(
-#include "wmem_help.inc"
-			);
-}
 static int exec(int argsc, char **argsv) {
 	SHELL_KEY keys[MAX_SHELL_KEYS];
 	int i;
@@ -39,17 +31,17 @@ static int exec(int argsc, char **argsv) {
 			keys);
 
 	if (keys_amount <= 0) {
-		wmem_print_help();
+		show_help();
 		return -1;
 	}
 
 	if (keys_amount == 0) {
-			wmem_print_help();
+			show_help();
 			return 0;
 		}
 
 	if ((get_key('h', keys, keys_amount, &key_value))) {
-		wmem_print_help();
+		show_help();
 		return 0;
 	}
 
@@ -57,13 +49,13 @@ static int exec(int argsc, char **argsv) {
 		if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &address))
 				&& (!sscanf(key_value, "%d", (int *) &address))) {
 			LOG_ERROR("wmem: hex value expected.\n");
-			wmem_print_help();
+			show_help();
 			return -1;
 		}
 
 	} else {
 		LOG_ERROR("wmem: -a key expected!\n");
-		wmem_print_help();
+		show_help();
 		return -1;
 	}
 
@@ -71,7 +63,7 @@ static int exec(int argsc, char **argsv) {
 		if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &new_value))
 				&& (!sscanf(key_value, "%d", (int *) &new_value))) {
 			LOG_ERROR("wmem: hex value expected.\n");
-			wmem_print_help();
+			show_help();
 			return -1;
 		}
 	} else {
@@ -80,7 +72,7 @@ static int exec(int argsc, char **argsv) {
 
 	if (address != address & 0xFFFFFFFC) {
 		LOG_ERROR("wmem: address in wrong format (last 2 bits must be 0)\n");
-		wmem_print_help();
+		show_help();
 		return -1;
 	}
 	*((WORD *) address) = new_value;

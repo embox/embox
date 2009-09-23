@@ -5,18 +5,8 @@
  * \author zoomer
  */
 
-#include "common.h"
 #include "shell_command.h"
-
 #include "file_new.h"
-/*
-static char cp_keys[] = {
-#include "ldimg_keys.inc"
-		};
-*/
-static void show_help() {
-	printf("help\n");
-}
 
 #define COMMAND_NAME "cp"
 #define COMMAND_DESC_MSG "cp file"
@@ -27,14 +17,11 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-static void show_help() {
-        printf(
-                #include "cp_help.inc"
-        );
-}
+static char cp_keys[] = {
+	'h'
+};
 
-static int exec(int argsc, char **argsv)
-{
+static int exec(int argsc, char **argsv) {
 	const char *src_path,*dst_path;
 
 	if (argsc < 2) {

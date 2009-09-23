@@ -3,8 +3,12 @@
 
 #include "conio/shell.h"
 #include "conio/conio.h"
+#include "conio/getopt.h"
+#include "asm/types.h"
+#include "common.h"
 
 #define SHELL_COMMAND_NAME_MAX_LEN 0x20
+
 typedef struct _SHELL_COMMAND_DESCRIPTOR {
 	const char *name;
 	int (*exec)(int argsc, char **argsv);
@@ -17,12 +21,18 @@ typedef struct _SHELL_COMMAND_DESCRIPTOR {
     static int exec(int argsc, char **argsv); \
     static const SHELL_COMMAND_DESCRIPTOR _descriptor __attribute__ ((section(".shell_commands"))) = { name, exec, desc_msg, &help_msg }; \
 
+#define show_help() printf(HELP_MSG)
 
+/**
+ * start exec shell command with pointed descriptor
+ */
 int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc, char **argsv);
 
 SHELL_COMMAND_DESCRIPTOR *shell_command_find_descriptor(char *name);
 
-/**iterate functions*/
+/**
+ * iterate functions
+ */
 SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_first(char *start_str, int length);
 
 SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_next(SHELL_COMMAND_DESCRIPTOR * cur_desc, char *start_str, int length);

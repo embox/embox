@@ -4,17 +4,9 @@
  * \date 03.07.2009
  * \author kse
  */
-#include "asm/types.h"
 #include "shell_command.h"
-
 #include "memseg.h"
 #include "file_new.h"
-
-static void show_help() {
-	printf(
-#include "ldimg_help.inc"
-	);
-}
 
 #define COMMAND_NAME "load.new"
 #define COMMAND_DESC_MSG "load image file"
@@ -25,11 +17,8 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
-static int exec(int argsc, char **argsv)
-{
+static int exec(int argsc, char **argsv) {
 	int i;
-
 	unsigned int base_addr;
 	char seg_fpath[256];
 	char *file_path;

@@ -6,6 +6,7 @@
 "    arp with no mode specifier will print the       \n"
 "    current content of the table.                   \n"
 "OPTIONS                                             \n"
+"    -i  - select  an  interface                     \n"
 "    -d  - will delete a ARP table entry             \n"
 "    -s  - used to set up a new table entry          \n"
 "    -a  - ip address                                \n"

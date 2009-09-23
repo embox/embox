@@ -5,7 +5,6 @@
  * \author kse
  */
 
-#include "asm/types.h"
 #include "shell_command.h"
 
 #define COMMAND_NAME "exec"
@@ -17,21 +16,13 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-
 static char goto_keys[] = {
-#include "goto_keys.inc"
-		};
-
-static void show_help() {
-	printf(
-#include "goto_help.inc"
-	);
-}
+	'a', 'h'
+};
 
 typedef void (*IMAGE_ENTRY)();
 
-void go_to(unsigned int addr)
-{
+void go_to(unsigned int addr) {
 	printf("Try goto 0x%08X\n", addr);
 	/*__asm__ __volatile__("jmpl %0, %%g0\nnop\n"::"rI"(addr));
     */
@@ -39,7 +30,6 @@ void go_to(unsigned int addr)
 	irq_ctrl_disable_all();
 	((IMAGE_ENTRY)addr)();
 }
-
 
 //int goto_shell_handler(int argsc, char **argsv) {
 static int exec(int argsc, char **argsv){
