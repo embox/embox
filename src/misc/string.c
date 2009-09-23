@@ -1,15 +1,11 @@
-/** \file string.c
- *  \brief Contains some utils function for working with strings and memory
- *  \date Mar 23, 2009
- *  \author Anton Bondarev
+/**
+ * \file string.c
+ * \brief Contains some utils function for working with strings and memory
+ * \date Mar 23, 2009
+ * \author Anton Bondarev
  */
 #include "string.h"
 
-/**
- * character to upper case
- * @param character in any register case
- * @return symbol in upcase register
- */
 char ch_upcase(char ch) {
 	if (ch >= 'a' && ch <= 'z')
 		return (ch + 'A' - 'a');
@@ -17,13 +13,6 @@ char ch_upcase(char ch) {
 		return ch;
 }
 
-/**
- * convert digit character to integer
- * @param digit character for converting
- * @param base for converting
- * @return converted symbol
- * @return -1 if error
- */
 int ch_to_digit(char ch, int base) {
 	ch = ch_upcase(ch);
 	switch (base) {
@@ -53,12 +42,6 @@ int ch_to_digit(char ch, int base) {
 	return -1;
 }
 
-/**
- * calculate length of string
- * @param pointer to  first symbol in string
- *
- * @return string length
- */
 int strlen(const char * str) {
 	const char *eos = str;
 
@@ -68,12 +51,6 @@ int strlen(const char * str) {
 	return (int) (eos - str - 1);
 }
 
-/**
- * copy string
- * @param pointer to first symbol in source string
- * @param pointer to first symbol in destination string
- * @return pointer to result string
- */
 char *strcpy(char * dest, const char * src) {
 	char *cp = dest;
 	while ((*cp++ = *src++))
@@ -81,13 +58,6 @@ char *strcpy(char * dest, const char * src) {
 	return dest;
 }
 
-/**
- * copy not more then n symbols in string
- * @param pointer to first symbol in source string
- * @param pointer to first symbol in destination string
- * @param max symbols quantity for copy
- * @return pointer to result string
- */
 char *strncpy(char *dest, const char *source, size_t count) {
 	char *start = dest;
 	while (count && (*dest++ = *source++))
@@ -97,14 +67,6 @@ char *strncpy(char *dest, const char *source, size_t count) {
 	return start;
 }
 
-/**
- * string comparing
- * @param pointer to first symbol in source string
- * @param pointer to first symbol in destination string
- * @return 0 if string is equal
- * @return 1 if str1 greater then str2
- * @return -1 if str2 greater then str1
- */
 int strcmp(const char * str1, const char * str2) {
 	int ret = 0;
 	while (!(ret = *(unsigned char *) str1 - *(unsigned char *) str2) && *str2)
@@ -118,14 +80,6 @@ int strcmp(const char * str1, const char * str2) {
 	return ret;
 }
 
-/**
- * string comparing max n symbols
- * @param pointer to first symbol in source string
- * @param pointer to first symbol in destination string
- * @return 0 if string is equal
- * @return 1 if str1 greater then str2
- * @return -1 if str2 greater then str1
- */
 int strncmp(const char *s1, const char *s2, size_t count) {
 	if (!count)
 		return 0;
@@ -138,27 +92,17 @@ int strncmp(const char *s1, const char *s2, size_t count) {
 	return *(unsigned char *) s1 - *(unsigned char *) s2;
 }
 
-/**
- * Determines whether beg is the beginning of the str string
- */
-//int str_starts_with(const char *str, const char *beg, int len) {
-//	// TODO change to strncpy
-//	int i;
-//	for (i = 0; *beg == *str || *beg == 0 || i == len; beg++, str++, i++) {
-//		if (*beg == 0 || i == len) {
-//			return TRUE;
-//		}
-//	}
-//	return FALSE;
-//}
+/*int str_starts_with(const char *str, const char *beg, int len) {
+	// TODO change to strncpy
+	int i;
+	for (i = 0; *beg == *str || *beg == 0 || i == len; beg++, str++, i++) {
+		if (*beg == 0 || i == len) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}*/
 
-/**
- * is symbol digit
- *  @param checking symbol
- *  @param base
- *  @return 1 if sym is digit
- *  @return 0 if not
- */
 int is_digit(int ch, int base) {
 	ch = (int) ch_upcase((char) ch);
 	switch (base) {
@@ -183,14 +127,6 @@ int is_digit(int ch, int base) {
 	return FALSE;
 }
 
-/**
- * comparing 2 massive of bytes
- * @param dst first mass
- * @param src second mass
- * @return 0 if equal
- * @return positive if dst > src
- * @return negotive if  dst < src
- */
 int memcmp(const void *dst, const void *src, size_t n) {
 	if (!n)
 		return 0;
@@ -203,11 +139,6 @@ int memcmp(const void *dst, const void *src, size_t n) {
 	return *((unsigned char *) dst) - *((unsigned char *) src);
 }
 
-/**
- * set massive of bytes pointed value
- * @param p pointer to first byte in massive
- * @return pointer to first byte in massive
- */
 void *memset(void *p, int c, size_t n) {
 	char *pb = (char *) p;
 	char *pbend = pb + n;
@@ -216,12 +147,6 @@ void *memset(void *p, int c, size_t n) {
 	return p;
 }
 
-/**
- * copy one massive of bytes to another
- * @param dst pointer to first byte in dst mass
- * @param src pointer to first byte in src mass
- * @return pointer to first byte in dst mass
- */
 void *memcpy(void *dst, const void *src, size_t n) {
 	void *ret = dst;
 
@@ -234,3 +159,77 @@ void *memcpy(void *dst, const void *src, size_t n) {
 	return ret;
 }
 
+char *strchr(const char *s, int c_in) {
+	const unsigned char *char_ptr;
+	const unsigned long int *longword_ptr;
+	unsigned long int longword, magic_bits, charmask;
+	unsigned char c;
+
+	c = (unsigned char) c_in;
+
+	for (char_ptr = (const unsigned char *) s;
+            ((unsigned long int) char_ptr & (sizeof (longword) - 1)) != 0;
+            ++char_ptr)
+    		if (*char_ptr == c)
+            		return (void *) char_ptr;
+                else if (*char_ptr == '\0')
+                        return NULL;
+
+	longword_ptr = (unsigned long int *) char_ptr;
+
+	switch (sizeof (longword)) {
+	case 4: magic_bits = 0x7efefeffL; break;
+	case 8: magic_bits = ((0x7efefefeL << 16) << 16) | 0xfefefeffL; break;
+	default:
+		return NULL;
+	}
+	charmask = c | (c << 8);
+	charmask |= charmask << 16;
+	if (sizeof (longword) > 4)
+		charmask |= (charmask << 16) << 16;
+        if (sizeof (longword) > 8)
+    		return NULL;
+
+	for (;;) {
+    		longword = *longword_ptr++;
+    		if ((((longword + magic_bits) ^ ~longword) & ~magic_bits) != 0 ||
+    		    ((((longword ^ charmask) + magic_bits) ^ ~(longword ^ charmask))& ~magic_bits) != 0) {
+    			const unsigned char *cp = (const unsigned char *) (longword_ptr - 1);
+    			if (*cp == c)
+    				return (char *) cp;
+    			else if (*cp == '\0')
+    			        return NULL;
+    			if (*++cp == c)
+    			        return (char *) cp;
+    			else if (*cp == '\0')
+    			        return NULL;
+    			if (*++cp == c)
+    			        return (char *) cp;
+    			else if (*cp == '\0')
+    			        return NULL;
+    			if (*++cp == c)
+    			        return (char *) cp;
+    			else if (*cp == '\0')
+    			        return NULL;
+        		if (sizeof (longword) > 4) {
+                                if (*++cp == c)
+                                        return (char *) cp;
+                                else if (*cp == '\0')
+                                        return NULL;
+                                if (*++cp == c)
+                                        return (char *) cp;
+                                else if (*cp == '\0')
+                                        return NULL;
+                                if (*++cp == c)
+                            	        return (char *) cp;
+                                else if (*cp == '\0')
+                            	        return NULL;
+                                if (*++cp == c)
+                                        return (char *) cp;
+                                else if (*cp == '\0')
+                                        return NULL;
+                        }
+                }
+        }
+        return NULL;
+}

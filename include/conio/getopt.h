@@ -4,16 +4,19 @@
  * \author Sikmir
  */
 #ifndef _GETOPT_H
-/*
-struct option {
-    const char *name;
-    int has_arg;
-    int *flag;
-    int val;
-};
 
-int getopt_long(int argc, char **argv, const char *shortopts, const struct option *longopts, int *longind);
-*/
+extern char *optarg;
+extern int optind;
+extern int optopt;
+extern int opterr;
+
+/**
+ * int    argc is the number of arguments on cmdline
+ * char   **argv is the pointer to array of cmdline arguments
+ * char   *opts is the string of all valid options
+ * each char case must be given; options taking an arg are followed by = ':'
+ */
+int getopt(int argc, char **argv, const char *opts);
 
 #define MAX_SHELL_KEYS 12
 
