@@ -113,7 +113,7 @@ static void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifde
 	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
 	rebuild_udp_header(pack, sk->inet.sport, sk->inet.dport);
-	memcpy(pack->h.uh->data, buf, len);
+//	memcpy(pack->h.uh->data, buf, len);
 }
 
 int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {

@@ -17,7 +17,6 @@ typedef struct _udphdr {
         unsigned short dest;
         unsigned short len;
         unsigned short check;
-	unsigned char  data[24];
 } __attribute__((packed)) udphdr;
 
 #define UDP_HEADER_SIZE	(sizeof(udphdr))
