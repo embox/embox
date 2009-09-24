@@ -44,10 +44,9 @@ static int bootp_dns_set = 0;
 static int bootp_dns_domain_set = 0;
 #endif
 
-static struct bootp_header_t bootp_info;
+static struct _bootp_header_t bootp_info;
 
-const struct bootp_header_t const* get_bootp_info ()
-{
+const struct _bootp_header_t const* get_bootp_info () {
 	return &bootp_info;
 }
 
@@ -55,36 +54,30 @@ static ip_addr_t local_ip_addr = {0};
 static ip_addr_t local_ip_mask = {0};
 static ip_addr_t local_ip_gate = {0};
 
-ip_addr_t* const get_ip_addr ()
-{
+ip_addr_t* const get_ip_addr () {
 	return &local_ip_addr;
 }
 
-ip_addr_t* const get_ip_mask ()
-{
+ip_addr_t* const get_ip_mask () {
         return &local_ip_mask;
 }
 
-ip_addr_t* const get_ip_gate ()
-{
+ip_addr_t* const get_ip_gate () {
         return &local_ip_gate;
 }
 
-static unsigned char* add_option (unsigned char* p, unsigned char* opt, int len)
-{
-	if (len == -1)
-	{
+static unsigned char* add_option (unsigned char* p, unsigned char* opt, int len) {
+	if (len == -1) 	{
 		len = strlen (opt);
 	}
 	memcpy (p, opt, len);
 	return p + len;
 }
 
-int bootp_discover (void* ifdev)
-{
+int bootp_discover (void* ifdev) {
         int             udp_skt = 0;
 	int             srv_skt = 0;
-	struct bootp_header_t  b;
+	struct _bootp_header_t  b;
         unsigned long   start = 0;
 	ip_addr_t       saved_ip_addr = {0};
 	struct sockaddr_in addr;
@@ -117,23 +110,23 @@ int bootp_discover (void* ifdev)
 	memset(&addr, 0, sizeof(struct sockaddr_in));
 	addr.sin_family  = AF_INET;
 	addr.sin_port    = htons (PORT_BOOTP_CLIENT);
+//	addr.sin_addr.s_addr = 0;
 
 	udp_skt = socket (AF_INET, SOCK_DGRAM, 0);
-	if (udp_skt == -1)
-	{
+	if (udp_skt == -1) {
 		LOG_ERROR ("bootp socket failed");
 		return -1;
 	}
 
-	if (bind (udp_skt, (const struct sockaddr*)&addr, sizeof (addr)) == -1)
-	{
+	if (bind (udp_skt, (const struct sockaddr*)&addr, sizeof (addr)) == -1) {
 		LOG_ERROR ("bootp bind failed");
                 return -1;
 	}
 
 	memset (&b, 0, sizeof (b));
-	for (;retry > 0; retry--)
-	{
+	TRACE("bootp for(;;) started\n");
+	for (;retry > 0; retry--) {
+		TRACE("retry #%d\n", retry);
 		// fill bootp packet
 		b.op = BOOTPREQUEST;
 		b.htype = HTYPE_ETHERNET;
@@ -145,8 +138,7 @@ int bootp_discover (void* ifdev)
 
 #ifdef DHCP_SUPPORT
 		p = b.options;
-		switch (dhcp_state)
-		{
+		switch (dhcp_state) {
 			case DHCP_NONE:
 			case DHCP_DISCOVER:
 				p = add_option (p, (unsigned char*)dhcp_cookie, -1);
@@ -193,10 +185,10 @@ int bootp_discover (void* ifdev)
 		old_state = dhcp_state;
 #endif
 
-		// create 'raw' socket
+		// create 'raw' packet
+		TRACE("create raw packet\n");
 		net_packet* pack = net_packet_alloc ();
-		if (pack == 0)
-		{
+		if (pack == 0) {
 			LOG_ERROR("bootp net_packet_alloc failed");
 			return -1;
 		}
@@ -209,88 +201,77 @@ int bootp_discover (void* ifdev)
 	        memcpy(pack->mac.ethh->src_addr, enet, sizeof(pack->mac.ethh->src_addr));
 		pack->mac.ethh->type = ETH_P_IP;
 
+		memcpy (pack->data + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE, &b, BOOTP_HEADER_SIZE);
+
                 pack->nh.iph = (struct _iphdr*)(pack->data + ETH_HEADER_SIZE);
-                ip_addr_t addr;
-                memset (addr, 0xff, sizeof (ip_addr_t));
-                rebuild_ip_header(pack, 100, AF_INET, 0, sizeof(struct bootp_header_t) + UDP_HEADER_SIZE, enet, addr);
+                ip_addr_t daddr;
+		ip_addr_t saddr;
+                memset (saddr, 0, sizeof (ip_addr_t));
+                memset (daddr, 0xff, sizeof (ip_addr_t));
+                rebuild_ip_header(pack, 100, /*AF_INET*/0x11, 0, BOOTP_HEADER_SIZE + UDP_HEADER_SIZE + IP_HEADER_SIZE, saddr, daddr);
 
 		pack->h.uh = (struct _udphdr*)(pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE);
 		pack->h.uh->source = htons(PORT_BOOTP_CLIENT);
 		pack->h.uh->dest = htons (PORT_BOOTP_SERVER);
-		pack->h.uh->len = sizeof(struct bootp_header_t);
+		pack->h.uh->len = BOOTP_HEADER_SIZE + UDP_HEADER_SIZE;
 		pack->h.uh->check = 0;
-		pack->h.uh->check = calc_checksumm (pack->h.uh, UDP_HEADER_SIZE);
+//		pack->h.uh->check = calc_checksumm (pack->h.uh, BOOTP_HEADER_SIZE + UDP_HEADER_SIZE);
 
-		memcpy (pack->data + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE, &b, BOOTP_HEADER_SIZE);
-
+		arp_add_entity (ifdev, daddr, pack->mac.ethh->dst_addr);
+		TRACE("eth_send\n");
 		eth_send (pack);
 		net_packet_free (pack);
 
 		// wait a bit
-		sleep (100);
+		sleep (1000);
 
 		// try to read reply
-		if (!empty_socket (udp_skt))
-		{
-			if (recv (udp_skt, (void*)&b, sizeof(struct bootp_header_t), 0) != -1)
-			{
-				if (b.op == BOOTPREPLY)
-				{
-					if (memcmp (b.chaddr, enet, ETH_ALEN))
-					{
+		if (!empty_socket (udp_skt)) {
+			TRACE("socket not empty\n");
+			if (recv (udp_skt, (void*)&b, sizeof(struct _bootp_header_t), 0) != -1) {
+				if (b.op == BOOTPREPLY) {
+					if (memcmp (b.chaddr, enet, ETH_ALEN)) {
 #ifdef DHCP_SUPPORT
 						p = b.options;
-						if (!memcmp (p, dhcp_cookie, sizeof (dhcp_cookie)))
-						{
+						if (!memcmp (p, dhcp_cookie, sizeof (dhcp_cookie))) {
 							// find the DHCP message tag
-							while (*p != TAG_DHCP_MESS_TYPE)
-							{
+							while (*p != TAG_DHCP_MESS_TYPE) {
 								p += p[1] + 2;
-								if (p >= b.options + BOOTP_HEADER_SIZE)
-								{
+								if (p >= b.options + BOOTP_HEADER_SIZE) {
 									cont = 1;
 								}
 							}
 							if (cont) continue;
 
 							p += 2;
-							switch (dhcp_state)
-							{
+							switch (dhcp_state) {
 								case DHCP_DISCOVER:
-									if (*p == DHCP_MESS_TYPE_OFFER)
-									{
-										if (!memcmp (b.chaddr, enet, 6))
-										{
+									if (*p == DHCP_MESS_TYPE_OFFER) {
+										if (!memcmp (b.chaddr, enet, 6)) {
 											old_state = dhcp_state;
 											dhcp_state = DHCP_REQUEST;
 											p = b.options + 4;
 											unsigned char* end = b.options + BOOTP_HEADER_SIZE;
 											int optlen = 0;
-											while (p < end)
-											{
+											while (p < end) {
 												unsigned char* tag = p;
 												if (*tag == TAG_END) break;
 												if (*tag == TAG_PAD) optlen = 1;
-												else
-												{
+												else {
 													optlen = p[1];
 													p += 2;
-													switch (*tag)
-													{
+													switch (*tag) {
 #ifdef DNS_SUPPORT
 														case TAG_DOMAIN_SERVER:
 															memcpy(&bootp_dns_addr, p, 4);
 															bootp_dns_set = 1;
 														break;
 														case TAG_DOMAIN_NAME:
-															if (optlen < sizeof(bootp_dns_domain))
-															{
+															if (optlen < sizeof(bootp_dns_domain)) {
 																memcpy (bootp_dns_domain, p, optlen);
 																bootp_dns_domain[optlen] = 0;
 																bootp_dns_domain_set = 1;
-															}
-															else
-															{
+															} else {
 																LOG_ERROR("DNS domain is too long.");
 															}
 														break;
@@ -303,26 +284,21 @@ int bootp_discover (void* ifdev)
 									}
 									break;
                                                                 case DHCP_REQUEST:
-                                                                        if (*p == DHCP_MESS_TYPE_OFFER)
-                                                                        {
-                                                                                if (!memcmp (b.chaddr, enet, 6))
-										{
+                                                                        if (*p == DHCP_MESS_TYPE_OFFER) {
+                                                                                if (!memcmp (b.chaddr, enet, 6)) {
 											memcpy (local_ip_addr, b.yiaddr, 4);
 											memcpy (local_ip_gate, b.giaddr, 4);
 											p = b.options + 4;
                                                                                         unsigned char* end = b.options + BOOTP_HEADER_SIZE;
                                                                                         int optlen = 0;
-											while (p < end)
-											{
+											while (p < end) {
 												unsigned char* tag = p;
                                                                                                 if (*tag == TAG_END) break;
                                                                                                 if (*tag == TAG_PAD) optlen = 1;
-												else
-												{
+												else {
 													optlen = p[1];
                                                                                                         p += 2;
-                                                                                                        switch (*tag)
-                                                                                                        {
+                                                                                                        switch (*tag) {
 														case TAG_SUBNET_MASK:
 															memcpy(local_ip_mask, p, 4);
 															break;
@@ -334,7 +310,7 @@ int bootp_discover (void* ifdev)
 												p += optlen;
 											}
 										}
-										memcpy (&bootp_info, &b, sizeof (struct bootp_header_t));
+										memcpy (&bootp_info, &b, sizeof (struct _bootp_header_t));
 										return 0;
                                                                         }
                                                                         break;
@@ -346,7 +322,7 @@ int bootp_discover (void* ifdev)
 							}
 						}
 #else
-						memcpy (&bootp_info, &b, sizeof (struct bootp_header_t));
+						memcpy (&bootp_info, &b, sizeof (struct _bootp_header_t));
 						memcpy (local_ip_addr, &b.yiaddr, 4);
 						memcpy (local_ip_gate, &b.giaddr, 4);
 #endif
@@ -364,8 +340,7 @@ int bootp_discover (void* ifdev)
 
 #define BUG_LIBC
 #ifdef BUG_LIBC
-char* strcat (char* s1, const char* s2)
-{
+char* strcat (char* s1, const char* s2) {
 	if (!s1 || !s2) return NULL;
 	char* s = s1;
 	while (*s1) s1++;

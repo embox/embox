@@ -4,10 +4,22 @@
 #include "net/ip.h"
 #include "net/net.h"
 
+//#define HOSTNAME "monitor"
+//#define DHCP_SUPPORT 1
+//#define DNS_SUPPORT 1
+
+#ifdef DHCP_SUPPORT
+#define VEND_LEN	(312 + 32)
+#define MINPKTSZ	576
+#else
+#define VEND_LEN	 64
+#define MINPKTSZ	300
+#endif
+
 /*
 	BOOTP support. For details read RFC951 and RFC1395.
 */
-struct bootp_header_t {
+struct _bootp_header_t {
     unsigned char    op;                     /* packet op code / message type */
     unsigned char    htype;                  /* hardware addr type */
     unsigned char    hlen;                   /* hardware addr length */
@@ -22,10 +34,11 @@ struct bootp_header_t {
     unsigned char    chaddr[16];             /* client hardware address */
     char             sname[64];              /* server host name */
     char             file[128];              /* boot file name */
-    unsigned char    options[64];
-};
+    unsigned char    options[VEND_LEN];
+} __attribute__((packed)) bootp_header_t;
 
-#define BOOTP_HEADER_SIZE sizeof(struct bootp_header_t)
+#define __MAX(a,b) ((a)>(b)?(a):(b))
+#define BOOTP_HEADER_SIZE __MAX(sizeof(struct _bootp_header_t), MINPKTSZ)
 
 // UDP port numbers, server and client.
 #define PORT_BOOTP_SERVER           67
@@ -151,7 +164,7 @@ struct bootp_header_t {
 #define DHCP_MESS_TYPE_NAK       ((unsigned char) 6)
 #define DHCP_MESS_TYPE_RELEASE   ((unsigned char) 7)
 
-#define RETRY_COUNT 8
+#define RETRY_COUNT 1 /*8*/
 
 #define SHOULD_BE_RANDOM  0x12345555
 
@@ -165,7 +178,7 @@ int bootp_discover (void* ifdev);
 /**
  * Return current bootp info
  */
-const struct bootp_header_t const* get_bootp_info ();
+const struct _bootp_header_t const* get_bootp_info ();
 
 /**
  * Return ip address obtained from bootp/dhcp
@@ -181,11 +194,6 @@ ip_addr_t* const get_ip_mask ();
  * Return gateway obtained from bootp/dhcp
  */
 ip_addr_t* const get_ip_gate ();
-
-
-//#define HOSTNAME "monitor"
-//#define DHCP_SUPPORT 1
-//#define DNS_SUPPORT 1
 
 #endif // __BOOTP_H__
 
