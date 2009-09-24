@@ -18,6 +18,9 @@ extern int opterr;
  */
 int getopt(int argc, char **argv, const char *opts);
 
+/** setup optind and opterr */
+void getopt_init();
+
 #define MAX_SHELL_KEYS 12
 
 typedef struct {

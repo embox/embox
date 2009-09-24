@@ -13,6 +13,6 @@
 "SEE ALSO                                 \n"
 "    mem                                  \n"
 "AUTHORS                                  \n"
-"    Alexey Fomin                         \n"
+"    Alexey Fomin                         "
 
 

@@ -4,7 +4,6 @@
  * \date 02.07.2009
  * \author kse
  */
-
 #include "shell_command.h"
 
 #define COMMAND_NAME "exec"
@@ -15,10 +14,6 @@ static const char *help_msg =
 #define HELP_MSG help_msg
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
-
-static char goto_keys[] = {
-	'a', 'h'
-};
 
 typedef void (*IMAGE_ENTRY)();
 
@@ -31,45 +26,34 @@ void go_to(unsigned int addr) {
 	((IMAGE_ENTRY)addr)();
 }
 
-//int goto_shell_handler(int argsc, char **argsv) {
 static int exec(int argsc, char **argsv){
-	SHELL_KEY keys[MAX_SHELL_KEYS];
-	char *key_value;
-	int keys_amount;
+	int nextOption;
 	unsigned int addr = 0;
 
-	keys_amount = parse_arg("goto", argsc, argsv, goto_keys, sizeof(goto_keys), keys);
-
-	if (keys_amount < 0) {
-		printf("no keys.\n");
-		return -1;
-	}
-
-
-	if (get_key('a', keys, keys_amount, &key_value))
-	{
-		if ((key_value == NULL) || (*key_value == '\0'))
-		{
-			LOG_ERROR("goto: missed address value\n");
+	getopt_init();
+	do {
+	        nextOption = getopt(argsc, argsv, "a:h");
+	        switch(nextOption) {
+	        case 'h':
+	                show_help();
+	                return 0;
+	        case 'a':
+			if ((optarg == NULL) || (*optarg == '\0')) {
+				LOG_ERROR("goto: missed address value\n");
+				return -1;
+			}
+			if (sscanf(optarg, "0x%x", &addr) > 0) {
+				go_to(addr);
+				return 0;
+			}
+			LOG_ERROR("goto: invalid value \"%s\".\n\the number expected.\n", optarg);
 			return -1;
+		case -1:
+		        break;
+		default:
+		        return 0;
 		}
+	} while(-1 != nextOption);
 
-		if (sscanf(key_value, "0x%x", &addr) > 0)
-		{
-			go_to(addr);
-			return 0;
-		}
-
-		LOG_ERROR("goto: invalid value \"%s\".\n\the number expected.\n", key_value);
-		return -1;
-	}
-
-
-	if (get_key('h', keys, keys_amount, &key_value)) {
-		show_help();
-		return 0;
-	}
-
-	show_help();
-	return -1;
+	return 0;
 }

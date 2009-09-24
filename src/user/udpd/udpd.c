@@ -25,36 +25,41 @@ static char available_keys[] = {
 };
 
 static int exec(int argsc, char **argsv) {
-	SHELL_KEY keys[MAX_SHELL_KEYS];
-	char *key_value;
-	int keys_amount;
+	int nextOption;
 	unsigned char addr[4];
-	unsigned long ip_addr;
-	int port;
+	unsigned long ip_addr = INADDR_ANY;
+	int port = 666;
 
-	keys_amount = parse_arg(COMMAND_NAME, argsc, argsv, available_keys,
-			sizeof(available_keys), keys);
+        getopt_init();
+        do {
+                nextOption = getopt(argsc, argsv, "a:p:h");
+                switch(nextOption) {
+                case 'h':
+                        show_help();
+                        return 0;
+                case 'a':
+            		if (NULL == ipaddr_scan(optarg, addr)) {
+                                LOG_ERROR("wrong ip addr format (%s)\n", optarg);
+                                show_help();
+                                return -1;
+                        } else {
+                                ip_addr = inet_addr(addr);
+                        }
+                        break;
+                case 'p':
+            		if (1 != sscanf(optarg, "%d", &port)) {
+                                LOG_ERROR("enter validly port '-p'\n");
+                                show_help();
+                                return -1;
+                        }
+                        break;
+                case -1:
+                        break;
+                default:
+                        return 0;
+                }
+        } while(-1 != nextOption);
 
-	if (!get_key('a', keys, keys_amount, &key_value)) {
-		ip_addr = INADDR_ANY;
-	} else if (NULL == ipaddr_scan(key_value, addr)) {
-	        LOG_ERROR("wrong ip addr format (%s)\n", key_value);
-	        show_help();
-	        return -1;
-	} else {
-		ip_addr = inet_addr(addr);
-	}
-        if (!get_key('p', keys, keys_amount, &key_value)) {
-                port = 666;
-        } else if (1 != sscanf(key_value, "%d", &port)) {
-                LOG_ERROR("enter validly port '-p'\n");
-                show_help();
-                return -1;
-        }
-	if (get_key('h', keys, keys_amount, &key_value)) {
-		show_help();
-		return 0;
-	}
 	int sock, length, n;
 	struct sockaddr_in server;
 	char buf[64];

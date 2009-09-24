@@ -15,32 +15,24 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-static char help_keys[] = {
-	'h'
-};
-
 static int exec(int argsc, char **argsv) {
-	SHELL_KEY keys[MAX_SHELL_KEYS];
-	char *key_value;
-	int keys_amount;
+	int nextOption;
 	int dev;
 	int i;
 //	SHELL_HANDLER_DESCR *shell_handlers;
-
-	keys_amount = parse_arg("help", argsc, argsv, help_keys, sizeof(help_keys),
-			keys);
-
-
-	if (keys_amount < 0) {
-		// Error state:
-		show_help();
-		return -1;
-	}
-
-	if (get_key('h', keys, keys_amount, &key_value)) {
-		show_help();
-		return 0;
-	}
+	getopt_init();
+        do {
+                nextOption = getopt(argsc, argsv, "h");
+                switch(nextOption) {
+                case 'h':
+            	        show_help();
+                        return 0;
+                case -1:
+                        break;
+                default:
+                        return 0;
+                }
+        } while(-1 != nextOption);
 
 //	if (NULL == (shell_handlers = shell_get_command_list())) {
 //		LOG_ERROR("can't find command list\n");

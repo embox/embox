@@ -6,12 +6,14 @@
 #include "conio/getopt.h"
 #include "common.h"
 #include "conio/conio.h"
+#include "string.h"
 
 int parse_arg(const char *handler_name, int argsc, char **argsv,
 		char *available_keys, int amount_of_available_keys, SHELL_KEY *keys) {
 	int i, j, args_count;
 
-	i = 0;
+	i = 1;
+	argsc--;
 	args_count = 0;
 
 	while (i < argsc) {
@@ -141,4 +143,9 @@ int getopt(int argc, char **argv, const char *opts) {
 	        optarg = NULL;
 	}
 	return c;
+}
+
+void getopt_init() {
+	opterr = 1;
+	optind = 1;
 }

@@ -1,7 +1,7 @@
 "NAME                                      \n"
 "    testmem - set of memory tests         \n"
 "SYNOPSIS                                  \n"
-"    mem [-h] [-a <addr>] [-n <number>] [-t <type of test]\n"
+"    testmem [-h] [-a <addr>] [-n <number>] [-t <type of test]\n"
 "DESCRIPTION                               \n"
 "    Read from memory or test memory.      \n"
 "OPTION                                    \n"

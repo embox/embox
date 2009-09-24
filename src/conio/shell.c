@@ -101,7 +101,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 		return;
 	}
 	//sys_exec_start(c_desc->exec, words_counter - 1, words + 1);
-	shell_command_exec(c_desc, words_counter - 1, words + 1);
+	shell_command_exec(c_desc, words_counter, words);
 	return;
 }
 

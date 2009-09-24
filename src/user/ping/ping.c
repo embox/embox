@@ -19,10 +19,6 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-static char available_keys[] = {
-	'I', 'c', 'W', 't', 'h'
-};
-
 static int has_responsed;
 static void callback(net_packet *pack) {
 	net_packet_free(pack);
@@ -65,74 +61,62 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl) 
 	icmp_abort_echo_request(ifdev);
 	return 0;
 }
-/**
- * handler of command is named "ping"
- * @param argsc - quantity of params
- * @param argsv - list of arguments
- */
+
 static int exec(int argsc, char **argsv) {
-	SHELL_KEY keys[MAX_SHELL_KEYS];
-	char *key_value;
-	int keys_amount;
-	//	char *eth_name;
-	int cnt;
-	int timeout;
-	int ttl;
+	int cnt     = 4;
+	int timeout = 1000;
+	int ttl     = 64;
+	void *ifdev = ifdev_find_by_name("eth0");
 	unsigned char dst[4];
-	void *ifdev;
+	int nextOption;
+	getopt_init();
+	do {
+		nextOption = getopt(argsc, argsv, "I:c:t:W:h");
+	        switch(nextOption) {
+	        case 'h':
+	                show_help();
+	                return 0;
+	        case 'I': /* get interface */
+                        if (NULL == (ifdev = ifdev_find_by_name(optarg))) {
+                                LOG_ERROR("Can't find interface %s\n see ifconfig for available interfaces list\n", optarg);
+                                show_help();
+                                return -1;
+                        }
+                        break;
+                case 'c': //get ping cnt */
+            		if (1 != sscanf(optarg, "%d", &cnt)) {
+            		        LOG_ERROR("enter validly cnt '-c'\n");
+            		        show_help();
+            		        return -1;
+            		}
+            		break;
+            	case 't': /* get icmp ttl */
+            		if (1 != sscanf(optarg, "%d", &ttl)) {
+            		        LOG_ERROR("enter validly ttl '-t'\n");
+            		        show_help();
+            		        return -1;
+            		}
+            		break;
+            	case 'W': /* get ping timeout */
+            		if (1 != sscanf(optarg, "%d", &timeout)) {
+            		        LOG_ERROR("enter validly timeout '-W'\n");
+            		        show_help();
+            		        return -1;
+            		}
+            		break;
+	        case -1:
+	                break;
+	        default:
+	        	return 0;
+	        }
+	} while(-1 != nextOption);
 
-	keys_amount = parse_arg(COMMAND_NAME, argsc - 1, argsv, available_keys,
-			sizeof(available_keys), keys);
-
-	if (keys_amount < 0) {
-		LOG_ERROR("during parsing params\n");
-		show_help();
-		return -1;
-	}
-
-	if (get_key('h', keys, keys_amount, &key_value)) {
+	if (argsc == 1) {
 		show_help();
 		return 0;
 	}
 
-	//get interface
-	if (!get_key('I', keys, keys_amount, &key_value)) {
-//		LOG_ERROR("choose right interface name '-i'\n");
-//		show_help();
-//		return -1;
-		ifdev = ifdev_find_by_name("eth0");
-	} else if (NULL == (ifdev = ifdev_find_by_name(key_value))) {
-		LOG_ERROR("Can't find interface %s\n see ifconfig for available interfaces list\n", key_value);
-		show_help();
-		return -1;
-	}
-	//get ping cnt
-	if (!get_key('c', keys, keys_amount, &key_value)) {
-		cnt = 4;
-	} else if (1 != sscanf(key_value, "%d", &cnt)) {
-		LOG_ERROR("enter validly cnt '-c'\n");
-		show_help();
-		return -1;
-	}
-
-        //get icmp ttl
-        if (!get_key('t', keys, keys_amount, &key_value)) {
-                ttl = 64;
-        } else if (1 != sscanf(key_value, "%d", &ttl)) {
-                LOG_ERROR("enter validly ttl '-t'\n");
-                show_help();
-                return -1;
-        }
-
-        //get ping timeout
-        if (!get_key('W', keys, keys_amount, &key_value)) {
-                timeout = 1000;
-        } else if (1 != sscanf(key_value, "%d", &timeout)) {
-                LOG_ERROR("enter validly timeout '-W'\n");
-                show_help();
-                return -1;
-        }
-        //get destanation addr
+        /* get destanation addr */
         if (NULL == ipaddr_scan(argsv[argsc - 1], dst)) {
                 LOG_ERROR("wrong ip addr format (%s)\n", argsv[argsc - 1]);
                 show_help();

@@ -328,10 +328,22 @@
 			"mdef": "MONITOR_USER_ARP",
 			"status": 1
 		},
+		"cp": {
+			"desc": "copy files and directories",
+			"inc": 0,
+			"mdef": "MONITOR_USER_CP",
+			"status": 1
+		},
 		"goto": {
 			"desc": "start execution from specified address",
 			"inc": 1,
 			"mdef": "MONITOR_USER_GOTO",
+			"status": 1
+		},
+		"help": {
+			"desc": "help system",
+			"inc": 1,
+			"mdef": "MONITOR_USER_HELP",
 			"status": 1
 		},
 		"ldimg": {
@@ -356,12 +368,6 @@
 			"desc": "read from memory or test memory",
 			"inc": 1,
 			"mdef": "MONITOR_USER_MEM",
-			"status": 1
-		},
-		"help": {
-			"desc": "help system",
-			"inc": 1,
-			"mdef": "MONITOR_USER_HELP",
 			"status": 1
 		},
 		"mmu_probe": {
@@ -392,6 +398,12 @@
 			"desc": "test memory",
 			"inc": 1,
 			"mdef": "MONITOR_USER_TESTMEM",
+			"status": 1
+		},
+		"man": {
+			"desc": "display manual pages",
+			"inc": 1,
+			"mdef": "MONITOR_USER_MAN",
 			"status": 1
 		}
 	}

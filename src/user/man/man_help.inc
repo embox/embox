@@ -1,0 +1,8 @@
+"NAME                                                 \n"
+"    man - format and display the on-line manual pages\n"
+"SYNOPSIS                                             \n"
+"    man [name]                                       \n"
+"DESCRIPTION                                          \n"
+"    man formats and displays the on-line manual pages\n"
+"AUTHORS                                              \n"
+"    Sikmir                                           "

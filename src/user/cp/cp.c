@@ -4,7 +4,6 @@
  * \date 22.08.2009
  * \author zoomer
  */
-
 #include "shell_command.h"
 #include "file_new.h"
 
@@ -17,20 +16,30 @@ static const char *help_msg =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
 
-static char cp_keys[] = {
-	'h'
-};
-
 static int exec(int argsc, char **argsv) {
+	int nextOption;
 	const char *src_path,*dst_path;
+	getopt_init();
+	do {
+		nextOption = getopt(argsc, argsv, "h");
+	        switch(nextOption) {
+	    	case 'h':
+	        	show_help();
+	    		return 0;
+                case -1:
+	                break;
+	        default:
+	                return 0;
+	        }
+	} while(-1 != nextOption);
 
-	if (argsc < 2) {
+	if (argsc < 3) {
 		show_help();
 		return -1;
 	}
 
-	src_path = argsv[0];
-	dst_path = argsv[1];
+	src_path = argsv[argsc - 2];
+	dst_path = argsv[argsc - 1];
 
 	FDESC src = open(src_path, NULL);
 	if (src==FDESC_INVALID)  {
