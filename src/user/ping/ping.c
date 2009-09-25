@@ -25,7 +25,7 @@ static void callback(net_packet *pack) {
 	has_responsed = TRUE;
 }
 
-static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl) {
+static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, int quiet) {
 	char ip[15];
 	ipaddr_print(ip, dst);
 	printf("PING to %s\n", ip);
@@ -41,18 +41,18 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl) 
 
 		has_responsed = FALSE;
 		ipaddr_print(ip, ifdev_get_ipaddr(ifdev));
-		printf("from %s", ip);
+		if(!quiet) printf("from %s", ip);
 		ipaddr_print(ip, dst);
-		printf(" to %s", ip);
-		printf(" ttl=%d ", ttl);
+		if(!quiet) printf(" to %s", ip);
+		if(!quiet) printf(" ttl=%d ", ttl);
 		icmp_send_echo_request(ifdev, dst, ttl, callback);
 		sleep(timeout);
 		if (FALSE == has_responsed) {
-			printf(" ....timeout\n");
+			if(!quiet) printf(" ....timeout\n");
 			icmp_abort_echo_request(ifdev);
 			cnt_err++;
 		} else {
-			printf(" ....ok\n");
+			if(!quiet) printf(" ....ok\n");
 			cnt_resp++;
 		}
 	}
@@ -66,43 +66,40 @@ static int exec(int argsc, char **argsv) {
 	int cnt     = 4;
 	int timeout = 1000;
 	int ttl     = 64;
+	int quiet   = 0;
 	void *ifdev = ifdev_find_by_name("eth0");
 	unsigned char dst[4];
 	int nextOption;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "I:c:t:W:h");
+		nextOption = getopt(argsc, argsv, "qI:c:t:W:h");
 	        switch(nextOption) {
 	        case 'h':
 	                show_help();
 	                return 0;
+	        case 'q':
+	    		quiet = 1;
+	    		break;
 	        case 'I': /* get interface */
                         if (NULL == (ifdev = ifdev_find_by_name(optarg))) {
-                                LOG_ERROR("Can't find interface %s\n see ifconfig for available interfaces list\n", optarg);
-                                show_help();
+                                TRACE("ping: unknown iface %s\n", optarg);
                                 return -1;
                         }
                         break;
                 case 'c': //get ping cnt */
             		if (1 != sscanf(optarg, "%d", &cnt)) {
-            		        LOG_ERROR("enter validly cnt '-c'\n");
-            		        show_help();
+            		        TRACE("ping: bad number of packets to transmit.\n");
             		        return -1;
             		}
             		break;
             	case 't': /* get icmp ttl */
             		if (1 != sscanf(optarg, "%d", &ttl)) {
-            		        LOG_ERROR("enter validly ttl '-t'\n");
-            		        show_help();
+            			TRACE("ping: can't set unicast time-to-live: Invalid argument\n");
             		        return -1;
             		}
             		break;
             	case 'W': /* get ping timeout */
-            		if (1 != sscanf(optarg, "%d", &timeout)) {
-            		        LOG_ERROR("enter validly timeout '-W'\n");
-            		        show_help();
-            		        return -1;
-            		}
+            		sscanf(optarg, "%d", &timeout);
             		break;
 	        case -1:
 	                break;
@@ -123,6 +120,6 @@ static int exec(int argsc, char **argsv) {
                 return -1;
         }
 	//carry out command
-	ping(ifdev, dst, cnt, timeout, ttl);
+	ping(ifdev, dst, cnt, timeout, ttl, quiet);
 	return 0;
 }

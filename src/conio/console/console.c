@@ -97,6 +97,11 @@ static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CB_EDIT_MODEL(cmdline_history_new_entry);
 }
 
+static void on_home(SCREEN_CALLBACK *cb, SCREEN *view) {
+	CONSOLE *this = (CONSOLE *) cb->outer;
+	//TODO: move cursor to the begin
+}
+
 CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 	if (this == NULL || callback == NULL) {
 		return NULL;
@@ -133,6 +138,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 	INIT_MEMBER(screen_callback,on_backspace);
 	INIT_MEMBER(screen_callback,on_tab);
 	INIT_MEMBER(screen_callback,on_delete);
+	INIT_MEMBER(screen_callback,on_home);
 	screen_callback->outer = this;
 
 	static const char * default_prompt = "";
