@@ -1,3 +1,8 @@
+/**
+ * \file shell_command.h
+ * \date 13.09.09
+ * \author Anton Bondarev
+ */
 #ifndef USER_HANDLER_H_
 #define USER_HANDLER_H_
 
@@ -12,14 +17,15 @@
 typedef struct _SHELL_COMMAND_DESCRIPTOR {
 	const char *name;
 	int (*exec)(int argsc, char **argsv);
-	const char * description;
-	const char **help_message;
+	const char *description;
+	const char *help_message;
+	const char **man_page;
 } SHELL_COMMAND_DESCRIPTOR;
 
 
-#define DECLARE_SHELL_COMMAND_DESCRIPTOR(name, exec, desc_msg, help_msg) \
+#define DECLARE_SHELL_COMMAND_DESCRIPTOR(name, exec, desc_msg, help_msg, man_page) \
     static int exec(int argsc, char **argsv); \
-    static const SHELL_COMMAND_DESCRIPTOR _descriptor __attribute__ ((section(".shell_commands"))) = { name, exec, desc_msg, &help_msg }; \
+    static const SHELL_COMMAND_DESCRIPTOR _descriptor __attribute__ ((section(".shell_commands"))) = { name, exec, desc_msg, help_msg, &man_page }; \
 
 #define show_help() printf(HELP_MSG)
 
@@ -28,7 +34,7 @@ typedef struct _SHELL_COMMAND_DESCRIPTOR {
  */
 int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc, char **argsv);
 
-SHELL_COMMAND_DESCRIPTOR *shell_command_find_descriptor(char *name);
+//SHELL_COMMAND_DESCRIPTOR *shell_command_find_descriptor(char *name);
 
 /**
  * iterate functions

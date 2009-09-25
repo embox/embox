@@ -6,14 +6,14 @@
 #include "file_new.h"
 #include "memseg.h"
 
-#define COMMAND_NAME "ls.new"
+#define COMMAND_NAME     "ls_new"
 #define COMMAND_DESC_MSG "lists files or segments"
-static const char *help_msg =
+#define HELP_MSG         "Usage: ls_new [-s] [path] [-h]"
+static const char *man_page =
 	#include "ls_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 #define MAX_NITEMS 100
 

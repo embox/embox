@@ -24,8 +24,8 @@ typedef struct _ETH_CONFIG{
 
 /* default configuration */
 static const ETH_CONFIG eth_ifs[] = {
-#include "ifconfig.inc"
-        };
+    #include "ifconfig.inc"
+};
 
 /**
  * initialize protocol's stack

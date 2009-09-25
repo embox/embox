@@ -1,25 +1,22 @@
 /*
- * help.c
+ * \file help.c
  *
- *  Created on: 02.03.2009
- *      Author: abatyukov
+ * \date 02.03.2009
+ * \author abatyukov
  */
 #include "shell_command.h"
 
-#define COMMAND_NAME "help"
+#define COMMAND_NAME     "help"
 #define COMMAND_DESC_MSG "show all available command"
-static const char *help_msg =
+#define HELP_MSG         "Usage: help [-h]"
+static const char *man_page =
 	#include "help_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
 	int nextOption;
-	int dev;
-	int i;
-//	SHELL_HANDLER_DESCR *shell_handlers;
 	getopt_init();
         do {
                 nextOption = getopt(argsc, argsv, "h");
@@ -33,16 +30,6 @@ static int exec(int argsc, char **argsv) {
                         return 0;
                 }
         } while(-1 != nextOption);
-
-//	if (NULL == (shell_handlers = shell_get_command_list())) {
-//		LOG_ERROR("can't find command list\n");
-//		return -1;
-//	}
-//	//need to display all possible commands
-//	printf("Available commands: \n");
-//	for (i = 0; i < shell_size_command_list(); i++) {
-//		printf("%s\t\t - %s\n", shell_handlers[i].name, shell_handlers[i].description);
-//	}
 
 	printf("Available commands: \n");
 	SHELL_COMMAND_DESCRIPTOR * shell_desc;

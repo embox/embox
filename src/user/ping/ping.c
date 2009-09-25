@@ -10,14 +10,14 @@
 #include "net/eth.h"
 #include "net/if_device.h"
 
-#define COMMAND_NAME "ping"
+#define COMMAND_NAME     "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
-static const char *help_msg =
+#define HELP_MSG         "Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl] host"
+static const char *man_page =
 	#include "ping_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int has_responsed;
 static void callback(net_packet *pack) {

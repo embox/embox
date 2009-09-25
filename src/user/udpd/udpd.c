@@ -11,14 +11,14 @@
 #include "net/in.h"
 #include "net/socket.h"
 
-#define COMMAND_NAME "udpd"
+#define COMMAND_NAME     "udpd"
 #define COMMAND_DESC_MSG "test udp socket"
-static const char *help_msg =
+#define HELP_MSG         "Usage: udpd [-h] [-a addr] [-p port]"
+static const char *man_page =
 	#include "udpd_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static char available_keys[] = {
 	'a', 'p', 'h'

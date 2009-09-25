@@ -5,47 +5,39 @@
 #include "string.h"
 #include "rootfs.h"
 
-#define COMMAND_NAME "ls"
+#define COMMAND_NAME     "ls"
 #define COMMAND_DESC_MSG "list directory contents"
-static const char *help_msg =
+#define HELP_MSG         "Usage: ls [-p path] [-h]"
+static const char *man_page =
 	#include "ls_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
-
-static char available_keys[] = {
-    'p', 'h'
-};
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
-    SHELL_KEY keys[MAX_SHELL_KEYS];
-    char *key_value;
-    int keys_amount;
-    char *path = NULL;
+    char *path = "/";
     FSOP_DESCRIPTION *fsop;
     FS_FILE_ITERATOR iter_func;
     FILE_INFO file_info;
 
+    int nextOption;
+    getopt_init();
+    do {
+            nextOption = getopt(argsc, argsv, "p:h");
+            switch(nextOption) {
+	    case 'h':
+    		    show_help();
+                    return 0;
+            case 'p':
+        	    path = optarg;
+        	    break;
+            case -1:
+                    break;
+            default:
+                    return 0;
+            }
+    } while(-1 != nextOption);
 
-    keys_amount = parse_arg(COMMAND_NAME, argsc, argsv, available_keys,
-            sizeof(available_keys), keys);
-
-    if (keys_amount < 0) {
-        show_help();
-        return -1;
-    }
-
-    if (get_key('h', keys, keys_amount, &key_value)) {
-        show_help();
-        return 0;
-    }
-
-    if (get_key('p', keys, keys_amount, &key_value)) {
-        path = key_value;
-    } else {
-        path = "/";
-    }
     if (NULL == (fsop = rootfs_get_fsopdesc(path))){
         LOG_ERROR("can't find fs %s\n", path);
         return 0;

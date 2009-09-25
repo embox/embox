@@ -2,12 +2,10 @@
  * \file memory_tests.c
  * \date Jul 29, 2009
  * \author afomin
- * \details
  */
 #include "conio/conio.h"
 #include "common.h"
 #include "string.h"
-#include "memory_tests.h"
 
 inline static print_error(volatile WORD *addr, volatile WORD expected_value) {
 	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", addr, *addr,

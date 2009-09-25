@@ -2,21 +2,20 @@
  * \file testmem.c
  * \date Jul 24, 2009
  * \author afomin
- * \details
  */
 
 #include "shell_command.h"
 #include "asm/cache.h"
 #include "memory_tests.h"
 
-#define COMMAND_NAME "testmem"
+#define COMMAND_NAME     "testmem"
 #define COMMAND_DESC_MSG "set of memory tests"
-static const char *help_msg =
+#define HELP_MSG         "Usage: testmem [-h] [-a addr] [-n num] [-t type]"
+static const char *man_page =
 	#include "testmem_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 typedef void TEST_MEM_FUNC(WORD *addr, long int amount);
 

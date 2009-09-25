@@ -9,18 +9,14 @@
 #include "ramfs.h"
 #include "file.h"
 
-#define COMMAND_NAME "load"
+#define COMMAND_NAME     "ldimg"
 #define COMMAND_DESC_MSG "load image file"
-static const char *help_msg =
+#define HELP_MSG         "Usage: ldimg [-a addr] [-f filename] [-h]"
+static const char *man_page =
 	#include "ldimg_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
-
-static char ldimg_keys[] = {
-	'a', 'f', 'h'
-};
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 #define ENTRY_PTR 0x40000000
 
@@ -65,56 +61,46 @@ int copy_image(file_name) {
 }
 
 
-//int ldimg_shell_handler(int argsc, char **argsv) {
 static int exec(int argsc, char **argsv){
-	SHELL_KEY keys[MAX_SHELL_KEYS];
-	char *key_value;
-	int keys_amount;
-	int dev;
-	int i;
-	//SHELL_HANDLER_DESCR *shell_handlers;
-    RAMFS_CREATE_PARAM param;
+	RAMFS_CREATE_PARAM param;
 	char *file_name;
 	unsigned int base_addr;
 	char ramfname[0x40];
-
-
 	FSOP_DESCRIPTION *fsop;
-
-	keys_amount = parse_arg("ldimg", argsc, argsv, ldimg_keys, sizeof(ldimg_keys),
-			keys);
-
-	if (keys_amount < 0) {
-	        show_help();
-	        return -1;
-	    }
-	if (get_key('h', keys, keys_amount, &key_value)) {
-		show_help();
-		return 0;
-	}
-    if (get_key('f', keys, keys_amount, &key_value)) {
-        file_name = key_value;
-    }
-
-
-
-    if (get_key('a', keys, keys_amount, &key_value)) {
-        if ((key_value != NULL) && (!sscanf(key_value, "0x%x", &base_addr))
-                && (!sscanf(key_value, "%d", (int *) &base_addr))) {
-            LOG_ERROR("ERROR: hex value expected.\n");
-            show_help();
-            return -1;
-        }
-    }
+        int nextOption;
+        getopt_init();
+        do {
+                nextOption = getopt(argsc, argsv, "f:a:h");
+                switch(nextOption) {
+                case 'h':
+                        show_help();
+                        return 0;
+                case 'f':
+            		file_name = optarg;
+            		break;
+            	case 'a':
+            		if ((optarg != NULL) && (!sscanf(optarg, "0x%x", &base_addr))
+            		            && (!sscanf(optarg, "%d", (int *) &base_addr))) {
+            		        LOG_ERROR("ERROR: hex value expected.\n");
+            		        show_help();
+            		        return -1;
+            		}
+            		break;
+                case -1:
+                        break;
+                default:
+                        return 0;
+                }
+        } while(-1 != nextOption);
 
 	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))){
-	    printf ("Error:Can't find ramfs disk");
-	    return -1;
+		LOG_ERROR("Can't find ramfs disk");
+		return -1;
 	}
 
-    param.size = 0x1000000;
-    param.start_addr = (unsigned int )(base_addr);
-    sprintf(param.name, "%s%s", file_name, "_loaded");
+	param.size = 0x1000000;
+        param.start_addr = (unsigned int )(base_addr);
+        sprintf(param.name, "%s%s", file_name, "_loaded");
 	if (-1 == fsop->create_file(&param)){
 	    printf ("Error:Can't create ramfs disk");
 	    return -1;

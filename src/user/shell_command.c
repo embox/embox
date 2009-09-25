@@ -61,8 +61,14 @@ SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_first(char *search_str,
 			LOG_ERROR("Broken shell command descriptor: can't find command name\n");
 			continue;
 		}
-		if (0 == strncmp(search_str, p_desc->name, length)) {
-			return p_desc;
+		if (length == -1) {
+			if (0 == strcmp(search_str, p_desc->name)) {
+				return p_desc;
+			}
+		} else {
+			if (0 == strncmp(search_str, p_desc->name, length)) {
+				return p_desc;
+			}
 		}
 	}
 	return NULL;
@@ -77,8 +83,14 @@ SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_next(
 			LOG_ERROR("Broken shell command descriptor: can't find command name\n");
 			continue;
 		}
-		if (0 == strncmp(search_str, p_desc->name, length)) {
-			return p_desc;
+		if (length == -1) {
+		        if (0 == strcmp(search_str, p_desc->name)) {
+		                return p_desc;
+		        }
+		} else {
+			if (0 == strncmp(search_str, p_desc->name, length)) {
+				return p_desc;
+			}
 		}
 	}
 	return NULL;

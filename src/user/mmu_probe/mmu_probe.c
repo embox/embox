@@ -2,24 +2,19 @@
  * \file mmu_probe.c
  * \date Jun 9, 2009
  * \author anton
- * \details
  */
 #include "shell_command.h"
 #include "asm/leon.h"
 #include "asm/mmu.h"
 
-#define COMMAND_NAME "mmu_probe"
+#define COMMAND_NAME     "mmu_probe"
 #define COMMAND_DESC_MSG "testing mmu module"
-static const char *help_msg =
+#define HELP_MSG         "Usage: mmu_probe [-i] [-v] [-h]"
+static const char *man_page =
 	#include "mmu_probe_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
-
-static char available_keys[] = {
-    'i', 'v', 'h'
-};
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 /**
  * show MMU register
@@ -224,32 +219,26 @@ static BOOL mmu_probe() {
  * return -1 another way
  */
 static int exec(int argsc, char **argsv) {
-    SHELL_KEY keys[MAX_SHELL_KEYS];
-    char *key_value;
-    int keys_amount;
+        int nextOption;
+        getopt_init();
+        do {
+                nextOption = getopt(argsc, argsv, "ivh");
+                switch(nextOption) {
+                case 'h':
+                        show_help();
+                        return 0;
+                case 'i':
+            		mmu_show_reg();
+            		return 0;
+                case 'v':
+            		mmu_show_version();
+            		return 0;
+                case -1:
+                        break;
+                default:
+                        return 0;
+                }
+        } while(-1 != nextOption);
 
-    keys_amount = parse_arg(COMMAND_NAME, argsc, argsv, available_keys,
-            sizeof(available_keys), keys);
-
-    if (keys_amount < 0) {
-        LOG_ERROR("during parsing params\n");
-        show_help();
-        return -1;
-    }
-
-    if (get_key('h', keys, keys_amount, &key_value)) {
-        show_help();
-        return 0;
-    }
-
-    if (get_key('v', keys, keys_amount, &key_value)) {
-        mmu_show_version();
-        return 0;
-    }
-
-    if (get_key('i', keys, keys_amount, &key_value)) {
-        mmu_show_reg();
-        return 0;
-    }
-    return mmu_probe();
+	return mmu_probe();
 }

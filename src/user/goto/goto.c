@@ -6,14 +6,14 @@
  */
 #include "shell_command.h"
 
-#define COMMAND_NAME "exec"
+#define COMMAND_NAME     "exec"
 #define COMMAND_DESC_MSG "execute image file"
-static const char *help_msg =
+#define HELP_MSG         "Usage: goto [-h] [-a addr]"
+static const char *man_page =
 	#include "goto_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 typedef void (*IMAGE_ENTRY)();
 
@@ -29,7 +29,6 @@ void go_to(unsigned int addr) {
 static int exec(int argsc, char **argsv){
 	int nextOption;
 	unsigned int addr = 0;
-
 	getopt_init();
 	do {
 	        nextOption = getopt(argsc, argsv, "a:h");

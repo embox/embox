@@ -5,16 +5,15 @@
  * \author Alexey Fomin
  */
 #include "shell_command.h"
-#include "mem.h"
 
-#define COMMAND_NAME "mem"
+#define COMMAND_NAME     "mem"
 #define COMMAND_DESC_MSG "read from memory"
-static const char *help_msg =
+#define HELP_MSG         "Usage: mem [-h] [-a addr] [-n num]"
+static const char *man_page =
 	#include "mem_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 char mem_keys[] = {
 	'a', 'n', 'h'
@@ -33,52 +32,53 @@ void mem_print(WORD *addr, long int amount) {
 		}
 		i++;
 	}
-
 }
 
 typedef void TEST_MEM_FUNC(WORD *addr, long int amount);
 
 static int exec(int argsc, char **argsv) {
-	SHELL_KEY keys[MAX_SHELL_KEYS];
-	char *key_value;
-	WORD *address = (WORD *) 0x70000000L;
-	long int amount = 100L;
-	int keys_amount = parse_arg("mem", argsc, argsv, mem_keys,
-			sizeof(mem_keys), keys);
-
-	if (keys_amount <= 0) {
-		show_help();
-		return -1;
-	}
-	if (get_key('h', keys, keys_amount, &key_value)) {
-		show_help();
-		return 0;
-	}
-
-	if (get_key('a', keys, keys_amount, &key_value)) {
-		if (key_value == NULL) {
-			LOG_ERROR("mem: -a: hex value for address expected.\n");
-			show_help();
-		}
-		if (!sscanf(key_value, "0x%x", &address)) {
-			LOG_ERROR("mem: -a: hex value for address expected.\n");
-			show_help();
-		}
-	}
-
-	if (get_key('n', keys, keys_amount, &key_value)) {
-		if (key_value == NULL) {
-			LOG_ERROR("mem: -n: hex or integer value for number of bytes expected.\n");
-			show_help();
-		}
-
-		if (!sscanf(key_value, "0x%x", amount)) {
-			if (!sscanf(key_value, "%d", &amount)) {
-				LOG_ERROR("mem: -n: hex or integer value for number of bytes expected.\n");
-				show_help();
-			}
-		}
-	}
+        WORD *address = (WORD *) 0x70000000L;
+        long int amount = 100L;
+        int nextOption;
+        getopt_init();
+        do {
+                nextOption = getopt(argsc, argsv, "a:h");
+                switch(nextOption) {
+                case 'h':
+                        show_help();
+                        return 0;
+                case 'a':
+            		if (optarg == NULL) {
+                                LOG_ERROR("mem: -a: hex value for address expected.\n");
+                                show_help();
+                                return -1;
+                        }
+                        if (!sscanf(optarg, "0x%x", &address)) {
+                                LOG_ERROR("mem: -a: hex value for address expected.\n");
+                                show_help();
+                                return -1;
+                        }
+                        break;
+                case 'n':
+            		if (optarg == NULL) {
+                                LOG_ERROR("mem: -n: hex or integer value for number of bytes expected.\n");
+                                show_help();
+                                return -1;
+                        }
+                        if (!sscanf(optarg, "0x%x", amount)) {
+                                if (!sscanf(optarg, "%d", &amount)) {
+                                        LOG_ERROR("mem: -n: hex or integer value for number of bytes expected.\n");
+                                        show_help();
+                                        return -1;
+                                }
+                        }
+                        break;
+                case -1:
+                        break;
+                default:
+                	return 0;
+                }
+        } while(-1 != nextOption);
 
 	mem_print(address, amount);
 	return 0;

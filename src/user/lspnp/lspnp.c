@@ -9,18 +9,14 @@
 #include "drivers/amba_pnp.h"
 #include "drivers/pnp_id.h"
 
-#define COMMAND_NAME "lspnp"
+#define COMMAND_NAME     "lspnp"
 #define COMMAND_DESC_MSG "show list of plug and play devices"
-static const char *help_msg =
+#define HELP_MSG         "Usage: lspnp [-b bus_type] [-n dev_id] [-h]"
+static const char *man_page =
 	#include "lspnp_help.inc"
 	;
-#define HELP_MSG help_msg
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG);
-
-static char available_keys[] = {
-	'b', 'n', 'h'
-};
+DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 //static int bus_type;
 
@@ -375,49 +371,42 @@ static FUNC_SHOW_BUS set_bus_type(const char *key_value) {
 }
 
 static int exec(int argsc, char **argsv) {
-	SHELL_KEY keys[MAX_SHELL_KEYS];
-	char *key_value;
-	int keys_amount;
 	int dev_number = -1;
-
-	FUNC_SHOW_BUS show_func;
-
-	keys_amount = parse_arg(COMMAND_NAME, argsc, argsv, available_keys,
-				sizeof(available_keys), keys);
-
-	if (keys_amount < 0) {
-		show_help();
-		return -1;
-	}
-
-	if (get_key('h', keys, keys_amount, &key_value)) {
-		show_help();
-		return 0;
-	}
-
-	if (!get_key('b', keys, keys_amount, &key_value)) {
-		key_value = "all";
-	}
-	if (NULL == (show_func = set_bus_type(key_value))){
-		LOG_ERROR("Parsing: chose right bus type '-b'\n");
-		show_help();
-		return -1;
-	}
-
-	if (get_key('n', keys, keys_amount, &key_value)) {
-		if (show_all == show_func) {
-			LOG_ERROR("Parsing: chose bus type '-b'\n");
-			show_help();
-			return -1;
-		}
-		if (1!=sscanf(key_value,"%d", &dev_number)) {
-			LOG_ERROR("parsing: enter validly dev_number '-b'\n");
-			show_help();
-			return -1;
-		}
-	}
+	FUNC_SHOW_BUS show_func = set_bus_type("all");
+        int nextOption;
+        getopt_init();
+        do {
+        	nextOption = getopt(argsc, argsv, "n:b:h");
+                switch(nextOption) {
+                case 'h':
+                        show_help();
+                        return 0;
+                case 'b':
+            		if (NULL == (show_func = set_bus_type(optarg))) {
+            		        LOG_ERROR("Parsing: chose right bus type '-b'\n");
+            		        show_help();
+            		        return -1;
+            		}
+            		break;
+		case 'n':
+			if (show_all == show_func) {
+		                LOG_ERROR("Parsing: chose bus type '-b'\n");
+		                show_help();
+		                return -1;
+		        }
+		        if (1 != sscanf(optarg,"%d", &dev_number)) {
+		                LOG_ERROR("parsing: enter validly dev_number '-b'\n");
+		                show_help();
+		                return -1;
+		        }
+		        break;
+                case -1:
+                        break;
+                default:
+                        return 0;
+                }
+        } while(-1 != nextOption);
 
 	show_func(dev_number);
-
 	return 0;
 }

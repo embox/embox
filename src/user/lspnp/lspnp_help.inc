@@ -1,7 +1,7 @@
 "NAME                                             \n"
 "    lspnp - show list of plug and play devices   \n"
 "SYNOPSIS                                         \n"
-"    lspnp [-b <bus_type> [-n <dev_id>]           \n"
+"    lspnp [-b <bus_type>] [-n <dev_id>]           \n"
 "OPTIONS                                          \n"
 "    -b bus_type  - type of the bus of P&P device.\n"
 "        Possible values: ahbm  - AHB bus, master \n"
