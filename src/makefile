@@ -3,6 +3,7 @@ include $(SCRIPTS_DIR)/autoconf
 SUBDIRS-y                      += arch
 SUBDIRS-y                      += kernel
 SUBDIRS-$(MONITOR_DRIVERS)     += drivers
+SUBDIRS-y                      += lib
 SUBDIRS-y                      += misc
 SUBDIRS-$(MONITOR_TESTS)       += tests
 SUBDIRS-$(MONITOR_FS)          += fs
