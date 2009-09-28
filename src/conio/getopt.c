@@ -8,7 +8,7 @@
 #include "conio/conio.h"
 #include "string.h"
 
-int parse_arg(const char *handler_name, int argsc, char **argsv,
+/*int parse_arg(const char *handler_name, int argsc, char **argsv,
 		char *available_keys, int amount_of_available_keys, SHELL_KEY *keys) {
 	int i, j, args_count;
 
@@ -57,7 +57,7 @@ int parse_arg(const char *handler_name, int argsc, char **argsv,
 		}
 	}
 	return args_count;
-}
+}*/
 
 /*int check_keys(SHELL_KEY *keys, int amount, char *available_keys,
         int amount_of_available_keys) {
@@ -76,7 +76,7 @@ int parse_arg(const char *handler_name, int argsc, char **argsv,
         return TRUE;
 }*/
 
-int get_key(char key, SHELL_KEY *keys, int keys_amount, char **value) {
+/*int get_key(char key, SHELL_KEY *keys, int keys_amount, char **value) {
         int i;
         for (i = 0; i < keys_amount; i++) {
                 if (keys[i].name == key) {
@@ -85,7 +85,7 @@ int get_key(char key, SHELL_KEY *keys, int keys_amount, char **value) {
                 }
         }
         return FALSE;
-}
+}*/
 
 int   opterr = 1;   /* flag:error message on unrecognzed options */
 int   optind = 1;   /* last touched cmdline argument */
