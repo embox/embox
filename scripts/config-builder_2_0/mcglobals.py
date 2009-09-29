@@ -477,7 +477,7 @@ constLinkScripts = [u'linkrom',u'linkram',u'linksim']
 
 
 
-gCfgDumpFileName = u'mdump0'
+gCfgDumpFileName = u'.config2'
 
 gConfig = None # must be MonitorConfig_t()
 

@@ -165,7 +165,7 @@ class MainCfgDlg_t (Ui_MainCfgDlgBase_t, Ui_MainCfgDlg_t):
 		print 'dir ',  mcglobals.gConfig.SrcDir
 		CfgDumpFlie = open(mcglobals.gCfgDumpFileName, 'w+')
 		pickle.dump(mcglobals.gConfig, CfgDumpFlie)
-
+		#TODO: generate autoconf/autoconf.h according to mcglobals.gConfig
 		QtGui.qApp.quit()
 
 

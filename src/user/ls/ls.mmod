@@ -1,4 +1,4 @@
 ModName   = ls
-DependsOn = shell
+DependsOn = shell fs
 Type      = Shell command
 SrcList   = ls.c

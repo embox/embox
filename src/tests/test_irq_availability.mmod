@@ -1,0 +1,3 @@
+ModName = test_irq_availability
+Type    = Express test
+SrcList = test_irq_availability.c

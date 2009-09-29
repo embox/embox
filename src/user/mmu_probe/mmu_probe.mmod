@@ -1,4 +1,4 @@
 ModName   = mmu_probe
-DependsOn = shell
+DependsOn = shell sparc
 Type      = Shell command
 SrcList   = mmu_probe.c

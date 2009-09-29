@@ -1,4 +1,4 @@
 ModName   = rm
-DependsOn = shell
+DependsOn = shell fs
 Type      = Shell command
 SrcList   = rm.c
