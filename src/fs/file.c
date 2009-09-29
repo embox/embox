@@ -1,8 +1,8 @@
 #include "conio/conio.h"
 #include "string.h"
 #include "common.h"
-#include "file.h"
-#include "rootfs.h"
+#include "fs/file.h"
+#include "fs/rootfs.h"
 
 
 void *fopen (const char *file_name, char *mode){

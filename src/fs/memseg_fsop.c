@@ -1,7 +1,6 @@
 #include "common.h"
-#include "fsop.h"
-
-#include "memseg.h"
+#include "fs/fsop.h"
+#include "fs/memseg.h"
 
 
 extern SEGMENT mm_segtable[MAX_NSEGMENTS];

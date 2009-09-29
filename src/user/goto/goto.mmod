@@ -1,0 +1,4 @@
+ModName   = goto
+DependsOn = shell
+Type      = Shell command
+SrcList   = goto.c

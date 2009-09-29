@@ -5,8 +5,8 @@
  * \author kse
  */
 #include "shell_command.h"
-#include "memseg.h"
-#include "file_new.h"
+#include "fs/memseg.h"
+#include "fs/file_new.h"
 
 #define COMMAND_NAME     "load_new"
 #define COMMAND_DESC_MSG "load image file"

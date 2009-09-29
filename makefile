@@ -69,14 +69,14 @@ checksum:
 clean:
 	@declare -x MAKEOP=clean; $(MAKE) --no-print-directory --directory=src clean
 	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old docs/
-	@$(SCRIPTS_DIR)/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
+	@$(SCRIPTS_DIR)/config-builder_1_0/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
 clean_all: clean
-	@$(RM) .config $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h src/conio/shell.inc src/conio/users.inc
+	@$(RM) .config $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h
 	@ln -sf -T asm-sparc include/asm
 
 xconfig:
-	@$(SCRIPTS_DIR)/configure.py --mode=x
+	@$(SCRIPTS_DIR)/config-builder_1_0/configure.py --mode=x
 
 menuconfig:
 	@if [ ! -e $(SCRIPTS_DIR)/autoconf ]; \
@@ -86,7 +86,10 @@ menuconfig:
 	fi;
 	@$(EDITOR) $(SCRIPTS_DIR)/autoconf
 	@$(EDITOR) $(SCRIPTS_DIR)/autoconf.h
-	@$(SCRIPTS_DIR)/configure.py --mode=menu
+	@$(SCRIPTS_DIR)/config-builder_1_0/configure.py --mode=menu
 
 config:
 	@echo "Oops! Try edit config file by hand or use \"make x(menu)config\" and have a lot of fun."
+
+mconfig:
+	@$(SCRIPTS_DIR)/config-builder_2_0/mcmain.py

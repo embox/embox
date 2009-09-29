@@ -6,7 +6,7 @@
  */
 #include "common.h"
 #include "string.h"
-#include "rootfs_new.h"
+#include "fs/rootfs_new.h"
 #include "file/fpath_common.h"
 
 extern FSOP memseg_fsop;

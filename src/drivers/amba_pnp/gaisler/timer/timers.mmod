@@ -1,0 +1,4 @@
+ModName   = timers
+Type      = Driver
+DependsOn = amba_pnp
+SrcList   = timers.c

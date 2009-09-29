@@ -1,0 +1,4 @@
+ModName   = cp
+DependsOn = shell
+Type      = Shell command
+SrcList   = cp.c

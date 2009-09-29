@@ -1,6 +1,6 @@
 #include "common.h"
-#include "file.h"
-#include "rootfs.h"
+#include "fs/file.h"
+#include "fs/rootfs.h"
 
 
 global_file_id_t fopen (const char* file_path){

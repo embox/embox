@@ -3,8 +3,8 @@
  */
 #include "shell_command.h"
 #include "string.h"
-#include "file_new.h"
-#include "memseg.h"
+#include "fs/file_new.h"
+#include "fs/memseg.h"
 
 #define COMMAND_NAME     "ls_new"
 #define COMMAND_DESC_MSG "lists files or segments"

@@ -1,5 +1,5 @@
 
-#include "memseg.h"
+#include "fs/memseg.h"
 #include "string.h"
 
 static int piggysize;

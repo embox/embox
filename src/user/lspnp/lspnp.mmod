@@ -1,0 +1,4 @@
+ModName   = lspnp
+DependsOn = shell amba_pnp
+Type      = Shell command
+SrcList   = lspnp.c

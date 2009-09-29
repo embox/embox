@@ -1,5 +1,6 @@
-include $(SCRIPTS_DIR)/autoconf
-
-SUBDIRS-y                                       += terminal
+OBJS-y:= vtparse_table.o \
+         vtparse.o \
+         vtbuild.o \
+         terminal.o
 
 include $(SRC_DIR)/common.mk

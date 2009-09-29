@@ -1,0 +1,4 @@
+ModName   = ldimg
+DependsOn = shell
+Type      = Shell command
+SrcList   = ldimg.c

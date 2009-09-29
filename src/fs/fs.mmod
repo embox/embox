@@ -1,0 +1,2 @@
+ModName = fs
+SrcList = ramfs.c rootfs.c file.c

@@ -7,8 +7,8 @@
 #include "conio/conio.h"
 #include "string.h"
 #include "common.h"
-#include "rootfs.h"
-#include "ramfs.h"
+#include "fs/rootfs.h"
+#include "fs/ramfs.h"
 
 typedef struct _FILE_DESC {
     unsigned int start_addr;

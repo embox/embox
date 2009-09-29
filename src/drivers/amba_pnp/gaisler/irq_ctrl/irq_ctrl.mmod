@@ -1,0 +1,4 @@
+ModName   = irq_ctrl
+Type      = Driver
+DependsOn = amba_pnp
+SrcList   = irq_ctrl.c

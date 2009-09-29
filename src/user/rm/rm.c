@@ -5,7 +5,7 @@
  * \author zoomer
  */
 #include "shell_command.h"
-#include "file_new.h"
+#include "fs/file_new.h"
 
 #define COMMAND_NAME     "rm"
 #define COMMAND_DESC_MSG "rm file"

@@ -10,7 +10,7 @@
 #include "kernel/uart.h"
 #include "kernel/timers.h"
 #include "net/net.h"
-#include "rootfs.h"
+#include "fs/rootfs.h"
 #include "asm/cache.h"
 #include "asm/leon.h"
 #include "asm/memory_map.h"

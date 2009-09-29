@@ -1,0 +1,4 @@
+ModName   = testmem
+DependsOn = shell
+Type      = Shell command
+SrcList   = testmem.c memory_tests.c

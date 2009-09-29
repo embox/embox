@@ -5,9 +5,9 @@
  * \author kse
  */
 #include "shell_command.h"
-#include "rootfs.h"
-#include "ramfs.h"
-#include "file.h"
+#include "fs/rootfs.h"
+#include "fs/ramfs.h"
+#include "fs/file.h"
 
 #define COMMAND_NAME     "ldimg"
 #define COMMAND_DESC_MSG "load image file"

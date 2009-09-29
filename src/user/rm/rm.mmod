@@ -1,0 +1,4 @@
+ModName   = rm
+DependsOn = shell
+Type      = Shell command
+SrcList   = rm.c

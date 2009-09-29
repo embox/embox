@@ -1,0 +1,3 @@
+ModName   = amba_pnp
+Type      = Driver
+SrcList   = amba_pnp.c

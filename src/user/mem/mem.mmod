@@ -1,0 +1,4 @@
+ModName   = mem
+DependsOn = shell
+Type      = Shell command
+SrcList   = mem.c

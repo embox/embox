@@ -3,7 +3,7 @@
  */
 #include "shell_command.h"
 #include "string.h"
-#include "rootfs.h"
+#include "fs/rootfs.h"
 
 #define COMMAND_NAME     "ls"
 #define COMMAND_DESC_MSG "list directory contents"

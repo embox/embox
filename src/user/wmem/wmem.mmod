@@ -1,0 +1,4 @@
+ModName   = wmwm
+DependsOn = shell
+Type      = Shell command
+SrcList   = wmem.c
