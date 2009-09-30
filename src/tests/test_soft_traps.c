@@ -5,7 +5,7 @@
  * \author sunnya
  */
 #include "common.h"
-#include "tests/express_tests.h"
+#include "express_tests.h"
 
 DECLARE_EXPRESS_TEST("software traps", exec)
 

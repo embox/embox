@@ -8,7 +8,7 @@
  * @author Eldar Abusalimov
  */
 
-#include "tests/express_tests.h"
+#include "express_tests.h"
 
 DECLARE_EXPRESS_TEST("recursion", exec)
 

@@ -9,7 +9,7 @@
 #include "shell.h"
 #include "conio.h"
 #include "common.h"
-#include "tests/express_tests.h"
+#include "express_tests.h"
 
 int main() {
 
@@ -22,10 +22,13 @@ int main() {
 	}
 #endif //MONITOR_TESTS
 #if !defined(SIMULATION_TRG) && defined(MONITOR_SHELL)
+
 #ifdef MONITOR_NETWORK
 	net_config();
 #endif /* MONITOR_NETWORK */
+
 	shell_start();
+
 #endif
 
 	while (1)

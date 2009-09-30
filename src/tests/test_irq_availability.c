@@ -7,7 +7,7 @@
 
 #include "common.h"
 #include "kernel/timers.h"
-#include "tests/express_tests.h"
+#include "express_tests.h"
 
 DECLARE_EXPRESS_TEST("timer callback", exec)
 

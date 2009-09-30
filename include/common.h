@@ -12,7 +12,8 @@
 
 #define BMASK(nbit)  (0x00000001 << (nbit))
 // Stop processor
-#define HALT     { __asm__ ("ta 0; nop;"); }
+//TODO this depends on the architecture
+#define HALT     { __asm__ ("nop;"); }
 #endif //_TEST_SYSTEM_
 inline static int dummy() {
 	return 0;
@@ -20,7 +21,7 @@ inline static int dummy() {
 
 #define LOGGER()		    printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
 #if defined(_ERROR) && !defined(SIMULATION_TRG)
-#define LOG_ERROR(format, args...)  do {LOGGER(); printf("ERROR: "format, ##args);} while(0)
+#define LOG_ERROR(...)  do {LOGGER(); printf("ERROR: "__VA_ARGS__);} while(0)
 #else
 #define LOG_ERROR(format, args...)  dummy()
 #endif //_ERROR
@@ -28,23 +29,23 @@ inline static int dummy() {
 #if defined(_WARN) && !defined(SIMULATION_TRG)
 #define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
 #else
-#define LOG_WARN(format, args...)   dummy()
+#define LOG_WARN(...)   dummy()
 #endif //_WARN
 
 #if defined(_DEBUG) && !defined(SIMULATION_TRG)
-#define LOG_DEBUG(format, args...)  do {LOGGER(); printf("DEBUG: "format, ##args);} while(0)
+#define LOG_DEBUG(...)  do {LOGGER(); printf("DEBUG: "__VA_ARGS__);} while(0)
 #else
-#define LOG_DEBUG(format, args...)  dummy()
+#define LOG_DEBUG(...)  dummy()
 #endif //_DEBUG
 
 #if defined(_TRACE) && !defined(SIMULATION_TRG)
 #ifdef _TEST_SYSTEM_
-#define TRACE(format, args...)  printf(format, ##args)
+#define TRACE(...)  printf(__VA_ARGS__)
 #else
-#define TRACE(format, args...)  printk(format, ##args)
+#define TRACE(...)  printk(__VA_ARGS__)
 #endif //_TEST_SYSTEM_
 #else
-#define TRACE(format, args...)  dummy()
+#define TRACE(...)  dummy()
 #endif //_TRACE && !SIMULATION_TRG
 #ifdef SIMULATION_TRG
 #define assert(cond)	{}
