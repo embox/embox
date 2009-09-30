@@ -7,7 +7,7 @@
  */
 #include "asm/types.h"
 #include "common.h"
-#include "conio/conio.h"
+#include "conio.h"
 #include "drivers/amba_pnp.h"
 #include "kernel/irq_ctrl.h"
 

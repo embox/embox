@@ -66,22 +66,10 @@
 		}
 	},
 	"Common": {
-		"Conio": {
-			"desc": "Console support",
-			"inc": 1,
-			"mdef": "MONITOR_CONIO",
-			"status": 1
-		},
 		"Disassemble": {
 			"desc": "Disassemble",
 			"inc": 0,
 			"mdef": "DISASSEMBLE",
-			"status": 1
-		},
-		"Drivers": {
-			"desc": "Drivers enable",
-			"inc": 1,
-			"mdef": "MONITOR_DRIVERS",
 			"status": 1
 		},
 		"Fs": {
@@ -118,12 +106,6 @@
 			"desc": "Express tests",
 			"inc": 1,
 			"mdef": "MONITOR_TESTS",
-			"status": 1
-		},
-		"Users": {
-			"desc": "Shell commands",
-			"inc": 1,
-			"mdef": "MONITOR_USERS",
 			"status": 1
 		}
 	},
@@ -410,6 +392,12 @@
 			"desc": "tftp client",
 			"inc": 1,
 			"mdef": "MONITOR_USER_TFTP",
+			"status": 1
+		},
+		"Shell": {
+			"desc": "Console support",
+			"inc": 1,
+			"mdef": "MONITOR_SHELL",
 			"status": 1
 		}
 	}

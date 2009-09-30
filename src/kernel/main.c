@@ -6,8 +6,8 @@
  */
 #include "asm/types.h"
 #include "asm/cpu_context.h"
-#include "conio/shell.h"
-#include "conio/conio.h"
+#include "shell.h"
+#include "conio.h"
 #include "common.h"
 #include "tests/express_tests.h"
 
@@ -21,7 +21,7 @@ int main() {
 			;
 	}
 #endif //MONITOR_TESTS
-#if !defined(SIMULATION_TRG) && defined(MONITOR_CONIO)
+#if !defined(SIMULATION_TRG) && defined(MONITOR_SHELL)
 #ifdef MONITOR_NETWORK
 	net_config();
 #endif /* MONITOR_NETWORK */

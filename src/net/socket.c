@@ -5,7 +5,7 @@
  * \author anton, sikmir
  */
 
-#include "conio/conio.h"
+#include "conio.h"
 #include "string.h"
 #include "common.h"
 #include "net/socket.h"

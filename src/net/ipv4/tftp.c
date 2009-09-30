@@ -6,7 +6,7 @@
  */
 
 #include "string.h"
-#include "conio/conio.h"
+#include "conio.h"
 #include "common.h"
 #include "net/tftp.h"
 #include "net/net.h"

@@ -1,4 +1,4 @@
 ModName   = shell
 DependsOn = char lib
-SrcList   = shell.c shell_command.c
-MDef      = MONITOR_CONIO
+SrcList   = shell.c shell_command.c console/
+MDef      = MONITOR_SHELL

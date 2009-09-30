@@ -4,11 +4,11 @@
  * \date 02.02.2009
  * \author Alexey Fomin
  */
-#include "conio/conio.h"
+#include "conio.h"
 #include "common.h"
 #include "string.h"
 #include "console.h"
-#include "conio/shell.h"
+#include "shell.h"
 #include "kernel/sys.h"
 #include "shell_command.h"
 

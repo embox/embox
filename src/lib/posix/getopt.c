@@ -3,9 +3,9 @@
  * \date 23.09.09
  * \author Sikmir
  */
-#include "conio/getopt.h"
+#include "getopt.h"
 #include "common.h"
-#include "conio/conio.h"
+#include "conio.h"
 #include "string.h"
 
 /*int parse_arg(const char *handler_name, int argsc, char **argsv,

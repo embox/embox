@@ -80,7 +80,7 @@ class configure_gen:
                         content = replacer(mdef, inc, content)
                 #-- Subframes enable
                 for item in self.menu.keys():
-            		if self.menu[item] == 1:
+            		if self.menu[item] == 1 and item not in ["Conio", "Users", "Drivers"]:
             			mdef    = self.tabs[mod_name][item]["mdef"]
             			inc     = (self.var[mod_name][item].get() == 1)
             			content = replacer(mdef, inc, content)
@@ -117,7 +117,7 @@ class configure_gen:
 		#-- Common ---------------------------------------------------------------------
 		mod_name = "Common"
 		for item in self.menu.keys():
-			if self.menu[item] == 1:
+			if self.menu[item] == 1 and item not in ["Conio", "Users", "Drivers"]:
 				mdef    = self.tabs[mod_name][item]["mdef"]
 				inc     = (self.var[mod_name][item].get() == 1)
 				content = replacer_h(mdef, inc, content)

@@ -5,7 +5,7 @@
  * \author anton
  */
 #include "common.h"
-#include "conio/conio.h"
+#include "conio.h"
 #include "kernel/irq.h"
 #include "kernel/uart.h"
 #include "kernel/timers.h"

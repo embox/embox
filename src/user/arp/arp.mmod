@@ -2,3 +2,4 @@ ModName   = arp
 DependsOn = shell
 Type      = Shell command
 SrcList   = arpc.c
+MDef      = MONITOR_USER_ARP

@@ -2,3 +2,4 @@ ModName   = wmwm
 DependsOn = shell
 Type      = Shell command
 SrcList   = wmem.c
+MDef      = MONITOR_USER_WMEM

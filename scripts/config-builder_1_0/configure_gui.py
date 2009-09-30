@@ -176,7 +176,7 @@ class configure_gui:
 		#-- Subframes
 		k = 1
 		for item in sorted(self.menu.keys()):
-			if self.menu[item] == 1:
+			if self.menu[item] == 1 and item not in ["Conio", "Users", "Drivers"]:
 				self.var[mod_name][item] = IntVar()
 				desc   = self.tabs[mod_name][item]["desc"]
 				inc    = self.tabs[mod_name][item]["inc"]

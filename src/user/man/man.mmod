@@ -2,3 +2,4 @@ ModName   = man
 DependsOn = shell
 Type      = Shell command
 SrcList   = man.c
+MDef      = MONITOR_USER_MAN

@@ -19,7 +19,6 @@
 #undef DOXYGEN_TRG
 
 /* Conio */
-#define MONITOR_CONIO 1
 #define MONITOR_START_MSG "Welcome to Monitor shell and have a lot of fun..."
 #define MONITOR_PROMPT "monitor> "
 #define MONITOR_MAX_PROMPT_LENGTH 15
@@ -50,7 +49,6 @@
 #undef MONITOR_TEST_RECURSION
 
 /* Drivers */
-#define MONITOR_DRIVERS 1
 
 #define MONITOR_DRIVER_AMBA_PNP 1
 
@@ -60,8 +58,8 @@
 #define MONITOR_DRIVER_GAISLER_UART 1
 #define MONITOR_DRIVER_GAISLER_TIMER 1
 
-/* Shell commands */
-#define MONITOR_USERS 1
+/* Users */
+#define MONITOR_SHELL 1
 #define MONITOR_USER_ARP 1
 #undef MONITOR_USER_CP
 #define MONITOR_USER_GOTO 1

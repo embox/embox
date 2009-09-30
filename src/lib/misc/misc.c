@@ -6,7 +6,7 @@
  */
 
 #include "misc.h"
-#include "conio/conio.h"
+#include "conio.h"
 #include "string.h"
 
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {

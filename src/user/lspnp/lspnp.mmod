@@ -2,3 +2,4 @@ ModName   = lspnp
 DependsOn = shell amba_pnp
 Type      = Shell command
 SrcList   = lspnp.c
+MDef      = MONITOR_USER_PNPLS

@@ -2,3 +2,4 @@ ModName   = testmem
 DependsOn = shell
 Type      = Shell command
 SrcList   = testmem.c memory_tests.c
+MDef      = MONITOR_USER_TESTMEM

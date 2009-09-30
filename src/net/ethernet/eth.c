@@ -3,7 +3,7 @@
  * \date Mar 4, 2009
  * \author anton
  */
-#include "conio/conio.h"
+#include "conio.h"
 #include "misc.h"
 #include "string.h"
 #include "net/net_pack_manager.h"

@@ -6,7 +6,7 @@
  *  user-supplied information to configure own IP address.
  */
 
-#include "conio/conio.h"
+#include "conio.h"
 #include "string.h"
 #include "common.h"
 #include "net/net.h"

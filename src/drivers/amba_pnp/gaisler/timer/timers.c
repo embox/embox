@@ -7,7 +7,7 @@
 #include "kernel/timers.h"
 #include "cpu_conf.h"
 #include "common.h"
-#include "conio/conio.h"
+#include "conio.h"
 
 typedef struct _TIMERS_STRUCT {
         volatile unsigned int scaler_cnt;

@@ -2,3 +2,4 @@ ModName   = ping
 DependsOn = shell
 Type      = Shell command
 SrcList   = ping.c
+MDef      = MONITOR_USER_PING

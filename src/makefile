@@ -2,12 +2,11 @@ include $(SCRIPTS_DIR)/autoconf
 
 SUBDIRS-y                      += arch
 SUBDIRS-y                      += kernel
-SUBDIRS-$(MONITOR_DRIVERS)     += drivers
+SUBDIRS-y                      += drivers
 SUBDIRS-y                      += lib
-SUBDIRS-y                      += misc
 SUBDIRS-$(MONITOR_TESTS)       += tests
 SUBDIRS-$(MONITOR_FS)          += fs
-SUBDIRS-$(MONITOR_USERS)       += user
+SUBDIRS-y                      += user
 SUBDIRS-$(MONITOR_NETWORK)     += net
 
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))

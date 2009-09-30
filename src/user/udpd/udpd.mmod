@@ -2,3 +2,4 @@ ModName   = udpd
 DependsOn = shell
 Type      = Shell command
 SrcList   = udpd.c
+MDef      = MONITOR_USER_UDPD

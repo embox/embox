@@ -1,6 +1,6 @@
 include $(SCRIPTS_DIR)/autoconf
 
-SUBDIRS-$(MONITOR_CONIO)          += shell
+SUBDIRS-$(MONITOR_SHELL)          += shell
 
 SUBDIRS-$(MONITOR_USER_ARP)       += arp
 SUBDIRS-$(MONITOR_USER_CP)        += cp

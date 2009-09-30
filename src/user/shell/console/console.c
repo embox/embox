@@ -12,7 +12,7 @@
 #include "console.h"
 #include "cmdline.h"
 #include "kernel/uart.h"
-#include "conio/conio.h"
+#include "conio.h"
 #include "common.h"
 #include "string.h"
 #include "terminal.h"

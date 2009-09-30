@@ -6,9 +6,9 @@
 #ifndef USER_HANDLER_H_
 #define USER_HANDLER_H_
 
-#include "conio/shell.h"
-#include "conio/conio.h"
-#include "conio/getopt.h"
+#include "shell.h"
+#include "conio.h"
+#include "getopt.h"
 #include "asm/types.h"
 #include "common.h"
 
