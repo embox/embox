@@ -113,7 +113,7 @@ class MonitorPreset_t:
 		self.PreprocDefnsDict = copy.deepcopy(defPreprocDefnsDict)
 
 		# StagedModulesDict indicates, whether specific module will be built into Monitor image
-	   # it is a dict(aka map) { str : bool }, which associates module name with staged flag
+		# it is a dict(aka map) { str : bool }, which associates module name with staged flag
 		self.StagedModulesDict = {}
 
 		for ModName in ModulesDict:
@@ -468,9 +468,9 @@ defPreprocDefnsDict = {
 	'_DEBUG' : PreprocDefnInfoStruct_t(Value='', isEnabled=False)
 }
 
-defSrcDir = u'.'#'../src'
+defSrcDir = u'src'
 
-defOutDir = u'../bin'
+defOutDir = u'bin'
 
 constLinkScripts = [u'linkrom',u'linkram',u'linksim']
 

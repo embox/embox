@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# requirement: python >= 2.6
+#              sip >= 4.9
+#              PyQt >= 4.6
+
 import os, re, sys, codecs, pickle, copy
 
 from PyQt4 import QtGui, QtCore

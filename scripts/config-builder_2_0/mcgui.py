@@ -4,7 +4,7 @@ import pickle
 
 from PyQt4 import QtGui, QtCore, uic
 
-import mcglobals, mcerrors, mcmsg
+import mcglobals, mcerrors, mcmsg, mcgen
 from mcmodview import ModViewFrame_t
 from mcppdefview import PPDefViewFrame_t
 
@@ -165,7 +165,8 @@ class MainCfgDlg_t (Ui_MainCfgDlgBase_t, Ui_MainCfgDlg_t):
 		print 'dir ',  mcglobals.gConfig.SrcDir
 		CfgDumpFlie = open(mcglobals.gCfgDumpFileName, 'w+')
 		pickle.dump(mcglobals.gConfig, CfgDumpFlie)
-		#TODO: generate autoconf/autoconf.h according to mcglobals.gConfig
+		gen = mcgen.ConfigGenerator(mcglobals.gConfig)
+		gen.generate()
 		QtGui.qApp.quit()
 
 
