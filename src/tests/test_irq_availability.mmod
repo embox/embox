@@ -1,3 +1,4 @@
 ModName = test_irq_availability
 Type    = Express test
 SrcList = test_irq_availability.c
+MDef    = MONITOR_TEST_IRQ_AVAILABILITY

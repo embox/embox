@@ -1,3 +1,0 @@
-ModName   = shell
-DependsOn = char lib
-SrcList   = shell.c

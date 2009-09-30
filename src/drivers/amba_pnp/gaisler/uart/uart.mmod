@@ -2,3 +2,4 @@ ModName   = uart
 Type      = Driver
 DependsOn = amba_pnp
 SrcList   = uart.c
+MDef      = MONITOR_DRIVER_GAISLER_UART

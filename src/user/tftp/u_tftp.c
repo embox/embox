@@ -15,16 +15,17 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
-/*    int nextOption;
+    int nextOption;
+    char *cmd;
     getopt_init();
     do {
-            nextOption = getopt(argsc, argsv, "p:h");
+            nextOption = getopt(argsc, argsv, "c:h");
             switch(nextOption) {
 	    case 'h':
     		    show_help();
                     return 0;
-            case 'p':
-        	    path = optarg;
+            case 'c':
+        	    cmd = optarg;
         	    break;
             case -1:
                     break;
@@ -32,15 +33,15 @@ static int exec(int argsc, char **argsv) {
                     return 0;
             }
     } while(-1 != nextOption);
-*/
-char buffer[10000];
-if (!buffer) return 1;
-ip_addr_t ip;
-ip[0] = 192;
-ip[1] = 168;
-ip[2] = 0;
-ip[3] = 59;
-int err = 0;
-tftp_client_get ("objs.lst", ip, 69, buffer, 10000, TFTP_NETASCII, &err);
+
+    char buffer[10000];
+    if (!buffer) return 1;
+    ip_addr_t ip;
+    ip[0] = 192;
+    ip[1] = 168;
+    ip[2] = 0;
+    ip[3] = 59;
+    int err = 0;
+    tftp_client_get ("objs.lst", ip, 69, buffer, 10000, TFTP_NETASCII, &err);
     return 0;
 }

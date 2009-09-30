@@ -1,3 +1,4 @@
 ModName   = amba_pnp
 Type      = Driver
 SrcList   = amba_pnp.c
+MDef      = MONITOR_DRIVER_AMBA_PNP

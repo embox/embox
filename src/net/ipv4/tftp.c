@@ -26,7 +26,7 @@ tftp_client_get (const char *const filename,
 	int result = 0;
 	int s = -1;
 	int actual_len, data_len;
-	socklen_t from_len, recv_len;
+	int/*socklen_t*/ from_len, recv_len;
 	static int get_port = 7700;
 	int error;
 
@@ -156,5 +156,4 @@ tftp_client_get (const char *const filename,
 		}
 	}
 }
-
 

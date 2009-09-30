@@ -9,12 +9,12 @@ class ConfigGenerator:
 		self.gConfig = gConfig
 
 	def generate(self):
-		self.genLinkScripts()
+		self.genLinkScript()
 		self.genAutoconf()
 		self.genAutoconfh()
 
-	def genLinkScripts(self):
-		""" Edit link scripts """
+	def genLinkScript(self):
+		""" Edit link script """
 		file = self.gConfig.PresetsDict[self.gConfig.CurPresetName].CurrentLinkScript
 		arch = self.gConfig.PresetsDict[self.gConfig.CurPresetName].CurrentArchName
 		content = self.read_file('scripts/' + file)

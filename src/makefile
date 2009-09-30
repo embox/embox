@@ -7,7 +7,6 @@ SUBDIRS-y                      += lib
 SUBDIRS-y                      += misc
 SUBDIRS-$(MONITOR_TESTS)       += tests
 SUBDIRS-$(MONITOR_FS)          += fs
-SUBDIRS-$(MONITOR_CONIO)       += conio
 SUBDIRS-$(MONITOR_USERS)       += user
 SUBDIRS-$(MONITOR_NETWORK)     += net
 

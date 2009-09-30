@@ -4,17 +4,17 @@
 class ModInfoStruct_t:
 	""" class representing single module information """
 	def __init__(self, filepath):
-		self.MFilePath = filepath # path to ".modinf" file
+		self.MFilePath = filepath # path to ".mmod" file
 		self.RequiredByList = []  # list of module names, which depend on this module
 
-		# following info comes from ".modinf" file:
+		# following info comes from ".mmodf" file:
 		self.ModName = ""         # unique name of the module
 		self.InitProc = ""        # name of module-init function in source
 		self.Type = "Other"       # type of module (for example "ShellCommand")
 		self.Description = ""     # description text, will be printed in GUI
 		self.DependsOnList = []   # list of module names, which required by this module
 		self.SrcList = []         # list of strings, representing paths to sources of this module
-
+		self.MDef = ""            # macro definition for autoconf/autoconf.h
 
 
 class ModulesDict_t(dict):

@@ -1,0 +1,4 @@
+ModName   = tftp
+DependsOn = shell
+Type      = Shell command
+SrcList   = u_tftp.c

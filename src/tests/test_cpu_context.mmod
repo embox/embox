@@ -1,3 +1,4 @@
 ModName = test_cpu_context
 Type    = Express test
 SrcList = test_cpu_context.c
+MDef    = MONITOR_TEST_CPU_CONTEXT

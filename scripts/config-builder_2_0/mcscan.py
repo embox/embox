@@ -68,6 +68,8 @@ def ParseModFile(ModFileFullPath):
 				CurModInfo.DependsOnList = Val.split(" ")
 			elif Key == "SrcList":
 				CurModInfo.SrcList       = Val.split(" ")
+			elif Key == "MDef":
+				CurModInfo.MDef          = Val
 			else:
 				raise mcerrors.InvalidKeyErr(ModFileFullPath, CurLineNum, MFLineStripped, Key)
 

@@ -1,2 +1,3 @@
 ModName = fs
 SrcList = ramfs.c rootfs.c file.c
+MDef    = MONITOR_FS

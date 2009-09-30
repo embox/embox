@@ -1,2 +1,3 @@
 ModName = lib
 SrcList = string.c printf.c scanf.c getopt.c
+MDef    = MONITOR_LIB

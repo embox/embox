@@ -2,3 +2,4 @@ ModName   = timers
 Type      = Driver
 DependsOn = amba_pnp
 SrcList   = timers.c
+MDef      = MONITOR_DRIVER_GAISLER_TIMER

@@ -1,3 +1,4 @@
 ModName = kernel
 Type    = Persistent
 SrcList = main.c irq.c timers_common.c
+MDef    = MONITOR_KERNEL

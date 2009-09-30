@@ -2,3 +2,4 @@ ModName   = irq_ctrl
 Type      = Driver
 DependsOn = amba_pnp
 SrcList   = irq_ctrl.c
+MDef      = MONITOR_DRIVER_GAISLER_IRQ_CTRL
