@@ -405,6 +405,12 @@
 			"inc": 1,
 			"mdef": "MONITOR_USER_MAN",
 			"status": 1
+		},
+		"tftp": {
+			"desc": "tftp client",
+			"inc": 1,
+			"mdef": "MONITOR_USER_TFTP",
+			"status": 1
 		}
 	}
 }

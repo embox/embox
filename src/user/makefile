@@ -16,5 +16,6 @@ SUBDIRS-$(MONITOR_USER_LS)        += ls
 SUBDIRS-$(MONITOR_USER_TESTMEM)   += testmem
 SUBDIRS-$(MONITOR_USER_UDPD)      += udpd
 SUBDIRS-$(MONITOR_USER_WMEM)      += wmem
+SUBDIRS-$(MONITOR_USER_TFTP)      += tftp
 
 include $(SRC_DIR)/common.mk

@@ -76,5 +76,6 @@
 #define MONITOR_USER_WMEM 1
 #define MONITOR_USER_LS 1
 #define MONITOR_USER_MAN 1
+#define MONITOR_USER_TFTP 1
 
 #endif /* _AUTOCONF_H_ */

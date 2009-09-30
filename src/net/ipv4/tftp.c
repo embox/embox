@@ -1,13 +1,9 @@
 /**
  * \file tftp.c
  *
- * \date May 16, 2009
- * \author sunnya
+ * \date Sep 29, 2009
+ * \author ababoshin
  */
-/////////////////////////////////////Comment!!////////////////////////////////////
-//!! send functions contain errors (for the present i don't know
-//	 how they are linked with udp)
-//	 +(error?): DEBUGs
 
 #include "string.h"
 #include "conio/conio.h"
@@ -18,141 +14,147 @@
 #include "net/if_device.h"
 #include "net/inet_sock.h"
 #include "net/net_pack_manager.h"
-#include "net/ip.h"
+#include "net/in.h"
+#include "net/socket.h"
 
-#define TFTP_ADDRESS_TO_SAVE	0x80000000
+//#define TFTP_ADDRESS_TO_SAVE  0x80000000
+	int
+tftp_client_get (const char *const filename,
+		 const ip_addr_t server,
+		 const int port, char *buf, int len, const int mode, int *const err) {
+	TRACE("tftp client started\n");
+	int result = 0;
+	int s = -1;
+	int actual_len, data_len;
+	socklen_t from_len, recv_len;
+	static int get_port = 7700;
+	int error;
 
-#define TFTP_FULL_PACKET_LENGTH	512
+	struct sockaddr local_addr, from_addr;
+	char data[SEGSIZE + sizeof (struct tftphdr)];
+	struct tftphdr *hdr = (struct tftphdr *) data;
+	const char *fp;
+	char *cp, *bp;
+	unsigned short last_good_block = 0;
+	int total_timeouts = 0;
 
-int offset = 0;
+	struct sockaddr_in saddr;
+	struct sockaddr_in laddr;
 
-////////primitives realization///////////////////
-int tftp_send_ack (void *ifdev, unsigned char srcaddr[4], unsigned char dstaddr[4], int block_number) {
-	net_packet *pack = net_packet_alloc();
-	if (pack == 0)
-		return -1;
-	pack->ifdev = ifdev;
-	pack->netdev = (struct _net_device *)ifdev_get_netdevice(ifdev);
+	*err = 0;		// Just in case
 
-	tftphdr header;
-	header.th_opcode  = TFTP_ACK;
-	header.th_u.tu_block = block_number;
-
-	int i;
-	char *data = (char *) &header;
-	for (i = 0; i < strlen(data); i++) {
-		pack->data[i] = data[i];
+	// Create initial request
+	hdr->th_opcode = htons (RRQ);	// Read file
+	cp = (char *) &hdr->th_stuff;
+	fp = filename;
+	while (*fp) {
+		*cp++ = *fp++;
 	}
-	pack->len += strlen(data);
-	pack->protocol = ETH_P_IP;
-
-	memcpy(pack->nh.iph->daddr, dstaddr, sizeof(pack->nh.iph->daddr));
-	memcpy(pack->nh.iph->saddr, srcaddr, sizeof(pack->nh.iph->saddr));
-
-	return udpsock_push(pack);
-	//inet_sock??
-	//udp_trans??   <<-- NO, tftp is application layer, not transport.
-
-	/*TODO: it's something wrong.
-	 inside tftp_send(args) and tftp_receive(args):
-	         create udp socket
-	         ..todo..
-	         close socket
-	 and use tftphdr insist of TFTP_RQ_PACKET, etc.
-	*/
-
-}
-
-int tftp_send_rrq_request(void *ifdev, unsigned char srcaddr[4], unsigned char dstaddr[4], char *filename, char *mode) {
-	net_packet *pack = net_packet_alloc();
-	if (pack == NULL) {
+	*cp++ = '\0';
+	if (mode == TFTP_NETASCII) {
+		fp = "NETASCII";
+	}
+	else if (mode == TFTP_OCTET) {
+		fp = "OCTET";
+	}
+	else {
+		*err = TFTP_INVALID;
 		return -1;
 	}
-	pack->ifdev = ifdev;
-	pack->netdev = ifdev_get_netdevice(ifdev);
+	while (*fp)
+		*cp++ = *fp++;
+	*cp++ = '\0';
 
-	tftphdr header;
-	header.th_opcode = TFTP_RRQ;
-
-	char *stuff = (char *) &(header.th_u.tu_stuff);
-	while(*stuff++ = *filename++);
-	*stuff++ = '\0';
-	while (*stuff++ = *mode++);
-	*stuff++ = '\0';
-
-    int i;
-
-	char *data = (char *) &header;
-	for (i = 0; i < strlen(data); i++) {
-		pack->data[i] = data[i];
+	TRACE("call socket\n");
+	s = socket (AF_INET, SOCK_DGRAM, 0);
+	if (s == -1) {
+		LOG_ERROR ("tftp socket failed");
+		return -1;
 	}
-	pack->len = strlen(data);
-	pack->protocol = ETH_P_IP;
 
-	memcpy(pack->nh.iph->daddr, dstaddr, sizeof(pack->nh.iph->daddr));
-	memcpy(pack->nh.iph->saddr, srcaddr, sizeof(pack->nh.iph->saddr));
+	memset (&laddr, 0, sizeof (struct sockaddr_in));
+	laddr.sin_port = htons (get_port++);
+	laddr.sin_addr.s_addr = INADDR_ANY;
 
-	return udpsock_push(pack);
-}
+	memset (&saddr, 0, sizeof (struct sockaddr_in));
+	saddr.sin_port = htons (port);
+	memcpy (&saddr.sin_addr.s_addr, server, sizeof (ip_addr_t));
 
-int tftp_received_type_error() {
-	LOG_DEBUG("TFTP session error. Impossible message type\n");
-	LOG_DEBUG("Session closed\n");
-}
-
-int tftp_received_error_handler(net_packet *pack){
-	tftphdr *data = (tftphdr *) (&pack->data);
-	LOG_DEBUG("TFTP session error. Error by server\n");
-	LOG_DEBUG("Error code %d, message %s\n", data->th_u.tu_code, data->th_data);
-	LOG_DEBUG("Session closed\n");
-}
-
-int tftp_received_data_handler(net_packet *pack) {
-	tftphdr *data_packet = (tftphdr *) (pack->data);
-	char *current_address  = (char *)(TFTP_ADDRESS_TO_SAVE + offset);
-	//save data
-	int i;
-	for (i = 0; i < strlen(data_packet->th_data); i++) {
-		current_address[i] = ((char *)(data_packet->th_data))[i];
+	TRACE("call bind\n");
+	if (bind (s, (struct sockaddr *) &saddr, sizeof (saddr)) < 0) {
+		LOG_ERROR ("tftp bind failed");
+		return -1;
 	}
-	offset +=TFTP_FULL_PACKET_LENGTH;
 
-	//tftp_send_ack(data->block);
+	TRACE("call send\n");
+	// Send request
+	if (send (s, data, (int) (cp - data), 0) < 0) {
+		LOG_ERROR ("tftp send failed");
+		return -1;
+	}
 
-//	if ((pack->h.uh->len) < (sizeof(udphdr) + TFTP_FULL_PACKET_LENGTH )) /*size?*/{
-//		//last packet
-//		LOG_DEBUG("File transfer finished. Session closed\n");
-//		offset = 0;
-//	}
-}
+	TRACE("try to read tftp data\n");
 
-int tftp_received_packet(net_packet *pack) {
-	//watch first 2 bytes to find message type
-	HWRD type;
-	type = *(HWRD *)(pack->data);
-	if ( 0x5 == type ) {	//error-message
-		tftp_received_error_handler(pack);
-	} else if ( 0x3 == type ) {	//data-message
-		tftp_received_data_handler(pack);
-	} else {						//session error
-		tftp_received_type_error();
+	// wait a bit
+//	sleep (100);
+
+	// Read data
+	bp = buf;
+
+	while (!empty_socket (s)) {
+		recv_len = sizeof (data);
+		from_len = sizeof (from_addr);
+		if ((data_len = recv (s, data, recv_len, 0)) < 0) {
+			LOG_ERROR ("tftp recv failed");
+			return -1;
+		}
+		if (ntohs (hdr->th_opcode) == DATA) {
+			actual_len = 0;
+			if (ntohs (hdr->th_block) == (last_good_block + 1)) {
+				cp = hdr->th_data;
+				data_len -= 4;	/* Sizeof TFTP header */
+				actual_len = data_len;
+				result += actual_len;
+				while (data_len-- > 0) {
+					if (len-- > 0) {
+						*bp++ = *cp++;
+					} else {
+						LOG_ERROR ("tftp buffer overflow");
+						close (s);
+						return -1;
+					}
+				}
+				last_good_block++;
+			} else {
+				// To prevent an out-of-sequence packet from
+				// terminating transmission prematurely, set
+				// actual_len to a full size packet.
+				actual_len = SEGSIZE;
+			}
+			// Send out the ACK
+			hdr->th_opcode = htons (ACK);
+			hdr->th_block = htons (last_good_block);
+			if (send (s, data, 4, 0) < 0) {
+				LOG_ERROR ("tftp send ack error");
+				close (s);
+				return -1;
+			}
+			// A short packet marks the end of the file.
+			if ((actual_len >= 0) && (actual_len < SEGSIZE)) {
+				// End of data
+				close (s);
+				return result;
+			}
+		} else if (ntohs (hdr->th_opcode) == ERROR) {
+			LOG_ERROR ("tftp got an error no = %d\n", ntohs (hdr->th_code));
+			close (s);
+			return -1;
+		} else {
+			LOG_ERROR ("tftp received strange packet\n");
+			close (s);
+			return -1;
+		}
 	}
 }
 
-///////////////////////////////////////////////////////////
-//int load_file() { //  <-- i think so
-//    //..todo..
-//    int i, sk;
-//    sk = socket(SOCK_DGRAM, UDP);
-//    if (sk < 0) {
-//        LOG_ERROR("opening socket\n");
-//        return -1;
-//    }
-//    if (bind(sk, addr, port)) {
-//        LOG_ERROR("binding socket\n");
-//        return -1;
-//    }
-//    //       while (1) {...          //  using primitives
-//    close(sk);
-//    return 0;
-//}
+
