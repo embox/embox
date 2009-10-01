@@ -3,7 +3,7 @@
 #include "net/bootp.h"
 #include "net/udp.h"
 #include "net/socket.h"
-#include "net/in.h"
+#include "netinet/in.h"
 #include "net/if_ether.h"
 #include "net/net_device.h"
 #include "net/net_packet.h"

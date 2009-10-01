@@ -8,13 +8,13 @@
 #include "string.h"
 #include "conio.h"
 #include "common.h"
-#include "net/tftp.h"
+#include "arpa/tftp.h"
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"
 #include "net/inet_sock.h"
 #include "net/net_pack_manager.h"
-#include "net/in.h"
+#include "netinet/in.h"
 #include "net/socket.h"
 
 //#define TFTP_ADDRESS_TO_SAVE  0x80000000
