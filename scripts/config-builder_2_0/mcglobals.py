@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import copy, pickle, os
+import copy, pickle, os, shutil
 
 import mcmsg, mcerrors, mcmodinfo
 from mcscan import ScanAndParse
@@ -345,6 +345,10 @@ class MonitorConfig_t:
 	def __init__(self):
 
 		global gCfgDumpFileName,  defSrcDir
+
+		if not os.path.exists(gCfgDumpFileName):
+			shutil.copyfile(gCfgDumpFileName + ".in", gCfgDumpFileName)
+
 		gCfgDumpFileName = os.path.abspath(gCfgDumpFileName)
 
 		if os.path.exists(gCfgDumpFileName):

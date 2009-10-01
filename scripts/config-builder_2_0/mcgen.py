@@ -70,7 +70,6 @@ class ConfigGenerator:
 		for module in mcglobals.gModulesDict.keys():
 		        mdef    = mcglobals.gModulesDict[module].MDef
             		inc     = CurPreset.StagedModulesDict[module]
-            		print "\""+mdef+"\""
             		content = self.replacer_h(mdef, inc, content)
 		#-- write autoconf.h
 		self.write_file('scripts/autoconf.h', content)
