@@ -1,0 +1,4 @@
+ModName   = net
+DependsOn = lib
+SrcList   = core/ ethernet/ ipv4/ ipaux.c ipconfig.c socket.c
+MDef      = MONITOR_NETWORK

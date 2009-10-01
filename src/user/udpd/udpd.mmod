@@ -1,5 +1,5 @@
 ModName   = udpd
-DependsOn = shell
+DependsOn = shell net
 Type      = Shell command
 SrcList   = udpd.c
 MDef      = MONITOR_USER_UDPD

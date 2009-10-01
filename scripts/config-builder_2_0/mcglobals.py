@@ -449,12 +449,12 @@ class MonitorConfig_t:
 defCompilersToSettingsDict = {
 	'sparc-linux' :  CompilerSettings_t(
 		Path = u'/opt/sparc-linux/bin/sparc-linux-gcc',
-		CFLAGS = u'-Werror -msoft-float -c -MD -mv8 -O0',
+		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0',
 		LDFLAGS = u'-Wl -N -nostdlib'
 	),
 	'sparc-elf' : CompilerSettings_t(
 		Path = u'/opt/sparc-elf/bin/sparc-elf-gcc',
-		CFLAGS = u'-Werror -msoft-float -c -MD -mv8 -O0',
+		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0',
 		LDFLAGS = u'-Wl -N -nostdlib'
 	)
 }

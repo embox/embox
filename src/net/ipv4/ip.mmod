@@ -1,0 +1,4 @@
+ModName   = ip_proto
+DependsOn = net
+Type      = Net protocol
+SrcList   = ip.c

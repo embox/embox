@@ -1,5 +1,5 @@
 ModName   = tftp
-DependsOn = shell
+DependsOn = shell net
 Type      = Shell command
 SrcList   = u_tftp.c
 MDef      = MONITOR_USER_TFTP

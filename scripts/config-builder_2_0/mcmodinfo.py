@@ -7,7 +7,7 @@ class ModInfoStruct_t:
 		self.MFilePath = filepath # path to ".mmod" file
 		self.RequiredByList = []  # list of module names, which depend on this module
 
-		# following info comes from ".mmodf" file:
+		# following info comes from ".mmod" file:
 		self.ModName = ""         # unique name of the module
 		self.InitProc = ""        # name of module-init function in source
 		self.Type = "Other"       # type of module (for example "ShellCommand")

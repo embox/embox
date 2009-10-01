@@ -1,0 +1,4 @@
+ModName   = arp_proto
+DependsOn = net
+Type      = Net protocol
+SrcList   = arp.c

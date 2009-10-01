@@ -3,6 +3,7 @@
 # requirement: python >= 2.6
 #              sip >= 4.9
 #              PyQt >= 4.6
+#              Qt >= 4.5
 
 import os, re, sys, codecs, pickle, copy
 

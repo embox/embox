@@ -1,0 +1,4 @@
+ModName   = icmp_proto
+DependsOn = net
+Type      = Net protocol
+SrcList   = icmp.c
