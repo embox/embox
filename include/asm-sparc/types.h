@@ -23,6 +23,10 @@ typedef signed short INT16;
 typedef signed char CHAR;
 typedef unsigned char BYTE;
 typedef int BOOL;
+typedef INT32 socklen_t;
+typedef unsigned char u8_t;
+typedef unsigned short u16_t;
+typedef unsigned int u32_t;
 
 #ifdef _TEST_SYSTEM_
 typedef int size_t;
