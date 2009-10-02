@@ -51,10 +51,10 @@ else
 	    scp -i $DSA_KEY_FILE $BIN_DIR/$MONITOR_ROM $USER@$HOST:$IMG_PATH
 	fi
     fi
-    if [ -e $BIN_DIR/$MONITOR_RAM ]; then
-	if [ -e $DSA_KEY_FILE ]; then
-	    scp -i $DSA_KEY_FILE $BIN_DIR/$MONITOR_RAM $USER@$HOST:$IMG_PATH
-	fi
-    fi
+#    if [ -e $BIN_DIR/$MONITOR_RAM ]; then
+#	if [ -e $DSA_KEY_FILE ]; then
+#	    scp -i $DSA_KEY_FILE $BIN_DIR/$MONITOR_RAM $USER@$HOST:$IMG_PATH
+#	fi
+#    fi
     svn diff > diff.log
 fi

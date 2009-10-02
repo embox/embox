@@ -158,3 +158,8 @@ void *memcpy(void *dst, const void *src, size_t n) {
 
 	return ret;
 }
+
+char *basename(const char *filename) {
+	char *p = strrchr(filename, '/');
+	return p ? p + 1 : (char *) filename;
+}

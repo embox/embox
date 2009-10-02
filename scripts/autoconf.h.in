@@ -23,9 +23,6 @@
 #define MONITOR_PROMPT "monitor> "
 #define MONITOR_MAX_PROMPT_LENGTH 15
 
-/* Misc */
-#define MONITOR_MISC 1
-
 /* "File system" */
 #define MONITOR_FS 1
 

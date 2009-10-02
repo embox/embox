@@ -19,10 +19,6 @@ CC_PACKET=sparc-elf
 CCFLAGS=-Werror -pipe -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_
 LDFLAGS=-Wl -N -nostdlib -g
 
-# Misc
-
-MONITOR_MISC=y
-
 # "File system" support
 
 MONITOR_FS=y

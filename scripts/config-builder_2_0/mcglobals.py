@@ -107,7 +107,7 @@ class MonitorPreset_t:
 	def __init__(self, ArchsToExcludedModsDict, ModulesDict):
 
 		# list of the known linkscripts is global and constant (constLinkScripts), so we don't need a deepcopy
-		self.CurrentLinkScript = constLinkScripts[0]
+		self.CurrentLinkScript = constLinkScripts.keys()[0]
 
 		# we need a deepcopy of defaults, because each preset must have it's own preprocdefns, not a link to one place
 		self.PreprocDefnsDict = copy.deepcopy(defPreprocDefnsDict)
@@ -203,7 +203,7 @@ class MonitorPreset_t:
 			ClobberedFields.append('PreprocDefnsDict')
 
 		try:
-			if InInstance.CurrentLinkScript in constLinkScripts:
+			if InInstance.CurrentLinkScript in constLinkScripts.keys():
 				self.CurrentLinkScript = InInstance.CurrentLinkScript
 			else:
 				ClobberedFields.append('CurrentLinkScript (was '+InInstance.CurrentLinkScript+')')
@@ -453,13 +453,13 @@ class MonitorConfig_t:
 defCompilersToSettingsDict = {
 	'sparc-linux' :  CompilerSettings_t(
 		Path = u'/opt/sparc-linux/bin/sparc-linux-gcc',
-		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0',
-		LDFLAGS = u'-Wl -N -nostdlib'
+		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
+		LDFLAGS = u'-Wl -N -nostdlib -g'
 	),
 	'sparc-elf' : CompilerSettings_t(
 		Path = u'/opt/sparc-elf/bin/sparc-elf-gcc',
-		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0',
-		LDFLAGS = u'-Wl -N -nostdlib'
+		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
+		LDFLAGS = u'-Wl -N -nostdlib -g'
 	)
 }
 
@@ -476,10 +476,11 @@ defSrcDir = u'src'
 
 defOutDir = u'bin'
 
-constLinkScripts = [u'linkrom',u'linkram',u'linksim']
-
-
-
+constLinkScripts = {
+	u'linkrom' : 'RELEASE_TRG',
+	u'linkram' : 'DEBUG_TRG',
+	u'linksim' : 'SIMULATION_TRG',
+}
 
 gCfgDumpFileName = u'.config2'
 

@@ -31,7 +31,7 @@ class MainCfgDlg_t (Ui_MainCfgDlgBase_t, Ui_MainCfgDlg_t):
 		self.PPDefsScrollArea.setWidget(self.PPDefViewFrame)
 		self.AddPreprocDefButton.clicked.connect(self.PPDefViewFrame.CallAddPreprocDefDlg)
 
-		for LinkscriptName in mcglobals.constLinkScripts:
+		for LinkscriptName in mcglobals.constLinkScripts.keys():
 			self.LinkScriptComBox.addItem(LinkscriptName)
 		self.LinkScriptComBox.currentIndexChanged[unicode].connect(self.SelectLinkScript)
 
@@ -165,7 +165,7 @@ class MainCfgDlg_t (Ui_MainCfgDlgBase_t, Ui_MainCfgDlg_t):
 		print 'dir ',  mcglobals.gConfig.SrcDir
 		CfgDumpFlie = open(mcglobals.gCfgDumpFileName, 'w+')
 		pickle.dump(mcglobals.gConfig, CfgDumpFlie)
-		gen = mcgen.ConfigGenerator(mcglobals.gConfig)
+		gen = mcgen.ConfigGenerator()
 		gen.generate()
 		QtGui.qApp.quit()
 

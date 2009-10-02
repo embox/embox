@@ -49,8 +49,7 @@
 				"Common": [
 					"Users",
 					"Conio",
-					"Fs",
-					"Misc"
+					"Fs"
 				],
 				"Levels": [
 					"Debug",
@@ -76,12 +75,6 @@
 			"desc": "File system support",
 			"inc": 1,
 			"mdef": "MONITOR_FS",
-			"status": 1
-		},
-		"Misc": {
-			"desc": "Miscellaneous",
-			"inc": 1,
-			"mdef": "MONITOR_MISC",
 			"status": 1
 		},
 		"Net": {
@@ -167,8 +160,7 @@
 			"dep": {
 				"Common": [
 					"Conio",
-					"Users",
-					"Misc"
+					"Users"
 				],
 				"Levels": [
 					"Debug",
@@ -227,12 +219,10 @@
 		"Drivers": 1,
 		"Fs": 1,
 		"Levels": 0,
-		"Misc": 1,
 		"Net": 1,
 		"Tests": 1,
 		"Users": 1
 	},
-	"Misc": {},
 	"Net": {
 		"bootp": {
 			"desc": "bootp/dhcp proto",

@@ -78,6 +78,11 @@ int strncmp(const char *s1, const char *s2, size_t count);
 char *strchr(const char *s, int c);
 
 /**
+ * Find the last occurrence of C in S.
+ */
+char *strrchr(const char *s, int c);
+
+/**
  * Determines whether beg is the beginning of the str string
  */
 //int str_starts_with(const char *str, const char *beg, int len);

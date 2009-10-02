@@ -5,8 +5,11 @@ import string, re, codecs, os, shutil
 import mcglobals
 
 class ConfigGenerator:
-	def __init__(self, gConfig):
-		self.gConfig = gConfig
+	def __init__(self):
+		self.gConfig = mcglobals.gConfig
+		self.CurPreset = self.gConfig.PresetsDict[self.gConfig.CurPresetName]
+		self.CurArch = self.CurPreset.ArchsToArchSettingsDict[self.CurPreset.CurrentArchName]
+		self.CurCompilerSettings = self.CurArch.CompilersToSettingsDict[self.CurArch.CurrentCompilerName]
 
 	def generate(self):
 		for file in ("scripts/autoconf", "scripts/autoconf.h"):
@@ -18,8 +21,8 @@ class ConfigGenerator:
 
 	def genLinkScript(self):
 		""" Edit link script """
-		file = self.gConfig.PresetsDict[self.gConfig.CurPresetName].CurrentLinkScript
-		arch = self.gConfig.PresetsDict[self.gConfig.CurPresetName].CurrentArchName
+		file = self.CurPreset.CurrentLinkScript
+		arch = self.CurPreset.CurrentArchName
 		content = self.read_file('scripts/' + file)
 		content = re.sub('OUTPUT_ARCH\((\w+)\)', "OUTPUT_ARCH({0})".format(arch), content)
 		self.write_file('scripts/' + file, content)
@@ -30,25 +33,22 @@ class ConfigGenerator:
 		""" Generate autoconf """
 		#-- read autoconf
 		content = self.read_file('scripts/autoconf')
-		CurPreset = mcglobals.gConfig.PresetsDict[mcglobals.gConfig.CurPresetName]
-		CurArch = CurPreset.ArchsToArchSettingsDict[CurPreset.CurrentArchName]
-		CurCompilerSettings = CurArch.CompilersToSettingsDict[CurArch.CurrentCompilerName]
-		#-- Arch ------------------------------------
-		for item in mcglobals.gModulesDict.KnownArchs:
-		        mdef    = mcglobals.gModulesDict[item].MDef
-		        if CurPreset.CurrentArchName == item:
-		    		inc = 1
-		    	else:
-		    		inc = 0
-		        content = self.replacer( mdef, inc, content)
 		#-- CC_PACKET, CFLAGS, LDFLAGS --------------
-		content = re.sub( "CFLAGS=([A-Za-z0-9_\\-# ]+)",  "CFLAGS="    + CurCompilerSettings.CFLAGS,  content)
-		content = re.sub( "LDFLAGS=([A-Za-z0-9_\\-# ]+)", "LDFLAGS="   + CurCompilerSettings.LDFLAGS, content)
-		content = re.sub( "CC_PACKET=(\\w+(-\\w+)?)",     "CC_PACKET=" + CurArch.CurrentCompilerName, content)
+		content = re.sub( "CFLAGS=([A-Za-z0-9_\\-# ]+)",  "CFLAGS="    + self.CurCompilerSettings.CFLAGS,  content)
+		content = re.sub( "LDFLAGS=([A-Za-z0-9_\\-# ]+)", "LDFLAGS="   + self.CurCompilerSettings.LDFLAGS, content)
+		content = re.sub( "CC_PACKET=(\\w+(-\\w+)?)",     "CC_PACKET=" + self.CurArch.CurrentCompilerName, content)
 		#-- Modules ---------------------------------
 		for module in mcglobals.gModulesDict.keys():
 			mdef    = mcglobals.gModulesDict[module].MDef
-			inc     = CurPreset.StagedModulesDict[module]
+			inc     = self.CurPreset.StagedModulesDict[module]
+			content = self.replacer(mdef, inc, content)
+		#-- Link Script -----------------------------
+		for linkScript in mcglobals.constLinkScripts.keys():
+			mdef = mcglobals.constLinkScripts[linkScript]
+			if self.CurPreset.CurrentLinkScript == linkScript:
+				inc = True
+			else:
+				inc = False
 			content = self.replacer(mdef, inc, content)
 		#-- write autoconf
 		self.write_file('scripts/autoconf', content)
@@ -57,20 +57,19 @@ class ConfigGenerator:
 		""" Generate autoconf.h """
 		#-- read autoconf.h
 		content = self.read_file('scripts/autoconf.h')
-		#-- Arch ------------------------------------
-		CurPreset = mcglobals.gConfig.PresetsDict[mcglobals.gConfig.CurPresetName]
-		for item in mcglobals.gModulesDict.KnownArchs:
-		        mdef    = mcglobals.gModulesDict[item].MDef
-		        if CurPreset.CurrentArchName == item:
-		    		inc = 1
-		    	else:
-		    		inc = 0
-		        content = self.replacer_h(mdef, inc, content)
         	#-- Modules ---------------------------------
 		for module in mcglobals.gModulesDict.keys():
 		        mdef    = mcglobals.gModulesDict[module].MDef
-            		inc     = CurPreset.StagedModulesDict[module]
+            		inc     = self.CurPreset.StagedModulesDict[module]
             		content = self.replacer_h(mdef, inc, content)
+            	#-- Link Script -----------------------------
+            	for linkScript in mcglobals.constLinkScripts.keys():
+            	        mdef = mcglobals.constLinkScripts[linkScript]
+            	        if self.CurPreset.CurrentLinkScript == linkScript:
+            	    		inc = 1
+            	        else:
+            	                inc = 0
+            	        content = self.replacer_h(mdef, inc, content)
 		#-- write autoconf.h
 		self.write_file('scripts/autoconf.h', content)
 

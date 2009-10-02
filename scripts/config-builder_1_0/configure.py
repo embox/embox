@@ -139,8 +139,6 @@ class configure:
 			self.gui.show_conio("Conio")
 			#-- Fs frame
 			self.gui.show_table("Fs")
-			#-- Misc frame
-			self.gui.show_table("Misc")
 			#-- Level frame
 			self.gui.show_table("Levels")
 			#-- Build frame

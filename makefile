@@ -72,7 +72,7 @@ clean:
 	@$(SCRIPTS_DIR)/config-builder_1_0/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
 clean_all: clean
-	@$(RM) .config $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h
+	@$(RM) .config .config2 $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h
 	@ln -sf -T asm-sparc include/asm
 
 xconfig:
