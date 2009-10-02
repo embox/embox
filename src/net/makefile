@@ -5,6 +5,7 @@ SUBDIRS-y   += ethernet
 SUBDIRS-y   += core
 
 OBJS-y      += socket.o
+#OBJS-y      += sockets.o
 OBJS-y      += ipconfig.o
 OBJS-y      += ipaux.o
 

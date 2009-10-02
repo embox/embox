@@ -43,6 +43,21 @@ int socket(int domain, int type, int protocol) {
         return -1;
 }
 
+int connect (int sockfd, const struct sockaddr *addr, int addrlen) {
+	LOG_DEBUG("connect socket\n");
+	if(sks[sockfd].is_busy == 0) {
+	    return -1;
+	}
+	memcpy(&sks[sockfd].sk->inet.daddr, &(addr->sa_data[2]), IP_ADDR_LEN);
+	memcpy(&sks[sockfd].sk->inet.dport, &(addr->sa_data[0]), sizeof(short));
+	char ip[15];
+	ipaddr_print(ip, sks[sockfd].sk->inet.daddr);
+	sks[sockfd].queue = net_packet_alloc ();
+	sks[sockfd].queue->ifdev = (void*)ifdev_find_by_name ("eth0");
+	LOG_WARN("socket connected at port=%d, ip=%s ifdev = %d\n", sks[sockfd].sk->inet.sport, ip, sks[sockfd].queue);
+	return 0;
+}
+
 int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
 	LOG_DEBUG("bind socket\n");
         if(sks[sockfd].is_busy == 0) {
