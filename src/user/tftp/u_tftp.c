@@ -3,7 +3,7 @@
  */
 #include "shell_command.h"
 #include "string.h"
-#include "arpa/tftp.h"
+#include "inet/arpa/tftp.h"
 
 #define COMMAND_NAME     "tftp"
 #define COMMAND_DESC_MSG "TFTP client"

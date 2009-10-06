@@ -7,10 +7,10 @@ create_include_dirs_lst: $(SUBDIRS-y) $(SUBDIRS-n)
 	@echo ' -I$(CURDIR)\' >> $(ROOT_DIR)/include_dirs.lst
 
 $(SUBDIRS-y):
-	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
+	@$(MAKE) -C $@ $(MAKEOP)
 
 $(SUBDIRS-n):
-	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
+	@$(MAKE) -C $@ $(MAKEOP)
 
 all: $(SUBDIRS-y) $(OBJS-y) copy_objs
 

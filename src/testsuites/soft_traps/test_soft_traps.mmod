@@ -1,0 +1,5 @@
+ModName   = test_soft_traps
+Type      = Express test
+DependsOn = tests
+SrcList   = test_soft_traps.c
+MDef      = MONITOR_TEST_SOFT_TRAPS

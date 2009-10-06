@@ -1,5 +1,7 @@
 include $(SCRIPTS_DIR)/autoconf
 
-OBJS-y += eth.o
+SUBDIRS-y += irq_ctrl
+SUBDIRS-y += timer
+SUBDIRS-y += uart
 
 include $(SCRIPTS_DIR)/common.mk

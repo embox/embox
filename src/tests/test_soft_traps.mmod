@@ -1,4 +1,0 @@
-ModName = test_soft_traps
-Type    = Express test
-SrcList = test_soft_traps.c
-MDef    = MONITOR_TEST_SOFT_TRAPS

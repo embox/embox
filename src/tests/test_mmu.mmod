@@ -1,4 +1,0 @@
-ModName = test_mmu
-Type    = Express test
-SrcList = test_mmu.c
-MDef    = MONITOR_TEST_MMU

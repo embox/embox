@@ -7,6 +7,7 @@ SCRIPTS_DIR = $(ROOT_DIR)/scripts
 INCLUDE_DIR = $(ROOT_DIR)/include
 RM          = rm -rf
 EDITOR      = vim
+MAKE        += --no-print-directory
 
 ifeq ($(shell [ -f scripts/autoconf ] && echo YES),YES)
     DEFAULT_CONF =
@@ -33,12 +34,12 @@ CC      = $(CC_PACKET)-gcc
 OD_TOOL = $(CC_PACKET)-objdump
 OC_TOOL = $(CC_PACKET)-objcopy
 
-.PHONY: mkdir build checksum all clean config xconfig menuconfig
+.PHONY: mkdir build checksum all clean config xconfig menuconfig mconfig
 
 all: mkdir build
 
 mkdir:
-	@if [ -e .config ]; \
+	@if [ -e .config2 ]; \
 	then \
 	    echo Start; \
 	else \
@@ -51,23 +52,23 @@ mkdir:
 	@test -d $(OBJ_DIR)/$(BUILD) || mkdir -p $(OBJ_DIR)/$(BUILD)
 
 build:
-	@rm -f objs.lst include_dirs.lst
-	@declare -x MAKEOP=create_objs_lst; $(MAKE) --no-print-directory --directory=src create_objs_lst
-	@declare -x MAKEOP=create_include_dirs_lst; $(MAKE) --no-print-directory --directory=src create_include_dirs_lst
+	@$(RM) objs.lst include_dirs.lst
+	@declare -x MAKEOP=create_objs_lst; $(MAKE) --directory=src create_objs_lst
+	@declare -x MAKEOP=create_include_dirs_lst; $(MAKE) --directory=src create_include_dirs_lst
 	@echo ' ' >> $(ROOT_DIR)/include_dirs.lst
-	@declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --no-print-directory --directory=src all
+	@declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --directory=src all
 
 checksum:
 	@if [ $(SIGN_CHECKSUM) == y ]; \
 	then \
 	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
-	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --no-print-directory --directory=src all; \
+	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --directory=src all; \
 	else \
 	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean; \
 	fi;
 
 clean:
-	@declare -x MAKEOP=clean; $(MAKE) --no-print-directory --directory=src clean
+	@declare -x MAKEOP=clean; $(MAKE) --directory=src clean
 	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old docs/
 	@$(SCRIPTS_DIR)/config-builder_1_0/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
@@ -75,7 +76,7 @@ clean_all: clean
 	@$(RM) .config .config2 $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h
 	@ln -sf -T asm-sparc include/asm
 
-xconfig:
+oldconfig:
 	@$(SCRIPTS_DIR)/config-builder_1_0/configure.py --mode=x
 
 menuconfig:
@@ -91,5 +92,5 @@ menuconfig:
 config:
 	@echo "Oops! Try edit config file by hand or use \"make x(menu)config\" and have a lot of fun."
 
-mconfig:
+xconfig:
 	@$(SCRIPTS_DIR)/config-builder_2_0/mcmain.py

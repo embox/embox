@@ -11,7 +11,7 @@ BIN_DIR=bin
 MONITOR_ROM=monitor_rom
 SIZE_ROM=0x80000
 MONITOR_RAM=monitor_ram
-AUTOCONF=.config
+AUTOCONF=.config2
 
 # Login
 USER=sikmir
@@ -51,10 +51,10 @@ else
 	    scp -i $DSA_KEY_FILE $BIN_DIR/$MONITOR_ROM $USER@$HOST:$IMG_PATH
 	fi
     fi
-#    if [ -e $BIN_DIR/$MONITOR_RAM ]; then
-#	if [ -e $DSA_KEY_FILE ]; then
-#	    scp -i $DSA_KEY_FILE $BIN_DIR/$MONITOR_RAM $USER@$HOST:$IMG_PATH
-#	fi
-#    fi
+    if [ -e $BIN_DIR/$MONITOR_RAM ]; then
+	if [ -e $DSA_KEY_FILE ]; then
+	    scp -i $DSA_KEY_FILE $BIN_DIR/$MONITOR_RAM $USER@$HOST:$IMG_PATH
+	fi
+    fi
     svn diff > diff.log
 fi

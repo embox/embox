@@ -9,4 +9,4 @@ OBJS-$(MONITOR_NET_TFTP)             += tftp.o
 OBJS-$(MONITOR_NET_BOOTP)             += bootp.o
 #OBJS-y                               += protocol.o
 
-include $(SRC_DIR)/common.mk
+include $(SCRIPTS_DIR)/common.mk

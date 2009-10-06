@@ -26,6 +26,13 @@
 /* "File system" */
 #define MONITOR_FS 1
 
+/* Glibc */
+#define MONITOR_LIB 1
+
+/* Kernel */
+
+#define MONITOR_KERNEL 1
+
 /* Network */
 #define MONITOR_NETWORK 1
 #define MONITOR_NET_ARP 1
@@ -46,6 +53,7 @@
 #undef MONITOR_TEST_RECURSION
 
 /* Drivers */
+#define MONITOR_DRIVER_CHAR 1
 
 #define MONITOR_DRIVER_AMBA_PNP 1
 

@@ -1,3 +1,3 @@
 OBJS-y     +=
 
-include $(SRC_DIR)/common.mk
+include $(SCRIPTS_DIR)/common.mk

@@ -17,7 +17,7 @@
 #include "net/icmp.h"
 #include "net/socket.h"
 #include "net/if_ether.h"
-#include "netinet/in.h"
+#include "inet/netinet/in.h"
 
 int udp_rcv(net_packet *pack) {
 	LOG_WARN("udp packet received\n");

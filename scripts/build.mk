@@ -1,18 +1,6 @@
-include $(SCRIPTS_DIR)/autoconf
-
-SUBDIRS-y                      += arch
-SUBDIRS-y                      += kernel
-SUBDIRS-y                      += drivers
-SUBDIRS-y                      += lib
-SUBDIRS-$(MONITOR_TESTS)       += tests
-SUBDIRS-$(MONITOR_FS)          += fs
-SUBDIRS-y                      += user
-SUBDIRS-$(MONITOR_NETWORK)     += net
-
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
 
 OBJ_HEAD:= entry.o
-
 
 .PHONY: all release debug sim docs $(SUBDIRS-y) $(SUBDIRS-n)
 
@@ -23,13 +11,13 @@ create_include_dirs_lst: $(SUBDIRS-y) $(SUBDIRS-n)
 
 $(SUBDIRS-y):
 ifdef G_DIRS
-	@declare -x INCLUDE_DIRS=$(filter-out '\\','$(G_DIRS)'); $(MAKE) --no-print-directory -C $@ $(MAKEOP)
+	@declare -x INCLUDE_DIRS=$(filter-out '\\','$(G_DIRS)'); $(MAKE) -C $@ $(MAKEOP)
 else
-	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
+	@$(MAKE) -C $@ $(MAKEOP)
 endif
 
 $(SUBDIRS-n):
-	@$(MAKE) --no-print-directory -C $@ $(MAKEOP)
+	@$(MAKE) -C $@ $(MAKEOP)
 
 release: $(SUBDIRS-y)
 	@#TODO may be use GOBJS list of objects files

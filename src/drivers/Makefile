@@ -1,5 +1,6 @@
 include $(SCRIPTS_DIR)/autoconf
 
-OBJS-y += eth.o
+SUBDIRS-y += amba_pnp
+SUBDIRS-y += char
 
 include $(SCRIPTS_DIR)/common.mk

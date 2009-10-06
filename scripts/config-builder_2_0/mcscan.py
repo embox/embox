@@ -84,6 +84,21 @@ def ParseModFile(ModFileFullPath):
 	return CurModInfo
 
 
+def ModFile2Makefile(FilePath, ModInfo):
+	if ModInfo.Type == "Net protocol":
+		return #TODO:
+	with codecs.open(os.path.dirname(FilePath) + "/Makefile", 'w+', "utf-8") as makefile:
+    		makefile_template  = "include $(SCRIPTS_DIR)/autoconf\n\n"
+		for item in ModInfo.SrcList:
+	    		if re.match("(\w+)[.].", item):
+	        		makefile_template += "OBJS-$({0}) += {1}\n".format(ModInfo.MDef, re.sub(r'[.].', '.o', item))
+	    		else:
+	            		makefile_template += "SUBDIRS-$({0}) += {1}\n".format(ModInfo.MDef, item)
+	        makefile_template += "\ninclude $(SCRIPTS_DIR)/common.mk\n"
+		makefile.write(makefile_template)
+	makefile.close()
+
+
 def ScanAndParse(RootDir):
 	""" Scan dirs recursively, find all module info files, and call parse routine
 	    organize returned info structures into dict """
@@ -105,6 +120,8 @@ def ScanAndParse(RootDir):
 			try:
 				# Call parse routine
 				CurModInfo = ParseModFile(CurFilePath)
+				# Generate Makefile
+				ModFile2Makefile(CurFilePath, CurModInfo)
 
 				CurModName = CurModInfo.ModName
 
