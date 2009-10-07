@@ -13,35 +13,37 @@
 #include "net/eth.h"
 #include "net/net_pack_manager.h"
 #include "net/if_arp.h"
+#include "net/arp.h"
 
-#define ARP_CACHE_SIZE         0x100
 
-static unsigned char brodcast_mac_addr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-typedef struct _ARP_ENTITY {
-	unsigned char hw_addr[ETH_ALEN];   /**< hardware addr */
-	unsigned char pw_addr[4];          /**< protocol addr */
-	void          *if_handler;         /**< net_device */
-	unsigned char is_busy;
-}ARP_ENTITY;
+//TODO this is wrong place for this variable
+static unsigned char broadcast_mac_addr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static unsigned char broadcast_ip_addr[IPV4_ADDR_LENGTH] = {0xFF, 0xFF, 0xFF, 0xFF};
 
 ARP_ENTITY arp_table[ARP_CACHE_SIZE];
 
 #define ARP_TABLE_SIZE array_len(arp_table)
 
-static inline int find_entity(void *ifdev, unsigned char dst_addr[4]) {
+static inline int find_entity(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
 	int i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
 		if(arp_table[i].is_busy &&
-		  (0 == memcmp(arp_table[i].pw_addr, dst_addr, 4)) &&
+		  (0 == memcmp(arp_table[i].pw_addr, dst_addr, sizeof(arp_table[i].pw_addr))) &&
 		  (ifdev == arp_table[i].if_handler)) {
 			return i;
 		}
 	}
 	return -1;
 }
-
-int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[ETH_ALEN]) {
+/**
+ * this function add entry in arp table if can
+ * @param ifdev (handler of ifdev struct) which identificate network interface where address can resolve
+ * @param ip addr
+ * @param hardware addr
+ * @return number of entry in table if success else -1
+ */
+int arp_add_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsigned char macaddr[ETH_ALEN]) {
 	int i;
 	if (-1 != (i = find_entity(ifdev,ipaddr))) {
 		return i;
@@ -55,9 +57,29 @@ int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[E
 			return i;
 		}
 	}
+	return -1;
 }
 
-static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4]) {
+/**
+ * this function delete entry from arp table if can
+ * @param ifdev (handler of ifdev struct) which identificate network interface where address can resolve
+ * @param ip addr
+ * @param hardware addr
+ * @return number of entry in table if success else -1
+ */
+int arp_delete_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsigned char macaddr[ETH_ALEN]) {
+    int i;
+    for (i = 0; i < ARP_TABLE_SIZE; i++) {
+       if(0 == memcmp(arp_table[i].pw_addr, ipaddr, array_len(arp_table[i].pw_addr)) ||
+           0 == memcmp(arp_table[i].hw_addr, macaddr, ETH_ALEN) ||
+           ifdev == arp_table[i].if_handler) {
+               arp_table[i].is_busy = 0;
+       }
+    }
+    return -1;
+}
+
+static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
 	net_packet *pack;
 
 	if (NULL == ifdev ||
@@ -69,7 +91,7 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 	pack->netdev  = ifdev_get_netdevice(ifdev);
 	pack->mac.raw = pack->data;
 	/* mac header */
-	memcpy (pack->mac.ethh->dst_addr, brodcast_mac_addr, ETH_ALEN);
+	memcpy (pack->mac.ethh->dst_addr, broadcast_mac_addr, ETH_ALEN);
 	memcpy (pack->mac.ethh->src_addr, pack->netdev->hw_addr, ETH_ALEN);
 	pack->mac.ethh->type = ETH_P_ARP;
 
@@ -80,7 +102,7 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 	pack->nh.arph->ptype = ETH_P_IP;
 	//TODO length hardware and logical type
 	pack->nh.arph->hlen = pack->netdev->addr_len;
-	pack->nh.arph->plen = 4;
+	pack->nh.arph->plen = IPV4_ADDR_LENGTH;
 	pack->nh.arph->oper = ARPOP_REQUEST;
 	memcpy (pack->nh.arph->sha, pack->netdev->hw_addr, ETH_ALEN);
 	memcpy (pack->nh.arph->spa, ifdev_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
@@ -91,19 +113,31 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[4])
 	return pack;
 }
 
-net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[4]) {
+/**
+ * resolve ip address and rebuild net_packet
+ * @param pack pointer to net_packet struct
+ * @param dst_addr IP address
+ * @return pointer to net_packet struct if success else NULL
+ */
+net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
 	int i;
 	void *ifdev = pack->ifdev;
 	if (NULL == pack || NULL == ifdev) {
 		return NULL;
 	}
-	if (-1 != (i = find_entity(ifdev, dst_addr))) {
+	if (memcmp(dst_addr, broadcast_ip_addr, sizeof(dst_addr))){
 		pack->mac.raw = pack->data;
 		memcpy (pack->mac.ethh->dst_addr, arp_table[i].hw_addr, sizeof(pack->mac.ethh->dst_addr));
 		return pack;
 	}
+	if (-1 != (i = find_entity(ifdev, dst_addr))) {
+		pack->mac.raw = pack->data;
+		memcpy (pack->mac.ethh->dst_addr, broadcast_mac_addr, sizeof(pack->mac.ethh->dst_addr));
+		return pack;
+	}
 	//send mac packet
 	eth_send(build_arp_pack(ifdev, dst_addr));
+	//TODO delete this after processes will be added to monitor
 	sleep(500);
 	if (-1 != (i = find_entity(ifdev, dst_addr))) {
 		pack->mac.raw = pack->data;
@@ -118,9 +152,10 @@ net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[4]) {
  */
 static int received_resp(net_packet *pack) {
 	arphdr *arp = pack->nh.arph;
-	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, 4)) {
+	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return -1;
 	}
+	//TODO delete this out log output from arp protocol in usual mode
 	char ip[15], mac[18];
 	ipaddr_print(ip, arp->spa);
 	macaddr_print(mac, arp->sha);
@@ -159,11 +194,15 @@ static int received_req(net_packet *pack) {
 	return 0;
 }
 
+/**
+ * Handle arp packet. This function called protocal stack when arp packet has been received
+ * @param pack net_packet
+ */
 int arp_received_packet(net_packet *pack) {
 	LOG_WARN("arp packet received\n");
 	arphdr *arp = pack->nh.arph;
 
-	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, 4)) {
+	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return 0;
 	}
 	switch(arp->oper) {
@@ -177,33 +216,5 @@ int arp_received_packet(net_packet *pack) {
 		return 0;
 	}
 
-	return 0;
-}
-
-int arp_delete_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[ETH_ALEN]) {
-        int i;
-        for (i = 0; i < ARP_TABLE_SIZE; i++) {
-                if(0 == memcmp(arp_table[i].pw_addr, ipaddr, 4) ||
-            	   0 == memcmp(arp_table[i].hw_addr, macaddr, ETH_ALEN) ||
-            	   ifdev == arp_table[i].if_handler) {
-                        arp_table[i].is_busy = 0;
-                }
-        }
-}
-
-int print_arp_cache(void *ifdev) {
-	int i;
-	char ip[15], mac[18];
-	net_device *net_dev;
-	for(i=0; i<ARP_CACHE_SIZE; i++) {
-		if((arp_table[i].is_busy == 1) &&
-		   (ifdev == NULL || ifdev == arp_table[i].if_handler)) {
-			net_dev = ifdev_get_netdevice(arp_table[i].if_handler);
-			ipaddr_print(ip, arp_table[i].pw_addr);
-			macaddr_print(mac, arp_table[i].hw_addr);
-			TRACE("%s\t\t%d\t%s\t%d\t%s\n", ip, ifdev_get_netdevice(arp_table[i].if_handler)->type,
-							 mac, net_dev->flags, net_dev->name);
-		}
-	}
 	return 0;
 }

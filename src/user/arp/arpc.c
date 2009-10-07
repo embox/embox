@@ -18,6 +18,23 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
+static int print_arp_cache(void *ifdev) {
+	int i;
+	char ip[15], mac[18];
+	net_device *net_dev;
+	for(i=0; i<ARP_CACHE_SIZE; i++) {
+		if((arp_table[i].is_busy == 1) &&
+		   (ifdev == NULL || ifdev == arp_table[i].if_handler)) {
+			net_dev = ifdev_get_netdevice(arp_table[i].if_handler);
+			ipaddr_print(ip, arp_table[i].pw_addr);
+			macaddr_print(mac, arp_table[i].hw_addr);
+			TRACE("%s\t\t%d\t%s\t%d\t%s\n", ip, ifdev_get_netdevice(arp_table[i].if_handler)->type,
+							 mac, net_dev->flags, net_dev->name);
+		}
+	}
+	return 0;
+}
+
 static int exec(int argsc, char **argsv) {
 	int nextOption;
 	unsigned char addr[4];
