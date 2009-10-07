@@ -11,7 +11,7 @@ BIN_DIR=bin
 MONITOR_ROM=monitor_rom
 SIZE_ROM=0x80000
 MONITOR_RAM=monitor_ram
-AUTOCONF=.config2
+AUTOCONF=.config
 
 # Login
 USER=sikmir

@@ -1,0 +1,8 @@
+include $(SCRIPTS_DIR)/autoconf
+
+OBJS-$(MONITOR_DRIVER_CHAR) += vtparse_table.o
+OBJS-$(MONITOR_DRIVER_CHAR) += vtparse.o
+OBJS-$(MONITOR_DRIVER_CHAR) += vtbuild.o
+OBJS-$(MONITOR_DRIVER_CHAR) += terminal.o
+
+include $(SCRIPTS_DIR)/common.mk
