@@ -1,0 +1,7 @@
+include $(SCRIPTS_DIR)/autoconf
+
+OBJS-$(MONITOR_FS) += ramfs.o
+OBJS-$(MONITOR_FS) += rootfs.o
+OBJS-$(MONITOR_FS) += file.o
+
+include $(SCRIPTS_DIR)/common.mk

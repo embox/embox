@@ -1,0 +1,9 @@
+include $(SCRIPTS_DIR)/autoconf
+
+SUBDIRS-$(MONITOR_LIB) += string
+SUBDIRS-$(MONITOR_LIB) += posix
+SUBDIRS-$(MONITOR_LIB) += stdio-common
+SUBDIRS-$(MONITOR_LIB) += crypt
+SUBDIRS-$(MONITOR_LIB) += misc
+
+include $(SCRIPTS_DIR)/common.mk

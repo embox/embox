@@ -1,0 +1,6 @@
+include $(SCRIPTS_DIR)/autoconf
+
+OBJS-$(MONITOR_DRIVER_AMBA_PNP) += amba_pnp.o
+SUBDIRS-$(MONITOR_DRIVER_AMBA_PNP) += gaisler
+
+include $(SCRIPTS_DIR)/common.mk

@@ -39,7 +39,7 @@ OC_TOOL = $(CC_PACKET)-objcopy
 all: mkdir build
 
 mkdir:
-	@if [ -e .config2 ]; \
+	@if [ -e .config ]; \
 	then \
 	    echo Start; \
 	else \
@@ -76,7 +76,7 @@ clean_all: clean
 	@$(RM) .config .config2 $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h
 	@ln -sf -T asm-sparc include/asm
 
-oldconfig:
+xconfig:
 	@$(SCRIPTS_DIR)/config-builder_1_0/configure.py --mode=x
 
 menuconfig:
@@ -92,5 +92,5 @@ menuconfig:
 config:
 	@echo "Oops! Try edit config file by hand or use \"make x(menu)config\" and have a lot of fun."
 
-xconfig:
+mconfig:
 	@$(SCRIPTS_DIR)/config-builder_2_0/mcmain.py

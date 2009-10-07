@@ -1,0 +1,16 @@
+include $(SCRIPTS_DIR)/autoconf
+
+OBJS-$(MONITOR_ARCH_SPARC) += leon_irq.o
+OBJS-$(MONITOR_ARCH_SPARC) += init.o
+OBJS-$(MONITOR_ARCH_SPARC) += mmu_asm.o
+OBJS-$(MONITOR_ARCH_SPARC) += boot.o
+OBJS-$(MONITOR_ARCH_SPARC) += cpu_context.o
+OBJS-$(MONITOR_ARCH_SPARC) += entry.o
+OBJS-$(MONITOR_ARCH_SPARC) += trap_setup.o
+OBJS-$(MONITOR_ARCH_SPARC) += windows.o
+OBJS-$(MONITOR_ARCH_SPARC) += bubble_sort.o
+OBJS-$(MONITOR_ARCH_SPARC) += sys.o
+OBJS-$(MONITOR_ARCH_SPARC) += srmmu_probe.o
+OBJS-$(MONITOR_ARCH_SPARC) += soft_trap_test.o
+
+include $(SCRIPTS_DIR)/common.mk
