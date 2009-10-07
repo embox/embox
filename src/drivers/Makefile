@@ -1,5 +1,3 @@
-include $(SCRIPTS_DIR)/autoconf
-
 SUBDIRS-y += amba_pnp
 SUBDIRS-y += char
 

@@ -1,5 +1,3 @@
-include $(SCRIPTS_DIR)/autoconf
-
-SUBDIRS-$(MONITOR_ARCH_SPARC)     += sparc
+SUBDIRS-y   += sparc
 
 include $(SCRIPTS_DIR)/common.mk

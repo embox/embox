@@ -1,0 +1,4 @@
+ModName   = gaisler
+Type      = Driver
+SrcList   = irq_ctrl timer uart
+MDef      = MONITOR_DRIVER_GAISLERDRV

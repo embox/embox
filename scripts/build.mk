@@ -23,7 +23,7 @@ release: $(SUBDIRS-y)
 	@#TODO may be use GOBJS list of objects files
 	@#TODO have to set entry point in linker script now importen link order
 	@#echo gobjs $(GOBJS)
-	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linkrom  -o $(BIN_DIR)/$(TARGET)_rom \
+	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linker/linkrom  -o $(BIN_DIR)/$(TARGET)_rom \
 	$(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD) $(filter-out $(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD), $(wildcard $(OBJ_DIR)/$(BUILD)/*.o))
 	@if [ $(DISASSEMBLE) == y ]; \
 	then \
@@ -37,7 +37,7 @@ debug: $(SUBDIRS-y)
 	@#TODO may be use GOBJS list of objects files
 	@#TODO have to set entry point in linker script now importen link order
 	@#echo gobjs $(GOBJS)
-	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linkram  -o $(BIN_DIR)/$(TARGET)_ram \
+	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linker/linkram  -o $(BIN_DIR)/$(TARGET)_ram \
 	$(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD) $(filter-out $(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD), $(wildcard $(OBJ_DIR)/$(BUILD)/*.o))
 	@if [ $(DISASSEMBLE) == y ]; \
 	then \
@@ -49,7 +49,7 @@ sim: $(SUBDIRS-y)
 	@#TODO may be use GOBJS list of objects files
 	@#echo gobjs $(GOBJS)
 	@#TODO have to set entry point in linker script now importen link order
-	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linksim  -o $(BIN_DIR)/$(TARGET)_sim \
+	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linker/linksim  -o $(BIN_DIR)/$(TARGET)_sim \
 	$(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD) $(filter-out $(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD), $(wildcard $(OBJ_DIR)/$(BUILD)/*.o))
 	@if [ $(DISASSEMBLE) == y ]; \
 	then \

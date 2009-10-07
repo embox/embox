@@ -1,5 +1,3 @@
-include $(SCRIPTS_DIR)/autoconf
-
 SUBDIRS-y += arch
 SUBDIRS-y += kernel
 SUBDIRS-y += drivers

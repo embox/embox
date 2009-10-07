@@ -1,4 +1,5 @@
-ModName = kernel
-Type    = Persistent
-SrcList = main.c irq.c timers_common.c
-MDef    = MONITOR_KERNEL
+ModName     = kernel
+Type        = Persistent
+Description = Kernel system
+SrcList     = main.c irq.c timers_common.c errno.c
+MDef        = MONITOR_KERNEL

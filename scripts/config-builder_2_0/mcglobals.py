@@ -3,6 +3,7 @@
 import copy, pickle, os, shutil
 
 import mcmsg, mcerrors, mcmodinfo
+
 from mcscan import ScanAndParse
 
 
@@ -477,9 +478,9 @@ defSrcDir = u'src'
 defOutDir = u'bin'
 
 constLinkScripts = {
-	u'linkrom' : 'RELEASE_TRG',
-	u'linkram' : 'DEBUG_TRG',
-	u'linksim' : 'SIMULATION_TRG',
+	u'linker/linkrom' : 'RELEASE_TRG',
+	u'linker/linkram' : 'DEBUG_TRG',
+	u'linker/linksim' : 'SIMULATION_TRG',
 }
 
 gCfgDumpFileName = u'.config2'

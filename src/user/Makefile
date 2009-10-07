@@ -1,5 +1,3 @@
-include $(SCRIPTS_DIR)/autoconf
-
 SUBDIRS-y += shell
 SUBDIRS-y += arp
 SUBDIRS-y += cp

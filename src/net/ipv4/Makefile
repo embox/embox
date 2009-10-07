@@ -1,5 +1,3 @@
-include $(SCRIPTS_DIR)/autoconf
-
 OBJS-$(MONITOR_NET_ARP)              += arp.o
 OBJS-$(MONITOR_NET_IP_V4)            += ip.o
 OBJS-$(MONITOR_NET_ICMP)             += icmp.o

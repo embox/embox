@@ -77,7 +77,6 @@ class configure:
 	def make_conf(self):
 		""" Generate code """
 		code_gen = configure_gen(self)
-#		code_gen.build_commands(self.files["shell_inc"], self.files["users_inc"])
 		if self.mode == "x":
 			code_gen.write_autoconf_h(self.files["autoconf_h"])
 			code_gen.build_link(self.linkers)
@@ -87,7 +86,6 @@ class configure:
 	def make_def_conf(self):
 		""" Generate default code """
 		code_gen = configure_gen(self)
-#		code_gen.build_commands(self.files["shell_inc"], self.files["users_inc"])
 		if self.mode == "x":
 			code_gen.write_autoconf_h(self.files["autoconf_h"] + ".in")
 			code_gen.build_link(self.linkers)

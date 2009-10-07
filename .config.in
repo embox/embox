@@ -207,9 +207,9 @@
 		}
 	},
 	"Linkers": [
-		"linkrom",
-		"linkram",
-		"linksim"
+		"linker/linkrom",
+		"linker/linkram",
+		"linker/linksim"
 	],
 	"Menu": {
 		"Arch": 0,

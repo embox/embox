@@ -54,6 +54,8 @@
 
 /* Drivers */
 #define MONITOR_DRIVER_CHAR 1
+#define MONITOR_DRIVER_GAISLERDRV 1
+
 
 #define MONITOR_DRIVER_AMBA_PNP 1
 
