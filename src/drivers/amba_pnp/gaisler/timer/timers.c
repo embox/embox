@@ -34,7 +34,7 @@ typedef struct _TIMERS_STRUCT {
 
 static TIMERS_STRUCT *dev_regs = NULL;
 
-#include "amba_drivers_helper.h"
+#include "drivers/amba_drivers_helper.h"
 #undef module_init
 #define module_init() timers_init()
 

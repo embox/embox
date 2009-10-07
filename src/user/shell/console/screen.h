@@ -10,7 +10,7 @@
 
 #include "asm/types.h"
 #include "cmdline.h"
-#include "terminal.h"
+#include "drivers/terminal.h"
 
 struct _SCREEN;
 

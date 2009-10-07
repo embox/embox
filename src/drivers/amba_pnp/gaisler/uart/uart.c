@@ -28,7 +28,7 @@ typedef struct _UART_STRUCT {
 
 static volatile UART_STRUCT *dev_regs = NULL;
 
-#include "amba_drivers_helper.h"
+#include "drivers/amba_drivers_helper.h"
 #undef module_init
 #define module_init() uart_init()
 

@@ -8,7 +8,7 @@
 #include "conio.h"
 #include "common.h"
 #include "net/net.h"
-#include "inet/netinet/in.h"
+#include "lib/inet/netinet/in.h"
 #include "net/ip.h"
 #include "net/inet_sock.h"
 #include "net/if_ether.h"

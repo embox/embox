@@ -8,7 +8,7 @@
 #include "string.h"
 #include "misc.h"
 #include "net/net.h"
-#include "inet/netinet/in.h"
+#include "lib/inet/netinet/in.h"
 #include "net/socket.h"
 
 #define COMMAND_NAME     "udpd"

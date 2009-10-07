@@ -23,7 +23,7 @@ typedef struct _IRQ_REGS {
 
 static IRQ_REGS * dev_regs = NULL;
 
-#include "amba_drivers_helper.h"
+#include "drivers/amba_drivers_helper.h"
 #undef module_init
 #define module_init() irq_ctrl_init()
 

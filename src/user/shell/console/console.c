@@ -15,7 +15,7 @@
 #include "conio.h"
 #include "common.h"
 #include "string.h"
-#include "terminal.h"
+#include "drivers/terminal.h"
 
 #define EDIT_MODEL(console,update, action, params...)	(action((console)->model, ##params) ? update((console)->view, (console)->model): FALSE)
 #define CB_EDIT_MODEL(action, params...)	EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##params)

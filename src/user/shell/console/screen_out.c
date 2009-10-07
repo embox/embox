@@ -7,7 +7,7 @@
 
 #include "screen.h"
 
-#include "terminal.h"
+#include "drivers/terminal.h"
 #include "common.h"
 #include "conio.h"
 

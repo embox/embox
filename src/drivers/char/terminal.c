@@ -9,14 +9,13 @@
  * Author: Eldar Abusalimov
  */
 
-#include "terminal.h"
+#include "drivers/terminal.h"
 
 #include "vt.h"
 #include "vtparse.h"
 #include "vtbuild.h"
 
 #include "asm/stdarg.h"
-#include "cmdline.h"
 #include "kernel/uart.h"
 #include "conio.h"
 #include "common.h"
