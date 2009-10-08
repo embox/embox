@@ -10,7 +10,7 @@
 #include "asm/leon_config.h"
 #include "asm/memory_map.h"
 #include "asm/sparc_regs.h"
-#include "../../scripts/autoconf.h"
+#include "autoconf.h"
 
  	.weak hardware_init_hook
  	.weak software_init_hook

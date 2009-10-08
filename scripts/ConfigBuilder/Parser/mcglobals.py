@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import copy, pickle, os, shutil
+import copy, pickle, os, shutil, sys
 
-import mcmsg, mcerrors, mcmodinfo
-
-from mcscan import ScanAndParse
+from ..QtGui import mcmsg, mcerrors
+from . import mcmodinfo
+from .mcscan import ScanAndParse
 
 
 #################################################

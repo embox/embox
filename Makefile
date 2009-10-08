@@ -61,23 +61,23 @@ build:
 checksum:
 	@if [ $(SIGN_CHECKSUM) == y ]; \
 	then \
-	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
+	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
 	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --directory=src all; \
 	else \
-	    $(SCRIPTS_DIR)/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean; \
+	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean; \
 	fi;
 
 clean:
 	@declare -x MAKEOP=clean; $(MAKE) --directory=src clean
 	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old docs/
-	@$(SCRIPTS_DIR)/config-builder_1_0/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
+	@$(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
 clean_all: clean
 	@$(RM) .config .config2 $(SCRIPTS_DIR)/autoconf $(SCRIPTS_DIR)/autoconf.h
 	@ln -sf -T asm-sparc include/asm
 
 xconfig:
-	@$(SCRIPTS_DIR)/config-builder_1_0/configure.py --mode=x
+	@$(SCRIPTS_DIR)/configure.py --mode=tk
 
 menuconfig:
 	@if [ ! -e $(SCRIPTS_DIR)/autoconf ]; \
@@ -87,10 +87,10 @@ menuconfig:
 	fi;
 	@$(EDITOR) $(SCRIPTS_DIR)/autoconf
 	@$(EDITOR) $(SCRIPTS_DIR)/autoconf.h
-	@$(SCRIPTS_DIR)/config-builder_1_0/configure.py --mode=menu
+	@$(SCRIPTS_DIR)/configure.py --mode=menu
 
 config:
 	@echo "Oops! Try edit config file by hand or use \"make x(menu)config\" and have a lot of fun."
 
 mconfig:
-	@$(SCRIPTS_DIR)/config-builder_2_0/mcmain.py
+	@$(SCRIPTS_DIR)/configure.py --mode=qt

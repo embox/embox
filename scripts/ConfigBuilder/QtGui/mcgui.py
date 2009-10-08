@@ -4,12 +4,13 @@ import pickle
 
 from PyQt4 import QtGui, QtCore, uic
 
-import mcglobals, mcerrors, mcmsg, mcgen
-from mcmodview import ModViewFrame_t
-from mcppdefview import PPDefViewFrame_t
+from ..Parser import mcglobals
+from . import mcerrors, mcmsg, mcgen
+from .mcmodview import ModViewFrame_t
+from .mcppdefview import PPDefViewFrame_t
 
 
-(Ui_MainCfgDlg_t, Ui_MainCfgDlgBase_t) = uic.loadUiType('scripts/config-builder_2_0/ui/MainDlg.ui')
+(Ui_MainCfgDlg_t, Ui_MainCfgDlgBase_t) = uic.loadUiType('scripts/ConfigBuilder/QtGui/ui/MainDlg.ui')
 
 class MainCfgDlg_t (Ui_MainCfgDlgBase_t, Ui_MainCfgDlg_t):
 	def __init__(self):

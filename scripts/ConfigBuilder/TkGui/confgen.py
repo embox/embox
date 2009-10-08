@@ -5,10 +5,10 @@
 # author: sikmir
 # requirement: python >= 2.6
 
-from misc import *
+from ..Misc.misc import *
 import string, re, os
 
-class configure_gen:
+class confgen:
 	def __init__(self, core_obj):
     		self.core = core_obj
 		self.tabs = core_obj.tabs

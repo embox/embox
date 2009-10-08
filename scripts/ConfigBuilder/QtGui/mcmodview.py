@@ -2,14 +2,14 @@
 
 from PyQt4 import QtGui, QtCore, uic
 
-import mcglobals, mcerrors, mcmsg
-
+from . import mcerrors, mcmsg
+from ..Parser import mcglobals
 
 # Ui_ModuleFrame_t represents a module frame (allows to stage and get module info)
-(Ui_ModuleFrame_t, Ui_ModuleFrameBase_t) = uic.loadUiType('scripts/config-builder_2_0/ui/ModuleFrame.ui')
+(Ui_ModuleFrame_t, Ui_ModuleFrameBase_t) = uic.loadUiType('scripts/ConfigBuilder/QtGui/ui/ModuleFrame.ui')
 
 # Ui_ModTypeFrame_t represents a frame in which modules of specific type are shown and can be staged
-(Ui_ModTypeFrame_t, Ui_ModTypeFrameBase_t) = uic.loadUiType('scripts/config-builder_2_0/ui/ModTypeFrame.ui')
+(Ui_ModTypeFrame_t, Ui_ModTypeFrameBase_t) = uic.loadUiType('scripts/ConfigBuilder/QtGui/ui/ModTypeFrame.ui')
 
 
 class ModTypeFrame_t (Ui_ModTypeFrame_t, Ui_ModTypeFrameBase_t):

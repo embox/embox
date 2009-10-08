@@ -7,7 +7,7 @@
 from Tkinter import *
 
 # tabs realization
-class conf_tab:
+class conftab:
 	def __init__(self, master, side=LEFT):
 		self.active_fr = None
 		self.count = 0

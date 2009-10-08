@@ -7,11 +7,11 @@
 
 import Tkinter
 from Tkinter import *
-from conf_tab import *
-from misc import *
+from .conftab import *
+from ..Misc.misc import *
 import tkSimpleDialog
 
-class configure_gui:
+class confgui:
 	def __init__(self, core_obj):
 		self.core = core_obj
 		self.tabs = core_obj.tabs
@@ -29,7 +29,7 @@ class configure_gui:
 		self.frame["Info"] = Tkinter.Frame(self.root)
 		self.frame["Info"].pack(fill = Tkinter.X, side = Tkinter.TOP, pady = 1)
 		#-- Tabs frame
-		self.frame["Main"] = conf_tab(self.frame["Info"], LEFT)
+		self.frame["Main"] = conftab(self.frame["Info"], LEFT)
 		#-- Init frames
 		for item in sorted(self.menu.keys()):
 			self.frame[item] = Tkinter.Frame(self.frame["Main"]())

@@ -2,14 +2,14 @@
 
 from PyQt4 import QtGui, QtCore, uic
 
-import mcglobals, mcerrors, mcmsg
-
+from . import mcerrors, mcmsg
+from ..Parser import mcglobals
 
 # Ui_PreprocDefnFrame_t represents a preprocessor definition frame (allows to view, delete and call edit dialog)
-(Ui_PreprocDefnFrame_t, Ui_PreprocDefnFrameBase_t) = uic.loadUiType('scripts/config-builder_2_0/ui/PreprocDefnFrame.ui')
+(Ui_PreprocDefnFrame_t, Ui_PreprocDefnFrameBase_t) = uic.loadUiType('scripts/ConfigBuilder/QtGui/ui/PreprocDefnFrame.ui')
 
 # Ui_PreprocDefnEditDlg_t represents a dialog for editing a preprocessor definition
-(Ui_PreprocDefnEditDlg_t, Ui_PreprocDefnEditDlgBase_t) = uic.loadUiType('scripts/config-builder_2_0/ui/PreprocDefnEditDlg.ui')
+(Ui_PreprocDefnEditDlg_t, Ui_PreprocDefnEditDlgBase_t) = uic.loadUiType('scripts/ConfigBuilder/QtGui/ui/PreprocDefnEditDlg.ui')
 
 
 class PreprocDefnEditDlg_t (Ui_PreprocDefnEditDlg_t, Ui_PreprocDefnEditDlgBase_t):

@@ -2,7 +2,7 @@
 
 import string, re, codecs, os, shutil
 
-import mcglobals
+from ..Parser import mcglobals
 
 class ConfigGenerator:
 	def __init__(self):

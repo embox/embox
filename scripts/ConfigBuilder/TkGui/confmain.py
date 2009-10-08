@@ -6,12 +6,12 @@
 # author: sikmir
 # requirement: python >= 2.6
 
-from misc import *
-from configure_gui import *
-from configure_gen import *
+from ..Misc.misc import *
+from .confgui import *
+from .confgen import *
 import sys, string, os, traceback, json, shutil, getopt
 
-class configure:
+class confmain:
 	def __init__(self, mode="x"):
 		self.mode = mode
 		self.files, self.linkers, self.menu = ( None, None, None )
@@ -76,7 +76,7 @@ class configure:
 
 	def make_conf(self):
 		""" Generate code """
-		code_gen = configure_gen(self)
+		code_gen = confgen(self)
 		if self.mode == "x":
 			code_gen.write_autoconf_h(self.files["autoconf_h"])
 			code_gen.build_link(self.linkers)
@@ -85,7 +85,7 @@ class configure:
 
 	def make_def_conf(self):
 		""" Generate default code """
-		code_gen = configure_gen(self)
+		code_gen = confgen(self)
 		if self.mode == "x":
 			code_gen.write_autoconf_h(self.files["autoconf_h"] + ".in")
 			code_gen.build_link(self.linkers)
@@ -118,9 +118,9 @@ class configure:
 		shutil.copyfile(".config", ".config.old")
 
 	def main(self):
-		""" Main: TIP: add self.gui.show_<item>(<name>) for new tabs here after declaration in configure_gui.py"""
+		""" Main: TIP: add self.gui.show_<item>(<name>) for new tabs here after declaration in confgui.py"""
 		if self.mode == "x":
-			self.gui = configure_gui(self)
+			self.gui = confgui(self)
 			#-- Common frame
 			self.gui.show_common("Common")
 			#-- Arch frame
@@ -148,18 +148,19 @@ class configure:
 		else:
 			print "Unknown mode"
 
-if __name__=='__main__':
+#if __name__=='__main__':
+def main():
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "hm:", ["help", "mode="])
-		for o, a in opts:
-			if o in ("-h", "--help"):
-				print "Usage: configure.py [-m <mode>] [-h]\n"
-			elif o in ("-m", "--mode"):
-				mode = a
-				obj = configure(mode)
-				obj.restore_config()
-				obj.main()
-			else:
-				assert False, "unhandled option"
+#		opts, args = getopt.getopt(sys.argv[1:], "hm:", ["help", "mode="])
+#		for o, a in opts:
+#			if o in ("-h", "--help"):
+#				print "Usage: confmain.py [-m <mode>] [-h]\n"
+#			elif o in ("-m", "--mode"):
+		mode = "x"#a
+		obj = confmain(mode)
+		obj.restore_config()
+		obj.main()
+#			else:
+#				assert False, "unhandled option"
 	except:
 		traceback.print_exc()
