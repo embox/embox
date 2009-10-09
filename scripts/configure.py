@@ -4,6 +4,7 @@
 import traceback, getopt, sys
 from ConfigBuilder.QtGui import mcmain
 from ConfigBuilder.TkGui import confmain
+from ConfigBuilder.Parser import mcglobals
 
 if __name__=='__main__':
         try:
@@ -13,6 +14,7 @@ if __name__=='__main__':
                     		if a == "tk":
                     			confmain.main()
                     		elif a == "qt":
+                    			mcglobals.gConfig = mcglobals.MonitorConfig_t()
                     			mcmain.main()
                         else:
                         	assert False, "unhandled option"

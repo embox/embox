@@ -9,18 +9,15 @@ import os, re, sys, codecs, pickle, copy
 
 from PyQt4 import QtGui, QtCore
 
-from . import mcgui, mcmsg, mcerrors
+from . import mcgui, mcmsg
 from ..Parser import mcglobals
+from ..Misc import mcerrors
 
-#if __name__=='__main__':
 def main():
 	app = QtGui.QApplication(sys.argv)
 
-	mcglobals.gConfig = mcglobals.MonitorConfig_t()
-
 	appMainCfgDlg = mcgui.MainCfgDlg_t()
 	appMainCfgDlg.show()
-
 
 	sys.exit(app.exec_())
 

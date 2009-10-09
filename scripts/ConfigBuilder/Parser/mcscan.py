@@ -4,7 +4,7 @@ import os, re, codecs
 
 from ..QtGui.mcmsg import AskForIgnoreMsgBox
 from . import mcmodinfo
-from ..QtGui import mcerrors
+from ..Misc import mcerrors
 
 
 def CheckDepTree(ModInfo, ModulesDict, DepStack):

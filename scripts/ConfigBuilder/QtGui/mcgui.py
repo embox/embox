@@ -5,7 +5,9 @@ import pickle
 from PyQt4 import QtGui, QtCore, uic
 
 from ..Parser import mcglobals
-from . import mcerrors, mcmsg, mcgen
+from ..CodeGen import mcgen
+from ..Misc import mcerrors
+from . import mcmsg
 from .mcmodview import ModViewFrame_t
 from .mcppdefview import PPDefViewFrame_t
 
@@ -164,8 +166,8 @@ class MainCfgDlg_t (Ui_MainCfgDlgBase_t, Ui_MainCfgDlg_t):
 	def SaveAndExit(self):
 		self.SaveCompilerSettings()
 		print 'dir ',  mcglobals.gConfig.SrcDir
-		CfgDumpFlie = open(mcglobals.gCfgDumpFileName, 'w+')
-		pickle.dump(mcglobals.gConfig, CfgDumpFlie)
+		CfgDumpFile = open(mcglobals.gCfgDumpFileName, 'w+')
+		pickle.dump(mcglobals.gConfig, CfgDumpFile)
 		gen = mcgen.ConfigGenerator()
 		gen.generate()
 		QtGui.qApp.quit()

@@ -2,8 +2,9 @@
 
 from PyQt4 import QtGui, QtCore, uic
 
-from . import mcerrors, mcmsg
+from . import mcmsg
 from ..Parser import mcglobals
+from ..Misc import mcerrors
 
 # Ui_ModuleFrame_t represents a module frame (allows to stage and get module info)
 (Ui_ModuleFrame_t, Ui_ModuleFrameBase_t) = uic.loadUiType('scripts/ConfigBuilder/QtGui/ui/ModuleFrame.ui')

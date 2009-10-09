@@ -8,7 +8,7 @@
 
 from ..Misc.misc import *
 from .confgui import *
-from .confgen import *
+from ..CodeGen.confgen import *
 import sys, string, os, traceback, json, shutil, getopt
 
 class confmain:

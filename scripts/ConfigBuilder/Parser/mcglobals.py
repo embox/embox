@@ -2,7 +2,8 @@
 
 import copy, pickle, os, shutil, sys
 
-from ..QtGui import mcmsg, mcerrors
+from ..QtGui import mcmsg
+from ..Misc import mcerrors
 from . import mcmodinfo
 from .mcscan import ScanAndParse
 
