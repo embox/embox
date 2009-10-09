@@ -53,7 +53,7 @@ static void on_delete(SCREEN_CALLBACK *cb, SCREEN *view) {
 static void on_tab(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
 	if (this->callback != NULL && this->callback->guess != NULL) {
-		char buf[this->model->cursor + 1];
+		char buf[CMDLINE_MAX_LENGTH + 1];
 		strncpy(buf, this->model->string, this->model->cursor);
 		buf[this->model->cursor] = '\0';
 
@@ -64,10 +64,9 @@ static void on_tab(SCREEN_CALLBACK *cb, SCREEN *view) {
 		this->callback->guess(this->callback, this, buf, MAX_PROPOSALS,
 				&proposals_len, proposals, &offset, &common);
 		if (proposals_len == 1) {
-			static char space = ' ';
 			cmdline_chars_insert(this->model, proposals[0] + offset, strlen(
 					proposals[0] + offset));
-			CB_EDIT_MODEL(cmdline_chars_insert, &space, 1);
+			CB_EDIT_MODEL(cmdline_chars_insert, " ", 1);
 		} else if (proposals_len > 0) {
 			if (common > 0) {
 				CB_EDIT_MODEL(cmdline_chars_insert, proposals[0] + offset, common);
