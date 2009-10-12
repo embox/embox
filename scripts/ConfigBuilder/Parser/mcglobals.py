@@ -345,7 +345,6 @@ class MonitorPreset_t:
 class MonitorConfig_t:
 	""" MonitorConfig_t is a class, which holds few presets with configuration info """
 	def __init__(self):
-
 		global gCfgDumpFileName,  defSrcDir
 
 		if not os.path.exists(gCfgDumpFileName):

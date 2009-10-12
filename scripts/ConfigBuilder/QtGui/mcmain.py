@@ -16,8 +16,9 @@ from ..Misc import mcerrors
 def main():
 	app = QtGui.QApplication(sys.argv)
 
+        mcglobals.gConfig = mcglobals.MonitorConfig_t()
+
 	appMainCfgDlg = mcgui.MainCfgDlg_t()
 	appMainCfgDlg.show()
 
 	sys.exit(app.exec_())
-
