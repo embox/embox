@@ -29,6 +29,11 @@ typedef struct _SHELL_COMMAND_DESCRIPTOR {
 
 #define show_help() printf(HELP_MSG)
 
+// TODO are there any other ways to print man_page?
+// May be function below is not needed and I just didn't know=)
+// .AFomin
+#define show_man_page() printf(man_page)
+
 /**
  * start exec shell command with pointed descriptor
  */
