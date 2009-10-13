@@ -5,6 +5,7 @@
  * \description Pseudo-dynamic memory allocator
  */
 #include "conio.h"
+#include "common.h"
 
 #define MEM_POOL_SIZE 0x11CA
 
@@ -79,6 +80,7 @@ void *malloc(size_t size) {
 		memory_location = last_valid_address;
 		last_valid_address += size;
 		if (last_valid_address > managed_memory_start + MEM_POOL_SIZE) {
+			LOG_ERROR("mem_pool is full!\n");
 			return NULL;
 		}
 		current_location_mcb = (struct mem_control_block *)memory_location;
@@ -92,11 +94,16 @@ void *malloc(size_t size) {
 }
 
 void *calloc(size_t nmemb, size_t size) {
-	//TODO:
-	return NULL;
+	void *tmp = malloc(nmemb * size);
+	memset(tmp, 0, nmemb * size);
+	return tmp;
 }
 
 void *realloc(void *ptr, size_t size) {
-	//TODO:
-	return NULL;
+	void *tmp = malloc(size);
+	struct mem_control_block *mcb;
+	mcb = ptr - sizeof(struct mem_control_block);
+	memcpy(tmp, ptr, mcb->size - sizeof(struct mem_control_block));
+	free(ptr);
+	return tmp;
 }

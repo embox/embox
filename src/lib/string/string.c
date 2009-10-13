@@ -67,19 +67,6 @@ char *strncpy(char *dest, const char *source, size_t count) {
 	return start;
 }
 
-int strcmp(const char * str1, const char * str2) {
-	int ret = 0;
-	while (!(ret = *(unsigned char *) str1 - *(unsigned char *) str2) && *str2)
-		++str1, ++str2;
-
-	if (ret < 0)
-		ret = -1;
-	else if (ret > 0)
-		ret = 1;
-
-	return ret;
-}
-
 int strncmp(const char *s1, const char *s2, size_t count) {
 	if (!count)
 		return 0;

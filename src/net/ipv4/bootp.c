@@ -337,15 +337,3 @@ int bootp_discover (void* ifdev) {
 	memcpy (local_ip_addr, saved_ip_addr, sizeof (ip_addr_t));
 	return 0;
 }
-
-#define BUG_LIBC
-#ifdef BUG_LIBC
-char* strcat (char* s1, const char* s2) {
-	if (!s1 || !s2) return NULL;
-	char* s = s1;
-	while (*s1) s1++;
-	strcpy (s1, s2);
-	return s;
-}
-#endif
-
