@@ -5,5 +5,6 @@ SUBDIRS-$(MONITOR_LIB) += posix
 SUBDIRS-$(MONITOR_LIB) += stdio-common
 SUBDIRS-$(MONITOR_LIB) += crypt
 SUBDIRS-$(MONITOR_LIB) += misc
+SUBDIRS-$(MONITOR_LIB) += malloc
 
 include $(SCRIPTS_DIR)/common.mk
