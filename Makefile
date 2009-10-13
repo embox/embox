@@ -39,7 +39,7 @@ OC_TOOL = $(CC_PACKET)-objcopy
 all: mkdir build
 
 mkdir:
-	@if [ -e .config ]; \
+	@if [ -e .config -o -e .config2 ]; \
 	then \
 	    echo Start; \
 	else \
