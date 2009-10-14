@@ -70,6 +70,11 @@ class ConfigGenerator:
             	        else:
             	                inc = 0
             	        content = self.replacer_h(mdef, inc, content)
+            	#-- Preproc defines -------------------------
+            	for mdef in self.CurPreset.PreprocDefnsDict.keys():
+			val = self.CurPreset.PreprocDefnsDict[mdef].Value
+			inc = self.CurPreset.PreprocDefnsDict[mdef].isEnabled
+			content = self.replacer_h(mdef, inc, content, val)
 		#-- write autoconf.h
 		self.write_file('scripts/autoconf.h', content)
 
@@ -96,12 +101,12 @@ class ConfigGenerator:
 	                content = re.sub(mask, mdef + "=n", content)
 	        return content
 
-	def replacer_h(self, mdef, inc, content):
+	def replacer_h(self, mdef, inc, content, val = "1"):
 		if mdef == "":
 			return content
-	        mask = '#([undefi]{5,6})([ \t]+)' + mdef + '([ \t]*)[1]?'
+	        mask = '#([undefi]{5,6})([ \t]+)' + mdef + '([ \t]*)([a-zA-Z0-9_<>., \"]+)'
 	        if inc == True:
-	                content = re.sub(mask, '#define {0} 1'.format(mdef), content)
+	                content = re.sub(mask, '#define {0} {1}'.format(mdef, val), content)
 	        else:
 	                content = re.sub(mask, '#undef {0}'.format(mdef), content)
 	        return content

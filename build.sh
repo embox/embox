@@ -12,6 +12,7 @@ MONITOR_ROM=monitor_rom
 SIZE_ROM=0x80000
 MONITOR_RAM=monitor_ram
 AUTOCONF=.config
+AUTOCONF2=.config2
 
 # Login
 USER=sikmir
@@ -19,7 +20,7 @@ HOST=10.0.3.97
 IMG_PATH=/home/$USER
 DSA_KEY_FILE=~/.ssh/id2_dsa
 
-if [ ! -e $AUTOCONF ]; then
+if [ ! -e $AUTOCONF -a ! -e $AUTOCONF2 ]; then
     make xconfig
 else
     make clean

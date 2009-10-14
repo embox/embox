@@ -348,7 +348,8 @@ class MonitorConfig_t:
 		global gCfgDumpFileName,  defSrcDir
 
 		if not os.path.exists(gCfgDumpFileName):
-			shutil.copyfile(gCfgDumpFileName + ".in", gCfgDumpFileName)
+			if os.path.exists(gCfgDumpFileName + ".in"):
+				shutil.copyfile(gCfgDumpFileName + ".in", gCfgDumpFileName)
 
 		gCfgDumpFileName = os.path.abspath(gCfgDumpFileName)
 
@@ -467,10 +468,10 @@ defCompilersToSettingsDict = {
 # PreprocDefnsDict holds info about all preprocessor definitions
 # it is a dict(aka map) { str : PreprocDefnInfoStruct_t }, which associates definition sring with info
 defPreprocDefnsDict = {
-	'_TEST_SYSTEM_' : PreprocDefnInfoStruct_t(Value='', isEnabled=True),
-	'_ERROR' : PreprocDefnInfoStruct_t(Value='', isEnabled=True),
-	'_WARN' : PreprocDefnInfoStruct_t(Value='', isEnabled=True),
-	'_DEBUG' : PreprocDefnInfoStruct_t(Value='', isEnabled=False)
+        '_TRACE' : PreprocDefnInfoStruct_t(Value='1', isEnabled=True),
+	'_ERROR' : PreprocDefnInfoStruct_t(Value='1', isEnabled=True),
+	'_WARN' : PreprocDefnInfoStruct_t(Value='1', isEnabled=True),
+	'_DEBUG' : PreprocDefnInfoStruct_t(Value='1', isEnabled=False)
 }
 
 defSrcDir = u'src'
