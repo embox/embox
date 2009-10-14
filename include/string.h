@@ -20,15 +20,6 @@ char ch_upcase(char ch);
 int ch_to_digit(char ch, int base);
 
 /**
- * is symbol digit
- *  @param checking symbol
- *  @param base
- *  @return 1 if sym is digit
- *  @return 0 if not
- */
-int is_digit(int ch, int base);
-
-/**
  * calculate length of string
  * @param pointer to  first symbol in string
  * @return string length
@@ -104,6 +95,13 @@ int memcmp(const void *dst, const void *src, size_t n);
  * @return pointer to first byte in dst mass
  */
 void *memcpy(void *dst, const void *src, size_t n);
+
+/**
+ * Copy no more than N bytes of SRC to DEST, stopping when C is found.
+ * @return the position in DEST one byte past where C was copied,
+ *      or NULL if C was not found in the first N bytes of SRC.
+ */
+void *memccpy(void *dest, const void *src, int c, size_t n);
 
 /**
  * set massive of bytes pointed value

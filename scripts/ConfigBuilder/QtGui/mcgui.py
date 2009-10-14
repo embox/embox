@@ -30,6 +30,9 @@ class MainCfgDlg_t (Ui_MainCfgDlgBase_t, Ui_MainCfgDlg_t):
 		self.ModViewScrollArea.setWidget(self.ModViewFrame)
 		self.ShowHideAllMTButton.clicked.connect(self.ModViewFrame.ToggleAllModsVis)
 
+		self.ModDirLineEdit.setText(mcglobals.gConfig.SrcDir)
+		self.OutDirLineEdit.setText(mcglobals.gConfig.OutDir)
+
 		self.PPDefViewFrame = PPDefViewFrame_t()
 		self.PPDefsScrollArea.setWidget(self.PPDefViewFrame)
 		self.AddPreprocDefButton.clicked.connect(self.PPDefViewFrame.CallAddPreprocDefDlg)

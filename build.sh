@@ -21,7 +21,7 @@ IMG_PATH=/home/$USER
 DSA_KEY_FILE=~/.ssh/id2_dsa
 
 if [ ! -e $AUTOCONF -a ! -e $AUTOCONF2 ]; then
-    make xconfig
+    make mconfig
 else
     make clean
     make

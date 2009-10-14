@@ -8,6 +8,7 @@
 #include "conio.h"
 #include "asm/stdarg.h"
 #include "string.h"
+#include "ctype.h"
 
 const int EOF = -1;
 
@@ -87,7 +88,7 @@ static int scan_int(char **in, int base, int widht) {
 		dst = ch_to_digit(ch, base);
 
 	for (i = 0; (ch = (int) ch_upcase(scanchar(in))) != EOF; i++) {
-		if (!is_digit(ch, base) || (0 == widht)) {
+		if (!isdigit(ch, base) || (0 == widht)) {
 			unscanchar(in, ch);
 			//end conversion
 			break;
@@ -116,7 +117,7 @@ static int scan_int(char **in, int base, int widht) {
  continue;
  }
 
- if (!is_digit( ch , base )) {
+ if (!isdigit( ch , base )) {
  ungetchar(ch);
  break;
  }
@@ -145,10 +146,10 @@ static int scan(char **in, const char *fmt, va_list args) {
 			if (*fmt == '\0')
 				break;
 
-			if (is_digit((int) *fmt, 10))
+			if (isdigit((int) *fmt, 10))
 				widht = 0;
 
-			while (is_digit((int) *fmt, 10)) {
+			while (isdigit((int) *fmt, 10)) {
 
 				widht = widht * 10 + (*fmt++ - '0');
 			}

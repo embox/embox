@@ -7,54 +7,11 @@
 #include "conio.h"
 #include "common.h"
 #include "string.h"
+#include "ctype.h"
 #include "console/console.h"
 #include "shell.h"
 #include "kernel/sys.h"
 #include "shell_command.h"
-
-static const char* welcome = MONITOR_PROMPT;
-
-//static SHELL_HANDLER_DESCR shell_handlers[] = {
-//#include "shell.inc"
-//		};
-//static SHELL_HANDLER_DESCR shell_handlers_old[] = {
-//#include "shell.inc"
-//		};
-
-//static SHELL_HANDLER_DESCR shell_handlers[] = {
-//#include "shell.inc"
-//		};
-//
-//static int cur_shellhandlers_count = 0;
-//
-//void insert_shell_handler(char* name, char* descr, PSHELL_HANDLER func) {
-//	shell_handlers[cur_shellhandlers_count].name = name;
-//	shell_handlers[cur_shellhandlers_count].description = descr;
-//	shell_handlers[cur_shellhandlers_count].phandler = func;
-//	cur_shellhandlers_count++;
-//}
-//
-//SHELL_HANDLER_DESCR *shell_get_command_list() {
-//	return shell_handlers;
-//}
-//
-//int shell_size_command_list() {
-//	return cur_shellhandlers_count; //array_len(shell_handlers);
-//}
-
-// *str becomes pointer to first non-space character
-static void skip_spaces(char **str) {
-	while (**str == ' ') {
-		(*str)++;
-	}
-}
-
-// *str becomes pointer to first space or '\0' character
-static void skip_word(char **str) {
-	while (**str != '\0' && **str != ' ') {
-		(*str)++;
-	}
-}
 
 static int parse_str(char *cmdline, char **words) {
 	int cnt = 0;
@@ -78,8 +35,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	char *words[CMDLINE_MAX_LENGTH + 1];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {
-		// Only spaces were entered
-		return;
+		return; /* Only spaces were entered */
 	}
 
 	// choosing correct handler
@@ -97,17 +53,12 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 		return;
 	}
 	if (NULL == c_desc->exec){
-		printf ("Error shell command: wrong command descriptor\n");
+		LOG_ERROR("shell command: wrong command descriptor\n");
 		return;
 	}
 	//sys_exec_start(c_desc->exec, words_counter - 1, words + 1);
 	shell_command_exec(c_desc, words_counter, words);
 	return;
-}
-
-//TODO why it was placed here?
-inline static BOOL is_char(char ch) {
-	return ((ch > 0x20) && (ch < 0x7F));
 }
 
 /**
@@ -120,7 +71,7 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 		char *proposals[], int *offset, int *common) {
 	int cursor = strlen(line);
 	int start = cursor;
-	while (start > 0 && is_char(line[start - 1])) {
+	while (start > 0 && isalpha(line[start - 1])) {
 		start--;
 	}
 	line += start;
