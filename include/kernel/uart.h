@@ -20,9 +20,9 @@ void uart_putc (char ch);
  */
 char uart_getc ();
 
-#ifdef IRQ_HANDLER
-int uart_set_irq_handler (IRQ_HANDLER pfunc);
-int uart_remove_irq_handler (IRQ_HANDLER pfunc);
-#endif
+//#ifdef IRQ_HANDLER
+//int uart_set_irq_handler (IRQ_HANDLER pfunc);
+//int uart_remove_irq_handler (IRQ_HANDLER pfunc);
+//#endif
 
 #endif /* _UART_H_ */

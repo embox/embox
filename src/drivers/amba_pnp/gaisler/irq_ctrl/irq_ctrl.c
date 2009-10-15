@@ -36,11 +36,11 @@ int irq_ctrl_init() {
 
 	dev_regs = (IRQ_REGS *) amba_dev.bar[0].start;
 
-	dev_regs->level = 0;
-	dev_regs->mask  = 0;
-	dev_regs->pend  = 0;
-	dev_regs->force = 0;
-	dev_regs->clear = 0xFFFFFFFF;
+	REG_STORE(dev_regs->level, 0);
+	REG_STORE(dev_regs->mask,  0);
+	REG_STORE(dev_regs->pend,  0);
+	REG_STORE(dev_regs->force, 0);
+	REG_STORE(dev_regs->clear, 0xFFFFFFFF);
 	return 0;
 }
 
@@ -58,6 +58,6 @@ int irq_ctrl_disable_irq(int irq_num) {
 
 int irq_ctrl_disable_all() {
     CHECK_INIT_MODULE();
-    dev_regs->mask = 0;
+    REG_STORE(dev_regs->mask, 0);
     return 0;
 }

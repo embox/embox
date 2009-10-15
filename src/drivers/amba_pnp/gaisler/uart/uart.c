@@ -1,7 +1,6 @@
 /**
  * \file uart.c
  */
-
 #include "asm/types.h"
 #include "kernel/irq.h"
 #include "cpu_conf.h"
@@ -34,9 +33,9 @@ static volatile UART_STRUCT *dev_regs = NULL;
 
 static int irq;
 
-static void irq_func_uart () {
+/*static void irq_func_uart () {
     char ch = uart_getc ();
-}
+}*/
 
 int uart_init () {
     if (NULL != dev_regs)
@@ -55,15 +54,13 @@ int uart_init () {
 
     dev_regs = (UART_STRUCT *) amba_dev.bar[0].start;
     irq = amba_dev.dev_info.irq;
-	/**< disabled uart */
-    dev_regs->ctrl = 0x0;
-    dev_regs->scaler = UART_SCALER_VAL;
-	/**< enable uart */
-    dev_regs->ctrl = /*UART_INT_RX_ENABLED | */ UART_TX_ENABLE | UART_RX_ENABLE;
+    REG_STORE(dev_regs->ctrl, 0x0); /**< disabled uart */
+    REG_STORE(dev_regs->scaler, UART_SCALER_VAL);
+    REG_STORE(dev_regs->ctrl, /*UART_INT_RX_ENABLED |*/ UART_TX_ENABLE | UART_RX_ENABLE); /**< enable uart */
 #ifndef SIMULATION_TRG
-    //while (!(UART_TX_READY & dev_regs->status));
+    //while (!(UART_TX_READY & REG_LOAD(dev_regs->status)));
     //clear uart
-    //while (UART_RX_READY & dev_regs->status);
+    //while (UART_RX_READY & REG_LOAD(dev_regs->status));
     //uart->data;
     //irq_set_handler(IRQ_UART1, irq_func_uart);
 #endif
@@ -71,42 +68,37 @@ int uart_init () {
 
 /*
 BOOL uart_is_empty() {
-	if (UART_RX_READY & uart->status)
-		return FALSE;
-	else
-		return TRUE;
+	return (UART_RX_READY & REG_LOAD(uart->status)) ? FALSE : TRUE;
 }
 */
 
 void uart_putc (char ch) {
-    volatile int i;
-    if (NULL == dev_regs)
-	uart_init ();
-
+    CHECK_INIT_MODULE();
 /*
 #ifndef SIMULATION_TRG
-	while (!(UART_TX_READY & dev_regs->status))
+	while (!(UART_TX_READY & REG_LOAD(dev_regs->status)))
 		;
 #endif
 */
-
+    volatile int i;
     for (i = 0; i < 0x1000; i++);
 
-    dev_regs->data = (UINT32) ch;
+    REG_STORE(dev_regs->data, (UINT32) ch);
 }
 
 char uart_getc () {
     CHECK_INIT_MODULE ();
 
-    while (!(UART_RX_READY & dev_regs->status))
+    while (!(UART_RX_READY & REG_LOAD(dev_regs->status)))
 	;
-    return ((char) dev_regs->data);
+
+    return ((char) REG_LOAD(dev_regs->data));
 }
 
-int uart_set_irq_handler (IRQ_HANDLER pfunc) {
+/*int uart_set_irq_handler (IRQ_HANDLER pfunc) {
     CHECK_INIT_MODULE ();
 
-    dev_regs->ctrl |= UART_INT_RX_ENABLED;
+    REG_ORIN(dev_regs->ctrl, UART_INT_RX_ENABLED);
     irq_set_handler (irq, pfunc);
     return 0;
 }
@@ -114,8 +106,8 @@ int uart_set_irq_handler (IRQ_HANDLER pfunc) {
 int uart_remove_irq_handler (IRQ_HANDLER pfunc) {
     CHECK_INIT_MODULE ();
 
-    dev_regs->ctrl &= ~UART_INT_RX_ENABLED;
+    REG_ANDIN(dev_regs->ctrl, ~UART_INT_RX_ENABLED);
     irq_set_handler (irq, NULL);
     return 0;
-}
+}*/
 
