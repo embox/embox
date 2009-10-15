@@ -45,4 +45,20 @@ int isdigit(int c, int base);
 /* checks for a hexadecimal digits. */
 //int isxdigit(int c);
 
+/**
+ * character to upper case
+ * @param character in any register case
+ * @return symbol in upcase register
+ */
+char ch_upcase(char ch);
+
+/**
+ * convert digit character to integer
+ * @param digit character for converting
+ * @param base for converting
+ * @return converted symbol
+ * @return -1 if error
+ */
+int ch_to_digit(char ch, int base);
+
 #endif /* CTYPE_H_ */

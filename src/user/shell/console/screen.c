@@ -1,10 +1,8 @@
-/*
- * screen.c
- *
- *  Created on: 28.02.2009
- *      Author: Eldar Abusalimov
+/**
+ * \file screen.c
+ * \date 28.02.2009
+ * \author Eldar Abusalimov
  */
-
 #include "screen.h"
 
 #include "cmdline.h"
@@ -21,6 +19,3 @@ SCREEN * screen_init(SCREEN *this, SCREEN_IO *io) {
 
 	return this;
 }
-
-#include "screen_in.c"
-#include "screen_out.c"

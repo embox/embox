@@ -48,7 +48,6 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 //	}
 	SHELL_COMMAND_DESCRIPTOR *c_desc;
 	if(NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))){
-		// handler not found:
 		printf("%s: Command not found\n", words[0]);
 		return;
 	}

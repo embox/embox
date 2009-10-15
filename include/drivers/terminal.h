@@ -13,9 +13,8 @@
 #define TERMINAL_H_
 
 #include "asm/types.h"
-#include "vt.h"
-#include "vtparse.h"
-#include "vtbuild.h"
+#include "drivers/vtparse.h"
+#include "drivers/vtbuild.h"
 
 typedef int TERMINAL_TOKEN;
 
@@ -30,36 +29,36 @@ typedef struct {
 		| ((char2 & 0xFF) << 8) \
 		| (code & 0xFF))
 
-#define DECODE_ACTION(token) (((token >> 24) & 0xFF) ^ VT_ACTION_PRINT)
-#define DECODE_CHAR1(token) ((token >> 16) & 0xFF)
-#define DECODE_CHAR2(token) ((token >> 8) & 0xFF)
-#define DECODE_CODE(token) ((token) & 0xFF)
+#define DECODE_ACTION(token)                 (((token >> 24) & 0xFF) ^ VT_ACTION_PRINT)
+#define DECODE_CHAR1(token)                  ((token >> 16) & 0xFF)
+#define DECODE_CHAR2(token)                  ((token >> 8) & 0xFF)
+#define DECODE_CODE(token)                   ((token) & 0xFF)
 
-#define ENCODE_CS_(char1, char2, code)	ENCODE(VT_ACTION_CS_DISPATCH, char1, char2, code)
-#define ENCODE_ESC_(char1, char2, code)	ENCODE(VT_ACTION_ESC_DISPATCH, char1, char2, code)
+#define ENCODE_CS_(char1, char2, code)	     ENCODE(VT_ACTION_CS_DISPATCH, char1, char2, code)
+#define ENCODE_ESC_(char1, char2, code)	     ENCODE(VT_ACTION_ESC_DISPATCH, char1, char2, code)
 
-#define ENCODE_CS(code)		ENCODE_CS_(0, 0, code)
-#define ENCODE_ESC(code)		ENCODE_ESC_(0, 0, code)
-#define ENCODE_EXEC(code)	ENCODE(VT_ACTION_EXECUTE, 0, 0, code)
+#define ENCODE_CS(code)                      ENCODE_CS_(0, 0, code)
+#define ENCODE_ESC(code)                     ENCODE_ESC_(0, 0, code)
+#define ENCODE_EXEC(code)                    ENCODE(VT_ACTION_EXECUTE, 0, 0, code)
 
-#define TERMINAL_TOKEN_EMPTY ENCODE(0,0,0,0)
+#define TERMINAL_TOKEN_EMPTY                 ENCODE(0,0,0,0)
 
 /* Cursor Up */
-#define TERMINAL_TOKEN_CURSOR_UP  ENCODE_CS('A')
+#define TERMINAL_TOKEN_CURSOR_UP             ENCODE_CS('A')
 /* Cursor Down */
-#define TERMINAL_TOKEN_CURSOR_DOWN  ENCODE_CS('B')
+#define TERMINAL_TOKEN_CURSOR_DOWN           ENCODE_CS('B')
 /* Cursor Forward */
-#define TERMINAL_TOKEN_CURSOR_RIGHT  ENCODE_CS('C')
+#define TERMINAL_TOKEN_CURSOR_RIGHT          ENCODE_CS('C')
 /* Cursor Backward */
-#define TERMINAL_TOKEN_CURSOR_LEFT  ENCODE_CS('D')
+#define TERMINAL_TOKEN_CURSOR_LEFT           ENCODE_CS('D')
 /* Cursor Position */
-#define TERMINAL_TOKEN_CURSOR_POSITION  ENCODE_CS('H')
+#define TERMINAL_TOKEN_CURSOR_POSITION       ENCODE_CS('H')
 /* Saves the cursor position. */
-#define TERMINAL_TOKEN_CURSOR_SAVE  ENCODE_CS('s')
+#define TERMINAL_TOKEN_CURSOR_SAVE           ENCODE_CS('s')
 /* Restores the cursor position. */
-#define TERMINAL_TOKEN_CURSOR_RESTORE  ENCODE_CS('u')
+#define TERMINAL_TOKEN_CURSOR_RESTORE        ENCODE_CS('u')
 /* Saves the cursor position & attributes. */
-#define TERMINAL_TOKEN_CURSOR_SAVE_ATTRS  ENCODE_ESC('7')
+#define TERMINAL_TOKEN_CURSOR_SAVE_ATTRS     ENCODE_ESC('7')
 /* Restores the cursor position & attributes. */
 #define TERMINAL_TOKEN_CURSOR_RESTORE_ATTRS  ENCODE_ESC('8')
 /*
@@ -68,7 +67,7 @@ typedef struct {
  * If param is 1), clear from cursor to beginning of the screen.
  * If param is 2), clear entire screen
  */
-#define TERMINAL_TOKEN_ERASE_SCREEN  ENCODE_CS('J')
+#define TERMINAL_TOKEN_ERASE_SCREEN          ENCODE_CS('J')
 /*
  * Erases part of the line.
  * If param is zero (or missing)), clear from cursor to the end of the line.
@@ -76,36 +75,40 @@ typedef struct {
  * If param is two), clear entire line.
  * Cursor position does not change
  */
-#define TERMINAL_TOKEN_ERASE_LINE  ENCODE_CS('K')
+#define TERMINAL_TOKEN_ERASE_LINE            ENCODE_CS('K')
 /* Carriage Return */
-#define TERMINAL_TOKEN_CR  ENCODE_EXEC('\r')
+#define TERMINAL_TOKEN_CR                    ENCODE_EXEC('\r')
 /* Line Feed */
-#define TERMINAL_TOKEN_LF  ENCODE_EXEC('\n')
+#define TERMINAL_TOKEN_LF                    ENCODE_EXEC('\n')
 /* Horizontal Tabulation */
-#define TERMINAL_TOKEN_HT  ENCODE_EXEC('\t')
+#define TERMINAL_TOKEN_HT                    ENCODE_EXEC('\t')
 /* Backspace */
-#define TERMINAL_TOKEN_BS  ENCODE_EXEC('\b')
+#define TERMINAL_TOKEN_BS                    ENCODE_EXEC('\b')
 /* Delete */
-#define TERMINAL_TOKEN_DEL  ENCODE_EXEC(0x7f)
+#define TERMINAL_TOKEN_DEL                   ENCODE_EXEC(0x7f)
+/* Ctrl+C */
+#define TERMINAL_TOKEN_CTRL_C                150994947 /* TODO: this is temporary shit, while understand upstairs macroses */
 /* Private */
-#define TERMINAL_TOKEN_PRIVATE  ENCODE_CS('~')
+#define TERMINAL_TOKEN_PRIVATE               ENCODE_CS('~')
 /* Set Mode */
-#define TERMINAL_TOKEN_SET_MODE  ENCODE_CS('h')
+#define TERMINAL_TOKEN_SET_MODE              ENCODE_CS('h')
 /* Reset Mode */
-#define TERMINAL_TOKEN_RESET_MODE  ENCODE_CS('l')
+#define TERMINAL_TOKEN_RESET_MODE            ENCODE_CS('l')
 /* Select Graphic Rendition */
-#define TERMINAL_TOKEN_SGR  ENCODE_CS('m')
+#define TERMINAL_TOKEN_SGR                   ENCODE_CS('m')
 
-#define TERMINAL_TOKEN_PARAM_MODE_LINE_WRAP 7
+#define TERMINAL_TOKEN_PARAM_MODE_LINE_WRAP     7
 
-#define TERMINAL_TOKEN_PARAM_ERASE_DOWN_RIGHT 	0
-#define TERMINAL_TOKEN_PARAM_ERASE_UP_LEFT 	0
-#define TERMINAL_TOKEN_PARAM_ERASE_ENTIRE 	2
+#define TERMINAL_TOKEN_PARAM_ERASE_DOWN_RIGHT   0
+#define TERMINAL_TOKEN_PARAM_ERASE_UP_LEFT      0
+#define TERMINAL_TOKEN_PARAM_ERASE_ENTIRE       2
 
-#define TERMINAL_TOKEN_PARAM_PRIVATE_INSERT	1
-#define TERMINAL_TOKEN_PARAM_PRIVATE_HOME	2
-#define TERMINAL_TOKEN_PARAM_PRIVATE_DELETE	4
-#define TERMINAL_TOKEN_PARAM_PRIVATE_END	5
+#define TERMINAL_TOKEN_PARAM_PRIVATE_HOME	1
+#define TERMINAL_TOKEN_PARAM_PRIVATE_INSERT	2
+#define TERMINAL_TOKEN_PARAM_PRIVATE_DELETE	3
+#define TERMINAL_TOKEN_PARAM_PRIVATE_END        4
+#define TERMINAL_TOKEN_PARAM_PRIVATE_PAGE_UP    5
+#define TERMINAL_TOKEN_PARAM_PRIVATE_PAGE_DOWN  6
 
 #define TERMINAL_TOKEN_PARAM_SGR_RESET		0
 #define TERMINAL_TOKEN_PARAM_SGR_INTENSITY_BOLD		1
@@ -136,23 +139,17 @@ typedef struct {
  * Terminal input/output functions
  */
 typedef struct {
-
 	char (*getc)();
-
 	void (*putc)(char ch);
-
 } TERMINAL_IO;
 
 /*
  * Terminal internal representation
  */
 typedef struct {
-
 	TERMINAL_IO io[1];
-
-	VTBUILDER builder[1];
-
-	VTPARSER parser[1];
+	VTBUILDER   builder[1];
+	VTPARSER    parser[1];
 
 	/* NOTE: This value is tightly relies on vtparse algorithms. */
 #define VTPARSER_TOKEN_QUEUE_AMOUNT 3
@@ -175,7 +172,7 @@ TERMINAL * terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
 BOOL terminal_receive(TERMINAL *terminal, TERMINAL_TOKEN *token,
 		TERMINAL_TOKEN_PARAMS *params);
 
-BOOL terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token, int params_len,
-		...);
+BOOL terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token,
+						int params_len, ...);
 
 #endif /* TERMINAL_H_ */

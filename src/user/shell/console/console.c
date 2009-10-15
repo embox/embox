@@ -10,7 +10,6 @@
  */
 
 #include "console.h"
-#include "cmdline.h"
 #include "kernel/uart.h"
 #include "conio.h"
 #include "common.h"
@@ -46,6 +45,22 @@ static void on_backspace(SCREEN_CALLBACK *cb, SCREEN *view) {
 
 static void on_delete(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CB_EDIT_MODEL(cmdline_chars_delete,1);
+}
+
+static void on_home(SCREEN_CALLBACK *cb, SCREEN *view) {
+        CB_EDIT_MODEL(cmdline_cursor_home);
+}
+
+static void on_end(SCREEN_CALLBACK *cb, SCREEN *view) {
+        CB_EDIT_MODEL(cmdline_cursor_end);
+}
+
+static void on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
+	//TODO:
+}
+
+static void on_ctrl_c(SCREEN_CALLBACK *cb, SCREEN *view) {
+	printf("//TODO:");
 }
 
 #define MAX_PROPOSALS	64
@@ -96,11 +111,6 @@ static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CB_EDIT_MODEL(cmdline_history_new_entry);
 }
 
-static void on_home(SCREEN_CALLBACK *cb, SCREEN *view) {
-	CONSOLE *this = (CONSOLE *) cb->outer;
-	//TODO: move cursor to the begin
-}
-
 CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 	if (this == NULL || callback == NULL) {
 		return NULL;
@@ -138,6 +148,9 @@ void console_start(CONSOLE *this, const char *prompt) {
 	INIT_MEMBER(screen_callback,on_tab);
 	INIT_MEMBER(screen_callback,on_delete);
 	INIT_MEMBER(screen_callback,on_home);
+	INIT_MEMBER(screen_callback,on_end);
+	INIT_MEMBER(screen_callback,on_insert);
+	INIT_MEMBER(screen_callback,on_ctrl_c);
 	screen_callback->outer = this;
 
 	static const char * default_prompt = "";
@@ -145,11 +158,9 @@ void console_start(CONSOLE *this, const char *prompt) {
 			MONITOR_MAX_PROMPT_LENGTH);
 
 	screen_out_show_prompt(this->view, this->prompt);
-
 	screen_in_start(this->view, screen_callback);
 }
 
 void console_stop(CONSOLE *this) {
 	screen_in_stop(this->view);
 }
-

@@ -6,9 +6,9 @@
 #ifdef _TEST_SYSTEM_
 //#include "conio.h"
 
-#define SetBit(rg, bit)   { (rg) |=  (1UL << (bit)); }
-#define ClearBit(rg, bit) { (rg) &= ~(1UL << (bit)); }
-#define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
+#define SetBit(rg, bit)   { REG_ORIN(rg, (1UL << (bit))); }
+#define ClearBit(rg, bit) { REG_ANDIN(rg, ~(1UL << (bit))); }
+//#define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
 
 #define BMASK(nbit)  (0x00000001 << (nbit))
 // Stop processor
@@ -23,7 +23,7 @@ inline static int dummy() {
 #if defined(_ERROR) && !defined(SIMULATION_TRG)
 #define LOG_ERROR(...)  do {LOGGER(); printf("ERROR: "__VA_ARGS__);} while(0)
 #else
-#define LOG_ERROR(format, args...)  dummy()
+#define LOG_ERROR(...)  dummy()
 #endif //_ERROR
 
 #if defined(_WARN) && !defined(SIMULATION_TRG)

@@ -1,4 +1,4 @@
-/*
+/**
  * Console command prompt.
  *
  * Supports typing proposals and custom welcome messages.
@@ -19,28 +19,19 @@
 struct _CONSOLE;
 
 typedef struct _CONSOLE_CALLBACK {
-
 	void (*exec)(struct _CONSOLE_CALLBACK *, struct _CONSOLE *console,
 			char *line);
-
 	void (*guess)(struct _CONSOLE_CALLBACK *, struct _CONSOLE *console,
 			const char* line, const int max_proposals, int *proposals_len,
 			char *proposals[], int *offset, int *common);
-
 	void *user_data;
-
 } CONSOLE_CALLBACK;
 
 typedef struct _CONSOLE {
-
 	CONSOLE_CALLBACK *callback;
-
 	CMDLINE model[1];
-
 	SCREEN view[1];
-
 	char prompt[MONITOR_MAX_PROMPT_LENGTH + 1];
-
 } CONSOLE;
 
 CONSOLE * console_init(CONSOLE *, CONSOLE_CALLBACK *callback);

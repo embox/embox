@@ -4,22 +4,6 @@
 #include "asm/types.h"
 
 /**
- * character to upper case
- * @param character in any register case
- * @return symbol in upcase register
- */
-char ch_upcase(char ch);
-
-/**
- * convert digit character to integer
- * @param digit character for converting
- * @param base for converting
- * @return converted symbol
- * @return -1 if error
- */
-int ch_to_digit(char ch, int base);
-
-/**
  * calculate length of string
  * @param pointer to  first symbol in string
  * @return string length

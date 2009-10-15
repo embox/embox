@@ -1,10 +1,8 @@
-/*
- * screen_out.c
- *
- *  Created on: 28.02.2009
- *      Author: Eldar Abusalimov
+/**
+ * \file screen_out.c
+ * \date 28.02.2009
+ * \author Eldar Abusalimov
  */
-
 #include "screen.h"
 
 #include "drivers/terminal.h"
@@ -17,10 +15,9 @@ static void transmit_string(SCREEN *this, const char *str) {
 	}
 }
 
-/*
+/**
  * moves screen cursor by specified value
- *
- * param by - delta to move screen cursor by
+ * @param by - delta to move screen cursor by
  */
 static void transmit_move_cursor_by(SCREEN *this, int by) {
 	if (by == 0) {

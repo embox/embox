@@ -6,11 +6,10 @@
  *
  * Author: Eldar Abusalimov
  */
-
-#include "vtbuild.h"
-
-#include "vt.h"
+#include "drivers/vtbuild.h"
 #include "common.h"
+
+#define BUF_SIZE 10
 
 VTBUILDER * vtbuild_init(VTBUILDER *this, void(*putc)(VTBUILDER *builder,
 		char ch)) {
@@ -27,12 +26,12 @@ static void build_param(VTBUILDER *this, int n) {
 		return;
 	}
 
-	static char buf[10];
+	static char buf[BUF_SIZE];
 	int i = 0;
 
 	do {
-		buf[i++] = n % 10 + '0';
-	} while ((n /= 10) > 0);
+		buf[i++] = n % BUF_SIZE + '0';
+	} while ((n /= BUF_SIZE) > 0);
 
 	do {
 		this->putc(this, buf[--i]);

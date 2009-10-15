@@ -10,9 +10,7 @@
  * This code is in the public domain.
  */
 
-#include "vtparse.h"
-
-#include "vt.h"
+#include "drivers/vtparse.h"
 #include "conio.h"
 #include "common.h"
 

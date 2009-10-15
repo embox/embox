@@ -1,12 +1,9 @@
-/*
- * cmdline.c
- *
- * Internal representation of command line entity.
- *
- *  Created on: 08.02.2009
- *      Author: Eldar Abusalimov
+/**
+ * \file cmdline.c
+ * \brief Internal representation of command line entity.
+ * \date 08.02.2009
+ * \author Eldar Abusalimov
  */
-
 #include "cmdline.h"
 
 #include "string.h"

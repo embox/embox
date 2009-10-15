@@ -11,16 +11,11 @@
 
 #include "drivers/terminal.h"
 
-#include "vt.h"
-#include "vtparse.h"
-#include "vtbuild.h"
-
 #include "asm/stdarg.h"
 #include "kernel/uart.h"
 #include "conio.h"
 #include "common.h"
 #include "string.h"
-#include "asm/stdarg.h"
 
 static void vtparse_callback(VTPARSER*, VT_TOKEN*);
 
@@ -47,7 +42,9 @@ TERMINAL * terminal_init(TERMINAL *this, TERMINAL_IO *io) {
 	}
 
 	this->parser->user_data = this;
-	vtparse_init(this->parser, vtparse_callback);
+	if(vtparse_init(this->parser, vtparse_callback) == NULL) {
+		return NULL;
+	}
 
 	this->vt_token_queue_head = 0;
 	this->vt_token_queue_len = 0;
@@ -202,9 +199,9 @@ BOOL terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 					params->length = vt_token->params_len;
 				}
 				(*p_len)--;
-				//				TRACE("%s %d(%x,%x) %x\n", ACTION_NAMES[vt_token->action],
-				//						vt_token->attrs_len, vt_token->attrs[0],
-				//						vt_token->attrs[1], vt_token->ch);
+				//TRACE("%s %d(%x,%x) %x\n", ACTION_NAMES[vt_token->action],
+				//vt_token->attrs_len, vt_token->attrs[0],
+				//vt_token->attrs[1], vt_token->ch);
 				return TRUE;
 			}
 		}
@@ -227,18 +224,19 @@ BOOL terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 BOOL terminal_transmit(TERMINAL *this, TERMINAL_TOKEN token, int params_len,
 		...) {
 	va_list args;
+	TERMINAL_TOKEN_PARAMS *params;
+	VT_TOKEN *vt_token;
 	va_start(args, params_len);
 
 	if (this == NULL) {
 		return FALSE;
 	}
 
-	TERMINAL_TOKEN_PARAMS *params = terminal_prepare_params(this, params_len,
-			args);
+	params = terminal_prepare_params(this, params_len, args);
 
 	va_end(args);
 
-	VT_TOKEN *vt_token = vt_from_term_token(token, params);
+	vt_token = vt_from_term_token(token, params);
 	if (vt_token == NULL) {
 		return FALSE;
 	}

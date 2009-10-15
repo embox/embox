@@ -13,8 +13,8 @@
 #ifndef VTPARSE_H_
 #define VTPARSE_H_
 
-#include "vt.h"
-#include "vtparse_table.h"
+#include "drivers/vt.h"
+#include "drivers/vtparse_table.h"
 #include "asm/types.h"
 
 struct _VTPARSER;

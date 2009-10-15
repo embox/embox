@@ -1,10 +1,8 @@
-/*
- * screen_in.c
- *
- *  Created on: 28.02.2009
- *      Author: Eldar Abusalimov
+/**
+ * \file screen_in.c
+ * \date 28.02.2009
+ * \author Eldar Abusalimov
  */
-
 #include "screen.h"
 
 #include "conio.h"
@@ -29,7 +27,6 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 	}
 
 	static TERMINAL_TOKEN prev_token = TERMINAL_TOKEN_EMPTY;
-
 	switch (token) {
 	case TERMINAL_TOKEN_CURSOR_LEFT:
 		FIRE_CALLBACK(cb, on_cursor_left, this, 1);
@@ -48,6 +45,9 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		break;
 	case TERMINAL_TOKEN_DEL:
 		FIRE_CALLBACK(cb, on_delete, this);
+		break;
+	case TERMINAL_TOKEN_CTRL_C:
+		FIRE_CALLBACK(cb, on_ctrl_c, this);
 		break;
 	case TERMINAL_TOKEN_LF:
 		if (prev_token == TERMINAL_TOKEN_CR) {
