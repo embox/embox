@@ -46,6 +46,10 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 	case TERMINAL_TOKEN_DEL:
 		FIRE_CALLBACK(cb, on_delete, this);
 		break;
+	case TERMINAL_TOKEN_END:
+		/* TODO: strange char 'F' */
+		FIRE_CALLBACK(cb, on_end, this);
+		break;
 	case TERMINAL_TOKEN_CTRL_C:
 		FIRE_CALLBACK(cb, on_ctrl_c, this);
 		break;
@@ -64,9 +68,9 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		case TERMINAL_TOKEN_PARAM_PRIVATE_DELETE:
 			FIRE_CALLBACK(cb, on_delete, this);
 			break;
-		case TERMINAL_TOKEN_PARAM_PRIVATE_END:
-			FIRE_CALLBACK(cb, on_end, this);
-			break;
+		//case TERMINAL_TOKEN_PARAM_PRIVATE_END:
+		//	FIRE_CALLBACK(cb, on_end, this);
+		//	break;
 		case TERMINAL_TOKEN_PARAM_PRIVATE_HOME:
 			FIRE_CALLBACK(cb, on_home, this);
 			break;

@@ -60,7 +60,7 @@ static void on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
 }
 
 static void on_ctrl_c(SCREEN_CALLBACK *cb, SCREEN *view) {
-	printf("//TODO:");
+	//TODO:
 }
 
 #define MAX_PROPOSALS	64

@@ -86,6 +86,8 @@ typedef struct {
 #define TERMINAL_TOKEN_BS                    ENCODE_EXEC('\b')
 /* Delete */
 #define TERMINAL_TOKEN_DEL                   ENCODE_EXEC(0x7f)
+/* End */
+#define TERMINAL_TOKEN_END                   134217807 /* TODO: this is temporary shit, while understand upstairs macroses */
 /* Ctrl+C */
 #define TERMINAL_TOKEN_CTRL_C                150994947 /* TODO: this is temporary shit, while understand upstairs macroses */
 /* Private */
