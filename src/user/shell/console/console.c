@@ -11,6 +11,7 @@
 
 #include "console.h"
 #include "kernel/uart.h"
+#include "kernel/sys.h"
 #include "conio.h"
 #include "common.h"
 #include "string.h"
@@ -75,7 +76,7 @@ static void on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
 }
 
 static void on_ctrl_c(SCREEN_CALLBACK *cb, SCREEN *view) {
-	//TODO:
+	sys_exec_stop();
 	on_new_line(cb, view);
 }
 
