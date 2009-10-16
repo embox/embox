@@ -19,6 +19,19 @@
 #define EDIT_MODEL(console,update, action, params...)	(action((console)->model, ##params) ? update((console)->view, (console)->model): FALSE)
 #define CB_EDIT_MODEL(action, params...)	EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##params)
 
+static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
+        CONSOLE *this = (CONSOLE *) cb->outer;
+        if (this->callback != NULL && this->callback->exec != NULL
+                                    && *this->model->string) {
+                screen_out_puts(this->view, NULL);
+                char buf[CMDLINE_MAX_LENGTH + 1];
+                strcpy(buf, this->model->string);
+                this->callback->exec(this->callback, this, buf);
+        }
+        screen_out_show_prompt(this->view, this->prompt);
+        CB_EDIT_MODEL(cmdline_history_new_entry);
+}
+
 static void on_char(SCREEN_CALLBACK *cb, SCREEN *view, char ch) {
 	CB_EDIT_MODEL(cmdline_chars_insert, &ch,1);
 }
@@ -56,11 +69,14 @@ static void on_end(SCREEN_CALLBACK *cb, SCREEN *view) {
 }
 
 static void on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
-	//TODO:
+	CONSOLE *this = (CONSOLE *) cb->outer;
+	CMDLINE *cmd = this->model;
+	cmd->is_insert_mode = cmd->is_insert_mode ? 0 : 1;
 }
 
 static void on_ctrl_c(SCREEN_CALLBACK *cb, SCREEN *view) {
 	//TODO:
+	on_new_line(cb, view);
 }
 
 #define MAX_PROPOSALS	64
@@ -96,19 +112,6 @@ static void on_tab(SCREEN_CALLBACK *cb, SCREEN *view) {
 			}
 		}
 	}
-}
-
-static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
-	CONSOLE *this = (CONSOLE *) cb->outer;
-	if (this->callback != NULL && this->callback->exec != NULL
-			&& *this->model->string) {
-		screen_out_puts(this->view, NULL);
-		char buf[CMDLINE_MAX_LENGTH + 1];
-		strcpy(buf, this->model->string);
-		this->callback->exec(this->callback, this, buf);
-	}
-	screen_out_show_prompt(this->view, this->prompt);
-	CB_EDIT_MODEL(cmdline_history_new_entry);
 }
 
 CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {

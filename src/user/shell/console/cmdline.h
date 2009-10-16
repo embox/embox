@@ -29,6 +29,7 @@ typedef struct _CMDLINE {
 	int cursor;                          /**< cursor current position */
 	CMDLINE_HISTORY history[1];          /**< editing history */
 	int history_cursor;                  /**< current position in history */
+	char is_insert_mode;                 /**< INSERT mode */
 } CMDLINE;
 
 CMDLINE * cmdline_init(CMDLINE *);

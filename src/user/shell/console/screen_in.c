@@ -50,7 +50,7 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		/* TODO: strange char 'F' */
 		FIRE_CALLBACK(cb, on_end, this);
 		break;
-	case TERMINAL_TOKEN_CTRL_C:
+	case TERMINAL_TOKEN_ETX:
 		FIRE_CALLBACK(cb, on_ctrl_c, this);
 		break;
 	case TERMINAL_TOKEN_LF:
@@ -105,7 +105,6 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	this->running = TRUE;
 
 	this->callback = cb;
-
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			params)) {
 		char ch = token & 0xFF;

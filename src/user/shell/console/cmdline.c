@@ -22,7 +22,7 @@ CMDLINE * cmdline_init(CMDLINE *this) {
 	this->length = 0;
 	this->cursor = 0;
 	this->history_cursor = 0;
-
+	this->is_insert_mode = 0;
 	return this;
 }
 
@@ -170,8 +170,10 @@ BOOL cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 	this->length += len;
 	this->cursor += len;
 
-	for (i = this->length; i >= this->cursor; --i) {
-		this->string[i] = this->string[i - len];
+	if(!this->is_insert_mode) {
+		for (i = this->length; i >= this->cursor; --i) {
+			this->string[i] = this->string[i - len];
+		}
 	}
 	for (i = 0; i < len; ++i) {
 		this->string[this->cursor - len + i] = ch[i];

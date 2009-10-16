@@ -105,7 +105,6 @@ static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 
 static void do_state_change(VTPARSER *this, state_change_t change, char ch) {
 	/* A state change is an action and/or a new state to transition to. */
-
 	VTPARSE_STATE new_state = STATE(change);
 	VT_ACTION action = ACTION(change);
 

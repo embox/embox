@@ -76,20 +76,78 @@ typedef struct {
  * Cursor position does not change
  */
 #define TERMINAL_TOKEN_ERASE_LINE            ENCODE_CS('K')
-/* Carriage Return */
-#define TERMINAL_TOKEN_CR                    ENCODE_EXEC('\r')
-/* Line Feed */
-#define TERMINAL_TOKEN_LF                    ENCODE_EXEC('\n')
-/* Horizontal Tabulation */
-#define TERMINAL_TOKEN_HT                    ENCODE_EXEC('\t')
+
+/** ASCII table **/
+
+/* Null */
+#define TERMINAL_TOKEN_NUL      ENCODE_EXEC(0x00) /* [Ctrl] @ (150994944) */
+/* Start of Header */
+#define TERMINAL_TOKEN_SOX      ENCODE_EXEC(0x01) /* [Ctrl] A */
+/* Start of Text */
+#define TERMINAL_TOKEN_STX      ENCODE_EXEC(0x02) /* [Ctrl] B */
+/* End of text */
+#define TERMINAL_TOKEN_ETX      ENCODE_EXEC(0x03) /* [Ctrl] C */
+/* End of Transmission */
+#define TERMINAL_TOKEN_EOT      ENCODE_EXEC(0x04) /* [Ctrl] D */
+/* Enquiry */
+#define TERMINAL_TOKEN_ENQ      ENCODE_EXEC(0x05) /* [Ctrl] E */
+/* Acknowledge */
+#define TERMINAL_TOKEN_ACK      ENCODE_EXEC(0x06) /* [Ctrl] F */
+/* Bell */
+#define TERMINAL_TOKEN_BEL      ENCODE_EXEC(0x07) /* [Ctrl] G */
 /* Backspace */
-#define TERMINAL_TOKEN_BS                    ENCODE_EXEC('\b')
+#define TERMINAL_TOKEN_BS       ENCODE_EXEC(0x08) /* [Ctrl] H '\b' */
+/* Horizontal Tabulation */
+#define TERMINAL_TOKEN_HT       ENCODE_EXEC(0x09) /* [Ctrl] I '\t' */
+/* Line Feed */
+#define TERMINAL_TOKEN_LF       ENCODE_EXEC(0x0A) /* [Ctrl] J '\n' */
+/* Vertical tabulation */
+#define TERMINAL_TOKEN_VT       ENCODE_EXEC(0x0B) /* [Ctrl] K */
+/* Form Feed */
+#define TERMINAL_TOKEN_FF       ENCODE_EXEC(0x0C) /* [Ctrl] L */
+/* Carriage Return */
+#define TERMINAL_TOKEN_CR       ENCODE_EXEC(0x0D) /* [Ctrl] M '\r' */
+/* Shift out */
+#define TERMINAL_TOKEN_SO       ENCODE_EXEC(0x0E) /* [Ctrl] N */
+/* Shift in */
+#define TERMINAL_TOKEN_SI       ENCODE_EXEC(0x0F) /* [Ctrl] O */
+/* Data Link Escape */
+#define TERMINAL_TOKEN_DLE      ENCODE_EXEC(0x10) /* [Ctrl] P */
+/* Device Control 1 (XON) */
+#define TERMINAL_TOKEN_DC1      ENCODE_EXEC(0x11) /* [Ctrl] Q */
+/* Device Control 2 */
+#define TERMINAL_TOKEN_DC2      ENCODE_EXEC(0x12) /* [Ctrl] R */
+/* Device Control 3 (XOFF) */
+#define TERMINAL_TOKEN_DC3      ENCODE_EXEC(0x13) /* [Ctrl] S */
+/* Device Control 4 */
+#define TERMINAL_TOKEN_DC4      ENCODE_EXEC(0x14) /* [Ctrl] T */
+/* Negative acknowledge */
+#define TERMINAL_TOKEN_NAK      ENCODE_EXEC(0x15) /* [Ctrl] U */
+/* Synchronous Idle */
+#define TERMINAL_TOKEN_SYN      ENCODE_EXEC(0x16) /* [Ctrl] V */
+/* End of Transmission Block */
+#define TERMINAL_TOKEN_ETB      ENCODE_EXEC(0x17) /* [Ctrl] W */
+/* Cancel */
+#define TERMINAL_TOKEN_CAN      ENCODE_EXEC(0x18) /* [Ctrl] X */
+/* End of Medium */
+#define TERMINAL_TOKEN_EM       ENCODE_EXEC(0x19) /* [Ctrl] Y */
+/* Substitute */
+#define TERMINAL_TOKEN_SUB      ENCODE_EXEC(0x1A) /* [Ctrl] Z */
+/* Escape */
+#define TERMINAL_TOKEN_ESC      ENCODE_EXEC(0x1B) /* [Ctrl] [ */
+/* File Separator */
+#define TERMINAL_TOKEN_FS       ENCODE_EXEC(0x1C) /* [Ctrl] \ */
+/* Group Separator */
+#define TERMINAL_TOKEN_GS       ENCODE_EXEC(0x1D) /* [Ctrl] ] */
+/* Record Separator */
+#define TERMINAL_TOKEN_RS       ENCODE_EXEC(0x1E) /* [Ctrl] ^ */
+/* Unit Separator */
+#define TERMINAL_TOKEN_US       ENCODE_EXEC(0x1E) /* [Ctrl] _ */
 /* Delete */
-#define TERMINAL_TOKEN_DEL                   ENCODE_EXEC(0x7f)
+#define TERMINAL_TOKEN_DEL      ENCODE_EXEC(0x7f) /* (150995071) */
+
 /* End */
-#define TERMINAL_TOKEN_END                   134217807 /* TODO: this is temporary shit, while understand upstairs macroses */
-/* Ctrl+C */
-#define TERMINAL_TOKEN_CTRL_C                150994947 /* TODO: this is temporary shit, while understand upstairs macroses */
+#define TERMINAL_TOKEN_END                   134217807 /* (27,79,70)(8,0,0,4F) TODO: this is temporary shit, while understand upstairs macroses */
 /* Private */
 #define TERMINAL_TOKEN_PRIVATE               ENCODE_CS('~')
 /* Set Mode */
