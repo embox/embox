@@ -20,6 +20,8 @@
 #define EDIT_MODEL(console,update, action, params...)	(action((console)->model, ##params) ? update((console)->view, (console)->model): FALSE)
 #define CB_EDIT_MODEL(action, params...)	EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##params)
 
+CONSOLE *cur_console = NULL; //TODO:
+
 static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
         CONSOLE *this = (CONSOLE *) cb->outer;
         if (this->callback != NULL && this->callback->exec != NULL
@@ -135,7 +137,7 @@ CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 	if (screen_init(this->view, &view_io) == NULL) {
 		return NULL;
 	}
-
+	cur_console = this;
 	return this;
 }
 

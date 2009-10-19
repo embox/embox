@@ -58,3 +58,6 @@ void sys_halt() {
 	//todo must be trap
 }
 
+BOOL sys_exec_is_started() {
+	return started;
+}

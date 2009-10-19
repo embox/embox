@@ -7,8 +7,12 @@
 
 #include "conio.h"
 #include "common.h"
+#include "console.h"
+#include "kernel/sys.h"
 
 #define FIRE_CALLBACK(cb, func, view, args...)	((cb->func != NULL) ? cb->func(cb, view, ##args) : 0)
+
+extern CONSOLE *cur_console;
 
 static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 	SCREEN_CALLBACK *cb = this->callback;
@@ -94,6 +98,22 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 	prev_token = token;
 }
 
+void uart_irq_handler() {
+	if (!sys_exec_is_started())
+		return;
+	static TERMINAL_TOKEN token;
+	static TERMINAL_TOKEN_PARAMS params[1];
+	SCREEN *this = cur_console->view;
+	terminal_receive(this->terminal, &token, params);
+	char ch = token & 0xFF;
+	//TODO:
+	if (ch == token) {
+	        handle_char_token(this, token);
+	} else {
+	        handle_ctrl_token(this, token, params);
+	}
+}
+
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	if (this == NULL) {
 		return;
@@ -108,6 +128,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	this->running = TRUE;
 
 	this->callback = cb;
+	uart_set_irq_handler(uart_irq_handler);
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			params)) {
 		char ch = token & 0xFF;
@@ -126,7 +147,7 @@ void screen_in_stop(SCREEN *this) {
 	if (this == NULL) {
 		return;
 	}
-
+	uart_remove_irq_handler();
 	this->callback = NULL;
 }
 
