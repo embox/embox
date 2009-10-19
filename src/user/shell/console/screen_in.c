@@ -51,7 +51,10 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		FIRE_CALLBACK(cb, on_end, this);
 		break;
 	case TERMINAL_TOKEN_ETX:
-		FIRE_CALLBACK(cb, on_ctrl_c, this);
+		FIRE_CALLBACK(cb, on_etx, this);
+		break;
+	case TERMINAL_TOKEN_DC2:
+		FIRE_CALLBACK(cb, on_dc2, this);
 		break;
 	case TERMINAL_TOKEN_LF:
 		if (prev_token == TERMINAL_TOKEN_CR) {

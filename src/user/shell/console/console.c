@@ -75,9 +75,14 @@ static void on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
 	cmd->is_insert_mode = cmd->is_insert_mode ? 0 : 1;
 }
 
-static void on_ctrl_c(SCREEN_CALLBACK *cb, SCREEN *view) {
+static void on_etx(SCREEN_CALLBACK *cb, SCREEN *view) {
 	sys_exec_stop();
 	on_new_line(cb, view);
+}
+
+static void on_dc2(SCREEN_CALLBACK *cb, SCREEN *view) {
+	printf("\r(reverse-i-search)`':");
+	//TODO:
 }
 
 #define MAX_PROPOSALS	64
@@ -154,7 +159,8 @@ void console_start(CONSOLE *this, const char *prompt) {
 	INIT_MEMBER(screen_callback,on_home);
 	INIT_MEMBER(screen_callback,on_end);
 	INIT_MEMBER(screen_callback,on_insert);
-	INIT_MEMBER(screen_callback,on_ctrl_c);
+	INIT_MEMBER(screen_callback,on_etx);
+	INIT_MEMBER(screen_callback,on_dc2);
 	screen_callback->outer = this;
 
 	static const char * default_prompt = "";

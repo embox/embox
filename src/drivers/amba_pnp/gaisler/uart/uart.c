@@ -9,20 +9,60 @@
 #include "kernel/uart.h"
 #include "common.h"
 
-#define UART_RX_READY                   0x00000001
-#define UART_TX_READY                   0x00000004	/*< hold register empty */
-// control register bit masks
-#define UART_DISABLE_ALL                0x00000000	/*< disable all */
-#define UART_RX_ENABLE                  0x00000001	/*< reciever enable */
-#define UART_TX_ENABLE                  0x00000002	/*< transmitter enable */
-#define UART_INT_RX_ENABLED             0x00000004
-#define UART_INT_TX_ENABLED             0x00000008
+#define UART_RX_READY     (1 << 0)
+#define UART_TX_READY     (1 << 2) /*< hold register empty */
+
+/* status register bit masks */
+#define UART_STAT_DR      (1 << 0) /*< Data is available for read in RX holding register*/
+#define UART_STAT_TS      (1 << 1) /*< TX shift register is empty */
+#define UART_STAT_TE      (1 << 2) /*< TX FIFO is emoty */
+#define UART_STAT_BR      (1 << 3) /*< BREAK received */
+#define UART_STAT_OV      (1 << 4) /*< 1 or more bytes lossed over overflow */
+#define UART_STAT_PE      (1 << 5) /*< error in parity control */
+#define UART_STAT_FE      (1 << 6) /*< error in frame */
+#define UART_STAT_TH      (1 << 7) /*< TX FIFO is half-full */
+#define UART_STAT_RH      (1 << 8) /*< RX FIFO is half-full */
+#define UART_STAT_TF      (1 << 9) /*< TX FIFO is full */
+#define UART_STAT_RF      (1 << 10)/*< RX FIFO is full */
+
+/* control register bit masks */
+#define UART_DISABLE_ALL  0x00000000 /*< disable all */
+#define UART_CTRL_RE      (1 << 0)  /*< reciever enable */
+#define UART_CTRL_TE      (1 << 1)  /*< transmitter enable */
+#define UART_CTRL_RI      (1 << 2)  /*< enable interrupt after receiving frame */
+#define UART_CTRL_TI      (1 << 3)  /*< enable interrupt after transmitting frame */
+#define UART_CTRL_PS      (1 << 4)  /*< type of parity control (0 - check for oddness, 1 - check for evenness) */
+#define UART_CTRL_PE      (1 << 5)  /*< parity control enable */
+#define UART_CTRL_FL      (1 << 6)  /*< flow control with CTS/RTS enable (don't use) */
+#define UART_CTRL_LB      (1 << 7)  /*< loopback enable */
+#define UART_CTRL_EC      (1 << 8)  /*< external clock enable */
+#define UART_CTRL_TF      (1 << 9)  /*< enable interrupt on FIFO transmitter layer */
+#define UART_CTRL_RF      (1 << 10) /*< enable interrupt on FIFO receiver layer */
+#define UART_CTRL_DB      (1 << 11) /*< debug mode enable (don't available) */
+#define UART_CTRL_OE      (1 << 12) /*< output transmitter enable */
+#define UART_CTRL_FA      (1 << 31) /*< set on when FIFO TX and RX are available */
 
 typedef struct _UART_STRUCT {
-        volatile UINT32 data; //0x70
-        volatile UINT32 status;
-        volatile UINT32 ctrl;
-        volatile UINT32 scaler;
+	/** _____________
+	 * |31_____8|7__0|
+	 * |RESERVED|DATA|
+	 */
+        volatile UINT32 data;   /* 0x0 */
+        /** _____________________________________________________
+         * |31_26|25_20|19____11|10|9_|8_|7_|6_|5_|4_|3_|2_|1_|0_|
+         * |RCNT |TCNT |RESERVED|RF|TF|RH|TH|FE|PE|OV|BR|TE|TS|DR|
+         */
+        volatile UINT32 status; /* 0x4 */
+        /** __________________________________________________
+         * |31|30____13|12|11|10|9_|8_|7_|6_|5_|4_|3_|2_|1_|0_|
+         * |FA|RESERVED|OE|DB|RF|TF|EC|LB|FL|PE|PS|TI|RI|TE|RE|
+         */
+        volatile UINT32 ctrl;   /* 0x8 */
+        /** ____________________________
+         * |31____12|11________________0|
+         * |RESERVED|SCALER RELOAD VALUE|
+         */
+        volatile UINT32 scaler; /* 0xC */
 } UART_STRUCT;
 
 static volatile UART_STRUCT *dev_regs = NULL;
@@ -54,9 +94,9 @@ int uart_init () {
 
     dev_regs = (UART_STRUCT *) amba_dev.bar[0].start;
     irq = amba_dev.dev_info.irq;
-    REG_STORE(dev_regs->ctrl, 0x0); /**< disabled uart */
+    REG_STORE(dev_regs->ctrl, UART_DISABLE_ALL); /**< disabled uart */
     REG_STORE(dev_regs->scaler, UART_SCALER_VAL);
-    REG_STORE(dev_regs->ctrl, /*UART_INT_RX_ENABLED |*/ UART_TX_ENABLE | UART_RX_ENABLE); /**< enable uart */
+    REG_STORE(dev_regs->ctrl, UART_CTRL_RI | UART_CTRL_TE | UART_CTRL_RE); /**< enable uart */
 #ifndef SIMULATION_TRG
     //while (!(UART_TX_READY & REG_LOAD(dev_regs->status)));
     //clear uart
@@ -98,7 +138,7 @@ char uart_getc () {
 /*int uart_set_irq_handler (IRQ_HANDLER pfunc) {
     CHECK_INIT_MODULE ();
 
-    REG_ORIN(dev_regs->ctrl, UART_INT_RX_ENABLED);
+    REG_ORIN(dev_regs->ctrl, UART_RI);
     irq_set_handler (irq, pfunc);
     return 0;
 }
@@ -106,7 +146,7 @@ char uart_getc () {
 int uart_remove_irq_handler (IRQ_HANDLER pfunc) {
     CHECK_INIT_MODULE ();
 
-    REG_ANDIN(dev_regs->ctrl, ~UART_INT_RX_ENABLED);
+    REG_ANDIN(dev_regs->ctrl, ~UART_RI);
     irq_set_handler (irq, NULL);
     return 0;
 }*/
