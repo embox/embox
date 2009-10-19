@@ -30,6 +30,7 @@ typedef struct _SCREEN_CALLBACK {
 	void (*on_end)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
 	void (*on_tab)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
 	void (*on_etx)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
+	void (*on_eot)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
 	void (*on_dc2)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
 	void (*on_dc4)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
 	void *outer;

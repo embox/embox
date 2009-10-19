@@ -89,6 +89,10 @@ static void on_etx(SCREEN_CALLBACK *cb, SCREEN *view) {
 	on_new_line(cb, view);
 }
 
+static void on_eot(SCREEN_CALLBACK *cb, SCREEN *view) {
+	console_stop(cur_console);
+}
+
 static void on_dc2(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CB_EDIT_MODEL(cmdline_dc2_reverse);
 }
@@ -172,6 +176,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 	INIT_MEMBER(screen_callback,on_end);
 	INIT_MEMBER(screen_callback,on_insert);
 	INIT_MEMBER(screen_callback,on_etx);
+	INIT_MEMBER(screen_callback,on_eot);
 	INIT_MEMBER(screen_callback,on_dc2);
 	INIT_MEMBER(screen_callback,on_dc4);
 	screen_callback->outer = this;
@@ -185,5 +190,6 @@ void console_start(CONSOLE *this, const char *prompt) {
 }
 
 void console_stop(CONSOLE *this) {
+	screen_out_puts(this->view, "\rConsole exit!");
 	screen_in_stop(this->view);
 }
