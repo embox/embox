@@ -60,6 +60,9 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 	case TERMINAL_TOKEN_DC2:
 		FIRE_CALLBACK(cb, on_dc2, this);
 		break;
+	case TERMINAL_TOKEN_DC4:
+	        FIRE_CALLBACK(cb, on_dc4, this);
+	        break;
 	case TERMINAL_TOKEN_LF:
 		if (prev_token == TERMINAL_TOKEN_CR) {
 			break;

@@ -93,6 +93,10 @@ static void on_dc2(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CB_EDIT_MODEL(cmdline_dc2_reverse);
 }
 
+static void on_dc4(SCREEN_CALLBACK *cb, SCREEN *view) {
+        CB_EDIT_MODEL(cmdline_dc4_reverse);
+}
+
 #define MAX_PROPOSALS	64
 
 static void on_tab(SCREEN_CALLBACK *cb, SCREEN *view) {
@@ -169,6 +173,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 	INIT_MEMBER(screen_callback,on_insert);
 	INIT_MEMBER(screen_callback,on_etx);
 	INIT_MEMBER(screen_callback,on_dc2);
+	INIT_MEMBER(screen_callback,on_dc4);
 	screen_callback->outer = this;
 
 	static const char * default_prompt = "";

@@ -185,3 +185,17 @@ BOOL cmdline_dc2_reverse(CMDLINE *this, char *ch, int len) {
 	cmdline_chars_insert(this, "\r(reverse-i-search)`':", 22);
 	this->cursor -= 2;
 }
+
+BOOL cmdline_dc4_reverse(CMDLINE *this, char *ch, int len) {
+	char tmp;
+	if (this->cursor != this->length) {
+		tmp = this->string[this->cursor];
+		this->string[this->cursor] = this->string[this->cursor - 1];
+		this->string[this->cursor - 1] = tmp;
+		this->cursor++;
+	} else {
+		tmp = this->string[this->length - 1];
+		this->string[this->length - 1] = this->string[this->length - 2];
+		this->string[this->length - 2] = tmp;
+	}
+}
