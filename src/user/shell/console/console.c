@@ -20,15 +20,22 @@
 #define EDIT_MODEL(console,update, action, params...)	(action((console)->model, ##params) ? update((console)->view, (console)->model): FALSE)
 #define CB_EDIT_MODEL(action, params...)	EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##params)
 
-CONSOLE *cur_console = NULL; //TODO:
+CONSOLE *cur_console = NULL;
 
 static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
         CONSOLE *this = (CONSOLE *) cb->outer;
+        /* resolve "(reverse-i-search)`':" statement */
+        char *cmd = strstr(this->model->string, ":");
+        if (cmd)
+    		*cmd++;
+    	else
+    		cmd = this->model->string;
+
         if (this->callback != NULL && this->callback->exec != NULL
-                                    && *this->model->string) {
+                                    && *cmd) {
                 screen_out_puts(this->view, NULL);
                 char buf[CMDLINE_MAX_LENGTH + 1];
-                strcpy(buf, this->model->string);
+                strcpy(buf, cmd);
                 this->callback->exec(this->callback, this, buf);
         }
         screen_out_show_prompt(this->view, this->prompt);
@@ -83,8 +90,7 @@ static void on_etx(SCREEN_CALLBACK *cb, SCREEN *view) {
 }
 
 static void on_dc2(SCREEN_CALLBACK *cb, SCREEN *view) {
-	printf("\r(reverse-i-search)`':");
-	//TODO:
+	CB_EDIT_MODEL(cmdline_dc2_reverse);
 }
 
 #define MAX_PROPOSALS	64

@@ -94,4 +94,13 @@ void *memccpy(void *dest, const void *src, int c, size_t n);
  */
 void *memset(void *p, int c, size_t n);
 
+/**
+ * function finds the first occurrence of the substring
+ * needle in the string haystack.  The terminating '\0'
+ * characters are not compared.
+ * @return pointer to the beginning of the substring,
+ *         or NULL if the substring is not found.
+ */
+char *strstr(const char *haystack, const char *needle);
+
 #endif //_STRING_H_

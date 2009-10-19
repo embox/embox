@@ -169,7 +169,6 @@ BOOL cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 
 	this->length += len;
 	this->cursor += len;
-
 	if(!this->is_insert_mode) {
 		for (i = this->length; i >= this->cursor; --i) {
 			this->string[i] = this->string[i - len];
@@ -182,3 +181,7 @@ BOOL cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 	return TRUE;
 }
 
+BOOL cmdline_dc2_reverse(CMDLINE *this, char *ch, int len) {
+	cmdline_chars_insert(this, "\r(reverse-i-search)`':", 22);
+	this->cursor -= 2;
+}
