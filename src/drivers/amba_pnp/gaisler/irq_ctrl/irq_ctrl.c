@@ -5,20 +5,22 @@
  * \author Anton Bondarev
  * \brief Realize hal layer interupt ctrl for leon 3 processor
  */
+
+#include "kernel/irq_ctrl.h"
+
 #include "asm/types.h"
 #include "common.h"
 #include "conio.h"
 #include "drivers/amba_pnp.h"
-#include "kernel/irq_ctrl.h"
 
 typedef struct _IRQ_REGS {
-        volatile unsigned int level;     /* 0x00 */
-        volatile unsigned int pend;      /* 0x04 */
-        volatile unsigned int force;     /* 0x08 */
-        volatile unsigned int clear;     /* 0x0C */
-        volatile unsigned int mpstatus;  /* 0x10 */
-        volatile unsigned int dummy[11]; /* 0x14 - 0x3C */
-        volatile unsigned int mask;      /* 0x40 */
+	volatile unsigned int level; /* 0x00 */
+	volatile unsigned int pend; /* 0x04 */
+	volatile unsigned int force; /* 0x08 */
+	volatile unsigned int clear; /* 0x0C */
+	volatile unsigned int mpstatus; /* 0x10 */
+	volatile unsigned int dummy[11]; /* 0x14 - 0x3C */
+	volatile unsigned int mask; /* 0x40 */
 } IRQ_REGS;
 
 static IRQ_REGS * dev_regs = NULL;
@@ -37,8 +39,8 @@ int irq_ctrl_init() {
 	dev_regs = (IRQ_REGS *) amba_dev.bar[0].start;
 
 	REG_STORE(dev_regs->level, 0);
-	REG_STORE(dev_regs->mask,  0);
-	REG_STORE(dev_regs->pend,  0);
+	REG_STORE(dev_regs->mask, 0);
+	REG_STORE(dev_regs->pend, 0);
 	REG_STORE(dev_regs->force, 0);
 	REG_STORE(dev_regs->clear, 0xFFFFFFFF);
 	return 0;
@@ -57,7 +59,8 @@ int irq_ctrl_disable_irq(int irq_num) {
 }
 
 int irq_ctrl_disable_all() {
-    CHECK_INIT_MODULE();
-    REG_STORE(dev_regs->mask, 0);
-    return 0;
+	CHECK_INIT_MODULE();
+	REG_STORE(dev_regs->mask, 0);
+	return 0;
 }
+

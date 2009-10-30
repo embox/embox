@@ -89,9 +89,10 @@ register_window_clean:
  	bg register_window_clean
 	 save
 
-	/* setup wim*/
+	/* setup WIM */
 	mov (1 << 1), %g1
 	wr %g1, %g0, %wim
+	 WRITE_PAUSE
 
 	/* setup MMU */
 // TODO move somewhere -- Eldar

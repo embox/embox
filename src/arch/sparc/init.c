@@ -77,6 +77,7 @@ int hardware_init_hook() {
 	cache_data_enable();
 	cache_instr_enable();
 
+
 	irq_init_handlers();
 	uart_init();
 	timers_init();

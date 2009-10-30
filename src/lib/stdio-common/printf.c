@@ -32,15 +32,6 @@
 #include "asm/stdarg.h"
 #include "kernel/uart.h"
 
-int puts (const char *S)
-{
-	char *ptr = (char*)S;
-	while (0 != (*ptr))	uart_putc (*ptr++);
-	uart_putc ('\r');
-	uart_putc ('\n');
-	return TRUE;
-}
-
 
 int putchar (int c)
 {
@@ -52,6 +43,15 @@ int putchar (int c)
 	uart_putc(c);
 	prev = c;
 	return c;
+}
+
+int puts (const char *S)
+{
+	char *ptr = (char*)S;
+	while (0 != (*ptr))	putchar (*ptr++);
+//	uart_putc ('\r');
+//	uart_putc ('\n');
+	return TRUE;
 }
 
 

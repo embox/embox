@@ -138,4 +138,5 @@ SECTIONS
 		*(.internal_mem)
 		_internal_end = .;
 	}>sram
+	PROVIDE (__internal_stack = 0xA0000000 + 0x800);
 }

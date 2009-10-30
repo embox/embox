@@ -67,16 +67,16 @@ typedef struct _TRAP_CONTEXT {
 
 /* Entry for traps which jump to a programmer-specified trap handler.  */
 #define TRAP(H) \
-	mov %psr, %t_psr; \
+	mov %psr, %t_psr;  \
 	sethi %hi(H), %t0; \
-	 jmp %t0 + %lo(H); \
-	mov %wim, %t_wim;
+	jmp %t0 + %lo(H);  \
+	 mov %wim, %t_wim;
 
 #define TRAPL(H) \
-	mov %g0, %t_psr; \
+	mov %g0, %t_psr;   \
 	sethi %hi(H), %t0; \
-	 jmp %t0 + %lo(H); \
-	mov %wim, %t_wim;
+	jmp %t0 + %lo(H);  \
+	 mov %wim, %t_wim;
 
 /* Unexpected trap will halt the processor by forcing it to error state */
 #define BAD_TRAP TRAP(bad_trap_dispatcher)
@@ -94,13 +94,13 @@ typedef struct _TRAP_CONTEXT {
 #endif
 
 #define SAVE_ALL \
-	sethi %hi(trap_entry_begin), %t0;            \
-	jmpl  %t0 + %lo(trap_entry_begin), %t_retpc; \
+	sethi %hi(trap_entry_begin), %t_retpc;            \
+	jmpl  %t_retpc + %lo(trap_entry_begin), %t_retpc; \
 	 nop;
 
 #define RESTORE_ALL \
-	sethi %hi(trap_entry_end), %t0;       \
-	jmpl  %t0 + %lo(trap_entry_end), %g0; \
+	sethi %hi(trap_entry_end), %t_retpc;       \
+	jmpl  %t_retpc + %lo(trap_entry_end), %g0; \
 	 nop;
 
 

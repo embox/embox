@@ -27,7 +27,7 @@
 
 /* control register bit masks */
 #define UART_DISABLE_ALL  0x00000000 /*< disable all */
-#define UART_CTRL_RE      (1 << 0)  /*< reciever enable */
+#define UART_CTRL_RE      (1 << 0)  /*< receiver enable */
 #define UART_CTRL_TE      (1 << 1)  /*< transmitter enable */
 #define UART_CTRL_RI      (1 << 2)  /*< enable interrupt after receiving frame */
 #define UART_CTRL_TI      (1 << 3)  /*< enable interrupt after transmitting frame */
@@ -47,22 +47,22 @@ typedef struct _UART_STRUCT {
 	 * |31_____8|7__0|
 	 * |RESERVED|DATA|
 	 */
-        volatile UINT32 data;   /* 0x0 */
-        /** _____________________________________________________
-         * |31_26|25_20|19____11|10|9_|8_|7_|6_|5_|4_|3_|2_|1_|0_|
-         * |RCNT |TCNT |RESERVED|RF|TF|RH|TH|FE|PE|OV|BR|TE|TS|DR|
-         */
-        volatile UINT32 status; /* 0x4 */
-        /** __________________________________________________
-         * |31|30____13|12|11|10|9_|8_|7_|6_|5_|4_|3_|2_|1_|0_|
-         * |FA|RESERVED|OE|DB|RF|TF|EC|LB|FL|PE|PS|TI|RI|TE|RE|
-         */
-        volatile UINT32 ctrl;   /* 0x8 */
-        /** ____________________________
-         * |31____12|11________________0|
-         * |RESERVED|SCALER RELOAD VALUE|
-         */
-        volatile UINT32 scaler; /* 0xC */
+	volatile UINT32 data; /* 0x0 */
+	/** _____________________________________________________
+	 * |31_26|25_20|19____11|10|9_|8_|7_|6_|5_|4_|3_|2_|1_|0_|
+	 * |RCNT |TCNT |RESERVED|RF|TF|RH|TH|FE|PE|OV|BR|TE|TS|DR|
+	 */
+	volatile UINT32 status; /* 0x4 */
+	/** __________________________________________________
+	 * |31|30____13|12|11|10|9_|8_|7_|6_|5_|4_|3_|2_|1_|0_|
+	 * |FA|RESERVED|OE|DB|RF|TF|EC|LB|FL|PE|PS|TI|RI|TE|RE|
+	 */
+	volatile UINT32 ctrl; /* 0x8 */
+	/** ____________________________
+	 * |31____12|11________________0|
+	 * |RESERVED|SCALER RELOAD VALUE|
+	 */
+	volatile UINT32 scaler; /* 0xC */
 } UART_STRUCT;
 
 static volatile UART_STRUCT *dev_regs = NULL;
@@ -73,72 +73,73 @@ static volatile UART_STRUCT *dev_regs = NULL;
 
 static int irq;
 
-int uart_init () {
-    if (NULL != dev_regs)
-	return -1;
+int uart_init() {
+	if (NULL != dev_regs)
+		return -1;
 
-    TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
+	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
 
-    if (UART_BASE != amba_dev.bar[0].start) {
-	TRACE ("uart base is %x instead of correct value %x\n", amba_dev.bar[0].start, UART_BASE);
-	return -1;
-    }
-    if (UART_IRQ != amba_dev.dev_info.irq) {
-	TRACE ("uart irq is %d instead of correct value %d", amba_dev.dev_info.irq, UART_IRQ);
-	return -1;
-    }
+	if (UART_BASE != amba_dev.bar[0].start) {
+		TRACE ("uart base is %x instead of correct value %x\n", amba_dev.bar[0].start, UART_BASE);
+		return -1;
+	}
+	if (UART_IRQ != amba_dev.dev_info.irq) {
+		TRACE ("uart irq is %d instead of correct value %d", amba_dev.dev_info.irq, UART_IRQ);
+		return -1;
+	}
 
-    dev_regs = (UART_STRUCT *) amba_dev.bar[0].start;
-    irq = amba_dev.dev_info.irq;
-    REG_STORE(dev_regs->ctrl, UART_DISABLE_ALL); /**< disabled uart */
-    REG_STORE(dev_regs->scaler, UART_SCALER_VAL);
-    REG_STORE(dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE); /**< enable uart */
+	dev_regs = (UART_STRUCT *) amba_dev.bar[0].start;
+	irq = amba_dev.dev_info.irq;
+	REG_STORE(dev_regs->ctrl, UART_DISABLE_ALL); /**< disabled uart */
+	REG_STORE(dev_regs->scaler, UART_SCALER_VAL);
+	REG_STORE(dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE); /**< enable uart */
 #ifndef SIMULATION_TRG
-    //while (!(UART_TX_READY & REG_LOAD(dev_regs->status)));
-    //clear uart
-    //while (UART_RX_READY & REG_LOAD(dev_regs->status));
-    //uart->data;
+	//while (!(UART_TX_READY & REG_LOAD(dev_regs->status)));
+	//clear uart
+	//while (UART_RX_READY & REG_LOAD(dev_regs->status));
+	//uart->data;
 #endif
 }
 
 /*BOOL uart_is_empty() {
-	return (UART_RX_READY & REG_LOAD(uart->status)) ? FALSE : TRUE;
-}*/
+ return (UART_RX_READY & REG_LOAD(uart->status)) ? FALSE : TRUE;
+ }*/
 
-void uart_putc (char ch) {
-    CHECK_INIT_MODULE();
-/*#ifndef SIMULATION_TRG
-	while (!(UART_TX_READY & REG_LOAD(dev_regs->status)))
+void uart_putc(char ch) {
+	CHECK_INIT_MODULE();
+	/*#ifndef SIMULATION_TRG
+	 while (!(UART_TX_READY & REG_LOAD(dev_regs->status)))
+	 ;
+	 #endif*/
+	volatile int i;
+	for (i = 0; i < 0x1000; i++)
 		;
-#endif*/
-    volatile int i;
-    for (i = 0; i < 0x1000; i++);
 
-    REG_STORE(dev_regs->data, (UINT32) ch);
+	REG_STORE(dev_regs->data, (UINT32) ch);
 }
 
-char uart_getc () {
-    CHECK_INIT_MODULE ();
+char uart_getc() {
+	CHECK_INIT_MODULE ();
 
-    while (!(UART_RX_READY & REG_LOAD(dev_regs->status)))
-	;
+	while (!(UART_RX_READY & REG_LOAD(dev_regs->status)))
+		;
 
-    return ((char) REG_LOAD(dev_regs->data));
+	return ((char) REG_LOAD(dev_regs->data));
 }
 
-int uart_set_irq_handler (IRQ_HANDLER pfunc) {
-    CHECK_INIT_MODULE ();
+int uart_set_irq_handler(IRQ_HANDLER pfunc) {
+	CHECK_INIT_MODULE ();
 
-    REG_ORIN(dev_regs->ctrl, UART_CTRL_RI);
-    irq_set_handler (irq, pfunc);
-    return 0;
+	REG_ORIN(dev_regs->ctrl, UART_CTRL_RI);
+	irq_set_handler(irq, pfunc);
+	return 0;
 }
 
-int uart_remove_irq_handler () {
-    CHECK_INIT_MODULE ();
+int uart_remove_irq_handler() {
+	CHECK_INIT_MODULE ();
 
-    REG_ANDIN(dev_regs->ctrl, ~UART_CTRL_RI);
-    irq_set_handler (irq, NULL);
-    return 0;
+	REG_ANDIN(dev_regs->ctrl, ~UART_CTRL_RI);
+	irq_set_handler(irq, NULL);
+	return 0;
 }
 

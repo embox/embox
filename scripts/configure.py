@@ -3,7 +3,7 @@
 
 import traceback, getopt, sys
 from PyQt4 import QtGui, QtCore
-from ConfigBuilder.QtGui import mcmain
+#from ConfigBuilder.QtGui import mcmain
 from ConfigBuilder.TkGui import confmain
 from ConfigBuilder.Parser import mcglobals
 

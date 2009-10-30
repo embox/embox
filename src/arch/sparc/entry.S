@@ -21,6 +21,11 @@
 	.section ".text"
 	.align 16
 
+	.global get_psr
+get_psr:
+	retl
+	 rd %psr, %o0
+
 trap_dispatcher:
 	! store previous nPC as PC
 	mov		%t_npc, %t_pc

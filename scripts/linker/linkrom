@@ -48,7 +48,7 @@ MEMORY
 {
   rom     : ORIGIN = 0x00000000, LENGTH = 512K
   sdram	  : ORIGIN = 0x42000000, LENGTH = 128M
-  sram    : ORIGIN = 0xA0000000, LENGTH = 1K
+  sram    : ORIGIN = 0xA0000000, LENGTH = 2K
 }
 
 /*
@@ -137,5 +137,5 @@ SECTIONS
 		*(.internal_mem)
 		_internal_end = .;
 	}>sram
+	PROVIDE (__internal_stack = 0xA0000000 + 0x800);
 }
-

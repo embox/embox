@@ -15,27 +15,24 @@
 //TODO this depends on the architecture
 #define HALT     { __asm__ ("nop;"); }
 #endif //_TEST_SYSTEM_
-inline static int dummy() {
-	return 0;
-}
 
 #define LOGGER()		    printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
 #if defined(_ERROR) && !defined(SIMULATION_TRG)
 #define LOG_ERROR(...)  do {LOGGER(); printf("ERROR: "__VA_ARGS__);} while(0)
 #else
-#define LOG_ERROR(...)  dummy()
+#define LOG_ERROR(...)  do ; while(0)
 #endif //_ERROR
 
 #if defined(_WARN) && !defined(SIMULATION_TRG)
 #define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
 #else
-#define LOG_WARN(...)   dummy()
+#define LOG_WARN(...)   do ; while(0)
 #endif //_WARN
 
 #if defined(_DEBUG) && !defined(SIMULATION_TRG)
 #define LOG_DEBUG(...)  do {LOGGER(); printf("DEBUG: "__VA_ARGS__);} while(0)
 #else
-#define LOG_DEBUG(...)  dummy()
+#define LOG_DEBUG(...)  do ; while(0)
 #endif //_DEBUG
 
 #if defined(_TRACE) && !defined(SIMULATION_TRG)
@@ -45,7 +42,7 @@ inline static int dummy() {
 #define TRACE(...)  printk(__VA_ARGS__)
 #endif //_TEST_SYSTEM_
 #else
-#define TRACE(...)  dummy()
+#define TRACE(...)  do ; while(0)
 #endif //_TRACE && !SIMULATION_TRG
 #ifdef SIMULATION_TRG
 #define assert(cond)	{}
