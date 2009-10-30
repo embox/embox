@@ -2,15 +2,18 @@
 #define _TYPES_H_
 
 #ifndef NULL
+//TODO this maybe (void *)0x0
 #define NULL  0x00000000
 #endif
 
+#if 0
 #ifndef TRUE
 #define TRUE    0x1
 #endif
 
 #ifndef FALSE
 #define FALSE   0x0
+#endif
 #endif
 
 #ifndef __ASSEMBLER__
@@ -30,15 +33,27 @@ typedef unsigned int u32_t;
 
 #ifdef _TEST_SYSTEM_
 typedef int size_t;
+
+typedef unsigned gfp_t;
+
+typedef struct {
+	volatile int counter;
+} atomic_t;
+
 #endif
 
+#if 0
 typedef void * PVOID;
+#endif
 
 // unsigned types
 #define WORD    unsigned long
 #define HWRD    unsigned short int
 #define BYTE    unsigned char
 
+
+
+#if 0
 // volatile types
 #define VWORD   volatile WORD
 #define VHWRD   volatile HWRD
@@ -55,7 +70,7 @@ typedef void * PVOID;
 #define AWORD(addr)           *((PVWORD)(addr))
 #define AHWRD(addr)           *((PVHWRD)(addr))
 #define ABYTE(addr)           *((PVBYTE)(addr))
-
+#endif
 #endif  // ifndef __ASSEMBLER__
 
 #endif // _TYPES_H_
