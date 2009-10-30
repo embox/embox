@@ -6,7 +6,7 @@
 #define NULL  0x00000000
 #endif
 
-#if 0
+
 #ifndef TRUE
 #define TRUE    0x1
 #endif
@@ -14,7 +14,7 @@
 #ifndef FALSE
 #define FALSE   0x0
 #endif
-#endif
+
 
 #ifndef __ASSEMBLER__
 
