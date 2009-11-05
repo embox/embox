@@ -64,3 +64,17 @@ int irq_ctrl_disable_all() {
 	return 0;
 }
 
+int irq_ctrl_force(BYTE irq_num) {
+//	That's force!
+//	if (!GetBit(dev_regs->mask, irq_num)) {
+//		return;
+//	}
+	SetBit(dev_regs->force, irq_num);
+	return 0;
+}
+
+int irq_ctrl_get_status(BYTE irq_num) {
+	return GetBit(dev_regs->mask, irq_num);
+}
+
+

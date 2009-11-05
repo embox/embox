@@ -32,5 +32,21 @@ int irq_ctrl_disable_irq(int irq_num);
  */
 int irq_ctrl_disable_all();
 
+/**
+ * Calls interrupt specified - right at the moment (forced)
+ * ( + no matter whether it was enabled or not)
+ *
+ * @param irq_num IRQ number to force call
+ */
+int irq_ctrl_force(BYTE irq_num);
+
+/**
+ * Get status of the irq specified
+ *
+ * @param irq_num IRQ number to check
+ * @return whether it is enabled or not
+ */
+int irq_ctrl_get_status(BYTE irq_num);
+
 #endif /* IRQ_CTRL_H_ */
 

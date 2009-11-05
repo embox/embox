@@ -8,7 +8,7 @@
 
 #define SetBit(rg, bit)   { REG_ORIN(rg, (1UL << (bit))); }
 #define ClearBit(rg, bit) { REG_ANDIN(rg, ~(1UL << (bit))); }
-//#define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
+#define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
 
 #define BMASK(nbit)  (0x00000001 << (nbit))
 // Stop processor
