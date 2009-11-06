@@ -19,8 +19,8 @@ typedef struct _FILE_DESC {
 } FILE_DESC;
 
 static int file_desc_cnt;
-#define FILE_DESC_QUANTITY 0x10
-static FILE_DESC fdesc[FILE_DESC_QUANTITY];
+#define MAX_FILE_QUANTITY 0x10
+static FILE_DESC fdesc[MAX_FILE_QUANTITY];
 
 static void *fopen(const char *file_name, char *mode);
 static int fclose(void * file);
@@ -44,10 +44,10 @@ static int file_handler_cnt;
 
 static file_list_cnt;
 static FILE_INFO * file_list_iterator(FILE_INFO *finfo) {
-    if (FILE_DESC_QUANTITY <= file_list_cnt)
+    if (MAX_FILE_QUANTITY <= file_list_cnt)
         return NULL;
     while (!fdesc[file_list_cnt].is_busy) {
-        if (FILE_DESC_QUANTITY <= file_list_cnt)
+        if (MAX_FILE_QUANTITY <= file_list_cnt)
             return NULL;
         file_list_cnt++;
     }
@@ -66,10 +66,10 @@ static FS_FILE_ITERATOR get_file_list_iterator() {
 
 static FILE_DESC * find_free_desc() {
     int i;
-    if (FILE_DESC_QUANTITY <= file_desc_cnt)
+    if (MAX_FILE_QUANTITY <= file_desc_cnt)
         return NULL;
 
-    for (i = 0; i < FILE_DESC_QUANTITY; i++) {
+    for (i = 0; i < MAX_FILE_QUANTITY; i++) {
         if (0 == fdesc[i].is_busy) {
             return &fdesc[i];
         }
@@ -80,7 +80,7 @@ static FILE_DESC * find_free_desc() {
 static FILE_DESC * find_file_desc(const char * file_name) {
     int i;
 
-    for (i = 0; i < FILE_DESC_QUANTITY; i++) {
+    for (i = 0; i < MAX_FILE_QUANTITY; i++) {
         if (0 == strncmp(fdesc[i].name, file_name, array_len(fdesc[i].name))) {
             return &fdesc[i];
         }
