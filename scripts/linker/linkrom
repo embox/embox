@@ -87,6 +87,10 @@ SECTIONS
 		*(.const)
 		. = ALIGN(0x4);
 
+		_sinittext = .;
+		    *(.init.text)
+        _einittext = .;
+
 		__express_tests_start = . ;
 	    *(.express_tests)
 	    __express_tests_end = .;

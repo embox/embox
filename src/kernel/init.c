@@ -17,6 +17,7 @@
 #include "asm/memory_map.h"
 #include "kernel/module.h"
 
+//TODO this code must move to boot.S file
 void copy_data_section() {
 	extern char _endtext, _data_start, _data_end, _bstart, _bend;
 
@@ -70,7 +71,9 @@ static int init_modules() {
 
 	return 0;
 }
-
+static int init_func_exec(){
+	return 0;
+}
 int hardware_init_hook() {
 	//TODO during too long time for simulation:(
 	copy_data_section();
@@ -84,6 +87,7 @@ int hardware_init_hook() {
 	timers_init();
 
 	init_modules();
+
 
 
 	TRACE("\nStarting Monitor...\n");
