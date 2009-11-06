@@ -14,5 +14,6 @@ SUBDIRS-y += testmem
 SUBDIRS-y += udpd
 SUBDIRS-y += wmem
 SUBDIRS-y += tftp
+SUBDIRS-y += testirqsave
 
 include $(SCRIPTS_DIR)/common.mk

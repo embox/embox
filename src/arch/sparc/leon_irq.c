@@ -58,9 +58,9 @@ void local_irq_enable(void)
 }
 /**
  * restore PSR_PIL after __local_irq_save
- * param psr which was returned __local_irq_save
+ * @param psr which was returned __local_irq_save
  */
-void local_irq_restore(unsigned long old_psr)
+void __local_irq_restore(unsigned long old_psr)
 {
 	unsigned long tmp;
 
@@ -74,4 +74,13 @@ void local_irq_restore(unsigned long old_psr)
 		: "=&r" (tmp)
 		: "i" (PSR_PIL), "r" (old_psr)
 		: "memory");
+}
+
+/**
+ * enable interrupt after local_irq_save
+ * @param old_psr - psr reg to be restored
+ */
+void local_irq_restore(unsigned long old_psr)
+{
+	__local_irq_restore(old_psr);
 }

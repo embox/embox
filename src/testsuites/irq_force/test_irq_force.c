@@ -21,7 +21,6 @@ static void test_irq_force_handler() {
 }
 
 static int exec() {
-	long i;
 	IRQ_HANDLER old_irq_handler = irq_get_handler(TEST_IRQ_NUM);
 	int old_irq_enabled = irq_ctrl_get_status(TEST_IRQ_NUM);
 
