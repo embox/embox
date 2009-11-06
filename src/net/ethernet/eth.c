@@ -6,6 +6,7 @@
 #include "conio.h"
 #include "misc.h"
 #include "string.h"
+#include "net/skbuff.h"
 #include "net/net_pack_manager.h"
 #include "net/net_packet.h"
 #include "net/net_device.h"
@@ -17,18 +18,18 @@
 #include "net/icmp.h"
 #include "net/if_device.h"
 
-void packet_dump(net_packet *);
+void packet_dump(sk_buff_type *);
 
 int eth_init() {
     return 0;
 }
 
-int eth_rebuild_header(net_packet *pack) {
+int eth_rebuild_header(sk_buff_type *pack) {
     if (NULL == pack) {
         return -1;
     }
     ethhdr     *eth = (ethhdr*)pack->data;
-    net_device *dev = pack->netdev;
+    net_device_type *dev = pack->netdev;
     if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
         if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr)) {
             LOG_WARN("Destanation host is unreachable\n");
@@ -42,7 +43,7 @@ int eth_rebuild_header(net_packet *pack) {
     return 0;
 }
 
-void ether_setup(net_device *dev) {
+void ether_setup(net_device_type *dev) {
     dev->rebuild_header     = eth_rebuild_header;
     /*TODO:
     dev->hard_header        = ...;
@@ -57,14 +58,21 @@ void ether_setup(net_device *dev) {
     memset(dev->broadcast, 0xFF, ETH_ALEN);
 }
 
-net_device *alloc_etherdev(int num) {
-    net_device *dev = alloc_netdev();
+net_device_type *alloc_etherdev(int num) {
+    net_device_type *dev = alloc_netdev();
     sprintf(dev->name, "eth%d", num);
     ether_setup(dev);
     return dev;
 }
 
-int eth_send(net_packet *pack) {
+
+/**
+ * this function call ip protocol,
+ * it call rebuild mac header function, if can resolve dest addr else it send arp packet and drop this packet
+ * and send packet by calling hard_start_xmit() function
+ * return 0 if success else -1
+ */
+int eth_send(sk_buff_type *pack) {
     IF_DEVICE *dev;
     net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
 
@@ -74,21 +82,25 @@ int eth_send(net_packet *pack) {
     dev = (IF_DEVICE *) pack->ifdev;
     if (ETH_P_ARP != pack->protocol) {
         if (-1 == dev->net_dev->rebuild_header(pack)) {
-            net_packet_free(pack);
+            kfree_skb(pack);
             stats->tx_err += 1;
             return -1;
         }
     }
-//    packet_dump(pack);
+//TODO delete this because we will can manager ifdev debug mod in future
+    //packet_dump(pack);
     if (-1 == dev->net_dev->hard_start_xmit(pack, pack->netdev)) {
-	net_packet_free(pack);
-	stats->tx_err += 1;
-	return -1;
+    	kfree_skb(pack);
+    	stats->tx_err += 1;
+    	return -1;
     }
+
+    ifdev_tx_callback(pack);
+
     /* update statistic */
     stats->tx_packets += 1;
     stats->tx_bytes   += pack->len;
-    net_packet_free(pack);
+    kfree_skb(pack);
     return 0;
 }
 
@@ -98,7 +110,7 @@ int eth_send(net_packet *pack) {
  * @param net_packet *pack struct of network packet
  * @return on success, returns 0, on error, -1 is returned
  */
-int netif_rx(net_packet *pack) {
+int netif_rx(sk_buff_type *pack) {
     int i;
     IF_DEVICE *dev;
     if ((NULL == pack) || (NULL == pack->netdev)) {
@@ -107,9 +119,10 @@ int netif_rx(net_packet *pack) {
     pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
     if (NULL == (pack->ifdev = ifdev_find_by_name(pack->netdev->name))){
         LOG_ERROR("wrong interface name during receiving packet\n");
-        net_packet_free(pack);
+        kfree_skb(pack);
         return -1;
     }
+
     if (ETH_P_ARP == pack->protocol) {
         arp_received_packet(pack);
     }
@@ -117,27 +130,18 @@ int netif_rx(net_packet *pack) {
         pack->h.raw  = pack->nh.raw + IP_HEADER_SIZE;
         ip_received_packet(pack);
     }
-    /* if there are some callback handlers for packet's protocol */
-    dev = (IF_DEVICE *) pack->ifdev;
-    for (i = 0; i < array_len(dev->cb_info); i++) {
-        if (1 == dev->cb_info[i].is_busy) {
-            if ((NET_TYPE_ALL_PROTOCOL == dev->cb_info[i].type)
-                    || (dev->cb_info[i].type == pack->protocol)) {
-                //may be copy pack for different protocols
-                dev->cb_info[i].func(pack);
-            }
-        }
-    }
+
     /* update device statistic */
     net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
     stats->rx_packets += 1;
     stats->rx_bytes   += pack->len;
     //free packet
-    net_packet_free(pack);
+    kfree_skb(pack);
     return 0;
 }
 
-void packet_dump(net_packet *pack) {
+//TODO delete this function from here
+void packet_dump(sk_buff_type *pack) {
     char ip[15], mac[18];
     TRACE("--------dump-----------------\n");
     TRACE("protocol=0x%X\n", pack->protocol);

@@ -1,5 +1,6 @@
-#include "common.h"
 #include "asm/types.h"
+#include "common.h"
+#include "net/skbuff.h"
 #include "net/bootp.h"
 #include "net/udp.h"
 #include "net/socket.h"
@@ -90,7 +91,7 @@ int bootp_discover (void* ifdev) {
 	int             abort = 0;
 	static int      xid = SHOULD_BE_RANDOM;
 	int             retry = RETRY_COUNT;
-	struct _net_device*     dev = (struct _net_device*)ifdev_get_netdevice (ifdev);
+	struct net_device*     dev = (struct net_device*)ifdev_get_netdevice (ifdev);
 	enet_addr_t     enet;
 	memcpy (enet, dev->hw_addr, ETH_ALEN);
 
@@ -187,7 +188,8 @@ int bootp_discover (void* ifdev) {
 
 		// create 'raw' packet
 		TRACE("create raw packet\n");
-		net_packet* pack = net_packet_alloc ();
+		//TODO packet must have length
+		sk_buff_type* pack = alloc_skb (0x400, 0);
 		if (pack == 0) {
 			LOG_ERROR("bootp net_packet_alloc failed");
 			return -1;
@@ -220,7 +222,7 @@ int bootp_discover (void* ifdev) {
 		arp_add_entity (ifdev, daddr, pack->mac.ethh->dst_addr);
 		TRACE("eth_send\n");
 		eth_send (pack);
-		net_packet_free (pack);
+		kfree_skb (pack);
 
 		// wait a bit
 		sleep (1000);

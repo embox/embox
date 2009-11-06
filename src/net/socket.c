@@ -8,6 +8,7 @@
 #include "conio.h"
 #include "string.h"
 #include "common.h"
+#include "net/skbuff.h"
 #include "net/socket.h"
 #include "net/udp.h"
 #include "net/ip.h"
@@ -52,7 +53,8 @@ int connect (int sockfd, const struct sockaddr *addr, int addrlen) {
 	memcpy(&sks[sockfd].sk->inet.dport, &(addr->sa_data[0]), sizeof(short));
 	char ip[15];
 	ipaddr_print(ip, sks[sockfd].sk->inet.daddr);
-	sks[sockfd].queue = net_packet_alloc ();
+	//TODO what is it
+	sks[sockfd].queue = alloc_skb (0x100, 0);
 	sks[sockfd].queue->ifdev = (void*)ifdev_find_by_name ("eth0");
 	LOG_WARN("socket connected at port=%d, ip=%s ifdev = %d\n", sks[sockfd].sk->inet.sport, ip, sks[sockfd].queue);
 	return 0;
@@ -95,7 +97,7 @@ int recv(int sockfd, void *buf, int len, int flags) {
 		if(sks[sockfd].new_pack == 1) {
 			LOG_DEBUG("received packet\n");
 			memcpy(buf, sks[sockfd].queue->data + ETH_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE - 24, len);
-			net_packet_free(sks[sockfd].queue);
+			kfree_skb(sks[sockfd].queue);
 			sks[sockfd].new_pack = 0;
 	    		return len;
 		}

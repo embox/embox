@@ -7,6 +7,7 @@
 #include "conio.h"
 #include "common.h"
 #include "string.h"
+#include "net/skbuff.h"
 #include "net/net_device.h"
 #include "net/net.h"
 #include "net/if_device.h"
@@ -79,11 +80,11 @@ int arp_delete_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsig
     return -1;
 }
 
-static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
-	net_packet *pack;
+static inline sk_buff_type* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
+	sk_buff_type *pack;
 
 	if (NULL == ifdev ||
-	    NULL == (pack = net_packet_alloc())) {
+	    NULL == (pack = alloc_skb((int)pack->len, 0))) {
 		return NULL;
 	}
 
@@ -119,7 +120,7 @@ static inline net_packet* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL
  */
-net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
+sk_buff_type *arp_resolve_addr (sk_buff_type * pack, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
 	int i;
 	void *ifdev = pack->ifdev;
 	if (NULL == pack || NULL == ifdev) {
@@ -150,7 +151,7 @@ net_packet *arp_resolve_addr (net_packet * pack, unsigned char dst_addr[IPV4_ADD
 /**
  * receive ARP response, update ARP table
  */
-static int received_resp(net_packet *pack) {
+static int received_resp(sk_buff_type *pack) {
 	arphdr *arp = pack->nh.arph;
 	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return -1;
@@ -169,8 +170,8 @@ static int received_resp(net_packet *pack) {
 /**
  * receive ARP request, send ARP response
  */
-static int received_req(net_packet *pack) {
-	net_packet *resp;
+static int received_req(sk_buff_type *pack) {
+	sk_buff_type *resp;
 	arphdr *arp = pack->nh.arph;
 	char ip[15], mac[18];
 	ipaddr_print(ip, arp->spa);
@@ -180,7 +181,7 @@ static int received_req(net_packet *pack) {
 	//add to arp_table
 	arp_add_entity(pack->ifdev, arp->spa, arp->sha);
 
-	resp = net_packet_copy(pack);
+	resp = skb_copy(pack, 0);
 
 	memcpy(resp->mac.ethh->dst_addr, pack->mac.ethh->src_addr, sizeof(resp->mac.ethh->dst_addr));
 	memcpy(resp->mac.ethh->src_addr, pack->netdev->hw_addr, sizeof(resp->mac.ethh->src_addr));
@@ -198,7 +199,7 @@ static int received_req(net_packet *pack) {
  * Handle arp packet. This function called protocal stack when arp packet has been received
  * @param pack net_packet
  */
-int arp_received_packet(net_packet *pack) {
+int arp_received_packet(sk_buff_type *pack) {
 	LOG_WARN("arp packet received\n");
 	arphdr *arp = pack->nh.arph;
 

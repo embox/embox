@@ -7,6 +7,7 @@
 #include "string.h"
 #include "conio.h"
 #include "common.h"
+#include "net/skbuff.h"
 #include "net/net.h"
 #include "net/if_device.h"
 #include "net/eth.h"
@@ -17,7 +18,7 @@
 
 #define CB_INFO_SIZE        0x10
 
-typedef void (*ICMP_CALLBACK)(struct _net_packet* response);
+typedef void (*ICMP_CALLBACK)(struct sk_buff* response);
 
 typedef struct _ICMP_CALLBACK_INFO {
 	ICMP_CALLBACK      cb;
@@ -90,7 +91,7 @@ static ICMP_CALLBACK callback_find(void *ifdev, unsigned short ip_id,
 	return NULL;
 }
 
-typedef int (*PACKET_HANDLER)(net_packet *pack);
+typedef int (*PACKET_HANDLER)(sk_buff_type *pack);
 
 static PACKET_HANDLER received_packet_handlers[NR_ICMP_TYPES];
 
@@ -105,7 +106,7 @@ unsigned short calc_checksumm(unsigned char *hdr, int size) {
 /**
  * Fill ICMP header
  */
-static int rebuild_icmp_header(net_packet *pack, unsigned char type, unsigned char code) {
+static int rebuild_icmp_header(sk_buff_type *pack, unsigned char type, unsigned char code) {
 	icmphdr *hdr = pack->h.icmph;
 	hdr->type    = type;
 	hdr->code    = code;
@@ -114,7 +115,7 @@ static int rebuild_icmp_header(net_packet *pack, unsigned char type, unsigned ch
 	return 0;
 }
 
-static inline int build_icmp_packet(net_packet *pack, unsigned char type,
+static inline int build_icmp_packet(sk_buff_type *pack, unsigned char type,
 		unsigned char code, unsigned char ttl, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
 	pack->h.raw = pack->nh.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
@@ -129,7 +130,7 @@ static inline int build_icmp_packet(net_packet *pack, unsigned char type,
 /**
  * implementation handlers for received msgs
  */
-static int icmp_get_echo_reply(net_packet *pack) {
+static int icmp_get_echo_reply(sk_buff_type *pack) {
 	LOG_DEBUG("icmp get echo reply\n");
 	ICMP_CALLBACK cb;
 	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
@@ -144,7 +145,7 @@ static int icmp_get_echo_reply(net_packet *pack) {
 /**
  * Handle ICMP_DEST_UNREACH.
  */
-static int icmp_unreach(net_packet *pack) {
+static int icmp_unreach(sk_buff_type *pack) {
 	iphdr *iph;
 	icmphdr *icmph;
 	icmph = pack->h.icmph;
@@ -172,9 +173,9 @@ static int icmp_unreach(net_packet *pack) {
 /**
  * Handle ICMP_ECHO ("ping") requests.
  */
-static int icmp_echo(net_packet *recieved_pack) {
+static int icmp_echo(sk_buff_type *recieved_pack) {
 	LOG_DEBUG("icmp get echo request\n");
-	net_packet *pack = net_packet_copy(recieved_pack);
+	sk_buff_type *pack = skb_copy(recieved_pack, 0);
 	if(ifdev_find_by_ip(pack->nh.iph->daddr)) {
 		return 0;
 	}
@@ -215,25 +216,26 @@ static int icmp_echo(net_packet *recieved_pack) {
 int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		ICMP_CALLBACK callback) { //type 8
 	LOG_DEBUG("icmp send echo request\n");
-	net_packet *pack = net_packet_alloc();
+	//TODO icmp req must be variable length
+	sk_buff_type *pack = alloc_skb(0x100, 0);
 	if ( pack == NULL ) {
 		return -1;
 	}
 	pack->ifdev  = ifdev;
-	pack->netdev = (struct _net_device *)ifdev_get_netdevice(ifdev);
+	pack->netdev = (struct net_device *)ifdev_get_netdevice(ifdev);
 	pack->len    = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
 					ifdev_get_ipaddr(ifdev), dstaddr);
 	pack->protocol = ETH_P_IP;
 
 	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->id,
 			ICMP_ECHOREPLY)) {
-		net_packet_free(pack);
+		kfree_skb(pack);
 		return -1;
 	}
 	return eth_send(pack);
 }
 
-void icmp_send(net_packet *pack, int type, int code) {
+void icmp_send(sk_buff_type *pack, int type, int code) {
 	//TODO:
 	switch(type) {
 	case ICMP_ECHO:
@@ -250,7 +252,7 @@ int icmp_init() {
 	return 0;
 }
 
-int icmp_rcv(net_packet *pack) {
+int icmp_rcv(sk_buff_type *pack) {
 	LOG_DEBUG("icmp packet received\n");
 	icmphdr *icmph = pack->h.icmph;
 	net_device_stats *stats = pack->netdev->get_stats(pack->netdev);

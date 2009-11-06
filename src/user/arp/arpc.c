@@ -21,7 +21,7 @@ DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG,
 static int print_arp_cache(void *ifdev) {
 	int i;
 	char ip[15], mac[18];
-	net_device *net_dev;
+	net_device_type *net_dev;
 	for(i=0; i<ARP_CACHE_SIZE; i++) {
 		if((arp_table[i].is_busy == 1) &&
 		   (ifdev == NULL || ifdev == arp_table[i].if_handler)) {

@@ -11,7 +11,7 @@
 #include "net/net_device.h"
 
 typedef struct _NET_DEV_INFO {
-	net_device       dev;
+	net_device_type       dev;
 	net_device_stats stats;
 	int              is_busy;
 } NET_DEV_INFO;
@@ -22,7 +22,7 @@ static inline int dev_is_busy(int num) {
 	return net_devices[num].is_busy;
 }
 
-static inline net_device *dev_lock(int num) {
+static inline net_device_type *dev_lock(int num) {
 	net_devices[num].is_busy = 1;
 	return &net_devices[num].dev;
 }
@@ -31,7 +31,7 @@ static inline void dev_unlock(int num) {
 	net_devices[num].is_busy = 0;
 }
 
-net_device *alloc_netdev() {
+net_device_type *alloc_netdev() {
 	int i;
 	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (!dev_is_busy(i)) {
@@ -41,7 +41,7 @@ net_device *alloc_netdev() {
 	return NULL;
 }
 
-void free_netdev(net_device *dev) {
+void free_netdev(net_device_type *dev) {
         int i;
 	for(i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (dev == &net_devices[i].dev) {
@@ -50,7 +50,7 @@ void free_netdev(net_device *dev) {
 	}
 }
 
-net_device *netdev_get_by_name(const char *name) {
+net_device_type *netdev_get_by_name(const char *name) {
 	int i;
 	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (dev_is_busy(i) &&
@@ -61,7 +61,7 @@ net_device *netdev_get_by_name(const char *name) {
 	return NULL;
 }
 
-net_device_stats *get_eth_stat(net_device *dev) {
+net_device_stats *get_eth_stat(net_device_type *dev) {
         int i;
         for(i = 0; i < NET_DEVICES_QUANTITY; i++) {
                 if (dev == &net_devices[i].dev) {

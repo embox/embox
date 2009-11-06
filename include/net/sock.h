@@ -10,8 +10,8 @@
 
 #define MAX_SOCK_NUM 4
 
-struct _net_device;
-struct _net_packet;
+struct net_device;
+struct sk_buff;
 struct udp_sock;
 
 /**
@@ -43,24 +43,24 @@ struct sock {
 	int			sk_rcvbuf;
 	int			sk_sndbuf;
 	unsigned long 		sk_flags;
-	//TODO: implement queue
-	//struct sk_buff_head     sk_receive_queue;
-	//struct sk_buff_head     sk_write_queue;
+
+	struct sk_buff_head     sk_receive_queue;
+	struct sk_buff_head     sk_write_queue;
 
 	struct socket           *sk_socket;
-	struct _net_device	*netdev;
+	struct net_device	*netdev;
 
 	void (* sk_state_change) (struct sock *sk);
 	void (* sk_data_ready) (struct sock *sk, int bytes);
 	void (* sk_write_space) (struct sock *sk);
 	void (* sk_error_report) (struct sock *sk);
-	int (* sk_backlog_rcv) (struct sock *sk, struct _net_packet *pack);
+	int (* sk_backlog_rcv) (struct sock *sk, struct sk_buff *pack);
 	void (* sk_destruct) (struct sock *sk);
 };
 
 typedef struct _SOCK_INFO{
         struct udp_sock *sk;
-        struct _net_packet *queue; //TODO: stub
+        struct sk_buff *queue; //TODO: stub
         int new_pack;
         int is_busy;
 }SOCK_INFO;

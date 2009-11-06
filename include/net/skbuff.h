@@ -51,14 +51,15 @@ struct sk_buff_head {
     struct sk_buff *prev;
 };
 
-struct sk_buff_queue {
-	struct sk_buff *head;
-    struct sk_buff *tail;
-};
 
-struct sk_buff *alloc_skb(unsigned int size, gfp_t priority);
+extern struct sk_buff *alloc_skb(unsigned int size, gfp_t priority);
 
-void kfree_skb(struct sk_buff *skb);
-struct sk_buff *alloc_skb_fclone(struct sk_buff *skb, gfp_t priority);
+extern void kfree_skb(struct sk_buff *skb);
+extern struct sk_buff *alloc_skb_fclone(struct sk_buff *skb, gfp_t priority);
+/**
+ * sk_buff clone it used as we want to queue sk_buff in several queue
+ */
+extern struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t priority);
+extern struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority);
 
 #endif /* SKBUFF_H_ */

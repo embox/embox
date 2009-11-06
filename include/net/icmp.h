@@ -9,7 +9,7 @@
 #ifndef ICMP_H_
 #define ICMP_H_
 
-struct _net_packet;
+struct sk_buff;
 
 /* Types */
 #define ICMP_ECHOREPLY          0       /* Echo Reply                   */
@@ -67,8 +67,8 @@ extern int icmp_init();
 /**
  * receive packet
  */
-extern int icmp_rcv(struct _net_packet *pack);
+extern int icmp_rcv(struct sk_buff *pack);
 
-extern void icmp_send(struct _net_packet *pack, int type, int code);
+extern void icmp_send(struct sk_buff *pack, int type, int code);
 
 #endif /* ICMP_H_ */

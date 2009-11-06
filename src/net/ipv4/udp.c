@@ -8,6 +8,7 @@
 #include "string.h"
 #include "conio.h"
 #include "common.h"
+#include "net/skbuff.h"
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"
@@ -19,7 +20,7 @@
 #include "net/if_ether.h"
 #include "lib/inet/netinet/in.h"
 
-int udp_rcv(net_packet *pack) {
+int udp_rcv(sk_buff_type *pack) {
 	LOG_WARN("udp packet received\n");
 	return udpsock_push(pack);
 }
@@ -39,9 +40,9 @@ static SOCK_INFO *__udp_lookup(unsigned char saddr[4], unsigned short source,
 	return NULL;
 }
 
-static int udp_queue_rcv_pack(SOCK_INFO *sk, net_packet *pack) {
+static int udp_queue_rcv_pack(SOCK_INFO *sk, sk_buff_type *pack) {
 	if(sk->new_pack == 0) {
-		sk->queue = net_packet_copy(pack);
+		sk->queue = skb_copy(pack, 0);
 		sk->new_pack = 1;
 		sk->sk->inet.dport = pack->h.uh->source;
 		memcpy(sk->sk->inet.daddr, pack->nh.iph->saddr, sizeof(pack->nh.iph->saddr));
@@ -52,7 +53,7 @@ static int udp_queue_rcv_pack(SOCK_INFO *sk, net_packet *pack) {
 	return -1;
 }
 
-int udpsock_push(net_packet *pack) {
+int udpsock_push(sk_buff_type *pack) {
         LOG_DEBUG("push packet to udp socket\n");
         int i;
         SOCK_INFO *sk;
@@ -88,7 +89,7 @@ int udp_init() {
 	return 0;
 }
 
-static int rebuild_udp_header(net_packet *pack, unsigned short source, unsigned short dest) {
+static int rebuild_udp_header(sk_buff_type *pack, unsigned short source, unsigned short dest) {
 	LOG_DEBUG("rebuild udp header\n");
 	udphdr *hdr = pack->h.uh;
 	hdr->source = source;
@@ -99,7 +100,7 @@ static int rebuild_udp_header(net_packet *pack, unsigned short source, unsigned 
 	return 0;
 }
 
-static void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
+static void rebuild_udp_packet(sk_buff_type *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	LOG_DEBUG("rebuild_udp_packet\n");
 	if( pack == NULL ||
 	    ifdev == NULL ||
@@ -118,8 +119,8 @@ static void rebuild_udp_packet(net_packet *pack, struct udp_sock *sk, void *ifde
 
 int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	LOG_DEBUG("udp_trans\n");
-	net_packet *pack;
-        pack = net_packet_alloc();
+	sk_buff_type *pack;
+        pack = alloc_skb(len, 0);
         if( pack == NULL) {
     		return -1;
         }

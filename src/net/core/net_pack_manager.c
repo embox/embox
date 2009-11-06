@@ -9,61 +9,59 @@
 #include "common.h"
 #include "net/net_device.h"
 #include "net/net_packet.h"
+#include "lib/list.h"
+#include "asm/spin_lock.h"
+#include "kernel/module.h"
 
-#define PACK_POOL_SIZE	0x100
 
-typedef struct _NET_PACK_INFO {
-	net_packet    pack    __attribute__((__aligned__));
-	int           is_busy __attribute__((__aligned__));
+typedef struct _NET_BUFF_INFO {
+	struct list_head list;
+	unsigned char *buff;
 }NET_PACK_INFO;
 
+static LIST_HEAD(free_packet_list_head);
+static LIST_HEAD(busy_packet_list_head);
+
 static NET_PACK_INFO pack_pool[PACK_POOL_SIZE];
+static unsigned char heap_buff[array_len(pack_pool)][ETHERNET_V2_FRAME_SIZE];
 
-static inline int net_pack_is_busy(int num) {
-        return pack_pool[num].is_busy;
-}
-
-net_packet *net_packet_alloc() {
+static int __init net_buff_init(){
 	int i;
-	for(i = 0; i < PACK_POOL_SIZE; i ++) {
-		if (!net_pack_is_busy(i)) {
-			pack_pool[i].is_busy = 1;
-			//clear all references
-			memset(&pack_pool[i].pack, 0, sizeof(pack_pool[i].pack) - sizeof(pack_pool[i].pack.data));
-			return &pack_pool[i].pack;
-		}
+
+	for (i = 0; i < array_len(pack_pool); i ++){
+		(&pack_pool[i])->buff = &heap_buff[i][0];
+		list_add(&free_packet_list_head,&(&pack_pool[i])->list);
 	}
-	LOG_ERROR("pack pool is full\n");
-	return NULL;
+	return 0;
 }
 
-void net_packet_free(net_packet *pack) {
-	int i;
-	for(i = 0; i < PACK_POOL_SIZE; i ++) {
-		if (pack == &pack_pool[i].pack) {
-			pack_pool[i].is_busy = 0;
-		}
-	}
-}
 
-net_packet *net_packet_copy(net_packet *pack) {
-	net_packet *new_pack;
-	if (NULL == pack ||
-	    NULL == (new_pack = net_packet_alloc())) {
+unsigned char *net_buff_alloc() {
+
+	unsigned long sp = spin_lock();
+	if (list_empty (&free_packet_list_head)){
+		spin_unlock(sp);
 		return NULL;
 	}
-//TODO too much copy during copy net_packets
-	memcpy (new_pack, pack, sizeof(net_packet));
+	list_move_tail((&free_packet_list_head)->next, &busy_packet_list_head);
+	NET_PACK_INFO *pack = list_entry((&busy_packet_list_head)->prev, struct _NET_BUFF_INFO, list);
 
-	//fix references during copy net_pack
-	if (NULL != pack->h.raw) {
-		new_pack->h.raw = new_pack->data + (pack->h.raw - pack->data);
-	}
-	if (NULL != pack->nh.raw) {
-		new_pack->nh.raw = new_pack->data + (pack->nh.raw - pack->data);
-	}
-	if (NULL != pack->mac.raw) {
-		new_pack->mac.raw = new_pack->data + (pack->mac.raw - pack->data);
-	}
-	return new_pack;
+	spin_unlock(sp);
+	return pack->buff;
 }
+
+void net_buff_free(unsigned char *buff) {
+	NET_PACK_INFO *pack;
+	struct list_head *q;
+	unsigned long sp = spin_lock();
+	list_for_each(q, &busy_packet_list_head){
+		pack = list_entry(q, NET_PACK_INFO, list);
+		if (pack->buff == buff) {
+			list_move_tail(q, &free_packet_list_head);
+			spin_unlock(sp);
+			return;
+		}
+	}
+	spin_unlock(sp);
+}
+

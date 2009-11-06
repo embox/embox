@@ -10,7 +10,7 @@
 #include "net/if_arp.h"
 
 //todo bad style
-struct _net_packet;
+struct sk_buff;
 
 /**
  * struct for arp_table_records
@@ -36,13 +36,13 @@ extern ARP_ENTITY arp_table[ARP_CACHE_SIZE];           /** arp table */
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL *
  */
-extern struct _net_packet *arp_resolve_addr(struct _net_packet * pack, unsigned char dst_addr[4]);
+extern struct sk_buff *arp_resolve_addr(struct sk_buff * pack, unsigned char dst_addr[4]);
 
 /**
  * Handle arp packet. This function called protocal stack when arp packet has been received
  * @param pack net_packet
  */
-extern int arp_received_packet(struct _net_packet *pack);
+extern int arp_received_packet(struct sk_buff *pack);
 
 /**
  * this function add entry in arp table if can

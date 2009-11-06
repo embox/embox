@@ -6,6 +6,7 @@
  */
 #include "string.h"
 #include "common.h"
+#include "net/skbuff.h"
 #include "net/sock.h"
 #include "net/udp.h"
 
@@ -35,7 +36,7 @@ void sk_free(struct udp_sock *sk) {
         for(i = 0; i < MAX_SOCK_NUM; i++) {
                 if (sk == sks[i].sk) {
                         sks[i].is_busy = 0;
-                        net_packet_free(sks[i].queue);
+                        kfree_skb(sks[i].queue);
                 }
         }
 }

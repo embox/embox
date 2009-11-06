@@ -7,31 +7,7 @@
 #ifndef NET_PACK_H_
 #define NET_PACK_H_
 
-struct _net_packet;
 
-/**
- * Allocate net_packet on the pool.
- * @return net_packet
- */
-extern struct _net_packet *net_packet_alloc();
 
-/**
- * Free net_packet on the pool.
- * @param pack
- */
-extern void net_packet_free(struct _net_packet *pack);
 
-/**
- * Copy net_packet on the pool.
- * @param pack
- * @return net_packet
- */
-extern struct _net_packet *net_packet_copy(struct _net_packet *pack);
-/*
-int net_packet_manager_init();
-void *net_pack_manager_alloc();
-
-void *net_pack_manager_lock_pack(void *manager, const unsigned char * data, unsigned short len);
-void net_pack_manager_unlock_pack(void *manager, void *net_pack_info);
-*/
 #endif /* NET_PACK_H_ */

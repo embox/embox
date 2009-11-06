@@ -8,6 +8,7 @@
 #include "string.h"
 #include "conio.h"
 #include "common.h"
+#include "net/skbuff.h"
 #include "lib/inet/arpa/tftp.h"
 #include "net/net.h"
 #include "net/eth.h"

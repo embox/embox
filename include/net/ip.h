@@ -54,16 +54,16 @@ typedef struct _iphdr {
  */
 
 struct inet_sock;
-struct _net_packet;
+struct sk_buff;
 
 /**
  * Handle IP packet
  */
-extern int ip_received_packet(struct _net_packet *pack);
+extern int ip_received_packet(struct sk_buff *pack);
 
 /**
  * Add an ip header to a net_packet and send it out.
  */
-extern int ip_send_packet(struct inet_sock *sk, struct _net_packet *pack);
+extern int ip_send_packet(struct inet_sock *sk, struct sk_buff *pack);
 
 #endif /* IP_H_ */

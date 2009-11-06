@@ -8,7 +8,7 @@
 #ifndef SOCKET_H_
 #define SOCKET_H_
 
-struct _net_packet;
+struct sk_buff;
 
 struct sockaddr {
         unsigned short    sa_family;    /* address family, AF_xxx */
@@ -64,6 +64,6 @@ extern int close(int sockfd);
 /**
  * Push packet received from udp_rcv into socket.
  */
-extern int udpsock_push(struct _net_packet *pack);
+extern int udpsock_push(struct sk_buff *pack);
 
 #endif /* SOCKET_H_ */

@@ -8,16 +8,14 @@
 
 #include "net/eth.h"
 
-typedef struct _CALLBACK_INFO {
-    int                 is_busy;
-    unsigned short      type;
-    ETH_LISTEN_CALLBACK func;
-} CALLBACK_INFO;
-
+/**
+ * struct of interface device
+ */
 typedef struct _IF_DEVICE {
     unsigned char ipv4_addr[IPV4_ADDR_LENGTH];
-    net_device    *net_dev;
-    CALLBACK_INFO cb_info[8];
+    net_device_type    *net_dev;
+    unsigned char mask[IPV4_ADDR_LENGTH];
+    unsigned char gw[IPV4_ADDR_LENGTH];
     unsigned char ipv4_addr_length;
 } IF_DEVICE;
 
@@ -28,7 +26,7 @@ int ifdev_init();
  * @param interface handler
  * @return pointer on net_device struct, NULL if error
  */
-net_device *ifdev_get_netdevice(void *handler);
+net_device_type *ifdev_get_netdevice(void *handler);
 
 /**
  * set callback function for all incoming packet throw interface
@@ -78,5 +76,15 @@ unsigned char *ifdev_get_ipaddr(void *handler);
 /* iterator functions */
 IF_DEVICE * ifdev_get_fist_used();
 IF_DEVICE * ifdev_get_next_used();
+
+
+/**
+ * Show interace (IP/MAC address)
+ * @param ifdev interface handler
+ */
+
+/**
+ * Show all eth interfaces (IP/MAC address)
+ */
 
 #endif /* IF_DEVICE_H_ */

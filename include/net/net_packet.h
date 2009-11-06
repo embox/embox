@@ -7,33 +7,19 @@
 #define NET_PACKET_H_
 
 #define ETHERNET_V2_FRAME_SIZE 1518
+//TODO this param must place in autoconf
+#define PACK_POOL_SIZE	0x100
 
-typedef struct _net_packet { /* = struct sk_buff in Linux */
-        struct _net_device      *netdev;
-        void                    *ifdev;
-        struct sock             *sk;
-        unsigned short          protocol;
-        unsigned int            len;
-        union {
-                //tcphdr        *th;
-                struct _udphdr  *uh;
-                struct _icmphdr *icmph;
-                //igmphdr       *igmph;
-                //iphdr         *ipiph;
-                //ipv6hdr       *ipv6h;
-    	        unsigned char   *raw;
-        } h;
-        union {
-                struct _iphdr   *iph;
-        	//ipv6hdr       *ipv6h;
-                struct _arphdr  *arph;
-                unsigned char   *raw;
-        } nh;
-        union {
-                struct _ethhdr  *ethh;
-                unsigned char   *raw;
-        } mac;
-        unsigned char data[ETHERNET_V2_FRAME_SIZE];
-}net_packet;
+/**
+ * Allocate net_packet_buff for one ethernet packet on the pool.
+ * @return net_packet
+ */
+extern unsigned char *net_buff_alloc();
+
+/**
+ * Free buff of net packet.
+ * @param pack
+ */
+extern void net_packet_free(unsigned char *pack);
 
 #endif /* NET_PACKET_H_ */

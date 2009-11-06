@@ -9,6 +9,7 @@
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"
+#include "net/skbuff.h"
 
 #define COMMAND_NAME     "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
@@ -20,8 +21,8 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int has_responsed;
-static void callback(net_packet *pack) {
-	net_packet_free(pack);
+static void callback(struct sk_buff *pack) {
+	kfree_skb(pack);
 	has_responsed = TRUE;
 }
 

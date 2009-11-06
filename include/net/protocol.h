@@ -9,14 +9,14 @@
 
 #define MAX_INET_PROTOS 256
 
-struct _net_packet;
+struct sk_buff;
 
 /* This is used to register protocols. */
 struct net_protocol {
-    int                     (*handler)(struct _net_packet *pack);
-    void                    (*err_handler)(struct _net_packet *pack, int info);
-    int                     (*gso_send_check)(struct _net_packet *pack);
-    struct _net_packet     *(*gso_segment)(struct _net_packet *pack, int features);
+    int                     (*handler)(struct sk_buff *pack);
+    void                    (*err_handler)(struct sk_buff *pack, int info);
+    int                     (*gso_send_check)(struct sk_buff *pack);
+    struct sk_buff     *(*gso_segment)(struct sk_buff *pack, int features);
     int                     no_policy;
 };
 

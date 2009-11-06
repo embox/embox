@@ -13,7 +13,7 @@
 
 typedef unsigned char enet_addr_t[6];
 
-struct _net_packet;
+struct sk_buff;
 
 enum sock_type {
         SOCK_STREAM     = 1,  /* TCP */
@@ -35,6 +35,6 @@ int net_init();
  */
 int net_config();
 
-int netif_rx(struct _net_packet *pack);
+int netif_rx(struct sk_buff *pack);
 
 #endif /* NET_H_ */
