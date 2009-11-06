@@ -32,6 +32,14 @@ unsigned long __local_irq_save(void)
 	return retval;
 }
 /**
+ * disable interrupt for atomic operation
+ * return old psr reg
+ */
+unsigned long local_irq_save(){
+	return __local_irq_save();
+}
+
+/**
  * set PSR_PIL in 0xF
  */
 void local_irq_enable(void)
