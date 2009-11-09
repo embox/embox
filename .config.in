@@ -342,6 +342,12 @@
 			"mdef": "MONITOR_USER_MEM",
 			"status": 1
 		},
+		"mkfile": {
+			"desc": "creates file specified",
+			"inc": 1,
+			"mdef": "MONITOR_USER_MKFILE",
+			"status": 1
+		},
 		"mmu_probe": {
 			"desc": "mmu_probe",
 			"inc": 1,
@@ -352,6 +358,12 @@
 			"desc": "test whether a particular host is reachable",
 			"inc": 1,
 			"mdef": "MONITOR_USER_PING",
+			"status": 1
+		},
+		"rm": {
+			"desc": "removes file specified",
+			"inc": 1,
+			"mdef": "MONITOR_USER_RM",
 			"status": 1
 		},
 		"udpd": {
