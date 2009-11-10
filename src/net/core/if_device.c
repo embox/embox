@@ -21,13 +21,13 @@ typedef struct _CALLBACK_INFO {
 } CALLBACK_INFO;
 
 typedef struct _IFDEV_INFO {
-    IF_DEVICE dev;
+    inet_device_t dev;
     int       is_busy;
     CALLBACK_INFO cb_info[IFDEV_CBINFO_QUANTITY];
 } IFDEV_INFO;
 
 static IFDEV_INFO ifs_info[NET_INTERFACES_QUANTITY];
-IFDEV_INFO *find_ifdev_info_entry(IF_DEVICE *ifdev){
+IFDEV_INFO *find_ifdev_info_entry(inet_device_t *ifdev){
 	int i;
 	for (i = 0; i < array_len(ifs_info); i ++){
 		if (&ifs_info[i].dev == ifdev){
@@ -36,7 +36,7 @@ IFDEV_INFO *find_ifdev_info_entry(IF_DEVICE *ifdev){
 	}
 	return NULL;
 }
-static IF_DEVICE * find_free_handler(){
+static inet_device_t * find_free_handler(){
     int i;
     for(i = 0; i < NET_INTERFACES_QUANTITY; i ++){
         if (0 == ifs_info[i].is_busy){
@@ -47,7 +47,7 @@ static IF_DEVICE * find_free_handler(){
     return NULL;
 }
 
-static int free_handler(IF_DEVICE * handler){
+static int free_handler(inet_device_t * handler){
     int i;
     for(i = 0; i < NET_INTERFACES_QUANTITY; i ++){
         if ((1 == ifs_info[i].is_busy) && (&ifs_info[i].dev == handler)){
@@ -58,7 +58,7 @@ static int free_handler(IF_DEVICE * handler){
     return -1;
 }
 
-static int alloc_callback(IF_DEVICE *dev, unsigned int type,
+static int alloc_callback(inet_device_t *dev, unsigned int type,
                           ETH_LISTEN_CALLBACK callback) {
     int i;
     IFDEV_INFO *ifdev_info = find_ifdev_info_entry(dev);
@@ -72,7 +72,7 @@ static int alloc_callback(IF_DEVICE *dev, unsigned int type,
     return -1;
 }
 
-static int free_callback(IF_DEVICE *dev, ETH_LISTEN_CALLBACK callback) {
+static int free_callback(inet_device_t *dev, ETH_LISTEN_CALLBACK callback) {
     int i;
     IFDEV_INFO *ifdev_info = find_ifdev_info_entry(dev);
     for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
@@ -83,12 +83,12 @@ static int free_callback(IF_DEVICE *dev, ETH_LISTEN_CALLBACK callback) {
     }
     return -1;
 }
-int ifdev_init() {
+int inet_dev_init() {
     return 0;
 }
 
-net_device_type *ifdev_get_netdevice(void *handler) {
-    IF_DEVICE *dev = (IF_DEVICE *) handler;
+struct net_device *inet_dev_get_netdevice(void *handler) {
+    inet_device_t *dev = (inet_device_t *) handler;
     if (NULL == dev) {
         LOG_ERROR("handler is NULL\n");
         return NULL;
@@ -96,16 +96,16 @@ net_device_type *ifdev_get_netdevice(void *handler) {
     return dev->net_dev;
 }
 
-int ifdev_listen(void *handler, unsigned short type,
+int inet_dev_listen(void *handler, unsigned short type,
                  ETH_LISTEN_CALLBACK callback) {
-    IF_DEVICE *dev = (IF_DEVICE *) handler;
+    inet_device_t *dev = (inet_device_t *) handler;
     if (NULL == dev) {
         return -1;
     }
     return alloc_callback(dev, type, callback);
 }
 
-int ifdev_find_by_ip(const unsigned char *ipaddr) {
+int inet_dev_find_by_ip(const unsigned char *ipaddr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
         if (0 == memcmp(ifs_info[i].dev.ipv4_addr, ipaddr, 4)) {
@@ -115,7 +115,7 @@ int ifdev_find_by_ip(const unsigned char *ipaddr) {
     return -1;
 }
 
-void *ifdev_find_by_name(const char *if_name) {
+void *inet_dev_find_by_name(const char *if_name) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
         LOG_DEBUG("ifname %s, net_dev 0x%X\n", if_name, ifs_info[i].dev.net_dev);
@@ -127,12 +127,12 @@ void *ifdev_find_by_name(const char *if_name) {
     return NULL;
 }
 
-int ifdev_set_interface(char *name, char *ipaddr, char *macaddr) {
+int inet_dev_set_interface(char *name, char *ipaddr, char *macaddr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
         if (0 == strncmp(name, ifs_info[i].dev.net_dev->name, array_len(ifs_info[i].dev.net_dev->name))) {
-            if( (-1 == ifdev_set_ipaddr(&ifs_info[i].dev, ipaddr)) ||
-                (-1 == ifdev_set_macaddr(&ifs_info[i].dev, macaddr)) ) {
+            if( (-1 == inet_dev_set_ipaddr(&ifs_info[i].dev, ipaddr)) ||
+                (-1 == inet_dev_set_macaddr(&ifs_info[i].dev, macaddr)) ) {
         	return -1;
     	    }
             return i;
@@ -141,25 +141,25 @@ int ifdev_set_interface(char *name, char *ipaddr, char *macaddr) {
     return -1;
 }
 
-int ifdev_set_ipaddr(void *ifdev, const unsigned char *ipaddr) {
+int inet_dev_set_ipaddr(void *ifdev, const unsigned char *ipaddr) {
     if (NULL == ifdev)
         return -1;
-    IF_DEVICE *dev = (IF_DEVICE *) ifdev;
+    inet_device_t *dev = (inet_device_t *) ifdev;
     memcpy(dev->ipv4_addr, ipaddr, sizeof(dev->ipv4_addr));
     return 0;
 }
 
-int ifdev_set_macaddr(void *ifdev, const unsigned char *macaddr) {
+int inet_dev_set_macaddr(void *ifdev, const unsigned char *macaddr) {
     if (NULL == ifdev || NULL == macaddr)
         return -1;
-    net_device_type *dev = ((IF_DEVICE*)ifdev)->net_dev;
+    net_device_t *dev = ((inet_device_t*)ifdev)->net_dev;
     if (NULL == dev)
         return -1;
     return dev->set_mac_address(dev, (void*)macaddr);
 }
 
-unsigned char *ifdev_get_ipaddr(void *handler) {
-    IF_DEVICE *dev = (IF_DEVICE *) handler;
+unsigned char *inet_dev_get_ipaddr(void *handler) {
+    inet_device_t *dev = (inet_device_t *) handler;
     if (NULL == dev)
         return NULL;
     return dev->ipv4_addr;
@@ -174,7 +174,7 @@ unsigned char *ifdev_get_ipaddr(void *handler) {
 void ifdev_rx_callback(sk_buff_type *pack){
 	int i;
 	/* if there are some callback handlers for packet's protocol */
-	IF_DEVICE *dev = (IF_DEVICE *) pack->ifdev;
+	inet_device_t *dev = (inet_device_t *) pack->ifdev;
 	if (NULL == dev)
 		return;
 
@@ -201,7 +201,7 @@ void ifdev_tx_callback(sk_buff_type *pack){
 
 /* iterator functions */
 static int iterator_cnt;
-IF_DEVICE * ifdev_get_fist_used(){
+inet_device_t * inet_dev_get_fist_used(){
     for(iterator_cnt = 0; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
         if (1 == ifs_info[iterator_cnt].is_busy){
             iterator_cnt++;
@@ -211,7 +211,7 @@ IF_DEVICE * ifdev_get_fist_used(){
     return NULL;
 }
 
-IF_DEVICE * ifdev_get_next_used(){
+inet_device_t * inet_dev_get_next_used(){
     for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
         if (1 == ifs_info[iterator_cnt].is_busy){
             iterator_cnt++;
@@ -223,7 +223,7 @@ IF_DEVICE * ifdev_get_next_used(){
 
 //TODO follow functions either have different interface or move to another place
 int ifdev_up(const char *iname){
-    IF_DEVICE *ifhandler;
+    inet_device_t *ifhandler;
     if (NULL == (ifhandler = find_free_handler ())){
         LOG_ERROR("ifdev up: can't find find free handler\n");
         return -1;
@@ -241,8 +241,8 @@ int ifdev_up(const char *iname){
 }
 
 int ifdev_down(const char *iname){
-    IF_DEVICE *ifhandler;
-    if (NULL == (ifhandler = ifdev_find_by_name(iname))){
+    inet_device_t *ifhandler;
+    if (NULL == (ifhandler = inet_dev_find_by_name(iname))){
             LOG_ERROR("ifdev down: can't find ifdev with name\n", iname);
             return -1;
         }

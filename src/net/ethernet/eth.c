@@ -29,7 +29,7 @@ int eth_rebuild_header(sk_buff_type *pack) {
         return -1;
     }
     ethhdr     *eth = (ethhdr*)pack->data;
-    net_device_type *dev = pack->netdev;
+    net_device_t *dev = pack->netdev;
     if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
         if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr)) {
             LOG_WARN("Destanation host is unreachable\n");
@@ -43,7 +43,7 @@ int eth_rebuild_header(sk_buff_type *pack) {
     return 0;
 }
 
-void ether_setup(net_device_type *dev) {
+void ether_setup(net_device_t *dev) {
     dev->rebuild_header     = eth_rebuild_header;
     /*TODO:
     dev->hard_header        = ...;
@@ -58,8 +58,8 @@ void ether_setup(net_device_type *dev) {
     memset(dev->broadcast, 0xFF, ETH_ALEN);
 }
 
-net_device_type *alloc_etherdev(int num) {
-    net_device_type *dev = alloc_netdev();
+net_device_t *alloc_etherdev(int num) {
+    net_device_t *dev = alloc_netdev();
     sprintf(dev->name, "eth%d", num);
     ether_setup(dev);
     return dev;
@@ -73,13 +73,13 @@ net_device_type *alloc_etherdev(int num) {
  * return 0 if success else -1
  */
 int eth_send(sk_buff_type *pack) {
-    IF_DEVICE *dev;
+    inet_device_t *dev;
     net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
 
     if ((NULL == pack) || (NULL == pack->ifdev))
         return -1;
 
-    dev = (IF_DEVICE *) pack->ifdev;
+    dev = (inet_device_t *) pack->ifdev;
     if (ETH_P_ARP != pack->protocol) {
         if (-1 == dev->net_dev->rebuild_header(pack)) {
             kfree_skb(pack);
@@ -112,12 +112,12 @@ int eth_send(sk_buff_type *pack) {
  */
 int netif_rx(sk_buff_type *pack) {
     int i;
-    IF_DEVICE *dev;
+    inet_device_t *dev;
     if ((NULL == pack) || (NULL == pack->netdev)) {
         return -1;
     }
     pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
-    if (NULL == (pack->ifdev = ifdev_find_by_name(pack->netdev->name))){
+    if (NULL == (pack->ifdev = inet_dev_find_by_name(pack->netdev->name))){
         LOG_ERROR("wrong interface name during receiving packet\n");
         kfree_skb(pack);
         return -1;

@@ -34,7 +34,7 @@ static const ETH_CONFIG eth_ifs[] = {
  */
 int net_init() {
     eth_init();
-    ifdev_init();
+    inet_dev_init();
 
     //TODO: inet_add_protocol
     icmp_init();
@@ -65,7 +65,7 @@ int net_config() {
             continue;
         }
         ifdev_up(eth_ifs[k].iname);
-        ifdev_set_interface((char *)eth_ifs[k].iname, (char *)ipaddr, (char *)hwaddr);
+        inet_dev_set_interface((char *)eth_ifs[k].iname, (char *)ipaddr, (char *)hwaddr);
         ipaddr_print(ipbuff, ipaddr);
         macaddr_print(macbuff,hwaddr);
         TRACE("name = %s\tip = %s\tmac = %s\n",eth_ifs[k].iname, ipbuff, macbuff);

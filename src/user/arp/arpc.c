@@ -21,14 +21,14 @@ DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG,
 static int print_arp_cache(void *ifdev) {
 	int i;
 	char ip[15], mac[18];
-	net_device_type *net_dev;
+	net_device_t *net_dev;
 	for(i=0; i<ARP_CACHE_SIZE; i++) {
 		if((arp_table[i].is_busy == 1) &&
 		   (ifdev == NULL || ifdev == arp_table[i].if_handler)) {
-			net_dev = ifdev_get_netdevice(arp_table[i].if_handler);
+			net_dev = inet_dev_get_netdevice(arp_table[i].if_handler);
 			ipaddr_print(ip, arp_table[i].pw_addr);
 			macaddr_print(mac, arp_table[i].hw_addr);
-			TRACE("%s\t\t%d\t%s\t%d\t%s\n", ip, ifdev_get_netdevice(arp_table[i].if_handler)->type,
+			TRACE("%s\t\t%d\t%s\t%d\t%s\n", ip, inet_dev_get_netdevice(arp_table[i].if_handler)->type,
 							 mac, net_dev->flags, net_dev->name);
 		}
 	}
@@ -67,7 +67,7 @@ static int exec(int argsc, char **argsv) {
 	    	        }
 	    	        break;
 	    	case 'i':
-	    		if (NULL == (ifdev = ifdev_find_by_name(optarg))) {
+	    		if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
 	    		        LOG_ERROR("can't find interface %s\n", optarg);
 	    		        return -1;
 	    		}

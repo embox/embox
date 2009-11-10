@@ -176,7 +176,7 @@ static int icmp_unreach(sk_buff_type *pack) {
 static int icmp_echo(sk_buff_type *recieved_pack) {
 	LOG_DEBUG("icmp get echo request\n");
 	sk_buff_type *pack = skb_copy(recieved_pack, 0);
-	if(ifdev_find_by_ip(pack->nh.iph->daddr)) {
+	if(inet_dev_find_by_ip(pack->nh.iph->daddr)) {
 		return 0;
 	}
 
@@ -222,9 +222,9 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		return -1;
 	}
 	pack->ifdev  = ifdev;
-	pack->netdev = (struct net_device *)ifdev_get_netdevice(ifdev);
+	pack->netdev = (struct net_device *)inet_dev_get_netdevice(ifdev);
 	pack->len    = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
-					ifdev_get_ipaddr(ifdev), dstaddr);
+					inet_dev_get_ipaddr(ifdev), dstaddr);
 	pack->protocol = ETH_P_IP;
 
 	if (-1 == callback_alloc(callback, ifdev, pack->nh.iph->id,

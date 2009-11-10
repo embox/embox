@@ -89,7 +89,7 @@ static inline sk_buff_type* build_arp_pack(void *ifdev, unsigned char dst_addr[I
 	}
 
 	pack->ifdev   = ifdev;
-	pack->netdev  = ifdev_get_netdevice(ifdev);
+	pack->netdev  = inet_dev_get_netdevice(ifdev);
 	pack->mac.raw = pack->data;
 	/* mac header */
 	memcpy (pack->mac.ethh->dst_addr, broadcast_mac_addr, ETH_ALEN);
@@ -106,7 +106,7 @@ static inline sk_buff_type* build_arp_pack(void *ifdev, unsigned char dst_addr[I
 	pack->nh.arph->plen = IPV4_ADDR_LENGTH;
 	pack->nh.arph->oper = ARPOP_REQUEST;
 	memcpy (pack->nh.arph->sha, pack->netdev->hw_addr, ETH_ALEN);
-	memcpy (pack->nh.arph->spa, ifdev_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
+	memcpy (pack->nh.arph->spa, inet_dev_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
 	memcpy (pack->nh.arph->tpa, dst_addr, sizeof(pack->nh.arph->tpa));
 
 	pack->len = 0x3b;
@@ -153,7 +153,7 @@ sk_buff_type *arp_resolve_addr (sk_buff_type * pack, unsigned char dst_addr[IPV4
  */
 static int received_resp(sk_buff_type *pack) {
 	arphdr *arp = pack->nh.arph;
-	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
+	if (0 != memcmp(inet_dev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return -1;
 	}
 	//TODO delete this out log output from arp protocol in usual mode
@@ -203,7 +203,7 @@ int arp_received_packet(sk_buff_type *pack) {
 	LOG_WARN("arp packet received\n");
 	arphdr *arp = pack->nh.arph;
 
-	if (0 != memcmp(ifdev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
+	if (0 != memcmp(inet_dev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return 0;
 	}
 	switch(arp->oper) {

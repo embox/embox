@@ -55,7 +55,7 @@ int connect (int sockfd, const struct sockaddr *addr, int addrlen) {
 	ipaddr_print(ip, sks[sockfd].sk->inet.daddr);
 	//TODO what is it
 	sks[sockfd].queue = alloc_skb (0x100, 0);
-	sks[sockfd].queue->ifdev = (void*)ifdev_find_by_name ("eth0");
+	sks[sockfd].queue->ifdev = (void*)inet_dev_find_by_name ("eth0");
 	LOG_WARN("socket connected at port=%d, ip=%s ifdev = %d\n", sks[sockfd].sk->inet.sport, ip, sks[sockfd].queue);
 	return 0;
 }

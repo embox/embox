@@ -37,12 +37,12 @@ extern int eth_rebuild_header(struct sk_buff * pack);
  * @param dev network device
  * Fill in the fields of the device structure with Ethernet-generic values.
  */
-extern void ether_setup(net_device_type *dev);
+extern void ether_setup(net_device_t *dev);
 
 /**
  * Allocates and sets up an Ethernet device
  */
-extern net_device_type *alloc_etherdev(int num);
+extern net_device_t *alloc_etherdev(int num);
 
 
 /**

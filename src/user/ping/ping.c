@@ -41,7 +41,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, 
 			break;
 
 		has_responsed = FALSE;
-		ipaddr_print(ip, ifdev_get_ipaddr(ifdev));
+		ipaddr_print(ip, inet_dev_get_ipaddr(ifdev));
 		if(!quiet) printf("from %s", ip);
 		ipaddr_print(ip, dst);
 		if(!quiet) printf(" to %s", ip);
@@ -68,7 +68,7 @@ static int exec(int argsc, char **argsv) {
 	int timeout = 1000;
 	int ttl     = 64;
 	int quiet   = 0;
-	void *ifdev = ifdev_find_by_name("eth0");
+	void *ifdev = inet_dev_find_by_name("eth0");
 	unsigned char dst[4];
 	int nextOption;
 	getopt_init();
@@ -82,7 +82,7 @@ static int exec(int argsc, char **argsv) {
 	    		quiet = 1;
 	    		break;
 	        case 'I': /* get interface */
-                        if (NULL == (ifdev = ifdev_find_by_name(optarg))) {
+                        if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
                                 TRACE("ping: unknown iface %s\n", optarg);
                                 return -1;
                         }

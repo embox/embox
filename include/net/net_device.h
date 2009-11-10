@@ -79,29 +79,29 @@ typedef struct net_device {
 	int (*rebuild_header)(struct sk_buff *pack);
 	net_device_stats *(*get_stats)(struct net_device *dev);
 	int (*set_mac_address)(struct net_device *dev, void *addr);
-}net_device_type;
+}net_device_t;
 
 /**
  * Find an network device by its name
  * @param name name to find
  * @return NULL is returned if no matching device is found.
  */
-extern net_device_type *netdev_get_by_name(const char *name);
+extern net_device_t *netdev_get_by_name(const char *name);
 
 /**
  * Allocate network device
  */
-extern net_device_type *alloc_netdev();
+extern net_device_t *alloc_netdev();
 
 /**
  * Free network device
  * @param dev net_device handler
  */
-extern void free_netdev(net_device_type *dev);
+extern void free_netdev(net_device_t *dev);
 
 /**
  * Get RX/TX stats
  */
-extern net_device_stats *get_eth_stat(net_device_type *dev);
+extern net_device_stats *get_eth_stat(net_device_t *dev);
 
 #endif /* NET_DEVICE_H_ */

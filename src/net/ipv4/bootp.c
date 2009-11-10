@@ -91,7 +91,7 @@ int bootp_discover (void* ifdev) {
 	int             abort = 0;
 	static int      xid = SHOULD_BE_RANDOM;
 	int             retry = RETRY_COUNT;
-	struct net_device*     dev = (struct net_device*)ifdev_get_netdevice (ifdev);
+	struct net_device*     dev = (struct net_device*)inet_dev_get_netdevice (ifdev);
 	enet_addr_t     enet;
 	memcpy (enet, dev->hw_addr, ETH_ALEN);
 
