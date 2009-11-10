@@ -12,7 +12,6 @@
 #include "net/net_device.h"
 #include "net/skbuff.h"
 
-
 #define IFDEV_CBINFO_QUANTITY 8
 
 typedef struct _CALLBACK_INFO {

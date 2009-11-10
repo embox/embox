@@ -10,7 +10,7 @@
 
 /**
  * find descriptor for shell command with pointed name
- * each command have to register own descriptor in system, by needs macros DECLARE_SHELL_COMMAND_DESCRIPTOR
+ * each command have to register own descriptor in system, by needs macros DECLARE_SHELL_COMMAND
  * that maros put pinter on registering descriptor to section ".shell_command".
  * And we can find this descriptor when we need to use it.
  *

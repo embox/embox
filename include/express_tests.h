@@ -7,15 +7,17 @@
 #ifndef EXPRESS_TESTS_H_
 #define EXPRESS_TESTS_H_
 
-typedef struct _EXPRESS_TEST_DESCRIPTOR {
+typedef struct _express_test_descriptor {
 	const char *name;
 	int (*exec)();
-} EXPRESS_TEST_DESCRIPTOR;
+} express_test_descriptor_t;
 
 #define DECLARE_EXPRESS_TEST(name, exec) \
     static int exec(); \
-    static const EXPRESS_TEST_DESCRIPTOR _descriptor = { name, exec }; \
-    static const EXPRESS_TEST_DESCRIPTOR *_pdescriptor __attribute__ ((section(".express_tests"))) = &_descriptor;
+    static const express_test_descriptor_t _descriptor##exec = { name, exec }; \
+    static const express_test_descriptor_t *_pdescriptor##exec \
+		__attribute__ ((used, section(".express_tests"))) \
+		= &_descriptor##exec;
 
 int express_tests_execute();
 

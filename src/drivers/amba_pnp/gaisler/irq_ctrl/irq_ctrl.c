@@ -47,19 +47,19 @@ int irq_ctrl_init() {
 }
 
 int irq_ctrl_enable_irq(int irq_num) {
-	CHECK_INIT_MODULE();
+	ASSERT_MODULE_INIT();
 	SetBit(dev_regs->mask, irq_num);
 	return 0;
 }
 
 int irq_ctrl_disable_irq(int irq_num) {
-	CHECK_INIT_MODULE();
+	ASSERT_MODULE_INIT();
 	ClearBit(dev_regs->mask, irq_num);
 	return 0;
 }
 
 int irq_ctrl_disable_all() {
-	CHECK_INIT_MODULE();
+	ASSERT_MODULE_INIT();
 	REG_STORE(dev_regs->mask, 0);
 	return 0;
 }
@@ -74,7 +74,7 @@ int irq_ctrl_force(BYTE irq_num) {
 }
 
 int irq_ctrl_clear(BYTE irq_num) {
-	CHECK_INIT_MODULE();
+	ASSERT_MODULE_INIT();
 	SetBit(dev_regs->clear, irq_num);
 	return 0;
 }

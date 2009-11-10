@@ -49,8 +49,7 @@ int puts (const char *S)
 {
 	char *ptr = (char*)S;
 	while (0 != (*ptr))	putchar (*ptr++);
-//	uart_putc ('\r');
-//	uart_putc ('\n');
+	putchar ('\n');
 	return TRUE;
 }
 

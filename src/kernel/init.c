@@ -4,6 +4,7 @@
  * \date May 21, 2009
  * \author anton
  */
+
 #include "asm/types.h"
 #include "common.h"
 #include "conio.h"
@@ -38,8 +39,8 @@ void copy_data_section() {
 }
 
 static int init_modules() {
-	extern MODULE_DESCRIPTOR *__modules_handlers_start, *__modules_handlers_end;
-	MODULE_DESCRIPTOR ** p_module = &__modules_handlers_start;
+	extern module_descriptor_t *__modules_handlers_start, *__modules_handlers_end;
+	module_descriptor_t ** p_module = &__modules_handlers_start;
 	int i, total = (int) (&__modules_handlers_end - &__modules_handlers_start);
 
 	TRACE("\nInitializing modules (total: %d)\n\n", total);
@@ -71,9 +72,7 @@ static int init_modules() {
 
 	return 0;
 }
-static int init_func_exec(){
-	return 0;
-}
+
 int hardware_init_hook() {
 	//TODO during too long time for simulation:(
 	copy_data_section();
@@ -81,19 +80,17 @@ int hardware_init_hook() {
 	cache_data_enable();
 	cache_instr_enable();
 
-
 	irq_init_handlers();
 	uart_init();
 	timers_init();
 
 	init_modules();
 
-
-
 	TRACE("\nStarting Monitor...\n");
 
 #ifdef MONITOR_FS
 	rootfs_init();
-#endif //MONITOR_FS
+#endif /* MONITOR_FS */
+
 	return 0;
 }

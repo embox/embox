@@ -2,67 +2,65 @@
 #define _COMMON_H_
 
 #include "autoconf.h"
+#include "asm/types.h"
 
 #ifdef _TEST_SYSTEM_
-//#include "conio.h"
 
-#define SetBit(rg, bit)   { REG_ORIN(rg, (1UL << (bit))); }
-#define ClearBit(rg, bit) { REG_ANDIN(rg, ~(1UL << (bit))); }
+#define SetBit(rg, bit)  do { REG_ORIN(rg, (1UL << (bit))); } while(0)
+#define ClearBit(rg, bit) do { REG_ANDIN(rg, ~(1UL << (bit))); } while(0)
 #define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
 
 #define BMASK(nbit)  (0x00000001 << (nbit))
-// Stop processor
-//TODO this depends on the architecture
-#define HALT     { __asm__ ("nop;"); }
-#endif //_TEST_SYSTEM_
+// TODO HALT should gracefully stop the processor. -- Eldar
+#define HALT do ; while(1)
+#endif /* _TEST_SYSTEM_ */
 
 #define LOGGER()		    printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
+
 #if defined(_ERROR) && !defined(SIMULATION_TRG)
-#define LOG_ERROR(...)  do {LOGGER(); printf("ERROR: "__VA_ARGS__);} while(0)
+# define LOG_ERROR(...)  do {LOGGER(); printf("ERROR: "__VA_ARGS__);} while(0)
 #else
-#define LOG_ERROR(...)  do ; while(0)
-#endif //_ERROR
+# define LOG_ERROR(...)  do ; while(0)
+#endif
 
 #if defined(_WARN) && !defined(SIMULATION_TRG)
-#define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
+# define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
 #else
-#define LOG_WARN(...)   do ; while(0)
-#endif //_WARN
+# define LOG_WARN(...)   do ; while(0)
+#endif
 
 #if defined(_DEBUG) && !defined(SIMULATION_TRG)
-#define LOG_DEBUG(...)  do {LOGGER(); printf("DEBUG: "__VA_ARGS__);} while(0)
+# define LOG_DEBUG(...)  do {LOGGER(); printf("DEBUG: "__VA_ARGS__);} while(0)
 #else
-#define LOG_DEBUG(...)  do ; while(0)
-#endif //_DEBUG
+# define LOG_DEBUG(...)  do ; while(0)
+#endif
 
 #if defined(_TRACE) && !defined(SIMULATION_TRG)
-#ifdef _TEST_SYSTEM_
-#define TRACE(...)  printf(__VA_ARGS__)
+# ifdef _TEST_SYSTEM_
+#  define TRACE(...)  printf(__VA_ARGS__)
+# else
+#  define TRACE(...)  printk(__VA_ARGS__)
+# endif
 #else
-#define TRACE(...)  printk(__VA_ARGS__)
-#endif //_TEST_SYSTEM_
-#else
-#define TRACE(...)  do ; while(0)
-#endif //_TRACE && !SIMULATION_TRG
-#ifdef SIMULATION_TRG
-#define assert(cond)	{}
-#else
+# define TRACE(...)  do ; while(0)
+#endif
 
-#include "asm/types.h"
+#ifdef SIMULATION_TRG
+# define assert(cond)	{}
+#else
+# define __ASSERT_STRING0(cond, file, line) \
+	"\nASSERTION FAILED at " #file " : " #line "\n" \
+	"(" cond ") is not TRUE\n"
+# define __ASSERT_STRING(cond, file, line) \
+	__ASSERT_STRING0(cond, file, line)
+# define assert(cond) \
+	do if (!(cond)) { \
+		puts(__ASSERT_STRING(#cond, __FILE__, __LINE__)); \
+		HALT; \
+	} while(0)
+#endif /* SIMULATION_TRG */
 
 #define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}
-
-//extern unsigned long old_psr;
-//extern unsigned long new_psr;
-//			printf("\nold_psr_icc: %x\nnew_psr_icc: %x", old_psr & PSR_ICC, new_psr & PSR_ICC);
-
-#define assert(cond)	{\
-		if (!(cond)){\
-			printf("\nASSERTION FAILED at %s, line %d:" #cond "\n", __FILE__, __LINE__);\
-			HALT;\
-		}\
-}
-#endif //SIMULATION_TRG
 #define array_len(array)		(sizeof(array) / sizeof(array[0]))
 
 // mathematics

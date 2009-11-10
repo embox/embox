@@ -15,7 +15,7 @@ static const char *man_page =
 	#include "ldimg_help.inc"
 	;
 
-DECLARE_SHELL_COMMAND_DESCRIPTOR(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
 	int i;

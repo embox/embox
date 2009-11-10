@@ -106,7 +106,7 @@ int uart_init() {
  }*/
 
 void uart_putc(char ch) {
-	CHECK_INIT_MODULE();
+	ASSERT_MODULE_INIT();
 	/*#ifndef SIMULATION_TRG
 	 while (!(UART_TX_READY & REG_LOAD(dev_regs->status)))
 	 ;
@@ -119,7 +119,7 @@ void uart_putc(char ch) {
 }
 
 char uart_getc() {
-	CHECK_INIT_MODULE ();
+	ASSERT_MODULE_INIT ();
 
 	while (!(UART_RX_READY & REG_LOAD(dev_regs->status)))
 		;
@@ -131,7 +131,7 @@ static IRQ_INFO irq_info;
 static BOOL handler_was_set = FALSE;
 
 int uart_set_irq_handler(IRQ_HANDLER pfunc) {
-	CHECK_INIT_MODULE ();
+	ASSERT_MODULE_INIT ();
 
 	REG_ORIN(dev_regs->ctrl, UART_CTRL_RI);
 
@@ -145,7 +145,7 @@ int uart_set_irq_handler(IRQ_HANDLER pfunc) {
 }
 
 int uart_remove_irq_handler() {
-	CHECK_INIT_MODULE ();
+	ASSERT_MODULE_INIT ();
 
 	REG_ANDIN(dev_regs->ctrl, ~UART_CTRL_RI);
 	if (handler_was_set) {

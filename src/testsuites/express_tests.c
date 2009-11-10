@@ -11,8 +11,8 @@
 #include "express_tests.h"
 
 int express_tests_execute() {
-	extern EXPRESS_TEST_DESCRIPTOR *__express_tests_start, *__express_tests_end;
-	EXPRESS_TEST_DESCRIPTOR ** p_test = &__express_tests_start;
+	extern express_test_descriptor_t *__express_tests_start, *__express_tests_end;
+	express_test_descriptor_t ** p_test = &__express_tests_start;
 	int i, total = (int) (&__express_tests_end - &__express_tests_start);
 	int passed = 0, failed = 0;
 

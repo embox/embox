@@ -7,24 +7,17 @@
 #ifndef MODULE_H_
 #define MODULE_H_
 
-typedef struct _MODULE_HANDLER {
+typedef struct module_descriptor {
 	const char *name;
 	int (*init)();
-} MODULE_DESCRIPTOR;
-
-#define REGISTER_MODULE(descr) static void _register_module(){ \
-    __asm__( \
-            ".section .modules_handlers\n\t" \
-            ".word %0\n\t" \
-            ".text\n" \
-            : :"i"(&descr)); \
-            }
+} module_descriptor_t;
 
 #define DECLARE_MODULE(name, init) \
 	static int init(); \
-    static const MODULE_DESCRIPTOR _descriptor = { name, init }; \
-    REGISTER_MODULE(_descriptor);
-
+    static const module_descriptor_t _descriptor##init = { name, init }; \
+    static const module_descriptor_t *_pdescriptor##init \
+		__attribute__ ((used, section(".modules_handlers"))) \
+		= &_descriptor##init;
 
 /* These macros are used to mark some functions or
  * initialized data (doesn't apply to uninitialized data)
@@ -62,7 +55,7 @@ typedef struct _MODULE_HANDLER {
  */
 
 /* These are for everybody (although not all archs will actually
-   discard it in modules) */
+ discard it in modules) */
 #define __init		__attribute__ ((__section__ (".init.text")))
 #define __initdata	__attribute__ ((__section__ (".init.data")))
 #define __exitdata	__attribute__ ((__section__(".exit.data")))
