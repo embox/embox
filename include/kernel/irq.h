@@ -19,6 +19,12 @@
 // type of irq handler function
 typedef void (*IRQ_HANDLER)();
 
+typedef struct {
+	int irq_num;
+	IRQ_HANDLER handler;
+	BOOL enabled;
+} IRQ_INFO;
+
 // traps handlers table size
 #define IRQ_TABLE_SIZE     0xFF
 
@@ -34,11 +40,13 @@ BOOL irq_remove_trap_handler(BYTE tt);
  * Sets and enables a new callback for the specified IRQ number
  * (removing and disabling an old one if any).
  *
- * @param nirq IRQ number to set handler for
- * @param pfunc the new handler function to set
- *  	or NULL to disable interrupts for the specified IRQ number
+ * @param IRQ_INFO new IRQ info to be set
+ * 		changes it's value to old value of specified irq info
+ * @return TRUE if completed successively
  */
-void irq_set_handler(BYTE nirq, IRQ_HANDLER pfunc);
+BOOL irq_set_info(IRQ_INFO *irq_info);
+
+void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc);
 
 /**
  * Gets a handler associated with the specified IRQ number (if any).

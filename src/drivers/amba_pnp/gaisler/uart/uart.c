@@ -127,11 +127,20 @@ char uart_getc() {
 	return ((char) REG_LOAD(dev_regs->data));
 }
 
+static IRQ_INFO irq_info;
+static BOOL handler_was_set = FALSE;
+
 int uart_set_irq_handler(IRQ_HANDLER pfunc) {
 	CHECK_INIT_MODULE ();
 
 	REG_ORIN(dev_regs->ctrl, UART_CTRL_RI);
-	irq_set_handler(irq, pfunc);
+
+	irq_info.enabled = TRUE;
+	irq_info.irq_num = irq;
+	irq_info.handler = pfunc;
+	irq_set_info(&irq_info);
+	handler_was_set = TRUE;
+	//irq_set_handler(irq, pfunc);
 	return 0;
 }
 
@@ -139,7 +148,11 @@ int uart_remove_irq_handler() {
 	CHECK_INIT_MODULE ();
 
 	REG_ANDIN(dev_regs->ctrl, ~UART_CTRL_RI);
-	irq_set_handler(irq, NULL);
+	if (handler_was_set) {
+		irq_set_info(&irq_info);
+		handler_was_set = FALSE;
+	}
+	//irq_set_handler(irq, NULL);
 	return 0;
 }
 

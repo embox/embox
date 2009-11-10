@@ -83,6 +83,35 @@ BOOL irq_remove_trap_handler(BYTE tt) {
 	return FALSE;
 }
 
+BOOL irq_set_info(IRQ_INFO *irq_info) {
+	IRQ_INFO old_irq_info;
+	unsigned long psr;
+	// check IRQ number
+	if (irq_info->irq_num != irq_info->irq_num & 0xF) {
+		return FALSE;
+	}
+	if (irq_info->enabled && irq_info->handler == NULL) {
+		return FALSE;
+	}
+
+	psr = local_irq_save();
+	  old_irq_info.irq_num = irq_info->irq_num;
+	  old_irq_info.handler = user_trap_handlers[IRQ_TRAP_TYPE(irq_info->irq_num)];
+	  old_irq_info.enabled = irq_ctrl_get_status(irq_info->irq_num);
+
+	  user_trap_handlers[IRQ_TRAP_TYPE(irq_info->irq_num)] = irq_info->handler;
+	  if (irq_info->enabled) {
+		  irq_ctrl_enable_irq(irq_info->irq_num);
+	  } else {
+		  irq_ctrl_disable_irq(irq_info->irq_num);
+	  }
+	  memcpy(irq_info, &old_irq_info, sizeof(IRQ_INFO));
+	  irq_ctrl_clear(irq_info->irq_num);
+	local_irq_restore(psr);
+
+	return TRUE;
+}
+
 void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
 	// check IRQ number
 	if (irq_number != irq_number & 0xF) {
@@ -97,18 +126,6 @@ void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
 	} else {
 		irq_ctrl_disable_irq(irq_number);
 	}
-	//	Do we need to check old handler?
-	//	We just set new handler (or disable it by 'NULL')
-	//	.afomin
-	//
-	//	OLD:
-	//	if (pfunc != NULL && old == NULL) {
-	//		LOG_DEBUG("set irq=%d\n", irq_number);
-	//		irq_ctrl_enable_irq(irq_number);
-	//	} else if (pfunc == NULL && old != NULL) {
-	//		irq_ctrl_disable_irq(irq_number);
-	//	}
-	// !!! And what else?? (pfunc != NULL && old != NULL)
 }
 
 IRQ_HANDLER irq_get_handler(BYTE irq_number) {

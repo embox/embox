@@ -9,6 +9,7 @@
 #include "cpu_conf.h"
 #include "common.h"
 #include "conio.h"
+#include "kernel/irq.h"
 
 typedef struct _TIMERS_STRUCT {
 	volatile unsigned int scaler_cnt; /**< 0x00 */
@@ -81,6 +82,7 @@ static void show_module_info(AMBA_DEV * dev) {
 
 int timers_init() {
 	int i;
+	IRQ_INFO irq_info;
 	if (dev_regs) {
 		return -1;
 	}
@@ -106,7 +108,12 @@ int timers_init() {
 	REG_STORE(dev_regs->timer_ld2, 0);
 	REG_STORE(dev_regs->timer_ctrl1, 0xf);
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /**< disable */
-	irq_set_handler(amba_dev.dev_info.irq, irq_func_tmr_1mS);
+
+	irq_info.enabled = TRUE;
+	irq_info.handler = irq_func_tmr_1mS;
+	irq_info.irq_num = amba_dev.dev_info.irq;
+	irq_set_info(&irq_info);
+	//irq_set_handler(amba_dev.dev_info.irq, irq_func_tmr_1mS);
 
 	cnt_sys_time = 0;
 

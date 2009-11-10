@@ -41,6 +41,13 @@ int irq_ctrl_disable_all();
 int irq_ctrl_force(BYTE irq_num);
 
 /**
+ * Clears irq state (deletes unhandled irq)
+ *
+ * @param irq_num IRQ number to clear
+ */
+int irq_ctrl_clear(BYTE irq_num);
+
+/**
  * Get status of the irq specified
  *
  * @param irq_num IRQ number to check

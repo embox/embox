@@ -5,6 +5,7 @@ SUBDIRS-$(MONITOR_TESTS) += checksum
 SUBDIRS-$(MONITOR_TESTS) += cpu_context
 SUBDIRS-$(MONITOR_TESTS) += irq_availability
 SUBDIRS-$(MONITOR_TESTS) += irq_force
+SUBDIRS-$(MONITOR_TESTS) += local_irq_save
 SUBDIRS-$(MONITOR_TESTS) += mmu
 SUBDIRS-$(MONITOR_TESTS) += recursion
 SUBDIRS-$(MONITOR_TESTS) += soft_traps

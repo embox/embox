@@ -12,30 +12,34 @@
 
 #define TEST_IRQ_NUM 10
 
-DECLARE_EXPRESS_TEST("force irq", exec)
+DECLARE_EXPRESS_TEST("local_irq_save()", exec)
 
 volatile static BOOL irq_happened;
 
-static void test_irq_force_handler() {
+static void test_local_irq_save_handler() {
 	irq_happened = TRUE;
 }
 
 static int exec() {
-	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_irq_force_handler, TRUE};
+	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_local_irq_save_handler, TRUE};
+	int old_irq_enabled;
+	unsigned long old_psr;
 
-	irq_happened = FALSE;
+	irq_set_info(&irq_info);
 
-	if (!irq_set_info(&irq_info)) {
-		TRACE("Unable to set irq handler\n");
-		return -3;
-	}
+	old_psr = local_irq_save();
 
 	irq_ctrl_force(irq_info.irq_num);
+	if (irq_happened) {
+		return -1;
+	}
 
+	local_irq_restore(old_psr);
 	if (!irq_happened) {
-		TRACE (" psr: 0x%08X ", get_psr());
+		return -1;
 	}
 
 	irq_set_info(&irq_info);
-	return irq_happened ? 0 : -1;
+
+	return 0;
 }
