@@ -10,5 +10,4 @@ SUBDIRS-$(MONITOR_TESTS) += mmu
 SUBDIRS-$(MONITOR_TESTS) += recursion
 SUBDIRS-$(MONITOR_TESTS) += soft_traps
 
-
 include $(SCRIPTS_DIR)/common.mk
