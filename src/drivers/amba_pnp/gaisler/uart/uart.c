@@ -67,11 +67,11 @@ typedef struct _UART_STRUCT {
 
 static volatile UART_STRUCT *dev_regs = NULL;
 
-#include "drivers/amba_drivers_helper.h"
-#undef module_init
-#define module_init() uart_init()
+#define ASSERT_INIT_DONE() assert_not_null(dev_regs)
 
 static int irq;
+
+static AMBA_DEV amba_dev;
 
 int uart_init() {
 	if (NULL != dev_regs)
@@ -106,7 +106,7 @@ int uart_init() {
  }*/
 
 void uart_putc(char ch) {
-	ASSERT_MODULE_INIT();
+	ASSERT_INIT_DONE();
 	/*#ifndef SIMULATION_TRG
 	 while (!(UART_TX_READY & REG_LOAD(dev_regs->status)))
 	 ;
@@ -119,7 +119,7 @@ void uart_putc(char ch) {
 }
 
 char uart_getc() {
-	ASSERT_MODULE_INIT ();
+	ASSERT_INIT_DONE ();
 
 	while (!(UART_RX_READY & REG_LOAD(dev_regs->status)))
 		;
@@ -131,7 +131,7 @@ static IRQ_INFO irq_info;
 static BOOL handler_was_set = FALSE;
 
 int uart_set_irq_handler(IRQ_HANDLER pfunc) {
-	ASSERT_MODULE_INIT ();
+	ASSERT_INIT_DONE ();
 
 	REG_ORIN(dev_regs->ctrl, UART_CTRL_RI);
 
@@ -145,7 +145,7 @@ int uart_set_irq_handler(IRQ_HANDLER pfunc) {
 }
 
 int uart_remove_irq_handler() {
-	ASSERT_MODULE_INIT ();
+	ASSERT_INIT_DONE ();
 
 	REG_ANDIN(dev_regs->ctrl, ~UART_CTRL_RI);
 	if (handler_was_set) {

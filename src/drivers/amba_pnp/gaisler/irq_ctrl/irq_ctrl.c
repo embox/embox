@@ -25,9 +25,9 @@ typedef struct _IRQ_REGS {
 
 static IRQ_REGS * dev_regs = NULL;
 
-#include "drivers/amba_drivers_helper.h"
-#undef module_init
-#define module_init() irq_ctrl_init()
+#define ASSERT_INIT_DONE() assert_not_null(dev_regs)
+
+static AMBA_DEV amba_dev;
 
 int irq_ctrl_init() {
 #ifndef SIMULATION_TRG
@@ -47,19 +47,19 @@ int irq_ctrl_init() {
 }
 
 int irq_ctrl_enable_irq(int irq_num) {
-	ASSERT_MODULE_INIT();
+	ASSERT_INIT_DONE();
 	SetBit(dev_regs->mask, irq_num);
 	return 0;
 }
 
 int irq_ctrl_disable_irq(int irq_num) {
-	ASSERT_MODULE_INIT();
+	ASSERT_INIT_DONE();
 	ClearBit(dev_regs->mask, irq_num);
 	return 0;
 }
 
 int irq_ctrl_disable_all() {
-	ASSERT_MODULE_INIT();
+	ASSERT_INIT_DONE();
 	REG_STORE(dev_regs->mask, 0);
 	return 0;
 }
@@ -74,7 +74,7 @@ int irq_ctrl_force(BYTE irq_num) {
 }
 
 int irq_ctrl_clear(BYTE irq_num) {
-	ASSERT_MODULE_INIT();
+	ASSERT_INIT_DONE();
 	SetBit(dev_regs->clear, irq_num);
 	return 0;
 }

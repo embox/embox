@@ -46,7 +46,7 @@
 #endif
 
 #ifdef SIMULATION_TRG
-# define assert(cond)	{}
+# define assert(cond)	do ; while(0)
 #else
 # define __ASSERT_STRING0(cond, file, line) \
 	"\nASSERTION FAILED at " #file " : " #line "\n" \
@@ -59,6 +59,9 @@
 		HALT; \
 	} while(0)
 #endif /* SIMULATION_TRG */
+
+#define assert_null(arg) assert((arg) == NULL)
+#define assert_not_null(arg) assert((arg) != NULL)
 
 #define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}
 #define array_len(array)		(sizeof(array) / sizeof(array[0]))

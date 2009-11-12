@@ -26,10 +26,10 @@ typedef struct _TIMERS_STRUCT {
 } TIMERS_STRUCT;
 
 static TIMERS_STRUCT * dev_regs = NULL;
-#include "drivers/amba_drivers_helper.h"
 
-#undef module_init
-#define module_init() timers_init()
+#define ASSERT_INIT_DONE() assert_not_null(dev_regs)
+
+static AMBA_DEV amba_dev;
 
 static volatile UINT32 cnt_ms_sleep; /**< for sleep function */
 static volatile UINT32 cnt_sys_time; /**< quantity ms after start system */
@@ -81,11 +81,11 @@ static void show_module_info(AMBA_DEV * dev) {
 }
 
 int timers_init() {
-	int i;
-	IRQ_INFO irq_info;
 	if (dev_regs) {
 		return -1;
 	}
+	int i;
+	IRQ_INFO irq_info;
 #ifndef SIMULATION_TRG
 	for (i = 0; i < /*array_len (sys_timers)*/MAX_QUANTITY_SYS_TIMERS; i++)
 		set_sys_timer_enable(i, FALSE);
