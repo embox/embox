@@ -1,7 +1,7 @@
 #ifndef FILE_H_
 #define FILE_H_
 
-#include "asm/types.h"
+#include "types.h"
 
 void *fopen (const char *file_name, char *mode);
 

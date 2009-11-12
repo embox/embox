@@ -1,7 +1,7 @@
 /**
  * \file uart.c
  */
-#include "asm/types.h"
+#include "types.h"
 #include "kernel/irq.h"
 #include "cpu_conf.h"
 #include "conio.h"

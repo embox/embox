@@ -2,7 +2,7 @@
 #define _COMMON_H_
 
 #include "autoconf.h"
-#include "asm/types.h"
+#include "types.h"
 
 #ifdef _TEST_SYSTEM_
 

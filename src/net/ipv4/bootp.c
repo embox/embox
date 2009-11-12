@@ -1,4 +1,4 @@
-#include "asm/types.h"
+#include "types.h"
 #include "common.h"
 #include "net/skbuff.h"
 #include "net/bootp.h"

@@ -6,7 +6,7 @@
  * \details this module realize interface with structure sk_buff
  * structures sk_buff are presented queue free packet.
  */
-#include "asm/types.h"
+#include "types.h"
 #include "common.h"
 #include "kernel/module.h"
 #include "lib/list.h"

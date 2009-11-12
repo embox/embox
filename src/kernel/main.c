@@ -4,7 +4,7 @@
  * \date Nov 27, 2008
  * \author anton
  */
-#include "asm/types.h"
+#include "types.h"
 #include "asm/cpu_context.h"
 #include "shell.h"
 #include "conio.h"
@@ -22,13 +22,10 @@ int main() {
 	}
 #endif //MONITOR_TESTS
 #if !defined(SIMULATION_TRG) && defined(MONITOR_SHELL)
-
 #ifdef MONITOR_NETWORK
 	net_config();
 #endif /* MONITOR_NETWORK */
-
 	shell_start();
-
 #endif
 
 	while (1)

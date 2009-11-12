@@ -4,7 +4,7 @@
  *  Created on: 10.02.2009
  *      Author: abatyukov
  */
-#include "asm/types.h"
+#include "types.h"
 #include "conio.h"
 #include "asm/stdarg.h"
 #include "string.h"

@@ -6,7 +6,7 @@
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
-#include "asm/types.h"
+#include "types.h"
 #include "cmdline.h"
 #include "drivers/terminal.h"
 

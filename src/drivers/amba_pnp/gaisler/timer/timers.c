@@ -4,7 +4,7 @@
 
 #include "kernel/timers.h"
 
-#include "asm/types.h"
+#include "types.h"
 #include "drivers/amba_pnp.h"
 #include "cpu_conf.h"
 #include "common.h"

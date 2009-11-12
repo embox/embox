@@ -10,7 +10,7 @@
 #ifndef WINDOWS_H_
 #define WINDOWS_H_
 
-#include "asm/types.h"
+#include "types.h"
 #include "asm/leon_config.h"
 
 #ifndef __ASSEMBLER__

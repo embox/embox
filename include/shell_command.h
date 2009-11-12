@@ -10,7 +10,7 @@
 #include "shell.h"
 #include "conio.h"
 #include "getopt.h"
-#include "asm/types.h"
+#include "types.h"
 #include "common.h"
 
 #define SHELL_COMMAND_NAME_MAX_LEN 0x20

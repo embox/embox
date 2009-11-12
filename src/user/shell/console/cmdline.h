@@ -7,7 +7,7 @@
 #ifndef CMDLINE_H_
 #define CMDLINE_H_
 
-#include "asm/types.h"
+#include "types.h"
 
 #define CMDLINE_MAX_LENGTH      127
 #define CMDLINE_HISTORY_SIZE    8

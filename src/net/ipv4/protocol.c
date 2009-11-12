@@ -5,7 +5,7 @@
  */
 
 #include "net/protocol.h"
-#include "asm/types.h"
+#include "types.h"
 
 struct net_protocol *inet_protos[MAX_INET_PROTOS];
 

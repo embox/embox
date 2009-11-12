@@ -5,7 +5,7 @@
  * \author anton
  */
 
-#include "asm/types.h"
+#include "types.h"
 #include "common.h"
 #include "conio.h"
 #include "kernel/irq.h"

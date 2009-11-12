@@ -4,7 +4,7 @@
  * \date Mar 4, 2009
  * \author Anton Bondarev
  */
-#include "asm/types.h"
+#include "types.h"
 #include "conio.h"
 #include "string.h"
 #include "common.h"

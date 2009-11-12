@@ -3,7 +3,7 @@
  * \date 14.10.09
  * \author Sikmir
  */
-#include "asm/types.h"
+#include "types.h"
 
 char ch_upcase(char ch) {
         if (ch >= 'a' && ch <= 'z')

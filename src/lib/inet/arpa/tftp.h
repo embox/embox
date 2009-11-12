@@ -8,7 +8,7 @@
 #ifndef TFTP_H_
 #define TFTP_H_
 
-#include "asm/types.h"
+#include "types.h"
 #include "net/ip.h"
 
 /*

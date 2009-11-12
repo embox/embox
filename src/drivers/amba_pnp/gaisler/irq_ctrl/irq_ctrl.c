@@ -8,7 +8,7 @@
 
 #include "kernel/irq_ctrl.h"
 
-#include "asm/types.h"
+#include "types.h"
 #include "common.h"
 #include "conio.h"
 #include "drivers/amba_pnp.h"

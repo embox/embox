@@ -1,7 +1,7 @@
 #ifndef _TRAPS_H_
 #define _TRAPS_H_
 
-#include "asm/types.h"
+#include "types.h"
 #include "asm/windows.h"
 
 #ifndef __ASSEMBLER__

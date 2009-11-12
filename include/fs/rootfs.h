@@ -15,7 +15,7 @@
 #define FILE_MODE_WX    0x6 //write execute
 #define FILE_MODE_RWX   0x7 //all
 
-#include "asm/types.h"
+#include "types.h"
 typedef struct _FILE_INFO {
     char file_name[0x10];
     unsigned int size_in_bytes;

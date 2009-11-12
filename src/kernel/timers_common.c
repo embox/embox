@@ -2,7 +2,7 @@
  * \file timers_helper.c
  */
 
-#include "asm/types.h"
+#include "types.h"
 #include "conio.h"
 #include "common.h"
 #include "kernel/irq.h"
