@@ -2,7 +2,7 @@
  * \file if_ether.h
  *
  * \date Mar 11, 2009
- * \author anton
+ * \author Anton Bondarev
  * \brief Global definitions for the Ethernet IEEE 802.3 interface.
  */
 
@@ -21,16 +21,23 @@
 /**
  * This is an Ethernet frame header.
  */
-typedef struct _ethhdr {
-	unsigned char dst_addr[ETH_ALEN];       /* destination eth addr */
-	unsigned char src_addr[ETH_ALEN];       /* source ether addr    */
-	unsigned short type;                    /* packet type ID field */
-} __attribute__((packed)) ethhdr;
+typedef struct ethhdr {
+	unsigned char h_dest[ETH_ALEN];       /**< destination eth addr */
+	unsigned char h_source[ETH_ALEN];       /**< source ether addr    */
+	__be16 h_proto;                            /**< packet type ID field */
+} __attribute__((packed)) ethhdr_t;
 
-#define ETH_HEADER_SIZE (sizeof(ethhdr))
+#define ETH_HEADER_SIZE (sizeof(struct ethhdr))
 
-/*static inline ethhdr *eth_hdr(struct _net_packet *pack) {
-        return (ethhdr*)pack->mac.raw;
-}*/
+#include "net/skbuff.h"
+
+/**
+ * extract MAC header for sbk
+ * @param skb
+ * @return pointer to MAC header
+ */
+static inline struct ethhdr *eth_hdr(const struct sk_buff *skb) {
+        return (struct ethhdr*)skb->mac.raw;
+}
 
 #endif /* IF_ETHER_H_ */

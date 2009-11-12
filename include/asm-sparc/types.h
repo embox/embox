@@ -30,6 +30,10 @@ typedef INT32 socklen_t;
 typedef unsigned char u8_t;
 typedef unsigned short u16_t;
 typedef unsigned int u32_t;
+typedef unsigned short __be16;
+typedef unsigned int __be32;
+typedef unsigned int __u32;
+typedef unsigned long spinlock_t;
 
 #ifdef _TEST_SYSTEM_
 typedef int size_t;

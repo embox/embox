@@ -17,10 +17,10 @@ typedef struct sk_buff {
 	    struct sk_buff *next;
 	    struct sk_buff *prev;
 
-        struct net_device      *netdev;
+        struct net_device       *netdev;
         void                    *ifdev;
         struct sock             *sk;
-        unsigned short          protocol;
+        __be16                  protocol;
         unsigned int            len;
         union {
                 //tcphdr        *th;
@@ -34,22 +34,24 @@ typedef struct sk_buff {
         union {
                 struct _iphdr   *iph;
         	//ipv6hdr       *ipv6h;
-                struct _arphdr  *arph;
+                struct arphdr  *arph;
                 unsigned char   *raw;
         } nh;
         union {
-                struct _ethhdr  *ethh;
+                struct ethhdr  *ethh;
                 unsigned char   *raw;
         } mac;
         void (*destructor)(struct sk_buff *skb);
         unsigned char *data;
 
-}sk_buff_type;
+}sk_buff_t;
 
-struct sk_buff_head {
+typedef struct sk_buff_head {
 	struct sk_buff *next;
     struct sk_buff *prev;
-};
+	__u32		qlen;
+	spinlock_t	lock;
+}sk_buff_head_t;
 
 
 extern struct sk_buff *alloc_skb(unsigned int size, gfp_t priority);

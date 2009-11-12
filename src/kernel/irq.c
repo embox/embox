@@ -112,6 +112,21 @@ BOOL irq_set_info(IRQ_INFO *irq_info) {
 	return TRUE;
 }
 
+int request_irq(BYTE irq_number, IRQ_HANDLER handler) {
+	// check IRQ number
+	if (irq_number != irq_number & 0xF) {
+		return;
+	}
+
+	if ((NULL == handler) || (NULL != user_trap_handlers[IRQ_TRAP_TYPE(irq_number)])){
+		return -1;
+	}
+	//TODO may be clear pending bit?
+	user_trap_handlers[IRQ_TRAP_TYPE(irq_number)];
+	irq_ctrl_enable_irq(irq_number);
+	return 0;
+}
+
 void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
 	// check IRQ number
 	if (irq_number != irq_number & 0xF) {

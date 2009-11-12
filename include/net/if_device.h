@@ -9,12 +9,13 @@
 #include "net/eth.h"
 
 /**
- * struct of interface device
+ * structute of inet(IP) device
  */
 typedef struct inet_device {
     unsigned char ipv4_addr[IPV4_ADDR_LENGTH];
     struct net_device    *net_dev;
     unsigned char mask[IPV4_ADDR_LENGTH];
+    /*TODO gw must be in route table*/
     unsigned char gw[IPV4_ADDR_LENGTH];
     unsigned char ipv4_addr_length;
 } inet_device_t;

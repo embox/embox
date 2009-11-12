@@ -20,7 +20,7 @@
 #include "net/if_ether.h"
 #include "lib/inet/netinet/in.h"
 
-int udp_rcv(sk_buff_type *pack) {
+int udp_rcv(sk_buff_t *pack) {
 	LOG_WARN("udp packet received\n");
 	return udpsock_push(pack);
 }
@@ -40,7 +40,7 @@ static SOCK_INFO *__udp_lookup(unsigned char saddr[4], unsigned short source,
 	return NULL;
 }
 
-static int udp_queue_rcv_pack(SOCK_INFO *sk, sk_buff_type *pack) {
+static int udp_queue_rcv_pack(SOCK_INFO *sk, sk_buff_t *pack) {
 	if(sk->new_pack == 0) {
 		sk->queue = skb_copy(pack, 0);
 		sk->new_pack = 1;
@@ -53,7 +53,7 @@ static int udp_queue_rcv_pack(SOCK_INFO *sk, sk_buff_type *pack) {
 	return -1;
 }
 
-int udpsock_push(sk_buff_type *pack) {
+int udpsock_push(sk_buff_t *pack) {
         LOG_DEBUG("push packet to udp socket\n");
         int i;
         SOCK_INFO *sk;
@@ -89,7 +89,7 @@ int udp_init() {
 	return 0;
 }
 
-static int rebuild_udp_header(sk_buff_type *pack, unsigned short source, unsigned short dest) {
+static int rebuild_udp_header(sk_buff_t *pack, unsigned short source, unsigned short dest) {
 	LOG_DEBUG("rebuild udp header\n");
 	udphdr *hdr = pack->h.uh;
 	hdr->source = source;
@@ -100,7 +100,7 @@ static int rebuild_udp_header(sk_buff_type *pack, unsigned short source, unsigne
 	return 0;
 }
 
-static void rebuild_udp_packet(sk_buff_type *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
+static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	LOG_DEBUG("rebuild_udp_packet\n");
 	if( pack == NULL ||
 	    ifdev == NULL ||
@@ -119,7 +119,7 @@ static void rebuild_udp_packet(sk_buff_type *pack, struct udp_sock *sk, void *if
 
 int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	LOG_DEBUG("udp_trans\n");
-	sk_buff_type *pack;
+	sk_buff_t *pack;
         pack = alloc_skb(len, 0);
         if( pack == NULL) {
     		return -1;

@@ -25,7 +25,7 @@
 /**
  * This structure defines an ethernet arp header.
  */
-typedef struct _arphdr {
+typedef struct arphdr {
     unsigned short htype;                   /**< format of hardware address = 0x0001;//ethernet */
     unsigned short ptype;                   /**< format of protocol address = 0x0800;//ip */
     unsigned char  hlen;                    /**< hardware addr len */
@@ -35,6 +35,6 @@ typedef struct _arphdr {
     unsigned char  spa[IPV4_ADDR_LENGTH];   /**< Sender protocol address */
     unsigned char  tha[ETH_ALEN];           /**< Target hardware address */
     unsigned char  tpa[IPV4_ADDR_LENGTH];   /**< Target protocol address */
-} __attribute__((packed)) arphdr;
+} __attribute__((packed)) arphdr_t;
 
 #endif	/* _IF_ARP_H */

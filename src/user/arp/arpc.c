@@ -3,7 +3,9 @@
  * \date 24.04.09
  * \author sikmir
  */
+#include "asm/types.h"
 #include "shell_command.h"
+#include "net/skbuff.h"
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/if_device.h"

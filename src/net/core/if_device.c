@@ -163,14 +163,14 @@ unsigned char *inet_dev_get_ipaddr(void *handler) {
         return NULL;
     return dev->ipv4_addr;
 }
-
+#if 0
 /**
  * this function is called by device layer from function "netif_rx"
  * before proto parse
  * socket must call "ifdev_listen" if it wants ifdev to have to
  * receive raw socket (for tcpdump for example)
  */
-void ifdev_rx_callback(sk_buff_type *pack){
+void ifdev_rx_callback(sk_buff_t *pack){
 	int i;
 	/* if there are some callback handlers for packet's protocol */
 	inet_device_t *dev = (inet_device_t *) pack->ifdev;
@@ -194,10 +194,10 @@ void ifdev_rx_callback(sk_buff_type *pack){
  * socket must call "ifdev_listen" if it wants ifdev to have to
  * receive raw socket (for tcpdump for example)
  */
-void ifdev_tx_callback(sk_buff_type *pack){
+void ifdev_tx_callback(sk_buff_t *pack){
 
 }
-
+#endif
 /* iterator functions */
 static int iterator_cnt;
 inet_device_t * inet_dev_get_fist_used(){

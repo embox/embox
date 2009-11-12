@@ -189,7 +189,7 @@ int bootp_discover (void* ifdev) {
 		// create 'raw' packet
 		TRACE("create raw packet\n");
 		//TODO packet must have length
-		sk_buff_type* pack = alloc_skb (0x400, 0);
+		sk_buff_t* pack = alloc_skb (0x400, 0);
 		if (pack == 0) {
 			LOG_ERROR("bootp net_packet_alloc failed");
 			return -1;
@@ -198,10 +198,10 @@ int bootp_discover (void* ifdev) {
 		pack->netdev = dev;
 		pack->protocol = ETH_P_IP;
 		pack->len = BOOTP_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE;
-		pack->mac.ethh = (struct _ethhdr*)pack->data;
-		memset(pack->mac.ethh->dst_addr, 0xff, sizeof(pack->mac.ethh->dst_addr));
-	        memcpy(pack->mac.ethh->src_addr, enet, sizeof(pack->mac.ethh->src_addr));
-		pack->mac.ethh->type = ETH_P_IP;
+		pack->mac.ethh = (struct ethhdr*)pack->data;
+		memset(pack->mac.ethh->h_dest, 0xff, sizeof(pack->mac.ethh->h_dest));
+	    memcpy(pack->mac.ethh->h_source, enet, sizeof(pack->mac.ethh->h_source));
+		pack->mac.ethh->h_proto = ETH_P_IP;
 
 		memcpy (pack->data + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE, &b, BOOTP_HEADER_SIZE);
 
@@ -219,9 +219,9 @@ int bootp_discover (void* ifdev) {
 		pack->h.uh->check = 0;
 //		pack->h.uh->check = calc_checksumm (pack->h.uh, BOOTP_HEADER_SIZE + UDP_HEADER_SIZE);
 
-		arp_add_entity (ifdev, daddr, pack->mac.ethh->dst_addr);
+		arp_add_entity (ifdev, daddr, pack->mac.ethh->h_dest);
 		TRACE("eth_send\n");
-		eth_send (pack);
+		dev_queue_xmit (pack);
 		kfree_skb (pack);
 
 		// wait a bit

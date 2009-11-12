@@ -51,6 +51,6 @@ extern net_device_t *alloc_etherdev(int num);
  * @param pack network packet which want send
  * @return on success, returns 0, on error, -1 is returned
  */
-extern int eth_send (struct sk_buff *pack);
+extern int dev_queue_xmit (struct sk_buff *pack);
 
 #endif /* ETH_H_ */

@@ -18,25 +18,25 @@
 #include "net/icmp.h"
 #include "net/if_device.h"
 
-void packet_dump(sk_buff_type *);
+void packet_dump(sk_buff_t *);
 
 int eth_init() {
     return 0;
 }
 
-int eth_rebuild_header(sk_buff_type *pack) {
+int eth_rebuild_header(sk_buff_t *pack) {
     if (NULL == pack) {
         return -1;
     }
-    ethhdr     *eth = (ethhdr*)pack->data;
+    ethhdr_t     *eth = (ethhdr_t*)pack->data;
     net_device_t *dev = pack->netdev;
     if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
         if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr)) {
             LOG_WARN("Destanation host is unreachable\n");
             return -1;
         }
-        memcpy(eth->src_addr, dev->hw_addr, sizeof(eth->src_addr));
-        eth->type = pack->protocol;
+        memcpy(eth->h_source, dev->hw_addr, sizeof(eth->h_source));
+        eth->h_proto = pack->protocol;
         pack->len += ETH_HEADER_SIZE;
         return 0;
     }
@@ -66,90 +66,20 @@ net_device_t *alloc_etherdev(int num) {
 }
 
 
-/**
- * this function call ip protocol,
- * it call rebuild mac header function, if can resolve dest addr else it send arp packet and drop this packet
- * and send packet by calling hard_start_xmit() function
- * return 0 if success else -1
- */
-int eth_send(sk_buff_type *pack) {
-    inet_device_t *dev;
-    net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
 
-    if ((NULL == pack) || (NULL == pack->ifdev))
-        return -1;
 
-    dev = (inet_device_t *) pack->ifdev;
-    if (ETH_P_ARP != pack->protocol) {
-        if (-1 == dev->net_dev->rebuild_header(pack)) {
-            kfree_skb(pack);
-            stats->tx_err += 1;
-            return -1;
-        }
-    }
-//TODO delete this because we will can manager ifdev debug mod in future
-    //packet_dump(pack);
-    if (-1 == dev->net_dev->hard_start_xmit(pack, pack->netdev)) {
-    	kfree_skb(pack);
-    	stats->tx_err += 1;
-    	return -1;
-    }
 
-    ifdev_tx_callback(pack);
-
-    /* update statistic */
-    stats->tx_packets += 1;
-    stats->tx_bytes   += pack->len;
-    kfree_skb(pack);
-    return 0;
-}
-
-/**
- * function must call from net drivers when packet was received
- * and need transmit one throw protocol's stack
- * @param net_packet *pack struct of network packet
- * @return on success, returns 0, on error, -1 is returned
- */
-int netif_rx(sk_buff_type *pack) {
-    int i;
-    inet_device_t *dev;
-    if ((NULL == pack) || (NULL == pack->netdev)) {
-        return -1;
-    }
-    pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
-    if (NULL == (pack->ifdev = inet_dev_find_by_name(pack->netdev->name))){
-        LOG_ERROR("wrong interface name during receiving packet\n");
-        kfree_skb(pack);
-        return -1;
-    }
-
-    if (ETH_P_ARP == pack->protocol) {
-        arp_received_packet(pack);
-    }
-    if (ETH_P_IP == pack->protocol) {
-        pack->h.raw  = pack->nh.raw + IP_HEADER_SIZE;
-        ip_received_packet(pack);
-    }
-
-    /* update device statistic */
-    net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
-    stats->rx_packets += 1;
-    stats->rx_bytes   += pack->len;
-    //free packet
-    kfree_skb(pack);
-    return 0;
-}
 
 //TODO delete this function from here
-void packet_dump(sk_buff_type *pack) {
+void packet_dump(sk_buff_t *pack) {
     char ip[15], mac[18];
     TRACE("--------dump-----------------\n");
     TRACE("protocol=0x%X\n", pack->protocol);
     TRACE("len=%d\n", pack->len);
-    TRACE("mac.mach.type=%d\n", pack->mac.ethh->type);
-    macaddr_print(mac, pack->mac.ethh->src_addr);
+    TRACE("mac.mach.type=%d\n", pack->mac.ethh->h_proto);
+    macaddr_print(mac, pack->mac.ethh->h_source);
     TRACE("mac.ethh.src_addr=%s\n", mac);
-    macaddr_print(mac, pack->mac.ethh->dst_addr);
+    macaddr_print(mac, pack->mac.ethh->h_dest);
     TRACE("mac.ethh.dst_addr=%s\n", mac);
     if (pack->protocol == ETH_P_ARP) {
         TRACE("nh.arph.htype=%d\n", pack->nh.arph->htype);

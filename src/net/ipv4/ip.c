@@ -16,9 +16,9 @@
 #include "net/net_packet.h"
 #include "net/net_device.h"
 
-int ip_received_packet(sk_buff_type *pack) {
+int ip_received_packet(sk_buff_t *pack) {
 	LOG_DEBUG("ip packet received\n");
-	net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
+	net_device_stats_t *stats = pack->netdev->get_stats(pack->netdev);
 	iphdr *iph = pack->nh.iph;
 	/**
 	 *   RFC1122: 3.1.2.2 MUST silently discard any IP frame that fails the checksum.
@@ -58,7 +58,7 @@ int ip_received_packet(sk_buff_type *pack) {
 	return 0;
 }
 
-int rebuild_ip_header(sk_buff_type *pack, unsigned char ttl, unsigned char proto,
+int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
 			unsigned short id, unsigned short len, unsigned char saddr[4], unsigned char daddr[4]) {
 	iphdr *hdr    = pack->nh.iph;
 	hdr->version  = 4;
@@ -76,17 +76,17 @@ int rebuild_ip_header(sk_buff_type *pack, unsigned char ttl, unsigned char proto
 	return 0;
 }
 
-static int build_ip_packet(struct inet_sock *sk, sk_buff_type *pack) {
+static int build_ip_packet(struct inet_sock *sk, sk_buff_t *pack) {
 	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
 	rebuild_ip_header(pack, sk->uc_ttl, sk->sk.sk_protocol,
 			  sk->id, pack->len, sk->saddr, sk->daddr);
 	return 0;
 }
 
-int ip_send_packet(struct inet_sock *sk, sk_buff_type *pack) {
+int ip_send_packet(struct inet_sock *sk, sk_buff_t *pack) {
 	LOG_DEBUG("ip_send_packet\n");
 	build_ip_packet(sk, pack);
 	pack->protocol = ETH_P_IP;
 	pack->len += IP_HEADER_SIZE;
-	return eth_send(pack);
+	return dev_queue_xmit(pack);
 }

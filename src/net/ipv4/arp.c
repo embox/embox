@@ -80,8 +80,8 @@ int arp_delete_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsig
     return -1;
 }
 
-static inline sk_buff_type* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
-	sk_buff_type *pack;
+static inline sk_buff_t* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
+	sk_buff_t *pack;
 
 	if (NULL == ifdev ||
 	    NULL == (pack = alloc_skb((int)pack->len, 0))) {
@@ -92,9 +92,9 @@ static inline sk_buff_type* build_arp_pack(void *ifdev, unsigned char dst_addr[I
 	pack->netdev  = inet_dev_get_netdevice(ifdev);
 	pack->mac.raw = pack->data;
 	/* mac header */
-	memcpy (pack->mac.ethh->dst_addr, broadcast_mac_addr, ETH_ALEN);
-	memcpy (pack->mac.ethh->src_addr, pack->netdev->hw_addr, ETH_ALEN);
-	pack->mac.ethh->type = ETH_P_ARP;
+	memcpy (pack->mac.ethh->h_dest, broadcast_mac_addr, ETH_ALEN);
+	memcpy (pack->mac.ethh->h_source, pack->netdev->hw_addr, ETH_ALEN);
+	pack->mac.ethh->h_proto = ETH_P_ARP;
 
 	pack->nh.raw = pack->mac.raw + ETH_HEADER_SIZE;
 
@@ -120,7 +120,7 @@ static inline sk_buff_type* build_arp_pack(void *ifdev, unsigned char dst_addr[I
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL
  */
-sk_buff_type *arp_resolve_addr (sk_buff_type * pack, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
+sk_buff_t *arp_resolve_addr (sk_buff_t * pack, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
 	int i;
 	void *ifdev = pack->ifdev;
 	if (NULL == pack || NULL == ifdev) {
@@ -128,21 +128,21 @@ sk_buff_type *arp_resolve_addr (sk_buff_type * pack, unsigned char dst_addr[IPV4
 	}
 	if (memcmp(dst_addr, broadcast_ip_addr, sizeof(dst_addr))){
 		pack->mac.raw = pack->data;
-		memcpy (pack->mac.ethh->dst_addr, arp_table[i].hw_addr, sizeof(pack->mac.ethh->dst_addr));
+		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));
 		return pack;
 	}
 	if (-1 != (i = find_entity(ifdev, dst_addr))) {
 		pack->mac.raw = pack->data;
-		memcpy (pack->mac.ethh->dst_addr, broadcast_mac_addr, sizeof(pack->mac.ethh->dst_addr));
+		memcpy (pack->mac.ethh->h_dest, broadcast_mac_addr, sizeof(pack->mac.ethh->h_dest));
 		return pack;
 	}
 	//send mac packet
-	eth_send(build_arp_pack(ifdev, dst_addr));
+	dev_queue_xmit(build_arp_pack(ifdev, dst_addr));
 	//TODO delete this after processes will be added to monitor
 	sleep(500);
 	if (-1 != (i = find_entity(ifdev, dst_addr))) {
 		pack->mac.raw = pack->data;
-		memcpy (pack->mac.ethh->dst_addr, arp_table[i].hw_addr, sizeof(pack->mac.ethh->dst_addr));
+		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));
 		return pack;
 	}
 	return NULL;
@@ -151,8 +151,8 @@ sk_buff_type *arp_resolve_addr (sk_buff_type * pack, unsigned char dst_addr[IPV4
 /**
  * receive ARP response, update ARP table
  */
-static int received_resp(sk_buff_type *pack) {
-	arphdr *arp = pack->nh.arph;
+static int received_resp(sk_buff_t *pack) {
+	arphdr_t *arp = pack->nh.arph;
 	if (0 != memcmp(inet_dev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return -1;
 	}
@@ -170,9 +170,9 @@ static int received_resp(sk_buff_type *pack) {
 /**
  * receive ARP request, send ARP response
  */
-static int received_req(sk_buff_type *pack) {
-	sk_buff_type *resp;
-	arphdr *arp = pack->nh.arph;
+static int received_req(sk_buff_t *pack) {
+	sk_buff_t *resp;
+	arphdr_t *arp = pack->nh.arph;
 	char ip[15], mac[18];
 	ipaddr_print(ip, arp->spa);
 	macaddr_print(mac, arp->sha);
@@ -183,15 +183,15 @@ static int received_req(sk_buff_type *pack) {
 
 	resp = skb_copy(pack, 0);
 
-	memcpy(resp->mac.ethh->dst_addr, pack->mac.ethh->src_addr, sizeof(resp->mac.ethh->dst_addr));
-	memcpy(resp->mac.ethh->src_addr, pack->netdev->hw_addr, sizeof(resp->mac.ethh->src_addr));
+	memcpy(resp->mac.ethh->h_dest, pack->mac.ethh->h_source, sizeof(resp->mac.ethh->h_dest));
+	memcpy(resp->mac.ethh->h_source, pack->netdev->hw_addr, sizeof(resp->mac.ethh->h_source));
 	resp->nh.arph->oper = ARPOP_REPLY;
 	memcpy(resp->nh.arph->sha, pack->netdev->hw_addr, sizeof(resp->nh.arph->sha));
-	memcpy(resp->nh.arph->tha, pack->mac.ethh->src_addr, sizeof(resp->nh.arph->tha));
+	memcpy(resp->nh.arph->tha, pack->mac.ethh->h_source, sizeof(resp->nh.arph->tha));
 	memcpy(resp->nh.arph->tpa, pack->nh.arph->spa, sizeof(resp->nh.arph->tpa));
 	memcpy(resp->nh.arph->spa, pack->nh.arph->tpa, sizeof(resp->nh.arph->spa));
 
-	eth_send(resp);
+	dev_queue_xmit(resp);
 	return 0;
 }
 
@@ -199,9 +199,9 @@ static int received_req(sk_buff_type *pack) {
  * Handle arp packet. This function called protocal stack when arp packet has been received
  * @param pack net_packet
  */
-int arp_received_packet(sk_buff_type *pack) {
+int arp_received_packet(sk_buff_t *pack) {
 	LOG_WARN("arp packet received\n");
-	arphdr *arp = pack->nh.arph;
+	arphdr_t *arp = pack->nh.arph;
 
 	if (0 != memcmp(inet_dev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return 0;

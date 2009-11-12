@@ -91,7 +91,7 @@ static ICMP_CALLBACK callback_find(void *ifdev, unsigned short ip_id,
 	return NULL;
 }
 
-typedef int (*PACKET_HANDLER)(sk_buff_type *pack);
+typedef int (*PACKET_HANDLER)(sk_buff_t *pack);
 
 static PACKET_HANDLER received_packet_handlers[NR_ICMP_TYPES];
 
@@ -106,7 +106,7 @@ unsigned short calc_checksumm(unsigned char *hdr, int size) {
 /**
  * Fill ICMP header
  */
-static int rebuild_icmp_header(sk_buff_type *pack, unsigned char type, unsigned char code) {
+static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type, unsigned char code) {
 	icmphdr *hdr = pack->h.icmph;
 	hdr->type    = type;
 	hdr->code    = code;
@@ -115,7 +115,7 @@ static int rebuild_icmp_header(sk_buff_type *pack, unsigned char type, unsigned 
 	return 0;
 }
 
-static inline int build_icmp_packet(sk_buff_type *pack, unsigned char type,
+static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
 		unsigned char code, unsigned char ttl, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
 	pack->h.raw = pack->nh.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
@@ -130,7 +130,7 @@ static inline int build_icmp_packet(sk_buff_type *pack, unsigned char type,
 /**
  * implementation handlers for received msgs
  */
-static int icmp_get_echo_reply(sk_buff_type *pack) {
+static int icmp_get_echo_reply(sk_buff_t *pack) {
 	LOG_DEBUG("icmp get echo reply\n");
 	ICMP_CALLBACK cb;
 	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
@@ -145,7 +145,7 @@ static int icmp_get_echo_reply(sk_buff_type *pack) {
 /**
  * Handle ICMP_DEST_UNREACH.
  */
-static int icmp_unreach(sk_buff_type *pack) {
+static int icmp_unreach(sk_buff_t *pack) {
 	iphdr *iph;
 	icmphdr *icmph;
 	icmph = pack->h.icmph;
@@ -173,9 +173,9 @@ static int icmp_unreach(sk_buff_type *pack) {
 /**
  * Handle ICMP_ECHO ("ping") requests.
  */
-static int icmp_echo(sk_buff_type *recieved_pack) {
+static int icmp_echo(sk_buff_t *recieved_pack) {
 	LOG_DEBUG("icmp get echo request\n");
-	sk_buff_type *pack = skb_copy(recieved_pack, 0);
+	sk_buff_t *pack = skb_copy(recieved_pack, 0);
 	if(inet_dev_find_by_ip(pack->nh.iph->daddr)) {
 		return 0;
 	}
@@ -209,7 +209,7 @@ static int icmp_echo(sk_buff_type *recieved_pack) {
 	pack->nh.iph->check    = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
 
 	pack->len -= ETH_HEADER_SIZE;
-	eth_send(pack);
+	dev_queue_xmit(pack);
 	return 0;
 }
 
@@ -217,7 +217,7 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		ICMP_CALLBACK callback) { //type 8
 	LOG_DEBUG("icmp send echo request\n");
 	//TODO icmp req must be variable length
-	sk_buff_type *pack = alloc_skb(0x100, 0);
+	sk_buff_t *pack = alloc_skb(0x100, 0);
 	if ( pack == NULL ) {
 		return -1;
 	}
@@ -232,10 +232,10 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 		kfree_skb(pack);
 		return -1;
 	}
-	return eth_send(pack);
+	return dev_queue_xmit(pack);
 }
 
-void icmp_send(sk_buff_type *pack, int type, int code) {
+void icmp_send(sk_buff_t *pack, int type, int code) {
 	//TODO:
 	switch(type) {
 	case ICMP_ECHO:
@@ -252,10 +252,10 @@ int icmp_init() {
 	return 0;
 }
 
-int icmp_rcv(sk_buff_type *pack) {
+int icmp_rcv(sk_buff_t *pack) {
 	LOG_DEBUG("icmp packet received\n");
 	icmphdr *icmph = pack->h.icmph;
-	net_device_stats *stats = pack->netdev->get_stats(pack->netdev);
+	net_device_stats_t *stats = pack->netdev->get_stats(pack->netdev);
 	/**
 	 * 18 is the highest 'known' ICMP type. Anything else is a mystery
 	 * RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently
