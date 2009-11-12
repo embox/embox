@@ -17,7 +17,7 @@ typedef struct module_descriptor {
     static const module_descriptor_t _descriptor##init = { name, init }; \
     static const module_descriptor_t *_pdescriptor##init \
 		__attribute__ ((used, section(".modules_handlers"))) \
-		= &_descriptor##init;
+		= &_descriptor##init
 
 /* These macros are used to mark some functions or
  * initialized data (doesn't apply to uninitialized data)
