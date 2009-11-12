@@ -17,7 +17,6 @@
 #define NET_DEVICES_QUANTITY     0x4
 #define MAX_IFNAME_LENGTH        0x6
 
-
 /* Standard interface flags (net_device->flags). */
 #define IFF_UP          0x1             /**< interface is up              */
 #define IFF_BROADCAST   0x2             /**< broadcast address valid      */
@@ -37,24 +36,24 @@ struct sk_buff;
  * Network device statistics structure.
  */
 typedef struct net_device_stats {
-	unsigned long rx_packets;         /**< total packets received       */
-	unsigned long tx_packets;         /**< total packets transmitted    */
-	unsigned long rx_bytes;           /**< total bytes received         */
-	unsigned long tx_bytes;           /**< total bytes transmitted      */
-	unsigned long rx_err;             /**< bad packets received         */
-	unsigned long tx_err;             /**< packet transmit problems     */
-	unsigned long rx_dropped;         /**< no space in pool             */
-	unsigned long tx_dropped;         /**< no space available in pool   */
-	unsigned long multicast;          /**< multicast packets received   */
+	unsigned long rx_packets; /**< total packets received       */
+	unsigned long tx_packets; /**< total packets transmitted    */
+	unsigned long rx_bytes; /**< total bytes received         */
+	unsigned long tx_bytes; /**< total bytes transmitted      */
+	unsigned long rx_err; /**< bad packets received         */
+	unsigned long tx_err; /**< packet transmit problems     */
+	unsigned long rx_dropped; /**< no space in pool             */
+	unsigned long tx_dropped; /**< no space available in pool   */
+	unsigned long multicast; /**< multicast packets received   */
 	unsigned long collisions;
 
 	/* detailed rx_errors: */
 	unsigned long rx_length_errors;
-	unsigned long rx_over_errors;     /**< receiver ring buff overflow  */
-	unsigned long rx_crc_errors;      /**< recved pkt with crc error    */
-	unsigned long rx_frame_errors;    /**< recv'd frame alignment error */
-	unsigned long rx_fifo_errors;     /**< recv'r fifo overrun          */
-	unsigned long rx_missed_errors;   /**< receiver missed packet       */
+	unsigned long rx_over_errors; /**< receiver ring buff overflow  */
+	unsigned long rx_crc_errors; /**< recved pkt with crc error    */
+	unsigned long rx_frame_errors; /**< recv'd frame alignment error */
+	unsigned long rx_fifo_errors; /**< recv'r fifo overrun          */
+	unsigned long rx_missed_errors; /**< receiver missed packet       */
 
 	/* detailed tx_errors */
 	unsigned long tx_aborted_errors;
@@ -64,14 +63,13 @@ typedef struct net_device_stats {
 	unsigned long tx_window_errors;
 } net_device_stats_t;
 
-
 #include "lib/list.h"
 /**
  * structure for register incoming protocol packets type
  */
 typedef struct packet_type {
-	__be16 type; /*< This is really htons(ether_type). */
-	struct net_device *dev; /* NULL is wildcarded here	     */
+	__be16 type;                       /**< This is really htons(ether_type). */
+	struct net_device *dev;            /**< NULL is wildcarded here	     */
 	int (*func)(struct sk_buff *, struct net_device *, struct packet_type *,
 			struct net_device *);
 #if 0
@@ -91,17 +89,17 @@ typedef struct packet_type {
  * structure of net device
  */
 typedef struct net_device {
-	char name[MAX_IFNAME_LENGTH];            /**< It is the name the interface.*/
-	unsigned char hw_addr[MAX_ADDR_LEN];     /**< hw address                   */
-	unsigned char broadcast[MAX_ADDR_LEN];   /**< hw bcast address             */
+	char name[MAX_IFNAME_LENGTH];           /**< It is the name the interface.*/
+	unsigned char hw_addr[MAX_ADDR_LEN];    /**< hw address                   */
+	unsigned char broadcast[MAX_ADDR_LEN];  /**< hw bcast address             */
 	unsigned long state;
-	unsigned char type;                      /**< interface hardware type      */
-	unsigned char addr_len;                  /**< hardware address length      */
-	unsigned int flags;                      /**< interface flags (a la BSD)   */
-	unsigned mtu;                            /**< interface MTU value          */
-	unsigned long tx_queue_len;              /**< Max frames per queue allowed */
-	unsigned long base_addr;                 /**< device I/O address           */
-	unsigned int irq;                        /**< device IRQ number            */
+	unsigned char type;                     /**< interface hardware type      */
+	unsigned char addr_len;                 /**< hardware address length      */
+	unsigned int flags;                     /**< interface flags (a la BSD)   */
+	unsigned mtu;                           /**< interface MTU value          */
+	unsigned long tx_queue_len;             /**< Max frames per queue allowed */
+	unsigned long base_addr;                /**< device I/O address           */
+	unsigned int irq;                       /**< device IRQ number            */
 
 	int (*open)(struct net_device *dev);
 	int (*stop)(struct net_device *dev);
