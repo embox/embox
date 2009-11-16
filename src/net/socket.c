@@ -55,7 +55,10 @@ int connect (int sockfd, const struct sockaddr *addr, int addrlen) {
 	ipaddr_print(ip, sks[sockfd].sk->inet.daddr);
 	//TODO what is it
 	sks[sockfd].queue = alloc_skb (0x100, 0);
+	//TODO we haven't ifdev now
+#if 0
 	sks[sockfd].queue->ifdev = (void*)inet_dev_find_by_name ("eth0");
+#endif
 	LOG_WARN("socket connected at port=%d, ip=%s ifdev = %d\n", sks[sockfd].sk->inet.sport, ip, sks[sockfd].queue);
 	return 0;
 }
@@ -84,7 +87,10 @@ int send(int sockfd, const void *buf, int len, int flags) {
 	if(sks[sockfd].is_busy == 0) {
 	        return -1;
 	}
+	//TODO we haven't ifdev now
+#if 0
         udp_trans(sks[sockfd].sk, sks[sockfd].queue->ifdev, buf, len);
+#endif
 	return len;
 }
 

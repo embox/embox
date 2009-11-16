@@ -112,8 +112,7 @@ void packet_dump(sk_buff_t *pack) {
         if (pack->nh.iph->proto == ICMP_PROTO_TYPE) {
             TRACE("h.icmph.type=%d\n", pack->h.icmph->type);
             TRACE("h.icmph.code=%d\n", pack->h.icmph->code);
-            TRACE("h.icmph.header_check_summ=%d\n", pack->h.icmph->header_check_summ);
-            TRACE("h.icmph.data=0x%X\n", pack->h.icmph->data);
+            TRACE("h.icmph.checksum=%d\n", pack->h.icmph->checksum);
         } else if (pack->nh.iph->proto == UDP_PROTO_TYPE) {
             LOG_DEBUG("h.uh.source=%d\n", pack->h.uh->source);
             LOG_DEBUG("h.uh.dest=%d\n", pack->h.uh->dest);

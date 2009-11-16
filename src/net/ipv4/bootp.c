@@ -194,7 +194,9 @@ int bootp_discover (void* ifdev) {
 			LOG_ERROR("bootp net_packet_alloc failed");
 			return -1;
 		}
+#if 0
 		pack->ifdev = ifdev;
+#endif
 		pack->netdev = dev;
 		pack->protocol = ETH_P_IP;
 		pack->len = BOOTP_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE;
@@ -205,7 +207,7 @@ int bootp_discover (void* ifdev) {
 
 		memcpy (pack->data + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE, &b, BOOTP_HEADER_SIZE);
 
-                pack->nh.iph = (struct _iphdr*)(pack->data + ETH_HEADER_SIZE);
+                pack->nh.iph = (struct iphdr*)(pack->data + ETH_HEADER_SIZE);
                 ip_addr_t daddr;
 		ip_addr_t saddr;
                 memset (saddr, 0, sizeof (ip_addr_t));

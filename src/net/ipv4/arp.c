@@ -88,7 +88,9 @@ static inline sk_buff_t* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4
 		return NULL;
 	}
 
+#if 0
 	pack->ifdev   = ifdev;
+#endif
 	pack->netdev  = inet_dev_get_netdevice(ifdev);
 	pack->mac.raw = pack->data;
 	/* mac header */
@@ -122,22 +124,29 @@ static inline sk_buff_t* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4
  */
 sk_buff_t *arp_resolve_addr (sk_buff_t * pack, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
 	int i;
+#if 0
 	void *ifdev = pack->ifdev;
+
 	if (NULL == pack || NULL == ifdev) {
 		return NULL;
 	}
+#endif
 	if (memcmp(dst_addr, broadcast_ip_addr, sizeof(dst_addr))){
 		pack->mac.raw = pack->data;
 		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));
 		return pack;
 	}
+	//TODO modify arp table
+#if 0
 	if (-1 != (i = find_entity(ifdev, dst_addr))) {
 		pack->mac.raw = pack->data;
 		memcpy (pack->mac.ethh->h_dest, broadcast_mac_addr, sizeof(pack->mac.ethh->h_dest));
 		return pack;
 	}
-	//send mac packet
+
+	/*send mac packet*/
 	dev_queue_xmit(build_arp_pack(ifdev, dst_addr));
+
 	//TODO delete this after processes will be added to monitor
 	sleep(500);
 	if (-1 != (i = find_entity(ifdev, dst_addr))) {
@@ -145,6 +154,7 @@ sk_buff_t *arp_resolve_addr (sk_buff_t * pack, unsigned char dst_addr[IPV4_ADDR_
 		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));
 		return pack;
 	}
+#endif
 	return NULL;
 }
 
@@ -153,9 +163,13 @@ sk_buff_t *arp_resolve_addr (sk_buff_t * pack, unsigned char dst_addr[IPV4_ADDR_
  */
 static int received_resp(sk_buff_t *pack) {
 	arphdr_t *arp = pack->nh.arph;
+
+	//TODO need add function for getting ip addr
+#if 0
 	if (0 != memcmp(inet_dev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return -1;
 	}
+#endif
 	//TODO delete this out log output from arp protocol in usual mode
 	char ip[15], mac[18];
 	ipaddr_print(ip, arp->spa);
@@ -163,7 +177,10 @@ static int received_resp(sk_buff_t *pack) {
 	LOG_DEBUG ("arp received resp from ip %s mac %s", ip, mac);
 
 	//add to arp_table
+	//TODO modify arp table
+#if 0
 	arp_add_entity(pack->ifdev, arp->spa, arp->sha);
+#endif
 	return 0;
 }
 
@@ -178,9 +195,11 @@ static int received_req(sk_buff_t *pack) {
 	macaddr_print(mac, arp->sha);
 	LOG_DEBUG ("arp received request from ip %s mac %s", ip, mac);
 
-	//add to arp_table
+	/*add record into arp_table*/
+	//TODO modify arp table
+#if 0
 	arp_add_entity(pack->ifdev, arp->spa, arp->sha);
-
+#endif
 	resp = skb_copy(pack, 0);
 
 	memcpy(resp->mac.ethh->h_dest, pack->mac.ethh->h_source, sizeof(resp->mac.ethh->h_dest));
@@ -202,10 +221,12 @@ static int received_req(sk_buff_t *pack) {
 int arp_received_packet(sk_buff_t *pack) {
 	LOG_WARN("arp packet received\n");
 	arphdr_t *arp = pack->nh.arph;
-
+	//TODO need add function for getting ip addr
+#if 0
 	if (0 != memcmp(inet_dev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
 		return 0;
 	}
+#endif
 	switch(arp->oper) {
 	case ARPOP_REPLY:
 		return received_resp(pack);

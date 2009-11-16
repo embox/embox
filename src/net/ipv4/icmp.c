@@ -107,11 +107,11 @@ unsigned short calc_checksumm(unsigned char *hdr, int size) {
  * Fill ICMP header
  */
 static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type, unsigned char code) {
-	icmphdr *hdr = pack->h.icmph;
+	icmphdr_t *hdr = pack->h.icmph;
 	hdr->type    = type;
 	hdr->code    = code;
-	hdr->header_check_summ = 0;
-	hdr->header_check_summ = calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE);
+	hdr->checksum = 0;
+	hdr->checksum = calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE);
 	return 0;
 }
 
@@ -132,6 +132,8 @@ static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
  */
 static int icmp_get_echo_reply(sk_buff_t *pack) {
 	LOG_DEBUG("icmp get echo reply\n");
+//TODO now ICMP reply haven't to work with callbacks it works through sockets
+#if 0
 	ICMP_CALLBACK cb;
 	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
 			ICMP_ECHOREPLY)))
@@ -139,6 +141,7 @@ static int icmp_get_echo_reply(sk_buff_t *pack) {
 	cb(pack);
 	//unregister
 	callback_free(cb, pack->ifdev, pack->nh.iph->id, ICMP_ECHOREPLY);
+#endif
 	return 0;
 }
 
@@ -146,10 +149,10 @@ static int icmp_get_echo_reply(sk_buff_t *pack) {
  * Handle ICMP_DEST_UNREACH.
  */
 static int icmp_unreach(sk_buff_t *pack) {
-	iphdr *iph;
-	icmphdr *icmph;
+	iphdr_t *iph;
+	icmphdr_t *icmph;
 	icmph = pack->h.icmph;
-	iph   = (iphdr*)pack->data;
+	iph   = (iphdr_t*)pack->data;
 	if (iph->ihl < 5)
 		return -1;
 
@@ -193,8 +196,8 @@ static int icmp_echo(sk_buff_t *recieved_pack) {
 		LOG_DEBUG("%2X",  pack->h.raw[i]);
 	}
 	LOG_DEBUG("%X\n",  pack->h.icmph->header_check_summ);
-*/	pack->h.icmph->header_check_summ = 0;
-	pack->h.icmph->header_check_summ = calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE );
+*/	pack->h.icmph->checksum = 0;
+	pack->h.icmph->checksum = calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE );
 
 	//fill ip header
 //	rebuild_ip_header(pack, 64, ICMP_PROTO_TYPE, pack->nh.iph->id++, pack->nh.iph->len,
@@ -221,8 +224,12 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 	if ( pack == NULL ) {
 		return -1;
 	}
+	//TODO ICMP get net dev
+#if 0
 	pack->ifdev  = ifdev;
+
 	pack->netdev = (struct net_device *)inet_dev_get_netdevice(ifdev);
+#endif
 	pack->len    = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
 					inet_dev_get_ipaddr(ifdev), dstaddr);
 	pack->protocol = ETH_P_IP;
@@ -254,7 +261,7 @@ int icmp_init() {
 
 int icmp_rcv(sk_buff_t *pack) {
 	LOG_DEBUG("icmp packet received\n");
-	icmphdr *icmph = pack->h.icmph;
+	icmphdr_t *icmph = pack->h.icmph;
 	net_device_stats_t *stats = pack->netdev->get_stats(pack->netdev);
 	/**
 	 * 18 is the highest 'known' ICMP type. Anything else is a mystery
@@ -286,8 +293,8 @@ int icmp_rcv(sk_buff_t *pack) {
         }
 
 	//TODO: check summ icmp? not need, if ip checksum is ok.
-	unsigned short tmp = icmph->header_check_summ;
-	icmph->header_check_summ = 0;
+	unsigned short tmp = icmph->checksum;
+	icmph->checksum = 0;
 	if( tmp !=  calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE)) {
 		LOG_ERROR("bad icmp checksum\n");
 		return -1;

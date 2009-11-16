@@ -67,12 +67,13 @@ net_device_t *netdev_get_by_name(const char *name) {
 
 int dev_queue_xmit(struct sk_buff *pack) {
     inet_device_t *dev;
-    net_device_stats_t *stats = pack->netdev->get_stats(pack->netdev);
+    net_device_stats_t *stats;
 
-    if ((NULL == pack) || (NULL == pack->ifdev))
+    if ((NULL == pack) || (NULL == pack->netdev))
         return -1;
 
-    dev = (inet_device_t *) pack->ifdev;
+    stats = pack->netdev->get_stats(pack->netdev);
+
     if (ETH_P_ARP != pack->protocol) {
         if (-1 == dev->net_dev->rebuild_header(pack)) {
             kfree_skb(pack);
@@ -82,14 +83,11 @@ int dev_queue_xmit(struct sk_buff *pack) {
     }
 //TODO delete this because we will can manager ifdev debug mod in future
     //packet_dump(pack);
-    if (-1 == dev->net_dev->hard_start_xmit(pack, pack->netdev)) {
+    if (-1 == pack->netdev->hard_start_xmit(pack, pack->netdev)) {
     	kfree_skb(pack);
     	stats->tx_err += 1;
     	return -1;
     }
-#if 0
-    ifdev_tx_callback(pack);
-#endif
     /* update statistic */
     stats->tx_packets += 1;
     stats->tx_bytes   += pack->len;
@@ -104,11 +102,39 @@ int netif_rx(struct sk_buff *pack) {
         return -1;
     }
     pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
+
+#if 0
+    //now we have not ifdev field in skb
     if (NULL == (pack->ifdev = inet_dev_find_by_name(pack->netdev->name))){
         LOG_ERROR("wrong interface name during receiving packet\n");
         kfree_skb(pack);
         return -1;
     }
+#endif
+    if (ETH_P_ARP == pack->protocol) {
+        arp_received_packet(pack);
+    }
+    if (ETH_P_IP == pack->protocol) {
+        ip_received_packet(pack);
+    }
+#if 0
+    /* if there are some callback handlers for packet's protocol */
+    dev = (IF_DEVICE *) pack->ifdev;
+    for (i = 0; i < array_len(dev->cb_info); i++) {
+        if (1 == dev->cb_info[i].is_busy) {
+            if ((NET_TYPE_ALL_PROTOCOL == dev->cb_info[i].type)
+                    || (dev->cb_info[i].type == pack->protocol)) {
+                //may be copy pack for different protocols
+                dev->cb_info[i].func(pack);
+            }
+        }
+    }
+#endif
+
+    //free packet
+    kfree_skb(pack);
+    return 0;
+
 }
 
 void dev_add_pack(struct packet_type *pt){

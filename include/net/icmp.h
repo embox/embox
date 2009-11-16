@@ -46,14 +46,16 @@ struct sk_buff;
 #define ICMP_PREC_CUTOFF        15      /* Precedence cut off */
 #define NR_ICMP_UNREACH         15      /* instead of hardcoding immediate value */
 
-typedef struct _icmphdr {
-	unsigned char  type;
-	unsigned char  code;
-	unsigned short header_check_summ;
+typedef struct icmphdr {
+	__u8  type;
+	__u8  code;
+	__be16 checksum;
+#if 0
 	unsigned char  data[0x40];
-} __attribute__((packed)) icmphdr;
+#endif
+} __attribute__((packed)) icmphdr_t;
 
-#define ICMP_HEADER_SIZE	(sizeof(icmphdr))
+#define ICMP_HEADER_SIZE	(sizeof(struct icmphdr))
 
 /**
  * Functions provided by icmp.c

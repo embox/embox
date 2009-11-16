@@ -59,7 +59,7 @@ int udpsock_push(sk_buff_t *pack) {
         SOCK_INFO *sk;
         udphdr *uh = pack->h.uh;
         unsigned short ulen = ntohs(uh->len);
-        iphdr *iph = pack->nh.iph;
+        iphdr_t *iph = pack->nh.iph;
         unsigned char saddr[4];
         unsigned char daddr[4];
         memcpy(saddr, pack->nh.iph->saddr, 4);
@@ -107,8 +107,11 @@ static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev
 	    sk ==NULL) {
 		return;
 	}
+	//TODO UDP get net dev
+#if 0
 	pack->ifdev = ifdev;
 	pack->netdev = inet_dev_get_netdevice(ifdev);
+#endif
 	pack->len = UDP_HEADER_SIZE;
 
 	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;

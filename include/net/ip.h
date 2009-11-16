@@ -23,7 +23,7 @@
 
 typedef unsigned char ip_addr_t[4];
 
-typedef struct _iphdr {
+typedef struct iphdr {
 #if defined(__LITTLE_ENDIAN)
         __extension__ unsigned char ihl:4,     /* ihl = 5 */
     				    version:4; /* version = 4 */
@@ -45,9 +45,9 @@ typedef struct _iphdr {
 	unsigned short    check;            /**< header's checksum */
 	unsigned char     saddr[4];         /**< source address */
 	unsigned char     daddr[4];         /**< destination address */
-} __attribute__((packed)) iphdr;
+} __attribute__((packed)) iphdr_t;
 
-#define IP_HEADER_SIZE   (sizeof(iphdr))
+#define IP_HEADER_SIZE   (sizeof(struct iphdr))
 
 /**
  * Functions provided by ip.c

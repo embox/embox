@@ -14,25 +14,30 @@ struct skb_timeval {
 };
 
 typedef struct sk_buff {
+/* These two members must be first. */
 	    struct sk_buff *next;
 	    struct sk_buff *prev;
 
-        struct net_device       *netdev;
+	    struct sock        *sk;
+        struct net_device  *netdev;
+    	struct skb_timeval tstamp;
+#if 0
         void                    *ifdev;
-        struct sock             *sk;
+#endif
+
         __be16                  protocol;
         unsigned int            len;
         union {
                 //tcphdr        *th;
                 struct _udphdr  *uh;
-                struct _icmphdr *icmph;
+                struct icmphdr *icmph;
                 //igmphdr       *igmph;
                 //iphdr         *ipiph;
                 //ipv6hdr       *ipv6h;
     	        unsigned char   *raw;
         } h;
         union {
-                struct _iphdr   *iph;
+                struct iphdr   *iph;
         	//ipv6hdr       *ipv6h;
                 struct arphdr  *arph;
                 unsigned char   *raw;
