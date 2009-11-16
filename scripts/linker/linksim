@@ -102,6 +102,11 @@ SECTIONS
 	    __modules_handlers_end = .;
 
 	    . = ALIGN(0x4);
+	    __init_handlers_start = .;
+	    *(.init_handlers)
+	    __init_handlers_end = .;
+
+	    . = ALIGN(0x4);
 	    _piggy_start = .;
 	    _piggy_end = .;
 	    . = ALIGN(0x4);

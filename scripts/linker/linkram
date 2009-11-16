@@ -102,6 +102,11 @@ SECTIONS
 	    __modules_handlers_end = .;
 
 	    . = ALIGN(0x4);
+	    __init_handlers_start = .;
+	    *(.init_handlers)
+	    __init_handlers_end = .;
+
+	    . = ALIGN(0x4);
 	    __shell_commands_start = .;
 	    *(.shell_commands)
 	    __shell_commands_end = .;
