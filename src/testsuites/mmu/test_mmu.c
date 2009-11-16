@@ -8,7 +8,7 @@
 #include "asm/mmu.h"
 #include "express_tests.h"
 
-DECLARE_EXPRESS_TEST("MMU", exec)
+DECLARE_EXPRESS_TEST("MMU", exec);
 
 #define TLBNUM 4
 

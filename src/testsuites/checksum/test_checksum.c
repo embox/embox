@@ -9,7 +9,7 @@
 #include "common.h"
 #include "express_tests.h"
 
-DECLARE_EXPRESS_TEST("checksum", exec)
+DECLARE_EXPRESS_TEST("checksum", exec);
 
 static int exec() {
 	extern unsigned long __checksum;

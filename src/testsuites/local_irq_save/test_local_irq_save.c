@@ -12,7 +12,7 @@
 
 #define TEST_IRQ_NUM 10
 
-DECLARE_EXPRESS_TEST("local_irq_save()", exec)
+DECLARE_EXPRESS_TEST("local_irq_save()", exec);
 
 volatile static BOOL irq_happened;
 

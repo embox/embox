@@ -19,6 +19,18 @@ typedef struct module_descriptor {
 		__attribute__ ((used, section(".modules_handlers"))) \
 		= &_descriptor##init
 
+typedef struct init_descriptor {
+	int (*init)();
+} init_descriptor_t;
+
+#define DECLARE_INITABLE(init) \
+    static int init(); \
+    static const init_descriptor_t _descriptor##init = { init }; \
+    static const init_descriptor_t *_pdescriptor##init \
+		__attribute__ ((used, section(".init_handlers"))) \
+		= &_descriptor##init
+
+
 /* These macros are used to mark some functions or
  * initialized data (doesn't apply to uninitialized data)
  * as `initialization' functions. The kernel can take this

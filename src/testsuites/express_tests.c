@@ -31,6 +31,11 @@ int express_tests_execute() {
 			LOG_ERROR("Broken express test descriptor: can't find exec function for test %s\n", (*p_test)->name);
 			continue;
 		}
+		if (!(*p_test)->execute_on_boot)
+		{
+			TRACE("Test \"%s\" was not marked to be executed on boot. Execute it manually if needed\n", (*p_test)->name);
+			continue;
+		}
 
 		TRACE("Testing %s ... ", (*p_test)->name);
 		// TODO magic constants

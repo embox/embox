@@ -10,7 +10,7 @@
 
 #include "express_tests.h"
 
-DECLARE_EXPRESS_TEST("recursion", exec)
+DECLARE_EXPRESS_TEST("recursion", exec);
 
 #define RECURSION_DEPTH 32
 

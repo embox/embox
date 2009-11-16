@@ -47,7 +47,7 @@ typedef struct _FSOP_DESCRIPTION {
 }FSOP_DESCRIPTION;
 
 
-int rootfs_init();
+//int rootfs_init();
 FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name);
 
 

@@ -118,6 +118,15 @@ int hardware_init_hook() {
 
 	init_others();
 
+#ifdef MONITOR_TESTS
+	if (0 != express_tests_execute()) {
+		TRACE("express tests fault\n halt system\n");
+		sys_halt();
+		while (1)
+			;
+	}
+#endif //MONITOR_TESTS
+
 	TRACE("\nStarting Monitor...\n");
 	return 0;
 }

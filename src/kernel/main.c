@@ -12,14 +12,6 @@
 #include "express_tests.h"
 
 int main() {
-#ifdef MONITOR_TESTS
-	if (0 != express_tests_execute()) {
-		TRACE("express tests fault\n halt system\n");
-		sys_halt();
-		while (1)
-			;
-	}
-#endif //MONITOR_TESTS
 #if !defined(SIMULATION_TRG) && defined(MONITOR_SHELL)
 #ifdef MONITOR_NETWORK
 	net_config();

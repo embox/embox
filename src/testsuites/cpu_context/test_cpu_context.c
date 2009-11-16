@@ -9,7 +9,7 @@
 #include "kernel/sys.h"
 #include "express_tests.h"
 
-DECLARE_EXPRESS_TEST("CPU context", exec)
+DECLARE_EXPRESS_TEST("CPU context", exec);
 
 /**
  * in this trap function contex_save takes place

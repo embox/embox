@@ -21,12 +21,12 @@ enum sock_type {
         SOCK_RAW        = 3,  /* IPPROTO_RAW */
 };
 
-/**
- * initialize protokol's stack
- * now only UDP ARP and so on
- * not support TCP protocol
- */
-int net_init();
+///**
+// * initialize protokol's stack
+// * now only UDP ARP and so on
+// * not support TCP protocol
+// */
+//int net_init();
 
 /**
  * set default config for net interfaces
