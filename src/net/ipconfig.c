@@ -12,6 +12,9 @@
 #include "net/net.h"
 #include "net/if_device.h"
 #include "misc.h"
+#include "kernel/module.h"
+
+DECLARE_INITABLE(net_init);
 
 /**
  * struct for default config net interfaces
@@ -32,7 +35,7 @@ static const ETH_CONFIG eth_ifs[] = {
  * now only UDP ARP and so on
  * not support TCP protocol
  */
-int net_init() {
+static int net_init() {
     eth_init();
     inet_dev_init();
 

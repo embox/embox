@@ -9,6 +9,9 @@
 #include "common.h"
 #include "fs/rootfs.h"
 #include "fs/ramfs.h"
+#include "kernel/module.h"
+
+DECLARE_INITABLE(rootfs_init);
 
 
 typedef struct _FS_DESCRIPTION {
@@ -41,7 +44,7 @@ static FS_FILE_ITERATOR get_file_list_iterator(){
 }
 
 static FSOP_DESCRIPTION rootfs_op = { get_file_list_iterator : get_file_list_iterator};
-int rootfs_init(){
+static int rootfs_init(){
     int i;
     for (i = 0; i < NUMBER_OF_FS; i++){
         if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)){

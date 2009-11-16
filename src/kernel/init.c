@@ -38,6 +38,8 @@ void copy_data_section() {
 		*dst = 0;
 }
 
+
+
 static int init_modules() {
 	extern module_descriptor_t *__modules_handlers_start, *__modules_handlers_end;
 	module_descriptor_t ** p_module = &__modules_handlers_start;
@@ -72,7 +74,35 @@ static int init_modules() {
 
 	return 0;
 }
+static int init_others() {
+	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
+	init_descriptor_t ** p_init_desc = &__init_handlers_start;
+	int i, total = (int) (&__init_handlers_end - &__init_handlers_start);
 
+	TRACE("\nInitializing others (total: %d)\n\n", total);
+
+	for (i = 0; i < total; i++, p_init_desc++) {
+		if (NULL == (*p_init_desc)) {
+			LOG_ERROR("Missing init descriptor\n");
+			continue;
+		}
+		if (NULL == ((*p_init_desc)->init)) {
+			LOG_ERROR("Broken init handler descriptor.");
+			continue;
+		}
+
+		if (-1 != (*p_init_desc)->init()) {
+			TRACE("DONE\n");
+		} else {
+			TRACE("FAILED\n");
+		}
+
+	}
+
+	TRACE("\n");
+
+	return 0;
+}
 int hardware_init_hook() {
 	//TODO during too long time for simulation:(
 	copy_data_section();
@@ -86,11 +116,8 @@ int hardware_init_hook() {
 
 	init_modules();
 
+	init_others();
+
 	TRACE("\nStarting Monitor...\n");
-
-#ifdef MONITOR_FS
-	rootfs_init();
-#endif /* MONITOR_FS */
-
 	return 0;
 }
