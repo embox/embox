@@ -1,6 +1,7 @@
 SUBDIRS-y += shell
 SUBDIRS-y += arp
 SUBDIRS-y += cp
+SUBDIRS-y += expresstest
 SUBDIRS-y += goto
 SUBDIRS-y += help
 SUBDIRS-y += ldimg
