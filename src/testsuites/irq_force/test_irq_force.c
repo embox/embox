@@ -5,13 +5,14 @@
  * \author Alexey Fomin
  */
 
+#include "autoconf.h"
 #include "common.h"
 #include "express_tests.h"
 #include "kernel/irq_ctrl.h"
 #include "kernel/irq.h"
 
 #define TEST_IRQ_NUM 10
-#include "on_boot_express_tests.h"
+
 
 DECLARE_EXPRESS_TEST("force irq", exec, TEST_FORCE_IRQ_ON_BOOT_ENABLE, NULL);
 

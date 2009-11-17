@@ -4,11 +4,11 @@
  * \date 28.01.2009
  * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
-
+#include "autoconf.h"
 #include "common.h"
 #include "kernel/timers.h"
 #include "express_tests.h"
-#include "on_boot_express_tests.h"
+
 
 DECLARE_EXPRESS_TEST("timer callback", exec, TEST_TIMER_CALLBACK_ON_BOOT_ENABLE, NULL);
 
