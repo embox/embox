@@ -11,8 +11,9 @@
 #include "kernel/irq.h"
 
 #define TEST_IRQ_NUM 10
+#include "on_boot_express_tests.h"
 
-DECLARE_EXPRESS_TEST("local_irq_save()", exec);
+DECLARE_EXPRESS_TEST("local_irq_save()", exec, TEST_LOCAL_IRQ_SAVE_ON_BOOT_ENABLE, NULL);
 
 volatile static BOOL irq_happened;
 

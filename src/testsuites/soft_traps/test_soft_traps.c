@@ -6,8 +6,9 @@
  */
 #include "common.h"
 #include "express_tests.h"
+#include "on_boot_express_tests.h"
 
-DECLARE_EXPRESS_TEST("software traps", exec);
+DECLARE_EXPRESS_TEST("software traps", exec, TEST_SOFT_TRAPS_ON_BOOT_ENABLE, NULL);
 
 extern unsigned int volatile test_soft_traps_variable;
 #define TEST_SOFT_TRAP_NUMBER 0x10

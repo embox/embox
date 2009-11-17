@@ -8,8 +8,9 @@
 #include "common.h"
 #include "kernel/timers.h"
 #include "express_tests.h"
+#include "on_boot_express_tests.h"
 
-DECLARE_SMART_EXPRESS_TEST("timer callback", exec, FALSE, NULL);
+DECLARE_EXPRESS_TEST("timer callback", exec, TEST_TIMER_CALLBACK_ON_BOOT_ENABLE, NULL);
 
 volatile static BOOL tick_happened;
 

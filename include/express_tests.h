@@ -20,15 +20,12 @@ typedef struct _express_test_descriptor {
 } express_test_descriptor_t;
 
 #define __semicolon ;
-#define DECLARE_SMART_EXPRESS_TEST(name, exec, on_boot, info_func) \
+#define DECLARE_EXPRESS_TEST(name, exec, on_boot, info_func) \
 	static int exec() __semicolon \
 	static const express_test_descriptor_t _descriptor##exec = { name, exec, on_boot, info_func } __semicolon \
 	static const express_test_descriptor_t \
 		*_pdescriptor##exec __attribute__ ((used, section(".express_tests"))) \
 		= &_descriptor##exec
-
-#define DECLARE_EXPRESS_TEST(name, exec) \
-		DECLARE_SMART_EXPRESS_TEST(name, exec, TRUE, NULL)
 
 int express_tests_execute();
 

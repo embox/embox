@@ -9,8 +9,9 @@
 #include "asm/cpu_context.h"
 #include "kernel/sys.h"
 #include "express_tests.h"
+#include "on_boot_express_tests.h"
 
-DECLARE_EXPRESS_TEST("CPU context", exec);
+DECLARE_EXPRESS_TEST("CPU context", exec, TEST_CPU_CONTEXT_ON_BOOT_ENABLE, NULL);
 
 /**
  * in this trap function contex_save takes place
