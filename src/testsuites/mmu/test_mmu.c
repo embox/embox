@@ -4,10 +4,11 @@
  * \author anton
  * \details
  */
+#include "autoconf.h"
+#include "common.h"
 #include "asm/leon.h"
 #include "asm/mmu.h"
 #include "express_tests.h"
-#include "on_boot_express_tests.h"
 
 DECLARE_EXPRESS_TEST("MMU", exec, TEST_MMU_ON_BOOT_ENABLE, NULL);
 

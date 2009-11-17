@@ -8,8 +8,9 @@
  * @author Eldar Abusalimov
  */
 
+#include "autoconf.h"
+#include "common.h"
 #include "express_tests.h"
-#include "on_boot_express_tests.h"
 
 DECLARE_EXPRESS_TEST("recursion", exec, TEST_RECURSION_ON_BOOT_ENABLE, NULL);
 

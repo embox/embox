@@ -5,10 +5,10 @@
  * \author Alexey Fomin
  */
 
+#include "autoconf.h"
 #include "crc32.h"
 #include "common.h"
 #include "express_tests.h"
-#include "on_boot_express_tests.h"
 
 DECLARE_EXPRESS_TEST("checksum", exec, TEST_CHECKSUM_ON_BOOT_ENABLE, NULL);
 

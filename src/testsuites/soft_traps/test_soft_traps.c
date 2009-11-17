@@ -4,9 +4,10 @@
  * \date 26.06.2009
  * \author sunnya
  */
+
+#include "autoconf.h"
 #include "common.h"
 #include "express_tests.h"
-#include "on_boot_express_tests.h"
 
 DECLARE_EXPRESS_TEST("software traps", exec, TEST_SOFT_TRAPS_ON_BOOT_ENABLE, NULL);
 
