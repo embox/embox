@@ -59,6 +59,5 @@ int express_tests_execute() {
 	TRACE("\nPassed: %d\n", passed);
 	TRACE("Failed: %d\n", failed);
 
-	return (passed == total) ? 0 : -1;
-
+	return /*(passed == total)*/(failed == 0) ? 0 : -1;
 }

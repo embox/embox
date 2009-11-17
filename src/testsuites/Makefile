@@ -3,7 +3,6 @@
 OBJS-$(MONITOR_TESTS) += express_tests.o
 SUBDIRS-$(MONITOR_TESTS) += checksum
 SUBDIRS-$(MONITOR_TESTS) += cpu_context
-SUBDIRS-$(MONITOR_TESTS) += timer_callback
 SUBDIRS-$(MONITOR_TESTS) += irq_force
 SUBDIRS-$(MONITOR_TESTS) += local_irq_save
 SUBDIRS-$(MONITOR_TESTS) += mmu

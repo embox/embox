@@ -142,7 +142,7 @@
 		"irq_ctrl": {
 			"dep": {
 				"Tests": [
-					"test_irq_availability"
+					"test_timer_callback"
 				]
 			},
 			"desc": "interrupt unit",
@@ -274,10 +274,10 @@
 			"mdef": "MONITOR_TEST_RECURSION",
 			"status": 1
 		},
-		"test_irq_availability": {
-			"desc": "irq availability",
+		"test_timer_callback": {
+			"desc": "timer callback",
 			"inc": 1,
-			"mdef": "MONITOR_TEST_IRQ_AVAILABILITY",
+			"mdef": "MONITOR_TEST_TIMER_CALLBACK",
 			"status": 1
 		},
 		"test_mmu": {
