@@ -24,11 +24,11 @@ CONSOLE *cur_console = NULL;
 
 static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
         CONSOLE *this = (CONSOLE *) cb->outer;
-        /* resolve "(reverse-i-search)`':" statement */
-        char *cmd = strstr(this->model->string, ":");
-        if (cmd)
-    		*cmd++;
-    	else
+        /*FIXME: resolve "(reverse-i-search)`':" statement */
+        char *cmd;// = strstr(this->model->string, ":");
+//        if (cmd)
+//    		*cmd++;
+//    	else
     		cmd = this->model->string;
 
         if (this->callback != NULL && this->callback->exec != NULL

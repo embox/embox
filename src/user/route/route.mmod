@@ -1,0 +1,5 @@
+ModName   = route
+DependsOn = shell net
+Type      = Shell command
+SrcList   = route.c
+MDef      = MONITOR_USER_ROUTE

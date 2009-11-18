@@ -366,6 +366,12 @@
 			"mdef": "MONITOR_USER_RM",
 			"status": 1
 		},
+		"route": {
+			"desc": "manipulate routing table",
+			"inc": 1,
+			"mdef": "MONITOR_USER_ROUTE",
+			"status": 1
+		},
 		"udpd": {
 			"desc": "test udp socket",
 			"inc": 1,
