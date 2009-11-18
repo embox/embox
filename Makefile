@@ -77,7 +77,7 @@ clean_all: clean
 	@ln -sf -T asm-sparc include/asm
 
 xconfig:
-	@$(SCRIPTS_DIR)/configure.py --mode=tk
+	@$(SCRIPTS_DIR)/configure.py --mode=tk > /dev/null 2>&1
 
 menuconfig:
 	@if [ ! -e $(SCRIPTS_DIR)/autoconf ]; \
@@ -87,10 +87,10 @@ menuconfig:
 	fi;
 	@$(EDITOR) $(SCRIPTS_DIR)/autoconf
 	@$(EDITOR) $(SCRIPTS_DIR)/autoconf.h
-	@$(SCRIPTS_DIR)/configure.py --mode=menu
+	@$(SCRIPTS_DIR)/configure.py --mode=menu > /dev/null 2>&1
 
 config:
 	@echo "Oops! Try edit config file by hand or use \"make x(menu)config\" and have a lot of fun."
 
 mconfig:
-	@$(SCRIPTS_DIR)/configure.py --mode=qt
+	@$(SCRIPTS_DIR)/configure.py --mode=qt > /dev/null 2>&1
