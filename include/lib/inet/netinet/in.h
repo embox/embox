@@ -7,10 +7,14 @@
 #ifndef IN_H_
 #define IN_H_
 
+#include "types.h"
+
 // IPv4 AF_INET sockets:
 
+typedef uint32_t in_addr_t;
+
 struct in_addr {
-        unsigned long    s_addr;
+        u32_t    s_addr;
 };
 
 struct sockaddr_in {
@@ -20,8 +24,13 @@ struct sockaddr_in {
         char             sin_zero[8];  /* zero this if you want to */
 };
 
+in_addr_t inet_addr(const char *cp);
+int inet_aton(const char *cp, struct in_addr *addr);
+
 #define htons(n)            n
 #define ntohs(n)            n
+#define htonl(n)            n
+#define ntohl(n)            n
 
 /* Address to accept any incoming messages. */
 #define INADDR_ANY          ((unsigned long int) 0x00000000)

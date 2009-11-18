@@ -7,5 +7,6 @@ SUBDIRS-$(MONITOR_LIB) += crypt
 SUBDIRS-$(MONITOR_LIB) += misc
 SUBDIRS-$(MONITOR_LIB) += malloc
 SUBDIRS-$(MONITOR_LIB) += ctype
+SUBDIRS-$(MONITOR_LIB) += resolv
 
 include $(SCRIPTS_DIR)/common.mk

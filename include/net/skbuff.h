@@ -9,16 +9,29 @@
 #define SKBUFF_H_
 
 struct skb_timeval {
-    UINT32 off_sec;
-    UINT32 off_usec;
+	UINT32 off_sec;
+	UINT32 off_usec;
 };
 
+/**
+ *      struct sk_buff - socket buffer
+ *      @next: Next buffer in list
+ *      @prev: Previous buffer in list
+ *      @sk: Socket we are owned by
+ *      @netdev: Device we arrived on/are leaving by
+ *      @tstamp: Time we arrived
+ *      @protocol: Packet protocol from driver
+ *      @len: Length of actual data
+ *      @h: Transport layer header
+ *      @nh: Network layer header
+ *      @mac: Link layer header
+ */
 typedef struct sk_buff {
-/* These two members must be first. */
-	    struct sk_buff *next;
-	    struct sk_buff *prev;
+	/* These two members must be first. */
+	struct sk_buff *next;
+	struct sk_buff *prev;
 
-	    struct sock        *sk;
+	struct sock        *sk;
         struct net_device  *netdev;
     	struct skb_timeval tstamp;
 #if 0
@@ -53,7 +66,7 @@ typedef struct sk_buff {
 
 typedef struct sk_buff_head {
 	struct sk_buff *next;
-    struct sk_buff *prev;
+	struct sk_buff *prev;
 	__u32		qlen;
 	spinlock_t	lock;
 }sk_buff_head_t;

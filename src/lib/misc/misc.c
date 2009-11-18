@@ -5,7 +5,9 @@
  * \author sikmir
  */
 
-#include "misc.h"
+#include "lib/bits/byteswap.h"
+#include "lib/inet/netinet/in.h"
+#include "common.h"
 #include "conio.h"
 #include "string.h"
 
@@ -83,15 +85,22 @@ void ipaddr_print(const char *buf, const unsigned char *addr) {
         sprintf((char *)buf, "%d.%d.%d.%d", addr[0], addr[1], addr[2], addr[3]);
 }
 
-unsigned long inet_addr(const unsigned char *cp) {
-        unsigned long tmp = 0x00000000;
-        int i;
-        for(i=0; i<4; i++) {
-                tmp += ((0xFF & cp[i]) << (3-i)*8);
-        }
-        return tmp;
-}
-
 void macaddr_print(const char *buf, const unsigned char *addr) {
         sprintf((char *)buf, "%2X:%2X:%2X:%2X:%2X:%2X", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+}
+
+int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigned char msk) {
+        const unsigned shift = 0xFFFFFFFF;
+        struct in_addr addr;
+
+        inet_aton(uip, &addr);
+        int userip = addr.s_addr;
+
+        inet_aton(nip, &addr);
+        int netip = addr.s_addr;
+
+        uint32_t mask = msk;
+        uint32_t shiftMask = shift << (32 - mask);
+
+        return (__bswap_32(netip) & shiftMask) == (__bswap_32(userip) & shiftMask) ? 0 : -1;
 }
