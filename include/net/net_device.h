@@ -13,6 +13,7 @@
 #define NET_DEVICE_H_
 
 #include "net/if_ether.h"
+#include "lib/inet/netinet/in.h"
 //TODO this must place in config file
 #define NET_DEVICES_QUANTITY     0x4
 #define MAX_IFNAME_LENGTH        0x6
@@ -91,7 +92,7 @@ typedef struct packet_type {
 typedef struct net_device {
 	char name[MAX_IFNAME_LENGTH];           /**< It is the name the interface.*/
 	unsigned char hw_addr[MAX_ADDR_LEN];    /**< hw address                   */
-	unsigned char broadcast[MAX_ADDR_LEN];  /**< hw bcast address             */
+	in_addr_t broadcast;                    /**< hw bcast address             */
 	unsigned long state;
 	unsigned char type;                     /**< interface hardware type      */
 	unsigned char addr_len;                 /**< hardware address length      */
@@ -100,6 +101,7 @@ typedef struct net_device {
 	unsigned long tx_queue_len;             /**< Max frames per queue allowed */
 	unsigned long base_addr;                /**< device I/O address           */
 	unsigned int irq;                       /**< device IRQ number            */
+//	void *priv;                             /**< pointer to private data      */
 
 	int (*open)(struct net_device *dev);
 	int (*stop)(struct net_device *dev);

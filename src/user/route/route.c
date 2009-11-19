@@ -62,20 +62,20 @@ static int exec(int argsc, char **argsv) {
 		inet_device_t *idev = (struct inet_device*)ifdev;
 		rt_del_route(idev->net_dev, net, mask, gw);
 	} else {
-		printf("Destination\t\tGateway\t\tGenmask   \t\tIface\n");
+		printf("Destination\t\tGateway   \t\tGenmask   \t\tIface\n");
 		rt = rt_fib_get_first();
 		while(rt != NULL) {
 			struct in_addr net_addr, mask_addr, gw_addr;
 			char *s_net, *s_mask, *s_gw;
 			net_addr.s_addr = rt->rt_dst;
 			s_net = inet_ntoa(net_addr);
-			printf("%s\t\t", s_net);
+			printf("%s  \t\t", s_net);
 			gw_addr.s_addr = rt->rt_gateway;
 			s_gw = inet_ntoa(gw_addr);
-			printf("%s\t\t", s_gw);
+			printf("%s  \t\t", s_gw);
 			mask_addr.s_addr = rt->rt_mask;
 			s_mask = inet_ntoa(mask_addr);
-			printf("%s\t\t%s\n", s_mask, rt->dev->name);
+			printf("%s  \t\t%s\n", s_mask, rt->dev->name);
 			rt = rt_fib_get_next();
 		}
 	}

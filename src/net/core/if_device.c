@@ -154,6 +154,14 @@ int inet_dev_set_mask(void *ifdev, const unsigned char *mask) {
             return -1;
     inet_device_t *dev = (inet_device_t *) ifdev;
     memcpy(dev->mask, mask, sizeof(dev->mask));
+    //TODO: fix ip addr format.
+    unsigned long ip_addr = 0x00000000, net_mask = 0x00000000;
+    int i;
+    for(i = 0; i < 4; i++) {
+            ip_addr += ((0xFF & dev->ipv4_addr[i]) << (3 - i)*8);
+            net_mask += ((0xFF & mask[i]) << (3 - i)*8);
+    }
+    dev->net_dev->broadcast = ip_addr | ~net_mask;
     return 0;
 }
 

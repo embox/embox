@@ -55,7 +55,7 @@ void ether_setup(net_device_t *dev) {
     dev->irq                = 12;
     dev->base_addr          = 0xCF000000;
     dev->tx_queue_len       = 1000;
-    memset(dev->broadcast, 0xFF, ETH_ALEN);
+    dev->broadcast          = 0xFFFFFFFF;
 }
 
 net_device_t *alloc_etherdev(int num) {
