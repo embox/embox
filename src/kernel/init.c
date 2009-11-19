@@ -127,6 +127,5 @@ int hardware_init_hook() {
 	}
 #endif //MONITOR_TESTS
 
-	TRACE("\nStarting Monitor...\n");
 	return 0;
 }

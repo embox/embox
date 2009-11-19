@@ -126,11 +126,12 @@ void *inet_dev_find_by_name(const char *if_name) {
     return NULL;
 }
 
-int inet_dev_set_interface(char *name, char *ipaddr, char *macaddr) {
+int inet_dev_set_interface(char *name, char *ipaddr, char *mask, char *macaddr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
         if (0 == strncmp(name, ifs_info[i].dev.net_dev->name, array_len(ifs_info[i].dev.net_dev->name))) {
             if( (-1 == inet_dev_set_ipaddr(&ifs_info[i].dev, ipaddr)) ||
+        	(-1 == inet_dev_set_mask(&ifs_info[i].dev, mask)) ||
                 (-1 == inet_dev_set_macaddr(&ifs_info[i].dev, macaddr)) ) {
         	return -1;
     	    }
@@ -145,6 +146,14 @@ int inet_dev_set_ipaddr(void *ifdev, const unsigned char *ipaddr) {
         return -1;
     inet_device_t *dev = (inet_device_t *) ifdev;
     memcpy(dev->ipv4_addr, ipaddr, sizeof(dev->ipv4_addr));
+    return 0;
+}
+
+int inet_dev_set_mask(void *ifdev, const unsigned char *mask) {
+    if (NULL == ifdev)
+            return -1;
+    inet_device_t *dev = (inet_device_t *) ifdev;
+    memcpy(dev->mask, mask, sizeof(dev->mask));
     return 0;
 }
 

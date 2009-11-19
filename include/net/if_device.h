@@ -54,13 +54,19 @@ void *inet_dev_find_by_name(const char *if_name);
  * @param ipaddr - ip devices address
  * @param macaddr - MAC devices address
  */
-int inet_dev_set_interface(char *name, char *ipaddr, char *macaddr);
+int inet_dev_set_interface(char *name, char *ipaddr, char* mask, char *macaddr);
 
 /**
  * Set IP address (sw)
  * @param ipaddr - ip devices address
  */
 int inet_dev_set_ipaddr(void *ifdev, const unsigned char *ipaddr);
+
+/**
+ * Set IP mask
+ * @param mask - ip mask
+ */
+int inet_dev_set_mask(void *ifdev, const unsigned char *mask);
 
 /**
  * Set MAC address
