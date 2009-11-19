@@ -13,6 +13,7 @@
 #include "kernel/irq_ctrl.h"
 #include "asm/traps.h"
 #include "kernel/irq.h"
+#include "asm/sys.h"
 
 // user trap handlers table
 static IRQ_HANDLER user_trap_handlers[IRQ_TABLE_SIZE];

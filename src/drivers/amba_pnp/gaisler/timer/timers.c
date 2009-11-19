@@ -44,7 +44,7 @@ void platform_timers_off() {
 }
 
 static void irq_func_tmr_1mS() {
-	unsigned int irq = __local_irq_save();
+	unsigned int irq = local_irq_save();
 	cnt_ms_sleep++;
 	cnt_sys_time++;
 	inc_sys_timers();
@@ -53,7 +53,7 @@ static void irq_func_tmr_1mS() {
 
 //TODO this must be in kernel part
 void sleep(volatile unsigned int ms) {
-	unsigned int irq = __local_irq_save();
+	unsigned int irq = local_irq_save();
 	cnt_ms_sleep = 0;
 	local_irq_restore(irq);
 

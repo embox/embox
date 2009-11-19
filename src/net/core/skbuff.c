@@ -14,6 +14,9 @@
 #include "asm/spin_lock.h"
 #include "net/net_packet.h"
 
+/*FIXME this file needs for local_irq_save but in this module we must use spin_lock*/
+#include "asm/sys.h"
+
 //TODO this define must place in autoconf
 #define QUANTITY_SKB 0x100
 

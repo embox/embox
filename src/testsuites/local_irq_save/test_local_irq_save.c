@@ -10,6 +10,7 @@
 #include "express_tests.h"
 #include "kernel/irq_ctrl.h"
 #include "kernel/irq.h"
+#include "asm/sys.h"
 
 #define TEST_IRQ_NUM 10
 

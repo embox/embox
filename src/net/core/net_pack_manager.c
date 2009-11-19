@@ -12,6 +12,8 @@
 #include "lib/list.h"
 #include "asm/spin_lock.h"
 #include "kernel/module.h"
+/*FIXME this file needs for local_irq_save but in this module we must use spin_lock*/
+#include "asm/sys.h"
 
 
 typedef struct _NET_BUFF_INFO {
