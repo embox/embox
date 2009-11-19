@@ -19,10 +19,9 @@ typedef struct _express_test_descriptor {
 	info_func_t info_func;
 } express_test_descriptor_t;
 
-#define __semicolon ;
 #define DECLARE_EXPRESS_TEST(name, exec, on_boot, info_func) \
-	static int exec() __semicolon \
-	static const express_test_descriptor_t _descriptor##exec = { name, exec, on_boot, info_func } __semicolon \
+	static int exec(); \
+	static const express_test_descriptor_t _descriptor##exec = { name, exec, on_boot, info_func }; \
 	static const express_test_descriptor_t \
 		*_pdescriptor##exec __attribute__ ((used, section(".express_tests"))) \
 		= &_descriptor##exec
