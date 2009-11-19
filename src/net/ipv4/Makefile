@@ -6,5 +6,6 @@ OBJS-$(MONITOR_NET_TFTP)             += tftp.o
 #OBJS-$(MONITOR_NET_DHCP)             += dhcp.o
 OBJS-$(MONITOR_NET_BOOTP)             += bootp.o
 #OBJS-y                               += protocol.o
+OBJS-y                               += route.o
 
 include $(SCRIPTS_DIR)/common.mk

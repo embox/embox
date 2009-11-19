@@ -1,13 +1,9 @@
 #ifndef __IP_ADDR_H__
 #define __IP_ADDR_H__
 
-#include "arch.h"
-
-PACK_STRUCT_BEGIN
 struct ip_addr {
-	PACK_STRUCT_FIELD(unsigned int addr);
-} PACK_STRUCT_STRUCT;
-PACK_STRUCT_END
+	unsigned int addr __attribute__((packed));
+} __attribute__((packed));
 
 //struct in_addr {
 //  u32_t s_addr;

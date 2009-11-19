@@ -15,6 +15,7 @@
 #include "net/if_ether.h"
 #include "net/net_packet.h"
 #include "net/net_device.h"
+#include "net/route.h"
 
 int ip_received_packet(sk_buff_t *pack) {
 	LOG_DEBUG("ip packet received\n");
@@ -48,8 +49,16 @@ int ip_received_packet(sk_buff_t *pack) {
 		stats->rx_length_errors += 1;
 		return -1;
 	}
-	//	packet_dump(pack);
-
+	/**
+	 * Check the destination address, and if it dosn't match
+	 * any of own addresses, retransmit packet according to routing table.
+	 */
+	if(inet_dev_find_by_ip(pack->nh.iph->daddr)) {
+		if(!ip_route(pack)) {
+			dev_queue_xmit(pack);
+		}
+	        return 0;
+	}
 	if (ICMP_PROTO_TYPE == iph->proto) {
 		icmp_rcv(pack);
 	}
@@ -90,5 +99,6 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *pack) {
 	build_ip_packet(sk, pack);
 	pack->protocol = ETH_P_IP;
 	pack->len += IP_HEADER_SIZE;
+	ip_route(pack);
 	return dev_queue_xmit(pack);
 }

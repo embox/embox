@@ -179,9 +179,6 @@ static int icmp_unreach(sk_buff_t *pack) {
 static int icmp_echo(sk_buff_t *recieved_pack) {
 	LOG_DEBUG("icmp get echo request\n");
 	sk_buff_t *pack = skb_copy(recieved_pack, 0);
-	if(inet_dev_find_by_ip(pack->nh.iph->daddr)) {
-		return 0;
-	}
 
 	//fill icmp header
 	pack->h.icmph->type = ICMP_ECHOREPLY;
