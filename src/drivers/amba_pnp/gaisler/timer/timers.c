@@ -6,10 +6,12 @@
 
 #include "types.h"
 #include "drivers/amba_pnp.h"
-#include "cpu_conf.h"
 #include "common.h"
 #include "conio.h"
 #include "kernel/irq.h"
+#include "autoconf.h"
+
+#define TIMER_SCALER_VAL (CORE_FREQ/1000000 - 1)
 
 typedef struct _TIMERS_STRUCT {
 	volatile unsigned int scaler_cnt; /**< 0x00 */
@@ -49,6 +51,7 @@ static void irq_func_tmr_1mS() {
 	local_irq_restore(irq);
 }
 
+//TODO this must be in kernel part
 void sleep(volatile unsigned int ms) {
 	unsigned int irq = __local_irq_save();
 	cnt_ms_sleep = 0;
