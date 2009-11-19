@@ -10,14 +10,6 @@
 #define NULL    0x00000000
 #endif
 
-#ifndef TRUE
-#define TRUE    0x1
-#endif
-
-#ifndef FALSE
-#define FALSE   0x0
-#endif
-
 typedef __u8                    UINT8;
 typedef __s8                    INT8;
 typedef __u16                   UINT16;
@@ -74,34 +66,22 @@ typedef struct {
         volatile int counter;
 } atomic_t;
 
-#if 0
-typedef void * PVOID;
-#endif
 
-// unsigned types
+
+//TODO is this type posix?
 #define WORD    unsigned long
 #define HWRD    unsigned short int
 #define BYTE    unsigned char
 #define BOOL    int
 
-#if 0
-// volatile types
-#define VWORD   volatile WORD
-#define VHWRD   volatile HWRD
-#define VBYTE   volatile BYTE
-#define VCHAR   volatile char
-#define VINT    volatile int
-
-// volatile pointers types
-#define PVWORD                VWORD*
-#define PVHWRD                VHWRD*
-#define PVBYTE                VBYTE*
-
-// access to value by address
-#define AWORD(addr)           *((PVWORD)(addr))
-#define AHWRD(addr)           *((PVHWRD)(addr))
-#define ABYTE(addr)           *((PVBYTE)(addr))
+#ifndef TRUE
+#define TRUE    0x1
 #endif
+
+#ifndef FALSE
+#define FALSE   0x0
+#endif
+
 
 #endif  // __ASSEMBLER__
 

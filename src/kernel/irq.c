@@ -14,6 +14,7 @@
 #include "asm/traps.h"
 #include "kernel/irq.h"
 #include "asm/sys.h"
+#include "string.h"
 
 // user trap handlers table
 static IRQ_HANDLER user_trap_handlers[IRQ_TABLE_SIZE];
@@ -29,6 +30,7 @@ void dispatch_trap(BYTE tt, UINT32 *sp) {
 }
 
 void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
+#if 0
 #ifdef MONITOR_ARCH_SPARC
 	REG_WINDOW *rw;
 
@@ -52,6 +54,7 @@ void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
 			rw->ins[0], rw->ins[1], rw->ins[2], rw->ins[3],
 			rw->ins[4], rw->ins[5], rw->ins[6], rw->ins[7]);
 #endif /* MONITOR_ARCH_SPARC */
+#endif
 	while (1)
 		;
 }
