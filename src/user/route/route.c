@@ -5,6 +5,7 @@
  */
 
 #include "shell_command.h"
+#include "lib/inet/netinet/in.h"
 #include "net/route.h"
 #include "net/if_device.h"
 
@@ -20,12 +21,10 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static int exec(int argsc, char **argsv) {
 	int nextOption;
 	void *ifdev;
-	unsigned char net[4]  = {0x0,0x0,0x0,0x0};
-	unsigned char mask[4] = {0x0,0x0,0x0,0x0};
-	unsigned int  n_mask  = 0;
-	unsigned char gw[4]   = {0x0,0x0,0x0,0x0};
+	in_addr_t net  = INADDR_ANY;
+	in_addr_t mask = INADDR_ANY;
+	in_addr_t gw   = INADDR_ANY;
 	struct rt_entry *rt;
-	char _net[15], _mask[15], _gw[15];
         getopt_init();
         do {
                 nextOption = getopt(argsc, argsv, "n:m:d:g:h");
@@ -34,26 +33,13 @@ static int exec(int argsc, char **argsv) {
                         show_help();
                         return 0;
 		case 'n':
-			if (NULL == ipaddr_scan(optarg, net)) {
-		                LOG_ERROR("wrong ip addr format (%s)\n", optarg);
-		                show_help();
-		                return -1;
-		        }
-			break;
+		        net = inet_addr(optarg);
+		        break;
 		case 'm':
-			if( (NULL == ipaddr_scan(optarg, mask)) ||
-			    (1 != sscanf(optarg, "%d", &n_mask)) ) {
-		                LOG_ERROR("wrong mask format (%s)\n", optarg);
-		                show_help();
-		                return -1;
-		        }
+		        mask = inet_addr(optarg);
 			break;
 		case 'g':
-		        if (NULL == ipaddr_scan(optarg, gw)) {
-		                LOG_ERROR("wrong ip addr format (%s)\n", optarg);
-		                show_help();
-		                return -1;
-		        }
+		        gw = inet_addr(optarg);
 		        break;
 		case 'd':
 			if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
@@ -79,10 +65,17 @@ static int exec(int argsc, char **argsv) {
 		printf("Destination\t\tGateway\t\tGenmask   \t\tIface\n");
 		rt = rt_fib_get_first();
 		while(rt != NULL) {
-			ipaddr_print(_net, rt->rt_dst);
-		        ipaddr_print(_mask, rt->rt_mask);
-		        ipaddr_print(_gw, rt->rt_gateway);
-		        printf("%s\t\t%s\t\t%s\t\t%s\n", _net, _gw, _mask, rt->dev->name);
+			struct in_addr net_addr, mask_addr, gw_addr;
+			char *s_net, *s_mask, *s_gw;
+			net_addr.s_addr = rt->rt_dst;
+			s_net = inet_ntoa(net_addr);
+			printf("%s\t\t", s_net);
+			gw_addr.s_addr = rt->rt_gateway;
+			s_gw = inet_ntoa(gw_addr);
+			printf("%s\t\t", s_gw);
+			mask_addr.s_addr = rt->rt_mask;
+			s_mask = inet_ntoa(mask_addr);
+			printf("%s\t\t%s\n", s_mask, rt->dev->name);
 			rt = rt_fib_get_next();
 		}
 	}

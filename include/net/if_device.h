@@ -7,6 +7,7 @@
 #define IF_DEVICE_H_
 
 #include "net/eth.h"
+#include "net/net.h"
 
 /**
  * structute of inet(IP) device
@@ -16,7 +17,7 @@ typedef struct inet_device {
     struct net_device    *net_dev;
     unsigned char mask[IPV4_ADDR_LENGTH];
     /*TODO gw must be in route table*/
-    unsigned char gw[IPV4_ADDR_LENGTH];
+    //unsigned char gw[IPV4_ADDR_LENGTH];
     unsigned char ipv4_addr_length;
 } inet_device_t;
 
