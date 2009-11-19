@@ -14,8 +14,6 @@
 #include "net/net.h"
 #include "fs/rootfs.h"
 #include "asm/cache.h"
-#include "asm/leon.h"
-#include "asm/memory_map.h"
 #include "kernel/module.h"
 
 //TODO this code must move to boot.S file
