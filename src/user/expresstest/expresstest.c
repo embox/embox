@@ -20,7 +20,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 
 #define DEFAULT_NAME_STR "NONAME"
 #define BROKEN_DESCRIPTOR_STR "BROKEN"
-#define ONBOOT_TEST_STR "ONBOOT"
+#define ON_BOOT_TEST_STR "ONBOOT"
 #define MANUAL_TEST_STR "MANUAL"
 #define NO_INFO_ERROR_STR "No info func available for that test"
 #define WRONG_TEST_NUMBER_ERROR_STR "Wrong test number entered"
@@ -50,6 +50,9 @@ static void print_express_tests() {
 		if (NULL == ((*p_test)->exec)) {
 			TRACE(BROKEN_DESCRIPTOR_STR"\n");
 			continue;
+		}
+		if ((*p_test)->execute_on_boot) {
+			TRACE(ON_BOOT_TEST_STR"\n");
 		}
 		else {
 			TRACE(MANUAL_TEST_STR"\n");
@@ -124,7 +127,7 @@ static int exec(int argsc, char **argsv) {
 	}
 	TRACE("Testing %s ... ", p_test->name == NULL ?
 			DEFAULT_NAME_STR : p_test->name);
-	int result = sys_exec_start(p_test->exec);
+	int result = p_test->exec();
 	if (result == PASSED_CODE) {
 		TRACE(PASSED_STR"\n");
 	} else {
