@@ -21,15 +21,15 @@
 static struct rt_entry rt_table[RT_TABLE_SIZE];
 
 int rt_add_route(struct net_device *dev, in_addr_t dst,
-        		    in_addr_t mask, in_addr_t gw) {
+        		    in_addr_t mask, in_addr_t gw, int flags) {
 	int i;
         for (i = 0; i < RT_TABLE_SIZE; i++) {
-                if (!rt_table[i]._is_up) {
+                if (!(rt_table[i].rt_flags & RTF_UP)) {
             		rt_table[i].dev        = dev;
             		rt_table[i].rt_dst     = dst;
             		rt_table[i].rt_mask    = mask;
             		rt_table[i].rt_gateway = gw;
-                        rt_table[i]._is_up     = 1;
+            		rt_table[i].rt_flags   = RTF_UP|flags;
                         return 0;
                 }
         }
@@ -43,7 +43,7 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
 	        if ((rt_table[i].rt_dst == dst || INADDR_ANY == dst) &&
 	    	    (rt_table[i].rt_mask == mask || INADDR_ANY == mask) &&
 	    	    (rt_table[i].rt_gateway == gw || INADDR_ANY == gw) ) {
-	                rt_table[i]._is_up = 0;
+	                rt_table[i].rt_flags &= ~RTF_UP;
 	                return 0;
 	        }
 	}
@@ -53,12 +53,14 @@ int ip_route(sk_buff_t *skbuff) {
 	int i;
 	char buf[15];
 	for(i = 0; i < RT_TABLE_SIZE; i++) {
-		ipaddr_print(buf, skbuff->nh.iph->daddr);
-		if( (inet_addr(buf) & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
-			skbuff->netdev = rt_table[i].dev;
-			//TODO: fix addr format.
-			//arp_resolve_addr(skbuff, rt_table[i].rt_gateway);
-			return 0;
+		if (rt_table[i].rt_flags & RTF_UP) {
+			ipaddr_print(buf, skbuff->nh.iph->daddr);
+			if( (inet_addr(buf) & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
+				skbuff->netdev = rt_table[i].dev;
+				//TODO: fix addr format.
+				//arp_resolve_addr(skbuff, rt_table[i].rt_gateway);
+				return 0;
+			}
 		}
 	}
 	return -1;
@@ -68,7 +70,7 @@ static int rt_iter;
 
 struct rt_entry *rt_fib_get_first() {
 	for(rt_iter = 0; rt_iter < RT_TABLE_SIZE; rt_iter++) {
-    		if (1 == rt_table[rt_iter]._is_up) {
+    		if (rt_table[rt_iter].rt_flags & RTF_UP) {
             		rt_iter++;
             		return &rt_table[rt_iter - 1];
     		}
@@ -78,7 +80,7 @@ struct rt_entry *rt_fib_get_first() {
 
 struct rt_entry *rt_fib_get_next() {
 	for(; rt_iter < RT_TABLE_SIZE; rt_iter++) {
-    		if (1 == rt_table[rt_iter]._is_up) {
+    		if (rt_table[rt_iter].rt_flags & RTF_UP) {
                 	rt_iter++;
                         return &rt_table[rt_iter - 1];
                 }

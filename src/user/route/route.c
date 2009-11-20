@@ -56,13 +56,14 @@ static int exec(int argsc, char **argsv) {
 
 	if(!strcmp(argsv[argsc - 1], "add")) {
 		inet_device_t *idev = (struct inet_device*)ifdev;
-		rt_add_route(idev->net_dev, net, mask, gw);
+		int flags = (gw == INADDR_ANY) ? RTF_UP : RTF_UP|RTF_GATEWAY;
+		rt_add_route(idev->net_dev, net, mask, gw, flags);
 		return 0;
 	} else if(!strcmp(argsv[argsc - 1], "del")) {
 		inet_device_t *idev = (struct inet_device*)ifdev;
 		rt_del_route(idev->net_dev, net, mask, gw);
 	} else {
-		printf("Destination\t\tGateway   \t\tGenmask   \t\tIface\n");
+		printf("Destination\t\tGateway   \t\tGenmask   \t\tFlags\tIface\n");
 		rt = rt_fib_get_first();
 		while(rt != NULL) {
 			struct in_addr net_addr, mask_addr, gw_addr;
@@ -75,7 +76,17 @@ static int exec(int argsc, char **argsv) {
 			printf("%s  \t\t", s_gw);
 			mask_addr.s_addr = rt->rt_mask;
 			s_mask = inet_ntoa(mask_addr);
-			printf("%s  \t\t%s\n", s_mask, rt->dev->name);
+			printf("%s  \t\t", s_mask);
+			if(rt->rt_flags & RTF_UP) {
+				printf("U");
+			}
+			if(rt->rt_flags & RTF_GATEWAY) {
+				printf("G");
+			}
+			if(rt->rt_flags & RTF_REJECT) {
+				printf("R");
+			}
+			printf("\t%s\n", rt->dev->name);
 			rt = rt_fib_get_next();
 		}
 	}
