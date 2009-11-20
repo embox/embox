@@ -87,8 +87,8 @@ static int scan_int(char **in, int base, int widht) {
 	} else
 		dst = ch_to_digit(ch, base);
 
-	for (i = 0; (ch = (int) ch_upcase(scanchar(in))) != EOF; i++) {
-		if (!isdigit_base(ch, base) || (0 == widht)) {
+	for (i = 0; (ch = (int) toupper(scanchar(in))) != EOF; i++) {
+		if (!(base == 10 ? isdigit(ch) : isxdigit(ch)) || (0 == widht)) {
 			unscanchar(in, ch);
 			//end conversion
 			break;

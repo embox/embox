@@ -1,7 +1,5 @@
 #export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
 
-OBJ_HEAD:= entry.o
-
 .PHONY: all release debug sim docs $(SUBDIRS-y) $(SUBDIRS-n)
 
 all: $(BUILD)

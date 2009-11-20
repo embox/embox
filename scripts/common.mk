@@ -25,11 +25,7 @@ all: $(SUBDIRS-y) $(OBJS-y) copy_objs
 copy_objs:
 	@if [ ! -z "$(OBJS-y)" ]; then \
 	    for OBJ in $(OBJS-y); do \
-		if [ "$$OBJ" != "entry.o" ]; then \
 		    cp -f $$OBJ $(OBJ_DIR)/$(BUILD)/`date +%N`-$$OBJ; \
-		else \
-		    cp -f $$OBJ $(OBJ_DIR)/$(BUILD)/$$OBJ; \
-		fi; \
 	    done; \
 	fi
 
