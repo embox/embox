@@ -88,7 +88,7 @@ static int scan_int(char **in, int base, int widht) {
 		dst = ch_to_digit(ch, base);
 
 	for (i = 0; (ch = (int) ch_upcase(scanchar(in))) != EOF; i++) {
-		if (!isdigit(ch, base) || (0 == widht)) {
+		if (!isdigit_base(ch, base) || (0 == widht)) {
 			unscanchar(in, ch);
 			//end conversion
 			break;
@@ -146,10 +146,10 @@ static int scan(char **in, const char *fmt, va_list args) {
 			if (*fmt == '\0')
 				break;
 
-			if (isdigit((int) *fmt, 10))
+			if (isdigit((int) *fmt))
 				widht = 0;
 
-			while (isdigit((int) *fmt, 10)) {
+			while (isdigit((int) *fmt)) {
 
 				widht = widht * 10 + (*fmt++ - '0');
 			}

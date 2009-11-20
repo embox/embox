@@ -6,9 +6,9 @@
 #ifndef CTYPE_H_
 #define CTYPE_H_
 
-#define in_range(c, lo, up)  ((u8_t)c >= lo && (u8_t)c <= up)
+#define in_range(c, lo, up)  (((u8_t)c >= lo) && ((u8_t)c <= up))
 #define isprint(c)           in_range(c, 0x20, 0x7f)
-#define isxdigit(c)          (isdigit(c,10) || in_range(c, 'a', 'f') || in_range(c, 'A', 'F'))
+#define isxdigit(c)          (in_range(c,'0','9') || in_range(c, 'a', 'f') || in_range(c, 'A', 'F'))
 #define islower(c)           in_range(c, 'a', 'z')
 #define isspace(c)           (c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v')
 
@@ -28,7 +28,7 @@ int isalpha(int c);
 //int iscntrl(int c);
 
 /* checks for a digit (0 through 9). */
-int isdigit(int c, int base);
+#define isdigit(c) in_range(c,'0','9')
 
 /* checks for any printable character except space. */
 //int isgraph(int c);

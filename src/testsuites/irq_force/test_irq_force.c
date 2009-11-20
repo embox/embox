@@ -6,6 +6,7 @@
  */
 
 #include "autoconf.h"
+#include "conio.h"
 #include "common.h"
 #include "express_tests.h"
 #include "kernel/irq_ctrl.h"

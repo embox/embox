@@ -6,6 +6,7 @@
  */
 #include "conio.h"
 #include "common.h"
+#include "string.h"
 
 #define MEM_POOL_SIZE 0x11CA
 

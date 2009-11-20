@@ -48,7 +48,7 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 		 * Values are specified as for C:
 		 * 0x=hex, 0=octal, isdigit=decimal.
 		 */
-		if (!isdigit(c,10))
+		if (!isdigit(c))
 			return 0;
 
 		val = 0; base = 10; digit = 0;
@@ -62,7 +62,7 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 			}
 		}
 		for (;;) {
-			if (isdigit(c,10)) {
+			if (isdigit(c)) {
 				if (base == 8 && (c == '8' || c == '9'))
 					return 0;
 				val = (val * base) + (c - '0');

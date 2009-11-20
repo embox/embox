@@ -4,6 +4,7 @@
  * \author Sikmir
  */
 #include "types.h"
+#include "ctype.h"
 
 char ch_upcase(char ch) {
         if (ch >= 'a' && ch <= 'z')
@@ -41,7 +42,7 @@ int ch_to_digit(char ch, int base) {
         return -1;
 }
 
-int isdigit(int ch, int base) {
+int isdigit_base(int ch, int base) {
 	ch = (int) ch_upcase((char) ch);
 	switch (base) {
 	case 10: {
@@ -65,6 +66,6 @@ int isdigit(int ch, int base) {
 	return FALSE;
 }
 
-int isalpha(char ch) {
+int isalpha(int ch) {
 	return ((ch > 0x20) && (ch < 0x7F));
 }

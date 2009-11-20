@@ -7,6 +7,7 @@
  * structures sk_buff are presented queue free packet.
  */
 #include "types.h"
+#include "string.h" /*for memcpy*/
 #include "common.h"
 #include "kernel/module.h"
 #include "lib/list.h"
