@@ -1,0 +1,5 @@
+ModName   = test_local_irq_save
+Type      = Express test
+DependsOn = tests
+SrcList   = test_local_irq_save.c
+MDef      = MONITOR_TEST_LOCAL_IRQ_SAVE

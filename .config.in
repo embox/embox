@@ -274,6 +274,18 @@
 			"mdef": "MONITOR_TEST_RECURSION",
 			"status": 1
 		},
+		"irq_force": {
+			"desc": "irq force",
+			"inc": 0,
+			"mdef": "MONITOR_TEST_IRQ_FORCE",
+			"status": 1
+		},
+		"local_irq_save": {
+			"desc": "local irq save",
+			"inc": 0,
+			"mdef": "MONITOR_TEST_LOCAL_IRQ_SAVE",
+			"status": 1
+		},
 		"test_timer_callback": {
 			"desc": "timer callback",
 			"inc": 1,
