@@ -57,7 +57,7 @@ int express_tests_execute() {
 
 	}
 
-	TRACE("\nSkipped: %d", skipped);
+	TRACE("\nSkipped: %d\n", skipped);
 	TRACE("Passed: %d\n", passed);
 	TRACE("Failed: %d\n", failed);
 
