@@ -24,7 +24,7 @@ release: $(SUBDIRS-y)
 	@#TODO have to set entry point in linker script now importen link order
 	@#echo gobjs $(GOBJS)
 	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linker/linkrom  -o $(BIN_DIR)/$(TARGET)_rom \
-	$(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD) $(filter-out $(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD), $(wildcard $(OBJ_DIR)/$(BUILD)/*.o))
+	$(OBJ_DIR)/$(BUILD)/*.o
 	@if [ $(DISASSEMBLE) == y ]; \
 	then \
 	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_rom > $(BIN_DIR)/$(TARGET)_rom.dis; \
@@ -38,7 +38,7 @@ debug: $(SUBDIRS-y)
 	@#TODO have to set entry point in linker script now importen link order
 	@#echo gobjs $(GOBJS)
 	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linker/linkram  -o $(BIN_DIR)/$(TARGET)_ram \
-	$(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD) $(filter-out $(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD), $(wildcard $(OBJ_DIR)/$(BUILD)/*.o))
+	$(OBJ_DIR)/$(BUILD)/*.o
 	@if [ $(DISASSEMBLE) == y ]; \
 	then \
 	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_ram > $(BIN_DIR)/$(TARGET)_ram.dis; \
@@ -50,7 +50,7 @@ sim: $(SUBDIRS-y)
 	@#echo gobjs $(GOBJS)
 	@#TODO have to set entry point in linker script now importen link order
 	@$(CC) $(LDFLAGS) -T $(SCRIPTS_DIR)/linker/linksim  -o $(BIN_DIR)/$(TARGET)_sim \
-	$(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD) $(filter-out $(OBJ_DIR)/$(BUILD)/$(OBJ_HEAD), $(wildcard $(OBJ_DIR)/$(BUILD)/*.o))
+	$(OBJ_DIR)/$(BUILD)/*.o
 	@if [ $(DISASSEMBLE) == y ]; \
 	then \
 	    $(OD_TOOL) -S $(BIN_DIR)/$(TARGET)_sim > $(BIN_DIR)/$(TARGET)_sim.dis; \
