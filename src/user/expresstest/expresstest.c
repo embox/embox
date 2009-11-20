@@ -97,7 +97,7 @@ static int exec(int argsc, char **argsv) {
 				LOG_ERROR("%s: -i: missing -n before -i.\n", COMMAND_NAME);
 			}
 			run_info_func = TRUE;
-			return 0;
+			break;
 		case -1:
 			break;
 		default:
