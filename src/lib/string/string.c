@@ -15,34 +15,6 @@ int strlen(const char * str) {
 	return (int) (eos - str - 1);
 }
 
-char *strcpy(char * dest, const char * src) {
-	char *cp = dest;
-	while ((*cp++ = *src++))
-		;
-	return dest;
-}
-
-char *strncpy(char *dest, const char *source, size_t count) {
-	char *start = dest;
-	while (count && (*dest++ = *source++))
-		count--;
-	while (count--)
-		*dest++ = '\0';
-	return start;
-}
-
-int strncmp(const char *s1, const char *s2, size_t count) {
-	if (!count)
-		return 0;
-
-	while (--count && *s1 && *s1 == *s2) {
-		s1++;
-		s2++;
-	}
-
-	return *(unsigned char *) s1 - *(unsigned char *) s2;
-}
-
 /*int str_starts_with(const char *str, const char *beg, int len) {
 	// TODO change to strncpy
 	int i;

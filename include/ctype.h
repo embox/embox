@@ -64,14 +64,4 @@ static inline unsigned char __toupper(unsigned char c) {
 /* Convert a character to upper case */
 #define toupper(c) __toupper(c)
 
-//TODO: move to lib/stdlib
-/**
- * convert digit character to integer
- * @param digit character for converting
- * @param base for converting
- * @return converted symbol
- * @return -1 if error
- */
-int ch_to_digit(char ch, int base);
-
 #endif /* CTYPE_H_ */

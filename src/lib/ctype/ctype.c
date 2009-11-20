@@ -5,6 +5,7 @@
  */
 #include "ctype.h"
 
+/**< ASCII table */
 unsigned char _ctype[] = {
 _C,_C,_C,_C,_C,_C,_C,_C,                        /* 0-7 */
 _C,_C|_S,_C|_S,_C|_S,_C|_S,_C|_S,_C,_C,         /* 8-15 */
@@ -22,6 +23,7 @@ _P,_L|_X,_L|_X,_L|_X,_L|_X,_L|_X,_L|_X,_L,      /* 96-103 */
 _L,_L,_L,_L,_L,_L,_L,_L,                        /* 104-111 */
 _L,_L,_L,_L,_L,_L,_L,_L,                        /* 112-119 */
 _L,_L,_L,_P,_P,_P,_P,_C,                        /* 120-127 */
+/* Extended ASCII Codes */
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,                /* 128-143 */
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,                /* 144-159 */
 _S|_SP,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,   /* 160-175 */
@@ -30,32 +32,3 @@ _U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,       /* 192-207 */
 _U,_U,_U,_U,_U,_U,_U,_P,_U,_U,_U,_U,_U,_U,_U,_L,       /* 208-223 */
 _L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,       /* 224-239 */
 _L,_L,_L,_L,_L,_L,_L,_P,_L,_L,_L,_L,_L,_L,_L,_L};      /* 240-255 */
-
-int ch_to_digit(char ch, int base) {
-        ch = toupper(ch);
-        switch (base) {
-        case 16: {
-                if (ch >= '0' && ch <= '9') {
-                        return (ch - '0');
-                } else if (ch >= 'A' && ch <= 'F') {
-                        return (ch - 'A' + 0x0A);
-                }
-                return -1;
-        }
-        case 10: {
-                if (ch >= '0' && ch <= '9') {
-                        return (ch - '0');
-                }
-                return -1;
-        }
-        case 8: {
-                if (ch >= '0' && ch <= '7') {
-                        return (ch - '0');
-                }
-        	return -1;
-        }
-        default:
-                return -1;
-        }
-        return -1;
-}

@@ -8,6 +8,7 @@
 #include "conio.h"
 #include "asm/stdarg.h"
 #include "string.h"
+#include "stdlib.h"
 #include "ctype.h"
 
 const int EOF = -1;

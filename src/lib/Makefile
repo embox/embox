@@ -8,5 +8,6 @@ SUBDIRS-$(MONITOR_LIB) += misc
 SUBDIRS-$(MONITOR_LIB) += malloc
 SUBDIRS-$(MONITOR_LIB) += ctype
 SUBDIRS-$(MONITOR_LIB) += resolv
+SUBDIRS-$(MONITOR_LIB) += stdlib
 
 include $(SCRIPTS_DIR)/common.mk
