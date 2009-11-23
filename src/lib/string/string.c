@@ -17,11 +17,6 @@
 	return FALSE;
 }*/
 
-char *basename(const char *filename) {
-	char *p = strrchr(filename, '/');
-	return p ? p + 1 : (char *) filename;
-}
-
 // *str becomes pointer to first non-space character
 void skip_spaces(char **str) {
         while (**str == ' ') {

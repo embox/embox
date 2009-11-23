@@ -30,4 +30,9 @@ extern int atoi(const char *nptr);
  */
 extern long int atol(const char *nptr);
 
+/**
+ * Convert a string to a floating-point number.
+ */
+double strtod(const char *nptr, char **endptr);
+
 #endif /* STDLIB_H_ */

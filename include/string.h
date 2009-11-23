@@ -76,6 +76,11 @@ int strcoll(const char *s1, const char *s2);
 char *strpbrk(const char *s, const char *accept);
 
 /**
+ * Parse S into tokens separated by characters in DELIM.
+ */
+char *strtok(char *str, const char *delim);
+
+/**
  * Calculates the length of the initial segment of s
  * which consists entirely of characters in accept.
  * @return the number of characters in the initial segment
