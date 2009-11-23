@@ -37,73 +37,10 @@ void copy_data_section() {
 		*dst = 0;
 }
 
-//static int init_modules() {
-//	extern module_descriptor_t *__modules_handlers_start,
-//			*__modules_handlers_end;
-//	module_descriptor_t ** p_module = &__modules_handlers_start;
-//	int i, total = (int) (&__modules_handlers_end - &__modules_handlers_start);
-//
-//	TRACE("\nInitializing modules (total: %d)\n\n", total);
-//
-//	for (i = 0; i < total; i++, p_module++) {
-//		if (NULL == (*p_module)) {
-//			LOG_ERROR("Missing module descriptor\n");
-//			continue;
-//		}
-//		if (NULL == ((*p_module)->name)) {
-//			LOG_ERROR("Broken module descriptor. Can't find module name\n");
-//			continue;
-//		}
-//		if (NULL == ((*p_module)->init)) {
-//			LOG_ERROR("Broken module descriptor. Can't find init function for module %s\n", (*p_module)->name);
-//			continue;
-//		}
-//
-//		TRACE("Initializing %s ... ", (*p_module)->name);
-//		if (-1 != (*p_module)->init()) {
-//			TRACE("DONE\n");
-//		} else {
-//			TRACE("FAILED\n");
-//		}
-//
-//	}
-//
-//	TRACE("\n");
-//
-//	return 0;
-//}
-//static int init_others() {
-//	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
-//	init_descriptor_t ** p_init_desc = &__init_handlers_start;
-//	int i, total = (int) (&__init_handlers_end - &__init_handlers_start);
-//
-//	TRACE("\nInitializing others (total: %d)\n\n", total);
-//
-//	for (i = 0; i < total; i++, p_init_desc++) {
-//		if (NULL == (*p_init_desc)) {
-//			LOG_ERROR("Missing init descriptor\n");
-//			continue;
-//		}
-//		if (NULL == ((*p_init_desc)->init)) {
-//			LOG_ERROR("Broken init handler descriptor.");
-//			continue;
-//		}
-//
-//		if (-1 != (*p_init_desc)->init()) {
-//			TRACE("DONE\n");
-//		} else {
-//			TRACE("FAILED\n");
-//		}
-//
-//	}
-//
-//	TRACE("\n");
-//
-//	return 0;
-//}
-
-// This section is to guarantee that 0-level init is ok
-// Order is significant!
+/*
+ * This section is to guarantee that 0-level init is ok.
+ * Order is significant!
+ */
 DECLARE_INIT("cache", cache_init_func, INIT_HARDWARE_LEVEL);
 DECLARE_INIT("irq", irq_init_func, INIT_HARDWARE_LEVEL);
 DECLARE_INIT("uart", uart_init_func, INIT_HARDWARE_LEVEL);
