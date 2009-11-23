@@ -9,9 +9,9 @@
 #include "common.h"
 #include "fs/rootfs.h"
 #include "fs/ramfs.h"
-#include "kernel/module.h"
+#include "kernel/init.h"
 
-DECLARE_INITABLE(rootfs_init);
+DECLARE_INIT("rootfs", rootfs_init, INIT_FS_LEVEL);
 
 
 typedef struct _FS_DESCRIPTION {

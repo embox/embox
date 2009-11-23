@@ -5,12 +5,16 @@
  *
  * \author Anton Bondarev
  * \author Eldar Abusalimov
+ * \author Alexey Fomin
  */
 #include "conio.h"
 #include "common.h"
 #include "express_tests.h"
+#include "kernel/init.h"
 
-int express_tests_execute() {
+DECLARE_INIT("Express tests", express_tests_execute, INIT_EXPR_TESTS_LEVEL);
+
+static int express_tests_execute() {
 	extern express_test_descriptor_t *__express_tests_start, *__express_tests_end;
 	express_test_descriptor_t ** p_test = &__express_tests_start;
 	int i, total = (int) (&__express_tests_end - &__express_tests_start);

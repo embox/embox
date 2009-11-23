@@ -12,9 +12,9 @@
 #include "net/net.h"
 #include "net/if_device.h"
 #include "misc.h"
-#include "kernel/module.h"
+#include "kernel/init.h"
 
-DECLARE_INITABLE(net_init);
+DECLARE_INIT("net", net_init, INIT_NET_LEVEL);
 
 /**
  * initialize protocol's stack

@@ -7,29 +7,10 @@
 #ifndef MODULE_H_
 #define MODULE_H_
 
-typedef struct module_descriptor {
-	const char *name;
-	int (*init)();
-} module_descriptor_t;
+#include "kernel/init.h"
 
 #define DECLARE_MODULE(name, init) \
-	static int init(); \
-    static const module_descriptor_t _descriptor##init = { name, init }; \
-    static const module_descriptor_t *_pdescriptor##init \
-		__attribute__ ((used, section(".modules_handlers"))) \
-		= &_descriptor##init
-
-typedef struct init_descriptor {
-	int (*init)();
-} init_descriptor_t;
-
-#define DECLARE_INITABLE(init) \
-    static int init(); \
-    static const init_descriptor_t _descriptor##init = { init }; \
-    static const init_descriptor_t *_pdescriptor##init \
-		__attribute__ ((used, section(".init_handlers"))) \
-		= &_descriptor##init
-
+	DECLARE_INIT(name, init, INIT_MODULE_LEVEL);
 
 /* These macros are used to mark some functions or
  * initialized data (doesn't apply to uninitialized data)
