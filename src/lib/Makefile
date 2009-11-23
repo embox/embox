@@ -9,5 +9,6 @@ SUBDIRS-$(MONITOR_LIB) += malloc
 SUBDIRS-$(MONITOR_LIB) += ctype
 SUBDIRS-$(MONITOR_LIB) += resolv
 SUBDIRS-$(MONITOR_LIB) += stdlib
+SUBDIRS-$(MONITOR_LIB) += math
 
 include $(SCRIPTS_DIR)/common.mk
