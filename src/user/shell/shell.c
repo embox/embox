@@ -13,6 +13,20 @@
 #include "kernel/sys.h"
 #include "shell_command.h"
 
+// *str becomes pointer to first non-space character
+void skip_spaces(char **str) {
+        while (**str == ' ') {
+                (*str)++;
+        }
+}
+
+// *str becomes pointer to first space or '\0' character
+void skip_word(char **str) {
+        while (**str != '\0' && **str != ' ') {
+                (*str)++;
+        }
+}
+
 static int parse_str(char *cmdline, char **words) {
 	int cnt = 0;
 	while (*cmdline != '\0') {
