@@ -58,6 +58,33 @@ char *strchr(const char *s, int c);
 char *strrchr(const char *s, int c);
 
 /**
+ * Append src on the end of dest.
+ */
+char *strcat(char *dest, const char *src);
+char *strncat(char *dest, const char *src, size_t n);
+
+/**
+ * Compares the two strings s1 and s2.
+ * @return an integer less than, equal to, or greater than zero
+ *         if s1 is found, respectively.
+ */
+int strcoll(const char *s1, const char *s2);
+
+/**
+ * Find the first occurrence in S of any character in ACCEPT.
+ */
+char *strpbrk(const char *s, const char *accept);
+
+/**
+ * Calculates the length of the initial segment of s
+ * which consists entirely of characters in accept.
+ * @return the number of characters in the initial segment
+ *         of s which consist only of characters from accept.
+ */
+size_t strspn(const char *s, const char *accept);
+size_t strcspn(const char *s, const char *reject);
+
+/**
  * Determines whether beg is the beginning of the str string
  */
 //int str_starts_with(const char *str, const char *beg, int len);
@@ -95,8 +122,31 @@ void *memccpy(void *dest, const void *src, int c, size_t n);
 void *memset(void *p, int c, size_t n);
 
 /**
+ * Search no more than N bytes of S for C.
+ * @param s points to the memory area to search.
+ * @param c is the character to find.
+ * @param n is the maximum number of bytes to search.
+ * @return pointer to the matching byte or NULL if the character
+ *         does not occur in the given memory area.
+ */
+void *memchr(const void *s, int c, size_t n);
+
+/**
+ * Copy n bytes of src to dest, guaranteeing
+ * correct behavior for overlapping strings.
+ * @return dst
+ */
+void *memmove( void *dst, const void *src, size_t n);
+
+/**
+ * Copy n bytes from src to dest. The result is correct,
+ * even when both areas overlap.
+ */
+void bcopy(const void *src, void *dest, size_t n);
+
+/**
  * function finds the first occurrence of the substring
- * needle in the string haystack.  The terminating '\0'
+ * needle in the string haystack. The terminating '\0'
  * characters are not compared.
  * @return pointer to the beginning of the substring,
  *         or NULL if the substring is not found.

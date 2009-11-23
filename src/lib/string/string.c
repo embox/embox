@@ -6,15 +6,6 @@
  */
 #include "string.h"
 
-int strlen(const char * str) {
-	const char *eos = str;
-
-	while (*eos++)
-		;
-
-	return (int) (eos - str - 1);
-}
-
 /*int str_starts_with(const char *str, const char *beg, int len) {
 	// TODO change to strncpy
 	int i;
@@ -25,26 +16,6 @@ int strlen(const char * str) {
 	}
 	return FALSE;
 }*/
-
-int memcmp(const void *dst, const void *src, size_t n) {
-	if (!n)
-		return 0;
-
-	while (--n && *(char *) dst == *(char *) src) {
-		dst = (char *) dst + 1;
-		src = (char *) src + 1;
-	}
-
-	return *((unsigned char *) dst) - *((unsigned char *) src);
-}
-
-void *memset(void *p, int c, size_t n) {
-	char *pb = (char *) p;
-	char *pbend = pb + n;
-	while (pb != pbend)
-		*pb++ = c;
-	return p;
-}
 
 char *basename(const char *filename) {
 	char *p = strrchr(filename, '/');
