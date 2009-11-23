@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "string.h"
+#include "autoconf.h"
 
 static void sign_checksum() {
 	__asm__(".section .checksum\n"
