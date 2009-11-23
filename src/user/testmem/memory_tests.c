@@ -3,7 +3,6 @@
  * \date Jul 29, 2009
  * \author afomin
  */
-#include "conio.h"
 #include "common.h"
 #include "string.h"
 

@@ -5,7 +5,7 @@
  * \author anton, sikmir
  */
 
-#include "conio.h"
+#include "stdio.h"
 #include "string.h"
 #include "common.h"
 #include "net/skbuff.h"

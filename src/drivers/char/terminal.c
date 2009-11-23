@@ -13,7 +13,6 @@
 
 #include "asm/stdarg.h"
 #include "kernel/uart.h"
-#include "conio.h"
 #include "common.h"
 #include "string.h"
 

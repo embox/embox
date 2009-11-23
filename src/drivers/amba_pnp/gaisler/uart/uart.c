@@ -3,7 +3,6 @@
  */
 #include "types.h"
 #include "kernel/irq.h"
-#include "conio.h"
 #include "drivers/amba_pnp.h"
 #include "kernel/uart.h"
 #include "common.h"

@@ -4,7 +4,6 @@
  * \author Sikmir
  * \description Pseudo-dynamic memory allocator
  */
-#include "conio.h"
 #include "common.h"
 #include "string.h"
 

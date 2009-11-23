@@ -7,7 +7,6 @@
 #include "types.h"
 #include "drivers/amba_pnp.h"
 #include "common.h"
-#include "conio.h"
 #include "kernel/irq.h"
 #include "autoconf.h"
 

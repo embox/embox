@@ -5,7 +5,7 @@
  */
 #include "getopt.h"
 #include "common.h"
-#include "conio.h"
+#include "stdio.h"
 #include "string.h"
 
 int   opterr = 1;

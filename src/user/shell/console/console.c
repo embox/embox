@@ -12,7 +12,6 @@
 #include "console.h"
 #include "kernel/uart.h"
 #include "kernel/sys.h"
-#include "conio.h"
 #include "common.h"
 #include "string.h"
 #include "drivers/terminal.h"

@@ -8,7 +8,7 @@
 #include "lib/bits/byteswap.h"
 #include "lib/inet/netinet/in.h"
 #include "common.h"
-#include "conio.h"
+#include "stdio.h"
 #include "string.h"
 
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {

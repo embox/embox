@@ -3,7 +3,6 @@
  */
 
 #include "types.h"
-#include "conio.h"
 #include "common.h"
 #include "kernel/irq.h"
 #include "kernel/timers.h"

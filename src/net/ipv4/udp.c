@@ -6,7 +6,6 @@
  * \details The User Datagram Protocol (UDP).
  */
 #include "string.h"
-#include "conio.h"
 #include "common.h"
 #include "net/skbuff.h"
 #include "net/net.h"

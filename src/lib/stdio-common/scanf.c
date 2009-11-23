@@ -5,7 +5,6 @@
  *      Author: abatyukov
  */
 #include "types.h"
-#include "conio.h"
 #include "asm/stdarg.h"
 #include "string.h"
 #include "stdlib.h"

@@ -10,7 +10,6 @@
 
 #include "types.h"
 #include "common.h"
-#include "conio.h"
 #include "drivers/amba_pnp.h"
 
 typedef struct _IRQ_REGS {

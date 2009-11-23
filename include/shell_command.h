@@ -8,7 +8,6 @@
 #define USER_HANDLER_H_
 
 #include "shell.h"
-#include "conio.h"
 #include "getopt.h"
 #include "types.h"
 #include "common.h"

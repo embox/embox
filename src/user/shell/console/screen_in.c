@@ -5,7 +5,6 @@
  */
 #include "screen.h"
 
-#include "conio.h"
 #include "common.h"
 #include "console.h"
 #include "kernel/sys.h"

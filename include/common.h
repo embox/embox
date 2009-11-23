@@ -3,6 +3,7 @@
 
 #include "autoconf.h"
 #include "types.h"
+#include "stdio.h"
 
 #ifdef _TEST_SYSTEM_
 

@@ -4,7 +4,6 @@
  * \author Anton Bondarev
  * \details
  */
-#include "conio.h"
 #include "string.h"
 #include "common.h"
 #include "fs/rootfs.h"

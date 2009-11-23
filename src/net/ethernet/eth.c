@@ -3,7 +3,6 @@
  * \date Mar 4, 2009
  * \author anton
  */
-#include "conio.h"
 #include "misc.h"
 #include "string.h"
 #include "net/skbuff.h"

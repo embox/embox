@@ -8,7 +8,6 @@
 
 #include "types.h"
 #include "common.h"
-#include "conio.h"
 #include "kernel/irq_ctrl.h"
 #include "kernel/uart.h"
 #include "kernel/timers.h"

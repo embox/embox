@@ -4,7 +4,6 @@
  * \author anton
  * \details realize file operation function in line address space
  */
-#include "conio.h"
 #include "string.h"
 #include "common.h"
 #include "fs/rootfs.h"

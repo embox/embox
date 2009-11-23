@@ -4,7 +4,6 @@
  * \date Mar 11, 2009
  * \author anton
  */
-#include "conio.h"
 #include "common.h"
 #include "string.h"
 #include "net/skbuff.h"

@@ -7,7 +7,6 @@
  * \author Eldar Abusalimov
  * \author Alexey Fomin
  */
-#include "conio.h"
 #include "common.h"
 #include "express_tests.h"
 #include "kernel/init.h"

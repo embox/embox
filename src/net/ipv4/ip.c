@@ -5,7 +5,6 @@
  * \author sunnya
  */
 #include "string.h"
-#include "conio.h"
 #include "common.h"
 #include "net/net.h"
 #include "net/skbuff.h"

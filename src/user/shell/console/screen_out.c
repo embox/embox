@@ -4,10 +4,8 @@
  * \author Eldar Abusalimov
  */
 #include "screen.h"
-
 #include "drivers/terminal.h"
 #include "common.h"
-#include "conio.h"
 
 static void transmit_string(SCREEN *this, const char *str) {
 	while (*str) {

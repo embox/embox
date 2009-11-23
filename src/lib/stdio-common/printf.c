@@ -28,10 +28,8 @@
 
 //void outbyte(int c);
 #include "types.h"
-#include "conio.h"
 #include "asm/stdarg.h"
 #include "kernel/uart.h"
-
 
 int putchar (int c)
 {

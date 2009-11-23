@@ -7,7 +7,7 @@
 #include "lib/inet/netinet/in.h"
 #include "net/ip_addr.h"
 #include "ctype.h"
-#include "conio.h"
+#include "stdio.h"
 
 /*
  * Ascii internet address interpretation routine.
