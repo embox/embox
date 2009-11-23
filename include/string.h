@@ -90,11 +90,6 @@ size_t strspn(const char *s, const char *accept);
 size_t strcspn(const char *s, const char *reject);
 
 /**
- * Determines whether beg is the beginning of the str string
- */
-//int str_starts_with(const char *str, const char *beg, int len);
-
-/**
  * comparing 2 massive of bytes
  * @param dst first mass
  * @param src second mass

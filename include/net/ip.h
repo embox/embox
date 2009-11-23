@@ -43,8 +43,11 @@ typedef struct iphdr {
 	unsigned char     ttl;              /**< Time to live */
 	unsigned char     proto;            /**< next header */
 	unsigned short    check;            /**< header's checksum */
-	unsigned char     saddr[4];         /**< source address */
-	unsigned char     daddr[4];         /**< destination address */
+        unsigned char     saddr[4];         /**< source address */
+        unsigned char     daddr[4];         /**< destination address */
+	//TODO:
+//	__be32            saddr;            /**< source address */
+//	__be32            daddr;            /**< destination address */
 } __attribute__((packed)) iphdr_t;
 
 #define IP_HEADER_SIZE   (sizeof(struct iphdr))
