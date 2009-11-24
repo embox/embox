@@ -57,7 +57,7 @@ int hardware_init_hook() {
 	sys_timers_init();
 
 
-	for (level = 1; level <= INIT_MAX_LEVEL; level++) {
+	for (level = 0; level <= INIT_MAX_LEVEL; level++) {
 		TRACE("\n********* Init level %d:\n", level);
 		for (p_init_desc = &__init_handlers_start; p_init_desc
 				< &__init_handlers_end; p_init_desc++) {
