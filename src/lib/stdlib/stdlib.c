@@ -5,6 +5,7 @@
  */
 
 #include "ctype.h"
+#include "types.h"
 #include "stdlib.h"
 
 //TODO: throw out.
@@ -38,8 +39,7 @@ int ch_to_digit(char ch, int base) {
 }
 
 double atof(const char *s) {
-//TODO: with -msoft-float don't work
-/*        char    c;
+        char    c;
         double  val = 0, power = 1;
         unsigned char sign = 0;
 
@@ -77,7 +77,7 @@ power:
                 s++;
                 goto power;
         }
-        return (sign ? -1 : 1)*(val / power);*/
+        return (sign ? -1 : 1)*(val / power);
 }
 
 int atoi(const char *s) {
@@ -111,5 +111,5 @@ conv:
 }
 
 long int atol(const char *nptr) {
-
+	return strtol(nptr,(char **)NULL, 10);
 }

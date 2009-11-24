@@ -3,7 +3,6 @@
 OBJS-$(MONITOR_KERNEL) += main.o
 OBJS-$(MONITOR_KERNEL) += irq.o
 OBJS-$(MONITOR_KERNEL) += timers_common.o
-OBJS-$(MONITOR_KERNEL) += errno.o
 OBJS-$(MONITOR_KERNEL) += init.o
 
 include $(SCRIPTS_DIR)/common.mk

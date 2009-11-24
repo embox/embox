@@ -35,4 +35,10 @@ extern long int atol(const char *nptr);
  */
 double strtod(const char *nptr, char **endptr);
 
+/**
+ * Converts the initial part of the string in nptr to a long
+ * integer value according to the given base.
+ */
+long int strtol(const char *nptr, char **endptr, int base);
+
 #endif /* STDLIB_H_ */
