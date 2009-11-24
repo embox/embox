@@ -10,6 +10,7 @@
 #include "net/eth.h"
 #include "net/if_device.h"
 #include "net/skbuff.h"
+#include "misc.h"
 
 #define COMMAND_NAME     "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"

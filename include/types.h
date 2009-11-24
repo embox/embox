@@ -7,8 +7,7 @@
 #ifndef __ASSEMBLER__
 
 #ifndef NULL
-//TODO this maybe (void *)0x0
-#define NULL    0x00000000
+#define NULL ((void *)0x0)
 #endif
 
 typedef __u8                    UINT8;

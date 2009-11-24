@@ -4,10 +4,12 @@
  * \author anton
  * \details realize file operation function in line address space
  */
+
 #include "string.h"
 #include "common.h"
 #include "fs/rootfs.h"
 #include "fs/ramfs.h"
+#include "misc.h"
 
 typedef struct _FILE_DESC {
     unsigned int start_addr;
@@ -210,6 +212,7 @@ static int fclose(void * file) {
     return 0;
 }
 
+#define TRACE_FREQ 0x10000
 static size_t fread(const void *buf, size_t size, size_t count, void *file) {
     FILE_HANDLER *fh = (FILE_HANDLER *) file;
     if (fh->cur_pointer >= fh->fdesc->size){
@@ -218,7 +221,7 @@ static size_t fread(const void *buf, size_t size, size_t count, void *file) {
     }
     memcpy((void*)buf, (const void *)fh->fdesc->start_addr + fh->cur_pointer, size * count);
     fh->cur_pointer += size * count;
-    if (NULL == (fh->cur_pointer % 0x10000)){
+    if (0 == (fh->cur_pointer & (TRACE_FREQ - 1))){
         TRACE("cur = 0x%X\t size = 0x%X\n",fh->cur_pointer,fh->fdesc->size);
     }
     return size * count;

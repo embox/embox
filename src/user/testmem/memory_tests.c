@@ -3,9 +3,12 @@
  * \date Jul 29, 2009
  * \author afomin
  */
+
 #include "common.h"
 #include "string.h"
+#include "misc.h"
 
+// FIXME what does this type mean? -- Eldar
 typedef unsigned char datum;
 // As much as needed to save mem in memory_test_data_bus
 #define MEM_BUF_SIZE 100
@@ -43,6 +46,7 @@ WORD memory_test_data_bus(volatile WORD *address)
 
 }   /* memory_test_data_bus */
 
+// TODO think about signature: err_t name(..., uint32_t *fault_address) -- Eldar
 WORD *memory_test_addr_bus(WORD * baseAddress, unsigned long nBytes) {
 	unsigned long addressMask = (nBytes / sizeof(WORD) - 1);
 	unsigned char mem_buf[100];
@@ -92,18 +96,20 @@ WORD *memory_test_addr_bus(WORD * baseAddress, unsigned long nBytes) {
 		baseAddress[testOffset] = pattern;
 	}
 
-	return (NULL);
+	return NULL;
 
 }
 
 void memory_test_quick(WORD *base_addr, long int amount) {
-	if (memory_test_data_bus(base_addr) == NULL)
+	if (0 == memory_test_data_bus(base_addr)) {
 		TRACE ("Data bus test ok\n");
+	}
 	//if (memory_test_addr_bus((WORD *)0x40000000, 0x100000) == NULL)
-	if (memory_test_addr_bus(base_addr, amount) == NULL)
+	if (0 == memory_test_addr_bus(base_addr, amount)) {
 		TRACE("Addr bus test ok\n");
-	else
+	} else {
 		TRACE("Addr bus failed\n");
+	}
 
 }
 
