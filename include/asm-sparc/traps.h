@@ -6,7 +6,13 @@
 
 #ifndef __ASSEMBLER__
 
-#define IRQ_TRAP_TYPE(nirq)   (0x10 + (nirq))
+//TODO this defines must be in config header
+#define MAX_IRQ_NUMBER 0x10
+
+#define IRQ_TRAP_NUMBER 0x10
+#define IRQ_TRAP_TYPE(nirq)   (IRQ_TRAP_NUMBER + (nirq))
+#define IRQ_GET_NUMBER(nirq)   ((nirq) - IRQ_TRAP_NUMBER)
+#define CHECK_IRQ_TRAP(tt)      ((tt > IRQ_TRAP_NUMBER) && (tt < (IRQ_TRAP_NUMBER + MAX_IRQ_NUMBER)))
 
 /*
  * Stack frame structure
