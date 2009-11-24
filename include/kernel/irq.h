@@ -30,11 +30,7 @@ typedef struct {
 
 int irq_init_handlers();
 
-// TODO m.b. move these ones to arch or delete them at all?
-// set trap handler
-BOOL irq_set_trap_handler(BYTE tt, IRQ_HANDLER pfunc);
-// remove trap handler
-BOOL irq_remove_trap_handler(BYTE tt);
+
 
 /**
  * Sets and enables a new callback for the specified IRQ number

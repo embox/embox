@@ -6,6 +6,7 @@ OBJS-$(MONITOR_ARCH_SPARC) += boot.o
 OBJS-$(MONITOR_ARCH_SPARC) += cpu_context.o
 OBJS-$(MONITOR_ARCH_SPARC) += entry.o
 OBJS-$(MONITOR_ARCH_SPARC) += trap_setup.o
+OBJS-$(MONITOR_ARCH_SPARC) += sparc_traps.o
 OBJS-$(MONITOR_ARCH_SPARC) += windows.o
 OBJS-$(MONITOR_ARCH_SPARC) += sys.o
 
