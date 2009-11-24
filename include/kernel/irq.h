@@ -28,7 +28,7 @@ typedef struct {
 // traps handlers table size
 #define IRQ_TABLE_SIZE     0xFF
 
-void irq_init_handlers();
+int irq_init_handlers();
 
 // TODO m.b. move these ones to arch or delete them at all?
 // set trap handler

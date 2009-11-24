@@ -7,14 +7,11 @@
 
 #ifndef __ASSEMBLER__
 
-#define MAX_QUANTITY_SYS_TIMERS   0x20
-#define DEFAULT_SLEEP_COUNTER     3470
-#define MAX_SAVE_CONTEXT          2
 
 /**
  * Initialization of timers subsystem
  */
-int timers_init();
+int timers_ctrl_init();
 
 typedef void (*TIMER_FUNC)(UINT32 id);
 
@@ -28,17 +25,6 @@ BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle);
  */
 void close_timer(UINT32 id);
 
-/**
- * Sleep a number of 'ms' millisecond.
- */
-void sleep(unsigned int ms);
-
-//void calibrate_sleep ();
-
-/**
- * Quantity of ms after starting the system
- */
-UINT32 get_sys_time();
 
 /**
  * Save timers context. Now saving only one context.

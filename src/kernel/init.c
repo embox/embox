@@ -54,7 +54,7 @@ int hardware_init_hook() {
 	cache_instr_enable();
 	irq_init_handlers();
 	uart_init();
-	timers_init();
+	sys_timers_init();
 
 
 	for (level = 1; level <= INIT_MAX_LEVEL; level++) {

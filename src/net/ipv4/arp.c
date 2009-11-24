@@ -147,7 +147,7 @@ sk_buff_t *arp_resolve_addr (sk_buff_t * pack, unsigned char dst_addr[IPV4_ADDR_
 	dev_queue_xmit(build_arp_pack(ifdev, dst_addr));
 
 	//TODO delete this after processes will be added to monitor
-	sleep(500);
+	usleep(500);
 	if (-1 != (i = find_entity(ifdev, dst_addr))) {
 		pack->mac.raw = pack->data;
 		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));

@@ -230,7 +230,7 @@ int bootp_discover (void* ifdev) {
 		kfree_skb (pack);
 
 		// wait a bit
-		sleep (1000);
+		usleep (1000);
 
 		// try to read reply
 		if (!empty_socket (udp_skt)) {

@@ -59,10 +59,9 @@ void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
 		;
 }
 
-void irq_init_handlers() {
-	int i;
-
+int irq_init_handlers() {
 	irq_ctrl_init();
+	return 0;
 }
 
 BOOL irq_set_trap_handler(BYTE tt, IRQ_HANDLER pfunc) {

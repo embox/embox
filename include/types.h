@@ -2,6 +2,7 @@
 #define TYPES_H
 
 #include "asm/types.h"
+#include "sys/types.h"
 
 #ifndef __ASSEMBLER__
 
@@ -59,7 +60,6 @@ typedef __u64                   __be64;
 
 typedef unsigned long           spinlock_t;
 typedef __s32                   socklen_t;
-typedef __s32                   size_t;
 typedef __u32                   gfp_t;
 
 typedef struct {

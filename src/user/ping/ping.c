@@ -47,7 +47,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, 
 		if(!quiet) printf(" to %s", ip);
 		if(!quiet) printf(" ttl=%d ", ttl);
 		icmp_send_echo_request(ifdev, dst, ttl, callback);
-		sleep(timeout);
+		usleep(timeout);
 		if (FALSE == has_responsed) {
 			if(!quiet) printf(" ....timeout\n");
 			icmp_abort_echo_request(ifdev);
