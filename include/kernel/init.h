@@ -8,7 +8,6 @@
 #ifndef INIT_H_
 #define INIT_H_
 
-#define INIT_HARDWARE_LEVEL   0
 #define INIT_MODULE_LEVEL     1
 #define INIT_EXPR_TESTS_LEVEL 2
 #define INIT_NET_LEVEL        3
