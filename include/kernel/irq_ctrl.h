@@ -7,7 +7,8 @@
 
 #ifndef IRQ_CTRL_H_
 #define IRQ_CTRL_H_
-
+#if 0
+/*this code move to hal folder*/
 /**
  * init hardware irq ctrl
  * Caprute APB dev
@@ -15,22 +16,22 @@
  * @return 0 if success
  * @return -1 another way
  */
-int irq_ctrl_init();
+int irqc_init();
 
 /*
  * Enable IRQ by it number.
  */
-int irq_ctrl_enable_irq(int irq_num);
+int irqc_enable_irq(int irq_num);
 
 /*
  * Disable IRQ by it number.
  */
-int irq_ctrl_disable_irq(int irq_num);
+int irqc_disable_irq(int irq_num);
 
 /*
  * Disable all IRQs.
  */
-int irq_ctrl_disable_all();
+int irqc_disable_all();
 
 /**
  * Calls interrupt specified - right at the moment (forced)
@@ -38,14 +39,14 @@ int irq_ctrl_disable_all();
  *
  * @param irq_num IRQ number to force call
  */
-int irq_ctrl_force(BYTE irq_num);
+int irqc_force(BYTE irq_num);
 
 /**
  * Clears irq state (deletes unhandled irq)
  *
  * @param irq_num IRQ number to clear
  */
-int irq_ctrl_clear(BYTE irq_num);
+int irqc_clear(BYTE irq_num);
 
 /**
  * Get status of the irq specified
@@ -53,7 +54,8 @@ int irq_ctrl_clear(BYTE irq_num);
  * @param irq_num IRQ number to check
  * @return whether it is enabled or not
  */
-int irq_ctrl_get_status(BYTE irq_num);
+int irqc_get_status(BYTE irq_num);
+#endif
 
 #endif /* IRQ_CTRL_H_ */
 

@@ -8,7 +8,7 @@
 #include "autoconf.h"
 #include "common.h"
 #include "express_tests.h"
-#include "kernel/irq_ctrl.h"
+#include "hal/irq_ctrl.h"
 #include "kernel/irq.h"
 
 #define TEST_IRQ_NUM 10
@@ -32,7 +32,7 @@ static int exec() {
 		return -3;
 	}
 
-	irq_ctrl_force(irq_info.irq_num);
+	irqc_force(irq_info.irq_num);
 
 	if (!irq_happened) {
 		TRACE (" psr: 0x%08X ", get_psr());

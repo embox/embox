@@ -1,12 +1,12 @@
 /**
  * \file irq_ctrl.c
  *
+ * \brief Realize hal layer interrupt ctrl for leon 3 processor
  * \date Apr 14, 2009
  * \author Anton Bondarev
- * \brief Realize hal layer interupt ctrl for leon 3 processor
  */
 
-#include "kernel/irq_ctrl.h"
+#include "hal/irq_ctrl.h"
 
 #include "types.h"
 #include "common.h"
@@ -28,7 +28,7 @@ static IRQ_REGS * dev_regs = NULL;
 
 static AMBA_DEV amba_dev;
 
-int irq_ctrl_init() {
+int irqc_init() {
 #ifndef SIMULATION_TRG
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_INTERRUPT_UNIT);
 #else
@@ -45,25 +45,25 @@ int irq_ctrl_init() {
 	return 0;
 }
 
-int irq_ctrl_enable_irq(int irq_num) {
+int irqc_enable_irq(irq_num_t irq_num) {
 	ASSERT_INIT_DONE();
 	SetBit(dev_regs->mask, irq_num);
 	return 0;
 }
 
-int irq_ctrl_disable_irq(int irq_num) {
+int irqc_disable_irq(irq_num_t irq_num) {
 	ASSERT_INIT_DONE();
 	ClearBit(dev_regs->mask, irq_num);
 	return 0;
 }
 
-int irq_ctrl_disable_all() {
+int irqc_disable_all() {
 	ASSERT_INIT_DONE();
 	REG_STORE(dev_regs->mask, 0);
 	return 0;
 }
 
-int irq_ctrl_force(BYTE irq_num) {
+int irqc_force(irq_num_t irq_num) {
 //	That's force!
 //	if (!GetBit(dev_regs->mask, irq_num)) {
 //		return;
@@ -72,14 +72,23 @@ int irq_ctrl_force(BYTE irq_num) {
 	return 0;
 }
 
-int irq_ctrl_clear(BYTE irq_num) {
+int irqc_clear(irq_num_t irq_num) {
 	ASSERT_INIT_DONE();
 	SetBit(dev_regs->clear, irq_num);
 	return 0;
 }
 
-int irq_ctrl_get_status(BYTE irq_num) {
+int irqc_get_status(irq_num_t irq_num) {
 	return GetBit(dev_regs->mask, irq_num);
 }
 
+irq_mask_t irqc_set_mask(irq_mask_t mask){
+	irq_mask_t old_mask = REG_LOAD(dev_regs->mask);
+	REG_STORE(dev_regs->mask, mask);
+	return old_mask;
+}
+
+irq_mask_t irqc_get_mask(){
+	return REG_LOAD(dev_regs->mask);
+}
 

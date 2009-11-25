@@ -8,7 +8,7 @@
 #include "autoconf.h"
 #include "common.h"
 #include "express_tests.h"
-#include "kernel/irq_ctrl.h"
+#include "hal/irq_ctrl.h"
 #include "kernel/irq.h"
 #include "asm/sys.h"
 
@@ -32,7 +32,7 @@ static int exec() {
 
 	old_psr = local_irq_save();
 
-	irq_ctrl_force(irq_info.irq_num);
+	irqc_force(irq_info.irq_num);
 	if (irq_happened) {
 		return -1;
 	}

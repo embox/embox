@@ -1,6 +1,6 @@
 #ifndef _LEON_H_
 #define _LEON_H_
-
+#if 0
 #ifndef __ASSEMBLER__
 
 #ifdef LEON2
@@ -122,5 +122,5 @@ typedef struct _LEON_REGS
 extern LEON_REGS *const l_regs;
 
 #endif // ifndef __ASSEMBLER__
-
+#endif
 #endif // _LEON_H_
