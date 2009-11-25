@@ -115,6 +115,10 @@ int timers_context_restore (int context_number) {
 	return context_number;
 }
 
+//TODO why?
+#if 0
 void timers_off () {
 	platform_timers_off ();
 }
+#endif
+

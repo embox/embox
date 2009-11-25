@@ -19,9 +19,9 @@ typedef void (*IMAGE_ENTRY)();
 
 void go_to(unsigned int addr) {
 	printf("Try goto 0x%08X\n", addr);
-	/*__asm__ __volatile__("jmpl %0, %%g0\nnop\n"::"rI"(addr));
-    */
+#if 0
 	timers_off();
+#endif
 	irqc_disable_all();
 	((IMAGE_ENTRY)addr)();
 }

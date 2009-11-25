@@ -32,12 +32,12 @@ static TIMERS_STRUCT * dev_regs = NULL;
 #define ASSERT_INIT_DONE() assert_not_null(dev_regs)
 
 static AMBA_DEV amba_dev;
-
+#if 0
 void platform_timers_off() {
 	REG_STORE(dev_regs->timer_ctrl1, 0x0);
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /* disable */
 }
-
+#endif
 
 static void show_module_info(AMBA_DEV * dev) {
 	TRACE ("*** GAISLER timers ***\n");
