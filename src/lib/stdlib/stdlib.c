@@ -38,7 +38,6 @@ int ch_to_digit(char ch, int base) {
         return -1;
 }
 
-#if 0 /*before this section we must added float-point library*/
 double atof(const char *s) {
         char    c;
         double  val = 0, power = 1;
@@ -110,7 +109,7 @@ conv:
         }
         return sign ? -a : a;
 }
-#endif
+
 long int atol(const char *nptr) {
 	return strtol(nptr,(char **)NULL, 10);
 }
