@@ -5,6 +5,7 @@
  */
 #include "screen.h"
 #include "drivers/terminal.h"
+#include "assert.h"
 #include "common.h"
 
 static void transmit_string(SCREEN *this, const char *str) {

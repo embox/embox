@@ -7,7 +7,7 @@
  */
 
 #include "hal/irq_ctrl.h"
-
+#include "assert.h"
 #include "types.h"
 #include "common.h"
 #include "drivers/amba_pnp.h"

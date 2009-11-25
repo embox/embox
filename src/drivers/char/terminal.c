@@ -10,7 +10,7 @@
  */
 
 #include "drivers/terminal.h"
-
+#include "assert.h"
 #include "asm/stdarg.h"
 #include "kernel/uart.h"
 #include "common.h"

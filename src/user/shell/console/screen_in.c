@@ -4,7 +4,7 @@
  * \author Eldar Abusalimov
  */
 #include "screen.h"
-
+#include "assert.h"
 #include "common.h"
 #include "console.h"
 #include "kernel/sys.h"

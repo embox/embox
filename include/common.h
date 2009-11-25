@@ -46,24 +46,6 @@
 # define TRACE(...)  do ; while(0)
 #endif
 
-#ifdef SIMULATION_TRG
-# define assert(cond)	do ; while(0)
-#else
-# define __ASSERT_STRING0(cond, file, line) \
-	"\nASSERTION FAILED at " #file " : " #line "\n" \
-	"(" cond ") is not TRUE\n"
-# define __ASSERT_STRING(cond, file, line) \
-	__ASSERT_STRING0(cond, file, line)
-# define assert(cond) \
-	do if (!(cond)) { \
-		puts(__ASSERT_STRING(#cond, __FILE__, __LINE__)); \
-		HALT; \
-	} while(0)
-#endif /* SIMULATION_TRG */
-
-#define assert_null(arg) assert((arg) == NULL)
-#define assert_not_null(arg) assert((arg) != NULL)
-
 #define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}
 #define array_len(array)		(sizeof(array) / sizeof(array[0]))
 
@@ -72,15 +54,6 @@
 #define min(i, j)   (((i) < (j)) ? (i) : (j))
 
 #define abs(i)   max((i), -(i))
-
-// check if 'num' is between 'min' and 'max'
-#define between(num, min, max) \
-    (((num) >= (min)) && ((num) <= (max)))
-// check if ch is HEX digit
-#define hex_digit(ch)           \
-   (   between((ch),'0','9')    \
-    || between((ch),'a','f')    \
-    || between((ch),'A','F') )
 
 #ifdef _TEST_SYSTEM_
 #define REG_LOAD(a)	a

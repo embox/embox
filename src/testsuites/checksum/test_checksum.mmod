@@ -1,5 +1,5 @@
 ModName   = test_checksum
 Type      = Express test
 DependsOn = tests
-SrcList   = test_checksum.c
+SrcList   = test_checksum.c checksum.c
 MDef      = MONITOR_TEST_CHECKSUM

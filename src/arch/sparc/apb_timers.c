@@ -3,7 +3,7 @@
  */
 
 #include "kernel/timers.h"
-
+#include "assert.h"
 #include "types.h"
 #include "drivers/amba_pnp.h"
 #include "common.h"
