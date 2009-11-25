@@ -6,6 +6,7 @@
 #include "stdlib.h"
 #include "ctype.h"
 
+#if 0 /*before this section we must added float-point library*/
 double strtod (const char *str, char **ptr) {
 	char *p;
 
@@ -78,3 +79,4 @@ double strtod (const char *str, char **ptr) {
         *ptr = (char*)str;
         return 0.0;
 }
+#endif
