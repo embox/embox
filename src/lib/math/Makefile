@@ -1,3 +1,3 @@
-OBJS-y     += div.o
+OBJS-y     +=
 
 include $(SCRIPTS_DIR)/common.mk

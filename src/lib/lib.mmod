@@ -1,3 +1,3 @@
 ModName = lib
-SrcList = string posix stdio-common crypt misc malloc ctype resolv stdlib math
+SrcList = string posix stdio-common crypt misc malloc ctype resolv stdlib math soft-fp
 MDef    = MONITOR_LIB

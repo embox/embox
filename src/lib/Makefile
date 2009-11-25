@@ -10,5 +10,6 @@ SUBDIRS-$(MONITOR_LIB) += ctype
 SUBDIRS-$(MONITOR_LIB) += resolv
 SUBDIRS-$(MONITOR_LIB) += stdlib
 SUBDIRS-$(MONITOR_LIB) += math
+SUBDIRS-$(MONITOR_LIB) += soft-fp
 
 include $(SCRIPTS_DIR)/common.mk
