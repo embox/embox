@@ -1,0 +1,150 @@
+/*  linkcmds
+ *
+ *  $Id: linkcmds,v 1.8.2.1 2000/05/24 17:06:38 joel Exp $
+ */
+
+OUTPUT_ARCH(microblaze)
+ENTRY(_hardreset)
+
+/*
+ * The memory map looks like this:
+ * +--------------------+ <- low memory
+ * | .text              |
+ * |        etext       |
+ * |        ctor list   | the ctor and dtor lists are for
+ * |        dtor list   | C++ support
+ * |        _endtext    |
+ * +--------------------+
+ * | .data              | initialized data goes here
+ * |        _sdata      |
+ * |        _edata      |
+ * +--------------------+
+ * | .bss               |
+ * |        __bss_start | start of bss, cleared by crt0
+ * |        _end        | start of heap, used by sbrk()
+ * +--------------------+
+ * |    heap space      |
+ * |        _ENDHEAP    |
+ * |    stack space     |
+ * |        __stack     | top of stack
+ * +--------------------+ <- high memory
+ */
+
+
+/*
+ * User modifiable values:
+ *
+ * _CLOCK_SPEED               in Mhz (used to program the counter/timers)
+ *
+ * _RAM_SIZE                  size of RAM (permissible values are 256K, 512K,
+ *                               1M, 2M, 4M, 8M, 16M, and 32M)
+ *
+ */
+
+/* these are the maximum values */
+
+MEMORY
+{
+  rom     : ORIGIN = 0x00000000, LENGTH = 512K
+  sdram	  : ORIGIN = 0x42000000, LENGTH = 128M
+  sram    : ORIGIN = 0xA0000000, LENGTH = 1K
+}
+
+/*
+ * Initalize some symbols to be zero so we can reference them in the
+ * crt0 without core dumping. These functions are all optional, but
+ * we do this so we can have our crt0 always use them if they exist.
+ * This is so BSPs work better when using the crt0 installed with gcc.
+ * We have to initalize them twice, so we cover a.out (which prepends
+ * an underscore) and coff object file formats.
+ */
+PROVIDE (hardware_init_hook = 0);
+PROVIDE (_hardware_init_hook = 0);
+PROVIDE (software_init_hook = 0);
+PROVIDE (_software_init_hook = 0);
+
+/*
+ *
+ */
+SECTIONS
+{
+	.text :
+	{
+		. = ALIGN (0x1000);
+		_trap_table = .;
+		*(.trap_table)
+
+		. = ALIGN (0x800);
+		*(.recovery_section)
+
+		. = ALIGN (0x1000);
+		_text_start = .;
+		_text_start = .;
+		*(.text)
+		. = ALIGN (0x4);
+		*(.rodata*)
+		. = ALIGN(0x4);
+		*(.const)
+		. = ALIGN(0x4);
+
+		_sinittext = .;
+		    *(.init.text)
+        _einittext = .;
+
+		__express_tests_start = . ;
+	    *(.express_tests)
+	    __express_tests_end = .;
+
+	    . = ALIGN(0x4);
+	    __modules_handlers_start = .;
+	    *(.modules_handlers)
+	    __modules_handlers_end = .;
+
+	    . = ALIGN(0x4);
+	    __init_handlers_start = .;
+	    *(.init_handlers)
+	    __init_handlers_end = .;
+
+	    . = ALIGN(0x4);
+	    __shell_commands_start = .;
+	    *(.shell_commands)
+	    __shell_commands_end = .;
+
+	    . = ALIGN(0x4);
+	    _piggy_start = .;
+	    _piggy_end = .;
+	    . = ALIGN(0x4);
+
+        *(.checksum)
+        . = ALIGN(0x4);
+		_endtext = .;
+
+		_data_image_start = .;
+	}> sdram
+
+	.data :
+	{
+	    . = ALIGN(0x4);
+	    _data_start = .;
+	    *(.data)
+		_data_end = .;
+	} > sdram
+
+	.bss :
+	{
+		. = ALIGN(0x4);
+	    _bstart = . ; *(.bss) *(COMMON) ;
+	    _bend = ALIGN(0x8);
+	} > sdram
+    _stack = _bend + 0x100000;
+    __checksum = 0x00000000;
+	PROVIDE (__stack = _bend + 0x100000);
+	.internal_mem :
+	{
+		. = ALIGN(0x8);
+		_internal_start = .;
+		*(.internal_mem)
+		_internal_end = .;
+	}>sram
+	PROVIDE (__internal_stack = 0xA0000000 + 0x800);
+}

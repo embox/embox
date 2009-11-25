@@ -1,0 +1,100 @@
+/**
+ * @file boot.S
+ *
+ * @brief Low-level boot code for microblaze architecture.
+ *
+ * @author Anton Bondarev
+ */
+
+#include "autoconf.h"
+#include "asm/mb_regs.h"
+
+
+ 	.weak hardware_init_hook
+ 	.weak software_init_hook
+	.section    ".text"
+	.align  4
+
+#define C_ENTRY(name)	.globl name; .align 4; name
+
+#define SET_HANDLER(base_addr, handler)            \
+	addik reg_tmp1, reg_zero, handler;             \
+	sw    reg_tmp2, reg_sp, reg_zero ;             \
+	lhu   reg_tmp2, reg_sp, reg_zero;              \
+	shi   reg_tmp2, reg_zero, (base_addr + 0x2) ;  \
+	shi   reg_tmp1, reg_zero, (base_addr + 0x6) ;
+
+
+C_ENTRY(boot_start):
+	mts	rmsr, reg_zero	/* disable cache, interupts, exceptions */
+
+/*now we will be set interrrupts and other vectors.
+at the first we set 0xb000 0000 (code IMM instruction) and 0xb808 0000 (code BRAI instruction)
+how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide */
+	/* add opcode instruction for 32bit jump - 2 instruction imm & brai*/
+	addik	r6, r0, 0xb0000000      /* hex b000 opcode imm */
+	swi	r6, r0, 0x0                 /* reset address */
+	swi	r6, r0, 0x8                 /* user vector exception */
+	swi	r6, r0, 0x10                /* interrupt */
+	swi	r6, r0, 0x20                /* hardware exception */
+
+	addik	r6, r0, 0xb8080000      /* hex b808 opcode brai*/
+	swi	r6, r0, 0x4                 /* reset address */
+	swi	r6, r0, 0xC                 /* user vector exception */
+	swi	r6, r0, 0x14                /* interrupt */
+	swi	r6, r0, 0x24                /* hardware exception */
+
+	/* now we set real handler*/
+	/*Reset/start*/
+	SET_HANDLER(0x00, _hardreset);
+	/*User exception*/
+	SET_HANDLER(0x08, _user_exception);
+	/*Inerrupt*/
+	SET_HANDLER(0x10, _interrupt_handler);
+	/*Break (HW/SW) debug exception*/
+	SET_HANDLER(0x18, _debug_exception);
+	/*Hardware exception*/
+	SET_HANDLER(0x20, _hw_exception_handler);
+
+
+/*text section and data section was copied by internal loader*/
+
+	/* clear BSS segments */
+clear_bss:
+#define cur_addr r11
+#define end_addr r12
+#define cmp_reg r6
+	addik  cur_addr, reg_zero, _bstart /*set start address for bss*/
+	addik  end_addr, reg_zero, _bend   /*set end address for bss section*/
+1:
+	cmp   cmp_reg, reg_zero, end_addr
+	beqi  cmp_reg, 2f                  /*cmp cur_addr and end_addr*/
+
+	swi   reg_zero, cur_addr, 0        /* write zero to loc */
+	addi  cur_addr, cur_addr, 4        /* increment to next loc */
+	brai    1b
+	nop
+
+2:
+	/*clear register*/
+	REGS_INIT();
+	/*set stack pointer*/
+	addi  reg_sp, reg_zero, _stack
+
+
+/*call hardware_init_hook if it set */
+	addik reg_tmp1, reg_zero, hardware_init_hook
+	beqi reg_tmp1, 1f
+	brai hardware_init_hook
+	nop
+1:
+/*call software_init_hook if it set */
+	addik reg_tmp1, reg_zero, software_init_hook
+	beqi reg_tmp1, 2f
+	brai software_init_hook
+	nop
+2:
+	brai main
+	/*unreacheble loop*/
+	//TODO may be it must be exeption or reset?
+3:	bri	3b
