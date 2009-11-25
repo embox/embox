@@ -4,6 +4,7 @@
 #include "autoconf.h"
 #include "types.h"
 #include "stdio.h"
+#include "err.h"
 
 #ifdef _TEST_SYSTEM_
 
@@ -12,29 +13,7 @@
 #define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
 
 #define BMASK(nbit)  (0x00000001 << (nbit))
-// TODO HALT should gracefully stop the processor. -- Eldar
-#define HALT do ; while(1)
 #endif /* _TEST_SYSTEM_ */
-
-#define LOGGER()		    printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
-
-#if defined(_ERROR) && !defined(SIMULATION_TRG)
-# define LOG_ERROR(...)  do {LOGGER(); printf("ERROR: "__VA_ARGS__);} while(0)
-#else
-# define LOG_ERROR(...)  do ; while(0)
-#endif
-
-#if defined(_WARN) && !defined(SIMULATION_TRG)
-# define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
-#else
-# define LOG_WARN(...)   do ; while(0)
-#endif
-
-#if defined(_DEBUG) && !defined(SIMULATION_TRG)
-# define LOG_DEBUG(...)  do {LOGGER(); printf("DEBUG: "__VA_ARGS__);} while(0)
-#else
-# define LOG_DEBUG(...)  do ; while(0)
-#endif
 
 #if defined(_TRACE) && !defined(SIMULATION_TRG)
 # ifdef _TEST_SYSTEM_
@@ -48,12 +27,6 @@
 
 #define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}
 #define array_len(array)		(sizeof(array) / sizeof(array[0]))
-
-// mathematics
-#define max(i, j)   (((i) > (j)) ? (i) : (j))
-#define min(i, j)   (((i) < (j)) ? (i) : (j))
-
-#define abs(i)   max((i), -(i))
 
 #ifdef _TEST_SYSTEM_
 #define REG_LOAD(a)	a

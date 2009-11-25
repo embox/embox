@@ -5,7 +5,7 @@
  * \author Eldar Abusalimov
  */
 #include "cmdline.h"
-
+#include "math.h"
 #include "string.h"
 #include "common.h"
 

@@ -1,0 +1,32 @@
+/**
+ * \file err.h
+ * \date 25.11.09
+ * \author sikmir
+ */
+#ifndef _ERR_H_
+#define _ERR_H_
+
+#include "autoconf.h"
+#include "stdio.h"
+
+#define LOGGER()   printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
+
+#if defined(_ERROR) && !defined(SIMULATION_TRG)
+# define LOG_ERROR(...)  do {LOGGER(); printf("ERROR: "__VA_ARGS__);} while(0)
+#else
+# define LOG_ERROR(...)  do ; while(0)
+#endif
+
+#if defined(_WARN) && !defined(SIMULATION_TRG)
+# define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
+#else
+# define LOG_WARN(...)   do ; while(0)
+#endif
+
+#if defined(_DEBUG) && !defined(SIMULATION_TRG)
+# define LOG_DEBUG(...)  do {LOGGER(); printf("DEBUG: "__VA_ARGS__);} while(0)
+#else
+# define LOG_DEBUG(...)  do ; while(0)
+#endif
+
+#endif /* _ERR_H_ */

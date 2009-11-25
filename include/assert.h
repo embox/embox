@@ -9,6 +9,9 @@
 
 #include "autoconf.h"
 
+// TODO HALT should gracefully stop the processor. -- Eldar
+#define HALT do ; while(1)
+
 #ifdef SIMULATION_TRG
     #define assert(cond)   do ; while(0)
 #else

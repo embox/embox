@@ -33,12 +33,17 @@ extern long int atol(const char *nptr);
 /**
  * Convert a string to a floating-point number.
  */
-double strtod(const char *nptr, char **endptr);
+extern double strtod(const char *nptr, char **endptr);
 
 /**
  * Converts the initial part of the string in nptr to a long
  * integer value according to the given base.
  */
-long int strtol(const char *nptr, char **endptr, int base);
+extern long int strtol(const char *nptr, char **endptr, int base);
+
+/**
+ * Return directory part of PATH or "." if none is available.
+ */
+extern char *dirname(char *path);
 
 #endif /* STDLIB_H_ */

@@ -1,3 +1,3 @@
-OBJS-y     += misc.o
+OBJS-y     += misc.o dirname.o
 
 include $(SCRIPTS_DIR)/common.mk
