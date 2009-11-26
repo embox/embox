@@ -226,6 +226,10 @@ static int scan(char **in, const char *fmt, va_list args) {
 				 ++converted;
 				 }
 				 continue;*/
+			case 'f': {
+				//TODO:
+			}
+				continue;
 			}
 		} else {
 			if (*fmt++ != *(*in)++) {

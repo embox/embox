@@ -2,5 +2,4 @@
 
 OBJS-$(MONITOR_DRIVER_XILINX_UART) += serial_xuartlite.o
 
-
 include $(SCRIPTS_DIR)/common.mk
