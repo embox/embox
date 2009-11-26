@@ -198,44 +198,39 @@ static int print(char **out, const char *format, va_list args )
 				width *= 10;
 				width += *format - '0';
 			}
-			if( *format == 's' ) {
-				/*register*/ char *s = (char *)va_arg( args, int );
+			switch(*format) {
+			case 's': {
+				char *s = (char *)va_arg( args, int );
 				pc += prints (out, s?s:"(null)", width, pad);
+				}
 				continue;
-			}
-			if( *format == 'd' ) {
+			case 'd':
 				pc += printi (out, va_arg( args, int ), 10, 1, width, pad, 'a');
 				continue;
-			}
-			if( *format == 'x' ) {
+			case 'x':
 				pc += printi (out, va_arg( args, int ), 16, 0, width, pad, 'a');
 				continue;
-			}
-			if( *format == 'X' ) {
+			case 'X':
 				pc += printi (out, va_arg( args, int ), 16, 0, width, pad, 'A');
 				continue;
-			}
-			if( *format == 'u' ) {
+			case 'u':
 				pc += printi (out, va_arg( args, int ), 10, 0, width, pad, 'a');
 				continue;
-			}
-			if( *format == 'b' ) {
+			case 'b':
 				pc += printb (out, va_arg( args, int ), width, 0);
 				continue;
-			}
-			if( *format == 'B' ) {
+			case 'B':
 				pc += printb (out, va_arg( args, int ), width, 1);
 				continue;
-			}
-			if( *format == 'c' ) {
+			case 'c':
 				/* char are converted to int then pushed on the stack */
 				scr[0] = (char)va_arg( args, int );
 				scr[1] = '\0';
 				pc += prints (out, scr, width, pad);
 				continue;
-			}
-			if ( *format == 'f' ) {
+			case 'f':
 				//TODO:
+				continue;
 			}
 		}
 		else {

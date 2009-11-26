@@ -4,6 +4,9 @@
  * \author sikmir
  * \brief Software FPU emulation.
  */
+#ifndef SOFTFLOAT_H_
+#define SOFTFLOAT_H_
+
 #include "types.h"
 
 /**
@@ -212,3 +215,14 @@ flag float64_is_signaling_nan(float64 a);
 commonNaNT float64ToCommonNaN(float64 a);
 float64 commonNaNToFloat64(commonNaNT a);
 float64 propagateFloat64NaN(float64 a, float64 b);
+
+/**
+ * Converter types.
+ */
+
+inline float64 double_to_float64(double a);
+inline double float64_to_double(float64 a);
+inline float32 float_to_float32(float a);
+inline float float32_to_float(float32 a);
+
+#endif /* SOFTFLOAT_H_ */
