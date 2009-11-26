@@ -75,6 +75,9 @@ extern "C"
 {
 #endif
 
+/*Count the md5 checksum */
+unsigned char *count_md5(unsigned char *addr, unsigned char *end_addr, unsigned char *pmd5_sum);
+
 /* Initialize the algorithm. */
 void md5_init(md5_state_t *pms);
 
