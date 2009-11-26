@@ -24,10 +24,12 @@
 /** Timer pheriphery is opb_timer_1 */
 #define XILINX_TIMER_BASEADDR       0x41c00000
 #define XILINX_TIMER_IRQ            0
+#define CONFIG_SYS_TIMER_PRELOAD    0x0
 
 /** Uart pheriphery is RS232_Uart */
 #define XILINX_UARTLITE_BASEADDR    0x40600000
 #define XILINX_UARTLITE_BAUDRATE    115200
+#define XILINX_UARTLITE_IRQ_NUM      0x0
 
 /** IIC pheriphery is IIC_EEPROM */
 #define XILINX_IIC_0_BASEADDR       0x40800000
@@ -52,6 +54,5 @@
 
 /** Ethernet controller is Ethernet_MAC */
 #define XILINX_EMACLITE_BASEADDR    0x40C00000
-
 
 #endif /* CPU_CONF_H_ */

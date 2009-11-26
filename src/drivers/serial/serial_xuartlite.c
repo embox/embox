@@ -6,35 +6,76 @@
  */
 
 #include "autoconf.h"
+#include "types.h"
 #include "kernel/irq.h"
 
-typedef struct uart_regs {
-	unsigned int rx_data;
-	unsigned int tx_data;
-	unsigned int status;
+typedef volatile struct uart_regs {
+	uint32_t rx_data;
+	uint32_t tx_data;
+	uint32_t status;
+	uint32_t ctrl;
 }uart_regs_t;
 
-#define SR_TX_FIFO_FULL	       0x08 /**< transmit FIFO full */
-#define SR_RX_FIFO_VALID_DATA  0x01 /**< data in receive FIFO */
-#define SR_RX_FIFO_FULL        0x02 /**< receive FIFO full */
+/*status registers bit definitions*/
+#define STATUS_PAR_ERROR_BIT          24
+#define STATUS_FRAME_ERROR_BIT        25
+#define STATUS_OVERUN_ERROR_BIT       26
+#define STATUS_INTR_ENABLED_BIT       27
+#define STATUS_TX_FIFO_FULL_BIT       28
+#define STATUS_TX_FIFO_EMPTY_BIT      29
+#define STATUS_RX_FIFO_FULL_BIT       30
+#define STATUS_RX_FIFO_VALID_DATA_BIT 31
+/*ctrl registers bit definitions*/
+#define CTRL_ENABLE_INTR_BIT          27
+#define CTRL_RST_RX_FIFO_BIT          30
+#define CTRL_RST_TX_FIFO_BIT          31
+
+/*1<<(31-XXX_BIT) it's necessary put 31 here because microblaze have bit reverse*/
+#define REVERSE_MASK(bit_num) (1<<(31-bit_num))
+
+#define STATUS_PAR_ERROR             REVERSE_MASK(STATUS_PAR_ERROR_BIT)
+#define STATUS_FRAME_ERROR           REVERSE_MASK(STATUS_FRAME_ERROR_BIT)
+#define STATUS_OVERUN_ERROR          REVERSE_MASK(STATUS_OVERUN_ERROR_BIT)
+#define STATUS_INTR_ENABLED          REVERSE_MASK(STATUS_INTR_ENABLED_BIT)
+#define STATUS_TX_FIFO_FULL          REVERSE_MASK(STATUS_TX_FIFO_FULL_BIT)
+#define STATUS_TX_FIFO_EMPTY         REVERSE_MASK(STATUS_TX_FIFO_EMPTY_BIT)
+#define STATUS_RX_FIFO_FULL          REVERSE_MASK(STATUS_RX_FIFO_FULL_BIT)
+#define STATUS_RX_FIFO_VALID_DATA    REVERSE_MASK(STATUS_RX_FIFO_VALID_DATA_BIT)
+
+#define CTRL_ENABLE_INTR             REVERSE_MASK(CTRL_ENABLE_INTR_BIT)
+#define CTRL_RST_RX_FIFO             REVERSE_MASK(CTRL_RST_RX_FIFO_BIT)
+#define CTRL_RST_TX_FIFO             REVERSE_MASK(CTRL_RST_TX_FIFO_BIT)
+
+/*set registers base*/
+uart_regs_t *uart =  (uart_regs_t *)XILINX_UARTLITE_BASEADDR;
+
+inline static int is_rx_empty(){
+	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
+}
+
+inline static int can_tx_trans(){
+	return !(uart->status & STATUS_TX_FIFO_FULL);
+}
 
 int uart_init() {
-
 }
 
 char uart_getc() {
+	while (!is_rx_empty());
+	return (char) (uart->rx_data & 0xFF);
 }
 
 void uart_putc(char ch){
-
+	while (!can_tx_trans());
+	uart->tx_data = (unsigned int)ch;
 }
 
+//TODO uart_set_irq_handler haven't to be used
 int uart_set_irq_handler(IRQ_HANDLER pfunc) {
-
+	request_irq(XILINX_UARTLITE_IRQ_NUM, pfunc);
 	return 0;
 }
 
 int uart_remove_irq_handler() {
-
 	return 0;
 }
