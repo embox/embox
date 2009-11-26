@@ -38,3 +38,27 @@ float __truncdfsf2(double a) {
 int __fixsfsi(float a) {
 	return float32_to_int32(float_to_float32(a));
 }
+
+float __negsf2(float a) {
+	return __subsf3(0.0, a);
+}
+
+float __sqrtsf2(float a) {
+	return float32_to_float(float32_sqrt(float_to_float32(a)));
+}
+
+int __lesf2(float a, float b) {
+        return float32_le(float_to_float32(a), float_to_float32(b));
+}
+
+int __gesf2(float a, float b) {
+        return !float32_lt(float_to_float32(a), float_to_float32(b));
+}
+
+int __ltsf2(float a, float b) {
+        return float32_lt(float_to_float32(a), float_to_float32(b));
+}
+
+int __gtsf2(float a, float b) {
+        return !float32_le(float_to_float32(a), float_to_float32(b));
+}
