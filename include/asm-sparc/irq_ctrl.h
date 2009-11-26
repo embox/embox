@@ -5,8 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef MICROBLAZE_IRQ_CTRL_H_
-#define MICROBLAZE_IRQ_CTRL_H_
+#ifndef SPARC_IRQ_CTRL_H_
+#define SPARC_IRQ_CTRL_H_
 
 #ifndef __ASSEMBLER__
 
@@ -15,5 +15,5 @@ typedef unsigned int irq_mask_t ;
 
 #endif /*__ASSEMBLER__*/
 
-#endif /* MICROBLAZE_IRQ_CTRL_H_ */
+#endif /* SPARC_IRQ_CTRL_H_ */
 
