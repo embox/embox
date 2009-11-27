@@ -5,15 +5,7 @@
 #include "types.h"
 #include "stdio.h"
 #include "err.h"
-
-#ifdef _TEST_SYSTEM_
-
-#define SetBit(rg, bit)  do { REG_ORIN(rg, (1UL << (bit))); } while(0)
-#define ClearBit(rg, bit) do { REG_ANDIN(rg, ~(1UL << (bit))); } while(0)
-#define GetBit(rg, bit)   ( ((rg) >> (bit)) & 1 )
-
-#define BMASK(nbit)  (0x00000001 << (nbit))
-#endif /* _TEST_SYSTEM_ */
+#include "bitops.h"
 
 #if defined(_TRACE) && !defined(SIMULATION_TRG)
 # ifdef _TEST_SYSTEM_

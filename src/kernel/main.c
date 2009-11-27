@@ -4,9 +4,8 @@
  * \date Nov 27, 2008
  * \author anton
  */
-#include "types.h"
 #include "shell.h"
-#include "common.h"
+#include "autoconf.h"
 
 int main() {
 #if !defined(SIMULATION_TRG) && defined(MONITOR_SHELL)

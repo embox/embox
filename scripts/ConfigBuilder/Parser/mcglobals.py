@@ -462,6 +462,11 @@ defCompilersToSettingsDict = {
 		Path = u'/opt/sparc-elf/bin/sparc-elf-gcc',
 		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
 		LDFLAGS = u'-Wl -N -nostdlib -g'
+	),
+	'mb-linux' : CompilerSettings_t(
+		Path = u'/opt/microblaze-cctools/bin',
+		CFLAGS = u'-Werror -pipe -c -O0 -D_TEST_SYSTEM_',
+		LDFLAGS = u'-Wl -N -nostdlib'
 	)
 }
 
