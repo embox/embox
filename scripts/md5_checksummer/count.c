@@ -8,7 +8,7 @@
 #include <string.h>
 #include <getopt.h>
 
-#define md5keyw "MD5_CHECKSUM"
+//#define md5keyw "MD5_CHECKSUM"
 
 struct option longOptions[] = {
         { "help",               0, NULL, 'h' },
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
                 case -1:
                         break;
                 default:
-                        exit(EXIT_SUCCESS);
+                        exit(1);
                 }
         } while(-1 != nextOption);
 
