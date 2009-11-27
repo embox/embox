@@ -127,7 +127,7 @@ void count(char *img) {
 int main(int argc, char **argv) {
 	progName = argv[0];
         int nextOption;
-        char *img, *config;
+        char *img;
         do {
                 nextOption = getopt_long(argc, argv, "hi:", longOptions, NULL);
         	switch(nextOption) {

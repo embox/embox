@@ -36,7 +36,7 @@ OC_TOOL = $(CC_PACKET)-objcopy
 
 .PHONY: mkdir build checksum all clean config xconfig menuconfig mconfig
 
-all: mkdir build
+all: mkdir build checksum
 
 mkdir:
 	@if [ -e .config -o -e .config2 ]; \
@@ -59,13 +59,14 @@ build:
 	@declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --directory=src all
 
 checksum:
-	@if [ $(SIGN_CHECKSUM) == y ]; \
-	then \
-	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
-	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --directory=src all; \
-	else \
-	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean; \
-	fi;
+	@$(MAKE) --directory=scripts/md5_checksummer
+#	@if [ $(SIGN_CHECKSUM) == y ]; \
+#	then \
+#	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
+#	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --directory=src all; \
+#	else \
+#	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean; \
+#	fi;
 
 clean:
 	@declare -x MAKEOP=clean; $(MAKE) --directory=src clean
