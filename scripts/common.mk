@@ -25,7 +25,7 @@ all: $(SUBDIRS-y) $(OBJS-y) copy_objs
 copy_objs:
 	@if [ ! -z "$(OBJS-y)" ]; then \
 	    for OBJ in $(OBJS-y); do \
-		    cp -f $$OBJ $(OBJ_DIR)/$(BUILD)/`date +%N`-$$OBJ; \
+		    cp -f $$OBJ $(OBJ_DIR)/$(BUILD)/$(shell pwd | openssl dgst -md5)-$$OBJ; \
 	    done; \
 	fi
 
