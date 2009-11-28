@@ -136,7 +136,7 @@ int bootp_discover (void* ifdev) {
 		b.htype = HTYPE_ETHERNET;
 		b.hlen = 6;
 		b.xid = xid++;
-		*(UINT32*)b.options = VM_RFC1048;
+		*(uint32_t*)b.options = VM_RFC1048;
 		memcpy (b.chaddr, enet, ETH_ALEN);
 		memset (local_ip_addr, 0, sizeof (ip_addr_t));
 

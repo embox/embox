@@ -22,9 +22,9 @@
  */
 typedef struct _CPU_CONTEXT {
 	/* global registers */
-	WORD globals[8];
+	uint32_t globals[8];
 	/* some control registers */
-	WORD y, tbr, psr, wim;
+	uint32_t y, tbr, psr, wim;
 	/* all register windows */
 	REG_WINDOW reg_windows[CORE_NWINDOWS];
 /*

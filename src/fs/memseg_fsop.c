@@ -6,7 +6,7 @@
 extern SEGMENT mm_segtable[MAX_NSEGMENTS];
 
 // TODO: probably we should not provide init() in fs interace, and initialize mem manger globally
-static BOOL init()
+static bool init()
 {
 	return memseg_init();
 }
@@ -30,16 +30,16 @@ static short get_file_idx (const char* file_name)
 }
 
 
-static BOOL delete_file (const char *file_name)
+static bool delete_file (const char *file_name)
 {
 	short sidx = get_seg_idx (file_name);
 	if (!IS_SEGTBL_ITEM_USED(mm_segtable, sidx)) {
 		TRACE ("invalid name!\n");
-		return FALSE;
+		return false;
 	}
 
 	RELEASE_SEGTBL_ITEM(mm_segtable,sidx);
-	return TRUE;
+	return true;
 }
 
 static size_t file_read (short fidx, long start_offset, void *buf, size_t nbytes)

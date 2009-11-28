@@ -7,7 +7,7 @@ static int piggysize;
 SEGMENT mm_segtable[MAX_NSEGMENTS];
 
 
-BOOL memseg_init()
+bool memseg_init()
 {
 	int i;
 	TRACE("mm init..\n");
@@ -26,26 +26,26 @@ BOOL memseg_init()
 	create_segment ("text", &_text_start, &_endtext);
 	create_segment ("data", &_data_start, &_data_end);
 
-	return TRUE;
+	return true;
 }
 
-inline BOOL is_overlap (void* start, void* end, SEGMENT seg)
+inline bool is_overlap (void* start, void* end, SEGMENT seg)
 {
 	//LOG_DEBUG("req: %08x | %08x \n", start, end);
 	//LOG_DEBUG("seg: %08x | %08x \n", seg.start, seg.end);
 	if ((start>=seg.start) && (start<seg.end)) {
 		//LOG_DEBUG("1 (start>=seg.start) && (start<seg.end)\n");
-		return TRUE;
+		return true;
 	}
 	if ((end>seg.start) && (end<=seg.end)) {
 		//LOG_DEBUG("2 ((end>seg.start) && (end<=seg.end))\n");
-		return TRUE;
+		return true;
 	}
 	if ((start<seg.start) && (end>seg.end)) {
 		//LOG_DEBUG("3 (start<seg.start) && (end>seg.end)\n");
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
 short get_seg_idx (const char* seg_name)
@@ -76,7 +76,7 @@ size_t list_segments (SEGMENT* out_slist, int max_nitems)
 	return list_idx;
 }
 
-BOOL create_segment (const char* name, void* start, void* end)
+bool create_segment (const char* name, void* start, void* end)
 {
 	//LOG_DEBUG("in create_segment %s\n",name);
 	//TODO: check input args
@@ -86,19 +86,19 @@ BOOL create_segment (const char* name, void* start, void* end)
 			free_idx=idx;
 		else if (is_overlap(start,end,mm_segtable[idx])) {
 			TRACE("segments could not overlap!\n");
-			return FALSE;
+			return false;
 		}
 	}
 
 	if (free_idx==IDX_INVALID) {
 		TRACE("max segments count reached\n");
-		return FALSE;
+		return false;
 	}
 
 	//LOG_DEBUG("creating segment %s with idx %d\n",name,free_idx);
 	strcpy(mm_segtable[free_idx].name,name);
 	mm_segtable[free_idx].start = start;
 	mm_segtable[free_idx].end = end;
-	return TRUE;
+	return true;
 }
 

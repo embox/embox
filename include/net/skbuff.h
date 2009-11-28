@@ -9,8 +9,8 @@
 #define SKBUFF_H_
 
 struct skb_timeval {
-	UINT32 off_sec;
-	UINT32 off_usec;
+	uint32_t off_sec;
+	uint32_t off_usec;
 };
 
 /**

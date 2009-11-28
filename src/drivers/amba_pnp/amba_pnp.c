@@ -12,21 +12,21 @@
  * \struct AHB_SLOT
  */
 typedef struct _AHB_SLOT {
-	UINT32 id_reg;
-	UINT32 user_defined[3];
-	UINT32 ba_reg[4];
+	uint32_t id_reg;
+	uint32_t user_defined[3];
+	uint32_t ba_reg[4];
 }AHB_SLOT;
 
 /**
  * \struct APB_SLOT
  */
 typedef struct _APB_SLOT {
-	UINT32 id_reg;
-	UINT32 ba_reg[1];
+	uint32_t id_reg;
+	uint32_t ba_reg[1];
 }APB_SLOT;
 
 
-inline static int lock_ahbm_slot(UINT16 slot, AMBA_DEV *dev) {
+inline static int lock_ahbm_slot(uint16_t slot, AMBA_DEV *dev) {
 	if (ahbm_devices[slot]) {
 		return -1;
 	}
@@ -34,7 +34,7 @@ inline static int lock_ahbm_slot(UINT16 slot, AMBA_DEV *dev) {
 	return 0;
 }
 
-inline static int lock_ahbsl_slot(UINT16 slot, AMBA_DEV *dev) {
+inline static int lock_ahbsl_slot(uint16_t slot, AMBA_DEV *dev) {
 	if (ahbsl_devices[slot]) {
 		return -1;
 	}
@@ -42,7 +42,7 @@ inline static int lock_ahbsl_slot(UINT16 slot, AMBA_DEV *dev) {
 	return 0;
 }
 
-inline static int lock_apb_slot(UINT16 slot, AMBA_DEV *dev) {
+inline static int lock_apb_slot(uint16_t slot, AMBA_DEV *dev) {
 	if (apb_devices[slot]) {
 		return -1;
 	}
@@ -50,7 +50,7 @@ inline static int lock_apb_slot(UINT16 slot, AMBA_DEV *dev) {
 	return 0;
 }
 
-inline static int lock_amba_slot (UINT16 slot, AMBA_DEV *dev, BOOL is_ahb, BOOL is_master) {
+inline static int lock_amba_slot (uint16_t slot, AMBA_DEV *dev, bool is_ahb, bool is_master) {
 	if (!is_ahb) {
 		return (-1 == lock_apb_slot(slot, dev)) ? -1 : 0;
 	}
@@ -67,19 +67,19 @@ inline static int lock_amba_slot (UINT16 slot, AMBA_DEV *dev, BOOL is_ahb, BOOL 
  * |vendor  |device  |00   |version |irq     |
  * |________|________|_____|________|________|
  */
-inline static BYTE get_ven(UINT32 id_reg) {
+inline static uint8_t get_ven(uint32_t id_reg) {
 	return (0xFF & ((id_reg) >> 24));
 }
 
-inline static UINT16 get_dev(UINT32 id_reg) {
+inline static uint16_t get_dev(uint32_t id_reg) {
 	return (0xFFF & ((id_reg) >> 12));
 }
 
-inline static BYTE get_irq(UINT32 id_reg) {
+inline static uint8_t get_irq(uint32_t id_reg) {
 	return (0x1F & (id_reg));
 }
 
-inline static BYTE get_version(UINT32 id_reg) {
+inline static uint8_t get_version(uint32_t id_reg) {
 	return (0x1F & ((id_reg)) >> 5);
 }
 
@@ -89,7 +89,7 @@ inline static BYTE get_version(UINT32 id_reg) {
  * @param dev_id device ID
  * @return slotnumber or -1
  */
-inline static int find_apbdev_slotnum(BYTE ven_id, UINT16 dev_id) {
+inline static int find_apbdev_slotnum(uint8_t ven_id, uint16_t dev_id) {
 	APB_SLOT *pslotbase = ((APB_SLOT *) APB_BASE);
 	int cur_slotnum;
 	for (cur_slotnum = 0; cur_slotnum < APB_QUANTITY; cur_slotnum++) {
@@ -108,7 +108,7 @@ inline static int find_apbdev_slotnum(BYTE ven_id, UINT16 dev_id) {
  * @param is_master master/slave
  * @return slotnumber or -1
  */
-inline static int find_ahbdev_slotnum(BYTE ven_id, UINT16 dev_id, BOOL is_master) {
+inline static int find_ahbdev_slotnum(uint8_t ven_id, uint16_t dev_id, bool is_master) {
 	AHB_SLOT *pslotbase = (AHB_SLOT *) (is_master ? AHB_MASTER_BASE : AHB_SLAVE_BASE);
 	int maxdevs = is_master ? AHB_MASTERS_QUANTITY : AHB_SLAVES_QUANTITY;
 	int cur_slotnum;
@@ -133,16 +133,16 @@ inline static int find_ahbdev_slotnum(BYTE ven_id, UINT16 dev_id, BOOL is_master
  *       0010 - AHB Memory space
  *       0011 - AHB I/O space
  */
-inline static void fill_ahb_bar_info(AMBA_BAR_INFO *bar, UINT32 ba_reg) {
+inline static void fill_ahb_bar_info(AMBA_BAR_INFO *bar, uint32_t ba_reg) {
 	if (ba_reg) {
 		bar->start = ba_reg & 0xFFF00000;
 		bar->prefetchable = (0x1 & ((ba_reg) >> 17));
 		bar->cacheable = (0x1 & ((ba_reg) >> 16));
 		bar->mask = (0xFFF & ((ba_reg) >> 4));
 		bar->type = (0xF & (ba_reg));
-		bar->used = TRUE;
+		bar->used = true;
 	} else {
-		bar->used = FALSE;
+		bar->used = false;
 	}
 }
 
@@ -158,7 +158,7 @@ inline static void fill_ahb_bar_infos(AMBA_DEV *dev, AHB_SLOT *ahb_slot) {
  * @param bar amba bar info
  * @param ba_reg Bank Address Register
  */
-inline static void fill_apb_bar_info(AMBA_BAR_INFO *bar, UINT32 ba_reg) {
+inline static void fill_apb_bar_info(AMBA_BAR_INFO *bar, uint32_t ba_reg) {
 	bar->start = 0x80000000;
 	bar->prefetchable = 0;
 	bar->cacheable = 0;
@@ -167,7 +167,7 @@ inline static void fill_apb_bar_info(AMBA_BAR_INFO *bar, UINT32 ba_reg) {
 	bar->start |= ((((0xFFF & (ba_reg) >> 20)) & bar->mask) << 8);
 }
 
-inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev_info, UINT32 id_reg) {
+inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev_info, uint32_t id_reg) {
 	dev_info->venID = get_ven(id_reg);
 	dev_info->devID = get_dev(id_reg);
 	dev_info->irq = get_irq(id_reg);
@@ -175,10 +175,10 @@ inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev_info, UINT32 id_reg) {
 }
 
 /**
- * @return TRUE (1) if successed
- * @return FALSE (0) slot is empty
+ * @return true (1) if successed
+ * @return false (0) slot is empty
  */
-int fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master) {
+int fill_amba_dev(AMBA_DEV *dev, uint8_t slot_number, bool is_ahb, bool is_master) {
 	/* ATTENTION! DON'T USE ANY printf IN THIS FUNCTION */
 	int base;
 	if (!is_ahb) {
@@ -207,7 +207,7 @@ int fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master) 
 	return 0;
 }
 
-int capture_amba_dev(AMBA_DEV *dev, BYTE ven_id, UINT16 dev_id, BOOL is_ahb, BOOL is_master) {
+int capture_amba_dev(AMBA_DEV *dev, uint8_t ven_id, uint16_t dev_id, bool is_ahb, bool is_master) {
 	int slot_number;
 	if (dev == NULL) {
 		return -1;

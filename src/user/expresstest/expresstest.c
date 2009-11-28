@@ -74,7 +74,7 @@ static express_test_descriptor_t *get_express_test(int test_num) {
 	return *p_test;
 }
 static int exec(int argsc, char **argsv) {
-	BOOL run_info_func = FALSE;
+	bool run_info_func = false;
 	express_test_descriptor_t *p_test = NULL;
 	int test_num = -1;
 	int nextOption;
@@ -96,7 +96,7 @@ static int exec(int argsc, char **argsv) {
 			if (test_num == -1) {
 				LOG_ERROR("%s: -i: missing -n before -i.\n", COMMAND_NAME);
 			}
-			run_info_func = TRUE;
+			run_info_func = true;
 			break;
 		case -1:
 			break;

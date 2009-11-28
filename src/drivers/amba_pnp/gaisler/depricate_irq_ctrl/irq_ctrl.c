@@ -63,7 +63,7 @@ int irqc_disable_all() {
 	return 0;
 }
 
-int irqc_force(BYTE irq_num) {
+int irqc_force(uint8_t irq_num) {
 //	That's force!
 //	if (!GetBit(dev_regs->mask, irq_num)) {
 //		return;
@@ -72,13 +72,13 @@ int irqc_force(BYTE irq_num) {
 	return 0;
 }
 
-int irqc_clear(BYTE irq_num) {
+int irqc_clear(uint8_t irq_num) {
 	ASSERT_INIT_DONE();
 	SetBit(dev_regs->clear, irq_num);
 	return 0;
 }
 
-int irqc_get_status(BYTE irq_num) {
+int irqc_get_status(uint8_t irq_num) {
 	return GetBit(dev_regs->mask, irq_num);
 }
 

@@ -21,13 +21,13 @@ DECLARE_EXPRESS_TEST("CPU context", exec, TEST_CPU_CONTEXT_ON_BOOT_ENABLE, NULL)
  */
 static int exec() {
 	static CPU_CONTEXT context;
-	volatile static BOOL started;
+	volatile static bool started;
 
-	started = FALSE;
+	started = false;
 	context_save(&context);
 	{
 		if (!started) {
-			started = TRUE;
+			started = true;
 		} else {
 			return 0;
 		}

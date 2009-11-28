@@ -15,14 +15,14 @@ typedef struct  {
 // TODO: linked list of segments will be much more convenient
 #define MAX_NSEGMENTS 100
 
-#define IS_SEGTBL_ITEM_USED(segtable,idx) (segtable[idx].name[0]!='0') ? TRUE : FALSE
+#define IS_SEGTBL_ITEM_USED(segtable,idx) (segtable[idx].name[0]!='0') ? true : false
 #define RELEASE_SEGTBL_ITEM(segtable,idx) segtable[idx].name[0]='0'
 
-inline BOOL is_overlap (void* start, void* end, SEGMENT seg);
+inline bool is_overlap (void* start, void* end, SEGMENT seg);
 
 size_t list_segments (SEGMENT* out_slist, int max_nitems);
 
-BOOL create_segment(const char* name, void* start, void* end);
+bool create_segment(const char* name, void* start, void* end);
 
 
 #endif // MM_H_

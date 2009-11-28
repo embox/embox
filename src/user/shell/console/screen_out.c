@@ -49,11 +49,11 @@ void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 	}
 
 	int i;
-	BOOL dirty = TRUE;
+	bool dirty = true;
 
 	for (i = 0; cmdline->string[i]; i++) {
 		if (this->string[i] == '\0') {
-			dirty = FALSE;
+			dirty = false;
 		}
 		if (!dirty || this->string[i] != cmdline->string[i]) {
 			move_cursor_to(this, i);

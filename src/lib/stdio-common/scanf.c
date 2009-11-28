@@ -52,10 +52,10 @@ static int scanchar(char **str) {
 	}
 }
 
-static BOOL is_space(int ch) {
+static bool is_space(int ch) {
 	if ((ch == ' ') || (ch == '\t') || (ch == '\n'))
-		return TRUE;
-	return FALSE;
+		return true;
+	return false;
 }
 
 static int trim_leading(char **str) {

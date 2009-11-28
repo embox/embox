@@ -47,7 +47,7 @@ static int exec(int argsc, char **argsv) {
 
 	if (base_addr<0x40000000) {
 		TRACE("segment start address must be equal or higher, than 0x40000000\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!create_segment(seg_name, (void*)base_addr, (void*)base_addr))

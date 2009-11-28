@@ -48,7 +48,7 @@ int puts (const char *S)
 	char *ptr = (char*)S;
 	while (0 != (*ptr))	putchar (*ptr++);
 	putchar ('\n');
-	return TRUE;
+	return true;
 }
 
 

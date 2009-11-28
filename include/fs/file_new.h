@@ -18,14 +18,14 @@ size_t write (FDESC file_desc, const void *buf, size_t nbytes);
 
 size_t read (FDESC file_desc, void *buf, size_t nbytes);
 
-BOOL fclose (FDESC file_desc);
+bool fclose (FDESC file_desc);
 
 int lseek(FDESC file_desc, long offset, int whence) ;
 
 size_t list_dir (const char *path, FLIST_ITEM* out_flist, int max_nitems);
 
-BOOL remove (const char* file_path);
+bool remove (const char* file_path);
 
-BOOL fsync(const char* file_path);
+bool fsync(const char* file_path);
 
 #endif /*FILE_H_*/

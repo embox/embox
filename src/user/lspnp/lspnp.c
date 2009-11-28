@@ -33,8 +33,8 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
  * \struct PNP_DEVICE_INFO
  */
 typedef struct _PNP_DEVICE_INFO {
-	const BYTE vendor_id;
-	const UINT16 device_id;
+	const uint8_t vendor_id;
+	const uint16_t device_id;
 	const char *name;
 } PNP_DEVICE_INFO;
 
@@ -49,7 +49,7 @@ PNP_DEVICE_INFO esa_pnp_devices_table [] = {
  * \struct PNP_VENDOR_INFO
  */
 typedef struct _PNP_VENDOR_INFO {
-	const BYTE vendor_id;
+	const uint8_t vendor_id;
 	const char *name;
 	PNP_DEVICE_INFO *dev_table ;
 	int size;
@@ -73,7 +73,7 @@ static PNP_DEVICE_INFO const devs_table[] = {
  * Get vendor name of amba pnp device.
  * @param ven_id vendor ID
  */
-inline static const char* amba_get_ven_name(BYTE ven_id) {
+inline static const char* amba_get_ven_name(uint8_t ven_id) {
 	LOG_DEBUG("amba_get_ven_name: ven_id=0x%X\n", ven_id);
 	int i;
 	for (i = 0; i < VENDORS_TABLE_LEN; i++) {
@@ -88,7 +88,7 @@ inline static const char* amba_get_ven_name(BYTE ven_id) {
  * @param ven_id vendor ID
  * @param dev_id device ID
  */
-inline static const char* amba_get_dev_name(BYTE ven_id, UINT16 dev_id) {
+inline static const char* amba_get_dev_name(uint8_t ven_id, uint16_t dev_id) {
 	LOG_DEBUG("amba_get_dev_name: ven_id=0x%X, dev_id=0x%X\n", ven_id, dev_id);
 	int i;
 	for (i = 0; i < DEVICES_TABLE_LEN; i++) {
@@ -141,7 +141,7 @@ void show_bars_infos(AMBA_DEV *dev) {
 
 const char UNKNOWN[] = "<unknown>";
 
-static void show_dev(AMBA_DEV *dev, BOOL show_user) {
+static void show_dev(AMBA_DEV *dev, bool show_user) {
 	LOG_DEBUG("show_dev\n");
         HANDLER_DATA_FUNC func;
         if (NULL == dev) return;
@@ -177,24 +177,24 @@ static int print_apb_entries(int amount) {
         //APB_SLOT *pslot = base_addr;
         for (i = 0; i < amount/4; i++) {
                 //if (0 != pslot[i].id_reg) {
-                if(-1 != fill_amba_dev(&dev, i, FALSE, FALSE)){
-                        show_dev(&dev, FALSE);
+                if(-1 != fill_amba_dev(&dev, i, false, false)){
+                        show_dev(&dev, false);
                         count++;
                 }
         }
         return count;
 }
 
-//static int print_ahb_entries(AHB_SLOT *base_addr, int amount,BOOL is_master) {
-static int print_ahb_entries(int amount, BOOL is_master) {
+//static int print_ahb_entries(AHB_SLOT *base_addr, int amount,bool is_master) {
+static int print_ahb_entries(int amount, bool is_master) {
 	LOG_DEBUG("print_ahb_entries: %d\n", amount);
         int i, count = 0;
         AMBA_DEV dev;
         //AHB_SLOT *pslot = base_addr;
         for (i = 0; i < amount; i++) {
                 //if (0 != pslot[i].id_reg) {
-                if(-1 != fill_amba_dev(&dev,  i, TRUE, is_master)){
-                	show_dev(&dev, FALSE);
+                if(-1 != fill_amba_dev(&dev,  i, true, is_master)){
+                	show_dev(&dev, false);
                 	count++;
                 }
         }
@@ -209,7 +209,7 @@ int print_ahbm_pnp_devs() {
         int count = 0;
         TRACE("\nAHB masters..\n");
         print_table_head();
-        count += print_ahb_entries(AHB_MASTERS_QUANTITY, TRUE);
+        count += print_ahb_entries(AHB_MASTERS_QUANTITY, true);
         return count;
 }
 
@@ -221,7 +221,7 @@ int print_ahbsl_pnp_devs() {
         int count = 0;
         TRACE("\nAHB slaves..\n");
         print_table_head();
-        count += print_ahb_entries(AHB_SLAVES_QUANTITY, FALSE);
+        count += print_ahb_entries(AHB_SLAVES_QUANTITY, false);
 	return count;
 }
 
@@ -256,7 +256,7 @@ void print_all_pnp_devs() {
 #endif
 }
 
-void print_ahbm_pnp_dev(UINT32 slot) {
+void print_ahbm_pnp_dev(uint32_t slot) {
 	LOG_DEBUG("print_ahbm_pnp_dev: %d\n", slot);
         if (slot >AHB_MASTERS_QUANTITY) {
     		LOG_ERROR("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
@@ -264,7 +264,7 @@ void print_ahbm_pnp_dev(UINT32 slot) {
         }
 
         if (NULL != ahbm_devices[slot]) {
-                show_dev(ahbm_devices[slot], TRUE);
+                show_dev(ahbm_devices[slot], true);
                 return;
         }
         AMBA_DEV dev;
@@ -272,50 +272,50 @@ void print_ahbm_pnp_dev(UINT32 slot) {
 
         //AHB_SLOT *pslot = (AHB_SLOT *)AHB_MASTER_BASE;
         //if (0 != pslot[slot].id_reg) {
-        if(-1 != fill_amba_dev(&dev, slot, TRUE, TRUE)){
-                show_dev(&dev, FALSE);
+        if(-1 != fill_amba_dev(&dev, slot, true, true)){
+                show_dev(&dev, false);
         } else {
                 LOG_ERROR("No such device.\n");
         }
-        //print_ahb_entries((AHB_SLOT *)AHB_MASTER_BASE, 1, TRUE);
+        //print_ahb_entries((AHB_SLOT *)AHB_MASTER_BASE, 1, true);
 }
 
-void print_ahbsl_pnp_dev(UINT32 slot) {
+void print_ahbsl_pnp_dev(uint32_t slot) {
 	LOG_DEBUG("print_ahbsl_pnp_dev: %d\n", slot);
         if (slot >AHB_SLAVES_QUANTITY) {
                 LOG_ERROR("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
                 return;
         }
         if (NULL != ahbsl_devices[slot]) {
-                show_dev(ahbsl_devices[slot], TRUE);
+                show_dev(ahbsl_devices[slot], true);
                 return;
         }
         AMBA_DEV dev;
         //AHB_SLOT *pslot = (AHB_SLOT *)AHB_SLAVE_BASE;
         //if (0 != pslot[slot].id_reg) {
-        if (-1 != fill_amba_dev(&dev, slot, TRUE, FALSE)){
-                show_dev(&dev, FALSE);
+        if (-1 != fill_amba_dev(&dev, slot, true, false)){
+                show_dev(&dev, false);
         } else {
                 LOG_ERROR("No such device.\n");
         }
 }
 
-void print_apb_pnp_dev(UINT32 slot) {
+void print_apb_pnp_dev(uint32_t slot) {
 	LOG_DEBUG("print_apb_pnp_dev: %d\n", slot);
         if (slot >APB_QUANTITY) {
                 LOG_ERROR("print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
                 return;
         }
         if (NULL != apb_devices[slot]) {
-                show_dev(apb_devices[slot], TRUE);
+                show_dev(apb_devices[slot], true);
                 return;
         }
         AMBA_DEV dev;
         //APB_SLOT *pslot = (APB_SLOT *)APB_BASE;
         //if (0 != pslot[slot].id_reg) {
 
-        if (-1 != fill_amba_dev(&dev, slot, FALSE, FALSE)){
-                show_dev(&dev, FALSE);
+        if (-1 != fill_amba_dev(&dev, slot, false, false)){
+                show_dev(&dev, false);
         } else {
                 LOG_ERROR("No such device.\n");
         }

@@ -48,7 +48,7 @@ int mmu_probe_init() {
     return 0;
 }
 
-void mmu_probe_set_pgd(UINT32 addr) {
+void mmu_probe_set_pgd(uint32_t addr) {
 
 }
 
@@ -60,7 +60,7 @@ void mmu_probe_set_pgd(UINT32 addr) {
 #define MMU_PTABLE_MASK_OFFSET  12
 #define MMU_PAGE_MASK           0xFFF
 
-int mmu_probe_map_region(UINT32 paddr, UINT32 vaddr, UINT32 size, UINT32 flags) {
+int mmu_probe_map_region(uint32_t paddr, uint32_t vaddr, uint32_t size, uint32_t flags) {
 
     pgd_t *g0 = (pgd_t *) &pg0;
     pmd_t *m0 = (pmd_t *) &pm0;

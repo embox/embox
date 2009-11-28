@@ -130,7 +130,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	if (this->running) {
 		return;
 	}
-	this->running = TRUE;
+	this->running = true;
 
 	this->callback = cb;
 	uart_set_irq_handler(uart_irq_handler);
@@ -144,7 +144,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 		}
 	}
 	assert(this->callback == NULL);
-	this->running = FALSE;
+	this->running = false;
 
 }
 

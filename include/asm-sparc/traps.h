@@ -21,11 +21,11 @@ typedef struct _STACKFRAME {
 	/* register window */
 	REG_WINDOW reg_window;
 	/* aggregate return structure pointer */
-	WORD structptr[1];
+	uint32_t structptr[1];
 	/* formal parameters */
-	WORD xargs[6];
+	uint32_t xargs[6];
 	/* TODO I don't know. -- Eldar */
-	WORD xxargs[1];
+	uint32_t xxargs[1];
 } STACKFRAME;
 
 /*
@@ -33,17 +33,17 @@ typedef struct _STACKFRAME {
  */
 typedef struct _TRAP_CONTEXT {
 	/* processor state register */
-	WORD psr;
+	uint32_t psr;
 	/* program counter */
-	WORD pc;
+	uint32_t pc;
 	/* next program counter */
-	WORD npc;
+	uint32_t npc;
 	/* mul/div */
-	WORD y;
+	uint32_t y;
 	/* global registers */
-	WORD globals[8];
+	uint32_t globals[8];
 	/* input registers */
-	WORD ins[8];
+	uint32_t ins[8];
 } TRAP_CONTEXT;
 
 #define STACKFRAME_SZ     sizeof(STACKFRAME)

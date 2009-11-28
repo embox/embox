@@ -12,16 +12,16 @@
 #include "drivers/pnp_id.h"
 #include "assert.h"
 
-#define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, TRUE, TRUE)){\
+#define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, true, true)){\
 	LOG_ERROR("can't capture ahbm dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
-#define TRY_CAPTURE_AHBSL_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, TRUE, FALSE)){\
+#define TRY_CAPTURE_AHBSL_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, true, false)){\
 	LOG_ERROR("can't capture ahbsl dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
 
-#define TRY_CAPTURE_APB_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, FALSE, FALSE)){\
+#define TRY_CAPTURE_APB_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, false, false)){\
 	LOG_ERROR("can't capture apb dev venID=0x%X, devID=0x%X\n", venID, devID);\
 	return -1;\
 }
@@ -40,22 +40,22 @@
  * BAR0-BAR3 registers are presented.
  */
 typedef struct _AMBA_BAR_INFO {
-	UINT32 start;
-	BOOL   prefetchable;
-	BOOL   cacheable;
-	UINT32 mask;
-	BYTE   type;
-	BOOL   used;
+	uint32_t start;
+	bool   prefetchable;
+	bool   cacheable;
+	uint32_t mask;
+	uint8_t   type;
+	bool   used;
 } AMBA_BAR_INFO;
 
 /**
  * \struct AMBA_DEV_INFO
  */
 typedef struct _AMBA_DEV_INFO {
-	BYTE   venID;
-	UINT16 devID;
-	BYTE   version;
-	BYTE   irq;
+	uint8_t   venID;
+	uint16_t devID;
+	uint8_t   version;
+	uint8_t   irq;
 } AMBA_DEV_INFO;
 
 
@@ -69,12 +69,12 @@ typedef void (*HANDLER_DATA_FUNC)(struct _AMBA_DEV *dev);
 typedef struct _AMBA_DEV{
 	AMBA_DEV_INFO      dev_info;     /**< VendorID, DeviceID, version, IRQ */
 	AMBA_BAR_INFO      bar[4];
-	BYTE               slot;         /**< information about location */
+	uint8_t               slot;         /**< information about location */
 	HANDLER_DATA_FUNC  show_info;    /**< show brief description */
 	char               dev_name[16]; /**< logical name */
-	BOOL               is_ahb;
-	BOOL               is_master;
-	UINT32             user_def[3];  /**< info from user registers */
+	bool               is_ahb;
+	bool               is_master;
+	uint32_t             user_def[3];  /**< info from user registers */
 } AMBA_DEV;
 
 static AMBA_DEV *ahbm_devices[AHB_MASTERS_QUANTITY];
@@ -85,12 +85,12 @@ static AMBA_DEV *apb_devices[APB_QUANTITY];
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-//int capture_ahbm_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
+//int capture_ahbm_dev(AHB_DEV *ahb_dev, uint8_t vendor_id, uint16_t device_id);
 /*
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-//int capture_ahbsl_dev(AHB_DEV *ahb_dev, BYTE vendor_id, UINT16 device_id);
+//int capture_ahbsl_dev(AHB_DEV *ahb_dev, uint8_t vendor_id, uint16_t device_id);
 
 /**
  * Capture amba pnp device.
@@ -101,7 +101,7 @@ static AMBA_DEV *apb_devices[APB_QUANTITY];
  * @param is_master master/slave
  * @return slot number or -1 if error
  */
-extern int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id, BOOL is_ahb, BOOL is_master);
+extern int capture_amba_dev(AMBA_DEV *apb_dev, uint8_t vendor_id, uint16_t device_id, bool is_ahb, bool is_master);
 
 /**
  * Fill amba device.
@@ -109,10 +109,10 @@ extern int capture_amba_dev(AMBA_DEV *apb_dev, BYTE vendor_id, UINT16 device_id,
  * @param slot_number slot number
  * @param is_ahb ahb/not ahb
  * @param is_master master/slave
- * @return TRUE (1) if successed
- * @return FALSE (0) slot is empty
+ * @return true (1) if successed
+ * @return false (0) slot is empty
  */
-extern int fill_amba_dev(AMBA_DEV *dev, BYTE slot_number, BOOL is_ahb, BOOL is_master);
+extern int fill_amba_dev(AMBA_DEV *dev, uint8_t slot_number, bool is_ahb, bool is_master);
 
 /**
  * Free amba device.

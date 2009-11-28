@@ -13,14 +13,14 @@
 
 typedef struct sys_tmr {
         volatile int f_enable;
-        volatile __u32 id;
-        volatile __u32 load;
-        volatile __u32 cnt;
+        volatile uint id;
+        volatile uint load;
+        volatile uint cnt;
         volatile TIMER_FUNC handle;
 } sys_tmr_t;
 
-static volatile __u32 cnt_ms_sleep; /**< for sleep function */
-static volatile __u32 cnt_sys_time; /**< quantity ms after start system */
+static volatile uint cnt_ms_sleep; /**< for sleep function */
+static volatile uint cnt_sys_time; /**< quantity ms after start system */
 
 static sys_tmr_t sys_timers[_SC_TIMER_MAX];
 
@@ -32,8 +32,8 @@ static void set_sys_timer_disable (int num) {
         sys_timers[num].f_enable = 0;
 }
 
-int set_timer (__u32 id, __u32 ticks, TIMER_FUNC handle) {
-	__u32 i;
+int set_timer (uint id, uint ticks, TIMER_FUNC handle) {
+	uint i;
 	for (i = 0; i < array_len (sys_timers); i++) {
 		if (!sys_timers[i].f_enable) {
 			sys_timers[i].handle = handle;
@@ -47,8 +47,8 @@ int set_timer (__u32 id, __u32 ticks, TIMER_FUNC handle) {
 	return 0;
 }
 
-void close_timer (__u32 id) {
-	__u32 i;
+void close_timer (uint id) {
+	uint i;
 	for (i = 0; i < array_len (sys_timers); i++) {
 		if (id == sys_timers[i].id) {
 			sys_timers[i].f_enable = 0;

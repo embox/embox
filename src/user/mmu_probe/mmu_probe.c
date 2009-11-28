@@ -19,7 +19,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 /**
  * show MMU register
  */
-static BOOL mmu_show_reg() {
+static bool mmu_show_reg() {
     printf("Registers MMU:\n");
 //    printf("CTLR REG:\t%X\n", srmmu_get_mmureg(SRMMU_CTRL_REG));
 //    printf("CTXTBL PTR:\t%X\n", srmmu_get_mmureg(SRMMU_CTXTBL_PTR));
@@ -28,7 +28,7 @@ static BOOL mmu_show_reg() {
 //    printf("FAULT ADDR:\t%X\n", srmmu_get_mmureg(SRMMU_FAULT_ADDR));
     return 0;
 }
-static BOOL mmu_show_version() {
+static bool mmu_show_version() {
     printf("Registers MMU:\n");
     return 0;
 }
@@ -37,7 +37,7 @@ static BOOL mmu_show_version() {
 #define TLBNUM 4
 
 
-static BOOL mmu_probe() {
+static bool mmu_probe() {
 
 //  ctxd_t *c0 = (ctxd_t *) &ctx;
 //  pgd_t *g0 = (pgd_t *) &pg0;
@@ -146,7 +146,7 @@ static BOOL mmu_probe() {
         *((unsigned long *) j) = j;
         if (*((unsigned long*) (((unsigned long) &page2) + (((i - 3) % 3)
                 * PAGE_SIZE))) != j) {
-            MMU_RETURN (FALSE);
+            MMU_RETURN (false);
         }
     }
     flush_data_cache();
@@ -159,7 +159,7 @@ static BOOL mmu_probe() {
 //
 //      if (((*(p0 + i)) & ~(SRMMU_DIRTY| SRMMU_REF)) != (pteval
 //              & ~(SRMMU_DIRTY| SRMMU_REF))) {
-//          MMU_RETURN (FALSE);
+//          MMU_RETURN (false);
 //      }
 //  }
     for (j = 0, i = 3; i < TLBNUM+3; i++) {
@@ -171,14 +171,14 @@ static BOOL mmu_probe() {
 
         if ((page_desc & ~(SRMMU_DIRTY| SRMMU_REF)) != (pteval
                 & ~(SRMMU_DIRTY| SRMMU_REF))) {
-            MMU_RETURN (FALSE);
+            MMU_RETURN (false);
         }
     }
 
 
   //at least one entry has to have been flushed
   if (j == 0) {
-      MMU_RETURN (FALSE);
+      MMU_RETURN (false);
   }
 
 
@@ -193,23 +193,23 @@ static BOOL mmu_probe() {
 //          j++;
 //  }
 //  if (j != TLBNUM) {
-//      MMU_RETURN (FALSE);
+//      MMU_RETURN (false);
 //  }
 //
 //  /* check modified & ref bit */
 // if (!srmmu_pte_dirty(p0[1]) || !srmmu_pte_young(p0[1])) {
-//      MMU_RETURN (FALSE);
+//      MMU_RETURN (false);
 //  }
 //
 //  if (!srmmu_pte_young(m0[2])) {
-//      MMU_RETURN (FALSE);
+//      MMU_RETURN (false);
 //  }
 //  if (!srmmu_pte_young(p0[2])) {
-//      MMU_RETURN (FALSE);
+//      MMU_RETURN (false);
 //  }
 
     printf ("ending mmu testing");
-    MMU_RETURN (TRUE);
+    MMU_RETURN (true);
 }
 
 /**

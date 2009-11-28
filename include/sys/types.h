@@ -10,9 +10,18 @@
 
 #ifndef __ASSEMBLER__
 
-typedef int size_t;               /**<Used for sizes of objects*/
-typedef unsigned long clock_t;    /**<Used for system times in clock ticks or CLOCKS_PER_SEC*/
+typedef int size_t; /**<Used for sizes of objects*/
+typedef unsigned long clock_t; /**<Used for system times in clock ticks or CLOCKS_PER_SEC*/
 typedef unsigned long useconds_t; /**<Used for time in microseconds.*/
-#endif /*__ASSEMBLER__*/
+
+typedef unsigned long spinlock_t;
+typedef __s32 socklen_t;
+typedef __u32 gfp_t;
+
+typedef struct {
+	volatile int counter;
+} atomic_t;
+
+#endif /* __ASSEMBLER__ */
 
 #endif /* SYS_TYPES_H_ */

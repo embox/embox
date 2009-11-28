@@ -46,7 +46,7 @@ typedef struct _SCREEN {
 	int cursor;   /**< cursor current position */
 	const char *prompt;
 	//int prompt_len;
-	BOOL running;
+	bool running;
 } SCREEN;
 
 SCREEN * screen_init(SCREEN *, SCREEN_IO *io);

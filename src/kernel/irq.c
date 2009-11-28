@@ -33,15 +33,15 @@ int irq_init_handlers() {
 	return 0;
 }
 
-BOOL irq_set_info(IRQ_INFO *irq_info) {
+bool irq_set_info(IRQ_INFO *irq_info) {
 	IRQ_INFO old_irq_info;
 	unsigned long psr;
 	// check IRQ number
 	if (irq_info->irq_num != irq_info->irq_num & 0xF) {
-		return FALSE;
+		return false;
 	}
 	if (irq_info->enabled && irq_info->handler == NULL) {
-		return FALSE;
+		return false;
 	}
 
 	psr = local_irq_save();
@@ -59,10 +59,10 @@ BOOL irq_set_info(IRQ_INFO *irq_info) {
 	  irqc_clear(irq_info->irq_num);
 	local_irq_restore(psr);
 
-	return TRUE;
+	return true;
 }
 
-int request_irq(BYTE irq_number, IRQ_HANDLER handler) {
+int request_irq(uint8_t irq_number, IRQ_HANDLER handler) {
 	// check IRQ number
 	if (irq_number != irq_number & 0xF) {
 		return -1;
@@ -77,7 +77,7 @@ int request_irq(BYTE irq_number, IRQ_HANDLER handler) {
 }
 
 #if 0
-void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
+void irq_set_handler(uint8_t irq_number, IRQ_HANDLER pfunc) {
 	// check IRQ number
 	if (irq_number != irq_number & 0xF) {
 		return;
@@ -93,7 +93,7 @@ void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc) {
 	}
 }
 
-IRQ_HANDLER irq_get_handler(BYTE irq_number) {
+IRQ_HANDLER irq_get_handler(uint8_t irq_number) {
 	return user_trap_handlers[IRQ_TRAP_TYPE(irq_number)];
 }
 #endif

@@ -28,8 +28,8 @@ typedef struct  {
 
 #define MAX_OPENED_FILES 100
 
-#define IS_FDESC_VALID(fdesc) ((fdesc>=0) && (fdesc<MAX_OPENED_FILES)) ? TRUE : FALSE
-#define IS_OFILE_USED(ofile) (ofile.fs_idx!=IDX_INVALID) ? TRUE : FALSE
+#define IS_FDESC_VALID(fdesc) ((fdesc>=0) && (fdesc<MAX_OPENED_FILES)) ? true : false
+#define IS_OFILE_USED(ofile) (ofile.fs_idx!=IDX_INVALID) ? true : false
 #define RELEASE_OFILE(ofile) ofile.fs_idx=IDX_INVALID
 
 static short get_fs_idx_by_path(const char *path);

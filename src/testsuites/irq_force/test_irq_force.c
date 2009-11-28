@@ -16,16 +16,16 @@
 
 DECLARE_EXPRESS_TEST("force irq", exec, TEST_FORCE_IRQ_ON_BOOT_ENABLE, NULL);
 
-volatile static BOOL irq_happened;
+volatile static bool irq_happened;
 
 static void test_irq_force_handler() {
-	irq_happened = TRUE;
+	irq_happened = true;
 }
 
 static int exec() {
-	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_irq_force_handler, TRUE};
+	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_irq_force_handler, true};
 
-	irq_happened = FALSE;
+	irq_happened = false;
 
 	if (!irq_set_info(&irq_info)) {
 		TRACE("Unable to set irq handler\n");

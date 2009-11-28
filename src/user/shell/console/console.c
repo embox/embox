@@ -16,29 +16,33 @@
 #include "string.h"
 #include "drivers/terminal.h"
 
-#define EDIT_MODEL(console,update, action, params...)	(action((console)->model, ##params) ? update((console)->view, (console)->model): FALSE)
-#define CB_EDIT_MODEL(action, params...)	EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##params)
+#define EDIT_MODEL(console, update, action, params...) \
+		do if((action)((console)->model, ##params)) { \
+			(update)((console)->view, (console)->model); \
+		} while(0)
+
+#define CB_EDIT_MODEL(action, params...) \
+		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##params)
 
 CONSOLE *cur_console = NULL;
 
 static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
-        CONSOLE *this = (CONSOLE *) cb->outer;
-        /*FIXME: resolve "(reverse-i-search)`':" statement */
-        char *cmd;// = strstr(this->model->string, ":");
-//        if (cmd)
-//    		*cmd++;
-//    	else
-    		cmd = this->model->string;
+	CONSOLE *this = (CONSOLE *) cb->outer;
+	/*FIXME: resolve "(reverse-i-search)`':" statement */
+	char *cmd;// = strstr(this->model->string, ":");
+	//        if (cmd)
+	//    		*cmd++;
+	//    	else
+	cmd = this->model->string;
 
-        if (this->callback != NULL && this->callback->exec != NULL
-                                    && *cmd) {
-                screen_out_puts(this->view, NULL);
-                char buf[CMDLINE_MAX_LENGTH + 1];
-                strcpy(buf, cmd);
-                this->callback->exec(this->callback, this, buf);
-        }
-        screen_out_show_prompt(this->view, this->prompt);
-        CB_EDIT_MODEL(cmdline_history_new_entry);
+	if (this->callback != NULL && this->callback->exec != NULL && *cmd) {
+		screen_out_puts(this->view, NULL);
+		char buf[CMDLINE_MAX_LENGTH + 1];
+		strcpy(buf, cmd);
+		this->callback->exec(this->callback, this, buf);
+	}
+	screen_out_show_prompt(this->view, this->prompt);
+	CB_EDIT_MODEL(cmdline_history_new_entry);
 }
 
 static void on_char(SCREEN_CALLBACK *cb, SCREEN *view, char ch) {
@@ -70,11 +74,11 @@ static void on_delete(SCREEN_CALLBACK *cb, SCREEN *view) {
 }
 
 static void on_home(SCREEN_CALLBACK *cb, SCREEN *view) {
-        CB_EDIT_MODEL(cmdline_cursor_home);
+	CB_EDIT_MODEL(cmdline_cursor_home);
 }
 
 static void on_end(SCREEN_CALLBACK *cb, SCREEN *view) {
-        CB_EDIT_MODEL(cmdline_cursor_end);
+	CB_EDIT_MODEL(cmdline_cursor_end);
 }
 
 static void on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
@@ -97,7 +101,7 @@ static void on_dc2(SCREEN_CALLBACK *cb, SCREEN *view) {
 }
 
 static void on_dc4(SCREEN_CALLBACK *cb, SCREEN *view) {
-        CB_EDIT_MODEL(cmdline_dc4_reverse);
+	CB_EDIT_MODEL(cmdline_dc4_reverse);
 }
 
 #define MAX_PROPOSALS	64
@@ -150,6 +154,7 @@ CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 	if (screen_init(this->view, &view_io) == NULL) {
 		return NULL;
 	}
+
 	cur_console = this;
 	return this;
 }

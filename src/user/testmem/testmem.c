@@ -18,12 +18,12 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 ;
 
-typedef void TEST_MEM_FUNC(WORD *addr, long int amount);
+typedef void TEST_MEM_FUNC(uint32_t *addr, long int amount);
 
 static int exec(int argsc, char **argsv) {
 	int i;
 	TEST_MEM_FUNC *test_mem_func;
-	WORD *address = (WORD *) 0x70000000L;
+	uint32_t *address = (uint32_t *) 0x70000000L;
 	long int amount = 1000000L;
 	int nextOption;
 	getopt_init();

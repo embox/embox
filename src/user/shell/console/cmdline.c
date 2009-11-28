@@ -26,7 +26,7 @@ CMDLINE * cmdline_init(CMDLINE *this) {
 	return this;
 }
 
-static BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
+static bool cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	int new_pos;
 	CMDLINE_HISTORY * history = cmdline->history;
 	if (to < 0) {
@@ -34,10 +34,10 @@ static BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	}
 	new_pos = to % CMDLINE_HISTORY_SIZE;
 	if (cmdline->history_cursor == new_pos) {
-		return FALSE;
+		return false;
 	}
 	if (history->array[new_pos][0] == '\0' && new_pos != history->index) {
-		return FALSE;
+		return false;
 	}
 
 	if (cmdline->history_cursor == history->index) {
@@ -49,30 +49,30 @@ static BOOL cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	strcpy(cmdline->string, history->array[new_pos]);
 	cmdline->length = strlen(cmdline->string);
 	cmdline->cursor = cmdline->length;
-	return TRUE;
+	return true;
 }
 
-inline static BOOL cmdline_history_move_by(CMDLINE *cmdline, int by) {
+inline static bool cmdline_history_move_by(CMDLINE *cmdline, int by) {
 	return cmdline_history_move_to(cmdline, cmdline->history_cursor + by);
 }
 
-inline BOOL cmdline_history_backward(CMDLINE *cmdline) {
+inline bool cmdline_history_backward(CMDLINE *cmdline) {
 	return cmdline_history_move_by(cmdline, -1);
 }
 
-inline BOOL cmdline_history_forward(CMDLINE *cmdline) {
+inline bool cmdline_history_forward(CMDLINE *cmdline) {
 	return cmdline_history_move_by(cmdline, 1);
 }
 
-BOOL cmdline_history_new_entry(CMDLINE *cmdline) {
+bool cmdline_history_new_entry(CMDLINE *cmdline) {
 	CMDLINE_HISTORY * history = cmdline->history;
 	if (cmdline->string[0] == '\0') {
-		return FALSE;
+		return false;
 	}
 
 	if (0 == strcmp(cmdline->string, history->array[(history->index
 			+ CMDLINE_HISTORY_SIZE - 1) % CMDLINE_HISTORY_SIZE])) {
-		return FALSE;
+		return false;
 	}
 
 	strcpy(history->array[history->index], cmdline->string);
@@ -86,10 +86,10 @@ BOOL cmdline_history_new_entry(CMDLINE *cmdline) {
 	cmdline->cursor = 0;
 	cmdline->string[0] = '\0';
 
-	return TRUE;
+	return true;
 }
 
-BOOL cmdline_cursor_move_to(CMDLINE *cmdline, int to) {
+bool cmdline_cursor_move_to(CMDLINE *cmdline, int to) {
 	int old_cursor = cmdline->cursor;
 	to = min(cmdline->length, to);
 	to = max(0, to);
@@ -97,35 +97,35 @@ BOOL cmdline_cursor_move_to(CMDLINE *cmdline, int to) {
 	return cmdline->cursor != old_cursor;
 }
 
-inline BOOL cmdline_cursor_move_by(CMDLINE *cmdline, int by) {
+inline bool cmdline_cursor_move_by(CMDLINE *cmdline, int by) {
 	return cmdline_cursor_move_to(cmdline, cmdline->cursor + by);
 }
 
-inline BOOL cmdline_cursor_right(CMDLINE *cmdline) {
+inline bool cmdline_cursor_right(CMDLINE *cmdline) {
 	return cmdline_cursor_move_by(cmdline, 1);
 }
 
-inline BOOL cmdline_cursor_left(CMDLINE *cmdline) {
+inline bool cmdline_cursor_left(CMDLINE *cmdline) {
 	return cmdline_cursor_move_by(cmdline, -1);
 }
 
-inline BOOL cmdline_cursor_home(CMDLINE *cmdline) {
+inline bool cmdline_cursor_home(CMDLINE *cmdline) {
 	return cmdline_cursor_move_to(cmdline, 0);
 }
 
-inline BOOL cmdline_cursor_end(CMDLINE *cmdline) {
+inline bool cmdline_cursor_end(CMDLINE *cmdline) {
 	return cmdline_cursor_move_to(cmdline, cmdline->length);
 }
 
-BOOL cmdline_chars_delete(CMDLINE *this, int len) {
+bool cmdline_chars_delete(CMDLINE *this, int len) {
 	if (this == NULL) {
-		return FALSE;
+		return false;
 	}
 
 	len = min(len, this->length - this->cursor);
 	len = max(0, len);
 	if (len == 0) {
-		return FALSE;
+		return false;
 	}
 
 	this->length -= len;
@@ -135,12 +135,12 @@ BOOL cmdline_chars_delete(CMDLINE *this, int len) {
 	}
 	this->string[this->length] = '\0';
 
-	return TRUE;
+	return true;
 }
 
-BOOL cmdline_chars_backspace(CMDLINE *this, int len) {
+bool cmdline_chars_backspace(CMDLINE *this, int len) {
 	if (this == NULL) {
-		return FALSE;
+		return false;
 	}
 
 	int old_cursor = this->cursor;
@@ -151,9 +151,9 @@ BOOL cmdline_chars_backspace(CMDLINE *this, int len) {
 	return cmdline_chars_delete(this, old_cursor - this->cursor);
 }
 
-BOOL cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
+bool cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 	if (this == NULL) {
-		return FALSE;
+		return false;
 	}
 
 	len = min(len, CMDLINE_MAX_LENGTH - this->length);
@@ -164,7 +164,7 @@ BOOL cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 	}
 	len = min(len, i);
 	if (len == 0) {
-		return FALSE;
+		return false;
 	}
 
 	this->length += len;
@@ -178,15 +178,15 @@ BOOL cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 		this->string[this->cursor - len + i] = ch[i];
 	}
 
-	return TRUE;
+	return true;
 }
 
-BOOL cmdline_dc2_reverse(CMDLINE *this, char *ch, int len) {
+bool cmdline_dc2_reverse(CMDLINE *this) {
 	cmdline_chars_insert(this, "\r(reverse-i-search)`':", 22);
 	this->cursor -= 2;
 }
 
-BOOL cmdline_dc4_reverse(CMDLINE *this, char *ch, int len) {
+bool cmdline_dc4_reverse(CMDLINE *this) {
 	char tmp;
 	if (this->cursor != this->length) {
 		tmp = this->string[this->cursor];

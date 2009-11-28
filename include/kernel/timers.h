@@ -13,17 +13,17 @@
  */
 int timers_ctrl_init();
 
-typedef void (*TIMER_FUNC)(UINT32 id);
+typedef void (*TIMER_FUNC)(uint32_t id);
 
 /**
  * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.
  */
-BOOL set_timer(UINT32 id, UINT32 ticks, TIMER_FUNC handle);
+int set_timer(uint id, uint ticks, TIMER_FUNC handle);
 
 /**
  * Shut down timer with 'id' identity
  */
-void close_timer(UINT32 id);
+void close_timer(uint32_t id);
 
 
 /**

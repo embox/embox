@@ -51,14 +51,14 @@ TERMINAL * terminal_init(TERMINAL *this, TERMINAL_IO *io) {
 	return this;
 }
 
-static BOOL is_valid_action(VT_ACTION action) {
+static bool is_valid_action(VT_ACTION action) {
 	switch (action) {
 	case VT_ACTION_PRINT:
 	case VT_ACTION_EXECUTE:
 	case VT_ACTION_CS_DISPATCH:
 	case VT_ACTION_ESC_DISPATCH:
 		/* ok */
-		return TRUE;
+		return true;
 	case VT_ACTION_OSC_START:
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:
@@ -78,7 +78,7 @@ static BOOL is_valid_action(VT_ACTION action) {
 		// ignore as VTParser internal states
 	default:
 		/* unknown */
-		return FALSE;
+		return false;
 	}
 }
 
@@ -140,7 +140,7 @@ static TERMINAL_TOKEN_PARAMS *terminal_prepare_params(TERMINAL *this,
 	params->length = length;
 	int i;
 	for (i = 0; i < length; ++i) {
-		params->data[i] = va_arg(args, INT32);
+		params->data[i] = va_arg(args, int);
 	}
 
 	return params;
@@ -154,7 +154,7 @@ static void vtparse_callback(VTPARSER *parser, VT_TOKEN *token) {
 				= *token;
 	} else {
 		// TODO
-		assert(FALSE);
+		assert(false);
 	}
 
 }
@@ -170,10 +170,10 @@ static void vtparse_callback(VTPARSER *parser, VT_TOKEN *token) {
  *
  * TODO describe this shit
  */
-BOOL terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
+bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 		TERMINAL_TOKEN_PARAMS *params) {
 	if (this == NULL) {
-		return FALSE;
+		return false;
 	}
 
 	int *p_len = &this->vt_token_queue_len;
@@ -201,7 +201,7 @@ BOOL terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 				//TRACE("%s %d(%x,%x) %x\n", ACTION_NAMES[vt_token->action],
 				//vt_token->attrs_len, vt_token->attrs[0],
 				//vt_token->attrs[1], vt_token->ch);
-				return TRUE;
+				return true;
 			}
 		}
 		// there were no any valid tokens in the queue,
@@ -216,11 +216,11 @@ BOOL terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 	}
 
 	// TODO in fact this code must not be reached;
-	assert(FALSE);
-	return FALSE;
+	assert(false);
+	return false;
 }
 
-BOOL terminal_transmit(TERMINAL *this, TERMINAL_TOKEN token, int params_len,
+bool terminal_transmit(TERMINAL *this, TERMINAL_TOKEN token, int params_len,
 		...) {
 	va_list args;
 	TERMINAL_TOKEN_PARAMS *params;
@@ -228,7 +228,7 @@ BOOL terminal_transmit(TERMINAL *this, TERMINAL_TOKEN token, int params_len,
 	va_start(args, params_len);
 
 	if (this == NULL) {
-		return FALSE;
+		return false;
 	}
 
 	params = terminal_prepare_params(this, params_len, args);
@@ -237,9 +237,9 @@ BOOL terminal_transmit(TERMINAL *this, TERMINAL_TOKEN token, int params_len,
 
 	vt_token = vt_from_term_token(token, params);
 	if (vt_token == NULL) {
-		return FALSE;
+		return false;
 	}
 	vtbuild(this->builder, vt_token);
 
-	return TRUE;
+	return true;
 }

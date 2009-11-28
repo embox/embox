@@ -22,7 +22,7 @@ typedef void (*IRQ_HANDLER)();
 typedef struct {
 	int irq_num;
 	IRQ_HANDLER handler;
-	BOOL enabled;
+	bool enabled;
 } IRQ_INFO;
 
 // traps handlers table size
@@ -38,11 +38,11 @@ int irq_init_handlers();
  *
  * @param IRQ_INFO new IRQ info to be set
  * 		changes it's value to old value of specified irq info
- * @return TRUE if completed successively
+ * @return true if completed successively
  */
-BOOL irq_set_info(IRQ_INFO *irq_info);
+bool irq_set_info(IRQ_INFO *irq_info);
 
-void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc);
+void irq_set_handler(uint8_t irq_number, IRQ_HANDLER pfunc);
 
 /**
  * Gets a handler associated with the specified IRQ number (if any).
@@ -50,7 +50,7 @@ void irq_set_handler(BYTE irq_number, IRQ_HANDLER pfunc);
  * @param nirq IRQ number to check
  * @return the handler function if it has been set or NULL otherwise
  */
-IRQ_HANDLER irq_get_handler(BYTE nirq);
+IRQ_HANDLER irq_get_handler(uint8_t nirq);
 
 #endif // __ASSEMBLER__
 #endif  // _IRQ_H_

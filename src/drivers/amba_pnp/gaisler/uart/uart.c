@@ -48,22 +48,22 @@ typedef struct _UART_STRUCT {
 	 * |31_____8|7__0|
 	 * |RESERVED|DATA|
 	 */
-	volatile UINT32 data; /* 0x0 */
+	volatile uint32_t data; /* 0x0 */
 	/** _____________________________________________________
 	 * |31_26|25_20|19____11|10|9_|8_|7_|6_|5_|4_|3_|2_|1_|0_|
 	 * |RCNT |TCNT |RESERVED|RF|TF|RH|TH|FE|PE|OV|BR|TE|TS|DR|
 	 */
-	volatile UINT32 status; /* 0x4 */
+	volatile uint32_t status; /* 0x4 */
 	/** __________________________________________________
 	 * |31|30____13|12|11|10|9_|8_|7_|6_|5_|4_|3_|2_|1_|0_|
 	 * |FA|RESERVED|OE|DB|RF|TF|EC|LB|FL|PE|PS|TI|RI|TE|RE|
 	 */
-	volatile UINT32 ctrl; /* 0x8 */
+	volatile uint32_t ctrl; /* 0x8 */
 	/** ____________________________
 	 * |31____12|11________________0|
 	 * |RESERVED|SCALER RELOAD VALUE|
 	 */
-	volatile UINT32 scaler; /* 0xC */
+	volatile uint32_t scaler; /* 0xC */
 } UART_STRUCT;
 
 static volatile UART_STRUCT *dev_regs = NULL;
@@ -102,8 +102,8 @@ int uart_init() {
 #endif
 }
 
-/*BOOL uart_is_empty() {
- return (UART_RX_READY & REG_LOAD(uart->status)) ? FALSE : TRUE;
+/*bool uart_is_empty() {
+ return (UART_RX_READY & REG_LOAD(uart->status)) ? false : true;
  }*/
 
 void uart_putc(char ch) {
@@ -116,7 +116,7 @@ void uart_putc(char ch) {
 	for (i = 0; i < 0x1000; i++)
 		;
 
-	REG_STORE(dev_regs->data, (UINT32) ch);
+	REG_STORE(dev_regs->data, (uint32_t) ch);
 }
 
 char uart_getc() {
@@ -129,18 +129,18 @@ char uart_getc() {
 }
 
 static IRQ_INFO irq_info;
-static BOOL handler_was_set = FALSE;
+static bool handler_was_set = false;
 
 int uart_set_irq_handler(IRQ_HANDLER pfunc) {
 	ASSERT_INIT_DONE ();
 
 	REG_ORIN(dev_regs->ctrl, UART_CTRL_RI);
 
-	irq_info.enabled = TRUE;
+	irq_info.enabled = true;
 	irq_info.irq_num = irq;
 	irq_info.handler = pfunc;
 	irq_set_info(&irq_info);
-	handler_was_set = TRUE;
+	handler_was_set = true;
 	//irq_set_handler(irq, pfunc);
 	return 0;
 }
@@ -151,7 +151,7 @@ int uart_remove_irq_handler() {
 	REG_ANDIN(dev_regs->ctrl, ~UART_CTRL_RI);
 	if (handler_was_set) {
 		irq_set_info(&irq_info);
-		handler_was_set = FALSE;
+		handler_was_set = false;
 	}
 	//irq_set_handler(irq, NULL);
 	return 0;

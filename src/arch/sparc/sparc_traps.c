@@ -33,7 +33,7 @@ void dispatch_trap(uint8_t tt, uint32_t *sp) {
 
 
 
-void dispatch_bad_trap(TRAP_CONTEXT * r, WORD tt) {
+void dispatch_bad_trap(TRAP_CONTEXT * r, uint32_t tt) {
 	REG_WINDOW *rw;
 
 	TRACE("BAD TRAP (0x%02x)\n", tt);

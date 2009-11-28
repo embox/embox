@@ -32,10 +32,10 @@ static TIMERS_STRUCT * dev_regs = NULL;
 
 static AMBA_DEV amba_dev;
 
-static volatile UINT32 cnt_ms_sleep; /**< for sleep function */
-static volatile UINT32 cnt_sys_time; /**< quantity ms after start system */
+static volatile uint32_t cnt_ms_sleep; /**< for sleep function */
+static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
-volatile static UINT32 sleep_cnt_const = DEFAULT_SLEEP_COUNTER; /**< for sleep function (loop-based) */
+volatile static uint32_t sleep_cnt_const = DEFAULT_SLEEP_COUNTER; /**< for sleep function (loop-based) */
 
 void platform_timers_off() {
 	REG_STORE(dev_regs->timer_ctrl1, 0x0);
@@ -60,7 +60,7 @@ void sleep(volatile unsigned int ms) {
 	}
 }
 
-UINT32 get_ms_sleep() {
+uint32_t get_ms_sleep() {
 	return cnt_ms_sleep;
 }
 
@@ -90,7 +90,7 @@ int timers_init() {
 	IRQ_INFO irq_info;
 #ifndef SIMULATION_TRG
 	for (i = 0; i < /*array_len (sys_timers)*/MAX_QUANTITY_SYS_TIMERS; i++)
-		set_sys_timer_enable(i, FALSE);
+		set_sys_timer_enable(i, false);
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
 #else
 	amba_dev.bar[0].start = TIMERS_BASE;
@@ -111,7 +111,7 @@ int timers_init() {
 	REG_STORE(dev_regs->timer_ctrl1, 0xf);
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /**< disable */
 
-	irq_info.enabled = TRUE;
+	irq_info.enabled = true;
 	irq_info.handler = irq_func_tmr_1mS;
 	irq_info.irq_num = amba_dev.dev_info.irq;
 	irq_set_info(&irq_info);

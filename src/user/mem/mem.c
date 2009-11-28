@@ -19,9 +19,9 @@ char mem_keys[] = {
 	'a', 'n', 'h'
 };
 
-void mem_print(WORD *addr, long int amount) {
+void mem_print(uint32_t *addr, long int amount) {
 	long i = 0;
-	addr = (WORD *) ((WORD) addr & 0xFFFFFFFC);
+	addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 	while (i < amount) {
 		if (0 == (i % 4)) {
 			printf("0x%08x:\t", (int) (addr + i));
@@ -34,10 +34,10 @@ void mem_print(WORD *addr, long int amount) {
 	}
 }
 
-typedef void TEST_MEM_FUNC(WORD *addr, long int amount);
+typedef void TEST_MEM_FUNC(uint32_t *addr, long int amount);
 
 static int exec(int argsc, char **argsv) {
-        WORD *address = (WORD *) 0x70000000L;
+        uint32_t *address = (uint32_t *) 0x70000000L;
         long int amount = 100L;
         int nextOption;
         getopt_init();

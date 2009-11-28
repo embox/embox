@@ -13,14 +13,14 @@ typedef unsigned char datum;
 // As much as needed to save mem in memory_test_data_bus
 #define MEM_BUF_SIZE 100
 
-inline static print_error(volatile WORD *addr, volatile WORD expected_value) {
+inline static print_error(volatile uint32_t *addr, volatile uint32_t expected_value) {
 	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", addr, *addr,
 			expected_value);
 }
 
-WORD memory_test_data_bus(volatile WORD *address)
+uint32_t memory_test_data_bus(volatile uint32_t *address)
 {
-    WORD pattern;
+    uint32_t pattern;
 
 
     /*
@@ -47,14 +47,14 @@ WORD memory_test_data_bus(volatile WORD *address)
 }   /* memory_test_data_bus */
 
 // TODO think about signature: err_t name(..., uint32_t *fault_address) -- Eldar
-WORD *memory_test_addr_bus(WORD * baseAddress, unsigned long nBytes) {
-	unsigned long addressMask = (nBytes / sizeof(WORD) - 1);
+uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
+	unsigned long addressMask = (nBytes / sizeof(uint32_t) - 1);
 	unsigned char mem_buf[100];
 	unsigned long offset;
 	unsigned long testOffset;
 
-	WORD pattern = (datum) 0xAAAAAAAA;
-	WORD antipattern = (datum) 0x55555555;
+	uint32_t pattern = (datum) 0xAAAAAAAA;
+	uint32_t antipattern = (datum) 0x55555555;
 
 	/*
 	 * Write the default pattern at each of the power-of-two offsets.
@@ -71,7 +71,7 @@ WORD *memory_test_addr_bus(WORD * baseAddress, unsigned long nBytes) {
 
 	for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
 		if (baseAddress[offset] != pattern) {
-			return ((WORD *) &baseAddress[offset]);
+			return ((uint32_t *) &baseAddress[offset]);
 		}
 	}
 
@@ -84,12 +84,12 @@ WORD *memory_test_addr_bus(WORD * baseAddress, unsigned long nBytes) {
 		baseAddress[testOffset] = antipattern;
 
 		if (baseAddress[0] != pattern) {
-			return ((WORD *) &baseAddress[testOffset]);
+			return ((uint32_t *) &baseAddress[testOffset]);
 		}
 
 		for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
 			if ((baseAddress[offset] != pattern) && (offset != testOffset)) {
-				return ((WORD *) &baseAddress[testOffset]);
+				return ((uint32_t *) &baseAddress[testOffset]);
 			}
 		}
 
@@ -100,11 +100,11 @@ WORD *memory_test_addr_bus(WORD * baseAddress, unsigned long nBytes) {
 
 }
 
-void memory_test_quick(WORD *base_addr, long int amount) {
+void memory_test_quick(uint32_t *base_addr, long int amount) {
 	if (0 == memory_test_data_bus(base_addr)) {
 		TRACE ("Data bus test ok\n");
 	}
-	//if (memory_test_addr_bus((WORD *)0x40000000, 0x100000) == NULL)
+	//if (memory_test_addr_bus((uint32_t *)0x40000000, 0x100000) == NULL)
 	if (0 == memory_test_addr_bus(base_addr, amount)) {
 		TRACE("Addr bus test ok\n");
 	} else {
@@ -113,10 +113,10 @@ void memory_test_quick(WORD *base_addr, long int amount) {
 
 }
 
-void memory_test_run1(WORD *base_addr, long int amount) {
-	WORD *addr, *end_addr;
-	volatile WORD value;
-	base_addr = (WORD *) ((WORD) base_addr & 0xFFFFFFFC);
+void memory_test_run1(uint32_t *base_addr, long int amount) {
+	uint32_t *addr, *end_addr;
+	volatile uint32_t value;
+	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
 	end_addr = base_addr + amount;
 
 	value = 0x1;
@@ -137,10 +137,10 @@ void memory_test_run1(WORD *base_addr, long int amount) {
 	return;
 }
 
-void memory_test_run0(WORD *base_addr, long int amount) {
-	WORD *addr, *end_addr;
-	volatile WORD value;
-	base_addr = (WORD *) ((WORD) base_addr & 0xFFFFFFFC);
+void memory_test_run0(uint32_t *base_addr, long int amount) {
+	uint32_t *addr, *end_addr;
+	volatile uint32_t value;
+	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
 	end_addr = base_addr + amount;
 
 	value = 0x1;
@@ -160,10 +160,10 @@ void memory_test_run0(WORD *base_addr, long int amount) {
 	}
 }
 
-void memory_test_address(WORD *base_addr, long int amount) {
-	volatile WORD *addr; // address === value in this case. So it must be volatile
-	WORD *end_addr;
-	base_addr = (WORD *) ((WORD) base_addr & 0xFFFFFFFC);
+void memory_test_address(uint32_t *base_addr, long int amount) {
+	volatile uint32_t *addr; // address === value in this case. So it must be volatile
+	uint32_t *end_addr;
+	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
 
 	long i;
 
@@ -173,10 +173,10 @@ void memory_test_address(WORD *base_addr, long int amount) {
 	// TODO debug:
 	TRACE("Starting testing memory from address 0x%08x till 0x%08x:\n", addr, end_addr);
 	while (addr < end_addr) {
-		if ((WORD) addr % 15 == 0) {
+		if ((uint32_t) addr % 15 == 0) {
 			TRACE("Writing address 0x%08x\n", addr);
 		}
-		*addr = (WORD) addr;
+		*addr = (uint32_t) addr;
 		addr++;
 	}
 	// checking
@@ -184,22 +184,22 @@ void memory_test_address(WORD *base_addr, long int amount) {
 	end_addr = base_addr + amount;
 	addr = base_addr;
 	while (addr < end_addr) {
-		if ((WORD) addr % 15 == 0) {
+		if ((uint32_t) addr % 15 == 0) {
 			TRACE("Checking address 0x%8x\n", addr);
 		}
-		if (*addr != (WORD) addr) {
-			print_error(addr, (WORD) addr);
+		if (*addr != (uint32_t) addr) {
+			print_error(addr, (uint32_t) addr);
 			return;
 		}
 		addr++;
 	}
 }
 
-void memory_test_chess(WORD *base_addr, long int amount) {
-	WORD *addr, *end_addr;
-	volatile WORD value;
+void memory_test_chess(uint32_t *base_addr, long int amount) {
+	uint32_t *addr, *end_addr;
+	volatile uint32_t value;
 
-	base_addr = (WORD *) ((WORD) base_addr & 0xFFFFFFFC);
+	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
 	end_addr = base_addr + amount;
 
 	// Writing
@@ -231,13 +231,13 @@ void memory_test_chess(WORD *base_addr, long int amount) {
 
 }
 
-void memory_test_loop(WORD *addr, long int counter) {
-	addr = (WORD *) ((WORD) addr & 0xFFFFFFFC);
-	volatile WORD value = 0x55555555;
+void memory_test_loop(uint32_t *addr, long int counter) {
+	addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
+	volatile uint32_t value = 0x55555555;
 
 	// Infinite loop case
 	if (counter == 0) {
-		while (TRUE) {
+		while (true) {
 			*addr = value;
 			if (*addr != value) {
 				print_error(addr, value);

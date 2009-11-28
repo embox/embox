@@ -27,7 +27,7 @@ void context_restore(CPU_CONTEXT * pcontext) {
 }
 
 static CPU_CONTEXT context;
-volatile static BOOL started = FALSE;
+volatile static bool started = false;
 
 int sys_exec_start(EXEC_FUNC f, int argc, char **argv) {
 	if (started) {
@@ -39,10 +39,10 @@ int sys_exec_start(EXEC_FUNC f, int argc, char **argv) {
 	context_save(&context);
 
 	if (!started) {
-		started = TRUE;
+		started = true;
 		ret = f(argc, argv);
 	}
-	started = FALSE;
+	started = false;
 
 	return ret;
 }
@@ -58,7 +58,7 @@ void sys_halt() {
 	//todo must be trap
 }
 
-BOOL sys_exec_is_started() {
+bool sys_exec_is_started() {
 	return started;
 }
 

@@ -24,7 +24,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static int has_responsed;
 static void callback(struct sk_buff *pack) {
 	kfree_skb(pack);
-	has_responsed = TRUE;
+	has_responsed = true;
 }
 
 static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, int quiet) {
@@ -41,7 +41,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, 
 		if ((0 <= cnt) && !(cnt--))
 			break;
 
-		has_responsed = FALSE;
+		has_responsed = false;
 		ipaddr_print(ip, inet_dev_get_ipaddr(ifdev));
 		if(!quiet) printf("from %s", ip);
 		ipaddr_print(ip, dst);
@@ -49,7 +49,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, 
 		if(!quiet) printf(" ttl=%d ", ttl);
 		icmp_send_echo_request(ifdev, dst, ttl, callback);
 		usleep(timeout);
-		if (FALSE == has_responsed) {
+		if (false == has_responsed) {
 			if(!quiet) printf(" ....timeout\n");
 			icmp_abort_echo_request(ifdev);
 			cnt_err++;

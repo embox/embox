@@ -18,8 +18,8 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static int exec(int argsc, char **argsv) {
 	int i, flag = 0;
 	int nextOption;
-	WORD *address;
-	WORD new_value;
+	uint32_t *address;
+	uint32_t new_value;
 
 	getopt_init();
         do {
@@ -63,5 +63,5 @@ static int exec(int argsc, char **argsv) {
 		return -1;
 	}
 
-	*((WORD *) address) = new_value;
+	*((uint32_t *) address) = new_value;
 }

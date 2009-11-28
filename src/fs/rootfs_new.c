@@ -190,21 +190,21 @@ size_t read (FDESC file_desc, void *buf, size_t nbytes)
 	return totalbytesread;
 }
 
-BOOL fclose (FDESC file_desc)
+bool fclose (FDESC file_desc)
 {
 	if (!IS_FDESC_VALID(file_desc))
-		return FALSE;
+		return false;
 	OPENED_FILE* ofile = &(opened_files[file_desc]);
 	if (!IS_OFILE_USED((*ofile))) {
 		TRACE("invalid file_desc! %d\n", file_desc);
-		return FALSE;
+		return false;
 	}
 
 	RELEASE_OFILE((*ofile));
-	return TRUE;
+	return true;
 }
 
-BOOL remove (const char* file_path)
+bool remove (const char* file_path)
 {
 	const char* filename = get_file_name(file_path);
 	if (filename == NULL) {
@@ -215,7 +215,7 @@ BOOL remove (const char* file_path)
 	short fs_idx;
 	if ((fs_idx=get_fs_idx_by_path(file_path)) == IDX_INVALID) {
 		TRACE("can't find filesystem description for file %s\n", file_path);
-		return FALSE;
+		return false;
 	}
 
 	const FSOP* fsop = mnt_fops[fs_idx].fsop;
@@ -230,12 +230,12 @@ int lseek(FDESC file_desc, long offset, int whence)
 }
 
 
-BOOL fsync(const char* file_path)
+bool fsync(const char* file_path)
 {
 	short fs_idx;
 	if ((fs_idx=get_fs_idx_by_path(file_path)) == IDX_INVALID) {
 		TRACE("can't find filesystem description for file %s\n", file_path);
-		return FALSE;
+		return false;
 	}
 
 	const FSOP* fsop = mnt_fops[fs_idx].fsop;

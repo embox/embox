@@ -19,8 +19,8 @@
  * A register window
  */
 typedef struct _REG_WINDOW {
-	WORD locals[8];
-	WORD ins[8];
+	uint32_t locals[8];
+	uint32_t ins[8];
 } REG_WINDOW;
 
 #define REG_WINDOW_SZ sizeof(REG_WINDOW)

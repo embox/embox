@@ -34,17 +34,19 @@ typedef struct _CMDLINE {
 
 CMDLINE * cmdline_init(CMDLINE *);
 
-BOOL cmdline_history_backward(CMDLINE *cmdline);
-BOOL cmdline_history_forward(CMDLINE *cmdline);
-BOOL cmdline_history_new_entry(CMDLINE *cmdline);
-BOOL cmdline_cursor_move_to(CMDLINE *cmdline, int to);
-BOOL cmdline_cursor_move_by(CMDLINE *cmdline, int by);
-BOOL cmdline_cursor_right(CMDLINE *cmdline);
-BOOL cmdline_cursor_left(CMDLINE *cmdline);
-BOOL cmdline_cursor_home(CMDLINE *cmdline);
-BOOL cmdline_cursor_end(CMDLINE *cmdline);
-BOOL cmdline_chars_delete(CMDLINE *cmdline, int len);
-BOOL cmdline_chars_backspace(CMDLINE *cmdline, int len);
-BOOL cmdline_chars_insert(CMDLINE *cmdline, char *ch, int len);
+bool cmdline_history_backward(CMDLINE *cmdline);
+bool cmdline_history_forward(CMDLINE *cmdline);
+bool cmdline_history_new_entry(CMDLINE *cmdline);
+bool cmdline_cursor_move_to(CMDLINE *cmdline, int to);
+bool cmdline_cursor_move_by(CMDLINE *cmdline, int by);
+bool cmdline_cursor_right(CMDLINE *cmdline);
+bool cmdline_cursor_left(CMDLINE *cmdline);
+bool cmdline_cursor_home(CMDLINE *cmdline);
+bool cmdline_cursor_end(CMDLINE *cmdline);
+bool cmdline_chars_delete(CMDLINE *cmdline, int len);
+bool cmdline_chars_backspace(CMDLINE *cmdline, int len);
+bool cmdline_chars_insert(CMDLINE *cmdline, char *ch, int len);
+bool cmdline_dc2_reverse(CMDLINE *cmdline);
+bool cmdline_dc4_reverse(CMDLINE *cmdline);
 
 #endif /* CMDLINE_H_ */
