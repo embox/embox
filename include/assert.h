@@ -11,8 +11,9 @@
 #define ASSERT_H_
 
 #include <autoconf.h>
-//#include <hal/machine.h>
 #include <types.h>
+
+//#include <hal/arch.h>
 
 #ifndef DEBUG
 # define __ASSERT_STRING0(cond, file, line) \
@@ -25,7 +26,7 @@
 # define assert(cond) \
 		do if (!(cond)) { \
 			puts(__ASSERT_STRING(#cond, __FILE__, __LINE__)); \
-			/*machine_panic();*/ \
+			/*arch_shutdown(ARCH_SHUTDOWN_MODE_DUMP);*/ \
 		} while(0)
 #else
 # define assert(cond)   do ; while(0)
