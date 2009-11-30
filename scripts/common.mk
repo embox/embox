@@ -15,12 +15,12 @@ $(SUBDIRS-n):
 all: $(SUBDIRS-y) $(OBJS-y) copy_objs
 
 %.o:%.S
-	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $@ $<
 	@printf "  [M]\t$@\n"
+	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $@ $<
 
 %.o:%.c
-	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $@ $<
 	@printf "  [M]\t$@\n"
+	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $@ $<
 
 copy_objs:
 	@if [ ! -z "$(OBJS-y)" ]; then \
@@ -30,5 +30,5 @@ copy_objs:
 	fi
 
 clean: $(SUBDIRS-y)
-	@rm -f  $(OBJS-y)
 	@printf "  [R]\t$(SUBDIRS-y) $(OBJS-y)\n"
+	@rm -f  $(OBJS-y)
