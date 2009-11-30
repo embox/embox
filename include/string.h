@@ -1,3 +1,10 @@
+/**
+ * @file string.h
+ *
+ * @date 02.12.08
+ * @author Anton Bondarev - Initial implementation.
+ * @author Nikolay Korotky - major rework.
+ */
 #ifndef _STRING_H_
 #define _STRING_H_
 
@@ -154,4 +161,4 @@ extern void bcopy(const void *src, void *dest, size_t n);
  */
 extern char *strstr(const char *haystack, const char *needle);
 
-#endif //_STRING_H_
+#endif /* _STRING_H_ */

@@ -1,7 +1,8 @@
 /**
- * \file err.h
- * \date 25.11.09
- * \author sikmir
+ * @file err.h
+ *
+ * @date 25.11.09
+ * @author Nikolay Korotky
  */
 #ifndef _ERR_H_
 #define _ERR_H_

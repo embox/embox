@@ -1,10 +1,9 @@
 /**
- * \file misc.h
+ * @file misc.h
  *
- * \date 27.05.09
- * \author sikmir
+ * @date 27.05.09
+ * @author Nikolay Korotky
  */
-
 #ifndef MISC_H_
 #define MISC_H_
 
@@ -16,4 +15,4 @@ void ipaddr_print(const char *buf, const unsigned char *addr);
 void macaddr_print(const char *buf, const unsigned char *addr);
 int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigned char msk);
 
-#endif //MISC_H_
+#endif /* MISC_H_ */

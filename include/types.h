@@ -1,3 +1,9 @@
+/**
+ * @file types.h
+ *
+ * @date 12.11.09
+ * @author Nikolay Korotky
+ */
 #ifndef TYPES_H
 #define TYPES_H
 

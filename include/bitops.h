@@ -1,7 +1,8 @@
 /**
- * \file bitops.h
- * \date 27.11.09
- * \author sikmir
+ * @file bitops.h
+ *
+ * @date 27.11.09
+ * @author Nikolay Korotky
  */
 #ifndef BITOPS_H_
 #define BITOPS_H_

@@ -1,7 +1,8 @@
 /**
- * \file ctype.h
- * \date 14.10.09
- * \author Sikmir
+ * @file ctype.h
+ *
+ * @date 14.10.09
+ * @author Nikolay Korotky
  */
 #ifndef CTYPE_H_
 #define CTYPE_H_

@@ -1,10 +1,12 @@
 /**
- * \file getopt.h
- * \date 23.09.09
- * \author Sikmir
+ * @file getopt.h
+ *
+ * @date 23.09.09
+ * @author Nikolay Korotky
  * NOTE: long options not supported.
  */
 #ifndef _GETOPT_H
+#define _GETOPT_H
 
 extern char *optarg; /**< argument to optopt */
 extern int optind;   /**< last touched cmdline argument */

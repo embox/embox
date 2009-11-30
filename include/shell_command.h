@@ -1,9 +1,9 @@
 /**
- * \file shell_command.h
- * \date 13.09.09
- * \author Anton Bondarev
+ * @file shell_command.h
+ *
+ * @date 13.09.09
+ * @author Anton Bondarev
  */
-
 #ifndef USER_HANDLER_H_
 #define USER_HANDLER_H_
 

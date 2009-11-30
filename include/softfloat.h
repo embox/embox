@@ -1,8 +1,9 @@
 /**
- * \file softfloat.h
- * \date 25.11.09
- * \author sikmir
- * \brief Software FPU emulation.
+ * @file softfloat.h
+ *
+ * @date 25.11.09
+ * @author Nikolay Korotky
+ * @brief Software FPU emulation.
  */
 #ifndef SOFTFLOAT_H_
 #define SOFTFLOAT_H_
@@ -219,7 +220,6 @@ float64 propagateFloat64NaN(float64 a, float64 b);
 /**
  * Converter types.
  */
-
 inline float64 double_to_float64(double a);
 inline double float64_to_double(float64 a);
 inline float32 float_to_float32(float a);

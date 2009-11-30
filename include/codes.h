@@ -1,3 +1,9 @@
+/**
+ * @file codes.h
+ *
+ * @date 1.10.09
+ * @author Andrey Baboshin
+ */
 #ifndef __CODES_H__
 #define __CODES_H__
 
@@ -79,6 +85,4 @@
 #define EHOSTDOWN        364   /* Host is down */
 #define EHOSTUNREACH     365   /* No route to host */
 
-
-#endif
-
+#endif /* __CODES_H__ */

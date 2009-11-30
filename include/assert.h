@@ -4,9 +4,8 @@
  *
  * @date 25.11.09
  * @author Eldar Abusalimov
- * @author sikmir
+ * @author Nikolay Korotky
  */
-
 #ifndef ASSERT_H_
 #define ASSERT_H_
 

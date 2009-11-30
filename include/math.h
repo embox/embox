@@ -1,9 +1,9 @@
 /**
- * \file math.h
- * \date 25.11.09
- * \author sikmir
+ * @file math.h
+ *
+ * @date 25.11.09
+ * @author Nikolay Korotky
  */
-
 #ifndef MATH_H_
 #define MATH_H_
 

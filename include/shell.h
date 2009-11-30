@@ -1,10 +1,9 @@
 /**
- * \file shell.h
+ * @file shell.h
  *
- * \date 02.02.2009
- * \author Alexey Fomin
+ * @date 02.02.2009
+ * @author Alexey Fomin
  */
-
 #ifndef SHELL_H_
 #define SHELL_H_
 

@@ -1,7 +1,8 @@
 /**
- * \file stdlib.h
- * \date 20.11.09
- * \author Sikmir
+ * @file stdlib.h
+ *
+ * @date 20.11.09
+ * @author Nikolay Korotky
  */
 #ifndef STDLIB_H_
 #define STDLIB_H_
