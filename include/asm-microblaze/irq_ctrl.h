@@ -1,5 +1,5 @@
 /**
- * @file asm-microblaze/irq_ctrl.h
+ * @file irq_ctrl.h
  * @brief This file defines microblaze interrupt controller specific settings
  * @date Apr 14, 2009
  * @author Anton Bondarev

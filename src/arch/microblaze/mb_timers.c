@@ -9,6 +9,7 @@
 #include "types.h"
 #include "kernel/irq.h"
 
+#define CONFIG_SYS_TIMER_PRELOAD     (CPU_CLOCK_FREQ/1000000)
 
 /*bits definition of cntl/status (tcsr) register*/
 #define TIMER_ENALL_BIT  21      /**< ENALL */
@@ -58,7 +59,7 @@ typedef volatile struct mb_timers {
 	mb_timer_t tmr1;
 }mb_timers;
 
-mb_timers *timers = (mb_timers *)MB_XILINX_TIMERS_BASE;
+mb_timers *timers = (mb_timers *)XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
 
 int timers_ctrl_init(IRQ_HANDLER irq_handler) {

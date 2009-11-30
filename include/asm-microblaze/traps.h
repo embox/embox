@@ -3,16 +3,15 @@
 
 #ifndef __ASSEMBLER__
 
-#define MAX_IRQ_NUMBER 0x10
-
+#if 0
 /*
  * Stack frame structure
  */
 typedef struct _STACKFRAME {
 	/* register window */
-	uint32_t xargs[6];
+	WORD xargs[6];
 	/* TODO I don't know. -- Eldar */
-	uint32_t xxargs[1];
+	WORD xxargs[1];
 } STACKFRAME;
 
 /*
@@ -20,22 +19,22 @@ typedef struct _STACKFRAME {
  */
 typedef struct _TRAP_CONTEXT {
 	/* processor state register */
-	uint32_t psr;
+	WORD psr;
 	/* program counter */
-	uint32_t pc;
+	WORD pc;
 	/* next program counter */
-	uint32_t npc;
+	WORD npc;
 	/* mul/div */
-	uint32_t y;
+	WORD y;
 	/* global registers */
-	uint32_t globals[8];
+	WORD globals[8];
 	/* input registers */
-	uint32_t ins[8];
+	WORD ins[8];
 } TRAP_CONTEXT;
 
 #define STACKFRAME_SZ     sizeof(STACKFRAME)
 #define TRAP_CONTEXT_SZ   sizeof(TRAP_CONTEXT)
-
+#endif
 #else /* __ASSEMBLER__ */
 
 /*
