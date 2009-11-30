@@ -14,7 +14,7 @@
 typedef uint32_t in_addr_t;
 
 struct in_addr {
-        u32_t    s_addr;
+        uint32_t    s_addr;
 };
 
 struct sockaddr_in {

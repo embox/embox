@@ -6,32 +6,32 @@
 
 #ifndef __ASSEMBLER__
 
-typedef __s8 int8_t;
+typedef __s8  int8_t;
 typedef __s16 int16_t;
 typedef __s32 int32_t;
 typedef __s64 int64_t;
 
-typedef __u8 uint8_t;
+typedef __u8  uint8_t;
 typedef __u16 uint16_t;
 typedef __u32 uint32_t;
 typedef __u64 uint64_t;
 
-typedef __u8 u8_t;
+/*typedef __u8 u8_t;
 typedef __u16 u16_t;
 typedef __u32 u32_t;
-typedef __u64 u64_t;
+typedef __u64 u64_t;*/
 
 /* BSD */
-typedef unsigned char u_char;
+/*typedef unsigned char u_char;
 typedef unsigned short u_short;
 typedef unsigned int u_int;
-typedef unsigned long u_long;
+typedef unsigned long u_long;*/
 
 /* SysV */
-typedef unsigned char unchar;
+/*typedef unsigned char unchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
-typedef unsigned long ulong;
+typedef unsigned long ulong;*/
 
 // FIXME try to avoid using these types -- Eldar
 typedef __u16 __le16;

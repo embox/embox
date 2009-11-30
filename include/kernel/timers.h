@@ -18,7 +18,7 @@ typedef void (*TIMER_FUNC)(uint32_t id);
 /**
  * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.
  */
-int set_timer(uint id, uint ticks, TIMER_FUNC handle);
+int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
 
 /**
  * Shut down timer with 'id' identity
