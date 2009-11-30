@@ -1,7 +1,11 @@
 /**
- * \file strtol.c
- * \date 24.11.09
- * \author Sikmir
+ * @file strtol.c
+ *
+ * @brief convert a string to a long integer
+ * @see stdlib.h
+ *
+ * @date 24.11.09
+ * @author Nikolay Korotky
  */
 #include "stdlib.h"
 #include "ctype.h"
@@ -40,7 +44,7 @@ long strtol(const char *nptr, char **endptr, int base) {
         }
 	if (base == 0)
         	base = c == '0' ? 8 : 10;
-        	/**
+        	/*
         	 * Compute the cutoff value between legal numbers and illegal
         	 * numbers.  That is the largest legal value, divided by the
         	 * base.  An input number that is greater than this value, if

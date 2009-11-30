@@ -1,7 +1,8 @@
 /**
- * \file strtod.c
- * \date 23.11.09
- * \author Sikmir
+ * @file strtod.c
+ *
+ * @date 23.11.09
+ * @author Nikolay Korotky
  */
 #include "stdlib.h"
 #include "ctype.h"

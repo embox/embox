@@ -1,7 +1,8 @@
 /**
- * \file stdlib.c
- * \date 20.11.09
- * \author Sikmir
+ * @file stdlib.c
+ *
+ * @date 20.11.09
+ * @author Nikolay Korotky
  */
 
 #include "ctype.h"
