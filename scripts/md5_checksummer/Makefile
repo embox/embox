@@ -1,24 +1,21 @@
-EXEC = count_md5
-SRC  = count.c md5.c
-OBJS = $(SRC:%.c=%.o)
-TARGET  = monitor_ram
-CC = gcc
+TARGET = monitor
+OC_TOOL = sparc-elf-objcopy
 
-.PHONY: all clean
+all:count_md5
+	echo done
 
-all: $(EXEC) count
+count.o: count.c
+	gcc -c -o $@ $<
 
-$(EXEC): $(OBJS)
-	@$(CC) $^ -o $@
+md5.o:
+	gcc -I$(INCLUDE_DIR) -c $(SRC_DIR)/lib/crypt/md5.c
 
-.c.o:
-	@$(CC) -c -I. $<
-
-count:
-	@$(OC_TOOL) -j .text $(BIN_DIR)/$(TARGET) imagetext.bin 2> /dev/null
-	@cat ../autoconf.h | sed 's/#define MD5_CHECKSUM "[0-9a-fA-F]*"/#define MD5_CHECKSUM "$(shell ./count_md5 -i imagetext.bin)"/' > copyautoconf.h
-	@mv -f copyautoconf.h ../autoconf.h
+count_md5:  count.o md5.o
+	gcc -o count_md5 count.o md5.o
+	$(OC_TOOL) -j .text $(BIN_DIR)/$(TARGET) imagetext.bin
+#	cat ../autoconf.h | sed 's/#define MD5_CHECKSUM ".*"/#define MD5_CHECKSUM "$(shell ./count_md5 -i imagetext.bin)"/' > copyautoconf.h
+#	mv -f copyautoconf.h ../autoconf.h
 #	$(CC) -c $(SRC_DIR)/testsuites/checksum/test_checksum.c
 
 clean:
-	@rm -f *.o $(EXEC) *.bin
+	rm -f *.o
