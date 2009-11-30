@@ -1,8 +1,8 @@
 /**
- * \file rootfs.c
- * \date Jun 29, 2009
- * \author Anton Bondarev
- * \details
+ * @file rootfs.c
+ * @date Jun 29, 2009
+ * @author Anton Bondarev
+ * @details
  */
 #include "string.h"
 #include "common.h"
@@ -55,37 +55,34 @@ static int rootfs_init(){
 
     return 0;
 }
-#define FS_MAX_DISK_NAME_LENGTH 0x10
-//for parsing filename
-typedef struct _FILE_NAME_STRUCT{
-    char fs_name[FS_MAX_DISK_NAME_LENGTH];//fs name (flash ramdisc and so on)
-    char *file_name; //
-}FILE_NAME_STRUCT;
 
-static FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_name_struct){
+FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_name_struct){
     int i;
     if ('/' != file_name[0]){
         return NULL;
     }
-
+    file_name_struct->fs_name[0] = '/';
     for (i = 0; i < array_len(file_name_struct->fs_name); i ++){
         if ('/' == file_name[i+1]){
-            file_name_struct->fs_name[i] = 0;
+            file_name_struct->fs_name[i + 1] = 0;
             file_name_struct->file_name = (char *)&file_name[i + 1 + 1];
             return file_name_struct;
         }
-        file_name_struct->fs_name[i] = file_name[i+1];
+        file_name_struct->fs_name[i + 1] = file_name[i+1];
     }
     return NULL;
 }
 
 FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name){
     int i;
+    printf("fs_name %10s\n", fs_name);
     if (0 == strncmp(fs_name, "/",FS_MAX_DISK_NAME_LENGTH)){
+        printf("oO\n");
         return &rootfs_op;
     }
     for (i = 0; i < NUMBER_OF_FS; i++){
         if (0 == strncmp(fs_list[i].name, fs_name + 1, array_len(fs_list[i].name))){
+            printf("%d", i);
             return (FSOP_DESCRIPTION *)fs_list[i].fsop;
         }
     }
@@ -96,11 +93,11 @@ void *rootfs_fopen(const char *file_name, char *mode){
     FILE_NAME_STRUCT fname_struct;
     FSOP_DESCRIPTION *fsop;
     if (NULL == parse_file_name(file_name, &fname_struct)){
-        TRACE("can't parse file name %s\n (may be wrong format)\n", file_name);
+        TRACE("can't parse file name %s\n (may be wrong format)\n", file_name); //??
         return NULL;
     }
     TRACE("try open: disk %s\tfile %s\n", fname_struct.fs_name, fname_struct.file_name);
-    if (NULL == (fsop = rootfs_get_fsopdesc((char*)file_name))){
+    if (NULL == (fsop = rootfs_get_fsopdesc((char*) /*file_name*/fname_struct.fs_name))){
         TRACE("can't find file system description for file %s\n (may be file %s didn't create)\n", file_name);
         return NULL;
     }

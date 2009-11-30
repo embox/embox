@@ -1,8 +1,8 @@
 /**
- * \file ramfs.c
- * \date Jun 29, 2009
- * \author anton
- * \details realize file operation function in line address space
+ * @file ramfs.c
+ * @date 29.06.2009
+ * @author Anton Bondarev
+ * @details realize file operation function in line address space
  */
 
 #include "string.h"
@@ -201,7 +201,7 @@ FSOP_DESCRIPTION ramfsop = { init, open_file, create_file, resize_file,
         get_file_list_iterator };
 
 static void *fopen(const char *file_name, char *mode) {
-    TRACE("file %s was opened\n", file_name);
+    TRACE("ramfs file %s was opened\n", file_name);
     return NULL;
 }
 

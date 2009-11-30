@@ -1,8 +1,8 @@
 /**
- * \file rootfs.h
- * \date Jun 29, 2009
- * \author anton
- * \details
+ * @file rootfs.h
+ * @date 29.06.2009
+ * @author Anton Bondarev
+ * @details
  */
 #ifndef ROOTFS_H_
 #define ROOTFS_H_
@@ -65,5 +65,14 @@ typedef struct _FILEOP{
     FILEOP_FSEEK fseek;
 }FILEOP;
 
+//for parsing filename
+#define FS_MAX_DISK_NAME_LENGTH 0x10
 
+typedef struct _FILE_NAME_STRUCT{
+    char fs_name[FS_MAX_DISK_NAME_LENGTH];//fs name (flash ramdisc and so on)
+    char *file_name; //
+}FILE_NAME_STRUCT;
+
+FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_name_struct);
+FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name);
 #endif /* ROOTFS_H_ */
