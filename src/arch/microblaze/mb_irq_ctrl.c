@@ -1,17 +1,19 @@
 /**
  * @file mb_irq_ctrl.c
+ *
  * @brief Low level functions for interrupt controller
+ *
  * @date 23.11.2009
  * @author: Anton Bondarev
  */
 
-#include "autoconf.h"
-#include "types.h"
-#include "hal/irq_ctrl.h"
-#include "common.h"
+#include <autoconf.h>
+#include <types.h>
+#include <hal/irq_ctrl.h>
+#include <common.h>
 
-/** microblaze interrupt controller registers definitions*/
-typedef volatile struct mb_irqc {
+/** microblaze interrupt controller registers definitions */
+typedef volatile struct irqc_regs {
 	uint32_t isr;                               /**< interrupt status register */
 	uint32_t ipr;                               /**< interrupt pending register */
 	uint32_t ier;                               /**< interrupt enable register */
@@ -20,23 +22,23 @@ typedef volatile struct mb_irqc {
 	uint32_t cie;                               /**< clear interrupt enable bits */
 	uint32_t ivr;                               /**< interrupt vector register */
 	uint32_t mer;                               /**< master enable register */
-} mb_irqc_t;
+} irqc_regs_t;
 
 #define MER_HIE_BIT     30
 #define MER_ME_BIT      31
 
-/*1<<(31-XXX_BIT) it's necessary put 31 here because microblaze have bit reverse*/
+/*It's necessary put 31 here because microblaze have bit reverse*/
 #define REVERSE_MASK(bit_num) (1<<(31-bit_num))
 
 #define MER_HIE              REVERSE_MASK(MER_HIE_BIT)
 #define MER_ME               REVERSE_MASK(MER_ME_BIT)
 
-mb_irqc_t * irqc = (mb_irqc_t * )XILINX_INTC_BASEADDR;
+static irqc_regs_t * irqc = (irqc_regs_t * )XILINX_INTC_BASEADDR;
 
 int irqc_init(){
 	irqc->mer = 0;
 	irqc->ier = 0;
-	irqc->iar = 0xFFFFFFFF;
+	irqc->iar = ~(0x0);
 	/* after set HIE bit we will not can clear it again.
 	 * It's a problem because we will couldn't testing interrupts by soft
 	 * (we will could use function irqc_force).

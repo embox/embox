@@ -1,13 +1,15 @@
 /**
  * @file mb_timer.c
+ *
  * @brief Implementation for microblaze timers
+ *
  * @date 19.11.2009
  * @author Anton Bondarev
  */
 
-#include "autoconf.h"
-#include "types.h"
-#include "kernel/irq.h"
+#include <autoconf.h>
+#include <types.h>
+#include <kernel/irq.h>
 
 #define CONFIG_SYS_TIMER_PRELOAD     (CPU_CLOCK_FREQ/1000000)
 
@@ -24,10 +26,10 @@
 #define TIMER_UDT_BIT    30      /**< UDT */
 #define TIMER_MDT        31      /**< MDT */
 
-/*1<<(31-XXX_BIT) it's necessary put 31 here because microblaze have bit reverse*/
+/*it's necessary put 31 here because microblaze have bit reverse*/
 #define REVERSE_MASK(bit_num) (1<<(31-bit_num))
 
-/** enable both timers t0 and t1. clearing this bit isn't change state ENT bit*/
+/** enable both timers t0 and t1. clearing this bit isn't change state ENT bit */
 #define TIMER_ENABLE_ALL    REVERSE_MASK(TIMER_ENALL_BIT)
 /** interrupt was pending. Write '1' for clearing this bit*/
 #define TIMER_INT           REVERSE_MASK(TIMER_INT_BIT)
@@ -45,25 +47,26 @@
 /**
  * Structure one of two timers. Both timers need only for pwm mode
  */
-typedef volatile struct mb_timer {
-	uint32_t tcsr;            /**< control/status register TCSR */
-	uint32_t tlr;             /**< load register TLR */
-	uint32_t tcr;             /**< timer/counter register */
-} mb_timer_t;
+typedef volatile struct timer_regs {
+	uint32_t tcsr; /**< control/status register TCSR */
+	uint32_t tlr; /**< load register TLR */
+	uint32_t tcr; /**< timer/counter register */
+} timer_regs_t;
 
 /**
- * Structure of mb_timers module. It contains two timer module.
+ * Microblaze timer module contains two timer module, each of them is described
+ * in @link srtuct timer_regs @endlink
  */
 typedef volatile struct mb_timers {
-	mb_timer_t tmr0;
-	mb_timer_t tmr1;
-}mb_timers;
+	timer_regs_t tmr0;
+	timer_regs_t tmr1;
+} mb_timers;
 
-mb_timers *timers = (mb_timers *)XILINX_TIMER_BASEADDR;
+static mb_timers *timers = (mb_timers *) XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
 
 int timers_ctrl_init(IRQ_HANDLER irq_handler) {
-	if (-1 == request_irq(XILINX_TIMER_IRQ, irq_handler)){
+	if (-1 == request_irq(XILINX_TIMER_IRQ, irq_handler)) {
 		return -1;
 	}
 	/*set clocks period*/
@@ -71,7 +74,8 @@ int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	/*clear interrupts bit and load value from tlr register*/
 	timer0->tcsr = TIMER_INT | TIMER_RESET;
 	/*start timer*/
-	timer0->tcsr |= TIMER_ENABLE | TIMER_INT_ENABLE | TIMER_RELOAD | TIMER_DOWN_COUNT;
+	timer0->tcsr |= TIMER_ENABLE | TIMER_INT_ENABLE | TIMER_RELOAD
+			| TIMER_DOWN_COUNT;
 	return 0;
 }
 
