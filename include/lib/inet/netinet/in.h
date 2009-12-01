@@ -3,16 +3,28 @@
  * \date 29.06.09
  * \author sikmir
  */
+//TODO: move out of here.
 
 #ifndef IN_H_
 #define IN_H_
 
 #include "types.h"
 
+/**< Standard well-defined IP protocols.  */
+enum {
+	IPPROTO_IP   = 0,     /* Dummy protocol for TCP            */
+	IPPROTO_ICMP = 1,     /* Internet Control Message Protocol */
+        IPPROTO_TCP  = 6,     /* Transmission Control Protocol     */
+        IPPROTO_UDP  = 17,    /* User Datagram Protocol            */
+	IPPROTO_RAW  = 255,   /* Raw IP packets                    */
+        IPPROTO_MAX
+};
+
 // IPv4 AF_INET sockets:
 
 typedef uint32_t in_addr_t;
 
+/**< Internet address. */
 struct in_addr {
         uint32_t    s_addr;
 };
@@ -42,6 +54,7 @@ in_addr_t inet_addr(const char *cp);
  */
 int inet_aton(const char *cp, struct in_addr *addr);
 
+//TODO:
 #define htons(n)            n
 #define ntohs(n)            n
 #define htonl(n)            n
@@ -52,6 +65,9 @@ int inet_aton(const char *cp, struct in_addr *addr);
 
 /* Address to send to all hosts. */
 #define INADDR_BROADCAST    ((unsigned long int) 0xffffffff)
+
+/* Address indicating an error return. */
+#define INADDR_NONE         ((unsigned long int) 0xffffffff)
 
 /* Address to loopback in software to local host.  */
 #define INADDR_LOOPBACK     ((unsigned long int) 0x7f000001)   /* 127.0.0.1   */

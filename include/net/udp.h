@@ -32,6 +32,10 @@ static inline struct udp_sock *udp_sk(const struct sock *sk) {
         return (struct udp_sock *)sk;
 }
 
+/* net/ipv4/udp.c */
+
 extern int udp_init();
+extern int udp_rcv(sk_buff_t *);
+//extern void udp_err(sk_buff_t *, uint32_t);
 
 #endif /* UDP_H_ */

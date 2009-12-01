@@ -5,7 +5,8 @@ OBJS-$(MONITOR_NET_UDP)              += udp.o
 OBJS-$(MONITOR_NET_TFTP)             += tftp.o
 #OBJS-$(MONITOR_NET_DHCP)             += dhcp.o
 OBJS-$(MONITOR_NET_BOOTP)             += bootp.o
-#OBJS-y                               += protocol.o
+OBJS-y                               += protocol.o
 OBJS-y                               += route.o
+OBJS-y                               += af_inet.o
 
 include $(SCRIPTS_DIR)/common.mk

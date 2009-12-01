@@ -4,8 +4,8 @@
  * @date 18.07.2009
  * @author Anton Bondarev
  */
-#ifndef IF_DEVICE_H_
-#define IF_DEVICE_H_
+#ifndef INETDEVICE_H_
+#define INETDEVICE_H_
 
 #include "net/eth.h"
 #include "net/net.h"
@@ -13,14 +13,14 @@
 /**
  * structute of inet(IP) device
  */
-typedef struct inet_device {
+typedef struct in_device {
     in_addr_t         ipv4_addr;
     struct net_device *net_dev;
     in_addr_t         mask;
     /*TODO gw must be in route table*/
     //unsigned char gw[IPV4_ADDR_LENGTH];
     unsigned char ipv4_addr_length;
-} inet_device_t;
+} in_device_t;
 
 extern int inet_dev_init();
 
@@ -83,9 +83,8 @@ extern int inet_dev_set_macaddr(void *ifdev, const unsigned char *macaddr);
 extern in_addr_t inet_dev_get_ipaddr(void *handler);
 
 /* iterator functions */
-extern inet_device_t * inet_dev_get_fist_used();
-extern inet_device_t * inet_dev_get_next_used();
-
+extern in_device_t * inet_dev_get_fist_used();
+extern in_device_t * inet_dev_get_next_used();
 
 /**
  * Show interace (IP/MAC address)
@@ -96,4 +95,4 @@ extern inet_device_t * inet_dev_get_next_used();
  * Show all eth interfaces (IP/MAC address)
  */
 
-#endif /* IF_DEVICE_H_ */
+#endif /* INETDEVICE_H_ */

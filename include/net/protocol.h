@@ -23,7 +23,14 @@ struct net_protocol {
 
 extern struct net_protocol *inet_protos[MAX_INET_PROTOS];
 
+/**
+ * Add a protocol handler to the hash tables
+ */
 extern int inet_add_protocol(struct net_protocol *prot, unsigned char num);
+
+/**
+ * Remove a protocol from the hash tables.
+ */
 extern int inet_del_protocol(struct net_protocol *prot, unsigned char num);
 
 #endif /* PROTOCOL_H_ */

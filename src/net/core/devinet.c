@@ -1,6 +1,7 @@
 /**
- * @file ifdev.c
+ * @file devinet.c
  *
+ * @brief IP device support routines.
  * @details realizing interface if_device struct (interface device)
  * @date 18.07.2009
  * @author Anton Bondarev
@@ -20,14 +21,14 @@ typedef struct _CALLBACK_INFO {
 } CALLBACK_INFO;
 
 typedef struct _IFDEV_INFO {
-    inet_device_t dev;
+    in_device_t dev;
     int           is_busy;
     CALLBACK_INFO cb_info[IFDEV_CBINFO_QUANTITY];
 } IFDEV_INFO;
 
 static IFDEV_INFO ifs_info[NET_INTERFACES_QUANTITY];
 
-IFDEV_INFO *find_ifdev_info_entry(inet_device_t *ifdev){
+IFDEV_INFO *find_ifdev_info_entry(in_device_t *ifdev){
 	int i;
 	for (i = 0; i < array_len(ifs_info); i ++){
 		if (&ifs_info[i].dev == ifdev){
@@ -36,7 +37,8 @@ IFDEV_INFO *find_ifdev_info_entry(inet_device_t *ifdev){
 	}
 	return NULL;
 }
-static inet_device_t *find_free_handler(){
+
+static in_device_t *find_free_handler(){
     int i;
     for(i = 0; i < NET_INTERFACES_QUANTITY; i ++){
         if (0 == ifs_info[i].is_busy){
@@ -47,7 +49,7 @@ static inet_device_t *find_free_handler(){
     return NULL;
 }
 
-static int free_handler(inet_device_t * handler){
+static int free_handler(in_device_t * handler){
     int i;
     for(i = 0; i < NET_INTERFACES_QUANTITY; i ++){
         if ((1 == ifs_info[i].is_busy) && (&ifs_info[i].dev == handler)){
@@ -58,7 +60,7 @@ static int free_handler(inet_device_t * handler){
     return -1;
 }
 
-static int alloc_callback(inet_device_t *dev, unsigned int type,
+static int alloc_callback(in_device_t *dev, unsigned int type,
                           ETH_LISTEN_CALLBACK callback) {
     int i;
     IFDEV_INFO *ifdev_info = find_ifdev_info_entry(dev);
@@ -72,7 +74,7 @@ static int alloc_callback(inet_device_t *dev, unsigned int type,
     return -1;
 }
 
-static int free_callback(inet_device_t *dev, ETH_LISTEN_CALLBACK callback) {
+static int free_callback(in_device_t *dev, ETH_LISTEN_CALLBACK callback) {
     int i;
     IFDEV_INFO *ifdev_info = find_ifdev_info_entry(dev);
     for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
@@ -88,7 +90,7 @@ int inet_dev_init() {
 }
 
 struct net_device *inet_dev_get_netdevice(void *handler) {
-    inet_device_t *dev = (inet_device_t *) handler;
+    in_device_t *dev = (in_device_t *) handler;
     if (NULL == dev) {
         LOG_ERROR("handler is NULL\n");
         return NULL;
@@ -98,7 +100,7 @@ struct net_device *inet_dev_get_netdevice(void *handler) {
 
 int inet_dev_listen(void *handler, unsigned short type,
                  ETH_LISTEN_CALLBACK callback) {
-    inet_device_t *dev = (inet_device_t *) handler;
+    in_device_t *dev = (in_device_t *) handler;
     if (NULL == dev) {
         return -1;
     }
@@ -146,7 +148,7 @@ int inet_dev_set_ipaddr(void *ifdev, const in_addr_t ipaddr) {
     if (NULL == ifdev) {
         return -1;
     }
-    inet_device_t *dev = (inet_device_t *) ifdev;
+    in_device_t *dev = (in_device_t *) ifdev;
     dev->ipv4_addr = ipaddr;
     return 0;
 }
@@ -155,7 +157,7 @@ int inet_dev_set_mask(void *ifdev, const in_addr_t mask) {
     if (NULL == ifdev) {
             return -1;
     }
-    inet_device_t *dev = (inet_device_t *) ifdev;
+    in_device_t *dev = (in_device_t *) ifdev;
     dev->mask = mask;
     //TODO: fix ip addr format.
 #if 0
@@ -173,14 +175,14 @@ int inet_dev_set_mask(void *ifdev, const in_addr_t mask) {
 int inet_dev_set_macaddr(void *ifdev, const unsigned char *macaddr) {
     if (NULL == ifdev || NULL == macaddr)
         return -1;
-    net_device_t *dev = ((inet_device_t*)ifdev)->net_dev;
+    net_device_t *dev = ((in_device_t*)ifdev)->net_dev;
     if (NULL == dev)
         return -1;
     return dev->set_mac_address(dev, (void*)macaddr);
 }
 
 in_addr_t inet_dev_get_ipaddr(void *handler) {
-    inet_device_t *dev = (inet_device_t *) handler;
+    in_device_t *dev = (in_device_t *) handler;
     if (NULL == dev)
         return 0;
     return dev->ipv4_addr;
@@ -195,7 +197,7 @@ in_addr_t inet_dev_get_ipaddr(void *handler) {
 void ifdev_rx_callback(sk_buff_t *pack){
 	int i;
 	/* if there are some callback handlers for packet's protocol */
-	inet_device_t *dev = (inet_device_t *) pack->ifdev;
+	in_device_t *dev = (in_device_t *) pack->ifdev;
 	if (NULL == dev)
 		return;
 
@@ -222,7 +224,7 @@ void ifdev_tx_callback(sk_buff_t *pack){
 #endif
 /* iterator functions */
 static int iterator_cnt;
-inet_device_t * inet_dev_get_fist_used(){
+in_device_t * inet_dev_get_fist_used() {
     for(iterator_cnt = 0; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
         if (1 == ifs_info[iterator_cnt].is_busy){
             iterator_cnt++;
@@ -232,9 +234,9 @@ inet_device_t * inet_dev_get_fist_used(){
     return NULL;
 }
 
-inet_device_t * inet_dev_get_next_used(){
-    for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++){
-        if (1 == ifs_info[iterator_cnt].is_busy){
+in_device_t * inet_dev_get_next_used() {
+    for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++) {
+        if (1 == ifs_info[iterator_cnt].is_busy) {
             iterator_cnt++;
             return &ifs_info[iterator_cnt - 1].dev;
         }
@@ -244,7 +246,7 @@ inet_device_t * inet_dev_get_next_used(){
 
 //TODO follow functions either have different interface or move to another place
 int ifdev_up(const char *iname){
-    inet_device_t *ifhandler;
+    in_device_t *ifhandler;
     if (NULL == (ifhandler = find_free_handler ())){
         LOG_ERROR("ifdev up: can't find find free handler\n");
         return -1;
@@ -262,7 +264,7 @@ int ifdev_up(const char *iname){
 }
 
 int ifdev_down(const char *iname){
-    inet_device_t *ifhandler;
+    in_device_t *ifhandler;
     if (NULL == (ifhandler = inet_dev_find_by_name(iname))){
             LOG_ERROR("ifdev down: can't find ifdev with name\n", iname);
             return -1;

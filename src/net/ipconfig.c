@@ -7,10 +7,8 @@
  * @author Nikolay Korotky
  */
 
-#include "common.h"
 #include "net/net.h"
 #include "net/inetdevice.h"
-#include "misc.h"
 #include "kernel/init.h"
 
 DECLARE_INIT("net", net_init, INIT_NET_LEVEL);
@@ -21,11 +19,8 @@ DECLARE_INIT("net", net_init, INIT_NET_LEVEL);
  * not support TCP protocol
  */
 static int net_init() {
+    //TODO:
     eth_init();
     inet_dev_init();
-
-    //TODO: inet_add_protocol
-    icmp_init();
-    udp_init();
     return 0;
 }

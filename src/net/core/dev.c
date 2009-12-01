@@ -66,7 +66,7 @@ net_device_t *netdev_get_by_name(const char *name) {
 }
 
 int dev_queue_xmit(struct sk_buff *pack) {
-    inet_device_t *dev;
+    in_device_t *dev;
     net_device_stats_t *stats;
 
     if ((NULL == pack) || (NULL == pack->netdev))
@@ -97,7 +97,7 @@ int dev_queue_xmit(struct sk_buff *pack) {
 
 int netif_rx(struct sk_buff *pack) {
     int i;
-    inet_device_t *dev;
+    in_device_t *dev;
     if ((NULL == pack) || (NULL == pack->netdev)) {
         return -1;
     }

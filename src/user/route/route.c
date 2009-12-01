@@ -55,12 +55,12 @@ static int exec(int argsc, char **argsv) {
 	} while(-1 != nextOption);
 
 	if(!strcmp(argsv[argsc - 1], "add")) {
-		inet_device_t *idev = (struct inet_device*)ifdev;
+		in_device_t *idev = (struct in_device*)ifdev;
 		int flags = (gw == INADDR_ANY) ? RTF_UP : RTF_UP|RTF_GATEWAY;
 		rt_add_route(idev->net_dev, net, mask, gw, flags);
 		return 0;
 	} else if(!strcmp(argsv[argsc - 1], "del")) {
-		inet_device_t *idev = (struct inet_device*)ifdev;
+		in_device_t *idev = (struct in_device*)ifdev;
 		rt_del_route(idev->net_dev, net, mask, gw);
 	} else {
 		printf("Destination\t\tGateway   \t\tGenmask   \t\tFlags\tIface\n");

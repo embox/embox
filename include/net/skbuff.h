@@ -7,6 +7,8 @@
 #ifndef SKBUFF_H_
 #define SKBUFF_H_
 
+#include "types.h"
+
 struct skb_timeval {
 	uint32_t off_sec;
 	uint32_t off_usec;
@@ -69,7 +71,6 @@ typedef struct sk_buff_head {
 	__u32		qlen;
 	spinlock_t	lock;
 }sk_buff_head_t;
-
 
 extern struct sk_buff *alloc_skb(unsigned int size, gfp_t priority);
 

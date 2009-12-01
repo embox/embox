@@ -59,7 +59,7 @@ build:
 	@declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --directory=src all
 
 checksum:
-	@$(MAKE) --directory=scripts/md5_checksummer
+#	@$(MAKE) --directory=scripts/md5_checksummer
 #	@if [ $(SIGN_CHECKSUM) == y ]; \
 #	then \
 #	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
