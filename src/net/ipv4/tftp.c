@@ -20,7 +20,7 @@
 //#define TFTP_ADDRESS_TO_SAVE  0x80000000
 	int
 tftp_client_get (const char *const filename,
-		 const ip_addr_t server,
+		 const in_addr_t server,
 		 const int port, char *buf, int len, const int mode, int *const err) {
 	TRACE("tftp client started\n");
 	int result = 0;
@@ -78,7 +78,7 @@ tftp_client_get (const char *const filename,
 
 	memset (&saddr, 0, sizeof (struct sockaddr_in));
 	saddr.sin_port = htons (port);
-	memcpy (&saddr.sin_addr.s_addr, server, sizeof (ip_addr_t));
+	saddr.sin_addr.s_addr = server;
 
 	TRACE("call bind\n");
 	if (bind (s, (struct sockaddr *) &saddr, sizeof (saddr)) < 0) {
@@ -156,4 +156,3 @@ tftp_client_get (const char *const filename,
 		}
 	}
 }
-

@@ -1,8 +1,8 @@
 /**
- * \file ip_v4.c
+ * @file ip_v4.c
  *
- * \date 17.03.2009
- * \author sunnya
+ * @date 17.03.2009
+ * @author sunnya
  */
 #include "string.h"
 #include "common.h"
@@ -68,13 +68,13 @@ int ip_received_packet(sk_buff_t *pack) {
 }
 
 int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
-		unsigned short id, unsigned short len, unsigned char saddr[4],
-		unsigned char daddr[4]) {
+		unsigned short id, unsigned short len, in_addr_t saddr,
+		in_addr_t daddr) {
 	iphdr_t *hdr = pack->nh.iph;
 	hdr->version = 4;
 	hdr->ihl = IP_HEADER_SIZE >> 2;
-	memcpy(hdr->saddr, saddr, sizeof(hdr->saddr));
-	memcpy(hdr->daddr, daddr, sizeof(hdr->daddr));
+	hdr->saddr = saddr;
+	hdr->daddr = daddr;
 	hdr->tot_len = len;
 	hdr->ttl = ttl;
 	hdr->id = id;

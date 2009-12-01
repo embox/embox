@@ -27,10 +27,10 @@ struct _bootp_header_t {
     unsigned int     xid;                    /* transaction ID */
     unsigned short   secs;                   /* seconds since boot began */
     unsigned short   flags;                  /* RFC1532 broadcast, etc. */
-    ip_addr_t        ciaddr;                 /* client IP address */
-    ip_addr_t        yiaddr;                 /* 'your' (client) IP address */
-    ip_addr_t        siaddr;                 /* server IP address */
-    ip_addr_t        giaddr;                 /* gateway IP address */
+    in_addr_t        ciaddr;                 /* client IP address */
+    in_addr_t        yiaddr;                 /* 'your' (client) IP address */
+    in_addr_t        siaddr;                 /* server IP address */
+    in_addr_t        giaddr;                 /* gateway IP address */
     unsigned char    chaddr[16];             /* client hardware address */
     char             sname[64];              /* server host name */
     char             file[128];              /* boot file name */
@@ -183,17 +183,17 @@ const struct _bootp_header_t const* get_bootp_info ();
 /**
  * Return ip address obtained from bootp/dhcp
  */
-ip_addr_t* const get_ip_addr ();
+in_addr_t const get_ip_addr ();
 
 /**
  * Return network mask obtained from bootp/dhcp
  */
-ip_addr_t* const get_ip_mask ();
+in_addr_t const get_ip_mask ();
 
 /**
  * Return gateway obtained from bootp/dhcp
  */
-ip_addr_t* const get_ip_gate ();
+in_addr_t const get_ip_gate ();
 
 #endif // __BOOTP_H__
 

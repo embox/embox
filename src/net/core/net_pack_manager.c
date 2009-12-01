@@ -1,8 +1,8 @@
 /**
- * \file net_pack.c
+ * @file net_pack.c
  *
- * \date Mar 7, 2009
- * \author anton
+ * @date Mar 7, 2009
+ * @author anton
  */
 #include "string.h"
 #include "common.h"
@@ -13,7 +13,6 @@
 #include "kernel/module.h"
 /*FIXME this file needs for local_irq_save but in this module we must use spin_lock*/
 #include "asm/sys.h"
-
 
 typedef struct _NET_BUFF_INFO {
 	struct list_head list;
@@ -38,7 +37,6 @@ static int __init net_buff_init(){
 
 
 unsigned char *net_buff_alloc() {
-
 	unsigned long sp = spin_lock();
 	if (list_empty (&free_packet_list_head)){
 		spin_unlock(sp);
@@ -65,4 +63,3 @@ void net_buff_free(unsigned char *buff) {
 	}
 	spin_unlock(sp);
 }
-

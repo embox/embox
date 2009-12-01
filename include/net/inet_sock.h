@@ -9,6 +9,7 @@
 #define INET_SOCK_H_
 
 #include "net/sock.h"
+#include "lib/inet/netinet/in.h"
 
 /** struct ip_options - IP Options
 *
@@ -64,9 +65,9 @@ struct inet_sock{
 	/* sk have to be the first member of inet_sock */
 	struct sock    sk;
 
-	unsigned char  daddr [4];
-	unsigned char  rcv_saddr[4];
-	unsigned char  saddr [4];
+	in_addr_t      daddr;
+	in_addr_t      rcv_saddr;
+	in_addr_t      saddr;
 	struct ip_options  *opt;
 	unsigned short sport;
 	unsigned char  uc_ttl;

@@ -1,8 +1,9 @@
 /**
- * \file socket.c
+ * @file socket.c
  *
- * \date Mar 19, 2009
- * \author anton, sikmir
+ * @date 19.03.2009
+ * @author Anton Bondarev
+ * @author Nikolay Korotky
  */
 
 #include "stdio.h"
@@ -51,15 +52,16 @@ int connect (int sockfd, const struct sockaddr *addr, int addrlen) {
 	}
 	memcpy(&sks[sockfd].sk->inet.daddr, &(addr->sa_data[2]), IP_ADDR_LEN);
 	memcpy(&sks[sockfd].sk->inet.dport, &(addr->sa_data[0]), sizeof(short));
-	char ip[15];
-	ipaddr_print(ip, sks[sockfd].sk->inet.daddr);
 	//TODO what is it
 	sks[sockfd].queue = alloc_skb (0x100, 0);
 	//TODO we haven't ifdev now
 #if 0
 	sks[sockfd].queue->ifdev = (void*)inet_dev_find_by_name ("eth0");
 #endif
-	LOG_WARN("socket connected at port=%d, ip=%s ifdev = %d\n", sks[sockfd].sk->inet.sport, ip, sks[sockfd].queue);
+	struct in_addr ip;
+	ip.s_addr = sks[sockfd].sk->inet.daddr;
+	LOG_WARN("socket connected at port=%d, ip=%s ifdev = %d\n", sks[sockfd].sk->inet.sport,
+							inet_ntoa(ip), sks[sockfd].queue);
 	return 0;
 }
 
@@ -70,9 +72,12 @@ int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
         }
 	memcpy(&sks[sockfd].sk->inet.saddr, &(addr->sa_data[2]), IP_ADDR_LEN);
 	memcpy(&sks[sockfd].sk->inet.sport, &(addr->sa_data[0]), sizeof(short));
-	char ip[15];
-	ipaddr_print(ip, sks[sockfd].sk->inet.saddr);
-	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[sockfd].sk->inet.sport, ip);
+#if 0
+	struct in_addr ip;
+	ip.s_addr = sks[sockfd].sk->inet.saddr;
+	LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[sockfd].sk->inet.sport,
+		    inet_ntoa(ip));
+#endif
 	return 0;
 }
 
@@ -118,4 +123,3 @@ int empty_socket(int sockfd) {
         }
 	return (1 - sks[sockfd].new_pack);
 }
-

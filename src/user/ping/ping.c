@@ -27,10 +27,8 @@ static void callback(struct sk_buff *pack) {
 	has_responsed = true;
 }
 
-static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, int quiet) {
-	char ip[15];
-	ipaddr_print(ip, dst);
-	printf("PING to %s\n", ip);
+static int ping(void *ifdev, struct in_addr dst, int cnt, int timeout, int ttl, int quiet) {
+	printf("PING to %s\n", inet_ntoa(dst));
 
 	int cnt_resp = 0, cnt_err = 0;
 
@@ -42,12 +40,12 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, 
 			break;
 
 		has_responsed = false;
-		ipaddr_print(ip, inet_dev_get_ipaddr(ifdev));
-		if(!quiet) printf("from %s", ip);
-		ipaddr_print(ip, dst);
-		if(!quiet) printf(" to %s", ip);
+		struct in_addr from;
+		from.s_addr = inet_dev_get_ipaddr(ifdev);
+		if(!quiet) printf("from %s", inet_ntoa(from));
+		if(!quiet) printf(" to %s", inet_ntoa(dst));
 		if(!quiet) printf(" ttl=%d ", ttl);
-		icmp_send_echo_request(ifdev, dst, ttl, callback);
+		icmp_send_echo_request(ifdev, dst.s_addr, ttl, callback);
 		usleep(timeout);
 		if (false == has_responsed) {
 			if(!quiet) printf(" ....timeout\n");
@@ -58,7 +56,7 @@ static int ping(void *ifdev, unsigned char *dst, int cnt, int timeout, int ttl, 
 			cnt_resp++;
 		}
 	}
-	printf("--- %d.%d.%d.%d ping statistics ---\n", dst[0], dst[1], dst[2], dst[3]);
+	printf("--- %s ping statistics ---\n", inet_ntoa(dst));
 	printf("%d packets transmitted, %d received, %d%% packet loss", cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp));
 	icmp_abort_echo_request(ifdev);
 	return 0;
@@ -70,7 +68,7 @@ static int exec(int argsc, char **argsv) {
 	int ttl     = 64;
 	int quiet   = 0;
 	void *ifdev = inet_dev_find_by_name("eth0");
-	unsigned char dst[4];
+	struct in_addr dst;
 	int nextOption;
 	getopt_init();
 	do {
@@ -116,7 +114,7 @@ static int exec(int argsc, char **argsv) {
 	}
 
         /* get destanation addr */
-        if (NULL == ipaddr_scan(argsv[argsc - 1], dst)) {
+        if (0 == inet_aton(argsv[argsc - 1], &dst)) {
                 LOG_ERROR("wrong ip addr format (%s)\n", argsv[argsc - 1]);
                 show_help();
                 return -1;

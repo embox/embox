@@ -1,8 +1,8 @@
 /**
- * \file ipaux.c
+ * @file ipaux.c
  *
- * \date Mar 20, 2009
- * \author anton
+ * @date 20.03.2009
+ * @author Anton
  */
 
 #define LITTLE 0// big endian only

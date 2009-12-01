@@ -1,7 +1,7 @@
 /**
- * \file protocol.c
- * \date 12.08.09
- * \author sikmir
+ * @file protocol.c
+ * @date 12.08.09
+ * @author Nikolay Korotky
  */
 
 #include "net/protocol.h"

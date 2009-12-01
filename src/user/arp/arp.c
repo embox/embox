@@ -24,16 +24,18 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int print_arp_cache(void *ifdev) {
 	int i;
-	char ip[15], mac[18];
+	char mac[18];
 	net_device_t *net_dev;
 	for(i=0; i<ARP_CACHE_SIZE; i++) {
 		if((arp_table[i].is_busy == 1) &&
 		   (ifdev == NULL || ifdev == arp_table[i].if_handler)) {
 			net_dev = inet_dev_get_netdevice(arp_table[i].if_handler);
-			ipaddr_print(ip, arp_table[i].pw_addr);
 			macaddr_print(mac, arp_table[i].hw_addr);
-			TRACE("%s\t\t%d\t%s\t%d\t%s\n", ip, inet_dev_get_netdevice(arp_table[i].if_handler)->type,
-							 mac, net_dev->flags, net_dev->name);
+			struct in_addr addr;
+			addr.s_addr = arp_table[i].pw_addr;
+			TRACE("%s\t\t%d\t%s\t%d\t%s\n", inet_ntoa(addr),
+					    inet_dev_get_netdevice(arp_table[i].if_handler)->type,
+					    mac, net_dev->flags, net_dev->name);
 		}
 	}
 	return 0;
@@ -41,7 +43,7 @@ static int print_arp_cache(void *ifdev) {
 
 static int exec(int argsc, char **argsv) {
 	int nextOption;
-	unsigned char addr[4];
+	struct in_addr addr;
 	unsigned char hwaddr[6];
 	void *ifdev = NULL;
 	int op = -1;
@@ -59,7 +61,7 @@ static int exec(int argsc, char **argsv) {
 	    		op = 1;
 	    	        break;
 	    	case 'a':
-	    	        if (NULL == ipaddr_scan(optarg, addr)) {
+	    	        if (0 == inet_aton(optarg, &addr)) {
 	    	                LOG_ERROR("wrong ip addr format (%s)\n", optarg);
 	    	                return -1;
 	    	        }
@@ -85,10 +87,10 @@ static int exec(int argsc, char **argsv) {
 
 	switch(op) {
         case 0:
-                arp_delete_entity(ifdev, addr, hwaddr);
+                arp_delete_entity(ifdev, addr.s_addr, hwaddr);
                 return 0;
         case 1:
-                arp_add_entity(ifdev, addr, hwaddr);
+                arp_add_entity(ifdev, addr.s_addr, hwaddr);
                 return 0;
 	default:
 		break;

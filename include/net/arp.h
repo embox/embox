@@ -1,13 +1,15 @@
 /**
- * \file arp.h
- * \date Mar 11, 2009
- * \author anton
- * \brief Definitions for the ARP protocol.
+ * @file arp.h
+ *
+ * @brief Definitions for the ARP protocol.
+ * @date Mar 11, 2009
+ * @author Anton Bondarev
  */
 #ifndef ARP_H_
 #define ARP_H_
 
 #include "net/if_arp.h"
+#include "types.h"
 
 //todo bad style
 struct sk_buff;
@@ -17,7 +19,7 @@ struct sk_buff;
  */
 typedef struct _ARP_ENTITY {
     unsigned char hw_addr[ETH_ALEN];                   /**< hardware addr */
-    unsigned char pw_addr[IPV4_ADDR_LENGTH];           /**< protocol addr */
+    in_addr_t     pw_addr;                             /**< protocol addr */
     void          *if_handler;                         /**< net_device */
     unsigned char is_busy;                             /**< internal flag that this entry is used */
 }ARP_ENTITY;
@@ -36,7 +38,7 @@ extern ARP_ENTITY arp_table[ARP_CACHE_SIZE];           /** arp table */
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL *
  */
-extern struct sk_buff *arp_resolve_addr(struct sk_buff * pack, unsigned char dst_addr[4]);
+extern struct sk_buff *arp_resolve_addr(struct sk_buff * pack, in_addr_t dst_addr);
 
 /**
  * Handle arp packet. This function called protocal stack when arp packet has been received
@@ -51,7 +53,7 @@ extern int arp_received_packet(struct sk_buff *pack);
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-extern int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6]);
+extern int arp_add_entity(void *ifdev, in_addr_t ipaddr, unsigned char macaddr[6]);
 
 /**
  * this function delete entry from arp table if can
@@ -60,6 +62,6 @@ extern int arp_add_entity(void *ifdev, unsigned char ipaddr[4], unsigned char ma
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-extern int arp_delete_entity(void *ifdev, unsigned char ipaddr[4], unsigned char macaddr[6]);
+extern int arp_delete_entity(void *ifdev, in_addr_t ipaddr, unsigned char macaddr[6]);
 
 #endif /* ARP_H_ */

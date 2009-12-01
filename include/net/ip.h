@@ -1,13 +1,14 @@
 /**
- * \file ip.h
+ * @file ip.h
  *
- * \date Mar 11, 2009
- * \author anton
- * \brief Definitions for the IP protocol.
+ * @date 11.03.2009
+ * @author Anton Bondarev
+ * @brief Definitions for the IP protocol.
  */
-
 #ifndef IP_H_
 #define IP_H_
+
+#include "lib/inet/netinet/in.h"
 
 #define __BIG_ENDIAN 1
 
@@ -20,8 +21,6 @@
 #define IP_DF           0x4000          /* Flag: "Don't Fragment"   */
 #define IP_MF           0x2000          /* Flag: "More Fragments"   */
 #define IP_OFFSET       0x1FFF          /* "Fragment Offset" part   */
-
-typedef unsigned char ip_addr_t[4];
 
 typedef struct iphdr {
 #if defined(__LITTLE_ENDIAN)
@@ -43,11 +42,8 @@ typedef struct iphdr {
 	unsigned char     ttl;              /**< Time to live */
 	unsigned char     proto;            /**< next header */
 	unsigned short    check;            /**< header's checksum */
-        unsigned char     saddr[4];         /**< source address */
-        unsigned char     daddr[4];         /**< destination address */
-	//TODO:
-//	__be32            saddr;            /**< source address */
-//	__be32            daddr;            /**< destination address */
+        in_addr_t         saddr;            /**< source address */
+        in_addr_t         daddr;            /**< destination address */
 } __attribute__((packed)) iphdr_t;
 
 #define IP_HEADER_SIZE   (sizeof(struct iphdr))

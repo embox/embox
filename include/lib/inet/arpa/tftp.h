@@ -10,6 +10,7 @@
 
 #include "types.h"
 #include "net/ip.h"
+#include "lib/inet/netinet/in.h"
 
 /*
  * Trivial File Transfer Protocol (IEN-133)
@@ -85,7 +86,7 @@ struct	tftphdr {
  * or a dotty or colony number format for IPv4 or IPv6.
 */
 int tftp_client_get(const char * const filename,
-                              const ip_addr_t server,
+                              const in_addr_t server,
                               const int port,
                               char * buff,
                               int len,

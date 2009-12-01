@@ -36,12 +36,9 @@ static int exec(int argsc, char **argsv) {
 
     char buffer[10000];
     if (!buffer) return 1;
-    ip_addr_t ip;
-    ip[0] = 192;
-    ip[1] = 168;
-    ip[2] = 0;
-    ip[3] = 59;
+    struct in_addr ip;
+    inet_aton("192.168.0.59", &ip);
     int err = 0;
-    tftp_client_get ("objs.lst", ip, 69, buffer, 10000, TFTP_NETASCII, &err);
+    tftp_client_get ("objs.lst", ip.s_addr, 69, buffer, 10000, TFTP_NETASCII, &err);
     return 0;
 }

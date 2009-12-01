@@ -54,20 +54,20 @@ const struct _bootp_header_t const* get_bootp_info () {
 	return &bootp_info;
 }
 
-static ip_addr_t local_ip_addr = {0};
-static ip_addr_t local_ip_mask = {0};
-static ip_addr_t local_ip_gate = {0};
+static in_addr_t local_ip_addr = 0;
+static in_addr_t local_ip_mask = 0;
+static in_addr_t local_ip_gate = 0;
 
-ip_addr_t* const get_ip_addr () {
-	return &local_ip_addr;
+in_addr_t const get_ip_addr () {
+	return local_ip_addr;
 }
 
-ip_addr_t* const get_ip_mask () {
-        return &local_ip_mask;
+in_addr_t const get_ip_mask () {
+        return local_ip_mask;
 }
 
-ip_addr_t* const get_ip_gate () {
-        return &local_ip_gate;
+in_addr_t const get_ip_gate () {
+        return local_ip_gate;
 }
 
 static unsigned char* add_option (unsigned char* p, unsigned char* opt, int len) {
@@ -78,12 +78,13 @@ static unsigned char* add_option (unsigned char* p, unsigned char* opt, int len)
 	return p + len;
 }
 
+//TODO: it's ahtung, split me.
 int bootp_discover (void* ifdev) {
         int             udp_skt = 0;
 	int             srv_skt = 0;
 	struct _bootp_header_t  b;
         unsigned long   start = 0;
-	ip_addr_t       saved_ip_addr = {0};
+	in_addr_t       saved_ip_addr = 0;
 	struct sockaddr_in addr;
 #ifdef DHCP_SUPPORT
 	unsigned char*  p = 0;
@@ -108,7 +109,7 @@ int bootp_discover (void* ifdev) {
 #endif
 
 	// save current local address
-	memcpy (saved_ip_addr, local_ip_addr, sizeof (ip_addr_t));
+	saved_ip_addr = local_ip_addr;
 
 	// create socket to DHCP/BOOTP server
 	memset(&addr, 0, sizeof(struct sockaddr_in));
@@ -138,7 +139,7 @@ int bootp_discover (void* ifdev) {
 		b.xid = xid++;
 		*(uint32_t*)b.options = VM_RFC1048;
 		memcpy (b.chaddr, enet, ETH_ALEN);
-		memset (local_ip_addr, 0, sizeof (ip_addr_t));
+		local_ip_addr = 0;
 
 #ifdef DHCP_SUPPORT
 		p = b.options;
@@ -211,10 +212,10 @@ int bootp_discover (void* ifdev) {
 		memcpy (pack->data + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE, &b, BOOTP_HEADER_SIZE);
 
                 pack->nh.iph = (struct iphdr*)(pack->data + ETH_HEADER_SIZE);
-                ip_addr_t daddr;
-		ip_addr_t saddr;
-                memset (saddr, 0, sizeof (ip_addr_t));
-                memset (daddr, 0xff, sizeof (ip_addr_t));
+                in_addr_t daddr;
+		in_addr_t saddr;
+                saddr = 0;
+                daddr = 0xff;
                 rebuild_ip_header(pack, 100, /*AF_INET*/0x11, 0, BOOTP_HEADER_SIZE + UDP_HEADER_SIZE + IP_HEADER_SIZE, saddr, daddr);
 
 		pack->h.uh = (struct _udphdr*)(pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE);
@@ -330,8 +331,8 @@ int bootp_discover (void* ifdev) {
 						}
 #else
 						memcpy (&bootp_info, &b, sizeof (struct _bootp_header_t));
-						memcpy (local_ip_addr, &b.yiaddr, 4);
-						memcpy (local_ip_gate, &b.giaddr, 4);
+						local_ip_addr = b.yiaddr;
+						local_ip_gate = b.giaddr;
 #endif
 						return 1;
 					}
@@ -341,6 +342,6 @@ int bootp_discover (void* ifdev) {
 	}
 
 	//there no bootp info, so restore ip address
-	memcpy (local_ip_addr, saved_ip_addr, sizeof (ip_addr_t));
+	local_ip_addr = saved_ip_addr;
 	return 0;
 }

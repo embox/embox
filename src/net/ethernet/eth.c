@@ -1,7 +1,7 @@
 /**
- * \file eth.c
- * \date Mar 4, 2009
- * \author anton
+ * @file eth.c
+ * @date 4.03.2009
+ * @author Anton Bondarev
  */
 #include "misc.h"
 #include "string.h"
@@ -64,11 +64,6 @@ net_device_t *alloc_etherdev(int num) {
     return dev;
 }
 
-
-
-
-
-
 //TODO delete this function from here
 void packet_dump(sk_buff_t *pack) {
     char ip[15], mac[18];
@@ -88,12 +83,13 @@ void packet_dump(sk_buff_t *pack) {
         TRACE("nh.arph.oper=%d\n", pack->nh.arph->oper);
         macaddr_print(mac, pack->nh.arph->sha);
         TRACE("nh.arph.sha=%s\n", mac);
-        ipaddr_print(ip, pack->nh.arph->spa);
-        TRACE("nh.arph.spa=%s\n", ip);
+        struct in_addr spa, tpa;
+        spa.s_addr = pack->nh.arph->spa;
+        TRACE("nh.arph.spa=%s\n", inet_ntoa(spa));
         macaddr_print(mac, pack->nh.arph->tha);
         TRACE("nh.arph.tha=%s\n", mac);
-        ipaddr_print(ip, pack->nh.arph->tpa);
-        TRACE("nh.arph.tpa=%s\n", ip);
+        tpa.s_addr = pack->nh.arph->tpa;
+        TRACE("nh.arph.tpa=%s\n", inet_ntoa(tpa));
     } else if (pack->protocol == ETH_P_IP) {
 	TRACE("nh.iph.ihl=%d\n", pack->nh.iph->ihl);
 	TRACE("nh.iph.version=%d\n", pack->nh.iph->version);
@@ -104,10 +100,11 @@ void packet_dump(sk_buff_t *pack) {
         TRACE("nh.iph.ttl=%d\n", pack->nh.iph->ttl);
         TRACE("nh.iph.proto=0x%X\n", pack->nh.iph->proto);
         TRACE("nh.iph.check=%d\n", pack->nh.iph->check);
-        ipaddr_print(ip, pack->nh.iph->saddr);
-        TRACE("nh.iph.saddr=%s\n", ip);
-        ipaddr_print(ip, pack->nh.iph->daddr);
-        TRACE("nh.iph.daddr=%s\n", ip);
+        struct in_addr saddr, daddr;
+        saddr.s_addr = pack->nh.iph->saddr;
+        daddr.s_addr = pack->nh.iph->daddr;
+        TRACE("nh.iph.saddr=%s\n", inet_ntoa(saddr));
+        TRACE("nh.iph.daddr=%s\n", inet_ntoa(daddr));
         if (pack->nh.iph->proto == ICMP_PROTO_TYPE) {
             TRACE("h.icmph.type=%d\n", pack->h.icmph->type);
             TRACE("h.icmph.code=%d\n", pack->h.icmph->code);
@@ -119,6 +116,5 @@ void packet_dump(sk_buff_t *pack) {
             LOG_DEBUG("h.uh.check=%d\n", pack->h.uh->check);
         }
     }
-    TRACE("data=0x%X\n", pack->data);
     TRACE("---------------end-----------------\n");
 }

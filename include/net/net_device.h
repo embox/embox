@@ -92,15 +92,15 @@ typedef struct packet_type {
 typedef struct net_device {
 	char name[MAX_IFNAME_LENGTH];           /**< It is the name the interface.*/
 	unsigned char hw_addr[MAX_ADDR_LEN];    /**< hw address                   */
-	in_addr_t broadcast;                    /**< hw bcast address             */
+	in_addr_t     broadcast;                /**< hw bcast address             */
 	unsigned long state;
 	unsigned char type;                     /**< interface hardware type      */
 	unsigned char addr_len;                 /**< hardware address length      */
-	unsigned int flags;                     /**< interface flags (a la BSD)   */
-	unsigned mtu;                           /**< interface MTU value          */
+	unsigned int  flags;                    /**< interface flags (a la BSD)   */
+	unsigned      mtu;                      /**< interface MTU value          */
 	unsigned long tx_queue_len;             /**< Max frames per queue allowed */
 	unsigned long base_addr;                /**< device I/O address           */
-	unsigned int irq;                       /**< device IRQ number            */
+	unsigned int  irq;                      /**< device IRQ number            */
 //	void *priv;                             /**< pointer to private data      */
 
 	int (*open)(struct net_device *dev);

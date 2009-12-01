@@ -7,7 +7,4 @@
 #ifndef NET_PACK_H_
 #define NET_PACK_H_
 
-
-
-
 #endif /* NET_PACK_H_ */

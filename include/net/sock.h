@@ -1,8 +1,8 @@
 /**
- * \file sock.h
- * \date Mar 17, 2009
- * \author anton
- * \brief Definitions for the AF_INET socket handler.
+ * @file sock.h
+ * @date 17.03.2009
+ * @author Anton Bondarev
+ * @brief Definitions for the AF_INET socket handler.
  */
 
 #ifndef SOCK_H_

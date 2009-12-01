@@ -1,8 +1,8 @@
 /**
- * \file ipconfig.c
- * \date 15.07.09
- * \author sikmir
- * \details  Automatic Configuration of IP -- use DHCP, BOOTP, or
+ * @file ipconfig.c
+ * @date 15.07.09
+ * @author Nikolay Korotky
+ * @details Automatic Configuration of IP -- use DHCP, BOOTP, or
  *  user-supplied information to configure own IP address.
  */
 

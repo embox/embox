@@ -1,9 +1,9 @@
 /**
- * \file skbuff.c
+ * @file skbuff.c
  *
- * \date 20.10.2009
- * \author Anton Bondarev
- * \details this module realize interface with structure sk_buff
+ * @date 20.10.2009
+ * @author Anton Bondarev
+ * @details this module realize interface with structure sk_buff
  * structures sk_buff are presented queue free packet.
  */
 #include "types.h"
@@ -20,8 +20,6 @@
 
 //TODO this define must place in autoconf
 #define QUANTITY_SKB 0x100
-
-
 
 //TODO this define must place in autoconf
 #define QUANTITY_SKB_QUEUE 0x100
@@ -108,6 +106,7 @@ void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk){
 	spin_unlock(sp);
 
 }
+
 /**
  * return head of queue allocated in alloc_skb_queue to the free queue pool
  * and give back all contained sk_buff in this list

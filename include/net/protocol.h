@@ -1,9 +1,8 @@
 /**
- * \file protocol.c
- * \date 12.08.09
- * \author sikmir
+ * @file protocol.c
+ * @date 12.08.09
+ * @author Nikolay Korotky
  */
-
 #ifndef PROTOCOL_H_
 #define PROTOCOL_H_
 
@@ -16,7 +15,7 @@ struct net_protocol {
     int                     (*handler)(struct sk_buff *pack);
     void                    (*err_handler)(struct sk_buff *pack, int info);
     int                     (*gso_send_check)(struct sk_buff *pack);
-    struct sk_buff     *(*gso_segment)(struct sk_buff *pack, int features);
+    struct sk_buff*         (*gso_segment)(struct sk_buff *pack, int features);
     int                     no_policy;
 };
 

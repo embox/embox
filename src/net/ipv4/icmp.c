@@ -1,8 +1,8 @@
 /**
- * \file icmp.c
+ * @file icmp.c
  *
- * \date 14.03.2009
- * \author sunnya
+ * @date 14.03.2009
+ * @author Alexander Batyukov
  */
 #include "string.h"
 #include "common.h"
@@ -115,7 +115,7 @@ static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type, unsigned cha
 }
 
 static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
-		unsigned char code, unsigned char ttl, unsigned char srcaddr[4], unsigned char dstaddr[4]) {
+		unsigned char code, unsigned char ttl, in_addr_t srcaddr, in_addr_t dstaddr) {
 	pack->h.raw = pack->nh.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
 	rebuild_icmp_header(pack, type, code);
@@ -199,8 +199,8 @@ static int icmp_echo(sk_buff_t *recieved_pack) {
 //	rebuild_ip_header(pack, 64, ICMP_PROTO_TYPE, pack->nh.iph->id++, pack->nh.iph->len,
 //			    recieved_pack->nh.iph->saddr, recieved_pack->nh.iph->daddr);
 
-	memcpy (pack->nh.iph->saddr, recieved_pack->nh.iph->daddr, sizeof (pack->nh.iph->saddr));
-	memcpy (pack->nh.iph->daddr, recieved_pack->nh.iph->saddr, sizeof (pack->nh.iph->daddr));
+	pack->nh.iph->saddr = recieved_pack->nh.iph->daddr;
+	pack->nh.iph->daddr = recieved_pack->nh.iph->saddr;
 	pack->nh.iph->id ++;
 	pack->nh.iph->ttl      = 64;
 	pack->nh.iph->frag_off = 0;
@@ -212,7 +212,7 @@ static int icmp_echo(sk_buff_t *recieved_pack) {
 	return 0;
 }
 
-int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
+int icmp_send_echo_request(void *ifdev, in_addr_t dstaddr, int ttl,
 		ICMP_CALLBACK callback) { //type 8
 	LOG_DEBUG("icmp send echo request\n");
 	//TODO icmp req must be variable length
@@ -223,7 +223,6 @@ int icmp_send_echo_request(void *ifdev, unsigned char dstaddr[4], int ttl,
 	//TODO ICMP get net dev
 #if 0
 	pack->ifdev  = ifdev;
-
 	pack->netdev = (struct net_device *)inet_dev_get_netdevice(ifdev);
 #endif
 	pack->len    = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,

@@ -1,8 +1,8 @@
 /**
- * \file ifdev.c
- * \date Jul 18, 2009
- * \author Anton Bondarev
- * \details realizing interface if_device struct (interface device)
+ * @file ifdev.c
+ * @date 18.07.2009
+ * @author Anton Bondarev
+ * @details realizing interface if_device struct (interface device)
  */
 #include "string.h"
 #include "common.h"
@@ -20,11 +20,12 @@ typedef struct _CALLBACK_INFO {
 
 typedef struct _IFDEV_INFO {
     inet_device_t dev;
-    int       is_busy;
+    int           is_busy;
     CALLBACK_INFO cb_info[IFDEV_CBINFO_QUANTITY];
 } IFDEV_INFO;
 
 static IFDEV_INFO ifs_info[NET_INTERFACES_QUANTITY];
+
 IFDEV_INFO *find_ifdev_info_entry(inet_device_t *ifdev){
 	int i;
 	for (i = 0; i < array_len(ifs_info); i ++){
@@ -34,7 +35,7 @@ IFDEV_INFO *find_ifdev_info_entry(inet_device_t *ifdev){
 	}
 	return NULL;
 }
-static inet_device_t * find_free_handler(){
+static inet_device_t *find_free_handler(){
     int i;
     for(i = 0; i < NET_INTERFACES_QUANTITY; i ++){
         if (0 == ifs_info[i].is_busy){
@@ -103,10 +104,10 @@ int inet_dev_listen(void *handler, unsigned short type,
     return alloc_callback(dev, type, callback);
 }
 
-int inet_dev_find_by_ip(const unsigned char *ipaddr) {
+int inet_dev_find_by_ip(const uint32_t ipaddr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-        if (0 == memcmp(ifs_info[i].dev.ipv4_addr, ipaddr, 4)) {
+        if (ifs_info[i].dev.ipv4_addr == ipaddr) {
             return 0;
         }
     }
@@ -125,7 +126,7 @@ void *inet_dev_find_by_name(const char *if_name) {
     return NULL;
 }
 
-int inet_dev_set_interface(char *name, char *ipaddr, char *mask, char *macaddr) {
+int inet_dev_set_interface(char *name, in_addr_t ipaddr, in_addr_t mask, unsigned char *macaddr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
         if (0 == strncmp(name, ifs_info[i].dev.net_dev->name, array_len(ifs_info[i].dev.net_dev->name))) {
@@ -140,27 +141,31 @@ int inet_dev_set_interface(char *name, char *ipaddr, char *mask, char *macaddr) 
     return -1;
 }
 
-int inet_dev_set_ipaddr(void *ifdev, const unsigned char *ipaddr) {
-    if (NULL == ifdev)
+int inet_dev_set_ipaddr(void *ifdev, const in_addr_t ipaddr) {
+    if (NULL == ifdev) {
         return -1;
+    }
     inet_device_t *dev = (inet_device_t *) ifdev;
-    memcpy(dev->ipv4_addr, ipaddr, sizeof(dev->ipv4_addr));
+    dev->ipv4_addr = ipaddr;
     return 0;
 }
 
-int inet_dev_set_mask(void *ifdev, const unsigned char *mask) {
-    if (NULL == ifdev)
+int inet_dev_set_mask(void *ifdev, const in_addr_t mask) {
+    if (NULL == ifdev) {
             return -1;
+    }
     inet_device_t *dev = (inet_device_t *) ifdev;
-    memcpy(dev->mask, mask, sizeof(dev->mask));
+    dev->mask = mask;
     //TODO: fix ip addr format.
-    unsigned long ip_addr = 0x00000000, net_mask = 0x00000000;
+#if 0
+    in_addr_t ip_addr = 0x00000000, net_mask = 0x00000000;
     int i;
     for(i = 0; i < 4; i++) {
             ip_addr += ((0xFF & dev->ipv4_addr[i]) << (3 - i)*8);
             net_mask += ((0xFF & mask[i]) << (3 - i)*8);
     }
-    dev->net_dev->broadcast = ip_addr | ~net_mask;
+#endif
+    dev->net_dev->broadcast = dev->ipv4_addr | ~dev->mask;
     return 0;
 }
 
@@ -173,10 +178,10 @@ int inet_dev_set_macaddr(void *ifdev, const unsigned char *macaddr) {
     return dev->set_mac_address(dev, (void*)macaddr);
 }
 
-unsigned char *inet_dev_get_ipaddr(void *handler) {
+in_addr_t inet_dev_get_ipaddr(void *handler) {
     inet_device_t *dev = (inet_device_t *) handler;
     if (NULL == dev)
-        return NULL;
+        return 0;
     return dev->ipv4_addr;
 }
 #if 0
@@ -198,7 +203,7 @@ void ifdev_rx_callback(sk_buff_t *pack){
 	for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
 		if (NULL != ifdev_info->cb_info[i].func) {
 			if ((NET_TYPE_ALL_PROTOCOL == ifdev_info->cb_info[i].type)
-					|| (ifdev_info->cb_info[i].type == pack->protocol)) {
+			   || (ifdev_info->cb_info[i].type == pack->protocol)) {
 				//may be copy pack for different protocols
 				ifdev_info->cb_info[i].func(pack);
 			}

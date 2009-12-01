@@ -1,8 +1,8 @@
 /**
- * \file arp.c
+ * @file arp.c
  *
- * \date Mar 11, 2009
- * \author anton
+ * @date 11.03.2009
+ * @author Anton Bondarev
  */
 #include "common.h"
 #include "string.h"
@@ -15,27 +15,26 @@
 #include "net/if_arp.h"
 #include "net/arp.h"
 
-
-
 //TODO this is wrong place for this variable
 static unsigned char broadcast_mac_addr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-static unsigned char broadcast_ip_addr[IPV4_ADDR_LENGTH] = {0xFF, 0xFF, 0xFF, 0xFF};
+static in_addr_t broadcast_ip_addr = 0xFFFFFFFF;
 
 ARP_ENTITY arp_table[ARP_CACHE_SIZE];
 
 #define ARP_TABLE_SIZE array_len(arp_table)
 
-static inline int find_entity(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
+static inline int find_entity(void *ifdev, in_addr_t dst_addr) {
 	int i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
 		if(arp_table[i].is_busy &&
-		  (0 == memcmp(arp_table[i].pw_addr, dst_addr, sizeof(arp_table[i].pw_addr))) &&
+		  (arp_table[i].pw_addr == dst_addr) &&
 		  (ifdev == arp_table[i].if_handler)) {
 			return i;
 		}
 	}
 	return -1;
 }
+
 /**
  * this function add entry in arp table if can
  * @param ifdev (handler of ifdev struct) which identificate network interface where address can resolve
@@ -43,7 +42,7 @@ static inline int find_entity(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENG
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-int arp_add_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsigned char macaddr[ETH_ALEN]) {
+int arp_add_entity(void *ifdev, in_addr_t ipaddr, unsigned char macaddr[ETH_ALEN]) {
 	int i;
 	if (-1 != (i = find_entity(ifdev,ipaddr))) {
 		return i;
@@ -52,7 +51,7 @@ int arp_add_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsigned
 		if(0 == arp_table[i].is_busy) {
 			arp_table[i].is_busy = 1;
 			arp_table[i].if_handler = ifdev;
-			memcpy(arp_table[i].pw_addr, ipaddr, sizeof (arp_table[i].pw_addr));
+			arp_table[i].pw_addr = ipaddr;
 			memcpy(arp_table[i].hw_addr, macaddr, sizeof(arp_table[i].hw_addr));
 			return i;
 		}
@@ -67,10 +66,10 @@ int arp_add_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsigned
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-int arp_delete_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsigned char macaddr[ETH_ALEN]) {
+int arp_delete_entity(void *ifdev, in_addr_t ipaddr, unsigned char macaddr[ETH_ALEN]) {
     int i;
     for (i = 0; i < ARP_TABLE_SIZE; i++) {
-       if(0 == memcmp(arp_table[i].pw_addr, ipaddr, array_len(arp_table[i].pw_addr)) ||
+       if( arp_table[i].pw_addr == ipaddr ||
            0 == memcmp(arp_table[i].hw_addr, macaddr, ETH_ALEN) ||
            ifdev == arp_table[i].if_handler) {
                arp_table[i].is_busy = 0;
@@ -79,7 +78,7 @@ int arp_delete_entity(void *ifdev, unsigned char ipaddr[IPV4_ADDR_LENGTH], unsig
     return -1;
 }
 
-static inline sk_buff_t* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
+static inline sk_buff_t* build_arp_pack(void *ifdev, in_addr_t dst_addr) {
 	sk_buff_t *pack;
 
 	if (NULL == ifdev ||
@@ -107,8 +106,8 @@ static inline sk_buff_t* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4
 	pack->nh.arph->plen = IPV4_ADDR_LENGTH;
 	pack->nh.arph->oper = ARPOP_REQUEST;
 	memcpy (pack->nh.arph->sha, pack->netdev->hw_addr, ETH_ALEN);
-	memcpy (pack->nh.arph->spa, inet_dev_get_ipaddr(ifdev), sizeof(pack->nh.arph->spa));
-	memcpy (pack->nh.arph->tpa, dst_addr, sizeof(pack->nh.arph->tpa));
+	pack->nh.arph->spa = inet_dev_get_ipaddr(ifdev);
+	pack->nh.arph->tpa = dst_addr;
 
 	pack->len = 0x3b;
 	pack->protocol = ETH_P_ARP;
@@ -121,7 +120,7 @@ static inline sk_buff_t* build_arp_pack(void *ifdev, unsigned char dst_addr[IPV4
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL
  */
-sk_buff_t *arp_resolve_addr (sk_buff_t * pack, unsigned char dst_addr[IPV4_ADDR_LENGTH]) {
+sk_buff_t *arp_resolve_addr (sk_buff_t *pack, in_addr_t dst_addr) {
 	int i;
 #if 0
 	void *ifdev = pack->ifdev;
@@ -130,7 +129,7 @@ sk_buff_t *arp_resolve_addr (sk_buff_t * pack, unsigned char dst_addr[IPV4_ADDR_
 		return NULL;
 	}
 #endif
-	if (memcmp(dst_addr, broadcast_ip_addr, sizeof(dst_addr))){
+	if (dst_addr != broadcast_ip_addr) {
 		pack->mac.raw = pack->data;
 		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));
 		return pack;
@@ -165,15 +164,16 @@ static int received_resp(sk_buff_t *pack) {
 
 	//TODO need add function for getting ip addr
 #if 0
-	if (0 != memcmp(inet_dev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
+	if (inet_dev_get_ipaddr(pack->ifdev) != arp->tpa) {
 		return -1;
 	}
 #endif
 	//TODO delete this out log output from arp protocol in usual mode
-	char ip[15], mac[18];
-	ipaddr_print(ip, arp->spa);
+	char mac[18];
 	macaddr_print(mac, arp->sha);
-	LOG_DEBUG ("arp received resp from ip %s mac %s", ip, mac);
+	struct in_addr spa;
+	spa.s_addr = arp->spa;
+	LOG_DEBUG ("arp received resp from ip %s mac %s", inet_ntoa(spa), mac);
 
 	//add to arp_table
 	//TODO modify arp table
@@ -189,10 +189,11 @@ static int received_resp(sk_buff_t *pack) {
 static int received_req(sk_buff_t *pack) {
 	sk_buff_t *resp;
 	arphdr_t *arp = pack->nh.arph;
-	char ip[15], mac[18];
-	ipaddr_print(ip, arp->spa);
+	char mac[18];
 	macaddr_print(mac, arp->sha);
-	LOG_DEBUG ("arp received request from ip %s mac %s", ip, mac);
+	struct in_addr spa;
+	spa.s_addr = arp->spa;
+	LOG_DEBUG ("arp received request from ip %s mac %s", inet_ntoa(spa), mac);
 
 	/*add record into arp_table*/
 	//TODO modify arp table
@@ -206,8 +207,8 @@ static int received_req(sk_buff_t *pack) {
 	resp->nh.arph->oper = ARPOP_REPLY;
 	memcpy(resp->nh.arph->sha, pack->netdev->hw_addr, sizeof(resp->nh.arph->sha));
 	memcpy(resp->nh.arph->tha, pack->mac.ethh->h_source, sizeof(resp->nh.arph->tha));
-	memcpy(resp->nh.arph->tpa, pack->nh.arph->spa, sizeof(resp->nh.arph->tpa));
-	memcpy(resp->nh.arph->spa, pack->nh.arph->tpa, sizeof(resp->nh.arph->spa));
+	resp->nh.arph->tpa = pack->nh.arph->spa;
+	resp->nh.arph->spa = pack->nh.arph->tpa;
 
 	dev_queue_xmit(resp);
 	return 0;
@@ -222,7 +223,7 @@ int arp_received_packet(sk_buff_t *pack) {
 	arphdr_t *arp = pack->nh.arph;
 	//TODO need add function for getting ip addr
 #if 0
-	if (0 != memcmp(inet_dev_get_ipaddr(pack->ifdev), arp->tpa, array_len(arp->tpa))) {
+	if (inet_dev_get_ipaddr(pack->ifdev) != arp->tpa) {
 		return 0;
 	}
 #endif

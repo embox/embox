@@ -1,10 +1,9 @@
 /**
- * \file sk_buff.h
+ * @file sk_buff.h
  *
- * \date 20.10.2009
- * \author Anton Bondarev
+ * @date 20.10.2009
+ * @author Anton Bondarev
  */
-
 #ifndef SKBUFF_H_
 #define SKBUFF_H_
 

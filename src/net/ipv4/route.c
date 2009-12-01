@@ -1,8 +1,9 @@
 /**
- * \file route.c
- * \date 16.11.09
- * \author sikmir
- * \brief implementation of the IP router.
+ * @file route.c
+ *
+ * @date 16.11.09
+ * @author Nikolay Korotky
+ * @brief implementation of the IP router.
  */
 
 #include "net/route.h"
@@ -51,14 +52,11 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
 
 int ip_route(sk_buff_t *skbuff) {
 	int i;
-	char buf[15];
 	for(i = 0; i < RT_TABLE_SIZE; i++) {
 		if (rt_table[i].rt_flags & RTF_UP) {
-			ipaddr_print(buf, skbuff->nh.iph->daddr);
-			if( (inet_addr(buf) & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
+			if( (skbuff->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
 				skbuff->netdev = rt_table[i].dev;
-				//TODO: fix addr format.
-				//arp_resolve_addr(skbuff, rt_table[i].rt_gateway);
+				arp_resolve_addr(skbuff, rt_table[i].rt_gateway);
 				return 0;
 			}
 		}
