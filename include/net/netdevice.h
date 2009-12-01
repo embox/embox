@@ -1,14 +1,10 @@
 /**
- * @file net_device.h
+ * @file netdevice.h
  *
- * @brief
- *
- * @details
- *
- * @date Mar 4, 2009
+ * @brief Definitions for the Interfaces handler.
+ * @date 04.03.2009
  * @author Anton Bondarev
  */
-
 #ifndef NET_DEVICE_H_
 #define NET_DEVICE_H_
 

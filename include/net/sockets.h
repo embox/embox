@@ -1,3 +1,9 @@
+/**
+ * @file sockets.h
+ *
+ * @date 01.10.09
+ * @author Andrey Baboshin
+ */
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
@@ -30,5 +36,5 @@ int connect (int s, struct sockaddr *name, socklen_t namelen);
 
 //int send (int s, void *data, int size, unsigned int flags);
 
-#endif //
+#endif /* __SOCKET_H__ */
 

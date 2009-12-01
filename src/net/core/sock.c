@@ -1,8 +1,9 @@
 /**
  * @file sock.c
+ *
+ * @details Generic socket support routines.
  * @date 12.08.09
  * @author Nikolay Korotky
- * @details Generic socket support routines.
  */
 #include "string.h"
 #include "common.h"

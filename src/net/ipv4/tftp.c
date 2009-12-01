@@ -1,8 +1,8 @@
 /**
- * \file tftp.c
+ * @file tftp.c
  *
- * \date Sep 29, 2009
- * \author ababoshin
+ * @date 29.09.2009
+ * @author Andrey Baboshin
  */
 
 #include "string.h"
@@ -11,17 +11,15 @@
 #include "lib/inet/arpa/tftp.h"
 #include "net/net.h"
 #include "net/eth.h"
-#include "net/if_device.h"
+#include "net/inetdevice.h"
 #include "net/inet_sock.h"
 #include "net/net_pack_manager.h"
 #include "lib/inet/netinet/in.h"
 #include "net/socket.h"
 
 //#define TFTP_ADDRESS_TO_SAVE  0x80000000
-	int
-tftp_client_get (const char *const filename,
-		 const in_addr_t server,
-		 const int port, char *buf, int len, const int mode, int *const err) {
+int tftp_client_get (const char *const filename, const in_addr_t server,
+	    const int port, char *buf, int len, const int mode, int *const err) {
 	TRACE("tftp client started\n");
 	int result = 0;
 	int s = -1;

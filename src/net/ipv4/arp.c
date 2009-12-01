@@ -1,15 +1,17 @@
 /**
  * @file arp.c
  *
+ * @brief This module implements the Address Resolution Protocol ARP (RFC 826),
+ * which is used to convert IP addresses into a low-level hardware address.
  * @date 11.03.2009
  * @author Anton Bondarev
  */
 #include "common.h"
 #include "string.h"
 #include "net/skbuff.h"
-#include "net/net_device.h"
+#include "net/netdevice.h"
 #include "net/net.h"
-#include "net/if_device.h"
+#include "net/inetdevice.h"
 #include "net/eth.h"
 #include "net/net_pack_manager.h"
 #include "net/if_arp.h"

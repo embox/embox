@@ -1,9 +1,9 @@
 /**
  * @file route.c
  *
+ * @brief implementation of the IP router.
  * @date 16.11.09
  * @author Nikolay Korotky
- * @brief implementation of the IP router.
  */
 
 #include "net/route.h"

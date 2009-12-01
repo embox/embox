@@ -15,7 +15,6 @@
 #include "net/ip.h"
 #include "net/if_ether.h"
 #include "net/net_pack_manager.h"
-#include "net/net_packet.h"
 
 void fill_sock(struct udp_sock *sk, int type, int proto) {
 	LOG_DEBUG("fill_sock\n");

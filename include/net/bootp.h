@@ -1,3 +1,9 @@
+/**
+ * @file bootp.h
+ *
+ * @date 28.08.09
+ * @author Andrey Baboshin
+ */
 #ifndef __BOOTP_H__
 #define __BOOTP_H__
 

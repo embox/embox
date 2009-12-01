@@ -1,10 +1,10 @@
 /**
- * \file socket.h
+ * @file socket.h
  *
- * \date Mar 19, 2009
- * \author anton, sikmir
+ * @date 19.03.2009
+ * @author Anton Bondarev
+ * @author Nikolay Korotky
  */
-
 #ifndef SOCKET_H_
 #define SOCKET_H_
 

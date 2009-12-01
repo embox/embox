@@ -1,10 +1,9 @@
 /**
- * \file net.h
+ * @file net.h
  *
- * \date Mar 11, 2009
- * \author anton
+ * @date 11.03.2009
+ * @author Anton Bondarev
  */
-
 #ifndef NET_H_
 #define NET_H_
 

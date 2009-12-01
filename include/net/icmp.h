@@ -1,10 +1,10 @@
 /**
  * @file icmp.h
  *
+ * @brief Definitions for the ICMP protocol.
  * @date 14.03.2009
  * @author Alexander Batyukov
  * @author Nikolay Korotky
- * @brief Definitions for the ICMP protocol.
  */
 #ifndef ICMP_H_
 #define ICMP_H_

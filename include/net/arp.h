@@ -2,7 +2,7 @@
  * @file arp.h
  *
  * @brief Definitions for the ARP protocol.
- * @date Mar 11, 2009
+ * @date 11.03.2009
  * @author Anton Bondarev
  */
 #ifndef ARP_H_

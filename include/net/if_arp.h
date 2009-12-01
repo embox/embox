@@ -1,8 +1,9 @@
-/*
- * \file if_arp.h
- * \date 10.08.09
- * \author sikmir
- * \brief Global definitions for the ARP (RFC 826) protocol.
+/**
+ * @file if_arp.h
+ *
+ * @brief Global definitions for the ARP (RFC 826) protocol.
+ * @date 10.08.09
+ * @author Nikolay Korotky
  */
 #ifndef _IF_ARP_H
 #define _IF_ARP_H

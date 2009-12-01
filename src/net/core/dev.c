@@ -1,8 +1,9 @@
 /**
- * \file net_device.c
+ * @file dev.c
  *
- * \date Mar 4, 2009
- * \author Anton Bondarev
+ * @brief Protocol independent device support routines.
+ * @date 04.03.2009
+ * @author Anton Bondarev
  */
 #include "types.h"
 #include "string.h"
@@ -10,8 +11,8 @@
 
 #include "net/skbuff.h"
 #include "net/net.h"
-#include "net/net_device.h"
-#include "net/if_device.h"
+#include "net/netdevice.h"
+#include "net/inetdevice.h"
 
 typedef struct _NET_DEV_INFO {
 	net_device_t       dev;

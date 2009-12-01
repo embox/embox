@@ -1,6 +1,7 @@
 /**
  * @file icmp.c
  *
+ * @brief Implementation of the ICMP protocol layer.
  * @date 14.03.2009
  * @author Alexander Batyukov
  */
@@ -8,7 +9,7 @@
 #include "common.h"
 #include "net/skbuff.h"
 #include "net/net.h"
-#include "net/if_device.h"
+#include "net/inetdevice.h"
 #include "net/eth.h"
 #include "net/icmp.h"
 #include "net/net_pack_manager.h"

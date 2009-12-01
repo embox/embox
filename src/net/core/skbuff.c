@@ -1,10 +1,10 @@
 /**
  * @file skbuff.c
  *
- * @date 20.10.2009
- * @author Anton Bondarev
  * @details this module realize interface with structure sk_buff
  * structures sk_buff are presented queue free packet.
+ * @date 20.10.2009
+ * @author Anton Bondarev
  */
 #include "types.h"
 #include "string.h" /*for memcpy*/
@@ -13,7 +13,7 @@
 #include "lib/list.h"
 #include "net/skbuff.h"
 #include "asm/spin_lock.h"
-#include "net/net_packet.h"
+#include "net/net_pack_manager.h"
 
 /*FIXME this file needs for local_irq_save but in this module we must use spin_lock*/
 #include "asm/sys.h"

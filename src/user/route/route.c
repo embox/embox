@@ -7,7 +7,7 @@
 #include "shell_command.h"
 #include "lib/inet/netinet/in.h"
 #include "net/route.h"
-#include "net/if_device.h"
+#include "net/inetdevice.h"
 
 #define COMMAND_NAME     "route"
 #define COMMAND_DESC_MSG "manipilate routing table"

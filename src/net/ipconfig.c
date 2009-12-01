@@ -1,14 +1,15 @@
 /**
  * @file ipconfig.c
+ *
+ * @details Automatic Configuration of IP -- use DHCP, BOOTP,
+ * or user-supplied information to configure own IP address.
  * @date 15.07.09
  * @author Nikolay Korotky
- * @details Automatic Configuration of IP -- use DHCP, BOOTP, or
- *  user-supplied information to configure own IP address.
  */
 
 #include "common.h"
 #include "net/net.h"
-#include "net/if_device.h"
+#include "net/inetdevice.h"
 #include "misc.h"
 #include "kernel/init.h"
 

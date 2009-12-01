@@ -1,9 +1,9 @@
 /**
- * \file ip_sock.h
+ * @file ip_sock.h
  *
- * \date Mar 18, 2009
- * \author anton
- * \brief Definitions for inet_sock.
+ * @brief Definitions for inet_sock.
+ * @date 18.03.2009
+ * @author Anton Bondarev
  */
 #ifndef INET_SOCK_H_
 #define INET_SOCK_H_
@@ -84,4 +84,3 @@ static inline struct inet_sock *inet_sk(const struct sock *sk) {
 }
 
 #endif /* INET_SOCK_H_ */
-

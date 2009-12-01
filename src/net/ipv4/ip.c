@@ -1,5 +1,5 @@
 /**
- * @file ip_v4.c
+ * @file ip.c
  *
  * @date 17.03.2009
  * @author sunnya
@@ -12,8 +12,8 @@
 #include "net/ip.h"
 #include "net/inet_sock.h"
 #include "net/if_ether.h"
-#include "net/net_packet.h"
-#include "net/net_device.h"
+#include "net/netdevice.h"
+#include "net/inetdevice.h"
 #include "net/route.h"
 
 int ip_received_packet(sk_buff_t *pack) {
@@ -52,7 +52,7 @@ int ip_received_packet(sk_buff_t *pack) {
 	 * Check the destination address, and if it dosn't match
 	 * any of own addresses, retransmit packet according to routing table.
 	 */
-	if(inet_dev_find_by_ip(pack->nh.iph->daddr)) {
+	if(ip_dev_find(pack->nh.iph->daddr) == NULL) {
 		if(!ip_route(pack)) {
 			dev_queue_xmit(pack);
 		}

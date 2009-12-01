@@ -8,7 +8,7 @@
 #include "net/icmp.h"
 #include "net/net.h"
 #include "net/eth.h"
-#include "net/if_device.h"
+#include "net/inetdevice.h"
 #include "net/skbuff.h"
 #include "misc.h"
 

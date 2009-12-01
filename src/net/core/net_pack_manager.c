@@ -1,16 +1,16 @@
 /**
- * @file net_pack.c
+ * @file net_pack_manager.c
  *
- * @date Mar 7, 2009
- * @author anton
+ * @date 07.03.2009
+ * @author Anton Bondarev
  */
 #include "string.h"
 #include "common.h"
-#include "net/net_device.h"
-#include "net/net_packet.h"
+#include "net/netdevice.h"
 #include "lib/list.h"
 #include "asm/spin_lock.h"
 #include "kernel/module.h"
+#include "net/net_pack_manager.h"
 /*FIXME this file needs for local_irq_save but in this module we must use spin_lock*/
 #include "asm/sys.h"
 

@@ -1,9 +1,9 @@
 /**
  * @file ip.h
  *
+ * @brief Definitions for the IP protocol.
  * @date 11.03.2009
  * @author Anton Bondarev
- * @brief Definitions for the IP protocol.
  */
 #ifndef IP_H_
 #define IP_H_

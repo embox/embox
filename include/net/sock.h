@@ -1,8 +1,9 @@
 /**
  * @file sock.h
+ *
+ * @brief Definitions for the AF_INET socket handler.
  * @date 17.03.2009
  * @author Anton Bondarev
- * @brief Definitions for the AF_INET socket handler.
  */
 
 #ifndef SOCK_H_

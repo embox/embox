@@ -1,14 +1,15 @@
 /**
  * @file ifdev.c
+ *
+ * @details realizing interface if_device struct (interface device)
  * @date 18.07.2009
  * @author Anton Bondarev
- * @details realizing interface if_device struct (interface device)
  */
 #include "string.h"
 #include "common.h"
 #include "net/net.h"
-#include "net/if_device.h"
-#include "net/net_device.h"
+#include "net/inetdevice.h"
+#include "net/netdevice.h"
 #include "net/skbuff.h"
 
 #define IFDEV_CBINFO_QUANTITY 8
@@ -104,14 +105,14 @@ int inet_dev_listen(void *handler, unsigned short type,
     return alloc_callback(dev, type, callback);
 }
 
-int inet_dev_find_by_ip(const uint32_t ipaddr) {
+struct net_device *ip_dev_find(in_addr_t addr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-        if (ifs_info[i].dev.ipv4_addr == ipaddr) {
-            return 0;
+        if (ifs_info[i].dev.ipv4_addr == addr) {
+            return ifs_info[i].dev.net_dev;
         }
     }
-    return -1;
+    return NULL;
 }
 
 void *inet_dev_find_by_name(const char *if_name) {

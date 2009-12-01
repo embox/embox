@@ -1,16 +1,16 @@
 /**
  * @file udp.c
  *
+ * @details The User Datagram Protocol (UDP).
  * @date 26.03.2009
  * @author Nikolay Korotky
- * @details The User Datagram Protocol (UDP).
  */
 #include "string.h"
 #include "common.h"
 #include "net/skbuff.h"
 #include "net/net.h"
 #include "net/eth.h"
-#include "net/if_device.h"
+#include "net/inetdevice.h"
 #include "net/net_pack_manager.h"
 #include "net/udp.h"
 #include "net/ip.h"

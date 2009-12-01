@@ -2,7 +2,7 @@
  * @file ipaux.c
  *
  * @date 20.03.2009
- * @author Anton
+ * @author Anton Bondarev
  */
 
 #define LITTLE 0// big endian only

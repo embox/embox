@@ -1,10 +1,10 @@
 /**
- * \file udp.h
+ * @file udp.h
  *
- * \date 26.03.2009
- * \author sikmir
+ * @brief Definitions for the UDP module.
+ * @date 26.03.2009
+ * @author Nikolay Korotky
  */
-
 #ifndef UDP_H_
 #define UDP_H_
 

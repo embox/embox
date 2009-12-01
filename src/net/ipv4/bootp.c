@@ -1,5 +1,8 @@
 /**
- * \file bootp.c
+ * @file bootp.c
+ *
+ * @date 28.08.09
+ * @author Andrey Baboshin
  */
 
 #include "types.h"
@@ -10,8 +13,7 @@
 #include "net/socket.h"
 #include "lib/inet/netinet/in.h"
 #include "net/if_ether.h"
-#include "net/net_device.h"
-#include "net/net_packet.h"
+#include "net/netdevice.h"
 #include "net/net_pack_manager.h"
 #include "string.h"
 

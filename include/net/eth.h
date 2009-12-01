@@ -1,17 +1,16 @@
 /**
- * \file eth.h
+ * @file eth.h
  *
- * \date Mar 5, 2009
- * \author anton
+ * @date 5.03.2009
+ * @author Anton Bondarev
  */
-
 #ifndef ETH_H_
 #define ETH_H_
 
 #define NET_TYPE_ALL_PROTOCOL 0
 
-#include "net/net_device.h"
-#include "net/net_packet.h"
+#include "net/netdevice.h"
+#include "net/skbuff.h"
 
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 

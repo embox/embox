@@ -1,5 +1,6 @@
 /**
  * @file eth.c
+ *
  * @date 4.03.2009
  * @author Anton Bondarev
  */
@@ -7,15 +8,14 @@
 #include "string.h"
 #include "net/skbuff.h"
 #include "net/net_pack_manager.h"
-#include "net/net_packet.h"
-#include "net/net_device.h"
+#include "net/netdevice.h"
 #include "net/arp.h"
 #include "net/udp.h"
 #include "net/net.h"
 #include "net/eth.h"
 #include "net/ip.h"
 #include "net/icmp.h"
-#include "net/if_device.h"
+#include "net/inetdevice.h"
 
 void packet_dump(sk_buff_t *);
 

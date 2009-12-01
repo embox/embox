@@ -1,5 +1,6 @@
 /**
- * @file if_device.h
+ * @file inetdevice.h
+ *
  * @date 18.07.2009
  * @author Anton Bondarev
  */
@@ -41,10 +42,10 @@ extern int inet_dev_listen(void *handler, unsigned short type, ETH_LISTEN_CALLBA
  * find known ifdev device has pointed ip address
  * @param ipaddr - ip devices address
  */
-extern int inet_dev_find_by_ip(const in_addr_t ipaddr);
+extern struct net_device *ip_dev_find(in_addr_t addr);
 
 /**
- * Get ifdev by name
+ * Get inet_devive by name
  * @param if_name - interface name
  */
 extern void *inet_dev_find_by_name(const char *if_name);
