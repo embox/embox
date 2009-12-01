@@ -15,6 +15,7 @@
 #include "net/netdevice.h"
 #include "net/inetdevice.h"
 #include "net/route.h"
+#include "net/checksum.h"
 
 int ip_received_packet(sk_buff_t *pack) {
 	LOG_DEBUG("ip packet received\n");
@@ -36,7 +37,7 @@ int ip_received_packet(sk_buff_t *pack) {
 	}
 	unsigned short tmp = iph->check;
 	iph->check = 0;
-	if (tmp != calc_checksumm(pack->nh.raw, IP_HEADER_SIZE)) {
+	if (tmp != ptclbsum(pack->nh.raw, IP_HEADER_SIZE)) {
 		LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors += 1;
 		return -1;
@@ -82,7 +83,7 @@ int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
 	hdr->frag_off = IP_DF;
 	hdr->proto = proto;
 	hdr->check = 0;
-	hdr->check = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
+	hdr->check = ptclbsum(pack->nh.raw, IP_HEADER_SIZE);
 	return 0;
 }
 

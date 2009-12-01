@@ -1,13 +1,14 @@
 /**
- * @file ipaux.c
+ * @file checksum.h
  *
+ * @brief Checksumming functions for IP, TCP, UDP and so on.
  * @date 20.03.2009
  * @author Anton Bondarev
  */
 
-#define LITTLE 0// big endian only
+//#define LITTLE 0// big endian only
 
-unsigned short ptclbsum(unsigned char *addr, int len) {
+static inline unsigned short ptclbsum(void *addr, int len) {
 
 	register long sum;
 	unsigned char oddbyte;
@@ -28,7 +29,7 @@ unsigned short ptclbsum(unsigned char *addr, int len) {
 	sum = (sum >> 16) + (sum & 0xffff);
 	sum += (sum >> 16);
 
-	return sum & 0xffff;
+	return ~(sum & 0xffff);
 
 /*
 	unsigned long losum, hisum, mdsum, x;
@@ -109,7 +110,8 @@ unsigned short ptclbsum(unsigned char *addr, int len) {
  * Check : 0x29B1 ("123456789")
  * MaxLen: 4095 byte (32767 bit)
  */
-unsigned short Crc16( unsigned char *pcBlock, unsigned short len ) {
+#if 0
+static inline unsigned short Crc16( unsigned char *pcBlock, unsigned short len ) {
         unsigned short crc = 0xFFFF;
 	unsigned char i;
 
@@ -122,3 +124,4 @@ unsigned short Crc16( unsigned char *pcBlock, unsigned short len ) {
         }
 	return crc;
 }
+#endif

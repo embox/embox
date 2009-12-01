@@ -15,6 +15,7 @@
 #include "net/net_pack_manager.h"
 #include "net/ip.h"
 #include "net/if_ether.h"
+#include "net/checksum.h"
 
 #define CB_INFO_SIZE        0x10
 
@@ -99,10 +100,6 @@ int icmp_abort_echo_request(void *ifdev) {
 	interface_abort(ifdev);
 }
 
-unsigned short calc_checksumm(unsigned char *hdr, int size) {
-	return ~ptclbsum(hdr, size);
-}
-
 /**
  * Fill ICMP header
  */
@@ -111,7 +108,7 @@ static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type, unsigned cha
 	hdr->type    = type;
 	hdr->code    = code;
 	hdr->checksum = 0;
-	hdr->checksum = calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE);
+	hdr->checksum = ptclbsum(pack->h.raw, ICMP_HEADER_SIZE);
 	return 0;
 }
 
@@ -194,7 +191,7 @@ static int icmp_echo(sk_buff_t *recieved_pack) {
 	}
 	LOG_DEBUG("%X\n",  pack->h.icmph->header_check_summ);
 */	pack->h.icmph->checksum = 0;
-	pack->h.icmph->checksum = calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE );
+	pack->h.icmph->checksum = ptclbsum(pack->h.raw, ICMP_HEADER_SIZE );
 
 	//fill ip header
 //	rebuild_ip_header(pack, 64, ICMP_PROTO_TYPE, pack->nh.iph->id++, pack->nh.iph->len,
@@ -206,7 +203,7 @@ static int icmp_echo(sk_buff_t *recieved_pack) {
 	pack->nh.iph->ttl      = 64;
 	pack->nh.iph->frag_off = 0;
 	pack->nh.iph->check    = 0;
-	pack->nh.iph->check    = calc_checksumm(pack->nh.raw, IP_HEADER_SIZE);
+	pack->nh.iph->check    = ptclbsum(pack->nh.raw, IP_HEADER_SIZE);
 
 	pack->len -= ETH_HEADER_SIZE;
 	dev_queue_xmit(pack);
@@ -291,7 +288,7 @@ int icmp_rcv(sk_buff_t *pack) {
 	//TODO: check summ icmp? not need, if ip checksum is ok.
 	unsigned short tmp = icmph->checksum;
 	icmph->checksum = 0;
-	if( tmp !=  calc_checksumm(pack->h.raw, ICMP_HEADER_SIZE)) {
+	if( tmp != ptclbsum(pack->h.raw, ICMP_HEADER_SIZE)) {
 		LOG_ERROR("bad icmp checksum\n");
 		return -1;
 	}

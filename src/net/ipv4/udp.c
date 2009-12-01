@@ -17,6 +17,7 @@
 #include "net/icmp.h"
 #include "net/socket.h"
 #include "net/if_ether.h"
+#include "net/checksum.h"
 #include "lib/inet/netinet/in.h"
 
 int udp_rcv(sk_buff_t *pack) {
@@ -67,7 +68,7 @@ int udpsock_push(sk_buff_t *pack) {
 	}
 	unsigned short tmp = uh->check;
 	uh->check          = 0;
-	if ( tmp !=  calc_checksumm(uh, UDP_HEADER_SIZE)) {
+	if ( tmp !=  ptclbsum(uh, UDP_HEADER_SIZE)) {
 		LOG_ERROR("bad udp checksum\n");
 		return -1;
 	}
@@ -91,7 +92,7 @@ static int rebuild_udp_header(sk_buff_t *pack, unsigned short source, unsigned s
 	hdr->dest   = dest;
 	hdr->len    = UDP_HEADER_SIZE;
 	hdr->check  = 0;
-	hdr->check  = calc_checksumm(hdr, UDP_HEADER_SIZE);
+	hdr->check  = ptclbsum(hdr, UDP_HEADER_SIZE);
 	return 0;
 }
 

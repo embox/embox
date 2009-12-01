@@ -15,6 +15,7 @@
 #include "net/if_ether.h"
 #include "net/netdevice.h"
 #include "net/net_pack_manager.h"
+#include "net/checksum.h"
 #include "string.h"
 
 #ifdef DHCP_SUPPORT
@@ -225,7 +226,7 @@ int bootp_discover (void* ifdev) {
 		pack->h.uh->dest = htons (PORT_BOOTP_SERVER);
 		pack->h.uh->len = BOOTP_HEADER_SIZE + UDP_HEADER_SIZE;
 		pack->h.uh->check = 0;
-//		pack->h.uh->check = calc_checksumm (pack->h.uh, BOOTP_HEADER_SIZE + UDP_HEADER_SIZE);
+//		pack->h.uh->check = ptclbsum(pack->h.uh, BOOTP_HEADER_SIZE + UDP_HEADER_SIZE);
 
 		arp_add_entity (ifdev, daddr, pack->mac.ethh->h_dest);
 		TRACE("eth_send\n");
