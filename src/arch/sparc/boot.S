@@ -119,6 +119,7 @@ register_window_clean:
 	set 0x81000f, %g1 // TODO wtf? -- Eldar
 	sta %g1, [%g0] 0x2
 
+
 	/* give us a stack! */
 	set __stack, %fp
 	sub %fp, 0x60, %sp

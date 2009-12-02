@@ -56,6 +56,7 @@ int hardware_init_hook() {
 	uart_init();
 	sys_timers_init();
 
+	TRACE("\nStarting Monitor...\n");
 
 	for (level = 0; level <= INIT_MAX_LEVEL; level++) {
 		TRACE("\n********* Init level %d:\n", level);
@@ -81,6 +82,5 @@ int hardware_init_hook() {
 		}
 	}
 
-	TRACE("\nStarting Monitor...\n");
 	return 0;
 }

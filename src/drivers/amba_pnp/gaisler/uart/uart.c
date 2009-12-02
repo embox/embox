@@ -66,7 +66,7 @@ typedef struct _UART_STRUCT {
 	volatile uint32_t scaler; /* 0xC */
 } UART_STRUCT;
 
-static volatile UART_STRUCT *dev_regs = NULL;
+static volatile UART_STRUCT * dev_regs = NULL;
 
 #define ASSERT_INIT_DONE() assert_not_null(dev_regs)
 
