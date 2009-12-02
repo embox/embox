@@ -78,16 +78,17 @@ int uart_init() {
 	if (NULL != dev_regs)
 		return -1;
 
+#ifndef SIMULATION_TRG
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
+#else
+	amba_dev.bar[0].start = UART_BASE;
+	amba_dev.dev_info.irq = UART_IRQ;
+#endif
 
-	if (UART_BASE != amba_dev.bar[0].start) {
-		TRACE ("uart base is %x instead of correct value %x\n", amba_dev.bar[0].start, UART_BASE);
-		return -1;
-	}
-	if (UART_IRQ != amba_dev.dev_info.irq) {
-		TRACE ("uart irq is %d instead of correct value %d", amba_dev.dev_info.irq, UART_IRQ);
-		return -1;
-	}
+#if defined(UART_BASE) && defined(UART_IRQ)
+	assert(UART_BASE == amba_dev.bar[0].start);
+	assert(UART_IRQ == amba_dev.dev_info.irq);
+#endif
 
 	dev_regs = (UART_STRUCT *) amba_dev.bar[0].start;
 	irq = amba_dev.dev_info.irq;
