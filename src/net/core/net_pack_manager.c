@@ -4,15 +4,12 @@
  * @date 07.03.2009
  * @author Anton Bondarev
  */
-#include "string.h"
 #include "common.h"
 #include "net/netdevice.h"
 #include "lib/list.h"
 #include "asm/spin_lock.h"
 #include "kernel/module.h"
 #include "net/net_pack_manager.h"
-/*FIXME this file needs for local_irq_save but in this module we must use spin_lock*/
-#include "asm/sys.h"
 
 typedef struct _NET_BUFF_INFO {
 	struct list_head list;

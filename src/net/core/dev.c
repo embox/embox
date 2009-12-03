@@ -143,3 +143,37 @@ void dev_add_pack(struct packet_type *pt){
 void dev_remove_pack(struct packet_type *pt){
 
 }
+
+int dev_open(struct net_device *dev) {
+	int ret = 0;
+	/* Is it already up? */
+        if (dev->flags & IFF_UP) {
+                return 0;
+        }
+        if (dev->open) {
+                ret = dev->open(dev);
+        } else {
+    		LOG_ERROR("ifdev up: can't find open function in net_device with name\n");
+        }
+        if (!ret) {
+                /* Set the flags. */
+                //TODO: IFF_RUNNING ?
+                dev->flags |= IFF_UP|IFF_RUNNING;
+        }
+        return ret;
+}
+
+int dev_close(struct net_device *dev) {
+	if (!(dev->flags & IFF_UP)) {
+                return 0;
+	}
+	if (dev->stop) {
+		dev->stop(dev);
+	} else {
+		LOG_ERROR("ifdev down: can't find stop function in net_device with name\n");
+	}
+	/* Device is now down. */
+	//TODO: IFF_RUNNING ?
+	dev->flags &= ~IFF_UP|IFF_RUNNING;
+	return 0;
+}

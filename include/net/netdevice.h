@@ -133,6 +133,18 @@ extern void dev_add_pack(struct packet_type *pt);
 extern void dev_remove_pack(struct packet_type *pt);
 
 /**
+ * Pepare an interface for use.
+ * @param dev device to open
+ */
+extern int dev_open(struct net_device *dev);
+
+/**
+ * Shutdown an interface.
+ * @param dev device to close
+ */
+extern int dev_close(struct net_device *dev);
+
+/**
  * this function call ip protocol,
  * it call rebuild mac header function, if can resolve dest addr else it send arp packet and drop this packet
  * and send packet by calling hard_start_xmit() function

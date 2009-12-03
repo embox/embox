@@ -85,6 +85,7 @@ static int free_callback(in_device_t *dev, ETH_LISTEN_CALLBACK callback) {
     }
     return -1;
 }
+
 int inet_dev_init() {
     return 0;
 }
@@ -246,12 +247,7 @@ int ifdev_up(const char *iname){
         LOG_ERROR("ifdev up: can't find net_device with name\n", iname);
         return -1;
     }
-    if (NULL == ifhandler->net_dev->open) {
-        LOG_ERROR("ifdev up: can't find open function in net_device with name\n", iname);
-        return -1;
-    }
-    ifhandler->net_dev->flags |= (IFF_UP|IFF_RUNNING);
-    return ifhandler->net_dev->open(ifhandler->net_dev);
+    return dev_open(ifhandler->net_dev);
 }
 
 int ifdev_down(const char *iname){
@@ -264,13 +260,7 @@ int ifdev_down(const char *iname){
             LOG_ERROR("ifdev down: can't find net_device with name\n", iname);
             return -1;
         }
-    if (NULL == ifhandler->net_dev->stop) {
-        LOG_ERROR("ifdev down: can't find stop function in net_device with name\n", iname);
-        return -1;
-    }
-    free_handler(ifhandler);
-    ifhandler->net_dev->flags &= ~(IFF_UP|IFF_RUNNING);
-    return ifhandler->net_dev->stop(ifhandler->net_dev);
+    return dev_close(ifhandler->net_dev);
 }
 
 int ifdev_set_debug_mode(const char *iname, unsigned int type_filter){
