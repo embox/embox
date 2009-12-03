@@ -191,7 +191,7 @@
  *
  * Then @em trap_handler if it needs a trap frame (ie. it has to call c-code
  * and the trap cannot be handled in-window) then it executes the
- * @link SAVE_ALL @endlink macro in entry.S which jumps here doing the
+ * SAVE_ALL macro in entry.S which jumps here doing the
  * following:
 @code
 	sethi %hi(trap_setup_begin), %t_retpc
@@ -205,7 +205,7 @@
  * @li when jumping here:  @em \%t_twinmask and @em \%t_retpc.
  *
  * It is assumed that these registers are <b>not touched at all</b> before
- * executing @link SAVE_ALL @endlink macro.
+ * executing SAVE_ALL macro.
  *
  */	.global trap_setup_begin
 trap_setup_begin:
