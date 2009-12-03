@@ -53,6 +53,34 @@ typedef struct net_device_stats {
 	unsigned long tx_window_errors;
 } net_device_stats_t;
 
+enum netdev_state_t {
+        __LINK_STATE_START,
+        __LINK_STATE_PRESENT,
+        __LINK_STATE_NOCARRIER,
+        __LINK_STATE_LINKWATCH_PENDING,
+        __LINK_STATE_DORMANT,
+};
+
+/*
+ * This structure defines the management hooks for network devices.
+ * The following hooks can be defined; unless noted otherwise, they are
+ * optional and can be filled with a null pointer.
+ */
+struct net_device_ops {
+        int (*ndo_open)(struct net_device *dev);
+        int (*ndo_stop)(struct net_device *dev);
+        int (*ndo_start_xmit)(struct sk_buff *pack, struct net_device *dev);
+        int (*set_mac_address)(struct net_device *dev, void *addr);
+        net_device_stats_t *(*get_stats)(struct net_device *dev);
+};
+
+struct header_ops {
+	int (*rebuild)(struct sk_buff *pack);
+	int (*create)(struct sk_buff *pack, struct net_device *dev,
+	              unsigned short type, void *daddr,
+	              void *saddr, unsigned len);
+};
+
 /**
  * structure for register incoming protocol packets type
  */
@@ -87,15 +115,8 @@ typedef struct net_device {
 	unsigned long base_addr;                /**< device I/O address           */
 	unsigned int  irq;                      /**< device IRQ number            */
 	net_device_stats_t stats;
-
-	int (*open)(struct net_device *dev);
-	int (*stop)(struct net_device *dev);
-	int (*hard_start_xmit)(struct sk_buff *pack, struct net_device *dev);
-	int (*hard_header)(struct sk_buff *pack, struct net_device *dev,
-			unsigned short type, void *daddr, void *saddr, unsigned tot_len);
-	int (*rebuild_header)(struct sk_buff *pack);
-	net_device_stats_t *(*get_stats)(struct net_device *dev);
-	int (*set_mac_address)(struct net_device *dev, void *addr);
+	const struct net_device_ops *netdev_ops;/**< Management operations        */
+	const struct header_ops *header_ops;    /**< Hardware header description  */
 } net_device_t;
 
 /**
@@ -166,7 +187,7 @@ extern int dev_change_flags(struct net_device *dev, unsigned flags);
  * this function call ip protocol,
  * it call rebuild mac header function,
  * if can resolve dest addr else it send arp packet and drop this packet
- * and send packet by calling hard_start_xmit() function
+ * and send packet by calling ndo_start_xmit() function
  * return 0 if success else -1
  */
 extern int dev_queue_xmit(struct sk_buff *pack);

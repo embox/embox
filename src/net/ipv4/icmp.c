@@ -255,7 +255,7 @@ void __init icmp_init() {
 int icmp_rcv(sk_buff_t *pack) {
 	LOG_DEBUG("icmp packet received\n");
 	icmphdr_t *icmph = pack->h.icmph;
-	net_device_stats_t *stats = pack->netdev->get_stats(pack->netdev);
+	net_device_stats_t *stats = pack->netdev->netdev_ops->get_stats(pack->netdev);
 	/**
 	 * 18 is the highest 'known' ICMP type. Anything else is a mystery
 	 * RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently

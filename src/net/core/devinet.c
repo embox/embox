@@ -176,7 +176,7 @@ int inet_dev_set_macaddr(void *ifdev, const unsigned char *macaddr) {
 	if (NULL == dev) {
     		return -1;
     	}
-	return dev->set_mac_address(dev, (void*)macaddr);
+	return dev->netdev_ops->set_mac_address(dev, (void*)macaddr);
 }
 
 in_addr_t inet_dev_get_ipaddr(void *handler) {

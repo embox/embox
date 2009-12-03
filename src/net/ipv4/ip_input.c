@@ -21,7 +21,7 @@
 int ip_rcv(sk_buff_t *pack) {
 	LOG_DEBUG("ip packet received\n");
 	pack->h.raw = pack->nh.raw + IP_HEADER_SIZE;
-	net_device_stats_t *stats = pack->netdev->get_stats(pack->netdev);
+	net_device_stats_t *stats = pack->netdev->netdev_ops->get_stats(pack->netdev);
 	iphdr_t *iph = pack->nh.iph;
 	/**
 	 *   RFC1122: 3.1.2.2 MUST silently discard any IP frame that fails the checksum.

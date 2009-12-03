@@ -87,18 +87,20 @@ static int eth_mac_addr(struct net_device *dev, void *p) {
         return 0;
 }
 
-void ether_setup(net_device_t *dev) {
-    dev->rebuild_header     = eth_rebuild_header;
-    dev->hard_header        = eth_header;
-    dev->set_mac_address    = eth_mac_addr;
+const struct header_ops eth_header_ops = {
+	.rebuild       = eth_rebuild_header,
+	.create        = eth_header
+};
 
-    dev->type               = ARPHRD_ETHER;
-    dev->addr_len           = ETH_ALEN;
-    dev->flags              = IFF_BROADCAST|IFF_MULTICAST;
-    dev->irq                = 12;
-    dev->base_addr          = 0xCF000000;
-    dev->tx_queue_len       = 1000;
-//    dev->broadcast          = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+void ether_setup(net_device_t *dev) {
+    dev->header_ops    = &eth_header_ops;
+    dev->type          = ARPHRD_ETHER;
+    dev->addr_len      = ETH_ALEN;
+    dev->flags         = IFF_BROADCAST|IFF_MULTICAST;
+    dev->irq           = 12;
+    dev->base_addr     = 0xCF000000;
+    dev->tx_queue_len  = 1000;
+//    dev->broadcast   = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 }
 
 net_device_t *alloc_etherdev(int num) {

@@ -72,17 +72,17 @@ int dev_queue_xmit(struct sk_buff *pack) {
 	if ((NULL == pack) || (NULL == pack->netdev)) {
     		return -1;
 	}
-	stats = pack->netdev->get_stats(pack->netdev);
+	stats = pack->netdev->netdev_ops->get_stats(pack->netdev);
 
 	if (ETH_P_ARP != pack->protocol) {
-    		if (-1 == dev->net_dev->rebuild_header(pack)) {
+    		if (-1 == dev->net_dev->header_ops->rebuild(pack)) {
         		kfree_skb(pack);
         		stats->tx_err += 1;
         		return -1;
     		}
 	}
 
-	if (-1 == pack->netdev->hard_start_xmit(pack, pack->netdev)) {
+	if (-1 == pack->netdev->netdev_ops->ndo_start_xmit(pack, pack->netdev)) {
     		kfree_skb(pack);
     		stats->tx_err += 1;
     		return -1;
@@ -148,12 +148,18 @@ int dev_open(struct net_device *dev) {
         if (dev->flags & IFF_UP) {
                 return 0;
         }
-        if (dev->open) {
-                ret = dev->open(dev);
+
+        dev->state |= __LINK_STATE_START;
+
+        if (dev->netdev_ops->ndo_open) {
+                ret = dev->netdev_ops->ndo_open(dev);
         } else {
     		LOG_ERROR("ifdev up: can't find open function in net_device with name\n");
         }
-        if (!ret) {
+
+        if (ret) {
+    		dev->state &= ~__LINK_STATE_START;
+        } else {
                 /* Set the flags. */
                 //TODO: IFF_RUNNING ?
                 dev->flags |= IFF_UP|IFF_RUNNING;
@@ -165,8 +171,11 @@ int dev_close(struct net_device *dev) {
 	if (!(dev->flags & IFF_UP)) {
                 return 0;
 	}
-	if (dev->stop) {
-		dev->stop(dev);
+
+	dev->state &= ~__LINK_STATE_START;
+
+	if (dev->netdev_ops->ndo_stop) {
+		dev->netdev_ops->ndo_stop(dev);
 	} else {
 		LOG_ERROR("ifdev down: can't find stop function in net_device with name\n");
 	}
