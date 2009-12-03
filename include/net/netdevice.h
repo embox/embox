@@ -86,7 +86,7 @@ typedef struct net_device {
 	unsigned long tx_queue_len;             /**< Max frames per queue allowed */
 	unsigned long base_addr;                /**< device I/O address           */
 	unsigned int  irq;                      /**< device IRQ number            */
-//	void *priv;                             /**< pointer to private data      */
+	net_device_stats_t stats;
 
 	int (*open)(struct net_device *dev);
 	int (*stop)(struct net_device *dev);
