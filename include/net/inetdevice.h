@@ -7,19 +7,19 @@
 #ifndef INETDEVICE_H_
 #define INETDEVICE_H_
 
-#include "net/etherdevice.h"
-#include "net/net.h"
+#include <net/etherdevice.h>
+#include <net/net.h>
 
 /**
  * structute of inet(IP) device
  */
 typedef struct in_device {
-    in_addr_t         ipv4_addr;
     struct net_device *net_dev;
-    in_addr_t         mask;
-    /*TODO gw must be in route table*/
-    //unsigned char gw[IPV4_ADDR_LENGTH];
-    unsigned char ipv4_addr_length;
+    in_addr_t         ifa_address;
+    in_addr_t         ifa_mask;
+    in_addr_t         ifa_broadcast;
+    in_addr_t         ifa_anycast;
+    unsigned char     ipv4_addr_length;
 } in_device_t;
 
 extern int inet_dev_init();

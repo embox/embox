@@ -110,7 +110,7 @@ int inet_dev_listen(void *handler, unsigned short type,
 struct net_device *ip_dev_find(in_addr_t addr) {
     int i;
     for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-        if (ifs_info[i].dev.ipv4_addr == addr) {
+        if (ifs_info[i].dev.ifa_address == addr) {
             return ifs_info[i].dev.net_dev;
         }
     }
@@ -149,7 +149,7 @@ int inet_dev_set_ipaddr(void *ifdev, const in_addr_t ipaddr) {
         return -1;
     }
     in_device_t *dev = (in_device_t *) ifdev;
-    dev->ipv4_addr = ipaddr;
+    dev->ifa_address = ipaddr;
     return 0;
 }
 
@@ -158,17 +158,8 @@ int inet_dev_set_mask(void *ifdev, const in_addr_t mask) {
             return -1;
     }
     in_device_t *dev = (in_device_t *) ifdev;
-    dev->mask = mask;
-    //TODO: fix ip addr format.
-#if 0
-    in_addr_t ip_addr = 0x00000000, net_mask = 0x00000000;
-    int i;
-    for(i = 0; i < 4; i++) {
-            ip_addr += ((0xFF & dev->ipv4_addr[i]) << (3 - i)*8);
-            net_mask += ((0xFF & mask[i]) << (3 - i)*8);
-    }
-#endif
-    dev->net_dev->broadcast = dev->ipv4_addr | ~dev->mask;
+    dev->ifa_mask = mask;
+    dev->ifa_broadcast = dev->ifa_address | ~dev->ifa_mask;
     return 0;
 }
 
@@ -185,7 +176,7 @@ in_addr_t inet_dev_get_ipaddr(void *handler) {
     in_device_t *dev = (in_device_t *) handler;
     if (NULL == dev)
         return 0;
-    return dev->ipv4_addr;
+    return dev->ifa_address;
 }
 #if 0
 /**

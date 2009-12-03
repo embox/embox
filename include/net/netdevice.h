@@ -9,25 +9,9 @@
 #define NET_DEVICE_H_
 
 #include <net/if_ether.h>
-#include "lib/inet/netinet/in.h"
-//TODO this must place in config file
-#define NET_DEVICES_QUANTITY     0x4
-#define MAX_IFNAME_LENGTH        0x6
-
-/* Standard interface flags (net_device->flags). */
-#define IFF_UP          0x1             /**< interface is up              */
-#define IFF_BROADCAST   0x2             /**< broadcast address valid      */
-#define IFF_DEBUG       0x4             /**< turn on debugging            */
-#define IFF_LOOPBACK    0x8             /**< is a loopback net            */
-#define IFF_POINTOPOINT 0x10            /**< interface is has p-p link    */
-#define IFF_NOTRAILERS  0x20            /**< avoid use of trailers        */
-#define IFF_RUNNING     0x40            /**< interface RFC2863 OPER_UP    */
-#define IFF_NOARP       0x80            /**< no ARP protocol              */
-#define IFF_PROMISC     0x100           /**< receive all packets          */
-#define IFF_ALLMULTI    0x200           /**< receive all multicast packets*/
-#define IFF_MULTICAST   0x1000          /**< Supports multicast           */
-
-struct sk_buff;
+#include <net/if.h>
+#include <net/skbuff.h>
+#include <lib/inet/netinet/in.h>
 
 /**
  * Network device statistics structure.
@@ -86,10 +70,9 @@ typedef struct packet_type {
  * structure of net device
  */
 typedef struct net_device {
-	char name[MAX_IFNAME_LENGTH];           /**< It is the name the interface.*/
+	char name[IFNAMSIZ];                    /**< It is the name the interface.*/
 	unsigned char hw_addr[MAX_ADDR_LEN];    /**< hw address                   */
-	//TODO: hw broadcast
-	in_addr_t     broadcast;                /**< hw bcast address             */
+	unsigned char broadcast[MAX_ADDR_LEN];  /**< hw bcast address             */
 	unsigned long state;
 	unsigned char type;                     /**< interface hardware type      */
 	unsigned char addr_len;                 /**< hardware address length      */
