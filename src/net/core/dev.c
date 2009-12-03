@@ -66,74 +66,72 @@ net_device_t *netdev_get_by_name(const char *name) {
 }
 
 int dev_queue_xmit(struct sk_buff *pack) {
-    in_device_t *dev;
-    net_device_stats_t *stats;
+	in_device_t *dev;
+	net_device_stats_t *stats;
 
-    if ((NULL == pack) || (NULL == pack->netdev))
-        return -1;
+	if ((NULL == pack) || (NULL == pack->netdev)) {
+    		return -1;
+	}
+	stats = pack->netdev->get_stats(pack->netdev);
 
-    stats = pack->netdev->get_stats(pack->netdev);
+	if (ETH_P_ARP != pack->protocol) {
+    		if (-1 == dev->net_dev->rebuild_header(pack)) {
+        		kfree_skb(pack);
+        		stats->tx_err += 1;
+        		return -1;
+    		}
+	}
 
-    if (ETH_P_ARP != pack->protocol) {
-        if (-1 == dev->net_dev->rebuild_header(pack)) {
-            kfree_skb(pack);
-            stats->tx_err += 1;
-            return -1;
-        }
-    }
-
-    if (-1 == pack->netdev->hard_start_xmit(pack, pack->netdev)) {
-    	kfree_skb(pack);
-    	stats->tx_err += 1;
-    	return -1;
-    }
-    /* update statistic */
-    stats->tx_packets += 1;
-    stats->tx_bytes   += pack->len;
-    kfree_skb(pack);
-    return 0;
+	if (-1 == pack->netdev->hard_start_xmit(pack, pack->netdev)) {
+    		kfree_skb(pack);
+    		stats->tx_err += 1;
+    		return -1;
+	}
+	/* update statistic */
+	stats->tx_packets += 1;
+	stats->tx_bytes   += pack->len;
+	kfree_skb(pack);
+	return 0;
 }
 
 int netif_rx(struct sk_buff *pack) {
-    int i;
-    in_device_t *dev;
-    if ((NULL == pack) || (NULL == pack->netdev)) {
-        return -1;
-    }
-    pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
+	int i;
+	in_device_t *dev;
+	if ((NULL == pack) || (NULL == pack->netdev)) {
+    		return NET_RX_DROP;
+	}
+	pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
 
 #if 0
-    //now we have not ifdev field in skb
-    if (NULL == (pack->ifdev = inet_dev_find_by_name(pack->netdev->name))){
-        LOG_ERROR("wrong interface name during receiving packet\n");
-        kfree_skb(pack);
-        return -1;
-    }
+	//now we have not ifdev field in skb
+	if (NULL == (pack->ifdev = inet_dev_find_by_name(pack->netdev->name))){
+    		LOG_ERROR("wrong interface name during receiving packet\n");
+    		kfree_skb(pack);
+    		return NET_RX_DROP;
+	}
 #endif
-    if (ETH_P_ARP == pack->protocol) {
-        arp_rcv(pack);
-    }
-    if (ETH_P_IP == pack->protocol) {
-        ip_rcv(pack);
-    }
+	if (ETH_P_ARP == pack->protocol) {
+    		arp_rcv(pack);
+	}
+	if (ETH_P_IP == pack->protocol) {
+    		ip_rcv(pack);
+	}
 #if 0
-    /* if there are some callback handlers for packet's protocol */
-    dev = (IF_DEVICE *) pack->ifdev;
-    for (i = 0; i < array_len(dev->cb_info); i++) {
-        if (1 == dev->cb_info[i].is_busy) {
-            if ((NET_TYPE_ALL_PROTOCOL == dev->cb_info[i].type)
-                    || (dev->cb_info[i].type == pack->protocol)) {
-                //may be copy pack for different protocols
-                dev->cb_info[i].func(pack);
-            }
-        }
-    }
+	/* if there are some callback handlers for packet's protocol */
+	dev = (IF_DEVICE *) pack->ifdev;
+	for (i = 0; i < array_len(dev->cb_info); i++) {
+    		if (1 == dev->cb_info[i].is_busy) {
+        		if ((NET_TYPE_ALL_PROTOCOL == dev->cb_info[i].type)
+                	    || (dev->cb_info[i].type == pack->protocol)) {
+            			//may be copy pack for different protocols
+            			dev->cb_info[i].func(pack);
+        		}
+    		}
+	}
 #endif
-
-    //free packet
-    kfree_skb(pack);
-    return 0;
-
+	//free packet
+	kfree_skb(pack);
+	return NET_RX_SUCCESS;
 }
 
 void dev_add_pack(struct packet_type *pt){
@@ -176,4 +174,20 @@ int dev_close(struct net_device *dev) {
 	//TODO: IFF_RUNNING ?
 	dev->flags &= ~IFF_UP|IFF_RUNNING;
 	return 0;
+}
+
+unsigned dev_get_flags(const struct net_device *dev) {
+	//TODO: ...
+        return dev->flags;
+}
+
+int dev_change_flags(struct net_device *dev, unsigned flags) {
+	int ret;
+	int old_flags = dev->flags;
+	if ((old_flags ^ flags) & IFF_UP) {
+		ret = ((old_flags & IFF_UP) ? dev_close : dev_open)(dev);
+	}
+	//TODO: ...
+	dev->flags = dev->flags & flags;
+        return ret;
 }

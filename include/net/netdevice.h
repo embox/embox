@@ -12,6 +12,15 @@
 #include <net/if.h>
 #include <net/skbuff.h>
 #include <lib/inet/netinet/in.h>
+#include <lib/list.h>
+
+/* Backlog congestion levels */
+#define NET_RX_SUCCESS       0
+#define NET_RX_DROP          1
+#define NET_RX_BAD           2
+
+/** Largest hardware address length */
+#define MAX_ADDR_LEN    32
 
 /**
  * Network device statistics structure.
@@ -19,21 +28,21 @@
 typedef struct net_device_stats {
 	unsigned long rx_packets; /**< total packets received       */
 	unsigned long tx_packets; /**< total packets transmitted    */
-	unsigned long rx_bytes; /**< total bytes received         */
-	unsigned long tx_bytes; /**< total bytes transmitted      */
-	unsigned long rx_err; /**< bad packets received         */
-	unsigned long tx_err; /**< packet transmit problems     */
+	unsigned long rx_bytes;   /**< total bytes received         */
+	unsigned long tx_bytes;   /**< total bytes transmitted      */
+	unsigned long rx_err;     /**< bad packets received         */
+	unsigned long tx_err;     /**< packet transmit problems     */
 	unsigned long rx_dropped; /**< no space in pool             */
 	unsigned long tx_dropped; /**< no space available in pool   */
-	unsigned long multicast; /**< multicast packets received   */
+	unsigned long multicast;  /**< multicast packets received   */
 	unsigned long collisions;
 
 	/* detailed rx_errors: */
 	unsigned long rx_length_errors;
-	unsigned long rx_over_errors; /**< receiver ring buff overflow  */
-	unsigned long rx_crc_errors; /**< recved pkt with crc error    */
-	unsigned long rx_frame_errors; /**< recv'd frame alignment error */
-	unsigned long rx_fifo_errors; /**< recv'r fifo overrun          */
+	unsigned long rx_over_errors;   /**< receiver ring buff overflow  */
+	unsigned long rx_crc_errors;    /**< recved pkt with crc error    */
+	unsigned long rx_frame_errors;  /**< recv'd frame alignment error */
+	unsigned long rx_fifo_errors;   /**< recv'r fifo overrun          */
 	unsigned long rx_missed_errors; /**< receiver missed packet       */
 
 	/* detailed tx_errors */
@@ -44,7 +53,6 @@ typedef struct net_device_stats {
 	unsigned long tx_window_errors;
 } net_device_stats_t;
 
-#include "lib/list.h"
 /**
  * structure for register incoming protocol packets type
  */
@@ -63,14 +71,11 @@ typedef struct packet_type {
 	struct list_head list;
 } packet_type_t;
 
-/** Largest hardware address length */
-#define MAX_ADDR_LEN	32
-
 /**
  * structure of net device
  */
 typedef struct net_device {
-	char name[IFNAMSIZ];                    /**< It is the name the interface.*/
+	char          name[IFNAMSIZ];           /**< It is the name the interface.*/
 	unsigned char hw_addr[MAX_ADDR_LEN];    /**< hw address                   */
 	unsigned char broadcast[MAX_ADDR_LEN];  /**< hw bcast address             */
 	unsigned long state;
@@ -112,23 +117,23 @@ extern net_device_t *alloc_netdev();
 extern void free_netdev(net_device_t *dev);
 
 /**
- *	dev_add_pack - add packet handler
- *	@pt: packet type declaration
+ * Add packet handler
+ * @param pt packet type declaration
  *
- *	Add a protocol handler to the networking stack. The passed &packet_type
- *	is linked into kernel lists and may not be freed until it has been
- *	removed from the kernel lists.
+ * Add a protocol handler to the networking stack. The passed &packet_type
+ * is linked into kernel lists and may not be freed until it has been
+ * removed from the kernel lists.
  */
 extern void dev_add_pack(struct packet_type *pt);
 
 /**
- *	dev_remove_pack	 - remove packet handler
- *	@pt: packet type declaration
+ * Remove packet handler
+ * @param pt packet type declaration
  *
- *	Remove a protocol handler that was previously added to the kernel
- *	protocol handlers by dev_add_pack(). The passed &packet_type is removed
- *	from the kernel lists and can be freed or reused once this function
- *	returns.
+ * Remove a protocol handler that was previously added to the kernel
+ * protocol handlers by dev_add_pack(). The passed &packet_type is removed
+ * from the kernel lists and can be freed or reused once this function
+ * returns.
  */
 extern void dev_remove_pack(struct packet_type *pt);
 
@@ -145,8 +150,22 @@ extern int dev_open(struct net_device *dev);
 extern int dev_close(struct net_device *dev);
 
 /**
+ * Get flags from device.
+ * @param dev device to get flags
+ */
+extern unsigned dev_get_flags(const struct net_device *dev);
+
+/**
+ * Set the flags on device.
+ * @param dev device to set flags
+ * @param flags
+ */
+extern int dev_change_flags(struct net_device *dev, unsigned flags);
+
+/**
  * this function call ip protocol,
- * it call rebuild mac header function, if can resolve dest addr else it send arp packet and drop this packet
+ * it call rebuild mac header function,
+ * if can resolve dest addr else it send arp packet and drop this packet
  * and send packet by calling hard_start_xmit() function
  * return 0 if success else -1
  */

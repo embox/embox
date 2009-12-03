@@ -8,6 +8,7 @@
 #define INETDEVICE_H_
 
 #include <net/etherdevice.h>
+#include <net/netdevice.h>
 #include <net/net.h>
 
 /**
@@ -39,7 +40,7 @@ extern struct net_device *inet_dev_get_netdevice(void *handler);
 extern int inet_dev_listen(void *handler, unsigned short type, ETH_LISTEN_CALLBACK callback);
 
 /**
- * find known ifdev device has pointed ip address
+ * find known netdev device has pointed ip address
  * @param ipaddr - ip devices address
  */
 extern struct net_device *ip_dev_find(in_addr_t addr);
@@ -62,19 +63,19 @@ extern int inet_dev_set_interface(char *name, in_addr_t ipaddr, in_addr_t mask, 
  * Set IP address (sw)
  * @param ipaddr - ip devices address
  */
-extern int inet_dev_set_ipaddr(void *ifdev, const in_addr_t ipaddr);
+extern int inet_dev_set_ipaddr(void *in_dev, const in_addr_t ipaddr);
 
 /**
  * Set IP mask
  * @param mask - ip mask
  */
-extern int inet_dev_set_mask(void *ifdev, const in_addr_t mask);
+extern int inet_dev_set_mask(void *in_dev, const in_addr_t mask);
 
 /**
  * Set MAC address
  * @param macaddr - MAC devices address
  */
-extern int inet_dev_set_macaddr(void *ifdev, const unsigned char *macaddr);
+extern int inet_dev_set_macaddr(void *in_dev, const unsigned char *macaddr);
 
 /**
  * Get interface's IP address
@@ -85,14 +86,5 @@ extern in_addr_t inet_dev_get_ipaddr(void *handler);
 /* iterator functions */
 extern in_device_t * inet_dev_get_fist_used();
 extern in_device_t * inet_dev_get_next_used();
-
-/**
- * Show interace (IP/MAC address)
- * @param ifdev interface handler
- */
-
-/**
- * Show all eth interfaces (IP/MAC address)
- */
 
 #endif /* INETDEVICE_H_ */
