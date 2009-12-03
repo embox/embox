@@ -81,8 +81,7 @@ int dev_queue_xmit(struct sk_buff *pack) {
             return -1;
         }
     }
-//TODO delete this because we will can manager ifdev debug mod in future
-    //packet_dump(pack);
+
     if (-1 == pack->netdev->hard_start_xmit(pack, pack->netdev)) {
     	kfree_skb(pack);
     	stats->tx_err += 1;

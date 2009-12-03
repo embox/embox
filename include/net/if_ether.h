@@ -8,7 +8,7 @@
 #ifndef IF_ETHER_H_
 #define IF_ETHER_H_
 
-#include "types.h"
+#include <types.h>
 
 #define ETH_ALEN        6                   /* Octets in one ethernet addr */
 #define ETH_HLEN        14                  /* Total octets in header.     */

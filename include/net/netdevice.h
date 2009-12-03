@@ -8,7 +8,7 @@
 #ifndef NET_DEVICE_H_
 #define NET_DEVICE_H_
 
-#include "net/if_ether.h"
+#include <net/if_ether.h>
 #include "lib/inet/netinet/in.h"
 //TODO this must place in config file
 #define NET_DEVICES_QUANTITY     0x4
@@ -88,6 +88,7 @@ typedef struct packet_type {
 typedef struct net_device {
 	char name[MAX_IFNAME_LENGTH];           /**< It is the name the interface.*/
 	unsigned char hw_addr[MAX_ADDR_LEN];    /**< hw address                   */
+	//TODO: hw broadcast
 	in_addr_t     broadcast;                /**< hw bcast address             */
 	unsigned long state;
 	unsigned char type;                     /**< interface hardware type      */

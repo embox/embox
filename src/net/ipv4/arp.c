@@ -8,6 +8,7 @@
  */
 #include "string.h"
 #include "common.h"
+#include "lib/inet/netinet/in.h"
 #include "kernel/module.h"
 #include "net/skbuff.h"
 #include "net/netdevice.h"
@@ -20,7 +21,6 @@
 
 //TODO this is wrong place for this variable
 static unsigned char broadcast_mac_addr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-static in_addr_t broadcast_ip_addr = 0xFFFFFFFF;
 
 ARP_ENTITY arp_table[ARP_CACHE_SIZE];
 
@@ -136,7 +136,7 @@ sk_buff_t *arp_resolve_addr (sk_buff_t *pack, in_addr_t dst_addr) {
 		return NULL;
 	}
 #endif
-	if (dst_addr != broadcast_ip_addr) {
+	if (dst_addr != INADDR_BROADCAST) {
 		pack->mac.raw = pack->data;
 		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));
 		return pack;

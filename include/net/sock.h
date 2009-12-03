@@ -9,12 +9,11 @@
 #ifndef SOCK_H_
 #define SOCK_H_
 
-#include "net/skbuff.h"
+#include <net/skbuff.h>
+#include <net/netdevice.h>
 
 #define MAX_SOCK_NUM 4
 
-struct net_device;
-struct sk_buff;
 struct udp_sock;
 
 /**

@@ -15,7 +15,41 @@
 
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 
-struct sk_buff;
+/**
+ * Determine if the Ethernet address is a multicast.
+ * @param addr Pointer to a six-byte array containing the Ethernet address
+ *
+ * Return true if the address is a multicast address.
+ * By definition the broadcast address is also a multicast address.
+ */
+static inline int is_multicast_ether_addr(const uint8_t *addr) {
+        return (0x01 & addr[0]);
+}
+
+/**
+ * Determine if the Ethernet address is broadcast
+ * @param addr Pointer to a six-byte array containing the Ethernet address
+ *
+ * Return true if the address is the broadcast address.
+ */
+static inline int is_broadcast_ether_addr(const uint8_t *addr) {
+        return (addr[0] & addr[1] & addr[2] & addr[3] & addr[4] & addr[5]) == 0xff;
+}
+
+/**
+ * Determine if the given Ethernet address is valid
+ * @param addr Pointer to a six-byte array containing the Ethernet address
+ *
+ * Check that the Ethernet address (MAC) is not 00:00:00:00:00:00, is not
+ * a multicast address, and is not FF:FF:FF:FF:FF:FF.
+ *
+ * @return true if the address is valid.
+ */
+static inline int is_valid_ether_addr(const uint8_t *addr) {
+        /* FF:FF:FF:FF:FF:FF is a multicast address so we don't need to
+         * explicitly check for it here. */
+         return !is_multicast_ether_addr(addr) && !is_zero_ether_addr(addr);
+}
 
 /**
  * Functions provided by eth.c

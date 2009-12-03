@@ -14,6 +14,17 @@ struct skb_timeval {
 	uint32_t off_usec;
 };
 
+/* Packet types */
+
+#define PACKET_HOST             0               /* To us                */
+#define PACKET_BROADCAST        1               /* To all               */
+#define PACKET_MULTICAST        2               /* To group             */
+#define PACKET_OTHERHOST        3               /* To someone else      */
+#define PACKET_OUTGOING         4               /* Outgoing of any type */
+/* These ones are invisible by user level */
+#define PACKET_LOOPBACK         5               /* MC/BRD frame looped back */
+#define PACKET_FASTROUTE        6               /* Fastrouted frame     */
+
 /**
  *      struct sk_buff - socket buffer
  *      @next: Next buffer in list
@@ -22,6 +33,7 @@ struct skb_timeval {
  *      @netdev: Device we arrived on/are leaving by
  *      @tstamp: Time we arrived
  *      @protocol: Packet protocol from driver
+ *      @pkt_type: Packet class
  *      @len: Length of actual data
  *      @h: Transport layer header
  *      @nh: Network layer header
@@ -40,6 +52,7 @@ typedef struct sk_buff {
 #endif
 
         __be16                  protocol;
+        uint8_t                 pkt_type;
         unsigned int            len;
         union {
                 //tcphdr        *th;
