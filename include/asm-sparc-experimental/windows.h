@@ -1,11 +1,16 @@
+/*
+ * Copyright (C) 2009 Lanit-Terkom, St.-Petersburg, Russia
+ *
+ * This file is part of EMBoX.
+ *
+ * < License goes here >
+ */
+
 /**
  * @file
- *
  * @brief SPARC register windows related stuff.
- *
  * @details Here is also described the windows management policy
  * used in the core trap setup and WOF/WUF handling routines.
- *
  *
  * We do a small trick based on a nonstandard usage of the WIM register.
  * The main advantage of this method is that it allows to quickly determine
