@@ -7,7 +7,7 @@
 #ifndef INETDEVICE_H_
 #define INETDEVICE_H_
 
-#include "net/eth.h"
+#include "net/etherdevice.h"
 #include "net/net.h"
 
 /**

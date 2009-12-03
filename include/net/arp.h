@@ -32,6 +32,8 @@ extern ARP_ENTITY arp_table[ARP_CACHE_SIZE];           /** arp table */
  * Functions provided by arp.c
  */
 
+extern void arp_init();
+
 /**
  * resolve ip address and rebuild net_packet
  * @param pack pointer to net_packet struct
@@ -44,7 +46,7 @@ extern struct sk_buff *arp_resolve_addr(struct sk_buff * pack, in_addr_t dst_add
  * Handle arp packet. This function called protocal stack when arp packet has been received
  * @param pack net_packet
  */
-extern int arp_received_packet(struct sk_buff *pack);
+extern int arp_rcv(struct sk_buff *pack);
 
 /**
  * this function add entry in arp table if can

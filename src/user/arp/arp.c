@@ -8,7 +8,7 @@
 #include "shell_command.h"
 #include "net/skbuff.h"
 #include "net/net.h"
-#include "net/eth.h"
+#include "net/etherdevice.h"
 #include "net/inetdevice.h"
 #include "net/arp.h"
 #include "misc.h"

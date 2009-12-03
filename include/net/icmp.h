@@ -64,7 +64,7 @@ typedef struct icmphdr {
 /**
  * set all realized handlers
  */
-extern int icmp_init();
+extern void icmp_init();
 
 /**
  * receive packet

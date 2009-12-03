@@ -6,13 +6,14 @@
  * @date 11.03.2009
  * @author Anton Bondarev
  */
-#include "common.h"
 #include "string.h"
+#include "common.h"
+#include "kernel/module.h"
 #include "net/skbuff.h"
 #include "net/netdevice.h"
 #include "net/net.h"
 #include "net/inetdevice.h"
-#include "net/eth.h"
+#include "net/etherdevice.h"
 #include "net/net_pack_manager.h"
 #include "net/if_arp.h"
 #include "net/arp.h"
@@ -24,6 +25,10 @@ static in_addr_t broadcast_ip_addr = 0xFFFFFFFF;
 ARP_ENTITY arp_table[ARP_CACHE_SIZE];
 
 #define ARP_TABLE_SIZE array_len(arp_table)
+
+void __init arp_init() {
+	//TODO:
+}
 
 static inline int find_entity(void *ifdev, in_addr_t dst_addr) {
 	int i;
@@ -216,11 +221,7 @@ static int received_req(sk_buff_t *pack) {
 	return 0;
 }
 
-/**
- * Handle arp packet. This function called protocal stack when arp packet has been received
- * @param pack net_packet
- */
-int arp_received_packet(sk_buff_t *pack) {
+int arp_rcv(sk_buff_t *pack) {
 	LOG_WARN("arp packet received\n");
 	arphdr_t *arp = pack->nh.arph;
 	//TODO need add function for getting ip addr

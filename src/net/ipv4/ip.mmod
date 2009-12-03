@@ -1,5 +1,5 @@
 ModName   = ip_proto
 DependsOn = net
 Type      = Net protocol
-SrcList   = ip.c
+SrcList   = ip_input.c ip_output.c
 MDef      = MONITOR_NET_IP_V4

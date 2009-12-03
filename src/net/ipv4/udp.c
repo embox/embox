@@ -9,7 +9,7 @@
 #include "common.h"
 #include "net/skbuff.h"
 #include "net/net.h"
-#include "net/eth.h"
+#include "net/etherdevice.h"
 #include "net/inetdevice.h"
 #include "net/net_pack_manager.h"
 #include "net/udp.h"

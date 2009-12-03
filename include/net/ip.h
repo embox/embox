@@ -55,10 +55,12 @@ typedef struct iphdr {
 struct inet_sock;
 struct sk_buff;
 
+extern void ip_init();
+
 /**
- * Handle IP packet
+ * Main IP Receive routine.
  */
-extern int ip_received_packet(struct sk_buff *pack);
+extern int ip_rcv(struct sk_buff *pack);
 
 /**
  * Add an ip header to a net_packet and send it out.

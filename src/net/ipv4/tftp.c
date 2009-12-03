@@ -10,7 +10,7 @@
 #include "net/skbuff.h"
 #include "lib/inet/arpa/tftp.h"
 #include "net/net.h"
-#include "net/eth.h"
+#include "net/etherdevice.h"
 #include "net/inetdevice.h"
 #include "net/inet_sock.h"
 #include "net/net_pack_manager.h"

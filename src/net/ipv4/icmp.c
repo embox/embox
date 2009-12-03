@@ -6,11 +6,12 @@
  * @author Alexander Batyukov
  */
 #include "string.h"
+#include "kernel/module.h"
 #include "common.h"
 #include "net/skbuff.h"
 #include "net/net.h"
 #include "net/inetdevice.h"
-#include "net/eth.h"
+#include "net/etherdevice.h"
 #include "net/icmp.h"
 #include "net/net_pack_manager.h"
 #include "net/ip.h"
@@ -244,12 +245,11 @@ void icmp_send(sk_buff_t *pack, int type, int code) {
 	}
 }
 
-int icmp_init() {
+void __init icmp_init() {
 	received_packet_handlers[ICMP_ECHOREPLY]    = icmp_get_echo_reply;
 	received_packet_handlers[ICMP_DEST_UNREACH] = icmp_unreach;
 	received_packet_handlers[ICMP_ECHO]         = icmp_echo;
 	//TODO: other types
-	return 0;
 }
 
 int icmp_rcv(sk_buff_t *pack) {

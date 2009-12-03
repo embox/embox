@@ -10,7 +10,8 @@
 
 #include "types.h"
 
-#define ETH_ALEN        6                        /* Octets in one ethernet addr */
+#define ETH_ALEN        6                   /* Octets in one ethernet addr */
+#define ETH_HLEN        14                  /* Total octets in header.     */
 
 /**
  * These are the defined Ethernet Protocol ID's.
@@ -33,7 +34,7 @@ typedef struct ethhdr {
 #include "net/skbuff.h"
 
 /**
- * extract MAC header for sbk
+ * extract MAC header for skb
  * @param skb
  * @return pointer to MAC header
  */

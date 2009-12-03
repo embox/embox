@@ -112,10 +112,10 @@ int netif_rx(struct sk_buff *pack) {
     }
 #endif
     if (ETH_P_ARP == pack->protocol) {
-        arp_received_packet(pack);
+        arp_rcv(pack);
     }
     if (ETH_P_IP == pack->protocol) {
-        ip_received_packet(pack);
+        ip_rcv(pack);
     }
 #if 0
     /* if there are some callback handlers for packet's protocol */

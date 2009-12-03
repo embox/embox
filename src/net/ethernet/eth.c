@@ -1,26 +1,51 @@
 /**
  * @file eth.c
  *
+ * @brief Ethernet-type device handling.
  * @date 4.03.2009
  * @author Anton Bondarev
  */
-#include "misc.h"
-#include "string.h"
-#include "net/skbuff.h"
-#include "net/net_pack_manager.h"
-#include "net/netdevice.h"
-#include "net/arp.h"
-#include "net/udp.h"
-#include "net/net.h"
-#include "net/eth.h"
-#include "net/ip.h"
-#include "net/icmp.h"
-#include "net/inetdevice.h"
+#include <misc.h>
+#include <string.h>
+#include <net/skbuff.h>
+#include <net/net_pack_manager.h>
+#include <net/netdevice.h>
+#include <net/arp.h>
+#include <net/udp.h>
+#include <net/net.h>
+#include <net/etherdevice.h>
+#include <net/ip.h>
+#include <net/icmp.h>
+#include <kernel/module.h>
+#include <net/inetdevice.h>
 
 void packet_dump(sk_buff_t *);
 
-int eth_init() {
+int __init eth_init() {
     return 0;
+}
+
+int eth_header(struct sk_buff *pack, struct net_device *dev, unsigned short type,
+            			    void *daddr, void *saddr, unsigned len) {
+        ethhdr_t *eth = eth_hdr(pack);
+
+        eth->h_proto = htons(type);
+        /*  Set the source hardware address. */
+        if (!saddr) {
+                saddr = dev->hw_addr;
+        }
+        memcpy(eth->h_source, saddr, dev->addr_len);
+
+        if (daddr) {
+        	memcpy(eth->h_dest, daddr, dev->addr_len);
+    		return ETH_HLEN;
+	}
+        /* Anyway, the loopback-device should never use this function... */
+        if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
+    		memset(eth->h_dest, 0, dev->addr_len);
+    		return ETH_HLEN;
+        }
+        return -ETH_HLEN;
 }
 
 int eth_rebuild_header(sk_buff_t *pack) {
@@ -42,11 +67,21 @@ int eth_rebuild_header(sk_buff_t *pack) {
     return 0;
 }
 
+/**
+ * Extract hardware address from packet.
+ * @param pack packet to extract header from
+ * @param haddr destination buffer
+ */
+static int eth_header_parse(sk_buff_t *pack, unsigned char *haddr) {
+	ethhdr_t *eth = eth_hdr(pack);
+        memcpy(haddr, eth->h_source, ETH_ALEN);
+        return ETH_ALEN;
+}
+
 void ether_setup(net_device_t *dev) {
     dev->rebuild_header     = eth_rebuild_header;
-    /*TODO:
-    dev->hard_header        = ...;
-    dev->set_mac_address    = ...;*/
+    dev->hard_header        = eth_header;
+//    dev->set_mac_address    = eth_mac_addr;
 
     dev->type               = ARPHRD_ETHER;
     dev->addr_len           = ETH_ALEN;
