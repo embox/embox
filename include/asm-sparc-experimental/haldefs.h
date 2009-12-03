@@ -1,6 +1,5 @@
 /**
- * @file haldefs.h
- *
+ * @file
  * @brief Provides necessary definitions needed by HAL.
  *
  * @date 25.11.2009

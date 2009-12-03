@@ -1,6 +1,5 @@
 /**
- * @file psr.h
- *
+ * @file
  * @brief SPARC v8 PSR (Processor State Register) layout.
  * @details
 @verbatim

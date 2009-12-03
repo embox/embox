@@ -1,6 +1,5 @@
 /**
- * @file head.h
- *
+ * @file
  * @brief Defines macros used to construct the trap table.
  *
  * @date 09.06.2009

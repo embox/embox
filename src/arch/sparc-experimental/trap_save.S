@@ -1,156 +1,162 @@
 /**
- * @file trap_save.S
+ * @file
  *
  * @brief Low-level trap pre-setup and SPARC windows overflow routines.
  *
  * @details Here is described the algorithm itself. More general information
  * can be found in @link windows.h @endlink docs.
  *
+ ** @par Introduction
  * Will use the following notation:
- * @li (T) - the trap time window,
- * @li (K) - kernel window,
- * @li (U) - user window,
- * @li (L) - the last user window,
- * @li (*) - invalid bit of WIM,
- * @li (@) - the window currently pointed by the CWP.
+ *       @n <tt>(T)</tt> - the trap time window,
+ *       @n <tt>(K)</tt> - kernel window,
+ *       @n <tt>(U)</tt> - user window,
+ *       @n <tt>(L)</tt> - the last user window,
+ *       @n <tt>(*)</tt> - invalid bit of WIM,
+ *       @n <tt>(@)</tt> - the window currently pointed by the @em CWP.
  *
- * Orientation of WIM register layout used in the examples below:
+ * @par
+ *       Orientation of @em WIM register layout used in the examples below:
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *   win#: | ... | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
- *         +-----+---+---+---+---+---+---+---+---+
- * <-- RESTORE, RETT                      TRAP, SAVE -->
-@endverbatim
- *
- *
- ** SAVE from user mode into an invalid window
-@verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  U  | U | U | L |@T*| U | U | U | U |
- *         +-----+---+---+---+---+---+---+---+---+
-@endverbatim
- * It's guaranteed that all windows belong to the user.
- * Try to save the next window to the user stack,
- * and circular shift the invalid bit to the right if all is ok.
-@verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  U  | U | U | L |@T | -*| U | U | U |
- *  (ok)   +-----+---+---+---+---+---+---+---+---+
-@endverbatim
- * If window saving fails, free all user windows by
- * circular shifting the invalid bit to the left.
-@verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  -  | - | - | -*|@T | - | - | - | - |
- *  (fail) +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+   win#: | ... | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+         +-----+---+---+---+---+---+---+---+---+
+ <-- RESTORE, RETT                      TRAP, SAVE -->
 @endverbatim
  *
- ** TRAP from user mode with an available window
- * (WIM & (1<<CWP)) == 0
+ *
+ ** @par @em SAVE from user mode into an invalid window
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  U  | U | U | L |@T | - | -*| U | U |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  U  | U | U | L |@T*| U | U | U | U |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
- * Mark the window we came from (L) as an invalid.
- * This mark is called secondary as opposite to the primary one, which
- * denotes the actually invalid window.
- * The secondary mark will be used later to determine whether there are
- * any user windows on the CPU to deal with.
+ *       It's guaranteed that all windows belong to the user. Try to save the
+ *       next window to the user stack, and circular shift the invalid bit to
+ *       the right if all is ok.
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  U  | U | U | L*|@T | - | -*| U | U |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  U  | U | U | L |@T | -*| U | U | U |
+  (ok)   +-----+---+---+---+---+---+---+---+---+
+@endverbatim
+ *       If window saving fails, free all user windows bycircular shifting the
+ *       invalid bit to the left.
+@verbatim
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  -  | - | - | -*|@T | - | - | - | - |
+  (fail) +-----+---+---+---+---+---+---+---+---+
 @endverbatim
  *
- ** TRAP from user mode into an invalid window
- * (WIM & (1<<CWP)) != 0
+ *
+ ** @par @em TRAP from user mode with an available window
+ *       <em>(WIM & (1<<CWP)) == 0</em>
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  U  | U | U | L |@T*| U | U | U | U |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  U  | U | U | L |@T | - | -*| U | U |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
- * Do the same as SAVE user window overflow handler (see above), and also
- * mark the last user window as an invalid (so that the current window
- * will be located "between" primarily and secondarily marked ones).
+ *       Mark the window we came from (L) as an invalid.This will be the
+ *       secondary mark as opposite to the primary one, which denotes the
+ *       actually invalid window. The secondary mark will be used later to
+ *       determine whether there are any user windows on the CPU to deal with.
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  U  | U | U | L*|@T | -*| U | U | U |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  U  | U | U | L*|@T | - | -*| U | U |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
  *
- ** TRAP from kernel with an available window
- * (WIM & (1<<CWP)) == 0
-@verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *         |  ?  | ? | ? | K |@T | - | - | -*| ? |
- *         +-----+---+---+---+---+---+---+---+---+
-@endverbatim
- * Relax! Nothing special to do.
  *
- ** SAVE or TRAP from kernel mode into an invalid window
- * In order to handle window overflow properly we should find out
- * if the window to be saved belongs to the kernel or a user.
- * It is achieved by examining if there is a secondary mark in the WIM
- * besides the primary one (WIM & ~(1<<CWP)).
- * The secondary bit represents the last user window being on the CPU.
- *
- ** SAVE or TRAP from kernel mode into an invalid window
- ** with some user windows.
- * (WIM & (1<<CWP)) != 0 && (WIM & ~(1<<CWP)) != 0
+ ** @par @em TRAP from user mode into an invalid window
+ *       <em>(WIM & (1<<CWP)) != 0</em>
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  U  | U | U | L*| K | K |@T*| U | U |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  U  | U | U | L |@T*| U | U | U | U |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
- * Try to save the next window to the user stack,
- * and circular shift the primary bit to the right if saving succeeds.
+ *       Do the same as @em SAVE user window overflow handler (see above), and
+ *       mark the last user window as an invalid (so that the current window
+ *       will be located "between" primarily and secondarily marked ones).
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  U  | U | U | L*| K | K |@T | -*| U |
- *  (ok)   +-----+---+---+---+---+---+---+---+---+
-@endverbatim
- * If user stack corruption is detected, then mark all of the user windows
- * as free just by removing the primary bit. The old secondary mark
- * becomes primary and represents the new invalid window.
-@verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  -  | - | - | -*| K | K |@T | - | - |
- *  (fail) +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  U  | U | U | L*|@T | -*| U | U | U |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
  *
- * So what happens when the last user window is about to be saved?
+ *
+ ** @par @em TRAP from kernel with an available window
+ *       <em>(WIM & (1<<CWP)) == 0</em>
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  K  | K |@T*| L*| K | K | K | K | K |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+         |  ?  | ? | ? | K |@T | - | - | -*| ? |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
- * Try to save the last user window (L) into the user stack,
- * and for both cases, either saving succeeds or not,
- * remove the primary mark (the trap window (T)).
- * The secondary bit (the old (L) window) becomes primary,
- * and the WIM returns back to its regular single-bit form:
+ *       Relax! Nothing special to do.
+ *
+ *
+ ** @par @em SAVE or @em TRAP from kernel mode into an invalid window
+ *       In order to handle window overflow properly we should find out if the
+ *       window to be saved belongs to the kernel or a user. It is achieved by
+ *       examining if there is a secondary mark in the @em WIM besides the
+ *       primary one (<em>WIM & ~(1<<CWP)</em>). The secondary bit represents
+ *       the last user window being on the CPU.
+ *
+ *
+ ** @par ... with some user windows
+ *       <em>(WIM & (1<<CWP)) != 0 && (WIM & ~(1<<CWP)) != 0</em>
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  K  | K |@T | -*| K | K | K | K | K |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  U  | U | U | L*| K | K |@T*| U | U |
+         +-----+---+---+---+---+---+---+---+---+
+@endverbatim
+ *       Try to save the next window to the user stack, and circular shift the
+ *       primary bit to the right if saving succeeds.
+@verbatim
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  U  | U | U | L*| K | K |@T | -*| U |
+  (ok)   +-----+---+---+---+---+---+---+---+---+
+@endverbatim
+ *       If user stack corruption is detected, then mark all user windows as
+ *       free just by removing the primary bit. The old secondary mark becomes
+ *       primary and represents the new invalid window.
+@verbatim
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  -  | - | - | -*| K | K |@T | - | - |
+  (fail) +-----+---+---+---+---+---+---+---+---+
 @endverbatim
  *
- ** SAVE or TRAP from kernel mode into an invalid window
- ** without any user windows.
- * (WIM & (1<<CWP)) != 0 && (WIM & ~(1<<CWP)) == 0
+ * @par
+ *       So what happens when the last user window is about to be saved?
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  K  | K | K |@T*| K | K | K | K | K |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  K  | K |@T*| L*| K | K | K | K | K |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
- * Just save the next window to the kernel stack,
- * and circular shift the invalid bit to the right.
+ *       Try to save the last user window (L) into the user stack, and for both
+ *       cases, either saving succeeds or not, remove the primary mark (the
+ *       trap window (T)). The secondary bit (the old (L) window) becomes
+ *       primary, and the @em WIM returns back to its regular single-bit form.
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  K  | K | K |@T | -*| K | K | K | K |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  K  | K |@T | -*| K | K | K | K | K |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
+ *
+ *
+ ** @par ... without any user windows
+ *       <em>(WIM & (1<<CWP)) != 0 && (WIM & ~(1<<CWP)) == 0</em>
+@verbatim
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  K  | K | K |@T*| K | K | K | K | K |
+         +-----+---+---+---+---+---+---+---+---+
+@endverbatim
+ *       Just save the next window to the kernel stack,  and circular shift the
+ *       invalid bit to the right.
+@verbatim
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  K  | K | K |@T | -*| K | K | K | K |
+         +-----+---+---+---+---+---+---+---+---+
+@endverbatim
+ *
  *
  * @sa windows.h
  *
@@ -160,14 +166,13 @@
 #include <asm/trap_setup.h>
 #include <asm/windows.h>
 #include <asm/regs.h>
-#include <asm/boot_patch.h>
 
 	.text
 	.align 4
 
-/** stack align (rounds "x" up to doubleword boundary) */
+/** Stack align (rounds "x" up to doubleword boundary) */
 #define SA(x) (((x)+7)&(~7))
-/** trap frame size */
+/** Trap frame size */
 #define TRAPFRAME_SZ (STACKFRAME_SZ + TRAP_REGS_SZ)
 
 #define g_newwim     g1
@@ -177,27 +182,30 @@
  * Prepares trap window to enter c-code.
  *
  * Each generic trap entry point executes the following:
- *	rd %psr, %t_psr
- *	rd %wim, %t_wim
- *	ba trap_handler
- *	 mov 0x1, %t_twinmask
+@code
+	rd %psr, %t_psr
+	rd %wim, %t_wim
+	ba trap_handler
+	 mov 0x1, %t_twinmask
+@endcode
  *
- * Then 'trap_handler' if it needs a trap frame (ie. it has
- * to call c-code and the trap cannot be handled in-window)
- * then it does the SAVE_ALL macro in entry.S which jumps here
- * doing the following:
+ * Then @em trap_handler if it needs a trap frame (ie. it has to call c-code
+ * and the trap cannot be handled in-window) then it executes the
+ * @link SAVE_ALL @endlink macro in entry.S which jumps here doing the
+ * following:
+@code
+	sethi %hi(trap_setup_begin), %t_retpc
+	jmpl  %t_retpc + %lo(trap_setup_begin), %t_retpc
+	 sll  %t_twinmask, %t_psr, %t_twinmask
+@endcode
  *
- *	sethi %hi(trap_setup_begin), %t_retpc
- *	jmpl  %t_retpc + %lo(trap_setup_begin), %t_retpc
- *	 sll  %t_twinmask, %t_psr, %t_twinmask
+ * So thus this routine expects that the following registers have already been
+ * initialized:
+ * @li on trap entry time: @em \%t_psr, @em \%t_wim, @em \%t_pc and @em \%t_npc
+ * @li when jumping here:  @em \%t_twinmask and @em \%t_retpc.
  *
- * Thus this routine expects that the following regs have already been
- * initialized.
- *	on trap entry time: %t_psr, %t_wim, %t_pc and %t_npc
- *	when jumping here:  %t_twinmask and %t_retpc.
- *
- * It is assumed that these registers are not touched at all
- * before executing SAVE_ALL macro.
+ * It is assumed that these registers are <b>not touched at all</b> before
+ * executing @link SAVE_ALL @endlink macro.
  *
  */	.global trap_setup_begin
 trap_setup_begin:
@@ -348,10 +356,12 @@ tsb_user_stack_is_corrupt:
  *
  * Assumes that the trap entry point has already done the following:
  *
- *	rd %psr, %t_psr
- *	rd %wim, %t_wim
- *	ba window_overflow
- *	 andcc %t_psr, PSR_PS, %g0
+@code
+	rd %psr, %t_psr
+	rd %wim, %t_wim
+	ba window_overflow
+	 andcc %t_psr, PSR_PS, %g0
+@endcode
  *
  */	.global  window_overflow
 window_overflow:

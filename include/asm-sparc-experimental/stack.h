@@ -1,6 +1,5 @@
 /**
- * @file stack.h
- *
+ * @file
  * @brief Defines stack frame structure.
  *
  * @date 29.11.2009

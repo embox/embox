@@ -1,6 +1,5 @@
 /**
- * @file trap_regs.h
- *
+ * @file
  * @brief TODO
  *
  * @date 23.07.2009

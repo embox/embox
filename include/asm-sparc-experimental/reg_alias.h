@@ -1,6 +1,5 @@
 /**
- * @file reg_alias.h
- *
+ * @file
  * @brief Defines common register aliases used in a trap context.
  *
  * @date 29.11.2009

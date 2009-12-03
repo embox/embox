@@ -59,11 +59,6 @@
 
 <storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
-<storageModule moduleId="org.eclipse.cdt.core.pathentry">
-<pathentry kind="src" path=""/>
-<pathentry kind="out" path=""/>
-<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
-</storageModule>
 <storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 <buildTargets>
 <target name="sparc" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
@@ -98,6 +93,12 @@
 <runAllBuilders>true</runAllBuilders>
 </target>
 </buildTargets>
+</storageModule>
+<storageModule moduleId="org.eclipse.cdt.core.pathentry">
+<pathentry kind="mac" name="_TEST_SYSTEM_" path="" value=""/>
+<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
+<pathentry kind="out" path=""/>
+<pathentry kind="src" path=""/>
 </storageModule>
 </cconfiguration>
 </storageModule>

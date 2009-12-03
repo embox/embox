@@ -1,78 +1,83 @@
 /**
- * @file trap_restore.S
+ * @file
  *
  * @brief Low-level trap post-setup and SPARC windows underflow routines.
  *
  * @details Here is described the algorithm itself. More general information
  * can be found in @link windows.h @endlink docs.
  *
- * Will use the following notation:
- * @li (T) - the trap time window,
- * @li (K) - kernel window,
- * @li (U) - user window,
- * @li (L) - the last user window,
- * @li (*) - invalid bit of WIM,
- * @li (@) - the window currently pointed by the CWP.
+ ** @par Introduction
+ *       Will use the following notation:
+ *       @n <tt>(T)</tt> - the trap time window,
+ *       @n <tt>(K)</tt> - kernel window,
+ *       @n <tt>(U)</tt> - user window,
+ *       @n <tt>(L)</tt> - the last user window,
+ *       @n <tt>(*)</tt> - invalid bit of @em WIM,
+ *       @n <tt>(@)</tt> - the window currently pointed by the @em CWP.
  *
- * Orientation of WIM register layout used in the examples below:
+ * @par
+ *       Orientation of @em WIM register layout used in the examples below:
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *   win#: | ... | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
- *         +-----+---+---+---+---+---+---+---+---+
- * <-- RESTORE, RETT                      TRAP, SAVE -->
-@endverbatim
- *
- *
- ** RETT back to user mode with an available window
- * (WIM & ~(1<<((CWP+1)%N))) != 0
-@verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  -  | -*| U | L*|@T | - | - | - | - |
- *         +-----+---+---+---+---+---+---+---+---+
-@endverbatim
- * Remove the secondary WIM bit (corresponds to the window
- * that we will land to when executing RETT, (L)).
-@verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  -  | -*| U | L |@T | - | - | - | - |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+   win#: | ... | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+         +-----+---+---+---+---+---+---+---+---+
+ <-- RESTORE, RETT                      TRAP, SAVE -->
 @endverbatim
  *
- ** RETT back to kernel with an available window
- * (WIM & ~(1<<((CWP+1)%N))) != 0
-@verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *         |  -  | -*| ? | K |@T | - | - | - | - |
- *         +-----+---+---+---+---+---+---+---+---+
-@endverbatim
- * Just do it!
  *
- ** RESTORE into an invalid window (user/kernel mode)
+ ** @par @em RETT back to user mode with an available window
+ *       <em>(WIM & ~(1<<((CWP+1)%N))) != 0</em>
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  -  | - | -*| ? |@T | - | - | - | - |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  -  | -*| U | L*|@T | - | - | - | - |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
- * Restore the necessary window from the user/kernel stack,
- * and circular shift the invalid bit to the left.
+ *       Remove the secondary @em WIM bit (corresponds to the window  that we
+ *       will land to when executing @em RETT, (L)).
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  -  | -*| ? | ? |@T | - | - | - | - |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  -  | -*| U | L |@T | - | - | - | - |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
  *
- ** RETT into an invalid window (user/kernel mode)
- * (WIM & ~(1<<((CWP+1)%N))) == 0
+ *
+ ** @par @em RETT back to kernel with an available window
+ *       <em>(WIM & ~(1<<((CWP+1)%N))) != 0</em>
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- * before: |  -  | - | - | -*|@T | - | - | - | - |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+         |  -  | -*| ? | K |@T | - | - | - | - |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
- * Do the same as RESTORE window underflow handler explained above
+ *       Just do it!
+ *
+ *
+ ** @par @em RESTORE into an invalid window (user/kernel mode)
 @verbatim
- *         +-----+---+---+---+---+---+---+---+---+
- *  after: |  -  | - | -*| ? |@T | - | - | - | - |
- *         +-----+---+---+---+---+---+---+---+---+
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  -  | - | -*| ? |@T | - | - | - | - |
+         +-----+---+---+---+---+---+---+---+---+
+@endverbatim
+ *       Restore the necessary window from the user/kernel stack, and circular
+ *       shift the invalid bit to the left.
+@verbatim
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  -  | -*| ? | ? |@T | - | - | - | - |
+         +-----+---+---+---+---+---+---+---+---+
+@endverbatim
+ *
+ *
+ ** @par @em RETT into an invalid window (user/kernel mode)
+ *       <em>(WIM & ~(1<<((CWP+1)%N))) == 0</em>
+@verbatim
+         +-----+---+---+---+---+---+---+---+---+
+ before: |  -  | - | - | -*|@T | - | - | - | - |
+         +-----+---+---+---+---+---+---+---+---+
+@endverbatim
+ *       Do the same as @em RESTORE window underflow handler explained above.
+@verbatim
+         +-----+---+---+---+---+---+---+---+---+
+  after: |  -  | - | -*| ? |@T | - | - | - | - |
+         +-----+---+---+---+---+---+---+---+---+
 @endverbatim
  *
  * @sa windows.h
@@ -83,7 +88,6 @@
 #include <asm/trap_setup.h>
 #include <asm/windows.h>
 #include <asm/regs.h>
-#include <asm/boot_patch.h>
 
 	.text
 	.align 4

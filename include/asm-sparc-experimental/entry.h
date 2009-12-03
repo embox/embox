@@ -1,6 +1,5 @@
 /**
- * @file entry.h
- *
+ * @file
  * @brief TODO
  *
  * @date 29.11.2009

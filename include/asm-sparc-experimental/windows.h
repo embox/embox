@@ -1,10 +1,10 @@
 /**
- * @file windows.h
+ * @file
  *
  * @brief SPARC register windows related stuff.
  *
  * @details Here is also described the windows management policy
- * used in the core trap setup and wof/wuf handling routines.
+ * used in the core trap setup and WOF/WUF handling routines.
  *
  *
  * We do a small trick based on a nonstandard usage of the WIM register.
@@ -13,15 +13,15 @@
  *
  * More definitely, we encode in the WIM not only the invalid window marker
  * but also the mask of the last user window (if any) being on the CPU.
- * Thus, one may distinguish WIM bits to primary (stands for traditional
- * invalid window mask) and secondary (represents the last user window)
+ * Thus, one may distinguish WIM bits to @b primary (stands for traditional
+ * invalid window mask) and @b secondary (represents the last user window)
  * markers.
  *
  * Some restrictions and assumptions needed for this method to work properly:
- *   1) Kernel code does not "overrestores" (particularly, it should
+ *   @n 1) Kernel code does not "overrestores" (particularly, it should
  * not perform "RESTORE - SAVE" combinations).
- *   2) At any moment each kernel window has proper stack pointer.
- *   3) CPU has got 3 or more register windows.
+ *   @n 2) At any moment each kernel window has proper stack pointer.
+ *   @n 3) CPU has got 3 or more register windows.
  *   TODO
  *
  *

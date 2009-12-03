@@ -1,6 +1,5 @@
 /**
- * @file types.h
- *
+ * @file
  * @brief TODO
  *
  * @date 25.11.2009
