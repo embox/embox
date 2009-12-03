@@ -1,4 +1,4 @@
 ModName = sparc
 Type    = Arch
-SrcList = sparc_traps.c apb_irq_ctrl.c apb_timers.c mmu_asm.S boot.S cpu_context.S entry.S trap_setup.S windows.S bubble_sort.S sys.c srmmu_probe.c soft_trap_test.S
+SrcList = sparc_traps.c apb_irq_ctrl.c apb_timers.c boot.S cpu_context.S entry.S trap_setup.S windows.S bubble_sort.S sys.c soft_trap_test.S
 MDef    = MONITOR_ARCH_SPARC
