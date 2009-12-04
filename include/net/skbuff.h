@@ -1,6 +1,7 @@
 /**
  * @file sk_buff.h
  *
+ * @brief Definitions for the 'struct sk_buff' memory handlers.
  * @date 20.10.2009
  * @author Anton Bondarev
  */
@@ -85,14 +86,23 @@ typedef struct sk_buff_head {
 	spinlock_t	lock;
 }sk_buff_head_t;
 
+/**
+ * allocate one instance of structure sk_buff. With pointed size and flags.
+ * @return If size is more then mtu (now it is defined by macros ETHERNET_V2_FRAME_SIZE)
+ * function will return queue of sk_buff. Else function return single sk_buff.
+ * Function return NULL if function can't allocate demanded buffer
+ */
 extern struct sk_buff *alloc_skb(unsigned int size, gfp_t priority);
 
 extern void kfree_skb(struct sk_buff *skb);
+
 extern struct sk_buff *alloc_skb_fclone(struct sk_buff *skb, gfp_t priority);
+
 /**
  * sk_buff clone it used as we want to queue sk_buff in several queue
  */
 extern struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t priority);
+
 extern struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority);
 
 #endif /* SKBUFF_H_ */

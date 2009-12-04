@@ -8,11 +8,16 @@
 #include "types.h"
 #include "string.h"
 #include "common.h"
-
 #include "net/skbuff.h"
 #include "net/net.h"
 #include "net/netdevice.h"
 #include "net/inetdevice.h"
+
+#define PTYPE_HASH_SIZE (16)
+#define PTYPE_HASH_MASK (PTYPE_HASH_SIZE - 1)
+
+static struct list_head ptype_base[PTYPE_HASH_SIZE];
+static struct list_head ptype_all;
 
 typedef struct _NET_DEV_INFO {
 	net_device_t     dev;
@@ -42,9 +47,9 @@ net_device_t *alloc_netdev(const char *name,
 		if (!dev_is_busy(i)) {
 			dev = dev_lock(i);
 			setup(dev);
-			strcpy(dev->name, name);
-			dev->irq           = 12;
-			dev->base_addr     = 0xCF000000;
+			char buff[IFNAMSIZ];
+			sprintf(buff, name, i);
+			strcpy(dev->name, buff);
 			return dev;
 		}
 	}
@@ -64,7 +69,7 @@ net_device_t *netdev_get_by_name(const char *name) {
 	int i;
 	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (dev_is_busy(i) &&
-		   (0 == strncmp(name, net_devices[i].dev.name, sizeof (net_devices[i].dev.name)))) {
+		   !strncmp(name, net_devices[i].dev.name, IFNAMSIZ)) {
 			return &net_devices[i].dev;
 		}
 	}
@@ -72,38 +77,41 @@ net_device_t *netdev_get_by_name(const char *name) {
 }
 
 int dev_queue_xmit(struct sk_buff *pack) {
-	in_device_t *dev;
+	net_device_t *dev = pack->netdev;
 	net_device_stats_t *stats;
 
-	if ((NULL == pack) || (NULL == pack->netdev)) {
+	if ((NULL == pack) || (NULL == dev)) {
     		return -1;
 	}
-	stats = pack->netdev->netdev_ops->ndo_get_stats(pack->netdev);
 
-	if (ETH_P_ARP != pack->protocol) {
-    		if (-1 == dev->net_dev->header_ops->rebuild(pack)) {
-        		kfree_skb(pack);
-        		stats->tx_err += 1;
-        		return -1;
-    		}
-	}
+	stats = dev->netdev_ops->ndo_get_stats(dev);
 
-	if (-1 == pack->netdev->netdev_ops->ndo_start_xmit(pack, pack->netdev)) {
-    		kfree_skb(pack);
-    		stats->tx_err += 1;
-    		return -1;
+	if (dev->flags & IFF_UP) {
+		if (ETH_P_ARP != pack->protocol) {
+    			if (-1 == dev->header_ops->rebuild(pack)) {
+        			kfree_skb(pack);
+        			stats->tx_err += 1;
+        			return -1;
+    			}
+		}
+
+		if (-1 == dev->netdev_ops->ndo_start_xmit(pack, dev)) {
+    			kfree_skb(pack);
+    			stats->tx_err += 1;
+    			return -1;
+		}
+		/* update statistic */
+		stats->tx_packets += 1;
+		stats->tx_bytes   += pack->len;
 	}
-	/* update statistic */
-	stats->tx_packets += 1;
-	stats->tx_bytes   += pack->len;
 	kfree_skb(pack);
 	return 0;
 }
 
 int netif_rx(struct sk_buff *pack) {
-	int i;
-	in_device_t *dev;
-	if ((NULL == pack) || (NULL == pack->netdev)) {
+	net_device_t *dev = pack->netdev;
+
+	if ((NULL == pack) || (NULL == dev)) {
     		return NET_RX_DROP;
 	}
 	pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
@@ -125,6 +133,7 @@ int netif_rx(struct sk_buff *pack) {
 #if 0
 	/* if there are some callback handlers for packet's protocol */
 	dev = (IF_DEVICE *) pack->ifdev;
+	int i;
 	for (i = 0; i < array_len(dev->cb_info); i++) {
     		if (1 == dev->cb_info[i].is_busy) {
         		if ((NET_TYPE_ALL_PROTOCOL == dev->cb_info[i].type)
@@ -140,12 +149,32 @@ int netif_rx(struct sk_buff *pack) {
 	return NET_RX_SUCCESS;
 }
 
-void dev_add_pack(struct packet_type *pt){
+void dev_add_pack(struct packet_type *pt) {
+	int hash;
 
+        if (pt->type == htons(ETH_P_ALL)) {
+                list_add(&pt->list, &ptype_all);
+        } else {
+        	hash = ntohs(pt->type) & PTYPE_HASH_MASK;
+                list_add(&pt->list, &ptype_base[hash]);
+        }
 }
 
-void dev_remove_pack(struct packet_type *pt){
+void dev_remove_pack(struct packet_type *pt) {
+	struct list_head *head;
+        struct packet_type *pt1;
 
+        if (pt->type == htons(ETH_P_ALL)) {
+                head = &ptype_all;
+        } else {
+                head = &ptype_base[ntohs(pt->type) & PTYPE_HASH_MASK];
+        }
+        list_for_each_entry(pt1, head, list) {
+    		if (pt == pt1) {
+            		list_del(&pt->list);
+            		return;
+    		}
+        }
 }
 
 int dev_open(struct net_device *dev) {
@@ -167,7 +196,7 @@ int dev_open(struct net_device *dev) {
     		dev->state &= ~__LINK_STATE_START;
         } else {
                 /* Set the flags. */
-                //TODO: IFF_RUNNING ?
+                //TODO: IFF_RUNNING sets not here
                 dev->flags |= IFF_UP|IFF_RUNNING;
         }
         return ret;
@@ -186,7 +215,7 @@ int dev_close(struct net_device *dev) {
 		LOG_ERROR("ifdev down: can't find stop function in net_device with name\n");
 	}
 	/* Device is now down. */
-	//TODO: IFF_RUNNING ?
+	//TODO: IFF_RUNNING sets not here
 	dev->flags &= ~IFF_UP|IFF_RUNNING;
 	return 0;
 }

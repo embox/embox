@@ -102,9 +102,7 @@ void ether_setup(net_device_t *dev) {
 	memset(dev->broadcast, 0xFF, ETH_ALEN);
 }
 
-net_device_t *alloc_etherdev(int num) {
-	char name[IFNAMSIZ];
-	sprintf(name, "eth%d", num);
-	net_device_t *dev = alloc_netdev(name, &ether_setup);
+net_device_t *alloc_etherdev() {
+	net_device_t *dev = alloc_netdev("eth%d", &ether_setup);
 	return dev;
 }

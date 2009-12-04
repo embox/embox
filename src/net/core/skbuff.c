@@ -60,12 +60,6 @@ static void __init init_skb(){
 	}
 }
 
-/**
- * allocate one instance of structure sk_buff. With pointed size and flags.
- * @return If size is more then mtu (now it is defined by macros ETHERNET_V2_FRAME_SIZE)
- * function will return queue of sk_buff. Else function return single sk_buff.
- * Function return NULL if function can't allocate demanded buffer
- */
 struct sk_buff *alloc_skb(unsigned int size, gfp_t priority){
 	struct sk_buff *skb;
 //TODO only one packet now

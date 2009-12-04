@@ -88,7 +88,7 @@ extern void ether_setup(net_device_t *dev);
 /**
  * Allocates and sets up an Ethernet device
  */
-extern net_device_t *alloc_etherdev(int num);
+extern net_device_t *alloc_etherdev();
 
 /**
  * Send Ethernet packet.
