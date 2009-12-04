@@ -9,16 +9,14 @@ $(SUBDIRS-n):
 all: $(SUBDIRS-y) $(OBJS-y)
 
 %.o:%.S
-	@printf "  [M]\t$(subst $(SRC_DIR)/,,$(abspath $@))\n"
-	@$(CC) $(CCFLAGS) -I$(INCLUDE_DIR) -o $@ $<
-#	@cp -f $@ $(OBJ_DIR)/$(BUILD)/$(subst /,__,$(subst $(SRC_DIR),,$(abspath $@)))
-	@ln -s $(abspath $@) $(OBJ_DIR)/$(BUILD)/$(subst /,__,$(subst $(SRC_DIR),,$(abspath $@)))
+#	@printf "  [M]\t$(subst $(SRC_DIR)/,,$(abspath $@))\n"
+	$(CC) $(CCFLAGS) -I$(INCLUDE_DIR) -o $@ $<
+	@echo '$(abspath $@)' >> $(OBJ_LIST)
 
 %.o:%.c
-	@printf "  [M]\t$(subst $(SRC_DIR)/,,$(abspath $@))\n"
-	@$(CC) $(CCFLAGS) -I$(INCLUDE_DIR) -o $@ $<
-#	@cp -f $@ $(OBJ_DIR)/$(BUILD)/$(subst /,__,$(subst $(SRC_DIR),,$(abspath $@)))
-	@ln -s $(abspath $@) $(OBJ_DIR)/$(BUILD)/$(subst /,__,$(subst $(SRC_DIR),,$(abspath $@)))
+#	@printf "  [M]\t$(subst $(SRC_DIR)/,,$(abspath $@))\n"
+	$(CC) $(CCFLAGS) -I$(INCLUDE_DIR) -o $@ $<
+	@echo '$(abspath $@)' >> $(OBJ_LIST)
 
 #copy_objs:
 #	@if [ ! -z "$(OBJS-y)" ]; then \

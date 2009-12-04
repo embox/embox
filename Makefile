@@ -9,6 +9,8 @@ RM          = rm -rf
 EDITOR      = vim
 MAKE        += --no-print-directory
 
+OBJ_LIST    = $(OBJ_DIR)/$(BUILD)/objects.lst
+
 ifeq ($(shell [ -f scripts/autoconf ] && echo YES),YES)
     DEFAULT_CONF =
 else
