@@ -1,18 +1,9 @@
-#export INCLUDE_DIRS:=$(addprefix -I$(SRC_DIR)/,$(SUBDIRS))
-
 .PHONY: all release debug sim docs $(SUBDIRS-y) $(SUBDIRS-n)
 
 all: $(BUILD)
 
-create_objs_lst: $(SUBDIRS-y)
-create_include_dirs_lst: $(SUBDIRS-y) $(SUBDIRS-n)
-
 $(SUBDIRS-y):
-ifdef G_DIRS
-	@declare -x INCLUDE_DIRS=$(filter-out '\\','$(G_DIRS)'); $(MAKE) -C $@ $(MAKEOP)
-else
 	@$(MAKE) -C $@ $(MAKEOP)
-endif
 
 $(SUBDIRS-n):
 	@$(MAKE) -C $@ $(MAKEOP)

@@ -1,10 +1,4 @@
-.PHONY: all $(SUBDIRS-y) $(SUBDIRS-n) copy_objs
-
-create_objs_lst: $(SUBDIRS-y)
-	@echo '$(addprefix $(CURDIR)/,$(OBJS-y)) \' >> $(ROOT_DIR)/objs.lst
-
-create_include_dirs_lst: $(SUBDIRS-y) $(SUBDIRS-n)
-	@echo ' -I$(CURDIR)\' >> $(ROOT_DIR)/include_dirs.lst
+.PHONY: all $(SUBDIRS-y) $(SUBDIRS-n)
 
 $(SUBDIRS-y):
 	@$(MAKE) -C $@ $(MAKEOP)
@@ -12,23 +6,26 @@ $(SUBDIRS-y):
 $(SUBDIRS-n):
 	@$(MAKE) -C $@ $(MAKEOP)
 
-all: $(SUBDIRS-y) $(OBJS-y) copy_objs
+all: $(SUBDIRS-y) $(OBJS-y)
 
 %.o:%.S
-	@printf "  [M]\t$@\n"
-	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $@ $<
+	@printf "  [M]\t$(subst $(SRC_DIR)/,,$(abspath $@))\n"
+	@$(CC) $(CCFLAGS) -I$(INCLUDE_DIR) -o $@ $<
+#	@cp -f $@ $(OBJ_DIR)/$(BUILD)/$(subst /,__,$(subst $(SRC_DIR),,$(abspath $@)))
+	@ln -s $(abspath $@) $(OBJ_DIR)/$(BUILD)/$(subst /,__,$(subst $(SRC_DIR),,$(abspath $@)))
 
 %.o:%.c
-	@printf "  [M]\t$@\n"
-	@$(CC) $(CCFLAGS) $(INCLUDE_DIRS) -I$(INCLUDE_DIR) -o $@ $<
+	@printf "  [M]\t$(subst $(SRC_DIR)/,,$(abspath $@))\n"
+	@$(CC) $(CCFLAGS) -I$(INCLUDE_DIR) -o $@ $<
+#	@cp -f $@ $(OBJ_DIR)/$(BUILD)/$(subst /,__,$(subst $(SRC_DIR),,$(abspath $@)))
+	@ln -s $(abspath $@) $(OBJ_DIR)/$(BUILD)/$(subst /,__,$(subst $(SRC_DIR),,$(abspath $@)))
 
-copy_objs:
-	@if [ ! -z "$(OBJS-y)" ]; then \
-	    for OBJ in $(OBJS-y); do \
-		    cp -f $$OBJ $(OBJ_DIR)/$(BUILD)/$(shell pwd | openssl dgst -md5)-$$OBJ; \
-	    done; \
-	fi
+#copy_objs:
+#	@if [ ! -z "$(OBJS-y)" ]; then \
+#	    for OBJ in $(OBJS-y); do \
+#		    cp -f $$OBJ $(OBJ_DIR)/$(BUILD)/$(shell pwd | openssl dgst -md5)-$$OBJ; \
+#	    done; \
+#	fi
 
 clean: $(SUBDIRS-y)
-	@printf "  [R]\t$(SUBDIRS-y) $(OBJS-y)\n"
-	@rm -f  $(OBJS-y)
+	@rm -fv *.o *.d

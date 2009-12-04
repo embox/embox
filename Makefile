@@ -52,11 +52,7 @@ mkdir:
 	@test -d $(OBJ_DIR)/$(BUILD) || mkdir -p $(OBJ_DIR)/$(BUILD)
 
 build:
-	@$(RM) objs.lst include_dirs.lst
-	@declare -x MAKEOP=create_objs_lst; $(MAKE) --directory=src create_objs_lst
-	@declare -x MAKEOP=create_include_dirs_lst; $(MAKE) --directory=src create_include_dirs_lst
-	@echo ' ' >> $(ROOT_DIR)/include_dirs.lst
-	@declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; $(MAKE) --directory=src all
+	@declare -x MAKEOP=all; $(MAKE) --directory=src all
 
 checksum:
 #	@$(MAKE) --directory=scripts/md5_checksummer
@@ -70,7 +66,7 @@ checksum:
 
 clean:
 	@declare -x MAKEOP=clean; $(MAKE) --directory=src clean
-	@$(RM) $(BIN_DIR) $(OBJ_DIR) objs.lst include_dirs.lst .config.old docs/
+	@$(RM) $(BIN_DIR) $(OBJ_DIR) .config.old docs/
 	@$(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py -o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
 clean_all: clean
@@ -78,7 +74,7 @@ clean_all: clean
 	@ln -sf -T asm-sparc include/asm
 
 xconfig:
-	@$(SCRIPTS_DIR)/configure.py --mode=tk > /dev/null 2>&1
+	@$(SCRIPTS_DIR)/configure.py --mode=tk
 
 menuconfig:
 	@if [ ! -e $(SCRIPTS_DIR)/autoconf ]; \
