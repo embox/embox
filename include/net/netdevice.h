@@ -61,17 +61,19 @@ enum netdev_state_t {
         __LINK_STATE_DORMANT,
 };
 
-/*
+/**
  * This structure defines the management hooks for network devices.
  * The following hooks can be defined; unless noted otherwise, they are
  * optional and can be filled with a null pointer.
  */
 struct net_device_ops {
-        int (*ndo_open)(struct net_device *dev);
-        int (*ndo_stop)(struct net_device *dev);
-        int (*ndo_start_xmit)(struct sk_buff *pack, struct net_device *dev);
-        int (*set_mac_address)(struct net_device *dev, void *addr);
-        net_device_stats_t *(*get_stats)(struct net_device *dev);
+        int                 (*ndo_open)(struct net_device *dev);
+        int                 (*ndo_stop)(struct net_device *dev);
+        int                 (*ndo_start_xmit)(struct sk_buff *pack,
+    						struct net_device *dev);
+        int                 (*ndo_set_mac_address)(struct net_device *dev,
+    						void *addr);
+        net_device_stats_t* (*ndo_get_stats)(struct net_device *dev);
 };
 
 struct header_ops {
@@ -79,6 +81,7 @@ struct header_ops {
 	int (*create)(struct sk_buff *pack, struct net_device *dev,
 	              unsigned short type, void *daddr,
 	              void *saddr, unsigned len);
+	int (*parse)(const struct sk_buff *pack, unsigned char *haddr);
 };
 
 /**
@@ -128,8 +131,11 @@ extern net_device_t *netdev_get_by_name(const char *name);
 
 /**
  * Allocate network device
+ * @param name device name format string
+ * @param callback to initialize device
  */
-extern net_device_t *alloc_netdev();
+extern net_device_t *alloc_netdev(const char *name,
+                void (*setup)(net_device_t *));
 
 /**
  * Free network device

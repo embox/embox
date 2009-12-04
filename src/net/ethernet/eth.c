@@ -70,7 +70,7 @@ int eth_rebuild_header(sk_buff_t *pack) {
  * @param pack packet to extract header from
  * @param haddr destination buffer
  */
-static int eth_header_parse(sk_buff_t *pack, unsigned char *haddr) {
+static int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr) {
 	ethhdr_t *eth = eth_hdr(pack);
         memcpy(haddr, eth->h_source, ETH_ALEN);
         return ETH_ALEN;
@@ -89,23 +89,22 @@ static int eth_mac_addr(struct net_device *dev, void *p) {
 
 const struct header_ops eth_header_ops = {
 	.rebuild       = eth_rebuild_header,
-	.create        = eth_header
+	.create        = eth_header,
+	.parse         = eth_header_parse,
 };
 
 void ether_setup(net_device_t *dev) {
-    dev->header_ops    = &eth_header_ops;
-    dev->type          = ARPHRD_ETHER;
-    dev->addr_len      = ETH_ALEN;
-    dev->flags         = IFF_BROADCAST|IFF_MULTICAST;
-    dev->irq           = 12;
-    dev->base_addr     = 0xCF000000;
-    dev->tx_queue_len  = 1000;
-//    dev->broadcast   = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	dev->header_ops    = &eth_header_ops;
+	dev->type          = ARPHRD_ETHER;
+	dev->addr_len      = ETH_ALEN;
+	dev->flags         = IFF_BROADCAST|IFF_MULTICAST;
+	dev->tx_queue_len  = 1000;
+	memset(dev->broadcast, 0xFF, ETH_ALEN);
 }
 
 net_device_t *alloc_etherdev(int num) {
-    net_device_t *dev = alloc_netdev();
-    sprintf(dev->name, "eth%d", num);
-    ether_setup(dev);
-    return dev;
+	char name[IFNAMSIZ];
+	sprintf(name, "eth%d", num);
+	net_device_t *dev = alloc_netdev(name, &ether_setup);
+	return dev;
 }

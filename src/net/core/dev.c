@@ -15,8 +15,7 @@
 #include "net/inetdevice.h"
 
 typedef struct _NET_DEV_INFO {
-	net_device_t       dev;
-	net_device_stats_t stats;
+	net_device_t     dev;
 	int              is_busy;
 } NET_DEV_INFO;
 
@@ -35,11 +34,18 @@ static inline void dev_unlock(int num) {
 	net_devices[num].is_busy = 0;
 }
 
-net_device_t *alloc_netdev() {
+net_device_t *alloc_netdev(const char *name,
+                void (*setup)(net_device_t *)) {
+        struct net_device *dev;
 	int i;
 	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (!dev_is_busy(i)) {
-			return dev_lock(i);
+			dev = dev_lock(i);
+			setup(dev);
+			strcpy(dev->name, name);
+			dev->irq           = 12;
+			dev->base_addr     = 0xCF000000;
+			return dev;
 		}
 	}
 	return NULL;
@@ -72,7 +78,7 @@ int dev_queue_xmit(struct sk_buff *pack) {
 	if ((NULL == pack) || (NULL == pack->netdev)) {
     		return -1;
 	}
-	stats = pack->netdev->netdev_ops->get_stats(pack->netdev);
+	stats = pack->netdev->netdev_ops->ndo_get_stats(pack->netdev);
 
 	if (ETH_P_ARP != pack->protocol) {
     		if (-1 == dev->net_dev->header_ops->rebuild(pack)) {
