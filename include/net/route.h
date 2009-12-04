@@ -38,6 +38,8 @@ struct rt_entry {
 //#define RTF_IRTT        0x0100          /* Initial round trip time      */
 #define RTF_REJECT      0x0200          /* Reject route                 */
 
+extern int ip_rt_init(void);
+
 /**
  * Add new route to table.
  * @param dev Iface
@@ -45,7 +47,7 @@ struct rt_entry {
  * @param mask Genmask
  * @param gw Gateway
  */
-int rt_add_route(struct net_device *dev, in_addr_t dst,
+extern int rt_add_route(struct net_device *dev, in_addr_t dst,
 				in_addr_t mask, in_addr_t gw, int flags);
 
 /**
@@ -55,17 +57,17 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
  * @param mask Genmask
  * @param gw Gateway
  */
-int rt_del_route(struct net_device *dev, in_addr_t dst,
+extern int rt_del_route(struct net_device *dev, in_addr_t dst,
 				in_addr_t mask, in_addr_t gw);
 
 /**
  * Rebuild sk_buff according to appropriated route.
  * @param skbuff
  */
-int ip_route(sk_buff_t *skbuff);
+extern int ip_route(sk_buff_t *skbuff);
 
 /**< iterators */
-struct rt_entry *rt_fib_get_first();
-struct rt_entry *rt_fib_get_next();
+extern struct rt_entry *rt_fib_get_first();
+extern struct rt_entry *rt_fib_get_next();
 
 #endif /* ROUTE_H_ */

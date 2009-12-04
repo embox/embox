@@ -15,7 +15,7 @@
  * structute of inet(IP) device
  */
 typedef struct in_device {
-    struct net_device *net_dev;
+    struct net_device *dev;
     in_addr_t         ifa_address;
     in_addr_t         ifa_mask;
     in_addr_t         ifa_broadcast;

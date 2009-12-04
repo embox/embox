@@ -46,7 +46,7 @@ typedef struct sk_buff {
 	struct sk_buff *prev;
 
 	struct sock        *sk;
-        struct net_device  *netdev;
+        struct net_device  *dev;
     	struct skb_timeval tstamp;
 #if 0
         void                    *ifdev;

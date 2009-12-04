@@ -51,13 +51,13 @@ int eth_rebuild_header(sk_buff_t *pack) {
         return -1;
     }
     ethhdr_t     *eth = (ethhdr_t*)pack->data;
-    net_device_t *dev = pack->netdev;
+    net_device_t *dev = pack->dev;
     if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
         if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr)) {
             LOG_WARN("Destanation host is unreachable\n");
             return -1;
         }
-        memcpy(eth->h_source, dev->hw_addr, sizeof(eth->h_source));
+        memcpy(eth->h_source, dev->hw_addr, ETH_ALEN);
         eth->h_proto = pack->protocol;
         pack->len += ETH_HEADER_SIZE;
         return 0;

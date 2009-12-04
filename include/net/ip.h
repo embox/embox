@@ -8,7 +8,9 @@
 #ifndef IP_H_
 #define IP_H_
 
-#include "lib/inet/netinet/in.h"
+#include <lib/inet/netinet/in.h>
+#include <net/skbuff.h>
+#include <net/inet_sock.h>
 
 #define __BIG_ENDIAN 1
 
@@ -52,15 +54,16 @@ typedef struct iphdr {
  * Functions provided by ip.c
  */
 
-struct inet_sock;
-struct sk_buff;
-
+/**
+ * Init.
+ */
 extern void ip_init();
 
 /**
  * Main IP Receive routine.
  */
-extern int ip_rcv(struct sk_buff *pack);
+extern int ip_rcv(struct sk_buff *pack, net_device_t *dev,
+                      packet_type_t *pt, net_device_t *orig_dev);
 
 /**
  * Add an ip header to a net_packet and send it out.

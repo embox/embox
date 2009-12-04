@@ -6,10 +6,11 @@
  * @author Nikolay Korotky
  */
 
-#include "net/route.h"
-#include "net/skbuff.h"
-#include "net/arp.h"
-#include "lib/inet/netinet/in.h"
+#include <kernel/module.h>
+#include <net/route.h>
+#include <net/skbuff.h>
+#include <net/arp.h>
+#include <lib/inet/netinet/in.h>
 
 #define RT_TABLE_SIZE 16
 
@@ -20,6 +21,10 @@
  *    - neibour table
  */
 static struct rt_entry rt_table[RT_TABLE_SIZE];
+
+int __init ip_rt_init(void) {
+	//TODO:
+}
 
 int rt_add_route(struct net_device *dev, in_addr_t dst,
         		    in_addr_t mask, in_addr_t gw, int flags) {
@@ -55,7 +60,7 @@ int ip_route(sk_buff_t *skbuff) {
 	for(i = 0; i < RT_TABLE_SIZE; i++) {
 		if (rt_table[i].rt_flags & RTF_UP) {
 			if( (skbuff->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
-				skbuff->netdev = rt_table[i].dev;
+				skbuff->dev = rt_table[i].dev;
 				arp_resolve_addr(skbuff, rt_table[i].rt_gateway);
 				return 0;
 			}

@@ -8,8 +8,8 @@
 #ifndef _IF_ARP_H
 #define _IF_ARP_H
 
-#include "net/net.h"
-#include "net/if_ether.h"
+#include <net/netdevice.h>
+#include <net/skbuff.h>
 
 /* ARP protocol HARDWARE identifiers. */
 #define ARPHRD_ETHER 	(unsigned short)0x1      /* Ethernet 10Mbps */
@@ -27,15 +27,19 @@
  * This structure defines an ethernet arp header.
  */
 typedef struct arphdr {
-    unsigned short htype;                   /**< format of hardware address = 0x0001;//ethernet */
-    unsigned short ptype;                   /**< format of protocol address = 0x0800;//ip */
-    unsigned char  hlen;                    /**< hardware addr len */
-    unsigned char  plen;                    /**< protocol addr len */
-    unsigned short oper;                    /**< ARP opcode (command)    */
-    unsigned char  sha[ETH_ALEN];           /**< Sender hardware address */
-    in_addr_t      spa;                     /**< Sender protocol address */
-    unsigned char  tha[ETH_ALEN];           /**< Target hardware address */
-    in_addr_t      tpa;                     /**< Target protocol address */
+	unsigned short htype;            /**< format of hardware address = 0x0001;//ethernet */
+	unsigned short ptype;            /**< format of protocol address = 0x0800;//ip */
+	unsigned char  hlen;             /**< hardware addr len */
+	unsigned char  plen;             /**< protocol addr len */
+	unsigned short oper;             /**< ARP opcode (command)    */
+	unsigned char  sha[ETH_ALEN];    /**< Sender hardware address */
+	in_addr_t      spa;              /**< Sender protocol address */
+	unsigned char  tha[ETH_ALEN];    /**< Target hardware address */
+	in_addr_t      tpa;              /**< Target protocol address */
 } __attribute__((packed)) arphdr_t;
+
+static inline arphdr_t *arp_hdr(const sk_buff_t *skb) {
+        return (arphdr_t *)skb->nh.raw;
+}
 
 #endif	/* _IF_ARP_H */

@@ -19,7 +19,7 @@
 #include "net/checksum.h"
 
 void __init ip_init(void) {
-	//TODO:
+        ip_rt_init();
 }
 
 int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,

@@ -77,7 +77,7 @@ net_device_t *netdev_get_by_name(const char *name) {
 }
 
 int dev_queue_xmit(struct sk_buff *pack) {
-	net_device_t *dev = pack->netdev;
+	net_device_t *dev = pack->dev;
 	net_device_stats_t *stats;
 
 	if ((NULL == pack) || (NULL == dev)) {
@@ -109,7 +109,7 @@ int dev_queue_xmit(struct sk_buff *pack) {
 }
 
 int netif_rx(struct sk_buff *pack) {
-	net_device_t *dev = pack->netdev;
+	net_device_t *dev = pack->dev;
 
 	if ((NULL == pack) || (NULL == dev)) {
     		return NET_RX_DROP;
@@ -118,18 +118,28 @@ int netif_rx(struct sk_buff *pack) {
 
 #if 0
 	//now we have not ifdev field in skb
-	if (NULL == (pack->ifdev = inet_dev_find_by_name(pack->netdev->name))){
+	if (NULL == (pack->ifdev = inet_dev_find_by_name(pack->dev->name))){
     		LOG_ERROR("wrong interface name during receiving packet\n");
     		kfree_skb(pack);
     		return NET_RX_DROP;
 	}
 #endif
+	//FIXME:
+	struct list_head *q;
+	list_for_each(q, &ptype_all) {
+		packet_type_t *pt = list_entry(q, packet_type_t, list);
+		if(pt->type == pack->protocol) {
+			pt->func(pack, NULL, NULL, NULL);
+		}
+	}
+#if 0
 	if (ETH_P_ARP == pack->protocol) {
     		arp_rcv(pack);
 	}
 	if (ETH_P_IP == pack->protocol) {
     		ip_rcv(pack);
 	}
+#endif
 #if 0
 	/* if there are some callback handlers for packet's protocol */
 	dev = (IF_DEVICE *) pack->ifdev;

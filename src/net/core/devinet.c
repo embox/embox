@@ -97,7 +97,7 @@ struct net_device *inet_dev_get_netdevice(void *handler) {
     		LOG_ERROR("handler is NULL\n");
     		return NULL;
 	}
-        return dev->net_dev;
+        return dev->dev;
 }
 
 int inet_dev_listen(void *handler, unsigned short type,
@@ -113,7 +113,7 @@ struct net_device *ip_dev_find(in_addr_t addr) {
 	int i;
 	for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
     		if (ifs_info[i].dev.ifa_address == addr) {
-        		return ifs_info[i].dev.net_dev;
+        		return ifs_info[i].dev.dev;
     		}
 	}
 	return NULL;
@@ -123,9 +123,9 @@ void *inet_dev_find_by_name(const char *if_name) {
 	int i;
 	for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
     		LOG_DEBUG("ifname %s, net_dev 0x%X\n", if_name,
-    					    ifs_info[i].dev.net_dev);
-    		if (0 == strncmp(if_name, ifs_info[i].dev.net_dev->name,
-            	    sizeof(ifs_info[i].dev.net_dev->name))) {
+    					    ifs_info[i].dev.dev);
+    		if (0 == strncmp(if_name, ifs_info[i].dev.dev->name,
+            					IFNAMSIZ)) {
         		return &ifs_info[i].dev;
     		}
 	}
@@ -136,8 +136,8 @@ int inet_dev_set_interface(char *name, in_addr_t ipaddr, in_addr_t mask,
 							unsigned char *macaddr) {
 	int i;
 	for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-    		if (0 == strncmp(name, ifs_info[i].dev.net_dev->name,
-    		    array_len(ifs_info[i].dev.net_dev->name))) {
+    		if (0 == strncmp(name, ifs_info[i].dev.dev->name,
+    		    array_len(ifs_info[i].dev.dev->name))) {
         		if((-1 == inet_dev_set_ipaddr(&ifs_info[i].dev, ipaddr))||
         		   (-1 == inet_dev_set_mask(&ifs_info[i].dev, mask)) ||
             		   (-1 == inet_dev_set_macaddr(&ifs_info[i].dev, macaddr))) {
@@ -149,30 +149,30 @@ int inet_dev_set_interface(char *name, in_addr_t ipaddr, in_addr_t mask,
 	return -1;
 }
 
-int inet_dev_set_ipaddr(void *ifdev, const in_addr_t ipaddr) {
-	if (NULL == ifdev) {
+int inet_dev_set_ipaddr(void *in_dev, const in_addr_t ipaddr) {
+	if (NULL == in_dev) {
     		return -1;
 	}
-	in_device_t *dev = (in_device_t *) ifdev;
+	in_device_t *dev = (in_device_t *) in_dev;
 	dev->ifa_address = ipaddr;
 	return 0;
 }
 
-int inet_dev_set_mask(void *ifdev, const in_addr_t mask) {
-	if (NULL == ifdev) {
+int inet_dev_set_mask(void *in_dev, const in_addr_t mask) {
+	if (NULL == in_dev) {
         	return -1;
 	}
-	in_device_t *dev = (in_device_t *) ifdev;
+	in_device_t *dev = (in_device_t *) in_dev;
 	dev->ifa_mask = mask;
 	dev->ifa_broadcast = dev->ifa_address | ~dev->ifa_mask;
 	return 0;
 }
 
-int inet_dev_set_macaddr(void *ifdev, const unsigned char *macaddr) {
-	if (NULL == ifdev || NULL == macaddr) {
+int inet_dev_set_macaddr(void *in_dev, const unsigned char *macaddr) {
+	if (NULL == in_dev || NULL == macaddr) {
     		return -1;
     	}
-	net_device_t *dev = ((in_device_t*)ifdev)->net_dev;
+	net_device_t *dev = ((in_device_t*)in_dev)->dev;
 	if (NULL == dev) {
     		return -1;
     	}
@@ -252,11 +252,11 @@ int ifdev_up(const char *iname){
         LOG_ERROR("ifdev up: can't find find free handler\n");
         return -1;
     }
-    if (NULL == (ifhandler->net_dev = netdev_get_by_name(iname))){
+    if (NULL == (ifhandler->dev = netdev_get_by_name(iname))){
         LOG_ERROR("ifdev up: can't find net_device with name\n", iname);
         return -1;
     }
-    return dev_open(ifhandler->net_dev);
+    return dev_open(ifhandler->dev);
 }
 
 int ifdev_down(const char *iname){
@@ -265,11 +265,11 @@ int ifdev_down(const char *iname){
             LOG_ERROR("ifdev down: can't find ifdev with name\n", iname);
             return -1;
         }
-    if (NULL == (ifhandler->net_dev)){
+    if (NULL == (ifhandler->dev)){
             LOG_ERROR("ifdev down: can't find net_device with name\n", iname);
             return -1;
         }
-    return dev_close(ifhandler->net_dev);
+    return dev_close(ifhandler->dev);
 }
 
 int ifdev_set_debug_mode(const char *iname, unsigned int type_filter){

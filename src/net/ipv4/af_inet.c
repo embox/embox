@@ -6,12 +6,14 @@
  * @author Nikolay Korotky
  */
 
-#include "kernel/module.h"
-#include "lib/inet/netinet/in.h"
-#include "err.h"
-#include "net/protocol.h"
-#include "net/udp.h"
-#include "net/icmp.h"
+#include <kernel/module.h>
+#include <lib/inet/netinet/in.h>
+#include <err.h>
+#include <net/protocol.h>
+#include <net/udp.h>
+#include <net/icmp.h>
+#include <net/ip.h>
+#include <net/netdevice.h>
 
 static struct net_protocol udp_protocol = {
         .handler = udp_rcv,
@@ -19,6 +21,11 @@ static struct net_protocol udp_protocol = {
 
 static struct net_protocol icmp_protocol = {
         .handler = icmp_rcv,
+};
+
+static struct packet_type ip_packet_type = {
+        .type = ETH_P_IP,
+        .func = ip_rcv,
 };
 
 static int __init inet_init(void) {
@@ -36,6 +43,8 @@ static int __init inet_init(void) {
 
         /* Set the ICMP layer up */
 	icmp_init();
+
+	dev_add_pack(&ip_packet_type);
 
 	return 0;
 }

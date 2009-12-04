@@ -204,7 +204,7 @@ int bootp_discover (void* ifdev) {
 #if 0
 		pack->ifdev = ifdev;
 #endif
-		pack->netdev = dev;
+		pack->dev = dev;
 		pack->protocol = ETH_P_IP;
 		pack->len = BOOTP_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE;
 		pack->mac.ethh = (struct ethhdr*)pack->data;

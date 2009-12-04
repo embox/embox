@@ -11,13 +11,12 @@
 #include "lib/inet/netinet/in.h"
 #include "kernel/module.h"
 #include "net/skbuff.h"
-#include "net/netdevice.h"
+#include <net/netdevice.h>
 #include "net/net.h"
 #include "net/inetdevice.h"
 #include "net/etherdevice.h"
 #include "net/net_pack_manager.h"
-#include "net/if_arp.h"
-#include "net/arp.h"
+#include <net/arp.h>
 
 //TODO this is wrong place for this variable
 static unsigned char broadcast_mac_addr[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -26,8 +25,13 @@ ARP_ENTITY arp_table[ARP_CACHE_SIZE];
 
 #define ARP_TABLE_SIZE array_len(arp_table)
 
+static struct packet_type arp_packet_type = {
+        .type = ETH_P_ARP,
+        .func = arp_rcv,
+};
+
 void __init arp_init() {
-	//TODO:
+        dev_add_pack(&arp_packet_type);
 }
 
 static inline int find_entity(void *ifdev, in_addr_t dst_addr) {
@@ -59,7 +63,7 @@ int arp_add_entity(void *ifdev, in_addr_t ipaddr, unsigned char macaddr[ETH_ALEN
 			arp_table[i].is_busy = 1;
 			arp_table[i].if_handler = ifdev;
 			arp_table[i].pw_addr = ipaddr;
-			memcpy(arp_table[i].hw_addr, macaddr, sizeof(arp_table[i].hw_addr));
+			memcpy(arp_table[i].hw_addr, macaddr, ETH_ALEN);
 			return i;
 		}
 	}
@@ -96,11 +100,11 @@ static inline sk_buff_t* build_arp_pack(void *ifdev, in_addr_t dst_addr) {
 #if 0
 	pack->ifdev   = ifdev;
 #endif
-	pack->netdev  = inet_dev_get_netdevice(ifdev);
+	pack->dev  = inet_dev_get_netdevice(ifdev);
 	pack->mac.raw = pack->data;
 	/* mac header */
 	memcpy (pack->mac.ethh->h_dest, broadcast_mac_addr, ETH_ALEN);
-	memcpy (pack->mac.ethh->h_source, pack->netdev->hw_addr, ETH_ALEN);
+	memcpy (pack->mac.ethh->h_source, pack->dev->hw_addr, ETH_ALEN);
 	pack->mac.ethh->h_proto = ETH_P_ARP;
 
 	pack->nh.raw = pack->mac.raw + ETH_HEADER_SIZE;
@@ -109,10 +113,10 @@ static inline sk_buff_t* build_arp_pack(void *ifdev, in_addr_t dst_addr) {
 	pack->nh.arph->htype = ARPHRD_ETHER;
 	pack->nh.arph->ptype = ETH_P_IP;
 	//TODO length hardware and logical type
-	pack->nh.arph->hlen = pack->netdev->addr_len;
+	pack->nh.arph->hlen = pack->dev->addr_len;
 	pack->nh.arph->plen = IPV4_ADDR_LENGTH;
 	pack->nh.arph->oper = ARPOP_REQUEST;
-	memcpy (pack->nh.arph->sha, pack->netdev->hw_addr, ETH_ALEN);
+	memcpy (pack->nh.arph->sha, pack->dev->hw_addr, ETH_ALEN);
 	pack->nh.arph->spa = inet_dev_get_ipaddr(ifdev);
 	pack->nh.arph->tpa = dst_addr;
 
@@ -138,14 +142,14 @@ sk_buff_t *arp_resolve_addr (sk_buff_t *pack, in_addr_t dst_addr) {
 #endif
 	if (dst_addr != INADDR_BROADCAST) {
 		pack->mac.raw = pack->data;
-		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));
+		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, ETH_ALEN);
 		return pack;
 	}
 	//TODO modify arp table
 #if 0
 	if (-1 != (i = find_entity(ifdev, dst_addr))) {
 		pack->mac.raw = pack->data;
-		memcpy (pack->mac.ethh->h_dest, broadcast_mac_addr, sizeof(pack->mac.ethh->h_dest));
+		memcpy (pack->mac.ethh->h_dest, broadcast_mac_addr, ETH_ALEN);
 		return pack;
 	}
 
@@ -156,7 +160,7 @@ sk_buff_t *arp_resolve_addr (sk_buff_t *pack, in_addr_t dst_addr) {
 	usleep(500);
 	if (-1 != (i = find_entity(ifdev, dst_addr))) {
 		pack->mac.raw = pack->data;
-		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, sizeof(pack->mac.ethh->h_dest));
+		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, ETH_ALEN);
 		return pack;
 	}
 #endif
@@ -209,11 +213,11 @@ static int received_req(sk_buff_t *pack) {
 #endif
 	resp = skb_copy(pack, 0);
 
-	memcpy(resp->mac.ethh->h_dest, pack->mac.ethh->h_source, sizeof(resp->mac.ethh->h_dest));
-	memcpy(resp->mac.ethh->h_source, pack->netdev->hw_addr, sizeof(resp->mac.ethh->h_source));
+	memcpy(resp->mac.ethh->h_dest, pack->mac.ethh->h_source, ETH_ALEN);
+	memcpy(resp->mac.ethh->h_source, pack->dev->hw_addr, ETH_ALEN);
 	resp->nh.arph->oper = ARPOP_REPLY;
-	memcpy(resp->nh.arph->sha, pack->netdev->hw_addr, sizeof(resp->nh.arph->sha));
-	memcpy(resp->nh.arph->tha, pack->mac.ethh->h_source, sizeof(resp->nh.arph->tha));
+	memcpy(resp->nh.arph->sha, pack->dev->hw_addr, ETH_ALEN);
+	memcpy(resp->nh.arph->tha, pack->mac.ethh->h_source, ETH_ALEN);
 	resp->nh.arph->tpa = pack->nh.arph->spa;
 	resp->nh.arph->spa = pack->nh.arph->tpa;
 
@@ -221,7 +225,8 @@ static int received_req(sk_buff_t *pack) {
 	return 0;
 }
 
-int arp_rcv(sk_buff_t *pack) {
+int arp_rcv(sk_buff_t *pack, net_device_t *dev,
+                   packet_type_t *pt, net_device_t *orig_dev) {
 	LOG_WARN("arp packet received\n");
 	arphdr_t *arp = pack->nh.arph;
 	//TODO need add function for getting ip addr

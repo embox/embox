@@ -222,7 +222,7 @@ int icmp_send_echo_request(void *ifdev, in_addr_t dstaddr, int ttl,
 	//TODO ICMP get net dev
 #if 0
 	pack->ifdev  = ifdev;
-	pack->netdev = (struct net_device *)inet_dev_get_netdevice(ifdev);
+	pack->dev = (struct net_device *)inet_dev_get_netdevice(ifdev);
 #endif
 	pack->len    = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
 					inet_dev_get_ipaddr(ifdev), dstaddr);
@@ -255,7 +255,7 @@ void __init icmp_init() {
 int icmp_rcv(sk_buff_t *pack) {
 	LOG_DEBUG("icmp packet received\n");
 	icmphdr_t *icmph = pack->h.icmph;
-	net_device_stats_t *stats = pack->netdev->netdev_ops->ndo_get_stats(pack->netdev);
+	net_device_stats_t *stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
 	/**
 	 * 18 is the highest 'known' ICMP type. Anything else is a mystery
 	 * RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently
