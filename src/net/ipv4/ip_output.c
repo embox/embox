@@ -48,11 +48,16 @@ static int build_ip_packet(struct inet_sock *sk, sk_buff_t *pack) {
 	return 0;
 }
 
+int ip_queue_xmit(struct sk_buff *skb) {
+	//TODO:
+	dev_queue_xmit(skb);
+}
+
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *pack) {
 	LOG_DEBUG("ip_send_packet\n");
 	build_ip_packet(sk, pack);
 	pack->protocol = ETH_P_IP;
 	pack->len += IP_HEADER_SIZE;
 	ip_route(pack);
-	return dev_queue_xmit(pack);
+	return ip_queue_xmit(pack);
 }

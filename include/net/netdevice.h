@@ -19,6 +19,10 @@
 #define NET_RX_DROP          1
 #define NET_RX_BAD           2
 
+/* Driver transmit return codes */
+#define NETDEV_TX_OK        0
+#define NETDEV_TX_BUSY      1
+
 /** Largest hardware address length */
 #define MAX_ADDR_LEN    32
 
@@ -55,10 +59,10 @@ typedef struct net_device_stats {
 
 enum netdev_state_t {
         __LINK_STATE_START,
-        __LINK_STATE_PRESENT,
-        __LINK_STATE_NOCARRIER,
-        __LINK_STATE_LINKWATCH_PENDING,
-        __LINK_STATE_DORMANT,
+//        __LINK_STATE_PRESENT,
+//        __LINK_STATE_NOCARRIER,
+//        __LINK_STATE_LINKWATCH_PENDING,
+//        __LINK_STATE_DORMANT,
 };
 
 /**
@@ -88,7 +92,7 @@ struct header_ops {
  * structure for register incoming protocol packets type
  */
 typedef struct packet_type {
-	__be16 type;                       /**< This is really htons(ether_type). */
+	__be16            type;            /**< This is really htons(ether_type). */
 	struct net_device *dev;            /**< NULL is wildcarded here	     */
 	int (*func)(struct sk_buff *, struct net_device *, struct packet_type *,
 			struct net_device *);
@@ -97,7 +101,6 @@ typedef struct packet_type {
 			int features);
 	int (*gso_send_check)(struct sk_buff *skb);
 #endif
-
 	void *af_packet_priv;
 	struct list_head list;
 } packet_type_t;

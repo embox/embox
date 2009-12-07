@@ -15,15 +15,15 @@
  * structute of inet(IP) device
  */
 typedef struct in_device {
-    struct net_device *dev;
-    in_addr_t         ifa_address;
-    in_addr_t         ifa_mask;
-    in_addr_t         ifa_broadcast;
-    in_addr_t         ifa_anycast;
-    unsigned char     ipv4_addr_length;
+	struct net_device *dev;
+	in_addr_t         ifa_address;
+	in_addr_t         ifa_mask;
+	in_addr_t         ifa_broadcast;
+	in_addr_t         ifa_anycast;
+	unsigned char     ipv4_addr_length;
 } in_device_t;
 
-extern int inet_dev_init();
+extern void devinet_init(void);
 
 /**
  * get pointer on net_device struct linked with pointed interface

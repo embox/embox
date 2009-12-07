@@ -18,8 +18,7 @@ typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 /**
  * Determine if the Ethernet address is a multicast.
  * @param addr Pointer to a six-byte array containing the Ethernet address
- *
- * Return true if the address is a multicast address.
+ * @return true if the address is a multicast address.
  * By definition the broadcast address is also a multicast address.
  */
 static inline int is_multicast_ether_addr(const uint8_t *addr) {
@@ -29,11 +28,19 @@ static inline int is_multicast_ether_addr(const uint8_t *addr) {
 /**
  * Determine if the Ethernet address is broadcast
  * @param addr Pointer to a six-byte array containing the Ethernet address
- *
- * Return true if the address is the broadcast address.
+ * @return true if the address is the broadcast address.
  */
 static inline int is_broadcast_ether_addr(const uint8_t *addr) {
         return (addr[0] & addr[1] & addr[2] & addr[3] & addr[4] & addr[5]) == 0xff;
+}
+
+/**
+ * Determine if give Ethernet address is all zeros.
+ * @param addr Pointer to a six-byte array containing the Ethernet address
+ * @return true if the address is all zeroes.
+ */
+static inline int is_zero_ether_addr(const uint8_t *addr) {
+        return !(addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]);
 }
 
 /**
@@ -56,9 +63,18 @@ static inline int is_valid_ether_addr(const uint8_t *addr) {
  */
 
 /**
- * Init ethernet.
+ * Extract hardware address from packet.
+ * @param pack packet to extract header from
+ * @param haddr destination buffer
  */
-extern int eth_init();
+int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr);
+
+/**
+ * Set new Ethernet hardware address.
+ * @param dev network device
+ * @param p socket address
+ */
+int eth_mac_addr(struct net_device *dev, void *p);
 
 /**
  * Create the Ethernet header
@@ -89,13 +105,5 @@ extern void ether_setup(net_device_t *dev);
  * Allocates and sets up an Ethernet device
  */
 extern net_device_t *alloc_etherdev();
-
-/**
- * Send Ethernet packet.
- * send packet into define eth interface
- * @param pack network packet which want send
- * @return on success, returns 0, on error, -1 is returned
- */
-extern int dev_queue_xmit (struct sk_buff *pack);
 
 #endif /* ETHERDEVICE_H_ */

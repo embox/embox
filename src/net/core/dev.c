@@ -77,14 +77,15 @@ net_device_t *netdev_get_by_name(const char *name) {
 }
 
 int dev_queue_xmit(struct sk_buff *pack) {
-	net_device_t *dev = pack->dev;
-	net_device_stats_t *stats;
-
-	if ((NULL == pack) || (NULL == dev)) {
-    		return -1;
+	if(NULL == pack) {
+	        return -1;
 	}
-
-	stats = dev->netdev_ops->ndo_get_stats(dev);
+	net_device_t *dev = pack->dev;
+	if (NULL == dev) {
+	        return -1;
+	}
+	const struct net_device_ops *ops = dev->netdev_ops;
+	net_device_stats_t *stats = ops->ndo_get_stats(dev);
 
 	if (dev->flags & IFF_UP) {
 		if (ETH_P_ARP != pack->protocol) {
@@ -95,7 +96,7 @@ int dev_queue_xmit(struct sk_buff *pack) {
     			}
 		}
 
-		if (-1 == dev->netdev_ops->ndo_start_xmit(pack, dev)) {
+		if (-1 == ops->ndo_start_xmit(pack, dev)) {
     			kfree_skb(pack);
     			stats->tx_err += 1;
     			return -1;
@@ -109,9 +110,11 @@ int dev_queue_xmit(struct sk_buff *pack) {
 }
 
 int netif_rx(struct sk_buff *pack) {
+	if(NULL == pack) {
+	        return NET_RX_DROP;
+	}
 	net_device_t *dev = pack->dev;
-
-	if ((NULL == pack) || (NULL == dev)) {
+	if(NULL == dev) {
     		return NET_RX_DROP;
 	}
 	pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
@@ -124,12 +127,12 @@ int netif_rx(struct sk_buff *pack) {
     		return NET_RX_DROP;
 	}
 #endif
-	//FIXME:
-	struct list_head *q;
-	list_for_each(q, &ptype_all) {
-		packet_type_t *pt = list_entry(q, packet_type_t, list);
-		if(pt->type == pack->protocol) {
-			pt->func(pack, NULL, NULL, NULL);
+	struct list_head *head;
+	struct packet_type *q;
+	head = &ptype_base[ntohs(pack->protocol) & PTYPE_HASH_MASK];
+	list_for_each_entry(q, head, list) {
+		if(q->type == pack->protocol) {
+			q->func(pack, NULL, NULL, NULL);
 		}
 	}
 #if 0
@@ -193,11 +196,11 @@ int dev_open(struct net_device *dev) {
         if (dev->flags & IFF_UP) {
                 return 0;
         }
-
+        const struct net_device_ops *ops = dev->netdev_ops;
         dev->state |= __LINK_STATE_START;
 
-        if (dev->netdev_ops->ndo_open) {
-                ret = dev->netdev_ops->ndo_open(dev);
+        if (ops->ndo_open) {
+                ret = ops->ndo_open(dev);
         } else {
     		LOG_ERROR("ifdev up: can't find open function in net_device with name\n");
         }
@@ -216,11 +219,11 @@ int dev_close(struct net_device *dev) {
 	if (!(dev->flags & IFF_UP)) {
                 return 0;
 	}
-
+	const struct net_device_ops *ops = dev->netdev_ops;
 	dev->state &= ~__LINK_STATE_START;
 
-	if (dev->netdev_ops->ndo_stop) {
-		dev->netdev_ops->ndo_stop(dev);
+	if (ops->ndo_stop) {
+		ops->ndo_stop(dev);
 	} else {
 		LOG_ERROR("ifdev down: can't find stop function in net_device with name\n");
 	}

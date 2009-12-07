@@ -7,8 +7,8 @@
 #ifndef __BOOTP_H__
 #define __BOOTP_H__
 
-#include "net/ip.h"
-#include "net/net.h"
+#include <net/ip.h>
+#include <net/net.h>
 
 //#define HOSTNAME "monitor"
 //#define DHCP_SUPPORT 1

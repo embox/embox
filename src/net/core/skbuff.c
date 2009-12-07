@@ -6,17 +6,14 @@
  * @date 20.10.2009
  * @author Anton Bondarev
  */
-#include "types.h"
-#include "string.h" /*for memcpy*/
-#include "common.h"
-#include "kernel/module.h"
-#include "lib/list.h"
-#include "net/skbuff.h"
-#include "asm/spin_lock.h"
-#include "net/net_pack_manager.h"
-
-/*FIXME this file needs for local_irq_save but in this module we must use spin_lock*/
-#include "asm/sys.h"
+#include <types.h>
+#include <string.h> /*for memcpy*/
+#include <common.h>
+#include <kernel/module.h>
+#include <lib/list.h>
+#include <net/skbuff.h>
+#include <asm/spin_lock.h>
+#include <net/net_pack_manager.h>
 
 //TODO this define must place in autoconf
 #define QUANTITY_SKB 0x100
@@ -101,10 +98,6 @@ void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk){
 
 }
 
-/**
- * return head of queue allocated in alloc_skb_queue to the free queue pool
- * and give back all contained sk_buff in this list
- */
 void skb_queue_purge(struct sk_buff_head *queue){
 	if (NULL == queue){
 		return;

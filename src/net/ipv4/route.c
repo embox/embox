@@ -23,7 +23,7 @@
 static struct rt_entry rt_table[RT_TABLE_SIZE];
 
 int __init ip_rt_init(void) {
-	//TODO:
+	devinet_init();
 }
 
 int rt_add_route(struct net_device *dev, in_addr_t dst,
@@ -61,7 +61,7 @@ int ip_route(sk_buff_t *skbuff) {
 		if (rt_table[i].rt_flags & RTF_UP) {
 			if( (skbuff->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
 				skbuff->dev = rt_table[i].dev;
-				arp_resolve_addr(skbuff, rt_table[i].rt_gateway);
+				arp_find(skbuff, rt_table[i].rt_gateway);
 				return 0;
 			}
 		}

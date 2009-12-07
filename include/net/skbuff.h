@@ -8,7 +8,7 @@
 #ifndef SKBUFF_H_
 #define SKBUFF_H_
 
-#include "types.h"
+#include <types.h>
 
 struct skb_timeval {
 	uint32_t off_sec;
@@ -104,5 +104,11 @@ extern struct sk_buff *alloc_skb_fclone(struct sk_buff *skb, gfp_t priority);
 extern struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t priority);
 
 extern struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority);
+
+/**
+ * return head of queue allocated in alloc_skb_queue to the free queue pool
+ * and give back all contained sk_buff in this list
+ */
+extern void skb_queue_purge(struct sk_buff_head *queue);
 
 #endif /* SKBUFF_H_ */

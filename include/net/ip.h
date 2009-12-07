@@ -70,4 +70,6 @@ extern int ip_rcv(struct sk_buff *pack, net_device_t *dev,
  */
 extern int ip_send_packet(struct inet_sock *sk, struct sk_buff *pack);
 
+extern int ip_queue_xmit(struct sk_buff *skb);
+
 #endif /* IP_H_ */

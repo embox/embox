@@ -15,6 +15,8 @@
 #include <net/ip.h>
 #include <net/netdevice.h>
 
+DECLARE_INIT("net", inet_init, INIT_NET_LEVEL);
+
 static struct net_protocol udp_protocol = {
         .handler = udp_rcv,
 };
@@ -28,6 +30,7 @@ static struct packet_type ip_packet_type = {
         .func = ip_rcv,
 };
 
+//TODO:
 static int __init inet_init(void) {
 	/* Add all the base protocols. */
         if (inet_add_protocol(&icmp_protocol, IPPROTO_ICMP) < 0)

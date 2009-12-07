@@ -32,7 +32,7 @@ typedef struct ethhdr {
 
 #define ETH_HEADER_SIZE (sizeof(struct ethhdr))
 
-#include "net/skbuff.h"
+#include <net/skbuff.h>
 
 /**
  * extract MAC header for skb

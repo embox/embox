@@ -4,12 +4,12 @@
  * @date 07.03.2009
  * @author Anton Bondarev
  */
-#include "common.h"
-#include "net/netdevice.h"
-#include "lib/list.h"
-#include "asm/spin_lock.h"
-#include "kernel/module.h"
-#include "net/net_pack_manager.h"
+#include <common.h>
+#include <net/netdevice.h>
+#include <lib/list.h>
+#include <asm/spin_lock.h>
+#include <kernel/module.h>
+#include <net/net_pack_manager.h>
 
 typedef struct _NET_BUFF_INFO {
 	struct list_head list;
@@ -31,7 +31,6 @@ static int __init net_buff_init(){
 	}
 	return 0;
 }
-
 
 unsigned char *net_buff_alloc() {
 	unsigned long sp = spin_lock();

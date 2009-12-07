@@ -7,7 +7,7 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-#include "ip_addr.h"
+#include <ip_addr.h>
 
 struct sockaddr_in {
   uint8_t sin_len;

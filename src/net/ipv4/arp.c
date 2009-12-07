@@ -34,12 +34,12 @@ void __init arp_init() {
         dev_add_pack(&arp_packet_type);
 }
 
-static inline int find_entity(void *ifdev, in_addr_t dst_addr) {
+static inline int find_entity(void *in_dev, in_addr_t dst_addr) {
 	int i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
 		if(arp_table[i].is_busy &&
 		  (arp_table[i].pw_addr == dst_addr) &&
-		  (ifdev == arp_table[i].if_handler)) {
+		  (in_dev == arp_table[i].if_handler)) {
 			return i;
 		}
 	}
@@ -53,15 +53,15 @@ static inline int find_entity(void *ifdev, in_addr_t dst_addr) {
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-int arp_add_entity(void *ifdev, in_addr_t ipaddr, unsigned char macaddr[ETH_ALEN]) {
+int arp_add_entity(void *in_dev, in_addr_t ipaddr, unsigned char macaddr[ETH_ALEN]) {
 	int i;
-	if (-1 != (i = find_entity(ifdev,ipaddr))) {
+	if (-1 != (i = find_entity(in_dev, ipaddr))) {
 		return i;
 	}
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
 		if(0 == arp_table[i].is_busy) {
 			arp_table[i].is_busy = 1;
-			arp_table[i].if_handler = ifdev;
+			arp_table[i].if_handler = in_dev;
 			arp_table[i].pw_addr = ipaddr;
 			memcpy(arp_table[i].hw_addr, macaddr, ETH_ALEN);
 			return i;
@@ -77,30 +77,30 @@ int arp_add_entity(void *ifdev, in_addr_t ipaddr, unsigned char macaddr[ETH_ALEN
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-int arp_delete_entity(void *ifdev, in_addr_t ipaddr, unsigned char macaddr[ETH_ALEN]) {
-    int i;
-    for (i = 0; i < ARP_TABLE_SIZE; i++) {
-       if( arp_table[i].pw_addr == ipaddr ||
-           0 == memcmp(arp_table[i].hw_addr, macaddr, ETH_ALEN) ||
-           ifdev == arp_table[i].if_handler) {
-               arp_table[i].is_busy = 0;
-       }
-    }
-    return -1;
+int arp_delete_entity(void *in_dev, in_addr_t ipaddr, unsigned char macaddr[ETH_ALEN]) {
+	int i;
+	for (i = 0; i < ARP_TABLE_SIZE; i++) {
+		if( arp_table[i].pw_addr == ipaddr ||
+        	    0 == memcmp(arp_table[i].hw_addr, macaddr, ETH_ALEN) ||
+        	    in_dev == arp_table[i].if_handler) {
+			arp_table[i].is_busy = 0;
+    		}
+	}
+	return -1;
 }
 
-static inline sk_buff_t* build_arp_pack(void *ifdev, in_addr_t dst_addr) {
+sk_buff_t* arp_create(void *in_dev, in_addr_t dst_addr) {
 	sk_buff_t *pack;
 
-	if (NULL == ifdev ||
+	if (NULL == in_dev ||
 	    NULL == (pack = alloc_skb((int)pack->len, 0))) {
 		return NULL;
 	}
 
 #if 0
-	pack->ifdev   = ifdev;
+	pack->ifdev   = in_dev;
 #endif
-	pack->dev  = inet_dev_get_netdevice(ifdev);
+	pack->dev  = inet_dev_get_netdevice(in_dev);
 	pack->mac.raw = pack->data;
 	/* mac header */
 	memcpy (pack->mac.ethh->h_dest, broadcast_mac_addr, ETH_ALEN);
@@ -117,7 +117,7 @@ static inline sk_buff_t* build_arp_pack(void *ifdev, in_addr_t dst_addr) {
 	pack->nh.arph->plen = IPV4_ADDR_LENGTH;
 	pack->nh.arph->oper = ARPOP_REQUEST;
 	memcpy (pack->nh.arph->sha, pack->dev->hw_addr, ETH_ALEN);
-	pack->nh.arph->spa = inet_dev_get_ipaddr(ifdev);
+	pack->nh.arph->spa = inet_dev_get_ipaddr(in_dev);
 	pack->nh.arph->tpa = dst_addr;
 
 	pack->len = 0x3b;
@@ -131,7 +131,7 @@ static inline sk_buff_t* build_arp_pack(void *ifdev, in_addr_t dst_addr) {
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL
  */
-sk_buff_t *arp_resolve_addr (sk_buff_t *pack, in_addr_t dst_addr) {
+sk_buff_t *arp_find(sk_buff_t *pack, in_addr_t dst_addr) {
 	int i;
 #if 0
 	void *ifdev = pack->ifdev;
@@ -154,7 +154,7 @@ sk_buff_t *arp_resolve_addr (sk_buff_t *pack, in_addr_t dst_addr) {
 	}
 
 	/*send mac packet*/
-	dev_queue_xmit(build_arp_pack(ifdev, dst_addr));
+	arp_xmit(arp_create(ifdev, dst_addr));
 
 	//TODO delete this after processes will be added to monitor
 	usleep(500);
@@ -221,7 +221,7 @@ static int received_req(sk_buff_t *pack) {
 	resp->nh.arph->tpa = pack->nh.arph->spa;
 	resp->nh.arph->spa = pack->nh.arph->tpa;
 
-	dev_queue_xmit(resp);
+	arp_xmit(resp);
 	return 0;
 }
 
@@ -247,4 +247,8 @@ int arp_rcv(sk_buff_t *pack, net_device_t *dev,
 	}
 
 	return 0;
+}
+
+void arp_xmit(sk_buff_t *skb) {
+	dev_queue_xmit(skb);
 }

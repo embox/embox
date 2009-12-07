@@ -7,20 +7,8 @@
  * @author Nikolay Korotky
  */
 
-#include "net/net.h"
-#include "net/inetdevice.h"
-#include "kernel/init.h"
+#include <net/net.h>
+#include <net/inetdevice.h>
+#include <kernel/init.h>
 
-DECLARE_INIT("net", net_init, INIT_NET_LEVEL);
-
-/**
- * initialize protocol's stack
- * now only UDP ARP and so on
- * not support TCP protocol
- */
-static int net_init() {
-    //TODO:
-    eth_init();
-    inet_dev_init();
-    return 0;
-}
+//DECLARE_INIT("net", net_init, INIT_NET_LEVEL);

@@ -19,10 +19,6 @@
 #include <net/sock.h>
 #include <net/socket.h>
 
-int __init eth_init() {
-	return 0;
-}
-
 int eth_header(struct sk_buff *pack, struct net_device *dev, unsigned short type,
             			    void *daddr, void *saddr, unsigned len) {
         ethhdr_t *eth = eth_hdr(pack);
@@ -53,7 +49,7 @@ int eth_rebuild_header(sk_buff_t *pack) {
     ethhdr_t     *eth = (ethhdr_t*)pack->data;
     net_device_t *dev = pack->dev;
     if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
-        if (NULL == arp_resolve_addr(pack, pack->nh.iph->daddr)) {
+        if (NULL == arp_find(pack, pack->nh.iph->daddr)) {
             LOG_WARN("Destanation host is unreachable\n");
             return -1;
         }
@@ -65,24 +61,17 @@ int eth_rebuild_header(sk_buff_t *pack) {
     return 0;
 }
 
-/**
- * Extract hardware address from packet.
- * @param pack packet to extract header from
- * @param haddr destination buffer
- */
-static int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr) {
+int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr) {
 	ethhdr_t *eth = eth_hdr(pack);
         memcpy(haddr, eth->h_source, ETH_ALEN);
         return ETH_ALEN;
 }
 
-/**
- * Set new Ethernet hardware address.
- * @param dev network device
- * @param p socket address
- */
-static int eth_mac_addr(struct net_device *dev, void *p) {
+int eth_mac_addr(struct net_device *dev, void *p) {
         struct sockaddr *addr = p;
+        if (!is_valid_ether_addr(addr->sa_data)) {
+    		return -1;
+        }
         memcpy(dev->hw_addr, addr->sa_data, dev->addr_len);
         return 0;
 }
@@ -103,6 +92,5 @@ void ether_setup(net_device_t *dev) {
 }
 
 net_device_t *alloc_etherdev() {
-	net_device_t *dev = alloc_netdev("eth%d", &ether_setup);
-	return dev;
+	return alloc_netdev("eth%d", &ether_setup);
 }

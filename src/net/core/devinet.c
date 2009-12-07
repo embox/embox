@@ -6,12 +6,13 @@
  * @date 18.07.2009
  * @author Anton Bondarev
  */
-#include "string.h"
-#include "common.h"
-#include "net/net.h"
-#include "net/inetdevice.h"
-#include "net/netdevice.h"
-#include "net/skbuff.h"
+#include <string.h>
+#include <common.h>
+#include <kernel/module.h>
+#include <net/net.h>
+#include <net/inetdevice.h>
+#include <net/netdevice.h>
+#include <net/skbuff.h>
 
 #define IFDEV_CBINFO_QUANTITY 8
 
@@ -87,8 +88,8 @@ static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
 	return -1;
 }
 
-int inet_dev_init() {
-	return 0;
+void __init devinet_init(void) {
+
 }
 
 struct net_device *inet_dev_get_netdevice(void *handler) {
@@ -246,6 +247,7 @@ in_device_t * inet_dev_get_next_used() {
 }
 
 //TODO follow functions either have different interface or move to another place
+//     move into ifconfig -- sikmir
 int ifdev_up(const char *iname){
     in_device_t *ifhandler;
     if (NULL == (ifhandler = find_free_handler ())){
