@@ -9,11 +9,10 @@
 #include "autoconf.h"
 #include "asm/mb_regs.h"
 
-
+	.section    ".start_code"
+	.align  4
  	.weak hardware_init_hook
  	.weak software_init_hook
-	.section    ".text"
-	.align  4
 
 #define C_ENTRY(name)	.globl name; .align 4; name
 
@@ -98,3 +97,6 @@ clear_bss:
 	/*unreacheble loop*/
 	//TODO may be it must be exeption or reset?
 3:	bri	3b
+
+	.section    ".text"
+	.align  4

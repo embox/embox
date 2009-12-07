@@ -45,9 +45,7 @@ ENTRY(_hardreset)
 
 MEMORY
 {
-  rom     : ORIGIN = 0x00000000, LENGTH = 512K
-  sdram	  : ORIGIN = 0x42000000, LENGTH = 128M
-  sram    : ORIGIN = 0xA0000000, LENGTH = 1K
+  sdram	  : ORIGIN = 0x00000000, LENGTH = 128M
 }
 
 /*
@@ -71,8 +69,8 @@ SECTIONS
 	.text :
 	{
 		. = ALIGN (0x1000);
-		_trap_table = .;
-		*(.trap_table)
+		_start_code = .;
+		*(.start_code)
 
 		. = ALIGN (0x800);
 		*(.recovery_section)
@@ -145,6 +143,6 @@ SECTIONS
 		_internal_start = .;
 		*(.internal_mem)
 		_internal_end = .;
-	}>sram
+	}>sdram
 	PROVIDE (__internal_stack = 0xA0000000 + 0x800);
 }
