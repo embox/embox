@@ -7,6 +7,8 @@
 #ifndef STDLIB_H_
 #define STDLIB_H_
 
+#include <types.h>
+
 /**
  * convert digit character to integer
  * @param digit character for converting
@@ -46,5 +48,11 @@ extern long int strtol(const char *nptr, char **endptr, int base);
  * Return directory part of PATH or "." if none is available.
  */
 extern char *dirname(char *path);
+
+/** Allocate and free dynamic memory */
+extern void *calloc(size_t nmemb, size_t size);
+extern void *malloc(size_t size);
+extern void free(void *ptr);
+extern void *realloc(void *ptr, size_t size);
 
 #endif /* STDLIB_H_ */
