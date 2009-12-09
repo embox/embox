@@ -61,7 +61,7 @@ int uart_init() {
 }
 
 char uart_getc() {
-	while (!is_rx_empty());
+	while (is_rx_empty());
 	return (char) (uart->rx_data & 0xFF);
 }
 

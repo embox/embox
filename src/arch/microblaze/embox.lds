@@ -45,7 +45,7 @@ ENTRY(_hardreset)
 
 MEMORY
 {
-  sdram	  : ORIGIN = 0x00000000, LENGTH = 128M
+  sdram	  : ORIGIN = 0x44000000, LENGTH = 4M
 }
 
 /*

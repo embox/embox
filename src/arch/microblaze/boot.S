@@ -66,7 +66,7 @@ clear_bss:
 	addik  cur_addr, reg_zero, _bstart /*set start address for bss*/
 	addik  end_addr, reg_zero, _bend   /*set end address for bss section*/
 1:
-	cmp   cmp_reg, reg_zero, end_addr
+	cmp   cmp_reg, cur_addr, end_addr
 	beqi  cmp_reg, 2f                  /*cmp cur_addr and end_addr*/
 
 	swi   reg_zero, cur_addr, 0        /* write zero to loc */
@@ -84,8 +84,9 @@ clear_bss:
 /*call hardware_init_hook if it set */
 	addik reg_tmp1, reg_zero, hardware_init_hook
 	beqi reg_tmp1, 1f
-	brai hardware_init_hook
+	brlid r15, hardware_init_hook
 	nop
+
 1:
 /*call software_init_hook if it set */
 	addik reg_tmp1, reg_zero, software_init_hook
@@ -93,7 +94,10 @@ clear_bss:
 	brai software_init_hook
 	nop
 2:
-	brai main
+	brlid r15, main
+	nop
+
+
 	/*unreacheble loop*/
 	//TODO may be it must be exeption or reset?
 3:	bri	3b
