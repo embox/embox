@@ -33,16 +33,33 @@ void count(char *img) {
     		printf("Bad jump to the end of the file\n");
         size_t size = ftell(pfile);
         rewind(pfile);
-        char *buffer =(char *) malloc(size);
+        unsigned char *buffer =(char *) malloc(size);
         if (!buffer)
     		printf("Bad memory allotment\n");
         size_t result = fread(buffer, 1, size, pfile);
         if (result != size) {
                 printf("Bad copy to the buffer\n");
         }
-        unsigned char *pmd5_sum = malloc(16*sizeof(unsigned char));
+        unsigned char *pmd5_sum = malloc(16 * sizeof(unsigned char));
         pmd5_sum = (unsigned char *) count_md5((unsigned char *) buffer, (unsigned char *) buffer + size, (unsigned char *) pmd5_sum);
         int i;
+
+
+        int h;
+        for (h = 0; h < 16; h++)
+                        printf("%02x", buffer[h]);
+        printf("\t");
+        int count = 0;
+        for (h = (unsigned int)buffer; h < (unsigned int) buffer + size; h++) {
+            count = (count + *(volatile unsigned char *)h) % (1 << 30);
+        }
+        printf("%d", count);
+        printf("\t");
+        for (h = 0; h < 16; h++)
+            printf("%02x", buffer[size - 16 + h]);
+        printf("Size of data for md5 checksum 0x%x\t\t", size);
+
+        //printf("start = 0x%x, finish = 0x%x   ", (unsigned char *) buffer, (unsigned char *) buffer + size);
         for (i = 0; i < 16; i++)
                 printf("%02x", pmd5_sum[i]);
         printf("\n");

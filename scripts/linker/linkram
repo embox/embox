@@ -83,6 +83,8 @@ SECTIONS
 		_text_start = .;
 		*(.text)
 		. = ALIGN (0x4);
+
+		_ro_data = .;
 		*(.rodata*)
 		. = ALIGN(0x4);
 		*(.const)

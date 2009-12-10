@@ -12,8 +12,8 @@ md5.o:
 
 count_md5:  count.o md5.o
 	gcc -o count_md5 count.o md5.o
-	$(OC_TOOL) -j .text $(BIN_DIR)/$(TARGET) imagetext.bin
-#	cat ../autoconf.h | sed 's/#define MD5_CHECKSUM ".*"/#define MD5_CHECKSUM "$(shell ./count_md5 -i imagetext.bin)"/' > copyautoconf.h
+	$(OC_TOOL) -O binary -j .text $(BIN_DIR)/$(TARGET)_ram imagetext.bin
+	cat ../autoconf.h | sed 's/#define MD5_CHECKSUM ".*"/#define MD5_CHECKSUM "$(shell ./count_md5 -i imagetext.bin)"/' > copyautoconf.h
 #	mv -f copyautoconf.h ../autoconf.h
 #	$(CC) -c $(SRC_DIR)/testsuites/checksum/test_checksum.c
 
