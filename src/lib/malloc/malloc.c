@@ -1,11 +1,11 @@
 /**
- * \file malloc.c
- * \date 13.10.09
- * \author Sikmir
- * \description Pseudo-dynamic memory allocator
+ * @file malloc.c
+ * @date 13.10.09
+ * @author Nikolay Korotky
+ * @description Pseudo-dynamic memory allocator.
  */
-#include "common.h"
-#include "string.h"
+#include <common.h>
+#include <string.h>
 
 #define MEM_POOL_SIZE 0x11CA
 
@@ -21,9 +21,14 @@ struct mem_control_block {
 };
 
 static void malloc_init() {
-	last_valid_address   = (void*)mem_pool;
-	managed_memory_start = last_valid_address;
+	managed_memory_start = (void*)mem_pool;
+	last_valid_address   = managed_memory_start;
 	has_initialized      = 1;
+
+	struct mem_control_block *init_mcb;
+	init_mcb = (struct mem_control_block *)managed_memory_start;
+	init_mcb->is_available = 1;
+	init_mcb->size = sizeof(mem_pool) - sizeof(struct mem_control_block);
 }
 
 static void _mem_defrag() {
@@ -46,22 +51,21 @@ static void _mem_defrag() {
 
 void free(void *ptr) {
 	struct mem_control_block *mcb;
-
 	mcb = ptr - sizeof(struct mem_control_block);
 	mcb->is_available = 1;
 	 _mem_defrag();
 	return;
 }
 
+//ATTENTION: memory size must be aligned!
 void *malloc(size_t size) {
-	void *current_location = managed_memory_start;
+	void *current_location;
         struct mem_control_block *current_location_mcb;
 	void *memory_location = NULL;
-
 	if(! has_initialized) {
 		malloc_init();
 	}
-
+	current_location = managed_memory_start;
 	size += sizeof(struct mem_control_block);
 
 	while(current_location != last_valid_address) {
@@ -75,7 +79,6 @@ void *malloc(size_t size) {
 		}
 		current_location += current_location_mcb->size;
 	}
-
 	if(! memory_location) {
 		memory_location = last_valid_address;
 		last_valid_address += size;
@@ -87,9 +90,7 @@ void *malloc(size_t size) {
 		current_location_mcb->is_available = 0;
 		current_location_mcb->size         = size;
 	}
-
 	memory_location += sizeof(struct mem_control_block);
-
 	return memory_location;
 }
 

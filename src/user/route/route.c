@@ -71,12 +71,15 @@ static int exec(int argsc, char **argsv) {
 			net_addr.s_addr = rt->rt_dst;
 			s_net = inet_ntoa(net_addr);
 			printf("%s  \t\t", s_net);
+			free(s_net);
 			gw_addr.s_addr = rt->rt_gateway;
 			s_gw = inet_ntoa(gw_addr);
 			printf("%s  \t\t", s_gw);
+			free(s_gw);
 			mask_addr.s_addr = rt->rt_mask;
 			s_mask = inet_ntoa(mask_addr);
 			printf("%s  \t\t", s_mask);
+			free(s_mask);
 			if(rt->rt_flags & RTF_UP) {
 				printf("U");
 			}

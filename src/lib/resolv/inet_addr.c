@@ -4,10 +4,10 @@
  * \author Sikmir
  */
 
-#include "lib/inet/netinet/in.h"
-#include "net/ip_addr.h"
-#include "ctype.h"
-#include "stdio.h"
+#include <lib/inet/netinet/in.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /*
  * Ascii internet address interpretation routine.
@@ -73,8 +73,9 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 					(c + 10 - (islower(c) ? 'a' : 'A'));
 				c = *++cp;
 				digit = 1;
-			} else
+			} else {
 				break;
+			}
 		}
 
 		if (c == '.') {
@@ -84,39 +85,41 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 			 *	a.b.c	(with c treated as 16 bits)
 			 *	a.b	(with b treated as 24 bits)
 			 */
-			if (pp > res.bytes + 2 || val > 0xff)
+			if (pp > res.bytes + 2 || val > 0xff) {
 				return 0;
+			}
 			*pp++ = val;
 			c = *++cp;
-		} else
+		} else {
 			break;
+		}
 	}
 	/*
 	 * Check for trailing characters.
 	 */
-	if (c != '\0' && !isspace(c))
+	if (c != '\0' && !isspace(c)) {
 		return 0;
+	}
 	/*
 	 * Did we get a valid digit?
 	 */
-	if (!digit)
+	if (!digit) {
 		return 0;
-
+	}
 	/* Check whether the last part is in its limits depending on
 	   the number of parts in total.  */
-	if (val > max[pp - res.bytes])
+	if (val > max[pp - res.bytes]) {
 		return 0;
-
-	if (addr != NULL)
+	}
+	if (addr != NULL) {
 		addr->s_addr = res.word | htonl (val);
-
+	}
 	return 1;
 }
 
-static char buffer[18];
 char *inet_ntoa(struct in_addr in) {
 	unsigned char *bytes = (unsigned char *) &in;
-	sprintf(buffer, "%d.%d.%d.%d",
-        bytes[0], bytes[1], bytes[2], bytes[3]);
+	char *buffer = (char*)malloc(24*sizeof(char));
+	sprintf(buffer, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
         return buffer;
 }
