@@ -5,7 +5,6 @@
     .section ".trap_table"
     .align 0x1000
 
-
 _hardreset:
 
   TRAPL(boot_start);            ! 00 reset trap
@@ -19,7 +18,6 @@ _hardreset:
   BAD_TRAP;                     ! 08 fp_exception
   SRMMU_DFAULT                  ! 09 data_access_exception
   BAD_TRAP;                     ! 0A tag_overflow
-
   BAD_TRAP;                     ! 0B watchpoint_exception
   BAD_TRAP;                     ! 0C undefined
   BAD_TRAP;                     ! 0D undefined
@@ -31,7 +29,7 @@ _hardreset:
   BAD_TRAP;                     ! 11 interrupt level  1   ! IRQ_AHB_error
   TRAP(irq_dispatcher);         ! 12 interrupt level  2   ! IRQ_UART2
   TRAP(irq_dispatcher);         ! 13 interrupt level  3   ! IRQ_UART1
-  TRAP(irq_dispatcher);                     ! 14 interrupt level  4   !
+  TRAP(irq_dispatcher);         ! 14 interrupt level  4   !
   TRAP(irq_dispatcher);         ! 15 interrupt level  5   !
   TRAP(irq_dispatcher);         ! 16 interrupt level  6   !
   TRAP(irq_dispatcher);         ! 17 interrupt level  7   !
@@ -40,10 +38,9 @@ _hardreset:
   TRAP(irq_dispatcher);         ! 1A interrupt level 10   !
   BAD_TRAP;                     ! 1B interrupt level 11   ! IRQ_DSU
   TRAP(irq_dispatcher);         ! 1C interrupt level 12   !
-  BAD_TRAP;                       !TRAP(irq_dispatcher);         ! 1D interrupt level 13   !
-  BAD_TRAP; ! TRAP(irq_dispatcher);         ! 1E interrupt level 14   ! IRQ_PCI
-  BAD_TRAP; !TRAP(halt_trap);              ! 1F interrupt level 15   ! IRQ_Halt (NMI)
-
+  BAD_TRAP;     !TRAP(irq_dispatcher);         ! 1D interrupt level 13   !
+  BAD_TRAP; ! TRAP(irq_dispatcher);   ! 1E interrupt level 14   ! IRQ_PCI
+  BAD_TRAP; !TRAP(halt_trap);         ! 1F interrupt level 15   ! IRQ_Halt (NMI)
 
   BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 20 - 23 undefined
   BAD_TRAP;                                     ! 24 cp_disabled
@@ -84,7 +81,7 @@ _hardreset:
   SOFT_TRAP;                                    ! 88
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;  ! 89 - 8B
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 8C - 8F
-  SOFT_TRAP; !TRAP(test_soft_traps_func);                   ! 90
+  SOFT_TRAP; !TRAP(test_soft_traps_func);       ! 90
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;              ! 91 - 93
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 94 - 97
   SOFT_TRAP; SOFT_TRAP; SOFT_TRAP; SOFT_TRAP;   ! 98 - 9B

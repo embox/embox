@@ -15,7 +15,6 @@
 #include "asm/leon_config.h"
 #include "asm/cpu_context.h"
 
-
 #include "traps.inc"
 
 	.section ".text"

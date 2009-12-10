@@ -4,16 +4,14 @@
  * @date 24.11.2009
  * @author Anton Bondarev
  */
-#include "types.h"
-
-#include "asm/traps.h"
-#include "kernel/irq.h"
-#include "stdio.h"
-#include "common.h"
+#include <types.h>
+#include <asm/traps.h>
+#include <kernel/irq.h>
+#include <stdio.h>
+#include <common.h>
 
 // user trap handlers table
 static IRQ_HANDLER user_trap_handlers[MAX_IRQ_NUMBER];
-
 
 /**
  * Runs user defined handler (if one has been enabled).
@@ -30,8 +28,6 @@ void dispatch_trap(uint8_t tt, uint32_t *sp) {
 		user_trap_handlers[tt]();
 	}
 }
-
-
 
 void dispatch_bad_trap(TRAP_CONTEXT * r, uint32_t tt) {
 	REG_WINDOW *rw;

@@ -1,9 +1,9 @@
 /**
- * \file irq_ctrl.c
+ * @file irq_ctrl.c
  *
- * \brief Realize hal layer interrupt ctrl for leon 3 processor
- * \date Apr 14, 2009
- * \author Anton Bondarev
+ * @brief Realize hal layer interrupt ctrl for leon 3 processor
+ * @date 14.04.09
+ * @author Anton Bondarev
  */
 
 #include "hal/irq_ctrl.h"
@@ -13,13 +13,13 @@
 #include "drivers/amba_pnp.h"
 
 typedef struct _IRQ_REGS {
-	volatile unsigned int level; /* 0x00 */
-	volatile unsigned int pend; /* 0x04 */
-	volatile unsigned int force; /* 0x08 */
-	volatile unsigned int clear; /* 0x0C */
+	volatile unsigned int level;    /* 0x00 */
+	volatile unsigned int pend;     /* 0x04 */
+	volatile unsigned int force;    /* 0x08 */
+	volatile unsigned int clear;    /* 0x0C */
 	volatile unsigned int mpstatus; /* 0x10 */
-	volatile unsigned int dummy[11]; /* 0x14 - 0x3C */
-	volatile unsigned int mask; /* 0x40 */
+	volatile unsigned int dummy[11];/* 0x14 - 0x3C */
+	volatile unsigned int mask;     /* 0x40 */
 } IRQ_REGS;
 
 static IRQ_REGS * dev_regs = NULL;
@@ -91,4 +91,3 @@ irq_mask_t irqc_set_mask(irq_mask_t mask){
 irq_mask_t irqc_get_mask(){
 	return REG_LOAD(dev_regs->mask);
 }
-

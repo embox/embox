@@ -1,12 +1,12 @@
 /**
- * \file sys.c
+ * @file sys.c
  *
- * \date Jun 09, 2009
- * \author Eldar Abusalimov
- * \author Alexey Fomin
+ * @date 09.06.09
+ * @author Eldar Abusalimov
+ * @author Alexey Fomin
  */
 
-#include "kernel/sys.h"
+#include <kernel/sys.h>
 
 void context_save(CPU_CONTEXT * pcontext) {
 	__asm__ __volatile__(
@@ -62,8 +62,6 @@ bool sys_exec_is_started() {
 	return started;
 }
 
-
-
 #define PSR_PIL     0x00000f00         /* processor interrupt level  */
 
 #define SMP_NOP2
@@ -73,8 +71,7 @@ bool sys_exec_is_started() {
  * disable interrupt for atomic operation
  * return old psr reg
  */
-unsigned long local_irq_save(void)
-{
+unsigned long local_irq_save(void) {
 	unsigned long retval;
 	unsigned long tmp;
 
@@ -91,12 +88,10 @@ unsigned long local_irq_save(void)
 	return retval;
 }
 
-
 /**
  * set PSR_PIL in 0xF
  */
-void local_irq_enable(void)
-{
+void local_irq_enable(void) {
 	unsigned long tmp;
 
 	__asm__ __volatile__(
@@ -109,12 +104,12 @@ void local_irq_enable(void)
 		: "i" (PSR_PIL)
 		: "memory");
 }
+
 /**
  * restore PSR_PIL after __local_irq_save
  * @param psr which was returned __local_irq_save
  */
-void local_irq_restore(unsigned long old_psr)
-{
+void local_irq_restore(unsigned long old_psr) {
 	unsigned long tmp;
 
 	__asm__ __volatile__(

@@ -1,5 +1,8 @@
 /**
- * \file timers.c
+ * @file timers.c
+ *
+ * @date 19.11.09
+ * @author Anton Bondarev
  */
 
 #include "kernel/timers.h"
@@ -15,16 +18,16 @@
 
 typedef struct _TIMERS_STRUCT {
 	volatile unsigned int scaler_cnt; /**< 0x00 */
-	volatile unsigned int scaler_ld; /**< 0x04 */
+	volatile unsigned int scaler_ld;  /**< 0x04 */
 	volatile unsigned int config_reg; /**< 0x08 */
-	volatile unsigned int dummy1; /**< 0x0C */
+	volatile unsigned int dummy1;     /**< 0x0C */
 	volatile unsigned int timer_cnt1; /**< 0x10 */
-	volatile unsigned int timer_ld1; /**< 0x14 */
-	volatile unsigned int timer_ctrl1; /**< 0x18 */
-	volatile unsigned int dummy2; /**< 0x1C */
+	volatile unsigned int timer_ld1;  /**< 0x14 */
+	volatile unsigned int timer_ctrl1;/**< 0x18 */
+	volatile unsigned int dummy2;     /**< 0x1C */
 	volatile unsigned int timer_cnt2; /**< 0x20 */
-	volatile unsigned int timer_ld2; /**< 0x24 */
-	volatile unsigned int timer_ctrl2; /**< 0x28 */
+	volatile unsigned int timer_ld2;  /**< 0x24 */
+	volatile unsigned int timer_ctrl2;/**< 0x28 */
 } TIMERS_STRUCT;
 
 static TIMERS_STRUCT * dev_regs = NULL;
@@ -66,7 +69,6 @@ int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	amba_dev.bar[0].start = TIMERS_BASE;
 	amba_dev.dev_info.irq = TIMERS_IRQ;
 #endif
-
 	dev_regs = (TIMERS_STRUCT *) amba_dev.bar[0].start;
 	REG_STORE(dev_regs->timer_ctrl1, 0x0);
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /**< disable */
@@ -82,6 +84,4 @@ int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /**< disable */
 
 	return request_irq(amba_dev.dev_info.irq, irq_handler);
-
 }
-
