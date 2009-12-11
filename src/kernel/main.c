@@ -1,19 +1,18 @@
 /**
- * \file main.c
+ * @file main.c
  *
- * \date Nov 27, 2008
- * \author anton
+ * @date 27.11.08
+ * @author Anton Bondarev
  */
-#include "shell.h"
-#include "autoconf.h"
+#include <shell.h>
+#include <autoconf.h>
 
 int main() {
 #if !defined(SIMULATION_TRG) && defined(MONITOR_SHELL)
-	shell_start();
+        shell_start();
 #endif
+        while (1)
+                ;
 
-	while (1)
-		;
-
-	return 0;
+        return 0;
 }
