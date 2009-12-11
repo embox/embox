@@ -1,17 +1,18 @@
 /**
- * \file irq.h
+ * @file irq.h
  *
- * \brief Common interrupting-related handling routines
+ * @brief Common interrupting-related handling routines
  *
- * \author Eldar Abusalimov
- * \author Anton Bondarev
- * \author Alexey Fomin
- * \author Alexandr Batyukov
+ * @author Eldar Abusalimov
+ * @author Anton Bondarev
+ * @author Alexey Fomin
+ * @author Alexandr Batyukov
  */
 
 #ifndef _IRQ_H_
 #define _IRQ_H_
-#include "types.h"
+
+#include <types.h>
 
 // Not for assembler
 #ifndef __ASSEMBLER__
@@ -29,8 +30,6 @@ typedef struct {
 #define IRQ_TABLE_SIZE     0xFF
 
 int irq_init_handlers();
-
-
 
 /**
  * Sets and enables a new callback for the specified IRQ number

@@ -11,8 +11,8 @@
 #include <types.h>
 
 struct skb_timeval {
-	uint32_t off_sec;
-	uint32_t off_usec;
+        uint32_t off_sec;
+        uint32_t off_usec;
 };
 
 /* Packet types */
@@ -41,12 +41,12 @@ struct skb_timeval {
  *      @mac: Link layer header
  */
 typedef struct sk_buff {
-	/* These two members must be first. */
-	struct sk_buff *next;
-	struct sk_buff *prev;
-	struct sock        *sk;
+        /* These two members must be first. */
+        struct sk_buff     *next;
+        struct sk_buff     *prev;
+        struct sock        *sk;
         struct net_device  *dev;
-    	struct skb_timeval tstamp;
+        struct skb_timeval tstamp;
 #if 0
         void                    *ifdev;
 #endif
@@ -60,11 +60,11 @@ typedef struct sk_buff {
                 //igmphdr       *igmph;
                 //iphdr         *ipiph;
                 //ipv6hdr       *ipv6h;
-    	        unsigned char   *raw;
+                unsigned char   *raw;
         } h;
         union {
                 struct iphdr   *iph;
-        	//ipv6hdr       *ipv6h;
+                //ipv6hdr       *ipv6h;
                 struct arphdr  *arph;
                 unsigned char   *raw;
         } nh;
@@ -77,10 +77,10 @@ typedef struct sk_buff {
 } sk_buff_t;
 
 typedef struct sk_buff_head {
-	sk_buff_t       *next;
-	sk_buff_t       *prev;
-	__u32		qlen;
-	spinlock_t	lock;
+        sk_buff_t       *next;
+        sk_buff_t       *prev;
+        uint32_t        qlen;
+        spinlock_t	lock;
 } sk_buff_head_t;
 
 /**

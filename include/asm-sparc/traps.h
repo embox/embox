@@ -1,3 +1,6 @@
+/**
+ * @file traps.h
+ */
 #ifndef _TRAPS_H_
 #define _TRAPS_H_
 
@@ -108,7 +111,6 @@ typedef struct _TRAP_CONTEXT {
 	sethi %hi(trap_entry_end), %t_retpc;       \
 	jmpl  %t_retpc + %lo(trap_entry_end), %g0; \
 	 nop;
-
 
 /* compute sizes by hand (see above) */
 #define STACKFRAME_SZ     (REG_WINDOW_SZ + (1+6+1)*4)
