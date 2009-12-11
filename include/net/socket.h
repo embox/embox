@@ -21,6 +21,9 @@ struct sockaddr {
 /* Protocol families, same as address families. */
 #define PF_INET      AF_INET
 
+//TODO: move out of here
+int sock_init(void);
+
 /**
  * create an endpoint for communication.
  * @param protocol The protocol specifies a particular protocol to be used with the socket.

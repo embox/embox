@@ -12,8 +12,6 @@
 
 typedef unsigned char enet_addr_t[6];
 
-struct sk_buff;
-
 enum sock_type {
         SOCK_STREAM     = 1,  /* TCP */
         SOCK_DGRAM      = 2,  /* UDP */

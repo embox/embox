@@ -20,13 +20,13 @@
  *    - routing cache (256 chains)
  *    - neibour table
  */
-static struct rt_entry rt_table[RT_TABLE_SIZE];
+static rt_entry_t rt_table[RT_TABLE_SIZE];
 
 int __init ip_rt_init(void) {
 	devinet_init();
 }
 
-int rt_add_route(struct net_device *dev, in_addr_t dst,
+int rt_add_route(net_device_t *dev, in_addr_t dst,
         		    in_addr_t mask, in_addr_t gw, int flags) {
 	int i;
         for (i = 0; i < RT_TABLE_SIZE; i++) {
@@ -42,7 +42,7 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
         return -1;
 }
 
-int rt_del_route(struct net_device *dev, in_addr_t dst,
+int rt_del_route(net_device_t *dev, in_addr_t dst,
 			    in_addr_t mask, in_addr_t gw) {
 	int i;
 	for(i = 0; i < RT_TABLE_SIZE; i++) {
@@ -53,6 +53,7 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
 	                return 0;
 	        }
 	}
+	return -1;
 }
 
 int ip_route(sk_buff_t *skbuff) {
@@ -71,7 +72,7 @@ int ip_route(sk_buff_t *skbuff) {
 
 static int rt_iter;
 
-struct rt_entry *rt_fib_get_first() {
+rt_entry_t *rt_fib_get_first() {
 	for(rt_iter = 0; rt_iter < RT_TABLE_SIZE; rt_iter++) {
     		if (rt_table[rt_iter].rt_flags & RTF_UP) {
             		rt_iter++;
@@ -81,7 +82,7 @@ struct rt_entry *rt_fib_get_first() {
         return NULL;
 }
 
-struct rt_entry *rt_fib_get_next() {
+rt_entry_t *rt_fib_get_next() {
 	for(; rt_iter < RT_TABLE_SIZE; rt_iter++) {
     		if (rt_table[rt_iter].rt_flags & RTF_UP) {
                 	rt_iter++;

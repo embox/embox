@@ -60,10 +60,9 @@ struct ip_options {
 * @mc_list - Group array
 * @cork - info to build ip hdr on each ip frag while socket is corked
 */
-
-struct inet_sock{
+typedef struct inet_sock {
 	/* sk have to be the first member of inet_sock */
-	struct sock    sk;
+	sock_t         sk;
 
 	in_addr_t      daddr;
 	in_addr_t      rcv_saddr;
@@ -77,10 +76,10 @@ struct inet_sock{
 	unsigned short id;
 	unsigned char  tos;
 	unsigned char  mc_ttl;
-};
+} inet_sock_t;
 
-static inline struct inet_sock *inet_sk(const struct sock *sk) {
-        return (struct inet_sock *)sk;
+static inline inet_sock_t *inet_sk(const sock_t *sk) {
+        return (inet_sock_t *)sk;
 }
 
 #endif /* INET_SOCK_H_ */

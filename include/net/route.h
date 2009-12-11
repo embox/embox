@@ -17,13 +17,13 @@
 /**
  * Routing table entry.
  */
-struct rt_entry {
-	struct net_device *dev;
-	in_addr_t rt_dst;
-	__u32     rt_flags;
-        in_addr_t rt_mask;
-        in_addr_t rt_gateway;
-};
+typedef struct rt_entry {
+	net_device_t *dev;
+	in_addr_t    rt_dst;
+	__u32        rt_flags;
+        in_addr_t    rt_mask;
+        in_addr_t    rt_gateway;
+} rt_entry_t;
 
 /**< Flags */
 #define RTF_UP          0x0001          /* route usable                 */
@@ -47,7 +47,7 @@ extern int ip_rt_init(void);
  * @param mask Genmask
  * @param gw Gateway
  */
-extern int rt_add_route(struct net_device *dev, in_addr_t dst,
+extern int rt_add_route(net_device_t *dev, in_addr_t dst,
 				in_addr_t mask, in_addr_t gw, int flags);
 
 /**
@@ -57,7 +57,7 @@ extern int rt_add_route(struct net_device *dev, in_addr_t dst,
  * @param mask Genmask
  * @param gw Gateway
  */
-extern int rt_del_route(struct net_device *dev, in_addr_t dst,
+extern int rt_del_route(net_device_t *dev, in_addr_t dst,
 				in_addr_t mask, in_addr_t gw);
 
 /**
@@ -67,7 +67,7 @@ extern int rt_del_route(struct net_device *dev, in_addr_t dst,
 extern int ip_route(sk_buff_t *skbuff);
 
 /**< iterators */
-extern struct rt_entry *rt_fib_get_first();
-extern struct rt_entry *rt_fib_get_next();
+extern rt_entry_t *rt_fib_get_first();
+extern rt_entry_t *rt_fib_get_next();
 
 #endif /* ROUTE_H_ */

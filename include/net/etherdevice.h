@@ -85,14 +85,14 @@ int eth_mac_addr(struct net_device *dev, void *p);
  * @param saddr source address (NULL use device source address)
  * @paramlen packet length (<= pack->len)
  */
-extern int eth_header(struct sk_buff *pack, struct net_device *dev,
+extern int eth_header(sk_buff_t *pack, net_device_t *dev,
                     unsigned short type, void *daddr, void *saddr, unsigned len);
 
 /**
  * Rebuild the Ethernet MAC header.
  * @param pack socket buffer to update
  */
-extern int eth_rebuild_header(struct sk_buff *pack);
+extern int eth_rebuild_header(sk_buff_t *pack);
 
 /**
  * Setup Ethernet network device

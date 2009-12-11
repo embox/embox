@@ -38,7 +38,7 @@ struct sock_common {
  * @param sk_rcvbuf size of receive buffer in bytes
  * @param sk_sndbuf size of send buffer in bytes
  */
-struct sock {
+typedef struct sock {
 	struct sock_common      __sk_common;
 	unsigned char		sk_protocol;
 	unsigned short		sk_type;
@@ -56,9 +56,9 @@ struct sock {
 	void (* sk_data_ready) (struct sock *sk, int bytes);
 	void (* sk_write_space) (struct sock *sk);
 	void (* sk_error_report) (struct sock *sk);
-	int (* sk_backlog_rcv) (struct sock *sk, struct sk_buff *pack);
+	int (* sk_backlog_rcv) (struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct) (struct sock *sk);
-};
+} sock_t;
 
 typedef struct _SOCK_INFO{
         struct udp_sock *sk;

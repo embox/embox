@@ -71,21 +71,19 @@ enum netdev_state_t {
  * optional and can be filled with a null pointer.
  */
 struct net_device_ops {
-        int                 (*ndo_open)(struct net_device *dev);
-        int                 (*ndo_stop)(struct net_device *dev);
-        int                 (*ndo_start_xmit)(struct sk_buff *pack,
-    						struct net_device *dev);
-        int                 (*ndo_set_mac_address)(struct net_device *dev,
-    						void *addr);
+        int           (*ndo_open)(struct net_device *dev);
+        int           (*ndo_stop)(struct net_device *dev);
+        int           (*ndo_start_xmit)(sk_buff_t *pack, struct net_device *dev);
+        int           (*ndo_set_mac_address)(struct net_device *dev, void *addr);
         net_device_stats_t* (*ndo_get_stats)(struct net_device *dev);
 };
 
 struct header_ops {
-	int (*rebuild)(struct sk_buff *pack);
-	int (*create)(struct sk_buff *pack, struct net_device *dev,
+	int (*rebuild)(sk_buff_t *pack);
+	int (*create)(sk_buff_t *pack, struct net_device *dev,
 	              unsigned short type, void *daddr,
 	              void *saddr, unsigned len);
-	int (*parse)(const struct sk_buff *pack, unsigned char *haddr);
+	int (*parse)(const sk_buff_t *pack, unsigned char *haddr);
 };
 
 /**
@@ -94,10 +92,10 @@ struct header_ops {
 typedef struct packet_type {
 	__be16            type;            /**< This is really htons(ether_type). */
 	struct net_device *dev;            /**< NULL is wildcarded here	     */
-	int (*func)(struct sk_buff *, struct net_device *, struct packet_type *,
+	int (*func)(sk_buff_t *, struct net_device *, struct packet_type *,
 			struct net_device *);
 #if 0
-	struct sk_buff *(*gso_segment)(struct sk_buff *skb,
+	struct sk_buff *(*gso_segment)(sk_buff_t *skb,
 			int features);
 	int (*gso_send_check)(struct sk_buff *skb);
 #endif

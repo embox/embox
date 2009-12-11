@@ -39,7 +39,7 @@ typedef struct ethhdr {
  * @param skb
  * @return pointer to MAC header
  */
-static inline struct ethhdr *eth_hdr(const struct sk_buff *skb) {
+static inline struct ethhdr *eth_hdr(const sk_buff_t *skb) {
         return (struct ethhdr*)skb->mac.raw;
 }
 

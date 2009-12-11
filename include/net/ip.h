@@ -62,14 +62,14 @@ extern void ip_init();
 /**
  * Main IP Receive routine.
  */
-extern int ip_rcv(struct sk_buff *pack, net_device_t *dev,
+extern int ip_rcv(sk_buff_t *pack, net_device_t *dev,
                       packet_type_t *pt, net_device_t *orig_dev);
 
 /**
  * Add an ip header to a net_packet and send it out.
  */
-extern int ip_send_packet(struct inet_sock *sk, struct sk_buff *pack);
+extern int ip_send_packet(inet_sock_t *sk, sk_buff_t *pack);
 
-extern int ip_queue_xmit(struct sk_buff *skb);
+extern int ip_queue_xmit(sk_buff_t *skb);
 
 #endif /* IP_H_ */

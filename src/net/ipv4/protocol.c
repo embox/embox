@@ -6,12 +6,12 @@
  * @author Nikolay Korotky
  */
 
-#include "net/protocol.h"
-#include "types.h"
+#include <net/protocol.h>
+#include <types.h>
 
-struct net_protocol *inet_protos[MAX_INET_PROTOS];
+net_protocol_t *inet_protos[MAX_INET_PROTOS];
 
-int inet_add_protocol(struct net_protocol *prot, unsigned char protocol) {
+int inet_add_protocol(net_protocol_t *prot, unsigned char protocol) {
         int hash, ret;
         hash = protocol & (MAX_INET_PROTOS - 1);
 
@@ -24,7 +24,7 @@ int inet_add_protocol(struct net_protocol *prot, unsigned char protocol) {
         return ret;
 }
 
-int inet_del_protocol(struct net_protocol *prot, unsigned char protocol) {
+int inet_del_protocol(net_protocol_t *prot, unsigned char protocol) {
         int hash, ret;
         hash = protocol & (MAX_INET_PROTOS - 1);
 

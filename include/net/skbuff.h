@@ -44,14 +44,12 @@ typedef struct sk_buff {
 	/* These two members must be first. */
 	struct sk_buff *next;
 	struct sk_buff *prev;
-
 	struct sock        *sk;
         struct net_device  *dev;
     	struct skb_timeval tstamp;
 #if 0
         void                    *ifdev;
 #endif
-
         __be16                  protocol;
         uint8_t                 pkt_type;
         unsigned int            len;
@@ -76,15 +74,20 @@ typedef struct sk_buff {
         } mac;
         void (*destructor)(struct sk_buff *skb);
         unsigned char *data;
-
-}sk_buff_t;
+} sk_buff_t;
 
 typedef struct sk_buff_head {
-	struct sk_buff *next;
-	struct sk_buff *prev;
+	sk_buff_t       *next;
+	sk_buff_t       *prev;
 	__u32		qlen;
 	spinlock_t	lock;
-}sk_buff_head_t;
+} sk_buff_head_t;
+
+/**
+ * function must called if we want use this functionality.
+ * It init queue free packet
+ */
+extern void skb_init();
 
 /**
  * allocate one instance of structure sk_buff. With pointed size and flags.
@@ -94,16 +97,16 @@ typedef struct sk_buff_head {
  */
 extern struct sk_buff *alloc_skb(unsigned int size, gfp_t priority);
 
-extern void kfree_skb(struct sk_buff *skb);
+extern void kfree_skb(sk_buff_t *skb);
 
-extern struct sk_buff *alloc_skb_fclone(struct sk_buff *skb, gfp_t priority);
+extern struct sk_buff *alloc_skb_fclone(sk_buff_t *skb, gfp_t priority);
 
 /**
  * sk_buff clone it used as we want to queue sk_buff in several queue
  */
-extern struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t priority);
+extern struct sk_buff *skb_clone(sk_buff_t *skb, gfp_t priority);
 
-extern struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority);
+extern struct sk_buff *skb_copy(const sk_buff_t *skb, gfp_t priority);
 
 /**
  * return head of queue allocated in alloc_skb_queue to the free queue pool

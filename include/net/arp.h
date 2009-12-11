@@ -46,7 +46,7 @@ static int arp_rcv(sk_buff_t *pack, net_device_t *dev,
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL *
  */
-extern sk_buff_t *arp_find(struct sk_buff * pack, in_addr_t dst_addr);
+extern sk_buff_t *arp_find(sk_buff_t * pack, in_addr_t dst_addr);
 
 /**
  * Create an arp packet.
@@ -74,6 +74,6 @@ extern int arp_delete_entity(void *in_dev, in_addr_t ipaddr, unsigned char macad
 /**
  * Send an arp packet.
  */
-extern void arp_xmit(struct sk_buff *skb);
+extern void arp_xmit(sk_buff_t *skb);
 
 #endif /* ARP_H_ */
