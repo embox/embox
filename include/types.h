@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file types.h
  *
  * @date 12.11.09
  * @author Nikolay Korotky
@@ -37,6 +37,8 @@ typedef _Bool bool;
 #define false 0
 
 #define NULL ((void *)0x0)
+
+#define offsetof(type, member) ((size_t) &((type *)0)->member)
 
 #if 0
 typedef __paddr_t paddr_t;
