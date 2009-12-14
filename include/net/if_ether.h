@@ -10,8 +10,12 @@
 
 #include <types.h>
 
-#define ETH_ALEN        6                   /* Octets in one ethernet addr */
-#define ETH_HLEN        14                  /* Total octets in header.     */
+/**
+ * IEEE 802.3 Ethernet magic constants.
+ */
+#define ETH_ALEN        6               /* Octets in one ethernet addr */
+#define ETH_HLEN        14              /* Total octets in header.     */
+#define ETH_DATA_LEN    1500            /* Max. octets in payload        */
 
 /**
  * These are the defined Ethernet Protocol ID's.
@@ -27,7 +31,7 @@
 typedef struct ethhdr {
 	unsigned char h_dest[ETH_ALEN];       /**< destination eth addr */
 	unsigned char h_source[ETH_ALEN];     /**< source ether addr    */
-	__be16 h_proto;                       /**< packet type ID field */
+	__be16        h_proto;                /**< packet type ID field */
 } __attribute__((packed)) ethhdr_t;
 
 #define ETH_HEADER_SIZE (sizeof(struct ethhdr))

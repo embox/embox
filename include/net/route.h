@@ -20,7 +20,7 @@
 typedef struct rt_entry {
 	net_device_t *dev;
 	in_addr_t    rt_dst;
-	__u32        rt_flags;
+	uint32_t     rt_flags;
         in_addr_t    rt_mask;
         in_addr_t    rt_gateway;
 } rt_entry_t;

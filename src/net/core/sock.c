@@ -17,7 +17,6 @@ SOCK_INFO sks[MAX_SOCK_NUM];
 //TODO:
 
 struct udp_sock* sk_alloc() {
-        LOG_DEBUG("sk_alloc\n");
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++) {
     	        if (0 == sks[i].is_busy) {
@@ -32,7 +31,6 @@ struct udp_sock* sk_alloc() {
 }
 
 void sk_free(struct udp_sock *sk) {
-        LOG_DEBUG("sk_free\n");
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++) {
                 if (sk == sks[i].sk) {

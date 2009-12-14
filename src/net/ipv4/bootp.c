@@ -100,7 +100,7 @@ int bootp_discover (void* ifdev) {
 	int             retry = RETRY_COUNT;
 	struct net_device*     dev = (struct net_device*)inet_dev_get_netdevice (ifdev);
 	enet_addr_t     enet;
-	memcpy (enet, dev->hw_addr, ETH_ALEN);
+	memcpy (enet, dev->dev_addr, ETH_ALEN);
 
 #ifdef DHCP_SUPPORT
 	dhcp_state = DHCP_NONE;

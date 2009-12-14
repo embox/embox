@@ -95,6 +95,13 @@ extern int eth_header(sk_buff_t *pack, net_device_t *dev,
 extern int eth_rebuild_header(sk_buff_t *pack);
 
 /**
+ * Set new MTU size
+ * @param dev network device
+ * @param new_mtu new Maximum Transfer Unit
+ */
+extern int eth_change_mtu(net_device_t *dev, int new_mtu);
+
+/**
  * Setup Ethernet network device
  * @param dev network device
  * Fill in the fields of the device structure with Ethernet-generic values.

@@ -37,7 +37,8 @@ extern struct net_device *inet_dev_get_netdevice(void *handler);
  * use it in sniffer program
  * not need set interface to PROMISC mode now
  */
-extern int inet_dev_listen(void *handler, unsigned short type, ETH_LISTEN_CALLBACK callback);
+extern int inet_dev_listen(void *handler, unsigned short type,
+					    ETH_LISTEN_CALLBACK callback);
 
 /**
  * find known netdev device has pointed ip address
@@ -57,7 +58,8 @@ extern void *inet_dev_find_by_name(const char *if_name);
  * @param ipaddr - ip devices address
  * @param macaddr - MAC devices address
  */
-extern int inet_dev_set_interface(char *name, in_addr_t ipaddr, in_addr_t mask, unsigned char *macaddr);
+extern int inet_dev_set_interface(char *name, in_addr_t ipaddr, in_addr_t mask,
+						    unsigned char *macaddr);
 
 /**
  * Set IP address (sw)

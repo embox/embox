@@ -54,7 +54,6 @@ int ip_queue_xmit(struct sk_buff *skb) {
 }
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *pack) {
-	LOG_DEBUG("ip_send_packet\n");
 	build_ip_packet(sk, pack);
 	pack->protocol = ETH_P_IP;
 	pack->len += IP_HEADER_SIZE;

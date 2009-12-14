@@ -20,7 +20,6 @@
 
 int ip_rcv(sk_buff_t *pack, net_device_t *dev,
                       packet_type_t *pt, net_device_t *orig_dev) {
-	LOG_DEBUG("ip packet received\n");
 	pack->h.raw = pack->nh.raw + IP_HEADER_SIZE;
 	net_device_stats_t *stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
 	iphdr_t *iph = pack->nh.iph;

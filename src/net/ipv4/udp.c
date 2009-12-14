@@ -46,15 +46,12 @@ static int udp_queue_rcv_pack(SOCK_INFO *sk, sk_buff_t *pack) {
 		sk->new_pack = 1;
 		sk->sk->inet.dport = pack->h.uh->source;
 		sk->sk->inet.daddr = pack->nh.iph->saddr;
-		LOG_DEBUG("packet pushed\n");
 		return 0;
 	}
-	LOG_DEBUG("queue is busy\n");
 	return -1;
 }
 
 int udpsock_push(sk_buff_t *pack) {
-        LOG_DEBUG("push packet to udp socket\n");
         int i;
         SOCK_INFO *sk;
         udphdr *uh = pack->h.uh;
@@ -76,7 +73,6 @@ int udpsock_push(sk_buff_t *pack) {
 	if (sk != NULL) {
 		return udp_queue_rcv_pack(sk, pack);
 	}
-    	LOG_DEBUG("destination socket not found\n");
     	icmp_send(pack, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH);
     	return -1;
 }
@@ -86,7 +82,6 @@ int udp_init() {
 }
 
 static int rebuild_udp_header(sk_buff_t *pack, unsigned short source, unsigned short dest) {
-	LOG_DEBUG("rebuild udp header\n");
 	udphdr *hdr = pack->h.uh;
 	hdr->source = source;
 	hdr->dest   = dest;
@@ -97,7 +92,6 @@ static int rebuild_udp_header(sk_buff_t *pack, unsigned short source, unsigned s
 }
 
 static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
-	LOG_DEBUG("rebuild_udp_packet\n");
 	if( pack == NULL ||
 	    ifdev == NULL ||
 	    sk ==NULL) {
@@ -117,7 +111,6 @@ static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev
 }
 
 int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
-	LOG_DEBUG("udp_trans\n");
 	sk_buff_t *pack;
         pack = alloc_skb(len, 0);
         if( pack == NULL) {

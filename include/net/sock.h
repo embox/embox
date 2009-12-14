@@ -50,7 +50,7 @@ typedef struct sock {
 	struct sk_buff_head     sk_write_queue;
 
 	struct socket           *sk_socket;
-	struct net_device	*netdev;
+	net_device_t            *netdev;
 
 	void (* sk_state_change) (struct sock *sk);
 	void (* sk_data_ready) (struct sock *sk, int bytes);

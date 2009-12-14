@@ -7,6 +7,7 @@
  */
 #include <misc.h>
 #include <string.h>
+#include <codes.h>
 #include <net/skbuff.h>
 #include <net/net_pack_manager.h>
 #include <net/netdevice.h>
@@ -26,43 +27,50 @@ int eth_header(sk_buff_t *pack, net_device_t *dev, unsigned short type,
         eth->h_proto = htons(type);
         /*  Set the source hardware address. */
         if (!saddr) {
-                saddr = dev->hw_addr;
+                saddr = dev->dev_addr;
         }
-        memcpy(eth->h_source, saddr, dev->addr_len);
+        memcpy(eth->h_source, saddr, ETH_ALEN);
 
         if (daddr) {
-                memcpy(eth->h_dest, daddr, dev->addr_len);
+                memcpy(eth->h_dest, daddr, ETH_ALEN);
                 return ETH_HLEN;
         }
         /* Anyway, the loopback-device should never use this function... */
         if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
-                memset(eth->h_dest, 0, dev->addr_len);
+                memset(eth->h_dest, 0, ETH_ALEN);
                 return ETH_HLEN;
         }
         return -ETH_HLEN;
 }
 
 int eth_rebuild_header(sk_buff_t *pack) {
-        if (NULL == pack) {
-                return -1;
-        }
         ethhdr_t     *eth = (ethhdr_t*)pack->data;
         net_device_t *dev = pack->dev;
+        if(eth->h_proto == htons(ETH_P_IP)) {
+//TODO:
+//                return arp_find(eth->h_dest, pack);
+        } else {
+    		LOG_DEBUG("%s: unable to resolve type %X addresses.\n",
+                                dev->name, (int)eth->h_proto);
+        	memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
+        }
+#if 0
         if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {
                 if (NULL == arp_find(pack, pack->nh.iph->daddr)) {
                         LOG_WARN("Destanation host is unreachable\n");
                         return -1;
                 }
-                memcpy(eth->h_source, dev->hw_addr, ETH_ALEN);
+                memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
                 eth->h_proto = pack->protocol;
                 pack->len += ETH_HEADER_SIZE;
                 return 0;
         }
+#endif
         return 0;
 }
 
 int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr) {
-        ethhdr_t *eth = eth_hdr(pack);
+        const ethhdr_t *eth = eth_hdr(pack);
         memcpy(haddr, eth->h_source, ETH_ALEN);
         return ETH_ALEN;
 }
@@ -70,21 +78,29 @@ int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr) {
 int eth_mac_addr(net_device_t *dev, void *p) {
         struct sockaddr *addr = p;
         if (!is_valid_ether_addr(addr->sa_data)) {
-                return -1;
+                return -EADDRNOTAVAIL;
         }
-        memcpy(dev->hw_addr, addr->sa_data, dev->addr_len);
+        memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
+        return 0;
+}
+
+int eth_change_mtu(net_device_t *dev, int new_mtu) {
+        if (new_mtu < 68 || new_mtu > ETH_DATA_LEN)
+                return -EINVAL;
+        dev->mtu = new_mtu;
         return 0;
 }
 
 const struct header_ops eth_header_ops = {
-        .rebuild       = eth_rebuild_header,
         .create        = eth_header,
         .parse         = eth_header_parse,
+        .rebuild       = eth_rebuild_header,
 };
 
 void ether_setup(net_device_t *dev) {
         dev->header_ops    = &eth_header_ops;
         dev->type          = ARPHRD_ETHER;
+        dev->mtu           = ETH_DATA_LEN;
         dev->addr_len      = ETH_ALEN;
         dev->flags         = IFF_BROADCAST|IFF_MULTICAST;
         dev->tx_queue_len  = 1000;

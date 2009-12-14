@@ -91,8 +91,9 @@ extern void skb_init();
 
 /**
  * allocate one instance of structure sk_buff. With pointed size and flags.
- * @return If size is more then mtu (now it is defined by macros ETHERNET_V2_FRAME_SIZE)
- * function will return queue of sk_buff. Else function return single sk_buff.
+ * @return If size is more then mtu (now it is defined by macros
+ * ETHERNET_V2_FRAME_SIZE) function will return queue of sk_buff.
+ * Else function return single sk_buff.
  * Function return NULL if function can't allocate demanded buffer
  */
 extern struct sk_buff *alloc_skb(unsigned int size, gfp_t priority);
@@ -112,6 +113,6 @@ extern struct sk_buff *skb_copy(const sk_buff_t *skb, gfp_t priority);
  * return head of queue allocated in alloc_skb_queue to the free queue pool
  * and give back all contained sk_buff in this list
  */
-extern void skb_queue_purge(struct sk_buff_head *queue);
+extern void skb_queue_purge(sk_buff_head_t *queue);
 
 #endif /* SKBUFF_H_ */

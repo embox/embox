@@ -1,7 +1,8 @@
 /**
  * @file socket.c
  *
- * @date 19.03.2009
+ * @brief An implementation of the SOCKET network access protocol.
+ * @date 19.03.09
  * @author Anton Bondarev
  * @author Nikolay Korotky
  */
@@ -44,7 +45,6 @@ int socket(int domain, int type, int protocol) {
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++) {
                 if (sk == sks[i].sk) {
-                        LOG_DEBUG("socket id=%d\n", i);
                         return i;
                 }
         }
@@ -79,8 +79,6 @@ int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
 #if 0
         struct in_addr ip;
         ip.s_addr = sks[sockfd].sk->inet.saddr;
-        LOG_DEBUG("socket binded at port=%d, ip=%s\n", sks[sockfd].sk->inet.sport,
-                  inet_ntoa(ip));
 #endif
         return 0;
 }

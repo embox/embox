@@ -70,28 +70,28 @@ enum netdev_state_t {
  * The following hooks can be defined; unless noted otherwise, they are
  * optional and can be filled with a null pointer.
  */
-struct net_device_ops {
+typedef struct net_device_ops {
         int           (*ndo_open)(struct net_device *dev);
         int           (*ndo_stop)(struct net_device *dev);
         int           (*ndo_start_xmit)(sk_buff_t *pack, struct net_device *dev);
         int           (*ndo_set_mac_address)(struct net_device *dev, void *addr);
         net_device_stats_t* (*ndo_get_stats)(struct net_device *dev);
-};
+} net_device_ops_t;
 
-struct header_ops {
+typedef struct header_ops {
 	int (*rebuild)(sk_buff_t *pack);
 	int (*create)(sk_buff_t *pack, struct net_device *dev,
 	              unsigned short type, void *daddr,
 	              void *saddr, unsigned len);
 	int (*parse)(const sk_buff_t *pack, unsigned char *haddr);
-};
+} header_ops_t;
 
 /**
  * structure for register incoming protocol packets type
  */
 typedef struct packet_type {
-	__be16            type;            /**< This is really htons(ether_type). */
-	struct net_device *dev;            /**< NULL is wildcarded here	     */
+	__be16            type;        /**< This is really htons(ether_type) */
+	struct net_device *dev;        /**< NULL is wildcarded here	     */
 	int (*func)(sk_buff_t *, struct net_device *, struct packet_type *,
 			struct net_device *);
 #if 0
@@ -108,7 +108,7 @@ typedef struct packet_type {
  */
 typedef struct net_device {
 	char          name[IFNAMSIZ];           /**< It is the name the interface.*/
-	unsigned char hw_addr[MAX_ADDR_LEN];    /**< hw address                   */
+	unsigned char dev_addr[MAX_ADDR_LEN];    /**< hw address                   */
 	unsigned char broadcast[MAX_ADDR_LEN];  /**< hw bcast address             */
 	unsigned long state;
 	unsigned char type;                     /**< interface hardware type      */
@@ -119,8 +119,8 @@ typedef struct net_device {
 	unsigned long base_addr;                /**< device I/O address           */
 	unsigned int  irq;                      /**< device IRQ number            */
 	net_device_stats_t stats;
-	const struct net_device_ops *netdev_ops;/**< Management operations        */
-	const struct header_ops *header_ops;    /**< Hardware header description  */
+	const net_device_ops_t *netdev_ops;     /**< Management operations        */
+	const header_ops_t *header_ops;         /**< Hardware header description  */
 } net_device_t;
 
 /**
@@ -152,7 +152,7 @@ extern void free_netdev(net_device_t *dev);
  * is linked into kernel lists and may not be freed until it has been
  * removed from the kernel lists.
  */
-extern void dev_add_pack(struct packet_type *pt);
+extern void dev_add_pack(packet_type_t *pt);
 
 /**
  * Remove packet handler
@@ -163,32 +163,32 @@ extern void dev_add_pack(struct packet_type *pt);
  * from the kernel lists and can be freed or reused once this function
  * returns.
  */
-extern void dev_remove_pack(struct packet_type *pt);
+extern void dev_remove_pack(packet_type_t *pt);
 
 /**
  * Pepare an interface for use.
  * @param dev device to open
  */
-extern int dev_open(struct net_device *dev);
+extern int dev_open(net_device_t *dev);
 
 /**
  * Shutdown an interface.
  * @param dev device to close
  */
-extern int dev_close(struct net_device *dev);
+extern int dev_close(net_device_t *dev);
 
 /**
  * Get flags from device.
  * @param dev device to get flags
  */
-extern unsigned dev_get_flags(const struct net_device *dev);
+extern unsigned dev_get_flags(const net_device_t *dev);
 
 /**
  * Set the flags on device.
  * @param dev device to set flags
  * @param flags
  */
-extern int dev_change_flags(struct net_device *dev, unsigned flags);
+extern int dev_change_flags(net_device_t *dev, unsigned flags);
 
 /**
  * this function call ip protocol,
@@ -197,7 +197,7 @@ extern int dev_change_flags(struct net_device *dev, unsigned flags);
  * and send packet by calling ndo_start_xmit() function
  * return 0 if success else -1
  */
-extern int dev_queue_xmit(struct sk_buff *pack);
+extern int dev_queue_xmit(sk_buff_t *pack);
 
 /**
  * function must call from net drivers when packet was received
@@ -205,6 +205,6 @@ extern int dev_queue_xmit(struct sk_buff *pack);
  * @param net_packet *pack struct of network packet
  * @return on success, returns 0, on error, -1 is returned
  */
-extern int netif_rx(struct sk_buff *pack);
+extern int netif_rx(sk_buff_t *pack);
 
 #endif /* NET_DEVICE_H_ */

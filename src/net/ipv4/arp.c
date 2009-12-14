@@ -104,7 +104,7 @@ sk_buff_t* arp_create(void *in_dev, in_addr_t dst_addr) {
 	pack->mac.raw = pack->data;
 	/* mac header */
 	memcpy (pack->mac.ethh->h_dest, broadcast_mac_addr, ETH_ALEN);
-	memcpy (pack->mac.ethh->h_source, pack->dev->hw_addr, ETH_ALEN);
+	memcpy (pack->mac.ethh->h_source, pack->dev->dev_addr, ETH_ALEN);
 	pack->mac.ethh->h_proto = ETH_P_ARP;
 
 	pack->nh.raw = pack->mac.raw + ETH_HEADER_SIZE;
@@ -116,7 +116,7 @@ sk_buff_t* arp_create(void *in_dev, in_addr_t dst_addr) {
 	pack->nh.arph->hlen = pack->dev->addr_len;
 	pack->nh.arph->plen = IPV4_ADDR_LENGTH;
 	pack->nh.arph->oper = ARPOP_REQUEST;
-	memcpy (pack->nh.arph->sha, pack->dev->hw_addr, ETH_ALEN);
+	memcpy (pack->nh.arph->sha, pack->dev->dev_addr, ETH_ALEN);
 	pack->nh.arph->spa = inet_dev_get_ipaddr(in_dev);
 	pack->nh.arph->tpa = dst_addr;
 
@@ -184,7 +184,6 @@ static int received_resp(sk_buff_t *pack) {
 	macaddr_print(mac, arp->sha);
 	struct in_addr spa;
 	spa.s_addr = arp->spa;
-	LOG_DEBUG ("arp received resp from ip %s mac %s", inet_ntoa(spa), mac);
 
 	//add to arp_table
 	//TODO modify arp table
@@ -204,7 +203,6 @@ static int received_req(sk_buff_t *pack) {
 	macaddr_print(mac, arp->sha);
 	struct in_addr spa;
 	spa.s_addr = arp->spa;
-	LOG_DEBUG ("arp received request from ip %s mac %s", inet_ntoa(spa), mac);
 
 	/*add record into arp_table*/
 	//TODO modify arp table
@@ -214,9 +212,9 @@ static int received_req(sk_buff_t *pack) {
 	resp = skb_copy(pack, 0);
 
 	memcpy(resp->mac.ethh->h_dest, pack->mac.ethh->h_source, ETH_ALEN);
-	memcpy(resp->mac.ethh->h_source, pack->dev->hw_addr, ETH_ALEN);
+	memcpy(resp->mac.ethh->h_source, pack->dev->dev_addr, ETH_ALEN);
 	resp->nh.arph->oper = ARPOP_REPLY;
-	memcpy(resp->nh.arph->sha, pack->dev->hw_addr, ETH_ALEN);
+	memcpy(resp->nh.arph->sha, pack->dev->dev_addr, ETH_ALEN);
 	memcpy(resp->nh.arph->tha, pack->mac.ethh->h_source, ETH_ALEN);
 	resp->nh.arph->tpa = pack->nh.arph->spa;
 	resp->nh.arph->spa = pack->nh.arph->tpa;

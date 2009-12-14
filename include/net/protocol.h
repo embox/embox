@@ -14,12 +14,12 @@
 
 /* This is used to register protocols. */
 typedef struct net_protocol {
-    int                     (*handler)(sk_buff_t *pack);
-    void                    (*err_handler)(sk_buff_t *pack, int info);
+    int            (*handler)(sk_buff_t *pack);
+    void           (*err_handler)(sk_buff_t *pack, int info);
 #if 0
-    int                     (*gso_send_check)(sk_buff_t *pack);
-    sk_buff_t              *(*gso_segment)(sk_buff_t *pack, int features);
-    int                     no_policy;
+    int            (*gso_send_check)(sk_buff_t *pack);
+    sk_buff_t     *(*gso_segment)(sk_buff_t *pack, int features);
+    int            no_policy;
 #endif
 } net_protocol_t;
 
