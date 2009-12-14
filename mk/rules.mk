@@ -19,7 +19,7 @@
 %.c : %.w
 
 %.o:%.c
-	$(CC) $(CCFLAGS) -nostdinc -I$(INCLUDE_DIR) -MMD -c -o $@ $<
+	$(CC) $(CCFLAGS) $(CCINCLUDES) -MMD -c -o $@ $<
 
 %.o:%.S
-	$(CC) $(CCFLAGS) -nostdinc -I$(INCLUDE_DIR) -MMD -c -o $@ $<
+	$(CC) $(CCFLAGS) $(CCINCLUDES) -MMD -c -o $@ $<

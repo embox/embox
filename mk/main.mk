@@ -17,8 +17,6 @@ BUILD_DIR   :=$(ROOT_DIR)/bin
 BIN_DIR     :=$(ROOT_DIR)/bin
 OBJ_DIR     :=$(ROOT_DIR)/obj
 
-INCLUDE_DIR :=$(ROOT_DIR)/include
-
 RM          :=rm -f
 EDITOR      :=vim
 

@@ -13,8 +13,8 @@ OBJS-y += soft_trap_test.o
 -include $(SELFDIR)/embox.lds.d
 
 $(SELFDIR)/embox.lds:$(SELFDIR)/embox.lds.S $(BUILD_DIR)/config.lds.h
-	$(CC) -I$(INCLUDE_DIR) -imacros $(BUILD_DIR)/config.lds.h -nostdinc \
-		-MMD -MT $@ -MF $@.d -E -Wp, -P -Usparc -o $@ $<
+	$(CC) $(CCINCLUDES) -imacros $(BUILD_DIR)/config.lds.h \
+		-MMD -MT $@ -MF $@.d -E -Wp, -P -undef -o $@ $<
 
 clean: sparc_clean
 
