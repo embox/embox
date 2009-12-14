@@ -6,7 +6,7 @@ CC      =$(CC_PACKET)-gcc
 OD_TOOL =$(CC_PACKET)-objdump
 OC_TOOL =$(CC_PACKET)-objcopy
 
-CCINCLUDES =-I$(ROOT_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include -nostdinc
+CCINCLUDES =-I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include -nostdinc
 
 LDSCRIPT =$(SRC_DIR)/arch/$(ARCH)/embox.lds
 
