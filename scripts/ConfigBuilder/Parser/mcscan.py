@@ -2,7 +2,7 @@
 
 import os, re, codecs
 
-from ..QtGui.mcmsg import AskForIgnoreMsgBox
+#from ..QtGui.mcmsg import AskForIgnoreMsgBox
 from . import mcmodinfo
 from ..Misc import mcerrors
 

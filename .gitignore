@@ -4,9 +4,10 @@
 /include_dirs.lst
 /obj
 /objs.lst
-scripts/autoconf
 scripts/autoconf.h
+scripts/autoconf.mk
 scripts/link*
+src/arch/sparc/embox.lds
 
 *.o
 *.d

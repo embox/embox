@@ -101,7 +101,7 @@ boot_start:
 #define tmp0 g4
 #define tmp1 g5
 	/* copy data sections */
-	set _endtext, %src
+	set _text_end, %src
 	set _data_start, %dst
 	set _data_end, %end
 	cmp %dst, %end

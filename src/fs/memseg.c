@@ -14,7 +14,7 @@ bool memseg_init()
 
 	extern char _piggy_end, _piggy_start, _pigmon_start, _pigmon_end;
 
-	extern char _text_start, _endtext, _data_start, _data_end, _trap_table;
+	extern char _text_start, _text_end, _data_start, _data_end, _trap_table;
 
 	short sidx;
 	for (sidx=0; sidx<MAX_NSEGMENTS; sidx++)
@@ -23,7 +23,7 @@ bool memseg_init()
 	create_segment ("piggy", &_piggy_start, &_piggy_end);
 	create_segment ("pigmon", &_pigmon_start, &_pigmon_end);
 	create_segment ("traptable", &_trap_table, &_text_start);
-	create_segment ("text", &_text_start, &_endtext);
+	create_segment ("text", &_text_start, &_text_end);
 	create_segment ("data", &_data_start, &_data_end);
 
 	return true;

@@ -194,4 +194,4 @@ typedef struct _TRAP_CONTEXT {
 
 #endif /* __ASSEMBLER__ */
 
-#endif // _TRAPS_H_
+#endif /* _TRAPS_H_ */

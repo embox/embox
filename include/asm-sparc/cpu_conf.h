@@ -8,4 +8,4 @@
 /* Desired uart baud rate */
 #define UART_BAUD_RATE  38400
 
-#endif //_CPU_CONF_
+#endif /* _CPU_CONF_ */

@@ -2,7 +2,7 @@
 
 import copy, pickle, os, shutil, sys
 
-from ..QtGui import mcmsg
+#from ..QtGui import mcmsg
 from ..Misc import mcerrors
 from . import mcmodinfo
 from .mcscan import ScanAndParse
@@ -455,17 +455,17 @@ class MonitorConfig_t:
 defCompilersToSettingsDict = {
 	'sparc-linux' :  CompilerSettings_t(
 		Path = u'/opt/sparc-linux/bin/sparc-linux-gcc',
-		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
+		CFLAGS = u'-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
 		LDFLAGS = u'-Wl -N -nostdlib -g'
 	),
 	'sparc-elf' : CompilerSettings_t(
 		Path = u'/opt/sparc-elf/bin/sparc-elf-gcc',
-		CFLAGS = u'-Werror -pipe -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
+		CFLAGS = u'-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
 		LDFLAGS = u'-Wl -N -nostdlib -g'
 	),
 	'mb-linux' : CompilerSettings_t(
 		Path = u'/opt/microblaze-cctools/bin',
-		CFLAGS = u'-Werror -pipe -c -O0 -D_TEST_SYSTEM_',
+		CFLAGS = u'-Werror -pipe -O0 -D_TEST_SYSTEM_',
 		LDFLAGS = u'-Wl -N -nostdlib'
 	)
 }

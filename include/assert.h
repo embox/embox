@@ -1,11 +1,12 @@
 /**
- * @file assert.h
+ * @file
  * @brief Provides @c assert macro definition
  *
  * @date 25.11.09
  * @author Eldar Abusalimov
  * @author Nikolay Korotky
  */
+
 #ifndef ASSERT_H_
 #define ASSERT_H_
 

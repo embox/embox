@@ -61,7 +61,7 @@ typedef struct _LEON_REGS
 }LEON_REGS;
 #endif
 
-#ifdef LEON3
+#ifdef CONFIG_LEON3
 typedef struct _LEON_REGS
 {
 	volatile unsigned int memcfg1;		/* 0x00 */
@@ -121,6 +121,6 @@ typedef struct _LEON_REGS
 
 extern LEON_REGS *const l_regs;
 
-#endif // ifndef __ASSEMBLER__
+#endif /* __ASSEMBLER__ */
 #endif
-#endif // _LEON_H_
+#endif /* _LEON_H_ */

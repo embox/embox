@@ -6,7 +6,7 @@
 /* Arch */
 #define MONITOR_ARCH_SPARC 1
 
-/* Verbous levels */
+/* Verbose levels */
 #define _ERROR 1
 #define _TRACE 1
 #undef _DEBUG
@@ -19,9 +19,9 @@
 #undef DOXYGEN_TRG
 
 /* Conio */
-#define MONITOR_START_MSG "Welcome to Monitor shell and have a lot of fun..."
-#define MONITOR_PROMPT "monitor> "
-#define MONITOR_MAX_PROMPT_LENGTH 15
+#define CONFIG_SHELL_WELCOME_MSG "Welcome to Monitor shell and have a lot of fun..."
+#define CONFIG_SHELL_PROMPT "monitor> "
+#define CONFIG_MAX_PROMPT_LENGTH 15
 
 /* "File system" */
 #define MONITOR_FS 1

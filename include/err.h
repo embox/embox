@@ -12,7 +12,7 @@
 
 #define LOGGER()   printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
 
-#if defined(_ERROR) && !defined(SIMULATION_TRG)
+#if defined(CONFIG_ERROR) && !defined(SIMULATION_TRG)
 # define LOG_ERROR(...)  do {LOGGER(); printf("ERROR: "__VA_ARGS__);} while(0)
 #else
 # define LOG_ERROR(...)  do ; while(0)

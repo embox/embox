@@ -2,28 +2,20 @@
 
 TARGET=monitor
 
-SIGN_CHECKSUM=y
-DISASSEMBLE=y
+ARCH=SPARC
 
-# Build targets (only one may be chosen)
-
-SIMULATION_TRG=n
-DEBUG_TRG=y
-RELEASE_TRG=n
-DOXYGEN_TRG=n
-
-# Arch (only one may be chosen)
-
-MONITOR_ARCH_SPARC=y
 CC_PACKET=sparc-elf
-CCFLAGS=-Werror -pipe -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_
+CCFLAGS=-Werror -pipe -msoft-float -mv8 -O1 -g -DLEON3 -D_TEST_SYSTEM_
 LDFLAGS=-Wl -N -nostdlib -g
+
+CHECKSUM=y
+DISASSEMBLE=y
 
 # "File system" support
 
 MONITOR_FS=y
 
-# GLibc
+# libc
 
 MONITOR_LIB=y
 

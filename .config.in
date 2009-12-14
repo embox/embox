@@ -3,7 +3,7 @@
 		"Arch_num": 0,
 		"sparc": {
 			"Cflags": {
-				"inc": "-Werror -pipe -msoft-float -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_",
+				"inc": "-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_",
 				"mdef": "CCFLAGS",
 				"re": "([A-Za-z0-9_\\-# ]+)",
 				"status": 1
@@ -86,7 +86,7 @@
 		"Sign_bin": {
 			"desc": "Sign checksum",
 			"inc": 1,
-			"mdef": "SIGN_CHECKSUM",
+			"mdef": "CHECKSUM",
 			"status": 1
 		},
 		"Target": {
@@ -105,19 +105,19 @@
 	"Conio": {
 		"Prompt": {
 			"inc": "monitor> ",
-			"mdef": "MONITOR_PROMPT",
+			"mdef": "CONFIG_SHELL_PROMPT",
 			"re": "([a-zA-Z0-9._ ->#@<]+)",
 			"status": 1
 		},
 		"Prompt_max_lenght": {
 			"inc": "15",
-			"mdef": "MONITOR_MAX_PROMPT_LENGTH",
+			"mdef": "CONFIG_MAX_PROMPT_LENGTH",
 			"re": "([0-9]+)",
 			"status": 1
 		},
 		"Start_msg": {
 			"inc": "Welcome to Monitor shell and have a lot of fun...",
-			"mdef": "MONITOR_START_MSG",
+			"mdef": "CONFIG_SHELL_WELCOME_MSG",
 			"re": "([\\a-zA-Z0-9._ ->]+)",
 			"status": 1
 		}
@@ -176,7 +176,7 @@
 		}
 	},
 	"Files": {
-		"autoconf": "scripts/autoconf",
+		"autoconf_mk": "scripts/autoconf.mk",
 		"autoconf_h": "scripts/autoconf.h"
 	},
 	"Fs": {},

@@ -103,12 +103,12 @@ static FILE_HANDLER * find_free_handler() {
 }
 
 static int init() {
-    extern char _data_start, _data_end, _text_start, _endtext;
+    extern char _data_start, _data_end, _text_start, _text_end;
     RAMFS_CREATE_PARAM param;
 
     //create file section_text
     strncpy(param.name, "section_text", array_len(param.name));
-    param.size = (unsigned int) (&_endtext - &_text_start);
+    param.size = (unsigned int) (&_text_end - &_text_start);
     param.start_addr = (unsigned int) (&_text_start);
     create_file(&param);//text
     //create file section_data

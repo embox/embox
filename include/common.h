@@ -7,7 +7,7 @@
 #include "err.h"
 #include "bitops.h"
 
-#if defined(_TRACE) && !defined(SIMULATION_TRG)
+#if defined(CONFIG_TRACE) && !defined(SIMULATION_TRG)
 # ifdef _TEST_SYSTEM_
 #  define TRACE(...)  printf(__VA_ARGS__)
 # else

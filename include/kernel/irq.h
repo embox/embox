@@ -14,10 +14,8 @@
 
 #include <types.h>
 
-// Not for assembler
 #ifndef __ASSEMBLER__
 
-// type of irq handler function
 typedef void (*IRQ_HANDLER)();
 
 typedef struct {
@@ -26,7 +24,6 @@ typedef struct {
 	bool enabled;
 } IRQ_INFO;
 
-// traps handlers table size
 #define IRQ_TABLE_SIZE     0xFF
 
 int irq_init_handlers();
@@ -51,5 +48,5 @@ void irq_set_handler(uint8_t irq_number, IRQ_HANDLER pfunc);
  */
 IRQ_HANDLER irq_get_handler(uint8_t nirq);
 
-#endif // __ASSEMBLER__
-#endif  // _IRQ_H_
+#endif /* __ASSEMBLER__ */
+#endif /* _IRQ_H_ */

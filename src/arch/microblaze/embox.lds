@@ -115,7 +115,7 @@ SECTIONS
 
         *(.checksum)
         . = ALIGN(0x4);
-		_endtext = .;
+		_text_end = .;
 
 		_data_image_start = .;
 	}> sdram

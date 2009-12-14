@@ -7,4 +7,4 @@ SUBDIRS-y += fs
 SUBDIRS-y += user
 SUBDIRS-y += net
 
-include $(SCRIPTS_DIR)/build.mk
+include $(SCRIPTS_DIR)/common.mk

@@ -80,7 +80,7 @@ class confmain:
 		if self.mode == "x":
 			code_gen.write_autoconf_h(self.files["autoconf_h"])
 			code_gen.build_link(self.linkers)
-			code_gen.write_autoconf(self.files["autoconf"])
+			code_gen.write_autoconf_mk(self.files["autoconf_mk"])
 			self.write_config(".config")
 
 	def make_def_conf(self):
@@ -89,7 +89,7 @@ class confmain:
 		if self.mode == "x":
 			code_gen.write_autoconf_h(self.files["autoconf_h"] + ".in")
 			code_gen.build_link(self.linkers)
-			code_gen.write_autoconf(self.files["autoconf"] + ".in")
+			code_gen.write_autoconf_mk(self.files["autoconf_mk"] + ".in")
 			self.write_config(".config.in")
 
 	def config_cmp(self, fconf1, fconf2):
@@ -105,13 +105,13 @@ class confmain:
 
 	def restore_config(self):
 		""" Restore files from default if not exist and read .config """
-		for file in (".config", "scripts/autoconf", "scripts/autoconf.h"):
+		for file in (".config", "scripts/autoconf.mk", "scripts/autoconf.h"):
 			if not os.path.exists(file):
 			      shutil.copyfile(file + ".in", file)
 		if not self.config_cmp(".config", ".config.in"):
 			print ".config and .config.in have sharp distinction, maybe .config is out of date?"
 			shutil.copyfile(".config.in", ".config")
-			shutil.copyfile("scripts/autoconf.in", "scripts/autoconf")
+			shutil.copyfile("scripts/autoconf.in", "scripts/autoconf.mk")
 		self.read_config(".config")
 		for tab in self.menu.keys():
 			self.var[tab] = { "0" : 0 }

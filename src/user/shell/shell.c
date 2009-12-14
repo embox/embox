@@ -136,7 +136,7 @@ static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback ) {
 }
 
 void shell_start() {
-	static const char* prompt = MONITOR_PROMPT;
+	static const char* prompt = CONFIG_SHELL_PROMPT;
 	static CONSOLE console[1];
 	static CONSOLE_CALLBACK callback[1];
 
@@ -156,6 +156,6 @@ void shell_start() {
 	printf("\nStarting script...\n\n");
 	shell_start_script(console, callback);
 
-	printf("\n\n%s", MONITOR_START_MSG);
+	printf("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
 	console_start(console, prompt);
 }

@@ -24,9 +24,9 @@ class confgen:
 	        os.remove("include/asm")
 	        os.symlink("asm-{0}".format(self.core.get_arch()), "include/asm")
 
-	def write_autoconf(self, file):
-		""" Generate autoconf """
-	        #-- read autoconf
+	def write_autoconf_mk(self, file):
+		""" Generate autoconf.mk """
+	        #-- read autoconf.mk
 	        content = read_file(file)
 		#-- Arch ------------------------------------------------------------------------
 	        mod_name = "Arch"
@@ -63,7 +63,7 @@ class confgen:
         	                        inc     = self.tabs[mod_name][item]["inc"]
         	                        mdef    = self.tabs[mod_name][item]["mdef"]
         	                        content = replacer(mdef, inc, content)
-                #-- write autoconf
+                #-- write autoconf.mk
                 write_file(file, content)
 
 	def write_autoconf_h(self, file):

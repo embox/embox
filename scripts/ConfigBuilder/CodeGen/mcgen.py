@@ -12,7 +12,7 @@ class ConfigGenerator:
 		self.CurCompilerSettings = self.CurArch.CompilersToSettingsDict[self.CurArch.CurrentCompilerName]
 
 	def generate(self):
-		for file in ("scripts/autoconf", "scripts/autoconf.h"):
+		for file in ("scripts/autoconf.mk", "scripts/autoconf.h"):
 		        if not os.path.exists(file):
 		                shutil.copyfile(file + ".in", file)
 		self.genLinkScript()
@@ -30,9 +30,9 @@ class ConfigGenerator:
 		os.symlink("asm-{0}".format(arch), "include/asm")
 
 	def genAutoconf(self):
-		""" Generate autoconf """
-		#-- read autoconf
-		content = self.read_file('scripts/autoconf')
+		""" Generate autoconf.mk """
+		#-- read autoconf.mk
+		content = self.read_file('scripts/autoconf.mk')
 		#-- CC_PACKET, CFLAGS, LDFLAGS --------------
 		content = re.sub( "CFLAGS=([A-Za-z0-9_\\-# ]+)",  "CFLAGS="    + self.CurCompilerSettings.CFLAGS,  content)
 		content = re.sub( "LDFLAGS=([A-Za-z0-9_\\-# ]+)", "LDFLAGS="   + self.CurCompilerSettings.LDFLAGS, content)
@@ -50,8 +50,8 @@ class ConfigGenerator:
 			else:
 				inc = False
 			content = self.replacer(mdef, inc, content)
-		#-- write autoconf
-		self.write_file('scripts/autoconf', content)
+		#-- write autoconf.mk
+		self.write_file('scripts/autoconf.mk', content)
 
 	def genAutoconfh(self):
 		""" Generate autoconf.h """
