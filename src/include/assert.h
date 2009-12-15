@@ -34,5 +34,6 @@
 
 #define assert_null(arg) assert((arg) == NULL)
 #define assert_not_null(arg) assert((arg) != NULL)
+#define ASSERT_INIT_DONE() assert_not_null(dev_regs)
 
 #endif /* ASSERT_H_ */

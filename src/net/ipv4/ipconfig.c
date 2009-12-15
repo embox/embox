@@ -10,5 +10,3 @@
 #include <net/net.h>
 #include <net/inetdevice.h>
 #include <kernel/init.h>
-
-//DECLARE_INIT("net", net_init, INIT_NET_LEVEL);

@@ -24,6 +24,7 @@ int __init sock_init(void) {
 
         /* Initialize skbuff. */
         skb_init();
+        return 0;
 }
 
 void fill_sock(struct udp_sock *sk, int type, int proto) {
