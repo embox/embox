@@ -7,7 +7,7 @@ $(error ROOT_DIR undefined)
 endif
 
 MK_DIR      :=$(ROOT_DIR)/mk
-CONF_DIR    :=$(ROOT_DIR)/conf
+CONF_DIR    :=$(ROOT_DIR)/templates/sparc
 SCRIPTS_DIR :=$(ROOT_DIR)/scripts
 
 SRC_DIR     :=$(ROOT_DIR)/src

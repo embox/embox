@@ -46,13 +46,12 @@ $(BUILD_DIR)/$(TARGET_SREC): $(BUILD_DIR)/$(TARGET)
 checksum:
 #	@$(MAKE) --directory=scripts/md5_checksummer
 #	@if [ $(CHECKSUM) == y ]; \
-	then \
-	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
-			-o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
-	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; \
-			$(MAKE) --directory=src all; \
-	else \
-	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
-			-o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean;\
-	fi;
-
+#	then \
+#	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
+#			-o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
+#	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; \
+#			$(MAKE) --directory=src all; \
+#	else \
+#	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
+#			-o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean;\
+#	fi;
