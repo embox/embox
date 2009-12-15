@@ -29,7 +29,7 @@ SECTIONS {
 
 	.text : {
 		ALIGNMENT();
-		*(.trap_table)
+		*(.start_code)
 		*(.text)
 		*(.init.text)
 	} >sdram
