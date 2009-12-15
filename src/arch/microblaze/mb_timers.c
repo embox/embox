@@ -60,9 +60,9 @@ typedef volatile struct timer_regs {
 typedef volatile struct mb_timers {
 	timer_regs_t tmr0;
 	timer_regs_t tmr1;
-} mb_timers;
+} mb_timers_t;
 
-static mb_timers *timers = (mb_timers *) XILINX_TIMER_BASEADDR;
+static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
 
 int timers_ctrl_init(IRQ_HANDLER irq_handler) {
