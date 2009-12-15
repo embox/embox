@@ -6,7 +6,7 @@
 
 OUTPUT_FORMAT("elf32-sparc", "elf32-sparc", "elf32-sparc")
 OUTPUT_ARCH(sparc)
-ENTRY(_start)
+ENTRY(_hardreset)
 
 MEMORY {
 	sdram : ORIGIN = LDS_RAM_BASE, LENGTH = LDS_RAM_SIZE
@@ -24,15 +24,15 @@ _text_start = _text_vma;
 _text_end = _text_vma + _text_len;
 
 // XXX just for now. -- Eldar
-#ifdef DEBUG_TRG
-#define rom sdram
-#endif
+//#ifdef DEBUG_TRG
+//#define rom sdram
+//#endif
 
 SECTIONS {
 
 	.text : {
 		ALIGNMENT();
-		*(.trap_table.text)
+		*(.trap_table)
 		*(.text)
 		*(.init.text)
 	} >rom AT>rom =0
@@ -43,7 +43,7 @@ SECTIONS {
 		ALIGNMENT();
 		_piggy_start = .;
 		_piggy_end = .;
-	} >rom AT>rom
+	} >rom
 	SECTION_SYMBOLS(rodata)
 
 	.data : {
@@ -51,7 +51,7 @@ SECTIONS {
 		_data_start = .;
 		*(.data)
 		_data_end = .;
-	} >sdram AT>rom
+	} >sdram
 	SECTION_SYMBOLS(data)
 
 	.bss : {
