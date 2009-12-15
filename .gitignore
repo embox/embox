@@ -7,6 +7,7 @@
 scripts/autoconf.h
 scripts/autoconf.mk
 scripts/link*
+src/arch/microblaze/embox.lds
 src/arch/sparc/embox.lds
 
 *.o
