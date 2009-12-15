@@ -46,8 +46,8 @@ clean:
 	@$(RM) -r $(BIN_DIR) $(BUILD_DIR) $(OBJ_DIR) $(DOCS_DIR)
 	@$(RM) $(OBJS_ALL)
 	@$(RM) $(OBJS_ALL:.o=.d)
-	@$(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
-		-o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
+#	@$(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
+#		-o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 	@echo 'Clean complete'
 
 config:
@@ -55,11 +55,11 @@ config:
 
 menuconfig:
 	@$(EDITOR) $(CONF_DIR)/config.mk
-	@$(SCRIPTS_DIR)/configure.py --mode=menu > /dev/null 2>&1
+#	@$(SCRIPTS_DIR)/configure.py --mode=menu > /dev/null 2>&1
 
 xconfig:
-	@$(SCRIPTS_DIR)/configure.py --mode=tk > /dev/null 2>&1
+#	@$(SCRIPTS_DIR)/configure.py --mode=tk > /dev/null 2>&1
 
 mconfig:
-	@$(SCRIPTS_DIR)/configure.py --mode=qt > /dev/null 2>&1
+#	@$(SCRIPTS_DIR)/configure.py --mode=qt > /dev/null 2>&1
 

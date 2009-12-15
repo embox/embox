@@ -10,7 +10,7 @@ BACH_FILE=cmd.grmon
 BIN_DIR=bin
 MONITOR_ROM=monitor_rom
 SIZE_ROM=0x80000
-MONITOR_RAM=monitor_ram
+MONITOR_RAM=embox
 AUTOCONF=.config
 AUTOCONF2=.config2
 
@@ -20,9 +20,9 @@ HOST=10.0.3.97
 IMG_PATH=/home/$USER
 DSA_KEY_FILE=~/.ssh/id2_dsa
 
-if [ ! -e $AUTOCONF -a ! -e $AUTOCONF2 ]; then
-    make mconfig
-else
+#if [ ! -e $AUTOCONF -a ! -e $AUTOCONF2 ]; then
+#    make mconfig
+#else
     make clean
     make
     if [ -e $BIN_DIR/$MONITOR_ROM ]; then
@@ -58,4 +58,4 @@ else
 	fi
     fi
     svn diff > diff.log
-fi
+#fi
