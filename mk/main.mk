@@ -6,9 +6,10 @@ ifndef ROOT_DIR
 $(error ROOT_DIR undefined)
 endif
 
-MK_DIR      :=$(ROOT_DIR)/mk
-CONF_DIR    :=$(ROOT_DIR)/templates/sparc
-SCRIPTS_DIR :=$(ROOT_DIR)/scripts
+MK_DIR       :=$(ROOT_DIR)/mk
+CONF_DIR     :=$(ROOT_DIR)/conf
+TEMPLATES_DIR:=$(ROOT_DIR)/templates
+SCRIPTS_DIR  :=$(ROOT_DIR)/scripts
 
 SRC_DIR     :=$(ROOT_DIR)/src
 DOCS_DIR    :=$(ROOT_DIR)/docs
@@ -51,7 +52,27 @@ clean:
 	@echo 'Clean complete'
 
 config:
-	@cp $(CONF_DIR)/config.in $(CONF_DIR)/config.mk
+ifndef TEMPLATE
+	@echo 'Error: TEMPLATE undefined'
+	@echo 'Usage: "make TEMPLATE=<profile> [OVERWRITE=1] config"'
+	@echo '    See templates/ folder for possible profiles'
+	exit 1
+endif
+
+	@test -d $(TEMPLATES_DIR)/$(TEMPLATE) \
+		|| (echo 'Error: template $(TEMPLATE) does not exist' \
+		&& exit 1)
+
+ifeq ($(OVERWRITE),1)
+	@test -d $(CONF_DIR) \
+		&& rm -rf $(CONF_DIR)/* \
+		|| mkdir -p $(CONF_DIR)
+	@cp -t $(CONF_DIR) $(addprefix $(TEMPLATES_DIR)/$(TEMPLATE)/,$(CONF_FILES))
+else
+	@test -d $(CONF_DIR) \
+		|| mkdir -p $(CONF_DIR)
+	@cp -u -t $(CONF_DIR) $(addprefix $(TEMPLATES_DIR)/$(TEMPLATE)/,$(CONF_FILES))
+endif
 
 menuconfig:
 	@$(EDITOR) $(CONF_DIR)/config.mk
