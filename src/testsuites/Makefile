@@ -6,6 +6,7 @@ SUBDIRS-$(MONITOR_TESTS) += cpu_context
 SUBDIRS-$(MONITOR_TESTS) += timer_callback
 SUBDIRS-$(MONITOR_TESTS) += irq_force
 SUBDIRS-$(MONITOR_TESTS) += local_irq_save
+SUBDIRS-$(MONITOR_TESTS) += memory
 SUBDIRS-$(MONITOR_TESTS) += mmu
 SUBDIRS-$(MONITOR_TESTS) += recursion
 SUBDIRS-$(MONITOR_TESTS) += soft_traps

@@ -1,12 +1,34 @@
 /**
- * \file memory_tests.c
- * \date Jul 29, 2009
- * \author afomin
+ * @file memory_tests.c
+ * @date 29.07.2009
+ * @author Alexey Fomin
+ * @author Alexander Batyukov (some changes in interface and designed as express test)
  */
 
+#include "autoconf.h"
+#include "test_memory.h"
 #include "common.h"
 #include "string.h"
 #include "misc.h"
+#include "express_tests.h"
+
+DECLARE_EXPRESS_TEST("Memory", exec, TEST_MEMORY_ON_BOOT_ENABLE, NULL);
+
+static int exec() {
+    if  (0 != memory_test_run0((uint32_t *)0x0, 0x10000)){
+        TRACE("memory test run 0 error FAILED\n");
+        return -1;
+    }
+    if  (0 != memory_test_run0((uint32_t *)0x10000, 0x10000)){
+        TRACE("memory test run 1 error FAILED\n");
+        return -1;
+    }
+    if (0 != memory_test_chess((uint32_t *)0x20000, 0x10000)){
+        TRACE("memory test chess FAILED\n");
+        return -1;
+    }
+    return 0;
+}
 
 // FIXME what does this type mean? -- Eldar
 typedef unsigned char datum;
@@ -100,20 +122,25 @@ uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 
 }
 
-void memory_test_quick(uint32_t *base_addr, long int amount) {
+int memory_test_quick(uint32_t *base_addr, long int amount) {
 	if (0 == memory_test_data_bus(base_addr)) {
 		TRACE ("Data bus test ok\n");
+	} else {
+	    TRACE("Data bus failed\n");
+	    return -1;
 	}
+
 	//if (memory_test_addr_bus((uint32_t *)0x40000000, 0x100000) == NULL)
 	if (0 == memory_test_addr_bus(base_addr, amount)) {
 		TRACE("Addr bus test ok\n");
 	} else {
 		TRACE("Addr bus failed\n");
+		return -1;
 	}
-
+	return 0;
 }
 
-void memory_test_run1(uint32_t *base_addr, long int amount) {
+int memory_test_run1(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -129,15 +156,15 @@ void memory_test_run1(uint32_t *base_addr, long int amount) {
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != value) {
 				print_error(addr, value);
-				return;
+				return -1;
 			}
 		}
 		value <<= 1;
 	}
-	return;
+	return 0;
 }
 
-void memory_test_run0(uint32_t *base_addr, long int amount) {
+int memory_test_run0(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -153,14 +180,15 @@ void memory_test_run0(uint32_t *base_addr, long int amount) {
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != ~value) {
 				print_error(addr, ~value);
-				return;
+				return -1;
 			}
 		}
 		value <<= 1;
 	}
+	return 0;
 }
 
-void memory_test_address(uint32_t *base_addr, long int amount) {
+int memory_test_address(uint32_t *base_addr, long int amount) {
 	volatile uint32_t *addr; // address === value in this case. So it must be volatile
 	uint32_t *end_addr;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -189,13 +217,14 @@ void memory_test_address(uint32_t *base_addr, long int amount) {
 		}
 		if (*addr != (uint32_t) addr) {
 			print_error(addr, (uint32_t) addr);
-			return;
+			return -1;
 		}
 		addr++;
 	}
+	return 0;
 }
 
-void memory_test_chess(uint32_t *base_addr, long int amount) {
+int memory_test_chess(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 
@@ -212,7 +241,7 @@ void memory_test_chess(uint32_t *base_addr, long int amount) {
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
 			print_error(addr, ~value);
-			return;
+			return -1;
 		}
 	}
 	// Writing
@@ -225,13 +254,13 @@ void memory_test_chess(uint32_t *base_addr, long int amount) {
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
 			print_error(addr, ~value);
-			return;
+			return -1;
 		}
 	}
-
+	return 0;
 }
 
-void memory_test_loop(uint32_t *addr, long int counter) {
+int memory_test_loop(uint32_t *addr, long int counter) {
 	addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 	volatile uint32_t value = 0x55555555;
 
@@ -241,7 +270,7 @@ void memory_test_loop(uint32_t *addr, long int counter) {
 			*addr = value;
 			if (*addr != value) {
 				print_error(addr, value);
-				return;
+				return -1;
 			}
 			value = ~value;
 		}
@@ -253,9 +282,10 @@ void memory_test_loop(uint32_t *addr, long int counter) {
 		*addr = value;
 		if (*addr != value) {
 			print_error(addr, value);
-			return;
+			return -1;
 		}
 		value = ~value;
 	}
+	return 0;
 }
 

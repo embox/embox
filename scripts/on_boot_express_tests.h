@@ -16,6 +16,7 @@
 #define TEST_SOFT_TRAPS_ON_BOOT_ENABLE      1
 #define TEST_TIMER_CALLBACK_ON_BOOT_ENABLE  1
 
+#define TEST_MEMORY_ON_BOOT_ENABLE          0
 #define TEST_MMU_ON_BOOT_ENABLE             0
 
 #endif /* ON_BOOT_EXPRESS_TESTS_H_ */

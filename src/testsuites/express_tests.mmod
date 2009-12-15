@@ -1,3 +1,3 @@
 ModName = tests
-SrcList = express_tests.c checksum cpu_context timer_callback irq_force local_irq_save mmu recursion soft_traps
+SrcList = express_tests.c checksum cpu_context timer_callback irq_force local_irq_save memory mmu recursion soft_traps
 MDef    = MONITOR_TESTS

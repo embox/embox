@@ -6,7 +6,7 @@
 
 #include "shell_command.h"
 #include "asm/cache.h"
-#include "memory_tests.h"
+#include "test_memory.h"
 
 #define COMMAND_NAME     "testmem"
 #define COMMAND_DESC_MSG "set of memory tests"
@@ -18,7 +18,7 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 ;
 
-typedef void TEST_MEM_FUNC(uint32_t *addr, long int amount);
+typedef int TEST_MEM_FUNC(uint32_t *addr, long int amount);
 
 static int exec(int argsc, char **argsv) {
 	int i;
