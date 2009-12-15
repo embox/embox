@@ -34,10 +34,6 @@ static int exec() {
 
 	irqc_force(irq_info.irq_num);
 
-	if (!irq_happened) {
-		TRACE (" psr: 0x%08X ", get_psr());
-	}
-
 	irq_set_info(&irq_info);
 	return irq_happened ? 0 : -1;
 }

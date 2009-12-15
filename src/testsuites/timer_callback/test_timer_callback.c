@@ -31,8 +31,6 @@ static int exec() {
 			break;
 	}
 	close_timer(id);
-	if(!tick_happened) {
-		TRACE (" psr: 0x%08X ", get_psr());
-	}
+
 	return tick_happened ? 0 : -1;
 }
