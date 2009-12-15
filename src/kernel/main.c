@@ -8,7 +8,7 @@
 #include <autoconf.h>
 
 int main() {
-#if !defined(SIMULATION_TRG) && defined(MONITOR_SHELL)
+#if !defined(SIMULATION_TRG) && defined(CONFIG_SHELL)
         shell_start();
 #endif
         while (1)
