@@ -37,7 +37,11 @@ static inline void dev_unlock(int num) {
         net_devices[num].is_busy = 0;
 }
 
-net_device_t *alloc_netdev(const char *name,
+int dev_alloc_name(struct net_device *dev, const char *name) {
+	return 0;
+}
+
+net_device_t *alloc_netdev(int sizeof_priv, const char *name,
                            void (*setup)(net_device_t *)) {
         struct net_device *dev;
         int i;
@@ -61,6 +65,15 @@ void free_netdev(net_device_t *dev) {
                         dev_unlock(i);
                 }
         }
+}
+
+int register_netdev(struct net_device *dev) {
+	return 0;
+}
+
+void unregister_netdev(struct net_device *dev)
+{
+
 }
 
 net_device_t *netdev_get_by_name(const char *name) {

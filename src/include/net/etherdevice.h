@@ -111,6 +111,6 @@ extern void ether_setup(net_device_t *dev);
 /**
  * Allocates and sets up an Ethernet device
  */
-extern net_device_t *alloc_etherdev();
+extern net_device_t *alloc_etherdev(int sizeof_priv);
 
 #endif /* ETHERDEVICE_H_ */

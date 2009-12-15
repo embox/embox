@@ -32,21 +32,21 @@
 typedef struct net_device_stats {
 	unsigned long rx_packets; /**< total packets received       */
 	unsigned long tx_packets; /**< total packets transmitted    */
-	unsigned long rx_bytes;   /**< total bytes received         */
-	unsigned long tx_bytes;   /**< total bytes transmitted      */
-	unsigned long rx_err;     /**< bad packets received         */
-	unsigned long tx_err;     /**< packet transmit problems     */
+	unsigned long rx_bytes; /**< total bytes received         */
+	unsigned long tx_bytes; /**< total bytes transmitted      */
+	unsigned long rx_err; /**< bad packets received         */
+	unsigned long tx_err; /**< packet transmit problems     */
 	unsigned long rx_dropped; /**< no space in pool             */
 	unsigned long tx_dropped; /**< no space available in pool   */
-	unsigned long multicast;  /**< multicast packets received   */
+	unsigned long multicast; /**< multicast packets received   */
 	unsigned long collisions;
 
 	/* detailed rx_errors: */
 	unsigned long rx_length_errors;
-	unsigned long rx_over_errors;   /**< receiver ring buff overflow  */
-	unsigned long rx_crc_errors;    /**< recved pkt with crc error    */
-	unsigned long rx_frame_errors;  /**< recv'd frame alignment error */
-	unsigned long rx_fifo_errors;   /**< recv'r fifo overrun          */
+	unsigned long rx_over_errors; /**< receiver ring buff overflow  */
+	unsigned long rx_crc_errors; /**< recved pkt with crc error    */
+	unsigned long rx_frame_errors; /**< recv'd frame alignment error */
+	unsigned long rx_fifo_errors; /**< recv'r fifo overrun          */
 	unsigned long rx_missed_errors; /**< receiver missed packet       */
 
 	/* detailed tx_errors */
@@ -58,7 +58,7 @@ typedef struct net_device_stats {
 } net_device_stats_t;
 
 enum netdev_state_t {
-        __LINK_STATE_START,
+	__LINK_STATE_START,
 //        __LINK_STATE_PRESENT,
 //        __LINK_STATE_NOCARRIER,
 //        __LINK_STATE_LINKWATCH_PENDING,
@@ -71,18 +71,17 @@ enum netdev_state_t {
  * optional and can be filled with a null pointer.
  */
 typedef struct net_device_ops {
-        int           (*ndo_open)(struct net_device *dev);
-        int           (*ndo_stop)(struct net_device *dev);
-        int           (*ndo_start_xmit)(sk_buff_t *pack, struct net_device *dev);
-        int           (*ndo_set_mac_address)(struct net_device *dev, void *addr);
-        net_device_stats_t* (*ndo_get_stats)(struct net_device *dev);
+	int (*ndo_open)(struct net_device *dev);
+	int (*ndo_stop)(struct net_device *dev);
+	int (*ndo_start_xmit)(sk_buff_t *pack, struct net_device *dev);
+	int (*ndo_set_mac_address)(struct net_device *dev, void *addr);
+	net_device_stats_t* (*ndo_get_stats)(struct net_device *dev);
 } net_device_ops_t;
 
 typedef struct header_ops {
 	int (*rebuild)(sk_buff_t *pack);
-	int (*create)(sk_buff_t *pack, struct net_device *dev,
-	              unsigned short type, void *daddr,
-	              void *saddr, unsigned len);
+	int (*create)(sk_buff_t *pack, struct net_device *dev, unsigned short type,
+			void *daddr, void *saddr, unsigned len);
 	int (*parse)(const sk_buff_t *pack, unsigned char *haddr);
 } header_ops_t;
 
@@ -90,8 +89,8 @@ typedef struct header_ops {
  * structure for register incoming protocol packets type
  */
 typedef struct packet_type {
-	__be16            type;        /**< This is really htons(ether_type) */
-	struct net_device *dev;        /**< NULL is wildcarded here	     */
+	__be16 type; /**< This is really htons(ether_type) */
+	struct net_device *dev; /**< NULL is wildcarded here	     */
 	int (*func)(sk_buff_t *, struct net_device *, struct packet_type *,
 			struct net_device *);
 #if 0
@@ -107,21 +106,28 @@ typedef struct packet_type {
  * structure of net device
  */
 typedef struct net_device {
-	char          name[IFNAMSIZ];           /**< It is the name the interface.*/
-	unsigned char dev_addr[MAX_ADDR_LEN];    /**< hw address                   */
-	unsigned char broadcast[MAX_ADDR_LEN];  /**< hw bcast address             */
+	char name[IFNAMSIZ]; /**< It is the name the interface.*/
+	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address                   */
+	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address             */
 	unsigned long state;
-	unsigned char type;                     /**< interface hardware type      */
-	unsigned char addr_len;                 /**< hardware address length      */
-	unsigned int  flags;                    /**< interface flags (a la BSD)   */
-	unsigned      mtu;                      /**< interface MTU value          */
-	unsigned long tx_queue_len;             /**< Max frames per queue allowed */
-	unsigned long base_addr;                /**< device I/O address           */
-	unsigned int  irq;                      /**< device IRQ number            */
+	unsigned char type; /**< interface hardware type      */
+	unsigned char addr_len; /**< hardware address length      */
+	unsigned int flags; /**< interface flags (a la BSD)   */
+	unsigned mtu; /**< interface MTU value          */
+	unsigned long tx_queue_len; /**< Max frames per queue allowed */
+	unsigned long base_addr; /**< device I/O address           */
+	unsigned int irq; /**< device IRQ number            */
 	net_device_stats_t stats;
-	const net_device_ops_t *netdev_ops;     /**< Management operations        */
-	const header_ops_t *header_ops;         /**< Hardware header description  */
+	const net_device_ops_t *netdev_ops; /**< Management operations        */
+	const header_ops_t *header_ops; /**< Hardware header description  */
+	void *priv; /**< pointer to private data */
 } net_device_t;
+
+static inline void *netdev_priv(struct net_device *dev) {
+	return dev->priv;
+}
+
+int dev_alloc_name(struct net_device *dev, const char *name);
 
 /**
  * Find an network device by its name
@@ -135,14 +141,18 @@ extern net_device_t *netdev_get_by_name(const char *name);
  * @param name device name format string
  * @param callback to initialize device
  */
-extern net_device_t *alloc_netdev(const char *name,
-                void (*setup)(net_device_t *));
+extern net_device_t *alloc_netdev(int sizeof_priv, const char *name,
+		void(*setup)(net_device_t *));
 
 /**
  * Free network device
  * @param dev net_device handler
  */
 extern void free_netdev(net_device_t *dev);
+
+int register_netdev(struct net_device *dev);
+
+void unregister_netdev(struct net_device *dev);
 
 /**
  * Add packet handler

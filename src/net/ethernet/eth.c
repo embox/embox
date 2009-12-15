@@ -107,6 +107,6 @@ void ether_setup(net_device_t *dev) {
         memset(dev->broadcast, 0xFF, ETH_ALEN);
 }
 
-net_device_t *alloc_etherdev() {
-        return alloc_netdev("eth%d", &ether_setup);
+net_device_t *alloc_etherdev(int sizeof_priv) {
+	return alloc_netdev(sizeof_priv, "eth%d", ether_setup);
 }
