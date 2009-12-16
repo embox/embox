@@ -14,10 +14,11 @@
 
 void interrupt_handler() {
 	irq_mask_t irq_stat;
-	while (0 != (irq_stat = irqc_get_mask())) {
+	while (0 != (irq_stat = irqc_get_isr_reg())) {
 		int irq_num;
-		for (irq_num = 0; irq_num < MAX_IRQ_NUMBER; irq_num ++) {
+		for (irq_num = 0; irq_num < MAX_IRQ_NUMBER; irq_num++) {
 			if (irq_stat & (1 << irq_num)) {
+				irqc_clear(irq_num);
 				irq_dispatch(irq_num);
 			}
 		}

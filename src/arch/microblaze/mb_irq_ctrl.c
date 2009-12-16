@@ -90,3 +90,7 @@ int irqc_clear(irq_num_t irq_num){
 	SetBit(irqc->iar,irq_num);
 	return old_mask;
 }
+
+irq_mask_t irqc_get_isr_reg() {
+	return irqc->isr;
+}

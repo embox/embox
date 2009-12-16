@@ -11,7 +11,12 @@
 #ifndef __ASSEMBLER__
 
 typedef char irq_num_t;
-typedef unsigned int irq_mask_t ;
+typedef unsigned int irq_mask_t;
+
+/**
+ * return isr register for mb_intc
+ */
+irq_mask_t irqc_get_isr_reg();
 
 #endif /*__ASSEMBLER__*/
 

@@ -8,7 +8,23 @@
 
 #include "autoconf.h"
 #include "asm/mb_regs.h"
-
+/*
+	.org  0x00
+_start:
+        brai    boot_start
+	.org  0x08
+_vector_sw_exception:
+        brai    _user_exception
+	.org  0x10
+_vector_interrupt:
+        brai    _interrupt_handler
+	.org  0x18
+_vector_debug_sw_break:
+	brai    _debug_exception
+	.org  0x20
+_vector_hw_exception:
+        brai    _hw_exception_handler
+*/
 	.section    ".start_code"
 	.align  4
  	.weak hardware_init_hook
@@ -18,7 +34,7 @@
 
 #define SET_HANDLER(base_addr, handler)            \
 	addik reg_tmp1, reg_zero, handler;             \
-	sw    reg_tmp2, reg_sp, reg_zero ;             \
+	sw    reg_tmp1, reg_sp, reg_zero ;             \
 	lhu   reg_tmp2, reg_sp, reg_zero;              \
 	shi   reg_tmp2, reg_zero, (base_addr + 0x2) ;  \
 	shi   reg_tmp1, reg_zero, (base_addr + 0x6) ;
@@ -55,6 +71,12 @@ how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide 
 	/*Hardware exception*/
 	SET_HANDLER(0x20, _hw_exception_handler);
 
+	/* enable instruction and data cache */
+	mfs	r12, rmsr
+	ori	r12, r12, 0xa0
+	mts	rmsr, r12
+
+
 
 /*text section and data section was copied by internal loader*/
 
@@ -75,6 +97,10 @@ clear_bss:
 	nop
 
 2:
+	mfs	r12, rmsr
+	ori	r12, r12, 0x2
+	mts	rmsr, r12
+
 	/*clear register*/
 	REGS_INIT();
 	/*set stack pointer*/

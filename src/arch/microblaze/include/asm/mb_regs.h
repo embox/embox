@@ -94,6 +94,7 @@ typedef struct stack_frame {
 
 
 #define SAVE_REGS \
+	addi r1,r1, -(PT_MSR + 4); \
 	swi	r2, r1, PTO+PT_R2;	/* Save SDA */			\
 	swi	r5, r1, PTO+PT_R5;					\
 	swi	r6, r1, PTO+PT_R6;					\
@@ -153,6 +154,7 @@ typedef struct stack_frame {
 	lwi	r28, r1, PTO+PT_R28;					\
 	lwi	r29, r1, PTO+PT_R29;					\
 	lwi	r30, r1, PTO+PT_R30;					\
-	lwi	r31, r1, PTO+PT_R31;	/* Restore cur task reg */
+	lwi	r31, r1, PTO+PT_R31;	/* Restore cur task reg */ \
+	addi r1,r1, (PT_MSR + 4);
 
 #endif /* MB_REGS_H_ */

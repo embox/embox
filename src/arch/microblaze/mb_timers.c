@@ -11,7 +11,7 @@
 #include <types.h>
 #include <kernel/irq.h>
 
-#define CONFIG_SYS_TIMER_PRELOAD     (CPU_CLOCK_FREQ/1000000)
+#define CONFIG_SYS_TIMER_PRELOAD     (CPU_CLOCK_FREQ/1000)
 
 /*bits definition of cntl/status (tcsr) register*/
 #define TIMER_ENALL_BIT  21      /**< ENALL */
@@ -64,9 +64,17 @@ typedef volatile struct mb_timers {
 
 static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
+static IRQ_HANDLER main_irq_handler = NULL;
+static void local_irq_handler() {
+	timer0->tcsr |= TIMER_INT;
+	if (NULL != main_irq_handler) {
+		main_irq_handler();
+	}
+}
 
 int timers_ctrl_init(IRQ_HANDLER irq_handler) {
-	if (-1 == request_irq(XILINX_TIMER_IRQ, irq_handler)) {
+	main_irq_handler = irq_handler;
+	if (-1 == request_irq(XILINX_TIMER_IRQ, local_irq_handler)) {
 		return -1;
 	}
 	/*set clocks period*/
@@ -74,7 +82,7 @@ int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	/*clear interrupts bit and load value from tlr register*/
 	timer0->tcsr = TIMER_INT | TIMER_RESET;
 	/*start timer*/
-	timer0->tcsr |= TIMER_ENABLE | TIMER_INT_ENABLE | TIMER_RELOAD
+	timer0->tcsr = TIMER_ENABLE | TIMER_INT_ENABLE | TIMER_RELOAD
 			| TIMER_DOWN_COUNT;
 	return 0;
 }

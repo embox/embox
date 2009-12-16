@@ -12,10 +12,11 @@
 
 
 #define MAX_IRQ_NUMBER      0x10
-#define CPU_CLOCK_FREQ      100000000
+
 
 /** System Clock Frequency */
-#define XILINX_CLOCK_FREQ           100000000
+#define XILINX_CLOCK_FREQ           50000000
+#define CPU_CLOCK_FREQ				XILINX_CLOCK_FREQ
 
 /** Microblaze is microblaze_0 */
 #define XILINX_USE_MSR_INSTR        1
