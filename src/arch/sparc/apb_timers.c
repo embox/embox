@@ -83,5 +83,6 @@ int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	REG_STORE(dev_regs->timer_ctrl1, 0xf);
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /**< disable */
 
-	return request_irq(amba_dev.dev_info.irq, irq_handler);
+
+	return request_irq(amba_dev.dev_info.irq, irq_handler, 0, "apb_timer", NULL);
 }

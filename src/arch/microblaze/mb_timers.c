@@ -74,7 +74,7 @@ static void local_irq_handler() {
 
 int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	main_irq_handler = irq_handler;
-	if (-1 == request_irq(XILINX_TIMER_IRQ, local_irq_handler)) {
+	if (-1 == request_irq(XILINX_TIMER_IRQ, local_irq_handler, 0, "xil_timer", NULL)) {
 		return -1;
 	}
 	/*set clocks period*/

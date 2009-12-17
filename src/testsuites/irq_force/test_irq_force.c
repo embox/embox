@@ -23,7 +23,7 @@ static void test_irq_force_handler() {
 }
 
 static int exec() {
-	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_irq_force_handler, true};
+	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_irq_force_handler, NULL, "test_irq_force", 0, true};
 
 	irq_happened = false;
 

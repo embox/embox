@@ -25,7 +25,7 @@ void dispatch_trap(uint8_t tt, uint32_t *sp) {
 	}
 	if (user_trap_handlers[tt] != NULL) {
 		// fire user handler!
-		user_trap_handlers[tt]();
+		user_trap_handlers[tt](0, NULL, NULL);
 	}
 }
 
