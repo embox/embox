@@ -6,15 +6,12 @@
  */
 
 #include "autoconf.h"
-#include "test_memory.h"
 #include "common.h"
 #include "string.h"
 #include "misc.h"
 #include "express_tests.h"
 
 DECLARE_EXPRESS_TEST("Memory", exec, TEST_MEMORY_ON_BOOT_ENABLE, NULL);
-
-
 
 // FIXME what does this type mean? -- Eldar
 typedef unsigned char datum;
