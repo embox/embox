@@ -6,7 +6,7 @@
 
 #include "shell_command.h"
 #include "asm/cache.h"
-#include "test_memory.h"
+#include "memory_tests.h"
 
 #define COMMAND_NAME     "testmem"
 #define COMMAND_DESC_MSG "set of memory tests"
