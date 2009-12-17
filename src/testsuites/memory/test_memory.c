@@ -14,21 +14,7 @@
 
 DECLARE_EXPRESS_TEST("Memory", exec, TEST_MEMORY_ON_BOOT_ENABLE, NULL);
 
-static int exec() {
-    if  (0 != memory_test_run0((uint32_t *)0x0, 0x10000)){
-        TRACE("memory test run 0 error FAILED\n");
-        return -1;
-    }
-    if  (0 != memory_test_run0((uint32_t *)0x10000, 0x10000)){
-        TRACE("memory test run 1 error FAILED\n");
-        return -1;
-    }
-    if (0 != memory_test_chess((uint32_t *)0x20000, 0x10000)){
-        TRACE("memory test chess FAILED\n");
-        return -1;
-    }
-    return 0;
-}
+
 
 // FIXME what does this type mean? -- Eldar
 typedef unsigned char datum;
@@ -40,7 +26,7 @@ inline static print_error(volatile uint32_t *addr, volatile uint32_t expected_va
 			expected_value);
 }
 
-uint32_t memory_test_data_bus(volatile uint32_t *address)
+static uint32_t memory_test_data_bus(volatile uint32_t *address)
 {
     uint32_t pattern;
 
@@ -69,7 +55,7 @@ uint32_t memory_test_data_bus(volatile uint32_t *address)
 }   /* memory_test_data_bus */
 
 // TODO think about signature: err_t name(..., uint32_t *fault_address) -- Eldar
-uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
+static uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 	unsigned long addressMask = (nBytes / sizeof(uint32_t) - 1);
 	unsigned char mem_buf[100];
 	unsigned long offset;
@@ -122,7 +108,7 @@ uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 
 }
 
-int memory_test_quick(uint32_t *base_addr, long int amount) {
+static int memory_test_quick(uint32_t *base_addr, long int amount) {
 	if (0 == memory_test_data_bus(base_addr)) {
 		TRACE ("Data bus test ok\n");
 	} else {
@@ -140,7 +126,7 @@ int memory_test_quick(uint32_t *base_addr, long int amount) {
 	return 0;
 }
 
-int memory_test_run1(uint32_t *base_addr, long int amount) {
+static int memory_test_run1(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -164,7 +150,7 @@ int memory_test_run1(uint32_t *base_addr, long int amount) {
 	return 0;
 }
 
-int memory_test_run0(uint32_t *base_addr, long int amount) {
+static int memory_test_run0(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -188,7 +174,7 @@ int memory_test_run0(uint32_t *base_addr, long int amount) {
 	return 0;
 }
 
-int memory_test_address(uint32_t *base_addr, long int amount) {
+static int memory_test_address(uint32_t *base_addr, long int amount) {
 	volatile uint32_t *addr; // address === value in this case. So it must be volatile
 	uint32_t *end_addr;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -224,7 +210,7 @@ int memory_test_address(uint32_t *base_addr, long int amount) {
 	return 0;
 }
 
-int memory_test_chess(uint32_t *base_addr, long int amount) {
+static int memory_test_chess(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 
@@ -260,7 +246,7 @@ int memory_test_chess(uint32_t *base_addr, long int amount) {
 	return 0;
 }
 
-int memory_test_loop(uint32_t *addr, long int counter) {
+static int memory_test_loop(uint32_t *addr, long int counter) {
 	addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 	volatile uint32_t value = 0x55555555;
 
@@ -289,3 +275,18 @@ int memory_test_loop(uint32_t *addr, long int counter) {
 	return 0;
 }
 
+static int exec() {
+    if  (0 != memory_test_run0((uint32_t *)0x0, 0x10000)){
+        TRACE("memory test run 0 error FAILED\n");
+        return -1;
+    }
+    if  (0 != memory_test_run0((uint32_t *)0x10000, 0x10000)){
+        TRACE("memory test run 1 error FAILED\n");
+        return -1;
+    }
+    if (0 != memory_test_chess((uint32_t *)0x20000, 0x10000)){
+        TRACE("memory test chess FAILED\n");
+        return -1;
+    }
+    return 0;
+}
