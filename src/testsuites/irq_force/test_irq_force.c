@@ -18,7 +18,7 @@ DECLARE_EXPRESS_TEST("force irq", exec, TEST_FORCE_IRQ_ON_BOOT_ENABLE, NULL);
 
 volatile static bool irq_happened;
 
-static void test_irq_force_handler() {
+static void test_irq_force_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
 	irq_happened = true;
 }
 
@@ -31,7 +31,6 @@ static int exec() {
 		TRACE("Unable to set irq handler\n");
 		return -3;
 	}
-
 	irqc_force(irq_info.irq_num);
 
 	irq_set_info(&irq_info);

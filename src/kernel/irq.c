@@ -52,8 +52,10 @@ bool irq_set_info(IRQ_INFO *irq_info) {
                 irqc_disable_irq(irq_info->irq_num);
         }
         memcpy(&old_irq_info, &irq_infos[irq_info->irq_num], sizeof(IRQ_INFO));
+        old_irq_info.irq_num = irq_info->irq_num;
         irqc_clear(irq_info->irq_num);
-        memcpy(&irq_infos[irq_info->irq_num], &irq_info, sizeof(IRQ_INFO));
+        memcpy(&irq_infos[irq_info->irq_num], irq_info, sizeof(IRQ_INFO));
+        memcpy(irq_info, &old_irq_info, sizeof(IRQ_INFO));
         local_irq_restore(psr);
         return true;
 #if 0
