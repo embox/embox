@@ -26,8 +26,7 @@ int __init net_buff_init() {
 	int i;
 	for (i = 0; i < array_len(pack_pool); i ++) {
 		(&pack_pool[i])->buff = &heap_buff[i][0];
-		INIT_LIST_HEAD(&(&pack_pool[i])->list);
-		list_add(&free_packet_list_head, &(&pack_pool[i])->list);
+		list_add(&(&pack_pool[i])->list, &free_packet_list_head);
 	}
 	INIT_LIST_HEAD(&busy_packet_list_head);
 	return 0;

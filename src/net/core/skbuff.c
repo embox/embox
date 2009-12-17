@@ -68,6 +68,7 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority){
 	}
 	skb = (struct sk_buff *)(&head_free_skb)->next;
 	list_del((&head_free_skb)->next);
+	INIT_LIST_HEAD((struct list_head *)skb);
 	spin_unlock(sp);
 
 	if (NULL == (skb->data = net_buff_alloc())) {
