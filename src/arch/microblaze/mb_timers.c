@@ -68,7 +68,7 @@ static IRQ_HANDLER main_irq_handler = NULL;
 static void local_irq_handler() {
 	timer0->tcsr |= TIMER_INT;
 	if (NULL != main_irq_handler) {
-		main_irq_handler();
+		main_irq_handler(XILINX_TIMER_IRQ, main_irq_handler, NULL);
 	}
 }
 
