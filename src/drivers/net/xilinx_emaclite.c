@@ -1,9 +1,20 @@
 /**
  *
  */
-#include "types.h"
-#include "autoconf.h"
-#include "kernel/module.h"
+#include <types.h>
+#include <autoconf.h>
+#include <kernel/module.h>
+#include <net/if_ether.h>
+#include <net/skbuff.h>
+#include <net/netdevice.h>
+#include <net/net.h>
+#include <net/if_ether.h>
+#include <net/net_pack_manager.h>
+#include <net/etherdevice.h>
+#include <kernel/irq.h>
+#include <net/etherdevice.h>
+#include <asm/spin_lock.h>
+#include <common.h>
 
 DECLARE_MODULE("Ethernet Emac lite", module_init)
 
@@ -91,7 +102,7 @@ static void pack_received() {
 		/* Read from the EmacLite device */
 
 		/* Acknowledge the frame */
-		emaclite->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
+		emaclite->rx_ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 	}
 
 #if 0
@@ -140,7 +151,7 @@ static int open(net_device_t *dev) {
 	 * RX - RX_PING & RX_PONG initialization
 	 */
 	/* Write out the value to flush the RX buffer */
-	emaclite->ctrl = XEL_RSR_RECV_IE_MASK;
+	emaclite->rx_ctrl = XEL_RSR_RECV_IE_MASK;
 #ifdef CONFIG_XILINX_EMACLITE_RX_PING_PONG
 	out_be32 (emaclite.baseaddress + XEL_RSR_OFFSET + XEL_BUFFER_OFFSET,
 			XEL_RSR_RECV_IE_MASK);
@@ -187,18 +198,16 @@ static const struct net_device_ops _netdev_ops = {
 
 static int module_init() {
 	/*if some module lock irq number we break initializing*/
-	if (-1 == request_irq(XILINX_EMACLITE_IRQ_NUM, irq_handler)) {
+
+	net_device_t *net_device;
+	/*initialize net_device structures and save information about them to local massive*/
+	if (NULL != (net_device = alloc_etherdev(0))) {
+		net_device->netdev_ops = &_netdev_ops;
+		net_device->irq = XILINX_EMACLITE_IRQ_NUM;
+		net_device->base_addr = XILINX_EMACLITE_BASEADDR;
+	}
+	if (-1 == request_irq(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0, "xilinx emaclite", net_device )) {
 		return -1;
 	}
 
-	int i;
-	/*initialize net_device structures and save information about them to local massive*/
-	for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
-		if (NULL != (net_devices[i] = alloc_etherdev(0))) {
-			net_devices[i]->netdev_ops = &_netdev_ops;
-			net_devices[i]->irq = XILINX_EMACLITE_IRQ_NUM;
-			net_devices[i]->base_addr = XILINX_EMACLITE_BASEADDR;
-		}
-	}
-	return 0;
 }
