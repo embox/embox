@@ -175,7 +175,8 @@ static int icmp_unreach(sk_buff_t *pack) {
  */
 static int icmp_echo(sk_buff_t *recieved_pack) {
 	sk_buff_t *pack = skb_copy(recieved_pack, 0);
-
+	pack->dev = recieved_pack->dev;
+	pack->protocol = recieved_pack->protocol;
 	//fill icmp header
 	pack->h.icmph->type = ICMP_ECHOREPLY;
 	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
@@ -219,7 +220,7 @@ int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
 	//TODO ICMP get net dev
 #if 0
 	pack->ifdev  = in_dev;
-	pack->dev = (struct net_device *)inet_dev_get_netdevice(in_dev);
+	pack->dev = in_dev->dev;
 #endif
 	pack->len    = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
 					inet_dev_get_ipaddr(in_dev), dstaddr);

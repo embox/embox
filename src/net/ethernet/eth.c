@@ -46,6 +46,7 @@ int eth_header(sk_buff_t *pack, net_device_t *dev, unsigned short type,
 int eth_rebuild_header(sk_buff_t *pack) {
         ethhdr_t     *eth = (ethhdr_t*)pack->data;
         net_device_t *dev = pack->dev;
+
         if(eth->h_proto == htons(ETH_P_IP)) {
 //TODO:
 //                return arp_find(eth->h_dest, pack);

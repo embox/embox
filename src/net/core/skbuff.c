@@ -132,7 +132,7 @@ struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority) {
 	if ((NULL == skb) || (NULL == (new_pack = alloc_skb(skb->len, priority)))) {
 		return NULL;
 	}
-	memcpy (skb->data, new_pack->data, skb->len);
+	memcpy (new_pack->data, skb->data, skb->len);
 
 	/*fix references during copy net_pack*/
 	if (NULL != skb->h.raw) {

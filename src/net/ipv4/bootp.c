@@ -14,6 +14,7 @@
 #include "lib/inet/netinet/in.h"
 #include "net/if_ether.h"
 #include "net/netdevice.h"
+#include <net/inetdevice.h>
 #include "net/net_pack_manager.h"
 #include "net/checksum.h"
 #include "string.h"
@@ -98,7 +99,7 @@ int bootp_discover (void* ifdev) {
 	int             abort = 0;
 	static int      xid = SHOULD_BE_RANDOM;
 	int             retry = RETRY_COUNT;
-	struct net_device*     dev = (struct net_device*)inet_dev_get_netdevice (ifdev);
+	net_device_t*   dev = ((in_device_t*)ifdev)->dev;
 	enet_addr_t     enet;
 	memcpy (enet, dev->dev_addr, ETH_ALEN);
 

@@ -7,7 +7,7 @@
 
 #include "lib/bits/byteswap.h"
 #include "lib/inet/netinet/in.h"
-#include "common.h"
+#include <misc.h>
 #include "stdio.h"
 #include "string.h"
 
@@ -46,7 +46,7 @@ unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {
     return res;
 }
 
-unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[6]) {
+unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[ETH_ALEN]) {
     unsigned char symbol_str[4];
     int i,j;
     int cur = 0;
@@ -81,12 +81,12 @@ unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[6]) {
     return res;
 }
 
-void ipaddr_print(const char *buf, const unsigned char *addr) {
-        sprintf((char *)buf, "%d.%d.%d.%d", addr[0], addr[1], addr[2], addr[3]);
-}
+//void ipaddr_print(const char *buf, const unsigned char *addr) {
+//        sprintf((char *)buf, "%d.%d.%d.%d", addr[0], addr[1], addr[2], addr[3]);
+//}
 
 void macaddr_print(const char *buf, const unsigned char *addr) {
-        sprintf((char *)buf, "%2X:%2X:%2X:%2X:%2X:%2X", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+        sprintf((char *)buf, "%02X:%02X:%02X:%02X:%02X:%02X", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 }
 
 int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigned char msk) {

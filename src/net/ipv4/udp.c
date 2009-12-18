@@ -100,7 +100,7 @@ static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev
 	//TODO UDP get net dev
 #if 0
 	pack->ifdev = ifdev;
-	pack->dev = inet_dev_get_netdevice(ifdev);
+	pack->dev = ifdev->dev;
 #endif
 	pack->len = UDP_HEADER_SIZE;
 

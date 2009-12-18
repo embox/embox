@@ -47,9 +47,6 @@ typedef struct sk_buff {
         struct sock        *sk;
         struct net_device  *dev;
         struct skb_timeval tstamp;
-#if 0
-        void                    *ifdev;
-#endif
         __be16                  protocol;
         uint8_t                 pkt_type;
         unsigned int            len;

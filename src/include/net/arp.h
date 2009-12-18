@@ -8,8 +8,9 @@
 #ifndef ARP_H_
 #define ARP_H_
 
-#include <net/if_arp.h>
 #include <types.h>
+#include <net/if_arp.h>
+#include <net/inetdevice.h>
 #include <net/skbuff.h>
 
 /**
@@ -18,7 +19,7 @@
 typedef struct _ARP_ENTITY {
     unsigned char hw_addr[ETH_ALEN];                   /**< hardware addr */
     in_addr_t     pw_addr;                             /**< protocol addr */
-    void          *if_handler;                         /**< net_device */
+    in_device_t   *if_handler;                         /**< inet device */
     unsigned char is_busy;                             /**< internal flag that this entry is used */
 } ARP_ENTITY;
 
@@ -46,12 +47,14 @@ static int arp_rcv(sk_buff_t *pack, net_device_t *dev,
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL *
  */
+//TODO:
+//extern int arp_find(unsigned char *haddr, sk_buff_t *pack);
 extern sk_buff_t *arp_find(sk_buff_t * pack, in_addr_t dst_addr);
 
 /**
  * Create an arp packet.
  */
-extern sk_buff_t* arp_create(void *in_dev, in_addr_t dst_addr);
+extern sk_buff_t* arp_create(in_device_t *in_dev, in_addr_t dst_addr);
 
 /**
  * this function add entry in arp table if can
@@ -60,7 +63,7 @@ extern sk_buff_t* arp_create(void *in_dev, in_addr_t dst_addr);
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-extern int arp_add_entity(void *in_dev, in_addr_t ipaddr, unsigned char macaddr[6]);
+extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr);
 
 /**
  * this function delete entry from arp table if can
@@ -69,7 +72,7 @@ extern int arp_add_entity(void *in_dev, in_addr_t ipaddr, unsigned char macaddr[
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-extern int arp_delete_entity(void *in_dev, in_addr_t ipaddr, unsigned char macaddr[6]);
+extern int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr);
 
 /**
  * Send an arp packet.

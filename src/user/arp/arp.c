@@ -24,17 +24,17 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int print_arp_cache(void *ifdev) {
 	int i;
-	char mac[18];
+	unsigned char mac[18];
 	net_device_t *net_dev;
 	for(i=0; i<ARP_CACHE_SIZE; i++) {
 		if((arp_table[i].is_busy == 1) &&
 		   (ifdev == NULL || ifdev == arp_table[i].if_handler)) {
-			net_dev = inet_dev_get_netdevice(arp_table[i].if_handler);
+			net_dev = arp_table[i].if_handler->dev;
 			macaddr_print(mac, arp_table[i].hw_addr);
 			struct in_addr addr;
 			addr.s_addr = arp_table[i].pw_addr;
 			TRACE("%s\t\t%d\t%s\t%d\t%s\n", inet_ntoa(addr),
-					    inet_dev_get_netdevice(arp_table[i].if_handler)->type,
+					    arp_table[i].if_handler->dev->type,
 					    mac, net_dev->flags, net_dev->name);
 		}
 	}
@@ -44,7 +44,7 @@ static int print_arp_cache(void *ifdev) {
 static int exec(int argsc, char **argsv) {
 	int nextOption;
 	struct in_addr addr;
-	unsigned char hwaddr[6];
+	unsigned char hwaddr[ETH_ALEN];
 	void *ifdev = NULL;
 	int op = -1;
 	getopt_init();

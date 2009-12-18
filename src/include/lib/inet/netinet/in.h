@@ -72,4 +72,13 @@ int inet_aton(const char *cp, struct in_addr *addr);
 /* Address to loopback in software to local host.  */
 #define INADDR_LOOPBACK     ((unsigned long int) 0x7f000001)   /* 127.0.0.1   */
 
+static inline bool ipv4_is_loopback(in_addr_t addr) {
+        return (addr & htonl(0xff000000)) == htonl(0x7f000000);
+}
+
+static inline bool ipv4_is_multicast(in_addr_t addr) {
+        return (addr & htonl(0xf0000000)) == htonl(0xe0000000);
+}
+
+
 #endif /* IN_H_ */

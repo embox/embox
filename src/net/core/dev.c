@@ -71,8 +71,7 @@ int register_netdev(struct net_device *dev) {
 	return 0;
 }
 
-void unregister_netdev(struct net_device *dev)
-{
+void unregister_netdev(struct net_device *dev) {
 
 }
 
@@ -142,7 +141,7 @@ int netif_rx(struct sk_buff *pack) {
         struct packet_type *q;
         list_for_each_entry(q, &ptype_base, list) {
                 if(q->type == pack->protocol) {
-                        q->func(pack, NULL, NULL, NULL);
+                        q->func(pack, dev, q, NULL);
                 }
         }
 #if 0
@@ -212,13 +211,12 @@ int dev_open(struct net_device *dev) {
         } else {
                 LOG_ERROR("can't find open function in net_device\n");
         }
-
         if (ret) {
                 dev->state &= ~__LINK_STATE_START;
         } else {
                 /* Set the flags. */
                 //TODO: IFF_RUNNING sets not here
-                dev->flags |= IFF_UP|IFF_RUNNING;
+                dev->flags |= (IFF_UP|IFF_RUNNING);
         }
         return ret;
 }
@@ -237,7 +235,7 @@ int dev_close(struct net_device *dev) {
         }
         /* Device is now down. */
         //TODO: IFF_RUNNING sets not here
-        dev->flags &= ~IFF_UP|IFF_RUNNING;
+        dev->flags &= ~(IFF_UP|IFF_RUNNING);
         return 0;
 }
 

@@ -91,17 +91,12 @@ static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
 void __init devinet_init(void) {
 }
 
-net_device_t *inet_dev_get_netdevice(void *handler) {
-        in_device_t *dev = (in_device_t *) handler;
-        if (NULL == dev) {
-                return NULL;
-        }
-        return dev->dev;
+in_device_t *in_dev_get(const net_device_t *dev) {
+	return (in_device_t *)inet_dev_find_by_name(dev->name);
 }
 
-int inet_dev_listen(void *handler, unsigned short type,
+int inet_dev_listen(in_device_t *dev, unsigned short type,
                     ETH_LISTEN_CALLBACK callback) {
-        in_device_t *dev = (in_device_t *) handler;
         if (NULL == dev) {
                 return -1;
         }
@@ -129,8 +124,8 @@ void *inet_dev_find_by_name(const char *if_name) {
         return NULL;
 }
 
-int inet_dev_set_interface(char *name, in_addr_t ipaddr, in_addr_t mask,
-                           unsigned char *macaddr) {
+int inet_dev_set_interface(const char *name, in_addr_t ipaddr, in_addr_t mask,
+                           const unsigned char *macaddr) {
         int i;
         for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
                 if (0 == strncmp(name, ifs_info[i].dev.dev->name,
@@ -146,7 +141,7 @@ int inet_dev_set_interface(char *name, in_addr_t ipaddr, in_addr_t mask,
         return -1;
 }
 
-int inet_dev_set_ipaddr(void *in_dev, const in_addr_t ipaddr) {
+int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr) {
         if (NULL == in_dev) {
                 return -1;
         }
@@ -155,7 +150,7 @@ int inet_dev_set_ipaddr(void *in_dev, const in_addr_t ipaddr) {
         return 0;
 }
 
-int inet_dev_set_mask(void *in_dev, const in_addr_t mask) {
+int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask) {
         if (NULL == in_dev) {
                 return -1;
         }
@@ -165,7 +160,7 @@ int inet_dev_set_mask(void *in_dev, const in_addr_t mask) {
         return 0;
 }
 
-int inet_dev_set_macaddr(void *in_dev, const unsigned char *macaddr) {
+int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macaddr) {
         if (NULL == in_dev || NULL == macaddr) {
                 return -1;
         }
@@ -176,12 +171,8 @@ int inet_dev_set_macaddr(void *in_dev, const unsigned char *macaddr) {
         return dev->netdev_ops->ndo_set_mac_address(dev, (void*)macaddr);
 }
 
-in_addr_t inet_dev_get_ipaddr(void *handler) {
-        in_device_t *dev = (in_device_t *) handler;
-        if (NULL == dev) {
-                return 0;
-        }
-        return dev->ifa_address;
+in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev) {
+        return (NULL == in_dev) ? 0 : in_dev->ifa_address;
 }
 #if 0
 /**
