@@ -1,11 +1,6 @@
-/.config
-/bin
 /build
 /conf
-/docs
-/include_dirs.lst
-/obj
-/objs.lst
+scripts/.config
 scripts/autoconf.h
 scripts/autoconf.mk
 scripts/link*
