@@ -7,7 +7,7 @@ GAISLER_GRMON_URL=ftp://gaisler.com/gaisler.com/grmon/$GRMON_EVAL_ARCH
 BACH_FILE=cmd.grmon
 
 # Image
-BIN_DIR=bin
+BIN_DIR=build/bin
 MONITOR_ROM=monitor_rom
 SIZE_ROM=0x80000
 MONITOR_RAM=embox
