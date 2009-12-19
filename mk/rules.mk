@@ -4,11 +4,13 @@
 # Author: Eldar Abusalimov
 #
 
-%.o:%.c
-	$(CC) $(CCFLAGS) $(CCINCLUDES) -MMD -c -o $@ $<
+CCMAKEDEPS:=-MMD# -MT $@ -MF $(@:.o=.d)
 
-%.o:%.S
-	$(CC) $(CCFLAGS) $(CCINCLUDES) -MMD -c -o $@ $<
+$(OBJ_DIR)/%.o::$(SRC_DIR)/%.c
+	$(CC) $(CCFLAGS) $(CCINCLUDES) $(CCMAKEDEPS) -c -o $@ $<
+
+$(OBJ_DIR)/%.o::$(SRC_DIR)/%.S
+	$(CC) $(CCFLAGS) $(CCINCLUDES) $(CCMAKEDEPS) -c -o $@ $<
 
 # Disable some builtin rules. These speeds up the build a bit.
 .SUFFIXES:
@@ -19,6 +21,7 @@
 % : RCS/%,w
 % : s.%
 % : SCCS/s.%
+% : %.w
 
 %.c : %.y
 %.c : %.l

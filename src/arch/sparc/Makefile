@@ -10,18 +10,10 @@ OBJS-y += bubble_sort.o
 OBJS-y += sys.o
 OBJS-y += soft_trap_test.o
 
--include $(SELFDIR)/embox.lds.d
+-include $(LDSCRIPT).d
 
-$(SELFDIR)/embox.lds:$(SELFDIR)/embox.lds.S $(BUILD_DIR)/config.lds.h
-	$(CC) $(CCINCLUDES) -imacros $(BUILD_DIR)/config.lds.h \
+$(LDSCRIPT):$(SELFDIR)/embox.lds.S $(BUILDCONF_DIR)/config.lds.h
+	$(CC) $(CCINCLUDES) -imacros $(BUILDCONF_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -E -Wp, -P -undef -o $@ $<
-
-clean: sparc_clean
-
-# Force SELFDIR to be immediately expanded
-sparc_dir:=$(SELFDIR)
-
-sparc_clean:
-	@$(RM) $(sparc_dir)/embox.lds @$(RM) $(sparc_dir)/embox.lds.d
 
 include $(SCRIPTS_DIR)/common.mk

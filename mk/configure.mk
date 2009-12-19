@@ -4,7 +4,7 @@
 
 CONF_FILES :=$(addsuffix .conf,common drivers fs lds net tests ugly usr)
 
--include $(BUILD_DIR)/config.mk
+-include $(BUILDCONF_DIR)/config.mk
 
 .PHONY: check_config
 
@@ -27,11 +27,11 @@ CCFLAGS_config.mk   :=-DMAKE
 CCFLAGS_config.lds.h:=-DLDS
 CCFLAGS_config.h    :=
 
-$(addprefix $(BUILD_DIR)/,config.mk config.lds.h config.h) : \
+$(addprefix $(BUILDCONF_DIR)/,config.mk config.lds.h config.h) : \
   $(MK_DIR)/confmacro.S $(addprefix $(CONF_DIR)/,$(CONF_FILES)) \
   | mkdir # mkdir shouldn't force target to be updated
 	gcc $(CCFLAGS_$(notdir $@)) -I$(CONF_DIR) -nostdinc -undef -E -Wp, -P $< \
 		| sed 's/$$define/\n#define/g' | uniq > $@
 
 mkdir:
-	@test -d $(BUILD_DIR) || mkdir -p $(BUILD_DIR)
+	@test -d $(BUILDCONF_DIR) || mkdir -p $(BUILDCONF_DIR)

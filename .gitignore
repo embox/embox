@@ -1,5 +1,6 @@
 /.config
 /bin
+/build
 /conf
 /docs
 /include_dirs.lst
