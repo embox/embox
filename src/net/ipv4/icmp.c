@@ -18,6 +18,22 @@
 #include "net/if_ether.h"
 #include <net/checksum.h>
 
+/**
+ * Build xmit assembly blocks
+ */
+struct icmp_bxm {
+	sk_buff_t *skb;
+        int offset;
+        int data_len;
+	struct {
+                icmphdr_t icmph;
+                uint32_t  times[3];
+        } data;
+        int head_len;
+        //struct ip_options replyopts;
+        unsigned char  optbuf[40];
+};
+
 #define CB_INFO_SIZE        0x10
 
 typedef void (*ICMP_CALLBACK)(struct sk_buff* response);
@@ -93,9 +109,15 @@ static ICMP_CALLBACK callback_find(void *in_dev, unsigned short ip_id,
 	return NULL;
 }
 
-typedef int (*PACKET_HANDLER)(sk_buff_t *pack);
+/*
+ * ICMP control array. This specifies what to do with each ICMP.
+ */
+struct icmp_control {
+	void (*handler)(sk_buff_t *skb);
+        short error; /* This ICMP is classed as an error message */
+};
 
-static PACKET_HANDLER received_packet_handlers[NR_ICMP_TYPES];
+static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1];
 
 int icmp_abort_echo_request(void *in_dev) {
 	interface_abort(in_dev);
@@ -128,30 +150,29 @@ static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
 /**
  * implementation handlers for received msgs
  */
-static int icmp_get_echo_reply(sk_buff_t *pack) {
+static void icmp_get_echo_reply(sk_buff_t *pack) {
 //TODO now ICMP reply haven't to work with callbacks it works through sockets
 #if 0
 	ICMP_CALLBACK cb;
 	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
 			ICMP_ECHOREPLY)))
-		return -1;
+		return;
 	cb(pack);
 	//unregister
 	callback_free(cb, pack->ifdev, pack->nh.iph->id, ICMP_ECHOREPLY);
 #endif
-	return 0;
 }
 
 /**
  * Handle ICMP_DEST_UNREACH.
  */
-static int icmp_unreach(sk_buff_t *pack) {
+static void icmp_unreach(sk_buff_t *pack) {
 	iphdr_t *iph;
 	icmphdr_t *icmph;
 	icmph = pack->h.icmph;
 	iph   = (iphdr_t*)pack->data;
 	if (iph->ihl < 5)
-		return -1;
+		return;
 
 	if (icmph->type == ICMP_DEST_UNREACH) {
 		switch (icmph->code & 15) {
@@ -165,15 +186,28 @@ static int icmp_unreach(sk_buff_t *pack) {
 		        break;
 		}
 		if (icmph->code > NR_ICMP_UNREACH)
-		        return -1;
+		        return;
 	}
-	return 0;
+}
+
+/*
+ * Driving logic for building and sending ICMP messages.
+ */
+static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *pack) {
+	//TODO:
+	dev_queue_xmit(pack);
 }
 
 /**
  * Handle ICMP_ECHO ("ping") requests.
+ * RFC 1122: 3.2.2.6 MUST have an echo server that answers ICMP echo
+ *                requests.
+ * RFC 1122: 3.2.2.6 Data received in the ICMP_ECHO request MUST be
+ *                included in the reply.
+ * RFC 1812: 4.3.3.6 SHOULD have a config option for silently ignoring
+ *                echo requests, MUST have default=NOT.
  */
-static int icmp_echo(sk_buff_t *recieved_pack) {
+static void icmp_echo(sk_buff_t *recieved_pack) {
 	sk_buff_t *pack = skb_copy(recieved_pack, 0);
 	pack->dev = recieved_pack->dev;
 	pack->protocol = recieved_pack->protocol;
@@ -205,9 +239,17 @@ static int icmp_echo(sk_buff_t *recieved_pack) {
 	pack->nh.iph->check    = 0;
 	pack->nh.iph->check    = ptclbsum(pack->nh.raw, IP_HEADER_SIZE);
 
-	pack->len -= ETH_HEADER_SIZE;
-	dev_queue_xmit(pack);
-	return 0;
+	struct icmp_bxm icmp_param;
+/*	icmp_param.data.icmph      = *icmp_hdr(recieved_pack);
+	icmp_param.data.icmph.type = ICMP_ECHOREPLY;
+	icmp_param.skb             = recieved_pack;
+	icmp_param.offset          = 0;
+	icmp_param.data_len        = recieved_pack->len;
+	icmp_param.head_len        = sizeof(icmphdr_t);*/
+	icmp_reply(&icmp_param, pack);
+}
+
+static void icmp_discard(sk_buff_t *skb) {
 }
 
 int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
@@ -218,11 +260,8 @@ int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
 		return -1;
 	}
 	//TODO ICMP get net dev
-#if 0
-	pack->ifdev  = in_dev;
-	pack->dev = in_dev->dev;
-#endif
-	pack->len    = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
+	pack->dev = ((in_device_t*)in_dev)->dev;
+	pack->len = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
 					inet_dev_get_ipaddr(in_dev), dstaddr);
 	pack->protocol = ETH_P_IP;
 
@@ -234,7 +273,7 @@ int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
 	return dev_queue_xmit(pack);
 }
 
-void icmp_send(sk_buff_t *pack, int type, int code) {
+void icmp_send(sk_buff_t *pack, int type, int code, uint32_t info) {
 	//TODO:
 	switch(type) {
 	case ICMP_ECHO:
@@ -243,11 +282,24 @@ void icmp_send(sk_buff_t *pack, int type, int code) {
 	}
 }
 
+/*
+ * This table is the definition of how we handle ICMP.
+ */
+static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
+	[ICMP_ECHOREPLY] = {
+		.handler = icmp_get_echo_reply/*icmp_discard*/,
+	},
+	[ICMP_DEST_UNREACH] = {
+	        .handler = icmp_unreach,
+	        .error = 1,
+	},
+	[ICMP_ECHO] = {
+	        .handler = icmp_echo,
+	},
+};
+
 void __init icmp_init() {
-	received_packet_handlers[ICMP_ECHOREPLY]    = icmp_get_echo_reply;
-	received_packet_handlers[ICMP_DEST_UNREACH] = icmp_unreach;
-	received_packet_handlers[ICMP_ECHO]         = icmp_echo;
-	//TODO: other types
+
 }
 
 int icmp_rcv(sk_buff_t *pack) {
@@ -289,8 +341,9 @@ int icmp_rcv(sk_buff_t *pack) {
 //		LOG_ERROR("bad icmp checksum\n");
 //		return -1;
 	}
-	if (NULL != received_packet_handlers[icmph->type]) {
-		return received_packet_handlers[icmph->type](pack);
+	if (NULL != icmp_pointers[icmph->type].handler) {
+		icmp_pointers[icmph->type].handler(pack);
+		return 0;
 	}
 	return -1;
 }

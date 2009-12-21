@@ -50,9 +50,6 @@ typedef struct icmphdr {
 	__u8  type;
 	__u8  code;
 	__be16 checksum;
-#if 0
-	unsigned char  data[0x40];
-#endif
 } __attribute__((packed)) icmphdr_t;
 
 #define ICMP_HEADER_SIZE	(sizeof(struct icmphdr))
@@ -71,6 +68,9 @@ extern void icmp_init();
  */
 extern int icmp_rcv(sk_buff_t *pack);
 
-extern void icmp_send(sk_buff_t *pack, int type, int code);
+/**
+ * Send an ICMP message in response to a situation
+ */
+extern void icmp_send(sk_buff_t *pack, int type, int code, uint32_t info);
 
 #endif /* ICMP_H_ */
