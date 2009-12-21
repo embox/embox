@@ -48,10 +48,9 @@ int eth_rebuild_header(sk_buff_t *pack) {
         net_device_t *dev = pack->dev;
 
         if(eth->h_proto == htons(ETH_P_IP)) {
-//TODO:
-//                return arp_find(eth->h_dest, pack);
+                return arp_find(eth->h_dest, pack);
         } else {
-    		LOG_DEBUG("%s: unable to resolve type %X addresses.\n",
+    		LOG_WARN("%s: unable to resolve type %X addresses.\n",
                                 dev->name, (int)eth->h_proto);
         	memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
         }

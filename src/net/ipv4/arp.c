@@ -17,6 +17,7 @@
 #include <net/etherdevice.h>
 #include <net/net_pack_manager.h>
 #include <net/arp.h>
+#include <net/ip.h>
 
 ARP_ENTITY arp_table[ARP_CACHE_SIZE];
 
@@ -86,37 +87,72 @@ int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *maca
 	return -1;
 }
 
-sk_buff_t* arp_create(in_device_t *in_dev, in_addr_t dst_addr) {
+sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
+                           net_device_t *dev, in_addr_t src_ip,
+			const unsigned char *dest_hw, const unsigned char *src_hw,
+			const unsigned char *target_hw) {
 	sk_buff_t *pack;
-
-	if (NULL == in_dev ||
-	    NULL == (pack = alloc_skb((int)pack->len, 0))) {
+	struct arphdr *arp;
+	if (NULL == dev ||
+	    NULL == (pack = alloc_skb(0x3b, 0))) {
 		return NULL;
 	}
 
-	pack->dev  = in_dev->dev;
 	pack->mac.raw = pack->data;
-	/* mac header */
-	memset (pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
-	memcpy (pack->mac.ethh->h_source, pack->dev->dev_addr, ETH_ALEN);
-	pack->mac.ethh->h_proto = ETH_P_ARP;
-
 	pack->nh.raw = pack->mac.raw + ETH_HEADER_SIZE;
+	arp = pack->nh.arph;
 
-	/* arp header */
-	pack->nh.arph->htype = ARPHRD_ETHER;
-	pack->nh.arph->ptype = ETH_P_IP;
-	//TODO length hardware and logical type
-	pack->nh.arph->hlen = pack->dev->addr_len;
-	pack->nh.arph->plen = IPV4_ADDR_LENGTH;
-	pack->nh.arph->oper = ARPOP_REQUEST;
-	memcpy (pack->nh.arph->sha, pack->dev->dev_addr, ETH_ALEN);
-	pack->nh.arph->spa = inet_dev_get_ipaddr(in_dev);
-	pack->nh.arph->tpa = dst_addr;
+	pack->dev  = dev;
+	pack->protocol = htons(ptype);
+	if (src_hw == NULL) {
+	        src_hw = dev->dev_addr;
+	}
+	if (dest_hw == NULL) {
+	        dest_hw = dev->broadcast;
+	}
 
-	pack->len = 0x3b;
-	pack->protocol = ETH_P_ARP;
+	/*
+	 * Fill the device header for the ARP frame
+	 */
+	if (dev_hard_header(pack, dev, ptype, (void*)dest_hw, (void*)src_hw, pack->len) < 0) {
+		kfree_skb(pack);
+		return NULL;
+	}
+
+	/*
+	 * Fill out the arp protocol part.
+	 */
+	arp->htype = htons(ARPHRD_ETHER);
+	arp->ptype = htons(ETH_P_IP);
+	arp->hlen = dev->addr_len;
+	arp->plen = IPV4_ADDR_LENGTH;
+	arp->oper = htons(type);
+	memcpy (arp->sha, src_hw, ETH_ALEN);
+	memcpy (arp->tha, dest_hw, ETH_ALEN);
+	arp->spa = src_ip;
+	arp->tpa = dest_ip;
+
 	return pack;
+}
+
+void arp_send(int type, int ptype, in_addr_t dest_ip,
+                    struct net_device *dev, in_addr_t src_ip,
+                    const unsigned char *dest_hw,
+                    const unsigned char *src_hw, const unsigned char *th) {
+	struct sk_buff *pack;
+
+	/*
+	 * No arp on this interface.
+	 */
+	if (dev->flags & IFF_NOARP) {
+		return;
+	}
+	pack = arp_create(type, ptype, dest_ip, dev, src_ip,
+	                        dest_hw, src_hw, th);
+	if (pack == NULL) {
+	        return;
+	}
+	arp_xmit(pack);
 }
 
 /**
@@ -125,42 +161,29 @@ sk_buff_t* arp_create(in_device_t *in_dev, in_addr_t dst_addr) {
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL
  */
-//int arp_find(unsigned char *haddr, sk_buff_t *pack)
-sk_buff_t *arp_find(sk_buff_t *pack, in_addr_t dst_addr) {
-	//TODO:
+int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	net_device_t *dev = pack->dev;
+	iphdr_t *ip = pack->nh.iph;
+	pack->mac.raw = pack->data;
 	int i;
-#if 0
-	void *ifdev = pack->ifdev;
-
-	if (NULL == pack || NULL == ifdev) {
-		return NULL;
+	if (ip->daddr != INADDR_BROADCAST) {
+		return 1;
 	}
-#endif
-	if (dst_addr != INADDR_BROADCAST) {
-		pack->mac.raw = pack->data;
+	if(-1 != (i = find_entity(NULL, ip->daddr))) {
 		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, ETH_ALEN);
-		return pack;
-	}
-#if 0
-	if (-1 != (i = find_entity(ifdev, dst_addr))) {
-		pack->mac.raw = pack->data;
-		memset (pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
-		return pack;
+		return 0;
 	}
 
-	/*send mac packet*/
-	arp_xmit(arp_create(ifdev, dst_addr));
+	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev,
+			    ip->saddr, NULL, dev->dev_addr, NULL);
 
 	//TODO delete this after processes will be added to monitor
 	usleep(500);
-	if (-1 != (i = find_entity(ifdev, dst_addr))) {
-		pack->mac.raw = pack->data;
+	if (-1 != (i = find_entity(NULL, ip->daddr))) {
 		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, ETH_ALEN);
-		return pack;
+		return 0;
 	}
-#endif
-	return NULL;
+	return 1;
 }
 
 /**
@@ -182,25 +205,9 @@ static int received_resp(sk_buff_t *pack) {
  * receive ARP request, send ARP response
  */
 static int received_req(sk_buff_t *pack) {
-	sk_buff_t *resp;
 	arphdr_t *arp = pack->nh.arph;
-	unsigned char mac[18];
-	macaddr_print(mac, arp->sha);
-	struct in_addr spa;
-	spa.s_addr = arp->spa;
-
-	resp = skb_copy(pack, 0);
-	resp->dev = pack->dev;
-	resp->protocol = pack->protocol;
-	memcpy(resp->mac.ethh->h_dest, pack->mac.ethh->h_source, ETH_ALEN);
-	memcpy(resp->mac.ethh->h_source, pack->dev->dev_addr, ETH_ALEN);
-	resp->nh.arph->oper = ARPOP_REPLY;
-	memcpy(resp->nh.arph->sha, pack->dev->dev_addr, ETH_ALEN);
-	memcpy(resp->nh.arph->tha, pack->mac.ethh->h_source, ETH_ALEN);
-	resp->nh.arph->tpa = pack->nh.arph->spa;
-	resp->nh.arph->spa = pack->nh.arph->tpa;
-
-	arp_xmit(resp);
+	arp_send(ARPOP_REPLY, ETH_P_ARP, arp->spa, pack->dev,
+	                        arp->tpa, pack->mac.ethh->h_source, pack->dev->dev_addr, NULL);
 	return 0;
 }
 

@@ -47,14 +47,23 @@ static int arp_rcv(sk_buff_t *pack, net_device_t *dev,
  * @param dst_addr IP address
  * @return pointer to net_packet struct if success else NULL *
  */
-//TODO:
-//extern int arp_find(unsigned char *haddr, sk_buff_t *pack);
-extern sk_buff_t *arp_find(sk_buff_t * pack, in_addr_t dst_addr);
+extern int arp_find(unsigned char *haddr, sk_buff_t *pack);
 
 /**
  * Create an arp packet.
  */
-extern sk_buff_t* arp_create(in_device_t *in_dev, in_addr_t dst_addr);
+extern sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
+			net_device_t *dev, in_addr_t src_ip,
+			const unsigned char *dest_hw, const unsigned char *src_hw,
+			const unsigned char *target_hw);
+
+/**
+ * Create and send an arp packet.
+ */
+extern void arp_send(int type, int ptype, in_addr_t dest_ip,
+                    struct net_device *dev, in_addr_t src_ip,
+		    const unsigned char *dest_hw,
+        	    const unsigned char *src_hw, const unsigned char *th);
 
 /**
  * this function add entry in arp table if can

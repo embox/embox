@@ -286,8 +286,8 @@ int icmp_rcv(sk_buff_t *pack) {
 	unsigned short tmp = icmph->checksum;
 	icmph->checksum = 0;
 	if( tmp != ptclbsum(pack->h.raw, ICMP_HEADER_SIZE)) {
-		LOG_ERROR("bad icmp checksum\n");
-		return -1;
+//		LOG_ERROR("bad icmp checksum\n");
+//		return -1;
 	}
 	if (NULL != received_packet_handlers[icmph->type]) {
 		return received_packet_handlers[icmph->type](pack);
