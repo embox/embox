@@ -4,7 +4,9 @@
 
 CONF_FILES :=$(addsuffix .conf,common drivers fs lds net tests ugly usr)
 
+ifneq ($(MAKECMDGOALS),clean)
 -include $(BUILDCONF_DIR)/config.mk
+endif
 
 .PHONY: check_config
 
@@ -30,7 +32,7 @@ CCFLAGS_config.h    :=
 $(addprefix $(BUILDCONF_DIR)/,config.mk config.lds.h config.h) : \
   $(MK_DIR)/confmacro.S $(addprefix $(CONF_DIR)/,$(CONF_FILES)) \
   | mkdir # mkdir shouldn't force target to be updated
-	gcc $(CCFLAGS_$(notdir $@)) -I$(CONF_DIR) -nostdinc -undef -E -Wp, -P $< \
+	gcc -E $(CCFLAGS_$(notdir $@)) -I$(CONF_DIR) -nostdinc -undef -Wp, -P $< \
 		| sed 's/$$define/\n#define/g' | uniq > $@
 
 mkdir:

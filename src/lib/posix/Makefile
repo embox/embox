@@ -1,3 +1,3 @@
-OBJS-y     += getopt.o
+LIBS-y += getopt.o
 
 include $(SCRIPTS_DIR)/common.mk

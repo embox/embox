@@ -19,10 +19,9 @@ SRC_DIR      :=$(ROOT_DIR)/src
 BUILD_DIR    :=$(ROOT_DIR)/build
 BIN_DIR      :=$(BUILD_DIR)/bin
 OBJ_DIR      :=$(BUILD_DIR)/obj
+LIB_DIR      :=$(BUILD_DIR)/lib
 DOCS_DIR     :=$(BUILD_DIR)/docs
 BUILDCONF_DIR:=$(BUILD_DIR)/conf
-
-LDSCRIPT =$(OBJ_DIR)/arch/$(ARCH)/embox.lds
 
 RM          :=rm -f
 EDITOR      :=vim
@@ -30,31 +29,11 @@ EDITOR      :=vim
 # Need to include it prior to walking the source tree
 # (particularly because of ARCH definition).
 include $(MK_DIR)/configure.mk
-include $(MK_DIR)/traverse.mk
-
-# Clear some variables, switch them to immediate expansion mode.
-OBJS_ALL:=
-DIRS_ALL:=
-
-# This code is executed each time when per-directory makefile is processed.
-define TRAVERSE_CALLBACK
-  obj_node_dir:=$(NODE_DIR:$(SRC_DIR)/%=$(OBJ_DIR)/%)
-  OBJS_ALL+=$$(addprefix $$(obj_node_dir)/,$(NODE_OBJS))
-  DIRS_ALL+=$$(obj_node_dir)
-endef
-
-# Walk the directory tree starting at $(SRC_DIR)
-# and searching for Makefile in each sub-directory.
-$(eval $(call TRAVERSE,$(SRC_DIR),Makefile,TRAVERSE_CALLBACK))
-
-# Process dependency files.
--include $(OBJS_ALL:.o=.d)
-
-# image.mk should be included after OBJS_ALL is filled in.
-include $(MK_DIR)/image.mk
 include $(MK_DIR)/rules.mk
 
-.PHONY: all check_config prepare image
+include $(MK_DIR)/image.mk
+
+.PHONY: all prepare docs clean config xconfig menuconfig mconfig
 
 all: check_config prepare image
 
@@ -62,10 +41,9 @@ prepare:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(BIN_DIR)
 	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(LIB_DIR)
 	@mkdir -p $(BUILDCONF_DIR)
 	@mkdir -p $(DIRS_ALL)
-
-.PHONY: docs clean config xconfig menuconfig mconfig
 
 docs:
 	doxygen
@@ -102,7 +80,7 @@ else
 endif
 
 menuconfig:
-	@$(EDITOR) $(CONF_DIR)/config.mk
+#	@$(EDITOR) $(CONF_DIR)/config.mk
 #	@$(SCRIPTS_DIR)/configure.py --mode=menu > /dev/null 2>&1
 
 xconfig:

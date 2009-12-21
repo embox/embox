@@ -2,45 +2,111 @@
 # Author: Eldar Abusalimov
 #
 
-CC      =$(CC_PACKET)-gcc
-OD_TOOL =$(CC_PACKET)-objdump
-OC_TOOL =$(CC_PACKET)-objcopy
+include $(MK_DIR)/traverse.mk
 
-CCINCLUDES =-I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include -nostdinc
+CC=$(CROSS_COMPILE)gcc
+AR=$(CROSS_COMPILE)ar
 
-TARGET_DIS  = $(TARGET).dis
-TARGET_SREC = prom.srec
+OD_TOOL=$(CROSS_COMPILE)objdump
+OC_TOOL=$(CROSS_COMPILE)objcopy
 
-.PHONY: image checksum
+CPPFLAGS=
+CPPFLAGS+=-I$(SRC_DIR)/include
+CPPFLAGS+=-I$(SRC_DIR)/arch/$(ARCH)/include
+CPPFLAGS+=-nostdinc
+CPPFLAGS+=-MMD# -MT $@ -MF $(@:.o=.d)
+CPPFLAGS+=$(_CPPFLAGS)# User defined preprocessor flags
 
-IMAGE_TARGET = $(BIN_DIR)/$(TARGET)
-IMAGE_SREC = $(BIN_DIR)/$(TARGET_SREC)
-ifeq ($(DISASSEMBLE),y)
-IMAGE_DISASSEMBLE = $(BIN_DIR)/$(TARGET_DIS)
-endif
-ifeq ($(CHECKSUM),y)
-IMAGE_CHECKSUM = checksum
-endif
+CFLAGS=
+CFLAGS+=-Werror
+CFLAGS+=-pipe
+CFLAGS+=$(_CFLAGS)# User defined compiler flags
 
-image: $(IMAGE_TARGET) $(IMAGE_SREC) $(IMAGE_DISASSEMBLE) $(IMAGE_CHECKSUM)
-	@echo 'Build complete'
+LDFLAGS=
+LDFLAGS+=-static
+LDFLAGS+=-nostdlib
+LDFLAGS+=-T $(LDSCRIPT)
+LDFLAGS+=$(_LDFLAGS)# User defined linker flags
+
+LDLIBS=-L$(LIB_DIR) -l$(LIB_NAME)
+
+ARFLAGS=rcs
+
+LIB_NAME:=c
+LIBC=$(LIB_DIR)/lib$(LIB_NAME).a
+
+LDSCRIPT =$(OBJ_DIR)/arch/$(ARCH)/embox.lds
+
+IMAGE=$(BIN_DIR)/$(TARGET)
+IMAGE_DIS =$(BIN_DIR)/$(TARGET).dis
+IMAGE_SREC=$(BIN_DIR)/prom.srec
+
+# Clear some variables.
+# Switch them to immediate expansion mode to be able to use += operator later.
+OBJS_ALL:=
+LIBS_ALL:=
+DIRS_ALL:=
+TRGS_ALL:=
+
+# This code is executed each time when per-directory makefile is processed.
+define TRAVERSE_CALLBACK
+  obj_node_dir:=$(NODE_DIR:$(SRC_DIR)%=$(OBJ_DIR)%)
+  DIRS_ALL+=$$(obj_node_dir)
+  OBJS_ALL+=$$(addprefix $$(obj_node_dir)/,$(NODE_OBJS))
+  LIBS_ALL+=$$(addprefix $$(obj_node_dir)/,$(NODE_LIBS))
+  TRGS_ALL+=$(NODE_TARGETS)
+endef
+
+# Walk the directory tree starting at $(SRC_DIR)
+# and searching for Makefile in each sub-directory.
+$(eval $(call TRAVERSE,$(SRC_DIR),Makefile,TRAVERSE_CALLBACK))
+
+# Expand these variables stripping out unnecessary whitespaces.
+DIRS_ALL:=$(strip $(DIRS_ALL))
+OBJS_ALL:=$(strip $(OBJS_ALL))
+LIBS_ALL:=$(strip $(LIBS_ALL))
+TRGS_ALL:=$(strip $(TRGS_ALL))
+
+# Process dependency files.
+-include $(OBJS_ALL:.o=.d)
 
 # TODO actually not all objects depend on config.h -- Eldar
 #$(OBJS_ALL): $(BUILDCONF_DIR)/config.h
-
 # TODO ... but $(TARGET) does not depend at config.h at all -- Eldar
-$(BIN_DIR)/$(TARGET): $(BUILDCONF_DIR)/config.h $(OBJS_ALL) $(LDSCRIPT)
-	@echo '$(CC) $(LDFLAGS) -T $(LDSCRIPT) -o $@ \ '
-	@echo '	<<a lot of object files>>'
-	@$(CC) $(LDFLAGS) -T $(LDSCRIPT) -o $@ $(OBJS_ALL)
-#	@echo '$(OBJS_ALL)' | sed 's/ /\n/g'
+TRGS_ALL+=$(BUILDCONF_DIR)/config.h
 
-$(BIN_DIR)/$(TARGET_DIS): $(BIN_DIR)/$(TARGET)
+$(OBJ_DIR)/%.o::$(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJ_DIR)/%.o::$(SRC_DIR)/%.S
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+$(IMAGE): $(TRGS_ALL) $(OBJS_ALL) $(LIBC)
+	@echo ' '
+	$(CC) $(LDFLAGS) $(OBJS_ALL) $(LDLIBS) -o $@
+
+$(LIBC): $(LIBS_ALL)
+	@echo ' '
+	$(AR) $(ARFLAGS) $@ $^
+
+$(IMAGE_DIS): $(IMAGE)
 	$(OD_TOOL) -S $< > $@
 
-$(BIN_DIR)/$(TARGET_SREC): $(BIN_DIR)/$(TARGET)
+$(IMAGE_SREC): $(IMAGE)
 	$(OC_TOOL) -O srec $< $@
 
+.PHONY: image
+image: $(IMAGE) $(IMAGE_SREC)
+ifeq ($(DISASSEMBLE),y)
+image: $(IMAGE_DIS)
+endif
+ifeq ($(CHECKSUM),y)
+image: checksum
+endif
+image:
+	@echo 'Build complete'
+
+.PHONY: checksum
 checksum:
 #	@$(MAKE) --directory=scripts/md5_checksummer
 #	@if [ $(CHECKSUM) == y ]; \

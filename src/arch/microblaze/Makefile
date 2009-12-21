@@ -5,10 +5,12 @@ OBJS-y += entry.o
 OBJS-y += boot.o
 OBJS-y += sys.o
 
--include $(LDSCRIPT).d
+TARGETS-y += $(LDSCRIPT)
 
 $(LDSCRIPT):$(SELFDIR)/embox.lds.S $(BUILDCONF_DIR)/config.lds.h
-	$(CC) $(CCINCLUDES) -imacros $(BUILDCONF_DIR)/config.lds.h \
-		-MMD -MT $@ -MF $@.d -E -Wp, -P -undef -o $@ $<
+	$(CPP) $(CPPFLAGS) -imacros $(BUILDCONF_DIR)/config.lds.h \
+		-MMD -MT $@ -MF $@.d -P -undef -o $@ $<
+
+-include $(LDSCRIPT).d
 
 include $(SCRIPTS_DIR)/common.mk
