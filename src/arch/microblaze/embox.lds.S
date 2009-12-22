@@ -6,7 +6,7 @@
 
 OUTPUT_FORMAT("elf32-microblaze", "elf32-microblaze", "elf32-microblaze")
 OUTPUT_ARCH(microblaze)
-ENTRY(_hardreset)
+ENTRY(_start)
 
 MEMORY {
 	sdram : ORIGIN = LDS_RAM_BASE, LENGTH = LDS_RAM_SIZE

@@ -1,7 +1,8 @@
 #include "asm/mb_regs.h"
-
+	#define C_ENTRY(name)	.globl name; .align 4; name
 	.section ".trap_table"
 	.balign 0x8
+C_ENTRY(_start):
 	brai boot_start
 	.balign 0x8
 	brai _user_exception
@@ -12,7 +13,7 @@
 	.balign 0x8
 	brai _hw_exception_handler
 
-	#define C_ENTRY(name)	.globl name; .align 4; name
+
 	.section ".text"
 
 C_ENTRY(_hardreset):
