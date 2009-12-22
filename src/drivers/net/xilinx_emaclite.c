@@ -125,15 +125,32 @@ static uint8_t etherrxbuff[PKTSIZE]; /* Receive buffer */
  * Send a packet on this device.
  */
 static int start_xmit(struct sk_buff *pack, struct net_device *dev) {
+	TRACE("xmit\n");
 	return -1;
+}
+//FIXME bad function (may be use if dest and src align 4)
+static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
+	size_t lenw = (size_t)((len & (~3)) >> 2);
+	volatile uint32_t *srcw = (uint32_t*)((uint32_t )(src) & (~3));
+
+	//TRACE("l =0x%X\tlenw 0x%X\tsrc = 0x%X\tdest = 0x%X\n",len, lenw, srcw, dest);
+	while (lenw --) {
+		//TRACE("s 0x%X\t", *srcw);
+		*dest++ = *srcw++;
+		//TRACE("d 0x%X\n", *dest);
+	}
+	if (len & (~3)) {
+		*dest++ = *srcw++;
+	}
 }
 
 /**
  *
  */
-static void pack_receiving() {
-	uint16_t length, proto_type;
+static void pack_receiving(void *dev_id) {
+	uint16_t len, proto_type;
 	uint32_t tmp;
+	sk_buff_t *skb;
 
 	/* Get the protocol type of the ethernet frame that arrived */
 	tmp = *(volatile uint32_t *) ( RX_PACK + 0xC);
@@ -144,41 +161,55 @@ static void pack_receiving() {
 	 * or an IP packet or an ARP packet */
 	switch (proto_type) {
 		case ETH_P_IP: {
-			length
+			len
 					= (((*(volatile uint32_t *) &(((struct ethhdr *)(RX_PACK))->h_proto)))
 							>> 16) & 0xFFFF;
-			length += ETH_HLEN + ETH_FCS_LEN;
+			len += ETH_HLEN + ETH_FCS_LEN;
+			break;
 		}
 		case ETH_P_ARP: {
-			TRACE("arp = 0x%X\n");
-			length = 28 + ETH_HLEN + ETH_FCS_LEN;
+			len = 28 + ETH_HLEN + ETH_FCS_LEN;
+			TRACE("arp len = 0x%X\n", len);
+			break;
 		}
 		default: {
 			/* Field contains type other than IP or ARP, use max
 			 * frame size and let user parse it */
-			length = ETH_FRAME_LEN;
+			len = ETH_FRAME_LEN;
+			break;
 		}
 	}
-
+	TRACE("arp len = 0x%X\n", len);
 	/* Read from the EmacLite device */
 
+	skb = alloc_skb(len + 4, 0);
+	if (NULL == skb) {
+		LOG_ERROR("Can't allocate packet, pack_pool is full\n");
+		current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
+		switch_rx_buff();
+		return;
+	}
+
+	memcpy32((uint32_t *)skb->data, RX_PACK, (size_t)len);
 	/* Acknowledge the frame */
 	current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
-
 	switch_rx_buff();
 
-#if 0
-	netif_rx(pack);
-#endif
+	skb->mac.ethh = (ethhdr_t *) skb->data;
+	skb->protocol = skb->mac.ethh->h_proto;
+	TRACE("skb->protocol = 0x%X\n", skb->protocol);
+
+	skb->dev = dev_id;
+	netif_rx(skb);
+
 }
 
 /**
  * IRQ handler
  */
-static void irq_handler() {
-	TRACE("pack\n");
+static void irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
 	if (NULL != get_rx_buff()) {
-		pack_receiving();
+		pack_receiving(dev_id);
 	}
 }
 

@@ -111,3 +111,8 @@ void ether_setup(net_device_t *dev) {
 net_device_t *alloc_etherdev(int sizeof_priv) {
 	return alloc_netdev(sizeof_priv, "eth%d", ether_setup);
 }
+
+__be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev) {
+	return skb->mac.ethh->h_proto;
+}
+

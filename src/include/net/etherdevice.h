@@ -113,4 +113,9 @@ extern void ether_setup(net_device_t *dev);
  */
 extern net_device_t *alloc_etherdev(int sizeof_priv);
 
+/**
+ * Âetermineû the packet's protocol ID.
+ */
+extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
+
 #endif /* ETHERDEVICE_H_ */
