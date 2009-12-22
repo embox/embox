@@ -6,7 +6,7 @@
  */
 
 #include "lib/bits/byteswap.h"
-#include "lib/inet/netinet/in.h"
+#include "in.h"
 #include <misc.h>
 #include "stdio.h"
 #include "string.h"

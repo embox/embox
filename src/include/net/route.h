@@ -12,7 +12,6 @@
 #include <types.h>
 #include <net/skbuff.h>
 #include <net/ip.h>
-#include <lib/inet/netinet/in.h>
 
 /**
  * Routing table entry.

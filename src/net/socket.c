@@ -27,6 +27,7 @@ int __init sock_init(void) {
         return 0;
 }
 
+#if 0
 void fill_sock(struct udp_sock *sk, int type, int proto) {
         sk->inet.sk.sk_protocol = proto;
         sk->inet.sk.sk_type = type;
@@ -121,3 +122,4 @@ int empty_socket(int sockfd) {
         }
         return (1 - sks[sockfd].new_pack);
 }
+#endif

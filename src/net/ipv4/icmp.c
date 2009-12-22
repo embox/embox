@@ -18,6 +18,8 @@
 #include "net/if_ether.h"
 #include <net/checksum.h>
 
+struct socket icmp_socket;
+
 /**
  * Build xmit assembly blocks
  */
@@ -193,8 +195,26 @@ static void icmp_unreach(sk_buff_t *pack) {
 /*
  * Driving logic for building and sending ICMP messages.
  */
-static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *pack) {
+static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb) {
+	sk_buff_t *pack = skb_copy(icmp_param->skb, 0);
+	pack->dev = icmp_param->skb->dev;
+	pack->protocol = icmp_param->skb->protocol;
+	pack->h.icmph->type = icmp_param->data.icmph.type;
 	//TODO:
+	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
+	pack->h.icmph->checksum = 0;
+	pack->h.icmph->checksum = ptclbsum(pack->h.raw, ICMP_HEADER_SIZE );
+	//TODO:
+//      rebuild_ip_header(pack, 64, ICMP_PROTO_TYPE, pack->nh.iph->id++, pack->nh.iph->len,
+//                          icmp_param->skb->nh.iph->saddr, icmp_param->skb->nh.iph->daddr);
+	pack->nh.iph->saddr = icmp_param->skb->nh.iph->daddr;
+	pack->nh.iph->daddr = icmp_param->skb->nh.iph->saddr;
+	pack->nh.iph->id ++;
+	pack->nh.iph->ttl      = 64;
+	pack->nh.iph->frag_off = 0;
+	pack->nh.iph->check    = 0;
+	pack->nh.iph->check    = ptclbsum(pack->nh.raw, IP_HEADER_SIZE);
+
 	dev_queue_xmit(pack);
 }
 
@@ -207,45 +227,14 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *pack) {
  * RFC 1812: 4.3.3.6 SHOULD have a config option for silently ignoring
  *                echo requests, MUST have default=NOT.
  */
-static void icmp_echo(sk_buff_t *recieved_pack) {
-	sk_buff_t *pack = skb_copy(recieved_pack, 0);
-	pack->dev = recieved_pack->dev;
-	pack->protocol = recieved_pack->protocol;
-	//fill icmp header
-	pack->h.icmph->type = ICMP_ECHOREPLY;
-	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
-
-/*	LOG_DEBUG("\npacket icmp\n");
-	int i;
-	for (i = 0; i < pack->nh.iph->tot_len + 64; i ++) {
-		if (0 == i % 4) {
-			LOG_DEBUG("\t ");
-		}
-		LOG_DEBUG("%2X",  pack->h.raw[i]);
-	}
-	LOG_DEBUG("%X\n",  pack->h.icmph->header_check_summ);
-*/	pack->h.icmph->checksum = 0;
-	pack->h.icmph->checksum = ptclbsum(pack->h.raw, ICMP_HEADER_SIZE );
-
-	//fill ip header
-//	rebuild_ip_header(pack, 64, ICMP_PROTO_TYPE, pack->nh.iph->id++, pack->nh.iph->len,
-//			    recieved_pack->nh.iph->saddr, recieved_pack->nh.iph->daddr);
-
-	pack->nh.iph->saddr = recieved_pack->nh.iph->daddr;
-	pack->nh.iph->daddr = recieved_pack->nh.iph->saddr;
-	pack->nh.iph->id ++;
-	pack->nh.iph->ttl      = 64;
-	pack->nh.iph->frag_off = 0;
-	pack->nh.iph->check    = 0;
-	pack->nh.iph->check    = ptclbsum(pack->nh.raw, IP_HEADER_SIZE);
-
+static void icmp_echo(sk_buff_t *pack) {
 	struct icmp_bxm icmp_param;
-/*	icmp_param.data.icmph      = *icmp_hdr(recieved_pack);
+	icmp_param.data.icmph      = *icmp_hdr(pack);
 	icmp_param.data.icmph.type = ICMP_ECHOREPLY;
-	icmp_param.skb             = recieved_pack;
+	icmp_param.skb             = pack;
 	icmp_param.offset          = 0;
-	icmp_param.data_len        = recieved_pack->len;
-	icmp_param.head_len        = sizeof(icmphdr_t);*/
+	icmp_param.data_len        = pack->len;
+	icmp_param.head_len        = sizeof(icmphdr_t);
 	icmp_reply(&icmp_param, pack);
 }
 
@@ -273,6 +262,13 @@ int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
 	return dev_queue_xmit(pack);
 }
 
+/* RFC 1122: 3.2.2 MUST send at least the IP header and 8 bytes of header.
+ *   MAY send more (we do).
+ *   MUST NOT change this header information.
+ *   MUST NOT reply to a multicast/broadcast IP address.
+ *   MUST NOT reply to a multicast/broadcast MAC address.
+ *   MUST reply to only the first fragment.
+ */
 void icmp_send(sk_buff_t *pack, int type, int code, uint32_t info) {
 	//TODO:
 	switch(type) {
@@ -335,7 +331,7 @@ int icmp_rcv(sk_buff_t *pack) {
         }
 
 	//TODO: check summ icmp? not need, if ip checksum is ok.
-	unsigned short tmp = icmph->checksum;
+	uint16_t tmp = icmph->checksum;
 	icmph->checksum = 0;
 	if( tmp != ptclbsum(pack->h.raw, ICMP_HEADER_SIZE)) {
 //		LOG_ERROR("bad icmp checksum\n");

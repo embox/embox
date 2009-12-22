@@ -9,7 +9,6 @@
 #include "kernel/module.h"
 #include "net/net.h"
 #include "net/skbuff.h"
-#include "lib/inet/netinet/in.h"
 #include "net/ip.h"
 #include "net/inet_sock.h"
 #include "net/if_ether.h"

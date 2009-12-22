@@ -13,8 +13,8 @@ SUBDIRS-y += ping
 SUBDIRS-y += route
 SUBDIRS-y += ls
 SUBDIRS-y += testmem
-SUBDIRS-y += udpd
+#SUBDIRS-y += udpd
 SUBDIRS-y += wmem
-SUBDIRS-y += tftp
+#SUBDIRS-y += tftp
 
 include $(SCRIPTS_DIR)/common.mk

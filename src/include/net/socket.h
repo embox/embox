@@ -8,7 +8,8 @@
 #ifndef SOCKET_H_
 #define SOCKET_H_
 
-struct sk_buff;
+#include <net/sock.h>
+#include <net/skbuff.h>
 
 struct sockaddr {
 	unsigned short    sa_family;    /* address family, AF_xxx */
@@ -21,9 +22,22 @@ struct sockaddr {
 /* Protocol families, same as address families. */
 #define PF_INET      AF_INET
 
+struct proto {
+        void (*close)(struct sock *sk, long timeout);
+        int  (*connect)(struct sock *sk, struct sockaddr *uaddr, int addr_len);
+        int  (*disconnect)(struct sock *sk, int flags);
+        struct sock *(*accept)(struct sock *sk, int flags, int *err);
+	int  (*init)(struct sock *sk);
+	int  (*sendmsg)(/*struct kiocb *iocb,*/ struct sock *sk,/* struct msghdr *msg,*/ size_t len);
+	int  (*recvmsg)(/*struct kiocb *iocb,*/ struct sock *sk,/* struct msghdr *msg,*/
+	                             size_t len, int noblock, int flags, int *addr_len);
+	int  (*bind)(struct sock *sk, struct sockaddr *uaddr, int addr_len);
+};
+
 //TODO: move out of here
 int sock_init(void);
 
+#if 0
 /**
  * create an endpoint for communication.
  * @param protocol The protocol specifies a particular protocol to be used with the socket.
@@ -68,5 +82,6 @@ extern int close(int sockfd);
  * Push packet received from udp_rcv into socket.
  */
 extern int udpsock_push(struct sk_buff *pack);
+#endif
 
 #endif /* SOCKET_H_ */

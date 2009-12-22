@@ -8,7 +8,7 @@
  */
 #include <string.h>
 #include <common.h>
-#include <lib/inet/netinet/in.h>
+#include <in.h>
 #include <kernel/module.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>

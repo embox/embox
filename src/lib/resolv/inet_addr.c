@@ -4,7 +4,7 @@
  * \author Sikmir
  */
 
-#include <lib/inet/netinet/in.h>
+#include <in.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

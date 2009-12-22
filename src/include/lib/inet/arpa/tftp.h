@@ -10,7 +10,6 @@
 
 #include "types.h"
 #include "net/ip.h"
-#include "lib/inet/netinet/in.h"
 
 /*
  * Trivial File Transfer Protocol (IEN-133)

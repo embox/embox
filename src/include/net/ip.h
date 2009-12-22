@@ -8,7 +8,7 @@
 #ifndef IP_H_
 #define IP_H_
 
-#include <lib/inet/netinet/in.h>
+#include <in.h>
 #include <net/skbuff.h>
 #include <net/inet_sock.h>
 
@@ -49,6 +49,10 @@ typedef struct iphdr {
 } __attribute__((packed)) iphdr_t;
 
 #define IP_HEADER_SIZE   (sizeof(struct iphdr))
+
+static inline iphdr_t *ip_hdr(const sk_buff_t *skb) {
+        return (iphdr_t *)skb->nh.raw;
+}
 
 /**
  * Functions provided by ip.c

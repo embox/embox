@@ -11,6 +11,7 @@
 #include "net/sock.h"
 #include "net/udp.h"
 
+#if 0
 static struct udp_sock sk_pool[MAX_SOCK_NUM];
 SOCK_INFO sks[MAX_SOCK_NUM];
 
@@ -39,3 +40,4 @@ void sk_free(struct udp_sock *sk) {
                 }
         }
 }
+#endif

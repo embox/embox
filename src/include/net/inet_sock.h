@@ -9,7 +9,7 @@
 #define INET_SOCK_H_
 
 #include <net/sock.h>
-#include <lib/inet/netinet/in.h>
+#include <in.h>
 
 /** struct ip_options - IP Options
 *

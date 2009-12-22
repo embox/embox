@@ -11,7 +11,7 @@
 #include <net/if_ether.h>
 #include <net/if.h>
 #include <net/skbuff.h>
-#include <lib/inet/netinet/in.h>
+#include <in.h>
 #include <lib/list.h>
 
 /* Backlog congestion levels */

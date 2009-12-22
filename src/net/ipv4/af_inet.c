@@ -7,7 +7,7 @@
  */
 
 #include <kernel/module.h>
-#include <lib/inet/netinet/in.h>
+#include <in.h>
 #include <err.h>
 #include <net/protocol.h>
 #include <net/udp.h>

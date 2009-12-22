@@ -5,19 +5,24 @@
  * @date 17.03.2009
  * @author Anton Bondarev
  */
-
 #ifndef SOCK_H_
 #define SOCK_H_
 
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 
+#if 0
 #define MAX_SOCK_NUM 4
 
 struct udp_sock;
+#endif
 
 /**
  * struct sock_common - minimal network layer representation of sockets
+ * @param skc_family network address family
+ * @param skc_state Connection state
+ * @param skc_reuse %SO_REUSEADDR setting
+ * @param skc_bound_dev_if bound device index if != 0
  */
 struct sock_common {
         unsigned short          skc_family;
@@ -34,9 +39,22 @@ struct sock_common {
 
 /**
  * struct sock - network layer representation of sockets
+ * @param __sk_common shared layout with inet_timewait_sock
+ * @param sk_protocol which protocol this socket belongs in this network family
  * @param sk_type socket type
  * @param sk_rcvbuf size of receive buffer in bytes
  * @param sk_sndbuf size of send buffer in bytes
+ * @param sk_flags %SO_LINGER (l_onoff), %SO_BROADCAST, %SO_KEEPALIVE,
+ *                %SO_OOBINLINE settings, %SO_TIMESTAMPING settings
+ * @param sk_receive_queue incoming packets
+ * @param sk_write_queue Packet sending queue
+ * @param sk_socket Identd and reporting IO signals
+ * @sk_state_change: callback to indicate change in the state of the sock
+ * @sk_data_ready: callback to indicate there is data to be processed
+ * @sk_write_space: callback to indicate there is bf sending space available
+ * @sk_error_report: callback to indicate errors (e.g. %MSG_ERRQUEUE)
+ * @sk_backlog_rcv: callback to process the backlog
+ * @sk_destruct: called at sock freeing time, i.e. when all refcnt == 0
  */
 typedef struct sock {
 	struct sock_common      __sk_common;
@@ -50,7 +68,6 @@ typedef struct sock {
 	struct sk_buff_head     sk_write_queue;
 
 	struct socket           *sk_socket;
-	net_device_t            *netdev;
 
 	void (* sk_state_change) (struct sock *sk);
 	void (* sk_data_ready) (struct sock *sk, int bytes);
@@ -60,6 +77,7 @@ typedef struct sock {
 	void (* sk_destruct) (struct sock *sk);
 } sock_t;
 
+#if 0
 typedef struct _SOCK_INFO{
         struct udp_sock *sk;
         struct sk_buff *queue; //TODO: stub
@@ -74,5 +92,6 @@ extern SOCK_INFO sks[MAX_SOCK_NUM];
  */
 extern struct udp_sock* sk_alloc();
 extern void sk_free(struct udp_sock *sk);
+#endif
 
 #endif /* SOCK_H_ */

@@ -18,13 +18,13 @@
 #include "net/socket.h"
 #include "net/if_ether.h"
 #include "net/checksum.h"
-#include "lib/inet/netinet/in.h"
+#include "in.h"
 
 int udp_rcv(sk_buff_t *pack) {
 	LOG_WARN("udp packet received\n");
-	return udpsock_push(pack);
+	return 0;//udpsock_push(pack);
 }
-
+#if 0
 static SOCK_INFO *__udp_lookup(in_addr_t saddr, unsigned short source,
 				in_addr_t daddr, unsigned short dest) {
 	int i;
@@ -119,3 +119,4 @@ int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 	rebuild_udp_packet(pack, sk, ifdev, buf, len);
 	return ip_send_packet(&sk->inet, pack);
 }
+#endif
