@@ -23,7 +23,7 @@ typedef struct net_protocol {
 #endif
 } net_protocol_t;
 
-extern net_protocol_t *inet_protos[MAX_INET_PROTOS];
+//extern net_protocol_t *inet_protos[MAX_INET_PROTOS];
 
 /**
  * Add a protocol handler to the hash tables

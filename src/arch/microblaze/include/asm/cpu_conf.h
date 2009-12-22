@@ -60,7 +60,8 @@
 #define XILINX_SYSACE_MEM_WIDTH     16
 
 /** Ethernet controller is Ethernet_MAC */
-#define XILINX_EMACLITE_BASEADDR    0x40C00000
-#define XILINX_EMACLITE_IRQ_NUM     4
+//#define XILINX_EMACLITE_BASEADDR    0x40C00000
+#define XILINX_EMACLITE_BASEADDR    0x81000000
+#define XILINX_EMACLITE_IRQ_NUM     1
 
 #endif /* CPU_CONF_H_ */
