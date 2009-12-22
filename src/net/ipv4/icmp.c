@@ -18,8 +18,6 @@
 #include "net/if_ether.h"
 #include <net/checksum.h>
 
-struct socket icmp_socket;
-
 /**
  * Build xmit assembly blocks
  */
@@ -146,7 +144,7 @@ static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
 	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
 	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, 0, ICMP_HEADER_SIZE, srcaddr, dstaddr);
 
-	return ICMP_HEADER_SIZE + IP_HEADER_SIZE;
+	return ICMP_HEADER_SIZE + IP_HEADER_SIZE + ETH_HEADER_SIZE;
 }
 
 /**
@@ -295,7 +293,6 @@ static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
 };
 
 void __init icmp_init() {
-
 }
 
 int icmp_rcv(sk_buff_t *pack) {

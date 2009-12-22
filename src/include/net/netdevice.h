@@ -217,14 +217,17 @@ extern int dev_queue_xmit(sk_buff_t *pack);
  */
 extern int netif_rx(sk_buff_t *pack);
 
-
-static inline int dev_hard_header(struct sk_buff *skb, struct net_device *dev,
+static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
                                 unsigned short type,
                                 void *daddr, void *saddr, unsigned len) {
         if (!dev->header_ops || !dev->header_ops->create) {
                 return 0;
 	}
 	return dev->header_ops->create(skb, dev, type, daddr, saddr, len);
+}
+
+static inline void netif_start_queue(net_device_t *dev) {
+	//TODO:
 }
 
 #endif /* NET_DEVICE_H_ */

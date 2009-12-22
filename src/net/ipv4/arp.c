@@ -19,9 +19,9 @@
 #include <net/arp.h>
 #include <net/ip.h>
 
-ARP_ENTITY arp_table[ARP_CACHE_SIZE];
+arp_table_t arp_tables[ARP_CACHE_SIZE];
 
-#define ARP_TABLE_SIZE array_len(arp_table)
+#define ARP_TABLE_SIZE array_len(arp_tables)
 
 static struct packet_type arp_packet_type = {
         .type = ETH_P_ARP,
@@ -35,9 +35,9 @@ void __init arp_init() {
 static inline int find_entity(in_device_t *in_dev, in_addr_t dst_addr) {
 	int i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
-		if(arp_table[i].is_busy &&
-		  (arp_table[i].pw_addr == dst_addr) &&
-		  (in_dev == arp_table[i].if_handler)) {
+		if(arp_tables[i].is_busy &&
+		  (arp_tables[i].pw_addr == dst_addr) &&
+		  (in_dev == arp_tables[i].if_handler)) {
 			return i;
 		}
 	}
@@ -57,11 +57,11 @@ int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr
 		return i;
 	}
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
-		if(0 == arp_table[i].is_busy) {
-			arp_table[i].is_busy = 1;
-			arp_table[i].if_handler = in_dev;
-			arp_table[i].pw_addr = ipaddr;
-			memcpy(arp_table[i].hw_addr, macaddr, ETH_ALEN);
+		if(0 == arp_tables[i].is_busy) {
+			arp_tables[i].is_busy = 1;
+			arp_tables[i].if_handler = in_dev;
+			arp_tables[i].pw_addr = ipaddr;
+			memcpy(arp_tables[i].hw_addr, macaddr, ETH_ALEN);
 			return i;
 		}
 	}
@@ -78,10 +78,10 @@ int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr
 int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr) {
 	int i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
-		if( arp_table[i].pw_addr == ipaddr ||
-        	    0 == memcmp(arp_table[i].hw_addr, macaddr, ETH_ALEN) ||
-        	    in_dev == arp_table[i].if_handler) {
-			arp_table[i].is_busy = 0;
+		if( arp_tables[i].pw_addr == ipaddr ||
+        	    0 == memcmp(arp_tables[i].hw_addr, macaddr, ETH_ALEN) ||
+        	    in_dev == arp_tables[i].if_handler) {
+			arp_tables[i].is_busy = 0;
     		}
 	}
 	return -1;
@@ -166,21 +166,21 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	iphdr_t *ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
 	int i;
-	if (ip->daddr != INADDR_BROADCAST) {
+	if (ip->daddr == INADDR_BROADCAST) {
 		return 1;
 	}
-	if(-1 != (i = find_entity(NULL, ip->daddr))) {
-		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, ETH_ALEN);
+	if(-1 != (i = find_entity(in_dev_get(dev), ip->daddr))) {
+		memcpy (pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
 		return 0;
 	}
-
 	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev,
 			    ip->saddr, NULL, dev->dev_addr, NULL);
 
 	//TODO delete this after processes will be added to monitor
 	usleep(500);
+
 	if (-1 != (i = find_entity(NULL, ip->daddr))) {
-		memcpy (pack->mac.ethh->h_dest, arp_table[i].hw_addr, ETH_ALEN);
+		memcpy (pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
 		return 0;
 	}
 	return 1;
@@ -234,7 +234,7 @@ static int arp_process(sk_buff_t *pack) {
         default:
                 ret = 0;
         }
-        /* add record into arp_table */
+        /* add record into arp_tables */
         arp_add_entity(in_dev, arp->spa, arp->sha);
         return ret;
 }

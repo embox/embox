@@ -16,16 +16,16 @@
 /**
  * struct for arp_table_records
  */
-typedef struct _ARP_ENTITY {
+typedef struct arp_table {
     unsigned char hw_addr[ETH_ALEN];                   /**< hardware addr */
     in_addr_t     pw_addr;                             /**< protocol addr */
     in_device_t   *if_handler;                         /**< inet device */
     unsigned char is_busy;                             /**< internal flag that this entry is used */
-} ARP_ENTITY;
+} arp_table_t;
 
 #define ARP_CACHE_SIZE         0x100                   /** arp table capacity */
 
-extern ARP_ENTITY arp_table[ARP_CACHE_SIZE];           /** arp table */
+extern arp_table_t arp_tables[ARP_CACHE_SIZE];           /** arp table */
 
 /**
  * Functions provided by arp.c
