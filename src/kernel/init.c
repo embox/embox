@@ -44,7 +44,7 @@ int hardware_init_hook() {
 	const char *default_init_name = "???";
 
 	//TODO during too long time for simulation:(
-	//copy_data_section();
+	copy_data_section();
 
 	/*
 	 * Zero level initialization (+ uart)
