@@ -1,5 +1,17 @@
 #include "asm/mb_regs.h"
 
+	.section ".trap_table"
+	.balign 0x8
+	brai boot_start
+	.balign 0x8
+	brai _user_exception
+	.balign 0x8
+	brai _interrupt_handler
+	.balign 0x8
+	brai _debug_exception
+	.balign 0x8
+	brai _hw_exception_handler
+
 	#define C_ENTRY(name)	.globl name; .align 4; name
 	.section ".text"
 

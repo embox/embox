@@ -25,7 +25,7 @@ _vector_debug_sw_break:
 _vector_hw_exception:
         brai    _hw_exception_handler
 */
-	.section    ".start_code"
+	.section    ".text"
 	.align  4
  	.weak hardware_init_hook
  	.weak software_init_hook

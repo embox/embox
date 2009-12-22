@@ -29,7 +29,8 @@ SECTIONS {
 
 	.text : {
 		ALIGNMENT();
-		*(.start_code)
+		*(.trap_table)
+		. = ALIGN(0x100);
 		*(.text)
 		*(.init.text)
 	} >sdram
