@@ -38,6 +38,8 @@ typedef struct arphdr {
 	in_addr_t      ar_tip;           /**< Target protocol address */
 } __attribute__((packed)) arphdr_t;
 
+#define ARP_HEADER_SIZE (sizeof(struct arphdr))
+
 static inline arphdr_t *arp_hdr(const sk_buff_t *skb) {
         return (arphdr_t *)skb->nh.raw;
 }

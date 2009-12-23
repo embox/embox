@@ -45,7 +45,7 @@ static int ping(void *ifdev, struct in_addr dst, int cnt, int timeout, int ttl, 
 		if(!quiet) printf("from %s", inet_ntoa(from));
 		if(!quiet) printf(" to %s", inet_ntoa(dst));
 		if(!quiet) printf(" ttl=%d ", ttl);
-		icmp_send_echo_request(ifdev, dst.s_addr, ttl, callback);
+		icmp_send_echo_request(ifdev, dst.s_addr, ttl, callback, 0x38);
 		usleep(timeout);
 		if (false == has_responsed) {
 			if(!quiet) printf(" ....timeout\n");

@@ -143,7 +143,6 @@ static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
 
 	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
 	memset(pack->nh.raw, 0, IP_HEADER_SIZE);
-	//ICMP_HEADER_SIZE = 4, IP_HEADER_SIZE = 20, ETH_HEADER_SIZE = 14
 	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, 0, ICMP_HEADER_SIZE + IP_HEADER_SIZE + ETH_HEADER_SIZE, srcaddr, dstaddr);
 
 	return ICMP_HEADER_SIZE + IP_HEADER_SIZE + ETH_HEADER_SIZE;
@@ -201,7 +200,7 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb) {
 	//TODO:
 	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
 	pack->h.icmph->checksum = 0;
-	pack->h.icmph->checksum = ptclbsum(pack->h.raw, ICMP_HEADER_SIZE );
+	pack->h.icmph->checksum = ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE );
 	//TODO:
 //      rebuild_ip_header(pack, 64, ICMP_PROTO_TYPE, pack->nh.iph->id++, pack->nh.iph->len,
 //                          icmp_param->skb->nh.iph->saddr, icmp_param->skb->nh.iph->daddr);
@@ -240,9 +239,8 @@ static void icmp_discard(sk_buff_t *skb) {
 }
 
 int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
-		ICMP_CALLBACK callback) { //type 8
-	//TODO icmp req must be variable length
-	sk_buff_t *pack = alloc_skb(0x100, 0);
+		ICMP_CALLBACK callback, unsigned size) { //type 8
+	sk_buff_t *pack = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE + ICMP_HEADER_SIZE + size, 0);
 	if ( pack == NULL ) {
 		return -1;
 	}
@@ -330,9 +328,9 @@ int icmp_rcv(sk_buff_t *pack) {
 	//TODO: check summ icmp? not need, if ip checksum is ok.
 	uint16_t tmp = icmph->checksum;
 	icmph->checksum = 0;
-	if( tmp != ptclbsum(pack->h.raw, ICMP_HEADER_SIZE)) {
-//		LOG_ERROR("bad icmp checksum\n");
-//		return -1;
+	if( tmp != ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE)) {
+		LOG_ERROR("bad icmp checksum\n");
+		return -1;
 	}
 	if (NULL != icmp_pointers[icmph->type].handler) {
 		icmp_pointers[icmph->type].handler(pack);

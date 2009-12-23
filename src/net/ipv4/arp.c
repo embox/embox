@@ -94,7 +94,7 @@ sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
 	sk_buff_t *pack;
 	struct arphdr *arp;
 	if (NULL == dev ||
-	    NULL == (pack = alloc_skb(0x3b, 0))) {
+	    NULL == (pack = alloc_skb(ETH_HEADER_SIZE + ARP_HEADER_SIZE, 0))) {
 		return NULL;
 	}
 
