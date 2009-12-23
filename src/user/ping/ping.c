@@ -27,7 +27,8 @@ static void callback(struct sk_buff *pack) {
 	has_responsed = true;
 }
 
-static int ping(void *ifdev, struct in_addr dst, int cnt, int timeout, int ttl, int quiet) {
+static int ping(void *ifdev, struct in_addr dst, int cnt, int timeout, int ttl,
+				    int quiet, unsigned packsize) {
 	printf("PING to %s\n", inet_ntoa(dst));
 
 	int cnt_resp = 0, cnt_err = 0;
@@ -45,7 +46,7 @@ static int ping(void *ifdev, struct in_addr dst, int cnt, int timeout, int ttl, 
 		if(!quiet) printf("from %s", inet_ntoa(from));
 		if(!quiet) printf(" to %s", inet_ntoa(dst));
 		if(!quiet) printf(" ttl=%d ", ttl);
-		icmp_send_echo_request(ifdev, dst.s_addr, ttl, callback, 0x38);
+		icmp_send_echo_request(ifdev, dst.s_addr, ttl, callback, packsize);
 		usleep(timeout);
 		if (false == has_responsed) {
 			if(!quiet) printf(" ....timeout\n");
@@ -64,6 +65,7 @@ static int ping(void *ifdev, struct in_addr dst, int cnt, int timeout, int ttl, 
 
 static int exec(int argsc, char **argsv) {
 	int cnt     = 4;
+	unsigned packsize = 0x38;
 	int timeout = 1000;
 	int ttl     = 64;
 	int quiet   = 0;
@@ -72,7 +74,7 @@ static int exec(int argsc, char **argsv) {
 	int nextOption;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "qI:c:t:W:h");
+		nextOption = getopt(argsc, argsv, "qI:c:t:W:s:h");
 	        switch(nextOption) {
 	        case 'h':
 	                show_help();
@@ -101,6 +103,9 @@ static int exec(int argsc, char **argsv) {
             	case 'W': /* get ping timeout */
             		sscanf(optarg, "%d", &timeout);
             		break;
+            	case 's': /* get packet size */
+            		sscanf(optarg, "%d", &packsize);
+            		break;
 	        case -1:
 	                break;
 	        default:
@@ -120,6 +125,6 @@ static int exec(int argsc, char **argsv) {
                 return -1;
         }
 	//carry out command
-	ping(ifdev, dst, cnt, timeout, ttl, quiet);
+	ping(ifdev, dst, cnt, timeout, ttl, quiet, packsize);
 	return 0;
 }

@@ -135,7 +135,7 @@ static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type, unsigned cha
 	return 0;
 }
 
-static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
+static inline void build_icmp_packet(sk_buff_t *pack, unsigned char type,
 		unsigned char code, unsigned char ttl, in_addr_t srcaddr, in_addr_t dstaddr) {
 	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
@@ -143,9 +143,7 @@ static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
 
 	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
 	memset(pack->nh.raw, 0, IP_HEADER_SIZE);
-	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, 0, ICMP_HEADER_SIZE + IP_HEADER_SIZE + ETH_HEADER_SIZE, srcaddr, dstaddr);
-
-	return ICMP_HEADER_SIZE + IP_HEADER_SIZE + ETH_HEADER_SIZE;
+	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, 0, pack->len - ETH_HEADER_SIZE, srcaddr, dstaddr);
 }
 
 /**
@@ -240,13 +238,14 @@ static void icmp_discard(sk_buff_t *skb) {
 
 int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
 		ICMP_CALLBACK callback, unsigned size) { //type 8
-	sk_buff_t *pack = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE + ICMP_HEADER_SIZE + size, 0);
+	sk_buff_t *pack = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE +
+						ICMP_HEADER_SIZE + size, 0);
 	if ( pack == NULL ) {
 		return -1;
 	}
 	//TODO ICMP get net dev
 	pack->dev = ((in_device_t*)in_dev)->dev;
-	pack->len = build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
+	build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
 					inet_dev_get_ipaddr(in_dev), dstaddr);
 	pack->protocol = ETH_P_IP;
 
