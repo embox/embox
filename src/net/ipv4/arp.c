@@ -167,7 +167,7 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	pack->mac.raw = pack->data;
 	int i;
 	if (ip->daddr == INADDR_BROADCAST) {
-		return 1;
+		return -1;
 	}
 	if(-1 != (i = find_entity(in_dev_get(dev), ip->daddr))) {
 		memcpy (pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
@@ -179,11 +179,11 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	//TODO delete this after processes will be added to monitor
 	usleep(500);
 
-	if (-1 != (i = find_entity(NULL, ip->daddr))) {
+	if (-1 != (i = find_entity(in_dev_get(dev), ip->daddr))) {
 		memcpy (pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
 		return 0;
 	}
-	return 1;
+	return -1;
 }
 
 /**

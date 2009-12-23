@@ -49,11 +49,11 @@ int eth_rebuild_header(sk_buff_t *pack) {
 	eth->h_proto = pack->protocol;
 
         if(eth->h_proto == htons(ETH_P_IP)) {
+    		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
                 return arp_find(eth->h_dest, pack);
         } else {
     		LOG_WARN("%s: unable to resolve type %X addresses.\n",
                                 dev->name, (int)eth->h_proto);
-        	memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
         }
 #if 0
         if (NULL == pack->sk || SOCK_RAW != pack->sk->sk_type) {

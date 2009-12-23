@@ -137,12 +137,14 @@ static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type, unsigned cha
 
 static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
 		unsigned char code, unsigned char ttl, in_addr_t srcaddr, in_addr_t dstaddr) {
-	pack->h.raw = pack->nh.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
+	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
 	rebuild_icmp_header(pack, type, code);
 
 	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
-	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, 0, ICMP_HEADER_SIZE, srcaddr, dstaddr);
+	memset(pack->nh.raw, 0, IP_HEADER_SIZE);
+	//ICMP_HEADER_SIZE = 4, IP_HEADER_SIZE = 20, ETH_HEADER_SIZE = 14
+	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, 0, ICMP_HEADER_SIZE + IP_HEADER_SIZE + ETH_HEADER_SIZE, srcaddr, dstaddr);
 
 	return ICMP_HEADER_SIZE + IP_HEADER_SIZE + ETH_HEADER_SIZE;
 }
@@ -152,15 +154,13 @@ static inline int build_icmp_packet(sk_buff_t *pack, unsigned char type,
  */
 static void icmp_get_echo_reply(sk_buff_t *pack) {
 //TODO now ICMP reply haven't to work with callbacks it works through sockets
-#if 0
 	ICMP_CALLBACK cb;
-	if (NULL == (cb = callback_find(pack->ifdev, pack->nh.iph->id,
+	if (NULL == (cb = callback_find(in_dev_get(pack->dev), pack->nh.iph->id,
 			ICMP_ECHOREPLY)))
 		return;
 	cb(pack);
 	//unregister
-	callback_free(cb, pack->ifdev, pack->nh.iph->id, ICMP_ECHOREPLY);
-#endif
+	callback_free(cb, in_dev_get(pack->dev), pack->nh.iph->id, ICMP_ECHOREPLY);
 }
 
 /**
