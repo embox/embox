@@ -126,20 +126,24 @@ int icmp_abort_echo_request(void *in_dev) {
 /**
  * Fill ICMP header
  */
-static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type, unsigned char code) {
+static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type,
+			    unsigned char code, unsigned seq, unsigned id) {
 	icmphdr_t *hdr = pack->h.icmph;
 	hdr->type    = type;
 	hdr->code    = code;
+	hdr->un.echo.sequence = seq;
+	hdr->un.echo.id = id;
 	hdr->checksum = 0;
 	hdr->checksum = ptclbsum(pack->h.raw, ICMP_HEADER_SIZE);
 	return 0;
 }
 
 static inline void build_icmp_packet(sk_buff_t *pack, unsigned char type,
-		unsigned char code, unsigned char ttl, in_addr_t srcaddr, in_addr_t dstaddr) {
+		unsigned char code, unsigned char ttl, in_addr_t srcaddr, in_addr_t dstaddr,
+		unsigned seq, unsigned id) {
 	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, ICMP_HEADER_SIZE);
-	rebuild_icmp_header(pack, type, code);
+	rebuild_icmp_header(pack, type, code, seq, id);
 
 	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
 	memset(pack->nh.raw, 0, IP_HEADER_SIZE);
@@ -237,7 +241,7 @@ static void icmp_discard(sk_buff_t *skb) {
 }
 
 int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
-		ICMP_CALLBACK callback, unsigned size) { //type 8
+	    ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq) {
 	sk_buff_t *pack = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE +
 						ICMP_HEADER_SIZE + size, 0);
 	if ( pack == NULL ) {
@@ -245,8 +249,8 @@ int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
 	}
 	//TODO ICMP get net dev
 	pack->dev = ((in_device_t*)in_dev)->dev;
-	build_icmp_packet(pack, ICMP_ECHO, 0, ttl,
-					inet_dev_get_ipaddr(in_dev), dstaddr);
+	build_icmp_packet(pack, ICMP_ECHO, 0, ttl, inet_dev_get_ipaddr(in_dev),
+				dstaddr, seq, /*id*/0);
 	pack->protocol = ETH_P_IP;
 
 	if (-1 == callback_alloc(callback, in_dev, pack->nh.iph->id,

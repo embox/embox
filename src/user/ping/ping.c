@@ -14,7 +14,9 @@
 
 #define COMMAND_NAME     "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
-#define HELP_MSG         "Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl] host"
+#define HELP_MSG         "Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl] \n\
+       [-i interval] [-p pattern] [-s packetsize] host"
+
 static const char *man_page =
 	#include "ping_help.inc"
 	;
@@ -22,51 +24,64 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int has_responsed;
+
 static void callback(struct sk_buff *pack) {
 	kfree_skb(pack);
 	has_responsed = true;
 }
 
 static int ping(void *ifdev, struct in_addr dst, int cnt, int timeout, int ttl,
-				    int quiet, unsigned packsize) {
-	printf("PING to %s\n", inet_ntoa(dst));
+	    int quiet, unsigned packsize, int interval, unsigned short pattern) {
+	char *dst_b = inet_ntoa(dst);
+	printf("PING %s %d bytes of data.\n", dst_b, packsize);
 
 	int cnt_resp = 0, cnt_err = 0;
 
-	if (0 == cnt)
+	if (0 == cnt) {
 		return 0;
+	}
 
-	while (1) {
-		if ((0 <= cnt) && !(cnt--))
-			break;
+	struct in_addr from;
+	from.s_addr = inet_dev_get_ipaddr(ifdev);
+	char *from_b = inet_ntoa(from);
 
+	int i;
+	for(i = 1; i <= cnt; i++) {
 		has_responsed = false;
-		struct in_addr from;
-		from.s_addr = inet_dev_get_ipaddr(ifdev);
-		if(!quiet) printf("from %s", inet_ntoa(from));
-		if(!quiet) printf(" to %s", inet_ntoa(dst));
-		if(!quiet) printf(" ttl=%d ", ttl);
-		icmp_send_echo_request(ifdev, dst.s_addr, ttl, callback, packsize);
+		if(!quiet) printf("%d bytes from %s", packsize, from_b);
+
+		if(!quiet) printf(" to %s:", dst_b);
+		icmp_send_echo_request(ifdev, dst.s_addr, ttl, callback,
+						packsize, pattern, i);
 		usleep(timeout);
 		if (false == has_responsed) {
-			if(!quiet) printf(" ....timeout\n");
+			if(!quiet) printf(" Destination Host Unreachable\n");
 			icmp_abort_echo_request(ifdev);
 			cnt_err++;
 		} else {
-			if(!quiet) printf(" ....ok\n");
+			if(!quiet) printf(" icmp_seq=%d ttl=%d time=%d ms\n",
+						i, ttl, /*TODO*/0);
+			//if(!quiet) printf(" ....ok\n");
 			cnt_resp++;
 		}
+		usleep(interval);
 	}
 	printf("--- %s ping statistics ---\n", inet_ntoa(dst));
-	printf("%d packets transmitted, %d received, %d%% packet loss", cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp));
+	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
+		cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp), 0);
+	//printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms", 0, 0, 0, 0);
 	icmp_abort_echo_request(ifdev);
+	free(dst_b);
+	free(from_b);
 	return 0;
 }
 
 static int exec(int argsc, char **argsv) {
 	int cnt     = 4;
 	unsigned packsize = 0x38;
-	int timeout = 1000;
+	int timeout = 1;
+	int interval = 0;
+	unsigned short pattern;
 	int ttl     = 64;
 	int quiet   = 0;
 	void *ifdev = inet_dev_find_by_name("eth0");
@@ -74,7 +89,7 @@ static int exec(int argsc, char **argsv) {
 	int nextOption;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "qI:c:t:W:s:h");
+		nextOption = getopt(argsc, argsv, "qI:c:t:W:s:i:p:h");
 	        switch(nextOption) {
 	        case 'h':
 	                show_help();
@@ -106,6 +121,12 @@ static int exec(int argsc, char **argsv) {
             	case 's': /* get packet size */
             		sscanf(optarg, "%d", &packsize);
             		break;
+            	case 'i': /* get interval */
+            		sscanf(optarg, "%d", &interval);
+            		break;
+            	case 'p': /* get pattern */
+            		sscanf(optarg, "%d", &pattern);
+            		break;
 	        case -1:
 	                break;
 	        default:
@@ -125,6 +146,7 @@ static int exec(int argsc, char **argsv) {
                 return -1;
         }
 	//carry out command
-	ping(ifdev, dst, cnt, timeout, ttl, quiet, packsize);
+	ping(ifdev, dst, cnt, timeout*1000, ttl, quiet, packsize,
+						    interval*1000, pattern);
 	return 0;
 }
