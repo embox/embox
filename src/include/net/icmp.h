@@ -47,9 +47,20 @@
 #define NR_ICMP_UNREACH         15      /* instead of hardcoding immediate value */
 
 typedef struct icmphdr {
-	uint8_t  type;
-	uint8_t  code;
+	__u8     type;
+	__u8     code;
 	uint16_t checksum;
+	union {
+	        struct {
+	        	__be16 id;
+	                __be16 sequence;
+	        } echo;
+	        __be16 gateway;
+	        struct {
+	                __be16 __unused;
+	        	__be16 mtu;
+	        } frag;
+	} un;
 } __attribute__((packed)) icmphdr_t;
 
 #define ICMP_HEADER_SIZE	(sizeof(struct icmphdr))

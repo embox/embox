@@ -26,26 +26,26 @@
 
 typedef struct iphdr {
 #if defined(__LITTLE_ENDIAN)
-        __extension__ unsigned char ihl:4,     /* ihl = 5 */
-    				    version:4; /* version = 4 */
+        __extension__ __u8 ihl:4,     /* ihl = 5 */
+    			    version:4; /* version = 4 */
 #elif defined (__BIG_ENDIAN)
-	__extension__ unsigned char version:4, /* version = 4 */
-	                            ihl:4;     /* ihl = 5 */
+	__extension__ __u8 version:4, /* version = 4 */
+	                        ihl:4;     /* ihl = 5 */
 #endif
-	unsigned char     tos;          /**< Type of Services, always 0 */
-	unsigned short    tot_len;      /**< packet length */
-	unsigned short    id;           /**< for packet fragmentation */
+	__u8        tos;          /**< Type of Services, always 0 */
+	__be16      tot_len;      /**< packet length */
+	__be16      id;           /**< for packet fragmentation */
 	/** ________________________________________________________________
 	 * |15_________________|14_________________|13______|12____________0|
 	 * |MF (more fragments)|DF (don’t fragment)|always 0|fragment offset|
 	 * |___________________|___________________|________|_______________|
 	 */
-	unsigned short    frag_off;     /**< flags + position of the fragment in the data flow */
-	unsigned char     ttl;          /**< Time to live */
-	unsigned char     proto;        /**< next header */
-	unsigned short    check;        /**< header's checksum */
-        in_addr_t         saddr;        /**< source address */
-        in_addr_t         daddr;        /**< destination address */
+	__be16      frag_off;     /**< flags + position of the fragment in the data flow */
+	__u8        ttl;          /**< Time to live */
+	__u8        proto;        /**< next header */
+	uint16_t    check;        /**< header's checksum */
+        in_addr_t   saddr;        /**< source address */
+        in_addr_t   daddr;        /**< destination address */
 } __attribute__((packed)) iphdr_t;
 
 #define IP_HEADER_SIZE   (sizeof(struct iphdr))

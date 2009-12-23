@@ -27,15 +27,15 @@
  * This structure defines an ethernet arp header.
  */
 typedef struct arphdr {
-	unsigned short htype;            /**< format of hardware address = 0x0001;//ethernet */
-	unsigned short ptype;            /**< format of protocol address = 0x0800;//ip */
-	unsigned char  hlen;             /**< hardware addr len */
-	unsigned char  plen;             /**< protocol addr len */
-	unsigned short oper;             /**< ARP opcode (command)    */
-	unsigned char  sha[ETH_ALEN];    /**< Sender hardware address */
-	in_addr_t      spa;              /**< Sender protocol address */
-	unsigned char  tha[ETH_ALEN];    /**< Target hardware address */
-	in_addr_t      tpa;              /**< Target protocol address */
+	__be16         ar_hrd;           /**< format of hardware address = 0x0001;//ethernet */
+	__be16         ar_pro;           /**< format of protocol address = 0x0800;//ip */
+	unsigned char  ar_hln;           /**< hardware addr len */
+	unsigned char  ar_pln;           /**< protocol addr len */
+	__be16         ar_op;            /**< ARP opcode (command)    */
+	unsigned char  ar_sha[ETH_ALEN]; /**< Sender hardware address */
+	in_addr_t      ar_sip;           /**< Sender protocol address */
+	unsigned char  ar_tha[ETH_ALEN]; /**< Target hardware address */
+	in_addr_t      ar_tip;           /**< Target protocol address */
 } __attribute__((packed)) arphdr_t;
 
 static inline arphdr_t *arp_hdr(const sk_buff_t *skb) {

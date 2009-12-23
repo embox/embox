@@ -122,15 +122,15 @@ sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
 	/*
 	 * Fill out the arp protocol part.
 	 */
-	arp->htype = htons(ARPHRD_ETHER);
-	arp->ptype = htons(ETH_P_IP);
-	arp->hlen = dev->addr_len;
-	arp->plen = IPV4_ADDR_LENGTH;
-	arp->oper = htons(type);
-	memcpy (arp->sha, src_hw, ETH_ALEN);
-	memcpy (arp->tha, dest_hw, ETH_ALEN);
-	arp->spa = src_ip;
-	arp->tpa = dest_ip;
+	arp->ar_hrd = htons(ARPHRD_ETHER);
+	arp->ar_pro = htons(ETH_P_IP);
+	arp->ar_hln = dev->addr_len;
+	arp->ar_pln = IPV4_ADDR_LENGTH;
+	arp->ar_op = htons(type);
+	memcpy (arp->ar_sha, src_hw, ETH_ALEN);
+	memcpy (arp->ar_tha, dest_hw, ETH_ALEN);
+	arp->ar_sip = src_ip;
+	arp->ar_tip = dest_ip;
 
 	return pack;
 }
@@ -194,7 +194,7 @@ static int received_resp(sk_buff_t *pack) {
 
 	//TODO need add function for getting ip addr
 #if 0
-	if (inet_dev_get_ipaddr(pack->ifdev) != arp->tpa) {
+	if (inet_dev_get_ipaddr(pack->ifdev) != arp->ar_tip) {
 		return -1;
 	}
 #endif
@@ -206,8 +206,8 @@ static int received_resp(sk_buff_t *pack) {
  */
 static int received_req(sk_buff_t *pack) {
 	arphdr_t *arp = pack->nh.arph;
-	arp_send(ARPOP_REPLY, ETH_P_ARP, arp->spa, pack->dev,
-	                        arp->tpa, pack->mac.ethh->h_source, pack->dev->dev_addr, NULL);
+	arp_send(ARPOP_REPLY, ETH_P_ARP, arp->ar_sip, pack->dev,
+	                        arp->ar_tip, pack->mac.ethh->h_source, pack->dev->dev_addr, NULL);
 	return 0;
 }
 
@@ -220,11 +220,11 @@ static int arp_process(sk_buff_t *pack) {
 	struct in_device *in_dev = in_dev_get(dev);
 	arphdr_t *arp = pack->nh.arph;
 
-	if (ipv4_is_loopback(arp->tpa) || ipv4_is_multicast(arp->tpa)) {
+	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)) {
 		return 0;
 	}
 
-	switch(arp->oper) {
+	switch(arp->ar_op) {
 	case htons(ARPOP_REPLY):
 		ret = received_resp(pack);
 		break;
@@ -235,18 +235,18 @@ static int arp_process(sk_buff_t *pack) {
                 ret = 0;
         }
         /* add record into arp_tables */
-        arp_add_entity(in_dev, arp->spa, arp->sha);
+        arp_add_entity(in_dev, arp->ar_sip, arp->ar_sha);
         return ret;
 }
 
 int arp_rcv(sk_buff_t *pack, net_device_t *dev,
                    packet_type_t *pt, net_device_t *orig_dev) {
 	arphdr_t *arp = pack->nh.arph;
-	if (arp->hlen != dev->addr_len ||
+	if (arp->ar_hln != dev->addr_len ||
 	    dev->flags & IFF_NOARP ||
 	    pack->pkt_type == PACKET_OTHERHOST ||
 	    pack->pkt_type == PACKET_LOOPBACK ||
-	    arp->plen != 4) {
+	    arp->ar_pln != 4) {
 	        kfree_skb(pack);
 	        return 0;
 	}
