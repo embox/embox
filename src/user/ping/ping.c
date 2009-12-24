@@ -81,7 +81,7 @@ static int exec(int argsc, char **argsv) {
 	unsigned packsize = 0x38;
 	int timeout = 1;
 	int interval = 0;
-	unsigned short pattern;
+	int pattern = 0xff;
 	int ttl     = 64;
 	int quiet   = 0;
 	void *ifdev = inet_dev_find_by_name("eth0");
@@ -147,6 +147,6 @@ static int exec(int argsc, char **argsv) {
         }
 	//carry out command
 	ping(ifdev, dst, cnt, timeout*1000, ttl, quiet, packsize,
-						    interval*1000, pattern);
+						    interval*1000, (__u16)pattern);
 	return 0;
 }

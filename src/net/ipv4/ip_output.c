@@ -21,6 +21,12 @@ void __init ip_init(void) {
         ip_rt_init();
 }
 
+/* Generate a checksum for an outgoing IP datagram. */
+inline void ip_send_check(iphdr_t *iph) {
+        iph->check = 0;
+        iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE);
+}
+
 int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
 		in_addr_t daddr) {
@@ -35,8 +41,7 @@ int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
 	hdr->tos = 0;
 	hdr->frag_off = IP_DF;
 	hdr->proto = proto;
-	hdr->check = 0;
-	hdr->check = ptclbsum(pack->nh.raw, IP_HEADER_SIZE);
+	ip_send_check(hdr);
 	return 0;
 }
 
@@ -47,8 +52,9 @@ static int build_ip_packet(struct inet_sock *sk, sk_buff_t *pack) {
 	return 0;
 }
 
-int ip_queue_xmit(struct sk_buff *skb) {
+int ip_queue_xmit(sk_buff_t *skb) {
 	//TODO:
+	skb->nh.iph->ttl      = 64;
 	dev_queue_xmit(skb);
 }
 
@@ -58,4 +64,14 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *pack) {
 	pack->len += IP_HEADER_SIZE;
 	ip_route(pack);
 	return ip_queue_xmit(pack);
+}
+
+void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
+			    sk_buff_t *pack, unsigned int len) {
+	pack->nh.iph->saddr = saddr;
+        pack->nh.iph->daddr = daddr;
+        pack->nh.iph->id ++;
+        pack->nh.iph->frag_off = IP_DF;
+        ip_send_check(pack->nh.iph);
+	ip_queue_xmit(pack);
 }

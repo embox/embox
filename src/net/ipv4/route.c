@@ -62,7 +62,8 @@ int ip_route(sk_buff_t *skbuff) {
 		if (rt_table[i].rt_flags & RTF_UP) {
 			if( (skbuff->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
 				skbuff->dev = rt_table[i].dev;
-				//arp_find(skbuff, rt_table[i].rt_gateway);
+				skbuff->nh.iph->daddr = rt_table[i].rt_gateway;
+				arp_find(skbuff->mac.ethh->h_dest, skbuff);
 				return 0;
 			}
 		}

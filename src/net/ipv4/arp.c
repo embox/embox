@@ -23,21 +23,36 @@ arp_table_t arp_tables[ARP_CACHE_SIZE];
 
 #define ARP_TABLE_SIZE array_len(arp_tables)
 
+#define ARP_TIMER_ID 12
+#define ARP_GAP      500
+
 static struct packet_type arp_packet_type = {
         .type = ETH_P_ARP,
         .func = arp_rcv,
 };
 
+void arp_update() {
+	int i;
+	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
+		arp_tables[i].ctime++;
+		if( arp_tables[i].state == 1 &&
+		    arp_tables[i].ctime >= ARP_ALIVE) {
+			arp_tables[i].state = 0;
+		}
+	}
+}
+
 void __init arp_init() {
         dev_add_pack(&arp_packet_type);
+        set_timer(ARP_TIMER_ID, ARP_GAP, arp_update);
 }
 
 static inline int find_entity(in_device_t *in_dev, in_addr_t dst_addr) {
 	int i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
-		if(arp_tables[i].is_busy &&
-		  (arp_tables[i].pw_addr == dst_addr) &&
-		  (in_dev == arp_tables[i].if_handler)) {
+		if((arp_tables[i].state == 1) &&
+		   (arp_tables[i].pw_addr == dst_addr) &&
+		   (in_dev == arp_tables[i].if_handler)) {
 			return i;
 		}
 	}
@@ -57,10 +72,11 @@ int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr
 		return i;
 	}
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
-		if(0 == arp_tables[i].is_busy) {
-			arp_tables[i].is_busy = 1;
+		if(arp_tables[i].state == 0) {
 			arp_tables[i].if_handler = in_dev;
 			arp_tables[i].pw_addr = ipaddr;
+			arp_tables[i].ctime = 0;
+			arp_tables[i].state = 1;
 			memcpy(arp_tables[i].hw_addr, macaddr, ETH_ALEN);
 			return i;
 		}
@@ -81,7 +97,7 @@ int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *maca
 		if( arp_tables[i].pw_addr == ipaddr ||
         	    0 == memcmp(arp_tables[i].hw_addr, macaddr, ETH_ALEN) ||
         	    in_dev == arp_tables[i].if_handler) {
-			arp_tables[i].is_busy = 0;
+			arp_tables[i].state = 0;
     		}
 	}
 	return -1;
@@ -155,12 +171,6 @@ void arp_send(int type, int ptype, in_addr_t dest_ip,
 	arp_xmit(pack);
 }
 
-/**
- * resolve ip address and rebuild net_packet
- * @param pack pointer to net_packet struct
- * @param dst_addr IP address
- * @return pointer to net_packet struct if success else NULL
- */
 int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	net_device_t *dev = pack->dev;
 	iphdr_t *ip = pack->nh.iph;
@@ -248,7 +258,7 @@ int arp_rcv(sk_buff_t *pack, net_device_t *dev,
 	    pack->pkt_type == PACKET_LOOPBACK ||
 	    arp->ar_pln != 4) {
 	        kfree_skb(pack);
-	        return 0;
+	        return NET_RX_SUCCESS;
 	}
 
 	return arp_process(pack);

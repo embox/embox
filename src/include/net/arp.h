@@ -17,13 +17,15 @@
  * struct for arp_table_records
  */
 typedef struct arp_table {
-    unsigned char hw_addr[ETH_ALEN];                   /**< hardware addr */
-    in_addr_t     pw_addr;                             /**< protocol addr */
-    in_device_t   *if_handler;                         /**< inet device */
-    unsigned char is_busy;                             /**< internal flag that this entry is used */
+    unsigned char hw_addr[ETH_ALEN];  /**< hardware addr */
+    in_addr_t     pw_addr;            /**< protocol addr */
+    in_device_t   *if_handler;        /**< inet device */
+    unsigned char ctime;              /**< time to alive */
+    unsigned char state;
 } arp_table_t;
 
-#define ARP_CACHE_SIZE         0x100                   /** arp table capacity */
+#define ARP_CACHE_SIZE    0x100                   /** arp table capacity */
+#define ARP_ALIVE         24
 
 extern arp_table_t arp_tables[ARP_CACHE_SIZE];           /** arp table */
 
@@ -44,7 +46,7 @@ static int arp_rcv(sk_buff_t *pack, net_device_t *dev,
 /**
  * resolve ip address and rebuild net_packet
  * @param pack pointer to net_packet struct
- * @param dst_addr IP address
+ * @param haddr MAC address
  * @return pointer to net_packet struct if success else NULL *
  */
 extern int arp_find(unsigned char *haddr, sk_buff_t *pack);

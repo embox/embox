@@ -33,21 +33,21 @@ int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 	if (iph->ihl < 5 || iph->version != 4) {
 		LOG_ERROR("invalide IPv4 header\n");
 		stats->rx_err += 1;
-		return -1;
+		return NET_RX_DROP;
 	}
 	unsigned short tmp = iph->check;
 	iph->check = 0;
 	if (tmp != ptclbsum(pack->nh.raw, IP_HEADER_SIZE)) {
 		LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors += 1;
-		return -1;
+		return NET_RX_DROP;
 	}
 
 	unsigned int len = ntohs(iph->tot_len);
 	if (pack->len < len || len < (iph->ihl * 4)) {
 		LOG_ERROR("invalide IPv4 header length\n");
 		stats->rx_length_errors += 1;
-		return -1;
+		return NET_RX_DROP;
 	}
 	/**
 	 * Check the destination address, and if it dosn't match
@@ -65,5 +65,5 @@ int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 	if (UDP_PROTO_TYPE == iph->proto) {
 		udp_rcv(pack);
 	}
-	return 0;
+	return NET_RX_SUCCESS;
 }

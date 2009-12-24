@@ -129,19 +129,14 @@ int netif_rx(struct sk_buff *pack) {
         }
         pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
 
-#if 0
-        //now we have not ifdev field in skb
-        if (NULL == (pack->ifdev = inet_dev_find_by_name(pack->dev->name))) {
-                LOG_ERROR("wrong interface name during receiving packet\n");
-                kfree_skb(pack);
-                return NET_RX_DROP;
-        }
-#endif
         struct list_head *head;
         struct packet_type *q;
+        int rc_rx;
         list_for_each_entry(q, &ptype_base, list) {
                 if(q->type == pack->protocol) {
-                        q->func(pack, dev, q, NULL);
+                        rc_rx = q->func(pack, dev, q, NULL);
+                        kfree_skb(pack);
+                        return rc_rx;
                 }
         }
 #if 0
@@ -158,9 +153,6 @@ int netif_rx(struct sk_buff *pack) {
                 }
         }
 #endif
-        //free packet
-        kfree_skb(pack);
-        return NET_RX_SUCCESS;
 }
 
 void dev_add_pack(struct packet_type *pt) {

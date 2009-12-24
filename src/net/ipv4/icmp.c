@@ -203,18 +203,9 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb) {
 	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
 	pack->h.icmph->checksum = 0;
 	pack->h.icmph->checksum = ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE );
-	//TODO:
-//      rebuild_ip_header(pack, 64, ICMP_PROTO_TYPE, pack->nh.iph->id++, pack->nh.iph->len,
-//                          icmp_param->skb->nh.iph->saddr, icmp_param->skb->nh.iph->daddr);
-	pack->nh.iph->saddr = icmp_param->skb->nh.iph->daddr;
-	pack->nh.iph->daddr = icmp_param->skb->nh.iph->saddr;
-	pack->nh.iph->id ++;
-	pack->nh.iph->ttl      = 64;
-	pack->nh.iph->frag_off = 0;
-	pack->nh.iph->check    = 0;
-	pack->nh.iph->check    = ptclbsum(pack->nh.raw, IP_HEADER_SIZE);
 
-	dev_queue_xmit(pack);
+	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
+			    icmp_param->skb->nh.iph->saddr, pack, 0);
 }
 
 /**
@@ -251,6 +242,7 @@ int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
 	pack->dev = ((in_device_t*)in_dev)->dev;
 	build_icmp_packet(pack, ICMP_ECHO, 0, ttl, inet_dev_get_ipaddr(in_dev),
 				dstaddr, seq, /*id*/0);
+	memset(pack->h.raw + ICMP_HEADER_SIZE, pattern, size);
 	pack->protocol = ETH_P_IP;
 
 	if (-1 == callback_alloc(callback, in_dev, pack->nh.iph->id,

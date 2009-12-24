@@ -49,7 +49,6 @@ void __init skb_init() {
 
 	int i;
 	for (i = 1; i < array_len(sk_buff_pool); i ++) {
-		//kfree_skb(&sk_buff_pool[i]); <-- What for?
 		list_add((struct list_head *)&sk_buff_pool[i], &head_free_skb);
 	}
 	for (i = 1; i < array_len(sk_queue_pool); i ++) {
