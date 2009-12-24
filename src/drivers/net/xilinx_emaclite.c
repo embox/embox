@@ -14,6 +14,7 @@
 #include <net/etherdevice.h>
 #include <asm/spin_lock.h>
 #include <common.h>
+#include <string.h>
 
 DECLARE_MODULE("Ethernet Emac lite", module_init)
 
@@ -43,6 +44,9 @@ DECLARE_MODULE("Ethernet Emac lite", module_init)
 /* Global Interrupt Enable Register (GIER) Bit Masks */
 #define XEL_GIER_GIE_MASK	0x80000000 	/* Global Enable */
 
+/* Transmit Packet Length Register (TPLR) */
+#define XEL_TPLR_LENGTH_MASK	0x0000FFFF 	/* Tx packet length */
+
 typedef struct mdio_regs {
 	uint32_t regs;
 } mdio_regs_t;
@@ -69,8 +73,9 @@ static pingpong_regs_t *current_tx_regs = NULL;
 
 #define GIE_REG      (&emaclite->tx_ping)->gie
 #define RX_PACK      ((uint8_t *)current_rx_regs->pack)
-#define TX_PACK      (current_tx_regs->pack)
+#define TX_PACK      ((uint8_t *)current_tx_regs->pack)
 #define TX_LEN_REG   current_tx_regs->len
+#define TX_CTRL_REG  current_tx_regs->ctrl
 #define RX_CTRL_REG  current_rx_regs->ctrl
 
 static void switch_rx_buff() {
@@ -101,10 +106,8 @@ static void switch_tx_buff() {
 
 static void restart_buff() {
 	switch_tx_buff();
-	TRACE("emaclite->tx_len addr = 0x%X\n", &TX_LEN_REG);
 	TX_LEN_REG = 0;
 	switch_tx_buff();
-	TRACE("emaclite->tx_len addr = 0x%X\n", &TX_LEN_REG);
 	TX_LEN_REG = 0;
 }
 
@@ -120,28 +123,38 @@ static pingpong_regs_t *get_rx_buff() {
 }
 
 static uint8_t etherrxbuff[PKTSIZE]; /* Receive buffer */
-
-/**
- * Send a packet on this device.
- */
-static int start_xmit(struct sk_buff *pack, struct net_device *dev) {
-	TRACE("xmit\n");
-	return -1;
-}
 //FIXME bad function (may be use if dest and src align 4)
 static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 	size_t lenw = (size_t)((len & (~3)) >> 2);
 	volatile uint32_t *srcw = (uint32_t*)((uint32_t )(src) & (~3));
 
-	//TRACE("l =0x%X\tlenw 0x%X\tsrc = 0x%X\tdest = 0x%X\n",len, lenw, srcw, dest);
 	while (lenw --) {
-		//TRACE("s 0x%X\t", *srcw);
 		*dest++ = *srcw++;
-		//TRACE("d 0x%X\n", *dest);
 	}
 	if (len & (~3)) {
 		*dest++ = *srcw++;
 	}
+}
+
+/**
+ * Send a packet on this device.
+ */
+static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
+	if ((NULL == skb) || (NULL == dev)) {
+		return -1;
+	}
+
+	if (0 != (TX_CTRL_REG & XEL_TSR_XMIT_BUSY_MASK)) {
+		switch_tx_buff();
+		if (0 != (TX_CTRL_REG & XEL_TSR_XMIT_BUSY_MASK)) {
+			return -1; /*transmitter is busy*/
+		}
+	}
+	memcpy32((uint32_t*)TX_PACK, skb->data, skb->len);
+	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
+	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
+
+	return skb->len;
 }
 
 /**
@@ -155,21 +168,20 @@ static void pack_receiving(void *dev_id) {
 	/* Get the protocol type of the ethernet frame that arrived */
 	tmp = *(volatile uint32_t *) ( RX_PACK + 0xC);
 	proto_type = (tmp >> 0x10) & 0xFFFF;
-	TRACE("proto = 0x%X\n", proto_type);
+
 
 	/* Check if received ethernet frame is a raw ethernet frame
 	 * or an IP packet or an ARP packet */
 	switch (proto_type) {
 		case ETH_P_IP: {
 			len
-					= (((*(volatile uint32_t *) &(((struct ethhdr *)(RX_PACK))->h_proto)))
+					= (((*(volatile uint32_t *) (RX_PACK + 0x10)))
 							>> 16) & 0xFFFF;
 			len += ETH_HLEN + ETH_FCS_LEN;
 			break;
 		}
 		case ETH_P_ARP: {
 			len = 28 + ETH_HLEN + ETH_FCS_LEN;
-			TRACE("arp len = 0x%X\n", len);
 			break;
 		}
 		default: {
@@ -179,7 +191,7 @@ static void pack_receiving(void *dev_id) {
 			break;
 		}
 	}
-	TRACE("arp len = 0x%X\n", len);
+
 	/* Read from the EmacLite device */
 
 	skb = alloc_skb(len + 4, 0);
@@ -197,11 +209,9 @@ static void pack_receiving(void *dev_id) {
 
 	skb->mac.ethh = (ethhdr_t *) skb->data;
 	skb->protocol = skb->mac.ethh->h_proto;
-	TRACE("skb->protocol = 0x%X\n", skb->protocol);
 
 	skb->dev = dev_id;
 	netif_rx(skb);
-
 }
 
 /**
@@ -212,6 +222,8 @@ static void irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
 		pack_receiving(dev_id);
 	}
 }
+/*default 00-00-5E-00-FA-CE*/
+const unsigned char default_mac [ETH_ALEN] = {0x00, 0x00, 0x5E, 0x00, 0xFA,0xCE};
 
 static int open(net_device_t *dev) {
 	if (NULL == dev) {
@@ -227,6 +239,7 @@ static int open(net_device_t *dev) {
 
 	restart_buff();
 	/* Copy MAC address */
+	memcpy(dev->dev_addr, default_mac, ETH_ALEN);
 #if 0
 	/*default 00-00-5E-00-FA-CE*/
 	set_mac_address(dev, dev->hw_addr);
@@ -286,7 +299,6 @@ static const struct net_device_ops _netdev_ops = {
 
 static int module_init() {
 	/*if some module lock irq number we break initializing*/
-
 	net_device_t *net_device;
 	/*initialize net_device structures and save information about them to local massive*/
 	if (NULL != (net_device = alloc_etherdev(0))) {
@@ -294,11 +306,9 @@ static int module_init() {
 		net_device->irq = XILINX_EMACLITE_IRQ_NUM;
 		net_device->base_addr = XILINX_EMACLITE_BASEADDR;
 	}
-	TRACE("net_dev = 0x%X\n", net_device);
+
 	if (-1 == request_irq(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0, "xilinx emaclite", net_device )) {
 		return -1;
 	}
-
-	TRACE("net_dev = 0x%X\tirq = %d\n", net_device, XILINX_EMACLITE_IRQ_NUM);
-
+	return 0;
 }
