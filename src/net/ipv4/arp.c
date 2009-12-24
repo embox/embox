@@ -230,7 +230,9 @@ static int arp_process(sk_buff_t *pack) {
 	struct in_device *in_dev = in_dev_get(dev);
 	arphdr_t *arp = pack->nh.arph;
 
-	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)) {
+	if (ipv4_is_loopback(arp->ar_tip) ||
+	    ipv4_is_multicast(arp->ar_tip) ||
+	    arp->ar_tip != in_dev_get(pack->dev)->ifa_address) {
 		return 0;
 	}
 
