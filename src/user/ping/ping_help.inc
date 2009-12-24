@@ -13,8 +13,6 @@
 "    -I interface                                          \n"
 "        Set source address to specified interface address.\n"
 "              by default: eth0                            \n"
-"    -d addr                                               \n"
-"        Destination ip address of host.                   \n"
 "    -c count                                              \n"
 "        Stop after sending count ECHO_REQUEST packets.    \n"
 "              by default: 4 (-1 infinity)                 \n"

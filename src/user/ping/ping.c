@@ -30,7 +30,7 @@ static void callback(struct sk_buff *pack) {
 	has_responsed = true;
 }
 
-static int ping(void *ifdev, struct in_addr dst, int cnt, int timeout, int ttl,
+static int ping(in_device_t *ifdev, struct in_addr dst, int cnt, int timeout, int ttl,
 	    int quiet, unsigned packsize, int interval, unsigned short pattern) {
 	char *dst_b = inet_ntoa(dst);
 	printf("PING %s %d bytes of data.\n", dst_b, packsize);
@@ -84,7 +84,7 @@ static int exec(int argsc, char **argsv) {
 	int pattern = 0xff;
 	int ttl     = 64;
 	int quiet   = 0;
-	void *ifdev = inet_dev_find_by_name("eth0");
+	in_device_t *ifdev = inet_dev_find_by_name("eth0");
 	struct in_addr dst;
 	int nextOption;
 	getopt_init();

@@ -92,7 +92,7 @@ void __init devinet_init(void) {
 }
 
 in_device_t *in_dev_get(const net_device_t *dev) {
-	return (in_device_t *)inet_dev_find_by_name(dev->name);
+	return inet_dev_find_by_name(dev->name);
 }
 
 int inet_dev_listen(in_device_t *dev, unsigned short type,
@@ -113,7 +113,7 @@ net_device_t *ip_dev_find(in_addr_t addr) {
         return NULL;
 }
 
-void *inet_dev_find_by_name(const char *if_name) {
+in_device_t *inet_dev_find_by_name(const char *if_name) {
         int i;
         for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
                 if (0 == strncmp(if_name, ifs_info[i].dev.dev->name,
@@ -248,16 +248,16 @@ int ifdev_up(const char *iname) {
 }
 
 int ifdev_down(const char *iname) {
-        in_device_t *ifhandler;
-        if (NULL == (ifhandler = inet_dev_find_by_name(iname))) {
+        in_device_t *in_dev;
+        if (NULL == (in_dev = inet_dev_find_by_name(iname))) {
                 LOG_ERROR("ifdev down: can't find ifdev with name\n", iname);
                 return -1;
         }
-        if (NULL == (ifhandler->dev)) {
+        if (NULL == (in_dev->dev)) {
                 LOG_ERROR("ifdev down: can't find net_device with name\n", iname);
                 return -1;
         }
-        return dev_close(ifhandler->dev);
+        return dev_close(in_dev->dev);
 }
 
 int ifdev_set_debug_mode(const char *iname, unsigned int type_filter) {

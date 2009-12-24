@@ -20,7 +20,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
 	int nextOption;
-	void *ifdev;
+	in_device_t *ifdev;
 	in_addr_t net  = INADDR_ANY;
 	in_addr_t mask = INADDR_ANY;
 	in_addr_t gw   = INADDR_ANY;
@@ -55,12 +55,12 @@ static int exec(int argsc, char **argsv) {
 	} while(-1 != nextOption);
 
 	if(!strcmp(argsv[argsc - 1], "add")) {
-		in_device_t *idev = (struct in_device*)ifdev;
+		in_device_t *idev = ifdev;
 		int flags = (gw == INADDR_ANY) ? RTF_UP : RTF_UP|RTF_GATEWAY;
 		rt_add_route(idev->dev, net, mask, gw, flags);
 		return 0;
 	} else if(!strcmp(argsv[argsc - 1], "del")) {
-		in_device_t *idev = (struct in_device*)ifdev;
+		in_device_t *idev = ifdev;
 		rt_del_route(idev->dev, net, mask, gw);
 	} else {
 		printf("Destination\t\tGateway   \t\tGenmask   \t\tFlags\tIface\n");

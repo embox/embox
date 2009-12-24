@@ -45,7 +45,7 @@ static int exec(int argsc, char **argsv) {
 	int nextOption;
 	struct in_addr addr;
 	unsigned char hwaddr[ETH_ALEN];
-	void *ifdev = NULL;
+	in_device_t *ifdev = NULL;
 	int op = -1;
 	getopt_init();
 	do {

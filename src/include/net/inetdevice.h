@@ -50,7 +50,7 @@ extern struct net_device *ip_dev_find(in_addr_t addr);
  * Get inet_devive by name
  * @param if_name - interface name
  */
-extern void *inet_dev_find_by_name(const char *if_name);
+extern in_device_t *inet_dev_find_by_name(const char *if_name);
 
 /**
  * set all config value for pointed interface
@@ -58,8 +58,8 @@ extern void *inet_dev_find_by_name(const char *if_name);
  * @param ipaddr - ip devices address
  * @param macaddr - MAC devices address
  */
-extern int inet_dev_set_interface(const char *name, const in_addr_t ipaddr, const in_addr_t mask,
-						    const unsigned char *macaddr);
+extern int inet_dev_set_interface(const char *name, const in_addr_t ipaddr,
+			    const in_addr_t mask, const unsigned char *macaddr);
 
 /**
  * Set IP address (sw)
