@@ -20,9 +20,9 @@ HOST=10.0.3.97
 IMG_PATH=/home/$USER
 DSA_KEY_FILE=~/.ssh/id2_dsa
 
-#if [ ! -e $AUTOCONF -a ! -e $AUTOCONF2 ]; then
-#    make mconfig
-#else
+if [ ! -d conf ]; then
+    make TEMPLATE=sparc config
+else
     make clean
     make
     if [ -e $BIN_DIR/$MONITOR_ROM ]; then
@@ -58,4 +58,4 @@ DSA_KEY_FILE=~/.ssh/id2_dsa
 	fi
     fi
     svn diff > diff.log
-#fi
+fi
