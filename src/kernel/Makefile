@@ -4,5 +4,6 @@ OBJS-$(MONITOR_KERNEL) += main.o
 OBJS-$(MONITOR_KERNEL) += irq.o
 OBJS-$(MONITOR_KERNEL) += timers_common.o
 OBJS-$(MONITOR_KERNEL) += init.o
+OBJS-$(MONITOR_KERNEL) += softirq.o
 
 include $(SCRIPTS_DIR)/common.mk

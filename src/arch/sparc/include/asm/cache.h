@@ -1,7 +1,8 @@
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
-
+//TODO may be put it in config file
+#define CACHE_LINE_LENGTH    32
 
 inline static void cache_set_ctrl_reg(unsigned int ctrl_reg){
     __asm__ __volatile__ ("flush\n\t"
