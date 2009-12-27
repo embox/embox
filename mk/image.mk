@@ -4,29 +4,37 @@
 
 include $(MK_DIR)/traverse.mk
 
-CC=$(CROSS_COMPILE)gcc
-AR=$(CROSS_COMPILE)ar
+CC     =$(CROSS_COMPILE)gcc
+AR     =$(CROSS_COMPILE)ar
+AS     =$(CROSS_COMPILE)as
+OBJDUMP=$(CROSS_COMPILE)objdump
+OBJCOPY=$(CROSS_COMPILE)objcopy
 
-OD_TOOL=$(CROSS_COMPILE)objdump
-OC_TOOL=$(CROSS_COMPILE)objcopy
+# Expand user defined flags and append them after default ones.
 
-CPPFLAGS=
+# Preprocessor flags
+cppflags:=$(CPPFLAGS)
+CPPFLAGS =
 CPPFLAGS+=-I$(SRC_DIR)/include
 CPPFLAGS+=-I$(SRC_DIR)/arch/$(ARCH)/include
 CPPFLAGS+=-nostdinc
 CPPFLAGS+=-MMD# -MT $@ -MF $(@:.o=.d)
-CPPFLAGS+=$(_CPPFLAGS)# User defined preprocessor flags
+CPPFLAGS+=$(cppflags)
 
-CFLAGS=
+# Compiler flags
+cflags:=$(CFLAGS)
+CFLAGS =
 CFLAGS+=-Werror
 CFLAGS+=-pipe
-CFLAGS+=$(_CFLAGS)# User defined compiler flags
+CFLAGS+=$(cflags)
 
-LDFLAGS=
+# Linker flags
+ldflags:=$(LDFLAGS)
+LDFLAGS =
 LDFLAGS+=-static
 LDFLAGS+=-nostdlib
 LDFLAGS+=-T $(LDSCRIPT)
-LDFLAGS+=$(_LDFLAGS)# User defined linker flags
+LDFLAGS+=$(ldflags)
 
 LDLIBS=-L$(LIB_DIR) -l$(LIB_NAME)
 
@@ -40,6 +48,12 @@ LDSCRIPT =$(OBJ_DIR)/arch/$(ARCH)/embox.lds
 IMAGE=$(BIN_DIR)/$(TARGET)
 IMAGE_DIS =$(BIN_DIR)/$(TARGET).dis
 IMAGE_SREC=$(BIN_DIR)/prom.srec
+
+# Just for better output readability.
+define NEW_LINE
+
+
+endef
 
 # Clear some variables.
 # Switch them to immediate expansion mode to be able to use += operator later.
@@ -76,24 +90,26 @@ TRGS_ALL:=$(strip $(TRGS_ALL))
 TRGS_ALL+=$(BUILDCONF_DIR)/config.h
 
 $(OBJ_DIR)/%.o::$(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) \
+	-c -o $@ $<
 
 $(OBJ_DIR)/%.o::$(SRC_DIR)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) \
+	-c -o $@ $<
 
 $(IMAGE): $(TRGS_ALL) $(OBJS_ALL) $(LIBC)
-	@echo ' '
-	$(CC) $(LDFLAGS) $(OBJS_ALL) $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) \
+ $(patsubst %,	% \$(NEW_LINE),$(OBJS_ALL)) $(LDLIBS) -o $@
 
 $(LIBC): $(LIBS_ALL)
-	@echo ' '
-	$(AR) $(ARFLAGS) $@ $^
+	$(AR) $(ARFLAGS) $@ \
+ $(patsubst %,	% \$(NEW_LINE),$^)
 
 $(IMAGE_DIS): $(IMAGE)
-	$(OD_TOOL) -S $< > $@
+	$(OBJDUMP) -S $< > $@
 
 $(IMAGE_SREC): $(IMAGE)
-	$(OC_TOOL) -O srec $< $@
+	$(OBJCOPY) -O srec $< $@
 
 .PHONY: image
 image: $(IMAGE) $(IMAGE_SREC)
@@ -112,10 +128,10 @@ checksum:
 #	@if [ $(CHECKSUM) == y ]; \
 #	then \
 #	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
-#			-o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
+#			-o $(OBJCOPY) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD); \
 #	    declare -x MAKEOP=all G_DIRS=`cat include_dirs.lst`; \
 #			$(MAKE) --directory=src all; \
 #	else \
 #	    $(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
-#			-o $(OC_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean;\
+#			-o $(OBJCOPY) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean;\
 #	fi;

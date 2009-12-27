@@ -2,6 +2,9 @@
 # Author: Eldar Abusalimov
 #
 
+HOST_CC =gcc
+HOST_CPP=$(HOST_CC) -E
+
 CONF_FILES :=$(addsuffix .conf,common drivers fs lds net tests ugly usr)
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -32,7 +35,7 @@ CCFLAGS_config.h    :=
 $(addprefix $(BUILDCONF_DIR)/,config.mk config.lds.h config.h) : \
   $(MK_DIR)/confmacro.S $(addprefix $(CONF_DIR)/,$(CONF_FILES)) \
   | mkdir # mkdir shouldn't force target to be updated
-	gcc -E $(CCFLAGS_$(notdir $@)) -I$(CONF_DIR) -nostdinc -undef -Wp, -P $< \
+	$(HOST_CPP) $(CCFLAGS_$(notdir $@)) -I$(CONF_DIR) -nostdinc -undef -Wp, -P $< \
 		| sed 's/$$define/\n#define/g' | uniq > $@
 
 mkdir:
