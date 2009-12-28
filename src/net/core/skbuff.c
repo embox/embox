@@ -27,7 +27,7 @@ static LIST_HEAD(head_free_skb);
 static struct sk_buff_head sk_queue_pool[QUANTITY_SKB_QUEUE];
 static LIST_HEAD(head_free_queue);
 
-struct sk_buff_head *alloc_skb_queue() {
+struct sk_buff_head *alloc_skb_queue(int len) {
 	struct sk_buff_head *queue;
 	unsigned long sp = spin_lock();
 	if(list_empty(&head_free_queue)) {
@@ -40,6 +40,7 @@ struct sk_buff_head *alloc_skb_queue() {
 	queue = (struct sk_buff_head *)(&head_free_queue)->next;
 	list_del((&head_free_queue)->next);
 	spin_unlock(sp);
+	queue->qlen = len;
 	return queue;
 }
 

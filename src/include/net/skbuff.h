@@ -107,6 +107,11 @@ extern struct sk_buff *skb_clone(sk_buff_t *skb, gfp_t priority);
 extern struct sk_buff *skb_copy(const sk_buff_t *skb, gfp_t priority);
 
 /**
+ * allocate one instance of structure sk_buff_head.
+ */
+extern struct sk_buff_head *alloc_skb_queue(int qlen);
+
+/**
  * return head of queue allocated in alloc_skb_queue to the free queue pool
  * and give back all contained sk_buff in this list
  */

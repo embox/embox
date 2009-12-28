@@ -11,8 +11,8 @@
 #include <net/sock.h>
 #include <in.h>
 
-/** struct ip_options - IP Options
-*
+/**
+* IP Options
 * @faddr - Saved first hop address
 * @is_data - Options in __data, rather than skb
 * @is_strictroute - Strict source route
@@ -22,27 +22,26 @@
 * @ts_needtime - Need to record timestamp
 * @ts_needaddr - Need to record addr of outgoing dev
 */
-struct ip_options {
-    unsigned char   faddr;
-    unsigned char   optlen;
-    unsigned char   srr;
-    unsigned char   rr;
-    unsigned char   ts;
-    __extension__ unsigned char   is_strictroute:1,
-	srr_is_hit:1,
-	is_changed:1,
-	rr_needaddr:1,
-	ts_needtime:1,
-	ts_needaddr:1;
-    unsigned char   router_alert;
-    unsigned char   cipso;
-    unsigned char   __pad2;
-    __extension__ unsigned char   __data[0];
-};
+typedef struct ip_options {
+	in_addr_t       faddr;
+	unsigned char   optlen;
+	unsigned char   srr;
+	unsigned char   rr;
+	unsigned char   ts;
+	__extension__ unsigned char   is_strictroute:1,
+		srr_is_hit:1,
+		is_changed:1,
+		rr_needaddr:1,
+		ts_needtime:1,
+		ts_needaddr:1;
+	unsigned char   router_alert;
+	unsigned char   cipso;
+	unsigned char   __pad2;
+	__extension__ unsigned char __data[0];
+} ip_options_t;
 
-
-/** struct inet_sock - representation of INET sockets
- *
+/**
+* Representation of INET sockets
 * @sk - ancestor class
 * @pinet6 - pointer to IPv6 control block
 * @daddr - Foreign IPv4 addr
@@ -66,16 +65,15 @@ typedef struct inet_sock {
 
 	in_addr_t      daddr;
 	in_addr_t      rcv_saddr;
+	struct ip_options *opt;
+	__be16         dport;
+	__u16          num;
 	in_addr_t      saddr;
-	struct ip_options  *opt;
-	unsigned short sport;
-	unsigned char  uc_ttl;
-	unsigned char  num;
-
-	unsigned short dport;
-	unsigned short id;
-	unsigned char  tos;
-	unsigned char  mc_ttl;
+	__s16          uc_ttl;
+	__be16         sport;
+	__u16          id;
+	__u8           tos;
+	__u8           mc_ttl;
 } inet_sock_t;
 
 static inline inet_sock_t *inet_sk(const sock_t *sk) {

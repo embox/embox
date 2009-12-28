@@ -8,31 +8,28 @@
 #ifndef SOCKET_H_
 #define SOCKET_H_
 
-#include <net/sock.h>
 #include <net/skbuff.h>
 
-struct sockaddr {
-	unsigned short    sa_family;    /* address family, AF_xxx */
-	char               sa_data[14];  /* 14 bytes of protocol address */
-};
+typedef unsigned short  sa_family_t;
+
+typedef struct sockaddr {
+	sa_family_t    sa_family;    /* address family, AF_xxx */
+	char           sa_data[14];  /* 14 bytes of protocol address */
+} sockaddr_t;
 
 /* Supported address families. */
-#define AF_INET      2  /* Internet IP Protocol */
+#define AF_UNSPEC    0
+#define AF_UNIX      1  /* Unix domain sockets    */
+#define AF_LOCAL     1  /* POSIX name for AF_UNIX */
+#define AF_INET      2  /* Internet IP Protocol   */
+#define AF_MAX       3  /* For now.. */
 
 /* Protocol families, same as address families. */
+#define PF_UNSPEC    AF_UNSPEC
+#define PF_UNIX      AF_UNIX
+#define PF_LOCAL     AF_LOCAL
 #define PF_INET      AF_INET
-
-struct proto {
-        void (*close)(struct sock *sk, long timeout);
-        int  (*connect)(struct sock *sk, struct sockaddr *uaddr, int addr_len);
-        int  (*disconnect)(struct sock *sk, int flags);
-        struct sock *(*accept)(struct sock *sk, int flags, int *err);
-	int  (*init)(struct sock *sk);
-	int  (*sendmsg)(/*struct kiocb *iocb,*/ struct sock *sk,/* struct msghdr *msg,*/ size_t len);
-	int  (*recvmsg)(/*struct kiocb *iocb,*/ struct sock *sk,/* struct msghdr *msg,*/
-	                             size_t len, int noblock, int flags, int *addr_len);
-	int  (*bind)(struct sock *sk, struct sockaddr *uaddr, int addr_len);
-};
+#define PF_MAX       AF_MAX
 
 //TODO: move out of here
 int sock_init(void);
