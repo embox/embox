@@ -36,6 +36,7 @@ include $(MK_DIR)/image.mk
 .PHONY: all prepare docs clean config xconfig menuconfig mconfig
 
 all: check_config prepare image
+	@echo 'Build complete'
 
 prepare:
 	@mkdir -p $(BUILD_DIR)
@@ -78,6 +79,7 @@ else
 		|| mkdir -p $(CONF_DIR)
 	@cp -u -t $(CONF_DIR) $(addprefix $(TEMPLATES_DIR)/$(TEMPLATE)/,$(CONF_FILES))
 endif
+	@echo 'Config complete'
 
 menuconfig:
 #	@$(EDITOR) $(CONF_DIR)/config.mk

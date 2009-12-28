@@ -119,8 +119,6 @@ endif
 ifeq ($(CHECKSUM),y)
 image: checksum
 endif
-image:
-	@echo 'Build complete'
 
 .PHONY: checksum
 checksum:
