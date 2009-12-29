@@ -12,7 +12,8 @@
 #include <net/skbuff.h>
 
 /* ARP protocol HARDWARE identifiers. */
-#define ARPHRD_ETHER 	(unsigned short)0x1      /* Ethernet 10Mbps */
+#define ARPHRD_ETHER 	1      /* Ethernet 10Mbps */
+#define ARPHRD_LOOPBACK 772    /* Loopback device */
 
 /* ARP protocol opcodes. */
 #define	ARPOP_REQUEST	1		/* ARP request   */

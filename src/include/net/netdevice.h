@@ -110,7 +110,7 @@ typedef struct net_device {
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address                   */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address             */
 	unsigned long state;
-	unsigned char type; /**< interface hardware type      */
+	unsigned short type; /**< interface hardware type      */
 	unsigned char addr_len; /**< hardware address length      */
 	unsigned int flags; /**< interface flags (a la BSD)   */
 	unsigned mtu; /**< interface MTU value          */
