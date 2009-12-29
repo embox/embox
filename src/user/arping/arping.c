@@ -79,11 +79,11 @@ static int exec(int argsc, char **argsv) {
 		arp_send(ARPOP_REQUEST, ETH_P_ARP, dst.s_addr, in_dev->dev,
 		           in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
 		usleep(ARP_RES_TIME);
-//		if(-1 != (j = arp_lookup(in_dev, dst.s_addr))) {
-//			macaddr_print(mac, arp_tables[j].hw_addr);
-//			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
-//			cnt_resp++;
-//		}
+		if(-1 != (j = arp_lookup(in_dev, dst.s_addr))) {
+			macaddr_print(mac, arp_tables[j].hw_addr);
+			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
+			cnt_resp++;
+		}
 	}
 	printf("Sent %d probes (%d broadcast(s))\n", cnt, 1);
 	printf("Received %d response(s)\n", cnt_resp);

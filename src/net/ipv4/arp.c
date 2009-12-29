@@ -19,35 +19,60 @@
 #include <net/arp.h>
 #include <net/ip.h>
 
+/* RFC1122 Status:
+ *  2.3.2.1 (ARP Cache Validation):
+ *    MUST provide mechanism to flush stale cache entries
+ *    SHOULD be able to configure cache timeout
+ *    MUST throttle ARP retransmits
+ *  2.3.2.2 (ARP Packet Queue):
+ *    SHOULD save at least one packet from each "conversation" with an
+ *      unresolved IP address.
+ */
+
 arp_table_t arp_tables[ARP_CACHE_SIZE];
 
 #define ARP_TABLE_SIZE array_len(arp_tables)
 
 #define ARP_TIMER_ID 12
-#define ARP_GAP      500
 
 static struct packet_type arp_packet_type = {
         .type = ETH_P_ARP,
         .func = arp_rcv,
 };
 
-void arp_update() {
+/*
+ * Check if there are entries that are too old and remove them.
+ */
+static void arp_check_expire() {
 	int i;
+	close_timer(ARP_TIMER_ID);
 	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
 		arp_tables[i].ctime++;
 		if( arp_tables[i].state == 1 &&
-		    arp_tables[i].ctime >= ARP_ALIVE) {
+		    arp_tables[i].ctime >= ARP_TIMEOUT) {
 			arp_tables[i].state = 0;
 		}
 	}
+	set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
+}
+
+/* Queue an IP packet, while waiting for the ARP reply packet. */
+void arp_queue(sk_buff_t *skb) {
+	//TODO:
+}
+
+/* This will try to retransmit everything on the queue. */
+static void arp_send_q(void) {
+
 }
 
 void __init arp_init() {
         dev_add_pack(&arp_packet_type);
-        set_timer(ARP_TIMER_ID, ARP_GAP, arp_update);
+	//TODO: set timer and init queue
+        set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
 }
 
-static inline int find_entity(in_device_t *in_dev, in_addr_t dst_addr) {
+inline int arp_lookup(in_device_t *in_dev, in_addr_t dst_addr) {
 	int i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
 		if((arp_tables[i].state == 1) &&
@@ -68,7 +93,7 @@ static inline int find_entity(in_device_t *in_dev, in_addr_t dst_addr) {
  */
 int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr) {
 	int i;
-	if (-1 != (i = find_entity(in_dev, ipaddr))) {
+	if (-1 != (i = arp_lookup(in_dev, ipaddr))) {
 		return i;
 	}
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
@@ -179,7 +204,7 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	if (ip->daddr == INADDR_BROADCAST) {
 		return -1;
 	}
-	if(-1 != (i = find_entity(in_dev_get(dev), ip->daddr))) {
+	if(-1 != (i = arp_lookup(in_dev_get(dev), ip->daddr))) {
 		memcpy (pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
 		return 0;
 	}
@@ -187,12 +212,14 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 			    ip->saddr, NULL, dev->dev_addr, NULL);
 
 	//TODO delete this after processes will be added to monitor
+#if 0
 	usleep(500);
 
-	if (-1 != (i = find_entity(in_dev_get(dev), ip->daddr))) {
+	if (-1 != (i = arp_lookup(in_dev_get(dev), ip->daddr))) {
 		memcpy (pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
 		return 0;
 	}
+#endif
 	return -1;
 }
 
@@ -248,6 +275,7 @@ static int arp_process(sk_buff_t *pack) {
         }
         /* add record into arp_tables */
         arp_add_entity(in_dev, arp->ar_sip, arp->ar_sha);
+        arp_send_q();
         return ret;
 }
 
