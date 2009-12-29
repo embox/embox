@@ -33,12 +33,12 @@ void softirq_init(void) {
 	for (i = 0; i < HARDIRQ_BITS; i ++) {
 		if (local_softirq_pending() & mask) {
 			if (NULL != softirq_vec[i].action) {
+				local_softirq_pending() &= ~mask;
 				softirq_vec[i].action (softirq_vec[i].data);
 			}
 		}
 		mask = mask << 1;
 	}
-
 }
 
 void irq_exit(void) {
