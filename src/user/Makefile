@@ -4,6 +4,7 @@ SUBDIRS-y += cp
 SUBDIRS-y += expresstest
 SUBDIRS-y += goto
 SUBDIRS-y += help
+SUBDIRS-y += ifconfig
 SUBDIRS-y += ldimg
 SUBDIRS-y += lspnp
 SUBDIRS-y += man

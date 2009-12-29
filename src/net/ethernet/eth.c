@@ -92,6 +92,37 @@ int eth_change_mtu(net_device_t *dev, int new_mtu) {
         return 0;
 }
 
+int eth_flag_up(net_device_t *dev, int flag_type) {
+    dev->flags |= flag_type;
+    return 0;
+}
+
+int eth_flag_down(net_device_t *dev, int flag_type) {
+    dev->flags &= ~flag_type;
+    return 0;
+}
+
+int eth_set_irq(net_device_t *dev, int irq_num) {
+    dev->irq = irq_num;
+    return 0;
+}
+
+int eth_set_baseaddr(net_device_t *dev, unsigned long base_addr) {
+    dev->base_addr = base_addr;
+    return 0;
+}
+
+int eth_set_txqueuelen(net_device_t *dev, unsigned long new_len) {
+    dev->tx_queue_len = new_len;
+    return 0;
+}
+//here??
+int eth_set_broadcast_addr(net_device_t *dev, unsigned char broadcast_addr[]){
+    //not realized
+    LOG_ERROR("not realized\n");
+    return 0;
+}
+
 const struct header_ops eth_header_ops = {
         .create        = eth_header,
         .parse         = eth_header_parse,
