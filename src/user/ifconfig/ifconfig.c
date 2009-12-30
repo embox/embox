@@ -240,7 +240,7 @@ static int exec(int argsc, char **argsv) {
 	    inet_dev_set_interface(iname, ipaddr.s_addr, mask.s_addr, macaddr);
 	    in_dev = inet_dev_find_by_name(iname);
 	}
-	if (arp == 0) {
+	if (arp == 1) {
 	    eth_flag_up(in_dev->dev, IFF_NOARP);
 	} else {
 	    eth_flag_down(in_dev->dev, IFF_NOARP);
