@@ -71,6 +71,7 @@ typedef struct sk_buff {
         } mac;
         void (*destructor)(struct sk_buff *skb);
         unsigned char *data;
+        unsigned char tries;
 } sk_buff_t;
 
 typedef struct sk_buff_head {

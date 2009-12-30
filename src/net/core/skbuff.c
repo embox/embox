@@ -39,6 +39,7 @@ struct sk_buff_head *alloc_skb_queue(int len) {
 	 */
 	queue = (struct sk_buff_head *)(&head_free_queue)->next;
 	list_del((&head_free_queue)->next);
+	INIT_LIST_HEAD((struct list_head *)queue);
 	spin_unlock(sp);
 	queue->qlen = len;
 	return queue;

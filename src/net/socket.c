@@ -18,6 +18,25 @@
 #include <net/if_ether.h>
 #include <net/net_pack_manager.h>
 
+/**
+ * Allocate a new socket object.
+ */
+static struct socket *sock_alloc() {
+	struct socket *sock;
+	//TODO:
+	return sock;
+}
+
+/**
+ * Close a socket
+ */
+void sock_release(struct socket *sock) {
+	if (sock->ops) {
+		sock->ops->release(sock);
+		sock->ops = NULL;
+	}
+}
+
 int __init sock_init(void) {
         /* Initialize sock. */
         //sk_init();

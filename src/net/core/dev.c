@@ -103,12 +103,10 @@ int dev_queue_xmit(struct sk_buff *pack) {
 	}
 	const struct net_device_ops *ops = dev->netdev_ops;
 	net_device_stats_t *stats = ops->ndo_get_stats(dev);
-
 	if (dev->flags & IFF_UP) {
 		if (ETH_P_ARP != pack->protocol) {
 			if (-1 == dev->header_ops->rebuild(pack)) {
-				kfree_skb(pack);
-				stats->tx_err += 1;
+				arp_queue(pack);
 				return -1;
 			}
 		}
@@ -247,6 +245,7 @@ static void netif_rx_schedule(struct softirq_action* action) {
 	struct list_head *skb_h;
 	struct sk_buff *skb;
 	struct packet_type *q;
+	//FIXME: getting into a loop, bad ip checksum
 	list_for_each(skb_h, (struct list_head *)&netdev_skb_head) {
 		list_for_each_entry(q, &ptype_base, list) {
 			skb = (struct sk_buff *)skb_h;

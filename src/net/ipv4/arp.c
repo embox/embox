@@ -40,6 +40,8 @@ static struct packet_type arp_packet_type = {
         .func = arp_rcv,
 };
 
+static LIST_HEAD(arp_q);
+
 /*
  * Check if there are entries that are too old and remove them.
  */
@@ -58,17 +60,45 @@ static void arp_check_expire() {
 
 /* Queue an IP packet, while waiting for the ARP reply packet. */
 void arp_queue(sk_buff_t *skb) {
-	//TODO:
+	skb->tries = ARP_MAX_TRIES;
+	list_add(&arp_q, (struct list_head *)skb);
 }
 
 /* This will try to retransmit everything on the queue. */
 static void arp_send_q(void) {
+	struct list_head *skb_h;
+	struct sk_buff *skb;
+	net_device_t *dev;
+	const struct net_device_ops *ops;
+	net_device_stats_t *stats;
 
+	list_for_each(skb_h, (struct list_head *)&arp_q) {
+		skb = (struct sk_buff *)skb_h;
+		dev = skb->dev;
+                ops = dev->netdev_ops;
+                stats = ops->ndo_get_stats(dev);
+		skb->tries--;
+		if (skb->tries == 0) {
+			list_del(skb_h);
+                        kfree_skb(skb);
+                        stats->tx_err ++;
+                        continue;
+		}
+		if (-1 != dev->header_ops->rebuild(skb)) {
+			if(-1 == ops->ndo_start_xmit(skb, dev)) {
+				list_del(skb_h);
+				kfree_skb(skb);
+                    		stats->tx_err ++;
+			}
+			/* update statistic */
+            		stats->tx_packets ++;
+            		stats->tx_bytes += skb->len;
+		}
+	}
 }
 
 void __init arp_init() {
         dev_add_pack(&arp_packet_type);
-	//TODO: set timer and init queue
         set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
 }
 
@@ -211,15 +241,6 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev,
 			    ip->saddr, NULL, dev->dev_addr, NULL);
 
-	//TODO delete this after processes will be added to monitor
-#if 0
-	usleep(500);
-
-	if (-1 != (i = arp_lookup(in_dev_get(dev), ip->daddr))) {
-		memcpy (pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
-		return 0;
-	}
-#endif
 	return -1;
 }
 
