@@ -105,7 +105,9 @@ static int exec(int argsc, char **argsv) {
 	unsigned char broadcastaddr[ETH_ALEN];
 	broadcastaddr[0] = 0;
 	int up = 0, down = 0, i = 0;
-	int arp = 0, promisc = 0, allmulti = 0, multicast = 0, mtu = 0;
+	int arp = 0, promisc = 0, allmulti = 0, multicast = 0, mtu = 0, p2p = 0;
+	struct in_addr p2paddr;
+	p2paddr.s_addr = 0;
 	unsigned int irq_num = 0;
 	unsigned long tx_queue_len = 0, base_addr = 0;
 	unsigned char iname[IFNAMSIZ];
@@ -113,7 +115,7 @@ static int exec(int argsc, char **argsv) {
         getopt_init();
         //and what about loopback, pointopoint and debug??
         do {
-                nextOption = getopt(argsc, argsv, "a:p:m:udx:r:f:c:g:l:b:i:t:w:h");
+                nextOption = getopt(argsc, argsv, "a:p:m:udx:r:f:c:g:l:b:i:t:w:z:h");
                 switch(nextOption) {
                 case 'h':   //++
                         show_help();
@@ -195,17 +197,24 @@ static int exec(int argsc, char **argsv) {
             	        return -1;
             	    }
             	    break;
-            	case 't':  //txqueuelen
+            	case 't':  //txqueuelen++
             	    if (1 != sscanf(optarg, "%d", &tx_queue_len)) {
             	        LOG_ERROR("wrong -t argument %s\n", optarg);
             	        return -1;
             	    }
             	    break;
-            	case 'w':
+            	case 'w':  //broadcast addr
                     if (NULL == macaddr_scan(optarg, broadcastaddr)) {
                          LOG_ERROR("wrong broadcast addr format %s\n", optarg);
                          return -1;
                      }
+            	    break;
+            	case 'z':  //pointopoint
+            	    if (0 == inet_aton(optarg, &p2paddr)){
+            	        p2p = 2;
+            	    } else {
+            	        p2p = 1;
+            	    }
             	    break;
             	case -1:
                     break;
@@ -281,6 +290,15 @@ static int exec(int argsc, char **argsv) {
 	        eth_set_broadcast_addr(in_dev->dev, broadcastaddr);    //??
 	        eth_flag_up(IFF_BROADCAST);
 	    }
+	}
+
+	if (p2p == 1) {
+	    eth_flag_up(in_dev->dev, IFF_POINTOPOINT);
+	} else if (p2p == 2){
+	    eth_flag_up(in_dev->dev, IFF_POINTOPOINT);
+	    // ?? not realized yet
+	} else {
+	    eth_flag_down(in_dev->dev, IFF_POINTOPOINT);
 	}
 
 	if( down == 1 ) {
