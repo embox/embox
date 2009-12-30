@@ -105,7 +105,7 @@ static int exec(int argsc, char **argsv) {
 	unsigned char broadcastaddr[ETH_ALEN];
 	broadcastaddr[0] = 0;
 	int up = 0, down = 0, i = 0;
-	int arp = 0, promisc = 0, allmulti = 0, multicast = 0, mtu = 0, p2p = 0;
+	int no_arp = 0, promisc = 0, allmulti = 0, multicast = 0, mtu = 0, p2p = 0;
 	struct in_addr p2paddr;
 	p2paddr.s_addr = 0;
 	unsigned int irq_num = 0;
@@ -156,7 +156,7 @@ static int exec(int argsc, char **argsv) {
             	    }
             	    break;
             	case 'r':  //arp
-            	    if (1 != sscanf(optarg, "%d", &arp)) {
+            	    if (1 != sscanf(optarg, "%d", &no_arp)) {
             	        LOG_ERROR("wrong -b argument %s\n", optarg);
             	        return -1;
             	    }
@@ -240,7 +240,7 @@ static int exec(int argsc, char **argsv) {
 	    inet_dev_set_interface(iname, ipaddr.s_addr, mask.s_addr, macaddr);
 	    in_dev = inet_dev_find_by_name(iname);
 	}
-	if (arp == 1) {
+	if (no_arp == 1) {
 	    eth_flag_up(in_dev->dev, IFF_NOARP);
 	} else {
 	    eth_flag_down(in_dev->dev, IFF_NOARP);
