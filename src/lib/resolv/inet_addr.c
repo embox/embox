@@ -61,6 +61,7 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 				digit = 1 ;
 			}
 		}
+		uint32_t temp;
 		for (;;) {
 			if (isdigit(c)) {
 				if (base == 8 && (c == '8' || c == '9'))
@@ -69,8 +70,9 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 				c = *++cp;
 				digit = 1;
 			} else if (base == 16 && isxdigit(c)) {
+			    temp = (islower(c) ? 'a' : 'A');
 				val = (val << 4) |
-					(c + 10 - (islower(c) ? 'a' : 'A'));
+					(c + 10 - temp /*(islower(c) ? 'a' : 'A')*/);
 				c = *++cp;
 				digit = 1;
 			} else {
