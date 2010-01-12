@@ -294,6 +294,7 @@ static int arp_process(sk_buff_t *pack) {
         default:
                 ret = 0;
         }
+        kfree_skb(pack);
         /* add record into arp_tables */
         arp_add_entity(in_dev, arp->ar_sip, arp->ar_sha);
         arp_send_q();

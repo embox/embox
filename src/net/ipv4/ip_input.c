@@ -61,6 +61,7 @@ int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 	}
 	if (ICMP_PROTO_TYPE == iph->proto) {
 		icmp_rcv(pack);
+		kfree_skb(pack);
 	}
 	if (UDP_PROTO_TYPE == iph->proto) {
 		udp_rcv(pack);
