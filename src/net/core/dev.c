@@ -141,11 +141,15 @@ int netif_rx(struct sk_buff *pack) {
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == pack->protocol) {
 #if CONFIG_SOFT_IRQ
-			list_add((struct list_head *)pack, &netdev_skb_head);
-			__raise_softirq_irqoff(NET_RX_SOFTIRQ);
-#else
-			rc_rx = q->func(pack, dev, q, NULL);
-			kfree_skb(pack);
+			if (ETH_P_ARP != pack->protocol) {
+				skb_queue_tail(&netdev_skb_head, pack);
+				__raise_softirq_irqoff(NET_RX_SOFTIRQ);
+			} else {
+#endif
+				rc_rx = q->func(pack, dev, q, NULL);
+				kfree_skb(pack);
+#if CONFIG_SOFT_IRQ
+			}
 #endif
 			return rc_rx;
 		}
