@@ -20,7 +20,7 @@
 int ip_rcv(sk_buff_t *pack, net_device_t *dev,
                       packet_type_t *pt, net_device_t *orig_dev) {
 	pack->h.raw = pack->nh.raw + IP_HEADER_SIZE;
-	net_device_stats_t *stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
+	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(pack->dev);
 	iphdr_t *iph = pack->nh.iph;
 	/**
 	 *   RFC1122: 3.1.2.2 MUST silently discard any IP frame that fails the checksum.
@@ -32,21 +32,21 @@ int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 	 */
 	if (iph->ihl < 5 || iph->version != 4) {
 		LOG_ERROR("invalide IPv4 header\n");
-		stats->rx_err += 1;
+		stats->rx_err ++;
 		return NET_RX_DROP;
 	}
 	unsigned short tmp = iph->check;
 	iph->check = 0;
 	if (tmp != ptclbsum(pack->nh.raw, IP_HEADER_SIZE)) {
 		LOG_ERROR("bad ip checksum\n");
-		stats->rx_crc_errors += 1;
+		stats->rx_crc_errors ++;
 		return NET_RX_DROP;
 	}
 
 	unsigned int len = ntohs(iph->tot_len);
 	if (pack->len < len || len < (iph->ihl * 4)) {
 		LOG_ERROR("invalide IPv4 header length\n");
-		stats->rx_length_errors += 1;
+		stats->rx_length_errors ++;
 		return NET_RX_DROP;
 	}
 	/**

@@ -61,7 +61,7 @@ static void arp_check_expire() {
 /* Queue an IP packet, while waiting for the ARP reply packet. */
 void arp_queue(sk_buff_t *skb) {
 	skb->tries = ARP_MAX_TRIES;
-	list_add(&arp_q, (struct list_head *)skb);
+	list_add((struct list_head *)skb, &arp_q);
 }
 
 /* This will try to retransmit everything on the queue. */

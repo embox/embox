@@ -15,12 +15,11 @@
 #include <net/net.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
-
+#include <lib/list.h>
 
 DECLARE_INIT("net_dev", net_dev_init, INIT_NET_LEVEL);
 
 static LIST_HEAD(netdev_skb_head);
-
 
 static LIST_HEAD(ptype_base);
 static LIST_HEAD(ptype_all);
@@ -110,14 +109,13 @@ int dev_queue_xmit(struct sk_buff *pack) {
 				return -1;
 			}
 		}
-
 		if (-1 == ops->ndo_start_xmit(pack, dev)) {
 			kfree_skb(pack);
-			stats->tx_err += 1;
+			stats->tx_err ++;
 			return -1;
 		}
 		/* update statistic */
-		stats->tx_packets += 1;
+		stats->tx_packets ++;
 		stats->tx_bytes += pack->len;
 	}
 	kfree_skb(pack);
@@ -143,7 +141,7 @@ int netif_rx(struct sk_buff *pack) {
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == pack->protocol) {
 #if CONFIG_SOFT_IRQ
-			list_add(&netdev_skb_head, (struct list_head *)pack);
+			list_add((struct list_head *)pack, &netdev_skb_head);
 			__raise_softirq_irqoff(NET_RX_SOFTIRQ);
 #else
 			rc_rx = q->func(pack, dev, q, NULL);
