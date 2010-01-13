@@ -24,7 +24,7 @@ DOCS_DIR     :=$(BUILD_DIR)/docs
 BUILDCONF_DIR:=$(BUILD_DIR)/conf
 
 RM          :=rm -f
-EDITOR      :=vim
+EDITOR      :=emacs
 
 # Need to include it prior to walking the source tree
 # (particularly because of ARCH definition).
@@ -82,12 +82,9 @@ endif
 	@echo 'Config complete'
 
 menuconfig:
-#	@$(EDITOR) $(CONF_DIR)/config.mk
-#	@$(SCRIPTS_DIR)/configure.py --mode=menu > /dev/null 2>&1
+	make TEMPLATE=sparc config
+	@$(EDITOR) -nw $(CONF_DIR)/*.conf
 
 xconfig:
-#	@$(SCRIPTS_DIR)/configure.py --mode=tk > /dev/null 2>&1
-
-mconfig:
-#	@$(SCRIPTS_DIR)/configure.py --mode=qt > /dev/null 2>&1
-
+	make TEMPLATE=sparc config
+	@$(EDITOR) $(CONF_DIR)/*.conf
