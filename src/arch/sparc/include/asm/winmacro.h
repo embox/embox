@@ -1,10 +1,10 @@
 /**
- * \file windows.h
+ * @file winmacro.h
  *
- * \brief SPARC register windows related macros
+ * @brief SPARC register windows related macros
  *
- * \date Jun 4, 2009
- * \author Eldar Abusalimov
+ * @date Jun 4, 2009
+ * @author Eldar Abusalimov
  */
 
 #ifndef WINDOWS_H_

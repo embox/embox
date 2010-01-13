@@ -4,7 +4,7 @@
  * @brief Low-level trap pre-setup and SPARC windows overflow routines.
  *
  * @details Here is described the algorithm itself. More general information
- * can be found in @link windows.h @endlink docs.
+ * can be found in @link winmacro.h @endlink docs.
  *
  ** @par Introduction
  * Will use the following notation:
@@ -158,13 +158,13 @@
 @endverbatim
  *
  *
- * @sa windows.h
+ * @sa winmacro.h
  *
  * @author Eldar Abusalimov
  */
 
 #include <asm/trap_setup.h>
-#include <asm/windows.h>
+#include <asm/winmacro.h>
 #include <asm/regs.h>
 
 	.text
@@ -263,7 +263,7 @@ tsb_kernel_wof:
 	sll %t_twinmask, CORE_NWINDOWS - 1, %g_newwim
 
 	/* Check whether the window to be saved is user or kernel one.
-	 * See windows.h for details.
+	 * See winmacro.h for details.
 	[andncc %t_wim, %t_twinmask, %t_uwinmask] */
 	bne tsb_save_user_window
 	 or %g_newwim, %g_temp, %g_newwim

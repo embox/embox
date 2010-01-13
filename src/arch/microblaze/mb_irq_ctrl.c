@@ -50,19 +50,19 @@ int irqc_init(){
 int irqc_enable_irq(irq_num_t irq_num){
 	/*save previous state of bit*/
 	irq_mask_t old_mask = irqc->ier;
-	SetBit(irqc->ier, irq_num);
-	return GetBit(old_mask, irq_num);
+	set_bit(irqc->ier, irq_num);
+	return get_bit(old_mask, irq_num);
 }
 
 int irqc_disable_irq(irq_num_t irq_num){
 	/*save previous state of bit*/
 	irq_mask_t old_mask = irqc->ier;
-	ClearBit(irqc->ier, irq_num);
-	return GetBit(old_mask, irq_num);
+	clear_bit(irqc->ier, irq_num);
+	return get_bit(old_mask, irq_num);
 }
 
 int irqc_get_status(irq_num_t irq_num){
-	return GetBit(irqc->ier, irq_num);
+	return get_bit(irqc->ier, irq_num);
 }
 
 irq_mask_t irqc_set_mask(irq_mask_t mask){
@@ -87,7 +87,7 @@ int irqc_force(irq_num_t irq_num){
 
 int irqc_clear(irq_num_t irq_num){
 	irq_mask_t old_mask = irqc->isr;
-	SetBit(irqc->iar,irq_num);
+	set_bit(irqc->iar,irq_num);
 	return old_mask;
 }
 

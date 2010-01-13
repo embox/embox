@@ -47,13 +47,13 @@ int irqc_init() {
 
 int irqc_enable_irq(irq_num_t irq_num) {
 	ASSERT_INIT_DONE();
-	SetBit(dev_regs->mask, irq_num);
+	set_bit(dev_regs->mask, irq_num);
 	return 0;
 }
 
 int irqc_disable_irq(irq_num_t irq_num) {
 	ASSERT_INIT_DONE();
-	ClearBit(dev_regs->mask, irq_num);
+	clear_bit(dev_regs->mask, irq_num);
 	return 0;
 }
 
@@ -65,21 +65,21 @@ int irqc_disable_all() {
 
 int irqc_force(irq_num_t irq_num) {
 //	That's force!
-//	if (!GetBit(dev_regs->mask, irq_num)) {
+//	if (!get_bit(dev_regs->mask, irq_num)) {
 //		return;
 //	}
-	SetBit(dev_regs->force, irq_num);
+	set_bit(dev_regs->force, irq_num);
 	return 0;
 }
 
 int irqc_clear(irq_num_t irq_num) {
 	ASSERT_INIT_DONE();
-	SetBit(dev_regs->clear, irq_num);
+	set_bit(dev_regs->clear, irq_num);
 	return 0;
 }
 
 int irqc_get_status(irq_num_t irq_num) {
-	return GetBit(dev_regs->mask, irq_num);
+	return get_bit(dev_regs->mask, irq_num);
 }
 
 irq_mask_t irqc_set_mask(irq_mask_t mask){

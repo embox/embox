@@ -4,7 +4,7 @@
  * @brief Low-level trap post-setup and SPARC windows underflow routines.
  *
  * @details Here is described the algorithm itself. More general information
- * can be found in @link windows.h @endlink docs.
+ * can be found in @link winmacro.h @endlink docs.
  *
  ** @par Introduction
  *       Will use the following notation:
@@ -80,13 +80,13 @@
          +-----+---+---+---+---+---+---+---+---+
 @endverbatim
  *
- * @sa windows.h
+ * @sa winmacro.h
  *
  * @author Eldar Abusalimov
  */
 
 #include <asm/trap_setup.h>
-#include <asm/windows.h>
+#include <asm/winmacro.h>
 #include <asm/regs.h>
 
 	.text

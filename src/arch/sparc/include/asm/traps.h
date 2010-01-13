@@ -5,7 +5,7 @@
 #define _TRAPS_H_
 
 #include "types.h"
-#include "asm/windows.h"
+#include "asm/winmacro.h"
 
 #ifndef __ASSEMBLER__
 

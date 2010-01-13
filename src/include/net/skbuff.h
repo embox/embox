@@ -113,9 +113,26 @@ extern struct sk_buff *skb_copy(const sk_buff_t *skb, gfp_t priority);
 extern struct sk_buff_head *alloc_skb_queue(int qlen);
 
 /**
+ * Empty a list.
  * return head of queue allocated in alloc_skb_queue to the free queue pool
  * and give back all contained sk_buff in this list
  */
 extern void skb_queue_purge(sk_buff_head_t *queue);
+
+/**
+ * Peek an sk_buff.
+ * Returns NULL for an empty list or a pointer to the head element.
+ */
+extern sk_buff_t *skb_peek(struct sk_buff_head *list_);
+
+/**
+ * Remove sk_buff from list.
+ */
+extern void skb_unlink(sk_buff_t *skb, struct sk_buff_head *list);
+
+/**
+ * Remove the head of the list.
+ */
+extern sk_buff_t *skb_dequeue(struct sk_buff_head *list);
 
 #endif /* SKBUFF_H_ */

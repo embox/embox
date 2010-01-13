@@ -8,7 +8,7 @@
 
 #include <asm/traps.h>
 #include <asm/regs.h>
-#include <asm/windows.h>
+#include <asm/winmacro.h>
 #include <asm/cpu_context.h>
 
 	.text

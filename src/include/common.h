@@ -1,11 +1,15 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#ifdef _TEST_SYSTEM_
 #include "autoconf.h"
 #include "types.h"
 #include "stdio.h"
 #include "err.h"
 #include "bitops.h"
+#else
+#include <linux/types.h>
+#endif
 
 #if defined(CONFIG_TRACE) && !defined(SIMULATION_TRG)
 # ifdef _TEST_SYSTEM_

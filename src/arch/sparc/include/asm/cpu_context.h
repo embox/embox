@@ -11,9 +11,9 @@
 #define CPU_CONTEXT_H_
 
 #include "asm/leon_config.h"
-#include "asm/traps.h"
 #include "types.h"
-#include "asm/windows.h"
+#include <asm/traps.h>
+#include <asm/winmacro.h>
 
 #ifndef __ASSEMBLER__
 

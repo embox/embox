@@ -6,9 +6,9 @@
  * @author Eldar Abusalimov
  */
 
-#include "asm/traps.h"
+#include <asm/traps.h>
 #include "asm/sparc_regs.h"
-#include "asm/windows.h"
+#include <asm/winmacro.h>
 
 	.section ".text"
 	.align 4
