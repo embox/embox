@@ -9,7 +9,7 @@
 
 #include <asm/winmacro.h>
 #include <asm/traps.h>
-#include "asm/sparc_regs.h"
+#include <asm/sparc_regs.h>
 
 /* Window overflow handling routine. */
 		.global window_overflow

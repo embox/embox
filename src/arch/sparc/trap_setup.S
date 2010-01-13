@@ -7,7 +7,7 @@
  */
 
 #include <asm/traps.h>
-#include "asm/sparc_regs.h"
+#include <asm/sparc_regs.h>
 #include <asm/winmacro.h>
 
 	.section ".text"

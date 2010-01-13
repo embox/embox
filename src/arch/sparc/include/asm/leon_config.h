@@ -1,14 +1,7 @@
 #ifndef LEON_134213_4535_53453
 #define LEON_134213_4535_53453
 
-
-
-/* CPU frequency (Hz) */
-#define CORE_FREQ   50000000
-/* Amount of available register windows */
-#define CORE_NWINDOWS   8
-/* Desired uart baud rate */
-#define UART_BAUD_RATE  38400
+#include <asm/cpu_conf.h>
 
 #define UART_SCALER_VAL  ((((CORE_FREQ*10) / (8 * UART_BAUD_RATE))-5)/10)
 /* Timing Calculation */
@@ -57,6 +50,3 @@
 #define	ICLEAR2	0xB8
 
 #endif
-
-
-

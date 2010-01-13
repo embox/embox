@@ -6,12 +6,13 @@
  * \date Jan 26, 2009
  * \author Eldar Abusalimov
  */
-
 #ifndef CPU_CONTEXT_H_
 #define CPU_CONTEXT_H_
 
-#include "asm/leon_config.h"
-#include "types.h"
+#ifdef _TEST_SYSTEM_
+#include <asm/leon_config.h>
+#include <types.h>
+#endif
 #include <asm/traps.h>
 #include <asm/winmacro.h>
 
