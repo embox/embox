@@ -27,7 +27,7 @@ typedef struct _CPU_CONTEXT {
 	/* some control registers */
 	uint32_t y, tbr, psr, wim;
 	/* all register windows */
-	struct reg_window reg_windows[CORE_NWINDOWS];
+	struct reg_window reg_windows[8/*CORE_NWINDOWS*/];
 	/*
 	 * We do not explicitly define space
 	 * for PC and nPC registers.

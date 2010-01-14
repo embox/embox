@@ -9,7 +9,6 @@
 #include "bitops.h"
 #else
 #include <linux/types.h>
-#include "./../assert.h"
 #endif
 
 #if defined(CONFIG_TRACE) && !defined(SIMULATION_TRG)
