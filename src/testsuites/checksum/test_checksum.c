@@ -6,7 +6,7 @@
  */
 
 #include "autoconf.h"
-#include "crc32.h"
+#include "md5.h"
 #include "common.h"
 #include "express_tests.h"
 
@@ -26,12 +26,13 @@ static int exec(int argc, char** argv) {
 //		return -1;
 //	}
 //	return 0;
-    extern unsigned long __checksum;
-    extern unsigned char _trap_table, _text_start, _endtext, _sinittext, _einittext, __express_tests_start, __express_tests_end, __shell_commands_end, _ro_data;
+    //extern unsigned long __checksum;
+    extern unsigned char _trap_table, /*_text_start,*/ _endtext/*, _sinittext, _einittext,
+	     __express_tests_start, __express_tests_end, __shell_commands_end, _ro_data*/;
     /*unsigned long result = count_crc32(&_text_start, &_endtext);*/
     unsigned char md5_sum[16];
-    const unsigned char *start_addr = &_trap_table;
-    const unsigned char *end_addr = &_endtext;
+    unsigned char *start_addr = &_trap_table;
+    unsigned char *end_addr = &_endtext;
 
     /*unsigned long result = count_md5(&_text_start, &_endtext);*/
     unsigned int cur_addr;
@@ -44,7 +45,7 @@ static int exec(int argc, char** argv) {
     }
     printf("count = %d", count);
     printf("\n\n");
-    printf("0x%x, 0x%x\n\n", start_addr, end_addr);
+    printf("0x%p, 0x%p\n\n", start_addr, end_addr);
 
 //       printf("\n\n");
 //       count = 0;

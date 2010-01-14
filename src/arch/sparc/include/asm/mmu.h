@@ -201,6 +201,7 @@ typedef unsigned long iopgprot_t;
  * swap instruction.  This insures the mmu and the cpu are in sync
  * with respect to ref/mod bits in the page tables.
  */
+#if 0
 static  unsigned long srmmu_swap(unsigned long *addr, unsigned long value)
 {
   #ifndef IMAGE_CREATE
@@ -223,7 +224,7 @@ static  int srmmu_device_memory(unsigned long x)
 {
 	return ((x & 0xF0000000) != 0);
 }
-
+#endif
 int srmmu_cache_pagetables;
 
 /* XXX Make this dynamic based on ram size - Anton */
@@ -241,6 +242,7 @@ int srmmu_nocache_used;
 #define __nocache_va(PADDR) PADDR // (__va((unsigned long)PADDR) - (unsigned long)srmmu_nocache_pool + SRMMU_NOCACHE_VADDR)
 #define __nocache_fix(VADDR) VADDR // __va(__nocache_pa(VADDR))
 
+#if 0
 static  unsigned long srmmu_pgd_page(pgd_t pgd)
 { return srmmu_device_memory(pgd_val(pgd))?~0:(unsigned long)__nocache_va((pgd_val(pgd) & SRMMU_PTD_PMASK) << 4); }
 
@@ -347,6 +349,7 @@ static  pmd_t *srmmu_pmd_offset(pgd_t * dir, unsigned long address)
 /* Find an entry in the third-level page table.. */
 static  pte_t *srmmu_pte_offset(pmd_t * dir, unsigned long address)
 { return (pte_t *) srmmu_pmd_page(*dir) + ((address >> PAGE_SHIFT) & (SRMMU_PTRS_PER_PTE - 1)); }
+#endif
 
 #endif /*__ASSEMBLER__*/
 

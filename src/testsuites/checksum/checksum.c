@@ -8,6 +8,7 @@
 #include "string.h"
 #include "autoconf.h"
 
+#if 0
 static void sign_checksum(void) {
 	__asm__(".section .checksum\n"
 		".global _md5_sum\n"
@@ -17,3 +18,4 @@ static void sign_checksum(void) {
 		"\"\n"
 		".section .text\n");
 }
+#endif
