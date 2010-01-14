@@ -9,31 +9,31 @@ inline static void cache_set_ctrl_reg(unsigned int ctrl_reg){
 	// stub
 }
 
-inline static void cache_refresh() {
+inline static void cache_refresh(void) {
 	// stub
 }
 
-inline static void cache_enable() {
+inline static void cache_enable(void) {
 	// stub
 }
 
-inline static void cache_disable() {
+inline static void cache_disable(void) {
 	// stub
 }
 
-inline static void cache_instr_enable() {
+inline static void cache_instr_enable(void) {
 	// stub
 }
 
-inline static void cache_instr_disable() {
+inline static void cache_instr_disable(void) {
 	// stub
 }
 
-inline static void cache_data_enable() {
+inline static void cache_data_enable(void) {
 	// stub
 }
 
-inline static void cache_data_disable() {
+inline static void cache_data_disable(void) {
 	// stub
 }
 

@@ -20,6 +20,7 @@ typedef __spin_lock_t spin_lock_t;
 #define spin_lock_locked(lock)  __spin_lock_locked (lock)
 #endif
 
+#include <kernel/irq.h>
 /**
  * now we have single thread system therefore we can use local_irq_save
  * instead of spin_lock

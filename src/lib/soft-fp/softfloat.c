@@ -1637,7 +1637,7 @@ float64 float64_rem( float64 a, float64 b ) {
         int16 aExp, bExp, expDiff;
         bits32 aSig0, aSig1, bSig0, bSig1, q, term0, term1, term2;
         bits32 allZero, alternateASig0, alternateASig1, sigMean1;
-        sbits32 sigMean0;
+        bits32 sigMean0;
         float64 z;
 
         aSig1 = extractFloat64Frac1( a );

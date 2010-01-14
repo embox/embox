@@ -29,7 +29,7 @@ static void inet_dev_show_info(void *handler) {
 	in_device_t *in_dev = (in_device_t *) handler;
 	net_device_t *dev = in_dev->dev;
 	net_device_stats_t *eth_stat;
-	unsigned char mac[18];
+	char mac[18];
 	struct in_addr ip, bcast, mask;
 	char *s_ip, *s_bcast, *s_mask;
 	macaddr_print(mac, dev->dev_addr);
@@ -107,7 +107,7 @@ static int exec(int argsc, char **argsv) {
 	struct in_addr p2paddr;
 	unsigned int irq_num = 0;
 	unsigned long tx_queue_len = 0, base_addr = 0;
-	unsigned char iname[IFNAMSIZ];
+	char iname[IFNAMSIZ];
         int nextOption;
         ipaddr.s_addr = 0;
         mask.s_addr = 0;
@@ -151,7 +151,7 @@ static int exec(int argsc, char **argsv) {
             	    }
             	    break;
             	case 'm':  //++
-            	    if (NULL == macaddr_scan(optarg, macaddr)) {
+            	    if (NULL == macaddr_scan((unsigned char *)optarg, macaddr)) {
             	        LOG_ERROR("wrong mac addr format %s\n", optarg);
             	        return -1;
             	    }
@@ -205,7 +205,7 @@ static int exec(int argsc, char **argsv) {
             	    }
             	    break;
             	case 'w':  //broadcast addr
-                    if (NULL == macaddr_scan(optarg, broadcastaddr)) {
+                    if (NULL == macaddr_scan((unsigned char *)optarg, broadcastaddr)) {
                          LOG_ERROR("wrong broadcast addr format %s\n", optarg);
                          return -1;
                      }

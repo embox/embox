@@ -78,7 +78,7 @@ static pingpong_regs_t *current_tx_regs = NULL;
 #define TX_CTRL_REG  current_tx_regs->ctrl
 #define RX_CTRL_REG  current_rx_regs->ctrl
 
-static void switch_rx_buff() {
+static void switch_rx_buff(void) {
 #ifdef PINPONG_BUFFER
 	if (current_rx_regs == emaclite->rx_ping) {
 		current_rx_regs = emaclite->rx_ping;
@@ -91,7 +91,7 @@ static void switch_rx_buff() {
 #endif
 }
 
-static void switch_tx_buff() {
+static void switch_tx_buff(void) {
 #ifdef PINPONG_BUFFER
 	if (current_tx_regs == emaclite->tx_ping) {
 		current_tx_regs = emaclite->tx_ping;
@@ -104,14 +104,14 @@ static void switch_tx_buff() {
 #endif
 }
 
-static void restart_buff() {
+static void restart_buff(void) {
 	switch_tx_buff();
 	TX_LEN_REG = 0;
 	switch_tx_buff();
 	TX_LEN_REG = 0;
 }
 
-static pingpong_regs_t *get_rx_buff() {
+static pingpong_regs_t *get_rx_buff(void) {
 	if (current_rx_regs->ctrl & XEL_RSR_RECV_DONE_MASK) {
 		return current_rx_regs;
 	}
@@ -121,8 +121,9 @@ static pingpong_regs_t *get_rx_buff() {
 	}
 	return NULL;
 }
-
+#if 0
 static uint8_t etherrxbuff[PKTSIZE]; /* Receive buffer */
+#endif
 //FIXME bad function (may be use if dest and src align 4)
 static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 	size_t lenw = (size_t)((len & (~3)) >> 2);
@@ -248,7 +249,7 @@ static int open(net_device_t *dev) {
 	/*
 	 * RX - RX_PING & RX_PONG initialization
 	 */
-	TRACE("emaclite->rx_ctrl addr = 0x%X\n", &RX_CTRL_REG);
+	TRACE("emaclite->rx_ctrl addr = 0x%X\n", (unsigned int)&RX_CTRL_REG);
 	RX_CTRL_REG = XEL_RSR_RECV_IE_MASK;
 #ifdef PINPONG_BUFFER
 	switch_rx_buff();

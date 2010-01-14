@@ -78,7 +78,7 @@ int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr) {
 
 int eth_mac_addr(net_device_t *dev, void *p) {
         struct sockaddr *addr = p;
-        if (!is_valid_ether_addr(addr->sa_data)) {
+        if (!is_valid_ether_addr((const uint8_t *)addr->sa_data)) {
                 return -EADDRNOTAVAIL;
         }
         memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);

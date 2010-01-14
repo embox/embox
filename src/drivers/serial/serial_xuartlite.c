@@ -49,18 +49,19 @@ typedef volatile struct uart_regs {
 /*set registers base*/
 uart_regs_t *uart =  (uart_regs_t *)XILINX_UARTLITE_BASEADDR;
 
-inline static int is_rx_empty(){
+inline static int is_rx_empty(void){
 	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
 }
 
-inline static int can_tx_trans(){
+inline static int can_tx_trans(void){
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 
-int uart_init() {
+int uart_init(void) {
+	return 0;
 }
 
-char uart_getc() {
+char uart_getc(void) {
 	while (is_rx_empty());
 	return (char) (uart->rx_data & 0xFF);
 }
@@ -76,6 +77,6 @@ int uart_set_irq_handler(IRQ_HANDLER pfunc) {
 	return 0;
 }
 
-int uart_remove_irq_handler() {
+int uart_remove_irq_handler(void) {
 	return 0;
 }

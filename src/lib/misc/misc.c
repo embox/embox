@@ -12,7 +12,7 @@
 #include "string.h"
 
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {
-    unsigned char symbol_str[4];
+    char symbol_str[4];
     int i,j;
     int cur = 0;
     int tmp;
@@ -36,7 +36,7 @@ unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {
         res[i] = tmp;
         cur += j + 1;
     }
-    strncpy(symbol_str, &addr[cur], array_len(symbol_str));
+    strncpy(symbol_str, (char *)&addr[cur], array_len(symbol_str));
     if (1 != sscanf (symbol_str, "%d", &tmp)) {
         return NULL;
     }
@@ -47,7 +47,7 @@ unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {
 }
 
 unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[ETH_ALEN]) {
-    unsigned char symbol_str[4];
+    char symbol_str[4];
     int i,j;
     int cur = 0;
     int tmp;
@@ -71,7 +71,7 @@ unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[ETH_ALEN]) {
         res[i] = tmp;
         cur += j + 1;
     }
-    strncpy(symbol_str, &addr[cur], array_len(symbol_str));
+    strncpy(symbol_str, (char *)&addr[cur], array_len(symbol_str));
     if (1 != sscanf (symbol_str, "%x", &tmp)) {
         return NULL;
     }
@@ -94,10 +94,10 @@ int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigne
         struct in_addr addr;
         int userip, netip;
         uint32_t mask, shiftMask;
-        inet_aton(uip, &addr);
+        inet_aton((char *)uip, &addr);
         userip = addr.s_addr;
 
-        inet_aton(nip, &addr);
+        inet_aton((char *)nip, &addr);
         netip = addr.s_addr;
 
         mask = msk;

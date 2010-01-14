@@ -1,18 +1,18 @@
 /**
  * @file interrupt_handler.c
  *
- * @brief This file contains @link interrupt_handler() @endlink function. It's proxy between
- *        asm code and kernel interrupt handler @link irq_dispatch() @endlink
- *        function.
+ * @details This file contains @link interrupt_handler() @endlink function.
+ *        It's proxy between asm code and kernel interrupt handler
+ *        @link irq_dispatch() @endlink function.
  *
  * @date 27.11.2009
  * @author Anton Bondarev
  */
-#include "autoconf.h"
-#include "hal/irq_ctrl.h"
-#include "kernel/irq.h"
+#include <autoconf.h>
+#include <hal/irq_ctrl.h>
+#include <kernel/irq.h>
 
-void interrupt_handler() {
+void interrupt_handler(void) {
 	irq_mask_t irq_stat;
 	while (0 != (irq_stat = irqc_get_isr_reg())) {
 		int irq_num;

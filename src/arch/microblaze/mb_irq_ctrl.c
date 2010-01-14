@@ -35,7 +35,7 @@ typedef volatile struct irqc_regs {
 
 static irqc_regs_t * irqc = (irqc_regs_t * )XILINX_INTC_BASEADDR;
 
-int irqc_init(){
+int irqc_init(void){
 	irqc->mer = 0;
 	irqc->ier = 0;
 	irqc->iar = ~(0x0);
@@ -71,11 +71,11 @@ irq_mask_t irqc_set_mask(irq_mask_t mask){
 	return old_mask;
 }
 
-irq_mask_t irqc_get_mask(){
+irq_mask_t irqc_get_mask(void){
 	return irqc->ier;
 }
 
-int irqc_disable_all(){
+int irqc_disable_all(void){
 	irqc->mer &= ~MER_ME;
 	return 0;
 }
@@ -91,6 +91,6 @@ int irqc_clear(irq_num_t irq_num){
 	return old_mask;
 }
 
-irq_mask_t irqc_get_isr_reg() {
+irq_mask_t irqc_get_isr_reg(void) {
 	return irqc->isr;
 }

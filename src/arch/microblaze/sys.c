@@ -17,11 +17,11 @@ static CPU_CONTEXT context;
 volatile static bool started = false;
 
 int sys_exec_start(EXEC_FUNC f, int argc, char **argv) {
+	int ret = -2;
+
 	if (started) {
 		return -3;
 	}
-
-	int ret = -2;
 
 	//context_save(&context);
 
@@ -54,7 +54,8 @@ void sys_halt() {
  * disable interrupt for atomic operation
  * return old psr reg
  */
-unsigned long local_irq_save(void){
+unsigned long local_irq_save(void) {
+	return 0;
 }
 
 /**
@@ -68,6 +69,5 @@ void local_irq_enable(void){
  * param psr which was returned __local_irq_save
  */
 void local_irq_restore(unsigned long old_psr){
-
 }
 

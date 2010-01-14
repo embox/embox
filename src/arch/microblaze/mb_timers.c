@@ -64,8 +64,11 @@ typedef volatile struct mb_timers {
 
 static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
+/*we must use proxy for interrupt handler because we must clean bit in register
+ * timer.
+ */
 static IRQ_HANDLER main_irq_handler = NULL;
-static void local_irq_handler() {
+static void local_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
 	timer0->tcsr |= TIMER_INT;
 	if (NULL != main_irq_handler) {
 		main_irq_handler(XILINX_TIMER_IRQ, main_irq_handler, NULL);
@@ -74,7 +77,7 @@ static void local_irq_handler() {
 
 int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	main_irq_handler = irq_handler;
-	if (-1 == request_irq(XILINX_TIMER_IRQ, local_irq_handler, 0, "xil_timer", NULL)) {
+	if (-1 == request_irq(XILINX_TIMER_IRQ, local_irq_handler, (unsigned long)0, "xil_timer", NULL)) {
 		return -1;
 	}
 	/*set clocks period*/
