@@ -135,4 +135,6 @@ extern void skb_unlink(sk_buff_t *skb, struct sk_buff_head *list);
  */
 extern sk_buff_t *skb_dequeue(struct sk_buff_head *list);
 
+extern void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk);
+
 #endif /* SKBUFF_H_ */

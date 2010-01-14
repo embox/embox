@@ -147,7 +147,7 @@ int netif_rx(struct sk_buff *pack) {
 		if (q->type == pack->protocol) {
 #if CONFIG_SOFT_IRQ
 			if (ETH_P_ARP != pack->protocol) {
-				skb_queue_tail(&netdev_skb_head, pack);
+				skb_queue_tail((struct sk_buff_head *)&netdev_skb_head, pack);
 				__raise_softirq_irqoff(NET_RX_SOFTIRQ);
 			} else {
 #endif

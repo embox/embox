@@ -13,6 +13,7 @@
 #include <hal/irq_ctrl.h>
 #include <asm/traps.h>
 #include <kernel/irq.h>
+#include <kernel/interrupt.h>
 #include <asm/sys.h>
 #include <string.h>
 #include <autoconf.h>
