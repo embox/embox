@@ -39,7 +39,7 @@ INETDEV_INFO *find_ifdev_info_entry(in_device_t *in_dev) {
         return NULL;
 }
 
-static in_device_t *find_free_handler() {
+static in_device_t *find_free_handler(void) {
         int i;
         for(i = 0; i < NET_INTERFACES_QUANTITY; i ++) {
                 if (0 == ifs_info[i].is_busy) {
@@ -49,7 +49,7 @@ static in_device_t *find_free_handler() {
         }
         return NULL;
 }
-
+#if 0
 static int free_handler(in_device_t * handler) {
         int i;
         for(i = 0; i < NET_INTERFACES_QUANTITY; i ++) {
@@ -61,7 +61,7 @@ static int free_handler(in_device_t * handler) {
         }
         return -1;
 }
-
+#endif
 static int alloc_callback(in_device_t *in_dev, unsigned int type,
                           ETH_LISTEN_CALLBACK callback) {
         int i;
@@ -75,7 +75,7 @@ static int alloc_callback(in_device_t *in_dev, unsigned int type,
         }
         return -1;
 }
-
+#if 0
 static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
         int i;
         INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
@@ -87,7 +87,7 @@ static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
         }
         return -1;
 }
-
+#endif
 void __init devinet_init(void) {
 }
 
@@ -142,29 +142,32 @@ int inet_dev_set_interface(const char *name, in_addr_t ipaddr, in_addr_t mask,
 }
 
 int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr) {
+        in_device_t *dev;
         if (NULL == in_dev) {
                 return -1;
         }
-        in_device_t *dev = (in_device_t *) in_dev;
+        dev = (in_device_t *) in_dev;
         dev->ifa_address = ipaddr;
         return 0;
 }
 
 int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask) {
+        in_device_t *dev;
         if (NULL == in_dev) {
                 return -1;
         }
-        in_device_t *dev = (in_device_t *) in_dev;
+        dev = (in_device_t *) in_dev;
         dev->ifa_mask = mask;
         dev->ifa_broadcast = dev->ifa_address | ~dev->ifa_mask;
         return 0;
 }
 
 int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macaddr) {
+        net_device_t *dev;
         if (NULL == in_dev || NULL == macaddr) {
                 return -1;
         }
-        net_device_t *dev = ((in_device_t*)in_dev)->dev;
+        dev = in_dev->dev;
         if (NULL == dev) {
                 return -1;
         }
@@ -211,7 +214,7 @@ void ifdev_tx_callback(sk_buff_t *pack) {
 /* iterator functions */
 static int iterator_cnt;
 
-in_device_t *inet_dev_get_fist_used() {
+in_device_t *inet_dev_get_fist_used(void) {
         for(iterator_cnt = 0; iterator_cnt < NET_INTERFACES_QUANTITY;
                         iterator_cnt++) {
                 if (1 == ifs_info[iterator_cnt].is_busy) {
@@ -222,7 +225,7 @@ in_device_t *inet_dev_get_fist_used() {
         return NULL;
 }
 
-in_device_t *inet_dev_get_next_used() {
+in_device_t *inet_dev_get_next_used(void) {
         for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++) {
                 if (1 == ifs_info[iterator_cnt].is_busy) {
                         iterator_cnt++;
@@ -241,7 +244,7 @@ int ifdev_up(const char *iname) {
                 return -1;
         }
         if (NULL == (ifhandler->dev = netdev_get_by_name(iname))) {
-                LOG_ERROR("ifdev up: can't find net_device with name\n", iname);
+                LOG_ERROR("ifdev up: can't find net_device with name %s\n", iname);
                 return -1;
         }
         return dev_open(ifhandler->dev);
@@ -250,11 +253,11 @@ int ifdev_up(const char *iname) {
 int ifdev_down(const char *iname) {
         in_device_t *in_dev;
         if (NULL == (in_dev = inet_dev_find_by_name(iname))) {
-                LOG_ERROR("ifdev down: can't find ifdev with name\n", iname);
+                LOG_ERROR("ifdev down: can't find ifdev with name %s\n", iname);
                 return -1;
         }
         if (NULL == (in_dev->dev)) {
-                LOG_ERROR("ifdev down: can't find net_device with name\n", iname);
+                LOG_ERROR("ifdev down: can't find net_device with name %s\n", iname);
                 return -1;
         }
         return dev_close(in_dev->dev);

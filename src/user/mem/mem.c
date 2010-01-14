@@ -18,14 +18,14 @@ char mem_keys[] = {
 	'a', 'n', 'h'
 };
 
-void mem_print(uint32_t *addr, long int amount) {
+void mem_print(uint32_t *addr, unsigned int amount) {
 	long i = 0;
 	uint32_t *cur_addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 	while (i < amount) {
 		if (0 == (i % 4)) {
-			printf("0x%08x:\t", cur_addr);
+			printf("0x%08x:\t", (unsigned)cur_addr);
 		}
-		printf("0x%08x\t", (uint32_t *) cur_addr);
+		printf("0x%08x\t", (unsigned) cur_addr);
 		if (3 == (i % 4)) {
 			printf("\n");
 		}
@@ -34,11 +34,11 @@ void mem_print(uint32_t *addr, long int amount) {
 	}
 }
 
-typedef void TEST_MEM_FUNC(uint32_t *addr, long int amount);
+typedef void TEST_MEM_FUNC(uint32_t *addr, unsigned int amount);
 
 static int exec(int argsc, char **argsv) {
 	uint32_t *address = (uint32_t *) 0x70000000L;
-	long int amount = 100L;
+	unsigned int amount = 100L;
 	int nextOption;
 	getopt_init();
 	do {
@@ -53,7 +53,7 @@ static int exec(int argsc, char **argsv) {
 				show_help();
 				return -1;
 			}
-			if (!sscanf(optarg, "0x%x", &address)) {
+			if (!sscanf(optarg, "0x%p", &address)) {
 				LOG_ERROR("mem: -a: hex value for address expected.\n");
 				show_help();
 				return -1;
@@ -66,7 +66,7 @@ static int exec(int argsc, char **argsv) {
 				return -1;
 			}
 			if (!sscanf(optarg, "0x%x", &amount)) {
-				if (!sscanf(optarg, "%d", &amount)) {
+				if (!sscanf(optarg, "%x", &amount)) {
 					LOG_ERROR("mem: -n: hex or integer value for number of bytes expected.\n");
 					show_help();
 					return -1;

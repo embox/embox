@@ -21,11 +21,13 @@
 /**
  * Allocate a new socket object.
  */
-static struct socket *sock_alloc() {
+#if 0
+static struct socket *sock_alloc(void) {
 	struct socket *sock;
 	//TODO:
 	return sock;
 }
+#endif
 
 /**
  * Close a socket

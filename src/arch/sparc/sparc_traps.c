@@ -30,7 +30,7 @@ void dispatch_trap(uint8_t tt, uint32_t *sp) {
 }
 
 void dispatch_bad_trap(TRAP_CONTEXT * r, uint32_t tt) {
-	REG_WINDOW *rw;
+	struct reg_window *rw;
 
 	TRACE("BAD TRAP (0x%02x)\n", tt);
 
@@ -43,7 +43,7 @@ void dispatch_bad_trap(TRAP_CONTEXT * r, uint32_t tt) {
 			r->ins[0], r->ins[1], r->ins[2], r->ins[3],
 			r->ins[4], r->ins[5], r->ins[6], r->ins[7]);
 
-	rw = (REG_WINDOW *) r->ins[6];
+	rw = (struct reg_window *) r->ins[6];
 
 	TRACE("%%L: %08x %08x  %08x %08x  %08x %08x  %08x %08x\n",
 			rw->locals[0], rw->locals[1], rw->locals[2], rw->locals[3],

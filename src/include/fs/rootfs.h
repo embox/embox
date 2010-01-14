@@ -47,7 +47,7 @@ typedef struct _FSOP_DESCRIPTION {
 }FSOP_DESCRIPTION;
 
 
-//int rootfs_init();
+//int rootfs_init(void);
 FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name);
 
 
@@ -75,4 +75,6 @@ typedef struct _FILE_NAME_STRUCT{
 
 FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_name_struct);
 FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name);
+void *rootfs_fopen(const char *file_name, char *mode);
+
 #endif /* ROOTFS_H_ */

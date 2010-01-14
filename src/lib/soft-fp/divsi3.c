@@ -4,8 +4,9 @@
  * @author Anton Bondarev, Oleg Medvedev
  */
 
+extern unsigned int __udivsi3(unsigned int op1, unsigned int op2);
+
 int __divsi3(int op1, int op2) {
-	int i;
 	int flag1, flag2;
 	int result;
 	flag1 = op1 < 0 ? 1 : 0;

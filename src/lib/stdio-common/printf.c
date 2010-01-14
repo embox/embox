@@ -31,8 +31,7 @@
 #include "asm/stdarg.h"
 #include "kernel/uart.h"
 
-int putchar (int c)
-{
+int putchar (int c) {
 	static char prev = 0;
 	/*if (c > 0 && c < ' ' && c != '\r' && c != '\n' && c != '\t' && c != '\b')
 		return;*/
@@ -43,8 +42,7 @@ int putchar (int c)
 	return c;
 }
 
-int puts (const char *S)
-{
+int puts (const char *S) {
 	char *ptr = (char*)S;
 	while (0 != (*ptr))	putchar (*ptr++);
 	putchar ('\n');
@@ -52,8 +50,7 @@ int puts (const char *S)
 }
 
 
-static void printchar(char **str, int c)
-{
+static void printchar(char **str, int c) {
 	//extern int putchar(int c);
 
 	if (str) {
@@ -227,6 +224,9 @@ static int print(char **out, const char *format, va_list args )
 				scr[0] = (char)va_arg( args, int );
 				scr[1] = '\0';
 				pc += prints (out, scr, width, pad);
+				continue;
+			case 'p':
+				//TODO:
 				continue;
 			case 'f':
 				//TODO:

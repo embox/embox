@@ -32,28 +32,25 @@ void irq_dispatch(uint32_t irq_number) {
 #endif
 }
 
-int irq_init_handlers() {
+int irq_init_handlers(void) {
 	irqc_init();
 	return 0;
 }
 
-
 int request_irq(unsigned int irq_number, IRQ_HANDLER handler,
 		unsigned long flags, const char *dev_name, void *dev_id) {
-	if (irq_number != irq_number & 0xF) {
+	if (irq_number != (irq_number & 0xF)) {
 		return -1;
 	}
 	if ((NULL == handler) || (NULL != irq_infos[irq_number].handler)) {
 		return -1;
 	}
-	irq_infos[irq_number].handler = handler;
-
-	irq_infos[irq_number].irq_num;
-
-	irq_infos[irq_number].dev_id = dev_id;
+	irq_infos[irq_number].handler  = handler;
+	irq_infos[irq_number].irq_num  = irq_number;
+	irq_infos[irq_number].dev_id   = dev_id;
 	irq_infos[irq_number].dev_name = dev_name;
-	irq_infos[irq_number].flags = flags;
-	irq_infos[irq_number].enabled = true;
+	irq_infos[irq_number].flags    = flags;
+	irq_infos[irq_number].enabled  = true;
 
 	irqc_enable_irq(irq_number);
 	return 0;
@@ -67,7 +64,7 @@ void free_irq(unsigned int irq, void *dev_id) {
 bool irq_set_info(IRQ_INFO *irq_info) {
 	IRQ_INFO old_irq_info;
 	unsigned long psr;
-	if (irq_info->irq_num != irq_info->irq_num & (MAX_IRQ_NUMBER - 1)) {
+	if (irq_info->irq_num != (irq_info->irq_num & (MAX_IRQ_NUMBER - 1))) {
 		return false;
 	}
 	if (irq_info->enabled && irq_info->handler == NULL) {

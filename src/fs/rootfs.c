@@ -25,7 +25,7 @@ FS_DESCRIPTION const fs_list[] = {
 #define NUMBER_OF_FS    array_len(fs_list)
 
 
-static file_list_cnt;
+static int file_list_cnt;
 static FILE_INFO * file_list_iterator(FILE_INFO *finfo){
     if (NUMBER_OF_FS  <= file_list_cnt)
         return NULL;
@@ -37,7 +37,7 @@ static FILE_INFO * file_list_iterator(FILE_INFO *finfo){
     return finfo;
 }
 
-static FS_FILE_ITERATOR get_file_list_iterator(){
+static FS_FILE_ITERATOR get_file_list_iterator(void){
     file_list_cnt = 0;
     return file_list_iterator;
 }
@@ -98,7 +98,8 @@ void *rootfs_fopen(const char *file_name, char *mode){
     }
     TRACE("try open: disk %s\tfile %s\n", fname_struct.fs_name, fname_struct.file_name);
     if (NULL == (fsop = rootfs_get_fsopdesc((char*) /*file_name*/fname_struct.fs_name))){
-        TRACE("can't find file system description for file %s\n (may be file %s didn't create)\n", file_name);
+        TRACE("can't find file system description for file %s\n (may be file %s didn't create)\n",
+    									file_name, file_name);
         return NULL;
     }
     if (NULL == fsop->open_file){

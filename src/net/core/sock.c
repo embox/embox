@@ -17,7 +17,7 @@ SOCK_INFO sks[MAX_SOCK_NUM];
 
 //TODO:
 
-struct udp_sock* sk_alloc() {
+struct udp_sock* sk_alloc(void) {
         int i;
         for(i = 0; i < MAX_SOCK_NUM; i++) {
     	        if (0 == sks[i].is_busy) {

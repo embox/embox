@@ -75,14 +75,14 @@ extern void arp_queue(sk_buff_t *skb);
  * Functions provided by arp.c
  */
 
-extern void arp_init();
+extern void arp_init(void);
 
 /**
  * Handle arp packet. This function called protocal stack
  * when arp packet has been received
  * @param pack net_packet
  */
-static int arp_rcv(sk_buff_t *pack, net_device_t *dev,
+extern int arp_rcv(sk_buff_t *pack, net_device_t *dev,
                       packet_type_t *pt, net_device_t *orig_dev);
 
 /**

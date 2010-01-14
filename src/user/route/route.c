@@ -8,6 +8,9 @@
 #include "in.h"
 #include "net/route.h"
 #include "net/inetdevice.h"
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define COMMAND_NAME     "route"
 #define COMMAND_DESC_MSG "manipilate routing table"

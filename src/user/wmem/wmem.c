@@ -16,7 +16,7 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
-	int i, flag = 0;
+	int flag = 0;
 	int nextOption;
 	uint32_t *address;
 	uint32_t new_value;
@@ -29,13 +29,13 @@ static int exec(int argsc, char **argsv) {
                         show_help();
                         return 0;
                 case 'a':
-                        if ((optarg != NULL) && (!sscanf(optarg, "0x%x", &address))
-                                        && (!sscanf(optarg, "%d", (int *) &address))) {
+                        if ((optarg != NULL) && (!sscanf(optarg, "0x%p", &address))
+                                        && (!sscanf(optarg, "%x", (int *) &address))) {
                                 LOG_ERROR("wmem: hex value expected.\n");
                                 show_help();
                                 return -1;
                         }
-                        if (address != address & 0xFFFFFFFC) {
+                        if ((unsigned)address != ((unsigned)address & 0xFFFFFFFC)) {
                                 LOG_ERROR("wmem: address in wrong format (last 2 bits must be 0)\n");
                                 show_help();
                                 return -1;
@@ -64,4 +64,5 @@ static int exec(int argsc, char **argsv) {
 	}
 
 	*((uint32_t *) address) = new_value;
+	return 0;
 }

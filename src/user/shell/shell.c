@@ -43,9 +43,8 @@ static int parse_str(char *cmdline, char **words) {
 
 static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
 	int words_counter = 0;
-	int i;
-	PSHELL_HANDLER phandler;
-
+	//PSHELL_HANDLER phandler;
+        SHELL_COMMAND_DESCRIPTOR *c_desc;
 	char *words[CMDLINE_MAX_LENGTH + 1];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {
@@ -60,7 +59,6 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 //			return;
 //		}
 //	}
-	SHELL_COMMAND_DESCRIPTOR *c_desc;
 	if(NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))){
 		printf("%s: Command not found\n", words[0]);
 		return;
@@ -83,7 +81,9 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 		const char* line, const int max_proposals, int *proposals_len,
 		char *proposals[], int *offset, int *common) {
 	int cursor = strlen(line);
-	int start = cursor;
+	int start = cursor, i;
+	char ch;
+	SHELL_COMMAND_DESCRIPTOR * shell_desc;
 	while (start > 0 && isalpha(line[start - 1])) {
 		start--;
 	}
@@ -91,14 +91,12 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 
 	*offset = cursor - start;
 	*proposals_len = 0;
-	int i;
 
 //	for (i = 0; i < array_len(shell_handlers) && *proposals_len < max_proposals; i++) {
 //		if (0 == strncmp(shell_handlers[i].name, line, *offset)) {
 //			proposals[(*proposals_len)++] = shell_handlers[i].name;
 //		}
 //	}
-	SHELL_COMMAND_DESCRIPTOR * shell_desc;
 	for(shell_desc = shell_command_descriptor_find_first((char*)line, *offset);
 			NULL != shell_desc;
 			shell_desc = shell_command_descriptor_find_next(shell_desc, (char *)line, *offset)){
@@ -108,7 +106,6 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	if (*proposals_len == 0) {
 		return;
 	}
-	char ch;
 	while (1) {
 		if ((ch = proposals[0][*offset + *common]) == '\0') {
 			return;
@@ -135,7 +132,7 @@ static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback ) {
 	}
 }
 
-void shell_start() {
+void shell_start(void) {
 	static const char* prompt = CONFIG_SHELL_PROMPT;
 	static CONSOLE console[1];
 	static CONSOLE_CALLBACK callback[1];

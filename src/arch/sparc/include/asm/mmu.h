@@ -102,7 +102,7 @@ constant MMCTRL_TLBDIS : integer := 31;
 
 #ifndef __ASSEMBLER__
 
-static inline unsigned long get_sp_reg()
+static inline unsigned long get_sp_reg(void)
 {
     register int retval;
     __asm__ __volatile__("mov %%sp, %0\n\t" :

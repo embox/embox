@@ -10,6 +10,7 @@
 #define ICMP_H_
 
 #include <net/skbuff.h>
+#include <in.h>
 
 /* Types */
 #define ICMP_ECHOREPLY          0       /* Echo Reply                   */
@@ -65,6 +66,8 @@ typedef struct icmphdr {
 
 #define ICMP_HEADER_SIZE	(sizeof(struct icmphdr))
 
+typedef void (*ICMP_CALLBACK)(struct sk_buff* response);
+
 static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
         return (icmphdr_t *)skb->h.raw;
 }
@@ -76,7 +79,7 @@ static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
 /**
  * set all realized handlers
  */
-extern void icmp_init();
+extern void icmp_init(void);
 
 /**
  * receive packet
@@ -87,5 +90,10 @@ extern int icmp_rcv(sk_buff_t *pack);
  * Send an ICMP message in response to a situation
  */
 extern void icmp_send(sk_buff_t *pack, int type, int code, uint32_t info);
+
+extern int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
+            ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq);
+
+extern int icmp_abort_echo_request(void *in_dev);
 
 #endif /* ICMP_H_ */

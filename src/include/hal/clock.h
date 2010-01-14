@@ -48,7 +48,7 @@ typedef __clock_nr_t clock_nr_t;
  *
  * @note Implementation have to disable all system timers.
  */
-void clock_init();
+void clock_init(void);
 
 /**
  * Configures a clock with the specified number.

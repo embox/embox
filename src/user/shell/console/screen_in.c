@@ -8,6 +8,7 @@
 #include "common.h"
 #include "console.h"
 #include "kernel/sys.h"
+#include "kernel/uart.h"
 
 #define FIRE_CALLBACK(cb, func, view, args...)	((cb->func != NULL) ? cb->func(cb, view, ##args) : 0)
 
@@ -25,11 +26,11 @@ static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		TERMINAL_TOKEN_PARAMS *params) {
 	SCREEN_CALLBACK *cb = this->callback;
+	static TERMINAL_TOKEN prev_token = TERMINAL_TOKEN_EMPTY;
 	if (cb == NULL) {
 		return;
 	}
 
-	static TERMINAL_TOKEN prev_token = TERMINAL_TOKEN_EMPTY;
 	switch (token) {
 	case TERMINAL_TOKEN_CURSOR_LEFT:
 		FIRE_CALLBACK(cb, on_cursor_left, this, 1);
@@ -103,14 +104,17 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 	prev_token = token;
 }
 
-void uart_irq_handler() {
-	if (!sys_exec_is_started())
-		return;
+static void uart_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
+	char ch;
 	static TERMINAL_TOKEN token;
-	static TERMINAL_TOKEN_PARAMS params[1];
-	SCREEN *this = cur_console->view;
+        static TERMINAL_TOKEN_PARAMS params[1];
+        SCREEN *this;
+	if (!sys_exec_is_started()) {
+		return;
+	}
+	this = cur_console->view;
 	terminal_receive(this->terminal, &token, params);
-	char ch = token & 0xFF;
+	ch = token & 0xFF;
 	//TODO:
 	if (ch == token) {
 	        handle_char_token(this, token);
@@ -120,14 +124,10 @@ void uart_irq_handler() {
 }
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
-	if (this == NULL) {
-		return;
-	}
-
 	static TERMINAL_TOKEN token;
 	static TERMINAL_TOKEN_PARAMS params[1];
-
-	if (this->running) {
+        char ch;
+	if ((this == NULL) || this->running) {
 		return;
 	}
 	this->running = true;
@@ -136,7 +136,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	uart_set_irq_handler(uart_irq_handler);
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			params)) {
-		char ch = token & 0xFF;
+		ch = token & 0xFF;
 		if (ch == token) {
 			handle_char_token(this, token);
 		} else {
@@ -145,7 +145,6 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	}
 	assert(this->callback == NULL);
 	this->running = false;
-
 }
 
 void screen_in_stop(SCREEN *this) {

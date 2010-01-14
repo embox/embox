@@ -26,12 +26,12 @@ static int print_arp_cache(void *ifdev) {
 	int i;
 	unsigned char mac[18];
 	net_device_t *net_dev;
+	struct in_addr addr;
 	for(i=0; i<ARP_CACHE_SIZE; i++) {
 		if((arp_tables[i].state == 1) &&
 		   (ifdev == NULL || ifdev == arp_tables[i].if_handler)) {
 			net_dev = arp_tables[i].if_handler->dev;
 			macaddr_print(mac, arp_tables[i].hw_addr);
-			struct in_addr addr;
 			addr.s_addr = arp_tables[i].pw_addr;
 			TRACE("%s\t\t%d\t%s\t%d\t%s\n", inet_ntoa(addr),
 					    arp_tables[i].if_handler->dev->type,

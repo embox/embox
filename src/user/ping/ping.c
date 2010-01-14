@@ -11,6 +11,8 @@
 #include "net/inetdevice.h"
 #include "net/skbuff.h"
 #include "misc.h"
+#include "unistd.h"
+#include "stdlib.h"
 
 #define COMMAND_NAME     "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
@@ -33,19 +35,18 @@ static void callback(struct sk_buff *pack) {
 static int ping(in_device_t *ifdev, struct in_addr dst, int cnt, int timeout, int ttl,
 	    int quiet, unsigned packsize, int interval, unsigned short pattern) {
 	char *dst_b = inet_ntoa(dst);
+	int cnt_resp = 0, cnt_err = 0, i;
+	struct in_addr from;
+	char *from_b;
 	printf("PING %s %d bytes of data.\n", dst_b, packsize);
-
-	int cnt_resp = 0, cnt_err = 0;
 
 	if (0 == cnt) {
 		return 0;
 	}
 
-	struct in_addr from;
 	from.s_addr = inet_dev_get_ipaddr(ifdev);
-	char *from_b = inet_ntoa(from);
+	from_b = inet_ntoa(from);
 
-	int i;
 	for(i = 1; i <= cnt; i++) {
 		has_responsed = false;
 		if(!quiet) printf("%d bytes from %s", packsize, from_b);

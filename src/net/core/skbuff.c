@@ -45,11 +45,11 @@ struct sk_buff_head *alloc_skb_queue(int len) {
 	return queue;
 }
 
-void __init skb_init() {
+void __init skb_init(void) {
+	int i;
 	/* Init net pack manager */
 	net_buff_init();
 
-	int i;
 	for (i = 1; i < array_len(sk_buff_pool); i ++) {
 		list_add((struct list_head *)&sk_buff_pool[i], &head_free_skb);
 	}
@@ -81,43 +81,81 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority){
 }
 
 void kfree_skb(struct sk_buff *skb) {
+	unsigned long sp;
 	if (NULL == skb) {
 		return;
 	}
 	net_buff_free(skb->data);
-	unsigned long sp = spin_lock();
+	sp = spin_lock();
 	list_move_tail((struct list_head *)skb, (struct list_head *)&head_free_skb);
 	spin_unlock(sp);
 }
 
 void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
+	unsigned long sp;
 	if (NULL == list || NULL == newsk) {
 		return;
 	}
-	unsigned long sp = spin_lock();
+	sp = spin_lock();
 	list_move_tail((struct list_head *)newsk, (struct list_head *)list);
 	spin_unlock(sp);
 }
 
+sk_buff_t *skb_peek(struct sk_buff_head *list_) {
+        sk_buff_t *list = ((sk_buff_t *)list_)->next;
+        if (list == (sk_buff_t *)list_) {
+                list = NULL;
+        }
+        return list;
+}
+
+void skb_unlink(sk_buff_t *skb, struct sk_buff_head *list) {
+        struct sk_buff *next, *prev;
+        list->qlen--;
+        next       = skb->next;
+        prev       = skb->prev;
+        skb->next  = skb->prev = NULL;
+        next->prev = prev;
+        prev->next = next;
+}
+
+sk_buff_t *skb_dequeue(struct sk_buff_head *list) {
+	struct sk_buff *skb;
+        unsigned long sp = spin_lock();
+        skb = skb_peek(list);
+        if (skb) {
+        	skb_unlink(skb, list);
+        }
+        spin_unlock(sp);
+        return skb;
+}
+
 void skb_queue_purge(struct sk_buff_head *queue) {
-	if (NULL == queue) {
-		return;
-	}
 	struct list_head *skb;
-	unsigned long sp = spin_lock();
-	/*free all sk_buff*/
-	list_for_each(skb, (struct list_head *)queue) {
-		net_buff_free(((struct sk_buff *)skb)->data);
-		list_move_tail(skb, (struct list_head *)queue);
+	unsigned long sp;
+	if (NULL == queue) {
+    		return;
 	}
-	/*free queue*/
-	list_add((struct list_head *)queue, &head_free_queue);
-	spin_unlock(sp);
+        sp = spin_lock();
+        /*free all sk_buff*/
+        list_for_each(skb, (struct list_head *)queue) {
+                net_buff_free(((struct sk_buff *)skb)->data);
+                list_move_tail(skb, (struct list_head *)queue);
+        }
+        /*free queue*/
+        list_add((struct list_head *)queue, &head_free_queue);
+        spin_unlock(sp);
+#if 0
+	sk_buff_t *skb;
+        while ((skb = skb_dequeue(queue)) != NULL) {
+    		//FIXME: crash
+                kfree_skb(skb);
+        }
+#endif
 }
 
 /**
  * split buffer to skb queue
- *
  */
 //TODO buff_to_skb not realize now
 struct sk_buff *buff_to_skb(unsigned char *buff) {

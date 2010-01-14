@@ -23,6 +23,6 @@ static int foo(int depth) {
 	return 0;
 }
 
-static int exec() {
+static int exec(int argc, char** argv) {
 	return foo(RECURSION_DEPTH);
 }

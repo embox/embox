@@ -24,7 +24,7 @@ CPPFLAGS+=$(cppflags)
 # Compiler flags
 cflags:=$(CFLAGS)
 CFLAGS =
-CFLAGS+=-Werror
+CFLAGS+=-Werror -Wstrict-prototypes -Wall -Wundef -Wno-trigraphs -Wno-char-subscripts -Wdeclaration-after-statement
 CFLAGS+=-pipe
 CFLAGS+=$(cflags)
 

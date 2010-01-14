@@ -10,11 +10,12 @@
 #include "common.h"
 
 CMDLINE * cmdline_init(CMDLINE *this) {
+	CMDLINE_HISTORY *history;
 	if (this == NULL) {
 		return NULL;
 	}
 
-	CMDLINE_HISTORY *history = this->history;
+	history = this->history;
 	history->array[0][0] = '\0';
 	history->array[1][0] = '\0';
 	history->index = 0;
@@ -118,6 +119,7 @@ inline bool cmdline_cursor_end(CMDLINE *cmdline) {
 }
 
 bool cmdline_chars_delete(CMDLINE *this, int len) {
+	int i;
 	if (this == NULL) {
 		return false;
 	}
@@ -129,7 +131,6 @@ bool cmdline_chars_delete(CMDLINE *this, int len) {
 	}
 
 	this->length -= len;
-	int i;
 	for (i = this->cursor; i < this->length; ++i) {
 		this->string[i] = this->string[i + len];
 	}
@@ -139,11 +140,12 @@ bool cmdline_chars_delete(CMDLINE *this, int len) {
 }
 
 bool cmdline_chars_backspace(CMDLINE *this, int len) {
+	int old_cursor;
 	if (this == NULL) {
 		return false;
 	}
 
-	int old_cursor = this->cursor;
+	old_cursor = this->cursor;
 	len = max(0, len);
 
 	cmdline_cursor_move_by(this, -len);
@@ -152,6 +154,7 @@ bool cmdline_chars_backspace(CMDLINE *this, int len) {
 }
 
 bool cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
+	int i;
 	if (this == NULL) {
 		return false;
 	}
@@ -159,7 +162,6 @@ bool cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 	len = min(len, CMDLINE_MAX_LENGTH - this->length);
 	len = max(0, len);
 
-	int i;
 	for (i = 0; (i < len) && ch[i]; ++i) {
 	}
 	len = min(len, i);
@@ -184,6 +186,7 @@ bool cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 bool cmdline_dc2_reverse(CMDLINE *this) {
 	cmdline_chars_insert(this, "\r(reverse-i-search)`':", 22);
 	this->cursor -= 2;
+	return true;
 }
 
 bool cmdline_dc4_reverse(CMDLINE *this) {
@@ -198,4 +201,5 @@ bool cmdline_dc4_reverse(CMDLINE *this) {
 		this->string[this->length - 1] = this->string[this->length - 2];
 		this->string[this->length - 2] = tmp;
 	}
+	return true;
 }

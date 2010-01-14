@@ -92,15 +92,16 @@ void macaddr_print(const char *buf, const unsigned char *addr) {
 int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigned char msk) {
         const unsigned shift = 0xFFFFFFFF;
         struct in_addr addr;
-
+        int userip, netip;
+        uint32_t mask, shiftMask;
         inet_aton(uip, &addr);
-        int userip = addr.s_addr;
+        userip = addr.s_addr;
 
         inet_aton(nip, &addr);
-        int netip = addr.s_addr;
+        netip = addr.s_addr;
 
-        uint32_t mask = msk;
-        uint32_t shiftMask = shift << (32 - mask);
+        mask = msk;
+        shiftMask = shift << (32 - mask);
 
         return (__bswap_32(netip) & shiftMask) == (__bswap_32(userip) & shiftMask) ? 0 : -1;
 }

@@ -10,7 +10,7 @@
 
 #include <kernel/cache.h>
 
-typedef struct irq_cpustat{
+typedef struct irq_cpustat {
 	unsigned int __softirq_pending;
 } ____cacheline_aligned irq_cpustat_t;
 

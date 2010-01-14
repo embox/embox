@@ -19,11 +19,11 @@ DECLARE_EXPRESS_TEST("local_irq_save()", exec, TEST_LOCAL_IRQ_SAVE_ON_BOOT_ENABL
 
 volatile static bool irq_happened;
 
-static void test_local_irq_save_handler() {
+static void test_local_irq_save_handler(void) {
 	irq_happened = true;
 }
 
-static int exec() {
+static int exec(int argc, char** argv) {
 	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_local_irq_save_handler, true};
 	int old_irq_enabled;
 	unsigned long old_psr;

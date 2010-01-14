@@ -8,6 +8,8 @@
 #ifndef SPIN_LOCK_H_
 #define SPIN_LOCK_H_
 
+#include <kernel/irq.h>
+
 //FIXME spin_lock has to have different signature
 # if 0
 typedef __spin_lock_t spin_lock_t;

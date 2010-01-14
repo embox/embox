@@ -14,7 +14,7 @@
  * we use massive because in future we want to use multi-core processors
  * we must use two way massive
  */
-irq_cpustat_t irq_stat[1] ____cacheline_aligned = {0};
+irq_cpustat_t irq_stat[1] ____cacheline_aligned = {{0}};
 
 /* we must use two way massive if we want use multi-core processors */
 static struct softirq_action softirq_vec[HARDIRQ_BITS] ____cacheline_aligned;

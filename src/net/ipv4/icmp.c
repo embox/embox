@@ -36,8 +36,6 @@ struct icmp_bxm {
 
 #define CB_INFO_SIZE        0x10
 
-typedef void (*ICMP_CALLBACK)(struct sk_buff* response);
-
 typedef struct _ICMP_CALLBACK_INFO {
 	ICMP_CALLBACK      cb;
 	void               *ifdev;
@@ -120,7 +118,7 @@ struct icmp_control {
 static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1];
 
 int icmp_abort_echo_request(void *in_dev) {
-	interface_abort(in_dev);
+	return interface_abort(in_dev);
 }
 
 /**
@@ -227,10 +225,10 @@ static void icmp_echo(sk_buff_t *pack) {
 	icmp_param.head_len        = sizeof(icmphdr_t);
 	icmp_reply(&icmp_param, pack);
 }
-
+#if 0
 static void icmp_discard(sk_buff_t *skb) {
 }
-
+#endif
 int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
 	    ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq) {
 	sk_buff_t *pack = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE +
@@ -285,12 +283,13 @@ static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
 	},
 };
 
-void __init icmp_init() {
+void __init icmp_init(void) {
 }
 
 int icmp_rcv(sk_buff_t *pack) {
 	icmphdr_t *icmph = pack->h.icmph;
 	net_device_stats_t *stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
+	uint16_t tmp;
 	/**
 	 * 18 is the highest 'known' ICMP type. Anything else is a mystery
 	 * RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently
@@ -298,7 +297,7 @@ int icmp_rcv(sk_buff_t *pack) {
 	 */
 	if (icmph->type > NR_ICMP_TYPES) {
 		LOG_ERROR("unknown type of ICMP packet\n");
-		stats->rx_err += 1;
+		stats->rx_err ++;
 		return -1;
 	}
 	/*
@@ -321,7 +320,7 @@ int icmp_rcv(sk_buff_t *pack) {
         }
 
 	//TODO: check summ icmp? not need, if ip checksum is ok.
-	uint16_t tmp = icmph->checksum;
+	tmp = icmph->checksum;
 	icmph->checksum = 0;
 	if( tmp != ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE)) {
 		LOG_ERROR("bad icmp checksum\n");

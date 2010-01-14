@@ -3,9 +3,8 @@
 #include "fs/file.h"
 #include "fs/rootfs.h"
 
-
 void *fopen (const char *file_name, char *mode){
-    rootfs_fopen(file_name, mode);
+    return rootfs_fopen(file_name, mode);
 }
 
 size_t fwrite (const void *buf, size_t size, size_t count, void *file)

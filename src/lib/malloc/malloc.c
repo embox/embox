@@ -20,18 +20,18 @@ struct mem_control_block {
         size_t size;
 };
 
-static void malloc_init() {
+static void malloc_init(void) {
+	struct mem_control_block *init_mcb;
 	managed_memory_start = (void*)mem_pool;
 	last_valid_address   = managed_memory_start;
 	has_initialized      = 1;
 
-	struct mem_control_block *init_mcb;
 	init_mcb = (struct mem_control_block *)managed_memory_start;
 	init_mcb->is_available = 1;
 	init_mcb->size = sizeof(mem_pool) - sizeof(struct mem_control_block);
 }
 
-static void _mem_defrag() {
+static void _mem_defrag(void) {
         void *current_location, *next;
         struct mem_control_block *current_location_mcb, *next_mcb;
         current_location = managed_memory_start;

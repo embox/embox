@@ -13,8 +13,8 @@ typedef unsigned char datum;
 // As much as needed to save mem in memory_test_data_bus
 #define MEM_BUF_SIZE 100
 
-inline static print_error(volatile uint32_t *addr, volatile uint32_t expected_value) {
-	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", addr, *addr,
+inline static void print_error(volatile uint32_t *addr, volatile uint32_t expected_value) {
+	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", (unsigned)addr, *addr,
 			expected_value);
 }
 
@@ -49,7 +49,7 @@ uint32_t memory_test_data_bus(volatile uint32_t *address)
 // TODO think about signature: err_t name(..., uint32_t *fault_address) -- Eldar
 uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 	unsigned long addressMask = (nBytes / sizeof(uint32_t) - 1);
-	unsigned char mem_buf[100];
+	//unsigned char mem_buf[100];
 	unsigned long offset;
 	unsigned long testOffset;
 
@@ -165,16 +165,14 @@ void memory_test_address(uint32_t *base_addr, long int amount) {
 	uint32_t *end_addr;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
 
-	long i;
-
 	// Writing
 	addr = base_addr;
 	end_addr = base_addr + amount;
 	// TODO debug:
-	TRACE("Starting testing memory from address 0x%08x till 0x%08x:\n", addr, end_addr);
+	TRACE("Starting testing memory from address 0x%08x till 0x%08x:\n", (unsigned)addr, (unsigned)end_addr);
 	while (addr < end_addr) {
 		if ((uint32_t) addr % 15 == 0) {
-			TRACE("Writing address 0x%08x\n", addr);
+			TRACE("Writing address 0x%08x\n", (unsigned)addr);
 		}
 		*addr = (uint32_t) addr;
 		addr++;
@@ -185,7 +183,7 @@ void memory_test_address(uint32_t *base_addr, long int amount) {
 	addr = base_addr;
 	while (addr < end_addr) {
 		if ((uint32_t) addr % 15 == 0) {
-			TRACE("Checking address 0x%8x\n", addr);
+			TRACE("Checking address 0x%8x\n", (unsigned)addr);
 		}
 		if (*addr != (uint32_t) addr) {
 			print_error(addr, (uint32_t) addr);
@@ -232,8 +230,8 @@ void memory_test_chess(uint32_t *base_addr, long int amount) {
 }
 
 void memory_test_loop(uint32_t *addr, long int counter) {
-	addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 	volatile uint32_t value = 0x55555555;
+	addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 
 	// Infinite loop case
 	if (counter == 0) {
@@ -249,7 +247,7 @@ void memory_test_loop(uint32_t *addr, long int counter) {
 
 	// // Finite loop case
 	while (counter--) {
-		TRACE("%d=n", counter);
+		TRACE("%ld=n", counter);
 		*addr = value;
 		if (*addr != value) {
 			print_error(addr, value);

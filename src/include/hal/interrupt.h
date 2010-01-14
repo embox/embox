@@ -42,7 +42,7 @@ typedef __interrupt_nr_t interrupt_nr_t;
  * @note Implementation have to perform basic controller initialization,
  * disabling all interrupts and clearing any pending IRQs (if needed).
  */
-void interrupt_init();
+void interrupt_init(void);
 
 /**
  * Enables the specified IRQ.

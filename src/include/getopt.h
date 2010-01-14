@@ -22,6 +22,6 @@ extern int opterr;   /**< flag:error message on unrecognzed options */
 extern int getopt(int argc, char **argv, const char *opts);
 
 /** setup optind and opterr */
-extern void getopt_init();
+extern void getopt_init(void);
 
 #endif /* _GETOPT_H */

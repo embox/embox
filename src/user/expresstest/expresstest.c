@@ -29,7 +29,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 #define PASSED_STR "PASSED"
 
 
-static void print_express_tests() {
+static void print_express_tests(void) {
 	extern express_test_descriptor_t *__express_tests_start,
 			*__express_tests_end;
 	express_test_descriptor_t ** p_test = &__express_tests_start;
@@ -76,7 +76,7 @@ static express_test_descriptor_t *get_express_test(int test_num) {
 static int exec(int argsc, char **argsv) {
 	bool run_info_func = false;
 	express_test_descriptor_t *p_test = NULL;
-	int test_num = -1;
+	int test_num = -1, result;
 	int nextOption;
 	getopt_init();
 	do {
@@ -127,7 +127,7 @@ static int exec(int argsc, char **argsv) {
 	}
 	TRACE("Testing %s ... ", p_test->name == NULL ?
 			DEFAULT_NAME_STR : p_test->name);
-	int result = p_test->exec();
+	result = p_test->exec(0, NULL);
 	if (result == PASSED_CODE) {
 		TRACE(PASSED_STR"\n");
 	} else {

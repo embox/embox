@@ -7,8 +7,7 @@ static int piggysize;
 SEGMENT mm_segtable[MAX_NSEGMENTS];
 
 
-bool memseg_init()
-{
+bool memseg_init(void) {
 	int i;
 	TRACE("mm init..\n");
 

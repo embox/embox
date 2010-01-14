@@ -17,6 +17,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
 	int nextOption;
+	SHELL_COMMAND_DESCRIPTOR * shell_desc;
 	getopt_init();
         do {
                 nextOption = getopt(argsc, argsv, "h");
@@ -32,7 +33,6 @@ static int exec(int argsc, char **argsv) {
         } while(-1 != nextOption);
 
 	printf("Available commands: \n");
-	SHELL_COMMAND_DESCRIPTOR * shell_desc;
 	for(shell_desc = shell_command_descriptor_find_first((char *)NULL, 0);
 			NULL != shell_desc;
 			shell_desc = shell_command_descriptor_find_next(shell_desc, (char *)NULL, 0)){

@@ -86,7 +86,7 @@ extern int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macadd
 extern in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev);
 
 /* iterator functions */
-extern in_device_t * inet_dev_get_fist_used();
-extern in_device_t * inet_dev_get_next_used();
+extern in_device_t * inet_dev_get_fist_used(void);
+extern in_device_t * inet_dev_get_next_used(void);
 
 #endif /* INETDEVICE_H_ */

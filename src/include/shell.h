@@ -21,17 +21,17 @@ typedef struct {
 } SHELL_HANDLER_DESCR;
 
 
-void shell_start();
+void shell_start(void);
 void insert_shell_handler(char* name, char* descr, PSHELL_HANDLER func);
 
 /**
  * @return  pointer to first element in shell command list description
  */
-SHELL_HANDLER_DESCR *shell_get_command_list();
+SHELL_HANDLER_DESCR *shell_get_command_list(void);
 
 /**
  * @return  quantity of shell commands
  */
-int shell_size_command_list();
+int shell_size_command_list(void);
 
 #endif /* SHELL_H_ */

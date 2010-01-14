@@ -1,18 +1,19 @@
-/*
- * scanf.c
- *	Realization of function scanf
- *  Created on: 10.02.2009
- *      Author: abatyukov
+/**
+ * @file scanf.c
+ * @brief Realization of function scanf
+ * @date 10.02.2009
+ * @author abatyukov
  */
 #include "types.h"
 #include "asm/stdarg.h"
 #include "string.h"
 #include "stdlib.h"
 #include "ctype.h"
+#include <kernel/uart.h>
 
 const int EOF = -1;
 
-inline static int getchar() {
+inline static int getchar(void) {
 	return (int) uart_getc();
 }
 
@@ -37,7 +38,7 @@ static void unscanchar(char **str, int ch) {
 }
 
 static int scanchar(char **str) {
-	extern int getchar();
+	extern int getchar(void);
 	int ch;
 	if (str) {
 		ch = **str;

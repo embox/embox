@@ -10,6 +10,7 @@
 #include <common.h>
 #include <in.h>
 #include <kernel/module.h>
+#include <kernel/timers.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/net.h>
@@ -45,7 +46,7 @@ static LIST_HEAD(arp_q);
 /*
  * Check if there are entries that are too old and remove them.
  */
-static void arp_check_expire() {
+static void arp_check_expire(uint32_t id) {
 	int i;
 	close_timer(ARP_TIMER_ID);
 	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
@@ -97,7 +98,7 @@ static void arp_send_q(void) {
 	}
 }
 
-void __init arp_init() {
+void __init arp_init(void) {
         dev_add_pack(&arp_packet_type);
         set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
 }
@@ -227,10 +228,10 @@ void arp_send(int type, int ptype, in_addr_t dest_ip,
 }
 
 int arp_find(unsigned char *haddr, sk_buff_t *pack) {
+	int i;
 	net_device_t *dev = pack->dev;
 	iphdr_t *ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
-	int i;
 	if (ip->daddr == INADDR_BROADCAST) {
 		return -1;
 	}
@@ -248,10 +249,10 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
  * receive ARP response, update ARP table
  */
 static int received_resp(sk_buff_t *pack) {
+#if 0
 	arphdr_t *arp = pack->nh.arph;
 
 	//TODO need add function for getting ip addr
-#if 0
 	if (inet_dev_get_ipaddr(pack->ifdev) != arp->ar_tip) {
 		return -1;
 	}

@@ -6,6 +6,7 @@
  */
 #include "shell_command.h"
 #include "string.h"
+#include <stdlib.h>
 #include "net/net.h"
 #include "net/etherdevice.h"
 #include "net/inetdevice.h"
@@ -27,10 +28,12 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static void inet_dev_show_info(void *handler) {
 	in_device_t *in_dev = (in_device_t *) handler;
 	net_device_t *dev = in_dev->dev;
+	net_device_stats_t *eth_stat;
 	unsigned char mac[18];
+	struct in_addr ip, bcast, mask;
+	char *s_ip, *s_bcast, *s_mask;
 	macaddr_print(mac, dev->dev_addr);
 
-	net_device_stats_t *eth_stat;
 	eth_stat = dev->netdev_ops->ndo_get_stats(dev);
 	TRACE("%s\tencap:", dev->name);
 	if(dev->flags & IFF_LOOPBACK) {
@@ -39,13 +42,12 @@ static void inet_dev_show_info(void *handler) {
             TRACE("Ethernet");
     }
     TRACE(" HWaddr %s\n", mac);
-	struct in_addr ip, bcast, mask;
 	ip.s_addr = in_dev->ifa_address;
 	bcast.s_addr = in_dev->ifa_broadcast;
 	mask.s_addr = in_dev->ifa_mask;
-	char *s_ip = inet_ntoa(ip);
-	char *s_bcast = inet_ntoa(bcast);
-	char *s_mask = inet_ntoa(mask);
+	s_ip = inet_ntoa(ip);
+	s_bcast = inet_ntoa(bcast);
+	s_mask = inet_ntoa(mask);
 	TRACE("\tinet addr:%s Bcast:%s  Mask:%s\n\t", s_ip, s_bcast, s_mask);
 	free(s_ip);
 	free(s_bcast);
@@ -65,26 +67,26 @@ static void inet_dev_show_info(void *handler) {
 	if(dev->flags & IFF_MULTICAST)
 	        TRACE("MULTICAST ");
 	TRACE("MTU:%d  Metric:%d\n",dev->mtu,0);
-	TRACE("\tRX packets:%d errors:%d dropped:%d overruns:%d frame:%d\n",
+	TRACE("\tRX packets:%ld errors:%ld dropped:%ld overruns:%ld frame:%ld\n",
 		eth_stat->rx_packets, eth_stat->rx_err,
 	        eth_stat->rx_dropped, eth_stat->rx_over_errors,
 	                            eth_stat->rx_frame_errors);
-	TRACE("\tTX packets:%d errors:%d dropped:%d overruns:%d carrier:%d\n",
+	TRACE("\tTX packets:%ld errors:%ld dropped:%ld overruns:%ld carrier:%ld\n",
 		eth_stat->tx_packets, eth_stat->tx_err,
 	        eth_stat->tx_dropped, eth_stat->rx_over_errors,
 	                            eth_stat->tx_carrier_errors);
-	TRACE("\tcollisions:%d txqueuelen:%d\n",
+	TRACE("\tcollisions:%ld txqueuelen:%ld\n",
 		eth_stat->collisions, dev->tx_queue_len);
-	TRACE("\tRX bytes:%d (%d MiB)  TX bytes:%d (%d MiB)\n",
+	TRACE("\tRX bytes:%ld (%ld MiB)  TX bytes:%ld (%ld MiB)\n",
 		eth_stat->rx_bytes, eth_stat->rx_bytes/1048576,
                 eth_stat->tx_bytes, eth_stat->tx_bytes/1048576);
-    TRACE("\tInterrupt:%d Base address:0x%08X\n", dev->irq, dev->base_addr);
+    TRACE("\tInterrupt:%d Base address:0x%08lX\n", dev->irq, dev->base_addr);
 }
 
 /**
  * Show all eth interfaces (IP/MAC address)
  */
-static void inet_dev_show_all_info() {
+static void inet_dev_show_all_info(void) {
 	in_device_t * ifdev = inet_dev_get_fist_used();
         if (NULL != ifdev){
                 inet_dev_show_info(ifdev);
@@ -97,21 +99,20 @@ static void inet_dev_show_all_info() {
 static int exec(int argsc, char **argsv) {
 	in_device_t *in_dev = NULL;
 	struct in_addr ipaddr;
-	ipaddr.s_addr = 0;
 	struct in_addr mask;
-	mask.s_addr = 0;
 	unsigned char macaddr[ETH_ALEN];
-	macaddr[0] = 0;
 	unsigned char broadcastaddr[ETH_ALEN];
-	broadcastaddr[0] = 0;
 	int up = 0, down = 0, i = 0;
 	int no_arp = 0, promisc = 0, allmulti = 0, multicast = 0, mtu = 0, p2p = 0;
 	struct in_addr p2paddr;
-	p2paddr.s_addr = 0;
 	unsigned int irq_num = 0;
 	unsigned long tx_queue_len = 0, base_addr = 0;
 	unsigned char iname[IFNAMSIZ];
         int nextOption;
+        ipaddr.s_addr = 0;
+        mask.s_addr = 0;
+        p2paddr.s_addr = 0;
+        macaddr[0] = broadcastaddr[0] = 0;
         getopt_init();
         //and what about loopback, pointopoint and debug??
         do {
@@ -186,7 +187,7 @@ static int exec(int argsc, char **argsv) {
             	    }
             	    break;
             	case 'b':  //base_addr++
-            	    if (0 == sscanf(optarg, "0x%X", &base_addr)) {
+            	    if (0 == sscanf(optarg, "0x%lX", &base_addr)) {
             	        LOG_ERROR("wrong -b argument %s\n", optarg);
             	        return -1;
             	    }
@@ -198,7 +199,7 @@ static int exec(int argsc, char **argsv) {
             	    }
             	    break;
             	case 't':  //txqueuelen++
-            	    if (1 != sscanf(optarg, "%d", &tx_queue_len)) {
+            	    if (1 != sscanf(optarg, "%ld", &tx_queue_len)) {
             	        LOG_ERROR("wrong -t argument %s\n", optarg);
             	        return -1;
             	    }
@@ -288,7 +289,7 @@ static int exec(int argsc, char **argsv) {
 	    }
 	    if (down == 0 ) {
 	        eth_set_broadcast_addr(in_dev->dev, broadcastaddr);    //??
-	        eth_flag_up(IFF_BROADCAST);
+	        eth_flag_up(in_dev->dev, IFF_BROADCAST);
 	    }
 	}
 

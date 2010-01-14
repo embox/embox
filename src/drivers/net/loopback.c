@@ -18,7 +18,7 @@
 #include <asm/spin_lock.h>
 
 DECLARE_MODULE("Loopback", module_init);
-
+#if 0
 static int loopback_xmit(sk_buff_t *skb, net_device_t *dev) {
 	//TODO:
 	return 0;
@@ -46,7 +46,7 @@ static void loopback_setup(net_device_t *dev) {
         dev->flags              = IFF_LOOPBACK;
         dev->netdev_ops         = &loopback_ops;
 }
-
+#endif
 static int module_init() {
         //TODO:
         return 0;

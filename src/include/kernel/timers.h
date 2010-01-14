@@ -5,15 +5,18 @@
 #ifndef _TIMERS_H_
 #define _TIMERS_H_
 
-#ifndef __ASSEMBLER__
+#include <kernel/irq.h>
 
+#ifndef __ASSEMBLER__
 
 /**
  * Initialization of timers subsystem
  */
-int timers_ctrl_init();
+int timers_ctrl_init(IRQ_HANDLER);
 
 typedef void (*TIMER_FUNC)(uint32_t id);
+
+int sys_timers_init(void);
 
 /**
  * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.
@@ -25,11 +28,10 @@ int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
  */
 void close_timer(uint32_t id);
 
-
 /**
  * Save timers context. Now saving only one context.
  */
-int timers_context_save();
+int timers_context_save(void);
 
 /**
  * Restore context by it number.
@@ -39,7 +41,7 @@ int timers_context_restore(int context_number);
 /**
  * Shutdown timers subsystem.
  */
-void timers_off();
+void timers_off(void);
 
 #endif //__ASSEMBLER
 #endif //_TIMERS_H_

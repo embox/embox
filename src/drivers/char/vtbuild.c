@@ -22,12 +22,11 @@ VTBUILDER * vtbuild_init(VTBUILDER *this, void(*putc)(VTBUILDER *builder,
 }
 
 static void build_param(VTBUILDER *this, int n) {
+	static char buf[BUF_SIZE];
+        int i = 0;
 	if (n < 0) {
 		return;
 	}
-
-	static char buf[BUF_SIZE];
-	int i = 0;
 
 	do {
 		buf[i++] = n % BUF_SIZE + '0';
@@ -36,7 +35,6 @@ static void build_param(VTBUILDER *this, int n) {
 	do {
 		this->putc(this, buf[--i]);
 	} while (i > 0);
-
 }
 
 void vtbuild(VTBUILDER *this, const VT_TOKEN *token) {

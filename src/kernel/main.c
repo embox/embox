@@ -7,7 +7,7 @@
 #include <shell.h>
 #include <autoconf.h>
 
-int main() {
+int main(void) {
 #if !defined(SIMULATION_TRG) && defined(CONFIG_SHELL)
         shell_start();
 #endif

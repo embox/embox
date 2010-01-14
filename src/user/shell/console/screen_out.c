@@ -44,12 +44,12 @@ static void move_cursor_to(SCREEN *this, int col) {
 }
 
 void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
+	int i;
+        bool dirty = true;
+
 	if (this == NULL) {
 		return;
 	}
-
-	int i;
-	bool dirty = true;
 
 	for (i = 0; cmdline->string[i]; i++) {
 		if (this->string[i] == '\0') {
@@ -86,10 +86,10 @@ void screen_out_puts(SCREEN *this, char *str) {
 }
 
 void screen_out_show_prompt(SCREEN *this, const char *prompt) {
+	static const char * default_prompt = "";
 	if (this == NULL) {
 		return;
 	}
-	static const char * default_prompt = "";
 
 	this->prompt = (prompt != NULL) ? prompt : default_prompt;
 

@@ -16,7 +16,7 @@
  * @return 0 if success
  * @return -1 another way
  */
-int irqc_init();
+int irqc_init(void);
 
 /*
  * Enable IRQ by it number.
@@ -31,7 +31,7 @@ int irqc_disable_irq(int irq_num);
 /*
  * Disable all IRQs.
  */
-int irqc_disable_all();
+int irqc_disable_all(void);
 
 /**
  * Calls interrupt specified - right at the moment (forced)

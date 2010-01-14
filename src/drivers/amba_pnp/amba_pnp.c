@@ -25,6 +25,9 @@ typedef struct _APB_SLOT {
 	uint32_t ba_reg[1];
 }APB_SLOT;
 
+AMBA_DEV *ahbm_devices[AHB_MASTERS_QUANTITY];
+AMBA_DEV *ahbsl_devices[AHB_SLAVES_QUANTITY];
+AMBA_DEV *apb_devices[APB_QUANTITY];
 
 inline static int lock_ahbm_slot(uint16_t slot, AMBA_DEV *dev) {
 	if (ahbm_devices[slot]) {
@@ -180,7 +183,7 @@ inline static void fill_amba_dev_info(AMBA_DEV_INFO *dev_info, uint32_t id_reg) 
  */
 int fill_amba_dev(AMBA_DEV *dev, uint8_t slot_number, bool is_ahb, bool is_master) {
 	/* ATTENTION! DON'T USE ANY printf IN THIS FUNCTION */
-	int base;
+	AHB_SLOT *slot;
 	if (!is_ahb) {
 		APB_SLOT *slot = ((APB_SLOT *) APB_BASE) + slot_number;
 		if (0 == slot->id_reg)
@@ -192,7 +195,6 @@ int fill_amba_dev(AMBA_DEV *dev, uint8_t slot_number, bool is_ahb, bool is_maste
 		return 0;
 	}
 	dev->is_master = is_master;
-	AHB_SLOT *slot;
 	if (!is_master) {
 		slot = ((AHB_SLOT *) AHB_SLAVE_BASE) + slot_number;
 	} else {

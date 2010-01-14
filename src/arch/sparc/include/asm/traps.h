@@ -22,7 +22,7 @@
  */
 typedef struct _STACKFRAME {
 	/* register window */
-	REG_WINDOW reg_window;
+	struct reg_window reg_window;
 	/* aggregate return structure pointer */
 	uint32_t structptr[1];
 	/* formal parameters */

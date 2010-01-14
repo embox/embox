@@ -230,4 +230,8 @@ static inline void netif_start_queue(net_device_t *dev) {
 	//TODO:
 }
 
+//TODO: deprecated
+int ifdev_up(const char *iname);
+int ifdev_down(const char *iname);
+
 #endif /* NET_DEVICE_H_ */

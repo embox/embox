@@ -77,7 +77,7 @@ int udpsock_push(sk_buff_t *pack) {
     	return -1;
 }
 
-int udp_init() {
+int udp_init(void) {
 	return 0;
 }
 

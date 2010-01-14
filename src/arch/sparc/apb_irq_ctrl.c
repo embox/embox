@@ -28,7 +28,7 @@ static IRQ_REGS * dev_regs = NULL;
 
 static AMBA_DEV amba_dev;
 
-int irqc_init() {
+int irqc_init(void) {
 #ifndef SIMULATION_TRG
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_INTERRUPT_UNIT);
 #else
@@ -57,7 +57,7 @@ int irqc_disable_irq(irq_num_t irq_num) {
 	return 0;
 }
 
-int irqc_disable_all() {
+int irqc_disable_all(void) {
 	ASSERT_INIT_DONE();
 	REG_STORE(dev_regs->mask, 0);
 	return 0;
@@ -88,6 +88,6 @@ irq_mask_t irqc_set_mask(irq_mask_t mask){
 	return old_mask;
 }
 
-irq_mask_t irqc_get_mask(){
+irq_mask_t irqc_get_mask(void){
 	return REG_LOAD(dev_regs->mask);
 }

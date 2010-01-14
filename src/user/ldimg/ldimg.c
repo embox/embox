@@ -20,7 +20,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 #define ENTRY_PTR 0x40000000
 
-int copy_image(file_name) {
+int copy_image(char *file_name) {
 
 //    extern char _piggy_start, _piggy_end, _data_start;
 //
@@ -58,14 +58,14 @@ int copy_image(file_name) {
     while(0 < fread(buff, sizeof(buff), 1, romfile)){
         fwrite(buff, sizeof(buff), 1, ramfile);
     }
+    return 0;
 }
-
 
 static int exec(int argsc, char **argsv){
 	RAMFS_CREATE_PARAM param;
 	char *file_name;
 	unsigned int base_addr;
-	char ramfname[0x40];
+	//char ramfname[0x40];
 	FSOP_DESCRIPTION *fsop;
         int nextOption;
         getopt_init();

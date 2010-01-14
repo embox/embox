@@ -12,7 +12,7 @@
 
 DECLARE_EXPRESS_TEST("checksum", exec, TEST_CHECKSUM_ON_BOOT_ENABLE, NULL);
 
-static int exec() {
+static int exec(int argc, char** argv) {
 //	extern unsigned long __checksum;
 //	extern unsigned char _text_start, _data_end;
 //	unsigned long result = count_md5(&_text_start, &_data_end);

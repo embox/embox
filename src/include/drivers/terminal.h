@@ -199,7 +199,7 @@ typedef struct {
  * Terminal input/output functions
  */
 typedef struct {
-	char (*getc)();
+	char (*getc)(void);
 	void (*putc)(char ch);
 } TERMINAL_IO;
 

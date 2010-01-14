@@ -16,17 +16,16 @@
 #define INIT_MAX_LEVEL 4
 
 typedef struct init_descriptor {
-    const char *name;
-	int (*init)();
+	const char *name;
+	int (*init)(void);
 	int level;
 } init_descriptor_t;
 
 #define DECLARE_INIT(name, init, level) \
-    static int init(); \
+    static int init(void); \
     static const init_descriptor_t _descriptor##init = { name, init, level }; \
     static const init_descriptor_t *_pdescriptor##init \
 		__attribute__ ((used, section(".init_handlers"))) \
 		= &_descriptor##init
-
 
 #endif /* INIT_H_ */

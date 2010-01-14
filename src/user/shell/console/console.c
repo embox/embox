@@ -28,6 +28,7 @@ CONSOLE *cur_console = NULL;
 
 static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
+	char buf[CMDLINE_MAX_LENGTH + 1];
 	/*FIXME: resolve "(reverse-i-search)`':" statement */
 	char *cmd;// = strstr(this->model->string, ":");
 	//        if (cmd)
@@ -37,7 +38,6 @@ static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
 
 	if (this->callback != NULL && this->callback->exec != NULL && *cmd) {
 		screen_out_puts(this->view, NULL);
-		char buf[CMDLINE_MAX_LENGTH + 1];
 		strcpy(buf, cmd);
 		this->callback->exec(this->callback, this, buf);
 	}
@@ -108,15 +108,13 @@ static void on_dc4(SCREEN_CALLBACK *cb, SCREEN *view) {
 
 static void on_tab(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
+	static char* proposals[MAX_PROPOSALS];
+	int proposals_len, offset, common;
 	if (this->callback != NULL && this->callback->guess != NULL) {
 		char buf[CMDLINE_MAX_LENGTH + 1];
 		strncpy(buf, this->model->string, this->model->cursor);
 		buf[this->model->cursor] = '\0';
 
-		static char* proposals[MAX_PROPOSALS];
-		int proposals_len;
-		int offset;
-		int common;
 		this->callback->guess(this->callback, this, buf, MAX_PROPOSALS,
 				&proposals_len, proposals, &offset, &common);
 		if (proposals_len == 1) {
@@ -140,13 +138,12 @@ static void on_tab(SCREEN_CALLBACK *cb, SCREEN *view) {
 }
 
 CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
+	static SCREEN_IO view_io = { uart_getc, uart_putc };
 	if (this == NULL || callback == NULL) {
 		return NULL;
 	}
 
 	this->callback = callback;
-
-	static SCREEN_IO view_io = { uart_getc, uart_putc };
 
 	if (cmdline_init(this->model) == NULL) {
 		return NULL;
@@ -162,11 +159,12 @@ CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 #define INIT_MEMBER(obj, member) 	obj->member = member
 
 void console_start(CONSOLE *this, const char *prompt) {
+	static SCREEN_CALLBACK screen_callback[1];
+	static const char * default_prompt = "";
 	if (this == NULL) {
 		return;
 	}
 
-	static SCREEN_CALLBACK screen_callback[1];
 	INIT_MEMBER(screen_callback,on_char);
 	INIT_MEMBER(screen_callback,on_cursor_up);
 	INIT_MEMBER(screen_callback,on_cursor_left);
@@ -185,7 +183,6 @@ void console_start(CONSOLE *this, const char *prompt) {
 	INIT_MEMBER(screen_callback,on_dc4);
 	screen_callback->outer = this;
 
-	static const char * default_prompt = "";
 	strncpy(this->prompt, (prompt != NULL) ? prompt : default_prompt,
 			CONFIG_MAX_PROMPT_LENGTH);
 

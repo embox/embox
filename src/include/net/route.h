@@ -66,7 +66,7 @@ extern int rt_del_route(net_device_t *dev, in_addr_t dst,
 extern int ip_route(sk_buff_t *skbuff);
 
 /**< iterators */
-extern rt_entry_t *rt_fib_get_first();
-extern rt_entry_t *rt_fib_get_next();
+extern rt_entry_t *rt_fib_get_first(void);
+extern rt_entry_t *rt_fib_get_next(void);
 
 #endif /* ROUTE_H_ */

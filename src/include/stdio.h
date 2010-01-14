@@ -9,6 +9,8 @@
 
 #include "types.h"
 
+extern int puts (const char *S);
+
 /**
  * Write formatted output to stdout from the format string FORMAT.
  */

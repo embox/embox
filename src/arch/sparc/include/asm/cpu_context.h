@@ -27,13 +27,13 @@ typedef struct _CPU_CONTEXT {
 	/* some control registers */
 	uint32_t y, tbr, psr, wim;
 	/* all register windows */
-	REG_WINDOW reg_windows[CORE_NWINDOWS];
-/*
- * We do not explicitly define space
- * for PC and nPC registers.
- * These registers are saved in locals of the window
- * pointed at the call time. (see traps.h)
- */
+	struct reg_window reg_windows[CORE_NWINDOWS];
+	/*
+	 * We do not explicitly define space
+	 * for PC and nPC registers.
+	 * These registers are saved in locals of the window
+	 * pointed at the call time. (see traps.h)
+	 */
 }__attribute__ ((aligned (8))) CPU_CONTEXT;
 
 #else /* __ASSEMBLER__ */

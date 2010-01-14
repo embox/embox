@@ -14,11 +14,11 @@ DECLARE_EXPRESS_TEST("timer callback", exec, TEST_TIMER_CALLBACK_ON_BOOT_ENABLE,
 
 volatile static bool tick_happened;
 
-static void test_timer_handler() {
+static void test_timer_handler(uint32_t id) {
 	tick_happened = true;
 }
 
-static int exec() {
+static int exec(int argc, char** argv) {
 	uint32_t id, ticks;
 	long i;
 	id = 17;

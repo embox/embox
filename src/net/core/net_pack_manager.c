@@ -22,7 +22,7 @@ static LIST_HEAD(busy_packet_list_head);
 static NET_PACK_INFO pack_pool[PACK_POOL_SIZE];
 static unsigned char heap_buff[array_len(pack_pool)][ETHERNET_V2_FRAME_SIZE];
 
-int __init net_buff_init() {
+int __init net_buff_init(void) {
 	int i;
 	for (i = 0; i < array_len(pack_pool); i ++) {
 		(&pack_pool[i])->buff = &heap_buff[i][0];
@@ -32,14 +32,15 @@ int __init net_buff_init() {
 	return 0;
 }
 
-unsigned char *net_buff_alloc() {
+unsigned char *net_buff_alloc(void) {
+	NET_PACK_INFO *pack;
 	unsigned long sp = spin_lock();
 	if (list_empty (&free_packet_list_head)) {
 		spin_unlock(sp);
 		return NULL;
 	}
 	list_move_tail((&free_packet_list_head)->next, &busy_packet_list_head);
-	NET_PACK_INFO *pack = list_entry((&busy_packet_list_head)->prev,
+	pack = list_entry((&busy_packet_list_head)->prev,
 						struct _NET_BUFF_INFO, list);
 	spin_unlock(sp);
 	return pack->buff;

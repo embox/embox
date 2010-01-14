@@ -9,7 +9,7 @@
 #include "asm/mmu.h"
 
 #define NODO_CLEAR
-int mmu_probe_init() {
+int mmu_probe_init(void) {
     ctxd_t *c0 = (ctxd_t *) &ctx;
     pgd_t *g0 = (pgd_t *) &pg0;
     //alloc mem for tables
@@ -125,7 +125,7 @@ unsigned int mmu_get_page_desc(unsigned int page_addr) {
     return 0;
 }
 
-int mmu_probe_start() {
+int mmu_probe_start(void) {
     srmmu_set_context(0);
     srmmu_set_mmureg(0x00000001);
     __asm__(" flush ");
@@ -136,7 +136,7 @@ int mmu_probe_start() {
     return 0;
 }
 
-void flush_data_cache() {
+void flush_data_cache(void) {
     __asm__(" sta  %g0, [%g0] 0x11 ");
     //dflush
 }

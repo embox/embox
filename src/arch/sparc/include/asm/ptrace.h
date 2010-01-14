@@ -16,12 +16,12 @@
 /**
  * A register window
  */
-typedef struct _REG_WINDOW {
+struct reg_window {
 	uint32_t locals[8];
 	uint32_t ins[8];
-} REG_WINDOW;
+};
 
-#define REG_WINDOW_SZ sizeof(REG_WINDOW)
+#define REG_WINDOW_SZ sizeof(struct reg_window)
 
 #else /* __ASSEMBLER__ */
 

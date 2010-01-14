@@ -113,20 +113,24 @@ static VT_TOKEN *vt_from_term_token(TERMINAL_TOKEN terminal_token,
 }
 
 static TERMINAL_TOKEN term_from_vt_token(VT_TOKEN *vt_token) {
+	VT_ACTION action;
+	char *a;
+	int a_len;
+	char char1, char2, code;
 	if (vt_token == NULL) {
 		return TERMINAL_TOKEN_EMPTY;
 	}
 
-	VT_ACTION action = vt_token->action;
+	action = vt_token->action;
 	if (!is_valid_action(action)) {
 		return TERMINAL_TOKEN_EMPTY;
 	}
 
-	char *a = vt_token->attrs;
-	int a_len = vt_token->attrs_len;
-	char char1 = (a_len > 0) ? a[0] : '\0';
-	char char2 = (a_len > 1) ? a[1] : '\0';
-	char code = vt_token->ch;
+	a = vt_token->attrs;
+	a_len = vt_token->attrs_len;
+	char1 = (a_len > 0) ? a[0] : '\0';
+	char2 = (a_len > 1) ? a[1] : '\0';
+	code = vt_token->ch;
 
 	return ENCODE(action,char1,char2, code);
 }
@@ -134,15 +138,14 @@ static TERMINAL_TOKEN term_from_vt_token(VT_TOKEN *vt_token) {
 static TERMINAL_TOKEN_PARAMS *terminal_prepare_params(TERMINAL *this,
 		int length, va_list args) {
 	TERMINAL_TOKEN_PARAMS *params = this->default_params;
+	int i;
 	if (length < 0) {
 		length = 0;
 	}
 	params->length = length;
-	int i;
 	for (i = 0; i < length; ++i) {
 		params->data[i] = va_arg(args, int);
 	}
-
 	return params;
 }
 
@@ -156,7 +159,6 @@ static void vtparse_callback(VTPARSER *parser, VT_TOKEN *token) {
 		// TODO
 		assert(false);
 	}
-
 }
 
 //static char *ACTION_NAMES[] = { "<no action>", "CLEAR", "COLLECT", "CSI_DISPATCH",
@@ -172,12 +174,14 @@ static void vtparse_callback(VTPARSER *parser, VT_TOKEN *token) {
  */
 bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 		TERMINAL_TOKEN_PARAMS *params) {
+	int *p_len, *p_head;
+	VT_TOKEN *vt_token;
 	if (this == NULL) {
 		return false;
 	}
 
-	int *p_len = &this->vt_token_queue_len;
-	int *p_head = &this->vt_token_queue_head;
+	p_len = &this->vt_token_queue_len;
+	p_head = &this->vt_token_queue_head;
 	while (*p_len == 0) {
 		// we don't return from vtparse until
 		// callback has not been invoked at least once.
@@ -187,7 +191,6 @@ bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 	}
 	assert(*p_len != 0);
 
-	VT_TOKEN *vt_token;
 	// Almost surely this loop will be executed only once
 	while (*p_len != 0) {
 		for (; *p_head < *p_len; (*p_head)++) {

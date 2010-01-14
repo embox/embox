@@ -5,6 +5,7 @@
  * \author kse
  */
 #include "shell_command.h"
+#include <hal/irq_ctrl.h>
 
 #define COMMAND_NAME     "exec"
 #define COMMAND_DESC_MSG "execute image file"
@@ -15,7 +16,7 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-typedef void (*IMAGE_ENTRY)();
+typedef void (*IMAGE_ENTRY)(void);
 
 void go_to(unsigned int addr) {
 	printf("Try goto 0x%08X\n", addr);

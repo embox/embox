@@ -85,7 +85,7 @@ typedef struct sk_buff_head {
  * function must called if we want use this functionality.
  * It init queue free packet
  */
-extern void skb_init();
+extern void skb_init(void);
 
 /**
  * allocate one instance of structure sk_buff. With pointed size and flags.

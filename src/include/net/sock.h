@@ -137,7 +137,7 @@ extern SOCK_INFO sks[MAX_SOCK_NUM];
 /**
  * All socket objects are allocated here
  */
-extern struct udp_sock* sk_alloc();
+extern struct udp_sock* sk_alloc(void);
 extern void sk_free(struct udp_sock *sk);
 #endif
 

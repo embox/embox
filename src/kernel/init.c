@@ -17,7 +17,7 @@
 #include <kernel/init.h>
 
 //TODO this code must move to boot.S file
-void copy_data_section() {
+void copy_data_section(void) {
 	extern char _text_end, _data_start, _data_end, _bstart, _bend;
 	char *src = &_text_end;
 	char *dst = &_data_start;
@@ -35,10 +35,10 @@ void copy_data_section() {
 	}
 }
 
-int hardware_init_hook() {
+int hardware_init_hook(void) {
 	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
 	init_descriptor_t ** p_init_desc = &__init_handlers_start;
-	int i, total = (int) (&__init_handlers_end - &__init_handlers_start);
+	//int i, total = (int) (&__init_handlers_end - &__init_handlers_start);
 	int level;
 	const char *init_name;
 	const char *default_init_name = "???";

@@ -41,9 +41,9 @@ typedef struct _FILE_HANDLER {
 } FILE_HANDLER;
 static FILE_HANDLER file_handlers[FILE_HANDLERS_QUANTITY];
 
-static int file_handler_cnt;
+//static int file_handler_cnt;
 
-static file_list_cnt;
+static int file_list_cnt;
 static FILE_INFO * file_list_iterator(FILE_INFO *finfo) {
     if (MAX_FILE_QUANTITY <= file_list_cnt)
         return NULL;
@@ -60,12 +60,12 @@ static FILE_INFO * file_list_iterator(FILE_INFO *finfo) {
     return finfo;
 }
 
-static FS_FILE_ITERATOR get_file_list_iterator() {
+static FS_FILE_ITERATOR get_file_list_iterator(void) {
     file_list_cnt = 0;
     return file_list_iterator;
 }
 
-static FILE_DESC * find_free_desc() {
+static FILE_DESC * find_free_desc(void) {
     int i;
     if (MAX_FILE_QUANTITY <= file_desc_cnt)
         return NULL;
@@ -89,7 +89,7 @@ static FILE_DESC * find_file_desc(const char * file_name) {
     return NULL;
 }
 
-static FILE_HANDLER * find_free_handler() {
+static FILE_HANDLER * find_free_handler(void) {
     int i;
     if (FILE_HANDLERS_QUANTITY <= file_desc_cnt)
         return NULL;
@@ -102,8 +102,9 @@ static FILE_HANDLER * find_free_handler() {
     return NULL;
 }
 
-static int init() {
-    extern char _data_start, _data_end, _text_start, _text_end;
+static int init(void) {
+    extern char _data_start, _data_end, _text_start, _text_end,
+				    _piggy_end, _piggy_start;
     RAMFS_CREATE_PARAM param;
 
     //create file section_text
@@ -118,7 +119,6 @@ static int init() {
     create_file(&param);//ram
 //#ifdef INCLUDE_OS_IMAGE
     //create section piggy if need
-    extern char _piggy_end, _piggy_start;
     if (&_piggy_end - &_piggy_start) {
         strncpy(param.name, "piggy", array_len(param.name));
         param.size = (unsigned int )(&_piggy_end - &_piggy_start);
@@ -147,9 +147,9 @@ static void *open_file(const char *file_name, char *mode) {
     //TODO must check permitions
     fh->mode = (unsigned int) *mode;
     fh->fileop = &fop;
-    printf ("fh = 0x%X\tfop = 0x%X\n", fh, &fop);
-    printf ("fread = 0x%X\n", fh->fileop->read);
-    printf ("fwrite = 0x%X\n", fh->fileop->write);
+    printf ("fh = 0x%X\tfop = 0x%X\n", (unsigned)fh, (unsigned)&fop);
+    printf ("fread = 0x%X\n", (unsigned)fh->fileop->read);
+    printf ("fwrite = 0x%X\n", (unsigned)fh->fileop->write);
     printf ("start_addr = 0x%X\t size = 0x%X\n", fh->fdesc->start_addr, fh->fdesc->size);
     fh->fileop->fopen(file_name, mode);
     return fh;
@@ -238,6 +238,6 @@ static size_t fwrite(const void *buf, size_t size, size_t count, void *file) {
 }
 
 static int fseek(void *file, long offset, int whence) {
-    FILE_HANDLER *fh = (FILE_HANDLER *) file;
+    //FILE_HANDLER *fh = (FILE_HANDLER *) file;
     return 0;
 }

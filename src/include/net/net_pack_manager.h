@@ -11,13 +11,13 @@
 //TODO this param must place in autoconf
 #define PACK_POOL_SIZE  0x100
 
-extern int net_buff_init();
+extern int net_buff_init(void);
 
 /**
  * Allocate net_packet_buff for one ethernet packet on the pool.
  * @return net_packet
  */
-extern unsigned char *net_buff_alloc();
+extern unsigned char *net_buff_alloc(void);
 
 /**
  * Free buff of net packet.

@@ -13,6 +13,8 @@
 #include <net/skbuff.h>
 #include <in.h>
 #include <misc.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #define COMMAND_NAME     "arping"
 #define COMMAND_DESC_MSG "send ARP REQUEST to a neighbour host"
@@ -25,9 +27,12 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
-	int cnt     = 4;
+	int cnt     = 4, cnt_resp = 0, i, j;
 	in_device_t *in_dev = inet_dev_find_by_name("eth0");
 	struct in_addr dst;
+	char *dst_b, *from_b;
+        struct in_addr from;
+        unsigned char mac[18];
 	int nextOption;
 	getopt_init();
 	do {
@@ -66,14 +71,10 @@ static int exec(int argsc, char **argsv) {
                 show_help();
                 return -1;
         }
-        int cnt_resp = 0;
-        char *dst_b = inet_ntoa(dst);
-        struct in_addr from;
+        dst_b = inet_ntoa(dst);
         from.s_addr = in_dev->ifa_address;
-        char *from_b = inet_ntoa(from);
-        unsigned char mac[18];
+        from_b = inet_ntoa(from);
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
-	int i, j;
 	for(i = 1; i <= cnt; i++) {
 		arp_delete_entity(NULL, dst.s_addr, NULL);
 		arp_send(ARPOP_REQUEST, ETH_P_ARP, dst.s_addr, in_dev->dev,

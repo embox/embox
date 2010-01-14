@@ -31,6 +31,7 @@ in_addr_t inet_addr(const char *cp) {
 int inet_aton(const char *cp, struct in_addr *addr) {
 	static const in_addr_t max[4] = { 0xffffffff, 0xffffff, 0xffff, 0xff };
 	in_addr_t val;
+	uint32_t temp;
 	char c;
 	union iaddr {
 	  uint8_t bytes[4];
@@ -61,7 +62,6 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 				digit = 1 ;
 			}
 		}
-		uint32_t temp;
 		for (;;) {
 			if (isdigit(c)) {
 				if (base == 8 && (c == '8' || c == '9'))

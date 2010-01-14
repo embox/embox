@@ -7,6 +7,8 @@
  */
 
 #include "shell_command.h"
+#include <kernel/sys.h>
+#include <string.h>
 
 /**
  * find descriptor for shell command with pointed name

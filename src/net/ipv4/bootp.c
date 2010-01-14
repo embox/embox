@@ -54,7 +54,7 @@ static int bootp_dns_domain_set = 0;
 
 static struct _bootp_header_t bootp_info;
 
-const struct _bootp_header_t const* get_bootp_info () {
+const struct _bootp_header_t const* get_bootp_info (void) {
 	return &bootp_info;
 }
 
@@ -62,15 +62,15 @@ static in_addr_t local_ip_addr = 0;
 static in_addr_t local_ip_mask = 0;
 static in_addr_t local_ip_gate = 0;
 
-in_addr_t const get_ip_addr () {
+in_addr_t const get_ip_addr (void) {
 	return local_ip_addr;
 }
 
-in_addr_t const get_ip_mask () {
+in_addr_t const get_ip_mask (void) {
         return local_ip_mask;
 }
 
-in_addr_t const get_ip_gate () {
+in_addr_t const get_ip_gate (void) {
         return local_ip_gate;
 }
 

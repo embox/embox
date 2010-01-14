@@ -61,7 +61,7 @@ static inline iphdr_t *ip_hdr(const sk_buff_t *skb) {
 /**
  * Init.
  */
-extern void ip_init();
+extern void ip_init(void);
 
 /**
  * Main IP Receive routine.
@@ -78,5 +78,9 @@ extern int ip_queue_xmit(sk_buff_t *skb);
 
 extern void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
 			sk_buff_t *skb, unsigned int len);
+
+extern int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
+                unsigned short id, unsigned short len, in_addr_t saddr,
+                in_addr_t daddr);
 
 #endif /* IP_H_ */

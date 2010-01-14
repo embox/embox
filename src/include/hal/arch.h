@@ -31,7 +31,7 @@ typedef struct {
 	} memory[];
 	int memory_sz;
 
-	char (*getc)();
+	char (*getc)(void);
 	void (*putc)(char ch);
 
 } arch_bootinfo_t;
@@ -42,14 +42,14 @@ typedef struct {
  *
  * @note Implementation have to setup such low-level features as e.g. cache.
  */
-void arch_init();
+void arch_init(void);
 
-void arch_idle();
+void arch_idle(void);
 
 void arch_shutdown(arch_shutdown_mode_t mode);
 
 #if 0
-arch_bootinfo_t *arch_bootinfo_get();
+arch_bootinfo_t *arch_bootinfo_get(void);
 #endif
 
 #endif /* HAL_ARCH_H_ */

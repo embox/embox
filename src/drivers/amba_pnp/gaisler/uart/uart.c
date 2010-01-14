@@ -3,6 +3,7 @@
  */
 #include "types.h"
 #include "kernel/irq.h"
+#include <hal/irq_ctrl.h>
 #include "drivers/amba_pnp.h"
 #include "kernel/uart.h"
 #include "common.h"
@@ -89,7 +90,6 @@ int uart_init() {
 	assert(UART_BASE == amba_dev.bar[0].start);
 	assert(UART_IRQ == amba_dev.dev_info.irq);
 #endif
-
 	dev_regs = (UART_STRUCT *) amba_dev.bar[0].start;
 	irq = amba_dev.dev_info.irq;
 	REG_STORE(dev_regs->ctrl, UART_DISABLE_ALL); /**< disabled uart */
@@ -101,6 +101,7 @@ int uart_init() {
 	//while (UART_RX_READY & REG_LOAD(dev_regs->status));
 	//uart->data;
 #endif
+	return 0;
 }
 
 /*bool uart_is_empty() {
@@ -108,12 +109,12 @@ int uart_init() {
  }*/
 
 void uart_putc(char ch) {
+	volatile int i;
 	ASSERT_INIT_DONE();
 	/*#ifndef SIMULATION_TRG
 	 while (!(UART_TX_READY & REG_LOAD(dev_regs->status)))
 	 ;
 	 #endif*/
-	volatile int i;
 	for (i = 0; i < 0x1000; i++)
 		;
 

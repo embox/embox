@@ -30,12 +30,12 @@ static CPU_CONTEXT context;
 volatile static bool started = false;
 
 int sys_exec_start(EXEC_FUNC f, int argc, char **argv) {
+	int ret;
 	if (started) {
 		return -3;
 	}
 
-	int ret = -2;
-
+	ret = -2;
 	context_save(&context);
 
 	if (!started) {
@@ -47,18 +47,18 @@ int sys_exec_start(EXEC_FUNC f, int argc, char **argv) {
 	return ret;
 }
 
-void sys_exec_stop() {
+void sys_exec_stop(void) {
 	if (!started) {
 		return;
 	}
 	context_restore(&context);
 }
 
-void sys_halt() {
+void sys_halt(void) {
 	//todo must be trap
 }
 
-bool sys_exec_is_started() {
+bool sys_exec_is_started(void) {
 	return started;
 }
 

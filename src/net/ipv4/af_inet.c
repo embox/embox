@@ -10,6 +10,7 @@
 #include <in.h>
 #include <err.h>
 #include <net/protocol.h>
+#include <net/arp.h>
 #include <net/udp.h>
 #include <net/icmp.h>
 #include <net/ip.h>

@@ -14,7 +14,7 @@ DECLARE_EXPRESS_TEST("MMU", exec, TEST_MMU_ON_BOOT_ENABLE, NULL);
 
 #define TLBNUM 4
 
-static int exec() {
+static int exec(int argc, char** argv) {
 	unsigned long pteval;
 	unsigned long j, i, val;
 

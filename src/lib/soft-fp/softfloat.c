@@ -836,7 +836,7 @@ float32 float32_div( float32 a, float32 b ) {
 float32 float32_rem( float32 a, float32 b ) {
         flag aSign, bSign, zSign;
         int16 aExp, bExp, expDiff;
-        bits32 aSig, bSig, q, allZero, alternateASig;
+        bits32 aSig, bSig, q, /*allZero,*/ alternateASig;
         sbits32 sigMean;
         aSig = extractFloat32Frac( a );
         aExp = extractFloat32Exp( a );
@@ -1037,7 +1037,7 @@ flag float32_eq_signaling( float32 a, float32 b ) {
  */
 flag float32_le_quiet( float32 a, float32 b ) {
         flag aSign, bSign;
-        int16 aExp, bExp;
+        //int16 aExp, bExp;
 
         if (((extractFloat32Exp(a) == 0xFF ) && extractFloat32Frac(a))
             || ((extractFloat32Exp(b) == 0xFF ) && extractFloat32Frac(b))) {

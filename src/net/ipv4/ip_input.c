@@ -10,6 +10,8 @@
 #include "net/net.h"
 #include "net/skbuff.h"
 #include "net/ip.h"
+#include <net/icmp.h>
+#include <net/udp.h>
 #include "net/inet_sock.h"
 #include "net/if_ether.h"
 #include "net/netdevice.h"
@@ -19,9 +21,12 @@
 
 int ip_rcv(sk_buff_t *pack, net_device_t *dev,
                       packet_type_t *pt, net_device_t *orig_dev) {
-	pack->h.raw = pack->nh.raw + IP_HEADER_SIZE;
 	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(pack->dev);
-	iphdr_t *iph = pack->nh.iph;
+	iphdr_t *iph;
+	unsigned short tmp;
+	unsigned int len;
+	pack->h.raw = pack->nh.raw + IP_HEADER_SIZE;
+	iph = pack->nh.iph;
 	/**
 	 *   RFC1122: 3.1.2.2 MUST silently discard any IP frame that fails the checksum.
 	 *   Is the datagram acceptable?
@@ -35,7 +40,7 @@ int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 		stats->rx_err ++;
 		return NET_RX_DROP;
 	}
-	unsigned short tmp = iph->check;
+	tmp = iph->check;
 	iph->check = 0;
 	if (tmp != ptclbsum(pack->nh.raw, IP_HEADER_SIZE)) {
 		LOG_ERROR("bad ip checksum\n");
@@ -43,7 +48,7 @@ int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 		return NET_RX_DROP;
 	}
 
-	unsigned int len = ntohs(iph->tot_len);
+	len = ntohs(iph->tot_len);
 	if (pack->len < len || len < (iph->ihl * 4)) {
 		LOG_ERROR("invalide IPv4 header length\n");
 		stats->rx_length_errors ++;
@@ -61,7 +66,6 @@ int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 	}
 	if (ICMP_PROTO_TYPE == iph->proto) {
 		icmp_rcv(pack);
-		kfree_skb(pack);
 	}
 	if (UDP_PROTO_TYPE == iph->proto) {
 		udp_rcv(pack);

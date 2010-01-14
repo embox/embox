@@ -23,7 +23,7 @@
  * @retval 0 on success.
  * @retval -1 if error has been occured.
  */
-int irqc_init();
+int irqc_init(void);
 
 /**
  * Sets pointed bit in irq_mask register.
@@ -69,14 +69,14 @@ irq_mask_t irqc_set_mask(irq_mask_t mask);
  *
  * @return irq_mask register state.
  */
-irq_mask_t irqc_get_mask();
+irq_mask_t irqc_get_mask(void);
 
 /**
  * Clear irq_mask register in interrupt controller. Clear pending register.
  *
  * @return irq_mask register state.
  */
-int irqc_disable_all();
+int irqc_disable_all(void);
 
 /**
  * Function set pointed bit in pending register.

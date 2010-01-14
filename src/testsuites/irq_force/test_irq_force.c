@@ -22,7 +22,7 @@ static void test_irq_force_handler(int irq_num, void *dev_id, struct pt_regs *re
 	irq_happened = true;
 }
 
-static int exec() {
+static int exec(int argc, char** argv) {
 	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_irq_force_handler, NULL, "test_irq_force", 0, true};
 
 	irq_happened = false;

@@ -10,7 +10,7 @@
 /*
  * Init UART subsystem.
  */
-int uart_init();
+int uart_init(void);
 
 /**
  * output: write character via uart.
@@ -20,11 +20,11 @@ void uart_putc(char ch);
 /**
  * input: read character via uart.
  */
-char uart_getc();
+char uart_getc(void);
 
 //#ifdef IRQ_HANDLER
 int uart_set_irq_handler(IRQ_HANDLER pfunc);
-int uart_remove_irq_handler();
+int uart_remove_irq_handler(void);
 //#endif
 
 #endif /* _UART_H_ */

@@ -7,17 +7,18 @@
  * \author Eldar Abusalimov
  * \author Alexey Fomin
  */
-#include "common.h"
-#include "express_tests.h"
-#include "kernel/init.h"
+#include <common.h>
+#include <express_tests.h>
+#include <kernel/init.h>
+#include <kernel/sys.h>
 
 DECLARE_INIT("Express tests", express_tests_execute, INIT_EXPR_TESTS_LEVEL);
 
-static int express_tests_execute() {
+static int express_tests_execute(void) {
 	extern express_test_descriptor_t *__express_tests_start, *__express_tests_end;
 	express_test_descriptor_t ** p_test = &__express_tests_start;
 	int i, total = (int) (&__express_tests_end - &__express_tests_start);
-	int passed = 0, failed = 0, skipped = 0;
+	int passed = 0, failed = 0, skipped = 0, result;
 
 	TRACE("\nRunning express tests subsystem (total tests: %d)\n\n", total);
 
@@ -43,7 +44,7 @@ static int express_tests_execute() {
 			continue;
 		}
 		// TODO magic constants
-		int result = sys_exec_start((*p_test)->exec);
+		result = sys_exec_start((*p_test)->exec, 0, NULL);
 		if (result == -1) {
 			TRACE("FAILED\n");
 			failed++;

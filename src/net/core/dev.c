@@ -13,6 +13,7 @@
 #include <kernel/interrupt.h>
 #include <net/skbuff.h>
 #include <net/net.h>
+#include <net/arp.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <lib/list.h>
@@ -51,12 +52,12 @@ int dev_alloc_name(struct net_device *dev, const char *name) {
 net_device_t *alloc_netdev(int sizeof_priv, const char *name, void(*setup)(
 		net_device_t *)) {
 	struct net_device *dev;
+	char buff[IFNAMSIZ];
 	int i;
 	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
 		if (!dev_is_busy(i)) {
 			dev = dev_lock(i);
 			setup(dev);
-			char buff[IFNAMSIZ];
 			sprintf(buff, name, i);
 			strcpy(dev->name, buff);
 			return dev;
@@ -93,15 +94,18 @@ net_device_t *netdev_get_by_name(const char *name) {
 }
 
 int dev_queue_xmit(struct sk_buff *pack) {
+	net_device_t *dev;
+	const struct net_device_ops *ops;
+	net_device_stats_t *stats;
 	if (NULL == pack) {
 		return -1;
 	}
-	net_device_t *dev = pack->dev;
+	dev = pack->dev;
 	if (NULL == dev) {
 		return -1;
 	}
-	const struct net_device_ops *ops = dev->netdev_ops;
-	net_device_stats_t *stats = ops->ndo_get_stats(dev);
+	ops = dev->netdev_ops;
+	stats = ops->ndo_get_stats(dev);
 	if (dev->flags & IFF_UP) {
 		if (ETH_P_ARP != pack->protocol) {
 			if (-1 == dev->header_ops->rebuild(pack)) {
@@ -126,18 +130,19 @@ int dev_queue_xmit(struct sk_buff *pack) {
 //#define CONFIG_SOFT_IRQ 0
 
 int netif_rx(struct sk_buff *pack) {
+	net_device_t *dev;
+	//struct list_head *head;
+        struct packet_type *q;
+        int rc_rx = 0;
 	if (NULL == pack) {
 		return NET_RX_DROP;
 	}
-	net_device_t *dev = pack->dev;
+	dev = pack->dev;
 	if (NULL == dev) {
 		return NET_RX_DROP;
 	}
 	pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
 
-	struct list_head *head;
-	struct packet_type *q;
-	int rc_rx = 0;
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == pack->protocol) {
 #if CONFIG_SOFT_IRQ
@@ -159,7 +164,6 @@ int netif_rx(struct sk_buff *pack) {
 }
 
 void dev_add_pack(struct packet_type *pt) {
-	int hash;
 	if (pt->type == htons(ETH_P_ALL)) {
 		list_add(&pt->list, &ptype_all);
 	} else {
@@ -186,11 +190,12 @@ void dev_remove_pack(struct packet_type *pt) {
 
 int dev_open(struct net_device *dev) {
 	int ret = 0;
+	const struct net_device_ops *ops;
 	/* Is it already up? */
 	if (dev->flags & IFF_UP) {
 		return 0;
 	}
-	const struct net_device_ops *ops = dev->netdev_ops;
+	ops = dev->netdev_ops;
 	dev->state |= __LINK_STATE_START;
 
 	if (ops->ndo_open) {
@@ -209,10 +214,11 @@ int dev_open(struct net_device *dev) {
 }
 
 int dev_close(struct net_device *dev) {
+	const struct net_device_ops *ops;
 	if (!(dev->flags & IFF_UP)) {
 		return 0;
 	}
-	const struct net_device_ops *ops = dev->netdev_ops;
+	ops = dev->netdev_ops;
 	dev->state &= ~__LINK_STATE_START;
 
 	if (ops->ndo_stop) {

@@ -7,6 +7,7 @@
 #include "shell_command.h"
 #include "asm/cache.h"
 #include "memory_tests.h"
+#include <string.h>
 
 #define COMMAND_NAME     "testmem"
 #define COMMAND_DESC_MSG "set of memory tests"
@@ -21,7 +22,6 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 typedef int TEST_MEM_FUNC(uint32_t *addr, long int amount);
 
 static int exec(int argsc, char **argsv) {
-	int i;
 	TEST_MEM_FUNC *test_mem_func;
 	uint32_t *address = (uint32_t *) 0x70000000L;
 	long int amount = 1000000L;
@@ -37,14 +37,14 @@ static int exec(int argsc, char **argsv) {
 			// Key -a for address
 			// Can be in hex and in decimal
 			if ((optarg == NULL) || // addr empty
-					((!sscanf(optarg, "0x%x", &address)) // addr not in hex
+					((!sscanf(optarg, "0x%p", &address)) // addr not in hex
 							&& (!sscanf(optarg, "%d", (int *) &address)))) { // addr not in decimal
 				LOG_ERROR("testmem: -a: address value in hex or in decimal expected.\n");
 				show_help();
 				return -1;
 			}
 			// TODO remove next
-			TRACE("Address: 0x%08x\n", address);
+			TRACE("Address: 0x%08x\n", (unsigned)address);
 			break;
 		case 'n':
 			// Key -n for number of
@@ -56,7 +56,7 @@ static int exec(int argsc, char **argsv) {
 				show_help();
 				return -1;
 			}
-			if (!sscanf(optarg, "0x%x", &amount)) { // amount not in hex
+			if (!sscanf(optarg, "0x%lx", &amount)) { // amount not in hex
 				if (!sscanf(optarg, "%d", (int *) &amount)) { // amount not in decimal
 					LOG_ERROR("testmem: -n: amount value in hex or in decimal expected.\n");
 					show_help();
@@ -103,7 +103,7 @@ static int exec(int argsc, char **argsv) {
 	}
 
 	cache_data_disable();
-	TRACE("Before starting: address: 0x%08x, amount: 0x%08x\n", address, amount);
+	TRACE("Before starting: address: 0x%08x, amount: 0x%08x\n", (unsigned)address, (unsigned)amount);
 	(*test_mem_func)(address, amount);
 	cache_data_enable();
 	return 0;

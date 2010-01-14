@@ -69,17 +69,17 @@ typedef void (*HANDLER_DATA_FUNC)(struct _AMBA_DEV *dev);
 typedef struct _AMBA_DEV{
 	AMBA_DEV_INFO      dev_info;     /**< VendorID, DeviceID, version, IRQ */
 	AMBA_BAR_INFO      bar[4];
-	uint8_t               slot;         /**< information about location */
+	uint8_t            slot;         /**< information about location */
 	HANDLER_DATA_FUNC  show_info;    /**< show brief description */
 	char               dev_name[16]; /**< logical name */
 	bool               is_ahb;
 	bool               is_master;
-	uint32_t             user_def[3];  /**< info from user registers */
+	uint32_t           user_def[3];  /**< info from user registers */
 } AMBA_DEV;
 
-static AMBA_DEV *ahbm_devices[AHB_MASTERS_QUANTITY];
-static AMBA_DEV *ahbsl_devices[AHB_SLAVES_QUANTITY];
-static AMBA_DEV *apb_devices[APB_QUANTITY];
+extern AMBA_DEV *ahbm_devices[AHB_MASTERS_QUANTITY];
+extern AMBA_DEV *ahbsl_devices[AHB_SLAVES_QUANTITY];
+extern AMBA_DEV *apb_devices[APB_QUANTITY];
 
 /*
  * pnp_dev must be allocated by caller

@@ -19,7 +19,7 @@ DECLARE_EXPRESS_TEST("CPU context", exec, TEST_CPU_CONTEXT_ON_BOOT_ENABLE, NULL)
  * then call function context_restore
  * @return 0 if success
  */
-static int exec() {
+static int exec(int argc, char** argv) {
 	static CPU_CONTEXT context;
 	volatile static bool started;
 

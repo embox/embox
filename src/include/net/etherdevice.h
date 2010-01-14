@@ -118,4 +118,11 @@ extern net_device_t *alloc_etherdev(int sizeof_priv);
  */
 extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
 
+extern int eth_flag_up(net_device_t *dev, int flag_type);
+extern int eth_flag_down(net_device_t *dev, int flag_type);
+extern int eth_set_irq(net_device_t *dev, int irq_num);
+extern int eth_set_baseaddr(net_device_t *dev, unsigned long base_addr);
+extern int eth_set_txqueuelen(net_device_t *dev, unsigned long new_len);
+extern int eth_set_broadcast_addr(net_device_t *dev, unsigned char broadcast_addr[]);
+
 #endif /* ETHERDEVICE_H_ */

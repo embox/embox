@@ -10,12 +10,14 @@
 #ifndef ASSERT_H_
 #define ASSERT_H_
 
+#ifdef _TEST_SYSTEM_
 #include <autoconf.h>
 #include <types.h>
+#endif
 
 //#include <hal/arch.h>
 
-#ifndef DEBUG
+#if !defined(DEBUG) && defined(_TEST_SYSTEM_)
 # define __ASSERT_STRING0(cond, file, line) \
 		"\nASSERTION FAILED at " #file " : " #line "\n" \
 		"(" cond ") is not true\n"

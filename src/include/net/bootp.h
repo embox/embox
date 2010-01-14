@@ -184,22 +184,22 @@ int bootp_discover (void* ifdev);
 /**
  * Return current bootp info
  */
-const struct _bootp_header_t const* get_bootp_info ();
+const struct _bootp_header_t const* get_bootp_info (void);
 
 /**
  * Return ip address obtained from bootp/dhcp
  */
-in_addr_t const get_ip_addr ();
+in_addr_t const get_ip_addr (void);
 
 /**
  * Return network mask obtained from bootp/dhcp
  */
-in_addr_t const get_ip_mask ();
+in_addr_t const get_ip_mask (void);
 
 /**
  * Return gateway obtained from bootp/dhcp
  */
-in_addr_t const get_ip_gate ();
+in_addr_t const get_ip_gate (void);
 
 #endif // __BOOTP_H__
 

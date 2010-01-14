@@ -33,7 +33,7 @@ typedef struct {
 
 #define IRQ_TABLE_SIZE     0xFF
 
-int irq_init_handlers();
+int irq_init_handlers(void);
 
 /**
  * Sets and enables a new callback for the specified IRQ number
@@ -82,6 +82,12 @@ int request_irq(unsigned int irq, IRQ_HANDLER handler, unsigned long flags,
 		const char *dev_name, void *dev_id);
 
 void free_irq(unsigned int irq, void *dev_id);
+
+extern void irq_dispatch(uint32_t irq_number);
+
+extern unsigned long local_irq_save(void);
+extern void local_irq_restore(unsigned long old_psr);
+extern void local_irq_enable(void);
 
 /** When set, this indicates a "fast'' interrupt handler.
  * Fast handlers are executed with interrupts disabled
