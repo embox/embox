@@ -20,16 +20,28 @@
 
 #endif /* MAKE */
 
+
 #ifdef LDS
-#define lds_ram(base, size) \
-	$define LDS_RAM_BASE base \
-	$define LDS_RAM_SIZE size
-#define lds_rom(base, size) \
-	$define LDS_ROM_BASE base \
-	$define LDS_ROM_SIZE size
+
+#define lds_region(name, base, size) \
+	$define LDS_REGION_##name \
+	REGION_##name : ORIGIN =##base, LENGTH =##size
+
+#define lds_section_lma_yes(name, region, lma) \
+	$define PLACE_##name REGION_##region \
+	$define LMA_##name AT ( ADDR(##lma) + SIZEOF (##lma) )
+
+#define lds_section_lma_no(name, region) \
+	$define PLACE_##name REGION_##region \
+	$define LMA_##name
+
 #else
-#define lds_ram(base, size)
-#define lds_rom(base, size)
+
+#define lds_region(name, base, size)
+#define lds_section(name, region, overloaded, lma)
+#define lds_section_lma_no(name, region)
+#define lds_section_lma_yes(name, region, lma)
+
 #endif /* LDS */
 
 #include "common.conf"

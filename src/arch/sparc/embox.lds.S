@@ -9,12 +9,12 @@ OUTPUT_ARCH(sparc)
 ENTRY(_hardreset)
 
 MEMORY {
-	sdram : ORIGIN = LDS_RAM_BASE, LENGTH = LDS_RAM_SIZE
-	  rom : ORIGIN = LDS_ROM_BASE, LENGTH = LDS_ROM_SIZE
-	 sram : ORIGIN = 0xA0000000,   LENGTH = 2K
+	LDS_REGION_SDRAM
+	LDS_REGION_FLASH
+	LDS_REGION_INTERNAL
 }
 
-_internal_stack = ORIGIN(sram) + LENGTH(sram);
+_internal_stack = ORIGIN(REGION_INTERNAL) + LENGTH(REGION_INTERNAL);
 _stack = _bend + 0x200000;
 __stack = _stack;
 __checksum = 0x00000000;
@@ -23,11 +23,6 @@ _data_image_start = _data_lma;
 _text_start = _text_vma;
 _text_end = _text_vma + _text_len;
 
-// XXX just for now. -- Eldar
-//#ifdef DEBUG_TRG
-//#define rom sdram
-//#endif
-
 SECTIONS {
 
 	.text : {
@@ -35,7 +30,7 @@ SECTIONS {
 		*(.trap_table)
 		*(.text)
 		*(.init.text)
-	} >rom AT>rom =0
+	} >PLACE_TEXT
 	SECTION_SYMBOLS(text)
 
 	.rodata (NOLOAD) : {
@@ -43,15 +38,15 @@ SECTIONS {
 		ALIGNMENT();
 		_piggy_start = .;
 		_piggy_end = .;
-	} >rom
+	} >PLACE_RODATA
 	SECTION_SYMBOLS(rodata)
 
-	.data : {
+	.data : LMA_DATA {
 		ALIGNMENT();
 		_data_start = .;
 		*(.data)
 		_data_end = .;
-	} >sdram
+	} >PLACE_DATA
 	SECTION_SYMBOLS(data)
 
 	.bss : {
@@ -60,7 +55,7 @@ SECTIONS {
 		*(.bss)
 		ALIGNMENT();
 		_bend = ALIGN(0x8);
-	} >sdram
+	}  >PLACE_BSS
 	SECTION_SYMBOLS(bss)
 
 	.internal_mem (NOLOAD) : {
@@ -68,5 +63,5 @@ SECTIONS {
 		_internal_start = .;
 		*(.internal_mem)
 		_internal_end = .;
-	} >sram
+	}  >PLACE_INTERNAL
 }
