@@ -25,7 +25,7 @@ void mem_print(uint32_t *addr, unsigned int amount) {
 		if (0 == (i % 4)) {
 			printf("0x%08x:\t", (unsigned)cur_addr);
 		}
-		printf("0x%08x\t", (unsigned) cur_addr);
+		printf("0x%08x\t", *(unsigned *) cur_addr);
 		if (3 == (i % 4)) {
 			printf("\n");
 		}
