@@ -5,11 +5,11 @@ OBJS-y += entry.o
 OBJS-y += boot.o
 OBJS-y += sys.o
 
-TARGETS-y += $(LDSCRIPT)
+$(IMAGE): $(LDSCRIPT)
 
-$(LDSCRIPT):$(SELFDIR)/embox.lds.S $(BUILDCONF_DIR)/config.lds.h
-	$(CPP) $(CPPFLAGS) -imacros $(BUILDCONF_DIR)/config.lds.h \
-		-MMD -MT $@ -MF $@.d -P -undef -o $@ $<
+$(LDSCRIPT): $(SELFDIR)/embox.lds.S $(BUILDCONF_DIR)/config.lds.h
+	$(CPP) -Wp, -P -undef $(CPPFLAGS) \
+		-imacros $(BUILDCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
 
 -include $(LDSCRIPT).d
 

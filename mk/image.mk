@@ -7,6 +7,7 @@ include $(MK_DIR)/traverse.mk
 CC     =$(CROSS_COMPILE)gcc
 AR     =$(CROSS_COMPILE)ar
 AS     =$(CROSS_COMPILE)as
+LD     =$(CROSS_COMPILE)ld
 OBJDUMP=$(CROSS_COMPILE)objdump
 OBJCOPY=$(CROSS_COMPILE)objcopy
 
@@ -15,8 +16,8 @@ OBJCOPY=$(CROSS_COMPILE)objcopy
 # Preprocessor flags
 cppflags:=$(CPPFLAGS)
 CPPFLAGS =
-CPPFLAGS+=-I$(SRC_DIR)/include
-CPPFLAGS+=-I$(SRC_DIR)/arch/$(ARCH)/include
+CPPFLAGS+=-imacros $(BUILDCONF_DIR)/config.h
+CPPFLAGS+=-I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
 CPPFLAGS+=-nostdinc
 CPPFLAGS+=-MMD# -MT $@ -MF $(@:.o=.d)
 CPPFLAGS+=$(cppflags)
@@ -24,7 +25,9 @@ CPPFLAGS+=$(cppflags)
 # Compiler flags
 cflags:=$(CFLAGS)
 CFLAGS =
-CFLAGS+=-Werror -Wstrict-prototypes -Wall -Wundef -Wno-trigraphs -Wno-char-subscripts -Wdeclaration-after-statement
+CFLAGS+=-Wall
+CFLAGS+=-Wstrict-prototypes -Wundef -Wdeclaration-after-statement
+CFLAGS+=-Wno-trigraphs -Wno-char-subscripts
 CFLAGS+=-pipe
 CFLAGS+=$(cflags)
 
@@ -60,7 +63,6 @@ endef
 OBJS_ALL:=
 LIBS_ALL:=
 DIRS_ALL:=
-TRGS_ALL:=
 
 # This code is executed each time when per-directory makefile is processed.
 define TRAVERSE_CALLBACK
@@ -68,42 +70,44 @@ define TRAVERSE_CALLBACK
   DIRS_ALL+=$$(obj_node_dir)
   OBJS_ALL+=$$(addprefix $$(obj_node_dir)/,$(NODE_OBJS))
   LIBS_ALL+=$$(addprefix $$(obj_node_dir)/,$(NODE_LIBS))
-  TRGS_ALL+=$(NODE_TARGETS)
 endef
 
 # Walk the directory tree starting at $(SRC_DIR)
 # and searching for Makefile in each sub-directory.
-$(eval $(call TRAVERSE,$(SRC_DIR),Makefile,TRAVERSE_CALLBACK))
+$(call TRAVERSE,$(SRC_DIR),Makefile,TRAVERSE_CALLBACK)
 
 # Expand these variables stripping out unnecessary whitespaces.
 DIRS_ALL:=$(strip $(DIRS_ALL))
 OBJS_ALL:=$(strip $(OBJS_ALL))
 LIBS_ALL:=$(strip $(LIBS_ALL))
-TRGS_ALL:=$(strip $(TRGS_ALL))
 
 # Process dependency files.
 -include $(OBJS_ALL:.o=.d)
 
 # TODO actually not all objects depend on config.h -- Eldar
-#$(OBJS_ALL): $(BUILDCONF_DIR)/config.h
+$(OBJS_ALL): $(BUILDCONF_DIR)/config.h
 # TODO ... but $(TARGET) does not depend at config.h at all -- Eldar
-TRGS_ALL+=$(BUILDCONF_DIR)/config.h
+#$(IMAGE): $(BUILDCONF_DIR)/config.h
 
 $(OBJ_DIR)/%.o::$(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) \
-	-c -o $@ $<
+	$(CC) -o $@ \
+	$(CPPFLAGS) \
+	$(CFLAGS) \
+	 -c $<
 
 $(OBJ_DIR)/%.o::$(SRC_DIR)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) \
-	-c -o $@ $<
+	$(CC) -o $@ \
+	$(CPPFLAGS) \
+	$(CFLAGS) \
+	 -c $<
 
-$(IMAGE): $(TRGS_ALL) $(OBJS_ALL) $(LIBC)
+$(IMAGE): $(OBJS_ALL) $(LIBC)
 	$(CC) $(LDFLAGS) \
  $(patsubst %,	% \$(NEW_LINE),$(OBJS_ALL)) $(LDLIBS) -o $@
 
 $(LIBC): $(LIBS_ALL)
 	$(AR) $(ARFLAGS) $@ \
- $(patsubst %,	% \$(NEW_LINE),$^)
+ $(patsubst %,	% \$(NEW_LINE),$(LIBS_ALL))
 
 $(IMAGE_DIS): $(IMAGE)
 	$(OBJDUMP) -S $< > $@

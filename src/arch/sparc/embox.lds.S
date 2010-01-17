@@ -9,12 +9,12 @@ OUTPUT_ARCH(sparc)
 ENTRY(_hardreset)
 
 MEMORY {
-	LDS_REGION_SDRAM
-	LDS_REGION_FLASH
-	LDS_REGION_INTERNAL
+	MEMORY_REGION(sdram)
+	MEMORY_REGION(flash)
+	MEMORY_REGION(internal)
 }
 
-_internal_stack = ORIGIN(REGION_INTERNAL) + LENGTH(REGION_INTERNAL);
+_internal_stack = ORIGIN(internal) + LENGTH(internal);
 _stack = _bend + 0x200000;
 __stack = _stack;
 __checksum = 0x00000000;
@@ -30,7 +30,7 @@ SECTIONS {
 		*(.trap_table)
 		*(.text)
 		*(.init.text)
-	} >PLACE_TEXT
+	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
 	.rodata (NOLOAD) : {
@@ -38,15 +38,15 @@ SECTIONS {
 		ALIGNMENT();
 		_piggy_start = .;
 		_piggy_end = .;
-	} >PLACE_RODATA
+	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
 
-	.data : LMA_DATA {
+	.data : {
 		ALIGNMENT();
 		_data_start = .;
 		*(.data)
 		_data_end = .;
-	} >PLACE_DATA
+	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
@@ -55,7 +55,7 @@ SECTIONS {
 		*(.bss)
 		ALIGNMENT();
 		_bend = ALIGN(0x8);
-	}  >PLACE_BSS
+	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 
 	.internal_mem (NOLOAD) : {
@@ -63,5 +63,6 @@ SECTIONS {
 		_internal_start = .;
 		*(.internal_mem)
 		_internal_end = .;
-	}  >PLACE_INTERNAL
+	} SECTION_REGION(internal_mem)
+
 }

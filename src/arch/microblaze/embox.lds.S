@@ -9,8 +9,8 @@ OUTPUT_ARCH(microblaze)
 ENTRY(_start)
 
 MEMORY {
-	LDS_REGION_SDRAM
-	LDS_REGION_FLASH
+	MEMORY_REGION(sdram)
+	MEMORY_REGION(flash)
 }
 
 _stack = _bend + 0x200000;
@@ -29,7 +29,7 @@ SECTIONS {
 		. = ALIGN(0x100);
 		*(.text)
 		*(.init.text)
-	} >PLACE_TEXT
+	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
 	.rodata (NOLOAD) : {
@@ -37,15 +37,15 @@ SECTIONS {
 		ALIGNMENT();
 		_piggy_start = .;
 		_piggy_end = .;
-	} >PLACE_RODATA
+	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
 
-	.data : LMA_DATA {
+	.data : {
 		ALIGNMENT();
 		_data_start = .;
 		*(.data)
 		_data_end = .;
-	} >PLACE_DATA
+	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
@@ -54,6 +54,6 @@ SECTIONS {
 		*(.bss)
 		ALIGNMENT();
 		_bend = ALIGN(0x8);
-	} >PLACE_BSS
+	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 }

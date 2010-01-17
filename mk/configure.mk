@@ -28,14 +28,14 @@ ifndef TARGET
 	exit 1
 endif
 
-CCFLAGS_config.mk   :=-DMAKE
-CCFLAGS_config.lds.h:=-DLDS
-CCFLAGS_config.h    :=
+CPPFLAGS_config.mk   :=-DMAKE
+CPPFLAGS_config.lds.h:=-DLDS
+CPPFLAGS_config.h    :=
 
 $(addprefix $(BUILDCONF_DIR)/,config.mk config.lds.h config.h) : \
   $(MK_DIR)/confmacro.S $(addprefix $(CONF_DIR)/,$(CONF_FILES)) \
   | mkdir # mkdir shouldn't force target to be updated
-	$(HOST_CPP) $(CCFLAGS_$(notdir $@)) -I$(CONF_DIR) -nostdinc -undef -Wp, -P $< \
+	$(HOST_CPP) -Wp, -P -undef $(CPPFLAGS_$(notdir $@)) -I$(CONF_DIR) -nostdinc $< \
 		| sed 's/$$define/\n#define/g' | uniq > $@
 
 mkdir:

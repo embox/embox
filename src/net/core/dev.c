@@ -145,7 +145,7 @@ int netif_rx(struct sk_buff *pack) {
 
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == pack->protocol) {
-#if CONFIG_SOFT_IRQ
+#if CONFIG(SOFT_IRQ)
 			if (ETH_P_ARP != pack->protocol) {
 				skb_queue_tail((struct sk_buff_head *)&netdev_skb_head, pack);
 				__raise_softirq_irqoff(NET_RX_SOFTIRQ);
@@ -153,7 +153,7 @@ int netif_rx(struct sk_buff *pack) {
 #endif
 				rc_rx = q->func(pack, dev, q, NULL);
 				kfree_skb(pack);
-#if CONFIG_SOFT_IRQ
+#if CONFIG(SOFT_IRQ)
 			}
 #endif
 			return rc_rx;
@@ -248,7 +248,7 @@ int dev_change_flags(struct net_device *dev, unsigned flags) {
 	return ret;
 }
 
-#if CONFIG_SOFT_IRQ
+#if CONFIG(SOFT_IRQ)
 static void netif_rx_schedule(struct softirq_action* action) {
 	struct list_head *skb_h;
 	struct sk_buff *skb;
@@ -269,7 +269,7 @@ static void netif_rx_schedule(struct softirq_action* action) {
 #endif
 
 static int __init net_dev_init(void) {
-#if CONFIG_SOFT_IRQ
+#if CONFIG(SOFT_IRQ)
 	open_softirq(NET_RX_SOFTIRQ, netif_rx_schedule, NULL);
 #endif
 	return 0;

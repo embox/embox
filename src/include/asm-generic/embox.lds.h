@@ -19,6 +19,12 @@
 #define SECTION_SYMBOLS(section) \
 	__SECTION_SYMBOLS(_##section, .##section) \
 
+#define MEMORY_REGION(name) \
+	name : ORIGIN = LDS_REGION_BASE_##name, LENGTH = LDS_REGION_SIZE_##name
+
+#define SECTION_REGION(section) \
+	> LDS_SECTION_VMA_##section AT> LDS_SECTION_LMA_##section
+
 #define ALIGNMENT() . = ALIGN(0x8)
 
 #define LDS_INPUT_RODATA \

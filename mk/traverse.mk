@@ -74,11 +74,10 @@ _traverse_mk_:=1
       NODE_SUBDIRS  =$(3)# 3. Enabled sub-directories
       NODE_OBJS     =$(4)# 4. Enabled objects
       NODE_LIBS     =$(5)# 5. Enabled libraries
-      NODE_TARGETS  =$(6)# 6. Additional targets
-      NODE_DEPTH    =$(7)# 7. Call depth
+      NODE_DEPTH    =$(6)# 6. Call depth
 #      (see TRAVERSE_CALLBACK_EXAMPLE as an example)
 #
-TRAVERSE =$(call traverse_process_node,$(1),$(2),$(3),.)
+TRAVERSE =$(eval $(call traverse_process_node,$(1),$(2),$(3),.))
 
 #
 # The callback for TRAVERSE that traces its input arguments.
@@ -89,7 +88,6 @@ TRAVERSE =$(call traverse_process_node,$(1),$(2),$(3),.)
 define TRAVERSE_CALLBACK_EXAMPLE
   $$(info $(NODE_DEPTH)processing $(NODE_DIR)/$(NODE_FILE))
   $$(info $(NODE_DEPTH) subdirs : $(NODE_SUBDIRS))
-  $$(info $(NODE_DEPTH) targets : $(NODE_TARGETS))
   $$(info $(NODE_DEPTH) objs    : $(NODE_OBJS))
   $$(info $(NODE_DEPTH) libs    : $(NODE_LIBS))
 endef
@@ -109,7 +107,6 @@ define traverse_process_node
   SUBDIRS-y :=
   OBJS-y    :=
   LIBS-y    :=
-  TARGETS-y :=
   # Provide the node location.
   SELFDIR   :=$(1)
 
@@ -120,7 +117,7 @@ define traverse_process_node
   subdirs_y :=$$(SUBDIRS-y)
 
   # Invoke user callback.
-  $$(eval $$(call $(3),$(1),$(2),$$(subdirs_y),$$(OBJS-y),$$(LIBS-y),$$(TARGETS-y),$(4)))
+  $$(eval $$(call $(3),$(1),$(2),$$(subdirs_y),$$(OBJS-y),$$(LIBS-y),$(4)))
 
   # Perform recursive walking over sub-directories.
   # It's important to note that subdirs_y variable is expanded only once
@@ -134,7 +131,6 @@ define traverse_process_node
   SUBDIRS-y :=
   OBJS-y    :=
   LIBS-y    :=
-  TARGETS-y :=
 
 endef
 

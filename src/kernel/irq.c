@@ -28,7 +28,7 @@ void irq_dispatch(uint32_t irq_number) {
 
 	irq_infos[irq_number].handler(irq_number, irq_infos[irq_number].dev_id,
 			NULL);
-#if CONFIG_SOFT_IRQ
+#if CONFIG(SOFT_IRQ)
 	irq_exit();/*soft irq and other*/
 #endif
 }
