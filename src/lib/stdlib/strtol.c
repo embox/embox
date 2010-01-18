@@ -14,7 +14,7 @@
 #define	ULONG_MAX	((unsigned long)(~0L))		/* 0xFFFFFFFF */
 #define	LONG_MAX	((long)(ULONG_MAX >> 1))	/* 0x7FFFFFFF */
 #define	LONG_MIN	((long)(~LONG_MAX))		/* 0x80000000 */
-
+#if 0
 long strtol(const char *nptr, char **endptr, int base) {
         const char *s = nptr;
         unsigned long acc;
@@ -64,6 +64,7 @@ long strtol(const char *nptr, char **endptr, int base) {
         	cutoff = neg ? -(unsigned long)LONG_MIN : LONG_MAX;
         	cutlim = cutoff % (unsigned long)base;
         	cutoff /= (unsigned long)base;
+        	///////////////////////
         	for (acc = 0, any = 0;; c = *s++) {
         		if (isdigit(c)) {
         			c -= '0';
@@ -83,6 +84,7 @@ long strtol(const char *nptr, char **endptr, int base) {
         			acc += c;
         		}
     		}
+        	////////////////////
         	if (any < 0) {
         		acc = neg ? LONG_MIN : LONG_MAX;
 //        		errno = ERANGE;
@@ -92,3 +94,4 @@ long strtol(const char *nptr, char **endptr, int base) {
         		*endptr = (char *) (any ? s - 1 : nptr);
         	return (acc);
 }
+#endif

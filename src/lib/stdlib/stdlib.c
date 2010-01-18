@@ -38,7 +38,7 @@ int ch_to_digit(char ch, int base) {
         }
         return -1;
 }
-
+#if 0
 double atof(const char *s) {
         char    c;
         double  val = 0, power = 1;
@@ -79,8 +79,9 @@ power:
                 goto power;
         }
         return (sign ? -1 : 1)*(val / power);
+    return 0;
 }
-
+#endif
 int atoi(const char *s) {
         char   c;
         int    a = 0;
@@ -110,7 +111,8 @@ conv:
         }
         return sign ? -a : a;
 }
-
+#if 0
 long int atol(const char *nptr) {
 	return strtol(nptr,(char **)NULL, 10);
 }
+#endif
