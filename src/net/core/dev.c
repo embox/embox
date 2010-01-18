@@ -17,6 +17,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <lib/list.h>
+#include <kernel/irq.h>
 
 DECLARE_INIT("net_dev", net_dev_init, INIT_NET_LEVEL);
 
@@ -126,14 +127,26 @@ int dev_queue_xmit(struct sk_buff *pack) {
 	return 0;
 }
 
-//TODO move it in config file
-//#define CONFIG_SOFT_IRQ 0
+/* we use this function in debug mode*/
+#if 0
+static void print_packet (sk_buff_t *skb) {
+	int i;
+	TRACE("pack: ");
+	for (i = 0; i < skb->len; i ++) {
+		 TRACE("%2X",  (uint8_t)skb->data[i]);
+	}
+	TRACE("\n");
+	return;
+}
+#endif
 
 int netif_rx(struct sk_buff *pack) {
 	net_device_t *dev;
-	//struct list_head *head;
-        struct packet_type *q;
-        int rc_rx = 0;
+    struct packet_type *q;
+    int rc_rx = 0;
+
+//	unsigned long sp = local_irq_save();
+
 	if (NULL == pack) {
 		return NET_RX_DROP;
 	}
@@ -156,10 +169,12 @@ int netif_rx(struct sk_buff *pack) {
 #if CONFIG(SOFT_IRQ)
 			}
 #endif
+//			local_irq_restore(sp);
 			return rc_rx;
 		}
 	}
 	kfree_skb(pack);
+//	local_irq_restore(sp);
 	return NET_RX_DROP;
 }
 
@@ -251,20 +266,31 @@ int dev_change_flags(struct net_device *dev, unsigned flags) {
 #if CONFIG(SOFT_IRQ)
 static void netif_rx_schedule(struct softirq_action* action) {
 	struct list_head *skb_h;
-	struct sk_buff *skb;
+	struct sk_buff *skb, *skb_prev = NULL;
 	struct packet_type *q;
-	//FIXME: getting into a loop, bad ip checksum
+//	unsigned long sp = local_irq_save();
+
+	/* we can't use here kfree_skb(skb); because we use skb for running across
+	 * list and if if free skb before getting next skb we'll run across
+	 * list of free skb
+	 */
 	list_for_each(skb_h, (struct list_head *)&netdev_skb_head) {
+		skb = (struct sk_buff *)skb_h;
+		if (skb_prev != NULL) {
+			kfree_skb(skb_prev);
+		}
+		skb_prev = skb;
 		list_for_each_entry(q, &ptype_base, list) {
-			skb = (struct sk_buff *)skb_h;
 			if (q->type == skb->protocol) {
 				q->func(skb, skb->dev, q, NULL);
-				//TODO we can't use here kfree_skb(skb);
 				break;
 			}
 		}
 	}
-	skb_queue_purge((struct sk_buff_head *)&netdev_skb_head);
+	if (skb_prev != NULL) {
+		kfree_skb(skb_prev);
+	}
+//	local_irq_restore(sp);
 }
 #endif
 
