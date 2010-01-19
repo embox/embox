@@ -1,5 +1,6 @@
 #include "asm/mb_regs.h"
-	#define C_ENTRY(name)	.globl name; .align 4; name
+
+#define C_ENTRY(name)	.globl name; .align 4; name
 	.section ".trap_table"
 	.balign 0x8
 C_ENTRY(_start):
@@ -40,6 +41,7 @@ C_ENTRY(_interrupt_handler):
 	addi	r1, r1, 4
 	nop
 	*/
+	msrclr -1
 	msrset	r0, 2
 
 	bra	 r14

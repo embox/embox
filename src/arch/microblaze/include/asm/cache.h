@@ -1,6 +1,7 @@
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
+#include <asm/msr.h>
 
 //TODO may be put it in config file
 #define CACHE_LINE_LENGTH    32
@@ -10,31 +11,32 @@ inline static void cache_set_ctrl_reg(unsigned int ctrl_reg){
 }
 
 inline static void cache_refresh(void) {
-	// stub
+	/* seems that nothing to do here:
+	 * Microblaze always writes through cache */
 }
 
 inline static void cache_enable(void) {
-	// stub
+	msr_set(MSR_ICE_MASK | MSR_DCE_MASK);
 }
 
 inline static void cache_disable(void) {
-	// stub
+	msr_clr(MSR_ICE_MASK | MSR_DCE_MASK);
 }
 
 inline static void cache_instr_enable(void) {
-	// stub
+	msr_set(MSR_ICE_MASK);
 }
 
 inline static void cache_instr_disable(void) {
-	// stub
+	msr_clr(MSR_ICE_MASK);
 }
 
 inline static void cache_data_enable(void) {
-	// stub
+	msr_set(MSR_DCE_MASK);
 }
 
 inline static void cache_data_disable(void) {
-	// stub
+	msr_clr(MSR_DCE_MASK);
 }
 
 #endif // ifndef __CACHE_H__
