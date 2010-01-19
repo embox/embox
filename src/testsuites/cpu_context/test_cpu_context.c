@@ -11,7 +11,7 @@
 #include "kernel/sys.h"
 #include "express_tests.h"
 
-DECLARE_EXPRESS_TEST("CPU context", exec, TEST_CPU_CONTEXT_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST("CPU context", "cpucontext", exec, TEST_CPU_CONTEXT_ON_BOOT_ENABLE, NULL);
 
 /**
  * in this trap function contex_save takes place

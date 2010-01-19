@@ -4,10 +4,11 @@
  * \author afomin
  */
 
-#include "shell_command.h"
-#include "express_tests.h"
+#include <shell_command.h>
+#include <express_tests.h>
+#include <string.h>
 
-#define COMMAND_NAME     "expresstest"
+#define COMMAND_NAME     "expr"
 #define COMMAND_DESC_MSG "works with express test subsystem"
 #define HELP_MSG         "Usage: expresstest [-h] [-n <test_num> [-i]]"
 static const char *man_page =
@@ -17,17 +18,18 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 ;
 
-
 #define DEFAULT_NAME_STR "NONAME"
+#define DEFAULT_SHORT_NAME_STR "?"
 #define BROKEN_DESCRIPTOR_STR "BROKEN"
 #define ON_BOOT_TEST_STR "ONBOOT"
 #define MANUAL_TEST_STR "MANUAL"
 #define NO_INFO_ERROR_STR "No info func available for that test"
 #define WRONG_TEST_NUMBER_ERROR_STR "Wrong test number entered"
+#define WRONG_TEST_NAME_ERROR_STR "test with specified name not found"
+
 #define PASSED_CODE 0
 #define FAILED_STR "FAILED"
 #define PASSED_STR "PASSED"
-
 
 static void print_express_tests(void) {
 	extern express_test_descriptor_t *__express_tests_start,
@@ -43,18 +45,24 @@ static void print_express_tests(void) {
 			TRACE(BROKEN_DESCRIPTOR_STR"\n");
 			continue;
 		}
-		if (NULL == ((*p_test)->name)) {
+
+		if (NULL != ((*p_test)->name)) {
+			TRACE("%10s ", (*p_test)->name);
+		} else {
 			TRACE(DEFAULT_NAME_STR" ");
 		}
-		TRACE("%10s - ", (*p_test)->name);
+		if (NULL != ((*p_test)->short_name)) {
+			TRACE("(%s) - ", (*p_test)->short_name);
+		} else {
+			TRACE(DEFAULT_SHORT_NAME_STR" ");
+		}
 		if (NULL == ((*p_test)->exec)) {
 			TRACE(BROKEN_DESCRIPTOR_STR"\n");
 			continue;
 		}
 		if ((*p_test)->execute_on_boot) {
 			TRACE(ON_BOOT_TEST_STR"\n");
-		}
-		else {
+		} else {
 			TRACE(MANUAL_TEST_STR"\n");
 		}
 	}
@@ -73,14 +81,42 @@ static express_test_descriptor_t *get_express_test(int test_num) {
 	p_test += test_num;
 	return *p_test;
 }
+
+static express_test_descriptor_t *get_express_test_by_name(char *short_name) {
+	extern express_test_descriptor_t *__express_tests_start,
+			*__express_tests_end;
+	express_test_descriptor_t **p_test = &__express_tests_start;
+	int total = (int) (&__express_tests_end - &__express_tests_start);
+	int i;
+
+	for (i = 0; i < total; i++, p_test++) {
+		if (NULL == (*p_test)) {
+			/* Broken descriptor */
+			continue;
+		}
+		if (NULL == ((*p_test)->short_name)) {
+			/* Broken test name */
+			continue;
+		}
+		if (strcmp((*p_test)->short_name, short_name) == 0) {
+			return *p_test;
+		}
+	}
+
+	return 0;
+}
+
 static int exec(int argsc, char **argsv) {
 	bool run_info_func = false;
 	express_test_descriptor_t *p_test = NULL;
 	int test_num = -1, result;
 	int nextOption;
+	/* TODO it must be agreed with shell maximum command length */
+	char test_name[100] = { 0 };
+
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "hn:i");
+		nextOption = getopt(argsc, argsv, "hn:t:i");
 		switch (nextOption) {
 		case 'h':
 			show_man_page();
@@ -92,9 +128,16 @@ static int exec(int argsc, char **argsv) {
 				return -1;
 			}
 			break;
+		case 't':
+			if ((optarg == NULL) || (!sscanf(optarg, "%s", test_name))) {
+				LOG_ERROR("%s: -t: test name expected.\n", COMMAND_NAME);
+				show_help();
+				return -1;
+			}
+			break;
 		case 'i':
-			if (test_num == -1) {
-				LOG_ERROR("%s: -i: missing -n before -i.\n", COMMAND_NAME);
+			if ((test_num == -1) && (*test_name == 0)) {
+				LOG_ERROR("%s: -i: missing -n or -t before -i.\n", COMMAND_NAME);
 			}
 			run_info_func = true;
 			break;
@@ -104,14 +147,22 @@ static int exec(int argsc, char **argsv) {
 			return 0;
 		}
 	} while (-1 != nextOption);
-	if (test_num == -1) {
+	if (test_num == -1 && (*test_name == 0)) {
 		print_express_tests();
 		return 0;
 	}
-	p_test = get_express_test(test_num);
-	if (p_test == NULL) {
-		TRACE(WRONG_TEST_NUMBER_ERROR_STR"\n");
-		return -1;
+	if (test_num == -1) {
+		p_test = get_express_test_by_name(test_name);
+		if (p_test == NULL) {
+			TRACE("%s: "WRONG_TEST_NAME_ERROR_STR"\n", test_name);
+			return -1;
+		}
+	} else {
+		p_test = get_express_test(test_num);
+		if (p_test == NULL) {
+			TRACE(WRONG_TEST_NUMBER_ERROR_STR"\n");
+			return -1;
+		}
 	}
 	if (run_info_func) {
 		if (p_test->info_func == NULL) {

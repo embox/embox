@@ -10,7 +10,7 @@
 #include "express_tests.h"
 
 
-DECLARE_EXPRESS_TEST("timer callback", exec, TEST_TIMER_CALLBACK_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST("timer callback", "timercallback", exec, TEST_TIMER_CALLBACK_ON_BOOT_ENABLE, NULL);
 
 volatile static bool tick_happened;
 

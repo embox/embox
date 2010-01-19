@@ -14,7 +14,7 @@
 
 #define TEST_IRQ_NUM 10
 
-DECLARE_EXPRESS_TEST("local_irq_save()", exec, TEST_LOCAL_IRQ_SAVE_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST("local_irq_save()", "localirqsave", exec, TEST_LOCAL_IRQ_SAVE_ON_BOOT_ENABLE, NULL);
 
 volatile static bool irq_happened;
 

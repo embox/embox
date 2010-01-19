@@ -14,7 +14,7 @@
 #define TEST_IRQ_NUM 10
 
 
-DECLARE_EXPRESS_TEST("force irq", exec, TEST_FORCE_IRQ_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST("force irq", "forceirq", exec, TEST_FORCE_IRQ_ON_BOOT_ENABLE, NULL);
 
 volatile static bool irq_happened;
 
