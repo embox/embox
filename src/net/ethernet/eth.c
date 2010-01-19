@@ -116,9 +116,9 @@ int eth_set_txqueuelen(net_device_t *dev, unsigned long new_len) {
     dev->tx_queue_len = new_len;
     return 0;
 }
-//here??
+
 int eth_set_broadcast_addr(net_device_t *dev, unsigned char broadcast_addr[]){
-    //not realized
+    strncpy(dev->broadcast, broadcast_addr, sizeof(dev->broadcast));
     LOG_ERROR("not realized\n");
     return 0;
 }

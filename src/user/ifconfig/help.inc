@@ -5,7 +5,7 @@
 "             [-r arp] [-f promisc] [-c allmulti]            \n"
 "             [-g multicast] [-l mtu] [-b address]           \n"
 "             [-i irq_num] [-t maxtxqueue] [-w brdcstaddr]   \n"
-"             [-z [destaddr]][-x name|interface]             \n"
+"             [-z p2p][[-x] name|interface]                  \n"
 "DESCRIPTION                                                 \n"
 "    Ifconfig is used to configure the kernel-resident       \n"
 "    network interfaces. If no arguments are given, ifconfig \n"
