@@ -3,5 +3,5 @@
  * \date Jun 29, 2009
  * \author: anton
  */
-{ "ramfs", &ramfsop},
+{ "ramfs", &ramfsop}//,
 
