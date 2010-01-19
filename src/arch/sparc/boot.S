@@ -129,9 +129,12 @@ register_window_clean:
 
 	set _data_vma, %o0
 	set _data_lma, %o1
+	subcc %o0, %o1, %g0
+	be 1f
+	 nop
 	set _data_len, %o2
 	call memcpy
-	 nop
+1:	 nop
 
 	set _bss_vma, %o0
 	mov %g0, %o1
