@@ -7,8 +7,6 @@
 # Author: Eldar Abusalimov
 #
 
-ifndef ROOT_DIR
 ROOT_DIR:=.#$(CURDIR)
-endif
 
 include $(ROOT_DIR)/mk/main.mk

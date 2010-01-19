@@ -19,7 +19,7 @@ typedef struct _FS_DESCRIPTION {
 }FS_DESCRIPTION;
 
 
-FS_DESCRIPTION const fs_list[] = {
+static FS_DESCRIPTION const fs_list[] = {
 #include "rootfs_desc.inc"
 };
 #define NUMBER_OF_FS    array_len(fs_list)

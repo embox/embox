@@ -127,6 +127,18 @@ register_window_clean:
 	PSR_BIT_TOGGLE_SHORT(PSR_ET, g1)
 	 WRITE_PAUSE
 
+	set _data_vma, %o0
+	set _data_lma, %o1
+	set _data_len, %o2
+	call memcpy
+	 nop
+
+	set _bss_vma, %o0
+	mov %g0, %o1
+	set _bss_len, %o2
+	call memset
+	 nop
+
 	set hardware_init_hook, %g1
 	tst %g1
 	be  1f

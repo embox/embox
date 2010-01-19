@@ -6,9 +6,10 @@
 #include "string.h"
 
 void *memset(void *p, int c, size_t n) {
-        char *pb = (char *) p;
-        char *pbend = pb + n;
-        while (pb != pbend)
-        	*pb++ = c;
-        return p;
+	char *pb = (char *) p;
+	char *pbend = pb + n;
+	while (pb != pbend) {
+		*pb++ = c;
+	}
+	return p;
 }
