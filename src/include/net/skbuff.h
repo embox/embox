@@ -81,6 +81,11 @@ typedef struct sk_buff_head {
         spinlock_t	lock;
 } sk_buff_head_t;
 
+#define SKB_LIST_HEAD_INIT(name) { (sk_buff_t *)(&name), (sk_buff_t *)(&name), 0, 0}
+
+#define SKB_LIST_HEAD(name) \
+		struct sk_buff_head name = SKB_LIST_HEAD_INIT(name)
+
 /**
  * function must called if we want use this functionality.
  * It init queue free packet

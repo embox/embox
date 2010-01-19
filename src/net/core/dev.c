@@ -21,7 +21,9 @@
 
 DECLARE_INIT("net_dev", net_dev_init, INIT_NET_LEVEL);
 
-static LIST_HEAD(netdev_skb_head);
+//FIXME we must have queue for each netdevice or if we want to use the only
+// we should use alloc_skb_queue?
+static SKB_LIST_HEAD(netdev_skb_head);
 
 static LIST_HEAD(ptype_base);
 static LIST_HEAD(ptype_all);
@@ -77,6 +79,7 @@ void free_netdev(net_device_t *dev) {
 }
 
 int register_netdev(struct net_device *dev) {
+	//FIXME we must create queue for each device
 	return 0;
 }
 
@@ -116,11 +119,11 @@ int dev_queue_xmit(struct sk_buff *pack) {
 		}
 		if (-1 == ops->ndo_start_xmit(pack, dev)) {
 			kfree_skb(pack);
-			stats->tx_err ++;
+			stats->tx_err++;
 			return -1;
 		}
 		/* update statistic */
-		stats->tx_packets ++;
+		stats->tx_packets++;
 		stats->tx_bytes += pack->len;
 	}
 	kfree_skb(pack);
@@ -133,48 +136,48 @@ static void print_packet (sk_buff_t *skb) {
 	int i;
 	TRACE("pack: ");
 	for (i = 0; i < skb->len; i ++) {
-		 TRACE("%2X",  (uint8_t)skb->data[i]);
+		TRACE("%2X", (uint8_t)skb->data[i]);
 	}
 	TRACE("\n");
 	return;
 }
 #endif
 
-int netif_rx(struct sk_buff *pack) {
+int netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
-    struct packet_type *q;
-    int rc_rx = 0;
+	struct packet_type *q;
+	int rc_rx = 0;
 
-//	unsigned long sp = local_irq_save();
+	//	unsigned long sp = local_irq_save();
 
-	if (NULL == pack) {
+	if (NULL == skb) {
 		return NET_RX_DROP;
 	}
-	dev = pack->dev;
+	dev = skb->dev;
 	if (NULL == dev) {
 		return NET_RX_DROP;
 	}
-	pack->nh.raw = (void *) pack->data + ETH_HEADER_SIZE;
+	skb->nh.raw = (void *) skb->data + ETH_HEADER_SIZE;
 
 	list_for_each_entry(q, &ptype_base, list) {
-		if (q->type == pack->protocol) {
+		if (q->type == skb->protocol) {
 #if CONFIG(SOFT_IRQ)
-			if (ETH_P_ARP != pack->protocol) {
-				skb_queue_tail((struct sk_buff_head *)&netdev_skb_head, pack);
+			if (ETH_P_ARP != skb->protocol) {
+				skb_queue_tail(&netdev_skb_head, skb);
 				__raise_softirq_irqoff(NET_RX_SOFTIRQ);
 			} else {
 #endif
-				rc_rx = q->func(pack, dev, q, NULL);
-				kfree_skb(pack);
+			rc_rx = q->func(skb, dev, q, NULL);
+			kfree_skb(skb);
 #if CONFIG(SOFT_IRQ)
-			}
+		}
 #endif
-//			local_irq_restore(sp);
+			//			local_irq_restore(sp);
 			return rc_rx;
 		}
 	}
-	kfree_skb(pack);
-//	local_irq_restore(sp);
+	kfree_skb(skb);
+	//	local_irq_restore(sp);
 	return NET_RX_DROP;
 }
 
@@ -265,32 +268,17 @@ int dev_change_flags(struct net_device *dev, unsigned flags) {
 
 #if CONFIG(SOFT_IRQ)
 static void netif_rx_schedule(struct softirq_action* action) {
-	struct list_head *skb_h;
-	struct sk_buff *skb, *skb_prev = NULL;
+	struct sk_buff *skb;
 	struct packet_type *q;
-//	unsigned long sp = local_irq_save();
-
-	/* we can't use here kfree_skb(skb); because we use skb for running across
-	 * list and if if free skb before getting next skb we'll run across
-	 * list of free skb
-	 */
-	list_for_each(skb_h, (struct list_head *)&netdev_skb_head) {
-		skb = (struct sk_buff *)skb_h;
-		if (skb_prev != NULL) {
-			kfree_skb(skb_prev);
-		}
-		skb_prev = skb;
+	while (NULL != (skb = skb_dequeue(&netdev_skb_head))) {
 		list_for_each_entry(q, &ptype_base, list) {
 			if (q->type == skb->protocol) {
 				q->func(skb, skb->dev, q, NULL);
 				break;
 			}
 		}
+		kfree_skb(skb);
 	}
-	if (skb_prev != NULL) {
-		kfree_skb(skb_prev);
-	}
-//	local_irq_restore(sp);
 }
 #endif
 
