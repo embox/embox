@@ -16,25 +16,6 @@
 #include <asm/cache.h>
 #include <kernel/init.h>
 
-//TODO this code must move to boot.S file
-void copy_data_section(void) {
-	extern char _text_end, _data_start, _data_end, _bstart, _bend;
-	char *src = &_text_end;
-	char *dst = &_data_start;
-
-	if (0x40000000 >= (unsigned int) &_text_end) {
-		/* ROM has data at end of text; copy it. */
-		while (dst < &_data_end) {
-			*dst++ = *src++;
-		}
-	}
-
-	/* Zero bss */
-	for (dst = &_bstart; dst < &_bend; dst++) {
-		*dst = 0;
-	}
-}
-
 int hardware_init_hook(void) {
 	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
 	init_descriptor_t ** p_init_desc = &__init_handlers_start;
@@ -42,9 +23,6 @@ int hardware_init_hook(void) {
 	int level;
 	const char *init_name;
 	const char *default_init_name = "???";
-
-	//TODO during too long time for simulation:(
-	copy_data_section();
 
 	/*
 	 * Zero level initialization (+ uart)
