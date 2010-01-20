@@ -73,24 +73,24 @@ void vtbuild(VTBUILDER *this, const VT_TOKEN *token) {
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:
 		/* Operating System Command */
-		// ignore them as unused in our system
-		//  -- Eldar
+		/* ignore them as unused in our system
+		  -- Eldar*/
 	case VT_ACTION_HOOK:
 	case VT_ACTION_PUT:
 	case VT_ACTION_UNHOOK:
 		/* device control strings */
-		// ignore them as unused in our system
-		//  -- Eldar
+		/* ignore them as unused in our system
+		  -- Eldar*/
 		break;
 	case VT_ACTION_IGNORE:
 	case VT_ACTION_COLLECT:
 	case VT_ACTION_PARAM:
 	case VT_ACTION_CLEAR:
-		// ignore as VTParser internal states
+		/* ignore as VTParser internal states*/
 		break;
 	default:
-		// unknown action
-		// do not fail, just ignore it
+		/* unknown action
+		 do not fail, just ignore it*/
 		break;
 	}
 }

@@ -85,14 +85,14 @@ static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:
 		/* Operating System Command */
-		// ignore them as unused in our system
-		//  -- Eldar
+		/* ignore them as unused in our system
+		  -- Eldar*/
 	case VT_ACTION_HOOK:
 	case VT_ACTION_PUT:
 	case VT_ACTION_UNHOOK:
 		/* device control strings */
-		// ignore them as unused in our system
-		//  -- Eldar
+		/* ignore them as unused in our system
+		  -- Eldar*/
 	case VT_ACTION_IGNORE:
 		/* do nothing */
 		break;
@@ -135,7 +135,6 @@ static void do_state_change(VTPARSER *this, state_change_t change, char ch) {
 void vtparse(VTPARSER *this, unsigned char ch) {
 	static state_change_t change;
 
-	//	TRACE("%c : %x : %d\n", ch, ch,ch);
 	/* If a transition is defined from the "anywhere" state, always
 	 * use that.  Otherwise use the transition from the current state. */
 

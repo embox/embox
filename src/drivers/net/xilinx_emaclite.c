@@ -124,7 +124,7 @@ static pingpong_regs_t *get_rx_buff(void) {
 #if 0
 static uint8_t etherrxbuff[PKTSIZE]; /* Receive buffer */
 #endif
-//FIXME bad function (may be use if dest and src align 4)
+/*FIXME bad function (may be use if dest and src align 4)*/
 static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 	size_t lenw = (size_t)((len & (~3)) >> 2);
 	volatile uint32_t *srcw = (uint32_t*)((uint32_t )(src) & (~3));

@@ -24,7 +24,7 @@ typedef enum {
 	VT_ACTION_PARAM        = 11,
 	VT_ACTION_PRINT        = 12,
 	VT_ACTION_PUT          = 13,
-	VT_ACTION_UNHOOK       = 14,
+	VT_ACTION_UNHOOK       = 14
 } VT_ACTION;
 
 typedef struct {
@@ -37,7 +37,8 @@ typedef struct {
 } VT_TOKEN;
 
 /** ANSI Escape */
-#define ESC		'\e'
+#define ESC		'\033' /*'\e' warning: non-ISO-standard escape sequence, '\e'
+					 Use \033 instead. \e is a GNU shortcut. */
 /** ANSI Control Sequence Introducer */
 #define CSI		'['
 

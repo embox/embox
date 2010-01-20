@@ -31,7 +31,7 @@ static packet_type_t ip_packet_type = {
         .func = ip_rcv,
 };
 
-//TODO:
+/* TODO:*/
 static int __init inet_init(void) {
         /* Init skb pool */
         sock_init();

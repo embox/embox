@@ -20,6 +20,6 @@ typedef unsigned int       __u32;
 typedef long long          __s64;
 typedef unsigned long long __u64;
 
-#endif  // __ASSEMBLER__
+#endif  /* __ASSEMBLER__*/
 
 #endif /* MICROBLAZE_TYPES_H_ */

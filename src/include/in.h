@@ -3,7 +3,7 @@
  * \date 29.06.09
  * \author sikmir
  */
-//TODO: move out of here.
+/*TODO: move out of here.*/
 
 #ifndef IN_H_
 #define IN_H_
@@ -20,7 +20,7 @@ enum {
         IPPROTO_MAX
 };
 
-// IPv4 AF_INET sockets:
+/* IPv4 AF_INET sockets:*/
 
 typedef uint32_t in_addr_t;
 
@@ -54,7 +54,7 @@ in_addr_t inet_addr(const char *cp);
  */
 int inet_aton(const char *cp, struct in_addr *addr);
 
-//TODO:
+/*TODO: htons not realize now*/
 #define htons(n)            n
 #define ntohs(n)            n
 #define htonl(n)            n

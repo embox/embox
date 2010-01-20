@@ -10,7 +10,7 @@
 
 #include <kernel/irq.h>
 
-//FIXME spin_lock has to have different signature
+/*FIXME spin_lock has to have different signature*/
 # if 0
 typedef __spin_lock_t spin_lock_t;
 #define SPIN_LOCK_INITIALIZER   __SPIN_LOCK_INITIALIZER

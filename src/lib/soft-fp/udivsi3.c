@@ -23,7 +23,6 @@ unsigned int __udivsi3(unsigned int op1, unsigned int op2) {
 			result += 1;
 			op1 -= op2;
 		}
-		//mask = mask >> 1;
 		op2 = op2 >> 1;
 	}
 	return result;

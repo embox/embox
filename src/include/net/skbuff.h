@@ -11,8 +11,8 @@
 #include <types.h>
 
 struct skb_timeval {
-        uint32_t off_sec;
-        uint32_t off_usec;
+	uint32_t off_sec;
+	uint32_t off_usec;
 };
 
 /* Packet types */
@@ -41,44 +41,50 @@ struct skb_timeval {
  *      @mac: Link layer header
  */
 typedef struct sk_buff {
-        /* These two members must be first. */
-        struct sk_buff     *next;
-        struct sk_buff     *prev;
-        struct sock        *sk;
-        struct net_device  *dev;
-        struct skb_timeval tstamp;
-        __be16                  protocol;
-        uint8_t                 pkt_type;
-        unsigned int            len;
-        union {
-                //tcphdr        *th;
-                struct _udphdr  *uh;
-                struct icmphdr *icmph;
-                //igmphdr       *igmph;
-                //iphdr         *ipiph;
-                //ipv6hdr       *ipv6h;
-                unsigned char   *raw;
-        } h;
-        union {
-                struct iphdr   *iph;
-                //ipv6hdr       *ipv6h;
-                struct arphdr  *arph;
-                unsigned char   *raw;
-        } nh;
-        union {
-                struct ethhdr  *ethh;
-                unsigned char   *raw;
-        } mac;
-        void (*destructor)(struct sk_buff *skb);
-        unsigned char *data;
-        unsigned char tries;
+	/* These two members must be first. */
+	struct sk_buff *next;
+	struct sk_buff *prev;
+	struct sock *sk;
+	struct net_device *dev;
+	struct skb_timeval tstamp;
+	__be16 protocol;
+	uint8_t pkt_type;
+	unsigned int len;
+	union {
+#if 0
+		tcphdr *th;
+#endif
+		struct _udphdr *uh;
+		struct icmphdr *icmph;
+#if 0
+		igmphdr *igmph;
+		iphdr *ipiph;
+		ipv6hdr *ipv6h;
+#endif
+		unsigned char *raw;
+	} h;
+	union {
+		struct iphdr *iph;
+#if 0
+		ipv6hdr *ipv6h;
+#endif
+		struct arphdr *arph;
+		unsigned char *raw;
+	} nh;
+	union {
+		struct ethhdr *ethh;
+		unsigned char *raw;
+	} mac;
+	void (*destructor)(struct sk_buff *skb);
+	unsigned char *data;
+	unsigned char tries;
 } sk_buff_t;
 
 typedef struct sk_buff_head {
-        sk_buff_t       *next;
-        sk_buff_t       *prev;
-        uint32_t        qlen;
-        spinlock_t	lock;
+	sk_buff_t *next;
+	sk_buff_t *prev;
+	uint32_t qlen;
+	spinlock_t lock;
 } sk_buff_head_t;
 
 #define SKB_LIST_HEAD_INIT(name) { (sk_buff_t *)(&name), (sk_buff_t *)(&name), 0, 0}

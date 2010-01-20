@@ -114,8 +114,9 @@ static int exec(int argsc, char **argsv) {
     unsigned char broadcastaddr[ETH_ALEN];
     int up = 0, down = 0, i = 0;
     int no_arp = 0, promisc = 0, allmulti = 0, multicast = 0, mtu = 0, p2p = 0;
-    unsigned int irq_num = 0;
-    unsigned long tx_queue_len = 0, base_addr = 0;
+    int irq_num = 0;
+    unsigned long base_addr = 0;
+    long tx_queue_len = 0;
     char iname[IFNAMSIZ];
     int nextOption;
     ipaddr.s_addr = 0;

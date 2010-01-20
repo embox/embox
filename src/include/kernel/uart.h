@@ -22,9 +22,9 @@ void uart_putc(char ch);
  */
 char uart_getc(void);
 
-//#ifdef IRQ_HANDLER
+
 int uart_set_irq_handler(IRQ_HANDLER pfunc);
 int uart_remove_irq_handler(void);
-//#endif
+
 
 #endif /* _UART_H_ */

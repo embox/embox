@@ -43,7 +43,7 @@ static int express_tests_execute(void) {
 			skipped++;
 			continue;
 		}
-		// TODO magic constants
+		/* TODO magic constants */
 		result = sys_exec_start((*p_test)->exec, 0, NULL);
 		if (result == -1) {
 			TRACE("FAILED\n");

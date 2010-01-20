@@ -7,8 +7,8 @@
 #ifndef NET_PACK_H_
 #define NET_PACK_H_
 
-#define ETHERNET_V2_FRAME_SIZE 1520 //TODO: 1518
-//TODO this param must place in autoconf
+#define ETHERNET_V2_FRAME_SIZE 1520 /*TODO: 1518*/
+/*TODO this param must place in autoconf*/
 #define PACK_POOL_SIZE  0x100
 
 extern int net_buff_init(void);

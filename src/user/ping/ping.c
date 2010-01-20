@@ -62,7 +62,6 @@ static int ping(in_device_t *ifdev, struct in_addr dst, int cnt, int timeout, in
 		} else {
 			if(!quiet) printf(" icmp_seq=%d ttl=%d time=%d ms\n",
 						i, ttl, /*TODO*/0);
-			//if(!quiet) printf(" ....ok\n");
 			cnt_resp++;
 		}
 		usleep(interval);
@@ -70,7 +69,7 @@ static int ping(in_device_t *ifdev, struct in_addr dst, int cnt, int timeout, in
 	printf("--- %s ping statistics ---\n", inet_ntoa(dst));
 	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
 		cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp), 0);
-	//printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms", 0, 0, 0, 0);
+
 	icmp_abort_echo_request(ifdev);
 	free(dst_b);
 	free(from_b);
@@ -79,7 +78,7 @@ static int ping(in_device_t *ifdev, struct in_addr dst, int cnt, int timeout, in
 
 static int exec(int argsc, char **argsv) {
 	int cnt     = 4;
-	unsigned packsize = 0x38;
+	int packsize = 0x38;
 	int timeout = 1;
 	int interval = 0;
 	int pattern = 0xff;
@@ -104,7 +103,7 @@ static int exec(int argsc, char **argsv) {
                                 return -1;
                         }
                         break;
-                case 'c': //get ping cnt */
+                case 'c': /*get ping cnt */
             		if (1 != sscanf(optarg, "%d", &cnt)) {
             		        TRACE("ping: bad number of packets to transmit.\n");
             		        return -1;
@@ -146,7 +145,7 @@ static int exec(int argsc, char **argsv) {
                 show_help();
                 return -1;
         }
-	//carry out command
+	/*carry out command*/
 	ping(ifdev, dst, cnt, timeout*1000, ttl, quiet, packsize,
 						    interval*1000, (__u16)pattern);
 	return 0;

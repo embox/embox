@@ -146,9 +146,13 @@ struct msghdr {
 	void	*	msg_name;	/* Socket name			*/
 	int		msg_namelen;	/* Length of name		*/
 	struct iovec *	msg_iov;	/* Data blocks			*/
-	//__kernel_size_t	msg_iovlen;	/* Number of blocks		*/
+#if 0
+	__kernel_size_t	msg_iovlen;	/* Number of blocks		*/
+#endif
 	void 	*	msg_control;	/* Per protocol magic (eg BSD file descriptor passing) */
-	//__kernel_size_t	msg_controllen;	/* Length of cmsg list */
+#if 0
+	__kernel_size_t	msg_controllen;	/* Length of cmsg list */
+#endif
 	unsigned	msg_flags;
 };
 
@@ -176,7 +180,7 @@ typedef struct sockaddr {
 #define PF_MAX       AF_MAX
 #endif
 
-//TODO: move out of here
+/*TODO: move out of here*/
 int sock_init(void);
 
 #if 0

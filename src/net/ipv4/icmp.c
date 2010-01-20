@@ -30,7 +30,9 @@ struct icmp_bxm {
                 uint32_t  times[3];
         } data;
         int head_len;
-        //struct ip_options replyopts;
+#if 0
+        struct ip_options replyopts;
+#endif
         unsigned char  optbuf[40];
 };
 

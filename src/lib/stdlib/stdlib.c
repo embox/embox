@@ -9,7 +9,7 @@
 #include "types.h"
 #include "stdlib.h"
 
-//TODO: throw out.
+/*TODO: throw out.*/
 int ch_to_digit(char ch, int base) {
         ch = toupper(ch);
         switch (base) {

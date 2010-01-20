@@ -63,19 +63,19 @@ static bool is_valid_action(VT_ACTION action) {
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:
 		/* Operating System Command */
-		// ignore them as unused in our system
-		//  -- Eldar
+		/* ignore them as unused in our system
+		  -- Eldar*/
 	case VT_ACTION_HOOK:
 	case VT_ACTION_PUT:
 	case VT_ACTION_UNHOOK:
 		/* device control strings */
-		// ignore them as unused in our system
-		//  -- Eldar
+		/* ignore them as unused in our system
+		  -- Eldar*/
 	case VT_ACTION_IGNORE:
 	case VT_ACTION_COLLECT:
 	case VT_ACTION_PARAM:
 	case VT_ACTION_CLEAR:
-		// ignore as VTParser internal states
+		/* ignore as VTParser internal states */
 	default:
 		/* unknown */
 		return false;
@@ -156,14 +156,15 @@ static void vtparse_callback(VTPARSER *parser, VT_TOKEN *token) {
 		terminal->vt_token_queue[terminal->vt_token_queue_head + (*queue_len)++]
 				= *token;
 	} else {
-		// TODO
+		/* TODO*/
 		assert(false);
 	}
 }
-
-//static char *ACTION_NAMES[] = { "<no action>", "CLEAR", "COLLECT", "CSI_DISPATCH",
-//		"ESC_DISPATCH", "EXECUTE", "HOOK", "IGNORE", "OSC_END", "OSC_PUT",
-//		"OSC_START", "PARAM", "PRINT", "PUT", "UNHOOK", };
+#if 0
+static char *ACTION_NAMES[] = { "<no action>", "CLEAR", "COLLECT", "CSI_DISPATCH",
+		"ESC_DISPATCH", "EXECUTE", "HOOK", "IGNORE", "OSC_END", "OSC_PUT",
+		"OSC_START", "PARAM", "PRINT", "PUT", "UNHOOK", };
+#endif
 
 /*
  * Yes, this routine is rather ugly, but I have not found another way
@@ -183,15 +184,15 @@ bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 	p_len = &this->vt_token_queue_len;
 	p_head = &this->vt_token_queue_head;
 	while (*p_len == 0) {
-		// we don't return from vtparse until
-		// callback has not been invoked at least once.
+		/* we don't return from vtparse until
+		 callback has not been invoked at least once.*/
 		vtparse(this->parser, this->io->getc());
-		// so vt_token_queue_len is greater then 0 at this line
-		// (see vtparse_callback algorithm)
+		/* so vt_token_queue_len is greater then 0 at this line
+		 (see vtparse_callback algorithm)*/
 	}
 	assert(*p_len != 0);
 
-	// Almost surely this loop will be executed only once
+	/* Almost surely this loop will be executed only once */
 	while (*p_len != 0) {
 		for (; *p_head < *p_len; (*p_head)++) {
 			vt_token = &this->vt_token_queue[*p_head];
@@ -201,16 +202,14 @@ bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 					params->length = vt_token->params_len;
 				}
 				(*p_len)--;
-				//TRACE("%s %d(%x,%x) %x\n", ACTION_NAMES[vt_token->action],
-				//vt_token->attrs_len, vt_token->attrs[0],
-				//vt_token->attrs[1], vt_token->ch);
+
 				return true;
 			}
 		}
-		// there were no any valid tokens in the queue,
-		// so reset queue head and length indexes
-		// and run parser again
-		// in general case this code should not be reached
+		/* there were no any valid tokens in the queue,
+		 so reset queue head and length indexes
+		 and run parser again
+		 in general case this code should not be reached */
 		*p_head = 0;
 		*p_len = 0;
 		while (*p_len == 0) {
@@ -218,7 +217,7 @@ bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 		}
 	}
 
-	// TODO in fact this code must not be reached;
+	/* TODO in fact this code must not be reached;*/
 	assert(false);
 	return false;
 }

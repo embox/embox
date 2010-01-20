@@ -13,26 +13,37 @@
 struct _SCREEN;
 
 typedef struct _SCREEN_CALLBACK {
-	void (*on_char)(struct _SCREEN_CALLBACK *, struct _SCREEN *view, char ch);
-	void (*on_cursor_up)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+	int (*on_char)(struct _SCREEN_CALLBACK *, struct _SCREEN *view, int ch);
+	int (*on_cursor_up)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
 			int by);
-	void (*on_cursor_down)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+	int (*on_cursor_down)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
 			int by);
-	void (*on_cursor_left)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+	int (*on_cursor_left)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
 			int by);
-	void (*on_cursor_right)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+	int (*on_cursor_right)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
 			int by);
-	void (*on_new_line)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_backspace)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_delete)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_insert)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_home)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_end)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_tab)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_etx)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_eot)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_dc2)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
-	void (*on_dc4)(struct _SCREEN_CALLBACK *, struct _SCREEN *view);
+	int (*on_new_line)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_backspace)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_delete)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_insert)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_home)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_end)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_tab)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_etx)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_eot)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_dc2)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
+	int (*on_dc4)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+			int by);
 	void *outer;
 } SCREEN_CALLBACK;
 
@@ -42,10 +53,14 @@ typedef struct _SCREEN {
 	SCREEN_CALLBACK *callback;
 	TERMINAL terminal[1];
 	char string[CMDLINE_MAX_LENGTH + 1]; /**< line itself */
-	//int length; /**< string length */
+#if 0
+	int length; /**< string length */
+#endif
 	int cursor;   /**< cursor current position */
 	const char *prompt;
-	//int prompt_len;
+#if 0
+	int prompt_len;
+#endif
 	bool running;
 } SCREEN;
 

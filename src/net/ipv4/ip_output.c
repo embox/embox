@@ -53,7 +53,7 @@ static int build_ip_packet(struct inet_sock *sk, sk_buff_t *pack) {
 }
 
 int ip_queue_xmit(sk_buff_t *skb) {
-	//TODO:
+	/*TODO:*/
 	skb->nh.iph->ttl      = 64;
 	return dev_queue_xmit(skb);
 }

@@ -18,7 +18,7 @@ typedef enum {
 	VTPARSE_STATE_ESCAPE_INTERMEDIATE = 11,
 	VTPARSE_STATE_GROUND              = 12,
 	VTPARSE_STATE_OSC_STRING          = 13,
-	VTPARSE_STATE_SOS_PM_APC_STRING   = 14,
+	VTPARSE_STATE_SOS_PM_APC_STRING   = 14
 } VTPARSE_STATE;
 
 typedef unsigned char state_change_t;

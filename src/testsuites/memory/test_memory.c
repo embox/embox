@@ -13,9 +13,9 @@
 
 DECLARE_EXPRESS_TEST("Memory", "memory", exec, TEST_MEMORY_ON_BOOT_ENABLE, NULL);
 
-// FIXME what does this type mean? -- Eldar
+/* FIXME what does this type mean? -- Eldar*/
 typedef unsigned char datum;
-// As much as needed to save mem in memory_test_data_bus
+/* As much as needed to save mem in memory_test_data_bus */
 #define MEM_BUF_SIZE 100
 
 inline static void print_error(volatile uint32_t *addr, volatile uint32_t expected_value) {

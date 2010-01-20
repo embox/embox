@@ -28,14 +28,14 @@ static void transmit_move_cursor_by(SCREEN *this, int by) {
 }
 
 static void move_cursor_to(SCREEN *this, int col) {
-	// TODO range checking
+	/* TODO range checking */
 
 	if (this->cursor + 3 < col || col < this->cursor) {
-		// it is more easy to move cursor by special command
+		/* it is more easy to move cursor by special command*/
 		transmit_move_cursor_by(this, col - this->cursor);
 		this->cursor = col;
 	} else if (this->cursor < col) {
-		// rewrite a few chars
+		/* rewrite a few chars*/
 		for (; this->cursor < col; ++this->cursor) {
 			terminal_transmit(this->terminal, this->string[this->cursor], 0);
 		}
@@ -97,8 +97,11 @@ void screen_out_show_prompt(SCREEN *this, const char *prompt) {
 	*this->string = '\0';
 	this->cursor = 0;
 
-	//	screen_set_foreground_color(SGR_COLOR_RED);
-	//	terminal_transmit(this->terminal, TERMINAL_TOKEN_CURSOR_SAVE_ATTRS, NULL);
+#if 0
+		screen_set_foreground_color(SGR_COLOR_RED);
+		terminal_transmit(this->terminal, TERMINAL_TOKEN_CURSOR_SAVE_ATTRS, NULL);
+#endif
+
 	terminal_transmit(this->terminal, TERMINAL_TOKEN_SGR, 1,
 			TERMINAL_TOKEN_PARAM_SGR_FG_RED);
 	terminal_transmit(this->terminal, TERMINAL_TOKEN_SGR, 1,
@@ -106,9 +109,10 @@ void screen_out_show_prompt(SCREEN *this, const char *prompt) {
 
 	transmit_string(this, prompt);
 
-	//	terminal_transmit(this->terminal, TERMINAL_TOKEN_CURSOR_RESTORE_ATTRS, NULL);
+
 	terminal_transmit(this->terminal, TERMINAL_TOKEN_SGR, 1,
 			TERMINAL_TOKEN_PARAM_SGR_RESET);
-
-	//	screen_set_foreground_color(SGR_COLOR_BLACK);
+#if 0
+	screen_set_foreground_color(SGR_COLOR_BLACK);
+#endif
 }

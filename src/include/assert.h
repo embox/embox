@@ -15,8 +15,6 @@
 #include <types.h>
 #endif
 
-//#include <hal/arch.h>
-
 #if !defined(DEBUG) && defined(_TEST_SYSTEM_)
 # define __ASSERT_STRING0(cond, file, line) \
 		"\nASSERTION FAILED at " #file " : " #line "\n" \

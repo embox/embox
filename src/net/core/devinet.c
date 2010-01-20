@@ -197,7 +197,7 @@ void ifdev_rx_callback(sk_buff_t *pack) {
                 if (NULL != ifdev_info->cb_info[i].func) {
                         if ((NET_TYPE_ALL_PROTOCOL == ifdev_info->cb_info[i].type)
                             || (ifdev_info->cb_info[i].type == pack->protocol)) {
-                                //may be copy pack for different protocols
+                                /* todo may be copy pack for different protocols*/
                                 ifdev_info->cb_info[i].func(pack);
                         }
                 }
@@ -235,8 +235,8 @@ in_device_t *inet_dev_get_next_used(void) {
         return NULL;
 }
 
-//TODO follow functions either have different interface or move to another place
-//     move into ifconfig -- sikmir
+/*TODO follow functions either have different interface or move to another place
+     move into ifconfig -- sikmir*/
 int ifdev_up(const char *iname) {
         in_device_t *ifhandler;
         if (NULL == (ifhandler = find_free_handler ())) {

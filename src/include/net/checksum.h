@@ -5,9 +5,9 @@
  * @date 20.03.2009
  * @author Anton Bondarev
  */
-
-//#define LITTLE 0// big endian only
-
+#if 0
+#define LITTLE 0 /* big endian only*/
+#endif
 static inline unsigned short ptclbsum(void *addr, int len) {
 
 	register long sum;

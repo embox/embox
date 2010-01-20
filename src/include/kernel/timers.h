@@ -43,5 +43,5 @@ int timers_context_restore(int context_number);
  */
 void timers_off(void);
 
-#endif //__ASSEMBLER
-#endif //_TIMERS_H_
+#endif /*__ASSEMBLER__*/
+#endif /*_TIMERS_H_*/

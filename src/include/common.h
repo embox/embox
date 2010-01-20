@@ -34,5 +34,5 @@
 #define REG_STORE(a,v) (LEON3_BYPASS_STORE_PA(&(a),v))
 #define REG_ORIN(a,v) (REG_STORE(a,(REG_LOAD(a) | (v))))
 #define REG_ANDIN(a,v) (REG_STORE(a,(REG_LOAD(a) & (v))))
-#endif //_TEST_SYSTEM_
-#endif //_COMMON_H_
+#endif /* _TEST_SYSTEM_*/
+#endif /* _COMMON_H_ */

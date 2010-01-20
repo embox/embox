@@ -69,7 +69,7 @@ enum sock_type {
 	SOCK_RDM	= 4,
 	SOCK_SEQPACKET	= 5,
 	SOCK_DCCP	= 6,
-	SOCK_PACKET	= 10,
+	SOCK_PACKET	= 10
 };
 
 #define SOCK_MAX (SOCK_PACKET + 1)
@@ -87,7 +87,9 @@ typedef struct socket {
 	socket_state state;
 	short type;
 	unsigned long flags;
-	//struct file             *file;
+#if 0
+	struct file             *file;
+#endif
 	struct sock *sk;
 	const struct proto_ops *ops;
 } socket_t;
@@ -138,7 +140,7 @@ struct proto_ops {
 struct net_proto_family {
 	int		family;
 	int		(*create)(struct socket *sock, int protocol);
-	//TODO may be define struct module for compatible
+	/*TODO may be define struct module for compatible*/
 #if 0
 	struct module	*owner;
 #endif

@@ -22,7 +22,7 @@
 
 int udp_rcv(sk_buff_t *pack) {
 	LOG_WARN("udp packet received\n");
-	return 0;//udpsock_push(pack);
+	return 0;/*udpsock_push(pack);*/
 }
 #if 0
 static SOCK_INFO *__udp_lookup(in_addr_t saddr, unsigned short source,
@@ -97,7 +97,7 @@ static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev
 	    sk ==NULL) {
 		return;
 	}
-	//TODO UDP get net dev
+	/*TODO UDP get net dev*/
 #if 0
 	pack->ifdev = ifdev;
 	pack->dev = ifdev->dev;
@@ -107,7 +107,6 @@ static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev
 	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
 	rebuild_udp_header(pack, sk->inet.sport, sk->inet.dport);
-//	memcpy(pack->h.uh->data, buf, len);
 }
 
 int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {

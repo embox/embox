@@ -21,7 +21,7 @@
 #if defined(_WARN) && !defined(SIMULATION_TRG)
 # define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
 #else
-# define LOG_WARN(...)   do ; while(0)
+# define LOG_WARN(...)  do ; while(0)
 #endif
 
 #if defined(_DEBUG) && !defined(SIMULATION_TRG)

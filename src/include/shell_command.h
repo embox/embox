@@ -37,9 +37,9 @@ typedef struct _SHELL_COMMAND_DESCRIPTOR {
  */
 int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
 		char **argsv);
-
-//SHELL_COMMAND_DESCRIPTOR *shell_command_find_descriptor(char *name);
-
+#if 0
+SHELL_COMMAND_DESCRIPTOR *shell_command_find_descriptor(char *name);
+#endif
 /**
  * iterate functions
  */

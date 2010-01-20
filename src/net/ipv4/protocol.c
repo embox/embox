@@ -8,7 +8,6 @@
 
 #include <net/protocol.h>
 #include <types.h>
-//#include "stdio.h"
 
 static net_protocol_t *inet_protos[MAX_INET_PROTOS];
 
@@ -16,7 +15,6 @@ int inet_add_protocol(net_protocol_t *prot, unsigned char protocol) {
         int hash, ret;
         hash = protocol & (MAX_INET_PROTOS - 1);
 
-        //printf ("protocol 0x%X\n", protocol);
         if (inet_protos[hash]) {
                 ret = -1;
         } else {

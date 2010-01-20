@@ -25,8 +25,8 @@ char *strtok (char *s, const char *delim) {
 	s = strpbrk (token, delim);
 	if (s == NULL) {
 		/* This token finishes the string.  */
-		//FIXME:
-		//olds = __rawmemchr (token, '\0');
+		/*FIXME:
+		olds = __rawmemchr (token, '\0');*/
 	} else {
     		/* Terminate the token and make OLDS point past it.  */
     		*s = '\0';

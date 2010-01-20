@@ -21,8 +21,8 @@
 
 DECLARE_INIT("net_dev", net_dev_init, INIT_NET_LEVEL);
 
-//FIXME we must have queue for each netdevice or if we want to use the only
-// we should use alloc_skb_queue?
+/*FIXME we must have queue for each netdevice or if we want to use the only
+ we should use alloc_skb_queue?*/
 static SKB_LIST_HEAD(netdev_skb_head);
 
 static LIST_HEAD(ptype_base);
@@ -79,7 +79,7 @@ void free_netdev(net_device_t *dev) {
 }
 
 int register_netdev(struct net_device *dev) {
-	//FIXME we must create queue for each device
+	/*FIXME we must create queue for each device*/
 	return 0;
 }
 
@@ -145,10 +145,9 @@ static void print_packet (sk_buff_t *skb) {
 
 int netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
-	struct packet_type *q;
+	struct packet_type *q = NULL;
 	int rc_rx = 0;
 
-	//	unsigned long sp = local_irq_save();
 
 	if (NULL == skb) {
 		return NET_RX_DROP;
@@ -157,7 +156,7 @@ int netif_rx(struct sk_buff *skb) {
 	if (NULL == dev) {
 		return NET_RX_DROP;
 	}
-	skb->nh.raw = (void *) skb->data + ETH_HEADER_SIZE;
+	skb->nh.raw = (unsigned char *)skb->data + ETH_HEADER_SIZE;
 
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == skb->protocol) {
@@ -172,12 +171,10 @@ int netif_rx(struct sk_buff *skb) {
 #if CONFIG(SOFT_IRQ)
 		}
 #endif
-			//			local_irq_restore(sp);
 			return rc_rx;
 		}
 	}
 	kfree_skb(skb);
-	//	local_irq_restore(sp);
 	return NET_RX_DROP;
 }
 
@@ -225,7 +222,7 @@ int dev_open(struct net_device *dev) {
 		dev->state &= ~__LINK_STATE_START;
 	} else {
 		/* Set the flags. */
-		//TODO: IFF_RUNNING sets not here
+		/*TODO: IFF_RUNNING sets not here*/
 		dev->flags |= (IFF_UP | IFF_RUNNING);
 	}
 	return ret;
@@ -245,23 +242,23 @@ int dev_close(struct net_device *dev) {
 		LOG_ERROR("ifdev down: can't find stop function in net_device with name\n");
 	}
 	/* Device is now down. */
-	//TODO: IFF_RUNNING sets not here
+	/*TODO: IFF_RUNNING sets not here*/
 	dev->flags &= ~(IFF_UP | IFF_RUNNING);
 	return 0;
 }
 
 unsigned dev_get_flags(const struct net_device *dev) {
-	//TODO: ...
+	/*TODO: ...*/
 	return dev->flags;
 }
 
 int dev_change_flags(struct net_device *dev, unsigned flags) {
-	int ret;
+	int ret = 0;
 	int old_flags = dev->flags;
 	if ((old_flags ^ flags) & IFF_UP) {
 		ret = ((old_flags & IFF_UP) ? dev_close : dev_open)(dev);
 	}
-	//TODO: ...
+	/*TODO: ...*/
 	dev->flags = dev->flags & flags;
 	return ret;
 }

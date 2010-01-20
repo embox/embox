@@ -23,7 +23,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
 	int nextOption;
-	in_device_t *ifdev;
+	in_device_t *ifdev = NULL;
 	in_addr_t net  = INADDR_ANY;
 	in_addr_t mask = INADDR_ANY;
 	in_addr_t gw   = INADDR_ANY;

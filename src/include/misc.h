@@ -12,7 +12,6 @@
 
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]);
 unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[ETH_ALEN]);
-//void ipaddr_print(const char *buf, const unsigned char *addr);
 void macaddr_print(const char *buf, const unsigned char *addr);
 int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigned char msk);
 

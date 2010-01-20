@@ -29,8 +29,8 @@ static int exec(int argsc, char **argsv) {
                         show_help();
                         return 0;
                 case 'a':
-                        if ((optarg != NULL) && (!sscanf(optarg, "0x%p", &address))
-                                        && (!sscanf(optarg, "%x", (int *) &address))) {
+                        if ((optarg != NULL) && (!sscanf(optarg, "0x%x", (unsigned *)(void *)(&address)))
+                                        && (!sscanf(optarg, "%d", (int *)(void *)(&address)))) {
                                 LOG_ERROR("wmem: hex value expected.\n");
                                 show_help();
                                 return -1;

@@ -252,7 +252,7 @@ static int received_resp(sk_buff_t *pack) {
 #if 0
 	arphdr_t *arp = pack->nh.arph;
 
-	//TODO need add function for getting ip addr
+	/*TODO need add function for getting ip addr*/
 	if (inet_dev_get_ipaddr(pack->ifdev) != arp->ar_tip) {
 		return -1;
 	}

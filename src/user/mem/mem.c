@@ -53,7 +53,7 @@ static int exec(int argsc, char **argsv) {
 				show_help();
 				return -1;
 			}
-			if (!sscanf(optarg, "0x%p", &address)) {
+			if (!sscanf(optarg, "0x%x", (unsigned *)(void *)&address)) {
 				LOG_ERROR("mem: -a: hex value for address expected.\n");
 				show_help();
 				return -1;

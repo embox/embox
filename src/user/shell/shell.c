@@ -13,14 +13,14 @@
 #include "kernel/sys.h"
 #include "shell_command.h"
 
-// *str becomes pointer to first non-space character
+/* *str becomes pointer to first non-space character*/
 void skip_spaces(char **str) {
         while (**str == ' ') {
                 (*str)++;
         }
 }
 
-// *str becomes pointer to first space or '\0' character
+/* *str becomes pointer to first space or '\0' character*/
 void skip_word(char **str) {
         while (**str != '\0' && **str != ' ') {
                 (*str)++;
@@ -43,22 +43,13 @@ static int parse_str(char *cmdline, char **words) {
 
 static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
 	int words_counter = 0;
-	//PSHELL_HANDLER phandler;
+
         SHELL_COMMAND_DESCRIPTOR *c_desc;
 	char *words[CMDLINE_MAX_LENGTH + 1];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {
 		return; /* Only spaces were entered */
 	}
-
-	// choosing correct handler
-//	for (i = 0; i < cur_shellhandlers_count; i++) { //array_len(shell_handlers); i++) {
-//		if (0 == strcmp(words[0], shell_handlers[i].name)) {
-//			phandler = shell_handlers[i].phandler;
-//			sys_exec_start(phandler, words_counter - 1, words + 1);
-//			return;
-//		}
-//	}
 	if(NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))){
 		printf("%s: Command not found\n", words[0]);
 		return;
@@ -67,7 +58,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 		LOG_ERROR("shell command: wrong command descriptor\n");
 		return;
 	}
-	//sys_exec_start(c_desc->exec, words_counter - 1, words + 1);
+
 	shell_command_exec(c_desc, words_counter, words);
 	return;
 }
@@ -92,11 +83,6 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	*offset = cursor - start;
 	*proposals_len = 0;
 
-//	for (i = 0; i < array_len(shell_handlers) && *proposals_len < max_proposals; i++) {
-//		if (0 == strncmp(shell_handlers[i].name, line, *offset)) {
-//			proposals[(*proposals_len)++] = shell_handlers[i].name;
-//		}
-//	}
 	for(shell_desc = shell_command_descriptor_find_first((char*)line, *offset);
 			NULL != shell_desc;
 			shell_desc = shell_command_descriptor_find_next(shell_desc, (char *)line, *offset)){
@@ -136,13 +122,6 @@ void shell_start(void) {
 	static const char* prompt = CONFIG_SHELL_PROMPT;
 	static CONSOLE console[1];
 	static CONSOLE_CALLBACK callback[1];
-
-//	printf("cur_shellhandlers_count :%d \n",cur_shellhandlers_count);
-//	int i;
-//	for (i=0; i<array_len(shell_handlers_old); i++) {
-//		shell_handlers[cur_shellhandlers_count] = shell_handlers_old[i];
-//		cur_shellhandlers_count++;
-//	}
 
 	callback->exec = exec_callback;
 	callback->guess = guess_callback;

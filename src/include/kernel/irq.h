@@ -55,7 +55,7 @@ void irq_set_handler(uint8_t irq_number, IRQ_HANDLER pfunc);
  */
 IRQ_HANDLER irq_get_handler(uint8_t nirq);
 
-//TODO this description from linux driver book
+/*TODO this description from linux driver book*/
 /**
  * The value returned from request_irq to the requesting function is either 0
  * to indicate success or a negative error code, as usual.

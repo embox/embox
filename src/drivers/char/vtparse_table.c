@@ -1520,7 +1520,7 @@ state_change_t STATE_TABLE[15][256] = {
 		/*124*/ VT_ACTION_ESC_DISPATCH | (VTPARSE_STATE_GROUND << 4),
 		/*125*/ VT_ACTION_ESC_DISPATCH | (VTPARSE_STATE_GROUND << 4),
 		/*126*/ VT_ACTION_ESC_DISPATCH | (VTPARSE_STATE_GROUND << 4),
-		/*127*/ VT_ACTION_EXECUTE | (0 << 4), // -- Eldar
+		/*127*/ VT_ACTION_EXECUTE | (0 << 4), /* -- Eldar*/
 	},
 	{	/* VTPARSE_STATE_ESCAPE_INTERMEDIATE */
 		/*0 */ VT_ACTION_EXECUTE | (0 << 4),
@@ -1780,7 +1780,7 @@ state_change_t STATE_TABLE[15][256] = {
 		/*124*/ VT_ACTION_PRINT | (0 << 4),
 		/*125*/ VT_ACTION_PRINT | (0 << 4),
 		/*126*/ VT_ACTION_PRINT | (0 << 4),
-		/*127*/ VT_ACTION_EXECUTE | (0 << 4), // -- Eldar
+		/*127*/ VT_ACTION_EXECUTE | (0 << 4), /* -- Eldar*/
 		/*128*/ VT_ACTION_EXECUTE | (0 << 4),
 		/*129*/ VT_ACTION_EXECUTE | (0 << 4),
 		/*130*/ VT_ACTION_EXECUTE | (0 << 4),

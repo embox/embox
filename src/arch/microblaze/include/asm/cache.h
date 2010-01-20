@@ -3,11 +3,11 @@
 
 #include <asm/msr.h>
 
-//TODO may be put it in config file
+/*TODO may be put it in config file*/
 #define CACHE_LINE_LENGTH    32
 
 inline static void cache_set_ctrl_reg(unsigned int ctrl_reg){
-	// stub
+	/* stub*/
 }
 
 inline static void cache_refresh(void) {
@@ -39,4 +39,4 @@ inline static void cache_data_disable(void) {
 	msr_clr(MSR_DCE_MASK);
 }
 
-#endif // ifndef __CACHE_H__
+#endif /* ifndef __CACHE_H__*/

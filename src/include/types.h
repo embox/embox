@@ -23,7 +23,7 @@ typedef __u16 uint16_t;
 typedef __u32 uint32_t;
 typedef __u64 uint64_t;
 
-// FIXME try to avoid using these types -- Eldar
+/* FIXME try to avoid using these types -- Eldar*/
 typedef __u16 __le16;
 typedef __u16 __be16;
 typedef __u32 __le32;

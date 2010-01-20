@@ -16,24 +16,27 @@
 #include "string.h"
 #include "drivers/terminal.h"
 
-#define EDIT_MODEL(console, update, action, params...) \
-		do if((action)((console)->model, ##params)) { \
+#define EDIT_MODEL(console, update, action, ...) \
+		do if((action)((console)->model, ##__VA_ARGS__)) { \
 			(update)((console)->view, (console)->model); \
 		} while(0)
 
-#define CB_EDIT_MODEL(action, params...) \
-		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##params)
+#define CB_EDIT_MODEL(action, ...) \
+		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##__VA_ARGS__)
 
 CONSOLE *cur_console = NULL;
 
-static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	/*FIXME: resolve "(reverse-i-search)`':" statement */
-	char *cmd;// = strstr(this->model->string, ":");
-	//        if (cmd)
-	//    		*cmd++;
-	//    	else
+	char *cmd;
+#if 0
+	= strstr(this->model->string, ":");
+	        if (cmd)
+	    		*cmd++;
+	    	else
+#endif
 	cmd = this->model->string;
 
 	if (this->callback != NULL && this->callback->exec != NULL && *cmd) {
@@ -43,70 +46,85 @@ static void on_new_line(SCREEN_CALLBACK *cb, SCREEN *view) {
 	}
 	screen_out_show_prompt(this->view, this->prompt);
 	CB_EDIT_MODEL(cmdline_history_new_entry);
+	return 0;
 }
 
-static void on_char(SCREEN_CALLBACK *cb, SCREEN *view, char ch) {
+static int on_char(SCREEN_CALLBACK *cb, SCREEN *view, int ch) {
 	CB_EDIT_MODEL(cmdline_chars_insert, &ch,1);
+	return 0;
 }
 
-static void on_cursor_up(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
+static int on_cursor_up(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_history_backward);
+	return 0;
 }
 
-static void on_cursor_down(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
+static int on_cursor_down(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_history_forward);
+	return 0;
 }
 
-static void on_cursor_left(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
+static int on_cursor_left(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_cursor_left);
+	return 0;
 }
 
-static void on_cursor_right(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
+static int on_cursor_right(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_cursor_right);
+	return 0;
 }
 
-static void on_backspace(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_backspace(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_chars_backspace,1);
+	return 0;
 }
 
-static void on_delete(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_delete(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_chars_delete,1);
+	return 0;
 }
 
-static void on_home(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_home(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_cursor_home);
+	return 0;
 }
 
-static void on_end(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_end(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_cursor_end);
+	return 0;
 }
 
-static void on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_insert(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
 	CMDLINE *cmd = this->model;
 	cmd->is_insert_mode = cmd->is_insert_mode ? 0 : 1;
+	return 0;
 }
 
-static void on_etx(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_etx(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	sys_exec_stop();
-	on_new_line(cb, view);
+	on_new_line(cb, view, 0);
+	return 0;
 }
 
-static void on_eot(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_eot(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	console_stop(cur_console);
+	return 0;
 }
 
-static void on_dc2(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_dc2(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_dc2_reverse);
+	return 0;
 }
 
-static void on_dc4(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_dc4(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_dc4_reverse);
+	return 0;
 }
 
 #define MAX_PROPOSALS	64
 
-static void on_tab(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
 	static char* proposals[MAX_PROPOSALS];
 	int proposals_len, offset, common;
@@ -135,6 +153,7 @@ static void on_tab(SCREEN_CALLBACK *cb, SCREEN *view) {
 			}
 		}
 	}
+	return 0;
 }
 
 CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
@@ -164,7 +183,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 	if (this == NULL) {
 		return;
 	}
-
+/*TODO may be do static initialize*/
 	INIT_MEMBER(screen_callback,on_char);
 	INIT_MEMBER(screen_callback,on_cursor_up);
 	INIT_MEMBER(screen_callback,on_cursor_left);

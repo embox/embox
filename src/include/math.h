@@ -11,6 +11,6 @@
 #define min(i, j)   (((i) < (j)) ? (i) : (j))
 #define abs(i)      max((i), -(i))
 
-//TODO: add float-point library
+/*TODO: add float-point library*/
 
 #endif /* MATH_H_ */

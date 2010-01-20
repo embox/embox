@@ -95,7 +95,7 @@ enum sock_flags {
         SOCK_DEAD,
         SOCK_DONE,
         SOCK_DESTROY,
-        SOCK_BROADCAST,
+        SOCK_BROADCAST
 };
 
 typedef struct proto {
@@ -114,7 +114,7 @@ typedef struct proto {
 extern int proto_register(proto_t *prot, int alloc_slab);
 extern void proto_unregister(proto_t *prot);
 
-//TODO:
+/*TODO:*/
 extern sock_t *sk_alloc(/*struct net *net,*/ int family, gfp_t priority, proto_t *prot);
 extern void sk_free(sock_t *sk);
 extern sock_t *sk_clone(const sock_t *sk, const gfp_t priority);
@@ -127,7 +127,7 @@ extern int sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
 #if 0
 typedef struct _SOCK_INFO{
         struct udp_sock *sk;
-        struct sk_buff *queue; //TODO: stub
+        struct sk_buff *queue; /*TODO: stub*/
         int new_pack;
         int is_busy;
 }SOCK_INFO;

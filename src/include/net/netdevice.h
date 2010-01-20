@@ -58,11 +58,13 @@ typedef struct net_device_stats {
 } net_device_stats_t;
 
 enum netdev_state_t {
-	__LINK_STATE_START,
-//        __LINK_STATE_PRESENT,
-//        __LINK_STATE_NOCARRIER,
-//        __LINK_STATE_LINKWATCH_PENDING,
-//        __LINK_STATE_DORMANT,
+	__LINK_STATE_START
+#if 0
+      ,  __LINK_STATE_PRESENT,
+        __LINK_STATE_NOCARRIER,
+        __LINK_STATE_LINKWATCH_PENDING,
+        __LINK_STATE_DORMANT,
+#endif
 };
 
 /**
@@ -227,10 +229,10 @@ static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
 }
 
 static inline void netif_start_queue(net_device_t *dev) {
-	//TODO:
+	/*TODO:*/
 }
 
-//TODO: deprecated
+/*TODO: deprecated*/
 int ifdev_up(const char *iname);
 int ifdev_down(const char *iname);
 
