@@ -10,8 +10,8 @@
  * This code is in the public domain.
  */
 
-#include "drivers/vtparse.h"
-#include "common.h"
+#include <drivers/vtparse.h>
+#include <common.h>
 
 #define ACTION(state_change) (state_change & 0x0F)
 #define STATE(state_change)  (state_change >> 4)

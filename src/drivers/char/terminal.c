@@ -9,12 +9,12 @@
  * Author: Eldar Abusalimov
  */
 
-#include "drivers/terminal.h"
-#include "assert.h"
-#include "asm/stdarg.h"
-#include "kernel/uart.h"
-#include "common.h"
-#include "string.h"
+#include <drivers/terminal.h>
+#include <assert.h>
+#include <asm/stdarg.h>
+#include <kernel/uart.h>
+#include <common.h>
+#include <string.h>
 
 static void vtparse_callback(VTPARSER*, VT_TOKEN*);
 

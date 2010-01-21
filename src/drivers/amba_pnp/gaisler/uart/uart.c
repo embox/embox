@@ -1,13 +1,13 @@
 /**
  * \file uart.c
  */
-#include "types.h"
-#include "kernel/irq.h"
+#include <types.h>
+#include <kernel/irq.h>
 #include <hal/irq_ctrl.h>
-#include "drivers/amba_pnp.h"
-#include "kernel/uart.h"
-#include "common.h"
-#include "autoconf.h"
+#include <drivers/amba_pnp.h>
+#include <kernel/uart.h>
+#include <common.h>
+#include <autoconf.h>
 
 #define UART_SCALER_VAL  ((((CORE_FREQ*10) / (8 * UART_BAUD_RATE))-5)/10)
 

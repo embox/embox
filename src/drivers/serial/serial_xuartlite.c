@@ -5,9 +5,9 @@
  * @author: Anton Bondarev
  */
 
-#include "autoconf.h"
-#include "types.h"
-#include "kernel/irq.h"
+#include <autoconf.h>
+#include <types.h>
+#include <kernel/irq.h>
 
 typedef volatile struct uart_regs {
 	uint32_t rx_data;

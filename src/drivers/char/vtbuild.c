@@ -6,8 +6,8 @@
  *
  * Author: Eldar Abusalimov
  */
-#include "drivers/vtbuild.h"
-#include "common.h"
+#include <drivers/vtbuild.h>
+#include <common.h>
 
 #define BUF_SIZE 10
 
