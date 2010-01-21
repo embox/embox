@@ -10,7 +10,7 @@
 #include "kernel/init.h"
 
 #define DECLARE_MODULE(name, init) \
-	DECLARE_INIT(name, init, INIT_MODULE_LEVEL);
+	DECLARE_INIT(name, init, INIT_MODULE_LEVEL)
 
 /* These macros are used to mark some functions or
  * initialized data (doesn't apply to uninitialized data)
