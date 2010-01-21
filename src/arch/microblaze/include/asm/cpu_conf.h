@@ -10,7 +10,6 @@
 #ifndef CPU_CONF_H_
 #define CPU_CONF_H_
 
-#define MB_SYMULATOR 0
 #define MAX_IRQ_NUMBER      0x10
 
 
@@ -23,7 +22,7 @@
 #define XILINX_FSL_NUMBER           3
 
 /** Interrupt controller is opb_intc_0 */
-#if MB_SYMULATOR
+#ifdef CONFIG_MB_SIMULATOR
 #define XILINX_INTC_BASEADDR        0x41200000
 #else
 #define XILINX_INTC_BASEADDR        0x81800000
@@ -31,7 +30,7 @@
 #define XILINX_INTC_NUM_INTR_INPUTS 6
 
 /** Timer pheriphery is opb_timer_1 */
-#if MB_SYMULATOR
+#ifdef CONFIG_MB_SIMULATOR
 #define XILINX_TIMER_BASEADDR       0x41c00000
 #else
 #define XILINX_TIMER_BASEADDR       0x83c00000
@@ -39,7 +38,7 @@
 #define XILINX_TIMER_IRQ            0
 
 /** Uart pheriphery is RS232_Uart */
-#if MB_SYMULATOR
+#ifdef CONFIG_MB_SIMULATOR
 #define XILINX_UARTLITE_BASEADDR    0x40600000
 #else
 #define XILINX_UARTLITE_BASEADDR    0x84000000
@@ -69,7 +68,7 @@
 #define XILINX_SYSACE_MEM_WIDTH     16
 
 /** Ethernet controller is Ethernet_MAC */
-#if MB_SYMULATOR
+#ifdef CONFIG_MB_SIMULATOR
 #define XILINX_EMACLITE_BASEADDR    0x40C00000
 #else
 #define XILINX_EMACLITE_BASEADDR    0x81000000
