@@ -16,7 +16,7 @@
 #include <common.h>
 #include <string.h>
 
-DECLARE_MODULE("Ethernet Emac lite", module_init)
+DECLARE_MODULE("Ethernet Emac lite", module_init);
 
 #define PKTSIZE 0x800
 
