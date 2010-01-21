@@ -58,10 +58,10 @@ int request_irq(unsigned int irq_number, IRQ_HANDLER handler,
 }
 
 void free_irq(unsigned int irq, void *dev_id) {
-	//TODO not realize now
+	/*TODO free_irq not realize now*/
 }
 
-//TODO may be it needs only for testing? and move it
+/*TODO may be it needs only for testing? and move it*/
 bool irq_set_info(IRQ_INFO *irq_info) {
 	IRQ_INFO old_irq_info;
 	unsigned long psr;

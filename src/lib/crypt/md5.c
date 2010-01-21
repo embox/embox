@@ -57,13 +57,9 @@
 unsigned char *count_md5(unsigned char *addr, unsigned char *end_addr, unsigned char *pmd5_sum)
 {
 	md5_state_t state;
-	//md5_byte_t md5_sum[16];
-	//int i;
 	md5_init(&state);
 	md5_append(&state, (const md5_byte_t *) addr, end_addr - addr);
 	md5_finish(&state, pmd5_sum);
-	//for (i = 0; i < 16; i++)
-	//    printf("%02x", md5_sum[i]);
     return 	pmd5_sum;
 }
 

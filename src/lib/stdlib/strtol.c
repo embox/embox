@@ -64,7 +64,7 @@ long strtol(const char *nptr, char **endptr, int base) {
         	cutoff = neg ? -(unsigned long)LONG_MIN : LONG_MAX;
         	cutlim = cutoff % (unsigned long)base;
         	cutoff /= (unsigned long)base;
-        	///////////////////////
+        	/****************/
         	for (acc = 0, any = 0;; c = *s++) {
         		if (isdigit(c)) {
         			c -= '0';
@@ -84,10 +84,10 @@ long strtol(const char *nptr, char **endptr, int base) {
         			acc += c;
         		}
     		}
-        	////////////////////
+        	/****************/
         	if (any < 0) {
         		acc = neg ? LONG_MIN : LONG_MAX;
-//        		errno = ERANGE;
+        		errno = ERANGE;
         	} else if (neg)
         		acc = -acc;
         	if (endptr != 0)

@@ -10,8 +10,8 @@
 #define MEM_POOL_SIZE 0x11CA
 
 static int has_initialized = 0;
-static void *managed_memory_start;
-static void *last_valid_address;
+static char *managed_memory_start;
+static char *last_valid_address;
 
 static char mem_pool[MEM_POOL_SIZE];
 
@@ -32,7 +32,7 @@ static void malloc_init(void) {
 }
 
 static void _mem_defrag(void) {
-        void *current_location, *next;
+        char *current_location, *next;
         struct mem_control_block *current_location_mcb, *next_mcb;
         current_location = managed_memory_start;
         current_location_mcb = (struct mem_control_block *)current_location;
@@ -51,17 +51,17 @@ static void _mem_defrag(void) {
 
 void free(void *ptr) {
 	struct mem_control_block *mcb;
-	mcb = ptr - sizeof(struct mem_control_block);
+	mcb = (void *)((char *)ptr - sizeof(struct mem_control_block));
 	mcb->is_available = 1;
 	 _mem_defrag();
 	return;
 }
 
-//ATTENTION: memory size must be aligned!
+/*FIXME ATTENTION: memory size must be aligned!*/
 void *malloc(size_t size) {
-	void *current_location;
-        struct mem_control_block *current_location_mcb;
-	void *memory_location = NULL;
+	char *current_location;
+    struct mem_control_block *current_location_mcb;
+	char *memory_location = NULL;
 	if(! has_initialized) {
 		malloc_init();
 	}
@@ -101,9 +101,9 @@ void *calloc(size_t nmemb, size_t size) {
 }
 
 void *realloc(void *ptr, size_t size) {
-	void *tmp = malloc(size);
+	char *tmp = malloc(size);
 	struct mem_control_block *mcb;
-	mcb = ptr - sizeof(struct mem_control_block);
+	mcb = (void *)((char *)ptr - sizeof(struct mem_control_block));
 	memcpy(tmp, ptr, mcb->size - sizeof(struct mem_control_block));
 	free(ptr);
 	return tmp;

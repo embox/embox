@@ -25,8 +25,10 @@
 
 #define putchar(c) outbyte(c)
 */
+#if 0
+void outbyte(int c);
+#endif
 
-//void outbyte(int c);
 #include "types.h"
 #include "asm/stdarg.h"
 #include "kernel/uart.h"
@@ -51,7 +53,6 @@ int puts (const char *S) {
 
 
 static void printchar(char **str, int c) {
-	//extern int putchar(int c);
 
 	if (str) {
 		**str = c;
@@ -65,7 +66,7 @@ static void printchar(char **str, int c) {
 
 static int prints(char **out, const char *string, int width, int pad)
 {
-//TODO: optimizations needed to be enabled in gcc (-O2) to make register qualifier work
+/*TODO: optimizations needed to be enabled in gcc (-O2) to make register qualifier work*/
 	/*register*/ int pc = 0, padchar = ' ';
 
 	if (width > 0) {
@@ -226,10 +227,10 @@ static int print(char **out, const char *format, va_list args )
 				pc += prints (out, scr, width, pad);
 				continue;
 			case 'p':
-				//TODO:
+				/*TODO: printf haven't realized pointer variable operations*/
 				continue;
 			case 'f':
-				//TODO:
+				/*TODO: printf haven't realized float variable operations*/
 				continue;
 			}
 		}

@@ -11,6 +11,7 @@
 #include "stdio.h"
 #include "string.h"
 
+/*FIXME rename this file it contains only net_utils function*/
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {
     char symbol_str[4];
     int i,j;
@@ -50,7 +51,7 @@ unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[ETH_ALEN]) {
     char symbol_str[4];
     int i,j;
     int cur = 0;
-    int tmp;
+    unsigned int tmp;
     for(i = 0; i < 5; i ++){
         symbol_str[0]='\0';
         for (j = 0; j < array_len(symbol_str); j ++ ){
@@ -80,10 +81,6 @@ unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[ETH_ALEN]) {
     res[i] = tmp;
     return res;
 }
-
-//void ipaddr_print(const char *buf, const unsigned char *addr) {
-//        sprintf((char *)buf, "%d.%d.%d.%d", addr[0], addr[1], addr[2], addr[3]);
-//}
 
 void macaddr_print(const char *buf, const unsigned char *addr) {
         sprintf((char *)buf, "%02X:%02X:%02X:%02X:%02X:%02X", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
