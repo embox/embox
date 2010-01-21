@@ -10,8 +10,9 @@
 #include "string.h"
 #include "misc.h"
 #include "express_tests.h"
+#include <kernel/init.h>
 
-DECLARE_EXPRESS_TEST("Memory", "memory", exec, TEST_MEMORY_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST("Memory", "memory", exec, INIT_MODULE_LEVEL, TEST_MEMORY_ON_BOOT_ENABLE, NULL);
 
 /* FIXME what does this type mean? -- Eldar*/
 typedef unsigned char datum;

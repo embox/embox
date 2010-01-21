@@ -9,11 +9,10 @@
 #define INIT_H_
 
 #define INIT_MODULE_LEVEL     1
-#define INIT_EXPR_TESTS_LEVEL 3
-#define INIT_NET_LEVEL        4
-#define INIT_FS_LEVEL         4
+#define INIT_NET_LEVEL        3
+#define INIT_FS_LEVEL         3
 
-#define INIT_MAX_LEVEL 4
+#define INIT_MAX_LEVEL 3
 
 typedef struct init_descriptor {
 	const char *name;

@@ -15,11 +15,11 @@
 #include <fs/rootfs.h>
 #include <asm/cache.h>
 #include <kernel/init.h>
+#include <express_tests.h>
 
 int hardware_init_hook(void) {
 	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
 	init_descriptor_t ** p_init_desc = &__init_handlers_start;
-	//int i, total = (int) (&__init_handlers_end - &__init_handlers_start);
 	int level;
 	const char *init_name;
 	const char *default_init_name = "???";
@@ -33,10 +33,12 @@ int hardware_init_hook(void) {
 	uart_init();
 	sys_timers_init();
 
+	express_tests_execute(0);
+
 	TRACE("\nStarting Monitor...\n");
 
 	for (level = 0; level <= INIT_MAX_LEVEL; level++) {
-		TRACE("\n********* Init level %d:\n", level);
+		TRACE("\n********************** Init level %d:\n", level);
 		for (p_init_desc = &__init_handlers_start; p_init_desc
 				< &__init_handlers_end; p_init_desc++) {
 			init_name = default_init_name;
@@ -55,9 +57,12 @@ int hardware_init_hook(void) {
 						init_name);
 				continue;
 			}
-			TRACE("*** Initializing %s\n", (*p_init_desc)->name);
+			TRACE("* Initializing %s\n", (*p_init_desc)->name);
 			(*p_init_desc)->init();
 		}
+		TRACE("\n");
+		/* after components initializing */
+		express_tests_execute(level);
 	}
 	return 0;
 }

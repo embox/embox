@@ -11,10 +11,11 @@
 #include "hal/irq_ctrl.h"
 #include "kernel/irq.h"
 #include "asm/sys.h"
+#include <kernel/init.h>
 
 #define TEST_IRQ_NUM 10
 
-DECLARE_EXPRESS_TEST("local_irq_save()", "localirqsave", exec, TEST_LOCAL_IRQ_SAVE_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST("local_irq_save()", "localirqsave", exec, INIT_MODULE_LEVEL, TEST_LOCAL_IRQ_SAVE_ON_BOOT_ENABLE, NULL);
 
 volatile static bool irq_happened;
 

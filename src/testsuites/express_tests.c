@@ -12,9 +12,7 @@
 #include <kernel/init.h>
 #include <kernel/sys.h>
 
-DECLARE_INIT("Express tests", express_tests_execute, INIT_EXPR_TESTS_LEVEL);
-
-static int express_tests_execute(void) {
+int express_tests_execute_all( void ) {
 	extern express_test_descriptor_t *__express_tests_start, *__express_tests_end;
 	express_test_descriptor_t ** p_test = &__express_tests_start;
 	int i, total = (int) (&__express_tests_end - &__express_tests_start);
@@ -64,6 +62,71 @@ static int express_tests_execute(void) {
 	TRACE("\nSkipped: %d\n", skipped);
 	TRACE("Passed: %d\n", passed);
 	TRACE("Failed: %d\n", failed);
+
+	return (failed == 0) ? 0 : -1;
+}
+
+int express_tests_execute( int level ) {
+	extern express_test_descriptor_t *__express_tests_start, *__express_tests_end;
+	express_test_descriptor_t ** p_test = &__express_tests_start;
+	int i, total = (int) (&__express_tests_end - &__express_tests_start);
+	int passed = 0, failed = 0, skipped = 0, result;
+
+	for (i = 0; i < total; i++, p_test++) {
+		if (NULL == (*p_test)) {
+			LOG_ERROR("Missing express test descriptor\n");
+			continue;
+		}
+		if (NULL == ((*p_test)->name)) {
+			LOG_ERROR("Broken express test descriptor: can't find test name\n");
+			continue;
+		}
+		if (NULL == ((*p_test)->exec)) {
+			LOG_ERROR("Broken express test descriptor: can't find exec function for test %s\n", (*p_test)->name);
+			continue;
+		}
+		if ((*p_test)->level != level) {
+			continue;
+		}
+
+		TRACE("Testing %s ... ", (*p_test)->name);
+		if (!(*p_test)->execute_on_boot)
+		{
+			TRACE("SKIPPED\n");
+			skipped++;
+			continue;
+		}
+
+		/* Executing express test */
+		result = sys_exec_start((*p_test)->exec, 0, NULL);
+
+		if (result == EXPRESS_TESTS_PASSED_RETCODE) {
+			TRACE("PASSED\n");
+		} else if (result == EXPRESS_TESTS_FAILED_RETCODE) {
+			TRACE("FAILED\n");
+			failed++;
+		} else if (result == EXPRESS_TESTS_INTERRUPTED_RETCODE) {
+			TRACE("INTERRUPTED\n");
+			failed++;
+		} else if (result == EXPRESS_TESTS_UNABLE_TO_START_RETCODE) {
+			TRACE("UNABLE TO START\n");
+			failed++;
+		} else {
+			TRACE(" Unknown retcode: %i (counting FAILED)\n", result);
+			failed++;
+		}
+	}
+
+	if (passed + failed == 0) {
+		/* No tests to execute on this level
+		 * Nothing to write in this case */
+		return 0;
+	}
+
+	TRACE("\nTests results on level %d:\n", level);
+	TRACE("\tSkipped: %d\n", skipped);
+	TRACE("\t Passed: %d\n", passed);
+	TRACE("\t Failed: %d\n", failed);
 
 	return (failed == 0) ? 0 : -1;
 }

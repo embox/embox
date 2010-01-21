@@ -11,8 +11,9 @@
 #include "autoconf.h"
 #include "common.h"
 #include "express_tests.h"
+#include <kernel/init.h>
 
-DECLARE_EXPRESS_TEST("recursion", "rec", exec, TEST_RECURSION_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST("recursion", "rec", exec, INIT_MODULE_LEVEL, TEST_RECURSION_ON_BOOT_ENABLE, NULL);
 
 #define RECURSION_DEPTH 32
 
