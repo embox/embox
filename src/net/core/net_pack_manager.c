@@ -11,52 +11,47 @@
 #include <kernel/module.h>
 #include <net/net_pack_manager.h>
 
-typedef struct _NET_BUFF_INFO {
+typedef struct net_buff_info {
+	/*it must be first member! We use casting in net_buff_free function*/
+	unsigned char buff[ETHERNET_V2_FRAME_SIZE];
 	struct list_head list;
-	unsigned char *buff;
-} NET_PACK_INFO;
+} net_buff_info_t;
 
-static LIST_HEAD(free_packet_list_head);
-static LIST_HEAD(busy_packet_list_head);
+static LIST_HEAD(head_free_pack);
 
-static NET_PACK_INFO pack_pool[PACK_POOL_SIZE];
-static unsigned char heap_buff[array_len(pack_pool)][ETHERNET_V2_FRAME_SIZE];
+static net_buff_info_t pack_pool[PACK_POOL_SIZE];
 
 int __init net_buff_init(void) {
 	int i;
 	for (i = 0; i < array_len(pack_pool); i ++) {
-		(&pack_pool[i])->buff = &heap_buff[i][0];
-		list_add(&(&pack_pool[i])->list, &free_packet_list_head);
+		list_add(&(&pack_pool[i])->list, &head_free_pack);
 	}
-	INIT_LIST_HEAD(&busy_packet_list_head);
 	return 0;
 }
 
 unsigned char *net_buff_alloc(void) {
-	NET_PACK_INFO *pack;
+	net_buff_info_t *entry;
+	unsigned char * buff;
 	unsigned long sp = spin_lock();
-	if (list_empty (&free_packet_list_head)) {
+	if (list_empty (&head_free_pack)) {
 		spin_unlock(sp);
 		return NULL;
 	}
-	list_move_tail((&free_packet_list_head)->next, &busy_packet_list_head);
-	pack = list_entry((&busy_packet_list_head)->prev,
-						struct _NET_BUFF_INFO, list);
+	entry = (&head_free_pack)->next;
+	list_del_init(entry);
+	buff = (unsigned char *)list_entry(entry, net_buff_info_t, list);
 	spin_unlock(sp);
-	return pack->buff;
+	return buff;
 }
 
 void net_buff_free(unsigned char *buff) {
-	NET_PACK_INFO *pack;
-	struct list_head *q;
+	net_buff_info_t *pack;
 	unsigned long sp = spin_lock();
-	list_for_each(q, &busy_packet_list_head) {
-		pack = list_entry(q, NET_PACK_INFO, list);
-		if (pack->buff == buff) {
-			list_move_tail(q, &free_packet_list_head);
-			spin_unlock(sp);
-			return;
-		}
-	}
+	/*return buff into pull*/
+	/* we can cast like this because buff is first element of
+	 * struct socket_info
+	 */
+	pack = (net_buff_info_t *)buff;
+	list_add(&pack->list, &head_free_pack);
 	spin_unlock(sp);
 }

@@ -56,7 +56,7 @@ void __init skb_init(void) {
 
 struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
 	struct sk_buff *skb;
-	//TODO only one packet now
+	/*TODO only one packet now*/
 
 	unsigned long sp = spin_lock();
 	if (list_empty(&head_free_skb)) {
@@ -144,7 +144,7 @@ void skb_queue_purge(struct sk_buff_head *queue) {
 /**
  * split buffer to skb queue
  */
-//TODO buff_to_skb not realize now
+/*TODO buff_to_skb not realize now*/
 struct sk_buff *buff_to_skb(unsigned char *buff) {
 	return NULL;
 }

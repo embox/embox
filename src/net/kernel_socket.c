@@ -14,14 +14,11 @@
 #include <net/socket.h>
 #include <net/net.h>
 
-//TODO it must place in config file
-#define MAX_KERNEL_SOCKETS 0x10
-
 typedef struct socket_info {
 	/*it must be first member! We use casting in sock_realize function*/
 	struct socket sock;
 	struct list_head list __attribute__ ((aligned (4)));
-}socket_info_t __attribute__ ((aligned (4)));
+} socket_info_t __attribute__ ((aligned (4)));
 
 static socket_info_t sockets_pull[MAX_KERNEL_SOCKETS];
 static LIST_HEAD(head_free_sk);
@@ -33,20 +30,19 @@ static const struct net_proto_family *net_families[NPROTO];
  *
  * In Linux it must use socketfs and they use inodes for it
  */
-static struct socket *sock_alloc(void)
-{
+static struct socket *sock_alloc(void) {
 	struct socket *sock;
 	struct list_head *entry;
 
 	unsigned long irq_old = local_irq_save();
 
-	if (list_empty (&head_free_sk)) {
+	if (list_empty(&head_free_sk)) {
 		local_irq_restore(irq_old);
 		return NULL;
 	}
 	entry = (&head_free_sk)->next;
 	list_del_init(entry);
-	sock = (struct socket *)list_entry(entry, socket_info_t, list);
+	sock = (struct socket *) list_entry(entry, socket_info_t, list);
 
 	local_irq_restore(irq_old);
 
@@ -55,21 +51,25 @@ static struct socket *sock_alloc(void)
 
 void kernel_sock_release(struct socket *sock) {
 	socket_info_t *sock_info;
+	unsigned long irq_old;
 	if ((NULL == sock) || (NULL == sock->ops) || (NULL == sock->ops->release)) {
-		return ;
+		return;
 	}
 	/*release struct sock*/
 	sock->ops->release(sock);
 
+	irq_old = local_irq_save();
 	/*return sock into pull*/
 	/* we can cast like this because struct socket is first element of
 	 * struct socket_info
 	 */
-	sock_info = (socket_info_t *)sock;
+	sock_info = (socket_info_t *) sock;
 	list_add(&sock_info->list, &head_free_sk);
+	local_irq_restore(irq_old);
 }
 
-static int __sock_create(int family, int type, int protocol, struct socket **res, int kern) {
+static int __sock_create(int family, int type, int protocol,
+		struct socket **res, int kern) {
 	int err;
 	struct socket *sock;
 	const struct net_proto_family *pf;
@@ -86,16 +86,16 @@ static int __sock_create(int family, int type, int protocol, struct socket **res
 		family = PF_PACKET;
 	}
 	/*pf = rcu_dereference(net_families[family]);*/
-	pf = (const struct net_proto_family *)&net_families[family];
+	pf = (const struct net_proto_family *) &net_families[family];
 	if (NULL == pf || NULL == pf->create) {
 		return -1;
 	}
-/*
-    here must be code for trying socket (permition and so on)
-	err = security_socket_create(family, type, protocol, kern);
-	if (err)
-		return err;
-*/
+	/*
+	 here must be code for trying socket (permition and so on)
+	 err = security_socket_create(family, type, protocol, kern);
+	 if (err)
+	 return err;
+	 */
 	/*
 	 *	Allocate the socket and allow the family to set things up. if
 	 *	the protocol is 0, the family is instructed to select an appropriate
@@ -114,14 +114,14 @@ static int __sock_create(int family, int type, int protocol, struct socket **res
 		return -1;
 	}
 	/*here we must be code for trying socket (permition and so on)
-	err = security_socket_post_create(sock, family, type, protocol, kern);
-	*/
+	 err = security_socket_post_create(sock, family, type, protocol, kern);
+	 */
 	*res = sock;
 	return 0;
 }
-int kernel_sock_init (void) {
+int kernel_sock_init(void) {
 	int i;
-	for (i = 0; i < array_len(sockets_pull); i ++) {
+	for (i = 0; i < array_len(sockets_pull); i++) {
 		list_add(&(&sockets_pull[i])->list, &head_free_sk);
 	}
 	return 0;
@@ -155,11 +155,13 @@ int kernel_getpeername(struct socket *sock, struct sockaddr *addr, int *addrlen)
 	return sock->ops->getname(sock, addr, addrlen, 1);
 }
 
-int kernel_getsockopt(struct socket *sock, int level, int optname, char *optval, int *optlen) {
+int kernel_getsockopt(struct socket *sock, int level, int optname,
+		char *optval, int *optlen) {
 	return sock->ops->getsockopt(sock, level, optname, optval, optlen);
 }
 
-int kernel_setsockopt(struct socket *sock, int level, int optname, char *optval, int optlen) {
+int kernel_setsockopt(struct socket *sock, int level, int optname,
+		char *optval, int optlen) {
 	return sock->ops->setsockopt(sock, level, optname, optval, optlen);
 }
 
