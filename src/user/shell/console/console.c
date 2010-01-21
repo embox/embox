@@ -50,7 +50,8 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 static int on_char(SCREEN_CALLBACK *cb, SCREEN *view, int ch) {
-	CB_EDIT_MODEL(cmdline_chars_insert, &ch,1);
+	char tmp_ch = (char)ch;
+	CB_EDIT_MODEL(cmdline_chars_insert, &tmp_ch,1);
 	return 0;
 }
 
