@@ -23,7 +23,7 @@ static int exec(int argc, char** argv) {
 	long i;
 	id = 17;
 	ticks = 2;
-	// (timer value changes means ok)
+	/* Timer value changing means ok */
 	tick_happened = false;
 	set_timer(id, ticks, test_timer_handler);
 	for (i = 0; i < (1 << 20); i++) {

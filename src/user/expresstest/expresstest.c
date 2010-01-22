@@ -6,7 +6,6 @@
 
 #include <shell_command.h>
 #include <express_tests.h>
-#include <string.h>
 
 #define COMMAND_NAME     "expr"
 #define COMMAND_DESC_MSG "works with express test subsystem"
@@ -17,6 +16,42 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 ;
+
+static inline char to_upper(char c) {
+	if ((c <= 'z') && (c >= 'a')) {
+		return c + 'A' - 'a';
+	} else {
+		return c;
+	}
+}
+static int is_ignored_symbol(char c) {
+	return (c == '_');
+}
+
+/**
+ * Compares input_name and test_name
+ * Ignores special symbols in test_name
+ * But all symbols in input_name are significant
+ *
+ * e.g.  cpucontext == cpu_context
+ *      cpu_context == cpu_context
+ *  but cpu_context != cpucontext
+ */
+static int is_test_name(const char *input_name, const char *test_name) {
+	while(*test_name) {
+		if (to_upper(*test_name) == to_upper(*input_name)) {
+			test_name++;
+			input_name++;
+			continue;
+		}
+		if (is_ignored_symbol(*test_name)) {
+			test_name++;
+			continue;
+		}
+		return 0;
+	}
+	return (*input_name == 0);
+}
 
 #define DEFAULT_NAME_STR "NONAME"
 #define DEFAULT_SHORT_NAME_STR "?"
@@ -98,7 +133,7 @@ static express_test_descriptor_t *get_express_test_by_name(char *name) {
 			/* Broken test name */
 			continue;
 		}
-		if (strcmp((*p_test)->name, name) == 0) {
+		if (is_test_name(name, (*p_test)->name)) {
 			return *p_test;
 		}
 	}
