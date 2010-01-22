@@ -7,7 +7,7 @@
 #include "shell_command.h"
 #include <hal/irq_ctrl.h>
 
-#define COMMAND_NAME     "exec"
+#define COMMAND_NAME     "goto"
 #define COMMAND_DESC_MSG "execute image file"
 #define HELP_MSG         "Usage: goto [-h] [-a addr]"
 static const char *man_page =
