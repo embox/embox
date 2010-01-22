@@ -10,6 +10,7 @@
 #define arch(arch) ARCH:=arch
 #define make(str) str
 #define option(option) MONITOR_##option=y
+#define test(test_name, level, on_boot) option(TEST_##test_name)
 
 #else
 
@@ -18,6 +19,10 @@
 #define make(str)
 #define option(option) \
 	$define CONFIG_##option
+#define test(test_name, level, on_boot) \
+	option(test_name) \
+	$define TEST_##test_name##_LEVEL level \
+	$define TEST_##test_name##_ONBOOT on_boot
 
 #endif /* MAKE */
 

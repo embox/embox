@@ -51,8 +51,8 @@ static void print_express_tests(void) {
 		} else {
 			TRACE(DEFAULT_NAME_STR" ");
 		}
-		if (NULL != ((*p_test)->short_name)) {
-			TRACE("(%s) - ", (*p_test)->short_name);
+		if (NULL != ((*p_test)->name)) {
+			TRACE("(%s) - ", (*p_test)->name);
 		} else {
 			TRACE(DEFAULT_SHORT_NAME_STR" ");
 		}
@@ -82,7 +82,7 @@ static express_test_descriptor_t *get_express_test(int test_num) {
 	return *p_test;
 }
 
-static express_test_descriptor_t *get_express_test_by_name(char *short_name) {
+static express_test_descriptor_t *get_express_test_by_name(char *name) {
 	extern express_test_descriptor_t *__express_tests_start,
 			*__express_tests_end;
 	express_test_descriptor_t **p_test = &__express_tests_start;
@@ -94,11 +94,11 @@ static express_test_descriptor_t *get_express_test_by_name(char *short_name) {
 			/* Broken descriptor */
 			continue;
 		}
-		if (NULL == ((*p_test)->short_name)) {
+		if (NULL == ((*p_test)->name)) {
 			/* Broken test name */
 			continue;
 		}
-		if (strcmp((*p_test)->short_name, short_name) == 0) {
+		if (strcmp((*p_test)->name, name) == 0) {
 			return *p_test;
 		}
 	}

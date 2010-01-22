@@ -10,9 +10,8 @@
 #include "asm/mmu.h"
 #include "asm/srmmu_probe.h"
 #include "express_tests.h"
-#include <kernel/init.h>
 
-DECLARE_EXPRESS_TEST("MMU", "mmu", exec, INIT_MODULE_LEVEL, TEST_MMU_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST(MMU, exec, NULL);
 
 #define TLBNUM 4
 

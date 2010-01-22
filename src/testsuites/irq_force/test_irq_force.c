@@ -10,12 +10,10 @@
 #include "express_tests.h"
 #include "hal/irq_ctrl.h"
 #include "kernel/irq.h"
-#include <kernel/init.h>
 
 #define TEST_IRQ_NUM 10
 
-
-DECLARE_EXPRESS_TEST("force irq", "forceirq", exec, INIT_MODULE_LEVEL, TEST_FORCE_IRQ_ON_BOOT_ENABLE, NULL);
+DECLARE_EXPRESS_TEST(IRQ_FORCE, exec, NULL);
 
 volatile static bool irq_happened;
 

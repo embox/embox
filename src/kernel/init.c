@@ -17,12 +17,35 @@
 #include <kernel/init.h>
 #include <express_tests.h>
 
+/* That's a temporary test for microblaze only
+ * (for other archs it's always correct and meaningless)
+ * it fails when -o0 is set for compiler
+ * In that case nothing works correctly =/ */
+static void tmp_test( void ) {
+	int a = 1;
+	TRACE("-------- tmp test -------\n");
+	a = a + 1;
+
+	/* uncommenting this line changes results of the test
+	 * when optimization level is o0 */
+
+	/* while(a==1); */
+
+	if(1<<a == 4) {
+		TRACE("tmp test OK\n");
+	} else {
+		TRACE("tmp test failed, set -o1 to compiler\n");
+	}
+}
+
 int hardware_init_hook(void) {
 	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
 	init_descriptor_t ** p_init_desc = &__init_handlers_start;
 	int level;
 	const char *init_name;
 	const char *default_init_name = "???";
+
+	express_tests_execute(PRE_INIT_LEVEL);
 
 	/*
 	 * Zero level initialization (+ uart)
@@ -33,12 +56,16 @@ int hardware_init_hook(void) {
 	uart_init();
 	sys_timers_init();
 
+	/* It's temporary
+	 * Just while problem with -o0 not solved */
+	tmp_test();
+
 	express_tests_execute(0);
 
 	TRACE("\nStarting Monitor...\n");
 
-	for (level = 0; level <= INIT_MAX_LEVEL; level++) {
-		TRACE("\n********************** Init level %d:\n", level);
+	for (level = 1; level <= INIT_MAX_LEVEL; level++) {
+		TRACE("\nLevel %d **********************\n", level);
 		for (p_init_desc = &__init_handlers_start; p_init_desc
 				< &__init_handlers_end; p_init_desc++) {
 			init_name = default_init_name;
