@@ -147,10 +147,10 @@ static void *open_file(const char *file_name, char *mode) {
     //TODO must check permitions
     fh->mode = (unsigned int) *mode;
     fh->fileop = &fop;
-    printf ("fh = 0x%X\tfop = 0x%X\n", (unsigned)fh, (unsigned)&fop);
-    printf ("fread = 0x%X\n", (unsigned)fh->fileop->read);
-    printf ("fwrite = 0x%X\n", (unsigned)fh->fileop->write);
-    printf ("start_addr = 0x%X\t size = 0x%X\n", fh->fdesc->start_addr, fh->fdesc->size);
+    printf ("fh = 0x%08X\tfop = 0x%08X\n", (unsigned)fh, (unsigned)&fop);
+    printf ("fread = 0x%08X\n", (unsigned)fh->fileop->read);
+    printf ("fwrite = 0x%08X\n", (unsigned)fh->fileop->write);
+    printf ("start_addr = 0x%08X\t size = %d\n", fh->fdesc->start_addr, fh->fdesc->size);
     fh->fileop->fopen(file_name, mode);
     return fh;
 }
@@ -222,7 +222,7 @@ static size_t fread(const void *buf, size_t size, size_t count, void *file) {
     memcpy((void*)buf, (const void *)fh->fdesc->start_addr + fh->cur_pointer, size * count);
     fh->cur_pointer += size * count;
     if (0 == (fh->cur_pointer & (TRACE_FREQ - 1))){
-        TRACE("cur = 0x%X\t size = 0x%X\n",fh->cur_pointer,fh->fdesc->size);
+        TRACE("cur = 0x%08X\t size = %d\n",fh->cur_pointer,fh->fdesc->size);
     }
     return size * count;
 }
