@@ -1,0 +1,7 @@
+
+/* Change following:                                        *
+ *                             |                        |   *
+ *                             V                        V   */
+OBJS-$(MONITOR_TEST_<TEST_NAME_IN_UPPER_CASE>) += test_template.o
+
+include $(SCRIPTS_DIR)/common.mk
