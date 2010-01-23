@@ -12,9 +12,9 @@ OBJS-y += soft_trap_test.o
 
 $(IMAGE): $(LDSCRIPT)
 
-$(LDSCRIPT): $(SELFDIR)/embox.lds.S $(BUILDCONF_DIR)/config.lds.h
+$(LDSCRIPT): $(SELFDIR)/embox.lds.S $(AUTOCONF_DIR)/config.lds.h
 	$(CPP) -Wp, -P -undef $(CPPFLAGS) \
-		-imacros $(BUILDCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
+		-imacros $(AUTOCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
 
 -include $(LDSCRIPT).d
 

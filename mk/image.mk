@@ -3,6 +3,7 @@
 #
 
 include $(MK_DIR)/traverse.mk
+include $(MK_DIR)/rules.mk
 
 CC     =$(CROSS_COMPILE)gcc
 AR     =$(CROSS_COMPILE)ar
@@ -16,7 +17,7 @@ OBJCOPY=$(CROSS_COMPILE)objcopy
 # Preprocessor flags
 cppflags:=$(CPPFLAGS)
 CPPFLAGS =
-CPPFLAGS+=-imacros $(BUILDCONF_DIR)/config.h
+CPPFLAGS+=-imacros $(AUTOCONF_DIR)/config.h
 CPPFLAGS+=-I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
 CPPFLAGS+=-nostdinc
 CPPFLAGS+=-MMD# -MT $@ -MF $(@:.o=.d)
@@ -86,9 +87,9 @@ LIBS_ALL:=$(strip $(LIBS_ALL))
 -include $(OBJS_ALL:.o=.d)
 
 # TODO actually not all objects depend on config.h -- Eldar
-$(OBJS_ALL): $(BUILDCONF_DIR)/config.h
+$(OBJS_ALL): $(AUTOCONF_DIR)/config.h
 # TODO ... but $(TARGET) does not depend at config.h at all -- Eldar
-#$(IMAGE): $(BUILDCONF_DIR)/config.h
+#$(IMAGE): $(AUTOCONF_DIR)/config.h
 
 $(OBJ_DIR)/%.o::$(SRC_DIR)/%.c
 	$(CC) -o $@ \
