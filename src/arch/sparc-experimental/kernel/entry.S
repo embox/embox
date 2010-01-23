@@ -14,39 +14,23 @@
 	.text
 	.align 4
 
-	.global instruction_trap
-instruction_trap:
-	! store previous nPC as PC
-	mov %t_npc, %t_pc
-	! store previous nPC+4 as nPC
-	add %t_npc, 4, %t_npc
-
 /**
  * Generic inerrupt handler.
- */	.global interrupting_trap
-interrupting_trap:
+ */	.global interrupt_entry
+interrupt_entry:
 	SAVE_ALL
 
-	/*
-	 * Traps are still disabled at this line,
-	 * and the cpu state has just been stored in the memory.
-	 * Therefore we can quietly use globals until enabling traps
-	 * and doing the callback into an arbitrary code.
-	 *
-	 * Feel free! ;)
-	 */
+	rd %tbr, %o0
+	and %o0, TBR_TT, %o0
+	srl %o0, 4, %o0
 
-	// pass trap type as parameter
-	TBR_GET_TT(o0);
+	or %t_psr, PSR_PIL, %g1
+	wr %g1, %g0, %psr
+	 WRITE_PAUSE
+	wr %g1, PSR_ET, %psr
+	 WRITE_PAUSE
 
-	/*
-	 * enable traps
-	 */
-	PSR_BIT_TOGGLE_SHORT(PSR_ET, g1)
-	 // do not wait (PSR_ET)
-
-		call	dispatch_trap
-		 nop
+	call hal_interrupt
 
 	/*
 	 * disable traps

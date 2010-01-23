@@ -1,12 +1,12 @@
 /**
- * @file boot.S
+ * @file
  *
  * @brief Initial boot code.
  *
  * @author Eldar Abusalimov
  */
 
-#include "sparc_regs.h"
+#include <asm/reg_alias.h>
 
  	.weak hardware_init_hook
  	.weak software_init_hook
@@ -39,8 +39,8 @@ trap_table:
  */
 boot_start:
 	/* set PSR initial value */
-	set	(PSR_PS | PSR_S | PSR_PIL | PSR_EF), %g1
-	wr	%g1, %g0, %psr
+	set (PSR_PS | PSR_S), %g1
+	wr  %g1, %g0, %psr
 	 WRITE_PAUSE
 
 	/* setup trap table address */
@@ -60,29 +60,29 @@ boot_start:
 	save /* get into the last window */
 		rd %psr, %g1
 	restore /* return to window #0 */
-	and	%g1, PSR_CWP, %g1
+	and %g1, PSR_CWP, %g1
 
 1:	subcc %g1, 1, %g1
-		mov %g0, %i0
-		mov %g0, %i1
-		mov %g0, %i2
-		mov %g0, %i3
-		mov %g0, %i4
-		mov %g0, %i5
-		mov %g0, %i6
-		mov %g0, %i7
-		mov %g0, %l0
-		mov %g0, %l1
-		mov %g0, %l2
-		mov %g0, %l3
-		mov %g0, %l4
-		mov %g0, %l5
-		mov %g0, %l6
-		mov %g0, %l7
+	mov %g0, %i0
+	mov %g0, %i1
+	mov %g0, %i2
+	mov %g0, %i3
+	mov %g0, %i4
+	mov %g0, %i5
+	mov %g0, %i6
+	mov %g0, %i7
+	mov %g0, %l0
+	mov %g0, %l1
+	mov %g0, %l2
+	mov %g0, %l3
+	mov %g0, %l4
+	mov %g0, %l5
+	mov %g0, %l6
+	mov %g0, %l7
  	bg 1b
 	 save
 
-	/* setup wim*/
+	/* setup WIM */
 	mov (1 << 1), %g1
 	wr %g1, %g0, %wim
 
@@ -95,42 +95,6 @@ boot_start:
 	mov %g0, %g6
 	mov %g0, %g7
 
-#define src g1
-#define dst g2
-#define end g3
-#define tmp0 g4
-#define tmp1 g5
-	/* copy data sections */
-	set _text_end, %src
-	set _data_start, %dst
-	set _data_end, %end
-	cmp %dst, %end
-	bge 2f
-	 nop
-
-1:	ldd [%src], %tmp0
-	std %tmp0, [%dst]
-	add %dst, 8, %dst
-	cmp %dst, %end
-	bl  1b
-	 add %src, 8, %src
-
-	/* Zero bss */
-2:	set _bstart, %dst
-	set _bend, %end
-	mov %g0, %tmp0
-	mov %g0, %tmp1
-	cmp %dst, %end
-	bge 2f
-	 sub %end, 8, %end
-
-1:	std %tmp0, [%dst]
-	cmp %dst, %end
-	bl  1b
-	 add %dst, 8, %dst
-
-2:
-
 	/* give us a stack! */
 	set __stack, %g1
 	mov %g1, %fp
@@ -139,22 +103,8 @@ boot_start:
 	PSR_BIT_TOGGLE(PSR_ET, g1)
 	 WRITE_PAUSE
 
-	set hardware_init_hook, %g1
-	tst %g1
-	be  1f
-	 nop
-	call %g1
-1:	 nop
-
-	set software_init_hook, %g1
-	tst %g1
-	be  1f
-	 nop
-	call %g1
-1:	 nop
-
-	call main
+	call hal_main
 	 nop
 
-	ta 0  // die
+	ta 0 ! die
 	 nop

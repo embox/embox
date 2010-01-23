@@ -10,7 +10,6 @@
 #define SPARC_HEAD_H_
 
 #include <asm/reg_alias.h>
-#include <asm/psr.h>
 
 #ifdef __ASSEMBLER__
 
@@ -21,24 +20,21 @@
 	nop; nop;
 
 /** Entry for traps which jump to a programmer-specified trap handler.  */
-#define TRAP_ENTRY_INTERRUPT \
-	ba ; \
-	 rd %psr, %t_psr;\
-	nop; nop;
+#define TRAP_ENTRY_INTERRUPT TRAP_ENTRY(interrupt_entry)
 
 /** Entry point for window overflow trap handler. */
 #define WOF_TRAP \
 	rd %psr, %t_psr;      \
-	rd %wim, %t_wim;      \
 	ba window_overflow;   \
-	 andcc %t_psr, PSR_PS, %g0;
+	 rd %wim, %t_wim;     \
+	nop
 
 /** Entry point for window underflow trap handler. */
 #define WUF_TRAP \
 	rd %psr, %t_psr;      \
-	rd %wim, %t_wim;      \
 	ba window_underflow;  \
-	 andcc %t_psr, PSR_PS, %g0;
+	 rd %wim, %t_wim;     \
+	nop
 
 /** Text fault. */
 #define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %l7;
@@ -46,7 +42,7 @@
 #define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
 
 /** Unexpected trap will halt the processor by forcing it to error state */
-#define BAD_TRAP TRAP(bad_trap_dispatcher)
+#define BAD_TRAP TRAP_ENTRY(bad_trap_dispatcher)
 
 /** Software trap. Treat as BAD_TRAP */
 #define SOFT_TRAP BAD_TRAP

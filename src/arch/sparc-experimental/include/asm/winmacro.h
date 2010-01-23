@@ -23,12 +23,14 @@
  * markers.
  *
  * Some restrictions and assumptions needed for this method to work properly:
- *   @n 1) Kernel code does not "overrestores" (particularly, it should
+ *   @n 1) Kernel code does not "over-restores" (particularly, it should
  * not perform "RESTORE - SAVE" combinations).
  *   @n 2) At any moment each kernel window has proper stack pointer.
- *   @n 3) CPU has got 3 or more register windows.
+ *   @n 3) CPU has got 3 or more register windows. Because of this fact it is
+ * guaranteed that bitwise AND of next and previous windows masks is always 0.
+ * This means that ORing, XORing, ADDing these masks together give the same
+ * result, and we can join such operations with SAVE or WRWIM instructions.
  *   TODO
- *
  *
  * @date Jun 4, 2009
  * @author Eldar Abusalimov
@@ -78,27 +80,27 @@ struct reg_window {
  * Store the register window onto the 8-byte aligned area starting at %reg.
  */
 #define STORE_WINDOW(reg, offset) \
-	std	%l0, [%reg + (offset) + RW_L0]; \
-	std	%l2, [%reg + (offset) + RW_L2]; \
-	std	%l4, [%reg + (offset) + RW_L4]; \
-	std	%l6, [%reg + (offset) + RW_L6]; \
-	std	%i0, [%reg + (offset) + RW_I0]; \
-	std	%i2, [%reg + (offset) + RW_I2]; \
-	std	%i4, [%reg + (offset) + RW_I4]; \
-	std	%i6, [%reg + (offset) + RW_I6];
+	std %l0, [%reg + (offset) + RW_L0]; \
+	std %l2, [%reg + (offset) + RW_L2]; \
+	std %l4, [%reg + (offset) + RW_L4]; \
+	std %l6, [%reg + (offset) + RW_L6]; \
+	std %i0, [%reg + (offset) + RW_I0]; \
+	std %i2, [%reg + (offset) + RW_I2]; \
+	std %i4, [%reg + (offset) + RW_I4]; \
+	std %i6, [%reg + (offset) + RW_I6];
 
 /**
  * Load a register window from the 8-byte aligned area beginning at %reg.
  */
 #define LOAD_WINDOW(reg, offset) \
-	ldd	[%reg + (offset) + RW_L0], %l0; \
-	ldd	[%reg + (offset) + RW_L2], %l2; \
-	ldd	[%reg + (offset) + RW_L4], %l4; \
-	ldd	[%reg + (offset) + RW_L6], %l6; \
-	ldd	[%reg + (offset) + RW_I0], %i0; \
-	ldd	[%reg + (offset) + RW_I2], %i2; \
-	ldd	[%reg + (offset) + RW_I4], %i4; \
-	ldd	[%reg + (offset) + RW_I6], %i6;
+	ldd [%reg + (offset) + RW_L0], %l0; \
+	ldd [%reg + (offset) + RW_L2], %l2; \
+	ldd [%reg + (offset) + RW_L4], %l4; \
+	ldd [%reg + (offset) + RW_L6], %l6; \
+	ldd [%reg + (offset) + RW_I0], %i0; \
+	ldd [%reg + (offset) + RW_I2], %i2; \
+	ldd [%reg + (offset) + RW_I4], %i4; \
+	ldd [%reg + (offset) + RW_I6], %i6;
 
 /**
  * Performs basic stack pointer checks and probes the MMU
@@ -131,6 +133,14 @@ struct reg_window {
 	andcc %scratch, SRMMU_WRITE, %g0;          \
 	be corrupt_stack_branch;                   \
 	 nop;
+
+#define STORE_USER_WINDOW(reg, offset, corrupt_stack_branch, scratch) \
+	USER_STACK_PROBE(corrupt_stack_branch, scratch) \
+	STORE_WINDOW(reg, offset)
+
+#define LOAD_USER_WINDOW(reg, offset, corrupt_stack_branch, scratch) \
+	USER_STACK_PROBE(corrupt_stack_branch, scratch) \
+	LOAD_WINDOW(reg, offset)
 
 #endif /* __ASSEMBLER__ */
 

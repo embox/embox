@@ -1,3 +1,14 @@
+/*
+ * Copyright (C) 2009 Lanit-Terkom Inc., St.-Petersburg, Russia
+ *
+ * This file is part of EMBoX.
+ *
+ * < License goes here > test
+ *
+ * Derived from Linux (include/asm-sparc/psr.h).
+ * Copyright (C) 1994 David S. Miller (davem@caip.rutgers.edu)
+ */
+
 /**
  * @file
  * @brief SPARC v8 PSR (Processor State Register) layout.
@@ -31,41 +42,5 @@
 #define PSR_N    0x00800000 /**< negative bit               */
 #define PSR_VERS 0x0f000000 /**< cpu-version field          */
 #define PSR_IMPL 0xf0000000 /**< cpu-implementation field   */
-
-#ifdef __ASSEMBLER__
-/* some useful state register macros... */
-
-#define PSR_BIT_TOGGLE(mask, scratch_psr) \
-	rd %psr, %scratch_psr;       \
-	wr %scratch_psr, mask, %psr;
-
-#define PSR_BIT_TOGGLE_LONG(mask, scratch_psr, scratch_mask) \
-	rd  %psr, %scratch_psr;                \
-	set mask, %scratch_mask;               \
-	wr  %scratch_psr, %scratch_mask, %psr;
-
-#define PSR_BIT_SET(mask, scratch_psr) \
-	rd  %psr, %scratch_psr;               \
-	or  %scratch_psr, mask, %scratch_psr; \
-	wr  %scratch_psr, %g0, %psr;
-
-#define PSR_BIT_SET_LONG(mask, scratch_psr, scratch_mask) \
-	rd  %psr, %scratch_psr;                        \
-	set mask, %scratch_mask;                       \
-	or  %scratch_psr, %scratch_mask, %scratch_psr; \
-	wr  %scratch_psr, %g0, %psr;
-
-#define PSR_BIT_CLEAR(mask, scratch_psr) \
-	rd   %psr, %scratch_psr;               \
-	andn %scratch_psr, mask, %scratch_psr; \
-	wr   %scratch_psr, %g0, %psr;
-
-#define PSR_BIT_CLEAR_LONG(mask, scratch_psr, scratch_mask) \
-	rd   %psr, %scratch_psr;                       \
-	set  mask, %scratch_mask;                      \
-	andn %scratch_psr, %scratch_mask, %scratch_psr;\
-	wr   %scratch_psr, %g0, %psr;
-
-#endif /* __ASSEMBLER__ */
 
 #endif /* SPARC_PSR_H_ */

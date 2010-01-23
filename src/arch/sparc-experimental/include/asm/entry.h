@@ -9,6 +9,8 @@
 #ifndef SPARC_ENTRY_H_
 #define SPARC_ENTRY_H_
 
+#include <asm/reg_alias.h>
+
 #ifdef __ASSEMBLER__
 
 /**
@@ -19,7 +21,7 @@
 #define SAVE_ALL \
 	sethi %hi(trap_begin), %t_retpc;            \
 	jmpl  %t_retpc + %lo(trap_begin), %t_retpc; \
-	 sll  %t_twinmask, %t_psr, %t_twinmask;
+	 rd %wim, %t_wim;
 
 /** All traps low-level code here must end with this macro. */
 #define RESTORE_ALL \
