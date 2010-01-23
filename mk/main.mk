@@ -12,6 +12,7 @@ endif
 
 MK_DIR       :=$(ROOT_DIR)/mk
 CONF_DIR     :=$(ROOT_DIR)/conf
+BACKUP_DIR   :=$(ROOT_DIR)/conf/backup~
 SCRIPTS_DIR  :=$(ROOT_DIR)/scripts
 TEMPLATES_DIR:=$(ROOT_DIR)/templates
 SRC_DIR      :=$(ROOT_DIR)/src
@@ -60,7 +61,7 @@ distclean: _distclean
 	@echo 'Distclean complete'
 
 _clean:
-	$(RM) -r $(BUILD_DIR)
+	@$(RM) -rv $(BUILD_DIR)
 #	@$(RM) -r $(BIN_DIR) $(OBJ_DIR) $(DOCS_DIR) $(AUTOCONF_DIR)
 #	@$(RM) $(OBJS_ALL)
 #	@$(RM) $(OBJS_ALL:.o=.d)
@@ -69,7 +70,8 @@ _clean:
 #		-o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
 
 _distclean: _clean
-	$(RM) -r $(CONF_DIR)
+	@$(RM) -rv $(BACKUP_DIR)
+	@$(RM) -rv $(CONF_DIR)
 
 config: _clean
 ifndef TEMPLATE
@@ -81,9 +83,21 @@ endif
 	@test -d $(TEMPLATES_DIR)/$(TEMPLATE) \
 		|| (echo 'Error: template $(TEMPLATE) does not exist' \
 		&& exit 1)
-	@test -d $(CONF_DIR) \
-		|| mkdir -p $(CONF_DIR)
-	cp -f -v -b -t $(CONF_DIR) $(TEMPLATES_DIR)/$(TEMPLATE)/*
+	@if [ -d $(CONF_DIR) ];           \
+	then                              \
+		if [ -d $(BACKUP_DIR) ];      \
+		then                          \
+			$(RM) -r $(BACKUP_DIR)/*; \
+		else                          \
+			mkdir -p $(BACKUP_DIR);   \
+		fi;                           \
+		mv -fv -t $(BACKUP_DIR)       \
+			$(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*)); \
+	else                              \
+		mkdir -p $(CONF_DIR);         \
+	fi;
+	@cp -fv -t $(CONF_DIR) \
+		$(wildcard $(TEMPLATES_DIR)/$(TEMPLATE)/*)
 	@echo 'Config complete'
 
 menuconfig:
