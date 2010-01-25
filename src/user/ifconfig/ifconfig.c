@@ -32,7 +32,7 @@ static void inet_dev_show_info(void *handler) {
     in_device_t *in_dev = (in_device_t *) handler;
     net_device_t *dev = in_dev->dev;
     net_device_stats_t *eth_stat;
-    char mac[18];
+    unsigned char mac[18];
     struct in_addr ip, bcast, mask;
     char *s_ip, *s_bcast, *s_mask;
 

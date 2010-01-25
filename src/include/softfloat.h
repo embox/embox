@@ -118,84 +118,84 @@ float64 int32_to_float64( int );
 /**
  * Software IEC/IEEE single-precision conversion routines.
  */
-int float32_to_int32( float32 );
-int float32_to_int32_round_to_zero( float32 );
-float64 float32_to_float64( float32 );
+extern int float32_to_int32( float32 );
+extern int float32_to_int32_round_to_zero( float32 );
+extern float64 float32_to_float64( float32 );
 
 /**
  * Software IEC/IEEE single-precision operations.
  */
-float32 float32_round_to_int( float32 );
-float32 float32_add( float32, float32 );
-float32 float32_sub( float32, float32 );
-float32 float32_mul( float32, float32 );
-float32 float32_div( float32, float32 );
-float32 float32_rem( float32, float32 );
-float32 float32_sqrt( float32 );
-flag float32_eq( float32, float32 );
-flag float32_le( float32, float32 );
-flag float32_lt( float32, float32 );
-flag float32_eq_signaling( float32, float32 );
-flag float32_le_quiet( float32, float32 );
-flag float32_lt_quiet( float32, float32 );
-flag float32_is_signaling_nan( float32 );
+extern float32 float32_round_to_int( float32 );
+extern float32 float32_add( float32, float32 );
+extern float32 float32_sub( float32, float32 );
+extern float32 float32_mul( float32, float32 );
+extern float32 float32_div( float32, float32 );
+extern float32 float32_rem( float32, float32 );
+extern float32 float32_sqrt( float32 );
+extern flag float32_eq( float32, float32 );
+extern flag float32_le( float32, float32 );
+extern flag float32_lt( float32, float32 );
+extern flag float32_eq_signaling( float32, float32 );
+extern flag float32_le_quiet( float32, float32 );
+extern flag float32_lt_quiet( float32, float32 );
+extern flag float32_is_signaling_nan( float32 );
 
 /**
  * Software IEC/IEEE double-precision conversion routines.
  */
-int float64_to_int32( float64 );
-int float64_to_int32_round_to_zero( float64 );
-float32 float64_to_float32( float64 );
+extern int float64_to_int32( float64 );
+extern int float64_to_int32_round_to_zero( float64 );
+extern float32 float64_to_float32( float64 );
 
 /**
  * Software IEC/IEEE double-precision operations.
  */
-float64 float64_round_to_int( float64 );
-float64 float64_add( float64, float64 );
-float64 float64_sub( float64, float64 );
-float64 float64_mul( float64, float64 );
-float64 float64_div( float64, float64 );
-float64 float64_rem( float64, float64 );
-float64 float64_sqrt( float64 );
-flag float64_eq( float64, float64 );
-flag float64_le( float64, float64 );
-flag float64_lt( float64, float64 );
-flag float64_eq_signaling( float64, float64 );
-flag float64_le_quiet( float64, float64 );
-flag float64_lt_quiet( float64, float64 );
-flag float64_is_signaling_nan( float64 );
+extern float64 float64_round_to_int( float64 );
+extern float64 float64_add( float64, float64 );
+extern float64 float64_sub( float64, float64 );
+extern float64 float64_mul( float64, float64 );
+extern float64 float64_div( float64, float64 );
+extern float64 float64_rem( float64, float64 );
+extern float64 float64_sqrt( float64 );
+extern flag float64_eq( float64, float64 );
+extern flag float64_le( float64, float64 );
+extern flag float64_lt( float64, float64 );
+extern flag float64_eq_signaling( float64, float64 );
+extern flag float64_le_quiet( float64, float64 );
+extern flag float64_lt_quiet( float64, float64 );
+extern flag float64_is_signaling_nan( float64 );
 
 /**
  * Primitive arithmetic functions, including multi-word arithmetic, and
  * division and square root approximations.  (Can be specialized to target if
  * desired.)
  */
-void shift32RightJamming( bits32 a, int16 count, bits32 *zPtr);
-void shift64Right(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
-void shift64RightJamming(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
-void shift64ExtraRightJamming( bits32 a0, bits32 a1, bits32 a2, int16 count,
+extern void shift32RightJamming( bits32 a, int16 count, bits32 *zPtr);
+extern void shift64Right(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
+extern void shift64RightJamming(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
+extern void shift64ExtraRightJamming( bits32 a0, bits32 a1, bits32 a2, int16 count,
                             bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
-void shortShift64Left(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
-void shortShift96Left(bits32 a0, bits32 a1, bits32 a2, int16 count,
+extern void shortShift64Left(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
+extern void shortShift96Left(bits32 a0, bits32 a1, bits32 a2, int16 count,
                     	    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
-void add64(bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
-void add96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1, bits32 b2,
+extern void add64(bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
+extern void add96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1, bits32 b2,
             		    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
-void sub64(bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
-void sub96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1, bits32 b2,
+extern void sub64(bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
+extern void sub96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1, bits32 b2,
                     	    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
-void mul32To64(bits32 a, bits32 b, bits32 *z0Ptr, bits32 *z1Ptr);
-void mul64By32To96(bits32 a0, bits32 a1, bits32 b, bits32 *z0Ptr,
+extern void mul32To64(bits32 a, bits32 b, bits32 *z0Ptr, bits32 *z1Ptr);
+extern void mul64By32To96(bits32 a0, bits32 a1, bits32 b, bits32 *z0Ptr,
                             bits32 *z1Ptr, bits32 *z2Ptr);
-void mul64To128(bits32 a0, bits32 a1, bits32 b0, bits32 b1,
+extern void mul64To128(bits32 a0, bits32 a1, bits32 b0, bits32 b1,
             		    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr, bits32 *z3Ptr);
-bits32 estimateDiv64To32(bits32 a0, bits32 a1, bits32 b);
-bits32 estimateSqrt32(int16 aExp, bits32 a);
-int8 countLeadingZeros32(bits32 a);
-flag eq64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
-flag le64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
-flag lt64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
-flag ne64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
+extern bits32 estimateDiv64To32(bits32 a0, bits32 a1, bits32 b);
+extern bits32 estimateSqrt32(int16 aExp, bits32 a);
+extern int8 countLeadingZeros32(bits32 a);
+extern flag eq64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
+extern flag le64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
+extern flag lt64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
+extern flag ne64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
 
 /**
  * Functions and definitions to determine:  (1) whether tininess for underflow
@@ -205,24 +205,24 @@ flag ne64(bits32 a0, bits32 a1, bits32 b0, bits32 b1);
  * are propagated from function inputs to output.  These details are target-
  * specific.
  */
-void float_raise(int8 flags);
-flag float32_is_nan(float32 a);
-flag float32_is_signaling_nan(float32 a);
-commonNaNT float32ToCommonNaN(float32 a);
-float32 commonNaNToFloat32(commonNaNT a);
-float32 propagateFloat32NaN(float32 a, float32 b);
-flag float64_is_nan(float64 a);
-flag float64_is_signaling_nan(float64 a);
-commonNaNT float64ToCommonNaN(float64 a);
-float64 commonNaNToFloat64(commonNaNT a);
-float64 propagateFloat64NaN(float64 a, float64 b);
+extern void float_raise(int8 flags);
+extern flag float32_is_nan(float32 a);
+extern flag float32_is_signaling_nan(float32 a);
+extern commonNaNT float32ToCommonNaN(float32 a);
+extern float32 commonNaNToFloat32(commonNaNT a);
+extern float32 propagateFloat32NaN(float32 a, float32 b);
+extern flag float64_is_nan(float64 a);
+extern flag float64_is_signaling_nan(float64 a);
+extern commonNaNT float64ToCommonNaN(float64 a);
+extern float64 commonNaNToFloat64(commonNaNT a);
+extern float64 propagateFloat64NaN(float64 a, float64 b);
 
 /**
  * Converter types.
  */
-inline float64 double_to_float64(double a);
-inline double float64_to_double(float64 a);
-inline float32 float_to_float32(float a);
-inline float float32_to_float(float32 a);
+extern float64 double_to_float64(double a);
+extern double float64_to_double(float64 a);
+extern float32 float_to_float32(float a);
+extern float float32_to_float(float32 a);
 
 #endif /* SOFTFLOAT_H_ */

@@ -178,7 +178,7 @@ static int resize_file(void *params) {
 
 static int delete_file(const char * file_name) {
     FILE_DESC *fd;
-    if (fd == find_file_desc(file_name)) {
+    if (NULL == (fd = find_file_desc(file_name))) {
         TRACE("file %s not found\n", file_name);
         return -1;
     }

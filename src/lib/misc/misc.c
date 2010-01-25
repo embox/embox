@@ -12,7 +12,7 @@
 #include "string.h"
 
 /*FIXME rename this file it contains only net_utils function*/
-unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {
+unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res) {
     char symbol_str[4];
     int i,j;
     int cur = 0;
@@ -47,7 +47,7 @@ unsigned char *ipaddr_scan(unsigned char *addr, unsigned char res[4]) {
     return res;
 }
 
-unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[ETH_ALEN]) {
+unsigned char *macaddr_scan(unsigned char *addr, unsigned char *res) {
     char symbol_str[4];
     int i,j;
     int cur = 0;
@@ -82,7 +82,7 @@ unsigned char *macaddr_scan(unsigned char *addr, unsigned char res[ETH_ALEN]) {
     return res;
 }
 
-void macaddr_print(const char *buf, const unsigned char *addr) {
+void macaddr_print(unsigned char *buf, const unsigned char *addr) {
         sprintf((char *)buf, "%02X:%02X:%02X:%02X:%02X:%02X", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 }
 

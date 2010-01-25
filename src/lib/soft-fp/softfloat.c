@@ -1929,25 +1929,25 @@ flag float64_lt_quiet( float64 a, float64 b ) {
         return aSign ? lt64( b.high, b.low, a.high, a.low ) : lt64( a.high, a.low, b.high, b.low );
 }
 
-inline float64 double_to_float64(double a) {
+float64 double_to_float64(double a) {
         double *_a = &a;
         float64 *_res = (float64*)_a;
         return *_res;
 }
 
-inline double float64_to_double(float64 a) {
+double float64_to_double(float64 a) {
         float64 *_a = &a;
         double *_res = (double*)_a;
         return *_res;
 }
 
-inline float32 float_to_float32(float a) {
+float32 float_to_float32(float a) {
         float *_a = &a;
         float32 *_res = (float32*)_a;
         return *_res;
 }
 
-inline float float32_to_float(float32 a) {
+float float32_to_float(float32 a) {
         float32 *_a = &a;
         float *_res = (float*)_a;
         return *_res;

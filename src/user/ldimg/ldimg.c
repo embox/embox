@@ -63,7 +63,7 @@ int copy_image(char *file_name) {
 
 static int exec(int argsc, char **argsv){
 	RAMFS_CREATE_PARAM param;
-	char *file_name;
+	char *file_name = NULL;
 	unsigned int base_addr;
 	//char ramfname[0x40];
 	FSOP_DESCRIPTION *fsop;

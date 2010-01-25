@@ -31,7 +31,7 @@ static int print_arp_cache(void *ifdev) {
 		if((arp_tables[i].state == 1) &&
 		   (ifdev == NULL || ifdev == arp_tables[i].if_handler)) {
 			net_dev = arp_tables[i].if_handler->dev;
-			macaddr_print((const char *)mac, arp_tables[i].hw_addr);
+			macaddr_print(mac, arp_tables[i].hw_addr);
 			addr.s_addr = arp_tables[i].pw_addr;
 			TRACE("%s\t\t%d\t%s\t%d\t%s\n", inet_ntoa(addr),
 					    arp_tables[i].if_handler->dev->type,

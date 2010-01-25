@@ -42,7 +42,8 @@ static FS_FILE_ITERATOR get_file_list_iterator(void){
     return file_list_iterator;
 }
 
-static FSOP_DESCRIPTION rootfs_op = { get_file_list_iterator : get_file_list_iterator};
+static FSOP_DESCRIPTION rootfs_op = { .get_file_list_iterator = get_file_list_iterator};
+
 static int rootfs_init(){
     int i;
     for (i = 0; i < NUMBER_OF_FS; i++){
@@ -62,13 +63,13 @@ FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_
         return NULL;
     }
     file_name_struct->fs_name[0] = '/';
-    for (i = 0; i < array_len(file_name_struct->fs_name); i ++){
-        if ('/' == file_name[i+1]){
-            file_name_struct->fs_name[i + 1] = 0;
-            file_name_struct->file_name = (char *)&file_name[i + 1 + 1];
+    for (i = 1; i < array_len(file_name_struct->fs_name); i ++){
+        if ('/' == file_name[i]){
+            file_name_struct->fs_name[i] = 0;
+            file_name_struct->file_name = (char *)&file_name[i + 1];
             return file_name_struct;
         }
-        file_name_struct->fs_name[i + 1] = file_name[i+1];
+        file_name_struct->fs_name[i] = file_name[i];
     }
     return NULL;
 }
