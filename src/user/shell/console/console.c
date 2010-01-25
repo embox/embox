@@ -21,8 +21,8 @@
 			(update)((console)->view, (console)->model); \
 		} while(0)
 
-#define CB_EDIT_MODEL(...) \
-		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, ##__VA_ARGS__)
+#define CB_EDIT_MODEL(action, ...) \
+		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##__VA_ARGS__)
 
 CONSOLE *cur_console = NULL;
 
