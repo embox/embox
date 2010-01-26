@@ -106,16 +106,14 @@ menuconfig:
 	make TEMPLATE=`dialog \
 		--stdout --backtitle "Configuration template selection" \
 		--radiolist "Select template to load:" 10 40 3 \
-		$(patsubst %,% "" on,$(firstword $(TEMPLATES))) \
-		$(patsubst %,% "" off,$(wordlist 2,$(words $(TEMPLATES)),$(TEMPLATES))) ` \
+		$(patsubst %,% "" off,$(TEMPLATES))` \
 	config
 	@$(EDITOR) -nw $(CONF_DIR)/*.conf
 
 xconfig:
-	@Xdialog --stdout --backtitle "Arch Selection" \
-	    --radiolist "Select arch:" 20 40 3 \
-	    sparc "" on \
-	    microblaze "" off > .tmp
-	make TEMPLATE=`cat .tmp` config
-	@rm -f .tmp
+	make TEMPLATE=`Xdialog \
+		--stdout --backtitle "Configuration template selection" \
+		--radiolist "Select template to load:" 20 40 3 \
+		$(patsubst %,% "" off,$(TEMPLATES))` \
+	config
 	@$(EDITOR) $(CONF_DIR)/*.conf
