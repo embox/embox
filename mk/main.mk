@@ -27,6 +27,8 @@ AUTOCONF_DIR :=$(BUILD_DIR)/conf
 RM          :=rm -f
 EDITOR      :=emacs
 
+TEMPLATES =$(notdir $(wildcard $(TEMPLATES_DIR)/*))
+
 makegoals:=$(MAKECMDGOALS)
 ifeq ($(makegoals),)
 makegoals:=all
@@ -101,12 +103,12 @@ endif
 	@echo 'Config complete'
 
 menuconfig:
-	@dialog --stdout --backtitle "Arch Selection" \
-	    --radiolist "Select arch:" 10 40 3 \
-	    sparc "" on \
-	    microblaze "" off > .tmp
-	make TEMPLATE=`cat .tmp` config
-	@rm -f .tmp
+	make TEMPLATE=`dialog \
+		--stdout --backtitle "Configuration template selection" \
+		--radiolist "Select template to load:" 10 40 3 \
+		$(patsubst %,% "" on,$(firstword $(TEMPLATES))) \
+		$(patsubst %,% "" off,$(wordlist 2,$(words $(TEMPLATES)),$(TEMPLATES))) ` \
+	config
 	@$(EDITOR) -nw $(CONF_DIR)/*.conf
 
 xconfig:
