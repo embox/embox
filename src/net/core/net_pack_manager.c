@@ -37,9 +37,9 @@ unsigned char *net_buff_alloc(void) {
 		spin_unlock(sp);
 		return NULL;
 	}
-	entry = (&head_free_pack)->next;
-	list_del_init(entry);
-	buff = (unsigned char *)list_entry(entry, net_buff_info_t, list);
+	entry = (net_buff_info_t *)((&head_free_pack)->next);
+	list_del_init((struct list_head *)entry);
+	buff = (unsigned char *)list_entry((struct list_head *)entry, net_buff_info_t, list);
 	spin_unlock(sp);
 	return buff;
 }

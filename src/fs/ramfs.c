@@ -219,7 +219,7 @@ static size_t fread(const void *buf, size_t size, size_t count, void *file) {
         TRACE("end read\n");
         return 0;
     }
-    memcpy((void*)buf, (const void *)fh->fdesc->start_addr + fh->cur_pointer, size * count);
+    memcpy((void*)buf, (const void *)(fh->fdesc->start_addr + fh->cur_pointer), size * count);
     fh->cur_pointer += size * count;
     if (0 == (fh->cur_pointer & (TRACE_FREQ - 1))){
         TRACE("cur = 0x%08X\t size = %d\n",fh->cur_pointer,fh->fdesc->size);
@@ -232,7 +232,7 @@ static size_t fwrite(const void *buf, size_t size, size_t count, void *file) {
     if (0==fh->cur_pointer){
             TRACE("start write\n");
         }
-    memcpy((void *)fh->fdesc->start_addr + fh->cur_pointer,buf, size * count);
+    memcpy((void *)(fh->fdesc->start_addr + fh->cur_pointer),buf, size * count);
     fh->cur_pointer += size * count;
     return size * count;
 }
