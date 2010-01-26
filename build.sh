@@ -18,10 +18,10 @@ AUTOCONF2=.config2
 USER=sikmir
 HOST=10.0.3.97
 IMG_PATH=/home/$USER
-DSA_KEY_FILE=~/.ssh/id2_dsa
+DSA_KEY_FILE=~/.ssh/id_dsa
 
 if [ ! -d conf ]; then
-    make TEMPLATE=sparc config
+    make menuconfig
 else
     make clean
     make

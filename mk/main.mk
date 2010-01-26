@@ -38,7 +38,7 @@ include $(MK_DIR)/configure.mk
 include $(MK_DIR)/image.mk
 endif
 
-.PHONY: all prepare docs clean config xconfig menuconfig mconfig
+.PHONY: all prepare docs clean config xconfig menuconfig
 
 all: check_config prepare image
 	@echo 'Build complete'
@@ -101,9 +101,19 @@ endif
 	@echo 'Config complete'
 
 menuconfig:
-	make TEMPLATE=sparc config
+	@dialog --stdout --backtitle "Arch Selection" \
+	    --radiolist "Select arch:" 10 40 3 \
+	    sparc "" on \
+	    microblaze "" off > .tmp
+	make TEMPLATE=`cat .tmp` config
+	@rm -f .tmp
 	@$(EDITOR) -nw $(CONF_DIR)/*.conf
 
 xconfig:
-	make TEMPLATE=sparc config
+	@Xdialog --stdout --backtitle "Arch Selection" \
+	    --radiolist "Select arch:" 20 40 3 \
+	    sparc "" on \
+	    microblaze "" off > .tmp
+	make TEMPLATE=`cat .tmp` config
+	@rm -f .tmp
 	@$(EDITOR) $(CONF_DIR)/*.conf
