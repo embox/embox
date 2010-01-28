@@ -33,9 +33,17 @@ _traverse_mk_:=1
 # Part of root Makefile using TRAVERSE may look like:
 ##
 #   include $(MK_DIR)/traverse.mk
-#   TRAVERSE_CALLBACK = \
-#       OBJS_ALL := $$(OBJS_ALL) $$(addprefix $(NODE_DIR)/,$(NODE_OBJS))
-#   $(eval $(call TRAVERSE,$(SRC_DIR),node.mk,TRAVERSE_CALLBACK))
+#
+#   define traverse_callback
+#     DIRS_ALL:=$(DIRS_ALL) $(NODE_DIR)
+#     OBJS_ALL:=$(OBJS_ALL) $(addprefix $(NODE_DIR)/,$(OBJS-y))
+#     LIBS_ALL:=$(LIBS_ALL) $(addprefix $(NODE_DIR)/,$(LIBS-y))
+#     NODE_RESULT:=$(SUBDIRS-y)
+#   endef
+#
+#   traverse_vars:=SUBDIRS-y OBJS-y LIBS-y
+#
+#   $(eval $(call TRAVERSE,$(SRC_DIR),node.mk,traverse_callback,traverse_vars))
 #
 #   all: $(OBJS_ALL)
 #   	@$(CC) $(LDFLAGS) -T $(LDSCRIPT) -o $(TARGET) $(OBJS_ALL)
@@ -67,29 +75,28 @@ _traverse_mk_:=1
 # Params:
 #  1. Root directory
 #  2. File name of node descriptor containing info about subdirs and objects
-#  3. (optional) Expression to evaluate as a callback after processing the node
+#  3. Expression to evaluate as a callback after processing the node
 #                with the following interface:
-      NODE_DIR      =$(1)# 1. Directory containing the node descriptor
-      NODE_FILE     =$(2)# 2. Descriptor file name
-      NODE_SUBDIRS  =$(3)# 3. Enabled sub-directories
-      NODE_OBJS     =$(4)# 4. Enabled objects
-      NODE_LIBS     =$(5)# 5. Enabled libraries
-      NODE_DEPTH    =$(6)# 6. Call depth
-#      (see TRAVERSE_CALLBACK_EXAMPLE as an example)
+#      [in] NODE_DIR    Directory containing the node descriptor
+#      [in] NODE_FILE   Descriptor file name
+#      [in] NODE_DEPTH  Call depth
+#     [out] NODE_RESULT Callback should return list of directories to continue
+#                       the walking by assigning it to this variable
+#    (see TRAVERSE_CALLBACK_EXAMPLE as an example)
+#  4. List of variable names to clear before entering each node
 #
-TRAVERSE =$(eval $(call traverse_process_node,$(1),$(2),$(3),.))
+TRAVERSE =$(eval $(call traverse_process_node,$(1),$(2),$(3),$(4),.))
 
 #
 # The callback for TRAVERSE that traces its input arguments.
 # Just to show how it can be implemented.
-# Note that everything except variables with NODE_ prefix should be escaped
-# (because of using 'eval' function, see 'make' manual).
 #
 define TRAVERSE_CALLBACK_EXAMPLE
-  $$(info $(NODE_DEPTH)processing $(NODE_DIR)/$(NODE_FILE))
-  $$(info $(NODE_DEPTH) subdirs : $(NODE_SUBDIRS))
-  $$(info $(NODE_DEPTH) objs    : $(NODE_OBJS))
-  $$(info $(NODE_DEPTH) libs    : $(NODE_LIBS))
+  $(info $(NODE_DEPTH)processing $(NODE_DIR)/$(NODE_FILE))
+  $(info $(NODE_DEPTH) subdirs : $(SUBDIRS-y))
+  $(info $(NODE_DEPTH) objs    : $(OBJS-y))
+  $(info $(NODE_DEPTH) libs    : $(LIBS-y))
+  NODE_RESULT:=$(SUBDIRS-y)
 endef
 
 #
@@ -99,38 +106,47 @@ endef
 #  1. Directory containing the node descriptor to process
 #  2. Descriptor file name
 #  3. User callback
-#  4. (internal) Call depth, root caller should pass 'non-white' string
+#  4. List of variable names to clear before entering each node
+#  5. (internal) Call depth, root caller should pass 'non-white' string
 #
 define traverse_process_node
+  ifeq ($(wildcard $(1))),)
+  $$(error Traverse error: Node not found: $(1))
+  endif
+  ifeq ($(wildcard $(1)/$(2)),)
+  $$(error Traverse error: Node descriptor not found: $(1)/$(2))
+  endif
 
   # Clean everything before entering into user defined code.
-  SUBDIRS-y :=
-  OBJS-y    :=
-  LIBS-y    :=
+  $$(foreach var_name,$($(4)),\
+    $$(eval $$(var_name):=)\
+  )
+
   # Provide the node location.
   SELFDIR   :=$(1)
 
   # Go!
   include $(1)/$(2)
 
-  # Expand SUBDIRS-y value to local variable.
-  subdirs_y :=$$(SUBDIRS-y)
-
   # Invoke user callback.
-  $$(eval $$(call $(3),$(1),$(2),$$(subdirs_y),$$(OBJS-y),$$(LIBS-y),$(4)))
+  NODE_DIR    :=$(1)
+  NODE_FILE   :=$(2)
+  NODE_DEPTH  :=$(5)
+  NODE_RESULT :=
+  $$(eval $$(value $(3)))
 
   # Perform recursive walking over sub-directories.
   # It's important to note that subdirs_y variable is expanded only once
   # and before entering child subroutines (which will overwrite this variable),
   # hence we have not to construct any stacks and so on.
-  $$(foreach subdir,$$(subdirs_y),\
-    $$(eval $$(call $(0),$(1)/$$(subdir),$(2),$(3),$(4) ))\
+  $$(foreach subdir,$$(NODE_RESULT),\
+    $$(eval $$(call $(0),$(1)/$$(subdir),$(2),$(3),$(4),$(5) ))\
   )
 
   # Clean everything again.
-  SUBDIRS-y :=
-  OBJS-y    :=
-  LIBS-y    :=
+  $$(foreach var_name,$($(4)),\
+    $$(eval $$(var_name):=)\
+  )
 
 endef
 

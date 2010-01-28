@@ -67,16 +67,19 @@ LIBS_ALL:=
 DIRS_ALL:=
 
 # This code is executed each time when per-directory makefile is processed.
-define TRAVERSE_CALLBACK
+define traverse_callback
   obj_node_dir:=$(NODE_DIR:$(SRC_DIR)%=$(OBJ_DIR)%)
-  DIRS_ALL+=$$(obj_node_dir)
-  OBJS_ALL+=$$(addprefix $$(obj_node_dir)/,$(NODE_OBJS))
-  LIBS_ALL+=$$(addprefix $$(obj_node_dir)/,$(NODE_LIBS))
+  DIRS_ALL+=$(obj_node_dir)
+  OBJS_ALL+=$(addprefix $(obj_node_dir)/,$(OBJS-y))
+  LIBS_ALL+=$(addprefix $(obj_node_dir)/,$(LIBS-y))
+  NODE_RESULT:=$(SUBDIRS-y)
 endef
+
+traverse_variables:=SUBDIRS-y OBJS-y LIBS-y
 
 # Walk the directory tree starting at $(SRC_DIR)
 # and searching for Makefile in each sub-directory.
-$(call TRAVERSE,$(SRC_DIR),Makefile,TRAVERSE_CALLBACK)
+$(call TRAVERSE,$(SRC_DIR),Makefile,traverse_callback,traverse_variables)
 
 # Expand these variables stripping out unnecessary whitespaces.
 DIRS_ALL:=$(strip $(DIRS_ALL))
