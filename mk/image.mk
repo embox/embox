@@ -16,34 +16,35 @@ OBJCOPY=$(CROSS_COMPILE)objcopy
 
 # Preprocessor flags
 cppflags:=$(CPPFLAGS)
-CPPFLAGS =
-CPPFLAGS+=-imacros $(AUTOCONF_DIR)/config.h
-CPPFLAGS+=-I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
-CPPFLAGS+=-nostdinc
-CPPFLAGS+=-MMD# -MT $@ -MF $(@:.o=.d)
-CPPFLAGS+=$(cppflags)
+override CPPFLAGS =
+override CPPFLAGS+=$(patsubst %,-D%,$(sort $(DEFS_$(abspath $(@D)))))
+override CPPFLAGS+=-imacros $(AUTOCONF_DIR)/config.h
+override CPPFLAGS+=-I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
+override CPPFLAGS+=-nostdinc
+override CPPFLAGS+=-MMD# -MT $@ -MF $(@:.o=.d)
+override CPPFLAGS+=$(cppflags)
 
 # Compiler flags
 cflags:=$(CFLAGS)
-CFLAGS =
-CFLAGS+=-Wall
-CFLAGS+=-pedantic #-std=gnu99
-CFLAGS+=-Wstrict-prototypes -Wundef -Wdeclaration-after-statement -Winline
-CFLAGS+=-Wno-trigraphs -Wno-char-subscripts
-CFLAGS+=-pipe
-CFLAGS+=$(cflags)
+override CFLAGS =
+override CFLAGS+=-Wall
+override CFLAGS+=-pedantic
+override CFLAGS+=-Wstrict-prototypes -Wundef -Wdeclaration-after-statement -Winline
+override CFLAGS+=-Wno-trigraphs -Wno-char-subscripts
+override CFLAGS+=-pipe
+override CFLAGS+=$(cflags)
 
 # Linker flags
 ldflags:=$(LDFLAGS)
-LDFLAGS =
-LDFLAGS+=-static
-LDFLAGS+=-nostdlib
-LDFLAGS+=-T $(LDSCRIPT)
-LDFLAGS+=$(ldflags)
+override LDFLAGS =
+override LDFLAGS+=-static
+override LDFLAGS+=-nostdlib
+override LDFLAGS+=-T $(LDSCRIPT)
+override LDFLAGS+=$(ldflags)
+
+override ARFLAGS=rcs
 
 LDLIBS=-L$(LIB_DIR) -l$(LIB_NAME)
-
-ARFLAGS=rcs
 
 LIB_NAME:=c
 LIBC=$(LIB_DIR)/lib$(LIB_NAME).a
@@ -72,10 +73,16 @@ define traverse_callback
   DIRS_ALL+=$(obj_node_dir)
   OBJS_ALL+=$(addprefix $(obj_node_dir)/,$(OBJS-y))
   LIBS_ALL+=$(addprefix $(obj_node_dir)/,$(LIBS-y))
+  DEFS_$(abspath $(obj_node_dir)):=\
+    $(DEFS_$(abspath $(obj_node_dir)/..)) $(DEFS-y)
+#  $(foreach obj,$(OBJS-y),$(eval \
+      DEFS_$(abspath $(obj_node_dir)/$(obj)):=\
+    $(DEFS_$(abspath $(obj_node_dir))) $(DEFS-y) \
+  ))
   NODE_RESULT:=$(SUBDIRS-y)
 endef
 
-traverse_variables:=SUBDIRS-y OBJS-y LIBS-y
+traverse_variables:=SUBDIRS-y OBJS-y LIBS-y DEFS-y
 
 # Walk the directory tree starting at $(SRC_DIR)
 # and searching for Makefile in each sub-directory.
@@ -97,7 +104,7 @@ $(OBJS_ALL): $(AUTOCONF_DIR)/config.h
 $(OBJ_DIR)/%.o::$(SRC_DIR)/%.c
 	$(CC) -o $@ \
 	$(CPPFLAGS) \
-	$(CFLAGS) \
+	$(CFLAGS) -std=gnu99 \
 	 -c $<
 
 $(OBJ_DIR)/%.o::$(SRC_DIR)/%.S

@@ -6,4 +6,6 @@ OBJS-$(MONITOR_KERNEL) += timers_common.o
 OBJS-$(MONITOR_KERNEL) += init.o
 OBJS-$(MONITOR_KERNEL) += softirq.o
 
+DEFS-y +=__KERNEL__
+
 include $(SCRIPTS_DIR)/common.mk
