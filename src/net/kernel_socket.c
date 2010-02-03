@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file kernel_socket.c
  *
  * @brief Implements socket interface function for kernel mode
  *

@@ -219,6 +219,11 @@ extern int dev_queue_xmit(sk_buff_t *pack);
  */
 extern int netif_rx(sk_buff_t *pack);
 
+/**
+ * Called by irq handler.
+ */
+extern void netif_rx_schedule(net_device_t *dev);
+
 static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
                                 unsigned short type,
                                 void *daddr, void *saddr, unsigned len) {

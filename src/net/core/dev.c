@@ -163,13 +163,13 @@ int netif_rx(struct sk_buff *skb) {
 #if CONFIG(SOFT_IRQ)
 			if (ETH_P_ARP != skb->protocol) {
 				skb_queue_tail(&netdev_skb_head, skb);
-				__raise_softirq_irqoff(NET_RX_SOFTIRQ);
+				netif_rx_schedule(dev);
 			} else {
 #endif
-			rc_rx = q->func(skb, dev, q, NULL);
-			kfree_skb(skb);
+				rc_rx = q->func(skb, dev, q, NULL);
+				kfree_skb(skb);
 #if CONFIG(SOFT_IRQ)
-		}
+			}
 #endif
 			return rc_rx;
 		}
@@ -264,7 +264,12 @@ int dev_change_flags(struct net_device *dev, unsigned flags) {
 }
 
 #if CONFIG(SOFT_IRQ)
-static void netif_rx_schedule(struct softirq_action* action) {
+void netif_rx_schedule(net_device_t *dev) {
+	//TODO:
+        __raise_softirq_irqoff(NET_RX_SOFTIRQ);
+}
+
+static void net_rx_action(struct softirq_action* action) {
 	struct sk_buff *skb;
 	struct packet_type *q;
 	while (NULL != (skb = skb_dequeue(&netdev_skb_head))) {
@@ -281,7 +286,7 @@ static void netif_rx_schedule(struct softirq_action* action) {
 
 static int __init net_dev_init(void) {
 #if CONFIG(SOFT_IRQ)
-	open_softirq(NET_RX_SOFTIRQ, netif_rx_schedule, NULL);
+	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
 #endif
 	return 0;
 }
