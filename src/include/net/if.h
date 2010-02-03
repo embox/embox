@@ -8,7 +8,6 @@
 #ifndef IF_H_
 #define IF_H_
 
-#define NET_DEVICES_QUANTITY     0x4
 #define IFNAMSIZ        0x6
 
 /* Standard interface flags (net_device->flags). */
