@@ -12,7 +12,6 @@
 #include <kernel/aio.h>
 #include <net/socket.h>
 
-#define NET_INTERFACES_QUANTITY     0x4
 #define IPV4_ADDR_LENGTH            0x4
 
 typedef unsigned char enet_addr_t[6];
