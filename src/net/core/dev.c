@@ -23,7 +23,7 @@ DECLARE_INIT("net_dev", net_dev_init, INIT_NET_LEVEL);
 
 /*FIXME we must have queue for each netdevice or if we want to use the only
  we should use alloc_skb_queue?*/
-static SKB_LIST_HEAD(netdev_skb_head);
+//static SKB_LIST_HEAD(netdev_skb_head);
 
 static LIST_HEAD(ptype_base);
 static LIST_HEAD(ptype_all);
@@ -49,11 +49,27 @@ static inline void dev_unlock(int num) {
 }
 
 int dev_alloc_name(struct net_device *dev, const char *name) {
+	strcpy(dev->name, name);
 	return 0;
 }
 
-net_device_t *alloc_netdev(int sizeof_priv, const char *name, void(*setup)(
-		net_device_t *)) {
+static int process_backlog(net_device_t *dev) {
+        struct sk_buff *skb;
+        struct packet_type *q;
+        while (NULL != (skb = skb_dequeue(&(dev->dev_queue)))) {
+                list_for_each_entry(q, &ptype_base, list) {
+                        if (q->type == skb->protocol) {
+                                q->func(skb, skb->dev, q, NULL);
+                                break;
+                        }
+                }
+                kfree_skb(skb);
+        }
+        return 0;
+}
+
+net_device_t *alloc_netdev(int sizeof_priv, const char *name,
+				    void(*setup)(net_device_t *)) {
 	struct net_device *dev;
 	char buff[IFNAMSIZ];
 	int i;
@@ -63,6 +79,12 @@ net_device_t *alloc_netdev(int sizeof_priv, const char *name, void(*setup)(
 			setup(dev);
 			sprintf(buff, name, i);
 			strcpy(dev->name, buff);
+
+			dev->dev_queue.next = (sk_buff_t *)(&(dev->dev_queue));
+			dev->dev_queue.prev = (sk_buff_t *)(&(dev->dev_queue));
+			dev->dev_queue.qlen = 0;
+			dev->dev_queue.lock = 0;
+			dev->poll = process_backlog;
 			return dev;
 		}
 	}
@@ -162,7 +184,8 @@ int netif_rx(struct sk_buff *skb) {
 		if (q->type == skb->protocol) {
 #if CONFIG(SOFT_IRQ)
 			if (ETH_P_ARP != skb->protocol) {
-				skb_queue_tail(&netdev_skb_head, skb);
+//				skb_queue_tail(&netdev_skb_head, skb);
+				skb_queue_tail(&(dev->dev_queue), skb);
 				netif_rx_schedule(dev);
 			} else {
 #endif
@@ -270,16 +293,13 @@ void netif_rx_schedule(net_device_t *dev) {
 }
 
 static void net_rx_action(struct softirq_action* action) {
-	struct sk_buff *skb;
-	struct packet_type *q;
-	while (NULL != (skb = skb_dequeue(&netdev_skb_head))) {
-		list_for_each_entry(q, &ptype_base, list) {
-			if (q->type == skb->protocol) {
-				q->func(skb, skb->dev, q, NULL);
-				break;
-			}
+	int i;
+	net_device_t *dev;
+	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
+                if (dev_is_busy(i)) {
+            		dev = &(net_devices[i].dev);
+            		dev->poll(dev);
 		}
-		kfree_skb(skb);
 	}
 }
 #endif

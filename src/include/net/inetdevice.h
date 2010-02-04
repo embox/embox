@@ -89,4 +89,8 @@ extern in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev);
 extern in_device_t * inet_dev_get_fist_used(void);
 extern in_device_t * inet_dev_get_next_used(void);
 
+/*TODO: deprecated*/
+extern int ifdev_up(const char *iname);
+extern int ifdev_down(const char *iname);
+
 #endif /* INETDEVICE_H_ */

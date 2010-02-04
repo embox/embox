@@ -108,21 +108,23 @@ typedef struct packet_type {
  * structure of net device
  */
 typedef struct net_device {
-	char name[IFNAMSIZ]; /**< It is the name the interface.*/
-	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address                   */
-	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address             */
-	unsigned long state;
-	unsigned short type; /**< interface hardware type      */
-	unsigned char addr_len; /**< hardware address length      */
-	unsigned int flags; /**< interface flags (a la BSD)   */
-	unsigned mtu; /**< interface MTU value          */
-	unsigned long tx_queue_len; /**< Max frames per queue allowed */
-	unsigned long base_addr; /**< device I/O address           */
-	unsigned int irq; /**< device IRQ number            */
-	net_device_stats_t stats;
-	const net_device_ops_t *netdev_ops; /**< Management operations        */
-	const header_ops_t *header_ops; /**< Hardware header description  */
-	void *priv; /**< pointer to private data */
+	char            name[IFNAMSIZ];          /**< Name of the interface.  */
+	unsigned char   dev_addr[MAX_ADDR_LEN];  /**< hw address              */
+	unsigned char   broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
+	unsigned long          state;
+	unsigned short         type;         /**< interface hardware type      */
+	unsigned char          addr_len;     /**< hardware address length      */
+	unsigned int           flags;        /**< interface flags (a la BSD)   */
+	unsigned               mtu;          /**< interface MTU value          */
+	unsigned long          tx_queue_len; /**< Max frames per queue allowed */
+	unsigned long          base_addr;    /**< device I/O address           */
+	unsigned int           irq;          /**< device IRQ number            */
+	net_device_stats_t     stats;
+	const net_device_ops_t *netdev_ops;  /**< Management operations        */
+	const header_ops_t     *header_ops;  /**< Hardware header description  */
+	void                   *priv;        /**< pointer to private data      */
+	struct sk_buff_head    dev_queue;
+	int                    (*poll)(struct net_device *dev);
 } net_device_t;
 
 static inline void *netdev_priv(struct net_device *dev) {
@@ -236,9 +238,5 @@ static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
 static inline void netif_start_queue(net_device_t *dev) {
 	/*TODO:*/
 }
-
-/*TODO: deprecated*/
-int ifdev_up(const char *iname);
-int ifdev_down(const char *iname);
 
 #endif /* NET_DEVICE_H_ */
