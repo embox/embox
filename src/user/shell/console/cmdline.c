@@ -73,6 +73,9 @@ bool cmdline_history_new_entry(CMDLINE *cmdline) {
 
 	if (0 == strcmp(cmdline->string, history->array[(history->index
 			+ CMDLINE_HISTORY_SIZE - 1) % CMDLINE_HISTORY_SIZE])) {
+		cmdline->length = 0;
+		cmdline->cursor = 0;
+    		cmdline->string[0] = '\0';
 		return false;
 	}
 
