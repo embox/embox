@@ -196,6 +196,10 @@ static int print(char **out, const char *format, va_list args )
 				width *= 10;
 				width += *format - '0';
 			}
+			if (*format == 'l') {
+				//TODO:
+                                ++format;
+                        }
 			switch(*format) {
 			case 's': {
 				char *s = (char *)va_arg( args, int );
