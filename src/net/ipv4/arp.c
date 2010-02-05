@@ -53,7 +53,8 @@ static void arp_check_expire(uint32_t id) {
 		//FIXME:
 		//arp_tables[i].ctime += ARP_CHECK_INTERVAL;
 		if( arp_tables[i].state == 1 &&
-		    arp_tables[i].ctime >= ARP_TIMEOUT) {
+		    arp_tables[i].ctime >= ARP_TIMEOUT &&
+		    arp_tables[i].flags == ATF_COM) {
 			arp_tables[i].state = 0;
 		}
 	}
@@ -123,7 +124,7 @@ inline int arp_lookup(in_device_t *in_dev, in_addr_t dst_addr) {
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr) {
+int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr, unsigned int flags) {
 	int i;
 	if (-1 != (i = arp_lookup(in_dev, ipaddr))) {
 		return i;
@@ -134,6 +135,7 @@ int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr
 			arp_tables[i].pw_addr = ipaddr;
 			arp_tables[i].ctime = 0;
 			arp_tables[i].state = 1;
+			arp_tables[i].flags = flags;
 			memcpy(arp_tables[i].hw_addr, macaddr, ETH_ALEN);
 			return i;
 		}
@@ -297,7 +299,7 @@ static int arp_process(sk_buff_t *pack) {
                 ret = 0;
         }
         /* add record into arp_tables */
-        arp_add_entity(in_dev, arp->ar_sip, arp->ar_sha);
+        arp_add_entity(in_dev, arp->ar_sip, arp->ar_sha, ATF_COM);
         kfree_skb(pack);
         arp_send_q();
         return ret;

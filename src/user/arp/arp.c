@@ -33,9 +33,9 @@ static int print_arp_cache(void *ifdev) {
 			net_dev = arp_tables[i].if_handler->dev;
 			macaddr_print(mac, arp_tables[i].hw_addr);
 			addr.s_addr = arp_tables[i].pw_addr;
-			TRACE("%s\t\t%d\t%s\t%d\t%s\n", inet_ntoa(addr),
+			TRACE("%s\t\t%d\t%s\t%c\t%s\n", inet_ntoa(addr),
 					    arp_tables[i].if_handler->dev->type,
-					    mac, net_dev->flags, net_dev->name);
+					    mac, arp_tables[i].flags==ATF_COM?'C':'P', net_dev->name);
 		}
 	}
 	return 0;
@@ -90,7 +90,7 @@ static int exec(int argsc, char **argsv) {
                 arp_delete_entity(ifdev, addr.s_addr, hwaddr);
                 return 0;
         case 1:
-                arp_add_entity(ifdev, addr.s_addr, hwaddr);
+                arp_add_entity(ifdev, addr.s_addr, hwaddr, ATF_PERM);
                 return 0;
 	default:
 		break;

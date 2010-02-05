@@ -20,9 +20,14 @@ typedef struct arp_table {
     unsigned char hw_addr[ETH_ALEN];  /**< hardware addr */
     in_addr_t     pw_addr;            /**< protocol addr */
     in_device_t   *if_handler;        /**< inet device */
-    unsigned int ctime;              /**< time to alive */
+    unsigned int ctime;               /**< time to alive */
     unsigned int state;
+    unsigned int flags;
 } arp_table_t;
+
+/* ARP Flag values. */
+#define ATF_COM         0x02          /* completed entry */
+#define ATF_PERM        0x04          /* permanent entry */
 
 /*
  * After that time, an unused entry is deleted from the arp table.
@@ -116,7 +121,7 @@ extern void arp_send(int type, int ptype, in_addr_t dest_ip,
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr);
+extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *hw, unsigned int flags);
 
 /**
  * this function delete entry from arp table if can
@@ -125,7 +130,7 @@ extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *
  * @param hardware addr
  * @return number of entry in table if success else -1
  */
-extern int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *macaddr);
+extern int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *hw);
 
 /**
  * Send an arp packet.

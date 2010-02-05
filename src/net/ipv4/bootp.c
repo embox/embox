@@ -229,7 +229,7 @@ int bootp_discover (void* ifdev) {
 		pack->h.uh->check = 0;
 //		pack->h.uh->check = ptclbsum(pack->h.uh, BOOTP_HEADER_SIZE + UDP_HEADER_SIZE);
 
-		arp_add_entity (ifdev, daddr, pack->mac.ethh->h_dest);
+		arp_add_entity (ifdev, daddr, pack->mac.ethh->h_dest, ATF_COM);
 		TRACE("eth_send\n");
 		dev_queue_xmit (pack);
 		kfree_skb (pack);
