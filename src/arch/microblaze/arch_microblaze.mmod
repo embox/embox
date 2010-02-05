@@ -1,4 +1,0 @@
-ModName = microblaze
-Type    = Arch
-SrcList = interrupt_handler.c mb_irq_crtl.c mb_timers.c entry.S boot.S sys.c
-MDef    = MONITOR_ARCH_MICROBLAZE

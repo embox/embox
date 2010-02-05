@@ -1,5 +1,0 @@
-ModName   = arp
-DependsOn = shell net
-Type      = Shell command
-SrcList   = arp.c
-MDef      = MONITOR_USER_ARP

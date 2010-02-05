@@ -1,4 +1,0 @@
-ModName   = gaisler
-Type      = Driver
-SrcList   = uart
-MDef      = MONITOR_DRIVER_GAISLERDRV

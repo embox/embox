@@ -1,5 +1,0 @@
-ModName   = rm
-DependsOn = shell fs
-Type      = Shell command
-SrcList   = rm.c
-MDef      = MONITOR_USER_RM

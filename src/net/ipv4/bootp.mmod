@@ -1,5 +1,0 @@
-ModName   = bootp_proto
-DependsOn = ip_proto
-Type      = Net protocol
-SrcList   = bootp.c
-MDef      = MONITOR_NET_BOOTP

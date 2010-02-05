@@ -1,5 +1,0 @@
-ModName   = ping
-DependsOn = shell net
-Type      = Shell command
-SrcList   = ping.c
-MDef      = MONITOR_USER_PING

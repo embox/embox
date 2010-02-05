@@ -1,5 +1,0 @@
-ModName   = char
-Type      = Driver
-DependsOn = uart
-SrcList   = vtparse_table.c vtparse.c vtbuild.c terminal.c
-MDef      = MONITOR_DRIVER_CHAR

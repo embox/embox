@@ -1,5 +1,0 @@
-ModName   = test_recursion
-Type      = Express test
-DependsOn = tests
-SrcList   = test_recursion.c
-MDef      = MONITOR_TEST_RECURSION

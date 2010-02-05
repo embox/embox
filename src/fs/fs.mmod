@@ -1,4 +1,0 @@
-ModName     = fs
-SrcList     = ramfs.c rootfs.c file.c
-Description = File system
-MDef        = MONITOR_FS

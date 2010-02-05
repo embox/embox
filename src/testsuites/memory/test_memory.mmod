@@ -1,5 +1,0 @@
-ModName   = test_memory
-Type      = Express test
-DependsOn = tests
-SrcList   = test_memory.c
-MDef      = MONITOR_TEST_MEMORY

@@ -1,5 +1,0 @@
-ModName   = icmp_proto
-DependsOn = net
-Type      = Net protocol
-SrcList   = icmp.c
-MDef      = MONITOR_NET_ICMP

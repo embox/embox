@@ -1,5 +1,0 @@
-ModName   = cp
-DependsOn = shell fs
-Type      = Shell command
-SrcList   = cp.c
-MDef      = MONITOR_USER_CP

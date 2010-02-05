@@ -1,4 +1,0 @@
-ModName   = xuartlite
-Type      = Driver
-SrcList   = serial_xuartlite.o
-MDef      = MONITOR_DRIVER_XILINX_UART

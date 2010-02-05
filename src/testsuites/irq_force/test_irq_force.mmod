@@ -1,5 +1,0 @@
-ModName   = test_irq_force
-Type      = Express test
-DependsOn = tests
-SrcList   = test_irq_force.c
-MDef      = MONITOR_TEST_IRQ_FORCE

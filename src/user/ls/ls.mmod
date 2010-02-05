@@ -1,5 +1,0 @@
-ModName   = ls
-DependsOn = shell fs
-Type      = Shell command
-SrcList   = ls.c
-MDef      = MONITOR_USER_LS

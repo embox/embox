@@ -1,5 +1,0 @@
-ModName   = mmu_probe
-DependsOn = shell sparc
-Type      = Shell command
-SrcList   = mmu_probe.c
-MDef      = MONITOR_USER_MMU_PROBE

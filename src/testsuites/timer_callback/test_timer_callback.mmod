@@ -1,5 +1,0 @@
-ModName   = test_timer_callback
-Type      = Express test
-DependsOn = tests
-SrcList   = test_timer_callback.c
-MDef      = MONITOR_TEST_TIMER_CALLBACK

@@ -1,4 +1,0 @@
-ModName   = amba_pnp
-Type      = Driver
-SrcList   = amba_pnp.c gaisler
-MDef      = MONITOR_DRIVER_AMBA_PNP

@@ -1,5 +1,0 @@
-ModName   = mem
-DependsOn = shell
-Type      = Shell command
-SrcList   = mem.c
-MDef      = MONITOR_USER_MEM

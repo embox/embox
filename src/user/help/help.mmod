@@ -1,5 +1,0 @@
-ModName   = help
-DependsOn = shell
-Type      = Shell command
-SrcList   = help.c
-MDef      = MONITOR_USER_HELP

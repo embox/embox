@@ -1,5 +1,0 @@
-ModName   = ldimg
-DependsOn = shell
-Type      = Shell command
-SrcList   = ldimg.c
-MDef      = MONITOR_USER_LDIMG
