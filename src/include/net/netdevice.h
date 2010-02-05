@@ -11,7 +11,7 @@
 #include <net/if_ether.h>
 #include <net/if.h>
 #include <net/skbuff.h>
-#include <in.h>
+#include <net/in.h>
 #include <lib/list.h>
 
 /* Backlog congestion levels */
@@ -60,18 +60,18 @@ typedef struct net_device_stats {
 enum netdev_state_t {
 	__LINK_STATE_START
 #if 0
-      ,  __LINK_STATE_PRESENT,
-        __LINK_STATE_NOCARRIER,
-        __LINK_STATE_LINKWATCH_PENDING,
-        __LINK_STATE_DORMANT,
+	, __LINK_STATE_PRESENT,
+	__LINK_STATE_NOCARRIER,
+	__LINK_STATE_LINKWATCH_PENDING,
+	__LINK_STATE_DORMANT,
 #endif
-};
+}	;
 
-/**
- * This structure defines the management hooks for network devices.
- * The following hooks can be defined; unless noted otherwise, they are
- * optional and can be filled with a null pointer.
- */
+	/**
+	 * This structure defines the management hooks for network devices.
+	 * The following hooks can be defined; unless noted otherwise, they are
+	 * optional and can be filled with a null pointer.
+	 */
 typedef struct net_device_ops {
 	int (*ndo_open)(struct net_device *dev);
 	int (*ndo_stop)(struct net_device *dev);
@@ -102,29 +102,35 @@ typedef struct packet_type {
 #endif
 	void *af_packet_priv;
 	struct list_head list;
+	int (*init)(void); /**<Function's called during net subsystem loading
+	 process */
 } packet_type_t;
 
+#define DECLARE_NET_PACKET(net_packet) \
+    static const packet_type_t *pdescriptor \
+		__attribute__ ((used, section(".ipstack.packets"))) \
+		= &net_packet
 /**
  * structure of net device
  */
 typedef struct net_device {
-	char            name[IFNAMSIZ];          /**< Name of the interface.  */
-	unsigned char   dev_addr[MAX_ADDR_LEN];  /**< hw address              */
-	unsigned char   broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
-	unsigned long          state;
-	unsigned short         type;         /**< interface hardware type      */
-	unsigned char          addr_len;     /**< hardware address length      */
-	unsigned int           flags;        /**< interface flags (a la BSD)   */
-	unsigned               mtu;          /**< interface MTU value          */
-	unsigned long          tx_queue_len; /**< Max frames per queue allowed */
-	unsigned long          base_addr;    /**< device I/O address           */
-	unsigned int           irq;          /**< device IRQ number            */
-	net_device_stats_t     stats;
-	const net_device_ops_t *netdev_ops;  /**< Management operations        */
-	const header_ops_t     *header_ops;  /**< Hardware header description  */
-	void                   *priv;        /**< pointer to private data      */
-	struct sk_buff_head    dev_queue;
-	int                    (*poll)(struct net_device *dev);
+	char name[IFNAMSIZ]; /**< Name of the interface.  */
+	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
+	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
+	unsigned long state;
+	unsigned short type; /**< interface hardware type      */
+	unsigned char addr_len; /**< hardware address length      */
+	unsigned int flags; /**< interface flags (a la BSD)   */
+	unsigned mtu; /**< interface MTU value          */
+	unsigned long tx_queue_len; /**< Max frames per queue allowed */
+	unsigned long base_addr; /**< device I/O address           */
+	unsigned int irq; /**< device IRQ number            */
+	net_device_stats_t stats;
+	const net_device_ops_t *netdev_ops; /**< Management operations        */
+	const header_ops_t *header_ops; /**< Hardware header description  */
+	void *priv; /**< pointer to private data      */
+	struct sk_buff_head dev_queue;
+	int (*poll)(struct net_device *dev);
 } net_device_t;
 
 static inline void *netdev_priv(struct net_device *dev) {
@@ -229,10 +235,9 @@ extern void netif_rx_schedule(net_device_t *dev);
 extern int netif_receive_skb(sk_buff_t *skb);
 
 static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
-                                unsigned short type,
-                                void *daddr, void *saddr, unsigned len) {
-        if (!dev->header_ops || !dev->header_ops->create) {
-                return 0;
+		unsigned short type, void *daddr, void *saddr, unsigned len) {
+	if (!dev->header_ops || !dev->header_ops->create) {
+		return 0;
 	}
 	return dev->header_ops->create(skb, dev, type, daddr, saddr, len);
 }

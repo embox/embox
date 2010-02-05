@@ -8,7 +8,7 @@
 #include "autoconf.h"
 #include "common.h"
 #include "string.h"
-#include "misc.h"
+//#include "misc.h"
 #include "express_tests.h"
 
 DECLARE_EXPRESS_TEST(MEMORY, exec, NULL);

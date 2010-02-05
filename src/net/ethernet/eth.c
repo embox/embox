@@ -5,7 +5,7 @@
  * @date 4.03.09
  * @author Anton Bondarev
  */
-#include <misc.h>
+#include <netutils.h>
 #include <string.h>
 #include <codes.h>
 #include <net/skbuff.h>

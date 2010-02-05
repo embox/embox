@@ -4,7 +4,7 @@
  * \author Sikmir
  */
 
-#include <in.h>
+#include <net/in.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

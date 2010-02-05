@@ -6,8 +6,8 @@
  */
 
 #include "lib/bits/byteswap.h"
-#include "in.h"
-#include <misc.h>
+#include "net/in.h"
+#include <netutils.h>
 #include "stdio.h"
 #include "string.h"
 

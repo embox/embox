@@ -5,7 +5,7 @@
  */
 
 #include "shell_command.h"
-#include "in.h"
+#include "net/in.h"
 #include "net/route.h"
 #include "net/inetdevice.h"
 #include <unistd.h>

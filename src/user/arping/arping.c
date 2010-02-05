@@ -11,8 +11,8 @@
 #include <net/etherdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
-#include <in.h>
-#include <misc.h>
+#include <net/in.h>
+#include <netutils.h>
 #include <unistd.h>
 #include <stdlib.h>
 

@@ -109,6 +109,7 @@ typedef struct proto {
         			    size_t len, int noblock, int flags, int *addr_len);
         int  (*bind)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
         int  (*backlog_rcv)(sock_t *sk, sk_buff_t *skb);
+    	char			name[32];
 } proto_t;
 
 extern int proto_register(proto_t *prot, int alloc_slab);

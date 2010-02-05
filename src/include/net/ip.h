@@ -8,7 +8,7 @@
 #ifndef IP_H_
 #define IP_H_
 
-#include <in.h>
+#include <net/in.h>
 #include <net/skbuff.h>
 #include <net/inet_sock.h>
 

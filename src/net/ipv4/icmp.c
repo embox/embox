@@ -17,6 +17,7 @@
 #include "net/ip.h"
 #include "net/if_ether.h"
 #include <net/checksum.h>
+#include <net/protocol.h>
 
 /**
  * Build xmit assembly blocks
@@ -334,3 +335,10 @@ int icmp_rcv(sk_buff_t *pack) {
 	}
 	return -1;
 }
+
+net_protocol_t icmp_protocol = {
+        .handler = icmp_rcv,
+        .type = IPPROTO_ICMP
+};
+
+DECLARE_INET_PROTO(icmp_protocol);

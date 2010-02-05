@@ -14,7 +14,7 @@
 #include "net/inetdevice.h"
 #include "net/inet_sock.h"
 #include "net/net_pack_manager.h"
-#include "in.h"
+#include "net/in.h"
 #include "net/socket.h"
 
 //#define TFTP_ADDRESS_TO_SAVE  0x80000000

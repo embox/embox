@@ -16,7 +16,8 @@
 #include <common.h>
 #include <string.h>
 
-DECLARE_MODULE("Ethernet Emac lite", module_init);
+DECLARE_MODULE("Ethernet Emac lite", module_init)
+;
 
 #define PKTSIZE 0x800
 
@@ -57,7 +58,7 @@ typedef struct pingpong_regs {
 	uint32_t len; /*0x07F4*/
 	uint32_t gie;
 	uint32_t ctrl;
-}pingpong_regs_t;
+} pingpong_regs_t;
 
 typedef struct xilinx_emaclite_regs {
 	pingpong_regs_t tx_ping;
@@ -126,10 +127,10 @@ static uint8_t etherrxbuff[PKTSIZE]; /* Receive buffer */
 #endif
 /*FIXME bad function (may be use if dest and src align 4)*/
 static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
-	size_t lenw = (size_t)((len & (~3)) >> 2);
-	volatile uint32_t *srcw = (uint32_t*)((uint32_t )(src) & (~3));
+	size_t lenw = (size_t) ((len & (~3)) >> 2);
+	volatile uint32_t *srcw = (uint32_t*) ((uint32_t) (src) & (~3));
 
-	while (lenw --) {
+	while (lenw--) {
 		*dest++ = *srcw++;
 	}
 	if (len & (~3)) {
@@ -151,7 +152,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 			return -1; /*transmitter is busy*/
 		}
 	}
-	memcpy32((uint32_t*)TX_PACK, skb->data, skb->len);
+	memcpy32((uint32_t*) TX_PACK, skb->data, skb->len);
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
 
@@ -167,30 +168,27 @@ static void pack_receiving(void *dev_id) {
 	sk_buff_t *skb;
 
 	/* Get the protocol type of the ethernet frame that arrived */
-	tmp = *(volatile uint32_t *) ( RX_PACK + 0xC);
+	tmp = *(volatile uint32_t *) (RX_PACK + 0xC);
 	proto_type = (tmp >> 0x10) & 0xFFFF;
-
 
 	/* Check if received ethernet frame is a raw ethernet frame
 	 * or an IP packet or an ARP packet */
 	switch (proto_type) {
-		case ETH_P_IP: {
-			len
-					= (((*(volatile uint32_t *) (RX_PACK + 0x10)))
-							>> 16) & 0xFFFF;
-			len += ETH_HLEN + ETH_FCS_LEN;
-			break;
-		}
-		case ETH_P_ARP: {
-			len = 28 + ETH_HLEN + ETH_FCS_LEN;
-			break;
-		}
-		default: {
-			/* Field contains type other than IP or ARP, use max
-			 * frame size and let user parse it */
-			len = ETH_FRAME_LEN;
-			break;
-		}
+	case ETH_P_IP: {
+		len = (((*(volatile uint32_t *) (RX_PACK + 0x10))) >> 16) & 0xFFFF;
+		len += ETH_HLEN + ETH_FCS_LEN;
+		break;
+	}
+	case ETH_P_ARP: {
+		len = 28 + ETH_HLEN + ETH_FCS_LEN;
+		break;
+	}
+	default: {
+		/* Field contains type other than IP or ARP, use max
+		 * frame size and let user parse it */
+		len = ETH_FRAME_LEN;
+		break;
+	}
 	}
 
 	/* Read from the EmacLite device */
@@ -203,7 +201,7 @@ static void pack_receiving(void *dev_id) {
 		return;
 	}
 
-	memcpy32((uint32_t *)skb->data, RX_PACK, (size_t)len);
+	memcpy32((uint32_t *) skb->data, RX_PACK, (size_t) len);
 	/* Acknowledge the frame */
 	current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 	switch_rx_buff();
@@ -224,7 +222,8 @@ static void irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
 	}
 }
 /*default 00-00-5E-00-FA-CE*/
-const unsigned char default_mac [ETH_ALEN] = {0x00, 0x00, 0x5E, 0x00, 0xFA,0xCE};
+const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
+		0xCE };
 
 static int open(net_device_t *dev) {
 	if (NULL == dev) {
@@ -308,7 +307,8 @@ static int module_init() {
 		net_device->base_addr = XILINX_EMACLITE_BASEADDR;
 	}
 
-	if (-1 == request_irq(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0, "xilinx emaclite", net_device )) {
+	if (-1 == request_irq(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
+			"xilinx emaclite", net_device)) {
 		return -1;
 	}
 	return 0;

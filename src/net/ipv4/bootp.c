@@ -11,7 +11,7 @@
 #include "net/bootp.h"
 #include "net/udp.h"
 #include "net/socket.h"
-#include "in.h"
+#include "net/in.h"
 #include "net/if_ether.h"
 #include "net/netdevice.h"
 #include <net/inetdevice.h>

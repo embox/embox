@@ -11,7 +11,7 @@
 #include "net/etherdevice.h"
 #include "net/inetdevice.h"
 #include "net/arp.h"
-#include "misc.h"
+#include "netutils.h"
 
 #define COMMAND_NAME     "arp"
 #define COMMAND_DESC_MSG "manipulate the system ARP cache"

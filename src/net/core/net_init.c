@@ -1,0 +1,34 @@
+/**
+ * @file
+ * @brief Implements net stack process loading.
+ *
+ * @date 04.02.2010
+ * @author Anton Bondarev
+ */
+#include <common.h>
+#include <kernel/module.h>
+#include <net/netdevice.h>
+
+DECLARE_INIT("ipstack", ipstack_init, INIT_NET_LEVEL);
+
+static int ipstack_init(void) {
+	extern packet_type_t *__ipstack_packets_start, *__ipstack_packets_end;
+	packet_type_t ** p_netpack = &__ipstack_packets_start;
+
+	for (; p_netpack < &__ipstack_packets_end; p_netpack++) {
+		if ((NULL == (*p_netpack)) || (NULL == (*p_netpack)->init)) {
+			TRACE ("Wrong packet descriptor\n");
+			continue;
+		}
+		TRACE ("Adding packet type %X..", (*p_netpack)->type);
+
+		if (-1 == (*p_netpack)->init()) {
+			TRACE ("NO\n");
+		}
+		else {
+			dev_add_pack((*p_netpack));
+			TRACE ("YES\n");
+		}
+	}
+	return 0;
+}

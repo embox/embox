@@ -12,7 +12,7 @@
 #include "net/etherdevice.h"
 #include "net/inetdevice.h"
 #include "net/netdevice.h"
-#include "misc.h"
+#include "netutils.h"
 
 #define COMMAND_NAME     "ifconfig"
 #define COMMAND_DESC_MSG "configure a network interface"

@@ -10,7 +10,7 @@
 #define ICMP_H_
 
 #include <net/skbuff.h>
-#include <in.h>
+#include <net/in.h>
 
 /* Types */
 #define ICMP_ECHOREPLY          0       /* Echo Reply                   */

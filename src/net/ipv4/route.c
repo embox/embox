@@ -10,7 +10,7 @@
 #include <net/route.h>
 #include <net/skbuff.h>
 #include <net/arp.h>
-#include <in.h>
+#include <net/in.h>
 
 #define RT_TABLE_SIZE 16
 

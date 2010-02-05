@@ -6,7 +6,7 @@
 
 #include "common.h"
 #include "string.h"
-#include "misc.h"
+//#include "misc.h"
 
 /* FIXME what does this type mean? -- Eldar*/
 typedef unsigned char datum;

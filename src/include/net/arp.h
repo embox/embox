@@ -79,8 +79,8 @@ extern void arp_queue(sk_buff_t *skb);
 /**
  * Functions provided by arp.c
  */
-
-extern void arp_init(void);
+//FIXME arp protocol & arp table must be separated
+//extern void arp_init(void);
 
 /**
  * Handle arp packet. This function called protocal stack

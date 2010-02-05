@@ -6,9 +6,9 @@
  */
 #include "shell_command.h"
 #include "string.h"
-#include "misc.h"
+#include "netutils.h"
 #include "net/net.h"
-#include "in.h"
+#include "net/in.h"
 #include "net/socket.h"
 
 #define COMMAND_NAME     "udpd"
