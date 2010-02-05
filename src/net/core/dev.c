@@ -190,7 +190,6 @@ int netif_rx(struct sk_buff *skb) {
 			} else {
 #endif
 				rc_rx = q->func(skb, dev, q, NULL);
-				kfree_skb(skb);
 #if CONFIG(SOFT_IRQ)
 			}
 #endif

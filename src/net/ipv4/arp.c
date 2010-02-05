@@ -50,7 +50,7 @@ static void arp_check_expire(uint32_t id) {
 	int i;
 	close_timer(ARP_TIMER_ID);
 	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
-		arp_tables[i].ctime++;
+		arp_tables[i].ctime += ARP_CHECK_INTERVAL;
 		if( arp_tables[i].state == 1 &&
 		    arp_tables[i].ctime >= ARP_TIMEOUT) {
 			arp_tables[i].state = 0;
@@ -295,9 +295,9 @@ static int arp_process(sk_buff_t *pack) {
         default:
                 ret = 0;
         }
-        kfree_skb(pack);
         /* add record into arp_tables */
         arp_add_entity(in_dev, arp->ar_sip, arp->ar_sha);
+        kfree_skb(pack);
         arp_send_q();
         return ret;
 }
