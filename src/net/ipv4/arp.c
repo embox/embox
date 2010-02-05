@@ -50,7 +50,8 @@ static void arp_check_expire(uint32_t id) {
 	int i;
 	close_timer(ARP_TIMER_ID);
 	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
-		arp_tables[i].ctime += ARP_CHECK_INTERVAL;
+		//FIXME:
+		//arp_tables[i].ctime += ARP_CHECK_INTERVAL;
 		if( arp_tables[i].state == 1 &&
 		    arp_tables[i].ctime >= ARP_TIMEOUT) {
 			arp_tables[i].state = 0;
