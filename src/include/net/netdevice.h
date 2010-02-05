@@ -226,6 +226,8 @@ extern int netif_rx(sk_buff_t *pack);
  */
 extern void netif_rx_schedule(net_device_t *dev);
 
+extern int netif_receive_skb(sk_buff_t *skb);
+
 static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
                                 unsigned short type,
                                 void *daddr, void *saddr, unsigned len) {

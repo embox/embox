@@ -55,15 +55,9 @@ int dev_alloc_name(struct net_device *dev, const char *name) {
 
 static int process_backlog(net_device_t *dev) {
         struct sk_buff *skb;
-        struct packet_type *q;
+        //TODO:
         while (NULL != (skb = skb_dequeue(&(dev->dev_queue)))) {
-                list_for_each_entry(q, &ptype_base, list) {
-                        if (q->type == skb->protocol) {
-                                q->func(skb, skb->dev, q, NULL);
-                                break;
-                        }
-                }
-                kfree_skb(skb);
+                netif_receive_skb(skb);
         }
         return 0;
 }
@@ -308,4 +302,16 @@ static int __init net_dev_init(void) {
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
 #endif
 	return 0;
+}
+
+int netif_receive_skb(sk_buff_t *skb) {
+        struct packet_type *q;
+        list_for_each_entry(q, &ptype_base, list) {
+                if (q->type == skb->protocol) {
+                        q->func(skb, skb->dev, q, NULL);
+                        break;
+                }
+        }
+        kfree_skb(skb);
+        return 0;
 }
