@@ -9,6 +9,7 @@
 #ifndef ICMP_H_
 #define ICMP_H_
 
+#include <net/inet_sock.h>
 #include <net/skbuff.h>
 #include <net/in.h>
 
@@ -70,6 +71,18 @@ typedef void (*ICMP_CALLBACK)(struct sk_buff* response);
 
 static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
         return (icmphdr_t *)skb->h.raw;
+}
+
+struct raw_sock {
+        /* inet_sock has to be the first member */
+        struct inet_sock   inet;
+#if 0
+        struct icmp_filter filter;
+#endif
+};
+
+static inline struct raw_sock *raw_sk(const struct sock *sk) {
+        return (struct raw_sock *)sk;
 }
 
 /**

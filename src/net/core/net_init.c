@@ -24,8 +24,7 @@ static int ipstack_init(void) {
 
 		if (-1 == (*p_netpack)->init()) {
 			TRACE ("NO\n");
-		}
-		else {
+		} else {
 			dev_add_pack((*p_netpack));
 			TRACE ("YES\n");
 		}

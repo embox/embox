@@ -38,4 +38,6 @@ extern int udp_init(void);
 extern int udp_rcv(sk_buff_t *);
 /*extern void udp_err(sk_buff_t *, uint32_t);*/
 
+extern int udp_disconnect(struct sock *sk, int flags);
+
 #endif /* UDP_H_ */

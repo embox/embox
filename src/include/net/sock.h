@@ -103,12 +103,20 @@ typedef struct proto {
         int  (*connect)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
         int  (*disconnect)(sock_t *sk, int flags);
         sock_t *(*accept)(sock_t *sk, int flags, int *err);
+        int  (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
         int  (*init)(sock_t *sk);
+        int  (*setsockopt)(struct sock *sk, int level,
+                            int optname, char *optval, int optlen);
+        int  (*getsockopt)(struct sock *sk, int level,
+                            int optname, char *optval, int *option);
         int  (*sendmsg)(/*struct kiocb *iocb,*/ sock_t *sk,/* struct msghdr *msg,*/ size_t len);
         int  (*recvmsg)(/*struct kiocb *iocb,*/ sock_t *sk,/* struct msghdr *msg,*/
         			    size_t len, int noblock, int flags, int *addr_len);
         int  (*bind)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
         int  (*backlog_rcv)(sock_t *sk, sk_buff_t *skb);
+        void (*hash)(struct sock *sk);
+        void (*unhash)(struct sock *sk);
+        unsigned int            obj_size;
     	char			name[32];
 } proto_t;
 

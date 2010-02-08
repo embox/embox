@@ -1,5 +1,4 @@
-/build
-/conf
+/build.sh
 scripts/.config
 scripts/autoconf.h
 scripts/autoconf.mk

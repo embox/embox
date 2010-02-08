@@ -9,7 +9,7 @@
 #include "common.h"
 #include "fs/rootfs.h"
 #include "fs/ramfs.h"
-#include "misc.h"
+#include "netutils.h"
 
 typedef struct _FILE_DESC {
     unsigned int start_addr;

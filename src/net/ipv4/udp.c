@@ -121,6 +121,10 @@ int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
 }
 #endif
 
+int udp_disconnect(struct sock *sk, int flags) {
+	return 0;
+}
+
 net_protocol_t udp_protocol = { .handler = udp_rcv, .type = IPPROTO_UDP };
 DECLARE_INET_PROTO(udp_protocol);
 
