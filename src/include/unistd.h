@@ -11,7 +11,7 @@
 #define UNISTD_H_
 
 #include "sys/types.h"
-#define _SC_TIMER_MAX 0x20 /**<system timers quantity */
+#define _SC_TIMER_MAX 4 /**<system timers quantity */
 
 /**
  * suspend execution for an interval of time

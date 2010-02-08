@@ -42,7 +42,11 @@ int express_tests_execute_all( void ) {
 			continue;
 		}
 		/* TODO magic constants */
+#ifndef SIMULATION_TRG
 		result = sys_exec_start((*p_test)->exec, 0, NULL);
+#else
+		result = (*p_test)->exec(0, NULL);
+#endif
 		if (result == -1) {
 			TRACE("FAILED\n");
 			failed++;
@@ -98,7 +102,11 @@ int express_tests_execute( int level ) {
 		}
 
 		/* Executing express test */
+#ifndef SIMULATION_TRG
 		result = sys_exec_start((*p_test)->exec, 0, NULL);
+#else
+		result = (*p_test)->exec(0, NULL);
+#endif
 
 		if (result == EXPRESS_TESTS_PASSED_RETCODE) {
 			TRACE("PASSED\n");

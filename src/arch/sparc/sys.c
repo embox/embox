@@ -8,6 +8,7 @@
 
 #include <kernel/sys.h>
 
+#ifndef SIMULATION_TRG
 void context_save(CPU_CONTEXT * pcontext) {
 	__asm__ __volatile__(
 			"mov %0, %%o0\n\t"
@@ -61,6 +62,7 @@ void sys_halt(void) {
 bool sys_exec_is_started(void) {
 	return started;
 }
+#endif
 
 #define PSR_PIL     0x00000f00         /* processor interrupt level  */
 
