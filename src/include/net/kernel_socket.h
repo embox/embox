@@ -35,6 +35,10 @@ extern int kernel_sendpage(struct socket *sock, struct page *page, int offset,
 extern int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg);
 #endif
 
+/**
+ * Go from a socket descriptor to its socket slot
+ */
 extern struct socket *sockfd_lookup(int fd);
+extern int sock_get_fd(struct socket *sock);
 
 #endif /* KERNEL_SOCKET_H_ */

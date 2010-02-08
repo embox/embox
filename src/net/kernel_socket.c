@@ -9,6 +9,7 @@
  * @author Anton Bondarev
  */
 #include <common.h>
+#include <codes.h>
 #include <kernel/irq.h>
 #include <lib/list.h>
 #include <net/socket.h>
@@ -17,6 +18,7 @@
 typedef struct socket_info {
 	/*it must be first member! We use casting in sock_realize function*/
 	struct socket sock;
+	int sockfd;
 	struct list_head list __attribute__ ((aligned (4)));
 } socket_info_t __attribute__ ((aligned (4)));
 
@@ -124,6 +126,7 @@ int kernel_sock_init(void) {
 	int i;
 	for (i = 0; i < array_len(sockets_pull); i++) {
 		list_add(&(&sockets_pull[i])->list, &head_free_sk);
+		(&sockets_pull[i])->sockfd = i;
 	}
 	return 0;
 }
@@ -189,7 +192,44 @@ int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg) {
 #endif
 
 struct socket *sockfd_lookup(int fd) {
-	struct socket *sock;
-	//TODO:
-	return NULL;
+	return &(&sockets_pull[fd])->sock;
+}
+
+int sock_get_fd(struct socket *sock) {
+	int i;
+        for (i = 0; i < array_len(sockets_pull); i++) {
+                if(&(&sockets_pull[i])->sock == sock) {
+            		return (&sockets_pull[i])->sockfd;
+                }
+        }
+        return -1;
+}
+
+int sock_register(const struct net_proto_family *ops) {
+        int err;
+        if (ops->family >= NPROTO) {
+                LOG_ERROR("protocol %d >= NPROTO(%d)\n", ops->family,
+                       NPROTO);
+                return -ENOBUFS;
+        }
+
+        if (net_families[ops->family])
+                err = -EEXIST;
+        else {
+    		//FIXME:
+                net_families[ops->family] = ops;
+                err = 0;
+        }
+
+        TRACE("NET: Registered protocol family %d\n", ops->family);
+        return err;
+}
+
+void sock_unregister(int family) {
+        if(family < 0 || family >= NPROTO) {
+    		return;
+        }
+
+        net_families[family] = NULL;
+        TRACE("NET: Unregistered protocol family %d\n", family);
 }

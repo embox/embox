@@ -18,16 +18,7 @@
 #include <net/if_ether.h>
 #include <net/net_pack_manager.h>
 #include <net/protocol.h>
-
-/**
- * Close a socket
- */
-void sock_release(struct socket *sock) {
-	if (sock->ops) {
-		sock->ops->release(sock);
-		sock->ops = NULL;
-	}
-}
+#include <net/kernel_socket.h>
 
 int __init sock_init(void) {
 	extern inet_protosw_t *__ipstack_sockets_start, *__ipstack_sockets_end;
@@ -45,18 +36,24 @@ int __init sock_init(void) {
 }
 
 int socket(int domain, int type, int protocol) {
-	return 0;
+	struct socket *res;
+	sock_create_kern(domain, type, protocol, &res);
+	return sock_get_fd(res);
 }
 
 int connect (int sockfd, const struct sockaddr *addr, int addrlen) {
-	return 0;
+	struct socket *sock = sockfd_lookup(sockfd);
+	return kernel_connect(sock, addr, addrlen, 0);
 }
 
 int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
-	return 0;
+	struct socket *sock = sockfd_lookup(sockfd);
+	return kernel_bind(sock, addr, addrlen);
 }
 
 int close(int sockfd) {
+	struct socket *sock = sockfd_lookup(sockfd);
+	kernel_sock_release(sock);
 	return 0;
 }
 

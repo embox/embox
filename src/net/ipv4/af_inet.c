@@ -63,7 +63,7 @@ static struct net_proto_family inet_family_ops = {
 #if 0
 		.owner = THIS_MODULE,
 #endif
-		};
+};
 
 static int inet_init(void) {
 	/* Init skb pool */
@@ -82,6 +82,7 @@ static int inet_init(void) {
 	//icmp_init();
 
 	//dev_add_pack(&ip_packet_type);
+    	sock_register(&inet_family_ops);
 
 	return 0;
 }
