@@ -73,9 +73,9 @@ static volatile UART_STRUCT * dev_regs = NULL;
 
 static int irq;
 
-static AMBA_DEV amba_dev;
 
 int uart_init() {
+	AMBA_DEV amba_dev;
 	if (NULL != dev_regs)
 		return -1;
 

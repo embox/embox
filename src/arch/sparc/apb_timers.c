@@ -34,7 +34,10 @@ static TIMERS_STRUCT * dev_regs = NULL;
 
 #define ASSERT_INIT_DONE() assert_not_null(dev_regs)
 
+#ifndef SIMULATION_TRG
 static AMBA_DEV amba_dev;
+#endif
+
 #if 0
 void platform_timers_off(void) {
 	REG_STORE(dev_regs->timer_ctrl1, 0x0);
@@ -42,6 +45,7 @@ void platform_timers_off(void) {
 }
 #endif
 
+#ifndef SIMULATION_TRG
 static void show_module_info(AMBA_DEV * dev) {
 	TRACE ("*** GAISLER timers ***\n");
 	TRACE ("regs:\n");
@@ -56,19 +60,22 @@ static void show_module_info(AMBA_DEV * dev) {
 	TRACE ("\tscaler_cnt 0x%X\n", REG_LOAD(dev_regs->scaler_cnt));
 	TRACE ("\tscaler_ld 0x%X\n", REG_LOAD(dev_regs->scaler_ld));
 }
+#endif
 
 int timers_ctrl_init(IRQ_HANDLER irq_handler) {
+	uint8_t irq;
 	if (dev_regs) {
 		return -1;
 	}
 #ifndef SIMULATION_TRG
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_TIMER);
-#else
-	amba_dev.bar[0].start = TIMERS_BASE;
-	amba_dev.dev_info.irq = TIMERS_IRQ;
-#endif
-	amba_dev.show_info = show_module_info;
 	dev_regs = (TIMERS_STRUCT *) amba_dev.bar[0].start;
+	amba_dev.show_info = show_module_info;
+	irq = amba_dev.dev_info.irq;
+#else
+	dev_regs = (TIMERS_STRUCT *) TIMERS_BASE;
+	irq = TIMERS_IRQ;
+#endif
 	REG_STORE(dev_regs->timer_ctrl1, 0x0);
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /**< disable */
 
@@ -82,5 +89,5 @@ int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	REG_STORE(dev_regs->timer_ctrl1, 0xf);
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /**< disable */
 
-	return request_irq(amba_dev.dev_info.irq, irq_handler, 0, "apb_timer", NULL);
+	return request_irq(irq, irq_handler, 0, "apb_timer", NULL);
 }

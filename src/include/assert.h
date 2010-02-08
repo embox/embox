@@ -15,7 +15,7 @@
 #include <types.h>
 #endif
 
-#if !defined(DEBUG) && defined(_TEST_SYSTEM_)
+#if !defined(DEBUG) && !defined(SIMULATION_TRG) && defined(_TEST_SYSTEM_)
 # define __ASSERT_STRING0(cond, file, line) \
 		"\nASSERTION FAILED at " #file " : " #line "\n" \
 		"(" cond ") is not true\n"

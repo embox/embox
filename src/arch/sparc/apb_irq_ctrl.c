@@ -26,16 +26,15 @@ static IRQ_REGS * dev_regs = NULL;
 
 #define ASSERT_INIT_DONE() assert_not_null(dev_regs)
 
-static AMBA_DEV amba_dev;
 
 int irqc_init(void) {
 #ifndef SIMULATION_TRG
+	AMBA_DEV amba_dev;
 	TRY_CAPTURE_APB_DEV (&amba_dev, VENDOR_ID_GAISLER, DEV_ID_GAISLER_INTERRUPT_UNIT);
-#else
-	amba_dev.bar[0].start = IRQ_CTRL_BASE;
-#endif
-
 	dev_regs = (IRQ_REGS *) amba_dev.bar[0].start;
+#else
+	dev_regs = (IRQ_REGS *) IRQ_CTRL_BASE;
+#endif
 
 	REG_STORE(dev_regs->level, 0);
 	REG_STORE(dev_regs->mask, 0);
