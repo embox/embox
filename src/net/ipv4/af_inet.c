@@ -24,11 +24,41 @@ DECLARE_INIT("net", inet_init, INIT_NET_LEVEL);
 
 /*create inet socket*/
 static int inet_create(struct socket *sock, int protocol) {
+	struct sock *sk = sock->sk;
+	sk->__sk_common.skc_prot->init(sk);
 	return 0;
 }
 
+int inet_release(struct socket *sock) {
+        struct sock *sk = sock->sk;
+        sock->sk = NULL;
+        sk->__sk_common.skc_prot->close(sk, 0);
+        return 0;
+}
+
+int inet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len) {
+	struct sock *sk = sock->sk;
+	sk->__sk_common.skc_prot->bind(sk, uaddr, addr_len);
+	return 0;
+}
+
+int inet_dgram_connect(struct socket *sock, struct sockaddr * uaddr,
+                       int addr_len, int flags) {
+        struct sock *sk = sock->sk;
+        sk->__sk_common.skc_prot->connect(sk, (struct sockaddr *)uaddr, addr_len);
+        return 0;
+}
+
+int inet_sendmsg(/*struct kiocb *iocb,*/ struct socket *sock,/* struct msghdr *msg,*/
+                 size_t size) {
+        struct sock *sk = sock->sk;
+        sk->__sk_common.skc_prot->sendmsg(/*iocb,*/ sk, /*msg,*/ size);
+        return 0;
+}
+
 /* uses for create socket */
-static struct net_proto_family inet_family_ops = { .family = PF_INET,
+static struct net_proto_family inet_family_ops = {
+		.family = PF_INET,
 		.create = inet_create,
 #if 0
 		.owner = THIS_MODULE,
@@ -56,6 +86,10 @@ static int inet_init(void) {
 	return 0;
 }
 
-static packet_type_t ip_packet_type = { .type = ETH_P_IP, .func = ip_rcv,
-		.init = inet_init };
+static packet_type_t ip_packet_type = {
+		.type = ETH_P_IP,
+		.func = ip_rcv,
+		.init = inet_init
+};
+
 DECLARE_NET_PACKET(ip_packet_type);

@@ -130,24 +130,6 @@ extern sock_t *sk_clone(const sock_t *sk, const gfp_t priority);
 extern int sock_setsockopt(socket_t *sock, int level, int op, char *optval, unsigned int optlen);
 extern int sock_getsockopt(socket_t *sock, int level, int op, char *optval, int *optlen);
 extern sk_buff_t *sock_alloc_send_skb(sock_t *sk, unsigned long size, int noblock, int *errcode);
-
 extern int sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
-
-#if 0
-typedef struct _SOCK_INFO{
-        struct udp_sock *sk;
-        struct sk_buff *queue; /*TODO: stub*/
-        int new_pack;
-        int is_busy;
-}SOCK_INFO;
-
-extern SOCK_INFO sks[MAX_SOCK_NUM];
-
-/**
- * All socket objects are allocated here
- */
-extern struct udp_sock* sk_alloc(void);
-extern void sk_free(struct udp_sock *sk);
-#endif
 
 #endif /* SOCK_H_ */

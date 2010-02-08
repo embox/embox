@@ -11,33 +11,14 @@
 #include "net/sock.h"
 #include "net/udp.h"
 
-#if 0
-static struct udp_sock sk_pool[MAX_SOCK_NUM];
-SOCK_INFO sks[MAX_SOCK_NUM];
-
-//TODO:
-
-struct udp_sock* sk_alloc(void) {
-        int i;
-        for(i = 0; i < MAX_SOCK_NUM; i++) {
-    	        if (0 == sks[i].is_busy) {
-                        sks[i].is_busy = 1;
-                        sks[i].new_pack = 0;
-                        memset(&sk_pool[i], 0, sizeof(sk_pool[i]));
-                        sks[i].sk = &sk_pool[i];
-                        return sks[i].sk;
-                }
-        }
-        return NULL;
+int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
+	return 0;
 }
 
-void sk_free(struct udp_sock *sk) {
-        int i;
-        for(i = 0; i < MAX_SOCK_NUM; i++) {
-                if (sk == sks[i].sk) {
-                        sks[i].is_busy = 0;
-                        kfree_skb(sks[i].queue);
-                }
-        }
+struct sock *sk_alloc(/*struct net *net,*/ int family, gfp_t priority,
+                      struct proto *prot) {
+	return NULL;
 }
-#endif
+
+void sk_free(struct sock *sk) {
+}

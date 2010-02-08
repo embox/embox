@@ -121,8 +121,12 @@ static const struct proto_ops inet_sockraw_ops = {
 #endif
 		};
 
-static struct inet_protosw raw_socket = { .type = SOCK_RAW,
+static struct inet_protosw raw_socket = {
+		.type = SOCK_RAW,
 		.protocol = IPPROTO_IP, /* wild card */
-		.prot = &raw_prot, .ops = &inet_sockraw_ops, .no_check = 0 /*UDP_CSUM_DEFAULT*/
+		.prot = &raw_prot,
+		.ops = &inet_sockraw_ops,
+		.no_check = 0 /*UDP_CSUM_DEFAULT*/
 };
+
 DECLARE_INET_SOCK(raw_socket);
