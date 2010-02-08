@@ -119,6 +119,7 @@ static int __sock_create(int family, int type, int protocol,
 	*res = sock;
 	return 0;
 }
+
 int kernel_sock_init(void) {
 	int i;
 	for (i = 0; i < array_len(sockets_pull); i++) {
@@ -126,6 +127,7 @@ int kernel_sock_init(void) {
 	}
 	return 0;
 }
+
 int sock_create_kern(int family, int type, int protocol, struct socket **res) {
 	return __sock_create(family, type, protocol, res, 1);
 }
@@ -167,15 +169,14 @@ int kernel_setsockopt(struct socket *sock, int level, int optname,
 
 #if 0
 int kernel_sendpage(struct socket *sock, struct page *page, int offset,
-		size_t size, int flags)
-{
+		size_t size, int flags) {
 	if (sock->ops->sendpage)
-	return sock->ops->sendpage(sock, page, offset, size, flags);
+		return sock->ops->sendpage(sock, page, offset, size, flags);
 
 	return sock_no_sendpage(sock, page, offset, size, flags);
 }
-int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg)
-{
+
+int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg) {
 	mm_segment_t oldfs = get_fs();
 	int err;
 
@@ -186,4 +187,3 @@ int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg)
 	return err;
 }
 #endif
-

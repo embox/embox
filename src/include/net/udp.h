@@ -22,6 +22,7 @@ typedef struct _udphdr {
 #define UDP_HEADER_SIZE	(sizeof(udphdr))
 
 struct udp_sock{
+	/* inet_sock has to be the first member */
         struct inet_sock inet;
         int              pending;
         unsigned int     corkflag;

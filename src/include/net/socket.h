@@ -183,7 +183,6 @@ typedef struct sockaddr {
 /*TODO: move out of here*/
 int sock_init(void);
 
-#if 0
 /**
  * create an endpoint for communication.
  * @param protocol The protocol specifies a particular protocol to be used with the socket.
@@ -224,6 +223,7 @@ extern int empty_socket(int sockfd);
  */
 extern int close(int sockfd);
 
+#if 0
 /**
  * Push packet received from udp_rcv into socket.
  */

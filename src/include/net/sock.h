@@ -13,12 +13,6 @@
 #include <net/socket.h>
 #include <net/net.h>
 
-#if 0
-#define MAX_SOCK_NUM 4
-
-struct udp_sock;
-#endif
-
 typedef struct {
         spinlock_t    slock;
 } socket_lock_t;
