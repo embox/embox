@@ -45,7 +45,7 @@ int __init sock_init(void) {
 	inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
 	for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
 		/*register socket type*/
-		 TRACE("Added sock type %X for proto %X\n", (* p_netsock)->type, (* p_netsock)->protocol);
+		 TRACE("Added sock type 0x%X for proto 0x%X\n", (* p_netsock)->type, (* p_netsock)->protocol);
 	}
 	/* Initialize sock. */
 	//sk_init();

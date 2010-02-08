@@ -39,8 +39,8 @@ struct sock_common {
         struct hlist_node       skc_bind_node;
         atomic_t                skc_refcnt;
         unsigned int            skc_hash;
-        struct proto            *skc_prot;
 */
+        struct proto            *skc_prot;
 };
 
 /**

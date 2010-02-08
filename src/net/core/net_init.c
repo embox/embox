@@ -20,7 +20,7 @@ static int ipstack_init(void) {
 			TRACE ("Wrong packet descriptor\n");
 			continue;
 		}
-		TRACE ("Adding packet type %X..", (*p_netpack)->type);
+		TRACE ("Adding packet type 0x%X..", (*p_netpack)->type);
 
 		if (-1 == (*p_netpack)->init()) {
 			TRACE ("NO\n");
