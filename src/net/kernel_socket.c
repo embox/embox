@@ -187,3 +187,9 @@ int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg) {
 	return err;
 }
 #endif
+
+struct socket *sockfd_lookup(int fd) {
+	struct socket *sock;
+	//TODO:
+	return NULL;
+}
