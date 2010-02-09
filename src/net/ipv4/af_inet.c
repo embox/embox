@@ -25,34 +25,53 @@ DECLARE_INIT("net", inet_init, INIT_NET_LEVEL);
 /*create inet socket*/
 static int inet_create(struct socket *sock, int protocol) {
 	struct sock *sk = sock->sk;
-	sk->__sk_common.skc_prot->init(sk);
-	return 0;
+	struct inet_sock *inet;
+	int err = -1;
+	extern inet_protosw_t *__ipstack_sockets_start, *__ipstack_sockets_end;
+        inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
+
+        for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
+    		if((* p_netsock)->type == sock->type &&
+    		   (* p_netsock)->protocol == protocol) {
+    			sk = sk_alloc(PF_INET, 0, (* p_netsock)->prot);
+    			break;
+    		}
+	}
+	if (sk == NULL) {
+        	return err;
+        }
+        inet = inet_sk(sk);
+        inet->id = 0;
+        sk->sk_protocol = protocol;
+	if(sk->sk_prot->init)
+    		err = sk->sk_prot->init(sk);
+    	return err;
 }
 
 int inet_release(struct socket *sock) {
         struct sock *sk = sock->sk;
         sock->sk = NULL;
-        sk->__sk_common.skc_prot->close(sk, 0);
+        sk->sk_prot->close(sk, 0);
         return 0;
 }
 
 int inet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len) {
 	struct sock *sk = sock->sk;
-	sk->__sk_common.skc_prot->bind(sk, uaddr, addr_len);
+	sk->sk_prot->bind(sk, uaddr, addr_len);
 	return 0;
 }
 
 int inet_dgram_connect(struct socket *sock, struct sockaddr * uaddr,
                        int addr_len, int flags) {
         struct sock *sk = sock->sk;
-        sk->__sk_common.skc_prot->connect(sk, (struct sockaddr *)uaddr, addr_len);
+        sk->sk_prot->connect(sk, (struct sockaddr *)uaddr, addr_len);
         return 0;
 }
 
 int inet_sendmsg(/*struct kiocb *iocb,*/ struct socket *sock,/* struct msghdr *msg,*/
                  size_t size) {
         struct sock *sk = sock->sk;
-        sk->__sk_common.skc_prot->sendmsg(/*iocb,*/ sk, /*msg,*/ size);
+        sk->sk_prot->sendmsg(/*iocb,*/ sk, /*msg,*/ size);
         return 0;
 }
 

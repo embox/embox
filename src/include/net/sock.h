@@ -59,6 +59,8 @@ struct sock_common {
  */
 typedef struct sock {
 	struct sock_common      __sk_common;
+#define sk_family               __sk_common.skc_family
+#define sk_prot                 __sk_common.skc_prot
 	unsigned char		sk_protocol;
 	unsigned short		sk_type;
 	int			sk_rcvbuf;
