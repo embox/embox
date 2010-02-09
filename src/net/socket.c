@@ -22,6 +22,7 @@
 
 int __init sock_init(void) {
 	kernel_sock_init();
+	sk_init();
 	extern inet_protosw_t *__ipstack_sockets_start, *__ipstack_sockets_end;
 	inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
 	for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
@@ -59,9 +60,13 @@ int close(int sockfd) {
 }
 
 int send(int sockfd, const void *buf, int len, int flags) {
+	struct socket *sock = sockfd_lookup(sockfd);
+        kernel_sendmsg(NULL, sock, NULL, len);
 	return len;
 }
 
 int recv(int sockfd, void *buf, int len, int flags) {
+	struct socket *sock = sockfd_lookup(sockfd);
+	kernel_recvmsg(NULL, sock, NULL, len, flags);
 	return len;
 }

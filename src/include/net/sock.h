@@ -105,8 +105,8 @@ typedef struct proto {
                             int optname, char *optval, int optlen);
         int  (*getsockopt)(struct sock *sk, int level,
                             int optname, char *optval, int *option);
-        int  (*sendmsg)(/*struct kiocb *iocb,*/ sock_t *sk,/* struct msghdr *msg,*/ size_t len);
-        int  (*recvmsg)(/*struct kiocb *iocb,*/ sock_t *sk,/* struct msghdr *msg,*/
+        int  (*sendmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg, size_t len);
+        int  (*recvmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
         			    size_t len, int noblock, int flags, int *addr_len);
         int  (*bind)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
         int  (*backlog_rcv)(sock_t *sk, sk_buff_t *skb);
@@ -119,7 +119,7 @@ typedef struct proto {
 extern int proto_register(proto_t *prot, int alloc_slab);
 extern void proto_unregister(proto_t *prot);
 
-/*TODO:*/
+extern void sk_init(void);
 extern sock_t *sk_alloc(/*struct net *net,*/ int family, gfp_t priority, proto_t *prot);
 extern void sk_free(sock_t *sk);
 extern sock_t *sk_clone(const sock_t *sk, const gfp_t priority);

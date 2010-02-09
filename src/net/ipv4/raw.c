@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file raw.c
  *
  * @brief Implementes raw socket function
  *
@@ -8,6 +8,7 @@
  */
 
 #include <net/protocol.h>
+#include <net/inet_common.h>
 #include <net/socket.h>
 #include <net/sock.h>
 #include <net/icmp.h>
@@ -34,13 +35,13 @@ static void raw_v4_hash(struct sock *sk) {
 static void raw_v4_unhash(struct sock *sk) {
 }
 
-static int raw_sendmsg(/*struct kiocb *iocb,*/ struct sock *sk,/* struct msghdr *msg,*/
+static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
                        size_t len) {
         //TODO:
 	return 0;
 }
 
-static int raw_recvmsg(/*struct kiocb *iocb,*/ struct sock *sk,/* struct msghdr *msg,*/
+static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
                        size_t len, int noblock, int flags, int *addr_len) {
 	//TODO: skb_recv_datagram
 	return 0;
@@ -99,12 +100,14 @@ static const struct proto raw_prot = {
  * udp_poll
  */
 static const struct proto_ops inet_sockraw_ops = {
-		.family = PF_INET
+		.family = PF_INET,
 #if 0
 		.owner = THIS_MODULE,
+#endif
 		.release = inet_release,
 		.bind = inet_bind,
 		.connect = inet_dgram_connect,
+#if 0
 		.socketpair = sock_no_socketpair,
 		.accept = sock_no_accept,
 		.getname = inet_getname,

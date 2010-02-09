@@ -68,10 +68,10 @@ int inet_dgram_connect(struct socket *sock, struct sockaddr * uaddr,
         return 0;
 }
 
-int inet_sendmsg(/*struct kiocb *iocb,*/ struct socket *sock,/* struct msghdr *msg,*/
+int inet_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *msg,
                  size_t size) {
         struct sock *sk = sock->sk;
-        sk->sk_prot->sendmsg(/*iocb,*/ sk, /*msg,*/ size);
+        sk->sk_prot->sendmsg(iocb, sk, msg, size);
         return 0;
 }
 

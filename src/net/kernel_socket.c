@@ -170,6 +170,16 @@ int kernel_setsockopt(struct socket *sock, int level, int optname,
 	return sock->ops->setsockopt(sock, level, optname, optval, optlen);
 }
 
+int kernel_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
+                        size_t total_len) {
+        return sock->ops->sendmsg(iocb, sock, m, total_len);
+}
+
+int kernel_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
+                        size_t total_len, int flags) {
+        return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
+}
+
 #if 0
 int kernel_sendpage(struct socket *sock, struct page *page, int offset,
 		size_t size, int flags) {
