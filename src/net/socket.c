@@ -21,6 +21,7 @@
 #include <net/kernel_socket.h>
 
 int __init sock_init(void) {
+	kernel_sock_init();
 	extern inet_protosw_t *__ipstack_sockets_start, *__ipstack_sockets_end;
 	inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
 	for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {

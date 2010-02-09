@@ -88,7 +88,7 @@ static int __sock_create(int family, int type, int protocol,
 		family = PF_PACKET;
 	}
 	/*pf = rcu_dereference(net_families[family]);*/
-	pf = (const struct net_proto_family *) &net_families[family];
+	pf = (const struct net_proto_family *) net_families[family];
 	if (NULL == pf || NULL == pf->create) {
 		return -1;
 	}
@@ -216,7 +216,6 @@ int sock_register(const struct net_proto_family *ops) {
         if (net_families[ops->family])
                 err = -EEXIST;
         else {
-    		//FIXME:
                 net_families[ops->family] = ops;
                 err = 0;
         }

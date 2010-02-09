@@ -17,7 +17,11 @@ int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 
 struct sock *sk_alloc(/*struct net *net,*/ int family, gfp_t priority,
                       struct proto *prot) {
-	return NULL;
+        struct sock *sk;
+        //TODO:
+        sk->__sk_common.skc_family = family;
+        sk->__sk_common.skc_prot = prot;
+	return sk;
 }
 
 void sk_free(struct sock *sk) {
