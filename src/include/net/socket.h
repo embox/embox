@@ -142,6 +142,11 @@
 /* IPX options */
 #define IPX_TYPE	1
 
+struct iovec {
+        void  *iov_base;
+        size_t iov_len;
+};
+
 struct msghdr {
 	void	*	msg_name;	/* Socket name			*/
 	int		msg_namelen;	/* Length of name		*/

@@ -24,7 +24,7 @@ DECLARE_INIT("net", inet_init, INIT_NET_LEVEL);
 
 /*create inet socket*/
 static int inet_create(struct socket *sock, int protocol) {
-	struct sock *sk = sock->sk;
+	struct sock *sk;
 	struct inet_sock *inet;
 	int err = -1;
 	extern inet_protosw_t *__ipstack_sockets_start, *__ipstack_sockets_end;
@@ -33,10 +33,12 @@ static int inet_create(struct socket *sock, int protocol) {
         for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
     		if((* p_netsock)->type == sock->type &&
     		   (* p_netsock)->protocol == protocol) {
-    			sk = sk_alloc(PF_INET, 0, (* p_netsock)->prot);
+    			sock->sk = sk_alloc(PF_INET, 0, (* p_netsock)->prot);
+    			sock->ops = (* p_netsock)->ops;
     			break;
     		}
 	}
+	sk = sock->sk;
 	if (sk == NULL) {
         	return err;
         }
