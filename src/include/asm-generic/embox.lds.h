@@ -71,4 +71,18 @@
 	ALIGNMENT();                   \
 	*(.checksum)                   \
 
+
+/* Allocates memory for express test's
+ *
+ * We allocate here region the same size as
+ * express test's handler pointer. We allocate it
+ * in .bss section so it'll be cleaned in asm code!
+ */
+#define ALLOC_EXPRESS_RESULT \
+	ALIGNMENT(); \
+	__expresstest_result_start = .; \
+	*(.express_tests) \
+	__expresstest_result_end = .; \
+
+
 #endif /* EMBOX_LDS_H_ */
