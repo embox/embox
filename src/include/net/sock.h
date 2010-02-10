@@ -51,12 +51,12 @@ struct sock_common {
  * @param sk_receive_queue incoming packets
  * @param sk_write_queue Packet sending queue
  * @param sk_socket Identd and reporting IO signals
- * @sk_state_change: callback to indicate change in the state of the sock
- * @sk_data_ready: callback to indicate there is data to be processed
- * @sk_write_space: callback to indicate there is bf sending space available
- * @sk_error_report: callback to indicate errors (e.g. %MSG_ERRQUEUE)
- * @sk_backlog_rcv: callback to process the backlog
- * @sk_destruct: called at sock freeing time, i.e. when all refcnt == 0
+ * @param sk_state_change: callback to indicate change in the state of the sock
+ * @param sk_data_ready: callback to indicate there is data to be processed
+ * @param sk_write_space: callback to indicate there is bf sending space available
+ * @param sk_error_report: callback to indicate errors (e.g. %MSG_ERRQUEUE)
+ * @param sk_backlog_rcv: callback to process the backlog
+ * @param sk_destruct: called at sock freeing time, i.e. when all refcnt == 0
  */
 typedef struct sock {
 	struct sock_common __sk_common;
