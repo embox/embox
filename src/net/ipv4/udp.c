@@ -5,21 +5,22 @@
  * @date 26.03.2009
  * @author Nikolay Korotky
  */
-#include "string.h"
-#include "common.h"
-#include "net/skbuff.h"
-#include "net/net.h"
-#include "net/etherdevice.h"
-#include "net/inetdevice.h"
-#include "net/net_pack_manager.h"
-#include "net/udp.h"
-#include "net/ip.h"
-#include "net/icmp.h"
-#include "net/socket.h"
-#include "net/if_ether.h"
-#include "net/checksum.h"
-#include "net/in.h"
-#include "net/protocol.h"
+#include <string.h>
+#include <common.h>
+#include <net/skbuff.h>
+#include <net/net.h>
+#include <net/etherdevice.h>
+#include <net/inetdevice.h>
+#include <net/net_pack_manager.h>
+#include <net/udp.h>
+#include <net/ip.h>
+#include <net/icmp.h>
+#include <net/socket.h>
+#include <net/if_ether.h>
+#include <net/checksum.h>
+#include <net/in.h>
+#include <net/protocol.h>
+#include <net/inet_common.h>
 
 int udp_rcv(sk_buff_t *pack) {
 	LOG_WARN("udp packet received\n");
@@ -128,3 +129,63 @@ int udp_disconnect(struct sock *sk, int flags) {
 net_protocol_t udp_protocol = { .handler = udp_rcv, .type = IPPROTO_UDP };
 DECLARE_INET_PROTO(udp_protocol);
 
+struct proto udp_prot = {
+        .name              = "UDP",
+#if 0
+        .owner             = THIS_MODULE,
+        .close             = udp_lib_close,
+        .connect           = ip4_datagram_connect,
+        .disconnect        = udp_disconnect,
+        .ioctl             = udp_ioctl,
+        .destroy           = udp_destroy_sock,
+        .setsockopt        = udp_setsockopt,
+        .getsockopt        = udp_getsockopt,
+        .sendmsg           = udp_sendmsg,
+        .recvmsg           = udp_recvmsg,
+        .sendpage          = udp_sendpage,
+        .backlog_rcv       = __udp_queue_rcv_skb,
+        .hash              = udp_lib_hash,
+        .unhash            = udp_lib_unhash,
+        .get_port          = udp_v4_get_port,
+        .memory_allocated  = &udp_memory_allocated,
+        .sysctl_mem        = sysctl_udp_mem,
+        .sysctl_wmem       = &sysctl_udp_wmem_min,
+        .sysctl_rmem       = &sysctl_udp_rmem_min,
+        .obj_size          = sizeof(struct udp_sock),
+        .slab_flags        = SLAB_DESTROY_BY_RCU,
+        .h.udp_table       = &udp_table,
+#endif
+};
+
+const struct proto_ops inet_dgram_ops = {
+        .family            = PF_INET,
+#if 0
+        .owner             = THIS_MODULE,
+        .release           = inet_release,
+        .bind              = inet_bind,
+        .connect           = inet_dgram_connect,
+        .socketpair        = sock_no_socketpair,
+        .accept            = sock_no_accept,
+        .getname           = inet_getname,
+        .poll              = udp_poll,
+        .ioctl             = inet_ioctl,
+        .listen            = sock_no_listen,
+        .shutdown          = inet_shutdown,
+        .setsockopt        = sock_common_setsockopt,
+        .getsockopt        = sock_common_getsockopt,
+        .sendmsg           = inet_sendmsg,
+        .recvmsg           = sock_common_recvmsg,
+        .mmap              = sock_no_mmap,
+        .sendpage          = inet_sendpage,
+#endif
+};
+
+static struct inet_protosw udp_socket = {
+        .type = SOCK_DGRAM,
+        .protocol = IPPROTO_UDP,
+        .prot = &udp_prot,
+        .ops = &inet_dgram_ops,
+        .no_check = 0 /*UDP_CSUM_DEFAULT*/
+};
+
+DECLARE_INET_SOCK(udp_socket);
