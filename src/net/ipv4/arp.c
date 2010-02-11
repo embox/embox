@@ -231,7 +231,8 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	iphdr_t *ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
 	if (ip->daddr == INADDR_BROADCAST) {
-		return -1;
+		memset(pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
+		return 0;
 	}
 	//	TRACE("f\n");
 	if (-1 != (i = arp_lookup(in_dev_get(dev), ip->daddr))) {
@@ -319,4 +320,5 @@ void arp_xmit(sk_buff_t *skb) {
 
 static struct packet_type arp_packet_type = { .type = ETH_P_ARP,
 		.func = arp_rcv, .init = arp_init };
+
 DECLARE_NET_PACKET(arp_packet_type);

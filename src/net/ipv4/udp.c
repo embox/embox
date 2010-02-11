@@ -22,8 +22,21 @@
 #include <net/protocol.h>
 #include <net/inet_common.h>
 
+int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+                size_t len) {
+	struct inet_sock *inet = inet_sk(sk);
+	struct udp_sock *up = udp_sk(sk);
+	//TODO:
+	return 0;
+}
+
+int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+                size_t len, int noblock, int flags, int *addr_len) {
+	return 0;
+}
+
 int udp_rcv(sk_buff_t *pack) {
-	LOG_WARN("udp packet received\n");
+	TRACE("udp packet received\n");
 	return 0;/*udpsock_push(pack);*/
 }
 #if 0
@@ -140,19 +153,16 @@ struct proto udp_prot = {
         .destroy           = udp_destroy_sock,
         .setsockopt        = udp_setsockopt,
         .getsockopt        = udp_getsockopt,
+#endif
         .sendmsg           = udp_sendmsg,
         .recvmsg           = udp_recvmsg,
+#if 0
         .sendpage          = udp_sendpage,
         .backlog_rcv       = __udp_queue_rcv_skb,
         .hash              = udp_lib_hash,
         .unhash            = udp_lib_unhash,
         .get_port          = udp_v4_get_port,
-        .memory_allocated  = &udp_memory_allocated,
-        .sysctl_mem        = sysctl_udp_mem,
-        .sysctl_wmem       = &sysctl_udp_wmem_min,
-        .sysctl_rmem       = &sysctl_udp_rmem_min,
         .obj_size          = sizeof(struct udp_sock),
-        .slab_flags        = SLAB_DESTROY_BY_RCU,
         .h.udp_table       = &udp_table,
 #endif
 };
@@ -173,7 +183,9 @@ const struct proto_ops inet_dgram_ops = {
         .shutdown          = inet_shutdown,
         .setsockopt        = sock_common_setsockopt,
         .getsockopt        = sock_common_getsockopt,
+#endif
         .sendmsg           = inet_sendmsg,
+#if 0
         .recvmsg           = sock_common_recvmsg,
         .mmap              = sock_no_mmap,
         .sendpage          = inet_sendpage,

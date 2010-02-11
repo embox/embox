@@ -8,13 +8,13 @@
  */
 
 #include <net/protocol.h>
-#include <net/inet_common.h>
 #include <net/socket.h>
 #include <net/sock.h>
 #include <net/icmp.h>
 #include <net/udp.h>
 #include <net/net.h>
 #include <net/in.h>
+#include <net/inet_common.h>
 
 static int raw_init(struct sock *sk) {
 	return 0;
@@ -37,7 +37,10 @@ static void raw_v4_unhash(struct sock *sk) {
 
 static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
                        size_t len) {
-        //TODO:
+	struct inet_sock *inet = inet_sk(sk);
+	sk_buff_t *skb = alloc_skb(msg->msg_iov->iov_len, 0);
+	skb->data = msg->msg_iov->iov_base;
+	ip_send_packet(inet, skb);
 	return 0;
 }
 
@@ -117,7 +120,9 @@ static const struct proto_ops inet_sockraw_ops = {
 		.shutdown = inet_shutdown,
 		.setsockopt = sock_common_setsockopt,
 		.getsockopt = sock_common_getsockopt,
+#endif
 		.sendmsg = inet_sendmsg,
+#if 0
 		.recvmsg = sock_common_recvmsg,
 		.mmap = sock_no_mmap,
 		.sendpage = inet_sendpage,

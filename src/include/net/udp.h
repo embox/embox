@@ -17,9 +17,9 @@ typedef struct _udphdr {
         unsigned short dest;
         unsigned short len;
         unsigned short check;
-} __attribute__((packed)) udphdr;
+} __attribute__((packed)) udphdr_t;
 
-#define UDP_HEADER_SIZE	(sizeof(udphdr))
+#define UDP_HEADER_SIZE	(sizeof(udphdr_t))
 
 struct udp_sock{
 	/* inet_sock has to be the first member */
@@ -37,6 +37,10 @@ static inline struct udp_sock *udp_sk(const struct sock *sk) {
 
 extern int udp_init(void);
 extern int udp_rcv(sk_buff_t *);
+extern int udp_sendmsg(struct kiocb *iocb, struct sock *sk,
+                            struct msghdr *msg, size_t len);
+extern int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+                            size_t len, int noblock, int flags, int *addr_len);
 /*extern void udp_err(sk_buff_t *, uint32_t);*/
 
 extern int udp_disconnect(struct sock *sk, int flags);

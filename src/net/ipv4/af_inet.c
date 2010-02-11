@@ -26,28 +26,40 @@ DECLARE_INIT("net", inet_init, INIT_NET_LEVEL);
 static int inet_create(struct socket *sock, int protocol) {
 	struct sock *sk;
 	struct inet_sock *inet;
-	int err = -1;
+	int err = 0;
 	extern inet_protosw_t *__ipstack_sockets_start, *__ipstack_sockets_end;
-        inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
+	inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
 
-        for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
-    		if((* p_netsock)->type == sock->type &&
-    		   (* p_netsock)->protocol == protocol) {
-    			sock->sk = sk_alloc(PF_INET, 0, (* p_netsock)->prot);
-    			sock->ops = (* p_netsock)->ops;
-    			break;
-    		}
+	for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
+		if((* p_netsock)->type != sock->type) {
+			continue;
+		}
+		if((* p_netsock)->protocol == protocol) {
+			if (protocol != IPPROTO_IP) {
+				break;
+			}
+		} else {
+			if (IPPROTO_IP == protocol) {
+				protocol = (* p_netsock)->protocol;
+				break;
+			}
+			if (IPPROTO_IP == (* p_netsock)->protocol) {
+				break;
+			}
+		}
 	}
+	sock->ops = (* p_netsock)->ops;
+	sock->sk = sk_alloc(PF_INET, 0, (* p_netsock)->prot);
 	sk = sock->sk;
 	if (sk == NULL) {
-        	return err;
-        }
-        inet = inet_sk(sk);
-        inet->id = 0;
-        sk->sk_protocol = protocol;
+		return -1;
+	}
+	inet = inet_sk(sk);
+	inet->id = 0;
+	sk->sk_protocol = protocol;
 	if(sk->sk_prot->init)
-    		err = sk->sk_prot->init(sk);
-    	return err;
+		err = sk->sk_prot->init(sk);
+	return err;
 }
 
 int inet_release(struct socket *sock) {

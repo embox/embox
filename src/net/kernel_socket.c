@@ -172,12 +172,12 @@ int kernel_setsockopt(struct socket *sock, int level, int optname,
 
 int kernel_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
                         size_t total_len) {
-        return sock->ops->sendmsg(iocb, sock, m, total_len);
+	return sock->ops->sendmsg(iocb, sock, m, total_len);
 }
 
 int kernel_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
                         size_t total_len, int flags) {
-        return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
+	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
 
 #if 0
@@ -216,29 +216,29 @@ int sock_get_fd(struct socket *sock) {
 }
 
 int sock_register(const struct net_proto_family *ops) {
-        int err;
-        if (ops->family >= NPROTO) {
-                LOG_ERROR("protocol %d >= NPROTO(%d)\n", ops->family,
-                       NPROTO);
-                return -ENOBUFS;
-        }
+	int err;
+	if (ops->family >= NPROTO) {
+		LOG_ERROR("protocol %d >= NPROTO(%d)\n", ops->family,
+				NPROTO);
+		return -ENOBUFS;
+	}
 
-        if (net_families[ops->family])
-                err = -EEXIST;
-        else {
-                net_families[ops->family] = ops;
-                err = 0;
-        }
+	if (net_families[ops->family]) {
+		err = -EEXIST;
+	} else {
+		net_families[ops->family] = ops;
+		err = 0;
+	}
 
-        TRACE("NET: Registered protocol family %d\n", ops->family);
-        return err;
+	TRACE("NET: Registered protocol family %d\n", ops->family);
+	return err;
 }
 
 void sock_unregister(int family) {
-        if(family < 0 || family >= NPROTO) {
-    		return;
-        }
+	if(family < 0 || family >= NPROTO) {
+		return;
+	}
 
-        net_families[family] = NULL;
-        TRACE("NET: Unregistered protocol family %d\n", family);
+	net_families[family] = NULL;
+	TRACE("NET: Unregistered protocol family %d\n", family);
 }
