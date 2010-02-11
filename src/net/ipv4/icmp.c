@@ -5,17 +5,17 @@
  * @date 14.03.2009
  * @author Alexander Batyukov
  */
-#include "string.h"
-#include "kernel/module.h"
-#include "common.h"
+#include <string.h>
+#include <kernel/module.h>
+#include <common.h>
 #include <net/skbuff.h>
-#include "net/net.h"
+#include <net/net.h>
 #include <net/inetdevice.h>
-#include "net/etherdevice.h"
-#include "net/icmp.h"
-#include "net/net_pack_manager.h"
-#include "net/ip.h"
-#include "net/if_ether.h"
+#include <net/etherdevice.h>
+#include <net/icmp.h>
+#include <net/net_pack_manager.h>
+#include <net/ip.h>
+#include <net/if_ether.h>
 #include <net/checksum.h>
 #include <net/protocol.h>
 

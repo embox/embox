@@ -5,17 +5,18 @@
  * @date 03.12.2009
  * @author Nikolay Korotky
  */
-#include "err.h"
-#include "kernel/module.h"
-#include "net/net.h"
-#include "net/skbuff.h"
-#include "net/ip.h"
-#include "net/inet_sock.h"
-#include "net/if_ether.h"
-#include "net/netdevice.h"
-#include "net/inetdevice.h"
-#include "net/route.h"
-#include "net/checksum.h"
+#include <err.h>
+#include <kernel/module.h>
+#include <net/net.h>
+#include <net/skbuff.h>
+#include <net/ip.h>
+#include <net/udp.h>
+#include <net/inet_sock.h>
+#include <net/if_ether.h>
+#include <net/netdevice.h>
+#include <net/inetdevice.h>
+#include <net/route.h>
+#include <net/checksum.h>
 
 void __init ip_init(void) {
         ip_rt_init();
@@ -54,15 +55,17 @@ static int build_ip_packet(struct inet_sock *sk, sk_buff_t *pack) {
 
 int ip_queue_xmit(sk_buff_t *skb) {
 	/*TODO:*/
-	skb->nh.iph->ttl      = 64;
+//	skb->nh.iph->ttl      = 64;
 	return dev_queue_xmit(skb);
 }
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *pack) {
-	build_ip_packet(sk, pack);
-	pack->protocol = ETH_P_IP;
-	pack->len += IP_HEADER_SIZE;
-	ip_route(pack);
+	if(sk->sk.sk_type != SOCK_RAW) {
+		build_ip_packet(sk, pack);
+		pack->protocol = ETH_P_IP;
+		pack->len += IP_HEADER_SIZE;
+		ip_route(pack);
+	}
 	return ip_queue_xmit(pack);
 }
 
