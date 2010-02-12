@@ -105,10 +105,24 @@ void unregister_netdev(struct net_device *dev) {
 }
 
 net_device_t *netdev_get_by_name(const char *name) {
+	struct net_device *dev;
 	int i;
 	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
-		if (dev_is_busy(i) && !strncmp(name, net_devices[i].dev.name, IFNAMSIZ)) {
-			return &net_devices[i].dev;
+		dev = &net_devices[i].dev;
+		if (dev_is_busy(i) && !strncmp(name, dev->name, IFNAMSIZ)) {
+			return dev;
+		}
+	}
+	return NULL;
+}
+
+net_device_t *dev_getbyhwaddr(unsigned short type, char *ha) {
+	struct net_device *dev;
+	int i;
+	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
+		dev = &net_devices[i].dev;
+		if (dev_is_busy(i) && !memcmp(ha, dev->dev_addr, dev->addr_len)) {
+			return dev;
 		}
 	}
 	return NULL;

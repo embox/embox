@@ -147,6 +147,13 @@ int dev_alloc_name(struct net_device *dev, const char *name);
 extern net_device_t *netdev_get_by_name(const char *name);
 
 /**
+ * Find an network device by its hw addr
+ * @param hwaddr addr to find
+ * @return NULL is returned if no matching device is found.
+ */
+extern net_device_t  *dev_getbyhwaddr(unsigned short type, char *hwaddr);
+
+/**
  * Allocate network device
  * @param name device name format string
  * @param callback to initialize device
