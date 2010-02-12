@@ -2,6 +2,6 @@
  * @file autoconf.h
  */
 
-#define CONFIG(option) (defined(CONFIG_##option) && CONFIG_##option)
+#define CONFIG(option) (defined(CONFIG_##option))
 
 #include "asm/cpu_conf.h"

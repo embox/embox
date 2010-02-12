@@ -11,6 +11,7 @@ int main(void) {
 #if !defined(SIMULATION_TRG) && defined(CONFIG_SHELL)
         shell_start();
 #endif
+        TRACE("\nend of program\n");
         while (1)
                 ;
 

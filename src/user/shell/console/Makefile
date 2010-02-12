@@ -1,4 +1,4 @@
-OBJS-y:= cmdline.o \
+OBJS-$(MONITOR_SHELL):= cmdline.o \
          screen.o \
          console.o \
          screen_in.o \

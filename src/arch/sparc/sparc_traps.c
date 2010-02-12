@@ -10,8 +10,10 @@
 #include <stdio.h>
 #include <common.h>
 
-// user trap handlers table
+#if CONFIG(SYSTEM_IRQ)
+/* user trap handlers table*/
 static IRQ_HANDLER user_trap_handlers[MAX_IRQ_NUMBER];
+#endif
 
 /**
  * Runs user defined handler (if one has been enabled).
@@ -19,6 +21,7 @@ static IRQ_HANDLER user_trap_handlers[MAX_IRQ_NUMBER];
  * @param sp - stack pointer (TODO why is stack pointer place here)
  */
 void dispatch_trap(uint8_t tt, uint32_t *sp) {
+#if CONFIG(SYSTEM_IRQ)
 	if (CHECK_IRQ_TRAP(tt)){
 		irq_dispatch(IRQ_GET_NUMBER(tt));
 		return ;
@@ -27,6 +30,7 @@ void dispatch_trap(uint8_t tt, uint32_t *sp) {
 		// fire user handler!
 		user_trap_handlers[tt](0, NULL, NULL);
 	}
+#endif
 }
 
 void dispatch_bad_trap(TRAP_CONTEXT * r, uint32_t tt) {

@@ -9,6 +9,9 @@
 #include <time.h>
 #include <common.h> /*for array_len*/
 #include <string.h>
+#include <kernel/module.h>
+
+DECLARE_INIT("sys_timers", sys_timers_init, INIT_SYSTEM_LEVEL);
 
 typedef struct sys_tmr {
         volatile int        f_enable;
@@ -77,7 +80,7 @@ static void irq_func_tmr_1mS(int irq_num, void *dev_id, struct pt_regs *regs) {
         local_irq_restore(irq);
 }
 
-int sys_timers_init(void) {
+static int sys_timers_init(void) {
         int i;
         cnt_sys_time = 0;
         for (i = 0; i < array_len(sys_timers); i++) {

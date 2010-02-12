@@ -16,7 +16,7 @@ int timers_ctrl_init(IRQ_HANDLER);
 
 typedef void (*TIMER_FUNC)(uint32_t id);
 
-int sys_timers_init(void);
+/*int sys_timers_init(void);*/
 
 /**
  * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.

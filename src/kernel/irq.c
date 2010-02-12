@@ -17,6 +17,9 @@
 #include <asm/sys.h>
 #include <string.h>
 #include <autoconf.h>
+#include <kernel/module.h>
+
+DECLARE_INIT("system_irq", irq_init_handlers, INIT_SYSTEM_LEVEL);
 
 static IRQ_INFO irq_infos[MAX_IRQ_NUMBER];
 
@@ -33,7 +36,7 @@ void irq_dispatch(uint32_t irq_number) {
 #endif
 }
 
-int irq_init_handlers(void) {
+static int irq_init_handlers(void) {
 	irqc_init();
 	return 0;
 }

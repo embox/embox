@@ -52,19 +52,23 @@ int hardware_init_hook(void) {
 	 */
 	cache_data_enable();
 	cache_instr_enable();
+#if 0
 	irq_init_handlers();
+#endif
 	uart_init();
+#if 0
 	sys_timers_init();
+#endif
 
 	/* It's temporary
 	 * Just while problem with -o0 not solved */
 	tmp_test();
-
+#if 0
 	express_tests_execute(0);
-
+#endif
 	TRACE("\nStarting Monitor...\n");
 
-	for (level = 1; level <= INIT_MAX_LEVEL; level++) {
+	for (level = 0; level <= INIT_MAX_LEVEL; level++) {
 		TRACE("\nLevel %d **********************\n", level);
 		for (p_init_desc = &__init_handlers_start; p_init_desc
 				< &__init_handlers_end; p_init_desc++) {

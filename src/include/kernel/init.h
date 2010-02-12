@@ -9,6 +9,7 @@
 #define INIT_H_
 
 #define PRE_INIT_LEVEL       -1
+#define INIT_SYSTEM_LEVEL     0
 #define INIT_MODULE_LEVEL     1
 #define INIT_NET_LEVEL        3
 #define INIT_FS_LEVEL         3

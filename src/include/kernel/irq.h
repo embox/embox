@@ -11,7 +11,7 @@
 
 #ifndef _IRQ_H_
 #define _IRQ_H_
-
+#include <autoconf.h>
 #include <types.h>
 
 #ifndef __ASSEMBLER__
@@ -33,7 +33,7 @@ typedef struct {
 
 #define IRQ_TABLE_SIZE     0xFF
 
-int irq_init_handlers(void);
+/*int irq_init_handlers(void);*/
 
 /**
  * Sets and enables a new callback for the specified IRQ number
@@ -55,6 +55,7 @@ void irq_set_handler(uint8_t irq_number, IRQ_HANDLER pfunc);
  */
 IRQ_HANDLER irq_get_handler(uint8_t nirq);
 
+#if CONFIG(SYSTEM_IRQ)
 /*TODO this description from linux driver book*/
 /**
  * The value returned from request_irq to the requesting function is either 0
@@ -80,6 +81,9 @@ IRQ_HANDLER irq_get_handler(uint8_t nirq);
  */
 int request_irq(unsigned int irq, IRQ_HANDLER handler, unsigned long flags,
 		const char *dev_name, void *dev_id);
+#else
+#define request_irq(irq, handler, flags, dev_name, dev_id)
+#endif
 
 void free_irq(unsigned int irq, void *dev_id);
 

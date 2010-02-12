@@ -1,6 +1,6 @@
 OBJS-y += sparc_traps.o
-OBJS-y += apb_irq_ctrl.o
-OBJS-y += apb_timers.o
+OBJS-$(MONITOR_SYSTEM_IRQ) += apb_irq_ctrl.o
+OBJS-$(MONITOR_SYSTEM_TIMERS) += apb_timers.o
 OBJS-y += boot.o
 OBJS-y += cpu_context.o
 OBJS-y += entry.o
