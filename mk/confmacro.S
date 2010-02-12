@@ -19,6 +19,7 @@
 #define make(str)
 #define option(option) \
 	$define CONFIG_##option
+
 #define test(test_name, level, on_boot) \
 	option(test_name) \
 	$define TEST_##test_name##_LEVEL level \
@@ -47,11 +48,13 @@
 
 #endif /* LDS */
 
-#include "common.conf"
+//#include "common.conf"
+#include "build.conf"
 #include "lds.conf"
-#include "drivers.conf"
-#include "fs.conf"
-#include "net.conf"
-#include "tests.conf"
-#include "usr.conf"
+//#include "drivers.conf"
+//#include "fs.conf"
+//#include "net.conf"
+//#include "tests.conf"
+/*#include "usr.conf"*/
 #include "ugly.conf"
+#include "subsystems.conf"

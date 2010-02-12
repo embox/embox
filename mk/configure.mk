@@ -7,8 +7,8 @@
 HOST_CC =gcc
 HOST_CPP=$(HOST_CC) -E
 
-CONF_FILES :=$(addsuffix .conf,common drivers fs lds net tests ugly usr)
-
+#CONF_FILES :=$(addsuffix .conf,common drivers fs lds net tests ugly usr)
+CONF_FILES :=$(addsuffix .conf,build ugly lds subsystems)
 .PHONY: check_config
 
 check_config:
