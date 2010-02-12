@@ -139,6 +139,9 @@ extern int sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
  */
 extern int sock_no_listen(struct socket *, int);
 
+extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
+                               struct msghdr *msg, size_t size, int flags);
+
 #if 0
 TODO NETSOCK: functions are not realized now
 extern int proto_register(proto_t *prot, int alloc_slab);

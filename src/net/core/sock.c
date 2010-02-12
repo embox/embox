@@ -96,3 +96,9 @@ int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	skb_queue_tail(&sk->sk_receive_queue, skb);
 	return 0;
 }
+
+int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
+                        struct msghdr *msg, size_t size, int flags) {
+	struct sock *sk = sock->sk;
+	return sk->sk_prot->recvmsg(iocb, sk, msg, size, 0, flags, NULL);
+}

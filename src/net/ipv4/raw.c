@@ -16,6 +16,7 @@
 #include <net/udp.h>
 #include <net/net.h>
 #include <net/in.h>
+#include <net/skbuff.h>
 #include <net/inet_common.h>
 
 static int raw_init(struct sock *sk) {
@@ -42,8 +43,9 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
                        size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
 	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + msg->msg_iov->iov_len, 0);
-	memcpy((void*)skb->data + ETH_HEADER_SIZE, (void*)msg->msg_iov->iov_base, msg->msg_iov->iov_len);
-	//skb->dev = netdev_get_by_name("eth0");
+	memcpy((void*)skb->data + ETH_HEADER_SIZE, (void*)msg->msg_iov->iov_base,
+										msg->msg_iov->iov_len);
+	skb->dev = netdev_get_by_name("eth0");
 	skb->protocol = ETH_P_IP;
 	skb->len = ETH_HEADER_SIZE + msg->msg_iov->iov_len;
 	skb->mac.raw = (unsigned char *) skb->data;
@@ -55,7 +57,18 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 
 static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
                        size_t len, int noblock, int flags, int *addr_len) {
-	//TODO: skb_recv_datagram
+	printf("raw_recvmsg\n");
+	struct inet_sock *inet = inet_sk(sk);
+	struct sk_buff *skb;
+	skb = skb_recv_datagram(sk, flags, 0, 0);
+	if(skb && skb->len > 0) {
+		memcpy((void*)msg->msg_iov->iov_base,
+				(void*)skb->data + ETH_HEADER_SIZE,
+				msg->msg_iov->iov_len);
+		msg->msg_iov->iov_len = skb->len;
+		return skb->len;
+	}
+	msg->msg_iov->iov_len = 0;
 	return 0;
 }
 
@@ -131,8 +144,8 @@ static const struct proto_ops inet_sockraw_ops = {
 		.getsockopt = sock_common_getsockopt,
 #endif
 		.sendmsg = inet_sendmsg,
-#if 0
 		.recvmsg = sock_common_recvmsg,
+#if 0
 		.mmap = sock_no_mmap,
 		.sendpage = inet_sendpage,
 #endif

@@ -148,4 +148,7 @@ extern sk_buff_t *skb_dequeue(struct sk_buff_head *list);
 
 extern void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk);
 
+extern struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
+					 int noblock, int *err);
+
 #endif /* SKBUFF_H_ */

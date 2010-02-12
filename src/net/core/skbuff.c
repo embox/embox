@@ -12,6 +12,7 @@
 #include <kernel/module.h>
 #include <lib/list.h>
 #include <net/skbuff.h>
+#include <net/sock.h>
 #include <asm/spin_lock.h>
 #include <net/net_pack_manager.h>
 
@@ -171,4 +172,17 @@ struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority) {
 		new_pack->mac.raw = new_pack->data + (skb->mac.raw - skb->data);
 	}
 	return new_pack;
+}
+
+struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
+				  int noblock, int *err) {
+	printf("skb_recv_datagram\n");
+	struct sk_buff *skb;
+	unsigned long sp = spin_lock();
+	skb = skb_peek(&sk->sk_receive_queue);
+	if (skb) {
+		skb_unlink(skb, &sk->sk_receive_queue);
+	}
+	spin_unlock(sp);
+	return skb;
 }
