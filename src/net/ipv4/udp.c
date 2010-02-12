@@ -112,11 +112,6 @@ static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev
 			sk ==NULL) {
 		return;
 	}
-	/*TODO UDP get net dev*/
-#if 0
-	pack->ifdev = ifdev;
-	pack->dev = ifdev->dev;
-#endif
 	pack->len = UDP_HEADER_SIZE;
 
 	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;

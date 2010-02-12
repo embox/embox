@@ -9,8 +9,10 @@
 
 #include <net/protocol.h>
 #include <net/socket.h>
+#include <string.h>
 #include <net/sock.h>
 #include <net/icmp.h>
+#include <net/ip.h>
 #include <net/udp.h>
 #include <net/net.h>
 #include <net/in.h>
@@ -22,6 +24,7 @@ static int raw_init(struct sock *sk) {
 
 static void raw_close(struct sock *sk, long timeout) {
 	//TODO: release socket
+	sk_free(sk);
 }
 
 static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb) {
@@ -38,8 +41,14 @@ static void raw_v4_unhash(struct sock *sk) {
 static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
                        size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
-	sk_buff_t *skb = alloc_skb(msg->msg_iov->iov_len, 0);
-	skb->data = msg->msg_iov->iov_base;
+	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + msg->msg_iov->iov_len, 0);
+	memcpy((void*)skb->data + ETH_HEADER_SIZE, (void*)msg->msg_iov->iov_base, msg->msg_iov->iov_len);
+	//skb->dev = netdev_get_by_name("eth0");
+	skb->protocol = ETH_P_IP;
+	skb->len = ETH_HEADER_SIZE + msg->msg_iov->iov_len;
+	skb->mac.raw = (unsigned char *) skb->data;
+	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+	skb->h.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	ip_send_packet(inet, skb);
 	return 0;
 }

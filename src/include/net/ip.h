@@ -74,7 +74,7 @@ extern int ip_rcv(sk_buff_t *pack, net_device_t *dev,
  */
 extern int ip_send_packet(inet_sock_t *sk, sk_buff_t *pack);
 
-extern int ip_queue_xmit(sk_buff_t *skb);
+extern int ip_queue_xmit(sk_buff_t *skb, int ipfragok);
 
 extern void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
 			sk_buff_t *skb, unsigned int len);

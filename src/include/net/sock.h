@@ -133,6 +133,12 @@ extern void sk_free(sock_t *sk);
 /** This function used by all transports to attempt to queue received packets*/
 extern int sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
 
+/**
+ * Functions to fill in entries in struct proto_ops when a protocol
+ * does not implement a particular function.
+ */
+extern int sock_no_listen(struct socket *, int);
+
 #if 0
 TODO NETSOCK: functions are not realized now
 extern int proto_register(proto_t *prot, int alloc_slab);

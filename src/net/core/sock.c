@@ -11,6 +11,7 @@
  */
 #include <string.h>
 #include <common.h>
+#include <codes.h>
 #include <kernel/module.h>
 #include <kernel/irq.h>
 #include <net/skbuff.h>
@@ -85,6 +86,10 @@ void sk_free(struct sock *sk) {
 		sk->sk_destruct(sk);
 	}
 	sk_prot_free(sk->sk_prot, sk);
+}
+
+int sock_no_listen(struct socket *sock, int backlog) {
+        return -EOPNOTSUPP;
 }
 
 int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
