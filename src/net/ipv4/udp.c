@@ -35,37 +35,27 @@ int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	return 0;
 }
 
-int udp_rcv(sk_buff_t *pack) {
-	TRACE("udp packet received\n");
-	return 0;/*udpsock_push(pack);*/
-}
-#if 0
-static SOCK_INFO *__udp_lookup(in_addr_t saddr, unsigned short source,
-		in_addr_t daddr, unsigned short dest) {
-	int i;
-	struct udp_sock *usk;
-	for(i=0; i< MAX_SOCK_NUM; i++) {
-		usk = sks[i].sk;
-		if(dest == usk->inet.sport &&
-				((daddr == usk->inet.saddr) ||
-						(0 == usk->inet.saddr))) {
-			return &sks[i];
-		}
-	}
+static struct sock *udp_lookup(in_addr_t saddr, __be16 sport,
+						in_addr_t daddr, __be16 dport) {
 	return NULL;
 }
 
-static int udp_queue_rcv_pack(SOCK_INFO *sk, sk_buff_t *pack) {
-	if(sk->new_pack == 0) {
-		sk->queue = skb_copy(pack, 0);
-		sk->new_pack = 1;
-		sk->sk->inet.dport = pack->h.uh->source;
-		sk->sk->inet.daddr = pack->nh.iph->saddr;
-		return 0;
+int udp_rcv(sk_buff_t *skb) {
+	TRACE("udp packet received\n");
+	struct sock *sk;
+	iphdr_t *iph = ip_hdr(skb);
+	udphdr_t *uh = udp_hdr(skb);
+	sk = udp_lookup(iph->saddr, uh->source, iph->daddr, uh->dest);
+	if (sk) {
+		udp_queue_rcv_skb(sk, skb);
 	}
-	return -1;
+	return 0;
 }
 
+int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
+	return 0;
+}
+#if 0
 int udpsock_push(sk_buff_t *pack) {
 	int i;
 	SOCK_INFO *sk;
@@ -117,16 +107,6 @@ static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev
 	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
 	rebuild_udp_header(pack, sk->inet.sport, sk->inet.dport);
-}
-
-int udp_trans(struct udp_sock *sk, void *ifdev, const void *buf, int len) {
-	sk_buff_t *pack;
-	pack = alloc_skb(len, 0);
-	if( pack == NULL) {
-		return -1;
-	}
-	rebuild_udp_packet(pack, sk, ifdev, buf, len);
-	return ip_send_packet(&sk->inet, pack);
 }
 #endif
 

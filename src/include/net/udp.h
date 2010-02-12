@@ -13,20 +13,24 @@
 struct sock;
 
 typedef struct _udphdr {
-        unsigned short source;
-        unsigned short dest;
-        unsigned short len;
-        unsigned short check;
+        __be16 source;
+        __be16 dest;
+        __be16 len;
+        __be16 check;
 } __attribute__((packed)) udphdr_t;
 
 #define UDP_HEADER_SIZE	(sizeof(udphdr_t))
+
+static inline udphdr_t *udp_hdr(const sk_buff_t *skb) {
+        return (udphdr_t *)skb->nh.raw;
+}
 
 struct udp_sock{
 	/* inet_sock has to be the first member */
         struct inet_sock inet;
         int              pending;
         unsigned int     corkflag;
-	unsigned short   len;
+	__be16           len;
 };
 
 static inline struct udp_sock *udp_sk(const struct sock *sk) {
