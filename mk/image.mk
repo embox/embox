@@ -92,7 +92,7 @@ $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
 	$(CC) -o $@ \
 	$(CPPFLAGS) $(CFLAGS) -c $<
 
-#$(info Enabled mods DAG: $(patsubst %,$N%,$(call MOD_DEPS_DAG,$(MODS_ENABLE))))
+$(info Enabled mods DAG: $(patsubst %,$N%,$(call MOD_DEPS_DAG,$(MODS_ENABLE))))
 MOD_FILES = $(call MOD_FILE,$(call MOD_DEPS_DAG,$(MODS_ENABLE)))
 
 $(IMAGE): $(call MOD_FILE,$(MODS_ENABLE)) $(call LIB_FILE,$(LIBS))

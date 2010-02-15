@@ -10,7 +10,8 @@ _ = EMBUILD/$(abspath $(dir))/
 
 # Traverse always defines SELFDIR before entering sub-makefile.
 dir = $(SELFDIR)
-DIRS := $(call TRAVERSE,$(SRC_DIR)) $(call TRAVERSE,$(PLATFORM_DIR))
+DIRS := $(call TRAVERSE,$(SRC_DIR)) \
+  $(if $(PLATFORM_DIR),$(call TRAVERSE,$(PLATFORM_DIR)))
 
 dir_package_lookup = \
   $(if $(filter $(abspath $(ROOT_DIR))%,$1),$(foreach dir,$1, \
@@ -157,7 +158,7 @@ define define_mod_rules
 
   $(mod_file) : OBJS := $(OBJS-$(mod))
   $(mod_file) : $(OBJS-$(mod))
-	$(CC) -static -nostdlib -r -o $@ $(OBJS:%= \$N	%)
+	$(LD) -static -nostdlib --relocatable -o $@ $(OBJS:%= \$N	%)
 
   -include $(OBJS-$(mod):.o=.d)
 

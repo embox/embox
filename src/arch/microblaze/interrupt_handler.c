@@ -8,23 +8,25 @@
  * @date 27.11.2009
  * @author Anton Bondarev
  */
+
 #include <autoconf.h>
-#include <hal/irq_ctrl.h>
+
 #include <kernel/irq.h>
+#include <hal/interrupt.h>
 
 void interrupt_handler(void) {
-#if CONFIG(SYSTEM_IRQ)
-	irq_mask_t irq_stat;
+	__interrupt_mask_t irq_stat;
+
 	while (0 != (irq_stat = irqc_get_isr_reg())) {
-		int irq_num;
-		for (irq_num = 0; irq_num < MAX_IRQ_NUMBER; irq_num++) {
+		interrupt_nr_t irq_num;
+		for (irq_num = 0; irq_num < INTERRUPT_NRS_TOTAL; irq_num++) {
 			if (irq_stat & (1 << irq_num)) {
-				irqc_clear(irq_num);
-
+				interrupt_clear(irq_num);
+#ifdef CONFIG_IRQ
 				irq_dispatch(irq_num);
-
+#endif
 			}
 		}
 	}
-#endif
+
 }

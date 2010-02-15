@@ -8,12 +8,13 @@
 #include "types.h"
 #include "kernel/sys.h"
 
-
+#if 0
 void context_restore(CPU_CONTEXT * pcontext) {
 
 }
 
 static CPU_CONTEXT context;
+#endif
 volatile static bool started = false;
 
 int sys_exec_start(EXEC_FUNC f, int argc, char **argv) {
@@ -42,7 +43,9 @@ void sys_exec_stop() {
 	if (!started) {
 		return;
 	}
+#if 0
 	context_restore(&context);
+#endif
 }
 
 void sys_halt() {

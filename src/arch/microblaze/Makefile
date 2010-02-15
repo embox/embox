@@ -1,9 +1,12 @@
-OBJS-y += interrupt_handler.o
-OBJS-$(MONITOR_SYSTEM_IRQ) += mb_irq_ctrl.o
-OBJS-$(MONITOR_SYSTEM_TIMERS) += mb_timers.o
-OBJS-y += entry.o
-OBJS-y += boot.o
-OBJS-y += sys.o
+$_MODS_ESSENTIAL += locore
+
+$_SUBDIRS := $(filter-out include,$($_SUBDIRS))
+
+$_SRCS-locore += interrupt_handler.c sys.c entry.S boot.S
+$_SRCS-interrupt += mb_irq_ctrl.c
+$_SRCS-clock += mb_timers.c
+$_SRCS-arch += arch.c
+$_SRCS-diag += diag_uart.c
 
 $(IMAGE): $(LDSCRIPT)
 

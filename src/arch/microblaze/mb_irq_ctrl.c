@@ -9,8 +9,9 @@
 
 #include <autoconf.h>
 #include <types.h>
-#include <hal/irq_ctrl.h>
+#include <hal/interrupt.h>
 #include <common.h>
+#include <asm/cpu_conf.h>
 
 /**
  * Microblaze interrupt controller registers definitions.
@@ -37,7 +38,7 @@ typedef volatile struct irqc_regs {
 
 static irqc_regs_t * irqc = (irqc_regs_t * )XILINX_INTC_BASEADDR;
 
-int irqc_init(void){
+void interrupt_init(void){
 	irqc->mer = 0;
 	irqc->ier = 0;
 	irqc->iar = ~(0x0);
@@ -46,34 +47,25 @@ int irqc_init(void){
 	 * (we will could use function irqc_force).
 	 */
 	irqc->mer = MER_HIE | MER_ME;
-	return 0;
 }
 
-int irqc_enable_irq(irq_num_t irq_num){
-	/*save previous state of bit*/
-	irq_mask_t old_mask = irqc->ier;
+void interrupt_enable(interrupt_nr_t irq_num){
 	set_bit(irqc->ier, irq_num);
-	return get_bit(old_mask, irq_num);
 }
 
-int irqc_disable_irq(irq_num_t irq_num){
-	/*save previous state of bit*/
-	irq_mask_t old_mask = irqc->ier;
+void interrupt_disable(interrupt_nr_t irq_num){
 	clear_bit(irqc->ier, irq_num);
-	return get_bit(old_mask, irq_num);
 }
-
-int irqc_get_status(irq_num_t irq_num){
+#if 0
+int irqc_get_status(interrupt_nr_t irq_num){
 	return get_bit(irqc->ier, irq_num);
 }
 
-irq_mask_t irqc_set_mask(irq_mask_t mask){
-	irq_mask_t old_mask = irqc->ier;
+void irqc_set_mask(__interrupt_mask_t mask){
 	irqc->ier = mask;
-	return old_mask;
 }
 
-irq_mask_t irqc_get_mask(void){
+__interrupt_mask_t irqc_get_mask(void){
 	return irqc->ier;
 }
 
@@ -81,18 +73,17 @@ int irqc_disable_all(void){
 	irqc->mer &= ~MER_ME;
 	return 0;
 }
+#endif
 
 //TODO this not set in microblaze
-int irqc_force(irq_num_t irq_num){
-	return 0;
+void interrupt_force(interrupt_nr_t irq_num){
+
 }
 
-int irqc_clear(irq_num_t irq_num){
-	irq_mask_t old_mask = irqc->isr;
+void interrupt_clear(interrupt_nr_t irq_num){
 	set_bit(irqc->iar,irq_num);
-	return old_mask;
 }
 
-irq_mask_t irqc_get_isr_reg(void) {
+__interrupt_mask_t irqc_get_isr_reg(void) {
 	return irqc->isr;
 }

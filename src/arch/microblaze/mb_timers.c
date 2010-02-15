@@ -10,6 +10,7 @@
 #include <autoconf.h>
 #include <types.h>
 #include <kernel/irq.h>
+#include <asm/cpu_conf.h>
 
 #define CONFIG_SYS_TIMER_PRELOAD     (CPU_CLOCK_FREQ/1000)
 
@@ -64,22 +65,19 @@ typedef volatile struct mb_timers {
 
 static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
+
+
 /*we must use proxy for interrupt handler because we must clean bit in register
  * timer.
  */
-static IRQ_HANDLER main_irq_handler = NULL;
-static void local_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
+static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	timer0->tcsr |= TIMER_INT;
-	if (NULL != main_irq_handler) {
-		main_irq_handler(XILINX_TIMER_IRQ, NULL, NULL);
-	}
+	// XXX
+	irq_func_tmr_1mS(irq_nr,dev_id);
+	return IRQ_HANDLED;
 }
 
-int timers_ctrl_init(IRQ_HANDLER irq_handler) {
-	main_irq_handler = irq_handler;
-	if (-1 == request_irq(XILINX_TIMER_IRQ, local_irq_handler, (unsigned long)0, "xil_timer", NULL)) {
-		return -1;
-	}
+void clock_init(void) {
 	/*set clocks period*/
 	timer0->tlr = CONFIG_SYS_TIMER_PRELOAD;
 	/*clear interrupts bit and load value from tlr register*/
@@ -87,6 +85,9 @@ int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	/*start timer*/
 	timer0->tcsr = TIMER_ENABLE | TIMER_INT_ENABLE | TIMER_RELOAD
 			| TIMER_DOWN_COUNT;
-	return 0;
+
+	if (0 != irq_attach(XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
+		panic("mbtimer irq_attach failed");
+	}
 }
 
