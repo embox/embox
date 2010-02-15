@@ -18,6 +18,7 @@
 #include <net/inetdevice.h>
 #include <net/route.h>
 #include <net/checksum.h>
+#include <net/protocol.h>
 
 int ip_rcv(sk_buff_t *pack, net_device_t *dev,
                       packet_type_t *pt, net_device_t *orig_dev) {

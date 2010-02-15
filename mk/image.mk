@@ -39,6 +39,8 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 # Preprocessor flags
 cppflags:=$(CPPFLAGS)
 override CPPFLAGS =
+# XXX
+override CPPFLAGS += -I$(THIRDPARTY_DIR)/linux-compat/include
 override CPPFLAGS += -D__EMBOX__
 override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
