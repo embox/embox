@@ -22,6 +22,8 @@
 int ip_rcv(sk_buff_t *pack, net_device_t *dev,
                       packet_type_t *pt, net_device_t *orig_dev) {
 	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(pack->dev);
+	extern net_protocol_t *__ipstack_protos_start, *__ipstack_protos_end;
+	net_protocol_t ** p_netproto = &__ipstack_protos_start;
 	iphdr_t *iph;
 	unsigned short tmp;
 	unsigned int len;
@@ -62,13 +64,12 @@ int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 		if(!ip_route(pack)) {
 			dev_queue_xmit(pack);
 		}
-	        return 0;
+		return 0;
 	}
-	if (ICMP_PROTO_TYPE == iph->proto) {
-		icmp_rcv(pack);
-	}
-	if (UDP_PROTO_TYPE == iph->proto) {
-		udp_rcv(pack);
+	for(; p_netproto < &__ipstack_protos_end ; p_netproto++) {
+		if((*p_netproto)->type == iph->proto) {
+			(*p_netproto)->handler(pack);
+		}
 	}
 	return NET_RX_SUCCESS;
 }
