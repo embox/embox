@@ -455,17 +455,17 @@ class MonitorConfig_t:
 defCompilersToSettingsDict = {
 	'sparc-linux' :  CompilerSettings_t(
 		Path = u'/opt/sparc-linux/bin/sparc-linux-gcc',
-		CFLAGS = u'-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
+		CFLAGS = u'-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D__EMBOX__',
 		LDFLAGS = u'-Wl -N -nostdlib -g'
 	),
 	'sparc-elf' : CompilerSettings_t(
 		Path = u'/opt/sparc-elf/bin/sparc-elf-gcc',
-		CFLAGS = u'-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_',
+		CFLAGS = u'-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D__EMBOX__',
 		LDFLAGS = u'-Wl -N -nostdlib -g'
 	),
 	'mb-linux' : CompilerSettings_t(
 		Path = u'/opt/microblaze-cctools/bin',
-		CFLAGS = u'-Werror -pipe -O0 -D_TEST_SYSTEM_',
+		CFLAGS = u'-Werror -pipe -O0 -D__EMBOX__',
 		LDFLAGS = u'-Wl -N -nostdlib'
 	)
 }

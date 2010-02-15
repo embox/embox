@@ -12,7 +12,6 @@
 #include <net/etherdevice.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
-#include <asm/spin_lock.h>
 #include <common.h>
 #include <string.h>
 

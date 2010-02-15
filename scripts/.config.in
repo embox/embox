@@ -3,7 +3,7 @@
 		"Arch_num": 0,
 		"sparc": {
 			"Cflags": {
-				"inc": "-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_",
+				"inc": "-Werror -pipe -msoft-float -mv8 -O0 -g -DLEON3 -D__EMBOX__",
 				"mdef": "CCFLAGS",
 				"re": "([A-Za-z0-9_\\-# ]+)",
 				"status": 1
@@ -328,6 +328,12 @@
 			"desc": "help system",
 			"inc": 1,
 			"mdef": "MONITOR_USER_HELP",
+			"status": 1
+		},
+		"ifconfig": {
+			"desc": "configure and control network interfaces",
+			"inc": 1,
+			"mdef": "MONITOR_USER_IFCONFIG",
 			"status": 1
 		},
 		"ldimg": {

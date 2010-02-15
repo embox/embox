@@ -1,9 +1,11 @@
 /**
- * @file ctype.h
+ * @file
+ * @brief Used for testing and converting characters.
  *
  * @date 14.10.09
  * @author Nikolay Korotky
  */
+
 #ifndef CTYPE_H_
 #define CTYPE_H_
 
@@ -48,15 +50,11 @@ extern unsigned char _ctype[];
 #define toascii(c) (((unsigned char)(c))&0x7f)
 
 static inline unsigned char __tolower(unsigned char c) {
-        if (isupper(c))
-                c -= 'A'-'a';
-        return c;
+	return isupper(c) ? c - ('A' - 'a') : c;
 }
 
 static inline unsigned char __toupper(unsigned char c) {
-        if (islower(c))
-    		c -= 'a'-'A';
-	return c;
+	return islower(c) ? c - ('a' - 'A') : c;
 }
 
 /* Convert a character to lower case */

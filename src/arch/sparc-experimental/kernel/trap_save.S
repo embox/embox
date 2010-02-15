@@ -163,20 +163,31 @@
  * @author Eldar Abusalimov
  */
 
-#include <asm/reg_alias.h>
-#include <asm/trap_regs.h>
+#include <asm/regs.h>
+#include <asm/psr.h>
+#include <asm/asi.h>
+#include <asm/ptrace.h>
+#include <asm/stack.h>
 #include <asm/winmacro.h>
 
 	.text
 	.align 4
 
+/* Trap pre-setup. */
+
 /** Stack align (rounds "x" up to doubleword boundary) */
 #define SA(x) (((x)+7)&(~7))
 /** Trap frame size */
-#define TRAPFRAME_SZ (STACKFRAME_SZ + TRAP_REGS_SZ)
+#define TRAP_FRAME_SZ (STACK_FRAME_SZ + PTRACE_REGS_SZ)
 
+/** Used for new WIM calculation and inter-window reference. */
 #define g_newwim     g1
-#define g_temp       g2
+/** The mask of the last user window (if any). */
+#define g_uwinmask   g2
+/** For temporal computations. */
+#define g_temp       g3
+/** Kernel stack pointer. */
+#define t_ksp        temp
 
 /**
  * Prepares trap window to enter c-code.
@@ -201,10 +212,10 @@
  * So thus this routine expects that the following registers have already been
  * initialized:
  * @li on trap entry time: @em \%t_psr, @em \%t_wim, @em \%t_pc and @em \%t_npc
- * @li when jumping here:  @em \%t_twinmask and @em \%t_retpc.
+ * @li when jumping here:  @em \%t_retpc.
  *
  * It is assumed that these registers are <b>not touched at all</b> before
- * executing @em SAVE_ALL macro.
+ * executing @c SAVE_ALL macro.
  *
  */	.global trap_setup_begin
 trap_setup_begin:
@@ -226,22 +237,18 @@ tsb_kernel:
 	/* For kernel mode:
 	 * Allocate a new frame in the existing kernel stack.
 	 * It's easy because the previous window in owned by the kernel
-	 * and we can trust in %fp value. */
-	add %fp, -SA(TRAPFRAME_SZ), %t_ksp
-	/* Note that we do not touch the real %sp register,
+	 * and we can trust in %fp value.
+	 * Note that we do not touch the real %sp register,
 	 * we'll do it a bit later after checking for possible window overflow.
-	 * (we use local t_ksp instead, be careful and do not change it
-	 * until updating the real %sp) */
+	 */
 
-	/* Write the CPU state (globals, PSR, PC, NPC, Y, ...). */
-	STORE_TR_ALL(t_ksp, t_psr, t_pc, t_npc, g_temp)
+	/* Write the CPU state (globals, PSR, PC, nPC, Y, ...). */
+	STORE_PT_ALL(fp - SA(TRAP_FRAME_SZ), t_psr, t_pc, t_npc, g_temp)
 
 	/* Test WIM for window overflow. */
 	andcc %t_wim, %t_twinmask, %g0
 	bne,a tsb_kernel_wof
-	 /* delay slot: determine whether there are some user windows
-	  * calculating the mask of the last user window. */
-	 andncc %t_wim, %t_twinmask, %t_uwinmask
+	 add %fp, -SA(TRAP_FRAME_SZ), %t_ksp
 
 	/* You're lucky guy, you've come from the kernel,
 	 * and there was no overflow when entering the trap window.
@@ -250,12 +257,14 @@ tsb_kernel:
 	 mov %t_ksp, %sp
 
 tsb_kernel_wof:
+	/* Determine whether there are some user windows calculating the mask of
+	 * the last one (if any). */
+	andncc %t_wim, %t_twinmask, %g_uwinmask
 	/* Calculate new WIM stubs needed by tsb_save_user_window routine. */
 	srl %t_twinmask, 1, %g_newwim
-	/* Check whether the window to be saved is user or kernel one.
-	[andncc %t_wim, %t_twinmask, %t_uwinmask] */
+	/* Check whether the window to be saved is user or kernel one. */
 	bne tsb_save_user_window
-	 sll %t_twinmask, CORE_NWINDOWS - 1, %g_temp
+	 sll %t_twinmask, CONFIG_NWINDOWS - 1, %g_temp
 
 tsb_save_kernel_window:
 	/* Save kernel window.
@@ -269,7 +278,7 @@ tsb_save_kernel_window:
 	wr %g_newwim, %g0, %wim
 	 ! do not wait for delayed write
 
-	STORE_WINDOW(sp, 0)
+	STORE_WINDOW(sp)
 
 	restore %g0, %g0, %g0 ! Go back to trap window
 
@@ -280,23 +289,23 @@ tsb_save_kernel_window:
 tsb_user:
 	/* For user mode:
 	 * Set pointer to the top of the empty kernel stack. */
-	set SA(__stack - TRAPFRAME_SZ), %t_ksp
+	set __stack - SA(TRAP_FRAME_SZ), %t_ksp
 
 	/* Write the cpu state (globals, psr, pc, npc, y, ...) */
-	STORE_TR_ALL(t_ksp, t_psr, t_pc, t_npc, g_temp)
+	STORE_PT_ALL(t_ksp, t_psr, t_pc, t_npc, g_temp)
 
 	/* WIM is in single-bit mode now, need to mark the last user window.
 	 * Calculate the mask of the last user window. */
-	sll %t_twinmask, 1, %t_uwinmask
-	srl %t_twinmask, CORE_NWINDOWS - 1, %g_temp
+	sll %t_twinmask, 1, %g_uwinmask
+	srl %t_twinmask, CONFIG_NWINDOWS - 1, %g_temp
 
 	/* Test WIM for window overflow. */
 	andcc %t_wim, %t_twinmask, %g0
 	bne tsb_user_wof
-	 or %t_uwinmask, %g_temp, %t_uwinmask
+	 or %g_uwinmask, %g_temp, %g_uwinmask
 
 	/* Mark the window we came from as an invalid. */
-	wr %t_wim, %t_uwinmask, %wim
+	wr %t_wim, %g_uwinmask, %wim
 	 nop // TODO wait a bit
 
 	/* Update the real stack pointer and return back to trap handler. */
@@ -306,28 +315,28 @@ tsb_user:
 tsb_user_wof:
 	/* Prepare new WIM stubs. These values will XORed together during WRWIM. */
 	srl %t_twinmask, 1, %g_newwim
-	sll %t_twinmask, CORE_NWINDOWS - 1, %g_temp
+	sll %t_twinmask, CONFIG_NWINDOWS - 1, %g_temp
 
 tsb_save_user_window:
 	/* Damn! Need to save user window. :(
 	 *
-	 * At this point %t_uwinmask contains the mask of the last user window,
+	 * At this point %g_uwinmask contains the mask of the last user window,
 	 * and bitwise ORing %g_newwim together with %g_temp results in shifted
 	 * single-bit new window mask.
 	 */
 
 	/* The two instructions below do the following:
-	 * (%g_newwim + %t_uwinmask) ^ %g_temp = %g_newwim | %t_uwinmask | %g_temp
-	 * = %t_uwinmask | (%g_newwim | %g_temp)
+	 * (%g_newwim + %g_uwinmask) ^ %g_temp = %g_newwim | %g_uwinmask | %g_temp
+	 * = %g_uwinmask | (%g_newwim | %g_temp)
 	 * This is exactly what we need - double-bit WIM denoting the windows
 	 * before (last user window) and after (new invalid window) the current
 	 * one. */
-	save %g_newwim, %t_uwinmask, %g_newwim ! Get into the window to be saved
+	save %g_newwim, %g_uwinmask, %g_newwim ! Get into the window to be saved
 	wr %g_newwim, %g_temp, %wim
 	 ! do not wait for delayed write
 
 	/* Try to save registers to user stack. */
-	STORE_USER_WINDOW(sp, 0, tsb_user_stack_is_corrupt, g_temp)
+	STORE_USER_WINDOW(sp, tsb_user_stack_is_corrupt, g_temp)
 
 	restore %g0, %g0, %g0 ! Go back to trap window
 
@@ -342,7 +351,7 @@ tsb_user_stack_is_corrupt:
 	 */
 	restore
 
-	wr %g_newwim, %t_uwinmask, %wim
+	wr %g_newwim, %g_uwinmask, %wim
 	 WRITE_PAUSE
 
 	jmpl %t_retpc + 8, %g0
@@ -350,11 +359,18 @@ tsb_user_stack_is_corrupt:
 
 #undef g_newwim
 #undef g_temp
+#undef g_ksp
 
+/* Window overflow trap. */
 
+/** Used for new WIM calculation and inter-window reference. */
 #define g_newwim     g1
-#define t_newwim     t_ksp
-#define t_temp       t_retpc
+/** Holds initial g_newwim value to be restored before returning from trap. */
+#define t_saved      local
+/** The mask of the last user window (if any). */
+#define t_uwinmask   t_retpc
+/** For temporal computations. */
+#define t_temp       temp
 
 /**
  * Window overflow handling routine.
@@ -375,7 +391,7 @@ window_overflow:
 	/* ...and branch respectively. */
 	be wof_from_user
 	 /* delay slot: remember the value of %g_newwim to restore it later. */
-	 mov %g_newwim, %t_newwim
+	 mov %g_newwim, %t_saved
 
 wof_from_kernel:
 	/* There could be some user windows on the CPU.
@@ -388,7 +404,7 @@ wof_from_kernel:
 
 	/* Prepare some values needed to calculate new WIM. */
 	srl %t_twinmask, 1, %g_newwim
-	sll %t_twinmask, CORE_NWINDOWS - 1, %t_temp
+	sll %t_twinmask, CONFIG_NWINDOWS - 1, %t_temp
 
 	/* Check whether the window to be saved is user or kernel one
 	 * simultaneously calculating the mask of the last user window. */
@@ -407,7 +423,7 @@ wof_save_kernel_window:
 	 ! do not wait
 
 	/* Do our job. */
-	STORE_WINDOW(sp, 0)
+	STORE_WINDOW(sp)
 
 	restore %g0, %g0, %g0 ! Go back to trap window
 
@@ -415,7 +431,7 @@ wof_save_kernel_window:
 	wr %t_psr, %g0, %psr
 	 ! do not wait
 	/* Restore saved %g_newwim */
-	mov %t_newwim, %g_newwim
+	mov %t_saved, %g_newwim
 
 	/* Re-execute SAVE */
 	jmp %t_pc
@@ -426,7 +442,7 @@ wof_from_user:
 	 * and its value equals to the current window mask.
 	 * Calculate the new WIM using %t_wim. */
 	srl %t_wim, 1, %g_newwim
-	sll %t_wim, CORE_NWINDOWS - 1, %t_temp
+	sll %t_wim, CONFIG_NWINDOWS - 1, %t_temp
 
 wof_save_user_window:
 	/* Need to save user window.
@@ -443,7 +459,7 @@ wof_save_user_window:
 	/* %g_newwim is not needful anymore, we'll use it as temporary register
 	 * because using locals is not permitted in the current window.
 	 * Try to save registers to user stack. */
-	STORE_USER_WINDOW(sp, 0, wof_user_stack_is_corrupt, g_newwim)
+	STORE_USER_WINDOW(sp, wof_user_stack_is_corrupt, g_newwim)
 
 	restore %g0, %g0, %g0 ! Go back to trap window
 
@@ -451,7 +467,7 @@ wof_save_user_window:
 	wr %t_psr, %g0, %psr
 	 ! do not wait
 	/* Restore saved %g_newwim */
-	mov %t_newwim, %g_newwim
+	mov %t_saved, %g_newwim
 	/* Re-execute SAVE */
 	jmp %t_pc
 	 rett %t_npc
@@ -474,7 +490,7 @@ wof_user_stack_is_corrupt:
 
 	/* Calculate the mask of the last user window. */
 	sll %t_twinmask, 1, %t_uwinmask
-	srl %t_twinmask, CORE_NWINDOWS - 1, %t_temp
+	srl %t_twinmask, CONFIG_NWINDOWS - 1, %t_temp
 	or  %t_uwinmask, %t_temp, %t_uwinmask
 
 	wr %t_uwinmask, %g0, %wim
@@ -485,12 +501,13 @@ wof_from_kernel_with_corrupt_user_stack:
 	wr %t_psr, %g0, %psr
 	 ! do not wait
 	/* Restore saved %g_newwim */
-	mov %t_newwim, %g_newwim
+	mov %t_saved, %g_newwim
 	/* Re-execute SAVE */
 	jmp %t_pc
 	 rett %t_npc
 
 
 #undef g_newwim
-#undef t_newwim
+#undef t_saved
+#undef t_uwinmask
 #undef t_temp

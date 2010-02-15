@@ -22,9 +22,7 @@ typedef struct _IRQ_REGS {
 	volatile unsigned int mask;     /* 0x40 */
 } IRQ_REGS;
 
-static IRQ_REGS * dev_regs = NULL;
-
-#define ASSERT_INIT_DONE() assert_not_null(dev_regs)
+static IRQ_REGS *dev_regs = NULL;
 
 
 int irqc_init(void) {
@@ -45,19 +43,19 @@ int irqc_init(void) {
 }
 
 int irqc_enable_irq(irq_num_t irq_num) {
-	ASSERT_INIT_DONE();
+	assert_not_null(dev_regs);
 	set_bit(dev_regs->mask, irq_num);
 	return 0;
 }
 
 int irqc_disable_irq(irq_num_t irq_num) {
-	ASSERT_INIT_DONE();
+	assert_not_null(dev_regs);
 	clear_bit(dev_regs->mask, irq_num);
 	return 0;
 }
 
 int irqc_disable_all(void) {
-	ASSERT_INIT_DONE();
+	assert_not_null(dev_regs);
 	REG_STORE(dev_regs->mask, 0);
 	return 0;
 }
@@ -72,7 +70,7 @@ int irqc_force(irq_num_t irq_num) {
 }
 
 int irqc_clear(irq_num_t irq_num) {
-	ASSERT_INIT_DONE();
+	assert_not_null(dev_regs);
 	set_bit(dev_regs->clear, irq_num);
 	return 0;
 }

@@ -1,4 +1,6 @@
-OBJS-$(MONITOR_DRIVER_XILINX_EMACLITE) += xilinx_emaclite.o
-OBJS-$(MONITOR_DRIVER_LOOPBACK)        += loopback.o
 
-include $(SCRIPTS_DIR)/common.mk
+$_MODS += xemaclite loopback
+
+$_SRCS-xemaclite += xilinx_emaclite.c
+
+$_SRCS-loopback += loopback.c

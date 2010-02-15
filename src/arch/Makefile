@@ -1,7 +1,9 @@
 
-SUBDIRS-y +=$(ARCH)
+$_SUBDIRS := $(ARCH)
 
-DEFS-y +=__HAL__
+$_PACKAGE := embox.hal
 
-include $(SCRIPTS_DIR)/common.mk
+# Kernel assumes the following mods are defined.
+$_MODS += clock interrupt arch diag
 
+$_CPPFLAGS += -D__HAL__

@@ -5,7 +5,7 @@
  * \author kse
  */
 #include "shell_command.h"
-#include <hal/irq_ctrl.h>
+#include <hal/interrupt.h>
 
 #define COMMAND_NAME     "goto"
 #define COMMAND_DESC_MSG "execute image file"
@@ -19,11 +19,14 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 typedef void (*IMAGE_ENTRY)(void);
 
 void go_to(unsigned int addr) {
+	interrupt_nr_t interrupt_nr;
 	printf("Try goto 0x%08X\n", addr);
 #if 0
 	timers_off();
 #endif
-	irqc_disable_all();
+	for (interrupt_nr = 0; interrupt_nr < INTERRUPT_NRS_TOTAL; ++interrupt_nr) {
+		interrupt_disable(interrupt_nr);
+	}
 	((IMAGE_ENTRY)addr)();
 }
 

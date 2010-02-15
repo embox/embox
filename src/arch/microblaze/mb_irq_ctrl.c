@@ -12,16 +12,18 @@
 #include <hal/irq_ctrl.h>
 #include <common.h>
 
-/** microblaze interrupt controller registers definitions */
+/**
+ * Microblaze interrupt controller registers definitions.
+ */
 typedef volatile struct irqc_regs {
-	uint32_t isr;                               /**< interrupt status register */
-	uint32_t ipr;                               /**< interrupt pending register */
-	uint32_t ier;                               /**< interrupt enable register */
-	uint32_t iar;                               /**< interrupt acknowledge register */
-	uint32_t sie;                               /**< set interrupt enable bits */
-	uint32_t cie;                               /**< clear interrupt enable bits */
-	uint32_t ivr;                               /**< interrupt vector register */
-	uint32_t mer;                               /**< master enable register */
+	uint32_t isr; /**< interrupt status register */
+	uint32_t ipr; /**< interrupt pending register */
+	uint32_t ier; /**< interrupt enable register */
+	uint32_t iar; /**< interrupt acknowledge register */
+	uint32_t sie; /**< set interrupt enable bits */
+	uint32_t cie; /**< clear interrupt enable bits */
+	uint32_t ivr; /**< interrupt vector register */
+	uint32_t mer; /**< master enable register */
 } irqc_regs_t;
 
 #define MER_HIE_BIT     30

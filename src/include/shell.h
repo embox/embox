@@ -8,9 +8,6 @@
 #define SHELL_H_
 
 #include "common.h"
-#include "asm/cpu_context.h"
-
-CPU_CONTEXT shell_proc_state;
 
 typedef int (*PSHELL_HANDLER)(int argsc, char **argsv);
 

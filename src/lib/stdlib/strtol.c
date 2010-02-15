@@ -9,7 +9,7 @@
  */
 #include "stdlib.h"
 #include "ctype.h"
-#include "codes.h"
+#include "errno.h"
 
 #define	ULONG_MAX	((unsigned long)(~0L))		/* 0xFFFFFFFF */
 #define	LONG_MAX	((long)(ULONG_MAX >> 1))	/* 0x7FFFFFFF */

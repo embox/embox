@@ -8,35 +8,16 @@
 
 #include <types.h>
 #include <common.h>
-#include <hal/irq_ctrl.h>
-#include <kernel/uart.h>
-#include <kernel/timers.h>
-#include <net/net.h>
-#include <fs/rootfs.h>
-#include <asm/cache.h>
+
 #include <kernel/init.h>
+#include <kernel/timers.h>
+#include <hal/arch.h>
+#include <hal/diag.h>
+#include <hal/interrupt.h>
 #include <express_tests.h>
 
-/* That's a temporary test for microblaze only
- * (for other archs it's always correct and meaningless)
- * it fails when -o0 is set for compiler
- * In that case nothing works correctly =/ */
-static void tmp_test( void ) {
-	int a = 1;
-	TRACE("-------- tmp test -------\n");
-	a = a + 1;
-
-	/* uncommenting this line changes results of the test
-	 * when optimization level is o0 */
-
-	/* while(a==1); */
-
-	if(1<<a == 4) {
-		TRACE("tmp test OK\n");
-	} else {
-		TRACE("tmp test failed, set -o1 to compiler\n");
-	}
-}
+// XXX
+#define express_tests_execute(ign)
 
 int hardware_init_hook(void) {
 	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
@@ -47,22 +28,17 @@ int hardware_init_hook(void) {
 
 	express_tests_execute(PRE_INIT_LEVEL);
 
-	/*
-	 * Zero level initialization (+ uart)
-	 */
-	cache_data_enable();
-	cache_instr_enable();
-#if 0
-	irq_init_handlers();
-#endif
-	uart_init();
-#if 0
-	sys_timers_init();
-#endif
+	arch_init();
 
-	/* It's temporary
-	 * Just while problem with -o0 not solved */
-	tmp_test();
+	diag_init();
+
+#ifdef CONFIG_IRQ
+	irq_init();
+#endif /* CONFIG_IRQ */
+#ifdef CONFIG_TIMER
+//	sys_timers_init();
+#endif /* CONFIG_TIMER */
+
 #if 0
 	express_tests_execute(0);
 #endif

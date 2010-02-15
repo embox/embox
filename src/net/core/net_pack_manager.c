@@ -7,9 +7,11 @@
 #include <common.h>
 #include <net/netdevice.h>
 #include <lib/list.h>
-#include <asm/spin_lock.h>
 #include <kernel/module.h>
 #include <net/net_pack_manager.h>
+
+#include <linux/init.h>
+#include <linux/spinlock.h>
 
 typedef struct net_buff_info {
 	/*it must be first member! We use casting in net_buff_free function*/
@@ -32,7 +34,8 @@ int __init net_buff_init(void) {
 unsigned char *net_buff_alloc(void) {
 	net_buff_info_t *entry;
 	unsigned char * buff;
-	unsigned long sp = spin_lock();
+	unsigned long sp;
+	spin_lock(sp);
 	if (list_empty (&head_free_pack)) {
 		spin_unlock(sp);
 		return NULL;
@@ -46,7 +49,8 @@ unsigned char *net_buff_alloc(void) {
 
 void net_buff_free(unsigned char *buff) {
 	net_buff_info_t *pack;
-	unsigned long sp = spin_lock();
+	unsigned long sp;
+	spin_lock(sp);
 	/*return buff into pull*/
 	/* we can cast like this because buff is first element of
 	 * struct socket_info

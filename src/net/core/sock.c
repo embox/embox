@@ -11,12 +11,15 @@
  */
 #include <string.h>
 #include <common.h>
-#include <codes.h>
+#include <errno.h>
 #include <kernel/module.h>
 #include <kernel/irq.h>
 #include <net/skbuff.h>
 #include <net/sock.h>
 #include <net/udp.h>
+
+#include <linux/init.h>
+#include <asm/system.h>
 
 typedef struct sock_info {
 	/*FIXME NETSOCK: now we use just udp_sock pull. It is the biggest of sock
@@ -41,18 +44,19 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		int family) {
 	struct sock *sock;
 	struct list_head *entry;
+	unsigned long flags;
 
-	unsigned long irq_old = local_irq_save();
+	local_irq_save(flags);
 
 	if (list_empty(&head_free_sock)) {
-		local_irq_restore(irq_old);
+		local_irq_restore(flags);
 		return NULL;
 	}
 	entry = (&head_free_sock)->next;
 	list_del_init(entry);
 	sock = (struct sock *) list_entry(entry, sock_info_t, list);
 
-	local_irq_restore(irq_old);
+	local_irq_restore(flags);
 
 	return sock;
 }
@@ -64,7 +68,7 @@ static void sk_prot_free(struct proto *prot, struct sock *sk) {
 		return;
 	}
 
-	irq_old = local_irq_save();
+	local_irq_save(irq_old);
 	sock_info = (sock_info_t *) sk;
 	list_add(&sock_info->list, &head_free_sock);
 	local_irq_restore(irq_old);

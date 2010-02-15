@@ -4,6 +4,7 @@
  * @date 24.11.2009
  * @author Anton Bondarev
  */
+
 #include <types.h>
 #include <asm/traps.h>
 #include <kernel/irq.h>
@@ -25,10 +26,6 @@ void dispatch_trap(uint8_t tt, uint32_t *sp) {
 	if (CHECK_IRQ_TRAP(tt)){
 		irq_dispatch(IRQ_GET_NUMBER(tt));
 		return ;
-	}
-	if (user_trap_handlers[tt] != NULL) {
-		// fire user handler!
-		user_trap_handlers[tt](0, NULL, NULL);
 	}
 #endif
 }

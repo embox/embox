@@ -4,21 +4,24 @@
  * Author: Eldar Abusalimov
  */
 
+#define target(target) make(TARGET := target)
+#define arch(arch) make(ARCH := arch)
+#define platform(platform) make(PLATFORM := platform)
+#define mod(mod) make(MODS_ENABLE += mod)
+
 #ifdef MAKE
 
-#define target(target) TARGET:=target
-#define arch(arch) ARCH:=arch
 #define make(str) str
-#define option(option) MONITOR_##option=y
+#define option(option) option_value(option, 1)
+#define option_value(option, value) CONFIG_##option := value
 #define test(test_name, level, on_boot) option(TEST_##test_name)
 
 #else
 
-#define target(target)
-#define arch(arch)
 #define make(str)
-#define option(option) \
-	$define CONFIG_##option
+#define option(option) option_value(option, 1)
+#define option_value(option, value) \
+	$define CONFIG_##option value
 
 #define test(test_name, level, on_boot) \
 	option(test_name) \
@@ -48,13 +51,7 @@
 
 #endif /* LDS */
 
-//#include "common.conf"
 #include "build.conf"
 #include "lds.conf"
-//#include "drivers.conf"
-//#include "fs.conf"
-//#include "net.conf"
-//#include "tests.conf"
-/*#include "usr.conf"*/
-#include "ugly.conf"
-#include "subsystems.conf"
+#include "platform.conf"
+#include "embox.conf"

@@ -86,15 +86,23 @@
  * @author Eldar Abusalimov
  */
 
-#include <asm/reg_alias.h>
-#include <asm/trap_regs.h>
+#include <asm/regs.h>
+#include <asm/psr.h>
+#include <asm/asi.h>
+#include <asm/ptrace.h>
 #include <asm/winmacro.h>
 
 	.text
 	.align 4
 
+/* Trap post-setup. */
+
+/** Used for new WIM calculation and inter-window reference. */
 #define g_newwim g1
+/** For temporal computations. */
 #define g_temp   g2
+/** The mask of the last user window (if any). */
+#define t_uwinmask   t_retpc
 
 /**
  * Performs some post-trap-handler routines such as
@@ -114,13 +122,13 @@ trap_setup_end:
 	 */
 
 	/* First of all, restore some important locals. */
-	LOAD_TR_PRIV(sp, t_psr, t_pc, t_npc)
+	LOAD_PT_PRIV(sp, t_psr, t_pc, t_npc)
 
 	mov 0x1, %t_twinmask
 	sll %t_twinmask, %t_psr, %t_twinmask
 	/* Calculate the mask of the window that will be entered after RETT. */
 	sll %t_twinmask, 1, %t_uwinmask
-	srl %t_twinmask, CORE_NWINDOWS - 1, %g_temp
+	srl %t_twinmask, CONFIG_NWINDOWS - 1, %g_temp
 	or  %t_uwinmask, %g_temp, %t_uwinmask
 
 	/* Check whether we are going to return to kernel or user code... */
@@ -139,7 +147,7 @@ tse_kernel:
 
 tse_finishup:
 	/* Restore trap time registers from the stack. */
-	LOAD_TR_UNPRIV(sp, g_temp)
+	LOAD_PT_UNPRIV(sp, g_temp)
 
 	/* see you soon! */
 	jmp %t_pc
@@ -153,22 +161,18 @@ tse_kernel_wuf:
 	/* WIM has got only one bit set, and there are no user windows.
 	 * Calculate new WIM (circular left shifting). */
 	sll %t_uwinmask, 1, %g_newwim
-	srl %t_uwinmask, CORE_NWINDOWS - 1, %g_temp
+	srl %t_uwinmask, CONFIG_NWINDOWS - 1, %g_temp
 	wr %g_newwim, %g_temp, %wim
 	 ! do not wait
 
-	/* Restore trap time unprivileged registers (except globals). */
-	LOAD_TR_YREG(sp, g_temp)
-	LOAD_TR_INS(sp)
+	/* Restore trap time unprivileged registers from the stack. */
+	LOAD_PT_UNPRIV(sp, g_temp)
 
 	restore ! get into the window to be restored
 
-	LOAD_WINDOW(sp, 0)
+	LOAD_WINDOW(sp)
 
 	save ! Get back to the trap window
-
-	/* Restore trap time globals from the stack. */
-	LOAD_TR_GLOBALS(sp)
 
 	jmp %t_pc
 	 rett %t_npc
@@ -194,7 +198,7 @@ tse_user_wuf:
 
 	/* Calculate new WIM. */
 	sll %t_uwinmask, 1, %g_newwim
-	srl %t_uwinmask, CORE_NWINDOWS - 1, %g_temp
+	srl %t_uwinmask, CONFIG_NWINDOWS - 1, %g_temp
 	or  %g_newwim, %g_temp, %g_newwim
 
 	restore ! get into the window to be restored
@@ -203,7 +207,7 @@ tse_user_wuf:
 
 	/* Locals are about to be reloaded, so we may trash them.
 	 * Attempt to restore the registers. */
-	LOAD_USER_WINDOW(sp, 0, tse_user_stack_is_corrupt, l0)
+	LOAD_USER_WINDOW(sp, tse_user_stack_is_corrupt, l0)
 
 	save ! Get back to trap window
 
@@ -214,9 +218,12 @@ tse_user_wuf:
 #undef g_newwim
 #undef g_temp
 
+/* Window underflow trap. */
 
-#define t_newwim t_ksp
-#define t_temp   t_retpc
+/** Used for new WIM calculation. */
+#define t_newwim local
+/** For temporal computations. */
+#define t_temp   temp
 
 /**
  * Window underflow handling routine.
@@ -236,7 +243,7 @@ window_underflow:
 
 	/* Calculate new WIM. */
 	sll %t_wim, 1, %t_newwim
-	srl %t_wim, CORE_NWINDOWS - 1, %t_temp
+	srl %t_wim, CONFIG_NWINDOWS - 1, %t_temp
 	wr %t_newwim, %t_temp, %wim
 	 ! do not wait
 
@@ -256,7 +263,7 @@ wuf_from_kernel:
 	restore ! two restores to get into the window to be loaded
 	restore
 
-	LOAD_WINDOW(sp, 0)
+	LOAD_WINDOW(sp)
 
 	save
 	save ! Get back to trap window
@@ -270,7 +277,7 @@ wuf_from_user:
 
 	/* Locals are about to be reloaded, so we may trash them.
 	 * Attempt to restore the registers. */
-	LOAD_USER_WINDOW(sp, 0, wuf_user_stack_is_corrupt, l0)
+	LOAD_USER_WINDOW(sp, wuf_user_stack_is_corrupt, l0)
 
 	save
 	save ! Get back to trap window

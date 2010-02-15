@@ -19,6 +19,8 @@
 #include <net/checksum.h>
 #include <net/protocol.h>
 
+#include <linux/init.h>
+
 /**
  * Build xmit assembly blocks
  */

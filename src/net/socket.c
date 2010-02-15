@@ -20,6 +20,8 @@
 #include <net/protocol.h>
 #include <net/kernel_socket.h>
 
+#include <linux/init.h>
+
 int __init sock_init(void) {
 	kernel_sock_init();
 	sk_init();

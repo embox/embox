@@ -1,6 +1,5 @@
 /**
- * @file interrupt.h
- *
+ * @file
  * @brief Interrupt controller interface.
  *
  * @date 25.11.2009
@@ -10,7 +9,7 @@
 #ifndef HAL_INTERRUPT_H_
 #define HAL_INTERRUPT_H_
 
-#include <asm/haldefs.h>
+#include <asm/hal/interrupt.h>
 
 /**
  * Total amount of interrupt lines available on the controller.
@@ -21,8 +20,10 @@
 #define INTERRUPT_NRS_TOTAL __INTERRUPT_NRS_TOTAL
 
 /**
- * Checks if the specified interrupt_nr is less then
- * @link INTERRUPT_NRS_TOTAL @endlink value.
+ * Checks if the specified interrupt_nr is less then @link
+ * INTERRUPT_NRS_TOTAL @endlink value. Most HAL methods @link assert @endlink
+ * that input @link interrupt_nr_t @endlink argument is valid, so kernel should
+ * perform necessary checks by itself.
  */
 #define interrupt_nr_valid(interrupt_nr) \
 	((interrupt_nr_t) interrupt_nr < (interrupt_nr_t) INTERRUPT_NRS_TOTAL)
@@ -37,7 +38,7 @@
 typedef __interrupt_nr_t interrupt_nr_t;
 
 /**
- * Initializes interrupt controller
+ * Initializes interrupt controller.
  *
  * @note Implementation have to perform basic controller initialization,
  * disabling all interrupts and clearing any pending IRQs (if needed).

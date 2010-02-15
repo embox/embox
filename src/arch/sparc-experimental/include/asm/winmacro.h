@@ -43,6 +43,8 @@
 
 #ifndef __ASSEMBLER__
 
+#define REG_WINDOW_SZ sizeof(struct reg_window)
+
 /**
  * SPARC register window.
  */
@@ -50,8 +52,6 @@ struct reg_window {
 	uint32_t locals[8];
 	uint32_t ins[8];
 }__attribute__ ((aligned (8)));
-
-#define REG_WINDOW_SZ sizeof(struct reg_window)
 
 #else /* __ASSEMBLER__ */
 
@@ -79,28 +79,30 @@ struct reg_window {
 /**
  * Store the register window onto the 8-byte aligned area starting at %reg.
  */
-#define STORE_WINDOW(reg, offset) \
-	std %l0, [%reg + (offset) + RW_L0]; \
-	std %l2, [%reg + (offset) + RW_L2]; \
-	std %l4, [%reg + (offset) + RW_L4]; \
-	std %l6, [%reg + (offset) + RW_L6]; \
-	std %i0, [%reg + (offset) + RW_I0]; \
-	std %i2, [%reg + (offset) + RW_I2]; \
-	std %i4, [%reg + (offset) + RW_I4]; \
-	std %i6, [%reg + (offset) + RW_I6];
+#define STORE_WINDOW(reg) \
+	std %l0, [%reg + RW_L0]; \
+	std %l2, [%reg + RW_L2]; \
+	std %l4, [%reg + RW_L4]; \
+	std %l6, [%reg + RW_L6]; \
+	std %i0, [%reg + RW_I0]; \
+	std %i2, [%reg + RW_I2]; \
+	std %i4, [%reg + RW_I4]; \
+	std %i6, [%reg + RW_I6];
 
 /**
  * Load a register window from the 8-byte aligned area beginning at %reg.
  */
-#define LOAD_WINDOW(reg, offset) \
-	ldd [%reg + (offset) + RW_L0], %l0; \
-	ldd [%reg + (offset) + RW_L2], %l2; \
-	ldd [%reg + (offset) + RW_L4], %l4; \
-	ldd [%reg + (offset) + RW_L6], %l6; \
-	ldd [%reg + (offset) + RW_I0], %i0; \
-	ldd [%reg + (offset) + RW_I2], %i2; \
-	ldd [%reg + (offset) + RW_I4], %i4; \
-	ldd [%reg + (offset) + RW_I6], %i6;
+#define LOAD_WINDOW(reg) \
+	ldd [%reg + RW_L0], %l0; \
+	ldd [%reg + RW_L2], %l2; \
+	ldd [%reg + RW_L4], %l4; \
+	ldd [%reg + RW_L6], %l6; \
+	ldd [%reg + RW_I0], %i0; \
+	ldd [%reg + RW_I2], %i2; \
+	ldd [%reg + RW_I4], %i4; \
+	ldd [%reg + RW_I6], %i6;
+
+#ifdef CONFIG_SRMMU
 
 /**
  * Performs basic stack pointer checks and probes the MMU
@@ -134,13 +136,17 @@ struct reg_window {
 	be corrupt_stack_branch;                   \
 	 nop;
 
-#define STORE_USER_WINDOW(reg, offset, corrupt_stack_branch, scratch) \
-	USER_STACK_PROBE(corrupt_stack_branch, scratch) \
-	STORE_WINDOW(reg, offset)
+#else
+#define USER_STACK_PROBE(corrupt_stack_branch, scratch)
+#endif /* CONFIG_SRMMU */
 
-#define LOAD_USER_WINDOW(reg, offset, corrupt_stack_branch, scratch) \
+#define STORE_USER_WINDOW(reg, corrupt_stack_branch, scratch) \
 	USER_STACK_PROBE(corrupt_stack_branch, scratch) \
-	LOAD_WINDOW(reg, offset)
+	STORE_WINDOW(reg)
+
+#define LOAD_USER_WINDOW(reg, corrupt_stack_branch, scratch) \
+	USER_STACK_PROBE(corrupt_stack_branch, scratch) \
+	LOAD_WINDOW(reg)
 
 #endif /* __ASSEMBLER__ */
 

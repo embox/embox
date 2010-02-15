@@ -1,7 +1,7 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#ifdef _TEST_SYSTEM_
+#ifdef __EMBOX__
 #include "autoconf.h"
 #include "types.h"
 #include "stdio.h"
@@ -12,7 +12,7 @@
 #endif
 
 #if defined(CONFIG_TRACE) && !defined(SIMULATION_TRG)
-# ifdef _TEST_SYSTEM_
+# ifdef __EMBOX__
 #  define TRACE(...)  printf(__VA_ARGS__)
 # else
 #  define TRACE(...)  printk(__VA_ARGS__)
@@ -24,7 +24,7 @@
 #define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}
 #define array_len(array)		(sizeof(array) / sizeof(array[0]))
 
-#ifdef _TEST_SYSTEM_
+#ifdef __EMBOX__
 #define REG_LOAD(a)	a
 #define REG_STORE(a,v) a=v
 #define REG_ORIN(a,v) (REG_STORE(a,(REG_LOAD(a) | (v))))
@@ -34,5 +34,5 @@
 #define REG_STORE(a,v) (LEON3_BYPASS_STORE_PA(&(a),v))
 #define REG_ORIN(a,v) (REG_STORE(a,(REG_LOAD(a) | (v))))
 #define REG_ANDIN(a,v) (REG_STORE(a,(REG_LOAD(a) & (v))))
-#endif /* _TEST_SYSTEM_*/
+#endif /* __EMBOX__*/
 #endif /* _COMMON_H_ */

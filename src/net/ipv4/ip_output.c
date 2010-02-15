@@ -18,6 +18,8 @@
 #include <net/route.h>
 #include <net/checksum.h>
 
+#include <linux/init.h>
+
 void __init ip_init(void) {
 	ip_rt_init();
 }

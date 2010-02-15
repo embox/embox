@@ -10,24 +10,28 @@ ifndef ROOT_DIR
 $(error ROOT_DIR undefined)
 endif
 
-MK_DIR       :=$(ROOT_DIR)/mk
-CONF_DIR     :=$(ROOT_DIR)/conf
-BACKUP_DIR   :=$(ROOT_DIR)/conf/backup~
-SCRIPTS_DIR  :=$(ROOT_DIR)/scripts
-TEMPLATES_DIR:=$(ROOT_DIR)/templates
-SRC_DIR      :=$(ROOT_DIR)/src
+MK_DIR         :=$(ROOT_DIR)/mk
+SCRIPTS_DIR    :=$(ROOT_DIR)/scripts
+TEMPLATES_DIR  :=$(ROOT_DIR)/templates
+THIRDPARTY_DIR :=$(ROOT_DIR)/third-party
+PLATFORM_DIR   :=$(ROOT_DIR)/platform
+SRC_DIR        :=$(ROOT_DIR)/src
 
-BUILD_DIR    :=$(ROOT_DIR)/build
-BIN_DIR      :=$(BUILD_DIR)/bin
-OBJ_DIR      :=$(BUILD_DIR)/obj
-LIB_DIR      :=$(BUILD_DIR)/lib
-DOCS_DIR     :=$(BUILD_DIR)/docs
-AUTOCONF_DIR :=$(BUILD_DIR)/conf
+CONF_DIR       :=$(ROOT_DIR)/conf
+BACKUP_DIR     :=$(ROOT_DIR)/conf/backup~
+
+BUILD_DIR      :=$(ROOT_DIR)/build
+BIN_DIR        :=$(BUILD_DIR)/bin
+OBJ_DIR        :=$(BUILD_DIR)/obj
+MOD_DIR        :=$(BUILD_DIR)/mod
+LIB_DIR        :=$(BUILD_DIR)/lib
+DOCS_DIR       :=$(BUILD_DIR)/docs
+AUTOCONF_DIR   :=$(BUILD_DIR)/conf
 
 RM          :=rm -f
 EDITOR      :=emacs
 
-TEMPLATES =$(notdir $(wildcard $(TEMPLATES_DIR)/*))
+TEMPLATES = $(notdir $(wildcard $(TEMPLATES_DIR)/*))
 
 makegoals:=$(MAKECMDGOALS)
 ifeq ($(makegoals),)
@@ -49,9 +53,9 @@ prepare:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(BIN_DIR)
 	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(MOD_DIR)
 	@mkdir -p $(LIB_DIR)
 	@mkdir -p $(AUTOCONF_DIR)
-	@mkdir -p $(DIRS_ALL)
 
 docs:
 	doxygen

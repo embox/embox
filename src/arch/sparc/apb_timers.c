@@ -30,8 +30,6 @@ typedef struct _TIMERS_STRUCT {
 	volatile unsigned int timer_ctrl2;/**< 0x28 */
 } TIMERS_STRUCT;
 
-static TIMERS_STRUCT * dev_regs = NULL;
-
 #define ASSERT_INIT_DONE() assert_not_null(dev_regs)
 
 #ifndef SIMULATION_TRG
@@ -62,7 +60,7 @@ static void show_module_info(AMBA_DEV * dev) {
 }
 #endif
 
-int timers_ctrl_init(IRQ_HANDLER irq_handler) {
+int timers_ctrl_init(irq_handler_t irq_handler) {
 	uint8_t irq;
 	if (dev_regs) {
 		return -1;
@@ -89,5 +87,6 @@ int timers_ctrl_init(IRQ_HANDLER irq_handler) {
 	REG_STORE(dev_regs->timer_ctrl1, 0xf);
 	REG_STORE(dev_regs->timer_ctrl2, 0x0); /**< disable */
 
-	return request_irq(irq, irq_handler, 0, "apb_timer", NULL);
+	return irq_attach(irq, irq_handler, 0, NULL, "apb_timer");
 }
+

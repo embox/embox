@@ -1,9 +1,33 @@
-OBJS-$(MONITOR_KERNEL) += main.o
-OBJS-$(MONITOR_SYSTEM_IRQ) += irq.o
-OBJS-$(MONITOR_SYSTEM_TIMERS) += timers_common.o
-OBJS-$(MONITOR_KERNEL) += init.o
-OBJS-$(MONITOR_SOFT_IRQ) += softirq.o
 
-DEFS-y +=__KERNEL__
+$_PACKAGE := embox.kernel
 
-include $(SCRIPTS_DIR)/common.mk
+$_MODS_ESSENTIAL += main
+$_MODS += irq timer printk softirq
+
+$_SRCS-main += main.c
+$_SRCS-main += init.c
+$_SRCS-main += panic.c
+$_SRCS-irq += irq.c
+$_SRCS-softirq += softirq.c
+$_SRCS-printk += printk.c
+$_SRCS-timer += timers_common.c
+
+$_DEPS-main += printk
+$_DEPS-main += embox.hal.arch
+ifdef CONFIG_IRQ
+  $_DEPS-main += irq
+endif
+ifdef CONFIG_TIMER
+  $_DEPS-main += timer
+endif
+
+$_DEPS-irq += embox.hal.interrupt
+ifdef CONFIG_SOFTIRQ
+  $_DEPS-irq += softirq
+endif
+
+$_DEPS-timer += embox.hal.clock
+$_DEPS-timer += embox.hal.clock
+$_DEPS-printk += embox.hal.diag
+
+$_CPPFLAGS += -D__KERNEL__

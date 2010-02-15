@@ -15,7 +15,6 @@
 #include <kernel/module.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
-#include <asm/spin_lock.h>
 
 DECLARE_MODULE("Loopback", module_init);
 #if 0

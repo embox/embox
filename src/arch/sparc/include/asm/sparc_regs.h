@@ -116,13 +116,13 @@
 /** Circular right shifting by 1 bit */
 #define WIM_SHIFT_RIGHT(r_oldwim, r_newwim, scratch) \
 	srl %r_oldwim, 1, %r_newwim;                   \
-	sll %r_oldwim, CORE_NWINDOWS - 1, %scratch;    \
+	sll %r_oldwim, CONFIG_NWINDOWS - 1, %scratch;    \
 	or %r_newwim, %scratch, %r_newwim;
 
 /** Circular left shifting by 1 bit */
 #define WIM_SHIFT_LEFT(r_oldwim, r_newwim, scratch)  \
 	sll %r_oldwim, 1, %r_newwim;                   \
-	srl %r_oldwim, CORE_NWINDOWS - 1, %scratch;    \
+	srl %r_oldwim, CONFIG_NWINDOWS - 1, %scratch;    \
 	or %r_newwim, %scratch, %r_newwim;
 
 #define WRITE_PAUSE  nop; nop; nop;

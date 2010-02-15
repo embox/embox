@@ -1,10 +1,4 @@
-SUBDIRS-y += arch
-SUBDIRS-y += kernel
-SUBDIRS-y += drivers
-SUBDIRS-y += lib
-SUBDIRS-y += testsuites
-SUBDIRS-y += fs
-SUBDIRS-y += user
-SUBDIRS-y += net
 
-include $(SCRIPTS_DIR)/common.mk
+$_SUBDIRS := $(filter-out include tests% fs,$($_SUBDIRS))
+
+$_PACKAGE := embox

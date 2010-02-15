@@ -3,18 +3,24 @@
  *
  * @date 23.11.09
  * @author Nikolay Korotky
+ * @author Eldar Abusalimov
  */
-#ifndef _STDIO_H_
-#define _STDIO_H_
 
-#include "types.h"
+#ifndef STDIO_H_
+#define STDIO_H_
 
-extern int puts (const char *S);
+#define EOF (-1)
+
+extern int puts(const char *s);
+extern int putchar(int c);
+
+extern char *gets(char *s);
+extern int getchar(void);
 
 /**
  * Write formatted output to stdout from the format string FORMAT.
  */
-extern int printf (const char *format, ...);
+extern int printf(const char *format, ...);
 
 /**
  * Write formatted output into S, according to the format string FORMAT.
@@ -24,11 +30,11 @@ extern int sprintf(char *s, const char *format, ...);
 /**
  * Read formatted input from stdin according to the format string FORMAT.
  */
-extern int scanf (const char *format, ...);
+extern int scanf(const char *format, ...);
 
 /**
  * Read formatted input from S, according to the format string FORMAT.
  */
-extern int sscanf (char *out, const char *format, ...);
+extern int sscanf(char *out, const char *format, ...);
 
-#endif /* _STDIO_H_ */
+#endif /* STDIO_H_ */

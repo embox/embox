@@ -1,8 +1,9 @@
-OBJS-y  += dev.o
-OBJS-y  += net_pack_manager.o
-OBJS-y  += devinet.o
-OBJS-y  += sock.o
-OBJS-y  += skbuff.o
-OBJS-y  += net_init.o
 
-include $(SCRIPTS_DIR)/common.mk
+$_MODS += core
+
+$_SRCS-core  += dev.c
+$_SRCS-core  += net_pack_manager.c
+$_SRCS-core  += devinet.c
+$_SRCS-core  += sock.c
+$_SRCS-core  += skbuff.c
+$_SRCS-core  += net_init.c

@@ -5,6 +5,7 @@
 #include <types.h>
 #include <unistd.h>
 #include <kernel/irq.h>
+#include <hal/clock.h>
 #include <kernel/timers.h>
 #include <time.h>
 #include <common.h> /*for array_len*/
@@ -72,12 +73,10 @@ static void inc_sys_timers (void) {
         }
 }
 
-static void irq_func_tmr_1mS(int irq_num, void *dev_id, struct pt_regs *regs) {
-        unsigned long irq = local_irq_save();
+void irq_func_tmr_1mS(int irq_num, void *dev_id) {
         cnt_ms_sleep++;
         cnt_sys_time++;
         inc_sys_timers();
-        local_irq_restore(irq);
 }
 
 static int sys_timers_init(void) {
@@ -86,13 +85,12 @@ static int sys_timers_init(void) {
         for (i = 0; i < array_len(sys_timers); i++) {
                 set_sys_timer_disable(i);
         }
-        return timers_ctrl_init(irq_func_tmr_1mS);
+        clock_init();
+        return 0;
 }
 
 int usleep(useconds_t usec) {
-        unsigned int irq = local_irq_save();
         cnt_ms_sleep = 0;
-        local_irq_restore(irq);
 
         while (cnt_ms_sleep < usec) {}
         return 0;

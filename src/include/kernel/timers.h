@@ -9,11 +9,6 @@
 
 #ifndef __ASSEMBLER__
 
-/**
- * Initialization of timers subsystem
- */
-int timers_ctrl_init(IRQ_HANDLER);
-
 typedef void (*TIMER_FUNC)(uint32_t id);
 
 /*int sys_timers_init(void);*/

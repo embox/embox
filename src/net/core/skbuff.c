@@ -13,8 +13,10 @@
 #include <lib/list.h>
 #include <net/skbuff.h>
 #include <net/sock.h>
-#include <asm/spin_lock.h>
 #include <net/net_pack_manager.h>
+
+#include <linux/init.h>
+#include <linux/spinlock.h>
 
 static struct sk_buff sk_buff_pool[QUANTITY_SKB];
 static LIST_HEAD(head_free_skb);
@@ -24,7 +26,8 @@ static LIST_HEAD(head_free_queue);
 
 struct sk_buff_head *alloc_skb_queue(int len) {
 	struct sk_buff_head *queue;
-	unsigned long sp = spin_lock();
+	unsigned long sp;
+	spin_lock(sp);
 	if (list_empty(&head_free_queue)) {
 		spin_unlock(sp);
 		return NULL;
@@ -59,7 +62,8 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
 	struct sk_buff *skb;
 	/*TODO only one packet now*/
 
-	unsigned long sp = spin_lock();
+	unsigned long sp;
+	spin_lock(sp);
 	if (list_empty(&head_free_skb)) {
 		spin_unlock(sp);
 		return NULL;
@@ -83,7 +87,7 @@ void kfree_skb(struct sk_buff *skb) {
 		return;
 	}
 	net_buff_free(skb->data);
-	sp = spin_lock();
+	spin_lock(sp);
 	if ((NULL == skb->prev) || (NULL == skb->next)) {
 		list_add((struct list_head *) skb, (struct list_head *) &head_free_skb);
 	} else {
@@ -98,7 +102,7 @@ void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
 	if (NULL == list || NULL == newsk) {
 		return;
 	}
-	sp = spin_lock();
+	spin_lock(sp);
 	list_move_tail((struct list_head *) newsk, (struct list_head *) list);
 	list->qlen++;
 	spin_unlock(sp);
@@ -124,7 +128,8 @@ void skb_unlink(sk_buff_t *skb, struct sk_buff_head *list) {
 
 sk_buff_t *skb_dequeue(struct sk_buff_head *list) {
 	struct sk_buff *skb;
-	unsigned long sp = spin_lock();
+	unsigned long sp;
+	spin_lock(sp);
 	skb = skb_peek(list);
 	if (skb) {
 		skb_unlink(skb, list);
@@ -176,9 +181,10 @@ struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority) {
 
 struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
 				  int noblock, int *err) {
-	printf("skb_recv_datagram\n");
 	struct sk_buff *skb;
-	unsigned long sp = spin_lock();
+	printf("skb_recv_datagram\n");
+	unsigned long sp;
+	spin_lock(sp);
 	skb = skb_peek(&sk->sk_receive_queue);
 	if (skb) {
 		skb_unlink(skb, &sk->sk_receive_queue);

@@ -8,8 +8,8 @@
 #define NET_H_
 
 #include <types.h>
-#include <kernel/compiler.h>
-#include <kernel/aio.h>
+#include <linux/compiler.h>
+#include <linux/aio.h>
 #include <net/socket.h>
 
 #define IPV4_ADDR_LENGTH            0x4

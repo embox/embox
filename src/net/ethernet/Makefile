@@ -1,3 +1,4 @@
-OBJS-y += eth.o
 
-include $(SCRIPTS_DIR)/common.mk
+$_MODS += eth
+
+$_SRCS-eth += eth.c

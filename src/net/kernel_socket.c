@@ -9,11 +9,13 @@
  * @author Anton Bondarev
  */
 #include <common.h>
-#include <codes.h>
+#include <errno.h>
 #include <kernel/irq.h>
 #include <lib/list.h>
 #include <net/socket.h>
 #include <net/net.h>
+
+#include <asm/system.h>
 
 typedef struct socket_info {
 	/*it must be first member! We use casting in sock_realize function*/
@@ -35,18 +37,19 @@ static const struct net_proto_family *net_families[NPROTO];
 static struct socket *sock_alloc(void) {
 	struct socket *sock;
 	struct list_head *entry;
+	unsigned long flags;
 
-	unsigned long irq_old = local_irq_save();
+	local_irq_save(flags);
 
 	if (list_empty(&head_free_sk)) {
-		local_irq_restore(irq_old);
+		local_irq_restore(flags);
 		return NULL;
 	}
 	entry = (&head_free_sk)->next;
 	list_del_init(entry);
 	sock = (struct socket *) list_entry(entry, socket_info_t, list);
 
-	local_irq_restore(irq_old);
+	local_irq_restore(flags);
 
 	return sock;
 }
@@ -60,7 +63,7 @@ void kernel_sock_release(struct socket *sock) {
 	/*release struct sock*/
 	sock->ops->release(sock);
 
-	irq_old = local_irq_save();
+	local_irq_save(irq_old);
 	/*return sock into pull*/
 	/* we can cast like this because struct socket is first element of
 	 * struct socket_info

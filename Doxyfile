@@ -88,10 +88,10 @@ WARN_LOGFILE =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-INPUT = src
+INPUT = src/kernel src/arch/sparc-experimental/kernel
 INPUT_ENCODING = UTF-8
 FILE_PATTERNS = *.c *.h *.S
-RECURSIVE = YES
+RECURSIVE = NO
 EXCLUDE =
 EXCLUDE_SYMLINKS = NO
 EXCLUDE_PATTERNS = */third_party/* */tests/* .git/*
@@ -229,7 +229,7 @@ EXPAND_ONLY_PREDEF = NO
 SEARCH_INCLUDES = YES
 INCLUDE_PATH =
 INCLUDE_FILE_PATTERNS =
-PREDEFINED = _TEST_SYSTEM_
+PREDEFINED = __EMBOX__
 EXPAND_AS_DEFINED =
 SKIP_FUNCTION_MACROS = YES
 

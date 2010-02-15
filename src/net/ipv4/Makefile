@@ -1,15 +1,18 @@
-OBJS-$(MONITOR_NET_ARP)     += arp.o
-OBJS-$(MONITOR_NET_IP_V4)   += ip_input.o
-OBJS-$(MONITOR_NET_IP_V4)   += ip_output.o
-OBJS-$(MONITOR_NET_ICMP)    += icmp.o
-OBJS-$(MONITOR_NET_UDP)     += udp.o
-OBJS-$(MONITOR_NET_SOCKRAW) += raw.o
-#OBJS-$(MONITOR_NET_TFTP)    += tftp.o
-#OBJS-$(MONITOR_NET_DHCP)    += dhcp.o
-#OBJS-$(MONITOR_NET_BOOTP)   += bootp.o
-OBJS-y                      += protocol.o
-OBJS-y                      += route.o
-OBJS-y                      += af_inet.o
-OBJS-y                      += ipconfig.o
 
-include $(SCRIPTS_DIR)/common.mk
+$_MODS += af_inet ipv4 arp icmp udp raw
+#$_MODS += tftp dhcp bootp
+
+$_SRCS-af_inet += af_inet.c
+$_SRCS-af_inet += protocol.c
+$_SRCS-af_inet += route.c
+$_SRCS-af_inet += ipconfig.c
+
+$_SRCS-arp     += arp.c
+$_SRCS-ipv4    += ip_input.c
+$_SRCS-ipv4    += ip_output.c
+$_SRCS-icmp    += icmp.c
+$_SRCS-udp     += udp.c
+$_SRCS-raw     += raw.c
+#$_SRCS-tftp    += tftp.c
+#$_SRCS-dhcp    += dhcp.c
+#$_SRCS-bootp   += bootp.c

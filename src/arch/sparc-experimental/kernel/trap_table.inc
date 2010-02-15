@@ -4,8 +4,8 @@ SRMMU_TFAULT;                 ! 01 instruction_access_exception
 BAD_TRAP;                     ! 02 illegal_instruction
 BAD_TRAP;                     ! 03 priveleged_instruction
 BAD_TRAP;                     ! 04 fp_disabled
-TRAP_ENTRY(window_overflow);  ! 05 window_overflow
-TRAP_ENTRY(window_underflow); ! 06 window_underflow
+WOF_TRAP;                     ! 05 window_overflow
+WUF_TRAP;                     ! 06 window_underflow
 BAD_TRAP;                     ! 07 memory_address_not_aligned
 BAD_TRAP;                     ! 08 fp_exception
 SRMMU_DFAULT;                 ! 09 data_access_exception
@@ -18,21 +18,21 @@ BAD_TRAP;                     ! 0F undefined
 BAD_TRAP;                     ! 10 undefined
 
 /* Interrupt entries */
-BAD_TRAP;                     ! 11 interrupt level  1 - IRQ_AHB_error
-TRAP_ENTRY_INTERRUPT;         ! 12 interrupt level  2 - IRQ_UART2
-TRAP_ENTRY_INTERRUPT;         ! 13 interrupt level  3 - IRQ_UART1
-TRAP_ENTRY_INTERRUPT;         ! 14 interrupt level  4
-TRAP_ENTRY_INTERRUPT;         ! 15 interrupt level  5
-TRAP_ENTRY_INTERRUPT;         ! 16 interrupt level  6
-TRAP_ENTRY_INTERRUPT;         ! 17 interrupt level  7
-TRAP_ENTRY_INTERRUPT;         ! 18 interrupt level  8 - IRQ_Timer1
-TRAP_ENTRY_INTERRUPT;         ! 19 interrupt level  9 - IRQ_Timer2
-TRAP_ENTRY_INTERRUPT;         ! 1A interrupt level 10
-BAD_TRAP;                     ! 1B interrupt level 11 - IRQ_DSU
-TRAP_ENTRY_INTERRUPT;         ! 1C interrupt level 12
-TRAP_ENTRY_INTERRUPT;         ! 1D interrupt level 13
-TRAP_ENTRY_INTERRUPT;         ! 1E interrupt level 14 - IRQ_PCI
-TRAP(halt_trap);              ! 1F interrupt level 15 - IRQ_Halt (NMI)
+TRAP_ENTRY_INTERRUPT(0x1);         ! 11 interrupt level  1 - IRQ_AHB_error
+TRAP_ENTRY_INTERRUPT(0x2);         ! 12 interrupt level  2 - IRQ_UART2
+TRAP_ENTRY_INTERRUPT(0x3);         ! 13 interrupt level  3 - IRQ_UART1
+TRAP_ENTRY_INTERRUPT(0x4);         ! 14 interrupt level  4
+TRAP_ENTRY_INTERRUPT(0x5);         ! 15 interrupt level  5
+TRAP_ENTRY_INTERRUPT(0x6);         ! 16 interrupt level  6
+TRAP_ENTRY_INTERRUPT(0x7);         ! 17 interrupt level  7
+TRAP_ENTRY_INTERRUPT(0x8);         ! 18 interrupt level  8 - IRQ_Timer1
+TRAP_ENTRY_INTERRUPT(0x9);         ! 19 interrupt level  9 - IRQ_Timer2
+TRAP_ENTRY_INTERRUPT(0xa);         ! 1A interrupt level 10
+TRAP_ENTRY_INTERRUPT(0xb);         ! 1B interrupt level 11 - IRQ_DSU
+TRAP_ENTRY_INTERRUPT(0xc);         ! 1C interrupt level 12
+TRAP_ENTRY_INTERRUPT(0xd);         ! 1D interrupt level 13
+TRAP_ENTRY_INTERRUPT(0xe);         ! 1E interrupt level 14 - IRQ_PCI
+BAD_TRAP;                          ! 1F interrupt level 15 - IRQ_Halt (NMI)
 
 
 BAD_TRAP; BAD_TRAP; BAD_TRAP; BAD_TRAP;       ! 20 - 23 undefined

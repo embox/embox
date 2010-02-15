@@ -21,7 +21,7 @@
  * At the boot time we are in an arbitrary register window.
  * Therefore we reset CWP field of PSR to zero
  * and mark the _previous_ window as invalid (set WIM to 1 << 1).
- * So it is possible to do (CORE_NWINDOWS - 1) SAVEs
+ * So it is possible to do (CONFIG_NWINDOWS - 1) SAVEs
  * before the WOF trap will occure for the first time.
  *
  * WIM layout:

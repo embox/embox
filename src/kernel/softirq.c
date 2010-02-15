@@ -1,47 +1,58 @@
 /**
  * @file
  *
- * @date 24.12.2009
- * @author Anton Bondarev
+ * @date 14.02.2010
+ * @author Eldar Abusalimov
  */
-#include <asm/hardirq.h>
-#include <kernel/cache.h>
-#include <kernel/interrupt.h>
-#include <string.h>
 
-/* we want call this variable direct for increasing speed
- * we use macroses for this deal
- * we use massive because in future we want to use multi-core processors
- * we must use two way massive
- */
-irq_cpustat_t irq_stat[1] ____cacheline_aligned = {{0}};
+#include <types.h>
+#include <assert.h>
+#include <errno.h>
 
-/* we must use two way massive if we want use multi-core processors */
-static struct softirq_action softirq_vec[HARDIRQ_BITS] ____cacheline_aligned;
+#include <kernel/softirq.h>
+#include <hal/ipl.h>
 
-void open_softirq(int nr, void (*action)(struct softirq_action*), void *data) {
-	softirq_vec[nr].action = action;
-}
+struct softirq_action {
+	softirq_handler_t handler;
+	void *dev_id;
+};
 
-void softirq_init(void) {
-	memset (softirq_vec, 0, sizeof(softirq_vec));
-}
+static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
+static uint32_t softirq_pending;
 
-/*asmlinkage */void do_softirq(void) {
-	int i;
-	unsigned int mask = 1 << HI_SOFTIRQ;
-	for (i = 0; i < HARDIRQ_BITS; i ++) {
-		if (local_softirq_pending() & mask) {
-			if (NULL != softirq_vec[i].action) {
-				local_softirq_pending() &= ~mask;
-				softirq_vec[i].action (softirq_vec[i].data);
-			}
-		}
-		mask = mask << 1;
+int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *dev_id) {
+	ipl_t ipl;
+
+	if (!softirq_nr_valid(nr)) {
+		return -EINVAL;
 	}
+
+	ipl = ipl_save();
+	softirq_actions[nr].handler = handler;
+	softirq_actions[nr].dev_id = dev_id;
+	ipl_restore(ipl);
+
+	return 0;
 }
 
-void irq_exit(void) {
-	if (local_softirq_pending())
-		do_softirq();
+int softirq_raise(softirq_nr_t nr) {
+	ipl_t ipl;
+
+	if (!softirq_nr_valid(nr)) {
+		return -EINVAL;
+	}
+
+	ipl = ipl_save();
+	softirq_pending |= (1 << nr);
+	ipl_restore(ipl);
+
+	return 0;
+}
+
+void softirq_dispatch(void) {
+	ipl_t ipl;
+
+	ipl = ipl_save();
+
+	ipl_restore(ipl);
 }

@@ -19,12 +19,12 @@ MONITOR_ARCH_MICROBLAZE=y
 
 #MONITOR_ARCH_FOLDER=src/arch/sparc
 #CC_PACKET=sparc-elf
-#CCFLAGS=-Werror -pipe -c -MD -mv8 -O0 -g -DLEON3 -D_TEST_SYSTEM_
+#CCFLAGS=-Werror -pipe -c -MD -mv8 -O0 -g -DLEON3 -D__EMBOX__
 #LDFLAGS=-Wl -N -nostdlib -g
 
 MONITOR_ARCH_FOLDER=src/arch/microblaze
 CC_PACKET=mb
-CCFLAGS=-Werror -c -MD -O0 -g -D_TEST_SYSTEM_ -ffixed-r31 -mno-xl-soft-mul
+CCFLAGS=-Werror -c -MD -O0 -g -D__EMBOX__ -ffixed-r31 -mno-xl-soft-mul
 LDFLAGS=-Wl -N -nostdlib -g
 
 
@@ -77,6 +77,7 @@ MONITOR_USER_ARP=n
 MONITOR_USER_CP=n
 MONITOR_USER_GOTO=n
 MONITOR_USER_HELP=y
+MONITOR_USER_IFCONFIG=n
 MONITOR_USER_LDIMG=n
 MONITOR_USER_PNPLS=n
 MONITOR_USER_MEM=y

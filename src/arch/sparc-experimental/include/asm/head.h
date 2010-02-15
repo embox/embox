@@ -9,7 +9,7 @@
 #ifndef SPARC_HEAD_H_
 #define SPARC_HEAD_H_
 
-#include <asm/reg_alias.h>
+#include <asm/regs.h>
 
 #ifdef __ASSEMBLER__
 
@@ -20,7 +20,11 @@
 	nop; nop;
 
 /** Entry for traps which jump to a programmer-specified trap handler.  */
-#define TRAP_ENTRY_INTERRUPT TRAP_ENTRY(interrupt_entry)
+#define TRAP_ENTRY_INTERRUPT(nr) \
+	rd %psr, %t_psr;    \
+	ba interrupt_entry; \
+	 mov nr, %local;    \
+	nop;
 
 /** Entry point for window overflow trap handler. */
 #define WOF_TRAP \
@@ -37,15 +41,18 @@
 	nop
 
 /** Text fault. */
-#define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %l7;
+#define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %local;
 /** Data fault. */
-#define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
+#define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %local;
 
 /** Unexpected trap will halt the processor by forcing it to error state */
-#define BAD_TRAP TRAP_ENTRY(bad_trap_dispatcher)
+#define BAD_TRAP TRAP_ENTRY(bad_trap_entry)
 
 /** Software trap. Treat as BAD_TRAP */
 #define SOFT_TRAP BAD_TRAP
+
+/* TODO */
+#define EMBOX_SYSTEM_CALL SOFT_TRAP
 
 #endif /* __ASSEMBLER__ */
 

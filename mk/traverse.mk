@@ -34,120 +34,144 @@ _traverse_mk_:=1
 ##
 #   include $(MK_DIR)/traverse.mk
 #
-#   define traverse_callback
-#     DIRS_ALL:=$(DIRS_ALL) $(NODE_DIR)
-#     OBJS_ALL:=$(OBJS_ALL) $(addprefix $(NODE_DIR)/,$(OBJS-y))
-#     LIBS_ALL:=$(LIBS_ALL) $(addprefix $(NODE_DIR)/,$(LIBS-y))
-#     NODE_RESULT:=$(SUBDIRS-y)
-#   endef
+#   # Guard symbol used in subdirs.
+#   _ = EMBUILD/$(abspath $(dir))/
 #
-#   traverse_vars:=SUBDIRS-y OBJS-y LIBS-y
+#   # Traverse always defines SELFDIR before entering sub-makefile.
+#   dir = $(SELFDIR)
+#   DIRS := $(call TRAVERSE,$(SRC_DIR),node.mk)
 #
-#   $(eval $(call TRAVERSE,$(SRC_DIR),node.mk,traverse_callback,traverse_vars))
+#   # Get list of all objects.
+#   OBJS := $(foreach dir,$(DIRS),$(wildcard $($_OBJS:%=$(dir)/%)))
 #
-#   all: $(OBJS_ALL)
-#   	@$(CC) $(LDFLAGS) -T $(LDSCRIPT) -o $(TARGET) $(OBJS_ALL)
+#   all: $(OBJS)
+#   	@$(CC) $(LDFLAGS) -T $(LDSCRIPT) -o $(TARGET) $(OBJS)
 ##
 #
 # node.mk files placed in each sub-directory should contain something like:
 ##
-#   SUBDIRS-y              += irq
-#   SUBDIRS-$(CONFIG_TEST) += test
-#
-#   OBJS-y                 += main.o
-#   OBJS-y                 += init.o
-#   OBJS-$(CONFIG_TIMER)   += timer.o
-#
-#   LIBS-y                 += lib.a
+#   $_OBJS += irq.o
+#   $_OBJS += main.o
+#   $_OBJS += init.o
 ##
-# Each time before node.mk is included variables SUBDIRS-y, OBJS-y, and LIBS-y
-# are set to empty string, and SELFDIR contains location of node.mk to be
-# processed.
+# Each time before node.mk is included variable SELFDIR is set to location of
+# node.mk being processed. Guard symbol ($_) is used to prevent namespace
+# collisions, and it also helps to determine where did a variable come from.
+#
+# By default traverse searches the whole directory tree, but this behavior can
+# be overridden by setting $_SUBDIRS variable in any node.mk file, e.g.:
+#   $_SUBDIRS := $(filter-out include,$($_SUBDIRS))
+# This expression will exclude sub-directory named "include" from searching.
 #
 # Enjoy!
 #
 
 #
 # Walks the directory tree starting at the specified root,
-# processing node descriptors with given file name
-# and invoking user-defined callback (if any).
+# processing node descriptors with given file name.
 #
 # Params:
 #  1. Root directory
-#  2. File name of node descriptor containing info about subdirs and objects
-#  3. Expression to evaluate as a callback after processing the node
-#                with the following interface:
-#      [in] NODE_DIR    Directory containing the node descriptor
-#      [in] NODE_FILE   Descriptor file name
-#      [in] NODE_DEPTH  Call depth
-#     [out] NODE_RESULT Callback should return list of directories to continue
-#                       the walking by assigning it to this variable
-#    (see TRAVERSE_CALLBACK_EXAMPLE as an example)
-#  4. List of variable names to clear before entering each node
+#  2. (optional) File name of node descriptor containing info about subdirs
+#   If not specified traverse will search for files named Makefile and makefile
 #
-TRAVERSE =$(eval $(call traverse_process_node,$(1),$(2),$(3),$(4),.))
+TRAVERSE= \
+  $(eval __traverse_return:=) \
+  $(eval $(call __traverse_invoke,$1,$2)) \
+  $(__traverse_return)
 
 #
-# The callback for TRAVERSE that traces its input arguments.
-# Just to show how it can be implemented.
-#
-define TRAVERSE_CALLBACK_EXAMPLE
-  $(info $(NODE_DEPTH)processing $(NODE_DIR)/$(NODE_FILE))
-  $(info $(NODE_DEPTH) subdirs : $(SUBDIRS-y))
-  $(info $(NODE_DEPTH) objs    : $(OBJS-y))
-  $(info $(NODE_DEPTH) libs    : $(LIBS-y))
-  NODE_RESULT:=$(SUBDIRS-y)
-endef
-
-#
-# The main routine used for recursive processing of tree nodes.
+# A kind of wrapper for __traverse_process that allows us to use unescaped code
+# and human-readable varible names in the latter. Also incapsulates recursive
+# sub-routine invocation code.
 #
 # Params:
 #  1. Directory containing the node descriptor to process
 #  2. Descriptor file name
-#  3. User callback
-#  4. List of variable names to clear before entering each node
-#  5. (internal) Call depth, root caller should pass 'non-white' string
 #
-define traverse_process_node
-  ifeq ($(wildcard $(1))),)
-  $$(error Traverse error: Node not found: $(1))
-  endif
-  ifeq ($(wildcard $(1)/$(2)),)
-  $$(error Traverse error: Node descriptor not found: $(1)/$(2))
-  endif
+define __traverse_invoke
 
-  # Clean everything before entering into user defined code.
-  $$(foreach var_name,$($(4)),\
-    $$(eval $$(var_name):=)\
-  )
-
-  # Provide the node location.
-  SELFDIR   :=$(1)
-
-  # Go!
-  include $(1)/$(2)
-
-  # Invoke user callback.
-  NODE_DIR    :=$(1)
-  NODE_FILE   :=$(2)
-  NODE_DEPTH  :=$(5)
-  NODE_RESULT :=
-  $$(eval $$(value $(3)))
+  # We use such long prefixed name to prevent global namespace pollution.
+  __traverse_node_dir  :=$1
+  __traverse_node_file :=$2
+  $(value __traverse_process)
 
   # Perform recursive walking over sub-directories.
-  # It's important to note that subdirs_y variable is expanded only once
-  # and before entering child subroutines (which will overwrite this variable),
-  # hence we have not to construct any stacks and so on.
-  $$(foreach subdir,$$(NODE_RESULT),\
-    $$(eval $$(call $(0),$(1)/$$(subdir),$(2),$(3),$(4),$(5) ))\
+  # It's important to note that __traverse_process_result variable is expanded
+  # only once and before entering child subroutines (which will overwrite this
+  # variable), hence we have not to construct any stacks and so on.
+  $$(foreach subdir,$$(__traverse_process_result),$$(eval \
+    $$(call __traverse_invoke,$1/$$(subdir),$2)\
+  ))
+
+endef
+
+#
+# Param: subdirectories list relative to __traverse_node_dir
+# possibly containing wildcard expressions.
+#
+# In a nutshell:
+#   Expand wildcards.
+#   Leave only directories (they contain trailing slash).
+#   Get back to sub-dirs relative names and remove duplicates.
+#
+__traverse_subdirs_wildcard = \
+  $(sort \
+    $(patsubst $(__traverse_node_dir)/%/,%, \
+      $(filter $(__traverse_node_dir)/%/, \
+        $(wildcard $(1:%=$(__traverse_node_dir)/%/)) \
+      ) \
+    ) \
   )
 
-  # Clean everything again.
-  $$(foreach var_name,$($(4)),\
-    $$(eval $$(var_name):=)\
-  )
+#
+# The main routine used for recursive processing of tree nodes.
+#
+define __traverse_process
+ # Check input arguments
+ ifeq ($(wildcard $(__traverse_node_dir)),)
+  $(warning EMBuild traverse warning $N \
+    Node not found: $(__traverse_node_dir))
+    Skipping)
+  __traverse_process_result :=
+ else
 
+  # Append current node to the resulting node list.
+  __traverse_return += $(__traverse_node_dir)
+
+  # Provide the node location.
+  SELFDIR := $(__traverse_node_dir)
+  SELF    := $(notdir $(SELFDIR))
+
+  # Sometimes it is useful to define variables as recursively expanded.
+  $_SELFDIR := $(SELFDIR)
+
+  # Default to expansion of *.
+  $_SUBDIRS := $(call __traverse_subdirs_wildcard,*)
+
+  ifneq ($(and $(__traverse_node_file), \
+      $(wildcard $(__traverse_node_dir)/$(__traverse_node_file))),)
+    # Go!
+    include $(__traverse_node_dir)/$(__traverse_node_file)
+  else ifneq ($(wildcard $(__traverse_node_dir)/Makefile),)
+    include $(__traverse_node_dir)/Makefile
+  else ifneq ($(wildcard $(__traverse_node_dir)/makefile),)
+    include $(__traverse_node_dir)/makefile
+  else
+    $(warning EMBuild traverse warning: \
+      Node descriptor not found in $(__traverse_node_dir): $N \
+      neither $(if $(__traverse_node_file), \
+        $(__traverse_node_file) nor) \
+      $(if $(filter Makefile,$(__traverse_node_file)),,Makefile nor) \
+      $(if $(filter makefile,$(__traverse_node_file)),,makefile) \
+      does not exist $N \
+      Skipping)
+  endif
+
+  # Prepare return value.
+  __traverse_process_result := $(call __traverse_subdirs_wildcard,$($_SUBDIRS))
+
+ endif
 endef
 
 endif # _traverse_mk_

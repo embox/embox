@@ -6,16 +6,19 @@
  * @author Eldar Abusalimov
  */
 
-#include <asm/reg_alias.h>
+#include <asm/head.h>
+#include <asm/regs.h>
+#include <asm/psr.h>
 
  	.weak hardware_init_hook
  	.weak software_init_hook
 
-	.section ".trap_table.text"
+	.section ".trap_table.text", #alloc, #execinstr
 	.align 0x1000
 
 	.global start
 start:
+	.global trap_table
 trap_table:
 #include "trap_table.inc"
 
@@ -100,10 +103,40 @@ boot_start:
 	mov %g1, %fp
 	sub %g1, 0x60, %sp
 
-	PSR_BIT_TOGGLE(PSR_ET, g1)
+	rd %psr, %g1
+	wr %g1, PSR_ET, %psr
 	 WRITE_PAUSE
 
-	call hal_main
+	set _data_vma, %o0
+	set _data_lma, %o1
+	subcc %o0, %o1, %g0
+	be 1f
+	 nop
+	set _data_len, %o2
+	call memcpy
+1:	 nop
+
+	set _bss_vma, %o0
+	mov %g0, %o1
+	set _bss_len, %o2
+	call memset
+	 nop
+
+	set hardware_init_hook, %g1
+	tst %g1
+	be  1f
+	 nop
+	call %g1
+1:	 nop
+
+	set software_init_hook, %g1
+	tst %g1
+	be  1f
+	 nop
+	call %g1
+1:	 nop
+
+	call main
 	 nop
 
 	ta 0 ! die
