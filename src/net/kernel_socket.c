@@ -210,12 +210,12 @@ struct socket *sockfd_lookup(int fd) {
 
 int sock_get_fd(struct socket *sock) {
 	int i;
-        for (i = 0; i < array_len(sockets_pull); i++) {
-                if(&(&sockets_pull[i])->sock == sock) {
-            		return (&sockets_pull[i])->sockfd;
-                }
-        }
-        return -1;
+	for (i = 0; i < array_len(sockets_pull); i++) {
+		if(&(&sockets_pull[i])->sock == sock) {
+			return (&sockets_pull[i])->sockfd;
+		}
+	}
+	return -1;
 }
 
 int sock_register(const struct net_proto_family *ops) {

@@ -93,7 +93,7 @@ void sk_free(struct sock *sk) {
 }
 
 int sock_no_listen(struct socket *sock, int backlog) {
-        return -EOPNOTSUPP;
+	return -EOPNOTSUPP;
 }
 
 int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {

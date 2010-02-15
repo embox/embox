@@ -78,20 +78,20 @@ static int rt_iter;
 
 rt_entry_t *rt_fib_get_first() {
 	for(rt_iter = 0; rt_iter < RT_TABLE_SIZE; rt_iter++) {
-    		if (rt_table[rt_iter].rt_flags & RTF_UP) {
-            		rt_iter++;
-            		return &rt_table[rt_iter - 1];
-    		}
-        }
+		if (rt_table[rt_iter].rt_flags & RTF_UP) {
+			rt_iter++;
+			return &rt_table[rt_iter - 1];
+		}
+	}
         return NULL;
 }
 
 rt_entry_t *rt_fib_get_next() {
 	for(; rt_iter < RT_TABLE_SIZE; rt_iter++) {
-    		if (rt_table[rt_iter].rt_flags & RTF_UP) {
-                	rt_iter++;
-                        return &rt_table[rt_iter - 1];
-                }
-        }
-        return NULL;
+		if (rt_table[rt_iter].rt_flags & RTF_UP) {
+			rt_iter++;
+			return &rt_table[rt_iter - 1];
+		}
+	}
+	return NULL;
 }

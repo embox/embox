@@ -150,9 +150,9 @@ int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr,
 		unsigned char *macaddr) {
 	int i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
-		if (arp_tables[i].pw_addr == ipaddr || 0 == memcmp(
-				arp_tables[i].hw_addr, macaddr, ETH_ALEN) || in_dev
-				== arp_tables[i].if_handler) {
+		if (arp_tables[i].pw_addr == ipaddr ||
+			0 == memcmp(arp_tables[i].hw_addr, macaddr, ETH_ALEN) ||
+			in_dev == arp_tables[i].if_handler) {
 			arp_tables[i].state = 0;
 		}
 	}

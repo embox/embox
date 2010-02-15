@@ -139,10 +139,8 @@ sk_buff_t *skb_dequeue(struct sk_buff_head *list) {
 }
 
 void skb_queue_purge(struct sk_buff_head *queue) {
-
 	sk_buff_t *skb;
 	while ((skb = skb_dequeue(queue)) != NULL) {
-
 		kfree_skb(skb);
 	}
 }

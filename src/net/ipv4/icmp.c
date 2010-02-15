@@ -26,17 +26,17 @@
  */
 struct icmp_bxm {
 	sk_buff_t *skb;
-        int offset;
-        int data_len;
+	int offset;
+	int data_len;
 	struct {
-                icmphdr_t icmph;
-                uint32_t  times[3];
-        } data;
-        int head_len;
+		icmphdr_t icmph;
+		uint32_t  times[3];
+	} data;
+	int head_len;
 #if 0
-        struct ip_options replyopts;
+	struct ip_options replyopts;
 #endif
-        unsigned char  optbuf[40];
+	unsigned char  optbuf[40];
 };
 
 #define CB_INFO_SIZE        0x10
@@ -117,7 +117,7 @@ static ICMP_CALLBACK callback_find(void *in_dev, unsigned short ip_id,
  */
 struct icmp_control {
 	void (*handler)(sk_buff_t *skb);
-        short error; /* This ICMP is classed as an error message */
+	short error; /* This ICMP is classed as an error message */
 };
 
 static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1];
@@ -280,11 +280,11 @@ static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
 		.handler = icmp_get_echo_reply/*icmp_discard*/,
 	},
 	[ICMP_DEST_UNREACH] = {
-	        .handler = icmp_unreach,
-	        .error = 1,
+		.handler = icmp_unreach,
+		.error = 1,
 	},
 	[ICMP_ECHO] = {
-	        .handler = icmp_echo,
+		.handler = icmp_echo,
 	},
 };
 
@@ -311,18 +311,18 @@ int icmp_rcv(sk_buff_t *pack) {
 	 * RFC 1122: 3.2.2.8 An ICMP_TIMESTAMP MAY be silently
 	 *        discarded if to broadcast/multicast.
 	 */
-        if ( 0 /* (IFF_BROADCAST | IFF_MULTICAST) */) {
-    		if (icmph->type == ICMP_ECHO ||
-            	    icmph->type == ICMP_TIMESTAMP) {
-    			return -1;
-    		}
-    		if (icmph->type != ICMP_ECHO &&
-            	    icmph->type != ICMP_TIMESTAMP &&
-            	    icmph->type != ICMP_ADDRESS &&
-            	    icmph->type != ICMP_ADDRESSREPLY) {
-    			return -1;
-    		}
-        }
+	if ( 0 /* (IFF_BROADCAST | IFF_MULTICAST) */) {
+		if (icmph->type == ICMP_ECHO ||
+			icmph->type == ICMP_TIMESTAMP) {
+			return -1;
+		}
+		if (icmph->type != ICMP_ECHO &&
+			icmph->type != ICMP_TIMESTAMP &&
+			icmph->type != ICMP_ADDRESS &&
+			icmph->type != ICMP_ADDRESSREPLY) {
+			return -1;
+		}
+	}
 
 	//TODO: check summ icmp? not need, if ip checksum is ok.
 	tmp = icmph->checksum;
