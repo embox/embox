@@ -20,8 +20,8 @@ typedef struct rt_entry {
 	net_device_t *dev;
 	in_addr_t    rt_dst;
 	uint32_t     rt_flags;
-        in_addr_t    rt_mask;
-        in_addr_t    rt_gateway;
+	in_addr_t    rt_mask;
+	in_addr_t    rt_gateway;
 } rt_entry_t;
 
 /**< Flags */

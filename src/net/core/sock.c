@@ -96,6 +96,10 @@ int sock_no_listen(struct socket *sock, int backlog) {
 	return -EOPNOTSUPP;
 }
 
+int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
+	return -EOPNOTSUPP;
+}
+
 int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	skb_queue_tail(&sk->sk_receive_queue, skb);
 	return 0;

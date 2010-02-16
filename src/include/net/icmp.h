@@ -53,15 +53,15 @@ typedef struct icmphdr {
 	__u8     code;
 	uint16_t checksum;
 	union {
-	        struct {
-	        	__be16 id;
-	                __be16 sequence;
-	        } echo;
-	        __be16 gateway;
-	        struct {
-	                __be16 __unused;
-	        	__be16 mtu;
-	        } frag;
+		struct {
+			__be16 id;
+			__be16 sequence;
+		} echo;
+		__be16 gateway;
+		struct {
+			__be16 __unused;
+			__be16 mtu;
+		} frag;
 	} un;
 } __attribute__((packed)) icmphdr_t;
 
@@ -70,19 +70,19 @@ typedef struct icmphdr {
 typedef void (*ICMP_CALLBACK)(struct sk_buff* response);
 
 static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
-        return (icmphdr_t *)skb->h.raw;
+	return (icmphdr_t *)skb->h.raw;
 }
 
 struct raw_sock {
-        /* inet_sock has to be the first member */
-        struct inet_sock   inet;
+	/* inet_sock has to be the first member */
+	struct inet_sock   inet;
 #if 0
-        struct icmp_filter filter;
+	struct icmp_filter filter;
 #endif
 };
 
 static inline struct raw_sock *raw_sk(const struct sock *sk) {
-        return (struct raw_sock *)sk;
+	return (struct raw_sock *)sk;
 }
 
 /**
@@ -105,7 +105,7 @@ extern int icmp_rcv(sk_buff_t *pack);
 extern void icmp_send(sk_buff_t *pack, int type, int code, uint32_t info);
 
 extern int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
-            ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq);
+		ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq);
 
 extern int icmp_abort_echo_request(void *in_dev);
 

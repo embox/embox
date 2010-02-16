@@ -16,10 +16,6 @@
 #include <net/ip.h>
 #include <net/netdevice.h>
 
-#if 0
-DECLARE_INIT("net", inet_init, INIT_NET_LEVEL);
-#endif
-
 /*inet socket function*/
 
 /*create inet socket*/
@@ -77,14 +73,14 @@ int inet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len) {
 }
 
 int inet_dgram_connect(struct socket *sock, struct sockaddr * uaddr,
-                       int addr_len, int flags) {
+			int addr_len, int flags) {
 	struct sock *sk = sock->sk;
 	sk->sk_prot->connect(sk, (struct sockaddr *)uaddr, addr_len);
 	return 0;
 }
 
-int inet_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *msg,
-                 size_t size) {
+int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
+			struct msghdr *msg, size_t size) {
 	struct sock *sk = sock->sk;
 	sk->sk_prot->sendmsg(iocb, sk, msg, size);
 	return 0;

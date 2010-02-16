@@ -18,18 +18,18 @@ typedef struct net_protocol {
 	int (*handler)(sk_buff_t *pack);
 	void (*err_handler)(sk_buff_t *pack, int info);
 #if 0
-int (*gso_send_check)(sk_buff_t *pack);
-sk_buff_t *(*gso_segment)(sk_buff_t *pack, int features);
-int no_policy;
+	int (*gso_send_check)(sk_buff_t *pack);
+	sk_buff_t *(*gso_segment)(sk_buff_t *pack, int features);
+	int no_policy;
 #endif
- __be16 type;
+	__be16 type;
 } net_protocol_t;
 #if 0
 extern net_protocol_t *inet_protos[MAX_INET_PROTOS];
 #endif
 
 #define DECLARE_INET_PROTO(inet_proto) \
-    static const net_protocol_t *p##inet_proto \
+	static const net_protocol_t *p##inet_proto \
 		__attribute__ ((used, section(".ipstack.protos"))) \
 		= &inet_proto
 
@@ -39,7 +39,6 @@ extern int inet_protocols_init (void);
  * Add a protocol handler to the hash tables
  */
 extern int inet_add_protocol(net_protocol_t *prot, unsigned char num);
-
 
 /**
  * Add a protocol handler to the hash tables
@@ -66,7 +65,7 @@ typedef struct inet_protosw {
 } inet_protosw_t;
 
 #define DECLARE_INET_SOCK(inet_proto) \
-    static const inet_protosw_t *p##inet_proto \
+	static const inet_protosw_t *p##inet_proto \
 		__attribute__ ((used, section(".ipstack.sockets"))) \
 		= &inet_proto
 

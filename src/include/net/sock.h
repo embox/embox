@@ -60,8 +60,8 @@ struct sock_common {
  */
 typedef struct sock {
 	struct sock_common __sk_common;
-#define sk_family               __sk_common.skc_family
-#define sk_prot                 __sk_common.skc_prot
+#define sk_family  __sk_common.skc_family
+#define sk_prot    __sk_common.skc_prot
 	unsigned char sk_protocol;
 	unsigned short sk_type;
 	int sk_rcvbuf;
@@ -138,6 +138,7 @@ extern int sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
  * does not implement a particular function.
  */
 extern int sock_no_listen(struct socket *, int);
+extern int sock_no_accept(struct socket *, struct socket *, int);
 
 extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
                                struct msghdr *msg, size_t size, int flags);

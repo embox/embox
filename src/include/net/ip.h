@@ -51,7 +51,7 @@ typedef struct iphdr {
 #define IP_HEADER_SIZE   (sizeof(struct iphdr))
 
 static inline iphdr_t *ip_hdr(const sk_buff_t *skb) {
-        return (iphdr_t *)skb->nh.raw;
+	return (iphdr_t *)skb->nh.raw;
 }
 
 /**
@@ -67,7 +67,7 @@ extern void ip_init(void);
  * Main IP Receive routine.
  */
 extern int ip_rcv(sk_buff_t *pack, net_device_t *dev,
-                      packet_type_t *pt, net_device_t *orig_dev);
+				packet_type_t *pt, net_device_t *orig_dev);
 
 /**
  * Add an ip header to a net_packet and send it out.
@@ -80,7 +80,7 @@ extern void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
 			sk_buff_t *skb, unsigned int len);
 
 extern int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
-                unsigned short id, unsigned short len, in_addr_t saddr,
-                in_addr_t daddr);
+				unsigned short id, unsigned short len, in_addr_t saddr,
+				in_addr_t daddr);
 
 #endif /* IP_H_ */

@@ -23,11 +23,11 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int print_arp_cache(void *ifdev) {
-	int i;
+	size_t i;
 	unsigned char mac[18];
 	net_device_t *net_dev;
 	struct in_addr addr;
-	for(i=0; i<ARP_CACHE_SIZE; i++) {
+	for(i = 0; i < ARP_CACHE_SIZE; i++) {
 		if((arp_tables[i].state == 1) &&
 		   (ifdev == NULL || ifdev == arp_tables[i].if_handler)) {
 			net_dev = arp_tables[i].if_handler->dev;

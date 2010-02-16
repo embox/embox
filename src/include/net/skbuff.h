@@ -27,18 +27,18 @@ struct skb_timeval {
 #define PACKET_FASTROUTE        6               /* Fastrouted frame     */
 
 /**
- *      struct sk_buff - socket buffer
- *      @next: Next buffer in list
- *      @prev: Previous buffer in list
- *      @sk: Socket we are owned by
- *      @netdev: Device we arrived on/are leaving by
- *      @tstamp: Time we arrived
- *      @protocol: Packet protocol from driver
- *      @pkt_type: Packet class
- *      @len: Length of actual data
- *      @h: Transport layer header
- *      @nh: Network layer header
- *      @mac: Link layer header
+ * struct sk_buff - socket buffer
+ * @next: Next buffer in list
+ * @prev: Previous buffer in list
+ * @sk: Socket we are owned by
+ * @netdev: Device we arrived on/are leaving by
+ * @tstamp: Time we arrived
+ * @protocol: Packet protocol from driver
+ * @pkt_type: Packet class
+ * @len: Length of actual data
+ * @h: Transport layer header
+ * @nh: Network layer header
+ * @mac: Link layer header
  */
 typedef struct sk_buff {
 	/* These two members must be first. */

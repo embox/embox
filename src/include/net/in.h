@@ -14,10 +14,10 @@
 enum {
 	IPPROTO_IP   = 0,     /* Dummy protocol for TCP            */
 	IPPROTO_ICMP = 1,     /* Internet Control Message Protocol */
-        IPPROTO_TCP  = 6,     /* Transmission Control Protocol     */
-        IPPROTO_UDP  = 17,    /* User Datagram Protocol            */
+//	IPPROTO_TCP  = 6,     /* Transmission Control Protocol     */
+	IPPROTO_UDP  = 17,    /* User Datagram Protocol            */
 	IPPROTO_RAW  = 255,   /* Raw IP packets                    */
-        IPPROTO_MAX
+	IPPROTO_MAX
 };
 
 /* IPv4 AF_INET sockets:*/
@@ -31,9 +31,9 @@ struct in_addr {
 
 struct sockaddr_in {
 	short            sin_family;   /* e.g. AF_INET */
-        unsigned short   sin_port;     /* e.g. htons(3490) */
-        struct in_addr   sin_addr;     /* see struct in_addr, below */
-        char             sin_zero[8];  /* zero this if you want to */
+	unsigned short   sin_port;     /* e.g. htons(3490) */
+	struct in_addr   sin_addr;     /* see struct in_addr, below */
+	char             sin_zero[8];  /* zero this if you want to */
 };
 
 /**
@@ -73,12 +73,11 @@ int inet_aton(const char *cp, struct in_addr *addr);
 #define INADDR_LOOPBACK     ((unsigned long int) 0x7f000001)   /* 127.0.0.1   */
 
 static inline bool ipv4_is_loopback(in_addr_t addr) {
-        return (addr & htonl(0xff000000)) == htonl(0x7f000000);
+	return (addr & htonl(0xff000000)) == htonl(0x7f000000);
 }
 
 static inline bool ipv4_is_multicast(in_addr_t addr) {
-        return (addr & htonl(0xf0000000)) == htonl(0xe0000000);
+	return (addr & htonl(0xf0000000)) == htonl(0xe0000000);
 }
-
 
 #endif /* IN_H_ */

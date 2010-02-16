@@ -17,12 +17,12 @@
  * struct for arp_table_records
  */
 typedef struct arp_table {
-    unsigned char hw_addr[ETH_ALEN];  /**< hardware addr */
-    in_addr_t     pw_addr;            /**< protocol addr */
-    in_device_t   *if_handler;        /**< inet device */
-    unsigned int ctime;               /**< time to alive */
-    unsigned int state;
-    unsigned int flags;
+	unsigned char hw_addr[ETH_ALEN];  /**< hardware addr */
+	in_addr_t     pw_addr;            /**< protocol addr */
+	in_device_t   *if_handler;        /**< inet device */
+	unsigned int ctime;               /**< time to alive */
+	unsigned int state;
+	unsigned int flags;
 } arp_table_t;
 
 /* ARP Flag values. */
@@ -62,9 +62,9 @@ typedef struct arp_table {
  * number of simultaneously opened sockets, or else
  * hardware header cache will not be efficient.
  */
-#define ARP_CACHE_SIZE    0x100                   /** arp table capacity */
+#define ARP_CACHE_SIZE     CONFIG_ARP_CACHE_SIZE
 
-extern arp_table_t arp_tables[ARP_CACHE_SIZE];           /** arp table */
+extern arp_table_t arp_tables[ARP_CACHE_SIZE];  /** arp table */
 
 /**
  * This will find an entry in the ARP table.
@@ -88,7 +88,7 @@ extern void arp_queue(sk_buff_t *skb);
  * @param pack net_packet
  */
 extern int arp_rcv(sk_buff_t *pack, net_device_t *dev,
-                      packet_type_t *pt, net_device_t *orig_dev);
+			packet_type_t *pt, net_device_t *orig_dev);
 
 /**
  * resolve ip address and rebuild net_packet
@@ -110,9 +110,9 @@ extern sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
  * Create and send an arp packet.
  */
 extern void arp_send(int type, int ptype, in_addr_t dest_ip,
-                    struct net_device *dev, in_addr_t src_ip,
-		    const unsigned char *dest_hw,
-        	    const unsigned char *src_hw, const unsigned char *th);
+			struct net_device *dev, in_addr_t src_ip,
+			const unsigned char *dest_hw,
+			const unsigned char *src_hw, const unsigned char *th);
 
 /**
  * this function add entry in arp table if can

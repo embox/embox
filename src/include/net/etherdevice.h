@@ -22,7 +22,7 @@ typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
  * By definition the broadcast address is also a multicast address.
  */
 static inline int is_multicast_ether_addr(const uint8_t *addr) {
-        return (0x01 & addr[0]);
+	return (0x01 & addr[0]);
 }
 
 /**
@@ -31,7 +31,7 @@ static inline int is_multicast_ether_addr(const uint8_t *addr) {
  * @return true if the address is the broadcast address.
  */
 static inline int is_broadcast_ether_addr(const uint8_t *addr) {
-        return (addr[0] & addr[1] & addr[2] & addr[3] & addr[4] & addr[5]) == 0xff;
+	return (addr[0] & addr[1] & addr[2] & addr[3] & addr[4] & addr[5]) == 0xff;
 }
 
 /**
@@ -40,7 +40,7 @@ static inline int is_broadcast_ether_addr(const uint8_t *addr) {
  * @return true if the address is all zeroes.
  */
 static inline int is_zero_ether_addr(const uint8_t *addr) {
-        return !(addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]);
+	return !(addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]);
 }
 
 /**
@@ -53,9 +53,9 @@ static inline int is_zero_ether_addr(const uint8_t *addr) {
  * @return true if the address is valid.
  */
 static inline int is_valid_ether_addr(const uint8_t *addr) {
-        /* FF:FF:FF:FF:FF:FF is a multicast address so we don't need to
-         * explicitly check for it here. */
-         return !is_multicast_ether_addr(addr) && !is_zero_ether_addr(addr);
+	/* FF:FF:FF:FF:FF:FF is a multicast address so we don't need to
+	 * explicitly check for it here. */
+	return !is_multicast_ether_addr(addr) && !is_zero_ether_addr(addr);
 }
 
 /**
@@ -86,7 +86,7 @@ int eth_mac_addr(struct net_device *dev, void *p);
  * @paramlen packet length (<= pack->len)
  */
 extern int eth_header(sk_buff_t *pack, net_device_t *dev,
-                    unsigned short type, void *daddr, void *saddr, unsigned len);
+			unsigned short type, void *daddr, void *saddr, unsigned len);
 
 /**
  * Rebuild the Ethernet MAC header.
@@ -114,7 +114,7 @@ extern void ether_setup(net_device_t *dev);
 extern net_device_t *alloc_etherdev(int sizeof_priv);
 
 /**
- * Âetermineû the packet's protocol ID.
+ * Determine the packet's protocol ID.
  */
 extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
 
