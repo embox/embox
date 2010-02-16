@@ -23,9 +23,9 @@ interrupt_entry:
 	SAVE_ALL
 
 	andn %t_psr, PSR_PIL, %g1
-	srl %local, 8, %temp
+	sll %local, 8, %temp
 	wr %g1, %temp, %psr
-	 WRITE_PAUSE
+	 or %g1, %temp, %g1; nop; nop
 	wr %g1, PSR_ET, %psr
 	 ! do not wait
 

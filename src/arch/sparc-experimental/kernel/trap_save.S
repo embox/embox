@@ -247,7 +247,7 @@ tsb_kernel:
 
 	/* Test WIM for window overflow. */
 	andcc %t_wim, %t_twinmask, %g0
-	bne,a tsb_kernel_wof
+	bne tsb_kernel_wof
 	 add %fp, -SA(TRAP_FRAME_SZ), %t_ksp
 
 	/* You're lucky guy, you've come from the kernel,
