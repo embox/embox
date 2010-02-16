@@ -23,7 +23,6 @@ BACKUP_DIR     :=$(ROOT_DIR)/conf/backup~
 BUILD_DIR      :=$(ROOT_DIR)/build
 BIN_DIR        :=$(BUILD_DIR)/bin
 OBJ_DIR        :=$(BUILD_DIR)/obj
-MOD_DIR        :=$(BUILD_DIR)/mod
 LIB_DIR        :=$(BUILD_DIR)/lib
 DOCS_DIR       :=$(BUILD_DIR)/docs
 AUTOCONF_DIR   :=$(BUILD_DIR)/conf
@@ -53,7 +52,6 @@ prepare:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(BIN_DIR)
 	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(MOD_DIR)
 	@mkdir -p $(LIB_DIR)
 	@mkdir -p $(AUTOCONF_DIR)
 

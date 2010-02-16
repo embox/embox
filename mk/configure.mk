@@ -21,10 +21,6 @@ ifndef ARCH
 	@echo 'Error: ARCH undefined'
 	exit 1
 endif
-ifndef PLATFORM
-	@echo 'Error: PLATFORM undefined'
-	exit 1
-endif
 ifndef TARGET
 	@echo 'Error: TARGET undefined'
 	exit 1

@@ -16,14 +16,9 @@
 #include <kernel/printk.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
-
-#ifdef CONFIG_AMBAPP
 #include <drivers/amba_pnp.h>
-#endif /* CONFIG_AMBAPP */
 
-/* XXX */
-#define CORE_FREQ   50000000
-#define SCALER_RELOAD (CORE_FREQ / 1000000 - 1)
+#define SCALER_RELOAD (CONFIG_CORE_FREQ / 1000000 - 1)
 #define TIMER0_RELOAD (1000000 / 1000 - 1)
 
 #define CTRL_EN (1 << 0) /**< Enable. */

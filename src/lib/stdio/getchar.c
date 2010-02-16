@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include <hal/diag.h>
+#include <kernel/diag.h>
 
 int getchar(void) {
 	return (int) diag_getc();

@@ -4,9 +4,10 @@
  * \date 28.01.2009
  * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
+
 #include "autoconf.h"
 #include "common.h"
-#include "kernel/timers.h"
+#include "kernel/timer.h"
 #include "express_tests.h"
 #include <kernel/init.h>
 

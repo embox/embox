@@ -5,19 +5,20 @@
  * @date 04.03.2009
  * @author Anton Bondarev
  */
+
 #include <types.h>
 #include <string.h>
-#include <common.h>
-#include <autoconf.h>
-#include <kernel/module.h>
-#include <kernel/interrupt.h>
+#include <stdio.h>
+
 #include <net/skbuff.h>
 #include <net/net.h>
 #include <net/arp.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
-#include <lib/list.h>
+#include <kernel/module.h>
 #include <kernel/irq.h>
+#include <kernel/printk.h>
+#include <lib/list.h>
 
 #include <linux/init.h>
 #include <linux/interrupt.h>
@@ -249,7 +250,7 @@ int dev_open(struct net_device *dev) {
 	if (ops->ndo_open) {
 		ret = ops->ndo_open(dev);
 	} else {
-		LOG_ERROR("can't find open function in net_device\n");
+		printk("can't find open function in net_device\n");
 	}
 	if (ret) {
 		dev->state &= ~__LINK_STATE_START;
@@ -272,7 +273,7 @@ int dev_close(struct net_device *dev) {
 	if (ops->ndo_stop) {
 		ops->ndo_stop(dev);
 	} else {
-		LOG_ERROR("ifdev down: can't find stop function in net_device with name\n");
+		printk("ifdev down: can't find stop function in net_device with name\n");
 	}
 	/* Device is now down. */
 	/*TODO: IFF_RUNNING sets not here*/

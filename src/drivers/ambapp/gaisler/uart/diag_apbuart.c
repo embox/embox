@@ -8,7 +8,7 @@
 
 #include <types.h>
 
-#include <hal/diag.h>
+#include <kernel/diag.h>
 #include <hal/reg.h>
 
 #define APBUART_BASE  0x80000100

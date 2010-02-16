@@ -3,7 +3,8 @@ $_SUBDIRS := $(ARCH)
 
 $_PACKAGE := embox.hal
 
-# Kernel assumes the following mods are defined.
-$_MODS += clock interrupt arch diag
-
 $_CPPFLAGS += -D__HAL__
+
+# Each HAL implementation should provide the following mods definition.
+# Kernel assumes their presense.
+$_MODS += arch clock interrupt

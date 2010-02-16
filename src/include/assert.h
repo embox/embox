@@ -12,15 +12,16 @@
 #include <kernel/panic.h>
 
 #ifndef NDEBUG
-# define __ASSERT_STRING0(cond, file, line) \
-		"\nASSERTION FAILED: " cond ", at " #file " : " #line "\n"
 
-# define __ASSERT_STRING(cond, file, line) \
-		__ASSERT_STRING0(cond, file, line)
+# define __STRINGIFY(expr) #expr
+# define __ASSERT_STRING(cond_str, file, line) \
+		"\nASSERTION FAILED: " cond_str ", at " \
+		__STRINGIFY(file) " : " __STRINGIFY(line) "\n"
 
-# define __ASSERT(cond) \
+/* we need to stringify condition before any expansion. */
+# define __ASSERT(cond, cond_str) \
 		do if (!(cond)) \
-			/*panic(__ASSERT_STRING(#cond, __FILE__, __LINE__))*/; \
+			panic(__ASSERT_STRING(cond_str, __FILE__, __LINE__)); \
 		while(0)
 #else
 # define __ASSERT(cond)   do ; while(0)
@@ -33,6 +34,6 @@
  * If the identifier NDEBUG ("no debug") is defined with
  * @code #define NDEBUG @endcode then the macro @c assert does nothing.
  */
-#define assert(cond)       __ASSERT(cond)
+#define assert(cond)       __ASSERT(cond, #cond)
 
 #endif /* ASSERT_H_ */

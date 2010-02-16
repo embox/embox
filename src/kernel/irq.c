@@ -21,9 +21,6 @@
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
-//#include <kernel/module.h>
-//XXX
-//DECLARE_INIT("system_irq", irq_init_handlers, INIT_SYSTEM_LEVEL);
 
 #ifdef CONFIG_IRQ_ACCOUNT
 #define action_count_handled_reset(action) \

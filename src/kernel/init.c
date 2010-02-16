@@ -1,25 +1,22 @@
 /**
- * @file init.c
+ * @file
  *
  * @date 21.03.09
  * @author Anton Bondarev
  * @author Alexey Fomin
+ * @author Eldar Abusalimov
  */
 
 #include <types.h>
 #include <common.h>
 
 #include <kernel/init.h>
-#include <kernel/timers.h>
-#include <hal/arch.h>
-#include <hal/diag.h>
-#include <hal/interrupt.h>
 #include <express_tests.h>
 
 // XXX
 #define express_tests_execute(ign)
 
-int hardware_init_hook(void) {
+int init(void) {
 	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
 	init_descriptor_t ** p_init_desc = &__init_handlers_start;
 	int level;
@@ -27,17 +24,6 @@ int hardware_init_hook(void) {
 	const char *default_init_name = "???";
 
 	express_tests_execute(PRE_INIT_LEVEL);
-
-	arch_init();
-
-	diag_init();
-
-#ifdef CONFIG_IRQ
-	irq_init();
-#endif /* CONFIG_IRQ */
-#ifdef CONFIG_TIMER
-//	sys_timers_init();
-#endif /* CONFIG_TIMER */
 
 #if 0
 	express_tests_execute(0);

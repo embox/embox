@@ -1,7 +1,6 @@
 /**
  * @file
- *
- * @brief Initial boot code.
+ * @brief Initial boot code for SPARC. Also includes trap table.
  *
  * @author Eldar Abusalimov
  */
@@ -42,7 +41,7 @@ trap_table:
  */
 boot_start:
 	/* set PSR initial value */
-	set (PSR_PS | PSR_S), %g1
+	set (PSR_PS | PSR_S | PSR_PIL), %g1
 	wr  %g1, %g0, %psr
 	 WRITE_PAUSE
 
@@ -98,6 +97,13 @@ boot_start:
 	mov %g0, %g6
 	mov %g0, %g7
 
+	set hardware_init_hook, %g1
+	tst %g1
+	be  1f
+	 nop
+	call %g1
+1:	 nop
+
 	/* give us a stack! */
 	set __stack, %g1
 	mov %g1, %fp
@@ -117,17 +123,9 @@ boot_start:
 1:	 nop
 
 	set _bss_vma, %o0
-	mov %g0, %o1
 	set _bss_len, %o2
 	call memset
-	 nop
-
-	set hardware_init_hook, %g1
-	tst %g1
-	be  1f
-	 nop
-	call %g1
-1:	 nop
+	 mov %g0, %o1
 
 	set software_init_hook, %g1
 	tst %g1

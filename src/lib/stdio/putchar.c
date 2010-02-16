@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include <hal/diag.h>
+#include <kernel/diag.h>
 
 int putchar(int c) {
 	static char prev = 0;

@@ -29,4 +29,6 @@ typedef struct init_descriptor {
 		__attribute__ ((used, section(".init_handlers"))) \
 		= &_descriptor##init
 
+int init(void);
+
 #endif /* INIT_H_ */

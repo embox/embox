@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <kernel/irq.h>
 #include <hal/clock.h>
-#include <kernel/timers.h>
+#include <kernel/timer.h>
 #include <time.h>
 #include <common.h> /*for array_len*/
 #include <string.h>

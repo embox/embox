@@ -103,6 +103,13 @@ define define_common_unit_symbols
   CPPFLAGS-$(unit) := $(strip $(CPPFLAGS-$(unit)))
   CFLAGS-$(unit)   :=   $(strip $(CFLAGS-$(unit)))
 #  LDFLAGS-$(unit)  :=  $(strip $(LDFLAGS-$(unit)))
+
+  $(OBJS-$(unit)) : override CPPFLAGS := \
+                        $(CPPFLAGS) $(CPPFLAGS-$(unit)) $(CPPFLAGS-$(abspath $@))
+  $(OBJS-$(unit)) : override CFLAGS := \
+                        $(CFLAGS) $(CFLAGS-$(unit)) $(CFLAGS-$(abspath $@))
+  -include $(OBJS-$(unit):.o=.d)
+
 endef
 
 $(foreach unit,$(MODS) $(LIBS), \
@@ -116,6 +123,7 @@ $(foreach unit,$(MODS) $(LIBS), \
 unit = $(mod)
 
 # The sub-graph of all module dependencies (either direct or indirect).
+# TODO Add cyclic deps check
 MOD_DEPS_DAG = $(sort $(call mod_deps_dag_walk,$1))
 mod_deps_dag_walk = $(foreach mod,$1,$(call $0,$(DEPS-$(mod))) $(mod))
 
@@ -145,27 +153,6 @@ $(foreach mod,$(MODS), \
     $(eval $(value define_mod_symbols_per_directory)) \
   ) \
   $(eval $(value define_mod_symbols)) \
-)
-
-mod_file = $(call MOD_FILE,$(mod))
-
-define define_mod_rules
-
-  $(mod_file) : override CPPFLAGS := $(CPPFLAGS) $(CPPFLAGS-$(mod))
-  $(mod_file) : override CFLAGS := $(CFLAGS) $(CFLAGS-$(mod))
-
-  $(mod_file) : $(call MOD_FILE,$(DEPS-$(mod)))
-
-  $(mod_file) : OBJS := $(OBJS-$(mod))
-  $(mod_file) : $(OBJS-$(mod))
-	$(LD) -static -nostdlib --relocatable -o $@ $(OBJS:%= \$N	%)
-
-  -include $(OBJS-$(mod):.o=.d)
-
-endef
-
-$(foreach mod,$(MODS), \
-  $(eval $(value define_mod_rules)) \
 )
 
 #mod_check_inheritance = \
@@ -215,15 +202,10 @@ lib_file = $(call LIB_FILE,$(lib))
 
 define define_lib_rules
 
-  $(lib_file) : override CPPFLAGS := $(CPPFLAGS) $(CPPFLAGS-$(lib))
-  $(lib_file) : override CFLAGS := $(CFLAGS) $(CFLAGS-$(lib))
-
   $(lib_file) : OBJS := $(OBJS-$(lib))
   $(lib_file) : $(OBJS-$(lib))
 	$(AR) $(ARFLAGS) $@ \
  $(OBJS:%=	% \$N)
-
-  -include $(OBJS-$(lib):.o=.d)
 
 endef
 

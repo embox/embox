@@ -73,14 +73,15 @@ LDLIBS = -L$(LIB_DIR) $(LIBS:%=-l.%)
 LDSCRIPT = $(BIN_DIR)/$(TARGET).lds
 
 SRC_TO_OBJ = $(patsubst $(ROOT_DIR)%,$(OBJ_DIR)%.o,$(basename $1))
-MOD_FILE   = $(1:%=$(MOD_DIR)/%.o)
 LIB_FILE   = $(1:%=$(LIB_DIR)/lib.%.a)
 
 # It's time to build dependency model!
 include $(MK_DIR)/embuild.mk
 
 OBJS_ALL := $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit)))
-MODS_ENABLE := $(sort $(MODS_ENABLE) $(MODS_ESSENTIAL))
+MODS_ENABLE := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_ESSENTIAL)))
+OBJS_ENABLE := $(foreach mod,$(MODS_ENABLE),$(OBJS-$(mod)))
+$(info Enabled mods DAG: $(patsubst %,$N%,$(MODS_ENABLE)))
 
 $(OBJS_ALL): $(AUTOCONF_DIR)/config.h
 
@@ -92,11 +93,8 @@ $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
 	$(CC) -o $@ \
 	$(CPPFLAGS) $(CFLAGS) -c $<
 
-$(info Enabled mods DAG: $(patsubst %,$N%,$(call MOD_DEPS_DAG,$(MODS_ENABLE))))
-MOD_FILES = $(call MOD_FILE,$(call MOD_DEPS_DAG,$(MODS_ENABLE)))
-
-$(IMAGE): $(call MOD_FILE,$(MODS_ENABLE)) $(call LIB_FILE,$(LIBS))
-	$(CC) $(LDFLAGS) -o $@ $(MOD_FILES:%= \$N	%) \
+$(IMAGE): $(OBJS_ENABLE) $(call LIB_FILE,$(LIBS))
+	$(CC) $(LDFLAGS) -o $@ $(OBJS_ENABLE:%= \$N	%) \
 	$(LDLIBS)
 
 $(IMAGE_DIS): $(IMAGE)

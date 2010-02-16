@@ -6,11 +6,13 @@
  * @date 11.03.2009
  * @author Anton Bondarev
  */
+
 #include <string.h>
 #include <common.h>
-#include <net/in.h>
+
 #include <kernel/module.h>
-#include <kernel/timers.h>
+#include <kernel/timer.h>
+#include <net/in.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/net.h>
