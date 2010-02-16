@@ -70,7 +70,7 @@ net_device_t *alloc_netdev(int sizeof_priv, const char *name, void(*setup)(
 		net_device_t *)) {
 	struct net_device *dev;
 	char buff[IFNAMSIZ];
-	int i;
+	size_t i;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		if (!dev_is_busy(i)) {
 			dev = dev_lock(i);
@@ -90,7 +90,7 @@ net_device_t *alloc_netdev(int sizeof_priv, const char *name, void(*setup)(
 }
 
 void free_netdev(net_device_t *dev) {
-	int i;
+	size_t i;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		if (dev == &net_devices[i].dev) {
 			dev_unlock(i);
@@ -109,7 +109,7 @@ void unregister_netdev(struct net_device *dev) {
 
 net_device_t *netdev_get_by_name(const char *name) {
 	struct net_device *dev;
-	int i;
+	size_t i;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		dev = &net_devices[i].dev;
 		if (dev_is_busy(i) && !strncmp(name, dev->name, IFNAMSIZ)) {
@@ -121,7 +121,7 @@ net_device_t *netdev_get_by_name(const char *name) {
 
 net_device_t *dev_getbyhwaddr(unsigned short type, char *ha) {
 	struct net_device *dev;
-	int i;
+	size_t i;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		dev = &net_devices[i].dev;
 		if (dev_is_busy(i) && !memcmp(ha, dev->dev_addr, dev->addr_len)) {
@@ -167,7 +167,7 @@ int dev_queue_xmit(struct sk_buff *pack) {
 /* we use this function in debug mode*/
 #if 0
 static void print_packet (sk_buff_t *skb) {
-	int i;
+	size_t i;
 	TRACE("pack: ");
 	for (i = 0; i < skb->len; i ++) {
 		TRACE("%2X", (uint8_t)skb->data[i]);
@@ -303,7 +303,7 @@ void netif_rx_schedule(net_device_t *dev) {
 }
 
 static void net_rx_action(struct softirq_action* action) {
-	int i;
+	size_t i;
 	net_device_t *dev;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		if (dev_is_busy(i)) {

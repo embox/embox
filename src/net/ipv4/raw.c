@@ -68,19 +68,19 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 
 static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
                        size_t len, int noblock, int flags, int *addr_len) {
-	printf("raw_recvmsg\n");
-	struct inet_sock *inet = inet_sk(sk);
 	struct sk_buff *skb;
 	skb = skb_recv_datagram(sk, flags, 0, 0);
 	if(skb && skb->len > 0) {
+		if(len > (skb->len - ETH_HEADER_SIZE)) {
+			len = skb->len - ETH_HEADER_SIZE;
+		}
 		memcpy((void*)msg->msg_iov->iov_base,
-				(void*)skb->data + ETH_HEADER_SIZE,
-				msg->msg_iov->iov_len);
-		msg->msg_iov->iov_len = skb->len;
-		return skb->len;
+				(void*)(skb->data + ETH_HEADER_SIZE), len);
+	} else {
+		len = 0;
 	}
-	msg->msg_iov->iov_len = 0;
-	return 0;
+	msg->msg_iov->iov_len = len;
+	return len;
 }
 
 static int raw_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len) {

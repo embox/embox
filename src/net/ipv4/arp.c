@@ -43,7 +43,7 @@ static LIST_HEAD(arp_q);
  * Check if there are entries that are too old and remove them.
  */
 static void arp_check_expire(uint32_t id) {
-	int i;
+	size_t i;
 	close_timer(ARP_TIMER_ID);
 	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
 		//FIXME:
@@ -102,7 +102,7 @@ static int arp_init(void) {
 }
 
 inline int arp_lookup(in_device_t *in_dev, in_addr_t dst_addr) {
-	int i;
+	size_t i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
 		if ((arp_tables[i].state == 1) && (arp_tables[i].pw_addr == dst_addr)
 				&& (in_dev == arp_tables[i].if_handler)) {
@@ -121,7 +121,7 @@ inline int arp_lookup(in_device_t *in_dev, in_addr_t dst_addr) {
  */
 int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr,
 		unsigned char *macaddr, unsigned int flags) {
-	int i;
+	size_t i;
 	if (-1 != (i = arp_lookup(in_dev, ipaddr))) {
 		return i;
 	}
@@ -148,7 +148,7 @@ int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr,
  */
 int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr,
 		unsigned char *macaddr) {
-	int i;
+	size_t i;
 	for (i = 0; i < ARP_TABLE_SIZE; i++) {
 		if (arp_tables[i].pw_addr == ipaddr ||
 			0 == memcmp(arp_tables[i].hw_addr, macaddr, ETH_ALEN) ||
@@ -226,7 +226,7 @@ void arp_send(int type, int ptype, in_addr_t dest_ip, struct net_device *dev,
 }
 
 int arp_find(unsigned char *haddr, sk_buff_t *pack) {
-	int i;
+	size_t i;
 	net_device_t *dev = pack->dev;
 	iphdr_t *ip = pack->nh.iph;
 	pack->mac.raw = pack->data;

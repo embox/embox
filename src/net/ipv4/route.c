@@ -30,37 +30,37 @@ int __init ip_rt_init(void) {
 }
 
 int rt_add_route(net_device_t *dev, in_addr_t dst,
-        		    in_addr_t mask, in_addr_t gw, int flags) {
-	int i;
-        for (i = 0; i < RT_TABLE_SIZE; i++) {
-                if (!(rt_table[i].rt_flags & RTF_UP)) {
-            		rt_table[i].dev        = dev;
-            		rt_table[i].rt_dst     = dst;
-            		rt_table[i].rt_mask    = mask;
-            		rt_table[i].rt_gateway = gw;
-            		rt_table[i].rt_flags   = RTF_UP|flags;
-                        return 0;
-                }
-        }
-        return -1;
+			in_addr_t mask, in_addr_t gw, int flags) {
+	size_t i;
+	for (i = 0; i < RT_TABLE_SIZE; i++) {
+		if (!(rt_table[i].rt_flags & RTF_UP)) {
+			rt_table[i].dev        = dev;
+			rt_table[i].rt_dst     = dst;
+			rt_table[i].rt_mask    = mask;
+			rt_table[i].rt_gateway = gw;
+			rt_table[i].rt_flags   = RTF_UP|flags;
+			return 0;
+		}
+	}
+	return -1;
 }
 
 int rt_del_route(net_device_t *dev, in_addr_t dst,
 			    in_addr_t mask, in_addr_t gw) {
-	int i;
+	size_t i;
 	for(i = 0; i < RT_TABLE_SIZE; i++) {
-	        if ((rt_table[i].rt_dst == dst || INADDR_ANY == dst) &&
-	    	    (rt_table[i].rt_mask == mask || INADDR_ANY == mask) &&
-	    	    (rt_table[i].rt_gateway == gw || INADDR_ANY == gw) ) {
-	                rt_table[i].rt_flags &= ~RTF_UP;
-	                return 0;
-	        }
+		if ((rt_table[i].rt_dst == dst || INADDR_ANY == dst) &&
+			(rt_table[i].rt_mask == mask || INADDR_ANY == mask) &&
+			(rt_table[i].rt_gateway == gw || INADDR_ANY == gw) ) {
+			rt_table[i].rt_flags &= ~RTF_UP;
+			return 0;
+		}
 	}
 	return -1;
 }
 
 int ip_route(sk_buff_t *skbuff) {
-	int i;
+	size_t i;
 	for(i = 0; i < RT_TABLE_SIZE; i++) {
 		if (rt_table[i].rt_flags & RTF_UP) {
 			if( (skbuff->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
@@ -83,7 +83,7 @@ rt_entry_t *rt_fib_get_first() {
 			return &rt_table[rt_iter - 1];
 		}
 	}
-        return NULL;
+	return NULL;
 }
 
 rt_entry_t *rt_fib_get_next() {

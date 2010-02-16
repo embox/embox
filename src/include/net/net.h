@@ -62,17 +62,16 @@ typedef enum {
  * overrides this enum for binary compat reasons.
  */
 enum sock_type {
-	SOCK_STREAM	= 1,
+//	SOCK_STREAM	= 1,
 	SOCK_DGRAM	= 2,
 	SOCK_RAW	= 3,
-	SOCK_RDM	= 4,
-	SOCK_SEQPACKET	= 5,
-	SOCK_DCCP	= 6,
+//	SOCK_RDM	= 4,
+//	SOCK_SEQPACKET	= 5,
+//	SOCK_DCCP	= 6,
 	SOCK_PACKET	= 10
 };
 
 #define SOCK_MAX (SOCK_PACKET + 1)
-
 
 /**
  * General BSD socket

@@ -46,7 +46,7 @@ struct sk_buff_head *alloc_skb_queue(int len) {
 }
 
 void __init skb_init(void) {
-	int i;
+	size_t i;
 	/* Init net pack manager */
 	net_buff_init();
 
@@ -180,7 +180,6 @@ struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority) {
 struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
 				  int noblock, int *err) {
 	struct sk_buff *skb;
-	printf("skb_recv_datagram\n");
 	unsigned long sp;
 	spin_lock(sp);
 	skb = skb_peek(&sk->sk_receive_queue);

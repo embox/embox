@@ -52,7 +52,7 @@ ICMP_CALLBACK_INFO cb_info[CB_INFO_SIZE];
 
 static int callback_alloc(ICMP_CALLBACK cb, void *in_dev, unsigned short ip_id,
 		unsigned char type) {
-	int i;
+	size_t i;
 	if (NULL == cb || NULL == in_dev)
 		return -1;
 	for (i = 0; i < array_len(cb_info); i++) {
@@ -68,7 +68,7 @@ static int callback_alloc(ICMP_CALLBACK cb, void *in_dev, unsigned short ip_id,
 }
 
 static int interface_abort(void *in_dev) {
-	int i;
+	size_t i;
 	if (NULL == in_dev)
 		return -1;
 	for (i = 0; i < array_len(cb_info); i++) {
@@ -85,7 +85,7 @@ static int interface_abort(void *in_dev) {
 
 static int callback_free(ICMP_CALLBACK cb, void *in_dev, unsigned short ip_id,
 		unsigned char type) {
-	int i;
+	size_t i;
 	if (NULL == cb) {
 		return -1;
 	}
@@ -103,7 +103,7 @@ static int callback_free(ICMP_CALLBACK cb, void *in_dev, unsigned short ip_id,
 
 static ICMP_CALLBACK callback_find(void *in_dev, unsigned short ip_id,
 		unsigned char type) {
-	int i;
+	size_t i;
 	for (i = 0; i < array_len(cb_info); i++) {
 		if (in_dev == cb_info[i].ifdev && type == cb_info[i].type) {
 			return cb_info[i].cb;

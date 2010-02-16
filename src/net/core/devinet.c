@@ -32,7 +32,7 @@ typedef struct _INETDEV_INFO {
 static INETDEV_INFO ifs_info[CONFIG_NET_INTERFACES_QUANTITY];
 
 INETDEV_INFO *find_ifdev_info_entry(in_device_t *in_dev) {
-	int i;
+	size_t i;
 	for (i = 0; i < array_len(ifs_info); i ++) {
 		if (&ifs_info[i].dev == in_dev) {
 			return &ifs_info[i];
@@ -42,7 +42,7 @@ INETDEV_INFO *find_ifdev_info_entry(in_device_t *in_dev) {
 }
 
 static in_device_t *find_free_handler(void) {
-	int i;
+	size_t i;
 	for(i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i ++) {
 		if (0 == ifs_info[i].is_busy) {
 			ifs_info[i].is_busy = 1;
@@ -53,7 +53,7 @@ static in_device_t *find_free_handler(void) {
 }
 #if 0
 static int free_handler(in_device_t * handler) {
-	int i;
+	size_t i;
 	for(i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i ++) {
 		if ((1 == ifs_info[i].is_busy) &&
 			(&ifs_info[i].dev == handler)) {
@@ -66,7 +66,7 @@ static int free_handler(in_device_t * handler) {
 #endif
 static int alloc_callback(in_device_t *in_dev, unsigned int type,
                           ETH_LISTEN_CALLBACK callback) {
-	int i;
+	size_t i;
 	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
 	for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
 		if (0 == ifdev_info->cb_info[i].func) {
@@ -79,7 +79,7 @@ static int alloc_callback(in_device_t *in_dev, unsigned int type,
 }
 #if 0
 static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
-	int i;
+	size_t i;
 	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
 	for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
 		if (callback == ifdev_info->cb_info[i].func) {
@@ -98,7 +98,7 @@ in_device_t *in_dev_get(const net_device_t *dev) {
 }
 
 int inet_dev_listen(in_device_t *dev, unsigned short type,
-                    ETH_LISTEN_CALLBACK callback) {
+			ETH_LISTEN_CALLBACK callback) {
 	if (NULL == dev) {
 		return -1;
  	}
@@ -106,7 +106,7 @@ int inet_dev_listen(in_device_t *dev, unsigned short type,
 }
 
 net_device_t *ip_dev_find(in_addr_t addr) {
-	int i;
+	size_t i;
 	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (ifs_info[i].dev.ifa_address == addr) {
 			return ifs_info[i].dev.dev;
@@ -116,7 +116,7 @@ net_device_t *ip_dev_find(in_addr_t addr) {
 }
 
 in_device_t *inet_dev_find_by_name(const char *if_name) {
-	int i;
+	size_t i;
 	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (0 == strncmp(if_name, ifs_info[i].dev.dev->name,
                                  IFNAMSIZ)) {
@@ -127,8 +127,8 @@ in_device_t *inet_dev_find_by_name(const char *if_name) {
 }
 
 int inet_dev_set_interface(const char *name, in_addr_t ipaddr, in_addr_t mask,
-                           const unsigned char *macaddr) {
-	int i;
+				const unsigned char *macaddr) {
+	size_t i;
 	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (0 == strncmp(name, ifs_info[i].dev.dev->name,
 				array_len(ifs_info[i].dev.dev->name))) {
@@ -187,7 +187,7 @@ in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev) {
  * receive raw socket (for tcpdump for example)
  */
 void ifdev_rx_callback(sk_buff_t *pack) {
-	int i;
+	size_t i;
 	/* if there are some callback handlers for packet's protocol */
 	in_device_t *in_dev = (in_device_t *) pack->ifdev;
 	if (NULL == dev)

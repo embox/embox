@@ -126,7 +126,7 @@ static int __sock_create(int family, int type, int protocol,
 }
 
 int kernel_sock_init(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < array_len(sockets_pull); i++) {
 		list_add(&(&sockets_pull[i])->list, &head_free_sk);
 		(&sockets_pull[i])->sockfd = i;
@@ -209,7 +209,7 @@ struct socket *sockfd_lookup(int fd) {
 }
 
 int sock_get_fd(struct socket *sock) {
-	int i;
+	size_t i;
 	for (i = 0; i < array_len(sockets_pull); i++) {
 		if(&(&sockets_pull[i])->sock == sock) {
 			return (&sockets_pull[i])->sockfd;

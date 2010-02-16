@@ -24,7 +24,7 @@ static LIST_HEAD(head_free_pack);
 static net_buff_info_t pack_pool[CONFIG_PACK_POOL_SIZE];
 
 int __init net_buff_init(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < array_len(pack_pool); i ++) {
 		list_add(&(&pack_pool[i])->list, &head_free_pack);
 	}

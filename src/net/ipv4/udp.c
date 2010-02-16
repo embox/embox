@@ -151,9 +151,11 @@ const struct proto_ops inet_dgram_ops = {
 	.family            = PF_INET,
 #if 0
 	.owner             = THIS_MODULE,
+#endif
 	.release           = inet_release,
 	.bind              = inet_bind,
 	.connect           = inet_dgram_connect,
+#if 0
 	.socketpair        = sock_no_socketpair,
 	.accept            = sock_no_accept,
 	.getname           = inet_getname,
@@ -165,8 +167,8 @@ const struct proto_ops inet_dgram_ops = {
 	.getsockopt        = sock_common_getsockopt,
 #endif
 	.sendmsg           = inet_sendmsg,
-#if 0
 	.recvmsg           = sock_common_recvmsg,
+#if 0
 	.mmap              = sock_no_mmap,
 	.sendpage          = inet_sendpage,
 #endif

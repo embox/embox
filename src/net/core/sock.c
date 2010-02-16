@@ -34,7 +34,7 @@ static sock_info_t socks_pull[CONFIG_MAX_KERNEL_SOCKETS];
 static LIST_HEAD(head_free_sock);
 
 void __init sk_init(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < array_len(socks_pull); i++) {
 		list_add(&(&socks_pull[i])->list, &head_free_sock);
 	}
