@@ -13,6 +13,7 @@
 #include <kernel/sys.h>
 
 int express_tests_execute_all( void ) {
+	extern int *__express_tests_result;
 	extern express_test_descriptor_t *__express_tests_start, *__express_tests_end;
 	express_test_descriptor_t ** p_test = &__express_tests_start;
 	int i, total = (int) (&__express_tests_end - &__express_tests_start);
@@ -47,6 +48,10 @@ int express_tests_execute_all( void ) {
 #else
 		result = (*p_test)->exec(0, NULL);
 #endif
+
+		/* writing test results to special section */
+		__express_tests_result[i] = result;
+
 		if (result == -1) {
 			TRACE("FAILED\n");
 			failed++;
@@ -71,6 +76,7 @@ int express_tests_execute_all( void ) {
 }
 
 int express_tests_execute( int level ) {
+	extern int *__express_tests_result;
 	extern express_test_descriptor_t *__express_tests_start, *__express_tests_end;
 	express_test_descriptor_t ** p_test = &__express_tests_start;
 	int i, total = (int) (&__express_tests_end - &__express_tests_start);
@@ -107,6 +113,9 @@ int express_tests_execute( int level ) {
 #else
 		result = (*p_test)->exec(0, NULL);
 #endif
+
+		/* writing test results to special section */
+		__express_tests_result[i] = result;
 
 		if (result == EXPRESS_TESTS_PASSED_RETCODE) {
 			TRACE("PASSED\n");
