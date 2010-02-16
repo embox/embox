@@ -24,7 +24,7 @@ typedef struct socket_info {
 	struct list_head list __attribute__ ((aligned (4)));
 } socket_info_t __attribute__ ((aligned (4)));
 
-static socket_info_t sockets_pull[MAX_KERNEL_SOCKETS];
+static socket_info_t sockets_pull[CONFIG_MAX_KERNEL_SOCKETS];
 static LIST_HEAD(head_free_sk);
 
 static const struct net_proto_family *net_families[NPROTO];

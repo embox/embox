@@ -37,7 +37,7 @@ typedef struct _NET_DEV_INFO {
 	int is_busy;
 } NET_DEV_INFO;
 
-static NET_DEV_INFO net_devices[NET_DEVICES_QUANTITY];
+static NET_DEV_INFO net_devices[CONFIG_NET_DEVICES_QUANTITY];
 
 static inline int dev_is_busy(int num) {
 	return net_devices[num].is_busy;
@@ -71,7 +71,7 @@ net_device_t *alloc_netdev(int sizeof_priv, const char *name, void(*setup)(
 	struct net_device *dev;
 	char buff[IFNAMSIZ];
 	int i;
-	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		if (!dev_is_busy(i)) {
 			dev = dev_lock(i);
 			setup(dev);
@@ -91,7 +91,7 @@ net_device_t *alloc_netdev(int sizeof_priv, const char *name, void(*setup)(
 
 void free_netdev(net_device_t *dev) {
 	int i;
-	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		if (dev == &net_devices[i].dev) {
 			dev_unlock(i);
 		}
@@ -110,7 +110,7 @@ void unregister_netdev(struct net_device *dev) {
 net_device_t *netdev_get_by_name(const char *name) {
 	struct net_device *dev;
 	int i;
-	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		dev = &net_devices[i].dev;
 		if (dev_is_busy(i) && !strncmp(name, dev->name, IFNAMSIZ)) {
 			return dev;
@@ -122,7 +122,7 @@ net_device_t *netdev_get_by_name(const char *name) {
 net_device_t *dev_getbyhwaddr(unsigned short type, char *ha) {
 	struct net_device *dev;
 	int i;
-	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		dev = &net_devices[i].dev;
 		if (dev_is_busy(i) && !memcmp(ha, dev->dev_addr, dev->addr_len)) {
 			return dev;
@@ -305,7 +305,7 @@ void netif_rx_schedule(net_device_t *dev) {
 static void net_rx_action(struct softirq_action* action) {
 	int i;
 	net_device_t *dev;
-	for (i = 0; i < NET_DEVICES_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 		if (dev_is_busy(i)) {
 			dev = &(net_devices[i].dev);
 			dev->poll(dev);

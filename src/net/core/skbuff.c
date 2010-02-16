@@ -18,10 +18,10 @@
 #include <linux/init.h>
 #include <linux/spinlock.h>
 
-static struct sk_buff sk_buff_pool[QUANTITY_SKB];
+static struct sk_buff sk_buff_pool[CONFIG_QUANTITY_SKB];
 static LIST_HEAD(head_free_skb);
 
-static struct sk_buff_head sk_queue_pool[QUANTITY_SKB_QUEUE];
+static struct sk_buff_head sk_queue_pool[CONFIG_QUANTITY_SKB_QUEUE];
 static LIST_HEAD(head_free_queue);
 
 struct sk_buff_head *alloc_skb_queue(int len) {

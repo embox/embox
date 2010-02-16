@@ -29,7 +29,7 @@ typedef struct _INETDEV_INFO {
 	CALLBACK_INFO cb_info[IFDEV_CBINFO_QUANTITY];
 } INETDEV_INFO;
 
-static INETDEV_INFO ifs_info[NET_INTERFACES_QUANTITY];
+static INETDEV_INFO ifs_info[CONFIG_NET_INTERFACES_QUANTITY];
 
 INETDEV_INFO *find_ifdev_info_entry(in_device_t *in_dev) {
 	int i;
@@ -43,7 +43,7 @@ INETDEV_INFO *find_ifdev_info_entry(in_device_t *in_dev) {
 
 static in_device_t *find_free_handler(void) {
 	int i;
-	for(i = 0; i < NET_INTERFACES_QUANTITY; i ++) {
+	for(i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i ++) {
 		if (0 == ifs_info[i].is_busy) {
 			ifs_info[i].is_busy = 1;
 			return &ifs_info[i].dev;
@@ -54,7 +54,7 @@ static in_device_t *find_free_handler(void) {
 #if 0
 static int free_handler(in_device_t * handler) {
 	int i;
-	for(i = 0; i < NET_INTERFACES_QUANTITY; i ++) {
+	for(i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i ++) {
 		if ((1 == ifs_info[i].is_busy) &&
 			(&ifs_info[i].dev == handler)) {
 			ifs_info[i].is_busy = 0;
@@ -107,7 +107,7 @@ int inet_dev_listen(in_device_t *dev, unsigned short type,
 
 net_device_t *ip_dev_find(in_addr_t addr) {
 	int i;
-	for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (ifs_info[i].dev.ifa_address == addr) {
 			return ifs_info[i].dev.dev;
 		}
@@ -117,7 +117,7 @@ net_device_t *ip_dev_find(in_addr_t addr) {
 
 in_device_t *inet_dev_find_by_name(const char *if_name) {
 	int i;
-	for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (0 == strncmp(if_name, ifs_info[i].dev.dev->name,
                                  IFNAMSIZ)) {
 			return &ifs_info[i].dev;
@@ -129,7 +129,7 @@ in_device_t *inet_dev_find_by_name(const char *if_name) {
 int inet_dev_set_interface(const char *name, in_addr_t ipaddr, in_addr_t mask,
                            const unsigned char *macaddr) {
 	int i;
-	for (i = 0; i < NET_INTERFACES_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (0 == strncmp(name, ifs_info[i].dev.dev->name,
 				array_len(ifs_info[i].dev.dev->name))) {
 			if((-1 == inet_dev_set_ipaddr(&ifs_info[i].dev, ipaddr))||
@@ -217,7 +217,7 @@ void ifdev_tx_callback(sk_buff_t *pack) {
 static int iterator_cnt;
 
 in_device_t *inet_dev_get_fist_used(void) {
-	for(iterator_cnt = 0; iterator_cnt < NET_INTERFACES_QUANTITY;
+	for(iterator_cnt = 0; iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY;
                         iterator_cnt++) {
 		if (1 == ifs_info[iterator_cnt].is_busy) {
 			iterator_cnt++;
@@ -228,7 +228,7 @@ in_device_t *inet_dev_get_fist_used(void) {
 }
 
 in_device_t *inet_dev_get_next_used(void) {
-	for(; iterator_cnt < NET_INTERFACES_QUANTITY; iterator_cnt++) {
+	for(; iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY; iterator_cnt++) {
 		if (1 == ifs_info[iterator_cnt].is_busy) {
 			iterator_cnt++;
 			return &ifs_info[iterator_cnt - 1].dev;

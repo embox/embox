@@ -30,7 +30,7 @@ typedef struct sock_info {
 	struct list_head list __attribute__ ((aligned (4)));
 } sock_info_t __attribute__ ((aligned (4)));
 
-static sock_info_t socks_pull[MAX_KERNEL_SOCKETS];
+static sock_info_t socks_pull[CONFIG_MAX_KERNEL_SOCKETS];
 static LIST_HEAD(head_free_sock);
 
 void __init sk_init(void) {

@@ -21,7 +21,7 @@ typedef struct net_buff_info {
 
 static LIST_HEAD(head_free_pack);
 
-static net_buff_info_t pack_pool[PACK_POOL_SIZE];
+static net_buff_info_t pack_pool[CONFIG_PACK_POOL_SIZE];
 
 int __init net_buff_init(void) {
 	int i;
