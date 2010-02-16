@@ -1,12 +1,6 @@
-OBJS-y += express_tests.o
-SUBDIRS-$(MONITOR_TESTS) += checksum
-SUBDIRS-$(MONITOR_TESTS) += cpu_context
-SUBDIRS-$(MONITOR_TESTS) += timer_callback
-SUBDIRS-$(MONITOR_TESTS) += irq_force
-SUBDIRS-$(MONITOR_TESTS) += local_irq_save
-SUBDIRS-$(MONITOR_TESTS) += memory
-SUBDIRS-$(MONITOR_TESTS) += mmu
-SUBDIRS-$(MONITOR_TESTS) += recursion
-SUBDIRS-$(MONITOR_TESTS) += soft_traps
+$_PACKAGE := embox.express_tests
 
-include $(SCRIPTS_DIR)/common.mk
+$_SUBDIRS := recursion
+
+$_MODS_ESSENTIAL += express_tests
+$_SRCS-express_tests += *.c
