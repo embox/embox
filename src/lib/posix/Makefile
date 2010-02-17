@@ -1,3 +1,2 @@
-LIBS-y += getopt.o
 
-include $(SCRIPTS_DIR)/common.mk
+$_SRCS-libc += *.c
