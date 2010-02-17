@@ -1,12 +1,13 @@
 /*
- * Console command prompt.
+ * @file console.c
+ * @brief Console command prompt.
  *
- * Supports typing proposals and custom welcome messages.
+ * @details Supports typing proposals and custom welcome messages.
  *
  * Implementation of MVC with passive model.
  * This entity is controller, cmdline is model, and screen is view.
  *
- * Author: Eldar Abusalimov
+ * @author Eldar Abusalimov
  */
 
 #include "console.h"

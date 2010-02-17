@@ -1,12 +1,13 @@
 /**
- * Console command prompt.
+ * @file console.h
+ * @brief Console command prompt.
  *
- * Supports typing proposals and custom welcome messages.
+ * @details Supports typing proposals and custom welcome messages.
  *
  * Implementation of MVC with passive model.
  * This entity is controller, cmdline is model, and screen is view.
  *
- * Author: Eldar Abusalimov
+ * @author: Eldar Abusalimov
  */
 
 #ifndef CONSOLE_H_
@@ -14,7 +15,7 @@
 
 #include "cmdline.h"
 #include "screen.h"
-#include "common.h"
+#include <common.h>
 
 struct _CONSOLE;
 

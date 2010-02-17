@@ -1,12 +1,12 @@
 /**
- * \file screen_out.c
- * \date 28.02.2009
- * \author Eldar Abusalimov
+ * @file screen_out.c
+ * @date 28.02.2009
+ * @author Eldar Abusalimov
  */
 #include "screen.h"
-#include "drivers/terminal.h"
-#include "assert.h"
-#include "common.h"
+#include <drivers/terminal.h>
+#include <assert.h>
+#include <common.h>
 
 static void transmit_string(SCREEN *this, const char *str) {
 	while (*str) {
@@ -45,7 +45,7 @@ static void move_cursor_to(SCREEN *this, int col) {
 
 void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 	int i;
-        bool dirty = true;
+	bool dirty = true;
 
 	if (this == NULL) {
 		return;

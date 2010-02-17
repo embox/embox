@@ -1,30 +1,30 @@
 /**
- * \file shell.c
+ * @file shell.c
  *
- * \date 02.02.2009
- * \author Alexey Fomin
+ * @date 02.02.2009
+ * @author Alexey Fomin
  */
-#include "stdio.h"
-#include "common.h"
-#include "string.h"
-#include "ctype.h"
+#include <stdio.h>
+#include <common.h>
+#include <string.h>
+#include <ctype.h>
 #include "console/console.h"
-#include "shell.h"
-#include "kernel/sys.h"
-#include "shell_command.h"
+#include <shell.h>
+#include <kernel/sys.h>
+#include <shell_command.h>
 
 /* *str becomes pointer to first non-space character*/
 void skip_spaces(char **str) {
-        while (**str == ' ') {
-                (*str)++;
-        }
+	while (**str == ' ') {
+		(*str)++;
+	}
 }
 
 /* *str becomes pointer to first space or '\0' character*/
 void skip_word(char **str) {
-        while (**str != '\0' && **str != ' ') {
-                (*str)++;
-        }
+	while (**str != '\0' && **str != ' ') {
+		(*str)++;
+	}
 }
 
 static int parse_str(char *cmdline, char **words) {
@@ -44,7 +44,7 @@ static int parse_str(char *cmdline, char **words) {
 static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
 	int words_counter = 0;
 
-        SHELL_COMMAND_DESCRIPTOR *c_desc;
+	SHELL_COMMAND_DESCRIPTOR *c_desc;
 	char *words[CMDLINE_MAX_LENGTH + 1];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {

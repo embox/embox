@@ -1,13 +1,13 @@
 /**
- * \file cmdline.h
- * \brief Internal representation of command line entity.
- * \date 08.02.2009
- * \author Eldar Abusalimov
+ * @file cmdline.h
+ * @brief Internal representation of command line entity.
+ * @date 08.02.2009
+ * @author Eldar Abusalimov
  */
 #ifndef CMDLINE_H_
 #define CMDLINE_H_
 
-#include "types.h"
+#include <types.h>
 
 #define CMDLINE_MAX_LENGTH      127
 #define CMDLINE_HISTORY_SIZE    8

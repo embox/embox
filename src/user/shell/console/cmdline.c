@@ -1,13 +1,13 @@
 /**
- * \file cmdline.c
- * \brief Internal representation of command line entity.
- * \date 08.02.2009
- * \author Eldar Abusalimov
+ * @file cmdline.c
+ * @brief Internal representation of command line entity.
+ * @date 08.02.2009
+ * @author Eldar Abusalimov
  */
 #include "cmdline.h"
-#include "math.h"
-#include "string.h"
-#include "common.h"
+#include <math.h>
+#include <string.h>
+#include <common.h>
 
 CMDLINE * cmdline_init(CMDLINE *this) {
 	CMDLINE_HISTORY *history;
@@ -75,7 +75,7 @@ bool cmdline_history_new_entry(CMDLINE *cmdline) {
 			+ CMDLINE_HISTORY_SIZE - 1) % CMDLINE_HISTORY_SIZE])) {
 		cmdline->length = 0;
 		cmdline->cursor = 0;
-    		cmdline->string[0] = '\0';
+			cmdline->string[0] = '\0';
 		return false;
 	}
 

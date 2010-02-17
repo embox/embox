@@ -1,7 +1,7 @@
 /**
- * \file screen_in.c
- * \date 28.02.2009
- * \author Eldar Abusalimov
+ * @file screen_in.c
+ * @date 28.02.2009
+ * @author Eldar Abusalimov
  */
 #include "screen.h"
 #include <assert.h>
@@ -109,8 +109,8 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 static void uart_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
 	char ch;
 	static TERMINAL_TOKEN token;
-        static TERMINAL_TOKEN_PARAMS params[1];
-        SCREEN *this;
+	static TERMINAL_TOKEN_PARAMS params[1];
+	SCREEN *this;
 	if (!sys_exec_is_started()) {
 		return;
 	}
@@ -119,16 +119,16 @@ static void uart_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
 	ch = token & 0xFF;
 	/*TODO:*/
 	if (ch == token) {
-	        handle_char_token(this, token);
+		handle_char_token(this, token);
 	} else {
-	        handle_ctrl_token(this, token, params);
+		handle_ctrl_token(this, token, params);
 	}
 }
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	static TERMINAL_TOKEN token;
 	static TERMINAL_TOKEN_PARAMS params[1];
-        char ch;
+	char ch;
 	if ((this == NULL) || this->running) {
 		return;
 	}
@@ -156,4 +156,3 @@ void screen_in_stop(SCREEN *this) {
 	uart_remove_irq_handler();
 	this->callback = NULL;
 }
-

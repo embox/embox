@@ -1,14 +1,14 @@
 /**
- * \file screen.h
- * \date 28.02.2009
- * \author Eldar Abusalimov
+ * @file screen.h
+ * @date 28.02.2009
+ * @author Eldar Abusalimov
  */
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
-#include "types.h"
+#include <types.h>
 #include "cmdline.h"
-#include "drivers/terminal.h"
+#include <drivers/terminal.h>
 
 struct _SCREEN;
 

@@ -1,15 +1,14 @@
 /**
- * \file shell_command.c
- * \date 13 august 2009
- * \author Anton Bondarev
- * \details Realyzed interface for working with user command
+ * @file shell_command.c
+ * @date 13 august 2009
+ * @author Anton Bondarev
+ * @details Realyzed interface for working with user command
  *          wich can be call from shell
  */
 
-#include "shell_command.h"
+#include <>shell_command.h>
 #include <kernel/sys.h>
 #include <string.h>
-
 
 int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
 		char **argsv) {
@@ -62,9 +61,9 @@ SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_next(
 			continue;
 		}
 		if (length == -1) {
-		        if (0 == strcmp(search_str, p_desc->name)) {
-		                return p_desc;
-		        }
+			if (0 == strcmp(search_str, p_desc->name)) {
+				return p_desc;
+			}
 		} else {
 			if (0 == strncmp(search_str, p_desc->name, length)) {
 				return p_desc;
