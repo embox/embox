@@ -23,9 +23,12 @@ $_DEPS-main    += irq
 $_DEPS-main    += timer
 $_DEPS-main    += embox.hal.arch
 $_DEPS-irq     += embox.hal.interrupt
-$_DEPS-irq     += softirq
 $_DEPS-timer   += embox.hal.clock
 $_DEPS-printk  += diag
+
+ifdef CONFIG_IRQ
+$_DEPS-irq     += softirq
+endif
 
 ifdef CONFIG_MOD_DIAG
   $_DEPS-diag += $(CONFIG_MOD_DIAG)

@@ -22,11 +22,6 @@ _util_mk_:=1
 #
 r-patsubst = $(if $(filter $1,$3),$(call $0,$1,$2,$(3:$1=$2)),$3)
 
-__r-wildcard = \
-  $(if $(and $(findstring **,$1),$2), \
-    $(call $0,$(subst **,**/*,$1),$(wildcard $(subst **,**/*,$1))) \
-  ) $2
-
 #
 # Extended version of wildcard that understands double asterisk pattern (**).
 #
@@ -35,6 +30,11 @@ __r-wildcard = \
 # NOTE: does not handle properly more than one ** tokens.
 #
 r-wildcard = $(strip $(call __r-wildcard,$1,$(wildcard $1)))
+
+__r-wildcard = \
+  $(if $(and $(findstring **,$1),$2), \
+    $(call $0,$(subst **,**/*,$1),$(wildcard $(subst **,**/*,$1))) \
+  ) $2
 
 # Just for better output readability.
 define N

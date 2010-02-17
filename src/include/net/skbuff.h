@@ -101,7 +101,7 @@ extern void skb_init(void);
 /**
  * allocate one instance of structure sk_buff. With pointed size and flags.
  * @return If size is more then mtu (now it is defined by macros
- * ETHERNET_V2_FRAME_SIZE) function will return queue of sk_buff.
+ * CONFIG_ETHERNET_V2_FRAME_SIZE) function will return queue of sk_buff.
  * Else function return single sk_buff.
  * Function return NULL if function can't allocate demanded buffer
  */

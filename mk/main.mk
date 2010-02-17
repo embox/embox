@@ -23,7 +23,8 @@ BACKUP_DIR     :=$(ROOT_DIR)/conf/backup~
 BUILD_DIR      :=$(ROOT_DIR)/build
 BIN_DIR        :=$(BUILD_DIR)/bin
 OBJ_DIR        :=$(BUILD_DIR)/obj
-LIB_DIR        :=$(BUILD_DIR)/lib
+LDS_DIR        :=$(OBJ_DIR)
+LIB_DIR        :=$(OBJ_DIR)
 DOCS_DIR       :=$(BUILD_DIR)/docs
 AUTOCONF_DIR   :=$(BUILD_DIR)/conf
 
@@ -40,7 +41,9 @@ ifneq ($(filter all,$(makegoals)),)
 # Need to include it prior to walking the source tree
 # (particularly because of ARCH definition).
 include $(MK_DIR)/configure.mk
+ifneq ($(wildcard $(AUTOCONF_DIR)/config.mk),)
 include $(MK_DIR)/image.mk
+endif
 endif
 
 .PHONY: all prepare docs clean config xconfig menuconfig

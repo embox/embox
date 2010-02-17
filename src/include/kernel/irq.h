@@ -12,7 +12,7 @@
 
 #ifndef IRQ_H_
 #define IRQ_H_
-#include <autoconf.h>
+
 #include <types.h>
 
 #include <hal/interrupt.h>

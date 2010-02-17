@@ -2,11 +2,7 @@
 #define _COMMON_H_
 
 #ifdef __EMBOX__
-#include "autoconf.h"
-#include "types.h"
-#include "stdio.h"
 #include "err.h"
-#include "bitops.h"
 #else
 #include <linux/types.h>
 #endif

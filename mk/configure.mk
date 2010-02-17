@@ -2,17 +2,29 @@
 # Author: Eldar Abusalimov
 #
 
--include $(AUTOCONF_DIR)/config.mk
-
 HOSTCC  = gcc
 HOSTCPP = $(HOSTCC) -E
 
-CONF_FILES := $(addsuffix .conf,build lds platform embox)
-AUTOCONF_FILES := config.mk config.lds.h config.h
+src_confs := embox platform
+mk_confs  := $(src_confs) build
+lds_confs := lds
+
+src_confs := $(src_confs:%=$(CONF_DIR)/%.conf)
+mk_confs  :=  $(mk_confs:%=$(CONF_DIR)/%.conf)
+lds_confs := $(lds_confs:%=$(CONF_DIR)/%.conf)
+
+src_autoconf := $(AUTOCONF_DIR)/config.h
+mk_autoconf  := $(AUTOCONF_DIR)/config.mk
+lds_autoconf := $(AUTOCONF_DIR)/config.lds.h
+
+CONF_FILES     := $(sort $(mk_confs) $(src_confs) $(lds_confs))
+AUTOCONF_FILES := $(mk_autoconf) $(src_autoconf) $(lds_autoconf)
+
+-include $(mk_autoconf)
 
 .PHONY: check_config
 check_config:
-	@test -d $(CONF_DIR) $(addprefix -a -f $(CONF_DIR)/,$(CONF_FILES)) \
+	@test -d $(CONF_DIR) $(CONF_FILES:%=-a -f %) \
 		||(echo 'Error: conf directory does not exist' \
 		&& echo 'Try "make TEMPLATE=<profile> config"' \
 		&& echo '    See templates dir for possible profiles' \
@@ -26,18 +38,23 @@ ifndef TARGET
 	exit 1
 endif
 
-CPPFLAGS_config.mk   :=-DMAKE
-CPPFLAGS_config.lds.h:=-DLDS
-CPPFLAGS_config.h    :=
+$(mk_autoconf) : $(mk_confs)
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) -DMAKE \
+	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S > $@
 
-$(addprefix $(AUTOCONF_DIR)/,$(AUTOCONF_FILES)) : \
-  $(MK_DIR)/confmacro.S $(addprefix $(CONF_DIR)/,$(CONF_FILES)) \
-  | mkdir # mkdir shouldn't force target to be updated
-	$(HOSTCPP) -Wp, -P -undef $(CPPFLAGS_$(notdir $@)) -I$(CONF_DIR) -nostdinc \
-	-MMD -MT $@ -MF $@.d $< \
+$(src_autoconf) : $(src_confs)
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) \
+	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$define/\n#define/g' | uniq > $@
 
--include $(AUTOCONF_FILES:%=$(AUTOCONF_DIR)/%.d)
+$(lds_autoconf) : $(lds_confs)
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) -DLDS \
+	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
+		| sed 's/$$define/\n#define/g' | uniq > $@
+
+$(AUTOCONF_FILES) : | mkdir # mkdir shouldn't force target to be updated
+
+-include $(AUTOCONF_FILES:%=%.d)
 
 mkdir:
 	@test -d $(AUTOCONF_DIR) || mkdir -p $(AUTOCONF_DIR)

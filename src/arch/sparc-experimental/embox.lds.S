@@ -11,11 +11,9 @@ ENTRY(start)
 MEMORY {
 	MEMORY_REGION(sdram)
 	MEMORY_REGION(flash)
-	MEMORY_REGION(internal)
 }
 
-_internal_stack = ORIGIN(internal) + LENGTH(internal);
-_stack = _bend + 0x200000;
+_stack = _bend + 0x10000;
 __stack = _stack;
 __checksum = 0x00000000;
 _data_image_start = _data_lma;
@@ -26,7 +24,6 @@ _text_end = _text_vma + _text_len;
 SECTIONS {
 
 	.text : {
-		ALIGNMENT();
 		*(.trap_table.text)
 		*(.text)
 		*(.init.text)
@@ -59,12 +56,5 @@ SECTIONS {
 		_bend = ALIGN(0x8);
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
-
-	.internal_mem (NOLOAD) : {
-		. = ALIGN(0x8);
-		_internal_start = .;
-		*(.internal_mem)
-		_internal_end = .;
-	} SECTION_REGION(internal_mem)
 
 }

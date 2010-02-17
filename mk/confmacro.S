@@ -4,21 +4,19 @@
  * Author: Eldar Abusalimov
  */
 
-#define target(target) make(TARGET := target)
-#define arch(arch) make(ARCH := arch)
-#define platform(platform) make(PLATFORM := platform)
-#define mod(mod) make(MODS_ENABLE += mod)
-
 #ifdef MAKE
 
-#define make(str) str
-#define option(option) option_value(option, 1)
+#define mod(mod) MODS_ENABLE += mod
+
 #define option_value(option, value) CONFIG_##option := value
+#define option(option) option_value(option, 1)
+
 #define test(test_name, level, on_boot) option(TEST_##test_name)
 
 #else
 
-#define make(str)
+#define mod(mod)
+
 #define option(option) option_value(option, 1)
 #define option_value(option, value) \
 	$define CONFIG_##option value
@@ -51,7 +49,12 @@
 
 #endif /* LDS */
 
+#ifdef MAKE
 #include "build.conf"
+#endif /* MAKE */
+#ifdef LDS
 #include "lds.conf"
+#endif /* LDS */
+
 #include "platform.conf"
 #include "embox.conf"

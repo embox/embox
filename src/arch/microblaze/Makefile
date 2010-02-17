@@ -10,7 +10,7 @@ $_SRCS-arch += arch.c
 
 $(IMAGE): $(LDSCRIPT)
 
-$(LDSCRIPT): $(SELFDIR)/embox.lds.S $(AUTOCONF_DIR)/config.lds.h
+$(LDSCRIPT): $($_SELFDIR)/embox.lds.S $(AUTOCONF_DIR)/config.lds.h
 	$(CPP) -Wp, -P -undef $(CPPFLAGS) \
 		-imacros $(AUTOCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
 

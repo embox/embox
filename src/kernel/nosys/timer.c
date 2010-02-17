@@ -27,3 +27,7 @@ int timers_context_restore(int context_number) {
 
 void timers_off(void) {
 }
+
+void irq_func_tmr_1mS(int irq_num, void *dev_id) {
+}
+

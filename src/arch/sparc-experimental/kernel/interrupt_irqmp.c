@@ -59,12 +59,7 @@ void interrupt_force(interrupt_nr_t interrupt_nr) {
 }
 
 void interrupt_handler(interrupt_nr_t interrupt_nr, struct ptrace_regs *regs) {
-#ifdef CONFIG_IRQ
 	irq_dispatch(interrupt_nr);
-#else
-	printk("Unexpected interrupt nr 0x%02X (configured without CONFIG_IRQ)\n",
-			interrupt_nr);
-#endif
 }
 
 void interrupt_init(void) {

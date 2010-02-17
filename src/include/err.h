@@ -7,7 +7,6 @@
 #ifndef _ERR_H_
 #define _ERR_H_
 
-#include "autoconf.h"
 #include "stdio.h"
 
 #define LOGGER()   printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)

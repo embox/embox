@@ -37,6 +37,14 @@ interrupt_entry:
 
 	RESTORE_ALL
 
+	.global weak_trap_entry
+weak_trap_entry:
+	orcc %local, %g0, %g0
+	be bad_trap_entry
+	 nop
+	call %g1
+	 nop
+
  	.global srmmu_fault
 srmmu_fault:
  	.global bad_trap_entry

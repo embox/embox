@@ -158,7 +158,7 @@ define __traverse_process
   else ifneq ($(wildcard $(__traverse_node_dir)/makefile),)
     include $(__traverse_node_dir)/makefile
   else
-    $(warning EMBuild traverse warning: \
+    $(warning EMBuild traverse warning:: \
       Node descriptor not found in $(__traverse_node_dir): $N \
       neither $(if $(__traverse_node_file), \
         $(__traverse_node_file) nor) \

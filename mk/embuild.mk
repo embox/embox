@@ -49,8 +49,8 @@ MODS := $(sort $(MODS) $(MODS_ESSENTIAL))
 
 # Common units handling: source assignments and flags.
 
-error_string_remote = $N$1/Makefile:0: EMBuild error:
-warning_string_remote = $N$1/Makefile:0: EMBuild warning:
+error_string_remote = $1/Makefile:0: EMBuild error::
+warning_string_remote = $1/Makefile:0: EMBuild warning::
 
 error_string = $(call error_string_remote,$(dir))
 warning_string = $(call warning_string_remote,$(dir))
@@ -65,23 +65,24 @@ unit_symbol = $($_$1-$(unit)) \
 
 package_symbol = $(if $(filter $($_PACKAGE),$(unit_package)),$($_$1))
 
+# Each source file should be assigned for a single unit. Prevent violation.
 unit_srcs_check = \
   $(foreach src,$1, \
     $(if $(UNIT-$(abspath $(src))), \
       $(if $(filter $(UNIT-$(abspath $(src))),$(unit)), \
         $(info $(warning_string) \
           Repeated source assignment of $(src) to the same unit $(unit)) \
-        $(info $(call warning_string_remote,$(UNIT_DEFINED-$(abspath $(src))))\
+        $(info $(call warning_string_remote,$(UNIT-$(abspath $(src))-DEFINED))\
           first defined here), \
-        $(info $(warning_string) \
+        $(info $(error_string) \
           Attempting to reassign source $(src) to unit $(unit) \
             (already assigned to $(UNIT-$(abspath $(src))))) \
-        $(info $(call warning_string_remote,$(UNIT_DEFINED-$(abspath $(src))))\
+        $(info $(call error_string_remote,$(UNIT-$(abspath $(src))-DEFINED))\
           first defined here) \
-        $(error Remote error) \
+        $(error Multiple source assignment) \
       ), \
       $(eval UNIT-$(abspath $(src)) := $(unit)) \
-      $(eval UNIT_DEFINED-$(abspath $(src)) := $(dir)) \
+      $(eval UNIT-$(abspath $(src))-DEFINED := $(dir)) \
       $(src) \
     ) \
   )
@@ -127,12 +128,17 @@ unit = $(mod)
 MOD_DEPS_DAG = $(sort $(call mod_deps_dag_walk,$1))
 mod_deps_dag_walk = $(foreach mod,$1,$(call $0,$(DEPS-$(mod))) $(mod))
 
+# User should list only existing mods in dependency list. Check it is true.
 mod_deps_filter = \
-  $(if $(filter-out $(MODS),$1), \
-    $(info $(warning_string) Undefined dependencies for mod $(mod): \
-      $(filter-out $(MODS),$1)) \
-    $(filter $(MODS),$1), \
-    $1 \
+  $(foreach dep, \
+    $(if $(filter-out $(MODS),$1), \
+      $(info $(warning_string) Undefined dependencies for mod $(mod):: \
+        $(filter-out $(MODS),$1)) \
+      $(filter $(MODS),$1), \
+      $1 \
+    ), \
+    $(eval MOD-$(mod)-DEP-$(dep)-DEFINED := $(dir)) \
+    $(dep) \
   )
 
 define define_mod_symbols_per_directory
@@ -140,20 +146,32 @@ define define_mod_symbols_per_directory
     $(call mod_deps_filter,$(call canonize_name,$(call unit_symbol,DEPS)))
 endef
 
-define define_mod_symbols
-  DEPS-$(mod) := $(sort $(DEPS-$(mod)))
-#  $(info CPPFLAGS-$(mod): $(CPPFLAGS-$(mod)))
-#  $(info DEPS-$(mod): $(DEPS-$(mod)))
-#  $(info OBJS-$(mod): $(OBJS-$(mod)))
-#  $(info SRCS-$(mod): $(SRCS-$(mod)))
-endef
-
+# Define dependency info for each mod.
 $(foreach mod,$(MODS), \
   $(foreach dir,$(DIRS), \
     $(eval $(value define_mod_symbols_per_directory)) \
   ) \
-  $(eval $(value define_mod_symbols)) \
+  $(eval DEPS-$(mod) := $(sort $(DEPS-$(mod)))) \
 )
+
+# After dependency info has been collected for all mods we should check that
+# the dependency graph is true DAG.
+mod_detect_cycle_deps = \
+  $(if $(filter $(mod),$1), \
+    $(foreach pair, \
+        $(call mod_dep_pairs,$2 $(lastword $3),$3 $(firstword $2)), \
+      $(info $(call error_string_remote,$(MOD-$(subst /,-DEP-,$(pair))-DEFINED)) \
+        Cyclic dependency definition here:: $(subst /, -> ,$(pair))) \
+    ) \
+    $(error Dependency cycle:: $(mod) $(strip $(3:%= -> %))), \
+    $(foreach parent,$(if $(m),$(m),$(mod)),$(foreach m,$1,\
+      $(call $0,$(DEPS-$(m)), \
+        $2 $(parent),$3 $(m)) \
+    )) \
+  )
+mod_dep_pairs = $(join $(1:%=%/),$(2))
+
+$(foreach mod,$(MODS),$(call mod_detect_cycle_deps,$(DEPS-$(mod))))
 
 #mod_check_inheritance = \
   $(call mod_detect_multiple_inheritance,$1) \

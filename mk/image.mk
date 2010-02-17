@@ -21,7 +21,7 @@ endif
 .PHONY: image_prepare
 prepare: image_prepare
 image_prepare:
-	@mkdir -p $(sort $(dir $(OBJS_ALL)))
+	@mkdir -p $(OBJ_SUBDIRS)
 
 .PHONY: checksum
 checksum:
@@ -39,13 +39,11 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 # Preprocessor flags
 cppflags:=$(CPPFLAGS)
 override CPPFLAGS =
-# XXX
-override CPPFLAGS += -I$(THIRDPARTY_DIR)/linux-compat/include
 override CPPFLAGS += -D__EMBOX__
 override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
 override CPPFLAGS += -nostdinc
-override CPPFLAGS += -MMD# -MT $@ -MF $(@:.o=.d)
+override CPPFLAGS += -MMD -MP# -MT $@ -MF $(@:.o=.d)
 override CPPFLAGS += $(cppflags)
 
 # Compiler flags
@@ -70,7 +68,7 @@ override ARFLAGS = rcs
 
 LDLIBS = -L$(LIB_DIR) $(LIBS:%=-l.%)
 
-LDSCRIPT = $(BIN_DIR)/$(TARGET).lds
+LDSCRIPT = $(LDS_DIR)/$(TARGET).lds
 
 SRC_TO_OBJ = $(patsubst $(ROOT_DIR)%,$(OBJ_DIR)%.o,$(basename $1))
 LIB_FILE   = $(1:%=$(LIB_DIR)/lib.%.a)
@@ -78,12 +76,16 @@ LIB_FILE   = $(1:%=$(LIB_DIR)/lib.%.a)
 # It's time to build dependency model!
 include $(MK_DIR)/embuild.mk
 
-OBJS_ALL := $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit)))
 MODS_ENABLE := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_ESSENTIAL)))
 OBJS_ENABLE := $(foreach mod,$(MODS_ENABLE),$(OBJS-$(mod)))
-$(info Enabled mods DAG: $(patsubst %,$N%,$(MODS_ENABLE)))
 
-$(OBJS_ALL): $(AUTOCONF_DIR)/config.h
+OBJ_SUBDIRS := \
+  $(sort $(dir $(OBJS_ENABLE) $(foreach lib,$(LIBS),$(OBJS-$(lib)))))
+
+$(info Enabled mods DAG:)
+$(foreach mod,$(MODS_ENABLE),$(info $(mod)))
+
+$(OBJS_ENABLE): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/config.mk
 
 $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.c
 	$(CC) -o $@ \

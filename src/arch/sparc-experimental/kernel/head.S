@@ -9,8 +9,8 @@
 #include <asm/regs.h>
 #include <asm/psr.h>
 
- 	.weak hardware_init_hook
- 	.weak software_init_hook
+	.weak hardware_init_hook
+	.weak software_init_hook
 
 	.section ".trap_table.text", #alloc, #execinstr
 	.align 0x1000
