@@ -40,16 +40,12 @@
 	 rd %wim, %t_wim;     \
 	nop
 
-sethi %hi(trap_setup_begin), %t_retpc;            \
-	jmpl  %t_retpc + %lo(trap_setup_begin), %t_retpc; \
-
 #define WEAK(name) \
 	.weak hw_trap_##name;                  \
 	sethi %hi(hw_trap_##name), %local;     \
 	or %local,%lo(hw_trap_##name), %local; \
 	ba weak_trap_entry;                    \
 	 rd %psr, %t_psr;
-
 
 /** Text fault. */
 #define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %local;
