@@ -4,8 +4,8 @@
  * \date 22.08.2009
  * \author zoomer
  */
-#include "shell_command.h"
-#include "fs/file_new.h"
+#include <shell_command.h>
+#include <fs/file_new.h>
 
 #define COMMAND_NAME     "cp"
 #define COMMAND_DESC_MSG "cp file"
