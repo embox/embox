@@ -10,8 +10,8 @@
  */
 
 #include "console.h"
-#include <kernel/uart.h>
 #include <kernel/sys.h>
+#include <kernel/diag.h>
 #include <common.h>
 #include <string.h>
 #include <drivers/terminal.h>
@@ -158,7 +158,7 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
-	static SCREEN_IO view_io = { uart_getc, uart_putc };
+	static SCREEN_IO view_io = { diag_getc, diag_putc };
 	if (this == NULL || callback == NULL) {
 		return NULL;
 	}

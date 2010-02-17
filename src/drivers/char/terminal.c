@@ -12,7 +12,7 @@
 #include <drivers/terminal.h>
 #include <assert.h>
 #include <asm/stdarg.h>
-#include <kernel/uart.h>
+#include <kernel/diag.h>
 #include <common.h>
 #include <string.h>
 

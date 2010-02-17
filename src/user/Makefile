@@ -5,7 +5,7 @@ $_MODS := $(filter-out mmu_probe mkfile tftp,$($_SUBDIRS))
 
 #$_MODS_ESSENTIAL += $($_MODS)
 
-$(foreach mod,$($_MODS),$(eval $_SRCS-$(mod) += $(mod)/$(mod).c))
+$(foreach mod,$($_MODS),$(eval $_SRCS-$(mod) += $(mod)/*.c $(mod)/*/*.c))
 
 $_SUBDIRS :=
 

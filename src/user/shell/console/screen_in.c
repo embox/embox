@@ -4,11 +4,11 @@
  * \author Eldar Abusalimov
  */
 #include "screen.h"
-#include "assert.h"
-#include "common.h"
+#include <assert.h>
+#include <common.h>
 #include "console.h"
-#include "kernel/sys.h"
-#include "kernel/uart.h"
+#include <kernel/sys.h>
+#include <kernel/diag.h>
 
 /*#define FIRE_CALLBACK(cb, func, view, args...)	((cb->func != NULL) ? cb->func(cb, view, ##args) : 0)*/
 #define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
