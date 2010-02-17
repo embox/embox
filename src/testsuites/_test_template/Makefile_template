@@ -2,6 +2,6 @@
 /* Change following:                                        *
  *                             |                        |   *
  *                             V                        V   */
-OBJS-$(MONITOR_TEST_<TEST_NAME_IN_UPPER_CASE>) += test_template.o
+$_MODS += <TEST_NAME>
 
-include $(SCRIPTS_DIR)/common.mk
+$_SRCS-<TEST_NAME> += *.c
