@@ -22,7 +22,7 @@ static int foo(int depth) {
 	if (depth > 0) {
 		return foo(--depth);
 	}
-	return 0;
+	return EXPRESS_TESTS_PASSED_RETCODE;
 }
 
 static int exec(int argc, char** argv) {

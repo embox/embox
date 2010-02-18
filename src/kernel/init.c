@@ -13,9 +13,6 @@
 #include <kernel/init.h>
 #include <express_tests.h>
 
-// XXX
-#define express_tests_execute(ign)
-
 int init(void) {
 	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
 	init_descriptor_t ** p_init_desc = &__init_handlers_start;
@@ -25,9 +22,6 @@ int init(void) {
 
 	express_tests_execute(PRE_INIT_LEVEL);
 
-#if 0
-	express_tests_execute(0);
-#endif
 	TRACE("\nStarting Monitor...\n");
 
 	for (level = 0; level <= INIT_MAX_LEVEL; level++) {

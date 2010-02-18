@@ -40,8 +40,14 @@ typedef struct _express_test_descriptor {
 	info_func_t info_func;
 } express_test_descriptor_t;
 
-int express_tests_execute_all( void );
-int express_tests_execute( int level );
+void express_tests_execute_all( void );
+
+/**
+ * Execute all express tests on specified level.
+ *
+ * This code is not thread safe.
+ */
+void express_tests_execute( int level );
 
 #define DECLARE_EXPRESS_TEST(name, exec, info_func) \
 	static int exec(int argc, char** argv); \
