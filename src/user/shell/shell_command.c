@@ -6,7 +6,7 @@
  *          wich can be call from shell
  */
 
-#include <>shell_command.h>
+#include <shell_command.h>
 #include <kernel/sys.h>
 #include <string.h>
 
