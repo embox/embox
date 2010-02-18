@@ -11,7 +11,7 @@
 #include "express_tests.h"
 #include <kernel/init.h>
 
-DECLARE_EXPRESS_TEST(TIMER_CALLBACK, exec, NULL);
+DECLARE_EXPRESS_TEST(timer_callback, exec, NULL);
 
 volatile static bool tick_happened;
 

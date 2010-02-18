@@ -11,7 +11,7 @@
 //#include "misc.h"
 #include "express_tests.h"
 
-DECLARE_EXPRESS_TEST(MEMORY, exec, NULL);
+DECLARE_EXPRESS_TEST(memory, exec, NULL);
 
 /* FIXME what does this type mean? -- Eldar*/
 typedef unsigned char datum;

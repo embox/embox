@@ -15,8 +15,8 @@
 #define EXPRESS_TESTS_INTERRUPTED_RETCODE     -2
 #define EXPRESS_TESTS_UNABLE_TO_START_RETCODE -3
 
-#define EXPRESS_TESTS_LEVEL(test_name) TEST_##test_name##_LEVEL
-#define EXPRESS_TESTS_ONBOOT(test_name) TEST_##test_name##_ONBOOT
+#define EXPRESS_TESTS_LEVEL(test_name) test_##test_name##_LEVEL
+#define EXPRESS_TESTS_ONBOOT(test_name) test_##test_name##_ONBOOT
 
 typedef void (*info_func_t)(void);
 

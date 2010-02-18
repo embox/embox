@@ -1,12 +1,18 @@
 /**
- * \file express_tests.c
+ * @file
  *
- * \date Dec 4, 2008
+ * @brief Express tests routings
  *
- * \author Anton Bondarev
- * \author Eldar Abusalimov
- * \author Alexey Fomin
+ * @date Dec 4, 2008
+ *
+ * @author Anton Bondarev
+ *         - Initial implementation
+ * @author Eldar Abusalimov
+ *         - Reworking finding handler algorithm
+ * @author Alexey Fomin
+ *         - Adding level implementation code
  */
+
 #include <common.h>
 #include <express_tests.h>
 #include <kernel/init.h>
@@ -42,12 +48,9 @@ int express_tests_execute_all( void ) {
 			skipped++;
 			continue;
 		}
-		/* TODO magic constants */
-#ifndef SIMULATION_TRG
-		result = sys_exec_start((*p_test)->exec, 0, NULL);
-#else
+
+		/* call test */
 		result = (*p_test)->exec(0, NULL);
-#endif
 
 		/* writing test results to special section */
 		__express_tests_result[i] = result;
@@ -108,11 +111,7 @@ int express_tests_execute( int level ) {
 		}
 
 		/* Executing express test */
-#ifndef SIMULATION_TRG
-		result = sys_exec_start((*p_test)->exec, 0, NULL);
-#else
 		result = (*p_test)->exec(0, NULL);
-#endif
 
 		/* writing test results to special section */
 		__express_tests_result[i] = result;

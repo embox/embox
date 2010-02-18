@@ -8,12 +8,11 @@
 #include "autoconf.h"
 #include "common.h"
 #include "express_tests.h"
-#include "hal/irq_ctrl.h"
 #include "kernel/irq.h"
 
 #define TEST_IRQ_NUM 10
 
-DECLARE_EXPRESS_TEST(IRQ_FORCE, exec, NULL);
+DECLARE_EXPRESS_TEST(irq_force, exec, NULL);
 
 volatile static bool irq_happened;
 

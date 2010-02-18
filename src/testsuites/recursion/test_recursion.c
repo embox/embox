@@ -9,10 +9,12 @@
  */
 
 #include "autoconf.h"
+#include "types.h"
 #include "common.h"
 #include "express_tests.h"
 
-DECLARE_EXPRESS_TEST(RECURSION, exec, NULL);
+//DECLARE_EXPRESS_TEST(RECURSION, exec, NULL);
+DECLARE_EXPRESS_TEST(recursion, exec, NULL);
 
 #define RECURSION_DEPTH 32
 
