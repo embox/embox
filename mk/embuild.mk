@@ -11,7 +11,7 @@ _ = EMBUILD/$(abspath $(dir))/
 # Traverse always defines SELFDIR before entering sub-makefile.
 dir = $(SELFDIR)
 DIRS := $(call TRAVERSE,$(SRC_DIR)) \
-  $(if $(PLATFORM_DIR),$(call TRAVERSE,$(PLATFORM_DIR)))
+  $(if $(PLATFORM),$(call TRAVERSE,$(PLATFORM_DIR)))
 
 dir_package_lookup = \
   $(if $(filter $(abspath $(ROOT_DIR))%,$1),$(foreach dir,$1, \
@@ -94,8 +94,6 @@ define define_common_unit_symbols_per_directory
      $(call unit_symbol,CPPFLAGS) $(call package_symbol,CPPFLAGS)
   CFLAGS-$(unit)   :=   $(CFLAGS-$(unit)) \
        $(call unit_symbol,CFLAGS) $(call package_symbol,CFLAGS)
-#  LDFLAGS-$(unit)  :=  $(LDFLAGS-$(unit)) \
-      $(call unit_symbol,LDFLAGS) $(call package_symbol,LDFLAGS)
 endef
 
 define define_common_unit_symbols
@@ -103,7 +101,6 @@ define define_common_unit_symbols
   OBJS-$(unit) := $(call SRC_TO_OBJ,$(SRCS-$(unit)))
   CPPFLAGS-$(unit) := $(strip $(CPPFLAGS-$(unit)))
   CFLAGS-$(unit)   :=   $(strip $(CFLAGS-$(unit)))
-#  LDFLAGS-$(unit)  :=  $(strip $(LDFLAGS-$(unit)))
 
   $(OBJS-$(unit)) : override CPPFLAGS := \
                         $(CPPFLAGS) $(CPPFLAGS-$(unit)) $(CPPFLAGS-$(abspath $@))
@@ -119,6 +116,11 @@ $(foreach unit,$(MODS) $(LIBS), \
   ) \
   $(eval $(value define_common_unit_symbols)) \
 )
+
+# LDFLAGS are common for the entire image.
+# We are ready to collect per-directory $_LDFLAGS definitions.
+$(foreach dir,$(DIRS),$(eval override LDFLAGS := $(LDFLAGS) $($_LDFLAGS)))
+override LDFLAGS := $(strip $(LDFLAGS))
 
 # Here goes mods specific functions (dependencies and so on).
 unit = $(mod)

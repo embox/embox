@@ -2,34 +2,33 @@
 # EMBOX main Makefile
 #
 
-# The first target refers to "all"
-.PHONY: default
-default: all
+# The first target is "all"
+all:
 
 ifndef ROOT_DIR
 $(error ROOT_DIR undefined)
 endif
 
-MK_DIR         :=$(ROOT_DIR)/mk
-SCRIPTS_DIR    :=$(ROOT_DIR)/scripts
-TEMPLATES_DIR  :=$(ROOT_DIR)/templates
-THIRDPARTY_DIR :=$(ROOT_DIR)/third-party
-PLATFORM_DIR   :=$(ROOT_DIR)/platform
-SRC_DIR        :=$(ROOT_DIR)/src
+MK_DIR         := $(ROOT_DIR)/mk
+SCRIPTS_DIR    := $(ROOT_DIR)/scripts
+TEMPLATES_DIR  := $(ROOT_DIR)/templates
+THIRDPARTY_DIR := $(ROOT_DIR)/third-party
+PLATFORM_DIR   := $(ROOT_DIR)/platform
+SRC_DIR        := $(ROOT_DIR)/src
 
-CONF_DIR       :=$(ROOT_DIR)/conf
-BACKUP_DIR     :=$(ROOT_DIR)/conf/backup~
+CONF_DIR       := $(ROOT_DIR)/conf
+BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 
-BUILD_DIR      :=$(ROOT_DIR)/build
-BIN_DIR        :=$(BUILD_DIR)/bin
-OBJ_DIR        :=$(BUILD_DIR)/obj
-LDS_DIR        :=$(OBJ_DIR)
-LIB_DIR        :=$(OBJ_DIR)
-DOCS_DIR       :=$(BUILD_DIR)/docs
-AUTOCONF_DIR   :=$(BUILD_DIR)/conf
+BUILD_DIR      := $(ROOT_DIR)/build
+BIN_DIR        := $(BUILD_DIR)/bin
+OBJ_DIR        := $(BUILD_DIR)/obj
+LIB_DIR        := $(OBJ_DIR)
+DOCS_DIR       := $(BUILD_DIR)/docs
+AUTOCONF_DIR   := $(BUILD_DIR)/conf
 
-RM          :=rm -f
-EDITOR      :=emacs
+RM     := rm -f
+CP     := cp
+EDIT := emacs
 
 TEMPLATES = $(notdir $(wildcard $(TEMPLATES_DIR)/*))
 
@@ -113,7 +112,7 @@ menuconfig:
 		--radiolist "Select template to load:" 10 40 3 \
 		$(patsubst %,% "" off,$(TEMPLATES))` \
 	config
-	@$(EDITOR) -nw $(CONF_DIR)/*.conf
+	@$(EDIT) -nw $(CONF_DIR)/*.conf
 
 xconfig:
 	make TEMPLATE=`Xdialog \
@@ -121,4 +120,4 @@ xconfig:
 		--radiolist "Select template to load:" 20 40 3 \
 		$(patsubst %,% "" off,$(TEMPLATES))` \
 	config
-	@$(EDITOR) $(CONF_DIR)/*.conf
+	@$(EDIT) $(CONF_DIR)/*.conf

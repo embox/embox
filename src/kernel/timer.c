@@ -99,10 +99,9 @@ int usleep(useconds_t usec) {
 /*TODO now save only one timer context*/
 #define MAX_SAVE_CONTEXT          2
 
-static sys_tmr_t save_timers_buffer[_SC_TIMER_MAX][MAX_SAVE_CONTEXT];
 #if 0
+static sys_tmr_t save_timers_buffer[_SC_TIMER_MAX][MAX_SAVE_CONTEXT];
 static int save_context_number = 0;
-#endif
 
 int timers_context_save () {
         int context_number = 0;
@@ -117,8 +116,6 @@ int timers_context_restore (int context_number) {
         return context_number;
 }
 
-/*TODO timers_off why?*/
-#if 0
 void timers_off () {
         platform_timers_off ();
 }

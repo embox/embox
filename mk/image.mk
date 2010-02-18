@@ -68,7 +68,7 @@ override ARFLAGS = rcs
 
 LDLIBS = -L$(LIB_DIR) $(LIBS:%=-l.%)
 
-LDSCRIPT = $(LDS_DIR)/$(TARGET).lds
+LDSCRIPT = $(OBJ_DIR)/$(TARGET).lds
 
 SRC_TO_OBJ = $(patsubst $(ROOT_DIR)%,$(OBJ_DIR)%.o,$(basename $1))
 LIB_FILE   = $(1:%=$(LIB_DIR)/lib.%.a)

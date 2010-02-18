@@ -16,7 +16,8 @@ void arch_init(void) {
 void arch_idle(void) {
 }
 
-void arch_shutdown(arch_shutdown_mode_t mode) {
+void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
+	// TODO DUMP regs and memory -- Eldar
 	while (1) {
 	}
 }

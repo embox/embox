@@ -8,6 +8,7 @@
 
 #include <stdarg.h>
 
+#include <hal/arch.h>
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 
@@ -21,7 +22,6 @@ panic(const char *format, ...) {
 	printk(format, args);
 	va_end(args);
 
-	while (1) {
-	}
+	arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT);
 
 }

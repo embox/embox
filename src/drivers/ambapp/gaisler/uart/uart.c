@@ -5,15 +5,9 @@
 #include <types.h>
 #include <errno.h>
 
-#include <common.h>
-#include <autoconf.h>
-
 #include <kernel/irq.h>
 #include <hal/reg.h>
-
-#ifdef CONFIG_AMBAPP
 #include <drivers/amba_pnp.h>
-#endif /* CONFIG_AMBAPP */
 
 #define UART_SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
@@ -110,7 +104,7 @@ char uart_getc() {
 static int dev_regs_init() {
 	AMBA_DEV amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, VENDOR_ID_GAISLER,
-			DEV_ID_GAISLER_UART, false, false)) {
+					DEV_ID_GAISLER_UART, false, false)) {
 		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",
 				VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
 		return -ENODEV;
