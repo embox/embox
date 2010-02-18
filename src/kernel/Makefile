@@ -12,6 +12,11 @@ $_SRCS-main += init.c
 $_SRCS-main += nosys.c
 $_SRCS-main += panic.c
 
+$_DEPS-main += embox.hal.arch
+$_DEPS-main += irq
+$_DEPS-main += timer
+$_DEPS-main += printk
+
 ifdef CONFIG_IRQ
   $_SRCS-irq     += irq.c
   $_DEPS-irq     += embox.hal.interrupt
@@ -28,8 +33,3 @@ ifdef CONFIG_TIMER
   $_SRCS-timer   += timer.c
   $_DEPS-timer   += embox.hal.clock
 endif
-
-$_DEPS-main    += embox.hal.arch
-$_DEPS-main    += irq
-$_DEPS-main    += timer
-$_DEPS-main    += printk
