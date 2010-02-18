@@ -1,9 +1,11 @@
 /**
  * @file softfloat.h
  *
- * @date 25.11.09
- * @author Nikolay Korotky
  * @brief Software FPU emulation.
+ *
+ * @date 25.11.09
+ * @author John R. Hauser - initial implementation.
+ * @author Nikolay Korotky
  */
 #ifndef SOFTFLOAT_H_
 #define SOFTFLOAT_H_
@@ -44,7 +46,7 @@ typedef __s32 sbits32;
  */
 typedef unsigned int float32;
 typedef struct {
-        unsigned int high, low;
+	unsigned int high, low;
 } float64;
 
 /**
@@ -52,8 +54,8 @@ typedef struct {
  */
 extern int float_detect_tininess;
 enum {
-        float_tininess_after_rounding  = 0,
-        float_tininess_before_rounding = 1
+	float_tininess_after_rounding  = 0,
+	float_tininess_before_rounding = 1
 };
 
 /**
@@ -61,10 +63,10 @@ enum {
  */
 extern int float_rounding_mode;
 enum {
-        float_round_nearest_even = 0,
-        float_round_to_zero      = 1,
-        float_round_up           = 2,
-        float_round_down         = 3
+	float_round_nearest_even = 0,
+	float_round_to_zero      = 1,
+	float_round_up	   = 2,
+	float_round_down	 = 3
 };
 
 /**
@@ -72,11 +74,11 @@ enum {
  */
 extern int float_exception_flags;
 enum {
-        float_flag_inexact   =  1,
-        float_flag_divbyzero =  2,
-        float_flag_underflow =  4,
-        float_flag_overflow  =  8,
-        float_flag_invalid   = 16
+	float_flag_inexact   =  1,
+	float_flag_divbyzero =  2,
+	float_flag_underflow =  4,
+	float_flag_overflow  =  8,
+	float_flag_invalid   = 16
 };
 
 /**
@@ -84,7 +86,7 @@ enum {
  */
 typedef struct {
 	flag sign;
-        bits32 high, low;
+	bits32 high, low;
 } commonNaNT;
 
 /**
@@ -92,8 +94,8 @@ typedef struct {
  * `low' values hold the most- and least-significant bits, respectively.
  */
 enum {
-       float64_default_nan_high = 0x7FFFFFFF,
-       float64_default_nan_low  = 0xFFFFFFFF
+	float64_default_nan_high = 0x7FFFFFFF,
+	float64_default_nan_low  = 0xFFFFFFFF
 };
 
 /**
@@ -174,21 +176,21 @@ extern void shift32RightJamming( bits32 a, int16 count, bits32 *zPtr);
 extern void shift64Right(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
 extern void shift64RightJamming(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
 extern void shift64ExtraRightJamming( bits32 a0, bits32 a1, bits32 a2, int16 count,
-                            bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
+			    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
 extern void shortShift64Left(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
 extern void shortShift96Left(bits32 a0, bits32 a1, bits32 a2, int16 count,
-                    	    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
+		    	    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
 extern void add64(bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
 extern void add96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1, bits32 b2,
-            		    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
+	    		    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
 extern void sub64(bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
 extern void sub96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1, bits32 b2,
-                    	    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
+				    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
 extern void mul32To64(bits32 a, bits32 b, bits32 *z0Ptr, bits32 *z1Ptr);
 extern void mul64By32To96(bits32 a0, bits32 a1, bits32 b, bits32 *z0Ptr,
-                            bits32 *z1Ptr, bits32 *z2Ptr);
+				bits32 *z1Ptr, bits32 *z2Ptr);
 extern void mul64To128(bits32 a0, bits32 a1, bits32 b0, bits32 b1,
-            		    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr, bits32 *z3Ptr);
+					bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr, bits32 *z3Ptr);
 extern bits32 estimateDiv64To32(bits32 a0, bits32 a1, bits32 b);
 extern bits32 estimateSqrt32(int16 aExp, bits32 a);
 extern int8 countLeadingZeros32(bits32 a);

@@ -1,9 +1,10 @@
 /**
- * \file ctype.c
- * \date 14.10.09
- * \author Sikmir
+ * @file ctype.c
+ *
+ * @date 14.10.09
+ * @author Nikolay Korotky
  */
-#include "ctype.h"
+#include <ctype.h>
 
 /**< ASCII table */
 unsigned char _ctype[] = {

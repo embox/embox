@@ -1,8 +1,10 @@
 /**
  * @file malloc.c
+ *
+ * @brief Pseudo-dynamic memory allocator.
+ *
  * @date 13.10.09
  * @author Nikolay Korotky
- * @description Pseudo-dynamic memory allocator.
  */
 #include <common.h>
 #include <string.h>
@@ -16,8 +18,8 @@ static char *last_valid_address;
 static char mem_pool[MEM_POOL_SIZE];
 
 struct mem_control_block {
-        char is_available;
-        size_t size;
+	char is_available;
+	size_t size;
 };
 
 static void malloc_init(void) {
@@ -32,21 +34,21 @@ static void malloc_init(void) {
 }
 
 static void _mem_defrag(void) {
-        char *current_location, *next;
-        struct mem_control_block *current_location_mcb, *next_mcb;
-        current_location = managed_memory_start;
-        current_location_mcb = (struct mem_control_block *)current_location;
-        while(current_location_mcb->size) {
-                if(current_location_mcb->is_available == 1) {
-                        next = current_location + current_location_mcb->size;
-                        next_mcb = (struct mem_control_block *)next;
-                        if(next_mcb->is_available == 1) {
-                        	current_location_mcb->size += next_mcb->size;
-                        }
-                }
-                current_location += current_location_mcb->size;
-                current_location_mcb = (struct mem_control_block *)current_location;
-        }
+	char *current_location, *next;
+	struct mem_control_block *current_location_mcb, *next_mcb;
+	current_location = managed_memory_start;
+	current_location_mcb = (struct mem_control_block *)current_location;
+	while(current_location_mcb->size) {
+		if(current_location_mcb->is_available == 1) {
+			next = current_location + current_location_mcb->size;
+			next_mcb = (struct mem_control_block *)next;
+			if(next_mcb->is_available == 1) {
+				current_location_mcb->size += next_mcb->size;
+			}
+		}
+		current_location += current_location_mcb->size;
+		current_location_mcb = (struct mem_control_block *)current_location;
+	}
 }
 
 void free(void *ptr) {
@@ -60,7 +62,7 @@ void free(void *ptr) {
 /*FIXME ATTENTION: memory size must be aligned!*/
 void *malloc(size_t size) {
 	char *current_location;
-    struct mem_control_block *current_location_mcb;
+	struct mem_control_block *current_location_mcb;
 	char *memory_location = NULL;
 	if(! has_initialized) {
 		malloc_init();
@@ -88,7 +90,7 @@ void *malloc(size_t size) {
 		}
 		current_location_mcb = (struct mem_control_block *)memory_location;
 		current_location_mcb->is_available = 0;
-		current_location_mcb->size         = size;
+		current_location_mcb->size	 = size;
 	}
 	memory_location += sizeof(struct mem_control_block);
 	return memory_location;

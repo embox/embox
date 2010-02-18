@@ -1,9 +1,10 @@
 /**
- * \file memset.c
- * \date 23.11.09
- * \author Sikmir
+ * @file memset.c
+ *
+ * @date 23.11.09
+ * @author Nikolay Korotky
  */
-#include "string.h"
+#include <string.h>
 
 void *memset(void *p, int c, size_t n) {
 	char *pb = (char *) p;

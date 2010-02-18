@@ -1,6 +1,7 @@
 /**
  * @file umodsi3.c
- * @date Aug 26, 2009
+ *
+ * @date 26.08.2009
  * @author Anton Bondarev, Oleg Medvedev
  */
 

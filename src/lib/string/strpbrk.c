@@ -1,17 +1,18 @@
 /**
- * \file strpbrk.c
- * \date 23.11.09
- * \author Sikmir
+ * @file strpbrk.c
+ *
+ * @date 23.11.09
+ * @author Nikolay Korotky
  */
-#include "string.h"
+#include <string.h>
 
 char *strpbrk (const char *s, const char *accept) {
 	while (*s != '\0') {
-    		const char *a = accept;
-    		while (*a != '\0')
+		const char *a = accept;
+		while (*a != '\0')
 			if (*a++ == *s)
 				return (char *) s;
-    		++s;
+		++s;
 	}
 
 	return NULL;

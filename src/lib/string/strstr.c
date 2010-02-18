@@ -1,9 +1,10 @@
 /**
- * \file strstr.c
- * \date 18.10.09
- * \author Sikmir
+ * @file strstr.c
+ *
+ * @date 18.10.09
+ * @author Nikolay Korotky
  */
-#include "string.h"
+#include <string.h>
 
 typedef unsigned chartype;
 
@@ -15,60 +16,60 @@ char *strstr (const char *phaystack, const char *pneedle) {
 	haystack = (const unsigned char *) phaystack;
 
 	if ((b = *(needle = (const unsigned char *) pneedle))) {
-    		chartype c;
-    		haystack--; /* possible ANSI violation */
+		chartype c;
+		haystack--; /* possible ANSI violation */
 
-    		{
+		{
 			unsigned a;
 			do
 				if (!(a = *++haystack))
 					goto ret0;
 			while (a != b);
-    		}
+		}
 
-    		if (!(c = *++needle))
+		if (!(c = *++needle))
 			goto foundneedle;
-    		++needle;
-    		goto jin;
+		++needle;
+		goto jin;
 
-    		for (;;) {
+		for (;;) {
 			{
 				unsigned a;
 				if (0)
 				jin:{
 					if ((a = *++haystack) == c)
 						goto crest;
-	    			} else
-	    				a = *++haystack;
+					} else
+						a = *++haystack;
 					do {
 						for (; a != b; a = *++haystack) {
 							if (!a)
-		    						goto ret0;
+								goto ret0;
 							if ((a = *++haystack) == b)
-		    						break;
+								break;
 							if (!a)
-		    						goto ret0;
+								goto ret0;
 						}
-	    				} while ((a = *++haystack) != c);
+					} while ((a = *++haystack) != c);
 			}
 			crest:
 			{
 				unsigned a;
 				{
-	    				const unsigned char *rhaystack;
-	    				if (*(rhaystack = haystack-- + 1) == (a = *(rneedle = needle)))
+					const unsigned char *rhaystack;
+					if (*(rhaystack = haystack-- + 1) == (a = *(rneedle = needle)))
 						do {
 							if (!a)
-		    						goto foundneedle;
+								goto foundneedle;
 							if (*++rhaystack != (a = *++needle))
-		    						break;
+								break;
 							if (!a)
-		    						goto foundneedle;
+								goto foundneedle;
 						} while (*++rhaystack == (a = *++needle));
-	    				needle = rneedle;	/* took the register-poor aproach */
+					needle = rneedle;	/* took the register-poor aproach */
 				}
 				if (!a)
-	    				break;
+					break;
 			}
 		}
 	}

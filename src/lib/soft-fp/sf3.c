@@ -1,9 +1,10 @@
 /**
- * \file sf3.c
- * \date 26.11.09
- * \author sikmir
+ * @file sf3.c
+ *
+ * @date 26.11.09
+ * @author Nikolay Korotky
  */
-#include "softfloat.h"
+#include <softfloat.h>
 
 #define PROCESS_OP(op) float32_to_float(float32_##op(float_to_float32(a), float_to_float32(b)))
 

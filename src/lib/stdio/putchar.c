@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file putchar.c
  * @brief TODO
  *
  * @date 14.02.2010
@@ -7,7 +7,6 @@
  */
 
 #include <stdio.h>
-
 #include <kernel/diag.h>
 
 int putchar(int c) {

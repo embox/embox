@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file getchar.c
  * @brief TODO
  *
  * @date 14.02.2010
@@ -7,7 +7,6 @@
  */
 
 #include <stdio.h>
-
 #include <kernel/diag.h>
 
 int getchar(void) {

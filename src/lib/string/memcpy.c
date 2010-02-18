@@ -1,9 +1,10 @@
 /**
- * \file memcpy.c
- * \date 14.10.09
- * \author Sikmir
+ * @file memcpy.c
+ *
+ * @date 14.10.09
+ * @author Nikolay Korotky
  */
-#include "string.h"
+#include <string.h>
 
 void *memcpy(void *dst, const void *src, size_t n) {
 	void *ret = dst;

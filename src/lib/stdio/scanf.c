@@ -1,8 +1,10 @@
 /**
  * @file scanf.c
+ *
  * @brief Realization of function scanf
+ *
  * @date 10.02.2009
- * @author abatyukov
+ * @author Alexandr Batyukov
  */
 
 #include <stdio.h>

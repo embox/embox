@@ -1,9 +1,10 @@
 /**
- * \file basename.c
- * \date 23.11.09
- * \author Sikmir
+ * @file basename.c
+ *
+ * @date 23.11.09
+ * @author Nikolay Korotky
  */
-#include "string.h"
+#include <string.h>
 
 char *basename(const char *filename) {
 	char *p = strrchr(filename, '/');

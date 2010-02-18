@@ -1,10 +1,11 @@
 /**
- * \file strerror.c
- * \date 13.10.09
- * \author Sikmir
+ * @file strerror.c
+ *
+ * @date 13.10.09
+ * @author Nikolay Korotky
  */
-#include "string.h"
-#include "errno.h"
+#include <string.h>
+#include <errno.h>
 
 char *strerror(int errnum) {
 	switch (errnum) {

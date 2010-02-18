@@ -1,7 +1,8 @@
 /**
- * \file inet_addr.c
- * \date 18.11.09
- * \author Sikmir
+ * @file inet_addr.c
+ *
+ * @date 18.11.09
+ * @author Nikolay Korotky
  */
 
 #include <net/in.h>
@@ -123,5 +124,5 @@ char *inet_ntoa(struct in_addr in) {
 	unsigned char *bytes = (unsigned char *) &in;
 	char *buffer = (char*)malloc(24*sizeof(char));
 	sprintf(buffer, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
-        return buffer;
+	return buffer;
 }

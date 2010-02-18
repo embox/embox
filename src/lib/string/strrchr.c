@@ -1,9 +1,10 @@
 /**
- * \file strchr.c
- * \date 1.10.09
- * \author Sikmir
+ * @file strchr.c
+ *
+ * @date 01.10.09
+ * @author Nikolay Korotky
  */
-#include "string.h"
+#include <string.h>
 
 char *strrchr (const char *s, int c) {
 	const char *found, *p;
@@ -14,8 +15,8 @@ char *strrchr (const char *s, int c) {
 
 	found = NULL;
 	while ((p = strchr (s, c)) != NULL) {
-    		found = p;
-    		s = p + 1;
+		found = p;
+		s = p + 1;
 	}
 
 	return (char *) found;

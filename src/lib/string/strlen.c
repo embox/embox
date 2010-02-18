@@ -1,15 +1,16 @@
 /**
- * \file strlen.c
- * \date 23.11.09
- * \author Sikmir
+ * @file strlen.c
+ *
+ * @date 23.11.09
+ * @author Nikolay Korotky
  */
-#include "string.h"
+#include <string.h>
 
 int strlen(const char * str) {
-        const char *eos = str;
+	const char *eos = str;
 
-        while (*eos++)
-        	;
+	while (*eos++)
+		;
 
-        return (int) (eos - str - 1);
+	return (int) (eos - str - 1);
 }
