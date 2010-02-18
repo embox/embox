@@ -3,6 +3,7 @@
  */
 #include <types.h>
 #include <autoconf.h>
+#include <asm/cpu_conf.h>
 #include <kernel/module.h>
 #include <net/if_ether.h>
 #include <net/skbuff.h>
@@ -215,10 +216,11 @@ static void pack_receiving(void *dev_id) {
 /**
  * IRQ handler
  */
-static void irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
+static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {
 	if (NULL != get_rx_buff()) {
 		pack_receiving(dev_id);
 	}
+	return 0;
 }
 /*default 00-00-5E-00-FA-CE*/
 const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
@@ -306,8 +308,8 @@ static int module_init() {
 		net_device->base_addr = XILINX_EMACLITE_BASEADDR;
 	}
 
-	if (-1 == request_irq(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
-			"xilinx emaclite", net_device)) {
+	if (-1 == irq_attach(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
+			net_device, "xilinx emaclite")) {
 		return -1;
 	}
 	return 0;

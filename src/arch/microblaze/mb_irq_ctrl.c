@@ -9,6 +9,7 @@
 
 #include <autoconf.h>
 #include <types.h>
+#include <bitops.h>
 #include <hal/interrupt.h>
 #include <common.h>
 #include <asm/cpu_conf.h>

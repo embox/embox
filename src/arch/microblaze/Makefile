@@ -15,5 +15,3 @@ $(LDSCRIPT): $($_SELFDIR)/embox.lds.S $(AUTOCONF_DIR)/config.lds.h
 		-imacros $(AUTOCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
 
 -include $(LDSCRIPT).d
-
-include $(SCRIPTS_DIR)/common.mk

@@ -10,6 +10,7 @@
 #include <autoconf.h>
 #include <types.h>
 #include <kernel/irq.h>
+#include <kernel/panic.h>
 #include <asm/cpu_conf.h>
 
 #define CONFIG_SYS_TIMER_PRELOAD     (CPU_CLOCK_FREQ/1000)
@@ -73,7 +74,7 @@ static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	timer0->tcsr |= TIMER_INT;
 	// XXX
-	irq_func_tmr_1mS(irq_nr,dev_id);
+//	irq_func_tmr_1mS(irq_nr,dev_id);
 	return IRQ_HANDLED;
 }
 

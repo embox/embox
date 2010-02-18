@@ -2,7 +2,9 @@
 $_PACKAGE := embox.kernel
 
 $_CPPFLAGS += -D__KERNEL__
-$_LDFLAGS  += -T $($_SELFDIR)/nosys.lds
+#TODO mb-gcc doesn't recognize multiple -T flag
+#$_LDFLAGS  += -T $($_SELFDIR)/nosys.lds
+$_LDFLAGS  += $($_SELFDIR)/nosys.lds
 
 $_MODS_ESSENTIAL += main
 $_MODS += irq timer printk softirq

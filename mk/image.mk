@@ -96,7 +96,7 @@ $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
 	$(CPPFLAGS) $(CFLAGS) -c $<
 
 $(IMAGE): $(OBJS_ENABLE) $(call LIB_FILE,$(LIBS))
-	$(CC) $(LDFLAGS) -o $@ $(OBJS_ENABLE:%= \$N	%) \
+	$(LD) $(LDFLAGS) -o $@ $(OBJS_ENABLE:%= \$N	%) \
 	$(LDLIBS)
 
 $(IMAGE_DIS): $(IMAGE)

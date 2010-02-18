@@ -6,6 +6,7 @@
  */
 
 #include <autoconf.h>
+#include <asm/cpu_conf.h>
 #include <types.h>
 #include <kernel/irq.h>
 
@@ -71,9 +72,24 @@ void uart_putc(char ch){
 	uart->tx_data = (unsigned int)ch;
 }
 
+/*
+ * diag interface
+ */
+int diag_init(void) {
+	return uart_init();
+}
+
+char diag_getc(void) {
+	return uart_getc();
+}
+
+void diag_putc(char ch){
+	uart_putc(ch);
+}
+
 /* TODO uart_set_irq_handler haven't to be used*/
-int uart_set_irq_handler(IRQ_HANDLER pfunc) {
-	request_irq(XILINX_UARTLITE_IRQ_NUM, pfunc, 0, "xil_uartlite", NULL);
+int uart_set_irq_handler(irq_handler_t pfunc) {
+	irq_attach(XILINX_UARTLITE_IRQ_NUM, pfunc, 0, "xil_uartlite", NULL);
 	return 0;
 }
 
