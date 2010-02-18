@@ -19,9 +19,12 @@
 #include <net/skbuff.h>
 #include <net/inet_common.h>
 
+static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb) ;
+
 static int raw_init(struct sock *sk) {
 	return 0;
 }
+
 
 int raw_rcv(sk_buff_t *skb) {
 	struct sock *sk;
