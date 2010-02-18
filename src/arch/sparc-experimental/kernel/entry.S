@@ -42,7 +42,7 @@ weak_trap_entry:
 	orcc %local, %g0, %g0
 	be bad_trap_entry
 	 nop
-	jmpl %g1, %g0
+	jmpl %local, %g0
 	 nop
 
  	.global srmmu_fault
