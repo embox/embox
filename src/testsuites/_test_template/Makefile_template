@@ -1,7 +1,3 @@
-
-/* Change following:                                        *
- *                             |                        |   *
- *                             V                        V   */
 $_MODS += <TEST_NAME>
 
 $_SRCS-<TEST_NAME> += *.c

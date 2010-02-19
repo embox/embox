@@ -53,7 +53,7 @@ static int express_tests_execute_on_criterion( express_tests_criterion_func_t ha
 			continue;
 		}
 
-		TRACE("Testing %s ... ", (*p_test)->name);
+		TRACE("Running express test: %s ... ", (*p_test)->name);
 		if (!(*p_test)->execute_on_boot)
 		{
 			TRACE("SKIPPED\n");
