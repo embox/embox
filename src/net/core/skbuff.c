@@ -3,10 +3,10 @@
  *
  * @details this module realize interface with structure sk_buff
  * structures sk_buff are presented queue free packet.
+ *
  * @date 20.10.2009
  * @author Anton Bondarev
  */
-#include <types.h>
 #include <string.h> /*for memcpy*/
 #include <common.h>
 #include <kernel/module.h>
@@ -14,7 +14,6 @@
 #include <net/skbuff.h>
 #include <net/sock.h>
 #include <net/net_pack_manager.h>
-
 #include <linux/init.h>
 #include <linux/spinlock.h>
 

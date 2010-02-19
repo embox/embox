@@ -7,7 +7,6 @@
  */
 
 #include <kernel/module.h>
-#include <net/in.h>
 #include <err.h>
 #include <net/protocol.h>
 #include <net/arp.h>
@@ -102,16 +101,10 @@ static int inet_init(void) {
 	/* Add all the base protocols. */
 
 	inet_protocols_init();
-	/* Set the ARP module up */
-	//arp_init();
 
 	/* Set the IP module up */
 	ip_init();
 
-	/* Set the ICMP layer up */
-	//icmp_init();
-
-	//dev_add_pack(&ip_packet_type);
 	sock_register(&inet_family_ops);
 
 	return 0;

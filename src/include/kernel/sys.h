@@ -8,7 +8,7 @@
 #ifndef SYS_H_
 #define SYS_H_
 
-#include "types.h"
+#include <types.h>
 
 typedef int (*EXEC_FUNC)(int argc, char **argv);
 

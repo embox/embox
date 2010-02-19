@@ -11,7 +11,6 @@
 #include <net/skbuff.h>
 #include <net/arp.h>
 #include <net/in.h>
-
 #include <linux/init.h>
 
 #define RT_TABLE_SIZE 16

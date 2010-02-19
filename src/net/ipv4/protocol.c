@@ -7,7 +7,6 @@
  */
 #include <common.h>
 #include <net/protocol.h>
-#include <types.h>
 #include <net/in.h>
 //TODO inet_protos not use now
 static net_protocol_t *inet_protos[MAX_INET_PROTOS];
@@ -39,7 +38,6 @@ int inet_protocols_init(void) {
 		LOG_ERROR("inet_init: Cannot add UDP protocol\n");
 	}
 #endif
-
 	return 0;
 }
 

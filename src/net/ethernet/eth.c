@@ -8,17 +8,12 @@
 #include <netutils.h>
 #include <string.h>
 #include <errno.h>
-#include <net/skbuff.h>
-#include <net/net_pack_manager.h>
 #include <net/netdevice.h>
 #include <net/arp.h>
-#include <net/net.h>
-#include <net/etherdevice.h>
 #include <net/ip.h>
 #include <kernel/module.h>
 #include <net/inetdevice.h>
 #include <net/sock.h>
-#include <net/socket.h>
 
 int eth_header(sk_buff_t *pack, net_device_t *dev, unsigned short type,
 			void *daddr, void *saddr, unsigned len) {

@@ -144,7 +144,7 @@ extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
                                struct msghdr *msg, size_t size, int flags);
 
 #if 0
-TODO NETSOCK: functions are not realized now
+//TODO NETSOCK: functions are not realized now
 extern int proto_register(proto_t *prot, int alloc_slab);
 extern void proto_unregister(proto_t *prot);
 

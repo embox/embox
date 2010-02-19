@@ -7,6 +7,5 @@
  * @author Nikolay Korotky
  */
 
-#include <net/net.h>
 #include <net/inetdevice.h>
 #include <kernel/init.h>

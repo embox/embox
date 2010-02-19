@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file irq.h
  * @brief Kernel interrupt requests handling.
  *
  * @author Anton Bondarev

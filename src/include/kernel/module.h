@@ -1,13 +1,13 @@
 /**
- * \file module.h
- * \date Jul 9, 2009
- * \author anton
- * \details
+ * @file module.h
+ *
+ * @date 09.07.2009
+ * @author Anton Bondarev
  */
 #ifndef MODULE_H_
 #define MODULE_H_
 
-#include "kernel/init.h"
+#include <kernel/init.h>
 
 #define DECLARE_MODULE(name, init) \
 	DECLARE_INIT(name, init, INIT_MODULE_LEVEL)

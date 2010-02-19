@@ -4,18 +4,13 @@
  * @date 29.09.2009
  * @author Andrey Baboshin
  */
-
-#include "string.h"
-#include "common.h"
-#include "net/skbuff.h"
-#include "lib/inet/arpa/tftp.h"
-#include "net/net.h"
-#include "net/etherdevice.h"
-#include "net/inetdevice.h"
-#include "net/inet_sock.h"
-#include "net/net_pack_manager.h"
-#include "net/in.h"
-#include "net/socket.h"
+#include <string.h>
+#include <common.h>
+#include <net/skbuff.h>
+#include <lib/inet/arpa/tftp.h>
+#include <net/inetdevice.h>
+#include <net/inet_sock.h>
+#include <net/socket.h>
 
 //#define TFTP_ADDRESS_TO_SAVE  0x80000000
 int tftp_client_get (const char *const filename, const in_addr_t server,

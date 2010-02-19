@@ -7,17 +7,12 @@
  */
 #include <err.h>
 #include <kernel/module.h>
-#include <net/net.h>
-#include <net/skbuff.h>
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>
-#include <net/if_ether.h>
-#include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/route.h>
 #include <net/checksum.h>
-
 #include <linux/init.h>
 
 void __init ip_init(void) {

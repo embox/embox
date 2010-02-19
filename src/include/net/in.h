@@ -1,7 +1,8 @@
 /**
- * \file in.h
- * \date 29.06.09
- * \author sikmir
+ * @file in.h
+ *
+ * @date 29.06.09
+ * @author Nikolay Korotky
  */
 /*TODO: move out of here.*/
 
@@ -16,6 +17,9 @@ enum {
 	IPPROTO_ICMP = 1,     /* Internet Control Message Protocol */
 //	IPPROTO_TCP  = 6,     /* Transmission Control Protocol     */
 	IPPROTO_UDP  = 17,    /* User Datagram Protocol            */
+	/* A protocol of IPPROTO_RAW is able to send any IP protocol
+	 * that is specified in the passed header. Receiving of all
+	 * IP protocols via IPPROTO_RAW is not possible using raw sockets. */
 	IPPROTO_RAW  = 255,   /* Raw IP packets                    */
 	IPPROTO_MAX
 };

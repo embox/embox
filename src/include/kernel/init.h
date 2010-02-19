@@ -1,10 +1,9 @@
 /**
- * \file init.h
+ * @file init.h
  *
- * \date Nov 23, 2009
- * \author afomin
+ * @date 23.11.2009
+ * @author Alexey Fomin
  */
-
 #ifndef INIT_H_
 #define INIT_H_
 
@@ -23,9 +22,9 @@ typedef struct init_descriptor {
 } init_descriptor_t;
 
 #define DECLARE_INIT(name, init, level) \
-    static int init(void); \
-    static const init_descriptor_t _descriptor##init = { name, init, level }; \
-    static const init_descriptor_t *_pdescriptor##init \
+	static int init(void); \
+	static const init_descriptor_t _descriptor##init = { name, init, level }; \
+	static const init_descriptor_t *_pdescriptor##init \
 		__attribute__ ((used, section(".init_handlers"))) \
 		= &_descriptor##init
 

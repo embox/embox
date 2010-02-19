@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file panic.h
  * @brief TODO
  *
  * @date 30.01.2010

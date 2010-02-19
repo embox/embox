@@ -9,17 +9,12 @@
 #include <types.h>
 #include <string.h>
 #include <stdio.h>
-
-#include <net/skbuff.h>
-#include <net/net.h>
 #include <net/arp.h>
-#include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <kernel/module.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <lib/list.h>
-
 #include <linux/init.h>
 #include <linux/interrupt.h>
 

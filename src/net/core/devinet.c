@@ -9,11 +9,7 @@
 #include <string.h>
 #include <common.h>
 #include <kernel/module.h>
-#include <net/net.h>
 #include <net/inetdevice.h>
-#include <net/netdevice.h>
-#include <net/skbuff.h>
-
 #include <linux/init.h>
 
 #define IFDEV_CBINFO_QUANTITY 8

@@ -4,20 +4,16 @@
  * @date 28.08.09
  * @author Andrey Baboshin
  */
-
-#include "types.h"
-#include "common.h"
-#include "net/skbuff.h"
-#include "net/bootp.h"
-#include "net/udp.h"
-#include "net/socket.h"
-#include "net/in.h"
-#include "net/if_ether.h"
-#include "net/netdevice.h"
+#include <types.h>
+#include <common.h>
+#include <net/skbuff.h>
+#include <net/bootp.h>
+#include <net/udp.h>
+#include <net/socket.h>
+#include <net/in.h>
 #include <net/inetdevice.h>
-#include "net/net_pack_manager.h"
-#include "net/checksum.h"
-#include "string.h"
+#include <net/checksum.h>
+#include <string.h>
 
 #ifdef DHCP_SUPPORT
 static const unsigned char dhcp_cookie[] = {99,130,83,99};

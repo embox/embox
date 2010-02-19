@@ -1,27 +1,20 @@
 /**
  * @file arp.c
  *
- * @brief This module implements the Address Resolution Protocol ARP (RFC 826),
+ * @brief This module implements the Address Resolution Protocol (ARP),
  * which is used to convert IP addresses into a low-level hardware address.
+ * @details RFC 826
+ *
  * @date 11.03.2009
  * @author Anton Bondarev
  */
-
 #include <string.h>
 #include <common.h>
-
 #include <kernel/module.h>
 #include <kernel/timer.h>
-#include <net/in.h>
-#include <net/skbuff.h>
-#include <net/netdevice.h>
-#include <net/net.h>
 #include <net/inetdevice.h>
-#include <net/etherdevice.h>
-#include <net/net_pack_manager.h>
 #include <net/arp.h>
 #include <net/ip.h>
-#include <net/netdevice.h>
 
 /* RFC1122 Status:
  *  2.3.2.1 (ARP Cache Validation):
@@ -41,7 +34,7 @@ arp_table_t arp_tables[ARP_CACHE_SIZE];
 
 static LIST_HEAD(arp_q);
 
-/*
+/**
  * Check if there are entries that are too old and remove them.
  */
 static void arp_check_expire(uint32_t id) {
@@ -98,7 +91,6 @@ static void arp_send_q(void) {
 }
 
 static int arp_init(void) {
-	/*dev_add_pack(&arp_packet_type);*/
 	set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
 	return 0;
 }
@@ -320,7 +312,10 @@ void arp_xmit(sk_buff_t *skb) {
 	dev_queue_xmit(skb);
 }
 
-static struct packet_type arp_packet_type = { .type = ETH_P_ARP,
-		.func = arp_rcv, .init = arp_init };
+static struct packet_type arp_packet_type = {
+		.type = ETH_P_ARP,
+		.func = arp_rcv,
+		.init = arp_init
+};
 
 DECLARE_NET_PACKET(arp_packet_type);

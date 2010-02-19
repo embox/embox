@@ -2,6 +2,8 @@
  * @file ip.h
  *
  * @brief Definitions for the IP protocol.
+ * @details RFC 791
+ *
  * @date 11.03.2009
  * @author Anton Bondarev
  */
