@@ -18,6 +18,7 @@
 #include <net/in.h>
 #include <net/skbuff.h>
 #include <net/inet_common.h>
+#include <net/raw.h>
 
 static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb) ;
 
@@ -29,14 +30,14 @@ static int raw_init(struct sock *sk) {
 int raw_rcv(sk_buff_t *skb) {
 	struct sock *sk;
 	iphdr_t *iph = ip_hdr(skb);
-	//TODO:	sk = raw_lookup(iph->proto);
+	/*TODO:	sk = raw_lookup(iph->proto);*/
 	if(sk) {
 		raw_rcv_skb(sk, skb);
 	}
 }
 
 static void raw_close(struct sock *sk, long timeout) {
-	//TODO: release socket
+	/*TODO: release socket*/
 	sk_free(sk);
 }
 
@@ -57,7 +58,7 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
                        size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
 	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + msg->msg_iov->iov_len, 0);
-	memcpy((void*)skb->data + ETH_HEADER_SIZE, (void*)msg->msg_iov->iov_base,
+	memcpy((void*)((unsigned int)(skb->data + ETH_HEADER_SIZE)), (void*)msg->msg_iov->iov_base,
 										msg->msg_iov->iov_len);
 	skb->dev = netdev_get_by_name("eth0");
 	skb->protocol = ETH_P_IP;
