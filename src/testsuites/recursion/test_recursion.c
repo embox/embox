@@ -12,18 +12,22 @@
 #include "common.h"
 #include "express_tests.h"
 
-//DECLARE_EXPRESS_TEST(RECURSION, exec, NULL);
 DECLARE_EXPRESS_TEST(recursion, exec, NULL);
 
 #define RECURSION_DEPTH 32
 
-static int foo(int depth) {
+static int foo (int depth) {
 	if (depth > 0) {
-		return foo(--depth);
-	}
-	return EXPRESS_TESTS_PASSED_RETCODE;
+			return foo(--depth) - 1;
+		}
+		return RECURSION_DEPTH;
 }
 
+
 static int exec(int argc, char** argv) {
-	return foo(RECURSION_DEPTH);
+	if (foo(RECURSION_DEPTH) == 0) {
+		return EXPRESS_TESTS_PASSED_RETCODE;
+	} else {
+		return EXPRESS_TESTS_FAILED_RETCODE;
+	}
 }
