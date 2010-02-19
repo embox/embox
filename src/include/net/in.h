@@ -30,7 +30,7 @@ typedef uint32_t in_addr_t;
 
 /**< Internet address. */
 struct in_addr {
-        uint32_t    s_addr;
+	uint32_t    s_addr;
 };
 
 struct sockaddr_in {

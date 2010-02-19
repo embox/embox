@@ -2,6 +2,7 @@
  * @file protocol.h
  *
  * @brief Definitions for the protocol dispatcher.
+ *
  * @date 12.08.09
  * @author Nikolay Korotky
  */

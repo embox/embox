@@ -2,6 +2,7 @@
  * @file checksum.h
  *
  * @brief Checksumming functions for IP, TCP, UDP and so on.
+ *
  * @date 20.03.2009
  * @author Anton Bondarev
  */
@@ -100,28 +101,3 @@ static inline unsigned short ptclbsum(void *addr, int len) {
 	return losum & 0xffff;
 	*/
 }
-
-/**
- * Name  : CRC-16 CCITT
- * Poly  : 0x1021	x^16 + x^12 + x^5 + 1
- * Init  : 0xFFFF
- * Revert: false
- * XorOut: 0x0000
- * Check : 0x29B1 ("123456789")
- * MaxLen: 4095 byte (32767 bit)
- */
-#if 0
-static inline unsigned short Crc16( unsigned char *pcBlock, unsigned short len ) {
-        unsigned short crc = 0xFFFF;
-	unsigned char i;
-
-	while( len-- ) {
-    		crc ^= *pcBlock++ << 8;
-
-    		for( i = 0; i < 8; i++ ) {
-    			crc = crc & 0x8000 ? ( crc << 1 ) ^ 0x1021 : crc << 1;
-    		}
-        }
-	return crc;
-}
-#endif

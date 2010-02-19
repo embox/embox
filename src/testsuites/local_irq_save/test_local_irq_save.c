@@ -5,7 +5,6 @@
  * \author Alexey Fomin
  */
 
-#include "autoconf.h"
 #include "common.h"
 #include "express_tests.h"
 #include "hal/irq_ctrl.h"

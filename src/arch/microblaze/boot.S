@@ -6,7 +6,6 @@
  * @author Anton Bondarev
  */
 
-#include "autoconf.h"
 #include "asm/mb_regs.h"
 /*
 	.org  0x00

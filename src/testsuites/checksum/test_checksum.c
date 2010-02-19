@@ -5,7 +5,6 @@
  * \author Alexey Fomin
  */
 
-#include "autoconf.h"
 #include "md5.h"
 #include "common.h"
 #include "express_tests.h"

@@ -7,7 +7,6 @@
  * @author Anton Bondarev
  */
 
-#include <autoconf.h>
 #include <types.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>

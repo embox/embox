@@ -11,7 +11,6 @@
 #include "drivers/amba_pnp.h"
 #include "common.h"
 #include "kernel/irq.h"
-#include "autoconf.h"
 
 /* timers clock 1 uSec*/
 #define TIMER_SCALER_VAL (CORE_FREQ/1000000 - 1)

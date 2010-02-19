@@ -9,8 +9,6 @@
  * @author Anton Bondarev
  */
 
-#include <autoconf.h>
-
 #include <kernel/irq.h>
 #include <hal/interrupt.h>
 

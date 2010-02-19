@@ -8,7 +8,6 @@
  * @author Eldar Abusalimov
  */
 
-#include "autoconf.h"
 #include "types.h"
 #include "common.h"
 #include "express_tests.h"

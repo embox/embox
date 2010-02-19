@@ -2,6 +2,7 @@
  * @file if_ether.h
  *
  * @brief Global definitions for the Ethernet IEEE 802.3 interface.
+ *
  * @date 11.03.2009
  * @author Anton Bondarev
  */

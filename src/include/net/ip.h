@@ -28,11 +28,11 @@
 
 typedef struct iphdr {
 #if defined(__LITTLE_ENDIAN)
-        __extension__ __u8 ihl:4,     /* ihl = 5 */
-    			    version:4; /* version = 4 */
+	__extension__ __u8 ihl:4,  /* ihl = 5 */
+					version:4; /* version = 4 */
 #elif defined (__BIG_ENDIAN)
 	__extension__ __u8 version:4, /* version = 4 */
-	                        ihl:4;     /* ihl = 5 */
+						ihl:4;    /* ihl = 5 */
 #endif
 	__u8        tos;          /**< Type of Services, always 0 */
 	__be16      tot_len;      /**< packet length */
@@ -46,8 +46,8 @@ typedef struct iphdr {
 	__u8        ttl;          /**< Time to live */
 	__u8        proto;        /**< next header */
 	uint16_t    check;        /**< header's checksum */
-        in_addr_t   saddr;        /**< source address */
-        in_addr_t   daddr;        /**< destination address */
+	in_addr_t   saddr;        /**< source address */
+	in_addr_t   daddr;        /**< destination address */
 } __attribute__((packed)) iphdr_t;
 
 #define IP_HEADER_SIZE   (sizeof(struct iphdr))

@@ -2,6 +2,8 @@
  * @file arp.h
  *
  * @brief Definitions for the ARP protocol.
+ * @details RFC 826
+ *
  * @date 11.03.2009
  * @author Anton Bondarev
  */

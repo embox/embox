@@ -2,6 +2,7 @@
  * @file if.h
  *
  * @brief Global definitions for the INET interface module.
+ *
  * @date 03.12.2009
  * @author Nikolay Korotky
  */

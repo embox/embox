@@ -2,6 +2,8 @@
  * @file etherdevice.h
  *
  * @brief Definitions for the Ethernet handlers.
+ * @details IEEE 802.3
+ *
  * @date 5.03.2009
  * @author Anton Bondarev
  */

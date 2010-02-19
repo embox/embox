@@ -2,7 +2,6 @@
  *
  */
 #include <types.h>
-#include <autoconf.h>
 #include <asm/cpu_conf.h>
 #include <kernel/module.h>
 #include <net/if_ether.h>

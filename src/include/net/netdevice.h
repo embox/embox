@@ -2,6 +2,7 @@
  * @file netdevice.h
  *
  * @brief Definitions for the Interfaces handler.
+ *
  * @date 04.03.2009
  * @author Anton Bondarev
  */

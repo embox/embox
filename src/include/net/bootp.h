@@ -1,6 +1,9 @@
 /**
  * @file bootp.h
  *
+ * @brief Defenitions for Bootstrap Protocol.
+ * @details RFC 951
+ *
  * @date 28.08.09
  * @author Andrey Baboshin
  */
@@ -26,21 +29,21 @@
 	BOOTP support. For details read RFC951 and RFC1395.
 */
 struct _bootp_header_t {
-    unsigned char    op;                     /* packet op code / message type */
-    unsigned char    htype;                  /* hardware addr type */
-    unsigned char    hlen;                   /* hardware addr length */
-    unsigned char    hops;                   /* gateway hops */
-    unsigned int     xid;                    /* transaction ID */
-    unsigned short   secs;                   /* seconds since boot began */
-    unsigned short   flags;                  /* RFC1532 broadcast, etc. */
-    in_addr_t        ciaddr;                 /* client IP address */
-    in_addr_t        yiaddr;                 /* 'your' (client) IP address */
-    in_addr_t        siaddr;                 /* server IP address */
-    in_addr_t        giaddr;                 /* gateway IP address */
-    unsigned char    chaddr[16];             /* client hardware address */
-    char             sname[64];              /* server host name */
-    char             file[128];              /* boot file name */
-    unsigned char    options[VEND_LEN];
+	unsigned char    op;                     /* packet op code / message type */
+	unsigned char    htype;                  /* hardware addr type */
+	unsigned char    hlen;                   /* hardware addr length */
+	unsigned char    hops;                   /* gateway hops */
+	unsigned int     xid;                    /* transaction ID */
+	unsigned short   secs;                   /* seconds since boot began */
+	unsigned short   flags;                  /* RFC1532 broadcast, etc. */
+	in_addr_t        ciaddr;                 /* client IP address */
+	in_addr_t        yiaddr;                 /* 'your' (client) IP address */
+	in_addr_t        siaddr;                 /* server IP address */
+	in_addr_t        giaddr;                 /* gateway IP address */
+	unsigned char    chaddr[16];             /* client hardware address */
+	char             sname[64];              /* server host name */
+	char             file[128];              /* boot file name */
+	unsigned char    options[VEND_LEN];
 } __attribute__((packed)) bootp_header_t;
 
 #define __MAX(a,b) ((a)>(b)?(a):(b))

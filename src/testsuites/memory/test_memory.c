@@ -5,10 +5,8 @@
  * @author Alexander Batyukov (some changes in interface and designed as express test)
  */
 
-#include "autoconf.h"
 #include "common.h"
 #include "string.h"
-//#include "misc.h"
 #include "express_tests.h"
 
 DECLARE_EXPRESS_TEST(memory, exec, NULL);

@@ -2,6 +2,7 @@
  * @file ip_sock.h
  *
  * @brief Definitions for inet_sock.
+ *
  * @date 18.03.2009
  * @author Anton Bondarev
  */

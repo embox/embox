@@ -5,7 +5,6 @@
  * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
-#include "autoconf.h"
 #include "common.h"
 #include "kernel/timer.h"
 #include "express_tests.h"

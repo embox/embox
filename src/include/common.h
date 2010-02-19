@@ -1,8 +1,14 @@
+/**
+ * @file common.h
+ *
+ * @date 01.01.1970
+ */
+
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
 #ifdef __EMBOX__
-#include "err.h"
+#include <err.h>
 #else
 #include <linux/types.h>
 #endif

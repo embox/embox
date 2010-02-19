@@ -86,7 +86,7 @@ typedef struct socket {
 	short type;
 	unsigned long flags;
 #if 0
-	struct file             *file;
+	struct file   *file;
 #endif
 	struct sock *sk;
 	const struct proto_ops *ops;

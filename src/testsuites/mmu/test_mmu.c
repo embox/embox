@@ -4,7 +4,6 @@
  * \author anton
  * \details
  */
-#include "autoconf.h"
 #include "common.h"
 #include "asm/leon.h"
 #include "asm/mmu.h"

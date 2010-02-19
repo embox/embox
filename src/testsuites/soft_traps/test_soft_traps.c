@@ -5,7 +5,6 @@
  * \author sunnya
  */
 
-#include "autoconf.h"
 #include "common.h"
 #include "express_tests.h"
 

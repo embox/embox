@@ -6,7 +6,6 @@
 
 #include "common.h"
 #include "string.h"
-#include "autoconf.h"
 
 #if 0
 static void sign_checksum(void) {

@@ -5,7 +5,6 @@
  *  \author Anton Bondarev
  */
 
-#include "autoconf.h"
 #include "common.h"
 #include "asm/cpu_context.h"
 #include "kernel/sys.h"

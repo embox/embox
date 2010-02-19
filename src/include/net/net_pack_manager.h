@@ -1,6 +1,8 @@
 /**
  * @file net_pack_manager.h
  *
+ * @brief net buffer allocator.
+ *
  * @date 07.03.2009
  * @author Anton Bondarev
  */

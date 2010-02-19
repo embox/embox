@@ -2,6 +2,7 @@
  * @file sock.h
  *
  * @brief Definitions for the AF_INET socket handler.
+ *
  * @date 17.03.2009
  * @author Anton Bondarev
  */
@@ -47,7 +48,7 @@ struct sock_common {
  * @param sk_lock synchronizer
  * @param sk_sndbuf size of send buffer in bytes
  * @param sk_flags %SO_LINGER (l_onoff), %SO_BROADCAST, %SO_KEEPALIVE,
- *                %SO_OOBINLINE settings, %SO_TIMESTAMPING settings
+ *			%SO_OOBINLINE settings, %SO_TIMESTAMPING settings
  * @param sk_receive_queue incoming packets
  * @param sk_write_queue Packet sending queue
  * @param sk_socket Identd and reporting IO signals
@@ -141,7 +142,7 @@ extern int sock_no_listen(struct socket *, int);
 extern int sock_no_accept(struct socket *, struct socket *, int);
 
 extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
-                               struct msghdr *msg, size_t size, int flags);
+			struct msghdr *msg, size_t size, int flags);
 
 #if 0
 //TODO NETSOCK: functions are not realized now

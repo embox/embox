@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 
-#include <autoconf.h>
 #include <asm/cpu_conf.h>
 #include <types.h>
 #include <kernel/irq.h>
