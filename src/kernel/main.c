@@ -26,6 +26,8 @@ int main(void) {
 
 	init();
 
+	shell_start();
+
 	while(1) {
 		arch_idle();
 	}

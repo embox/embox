@@ -8,6 +8,7 @@
 #include <kernel/irq.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
+#include <kernel/printk.h>
 
 #define UART_SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
@@ -40,6 +41,7 @@
 #define UART_CTRL_DB (1 << 11) /**< debug mode enable (don't available) */
 #define UART_CTRL_OE (1 << 12) /**< output transmitter enable */
 #define UART_CTRL_FA (1 << 31) /**< set on when FIFO TX and RX are available */
+#define UART_DISABLE_ALL 0
 
 struct apbuart_regs {
 	/*------+------+
@@ -67,8 +69,9 @@ struct apbuart_regs {
 static volatile struct apbuart_regs *dev_regs;
 
 static int dev_regs_init(void);
+static irq_nr_t irq_num;
 
-int uart_init() {
+int uart_init(void) {
 	int err;
 
 	if (NULL != dev_regs) {
@@ -94,7 +97,7 @@ void uart_putc(char ch) {
 	REG_STORE(&dev_regs->data, (uint32_t) ch);
 }
 
-char uart_getc() {
+char uart_getc(void) {
 	while (!(UART_STAT_DR & REG_LOAD(&dev_regs->status))) {
 	}
 	return ((char) REG_LOAD(&dev_regs->data));
@@ -110,38 +113,40 @@ static int dev_regs_init() {
 		return -ENODEV;
 	}
 	dev_regs = (volatile struct apbuart_regs *) amba_dev.bar[0].start;
+	irq_num = amba_dev.dev_info.irq;
 	return 0;
 }
 #elif defined(CONFIG_APBUART_BASE)
 static int dev_regs_init() {
 	dev_regs = (volatile struct apbuart_regs *) CONFIG_APBUART_BASE;
+	irq_num =
 	return 0;
 }
 #else
 # error "Either CONFIG_AMBAPP or CONFIG_APBUART_BASE must be defined"
 #endif /* CONFIG_AMBAPP */
 
-#if 0
+#if 1
 
 static bool handler_was_set = false;
 
 int uart_set_irq_handler(irq_handler_t pfunc) {
-	ASSERT_INIT_DONE ();
+//	ASSERT_INIT_DONE ();
 
-	REG_ORIN(dev_regs->ctrl, UART_CTRL_RI);
+	REG_ORIN((&dev_regs->ctrl), UART_CTRL_RI);
 
-	irq_attach(irq,pfunc,0,NULL,"uart");
+	irq_attach(irq_num, pfunc,0,NULL,"uart");
 	handler_was_set = true;
 	//irq_set_handler(irq, pfunc);
 	return 0;
 }
 
-int uart_remove_irq_handler() {
-	ASSERT_INIT_DONE ();
+int uart_remove_irq_handler(void) {
+//	ASSERT_INIT_DONE ();
 
-	REG_ANDIN(dev_regs->ctrl, ~UART_CTRL_RI);
+	REG_ANDIN((&dev_regs->ctrl), ~UART_CTRL_RI);
 	if (handler_was_set) {
-		irq_detach(irq,NULL);
+		irq_detach(irq_num, NULL);
 		handler_was_set = false;
 	}
 	//irq_set_handler(irq, NULL);

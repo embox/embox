@@ -52,6 +52,7 @@ SECTIONS {
 		ALIGNMENT();
 		_bstart = .;
 		*(.bss)
+		*(.sbss)
 		ALIGNMENT();
 
 		ALLOC_EXPRESS_RESULT
