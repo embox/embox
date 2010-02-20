@@ -1,5 +1,5 @@
 /**
- * @file traps.h
+ * @file
  */
 #ifndef _TRAPS_H_
 #define _TRAPS_H_

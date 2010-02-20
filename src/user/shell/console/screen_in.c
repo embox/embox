@@ -1,5 +1,6 @@
 /**
- * @file screen_in.c
+ * @file
+ *
  * @date 28.02.2009
  * @author Eldar Abusalimov
  */

@@ -1,5 +1,5 @@
 /**
- * @file strtod.c
+ * @file
  *
  * @date 23.11.09
  * @author Nikolay Korotky

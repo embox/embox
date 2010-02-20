@@ -1,5 +1,5 @@
 /**
- * @file ptrace.h
+ * @file
  *
  * @date Jun 4, 2009
  * @author Eldar Abusalimov

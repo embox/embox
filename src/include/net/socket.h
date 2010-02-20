@@ -1,5 +1,5 @@
 /**
- * @file socket.h
+ * @file
  *
  * @date 19.03.2009
  * @author Anton Bondarev

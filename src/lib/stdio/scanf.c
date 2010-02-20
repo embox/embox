@@ -1,5 +1,5 @@
 /**
- * @file scanf.c
+ * @file
  *
  * @brief Realization of function scanf
  *

@@ -1,7 +1,8 @@
 /**
- * @file route.c
+ * @file
  *
  * @brief implementation of the IP router.
+ *
  * @date 16.11.09
  * @author Nikolay Korotky
  */

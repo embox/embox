@@ -1,5 +1,5 @@
 /**
- * @file strerror.c
+ * @file
  *
  * @date 13.10.09
  * @author Nikolay Korotky

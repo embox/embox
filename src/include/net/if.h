@@ -1,5 +1,5 @@
 /**
- * @file if.h
+ * @file
  *
  * @brief Global definitions for the INET interface module.
  *

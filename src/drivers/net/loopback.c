@@ -1,7 +1,8 @@
 /**
- * @file loopback.c
+ * @file
  *
  * @brief Pseudo-driver for the loopback interface.
+ *
  * @date 29.12.09
  * @author Nikolay Korotky
  */

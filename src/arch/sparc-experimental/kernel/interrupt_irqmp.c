@@ -58,10 +58,6 @@ void interrupt_force(interrupt_nr_t interrupt_nr) {
 	REG_ORIN(&dev_regs->force, 1 << interrupt_nr);
 }
 
-void interrupt_handler(interrupt_nr_t interrupt_nr, struct ptrace_regs *regs) {
-	irq_dispatch(interrupt_nr);
-}
-
 void interrupt_init(void) {
 	assert(NULL == dev_regs);
 

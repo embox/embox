@@ -1,5 +1,6 @@
 /**
- * @file memory_tests.c
+ * @file
+ *
  * @date 29.07.2009
  * @author Alexey Fomin
  * @author Alexander Batyukov (some changes in interface and designed as express test)

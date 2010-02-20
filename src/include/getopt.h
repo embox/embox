@@ -1,5 +1,5 @@
 /**
- * @file getopt.h
+ * @file
  *
  * @date 23.09.09
  * @author Nikolay Korotky

@@ -1,5 +1,5 @@
 /**
- * @file icmp.c
+ * @file
  *
  * @brief Implementation of the ICMP protocol layer.
  * @details RFC 792

@@ -1,6 +1,7 @@
 /**
- * @file serial_xuartlite.c
+ * @file
  * @brief This file implemented functions for work with xilix uart (for microblaze)
+ *
  * @date 19.11.2009
  * @author: Anton Bondarev
  */

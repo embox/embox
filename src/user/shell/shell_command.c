@@ -1,5 +1,6 @@
 /**
- * @file shell_command.c
+ * @file
+ *
  * @date 13 august 2009
  * @author Anton Bondarev
  * @details Realyzed interface for working with user command

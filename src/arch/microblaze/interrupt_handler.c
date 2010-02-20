@@ -1,5 +1,5 @@
 /**
- * @file interrupt_handler.c
+ * @file
  *
  * @details This file contains @link interrupt_handler() @endlink function.
  *        It's proxy between asm code and kernel interrupt handler

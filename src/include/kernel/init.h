@@ -1,5 +1,5 @@
 /**
- * @file init.h
+ * @file
  *
  * @date 23.11.2009
  * @author Alexey Fomin

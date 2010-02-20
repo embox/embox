@@ -1,5 +1,5 @@
 /**
- * @file winmacro.h
+ * @file
  *
  * @brief SPARC register windows related macros
  *

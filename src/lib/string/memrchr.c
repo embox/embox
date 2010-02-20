@@ -1,5 +1,6 @@
 /**
- * @file memrchr.c
+ * @file
+ *
  * @date 25.11.09
  * @author Nikolay Korotky
  */

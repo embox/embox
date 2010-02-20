@@ -1,5 +1,5 @@
 /**
- * @file test_recursion.c
+ * @file
  *
  * @brief tests proper stack usage (particularly, right handling
  * of window overflow//underflow on SPARC).

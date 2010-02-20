@@ -58,7 +58,7 @@ prepare:
 	@mkdir -p $(AUTOCONF_DIR)
 
 docs:
-	doxygen
+	@mkdir -p $(DOCS_DIR) && doxygen
 
 clean: _clean
 	@echo 'Clean complete'

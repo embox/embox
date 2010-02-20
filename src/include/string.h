@@ -1,5 +1,5 @@
 /**
- * @file string.h
+ * @file
  *
  * @date 02.12.08
  * @author Anton Bondarev - Initial implementation.

@@ -1,5 +1,5 @@
 /**
- * @file printk.h
+ * @file
  * @brief TODO
  *
  * @date 13.02.2010

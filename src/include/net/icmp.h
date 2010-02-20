@@ -1,5 +1,5 @@
 /**
- * @file icmp.h
+ * @file
  *
  * @brief Definitions for the ICMP protocol.
  * @details RFC 792

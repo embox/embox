@@ -14,7 +14,7 @@
 #include <sys/types.h>
 
 /**
- * Alias used to disable a clock when calling @link clock_setup() @endlink .
+ * Alias used to disable a clock when calling #clock_setup().
  */
 #define CLOCK_SETUP_DISABLE 0
 
@@ -29,7 +29,7 @@ void clock_init(void);
  * Configures the hardware clock.
  *
  * @param useconds positive value as timer period in microseconds,
- * or @link CLOCK_SETUP_DISABLE @endlink to disable the clock
+ * or #CLOCK_SETUP_DISABLE to disable the clock
  */
 void clock_setup(useconds_t useconds);
 

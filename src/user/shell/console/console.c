@@ -1,5 +1,5 @@
 /*
- * @file console.c
+ * @file
  * @brief Console command prompt.
  *
  * @details Supports typing proposals and custom welcome messages.

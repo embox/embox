@@ -1,5 +1,5 @@
 /**
- * @file ip_sock.h
+ * @file
  *
  * @brief Definitions for inet_sock.
  *

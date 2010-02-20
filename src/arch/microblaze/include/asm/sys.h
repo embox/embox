@@ -1,6 +1,7 @@
 /**
- * @file asm-sparc/sys.h
+ * @file
  * @brief System calls and other system function
+ *
  * @date 19.11.2009
  * @author Anton Bondarev
  */

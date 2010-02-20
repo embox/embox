@@ -1,5 +1,5 @@
 /**
- * @file net.h
+ * @file
  *
  * @date 11.03.2009
  * @author Anton Bondarev

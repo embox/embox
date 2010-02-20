@@ -1,5 +1,5 @@
 /**
- * @file math.h
+ * @file
  *
  * @date 25.11.09
  * @author Nikolay Korotky

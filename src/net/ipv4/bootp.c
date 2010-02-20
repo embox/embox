@@ -1,5 +1,5 @@
 /**
- * @file bootp.c
+ * @file
  *
  * @date 28.08.09
  * @author Andrey Baboshin

@@ -1,5 +1,5 @@
 /**
- * @file softfloat.h
+ * @file
  *
  * @brief Software FPU emulation.
  *

@@ -1,5 +1,5 @@
 /**
- * @file basename.c
+ * @file
  *
  * @date 23.11.09
  * @author Nikolay Korotky

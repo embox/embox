@@ -1,5 +1,5 @@
 /**
- * @file sk_buff.h
+ * @file
  *
  * @brief Definitions for the 'struct sk_buff' memory handlers.
  *

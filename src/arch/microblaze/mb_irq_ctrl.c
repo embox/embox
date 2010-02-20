@@ -1,5 +1,5 @@
 /**
- * @file mb_irq_ctrl.c
+ * @file
  *
  * @brief Low level functions for interrupt controller
  *

@@ -1,5 +1,5 @@
 /**
- * @file trap_setup.S
+ * @file
  *
  * @brief Low-level traps pre- and post-setup routines.
  *

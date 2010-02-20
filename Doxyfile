@@ -3,7 +3,7 @@
 #---------------------------------------------------------------------------
 
 DOXYFILE_ENCODING = UTF-8
-PROJECT_NAME = emBOX
+PROJECT_NAME = EMBOX
 PROJECT_NUMBER =
 OUTPUT_DIRECTORY = build/docs
 CREATE_SUBDIRS = NO
@@ -88,13 +88,13 @@ WARN_LOGFILE =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-INPUT = src/kernel src/arch/sparc-experimental/kernel
+INPUT = platform src
 INPUT_ENCODING = UTF-8
 FILE_PATTERNS = *.c *.h *.S
-RECURSIVE = NO
+RECURSIVE = YES
 EXCLUDE =
 EXCLUDE_SYMLINKS = NO
-EXCLUDE_PATTERNS = */third_party/* */tests/* .git/*
+EXCLUDE_PATTERNS = */third_party/* .git/*
 EXCLUDE_SYMBOLS =
 EXAMPLE_PATH =
 EXAMPLE_PATTERNS =

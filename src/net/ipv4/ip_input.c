@@ -1,7 +1,8 @@
 /**
- * @file ip.c
+ * @file
  *
  * @brief The Internet Protocol (IP) module.
+ *
  * @date 17.03.2009
  * @author Alexandr Batyukov
  * @author Nikolay Korotky

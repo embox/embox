@@ -1,5 +1,5 @@
 /**
- * @file timers.c
+ * @file
  *
  * @date 19.11.09
  * @author Anton Bondarev

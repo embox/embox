@@ -1,5 +1,5 @@
 /**
- * @file sys.h
+ * @file
  *
  * @date 09.06.2009
  * @author Eldar Abusalimov

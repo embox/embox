@@ -1,5 +1,5 @@
 /**
- * @file net_pack_manager.h
+ * @file
  *
  * @brief net buffer allocator.
  *

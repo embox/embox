@@ -1,5 +1,5 @@
 /**
- * @file arch/microblaze/sys.c
+ * @file
  *
  * @date 23.11.2009
  * @author: Anton Bondarev

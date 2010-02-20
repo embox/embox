@@ -1,5 +1,5 @@
 /**
- * @file memccpy.c
+ * @file
  *
  * @date 14.10.09
  * @author Nikolay Korotky

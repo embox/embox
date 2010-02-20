@@ -1,5 +1,5 @@
 /**
- * @file tftp.c
+ * @file
  *
  * @date 29.09.2009
  * @author Andrey Baboshin

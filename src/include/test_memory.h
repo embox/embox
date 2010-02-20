@@ -1,5 +1,6 @@
 /**
- * @file test_memory.h
+ * @file
+ *
  * @date Jul 29, 2009
  * @author afomin
  * @details

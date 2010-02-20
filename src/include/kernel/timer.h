@@ -1,5 +1,5 @@
 /**
- * @file timers.h
+ * @file
  */
 
 #ifndef _TIMERS_H_

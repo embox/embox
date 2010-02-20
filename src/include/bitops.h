@@ -1,5 +1,5 @@
 /**
- * @file bitops.h
+ * @file
  *
  * @date 27.11.09
  * @author Nikolay Korotky

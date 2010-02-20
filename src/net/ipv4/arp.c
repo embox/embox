@@ -1,5 +1,5 @@
 /**
- * @file arp.c
+ * @file
  *
  * @brief This module implements the Address Resolution Protocol (ARP),
  * which is used to convert IP addresses into a low-level hardware address.

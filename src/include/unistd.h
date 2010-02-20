@@ -1,8 +1,9 @@
 /**
- * @file unistd.h
+ * @file
  *
  * @brief This file defines miscellaneous symbolic constants and types,
  *        and declares miscellaneous function. Now only sleep functions.
+ *
  * @date 24.11.2009
  * @author Anton Bondarev
  */

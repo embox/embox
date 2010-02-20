@@ -1,5 +1,5 @@
 /**
- * @file main.c
+ * @file
  *
  * @date 27.11.08
  * @author Anton Bondarev

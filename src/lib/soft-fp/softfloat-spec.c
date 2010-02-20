@@ -1,5 +1,5 @@
 /**
- * @file softfloat-specialize.h
+ * @file
  *
  * @date 25.11.09
  * @author John R. Hauser - initial implementation.

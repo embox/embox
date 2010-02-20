@@ -1,5 +1,5 @@
 /**
- * @file ip.h
+ * @file
  *
  * @brief Definitions for the IP protocol.
  * @details RFC 791

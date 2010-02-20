@@ -1,5 +1,5 @@
 /**
- * @file misc.c
+ * @file
  *
  * @date 27.05.09
  * @author Nikolay Korotky

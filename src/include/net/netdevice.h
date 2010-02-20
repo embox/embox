@@ -1,5 +1,5 @@
 /**
- * @file netdevice.h
+ * @file
  *
  * @brief Definitions for the Interfaces handler.
  *

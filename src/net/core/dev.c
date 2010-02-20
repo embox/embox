@@ -1,7 +1,8 @@
 /**
- * @file dev.c
+ * @file
  *
  * @brief Protocol independent device support routines.
+ *
  * @date 04.03.2009
  * @author Anton Bondarev
  */

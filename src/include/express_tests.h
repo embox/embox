@@ -1,7 +1,8 @@
 /**
- * @file express_tests.h
+ * @file
  * @brief Express tests structure and macroses definition
  * @details Express tests are low level tests for hardware. It can be called during starting system and with user command express.
+ *
  * @date Jul 4, 2009
  * @author Anton Bondarev, Alexey Fomin
  */

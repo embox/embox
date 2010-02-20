@@ -1,7 +1,8 @@
 /**
- * @file udp.c
+ * @file
  *
  * @details The User Datagram Protocol (UDP).
+ *
  * @date 26.03.2009
  * @author Nikolay Korotky
  */

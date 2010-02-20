@@ -1,5 +1,5 @@
 /**
- * @file udp.h
+ * @file
  *
  * @brief Definitions for the UDP module.
  *

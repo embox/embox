@@ -1,5 +1,5 @@
 /**
- * @file bootp.h
+ * @file
  *
  * @brief Defenitions for Bootstrap Protocol.
  * @details RFC 951

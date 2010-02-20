@@ -1,5 +1,5 @@
 /**
- * @file skbuff.c
+ * @file
  *
  * @details this module realize interface with structure sk_buff
  * structures sk_buff are presented queue free packet.

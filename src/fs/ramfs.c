@@ -1,5 +1,6 @@
 /**
- * @file ramfs.c
+ * @file
+ *
  * @date 29.06.2009
  * @author Anton Bondarev
  * @details realize file operation function in line address space

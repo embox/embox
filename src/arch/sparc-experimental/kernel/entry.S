@@ -29,9 +29,13 @@ interrupt_entry:
 	wr %g1, PSR_ET, %psr
 	 ! do not wait
 
+	/* Forward interrupt handling directly to kernel.
+	 * There is no need to introduce HAL interrupt handling proxy function.
+	 * At least for now. */
 	mov %local, %o0 ! interrupt nr
-	call interrupt_handler
-	 add %sp, STACK_FRAME_SZ, %o1
+	call irq_dispatch
+	 nop
+	! add %sp, STACK_FRAME_SZ, %o1
 
 	! TODO maybe traps disable is needed
 
@@ -47,7 +51,11 @@ weak_trap_entry:
 
  	.global srmmu_fault
 srmmu_fault:
- 	.global bad_trap_entry
+!	mov %t_npc, %t_pc
+!	add %t_npc, 4, %t_npc
+	jmpl %t_npc, %g0
+	 rett %t_npc + 4
+	.global bad_trap_entry
 bad_trap_entry:
 	SAVE_ALL
 

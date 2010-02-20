@@ -1,5 +1,5 @@
 /**
- * @file strtol.c
+ * @file
  *
  * @brief convert a string to a long integer
  * @see stdlib.h

@@ -1,5 +1,5 @@
 /**
- * @file malloc.c
+ * @file
  *
  * @brief Pseudo-dynamic memory allocator.
  *

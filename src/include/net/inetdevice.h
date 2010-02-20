@@ -1,5 +1,5 @@
 /**
- * @file inetdevice.h
+ * @file
  *
  * @date 18.07.2009
  * @author Anton Bondarev

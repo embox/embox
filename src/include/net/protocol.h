@@ -1,5 +1,5 @@
 /**
- * @file protocol.h
+ * @file
  *
  * @brief Definitions for the protocol dispatcher.
  *

@@ -1,5 +1,5 @@
 /**
- * @file shell_command.h
+ * @file
  *
  * @date 13.09.09
  * @author Anton Bondarev

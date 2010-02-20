@@ -1,6 +1,7 @@
 /**
- * @file asm-sparc/irq_ctrl.h
+ * @file
  * @brief This file defines SPARC (leon3) interrupt controller specific settings
+ *
  * @date Apr 14, 2009
  * @author Anton Bondarev
  */

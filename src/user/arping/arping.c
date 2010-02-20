@@ -1,7 +1,8 @@
 /**                                                         o
- * @file arping.c
+ * @file
  *
  * @brief Ping hosts by ARP requests/replies
+ *
  * @date 23.12.09
  * @author Nikolay Korotky
  */

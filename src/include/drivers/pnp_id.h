@@ -1,5 +1,5 @@
 /**
- * @file pnp_id.h
+ * @file
  */
 #ifndef PNP_H_
 #define PNP_H_

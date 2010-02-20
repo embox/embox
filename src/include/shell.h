@@ -1,5 +1,5 @@
 /**
- * @file shell.h
+ * @file
  *
  * @date 02.02.2009
  * @author Alexey Fomin

@@ -1,5 +1,5 @@
 /**
- * @file module.h
+ * @file
  *
  * @date 09.07.2009
  * @author Anton Bondarev

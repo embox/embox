@@ -1,5 +1,5 @@
 /**
- * @file if_ether.h
+ * @file
  *
  * @brief Global definitions for the Ethernet IEEE 802.3 interface.
  *

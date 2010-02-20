@@ -1,5 +1,5 @@
 /**
- * @file sock.h
+ * @file
  *
  * @brief Definitions for the AF_INET socket handler.
  *

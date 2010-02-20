@@ -1,8 +1,9 @@
 /**
- * @file devinet.c
+ * @file
  *
  * @brief IP device support routines.
  * @details realizing interface if_device struct (interface device)
+ *
  * @date 18.07.2009
  * @author Anton Bondarev
  */

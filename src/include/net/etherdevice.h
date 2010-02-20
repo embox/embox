@@ -1,5 +1,5 @@
 /**
- * @file etherdevice.h
+ * @file
  *
  * @brief Definitions for the Ethernet handlers.
  * @details IEEE 802.3

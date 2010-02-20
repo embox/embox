@@ -14,16 +14,16 @@
 /**
  * Total amount of interrupt lines available on the controller.
  *
- * @note Implementation should provide @link __INTERRUPT_NRS_TOTAL @endlink
- * definition indicating positive constant.
+ * @note Implementation should provide @c __INTERRUPT_NRS_TOTAL definition
+ * indicating positive constant.
  */
 #define INTERRUPT_NRS_TOTAL __INTERRUPT_NRS_TOTAL
 
 /**
- * Checks if the specified interrupt_nr is less then @link
- * INTERRUPT_NRS_TOTAL @endlink value. Most HAL methods @link assert @endlink
- * that input @link interrupt_nr_t @endlink argument is valid, so kernel should
- * perform necessary checks by itself.
+ * Checks if the specified interrupt_nr is less then #INTERRUPT_NRS_TOTAL
+ * value.
+ * @note Most HAL methods uses @link assert() @endlink instead of checking the
+ * input arguments, so kernel should perform necessary checks by itself.
  */
 #define interrupt_nr_valid(interrupt_nr) \
 	((interrupt_nr_t) interrupt_nr < (interrupt_nr_t) INTERRUPT_NRS_TOTAL)
@@ -31,9 +31,9 @@
 /**
  * Type representing interrupt line number.
  *
- * @note Implementation should provide @link __interrupt_nr_t @endlink type
- * indicating unsigned (it is essential!) integer suitable to hold up to
- * @link INTERRUPT_NRS_TOTAL @endlink values.
+ * @note Implementation should provide @c __interrupt_nr_t type indicating
+ * unsigned (it is essential!) integer suitable to hold up to
+ * #INTERRUPT_NRS_TOTAL values.
  */
 typedef __interrupt_nr_t interrupt_nr_t;
 

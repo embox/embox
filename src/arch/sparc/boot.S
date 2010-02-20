@@ -1,5 +1,5 @@
 /**
- * @file boot.S
+ * @file
  *
  * @brief Low-level boot code.
  *

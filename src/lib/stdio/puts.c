@@ -1,5 +1,5 @@
 /**
- * @file puts.c
+ * @file
  * @brief TODO
  *
  * @date 14.02.2010

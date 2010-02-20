@@ -1,5 +1,5 @@
 /**
- * @file list.h
+ * @file
  */
 #ifndef __LIST_H
 #define __LIST_H

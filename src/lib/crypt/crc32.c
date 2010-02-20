@@ -1,5 +1,5 @@
 /**
- * @file crc32.c
+ * @file
  *
  * @date 01.07.09
  * @author Alexey Fomin

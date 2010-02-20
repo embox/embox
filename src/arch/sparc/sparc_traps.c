@@ -1,6 +1,7 @@
 /**
  * @arch/sparc/sparc_traps.c
  * @brief function for working with traps in SPARC architecture
+ *
  * @date 24.11.2009
  * @author Anton Bondarev
  */

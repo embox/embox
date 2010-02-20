@@ -1,7 +1,8 @@
 /**
- * @file socket.c
+ * @file
  *
  * @brief An implementation of the SOCKET network access protocol.
+ *
  * @date 19.03.09
  * @author Anton Bondarev
  * @author Nikolay Korotky

@@ -1,7 +1,8 @@
 /**
- * @file irq_ctrl.c
+ * @file
  *
  * @brief Realize hal layer interrupt ctrl for leon 3 processor
+ *
  * @date 14.04.09
  * @author Anton Bondarev
  */

@@ -1,5 +1,5 @@
 /**
- * @file strcpy.c
+ * @file
  *
  * @date 20.11.09
  * @author Nikolay Korotky

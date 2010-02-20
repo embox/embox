@@ -1,5 +1,5 @@
 /**
- * @file sock.c
+ * @file
  *
  * @brief Generic socket support routines.
  *

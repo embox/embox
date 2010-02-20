@@ -1,5 +1,5 @@
 /**
- * @file kernel_socket.h
+ * @file
  *
  * @brief Socket interface function for kernel mode
  *

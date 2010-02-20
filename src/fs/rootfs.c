@@ -1,5 +1,6 @@
 /**
- * @file rootfs.c
+ * @file
+ *
  * @date Jun 29, 2009
  * @author Anton Bondarev
  * @details

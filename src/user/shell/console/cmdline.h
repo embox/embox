@@ -1,6 +1,7 @@
 /**
- * @file cmdline.h
+ * @file
  * @brief Internal representation of command line entity.
+ *
  * @date 08.02.2009
  * @author Eldar Abusalimov
  */

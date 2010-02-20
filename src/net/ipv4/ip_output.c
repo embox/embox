@@ -1,7 +1,8 @@
 /**
- * @file ip_output.c
+ * @file
  *
  * @brief The Internet Protocol (IP) output module.
+ *
  * @date 03.12.2009
  * @author Nikolay Korotky
  */

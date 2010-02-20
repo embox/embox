@@ -1,5 +1,5 @@
 /**
- * @file net_pack_manager.c
+ * @file
  *
  * @date 07.03.2009
  * @author Anton Bondarev

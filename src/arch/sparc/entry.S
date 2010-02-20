@@ -1,5 +1,5 @@
 /**
- * @file entry.S
+ * @file
  *
  * @brief Low-level traps dispatching
  *

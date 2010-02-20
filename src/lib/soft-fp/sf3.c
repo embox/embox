@@ -1,5 +1,5 @@
 /**
- * @file sf3.c
+ * @file
  *
  * @date 26.11.09
  * @author Nikolay Korotky

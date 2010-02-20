@@ -1,5 +1,5 @@
 /**
- * @file checksum.h
+ * @file
  *
  * @brief Checksumming functions for IP, TCP, UDP and so on.
  *

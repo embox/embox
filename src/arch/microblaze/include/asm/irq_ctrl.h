@@ -1,6 +1,7 @@
 /**
- * @file irq_ctrl.h
+ * @file
  * @brief This file defines microblaze interrupt controller specific settings
+ *
  * @date Apr 14, 2009
  * @author Anton Bondarev
  */

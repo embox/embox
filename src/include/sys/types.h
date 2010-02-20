@@ -1,5 +1,5 @@
 /**
- * @file types.h
+ * @file
  *
  * @date 24.11.2009
  * @author Anton Bondarev

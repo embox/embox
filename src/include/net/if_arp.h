@@ -1,5 +1,5 @@
 /**
- * @file if_arp.h
+ * @file
  *
  * @brief Global definitions for the ARP (RFC 826) protocol.
  *

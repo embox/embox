@@ -1,5 +1,5 @@
 /**
- * @file inet_addr.c
+ * @file
  *
  * @date 18.11.09
  * @author Nikolay Korotky

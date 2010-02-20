@@ -1,7 +1,8 @@
 /**
- * @file af_inet.c
+ * @file
  *
  * @brief PF_INET protocol family socket handler.
+ *
  * @date 01.12.09
  * @author Nikolay Korotky
  */

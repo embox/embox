@@ -1,5 +1,6 @@
 /**
- * @file mem.c
+ * @file
+ *
  * @date 13.02.2009
  * @author Alexey Fomin
  */

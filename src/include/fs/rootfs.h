@@ -1,5 +1,6 @@
 /**
- * @file rootfs.h
+ * @file
+ *
  * @date 29.06.2009
  * @author Anton Bondarev
  * @details

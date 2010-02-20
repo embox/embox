@@ -1,5 +1,5 @@
 /**
- * @file mb_timer.c
+ * @file
  *
  * @brief Implementation for microblaze timers
  *

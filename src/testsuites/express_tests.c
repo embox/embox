@@ -1,5 +1,5 @@
 /**
- * @file express_tests.c
+ * @file
  *
  * @brief Express tests routings
  *

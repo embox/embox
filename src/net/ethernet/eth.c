@@ -1,7 +1,8 @@
 /**
- * @file eth.c
+ * @file
  *
  * @brief Ethernet-type device handling.
+ *
  * @date 4.03.09
  * @author Anton Bondarev
  */

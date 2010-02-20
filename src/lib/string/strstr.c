@@ -1,5 +1,5 @@
 /**
- * @file strstr.c
+ * @file
  *
  * @date 18.10.09
  * @author Nikolay Korotky

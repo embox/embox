@@ -1,5 +1,5 @@
 /**
- * @file inet_common.h
+ * @file
  *
  * @brief Common inet definitions.
  *

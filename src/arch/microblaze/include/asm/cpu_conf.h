@@ -1,8 +1,9 @@
 /**
- * @file asm-microblaze/cpu_conf.h
+ * @file
  * @brief This file includes platform specific settings.
  * @details This file includes microblaze specific settings. It's included into autoconf.h.
  * 			This file may be change by configure script.
+ *
  * @date 19.11.2009
  * @author Anton Bondarev
  */

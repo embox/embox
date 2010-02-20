@@ -1,7 +1,8 @@
 /**
- * @file protocol.c
+ * @file
  *
  * @brief INET protocol dispatch tables.
+ *
  * @date 12.08.09
  * @author Nikolay Korotky
  */

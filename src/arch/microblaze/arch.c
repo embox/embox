@@ -2,6 +2,7 @@
  * @file
  * @brief TODO stub
  *
+ *
  * @date 14.02.2010
  * @author Anton Bondarev
  */

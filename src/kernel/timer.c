@@ -1,5 +1,5 @@
 /**
- * @file timers_helper.c
+ * @file
  */
 
 #include <types.h>

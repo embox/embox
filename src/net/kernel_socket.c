@@ -1,9 +1,10 @@
 /**
- * @file kernel_socket.c
+ * @file
  *
  * @brief Implements socket interface function for kernel mode
  *
  * @details
+ *
  * @date 13.01.2010
  *
  * @author Anton Bondarev

@@ -1,5 +1,5 @@
 /**
- * @file types.h
+ * @file
  *
  * @date 12.11.09
  * @author Nikolay Korotky

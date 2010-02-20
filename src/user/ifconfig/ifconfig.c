@@ -1,5 +1,5 @@
 /**
- * @file ifconfig.c
+ * @file
  *
  * @date 22.03.2009
  * @brief ifconfig command realization.
