@@ -21,19 +21,19 @@
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
 
 void diag_init(void) {
-	REG_STORE((uint32_t *) (APBUART_BASE + SCALER_REG), SCALER_VAL);
-	REG_STORE((uint32_t *) (APBUART_BASE + CTRL_REG), 0x3);
+	REG_STORE((volatile uint32_t *) (APBUART_BASE + SCALER_REG), SCALER_VAL);
+	REG_STORE((volatile uint32_t *) (APBUART_BASE + CTRL_REG), 0x3);
 }
 
 char diag_getc(void) {
-	while (!(0x1 & REG_LOAD((uint32_t *) (APBUART_BASE + STATUS_REG)))) {
+	while (!(0x1 & REG_LOAD((volatile uint32_t *) (APBUART_BASE + STATUS_REG)))) {
 	}
-	return ((char) REG_LOAD((uint32_t *) (APBUART_BASE + DATA_REG)));
+	return ((char) REG_LOAD((volatile uint32_t *) (APBUART_BASE + DATA_REG)));
 }
 
 void diag_putc(char ch) {
 	volatile int i;
 	for (i = 0; i < 0x1000; i++) {
 	}
-	REG_STORE((uint32_t *) (APBUART_BASE + DATA_REG), (uint32_t) ch);
+	REG_STORE((volatile uint32_t *) (APBUART_BASE + DATA_REG), (uint32_t) ch);
 }

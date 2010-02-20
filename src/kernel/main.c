@@ -22,6 +22,7 @@ int main(void) {
 	timer_init();
 #endif
 
+	uart_init();
 	ipl_init();
 
 	init();

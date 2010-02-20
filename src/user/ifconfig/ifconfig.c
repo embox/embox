@@ -5,6 +5,8 @@
  * @brief ifconfig command realization.
  * @author Anton Bondarev, Alexander Batyukov
  */
+
+#include <types.h>
 #include "shell_command.h"
 #include "string.h"
 #include <stdlib.h>
@@ -112,7 +114,8 @@ static int exec(int argsc, char **argsv) {
     struct in_addr mask;
     unsigned char macaddr[ETH_ALEN];
     unsigned char broadcastaddr[ETH_ALEN];
-    int up = 0, down = 0, i = 0;
+    bool up = false, down = false;
+    int i = 0;
     int no_arp = 0, promisc = 0, allmulti = 0, multicast = 0, mtu = 0, p2p = 0;
     int irq_num = 0;
     unsigned long base_addr = 0;
@@ -131,10 +134,10 @@ static int exec(int argsc, char **argsv) {
             show_help();
             return 0;
         case 'u': /* device up */
-            up = 1;
+            up = true;
             break;
         case 'd': /* device down */
-            down = 1;
+            down = true;
             break;
 
         case 'x': /* find interface by name */
@@ -239,13 +242,13 @@ static int exec(int argsc, char **argsv) {
     if (argsc > 1) {
         sscanf(argsv[argsc - 1], "eth%d", &i);
         strncpy(iname, argsv[argsc - 1], array_len(iname));
-        if ((NULL == (in_dev = inet_dev_find_by_name(argsv[argsc - 1]))) && (up
-                == 0)) {
+        if (NULL == (in_dev = inet_dev_find_by_name(argsv[argsc - 1])) && (up
+                || down)) {
             LOG_ERROR("can't find interface %s\n", argsv[argsc - 1]);
             return -1;
         }
     }
-    if (up == 1) {
+    if (up) {
         ifdev_up(iname);    /* up net iface */
         inet_dev_set_interface(iname, ipaddr.s_addr, mask.s_addr, macaddr);
         in_dev = inet_dev_find_by_name(iname);
@@ -296,7 +299,7 @@ static int exec(int argsc, char **argsv) {
             show_help();
             return -1;
         }
-        if (down == 0) {    /* set broadcast addr */
+        if (!down) {    /* set broadcast addr */
             eth_set_broadcast_addr(in_dev->dev, broadcastaddr);
             eth_flag_up(in_dev->dev, IFF_BROADCAST);
         }
@@ -308,7 +311,7 @@ static int exec(int argsc, char **argsv) {
         eth_flag_down(in_dev->dev, IFF_POINTOPOINT);
     }
 
-    if (down == 1) {            /* down net iface */
+    if (down) {            /* down net iface */
         ifdev_down(iname);
         return 0;
     }
@@ -318,7 +321,7 @@ static int exec(int argsc, char **argsv) {
             show_help();
             return -1;
         }
-        if (down == 0) {
+        if (!down) {
             inet_dev_set_ipaddr(in_dev, ipaddr.s_addr);
         }
     }
@@ -328,7 +331,7 @@ static int exec(int argsc, char **argsv) {
             show_help();
             return -1;
         }
-        if (down == 0) {
+        if (!down) {
             inet_dev_set_mask(in_dev, mask.s_addr);
         }
     }
@@ -338,7 +341,7 @@ static int exec(int argsc, char **argsv) {
             show_help();
             return -1;
         }
-        if (down == 0) {
+        if (!down) {
             inet_dev_set_macaddr(in_dev, macaddr);
         }
     }
