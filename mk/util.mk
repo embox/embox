@@ -5,7 +5,7 @@
 #
 
 ifndef _util_mk_
-_util_mk_:=1
+_util_mk_ := 1
 
 #
 # r-patsubst stands for recursive patsubst.
@@ -35,6 +35,23 @@ __r-wildcard = \
   $(if $(and $(findstring **,$1),$2), \
     $(call $0,$(subst **,**/*,$1),$(wildcard $(subst **,**/*,$1))) \
   ) $2
+
+
+# Make-style error and warning strings.
+
+# The most general way to get error/warning string.
+# First argument should contain the location to print (directory and file).
+error_str_file   = $1:1: EMBuild error::
+warning_str_file = $1:1: EMBuild warning::
+
+# Print location using the first argument as directory
+# and 'Makefile' as file within the directory.
+error_str_dir    = $(call error_str_file,$1/Makefile)
+warning_str_dir  = $(call warning_str_file,$1/Makefile)
+
+# Generates error/warning string in $(dir)/Makefile.
+error_str        = $(call error_str_dir,$(dir))
+warning_str      = $(call warning_str_dir,$(dir))
 
 # Just for better output readability.
 define N

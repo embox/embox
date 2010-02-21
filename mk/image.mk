@@ -38,8 +38,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 
 # Preprocessor flags
 cppflags:=$(CPPFLAGS)
-override CPPFLAGS =
-override CPPFLAGS += -D__EMBOX__
+override CPPFLAGS  = -D__EMBOX__
 override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
 override CPPFLAGS += -nostdinc
@@ -48,8 +47,7 @@ override CPPFLAGS += $(cppflags)
 
 # Compiler flags
 cflags:=$(CFLAGS)
-override CFLAGS =
-override CFLAGS += -pedantic
+override CFLAGS  = -pedantic
 override CFLAGS += -Wall
 override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement -Winline
 override CFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
@@ -58,8 +56,7 @@ override CFLAGS += $(cflags)
 
 # Linker flags
 ldflags:=$(LDFLAGS)
-override LDFLAGS =
-override LDFLAGS += -static
+override LDFLAGS  = -static
 override LDFLAGS += -nostdlib
 override LDFLAGS += -T $(LDSCRIPT)
 override LDFLAGS += $(ldflags)
@@ -76,16 +73,12 @@ LIB_FILE   = $(1:%=$(LIB_DIR)/lib.%.a)
 # It's time to build dependency model!
 include $(MK_DIR)/embuild.mk
 
-MODS_ENABLE := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_ESSENTIAL)))
-OBJS_ENABLE := $(foreach mod,$(MODS_ENABLE),$(OBJS-$(mod)))
+OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
 
 OBJ_SUBDIRS := \
-  $(sort $(dir $(OBJS_ENABLE) $(foreach lib,$(LIBS),$(OBJS-$(lib)))))
+  $(sort $(dir $(OBJS_BUILD) $(foreach lib,$(LIBS),$(OBJS-$(lib)))))
 
-$(info Enabled mods DAG:)
-$(foreach mod,$(MODS_ENABLE),$(info $(mod)))
-
-$(OBJS_ENABLE): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/config.mk
+$(OBJS_BUILD): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/config.mk
 
 $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.c
 	$(CC) -o $@ \
@@ -95,8 +88,8 @@ $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
 	$(CC) -o $@ \
 	$(CPPFLAGS) $(CFLAGS) -c $<
 
-$(IMAGE): $(OBJS_ENABLE) $(call LIB_FILE,$(LIBS))
-	$(LD) $(LDFLAGS) -o $@ $(OBJS_ENABLE:%= \$N	%) \
+$(IMAGE): $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
+	$(LD) $(LDFLAGS) -o $@ $(OBJS_BUILD:%= \$N	%) \
 	$(LDLIBS)
 
 $(IMAGE_DIS): $(IMAGE)

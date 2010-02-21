@@ -1,4 +1,4 @@
-$_PACKAGE := embox.drivers.net
+$_PACKAGE := embox.driver.net
 
 $_CPPFLAGS += -I$(THIRDPARTY_DIR)/linux-compat/include
 

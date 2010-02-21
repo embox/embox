@@ -25,7 +25,9 @@
 #
 
 ifndef _traverse_mk_
-_traverse_mk_:=1
+_traverse_mk_ := 1
+
+include $(MK_DIR)/util.mk
 
 #
 # Usage:
@@ -75,10 +77,13 @@ _traverse_mk_:=1
 #  2. (optional) File name of node descriptor containing info about subdirs
 #   If not specified traverse will search for files named Makefile and makefile
 #
-TRAVERSE= \
-  $(eval __traverse_return:=) \
-  $(eval $(call __traverse_invoke,$1,$2)) \
-  $(__traverse_return)
+TRAVERSE = \
+  $(if $(filter $0,TRAVERSE),,$(error TRAVERSE must be call'ed)) \
+  $(foreach __traverse_root,$(patsubst %/,%,$(wildcard $(1:%=%/))), \
+    $(eval __traverse_return := ) \
+    $(eval $(call __traverse_invoke,$(__traverse_root),$2)) \
+    $(__traverse_return) \
+  )
 
 #
 # A kind of wrapper for __traverse_process that allows us to use unescaped code
@@ -92,8 +97,8 @@ TRAVERSE= \
 define __traverse_invoke
 
   # We use such long prefixed name to prevent global namespace pollution.
-  __traverse_node_dir  :=$1
-  __traverse_node_file :=$2
+  __traverse_node_dir  := $1
+  __traverse_node_file := $2
   $(value __traverse_process)
 
   # Perform recursive walking over sub-directories.
@@ -101,7 +106,7 @@ define __traverse_invoke
   # only once and before entering child subroutines (which will overwrite this
   # variable), hence we have not to construct any stacks and so on.
   $$(foreach subdir,$$(__traverse_process_result),$$(eval \
-    $$(call __traverse_invoke,$1/$$(subdir),$2)\
+    $$(call __traverse_invoke,$1/$$(subdir),$2) \
   ))
 
 endef
@@ -124,6 +129,20 @@ __traverse_subdirs_wildcard = \
     ) \
   )
 
+__traverse_node_file_wildcard = $(strip \
+  $(or \
+    $(wildcard $(__traverse_node_file:%=$1/%)), \
+    $(wildcard $1/Makefile), \
+    $(wildcard $1/makefile), \
+  ) \
+)
+
+__traverse_parent_node_file = $(strip \
+  $(patsubst $(abspath $(__traverse_root))/%,$(__traverse_root)/%, \
+    $(abspath $(call __traverse_node_file_wildcard,$(__traverse_node_dir)/..)) \
+  ) \
+)
+
 #
 # The main routine used for recursive processing of tree nodes.
 #
@@ -132,7 +151,6 @@ define __traverse_process
  ifeq ($(wildcard $(__traverse_node_dir)),)
   $(warning EMBuild traverse warning $N \
     Node not found: $(__traverse_node_dir))
-    Skipping)
   __traverse_process_result :=
  else
 
@@ -149,23 +167,21 @@ define __traverse_process
   # Default to expansion of *.
   $_SUBDIRS := $(call __traverse_subdirs_wildcard,*)
 
-  ifneq ($(and $(__traverse_node_file), \
-      $(wildcard $(__traverse_node_dir)/$(__traverse_node_file))),)
+  __traverse_include := \
+    $(call __traverse_node_file_wildcard,$(__traverse_node_dir))
+  ifneq ($(__traverse_include),)
     # Go!
-    include $(__traverse_node_dir)/$(__traverse_node_file)
-  else ifneq ($(wildcard $(__traverse_node_dir)/Makefile),)
-    include $(__traverse_node_dir)/Makefile
-  else ifneq ($(wildcard $(__traverse_node_dir)/makefile),)
-    include $(__traverse_node_dir)/makefile
+    include $(__traverse_include)
   else
-    $(warning EMBuild traverse warning:: \
-      Node descriptor not found in $(__traverse_node_dir) :: $N \
+    $(info $(call warning_str_file,$(__traverse_parent_node_file)) \
+      Node descriptor not found in subdirectory $(__traverse_node_dir) $N \
       neither $(if $(__traverse_node_file), \
         $(__traverse_node_file) nor) \
       $(if $(filter Makefile,$(__traverse_node_file)),,Makefile nor) \
       $(if $(filter makefile,$(__traverse_node_file)),,makefile) \
       does not exist $N \
       Skipping)
+    $_SUBDIRS :=
   endif
 
   # Prepare return value.

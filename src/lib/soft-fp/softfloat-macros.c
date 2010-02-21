@@ -5,7 +5,8 @@
  * @author John R. Hauser - initial implementation.
  * @author Nikolay Korotky
  */
-#include <softfloat.h>
+
+#include "softfloat.h"
 
 /**
  * Shifts `a' right by the number of bits given in `count'.  If any nonzero

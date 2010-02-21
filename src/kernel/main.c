@@ -22,12 +22,12 @@ int main(void) {
 	timer_init();
 #endif
 
-	uart_init();
+//	uart_init();
 	ipl_init();
 
 	init();
 
-	shell_start();
+//	shell_start();
 
 	while(1) {
 		arch_idle();

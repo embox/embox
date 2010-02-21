@@ -4,7 +4,8 @@
  * @date 25.11.09
  * @author Nikolay Korotky
  */
-#include <softfloat.h>
+
+#include "softfloat.h"
 
 #define PROCESS_OP(op) float64_to_double(float64_##op(double_to_float64(a), double_to_float64(b)))
 

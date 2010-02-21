@@ -11,9 +11,8 @@
 #define option_value(option, value) CONFIG_##option := value
 #define option(option) option_value(option, 1)
 
-/*#define test(test_name, level, on_boot) option(TEST_##test_name)*/
 #define test(test_name, level, on_boot) \
-	mod(embox.express_tests.##test_name)
+	mod(embox.test.##test_name)
 
 #else
 

@@ -6,5 +6,3 @@ $_SUBDIRS :=
 $_LIBS += libc
 
 $_SRCS-libc += */*.c
-
-$_CPPFLAGS += -I$(SRC_DIR)/lib/soft-fp

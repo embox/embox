@@ -1,5 +1,7 @@
 
-$_PACKAGE := embox.kernel
+# core.kernel package is always available.
+# There is no need to add it's mods to dependency list of your mods.
+$_PACKAGE := core.kernel
 
 $_CPPFLAGS += -D__KERNEL__
 #TODO mb-gcc doesn't recognize multiple -T flag
@@ -7,6 +9,7 @@ $_CPPFLAGS += -D__KERNEL__
 $_LDFLAGS  += $($_SELFDIR)/nosys.lds
 
 $_MODS_ESSENTIAL += main
+
 $_MODS += irq timer printk softirq
 
 $_SRCS-main += main.c
@@ -18,6 +21,7 @@ $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq
 $_DEPS-main += timer
 $_DEPS-main += printk
+$_DEPS-main += softirq
 
 ifdef CONFIG_IRQ
   $_SRCS-irq     += irq.c

@@ -1,4 +1,4 @@
-$_PACKAGE := embox.drivers.serial
+$_PACKAGE := embox.driver.serial
 
 $_MODS += xuartlite
 

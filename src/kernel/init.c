@@ -20,7 +20,7 @@ int init(void) {
 	const char *init_name;
 	const char *default_init_name = "???";
 
-	express_tests_execute(PRE_INIT_LEVEL);
+//	express_tests_execute(PRE_INIT_LEVEL);
 
 	TRACE("\nStarting Monitor...\n");
 
@@ -49,7 +49,7 @@ int init(void) {
 		}
 		TRACE("\n");
 		/* after components initializing */
-		express_tests_execute(level);
+//		express_tests_execute(level);
 	}
 	return 0;
 }

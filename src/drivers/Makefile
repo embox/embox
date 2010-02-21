@@ -1,2 +1,2 @@
 
-$_PACKAGE := embox.drivers
+$_PACKAGE := embox.driver

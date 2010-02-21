@@ -10,14 +10,33 @@ _ = EMBUILD/$(abspath $(dir))/
 
 # Traverse always defines SELFDIR before entering sub-makefile.
 dir = $(SELFDIR)
+
+$(info Invoking traverse)
 DIRS := $(call TRAVERSE,$(SRC_DIR)) \
   $(if $(PLATFORM),$(call TRAVERSE,$(PLATFORM_DIR)))
+
+# Name check for packages and units.
+invalid_symbols := ` ~ ! @ $$ % ^ & * ( ) { } [ ] < > ; : ' " \ | / ? + = № ..
+check_name = \
+  $(if $(or \
+        $(filter .%,$(1)), \
+        $(filter %.,$(1)), \
+        $(strip $(foreach s,$(invalid_symbols),$(findstring $s,$(1)))) \
+      ), \
+    $(info $(error_str) Invalid name:: $(1)) \
+    $(error Invalid package/unit name) \
+  ) \
+
+# First of all deal with package info:
+# define implicit directory packages, assign compilation flags.
+$(info Processing package info)
 
 dir_package_lookup = \
   $(if $(filter $(abspath $(ROOT_DIR))%,$1),$(foreach dir,$1, \
     $(eval $_PACKAGE ?= $(strip $(call $0,$(dir $(1:%/=%))))) \
     $(eval $_PACKAGE := $($_PACKAGE)) \
     $(eval $_PACKAGE := $(if $($_PACKAGE),$($_PACKAGE),generic)) \
+    $(call check_name,$($_PACKAGE)) \
     $($_PACKAGE) \
   ))
 
@@ -26,34 +45,78 @@ dir_package_lookup = \
 PACKAGES := \
   $(sort $(foreach dir,$(DIRS),$(call dir_package_lookup,$(abspath $(dir)))))
 
+package_symbol = $(if $(filter $($_PACKAGE),$(package)),$($_$1)) \
+  $(if $(filter $(flavor $_$1),simple),$(eval $1-$(package)-(SIMPLE) := 1))
+
+parent_package_symbol = \
+  $(if $($1-$(package)-(SIMPLE)),,$(if $(findstring .,$(package)), \
+    $(call __parent_package_symbol,$1,$(basename $(package))) \
+  ))
+__parent_package_symbol = \
+  $(if $2, \
+    $(if $(findstring .,$2),$(call $0,$1,$(basename $2))) \
+  $($1-$2) \
+)
+
+define define_package_symbols_per_directory
+  CPPFLAGS-$(package) := $(CPPFLAGS-$(package)) \
+     $(call package_symbol,CPPFLAGS)
+  CFLAGS-$(package)   :=   $(CFLAGS-$(package)) \
+       $(call package_symbol,CFLAGS)
+endef
+
+define define_package_symbols
+  CPPFLAGS-$(package) := $(strip $(CPPFLAGS-$(package)) \
+      $(call parent_package_symbol,CPPFLAGS))
+  CFLAGS-$(package)   :=   $(strip $(CFLAGS-$(package)) \
+        $(call parent_package_symbol,CFLAGS))
+endef
+
+$(foreach package,$(PACKAGES), \
+  $(foreach dir,$(DIRS), \
+    $(eval $(value define_package_symbols_per_directory)) \
+  ) \
+  $(eval $(value define_package_symbols)) \
+)
+
+# LDFLAGS are common for the entire image.
+# Collect per-directory $_LDFLAGS definitions.
+$(foreach dir,$(DIRS),$(eval override LDFLAGS := $(LDFLAGS) $($_LDFLAGS)))
+override LDFLAGS := $(strip $(LDFLAGS))
+
+$(info Listing mods and libs)
+
 # Canonical unit name is one with package prefix.
 canonize_name = \
   $(foreach name,$1, \
+    $(call check_name,$(name)) \
     $(if $(findstring .,$(name)), \
-      $(if $(or $(filter .%,$(name)),$(filter %.,$(name))),,$(name)), \
+      $(name), \
       $($_PACKAGE).$(name) \
     ) \
   )
 
 # Get list of all modules and libraries.
-MODS := $(sort $(foreach dir,$(DIRS),$(call canonize_name,$($_MODS))))
-LIBS := $(sort $(foreach dir,$(DIRS),$(call canonize_name,$($_LIBS))))
+unit_def = \
+  $(foreach unit,$(call canonize_name,$1), \
+    $(unit) $(eval $(unit)-DEFINED := $(dir)) \
+  )
+
+unit_symbol_collect = $(sort $(foreach dir,$(DIRS),$(call unit_def,$($_$1))))
 
 # Mods that are always included to the resulting image
 # (with their dependencies satisfied, of course).
-MODS_ESSENTIAL := \
-  $(sort $(foreach dir,$(DIRS),$(call canonize_name,$($_MODS_ESSENTIAL))))
+MODS_ESSENTIAL := $(call unit_symbol_collect,MODS_ESSENTIAL)
+# Regular mods.
+MODS           := $(call unit_symbol_collect,MODS)
+# Libraries.
+LIBS           := $(call unit_symbol_collect,LIBS)
 
 # Essential mods are so essential...
 MODS := $(sort $(MODS) $(MODS_ESSENTIAL))
 
 # Common units handling: source assignments and flags.
-
-error_string_remote = $1/Makefile:0: EMBuild error::
-warning_string_remote = $1/Makefile:0: EMBuild warning::
-
-error_string = $(call error_string_remote,$(dir))
-warning_string = $(call warning_string_remote,$(dir))
+$(info Common unit processing)
 
 wildcard_srcs = $(wildcard $(1:%=$(dir)/%))
 
@@ -63,21 +126,19 @@ unit_name = $(patsubst .%,%,$(suffix $(unit)))
 unit_symbol = $($_$1-$(unit)) \
   $(if $(filter $($_PACKAGE),$(unit_package)),$($_$1-$(unit_name)))
 
-package_symbol = $(if $(filter $($_PACKAGE),$(unit_package)),$($_$1))
-
 # Each source file should be assigned for a single unit. Prevent violation.
 unit_srcs_check = \
   $(foreach src,$1, \
     $(if $(UNIT-$(abspath $(src))), \
       $(if $(filter $(UNIT-$(abspath $(src))),$(unit)), \
-        $(info $(warning_string) \
+        $(info $(warning_str) \
           Repeated source assignment of $(src) to the same unit $(unit)) \
-        $(info $(call warning_string_remote,$(UNIT-$(abspath $(src))-DEFINED))\
+        $(info $(call warning_str_dir,$(UNIT-$(abspath $(src))-DEFINED))\
           first defined here), \
-        $(info $(error_string) \
+        $(info $(error_str) \
           Attempting to reassign source $(src) to unit $(unit) \
             (already assigned to $(UNIT-$(abspath $(src))))) \
-        $(info $(call error_string_remote,$(UNIT-$(abspath $(src))-DEFINED))\
+        $(info $(call error_str_dir,$(UNIT-$(abspath $(src))-DEFINED))\
           first defined here) \
         $(error Multiple source assignment) \
       ), \
@@ -87,20 +148,18 @@ unit_srcs_check = \
     ) \
   )
 
-define define_common_unit_symbols_per_directory
+define define_unit_symbols_per_directory
   SRCS-$(unit) := $(SRCS-$(unit)) \
     $(call unit_srcs_check,$(call wildcard_srcs,$(call unit_symbol,SRCS)))
-  CPPFLAGS-$(unit) := $(CPPFLAGS-$(unit)) \
-     $(call unit_symbol,CPPFLAGS) $(call package_symbol,CPPFLAGS)
-  CFLAGS-$(unit)   :=   $(CFLAGS-$(unit)) \
-       $(call unit_symbol,CFLAGS) $(call package_symbol,CFLAGS)
+  CPPFLAGS-$(unit) := $(CPPFLAGS-$(unit)) $(call unit_symbol,CPPFLAGS)
+  CFLAGS-$(unit)   :=   $(CFLAGS-$(unit)) $(call unit_symbol,CFLAGS)
 endef
 
-define define_common_unit_symbols
+define define_unit_symbols
   SRCS-$(unit) := $(strip $(SRCS-$(unit)))
   OBJS-$(unit) := $(call SRC_TO_OBJ,$(SRCS-$(unit)))
-  CPPFLAGS-$(unit) := $(strip $(CPPFLAGS-$(unit)))
-  CFLAGS-$(unit)   :=   $(strip $(CFLAGS-$(unit)))
+  CPPFLAGS-$(unit) := $(strip $(CPPFLAGS-$(unit)) $(CPPFLAGS-$(unit_package)))
+  CFLAGS-$(unit)   := $(strip   $(CFLAGS-$(unit))   $(CFLAGS-$(unit_package)))
 
   $(OBJS-$(unit)) : override CPPFLAGS := \
                         $(CPPFLAGS) $(CPPFLAGS-$(unit)) $(CPPFLAGS-$(abspath $@))
@@ -112,21 +171,35 @@ endef
 
 $(foreach unit,$(MODS) $(LIBS), \
   $(foreach dir,$(DIRS), \
-    $(eval $(value define_common_unit_symbols_per_directory)) \
+    $(eval $(value define_unit_symbols_per_directory)) \
   ) \
-  $(eval $(value define_common_unit_symbols)) \
+  $(eval $(value define_unit_symbols)) \
 )
 
-# LDFLAGS are common for the entire image.
-# We are ready to collect per-directory $_LDFLAGS definitions.
-$(foreach dir,$(DIRS),$(eval override LDFLAGS := $(LDFLAGS) $($_LDFLAGS)))
-override LDFLAGS := $(strip $(LDFLAGS))
+# Here goes libs handling stuff.
+$(info Libs processing)
+unit = $(lib)
+
+lib_file = $(call LIB_FILE,$(lib))
+
+define define_lib_rules
+
+  $(lib_file) : OBJS := $(OBJS-$(lib))
+  $(lib_file) : $(OBJS-$(lib))
+	$(AR) $(ARFLAGS) $@ \
+ $(OBJS:%=	% \$N)
+
+endef
+
+$(foreach lib,$(LIBS), \
+  $(eval $(value define_lib_rules)) \
+)
 
 # Here goes mods specific functions (dependencies and so on).
+$(info Mods processing)
 unit = $(mod)
 
 # The sub-graph of all module dependencies (either direct or indirect).
-# TODO Add cyclic deps check
 MOD_DEPS_DAG = $(sort $(call mod_deps_dag_walk,$1))
 mod_deps_dag_walk = $(foreach mod,$1,$(call $0,$(DEPS-$(mod))) $(mod))
 
@@ -134,7 +207,7 @@ mod_deps_dag_walk = $(foreach mod,$1,$(call $0,$(DEPS-$(mod))) $(mod))
 mod_deps_filter = \
   $(foreach dep, \
     $(if $(filter-out $(MODS),$1), \
-      $(info $(warning_string) Undefined dependencies for mod $(mod):: \
+      $(info $(warning_str) Undefined dependencies for mod $(mod):: \
         $(filter-out $(MODS),$1)) \
       $(filter $(MODS),$1), \
       $1 \
@@ -162,7 +235,7 @@ mod_detect_cycle_deps = \
   $(if $(filter $(mod),$1), \
     $(foreach pair, \
         $(call mod_dep_pairs,$2 $(lastword $3),$3 $(firstword $2)), \
-      $(info $(call error_string_remote,$(MOD-$(subst /,-DEP-,$(pair))-DEFINED)) \
+      $(info $(call error_str_dir,$(MOD-$(subst /,-DEP-,$(pair))-DEFINED)) \
         Cyclic dependency definition here:: $(subst /, -> ,$(pair))) \
     ) \
     $(error Dependency cycle:: $(mod) $(strip $(3:%= -> %))), \
@@ -175,61 +248,33 @@ mod_dep_pairs = $(join $(1:%=%/),$(2))
 
 $(foreach mod,$(MODS),$(call mod_detect_cycle_deps,$(DEPS-$(mod))))
 
-#mod_check_inheritance = \
-  $(call mod_detect_multiple_inheritance,$1) \
-  $(call mod_detect_inheritance_loop,$(mod))
+# Now process mods that come from config files.
+$(info Checking configs)
 
-# Param: mod children
-#mod_detect_multiple_inheritance = \
-  $(foreach child_mod,$1, \
-    $(if $(filter-out $(mod),$(PARENT-$(child_mod))), \
-      $(error EMBuild mods error $N \
-        Multiple inheritance detected for mod $(child_mod): $N \
-        old parent: $(PARENT-$(child_mod)), \
-          (defined in $(PARENT_DEFINED-$(child_mod))) $N \
-        new parent: $(mod), \
-          (defined in $(dir))), \
-      $(eval PARENT-$(child_mod) := $(mod)) \
-      $(eval PARENT_DEFINED-$(child_mod) := $(dir)/Makefile) \
-    ) \
-  )
+MODS_ENABLE := $(sort $(MODS_ENABLE))
+undefined_mods := $(filter-out $(MODS),$(MODS_ENABLE))
+$(foreach mod,$(undefined_mods), \
+  $(info $(call warning_str_file,$(AUTOCONF_DIR)/config.mk) \
+    Undefined mod $(mod)) \
+)
+MODS_ENABLE := $(filter $(MODS),$(MODS_ENABLE))
 
-# Param: mod parent
-#mod_detect_inheritance_loop = \
-  $(if $2,,$(call $0,$1,$N ^- <root>)) \
-  $(if $(filter $(mod),$(PARENT-$1)), \
-    $(error EMBuild mods error $N \
-      Inheritance loop detected for mod $(mod): \
-      $N- $1 $2 (defined in $(PARENT_DEFINED-$1))), \
-    $(if $1, $(call $0,$(PARENT-$1), \
-      $N ^- $1 (defined in $(PARENT_DEFINED-$1)) $(2:$N=$N .))) \
-  )
+# Prepare the list of mods for the build.
+MODS_BUILD := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_ESSENTIAL)))
 
-#mod_tree_walk_process = \
-  $(foreach mod,$1, \
-    $(foreach dir,$(DIRS), \
-      $(eval $(value mod_symbols_per_directory)) \
-      $(call mod_check_inheritance,$($_MODS-$(mod))) \
-    ) \
-    $(eval $(value mod_symbols)) \
-    $(call $0,$(MODS-$(mod))) \
-  )
-
-# Here goes libs handling stuff.
-unit = $(lib)
-
-lib_file = $(call LIB_FILE,$(lib))
-
-define define_lib_rules
-
-  $(lib_file) : OBJS := $(OBJS-$(lib))
-  $(lib_file) : $(OBJS-$(lib))
-	$(AR) $(ARFLAGS) $@ \
- $(OBJS:%=	% \$N)
-
-endef
-
-$(foreach lib,$(LIBS), \
-  $(eval $(value define_lib_rules)) \
+#$(foreach mod,$(MODS), \
+  $(info (GLOBAL) $(mod) defined in $($(mod)-DEFINED)) \
+)
+$(info Mods enabled in config: )
+$(foreach mod,$(MODS_ENABLE), \
+  $(info (CONFIG) $(mod)) \
+)
+$(info Essential Mods: )
+$(foreach mod,$(filter-out $(MODS_ENABLE),$(MODS_ESSENTIAL)), \
+  $(info (ESSENT) $(mod)) \
+)
+$(info Mods included to satisfy dependencies: )
+$(foreach mod,$(filter-out $(MODS_ENABLE) $(MODS_ESSENTIAL),$(MODS_BUILD)), \
+  $(info (DEPEND) $(mod)) \
 )
 

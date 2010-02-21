@@ -5,7 +5,8 @@
  * @author John R. Hauser - initial implementation.
  * @author Nikolay Korotky
  */
-#include <softfloat.h>
+
+#include "softfloat.h"
 
 /**
  * Floating-point rounding mode and exception flags.

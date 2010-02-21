@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief No-op function returning -ENOSYS.
  *
  * @date 18.02.2010
  * @author Eldar Abusalimov
