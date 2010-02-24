@@ -89,6 +89,7 @@ void irq_init(void);
  *                 if the @c handler is @c NULL
  * @retval -EBUSY if another ISR has already been attached to the specified IRQ
  *                number
+ * @retval -ENOSYS if kernel is compiled without IRQ support
  */
 int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, irq_flags_t flags,
 		void *dev_id, const char *dev_name);
@@ -102,6 +103,7 @@ int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, irq_flags_t flags,
  * @return detach result
  * @retval 0 if all is OK
  * @retval -EINVAL if @c irq_nr is not @link #irq_nr_valid() valid @endlink
+ * @retval -ENOSYS if kernel is compiled without IRQ support
  */
 int irq_detach(irq_nr_t irq_nr, void *dev_id);
 

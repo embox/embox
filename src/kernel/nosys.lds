@@ -11,12 +11,14 @@ PROVIDE(irq_attach   = nosys);
 PROVIDE(irq_detach   = nosys);
 PROVIDE(irq_dispatch = nosys);
 
+PROVIDE(softirq_init     = nosys);
 PROVIDE(softirq_install  = nosys);
 PROVIDE(softirq_raise    = nosys);
 PROVIDE(softirq_dispatch = nosys);
 
 PROVIDE(printk = nosys);
 
+PROVIDE(timer_init = nosys);
 PROVIDE(set_timer = nosys);
 PROVIDE(close_timer = nosys);
 PROVIDE(timers_off = nosys);

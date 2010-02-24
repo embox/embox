@@ -10,6 +10,7 @@ IMAGE_DIS  = $(BIN_DIR)/$(TARGET).dis
 IMAGE_SREC = $(BIN_DIR)/$(TARGET).srec
 
 .PHONY: image
+image: image_init
 image: $(IMAGE) $(IMAGE_SREC)
 ifeq ($(DISASSEMBLE),y)
 image: $(IMAGE_DIS)
@@ -17,6 +18,9 @@ endif
 ifeq ($(CHECKSUM),y)
 image: checksum
 endif
+image: image_fini
+
+image_init image_fini:
 
 .PHONY: image_prepare
 prepare: image_prepare
@@ -59,6 +63,7 @@ ldflags:=$(LDFLAGS)
 override LDFLAGS  = -static
 override LDFLAGS += -nostdlib
 override LDFLAGS += -T $(LDSCRIPT)
+override LDFLAGS += $(SUBDIRS_LDFLAGS)
 override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
@@ -70,27 +75,29 @@ LDSCRIPT = $(OBJ_DIR)/$(TARGET).lds
 SRC_TO_OBJ = $(patsubst $(ROOT_DIR)%,$(OBJ_DIR)%.o,$(basename $1))
 LIB_FILE   = $(1:%=$(LIB_DIR)/lib.%.a)
 
-# It's time to build dependency model!
+# It's time to scan subdirs and prepare mods info.
 include $(MK_DIR)/embuild.mk
+# ...and to build dependency injection model
+include $(MK_DIR)/depsinject.mk
+
+OBJS_ALL := $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit)))
+-include $(OBJS_ALL:.o=.d)
 
 OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
-
 OBJ_SUBDIRS := \
   $(sort $(dir $(OBJS_BUILD) $(foreach lib,$(LIBS),$(OBJS-$(lib)))))
 
-$(OBJS_BUILD): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/config.mk
+$(OBJS_ALL): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/config.mk
 
 $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.c
-	$(CC) -o $@ \
-	$(CPPFLAGS) $(CFLAGS) -std=gnu99 -c $<
+	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) -std=gnu99 -c $<
 
 $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
-	$(CC) -o $@ \
-	$(CPPFLAGS) $(CFLAGS) -c $<
+	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) -c $<
 
-$(IMAGE): $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
+$(IMAGE): $(OBJS_BUILD) $(call LIB_FILE,$(LIBS)) $(DEPSINJECT_OBJ)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS_BUILD:%= \$N	%) \
-	$(LDLIBS)
+	$(DEPSINJECT_OBJ) $(LDLIBS)
 
 $(IMAGE_DIS): $(IMAGE)
 	$(OBJDUMP) -S $< > $@

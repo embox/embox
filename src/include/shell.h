@@ -18,7 +18,9 @@ typedef struct {
 } SHELL_HANDLER_DESCR;
 
 
+#if 0
 void shell_start(void);
+#endif
 void insert_shell_handler(char* name, char* descr, PSHELL_HANDLER func);
 
 /**

@@ -65,7 +65,8 @@ static int express_tests_execute_on_criterion( express_tests_criterion_func_t ha
 		result = (*p_test)->exec(0, NULL);
 
 		/* writing test results to special section */
-		__express_tests_result[i] = result;
+// XXX this shit causes NULL pointer exception when running on TSIM. -- Eldar
+//		__express_tests_result[i] = result;
 
 		if (result == EXPRESS_TESTS_PASSED_RETCODE) {
 			TRACE("PASSED\n");

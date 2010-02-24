@@ -1,7 +1,7 @@
 
 $_SUBDIRS := $(filter-out include,$($_SUBDIRS))
 
-$_MODS_ESSENTIAL += locore
+$_MODS_CORE += locore
 
 $_SRCS-locore += interrupt_handler.c sys.c entry.S boot.S
 $_SRCS-interrupt += mb_irq_ctrl.c

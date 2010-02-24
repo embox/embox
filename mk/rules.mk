@@ -2,6 +2,8 @@
 # Author: Eldar Abusalimov
 #
 
+.DELETE_ON_ERROR:
+
 # Disable some annoying builtin rules. These speeds up the build a bit.
 .SUFFIXES:
 % : RCS/%

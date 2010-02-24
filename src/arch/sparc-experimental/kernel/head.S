@@ -134,7 +134,7 @@ boot_start:
 	call %g1
 1:	 nop
 
-	call main
+	call kernel_start
 	 nop
 
 	ta 0 ! die

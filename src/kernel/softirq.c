@@ -20,6 +20,10 @@ struct softirq_action {
 static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
 static uint32_t softirq_pending;
 
+void softirq_init(void) {
+	// TODO install common softirqs
+}
+
 int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *dev_id) {
 	ipl_t ipl;
 
@@ -53,6 +57,6 @@ void softirq_dispatch(void) {
 	ipl_t ipl;
 
 	ipl = ipl_save();
-
+	// TODO
 	ipl_restore(ipl);
 }

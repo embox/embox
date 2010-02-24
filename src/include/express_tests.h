@@ -51,6 +51,13 @@ void express_tests_execute_all( void );
 void express_tests_execute( int level );
 
 #define DECLARE_EXPRESS_TEST(name, exec, info_func) \
+		_DECLARE_EXPRESS_TEST(name, exec, info_func, __EMBUILD_MOD__)
+#define _DECLARE_EXPRESS_TEST(name, exec, info_func, _mod) \
+		__DECLARE_EXPRESS_TEST(name, exec, info_func, _mod)
+
+#define __DECLARE_EXPRESS_TEST(name, exec, info_func, _mod) \
+	extern const express_test_descriptor_t __mod_rodata__##_mod \
+	__attribute__((alias("_descriptor" #exec))); \
 	static int exec(int argc, char** argv); \
 	static const express_test_descriptor_t _descriptor##exec = \
       { #name, exec, \

@@ -28,9 +28,11 @@ typedef unsigned char softirq_nr_t;
  * Deferred Interrupt Service Routine type.
  *
  * @param softirq_nr the interrupt request number being handled
- * @param dev_id the device tag specified at @link softirq_install() @endlink time
+ * @param dev_id the device tag specified at #softirq_install() time
  */
 typedef void (*softirq_handler_t)(softirq_nr_t softirq_nr, void *dev_id);
+
+extern void softirq_init(void);
 
 extern int softirq_install(softirq_nr_t nr, softirq_handler_t handler,
 		void *dev_id);

@@ -36,7 +36,7 @@ makegoals:=$(MAKECMDGOALS)
 ifeq ($(makegoals),)
 makegoals:=all
 endif
-ifneq ($(filter all,$(makegoals)),)
+ifeq ($(filter clean %config,$(makegoals)),)
 # Need to include it prior to walking the source tree
 # (particularly because of ARCH definition).
 include $(MK_DIR)/configure.mk

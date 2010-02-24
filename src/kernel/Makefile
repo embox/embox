@@ -8,14 +8,13 @@ $_CPPFLAGS += -D__KERNEL__
 #$_LDFLAGS  += -T $($_SELFDIR)/nosys.lds
 $_LDFLAGS  += $($_SELFDIR)/nosys.lds
 
-$_MODS_ESSENTIAL += main
+$_MODS_CORE += main
 
 $_MODS += irq timer printk softirq
 
 $_SRCS-main += main.c
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
-$_SRCS-main += panic.c
 
 $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq

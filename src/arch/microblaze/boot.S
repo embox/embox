@@ -119,7 +119,7 @@ clear_bss:
 	brai software_init_hook
 	nop
 2:
-	brlid r15, main
+	brlid r15, kernel_start
 	nop
 
 

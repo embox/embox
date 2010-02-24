@@ -30,45 +30,50 @@
 
 #define LDS_INPUT_RODATA \
 	ALIGNMENT();                   \
-                                   \
+	                               \
 	*(.rodata*)                    \
 	*(.const)                      \
-                                   \
+	                               \
+	ALIGNMENT();                   \
+	__mods_start = . ;             \
+		*(.mods)                   \
+	__mods_end = .;                \
+	                               \
 	ALIGNMENT();                   \
 	__express_tests_start = . ;    \
 		*(.express_tests)          \
 	__express_tests_end = .;       \
-                                   \
+	                               \
 	ALIGNMENT();                   \
 	__modules_handlers_start = .;  \
 		*(.modules_handlers)       \
 	__modules_handlers_end = .;    \
-                                   \
+	                               \
 	ALIGNMENT();                   \
 	__init_handlers_start = .;     \
 		*(.init_handlers)          \
 	__init_handlers_end = .;       \
-                                   \
+	                               \
 	ALIGNMENT();                   \
 	__shell_commands_start = .;    \
 		*(.shell_commands)         \
 	__shell_commands_end = .;      \
-                                   \
+	                               \
 	ALIGNMENT();                   \
 	__ipstack_packets_start = .;   \
 		*(.ipstack.packets)        \
 	__ipstack_packets_end = .;     \
-                                   \
+	                               \
 	ALIGNMENT();                   \
 	__ipstack_sockets_start = .;   \
 		*(.ipstack.sockets)        \
 	__ipstack_sockets_end = .;     \
-                                   \
+	                               \
 	ALIGNMENT();                   \
 	__ipstack_protos_start = .;    \
 		*(.ipstack.protos)         \
 	__ipstack_protos_end = .;      \
-                                   \
+	                               \
 	ALIGNMENT();                   \
 	*(.checksum)                   \
 

@@ -22,19 +22,17 @@ AUTOCONF_FILES := $(mk_autoconf) $(src_autoconf) $(lds_autoconf)
 
 -include $(mk_autoconf)
 
+TARGET ?= embox
+
 .PHONY: check_config
 check_config:
 	@test -d $(CONF_DIR) $(CONF_FILES:%=-a -f %) \
-		||(echo 'Error: conf directory does not exist' \
+		||(echo 'Error: conf directory or files do not exist' \
 		&& echo 'Try "make TEMPLATE=<profile> config"' \
 		&& echo '    See templates dir for possible profiles' \
 		&& exit 1)
 ifndef ARCH
 	@echo 'Error: ARCH undefined'
-	exit 1
-endif
-ifndef TARGET
-	@echo 'Error: TARGET undefined'
 	exit 1
 endif
 

@@ -1,5 +1,5 @@
 
-$_MODS_ESSENTIAL += locore
+$_MODS_CORE += locore
 
 $_SRCS-locore += head.S entry.S trap_*.S sys.c
 $_SRCS-arch += arch.c
