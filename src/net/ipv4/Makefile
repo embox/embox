@@ -16,3 +16,7 @@ $_SRCS-raw     += raw.c
 #$_SRCS-tftp    += tftp.c
 #$_SRCS-dhcp    += dhcp.c
 #$_SRCS-bootp   += bootp.c
+
+$_DEPS-af_inet += embox.net.socket
+$_DEPS-udp     += embox.net.socket
+$_DEPS-raw     += embox.net.socket
