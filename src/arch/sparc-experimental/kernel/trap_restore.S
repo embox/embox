@@ -260,6 +260,9 @@ wuf_from_kernel:
 	 * loaded belongs to kernel code and does not need stack checking.
 	 */
 
+	! XXX I don't know why, but this delay is really needed. -- Eldar
+	nop; ! the same should be inserted in user mode.
+
 	restore ! two restores to get into the window to be loaded
 	restore
 
@@ -272,6 +275,8 @@ wuf_from_kernel:
 	 rett %t_npc
 
 wuf_from_user:
+	nop; ! XXX see above
+
 	restore ! two restores to get into the window to be loaded
 	restore
 
