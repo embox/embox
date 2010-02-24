@@ -10,6 +10,11 @@
 #define SOFTIRQ_H_
 
 /**
+ * most significant soft irq
+ */
+#define SOFTIRQ_HI_LEVEL 0
+
+/**
  * Total amount of possible soft IRQs.
  */
 #define SOFTIRQ_NRS_TOTAL 32

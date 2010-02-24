@@ -19,6 +19,7 @@ struct softirq_action {
 
 static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
 static uint32_t softirq_pending;
+#define local_softirq_pending() softirq_pending
 
 void softirq_init(void) {
 	// TODO install common softirqs
@@ -53,10 +54,25 @@ int softirq_raise(softirq_nr_t nr) {
 	return 0;
 }
 
-void softirq_dispatch(void) {
+void do_softirq(void) {
+	int i;
 	ipl_t ipl;
+	unsigned int mask = 1 << SOFTIRQ_HI_LEVEL;
 
-	ipl = ipl_save();
-	// TODO
-	ipl_restore(ipl);
+	for (i = 0; i < SOFTIRQ_NRS_TOTAL; i ++) {
+		if (local_softirq_pending() & mask) {
+			if (NULL != softirq_actions[i].handler) {
+				ipl = ipl_save();
+				local_softirq_pending() &= ~mask;
+				ipl_restore(ipl);
+				softirq_actions[i].handler (i, softirq_actions[i].dev_id);
+			}
+		}
+		mask = mask << 1;
+	}
+}
+
+void softirq_dispatch(void) {
+	if (local_softirq_pending())
+		do_softirq();
 }

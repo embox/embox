@@ -72,8 +72,8 @@ static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
  */
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	timer0->tcsr |= TIMER_INT;
-	// XXX
-//	irq_func_tmr_1mS(irq_nr,dev_id);
+	// XXX Anton irq_func_tmr_1mS bad style
+	irq_func_tmr_1mS(irq_nr,dev_id);
 	return IRQ_HANDLED;
 }
 

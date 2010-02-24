@@ -242,17 +242,20 @@ static int exec(int argsc, char **argsv) {
     if (argsc > 1) {
         sscanf(argsv[argsc - 1], "eth%d", &i);
         strncpy(iname, argsv[argsc - 1], array_len(iname));
+        if (up) {
+        	ifdev_up(iname);    /* up net iface */
+        }
         if (NULL == (in_dev = inet_dev_find_by_name(argsv[argsc - 1])) && (up
                 || down)) {
             LOG_ERROR("can't find interface %s\n", argsv[argsc - 1]);
             return -1;
         }
     }
-    if (up) {
-        ifdev_up(iname);    /* up net iface */
-        inet_dev_set_interface(iname, ipaddr.s_addr, mask.s_addr, macaddr);
-        in_dev = inet_dev_find_by_name(iname);
-    }
+//    if (up) {
+//        ifdev_up(iname);    /* up net iface */
+//        inet_dev_set_interface(iname, ipaddr.s_addr, mask.s_addr, macaddr);
+//        in_dev = inet_dev_find_by_name(iname);
+//    }
     if (no_arp == 1) {      /* set flag IFF_NOARP. Default 0 means ARP enabled.*/
         eth_flag_up(in_dev->dev, IFF_NOARP);
     } else {

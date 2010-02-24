@@ -192,7 +192,6 @@ int netif_rx(struct sk_buff *skb) {
 		if (q->type == skb->protocol) {
 #ifdef CONFIG_SOFTIRQ
 			if (ETH_P_ARP != skb->protocol) {
-				//				skb_queue_tail(&netdev_skb_head, skb);
 				skb_queue_tail(&(dev->dev_queue), skb);
 				netif_rx_schedule(dev);
 			} else {
@@ -299,7 +298,7 @@ void netif_rx_schedule(net_device_t *dev) {
 	raise_softirq(NET_RX_SOFTIRQ);
 }
 
-static void net_rx_action(struct softirq_action* action) {
+static void net_rx_action(softirq_nr_t softirq_nr, void *dev_id) {
 	size_t i;
 	net_device_t *dev;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
@@ -311,21 +310,26 @@ static void net_rx_action(struct softirq_action* action) {
 }
 #endif
 
-static int __init net_dev_init(void) {
-#ifdef CONFIG_SOFTIRQ
-	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
-#endif
-	return 0;
-}
 
 int netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == skb->protocol) {
 			q->func(skb, skb->dev, q, NULL);
-			break;
+			return 0;
 		}
 	}
 	kfree_skb(skb);
+	return 0;
+}
+
+static int __init net_dev_init(void) {
+#if 0
+	//TODO interface not compatible with linux
+	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
+#endif
+#ifdef CONFIG_SOFTIRQ
+	softirq_install(NET_RX_SOFTIRQ,net_rx_action, NULL);
+#endif
 	return 0;
 }
