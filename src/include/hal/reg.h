@@ -27,9 +27,9 @@
 
 #else
 
-#define REG_STORE(addr, value) *(addr) = value
+#define REG_STORE(addr, value) *((volatile unsigned long *)(addr)) = value
 
-#define REG_LOAD(addr) *(addr)
+#define REG_LOAD(addr) *((volatile unsigned long *)(addr))
 
 #define REG_ORIN(addr, mask) \
 		REG_STORE(addr, REG_LOAD(addr) | (unsigned long)(mask))
