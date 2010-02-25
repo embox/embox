@@ -1,13 +1,11 @@
 /**
- * \file route.c
- * \date 16.11.09
- * \author sikmir
+ * @file
+ * @date 16.11.09
+ * @author Nikolay Korotky
  */
-
-#include "shell_command.h"
-#include "net/in.h"
-#include "net/route.h"
-#include "net/inetdevice.h"
+#include <shell_command.h>
+#include <net/route.h>
+#include <net/inetdevice.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,33 +26,33 @@ static int exec(int argsc, char **argsv) {
 	in_addr_t mask = INADDR_ANY;
 	in_addr_t gw   = INADDR_ANY;
 	struct rt_entry *rt;
-        getopt_init();
-        do {
-                nextOption = getopt(argsc, argsv, "n:m:d:g:h");
-                switch(nextOption) {
-                case 'h':
-                        show_help();
-                        return 0;
+	getopt_init();
+	do {
+		nextOption = getopt(argsc, argsv, "n:m:d:g:h");
+		switch(nextOption) {
+		case 'h':
+			show_help();
+			return 0;
 		case 'n':
-		        net = inet_addr(optarg);
-		        break;
+			net = inet_addr(optarg);
+			break;
 		case 'm':
-		        mask = inet_addr(optarg);
+			mask = inet_addr(optarg);
 			break;
 		case 'g':
-		        gw = inet_addr(optarg);
-		        break;
+			gw = inet_addr(optarg);
+			break;
 		case 'd':
 			if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
-			        TRACE("route: unknown iface %s\n", optarg);
-			        return -1;
+				TRACE("route: unknown iface %s\n", optarg);
+				return -1;
 			}
 			break;
 		case -1:
-	    		break;
-	        default:
-	        	return 0;
-	        }
+			break;
+		default:
+			return 0;
+		}
 	} while(-1 != nextOption);
 
 	if(!strcmp(argsv[argsc - 1], "add")) {

@@ -1,18 +1,14 @@
 /**
- * \file ping.c
- *
- * \date Mar 20, 2009
- * \author anton
+ * @file
+ * @date 20.03.2009
+ * @author Anton Bondarev
  */
-#include "shell_command.h"
-#include "net/icmp.h"
-#include "net/net.h"
-#include "net/etherdevice.h"
-#include "net/inetdevice.h"
-#include "net/skbuff.h"
-#include "netutils.h"
-#include "unistd.h"
-#include "stdlib.h"
+#include <shell_command.h>
+#include <net/icmp.h>
+#include <net/inetdevice.h>
+#include <netutils.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #define COMMAND_NAME     "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
@@ -90,48 +86,48 @@ static int exec(int argsc, char **argsv) {
 	getopt_init();
 	do {
 		nextOption = getopt(argsc, argsv, "qI:c:t:W:s:i:p:h");
-	        switch(nextOption) {
-	        case 'h':
-	                show_help();
-	                return 0;
-	        case 'q':
-	    		quiet = 1;
-	    		break;
-	        case 'I': /* get interface */
-                        if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
-                                TRACE("ping: unknown iface %s\n", optarg);
-                                return -1;
-                        }
-                        break;
-                case 'c': /*get ping cnt */
-            		if (1 != sscanf(optarg, "%d", &cnt)) {
-            		        TRACE("ping: bad number of packets to transmit.\n");
-            		        return -1;
-            		}
-            		break;
-            	case 't': /* get icmp ttl */
-            		if (1 != sscanf(optarg, "%d", &ttl)) {
-            			TRACE("ping: can't set unicast time-to-live: Invalid argument\n");
-            		        return -1;
-            		}
-            		break;
-            	case 'W': /* get ping timeout */
-            		sscanf(optarg, "%d", &timeout);
-            		break;
-            	case 's': /* get packet size */
-            		sscanf(optarg, "%d", &packsize);
-            		break;
-            	case 'i': /* get interval */
-            		sscanf(optarg, "%d", &interval);
-            		break;
-            	case 'p': /* get pattern */
-            		sscanf(optarg, "%d", &pattern);
-            		break;
-	        case -1:
-	                break;
-	        default:
-	        	return 0;
-	        }
+		switch(nextOption) {
+		case 'h':
+			show_help();
+			return 0;
+		case 'q':
+				quiet = 1;
+				break;
+		case 'I': /* get interface */
+			if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
+				TRACE("ping: unknown iface %s\n", optarg);
+				return -1;
+			}
+			break;
+		case 'c': /*get ping cnt */
+				if (1 != sscanf(optarg, "%d", &cnt)) {
+					TRACE("ping: bad number of packets to transmit.\n");
+					return -1;
+				}
+				break;
+			case 't': /* get icmp ttl */
+				if (1 != sscanf(optarg, "%d", &ttl)) {
+					TRACE("ping: can't set unicast time-to-live: Invalid argument\n");
+					return -1;
+				}
+				break;
+			case 'W': /* get ping timeout */
+				sscanf(optarg, "%d", &timeout);
+				break;
+			case 's': /* get packet size */
+				sscanf(optarg, "%d", &packsize);
+				break;
+			case 'i': /* get interval */
+				sscanf(optarg, "%d", &interval);
+				break;
+			case 'p': /* get pattern */
+				sscanf(optarg, "%d", &pattern);
+				break;
+		case -1:
+			break;
+		default:
+			return 0;
+		}
 	} while(-1 != nextOption);
 
 	if (argsc == 1) {
@@ -139,14 +135,14 @@ static int exec(int argsc, char **argsv) {
 		return 0;
 	}
 
-        /* get destanation addr */
-        if (0 == inet_aton(argsv[argsc - 1], &dst)) {
-                LOG_ERROR("wrong ip addr format (%s)\n", argsv[argsc - 1]);
-                show_help();
-                return -1;
-        }
+	/* get destanation addr */
+	if (0 == inet_aton(argsv[argsc - 1], &dst)) {
+		LOG_ERROR("wrong ip addr format (%s)\n", argsv[argsc - 1]);
+		show_help();
+		return -1;
+	}
 	/*carry out command*/
 	ping(ifdev, dst, cnt, timeout*1000, ttl, quiet, packsize,
-						    interval*1000, (__u16)pattern);
+							interval*1000, (__u16)pattern);
 	return 0;
 }

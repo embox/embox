@@ -1,13 +1,12 @@
 /**
- * \file test_irq_availability.c
- *
- * \date 28.01.2009
- * \author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
+ * @file
+ * @date 28.01.2009
+ * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
-#include "common.h"
-#include "kernel/timer.h"
-#include "express_tests.h"
+#include <common.h>
+#include <kernel/timer.h>
+#include <express_tests.h>
 #include <kernel/init.h>
 
 DECLARE_EXPRESS_TEST(timer_callback, exec, NULL);

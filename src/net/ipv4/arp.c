@@ -1,10 +1,8 @@
 /**
  * @file
- *
  * @brief This module implements the Address Resolution Protocol (ARP),
  * which is used to convert IP addresses into a low-level hardware address.
  * @details RFC 826
- *
  * @date 11.03.2009
  * @author Anton Bondarev
  */
@@ -313,9 +311,9 @@ void arp_xmit(sk_buff_t *skb) {
 }
 
 static struct packet_type arp_packet_type = {
-		.type = ETH_P_ARP,
-		.func = arp_rcv,
-		.init = arp_init
+	.type = ETH_P_ARP,
+	.func = arp_rcv,
+	.init = arp_init
 };
 
 DECLARE_NET_PACKET(arp_packet_type);
