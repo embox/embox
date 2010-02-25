@@ -7,7 +7,7 @@
 #ifndef SHELL_H_
 #define SHELL_H_
 
-#include "common.h"
+#include <common.h>
 
 typedef int (*PSHELL_HANDLER)(int argsc, char **argsv);
 

@@ -1,10 +1,9 @@
 /**
- * \file wmem.c
- *
- * \date 20.02.2009
- * \author Alexey Fomin
+ * @file
+ * @date 20.02.2009
+ * @author Alexey Fomin
  */
-#include "shell_command.h"
+#include <shell_command.h>
 
 #define COMMAND_NAME     "wmem"
 #define COMMAND_DESC_MSG "writes to memory"
@@ -22,40 +21,41 @@ static int exec(int argsc, char **argsv) {
 	uint32_t new_value;
 
 	getopt_init();
-        do {
-                nextOption = getopt(argsc, argsv, "a:v:h");
-                switch(nextOption) {
-                case 'h':
-                        show_help();
-                        return 0;
-                case 'a':
-                        if ((optarg != NULL) && (!sscanf(optarg, "0x%x", (unsigned *)(void *)(&address)))
-                                        && (!sscanf(optarg, "%d", (int *)(void *)(&address)))) {
-                                LOG_ERROR("wmem: hex value expected.\n");
-                                show_help();
-                                return -1;
-                        }
-                        if ((unsigned)address != ((unsigned)address & 0xFFFFFFFC)) {
-                                LOG_ERROR("wmem: address in wrong format (last 2 bits must be 0)\n");
-                                show_help();
-                                return -1;
-                        }
-                        flag++;
-                        break;
-                case 'v':
-            		if ((optarg != NULL) && (!sscanf(optarg, "0x%x", &new_value))
-                                        && (!sscanf(optarg, "%d", (int *) &new_value))) {
-                                LOG_ERROR("wmem: hex value expected.\n");
-                                show_help();
-                                return -1;
-                        }
-                        flag++;
-                        break;
+	do {
+		nextOption = getopt(argsc, argsv, "a:v:h");
+		switch(nextOption) {
+		case 'h':
+			show_help();
+			return 0;
+		case 'a':
+			if ((optarg != NULL) &&
+					(!sscanf(optarg, "0x%x", (unsigned *)(void *)(&address)))
+					&& (!sscanf(optarg, "%d", (int *)(void *)(&address)))) {
+				LOG_ERROR("wmem: hex value expected.\n");
+				show_help();
+				return -1;
+			}
+			if ((unsigned)address != ((unsigned)address & 0xFFFFFFFC)) {
+				LOG_ERROR("wmem: address in wrong format (last 2 bits must be 0)\n");
+				show_help();
+				return -1;
+			}
+			flag++;
+			break;
+		case 'v':
+			if ((optarg != NULL) && (!sscanf(optarg, "0x%x", &new_value))
+					&& (!sscanf(optarg, "%d", (int *) &new_value))) {
+				LOG_ERROR("wmem: hex value expected.\n");
+				show_help();
+				return -1;
+			}
+			flag++;
+			break;
 		case -1:
-	                break;
-	        default:
-	                return 0;
-	        }
+			break;
+		default:
+			return 0;
+		}
 	} while(-1 != nextOption);
 
 	if(flag != 2) {

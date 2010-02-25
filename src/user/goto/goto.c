@@ -1,10 +1,9 @@
 /**
- * \file goto.c
- *
- * \date 02.07.2009
- * \author kse
+ * @file
+ * @date 02.07.2009
+ * @author Sergey Kuzmin
  */
-#include "shell_command.h"
+#include <shell_command.h>
 #include <hal/interrupt.h>
 
 #define COMMAND_NAME     "goto"
@@ -35,12 +34,12 @@ static int exec(int argsc, char **argsv){
 	unsigned int addr = 0;
 	getopt_init();
 	do {
-	        nextOption = getopt(argsc, argsv, "a:h");
-	        switch(nextOption) {
-	        case 'h':
-	                show_help();
-	                return 0;
-	        case 'a':
+		nextOption = getopt(argsc, argsv, "a:h");
+		switch(nextOption) {
+		case 'h':
+			show_help();
+			return 0;
+		case 'a':
 			if ((optarg == NULL) || (*optarg == '\0')) {
 				LOG_ERROR("goto: missed address value\n");
 				return -1;
@@ -52,9 +51,9 @@ static int exec(int argsc, char **argsv){
 			LOG_ERROR("goto: invalid value \"%s\".\n\the number expected.\n", optarg);
 			return -1;
 		case -1:
-		        break;
+			break;
 		default:
-		        return 0;
+			return 0;
 		}
 	} while(-1 != nextOption);
 

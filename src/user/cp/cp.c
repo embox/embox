@@ -1,8 +1,7 @@
  /**
- * \file cp.c
- *
- * \date 22.08.2009
- * \author zoomer
+ * @file
+ * @date 22.08.2009
+ * @author Roman Evstifeev
  */
 #include <shell_command.h>
 #include <fs/file_new.h>
@@ -11,8 +10,8 @@
 #define COMMAND_DESC_MSG "cp file"
 #define HELP_MSG         "Usage: cp [-h] [source] [dest]"
 static const char *man_page =
-	    #include "cp_help.inc"
-	    ;
+	#include "cp_help.inc"
+	;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
@@ -22,15 +21,15 @@ static int exec(int argsc, char **argsv) {
 	getopt_init();
 	do {
 		nextOption = getopt(argsc, argsv, "h");
-	        switch(nextOption) {
-	    	case 'h':
-	        	show_help();
-	    		return 0;
-                case -1:
-	                break;
-	        default:
-	                return 0;
-	        }
+		switch(nextOption) {
+		case 'h':
+			show_help();
+			return 0;
+		case -1:
+			break;
+		default:
+			return 0;
+		}
 	} while(-1 != nextOption);
 
 	if (argsc < 3) {

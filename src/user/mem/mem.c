@@ -1,10 +1,9 @@
 /**
  * @file
- *
  * @date 13.02.2009
  * @author Alexey Fomin
  */
-#include "shell_command.h"
+#include <shell_command.h>
 
 #define COMMAND_NAME     "mem"
 #define COMMAND_DESC_MSG "read from memory"
@@ -49,12 +48,9 @@ static int exec(int argsc, char **argsv) {
 			show_help();
 			return 0;
 		case 'a':
-			if (optarg == NULL) {
-				LOG_ERROR("mem: -a: hex value for address expected.\n");
-				show_help();
-				return -1;
-			}
-			if (!sscanf(optarg, "0x%x", (unsigned *)(void *)&address)) {
+			if ((optarg != NULL) &&
+					(!sscanf(optarg, "0x%x", (unsigned *)(void *)&address)) &&
+					(!sscanf(optarg, "%d", (int *)(void *)(&address)))) {
 				LOG_ERROR("mem: -a: hex value for address expected.\n");
 				show_help();
 				return -1;

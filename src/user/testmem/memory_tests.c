@@ -1,11 +1,10 @@
 /**
- * \file memory_tests.c
- * \date Jul 29, 2009
- * \author afomin
+ * @file
+ * @date 29.07.2009
+ * @author Alexey Fomin
  */
-
-#include "common.h"
-#include "string.h"
+#include <shell_command.h>
+#include <string.h>
 //#include "misc.h"
 
 /* FIXME what does this type mean? -- Eldar*/
@@ -18,33 +17,28 @@ inline static void print_error(volatile uint32_t *addr, volatile uint32_t expect
 			expected_value);
 }
 
-uint32_t memory_test_data_bus(volatile uint32_t *address)
-{
-    uint32_t pattern;
+uint32_t memory_test_data_bus(volatile uint32_t *address) {
+	uint32_t pattern;
+	/*
+	 * Perform a walking 1's test at the given address.
+	 */
+	for (pattern = 1; pattern != 0; pattern <<= 1) {
+		/*
+		 * Write the test pattern.
+		 */
+		*address = pattern;
 
+		/*
+		 * Read it back (immediately is okay for this test).
+		 */
+		if (*address != pattern) {
+			return (pattern);
+		}
+	}
 
-    /*
-     * Perform a walking 1's test at the given address.
-     */
-    for (pattern = 1; pattern != 0; pattern <<= 1)
-    {
-        /*
-         * Write the test pattern.
-         */
-        *address = pattern;
+	return (0);
 
-        /*
-         * Read it back (immediately is okay for this test).
-         */
-        if (*address != pattern)
-        {
-            return (pattern);
-        }
-    }
-
-    return (0);
-
-}   /* memory_test_data_bus */
+} /* memory_test_data_bus */
 
 /* TODO think about signature: err_t name(..., uint32_t *fault_address) -- Eldar*/
 uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
@@ -109,7 +103,6 @@ void memory_test_quick(uint32_t *base_addr, long int amount) {
 	} else {
 		TRACE("Addr bus failed\n");
 	}
-
 }
 
 void memory_test_run1(uint32_t *base_addr, long int amount) {
@@ -160,7 +153,8 @@ void memory_test_run0(uint32_t *base_addr, long int amount) {
 }
 
 void memory_test_address(uint32_t *base_addr, long int amount) {
-	volatile uint32_t *addr; /* address === value in this case. So it must be volatile*/
+	/* address === value in this case. So it must be volatile*/
+	volatile uint32_t *addr;
 	uint32_t *end_addr;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
 
@@ -168,7 +162,8 @@ void memory_test_address(uint32_t *base_addr, long int amount) {
 	addr = base_addr;
 	end_addr = base_addr + amount;
 	/* TODO debug: */
-	TRACE("Starting testing memory from address 0x%08x till 0x%08x:\n", (unsigned)addr, (unsigned)end_addr);
+	TRACE("Starting testing memory from address 0x%08x till 0x%08x:\n",
+			(unsigned)addr, (unsigned)end_addr);
 	while (addr < end_addr) {
 		if ((uint32_t) addr % 15 == 0) {
 			TRACE("Writing address 0x%08x\n", (unsigned)addr);
@@ -255,4 +250,3 @@ void memory_test_loop(uint32_t *addr, long int counter) {
 		value = ~value;
 	}
 }
-

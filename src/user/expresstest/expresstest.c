@@ -1,9 +1,8 @@
 /**
- * \file expresstest.c
- * \date Nov 17, 2009
- * \author afomin
+ * @file
+ * @date 17.11.2009
+ * @author Alexey Fomin
  */
-
 #include <shell_command.h>
 #include <express_tests.h>
 

@@ -1,10 +1,10 @@
 /**
- * \file man.c
- * \date 23.09.09
- * \author Sikmir
+ * @file
+ * @date 23.09.09
+ * @author Nikolay Korotky
  */
-#include "shell_command.h"
-#include "string.h"
+#include <shell_command.h>
+#include <string.h>
 
 #define COMMAND_NAME     "man"
 #define COMMAND_DESC_MSG "display the on-line manual pages"

@@ -1,11 +1,10 @@
  /**
- * \file cp.c
- *
- * \date 22.08.2009
- * \author zoomer
+ * @file
+ * @date 22.08.2009
+ * @author Roman Evstifeev
  */
-#include "shell_command.h"
-#include "fs/file_new.h"
+#include <shell_command.h>
+#include <fs/file_new.h>
 
 #define COMMAND_NAME     "rm"
 #define COMMAND_DESC_MSG "rm file"
