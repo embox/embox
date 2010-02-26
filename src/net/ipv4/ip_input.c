@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief The Internet Protocol (IP) module.
  *
  * @date 17.03.2009
@@ -67,7 +66,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol before it is passed
 	 * to other protocol handlers */
-	raw_rcv();
+	raw_rcv(skb);
 	for(; p_netproto < &__ipstack_protos_end; p_netproto++) {
 		if((*p_netproto)->type == iph->proto) {
 			(*p_netproto)->handler(skb);

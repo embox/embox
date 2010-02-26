@@ -1,39 +1,52 @@
 /**
  * @file
- *
- * @brief Implementes raw socket function
+ * @brief Implementes raw socket function.
  *
  * @date 04.02.2010
  * @author Anton Bondarev
  */
-
 #include <net/protocol.h>
-#include <net/socket.h>
-#include <string.h>
 #include <net/sock.h>
 #include <net/icmp.h>
 #include <net/ip.h>
 #include <net/udp.h>
-#include <net/net.h>
-#include <net/in.h>
-#include <net/skbuff.h>
-#include <net/inet_common.h>
 #include <net/raw.h>
+#include <net/inet_common.h>
+#include <string.h>
 
-static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb) ;
+static struct raw_sock *raw_hash[CONFIG_MAX_KERNEL_SOCKETS];
+
+static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb);
 
 static int raw_init(struct sock *sk) {
 	return 0;
 }
 
+#if 0
+static struct sock *raw_lookup(__u8 proto) {
+	struct sock *sk;
+	size_t i;
+	for(i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		sk = (struct sock*)raw_hash[i];
+		if (sk && sk->sk_protocol == proto) {
+			return sk;
+		}
+	}
+	return NULL;
+}
+#endif
 
 int raw_rcv(sk_buff_t *skb) {
+	size_t i;
 	struct sock *sk;
 	iphdr_t *iph = ip_hdr(skb);
-	/*TODO:	sk = raw_lookup(iph->proto);*/
-	if(sk) {
-		raw_rcv_skb(sk, skb);
+	for(i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		sk = (struct sock*)raw_hash[i];
+		if(sk && sk->sk_protocol == iph->proto) {
+			raw_rcv_skb(sk, skb);
+		}
 	}
+	return 0;
 }
 
 static void raw_close(struct sock *sk, long timeout) {
@@ -49,17 +62,32 @@ static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb) {
 }
 
 static void raw_v4_hash(struct sock *sk) {
+	size_t i;
+	for(i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		if(raw_hash[i] == NULL) {
+			raw_hash[i] = (struct raw_sock*)sk;
+			break;
+		}
+	}
 }
 
 static void raw_v4_unhash(struct sock *sk) {
+	size_t i;
+	for(i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		if(raw_hash[i] == (struct raw_sock*)sk) {
+			raw_hash[i] = NULL;
+			break;
+		}
+	}
 }
 
 static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-                       size_t len) {
+			size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
 	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + msg->msg_iov->iov_len, 0);
-	memcpy((void*)((unsigned int)(skb->data + ETH_HEADER_SIZE)), (void*)msg->msg_iov->iov_base,
-										msg->msg_iov->iov_len);
+	memcpy((void*)((unsigned int)(skb->data + ETH_HEADER_SIZE)),
+						(void*)msg->msg_iov->iov_base,
+						msg->msg_iov->iov_len);
 	skb->dev = netdev_get_by_name("eth0");
 	skb->protocol = ETH_P_IP;
 	skb->len = ETH_HEADER_SIZE + msg->msg_iov->iov_len;
@@ -71,7 +99,7 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 }
 
 static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-                       size_t len, int noblock, int flags, int *addr_len) {
+			size_t len, int noblock, int flags, int *addr_len) {
 	struct sk_buff *skb;
 	skb = skb_recv_datagram(sk, flags, 0, 0);
 	if(skb && skb->len > 0) {
@@ -90,19 +118,17 @@ static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 static int raw_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len) {
 	struct inet_sock *inet = inet_sk(sk);
 	struct sockaddr_in *addr = (struct sockaddr_in *) uaddr;
-
 	inet->rcv_saddr = inet->saddr = addr->sin_addr.s_addr;
-
 	return 0;
 }
 
 static int raw_setsockopt(struct sock *sk, int level, int optname,
-                          char *optval, int optlen) {
+			char *optval, int optlen) {
 	return 0;
 }
 
 static int raw_getsockopt(struct sock *sk, int level, int optname,
-                          char *optval, int *optlen) {
+			char *optval, int *optlen) {
 	return 0;
 }
 
