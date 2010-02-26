@@ -85,6 +85,7 @@ static int sys_timers_init(void) {
 		set_sys_timer_disable(i);
 	}
 	clock_init();
+	clock_setup(1000);
 	return 0;
 }
 
