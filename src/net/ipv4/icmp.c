@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Implementation of the ICMP protocol layer.
  * @details RFC 792
  *
@@ -126,7 +125,7 @@ int icmp_abort_echo_request(void *in_dev) {
  * Fill ICMP header
  */
 static int rebuild_icmp_header(sk_buff_t *pack, unsigned char type,
-			    unsigned char code, unsigned seq, unsigned id) {
+			unsigned char code, unsigned seq, unsigned id) {
 	icmphdr_t *hdr = pack->h.icmph;
 	hdr->type    = type;
 	hdr->code    = code;
@@ -153,7 +152,7 @@ static inline void build_icmp_packet(sk_buff_t *pack, unsigned char type,
  * implementation handlers for received msgs
  */
 static void icmp_get_echo_reply(sk_buff_t *pack) {
-//TODO now ICMP reply haven't to work with callbacks it works through sockets
+	//TODO now ICMP reply haven't to work with callbacks it works through sockets
 	ICMP_CALLBACK cb;
 	if (NULL == (cb = callback_find(in_dev_get(pack->dev), pack->nh.iph->id,
 			ICMP_ECHOREPLY)))
@@ -201,10 +200,12 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb) {
 	//TODO:
 	memset(pack->h.raw + pack->nh.iph->tot_len - IP_HEADER_SIZE + 1, 0, 64);
 	pack->h.icmph->checksum = 0;
-	pack->h.icmph->checksum = ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE );
+	pack->h.icmph->checksum = ptclbsum(pack->h.raw,
+				pack->nh.iph->tot_len - IP_HEADER_SIZE );
 
 	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
-			    icmp_param->skb->nh.iph->saddr, pack, 0);
+				icmp_param->skb->nh.iph->saddr, pack, 0);
+	kfree_skb(pack);
 }
 
 /**
@@ -231,7 +232,7 @@ static void icmp_discard(sk_buff_t *skb) {
 }
 #endif
 int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
-	    ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq) {
+		ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq) {
 	sk_buff_t *pack = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE +
 						ICMP_HEADER_SIZE + size, 0);
 	if ( pack == NULL ) {
@@ -329,6 +330,7 @@ int icmp_rcv(sk_buff_t *pack) {
 	}
 	if (NULL != icmp_pointers[icmph->type].handler) {
 		icmp_pointers[icmph->type].handler(pack);
+		kfree_skb(pack);
 		return 0;
 	}
 	return -1;
