@@ -1,7 +1,13 @@
+/**
+ * @file
+ *
+ * @date 28.08.2009
+ * @author Roman Evstifeev
+ */
 #ifndef FSOP_H_
 #define FSOP_H_
 
-#include "file_new.h" // FLIST_ITEM
+#include <file_new.h> // FLIST_ITEM
 
 typedef bool (*FS_INIT_FUNC) (void);
 
@@ -19,7 +25,6 @@ typedef bool (*FS_SYNC_FUNC) (void);
 
 typedef int (*FS_GETCAPACITY_FUNC) (void);
 typedef int (*FS_GETFREESPACE_FUNC) (void);
-
 
 typedef struct {
 	FS_INIT_FUNC init;

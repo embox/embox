@@ -1,13 +1,13 @@
 /**
- * \file rootfs.c
- * \date Jun 29, 2009
- * \author Anton Bondarev
- * \details
+ * @file rootfs.c
+ *
+ * @date 29.06.2009
+ * @author Anton Bondarev
  */
-#include "common.h"
-#include "string.h"
-#include "fs/rootfs_new.h"
-#include "file/fpath_common.h"
+#include <common.h>
+#include <string.h>
+#include <fs/rootfs_new.h>
+#include <file/fpath_common.h>
 
 extern FSOP memseg_fsop;
 
@@ -22,8 +22,7 @@ static OPENED_FILE opened_files[MAX_OPENED_FILES];
  * @param max_nitems - maximum number of FLIST_ITEMs, that can be placed in the out_flist
  * @return actual number of flist_items, that can be returned (it can be more than max_nitems)
  * @return -1 on error (invalid path for ex.) */
-size_t list_dir (const char *path, FLIST_ITEM* out_flist, int max_nitems)
-{
+size_t list_dir (const char *path, FLIST_ITEM* out_flist, int max_nitems) {
 	short fs_idx;
 
 	if (out_flist == NULL) {
@@ -48,8 +47,7 @@ size_t list_dir (const char *path, FLIST_ITEM* out_flist, int max_nitems)
 	return mnt_fops[fs_idx].fsop->list_files(out_flist, max_nitems);
 }
 
-int rootfs_init()
-{
+int rootfs_init() {
 	int i;
 	for (i = 0; i < FS_LIST_SIZE; i++)
 		mnt_fops[i].fsop->init();
@@ -60,8 +58,7 @@ int rootfs_init()
 	return 0;
 }
 
-static int find_free_ofile_idx()
-{
+static int find_free_ofile_idx() {
 	int i;
 	for (i=0;i<MAX_OPENED_FILES;i++) {
 		if (!IS_OFILE_USED(opened_files[i]))
@@ -70,8 +67,7 @@ static int find_free_ofile_idx()
 	return IDX_INVALID;
 }
 
-static short get_fs_idx_by_path(const char *path)
-{
+static short get_fs_idx_by_path(const char *path) {
 	short fs_idx;
 
 	for (fs_idx=0; fs_idx<FS_LIST_SIZE; fs_idx++)
@@ -81,8 +77,7 @@ static short get_fs_idx_by_path(const char *path)
 	return IDX_INVALID;
 }
 
-FDESC open (const char *file_path, int flags)
-{
+FDESC open (const char *file_path, int flags) {
 	TRACE("opening %s..\n", file_path);
 	int ofile_idx=find_free_ofile_idx();
 	if (ofile_idx == IDX_INVALID) {
@@ -126,9 +121,7 @@ FDESC open (const char *file_path, int flags)
 	return (FDESC)ofile_idx;
 }
 
-
-size_t write (FDESC file_desc, const void *buf, size_t nbytes)
-{
+size_t write (FDESC file_desc, const void *buf, size_t nbytes) {
 	if (!IS_FDESC_VALID(file_desc)){
 		TRACE("invalid file_desc! %d\n", file_desc);
 		return -1;
@@ -159,8 +152,7 @@ size_t write (FDESC file_desc, const void *buf, size_t nbytes)
 	return totalbyteswritten;
 }
 
-size_t read (FDESC file_desc, void *buf, size_t nbytes)
-{
+size_t read (FDESC file_desc, void *buf, size_t nbytes) {
 	if (!IS_FDESC_VALID(file_desc)){
 		TRACE("invalid file_desc! %d\n", file_desc);
 		return -1;
@@ -190,8 +182,7 @@ size_t read (FDESC file_desc, void *buf, size_t nbytes)
 	return totalbytesread;
 }
 
-bool fclose (FDESC file_desc)
-{
+bool fclose (FDESC file_desc) {
 	if (!IS_FDESC_VALID(file_desc))
 		return false;
 	OPENED_FILE* ofile = &(opened_files[file_desc]);
@@ -204,8 +195,7 @@ bool fclose (FDESC file_desc)
 	return true;
 }
 
-bool remove (const char* file_path)
-{
+bool remove (const char* file_path) {
 	const char* filename = get_file_name(file_path);
 	if (filename == NULL) {
 		TRACE("can't parse file path %s\n (may be wrong format)\n", file_path);
@@ -223,15 +213,12 @@ bool remove (const char* file_path)
 	return fsop->delete_file(filename);
 }
 
-int lseek(FDESC file_desc, long offset, int whence)
-{
-   //TODO
+int lseek(FDESC file_desc, long offset, int whence) {
+	//TODO
 	return 0;
 }
 
-
-bool fsync(const char* file_path)
-{
+bool fsync(const char* file_path) {
 	short fs_idx;
 	if ((fs_idx=get_fs_idx_by_path(file_path)) == IDX_INVALID) {
 		TRACE("can't find filesystem description for file %s\n", file_path);

@@ -1,18 +1,21 @@
-#include "common.h"
-#include "fs/fsop.h"
-#include "fs/memseg.h"
-
+/*
+ * @file
+ *
+ * @date 28.08.2009
+ * @author Roman Evstifeev
+ */
+#include <common.h>
+#include <fs/fsop.h>
+#include <fs/memseg.h>
 
 extern SEGMENT mm_segtable[MAX_NSEGMENTS];
 
 // TODO: probably we should not provide init() in fs interace, and initialize mem manger globally
-static bool init()
-{
+static bool init() {
 	return memseg_init();
 }
 
-static size_t list_files (FLIST_ITEM* out_flist, int max_nitems)
-{
+static size_t list_files (FLIST_ITEM* out_flist, int max_nitems) {
 	//TODO: max_nitems check
 	short sidx, flist_idx = 0;
 	for (sidx=0; sidx<MAX_NSEGMENTS; sidx++)
@@ -24,26 +27,22 @@ static size_t list_files (FLIST_ITEM* out_flist, int max_nitems)
 	return flist_idx;
 }
 
-static short get_file_idx (const char* file_name)
-{
+static short get_file_idx (const char* file_name) {
 	return get_seg_idx (file_name);
 }
 
 
-static bool delete_file (const char *file_name)
-{
+static bool delete_file (const char *file_name) {
 	short sidx = get_seg_idx (file_name);
 	if (!IS_SEGTBL_ITEM_USED(mm_segtable, sidx)) {
 		TRACE ("invalid name!\n");
 		return false;
 	}
-
 	RELEASE_SEGTBL_ITEM(mm_segtable,sidx);
 	return true;
 }
 
-static size_t file_read (short fidx, long start_offset, void *buf, size_t nbytes)
-{
+static size_t file_read (short fidx, long start_offset, void *buf, size_t nbytes) {
 	int bytesleft = mm_segtable[fidx].end - mm_segtable[fidx].start - start_offset;
 	if (bytesleft<=0) {
 		//TRACE("EOF\n", start_offset);
@@ -55,8 +54,7 @@ static size_t file_read (short fidx, long start_offset, void *buf, size_t nbytes
 	return nrbytes;
 }
 
-static size_t file_write (short fidx, size_t start_offset, const void *buf, size_t nbytes)
-{
+static size_t file_write (short fidx, size_t start_offset, const void *buf, size_t nbytes) {
 	void* wrstart = mm_segtable[fidx].start+start_offset;
 	short idx;
 	TRACE("wrstart %08x ;  end %08x\n",wrstart, wrstart+nbytes);
@@ -71,8 +69,6 @@ static size_t file_write (short fidx, size_t start_offset, const void *buf, size
 	mm_segtable[fidx].end = wrstart+nbytes;
 	return nbytes;
 }
-
-
 
 FSOP memseg_fsop ={
 	(FS_INIT_FUNC) init,

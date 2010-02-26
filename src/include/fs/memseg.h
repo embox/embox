@@ -1,8 +1,14 @@
+/**
+ * @file
+ *
+ * @date 28.08.2009
+ * @author Roman Evstifeev
+ */
 #ifndef MM_H_
 #define MM_H_
 
-//#include "file_interface.h"
-#include "common.h"
+//#include <file_interface.h>
+#include <common.h>
 
 #define MAX_SEGNAME_LEN 80
 
@@ -23,6 +29,5 @@ inline bool is_overlap (void* start, void* end, SEGMENT seg);
 size_t list_segments (SEGMENT* out_slist, int max_nitems);
 
 bool create_segment(const char* name, void* start, void* end);
-
 
 #endif // MM_H_

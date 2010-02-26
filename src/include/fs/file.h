@@ -1,7 +1,13 @@
+/**
+ * @file
+ *
+ * @date 30.06.2009
+ * @author Anton Bondarev
+ */
 #ifndef FILE_H_
 #define FILE_H_
 
-#include "types.h"
+#include <types.h>
 
 void *fopen (const char *file_name, char *mode);
 

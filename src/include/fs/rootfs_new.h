@@ -1,22 +1,19 @@
 /**
- * \file rootfs.h
- * \date Jul 21, 2009
- * \author zoomer
- * \details
+ * @file
+ *
+ * @date 21.07.2009
+ * @author Roman Evstifeev
  */
-
 #ifndef ROOTFS_H_
 #define ROOTFS_H_
 
-
-#include "fsop.h"
-#include "file.h"
+#include <fsop.h>
+#include <file.h>
 
 typedef struct  {
 	const char* mountpath;
 	const FSOP* fsop;
 } MNT_FSOP;
-
 
 #define FS_LIST_SIZE    array_len(mnt_fops)
 

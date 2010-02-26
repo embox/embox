@@ -1,7 +1,11 @@
+/*
+ * @file
+ *
+ * @date 28.08.2009
+ * @author Roman Evstifeev
+ */
 
-
-const char* get_file_name(const char *path)
-{
+const char* get_file_name(const char *path) {
 	int i;
 
 	if (path[strlen(path)] == '/')

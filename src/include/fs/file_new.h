@@ -1,7 +1,13 @@
+/**
+ * @file
+ *
+ * @date 28.08.2009
+ * @author Roman Evstifeev
+ */
 #ifndef FILE_H_
 #define FILE_H_
 
-#include "file_interface.h"
+#include <file_interface.h>
 
 typedef int FDESC;
 

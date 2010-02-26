@@ -1,11 +1,15 @@
-
-#include "fs/memseg.h"
-#include "string.h"
+/*
+ * @file
+ *
+ * @date 28.08.2009
+ * @author Roman Evstifeev
+ */
+#include <fs/memseg.h>
+#include <string.h>
 
 static int piggysize;
 
 SEGMENT mm_segtable[MAX_NSEGMENTS];
-
 
 bool memseg_init(void) {
 	int i;
@@ -28,8 +32,7 @@ bool memseg_init(void) {
 	return true;
 }
 
-inline bool is_overlap (void* start, void* end, SEGMENT seg)
-{
+inline bool is_overlap (void* start, void* end, SEGMENT seg) {
 	//LOG_DEBUG("req: %08x | %08x \n", start, end);
 	//LOG_DEBUG("seg: %08x | %08x \n", seg.start, seg.end);
 	if ((start>=seg.start) && (start<seg.end)) {
@@ -47,8 +50,7 @@ inline bool is_overlap (void* start, void* end, SEGMENT seg)
 	return false;
 }
 
-short get_seg_idx (const char* seg_name)
-{
+short get_seg_idx (const char* seg_name) {
 	short idx;
 	for (idx=0; idx<MAX_NSEGMENTS; idx++)
 		if (IS_SEGTBL_ITEM_USED(mm_segtable,idx))
@@ -58,8 +60,7 @@ short get_seg_idx (const char* seg_name)
 	return IDX_INVALID;
 }
 
-size_t list_segments (SEGMENT* out_slist, int max_nitems)
-{
+size_t list_segments (SEGMENT* out_slist, int max_nitems) {
 	short idx, list_idx=0;
 	for (idx=0; idx<MAX_NSEGMENTS; idx++) {
 		if (IS_SEGTBL_ITEM_USED(mm_segtable,idx)) {
@@ -71,12 +72,10 @@ size_t list_segments (SEGMENT* out_slist, int max_nitems)
 			list_idx++;
 		}
 	}
-
 	return list_idx;
 }
 
-bool create_segment (const char* name, void* start, void* end)
-{
+bool create_segment (const char* name, void* start, void* end) {
 	//LOG_DEBUG("in create_segment %s\n",name);
 	//TODO: check input args
 	short idx, free_idx=IDX_INVALID;
