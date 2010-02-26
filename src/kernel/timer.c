@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <kernel/irq.h>
 #include <hal/clock.h>
+#include <hal/arch.h>
 #include <kernel/timer.h>
 #include <time.h>
 #include <common.h> /*for array_len*/
@@ -92,7 +93,9 @@ static int sys_timers_init(void) {
 int usleep(useconds_t usec) {
 	cnt_ms_sleep = 0;
 
-	while (cnt_ms_sleep < usec) {}
+	while (cnt_ms_sleep < usec) {
+		arch_idle();
+	}
 	return 0;
 }
 
