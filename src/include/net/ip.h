@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the IP protocol.
  * @details RFC 791
  *
@@ -21,10 +20,10 @@
 #define UDP_PROTO_TYPE   (unsigned short)0x11
 
 /* IP flags. */
-#define IP_CE           0x8000          /* Flag: "Congestion"       */
-#define IP_DF           0x4000          /* Flag: "Don't Fragment"   */
-#define IP_MF           0x2000          /* Flag: "More Fragments"   */
-#define IP_OFFSET       0x1FFF          /* "Fragment Offset" part   */
+#define IP_CE           0x8000	/* Flag: "Congestion"       */
+#define IP_DF           0x4000	/* Flag: "Don't Fragment"   */
+#define IP_MF           0x2000	/* Flag: "More Fragments"   */
+#define IP_OFFSET       0x1FFF	/* "Fragment Offset" part   */
 
 typedef struct iphdr {
 #if defined(__LITTLE_ENDIAN)
@@ -81,8 +80,8 @@ extern int ip_queue_xmit(sk_buff_t *skb, int ipfragok);
 extern void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
 			sk_buff_t *skb, unsigned int len);
 
-extern int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
-				unsigned short id, unsigned short len, in_addr_t saddr,
-				in_addr_t daddr);
+extern int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl,
+			unsigned char proto, unsigned short id, unsigned short len,
+			in_addr_t saddr, in_addr_t daddr);
 
 #endif /* IP_H_ */

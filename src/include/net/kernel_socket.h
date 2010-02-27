@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Socket interface function for kernel mode
  *
  * @date 08.02.2010
@@ -34,6 +33,7 @@ extern int kernel_sendmsg(struct kiocb *iocb, struct socket *sock,
 				struct msghdr *m, size_t total_len);
 extern int kernel_recvmsg(struct kiocb *iocb, struct socket *sock,
 				struct msghdr *m, size_t total_len, int flags);
+
 #if 0
 extern int kernel_sendpage(struct socket *sock, struct page *page, int offset,
 			size_t size, int flags);

@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the Interfaces handler.
  *
  * @date 04.03.2009
@@ -11,7 +10,6 @@
 
 #include <net/if_ether.h>
 #include <net/if.h>
-#include <net/skbuff.h>
 #include <net/in.h>
 #include <lib/list.h>
 

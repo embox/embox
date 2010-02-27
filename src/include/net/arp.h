@@ -1,19 +1,17 @@
 /**
  * @file
- *
  * @brief Definitions for the ARP protocol.
  * @details RFC 826
  *
  * @date 11.03.2009
  * @author Anton Bondarev
+ * @author Nikolay Korotky
  */
 #ifndef ARP_H_
 #define ARP_H_
 
-#include <types.h>
 #include <net/if_arp.h>
 #include <net/inetdevice.h>
-#include <net/skbuff.h>
 
 /**
  * struct for arp_table_records

@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for inet_sock.
  *
  * @date 18.03.2009

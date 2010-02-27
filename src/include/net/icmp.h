@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the ICMP protocol.
  * @details RFC 792
  *
@@ -12,8 +11,6 @@
 #define ICMP_H_
 
 #include <net/inet_sock.h>
-#include <net/skbuff.h>
-#include <net/in.h>
 
 /* Types */
 #define ICMP_ECHOREPLY          0       /* Echo Reply                   */

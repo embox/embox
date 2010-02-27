@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Common inet definitions.
  *
  * @date 09.02.2010

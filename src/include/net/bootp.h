@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Defenitions for Bootstrap Protocol.
  * @details RFC 951
  *
@@ -204,5 +203,4 @@ in_addr_t const get_ip_mask (void);
  */
 in_addr_t const get_ip_gate (void);
 
-#endif // __BOOTP_H__
-
+#endif /* __BOOTP_H__ */

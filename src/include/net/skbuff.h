@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the 'struct sk_buff' memory handlers.
  *
  * @date 20.10.2009

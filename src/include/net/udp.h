@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the UDP module.
  *
  * @date 26.03.2009

@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the IP router.
  * @details no cache routing.
  *

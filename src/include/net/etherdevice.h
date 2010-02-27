@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the Ethernet handlers.
  * @details IEEE 802.3
  *
@@ -13,7 +12,6 @@
 #define NET_TYPE_ALL_PROTOCOL 0
 
 #include <net/netdevice.h>
-#include <net/if_ether.h>
 
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 

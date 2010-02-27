@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief net buffer allocator.
  *
  * @date 07.03.2009

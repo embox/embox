@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the AF_INET socket handler.
  *
  * @date 17.03.2009
@@ -9,9 +8,7 @@
 #ifndef SOCK_H_
 #define SOCK_H_
 
-#include <net/skbuff.h>
 #include <net/netdevice.h>
-#include <net/socket.h>
 #include <net/net.h>
 
 typedef struct {
@@ -74,8 +71,8 @@ typedef struct sock {
 	int sk_sndbuf;
 	unsigned long sk_flags;
 
-	struct sk_buff_head sk_receive_queue;
-	struct sk_buff_head sk_write_queue;
+	struct sk_buff_head *sk_receive_queue;
+	struct sk_buff_head *sk_write_queue;
 
 	struct socket *sk_socket;
 	void *sk_user_data;
@@ -90,7 +87,10 @@ typedef struct sock {
 
 /** Sock flags */
 enum sock_flags {
-	SOCK_DEAD, SOCK_DONE, SOCK_DESTROY, SOCK_BROADCAST
+	SOCK_DEAD,
+	SOCK_DONE,
+	SOCK_DESTROY,
+	SOCK_BROADCAST
 };
 
 /** Protocol specific functions */

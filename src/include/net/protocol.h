@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Definitions for the protocol dispatcher.
  *
  * @date 12.08.09

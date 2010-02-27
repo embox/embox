@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Global definitions for the Ethernet IEEE 802.3 interface.
  *
  * @date 11.03.2009
@@ -10,6 +9,7 @@
 #define IF_ETHER_H_
 
 #include <types.h>
+#include <net/skbuff.h>
 
 /**
  * IEEE 802.3 Ethernet magic constants.
@@ -39,8 +39,6 @@ typedef struct ethhdr {
 } __attribute__((packed)) ethhdr_t;
 
 #define ETH_HEADER_SIZE (sizeof(struct ethhdr))
-
-#include <net/skbuff.h>
 
 /**
  * extract MAC header for skb

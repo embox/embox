@@ -1,16 +1,14 @@
 /**
  * @file
- *
  * @brief Global definitions for the ARP (RFC 826) protocol.
  *
- * @date 10.08.09
+ * @date 10.08.2009
  * @author Nikolay Korotky
  */
 #ifndef _IF_ARP_H
 #define _IF_ARP_H
 
 #include <net/netdevice.h>
-#include <net/skbuff.h>
 
 /* ARP protocol HARDWARE identifiers. */
 #define ARPHRD_ETHER 	1      /* Ethernet 10Mbps */

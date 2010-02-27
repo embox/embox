@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Checksumming functions for IP, TCP, UDP and so on.
  *
  * @date 20.03.2009
@@ -9,8 +8,8 @@
 #if 0
 #define LITTLE 0 /* big endian only*/
 #endif
-static inline unsigned short ptclbsum(void *addr, int len) {
 
+static inline unsigned short ptclbsum(void *addr, int len) {
 	register long sum;
 	unsigned char oddbyte;
 	unsigned short *ptr = (unsigned short *) addr;

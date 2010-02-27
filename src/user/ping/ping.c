@@ -13,7 +13,7 @@
 #define COMMAND_NAME     "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
 #define HELP_MSG         "Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl] \n\
-       [-i interval] [-p pattern] [-s packetsize] host"
+		[-i interval] [-p pattern] [-s packetsize] host"
 
 static const char *man_page =
 	#include "ping_help.inc"
@@ -29,7 +29,7 @@ static void callback(struct sk_buff *pack) {
 }
 
 static int ping(in_device_t *ifdev, struct in_addr dst, int cnt, int timeout, int ttl,
-	    int quiet, unsigned packsize, int interval, unsigned short pattern) {
+		int quiet, unsigned packsize, int interval, unsigned short pattern) {
 	char *dst_b = inet_ntoa(dst);
 	int cnt_resp = 0, cnt_err = 0, i;
 	struct in_addr from;
