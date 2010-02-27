@@ -1,5 +1,9 @@
 /**
+ * @file
+ * @brief Emaclite driver.
  *
+ * @date 18.12.2009
+ * @author Anton Bondarev
  */
 #include <types.h>
 #include <asm/cpu_conf.h>
@@ -11,7 +15,6 @@
 #include <net/net_pack_manager.h>
 #include <net/etherdevice.h>
 #include <kernel/irq.h>
-#include <net/etherdevice.h>
 #include <common.h>
 #include <string.h>
 

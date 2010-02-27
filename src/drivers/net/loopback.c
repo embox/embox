@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Pseudo-driver for the loopback interface.
  *
  * @date 29.12.09
@@ -30,8 +29,8 @@ static net_device_stats_t *loopback_get_stats(net_device_t *dev) {
 }
 
 static const struct net_device_ops loopback_ops = {
-        .ndo_start_xmit= loopback_xmit,
-        .ndo_get_stats = loopback_get_stats,
+	.ndo_start_xmit= loopback_xmit,
+	.ndo_get_stats = loopback_get_stats,
 };
 
 /**
@@ -39,15 +38,15 @@ static const struct net_device_ops loopback_ops = {
  * per network namespace.
  */
 static void loopback_setup(net_device_t *dev) {
-        dev->mtu                = (16 * 1024) + 20 + 20 + 12;
-        dev->addr_len           = ETH_ALEN;
-        dev->tx_queue_len       = 0;
-        dev->type               = ARPHRD_LOOPBACK;
-        dev->flags              = IFF_LOOPBACK;
-        dev->netdev_ops         = &loopback_ops;
+	dev->mtu                = (16 * 1024) + 20 + 20 + 12;
+	dev->addr_len           = ETH_ALEN;
+	dev->tx_queue_len       = 0;
+	dev->type               = ARPHRD_LOOPBACK;
+	dev->flags              = IFF_LOOPBACK;
+	dev->netdev_ops         = &loopback_ops;
 }
 #endif
 static int module_init() {
-        //TODO:
-        return 0;
+	//TODO:
+	return 0;
 }

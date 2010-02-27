@@ -1,4 +1,9 @@
-
+/**
+ * @file
+ *
+ * @date 04.02.2009
+ * @author Eldar Abusalimov
+ */
 #include <drivers/vtparse_table.h>
 
 state_change_t STATE_TABLE[15][256] = {

@@ -1,10 +1,11 @@
-/*
- * VTBuild - Provides VT token printing routines as opposed to VTParse module
- *
- * As we use only Plain, ESC and CSI-based tokens
+/**
+ * @file
+ * @brief VTBuild - Provides VT token printing routines as opposed to VTParse module
+ * @details As we use only Plain, ESC and CSI-based tokens
  * all the others are ignored (the same remark concerns to VTParse too).
  *
- * Author: Eldar Abusalimov
+ * @date 04.02.2009
+ * @author Eldar Abusalimov
  */
 #include <drivers/vtbuild.h>
 #include <common.h>

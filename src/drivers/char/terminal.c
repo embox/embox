@@ -1,14 +1,14 @@
-/*
- * Terminal driver.
- *
+/**
+ * @file
+ * @brief Terminal driver.
+ * @details
  * Allows us to operate high-level tokens instead of simple chars.
  * It also provides some common ANSI/VT100 terminal control sequences.
- *
  * This entity is backed by VTParse and VTBuild modules.
  *
- * Author: Eldar Abusalimov
+ * @date 04.02.2009
+ * @author Eldar Abusalimov
  */
-
 #include <drivers/terminal.h>
 #include <assert.h>
 #include <asm/stdarg.h>
