@@ -1,7 +1,11 @@
 /**
- * \file testmem.c
- * \date Jul 24, 2009
- * \author afomin
+ * @file
+ *
+ * @date Jul 24, 2009
+ *
+ * @author Alexey Fomin
+ *
+ * @author Daria Teplykh
  */
 
 #include "shell_command.h"
@@ -20,7 +24,10 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 ;
 
 typedef int TEST_MEM_FUNC(uint32_t *addr, long int amount);
-
+/*
+ *  interface for 'testmem' user command
+ *
+ */
 static int exec(int argsc, char **argsv) {
 	TEST_MEM_FUNC *test_mem_func = NULL;
 	uint32_t *address = (uint32_t *) 0x70000000L;
@@ -37,9 +44,10 @@ static int exec(int argsc, char **argsv) {
 			/* Key -a for address
 			 Can be in hex and in decimal*/
 			if ((optarg == NULL) || /* addr empty*/
-					((!sscanf(optarg, "0x%x", (unsigned *)(void *)&address)) /* addr not in hex*/
-							&& (!sscanf(optarg, "%d", (int *)(void *) &address)))) { /* addr not in decimal*/
-				LOG_ERROR("testmem: -a: address value in hex or in decimal expected.\n");
+			((!sscanf(optarg, "0x%x", (unsigned *) (void *) &address)) /* addr not in hex*/
+			&& (!sscanf(optarg, "%d", (int *) (void *) &address)))) { /* addr not in decimal*/
+				LOG_ERROR(
+						"testmem: -a: address value in hex or in decimal expected.\n");
 				show_help();
 				return -1;
 			}
@@ -48,17 +56,19 @@ static int exec(int argsc, char **argsv) {
 			break;
 		case 'n':
 			/* Key -n for number of
-			   - times, starting loop in "loop" test
-			   - bytes testing in other case
+			 - times, starting loop in "loop" test
+			 - bytes testing in other case
 			 The same as address can be either in hex or decimal*/
 			if (optarg == NULL) {
-				LOG_ERROR("testmem: -n: amount value in hex or in decimal expected.\n");
+				LOG_ERROR(
+						"testmem: -n: amount value in hex or in decimal expected.\n");
 				show_help();
 				return -1;
 			}
 			if (!sscanf(optarg, "0x%lx", &amount)) {
-				if (!sscanf(optarg, "%d", (int *) (void *)&amount)) {
-					LOG_ERROR("testmem: -n: amount value in hex or in decimal expected.\n");
+				if (!sscanf(optarg, "%d", (int *) (void *) &amount)) {
+					LOG_ERROR(
+							"testmem: -n: amount value in hex or in decimal expected.\n");
 					show_help();
 					return -1;
 				}
@@ -70,6 +80,7 @@ static int exec(int argsc, char **argsv) {
 			 !! for "loop" different default value
 			 !!   for amount (in this case amount is
 			 !!   a counter of loop)*/
+
 			if (strcmp(optarg, "runzero") == 0) {
 				test_mem_func = &memory_test_walking_zero;
 			} else if (strcmp(optarg, "runone") == 0) {
@@ -107,4 +118,37 @@ static int exec(int argsc, char **argsv) {
 	(*test_mem_func)(address, amount);
 	cache_data_enable();
 	return 0;
+}
+typedef struct memtest_err {
+	const char *test_name;
+	uint32_t addr;
+	uint32_t received_value;
+	uint32_t expected_value;
+} memtest_err_t;
+
+typedef struct memtest_desc {
+	const char *test_name;
+	int (*func)(uint32_t *addr, size_t block_size, uint32_t template,
+			memtest_err_t *s_err);
+}memory_test_t;
+
+
+extern memory_test_t memtest_array[];
+
+static memtest_err_t last_err;
+void run_test(optarg) {
+	int i;
+	for (i = 0; i < array_len(memtest_array); i++) {
+		if (strncmp(optarg, memtest[i].option) == 0) {
+
+			memtest[i].func(fff, &last_err);
+
+			break;
+		}
+	}
+
+	if (i == memtest_len) {
+		LOG_ERROR("testmem: %s: no such test.\n", optarg);
+		show_help();
+	}
 }

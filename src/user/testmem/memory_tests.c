@@ -5,10 +5,9 @@
  */
 #include <shell_command.h>
 #include <string.h>
-//#include "misc.h"
 
-/* FIXME what does this type mean? -- Eldar*/
-typedef unsigned char datum;
+/* TODO: move to header: the type is used for one width data bus */
+typedef uint32_t datum;
 
 inline static void print_error(volatile uint32_t *addr, volatile uint32_t expected_value) {
 	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", (unsigned)addr, *addr,
@@ -58,7 +57,7 @@ static uint32_t memory_test_data_bus(volatile uint32_t *address) {
  * NULL if test is finished correctly.
  */
 /* TODO think about signature: err_t name(..., uint32_t *fault_address) -- Eldar*/
-static uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
+static uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes, uint32 template) {
 	unsigned long addressMask = (nBytes / sizeof(uint32_t) - 1);
 	unsigned long offset;
 	unsigned long testOffset;
@@ -138,6 +137,7 @@ static int memory_test_quick(uint32_t *base_addr, long int amount) {
  * Returns the address, its value and the value
  * which were written by this address, if the test is
  * failed and one if the test is passed.
+ * @param base_addr
  */
 static int memory_test_walking_one(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
@@ -295,3 +295,19 @@ static int memory_test_loop(uint32_t *addr, long int counter) {
 	}
 	return 1;
 }
+#define DECLARE_MEM_TESTS(...) \
+		memory_test_t memtest_array[] ={__ARGS__};
+
+#define MEM_TEST(name, func) \
+		{name, memory_test_chess}
+
+/*
+memory_test_t memtest_array[] ={
+		{"chess", memory_test_chess},
+		{"loop", memory_test_loop}
+};
+*/
+DECLARE_MEM_TESTS(
+		MEM_TEST("chess", memory_test_chess),
+		MEM_TEST("loop", memory_test_loop)
+		)
