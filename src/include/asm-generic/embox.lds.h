@@ -26,7 +26,7 @@
 #define SECTION_REGION(section) \
 	> LDS_SECTION_VMA_##section AT> LDS_SECTION_LMA_##section
 
-#define ALIGNMENT() . = ALIGN(0x8)
+#define ALIGNMENT() . = ALIGN(0x10)
 
 #define LDS_INPUT_RODATA \
 	ALIGNMENT();                   \
