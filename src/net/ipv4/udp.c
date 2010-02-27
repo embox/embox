@@ -1,45 +1,75 @@
 /**
  * @file
- *
- * @details The User Datagram Protocol (UDP).
+ * @brief The User Datagram Protocol (UDP).
  *
  * @date 26.03.2009
  * @author Nikolay Korotky
  */
 #include <string.h>
 #include <common.h>
-#include <net/skbuff.h>
-#include <net/net.h>
-#include <net/etherdevice.h>
 #include <net/inetdevice.h>
-#include <net/net_pack_manager.h>
 #include <net/udp.h>
 #include <net/ip.h>
 #include <net/icmp.h>
 #include <net/socket.h>
-#include <net/if_ether.h>
 #include <net/checksum.h>
-#include <net/in.h>
 #include <net/protocol.h>
 #include <net/inet_common.h>
 
+static struct udp_sock *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
+
 int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-                size_t len) {
-	struct inet_sock *inet = inet_sk(sk);
-	struct udp_sock *up = udp_sk(sk);
+			size_t len) {
+//	struct inet_sock *inet = inet_sk(sk);
+//	struct udp_sock *up = udp_sk(sk);
 	//TODO:
 	return 0;
 }
 
 int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-                size_t len, int noblock, int flags, int *addr_len) {
+			size_t len, int noblock, int flags, int *addr_len) {
 	return 0;
 }
 
+static void udp_lib_hash(struct sock *sk) {
+	size_t i;
+	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		if(udp_hash[i] == NULL) {
+			udp_hash[i] = (struct udp_sock*)sk;
+			break;
+		}
+	}
+}
+
+static void udp_lib_unhash(struct sock *sk) {
+	size_t i;
+	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		if(udp_hash[i] == (struct udp_sock*)sk) {
+			udp_hash[i] = NULL;
+			break;
+		}
+	}
+}
+
 static struct sock *udp_lookup(in_addr_t saddr, __be16 sport,
-						in_addr_t daddr, __be16 dport) {
-	//TODO:
+			in_addr_t daddr, __be16 dport) {
+	struct inet_sock *inet;
+	size_t i;
+	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		inet = inet_sk((struct sock*)udp_hash[i]);
+		if (inet &&
+			inet->rcv_saddr == daddr &&
+			inet->daddr == saddr &&
+			inet->dport != sport) {
+			return (struct sock*)inet;
+		}
+	}
 	return NULL;
+}
+
+static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
+	sock_queue_rcv_skb(sk, skb);
+	return 0;
 }
 
 int udp_rcv(sk_buff_t *skb) {
@@ -49,45 +79,13 @@ int udp_rcv(sk_buff_t *skb) {
 	sk = udp_lookup(iph->saddr, uh->source, iph->daddr, uh->dest);
 	if (sk) {
 		udp_queue_rcv_skb(sk, skb);
+	} else {
+		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
 	}
 	return 0;
 }
 
-int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
-	sock_queue_rcv_skb(sk, skb);
-	return 0;
-}
 #if 0
-int udpsock_push(sk_buff_t *pack) {
-	int i;
-	SOCK_INFO *sk;
-	udphdr *uh = pack->h.uh;
-	unsigned short ulen = ntohs(uh->len);
-	iphdr_t *iph = pack->nh.iph;
-	/**
-	 *  Validate the packet.
-	 */
-	if (ulen > pack->len) {
-		return -1;
-	}
-	unsigned short tmp = uh->check;
-	uh->check = 0;
-	if ( tmp != ptclbsum(uh, UDP_HEADER_SIZE)) {
-		LOG_ERROR("bad udp checksum\n");
-		return -1;
-	}
-	sk = __udp_lookup(pack->nh.iph->saddr, uh->source, pack->nh.iph->daddr, uh->dest);
-	if (sk != NULL) {
-		return udp_queue_rcv_pack(sk, pack);
-	}
-	icmp_send(pack, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
-	return -1;
-}
-
-int udp_init(void) {
-	return 0;
-}
-
 static int rebuild_udp_header(sk_buff_t *pack, unsigned short source, unsigned short dest) {
 	udphdr *hdr = pack->h.uh;
 	hdr->source = source;
@@ -139,9 +137,11 @@ struct proto udp_prot = {
 	.recvmsg           = udp_recvmsg,
 #if 0
 	.sendpage          = udp_sendpage,
-	.backlog_rcv       = __udp_queue_rcv_skb,
+#endif
+	.backlog_rcv       = udp_queue_rcv_skb,
 	.hash              = udp_lib_hash,
 	.unhash            = udp_lib_unhash,
+#if 0
 	.get_port          = udp_v4_get_port,
 	.obj_size          = sizeof(struct udp_sock),
 	.h.udp_table       = &udp_table,
