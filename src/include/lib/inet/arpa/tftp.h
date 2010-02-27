@@ -1,15 +1,14 @@
 /**
- * \file tftp.h
+ * @file
  *
- * \date May 16, 2009
- * \author sunnya
+ * @date 16.03.2009
+ * @author Aleksandr Batyukov
  */
-
 #ifndef TFTP_H_
 #define TFTP_H_
 
-#include "types.h"
-#include "net/ip.h"
+#include <types.h>
+#include <net/ip.h>
 
 /*
  * Trivial File Transfer Protocol (IEN-133)

@@ -1,17 +1,15 @@
 /**
  * @file
- *
  * @brief This file defines miscellaneous symbolic constants and types,
  *        and declares miscellaneous function. Now only sleep functions.
  *
  * @date 24.11.2009
  * @author Anton Bondarev
  */
-
 #ifndef UNISTD_H_
 #define UNISTD_H_
 
-#include "sys/types.h"
+#include <sys/types.h>
 #define _SC_TIMER_MAX 4 /**<system timers quantity */
 
 /**

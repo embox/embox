@@ -2,6 +2,7 @@
  * @file
  * @brief Kernel interrupt requests handling.
  *
+ * @date 26.08.2009
  * @author Anton Bondarev
  *         - Initial implementation
  * @author Alexandr Batyukov, Alexey Fomin
@@ -9,12 +10,10 @@
  * @author Eldar Abusalimov
  *         - Rewriting from scratch, interface change
  */
-
 #ifndef IRQ_H_
 #define IRQ_H_
 
 #include <types.h>
-
 #include <hal/interrupt.h>
 
 /**

@@ -1,9 +1,9 @@
-/*
+/**
  * vt.h
  *
- * Author: Eldar Abusalimov
+ * @date 04.02.2009
+ * @author Eldar Abusalimov
  */
-
 #ifndef VT_H_
 #define VT_H_
 

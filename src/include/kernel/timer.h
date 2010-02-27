@@ -1,7 +1,9 @@
 /**
  * @file
+ *
+ * @date 02.09.2009
+ * @author Andrey Baboshin
  */
-
 #ifndef _TIMERS_H_
 #define _TIMERS_H_
 

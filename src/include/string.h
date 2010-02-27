@@ -8,7 +8,7 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 
-#include "types.h"
+#include <types.h>
 
 /**
  * calculate length of string

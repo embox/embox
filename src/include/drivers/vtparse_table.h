@@ -1,7 +1,13 @@
+/**
+ * @file
+ *
+ * @date 04.02.2009
+ * @author Eldar Abusalimov
+ */
 #ifndef VTPARSE_TABLE_H_
 #define VTPARSE_TABLE_H_
 
-#include "drivers/vt.h"
+#include <drivers/vt.h>
 
 typedef enum {
 	VTPARSE_STATE_ANYWHERE            = 0,
