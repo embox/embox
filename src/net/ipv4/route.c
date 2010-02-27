@@ -1,12 +1,10 @@
 /**
  * @file
- *
  * @brief implementation of the IP router.
  *
  * @date 16.11.09
  * @author Nikolay Korotky
  */
-
 #include <kernel/module.h>
 #include <net/route.h>
 #include <net/skbuff.h>

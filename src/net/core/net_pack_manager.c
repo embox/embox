@@ -9,7 +9,6 @@
 #include <lib/list.h>
 #include <kernel/module.h>
 #include <net/net_pack_manager.h>
-
 #include <linux/init.h>
 #include <linux/spinlock.h>
 
@@ -42,7 +41,8 @@ unsigned char *net_buff_alloc(void) {
 	}
 	entry = (net_buff_info_t *)((&head_free_pack)->next);
 	list_del_init((struct list_head *)entry);
-	buff = (unsigned char *)list_entry((struct list_head *)entry, net_buff_info_t, list);
+	buff = (unsigned char *)list_entry((struct list_head *)entry,
+										net_buff_info_t, list);
 	spin_unlock(sp);
 	return buff;
 }

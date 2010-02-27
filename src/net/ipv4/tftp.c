@@ -14,7 +14,7 @@
 
 //#define TFTP_ADDRESS_TO_SAVE  0x80000000
 int tftp_client_get (const char *const filename, const in_addr_t server,
-	    const int port, char *buf, int len, const int mode, int *const err) {
+			const int port, char *buf, int len, const int mode, int *const err) {
 	TRACE("tftp client started\n");
 	int result = 0;
 	int s = -1;

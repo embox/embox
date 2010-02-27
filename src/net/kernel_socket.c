@@ -1,21 +1,15 @@
 /**
  * @file
- *
  * @brief Implements socket interface function for kernel mode
  *
- * @details
- *
  * @date 13.01.2010
- *
  * @author Anton Bondarev
  */
 #include <common.h>
 #include <errno.h>
 #include <kernel/irq.h>
 #include <lib/list.h>
-#include <net/socket.h>
 #include <net/net.h>
-
 #include <asm/system.h>
 
 typedef struct socket_info {
@@ -58,7 +52,8 @@ static struct socket *sock_alloc(void) {
 void kernel_sock_release(struct socket *sock) {
 	socket_info_t *sock_info;
 	unsigned long irq_old;
-	if ((NULL == sock) || (NULL == sock->ops) || (NULL == sock->ops->release)) {
+	if ((NULL == sock) || (NULL == sock->ops)
+			|| (NULL == sock->ops->release)) {
 		return;
 	}
 	/*release struct sock*/
@@ -156,11 +151,13 @@ int kernel_connect(struct socket *sock, struct sockaddr *addr, int addrlen,
 	return sock->ops->connect(sock, addr, addrlen, flags);
 }
 
-int kernel_getsockname(struct socket *sock, struct sockaddr *addr, int *addrlen) {
+int kernel_getsockname(struct socket *sock,
+			struct sockaddr *addr, int *addrlen) {
 	return sock->ops->getname(sock, addr, addrlen, 0);
 }
 
-int kernel_getpeername(struct socket *sock, struct sockaddr *addr, int *addrlen) {
+int kernel_getpeername(struct socket *sock,
+			struct sockaddr *addr, int *addrlen) {
 	return sock->ops->getname(sock, addr, addrlen, 1);
 }
 
@@ -175,12 +172,12 @@ int kernel_setsockopt(struct socket *sock, int level, int optname,
 }
 
 int kernel_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
-                        size_t total_len) {
+			size_t total_len) {
 	return sock->ops->sendmsg(iocb, sock, m, total_len);
 }
 
 int kernel_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
-                        size_t total_len, int flags) {
+			size_t total_len, int flags) {
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
 

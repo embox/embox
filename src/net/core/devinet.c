@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief IP device support routines.
  * @details realizing interface if_device struct (interface device)
  *
@@ -62,7 +61,7 @@ static int free_handler(in_device_t * handler) {
 }
 #endif
 static int alloc_callback(in_device_t *in_dev, unsigned int type,
-                          ETH_LISTEN_CALLBACK callback) {
+				ETH_LISTEN_CALLBACK callback) {
 	size_t i;
 	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
 	for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
@@ -115,8 +114,7 @@ net_device_t *ip_dev_find(in_addr_t addr) {
 in_device_t *inet_dev_find_by_name(const char *if_name) {
 	size_t i;
 	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
-		if (0 == strncmp(if_name, ifs_info[i].dev.dev->name,
-                                 IFNAMSIZ)) {
+		if (0 == strncmp(if_name, ifs_info[i].dev.dev->name, IFNAMSIZ)) {
 			return &ifs_info[i].dev;
 		}
 	}
@@ -214,8 +212,9 @@ void ifdev_tx_callback(sk_buff_t *pack) {
 static int iterator_cnt;
 
 in_device_t *inet_dev_get_fist_used(void) {
-	for(iterator_cnt = 0; iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY;
-                        iterator_cnt++) {
+	for(iterator_cnt = 0;
+			iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY;
+			iterator_cnt++) {
 		if (1 == ifs_info[iterator_cnt].is_busy) {
 			iterator_cnt++;
 			return &ifs_info[iterator_cnt - 1].dev;

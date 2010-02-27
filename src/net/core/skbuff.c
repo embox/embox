@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @details this module realize interface with structure sk_buff
  * structures sk_buff are presented queue free packet.
  *
@@ -88,7 +87,7 @@ void kfree_skb(struct sk_buff *skb) {
 	net_buff_free(skb->data);
 	spin_lock(sp);
 	if ((NULL == skb->prev) || (NULL == skb->next)) {
-		list_add((struct list_head *) skb, (struct list_head *) &head_free_skb);
+		list_add((struct list_head *) skb, (struct list_head *)&head_free_skb);
 	} else {
 		list_move_tail((struct list_head *) skb,
 				(struct list_head *) &head_free_skb);
@@ -177,13 +176,13 @@ struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority) {
 }
 
 struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
-				  int noblock, int *err) {
+				int noblock, int *err) {
 	struct sk_buff *skb;
 	unsigned long sp;
 	spin_lock(sp);
-	skb = skb_peek(&sk->sk_receive_queue);
+	skb = skb_peek(sk->sk_receive_queue);
 	if (skb) {
-		skb_unlink(skb, &sk->sk_receive_queue);
+		skb_unlink(skb, sk->sk_receive_queue);
 	}
 	spin_unlock(sp);
 	return skb;

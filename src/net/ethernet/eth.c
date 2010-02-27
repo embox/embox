@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Ethernet-type device handling.
  *
  * @date 4.03.09
@@ -48,7 +47,7 @@ int eth_rebuild_header(sk_buff_t *pack) {
 		return arp_find(eth->h_dest, pack);
 	} else {
 		LOG_WARN("%s: unable to resolve type %X addresses.\n",
-                                dev->name, (int)eth->h_proto);
+					dev->name, (int)eth->h_proto);
 	}
 	return 0;
 }

@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief The Internet Protocol (IP) output module.
  *
  * @date 03.12.2009

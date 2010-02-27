@@ -2,7 +2,6 @@
  * @file
  * @brief Implements net stack process loading.
  *
- *
  * @date 04.02.2010
  * @author Anton Bondarev
  */

@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief INET protocol dispatch tables.
  *
  * @date 12.08.09
@@ -18,6 +17,7 @@ static net_protocol_t *inet_protos[MAX_INET_PROTOS];
 #if WRONG_DESC_NUMBER
 extern net_protocol_t udp_protocol, icmp_protocol;
 #endif
+
 int inet_protocols_init(void) {
 #if !WRONG_DESC_NUMBER
 	extern net_protocol_t *__ipstack_protos_start, *__ipstack_protos_end;

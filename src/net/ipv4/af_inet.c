@@ -1,12 +1,10 @@
 /**
  * @file
- *
  * @brief PF_INET protocol family socket handler.
  *
  * @date 01.12.09
  * @author Nikolay Korotky
  */
-
 #include <kernel/module.h>
 #include <err.h>
 #include <net/protocol.h>
@@ -54,8 +52,9 @@ static int inet_create(struct socket *sock, int protocol) {
 	inet->id = 0;
 	sk->sk_type = sock->type;
 	sk->sk_protocol = protocol;
-	if(sk->sk_prot->init)
+	if(sk->sk_prot->init) {
 		err = sk->sk_prot->init(sk);
+	}
 	return err;
 }
 

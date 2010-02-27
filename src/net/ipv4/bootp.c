@@ -35,11 +35,11 @@ static const unsigned char dhcp_request[] = {53,1,3};
 static const unsigned char dhcp_request_ip[] = {50,4};
 static const unsigned char dhcp_param_request_list[] = {55,4,1,15,3,6};
 typedef enum {
-    DHCP_NONE = 0,
-    DHCP_DISCOVER,
-    DHCP_OFFER,
-    DHCP_REQUEST,
-    DHCP_ACK
+	DHCP_NONE = 0,
+	DHCP_DISCOVER,
+	DHCP_OFFER,
+	DHCP_REQUEST,
+	DHCP_ACK
 } dhcp_state_t;
 static dhcp_state_t dhcp_state = DHCP_NONE;
 
@@ -63,11 +63,11 @@ in_addr_t const get_ip_addr (void) {
 }
 
 in_addr_t const get_ip_mask (void) {
-        return local_ip_mask;
+	return local_ip_mask;
 }
 
 in_addr_t const get_ip_gate (void) {
-        return local_ip_gate;
+	return local_ip_gate;
 }
 
 static unsigned char* add_option (unsigned char* p, unsigned char* opt, int len) {
@@ -80,16 +80,16 @@ static unsigned char* add_option (unsigned char* p, unsigned char* opt, int len)
 
 //TODO: it's ahtung, split me.
 int bootp_discover (void* ifdev) {
-        int             udp_skt = 0;
+	int             udp_skt = 0;
 	int             srv_skt = 0;
 	struct _bootp_header_t  b;
-        unsigned long   start = 0;
+	unsigned long   start = 0;
 	in_addr_t       saved_ip_addr = 0;
 	struct sockaddr_in addr;
 #ifdef DHCP_SUPPORT
 	unsigned char*  p = 0;
 	int             old_state = 0;
-        int             len = 0;
+	int             len = 0;
 	int             cont = 0;
 #endif
 	int             abort = 0;
@@ -125,7 +125,7 @@ int bootp_discover (void* ifdev) {
 
 	if (bind (udp_skt, (const struct sockaddr*)&addr, sizeof (addr)) == -1) {
 		LOG_ERROR ("bootp bind failed");
-                return -1;
+		return -1;
 	}
 
 	memset (&b, 0, sizeof (b));
@@ -184,8 +184,6 @@ int bootp_discover (void* ifdev) {
 				dhcp_state = DHCP_REQUEST;
 				memset (b.yiaddr, 0, 4);
 				memset (b.siaddr, 0, 4);
-
-
 		}
 		old_state = dhcp_state;
 #endif
@@ -206,17 +204,18 @@ int bootp_discover (void* ifdev) {
 		pack->len = BOOTP_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE;
 		pack->mac.ethh = (struct ethhdr*)pack->data;
 		memset(pack->mac.ethh->h_dest, 0xff, sizeof(pack->mac.ethh->h_dest));
-	    memcpy(pack->mac.ethh->h_source, enet, sizeof(pack->mac.ethh->h_source));
+		memcpy(pack->mac.ethh->h_source, enet, sizeof(pack->mac.ethh->h_source));
 		pack->mac.ethh->h_proto = ETH_P_IP;
 
 		memcpy (pack->data + IP_HEADER_SIZE + UDP_HEADER_SIZE + ETH_HEADER_SIZE, &b, BOOTP_HEADER_SIZE);
 
-                pack->nh.iph = (struct iphdr*)(pack->data + ETH_HEADER_SIZE);
-                in_addr_t daddr;
+		pack->nh.iph = (struct iphdr*)(pack->data + ETH_HEADER_SIZE);
+		in_addr_t daddr;
 		in_addr_t saddr;
-                saddr = 0;
-                daddr = 0xff;
-                rebuild_ip_header(pack, 100, /*AF_INET*/0x11, 0, BOOTP_HEADER_SIZE + UDP_HEADER_SIZE + IP_HEADER_SIZE, saddr, daddr);
+		saddr = 0;
+		daddr = 0xff;
+		rebuild_ip_header(pack, 100, /*AF_INET*/0x11, 0,
+				BOOTP_HEADER_SIZE + UDP_HEADER_SIZE + IP_HEADER_SIZE, saddr, daddr);
 
 		pack->h.uh = (struct _udphdr*)(pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE);
 		pack->h.uh->source = htons(PORT_BOOTP_CLIENT);
@@ -291,22 +290,22 @@ int bootp_discover (void* ifdev) {
 										}
 									}
 									break;
-                                                                case DHCP_REQUEST:
-                                                                        if (*p == DHCP_MESS_TYPE_OFFER) {
-                                                                                if (!memcmp (b.chaddr, enet, 6)) {
+								case DHCP_REQUEST:
+									if (*p == DHCP_MESS_TYPE_OFFER) {
+										if (!memcmp (b.chaddr, enet, 6)) {
 											memcpy (local_ip_addr, b.yiaddr, 4);
 											memcpy (local_ip_gate, b.giaddr, 4);
 											p = b.options + 4;
-                                                                                        unsigned char* end = b.options + BOOTP_HEADER_SIZE;
-                                                                                        int optlen = 0;
+											unsigned char* end = b.options + BOOTP_HEADER_SIZE;
+											int optlen = 0;
 											while (p < end) {
 												unsigned char* tag = p;
-                                                                                                if (*tag == TAG_END) break;
-                                                                                                if (*tag == TAG_PAD) optlen = 1;
+												if (*tag == TAG_END) break;
+												if (*tag == TAG_PAD) optlen = 1;
 												else {
 													optlen = p[1];
-                                                                                                        p += 2;
-                                                                                                        switch (*tag) {
+													p += 2;
+													switch (*tag) {
 														case TAG_SUBNET_MASK:
 															memcpy(local_ip_mask, p, 4);
 															break;
@@ -320,12 +319,10 @@ int bootp_discover (void* ifdev) {
 										}
 										memcpy (&bootp_info, &b, sizeof (struct _bootp_header_t));
 										return 0;
-                                                                        }
-                                                                        break;
-
+									}
+									break;
 							}
-							if (*p == DHCP_MESS_TYPE_NAK)
-							{
+							if (*p == DHCP_MESS_TYPE_NAK) {
 								dhcp_state = DHCP_NONE;
 							}
 						}
