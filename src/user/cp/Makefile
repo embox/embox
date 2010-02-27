@@ -3,4 +3,4 @@ $_MODS += cp
 
 $_SRCS-cp += *.c
 
-$_DEPS-cp += embox.fs
+$_DEPS-cp += embox.fs.file
