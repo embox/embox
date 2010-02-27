@@ -3,8 +3,10 @@
  * @brief This module implements the Address Resolution Protocol (ARP),
  * which is used to convert IP addresses into a low-level hardware address.
  * @details RFC 826
+ *
  * @date 11.03.2009
  * @author Anton Bondarev
+ * @author Nikolay Korotky
  */
 #include <string.h>
 #include <common.h>
@@ -226,7 +228,6 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 		memset(pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return 0;
 	}
-	//	TRACE("f\n");
 	if (-1 != (i = arp_lookup(in_dev_get(dev), ip->daddr))) {
 		memcpy(pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
 		return 0;
@@ -296,9 +297,11 @@ static int arp_process(sk_buff_t *pack) {
 int arp_rcv(sk_buff_t *pack, net_device_t *dev, packet_type_t *pt,
 		net_device_t *orig_dev) {
 	arphdr_t *arp = pack->nh.arph;
-	if (arp->ar_hln != dev->addr_len || dev->flags & IFF_NOARP
-			|| pack->pkt_type == PACKET_OTHERHOST || pack->pkt_type
-			== PACKET_LOOPBACK || arp->ar_pln != 4) {
+	if (arp->ar_hln != dev->addr_len
+			|| dev->flags & IFF_NOARP
+			|| pack->pkt_type == PACKET_OTHERHOST
+			|| pack->pkt_type == PACKET_LOOPBACK
+			|| arp->ar_pln != 4) {
 		kfree_skb(pack);
 		return NET_RX_SUCCESS;
 	}

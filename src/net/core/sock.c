@@ -1,10 +1,8 @@
 /**
  * @file
- *
  * @brief Generic socket support routines.
- *
  * @details Contains functions for working with all type of structure sock.
- *          It includes free sock pull.
+ *			It includes free sock pull.
  *
  * @date 12.08.09
  * @author Nikolay Korotky
@@ -38,6 +36,7 @@ void __init sk_init(void) {
 		list_add(&(&socks_pull[i])->list, &head_free_sock);
 	}
 }
+
 /* allocates proto structure for specified protocol*/
 static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		int family) {
@@ -60,6 +59,7 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 
 	return sock;
 }
+
 /* returns specified structure sock into pull */
 static void sk_prot_free(struct proto *prot, struct sock *sk) {
 	sock_info_t *sock_info;
@@ -82,6 +82,8 @@ struct sock *sk_alloc(/*struct net *net,*/int family, gfp_t priority,
 	if (sk) {
 		sk->sk_family = family;
 		sk->sk_prot = prot;
+		sk->sk_receive_queue = alloc_skb_queue(CONFIG_QUANTITY_SKB_QUEUE);
+		sk->sk_write_queue = alloc_skb_queue(CONFIG_QUANTITY_SKB_QUEUE);
 	}
 	return sk;
 }
@@ -102,12 +104,12 @@ int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
 }
 
 int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
-	skb_queue_tail(&sk->sk_receive_queue, skb);
+	skb_queue_tail(sk->sk_receive_queue, skb);
 	return 0;
 }
 
 int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
-                        struct msghdr *msg, size_t size, int flags) {
+			struct msghdr *msg, size_t size, int flags) {
 	struct sock *sk = sock->sk;
 	return sk->sk_prot->recvmsg(iocb, sk, msg, size, 0, flags, NULL);
 }

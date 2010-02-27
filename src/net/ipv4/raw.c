@@ -39,11 +39,13 @@ static struct sock *raw_lookup(__u8 proto) {
 int raw_rcv(sk_buff_t *skb) {
 	size_t i;
 	struct sock *sk;
+	sk_buff_t *copy;
 	iphdr_t *iph = ip_hdr(skb);
 	for(i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock*)raw_hash[i];
 		if(sk && sk->sk_protocol == iph->proto) {
-			raw_rcv_skb(sk, skb);
+			copy = skb_copy(skb, 0);
+			raw_rcv_skb(sk, copy);
 		}
 	}
 	return 0;
