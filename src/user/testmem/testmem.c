@@ -12,6 +12,7 @@
 #include "asm/cache.h"
 #include "memory_tests.h"
 #include <string.h>
+#include <hal/types.h>
 
 #define COMMAND_NAME     "testmem"
 #define COMMAND_DESC_MSG "set of memory tests"
@@ -28,10 +29,14 @@ typedef int TEST_MEM_FUNC(uint32_t *addr, long int amount);
  *  interface for 'testmem' user command
  *
  */
+
+static memtest_err_t last_err;
+
 static int exec(int argsc, char **argsv) {
 	TEST_MEM_FUNC *test_mem_func = NULL;
 	uint32_t *address = (uint32_t *) 0x70000000L;
 	long unsigned int amount = 1000000L;
+	uint32_t template = (uint32_t) 0x55555555;
 	int nextOption;
 	getopt_init();
 	do {
@@ -80,25 +85,7 @@ static int exec(int argsc, char **argsv) {
 			 !! for "loop" different default value
 			 !!   for amount (in this case amount is
 			 !!   a counter of loop)*/
-
-			if (strcmp(optarg, "runzero") == 0) {
-				test_mem_func = &memory_test_walking_zero;
-			} else if (strcmp(optarg, "runone") == 0) {
-				test_mem_func = &memory_test_walking_one;
-			} else if (strcmp(optarg, "loop") == 0) {
-				amount = 0;
-				test_mem_func = &memory_test_loop;
-			} else if (strcmp(optarg, "address") == 0) {
-				test_mem_func = &memory_test_address;
-			} else if (strcmp(optarg, "chess") == 0) {
-				test_mem_func = &memory_test_chess;
-			} else if (strcmp(optarg, "quick") == 0) {
-				test_mem_func = &memory_test_quick;
-			} else {
-				LOG_ERROR("testmem: %s: no such test.\n", optarg);
-				show_help();
-				return -1;
-			}
+			test_mem_func = find_test(optarg);
 			break;
 		case -1:
 			break;
@@ -115,40 +102,23 @@ static int exec(int argsc, char **argsv) {
 
 	cache_data_disable();
 	TRACE("Before starting: address: 0x%08x, amount: 0x%08x\n", (unsigned)address, (unsigned)amount);
-	(*test_mem_func)(address, amount);
+	(*test_mem_func)(address, amount, template, last_err);
 	cache_data_enable();
 	return 0;
 }
-typedef struct memtest_err {
-	const char *test_name;
-	uint32_t addr;
-	uint32_t received_value;
-	uint32_t expected_value;
-} memtest_err_t;
 
-typedef struct memtest_desc {
-	const char *test_name;
-	int (*func)(uint32_t *addr, size_t block_size, uint32_t template,
-			memtest_err_t *s_err);
-}memory_test_t;
-
-
-extern memory_test_t memtest_array[];
-
-static memtest_err_t last_err;
-void run_test(optarg) {
+TEST_MEM_FUNC *find_test(char *test_name) {
 	int i;
 	for (i = 0; i < array_len(memtest_array); i++) {
-		if (strncmp(optarg, memtest[i].option) == 0) {
-
-			memtest[i].func(fff, &last_err);
-
-			break;
+		if (strncmp(test_name, memtest[i].option) == 0) {
+			return memtest[i].func;
 		}
 	}
 
 	if (i == memtest_len) {
 		LOG_ERROR("testmem: %s: no such test.\n", optarg);
 		show_help();
+		return NULL;
 	}
+	return 0;
 }

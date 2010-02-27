@@ -5,9 +5,16 @@
  */
 #include <shell_command.h>
 #include <string.h>
+#include <memory_tests.h>
 
-/* TODO: move to header: the type is used for one width data bus */
-typedef uint32_t datum;
+#define RETURN_ERROR(s_error, test_name, addr, received_value, expected_value) \
+	print_error(addr, expected_value); \
+	s_error->test_name = test_name; \
+	s_error->addr = addr; \
+	s_error->received_value = received_value; \
+	s_error->expected_value = expected_value; \
+	return TESTMEM_RETCODE_FAILED;
+
 
 inline static void print_error(volatile uint32_t *addr, volatile uint32_t expected_value) {
 	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", (unsigned)addr, *addr,
@@ -23,7 +30,8 @@ inline static void print_error(volatile uint32_t *addr, volatile uint32_t expect
  * from the address and zero if test
  * is finished correctly.
  */
-static uint32_t memory_test_data_bus(volatile uint32_t *address) {
+static int memory_test_data_bus(volatile uint32_t *address,
+		size_t block_size,uint32_t template, memtest_err_t *s_err) {
 	uint32_t pattern;
 	/*
 	 * Perform a walking 1's test at the given address.
@@ -38,11 +46,11 @@ static uint32_t memory_test_data_bus(volatile uint32_t *address) {
 		 * Read it back (immediately is okay for this test).
 		 */
 		if (*address != pattern) {
-			return (pattern);
+			RETURN_ERROR(s_err, "databus", address, *address, pattern);
 		}
 	}
 
-	return (0);
+	return MEMTEST_RETCODE_PASSED;
 
 } /* memory_test_data_bus */
 
@@ -56,56 +64,59 @@ static uint32_t memory_test_data_bus(volatile uint32_t *address) {
  * Returns the failure address if test fails and
  * NULL if test is finished correctly.
  */
-/* TODO think about signature: err_t name(..., uint32_t *fault_address) -- Eldar*/
-static uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes, uint32 template) {
-	unsigned long addressMask = (nBytes / sizeof(uint32_t) - 1);
+
+static int memory_test_addr_bus(uint32_t *base_address, unsigned long block_size, uint32_t template, memtest_err_t *s_err) {
+	unsigned long addressMask = (block_size / sizeof(uint32_t) - 1);
 	unsigned long offset;
 	unsigned long testOffset;
 
-	uint32_t pattern = (datum) 0xAAAAAAAA;
-	uint32_t antipattern = (datum) 0x55555555;
+	uint32_t pattern = (uint32_t) 0xAAAAAAAA;
+	uint32_t antipattern = (uint32_t) template;
 
 	/*
 	 * Write the default pattern at each of the power-of-two offsets.
 	 */
 	for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
-		baseAddress[offset] = pattern;
+		base_address[offset] = pattern;
 	}
 
 	/*
 	 * Check for address bits stuck high.
 	 */
 	testOffset = 0;
-	baseAddress[testOffset] = antipattern;
+	base_address[testOffset] = antipattern;
 
 	for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
-		if (baseAddress[offset] != pattern) {
-			return ((uint32_t *) &baseAddress[offset]);
+		if (base_address[offset] != pattern) {
+			RETURN_ERROR(s_err, "addrbus", (uint32_t *) &base_address[offset],
+					base_address[offset], pattern);
 		}
 	}
 
-	baseAddress[testOffset] = pattern;
+	base_address[testOffset] = pattern;
 
 	/*
 	 * Check for address bits stuck low or shorted.
 	 */
 	for (testOffset = 1; (testOffset & addressMask) != 0; testOffset <<= 1) {
-		baseAddress[testOffset] = antipattern;
+		base_address[testOffset] = antipattern;
 
-		if (baseAddress[0] != pattern) {
-			return ((uint32_t *) &baseAddress[testOffset]);
+		if (base_address[0] != pattern) {
+			RETURN_ERROR(s_err, "addrbus", (uint32_t *) &base_address[testOffset],
+								base_address[0], pattern);
 		}
 
 		for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
-			if ((baseAddress[offset] != pattern) && (offset != testOffset)) {
-				return ((uint32_t *) &baseAddress[testOffset]);
+			if ((base_address[offset] != pattern) && (offset != testOffset)) {
+				RETURN_ERROR(s_err, "addrbus", (uint32_t *) &base_address[testOffset],
+												base_address[offset], pattern);
 			}
 		}
 
-		baseAddress[testOffset] = pattern;
+		base_address[testOffset] = pattern;
 	}
 
-	return NULL;
+	return MEMTEST_RETCODE_PASSED;
 
 }
 
@@ -113,21 +124,21 @@ static uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nByt
  * Run memory_test_data_bus and memory_test_addr_bus
  * for quick checking of memory.
  */
-static int memory_test_quick(uint32_t *base_addr, long int amount) {
-	if (0 == memory_test_data_bus(base_addr)) {
+static int memory_test_quick(uint32_t *base_addr, long int amount, uint32_t template, memtest_err_t *s_err) {
+	if (MEMTEST_RETCODE_PASSED == memory_test_data_bus(base_addr, 1, template, s_err)) {
 		TRACE ("Data bus test ok\n");
 	} else {
 		TRACE("Data bus failed\n");
-		return 0;
+		return MEMTEST_RETCODE_FAILED;
 	}
 
-	if (0 == memory_test_addr_bus(base_addr, amount)) {
+	if (MEMTEST_RETCODE_PASSED == memory_test_addr_bus(base_addr, amount, template, s_err)) {
 		TRACE("Addr bus test ok\n");
 	} else {
 		TRACE("Addr bus failed\n");
-		return 0;
+		return MEMTEST_RETCODE_FAILED;
 	}
-	return 1;
+	return MEMTEST_RETCODE_PASSED;
 }
 
 /**
@@ -139,7 +150,8 @@ static int memory_test_quick(uint32_t *base_addr, long int amount) {
  * failed and one if the test is passed.
  * @param base_addr
  */
-static int memory_test_walking_one(uint32_t *base_addr, long int amount) {
+static int memory_test_walking_one(uint32_t *base_addr, long int amount,
+		uint32_t template, memtest_err_t *s_err) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -154,13 +166,12 @@ static int memory_test_walking_one(uint32_t *base_addr, long int amount) {
 		/* Checking*/
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != value) {
-				print_error(addr, value);
-				return 0;
+				RETURN_ERROR(s_err, "runone", addr, *addr, value);
 			}
 		}
 		value <<= 1;
 	}
-	return 1;
+	return MEMTEST_RETCODE_PASSED;
 }
 
 /**
@@ -171,7 +182,8 @@ static int memory_test_walking_one(uint32_t *base_addr, long int amount) {
  * which were written by this address, if the test is
  * failed and one if the test is passed.
  */
-static int memory_test_walking_zero(uint32_t *base_addr, long int amount) {
+static int memory_test_walking_zero(uint32_t *base_addr, long int amount,
+		uint32_t template, memtest_err_t *s_err) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -186,16 +198,25 @@ static int memory_test_walking_zero(uint32_t *base_addr, long int amount) {
 		/* Checking */
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != ~value) {
-				print_error(addr, ~value);
-				return 0;
+				RETURN_ERROR(s_err, "runzero", addr, *addr, ~value);
 			}
 		}
 		value <<= 1;
 	}
-	return 1;
+	return MEMTEST_RETCODE_PASSED;
 }
 
-static int memory_test_address(uint32_t *base_addr, long int amount) {
+/**
+ * In the given block of memory in each memory cell
+ * the address of this cell is written. And then
+ * the address and its written value are checked.
+ * Parameters: the base address, tested region size.
+ * Returns the address, delivered value and the value
+ * which were written by this address, if the test is
+ * failed and one if the test is passed.
+ */
+static int memory_test_address(uint32_t *base_addr, long int amount,
+		uint32_t template, memtest_err_t *s_err) {
 	/* address === value in this case. So it must be volatile*/
 	volatile uint32_t *addr;
 	uint32_t *end_addr;
@@ -220,15 +241,22 @@ static int memory_test_address(uint32_t *base_addr, long int amount) {
 			TRACE("Checking address 0x%8x\n", (unsigned)addr);
 		}
 		if (*addr != (uint32_t) addr) {
-			print_error(addr, (uint32_t) addr);
-			return 0;
+			RETURN_ERROR(s_err, "address", addr, *addr, (uint32_t) addr);
 		}
 		addr++;
 	}
-	return 1;
+	return MEMTEST_RETCODE_PASSED;
 }
 
-static int memory_test_chess(uint32_t *base_addr, long int amount) {
+/**
+ *
+ * Parameters: the base address, tested region size.
+ * Returns the address, delivered value and the value
+ * which were written by this address, if the test is
+ * failed and one if the test is passed.
+ */
+static int memory_test_chess(uint32_t *base_addr, long int amount,
+		uint32_t template, memtest_err_t *s_err) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 
@@ -236,39 +264,38 @@ static int memory_test_chess(uint32_t *base_addr, long int amount) {
 	end_addr = base_addr + amount;
 
 	/* Writing */
-	value = 0x55555555; /* setting first value */
+	value = template; /* setting first value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		*addr = value;
 	}
 	/* Testing */
-	value = 0x55555555; /* setting second value */
+	value = template; /* setting second value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
-			print_error(addr, ~value);
-			return 0;
+			RETURN_ERROR(s_err, "chess", addr, *addr, ~value);
 		}
 	}
 	/* Writing */
-	value = ~0x55555555; /* setting first value */
+	value = ~template; /* setting first value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		*addr = value;
 	}
 	/* Testing */
-	value = ~0x55555555; /* setting second value */
+	value = ~template; /* setting second value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
-			print_error(addr, ~value);
-			return 0;
+			RETURN_ERROR(s_err, "chess", addr, *addr, ~value);
 		}
 	}
-	return 1;
+	return MEMTEST_RETCODE_PASSED;
 }
 
 /**
 * This test is needed for the oscilloscope.
 */
-static int memory_test_loop(uint32_t *addr, long int counter) {
-	volatile uint32_t value = 0x55555555;
+static int memory_test_loop(uint32_t *addr, long int counter,
+		uint32_t template, memtest_err_t *s_err) {
+	volatile uint32_t value = template;
 	addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 
 	/* Infinite loop case */
@@ -276,8 +303,7 @@ static int memory_test_loop(uint32_t *addr, long int counter) {
 		while (true) {
 			*addr = value;
 			if (*addr != value) {
-				print_error(addr, value);
-				return 0;
+				RETURN_ERROR(s_err, "loop", addr, *addr, value);
 			}
 			value = ~value;
 		}
@@ -288,26 +314,9 @@ static int memory_test_loop(uint32_t *addr, long int counter) {
 		TRACE("%ld=n", counter);
 		*addr = value;
 		if (*addr != value) {
-			print_error(addr, value);
-			return 0;
+			RETURN_ERROR(s_err, "loop", addr, *addr, value);
 		}
 		value = ~value;
 	}
-	return 1;
+	return MEMTEST_RETCODE_PASSED;
 }
-#define DECLARE_MEM_TESTS(...) \
-		memory_test_t memtest_array[] ={__ARGS__};
-
-#define MEM_TEST(name, func) \
-		{name, memory_test_chess}
-
-/*
-memory_test_t memtest_array[] ={
-		{"chess", memory_test_chess},
-		{"loop", memory_test_loop}
-};
-*/
-DECLARE_MEM_TESTS(
-		MEM_TEST("chess", memory_test_chess),
-		MEM_TEST("loop", memory_test_loop)
-		)
