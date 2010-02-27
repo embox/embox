@@ -71,9 +71,9 @@ static int exec(int argsc, char **argsv) {
 			 !!   for amount (in this case amount is
 			 !!   a counter of loop)*/
 			if (strcmp(optarg, "runzero") == 0) {
-				test_mem_func = &memory_test_run0;
+				test_mem_func = &memory_test_walking_zero;
 			} else if (strcmp(optarg, "runone") == 0) {
-				test_mem_func = &memory_test_run1;
+				test_mem_func = &memory_test_walking_one;
 			} else if (strcmp(optarg, "loop") == 0) {
 				amount = 0;
 				test_mem_func = &memory_test_loop;

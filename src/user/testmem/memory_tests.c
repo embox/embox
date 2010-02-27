@@ -9,15 +9,22 @@
 
 /* FIXME what does this type mean? -- Eldar*/
 typedef unsigned char datum;
-/* As much as needed to save mem in memory_test_data_bus*/
-#define MEM_BUF_SIZE 100
 
 inline static void print_error(volatile uint32_t *addr, volatile uint32_t expected_value) {
 	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", (unsigned)addr, *addr,
 			expected_value);
 }
 
-uint32_t memory_test_data_bus(volatile uint32_t *address) {
+/**
+ * Test the data bus wiring by performing
+ * walking 1's test at a fixed address
+ * which is given as argument.
+ * Returns the written value if it doesn't
+ * agree with the value which has been read
+ * from the address and zero if test
+ * is finished correctly.
+ */
+static uint32_t memory_test_data_bus(volatile uint32_t *address) {
 	uint32_t pattern;
 	/*
 	 * Perform a walking 1's test at the given address.
@@ -40,8 +47,18 @@ uint32_t memory_test_data_bus(volatile uint32_t *address) {
 
 } /* memory_test_data_bus */
 
+/**
+ * The test finds single-bit address failures.
+ * Test the address bus wiring in a memory
+ * region by performing a walking 1's test
+ * on the relevant bits of the address and
+ * checking for aliasing.
+ * Parameters: the base address, tested region size
+ * Returns the failure address if test fails and
+ * NULL if test is finished correctly.
+ */
 /* TODO think about signature: err_t name(..., uint32_t *fault_address) -- Eldar*/
-uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
+static uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 	unsigned long addressMask = (nBytes / sizeof(uint32_t) - 1);
 	unsigned long offset;
 	unsigned long testOffset;
@@ -93,19 +110,36 @@ uint32_t *memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 
 }
 
-void memory_test_quick(uint32_t *base_addr, long int amount) {
+/**
+ * Run memory_test_data_bus and memory_test_addr_bus
+ * for quick checking of memory.
+ */
+static int memory_test_quick(uint32_t *base_addr, long int amount) {
 	if (0 == memory_test_data_bus(base_addr)) {
 		TRACE ("Data bus test ok\n");
+	} else {
+		TRACE("Data bus failed\n");
+		return 0;
 	}
 
 	if (0 == memory_test_addr_bus(base_addr, amount)) {
 		TRACE("Addr bus test ok\n");
 	} else {
 		TRACE("Addr bus failed\n");
+		return 0;
 	}
+	return 1;
 }
 
-void memory_test_run1(uint32_t *base_addr, long int amount) {
+/**
+ * Test the data bus wiring by performing
+ * walking 1's test at a block of memory.
+ * Parameters: the base address, tested region size.
+ * Returns the address, its value and the value
+ * which were written by this address, if the test is
+ * failed and one if the test is passed.
+ */
+static int memory_test_walking_one(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -121,15 +155,23 @@ void memory_test_run1(uint32_t *base_addr, long int amount) {
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != value) {
 				print_error(addr, value);
-				return;
+				return 0;
 			}
 		}
 		value <<= 1;
 	}
-	return;
+	return 1;
 }
 
-void memory_test_run0(uint32_t *base_addr, long int amount) {
+/**
+ * Test the data bus wiring by performing
+ * walking 0's test at a block of memory.
+ * Parameters: the base address, tested region size.
+ * Returns the address, its value and the value
+ * which were written by this address, if the test is
+ * failed and one if the test is passed.
+ */
+static int memory_test_walking_zero(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
@@ -145,14 +187,15 @@ void memory_test_run0(uint32_t *base_addr, long int amount) {
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != ~value) {
 				print_error(addr, ~value);
-				return;
+				return 0;
 			}
 		}
 		value <<= 1;
 	}
+	return 1;
 }
 
-void memory_test_address(uint32_t *base_addr, long int amount) {
+static int memory_test_address(uint32_t *base_addr, long int amount) {
 	/* address === value in this case. So it must be volatile*/
 	volatile uint32_t *addr;
 	uint32_t *end_addr;
@@ -161,9 +204,6 @@ void memory_test_address(uint32_t *base_addr, long int amount) {
 	/* Writing */
 	addr = base_addr;
 	end_addr = base_addr + amount;
-	/* TODO debug: */
-	TRACE("Starting testing memory from address 0x%08x till 0x%08x:\n",
-			(unsigned)addr, (unsigned)end_addr);
 	while (addr < end_addr) {
 		if ((uint32_t) addr % 15 == 0) {
 			TRACE("Writing address 0x%08x\n", (unsigned)addr);
@@ -181,13 +221,14 @@ void memory_test_address(uint32_t *base_addr, long int amount) {
 		}
 		if (*addr != (uint32_t) addr) {
 			print_error(addr, (uint32_t) addr);
-			return;
+			return 0;
 		}
 		addr++;
 	}
+	return 1;
 }
 
-void memory_test_chess(uint32_t *base_addr, long int amount) {
+static int memory_test_chess(uint32_t *base_addr, long int amount) {
 	uint32_t *addr, *end_addr;
 	volatile uint32_t value;
 
@@ -204,7 +245,7 @@ void memory_test_chess(uint32_t *base_addr, long int amount) {
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
 			print_error(addr, ~value);
-			return;
+			return 0;
 		}
 	}
 	/* Writing */
@@ -217,13 +258,16 @@ void memory_test_chess(uint32_t *base_addr, long int amount) {
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
 			print_error(addr, ~value);
-			return;
+			return 0;
 		}
 	}
-
+	return 1;
 }
 
-void memory_test_loop(uint32_t *addr, long int counter) {
+/**
+* This test is needed for the oscilloscope.
+*/
+static int memory_test_loop(uint32_t *addr, long int counter) {
 	volatile uint32_t value = 0x55555555;
 	addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 
@@ -233,7 +277,7 @@ void memory_test_loop(uint32_t *addr, long int counter) {
 			*addr = value;
 			if (*addr != value) {
 				print_error(addr, value);
-				return;
+				return 0;
 			}
 			value = ~value;
 		}
@@ -245,8 +289,9 @@ void memory_test_loop(uint32_t *addr, long int counter) {
 		*addr = value;
 		if (*addr != value) {
 			print_error(addr, value);
-			return;
+			return 0;
 		}
 		value = ~value;
 	}
+	return 1;
 }
