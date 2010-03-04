@@ -1,8 +1,10 @@
 /**
  * @file
+ * @brief Similar to the standard Unix ifconfig.
+ *
  * @date 22.03.2009
- * @brief ifconfig command realization.
- * @author Anton Bondarev, Alexander Batyukov
+ * @author Anton Bondarev
+ * @author Alexander Batyukov
  */
 #include <shell_command.h>
 #include <string.h>

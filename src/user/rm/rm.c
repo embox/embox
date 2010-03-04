@@ -1,5 +1,7 @@
  /**
  * @file
+ * @brief rm file
+ *
  * @date 22.08.2009
  * @author Roman Evstifeev
  */
@@ -9,6 +11,7 @@
 #define COMMAND_NAME     "rm"
 #define COMMAND_DESC_MSG "rm file"
 #define HELP_MSG         "Usage: rm FILE"
+
 static const char *man_page =
 	#include "rm_help.inc"
 	;

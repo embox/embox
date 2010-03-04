@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief writes to memory
+ *
  * @date 20.02.2009
  * @author Alexey Fomin
  */

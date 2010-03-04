@@ -1,5 +1,7 @@
 /*
  * @file
+ * @brief Show all available command.
+ *
  * @date 02.03.2009
  * @author Alexandr Batyukov
  */

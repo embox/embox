@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief Manipulate the system ARP cache.
+ *
  * @date 24.04.09
  * @author Nikolay Korotky
  */

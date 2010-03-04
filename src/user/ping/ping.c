@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief send ICMP ECHO_REQUEST to network hosts.
+ *
  * @date 20.03.2009
  * @author Anton Bondarev
  */

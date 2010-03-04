@@ -1,5 +1,8 @@
 /**
  * @file
+ * @brief List directory contents.
+ *
+ * @date 02.07.2009
  * @author Anton Bondarev
  */
 #include <shell_command.h>

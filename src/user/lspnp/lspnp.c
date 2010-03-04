@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief show list of plug and play devices
+ *
  * @date 20.02.2009
  * @author Alexandr Batyukov
  */

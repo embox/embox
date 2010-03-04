@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief Load image file.
+ *
  * @date 03.07.2009
  * @author Sergey Kuzmin
  */

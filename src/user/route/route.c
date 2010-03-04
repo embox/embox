@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief Similar to the standard Unix route.
+ *
  * @date 16.11.09
  * @author Nikolay Korotky
  */

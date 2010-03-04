@@ -1,5 +1,6 @@
 /**
  * @file echo.c
+ * @brief echo test
  *
  * @date 08.05.2009
  * @author Nikolay Korotky

@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief Works with express test subsystem.
+ *
  * @date 17.11.2009
  * @author Alexey Fomin
  */

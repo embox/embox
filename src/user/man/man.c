@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief display the on-line manual pages
+ *
  * @date 23.09.09
  * @author Nikolay Korotky
  */
