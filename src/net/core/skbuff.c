@@ -119,7 +119,7 @@ void skb_unlink(sk_buff_t *skb, struct sk_buff_head *list) {
 	list->qlen--;
 	next = skb->next;
 	prev = skb->prev;
-	skb->next = skb->prev = NULL;
+	skb->next = skb->prev = skb;
 	next->prev = prev;
 	prev->next = next;
 }

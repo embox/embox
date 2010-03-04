@@ -66,8 +66,16 @@ int inet_release(struct socket *sock) {
 }
 
 int inet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len) {
+	struct sockaddr_in *addr = (struct sockaddr_in *)uaddr;
 	struct sock *sk = sock->sk;
-	sk->sk_prot->bind(sk, uaddr, addr_len);
+	struct inet_sock *inet = inet_sk(sk);
+	if (sk->sk_prot->bind) {
+		sk->sk_prot->bind(sk, uaddr, addr_len);
+	}
+	inet->rcv_saddr = inet->saddr = addr->sin_addr.s_addr;
+	inet->sport = addr->sin_port;
+	inet->daddr = 0;
+	inet->dport = 0;
 	return 0;
 }
 

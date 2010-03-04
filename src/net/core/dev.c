@@ -308,7 +308,6 @@ static void net_rx_action(softirq_nr_t softirq_nr, void *dev_id) {
 }
 #endif
 
-
 int netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
 	list_for_each_entry(q, &ptype_base, list) {
