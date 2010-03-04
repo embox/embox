@@ -57,7 +57,8 @@ int close(int sockfd) {
 	return 0;
 }
 
-int send(int sockfd, const void *buf, int len, int flags) {
+ssize_t sendto(int sockfd, const void *buf, int len, int flags,
+		const struct sockaddr *dest_addr, socklen_t addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
 	//TODO: temporary XXX
 	struct iovec iov = {
@@ -70,7 +71,8 @@ int send(int sockfd, const void *buf, int len, int flags) {
 	return len;
 }
 
-int recv(int sockfd, void *buf, int len, int flags) {
+ssize_t recvfrom(int sockfd, void *buf, int len, int flags,
+			struct sockaddr *src_addr, socklen_t *addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
 	//TODO: temporary XXX
 	struct iovec iov = {

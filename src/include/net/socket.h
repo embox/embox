@@ -190,13 +190,15 @@ extern int bind(int sockfd, const struct sockaddr *addr, int addrlen);
  * send a message on a socket.
  * @return the number of characters sent. On error, -1.
  */
-extern int send(int sockfd, const void *buf, int len, int flags);
+extern ssize_t sendto(int sockfd, const void *buf, int len, int flags,
+		const struct sockaddr *dest_addr, socklen_t addrlen);
 
 /**
  * receive a message from a socket.
  * @return the number of bytes received, or -1 if an error occurred.
  */
-extern int recv(int sockfd, void *buf, int len, int flags);
+extern ssize_t recvfrom(int sockfd, void *buf, int len, int flags,
+		struct sockaddr *src_addr, socklen_t *addrlen);
 
 /**
  * check message in a socket

@@ -41,7 +41,7 @@ int raw_echo(void) {
 		return -1;
 	}
 	while(1) {
-		if (recv (fd, datagram, 4096, 0) > 0) {
+		if (recvfrom(fd, datagram, 4096, 0, NULL, NULL) > 0) {
 			//printf ("Caught udp packet: %s\n", datagram + IP_HEADER_SIZE + UDP_HEADER_SIZE);
 			tmp_addr = iph->saddr;
 			iph->saddr = iph->daddr;
@@ -52,7 +52,7 @@ int raw_echo(void) {
 			udph->check = 0;
 			iph->check = 0;
 			iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE);
-			send(fd, datagram, iph->tot_len, 0);
+			sendto(fd, datagram, iph->tot_len, 0, NULL, 0);
 		}
 		usleep(10);
 	}
@@ -61,6 +61,7 @@ int raw_echo(void) {
 int udp_echo(void) {
 	int fd;
 	struct sockaddr_in server;
+	struct sockaddr_in from;
 	char buf[1024];
 	fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	server.sin_family = AF_INET;
@@ -68,9 +69,9 @@ int udp_echo(void) {
 	server.sin_port = 33;
 	bind(fd, (struct sockaddr *)&server, 0);
 	while (1) {
-		if (recv(fd, buf, 1024, 0) > 0) {
+		if (recvfrom(fd, buf, 1024, 0, (struct sockaddr *)&from, NULL) > 0) {
 			printf("ok\n");
-			send(fd, buf, 1024, 0);
+			sendto(fd, buf, 1024, 0, (struct sockaddr *)&from, 0);
 		}
 		usleep(10);
 	}
