@@ -217,7 +217,7 @@ int bootp_discover (void* ifdev) {
 		rebuild_ip_header(pack, 100, /*AF_INET*/0x11, 0,
 				BOOTP_HEADER_SIZE + UDP_HEADER_SIZE + IP_HEADER_SIZE, saddr, daddr);
 
-		pack->h.uh = (struct _udphdr*)(pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE);
+		pack->h.uh = (struct udphdr*)(pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE);
 		pack->h.uh->source = htons(PORT_BOOTP_CLIENT);
 		pack->h.uh->dest = htons (PORT_BOOTP_SERVER);
 		pack->h.uh->len = BOOTP_HEADER_SIZE + UDP_HEADER_SIZE;

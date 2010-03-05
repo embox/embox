@@ -54,7 +54,7 @@ typedef struct sk_buff {
 #if 0
 		tcphdr *th;
 #endif
-		struct _udphdr *uh;
+		struct udphdr *uh;
 		struct icmphdr *icmph;
 #if 0
 		igmphdr *igmph;

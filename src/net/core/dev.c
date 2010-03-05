@@ -126,36 +126,36 @@ net_device_t *dev_getbyhwaddr(unsigned short type, char *ha) {
 	return NULL;
 }
 
-int dev_queue_xmit(struct sk_buff *pack) {
+int dev_queue_xmit(struct sk_buff *skb) {
 	net_device_t *dev;
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
-	if (NULL == pack) {
+	if (NULL == skb) {
 		return -1;
 	}
-	dev = pack->dev;
+	dev = skb->dev;
 	if (NULL == dev) {
 		return -1;
 	}
 	ops = dev->netdev_ops;
 	stats = ops->ndo_get_stats(dev);
 	if (dev->flags & IFF_UP) {
-		if (ETH_P_ARP != pack->protocol) {
-			if (-1 == dev->header_ops->rebuild(pack)) {
-				arp_queue(pack);
+		if (ETH_P_ARP != skb->protocol) {
+			if (-1 == dev->header_ops->rebuild(skb)) {
+				arp_queue(skb);
 				return -1;
 			}
 		}
-		if (-1 == ops->ndo_start_xmit(pack, dev)) {
-			kfree_skb(pack);
+		if (-1 == ops->ndo_start_xmit(skb, dev)) {
+			kfree_skb(skb);
 			stats->tx_err++;
 			return -1;
 		}
 		/* update statistic */
 		stats->tx_packets++;
-		stats->tx_bytes += pack->len;
+		stats->tx_bytes += skb->len;
 	}
-	kfree_skb(pack);
+	kfree_skb(skb);
 	return 0;
 }
 

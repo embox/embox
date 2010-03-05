@@ -57,14 +57,16 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 	return -1;
 }
 
-int ip_route(sk_buff_t *skbuff) {
+int ip_route(sk_buff_t *skb) {
 	size_t i;
 	for(i = 0; i < RT_TABLE_SIZE; i++) {
 		if (rt_table[i].rt_flags & RTF_UP) {
-			if( (skbuff->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
-				skbuff->dev = rt_table[i].dev;
-				skbuff->nh.iph->daddr = rt_table[i].rt_gateway;
-				arp_find(skbuff->mac.ethh->h_dest, skbuff);
+			if( (skb->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
+				skb->dev = rt_table[i].dev;
+				if(rt_table[i].rt_gateway != INADDR_ANY) {
+					skb->nh.iph->daddr = rt_table[i].rt_gateway;
+					arp_find(skb->mac.ethh->h_dest, skb);
+				}
 				return 0;
 			}
 		}

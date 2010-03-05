@@ -90,11 +90,7 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	memcpy((void*)((unsigned int)(skb->data + ETH_HEADER_SIZE)),
 						(void*)msg->msg_iov->iov_base,
 						msg->msg_iov->iov_len);
-	skb->dev = netdev_get_by_name("eth0");
-	skb->protocol = ETH_P_IP;
-	skb->len = ETH_HEADER_SIZE + msg->msg_iov->iov_len;
 	skb->mac.raw = (unsigned char *) skb->data;
-	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 	skb->h.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	ip_send_packet(inet, skb);
 	return 0;

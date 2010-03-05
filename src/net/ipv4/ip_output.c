@@ -25,10 +25,10 @@ inline static void ip_send_check(iphdr_t *iph) {
 	iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE);
 }
 
-int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
+int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
 		in_addr_t daddr) {
-	iphdr_t *hdr = pack->nh.iph;
+	iphdr_t *hdr = skb->nh.iph;
 	hdr->version = 4;
 	hdr->ihl = IP_HEADER_SIZE >> 2;
 	hdr->saddr = saddr;
@@ -43,9 +43,9 @@ int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl, unsigned char proto,
 	return 0;
 }
 
-static int build_ip_packet(struct inet_sock *sk, sk_buff_t *pack) {
-	pack->nh.raw = pack->data + ETH_HEADER_SIZE;
-	rebuild_ip_header(pack, sk->uc_ttl, sk->sk.sk_protocol, sk->id, pack->len,
+static int build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
+	skb->nh.raw = skb->data + ETH_HEADER_SIZE;
+	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.sk_protocol, sk->id, skb->len,
 			sk->saddr, sk->daddr);
 	return 0;
 }
@@ -60,22 +60,23 @@ int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 	return dev_queue_xmit(skb);
 }
 
-int ip_send_packet(struct inet_sock *sk, sk_buff_t *pack) {
+int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
+	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 	if(sk->sk.sk_type != SOCK_RAW) {
-		build_ip_packet(sk, pack);
-		pack->protocol = ETH_P_IP;
-		pack->len += IP_HEADER_SIZE;
-		ip_route(pack);
+		build_ip_packet(sk, skb);
+		//skb->len += IP_HEADER_SIZE;
 	}
-	return ip_queue_xmit(pack, 0);
+	skb->protocol = ETH_P_IP;
+	ip_route(skb);
+	return ip_queue_xmit(skb, 0);
 }
 
 void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
-			    sk_buff_t *pack, unsigned int len) {
-	pack->nh.iph->saddr = saddr;
-	pack->nh.iph->daddr = daddr;
-	pack->nh.iph->id ++;
-	pack->nh.iph->frag_off = IP_DF;
-	ip_send_check(pack->nh.iph);
-	ip_queue_xmit(pack, 0);
+			sk_buff_t *skb, unsigned int len) {
+	skb->nh.iph->saddr = saddr;
+	skb->nh.iph->daddr = daddr;
+	skb->nh.iph->id ++;
+	skb->nh.iph->frag_off = IP_DF;
+	ip_send_check(skb->nh.iph);
+	ip_queue_xmit(skb, 0);
 }

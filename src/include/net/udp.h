@@ -12,7 +12,7 @@
 
 struct sock;
 
-typedef struct _udphdr {
+typedef struct udphdr {
 	__be16 source;
 	__be16 dest;
 	__be16 len;
@@ -22,7 +22,7 @@ typedef struct _udphdr {
 #define UDP_HEADER_SIZE	(sizeof(udphdr_t))
 
 static inline udphdr_t *udp_hdr(const sk_buff_t *skb) {
-	return (udphdr_t *)skb->nh.raw;
+	return (udphdr_t *)skb->h.raw;
 }
 
 struct udp_sock{

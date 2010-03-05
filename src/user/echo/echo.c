@@ -70,7 +70,7 @@ int udp_echo(void) {
 	bind(fd, (struct sockaddr *)&server, 0);
 	while (1) {
 		if (recvfrom(fd, buf, 1024, 0, (struct sockaddr *)&from, NULL) > 0) {
-			printf("ok\n");
+			printf ("Caught udp packet: %s\n", buf);
 			sendto(fd, buf, 1024, 0, (struct sockaddr *)&from, 0);
 		}
 		usleep(10);
