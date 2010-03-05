@@ -92,6 +92,7 @@ void kfree_skb(struct sk_buff *skb) {
 		list_move_tail((struct list_head *) skb,
 				(struct list_head *) &head_free_skb);
 	}
+	skb = NULL;
 	spin_unlock(sp);
 }
 

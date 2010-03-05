@@ -26,7 +26,6 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static int has_responsed;
 
 static void callback(struct sk_buff *pack) {
-	kfree_skb(pack);
 	has_responsed = true;
 }
 
