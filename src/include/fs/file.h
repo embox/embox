@@ -9,12 +9,14 @@
 
 #include <types.h>
 
-void *fopen (const char *file_name, char *mode);
+typedef void FILE;
 
-size_t fwrite (const void *buf, size_t size, size_t count, void *file);
+FILE *fopen (const char *file_name, char *mode);
 
-size_t fread (const void *buf, size_t size, size_t count, void *file);
+size_t fwrite (const void *buf, size_t size, size_t count, FILE *file);
 
-void fclose (void *file);
+size_t fread (const void *buf, size_t size, size_t count, FILE *file);
+
+void fclose (FILE *file);
 
 #endif /*FILE_H_*/
