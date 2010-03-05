@@ -5,20 +5,21 @@
  */
 #include <shell_command.h>
 #include <string.h>
-#include <memory_tests.h>
-
-#define RETURN_ERROR(s_error, test_name, addr, received_value, expected_value) \
-	print_error(addr, expected_value); \
-	s_error->test_name = test_name; \
-	s_error->addr = addr; \
-	s_error->received_value = received_value; \
-	s_error->expected_value = expected_value; \
-	return TESTMEM_RETCODE_FAILED;
-
+#include "memory_tests.h"
 
 inline static void print_error(volatile uint32_t *addr, volatile uint32_t expected_value) {
 	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", (unsigned)addr, *addr,
 			expected_value);
+}
+
+inline static int return_error(memtest_err_t *s_err, const char *test_name,
+		volatile uint32_t *address, uint32_t received_value, volatile uint32_t expected_value) {
+	print_error(address, expected_value);
+	s_err->test_name = test_name;
+	s_err->addr = (uint32_t) address;
+	s_err->received_value = received_value;
+	s_err->expected_value = expected_value;
+	return MEMTEST_RETCODE_FAILED;
 }
 
 /**
@@ -31,7 +32,7 @@ inline static void print_error(volatile uint32_t *addr, volatile uint32_t expect
  * is finished correctly.
  */
 static int memory_test_data_bus(volatile uint32_t *address,
-		size_t block_size,uint32_t template, memtest_err_t *s_err) {
+		size_t block_size, uint32_t template, memtest_err_t *s_err) {
 	uint32_t pattern;
 	/*
 	 * Perform a walking 1's test at the given address.
@@ -46,7 +47,7 @@ static int memory_test_data_bus(volatile uint32_t *address,
 		 * Read it back (immediately is okay for this test).
 		 */
 		if (*address != pattern) {
-			RETURN_ERROR(s_err, "databus", address, *address, pattern);
+			return return_error(s_err, "databus", address, *address, pattern);
 		}
 	}
 
@@ -88,7 +89,7 @@ static int memory_test_addr_bus(uint32_t *base_address, unsigned long block_size
 
 	for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
 		if (base_address[offset] != pattern) {
-			RETURN_ERROR(s_err, "addrbus", (uint32_t *) &base_address[offset],
+			return return_error(s_err, "addrbus", (uint32_t *) &base_address[offset],
 					base_address[offset], pattern);
 		}
 	}
@@ -102,13 +103,13 @@ static int memory_test_addr_bus(uint32_t *base_address, unsigned long block_size
 		base_address[testOffset] = antipattern;
 
 		if (base_address[0] != pattern) {
-			RETURN_ERROR(s_err, "addrbus", (uint32_t *) &base_address[testOffset],
+			return return_error(s_err, "addrbus", (uint32_t *) &base_address[testOffset],
 								base_address[0], pattern);
 		}
 
 		for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
 			if ((base_address[offset] != pattern) && (offset != testOffset)) {
-				RETURN_ERROR(s_err, "addrbus", (uint32_t *) &base_address[testOffset],
+				return return_error(s_err, "addrbus", (uint32_t *) &base_address[testOffset],
 												base_address[offset], pattern);
 			}
 		}
@@ -166,7 +167,7 @@ static int memory_test_walking_one(uint32_t *base_addr, long int amount,
 		/* Checking*/
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != value) {
-				RETURN_ERROR(s_err, "runone", addr, *addr, value);
+				return return_error(s_err, "runone", addr, *addr, value);
 			}
 		}
 		value <<= 1;
@@ -198,7 +199,7 @@ static int memory_test_walking_zero(uint32_t *base_addr, long int amount,
 		/* Checking */
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != ~value) {
-				RETURN_ERROR(s_err, "runzero", addr, *addr, ~value);
+				return return_error(s_err, "runzero", addr, *addr, ~value);
 			}
 		}
 		value <<= 1;
@@ -241,7 +242,7 @@ static int memory_test_address(uint32_t *base_addr, long int amount,
 			TRACE("Checking address 0x%8x\n", (unsigned)addr);
 		}
 		if (*addr != (uint32_t) addr) {
-			RETURN_ERROR(s_err, "address", addr, *addr, (uint32_t) addr);
+			return return_error(s_err, "address", addr, *addr, (uint32_t) addr);
 		}
 		addr++;
 	}
@@ -272,7 +273,7 @@ static int memory_test_chess(uint32_t *base_addr, long int amount,
 	value = template; /* setting second value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
-			RETURN_ERROR(s_err, "chess", addr, *addr, ~value);
+			return return_error(s_err, "chess", addr, *addr, ~value);
 		}
 	}
 	/* Writing */
@@ -284,7 +285,7 @@ static int memory_test_chess(uint32_t *base_addr, long int amount,
 	value = ~template; /* setting second value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
-			RETURN_ERROR(s_err, "chess", addr, *addr, ~value);
+			return return_error(s_err, "chess", addr, *addr, ~value);
 		}
 	}
 	return MEMTEST_RETCODE_PASSED;
@@ -303,7 +304,7 @@ static int memory_test_loop(uint32_t *addr, long int counter,
 		while (true) {
 			*addr = value;
 			if (*addr != value) {
-				RETURN_ERROR(s_err, "loop", addr, *addr, value);
+				return return_error(s_err, "loop", addr, *addr, value);
 			}
 			value = ~value;
 		}
@@ -314,7 +315,7 @@ static int memory_test_loop(uint32_t *addr, long int counter,
 		TRACE("%ld=n", counter);
 		*addr = value;
 		if (*addr != value) {
-			RETURN_ERROR(s_err, "loop", addr, *addr, value);
+			return return_error(s_err, "loop", addr, *addr, value);
 		}
 		value = ~value;
 	}
