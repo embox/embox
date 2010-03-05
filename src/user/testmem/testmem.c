@@ -7,12 +7,13 @@
  *
  * @author Daria Teplykh
  */
+#include <types.h>
+#include <shell_command.h>
+#include <asm/cache.h>
 
-#include "shell_command.h"
-#include "asm/cache.h"
-#include "memory_tests.h"
 #include <string.h>
-#include <hal/types.h>
+
+#include "memory_tests.h"
 
 #define COMMAND_NAME     "testmem"
 #define COMMAND_DESC_MSG "set of memory tests"
@@ -24,8 +25,7 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 ;
 
-typedef int TEST_MEM_FUNC(uint32_t *addr, long int amount, uint32_t template,
-		memtest_err_t last_err);
+
 /*
  *  interface for 'testmem' user command
  *
@@ -57,8 +57,6 @@ static int exec(int argsc, char **argsv) {
 				show_help();
 				return -1;
 			}
-			/* TODO remove next*/
-			TRACE("Address: 0x%08x\n", (unsigned)address);
 			break;
 		case 'n':
 			/* Key -n for number of
@@ -86,16 +84,12 @@ static int exec(int argsc, char **argsv) {
 			 !! for "loop" different default value
 			 !!   for amount (in this case amount is
 			 !!   a counter of loop)*/
-			for (int i = 0; i < array_len(memtest_array); i++) {
-				if (strcmp(optarg, memtest_array[i].test_name) == 0) {
-					test_mem_func = &memtest_array[i].func;
-				}
-				if (i == array_len(memtest_array)) {
-					LOG_ERROR("testmem: %s: no such test.\n", optarg);
-					show_help();
-					return -1;
-				}
+			if (NULL == (test_mem_func = get_memtest_func(optarg))) {
+				LOG_ERROR("testmem: %s: no such test.\n", optarg);
+				show_help();
+				return -1;
 			}
+
 			break;
 		case -1:
 			break;
@@ -112,7 +106,7 @@ static int exec(int argsc, char **argsv) {
 
 	cache_data_disable();
 	TRACE("Before starting: address: 0x%08x, amount: 0x%08x\n", (unsigned)address, (unsigned)amount);
-	(*test_mem_func)(address, amount, template, last_err);
+	(*test_mem_func)(address, amount, template, &last_err);
 	cache_data_enable();
 	return 0;
 }

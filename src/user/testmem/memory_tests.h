@@ -18,33 +18,14 @@ typedef struct memtest_err {
 	uint32_t expected_value;
 } memtest_err_t;
 
+typedef int (*TEST_MEM_FUNC)(uint32_t *addr, long int amount, uint32_t template,
+		memtest_err_t *last_err);
+
 typedef struct memtest_desc {
 	const char *test_name;
-	int (*func)(uint32_t *addr, size_t block_size, uint32_t template,
-			memtest_err_t *s_err);
+	TEST_MEM_FUNC func;
 }memory_test_t;
 
-static int memory_test_walking_one(uint32_t *base_addr, long int amount,
-		uint32_t template, memtest_err_t *s_err);
-static int memory_test_walking_zero(uint32_t *base_addr, long int amount,
-		uint32_t template, memtest_err_t *s_err);
-static int memory_test_address(uint32_t *base_addr, long int amount, uint32_t template,
-		memtest_err_t *s_err);
-static int memory_test_chess(uint32_t *base_addr, long int amount, uint32_t template,
-		memtest_err_t *s_err);
-static int memory_test_quick(uint32_t *base_addr, long int amount, uint32_t template,
-		memtest_err_t *s_err);
-
-static int memory_test_loop(uint32_t *addr, long int counter, uint32_t template,
-		memtest_err_t *s_err);
-
-memory_test_t memtest_array[] = {
-		{"runzero", memory_test_walking_zero},
-		{"runone", memory_test_walking_one},
-		{"address", memory_test_address},
-		{"chess", memory_test_chess},
-		{"quick", memory_test_quick},
-		{"loop", memory_test_loop}
-};
+TEST_MEM_FUNC *get_memtest_func(const char *test_name);
 
 #endif /* MEMORY_TESTS_H_ */
