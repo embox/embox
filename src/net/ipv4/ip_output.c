@@ -33,7 +33,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	hdr->ihl = IP_HEADER_SIZE >> 2;
 	hdr->saddr = saddr;
 	hdr->daddr = daddr;
-	hdr->tot_len = len;
+	hdr->tot_len = len - ETH_HEADER_SIZE;
 	hdr->ttl = ttl;
 	hdr->id = id;
 	hdr->tos = 0;

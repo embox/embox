@@ -57,5 +57,6 @@ void net_buff_free(unsigned char *buff) {
 	 */
 	pack = (net_buff_info_t *)buff;
 	list_add(&pack->list, &head_free_pack);
+	buff = NULL;
 	spin_unlock(sp);
 }

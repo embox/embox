@@ -20,10 +20,21 @@ static struct udp_sock *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
 int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len) {
-//	struct inet_sock *inet = inet_sk(sk);
-//	struct udp_sock *up = udp_sk(sk);
-	//TODO:
-	return 0;
+	struct inet_sock *inet = inet_sk(sk);
+	udphdr_t *udph;
+	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE +
+					UDP_HEADER_SIZE + msg->msg_iov->iov_len, 0);
+	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+	skb->h.raw = (unsigned char *) skb->nh.raw + IP_HEADER_SIZE;
+	memcpy((void*)((unsigned int)(skb->h.raw + UDP_HEADER_SIZE)),
+				(void*)msg->msg_iov->iov_base, msg->msg_iov->iov_len);
+	/* Fill UDP header */
+	udph = skb->h.uh;
+	udph->source = inet->sport;
+	udph->dest = inet->dport;
+	udph->len = len;
+	udph->check = 0;
+	return ip_send_packet(inet, skb);
 }
 
 int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
@@ -84,11 +95,19 @@ static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 
 int udp_rcv(sk_buff_t *skb) {
 	struct sock *sk;
+	struct inet_sock *inet;
 	iphdr_t *iph = ip_hdr(skb);
 	udphdr_t *uh = udp_hdr(skb);
 	sk = udp_lookup(iph->daddr, uh->dest);
+	inet = inet_sk(sk);
+	if(inet->rcv_saddr == INADDR_ANY) {
+		//TODO: temporary
+		inet->saddr = skb->nh.iph->daddr;
+	}
 	if (sk) {
 		udp_queue_rcv_skb(sk, skb);
+		inet->dport = uh->source;
+		inet->daddr = iph->saddr;
 	} else {
 		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
 	}

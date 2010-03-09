@@ -81,6 +81,6 @@ ssize_t recvfrom(int sockfd, void *buf, int len, int flags,
 	};
 	static struct msghdr m;
 	m.msg_iov = &iov;
-	kernel_recvmsg(NULL, sock, &m, len, flags);
+	m.msg_iov->iov_len = kernel_recvmsg(NULL, sock, &m, len, flags);
 	return m.msg_iov->iov_len;
 }

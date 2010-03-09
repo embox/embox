@@ -59,7 +59,7 @@ int raw_echo(void) {
 }
 
 int udp_echo(void) {
-	int fd;
+	int fd, len;
 	struct sockaddr_in server;
 	struct sockaddr_in from;
 	char buf[1024];
@@ -69,9 +69,10 @@ int udp_echo(void) {
 	server.sin_port = 33;
 	bind(fd, (struct sockaddr *)&server, 0);
 	while (1) {
-		if (recvfrom(fd, buf, 1024, 0, (struct sockaddr *)&from, NULL) > 0) {
-			printf ("Caught udp packet: %s\n", buf);
-			sendto(fd, buf, 1024, 0, (struct sockaddr *)&from, 0);
+		len = recvfrom(fd, buf, 1024, 0, (struct sockaddr *)&from, NULL);
+		if ( len > 0) {
+			//printf ("Caught udp packet: %s\n", buf);
+			sendto(fd, buf, len, 0, (struct sockaddr *)&from, 0);
 		}
 		usleep(10);
 	}
