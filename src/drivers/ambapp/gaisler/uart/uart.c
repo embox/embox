@@ -119,7 +119,7 @@ static int dev_regs_init() {
 #elif defined(CONFIG_APBUART_BASE)
 static int dev_regs_init() {
 	dev_regs = (volatile struct apbuart_regs *) CONFIG_APBUART_BASE;
-	irq_num =
+	irq_num = CONFIG_APBUART_IRQ;
 	return 0;
 }
 #else
