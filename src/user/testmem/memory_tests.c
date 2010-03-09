@@ -1,7 +1,11 @@
 /**
  * @file
+ *
  * @date 29.07.2009
+ *
  * @author Alexey Fomin
+ *
+ * @author Daria Teplykh
  */
 #include <shell_command.h>
 #include <string.h>
@@ -9,8 +13,8 @@
 
 inline static void print_error(volatile uint32_t *addr,
 		volatile uint32_t expected_value) {
-	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n", (unsigned)addr, *addr,
-			expected_value);
+	TRACE("FAILED! at address 0x%08x value 0x%08x (0x%8x expected)\n",
+			(unsigned)addr, *addr, expected_value);
 }
 
 inline static int return_error(memtest_err_t *s_err, const char *test_name,
@@ -25,14 +29,13 @@ inline static int return_error(memtest_err_t *s_err, const char *test_name,
 }
 
 /**
- * Test the data bus wiring by performing
- * walking 1's test at a fixed address
+ * Test the data bus wiring by performing walking 1's test at a fixed address
  * which is given as argument.
- * Returns the written value if it doesn't
- * agree with the value which has been read
- * from the address and zero if test
- * is finished correctly.
+ * @param address - the base address
+ * @param block_size - the size of memory for testing
+ * @return -1 in case the test is failed and 0 otherwise
  */
+/* TODO: remove to express_tests*/
 static int memory_test_data_bus(volatile uint32_t *address, size_t block_size,
 		uint32_t template, memtest_err_t *s_err) {
 	uint32_t pattern;
@@ -58,16 +61,14 @@ static int memory_test_data_bus(volatile uint32_t *address, size_t block_size,
 } /* memory_test_data_bus */
 
 /**
- * The test finds single-bit address failures.
- * Test the address bus wiring in a memory
- * region by performing a walking 1's test
- * on the relevant bits of the address and
- * checking for aliasing.
- * Parameters: the base address, tested region size
- * Returns the failure address if test fails and
- * NULL if test is finished correctly.
+ * The test finds single-bit address failures. Test the address bus wiring in
+ * a memory region by performing a walking 1's test on the relevant bits of
+ * the address and checking for aliasing.
+ * @param base_addr - the base address
+ * @param block_size - the size of the region which will be tested
+ * @return -1 in case the test is failed and 0 otherwise
  */
-
+/* TODO: remove to express_tests*/
 static int memory_test_addr_bus(uint32_t *base_address,
 		unsigned long block_size, uint32_t template, memtest_err_t *s_err) {
 	unsigned long addressMask = (block_size / sizeof(uint32_t) - 1);
@@ -128,9 +129,13 @@ static int memory_test_addr_bus(uint32_t *base_address,
 }
 
 /**
- * Run memory_test_data_bus and memory_test_addr_bus
- * for quick checking of memory.
+ * Run memory_test_data_bus and memory_test_addr_bus for the quick checking
+ * of memory.
+ * @param base_addr - the base address
+ * @param amount - the size of the region which will be tested
+ * @return -1 in case the test is failed and 0 otherwise
  */
+/* TODO: remove to express_tests*/
 static int memory_test_quick(uint32_t *base_addr, long int amount,
 		uint32_t template, memtest_err_t *s_err) {
 	if (MEMTEST_RETCODE_PASSED == memory_test_data_bus(base_addr, 1, template,
@@ -152,13 +157,10 @@ static int memory_test_quick(uint32_t *base_addr, long int amount,
 }
 
 /**
- * Test the data bus wiring by performing
- * walking 1's test at a block of memory.
- * Parameters: the base address, tested region size.
- * Returns the address, its value and the value
- * which were written by this address, if the test is
- * failed and one if the test is passed.
- * @param base_addr
+ * Test the data bus wiring by performing walking 1's test at a memory block.
+ * @param base_addr - the base address
+ * @param amount - the size of the region which will be tested
+ * @return -1 in case the test is failed and 0 otherwise
  */
 static int memory_test_walking_one(uint32_t *base_addr, long int amount,
 		uint32_t template, memtest_err_t *s_err) {
@@ -185,12 +187,10 @@ static int memory_test_walking_one(uint32_t *base_addr, long int amount,
 }
 
 /**
- * Test the data bus wiring by performing
- * walking 0's test at a block of memory.
- * Parameters: the base address, tested region size.
- * Returns the address, its value and the value
- * which were written by this address, if the test is
- * failed and one if the test is passed.
+ * Test the data bus wiring by performing walking 0's test at a memory block.
+ * @param base_addr - the base address
+ * @param amount - the size of the region which will be tested
+ * @return -1 in case the test is failed and 0 otherwise
  */
 static int memory_test_walking_zero(uint32_t *base_addr, long int amount,
 		uint32_t template, memtest_err_t *s_err) {
@@ -217,13 +217,11 @@ static int memory_test_walking_zero(uint32_t *base_addr, long int amount,
 }
 
 /**
- * In the given block of memory in each memory cell
- * the address of this cell is written. And then
- * the address and its written value are checked.
- * Parameters: the base address, tested region size.
- * Returns the address, delivered value and the value
- * which were written by this address, if the test is
- * failed and one if the test is passed.
+ * In the given block of memory in each memory cell the address of this cell
+ * is written. And then the address and its written value are checked.
+ * @param base_addr - the base address
+ * @param amount - the size of the region which will be tested
+ * @return -1 in case the test is failed and 0 otherwise
  */
 static int memory_test_address(uint32_t *base_addr, long int amount,
 		uint32_t template, memtest_err_t *s_err) {
@@ -260,10 +258,10 @@ static int memory_test_address(uint32_t *base_addr, long int amount,
 
 /**
  *
- * Parameters: the base address, tested region size.
- * Returns the address, delivered value and the value
- * which were written by this address, if the test is
- * failed and one if the test is passed.
+ * @param base_addr - the base address
+ * @param amount - the size of the region which will be tested
+ * @param template - the value, which is written to the address
+ * @return -1 in case the test is failed and 0 otherwise
  */
 static int memory_test_chess(uint32_t *base_addr, long int amount,
 		uint32_t template, memtest_err_t *s_err) {
@@ -302,6 +300,7 @@ static int memory_test_chess(uint32_t *base_addr, long int amount,
 
 /**
  * This test is needed for the oscilloscope.
+ * @return -1 in case the test is failed and 0 otherwise
  */
 static int memory_test_loop(uint32_t *addr, long int counter,
 		uint32_t template, memtest_err_t *s_err) {
@@ -331,6 +330,7 @@ static int memory_test_loop(uint32_t *addr, long int counter,
 	return MEMTEST_RETCODE_PASSED;
 }
 
+/* Add the test name and the function name of the test if the test is added */
 static memory_test_t memtest_array[] = {
 		{ "runzero", memory_test_walking_zero },
 		{ "runone", memory_test_walking_one },
@@ -339,7 +339,10 @@ static memory_test_t memtest_array[] = {
 		{ "quick", memory_test_quick },
 		{ "loop", memory_test_loop }
 };
-
+/**
+ * @param test_name the name of the test
+ * @return the function of the needed memory test and NULL otherwise
+ */
 TEST_MEM_FUNC *get_memtest_func(const char *test_name) {
 	int i;
 	for (i = 0; i < array_len(memtest_array); i++) {
