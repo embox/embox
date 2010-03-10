@@ -5,11 +5,11 @@
  * \author sunnya
  */
 
-#include "types.h"
-#include "common.h"
-#include "express_tests.h"
+#include <types.h>
+#include <common.h>
+#include <express_tests.h>
 
-DECLARE_EXPRESS_TEST(SOFT_TRAPS, exec, NULL);
+DECLARE_EXPRESS_TEST(soft_traps, exec, NULL);
 
 extern unsigned int volatile test_soft_traps_variable;
 #define TEST_SOFT_TRAP_NUMBER 0x10
