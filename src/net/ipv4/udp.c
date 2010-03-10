@@ -18,10 +18,21 @@
 
 static struct udp_sock *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
+static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
+					__be16 dest, size_t len) {
+	udphdr_t *udph = skb->h.uh;
+	udph = skb->h.uh;
+	udph->source = source;
+	udph->dest = dest;
+	udph->len = len + UDP_HEADER_SIZE;
+	udph->check = 0;
+//	udph->check = ptclbsum((void*)udph, UDP_HEADER_SIZE);
+	return 0;
+}
+
 int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
-	udphdr_t *udph;
 	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE +
 					UDP_HEADER_SIZE + msg->msg_iov->iov_len, 0);
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
@@ -29,11 +40,7 @@ int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	memcpy((void*)((unsigned int)(skb->h.raw + UDP_HEADER_SIZE)),
 				(void*)msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill UDP header */
-	udph = skb->h.uh;
-	udph->source = inet->sport;
-	udph->dest = inet->dport;
-	udph->len = len;
-	udph->check = 0;
+	rebuild_udp_header(skb, inet->sport, inet->dport, len);
 	return ip_send_packet(inet, skb);
 }
 
@@ -42,11 +49,11 @@ int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	struct sk_buff *skb;
 	skb = skb_recv_datagram(sk, flags, 0, 0);
 	if(skb && skb->len > 0) {
-		if(len > (skb->len - ETH_HEADER_SIZE - IP_HEADER_SIZE - UDP_HEADER_SIZE)) {
-			len = skb->len - ETH_HEADER_SIZE - IP_HEADER_SIZE - UDP_HEADER_SIZE;
+		if(len > (skb->h.uh->len - UDP_HEADER_SIZE)) {
+			len = skb->h.uh->len - UDP_HEADER_SIZE;
 		}
 		memcpy((void*)msg->msg_iov->iov_base,
-				(void*)(skb->data + ETH_HEADER_SIZE + IP_HEADER_SIZE + UDP_HEADER_SIZE), len);
+				(void*)(skb->h.raw + UDP_HEADER_SIZE), len);
 	} else {
 		len = 0;
 	}
@@ -113,31 +120,6 @@ int udp_rcv(sk_buff_t *skb) {
 	}
 	return 0;
 }
-
-#if 0
-static int rebuild_udp_header(sk_buff_t *pack, unsigned short source, unsigned short dest) {
-	udphdr *hdr = pack->h.uh;
-	hdr->source = source;
-	hdr->dest = dest;
-	hdr->len = UDP_HEADER_SIZE;
-	hdr->check = 0;
-	hdr->check = ptclbsum(hdr, UDP_HEADER_SIZE);
-	return 0;
-}
-
-static void rebuild_udp_packet(sk_buff_t *pack, struct udp_sock *sk, void *ifdev, const void *buf, int len) {
-	if( pack == NULL ||
-		ifdev == NULL ||
-		sk ==NULL) {
-		return;
-	}
-	pack->len = UDP_HEADER_SIZE;
-
-	pack->h.raw = pack->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
-	memset(pack->h.raw, 0, UDP_HEADER_SIZE);
-	rebuild_udp_header(pack, sk->inet.sport, sk->inet.dport);
-}
-#endif
 
 int udp_disconnect(struct sock *sk, int flags) {
 	return 0;

@@ -89,8 +89,7 @@ int inet_dgram_connect(struct socket *sock, struct sockaddr * uaddr,
 int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 			struct msghdr *msg, size_t size) {
 	struct sock *sk = sock->sk;
-	sk->sk_prot->sendmsg(iocb, sk, msg, size);
-	return 0;
+	return sk->sk_prot->sendmsg(iocb, sk, msg, size);
 }
 
 /* uses for create socket */

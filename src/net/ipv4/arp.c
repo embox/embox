@@ -79,13 +79,14 @@ static void arp_send_q(void) {
 		}
 		if (-1 != dev->header_ops->rebuild(skb)) {
 			if (-1 == ops->ndo_start_xmit(skb, dev)) {
-				list_del(skb_h);
-				kfree_skb(skb);
 				stats->tx_err++;
+				continue;
 			}
 			/* update statistic */
 			stats->tx_packets++;
 			stats->tx_bytes += skb->len;
+			list_del(skb_h);
+			kfree_skb(skb);
 		}
 	}
 }

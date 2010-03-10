@@ -1,9 +1,9 @@
 /**
- * \file tftp.c
+ * @file
  */
-#include "shell_command.h"
-#include "string.h"
-#include "lib/inet/arpa/tftp.h"
+#include <shell_command.h>
+#include <string.h>
+#include <lib/inet/arpa/tftp.h>
 
 #define COMMAND_NAME     "tftp"
 #define COMMAND_DESC_MSG "TFTP client"

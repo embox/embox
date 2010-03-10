@@ -24,9 +24,10 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-int raw_echo(void) {
+int raw_echo_server(void) {
 	int fd;
-	char datagram[4096];
+	struct sockaddr_in from;
+	char datagram[1024];
 	in_addr_t tmp_addr;
 	__be16 tmp_port;
 	iphdr_t *iph;
@@ -41,7 +42,7 @@ int raw_echo(void) {
 		return -1;
 	}
 	while(1) {
-		if (recvfrom(fd, datagram, 4096, 0, NULL, NULL) > 0) {
+		if (recvfrom(fd, datagram, 1024, 0, (struct sockaddr *)&from, NULL) > 0) {
 			//printf ("Caught udp packet: %s\n", datagram + IP_HEADER_SIZE + UDP_HEADER_SIZE);
 			tmp_addr = iph->saddr;
 			iph->saddr = iph->daddr;
@@ -52,16 +53,20 @@ int raw_echo(void) {
 			udph->check = 0;
 			iph->check = 0;
 			iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE);
-			sendto(fd, datagram, iph->tot_len, 0, NULL, 0);
+			sendto(fd, datagram, iph->tot_len, 0, (struct sockaddr *)&from, 0);
 		}
 		usleep(10);
 	}
 }
 
-int udp_echo(void) {
+int raw_client(void) {
+	//TODO:
+	return 0;
+}
+
+int udp_echo_server(void) {
 	int fd, len;
-	struct sockaddr_in server;
-	struct sockaddr_in from;
+	struct sockaddr_in server, from;
 	char buf[1024];
 	fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	server.sin_family = AF_INET;
@@ -73,6 +78,28 @@ int udp_echo(void) {
 		if ( len > 0) {
 			//printf ("Caught udp packet: %s\n", buf);
 			sendto(fd, buf, len, 0, (struct sockaddr *)&from, 0);
+		}
+		usleep(10);
+	}
+	return 0;
+}
+
+int udp_client(void) {
+	int fd, len;
+	in_addr_t dst;
+	struct sockaddr_in server, from;
+	char buf[256] = "test";
+	fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	server.sin_family = AF_INET;
+	inet_aton("192.168.0.59", &dst);
+	server.sin_addr.s_addr = dst;
+	server.sin_port = 33;
+	sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&server, 0);
+	while(1) {
+		len = recvfrom(fd, buf, 256, 0, (struct sockaddr *)&from, NULL);
+		if(len > 0) {
+			//printf ("Caught udp packet: %s\n", buf);
+			break;
 		}
 		usleep(10);
 	}
@@ -103,10 +130,16 @@ static int exec(int argsc, char **argsv) {
 
 	switch(type) {
 	case 0:
-		raw_echo();
+		raw_echo_server();
 		break;
 	case 1:
-		udp_echo();
+		udp_echo_server();
+		break;
+	case 2:
+		raw_client();
+		break;
+	case 3:
+		udp_client();
 		break;
 	case -1:
 		break;

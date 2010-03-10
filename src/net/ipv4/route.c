@@ -63,6 +63,7 @@ int ip_route(sk_buff_t *skb) {
 		if (rt_table[i].rt_flags & RTF_UP) {
 			if( (skb->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
 				skb->dev = rt_table[i].dev;
+				skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
 				if(rt_table[i].rt_gateway != INADDR_ANY) {
 					skb->nh.iph->daddr = rt_table[i].rt_gateway;
 					arp_find(skb->mac.ethh->h_dest, skb);

@@ -68,6 +68,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	}
 	skb->protocol = ETH_P_IP;
 	ip_route(skb);
+	ip_send_check(skb->nh.iph);
 	return ip_queue_xmit(skb, 0);
 }
 
