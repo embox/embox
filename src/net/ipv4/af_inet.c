@@ -50,6 +50,8 @@ static int inet_create(struct socket *sock, int protocol) {
 	}
 	inet = inet_sk(sk);
 	inet->id = 0;
+	inet->uc_ttl = 64;
+	inet->mc_ttl = 64;
 	sk->sk_type = sock->type;
 	sk->sk_protocol = protocol;
 	if(sk->sk_prot->init) {

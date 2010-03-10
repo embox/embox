@@ -34,23 +34,6 @@ arp_table_t arp_tables[ARP_CACHE_SIZE];
 
 static LIST_HEAD(arp_q);
 
-/**
- * Check if there are entries that are too old and remove them.
- */
-static void arp_check_expire(uint32_t id) {
-	size_t i;
-	close_timer(ARP_TIMER_ID);
-	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
-		//FIXME:
-		//arp_tables[i].ctime += ARP_CHECK_INTERVAL;
-		if (arp_tables[i].state == 1 && arp_tables[i].ctime >= ARP_TIMEOUT
-				&& arp_tables[i].flags == ATF_COM) {
-			arp_tables[i].state = 0;
-		}
-	}
-	set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
-}
-
 /* Queue an IP packet, while waiting for the ARP reply packet. */
 void arp_queue(sk_buff_t *skb) {
 	skb->tries = ARP_MAX_TRIES;
@@ -89,6 +72,24 @@ static void arp_send_q(void) {
 			kfree_skb(skb);
 		}
 	}
+}
+
+/**
+ * Check if there are entries that are too old and remove them.
+ */
+static void arp_check_expire(uint32_t id) {
+	size_t i;
+	close_timer(ARP_TIMER_ID);
+	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
+		//FIXME:
+		//arp_tables[i].ctime += ARP_CHECK_INTERVAL;
+		if (arp_tables[i].state == 1 && arp_tables[i].ctime >= ARP_TIMEOUT
+				&& arp_tables[i].flags == ATF_COM) {
+			arp_tables[i].state = 0;
+		}
+	}
+	set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
+	arp_send_q();
 }
 
 static int arp_init(void) {
