@@ -12,3 +12,9 @@
 
 
 uint8_t tests_trap_table[TRAP_TABLE_SIZE];
+
+int trap_fire(unsigned int trap_number) {
+	__asm__ __volatile__ ("ta %0\n\t"::"i" (trap_number));
+
+	return 0;
+}
