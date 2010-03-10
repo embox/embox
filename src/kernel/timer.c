@@ -73,7 +73,7 @@ static void inc_sys_timers (void) {
 	}
 }
 
-void irq_func_tmr_1mS(int irq_num, void *dev_id) {
+void clock_tick_handler(int irq_num, void *dev_id) {
 	cnt_ms_sleep++;
 	cnt_sys_time++;
 	inc_sys_timers();

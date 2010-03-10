@@ -33,4 +33,6 @@ void clock_init(void);
  */
 void clock_setup(useconds_t useconds);
 
+void clock_tick_handler(int irq_num, void *dev_id);
+
 #endif /* HAL_CLOCK_H_ */

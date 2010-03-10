@@ -66,7 +66,7 @@ struct gptimer_regs {
 		/* 0xn0 */uint32_t counter;
 		/**
 		 * Timer Reload value. This value is loaded into the timer counter
-		 * value register when ‘1’ is written to load bit in the timers control
+		 * value register when the LD bit is written to load bit in the timers control
 		 * register or when the RS bit is set in the control register and the
 		 * timer underflows.
 		 */
@@ -96,8 +96,8 @@ void clock_setup(useconds_t useconds) {
 }
 
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
-	// XXX
-	irq_func_tmr_1mS(irq_nr,dev_id);
+	// XXX clock_hander is called from arch part
+	clock_tick_handler(irq_nr,dev_id);
 	return IRQ_HANDLED;
 }
 
