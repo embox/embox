@@ -5,9 +5,10 @@
  *
  * @author Anton Bondarev
  */
+#include <asm/linkage.h>
+#include <asm/mb_regs.h>
 
-#include "asm/mb_regs.h"
-/*
+#if 0
 	.org  0x00
 _start:
         brai    boot_start
@@ -23,13 +24,12 @@ _vector_debug_sw_break:
 	.org  0x20
 _vector_hw_exception:
         brai    _hw_exception_handler
-*/
+#endif
 	.section    ".text"
 	.align  4
  	.weak hardware_init_hook
  	.weak software_init_hook
 
-#define C_ENTRY(name)	.globl name; .align 4; name
 
 #define SET_HANDLER(base_addr, handler)            \
 	addik reg_tmp1, reg_zero, handler;             \

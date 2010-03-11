@@ -1,6 +1,6 @@
-#include "asm/mb_regs.h"
+#include <asm/linkage.h>
+#include <asm/mb_regs.h>
 
-#define C_ENTRY(name)	.globl name; .align 4; name
 	.section ".trap_table"
 	.balign 0x8
 C_ENTRY(_start):
