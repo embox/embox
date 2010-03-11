@@ -57,6 +57,8 @@ int raw_echo_server(void) {
 		}
 		usleep(10);
 	}
+	close(fd);
+	return 0;
 }
 
 int raw_client(void) {
@@ -70,9 +72,12 @@ int udp_echo_server(void) {
 	char buf[1024];
 	fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = 33;
-	bind(fd, (struct sockaddr *)&server, 0);
+	server.sin_addr.s_addr = htonl(INADDR_ANY);
+	server.sin_port = htons(33);
+	if(bind(fd, (struct sockaddr *)&server, 0) == -1) {
+		close(fd);
+		return -1;
+	}
 	while (1) {
 		len = recvfrom(fd, buf, 1024, 0, (struct sockaddr *)&from, NULL);
 		if ( len > 0) {
@@ -81,19 +86,18 @@ int udp_echo_server(void) {
 		}
 		usleep(10);
 	}
+	close(fd);
 	return 0;
 }
 
 int udp_client(void) {
 	int fd, len;
-	in_addr_t dst;
 	struct sockaddr_in server, from;
 	char buf[256] = "test";
 	fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	server.sin_family = AF_INET;
-	inet_aton("192.168.0.59", &dst);
-	server.sin_addr.s_addr = dst;
-	server.sin_port = 33;
+	server.sin_addr.s_addr = inet_addr("192.168.0.59");
+	server.sin_port = htons(33);
 	sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&server, 0);
 	while(1) {
 		len = recvfrom(fd, buf, 256, 0, (struct sockaddr *)&from, NULL);
@@ -103,6 +107,7 @@ int udp_client(void) {
 		}
 		usleep(10);
 	}
+	close(fd);
 	return 0;
 }
 
