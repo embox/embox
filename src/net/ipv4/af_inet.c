@@ -62,8 +62,8 @@ static int inet_create(struct socket *sock, int protocol) {
 
 int inet_release(struct socket *sock) {
 	struct sock *sk = sock->sk;
-	sock->sk = NULL;
 	sk->sk_prot->close(sk, 0);
+	sock->sk = NULL;
 	return 0;
 }
 

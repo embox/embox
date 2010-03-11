@@ -113,6 +113,7 @@ int udp_rcv(sk_buff_t *skb) {
 	}
 	if (sk) {
 		udp_queue_rcv_skb(sk, skb);
+		printf("sock=0x%08x\n", sk);
 		inet->dport = uh->source;
 		inet->daddr = iph->saddr;
 	} else {
@@ -123,6 +124,10 @@ int udp_rcv(sk_buff_t *skb) {
 
 int udp_disconnect(struct sock *sk, int flags) {
 	return 0;
+}
+
+static void udp_lib_close(struct sock *sk, long timeout) {
+	sk_common_release(sk);
 }
 
 net_protocol_t udp_protocol = {
@@ -136,7 +141,9 @@ struct proto udp_prot = {
 	.name              = "UDP",
 #if 0
 	.owner             = THIS_MODULE,
+#endif
 	.close             = udp_lib_close,
+#if 0
 	.connect           = ip4_datagram_connect,
 	.disconnect        = udp_disconnect,
 	.ioctl             = udp_ioctl,

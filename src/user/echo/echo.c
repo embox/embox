@@ -102,7 +102,7 @@ int udp_client(void) {
 	while(1) {
 		len = recvfrom(fd, buf, 256, 0, (struct sockaddr *)&from, NULL);
 		if(len > 0) {
-			//printf ("Caught udp packet: %s\n", buf);
+			printf ("Caught udp packet: %s\n", buf);
 			break;
 		}
 		usleep(10);

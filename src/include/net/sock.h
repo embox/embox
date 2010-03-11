@@ -101,6 +101,7 @@ typedef struct proto {
 	sock_t *(*accept)(sock_t *sk, int flags, int *err);
 	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
 	int (*init)(sock_t *sk);
+	void (*destroy)(struct sock *sk);
 	int (*setsockopt)(struct sock *sk, int level, int optname, char *optval,
 			int optlen);
 	int (*getsockopt)(struct sock *sk, int level, int optname, char *optval,

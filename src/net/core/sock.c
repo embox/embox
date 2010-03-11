@@ -113,3 +113,11 @@ int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 	struct sock *sk = sock->sk;
 	return sk->sk_prot->recvmsg(iocb, sk, msg, size, 0, flags, NULL);
 }
+
+void sk_common_release(struct sock *sk) {
+	if (sk->sk_prot->destroy) {
+		sk->sk_prot->destroy(sk);
+	}
+
+	//sk->sk_prot->unhash(sk);
+}
