@@ -6,10 +6,11 @@
  * @author Anton Bondarev
  * @author Nikolay Korotky
  */
+
 #include <stdio.h>
 #include <string.h>
 #include <common.h>
-#include <kernel/module.h>
+
 #include <net/socket.h>
 #include <net/udp.h>
 #include <net/ip.h>

@@ -8,14 +8,15 @@
 #include <common.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "console/console.h"
 #include <shell.h>
 #include <kernel/sys.h>
 #include <shell_command.h>
-#include <kernel/init.h>
+#include <embox/unit.h>
 
 // XXX just for now -- Eldar
-DECLARE_INIT("shell",shell_start,3);
+EMBOX_UNIT(shell_start, shell_stop);
 
 /* *str becomes pointer to first non-space character*/
 void skip_spaces(char **str) {
@@ -122,9 +123,10 @@ static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback ) {
 	}
 }
 
+static CONSOLE console[1];
+
 static int shell_start(void) {
 	static const char* prompt = CONFIG_SHELL_PROMPT;
-	static CONSOLE console[1];
 	static CONSOLE_CALLBACK callback[1];
 
 	callback->exec = exec_callback;
@@ -138,5 +140,10 @@ static int shell_start(void) {
 
 	printf("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
 	console_start(console, prompt);
+	return 0;
+}
+
+static int shell_stop(void) {
+	console_stop(console);
 	return 0;
 }

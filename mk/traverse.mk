@@ -46,8 +46,9 @@ include $(MK_DIR)/util.mk
 #   # Get list of all objects.
 #   OBJS := $(foreach dir,$(DIRS),$(wildcard $($_OBJS:%=$(dir)/%)))
 #
-#   all: $(OBJS)
-#   	@$(CC) $(LDFLAGS) -T $(LDSCRIPT) -o $(TARGET) $(OBJS)
+#   all: $(TARGET)
+#   $(TARGET): $(OBJS)
+#   	@$(CC) $(LDFLAGS) -o $@ $^
 ##
 #
 # node.mk files placed in each sub-directory should contain something like:
@@ -154,9 +155,6 @@ define __traverse_process
   __traverse_process_result :=
  else
 
-  # Append current node to the resulting node list.
-  __traverse_return += $(__traverse_node_dir)
-
   # Provide the node location.
   SELFDIR := $(__traverse_node_dir)
   SELF    := $(notdir $(SELFDIR))
@@ -172,6 +170,8 @@ define __traverse_process
   ifneq ($(__traverse_include),)
     # Go!
     include $(__traverse_include)
+    # Append current node to the resulting node list.
+    __traverse_return += $(__traverse_node_dir)
   else
     $(info $(call warning_str_file,$(__traverse_parent_node_file)) \
       Node descriptor not found in subdirectory $(__traverse_node_dir) $N \

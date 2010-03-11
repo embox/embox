@@ -54,10 +54,7 @@ SECTIONS {
 		_bstart = .;
 		*(.bss)
 		ALIGNMENT();
-
-		ALLOC_EXPRESS_RESULT
-
-		_bend = ALIGN(0x8);
+		_bend = .;
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 

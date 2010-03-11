@@ -6,9 +6,10 @@
  * @date 20.10.2009
  * @author Anton Bondarev
  */
+
 #include <string.h> /*for memcpy*/
 #include <common.h>
-#include <kernel/module.h>
+
 #include <lib/list.h>
 #include <net/skbuff.h>
 #include <net/sock.h>

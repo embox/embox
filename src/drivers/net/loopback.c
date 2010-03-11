@@ -5,18 +5,21 @@
  * @date 29.12.09
  * @author Nikolay Korotky
  */
+
 #include <string.h>
+
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/net.h>
 #include <net/if_ether.h>
 #include <net/if_arp.h>
-#include <net/net_pack_manager.h>
-#include <kernel/module.h>
-#include <kernel/irq.h>
 #include <net/etherdevice.h>
+#include <net/net_pack_manager.h>
+#include <kernel/irq.h>
+#include <embox/unit.h>
 
-DECLARE_MODULE("Loopback", module_init);
+EMBOX_UNIT_INIT(unit_init);
+
 #if 0
 static int loopback_xmit(sk_buff_t *skb, net_device_t *dev) {
 	//TODO:
@@ -46,7 +49,7 @@ static void loopback_setup(net_device_t *dev) {
 	dev->netdev_ops         = &loopback_ops;
 }
 #endif
-static int module_init() {
+static int unit_init() {
 	//TODO:
 	return 0;
 }

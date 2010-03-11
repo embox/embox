@@ -13,15 +13,11 @@
 
 #ifndef NDEBUG
 
-# define __STRINGIFY(expr) #expr
-# define __ASSERT_STRING(cond_str, file, line) \
-		"\nASSERTION FAILED: " cond_str ", at " \
-		__STRINGIFY(file) " : " __STRINGIFY(line) "\n"
-
 /* we need to stringify condition before any expansion. */
 # define __ASSERT(cond, cond_str) \
 		do if (!(cond)) \
-			panic(__ASSERT_STRING(cond_str, __FILE__, __LINE__)); \
+			panic("\nASSERTION FAILED: %s, at %s : %d\n", cond_str, __FILE__, \
+					__LINE__); \
 		while(0)
 #else
 # define __ASSERT(cond)   do ; while(0)

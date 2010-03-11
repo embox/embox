@@ -2,7 +2,7 @@
 # error "Do not include this file directly!"
 #endif /* HAL_REG_H_ */
 
-#if CONFIG_SPARC_LEON
+#ifdef CONFIG_SPARC_LEON
 /*
  * Derived from Linux SPARC port.
  *
@@ -34,12 +34,6 @@ static __inline__ unsigned long __leon_load_reg(unsigned long paddr) {
 
 #define __REG_LOAD(addr) \
 		__leon_load_reg((unsigned long) (addr))
-
-#define __REG_ORIN(addr, mask) \
-		__REG_STORE(addr, __REG_LOAD(addr) | (unsigned long)(mask))
-
-#define __REG_ANDIN(addr, mask) \
-		__REG_STORE(addr, __REG_LOAD(addr) & (unsigned long)(mask))
 
 #else
 /* TODO not yet implemented. -- Eldar */

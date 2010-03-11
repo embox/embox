@@ -6,9 +6,10 @@
  * @date 14.03.2009
  * @author Alexander Batyukov
  */
+
 #include <string.h>
-#include <kernel/module.h>
 #include <common.h>
+
 #include <net/inetdevice.h>
 #include <net/icmp.h>
 #include <net/ip.h>

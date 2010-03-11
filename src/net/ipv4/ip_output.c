@@ -5,8 +5,8 @@
  * @date 03.12.2009
  * @author Nikolay Korotky
  */
+
 #include <err.h>
-#include <kernel/module.h>
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>

@@ -20,9 +20,13 @@
 #define INTERRUPT_NRS_TOTAL __INTERRUPT_NRS_TOTAL
 
 /**
- * Checks if the specified interrupt_nr is less then #INTERRUPT_NRS_TOTAL
+ * Checks if the specified @c interrupt_nr is less then #INTERRUPT_NRS_TOTAL
  * value.
- * @note Most HAL methods uses @link assert() @endlink instead of checking the
+ *
+ * @param interrupt_nr the number to check
+ * @return comparison result
+ *
+ * @note Most HAL methods uses @link #assert() @endlink instead of checking the
  * input arguments, so kernel should perform necessary checks by itself.
  */
 #define interrupt_nr_valid(interrupt_nr) \

@@ -5,10 +5,10 @@
  * @author Alexey Fomin
  */
 
-#include <express_tests.h>
+#include <embox/test.h>
 #include <string.h>
 
-DECLARE_EXPRESS_TEST(clear_mem, clear_mem, 0);
+EMBOX_TEST(clear_mem, clear_mem, 0);
 
 #define BASE_ADDR 0x40000000
 #define END_ADDR  0x44000000

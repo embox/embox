@@ -6,7 +6,7 @@
  * @author Alexey Fomin
  */
 #include <shell_command.h>
-#include <express_tests.h>
+#include <embox/test.h>
 
 #define COMMAND_NAME     "expr"
 #define COMMAND_DESC_MSG "works with express test subsystem"

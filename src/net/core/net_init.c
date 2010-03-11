@@ -5,13 +5,15 @@
  * @date 04.02.2010
  * @author Anton Bondarev
  */
+
 #include <common.h>
-#include <kernel/module.h>
+
 #include <net/netdevice.h>
+#include <embox/unit.h>
 
-DECLARE_INIT("ipstack", ipstack_init, INIT_NET_LEVEL);
+EMBOX_UNIT_INIT(unit_init);
 
-static int ipstack_init(void) {
+static int unit_init(void) {
 	extern packet_type_t *__ipstack_packets_start, *__ipstack_packets_end;
 	packet_type_t ** p_netpack = &__ipstack_packets_start;
 

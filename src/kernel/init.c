@@ -7,20 +7,21 @@
  * @author Eldar Abusalimov
  */
 
-#include <types.h>
 #include <common.h>
 
 #include <hal/arch.h>
 #include <hal/ipl.h>
-#include <kernel/init.h>
 #include <kernel/irq.h>
 #include <kernel/softirq.h>
 #include <kernel/timer.h>
 #include <kernel/diag.h>
-#include <kernel/mod.h>
+#include <embox/runlevel.h>
 
 void main(void);
 static void kernel_init(void);
+static int init(void);
+// XXX remove from here. -- Eldar
+int uart_init(void);
 
 void kernel_start(void) {
 
@@ -41,50 +42,22 @@ static void kernel_init(void) {
 	irq_init();
 	softirq_init();
 
-//	timer_init(); // XXX
+	timer_init();
 	uart_init(); // XXX
 
 	ipl_init();
 
 }
 
-// TODO rewrite and move from here. -- Eldar
-int init(void) {
-	extern init_descriptor_t *__init_handlers_start, *__init_handlers_end;
-	init_descriptor_t ** p_init_desc = &__init_handlers_start;
-	int level;
-	const char *init_name;
-	const char *default_init_name = "???";
+static int init(void) {
+	int ret = 0;
+	const runlevel_nr_t target_level = RUNLEVEL_NRS_TOTAL - 1;
 
-	express_tests_execute(PRE_INIT_LEVEL);
+	TRACE("EMBOX kernel start");
 
-	TRACE("\nStarting Monitor...\n");
-
-	for (level = 0; level <= INIT_MAX_LEVEL; level++) {
-		TRACE("\nLevel %d **********************\n", level);
-		for (p_init_desc = &__init_handlers_start; p_init_desc
-				< &__init_handlers_end; p_init_desc++) {
-			init_name = default_init_name;
-			if (NULL == (*p_init_desc)) {
-				TRACE("Missing init descriptor\n");
-				continue;
-			}
-			if ((*p_init_desc)->level != level) {
-				continue;
-			}
-			if (NULL != (*p_init_desc)->name) {
-				init_name = ((*p_init_desc)->name);
-			}
-			if (NULL == ((*p_init_desc)->init)) {
-				TRACE("%s has a broken init handler descriptor.\n", init_name);
-				continue;
-			}
-			TRACE("* Initializing %s\n", (*p_init_desc)->name);
-			(*p_init_desc)->init();
-		}
-		TRACE("\n");
-		/* after components initializing */
-		express_tests_execute(level);
+	if (0 != (ret = runlevel_set(target_level))) {
+		TRACE("Failed to get into level %d, current level %d", target_level,
+				runlevel_get_entered());
 	}
-	return 0;
+	return ret;
 }

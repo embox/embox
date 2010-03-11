@@ -45,6 +45,7 @@ SECTIONS {
 		ALIGNMENT();
 		_data_start = .;
 		*(.data)
+		ALIGNMENT();
 		_data_end = .;
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
@@ -55,10 +56,7 @@ SECTIONS {
 		*(.bss)
 		*(.sbss)
 		ALIGNMENT();
-
-		ALLOC_EXPRESS_RESULT
-
-		_bend = ALIGN(0x8);
+		_bend = .;
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 }

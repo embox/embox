@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Necessary arch-dependent typedefs.
  *
  * @date 25.11.2009
  * @author Eldar Abusalimov
@@ -8,6 +8,8 @@
 
 #ifndef SPARC_TYPES_H_
 #define SPARC_TYPES_H_
+
+#define __WORDSIZE 32
 
 #ifndef __ASSEMBLER__
 
@@ -24,6 +26,9 @@ typedef unsigned int __paddr_t;
 typedef unsigned int __psize_t;
 typedef unsigned int __vaddr_t;
 typedef unsigned int __vsize_t;
+
+typedef unsigned int  __size_t;
+typedef signed int __ptrdiff_t;
 
 #endif /* __ASSEMBLER__ */
 

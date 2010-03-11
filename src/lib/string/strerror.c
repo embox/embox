@@ -4,6 +4,7 @@
  * @date 13.10.09
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 #include <errno.h>
 
@@ -40,6 +41,6 @@ char *strerror(int errnum) {
 	case EEOF:         return "End of file reached";
 	case ENOSUPP:      return "Operation not supported";
 	case EDEVNOSUPP:   return "Device does not support this operation";
+	default:           return "Unknown error code";
 	}
-	return NULL;
 }

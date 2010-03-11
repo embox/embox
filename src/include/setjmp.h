@@ -44,6 +44,6 @@ int setjmp(jmp_buf env);
  * @param env @link jmp_buf @endlink to restore the context from
  * @param value the return value for @c setjmp call
  */
-void longjmp(jmp_buf env, int value);
+void longjmp(jmp_buf env, int value) __attribute__ ((noreturn));
 
 #endif /* SETJMP_H_ */

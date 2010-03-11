@@ -6,16 +6,16 @@
  */
 
 #include <types.h>
-#include <express_tests.h>
 
+#include <embox/test.h>
 #include <hal/mm/mmu_core.h>
 
-DECLARE_EXPRESS_TEST(mmu_enable, exec, NULL);
+EMBOX_TEST(run);
+
 static uint32_t prev_mmu_status;
 static uint32_t prev_mmu_table;
 
-
-static int exec(int argc, char** argv) {
+static int run() {
 	mmu_save_status(&prev_mmu_status);
 	if (prev_mmu_status) {
 		mmu_save_table(&prev_mmu_table);

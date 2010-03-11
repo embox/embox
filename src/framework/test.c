@@ -1,37 +1,55 @@
 /**
  * @file
  *
- * @brief Express tests routings
+ * @brief EMBOX test framework implementation.
  *
  * @date Dec 4, 2008
- *
  * @author Anton Bondarev
  *         - Initial implementation
  * @author Eldar Abusalimov
- *         - Reworking finding handler algorithm
+ *         - Reworking handler search algorithm
  * @author Alexey Fomin
  *         - Adding level implementation code
  */
 
+#include <types.h>
+#include <errno.h>
 #include <common.h>
-#include <express_tests.h>
-#include <kernel/init.h>
-#include <kernel/sys.h>
 
-typedef int (*express_tests_criterion_func_t)(express_test_descriptor_t *);
+#include <embox/test.h>
+#include <embox/mod.h>
 
-static int execute_level = 0;
-static int is_on_level(express_test_descriptor_t *expr_tst) {
-	return expr_tst->level == execute_level;
+static int test_mod_invoke(struct mod *mod);
+
+struct mod_ops __test_mod_ops = { .enable = &test_mod_invoke,
+		.invoke = &test_mod_invoke };
+
+MOD_DEF(__test_tag, generic, "test");
+
+static int test_mod_invoke(struct mod *mod) {
+	int result;
+	struct test *test = (struct test *) mod->data;
+
+	if (NULL == test->run) {
+		return -EBADF;
+	}
+
+	TRACE("test: running %s: ", test->name);
+	if (0 == (result = test->run())) {
+		TRACE("passed\n");
+	} else {
+		TRACE("failed\n");
+	}
+
+	return (test->private->result = result);
 }
 
-static int always_true(express_test_descriptor_t *expr_tst) {
-	return 1;
-}
-
-static int express_tests_execute_on_criterion( express_tests_criterion_func_t has_to_be_executed ) {
+#if 0
+static int express_tests_execute_on_criterion(
+		express_tests_criterion_func_t has_to_be_executed) {
 	extern int *__express_tests_result;
-	extern express_test_descriptor_t *__express_tests_start, *__express_tests_end;
+	extern express_test_descriptor_t *__express_tests_start,
+	*__express_tests_end;
 	express_test_descriptor_t ** p_test = &__express_tests_start;
 	int i, total = (int) (&__express_tests_end - &__express_tests_start);
 	int passed = 0, failed = 0, skipped = 0, result;
@@ -46,7 +64,9 @@ static int express_tests_execute_on_criterion( express_tests_criterion_func_t ha
 			continue;
 		}
 		if (NULL == ((*p_test)->exec)) {
-			LOG_ERROR("Broken express test descriptor: can't find exec function for test %s\n", (*p_test)->name);
+			LOG_ERROR(
+					"Broken express test descriptor: can't find exec function for test %s\n",
+					(*p_test)->name);
 			continue;
 		}
 		if (!has_to_be_executed(*p_test)) {
@@ -54,8 +74,7 @@ static int express_tests_execute_on_criterion( express_tests_criterion_func_t ha
 		}
 
 		TRACE("Running express test: %s ... ", (*p_test)->name);
-		if (!(*p_test)->execute_on_boot)
-		{
+		if (!(*p_test)->execute_on_boot) {
 			TRACE("SKIPPED\n");
 			skipped++;
 			continue;
@@ -65,8 +84,8 @@ static int express_tests_execute_on_criterion( express_tests_criterion_func_t ha
 		result = (*p_test)->exec(0, NULL);
 
 		/* writing test results to special section */
-// XXX this shit causes NULL pointer exception when running on TSIM. -- Eldar
-//		__express_tests_result[i] = result;
+		// XXX this shit causes NULL pointer exception when running on TSIM. -- Eldar
+		//		__express_tests_result[i] = result;
 
 		if (result == EXPRESS_TESTS_PASSED_RETCODE) {
 			TRACE("PASSED\n");
@@ -100,8 +119,7 @@ static int express_tests_execute_on_criterion( express_tests_criterion_func_t ha
 	return (failed == 0) ? 0 : -1;
 }
 
-
-void express_tests_execute( int level ) {
+void express_tests_execute(int level) {
 	execute_level = level;
 	express_tests_execute_on_criterion(is_on_level);
 }
@@ -109,3 +127,4 @@ void express_tests_execute( int level ) {
 void express_tests_execute_all() {
 	express_tests_execute_on_criterion(always_true);
 }
+#endif

@@ -1,35 +1,46 @@
 /**
- * \file test_irq_force.c
+ * @file
  *
- * \date 02.11.2009
- * \author Alexey Fomin
+ * @date 02.11.2009
+ * @author Alexey Fomin
+ * @author Eldar Abusalimov
  */
 
 #include "common.h"
-#include "express_tests.h"
-#include "kernel/irq.h"
 
-#define TEST_IRQ_NUM 10
+#include <types.h>
+#include <string.h>
 
-DECLARE_EXPRESS_TEST(irq_force, exec, NULL);
+#include <embox/test.h>
+#include <kernel/irq.h>
+#include <hal/interrupt.h>
+
+#define TEST_IRQ_NR 10
+
+EMBOX_TEST(run);
+EMBOX_TEST_EXPORT(run_irq_force);
 
 volatile static bool irq_happened;
 
-static void test_irq_force_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
+static irq_return_t test_isr(irq_nr_t irq_nr, void *dev_id) {
 	irq_happened = true;
+	return IRQ_HANDLED;
 }
 
-static int exec(int argc, char** argv) {
-	IRQ_INFO irq_info = {TEST_IRQ_NUM, test_irq_force_handler, NULL, "test_irq_force", 0, true};
+static int run(void) {
+	int error;
 
 	irq_happened = false;
 
-	if (!irq_set_info(&irq_info)) {
-		TRACE("Unable to set irq handler\n");
-		return -3;
+	if (0 != (error = irq_attach(TEST_IRQ_NR, test_isr, 0x0, NULL,
+			"test_irq_force"))) {
+		TRACE("irq_attach failed: %s\n", strerror(error));
+		return -1;
 	}
-	irqc_force(irq_info.irq_num);
 
-	irq_set_info(&irq_info);
+	interrupt_force(TEST_IRQ_NR);
+
+	irq_detach(TEST_IRQ_NR, NULL);
+
 	return irq_happened ? 0 : -1;
 }

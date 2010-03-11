@@ -5,7 +5,7 @@
 ifndef _embuild_mk_
 _embuild_mk_ := 1
 
-EMBUILD_DUMP_MK := $(AUTOCONF_DIR)/embuild_cache.mk
+EMBUILD_DUMP_MK := $(CODEGEN_DIR)/embuild_cache.mk
 
 #$(info Running EMBuild [$(MAKELEVEL)])
 
@@ -288,8 +288,7 @@ define define_unit_obj_rules
 endef
 define define_lib_rules
   $(call LIB_FILE,$(unit)) : $(OBJS-$(unit))
-	$(AR) $(ARFLAGS) $@ \
- $(^:%=	% \$N)
+	$(AR) $(ARFLAGS) $@ $(^:%= \$N	%)
 endef
 define define_mod_obj_rules
   $(OBJS-$(unit)) : override CPPFLAGS += -D__EMBUILD_MOD__='$(subst .,$$,$(unit))'
@@ -305,9 +304,10 @@ $(foreach unit,$(MODS), \
 )
 
 # Now process mods that come from config files.
+undefined_mods := $(filter-out $(MODS),$(MODS_ENABLE))
 print_undefined_mods = \
-  $(foreach mod,$(filter-out $(MODS),$(MODS_ENABLE)), \
-    $(info $(call warning_str_file,$(AUTOCONF_DIR)/config.mk) \
+  $(foreach mod,$(undefined_mods), \
+    $(info $(call warning_str_file,$(AUTOCONF_DIR)/mods.mk) \
       Undefined mod $(mod)) \
   )
 
@@ -315,6 +315,15 @@ MODS_ENABLE := $(sort $(filter $(MODS),$(MODS_ENABLE)))
 
 # Prepare the list of mods for the build.
 MODS_BUILD := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_CORE)))
+
+$(foreach mod,$(MODS_CORE), \
+  $(eval RUNLEVEL-$(mod) := 0)\
+)
+
+# XXX just for now. -- Eldar
+$(foreach mod,$(MODS_ENABLE),$(if $(RUNLEVEL-$(mod)),, \
+  $(eval RUNLEVEL-$(mod) := 2)\
+))
 
 __print_units = \
   $(if $(foreach e,$2, \
@@ -345,7 +354,7 @@ image_init:
 # Here goes dump generating stuff needed to speed-up a build.
 
 EMBUILD_DUMP_PREREQUISITES += $(DIRS:%=%/Makefile)
-EMBUILD_DUMP_PREREQUISITES += $(AUTOCONF_DIR)/config.mk
+EMBUILD_DUMP_PREREQUISITES += $(AUTOCONF_DIR)/build.mk
 
 dump_var = $1 := $($1:%=\\\n  %)\n
 dump_var_symbol = $(subst \\\n,\\\n  ,$(subst \n ,\n,$(strip \

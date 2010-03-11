@@ -1,2 +1,2 @@
 
-$_SRCS-libc.a += setjmp.S
+$_SRCS-embox.libc += setjmp.S

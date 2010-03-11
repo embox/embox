@@ -10,11 +10,11 @@
 #include <types.h>
 #include <md5.h>
 #include <common.h>
-#include <express_tests.h>
+#include "embox/test.h"
 
-DECLARE_EXPRESS_TEST(checksum, exec, NULL);
+EMBOX_TEST(run);
 
-static int exec(int argc, char** argv) {
+static int run(void) {
 /*	extern unsigned long __checksum;
 	extern unsigned char _text_start, _data_end;
 	unsigned long result = count_md5(&_text_start, &_data_end);

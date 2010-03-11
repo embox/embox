@@ -9,7 +9,7 @@
 #include <types.h>
 
 #include <shell_command.h>
-#include <kernel/mod.h>
+#include <embox/mod.h>
 
 static const char *man_page =
 		"I am too lazy to fill these stupid man pages. \n"
@@ -21,7 +21,7 @@ DECLARE_SHELL_COMMAND("lsmod", exec,
 		man_page);
 
 static void mod_print(const struct mod *mod, int depth) {
-	const struct mod **p_dep = mod->deps;
+	struct mod **p_requires;
 	int i;
 	for (i = 0; i < depth - 1; ++i) {
 		printf("|  ");
@@ -29,10 +29,10 @@ static void mod_print(const struct mod *mod, int depth) {
 	if (depth > 0) {
 		printf("|- ");
 	}
-	printf("%s.%s\n", mod->package, mod->name);
+	printf("%s.%s\n", mod->package->name, mod->name);
 
-	for (; *p_dep != NULL; ++p_dep) {
-		mod_print(*p_dep, depth + 1);
+	for (p_requires = mod->requires; *p_requires != NULL; ++p_requires) {
+		mod_print(*p_requires, depth + 1);
 	}
 }
 

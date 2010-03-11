@@ -7,21 +7,22 @@
 
 #include <types.h>
 #include <common.h>
-#include <express_tests.h>
+#include <embox/test.h>
 
-DECLARE_EXPRESS_TEST(soft_traps, exec, NULL);
-
-extern unsigned int volatile test_soft_traps_variable;
 #define TEST_SOFT_TRAP_NUMBER 0x10
 
-static int exec(int argc, char** argv) {
+EMBOX_TEST(run);
+
+extern unsigned int volatile test_soft_traps_variable;
+
+static int run(void) {
 	unsigned int temp = test_soft_traps_variable;
 
 	trap_fire(TEST_SOFT_TRAP_NUMBER);
 
 	if (temp != (test_soft_traps_variable - 1)) {
 		TRACE("Incorrect software traps handling\n");
-		return EXPRESS_TESTS_FAILED_RETCODE;
+		return -1;
 	}
-	return EXPRESS_TESTS_PASSED_RETCODE;
+	return 0;
 }

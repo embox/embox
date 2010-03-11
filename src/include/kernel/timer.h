@@ -13,7 +13,7 @@
 
 typedef void (*TIMER_FUNC)(uint32_t id);
 
-/*int sys_timers_init(void);*/
+int timer_init(void);
 
 /**
  * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.

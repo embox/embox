@@ -4,11 +4,12 @@
  * @date 07.03.2009
  * @author Anton Bondarev
  */
+
 #include <common.h>
+
 #include <net/netdevice.h>
-#include <lib/list.h>
-#include <kernel/module.h>
 #include <net/net_pack_manager.h>
+#include <lib/list.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>
 

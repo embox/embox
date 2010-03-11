@@ -28,7 +28,6 @@ ifdef CONFIG_IRQ
   $_DEPS-irq     += softirq
 endif
 ifdef CONFIG_PRINTK
-  $_SRCS-printk  += printk.c
   $_DEPS-printk  += $(CONFIG_MOD_DIAG)
 endif
 ifdef CONFIG_SOFTIRQ

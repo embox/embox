@@ -1,58 +1,78 @@
 /**
  * @file
+ * @brief C standard library header.
+ * @details Contains declarations of functions used for C-style strings
+ * handling and operating with memory blocks.
  *
  * @date 02.12.08
- * @author Anton Bondarev - Initial implementation.
- * @author Nikolay Korotky - major rework.
+ * @author Anton Bondarev
+ *         - Initial implementation
+ * @author Nikolay Korotky
+ *         - Major rework
+ * @author Eldar Abusalimov
+ *         - Documenting and library code cleanup (TODO in progress. -- Eldar)
  */
+
 #ifndef _STRING_H_
 #define _STRING_H_
 
-#include <types.h>
+#include <stddef.h>
 
 /**
- * calculate length of string
- * @param pointer to  first symbol in string
+ * Calculates the length of the specified string.
+ *
+ * @param str target C-style string
  * @return string length
  */
 extern int strlen(const char *str);
 
 /**
- * copy string
- * @param pointer to first symbol in source string
- * @param pointer to first symbol in destination string
- * @return pointer to result string
+ * Copies a string from one location to another.
+ *
+ * @param dst destination string
+ * @param src source string
+ * @return pointer to destination string
  */
-extern char *strcpy(char *dest, const char *src);
+extern char *strcpy(char *dst, const char *src);
 
 /**
- * copy not more then n symbols in string
- * @param pointer to first symbol in source string
- * @param pointer to first symbol in destination string
- * @param max symbols quantity for copy
- * @return pointer to result string
+ * Copies up to @c n bytes of a string from one location to another adding
+ * zeros to the end of the copy is the source string length is less than @c n.
+ * Despite its name it is not a bounded version of #strcpy(), it does not
+ * guarantee that the result is a null-terminated string.
+ *
+ * @param dst destination string
+ * @param src source string
+ * @param n the size of block to fill in the destination buffer
+ * @return pointer to destination string
  */
-extern char *strncpy(char *dest, const char *source, size_t count);
+extern char *strncpy(char *dst, const char *src, size_t n);
 
 /**
- * string comparing
- * @param pointer to first symbol in source string
- * @param pointer to first symbol in destination string
- * @return 0 if string is equal
- * @return 1 if str1 greater then str2
- * @return -1 if str2 greater then str1
+ * Compares two strings lexicographically.
+ *
+ * @param str1 first string
+ * @param str2 second string
+ * @return comparison result according to the lexicographical order
+ * @retval 0 if the strings are equal
+ * @return positive if @c str1 is greater than @c str2
+ * @return negative if @c str1 is less than @c str2
  */
 extern int strcmp(const char *str1, const char *str2);
 
 /**
- * string comparing max n symbols
- * @param pointer to first symbol in source string
- * @param pointer to first symbol in destination string
- * @return 0 if string is equal
- * @return 1 if str1 greater then str2
- * @return -1 if str2 greater then str1
+ * Compares up to @c n bytes of two strings lexicographically. This function is
+ * a bounded version of #strcmp().
+ *
+ * @param str1 first string
+ * @param str2 second string
+ * @param n max number of symbols to compare
+ * @return comparison result according to the lexicographical order
+ * @retval 0 if the strings are equal
+ * @return positive if @c str1 is greater than @c str2
+ * @return negative if @c str1 is less than @c str2
  */
-extern int strncmp(const char *s1, const char *s2, size_t count);
+extern int strncmp(const char *str1, const char *str2, size_t n);
 
 /**
  * Find the first occurrence of C in S.
@@ -95,6 +115,14 @@ extern char *strtok(char *str, const char *delim);
  */
 extern size_t strspn(const char *s, const char *accept);
 extern size_t strcspn(const char *s, const char *reject);
+
+/**
+ * Returns the string representation of an error number e.g. errno.
+ *
+ * @param errnum error code
+ * @return C-style string, containing an error message
+ */
+extern char *strerror(int errnum);
 
 /**
  * comparing 2 massive of bytes

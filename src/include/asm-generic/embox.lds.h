@@ -36,12 +36,13 @@
 	                               \
 	ALIGNMENT();                   \
 	__mods_start = . ;             \
-		*(.mods)                   \
+		*(.mod.rodata)             \
 	__mods_end = .;                \
+	*(SORT(.mod*.rodata))          \
 	                               \
 	ALIGNMENT();                   \
 	__express_tests_start = . ;    \
-		*(.express_tests)          \
+		*(.test.rodata)            \
 	__express_tests_end = .;       \
 	                               \
 	ALIGNMENT();                   \
@@ -76,27 +77,5 @@
 	                               \
 	ALIGNMENT();                   \
 	*(.checksum)                   \
-
-/* Allocates memory for express test's results.
- *
- * For each test we have it's int return code.
- *
- * It is the same size as the section
- * for express tests descriptors.
- * So here (.express_tests) is written.
- *
- * Also, we know exact size of the section,
- * so nothing like "__expr_tst_end"
- * is written in the end.
- *
- * This section is allocated in .bss
- * it won't be cleaned in asm code!
- */
-#define ALLOC_EXPRESS_RESULT \
-	ALIGNMENT(); \
-	__express_tests_result = .; \
-	*(.express_tests)
-
-
 
 #endif /* EMBOX_LDS_H_ */

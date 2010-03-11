@@ -4,14 +4,15 @@
  * @date 29.06.2009
  * @author Anton Bondarev
  */
+
 #include <string.h>
 #include <common.h>
+
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
-#include <kernel/init.h>
+#include <embox/unit.h>
 
-DECLARE_INIT("rootfs", rootfs_init, INIT_FS_LEVEL);
-
+EMBOX_UNIT_INIT(unit_init);
 
 typedef struct _FS_DESCRIPTION {
 	const char * name;
@@ -47,7 +48,7 @@ static FSOP_DESCRIPTION rootfs_op = {
 	.get_file_list_iterator = get_file_list_iterator
 };
 
-static int rootfs_init(){
+static int unit_init(){
 	int i;
 	for (i = 0; i < NUMBER_OF_FS; i++){
 		if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)){

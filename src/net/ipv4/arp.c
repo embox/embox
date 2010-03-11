@@ -8,9 +8,10 @@
  * @author Anton Bondarev
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 #include <common.h>
-#include <kernel/module.h>
+
 #include <kernel/timer.h>
 #include <net/inetdevice.h>
 #include <net/arp.h>

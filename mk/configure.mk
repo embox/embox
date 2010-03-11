@@ -5,24 +5,22 @@
 HOSTCC  = gcc
 HOSTCPP = $(HOSTCC) -E
 
-src_confs := embox platform
-mk_confs  := $(src_confs) build
-lds_confs := lds
+build_conf   := $(CONF_DIR)/build.conf
+options_conf := $(CONF_DIR)/options.conf
+mods_conf    := $(CONF_DIR)/mods.conf
+lds_conf     := $(CONF_DIR)/lds.conf
 
-src_confs := $(src_confs:%=$(CONF_DIR)/%.conf)
-mk_confs  :=  $(mk_confs:%=$(CONF_DIR)/%.conf)
-lds_confs := $(lds_confs:%=$(CONF_DIR)/%.conf)
+build_mk     := $(AUTOCONF_DIR)/build.mk
+mods_mk      := $(AUTOCONF_DIR)/mods.mk
+config_h     := $(AUTOCONF_DIR)/config.h
+config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 
-src_autoconf := $(AUTOCONF_DIR)/config.h
-mk_autoconf  := $(AUTOCONF_DIR)/config.mk
-lds_autoconf := $(AUTOCONF_DIR)/config.lds.h
+CONF_FILES     := $(build_conf) $(options_conf) $(mods_conf) $(lds_conf)
+AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 
-CONF_FILES     := $(sort $(mk_confs) $(src_confs) $(lds_confs))
-AUTOCONF_FILES := $(mk_autoconf) $(src_autoconf) $(lds_autoconf)
+-include $(build_mk) $(mods_mk)
 
--include $(mk_autoconf)
-
-TARGET ?= embox
+TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
 
 .PHONY: check_config
 check_config:
@@ -36,21 +34,23 @@ ifndef ARCH
 	exit 1
 endif
 
-$(mk_autoconf) : $(mk_confs)
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) -DMAKE \
-	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S > $@
+$(build_mk)     : DEFS := __BUILD_MK__
+$(mods_mk)      : DEFS := __MODS_MK__
+$(config_h)     : DEFS := __CONFIG_H__
+$(config_lds_h) : DEFS := __CONFIG_LDS_H__
 
-$(src_autoconf) : $(src_confs)
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) \
+$(build_mk) $(mods_mk) :
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
-		| sed 's/$$define/\n#define/g' | uniq > $@
+		| sed 's/$$N/\n/g' > $@
 
-$(lds_autoconf) : $(lds_confs)
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) -DLDS \
+$(config_h) $(config_lds_h) :
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
-		| sed 's/$$define/\n#define/g' | uniq > $@
+		| sed 's/$$N/\n/g' | sed 's/$$define/#define/g' > $@
 
-$(AUTOCONF_FILES) : | mkdir # mkdir shouldn't force target to be updated
+$(AUTOCONF_FILES) : $(MK_DIR)/configure.mk \
+  | mkdir # mkdir shouldn't force target to be updated
 
 -include $(AUTOCONF_FILES:%=%.d)
 

@@ -7,10 +7,11 @@
  * @date 12.08.09
  * @author Nikolay Korotky
  */
-#include <string.h>
+
 #include <common.h>
+#include <string.h>
 #include <errno.h>
-#include <kernel/module.h>
+
 #include <kernel/irq.h>
 #include <net/skbuff.h>
 #include <net/sock.h>

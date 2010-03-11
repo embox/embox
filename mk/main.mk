@@ -23,8 +23,10 @@ BUILD_DIR      := $(ROOT_DIR)/build
 BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
 LIB_DIR        := $(OBJ_DIR)
+DOT_DIR        := $(BUILD_DIR)/dot
 DOCS_DIR       := $(BUILD_DIR)/docs
-AUTOCONF_DIR   := $(BUILD_DIR)/conf
+CODEGEN_DIR    := $(BUILD_DIR)/codegen
+AUTOCONF_DIR   := $(CODEGEN_DIR)
 
 RM     := rm -f
 CP     := cp
@@ -40,12 +42,13 @@ ifeq ($(filter clean %config,$(makegoals)),)
 # Need to include it prior to walking the source tree
 # (particularly because of ARCH definition).
 include $(MK_DIR)/configure.mk
-ifneq ($(wildcard $(AUTOCONF_DIR)/config.mk),)
+ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
 include $(MK_DIR)/image.mk
+include $(MK_DIR)/codegen-dot.mk
 endif
 endif
 
-.PHONY: all prepare docs clean config xconfig menuconfig
+.PHONY: all prepare docs dot clean config xconfig menuconfig
 
 all: check_config prepare image
 	@echo 'Build complete'
@@ -59,6 +62,9 @@ prepare:
 
 docs:
 	@mkdir -p $(DOCS_DIR) && doxygen
+
+dot: $(GRAPH_PS)
+	@echo 'Dot complete'
 
 clean: _clean
 	@echo 'Clean complete'

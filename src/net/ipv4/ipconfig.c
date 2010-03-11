@@ -6,5 +6,5 @@
  * @date 15.07.09
  * @author Nikolay Korotky
  */
+
 #include <net/inetdevice.h>
-#include <kernel/init.h>

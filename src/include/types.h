@@ -5,23 +5,16 @@
  * @author Nikolay Korotky
  * @author Eldar Abusalimov
  */
+
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <asm/types.h>
-#include <sys/types.h>
-
 #ifndef __ASSEMBLER__
 
-typedef __s8  int8_t;
-typedef __s16 int16_t;
-typedef __s32 int32_t;
-typedef __s64 int64_t;
+#include <stdint.h>
+#include <stdbool.h>
 
-typedef __u8  uint8_t;
-typedef __u16 uint16_t;
-typedef __u32 uint32_t;
-typedef __u64 uint64_t;
+#include <sys/types.h>
 
 /* FIXME try to avoid using these types -- Eldar*/
 typedef __u16 __le16;
@@ -31,14 +24,9 @@ typedef __u32 __be32;
 typedef __u64 __le64;
 typedef __u64 __be64;
 
-typedef _Bool bool;
-
-#define true 1
-#define false 0
-
+#ifndef NULL
 #define NULL ((void *)0x0)
-
-#define offsetof(type, member) ((size_t) &((type *)0)->member)
+#endif
 
 #if 0
 typedef __paddr_t paddr_t;

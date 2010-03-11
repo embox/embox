@@ -11,6 +11,7 @@
 
 #include <kernel/printk.h>
 
+#if 0
 int __attribute__ ((format (printf, 1, 2))) printk(const char *format, ...) {
 	va_list args;
 	int ret;
@@ -21,3 +22,4 @@ int __attribute__ ((format (printf, 1, 2))) printk(const char *format, ...) {
 
 	return ret;
 }
+#endif

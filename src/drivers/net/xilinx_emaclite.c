@@ -5,21 +5,22 @@
  * @date 18.12.2009
  * @author Anton Bondarev
  */
+
+#include <common.h>
 #include <types.h>
+#include <string.h>
+
 #include <asm/cpu_conf.h>
-#include <kernel/module.h>
+#include <kernel/irq.h>
 #include <net/if_ether.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/net.h>
 #include <net/net_pack_manager.h>
 #include <net/etherdevice.h>
-#include <kernel/irq.h>
-#include <common.h>
-#include <string.h>
+#include <embox/unit.h>
 
-DECLARE_MODULE("Ethernet Emac lite", module_init)
-;
+EMBOX_UNIT_INIT(unit_init);
 
 #define PKTSIZE 0x800
 
@@ -300,7 +301,7 @@ static const struct net_device_ops _netdev_ops = {
 		.ndo_start_xmit = start_xmit, .ndo_open = open, .ndo_stop = stop,
 		.ndo_get_stats = get_eth_stat, .ndo_set_mac_address = set_mac_address };
 
-static int module_init() {
+static int unit_init() {
 	/*if some module lock irq number we break initializing*/
 	net_device_t *net_device;
 	/*initialize net_device structures and save information about them to local massive*/

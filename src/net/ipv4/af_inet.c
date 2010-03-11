@@ -5,7 +5,7 @@
  * @date 01.12.09
  * @author Nikolay Korotky
  */
-#include <kernel/module.h>
+
 #include <err.h>
 #include <net/protocol.h>
 #include <net/arp.h>

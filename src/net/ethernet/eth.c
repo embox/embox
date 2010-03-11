@@ -5,13 +5,14 @@
  * @date 4.03.09
  * @author Anton Bondarev
  */
-#include <netutils.h>
+
 #include <string.h>
 #include <errno.h>
+
+#include <netutils.h>
 #include <net/netdevice.h>
 #include <net/arp.h>
 #include <net/ip.h>
-#include <kernel/module.h>
 #include <net/inetdevice.h>
 #include <net/sock.h>
 

@@ -15,10 +15,11 @@
  */
 
 #include <types.h>
-#include <express_tests.h>
-DECLARE_EXPRESS_TEST(compiler_mem_alloc, compiler_mem_alloc_test, NULL);
+#include <embox/test.h>
 
-static int compiler_mem_alloc_test(int argc, char** argv) {
+EMBOX_TEST(run);
+
+static int run() {
 	char buf[2];
 	static char* proposals[64];
 	proposals[0] = "a"; 					/* for mem allocation only */
@@ -28,9 +29,5 @@ static int compiler_mem_alloc_test(int argc, char** argv) {
 	buf[1] = '\0';
 /*	printf("%s\n", buf); 		*/
 
-	if (!strcmp(buf, " ")) {
-		return EXPRESS_TESTS_PASSED_RETCODE;
-	} else {
-		return EXPRESS_TESTS_FAILED_RETCODE;
-	}
+    return strcmp(buf, " ");
 }

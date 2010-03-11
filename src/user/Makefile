@@ -1,5 +1,5 @@
 
-$_PACKAGE := embox.usr
+$_PACKAGE := embox.cmd
 
 $_SUBDIRS := $(filter-out mmu_probe mkfile ls_new,$($_SUBDIRS))
 

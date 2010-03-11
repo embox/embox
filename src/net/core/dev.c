@@ -5,20 +5,21 @@
  * @date 04.03.2009
  * @author Anton Bondarev
  */
+
 #include <types.h>
 #include <string.h>
 #include <stdio.h>
+
 #include <net/arp.h>
 #include <net/inetdevice.h>
-#include <kernel/module.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <lib/list.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
+#include <embox/unit.h>
 
-DECLARE_INIT("net_dev", net_dev_init, INIT_NET_LEVEL)
-;
+EMBOX_UNIT_INIT(unit_init);
 
 /*FIXME we must have queue for each netdevice or if we want to use the only
  we should use alloc_skb_queue?*/
@@ -320,7 +321,7 @@ int netif_receive_skb(sk_buff_t *skb) {
 	return 0;
 }
 
-static int __init net_dev_init(void) {
+static int __init unit_init(void) {
 #if 0
 	//TODO interface not compatible with linux
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);

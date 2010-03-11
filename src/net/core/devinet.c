@@ -6,9 +6,10 @@
  * @date 18.07.2009
  * @author Anton Bondarev
  */
+
 #include <string.h>
 #include <common.h>
-#include <kernel/module.h>
+
 #include <net/inetdevice.h>
 #include <linux/init.h>
 

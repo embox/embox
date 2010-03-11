@@ -8,13 +8,13 @@
 #include "asm/leon.h"
 #include "asm/mmu.h"
 #include "asm/srmmu_probe.h"
-#include "express_tests.h"
+#include "embox/test.h"
 
-DECLARE_EXPRESS_TEST(MMU, exec, NULL);
+EMBOX_TEST(run);
 
 #define TLBNUM 4
 
-static int exec(int argc, char** argv) {
+static int run() {
 	unsigned long pteval;
 	unsigned long j, i, val;
 

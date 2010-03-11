@@ -6,14 +6,14 @@
  */
 
 #include "common.h"
-#include "express_tests.h"
+#include "embox/test.h"
 #include "hal/irq_ctrl.h"
 #include "kernel/irq.h"
 #include "asm/sys.h"
 
 #define TEST_IRQ_NUM 10
 
-DECLARE_EXPRESS_TEST(LOCAL_IRQ_SAVE, exec, NULL);
+EMBOX_TEST(LOCAL_IRQ_SAVE, exec, NULL);
 
 volatile static bool irq_happened;
 

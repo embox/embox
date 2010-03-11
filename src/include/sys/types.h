@@ -10,7 +10,11 @@
 
 #ifndef __ASSEMBLER__
 
+#ifndef __size_t_defined
+#define __size_t_defined
 typedef int size_t; /**<Used for sizes of objects*/
+#endif /* __size_t_defined */
+
 /**<Note also that 'size_t' is a typedef required by the ISO C standard
  (it must be available if <stddef.h> is included). However, 'ssize_t'
  does not exist in the C standard -- the standard 'ptrdiff_t'
