@@ -1,5 +1,8 @@
-EmBox - Essential toolbox for embedded development.
+EMBOX - Essential toolbox for embedded development.
 
 Quickstart guide
 
-...
+make config TEMPLATE=<arch>
+make all
+
+To be continued...

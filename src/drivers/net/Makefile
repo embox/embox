@@ -1,6 +1,7 @@
+
 $_PACKAGE := embox.driver.net
 
-$_CPPFLAGS += -I$(THIRDPARTY_DIR)/linux-compat/include
+$_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
 
 $_MODS += xemaclite loopback
 

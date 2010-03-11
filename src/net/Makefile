@@ -8,4 +8,4 @@ $_SRCS-socket += kernel_socket.c
 
 $_DEPS-socket += embox.net.core
 
-$_CPPFLAGS += -I$(THIRDPARTY_DIR)/linux-compat/include
+$_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
