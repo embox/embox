@@ -113,7 +113,6 @@ int udp_rcv(sk_buff_t *skb) {
 	}
 	if (sk) {
 		udp_queue_rcv_skb(sk, skb);
-		printf("sock=0x%08x\n", sk);
 		inet->dport = uh->source;
 		inet->daddr = iph->saddr;
 	} else {

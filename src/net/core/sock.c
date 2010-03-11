@@ -119,6 +119,6 @@ void sk_common_release(struct sock *sk) {
 	if (sk->sk_prot->destroy) {
 		sk->sk_prot->destroy(sk);
 	}
-
 	//sk->sk_prot->unhash(sk);
+	sk_free(sk);
 }
