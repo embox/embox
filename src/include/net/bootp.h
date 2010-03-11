@@ -12,7 +12,7 @@
 #include <net/ip.h>
 #include <net/net.h>
 
-//#define HOSTNAME "monitor"
+//#define HOSTNAME "embox"
 //#define DHCP_SUPPORT 1
 //#define DNS_SUPPORT 1
 
