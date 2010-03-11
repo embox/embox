@@ -1,13 +1,3 @@
 /build
 /build.sh
 /conf
-scripts/.config
-scripts/autoconf.h
-scripts/autoconf.mk
-scripts/link*
-
-*.o
-*.d
-
-*.pyc
-
