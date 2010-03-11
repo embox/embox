@@ -14,12 +14,12 @@
 
 #ifndef __ASSEMBLER__
 
-#define PTRACE_REGS_SZ sizeof(struct ptrace_regs)
+#define PTRACE_REGS_SZ sizeof(struct pt_regs)
 
 /**
  * Basic set of registers to save when trap occurs.
  */
-struct ptrace_regs {
+struct pt_regs {
 	uint32_t psr;        /**< Processor state register. */
 	uint32_t pc;         /**< Program counter. */
 	uint32_t npc;        /**< Next Program counter. */

@@ -1,6 +1,5 @@
 
 $_MODS += af_inet ipv4 arp icmp udp raw
-#$_MODS += tftp dhcp bootp
 
 $_SRCS-af_inet += af_inet.c
 $_SRCS-af_inet += protocol.c
@@ -13,9 +12,6 @@ $_SRCS-ipv4    += ip_output.c
 $_SRCS-icmp    += icmp.c
 $_SRCS-udp     += udp.c
 $_SRCS-raw     += raw.c
-#$_SRCS-tftp    += tftp.c
-#$_SRCS-dhcp    += dhcp.c
-#$_SRCS-bootp   += bootp.c
 
 $_DEPS-af_inet += embox.net.socket
 $_DEPS-udp     += embox.net.socket

@@ -145,6 +145,8 @@ extern int sock_no_accept(struct socket *, struct socket *, int);
 extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 			struct msghdr *msg, size_t size, int flags);
 
+extern void sk_common_release(struct sock *sk);
+
 #if 0
 //TODO NETSOCK: functions are not realized now
 extern int proto_register(proto_t *prot, int alloc_slab);
