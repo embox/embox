@@ -76,7 +76,7 @@ $(DEPSINJECT_SRC) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
 
 $(DEPSINJECT_OBJ) : $(AUTOCONF_DIR)/config.h
 $(DEPSINJECT_OBJ) : $(DEPSINJECT_SRC)
-	$(CC) $(CPPFLAGS) -D__EMBUILD_DEPSINJECT__ -o $@ -c $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -std=gnu99 -D__EMBUILD_DEPSINJECT__ -o $@ -c $<
 
 -include $(DEPSINJECT_OBJ:.o=.d)
 

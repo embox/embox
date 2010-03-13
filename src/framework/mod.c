@@ -41,8 +41,8 @@ int mod_enable(const struct mod *mod) {
 		TRACE("     mod->ops->enable: 0x%08x\n", (unsigned int) (*mod->ops)->enable);
 	}
 #endif
-	if (NULL != mod->ops && NULL != (*mod->ops)->enable && 0
-			!= (*mod->ops)->enable((struct mod *) mod)) {
+	if (NULL != mod->ops_ref && NULL != mod->ops_ref->ops->enable && 0
+			!= mod->ops_ref->ops->enable((struct mod *) mod)) {
 		mod_flag_set(mod, MOD_FLAG_OPFAILED);
 		return -EINTR;
 	}
@@ -68,8 +68,8 @@ int mod_disable(const struct mod *mod) {
 		}
 	}
 
-	if (NULL != mod->ops && NULL != (*mod->ops)->disable && 0
-			!= (*mod->ops)->disable((struct mod *) mod)) {
+	if (NULL != mod->ops_ref && NULL != mod->ops_ref->ops->disable && 0
+			!= mod->ops_ref->ops->disable((struct mod *) mod)) {
 		mod_flag_set(mod, MOD_FLAG_OPFAILED);
 		return -EINTR;
 	}

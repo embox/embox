@@ -16,8 +16,9 @@
 #include <embox/mod.h>
 
 #define __EMBOX_UNIT(_init, _fini) \
-	MOD_SELF_DATA_DEF(__unit__); \
-	MOD_SELF_OPS_DEF(__unit_mod_ops); \
+	static const struct unit __unit__; \
+	MOD_SELF_DATA_DEF(&__unit__); \
+	MOD_SELF_OPS_DEF(&__unit_mod_ops); \
 	static const struct unit __unit__ = { \
 			.init = _init, \
 			.fini = _fini, \

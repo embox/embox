@@ -1,11 +1,3 @@
-/*
- * Copyright (C) 2009 Lanit-Terkom, St.-Petersburg, Russia
- *
- * This file is part of EMBoX.
- *
- * < License goes here > test
- */
-
 /**
  * @file
  * @brief SPARC register windows related stuff.

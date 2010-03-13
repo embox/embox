@@ -53,7 +53,7 @@ static int init(void) {
 	int ret = 0;
 	const runlevel_nr_t target_level = RUNLEVEL_NRS_TOTAL - 1;
 
-	TRACE("EMBOX kernel start");
+	TRACE("EMBOX kernel start\n");
 
 	if (0 != (ret = runlevel_set(target_level))) {
 		TRACE("Failed to get into level %d, current level %d", target_level,

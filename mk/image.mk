@@ -52,6 +52,7 @@ override CPPFLAGS += $(cppflags)
 # Compiler flags
 cflags:=$(CFLAGS)
 override CFLAGS  = -pedantic
+override CFLAGS += -fno-strict-aliasing -fno-common
 override CFLAGS += -Wall
 override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement -Winline
 override CFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts

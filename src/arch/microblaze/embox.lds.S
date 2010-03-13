@@ -1,6 +1,3 @@
-/*
- * This file is part of EMBOX.
- */
 
 #include <asm-generic/embox.lds.h>
 

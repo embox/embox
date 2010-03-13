@@ -19,7 +19,7 @@ struct mod_ops __unit_mod_ops = { .enable = &unit_mod_enable,
 
 static int unit_mod_enable(struct mod *mod) {
 	int ret = 0;
-	struct unit *unit = (struct unit *) mod->data;
+	struct unit *unit = (struct unit *) mod->data_ref->data;
 
 	if (NULL == unit->init) {
 		return 0;
@@ -37,7 +37,7 @@ static int unit_mod_enable(struct mod *mod) {
 
 static int unit_mod_disable(struct mod *mod) {
 	int ret = 0;
-	struct unit *unit = (struct unit *) mod->data;
+	struct unit *unit = (struct unit *) mod->data_ref->data;
 
 	if (NULL == unit->fini) {
 		return 0;

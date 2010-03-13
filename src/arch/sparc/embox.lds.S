@@ -1,6 +1,3 @@
-/*
- * This file is part of EMBOX.
- */
 
 #include <asm-generic/embox.lds.h>
 
@@ -27,6 +24,8 @@ SECTIONS {
 		*(.trap_table.text)
 		*(.text)
 		*(.init.text)
+		ALIGNMENT();
+	    *(.eh_frame)
 		ALIGNMENT();
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)

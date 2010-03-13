@@ -15,7 +15,7 @@
 #define __RUNLEVEL_MOD_DEF(op, nr) \
 	MOD_DEF(runlevel##nr##_##op, generic, "runlevel"#nr"_"#op); \
 	MOD_DATA_DEF(runlevel##nr##_##op, nr); \
-	MOD_OPS_DEF(runlevel##nr##_##op, __runlevel_##op##_mod_ops)
+	MOD_OPS_DEF(runlevel##nr##_##op, &__runlevel_##op##_mod_ops)
 
 #define RUNLEVEL_DEF(nr) \
 	__RUNLEVEL_MOD_DEF(init, nr); \
@@ -48,7 +48,7 @@ static runlevel_nr_t init_level = -1, fini_level = -1;
 
 static int init_mod_enable(struct mod *self) {
 	int ret;
-	int level = (runlevel_nr_t) self->data;
+	int level = (runlevel_nr_t) self->data_ref->data;
 
 	if (runlevel_nr_valid(level - 1) && 0 != (ret = mod_enable(runlevels[level
 			- 1].init_mod))) {
@@ -62,7 +62,7 @@ static int init_mod_enable(struct mod *self) {
 
 static int init_mod_disable(struct mod *self) {
 	int ret;
-	int level = (runlevel_nr_t) self->data;
+	int level = (runlevel_nr_t) self->data_ref->data;
 
 	if (runlevel_nr_valid(level + 1) && 0 != (ret = mod_disable(runlevels[level
 			+ 1].init_mod))) {
@@ -76,7 +76,7 @@ static int init_mod_disable(struct mod *self) {
 
 static int fini_mod_enable(struct mod *self) {
 	int ret;
-	int level = (runlevel_nr_t) self->data;
+	int level = (runlevel_nr_t) self->data_ref->data;
 
 	if (runlevel_nr_valid(level - 1) && 0 != (ret = mod_enable(runlevels[level
 			- 1].fini_mod))) {
@@ -89,7 +89,7 @@ static int fini_mod_enable(struct mod *self) {
 
 static int fini_mod_disable(struct mod *self) {
 	int ret;
-	int level = (runlevel_nr_t) self->data;
+	int level = (runlevel_nr_t) self->data_ref->data;
 
 	if (runlevel_nr_valid(level + 1) && 0 != (ret = mod_disable(runlevels[level
 			+ 1].fini_mod))) {

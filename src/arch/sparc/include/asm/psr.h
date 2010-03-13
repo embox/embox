@@ -1,10 +1,4 @@
 /*
- * Copyright (C) 2009 Lanit-Terkom Inc., St.-Petersburg, Russia
- *
- * This file is part of EMBoX.
- *
- * < License goes here > test
- *
  * Derived from Linux (include/asm-sparc/psr.h).
  * Copyright (C) 1994 David S. Miller (davem@caip.rutgers.edu)
  */

@@ -1,6 +1,3 @@
-/*
- * This file is part of EMBOX.
- */
 
 PROVIDE(diag_init = nosys);
 PROVIDE(diag_getc = nosys);

@@ -39,8 +39,8 @@
 /* Internal variable names. */
 
 #define __MOD(_mod)              __mod__$$##_mod
-#define __MOD_DATA(_mod)         __mod_data__##_mod
-#define __MOD_OPS(_mod)          __mod_ops__##_mod
+#define __MOD_DATA_REF(_mod)     __mod_data_ref__##_mod
+#define __MOD_OPS_REF(_mod)      __mod_ops_ref__##_mod
 #define __MOD_NAME(_mod)         __mod_name__##_mod
 #define __MOD_PRIVATE(_mod)      __mod_private__$$##_mod
 #define __MOD_PACKAGE(_package)  __mod_package__$$##_package
@@ -56,10 +56,10 @@
 #define __MOD_PACKAGE_DECL(_mod_package) \
 	extern const struct mod_package __MOD_PACKAGE(_mod_package)
 
-#define __MOD_DATA_DECL(_mod) \
-	extern void *__MOD_DATA(_mod) __attribute__ ((weak))
-#define __MOD_OPS_DECL(_mod) \
-	extern struct mod_ops *__MOD_OPS(_mod) __attribute__ ((weak))
+#define __MOD_DATA_REF_DECL(_mod) \
+	extern const struct mod_data_ref __MOD_DATA_REF(_mod) __attribute__ ((weak))
+#define __MOD_OPS_REF_DECL(_mod) \
+	extern const struct mod_ops_ref __MOD_OPS_REF(_mod) __attribute__ ((weak))
 
 #define __MOD_NAME_DEF(_mod, _mod_name) \
 	const char __MOD_NAME(_mod)[] = _mod_name
@@ -67,8 +67,8 @@
 	static struct mod_private __MOD_PRIVATE(_mod)
 
 #define __MOD_ARRAY_DEF(_mod, array) \
-	static const struct mod *__MOD_ARRAY(_mod, array)[] \
-		__attribute__ ((section(__MOD_SECTION_HEAD(_mod, array)))) = { }; \
+	static const struct mod *__MOD_ARRAY(_mod, array)[1] \
+		__attribute__ ((section(__MOD_SECTION_HEAD(_mod, array)))); \
 	static const struct mod *__MOD_ARRAY_ENTRY(_mod, array, __null$$) \
 		__attribute__ ((used, section(__MOD_SECTION_TAIL(_mod, array)))) = NULL
 
@@ -114,21 +114,21 @@
  *        using #MOD_SELF_NAME macro
  */
 #define MOD_DEF(_mod, _mod_package, mod_name) \
-	__MOD_DATA_DECL(_mod); \
-	__MOD_OPS_DECL(_mod); \
+	__MOD_DATA_REF_DECL(_mod); \
+	__MOD_OPS_REF_DECL(_mod); \
 	__MOD_PACKAGE_DECL(_mod_package); \
 	__MOD_ARRAY_DEF(_mod, requires); \
 	__MOD_ARRAY_DEF(_mod, provides); \
 	__MOD_NAME_DEF(_mod, mod_name); \
 	__MOD_PRIVATE_DEF(_mod); \
 	const struct mod __MOD(_mod) = { \
-			.private = &__MOD_PRIVATE(_mod), \
-			.data  = &__MOD_DATA(_mod), \
-			.ops   = &__MOD_OPS(_mod), \
-			.package = (struct mod_package *) &__MOD_PACKAGE(_mod_package), \
-			.name = __MOD_NAME(_mod), \
-			.requires = (struct mod **) __MOD_ARRAY(_mod, requires), \
-			.provides = (struct mod **) __MOD_ARRAY(_mod, provides), \
+			.private  = &__MOD_PRIVATE(_mod), \
+			.data_ref = (struct mod_data_ref *) &__MOD_DATA_REF(_mod), \
+			.ops_ref  = (struct mod_ops_ref *) &__MOD_OPS_REF(_mod), \
+			.package  = (struct mod_package *) &__MOD_PACKAGE(_mod_package), \
+			.name     = __MOD_NAME(_mod), \
+			.requires = (struct mod **) &__MOD_ARRAY(_mod, requires)[1], \
+			.provides = (struct mod **) &__MOD_ARRAY(_mod, provides)[1], \
 		}
 
 #define MOD_DEP_DEF(_mod, _dep) \
@@ -147,9 +147,11 @@
 		__attribute__ ((used, section(".mod.rodata"))) = MOD_PTR(_mod)
 
 #define MOD_DATA_DEF(_mod, _mod_data) \
-	extern void *__MOD_DATA(_mod) __attribute__ ((alias(#_mod_data)))
+	const struct mod_data_ref __MOD_DATA_REF(_mod) = \
+		{ .data = (void *) _mod_data }
 #define MOD_OPS_DEF(_mod, _mod_ops) \
-	struct mod_ops *__MOD_OPS(_mod) = &_mod_ops
+	const struct mod_ops_ref __MOD_OPS_REF(_mod) = \
+		{ .ops = (struct mod_ops *) _mod_ops }
 
 #define MOD_SELF                     __MOD_SELF(__MOD)
 #define MOD_SELF_NAME                __MOD_SELF(__MOD_NAME)
@@ -165,6 +167,9 @@ struct mod;
 struct mod_package;
 struct mod_ops;
 struct mod_private;
+
+struct mod_ops_ref;
+struct mod_data_ref;
 
 /**
  * Performs an operation with the module. The semantics of the operation is
@@ -186,9 +191,9 @@ struct mod {
 	/** Internal data needed by dependency resolver. */
 	struct mod_private *private;
 	/** (optional) Module specific data. */
-	void *data;
-	/** (optional) Available operations. TODO double reference. -- Eldar */
-	struct mod_ops **ops;
+	struct mod_data_ref *data_ref;
+	/** (optional) Available operations. */
+	struct mod_ops_ref *ops_ref;
 	/** Module package assigned by EMBuild. */
 	struct mod_package *package;
 	/** Module name assigned by EMBuild. */
@@ -210,6 +215,14 @@ struct mod_ops {
 	mod_op_t enable, disable;
 	/** (optional) Module main method. */
 	mod_op_t invoke;
+};
+
+struct mod_ops_ref {
+	struct mod_ops *ops;
+};
+
+struct mod_data_ref {
+	void *data;
 };
 
 struct mod_private {

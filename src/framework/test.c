@@ -28,7 +28,7 @@ MOD_DEF(__test_tag, generic, "test");
 
 static int test_mod_invoke(struct mod *mod) {
 	int result;
-	struct test *test = (struct test *) mod->data;
+	struct test *test = (struct test *) mod->data_ref->data;
 
 	if (NULL == test->run) {
 		return -EBADF;

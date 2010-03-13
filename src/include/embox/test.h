@@ -28,9 +28,10 @@
 	EMBOX_TEST_DETAILS(_run, MOD_SELF_NAME, NULL, __EMBUILD_MOD__)
 
 #define EMBOX_TEST_DETAILS(_run, _name, _info, _mod) \
+	static const struct test __test__; \
 	MOD_DEP_DEF(_mod, __test_tag); \
-	MOD_DATA_DEF(_mod, __test__); \
-	MOD_OPS_DEF(_mod, __test_mod_ops); \
+	MOD_DATA_DEF(_mod, &__test__); \
+	MOD_OPS_DEF(_mod, &__test_mod_ops); \
 	static int _run(void); \
 	static int __test_run__(void) __attribute__ ((alias(#_run))); \
 	static struct test_private __test_private__; \
