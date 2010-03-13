@@ -25,13 +25,13 @@
 
 #define EMBOX_TEST(_run) \
 	extern const char MOD_SELF_NAME[]; \
-	EMBOX_TEST_DETAILS(_run, MOD_SELF_NAME, NULL, __EMBUILD_MOD__)
+	EMBOX_TEST_DETAILS(_run, MOD_SELF_NAME, NULL)
 
-#define EMBOX_TEST_DETAILS(_run, _name, _info, _mod) \
+#define EMBOX_TEST_DETAILS(_run, _name, _info) \
 	static const struct test __test__; \
-	MOD_DEP_DEF(_mod, __test_tag); \
-	MOD_DATA_DEF(_mod, &__test__); \
-	MOD_OPS_DEF(_mod, &__test_mod_ops); \
+	MOD_SELF_DEP_DEF(__test_tag); \
+	MOD_SELF_DATA_DEF(&__test__); \
+	MOD_SELF_OPS_DEF(&__test_mod_ops); \
 	static int _run(void); \
 	static int __test_run__(void) __attribute__ ((alias(#_run))); \
 	static struct test_private __test_private__; \
