@@ -365,19 +365,19 @@ $(EMBUILD_DUMP_MK) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/embuild.mk
 ifndef EMBUILD_DUMP_CREATE
 	@$(RM) $@ && $(MAKE) EMBUILD_DUMP_CREATE=1 --no-print-directory $@
 else
-	@echo -e '# Auto-generated EMBuild symbols dump file. Do not edit.' > $@
-	@echo -e '$(call dump_var,PACKAGES)' >> $@
-	@echo -e '$(call dump_var,MODS_CORE)' >> $@
-	@echo -e '$(call dump_var,MODS)' >> $@
-	@echo -e '$(call dump_var,LIBS)' >> $@
-	@echo -e '$(call dump_var_symbol,CPPFLAGS,$(PACKAGES))' >> $@
-	@echo -e '$(call dump_var_symbol,CFLAGS,$(PACKAGES))' >> $@
-	@echo -e '$(call dump_var_symbol,SRCS,$(MODS) $(LIBS))' >> $@
-	@echo -e '$(call dump_var_symbol,CPPFLAGS,$(MODS) $(LIBS))' >> $@
-	@echo -e '$(call dump_var_symbol,CFLAGS,$(MODS) $(LIBS))' >> $@
-	@echo -e '$(call dump_var_symbol,DEPS,$(MODS))' >> $@
-	@echo -e '$(call dump_var,SUBDIRS_LDFLAGS)' >> $@
-	@echo -e '$(call dump_var_symbol,UNIT_DEFINED,$(MODS) $(LIBS))' >> $@
+	@$(PRINTF) '# Auto-generated EMBuild symbols dump file. Do not edit.' > $@
+	@$(PRINTF) '$(call dump_var,PACKAGES)' >> $@
+	@$(PRINTF) '$(call dump_var,MODS_CORE)' >> $@
+	@$(PRINTF) '$(call dump_var,MODS)' >> $@
+	@$(PRINTF) '$(call dump_var,LIBS)' >> $@
+	@$(PRINTF) '$(call dump_var_symbol,CPPFLAGS,$(PACKAGES))' >> $@
+	@$(PRINTF) '$(call dump_var_symbol,CFLAGS,$(PACKAGES))' >> $@
+	@$(PRINTF) '$(call dump_var_symbol,SRCS,$(MODS) $(LIBS))' >> $@
+	@$(PRINTF) '$(call dump_var_symbol,CPPFLAGS,$(MODS) $(LIBS))' >> $@
+	@$(PRINTF) '$(call dump_var_symbol,CFLAGS,$(MODS) $(LIBS))' >> $@
+	@$(PRINTF) '$(call dump_var_symbol,DEPS,$(MODS))' >> $@
+	@$(PRINTF) '$(call dump_var,SUBDIRS_LDFLAGS)' >> $@
+	@$(PRINTF) '$(call dump_var_symbol,UNIT_DEFINED,$(MODS) $(LIBS))' >> $@
 endif
 
 endif

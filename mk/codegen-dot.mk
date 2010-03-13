@@ -27,7 +27,7 @@ generate_dot = $(strip \ndigraph EMBOX { \
 \n})
 
 $(GRAPH_DOT) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-dot.mk
-	@echo -e '$(generate_dot)' > $@
+	@$(PRINTF) '$(generate_dot)' > $@
 
 $(GRAPH_PS) : $(GRAPH_DOT)
 	@mkdir -p $(DOT_DIR) && dot -Tps $< -o $@

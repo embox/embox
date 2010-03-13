@@ -67,12 +67,12 @@ generate_includes = \n\#include <types.h>\n\#include <embox/mod.h>
 
 $(DEPSINJECT_SRC) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
   $(AUTOCONF_DIR)/mods.mk
-	@echo -e '/* Auto-generated EMBuild deps injection file. Do not edit. */' > $@
-	@echo -e '$(generate_includes)' >> $@
-	@echo -e '$(generate_package_defs)' >> $@
-	@echo -e '$(generate_mod_defs)' >> $@
-	@echo -e '$(generate_mod_deps)' >> $@
-	@echo -e '$(generate_root_mods)' >> $@
+	@$(PRINTF) '/* Auto-generated EMBuild deps injection file. Do not edit. */' > $@
+	@$(PRINTF) '$(generate_includes)' >> $@
+	@$(PRINTF) '$(generate_package_defs)' >> $@
+	@$(PRINTF) '$(generate_mod_defs)' >> $@
+	@$(PRINTF) '$(generate_mod_deps)' >> $@
+	@$(PRINTF) '$(generate_root_mods)' >> $@
 
 $(DEPSINJECT_OBJ) : $(AUTOCONF_DIR)/config.h
 $(DEPSINJECT_OBJ) : $(DEPSINJECT_SRC)

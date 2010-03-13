@@ -30,7 +30,8 @@ AUTOCONF_DIR   := $(CODEGEN_DIR)
 
 RM     := rm -f
 CP     := cp
-EDIT := emacs
+EDIT   := emacs
+PRINTF := printf
 
 TEMPLATES = $(notdir $(wildcard $(TEMPLATES_DIR)/*))
 
