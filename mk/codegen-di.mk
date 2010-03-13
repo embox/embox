@@ -32,13 +32,13 @@ generate_package_defs = $(strip \n/* Package definitions. */\
   $(foreach package,$(filter-out generic,$(sort $(basename $(MODS_BUILD)))), \
     \nMOD_PACKAGE_DEF($(c_package), "$(package)"); \
   ) \
-)
+)\n
 
 generate_mod_defs = $(strip \n/* Mod definitions. */\
   $(foreach mod,$(MODS_BUILD), \
     \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)"); \
   ) \
-)
+)\n
 
 #__generate_mod_deps = \
   \n$1($(c_mod),$(call c_escape,$(foreach dep,$2,\n\tMOD_PTR($(dep)),)) NULL);
@@ -55,19 +55,19 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
       \nMOD_DEP_DEF($(c_mod), runlevel$(RUNLEVEL-$(mod))_fini); \
     ) \
   ) \
-)
+)\n
 
 generate_root_mods = $(strip \n/* Root modules. */\
   $(foreach mod,$(filter-out $(foreach m,$(MODS_BUILD),$(DEPS-$m)),$(MODS_BUILD)), \
     \nMOD_ROOT_DEF($(subst .,$$,$(mod))); \
   ) \
-)
+)\n
 
-generate_includes = \n\#include <types.h>\n\#include <embox/mod.h>
+generate_includes = \n\#include <types.h>\n\#include <embox/mod.h>\n
 
 $(DEPSINJECT_SRC) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
   $(AUTOCONF_DIR)/mods.mk
-	@$(PRINTF) '/* Auto-generated EMBuild deps injection file. Do not edit. */' > $@
+	@$(PRINTF) '/* Auto-generated EMBuild deps injection file. Do not edit. */\n' > $@
 	@$(PRINTF) '$(generate_includes)' >> $@
 	@$(PRINTF) '$(generate_package_defs)' >> $@
 	@$(PRINTF) '$(generate_mod_defs)' >> $@

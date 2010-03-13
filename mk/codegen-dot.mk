@@ -24,7 +24,7 @@ generate_dot = $(strip \ndigraph EMBOX { \
       \n$(dot_mod) -> $(dot_dep); \
     ) \
   ) \
-\n})
+\n})\n
 
 $(GRAPH_DOT) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-dot.mk
 	@$(PRINTF) '$(generate_dot)' > $@

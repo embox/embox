@@ -365,7 +365,7 @@ $(EMBUILD_DUMP_MK) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/embuild.mk
 ifndef EMBUILD_DUMP_CREATE
 	@$(RM) $@ && $(MAKE) EMBUILD_DUMP_CREATE=1 --no-print-directory $@
 else
-	@$(PRINTF) '# Auto-generated EMBuild symbols dump file. Do not edit.' > $@
+	@$(PRINTF) '# Auto-generated EMBuild symbols dump file. Do not edit.\n' > $@
 	@$(PRINTF) '$(call dump_var,PACKAGES)' >> $@
 	@$(PRINTF) '$(call dump_var,MODS_CORE)' >> $@
 	@$(PRINTF) '$(call dump_var,MODS)' >> $@
