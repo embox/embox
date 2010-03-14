@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief C standard library header.
+ * @details Integer constants which represent error codes.
  *
  * @date 1.10.09
  * @author Andrey Baboshin

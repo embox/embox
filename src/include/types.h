@@ -25,7 +25,7 @@ typedef __u64 __le64;
 typedef __u64 __be64;
 
 #ifndef NULL
-#define NULL ((void *)0x0)
+#define NULL ((void *) 0x0)
 #endif
 
 #if 0

@@ -159,7 +159,7 @@
 #define MOD_SELF_OPS_DEF(_mod_ops)   MOD_OPS_DEF(__EMBUILD_MOD__, _mod_ops)
 #define MOD_SELF_DEP_DEF(_dep)       MOD_DEP_DEF(__EMBUILD_MOD__, _dep)
 
-#define MOD_FLAG_ENABLED       (1 << 0)
+#define MOD_FLAG_ENABLED       (1 << 3)
 #define MOD_FLAG_OPFAILED      (1 << 1)
 #define MOD_FLAG_OPINPROGRESS  (1 << 2)
 
@@ -177,12 +177,12 @@ struct mod_data_ref;
  * contains @c NULL pointer fields), the meaning is that module operation
  * always succeeds (as if the corresponding function returns 0).
  *
- * @param self pointer to the #mod struct.
+ * @param data pointer to the module-specific data (if any).
  * @return error code
  * @retval 0 if operation succeeds
  * @retval nonzero on error
  */
-typedef int (*mod_op_t)(struct mod *self);
+typedef int (*mod_op_t)(void *data);
 
 /**
  * TODO Module info emitted by EMBuild dependency injection model generator.
@@ -208,10 +208,10 @@ struct mod_package {
 
 /**
  * Module operations.
- * @note Do not call this functions directly!
+ * @note Do not call these functions directly!
  */
 struct mod_ops {
-	/** (optional) Module enable operation. */
+	/** (optional) Module state change operation. */
 	mod_op_t enable, disable;
 	/** (optional) Module main method. */
 	mod_op_t invoke;
@@ -243,7 +243,9 @@ __MOD_PACKAGE_DECL(generic);
  * @param mod the mod to enable
  * @return operation result
  * @retval 0 if the mod has been successfully enabled
- * @retval nonzero TODO
+ * @retval -EINVAL if the argument is @c NULL
+ * @retval -EINTR if an error occurred while enabling the mod or one of its
+ *         dependencies
  */
 extern int mod_enable(const struct mod *mod);
 
@@ -256,7 +258,9 @@ extern int mod_enable(const struct mod *mod);
  * @param mod the mod to disable
  * @return operation result
  * @retval 0 if the mod has been successfully disabled
- * @retval nonzero TODO
+ * @retval -EINVAL if the argument is @c NULL
+ * @retval -EINTR if an error occurred while enabling the mod or one of its
+ *         dependencies
  */
 extern int mod_disable(const struct mod *mod);
 

@@ -16,12 +16,14 @@
 #include <embox/mod.h>
 
 #define __EMBOX_UNIT(_init, _fini) \
+	extern const char MOD_SELF_NAME[]; \
 	static const struct unit __unit__; \
 	MOD_SELF_DATA_DEF(&__unit__); \
 	MOD_SELF_OPS_DEF(&__unit_mod_ops); \
 	static const struct unit __unit__ = { \
 			.init = _init, \
 			.fini = _fini, \
+			.name = MOD_SELF_NAME \
 		}
 
 #define EMBOX_UNIT(_init, _fini) \
@@ -51,6 +53,7 @@ typedef int(*unit_op_t)(void);
 struct unit {
 	unit_op_t init;
 	unit_op_t fini;
+	const char *name;
 };
 
 #endif /* EMBOX_UNIT_H_ */

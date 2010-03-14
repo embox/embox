@@ -11,21 +11,21 @@
 #include <embox/unit.h>
 #include <embox/mod.h>
 
-static int unit_mod_enable(struct mod *mod);
-static int unit_mod_disable(struct mod *mod);
+static int unit_mod_enable(void *data);
+static int unit_mod_disable(void *data);
 
 struct mod_ops __unit_mod_ops = { .enable = &unit_mod_enable,
 		.disable = &unit_mod_disable };
 
-static int unit_mod_enable(struct mod *mod) {
+static int unit_mod_enable(void *data) {
 	int ret = 0;
-	struct unit *unit = (struct unit *) mod->data_ref->data;
+	struct unit *unit = (struct unit *) data;
 
 	if (NULL == unit->init) {
 		return 0;
 	}
 
-	TRACE("unit: initializing %s.%s: ", mod->package->name, mod->name);
+	TRACE("unit: initializing %s: ", unit->name);
 	if (0 == (ret = unit->init())) {
 		TRACE("done\n");
 	} else {
@@ -35,15 +35,15 @@ static int unit_mod_enable(struct mod *mod) {
 	return ret;
 }
 
-static int unit_mod_disable(struct mod *mod) {
+static int unit_mod_disable(void *data) {
 	int ret = 0;
-	struct unit *unit = (struct unit *) mod->data_ref->data;
+	struct unit *unit = (struct unit *) data;
 
 	if (NULL == unit->fini) {
 		return 0;
 	}
 
-	TRACE("unit: finalizing %s.%s: ", mod->package->name, mod->name);
+	TRACE("unit: finalizing %s: ", unit->name);
 	if (0 == (ret = unit->fini())) {
 		TRACE("done\n");
 	} else {

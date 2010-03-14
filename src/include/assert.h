@@ -1,6 +1,8 @@
 /**
  * @file
- * @brief Provides @c assert macro as defined by C Standard Library.
+ * @brief C standard library header.
+ * @details Provides #assert macro definition which is used in debugging
+ * purposes.
  *
  * @date 25.11.09
  * @author Eldar Abusalimov

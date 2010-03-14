@@ -1,7 +1,7 @@
 /**
  * @file
- *
- * @brief Used for testing and converting characters.
+ * @brief C standard library header.
+ * @details Contains declarations for character classification functions.
  *
  * @date 14.10.09
  * @author Nikolay Korotky

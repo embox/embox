@@ -32,10 +32,12 @@ char diag_getc(void) {
 }
 
 void diag_putc(char ch) {
+#if 0
 	volatile int i;
 	for (i = 0; i < 0x1000; i++) {
 	}
-//	while (!(0x4 & REG_LOAD((volatile uint32_t *) (APBUART_BASE + STATUS_REG)))) {
-//	}
+#endif
+	while (!(0x4 & REG_LOAD((volatile uint32_t *) (APBUART_BASE + STATUS_REG)))) {
+	}
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + DATA_REG), (uint32_t) ch);
 }

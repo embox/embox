@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief C standard library header.
  *
  * @date 09.03.2010
  * @author Eldar Abusalimov
@@ -10,6 +10,10 @@
 #define STDINT_H_
 
 #include <asm/types.h>
+
+#ifndef __WORDSIZE
+# error "You must define __WORDSIZE in asm/types.h"
+#endif
 
 typedef __s8  int8_t;
 typedef __s16 int16_t;
@@ -38,15 +42,15 @@ typedef __u32 __u_fast;
 typedef __s64 __s_fast;
 typedef __u64 __u_fast;
 #else
-# error "You must define __WORDSIZE in asm/types.h"
+# error "Only 32 and 64 __WORDSIZE values are supported"
 #endif
 
-typedef __s_fast  int_fast8_t;
+typedef __s_fast int_fast8_t;
 typedef __s_fast int_fast16_t;
 typedef __s_fast int_fast32_t;
 typedef __s_fast int_fast64_t;
 
-typedef __u_fast  uint_fast8_t;
+typedef __u_fast uint_fast8_t;
 typedef __u_fast uint_fast16_t;
 typedef __u_fast uint_fast32_t;
 typedef __u_fast uint_fast64_t;

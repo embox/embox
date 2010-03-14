@@ -9,12 +9,14 @@
  * @date 04.02.2009
  * @author Eldar Abusalimov
  */
-#include <drivers/terminal.h>
+
 #include <assert.h>
-#include <asm/stdarg.h>
-#include <kernel/diag.h>
-#include <common.h>
 #include <string.h>
+#include <common.h>
+#include <stdarg.h>
+
+#include <drivers/terminal.h>
+#include <kernel/diag.h>
 
 static void vtparse_callback(VTPARSER*, VT_TOKEN*);
 

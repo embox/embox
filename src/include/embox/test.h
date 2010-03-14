@@ -74,12 +74,19 @@ struct test {
 	test_run_t run;
 	/** (optional) Shows detailed results of the last test. */
 	test_info_t info;
-	/** (optional) Short annotation that will be shown on executing test. */
+	/** Test name (defaults to the corresponding mod name). */
 	const char *name;
 };
 
 struct test_private {
 	int result;
 };
+
+/**
+ * Lists all available tests.
+ *
+ * @return null-terminated array of tests
+ */
+extern struct test **test_get_all(void);
 
 #endif /* EMBOX_TEST_H_ */
