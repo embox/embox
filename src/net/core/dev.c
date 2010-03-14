@@ -127,6 +127,24 @@ net_device_t *dev_getbyhwaddr(unsigned short type, char *ha) {
 	return NULL;
 }
 
+/* we use this function in debug mode*/
+#if 0
+static void print_packet (sk_buff_t *skb) {
+	size_t i, j;
+	printf("pack:\n");
+	for(i = 0; i < skb->len; i += 16) {
+		for(j = 0; j < 16; j += 2) {
+			printf("%02x%02x ",
+				(uint8_t)skb->data[i + j],
+				(uint8_t)skb->data[i + j + 1]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	return;
+}
+#endif
+
 int dev_queue_xmit(struct sk_buff *skb) {
 	net_device_t *dev;
 	const struct net_device_ops *ops;
@@ -147,6 +165,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 				return -1;
 			}
 		}
+		//print_packet(skb);
 		if (-1 == ops->ndo_start_xmit(skb, dev)) {
 			kfree_skb(skb);
 			stats->tx_err++;
@@ -159,19 +178,6 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	kfree_skb(skb);
 	return 0;
 }
-
-/* we use this function in debug mode*/
-#if 0
-static void print_packet (sk_buff_t *skb) {
-	size_t i;
-	TRACE("pack: ");
-	for (i = 0; i < skb->len; i ++) {
-		TRACE("%2X", (uint8_t)skb->data[i]);
-	}
-	TRACE("\n");
-	return;
-}
-#endif
 
 int netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
@@ -190,14 +196,14 @@ int netif_rx(struct sk_buff *skb) {
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == skb->protocol) {
 #ifdef CONFIG_SOFTIRQ
-			if (ETH_P_ARP != skb->protocol) {
+//			if (ETH_P_ARP != skb->protocol) {
 				skb_queue_tail(&(dev->dev_queue), skb);
 				netif_rx_schedule(dev);
-			} else {
+//			} else {
 #endif
-			rc_rx = q->func(skb, dev, q, NULL);
+//			rc_rx = q->func(skb, dev, q, NULL);
 #ifdef CONFIG_SOFTIRQ
-		}
+//		}
 #endif
 			return rc_rx;
 		}

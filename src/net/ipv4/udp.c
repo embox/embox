@@ -26,7 +26,7 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 	udph->dest = dest;
 	udph->len = len + UDP_HEADER_SIZE;
 	udph->check = 0;
-//	udph->check = ptclbsum((void*)udph, UDP_HEADER_SIZE);
+//	udph->check = ptclbsum((void*)udph, udph->len);
 	return 0;
 }
 
@@ -86,10 +86,11 @@ static struct sock *udp_lookup(in_addr_t daddr, __be16 dport) {
 	size_t i;
 	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		inet = inet_sk((struct sock*)udp_hash[i]);
-		if (inet &&
-			(inet->rcv_saddr == INADDR_ANY || inet->rcv_saddr == daddr) &&
-			inet->sport == dport) {
-			return (struct sock*)inet;
+		if (inet) {
+			if ((inet->rcv_saddr == INADDR_ANY || inet->rcv_saddr == daddr) &&
+					inet->sport == dport) {
+				return (struct sock*)inet;
+			}
 		}
 	}
 	return NULL;
@@ -107,14 +108,14 @@ int udp_rcv(sk_buff_t *skb) {
 	udphdr_t *uh = udp_hdr(skb);
 	sk = udp_lookup(iph->daddr, uh->dest);
 	inet = inet_sk(sk);
-	if(inet->rcv_saddr == INADDR_ANY) {
-		//TODO: temporary
-		inet->saddr = skb->nh.iph->daddr;
-	}
 	if (sk) {
 		udp_queue_rcv_skb(sk, skb);
 		inet->dport = uh->source;
 		inet->daddr = iph->saddr;
+		if(inet->rcv_saddr == INADDR_ANY) {
+			//TODO: temporary
+			inet->saddr = skb->nh.iph->daddr;
+		}
 	} else {
 		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
 	}
