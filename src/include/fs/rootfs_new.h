@@ -8,7 +8,7 @@
 #define ROOTFS_H_
 
 #include <fsop.h>
-#include <file.h>
+#include <stdio.h>
 
 typedef struct  {
 	const char* mountpath;

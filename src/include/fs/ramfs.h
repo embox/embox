@@ -4,18 +4,16 @@
  * @date 29.06.2009
  * @author Anton Bondarev
  */
-#ifndef RAMFS_H_
-#define RAMFS_H_
-
-#define MAX_LENGTH_FILE_NAME 0x10
+#ifndef FS_RAMFS_H_
+#define FS_RAMFS_H_
 
 typedef struct _RAMFS_CREATE_PARAM {
 	unsigned int start_addr;
-	unsigned int size;
-	char name[MAX_LENGTH_FILE_NAME];
+	size_t size;
+	char name[CONFIG_MAX_LENGTH_FILE_NAME];
 	unsigned int mode;
 }RAMFS_CREATE_PARAM;
 
 extern FSOP_DESCRIPTION ramfsop;
 
-#endif /* RAMFS_H_ */
+#endif /* FS_RAMFS_H_ */

@@ -5,7 +5,7 @@
  * @author Roman Evstifeev
  */
 #include <common.h>
-#include <fs/file.h>
+#include <stdio.h>
 #include <fs/rootfs.h>
 
 global_file_id_t fopen (const char* file_path){

@@ -9,7 +9,7 @@
 #include <shell_command.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
-#include <fs/file.h>
+#include <stdio.h>
 
 #define COMMAND_NAME     "load"
 #define COMMAND_DESC_MSG "load image file"

@@ -6,45 +6,45 @@
  */
 #include <string.h>
 #include <common.h>
-#include <fs/file.h>
+#include <stdio.h>
 #include <fs/rootfs.h>
 
-FILE *fopen (const char *file_name, char *mode){
-	return rootfs_fopen(file_name, mode);
+FILE *fopen(const char *path, const char *mode) {
+	return rootfs_fopen(path, mode);
 }
 
 size_t fwrite (const void *buf, size_t size, size_t count, FILE *file) {
 	FILEOP **fop = (FILEOP **)file;
 	if (NULL == fop){
-		TRACE("Error during write file: fop is NULL wrong file handler\n");
+		LOG_ERROR("fop is NULL handler\n");
 		return -1;
 	}
 	if (NULL == (*fop)->write){
-		TRACE("Error during write file: fop->read is NULL wrong file handler\n");
+		LOG_ERROR("fop->write is NULL handler\n");
 		return -1;
 	}
 	return (*fop)->write(buf, size, count, file);
 }
 
-size_t fread (const void *buf, size_t size, size_t count, FILE *file) {
+size_t fread (void *buf, size_t size, size_t count, FILE *file) {
 	FILEOP **fop = (FILEOP **)file;
 	if (NULL == fop){
-		TRACE("Error during read file: fop is NULL wrong file handler\n");
+		LOG_ERROR("fop is NULL handler\n");
 		return -1;
 	}
 	if (NULL == (*fop)->read){
-		TRACE("Error during read file: fop->read is NULL wrong file handler\n");
+		LOG_ERROR("fop->read is NULL handler\n");
 		return -1;
 	}
 	return (*fop)->read(buf, size, count, file);
 }
 
-void fclose (FILE *file) {
-	FILEOP *fop = (FILEOP *)file;
+int fclose (FILE *fp) {
+	FILEOP *fop = (FILEOP *)fp;
 	if (NULL == fop)
-		return ;
+		return EOF;
 	if (NULL == fop->close){
-		return ;
+		return EOF;
 	}
-	fop->close(file);
+	return fop->close(fp);
 }

@@ -9,27 +9,32 @@
 #include <common.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
-#include <netutils.h>
 
 typedef struct _FILE_DESC {
 	unsigned int start_addr;
 	unsigned int size;
-	char name[MAX_LENGTH_FILE_NAME];
+	char name[CONFIG_MAX_LENGTH_FILE_NAME];
 	unsigned int mode;
 	unsigned int is_busy;
 } FILE_DESC;
 
 static int file_desc_cnt;
-#define MAX_FILE_QUANTITY 0x10
-static FILE_DESC fdesc[MAX_FILE_QUANTITY];
 
-static void *fopen(const char *file_name, char *mode);
-static int fclose(void * file);
-static size_t fread(const void *buf, size_t size, size_t count, void *file);
-static size_t fwrite(const void *buf, size_t size, size_t count, void *file);
-static int fseek(void *file, long offset, int whence);
+static FILE_DESC fdesc[CONFIG_MAX_FILE_QUANTITY];
 
-static FILEOP fop = { fopen, fclose, fread, fwrite, fseek };
+static void *ramfs_fopen(const char *path, const char *mode);
+static int ramfs_fclose(void * file);
+static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file);
+static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file);
+static int ramfs_fseek(void *file, long offset, int whence);
+
+static FILEOP fop = {
+	ramfs_fopen,
+	ramfs_fclose,
+	ramfs_fread,
+	ramfs_fwrite,
+	ramfs_fseek
+};
 
 static int create_file(void *params);
 
@@ -41,6 +46,7 @@ typedef struct _FILE_HANDLER {
 	int cur_pointer;
 	unsigned int mode;
 } FILE_HANDLER;
+
 static FILE_HANDLER file_handlers[FILE_HANDLERS_QUANTITY];
 
 //static int file_handler_cnt;
@@ -48,14 +54,14 @@ static FILE_HANDLER file_handlers[FILE_HANDLERS_QUANTITY];
 static int file_list_cnt;
 
 static FILE_INFO * file_list_iterator(FILE_INFO *finfo) {
-	if (MAX_FILE_QUANTITY <= file_list_cnt)
+	if (CONFIG_MAX_FILE_QUANTITY <= file_list_cnt)
 		return NULL;
 	while (!fdesc[file_list_cnt].is_busy) {
-		if (MAX_FILE_QUANTITY <= file_list_cnt)
+		if (CONFIG_MAX_FILE_QUANTITY <= file_list_cnt)
 			return NULL;
 		file_list_cnt++;
 	}
-	strncpy(finfo->file_name, fdesc[file_list_cnt].name, array_len(finfo->file_name) );
+	strncpy(finfo->file_name, fdesc[file_list_cnt].name, array_len(finfo->file_name));
 	finfo->mode = fdesc[file_list_cnt].mode;
 	finfo->size_in_bytes = fdesc[file_list_cnt].size;
 	finfo->size_on_disk = 0;
@@ -68,12 +74,12 @@ static FS_FILE_ITERATOR get_file_list_iterator(void) {
 	return file_list_iterator;
 }
 
-static FILE_DESC * find_free_desc(void) {
-	int i;
-	if (MAX_FILE_QUANTITY <= file_desc_cnt)
+static FILE_DESC *find_free_desc(void) {
+	size_t i;
+	if (CONFIG_MAX_FILE_QUANTITY <= file_desc_cnt)
 		return NULL;
 
-	for (i = 0; i < MAX_FILE_QUANTITY; i++) {
+	for (i = 0; i < CONFIG_MAX_FILE_QUANTITY; i++) {
 		if (0 == fdesc[i].is_busy) {
 			return &fdesc[i];
 		}
@@ -82,9 +88,8 @@ static FILE_DESC * find_free_desc(void) {
 }
 
 static FILE_DESC * find_file_desc(const char * file_name) {
-	int i;
-
-	for (i = 0; i < MAX_FILE_QUANTITY; i++) {
+	size_t i;
+	for (i = 0; i < CONFIG_MAX_FILE_QUANTITY; i++) {
 		if (0 == strncmp(fdesc[i].name, file_name, array_len(fdesc[i].name))) {
 			return &fdesc[i];
 		}
@@ -93,7 +98,7 @@ static FILE_DESC * find_file_desc(const char * file_name) {
 }
 
 static FILE_HANDLER * find_free_handler(void) {
-	int i;
+	size_t i;
 	if (FILE_HANDLERS_QUANTITY <= file_desc_cnt)
 		return NULL;
 
@@ -132,7 +137,7 @@ static int init(void) {
 	return 0;
 }
 
-static void *open_file(const char *file_name, char *mode) {
+static void *open_file(const char *file_name, const char *mode) {
 	FILE_HANDLER *fh;
 	FILE_DESC *fd;
 
@@ -150,10 +155,10 @@ static void *open_file(const char *file_name, char *mode) {
 	//TODO must check permitions
 	fh->mode = (unsigned int) *mode;
 	fh->fileop = &fop;
-	printf ("fh = 0x%08X\tfop = 0x%08X\n", (unsigned)fh, (unsigned)&fop);
-	printf ("fread = 0x%08X\n", (unsigned)fh->fileop->read);
-	printf ("fwrite = 0x%08X\n", (unsigned)fh->fileop->write);
-	printf ("start_addr = 0x%08X\t size = %d\n", fh->fdesc->start_addr, fh->fdesc->size);
+	//printf ("fh = 0x%08X\tfop = 0x%08X\n", (unsigned)fh, (unsigned)&fop);
+	//printf ("fread = 0x%08X\n", (unsigned)fh->fileop->read);
+	//printf ("fwrite = 0x%08X\n", (unsigned)fh->fileop->write);
+	//printf ("start_addr = 0x%08X\t size = %d\n", fh->fdesc->start_addr, fh->fdesc->size);
 	fh->fileop->fopen(file_name, mode);
 	return fh;
 }
@@ -211,12 +216,12 @@ FSOP_DESCRIPTION ramfsop = {
 	get_file_list_iterator
 };
 
-static void *fopen(const char *file_name, char *mode) {
+static void *ramfs_fopen(const char *file_name, const char *mode) {
 	TRACE("ramfs file %s was opened\n", file_name);
 	return NULL;
 }
 
-static int fclose(void * file) {
+static int ramfs_fclose(void * file) {
 	FILE_HANDLER *fh = (FILE_HANDLER *) file;
 	fh->fileop = NULL;
 
@@ -225,7 +230,7 @@ static int fclose(void * file) {
 
 #define TRACE_FREQ 0x10000
 
-static size_t fread(const void *buf, size_t size, size_t count, void *file) {
+static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 	FILE_HANDLER *fh = (FILE_HANDLER *) file;
 	if (fh->cur_pointer >= fh->fdesc->size){
 		TRACE("end read\n");
@@ -239,18 +244,17 @@ static size_t fread(const void *buf, size_t size, size_t count, void *file) {
 	return size * count;
 }
 
-static size_t fwrite(const void *buf, size_t size, size_t count, void *file) {
+static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file) {
 	FILE_HANDLER *fh = (FILE_HANDLER *) file;
-	if (0==fh->cur_pointer){
-			TRACE("start write\n");
-		}
+	if (0 == fh->cur_pointer) {
+		TRACE("start write\n");
+	}
 	memcpy((void *)(fh->fdesc->start_addr + fh->cur_pointer),buf, size * count);
 	fh->cur_pointer += size * count;
 	return size * count;
 }
 
-static int fseek(void *file, long offset, int whence) {
+static int ramfs_fseek(void *file, long offset, int whence) {
 	//FILE_HANDLER *fh = (FILE_HANDLER *) file;
 	return 0;
 }
-

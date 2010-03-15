@@ -4,10 +4,8 @@
  * @date 29.06.2009
  * @author Anton Bondarev
  */
-
 #include <string.h>
 #include <common.h>
-
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <embox/unit.h>
@@ -17,16 +15,16 @@ EMBOX_UNIT_INIT(unit_init);
 typedef struct _FS_DESCRIPTION {
 	const char * name;
 	const FSOP_DESCRIPTION *fsop;
-}FS_DESCRIPTION;
-
+} FS_DESCRIPTION;
 
 static FS_DESCRIPTION const fs_list[] = {
 	#include "rootfs_desc.inc"
 };
+
 #define NUMBER_OF_FS    array_len(fs_list)
 
-
 static int file_list_cnt;
+
 static FILE_INFO * file_list_iterator(FILE_INFO *finfo){
 	if (NUMBER_OF_FS  <= file_list_cnt)
 		return NULL;
@@ -48,11 +46,11 @@ static FSOP_DESCRIPTION rootfs_op = {
 	.get_file_list_iterator = get_file_list_iterator
 };
 
-static int unit_init(){
-	int i;
-	for (i = 0; i < NUMBER_OF_FS; i++){
-		if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)){
-			TRACE("Error: during init fs fs with id has wrong operations desc\n");
+static int unit_init() {
+	size_t i;
+	for (i = 0; i < NUMBER_OF_FS; i++) {
+		if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)) {
+			LOG_ERROR("fs with id has wrong operations desc\n");
 			continue;
 		}
 		fs_list[i].fsop ->init();
@@ -63,7 +61,7 @@ static int unit_init(){
 
 FILE_NAME_STRUCT *parse_file_name(const char *file_name,
 							FILE_NAME_STRUCT *file_name_struct){
-	int i;
+	size_t i;
 	if ('/' != file_name[0]){
 		return NULL;
 	}
@@ -80,22 +78,20 @@ FILE_NAME_STRUCT *parse_file_name(const char *file_name,
 }
 
 FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name){
-	int i;
+	size_t i;
 	printf("fs_name %10s\n", fs_name);
-	if (0 == strncmp(fs_name, "/",FS_MAX_DISK_NAME_LENGTH)){
-		printf("oO\n");
+	if (0 == strncmp(fs_name, "/",CONFIG_FS_MAX_DISK_NAME_LENGTH)){
 		return &rootfs_op;
 	}
 	for (i = 0; i < NUMBER_OF_FS; i++){
 		if (0 == strncmp(fs_list[i].name, fs_name + 1, array_len(fs_list[i].name))){
-			printf("%d", i);
 			return (FSOP_DESCRIPTION *)fs_list[i].fsop;
 		}
 	}
 	return NULL;
 }
 
-void *rootfs_fopen(const char *file_name, char *mode){
+void *rootfs_fopen(const char *file_name, const char *mode){
 	FILE_NAME_STRUCT fname_struct;
 	FSOP_DESCRIPTION *fsop;
 	if (NULL == parse_file_name(file_name, &fname_struct)){

@@ -7,7 +7,7 @@
  */
 #include <shell_command.h>
 #include <string.h>
-#include <fs/file.h>
+#include <stdio.h>
 #include "tftp.h"
 
 #define COMMAND_NAME     "tftp"

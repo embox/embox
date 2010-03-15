@@ -5,16 +5,28 @@
  * @author Nikolay Korotky
  * @author Eldar Abusalimov
  */
-
 #ifndef STDIO_H_
 #define STDIO_H_
 
+#include <types.h>
+
 #define EOF (-1)
 
+typedef void FILE;
+
+/**
+ * Writes the string s and a trailing newline to stdout.
+ */
 extern int puts(const char *s);
+
 extern int putchar(int c);
 
+/**
+ * Read a line from stdin into the buffer pointed to by s until
+ * either a terminating newline or EOF
+ */
 extern char *gets(char *s);
+
 extern int getchar(void);
 
 /**
@@ -36,5 +48,29 @@ extern int scanf(const char *format, ...);
  * Read formatted input from S, according to the format string FORMAT.
  */
 extern int sscanf(char *out, const char *format, ...);
+
+/**
+ * Open the file whose name is the string pointed to by path
+ * and associates a stream with it.
+ */
+extern FILE *fopen(const char *path, const char *mode);
+
+/**
+ * Read nmemb elements of data, each size bytes long, from the stream
+ * pointed to by stream, storing them at the location given by ptr.
+ */
+extern size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+
+/**
+ * Read nmemb elements of data, each size bytes long, from the stream
+ * pointed to by stream, storing them at the location given by ptr.
+ */
+extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+
+/**
+ * Function will flushes the stream pointed to by fp (writing any buffered
+ * output data using fflush(3)) and closes the underlying file descriptor.
+ */
+extern int fclose(FILE *fp);
 
 #endif /* STDIO_H_ */
