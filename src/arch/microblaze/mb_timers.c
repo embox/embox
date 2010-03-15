@@ -11,6 +11,7 @@
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <asm/cpu_conf.h>
+#include <hal/clock.h>
 
 #define CONFIG_SYS_TIMER_PRELOAD     (CPU_CLOCK_FREQ/1000)
 
@@ -91,3 +92,6 @@ void clock_init(void) {
 	}
 }
 
+void clock_setup(useconds_t useconds) {
+
+}

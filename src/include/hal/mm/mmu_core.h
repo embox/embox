@@ -8,6 +8,8 @@
 #ifndef MMU_CORE_H_
 #define MMU_CORE_H_
 
+#include <asm/mmu_core.h>
+
 void mmu_save_status(uint32_t *status);
 
 void mmu_restore_status(uint32_t *status);
