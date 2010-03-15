@@ -68,14 +68,14 @@ int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 	while(1) {
 		size = recvfrom(desc, dp, PKTSIZE, 0, (struct sockaddr *)&from, &fromlen);
 		if(size > 0) {
-			//printf("data %d\n", size);
+			//printf("data: %s\n", dp->th_data);
 			fwrite(dp->th_data, size - 4, 1, file);
 			ap->th_opcode = htons((short)ACK);
 			ap->th_block = dp->th_block;
 			sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen);
-		}
-		if(size < PKTSIZE) {
-			break;
+			if(size < PKTSIZE) {
+				break;
+			}
 		}
 	}
 	close(desc);

@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief The User Datagram Protocol (UDP).
+ * @details RFC 768
  *
  * @date 26.03.2009
  * @author Nikolay Korotky

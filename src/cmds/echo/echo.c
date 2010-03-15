@@ -67,22 +67,22 @@ int raw_client(void) {
 }
 
 int udp_echo_server(void) {
-	int fd, len;
+	int fd, len, fromlen;
 	struct sockaddr_in server, from;
 	char buf[1024];
 	fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
 	server.sin_port = htons(33);
-	if(bind(fd, (struct sockaddr *)&server, 0) == -1) {
+	if(bind(fd, (struct sockaddr *)&server, sizeof(struct sockaddr_in)) == -1) {
 		close(fd);
 		return -1;
 	}
 	while (1) {
-		len = recvfrom(fd, buf, 1024, 0, (struct sockaddr *)&from, NULL);
+		len = recvfrom(fd, buf, 1024, 0, (struct sockaddr *)&from, &fromlen);
 		if ( len > 0) {
 			//printf ("Caught udp packet: %s\n", buf);
-			sendto(fd, buf, len, 0, (struct sockaddr *)&from, 0);
+			sendto(fd, buf, len, 0, (struct sockaddr *)&from, fromlen);
 		}
 		usleep(10);
 	}

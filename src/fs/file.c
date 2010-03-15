@@ -9,11 +9,11 @@
 #include <fs/file.h>
 #include <fs/rootfs.h>
 
-void *fopen (const char *file_name, char *mode){
+FILE *fopen (const char *file_name, char *mode){
 	return rootfs_fopen(file_name, mode);
 }
 
-size_t fwrite (const void *buf, size_t size, size_t count, void *file) {
+size_t fwrite (const void *buf, size_t size, size_t count, FILE *file) {
 	FILEOP **fop = (FILEOP **)file;
 	if (NULL == fop){
 		TRACE("Error during write file: fop is NULL wrong file handler\n");
@@ -26,7 +26,7 @@ size_t fwrite (const void *buf, size_t size, size_t count, void *file) {
 	return (*fop)->write(buf, size, count, file);
 }
 
-size_t fread (const void *buf, size_t size, size_t count, void *file) {
+size_t fread (const void *buf, size_t size, size_t count, FILE *file) {
 	FILEOP **fop = (FILEOP **)file;
 	if (NULL == fop){
 		TRACE("Error during read file: fop is NULL wrong file handler\n");
@@ -39,7 +39,7 @@ size_t fread (const void *buf, size_t size, size_t count, void *file) {
 	return (*fop)->read(buf, size, count, file);
 }
 
-void fclose (void *file) {
+void fclose (FILE *file) {
 	FILEOP *fop = (FILEOP *)file;
 	if (NULL == fop)
 		return ;

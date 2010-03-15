@@ -14,7 +14,7 @@
 typedef struct _FILE_DESC {
 	unsigned int start_addr;
 	unsigned int size;
-	char name[MAX_LENCTH_FILE_NAME];
+	char name[MAX_LENGTH_FILE_NAME];
 	unsigned int mode;
 	unsigned int is_busy;
 } FILE_DESC;
@@ -199,9 +199,17 @@ static int get_descriptors_info(void *params) {
 	return 0;
 }
 
-FSOP_DESCRIPTION ramfsop = { init, open_file, create_file, resize_file,
-		delete_file, get_capacity, get_freespace, get_descriptors_info,
-		get_file_list_iterator };
+FSOP_DESCRIPTION ramfsop = {
+	init,
+	open_file,
+	create_file,
+	resize_file,
+	delete_file,
+	get_capacity,
+	get_freespace,
+	get_descriptors_info,
+	get_file_list_iterator
+};
 
 static void *fopen(const char *file_name, char *mode) {
 	TRACE("ramfs file %s was opened\n", file_name);
@@ -245,3 +253,4 @@ static int fseek(void *file, long offset, int whence) {
 	//FILE_HANDLER *fh = (FILE_HANDLER *) file;
 	return 0;
 }
+

@@ -56,7 +56,7 @@ static int init(void) {
 	TRACE("EMBOX kernel start\n");
 
 	if (0 != (ret = runlevel_set(target_level))) {
-		TRACE("Failed to get into level %d, current level %d", target_level,
+		TRACE("Failed to get into level %d, current level %d\n", target_level,
 				runlevel_get_entered());
 	}
 	return ret;
