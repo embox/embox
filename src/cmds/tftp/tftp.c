@@ -13,6 +13,7 @@
 #define COMMAND_NAME     "tftp"
 #define COMMAND_DESC_MSG "TFTP client"
 #define HELP_MSG         "Usage: tftp <server> <file>"
+
 static const char *man_page =
 	#include "tftp_help.inc"
 ;
@@ -31,7 +32,7 @@ static int create_socket(struct sockaddr_in *addr) {
 	addr->sin_addr.s_addr = htonl(INADDR_ANY);
 	addr->sin_port = htons(666);
 
-	if (bind(sock, (struct sockaddr *)addr, 0) == -1) {
+	if (bind(sock, (struct sockaddr *)addr, sizeof(struct sockaddr_in)) == -1) {
 		printf("Attachement socket impossible.\n");
 		close(sock);
 		return -1;
@@ -41,7 +42,7 @@ static int create_socket(struct sockaddr_in *addr) {
 
 int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 	int desc;
-	size_t size;
+	size_t size, fromlen;
 	struct sockaddr_in from;
 	char buf[PKTSIZE], ackbuf[PKTSIZE], *dat, *cp;
 	tftphdr_t *dp,*ap;
@@ -62,19 +63,18 @@ int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 	cp += strlen(mode);
 	*cp++ = '\0';
 	size = (unsigned long)cp - (unsigned long)ackbuf;
-	sendto(desc, ap, size, 0, (struct sockaddr *)to, 0);
+	fromlen = sizeof(struct sockaddr_in);
+	sendto(desc, ap, size, 0, (struct sockaddr *)to, fromlen);
 	while(1) {
-		size = recvfrom(desc, dp, PKTSIZE, 0, (struct sockaddr *)&from, NULL);
+		size = recvfrom(desc, dp, PKTSIZE, 0, (struct sockaddr *)&from, &fromlen);
 		if(size > 0) {
-			printf("data\n");
-			//TODO: get data
+			//printf("data %d\n", size);
+			fwrite(dp->th_data, size - 4, 1, file);
 			ap->th_opcode = htons((short)ACK);
 			ap->th_block = dp->th_block;
-			sendto(desc, ap, 4, 0, (struct sockaddr *)&from, 0);
+			sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen);
 		}
 		if(size < PKTSIZE) {
-			/* send the "final" ack */
-			//sendto(desc, ap, 4, 0, (struct sockaddr *)&from, 0);
 			break;
 		}
 	}
@@ -93,8 +93,8 @@ static int exec(int argsc, char **argsv) {
 	server.sin_port = htons(69);
 	server.sin_addr.s_addr = inet_addr(argsv[1]);
 
-	//f = fopen(argsv[2], "wb");
+	f = fopen(argsv[2], "wb");
 	tftp_receive(&server, "octet", argsv[2], f);
-	//fclose(f);
+	fclose(f);
 	return 0;
 }
