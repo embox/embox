@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 15.03.2010
+ * @date 15.03.2010
  * @author Anton Bondarev
  * @author Alexander Batyukov
  */

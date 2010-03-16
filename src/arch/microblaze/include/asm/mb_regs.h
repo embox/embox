@@ -1,7 +1,7 @@
 /*
  * @file
  * @brief aliases for register's name mentioned in microblaze API
- * @data 17.11.2009
+ * @date 17.11.2009
  * @author Anton Bondarev
  */
 
