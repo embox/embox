@@ -1,5 +1,5 @@
 
-$_SUBDIRS := $(filter-out include testsuites,$($_SUBDIRS))
+$_SUBDIRS := $(filter-out include,$($_SUBDIRS))
 
 $(IMAGE): $(LDSCRIPT)
 

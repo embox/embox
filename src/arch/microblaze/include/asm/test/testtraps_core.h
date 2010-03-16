@@ -11,7 +11,7 @@
 #include <types.h>
 #include <asm/traps_core.h>
 
-extern uint8_t tests_trap_table[TRAP_TABLE_SIZE];
+extern uint8_t testtraps_table[TRAP_TABLE_SIZE];
 
 extern void testtraps_set_handler(uint32_t type, int number, uint32_t handler);
 

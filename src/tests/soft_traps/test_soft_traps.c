@@ -16,16 +16,24 @@
 
 EMBOX_TEST(run);
 
-extern unsigned int volatile test_soft_traps_variable;
-
+static unsigned int volatile test_variable;
+static void test_handler(void *data) {
+	test_variable ++;
+}
+#define TRAP_TYPE_SOFTTRAP 0
 static int run(void) {
-	unsigned int temp = test_soft_traps_variable;
+	unsigned int temp = test_variable;
+
+	traps_save_table(testtraps_table);
+	testtraps_set_handler(TRAP_TYPE_SOFTTRAP, TEST_SOFT_TRAP_NUMBER, test_handler);
 
 	testtraps_fire_softtrap(TEST_SOFT_TRAP_NUMBER);
 
-	if (temp != (test_soft_traps_variable - 1)) {
+	if (temp != (test_variable - 1)) {
 		TRACE("Incorrect software traps handling\n");
 		return -1;
 	}
+	traps_restore_table(testtraps_table);
+
 	return 0;
 }
