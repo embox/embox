@@ -51,10 +51,10 @@ static int build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 }
 
 int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
-	struct sock *sk = skb->sk;
-	struct inet_sock *inet = inet_sk(sk);
-	struct ip_options *opt = inet->opt;
-	struct iphdr *iph = skb->nh.iph;
+//	struct sock *sk = skb->sk;
+//	struct inet_sock *inet = inet_sk(sk);
+//	struct ip_options *opt = inet->opt;
+//	struct iphdr *iph = skb->nh.iph;
 	/*TODO: route*/
 //	iph->ttl      = 64;
 	return dev_queue_xmit(skb);

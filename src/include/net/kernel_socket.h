@@ -15,7 +15,8 @@ extern void kernel_sock_release(struct socket *sock);
 extern int kernel_sock_init(void);
 extern int sock_create_kern(int family, int type, int protocol,
 					struct socket **res);
-extern int kernel_bind(struct socket *sock, struct sockaddr *addr, int addrlen);
+extern int kernel_bind(struct socket *sock, const struct sockaddr *addr,
+					socklen_t addrlen);
 extern int kernel_listen(struct socket *sock, int backlog);
 extern int kernel_accept(struct socket *sock, struct socket **newsock,
 					int flags);

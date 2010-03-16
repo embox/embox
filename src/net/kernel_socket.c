@@ -134,7 +134,8 @@ int sock_create_kern(int family, int type, int protocol, struct socket **res) {
 	return __sock_create(family, type, protocol, res, 1);
 }
 
-int kernel_bind(struct socket *sock, struct sockaddr *addr, int addrlen) {
+int kernel_bind(struct socket *sock, const struct sockaddr *addr,
+			socklen_t addrlen) {
 	return sock->ops->bind(sock, addr, addrlen);
 }
 
@@ -146,8 +147,8 @@ int kernel_accept(struct socket *sock, struct socket **newsock, int flags) {
 	return sock->ops->accept(sock, *newsock, flags);
 }
 
-int kernel_connect(struct socket *sock, struct sockaddr *addr, int addrlen,
-		int flags) {
+int kernel_connect(struct socket *sock, const struct sockaddr *addr,
+		socklen_t addrlen, int flags) {
 	return sock->ops->connect(sock, addr, addrlen, flags);
 }
 

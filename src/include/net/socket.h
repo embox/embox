@@ -184,7 +184,7 @@ extern int socket(int domain, int type, int protocol);
  * bind a name to a socket.
  * @return 0 on success.  On error, -1.
  */
-extern int bind(int sockfd, const struct sockaddr *addr, int addrlen);
+extern int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
  * send a message on a socket.
@@ -211,12 +211,5 @@ extern int empty_socket(int sockfd);
  * @return 0 on success. On error, -1.
  */
 extern int close(int sockfd);
-
-#if 0
-/**
- * Push packet received from udp_rcv into socket.
- */
-extern int udpsock_push(struct sk_buff *pack);
-#endif
 
 #endif /* SOCKET_H_ */

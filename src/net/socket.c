@@ -42,12 +42,12 @@ int socket(int domain, int type, int protocol) {
 	return sock_get_fd(res);
 }
 
-int connect (int sockfd, const struct sockaddr *addr, int addrlen) {
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
 	return kernel_connect(sock, addr, addrlen, 0);
 }
 
-int bind(int sockfd, const struct sockaddr *addr, int addrlen) {
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
 	return kernel_bind(sock, addr, addrlen);
 }
@@ -58,7 +58,7 @@ int close(int sockfd) {
 	return 0;
 }
 
-ssize_t sendto(int sockfd, const void *buf, int len, int flags,
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *dest_addr, socklen_t addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
 	struct sockaddr_in *daddr = (struct sockaddr_in *)dest_addr;
@@ -80,7 +80,7 @@ ssize_t sendto(int sockfd, const void *buf, int len, int flags,
 	return len;
 }
 
-ssize_t recvfrom(int sockfd, void *buf, int len, int flags,
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *src_addr, socklen_t *addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
 	struct sockaddr_in *saddr = (struct sockaddr_in *)src_addr;

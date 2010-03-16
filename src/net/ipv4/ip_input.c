@@ -10,6 +10,7 @@
 #include <net/ip.h>
 #include <net/icmp.h>
 #include <net/udp.h>
+#include <net/raw.h>
 #include <net/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/route.h>
