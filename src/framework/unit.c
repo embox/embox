@@ -11,15 +11,15 @@
 #include <embox/unit.h>
 #include <embox/mod.h>
 
-static int unit_mod_enable(void *data);
-static int unit_mod_disable(void *data);
+static int unit_mod_enable(struct mod *mod);
+static int unit_mod_disable(struct mod *mod);
 
 struct mod_ops __unit_mod_ops = { .enable = &unit_mod_enable,
 		.disable = &unit_mod_disable };
 
-static int unit_mod_enable(void *data) {
+static int unit_mod_enable(struct mod *mod) {
 	int ret = 0;
-	struct unit *unit = (struct unit *) data;
+	struct unit *unit = (struct unit *) mod_data(mod);
 
 	if (NULL == unit->init) {
 		return 0;
@@ -35,9 +35,9 @@ static int unit_mod_enable(void *data) {
 	return ret;
 }
 
-static int unit_mod_disable(void *data) {
+static int unit_mod_disable(struct mod *mod) {
 	int ret = 0;
-	struct unit *unit = (struct unit *) data;
+	struct unit *unit = (struct unit *) mod_data(mod);
 
 	if (NULL == unit->fini) {
 		return 0;

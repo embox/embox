@@ -19,17 +19,28 @@
 #include <embox/test.h>
 #include <embox/mod.h>
 
-static int test_mod_invoke(void *data);
+static int test_mod_enable(struct mod *mod);
+static int test_mod_invoke(struct mod *mod, void *data);
 
-struct mod_ops __test_mod_ops = { .enable = &test_mod_invoke,
+struct mod_ops __test_mod_ops = { .enable = &test_mod_enable,
 		.invoke = &test_mod_invoke };
+MOD_DEF(__test_tag, generic, "test")
+;
 
-MOD_DEF(__test_tag, generic, "test");
+static int test_mod_enable(struct mod *mod) {
+	return test_mod_invoke(mod, NULL);
+}
 
-static int test_mod_invoke(void *data) {
+static int test_mod_invoke(struct mod *mod, void *data) {
+	return test_invoke((struct test *) mod_data(mod));
+}
+
+int test_invoke(struct test *test) {
 	int result;
-	struct test *test = (struct test *) data;
 
+	if (NULL == test) {
+		return -EINVAL;
+	}
 	if (NULL == test->run) {
 		return -EBADF;
 	}
@@ -44,6 +55,23 @@ static int test_mod_invoke(void *data) {
 	return (test->private->result = result);
 }
 
-struct test **test_get_all(void){
-	return MOD_PTR(__test_tag)->provides;
+struct test_iterator *test_iterator(struct test_iterator *iterator) {
+	if (NULL == iterator) {
+		return NULL;
+	}
+	iterator->p_mod = MOD_PTR(__test_tag)->provides;
+	return iterator;
 }
+
+inline bool test_iterator_has_next(struct test_iterator *iterator) {
+	return NULL != iterator && NULL != iterator->p_mod && NULL
+			!= *iterator->p_mod;
+}
+
+struct test *test_iterator_next(struct test_iterator *iterator) {
+	if (!test_iterator_has_next(iterator)) {
+		return NULL;
+	}
+	return (struct test *) mod_data(*(iterator->p_mod++));
+}
+

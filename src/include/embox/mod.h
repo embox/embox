@@ -177,12 +177,27 @@ struct mod_data_ref;
  * contains @c NULL pointer fields), the meaning is that module operation
  * always succeeds (as if the corresponding function returns 0).
  *
- * @param data pointer to the module-specific data (if any).
+ * @param self pointer to the #mod struct.
  * @return error code
  * @retval 0 if operation succeeds
  * @retval nonzero on error
  */
-typedef int (*mod_op_t)(void *data);
+typedef int (*mod_op_t)(struct mod *self);
+
+/**
+ * The main mod operation. The semantics of the operation is module-specific.
+ * Mods framework does not use this method nor its return value. Please note
+ * that framework also does not track the current state of the mod or its
+ * dependencies, so the mod should check its state by itself.
+ *
+ * The caller should use #mod_invoke() function instead of directly accessing
+ * the corresponding field of the #mod_ops structure.
+ *
+ * @param self pointer to the #mod struct.
+ * @param data optional argument
+ * @return operation result
+ */
+typedef int (*mod_invoke_t)(struct mod *self, void *data);
 
 /**
  * TODO Module info emitted by EMBuild dependency injection model generator.
@@ -214,7 +229,7 @@ struct mod_ops {
 	/** (optional) Module state change operation. */
 	mod_op_t enable, disable;
 	/** (optional) Module main method. */
-	mod_op_t invoke;
+	mod_invoke_t invoke;
 };
 
 struct mod_ops_ref {
@@ -244,8 +259,8 @@ __MOD_PACKAGE_DECL(generic);
  * @return operation result
  * @retval 0 if the mod has been successfully enabled
  * @retval -EINVAL if the argument is @c NULL
- * @retval -EINTR if an error occurred while enabling the mod or one of its
- *         dependencies
+ * @retval -EINTR if an error has occurred while enabling the mod or one of
+ *         its dependencies
  */
 extern int mod_enable(const struct mod *mod);
 
@@ -259,9 +274,91 @@ extern int mod_enable(const struct mod *mod);
  * @return operation result
  * @retval 0 if the mod has been successfully disabled
  * @retval -EINVAL if the argument is @c NULL
- * @retval -EINTR if an error occurred while enabling the mod or one of its
- *         dependencies
+ * @retval -EINTR if an error has occurred while disabling the mod or one of
+ *         its dependencies
  */
 extern int mod_disable(const struct mod *mod);
+
+/**
+ * The weak version of #mod_enable().
+ * Enables the specified mod if and only if all the mods on which the given one
+ * depends are also enabled. If the mod has already been enabled then nothing
+ * special is done and the function returns zero.
+ *
+ * @param mod the mod to enable
+ * @return operation result
+ * @retval 0 if the mod has been successfully enabled
+ * @retval -EINVAL if the argument is @c NULL
+ * @retval -EBUSY if the mod cannot be enabled at the moment because of
+ *         unsatisfied dependencies
+ * @retval -EINTR if an error has occurred while enabling the mod
+ */
+extern int mod_enable_nodep(const struct mod *mod);
+
+/**
+ * The weak version of #mod_disable().
+ * Disables the specified mod if and only if all the mods which depend on the
+ * given one are also disabled. If the mod has not been enabled yet then
+ * nothing special is done and the function returns zero.
+ *
+ * @param mod the mod to disable
+ * @return operation result
+ * @retval 0 if the mod has been successfully disabled
+ * @retval -EINVAL if the argument is @c NULL
+ * @retval -EBUSY if the mod cannot be disabled at the moment because of
+ *         unsatisfied dependencies
+ * @retval -EINTR if an error has occurred while disabling the mod
+ */
+extern int mod_disable_nodep(const struct mod *mod);
+
+/**
+ * Invokes the module if it has provided the corresponding operation.
+ * Please note that framework does not track the current state of the mod or
+ * its dependencies, this means that the mod will be invoked even if it is not
+ * enabled now.
+ *
+ * @param mod the mod on which to call @link mod_ops#invoke @endlink method
+ * @param data optional argument to pass to the @c invoke method
+ * @return invocation result
+ * @retval -EINVAL if the @c mod argument is @c NULL
+ * @retval -ENOTSUP if the mod does not support invoke method
+ */
+extern int mod_invoke(const struct mod *mod, void *data);
+
+/**
+ * Gets the data associated with the specified mod (if any).
+ *
+ * @param mod the mod which's data to get
+ * @return the mod data
+ */
+extern void *mod_data(const struct mod *mod);
+
+#if 0
+/* TODO there is no way to implement these functions at now. -- Eldar */
+
+/**
+ * Sets the mod-specific data.
+ *
+ * @param mod the mod which's data to get
+ * @param data the data to associate with the mod
+ */
+extern void mod_data_set(const struct mod *mod, void *data);
+
+/**
+ * Gets the #mod_ops of the specified mod.
+ *
+ * @param mod the mod which's ops to get
+ * @return the mod operations structure
+ */
+extern struct mod_ops *mod_ops_get(const struct mod *mod);
+
+/**
+ * Sets the mod-specific data.
+ *
+ * @param mod the mod which's data to get
+ * @param ops the data to associate with the mod
+ */
+extern void mod_ops_set(const struct mod *mod, struct mod_ops *ops);
+#endif
 
 #endif /* EMBOX_MOD_H_ */

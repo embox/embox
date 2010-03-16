@@ -20,6 +20,7 @@
 #define EMBOX_TEST_H_
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include <embox/mod.h>
 
@@ -82,11 +83,16 @@ struct test_private {
 	int result;
 };
 
-/**
- * Lists all available tests.
- *
- * @return null-terminated array of tests
- */
-extern struct test **test_get_all(void);
+struct test_iterator {
+	struct mod **p_mod;
+};
+
+extern int test_invoke(struct test *test);
+
+extern struct test_iterator *test_iterator(struct test_iterator *iterator);
+
+extern struct test *test_iterator_next(struct test_iterator *iterator);
+
+extern bool test_iterator_has_next(struct test_iterator *iterator);
 
 #endif /* EMBOX_TEST_H_ */
