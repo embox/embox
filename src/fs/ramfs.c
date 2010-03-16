@@ -121,17 +121,20 @@ static int init(void) {
 	strncpy(param.name, "section_text", array_len(param.name));
 	param.size = (unsigned int) (&_text_end - &_text_start);
 	param.start_addr = (unsigned int) (&_text_start);
+	param.mode = FILE_MODE_RWX;
 	create_file(&param);
 	/* create file /ramfs/section_data */
 	strncpy(param.name, "section_data", array_len(param.name));
 	param.size = (unsigned int) (&_data_end - &_data_start);
 	param.start_addr = (unsigned int) (&_data_start);
+	param.mode = FILE_MODE_RWX;
 	create_file(&param);
 	/* create file /ramfs/piggy if need */
 	if (&_piggy_end - &_piggy_start) {
 		strncpy(param.name, "piggy", array_len(param.name));
 		param.size = (unsigned int )(&_piggy_end - &_piggy_start);
 		param.start_addr = (unsigned int )(&_piggy_start);
+		param.mode = FILE_MODE_RWX;
 		create_file(&param);
 	}
 	return 0;
@@ -174,7 +177,7 @@ static int create_file(void *params) {
 
 	strncpy(fd->name, par->name, array_len(fd->name));
 	fd->start_addr = par->start_addr;
-	fd->size = par->size;
+	fd->size = 0/*par->size*/;
 	fd->mode = par->mode;
 	fd->is_busy = 1;
 	return 0;
@@ -232,25 +235,33 @@ static int ramfs_fclose(void * file) {
 
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 	FILE_HANDLER *fh = (FILE_HANDLER *) file;
+#if 0
 	if (fh->cur_pointer >= fh->fdesc->size){
 		TRACE("end read\n");
 		return 0;
 	}
+#endif
 	memcpy((void*)buf, (const void *)(fh->fdesc->start_addr + fh->cur_pointer), size * count);
 	fh->cur_pointer += size * count;
+#if 0
 	if (0 == (fh->cur_pointer & (TRACE_FREQ - 1))){
 		TRACE("cur = 0x%08X\t size = %d\n",fh->cur_pointer,fh->fdesc->size);
 	}
+#endif
 	return size * count;
 }
 
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file) {
 	FILE_HANDLER *fh = (FILE_HANDLER *) file;
+	FILE_DESC *fd = find_file_desc(fh->fdesc->name);
+#if 0
 	if (0 == fh->cur_pointer) {
 		TRACE("start write\n");
 	}
+#endif
 	memcpy((void *)(fh->fdesc->start_addr + fh->cur_pointer),buf, size * count);
 	fh->cur_pointer += size * count;
+	fd->size += size * count;
 	return size * count;
 }
 

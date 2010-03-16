@@ -6,9 +6,9 @@ $_SRCS-locore += sys.c
 
 LOCORE_OBSOLETE = 1
 ifndef LOCORE_OBSOLETE
-$_SRCS-locore += entry.S trap_*.S
+$_SRCS-locore += entry.S trap_*.S traps.c
 else
-$_SRCS-locore += locore_obsolete.S traps_obsolete.c
+$_SRCS-locore += locore_obsolete.S traps_obsolete.c traps.c
 endif
 
 $_SRCS-arch += arch.c

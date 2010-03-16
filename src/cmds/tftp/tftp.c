@@ -72,7 +72,7 @@ int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 				printf("Error %d\n",dp->th_u.tu_code);
 				break;
 			}
-			printf("data: %s\n", dp->th_data);
+			//printf("data: %s\n", dp->th_data);
 			fwrite(dp->th_data, size - 4, 1, file);
 			ap->th_opcode = htons((short)ACK);
 			ap->th_block = dp->th_block;
