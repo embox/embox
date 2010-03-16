@@ -105,6 +105,7 @@ static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 		}
 		memcpy((void*)msg->msg_iov->iov_base,
 				(void*)(skb->data + ETH_HEADER_SIZE), len);
+		kfree_skb(skb);
 	} else {
 		len = 0;
 	}
