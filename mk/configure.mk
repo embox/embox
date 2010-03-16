@@ -22,13 +22,14 @@ AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 
 TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
 
-.PHONY: check_config
-check_config:
+.PHONY: check_config check_conf_dir
+check_conf_dir:
 	@test -d $(CONF_DIR) $(CONF_FILES:%=-a -f %) \
 		||(echo 'Error: conf directory or files do not exist' \
 		&& echo 'Try "make TEMPLATE=<profile> config"' \
 		&& echo '    See templates dir for possible profiles' \
 		&& exit 1)
+check_config: check_conf_dir
 ifndef ARCH
 	@echo 'Error: ARCH undefined'
 	exit 1
@@ -50,7 +51,7 @@ $(config_h) $(config_lds_h) :
 		| sed 's/$$N/\n/g' | sed 's/$$define/#define/g' > $@
 
 $(AUTOCONF_FILES) : $(MK_DIR)/configure.mk \
-  | mkdir # mkdir shouldn't force target to be updated
+  | check_conf_dir mkdir # these goals shouldn't force target to be updated
 
 -include $(AUTOCONF_FILES:%=%.d)
 

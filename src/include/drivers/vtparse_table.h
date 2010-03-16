@@ -28,8 +28,8 @@ typedef enum {
 } VTPARSE_STATE;
 
 typedef unsigned char state_change_t;
-extern state_change_t STATE_TABLE[15][256];
-extern VT_ACTION ENTRY_ACTIONS[15];
-extern VT_ACTION EXIT_ACTIONS[15];
+extern const state_change_t STATE_TABLE[15][256];
+extern const VT_ACTION ENTRY_ACTIONS[15];
+extern const VT_ACTION EXIT_ACTIONS[15];
 
 #endif /* VTPARSE_TABLE_H_ */

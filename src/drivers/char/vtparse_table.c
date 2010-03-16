@@ -4,9 +4,10 @@
  * @date 04.02.2009
  * @author Eldar Abusalimov
  */
+
 #include <drivers/vtparse_table.h>
 
-state_change_t STATE_TABLE[15][256] = {
+const state_change_t STATE_TABLE[15][256] = {
 	{	/* VTPARSE_STATE_ANYWHERE */
 		0,
 		0,
@@ -2136,7 +2137,7 @@ state_change_t STATE_TABLE[15][256] = {
 	},
 };
 
-VT_ACTION ENTRY_ACTIONS[] = {
+const VT_ACTION ENTRY_ACTIONS[] = {
 	0 /* none for ANYWHERE */,
 	VT_ACTION_CLEAR, /* CSI_ENTRY */
 	0 /* none for CSI_IGNORE */,
@@ -2154,7 +2155,7 @@ VT_ACTION ENTRY_ACTIONS[] = {
 	0 /* none for SOS_PM_APC_STRING */,
 };
 
-VT_ACTION EXIT_ACTIONS[] = {
+const VT_ACTION EXIT_ACTIONS[] = {
 	0 /* none for ANYWHERE */,
 	0 /* none for CSI_ENTRY */,
 	0 /* none for CSI_IGNORE */,
