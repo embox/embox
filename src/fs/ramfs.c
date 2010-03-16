@@ -111,29 +111,29 @@ static FILE_HANDLER * find_free_handler(void) {
 }
 
 static int init(void) {
-	extern char _data_start, _data_end, _text_start, _text_end,
-					_piggy_end, _piggy_start;
+	extern char _data_start, _data_end,
+				_text_start, _text_end,
+				_piggy_end, _piggy_start;
 	RAMFS_CREATE_PARAM param;
+	TRACE("Init RAMFS\n");
 
-	//create file section_text
+	/* create file /rams/section_text */
 	strncpy(param.name, "section_text", array_len(param.name));
 	param.size = (unsigned int) (&_text_end - &_text_start);
 	param.start_addr = (unsigned int) (&_text_start);
-	create_file(&param);//text
-	//create file section_data
+	create_file(&param);
+	/* create file /ramfs/section_data */
 	strncpy(param.name, "section_data", array_len(param.name));
 	param.size = (unsigned int) (&_data_end - &_data_start);
 	param.start_addr = (unsigned int) (&_data_start);
-	create_file(&param);//ram
-//#ifdef INCLUDE_OS_IMAGE
-	//create section piggy if need
+	create_file(&param);
+	/* create file /ramfs/piggy if need */
 	if (&_piggy_end - &_piggy_start) {
 		strncpy(param.name, "piggy", array_len(param.name));
 		param.size = (unsigned int )(&_piggy_end - &_piggy_start);
 		param.start_addr = (unsigned int )(&_piggy_start);
-		create_file(&param);// /ramfs/piggy
+		create_file(&param);
 	}
-//#endif //INCLUDE_OS_IMAGE
 	return 0;
 }
 
@@ -217,7 +217,7 @@ FSOP_DESCRIPTION ramfsop = {
 };
 
 static void *ramfs_fopen(const char *file_name, const char *mode) {
-	TRACE("ramfs file %s was opened\n", file_name);
+	//TRACE("ramfs file %s was opened\n", file_name);
 	return NULL;
 }
 

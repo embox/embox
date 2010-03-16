@@ -68,7 +68,11 @@ int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 	while(1) {
 		size = recvfrom(desc, dp, PKTSIZE, 0, (struct sockaddr *)&from, &fromlen);
 		if(size > 0) {
-			//printf("data: %s\n", dp->th_data);
+			if(dp->th_opcode == ERROR) {
+				printf("Error %d\n",dp->th_u.tu_code);
+				break;
+			}
+			printf("data: %s\n", dp->th_data);
 			fwrite(dp->th_data, size - 4, 1, file);
 			ap->th_opcode = htons((short)ACK);
 			ap->th_block = dp->th_block;
@@ -79,11 +83,13 @@ int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 		}
 	}
 	close(desc);
+	return 0;
 }
 
 static int exec(int argsc, char **argsv) {
 	struct sockaddr_in server;
 	FILE *f;
+	char fname[0x40];
 
 	if (argsc < 3) {
 		show_help();
@@ -93,7 +99,8 @@ static int exec(int argsc, char **argsv) {
 	server.sin_port = htons(69);
 	server.sin_addr.s_addr = inet_addr(argsv[1]);
 
-	f = fopen(argsv[2], "wb");
+	sprintf(fname, "%s%s", "/ramfs/", argsv[2]);
+	f = fopen(fname, "wb");
 	tftp_receive(&server, "octet", argsv[2], f);
 	fclose(f);
 	return 0;

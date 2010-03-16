@@ -22,7 +22,7 @@ static int unit_init(void) {
 			TRACE ("Wrong packet descriptor\n");
 			continue;
 		}
-		TRACE ("Adding packet type 0x%X..", (*p_netpack)->type);
+		TRACE ("Adding packet type 0x%03X..", (*p_netpack)->type);
 
 		if (-1 == (*p_netpack)->init()) {
 			TRACE ("NO\n");

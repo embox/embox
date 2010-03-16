@@ -79,7 +79,7 @@ FILE_NAME_STRUCT *parse_file_name(const char *file_name,
 
 FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name){
 	size_t i;
-	printf("fs_name %10s\n", fs_name);
+	//printf("fs_name %10s\n", fs_name);
 	if (0 == strncmp(fs_name, "/",CONFIG_FS_MAX_DISK_NAME_LENGTH)){
 		return &rootfs_op;
 	}
@@ -91,21 +91,23 @@ FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name){
 	return NULL;
 }
 
-void *rootfs_fopen(const char *file_name, const char *mode){
+void *rootfs_fopen(const char *file_name, const char *mode) {
 	FILE_NAME_STRUCT fname_struct;
 	FSOP_DESCRIPTION *fsop;
 	if (NULL == parse_file_name(file_name, &fname_struct)){
-		TRACE("can't parse file name %s\n (may be wrong format)\n", file_name); //??
+		TRACE("can't parse file name %s\n (may be wrong format)\n", file_name);
 		return NULL;
 	}
-	TRACE("try open: disk %s\tfile %s\n", fname_struct.fs_name, fname_struct.file_name);
-	if (NULL == (fsop = rootfs_get_fsopdesc((char*) /*file_name*/fname_struct.fs_name))){
-		TRACE("can't find file system description for file %s\n (may be file %s didn't create)\n",
-										file_name, file_name);
+	//TRACE("try open: disk %s\tfile %s\n", fname_struct.fs_name,
+	//										fname_struct.file_name);
+	if (NULL == (fsop = rootfs_get_fsopdesc((char*)fname_struct.fs_name))){
+		TRACE("can't find file system description for file %s\n"
+				"(may be file %s didn't create)\n", file_name, file_name);
 		return NULL;
 	}
 	if (NULL == fsop->open_file){
-		TRACE("can't find open_file function wrong fs operation descriptor for file %s\n", file_name);
+		TRACE("can't find open_file function wrong fs operation "
+				"descriptor for file %s\n", file_name);
 		return NULL;
 	}
 	return fsop->open_file(fname_struct.file_name, mode);

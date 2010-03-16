@@ -39,7 +39,7 @@ int copy_image(char *file_name) {
 	}
 	sprintf(ramfname, "%s%s", romfname, "_loaded");
 	if (NULL == (ramfile = fopen(ramfname, "w"))) {
-		printf("Error:Can't create ramfs disk");
+		LOG_ERROR("Can't create ramfs disk");
 		return -1;
 	}
 	while (0 < fread(buff, sizeof(buff), 1, romfile)) {
@@ -67,7 +67,7 @@ static int exec(int argsc, char **argsv) {
 		case 'a':
 			if ((optarg != NULL) && (!sscanf(optarg, "0x%x", &base_addr))
 					&& (!sscanf(optarg, "%d", (int *) &base_addr))) {
-				LOG_ERROR("ERROR: hex value expected.\n");
+				LOG_ERROR("hex value expected.\n");
 				show_help();
 				return -1;
 			}
@@ -88,7 +88,7 @@ static int exec(int argsc, char **argsv) {
 	param.start_addr = (unsigned int) (base_addr);
 	sprintf(param.name, "%s%s", file_name, "_loaded");
 	if (-1 == fsop->create_file(&param)) {
-		printf("Error:Can't create ramfs disk");
+		LOG_ERROR("Can't create ramfs disk\n");
 		return -1;
 	}
 	return copy_image(file_name);
