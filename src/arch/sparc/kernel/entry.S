@@ -69,7 +69,7 @@ bad_trap_entry:
 	wr %g1, PSR_ET, %psr
 	 WRITE_PAUSE
 
-!	call bad_trap_handler
+	call bad_trap_handler
 	 add %sp, STACK_FRAME_SZ, %o1
 
 	RESTORE_ALL
