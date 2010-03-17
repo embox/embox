@@ -26,9 +26,9 @@ static LIST_HEAD(head_free_queue);
 struct sk_buff_head *alloc_skb_queue(int len) {
 	struct sk_buff_head *queue;
 	unsigned long sp;
-	spin_lock(sp);
+	spin_lock(&sp);
 	if (list_empty(&head_free_queue)) {
-		spin_unlock(sp);
+		spin_unlock(&sp);
 		return NULL;
 	}
 	/* in free queue we held structure sk_buff_head but this pointer has sk_buff * type
@@ -39,7 +39,7 @@ struct sk_buff_head *alloc_skb_queue(int len) {
 	INIT_LIST_HEAD((struct list_head *)queue);
 	queue->qlen = 0;
 	queue->qlen = 0;
-	spin_unlock(sp);
+	spin_unlock(&sp);
 	queue->qlen = len;
 	return queue;
 }
@@ -62,15 +62,15 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
 	/*TODO only one packet now*/
 
 	unsigned long sp;
-	spin_lock(sp);
+	spin_lock(&sp);
 	if (list_empty(&head_free_skb)) {
-		spin_unlock(sp);
+		spin_unlock(&sp);
 		return NULL;
 	}
 	skb = (struct sk_buff *) (&head_free_skb)->next;
 	list_del((&head_free_skb)->next);
 	INIT_LIST_HEAD((struct list_head *)skb);
-	spin_unlock(sp);
+	spin_unlock(&sp);
 
 	if (NULL == (skb->data = net_buff_alloc())) {
 		kfree_skb(skb);
@@ -87,7 +87,7 @@ void kfree_skb(struct sk_buff *skb) {
 		return;
 	}
 	net_buff_free(skb->data);
-	spin_lock(sp);
+	spin_lock(&sp);
 	if ((NULL == skb->prev) || (NULL == skb->next)) {
 		list_add((struct list_head *) skb, (struct list_head *)&head_free_skb);
 	} else {
@@ -95,7 +95,7 @@ void kfree_skb(struct sk_buff *skb) {
 				(struct list_head *) &head_free_skb);
 	}
 	skb = NULL;
-	spin_unlock(sp);
+	spin_unlock(&sp);
 }
 
 void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
@@ -103,10 +103,10 @@ void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
 	if (NULL == list || NULL == newsk) {
 		return;
 	}
-	spin_lock(sp);
+	spin_lock(&sp);
 	list_move_tail((struct list_head *) newsk, (struct list_head *) list);
 	list->qlen++;
-	spin_unlock(sp);
+	spin_unlock(&sp);
 }
 
 sk_buff_t *skb_peek(struct sk_buff_head *list_) {
@@ -130,12 +130,12 @@ void skb_unlink(sk_buff_t *skb, struct sk_buff_head *list) {
 sk_buff_t *skb_dequeue(struct sk_buff_head *list) {
 	struct sk_buff *skb;
 	unsigned long sp;
-	spin_lock(sp);
+	spin_lock(&sp);
 	skb = skb_peek(list);
 	if (skb) {
 		skb_unlink(skb, list);
 	}
-	spin_unlock(sp);
+	spin_unlock(&sp);
 	return skb;
 }
 
@@ -182,11 +182,11 @@ struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
 				int noblock, int *err) {
 	struct sk_buff *skb;
 	unsigned long sp;
-	spin_lock(sp);
+	spin_lock(&sp);
 	skb = skb_peek(sk->sk_receive_queue);
 	if (skb) {
 		skb_unlink(skb, sk->sk_receive_queue);
 	}
-	spin_unlock(sp);
+	spin_unlock(&sp);
 	return skb;
 }
