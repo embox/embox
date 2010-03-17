@@ -1,20 +1,16 @@
-/*
- * msr.h
+/**
+ * @file
  *
- *  Created on: 11.01.2010
- *      Author: fomka
+ * @brief Includes framework for working with msr register in microblaze cpu
+ *
+ * @date 11.01.2010
+ * @author Alexey Fomin
  */
 
 #ifndef MSR_H_
 #define MSR_H_
-
-
-#ifdef REVERSE_MASK
-#undef REVERSE_MASK
-#endif
-/* It's necessary to put 31 here
- * because microblaze has reverse bits order */
-#define REVERSE_MASK(bit_num) (1<<(31-bit_num))
+#include <types.h>
+#include <asm/bitops.h>
 
 #define MSR_EIP_BIT    22
 #define MSR_EE_BIT     23
@@ -27,9 +23,9 @@
 #define MSR_BE_BIT     30
 #define MSR_C_BIT      31
 
-#define MSR_EIP_MASK	REVERSE_MASK(MSR_EIP_BIT)
-#define MSR_EE_MASK	REVERSE_MASK(MSR_EE_BIT)
-#define MSR_DCE_MASK	REVERSE_MASK(MSR_DCE_BIT)
+#define MSR_EIP_MASK   REVERSE_MASK(MSR_EIP_BIT)
+#define MSR_EE_MASK    REVERSE_MASK(MSR_EE_BIT)
+#define MSR_DCE_MASK   REVERSE_MASK(MSR_DCE_BIT)
 #define MSR_DZ_MASK    REVERSE_MASK(MSR_DZ_BIT)
 #define MSR_ICE_MASK   REVERSE_MASK(MSR_ICE_BIT)
 #define MSR_FSL_MASK   REVERSE_MASK(MSR_FSL_BIT)
@@ -41,44 +37,86 @@
 /* code from u-boot (modified)*/
 /* use machine status register USE_MSR_REG */
 #ifdef XILINX_USE_MSR_INSTR
-#define msr_set(val) \
+/**
+ * Sets some bits in msr register
+ * @val bit's mask want to be set
+ */
+static inline void msr_set(uint32_t val) {
 	__asm__ __volatile__ ("msrset r0, %0" ::"i"(val) );
-
-#define msr_clr(val) \
+}
+/**
+ * Clears some bits in msr register
+ * @val bit's mask want to be cleared
+ */
+static inline void msr_clr(uint32_t val) {
 	__asm__ __volatile__ ("msrclr r0, %0" ::"i"(val));
-
-#else
-#define msr_set(val)                		\
-{                                         	\
-	register unsigned tmp;             	\
-	__asm__ __volatile__ ("          		\
-			mfs	%0, rmsr;                   \
-			ori	%0, %0, %1;             	\
-			mts	rmsr, %0;                   \
-			nop;"                           \
-			: "=r" (tmp)                    \
-			: "i" (val)                     \
-			: "memory");                    \
 }
 
-#define msr_clr(val)						\
-{											\
-	register unsigned tmp;				\
-	__asm__ __volatile__ ("				\
-			mfs	%0, rmsr;					\
-			andi	%0, %0, ~%1;			\
-			mts	rmsr, %0;					\
-			nop;"							\
-			: "=r" (tmp)					\
-			: "i" (val)						\
-			: "memory");					\
+#else
+
+/**
+ * Sets some bits in msr register
+ * @val bit's mask want to be set
+ */
+static inline void msr_set(uint32_t val) {
+#if 0
+	register unsigned tmp;
+	__asm__ __volatile__ (
+			"mfs	%0, rmsr;\n\t"
+			"ori	%0, %0, %1;\n\t"
+			"mts	rmsr, %0;\n\t"
+			"nop;"
+			: "=r" (tmp)
+			: "r" (val)
+			: "memory");
+#endif
+}
+/**
+ * Clears some bits in msr register
+ * @val bit's mask want to be cleared
+ */
+static inline void msr_clr(uint32_t val) {
+#if 0
+	register unsigned tmp;
+	__asm__ __volatile__ (
+			"mfs	%0, rmsr;\n\t"
+			"andni	%0, %0, %1;\n\t"
+			"mts	rmsr, %0;\n\t"
+			"nop;"
+			: "=r" (tmp)
+			: "r" (val)
+			: "memory");
+#endif
 }
 #endif
 
-#define msr_set_bit(bit) \
-	msr_set(REVERSE_MASK(bit))
 
-#define msr_clr_bit(bit) \
-	msr_clr(REVERSE_MASK(bit))
+/**
+ * Clears some bits in msr register
+ * @val bit's mask want to be cleared
+ */
+static inline uint32_t msr_get_value(void) {
+	register unsigned msr;
+	__asm__ __volatile__ (
+			"mfs	%0, rmsr;\n\t"
+			: "=r" (msr)
+			);
+	return msr;
+}
+
+static inline void msr_set_value(uint32_t val) {
+	__asm__ __volatile__ (
+			"mts	rmsr, %0;\n\t"
+			"nop;\n\t"
+			: "=r" (val));
+}
+
+static inline void msr_set_bit(int bit) {
+	msr_set(REVERSE_MASK(bit));
+}
+
+static inline void msr_clr_bit(int bit) {
+	msr_clr(REVERSE_MASK(bit));
+}
 
 #endif /* MSR_H_ */

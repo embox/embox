@@ -9,6 +9,7 @@
 #include <asm/mb_regs.h>
 
 #if 0
+//FIXME Microblaze boot code
 	.org  0x00
 _start:
         brai    boot_start

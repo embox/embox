@@ -1,13 +1,15 @@
 /**
  * @file
- * @brief This file implemented functions for work with xilix uart (for microblaze)
+ * @brief This file implemented functions for work with xilix uart
+ *        (for microblaze)
  *
  * @date 19.11.2009
  * @author: Anton Bondarev
  */
 
-#include <asm/cpu_conf.h>
 #include <types.h>
+#include <bitops.h>
+#include <asm/cpu_conf.h>
 #include <kernel/irq.h>
 
 typedef volatile struct uart_regs {
@@ -30,9 +32,6 @@ typedef volatile struct uart_regs {
 #define CTRL_ENABLE_INTR_BIT          27
 #define CTRL_RST_RX_FIFO_BIT          30
 #define CTRL_RST_TX_FIFO_BIT          31
-
-/*1<<(31-XXX_BIT) it's necessary put 31 here because microblaze have bit reverse*/
-#define REVERSE_MASK(bit_num) (1<<(31-bit_num))
 
 #define STATUS_PAR_ERROR             REVERSE_MASK(STATUS_PAR_ERROR_BIT)
 #define STATUS_FRAME_ERROR           REVERSE_MASK(STATUS_FRAME_ERROR_BIT)

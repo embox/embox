@@ -8,6 +8,7 @@
  */
 
 #include <types.h>
+#include <bitops.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <asm/cpu_conf.h>
@@ -27,9 +28,6 @@
 #define TIMER_GENT_BIT   29      /**< GENT */
 #define TIMER_UDT_BIT    30      /**< UDT */
 #define TIMER_MDT        31      /**< MDT */
-
-/*it's necessary put 31 here because microblaze have bit reverse*/
-#define REVERSE_MASK(bit_num) (1<<(31-bit_num))
 
 /** enable both timers t0 and t1. clearing this bit isn't change state ENT bit */
 #define TIMER_ENABLE_ALL    REVERSE_MASK(TIMER_ENALL_BIT)

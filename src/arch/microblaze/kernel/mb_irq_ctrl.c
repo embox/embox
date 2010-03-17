@@ -30,9 +30,6 @@ typedef volatile struct irqc_regs {
 #define MER_HIE_BIT     30
 #define MER_ME_BIT      31
 
-/*It's necessary put 31 here because microblaze have bit reverse*/
-#define REVERSE_MASK(bit_num) (1<<(31-bit_num))
-
 #define MER_HIE              REVERSE_MASK(MER_HIE_BIT)
 #define MER_ME               REVERSE_MASK(MER_ME_BIT)
 
