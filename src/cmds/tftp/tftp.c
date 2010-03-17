@@ -42,7 +42,7 @@ static int create_socket(struct sockaddr_in *addr) {
 
 int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 	int desc;
-	size_t size, fromlen;
+	size_t size, fromlen, dsize = 0;
 	struct sockaddr_in from;
 	char buf[PKTSIZE], ackbuf[PKTSIZE], *dat, *cp;
 	tftphdr_t *dp,*ap;
@@ -75,6 +75,8 @@ int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 			if(dp->th_opcode == DATA) {
 				//printf("data: %s\n", dp->th_data);
 				fwrite(dp->th_data, size - 4, 1, file);
+				dsize += size - 4;
+				if(dsize % 0x200 == 0) printf("Download: %d bytes\r", dsize);
 				ap->th_opcode = htons((short)ACK);
 				ap->th_block = dp->th_block;
 				sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen);
@@ -84,6 +86,7 @@ int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 			}
 		}
 	}
+	printf("Downloaded: %d bytes\n", dsize);
 	close(desc);
 	return 0;
 }
