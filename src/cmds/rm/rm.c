@@ -6,7 +6,7 @@
  * @author Roman Evstifeev
  */
 #include <shell_command.h>
-#include <fs/file_new.h>
+#include <stdio.h>
 
 #define COMMAND_NAME     "rm"
 #define COMMAND_DESC_MSG "rm file"
@@ -28,8 +28,5 @@ static int exec(int argsc, char **argsv) {
 
 	file_path = argsv[0];
 
-	if (!remove(file_path))
-		return -1;
-
-	return 0;
+	return remove(file_path);
 }

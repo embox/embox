@@ -66,3 +66,18 @@ int fclose(FILE *fp) {
 	}
 	return (*fop)->close(fp);
 }
+
+int remove(const char *pathname) {
+	RAMFS_CREATE_PARAM param;
+	FSOP_DESCRIPTION *fsop;
+	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))) {
+		LOG_ERROR("Can't find ramfs disk\n");
+		return -1;
+	}
+	sprintf(param.name, basename(pathname));
+	if (-1 == fsop->delete_file(&param)) {
+		LOG_ERROR("Can't delete ramfs disk\n");
+		return -1;
+	}
+	return 0;
+}

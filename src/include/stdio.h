@@ -73,4 +73,9 @@ extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
  */
 extern int fclose(FILE *fp);
 
+/**
+ * Deletes a name from the file system.
+ */
+extern int remove(const char *pathname);
+
 #endif /* STDIO_H_ */
