@@ -1,0 +1,8 @@
+"NAME\n"
+"\tcat - concatenate files and print on the standard output\n"
+"SYNOPSIS\n"
+"\tcat [FILES]\n"
+"DESCRIPTION\n"
+"\tConcatenate FILE(s) to standard output.\n"
+"AUTHORS\n"
+"\tNikolay Korotky"

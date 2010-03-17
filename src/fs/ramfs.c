@@ -235,12 +235,12 @@ static int ramfs_fclose(void * file) {
 
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 	FILE_HANDLER *fh = (FILE_HANDLER *) file;
-#if 0
+
 	if (fh->cur_pointer >= fh->fdesc->size){
-		TRACE("end read\n");
+		//TRACE("end read\n");
 		return 0;
 	}
-#endif
+
 	memcpy((void*)buf, (const void *)(fh->fdesc->start_addr + fh->cur_pointer), size * count);
 	fh->cur_pointer += size * count;
 #if 0
