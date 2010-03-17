@@ -145,7 +145,7 @@ static void *open_file(const char *file_name, const char *mode) {
 	FILE_DESC *fd;
 
 	if (NULL == (fd = find_file_desc(file_name))){
-		TRACE("can't find file %s\n", file_name);
+		//TRACE("can't find file %s\n", file_name);
 		return NULL;
 	}
 

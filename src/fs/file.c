@@ -13,22 +13,25 @@
 FILE *fopen(const char *path, const char *mode) {
 	RAMFS_CREATE_PARAM param;
 	FSOP_DESCRIPTION *fsop;
+	FILE *fd;
 	//FIXME: Actually, whole FS is unfinished now.
 	unsigned int base_addr = 0x40000000;
 	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))) {
 		LOG_ERROR("Can't find ramfs disk\n");
 		return -1;
 	}
-
-	param.size = 0x1000000;
-	param.mode = FILE_MODE_RWX;
-	param.start_addr = (unsigned int) (base_addr);
-	sprintf(param.name, basename(path));
-	if (-1 == fsop->create_file(&param)) {
-		LOG_ERROR("Can't create ramfs disk\n");
-		return -1;
+	if((fd = rootfs_fopen(path, mode)) == NULL) {
+		param.size = 0x1000000;
+		param.mode = FILE_MODE_RWX;
+		param.start_addr = (unsigned int) (base_addr);
+		sprintf(param.name, basename(path));
+		if (-1 == fsop->create_file(&param)) {
+			LOG_ERROR("Can't create ramfs disk\n");
+			return -1;
+		}
+		fd = rootfs_fopen(path, mode);
 	}
-	return rootfs_fopen(path, mode);
+	return fd;
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
