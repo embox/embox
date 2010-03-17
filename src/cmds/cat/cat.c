@@ -21,7 +21,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static int exec(int argsc, char **argsv) {
 	int nextOption;
 	FILE *fd;
-	char buff[4];
+	char buff[1] = " ";
 	getopt_init();
 	do {
 		nextOption = getopt(argsc - 1, argsv, "h");
