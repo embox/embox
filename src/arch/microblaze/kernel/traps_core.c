@@ -20,7 +20,7 @@ void traps_disable(void) {
 	msr_clr_bit(MSR_EE_BIT);}
 
 void traps_status_save(uint32_t *status) {
-	*status = msr_get_value() | MSR_EE_MASK;
+	*status = msr_get_value() & MSR_EE_MASK;
 }
 
 void traps_status_restore(uint32_t *status) {
