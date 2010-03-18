@@ -10,6 +10,6 @@
 "EXAMPLES\n"
 "\tgoto -a 0x666\n"
 "SEE ALSO\n"
-"\tldimg\n"
+"\tload\n"
 "AUTHORS\n"
 "\tSergey Kuzmin"
