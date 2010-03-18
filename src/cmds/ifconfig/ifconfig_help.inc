@@ -34,4 +34,4 @@
 "SEE ALSO\n"
 "\tarp\n"
 "AUTHORS\n"
-"\tAnton, Sunnya"
+"\tAnton Bondarev, Alexandr Batyukov"

@@ -5,4 +5,4 @@
 "DESCRIPTION\n"
 "\trm removes each specified file  \n"
 "AUTHOR\n"
-"\tzoomer"
+"\tRoman Evstifeev"

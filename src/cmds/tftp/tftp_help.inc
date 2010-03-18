@@ -10,4 +10,4 @@
 "\t<host> - address of the server.\n"
 "\t<file> - name of the file to Receive.\n"
 "AUTHORS\n"
-"\tAbaboshin, Sikmir"
+"\tAndrey Baboshin, Nikolay Korotky"

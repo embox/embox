@@ -17,7 +17,7 @@
 #define HELP_MSG         "Usage:[-a ipaddr] [-m macaddr] [-p mask] [-u|d] [-r 0|1] [-f 0|1] [-c 0|1] [-g 0|1] [-l mtu] [-b address] [-i irq_num] [-t maxtxqueue] [-w brdcstaddr] [-z [destaddr]][-x name|interface]"
 
 static const char *man_page =
-#include "help.inc"
+	#include "ifconfig_help.inc"
 ;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)

@@ -37,4 +37,4 @@
 "SEE ALSO\n"
 "\tifconfig\n"
 "AUTHORS\n"
-"\tAbatyukov, Anton, Sannya"
+"\tAlexandr Batyukov, Anton Bondarev"

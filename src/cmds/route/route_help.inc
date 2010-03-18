@@ -12,4 +12,4 @@
 "SEE ALSO\n"
 "\tifconfig, arp\n"
 "AUTHOR\n"
-"\tSikmir"
+"\tNikolay Korotky"

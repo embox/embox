@@ -17,4 +17,4 @@
 "SEE ALSO\n"
 "\tifconfig, ping\n"
 "AUTHORS\n"
-"\tSikmir"
+"\tNikolay Korotky"

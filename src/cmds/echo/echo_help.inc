@@ -7,4 +7,4 @@
 "SEE ALSO\n"
 "\tifconfig\n"
 "AUTHORS\n"
-"\tSikmir"
+"\tNikolay Korotky"

@@ -12,4 +12,4 @@
 "SEE ALSO\n"
 "\tldimg\n"
 "AUTHORS\n"
-"\tKse"
+"\tSergey Kuzmin"

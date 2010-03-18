@@ -11,4 +11,4 @@
 "\t\tby default: all\n"
 "\t-n dev_id    - number of required device.\n"
 "AUTHORS\n"
-"\tAbatyukov"
+"\tAlexandr Batyukov"

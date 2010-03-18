@@ -5,4 +5,4 @@
 "DESCRIPTION\n"
 "\tCopy SOURCE to DEST\n"
 "AUTHOR\n"
-"\tzoomer"
+"\tRoman Evstifeev"
