@@ -5,6 +5,15 @@
 # The first target is "all"
 all:
 
+ifeq ($(MAKE_VERSION),3.80)
+define ERROR
+Unsupported GNU Make version.
+Unfortunatelly EMBuild does not work properly with GNU Make $(MAKE_VERSION)
+This is a known issue. Please use GNU Make version 3.81
+endef
+$(error $(ERROR))
+endif
+
 ifndef ROOT_DIR
 $(error ROOT_DIR undefined)
 endif
