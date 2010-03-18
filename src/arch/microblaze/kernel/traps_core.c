@@ -33,13 +33,15 @@ void traps_save_table(uint32_t *table) {
 }
 
 void traps_restore_table(uint32_t *table) {
-	void *trap_table_base = 0;
+/*	uint32_t *trap_table_base = 0;*/
 	uint32_t msr;
 	/*save msr register*/
 	msr = msr_get_value();
 	/*disable traps and interrupts*/
-	msr_set_value(msr & ~(MSR_EE_MASK | MSR_IE_BIT));
+	msr_set_value(msr & ~(MSR_EE_MASK | MSR_IE_MASK));
+/* we have probler in this place
 	memcpy(trap_table_base, table, TRAP_TABLE_SIZE);
+*/
 	/*restore traps status*/
 	msr_set_value(msr);
 }

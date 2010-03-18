@@ -43,7 +43,6 @@ int testtraps_fire_softtrap(uint32_t number) {
 			"brki  r16, 0x8;\n\t"
 			"nop;\n\t"
 			"nop;\n\t");
-	TRACE("muuu\n");
 
 	return 0;
 }

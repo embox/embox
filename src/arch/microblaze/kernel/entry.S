@@ -345,7 +345,7 @@ C_ENTRY(_debug_exception):
 	nop
 	nop
 
-	rtbd r16,4
+	rtbd r16,8
 	nop
 	nop
 #else

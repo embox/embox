@@ -11,6 +11,5 @@ softtrap_handler test_handler;
 void exception_handler(void) {
 	if (NULL == test_handler)
 		return;
-	TRACE("handler");
 	test_handler(0);
 }
