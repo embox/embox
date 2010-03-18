@@ -8,8 +8,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef SETJMP_H_
-#define SETJMP_H_
+#ifndef MICROBLAZE_SETJMP_H_
+#define MICROBLAZE_SETJMP_H_
 
 #include <types.h>
 
@@ -29,4 +29,4 @@ typedef struct {
 
 #define JB_SIZE     (4 * 15)
 
-#endif /* SETJMP_H_ */
+#endif /* MICROBLAZE_SETJMP_H_ */

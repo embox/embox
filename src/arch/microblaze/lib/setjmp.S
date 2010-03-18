@@ -41,7 +41,7 @@ C_ENTRY(longjmp):
 	lwi	r29, r5, JB_REGS + 0x2C
 	lwi	r30, r5, JB_REGS + 0x30
 
-	bnei r6, sec_arg_zero   /* branch if not equal to zero*/
+	beqi r6, sec_arg_zero   /* branch if not equal to zero*/
 	addi	r3, r6, 0		/* return val */
 	rtsd	r15, 8			/* normal return */
 	nop
