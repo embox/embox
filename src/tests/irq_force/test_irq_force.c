@@ -20,20 +20,32 @@
 EMBOX_TEST(run);
 EMBOX_TEST_EXPORT(run_irq_force);
 
-volatile static bool irq_happened;
+volatile static bool irq_first, irq_second;
 
 static irq_return_t test_isr(irq_nr_t irq_nr, void *dev_id) {
-	irq_happened = true;
+	if (!irq_first) {
+		TRACE(" first(%d) { ", irq_nr);
+		irq_first = true;
+		interrupt_force(TEST_IRQ_NR + 1);
+		TRACE(" } first ");
+	} else if (!irq_second) {
+		TRACE(" second(%d) ", irq_nr);
+		irq_second = true;
+	} else {
+		TRACE(" third(%d) ", irq_nr);
+	}
 	return IRQ_HANDLED;
 }
 
 static int run(void) {
 	int error;
 
-	irq_happened = false;
+	irq_first = false;
+	irq_second = false;
 
 	if (0 != (error = irq_attach(TEST_IRQ_NR, test_isr, 0x0, NULL,
-			"test_irq_force"))) {
+			"test_irq_first")) || 0 != (error = irq_attach(TEST_IRQ_NR + 1,
+			test_isr, 0x0, NULL, "test_irq_second"))) {
 		TRACE("irq_attach failed: %s\n", strerror(error));
 		return -1;
 	}
@@ -41,6 +53,7 @@ static int run(void) {
 	interrupt_force(TEST_IRQ_NR);
 
 	irq_detach(TEST_IRQ_NR, NULL);
+	irq_detach(TEST_IRQ_NR + 1, NULL);
 
-	return irq_happened ? 0 : -1;
+	return irq_first && irq_second ? 0 : -1;
 }
