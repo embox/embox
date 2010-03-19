@@ -25,10 +25,17 @@ THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 PLATFORM_DIR   := $(ROOT_DIR)/platform
 SRC_DIR        := $(ROOT_DIR)/src
 
+ifndef PROJECT_NAME
+#	the only case it's not defined - when target is config
+#	In that case CONF_DIR must refer to ./conf
 CONF_DIR       := $(ROOT_DIR)/conf
+else
+CONF_DIR       := $(ROOT_DIR)/conf/$(PROJECT_NAME)
+endif
+
 BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 
-BUILD_DIR      := $(ROOT_DIR)/build
+BUILD_DIR      := $(ROOT_DIR)/build/$(PROJECT_NAME)
 BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
 LIB_DIR        := $(OBJ_DIR)
@@ -36,6 +43,19 @@ DOT_DIR        := $(BUILD_DIR)/dot
 DOCS_DIR       := $(BUILD_DIR)/docs
 CODEGEN_DIR    := $(BUILD_DIR)/codegen
 AUTOCONF_DIR   := $(CODEGEN_DIR)
+
+CUR_TEMPLATE_FILES := $(wildcard $(TEMPLATES_DIR)/$(TEMPLATE)/*)
+
+__get_subdirs = \
+	  $(sort \
+	    $(notdir \
+	      $(patsubst %/,%, \
+	        $(filter %/, \
+	          $(wildcard $(1:%=%/)) \
+	        ) \
+	      ) \
+	    ) \
+	  )
 
 RM     := rm -f
 CP     := cp
@@ -58,9 +78,16 @@ include $(MK_DIR)/codegen-dot.mk
 endif
 endif
 
-.PHONY: all prepare docs dot clean config xconfig menuconfig
+.PHONY: all
+all:
+	$(foreach target_name, $(call __get_subdirs, $(CONF_DIR)/*), \
+	$(MAKE) -C $(ROOT_DIR)/ PROJECT_NAME=$(target_name) build_target;     \
+	)
 
-all: check_config prepare image
+old_phony: build_target prepare docs dot clean config xconfig menuconfig
+
+#	ex- all
+build_target: check_config prepare image
 	@echo 'Build complete'
 
 prepare:
@@ -113,12 +140,17 @@ endif
 		else                          \
 			mkdir -p $(BACKUP_DIR);   \
 		fi;                           \
-		mv -fv -t $(BACKUP_DIR)       \
+		mv -fv -t $(BACKUP_DIR) \
 			$(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*)); \
-	else                              \
-		mkdir -p $(CONF_DIR);         \
 	fi;
-	@cp -fv -t $(CONF_DIR) \
+	$(foreach dir, $(call __get_subdirs, $(TEMPLATES_DIR)/$(TEMPLATE)/*), \
+	  mkdir -p $(CONF_DIR)/$(dir); \
+	  cp -fv -t $(CONF_DIR)/$(dir) \
+	     $(wildcard $(TEMPLATES_DIR)/$(TEMPLATE)/*); \
+	  cp -fv -t $(CONF_DIR)/$(dir) \
+	     $(TEMPLATES_DIR)/$(TEMPLATE)/$(dir)/*; \
+	)
+#	@cp -fv -t $(CONF_DIR) \
 		$(wildcard $(TEMPLATES_DIR)/$(TEMPLATE)/*)
 	@echo 'Config complete'
 
