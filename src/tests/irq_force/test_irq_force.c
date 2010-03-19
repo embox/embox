@@ -9,6 +9,7 @@
 #include "common.h"
 
 #include <stdbool.h>
+#include <string.h>
 
 #include <embox/test.h>
 #include <kernel/irq.h>

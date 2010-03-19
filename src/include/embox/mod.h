@@ -67,7 +67,7 @@
 	static struct mod_private __MOD_PRIVATE(_mod)
 
 #define __MOD_ARRAY_DEF(_mod, array) \
-	static const struct mod *__MOD_ARRAY(_mod, array)[1] \
+	__extension__ static const struct mod *__MOD_ARRAY(_mod, array)[0] \
 		__attribute__ ((section(__MOD_SECTION_HEAD(_mod, array)))); \
 	static const struct mod *__MOD_ARRAY_ENTRY(_mod, array, __null$$) \
 		__attribute__ ((used, section(__MOD_SECTION_TAIL(_mod, array)))) = NULL
@@ -127,8 +127,8 @@
 			.ops_ref  = (struct mod_ops_ref *) &__MOD_OPS_REF(_mod), \
 			.package  = (struct mod_package *) &__MOD_PACKAGE(_mod_package), \
 			.name     = __MOD_NAME(_mod), \
-			.requires = (struct mod **) &__MOD_ARRAY(_mod, requires)[1], \
-			.provides = (struct mod **) &__MOD_ARRAY(_mod, provides)[1], \
+			.requires = (struct mod **) &__MOD_ARRAY(_mod, requires), \
+			.provides = (struct mod **) &__MOD_ARRAY(_mod, provides), \
 		}
 
 #define MOD_DEP_DEF(_mod, _dep) \

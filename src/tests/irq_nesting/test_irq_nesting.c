@@ -8,6 +8,7 @@
 #include "common.h"
 
 #include <types.h>
+#include <string.h>
 
 #include <embox/test.h>
 #include <kernel/irq.h>
