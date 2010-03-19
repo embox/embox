@@ -13,15 +13,23 @@ include $(MK_DIR)/embuild.mk
 GRAPH_DOT = $(CODEGEN_DIR)/mod_dag.dot
 GRAPH_PS  = $(DOT_DIR)/$(TARGET).ps
 
-dot_mod = $(call dot_escape,$(mod))
-dot_dep = $(call dot_escape,$(dep))
-
-dot_escape = $(subst .,_,$(1))
+mod_package = $(basename $(mod))
+mod_name = $(patsubst .%,%,$(suffix $(mod)))
 
 generate_dot = $(strip \ndigraph EMBOX { \
-  $(foreach mod,$(MODS_BUILD), \
+  ratio=compress; size="50,50"; concentrate=true; ranksep="1.0 equal";\
+  $(foreach package,$(sort $(basename $(MODS_BUILD))), \
+    \nsubgraph "cluster.$(package)" { \
+      \nnode [style=filled,fillcolor=white]; \
+      \ngraph [label = "$(package)",style=rounded,style=filled,color=lightgray]; \
+      $(foreach mod,$(MODS_BUILD),$(if $(filter $(package),$(mod_package)),\
+        \n"$(mod)" [label = "$(mod_name)"];\
+      )) \
+    \n} \
+  ) \
+  $(foreach mod,$(MODS_BUILD),\
     $(foreach dep,$(DEPS-$(mod)), \
-      \n$(dot_mod) -> $(dot_dep); \
+      \n"$(mod)" -> "$(dep)"; \
     ) \
   ) \
 \n})\n
