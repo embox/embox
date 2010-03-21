@@ -53,6 +53,8 @@ PRINTF := printf
 
 TEMPLATES = $(notdir $(wildcard $(TEMPLATES_DIR)/*))
 
+include $(MK_DIR)/util.mk
+
 makegoals := $(MAKECMDGOALS)
 ifeq ($(makegoals),)
 makegoals := all
@@ -67,7 +69,7 @@ include $(MK_DIR)/codegen-dot.mk
 endif
 endif
 
-__get_subdirs = $(sort $(notdir $(call d-wildcard,$(1/*))))
+__get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
 
 .PHONY: all
 all:
