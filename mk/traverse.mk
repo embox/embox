@@ -1,7 +1,7 @@
 #
 # Yet another implementation of non-recursive 'make'.
 #
-# Copyright (C) 2009 Eldar Abusalimov. All rights reserved.
+# Copyright (C) 2009-2010 Eldar Abusalimov. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -79,7 +79,7 @@ include $(MK_DIR)/util.mk
 #   If not specified traverse will search for files named Makefile and makefile
 #
 TRAVERSE = \
-  $(if $(filter $0,TRAVERSE),,$(error TRAVERSE must be call'ed)) \
+  $(call assert_called,$0,TRAVERSE) \
   $(foreach __traverse_root,$(patsubst %/,%,$(wildcard $(1:%=%/))), \
     $(eval __traverse_return := ) \
     $(eval $(call __traverse_invoke,$(__traverse_root),$2)) \
@@ -117,18 +117,14 @@ endef
 # possibly containing wildcard expressions.
 #
 # In a nutshell:
-#   Expand wildcards.
-#   Leave only directories (they contain trailing slash).
+#   Expand d-wildcards for sub-dirs within current node directory.
 #   Get back to sub-dirs relative names and remove duplicates.
 #
-__traverse_subdirs_wildcard = \
-  $(sort \
-    $(patsubst $(__traverse_node_dir)/%/,%, \
-      $(filter $(__traverse_node_dir)/%/, \
-        $(wildcard $(1:%=$(__traverse_node_dir)/%/)) \
-      ) \
-    ) \
-  )
+__traverse_subdirs_wildcard = $(sort \
+  $(patsubst $(__traverse_node_dir)/%,%, \
+    $(call d-wildcard,$(1:%=$(__traverse_node_dir)/%)) \
+  ) \
+)
 
 __traverse_node_file_wildcard = $(strip \
   $(or \

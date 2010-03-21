@@ -8,6 +8,23 @@ ifndef _util_mk_
 _util_mk_ := 1
 
 #
+# Can be used to check whether the variable is expanded using call or not.
+#
+# For example:
+#   func = $(call assert_called,$0,func) Use input args, e.g. $1, $2 or $3
+#   $(call func,foo,bar,baz) expands to "Use input args, e.g. foo, bar or baz"
+#   but plain $(func) expansion produces an error.
+#
+# Usage: $(call assert_called,$0,var_name)
+#
+assert_called = $(strip \
+  $(call __assert_called,$0,assert_called) \
+  $(call __assert_called,$1,$2) \
+)
+
+__assert_called = $(if $(filter $1,$2),,$(error $2 must be call'ed))
+
+#
 # r-patsubst stands for recursive patsubst.
 # This function has the same syntax as patsubst, excepting that you should use
 # $(call ...) to invoke it.
@@ -36,6 +53,26 @@ __r-wildcard = \
     $(call $0,$(subst **,**/*,$1),$(wildcard $(subst **,**/*,$1))) \
   ) $2
 
+# Directory/file versions of wildcard.
+# Both of them are based on the fact that wildcard expansion of the expression
+# containing the trailing slash drops the slash in files but leaves it in
+# directories.
+
+#
+# Directory-only wildcard. This version of wildcard filters out any files
+# leaving only directories.
+#
+# Usage: $(call d-wildcard,pattern)
+#
+d-wildcard = $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
+
+#
+# File-only wildcard. This version of wildcard leaves only files in the
+# expansion result.
+#
+# Usage: $(call f-wildcard,pattern)
+#
+f-wildcard = $(patsubst %/,%,$(filter-out %/,$(wildcard $(1:%=%/))))
 
 # Make-style error and warning strings.
 
