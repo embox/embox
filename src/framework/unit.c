@@ -7,6 +7,7 @@
  */
 
 #include <common.h>
+#include <string.h>
 
 #include <embox/unit.h>
 #include <embox/mod.h>
@@ -29,7 +30,7 @@ static int unit_mod_enable(struct mod *mod) {
 	if (0 == (ret = unit->init())) {
 		TRACE("done\n");
 	} else {
-		TRACE("error\n");
+		TRACE("error: %s\n", strerror(-ret));
 	}
 
 	return ret;
@@ -47,7 +48,7 @@ static int unit_mod_disable(struct mod *mod) {
 	if (0 == (ret = unit->fini())) {
 		TRACE("done\n");
 	} else {
-		TRACE("error\n");
+		TRACE("error: %s\n", strerror(-ret));
 	}
 
 	return ret;

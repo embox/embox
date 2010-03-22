@@ -20,3 +20,4 @@ PROVIDE(set_timer = nosys);
 PROVIDE(close_timer = nosys);
 PROVIDE(timers_off = nosys);
 PROVIDE(irq_func_tmr_1mS = nosys);
+PROVIDE(usleep = nosys);

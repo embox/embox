@@ -121,6 +121,8 @@ static int mod_perform(const struct mod *mod, bool op) {
 	return mod_perform_nodep(mod, op);
 }
 
+// XXX What's about recursive invocations from mod ops? -- Eldar
+// TODO introduce -ELOOP or something else.
 static int mod_perform_nodep(const struct mod *mod, bool op) {
 	size_t op_offset = op ? offsetof(struct mod_ops, enable)
 			: offsetof(struct mod_ops, disable);

@@ -48,7 +48,7 @@ static int run(void) {
 	if (0 != (error = irq_attach(TEST_OUTER_IRQ_NR, test_isr, 0x0, NULL,
 			"test_irq_first")) || 0 != (error = irq_attach(TEST_INNER_IRQ_NR,
 			test_isr, 0x0, NULL, "test_irq_second"))) {
-		TRACE("irq_attach failed: %s\n", strerror(error));
+		TRACE("irq_attach failed: %s\n", strerror(-error));
 		return -1;
 	}
 
