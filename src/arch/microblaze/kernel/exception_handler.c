@@ -5,11 +5,13 @@
  * @author Anton Bondarev
  */
 #include <types.h>
-#include <asm/test/testtraps_core.h>
-softtrap_handler test_handler;
-#include <common.h>
-void exception_handler(void) {
+#include <asm/traps_core.h>
+#include <test/testtraps_core.h>
+
+softtrap_handler_t test_handler[MAX_SOFTTRAP_NUMBER];
+
+void exception_handler(int number) {
 	if (NULL == test_handler)
 		return;
-	test_handler(0);
+	test_handler[number](0,0);
 }

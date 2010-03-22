@@ -5,11 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef TESTIRQ_CORE_H_
-#define TESTIRQ_CORE_H_
+#ifndef MICROBLAZE_TESTIRQ_CORE_H_
+#define MICROBLAZE_TESTIRQ_CORE_H_
 
-extern void testirq_save_status(uint32_t *status);
 
-extern void testirq_restore_status(uint32_t *status);
-
-#endif /* TESTIRQ_CORE_H_ */
+#endif /* MICROBLAZE_TESTIRQ_CORE_H_ */

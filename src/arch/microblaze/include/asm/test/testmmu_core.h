@@ -5,12 +5,12 @@
  * @author Anton Bondarev
  */
 
-#ifndef TESTMMU_CORE_H_
-#define TESTMMU_CORE_H_
+#ifndef MICROBLAZE_TESTMMU_CORE_H_
+#define MICROBLAZE_TESTMMU_CORE_H_
 
 #include <types.h>
 #include <asm/mmu_core.h>
 
 extern uint8_t test_mmu_table[MMU_TABLE_SIZE];
 
-#endif /* TESTMMU_CORE_H_ */
+#endif /* MICROBLAZE_TESTMMU_CORE_H_ */

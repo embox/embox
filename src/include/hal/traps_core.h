@@ -12,16 +12,26 @@
 
 #include <asm/traps_core.h>
 
-extern void traps_save_table(uint32_t *table);
+#define TRAP_TYPE_HARDTRAP  0
+#define TRAP_TYPE_INTERRUPT 1
+#define TRAP_TYPE_SOFTTRAP  2
 
-extern void traps_restore_table(uint32_t *table);
+typedef __traps_env_t traps_env_t ;
 
+extern void traps_save_env(traps_env_t *env);
+
+extern void traps_restore_env(traps_env_t *env);
+
+extern void traps_set_env(traps_env_t *env);
+
+/**
+ * Allows traps in system
+ */
 extern void traps_enable(void);
 
+/**
+ * Prohibits traps in system
+ */
 extern void traps_disable(void);
-
-extern void traps_status_save(uint32_t *status);
-
-extern void traps_status_restore(uint32_t *status);
 
 #endif /* TRAPS_CORE_H_ */
