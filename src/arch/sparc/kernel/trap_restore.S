@@ -162,7 +162,10 @@ tse_kernel_wuf:
 	 * Calculate new WIM (circular left shifting). */
 	sll %t_uwinmask, 1, %g_newwim
 	srl %t_uwinmask, CONFIG_NWINDOWS - 1, %g_temp
-	wr %g_newwim, %g_temp, %wim
+	or %g_newwim, %g_temp, %g_newwim
+	// XXX severe bug was here, review other locore part. -- Eldar
+	// XORing impure shifted t_uwinmask's results in zero WIM value.
+	wr %g_newwim, %g0, %wim
 	 ! do not wait
 
 	/* Restore trap time unprivileged registers from the stack. */
