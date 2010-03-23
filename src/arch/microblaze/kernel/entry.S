@@ -259,7 +259,7 @@ C_ENTRY(_debug_exception):
 	swi	r30, r1, 0
 	addi	r1, r1, -4
 	swi	r31, r1, 0
-	brlid	r15, exception_handler
+	brlid	r15, mb_exception_dispatcher
 	nop
 	nop
 	lwi	r31, r1, 0

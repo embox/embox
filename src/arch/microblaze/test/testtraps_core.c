@@ -12,8 +12,7 @@
 static traps_env_t test_env[1];
 
 //FIXME testtraps_set_handler haven't been implemented yet
-extern softtrap_handler_t test_handler[MAX_SOFTTRAP_NUMBER];
-void testtraps_set_handler(uint32_t type, int number, softtrap_handler_t handler) {
+void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 	switch(type) {
 	case TRAP_TYPE_HARDTRAP: {
 		break;
@@ -22,7 +21,7 @@ void testtraps_set_handler(uint32_t type, int number, softtrap_handler_t handler
 		break;
 	}
 	case TRAP_TYPE_SOFTTRAP: {
-		test_handler[number] = handler;
+		sotftrap_handler[number] = handler;
 		break;
 	}
 	default:

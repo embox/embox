@@ -14,9 +14,9 @@
 /*FIXME move MMU_TABLE_SIZE to arch dependent config*/
 #define TRAP_TABLE_SIZE (5*8)
 
-extern void traps_save_table(uint32_t *table);
+extern void traps_save_env(uint32_t *table);
 
-extern void traps_restore_table(uint32_t *table);
+extern void traps_restore_env(uint32_t *table);
 
 extern void traps_enable(void);
 

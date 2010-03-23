@@ -19,7 +19,7 @@ EMBOX_TEST(run);
 
 static unsigned int volatile test_variable;
 /* test handler*/
-static void test_handler(void *data) {
+static void test_handler(uint32_t trap_nr, void *data) {
 	test_variable++;
 }
 

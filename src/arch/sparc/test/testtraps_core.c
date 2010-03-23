@@ -19,3 +19,6 @@ int testtraps_fire_softtrap(uint32_t number) {
 	return 0;
 }
 
+traps_env_t *testtraps_env(void) {
+	return NULL;
+}
