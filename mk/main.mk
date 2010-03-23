@@ -70,17 +70,19 @@ endif
 endif
 
 __get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
+build_targets := $(patsubst %,%.target,$(filter-out $(notdir $(BACKUP_DIR)), \
+  $(call __get_subdirs, $(CONF_DIR))))
 
-.PHONY: all build_target prepare docs dot clean config xconfig menuconfig
-all:
-	$(foreach target_name, $(call __get_subdirs, $(CONF_DIR)), \
-	$(MAKE) -C $(ROOT_DIR)/ PROJECT_NAME=$(target_name) build_target;     \
-	)
+.PHONY: all build_target $(build_targets) prepare docs dot clean config xconfig menuconfig
+
+all: $(build_targets)
 	@echo 'Build complete'
 
-#	ex- all
+$(build_targets):
+	$(MAKE) -C $(ROOT_DIR)/ PROJECT_NAME=$(basename $@) build_target
+
 build_target: check_config prepare image
-	@echo '$(PROJECT_NAME) was build successfully'
+	@echo '$(PROJECT_NAME) was built successfully'
 
 prepare:
 	@mkdir -p $(BUILD_DIR)
@@ -141,15 +143,20 @@ endif
 		else                          \
 			mkdir -p $(BACKUP_DIR);   \
 		fi;                           \
-		mv -fv -t $(BACKUP_DIR) \
-			$(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*)); \
+		$(if $(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*)), \
+			mv -fv -t $(BACKUP_DIR) \
+				$(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*));, \
+			rm -r $(BACKUP_DIR); \
+		) \
 	fi;
 	$(foreach dir, $(call __get_subdirs, $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)), \
 	  mkdir -p $(CONF_DIR)/$(dir); \
 	  cp -fv -t $(CONF_DIR)/$(dir) \
 	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/*); \
-	  cp -fv -t $(CONF_DIR)/$(dir) \
-	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/$(dir)/*); \
+	  $(if $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/$(dir)/*), \
+	    cp -fv -t $(CONF_DIR)/$(dir) \
+	       $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/$(dir)/*); \
+	  ) \
 	)
 	@echo 'Config complete'
 
