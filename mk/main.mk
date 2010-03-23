@@ -20,7 +20,7 @@ endif
 
 MK_DIR         := $(ROOT_DIR)/mk
 SCRIPTS_DIR    := $(ROOT_DIR)/scripts
-TEMPLATES_DIR  := $(ROOT_DIR)/templates
+PROJECTS_DIR  := $(ROOT_DIR)/templates
 THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 PLATFORM_DIR   := $(ROOT_DIR)/platform
 SRC_DIR        := $(ROOT_DIR)/src
@@ -118,12 +118,21 @@ _distclean: _clean
 config: _clean
 ifndef TEMPLATE
 	@echo 'Error: TEMPLATE undefined'
-	@echo 'Usage: "make TEMPLATE=<profile> config"'
-	@echo '    See templates dir for possible profiles'
+	@echo 'Usage: "make PROJECT=<proj_name> TEMPLATE=<profile> config"'
+	@echo '    See templates dir for possible projects and profiles'
 	exit 1
 endif
-	@test -d $(TEMPLATES_DIR)/$(TEMPLATE) \
-		|| (echo 'Error: template $(TEMPLATE) does not exist' \
+ifndef PROJECT
+	@echo 'Error: PROJECT undefined'
+	@echo 'Usage: "make PROJECT=<proj_name> TEMPLATE=<profile> config"'
+	@echo '    See templates dir for possible projects and profiles'
+	exit 1
+endif
+	@test -d $(PROJECTS_DIR)/$(PROJECT) \
+		|| (echo 'Error: project $(PROJECT) does not exist' \
+		&& exit 1)
+	@test -d $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE) \
+		|| (echo 'Error: template $(TEMPLATE) does not exist in project $(PROJECT)' \
 		&& exit 1)
 	@if [ -d $(CONF_DIR) ];           \
 	then                              \
@@ -136,15 +145,16 @@ endif
 		mv -fv -t $(BACKUP_DIR) \
 			$(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*)); \
 	fi;
-	$(foreach dir, $(call __get_subdirs, $(TEMPLATES_DIR)/$(TEMPLATE)), \
+	$(foreach dir, $(call __get_subdirs, $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)), \
 	  mkdir -p $(CONF_DIR)/$(dir); \
 	  cp -fv -t $(CONF_DIR)/$(dir) \
-	     $(wildcard $(TEMPLATES_DIR)/$(TEMPLATE)/*); \
+	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/*); \
+	if [-d $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/$(dir)/*]; \
+	then \
 	  cp -fv -t $(CONF_DIR)/$(dir) \
-	     $(TEMPLATES_DIR)/$(TEMPLATE)/$(dir)/*; \
+	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/$(dir)/*); \
+	fi; \
 	)
-#	@cp -fv -t $(CONF_DIR) \
-		$(wildcard $(TEMPLATES_DIR)/$(TEMPLATE)/*)
 	@echo 'Config complete'
 
 menuconfig:

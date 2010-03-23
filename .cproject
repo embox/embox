@@ -133,9 +133,9 @@
 <useDefaultCommand>true</useDefaultCommand>
 <runAllBuilders>true</runAllBuilders>
 </target>
-<target name="config sparc" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="config sparc release" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>make</buildCommand>
-<buildArguments>TEMPLATE=sparc</buildArguments>
+<buildArguments>PROJECT=sparc TEMPLATE=release</buildArguments>
 <buildTarget>config</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
@@ -157,9 +157,9 @@
 <useDefaultCommand>true</useDefaultCommand>
 <runAllBuilders>true</runAllBuilders>
 </target>
-<target name="config microblaze" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<target name="config microblaze release" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>make</buildCommand>
-<buildArguments>TEMPLATE=microblaze</buildArguments>
+<buildArguments>PROJECT=microblaze TEMPLATE=release</buildArguments>
 <buildTarget>config</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
@@ -187,6 +187,22 @@
 <buildTarget>dot</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>true</useDefaultCommand>
+<runAllBuilders>true</runAllBuilders>
+</target>
+<target name="config sparc simulation" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments>PROJECT=sparc TEMPLATE=simulation</buildArguments>
+<buildTarget>config</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>false</useDefaultCommand>
+<runAllBuilders>true</runAllBuilders>
+</target>
+<target name="config microblaze compiler_tests" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments>PROJECT=microblaze TEMPLATE=compiler_tests</buildArguments>
+<buildTarget>config</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>false</useDefaultCommand>
 <runAllBuilders>true</runAllBuilders>
 </target>
 </buildTargets>
