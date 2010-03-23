@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 #include <shell_command.h>
-#include <asm/leon.h>
-#include <asm/mmu.h>
+//#include <asm/leon.h>
+#include <asm/mmu_obsolete.h>
 
 #define COMMAND_NAME     "mmu_probe"
 #define COMMAND_DESC_MSG "testing mmu module"
@@ -23,11 +23,11 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
  */
 static bool mmu_show_reg() {
 	printf("Registers MMU:\n");
-//	printf("CTLR REG:\t%X\n", srmmu_get_mmureg(SRMMU_CTRL_REG));
-//	printf("CTXTBL PTR:\t%X\n", srmmu_get_mmureg(SRMMU_CTXTBL_PTR));
-//	printf("CTX REG:\t%X\n", srmmu_get_mmureg(SRMMU_CTX_REG));
-//	printf("FAULT STATUS:\t%X\n", srmmu_get_mmureg(SRMMU_FAULT_STATUS));
-//	printf("FAULT ADDR:\t%X\n", srmmu_get_mmureg(SRMMU_FAULT_ADDR));
+	printf("CTLR REG:\t%X\n", srmmu_get_mmureg(SRMMU_CTRL_REG));
+	printf("CTXTBL PTR:\t%X\n", srmmu_get_mmureg(SRMMU_CTXTBL_PTR));
+	printf("CTX REG:\t%X\n", srmmu_get_mmureg(SRMMU_CTX_REG));
+	printf("FAULT STATUS:\t%X\n", srmmu_get_mmureg(SRMMU_FAULT_STATUS));
+	printf("FAULT ADDR:\t%X\n", srmmu_get_mmureg(SRMMU_FAULT_ADDR));
 	return 0;
 }
 static bool mmu_show_version() {

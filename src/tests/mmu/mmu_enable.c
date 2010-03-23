@@ -23,7 +23,7 @@ static int run() {
 	if (prev_mmu_status) {
 		mmu_save_table(&prev_mmu_table);
 	}
-	mmu_enable(prev_mmu_table);
+	mmu_enable(&prev_mmu_table);
 
 	if(prev_mmu_status) {
 		mmu_restore_table(&prev_mmu_table);
