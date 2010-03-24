@@ -22,11 +22,12 @@
 interrupt_entry:
 	SAVE_ALL
 
-	andn %t_psr, PSR_PIL, %g1
-	sll %local, 8, %temp
-	wr %g1, %temp, %psr
-	 or %g1, %temp, %g1; nop; nop
-	wr %g1, PSR_ET, %psr
+	andn %t_psr, PSR_PIL, %temp
+	sll %local, 8, %g1
+	or %temp, %g1, %temp
+	wr %temp, %g0, %psr
+	 WRITE_PAUSE
+	wr %temp, PSR_ET, %psr
 	 ! do not wait
 
 	/* Forward interrupt handling directly to kernel.
@@ -38,6 +39,12 @@ interrupt_entry:
 	! add %sp, STACK_FRAME_SZ, %o1
 
 	! TODO maybe traps disable is needed
+	! XXX it is really needed because of possible races with another interrupt
+	! which may occur after RESTORE_ALL and before restoring trap time PSR.
+	! t_wim becomes irrelevant if deep interrupt occurs after reading WIM
+	! XXX clean up and describe these bugs -- Eldar.
+	wr %temp, %g0, %psr
+	 WRITE_PAUSE
 
 	RESTORE_ALL
 
