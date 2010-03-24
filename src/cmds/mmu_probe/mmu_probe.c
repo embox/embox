@@ -138,7 +138,7 @@ static bool mmu_probe() {
 
 	/* close your eyes and pray ... */
 	printf("mmu start...\n");
-//	mmu_probe_start();
+	mmu_probe_start();
 #if 0
 	/* do tests*/
 //page translation tast page0 in 0xf0041000 addr 0x40000000 0xf0080000
