@@ -88,9 +88,9 @@ static bool mmu_probe() {
 	mmu_flush_tlb_all ();
 
 	/* one-on-one mapping for context 0 */
-	mmu_probe_map_region(LDS_REGION_BASE_flash, LDS_REGION_BASE_flash, 0x1000000, MMU_PRIV);
+	mmu_probe_map_region(0/*LDS_REGION_BASE_flash*/, 0/*LDS_REGION_BASE_flash*/, 0x1000000, MMU_PRIV);
 //	mmu_probe_map_region(0x20000000, 0x20000000, 0x1000000, MMU_PRIV);
-	mmu_probe_map_region(LDS_REGION_BASE_sdram, LDS_REGION_BASE_sdram, 0x1000000, MMU_PRIV);
+	mmu_probe_map_region(0x44000000/*LDS_REGION_BASE_sdram*/, 0x44000000/*LDS_REGION_BASE_sdram*/, 0x1000000, MMU_PRIV);
 	mmu_probe_map_region(0x80000000, 0x80000000, 0x1000000, MMU_PRIV);
 #if 0
  /* testarea:
