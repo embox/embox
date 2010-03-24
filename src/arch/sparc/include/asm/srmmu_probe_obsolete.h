@@ -1,6 +1,7 @@
 /**
  * @file
- * @date Jun 18, 2009
+ *
+ * @date 18.06.10
  * @author Anton Bondarev
  */
 #ifndef SRMMU_PROBE_H_
@@ -22,7 +23,7 @@ extern void flush_data_cache(void);
 
 extern unsigned long ctx, pg0, pm0, pt0;
 extern unsigned long page0, page1, page2;
-#endif // __ASSEMBLER__
+#endif /* __ASSEMBLER__ */
 
 #define MMU_PRIV            SRMMU_PRIV
 #define MMU_PRIV_RDONLY     SRMMU_PRIV_RDONLY

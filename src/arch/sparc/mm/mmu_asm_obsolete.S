@@ -12,8 +12,7 @@ mmu_func1:
 
 	.align 4
 
-	/**may be testing data cache?
-	*/
+	/**may be testing data cache? */
 	.global mmu_double
 mmu_double:
 	save  %sp, -112, %sp
@@ -104,5 +103,3 @@ srmmu_fault:
 pth_addr:	.word 0
 	.align 8
 pth_addr1:	.word 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-
-
