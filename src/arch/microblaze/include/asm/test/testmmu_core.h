@@ -11,6 +11,5 @@
 #include <types.h>
 #include <asm/mmu_core.h>
 
-extern uint8_t test_mmu_table[MMU_TABLE_SIZE];
 
 #endif /* MICROBLAZE_TESTMMU_CORE_H_ */
