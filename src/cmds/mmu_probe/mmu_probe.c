@@ -55,7 +55,7 @@ static bool mmu_show_reg() {
 	return 0;
 }
 
-//#define TLBNUM 4
+#define TLBNUM 4
 
 static bool mmu_probe() {
 //	ctxd_t *c0 = (ctxd_t *) &ctx;
@@ -101,13 +101,14 @@ static bool mmu_probe() {
  * page fault test:
  *  missing pgd at f1000000 [vaddr:(0) (241)(-)(-)]
  */
-	mmu_probe_map_region(0x40000000, 0xf0080000, 0x40000, MMU_PRIV);
+	mmu_probe_map_region(0x44000000, 0xf0080000, 0x40000, MMU_PRIV);
 	//not alloc here (alloc after page_fault)
 	mmu_probe_map_region(0x0, 0xf0042000, 0x1000, 0);
 	//first read only during trap clear this flag
 	mmu_probe_map_region((unsigned long)&page0, 0xf0041000, 0x1000, MMU_PRIV_RDONLY);
 	for (i = 3; i < TLBNUM+3; i++) {
-		mmu_probe_map_region((((unsigned long) &page2) + (((i - 3) % 3) * PAGE_SIZE)), (0xf0040000 + (i * PAGE_SIZE)) , 0x1000, MMU_PRIV);
+		mmu_probe_map_region((((unsigned long) &page2) + (((i - 3) % 3) * PAGE_SIZE)),
+				(0xf0040000 + (i * PAGE_SIZE)) , 0x1000, MMU_PRIV);
 	}
 	mmu_probe_repair_table_init((unsigned long)&page0);
 
@@ -151,16 +152,16 @@ static bool mmu_probe() {
 //	pthaddr[0] = (unsigned long) (g0+241);
 //	pthaddr[1] = ((0x40000000 >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
 //	pthaddr[2] = 0xf1000000;
-val = * ((volatile unsigned long *)0xf1000000);
-/* write protection fault */
-//	/* repair info for write protection fault (0xf0041000) */
+	val = * ((volatile unsigned long *)0xf1000000);
+	/* write protection fault */
+	/* repair info for write protection fault (0xf0041000) */
 //	pthaddr[3] = (unsigned long) (p0+1);
 //	pthaddr[4] = ((((unsigned long)&page0) >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
 //	pthaddr[5] = 0xf0041000;
-* ((volatile unsigned long *)0xf0041004) = 0x87654321;
+	*((volatile unsigned long *)0xf0041004) = 0x87654321;
 	if ( (*((volatile unsigned long *)0xf0041004)) != 0x87654321 ) { MMU_RETURN(3); }
 
-//test several page for modify flags
+	/* test several page for modify flags */
 	for (j = 0xf0043000, i = 3; i < TLBNUM+3; i++, j += 0x1000) {
 		*((unsigned long *) j) = j;
 		if (*((unsigned long*) (((unsigned long) &page2) + (((i - 3) % 3)

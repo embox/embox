@@ -8,7 +8,7 @@
  */
 
 #include <types.h>
-#include <common.h>
+#include <embox/kernel.h>
 #include <asm/msr.h>
 #include <hal/traps_core.h>
 #include <string.h>

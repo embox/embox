@@ -8,7 +8,6 @@
  */
 
 #include <types.h>
-#include <common.h>
 #include <embox/test.h>
 #include <test/testtraps_core.h>
 

@@ -4,7 +4,6 @@
  * @date 28.08.2009
  * @author Roman Evstifeev
  */
-#include <common.h>
 #include <fs/fsop.h>
 #include <fs/memseg.h>
 

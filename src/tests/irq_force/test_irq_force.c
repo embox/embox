@@ -6,8 +6,6 @@
  * @author Eldar Abusalimov
  */
 
-#include "common.h"
-
 #include <stdbool.h>
 #include <string.h>
 

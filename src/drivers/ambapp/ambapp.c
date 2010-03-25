@@ -6,7 +6,7 @@
  */
 
 #include <types.h>
-#include <common.h>
+#include <embox/kernel.h>
 #include <drivers/amba_pnp.h>
 
 /**

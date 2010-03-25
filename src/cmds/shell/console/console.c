@@ -13,7 +13,6 @@
 #include "console.h"
 #include <kernel/sys.h>
 #include <kernel/diag.h>
-#include <common.h>
 #include <string.h>
 #include <drivers/terminal.h>
 

@@ -14,7 +14,7 @@
 
 #include <types.h>
 #include <errno.h>
-#include <common.h>
+#include <embox/kernel.h>
 
 #include <embox/test.h>
 #include <embox/mod.h>

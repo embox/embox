@@ -5,7 +5,6 @@
  * @author Alexey Fomin
  */
 #include <stdio.h>
-#include <common.h>
 #include <string.h>
 #include <ctype.h>
 

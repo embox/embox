@@ -13,8 +13,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
 #include <sys/types.h>
+#include <err.h>
 
 /* FIXME try to avoid using these types -- Eldar*/
 typedef __u16 __le16;

@@ -5,7 +5,7 @@
  * @author Nikolay Korotky
  */
 #include <getopt.h>
-#include <common.h>
+#include <embox/kernel.h>
 #include <stdio.h>
 #include <string.h>
 

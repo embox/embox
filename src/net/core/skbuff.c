@@ -8,8 +8,6 @@
  */
 
 #include <string.h> /*for memcpy*/
-#include <common.h>
-
 #include <lib/list.h>
 #include <net/skbuff.h>
 #include <net/sock.h>

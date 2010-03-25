@@ -8,7 +8,7 @@
 #include "cmdline.h"
 #include <math.h>
 #include <string.h>
-#include <common.h>
+#include <embox/kernel.h>
 
 CMDLINE * cmdline_init(CMDLINE *this) {
 	CMDLINE_HISTORY *history;

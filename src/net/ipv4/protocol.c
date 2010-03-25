@@ -5,7 +5,6 @@
  * @date 12.08.09
  * @author Nikolay Korotky
  */
-#include <common.h>
 #include <net/protocol.h>
 #include <net/in.h>
 //TODO inet_protos not use now

@@ -7,9 +7,7 @@
  *         - some changes in interface and designed as express test
  */
 
-#include "common.h"
-#include "string.h"
-
+#include <string.h>
 #include <embox/test.h>
 
 EMBOX_TEST(run);

@@ -8,10 +8,8 @@
  * @author Nikolay Korotky
  */
 
-#include <common.h>
 #include <string.h>
 #include <errno.h>
-
 #include <kernel/irq.h>
 #include <net/skbuff.h>
 #include <net/sock.h>

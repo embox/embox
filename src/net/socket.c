@@ -9,8 +9,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <common.h>
-
 #include <net/socket.h>
 #include <net/udp.h>
 #include <net/ip.h>

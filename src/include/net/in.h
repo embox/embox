@@ -10,6 +10,7 @@
 #define IN_H_
 
 #include <types.h>
+#include <embox/kernel.h>
 
 /**< Standard well-defined IP protocols.  */
 enum {

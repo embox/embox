@@ -12,7 +12,7 @@
 
 #include <assert.h>
 #include <string.h>
-#include <common.h>
+#include <embox/kernel.h>
 #include <stdarg.h>
 
 #include <drivers/terminal.h>

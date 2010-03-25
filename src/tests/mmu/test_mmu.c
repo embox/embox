@@ -4,7 +4,6 @@
  * \author anton
  * \details
  */
-#include "common.h"
 #include "asm/leon.h"
 #include "asm/mmu.h"
 #include "asm/srmmu_probe.h"

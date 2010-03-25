@@ -5,7 +5,6 @@
  * \author Alexey Fomin
  */
 
-#include "common.h"
 #include "embox/test.h"
 #include "hal/irq_ctrl.h"
 #include "kernel/irq.h"

@@ -7,7 +7,6 @@
  * @author Nikolay Korotky
  */
 #include <string.h>
-#include <common.h>
 #include <net/inetdevice.h>
 #include <net/udp.h>
 #include <net/ip.h>

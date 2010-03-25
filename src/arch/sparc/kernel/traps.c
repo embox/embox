@@ -4,7 +4,7 @@
  * @date 15.03.2010
  * @author Nikolay Korotky
  */
-#include <common.h>
+#include <embox/kernel.h>
 #include <types.h>
 #include <asm/winmacro.h>
 #include <asm/ptrace.h>

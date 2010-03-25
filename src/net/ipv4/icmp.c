@@ -8,8 +8,6 @@
  */
 
 #include <string.h>
-#include <common.h>
-
 #include <net/inetdevice.h>
 #include <net/icmp.h>
 #include <net/ip.h>

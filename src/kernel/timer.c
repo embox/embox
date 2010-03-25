@@ -8,7 +8,7 @@
 #include <hal/arch.h>
 #include <kernel/timer.h>
 #include <time.h>
-#include <common.h> /*for array_len*/
+#include <embox/kernel.h> /*for array_len*/
 #include <string.h>
 
 typedef struct sys_tmr {

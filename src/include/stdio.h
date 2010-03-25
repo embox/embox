@@ -78,4 +78,16 @@ extern int fclose(FILE *fp);
  */
 extern int remove(const char *pathname);
 
+#if defined(CONFIG_TRACE) && !defined(SIMULATION_TRG)
+# ifdef __EMBOX__
+#  define TRACE(...)  printf(__VA_ARGS__)
+# else
+#  define TRACE(...)  printk(__VA_ARGS__)
+# endif
+#else
+# define TRACE(...)  do ; while(0)
+#endif
+
+#define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}
+
 #endif /* STDIO_H_ */

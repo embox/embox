@@ -35,11 +35,19 @@ int mmu_enable(uint32_t *table) {
 }
 
 void mmu_on(void) {
-
+	__asm__ __volatile__("sta %0, [%%g0] %1\n\t"
+		:
+		: "r" (0x00000001), "i" (ASI_M_MMUREGS)
+		: "memory"
+	);
 }
 
 void mmu_off(void) {
-
+	__asm__ __volatile__("sta %0, [%%g0] %1\n\t"
+		:
+		: "r" (0x00000000), "i" (ASI_M_MMUREGS)
+		: "memory"
+	);
 }
 
 int mmu_map_region(uint32_t phy_addr, uint32_t virt_addr,

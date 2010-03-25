@@ -7,7 +7,7 @@
  * @author Eldar Abusalimov
  */
 
-#include <common.h>
+#include <embox/kernel.h>
 
 #include <hal/arch.h>
 #include <hal/ipl.h>

@@ -5,8 +5,6 @@
  * @author Anton Bondarev
  */
 
-#include <common.h>
-
 #include <net/netdevice.h>
 #include <net/net_pack_manager.h>
 #include <lib/list.h>

@@ -6,7 +6,7 @@
  */
 #include "screen.h"
 #include <assert.h>
-#include <common.h>
+#include <embox/kernel.h>
 #include "console.h"
 #include <kernel/sys.h>
 #include <kernel/diag.h>

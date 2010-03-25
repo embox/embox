@@ -21,7 +21,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
-
+#include <embox/kernel.h>
 #include <embox/mod.h>
 
 #define EMBOX_TEST(_run) \

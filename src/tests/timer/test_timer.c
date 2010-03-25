@@ -4,8 +4,6 @@
  * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
-#include "common.h"
-
 #include <embox/test.h>
 #include <kernel/timer.h>
 

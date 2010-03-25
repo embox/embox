@@ -5,10 +5,10 @@
  * @date 13.01.2010
  * @author Anton Bondarev
  */
-#include <common.h>
 #include <errno.h>
 #include <kernel/irq.h>
 #include <lib/list.h>
+#include <net/in.h>
 #include <net/net.h>
 #include <asm/system.h>
 

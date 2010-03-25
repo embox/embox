@@ -7,8 +7,6 @@
  */
 
 #include <setjmp.h>
-#include <common.h>
-
 #include <embox/test.h>
 
 #define TEST_JUMP_VALUE 0xFADE

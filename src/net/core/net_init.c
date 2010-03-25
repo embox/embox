@@ -6,8 +6,6 @@
  * @author Anton Bondarev
  */
 
-#include <common.h>
-
 #include <net/netdevice.h>
 #include <embox/unit.h>
 

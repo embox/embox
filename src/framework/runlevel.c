@@ -7,7 +7,7 @@
  */
 
 #include <errno.h>
-#include <common.h>
+#include <embox/kernel.h>
 
 #include <embox/runlevel.h>
 #include <embox/mod.h>

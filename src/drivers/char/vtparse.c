@@ -12,7 +12,7 @@
  *           (in spite of the fact that the Parser is capable to handle them correctly).
  */
 #include <drivers/vtparse.h>
-#include <common.h>
+#include <embox/kernel.h>
 
 #define ACTION(state_change) (state_change & 0x0F)
 #define STATE(state_change)  (state_change >> 4)

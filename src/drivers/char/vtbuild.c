@@ -8,7 +8,7 @@
  * @author Eldar Abusalimov
  */
 #include <drivers/vtbuild.h>
-#include <common.h>
+#include <embox/kernel.h>
 #include <types.h>
 
 #define BUF_SIZE 10

@@ -9,8 +9,7 @@
 
 #include <types.h>
 #include <md5.h>
-#include <common.h>
-#include "embox/test.h"
+#include <embox/test.h>
 
 EMBOX_TEST(run);
 

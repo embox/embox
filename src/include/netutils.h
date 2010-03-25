@@ -7,7 +7,7 @@
 #ifndef MISC_H_
 #define MISC_H_
 
-#include <common.h>
+#include <embox/kernel.h>
 #include <net/if_ether.h>
 
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res);

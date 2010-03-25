@@ -5,8 +5,6 @@
  * @author Eldar Abusalimov
  */
 
-#include "common.h"
-
 #include <types.h>
 #include <string.h>
 

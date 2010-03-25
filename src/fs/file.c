@@ -5,7 +5,6 @@
  * @author Anton Bondarev
  */
 #include <string.h>
-#include <common.h>
 #include <stdio.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>

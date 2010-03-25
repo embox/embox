@@ -6,7 +6,6 @@
  * @author Anton Bondarev
  */
 
-#include <common.h>
 #include <types.h>
 #include <string.h>
 

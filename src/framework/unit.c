@@ -6,7 +6,6 @@
  * @author Eldar Abusalimov
  */
 
-#include <common.h>
 #include <string.h>
 
 #include <embox/unit.h>

@@ -10,7 +10,7 @@
 #include <shell.h>
 #include <getopt.h>
 #include <types.h>
-#include <common.h>
+#include <embox/kernel.h>
 
 #define SHELL_COMMAND_NAME_MAX_LEN 0x20
 

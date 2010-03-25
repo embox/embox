@@ -8,7 +8,6 @@
 #define MM_H_
 
 //#include <file_interface.h>
-#include <common.h>
 
 #define MAX_SEGNAME_LEN 80
 

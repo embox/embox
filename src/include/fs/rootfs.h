@@ -8,6 +8,7 @@
 #define FS_ROOTFS_H_
 
 #include <types.h>
+#include <embox/kernel.h>
 
 #define FILE_MODE_RO    0x1 /*read only     */
 #define FILE_MODE_WO    0x2 /*write only    */

@@ -4,7 +4,7 @@
  * @date 18.06.10
  * @author Anton Bondarev
  */
-#include <common.h>
+#include <embox/kernel.h>
 #include <asm/mmu_obsolete.h>
 
 #define NODO_CLEAR
