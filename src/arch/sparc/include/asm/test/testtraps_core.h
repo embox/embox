@@ -6,8 +6,8 @@
  * @author Alexander Batyukov
  */
 
-#ifndef TESTTRAPS_H_
-#define TESTTRAPS_H_
+#ifndef SPARC_TESTTRAPS_H_
+#define SPARC_TESTTRAPS_H_
 
 #include <types.h>
 #include <asm/traps_core.h>
@@ -18,4 +18,4 @@ extern void testtraps_set_handler(uint32_t type, int number, uint32_t handler);
 
 extern int testtraps_fire_softtrap(uint32_t uint8_t);
 
-#endif /* TESTTRAPS_H_ */
+#endif /* SPARC_TESTTRAPS_H_ */

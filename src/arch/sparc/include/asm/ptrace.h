@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef SPARC_TRAP_REGS_H_
-#define SPARC_TRAP_REGS_H_
+#ifndef SPARC_PTRACE_H_
+#define SPARC_PTRACE_H_
 
 #include <types.h>
 #include <asm/stack.h>
@@ -117,4 +117,4 @@ struct pt_regs {
 
 #endif /* __ASSEMBLER__ */
 
-#endif /* SPARC_TRAP_REGS_H_ */
+#endif /* SPARC_PTRACE_H_ */

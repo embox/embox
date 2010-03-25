@@ -49,9 +49,17 @@
 	 rd %psr, %t_psr;
 
 /** Text fault. */
-#define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %local;
+#define SRMMU_TFAULT \
+	rd %psr, %l0;    \
+	rd %wim, %l3;    \
+	b srmmu_fault;   \
+	mov 1, %local;
 /** Data fault. */
-#define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %local;
+#define SRMMU_DFAULT \
+	rd %psr, %l0;    \
+	rd %wim, %l3;    \
+	b srmmu_fault;   \
+	mov 0, %local;
 
 /** Unexpected trap will halt the processor by forcing it to error state */
 #define BAD_TRAP TRAP_ENTRY(bad_trap_entry)

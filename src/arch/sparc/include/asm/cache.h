@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef CACHE_H_
-#define CACHE_H_
+#ifndef SPARC_CACHE_H_
+#define SPARC_CACHE_H_
 
 inline static void cache_flush(void) {
 	__asm__ __volatile__ ("flush\n\t"
@@ -74,4 +74,4 @@ inline static void cache_data_disable(void) {
 	);
 }
 
-#endif /* CACHE_H_ */
+#endif /* SPARC_CACHE_H_ */
