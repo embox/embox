@@ -8,6 +8,9 @@
 
 #include <types.h>
 #include <hal/mm/mmu_core.h>
+#include <test/testmmu_core.h>
 
-uint8_t test_mmu_table[MMU_TABLE_SIZE];
-
+static mmu_env_t env;
+mmu_env_t *testmmu_env(void) {
+	return &env;
+}
