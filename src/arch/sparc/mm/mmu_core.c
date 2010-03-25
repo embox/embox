@@ -47,7 +47,7 @@ int mmu_map_region(uint32_t phy_addr, uint32_t virt_addr,
 	return -1;
 }
 
-void mmu_restore_env(LEON_MMUTLB_ENT_MAX     64 *env) {
+void mmu_restore_env(mmu_env_t *env) {
 	/* disable virtual mode*/
 	mmu_off();
 
