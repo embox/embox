@@ -135,7 +135,7 @@
 </target>
 <target name="config sparc release" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>make</buildCommand>
-<buildArguments>PROJECT=sparc TEMPLATE=release</buildArguments>
+<buildArguments>PROJECT=sparc PROFILE=release</buildArguments>
 <buildTarget>config</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
@@ -159,7 +159,7 @@
 </target>
 <target name="config microblaze release" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>make</buildCommand>
-<buildArguments>PROJECT=microblaze TEMPLATE=release</buildArguments>
+<buildArguments>PROJECT=microblaze PROFILE=release</buildArguments>
 <buildTarget>config</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
@@ -191,7 +191,7 @@
 </target>
 <target name="config sparc simulation" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>make</buildCommand>
-<buildArguments>PROJECT=sparc TEMPLATE=simulation</buildArguments>
+<buildArguments>PROJECT=sparc PROFILE=simulation</buildArguments>
 <buildTarget>config</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
@@ -199,7 +199,7 @@
 </target>
 <target name="config microblaze compiler_tests" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 <buildCommand>make</buildCommand>
-<buildArguments>PROJECT=microblaze TEMPLATE=compiler_tests</buildArguments>
+<buildArguments>PROJECT=microblaze PROFILE=compiler_tests</buildArguments>
 <buildTarget>config</buildTarget>
 <stopOnError>true</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>

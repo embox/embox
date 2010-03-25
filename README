@@ -2,7 +2,7 @@ EMBOX - Essential toolbox for embedded development.
 
 Quickstart guide
 
-make config TEMPLATE=<arch>
+make PROJECT=<project> PROFILE=<profile> config
 make all
 
 To be continued...

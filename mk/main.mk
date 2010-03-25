@@ -25,17 +25,17 @@ THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 PLATFORM_DIR   := $(ROOT_DIR)/platform
 SRC_DIR        := $(ROOT_DIR)/src
 
-ifndef PROJECT_NAME
+ifndef PATCH_NAME
 #	the only case it's not defined - when target is config
 #	In that case CONF_DIR must refer to ./conf
 CONF_DIR       := $(ROOT_DIR)/conf
 else
-CONF_DIR       := $(ROOT_DIR)/conf/$(PROJECT_NAME)
+CONF_DIR       := $(ROOT_DIR)/conf/$(PATCH_NAME)
 endif
 
 BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 
-BUILD_DIR      := $(ROOT_DIR)/build/$(PROJECT_NAME)
+BUILD_DIR      := $(ROOT_DIR)/build/$(PATCH_NAME)
 BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
 LIB_DIR        := $(OBJ_DIR)
@@ -43,8 +43,6 @@ DOT_DIR        := $(BUILD_DIR)/dot
 DOCS_DIR       := $(BUILD_DIR)/docs
 CODEGEN_DIR    := $(BUILD_DIR)/codegen
 AUTOCONF_DIR   := $(CODEGEN_DIR)
-
-CUR_TEMPLATE_FILES := $(wildcard $(TEMPLATES_DIR)/$(TEMPLATE)/*)
 
 RM     := rm -f
 CP     := cp
@@ -59,30 +57,34 @@ makegoals := $(MAKECMDGOALS)
 ifeq ($(makegoals),)
 makegoals := all
 endif
-ifeq ($(filter %clean %config,$(makegoals)),)
+
+ifdef PATCH_NAME
 # Need to include it prior to walking the source tree
 # (particularly because of ARCH definition).
 include $(MK_DIR)/configure.mk
+endif
+
 ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
 include $(MK_DIR)/image.mk
 include $(MK_DIR)/codegen-dot.mk
-endif
 endif
 
 __get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
 build_targets := $(patsubst %,%.target,$(filter-out $(notdir $(BACKUP_DIR)), \
   $(call __get_subdirs, $(CONF_DIR))))
 
-.PHONY: all build_target $(build_targets) prepare docs dot clean config xconfig menuconfig
+.PHONY: all build prepare docs dot clean config xconfig menuconfig
+.PHONY: $(build_targets)
 
 all: $(build_targets)
 	@echo 'Build complete'
 
+$(build_targets): export PATCH_NAME = $(basename $@)
 $(build_targets):
-	$(MAKE) -C $(ROOT_DIR)/ PROJECT_NAME=$(basename $@) build_target
+	$(MAKE) build
 
-build_target: check_config prepare image
-	@echo '$(PROJECT_NAME) was built successfully'
+build: check_config prepare image
+	@echo '$(PATCH_NAME) build complete'
 
 prepare:
 	@mkdir -p $(BUILD_DIR)
@@ -116,25 +118,26 @@ _distclean: _clean
 	@$(RM) -rv $(BACKUP_DIR)
 	@$(RM) -rv $(CONF_DIR)
 
+
 config: _clean
-ifndef TEMPLATE
-	@echo 'Error: TEMPLATE undefined'
-	@echo 'Usage: "make PROJECT=<proj_name> TEMPLATE=<profile> config"'
+ifndef PROFILE
+	@echo 'Error: PROFILE undefined'
+	@echo 'Usage: "make PROJECT=<project> PROFILE=<profile> config"'
 	@echo '    See templates dir for possible projects and profiles'
 	exit 1
 endif
 ifndef PROJECT
 	@echo 'Error: PROJECT undefined'
-	@echo 'Usage: "make PROJECT=<proj_name> TEMPLATE=<profile> config"'
+	@echo 'Usage: "make PROJECT=<project> PROFILE=<profile> config"'
 	@echo '    See templates dir for possible projects and profiles'
 	exit 1
 endif
 	@test -d $(PROJECTS_DIR)/$(PROJECT) \
 		|| (echo 'Error: project $(PROJECT) does not exist' \
-		&& exit 1)
-	@test -d $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE) \
-		|| (echo 'Error: template $(TEMPLATE) does not exist in project $(PROJECT)' \
-		&& exit 1)
+			&& exit 1)
+	@test -d $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE) \
+		|| (echo 'Error: profile $(PROFILE) does not exist in project $(PROJECT)' \
+			&& exit 1)
 	@if [ -d $(CONF_DIR) ];           \
 	then                              \
 		if [ -d $(BACKUP_DIR) ];      \
@@ -149,19 +152,19 @@ endif
 			rm -r $(BACKUP_DIR); \
 		) \
 	fi;
-	$(foreach dir, $(call __get_subdirs, $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)), \
+	@$(foreach dir,$(call __get_subdirs,$(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)), \
 	  mkdir -p $(CONF_DIR)/$(dir); \
 	  cp -fv -t $(CONF_DIR)/$(dir) \
-	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/*); \
-	  $(if $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/$(dir)/*), \
+	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*); \
+	  $(if $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*), \
 	    cp -fv -t $(CONF_DIR)/$(dir) \
-	       $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(TEMPLATE)/$(dir)/*); \
+	       $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*); \
 	  ) \
 	)
 	@echo 'Config complete'
 
 menuconfig:
-	make TEMPLATE=`dialog \
+	make PROFILE=`dialog \
 		--stdout --backtitle "Configuration template selection" \
 		--radiolist "Select template to load:" 10 40 3 \
 		$(patsubst %,% "" off,$(TEMPLATES))` \
@@ -169,7 +172,7 @@ menuconfig:
 	@$(EDIT) -nw $(CONF_DIR)/*.conf
 
 xconfig:
-	make TEMPLATE=`Xdialog \
+	make PROFILE=`Xdialog \
 		--stdout --backtitle "Configuration template selection" \
 		--radiolist "Select template to load:" 20 40 3 \
 		$(patsubst %,% "" off,$(TEMPLATES))` \

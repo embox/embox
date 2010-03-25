@@ -21,3 +21,6 @@ PROVIDE(close_timer = nosys);
 PROVIDE(timers_off = nosys);
 PROVIDE(irq_func_tmr_1mS = nosys);
 PROVIDE(usleep = nosys);
+
+/* XXX remove from here. -- Eldar */
+PROVIDE(uart_init = nosys);
