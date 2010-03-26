@@ -112,7 +112,7 @@
 #define ASI_M_ACTION       0x4c   /* Breakpoint Action Register (GNU/Viking) */
 
 /* FIXME: non-standard Leon ASI definition */
-#ifdef CONFIG_LEON
+#if defined(CONFIG_LEON) || defined(CONFIG_LEON3)
 #undef ASI_M_MMUREGS
 #define ASI_M_MMUREGS		0x19
 #endif /* CONFIG_LEON */

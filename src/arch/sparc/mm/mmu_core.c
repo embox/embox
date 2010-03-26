@@ -35,19 +35,18 @@ int mmu_enable(uint32_t *table) {
 }
 
 void mmu_on(void) {
-	__asm__ __volatile__("sta %0, [%%g0] %1\n\t"
-		:
-		: "r" (0x00000001), "i" (ASI_M_MMUREGS)
-		: "memory"
-	);
+	printf("mmu_on\n");
+	unsigned long val;
+	val = mmu_get_mmureg(LEON_CNR_CTRL);
+	val |= 0x1;
+	mmu_set_mmureg(LEON_CNR_CTRL, val);
 }
 
 void mmu_off(void) {
-	__asm__ __volatile__("sta %0, [%%g0] %1\n\t"
-		:
-		: "r" (0x00000000), "i" (ASI_M_MMUREGS)
-		: "memory"
-	);
+	unsigned long val;
+	val = mmu_get_mmureg(LEON_CNR_CTRL);
+	val &= ~0x1;
+	mmu_set_mmureg(LEON_CNR_CTRL, val);
 }
 
 int mmu_map_region(uint32_t phy_addr, uint32_t virt_addr,
