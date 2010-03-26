@@ -15,6 +15,7 @@ endif
 $_SRCS-arch      += arch.c
 $_SRCS-clock     += clock_gptimer.c
 $_SRCS-interrupt += interrupt_irqmp.c
+$_SRCS-traps     += traps_core.c
 
 ifdef CONFIG_AMBAPP
   $_DEPS-clock     += embox.driver.ambapp
