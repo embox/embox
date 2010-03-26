@@ -70,8 +70,8 @@ void mmu_save_env(mmu_env_t *env) {
 	/* disable virtual mode*/
 	mmu_off();
 
-	/* change cur_env pointer */
-	cur_env = env;
+	/* save cur_env pointer */
+	env = cur_env;
 
 	/* restore MMU mode */
 	env->status ? mmu_on(): mmu_off();

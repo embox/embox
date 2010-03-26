@@ -41,7 +41,7 @@ _vector_hw_exception:
 
 
 C_ENTRY(boot_start):
-	mts	rmsr, reg_zero	/* disable cache, interupts, exceptions */
+	mts	rmsr, reg_zero	/* disable cache, interrupts, exceptions */
 
 /*now we will be set interrrupts and other vectors.
 at the first we set 0xb000 0000 (code IMM instruction) and 0xb808 0000 (code BRAI instruction)
