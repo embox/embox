@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief sparc specific parts of process tracing
  *
  * @date 23.07.2009
  * @author Eldar Abusalimov
@@ -113,7 +113,7 @@ struct pt_regs {
 
 #define STORE_PT_ALL(base_reg, t_psr, t_pc, t_npc, g_scratch) \
 	STORE_PT_PRIV(base_reg, t_psr, t_pc, t_npc) \
-    STORE_PT_UNPRIV(base_reg, g_scratch)
+	STORE_PT_UNPRIV(base_reg, g_scratch)
 
 #endif /* __ASSEMBLER__ */
 

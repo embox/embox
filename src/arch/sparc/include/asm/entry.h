@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Definitions used by low-level trap handlers
  *
  * @date 29.11.2009
  * @author Eldar Abusalimov

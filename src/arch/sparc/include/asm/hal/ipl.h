@@ -16,7 +16,8 @@ inline static void ipl_init(void) {
 			" nop; nop; nop\n"
 			: "=&r" (tmp)
 			: "i" (PSR_PIL)
-			: "memory");
+			: "memory"
+	);
 }
 
 inline static unsigned int ipl_save(void) {
@@ -30,7 +31,8 @@ inline static unsigned int ipl_save(void) {
 			" nop; nop; nop\n"
 			: "=&r" (ret), "=r" (tmp)
 			: "i" (PSR_PIL)
-			: "memory");
+			: "memory"
+	);
 
 	return ret;
 }
@@ -46,5 +48,6 @@ inline static void ipl_restore(unsigned int ipl) {
 			" nop; nop; nop\n"
 			: "=&r" (tmp)
 			: "i" (PSR_PIL), "r" (ipl)
-			: "memory");
+			: "memory"
+	);
 }

@@ -37,4 +37,31 @@
 #define PSR_VERS 0x0f000000 /**< cpu-version field          */
 #define PSR_IMPL 0xf0000000 /**< cpu-implementation field   */
 
+#ifndef __ASSEMBLER__
+
+static inline unsigned int get_psr(void) {
+	unsigned int psr;
+	__asm__ __volatile__(
+			"rd     %%psr, %0\n\t"
+			"nop; nop; nop;\n\t"
+			: "=r" (psr)
+			: /* no inputs */
+			: "memory"
+	);
+
+	return psr;
+}
+
+static inline void put_psr(unsigned int new_psr) {
+	__asm__ __volatile__(
+			"wr     %0, 0x0, %%psr\n\t"
+			"nop; nop; nop;\n\t"
+			: /* no outputs */
+			: "r" (new_psr)
+			: "memory", "cc"
+	);
+}
+
+#endif /* __ASSEMBLER__ */
+
 #endif /* SPARC_PSR_H_ */

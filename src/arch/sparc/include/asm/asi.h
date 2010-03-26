@@ -1,14 +1,16 @@
-/* $Id: asi.h,v 1.18 1998/03/09 14:04:46 jj Exp $ */
-#ifndef _SPARC_ASI_H
-#define _SPARC_ASI_H
-
-/* asi.h:  Address Space Identifier values for the sparc.
+/**
+ * @file
+ * @brief Address Space Identifier values for the sparc.
  *
  * Copyright (C) 1995 David S. Miller (davem@caip.rutgers.edu)
  *
- * Pioneer work for sun4m: Paul Hatchman (paul@sfe.com.au)
- * Joint edition for sun4c+sun4m: Pete A. Zaitcev <zaitcev@ipmce.su>
+ * @author Paul Hatchman (paul@sfe.com.au)
+ *					- Pioneer work for sun4m
+ * @author Pete A. Zaitcev <zaitcev@ipmce.su>
+ * 					- Joint edition for sun4c+sun4m
  */
+#ifndef SPARC_ASI_H
+#define SPARC_ASI_H
 
 /* The first batch are for the sun4c. */
 
@@ -180,4 +182,4 @@ constant ASI_MMU_DSU        : std_logic_vector(4 downto 0) := "11111";  -- 0x1f 
 */
 #endif
 
-#endif /* _SPARC_ASI_H */
+#endif /* SPARC_ASI_H */

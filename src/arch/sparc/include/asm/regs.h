@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef SPARC_REG_ALIAS_H_
-#define SPARC_REG_ALIAS_H_
+#ifndef SPARC_REGS_H_
+#define SPARC_REGS_H_
 
 #ifdef __ASSEMBLER__
 
@@ -68,4 +68,4 @@
 
 #endif /* __ASSEMBLER__ */
 
-#endif /* SPARC_REG_ALIAS_H_ */
+#endif /* SPARC_REGS_H_ */

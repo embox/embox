@@ -54,6 +54,7 @@
 	rd %wim, %l3;    \
 	b srmmu_fault;   \
 	mov 1, %local;
+
 /** Data fault. */
 #define SRMMU_DFAULT \
 	rd %psr, %l0;    \

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Cache specific code for the Sparc.
  *
  * @date 14.02.2010
  * @author Eldar Abusalimov
@@ -11,7 +11,8 @@
 
 inline static void cache_flush(void) {
 	__asm__ __volatile__ ("flush\n\t"
-			"nop;nop;nop\n\t");
+			"nop;nop;nop\n\t"
+	);
 }
 
 inline static void cache_enable(void) {
