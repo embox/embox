@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @date 25.03.2010
+ * @author Alexander Batyukov
+ */
+
 #include <asm/head.h>
 
 	.text

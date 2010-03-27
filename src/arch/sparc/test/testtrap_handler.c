@@ -9,7 +9,7 @@
 #include <test/testtraps_core.h>
 #include <stdio.h>
 
-trap_handler_t test_handler[MAX_SOFTTRAP_NUMBER];
+trap_handler_t test_handler[CONFIG_MAX_SOFTTRAP_NUMBER];
 
 void test_soft_trap_handler(uint8_t tt) {
 	if (NULL == test_handler)

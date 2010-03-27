@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @date 25.03.2010
+ * @author Alexander Batyukov
+ */
+
 #include <asm/entry.h>
 #include <asm/psr.h>
 
