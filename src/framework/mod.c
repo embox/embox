@@ -25,14 +25,54 @@ static bool mod_deps_satisfied(const struct mod *mod, bool op);
 MOD_PACKAGE_DEF(generic, "generic");
 
 inline static mod_op_t mod_op_deref(const struct mod *mod, size_t op_offset) {
-	if (NULL != mod->ops_ref && NULL != mod->ops_ref->ops) {
-		return *(mod_op_t *) ((size_t) mod->ops_ref->ops + op_offset);
+	if (NULL != mod->api && NULL != mod->api->ops) {
+		return *(mod_op_t *) ((size_t) mod->api->ops + op_offset);
 	}
 	return NULL;
 }
 
 inline static void *mod_data_deref(const struct mod *mod) {
-	return (NULL != mod->data_ref) ? mod->data_ref->data : NULL;
+	return (NULL != mod->api) ? mod->api->data : NULL;
+}
+
+struct mod_iterator *mod_requires(const struct mod *mod,
+		struct mod_iterator *iterator) {
+	if (NULL == mod || NULL == iterator) {
+		return NULL;
+	}
+	iterator->p_mod = mod->requires;
+	return iterator;
+}
+
+struct mod_iterator *mod_provides(const struct mod *mod,
+		struct mod_iterator *iterator) {
+	if (NULL == mod || NULL == iterator) {
+		return NULL;
+	}
+	iterator->p_mod = mod->provides;
+	return iterator;
+}
+
+struct mod_iterator *mod_tagged(const struct mod_tag *tag,
+		struct mod_iterator *iterator) {
+	if (NULL == tag || NULL == iterator) {
+		return NULL;
+	}
+	iterator->p_mod = tag->mods;
+	return iterator;
+}
+
+
+inline bool mod_iterator_has_next(struct mod_iterator *iterator) {
+	return NULL != iterator && NULL != iterator->p_mod && NULL
+			!= *iterator->p_mod;
+}
+
+struct mod *mod_iterator_next(struct mod_iterator *iterator) {
+	if (!mod_iterator_has_next(iterator)) {
+		return NULL;
+	}
+	return *(iterator->p_mod++);
 }
 
 void *mod_data(const struct mod *mod) {
@@ -48,8 +88,8 @@ int mod_invoke(const struct mod *mod, void *data) {
 	if (NULL == mod) {
 		return -EINVAL;
 	}
-	if (NULL == mod->ops_ref || NULL == mod->ops_ref->ops || NULL == (invoke
-			= mod->ops_ref->ops->invoke)) {
+	if (NULL == mod->api || NULL == mod->api->ops || NULL == (invoke
+			= mod->api->ops->invoke)) {
 		return -ENOTSUP;
 	}
 	return invoke((struct mod *) mod, data);

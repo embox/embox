@@ -11,6 +11,13 @@
 
 #include <stddef.h>
 
+/*
+ * Implementation note:
+ * Many macros uses some of their arguments to construct symbol names. This
+ * imposes well-known restrictions to the input values of these arguments.
+ * To prevent a confusion all such arguments are prefixed by 's_' (symbol).
+ */
+
 #if !defined(__FRAMEWORK__) && !defined(__EMBUILD_DEPSINJECT__)
 # ifndef __EMBUILD_MOD__
 #  error "Do not include without __EMBUILD_MOD__ defined (e.g. from lib code)!"
@@ -29,53 +36,55 @@
  * to create null-terminated arrays of module dependencies initialized
  * (populated) in multiple compilation units.
  */
-#define __MOD_SECTION(_mod, section, order, tag) \
-	".mod"__STRINGIFY(__##section##__$$##_mod##$$__##order##_##tag)".rodata"
+#define __MOD_SECTION(s_mod, section, order, tag) \
+	".mod"__STRINGIFY(__##section##__$$##s_mod##$$__##order##_##tag)".rodata"
 
-#define __MOD_SECTION_HEAD(_mod, section) __MOD_SECTION(_mod, section, 0,head)
-#define __MOD_SECTION_BODY(_mod, section) __MOD_SECTION(_mod, section, 1,body)
-#define __MOD_SECTION_TAIL(_mod, section) __MOD_SECTION(_mod, section, 9,tail)
+#define __MOD_SECTION_HEAD(s_mod, section) __MOD_SECTION(s_mod, section,0,head)
+#define __MOD_SECTION_BODY(s_mod, section) __MOD_SECTION(s_mod, section,1,body)
+#define __MOD_SECTION_TAIL(s_mod, section) __MOD_SECTION(s_mod, section,9,tail)
 
 /* Internal variable names. */
 
-#define __MOD(_mod)              __mod__$$##_mod
-#define __MOD_DATA_REF(_mod)     __mod_data_ref__##_mod
-#define __MOD_OPS_REF(_mod)      __mod_ops_ref__##_mod
-#define __MOD_NAME(_mod)         __mod_name__##_mod
-#define __MOD_PRIVATE(_mod)      __mod_private__$$##_mod
-#define __MOD_PACKAGE(_package)  __mod_package__$$##_package
-#define __MOD_ARRAY(_mod, array) __mod_##array##__$$##_mod
-#define __MOD_ARRAY_ENTRY(_mod, array, entry) \
-	__mod_##array##__$$##_mod##$$__$$##entry
+#define __MOD(s_mod)              __mod__$$##s_mod
+#define __MOD_API(s_mod)          __mod_api__$$##s_mod
+#define __MOD_TAG(s_tag)          __mod_tag__$$##s_tag
+#define __MOD_NAME(s_mod)         __mod_name__$$##s_mod
+#define __MOD_PRIVATE(s_mod)      __mod_private__$$##s_mod
+#define __MOD_PACKAGE(s_package)  __mod_package__$$##s_package
+#define __MOD_ARRAY(s_mod, s_array) __mod_##s_array##__$$##s_mod
+#define __MOD_ARRAY_ENTRY(s_mod, s_array, s_entry) \
+	__mod_##s_array##__$$##s_mod##$$__$$##s_entry
 
 /* Internal declarations and definitions. */
 
-#define __MOD_DECL(_mod) \
-	extern const struct mod __MOD(_mod)
+#define __MOD_DECL(s_mod) \
+	extern const struct mod __MOD(s_mod)
 
-#define __MOD_PACKAGE_DECL(_mod_package) \
-	extern const struct mod_package __MOD_PACKAGE(_mod_package)
+#define __MOD_PACKAGE_DECL(s_package) \
+	extern const struct mod_package __MOD_PACKAGE(s_package)
 
-#define __MOD_DATA_REF_DECL(_mod) \
-	extern const struct mod_data_ref __MOD_DATA_REF(_mod) __attribute__ ((weak))
-#define __MOD_OPS_REF_DECL(_mod) \
-	extern const struct mod_ops_ref __MOD_OPS_REF(_mod) __attribute__ ((weak))
+#define __MOD_API_DECL(s_mod) \
+	extern const struct mod_api __MOD_API(s_mod) __attribute__ ((weak))
 
-#define __MOD_NAME_DEF(_mod, _mod_name) \
-	const char __MOD_NAME(_mod)[] = _mod_name
-#define __MOD_PRIVATE_DEF(_mod) \
-	static struct mod_private __MOD_PRIVATE(_mod)
+#define __MOD_TAG_DECL(s_tag) \
+	extern const struct mod_tag __MOD_TAG(s_tag)
 
-#define __MOD_ARRAY_DEF(_mod, array) \
-	__extension__ static const struct mod *__MOD_ARRAY(_mod, array)[0] \
-		__attribute__ ((section(__MOD_SECTION_HEAD(_mod, array)))); \
-	static const struct mod *__MOD_ARRAY_ENTRY(_mod, array, __null$$) \
-		__attribute__ ((used, section(__MOD_SECTION_TAIL(_mod, array)))) = NULL
+#define __MOD_NAME_DEF(s_mod, _mod_name) \
+	const char __MOD_NAME(s_mod)[] = _mod_name
+#define __MOD_PRIVATE_DEF(s_mod) \
+	static struct mod_private __MOD_PRIVATE(s_mod)
 
-#define __MOD_ARRAY_ADD(_mod, array, entry) \
-	static const struct mod *__MOD_ARRAY_ENTRY(_mod, array, entry) \
-		__attribute__ ((used, section(__MOD_SECTION_BODY(_mod, array)))) \
-		= MOD_PTR(entry) \
+#define __MOD_ARRAY_DEF(s_mod, s_array) \
+	__extension__ static const struct mod *__MOD_ARRAY(s_mod, s_array)[0] \
+		__attribute__ ((section(__MOD_SECTION_HEAD(s_mod, s_array)))); \
+	static const struct mod *__MOD_ARRAY_ENTRY(s_mod, s_array, __null$$) \
+		__attribute__ ((used, section(__MOD_SECTION_TAIL(s_mod, s_array)))) \
+		= NULL
+
+#define __MOD_ARRAY_ADD(s_mod, s_array, s_mod_entry) \
+	static const struct mod *__MOD_ARRAY_ENTRY(s_mod, s_array, s_mod_entry) \
+		__attribute__ ((used, section(__MOD_SECTION_BODY(s_mod, s_array)))) \
+		= MOD_PTR(s_mod_entry) \
 
 /**
  * Used to access the self module (referenced by __EMBUILD_MOD__), e.g. to bind
@@ -93,83 +102,106 @@
 /**
  * Pointer to the #mod structure defined with #MOD_DEF() macro.
  *
- * @param _mod the mod variable name used at definition time.
+ * @param s_mod the mod variable name used at definition time.
  */
-#define MOD_PTR(_mod) (&__MOD(_mod))
+#define MOD_PTR(s_mod) (&__MOD(s_mod))
+
+/**
+ * Pointer to the #mod_tag structure defined with #MOD_TAG_DEF() macro.
+ *
+ * @param s_tag the mod_tag variable name used at definition time.
+ */
+#define MOD_TAG_PTR(s_tag) (&__MOD_TAG(s_tag))
 
 /**
  * Defines a new mod. For the new mod the @link #mod corresponding @endlink
  * structure is allocated. Also two section-driven arrays are defined for the
  * mod#provides and mod#requires lists.
  *
- * @param _mod the variable name used later to access the mod structure using
- *        #MOD_PTR(), to define dependencies with #MOD_DEP_DEF(), or to bind
- *        mod-specific @link #mod_ops operations @endlink and data using
+ * @param s_mod the variable name used later to access the mod structure
+ *        using #MOD_PTR(), to define dependencies with #MOD_DEP_DEF(), or to
+ *        bind mod-specific @link #mod_ops operations @endlink and data using
  *        #MOD_OPS_DEF() and #MOD_DATA_DEF() macros. For the code generated by
  *        EMBuild this argument must be the same as provided by the
  *        __EMBUILD_MOD__ macro for each mod at compilation time
- * @param _mod_package the package variable name used in #MOD_PACKAGE_DEF()
+ * @param s_mod_package the package variable name used in
+ *        #MOD_PACKAGE_DEF()
  * @param mod_name a string containing the mod name. The name of the current
  *        mod (referenced by __EMBUILD_MOD__) can accessed at compilation time
  *        using #MOD_SELF_NAME macro
  */
-#define MOD_DEF(_mod, _mod_package, mod_name) \
-	__MOD_DATA_REF_DECL(_mod); \
-	__MOD_OPS_REF_DECL(_mod); \
-	__MOD_PACKAGE_DECL(_mod_package); \
-	__MOD_ARRAY_DEF(_mod, requires); \
-	__MOD_ARRAY_DEF(_mod, provides); \
-	__MOD_NAME_DEF(_mod, mod_name); \
-	__MOD_PRIVATE_DEF(_mod); \
-	const struct mod __MOD(_mod) = { \
-			.private  = &__MOD_PRIVATE(_mod), \
-			.data_ref = (struct mod_data_ref *) &__MOD_DATA_REF(_mod), \
-			.ops_ref  = (struct mod_ops_ref *) &__MOD_OPS_REF(_mod), \
-			.package  = (struct mod_package *) &__MOD_PACKAGE(_mod_package), \
-			.name     = __MOD_NAME(_mod), \
-			.requires = (struct mod **) &__MOD_ARRAY(_mod, requires), \
-			.provides = (struct mod **) &__MOD_ARRAY(_mod, provides), \
+#define MOD_DEF(s_mod, s_mod_package, mod_name) \
+	__MOD_API_DECL(s_mod); \
+	__MOD_PACKAGE_DECL(s_mod_package); \
+	__MOD_ARRAY_DEF(s_mod, requires); \
+	__MOD_ARRAY_DEF(s_mod, provides); \
+	__MOD_NAME_DEF(s_mod, mod_name); \
+	__MOD_PRIVATE_DEF(s_mod); \
+	const struct mod __MOD(s_mod) = { \
+			.private  = &__MOD_PRIVATE(s_mod), \
+			.api      = (struct mod_api *) &__MOD_API(s_mod), \
+			.package  = (struct mod_package *) &__MOD_PACKAGE(s_mod_package), \
+			.name     = __MOD_NAME(s_mod), \
+			.requires = (struct mod **) &__MOD_ARRAY(s_mod, requires), \
+			.provides = (struct mod **) &__MOD_ARRAY(s_mod, provides), \
 		}
 
-#define MOD_DEP_DEF(_mod, _dep) \
-	__MOD_DECL(_mod); \
-	__MOD_DECL(_dep); \
-	__MOD_ARRAY_ADD(_mod, requires, _dep); \
-	__MOD_ARRAY_ADD(_dep, provides, _mod)
+#define MOD_TAG_DEF(s_tag, _tag_name) \
+	__MOD_ARRAY_DEF(s_tag, tagged); \
+	const struct mod_tag __MOD_TAG(s_tag) = { \
+			.name = _tag_name, \
+			.mods = (struct mod **) &__MOD_ARRAY(s_tag, tagged), \
+		}
 
-#define MOD_PACKAGE_DEF(_mod_package, package_name) \
-	const struct mod_package __MOD_PACKAGE(_mod_package) = { \
+#define MOD_API_DEF(s_mod, _mod_data, _mod_ops) \
+	__MOD_API_DEF(s_mod, _mod_data, _mod_ops, NULL)
+
+#define MOD_API_TAGGED_DEF(s_mod, _mod_data, _mod_ops, s_tag) \
+	__MOD_DECL(s_mod); \
+	__MOD_TAG_DECL(s_tag); \
+	__MOD_ARRAY_ADD(s_tag, tagged, s_mod); \
+	__MOD_API_DEF(s_mod, _mod_data, _mod_ops, MOD_TAG_PTR(s_tag))
+
+#define __MOD_API_DEF(s_mod, _mod_data, _mod_ops, _mod_tag) \
+	const struct mod_api __MOD_API(s_mod) = { \
+			.data = (void *) _mod_data, \
+			.ops = (struct mod_ops *) _mod_ops, \
+			.tag = (struct mod_tag *) _mod_tag, \
+		}
+
+#define MOD_DEP_DEF(s_mod, s_dep) \
+	__MOD_DECL(s_mod); \
+	__MOD_DECL(s_dep); \
+	__MOD_ARRAY_ADD(s_mod, requires, s_dep); \
+	__MOD_ARRAY_ADD(s_dep, provides, s_mod)
+
+#define MOD_PACKAGE_DEF(s_package, package_name) \
+	const struct mod_package __MOD_PACKAGE(s_package) = { \
 			.name = package_name, \
 		}
 
-#define MOD_ROOT_DEF(_mod) \
-	static const struct mod *__mod_root__##_mod \
-		__attribute__ ((used, section(".mod.rodata"))) = MOD_PTR(_mod)
-
-#define MOD_DATA_DEF(_mod, _mod_data) \
-	const struct mod_data_ref __MOD_DATA_REF(_mod) = \
-		{ .data = (void *) _mod_data }
-#define MOD_OPS_DEF(_mod, _mod_ops) \
-	const struct mod_ops_ref __MOD_OPS_REF(_mod) = \
-		{ .ops = (struct mod_ops *) _mod_ops }
+#define MOD_ROOT_DEF(s_mod) \
+	static const struct mod *__mod_root__##s_mod \
+		__attribute__ ((used, section(".mod.rodata"))) = MOD_PTR(s_mod)
 
 #define MOD_SELF                     __MOD_SELF(__MOD)
 #define MOD_SELF_NAME                __MOD_SELF(__MOD_NAME)
-#define MOD_SELF_DATA_DEF(_mod_data) MOD_DATA_DEF(__EMBUILD_MOD__, _mod_data)
-#define MOD_SELF_OPS_DEF(_mod_ops)   MOD_OPS_DEF(__EMBUILD_MOD__, _mod_ops)
-#define MOD_SELF_DEP_DEF(_dep)       MOD_DEP_DEF(__EMBUILD_MOD__, _dep)
+#define MOD_SELF_DEP_DEF(s_dep)       MOD_DEP_DEF(__EMBUILD_MOD__, s_dep)
+#define MOD_SELF_API_TAGGED_DEF(_mod_data, _mod_ops, s_tag) \
+		MOD_API_TAGGED_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops, s_tag)
+#define MOD_SELF_API_DEF(_mod_data, _mod_ops) \
+		MOD_API_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops)
 
-#define MOD_FLAG_ENABLED       (1 << 3)
+#define MOD_FLAG_ENABLED       (1 << 0)
 #define MOD_FLAG_OPFAILED      (1 << 1)
 #define MOD_FLAG_OPINPROGRESS  (1 << 2)
 
 struct mod;
 struct mod_package;
 struct mod_ops;
+struct mod_api;
+struct mod_tag;
 struct mod_private;
-
-struct mod_ops_ref;
-struct mod_data_ref;
 
 /**
  * Performs an operation with the module. The semantics of the operation is
@@ -205,16 +237,39 @@ typedef int (*mod_invoke_t)(struct mod *self, void *data);
 struct mod {
 	/** Internal data needed by dependency resolver. */
 	struct mod_private *private;
-	/** (optional) Module specific data. */
-	struct mod_data_ref *data_ref;
-	/** (optional) Available operations. */
-	struct mod_ops_ref *ops_ref;
+	/** (optional) Interface with mods framework and others. */
+	struct mod_api *api;
 	/** Module package assigned by EMBuild. */
 	struct mod_package *package;
 	/** Module name assigned by EMBuild. */
 	const char *name;
-	/** Dependency info. */
+	/** Null-terminated array containing dependency info. */
 	struct mod **requires, **provides;
+};
+
+/**
+ * Mods framework manages each mod through a special interface so-called
+ * @c mod_api.
+ */
+struct mod_api {
+	/** (optional) Module specific data. */
+	void *data;
+	/** (optional) Available operations. */
+	struct mod_ops *ops;
+	/** (optional) Mod tag. */
+	struct mod_tag *tag;
+};
+
+/**
+ * Each mod can have an optional tag. Tag is used to group similar mods, e.g.
+ * which are managed by the same framework. Tag has no special meaning for the
+ * mods framework.
+ */
+struct mod_tag {
+	/** (optional) Tag name. */
+	const char *name;
+	/** Null-terminated array of tagged mods. */
+	struct mod **mods;
 };
 
 struct mod_package {
@@ -232,20 +287,16 @@ struct mod_ops {
 	mod_invoke_t invoke;
 };
 
-struct mod_ops_ref {
-	struct mod_ops *ops;
-};
-
-struct mod_data_ref {
-	void *data;
-};
-
 struct mod_private {
 	unsigned int flags;
 };
+
+struct mod_iterator {
+	struct mod **p_mod;
+};
 /**
  * The special package which may be used for pseudo-mods defined by other
- * frameworks (e.g. tag mods and so on).
+ * frameworks.
  */
 __MOD_PACKAGE_DECL(generic);
 
@@ -332,6 +383,17 @@ extern int mod_invoke(const struct mod *mod, void *data);
  * @return the mod data
  */
 extern void *mod_data(const struct mod *mod);
+
+extern struct mod_iterator *mod_requires(const struct mod *mod,
+		struct mod_iterator *iterator);
+extern struct mod_iterator *mod_provides(const struct mod *mod,
+		struct mod_iterator *iterator);
+extern struct mod_iterator *mod_tagged(const struct mod_tag *tag,
+		struct mod_iterator *iterator);
+
+extern struct mod *mod_iterator_next(struct mod_iterator *iterator);
+
+extern bool mod_iterator_has_next(struct mod_iterator *iterator);
 
 #if 0
 /* TODO there is no way to implement these functions at now. -- Eldar */

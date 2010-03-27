@@ -32,7 +32,7 @@ static void print_tests(void) {
 	struct test_iterator iterator;
 	int i = 0;
 
-	test_iterator(&iterator);
+	test_get_all(&iterator);
 	while(test_iterator_has_next(&iterator)) {
 		test = test_iterator_next(&iterator);
 		TRACE("%3d. ", ++i);
@@ -82,7 +82,7 @@ static struct test *get_test_by_name(char *name) {
 	struct test *test;
 	struct test_iterator iterator;
 
-	test_iterator(&iterator);
+	test_get_all(&iterator);
 	while(test_iterator_has_next(&iterator)) {
 		test = test_iterator_next(&iterator);
 		if (is_test_name(name, test->name)) {
@@ -103,7 +103,7 @@ static struct test *get_test(int nr) {
 		return NULL;
 	}
 
-	test_iterator(&iterator);
+	test_get_all(&iterator);
 	for (i = 0; i != nr; ++i) {
 		if (test_iterator_has_next(&iterator)) {
 			test = test_iterator_next(&iterator);

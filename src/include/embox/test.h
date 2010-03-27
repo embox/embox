@@ -30,9 +30,7 @@
 
 #define EMBOX_TEST_DETAILS(_run, _name, _info) \
 	static const struct test __test__; \
-	MOD_SELF_DEP_DEF(__test_tag); \
-	MOD_SELF_DATA_DEF(&__test__); \
-	MOD_SELF_OPS_DEF(&__test_mod_ops); \
+	MOD_SELF_API_TAGGED_DEF(&__test__, &__test_mod_ops, test); \
 	static int _run(void); \
 	static int __test_run__(void) __attribute__ ((alias(#_run))); \
 	static struct test_private __test_private__; \
@@ -84,12 +82,12 @@ struct test_private {
 };
 
 struct test_iterator {
-	struct mod **p_mod;
+	struct mod_iterator mod_iterator;
 };
 
 extern int test_invoke(struct test *test);
 
-extern struct test_iterator *test_iterator(struct test_iterator *iterator);
+extern struct test_iterator *test_get_all(struct test_iterator *iterator);
 
 extern struct test *test_iterator_next(struct test_iterator *iterator);
 

@@ -24,8 +24,8 @@ static int test_mod_invoke(struct mod *mod, void *data);
 
 struct mod_ops __test_mod_ops = { .enable = &test_mod_enable,
 		.invoke = &test_mod_invoke };
-MOD_DEF(__test_tag, generic, "test")
-;
+
+MOD_TAG_DEF(test, "test");
 
 static int test_mod_enable(struct mod *mod) {
 	return test_mod_invoke(mod, NULL);
@@ -55,23 +55,22 @@ int test_invoke(struct test *test) {
 	return (test->private->result = result);
 }
 
-struct test_iterator *test_iterator(struct test_iterator *iterator) {
+struct test_iterator *test_get_all(struct test_iterator *iterator) {
 	if (NULL == iterator) {
 		return NULL;
 	}
-	iterator->p_mod = MOD_PTR(__test_tag)->provides;
+	mod_tagged(MOD_TAG_PTR(test), &iterator->mod_iterator);
 	return iterator;
 }
 
 inline bool test_iterator_has_next(struct test_iterator *iterator) {
-	return NULL != iterator && NULL != iterator->p_mod && NULL
-			!= *iterator->p_mod;
+	return NULL != iterator && mod_iterator_has_next(&iterator->mod_iterator);
 }
 
 struct test *test_iterator_next(struct test_iterator *iterator) {
 	if (!test_iterator_has_next(iterator)) {
 		return NULL;
 	}
-	return (struct test *) mod_data(*(iterator->p_mod++));
+	return (struct test *) mod_data(mod_iterator_next(&iterator->mod_iterator));
 }
 

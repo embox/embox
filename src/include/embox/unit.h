@@ -17,14 +17,12 @@
 
 #define __EMBOX_UNIT(_init, _fini) \
 	extern const char MOD_SELF_NAME[]; \
-	static const struct unit __unit__; \
-	MOD_SELF_DATA_DEF(&__unit__); \
-	MOD_SELF_OPS_DEF(&__unit_mod_ops); \
 	static const struct unit __unit__ = { \
 			.init = _init, \
 			.fini = _fini, \
 			.name = MOD_SELF_NAME \
-		}
+		}; \
+	MOD_SELF_API_DEF(&__unit__, &__unit_mod_ops)
 
 #define EMBOX_UNIT(_init, _fini) \
 	static int _init(void); \
