@@ -1,17 +1,19 @@
 /**
  * @file
- * @brief SPARC implementation traps framework
  *
- * @date 26.03.2010
- * @author Nikolay Korotky
+ * @brief Sparc implementation traps framework
+ *
+ * @date 15.03.2010
+ * @author Anton Bondarev
+ * @author Alexander Batyukov
  */
 
-#include <types.h>
-#include <embox/kernel.h>
+#include <asm/traps_core.h>
+#include <string.h>
+#include <hal/ipl.h>
+#include <asm/tbr.h>
 #include <hal/traps_core.h>
 
-static traps_env_t *old_env;
-static traps_env_t cur_env;
 
 void traps_enable(void) {
 
@@ -22,13 +24,23 @@ void traps_disable(void) {
 }
 
 void traps_save_env(traps_env_t *env) {
-
+	env->base_addr = tbr_tba_get();
 }
 
 void traps_restore_env(traps_env_t *env) {
+	ipl_t ipl_status = ipl_save();
 
+	/* atomic */
+	tbr_tba_set(env->base_addr);
+
+	ipl_restore(ipl_status);
 }
 
 void traps_set_env(traps_env_t *env) {
+	ipl_t ipl_status = ipl_save();
 
+	/* atomic */
+	tbr_tba_set(env->base_addr);
+
+	ipl_restore(ipl_status);
 }

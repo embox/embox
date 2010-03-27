@@ -71,6 +71,9 @@
 /* TODO */
 #define EMBOX_SYSTEM_CALL SOFT_TRAP
 
+#define TEST_SOFT_TRAP TRAP_ENTRY(test_soft_trap_entry)
+
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* SPARC_HEAD_H_ */

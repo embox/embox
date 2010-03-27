@@ -8,6 +8,8 @@
 #include <types.h>
 #include <asm/winmacro.h>
 #include <asm/ptrace.h>
+#include <asm/traps_core.h>
+#include <test/testtraps_core.h>
 
 void bad_trap_handler(uint8_t tt, struct pt_regs *r) {
 	struct reg_window *rw;
