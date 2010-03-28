@@ -13,18 +13,15 @@
 #define RECURSION_DEPTH 32
 
 EMBOX_TEST(run);
+EMBOX_TEST_EXPORT(run_recursion);
 
-static int foo(int depth) {
+static int call_me(int depth) {
 	if (depth > 0) {
-		return foo(--depth) - 1;
+		return call_me(--depth) - 1;
 	}
 	return RECURSION_DEPTH;
 }
 
 static int run() {
-	if (foo(RECURSION_DEPTH) == 0) {
-		return 0;
-	} else {
-		return -1;
-	}
+	return call_me(RECURSION_DEPTH);
 }

@@ -157,6 +157,7 @@ define __traverse_process
 
   # Sometimes it is useful to define variables as recursively expanded.
   $_SELFDIR := $(SELFDIR)
+  $_SELF    := $(SELF)
 
   # Default to expansion of *.
   $_SUBDIRS := $(call __traverse_subdirs_wildcard,*)
