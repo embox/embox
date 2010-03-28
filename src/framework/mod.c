@@ -13,6 +13,10 @@
 
 #include <embox/mod.h>
 
+#define MOD_FLAG_ENABLED       (1 << 0)
+#define MOD_FLAG_OPFAILED      (1 << 1)
+#define MOD_FLAG_OPINPROGRESS  (1 << 2)
+
 #define mod_flag_tst(mod, mask)   ((mod)->private->flags &   (mask))
 #define mod_flag_tgl(mod, mask) do (mod)->private->flags ^=  (mask); while(0)
 #define mod_flag_set(mod, mask) do (mod)->private->flags |=  (mask); while(0)
@@ -73,6 +77,10 @@ struct mod *mod_iterator_next(struct mod_iterator *iterator) {
 		return NULL;
 	}
 	return *(iterator->p_mod++);
+}
+
+bool mod_is_running(const struct mod *mod) {
+	return mod != NULL && mod_flag_tst(mod, MOD_FLAG_ENABLED);
 }
 
 void *mod_data(const struct mod *mod) {
