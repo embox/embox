@@ -10,7 +10,7 @@
 
 #include <types.h>
 
-/*FIXME move MMU_TABLE_SIZE to arch dependent config*/
+/*FIXME move UTLB_QUANTITY_RECORDS to arch dependent config*/
 #define MAX_HWTRAP_NUMBER    0x8
 #define MAX_SOFTTRAP_NUMBER  0x10
 #define MAX_INTERRUPT_NUMBER 0x10

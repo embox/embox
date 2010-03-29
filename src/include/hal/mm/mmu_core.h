@@ -12,18 +12,11 @@
 
 #include <asm/mmu_core.h>
 
-#if 0
-this is old
-void mmu_save_status(uint32_t *status);
 
-void mmu_restore_status(uint32_t *status);
+#define MMU_PAGE_CACHEABLE    0x1
+#define MMU_PAGE_WRITEABLE    0x2
+#define MMU_PAGE_EXECUTEABLE   0x4
 
-void mmu_save_table(uint32_t *status);
-
-void mmu_restore_table(uint32_t *status);
-
-int mmu_enable(uint32_t *table);
-#endif
 
 /**
  * Defines type for structure of MMU environment. This structure must be

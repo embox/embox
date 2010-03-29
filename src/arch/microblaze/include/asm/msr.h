@@ -12,6 +12,11 @@
 #include <types.h>
 #include <asm/bitops.h>
 
+#define MSR_VMS_BIT    17
+#define MSR_VM_BIT     18
+#define MSR_UMS_BIT    19
+#define MSR_UM_BIT     20
+#define MSR_PVR_BIT    21
 #define MSR_EIP_BIT    22
 #define MSR_EE_BIT     23
 #define MSR_DCE_BIT    24
@@ -23,6 +28,11 @@
 #define MSR_BE_BIT     30
 #define MSR_C_BIT      31
 
+#define MSR_VMS_MASK   REVERSE_MASK(MSR_VMS_BIT)
+#define MSR_VM_MASK    REVERSE_MASK(MSR_VM_BIT)
+#define MSR_UMS_MASK   REVERSE_MASK(MSR_UMS_BIT)
+#define MSR_UM_MASK    REVERSE_MASK(MSR_UM_BIT)
+#define MSR_PVR_MASK   REVERSE_MASK(MSR_PVR_BIT)
 #define MSR_EIP_MASK   REVERSE_MASK(MSR_EIP_BIT)
 #define MSR_EE_MASK    REVERSE_MASK(MSR_EE_BIT)
 #define MSR_DCE_MASK   REVERSE_MASK(MSR_DCE_BIT)
