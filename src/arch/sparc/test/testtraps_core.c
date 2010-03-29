@@ -31,8 +31,12 @@ void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 
 }
 
-int testtraps_fire_softtrap(uint32_t number) {
-	__asm__ __volatile__ ("ta %0\n\t"::"r" (number));
+int testtraps_fire_softtrap(uint32_t number, void *data) {
+	__asm__ __volatile__ (
+			"mov %1, %%g7\n\t"
+			"ta %0\n\t"
+			:
+			:"r" (number), "r" (data));
 	return 0;
 }
 
