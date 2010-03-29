@@ -78,7 +78,7 @@ extern int fclose(FILE *fp);
  */
 extern int remove(const char *pathname);
 
-#if defined(CONFIG_TRACE) && !defined(SIMULATION_TRG)
+#if defined(CONFIG_TRACE)
 # ifdef __EMBOX__
 #  define TRACE(...)  printf(__VA_ARGS__)
 # else
