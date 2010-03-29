@@ -42,7 +42,7 @@ $(config_h)     : DEFS := __CONFIG_H__
 $(config_lds_h) : DEFS := __CONFIG_LDS_H__
 
 $(build_mk) $(mods_mk) :
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) $(DEFS:%=-D%) \
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' > $@
 

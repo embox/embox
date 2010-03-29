@@ -25,17 +25,29 @@ THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 PLATFORM_DIR   := $(ROOT_DIR)/platform
 SRC_DIR        := $(ROOT_DIR)/src
 
-ifndef PATCH_NAME
-#	the only case it's not defined - when target is config
-#	In that case CONF_DIR must refer to ./conf
 CONF_DIR       := $(ROOT_DIR)/conf
-else
-CONF_DIR       := $(ROOT_DIR)/conf/$(PATCH_NAME)
-endif
+
+BASE_CONF_DIR  := $(ROOT_DIR)/conf
+PATCH_CONF_DIR := $(ROOT_DIR)/conf/$(PATCH_NAME)
 
 BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 
-BUILD_DIR      := $(ROOT_DIR)/build/$(PATCH_NAME)
+ifeq ($(BUILD_TYPE),patch)
+BUILD_DIR      := $(ROOT_DIR)/build/patch_$(PATCH_NAME)
+else
+ifeq ($(BUILD_TYPE),base)
+BUILD_DIR      := $(ROOT_DIR)/build/base
+else
+BUILD_DIR      := $(ROOT_DIR)/build
+endif
+endif
+
+ifdef SINGLE_TARGET
+# ? - m.b. it's a mistake=)
+BUILD_TYPE     := single_target
+BUILD_DIR      := $(ROOT_DIR)/build
+endif
+
 BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
 LIB_DIR        := $(OBJ_DIR)
@@ -58,7 +70,7 @@ ifeq ($(makegoals),)
 makegoals := all
 endif
 
-ifdef PATCH_NAME
+ifdef BUILD_TYPE
 # Need to include it prior to walking the source tree
 # (particularly because of ARCH definition).
 include $(MK_DIR)/configure.mk
@@ -70,18 +82,25 @@ include $(MK_DIR)/codegen-dot.mk
 endif
 
 __get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
-build_targets := $(patsubst %,%.target,$(filter-out $(notdir $(BACKUP_DIR)), \
+build_patch_targets := $(patsubst %,%.target,$(filter-out $(notdir $(BACKUP_DIR)), \
   $(call __get_subdirs, $(CONF_DIR))))
-
+ifndef $(SINGLE_TARGET)
+build_targets = build_base_target $(build_patch_targets)
+else
+build_targets = $(SINGLE_TARGET)
+endif
 .PHONY: all build prepare docs dot clean config xconfig menuconfig
-.PHONY: $(build_targets)
+.PHONY: $(build_patch_targets) build_base_target build_targets
 
-all: $(build_targets)
+all: build_base_target
+all: $(build_patch_targets)
 	@echo 'Build complete'
 
-$(build_targets): export PATCH_NAME = $(basename $@)
-$(build_targets):
-	$(MAKE) build
+$(build_patch_targets):
+	$(MAKE) BUILD_TYPE=patch PATCH_NAME=$(basename $@) build
+
+build_base_target:
+	$(MAKE) BUILD_TYPE=base build
 
 build: check_config prepare image
 	@echo '$(PATCH_NAME) build complete'
@@ -150,8 +169,14 @@ endif
 			mv -fv -t $(BACKUP_DIR) \
 				$(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*));, \
 			rm -r $(BACKUP_DIR); \
-		) \
+		)                             \
+	else                              \
+		mkdir -p $(CONF_DIR);         \
 	fi;
+ifeq (0,1)
+# That's an old variant of config creating system.
+# It will be removed soon.
+# Just not to search long if smth goes wrong %)
 	@$(foreach dir,$(call __get_subdirs,$(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)), \
 	  mkdir -p $(CONF_DIR)/$(dir); \
 	  cp -fv -t $(CONF_DIR)/$(dir) \
@@ -161,6 +186,12 @@ endif
 	       $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*); \
 	  ) \
 	)
+else
+# That's a new variant.
+# We just copy from templates dir to conf dir
+	@cp -fv -R -t $(CONF_DIR) \
+	  $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*);
+endif
 	@echo 'Config complete'
 
 menuconfig:
