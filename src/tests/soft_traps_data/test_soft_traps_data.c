@@ -1,7 +1,8 @@
 /**
  * @file
  *
- * @brief Test checks possibility soft traps calling
+ * @brief Test checks correctness of transmission parameters during soft trap's
+ *        processing
  *
  * @date 26.06.2009
  * @author Alexander Batyukov
@@ -16,7 +17,6 @@
 
 EMBOX_TEST(run);
 
-static unsigned int volatile test_variable;
 /* test handler*/
 static void test_handler(uint32_t trap_nr, void *data) {
 	(*(uint32_t *)data) ++;
@@ -25,6 +25,7 @@ static void test_handler(uint32_t trap_nr, void *data) {
 static int run(void) {
 	unsigned int temp = test_variable;
 	traps_env_t old_env;
+	unsigned int volatile test_variable;
 
 	traps_save_env(&old_env);
 	traps_set_env(testtraps_env());

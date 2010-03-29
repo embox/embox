@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Test checks possibility soft traps calling
+ * @brief Test checks possibility soft trap's calling
  *
  * @date 26.06.2009
  * @author Alexander Batyukov
@@ -32,7 +32,7 @@ static int run(void) {
 	testtraps_set_handler(TRAP_TYPE_SOFTTRAP, TEST_SOFT_TRAP_NUMBER,
 			test_handler);
 
-	testtraps_fire_softtrap(TEST_SOFT_TRAP_NUMBER, (void *)&test_variable);
+	testtraps_fire_softtrap(TEST_SOFT_TRAP_NUMBER, NULL);
 
 	traps_restore_env(&old_env);
 
