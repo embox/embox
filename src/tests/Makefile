@@ -1,5 +1,5 @@
 
-$_SUBDIRS := $(filter-out _template soft_traps,$($_SUBDIRS))
+$_SUBDIRS := $(filter-out _template,$($_SUBDIRS))
 
 $_PACKAGE := embox.test
 
