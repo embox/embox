@@ -8,6 +8,10 @@
 
 #include <errno.h>
 
+/**
+ * No operation function returning -ENOSYS.
+ * @return -ENOSYS
+ */
 int nosys(void) {
 	return -ENOSYS;
 }

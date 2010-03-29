@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Software interrupts handling.
  *
  * @date 14.02.2010
  * @author Eldar Abusalimov
@@ -21,10 +22,24 @@ static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
 static uint32_t softirq_pending;
 #define local_softirq_pending() softirq_pending
 
+/**
+ * Initialization of the soft IRQ subsystem.
+ */
 void softirq_init(void) {
 	// TODO install common softirqs
 }
 
+/**
+ * Set the handler of the concrete type soft IRQ.
+ *
+ * @param nr the soft IRQ number
+ * @param handler the ISR itself
+ * @param dev_id the optional device tag
+ *
+ * @return the initialization result
+ * @retval 0 if the initialization is done
+ * @retval -EINVAL if the @c nr doesn't represent valid soft IRQ number
+ */
 int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *dev_id) {
 	ipl_t ipl;
 
@@ -40,6 +55,15 @@ int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *dev_id) {
 	return 0;
 }
 
+/**
+ * Activation of the soft IRQ.
+ *
+ * @param nr the soft IRQ number
+ *
+ * @return the activation result
+ * @retval 0 if the activation is done
+ * @retval -EINVAL if the @c nr doesn't represent valid soft IRQ number
+ */
 int softirq_raise(softirq_nr_t nr) {
 	ipl_t ipl;
 
@@ -53,7 +77,9 @@ int softirq_raise(softirq_nr_t nr) {
 
 	return 0;
 }
-
+/**
+ * A common framework for IRQ handling.
+ */
 void do_softirq(void) {
 	int i;
 	ipl_t ipl;

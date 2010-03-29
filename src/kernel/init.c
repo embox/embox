@@ -1,6 +1,8 @@
 /**
  * @file
  *
+ * @brief The kernel initialization sequence.
+ *
  * @date 21.03.09
  * @author Anton Bondarev
  * @author Alexey Fomin
@@ -23,6 +25,9 @@ static int init(void);
 // XXX remove from here. -- Eldar
 int uart_init(void);
 
+/**
+ * The setup of the system, the run level and execution of the idle function.
+ */
 void kernel_start(void) {
 
 	kernel_init();
@@ -35,6 +40,10 @@ void kernel_start(void) {
 	}
 }
 
+/**
+ * The initialization functions are called to set up interrupts, perform
+ * further memory configuration, initialization of drivers, devices.
+ */
 static void kernel_init(void) {
 	arch_init();
 
@@ -49,6 +58,10 @@ static void kernel_init(void) {
 
 }
 
+/**
+ * Set the run level to the value of the file system and net level.
+ * @return 0
+ */
 static int init(void) {
 	int ret = 0;
 	const runlevel_nr_t target_level = RUNLEVEL_NRS_TOTAL - 1;

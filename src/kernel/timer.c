@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Timer handling.
  */
 #include <types.h>
 #include <unistd.h>
@@ -24,11 +25,18 @@ static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
 static sys_tmr_t sys_timers[_SC_TIMER_MAX];
 
-
+/**
+ * Enable the timer.
+ * @param num the timer index in the timers array
+ */
 static void set_sys_timer_enable (int num) {
 	sys_timers[num].f_enable = 1;
 }
 
+/**
+ * Disable the timer.
+ * @param num the timer index in the timers array
+ */
 static void set_sys_timer_disable (int num) {
 	sys_timers[num].f_enable = 0;
 }
@@ -58,6 +66,11 @@ void close_timer (uint32_t id) {
 	}
 }
 
+/**
+ * For each timer in the timers array do the following: if the timer is enable
+ * and the counter of this timer is the zero then its initial value is assigned
+ * to the counter and the function is executed.
+ */
 static void inc_sys_timers (void) {
 	int i;
 	for (i = 0; i < array_len (sys_timers); i++) {
@@ -70,12 +83,20 @@ static void inc_sys_timers (void) {
 	}
 }
 
+/**
+ * Handling of the clock tick.
+ */
 void clock_tick_handler(int irq_num, void *dev_id) {
 	cnt_ms_sleep++;
 	cnt_sys_time++;
 	inc_sys_timers();
 }
 
+/**
+ * Initialization of the timer subsystem.
+ *
+ * @return 0
+ */
 int timer_init(void) {
 	int i;
 	cnt_sys_time = 0;
@@ -96,10 +117,10 @@ int usleep(useconds_t usec) {
 	return 0;
 }
 
+#if 0
 /*TODO now save only one timer context*/
 #define MAX_SAVE_CONTEXT	  2
 
-#if 0
 static sys_tmr_t save_timers_buffer[_SC_TIMER_MAX][MAX_SAVE_CONTEXT];
 static int save_context_number = 0;
 
