@@ -30,6 +30,7 @@
 #define AHB_SLAVE_BASE           0xFFFFF800 // max: 64 devices
 #define APB_BASE                 0x800FF000 // max: 512 devices
 
+/* max devices on AMBA bus */
 #define AHB_MASTERS_QUANTITY     0x10
 #define AHB_SLAVES_QUANTITY      0x40
 #define APB_QUANTITY             0x40
