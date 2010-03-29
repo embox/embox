@@ -13,15 +13,28 @@
 
 typedef void (*TIMER_FUNC)(uint32_t id);
 
+/**
+ * Initialization of the timers subsystem.
+ */
 int timer_init(void);
 
 /**
  * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.
+ *
+ * @param id timer identifier
+ * @param ticks assignable time
+ * @param handle the function to be executed
+ *
+ * @return whether the timer is set
+ * @retval 1 if the timer is set
+ * @retval 0 if the timer isn't set
  */
 int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
 
 /**
  * Shut down timer with 'id' identity
+ *
+ * @param id timer identifier
  */
 void close_timer(uint32_t id);
 
