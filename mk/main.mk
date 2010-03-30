@@ -194,6 +194,43 @@ else
 endif
 	@echo 'Config complete'
 
+CUR_CONFIG_FILES := $(filter-out $(notdir $(BACKUP_DIR)),\
+						$(notdir $(wildcard $(BASE_CONF_DIR)/*)))
+# It would be better to use check_config from configure.mk,
+# But I cant imagine any normal condition to include it.
+saveconfig:
+ifndef PROJECT
+	@echo 'Error: PROJECT undefined'
+	@echo 'Usage: "make PROJECT=<project> PROFILE=<new profile name> saveconfig"'
+	exit 1
+endif
+ifndef PROFILE
+	@echo 'Error: PROFILE undefined'
+	@echo 'Usage: "make PROJECT=<project> PROFILE=<new profile name> saveconfig"'
+	exit 1
+endif
+#	@if [-d $(BASE_CONF_DIR)];                                           \
+	then                                                                 \
+		echo 'Error: conf - folder not found. No config to be saved.';   \
+		exit 1; \
+	fi;
+	$(if $(CUR_CONFIG_FILES),,\
+		echo 'Error: no config presented in "$(BASE_CONF_DIR)"'; \
+		exit 1; \
+	)
+ifneq ($(FORCED),true)
+	@if [ -d $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE) ];          \
+	then                                                       \
+		echo 'Error: Profile "$(PROFILE)" already exist';      \
+		exit 1;                                                \
+	fi;
+else
+	rm -r $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);
+endif
+	mkdir -p $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);        \
+	cp -fvr -t $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/ \
+			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
+	@echo Config was saved.
 menuconfig:
 	make PROFILE=`dialog \
 		--stdout --backtitle "Configuration template selection" \
