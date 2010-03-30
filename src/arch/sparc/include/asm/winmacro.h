@@ -117,14 +117,14 @@ struct reg_window {
 	add %scratch, 0x1000, %scratch;            \
 	/* Probe the MMU for %sp + 0x38 value. */  \
 	lda [%scratch] ASI_LEON_MMUFLUSH, %scratch;\
-	andcc %scratch, SRMMU_WRITE, %g0;          \
+	andcc %scratch, MMU_PTE_WRITE, %g0;          \
 	be corrupt_stack_branch;                   \
 	 andn %sp, 0xfff, %scratch;                \
 	or %scratch, 0x400, %scratch;              \
 10293847: /* single page */                    \
 	 /* Probe the MMU for %sp value. */        \
 	lda [%scratch] ASI_LEON_MMUFLUSH, %scratch;\
-	andcc %scratch, SRMMU_WRITE, %g0;          \
+	andcc %scratch, MMU_PTE_WRITE, %g0;          \
 	be corrupt_stack_branch;                   \
 	 nop;
 

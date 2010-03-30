@@ -56,8 +56,8 @@ weak_trap_entry:
 	jmpl %local, %g0
 	 nop
 
- 	.global srmmu_fault
-srmmu_fault:
+! 	.global srmmu_fault
+!srmmu_fault:
 !	mov %t_npc, %t_pc
 !	add %t_npc, 4, %t_npc
 	jmpl %t_npc, %g0

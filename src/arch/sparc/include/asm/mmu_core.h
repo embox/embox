@@ -5,6 +5,7 @@
  * @date 15.03.2010
  * @author Anton Bondarev
  * @author Alexander Batyukov
+ * @author Nikolay Korotky
  */
 
 #ifndef SPARC_MMU_CORE_H_
@@ -12,20 +13,152 @@
 
 #include <asm/asi.h>
 
-/* mmu register access, ASI_LEON_MMUREGS */
-#define LEON_CNR_CTRL           0x000
-#define LEON_CNR_CTXP           0x100
-#define LEON_CNR_CTX            0x200
-#define LEON_CNR_F              0x300
-#define LEON_CNR_FADDR          0x400
+/**
+ * MMU registers.
+ * Note: MMU mapped via an Alternate Address Space of the CPU (ASI_M_MMUREGS).
+ */
 
-#define LEON_CNR_CTX_NCTX       256     /*number of MMU ctx */
-#define LEON_CNR_CTRL_TLBDIS    0x80000000
+#define LEON_CNR_CTRL        0x00000000 /** Control Register */
+#define LEON_CNR_CTXP        0x00000100 /** Context Table Pointer Register */
+#define LEON_CNR_CTX         0x00000200 /** Context Register */
+#define LEON_CNR_F           0x00000300 /** Fault Status Register */
+#define LEON_CNR_FADDR       0x00000400 /** Fault Address Register */
 
-#define MMU_PAGE_SIZE         (1 << 12)
-#define MMU_PTE_TABLE_SIZE    0x100 /* 64 entries, 4 bytes a piece  */
-#define MMU_PMD_TABLE_SIZE    0x100 /* 64 entries, 4 bytes a piece  */
-#define MMU_PGD_TABLE_SIZE    0x400 /* 256 entries, 4 bytes a piece */
+#define LEON_CNR_CTX_NCTX    256        /** number of MMU ctx */
+//#define LEON_CNR_CTRL_TLBDIS 0x80000000
+
+/** Control Register's fields */
+
+/** specific implementation of the MMU */
+#define MMU_CTRL_IMPL        0xF0000000
+/** particular version of this MMU implementation */
+#define MMU_CTRL_VER         0x0F000000
+/** The System Control bits */
+#define MMU_CTRL_SC          0x00FFFF00
+/**
+ * The PSO bit controls whether the memory model seen by the processor
+ * is Partial Store Ordering (PSO=1) or Total Store Ordering (PSO=0).
+ */
+#define MMU_CTRL_PSO         0x00000080
+/**
+ * “No Fault” bit.
+ */
+#define MMU_CTRL_NF          0x00000002
+/**
+ * The Enable bit enables or disables the MMU.
+ */
+#define MMU_CTRL_E           0x00000001
+
+/** Fault Status Register's fields */
+
+/**
+ * External Bus Error
+ */
+#define MMU_F_EBE            0x0003FC00
+/**
+ * The Level field is set to the page table
+ * level of the entry which caused the fault.
+ */
+#define MMU_F_L              0x00000300
+/**
+ * Access Type:
+ * 0 Load from User Data Space
+ * 1 Load from Supervisor Data Space
+ * 2 Load/Execute from User Instruction Space
+ * 3 Load/Execute from Supervisor Instruction Space
+ * 4 Store to User Data Space
+ * 5 Store to Supervisor Data Space
+ * 6 Store to User Instruction Space
+ * 7 Store to Supervisor Instruction Space
+ */
+#define MMU_F_AT             0x000000E0
+/**
+ * Fault Type:
+ * 0 None
+ * 1 Invalid address error
+ * 2 Protection error
+ * 3 Privilege violation error
+ * 4 Translation error
+ * 5 Access bus error
+ * 6 Internal error
+ */
+#define MMU_F_FT             0x0000001C
+/**
+ * Fault Address Valid bit
+ */
+#define MMU_F_FAV            0x00000002
+/**
+ * Overwrite bit
+ */
+#define MMU_F_OW             0x00000001
+
+/** MMU three-level mapping */
+
+/** Level-3 Table:64 entries, 4 bytes a piece */
+#define MMU_PTE_TABLE_SIZE   0x100
+/** Level-2 Table:64 entries, 4 bytes a piece */
+#define MMU_PMD_TABLE_SIZE   0x100
+/** Level-1 Table: 256 entries, 4 bytes a piece */
+#define MMU_PGD_TABLE_SIZE   0x400
+
+/** 4K-byte pages */
+#define PAGE_SIZE            (1<<12)
+
+/* The PTE non-page bits.  Some notes:
+ * 1) cache, modified, valid, and ref are frobbable
+ *    for both supervisor and user pages.
+ * 2) exec and write will only give the desired effect
+ *    on user pages
+ * 3) use priv and priv_readonly for changing the
+ *    characteristics of supervisor ptes
+ */
+#define MMU_PTE_CACHE        0x80
+#define MMU_PTE_MODIFIED     0x40
+#define MMU_PTE_REF          0x20
+#define MMU_PTE_EXEC         0x08
+#define MMU_PTE_WRITE        0x04
+#define MMU_PTE_PRIV         0x1c
+#define MMU_PTE_PRIV_RDONLY  0x18
+#define MMU_PTE_ET           0x2
+
+/* Physical page extraction from PTP's and PTE's. */
+#define MMU_CTX_PMASK      0xfffffff0
+#define MMU_PTD_PMASK      0xfffffff0
+#define MMU_PTE_PMASK      0xffffff00
+
+/**
+ * Entry Type — This field differentiates a PTD from a PTE. For a PTD,
+ * it must contain the value 1.
+ */
+#define MMU_ET_PTD           0x1
+
+typedef unsigned long pte_t;
+typedef unsigned long pmd_t;
+typedef unsigned long pgd_t;
+typedef unsigned long ctxd_t;
+
+#define pte_val(x)    (x)
+#define pmd_val(x)    (x)
+#define pgd_val(x)    (x)
+#define ctxd_val(x)   (x)
+
+#define __pte(x)      (x)
+#define __pmd(x)      (x)
+#define __pgd(x)      (x)
+#define __ctxd(x)     (x)
+
+/* This makes sense. Honest it does - Anton */
+#define __nocache_pa(VADDR)  VADDR
+#define __nocache_va(PADDR)  PADDR
+#define __nocache_fix(VADDR) VADDR
+
+#define MMU_GTABLE_MASK         0xFF000000
+#define MMU_GTABLE_MASK_OFFSET  24
+#define MMU_MTABLE_MASK         0x00FC0000
+#define MMU_MTABLE_MASK_OFFSET  18
+#define MMU_PTABLE_MASK         0x0003F000
+#define MMU_PTABLE_MASK_OFFSET  12
+#define MMU_PAGE_MASK           0xFFF
 
 /**
  * Describes structure for MMU environment for SPARC architecture.
@@ -33,11 +166,17 @@
 typedef struct __mmu_env {
 	uint32_t status;          /**< MMU enabled/disabled */
 
+	ctxd_t *ctx;              /**< context table */
+	pgd_t  *pg0;              /**< Level-1 table */
+	pmd_t  *pm0;              /**< Level-2 table */
+	pte_t  *pt0;              /**< Level-3 table */
+
 	uint32_t data_fault_cnt;  /**< Counter for data page faults */
 	uint32_t inst_fault_cnt;  /**< Counter for instruction page faults */
 	uint32_t fault_addr;      /**< Last fault address */
 }__mmu_env_t;
 
+/** Set MMU reg */
 static inline void mmu_set_mmureg(unsigned long addr_reg,
 				unsigned long regval) {
 	__asm__ __volatile__("sta %0, [%1] %2\n\t"
@@ -47,6 +186,7 @@ static inline void mmu_set_mmureg(unsigned long addr_reg,
 	);
 }
 
+/** Get MMU reg */
 static inline unsigned long mmu_get_mmureg(unsigned long addr_reg) {
 	register int retval;
 	__asm__ __volatile__("lda [%1] %2, %0\n\t"
@@ -54,6 +194,56 @@ static inline unsigned long mmu_get_mmureg(unsigned long addr_reg) {
 		: "r" (addr_reg), "i" (ASI_M_MMUREGS)
 	);
 	return retval;
+}
+
+/** Set context table pointer */
+static inline void mmu_set_ctable_ptr(unsigned long paddr) {
+	paddr = ((paddr >> 4) & MMU_CTX_PMASK);
+	mmu_set_mmureg(LEON_CNR_CTXP, paddr);
+}
+
+/** Get context table pointer */
+static inline unsigned long mmu_get_ctable_ptr(void) {
+	unsigned int retval;
+	retval = mmu_get_mmureg(LEON_CNR_CTXP);
+	return (retval & MMU_CTX_PMASK) << 4;
+}
+
+#define mmu_set_context(context) mmu_set_mmureg(LEON_CNR_CTX, context)
+#define mmu_get_context() mmu_get_mmureg(LEON_CNR_CTX)
+
+/*
+ * In general all page table modifications should use the V8 atomic
+ * swap instruction.  This insures the mmu and the cpu are in sync
+ * with respect to ref/mod bits in the page tables.
+ */
+static  unsigned long mmu_swap(unsigned long *addr, unsigned long value) {
+	__asm__ __volatile__("swap [%2], %0"
+		: "=&r" (value)
+		: "0" (value), "r" (addr)
+	);
+	return value;
+}
+
+/** Set page table entry with value */
+static void mmu_set_pte(pte_t *ptep, pte_t pteval) {
+	mmu_swap((unsigned long *)ptep, pte_val(pteval));
+}
+
+/* XXX should we hyper_flush_whole_icache here - Anton */
+static void mmu_ctxd_set(ctxd_t *ctxp, pgd_t *pgdp) {
+	mmu_set_pte((pte_t *)ctxp,
+		(MMU_ET_PTD | (__nocache_pa((unsigned long) pgdp) >> 4)));
+}
+
+static void mmu_pgd_set(pgd_t * pgdp, pmd_t * pmdp) {
+	mmu_set_pte((pte_t *)pgdp,
+		(MMU_ET_PTD | (__nocache_pa((unsigned long) pmdp) >> 4)));
+}
+
+static void mmu_pmd_set(pmd_t * pmdp, pte_t * ptep) {
+	mmu_set_pte((pte_t *)pmdp,
+		(MMU_ET_PTD | (__nocache_pa((unsigned long) ptep) >> 4)));
 }
 
 #endif /* SPARC_MMU_CORE_H_ */
