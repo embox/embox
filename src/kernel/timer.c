@@ -95,7 +95,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 /**
  * Initialization of the timer subsystem.
  *
- * @return 0
+ * @return 0 if success
  */
 int timer_init(void) {
 	int i;

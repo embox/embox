@@ -13,7 +13,7 @@
 
 /**
  * Print a formatted message to the kernel console.
- * @param format C string
+ * @param format C string in Kernel
  * @param additional_arguments
  *   Depending on the format string, the function may expect a sequence of
  *   additional arguments, each containing one value to be inserted instead
