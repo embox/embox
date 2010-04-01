@@ -54,12 +54,12 @@ start_script:
 		)\
 	)
 
-$(build_mk) $(mods_mk) : start_script
+$(build_mk) $(mods_mk) :
 	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' > $@
 
-$(config_h) $(config_lds_h) :
+$(config_h) $(config_lds_h) : start_script
 	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' | sed 's/$$define/#define/g' > $@
