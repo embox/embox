@@ -17,15 +17,17 @@
 
 EMBOX_TEST(run);
 
-/* test handler*/
+/**
+ *  Test handler
+ *  */
 static void test_handler(uint32_t trap_nr, void *data) {
 	(*(uint32_t *)data) ++;
 }
 
 static int run(void) {
-	unsigned int temp = test_variable;
 	traps_env_t old_env;
 	unsigned int volatile test_variable;
+	unsigned int temp = test_variable;
 
 	traps_save_env(&old_env);
 	traps_set_env(testtraps_env());

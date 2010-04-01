@@ -22,8 +22,6 @@ test_soft_trap_entry:
 	srl %o0, 4, %o0
 	and %o0, 0xFF, %o0		! pass TT as parameter
 
-	mov %g7, %o1			! test_variable as parameter
-
 	or %t_psr, PSR_PIL, %g1
 	wr %g1, %g0, %psr
 	 WRITE_PAUSE
