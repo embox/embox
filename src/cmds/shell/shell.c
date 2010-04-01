@@ -111,8 +111,9 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 
 static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback ) {
 	static char *script_commands[] = {
-	#include "start_script.inc"
+		#include <start_script.inc>;
 	};
+
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	int i;
 	for (i = 0; i < array_len(script_commands); i++) {

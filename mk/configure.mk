@@ -41,13 +41,26 @@ $(mods_mk)      : DEFS := __MODS_MK__
 $(config_h)     : DEFS := __CONFIG_H__
 $(config_lds_h) : DEFS := __CONFIG_LDS_H__
 
-$(build_mk) $(mods_mk) :
+.PHONY: start_script
+start_script:
+	$(if $(filter %shell,$(MODS_ENABLE)),\
+		$(if $(wildcard $(PATCH_CONF_DIR)/start_script.inc),\
+			cp -f -t $(AUTOCONF_DIR) $(PATCH_CONF_DIR)/start_script.inc;,\
+			$(if $(wildcard $(BASE_CONF_DIR)/start_script.inc),\
+				cp -f -t $(AUTOCONF_DIR) $(BASE_CONF_DIR)/start_script.inc;,\
+				echo 'ERROR: start_script.inc not found';\
+				exit 1;\
+			)\
+		)\
+	)
+
+$(build_mk) $(mods_mk) : start_script
 	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' > $@
 
 $(config_h) $(config_lds_h) :
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(CONF_DIR) $(DEFS:%=-D%) \
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' | sed 's/$$define/#define/g' > $@
 
