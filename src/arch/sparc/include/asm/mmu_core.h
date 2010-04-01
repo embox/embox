@@ -212,6 +212,24 @@ static inline unsigned long mmu_get_ctable_ptr(void) {
 #define mmu_set_context(context) mmu_set_mmureg(LEON_CNR_CTX, context)
 #define mmu_get_context() mmu_get_mmureg(LEON_CNR_CTX)
 
+static inline void mmu_flush_cache_all(void) {
+	__asm__ __volatile__("flush\n\t"
+		"sta %%g0, [%%g0] %0\n\t"
+		:
+		: "i" (0x11) /* magic number detected */
+		: "memory"
+	);
+}
+
+static inline void mmu_flush_tlb_all(void) {
+	mmu_flush_cache_all();
+	__asm__ __volatile__("sta %%g0, [%0] %1\n\t"
+		:
+		: "r" (0x400), "i" (0x18) /* magic number detected */
+		: "memory"
+	);
+}
+
 /*
  * In general all page table modifications should use the V8 atomic
  * swap instruction.  This insures the mmu and the cpu are in sync

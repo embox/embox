@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 #include <shell_command.h>
-#include <asm/mmu_obsolete.h>
+#include <asm/mmu_core.h>
 
 #define COMMAND_NAME     "mmu_probe"
 #define COMMAND_DESC_MSG "testing mmu module"
@@ -19,26 +19,26 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static bool mmu_show_ctrl() {
-	unsigned int ctrl_reg = srmmu_get_mmureg(SRMMU_CTRL_REG);
+	unsigned int ctrl_reg = mmu_get_mmureg(LEON_CNR_CTRL);
 	printf("CTLR REG:\t0x%08X\n", ctrl_reg);
-	printf("\tIMPL:\t0x%01X\n", (ctrl_reg >> 28) & 0xF);
-	printf("\tVER:\t0x%01X\n",  (ctrl_reg >> 24) & 0xF);
-	printf("\tSC:\t0x%04X\n",   (ctrl_reg >> 8) & 0xFFFF);
-	printf("\tPSO:\t%d\n",      (ctrl_reg >> 7) & 0x1);
-	printf("\tNF:\t%d\n",       (ctrl_reg >> 1) & 0x1);
-	printf("\tE:\t%d\n",         ctrl_reg & 0x1);
+	printf("\tIMPL:\t0x%01X\n", (ctrl_reg & MMU_CTRL_IMPL) >> 28);
+	printf("\tVER:\t0x%01X\n",  (ctrl_reg & MMU_CTRL_VER) >> 24);
+	printf("\tSC:\t0x%04X\n",   (ctrl_reg & MMU_CTRL_SC) >> 8);
+	printf("\tPSO:\t%d\n",      (ctrl_reg & MMU_CTRL_PSO) >> 7);
+	printf("\tNF:\t%d\n",       (ctrl_reg & MMU_CTRL_NF) >> 1);
+	printf("\tE:\t%d\n",         ctrl_reg & MMU_CTRL_E);
 	return 0;
 }
 
 static bool mmu_show_fault_status() {
-	unsigned int fault_reg = srmmu_get_mmureg(SRMMU_FAULT_STATUS);
+	unsigned int fault_reg = mmu_get_mmureg(LEON_CNR_F);
 	printf("FAULT STATUS:\t0x%08X\n", fault_reg);
-	printf("\tEBE:\t0x%02X\n", (fault_reg >> 10) & 0xFF);
-	printf("\tL:\t0x%01X\n",   (fault_reg >> 8) & 0x3);
-	printf("\tAT:\t0x%01X\n",  (fault_reg >> 5) & 0x7);
-	printf("\tFT:\t0x%01X\n",  (fault_reg >> 2) & 0x7);
-	printf("\tFAV:\t%d\n",     (fault_reg >> 1) & 0x1);
-	printf("\tOW:\t%d\n",       fault_reg & 0x1);
+	printf("\tEBE:\t0x%02X\n", (fault_reg & MMU_F_EBE) >> 10);
+	printf("\tL:\t0x%01X\n",   (fault_reg & MMU_F_L) >> 8);
+	printf("\tAT:\t0x%01X\n",  (fault_reg & MMU_F_AT) >> 5);
+	printf("\tFT:\t0x%01X\n",  (fault_reg & MMU_F_FT) >> 2);
+	printf("\tFAV:\t%d\n",     (fault_reg & MMU_F_FAV) >> 1);
+	printf("\tOW:\t%d\n",       fault_reg & MMU_F_OW);
 	return 0;
 }
 
@@ -48,10 +48,10 @@ static bool mmu_show_fault_status() {
 static bool mmu_show_reg() {
 	printf("Registers MMU:\n");
 	mmu_show_ctrl();
-	printf("CTXTBL PTR:\t0x%08X\n", srmmu_get_mmureg(SRMMU_CTXTBL_PTR));
-	printf("CTX REG:\t0x%08X\n", srmmu_get_mmureg(SRMMU_CTX_REG));
+	printf("CTXTBL PTR:\t0x%08X\n", mmu_get_mmureg(LEON_CNR_CTXP));
+	printf("CTX REG:\t0x%08X\n", mmu_get_mmureg(LEON_CNR_CTX));
 	mmu_show_fault_status();
-	printf("FAULT ADDR:\t0x%08X\n", srmmu_get_mmureg(SRMMU_FAULT_ADDR));
+	printf("FAULT ADDR:\t0x%08X\n", mmu_get_mmureg(LEON_CNR_CTX));
 	return 0;
 }
 
@@ -62,11 +62,11 @@ static bool mmu_probe() {
 //	pgd_t *g0 = (pgd_t *) &pg0;
 //	pmd_t *m0 = (pmd_t *) &pm0;
 //	pte_t *p0 = (pte_t *) &pt0;
-	unsigned long pteval;
-	unsigned long j,i, val;
+//	unsigned long pteval;
+//	unsigned long j,i, val;
 //	unsigned long paddr, vaddr, val;
 //	unsigned long *pthaddr = &pth_addr1;
-	functype func = mmu_func1;
+//	functype func = mmu_func1;
 	//int i = 0;
 	/* alloc mem for pages */
 	__asm__(
@@ -77,21 +77,21 @@ static bool mmu_probe() {
 		"page2: .skip %4\n\t"
 		".text\n"
 		: : "i" (PAGE_SIZE),
-		"i"(SRMMU_PGD_TABLE_SIZE) ,
-		"i"(SRMMU_PMD_TABLE_SIZE) ,
-		"i"(SRMMU_PTE_TABLE_SIZE) ,
+		"i"(MMU_PGD_TABLE_SIZE) ,
+		"i"(MMU_PMD_TABLE_SIZE) ,
+		"i"(MMU_PTE_TABLE_SIZE) ,
 		"i"((3)*PAGE_SIZE)
 	);
 
-	mmu_probe_init();
-	mmu_flush_cache_all ();
-	mmu_flush_tlb_all ();
+//	mmu_probe_init();
+//	mmu_flush_cache_all ();
+//	mmu_flush_tlb_all ();
 
 	/* one-on-one mapping for context 0 */
-	mmu_probe_map_region(0/*LDS_REGION_BASE_flash*/, 0/*LDS_REGION_BASE_flash*/, 0x1000000, MMU_PRIV);
-//	mmu_probe_map_region(0x20000000, 0x20000000, 0x1000000, MMU_PRIV);
-	mmu_probe_map_region(0x44000000/*LDS_REGION_BASE_sdram*/, 0x44000000/*LDS_REGION_BASE_sdram*/, 0x1000000, MMU_PRIV);
-	mmu_probe_map_region(0x80000000, 0x80000000, 0x1000000, MMU_PRIV);
+	mmu_map_region(0, 0, 0x1000000, MMU_PTE_PRIV);
+//	mmu_map_region(0x20000000, 0x20000000, 0x1000000, MMU_PRIV);
+	mmu_map_region(0x44000000, 0x44000000, 0x1000000, MMU_PTE_PRIV);
+	mmu_map_region(0x80000000, 0x80000000, 0x1000000, MMU_PTE_PRIV);
 #if 0
  /* testarea:
  *  map 0x40000000  at f0080000 [vaddr:(0) (240)(2)(-)] as pmd
@@ -139,7 +139,7 @@ static bool mmu_probe() {
 
 	/* close your eyes and pray ... */
 	printf("mmu start...\n");
-	mmu_probe_start();
+	mmu_on();
 #if 0
 	/* do tests*/
 //page translation tast page0 in 0xf0041000 addr 0x40000000 0xf0080000
@@ -229,7 +229,8 @@ static bool mmu_probe() {
 //	}
 #endif
 	printf ("ending mmu testing");
-	MMU_RETURN (true);
+	mmu_off();
+	return 0;
 }
 
 /**

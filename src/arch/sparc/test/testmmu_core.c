@@ -39,6 +39,7 @@ mmu_env_t *testmmu_env(void) {
 	(&env)->pt0 = &pt0;
 	(&env)->ctx = &ctx;
 	(&env)->fault_addr = 0;
+	(&env)->status = 0;
 	(&env)->inst_fault_cnt = (&env)->data_fault_cnt = 0;
 	return &env;
 }

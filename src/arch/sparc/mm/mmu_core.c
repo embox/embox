@@ -44,10 +44,11 @@ void mmu_restore_table(uint32_t *status) {
 
 void mmu_on(void) {
 	unsigned long val;
-	mmu_set_context(0);
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
 	val |= 0x1;
+	mmu_set_context(0);
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
+	mmu_flush_cache_all();
 }
 
 void mmu_off(void) {
@@ -104,7 +105,7 @@ void mmu_restore_env(mmu_env_t *env) {
 
 	mmu_set_ctable_ptr(env->ctx);
 	mmu_ctxd_set(env->ctx, env->pg0);
-//	mmu_flush_tlb_all();
+	mmu_flush_tlb_all();
 
 	/* restore MMU mode */
 	env->status ? mmu_on(): mmu_off();
@@ -130,9 +131,9 @@ void mmu_set_env(mmu_env_t *env) {
 	/* change cur_env pointer */
 	cur_env = env;
 
-	mmu_set_ctable_ptr(env->ctx);
+	mmu_set_ctable_ptr((unsigned long)env->ctx);
 	mmu_ctxd_set(env->ctx, env->pg0);
-//	mmu_flush_tlb_all();
+	mmu_flush_tlb_all();
 
 //	mmu_restore_table(env->pg0);
 //	mmu_restore_table(env->pm0);
@@ -140,24 +141,6 @@ void mmu_set_env(mmu_env_t *env) {
 
 	/* restore MMU mode */
 	env->status ? mmu_on() : mmu_off();
-}
-
-void mmu_flush_cache_all(void) {
-	__asm__ __volatile__("flush\n\t"
-		"sta %%g0, [%%g0] %0\n\t"
-		:
-		: "i" (0x11) /* magic number detected */
-		: "memory"
-	);
-}
-
-void mmu_flush_tlb_all(void) {
-	mmu_flush_cache_all();
-	__asm__ __volatile__("sta %%g0, [%0] %1\n\t"
-		:
-		: "r" (0x400), "i" (0x18) /* magic number detected */
-		: "memory"
-	);
 }
 
 /**
@@ -192,7 +175,6 @@ static int mmu_init(void) {
 	(&system_env)->ctx = &sys_ctx;
 
 	cur_env = &system_env;
-//	mmu_flush_cache_all();
 
 	return 0;
 }
