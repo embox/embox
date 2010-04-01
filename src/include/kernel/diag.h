@@ -15,4 +15,6 @@ extern char diag_getc(void);
 
 extern void diag_putc(char ch);
 
+extern int diag_has_symbol(void);
+
 #endif /* DIAG_H_ */

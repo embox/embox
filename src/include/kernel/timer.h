@@ -53,5 +53,7 @@ int timers_context_restore(int context_number);
  */
 void timers_off(void);
 
+uint32_t cnt_system_time(void);
+
 #endif /*__ASSEMBLER__*/
 #endif /*_TIMERS_H_*/

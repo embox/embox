@@ -41,6 +41,10 @@ static void set_sys_timer_disable (int num) {
 	sys_timers[num].f_enable = 0;
 }
 
+uint32_t cnt_system_time(void) {
+	return cnt_sys_time;
+}
+
 int set_timer (uint32_t id, uint32_t ticks, TIMER_FUNC handle) {
 	int i;
 	for (i = 0; i < array_len (sys_timers); i++) {

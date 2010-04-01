@@ -31,6 +31,10 @@ char diag_getc(void) {
 	return ((char) REG_LOAD((volatile uint32_t *) (APBUART_BASE + DATA_REG)));
 }
 
+int diag_has_symbol(void) {
+	return (0x1 & REG_LOAD((volatile uint32_t *) (APBUART_BASE + STATUS_REG)));
+}
+
 void diag_putc(char ch) {
 #if 0
 	volatile int i;
