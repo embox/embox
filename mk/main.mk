@@ -32,21 +32,7 @@ PATCH_CONF_DIR := $(ROOT_DIR)/conf/$(PATCH_NAME)
 
 BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 
-ifeq ($(BUILD_TYPE),patch)
-BUILD_DIR      := $(ROOT_DIR)/build/patch_$(PATCH_NAME)
-else
-ifeq ($(BUILD_TYPE),base)
-BUILD_DIR      := $(ROOT_DIR)/build/base
-else
-BUILD_DIR      := $(ROOT_DIR)/build
-endif
-endif
-
-ifdef SINGLE_TARGET
-# ? - m.b. it's a mistake=)
-BUILD_TYPE     := single_target
-BUILD_DIR      := $(ROOT_DIR)/build
-endif
+BUILD_DIR     := $(ROOT_DIR)/build/$(if $(PATCH_NAME),patch_$(PATCH_NAME),base)
 
 BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
@@ -63,6 +49,7 @@ PRINTF := printf
 
 TEMPLATES = $(notdir $(wildcard $(TEMPLATES_DIR)/*))
 
+include $(MK_DIR)/rules.mk
 include $(MK_DIR)/util.mk
 
 makegoals := $(MAKECMDGOALS)
@@ -70,40 +57,36 @@ ifeq ($(makegoals),)
 makegoals := all
 endif
 
-ifdef BUILD_TYPE
+# XXX Fix this shit. -- Eldar
+ifneq ($(or $(filter-out $(makegoals),all),$(BUILD_TARGET)),)
 # Need to include it prior to walking the source tree
 # (particularly because of ARCH definition).
 include $(MK_DIR)/configure.mk
-endif
-
 ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
 include $(MK_DIR)/image.mk
 include $(MK_DIR)/codegen-dot.mk
 endif
+endif
 
 __get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
-build_patch_targets := $(patsubst %,%.target,$(filter-out $(notdir $(BACKUP_DIR)), \
-  $(call __get_subdirs, $(CONF_DIR))))
-ifndef $(SINGLE_TARGET)
-build_targets = build_base_target $(build_patch_targets)
-else
-build_targets = $(SINGLE_TARGET)
-endif
-.PHONY: all build prepare docs dot clean config xconfig menuconfig
-.PHONY: $(build_patch_targets) build_base_target build_targets
+build_patch_targets := \
+  $(patsubst %,%.target, \
+    $(filter-out $(notdir $(BACKUP_DIR)),$(call __get_subdirs, $(CONF_DIR))) \
+  )
 
-all: build_base_target
-all: $(build_patch_targets)
+.PHONY: all build prepare docs dot clean config xconfig menuconfig
+.PHONY: $(build_patch_targets) build_base_target
+
+all: $(build_patch_targets) build_base_target
 	@echo 'Build complete'
 
-$(build_patch_targets):
-	$(MAKE) BUILD_TYPE=patch PATCH_NAME=$(basename $@) build
-
-build_base_target:
-	$(MAKE) BUILD_TYPE=base build
+$(build_patch_targets): export PATCH_NAME:=$(basename $@)
+$(build_patch_targets) build_base_target: export BUILD_TARGET=1
+$(build_patch_targets) build_base_target:
+	$(MAKE) --no-print-directory build
 
 build: check_config prepare start_script image
-	@echo '$(PATCH_NAME) build complete'
+	@echo '$(or $(PATCH_NAME),Base) build complete'
 
 prepare:
 	@mkdir -p $(BUILD_DIR)

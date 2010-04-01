@@ -3,7 +3,6 @@
 #
 
 include $(MK_DIR)/util.mk
-include $(MK_DIR)/rules.mk
 
 IMAGE      = $(BIN_DIR)/$(TARGET)
 IMAGE_DIS  = $(BIN_DIR)/$(TARGET).dis
