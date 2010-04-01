@@ -23,7 +23,7 @@ AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
 
 .PHONY: check_config check_conf_dir start_script
-check_config: start_script check_conf_dir $(CONF_FILES)
+check_config: check_conf_dir $(CONF_FILES)
 ifndef ARCH
 	@echo 'Error: ARCH undefined'
 	exit 1
@@ -41,7 +41,7 @@ $(mods_mk)      : DEFS := __MODS_MK__
 $(config_h)     : DEFS := __CONFIG_H__
 $(config_lds_h) : DEFS := __CONFIG_LDS_H__
 
-start_script:
+start_script: prepare
 	$(if $(filter %shell,$(MODS_ENABLE)),\
 		$(if $(wildcard $(PATCH_CONF_DIR)/start_script.inc),\
 			cp -f -t $(AUTOCONF_DIR) $(PATCH_CONF_DIR)/start_script.inc;,\

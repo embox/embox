@@ -102,7 +102,7 @@ $(build_patch_targets):
 build_base_target:
 	$(MAKE) BUILD_TYPE=base build
 
-build: check_config prepare image
+build: check_config prepare start_script image
 	@echo '$(PATCH_NAME) build complete'
 
 prepare:
