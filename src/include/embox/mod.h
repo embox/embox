@@ -154,6 +154,7 @@
 /**
  * Associates data and operations with the mod specified by @c s_mod argument.
  *
+ * @param s_mod symbol name of the module
  * @param mod_data pointer to the module specific data (if any)
  * @param mod_ops pointer to the #mod_ops structure (if any)
  */
@@ -164,6 +165,7 @@
  * Does the same as #MOD_API_DEF() and also tags the current mod with the
  * specified tag.
  *
+ * @param s_mod symbol name of the module
  * @param mod_data pointer to the module specific data (if any)
  * @param mod_ops pointer to the #mod_ops structure (if any)
  * @param s_tag symbol name of the tag defined with #MOD_TAG_DEF() macro

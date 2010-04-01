@@ -5,7 +5,7 @@
  * software. Test can be either passed or failed (framework uses return value
  * of test function to determine the test result).
  * Each test resides in a single mod which is usually defined in
- * @code embox.test @code or @code <platform>.test @code packages.
+ * @code embox.test @endcode or @code <platform>.test @endcode packages.
  *
  * @sa EMBOX_TEST() simple macro used to declare a new test
  *

@@ -26,7 +26,7 @@
 #endif /* NDEBUG */
 
 /**
- * If expression evaluates to @c 0 (@c false), then @link panic() @endlink
+ * If expression evaluates to @c 0 (@c false), then @link #panic() @endlink
  * function is called with the message containing the expression, sourcecode
  * filename, and line number as its argument.
  * If the identifier NDEBUG ("no debug") is defined with

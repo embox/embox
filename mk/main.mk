@@ -85,7 +85,7 @@ $(build_patch_targets) build_base_target: export BUILD_TARGET=1
 $(build_patch_targets) build_base_target:
 	$(MAKE) --no-print-directory build
 
-build: check_config prepare start_script image
+build: check_config prepare image
 	@echo '$(or $(PATCH_NAME),Base) build complete'
 
 prepare:
