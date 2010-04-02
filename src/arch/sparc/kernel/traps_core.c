@@ -8,11 +8,10 @@
  * @author Alexander Batyukov
  */
 
-#include <asm/traps_core.h>
 #include <string.h>
 #include <hal/ipl.h>
 #include <asm/tbr.h>
-#include <hal/traps_core.h>
+#include <hal/env/traps_core.h>
 
 
 void traps_enable(void) {

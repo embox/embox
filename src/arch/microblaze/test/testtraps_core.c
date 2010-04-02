@@ -6,7 +6,7 @@
  */
 
 #include <types.h>
-#include <hal/traps_core.h>
+#include <hal/env/traps_core.h>
 #include <test/testtraps_core.h>
 
 static traps_env_t test_env[1];

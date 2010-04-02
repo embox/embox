@@ -10,6 +10,6 @@
 #define SPARC_TESTTRAPS_H_
 
 #include <types.h>
-#include <hal/traps_core.h>
+#include <hal/env/traps_core.h>
 
 #endif /* SPARC_TESTTRAPS_H_ */

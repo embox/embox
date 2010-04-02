@@ -5,7 +5,6 @@
  * @author Alexander Batyukov
  */
 
-#include <asm/traps_core.h>
 #include <test/testtraps_core.h>
 #include <stdio.h>
 

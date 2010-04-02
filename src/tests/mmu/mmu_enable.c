@@ -15,7 +15,6 @@
 #include <types.h>
 
 #include <embox/test.h>
-#include <hal/traps_core.h>
 #include <hal/mm/mmu_core.h>
 #include <test/testmmu_core.h>
 

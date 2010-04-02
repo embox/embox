@@ -5,7 +5,6 @@
  * @author Anton Bondarev
  */
 #include <types.h>
-#include <hal/traps_core.h>
 #include <test/testtraps_core.h>
 
 trap_handler_t sotftrap_handler[MAX_SOFTTRAP_NUMBER];

@@ -10,7 +10,7 @@
 #include <types.h>
 #include <embox/kernel.h>
 #include <asm/msr.h>
-#include <hal/traps_core.h>
+#include <hal/env/traps_core.h>
 #include <string.h>
 
 static traps_env_t *old_env;

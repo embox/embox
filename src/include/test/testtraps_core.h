@@ -11,7 +11,7 @@
 #define TESTTRAPS_H_
 
 #include <types.h>
-#include <hal/traps_core.h>
+#include <hal/env/traps_core.h>
 #include <asm/test/testtraps_core.h>
 
 /**
@@ -39,3 +39,4 @@ extern int testtraps_fire_softtrap(uint32_t number, void *data);
 extern traps_env_t *testtraps_env(void);
 
 #endif /* TESTTRAPS_H_ */
+
