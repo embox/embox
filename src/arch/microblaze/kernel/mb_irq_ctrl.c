@@ -53,24 +53,8 @@ void interrupt_enable(interrupt_nr_t irq_num){
 void interrupt_disable(interrupt_nr_t irq_num){
 	clear_bit(irqc->ier, irq_num);
 }
-#if 0
-int irqc_get_status(interrupt_nr_t irq_num){
-	return get_bit(irqc->ier, irq_num);
-}
 
-void irqc_set_mask(__interrupt_mask_t mask){
-	irqc->ier = mask;
-}
 
-__interrupt_mask_t irqc_get_mask(void){
-	return irqc->ier;
-}
-
-int irqc_disable_all(void){
-	irqc->mer &= ~MER_ME;
-	return 0;
-}
-#endif
 
 //TODO this not set in microblaze
 void interrupt_force(interrupt_nr_t irq_num){
@@ -81,6 +65,30 @@ void interrupt_clear(interrupt_nr_t irq_num){
 	set_bit(irqc->iar,irq_num);
 }
 
+/*
+ * Microblaze specific functions:
+ */
+
 __interrupt_mask_t irqc_get_isr_reg(void) {
 	return irqc->isr;
 }
+
+void irqc_set_mask(__interrupt_mask_t mask){
+	irqc->ier = mask;
+}
+
+__interrupt_mask_t irqc_get_mask(void){
+	return irqc->ier;
+}
+
+/* Following functions never be used */
+#if 0
+int irqc_get_status(interrupt_nr_t irq_num){
+	return get_bit(irqc->ier, irq_num);
+}
+
+int irqc_disable_all(void){
+	irqc->mer &= ~MER_ME;
+	return 0;
+}
+#endif

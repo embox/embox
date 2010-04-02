@@ -3,18 +3,18 @@
 #endif /* HAL_IPL_H_ */
 
 #include <asm/msr.h>
+#include <hal/interrupt.h>
 
 typedef unsigned int __ipl_t;
 
 inline static void ipl_init(void) {
-
+	irqc_set_mask(~(__interrupt_mask_t)0);
 }
 
 inline static unsigned int ipl_save(void) {
-	msr_clr_bit(1);
-	return 0;
+	return irqc_get_mask();
 }
 
 inline static void ipl_restore(unsigned int ipl) {
-	msr_set_bit(1);
+	irqc_set_mask(ipl);
 }

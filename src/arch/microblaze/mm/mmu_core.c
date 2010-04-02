@@ -184,7 +184,7 @@ void mmu_restore_env(mmu_env_t *env) {
 }
 
 void mmu_save_env(mmu_env_t *env) {
-	//	unsigned int ipl = ipl_save();
+		unsigned int ipl = ipl_save();
 
 	mmu_save_status(&(cur_env->status));
 
@@ -196,7 +196,7 @@ void mmu_save_env(mmu_env_t *env) {
 	/* flush utlb records */
 	mmu_save_table(env->utlb_table);
 
-	//	ipl_restore(ipl);
+		ipl_restore(ipl);
 }
 
 void mmu_set_env(mmu_env_t *env) {
