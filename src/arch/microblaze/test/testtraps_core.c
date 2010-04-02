@@ -6,7 +6,7 @@
  */
 
 #include <types.h>
-#include <hal/env/traps_core.h>
+
 #include <test/testtraps_core.h>
 
 static traps_env_t test_env[1];
@@ -40,7 +40,7 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 			"nop;\n\t"
 			"nop;\n\t");
 #endif
-
+#if 0
 	__asm__ __volatile__ (
 			"add  r5, %0;\n\t"
 			"add  r12, %0;\n\t"
@@ -50,7 +50,11 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 			:
 			:"r" (number), "r"(data)
 			);
-
+#endif
+	__asm__ __volatile__ (
+			"brki  r16, 0x8;\n\t"
+			"nop;\n\t"
+			"nop;\n\t");
 	return 0;
 }
 
