@@ -60,8 +60,7 @@ void mmu_off(void) {
 
 int mmu_map_region(uint32_t phy_addr, uint32_t virt_addr,
 		size_t reg_size, uint32_t flags) {
-	phy_addr += 0x44000000; /* ram */
-	virt_addr += 0x44000000; /* ram */
+	flags = flags << 2;
 	pgd_t *g0 = (pgd_t *) cur_env->pg0;
 	pmd_t *m0 = (pmd_t *) cur_env->pm0;
 	pte_t *p0 = (pte_t *) cur_env->pt0;
