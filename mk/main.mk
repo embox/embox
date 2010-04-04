@@ -58,15 +58,20 @@ makegoals := all
 endif
 
 # XXX Fix this shit. -- Eldar
+
+# 'clean' and 'config' are handled in-place.
+ifneq ($(filter-out %clean %config,$(makegoals)),)
+# Root 'make all' does not need other makefiles too.
 ifneq ($(or $(filter-out $(makegoals),all),$(BUILD_TARGET)),)
 # Need to include it prior to walking the source tree
-# (particularly because of ARCH definition).
 include $(MK_DIR)/configure.mk
+# Skip image.mk if configs has not been remade yet
 ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
 include $(MK_DIR)/image.mk
 include $(MK_DIR)/codegen-dot.mk
-endif
-endif
+endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
+endif # $(or $(filter-out $(makegoals),all),$(BUILD_TARGET))
+endif # $(filter-out %clean %config,$(makegoals))
 
 __get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
 build_patch_targets := \
