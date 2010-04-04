@@ -3,6 +3,6 @@
 # may be this is not the best solution, but just for now... -- Eldar
 $_SUBDIRS :=
 
-$_LIBS += libc
+$_LIBS += libc.a
 
-$_SRCS-libc += */*.c
+$_SRCS-libc.a += */*.c

@@ -1,6 +1,6 @@
 
-$_MODS_CORE += framework
+$_LIBS += libframework.a
 
-$_SRCS-framework += *.c
+$_SRCS-libframework.a += *.c
 
-$_CPPFLAGS-framework += -D__FRAMEWORK__
+$_CPPFLAGS-libframework.a += -D__FRAMEWORK__

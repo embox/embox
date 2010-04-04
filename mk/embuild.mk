@@ -106,19 +106,23 @@ canonize_name = \
 
 # Get list of all modules and libraries.
 unit_def = \
-  $(foreach unit,$(call canonize_name,$1), \
+  $(foreach unit,$1, \
     $(unit) $(eval UNIT_DEFINED-$(unit) := $(dir)) \
   )
 
-unit_collect = $(sort $(foreach dir,$(DIRS),$(call unit_def,$($_$1))))
+mod_collect = \
+  $(sort $(foreach dir,$(DIRS),$(call unit_def,$(call canonize_name,$($_$1)))))
 
 # Mods that are always included to the resulting image
 # (with their dependencies satisfied, of course).
-__MODS_CORE = $(info Listing essentials) $(call unit_collect,MODS_CORE)
+__MODS_CORE = $(info Listing essentials) $(call mod_collect,MODS_CORE)
 # Regular mods.
-__MODS           = $(info Listing mods) $(call unit_collect,MODS)
+__MODS           = $(info Listing mods) $(call mod_collect,MODS)
+
+lib_collect = $(sort $(foreach dir,$(DIRS),$(call unit_def,$($_$1))))
+
 # Libraries.
-__LIBS           = $(info Listing libs) $(call unit_collect,LIBS)
+__LIBS           = $(info Listing libs) $(call lib_collect,LIBS)
 
 # Common units handling: source assignments and flags.
 
@@ -194,7 +198,6 @@ __UNITS_PROCESS = $(info Processing all units) \
   )
 
 # Here goes mods specific functions (dependencies and so on).
-#$(info Mods processing)
 unit = $(mod)
 
 # The sub-graph of all module dependencies (either direct or indirect).

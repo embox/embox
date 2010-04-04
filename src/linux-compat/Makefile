@@ -1,2 +1,2 @@
 
-$_SUBDIRS :=
+$_SUBDIRS := $(filter-out include,$($_SUBDIRS))

@@ -68,12 +68,12 @@ override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
 
-LDLIBS = -L$(LIB_DIR) $(LIBS:%=-l.%)
+LDLIBS = -L$(LIB_DIR) $(LIBS:lib%.a=-l%)
 
 LDSCRIPT = $(OBJ_DIR)/$(TARGET).lds
 
 SRC_TO_OBJ = $(patsubst $(ROOT_DIR)%,$(OBJ_DIR)%.o,$(basename $1))
-LIB_FILE   = $(1:%=$(LIB_DIR)/lib.%.a)
+LIB_FILE   = $(1:%=$(LIB_DIR)/%)
 
 # It's time to scan subdirs and prepare mods info.
 include $(MK_DIR)/embuild.mk

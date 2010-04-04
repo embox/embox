@@ -113,13 +113,7 @@ distclean: _distclean
 	@echo 'Distclean complete'
 
 _clean:
-	@$(RM) -rv $(BUILD_DIR)
-#	@$(RM) -r $(BIN_DIR) $(OBJ_DIR) $(DOCS_DIR) $(AUTOCONF_DIR)
-#	@$(RM) $(OBJS_ALL)
-#	@$(RM) $(OBJS_ALL:.o=.d)
-#	@$(RM) .config.old
-#	@$(SCRIPTS_DIR)/ConfigBuilder/Misc/checksum.py \
-#		-o $(OD_TOOL) -d $(BIN_DIR) -t $(TARGET) --build=$(BUILD) --clean
+	@$(RM) -rv $(ROOT_DIR)/build
 
 _distclean: _clean
 	@$(RM) -rv $(BACKUP_DIR)
