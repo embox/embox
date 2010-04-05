@@ -10,7 +10,7 @@
 
 #include <types.h>
 #include <hal/mm/mmu_core.h>
-#include <asm/test/testmmu_core.h>
+#include <asm/hal/test/testmmu_core.h>
 
 /**
  * Initializes testing mmu environment.

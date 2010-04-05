@@ -5,8 +5,7 @@
  * @author Alexander Batyukov
  */
 
-#include <test/testtraps_core.h>
-#include <stdio.h>
+#include <hal/test/testtraps_core.h>
 
 trap_handler_t test_handler[CONFIG_MAX_SOFTTRAP_NUMBER];
 

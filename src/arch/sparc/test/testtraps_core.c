@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <test/testtraps_core.h>
+#include <hal/test/testtraps_core.h>
 #include <asm/head.h>
 
 

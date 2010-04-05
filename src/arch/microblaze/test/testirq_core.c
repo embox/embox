@@ -6,7 +6,7 @@
  */
 
 #include <types.h>
-#include <asm/test/testirq_core.h>
+#include <hal/test/testirq_core.h>
 
 void testirq_save_status(uint32_t *status) {
 

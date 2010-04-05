@@ -12,7 +12,7 @@
 
 #include <types.h>
 #include <hal/env/traps_core.h>
-#include <asm/test/testtraps_core.h>
+#include <asm/hal/test/testtraps_core.h>
 
 /**
  * Set specified handler for trap

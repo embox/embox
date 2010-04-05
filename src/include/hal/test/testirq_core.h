@@ -8,7 +8,7 @@
 #ifndef TESTIRQ_CORE_H_
 #define TESTIRQ_CORE_H_
 
-#include <asm/test/testirq_core.h>
+#include <asm/hal/test/testirq_core.h>
 
 extern void testirq_save_status(uint32_t *status);
 
