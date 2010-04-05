@@ -121,6 +121,10 @@ int usleep(useconds_t usec) {
 	return 0;
 }
 
+unsigned int sleep(unsigned int seconds) {
+	return usleep(seconds*1000);
+}
+
 #if 0
 /*TODO now save only one timer context*/
 #define MAX_SAVE_CONTEXT	  2
