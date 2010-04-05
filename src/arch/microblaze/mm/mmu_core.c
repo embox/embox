@@ -13,6 +13,7 @@
 #include <asm/msr.h>
 #include <hal/mm/mmu_core.h>
 #include <embox/unit.h>
+#include <hal/ipl.h>
 
 /* buffer for utlb records */
 static __mmu_table_t system_utlb;
