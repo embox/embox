@@ -9,10 +9,10 @@ MEMORY {
 	MEMORY_REGION(sdram)
 	MEMORY_REGION(flash)
 }
-
+/*
 _stack = _bend + 0x200000;
 __stack = _stack;
-__checksum = 0x00000000;
+__checksum = 0x00000000;*/
 _data_image_start = _data_lma;
 
 _text_start = _text_vma;
@@ -56,4 +56,15 @@ SECTIONS {
 		_bend = .;
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
+
+	.stack (NOLOAD): {
+		ALIGNMENT();
+		_stack_bottom = .;
+		. += STACK_SIZE;
+		ALIGNMENT();
+		_stack_top = .;
+		_stack = _stack_top;
+		__stack = _stack;
+	} SECTION_REGION(stack)
+	SECTION_SYMBOLS(stack)
 }
