@@ -131,7 +131,7 @@ static void udp_lib_close(struct sock *sk, long timeout) {
 	sk_common_release(sk);
 }
 
-net_protocol_t udp_protocol = {
+static const net_protocol_t udp_protocol = {
 	.handler = udp_rcv,
 	.type = IPPROTO_UDP
 };

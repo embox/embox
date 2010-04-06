@@ -62,7 +62,7 @@ typedef enum {
  * overrides this enum for binary compat reasons.
  */
 enum sock_type {
-//	SOCK_STREAM	= 1,
+	SOCK_STREAM	= 1,
 	SOCK_DGRAM	= 2,
 	SOCK_RAW	= 3,
 //	SOCK_RDM	= 4,

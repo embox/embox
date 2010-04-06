@@ -16,7 +16,7 @@
 enum {
 	IPPROTO_IP   = 0,     /* Dummy protocol for TCP            */
 	IPPROTO_ICMP = 1,     /* Internet Control Message Protocol */
-//	IPPROTO_TCP  = 6,     /* Transmission Control Protocol     */
+	IPPROTO_TCP  = 6,     /* Transmission Control Protocol     */
 	IPPROTO_UDP  = 17,    /* User Datagram Protocol            */
 	/* A protocol of IPPROTO_RAW is able to send any IP protocol
 	 * that is specified in the passed header. Receiving of all
