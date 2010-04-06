@@ -4,126 +4,193 @@
  *
  * @date 20.03.2009
  * @author Anton Bondarev
+ * @author Nikolay Korotky
+ * 			- implement ping through raw socket.
+ * 			- major refactoring
  */
 #include <shell_command.h>
 #include <net/icmp.h>
+#include <net/ip.h>
 #include <net/inetdevice.h>
+#include <net/checksum.h>
 #include <netutils.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define COMMAND_NAME     "ping"
 #define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
-#define HELP_MSG         "Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl] \n\
-		[-i interval] [-p pattern] [-s packetsize] host"
+#define HELP_MSG         "Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl]\n\
+		[-i interval] [-p pattern] [-s packetsize] destination"
 
 static const char *man_page =
 	#include "ping_help.inc"
-	;
+;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-static int has_responsed;
-
-static void callback(struct sk_buff *pack) {
-	has_responsed = true;
-}
-
-static int ping(in_device_t *ifdev, struct in_addr dst, int cnt, int timeout, int ttl,
-		int quiet, unsigned packsize, int interval, unsigned short pattern) {
-	char *dst_b = inet_ntoa(dst);
-	int cnt_resp = 0, cnt_err = 0, i;
+typedef struct ping_info {
+	/* Stop after sending count ECHO_REQUEST packets. */
+	int count;
+	/* The number of data bytes to be sent. */
+	int padding_size;
+	/* Time  to wait for a response, in seconds. */
+	int timeout;
+	/* Wait  interval seconds between sending each packet. */
+	int interval;
+	/* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
+	int pattern;
+	/* IP Time to Live. */
+	int ttl;
+	/* Source address to specified interface address. */
 	struct in_addr from;
-	char *from_b;
-	printf("PING %s %d bytes of data.\n", dst_b, packsize);
+	/* Destination host */
+	struct in_addr dst;
+} ping_info_t;
 
-	if (0 == cnt) {
-		return 0;
+/* boundary and default */
+enum {
+	DEF_COUNT = 4,
+	DEF_PADLEN = 56,
+	DEF_TIMEOUT = 1,
+	DEF_INTERVAL = 1,
+	DEF_PATTERN = 0xFF,
+	DEF_TTL = 59,
+	MAX_PADLEN = 65507,
+	MAX_TIMEOUT = 2148,
+};
+
+static int ping(ping_info_t *pinfo) {
+	int cnt_resp = 0, cnt_err = 0, sk;
+	size_t i;
+	iphdr_t *iph;
+	icmphdr_t *icmph;
+	char *from_addr_str, *dst_addr_str;
+	char packet[IP_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
+	char rcv_buff[IP_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
+	dst_addr_str = inet_ntoa(pinfo->dst);
+	from_addr_str = inet_ntoa(pinfo->from);
+	printf("PING %s %d bytes of data.\n", dst_addr_str, pinfo->padding_size);
+
+	if((sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
+		LOG_ERROR("socket error\n");
+		return -1;
 	}
+	iph = (iphdr_t *)packet;
+	icmph = (icmphdr_t *) (packet + IP_HEADER_SIZE);
+	memset(packet, 0, IP_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
+	memset(icmph, pinfo->pattern, pinfo->padding_size);
+	iph->version = 4;
+	iph->ihl = IP_HEADER_SIZE >> 2;
+	iph->tos = 0;
+	iph->frag_off = IP_DF;
+	iph->saddr = pinfo->from.s_addr;
+	iph->daddr = pinfo->dst.s_addr;
+	iph->tot_len = IP_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size;
+	iph->ttl = pinfo->ttl;
+	iph->proto = IPPROTO_ICMP;
+	icmph->type = ICMP_ECHO;
+	icmph->code = 0;
+	icmph->un.echo.id = /*TID*/0;
 
-	from.s_addr = inet_dev_get_ipaddr(ifdev);
-	from_b = inet_ntoa(from);
+	for(i = 0; i < pinfo->count; i++) {
+		icmph->un.echo.sequence++;
+		icmph->checksum = 0;
+		icmph->checksum = ptclbsum(packet + IP_HEADER_SIZE,
+						ICMP_HEADER_SIZE + pinfo->padding_size);
 
-	for(i = 1; i <= cnt; i++) {
-		has_responsed = false;
-		if(!quiet) printf("%d bytes from %s", packsize, from_b);
+		sendto(sk, packet, iph->tot_len, 0, (struct sockaddr *)&pinfo->dst, 0);
+		sleep(pinfo->timeout);
 
-		if(!quiet) printf(" to %s:", dst_b);
-		icmp_send_echo_request(ifdev, dst.s_addr, ttl, callback,
-						packsize, pattern, i);
-		usleep(timeout);
-		if (false == has_responsed) {
-			if(!quiet) printf(" Destination Host Unreachable\n");
-			icmp_abort_echo_request(ifdev);
-			cnt_err++;
-		} else {
-			if(!quiet) printf(" icmp_seq=%d ttl=%d time=%d ms\n",
-						i, ttl, /*TODO*/0);
+		/* we don't need to get pad data, only header */
+		if(recvfrom(sk, rcv_buff, IP_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
+				(struct sockaddr *)&pinfo->from, NULL) > 0) {
+			printf("%d bytes from %s to %s: icmp_seq=%d ttl=%d time=%d ms\n",
+					pinfo->padding_size, from_addr_str, dst_addr_str, i + 1, pinfo->ttl, 0);
 			cnt_resp++;
+		} else {
+			printf("Destination Host Unreachable\n");
+			cnt_err++;
 		}
-		usleep(interval);
+		sleep(pinfo->interval);
 	}
-	printf("--- %s ping statistics ---\n", inet_ntoa(dst));
+	printf("--- %s ping statistics ---\n", dst_addr_str);
 	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
-		cnt_resp+cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp), 0);
+		cnt_resp + cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp), 0);
 
-	icmp_abort_echo_request(ifdev);
-	free(dst_b);
-	free(from_b);
+	free(dst_addr_str);
+	free(from_addr_str);
+	close(sk);
 	return 0;
 }
 
-static int exec(int argsc, char **argsv) {
-	int cnt     = 4;
-	int packsize = 0x38;
-	int timeout = 1;
-	int interval = 0;
-	int pattern = 0xff;
-	int ttl     = 64;
-	int quiet   = 0;
-	in_device_t *ifdev = inet_dev_find_by_name("eth0");
-	struct in_addr dst;
+static int exec(int argc, char **argv) {
+	ping_info_t pinfo;
+	in_device_t *in_dev = inet_dev_find_by_name("eth0");
+	pinfo.count = DEF_COUNT;
+	pinfo.interval = DEF_INTERVAL;
+	pinfo.padding_size = DEF_PADLEN;
+	pinfo.pattern = DEF_PATTERN;
+	pinfo.timeout = DEF_TIMEOUT;
+	pinfo.ttl = DEF_TTL;
 	int nextOption;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "qI:c:t:W:s:i:p:h");
+		nextOption = getopt(argc, argv, "I:c:t:W:s:i:p:h");
 		switch(nextOption) {
 		case 'h':
 			show_help();
 			return 0;
-		case 'q':
-				quiet = 1;
-				break;
-		case 'I': /* get interface */
-			if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
-				TRACE("ping: unknown iface %s\n", optarg);
+		case 'I':
+			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
+				printf("ping: unknown iface %s\n", optarg);
 				return -1;
 			}
 			break;
-		case 'c': /*get ping cnt */
-				if (1 != sscanf(optarg, "%d", &cnt)) {
-					TRACE("ping: bad number of packets to transmit.\n");
-					return -1;
-				}
-				break;
-			case 't': /* get icmp ttl */
-				if (1 != sscanf(optarg, "%d", &ttl)) {
-					TRACE("ping: can't set unicast time-to-live: Invalid argument\n");
-					return -1;
-				}
-				break;
-			case 'W': /* get ping timeout */
-				sscanf(optarg, "%d", &timeout);
-				break;
-			case 's': /* get packet size */
-				sscanf(optarg, "%d", &packsize);
-				break;
-			case 'i': /* get interval */
-				sscanf(optarg, "%d", &interval);
-				break;
-			case 'p': /* get pattern */
-				sscanf(optarg, "%d", &pattern);
-				break;
+		case 'c':
+			if (1 != sscanf(optarg, "%d", &pinfo.count) || pinfo.count < 1) {
+				printf("ping: bad number of packets to transmit.\n");
+				return -1;
+			}
+			break;
+		case 't':
+			if (1 != sscanf(optarg, "%d", &pinfo.ttl)) {
+				printf("ping: can't set unicast time-to-live: Invalid argument\n");
+				return -1;
+			}
+			break;
+		case 'W':
+			if (1 != sscanf(optarg, "%d", &pinfo.timeout)) {
+				pinfo.timeout = 1;
+			}
+			if(pinfo.timeout > MAX_TIMEOUT || pinfo.timeout < 0) {
+				printf("ping: bad linger time.\n");
+				return -1;
+			}
+			break;
+		case 's':
+			if (1 != sscanf(optarg, "%d", &pinfo.padding_size)) {
+				pinfo.padding_size = 0;
+			}
+			if(pinfo.padding_size > MAX_PADLEN) {
+				printf("packet size is too large. Maximum is 65507\n");
+			} else if(pinfo.padding_size < 0) {
+				printf("illegal negative packet size\n");
+			}
+			break;
+		case 'i':
+			if (1 != sscanf(optarg, "%d", &pinfo.interval) ||
+					pinfo.interval < 0) {
+				printf("ping: bad timing interval.\n");
+				return -1;
+			}
+			break;
+		case 'p':
+			if (1 != sscanf(optarg, "%d", &pinfo.pattern)) {
+				printf("ping: patterns must be specified as hex digits.\n");
+				return -1;
+			}
+			break;
 		case -1:
 			break;
 		default:
@@ -131,19 +198,19 @@ static int exec(int argsc, char **argsv) {
 		}
 	} while(-1 != nextOption);
 
-	if (argsc == 1) {
+	if (argc == 1) {
 		show_help();
 		return 0;
 	}
 
-	/* get destanation addr */
-	if (0 == inet_aton(argsv[argsc - 1], &dst)) {
-		LOG_ERROR("wrong ip addr format (%s)\n", argsv[argsc - 1]);
+	/* get destination addr */
+	if (0 == inet_aton(argv[argc - 1], &pinfo.dst)) {
+		printf("wrong ip addr format (%s)\n", argv[argc - 1]);
 		show_help();
 		return -1;
 	}
-	/*carry out command*/
-	ping(ifdev, dst, cnt, timeout*1000, ttl, quiet, packsize,
-							interval*1000, (__u16)pattern);
+	pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);
+	/* carry out command */
+	ping(&pinfo);
 	return 0;
 }

@@ -91,9 +91,4 @@ extern int icmp_rcv(sk_buff_t *pack);
  */
 extern void icmp_send(sk_buff_t *pack, int type, int code, uint32_t info);
 
-extern int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
-		ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq);
-
-extern int icmp_abort_echo_request(void *in_dev);
-
 #endif /* ICMP_H_ */

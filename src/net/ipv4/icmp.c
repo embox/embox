@@ -5,6 +5,9 @@
  *
  * @date 14.03.2009
  * @author Alexander Batyukov
+ * @author Nikolay Korotky
+ * 			- remove callback interface
+ * 			- major refactoring
  */
 
 #include <string.h>
@@ -33,79 +36,6 @@ struct icmp_bxm {
 	unsigned char  optbuf[40];
 };
 
-#define CB_INFO_SIZE        0x10
-
-typedef struct _ICMP_CALLBACK_INFO {
-	ICMP_CALLBACK      cb;
-	void               *ifdev;
-	unsigned short     ip_id;
-	unsigned char      type;
-} ICMP_CALLBACK_INFO;
-
-ICMP_CALLBACK_INFO cb_info[CB_INFO_SIZE];
-
-static int callback_alloc(ICMP_CALLBACK cb, void *in_dev, unsigned short ip_id,
-		unsigned char type) {
-	size_t i;
-	if (NULL == cb || NULL == in_dev)
-		return -1;
-	for (i = 0; i < array_len(cb_info); i++) {
-		if (NULL == cb_info[i].cb) {
-			cb_info[i].cb    = cb;
-			cb_info[i].ifdev = in_dev;
-			cb_info[i].ip_id = ip_id;
-			cb_info[i].type  = type;
-			return i;
-		}
-	}
-	return -1;
-}
-
-static int interface_abort(void *in_dev) {
-	size_t i;
-	if (NULL == in_dev)
-		return -1;
-	for (i = 0; i < array_len(cb_info); i++) {
-		if (cb_info[i].ifdev == in_dev) {
-			cb_info[i].cb    = 0;
-			cb_info[i].ifdev = 0;
-			cb_info[i].ip_id = 0;
-			cb_info[i].type  = 0;
-			return i;
-		}
-	}
-	return -1;
-}
-
-static int callback_free(ICMP_CALLBACK cb, void *in_dev, unsigned short ip_id,
-		unsigned char type) {
-	size_t i;
-	if (NULL == cb) {
-		return -1;
-	}
-	for (i = 0; i < array_len(cb_info); i++) {
-		if (cb_info[i].cb == cb && in_dev == cb_info[i].ifdev) {
-			cb_info[i].cb    = 0;
-			cb_info[i].ifdev = 0;
-			cb_info[i].ip_id = 0;
-			cb_info[i].type  = 0;
-			return i;
-		}
-	}
-	return -1;
-}
-
-static ICMP_CALLBACK callback_find(void *in_dev, unsigned short ip_id,
-		unsigned char type) {
-	size_t i;
-	for (i = 0; i < array_len(cb_info); i++) {
-		if (in_dev == cb_info[i].ifdev && type == cb_info[i].type) {
-			return cb_info[i].cb;
-		}
-	}
-	return NULL;
-}
-
 /*
  * ICMP control array. This specifies what to do with each ICMP.
  */
@@ -116,10 +46,7 @@ struct icmp_control {
 
 static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1];
 
-int icmp_abort_echo_request(void *in_dev) {
-	return interface_abort(in_dev);
-}
-
+#if 0
 /**
  * Fill ICMP header
  */
@@ -146,25 +73,12 @@ static inline void build_icmp_packet(sk_buff_t *pack, unsigned char type,
 	memset(pack->nh.raw, 0, IP_HEADER_SIZE);
 	rebuild_ip_header(pack, ttl, ICMP_PROTO_TYPE, 0, pack->len - ETH_HEADER_SIZE, srcaddr, dstaddr);
 }
-
-/**
- * implementation handlers for received msgs
- */
-static void icmp_get_echo_reply(sk_buff_t *pack) {
-	//TODO now ICMP reply haven't to work with callbacks it works through sockets
-	ICMP_CALLBACK cb;
-	if (NULL == (cb = callback_find(in_dev_get(pack->dev), pack->nh.iph->id,
-			ICMP_ECHOREPLY)))
-		return;
-	cb(pack);
-	//unregister
-	callback_free(cb, in_dev_get(pack->dev), pack->nh.iph->id, ICMP_ECHOREPLY);
-}
-
+#endif
 /**
  * Handle ICMP_DEST_UNREACH.
  */
 static void icmp_unreach(sk_buff_t *pack) {
+	//TODO:
 	iphdr_t *iph;
 	icmphdr_t *icmph;
 	icmph = pack->h.icmph;
@@ -186,6 +100,9 @@ static void icmp_unreach(sk_buff_t *pack) {
 		if (icmph->code > NR_ICMP_UNREACH)
 			return;
 	}
+}
+
+static void icmp_discard(sk_buff_t *skb) {
 }
 
 /*
@@ -226,31 +143,6 @@ static void icmp_echo(sk_buff_t *pack) {
 	icmp_param.head_len        = sizeof(icmphdr_t);
 	icmp_reply(&icmp_param, pack);
 }
-#if 0
-static void icmp_discard(sk_buff_t *skb) {
-}
-#endif
-int icmp_send_echo_request(void *in_dev, in_addr_t dstaddr, int ttl,
-		ICMP_CALLBACK callback, unsigned size, __u16 pattern, unsigned seq) {
-	sk_buff_t *pack = alloc_skb(ETH_HEADER_SIZE + IP_HEADER_SIZE +
-						ICMP_HEADER_SIZE + size, 0);
-	if ( pack == NULL ) {
-		return -1;
-	}
-	//TODO ICMP get net dev
-	pack->dev = ((in_device_t*)in_dev)->dev;
-	build_icmp_packet(pack, ICMP_ECHO, 0, ttl, inet_dev_get_ipaddr(in_dev),
-				dstaddr, seq, /*id*/0);
-	memset(pack->h.raw + ICMP_HEADER_SIZE, pattern, size);
-	pack->protocol = ETH_P_IP;
-
-	if (-1 == callback_alloc(callback, in_dev, pack->nh.iph->id,
-			ICMP_ECHOREPLY)) {
-		kfree_skb(pack);
-		return -1;
-	}
-	return dev_queue_xmit(pack);
-}
 
 /* RFC 1122: 3.2.2 MUST send at least the IP header and 8 bytes of header.
  *   MAY send more (we do).
@@ -273,7 +165,7 @@ void icmp_send(sk_buff_t *pack, int type, int code, uint32_t info) {
  */
 static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
 	[ICMP_ECHOREPLY] = {
-		.handler = icmp_get_echo_reply/*icmp_discard*/,
+		.handler = icmp_discard,
 	},
 	[ICMP_DEST_UNREACH] = {
 		.handler = icmp_unreach,

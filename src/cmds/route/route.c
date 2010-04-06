@@ -36,10 +36,16 @@ static int exec(int argsc, char **argsv) {
 			show_help();
 			return 0;
 		case 'n':
-			net = inet_addr(optarg);
+			if((net = inet_addr(optarg)) == INADDR_NONE) {
+				printf("Unknown host\n");
+				return -1;
+			}
 			break;
 		case 'm':
-			mask = inet_addr(optarg);
+			if((mask = inet_addr(optarg)) == INADDR_NONE) {
+				printf("Unknown mask\n");
+				return -1;
+			}
 			break;
 		case 'g':
 			gw = inet_addr(optarg);
