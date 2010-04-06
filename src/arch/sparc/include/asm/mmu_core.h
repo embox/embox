@@ -11,7 +11,14 @@
 #ifndef SPARC_MMU_CORE_H_
 #define SPARC_MMU_CORE_H_
 
+#include <types.h>
 #include <asm/asi.h>
+
+
+typedef uint32_t __mmu_paddr_t;
+typedef uint32_t __mmu_vaddr_t;
+typedef uint32_t __mmu_pgd_t;
+typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
 
 /**
  * MMU registers.
@@ -176,6 +183,8 @@ typedef struct __mmu_env {
 	uint32_t fault_addr;      /**< Last fault address */
 }__mmu_env_t;
 
+typedef uint16_t __mmu_ctx_t;   /* 256 process id and error error code*/
+
 /** Set MMU reg */
 static inline void mmu_set_mmureg(unsigned long addr_reg,
 				unsigned long regval) {
@@ -249,17 +258,17 @@ static void mmu_set_pte(pte_t *ptep, pte_t pteval) {
 }
 
 /* XXX should we hyper_flush_whole_icache here - Anton */
-static void mmu_ctxd_set(ctxd_t *ctxp, pgd_t *pgdp) {
+static inline void mmu_ctxd_set(ctxd_t *ctxp, pgd_t *pgdp) {
 	mmu_set_pte((pte_t *)ctxp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pgdp) >> 4)));
 }
 
-static void mmu_pgd_set(pgd_t * pgdp, pmd_t * pmdp) {
+static inline void mmu_pgd_set(pgd_t * pgdp, pmd_t * pmdp) {
 	mmu_set_pte((pte_t *)pgdp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pmdp) >> 4)));
 }
 
-static void mmu_pmd_set(pmd_t * pmdp, pte_t * ptep) {
+static inline void mmu_pmd_set(pmd_t * pmdp, pte_t * ptep) {
 	mmu_set_pte((pte_t *)pmdp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) ptep) >> 4)));
 }

@@ -58,7 +58,7 @@ void mmu_off(void) {
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 }
 
-int mmu_map_region(uint32_t phy_addr, uint32_t virt_addr,
+int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, uint32_t flags) {
 	flags = flags << 2;
 	pgd_t *g0 = (pgd_t *) cur_env->pg0;

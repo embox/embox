@@ -142,9 +142,9 @@ static inline uint32_t reg_size_convert(size_t reg_size) {
 		}
 	}
 }
-#include <stdio.h>
-int mmu_map_region(uint32_t phy_addr, uint32_t virt_addr, size_t reg_size,
-		uint32_t flags) {
+
+int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
+		size_t reg_size, uint32_t flags) {
 	uint32_t tlblo, tlbhi; /* mmu registers */
 	uint32_t size_field;
 	/* setup tlbhi register fields */
@@ -167,7 +167,7 @@ int mmu_map_region(uint32_t phy_addr, uint32_t virt_addr, size_t reg_size,
 }
 
 void mmu_restore_env(mmu_env_t *env) {
-	//	unsigned int ipl = ipl_save();
+	unsigned int ipl = ipl_save();
 
 	/* disable virtual mode*/
 	mmu_off();
@@ -181,7 +181,7 @@ void mmu_restore_env(mmu_env_t *env) {
 	/* restore MMU mode */
 	env->status ? mmu_on() : mmu_off();
 
-	//	ipl_restore(ipl);
+	ipl_restore(ipl);
 }
 
 void mmu_save_env(mmu_env_t *env) {
@@ -197,7 +197,7 @@ void mmu_save_env(mmu_env_t *env) {
 	/* flush utlb records */
 	mmu_save_table(env->utlb_table);
 
-		ipl_restore(ipl);
+	ipl_restore(ipl);
 }
 
 void mmu_set_env(mmu_env_t *env) {
