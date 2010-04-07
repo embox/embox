@@ -10,7 +10,7 @@
 #ifndef MMU_CORE_H_
 #define MMU_CORE_H_
 
-#include <asm/mmu_core.h>
+#include <asm/hal/mm/mmu_core.h>
 
 
 

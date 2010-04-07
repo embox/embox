@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 #include <shell_command.h>
-#include <asm/mmu_core.h>
+#include <hal/mmu_core.h>
 
 #define COMMAND_NAME     "mmu_probe"
 #define COMMAND_DESC_MSG "testing mmu module"

@@ -9,7 +9,7 @@
 #define MICROBLAZE_TESTMMU_CORE_H_
 
 #include <types.h>
-#include <asm/mmu_core.h>
+#include <hal/mmu_core.h>
 
 
 #endif /* MICROBLAZE_TESTMMU_CORE_H_ */
