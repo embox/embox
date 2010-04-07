@@ -1,0 +1,3 @@
+
+#define EXTENDED_TEST
+

@@ -8,8 +8,7 @@
  */
 
 
-#define DEBUG_x86_ONLY
-#include "page_alloc.h"
+#include <lib/page_alloc.h>
 
 #if 0
 #include "../../src/lib/page_alloc/page_alloc.c"
