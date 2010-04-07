@@ -13,14 +13,18 @@
 #include <asm/hal/mm/mmu_core.h>
 
 
-
+/** Allows caching for this page*/
 #define MMU_PAGE_CACHEABLE    0x1
+/** Allows writing to this page*/
 #define MMU_PAGE_WRITEABLE    0x2
+/** Allows execute program code from this page*/
 #define MMU_PAGE_EXECUTEABLE  0x4
 
 
 typedef __mmu_paddr_t paddr_t;
 typedef __mmu_vaddr_t vaddr_t;
+
+typedef __mmu_page_flags_t mmu_page_flags_t;
 
 /** pgd - page global directory (page table for specific process) */
 typedef __mmu_pgd_t mmu_pgd_t;
@@ -29,12 +33,13 @@ typedef __mmu_pgd_t mmu_pgd_t;
 
 /**
  * Defines type for structure of MMU environment. This structure must be
- * describe in platform specific part in file <asm/mmu_core.h>.
+ * describe in platform specific part in file <asm/hal/mm/mmu_core.h>.
  */
 typedef __mmu_env_t mmu_env_t;
 
 typedef __mmu_ctx_t mmu_ctx_t;
 
+/** Error code for MMU module operation*/
 #define MMU_RRTURN_ERROR     (mmu_ctx)(-1)
 
 /**

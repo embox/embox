@@ -18,6 +18,9 @@
 typedef uint32_t __mmu_paddr_t;
 typedef uint32_t __mmu_vaddr_t;
 typedef uint32_t __mmu_pgd_t;
+
+typedef uint32_t __mmu_page_flags_t;
+
 typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
 
 /**
