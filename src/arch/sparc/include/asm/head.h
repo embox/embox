@@ -71,8 +71,8 @@
 /* TODO */
 #define EMBOX_SYSTEM_CALL SOFT_TRAP
 
-#define TEST_SOFT_TRAP TRAP_ENTRY(test_soft_trap_entry)
-
+#define TEST_SOFT_TRAP TRAP_ENTRY(test_trap_entry)
+#define TEST_HARD_TRAP TEST_SOFT_TRAP
 
 #endif /* __ASSEMBLER__ */
 

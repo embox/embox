@@ -11,23 +11,24 @@
 	.align 0x1000
 .global __test_trap_table
 __test_trap_table:
+/* Reserved by SPARC architecture traps */
 b start; nop; nop; nop;  ! 00 reset trap
-SRMMU_TFAULT;                 ! 01 instruction_access_exception
-BAD_TRAP;                     ! 02 illegal_instruction
-BAD_TRAP;                     ! 03 priveleged_instruction
-BAD_TRAP;                     ! 04 fp_disabled
-WOF_TRAP;                     ! 05 window_overflow
-WUF_TRAP;                     ! 06 window_underflow
-BAD_TRAP;                     ! 07 memory_address_not_aligned
-BAD_TRAP;                     ! 08 fp_exception
-SRMMU_DFAULT;                 ! 09 data_access_exception
-BAD_TRAP;                     ! 0A tag_overflow
-BAD_TRAP;                     ! 0B watchpoint_exception
-BAD_TRAP;                     ! 0C undefined
-BAD_TRAP;                     ! 0D undefined
-BAD_TRAP;                     ! 0E undefined
-BAD_TRAP;                     ! 0F undefined
-BAD_TRAP;                     ! 10 undefined
+TEST_HARD_TRAP;          ! 01
+TEST_HARD_TRAP;          ! 02
+TEST_HARD_TRAP;          ! 03
+TEST_HARD_TRAP;          ! 04
+WOF_TRAP;                ! 05 window_overflow
+WUF_TRAP;                ! 06 window_underflow
+TEST_HARD_TRAP;          ! 07
+TEST_HARD_TRAP;          ! 08
+TEST_HARD_TRAP;          ! 09
+TEST_HARD_TRAP;          ! 0A
+TEST_HARD_TRAP;          ! 0B
+TEST_HARD_TRAP;          ! 0C
+TEST_HARD_TRAP;          ! 0D
+TEST_HARD_TRAP;          ! 0E
+TEST_HARD_TRAP;          ! 0F
+TEST_HARD_TRAP;          ! 10
 
 /* Interrupt entries */
 TRAP_ENTRY_INTERRUPT(0x1);         ! 11 interrupt level  1 - IRQ_AHB_error
@@ -82,9 +83,7 @@ TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! 88 - 8B
 TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! 8C - 8F
 TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! 90 - 93
 TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! 94 - 97
-TEST_SOFT_TRAP;                                      ! 98
-            TEST_SOFT_TRAP;                  ! 99
-                        TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! 9A - 9B
+TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! 98 - 9B
 TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! 9C - 9F
 TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! A0 - A3
 TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  TEST_SOFT_TRAP;  ! A4 - A7

@@ -16,8 +16,6 @@
 /*FIXME move MMU_TABLE_SIZE to arch dependent config*/
 #define TRAP_TABLE_SIZE      (256)
 
-#define MIN_SOFT_TRAP_NUMBER 0x80
-
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef void (*__trap_handler)(uint32_t nr, void *data);
 

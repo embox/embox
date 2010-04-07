@@ -1,4 +1,5 @@
 
+/* Reserved by SPARC architecture traps */
 b boot_start; nop; nop; nop;  ! 00 reset trap
 SRMMU_TFAULT;                 ! 01 instruction_access_exception
 BAD_TRAP;                     ! 02 illegal_instruction

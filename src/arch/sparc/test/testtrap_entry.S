@@ -10,8 +10,8 @@
 	.text
 	.align 4
 
-	.global test_soft_trap_entry
-test_soft_trap_entry:
+	.global test_trap_entry
+test_trap_entry:
 
 	add %t_pc, 4, %t_pc
 	add %t_npc, 4, %t_npc
@@ -20,7 +20,7 @@ test_soft_trap_entry:
 
 	mov %tbr, %o0
 	srl %o0, 4, %o0
-	and %o0, 0xFF, %o0		! pass TT as parameter
+	and %o0, 0xFF, %o0 ! pass trap type (TT) as parameter
 
 	or %t_psr, PSR_PIL, %g1
 	wr %g1, %g0, %psr
@@ -28,7 +28,7 @@ test_soft_trap_entry:
 	wr %g1, PSR_ET, %psr
 	 WRITE_PAUSE
 
-	call test_soft_trap_handler
+	call test_trap_handler
 	 nop
 
 	RESTORE_ALL
