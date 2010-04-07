@@ -10,10 +10,12 @@
  * @author Eldar Abusalimov
  *         - Rewriting from scratch, interface change
  */
+
 #ifndef IRQ_H_
 #define IRQ_H_
 
-#include <types.h>
+#include <stdbool.h>
+
 #include <hal/interrupt.h>
 
 /**
@@ -46,26 +48,15 @@ typedef bool irq_return_t;
  * Interrupt Service Routine type.
  *
  * @param irq_nr the number of interrupt request being handled
- * @param dev_id the device tag specified at @link irq_attach() @endlink time
+ * @param data the device tag specified at @link irq_attach() @endlink time
  *
  * @return interrupt handling result
  * @retval IRQ_NONE if ISR didn't handled the interrupt
  * @retval IRQ_HANDLED if interrupt has been handled by this ISR
  */
-typedef irq_return_t (*irq_handler_t)(irq_nr_t irq_nr, void *dev_id);
+typedef irq_return_t (*irq_handler_t)(irq_nr_t irq_nr, void *data);
 
 typedef unsigned long irq_flags_t;
-
-#if 0
-struct irq_info {
-	irq_nr_t irq_nr;
-	irq_handler_t handler;
-	irq_flags_t flags;
-	void *dev_id;
-	const char* dev_name;
-	unsigned int count;
-};
-#endif
 
 /**
  * Initializes IRQ subsystem.
@@ -78,8 +69,8 @@ void irq_init(void);
  *
  * @param irq_nr the IRQ number to attach the @c handler to
  * @param handler the ISR itself
- * @param flags TODO not yet implemented
- * @param dev_id the optional device tag which will be passed to the ISR.
+ * @param flags TODO not yet implemented -- Eldar
+ * @param data the optional device tag which will be passed to the ISR.
  * @param dev_name the optional device name
  *
  * @return attach result
@@ -91,24 +82,20 @@ void irq_init(void);
  * @retval -ENOSYS if kernel is compiled without IRQ support
  */
 int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, irq_flags_t flags,
-		void *dev_id, const char *dev_name);
+		void *data, const char *dev_name);
 
 /**
  * Detaches ISR from the specified @link #irq_nr_t IRQ number @endlink.
  *
  * @param irq_nr the IRQ number to detach ISR from
- * @param dev_id device tag specified at #irq_attach() time
+ * @param data device tag specified at #irq_attach() time
  *
  * @return detach result
  * @retval 0 if all is OK
  * @retval -EINVAL if @c irq_nr is not @link #irq_nr_valid() valid @endlink
  * @retval -ENOSYS if kernel is compiled without IRQ support
  */
-int irq_detach(irq_nr_t irq_nr, void *dev_id);
-
-#if 0
-int irq_info(irq_nr_t irq_nr, struct irq_info *info);
-#endif
+int irq_detach(irq_nr_t irq_nr, void *data);
 
 #ifdef __HAL__
 /**

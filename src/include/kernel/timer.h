@@ -7,6 +7,8 @@
 #ifndef _TIMERS_H_
 #define _TIMERS_H_
 
+#include <types.h>
+
 #include <kernel/irq.h>
 
 #ifndef __ASSEMBLER__

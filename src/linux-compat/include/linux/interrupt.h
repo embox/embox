@@ -12,8 +12,6 @@
 #include <kernel/irq.h>
 #include <kernel/softirq.h>
 
-#include <asm/hardirq.h>
-
 /**
  * The value returned from request_irq to the requesting function is either 0
  * to indicate success or a negative error code, as usual.
@@ -57,13 +55,9 @@ struct softirq_action {
 	void (*action)(struct softirq_action *);
 	void *data;
 };
-#if 0
-// XXX different interfaces. -- Eldar
-inline static void open_softirq(int nr, void(*action)(struct softirq_action*),
-		void *data){
-	softirq_install(nr, action, data);
-}
-#endif
+
+extern void open_softirq(int nr, void(*action)(struct softirq_action *),
+		void *data);
 
 #define raise_softirq(nr) softirq_raise(nr)
 

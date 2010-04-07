@@ -1,13 +1,18 @@
 /**
  * @file
- * @brief Software interrupts handling.
+ * @brief Software interrupts subsystem.
  *
- * @date 14.02.2010
+ * @date 24.12.2009
+ * @author Anton Bondarev
+ *         - Initial implementation
  * @author Eldar Abusalimov
+ *         - Rewriting from scratch:
+ *          - Implementing new interface
+ *          - Introducing interrupt safety
  */
 
-#include <types.h>
-#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <errno.h>
 
 #include <kernel/softirq.h>
@@ -15,32 +20,17 @@
 
 struct softirq_action {
 	softirq_handler_t handler;
-	void *dev_id;
+	void *data;
 };
 
-static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
-static uint32_t softirq_pending;
-#define local_softirq_pending() softirq_pending
+volatile static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
+volatile static uint32_t softirq_pending;
 
-/**
- * Initialization of the soft IRQ subsystem.
- */
 void softirq_init(void) {
-	// TODO install common softirqs
+	// TODO install common softirqs. -- Eldar
 }
 
-/**
- * Set the handler of the concrete type soft IRQ.
- *
- * @param nr the soft IRQ number
- * @param handler the ISR itself
- * @param dev_id the optional device tag
- *
- * @return the initialization result
- * @retval 0 if the initialization is done
- * @retval -EINVAL if the @c nr doesn't represent valid soft IRQ number
- */
-int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *dev_id) {
+int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *data) {
 	ipl_t ipl;
 
 	if (!softirq_nr_valid(nr)) {
@@ -49,21 +39,12 @@ int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *dev_id) {
 
 	ipl = ipl_save();
 	softirq_actions[nr].handler = handler;
-	softirq_actions[nr].dev_id = dev_id;
+	softirq_actions[nr].data = data;
 	ipl_restore(ipl);
 
 	return 0;
 }
 
-/**
- * Activation of the soft IRQ.
- *
- * @param nr the soft IRQ number
- *
- * @return the activation result
- * @retval 0 if the activation is done
- * @retval -EINVAL if the @c nr doesn't represent valid soft IRQ number
- */
 int softirq_raise(softirq_nr_t nr) {
 	ipl_t ipl;
 
@@ -77,28 +58,27 @@ int softirq_raise(softirq_nr_t nr) {
 
 	return 0;
 }
-/**
- * A common framework for IRQ handling.
- */
-void do_softirq(void) {
-	int i;
-	ipl_t ipl;
-	unsigned int mask = 1 << SOFTIRQ_HI_LEVEL;
-
-	for (i = 0; i < SOFTIRQ_NRS_TOTAL; i ++) {
-		if (local_softirq_pending() & mask) {
-			if (NULL != softirq_actions[i].handler) {
-				ipl = ipl_save();
-				local_softirq_pending() &= ~mask;
-				ipl_restore(ipl);
-				softirq_actions[i].handler (i, softirq_actions[i].dev_id);
-			}
-		}
-		mask = mask << 1;
-	}
-}
 
 void softirq_dispatch(void) {
-	if (local_softirq_pending())
-		do_softirq();
+	uint32_t pending;
+	softirq_nr_t nr;
+	softirq_handler_t handler;
+	void *data;
+
+	while (0x0 != (pending = softirq_pending)) {
+		softirq_pending = 0;
+		for (nr = 0; pending; pending >>= 1, ++nr) {
+			if (0x0 == (pending & 0x1)) {
+				continue;
+			}
+
+			if (NULL != (handler = softirq_actions[nr].handler)) {
+				data = softirq_actions[nr].data;
+				ipl_enable();
+				handler(nr, data);
+				ipl_disable();
+			}
+
+		}
+	}
 }

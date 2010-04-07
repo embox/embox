@@ -303,7 +303,7 @@ void netif_rx_schedule(net_device_t *dev) {
 	raise_softirq(NET_RX_SOFTIRQ);
 }
 
-static void net_rx_action(softirq_nr_t softirq_nr, void *dev_id) {
+static void net_rx_action(struct softirq_action *action) {
 	size_t i;
 	net_device_t *dev;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
@@ -328,12 +328,8 @@ int netif_receive_skb(sk_buff_t *skb) {
 }
 
 static int __init unit_init(void) {
-#if 0
-	//TODO interface not compatible with linux
-	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
-#endif
 #ifdef CONFIG_SOFTIRQ
-	softirq_install(NET_RX_SOFTIRQ,net_rx_action, NULL);
+	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
 #endif
 	return 0;
 }
