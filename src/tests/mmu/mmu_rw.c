@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Testing page translating in virtual mode.
+ * @brief Testing read/write in virtual mode.
  *
  * @date 05.04.2010
  * @author Nikolay Korotky
@@ -13,6 +13,7 @@
 
 /* declare test in system */
 EMBOX_TEST(run);
+static char addr;
 
 /* starting function for test */
 static int run() {
@@ -25,7 +26,8 @@ static int run() {
 	mmu_set_env(testmmu_env());
 
 	/* map one to one section text and may be whole image with stack */
-	mmu_map_region((mmu_ctx_t)0, (uint32_t) &_text_start, (uint32_t) &_text_start, 0x1000000,
+	mmu_map_region((mmu_ctx_t)0, (uint32_t) &_text_start,
+			(uint32_t) &_text_start, 0x1000000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
 	if (&__stack > (&_text_start + 0x1000000)) {
@@ -33,12 +35,12 @@ static int run() {
 		mmu_map_region((mmu_ctx_t)0, _data_start, _data_start, 0x1000000,
 				MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
-	mmu_map_region((mmu_ctx_t)0, 0x40000000, 0xf0080000, 0x40000,
+	mmu_map_region((mmu_ctx_t)0, &addr, 0xf0080000, 0x40000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
 	mmu_on();
 
-	if ((*((unsigned long *)0xf0080000)) != (*((unsigned long *)0x40000000))) {
+	if ((*((unsigned long *)0xf0080000)) != (*((unsigned long *)&addr))) {
 		status = -1;
 	}
 

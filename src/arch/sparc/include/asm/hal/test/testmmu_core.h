@@ -10,7 +10,7 @@
 #define SPARC_TESTMMU_CORE_H_
 
 #include <types.h>
-#include <hal/mmu_core.h>
+#include <hal/mm/mmu_core.h>
 
 
 #endif /* SPARC_TESTMMU_CORE_H_ */
