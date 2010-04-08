@@ -50,5 +50,12 @@ pmark_t *page_alloc(void);
  */
 void page_free(pmark_t *paddr);
 
+#ifdef EXTENDED_TEST
+# define PAGE_QUANTITY 0x100
+# define PAGE_SIZE 0x20
+static uint8_t page_pool[PAGE_SIZE][PAGE_QUANTITY];
+static pmark_t *cmark_p = (pmark_t *) page_pool;
+#endif
+
 #endif /* __PAGE_ALLOC_H_ */
 

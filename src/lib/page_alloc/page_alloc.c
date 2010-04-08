@@ -7,16 +7,31 @@
  * @author Fedor Burdun
  */
 
+/*
+ * TODO:
+ * 	debug it
+ * 		page_alloc don't work
+ */
+
 #include <lib/page_alloc.h>
 
-#define PAGE_QUANTITY 0x100
-#define PAGE_SIZE 0x100
+#ifndef PAGE_QUANTITY
+# define PAGE_QUANTITY 0x100
+#endif
+#ifndef PAGE_SIZE
+# define PAGE_SIZE 0x100
+#endif
 
 int page_alloc_hasinit = 0;
 
 #ifdef EXTENDED_TEST
+
+//very TEMP!!!
+	#include <stdio.h>
+#if 0
 static uint8_t page_pool[PAGE_SIZE][PAGE_QUANTITY];
 static pmark_t *cmark_p = (pmark_t *) page_pool;
+#endif
 #else
 #define START_MEMORY_ADDR 0x40000000
 static pmark_t *cmark_p = (pmark_t *)START_MEMORY_ADDR;
@@ -83,4 +98,5 @@ void page_free(pmark_t *paddr) {
 	cmark_p->pprev = paddr;
 	paddr->pnext = cmark_p;
 }
+
 
