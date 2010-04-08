@@ -10,13 +10,21 @@
 #ifndef __PAGE_ALLOC_H_
 #define __PAGE_ALLOC_H_
 
-#include <types.h>
+#ifndef EXTENDED_TEST
+# include <types.h>
+#else
+# include <bits/types.h>
+# include <unistd.h>
+# include <cdio/types.h>
+#endif
 
 /** Structure of page marker. It occupies at the begin of each free memory
  * block
+ * psize - count of page
+ * pnext, pprev - pointers other free blocks
  */
 typedef struct pmark {
-	size_t	psize;
+	size_t psize;
 	struct pmark *pnext;
 	struct pmark *pprev;
 }pmark_t;

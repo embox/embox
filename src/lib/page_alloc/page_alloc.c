@@ -12,9 +12,11 @@
 #define PAGE_QUANTITY 0x100
 #define PAGE_SIZE 0x100
 
+int page_alloc_hasinit = 0;
+
 #ifdef EXTENDED_TEST
-static uint8_t page_pool[PAGE_SIZE][PAGE_QUANTITY]
-static pmark_t *cmark_p = (pmark_t *);
+static uint8_t page_pool[PAGE_SIZE][PAGE_QUANTITY];
+static pmark_t *cmark_p = (pmark_t *) page_pool;
 #else
 #define START_MEMORY_ADDR 0x40000000
 static pmark_t *cmark_p = (pmark_t *)START_MEMORY_ADDR;
@@ -34,12 +36,6 @@ static pmark_t *copy_mark( pmark_t *from , pmark_t *to ) {
 
 /* Initialize page allocator */
 int page_alloc_init(void) {
-#ifdef DEBUG_x86_ONLY /* Code included for debug specific */
-	//we allocated this static
-	//mem = malloc( MAXPAGECOUNT * SIZEOFPAGE );
-#else /* Embox specific code */
-#endif /* End of specific code */
-	//cmark_p = mem;
 	cmark_p->psize = PAGE_QUANTITY;
 	cmark_p->pnext	= cmark_p;
 	cmark_p->pprev	= cmark_p;
@@ -48,18 +44,20 @@ int page_alloc_init(void) {
 
 /* allocate page */
 pmark_t *page_alloc(void) {
-	size_t psize = PAGE_SIZE;
-//	if (!palloc_hasinit) {
-//		page_alloc_init();
-//	}
-	/* find first proper block */
+	size_t psize = 1;
 	pmark_t *pcur;
+
+	if (!page_alloc_hasinit) {
+		page_alloc_init();
+		page_alloc_hasinit = 1;
+	}
+	/* find first proper block */
 	pcur = cmark_p->pnext;
 	while ( pcur != cmark_p /*&& pcur->psize < psize */) {
 		pcur = pcur->pnext;
 	}
 	/* check finded block */
-	if ( pcur->psize >= PAGE_SIZE ) {
+	if ( pcur->psize >= psize ) {
 		/* change list and return value */
 		if (pcur->psize > psize ) {
 			pcur->psize = pcur->psize - psize;
@@ -68,6 +66,7 @@ pmark_t *page_alloc(void) {
 		} else {
 			/* psize == pcur->psize */
 			pcur->pprev->pnext = pcur->pnext;
+			cmark_p = pcur->pnext;
 			return pcur;
 		}
 
@@ -79,7 +78,9 @@ pmark_t *page_alloc(void) {
 /* free page that was allocated */
 void page_free(pmark_t *paddr) {
 	/* find */
+	paddr->psize = 1;
+	paddr->pprev = cmark_p->pprev;
+	cmark_p->pprev = paddr;
+	paddr->pnext = cmark_p;
 }
-
-
 
