@@ -6,7 +6,7 @@
  * @details Implements interface for working with different types of MMU flag
  *         such as @link #MMU_PAGE_WRITEABLE @endlink. You can mark page
  *         invalid it means if system call this page it impels page_fault trap.
- *         IMPOTENT: These functions work with already mapped pages only!
+ *         IMPORTENT: These functions work with already mapped pages only!
  *
  * @date 07.04.2010
  * @author Anton Bondarev
