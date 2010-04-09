@@ -15,7 +15,7 @@
 
 /* main system MMU environment*/
 static mmu_env_t system_env;
-static mmu_env_t *cur_env;
+/*static*/ mmu_env_t *cur_env;
 
 extern pgd_t sys_pg0;
 extern pmd_t sys_pm0;
@@ -46,7 +46,6 @@ void mmu_on(void) {
 	unsigned long val;
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
 	val |= 0x1;
-	mmu_set_context(0);
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 	mmu_flush_cache_all();
 }
@@ -61,9 +60,9 @@ void mmu_off(void) {
 int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, uint32_t flags) {
 	flags = flags << 2;
-	pgd_t *g0 = (pgd_t *) cur_env->pg0;
-	pmd_t *m0 = (pmd_t *) cur_env->pm0;
-	pte_t *p0 = (pte_t *) cur_env->pt0;
+	pgd_t *g0 = (unsigned long)(*(cur_env->ctx + ctx) << 4) & MMU_PTE_PMASK;
+	pmd_t *m0 = (unsigned long)(*g0 << 4) & MMU_PTE_PMASK;
+	pte_t *p0 = (unsigned long)(*m0 << 4) & MMU_PTE_PMASK;
 	/* align on page size */
 	reg_size &= ~MMU_PAGE_MASK;
 	phy_addr &= ~MMU_PAGE_MASK;
@@ -103,7 +102,7 @@ void mmu_restore_env(mmu_env_t *env) {
 	cur_env = env;
 
 	mmu_set_ctable_ptr(env->ctx);
-	mmu_ctxd_set(env->ctx, env->pg0);
+	mmu_set_context(cur_env->cur_ctx);
 	mmu_flush_tlb_all();
 
 	/* restore MMU mode */
@@ -118,10 +117,6 @@ void mmu_save_env(mmu_env_t *env) {
 
 	/* save cur_env pointer */
 	memcpy(env, cur_env, sizeof(mmu_env_t));
-
-//	mmu_save_table(env->pg0);
-//	mmu_save_table(env->pm0);
-//	mmu_save_table(env->pt0);
 }
 
 void mmu_set_env(mmu_env_t *env) {
@@ -131,12 +126,8 @@ void mmu_set_env(mmu_env_t *env) {
 	cur_env = env;
 
 	mmu_set_ctable_ptr((unsigned long)env->ctx);
-	mmu_ctxd_set(env->ctx, env->pg0);
+	mmu_set_context(env->cur_ctx);
 	mmu_flush_tlb_all();
-
-//	mmu_restore_table(env->pg0);
-//	mmu_restore_table(env->pm0);
-//	mmu_restore_table(env->pt0);
 
 	/* restore MMU mode */
 	env->status ? mmu_on() : mmu_off();
@@ -168,10 +159,11 @@ static int mmu_init(void) {
 	(&system_env)->status = 0;
 	(&system_env)->fault_addr = 0;
 	(&system_env)->inst_fault_cnt = (&system_env)->data_fault_cnt = 0;
-	(&system_env)->pg0 = &sys_pg0;
-	(&system_env)->pm0 = &sys_pm0;
-	(&system_env)->pt0 = &sys_pt0;
 	(&system_env)->ctx = &sys_ctx;
+	(&system_env)->cur_ctx = 0;
+	mmu_ctxd_set((&system_env)->ctx, &sys_pg0);
+	mmu_pgd_set(&sys_pg0, &sys_pm0);
+	mmu_pmd_set(&sys_pm0, &sys_pt0);
 
 	cur_env = &system_env;
 

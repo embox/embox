@@ -177,9 +177,7 @@ typedef struct __mmu_env {
 	uint32_t status;          /**< MMU enabled/disabled */
 
 	ctxd_t *ctx;              /**< context table */
-	pgd_t  *pg0;              /**< Level-1 table */
-	pmd_t  *pm0;              /**< Level-2 table */
-	pte_t  *pt0;              /**< Level-3 table */
+	uint32_t cur_ctx;
 
 	uint32_t data_fault_cnt;  /**< Counter for data page faults */
 	uint32_t inst_fault_cnt;  /**< Counter for instruction page faults */

@@ -34,10 +34,11 @@ mmu_env_t *testmmu_env(void) {
 		"i"(MMU_PTE_TABLE_SIZE)
 	);
 
-	(&env)->pg0 = &pg0;
-	(&env)->pm0 = &pm0;
-	(&env)->pt0 = &pt0;
 	(&env)->ctx = &ctx;
+	(&env)->cur_ctx = 0;
+	mmu_ctxd_set((&env)->ctx, &pg0);
+	mmu_pgd_set(&pg0, &pm0);
+	mmu_pmd_set(&pm0, &pt0);
 	(&env)->fault_addr = 0;
 	(&env)->status = 0;
 	(&env)->inst_fault_cnt = (&env)->data_fault_cnt = 0;
