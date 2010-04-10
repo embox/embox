@@ -10,6 +10,9 @@
 #include "console.h"
 #include <kernel/sys.h>
 #include <kernel/diag.h>
+#include <kernel/softirq.h>
+
+#define UART_SOFTIRQ_NR 31
 
 /*#define FIRE_CALLBACK(cb, func, view, args...)	((cb->func != NULL) ? cb->func(cb, view, ##args) : 0)*/
 #define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
@@ -107,14 +110,14 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 	prev_token = token;
 }
 
-static void uart_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
+void uart_softirq_handler(softirq_nr_t softirq_nr, void *data) {
 	char ch;
 	static TERMINAL_TOKEN token;
 	static TERMINAL_TOKEN_PARAMS params[1];
 	SCREEN *this;
-	if (!sys_exec_is_started()) {
-		return;
-	}
+//	if (!sys_exec_is_started()) {
+//		return;
+//	}
 	this = cur_console->view;
 	terminal_receive(this->terminal, &token, params);
 	ch = token & 0xFF;
@@ -124,6 +127,10 @@ static void uart_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
 	} else {
 		handle_ctrl_token(this, token, params);
 	}
+}
+
+static void uart_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
+	softirq_raise(UART_SOFTIRQ_NR);
 }
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
@@ -136,6 +143,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	this->running = true;
 
 	this->callback = cb;
+	softirq_install(UART_SOFTIRQ_NR, uart_softirq_handler, NULL);
 	uart_set_irq_handler(uart_irq_handler);
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			params)) {
