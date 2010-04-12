@@ -3,8 +3,8 @@
  *
  * @date 13 august 2009
  * @author Anton Bondarev
- * @details Realyzed interface for working with user command
- *          wich can be call from shell
+ * @details Realized interface for working with user command
+ *          which can be call from shell
  */
 
 #include <shell_command.h>
@@ -45,10 +45,10 @@ SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_first(char *search_str,
 /**
  * find descriptor for shell command with pointed name
  * each command have to register own descriptor in system, by needs macros DECLARE_SHELL_COMMAND
- * that maros put pinter on registering descriptor to section ".shell_command".
+ * that macros put pinter on registering descriptor to section ".shell_command".
  * And we can find this descriptor when we need to use it.
  *
- * @param comand name
+ * @param command name
  * @return command descriptor if command was found in image
  * @return NULL another way
  */

@@ -11,6 +11,7 @@
 #include "console/console.h"
 #include <shell.h>
 #include <kernel/sys.h>
+#include <kernel/job.h>
 #include <shell_command.h>
 #include <embox/unit.h>
 
@@ -63,7 +64,14 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 		return;
 	}
 
-	shell_command_exec(c_desc, words_counter, words);
+	//job_push creates a point of return if it would be necessary
+	switch(job_push()){
+	case 0:
+		shell_command_exec(c_desc, words_counter, words);
+	case 256:
+		return;
+	}
+
 	return;
 }
 

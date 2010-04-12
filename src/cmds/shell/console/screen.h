@@ -45,6 +45,8 @@ typedef struct _SCREEN_CALLBACK {
 			int by);
 	int (*on_dc4)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
 			int by);
+	int (*on_ack)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
+				int by);
 	void *outer;
 } SCREEN_CALLBACK;
 

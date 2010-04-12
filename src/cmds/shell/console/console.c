@@ -26,11 +26,14 @@
 
 CONSOLE *cur_console = NULL;
 
+static int adr;
+
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	/*FIXME: resolve "(reverse-i-search)`':" statement */
 	char *cmd;
+
 #if 0
 	= strstr(this->model->string, ":");
 	        if (cmd)
@@ -44,8 +47,9 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 		strcpy(buf, cmd);
 		this->callback->exec(this->callback, this, buf);
 	}
-	screen_out_show_prompt(this->view, this->prompt);
 	CB_EDIT_MODEL(cmdline_history_new_entry);
+	screen_out_show_prompt(this->view, this->prompt);
+
 	return 0;
 }
 
@@ -120,6 +124,13 @@ static int on_dc2(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 
 static int on_dc4(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CB_EDIT_MODEL(cmdline_dc4_reverse);
+	return 0;
+}
+
+static int on_ack(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
+//	jmp_buf* interrupt = job_abort();
+//	longjmp(*interrupt, 256);
+	job_abort();
 	return 0;
 }
 
@@ -201,6 +212,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 	INIT_MEMBER(screen_callback,on_eot);
 	INIT_MEMBER(screen_callback,on_dc2);
 	INIT_MEMBER(screen_callback,on_dc4);
+	INIT_MEMBER(screen_callback,on_ack);
 	screen_callback->outer = this;
 
 	strncpy(this->prompt, (prompt != NULL) ? prompt : default_prompt,
