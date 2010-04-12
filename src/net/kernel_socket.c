@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implements socket interface function for kernel mode
+ * @brief Implements socket interface function for kernel mode.
  *
  * @date 13.01.2010
  * @author Anton Bondarev
@@ -22,9 +22,13 @@ typedef struct socket_info {
 static socket_info_t sockets_pull[CONFIG_MAX_KERNEL_SOCKETS];
 static LIST_HEAD(head_free_sk);
 
+/**
+ * The protocol list. Each protocol is registered in here.
+ */
 static const struct net_proto_family *net_families[NPROTO];
 
-/* sock_alloc	-	allocate a socket
+/**
+ * Allocate a socket
  * now we only allocate memory for structure of socket (struct socket)
  *
  * In Linux it must use socketfs and they use inodes for it
@@ -60,8 +64,8 @@ void kernel_sock_release(struct socket *sock) {
 	sock->ops->release(sock);
 
 	local_irq_save(irq_old);
-	/*return sock into pull*/
-	/* we can cast like this because struct socket is first element of
+	/* return sock into pull
+	 * we can cast like this because struct socket is first element of
 	 * struct socket_info
 	 */
 	sock_info = (socket_info_t *) sock;
@@ -76,7 +80,7 @@ static int __sock_create(int family, int type, int protocol,
 	const struct net_proto_family *pf;
 
 	/*
-	 *      Check protocol is in range
+	 * Check protocol is in range
 	 */
 	if (family < 0 || family >= NPROTO)
 		return -1;
@@ -136,7 +140,7 @@ int sock_create_kern(int family, int type, int protocol, struct socket **res) {
 
 int kernel_bind(struct socket *sock, const struct sockaddr *addr,
 			socklen_t addrlen) {
-	return sock->ops->bind(sock, addr, addrlen);
+	return sock->ops->bind(sock, (struct sockaddr *)addr, addrlen);
 }
 
 int kernel_listen(struct socket *sock, int backlog) {
@@ -144,12 +148,18 @@ int kernel_listen(struct socket *sock, int backlog) {
 }
 
 int kernel_accept(struct socket *sock, struct socket **newsock, int flags) {
-	return sock->ops->accept(sock, *newsock, flags);
+	int err;
+	err = sock->ops->accept(sock, *newsock, flags);
+	if (err < 0) {
+		kernel_sock_release(*newsock);
+	}
+	(*newsock)->ops = sock->ops;
+	return err;
 }
 
 int kernel_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
-	return sock->ops->connect(sock, addr, addrlen, flags);
+	return sock->ops->connect(sock, (struct sockaddr *)addr, addrlen, flags);
 }
 
 int kernel_getsockname(struct socket *sock,

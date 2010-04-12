@@ -126,6 +126,7 @@ static int ping(ping_info_t *pinfo) {
 
 static int exec(int argc, char **argv) {
 	ping_info_t pinfo;
+	int nextOption;
 	in_device_t *in_dev = inet_dev_find_by_name("eth0");
 	pinfo.count = DEF_COUNT;
 	pinfo.interval = DEF_INTERVAL;
@@ -133,7 +134,6 @@ static int exec(int argc, char **argv) {
 	pinfo.pattern = DEF_PATTERN;
 	pinfo.timeout = DEF_TIMEOUT;
 	pinfo.ttl = DEF_TTL;
-	int nextOption;
 	getopt_init();
 	do {
 		nextOption = getopt(argc, argv, "I:c:t:W:s:i:p:h");

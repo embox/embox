@@ -63,6 +63,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	pgd_t *g0 = (unsigned long)(*(cur_env->ctx + ctx) << 4) & MMU_PTE_PMASK;
 	pmd_t *m0 = (unsigned long)(*g0 << 4) & MMU_PTE_PMASK;
 	pte_t *p0 = (unsigned long)(*m0 << 4) & MMU_PTE_PMASK;
+	printf("ctx= 0x%08x, g0=0x%08x, m0=0x%08x, p0=0x%08x\n", cur_env->ctx, g0, m0, p0);
 	/* align on page size */
 	reg_size &= ~MMU_PAGE_MASK;
 	phy_addr &= ~MMU_PAGE_MASK;

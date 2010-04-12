@@ -144,7 +144,16 @@ struct net_proto_family {
 #endif
 };
 
-extern int      sock_register(const struct net_proto_family *fam);
-extern void     sock_unregister(int family);
+/**
+ * Add a socket protocol handler
+ * @param ops description of protocol
+ */
+extern int sock_register(const struct net_proto_family *ops);
+
+/**
+ * Remove a protocol handler.
+ * @param family protocol family to remove
+ */
+extern void sock_unregister(int family);
 
 #endif /* NET_H_ */
