@@ -14,6 +14,7 @@
 #include <net/net_pack_manager.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>
+#include <hal/ipl.h>
 
 static struct sk_buff sk_buff_pool[CONFIG_QUANTITY_SKB];
 static LIST_HEAD(head_free_skb);
@@ -23,10 +24,10 @@ static LIST_HEAD(head_free_queue);
 
 struct sk_buff_head *alloc_skb_queue(int len) {
 	struct sk_buff_head *queue;
-	unsigned long sp;
-	spin_lock(&sp);
+	ipl_t sp;
+	sp = ipl_save();
 	if (list_empty(&head_free_queue)) {
-		spin_unlock(&sp);
+		ipl_restore(sp);
 		return NULL;
 	}
 	/* in free queue we held structure sk_buff_head but this pointer has sk_buff * type
@@ -37,7 +38,7 @@ struct sk_buff_head *alloc_skb_queue(int len) {
 	INIT_LIST_HEAD((struct list_head *)queue);
 	queue->qlen = 0;
 	queue->qlen = 0;
-	spin_unlock(&sp);
+	ipl_restore(sp);
 	queue->qlen = len;
 	return queue;
 }
@@ -59,16 +60,16 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
 	struct sk_buff *skb;
 	/*TODO only one packet now*/
 
-	unsigned long sp;
-	spin_lock(&sp);
+	ipl_t sp;
+	sp = ipl_save();
 	if (list_empty(&head_free_skb)) {
-		spin_unlock(&sp);
+		ipl_restore(sp);
 		return NULL;
 	}
 	skb = (struct sk_buff *) (&head_free_skb)->next;
 	list_del((&head_free_skb)->next);
 	INIT_LIST_HEAD((struct list_head *)skb);
-	spin_unlock(&sp);
+	ipl_restore(sp);
 
 	if (NULL == (skb->data = net_buff_alloc())) {
 		kfree_skb(skb);
@@ -80,12 +81,12 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
 }
 
 void kfree_skb(struct sk_buff *skb) {
-	unsigned long sp;
+	ipl_t sp;
 	if (NULL == skb) {
 		return;
 	}
 	net_buff_free(skb->data);
-	spin_lock(&sp);
+	sp = ipl_save();
 	if ((NULL == skb->prev) || (NULL == skb->next)) {
 		list_add((struct list_head *) skb, (struct list_head *)&head_free_skb);
 	} else {
@@ -93,18 +94,18 @@ void kfree_skb(struct sk_buff *skb) {
 				(struct list_head *) &head_free_skb);
 	}
 	skb = NULL;
-	spin_unlock(&sp);
+	ipl_restore(sp);
 }
 
 void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
-	unsigned long sp;
+	ipl_t sp;
 	if (NULL == list || NULL == newsk) {
 		return;
 	}
-	spin_lock(&sp);
+	sp = ipl_save();
 	list_move_tail((struct list_head *) newsk, (struct list_head *) list);
 	list->qlen++;
-	spin_unlock(&sp);
+	ipl_restore(sp);
 }
 
 sk_buff_t *skb_peek(struct sk_buff_head *list_) {
@@ -127,13 +128,13 @@ void skb_unlink(sk_buff_t *skb, struct sk_buff_head *list) {
 
 sk_buff_t *skb_dequeue(struct sk_buff_head *list) {
 	struct sk_buff *skb;
-	unsigned long sp;
-	spin_lock(&sp);
+	ipl_t sp;
+	sp = ipl_save();
 	skb = skb_peek(list);
 	if (skb) {
 		skb_unlink(skb, list);
 	}
-	spin_unlock(&sp);
+	ipl_restore(sp);
 	return skb;
 }
 
@@ -179,12 +180,12 @@ struct sk_buff *skb_copy(const struct sk_buff *skb, gfp_t priority) {
 struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
 				int noblock, int *err) {
 	struct sk_buff *skb;
-	unsigned long sp;
-	spin_lock(&sp);
+	ipl_t sp;
+	sp = ipl_save();
 	skb = skb_peek(sk->sk_receive_queue);
 	if (skb) {
 		skb_unlink(skb, sk->sk_receive_queue);
 	}
-	spin_unlock(&sp);
+	ipl_restore(sp);
 	return skb;
 }

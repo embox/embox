@@ -32,24 +32,24 @@ int __init net_buff_init(void) {
 unsigned char *net_buff_alloc(void) {
 	net_buff_info_t *entry;
 	unsigned char * buff;
-	unsigned long sp;
-	spin_lock(&sp);
+	ipl_t sp;
+	sp = ipl_save();
 	if (list_empty (&head_free_pack)) {
-		spin_unlock(&sp);
+		ipl_restore(sp);
 		return NULL;
 	}
 	entry = (net_buff_info_t *)((&head_free_pack)->next);
 	list_del_init((struct list_head *)entry);
 	buff = (unsigned char *)list_entry((struct list_head *)entry,
 										net_buff_info_t, list);
-	spin_unlock(&sp);
+	ipl_restore(sp);
 	return buff;
 }
 
 void net_buff_free(unsigned char *buff) {
 	net_buff_info_t *pack;
-	unsigned long sp;
-	spin_lock(&sp);
+	ipl_t sp;
+	sp = ipl_save();
 	/*return buff into pull*/
 	/* we can cast like this because buff is first element of
 	 * struct socket_info
@@ -57,5 +57,5 @@ void net_buff_free(unsigned char *buff) {
 	pack = (net_buff_info_t *)buff;
 	list_add(&pack->list, &head_free_pack);
 	buff = NULL;
-	spin_unlock(&sp);
+	ipl_restore(sp);
 }
