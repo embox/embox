@@ -12,8 +12,8 @@
 #define JOB_H_
 #include <setjmp.h>
 
-extern int job_push();
+extern int job_push(void);
 
-extern void job_abort();
+extern void job_abort(void);
 
 #endif /* JOB_H_ */
