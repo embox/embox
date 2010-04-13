@@ -27,7 +27,7 @@
 
 CONSOLE *cur_console = NULL;
 
-static int adr;
+//static int adr;
 
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;

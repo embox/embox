@@ -49,6 +49,11 @@ extern long int strtol(const char *nptr, char **endptr, int base);
  */
 extern char *dirname(char *path);
 
+/**
+ * Strip directory and suffix from filenames.
+ */
+extern char *basename(const char *filename);
+
 /** Allocate and free dynamic memory */
 extern void *calloc(size_t nmemb, size_t size);
 extern void *malloc(size_t size);

@@ -156,9 +156,11 @@ static point dispatch(char c) {
 
 }
 
+#if 0
 static int pcmp(point p1, point p2) {
     return p1.x - p2.x + p1.y - p2.y;
 }
+#endif
 
 static int snake_update(void) {
     point p = point_plus(head, diff);

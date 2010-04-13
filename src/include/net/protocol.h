@@ -16,7 +16,7 @@
 /* This is used to register protocols. */
 typedef struct net_protocol {
 	int (*handler)(sk_buff_t *pack);
-	void (*err_handler)(sk_buff_t *pack, int info);
+	void (*err_handler)(sk_buff_t *pack, uint32_t info);
 #if 0
 	int (*gso_send_check)(sk_buff_t *pack);
 	sk_buff_t *(*gso_segment)(sk_buff_t *pack, int features);
