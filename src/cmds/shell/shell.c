@@ -11,6 +11,7 @@
 #include "console/console.h"
 #include <shell.h>
 #include <kernel/job.h>
+#include <hal/context.h>
 #include <shell_command.h>
 #include <embox/unit.h>
 
@@ -62,15 +63,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 		LOG_ERROR("shell command: wrong command descriptor\n");
 		return;
 	}
-
-	//job_push creates a point of return if it would be necessary
-	switch(job_push()){
-	case 0:
-		shell_command_exec(c_desc, words_counter, words);
-	case 256:
-		return;
-	}
-
+	shell_command_exec(c_desc, words_counter, words);
 	return;
 }
 
@@ -116,6 +109,10 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	}
 }
 
+static void job_abort_callback() {
+	context_set_entry(NULL, job_abort);
+}
+
 static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 	static const char *script_commands[] = {
 #include <start_script.inc>
@@ -138,6 +135,7 @@ static int shell_start(void) {
 
 	callback->exec = exec_callback;
 	callback->guess = guess_callback;
+	callback->job_abort = job_abort_callback;
 	if (console_init(console, callback) == NULL) {
 		LOG_ERROR("Failed to create a console");
 		return -1;

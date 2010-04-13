@@ -99,7 +99,7 @@ static int on_end(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	return 0;
 }
 
-static int on_insert(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
+static int on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
 	CMDLINE *cmd = this->model;
 	cmd->is_insert_mode = cmd->is_insert_mode ? 0 : 1;
@@ -127,9 +127,9 @@ static int on_dc4(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 static int on_ack(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-//	jmp_buf* interrupt = job_abort();
-//	longjmp(*interrupt, 256);
-	job_abort();
+	CONSOLE *this = (CONSOLE *) cb->outer;
+	if (this->callback != NULL && this->callback->job_abort != NULL)
+		this->callback->job_abort;
 	return 0;
 }
 
