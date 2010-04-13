@@ -8,7 +8,7 @@
 #include <net/protocol.h>
 #include <net/in.h>
 //TODO inet_protos not use now
-static net_protocol_t *inet_protos[MAX_INET_PROTOS];
+const net_protocol_t *inet_protos[MAX_INET_PROTOS];
 
 #define WRONG_DESC_NUMBER 0 /*FIXME It seems 3 protocols in list
  not 2 we defined only 0x1 and 0x11 but see also 0x3 type of protocols*/

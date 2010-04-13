@@ -86,10 +86,9 @@ static void raw_v4_unhash(struct sock *sk) {
 static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
-	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + msg->msg_iov->iov_len, 0);
+	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + len, 0);
 	memcpy((void*)((unsigned int)(skb->data + ETH_HEADER_SIZE)),
-						(void*)msg->msg_iov->iov_base,
-						msg->msg_iov->iov_len);
+						(void*)msg->msg_iov->iov_base, len);
 	skb->h.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE + IP_HEADER_SIZE;
 	ip_send_packet(inet, skb);
 	return 0;

@@ -41,6 +41,7 @@ static inline struct udp_sock *udp_sk(const struct sock *sk) {
 
 extern int udp_init(void);
 extern int udp_rcv(sk_buff_t *);
+extern void udp_err(sk_buff_t *, uint32_t);
 extern int udp_sendmsg(struct kiocb *iocb, struct sock *sk,
 			struct msghdr *msg, size_t len);
 extern int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,

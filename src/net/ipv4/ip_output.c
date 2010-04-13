@@ -57,6 +57,7 @@ int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 //	struct iphdr *iph = skb->nh.iph;
 	/*TODO: route*/
 //	iph->ttl      = 64;
+	skb->protocol = ETH_P_IP;
 	return dev_queue_xmit(skb);
 }
 
@@ -66,7 +67,6 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		build_ip_packet(sk, skb);
 		//skb->len += IP_HEADER_SIZE;
 	}
-	skb->protocol = ETH_P_IP;
 	ip_route(skb);
 	ip_send_check(skb->nh.iph);
 	return ip_queue_xmit(skb, 0);

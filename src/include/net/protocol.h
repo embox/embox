@@ -64,6 +64,8 @@ typedef struct inet_protosw {
 	char no_check; /* checksum on rcv/xmit/none? */
 } inet_protosw_t;
 
+extern const net_protocol_t *inet_protos[MAX_INET_PROTOS];
+
 #define DECLARE_INET_SOCK(inet_proto) \
 	static const inet_protosw_t *p##inet_proto \
 		__attribute__ ((used, section(".ipstack.sockets"))) \

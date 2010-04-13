@@ -108,8 +108,8 @@ int udp_rcv(sk_buff_t *skb) {
 	iphdr_t *iph = ip_hdr(skb);
 	udphdr_t *uh = udp_hdr(skb);
 	sk = udp_lookup(iph->daddr, uh->dest);
-	inet = inet_sk(sk);
 	if (sk) {
+		inet = inet_sk(sk);
 		udp_queue_rcv_skb(sk, skb);
 		inet->dport = uh->source;
 		inet->daddr = iph->saddr;
@@ -123,6 +123,11 @@ int udp_rcv(sk_buff_t *skb) {
 	return 0;
 }
 
+void udp_err(sk_buff_t *skb, uint32_t info) {
+	printf("todo: udp_err\n");
+}
+
+
 int udp_disconnect(struct sock *sk, int flags) {
 	return 0;
 }
@@ -133,6 +138,7 @@ static void udp_lib_close(struct sock *sk, long timeout) {
 
 static const net_protocol_t udp_protocol = {
 	.handler = udp_rcv,
+	.err_handler = udp_err,
 	.type = IPPROTO_UDP
 };
 

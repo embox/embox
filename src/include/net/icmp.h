@@ -15,15 +15,15 @@
 /* Types */
 #define ICMP_ECHOREPLY          0       /* Echo Reply                   */
 #define ICMP_DEST_UNREACH       3       /* Destination Unreachable      */
-//#define ICMP_SOURCE_QUENCH      4       /* Source Quench                */
-//#define ICMP_REDIRECT           5       /* Redirect (change route)      */
+#define ICMP_SOURCE_QUENCH      4       /* Source Quench                */
+#define ICMP_REDIRECT           5       /* Redirect (change route)      */
 #define ICMP_ECHO               8       /* Echo Request                 */
-//#define ICMP_TIME_EXCEEDED      11      /* Time Exceeded                */
-//#define ICMP_PARAMETERPROB      12      /* Parameter Problem            */
+#define ICMP_TIME_EXCEEDED      11      /* Time Exceeded                */
+#define ICMP_PARAMETERPROB      12      /* Parameter Problem            */
 #define ICMP_TIMESTAMP          13      /* Timestamp Request            */
-//#define ICMP_TIMESTAMPREPLY     14      /* Timestamp Reply              */
-//#define ICMP_INFO_REQUEST       15      /* Information Request          */
-//#define ICMP_INFO_REPLY         16      /* Information Reply            */
+#define ICMP_TIMESTAMPREPLY     14      /* Timestamp Reply              */
+#define ICMP_INFO_REQUEST       15      /* Information Request          */
+#define ICMP_INFO_REPLY         16      /* Information Reply            */
 #define ICMP_ADDRESS            17      /* Address Mask Request         */
 #define ICMP_ADDRESSREPLY       18      /* Address Mask Reply           */
 #define NR_ICMP_TYPES           18
@@ -47,6 +47,16 @@
 #define ICMP_PREC_CUTOFF        15      /* Precedence cut off */
 #define NR_ICMP_UNREACH         15      /* instead of hardcoding immediate value */
 
+/* Codes for REDIRECT. */
+#define ICMP_REDIR_NET          0       /* Redirect Net          */
+#define ICMP_REDIR_HOST         1       /* Redirect Host         */
+#define ICMP_REDIR_NETTOS       2       /* Redirect Net for TOS  */
+#define ICMP_REDIR_HOSTTOS      3       /* Redirect Host for TOS */
+
+/* Codes for TIME_EXCEEDED. */
+#define ICMP_EXC_TTL            0       /* TTL count exceeded           */
+#define ICMP_EXC_FRAGTIME       1       /* Fragment Reass time exceeded */
+
 typedef struct icmphdr {
 	__u8     type;
 	__u8     code;
@@ -66,8 +76,6 @@ typedef struct icmphdr {
 
 #define ICMP_HEADER_SIZE	(sizeof(struct icmphdr))
 
-typedef void (*ICMP_CALLBACK)(struct sk_buff* response);
-
 static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
 	return (icmphdr_t *)skb->h.raw;
 }
@@ -77,18 +85,30 @@ static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
  */
 
 /**
- * set all realized handlers
+ * Initialize ICMP.
  */
 extern void icmp_init(void);
 
 /**
- * receive packet
+ * Receive packet.
+ *
+ * @param skb received packet
  */
-extern int icmp_rcv(sk_buff_t *pack);
+extern int icmp_rcv(sk_buff_t *skb);
 
 /**
- * Send an ICMP message in response to a situation
+ * Send an ICMP message in response to a situation.
+ * Used by the kernel to transmit ICMP error messages when
+ * specific conditions are detected.
+ *
+ * @param skb_in input IP packet the error is assiciated with
+ * @param type field to use in the ICMP header
+ * @param code field to use in the ICMP header
+ * @param info additional information:
+ * 			MTU for ICMP_FRAG_NEEDED
+ * 			gateway address for ICMP_REDIRECT
+ * 			offset for ICMP_PARAMETERPROB
  */
-extern void icmp_send(sk_buff_t *pack, int type, int code, uint32_t info);
+extern void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info);
 
 #endif /* ICMP_H_ */
