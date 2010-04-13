@@ -20,28 +20,14 @@
  * Stack frame structure accordingly to the SPARC v8 Software Considerations.
  */
 struct stack_frame {
-
-	/**
-	 * 16 words in which to save register window (in and local registers).
-	 */
+	/** 16 words in which to save register window (in and local registers). */
 	struct reg_window reg_window;
-
-	/**
-	 * One-word hidden parameter (address at which callee should store
-	 * aggregate return value).
-	 */
+	/** One-word hidden parameter (address for aggregate return value). */
 	uint32_t structptr[1];
-
-	/**
-	 * 6 words into which callee may store register arguments.
-	 */
+	/** 6 words into which callee may store register arguments. */
 	uint32_t xargs[6];
-
-	/**
-	 * TODO I don't know. Seems to be just a place holder. -- Eldar
-	 */
+	/** TODO I don't know. Seems to be just a place holder. -- Eldar */
 	uint32_t xxargs[1];
-
 }__attribute__ ((aligned (8)));
 
 #else /* __ASSEMBLER__ */

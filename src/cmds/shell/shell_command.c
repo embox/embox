@@ -8,13 +8,12 @@
  */
 
 #include <shell_command.h>
-#include <kernel/sys.h>
 #include <string.h>
 
 int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
 		char **argsv) {
 	if ((NULL != descriptor) && (NULL != descriptor->exec)) {
-		return sys_exec_start(descriptor->exec, argsc, argsv);
+		return descriptor->exec(argsc, argsv); // FIXME job_exec -- Eldar
 	}
 	LOG_ERROR("Error shell command: wrong command descriptor\n");
 	return -1;

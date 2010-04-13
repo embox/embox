@@ -23,15 +23,9 @@ setjmp:
 
 	.global longjmp
 longjmp:
-	/* Provoke all windows to be flushed onto the stack. */
-	mov CONFIG_NWINDOWS - 1, %g1
-1:	subcc %g1, 1, %g1
- 	bg 1b
-	 save
-	mov CONFIG_NWINDOWS - 1, %g1
-1:	subcc %g1, 1, %g1
- 	bg 1b
-	 restore
+	/* Forget my own return address... */
+	call winflush
+	 nop
 
 	/* It is guaranteed that window to be entered executing RESTORE is invalid.
 	 * Just restore the current window from a stack frame pointed by saved %sp

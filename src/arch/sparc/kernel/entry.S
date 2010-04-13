@@ -30,6 +30,10 @@ interrupt_entry:
 	wr %temp, PSR_ET, %psr
 	 ! do not wait
 
+	set current_ctx, %g1
+	add %sp, STACK_FRAME_SZ, %o1
+	st %o1, [%g1]
+
 	/* Forward interrupt handling directly to kernel.
 	 * There is no need to introduce HAL interrupt handling proxy function.
 	 * At least for now. */

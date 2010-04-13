@@ -64,6 +64,7 @@
  */
 #define t_retpc    l7
 
+// TODO remove it from here. -- Eldar
 #define WRITE_PAUSE  nop; nop; nop;
 
 #endif /* __ASSEMBLER__ */

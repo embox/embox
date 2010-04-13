@@ -8,7 +8,6 @@
 #include <assert.h>
 #include <embox/kernel.h>
 #include "console.h"
-#include <kernel/sys.h>
 #include <kernel/diag.h>
 #include <kernel/softirq.h>
 

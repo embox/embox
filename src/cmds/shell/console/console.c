@@ -11,7 +11,6 @@
  */
 
 #include "console.h"
-#include <kernel/sys.h>
 #include <kernel/diag.h>
 #include <kernel/job.h>
 #include <string.h>
@@ -108,7 +107,6 @@ static int on_insert(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 static int on_etx(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	sys_exec_stop();
 	on_new_line(cb, view, 0);
 	return 0;
 }

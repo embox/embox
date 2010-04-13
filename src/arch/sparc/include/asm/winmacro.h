@@ -45,6 +45,8 @@ struct reg_window {
 	uint32_t ins[8];
 }__attribute__ ((aligned (8)));
 
+extern void winflush(void);
+
 #else /* __ASSEMBLER__ */
 
 /* compute sizes by hand */

@@ -10,7 +10,6 @@
 
 #include "console/console.h"
 #include <shell.h>
-#include <kernel/sys.h>
 #include <kernel/job.h>
 #include <shell_command.h>
 #include <embox/unit.h>
