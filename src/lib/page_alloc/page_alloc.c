@@ -97,7 +97,8 @@ pmark_t *page_alloc(void) { /* Don't work!!!! */
 	//if ( pcur->psize >= psize ) {
 		/* change list and return value */
 		if (pcur->psize > psize ) {
-			tt = (long) pcur + (long) PAGE_SIZE * (long) psize; /* I'm not sure that it's good idea */
+			tt = (unsigned long) pcur + (unsigned long) PAGE_SIZE *
+				(unsigned long) psize; /* I'm not sure that it's good idea */
 			pcur->psize -= psize;
 			tmp = cmark_p->pnext;
 			//cmark_p->pprev->pnext = pcur + PAGE_SIZE * psize;
