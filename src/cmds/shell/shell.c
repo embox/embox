@@ -109,7 +109,7 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	}
 }
 
-static void job_abort_callback() {
+static void job_abort_callback(CONSOLE_CALLBACK *cb, CONSOLE *console) {
 	context_set_entry(NULL, job_abort);
 }
 

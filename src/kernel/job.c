@@ -9,17 +9,26 @@
  */
 
 #include <kernel/job.h>
+#include <errno.h>
 
 static jmp_buf current_job;
 static int current_adr;
 
-//Setting up a point for longjmp if the job would be interrupted by pushing ctrl-f
-int job_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
-		char **argsv) {
-	current_adr = setjmp(current_job);
-	return descriptor->exec(argsc,argsv);
+#define LONGJMP_ABORT 1
+
+int job_exec(int (*exec)(int argsc, char **argsv), int argsc,char **argsv) {
+	if (exec == NULL)
+	{
+		return -EINVAL;
+	}
+	if (setjmp(current_job) == 0)
+	{
+		return exec(argsc,argsv);
+	}else{
+		return -EINTR;
+	}
 }
 
 void job_abort(){
-	longjmp(current_job, current_adr);
+	longjmp(current_job, LONGJMP_ABORT);
 }

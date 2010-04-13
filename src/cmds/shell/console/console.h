@@ -25,7 +25,7 @@ typedef struct _CONSOLE_CALLBACK {
 	void (*guess)(struct _CONSOLE_CALLBACK *, struct _CONSOLE *console,
 			const char* line, const int max_proposals, int *proposals_len,
 			char *proposals[], int *offset, int *common);
-	void (*job_abort)();
+	void (*job_abort)(struct _CONSOLE_CALLBACK *, struct _CONSOLE *console);
 	void *user_data;
 } CONSOLE_CALLBACK;
 

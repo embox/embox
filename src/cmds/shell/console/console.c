@@ -129,7 +129,7 @@ static int on_dc4(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 static int on_ack(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
 	if (this->callback != NULL && this->callback->job_abort != NULL)
-		this->callback->job_abort;
+		this->callback->job_abort(this->callback, this);
 	return 0;
 }
 
