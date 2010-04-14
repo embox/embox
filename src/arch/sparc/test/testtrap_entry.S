@@ -7,6 +7,8 @@
 
 #include <asm/entry.h>
 #include <asm/psr.h>
+#include <asm/stack.h>
+
 	.text
 	.align 4
 
