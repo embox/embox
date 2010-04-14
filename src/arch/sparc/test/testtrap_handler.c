@@ -14,8 +14,9 @@ void test_trap_handler(uint8_t tt, uint32_t *data, struct pt_regs *regs) {
 	if (NULL == test_handler) {
 		return;
 	}
-	if (0 != test_handler[tt](tt, (void *)data)) {
-		regs->pc = regs->npc;
-		regs->npc = regs->npc + 4;
-	}
+	test_handler[tt](tt, (void *)data);
+//	if (0 != test_handler[tt](tt, (void *)data)) {
+//		regs->pc = regs->npc;
+//		regs->npc = regs->npc + 4;
+//	}
 }

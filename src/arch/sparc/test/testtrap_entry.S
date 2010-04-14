@@ -14,6 +14,9 @@
 
 	.global test_trap_entry
 test_trap_entry:
+	add %t_pc, 4, %t_pc
+	add %t_npc, 4, %t_npc
+
 	SAVE_ALL
 
 	mov %tbr, %o0
@@ -27,7 +30,8 @@ test_trap_entry:
 	 WRITE_PAUSE
 
 	call test_trap_handler
-	 add %sp, STACK_FRAME_SZ, %o2
+	 nop
+//	 add %sp, STACK_FRAME_SZ, %o2
 
 	RESTORE_ALL
 
