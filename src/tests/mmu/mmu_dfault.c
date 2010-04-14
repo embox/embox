@@ -11,6 +11,7 @@
 
 #include <embox/test.h>
 #include <hal/mm/mmu_core.h>
+#include <hal/mm/mmu_page.h>
 #include <hal/env/traps_core.h>
 #include <hal/test/testmmu_core.h>
 #include <hal/test/testtraps_core.h>
@@ -23,15 +24,16 @@ EMBOX_TEST(run);
 static char addr;
 
 /* MMU data access exception handler */
-static void dfault_handler(uint32_t trap_nr, void *data) {
-	return;
+static int dfault_handler(uint32_t trap_nr, void *data) {
+	return 1;
 }
 
 static int run() {
 	extern char _text_start, __stack, _data_start;
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
-	int var;
+	mmu_page_flags_t flags;
+	unsigned long var;
 
 	mmu_save_env(&prev_mmu_env);
 	mmu_set_env(testmmu_env());
@@ -51,21 +53,21 @@ static int run() {
 
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
 
-	mmu_on();
-
-	mmu_map_region((mmu_ctx_t)0, &addr, 0xf0091004, 0x40000,
+	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr, 0xf0080000, 0x40000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
-	*((volatile unsigned long *)0xf0091004) = 0x11111111;
+	mmu_on();
 
-	//mmu_page_set_flags(0, 0xf0091004, );
+	*((volatile unsigned long *)0xf0080000) = 0x11111111;
+
+	mmu_page_set_flags((mmu_ctx_t)0, 0xf0080000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
 
 	/* Data access exception */
-	*((volatile unsigned long *)0xf0091004) = 0x77777777;
-	var = *((volatile unsigned long *)0xf0091004);
+	*((volatile unsigned long *)0xf0080000) = 0x77777777;
+	var = *((volatile unsigned long *)0xf0080000);
 
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
 
-	return (var == 0x77777777) ? -1 : 0;
+	return (var != 0x11111111) ? -1 : 0;
 }

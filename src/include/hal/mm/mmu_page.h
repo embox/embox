@@ -15,7 +15,7 @@
 #ifndef MMU_PAGE_H_
 #define MMU_PAGE_H_
 
-#include <mmu_core.h>
+#include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/mmu_page.h>
 
 /**

@@ -131,6 +131,23 @@ typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
 #define MMU_PTE_PRIV_RDONLY  0x18
 #define MMU_PTE_ET           0x2
 
+/** Accesses Allowed:
+ *     |User access        |Supervisor access
+ * ACC |(ASI = 0x8 or 0xA) |(ASI = 0x9 or 0xB)
+ * 0   |Read Only          |Read Only
+ * 1   |Read/Write         |Read/Write
+ * 2   |Read/Execute       |Read/Execute
+ * 3   |Read/Write/Execute |Read/Write/Execute
+ * 4   |Execute Only       |Execute Only
+ * 5   |Read Only          |Read/Write
+ * 6   |No Access          |Read/Execute
+ * 7   |No Access          |Read/Write/Execute
+ */
+#define MMU_PTE_RO         0x0
+#define MMU_PTE_RW         0x1
+#define MMU_PTE_RE         0x2
+#define MMU_PTE_EO         0x4
+
 /* Physical page extraction from PTP's and PTE's. */
 #define MMU_CTX_PMASK      0xfffffff0
 #define MMU_PTD_PMASK      0xfffffff0

@@ -18,7 +18,6 @@ static char addr;
 /* starting function for test */
 static int run() {
 	extern char _text_start, __stack, _data_start;
-	unsigned long val;
 	int status = 0;
 	mmu_env_t prev_mmu_env;
 
@@ -35,7 +34,7 @@ static int run() {
 		mmu_map_region((mmu_ctx_t)0, _data_start, _data_start, 0x1000000,
 				MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
-	mmu_map_region((mmu_ctx_t)0, &addr, 0xf0080000, 0x40000,
+	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr, 0xf0080000, 0x40000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
 	mmu_on();
