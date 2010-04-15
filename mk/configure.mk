@@ -56,7 +56,7 @@ $(config_h) $(config_lds_h) :
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' | sed 's/$$define/#define/g' > $@
 
-$(AUTOCONF_FILES) : $(CONF_FILES) $(MK_DIR)/configure.mk \
+$(AUTOCONF_FILES) : $(MK_DIR)/configure.mk \
   | mkdir # this goal shouldn't force target to be updated
 
 -include $(AUTOCONF_FILES:%=%.d)
