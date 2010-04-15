@@ -16,10 +16,10 @@ extern mmu_env_t *cur_env;
 	((pgd_t*)((unsigned long)(*(cur_env->ctx + ctx) << 4) & MMU_PTE_PMASK))
 
 #define GET_PMD(ctx) \
-	((pmd_t*)((unsigned long)((*(pgd_t*)GET_PGD(ctx)) << 4) & MMU_PTE_PMASK))
+	((pmd_t*)((unsigned long)((*GET_PGD(ctx)) << 4) & MMU_PTE_PMASK))
 
 #define GET_PTE(ctx) \
-	((pte_t*)((unsigned long)((*(pgd_t*)GET_PMD(ctx)) << 4) & MMU_PTE_PMASK))
+	((pte_t*)((unsigned long)((*GET_PMD(ctx)) << 4) & MMU_PTE_PMASK))
 
 #define GET_FLAGS(ctx, vaddr) \
 	((mmu_page_flags_t*)(GET_PMD(ctx) + (vaddr >> MMU_MTABLE_MASK_OFFSET)))

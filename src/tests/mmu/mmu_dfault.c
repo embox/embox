@@ -24,8 +24,8 @@ EMBOX_TEST(run);
 static char addr;
 
 /* MMU data access exception handler */
-static void dfault_handler(uint32_t trap_nr, void *data) {
-	return;
+static int dfault_handler(uint32_t trap_nr, void *data) {
+	return 0;
 }
 
 static int run() {

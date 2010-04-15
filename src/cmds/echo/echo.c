@@ -34,8 +34,7 @@ int raw_echo_server(void) {
 	udphdr_t *udph;
 	fd = socket(PF_INET, SOCK_RAW, IPPROTO_UDP);
 	iph = (iphdr_t *) datagram;
-	//NOTE: why 4096? datagram's size was declared to be 1024
-	memset (datagram, 0, 4096);
+	memset (datagram, 0, 1024);
 
 	if (fd < 0) {
 		LOG_ERROR("socket error\n");
