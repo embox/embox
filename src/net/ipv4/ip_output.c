@@ -22,15 +22,15 @@ void __init ip_init(void) {
 /* Generate a checksum for an outgoing IP datagram. */
 inline static void ip_send_check(iphdr_t *iph) {
 	iph->check = 0;
-	iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE);
+	iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE(iph));
 }
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
-		in_addr_t daddr) {
+		in_addr_t daddr/*, ip_options_t *opt*/) {
 	iphdr_t *hdr = skb->nh.iph;
 	hdr->version = 4;
-	hdr->ihl = IP_HEADER_SIZE >> 2;
+	hdr->ihl = IP_MIN_HEADER_SIZE >> 2/* + opt->optlen*/;
 	hdr->saddr = saddr;
 	hdr->daddr = daddr;
 	hdr->tot_len = len - ETH_HEADER_SIZE;
@@ -46,7 +46,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 static int build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	skb->nh.raw = skb->data + ETH_HEADER_SIZE;
 	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.sk_protocol, sk->id, skb->len,
-			sk->saddr, sk->daddr);
+			sk->saddr, sk->daddr/*, sk->opt*/);
 	return 0;
 }
 

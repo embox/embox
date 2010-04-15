@@ -79,7 +79,7 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 	skb->h.icmph->code = icmp_param->data.icmph.code;
 	skb->h.icmph->checksum = 0;
 	skb->h.icmph->checksum = ptclbsum(skb->h.raw,
-				skb->nh.iph->tot_len - IP_HEADER_SIZE );
+				skb->nh.iph->tot_len - IP_HEADER_SIZE(skb->nh.iph) );
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
 				icmp_param->skb->nh.iph->saddr, skb, 0);
@@ -188,13 +188,13 @@ static void icmp_timestamp(sk_buff_t *skb) {
 	icmp_reply(&icmp_param, skb);
 }
 
-#define DATA_SIZE (IP_HEADER_SIZE + 8)
+#define DATA_SIZE(iph) (IP_HEADER_SIZE(iph) + 8)
 
 void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	iphdr_t *iph_in = ip_hdr(skb_in);
 	iphdr_t *iph;
 	icmphdr_t *icmph;
-	char packet[IP_HEADER_SIZE + ICMP_HEADER_SIZE + DATA_SIZE];
+	char packet[IP_HEADER_SIZE(iph_in) + ICMP_HEADER_SIZE + DATA_SIZE(iph_in)];
 	/*
 	 * RFC 1122: 3.2.2 MUST send at least the IP header and 8 bytes of header.
 	 *   MAY send more (we do).
@@ -208,26 +208,26 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 		return;
 	}
 	iph = (iphdr_t *)packet;
-	icmph = (icmphdr_t *)(packet + IP_HEADER_SIZE);
+	icmph = (icmphdr_t *)(packet + IP_HEADER_SIZE(iph_in));
 	/* build IP header */
-	memcpy(iph, iph_in, IP_HEADER_SIZE);
+	memcpy(iph, iph_in, IP_HEADER_SIZE(iph_in));
 	iph->proto = IPPROTO_ICMP;
-	iph->tot_len = IP_HEADER_SIZE + ICMP_HEADER_SIZE + DATA_SIZE;
+	iph->tot_len = IP_HEADER_SIZE(iph_in) + ICMP_HEADER_SIZE + DATA_SIZE(iph_in);
 	iph->daddr = skb_in->nh.iph->saddr;
 	iph->saddr = skb_in->nh.iph->daddr;
 	iph->id++;
 	iph->frag_off = IP_DF;
 	/* build ICMP header */
-	memcpy(icmph + ICMP_HEADER_SIZE, iph_in, DATA_SIZE);
+	memcpy(icmph + ICMP_HEADER_SIZE, iph_in, DATA_SIZE(iph_in));
 	icmph->type = type;
 	icmph->code = code;
 	icmph->un.gateway = info;
 	icmph->checksum = 0;
-	icmph->checksum = ptclbsum(icmph, iph->tot_len - IP_HEADER_SIZE);
+	icmph->checksum = ptclbsum(icmph, iph->tot_len - IP_HEADER_SIZE(iph));
 
 	struct iovec iov = {
 		.iov_base = (void*)packet,
-		.iov_len = IP_HEADER_SIZE + ICMP_HEADER_SIZE + DATA_SIZE,
+		.iov_len = IP_HEADER_SIZE(iph) + ICMP_HEADER_SIZE + DATA_SIZE(iph),
 	};
 	struct msghdr m;
 	m.msg_iov = &iov;
@@ -354,7 +354,7 @@ int icmp_rcv(sk_buff_t *pack) {
 	//TODO: check summ icmp? not need, if ip checksum is ok.
 	tmp = icmph->checksum;
 	icmph->checksum = 0;
-	if( tmp != ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE)) {
+	if( tmp != ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE(pack->nh.iph))) {
 		LOG_ERROR("bad icmp checksum\n");
 		return -1;
 	}

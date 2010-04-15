@@ -66,8 +66,8 @@ static int ping(ping_info_t *pinfo) {
 	iphdr_t *iph;
 	icmphdr_t *icmph;
 	char *from_addr_str, *dst_addr_str;
-	char packet[IP_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
-	char rcv_buff[IP_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
+	char packet[IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
+	char rcv_buff[IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
 	dst_addr_str = inet_ntoa(pinfo->dst);
 	from_addr_str = inet_ntoa(pinfo->from);
 	printf("PING %s %d bytes of data.\n", dst_addr_str, pinfo->padding_size);
@@ -77,16 +77,16 @@ static int ping(ping_info_t *pinfo) {
 		return -1;
 	}
 	iph = (iphdr_t *)packet;
-	icmph = (icmphdr_t *) (packet + IP_HEADER_SIZE);
-	memset(packet, 0, IP_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
+	icmph = (icmphdr_t *) (packet + IP_MIN_HEADER_SIZE);
+	memset(packet, 0, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
 	memset(icmph, pinfo->pattern, pinfo->padding_size);
 	iph->version = 4;
-	iph->ihl = IP_HEADER_SIZE >> 2;
+	iph->ihl = IP_MIN_HEADER_SIZE >> 2;
 	iph->tos = 0;
 	iph->frag_off = IP_DF;
 	iph->saddr = pinfo->from.s_addr;
 	iph->daddr = pinfo->dst.s_addr;
-	iph->tot_len = IP_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size;
+	iph->tot_len = IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size;
 	iph->ttl = pinfo->ttl;
 	iph->proto = IPPROTO_ICMP;
 	icmph->type = ICMP_ECHO;
@@ -96,14 +96,14 @@ static int ping(ping_info_t *pinfo) {
 	for(i = 0; i < pinfo->count; i++) {
 		icmph->un.echo.sequence++;
 		icmph->checksum = 0;
-		icmph->checksum = ptclbsum(packet + IP_HEADER_SIZE,
+		icmph->checksum = ptclbsum(packet + IP_MIN_HEADER_SIZE,
 						ICMP_HEADER_SIZE + pinfo->padding_size);
 
 		sendto(sk, packet, iph->tot_len, 0, (struct sockaddr *)&pinfo->dst, 0);
 		sleep(pinfo->timeout);
 
 		/* we don't need to get pad data, only header */
-		if(recvfrom(sk, rcv_buff, IP_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
+		if(recvfrom(sk, rcv_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
 				(struct sockaddr *)&pinfo->from, NULL) > 0) {
 			printf("%d bytes from %s to %s: icmp_seq=%d ttl=%d time=%d ms\n",
 					pinfo->padding_size, from_addr_str, dst_addr_str, i + 1, pinfo->ttl, 0);

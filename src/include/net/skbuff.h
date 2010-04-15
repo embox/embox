@@ -35,6 +35,7 @@ struct skb_timeval {
  * @tstamp: Time we arrived
  * @protocol: Packet protocol from driver
  * @pkt_type: Packet class
+ * @cb: control buffer, used to store layer-specific info e.g. ip options
  * @len: Length of actual data
  * @h: Transport layer header
  * @nh: Network layer header
@@ -49,6 +50,7 @@ typedef struct sk_buff {
 	struct skb_timeval tstamp;
 	__be16 protocol;
 	uint8_t pkt_type;
+	char cb[52];
 	unsigned int len;
 	union {
 #if 0

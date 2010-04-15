@@ -34,7 +34,7 @@ int raw_echo_server(void) {
 	udphdr_t *udph;
 	fd = socket(PF_INET, SOCK_RAW, IPPROTO_UDP);
 	iph = (iphdr_t *) datagram;
-	udph = (udphdr_t *) (datagram + IP_HEADER_SIZE);
+	//NOTE: why 4096? datagram's size was declared to be 1024
 	memset (datagram, 0, 4096);
 
 	if (fd < 0) {
@@ -48,11 +48,12 @@ int raw_echo_server(void) {
 			iph->saddr = iph->daddr;
 			iph->daddr = tmp_addr;
 			tmp_port = udph->source;
+			udph = (udphdr_t *) (datagram + IP_HEADER_SIZE(iph));
 			udph->source = udph->dest;
 			udph->dest = tmp_port;
 			udph->check = 0;
 			iph->check = 0;
-			iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE);
+			iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE(iph));
 			sendto(fd, datagram, iph->tot_len, 0, (struct sockaddr *)&from, 0);
 		}
 		usleep(10);

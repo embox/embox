@@ -7,7 +7,7 @@ $_SRCS-af_inet += route.c
 $_SRCS-af_inet += ipconfig.c
 
 $_SRCS-arp     += arp.c
-$_SRCS-ipv4    += ip_input.c
+$_SRCS-ipv4    += ip_input.c : ip_options.c
 $_SRCS-ipv4    += ip_output.c
 $_SRCS-icmp    += icmp.c
 $_SRCS-udp     += udp.c

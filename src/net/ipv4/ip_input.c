@@ -7,6 +7,7 @@
  * @author Nikolay Korotky
  */
 #include <err.h>
+#include <string.h>
 #include <net/ip.h>
 #include <net/icmp.h>
 #include <net/udp.h>
@@ -19,14 +20,17 @@
 
 int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			packet_type_t *pt, net_device_t *orig_dev) {
+
 	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(skb->dev);
 	extern net_protocol_t *__ipstack_protos_start, *__ipstack_protos_end;
 	net_protocol_t ** p_netproto = &__ipstack_protos_start;
 	iphdr_t *iph;
 	unsigned short tmp;
 	unsigned int len;
-	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE;
-	iph = skb->nh.iph;
+	int optlen;
+
+	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(skb->nh.iph);
+	iph = ip_hdr(skb);
 	/**
 	 *   RFC1122: 3.1.2.2 MUST silently discard any IP frame that fails the checksum.
 	 *   Is the datagram acceptable?
@@ -36,29 +40,52 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	 *   4.  Doesn't have a bogus length
 	 */
 	if (iph->ihl < 5 || iph->version != 4) {
-		LOG_ERROR("invalide IPv4 header\n");
+		LOG_ERROR("invalid IPv4 header\n");
 		stats->rx_err ++;
 		return NET_RX_DROP;
 	}
 	tmp = iph->check;
 	iph->check = 0;
-	if (tmp != ptclbsum(skb->nh.raw, IP_HEADER_SIZE)) {
+	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
 		LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors ++;
 		return NET_RX_DROP;
 	}
 
 	len = ntohs(iph->tot_len);
-	if (skb->len < len || len < (iph->ihl * 4)) {
-		LOG_ERROR("invalide IPv4 header length\n");
+	if (skb->len < len || len < IP_HEADER_SIZE(iph)) {
+		LOG_ERROR("invalid IPv4 header length\n");
 		stats->rx_length_errors ++;
 		return NET_RX_DROP;
 	}
+
+	optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
+	if (optlen > 0) {
+		/* NOTE : maybe it'd be better to copy skb here,
+		 * 'cause options may cause modifications
+		 * but smart people who wrote linux kernel
+		 * say that this is extremely rarely needed
+		 */
+		ip_options_t *opts = (ip_options_t*)(skb->cb);
+
+		memset(skb->cb, 0, sizeof(skb->cb));
+		opts->optlen = optlen;
+		if (ip_options_compile(skb, opts)) {
+			stats->rx_err ++;
+			return NET_RX_DROP;
+		}
+		if (ip_options_handle_srr(skb))
+		{
+			stats->tx_err ++;
+			return NET_RX_DROP;
+		}
+	}
+
 	/**
-	 * Check the destination address, and if it dosn't match
+	 * Check the destination address, and if it doesn't match
 	 * any of own addresses, retransmit packet according to routing table.
 	 */
-	if(ip_dev_find(skb->nh.iph->daddr) == NULL) {
+	if(ip_dev_find(iph->daddr) == NULL) {
 		if(!ip_route(skb)) {
 			dev_queue_xmit(skb);
 		}
