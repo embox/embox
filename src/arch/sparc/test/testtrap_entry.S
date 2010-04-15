@@ -21,6 +21,8 @@ test_trap_entry:
 	srl %o0, 4, %o0
 	and %o0, 0xFF, %o0 ! pass trap type (TT) as parameter
 
+	mov %i1, %o1
+
 	or %t_psr, PSR_PIL, %g1
 	wr %g1, %g0, %psr
 	 WRITE_PAUSE
