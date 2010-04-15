@@ -10,6 +10,7 @@
 #include <types.h>
 #include <string.h>
 #include <hal/mm/mmu_core.h>
+#include <asm/hal/mm/mmu_page.h>
 #include <asm/asi.h>
 #include <embox/unit.h>
 
@@ -27,11 +28,18 @@ EMBOX_UNIT_INIT(mmu_init)
 ;
 
 void mmu_save_status(uint32_t *status) {
-
+	__asm__ __volatile__("sta %0, [%1] %2\n\t"
+		:
+		: "r"(status), "r"(LEON_CNR_CTRL), "i"(ASI_M_MMUREGS)
+		: "memory"
+	);
 }
 
 void mmu_restore_status(uint32_t *status) {
-
+	__asm__ __volatile__("lda [%1] %2, %0\n\t"
+		: "=r" (status)
+		: "r" (LEON_CNR_CTRL), "i" (ASI_M_MMUREGS)
+	);
 }
 
 void mmu_save_table(uint32_t *status) {
@@ -59,11 +67,15 @@ void mmu_off(void) {
 
 int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, uint32_t flags) {
-	flags = flags << 2;
-	pgd_t *g0 = (unsigned long)(*(cur_env->ctx + ctx) << 4) & MMU_PTE_PMASK;
-	pmd_t *m0 = (unsigned long)(*g0 << 4) & MMU_PTE_PMASK;
-	pte_t *p0 = (unsigned long)(*m0 << 4) & MMU_PTE_PMASK;
-//	printf("ctx= 0x%08x, g0=0x%08x, m0=0x%08x, p0=0x%08x\n", cur_env->ctx, g0, m0, p0);
+	pgd_t *g0 = GET_PGD(ctx);
+	pmd_t *m0 = GET_PMD(ctx);
+//	pte_t *p0 = GET_PTE(ctx);
+	flags = flags << 1;
+	if(flags & (MMU_PAGE_CACHEABLE << 1)) {
+		flags |= MMU_PTE_CACHE;
+	}
+//	printf("ctx= 0x%08x(0x%08x), g0=0x%08x(0x%08x), m0=0x%08x(0x%08x), p0=0x%08x\n",
+//			cur_env->ctx, *cur_env->ctx, g0, *g0, m0, *m0, p0);
 	/* align on page size */
 	reg_size &= ~MMU_PAGE_MASK;
 	phy_addr &= ~MMU_PAGE_MASK;
@@ -91,6 +103,8 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		virt_addr &= MMU_MTABLE_MASK;
 		mmu_set_pte(m0 + (virt_addr >> MMU_MTABLE_MASK_OFFSET),
 				(phy_addr >> 4) | flags);
+//		printf("0x%08x(0x%08x)\n", m0 + (virt_addr >> MMU_MTABLE_MASK_OFFSET),
+//				*(m0 + (virt_addr >> MMU_MTABLE_MASK_OFFSET)));
 	}
 	return -1;
 }
@@ -102,9 +116,10 @@ void mmu_restore_env(mmu_env_t *env) {
 	/* change cur_env pointer */
 	cur_env = env;
 
-	mmu_set_ctable_ptr(env->ctx);
+	mmu_set_ctable_ptr((unsigned long)env->ctx);
 	mmu_set_context(cur_env->cur_ctx);
 	mmu_flush_tlb_all();
+	mmu_restore_status(&(cur_env->status));
 
 	/* restore MMU mode */
 	env->status ? mmu_on(): mmu_off();

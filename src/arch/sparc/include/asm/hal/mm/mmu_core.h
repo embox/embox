@@ -125,10 +125,10 @@ typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
 #define MMU_PTE_CACHE        0x80
 #define MMU_PTE_MODIFIED     0x40
 #define MMU_PTE_REF          0x20
-#define MMU_PTE_EXEC         0x08
-#define MMU_PTE_WRITE        0x04
-#define MMU_PTE_PRIV         0x1c
-#define MMU_PTE_PRIV_RDONLY  0x18
+//#define MMU_PTE_EXEC         0x08
+//#define MMU_PTE_WRITE        0x04
+//#define MMU_PTE_PRIV         0x1c
+//#define MMU_PTE_PRIV_RDONLY  0x18
 #define MMU_PTE_ET           0x2
 
 /** Accesses Allowed:

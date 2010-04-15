@@ -24,15 +24,14 @@ EMBOX_TEST(run);
 static char addr;
 
 /* MMU data access exception handler */
-static int dfault_handler(uint32_t trap_nr, void *data) {
-	return 1;
+static void dfault_handler(uint32_t trap_nr, void *data) {
+	return;
 }
 
 static int run() {
 	extern char _text_start, __stack, _data_start;
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
-	mmu_page_flags_t flags;
 	unsigned long var;
 
 	mmu_save_env(&prev_mmu_env);
@@ -50,6 +49,9 @@ static int run() {
 		mmu_map_region((mmu_ctx_t)0, _data_start, _data_start,
 				0x1000000, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
+
+	mmu_map_region((mmu_ctx_t)0, (uint32_t) 0x80000000,
+			(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE );
 
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
 
