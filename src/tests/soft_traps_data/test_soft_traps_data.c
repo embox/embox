@@ -20,8 +20,9 @@ EMBOX_TEST(run);
 /**
  *  Test handler
  *  */
-static void test_handler(uint32_t trap_nr, void *data) {
+static int test_handler(uint32_t trap_nr, void *data) {
 	(*(uint32_t *)data) ++;
+	return 0;
 }
 
 static int run(void) {

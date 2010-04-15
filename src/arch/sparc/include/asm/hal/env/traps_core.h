@@ -17,7 +17,7 @@
 #define TRAP_TABLE_SIZE      (256)
 
 /** Defines handler for traps_dispatcher in microblaze archecture */
-typedef void (*__trap_handler)(uint32_t nr, void *data);
+typedef int (*__trap_handler)(uint32_t nr, void *data);
 
 /** Defines traps environment for sparc structure */
 typedef struct __traps_env {
