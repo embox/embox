@@ -12,7 +12,7 @@
 #include <errno.h>
 
 static jmp_buf current_job;
-static int current_adr;
+//static int current_adr;
 
 #define LONGJMP_ABORT 1
 

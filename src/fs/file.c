@@ -6,6 +6,7 @@
  */
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 
@@ -17,7 +18,7 @@ FILE *fopen(const char *path, const char *mode) {
 	unsigned int base_addr = 0x40000000;
 	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))) {
 		LOG_ERROR("Can't find ramfs disk\n");
-		return -1;
+		return NULL;
 	}
 	if((fd = rootfs_fopen(path, mode)) == NULL) {
 		param.size = 0x1000000;
@@ -26,7 +27,7 @@ FILE *fopen(const char *path, const char *mode) {
 		sprintf(param.name, basename(path));
 		if (-1 == fsop->create_file(&param)) {
 			LOG_ERROR("Can't create ramfs disk\n");
-			return -1;
+			return NULL;
 		}
 		fd = rootfs_fopen(path, mode);
 	}
@@ -77,7 +78,7 @@ int remove(const char *pathname) {
 		return -1;
 	}
 	sprintf(param.name, basename(pathname));
-	if (-1 == fsop->delete_file(&param)) {
+	if (-1 == fsop->delete_file(param.name)) {
 		LOG_ERROR("Can't delete ramfs disk\n");
 		return -1;
 	}

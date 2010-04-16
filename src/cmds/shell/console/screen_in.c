@@ -131,7 +131,7 @@ void uart_softirq_handler(softirq_nr_t softirq_nr, void *data) {
 	}
 }
 
-static void uart_irq_handler(int irq_num, void *dev_id, struct pt_regs *regs) {
+static void uart_irq_handler(softirq_nr_t irq, void *data) {
 	softirq_raise(UART_SOFTIRQ_NR);
 }
 

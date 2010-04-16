@@ -216,7 +216,7 @@ error:
 int ip_options_handle_srr(sk_buff_t *skb)
 {
 	ip_options_t *opt = (ip_options_t*)(skb->cb);
-	iphdr_t *iph = ip_hdr(skb);
+//	iphdr_t *iph = ip_hdr(skb);
 
 	if (!opt->srr) {
 		return 0;

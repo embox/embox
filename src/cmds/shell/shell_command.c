@@ -9,6 +9,7 @@
 
 #include <shell_command.h>
 #include <string.h>
+#include <kernel/job.h>
 
 int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
 		char **argsv) {
