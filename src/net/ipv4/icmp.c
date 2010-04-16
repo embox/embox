@@ -194,6 +194,8 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	iphdr_t *iph_in = ip_hdr(skb_in);
 	iphdr_t *iph;
 	icmphdr_t *icmph;
+	struct iovec iov;
+	struct msghdr m;
 	char packet[IP_HEADER_SIZE(iph_in) + ICMP_HEADER_SIZE + DATA_SIZE(iph_in)];
 	/*
 	 * RFC 1122: 3.2.2 MUST send at least the IP header and 8 bytes of header.
@@ -225,11 +227,8 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	icmph->checksum = 0;
 	icmph->checksum = ptclbsum(icmph, iph->tot_len - IP_HEADER_SIZE(iph));
 
-	struct iovec iov = {
-		.iov_base = (void*)packet,
-		.iov_len = IP_HEADER_SIZE(iph) + ICMP_HEADER_SIZE + DATA_SIZE(iph),
-	};
-	struct msghdr m;
+	iov.iov_base = (void*)packet;
+	iov.iov_len = IP_HEADER_SIZE(iph) + ICMP_HEADER_SIZE + DATA_SIZE(iph);
 	m.msg_iov = &iov;
 	kernel_sendmsg(NULL, __icmp_socket, &m, iov.iov_len);
 

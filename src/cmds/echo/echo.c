@@ -25,7 +25,7 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 int raw_echo_server(void) {
-	int fd;
+	int fd, fromlen;
 	struct sockaddr_in from;
 	char datagram[1024];
 	in_addr_t tmp_addr;
@@ -41,19 +41,19 @@ int raw_echo_server(void) {
 		return -1;
 	}
 	while(1) {
-		if (recvfrom(fd, datagram, 1024, 0, (struct sockaddr *)&from, NULL) > 0) {
+		if (recvfrom(fd, datagram, 1024, 0, (struct sockaddr *)&from, &fromlen) > 0) {
 			//printf ("Caught udp packet: %s\n", datagram + IP_HEADER_SIZE + UDP_HEADER_SIZE);
 			tmp_addr = iph->saddr;
 			iph->saddr = iph->daddr;
 			iph->daddr = tmp_addr;
-			tmp_port = udph->source;
 			udph = (udphdr_t *) (datagram + IP_HEADER_SIZE(iph));
+			tmp_port = udph->source;
 			udph->source = udph->dest;
 			udph->dest = tmp_port;
 			udph->check = 0;
 			iph->check = 0;
 			iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE(iph));
-			sendto(fd, datagram, iph->tot_len, 0, (struct sockaddr *)&from, 0);
+			sendto(fd, datagram, iph->tot_len, 0, (struct sockaddr *)&from, fromlen);
 		}
 		usleep(10);
 	}

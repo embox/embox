@@ -61,12 +61,11 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 	struct socket *sock = sockfd_lookup(sockfd);
 	struct sockaddr_in *daddr = (struct sockaddr_in *)dest_addr;
 	struct inet_sock *inet = inet_sk(sock->sk);
+	struct iovec iov;
+	struct msghdr m;
 	//TODO: temporary XXX
-	struct iovec iov = {
-		.iov_base = (void*)buf,
-	 	.iov_len = len
-	};
-	static struct msghdr m;
+	iov.iov_base = (void*)buf;
+	iov.iov_len = len;
 	m.msg_iov = &iov;
 	inet->dport = daddr->sin_port;
 	if(inet->sport == 0) {
@@ -83,12 +82,11 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 	struct socket *sock = sockfd_lookup(sockfd);
 	struct sockaddr_in *saddr = (struct sockaddr_in *)src_addr;
 	struct inet_sock *inet = inet_sk(sock->sk);
+	struct iovec iov;
+	struct msghdr m;
 	//TODO: temporary XXX
-	struct iovec iov = {
-		.iov_base = (void*)buf,
-		.iov_len = len
-	};
-	static struct msghdr m;
+	iov.iov_base = (void*)buf;
+	iov.iov_len = len;
 	m.msg_iov = &iov;
 	m.msg_iov->iov_len = kernel_recvmsg(NULL, sock, &m, len, flags);
 	saddr->sin_port = inet->dport;

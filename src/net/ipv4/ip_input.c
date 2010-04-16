@@ -24,13 +24,12 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(skb->dev);
 	extern net_protocol_t *__ipstack_protos_start, *__ipstack_protos_end;
 	net_protocol_t ** p_netproto = &__ipstack_protos_start;
-	iphdr_t *iph;
+	iphdr_t *iph = ip_hdr(skb);
 	unsigned short tmp;
 	unsigned int len;
 	int optlen;
 
-	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(skb->nh.iph);
-	iph = ip_hdr(skb);
+	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
 	/**
 	 *   RFC1122: 3.1.2.2 MUST silently discard any IP frame that fails the checksum.
 	 *   Is the datagram acceptable?

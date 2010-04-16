@@ -37,7 +37,7 @@ int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 								inet->opt->optlen + UDP_HEADER_SIZE +
 								msg->msg_iov->iov_len, 0);
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
-	skb->h.raw = (unsigned char *) skb->nh.raw + IP_HEADER_SIZE(skb->nh.iph);
+	skb->h.raw = (unsigned char *) skb->nh.raw + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
 	memcpy((void*)((unsigned int)(skb->h.raw + UDP_HEADER_SIZE)),
 				(void*)msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill UDP header */
