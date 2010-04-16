@@ -16,7 +16,7 @@ $_SRCS-main += main.c
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
 $_SRCS-main += job.c
-
+$_SRCS-main += thread.c
 $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq
 $_DEPS-main += timer
