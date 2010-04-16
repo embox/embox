@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief test page allocator
- * @details
+ * @details Some random or interactive tests for page allocator
  *
  * @date 04.04.10
  * @author Fedor Burdun
@@ -190,7 +190,7 @@ void pop() {
 }
 
 /**
- * Debug output memory
+ * Debug output memory (print list of markers)
  */
 void do_allpage() {
 	pmark_t* pcur = get_cmark_p();
@@ -207,8 +207,14 @@ void do_allpage() {
 	} while (pcur != get_cmark_p());
 }
 
+/**
+ * memory error counter
+ */
 int count_of_error = 0;
 
+/**
+ * simply memory checker (sum free and alocated memory must be equal size of pool)
+ */
 void memory_check() {
 	size_t allocp = allow_page_count();
 	size_t freep  = free_page_count();
@@ -228,7 +234,6 @@ int main() {
 
 	page_alloc_init();
 
-//#if 0
 	#ifdef INTERACTIVE_TEST
 	printf("Input: number of tests :: ");
 	scanf("%d",&test_count);
@@ -280,6 +285,5 @@ int main() {
 	memory_check();
 
 	printf("\n\nMEMORY BAD SITUATION: %d\n",count_of_error);
-//#endif
 }
 

@@ -54,8 +54,12 @@ void page_free(pmark_t *paddr);
 #define PAGE_QUANTITY 0x100000
 #define PAGE_SIZE 0x100
 
+/* return pool pointer, need for test */
 pmark_t* get_cmark_p();
+
+/* evident initialize of page alloc, need for test */
 int page_alloc_init(void);
+
 #endif
 
 #endif /* __PAGE_ALLOC_H_ */

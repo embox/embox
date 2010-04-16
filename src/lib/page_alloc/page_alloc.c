@@ -1,16 +1,11 @@
 /**
  * @file
  * @brief page allocator
- * @details
+ * @details Use `page allocator' when we need allocate or free only one page,
+ * else see `multipage allocator' or `malloc'.
  *
  * @date 04.04.10
  * @author Fedor Burdun
- */
-
-/*
- * TODO:
- * 	rewrite (long) to (void *) or something
- * 		:98
  */
 
 #include <errno.h>
@@ -27,8 +22,6 @@ int page_alloc_hasinit = 0;
 
 #ifdef EXTENDED_TEST
 
-//very TEMP!!!
-//	#include <stdio.h>
 static uint8_t page_pool[PAGE_QUANTITY][PAGE_SIZE];
 static pmark_t *cmark_p = (pmark_t *) page_pool;
 #else
@@ -66,10 +59,8 @@ int page_alloc_init(void) {
 }
 
 /* allocate page */
-pmark_t *page_alloc(void) { /* Don't work!!!! */
+pmark_t *page_alloc(void) {
 	size_t psize = 1;
-	//int has_only_one_block = 0;
-
 	pmark_t *pcur,*tmp,*tt;
 
 	if (!page_alloc_hasinit) {
@@ -87,41 +78,29 @@ pmark_t *page_alloc(void) { /* Don't work!!!! */
 	/* find first proper block */
 	pcur = cmark_p;
 
-#if 0
-	if (pcur->pnext == pcur) {
-		has_only_one_block = 1;
-	}
-#endif
-
 	/* check finded block */
-	//if ( pcur->psize >= psize ) {
-		/* change list and return value */
-		if (pcur->psize > psize ) {
-			tt = (unsigned long) pcur + (unsigned long) PAGE_SIZE *
-				(unsigned long) psize; /* I'm not sure that it's good idea */
-			pcur->psize -= psize;
-			tmp = cmark_p->pnext;
-			//cmark_p->pprev->pnext = pcur + PAGE_SIZE * psize;
-			//tmp->pprev = pcur + PAGE_SIZE * psize;
-			//cmark_p = copy_mark( pcur , pcur + PAGE_SIZE * psize );
-			cmark_p->pprev->pnext = tt;
-			tmp->pprev = tt;
-			cmark_p = copy_mark( pcur , tt );
-			return pcur;
-		} else {
-			if (pcur->pnext == pcur) {
-				cmark_p = NULL;
-				return NULL;
-			} else {
-				/* psize == pcur->psize */
-				pcur->pprev->pnext = pcur->pnext;
-				pcur->pnext->pprev = pcur->pprev;
-				cmark_p = pcur->pnext;
-				return pcur;
-			}
-		}
-	//}
 
+	/* change list and return value */
+	if (pcur->psize > psize ) {
+		tt = (unsigned long) pcur + (unsigned long) PAGE_SIZE *
+			(unsigned long) psize;
+		pcur->psize -= psize;
+		tmp = cmark_p->pnext;
+		cmark_p->pprev->pnext = tt;
+		tmp->pprev = tt;
+		cmark_p = copy_mark( pcur , tt );
+		return pcur;
+	} else {
+		if (pcur->pnext == pcur) {
+			cmark_p = NULL;
+			return NULL;
+		} else { /* psize == pcur->psize */
+			pcur->pprev->pnext = pcur->pnext;
+			pcur->pnext->pprev = pcur->pprev;
+			cmark_p = pcur->pnext;
+			return pcur;
+		}
+	}
 	return NULL;
 }
 
