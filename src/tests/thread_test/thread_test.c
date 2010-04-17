@@ -7,14 +7,12 @@
  */
 
 #include <embox/test.h>
-#include <hal/thread.h>
+#include <kernel/thread.h>
 
 EMBOX_TEST(run);
 
-#define THREAD_STACK_SIZE 1000
-static int array[THREAD_STACK_SIZE];
-
 static int run() {
-	idle_thread = thread_create(idle_run, array, (size_t)sizeof(array));
+	threads_init();
+	scheduler_dispatch();
 	return 0;
 }
