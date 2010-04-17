@@ -12,7 +12,7 @@
 
 #include <lib/page_alloc.h>
 
-#define TEST_COUNT 10
+#define TEST_COUNT 0x100
 #define TEST_STACK_SIZE	(2*TEST_COUNT+2)
 
 #if 0
@@ -118,18 +118,16 @@ static int run(void) {
 	do {
 		if (++test_id<TEST_COUNT) {
 			if (NULL == (*last = page_alloc())) {
-				printf("No memory! ");
-				break;
+			} else {
+				last = ++last < pointers+TEST_STACK_SIZE ? last : pointers;
+				++callowed;
 			}
-			last = ++last < pointers+TEST_STACK_SIZE ? last : pointers;
 
 			if (NULL == (*last = page_alloc())) {
-				printf("No memory! ");
-				break;
+			} else {
+				last = ++last < pointers+TEST_STACK_SIZE ? last : pointers;
+				++callowed;
 			}
-			last = ++last < pointers+TEST_STACK_SIZE ? last : pointers;
-
-			callowed += 2;
 		}
 		page_free(*first);
 		first = ++first < pointers+TEST_STACK_SIZE ? first : pointers;
@@ -137,7 +135,7 @@ static int run(void) {
 
 	} while (first!=last); /* queue is not empty */
 
-	printf("Allowed %d free %d: ",callowed,cfree);
+	printf("allowed %d free %d: ",callowed,cfree);
 
 	return callowed == cfree ? 0 : 1;
 }

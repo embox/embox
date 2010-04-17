@@ -51,7 +51,7 @@ pmark_t *page_alloc(void);
 void page_free(pmark_t *paddr);
 
 #ifdef EXTENDED_TEST
-#define PAGE_QUANTITY 0x100000
+#define PAGE_QUANTITY 0x10
 #define PAGE_SIZE 0x100
 
 /* return pool pointer, need for test */

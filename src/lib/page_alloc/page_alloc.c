@@ -12,7 +12,7 @@
 #include <lib/page_alloc.h>
 
 #ifndef PAGE_QUANTITY
-# define PAGE_QUANTITY 0x100
+# define PAGE_QUANTITY 0x10
 #endif
 #ifndef PAGE_SIZE
 # define PAGE_SIZE 0x100
@@ -60,7 +60,7 @@ int page_alloc_init(void) {
 
 /* allocate page */
 pmark_t *page_alloc(void) {
-	size_t psize = 1;
+	/* size_t psize = 1; */
 	pmark_t *pcur,*tmp,*tt;
 
 	if (!page_alloc_hasinit) {
@@ -78,23 +78,27 @@ pmark_t *page_alloc(void) {
 	/* find first proper block */
 	pcur = cmark_p;
 
+	#if 0
+	printf("cmark_p: %d size: %d \n",cmark_p,cmark_p->psize);
+	#endif
+
 	/* check finded block */
 
 	/* change list and return value */
-	if (pcur->psize > psize ) {
+	if (pcur->psize > 1 ) { /* 1 := psize */
 		tt = (unsigned long) pcur + (unsigned long) PAGE_SIZE *
-			(unsigned long) psize;
-		pcur->psize -= psize;
+			(unsigned long) 1;  /* 1:= psize */
+		pcur->psize -= 1; /* 1 := psize */
 		tmp = cmark_p->pnext;
 		cmark_p->pprev->pnext = tt;
 		tmp->pprev = tt;
 		cmark_p = copy_mark( pcur , tt );
 		return pcur;
-	} else {
-		if (pcur->pnext == pcur) {
+	} else {/* psize =: 1 == pcur->psize */
+		if (pcur->pnext == pcur) { /* it's last block */
 			cmark_p = NULL;
-			return NULL;
-		} else { /* psize == pcur->psize */
+			return pcur;
+		} else {
 			pcur->pprev->pnext = pcur->pnext;
 			pcur->pnext->pprev = pcur->pprev;
 			cmark_p = pcur->pnext;
@@ -106,6 +110,13 @@ pmark_t *page_alloc(void) {
 
 /* free page that was allocated */
 void page_free(pmark_t *paddr) {
+	#if 0
+	if (paddr == NULL) {
+		printf("PAGE FREE: try free NULL pointer!!!\n");
+		return;
+	}
+	#endif
+
 	paddr->psize = 1;
 
 	if (cmark_p == NULL) { /* if don't exist any free page */
