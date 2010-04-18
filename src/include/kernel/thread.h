@@ -4,7 +4,7 @@
  * working with them. Implementation look at
  * src/kernel/thread.c
  *
- * @date 16.04.2010
+ * @date 18.04.2010
  * @author Avdyukhin Dmitry
  */
 
@@ -17,10 +17,11 @@
  * Thread, which make nothing.
  * Is used to be working when there is no another process.
  */
-extern struct thread * idle_thread;
+extern struct thread idle_thread;
 /**
  * If it doesn't equal to zero, it means
- * that we are located in critical section.
+ * that we are located in critical section
+ * and cant's switch between threads.
  */
 extern int preemption_count;
 
@@ -34,6 +35,7 @@ struct thread {
 	struct context thread_context;
 	thread_id_t id;
 	thread_priority_t priority;
+	bool must_be_switched;
 };
 
 /**
@@ -45,8 +47,10 @@ void threads_init(void);
 /**
  * Creates new thread with function pointer run,
  * stack address stack_address and stack size stack_size.
+ * Returns 0 if all parameters are correct and code of error otherwise.
  */
-struct thread *thread_create(void (*run)(void), void *stack_address, size_t stack_size);
+int thread_create(struct thread *created_thread, void (*run)(void),
+		void *stack_address);
 
 /**
  * Deletes chosen thread.

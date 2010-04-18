@@ -1,8 +1,8 @@
 /**
- * @file thread.c
+ * @file
  * @brief TODO
  *
- * @date 16.04.2010
+ * @date 18.04.2010
  * @author Avdyukhin Dmitry
  */
 
@@ -11,43 +11,28 @@
 #include <hal/arch.h>
 #include <errno.h>
 
-/**
- * Allots memory segment of chosen size
- * Returns address of alloted segment.
- */
-void *kmem_alloc(size_t size) {
-	/**TODO*/
-	return NULL;
-}
-
-/**
- * Cleans memory with chosen address
- */
-void kmem_free(void *address) {
-	/**TODO*/
-}
-
-struct thread *idle_thread;
+struct thread idle_thread;
 int preemption_count;
 
-struct thread *thread_create(void (*run)(void),
-		void *stack_address, size_t stack_size) {
-	if (run == NULL || stack_size < 0 || (int)stack_address < (size_t)stack_size) {
-		return NULL;
+int thread_create(struct thread *created_thread, void (*run)(void),
+		void *stack_address) {
+	if (created_thread == NULL || run == NULL || stack_address == NULL) {
+		return EINVAL;
 	}
-	struct thread *created_thread =
-		(struct thread *)kmem_alloc((size_t)sizeof(struct thread));
 	context_init(&created_thread->thread_context, true);
-	context_set_entry(&created_thread->thread_context, (void *)run);
+	context_set_entry(&created_thread->thread_context, run);
 	context_set_stack(&created_thread->thread_context, stack_address);
-	return created_thread;
+	return 0;
 }
 
 int thread_delete (struct thread *deleted_thread) {
+	/**TODO*/
 	if (deleted_thread == NULL) {
 		return EINVAL;
 	}
+#if 0
 	kmem_free(&deleted_thread);
+#endif
 	return 0;
 }
 
@@ -62,8 +47,8 @@ static int idle_thread_stack[THREAD_STACK_SIZE];
 
 void threads_init(void) {
 	preemption_count = 0;
-	idle_thread = thread_create(idle_run, idle_thread_stack,
-			(size_t)sizeof(idle_thread_stack));
+	thread_create(&idle_thread, idle_run,
+			idle_thread_stack + sizeof(idle_thread_stack));
 }
 
 void scheduler_lock(void) {
