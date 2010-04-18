@@ -13,12 +13,14 @@
 
 /* declare test in system */
 EMBOX_TEST(run);
-static char addr;
+static char addr[0x1000 * 3];
+static char *pointer;
 
 /* starting function for test */
 static int run() {
 	extern char _text_start, __stack, _data_start;
 	int status = 0;
+	int i;
 	mmu_env_t prev_mmu_env;
 
 	mmu_save_env(&prev_mmu_env);
@@ -36,9 +38,7 @@ static int run() {
 	}
 	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr, 0xf0080000, 0x40000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
-
 	mmu_on();
-
 	if ((*((unsigned long *)0xf0080000)) != (*((unsigned long *)&addr))) {
 		status = -1;
 	}
@@ -49,6 +49,7 @@ static int run() {
 		status = -1;
 	}
 
+	mmu_off;
 	mmu_restore_env(&prev_mmu_env);
 	return status;
 }
