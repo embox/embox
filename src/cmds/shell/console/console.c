@@ -21,8 +21,8 @@
 			(update)((console)->view, (console)->model); \
 		} while(0)
 
-#define CB_EDIT_MODEL(action, ...) \
-		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action, ##__VA_ARGS__)
+#define CB_EDIT_MODEL(...) \
+		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, ##__VA_ARGS__)
 
 CONSOLE *cur_console = NULL;
 
@@ -99,7 +99,7 @@ static int on_end(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	return 0;
 }
 
-static int on_insert(SCREEN_CALLBACK *cb, SCREEN *view) {
+static int on_insert(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
 	CMDLINE *cmd = this->model;
 	cmd->is_insert_mode = cmd->is_insert_mode ? 0 : 1;
