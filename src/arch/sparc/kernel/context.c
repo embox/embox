@@ -9,12 +9,14 @@
 // XXX this is the very very temporal solution. -- Eldar
 
 #include <types.h>
+#include <assert.h>
 
 #include <hal/context.h>
 #include <asm/psr.h>
 
 void context_init(struct context *ctx, bool privileged) {
 	// TODO initial context state... -- Eldar
+//	ctx->regs.psr = PSR_S | PSR_ET;
 	if (privileged) {
 		ctx->regs.psr |= PSR_PS;
 	}
@@ -25,14 +27,11 @@ void context_set_stack(struct context *ctx, void *sp) {
 }
 
 struct context *current_ctx; // XXX I'll fix it soon. -- Eldar
-void context_set_entry(struct context *ctx, void *pc) {
+void context_set_entry(struct context *ctx, void (*pc)(int), int arg) {
 	if (!ctx) {
 		ctx = current_ctx;
 	}
-	ctx->regs.pc = (uint32_t) pc;
-	ctx->regs.npc = (uint32_t) pc + 4;
+	assert(ctx != NULL);
+	ctx->regs.ins[7] = (uint32_t) pc - 8;
+	ctx->regs.ins[0] = (uint32_t) arg;
 }
-
-// TODO locore context switch. -- Eldar
-// and do not forget to flush all windows.
-void context_switch(struct context *prev, struct context *next);

@@ -20,7 +20,7 @@ int thread_create(struct thread *created_thread, void (*run)(void),
 		return EINVAL;
 	}
 	context_init(&created_thread->thread_context, true);
-	context_set_entry(&created_thread->thread_context, run);
+	context_set_entry(&created_thread->thread_context, run, 0);
 	context_set_stack(&created_thread->thread_context, stack_address);
 	return 0;
 }

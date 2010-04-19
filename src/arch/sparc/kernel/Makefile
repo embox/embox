@@ -18,7 +18,7 @@ endif
 $_SRCS-arch      += arch.c
 $_SRCS-clock     += clock_gptimer.c
 $_SRCS-interrupt += interrupt_irqmp.c
-$_SRCS-context   += context.c
+$_SRCS-context   += context.c context_switch.S
 $_SRCS-thread    += thread.c
 
 $_SRCS-traps 	 += traps_core.c

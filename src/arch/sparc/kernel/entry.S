@@ -22,6 +22,12 @@
 interrupt_entry:
 	SAVE_ALL
 
+	! XXX fucking shit -- Eldar
+	set current_ctx, %g1
+	ld [%g1], %t_retpc
+	add %sp, STACK_FRAME_SZ, %o1
+	st %o1, [%g1]
+
 	andn %t_psr, PSR_PIL, %temp
 	sll %local, 8, %g1
 	or %temp, %g1, %temp
@@ -29,10 +35,6 @@ interrupt_entry:
 	 WRITE_PAUSE
 	wr %temp, PSR_ET, %psr
 	 ! do not wait
-
-	set current_ctx, %g1
-	add %sp, STACK_FRAME_SZ, %o1
-	st %o1, [%g1]
 
 	/* Forward interrupt handling directly to kernel.
 	 * There is no need to introduce HAL interrupt handling proxy function.
@@ -49,6 +51,10 @@ interrupt_entry:
 	! XXX clean up and describe these bugs -- Eldar.
 	wr %temp, %g0, %psr
 	 WRITE_PAUSE
+
+	! XXX KILL IT WITH FIRE!!!!1111 -- Eldar
+	set current_ctx, %g1
+	st %t_retpc, [%g1]
 
 	RESTORE_ALL
 
