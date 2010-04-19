@@ -9,7 +9,6 @@
 #ifndef AMBA_PNP_H_
 #define AMBA_PNP_H_
 
-#include <drivers/pnp_id.h>
 #include <assert.h>
 
 #define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) if (-1 == capture_amba_dev(dev, venID, devID, true, true)){\

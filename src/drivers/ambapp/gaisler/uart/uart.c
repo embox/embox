@@ -106,10 +106,10 @@ char uart_getc(void) {
 #ifdef CONFIG_AMBAPP
 static int dev_regs_init() {
 	AMBA_DEV amba_dev;
-	if (-1 == capture_amba_dev(&amba_dev, VENDOR_ID_GAISLER,
-					DEV_ID_GAISLER_UART, false, false)) {
+	if (-1 == capture_amba_dev(&amba_dev, CONFIG_VENDOR_ID_GAISLER,
+					CONFIG_DEV_ID_GAISLER_UART, false, false)) {
 		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",
-				VENDOR_ID_GAISLER, DEV_ID_GAISLER_UART);
+				CONFIG_VENDOR_ID_GAISLER, CONFIG_DEV_ID_GAISLER_UART);
 		return -ENODEV;
 	}
 	dev_regs = (volatile struct apbuart_regs *) amba_dev.bar[0].start;

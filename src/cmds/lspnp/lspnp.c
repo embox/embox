@@ -8,7 +8,6 @@
 #include <shell_command.h>
 #include <string.h>
 #include <drivers/amba_pnp.h>
-#include <drivers/pnp_id.h>
 
 #define COMMAND_NAME     "lspnp"
 #define COMMAND_DESC_MSG "show list of plug and play devices"
@@ -40,10 +39,10 @@ typedef struct _PNP_DEVICE_INFO {
 } PNP_DEVICE_INFO;
 
 PNP_DEVICE_INFO gaisler_pnp_devices_table [] = {
-	#include "gaisler_pnp_devices_table.inc"
+	#include <gaisler_pnp_devices_table.inc>
 };
 PNP_DEVICE_INFO esa_pnp_devices_table [] = {
-	#include "esa_pnp_devices_table.inc"
+	#include <esa_pnp_devices_table.inc>
 };
 
 /**
@@ -58,13 +57,13 @@ typedef struct _PNP_VENDOR_INFO {
 
 
 static PNP_VENDOR_INFO const vendors_table[] = {
-	#include "pnp_vendors_table.inc"
+	#include <pnp_vendors_table.inc>
 };
 
 static PNP_DEVICE_INFO const devs_table[] = {
-	#include "gaisler_pnp_devices_table.inc"
+	#include <gaisler_pnp_devices_table.inc>
 	,
-	#include "esa_pnp_devices_table.inc"
+	#include <esa_pnp_devices_table.inc>
 };
 
 #define VENDORS_TABLE_LEN        array_len(vendors_table)

@@ -14,7 +14,7 @@
 /* declare test in system */
 EMBOX_TEST(run);
 static char addr[0x1000 * 3];
-static char *pointer;
+//static char *pointer;
 
 /* starting function for test */
 static int run() {
@@ -49,7 +49,6 @@ static int run() {
 		status = -1;
 	}
 
-	mmu_off;
 	mmu_restore_env(&prev_mmu_env);
 	return status;
 }

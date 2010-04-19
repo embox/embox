@@ -71,7 +71,7 @@ uint8_t page_pool[PAGE_SIZE * 100];
 uint8_t *page_pool_ptr = NULL;
 
 //TODO replace this with default page alloc
-static pmark_t *mypage_alloc() {
+static pmark_t *mypage_alloc(void) {
 	if (page_pool_ptr == NULL) {
 		page_pool_ptr = page_pool;
 	}
@@ -79,7 +79,7 @@ static pmark_t *mypage_alloc() {
 	return (pmark_t *) (((unsigned long) page_pool_ptr) & ~0xfff);
 }
 
-static pmark_t *clear_page_alloc() {
+static pmark_t *clear_page_alloc(void) {
 	uint32_t i;
 	pmark_t *t = mypage_alloc();
 	for (i = 0; i < PAGE_SIZE >> 2; i++) {
@@ -91,6 +91,7 @@ static pmark_t *clear_page_alloc() {
 
 uint8_t *cur_page = NULL;
 size_t cur_rest = 0;
+
 pmd_t *table_alloc(size_t size) {
 	uint8_t *t;
 	if (cur_rest < size) {
@@ -106,28 +107,41 @@ pmd_t *table_alloc(size_t size) {
 	return (pmd_t *) t;
 }
 
-static unsigned long levels[] = {0xffffffff,
-			    MMU_MTABLE_MASK + (1<<MMU_MTABLE_MASK_OFFSET),
-			    MMU_PTABLE_MASK + (1<<MMU_PTABLE_MASK_OFFSET),
-			    MMU_PAGE_MASK + 1, 1};
-static unsigned long offsets[] = {32,
-			     MMU_GTABLE_MASK_OFFSET,
-			     MMU_MTABLE_MASK_OFFSET,
-			     MMU_PTABLE_MASK_OFFSET,
-			     0};
-static unsigned long masks[] = {0xffffffff,
-			   MMU_GTABLE_MASK,
-			   MMU_MTABLE_MASK,
-			   MMU_PTABLE_MASK,
-			   MMU_PAGE_MASK};
+static unsigned long levels[] = {
+	0xffffffff,
+	MMU_MTABLE_MASK + (1<<MMU_MTABLE_MASK_OFFSET),
+	MMU_PTABLE_MASK + (1<<MMU_PTABLE_MASK_OFFSET),
+	MMU_PAGE_MASK + 1,
+	1
+};
+
+static unsigned long offsets[] = {
+	32,
+	MMU_GTABLE_MASK_OFFSET,
+	MMU_MTABLE_MASK_OFFSET,
+	MMU_PTABLE_MASK_OFFSET,
+	0
+};
+
+static unsigned long masks[] = {
+	0xffffffff,
+	MMU_GTABLE_MASK,
+	MMU_MTABLE_MASK,
+	MMU_PTABLE_MASK,
+	MMU_PAGE_MASK
+};
+
 static unsigned long *context[] = {NULL, NULL, NULL, NULL, NULL };
 
 typedef void (*setter)(unsigned long ptd, unsigned long pte);
-static setter setters[] = {NULL,
-			  &mmu_pgd_set,
-			  &mmu_pmd_set,
-			  &mmu_set_pte,
-			  NULL};
+
+static setter setters[] = {
+	NULL,
+	&mmu_pgd_set,
+	&mmu_pmd_set,
+	&mmu_set_pte,
+	NULL
+};
 
 void flags_translate(uint32_t *flags) {
 	uint32_t fl = *flags;
@@ -148,13 +162,13 @@ void flags_translate(uint32_t *flags) {
 
 int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, uint32_t flags) {
-        uint8_t cur_level = 1; /* pointer in levels array -- techincal thing*/
+	uint8_t cur_level = 1; /* pointer in levels array -- techincal thing*/
 	uint32_t cur_offset;
 	signed long treg_size;
 	unsigned long pte;
 	context[1] = (unsigned long *) (((*(((unsigned long *) cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4));
 
-        /* assuming addresses aligned to page size */
+	/* assuming addresses aligned to page size */
 	phy_addr &= ~MMU_PAGE_MASK;
 	virt_addr &= ~MMU_PAGE_MASK;
 	reg_size &= ~MMU_PAGE_MASK;
@@ -189,7 +203,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 			/* going to the next level map */
 			pte = *((unsigned long *) context[cur_level] + cur_offset);
 			context[cur_level + 1] = (unsigned long *) ((pte & MMU_PTD_PMASK) << 4);
-    		}
+		}
 		/* we are on the best fitting level - creating mapping */
 		mmu_set_pte(context[cur_level] + cur_offset,
 				(((phy_addr >> 4) ) & MMU_PTE_PMASK) | flags | MMU_PTE_ET);
