@@ -69,7 +69,7 @@ static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
 /*we must use proxy for interrupt handler because we must clean bit in register
  * timer.
  */
-static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
+static irqreturn_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	timer0->tcsr |= TIMER_INT;
 	// XXX Anton irq_func_tmr_1mS bad style
 	clock_tick_handler(irq_nr,dev_id);

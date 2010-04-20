@@ -218,7 +218,7 @@ static void pack_receiving(void *dev_id) {
 /**
  * IRQ handler
  */
-static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {
+static irqreturn_t irq_handler(irq_nr_t irq_num, void *dev_id) {
 	if (NULL != get_rx_buff()) {
 		pack_receiving(dev_id);
 	}
