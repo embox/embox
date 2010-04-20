@@ -20,7 +20,7 @@ endif
 
 MK_DIR         := $(ROOT_DIR)/mk
 SCRIPTS_DIR    := $(ROOT_DIR)/scripts
-PROJECTS_DIR  := $(ROOT_DIR)/templates
+PROJECTS_DIR   := $(ROOT_DIR)/templates
 THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 PLATFORM_DIR   := $(ROOT_DIR)/platform
 SRC_DIR        := $(ROOT_DIR)/src
@@ -46,8 +46,9 @@ RM     := rm -f
 CP     := cp
 EDIT   := emacs
 PRINTF := printf
+SHELL  := bash
 
-TEMPLATES = $(notdir $(wildcard $(TEMPLATES_DIR)/*))
+TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 
 include $(MK_DIR)/rules.mk
 include $(MK_DIR)/util.mk
@@ -213,18 +214,31 @@ endif
 	cp -fvr -t $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/ \
 			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
 	@echo Config was saved.
+
+menuconfig: PROJECT := `dialog \
+                --stdout --backtitle "Configuration template selection" \
+                --radiolist "Select project to load:" 10 40 \
+                $(shell echo $(TEMPLATES) | wc -w) \
+                $(patsubst %,% "" off,$(TEMPLATES))`
+menuconfig: PROFILE := `dialog \
+                --stdout --backtitle "Configuration template selection" \
+                --radiolist "Select profile to load:" 10 40 \
+                $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
+                $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
 menuconfig:
-	make PROFILE=`dialog \
-		--stdout --backtitle "Configuration template selection" \
-		--radiolist "Select template to load:" 10 40 3 \
-		$(patsubst %,% "" off,$(TEMPLATES))` \
-	config
+	make PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) -nw $(CONF_DIR)/*.conf
 
+xconfig: PROJECT := `Xdialog \
+                --stdout --backtitle "Configuration template selection" \
+                --radiolist "Select project to load:" 10 40 \
+                $(shell echo $(TEMPLATES) | wc -w) \
+                $(patsubst %,% "" off,$(TEMPLATES))`
+xconfig: PROFILE := `Xdialog \
+                --stdout --backtitle "Configuration template selection" \
+                --radiolist "Select profile to load:" 10 40 \
+                $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
+                $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
 xconfig:
-	make PROFILE=`Xdialog \
-		--stdout --backtitle "Configuration template selection" \
-		--radiolist "Select template to load:" 20 40 3 \
-		$(patsubst %,% "" off,$(TEMPLATES))` \
-	config
+	make PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) $(CONF_DIR)/*.conf
