@@ -36,6 +36,5 @@ static int run() {
 	thread_create(&plus_thread, plus_run, plus_stack + sizeof(plus_stack));
 	thread_create(&minus_thread, minus_run, minus_stack + sizeof(minus_stack));
 	threads_init();
-	scheduler_dispatch();
 	return 0;
 }

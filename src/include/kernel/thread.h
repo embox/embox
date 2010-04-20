@@ -13,18 +13,6 @@
 
 #include <hal/context.h>
 
-/**
- * Thread, which make nothing.
- * Is used to be working when there is no another process.
- */
-extern struct thread idle_thread;
-/**
- * If it doesn't equal to zero, it means
- * that we are located in critical section
- * and cant's switch between threads.
- */
-extern int preemption_count;
-
 typedef int thread_id_t;
 typedef int thread_priority_t;
 
@@ -33,6 +21,7 @@ typedef int thread_priority_t;
  */
 struct thread {
 	struct context thread_context;
+	void (*run)(void);
 	thread_id_t id;
 	thread_priority_t priority;
 	bool must_be_switched;
@@ -55,7 +44,7 @@ int thread_create(struct thread *created_thread, void (*run)(void),
 /**
  * Deletes chosen thread.
  */
-int thread_delete(struct thread *deleted_thread);
+void thread_delete(struct thread *deleted_thread);
 
 /**
  * Is called after entering a regular critical section.
