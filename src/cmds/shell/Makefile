@@ -2,6 +2,7 @@
 $_MODS += shell
 
 $_SRCS-shell += *.c console/*.c
+$_DEPS-shell += core.kernel.job
 
 $_CPPFLAGS-shell += -I$(AUTOCONF_DIR)
 

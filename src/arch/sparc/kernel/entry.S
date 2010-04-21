@@ -11,7 +11,13 @@
 #include <asm/psr.h>
 #include <asm/winmacro.h>
 #include <asm/stack.h>
-
+! XXX this is shit too --Anton
+#ifdef CONFIG_THREAD
+ #define CURRENT_CTX current_ctx
+#else
+  .comm retpc_value, 4, 4
+ #define CURRENT_CTX retpc_value
+#endif
 	.text
 	.align 4
 
@@ -23,7 +29,7 @@ interrupt_entry:
 	SAVE_ALL
 
 	! XXX fucking shit -- Eldar
-	set current_ctx, %g1
+	set CURRENT_CTX, %g1
 	ld [%g1], %t_retpc
 	add %sp, STACK_FRAME_SZ, %o1
 	st %o1, [%g1]
@@ -53,7 +59,7 @@ interrupt_entry:
 	 WRITE_PAUSE
 
 	! XXX KILL IT WITH FIRE!!!!1111 -- Eldar
-	set current_ctx, %g1
+	set CURRENT_CTX, %g1
 	st %t_retpc, [%g1]
 
 	RESTORE_ALL

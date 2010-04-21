@@ -2,7 +2,7 @@
 $_MODS_CORE += locore
 
 # XXX agrhh... -- Eldar
-$_MODS_CORE += context
+#$_MODS_CORE += context
 
 $_SRCS-locore += head.S
 $_SRCS-locore += sys.c
@@ -20,6 +20,7 @@ $_SRCS-clock     += clock_gptimer.c
 $_SRCS-interrupt += interrupt_irqmp.c
 $_SRCS-context   += context.c context_switch.S
 $_SRCS-thread    += thread.c
+
 
 $_SRCS-traps 	 += traps_core.c
 

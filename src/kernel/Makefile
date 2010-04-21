@@ -10,18 +10,27 @@ $_LDFLAGS  += $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 
-$_MODS += irq timer printk softirq
+$_MODS += irq timer printk softirq thread job
 
 $_SRCS-main += main.c
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
-$_SRCS-main += job.c
-$_SRCS-main += thread.c
+$_SRCS-job += job.c
 $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq
 $_DEPS-main += timer
 $_DEPS-main += printk
 $_DEPS-main += softirq
+
+ifdef CONFIG_THREAD
+$_DEPS-main += core.kernel.thread
+$_DEPS-main += embox.hal.context
+$_SRCS-thread += thread.c
+endif
+
+ifdef CONFIG_MMU_SUPPORT
+$_DEPS-main += embox.hal.mm.mmu
+endif
 
 ifdef CONFIG_IRQ
   $_SRCS-irq     += irq.c
