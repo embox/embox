@@ -7,7 +7,7 @@
 #include <embox/test.h>
 #include <stdio.h>
 
-#define STACK_SZ 0x100
+#define STACK_SZ 0x1000
 
 EMBOX_TEST(run);
 
