@@ -13,6 +13,14 @@
 
 #include <hal/context.h>
 
+/**
+ * Thread, which makes nothing.
+ * Is used to be working when there is no another process.
+ */
+static struct thread idle_thread;
+static struct context acontext;
+void idle_run(void);
+
 typedef int thread_id_t;
 typedef int thread_priority_t;
 
@@ -38,7 +46,7 @@ void threads_init(void);
  * stack address stack_address and stack size stack_size.
  * Returns 0 if all parameters are correct and code of error otherwise.
  */
-int thread_create(struct thread *created_thread, void (*run)(void),
+int thread_create(struct thread *created_thread, void run(void),
 		void *stack_address);
 
 /**

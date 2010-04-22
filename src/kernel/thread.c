@@ -12,11 +12,6 @@
 #include <errno.h>
 
 /**
- * Thread, which make nothing.
- * Is used to be working when there is no another process.
- */
-static struct thread idle_thread;
-/**
  * If it doesn't equal to zero, it means
  * that we are located in critical section
  * and cant's switch between threads.
@@ -26,12 +21,21 @@ static int preemption_count;
 void thread_run(int thread_pointer) {
 	struct thread *running_thread = (struct thread *)thread_pointer;
 	running_thread->run();
-	TRACE("\nWhat's the ****?d\n");
-	thread_delete(running_thread);
+	TRACE("\nWhat's the ****?\n");
+//	thread_delete(running_thread);
 }
 
 
-int thread_create(struct thread *created_thread, void (*run)(void),
+#define THREAD_STACK_SIZE 0x1000
+static char idle_thread_stack[THREAD_STACK_SIZE];
+void threads_init(void) {
+	preemption_count = 0;
+	thread_create(&idle_thread, idle_run,
+			idle_thread_stack + sizeof(idle_thread_stack));
+	TRACE("adasdasd\n");
+}
+
+int thread_create(struct thread *created_thread, void run(void),
 		void *stack_address) {
 	if (created_thread == NULL || run == NULL || stack_address == NULL) {
 		return EINVAL;
@@ -55,27 +59,10 @@ void thread_delete (struct thread *deleted_thread) {
 #endif
 }
 
-static void idle_run(void) {
+void idle_run(void) {
 	while (true) {
 		TRACE("+");
-		/*
-		arch_idle();
-		*/
 	}
-}
-
-#define THREAD_STACK_SIZE 0x400
-static int idle_thread_stack[THREAD_STACK_SIZE];
-
-static struct context acontext;
-
-void threads_init(void) {
-	preemption_count = 0;
-	thread_create(&idle_thread, idle_run,
-			idle_thread_stack + sizeof(idle_thread_stack));
-	TRACE("\nadasdasd\n");
-	context_switch(&acontext, &idle_thread.thread_context);
-	TRACE("\nadasdasd\n");
 }
 
 void scheduler_lock(void) {
