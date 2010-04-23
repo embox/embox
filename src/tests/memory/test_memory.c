@@ -452,7 +452,7 @@ static int memory_test_write_recovery(uint32_t *base_addr, long int amount) {
 			temp = *addr;
 			if (temp != value) {
 				TRACE(".addr = 0x%x, expected value = 0x%x, real value = 0x%x, curr_addr = 0x%x\n",
-						addr, value, temp, curr_addr);
+						(uint32_t) addr, value, temp, (uint32_t) curr_addr);
 				return -1;
 			}
 
@@ -461,7 +461,7 @@ static int memory_test_write_recovery(uint32_t *base_addr, long int amount) {
 			temp = *addr;
 			if (temp != value) {
 				TRACE("..addr = 0x%x, expected value = 0x%x, real value = 0x%x, curr_addr = 0x%x\n",
-						addr, value, temp, curr_addr);
+						(uint32_t) addr, value, temp, (uint32_t) curr_addr);
 				return -1;
 			}
 		}
@@ -536,7 +536,7 @@ static int run(void) {
 
 	TRACE("write_recovery\n");
 	if (0 != memory_test_write_recovery(
-			(uint32_t *) (RAM_BASE_ADDR + 0x4000000), 0x100)) {
+			(uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x100)) {
 		TRACE("memory test write recovery FAILED\n");
 		return -1;
 	}
