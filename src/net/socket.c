@@ -73,7 +73,9 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		inet->sport = 666;
 	}
 	inet->daddr = daddr->sin_addr.s_addr;
-	kernel_sendmsg(NULL, sock, &m, len);
+	if(kernel_sendmsg(NULL, sock, &m, len) < 0) {
+		return -1;
+	}
 	return len;
 }
 

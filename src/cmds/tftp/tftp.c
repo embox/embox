@@ -79,9 +79,11 @@ int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 				if(dsize % 0x200 == 0) printf("Download: %d bytes\r", dsize);
 				ap->th_opcode = htons((short)ACK);
 				ap->th_block = dp->th_block;
-				sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen);
+				if(sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen) < 0) {
+					printf("Error occured\n");
+				}
 				if(size < PKTSIZE) {
-					 break;
+					break;
 				}
 			}
 		}
