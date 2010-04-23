@@ -467,6 +467,7 @@ static int memory_test_write_recovery(uint32_t *base_addr, long int amount) {
 		}
 		*addr = 0;
 	}
+	return 0;
 } /* memory_test_write_recovery */
 
 static int run(void) {
@@ -498,7 +499,7 @@ static int run(void) {
 	 }
 
 
-	 TRACE("data bus\n");
+/*	 TRACE("data bus\n");
 	 if (0 != memory_test_data_bus((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET))) {
 	 TRACE("memory test daat bus FAILED\n");
 	 return -1;
@@ -510,6 +511,7 @@ static int run(void) {
 		TRACE("memory test addr bus FAILED\n");
 		return -1;
 	}
+*/
 
 
 	 TRACE("quick\n");
