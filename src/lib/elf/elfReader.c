@@ -1,64 +1,31 @@
-/**
- * @file
- *
- * @date 19.4.10
- * @author Aleksandr Kirov
- */
-
 #include "elfReader.h"
 #include <stdio.h>
 #include <string.h>
 
-//the only argument is file name
-int main(int argc, char *argv[])
-{
-	char * fileName = argv[1];
+#define staticNumberOfSections 100
 
-	Elf32_Ehdr header;
-
-	if (argc != 2){
-		printf("You didn't wrote a file name\n");
-		return 1;
-	}
-
-	FILE * fo;
-	if ((fo = fopen(fileName,"rb"))==NULL) {
-		printf("Error on file open\n");
-		return 1;
-	}
-
-	//size_t fread(void * buffer, size_t numberOfBytes, size_t counter, FILE * FL);
-	fread(&header, sizeof(Elf32_Ehdr), 1, fo);
-
-	printHeader(&header);
-
-	fclose(fo);
-}
-
-//reverse byte-order in 4-byte integer
-unsigned long reverseLong(unsigned long num, uchar reversed)
+ulong reverseLong(ulong num, uchar reversed)
 {
 	switch(reversed){
-		case 0 : return(num);break;
-		case 1 : return(num);break;
-		case 2 : return(((num&0x000000ff)<<24) + ((num&0x0000ff00)<<8) + ((num&0x00ff0000)>>8) + ((num&0xff000000)>>24));break;
+		case 0:return(num);break;
+		case 1:return(num);break;
+		case 2:return(((num&0x000000ff)<<24) + ((num&0x0000ff00)<<8) + ((num&0x00ff0000)>>8) + ((num&0xff000000)>>24));break;
 	}
 }
 
-//reverse bytes order in 2-byte integer
-unsigned short reverseShort(unsigned short num, uchar reversed)
+ushort reverseShort(ushort num, uchar reversed)
 {
 	switch(reversed){
-		case 0 : return(num);break;
-		case 1 : return(num);break;
-		case 2 : return(((num&0x00ff)<<8) + ((num&0xff00)>>8));break;
+		case 0:return(num);break;
+		case 1:return(num);break;
+		case 2:return(((num&0x00ff)<<8) + ((num&0xff00)>>8));break;
 	}
 }
 
-//print ELF-header on screen
+
 void printHeader(Elf32_Ehdr * header)
 {
-	printf("e_ident : ");
+	printf("\n\ne_ident : ");
 	int i = 0;
 	for(;i<16;i++){
 		printf("%c ", header->e_ident[i]);
@@ -142,3 +109,136 @@ void printHeader(Elf32_Ehdr * header)
 
 	printf("e_shstrndx - Section table header table index of the entry : %hd \n", reverseShort(header->e_shstrndx,header->e_ident[5]));
 }
+
+void printSectionHeader(Elf32_Shdr * sectionHeader, uchar reversed)
+{
+	printf("\n");
+
+	printf("sh_name - name of section : %ld \n",reverseLong(sectionHeader->sh_name,reversed));
+
+	printf("sh_type - type of section header : ");
+	switch(reverseLong(sectionHeader->sh_type,reversed)){
+		case 0:printf("SHT_NULL");break;
+		case 1:printf("SHT_PROGBITS");break;
+		case 2:printf("SHT_SYMTAB");break;
+		case 3:printf("SHT_STRTAB");break;
+		case 4:printf("SHT_RELA");break;
+		case 5:printf("SHT_HASH");break;
+		case 6:printf("SHT_DYNAMIC");break;
+		case 7:printf("SHT_NOTE");break;
+		case 8:printf("SHT_NOBITS");break;
+		case 9:printf("SHT_REL");break;
+		case 10:printf("SHT_SHLIB");break;
+		case 11:printf("SHT_DYNSYM");break;
+		case 0x70000000:printf("SHT_LOPROC");break;
+		case 0x7fffffff:printf("SHT_HIPROC");break;
+		case 0x80000000:printf("SHT_LOUSER");break;
+		case 0xffffffff:printf("SHT_HIUSER");break;
+	}
+	printf("\n");
+
+	ulong flags = reverseLong(sectionHeader->sh_flags,reversed);
+	printf("sh_flags - 1-bit flags : %ld : ", flags);
+	if (flags & 0x1) printf("SHF_WRITE ");
+	if (flags & 0x2) printf("SHF_ALLOC ");
+	if (flags & 0x4) printf("SHF_EXECINSTR ");
+	if (flags & 0xf0000000) printf("SHF_MASKPROC ");
+	printf("\n");
+
+	printf("sh_addr - first byte in memory image of process : %ld \n", reverseLong(sectionHeader->sh_addr,reversed));
+
+	printf("sh_offset - first byte of section in file : %ld \n", reverseLong(sectionHeader->sh_offset, reversed));
+
+	printf("sh_size - section size : %ld \n",reverseLong(sectionHeader->sh_size,reversed));
+
+	printf("sh_link - section header table index link: %ld \n", reverseLong(sectionHeader->sh_link,reversed));
+
+	printf("sh_info - extra information: %ld \n", reverseLong(sectionHeader->sh_info,reversed));
+
+	printf("sh_addralign - : %ld \n",reverseLong(sectionHeader->sh_addralign,reversed));
+
+	printf("sh_entsize - : %ld \n",reverseLong(sectionHeader->sh_entsize,reversed));
+}
+
+void printSegmentHeader(Elf32_Phdr * segmentHeader, uchar reversed)
+{
+	printf("\n");
+
+	printf("p_type - type of segment : ");
+	switch(reverseLong(segmentHeader->p_type,reversed)){
+		case 0:printf("PT_NULL");break;
+		case 1:printf("PT_LOAD");break;
+		case 2:printf("PT_DYNAMIC");break;
+		case 3:printf("PT_INTERP");break;
+		case 4:printf("PT_NOTE");break;
+		case 5:printf("PT_SHLIB");break;
+		case 6:printf("PT_PHDR");break;
+		case 0x70000000:printf("PT_LOPROC");break;
+		case 0x7fffffff:printf("PT_HIPROC");break;
+	}
+	printf("\n");
+
+	printf("p_offset - first byte of segment in file : %ld \n",reverseLong(segmentHeader->p_offset,reversed));
+
+	printf("p_vaddr - virtual address for first byte : %ld \n",reverseLong(segmentHeader->p_vaddr,reversed));
+
+	printf("p_paddr - segments physical address : %ld \n",reverseLong(segmentHeader->p_paddr,reversed));
+
+	printf("p_filesz - size of file image of the  segment : %ld \n",reverseLong(segmentHeader->p_filesz,reversed));
+
+	printf("p_memsz - size of memory image of the segment : %ld \n",reverseLong(segmentHeader->p_memsz,reversed));
+
+	printf("p_flags - flags relevant for the segment : %ld \n",reverseLong(segmentHeader->p_flags,reversed));
+
+	printf("p_align - segments are aligned in memory and in the file : %ld \n",reverseLong(segmentHeader->p_align,reversed));
+}
+
+int main(int argc, char *argv[])
+{
+	char * fileName = argv[1];
+
+	Elf32_Ehdr header;
+
+	if (argc != 2){
+		printf("You didn't wrote a file name\n");
+		return 1;
+	}
+
+	FILE * fo;
+	if ((fo = fopen(fileName,"rb"))==NULL) {
+		printf("Error on file open\n");
+		return 1;
+	}
+
+	//size_t fread(void * buffer, size_t numberOfBytes, size_t counter, FILE * FL);
+	fread(&header, sizeof(Elf32_Ehdr), 1, fo);
+	printHeader(&header);
+
+	Elf32_Shdr sectionHeaderTable[100];
+	if (reverseLong(header.e_shoff,header.e_ident[5]) != 0){
+		fseek(fo, reverseLong(header.e_shoff,header.e_ident[5]), 0);
+		fread(&sectionHeaderTable, reverseShort(header.e_shentsize,header.e_ident[5]), reverseShort(header.e_shnum,header.e_ident[5]), fo);
+
+		int i=0;
+		for(;i<reverseShort(header.e_shnum,header.e_ident[5]);i++){
+			printf("\n		Section #%d : \n", i+1);
+			printSectionHeader(&(sectionHeaderTable[i]), header.e_ident[5]);
+		}
+	}
+
+	Elf32_Phdr segmentHeaderTable[100];
+	if (reverseLong(header.e_phoff,header.e_ident[5]) != 0){
+		fseek(fo, reverseLong(header.e_phoff,header.e_ident[5]), 0);
+		fread(&segmentHeaderTable, reverseShort(header.e_phentsize,header.e_ident[5]), reverseShort(header.e_phnum,header.e_ident[5]), fo);
+
+		int i=0;
+		for(;i<reverseShort(header.e_phnum,header.e_ident[5]);i++){
+			printf("\n		Segment #%d : \n", i+1);
+			printSegmentHeader(&(segmentHeaderTable[i]), header.e_ident[5]);
+		}
+	}
+
+	fclose(fo);
+}
+
+
