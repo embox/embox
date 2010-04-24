@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define staticNumberOfSections 100
-
 ulong reverseLong(ulong num, uchar reversed)
 {
 	switch(reversed){
@@ -110,11 +108,27 @@ void printHeader(Elf32_Ehdr * header)
 	printf("e_shstrndx - Section table header table index of the entry : %hd \n", reverseShort(header->e_shstrndx,header->e_ident[5]));
 }
 
-void printSectionHeader(Elf32_Shdr * sectionHeader, uchar reversed)
+void printSectionName(int index, char * stringTable)
+{
+	int offset = 0;
+	while( stringTable[index+offset] != '\0' ){
+		putchar(stringTable[index+offset]);
+		offset++;
+	}
+}
+
+void printSectionHeader(Elf32_Shdr * sectionHeader, uchar reversed, char * stringTable)
 {
 	printf("\n");
 
-	printf("sh_name - name of section : %ld \n",reverseLong(sectionHeader->sh_name,reversed));
+	printf("sh_name - name of section : %ld - ",reverseLong(sectionHeader->sh_name,reversed));
+	if (reverseLong(sectionHeader->sh_name,reversed) == 0){
+		printf("no name");
+	}
+	else{
+		printSectionName(reverseLong(sectionHeader->sh_name,reversed), stringTable);
+	}
+	printf("\n");
 
 	printf("sh_type - type of section header : ");
 	switch(reverseLong(sectionHeader->sh_type,reversed)){
@@ -193,6 +207,15 @@ void printSegmentHeader(Elf32_Phdr * segmentHeader, uchar reversed)
 	printf("p_align - segments are aligned in memory and in the file : %ld \n",reverseLong(segmentHeader->p_align,reversed));
 }
 
+readSymbolTable(Elf32_Shdr * sectionHeader, char reversed, Elf32_Sym * symbolTable,  char * symbolStringTable)
+{
+	int i = reverseLong(sectionHeader->sh_size, reversed) / sizeof(Elf32_Sym);
+	for (;i>0;i--){
+
+
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	char * fileName = argv[1];
@@ -214,19 +237,39 @@ int main(int argc, char *argv[])
 	fread(&header, sizeof(Elf32_Ehdr), 1, fo);
 	printHeader(&header);
 
-	Elf32_Shdr sectionHeaderTable[100];
+	Elf32_Shdr sectionHeaderTable[maxNumberOfSections];
+	char stringTable[maxStringTableLength];
+	Elf32_Sym symbolTable[maxSymbolTableLength];
+	char symbolStringTable[maxSymbolStringTableLength];
 	if (reverseLong(header.e_shoff,header.e_ident[5]) != 0){
+
 		fseek(fo, reverseLong(header.e_shoff,header.e_ident[5]), 0);
 		fread(&sectionHeaderTable, reverseShort(header.e_shentsize,header.e_ident[5]), reverseShort(header.e_shnum,header.e_ident[5]), fo);
 
+		if ( header.e_shstrndx != 0 ){
+			fseek(fo, reverseLong(sectionHeaderTable[reverseShort(header.e_shstrndx,header.e_ident[5])].sh_offset, header.e_ident[5]), 0);
+			fread(&stringTable, reverseLong(sectionHeaderTable[reverseShort(header.e_shstrndx, header.e_ident[5])].sh_size, header.e_ident[5]), 1, fo);
+		}
+
 		int i=0;
-		for(;i<reverseShort(header.e_shnum,header.e_ident[5]);i++){
+		for (;i < reverseShort(header.e_shnum,header.e_ident[5]) ; i++ ){
+
 			printf("\n		Section #%d : \n", i+1);
-			printSectionHeader(&(sectionHeaderTable[i]), header.e_ident[5]);
+			printSectionHeader(&(sectionHeaderTable[i]), header.e_ident[5], stringTable);
+
+			if (sectionHeaderTable[i].sh_type == 2){ //2:"SHT_SYMTAB"
+				fseek(fo, reverseLong(sectionHeaderTable[i].sh_offset,header.e_ident[5]), 0);
+				fread(symbolTable, reverseLong(sectionHeaderTable[i].sh_size, header.e_ident[5]), 1, fo);
+			}
+
+			if ( (sectionHeaderTable[i].sh_type == 3) & ( i !=  header.e_shstrndx) ){ //3:"SHT_STRTAB" for symbols
+				fseek(fo, reverseLong(sectionHeaderTable[i].sh_offset,header.e_ident[5]), 0);
+				fread(symbolStringTable, reverseLong(sectionHeaderTable[i].sh_size, header.e_ident[5]), 1, fo);
+			}
 		}
 	}
 
-	Elf32_Phdr segmentHeaderTable[100];
+	Elf32_Phdr segmentHeaderTable[maxNumberOfSections];
 	if (reverseLong(header.e_phoff,header.e_ident[5]) != 0){
 		fseek(fo, reverseLong(header.e_phoff,header.e_ident[5]), 0);
 		fread(&segmentHeaderTable, reverseShort(header.e_phentsize,header.e_ident[5]), reverseShort(header.e_phnum,header.e_ident[5]), fo);

@@ -22,7 +22,15 @@
 #define ulong unsigned long
 #define ushort unsigned short
 
+#define maxNumberOfSections 100
+#define maxStringTableLength 500
+#define maxSymbolTableLength 3000
+#define maxSymbolStringTableLength 50000
 #define EI_NIDENT 16
+
+#define ELF32_ST_BIND(i) ((i))>>4)
+#define ELF32_ST_TYPE(i) ((i)&0xf)
+#define ELF32_ST_INFO(b,t) (((b)<<4)+((t)&0xf))
 
 //ELF Header
 typedef struct{
@@ -44,16 +52,16 @@ typedef struct{
 
 //ELF Section header
 typedef struct{
-	Elf32_Word sh_name ;
+	Elf32_Word sh_name;
 	Elf32_Word sh_type;
-	Elf32_Word sh_flags ;
-	Elf32_Addr sh_addr ;
-	Elf32_Off sh_offset ;
-	Elf32_Word sh_size ;
-	Elf32_Word sh_link ;
-	Elf32_Word sh_info ;
-	Elf32_Word sh_addralign ;
-	Elf32_Word sh_entsize ;
+	Elf32_Word sh_flags;
+	Elf32_Addr sh_addr;
+	Elf32_Off sh_offset;
+	Elf32_Word sh_size;
+	Elf32_Word sh_link;
+	Elf32_Word sh_info;
+	Elf32_Word sh_addralign;
+	Elf32_Word sh_entsize;
 }Elf32_Shdr;
 
 //ELF Program Segment header
@@ -68,5 +76,21 @@ typedef struct{
 	Elf32_Word p_align;
 } Elf32_Phdr;
 
+//Symbol table entry
+typedef struct{
+	Elf32_Word st_name;
+	Elf32_Addr st_value;
+	Elf32_Word st_size;
+	uchar st_info;
+	uchar st_other;
+	Elf32_Half st_shndx;
+} Elf32_Sym;
 
+//Collection of information about elf
+typedef struct{
+	Elf32_Ehdr header;
+	Elf32_Shdr sectionHeaders[maxNumberOfSections];
+	Elf32_Phdr segmentHeaders[maxNumberOfSections];
+	char stringTable[maxStringTableLength];
+} ElfFile;
 
