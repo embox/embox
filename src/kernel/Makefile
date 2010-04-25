@@ -26,6 +26,7 @@ ifdef CONFIG_THREAD
 $_DEPS-main += core.kernel.thread
 $_DEPS-main += embox.hal.context
 $_SRCS-thread += thread.c
+$_SRCS-thread += scheduler.c
 endif
 
 ifdef CONFIG_MMU_SUPPORT

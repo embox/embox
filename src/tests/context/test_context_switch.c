@@ -24,6 +24,7 @@ static void entry(int arg) {
 static void infinite (int arg) {
 	while (true) {
 		TRACE("?");
+		context_switch(&infinite_context, &entry_context);
 	}
 }
 /**

@@ -7,10 +7,28 @@
  */
 #include <embox/test.h>
 #include <kernel/thread.h>
+#include <kernel/scheduler.h>
 #include <hal/context.h>
+#include <kernel/timer.h>
 #include <stdio.h>
 
+#define TREAD_STACK_SIZE 0x1000
+
+static char plus_stack[TREAD_STACK_SIZE];
+static char minus_stack[TREAD_STACK_SIZE];
+static struct thread *plus_thread;
+static struct thread *minus_thread;
+
 EMBOX_TEST(run_test);
+
+/**
+ * Endlessly writes "-".
+ */
+static void minus_run(void) {
+	while (true) {
+		TRACE("-");
+	}
+}
 
 /**
  * Endlessly writes "+".
@@ -20,42 +38,33 @@ static void plus_run(void) {
 		TRACE("+");
 	}
 }
+
 /**
- * Endlessly writes "-".
+ * Test, which infinitely writes "+" and "-" on the screen.
+ * @retval 0 if test is passed
+ * @retval EINVAL if an error occurs.
  */
-static void minus_run(void) {
-	while (true) {
-		TRACE("-");
-	}
-}
-#define TREAD_STACK_SIZE 0x1000
-static char plus_stack[TREAD_STACK_SIZE];
-static char minus_stack[TREAD_STACK_SIZE];
-static char idle_stack[TREAD_STACK_SIZE];
-static struct thread plus_thread;
-static struct thread minus_thread;
-static struct context bcontext;
-
-#if 0
-void threads_init(void) {
-	thread_create(&idle_thread, idle_run,
-			idle_stack + sizeof(idle_stack));
-	TRACE("adasdasd\n");
-}
-#endif
-
 static int run_test() {
-	thread_create(&plus_thread, plus_run, plus_stack + sizeof(plus_stack));
-	thread_create(&minus_thread, minus_run, minus_stack + sizeof(minus_stack));
-	threads_init();
-//	thread_create(&idle_thread, idle_run, idle_stack + sizeof(idle_stack));
-	TRACE("before\n");
-	idle_thread.run();
-	TRACE("after\n");
-	idle_run();
-#if 0
-	context_switch(&bcontext, &idle_thread.thread_context);
-#endif
-	TRACE("adasdasd\n");
+	scheduler_init();
+	plus_thread = thread_new();
+	minus_thread = thread_new();
+	thread_create(plus_thread, plus_run, plus_stack + sizeof(plus_stack));
+	thread_create(minus_thread, minus_run, minus_stack + sizeof(minus_stack));
+	scheduler_add(plus_thread);
+	scheduler_add(minus_thread);
+	if (plus_thread == NULL) {
+		TRACE("\nPlus thread is NULL\n");
+		return 0;
+	}
+	if (minus_thread == NULL) {
+		TRACE("\nMinus thread is NULL\n");
+		return 0;
+	}
+	TRACE("\nPlus thread is not NULL\n");
+	TRACE("Minus thread is not NULL\n");
+	TRACE("\nBefore start\n");
+	scheduler_start();
+	scheduler_start();
+	TRACE("\nAfter start\n");
 	return 0;
 }

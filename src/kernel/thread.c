@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implementation of methods in thread.h
  *
- * @date 18.04.2010
+ * @date 22.04.2010
  * @author Avdyukhin Dmitry
  */
 
@@ -10,71 +10,60 @@
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <errno.h>
+#include <kernel/scheduler.h>
+
+#define MAX_THREADS_COUNT 32
 
 /**
- * If it doesn't equal to zero, it means
- * that we are located in critical section
- * and cant's switch between threads.
+ * Pool, containing threads.
  */
-static int preemption_count;
+static struct thread threads_pool[MAX_THREADS_COUNT];
 
 void thread_run(int thread_pointer) {
-	struct thread *running_thread = (struct thread *)thread_pointer;
+	struct thread *running_thread = (struct thread *) thread_pointer;
+	TRACE("\nThread ID = %d\n", running_thread->id);
 	running_thread->run();
-	TRACE("\nWhat's the ****?\n");
 //	thread_delete(running_thread);
 }
 
+/**
+ * A mask, which shows, what places for new threads are free.
+ */
+static int mask = 0;
 
-#define THREAD_STACK_SIZE 0x1000
-static char idle_thread_stack[THREAD_STACK_SIZE];
-void threads_init(void) {
-	preemption_count = 0;
-	thread_create(&idle_thread, idle_run,
-			idle_thread_stack + sizeof(idle_thread_stack));
-	TRACE("adasdasd\n");
+struct thread * thread_new(void) {
+	for (int i = 0; i < MAX_THREADS_COUNT; i++) {
+		if (((mask >> i) & 1) == 0) {
+			struct thread *created_thread;
+			created_thread = threads_pool + i;
+			created_thread->id = i + 1;
+			TRACE("Thread ID = %d\n", created_thread->id);
+			mask |= (1 << i);
+			return created_thread;
+		}
+	}
+	return NULL;
 }
 
 int thread_create(struct thread *created_thread, void run(void),
 		void *stack_address) {
 	if (created_thread == NULL || run == NULL || stack_address == NULL) {
-		return EINVAL;
+		return -EINVAL;
 	}
 	created_thread->run = run;
 	context_init(&created_thread->thread_context, true);
-	context_set_entry(&created_thread->thread_context, thread_run, (int)created_thread);
+	context_set_entry(&created_thread->thread_context, thread_run,
+			(int) created_thread);
 	context_set_stack(&created_thread->thread_context, stack_address);
 	return 0;
 }
 
-void thread_delete (struct thread *deleted_thread) {
-#if 0
-	/**TODO*/
+int thread_delete(struct thread *deleted_thread) {
 	if (deleted_thread == NULL) {
-		return 1;
+		return -EINVAL;
 	}
-	/*
+	scheduler_remove(deleted_thread);
+	mask &= ~(1 << (deleted_thread - threads_pool));
 	return 0;
-	*/
-#endif
 }
 
-void idle_run(void) {
-	while (true) {
-		TRACE("+");
-	}
-}
-
-void scheduler_lock(void) {
-	preemption_count++;
-}
-
-void scheduler_unlock(void) {
-	if (--preemption_count == 0) {
-		scheduler_dispatch();
-	}
-}
-
-void scheduler_dispatch(void) {
-	/**TODO*/
-}

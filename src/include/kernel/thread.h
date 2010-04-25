@@ -1,10 +1,10 @@
-/*
+/**
  * @file
  * @brief Defines structure of threads and methods,
  * working with them. Implementation look at
  * src/kernel/thread.c
  *
- * @date 18.04.2010
+ * @date 22.04.2010
  * @author Avdyukhin Dmitry
  */
 
@@ -13,16 +13,9 @@
 
 #include <hal/context.h>
 
-/**
- * Thread, which makes nothing.
- * Is used to be working when there is no another process.
- */
-static struct thread idle_thread;
-static struct context acontext;
-void idle_run(void);
-
 typedef int thread_id_t;
 typedef int thread_priority_t;
+typedef struct thread * thread_pt;
 
 /**
  * Structure, describing threads.
@@ -36,15 +29,14 @@ struct thread {
 };
 
 /**
- * Initializes threads: set the ability of preemption as true
- * and describes idle_thread.
- */
-void threads_init(void);
-
-/**
  * Creates new thread with function pointer run,
  * stack address stack_address and stack size stack_size.
  * Returns 0 if all parameters are correct and code of error otherwise.
+ *
+ * @param created_thread
+ * @param run
+ * @param stack_address
+ * @return
  */
 int thread_create(struct thread *created_thread, void run(void),
 		void *stack_address);
@@ -52,25 +44,14 @@ int thread_create(struct thread *created_thread, void run(void),
 /**
  * Deletes chosen thread.
  */
-void thread_delete(struct thread *deleted_thread);
+int thread_delete(struct thread *deleted_thread);
 
 /**
- * Is called after entering a regular critical section.
- * Increases preemption_count.
+ * Allocates memory for thread _thread.
+ * Returns EINVAL, if there is no enough memory for threads.
+ * Otherwise returns 0.
  */
-void scheduler_lock(void);
-
-/**
- * Is called after escaping last critical section.
- * Decreases preemption_count. If the latter one becomes zero,
- * calls scheduler_dispatch.
- */
-void scheduler_unlock(void);
-
-/**
- * Is called to change current thread.
- */
-void scheduler_dispatch(void);
+struct thread * thread_new(void);
 
 
 #endif /* THREAD_H_ */
