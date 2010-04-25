@@ -22,10 +22,12 @@
 #define ulong unsigned long
 #define ushort unsigned short
 
+#define MACHINE_DATA_ENCODING 1
+
 #define maxNumberOfSections 100
 #define maxStringTableLength 500
 #define maxSymbolTableLength 3000
-#define maxSymbolStringTableLength 50000
+#define maxSymbolStringTableLength 200000
 #define EI_NIDENT 16
 
 #define ELF32_ST_BIND(i) ((i))>>4)
