@@ -16,7 +16,7 @@
 #define REVERSE_LONG(x) (x) = __bswap_constant_32(x)
 
 #if 0
-ulong reverseLong(ulong num, uchar reversed)
+ulong reverse_long(ulong num, uchar reversed)
 {
 	switch(reversed){
 		case 0:return(num);break;
@@ -25,7 +25,7 @@ ulong reverseLong(ulong num, uchar reversed)
 	}
 }
 
-ushort reverseShort(ushort num, uchar reversed)
+ushort reverse_short(ushort num, uchar reversed)
 {
 	switch(reversed){
 		case 0:return(num);break;
@@ -35,7 +35,7 @@ ushort reverseShort(ushort num, uchar reversed)
 }
 #endif
 
-void printHeader(Elf32_Ehdr * header)
+void print_header(Elf32_Ehdr * header)
 {
 	printf("\n\ne_ident : ");
 	int i = 0;
@@ -123,7 +123,7 @@ void printHeader(Elf32_Ehdr * header)
 }
 
 #if 0
-void printSectionName(int index, char * stringTable)
+void print_section_name(int index, char * stringTable)
 {
 	int offset = 0;
 	while( stringTable[index+offset] != '\0' ){
@@ -133,20 +133,20 @@ void printSectionName(int index, char * stringTable)
 }
 #endif
 
-void printSectionHeader(Elf32_Shdr * sectionHeader, char * stringTable)
+void print_section_header(Elf32_Shdr * section_header, char * string_table)
 {
 	printf("\n");
 
-	printf("sh_name - name of section : %ld - ", sectionHeader->sh_name);
-	if (sectionHeader->sh_name == 0){
+	printf("sh_name - name of section : %ld - ", section_header->sh_name);
+	if (section_header->sh_name == 0){
 		printf("no name\n");
 	}
 	else{
-		printf("%s\n" , &(stringTable[sectionHeader->sh_name]));
+		printf("%s\n" , &(string_table[section_header->sh_name]));
 	}
 
 	printf("sh_type - type of section header : ");
-	switch(sectionHeader->sh_type){
+	switch(section_header->sh_type){
 		case 0:printf("SHT_NULL");break;
 		case 1:printf("SHT_PROGBITS");break;
 		case 2:printf("SHT_SYMTAB");break;
@@ -166,7 +166,7 @@ void printSectionHeader(Elf32_Shdr * sectionHeader, char * stringTable)
 	}
 	printf("\n");
 
-	ulong flags = sectionHeader->sh_flags;
+	ulong flags = section_header->sh_flags;
 	printf("sh_flags - 1-bit flags : %ld : ", flags);
 	if (flags & 0x1) printf("SHF_WRITE ");
 	if (flags & 0x2) printf("SHF_ALLOC ");
@@ -174,27 +174,27 @@ void printSectionHeader(Elf32_Shdr * sectionHeader, char * stringTable)
 	if (flags & 0xf0000000) printf("SHF_MASKPROC ");
 	printf("\n");
 
-	printf("sh_addr - first byte in memory image of process : %ld \n", sectionHeader->sh_addr);
+	printf("sh_addr - first byte in memory image of process : %ld \n", section_header->sh_addr);
 
-	printf("sh_offset - first byte of section in file : %ld \n", sectionHeader->sh_offset);
+	printf("sh_offset - first byte of section in file : %ld \n", section_header->sh_offset);
 
-	printf("sh_size - section size : %ld \n",sectionHeader->sh_size);
+	printf("sh_size - section size : %ld \n",section_header->sh_size);
 
-	printf("sh_link - section header table index link: %ld \n", sectionHeader->sh_link);
+	printf("sh_link - section header table index link: %ld \n", section_header->sh_link);
 
-	printf("sh_info - extra information: %ld \n", sectionHeader->sh_info);
+	printf("sh_info - extra information: %ld \n", section_header->sh_info);
 
-	printf("sh_addralign - : %ld \n", sectionHeader->sh_addralign);
+	printf("sh_addralign - : %ld \n", section_header->sh_addralign);
 
-	printf("sh_entsize - : %ld \n", sectionHeader->sh_entsize);
+	printf("sh_entsize - : %ld \n", section_header->sh_entsize);
 }
 
-void printSegmentHeader(Elf32_Phdr * segmentHeader)
+void print_segment_header(Elf32_Phdr * segment_header)
 {
 	printf("\n");
 
 	printf("p_type - type of segment : ");
-	switch(segmentHeader->p_type){
+	switch(segment_header->p_type){
 		case 0:printf("PT_NULL");break;
 		case 1:printf("PT_LOAD");break;
 		case 2:printf("PT_DYNAMIC");break;
@@ -207,25 +207,25 @@ void printSegmentHeader(Elf32_Phdr * segmentHeader)
 	}
 	printf("\n");
 
-	printf("p_offset - first byte of segment in file : %ld \n", segmentHeader->p_offset);
+	printf("p_offset - first byte of segment in file : %ld \n", segment_header->p_offset);
 
-	printf("p_vaddr - virtual address for first byte : %ld \n", segmentHeader->p_vaddr);
+	printf("p_vaddr - virtual address for first byte : %ld \n", segment_header->p_vaddr);
 
-	printf("p_paddr - segments physical address : %ld \n", segmentHeader->p_paddr);
+	printf("p_paddr - segments physical address : %ld \n", segment_header->p_paddr);
 
-	printf("p_filesz - size of file image of the  segment : %ld \n", segmentHeader->p_filesz);
+	printf("p_filesz - size of file image of the  segment : %ld \n", segment_header->p_filesz);
 
-	printf("p_memsz - size of memory image of the segment : %ld \n", segmentHeader->p_memsz);
+	printf("p_memsz - size of memory image of the segment : %ld \n", segment_header->p_memsz);
 
-	printf("p_flags - flags relevant for the segment : %ld \n", segmentHeader->p_flags);
+	printf("p_flags - flags relevant for the segment : %ld \n", segment_header->p_flags);
 
-	printf("p_align - segments are aligned in memory and in the file : %ld \n", segmentHeader->p_align);
+	printf("p_align - segments are aligned in memory and in the file : %ld \n", segment_header->p_align);
 }
 
 #if 0
-readSymbolTable(Elf32_Shdr * sectionHeader, char reversed, Elf32_Sym * symbolTable,  char * symbolStringTable)
+read_symbol_table(Elf32_Shdr * sectionHeader, char reversed, Elf32_Sym * symbolTable,  char * symbolStringTable)
 {
-	int i = reverseLong(sectionHeader->sh_size, reversed) / sizeof(Elf32_Sym);
+	int i = reverse_long(sectionHeader->sh_size, reversed) / sizeof(Elf32_Sym);
 	for (;i>0;i--){
 
 
@@ -373,7 +373,7 @@ int read_string_table(FILE *f , Elf32_Ehdr *head , Elf32_Shdr sections[] , \
 
 int main(int argc, char *argv[])
 {
-	char * fileName = argv[1];
+	char * file_name = argv[1];
         char stringtable_ok;
 
 	Elf32_Ehdr header;
@@ -384,13 +384,13 @@ int main(int argc, char *argv[])
 	}
 
 	FILE * fo;
-	if ((fo = fopen(fileName,"rb"))==NULL) {
+	if ((fo = fopen(file_name,"rb"))==NULL) {
 		printf("Error on file open\n");
 		return 1;
 	}
 
         if (read_header(fo , &header)) {
-            printHeader(&header);
+            print_header(&header);
         }
         else {
             printf("Error on reading header.\n");
@@ -398,38 +398,38 @@ int main(int argc, char *argv[])
         }
 
 
-	Elf32_Shdr sectionHeaderTable[maxNumberOfSections];
-	char stringTable[maxStringTableLength];
-	Elf32_Sym symbolTable[maxSymbolTableLength];
-	char symbolStringTable[maxSymbolStringTableLength];
-	if (read_section_table(fo , &header , sectionHeaderTable)){
-                stringtable_ok = read_string_table(fo , &header , sectionHeaderTable , stringTable);
+	Elf32_Shdr section_header_table[MAX_NUMBER_OF_SECTIONS];
+	char string_table[MAX_STRING_TABLE_LENGTH];
+	Elf32_Sym symbol_table[MAX_SYMBOL_TABLE_LENGTH];
+	char symbol_string_table[MAX_SYMBOL_STRING_TABLE_LENGTH];
+	if (read_section_table(fo , &header , section_header_table)){
+                stringtable_ok = read_string_table(fo , &header , section_header_table , string_table);
 
 		int i=0;
                 // TODO replace header.e_shnum with more correct variable
 		for (;i < header.e_shnum ; i++ ){
 			printf("\n		Section #%d : \n", i+1);
-			printSectionHeader(&(sectionHeaderTable[i]) , stringTable);
+			print_section_header(&(section_header_table[i]) , string_table);
 
-			if (sectionHeaderTable[i].sh_type == 2){ //2:"SHT_SYMTAB"
-				fseek(fo, sectionHeaderTable[i].sh_offset , 0);
-				fread(symbolTable, sectionHeaderTable[i].sh_size , 1, fo);
+			if (section_header_table[i].sh_type == 2){ //2:"SHT_SYMTAB"
+				fseek(fo, section_header_table[i].sh_offset , 0);
+				fread(symbol_table, section_header_table[i].sh_size , 1, fo);
 			}
-			if ( (sectionHeaderTable[i].sh_type == 3) && ( i !=  header.e_shstrndx) ){ //3:"SHT_STRTAB" for symbols
-				fseek(fo, sectionHeaderTable[i].sh_offset , 0);
-				fread(symbolStringTable, sectionHeaderTable[i].sh_size , 1, fo);
+			if ( (section_header_table[i].sh_type == 3) && ( i !=  header.e_shstrndx) ){ //3:"SHT_STRTAB" for symbols
+				fseek(fo, section_header_table[i].sh_offset , 0);
+				fread(symbol_string_table, section_header_table[i].sh_size , 1, fo);
 
 			}
 		}
 	}
 
-	Elf32_Phdr segmentHeaderTable[maxNumberOfSections];
+	Elf32_Phdr segmentHeaderTable[MAX_NUMBER_OF_SECTIONS];
 	if (read_segment_table(fo , &header , segmentHeaderTable)){
 
 		int i=0;
 		for(;i< header.e_phnum ;i++){
 			printf("\n		Segment #%d : \n", i+1);
-			printSegmentHeader(&(segmentHeaderTable[i]));
+			print_segment_header(&(segmentHeaderTable[i]));
 		}
 	}
 

@@ -24,10 +24,10 @@
 
 #define MACHINE_DATA_ENCODING 1
 
-#define maxNumberOfSections 100
-#define maxStringTableLength 500
-#define maxSymbolTableLength 3000
-#define maxSymbolStringTableLength 200000
+#define MAX_NUMBER_OF_SECTIONS 100
+#define MAX_STRING_TABLE_LENGTH 500
+#define MAX_SYMBOL_TABLE_LENGTH 3000
+#define MAX_SYMBOL_STRING_TABLE_LENGTH 200000
 #define EI_NIDENT 16
 
 #define ELF32_ST_BIND(i) ((i))>>4)
@@ -91,8 +91,8 @@ typedef struct{
 //Collection of information about elf
 typedef struct{
 	Elf32_Ehdr header;
-	Elf32_Shdr sectionHeaders[maxNumberOfSections];
-	Elf32_Phdr segmentHeaders[maxNumberOfSections];
-	char stringTable[maxStringTableLength];
+	Elf32_Shdr section_headers[MAX_NUMBER_OF_SECTIONS];
+	Elf32_Phdr segment_headers[MAX_NUMBER_OF_SECTIONS];
+	char string_table[MAX_STRING_TABLE_LENGTH];
 } ElfFile;
 
