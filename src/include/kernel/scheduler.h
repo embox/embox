@@ -10,9 +10,10 @@
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
 
+#include <kernel/thread.h>
+
 /**
- * Initializes threads: set the ability of preemption as true
- * and describes idle_thread.
+ * Initializes threads:  describes idle_thread.
  */
 void scheduler_init(void);
 
@@ -35,24 +36,30 @@ void scheduler_lock(void);
 void scheduler_unlock(void);
 
 /**
- * Is called to change current thread.
+ * Changes executable thread.
  */
 void scheduler_dispatch(void);
 
 /**
- * Regularly calls scheduler_dispatch.
+ * Is regularly called to show that current thread to be changed.
+ *
+ * @param id nothing significant
  */
 void scheduler_tick(uint32_t id);
 
 /**
- * Adds a thread into the list of executable threads.
+ * Adds thread into the list of executable threads.
+ *
+ * @param added_thread thread to be added into the list
  */
-void scheduler_add (struct thread *added_thread);
+void scheduler_add(struct thread *added_thread);
 
 /**
- * Adds a thread into the list of executable threads.
- * Returns EINVAL in case of error.
+ * Removes a thread from the list of executable threads.
+ * @param removed_thread deleted thread
+ * @retval 0 if thread was successfully removed.
+ * @retval -EINVAL if @c removed_thread is NULL or &idle_thread.
  */
-int scheduler_remove (struct thread *removed_thread);
+int scheduler_remove(struct thread *removed_thread);
 
 #endif /* SCHEDULER_H_ */

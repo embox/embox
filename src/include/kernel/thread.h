@@ -29,14 +29,13 @@ struct thread {
 };
 
 /**
- * Creates new thread with function pointer run,
- * stack address stack_address and stack size stack_size.
- * Returns 0 if all parameters are correct and code of error otherwise.
+ * Creates new thread
  *
- * @param created_thread
- * @param run
- * @param stack_address
- * @return
+ * @param created_thread pointer to created thread
+ * @param run function executed in created thread
+ * @param stack_address address of thread's stack
+ * @return 0 if all parameters are correct
+ * @return -EINVAL if one of parameters is NULL
  */
 int thread_create(struct thread *created_thread, void run(void),
 		void *stack_address);
@@ -47,9 +46,10 @@ int thread_create(struct thread *created_thread, void run(void),
 int thread_delete(struct thread *deleted_thread);
 
 /**
- * Allocates memory for thread _thread.
- * Returns EINVAL, if there is no enough memory for threads.
- * Otherwise returns 0.
+ * Allocates memory for new thread.
+ *
+ * @return pointer to alloted thread
+ * @retval NULL if there are not free threads
  */
 struct thread * thread_new(void);
 

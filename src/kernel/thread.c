@@ -11,6 +11,7 @@
 #include <hal/arch.h>
 #include <errno.h>
 #include <kernel/scheduler.h>
+#include <assert.h>
 
 #define MAX_THREADS_COUNT 32
 
@@ -19,9 +20,15 @@
  */
 static struct thread threads_pool[MAX_THREADS_COUNT];
 
+/**
+ * Transforms function "run" in thread into function which can
+ * execute "run" and delete thread from scheduler.
+ * @param thread_pointer pointer at thread.
+ */
 void thread_run(int thread_pointer) {
 	struct thread *running_thread = (struct thread *) thread_pointer;
 	TRACE("\nThread ID = %d\n", running_thread->id);
+	assert(running_thread != NULL);
 	running_thread->run();
 //	thread_delete(running_thread);
 }
@@ -52,7 +59,7 @@ int thread_create(struct thread *created_thread, void run(void),
 	}
 	created_thread->run = run;
 	context_init(&created_thread->thread_context, true);
-	context_set_entry(&created_thread->thread_context, thread_run,
+	context_set_entry(&created_thread->thread_context, &thread_run,
 			(int) created_thread);
 	context_set_stack(&created_thread->thread_context, stack_address);
 	return 0;
@@ -62,8 +69,8 @@ int thread_delete(struct thread *deleted_thread) {
 	if (deleted_thread == NULL) {
 		return -EINVAL;
 	}
-	scheduler_remove(deleted_thread);
 	mask &= ~(1 << (deleted_thread - threads_pool));
+//	scheduler_remove(deleted_thread);
 	return 0;
 }
 

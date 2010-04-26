@@ -21,6 +21,7 @@
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
+#include <kernel/scheduler.h>
 
 struct irq_action {
 	irq_handler_t handler;
@@ -102,6 +103,7 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 static volatile unsigned int irq_nesting_count;
 
 static void irq_enter(void) {
+	scheduler_lock();
 	ipl_t ipl;
 
 	ipl = ipl_save();
@@ -118,6 +120,10 @@ static void irq_leave(void) {
 		softirq_dispatch();
 	}
 	ipl_restore(ipl);
+	if (0 == irq_nesting_count) {
+		ipl_enable();
+	}
+	scheduler_unlock();
 }
 
 void irq_dispatch(interrupt_nr_t interrupt_nr) {

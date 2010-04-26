@@ -8,11 +8,10 @@
 #include <embox/test.h>
 #include <kernel/thread.h>
 #include <kernel/scheduler.h>
-#include <hal/context.h>
-#include <kernel/timer.h>
-#include <stdio.h>
+#include <errno.h>
 
 #define TREAD_STACK_SIZE 0x1000
+
 
 static char plus_stack[TREAD_STACK_SIZE];
 static char minus_stack[TREAD_STACK_SIZE];
@@ -28,6 +27,7 @@ static void minus_run(void) {
 	while (true) {
 		TRACE("-");
 	}
+//	TRACE("-");
 }
 
 /**
@@ -41,8 +41,9 @@ static void plus_run(void) {
 
 /**
  * Test, which infinitely writes "+" and "-" on the screen.
+ *
  * @retval 0 if test is passed
- * @retval EINVAL if an error occurs.
+ * @retval -EINVAL if an error occurs.
  */
 static int run_test() {
 	scheduler_init();
@@ -54,16 +55,15 @@ static int run_test() {
 	scheduler_add(minus_thread);
 	if (plus_thread == NULL) {
 		TRACE("\nPlus thread is NULL\n");
-		return 0;
+		return -EINVAL;
 	}
 	if (minus_thread == NULL) {
 		TRACE("\nMinus thread is NULL\n");
-		return 0;
+		return -EINVAL;
 	}
 	TRACE("\nPlus thread is not NULL\n");
 	TRACE("Minus thread is not NULL\n");
 	TRACE("\nBefore start\n");
-	scheduler_start();
 	scheduler_start();
 	TRACE("\nAfter start\n");
 	return 0;
