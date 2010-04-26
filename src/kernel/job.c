@@ -4,7 +4,7 @@
  *
  * @date 12.04.2010
  * @author Alexey Kryachko
- * 			Maxim Okhotsky
+ * @author Maxim Okhotsky
  *
  */
 
@@ -12,7 +12,6 @@
 #include <errno.h>
 
 static jmp_buf current_job;
-//static int current_adr;
 
 #define LONGJMP_ABORT 1
 
@@ -30,5 +29,6 @@ int job_exec(int (*exec)(int argsc, char **argsv), int argsc,char **argsv) {
 }
 
 void job_abort(){
+	// TODO not always calling longjmp. -- Alexey
 	longjmp(current_job, LONGJMP_ABORT);
 }
