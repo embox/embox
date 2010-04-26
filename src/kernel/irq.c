@@ -129,7 +129,7 @@ static void irq_leave(void) {
 void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_nr_t irq_nr = interrupt_nr;
 	struct irq_action *action;
-	irqreturn_t irq_return;
+	irq_return_t irq_return;
 
 	assert(interrupt_nr_valid(interrupt_nr));
 

@@ -42,7 +42,7 @@ typedef interrupt_nr_t irq_nr_t;
 /**
  * IRQ handler return type.
  */
-typedef bool irqreturn_t;
+typedef bool irq_return_t;
 
 /**
  * Interrupt Service Routine type.
@@ -54,7 +54,7 @@ typedef bool irqreturn_t;
  * @retval IRQ_NONE if ISR didn't handled the interrupt
  * @retval IRQ_HANDLED if interrupt has been handled by this ISR
  */
-typedef irqreturn_t (*irq_handler_t)(irq_nr_t irq_nr, void *data);
+typedef irq_return_t (*irq_handler_t)(irq_nr_t irq_nr, void *data);
 
 typedef unsigned long irq_flags_t;
 

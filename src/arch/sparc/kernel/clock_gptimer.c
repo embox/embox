@@ -95,7 +95,7 @@ void clock_setup(useconds_t useconds) {
 
 }
 
-static irqreturn_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
+static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	// XXX clock_hander is called from arch part
 	clock_tick_handler(irq_nr,dev_id);
 	return IRQ_HANDLED;

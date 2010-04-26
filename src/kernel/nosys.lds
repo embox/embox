@@ -13,6 +13,9 @@ PROVIDE(softirq_install  = nosys);
 PROVIDE(softirq_raise    = nosys);
 PROVIDE(softirq_dispatch = nosys);
 
+PROVIDE(scheduler_lock = nosys);
+PROVIDE(scheduler_unlock = nosys);
+
 PROVIDE(printk = nosys);
 
 PROVIDE(timer_init = nosys);

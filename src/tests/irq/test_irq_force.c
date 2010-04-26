@@ -20,7 +20,7 @@ EMBOX_TEST_EXPORT(run_irq_force);
 
 volatile static bool irq_happened;
 
-static irqreturn_t test_isr(irq_nr_t irq_nr, void *dev_id) {
+static irq_return_t test_isr(irq_nr_t irq_nr, void *dev_id) {
 	irq_happened = true;
 	return IRQ_HANDLED;
 }

@@ -19,7 +19,7 @@ EMBOX_TEST_IMPORT(run_recursion);
 
 volatile static bool irq_happened;
 
-static irqreturn_t test_isr(irq_nr_t irq_nr, void *dev_id) {
+static irq_return_t test_isr(irq_nr_t irq_nr, void *dev_id) {
 	run_recursion();
 	irq_happened = true;
 	return IRQ_HANDLED;
