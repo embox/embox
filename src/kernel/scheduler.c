@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <kernel/timer.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #define THREAD_STACK_SIZE 0x1000
 #define THREADS_TIMER_ID 17
@@ -158,7 +159,9 @@ int scheduler_remove(struct thread *removed_thread) {
 	del_pos->prev->next = del_pos->next;
 	del_pos->next->prev = del_pos->prev;
 	if (current_pos == del_pos) {
+		assert(current_thread == removed_thread);
 		current_pos = del_pos->prev;
+		current_thread->must_be_switched = true;
 	}
 	free(del_pos);
 	scheduler_unlock();

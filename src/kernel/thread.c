@@ -30,7 +30,7 @@ void thread_run(int thread_pointer) {
 	TRACE("\nThread ID = %d\n", running_thread->id);
 	assert(running_thread != NULL);
 	running_thread->run();
-//	thread_delete(running_thread);
+	thread_delete(running_thread);
 }
 
 /**
@@ -44,7 +44,7 @@ struct thread * thread_new(void) {
 			struct thread *created_thread;
 			created_thread = threads_pool + i;
 			created_thread->id = i + 1;
-			TRACE("Thread ID = %d\n", created_thread->id);
+			TRACE("Alloted thread ID = %d\n", created_thread->id);
 			mask |= (1 << i);
 			return created_thread;
 		}
@@ -70,7 +70,7 @@ int thread_delete(struct thread *deleted_thread) {
 		return -EINVAL;
 	}
 	mask &= ~(1 << (deleted_thread - threads_pool));
-//	scheduler_remove(deleted_thread);
+	scheduler_remove(deleted_thread);
 	return 0;
 }
 
