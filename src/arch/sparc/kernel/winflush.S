@@ -15,7 +15,7 @@ winflush:
 	mov CONFIG_NWINDOWS - 1, %g1
 1:	subcc %g1, 1, %g1
  	bg 1b
-	 save
+	 save %sp, -0x60, %sp
 	mov CONFIG_NWINDOWS - 1, %g1
 1:	subcc %g1, 1, %g1
  	bg 1b
