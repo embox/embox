@@ -7,7 +7,7 @@
 #include <embox/test.h>
 #include <stdio.h>
 
-#define STACK_SZ 0x1000
+#define STACK_SZ 0x10000
 
 EMBOX_TEST(run);
 
@@ -17,7 +17,10 @@ static char infinite_stack[STACK_SZ];
 
 static void entry(int arg) {
 	TRACE("entry begin\n");
-	context_switch(&entry_context, &infinite_context);
+	while (true){
+		TRACE("E");
+		context_switch(&entry_context, &infinite_context);
+	}
 	TRACE("entry end (should not be reached)\n");
 }
 
@@ -46,9 +49,6 @@ static int run(void) {
 	context_set_stack(&infinite_context, infinite_stack + STACK_SZ);
 
 	TRACE("test begin\n");
-#if 0
-	context_switch(&redundant_context, &infinite_context);
-#endif
 	context_switch(&redundant_context, &entry_context);
 	TRACE("test end\n");
 

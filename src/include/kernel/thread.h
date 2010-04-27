@@ -22,6 +22,7 @@ typedef struct thread * thread_pt;
  */
 struct thread {
 	struct context thread_context;
+	struct thread *next_locked_thread;
 	void (*run)(void);
 	thread_id_t id;
 	thread_priority_t priority;
