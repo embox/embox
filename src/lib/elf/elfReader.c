@@ -254,7 +254,7 @@ void elf_print_segment_header(Elf32_Phdr * segment_header, uchar reversed)
  		   elf_reverse_long(segment_header->p_align, reversed));
 }
 
-elf_print_symbol_table(int counter,
+void elf_print_symbol_table(int counter,
 					   char reversed,
 					   Elf32_Sym * symbol_table,
 					   char * symbol_string_table)

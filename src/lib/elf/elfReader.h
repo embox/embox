@@ -117,6 +117,7 @@ typedef struct{
 	Elf32_Sword r_addend;
 } Elf32_Rela;
 
+#if 0
 /*Collection of information about elf*/
 typedef struct{
 	Elf32_Ehdr header;
@@ -124,6 +125,67 @@ typedef struct{
 	Elf32_Phdr segmentHeaders[MAX_NUMBER_OF_SECTIONS];
 	char stringTable[MAX_STRING_TABLE_LENGTH];
 } ElfFile;
+#endif
+
+/******LIBRARY INTERFACE******/
+
+/*function reverses order of bytes in received integer with size 4-bytes if reversed value is 2 - according
+ * specification and big-low type of bytes order in numbers
+ *
+ * @param num - integer to reverse
+ * @param reversed - integer from specification - property talking about data type
+ */
+ulong elf_reverse_long(ulong num, uchar reversed);
+
+
+/*function reverses order of bytes in received integer with size 2-bytes if reversed value is 2 - according
+ * specification and big-low type of bytes order in numbers
+ *
+ * @param num - integer to reverse
+ * @param reversed - integer from specification - property talking about data type
+ */
+ushort elf_reverse_short(ushort num, uchar reversed);
+
+/*function prints consistens of elf header according the specification with comments and meaning writing
+ *
+ * @param header - head structure which describe common file information
+ */
+void elf_print_header(Elf32_Ehdr * header);
+
+/**
+ * finds index in array string-table and starts printing name of sm-th begining from that index till the nearest "/0"
+ * string_table must start and finish with "/0"
+ *
+ * @param index - index in array which to start from
+ * @param string_table  - array which consist names devided by "/0"
+ */
+void elf_print_name(int index, char * string_table);
+
+/**
+ * Prints given section header using information about reversing of byte-order
+ * (big-endianess) with comments and some description of meanings
+ *
+ * @param section_header - struct to be print
+ * @param reversed - info about big-low-endianess data type - according specification
+ * @param string_table - an array given by user, got by according sectiong
+ *        which func can get names of sections from
+ */
+void elf_print_section_header(Elf32_Shdr * section_header,
+							  uchar reversed,
+							  char * string_table);
+
+/**
+ * Prints given segment header using information about reversing of byte-order
+ * (big-endianess) with comments and some description of meanings
+ *
+ * @param segment_header - struct to be print
+ * @param reversed - info about big-low-endianess data type - according specification
+ */
+void elf_print_segment_header(Elf32_Phdr * segment_header, uchar reversed);
+
+/*Oo TODO it*/
+void elf_print_symbol_table(int counter, char reversed, Elf32_Sym * symbol_table, char * symbol_string_table);
+
+
 
 #endif /* elf_elfReader_H_ */
-
