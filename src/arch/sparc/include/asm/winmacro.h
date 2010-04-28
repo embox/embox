@@ -1,28 +1,6 @@
 /**
  * @file
  * @brief SPARC register windows related stuff.
- * @details Here is also described the windows management policy
- * used in the core trap setup and WOF/WUF handling routines.
- *
- * We do a small trick based on a nonstandard usage of the WIM register.
- * The main advantage of this method is that it allows to quickly determine
- * a presence of user windows on the CPU.
- *
- * More definitely, we encode in the WIM not only the invalid window marker
- * but also the mask of the last user window (if any) being on the CPU.
- * Thus, one may distinguish WIM bits to @b primary (stands for traditional
- * invalid window mask) and @b secondary (represents the last user window)
- * markers.
- *
- * Some restrictions and assumptions needed for this method to work properly:
- *   @n 1) Kernel code does not "over-restores" (particularly, it should
- * not perform "RESTORE - SAVE" combinations).
- *   @n 2) At any moment each kernel window has proper stack pointer.
- *   @n 3) CPU has got 3 or more register windows. Because of this fact it is
- * guaranteed that bitwise AND of next and previous windows masks is always 0.
- * This means that ORing, XORing, ADDing these masks together give the same
- * result, and we can join such operations with SAVE or WRWIM instructions.
- *   TODO
  *
  * @date Jun 4, 2009
  * @author Eldar Abusalimov

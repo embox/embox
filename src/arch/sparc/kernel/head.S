@@ -8,9 +8,8 @@
 #include <asm/head.h>
 #include <asm/regs.h>
 #include <asm/psr.h>
-
-	.weak hardware_init_hook
-	.weak software_init_hook
+#include <asm/wim.h>
+#include <asm/stack.h>
 
 	.section ".trap_table.text", #alloc, #execinstr
 	.align 0x1000
@@ -24,21 +23,9 @@ trap_table:
 	.text
 	.align 4
 
-/*
- * At the boot time we are in an arbitrary register window.
- * Therefore we reset CWP field of PSR to zero and mark the _previous_ window
- * as invalid (set WIM to 1 << 1). So it is possible to do (NWINDOWS - 1) SAVEs
- * before the WOF trap will occure for the first time.
- *
- * WIM layout:
- *
- * <-- restore, rett                 trap, save -->
- *       +-----+---+---+---+---+---+---+---+---+
- *  win# | ... | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
- *  bits |     |   |   |   |   |   |   | * |   |
- *       +-----+---+---+---+---+---+---+---+---+
- *                                           ^-CWP
- */
+	.weak hardware_init_hook
+	.weak software_init_hook
+
 boot_start:
 	/* set PSR initial value */
 	set (PSR_PS | PSR_S | PSR_PIL), %g1
@@ -84,8 +71,8 @@ boot_start:
  	bg 1b
 	 save
 
-	/* setup WIM */
-	mov (1 << 1), %g1
+	/* setup WIM (see asm/wim.h for the details) */
+	mov WIM_INIT, %g1
 	wr %g1, %g0, %wim
 
 	/* clear global registers. */
@@ -105,9 +92,8 @@ boot_start:
 1:	 nop
 
 	/* give us a stack! */
-	set __stack, %g1
-	mov %g1, %fp
-	sub %g1, 0x60, %sp
+	set __stack, %fp
+	add %fp, -STACK_FRAME_SZ, %sp
 
 	rd %psr, %g1
 	wr %g1, PSR_ET, %psr

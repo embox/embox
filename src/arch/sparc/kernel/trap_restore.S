@@ -4,7 +4,7 @@
  * @brief Low-level trap post-setup and SPARC windows underflow routines.
  *
  * @details Here is described the algorithm itself. More general information
- * can be found in @link winmacro.h @endlink docs.
+ * can be found in @link wim.h @endlink docs.
  *
  ** @par Introduction
  * Will use the following notation:
@@ -13,7 +13,7 @@
  *       @n <tt>(U)</tt> - user window,
  *       @n <tt>(L)</tt> - the last user window,
  *       @n <tt>(*)</tt> - invalid bit of @em WIM,
- *       @n <tt>(@)</tt> - the window currently pointed by the @em CWP.
+ *       @n <tt>(@)</tt> - the window pointed by the @em CWP.
  *
  * @par
  *       Orientation of @em WIM register layout used in the examples below:
@@ -81,13 +81,14 @@
 @endverbatim
  *
  *
- * @sa winmacro.h
+ * @sa wim.h
  *
  * @author Eldar Abusalimov
  */
 
 #include <asm/regs.h>
 #include <asm/psr.h>
+#include <asm/wim.h>
 #include <asm/asi.h>
 #include <asm/ptrace.h>
 #include <asm/winmacro.h>

@@ -7,10 +7,8 @@
  */
 
 #include <asm/regs.h>
-#include <asm/psr.h>
 #include <asm/ptrace.h>
 #include <asm/stack.h>
-#include <asm/winmacro.h>
 
 	.text
 	.align 4
