@@ -79,6 +79,12 @@ static pmark_t *mypage_alloc(void) {
 	page_pool_ptr += PAGE_SIZE;
 	return (pmark_t *) (((unsigned long) page_pool_ptr) & ~0xfff);
 }
+static void mypage_free(pmark_t *page) {
+#ifdef DEBUG
+	printf("---need to free page %8x\n", (unsigned long) page);
+#endif
+	return;
+}
 
 static pmark_t *clear_page_alloc(void) {
 	uint32_t i;
@@ -89,15 +95,28 @@ static pmark_t *clear_page_alloc(void) {
 	return t;
 }
 
+//#define DEBUG
 
+/* it should be computed but seems too complicated (must be aligned
+ * for _all_ possible requests for space -- this the main feature of
+ * table_alloc) */
+#define PAGE_HEADER_SIZE 1024
+typedef struct {
+	uint32_t free;
+} page_header_t;
 uint8_t *cur_page = NULL;
 size_t cur_rest = 0;
 
 unsigned long *table_alloc(size_t size) {
-	uint8_t *t;
+	uint8_t *t, *page;
 	if (cur_rest < size) {
 		cur_page = (uint8_t *) clear_page_alloc();
-		cur_rest = PAGE_SIZE;
+#ifdef DEBUG
+		printf("---requesting new page %x\n",cur_page);
+#endif
+		cur_rest = PAGE_SIZE - PAGE_HEADER_SIZE;
+		((page_header_t *) cur_page)->free = cur_rest;
+		cur_page += PAGE_HEADER_SIZE;
 	}
 	t = cur_page;
 	cur_page += size;
@@ -105,8 +124,47 @@ unsigned long *table_alloc(size_t size) {
 	* aligned on a boundary equal to the size of the page table.
 	*   -- SRMMU.*/
 	cur_rest -= size;
+	page = (uint8_t *) (((unsigned long) cur_page) & ~MMU_PAGE_MASK);
+	if (cur_rest == 0) {
+		page -= PAGE_SIZE;
+	}
+#ifdef DEBUG
+	printf("page %x; page->free %x; cur_rest %x; size %x, return %x\n", page, ((page_header_t *) page)->free, cur_rest, size, t);
+#endif
+	((page_header_t *) page)->free -= size;
 	return (pmd_t *) t;
 }
+
+static unsigned long sizes[] = {
+	LEON_CNR_CTX_NCTX,
+	MMU_PGD_TABLE_SIZE,
+	MMU_PMD_TABLE_SIZE,
+	MMU_PTE_TABLE_SIZE
+};
+
+void table_free(unsigned long *table, int level) {
+	uint8_t *page = (uint8_t *) (((unsigned long) table) & ~MMU_PAGE_MASK);
+	int i;
+	int size = sizes[level];
+#ifdef DEBUG
+	printf("table %x; level %x; page %x; size %x; is free %x\n", (unsigned long) table, level,
+			(unsigned long) page, size, ((page_header_t *) page)->free + size);
+#endif
+	for (i = 0; i < sizes[level-1]; i++ ) {
+		unsigned long t = *(table + i);
+		if (t & MMU_ET_PTD != 0) {
+#ifdef DEBUG
+			printf("on %x to %x\n", table + i, (t & MMU_PTD_PMASK) << 4);
+#endif
+			table_free(((unsigned long *) ((t & MMU_PTD_PMASK) << 4)), level + 1);
+		}
+	}
+	((page_header_t *) page)->free += size;
+	if (((page_header_t *) page)->free == PAGE_SIZE - PAGE_HEADER_SIZE && page != cur_page) {
+		mypage_free(page);
+	}
+}
+
 
 static unsigned long levels[] = {
 	0xffffffff,
@@ -158,8 +216,6 @@ void flags_translate(uint32_t *flags) {
 	}
 	*flags = ret;
 }
-
-//#define DEBUG
 
 int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, uint32_t flags) {
@@ -257,17 +313,30 @@ void mmu_set_env(mmu_env_t *env) {
 	env->status ? mmu_on() : mmu_off();
 }
 
-int last_ctx = 1;
+uint8_t used_context[LEON_CNR_CTX_NCTX];
 
 mmu_ctx_t mmu_create_context(void) {
-	if (last_ctx >= LEON_CNR_CTX_NCTX)
-		return -1;
-	mmu_ctxd_set(cur_env->ctx + last_ctx, table_alloc(MMU_PGD_TABLE_SIZE));
-	cur_env->cur_ctx = last_ctx;
+	int i;
+	for (i = 0; i < LEON_CNR_CTX_NCTX; i++) {
+		if (!used_context[i])
+			break;
+	}
 #ifdef DEBUG
-	printf("creating %d context\n",last_ctx);
+	printf("create %d\n", i);
 #endif
-	return last_ctx++;
+	if (i >= LEON_CNR_CTX_NCTX)
+		return -1;
+	mmu_ctxd_set(cur_env->ctx + i, table_alloc(MMU_PGD_TABLE_SIZE));
+	used_context[i] = 1;
+	return i;
+}
+
+void mmu_delete_context(mmu_ctx_t ctx) {
+   used_context[ctx] = 0;
+#ifdef DEBUG
+   printf("delete %d\n",ctx);
+#endif
+   table_free(((unsigned long) *( cur_env->ctx + ctx) & MMU_CTX_PMASK) << 4, 1);
 }
 
 void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {
@@ -309,6 +378,7 @@ static int mmu_init(void) {
 	mmu_pmd_set(&sys_pm0, &sys_pt0);
 
 	cur_env = &system_env;
+	used_context[0] = 1;
 
 	return 0;
 }

@@ -211,23 +211,23 @@ static int exec(int argsc, char **argsv) {
     diff = dxp;
     getchar();
     while (snake_update()) {
-	point d = nil;
-	point d2 = nil;
-	char ch = ' ';
+		point d = nil;
+		point d2 = nil;
+		char ch = ' ';
 
-	usleep(sleep_time);
-	last_valid = 0;
-	while (diag_has_symbol() && !last_valid ) {
-	    d = dispatch((ch = getchar()));
-	    d2 = point_plus(d,diff);
-	    valid(d2);
-	}
-	if (last_valid) {
-	    diff = d;
-	    diff_char = ch;
-	}
-	while (diag_has_symbol())
-	    getchar();
+		usleep(sleep_time);
+		last_valid = 0;
+		while (diag_has_symbol() && !last_valid ) {
+			d = dispatch((ch = getchar()));
+			d2 = point_plus(d,diff);
+			valid(d2);
+		}
+		if (last_valid) {
+			diff = d;
+			diff_char = ch;
+		}
+		while (diag_has_symbol())
+			getchar();
     }
     getchar();
     printf("%c%c2J",ESC,CSI);
