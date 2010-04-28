@@ -5,8 +5,6 @@
  */
 
 #include "elfReader.h"
-#include <stdio.h>
-#include <string.h>
 
 ulong elf_reverse_long(ulong num, uchar reversed)
 {
@@ -254,6 +252,8 @@ void elf_print_segment_header(Elf32_Phdr * segment_header, uchar reversed)
  		   elf_reverse_long(segment_header->p_align, reversed));
 }
 
+
+/*TODO it : look attantivly on string symbol table and taking names from it*/
 void elf_print_symbol_table(int counter,
 					   char reversed,
 					   Elf32_Sym * symbol_table,
@@ -296,6 +296,236 @@ void elf_print_symbol_table(int counter,
 	}
 }
 
+void elf_print_rel(Elf32_Rel * rel_array, int count, int reversed)
+{
+	if (count != 0) {
+		printf("\n");
+
+		int i = 0;
+
+		for (; i < count; i++ ) {
+			printf("\nr_offset : %ld", elf_reverse_long(rel_array[i].r_offset, reversed));
+			printf("\nr_info : %ld\n", elf_reverse_long(rel_array[i].r_info, reversed));
+		}
+	}
+	else {
+		printf("\nList of Elf32_Rel structures if empty\n");
+	}
+}
+
+void elf_print_rela(Elf32_Rela * rela_array, int count, int reversed)
+{
+	if (count != 0) {
+		printf("\n");
+
+		int i = 0;
+
+		for (; i < count; i++ ) {
+			printf("\nr_offset : %ld", elf_reverse_long(rela_array[i].r_offset, reversed));
+			printf("\nr_info : %ld", elf_reverse_long(rela_array[i].r_info, reversed));
+			printf("\nr_addend : %ld\n", elf_reverse_long(rela_array[i].r_addend, reversed));
+		}
+	}
+	else {
+		printf("\nList of Elf32_Rela structures if empty\n");
+	}
+}
+
+int elf_read_header(FILE * fo, Elf32_Ehdr * header)
+{
+	if (fo != NULL) {
+		fread(header, sizeof(Elf32_Ehdr), 1, fo);
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}
+
+int elf_read_sections_table(FILE * fo, Elf32_Ehdr * header,
+							Elf32_Shdr * section_header_table)
+{
+	if (elf_reverse_long(header->e_shoff, header->e_ident[5]) != 0) {
+		fseek(fo, elf_reverse_long(header->e_shoff, header->e_ident[5]), 0);
+		fread(&section_header_table,
+			  elf_reverse_short(header->e_shentsize,header->e_ident[5]),
+			  elf_reverse_short(header->e_shnum,header->e_ident[5]), fo);
+		return 0;
+	}
+	else {/*Table doesn't exist*/
+		return 1;
+	}
+}
+
+int elf_read_segments_table(FILE * fo, Elf32_Ehdr * header,
+							Elf32_Phdr * segment_header_table)
+{
+	if (elf_reverse_long(header->e_phoff, header->e_ident[5]) != 0) {
+		fseek(fo, elf_reverse_long(header->e_phoff, header->e_ident[5]), 0);
+		fread(segment_header_table, elf_reverse_short(header->e_phentsize,
+													  header->e_ident[5]),
+			  elf_reverse_short(header->e_phnum,header->e_ident[5]), fo);
+		return 0;
+	}
+	else {/*Table doesn't exist*/
+		return 1;
+	}
+}
+
+int elf_read_string_table(FILE * fo, Elf32_Ehdr * header,
+						  Elf32_Shdr * section_header_table,
+						  char * names, int * length)
+{
+	if (elf_reverse_long(header->e_shoff,header->e_ident[5]) != 0) {
+		if ( header->e_shstrndx != 0 ) {
+			fseek(fo, elf_reverse_long(section_header_table[elf_reverse_short
+				  (header->e_shstrndx, header->e_ident[5])].sh_offset,
+				  header->e_ident[5]), 0);
+			fread(names, elf_reverse_long(section_header_table[elf_reverse_short
+				  (header->e_shstrndx, header->e_ident[5])].sh_size,
+				  header->e_ident[5]), 1, fo);
+			*length = elf_reverse_long(section_header_table[elf_reverse_short
+					  (header->e_shstrndx, header->e_ident[5])].sh_size,
+					  header->e_ident[5]);
+			return 0;
+		}
+		else {/*Not found*/
+			return 1;
+		}
+	}
+	else {/*Empty table*/
+		return 2;
+	}
+}
+
+int elf_read_symbol_table(FILE * fo, Elf32_Ehdr * header,
+						  Elf32_Shdr * section_header_table,
+						  Elf32_Sym * symbol_table, int * count)
+{
+	if (elf_reverse_long(header->e_shoff,header->e_ident[5]) != 0) {
+		int i=0;
+		*count = 0;
+
+		for (;i < elf_reverse_short(header->e_shnum,header->e_ident[5]) ; i++ ) {
+			/*We find SHT_SYMTAB - sh_type with value - 2*/
+			if (elf_reverse_long(section_header_table[i].sh_type, header->e_ident[5]) == 2) {
+				fseek(fo, elf_reverse_long(section_header_table[i].sh_offset,
+					  header->e_ident[5]), 0);
+				fread(symbol_table, elf_reverse_long(
+					  section_header_table[i].sh_size, header->e_ident[5]),
+					  1, fo);
+				*count = elf_reverse_long(section_header_table[i].sh_size,
+						 header->e_ident[5]) / sizeof(Elf32_Sym);
+				return 0;
+			}
+		}
+		if (*count == 0) { /*nothing found*/
+			return 1;
+		}
+	}
+	else { /*empty table*/
+		return 2;
+	}
+}
+
+int elf_read_rel_table(FILE * fo, Elf32_Ehdr * header,
+				       Elf32_Shdr * section_header_table,
+					   Elf32_Rel * rel_table, int * count)
+{
+	if (elf_reverse_long(header->e_shoff,header->e_ident[5]) != 0) {
+		int i=0;
+		*count = 0;
+
+		for (;i < elf_reverse_short(header->e_shnum,header->e_ident[5]) ; i++ ) {
+			/*We find SHT_REL - sh_type with value - 9*/
+			if (elf_reverse_long(section_header_table[i].sh_type, header->e_ident[5]) == 9) {
+				fseek(fo, elf_reverse_long(section_header_table[i].sh_offset,
+					  header->e_ident[5]), 0);
+				fread(rel_table + *count,
+					  elf_reverse_long(section_header_table[i].sh_size,
+					  header->e_ident[5]), 1, fo);
+				*count += elf_reverse_long(section_header_table[i].sh_size,
+						  header->e_ident[5]) / sizeof(Elf32_Rel);
+			}
+		}
+
+		if (*count != 0) {
+			return 0;
+		}
+		else {/*Nothing found*/
+			return 1;
+		}
+	}
+	else {/*Section header table is empty*/
+		return 2;
+	}
+}
+
+int elf_read_rela_table(FILE * fo, Elf32_Ehdr * header,
+				       Elf32_Shdr * section_header_table,
+					   Elf32_Rela * rela_table, int * count)
+{
+	if (elf_reverse_long(header->e_shoff,header->e_ident[5]) != 0) {
+		int i=0;
+		*count = 0;
+
+		for (;i < elf_reverse_short(header->e_shnum,header->e_ident[5]) ; i++ ) {
+			/*We find SHT_RELA - sh_type with value - 4*/
+			if (elf_reverse_long(section_header_table[i].sh_type, header->e_ident[5]) == 4) {
+				fseek(fo, elf_reverse_long(section_header_table[i].sh_offset,
+					  header->e_ident[5]), 0);
+				fread(rela_table + *count,
+					  elf_reverse_long(section_header_table[i].sh_size,
+					  header->e_ident[5]), 1, fo);
+				*count += elf_reverse_long(section_header_table[i].sh_size,
+						  header->e_ident[5]) / sizeof(Elf32_Rela);
+			}
+		}
+
+		if (*count != 0) {
+			return 0;
+		}
+		else {/*Nothing found*/
+			return 1;
+		}
+	}
+	else {/*Section header table is empty*/
+		return 2;
+	}
+}
+
+/*TODO*/
+int elf_read_symbol_string_table(FILE * fo, Elf32_Ehdr * header,
+								 Elf32_Shdr * section_header_table,
+								 char * names, int * length)
+{
+	return 0;//works not properly
+
+	if (elf_reverse_long(header->e_shoff,header->e_ident[5]) != 0) {
+		int i=0;
+
+		for (;i < elf_reverse_short(header->e_shnum,header->e_ident[5]) ; i++ ){
+		/*3:"SHT_STRTAB" not  only for symbols*/
+			if ( (elf_reverse_long(section_header_table[i].sh_type, header->e_ident[5]) == 3)){
+				*length = elf_reverse_long(section_header_table[i].sh_size, header->e_ident[5]);
+				fseek(fo, elf_reverse_long(section_header_table[i].sh_offset,header->e_ident[5]), 0);
+				fread(names, *length, 1, fo);
+			}
+		}
+
+		if (*length != 0) {
+			return 0;
+		}
+		else {/*Nothing found*/
+			return 1;
+		}
+	}
+	else {/*Section header table is empty*/
+		return 2;
+	}
+}
+
+#if 0
 int main(int argc, char *argv[])
 {
 	char * file_name = argv[1];
@@ -318,10 +548,10 @@ int main(int argc, char *argv[])
 	elf_print_header(&header);
 
 	/*Array for headers of sections*/
-	Elf32_Shdr section_headerTable[MAX_NUMBER_OF_SECTIONS];
+	Elf32_Shdr section_header_table[MAX_NUMBER_OF_SECTIONS];
 
 	/*Array for headers of segments*/
-	Elf32_Phdr segment_headerTable[MAX_NUMBER_OF_SECTIONS];
+	Elf32_Phdr segment_header_table[MAX_NUMBER_OF_SECTIONS];
 
 	/* Array for symbols - consist of structures*/
 	Elf32_Sym symbol_table[MAX_SYMBOL_TABLE_LENGTH];
@@ -336,27 +566,35 @@ int main(int argc, char *argv[])
 	char symbol_string_table[MAX_SYMBOL_STRING_TABLE_LENGTH];
 	int realsymbol_string_tableLength = 0;
 
+	Elf32_Rel rel_array[MAX_REL_ARRAY_LENGTH];
+	int real_rel_array_length = 0;
+
+	Elf32_Rela rela_array[MAX_RELA_ARRAY_LENGTH];
+	int real_rela_array_length = 0;
+
+	/*data description finished*/
+
 	if (elf_reverse_long(header.e_shoff,header.e_ident[5]) != 0) {
 
 		fseek(fo, elf_reverse_long(header.e_shoff,header.e_ident[5]), 0);
 
-		fread(&section_headerTable,
+		fread(&section_header_table,
 			  elf_reverse_short(header.e_shentsize,header.e_ident[5]),
 			  elf_reverse_short(header.e_shnum,header.e_ident[5]), fo);
 
 		if ( header.e_shstrndx != 0 ) {
 			fseek(fo,
-				  elf_reverse_long(section_headerTable[elf_reverse_short(header.e_shstrndx, header.e_ident[5])].sh_offset,
+				  elf_reverse_long(section_header_table[elf_reverse_short(header.e_shstrndx, header.e_ident[5])].sh_offset,
 																		 header.e_ident[5]),
 				  0);
 
 			fread(&string_table,
-				  elf_reverse_long(section_headerTable[elf_reverse_short(header.e_shstrndx, header.e_ident[5])].sh_size,
+				  elf_reverse_long(section_header_table[elf_reverse_short(header.e_shstrndx, header.e_ident[5])].sh_size,
 								   header.e_ident[5]),
 				  1,
 				  fo);
 
-			real_string_table_length = elf_reverse_long(section_headerTable[elf_reverse_short(header.e_shstrndx,
+			real_string_table_length = elf_reverse_long(section_header_table[elf_reverse_short(header.e_shstrndx,
 																						      header.e_ident[5])].sh_size,
 														header.e_ident[5]);
 		}
@@ -366,24 +604,39 @@ int main(int argc, char *argv[])
 		for (;i < elf_reverse_short(header.e_shnum,header.e_ident[5]) ; i++ ){
 
 			printf("\n		Section #%d : \n", i+1);
-			elf_print_section_header(&(section_headerTable[i]),
+			elf_print_section_header(&(section_header_table[i]),
 								header.e_ident[5],
 								string_table);
 
-			/*2:"SHT_SYMTAB"*/
-			if (elf_reverse_long(section_headerTable[i].sh_type, header.e_ident[5]) == 2) {
-				fseek(fo, elf_reverse_long(section_headerTable[i].sh_offset,header.e_ident[5]), 0);
-				fread(symbol_table, elf_reverse_long(section_headerTable[i].sh_size, header.e_ident[5]), 1, fo);
-				real_symbol_counter = elf_reverse_long(section_headerTable[i].sh_size, header.e_ident[5]) / sizeof(Elf32_Sym);
+			/*We found SHT_SYMTAB*/
+			if (elf_reverse_long(section_header_table[i].sh_type, header.e_ident[5]) == 2) {
+				fseek(fo, elf_reverse_long(section_header_table[i].sh_offset,header.e_ident[5]), 0);
+				fread(symbol_table, elf_reverse_long(section_header_table[i].sh_size, header.e_ident[5]), 1, fo);
+				real_symbol_counter = elf_reverse_long(section_header_table[i].sh_size, header.e_ident[5]) / sizeof(Elf32_Sym);
+			}
+
+			/*We found SHT_RELA*/
+			if (elf_reverse_long(section_header_table[i].sh_type, header.e_ident[5]) == 4) {
+				fseek(fo, elf_reverse_long(section_header_table[i].sh_offset,header.e_ident[5]), 0);
+				fread(rela_array + real_rel_array_length / sizeof(Elf32_Rela), elf_reverse_long(section_header_table[i].sh_size, header.e_ident[5]), 1, fo);
+				real_rela_array_length += elf_reverse_long(section_header_table[i].sh_size, header.e_ident[5]);
+			}
+
+
+			/*We found SHT_REL*/
+			if (elf_reverse_long(section_header_table[i].sh_type, header.e_ident[5]) == 9) {
+				fseek(fo, elf_reverse_long(section_header_table[i].sh_offset,header.e_ident[5]), 0);
+				fread(rel_array + real_rela_array_length  / sizeof(Elf32_Rel), elf_reverse_long(section_header_table[i].sh_size, header.e_ident[5]), 1, fo);
+				real_rel_array_length += elf_reverse_long(section_header_table[i].sh_size, header.e_ident[5]);
 			}
 
 			/*TODO analyze of stringsymbol_table search*/
 			/*printf("\n %d %d %ld \n",i,elf_reverse_short(header.e_shstrndx,header.e_ident[5]),
-					elf_reverse_long(section_headerTable[i].sh_type, header.e_ident[5]));*/
-			/*if ( (elf_reverse_long(section_headerTable[i].sh_type, header.e_ident[5]) == 3)){ /*3:"SHT_STRTAB" for symbols
+					elf_reverse_long(section_header_table[i].sh_type, header.e_ident[5]));*/
+			/*if ( (elf_reverse_long(section_header_table[i].sh_type, header.e_ident[5]) == 3)){ /*3:"SHT_STRTAB" for symbols
 				printf("\nsymbols table found\n");*/
-				/*realsymbol_string_tableLength = elf_reverse_long(section_headerTable[i].sh_size, header.e_ident[5]);
-				 *fseek(fo, elf_reverse_long(section_headerTable[i].sh_offset,header.e_ident[5]), 0);
+				/*realsymbol_string_tableLength = elf_reverse_long(section_header_table[i].sh_size, header.e_ident[5]);
+				 *fseek(fo, elf_reverse_long(section_header_table[i].sh_offset,header.e_ident[5]), 0);
 				 *fread(symbol_string_table, realsymbol_string_tableLength, 1, fo);*/
 			/*}*/
 		}
@@ -393,7 +646,7 @@ int main(int argc, char *argv[])
 
 	if (elf_reverse_long(header.e_phoff,header.e_ident[5]) != 0) {
 		fseek(fo, elf_reverse_long(header.e_phoff,header.e_ident[5]), 0);
-		fread(&segment_headerTable, elf_reverse_short(header.e_phentsize,
+		fread(&segment_header_table, elf_reverse_short(header.e_phentsize,
 													  header.e_ident[5]),
 			  elf_reverse_short(header.e_phnum,header.e_ident[5]), fo);
 
@@ -401,10 +654,12 @@ int main(int argc, char *argv[])
 
 		for (;i<elf_reverse_short(header.e_phnum,header.e_ident[5]);i++) {
 			printf("\n		Segment #%d : \n", i+1);
-			elf_print_segment_header(&(segment_headerTable[i]), header.e_ident[5]);
+			elf_print_segment_header(&(segment_header_table[i]), header.e_ident[5]);
 		}
 	}
 
 	fclose(fo);
 }
+#endif /*of function main*/
+
 
