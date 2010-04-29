@@ -140,12 +140,12 @@ int mod_disable_nodep(const struct mod *mod) {
 static bool mod_deps_satisfied(const struct mod *mod, bool op) {
 	struct mod **p_dep;
 
-	if (!!op == !!mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
+	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return true;
 	}
 
 	for (p_dep = op ? mod->requires : mod->provides; *p_dep != NULL; ++p_dep) {
-		if (!!op != !!mod_flag_tst(*p_dep, MOD_FLAG_ENABLED)) {
+		if (!op != !mod_flag_tst(*p_dep, MOD_FLAG_ENABLED)) {
 			return false;
 		}
 	}
@@ -156,7 +156,7 @@ static bool mod_deps_satisfied(const struct mod *mod, bool op) {
 static int mod_perform(const struct mod *mod, bool op) {
 	struct mod **p_dep;
 
-	if (!!op == !!mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
+	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
 	}
 
@@ -176,7 +176,7 @@ static int mod_perform_nodep(const struct mod *mod, bool op) {
 			: offsetof(struct mod_ops, disable);
 	mod_op_t mod_op;
 
-	if (!!op == !!mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
+	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
 	}
 
