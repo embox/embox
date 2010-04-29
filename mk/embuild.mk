@@ -111,7 +111,7 @@ unit_def = \
 
 # Mods that are always included to the resulting image
 # (with their dependencies satisfied, of course).
-__MODS_CORE = $(info Listing essentials) $(call mod_collect,MODS_CORE)
+__MODS_CORE = $(info Listing core mods) $(call mod_collect,MODS_CORE)
 # Regular mods.
 __MODS           = $(info Listing mods) $(call mod_collect,MODS)
 
@@ -272,8 +272,9 @@ __DEPS_PROCESS = $(info Processing dependencies) \
 MOD_DEPS_DAG = $(sort $(call deps_dag_walk,$1))
 deps_dag_walk = $(foreach unit,$1,$(call $0,$(DEPS-$(unit))) $(unit))
 
-t-sort = \
-
+#t-sort = $(call __t-sort,$1,$(firstword $(foreach n,$1,$(if ,,$n))))
+#__t-sort = \
+#  $2 $(foreach n,$(DEPS-$1),$(call $0,$n))
 
 # The real work is done here.
 # This code is evaluated during symbol cache generation.
