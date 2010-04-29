@@ -49,7 +49,7 @@ static void loopback_setup(net_device_t *dev) {
 	dev->netdev_ops         = &loopback_ops;
 }
 #endif
-static int unit_init() {
+static int __init unit_init() {
 	//TODO:
 	return 0;
 }

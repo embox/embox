@@ -8,10 +8,11 @@
 
 #include <net/netdevice.h>
 #include <embox/unit.h>
+#include <linux/init.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
-static int unit_init(void) {
+static int __init unit_init(void) {
 	extern packet_type_t *__ipstack_packets_start, *__ipstack_packets_end;
 	packet_type_t ** p_netpack = &__ipstack_packets_start;
 

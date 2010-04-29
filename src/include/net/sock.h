@@ -129,7 +129,10 @@ extern void sk_init(void);
 extern sock_t *sk_alloc(/*struct net *net,*/int family, gfp_t priority,
 		proto_t *prot);
 
-/** returns specified structure sock into pull */
+/**
+ * Returns specified structure sock into pull,
+ * assuming there are no more handle on it.
+ */
 extern void sk_free(sock_t *sk);
 
 /** This function used by all transports to attempt to queue received packets*/

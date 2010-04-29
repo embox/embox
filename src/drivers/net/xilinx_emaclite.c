@@ -18,6 +18,7 @@
 #include <net/net_pack_manager.h>
 #include <net/etherdevice.h>
 #include <embox/unit.h>
+#include <linux/init.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -300,7 +301,7 @@ static const struct net_device_ops _netdev_ops = {
 		.ndo_start_xmit = start_xmit, .ndo_open = open, .ndo_stop = stop,
 		.ndo_get_stats = get_eth_stat, .ndo_set_mac_address = set_mac_address };
 
-static int unit_init() {
+static int __init unit_init() {
 	/*if some module lock irq number we break initializing*/
 	net_device_t *net_device;
 	/*initialize net_device structures and save information about them to local massive*/

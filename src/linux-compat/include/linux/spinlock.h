@@ -35,4 +35,6 @@
 #define read_lock_irqsave(lock, flags)  local_irq_save(flags)
 #define write_lock_irqsave(lock, flags) local_irq_save(flags)
 
+#define SPIN_LOCK_UNLOCKED 0
+
 #endif /* LINUX_SPINLOCK_H_ */
