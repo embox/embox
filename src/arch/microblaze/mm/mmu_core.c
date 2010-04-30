@@ -124,14 +124,26 @@ void mmu_restore_table(__mmu_table_t utlb) {
 
 static inline uint32_t reg_size_convert(size_t reg_size) {
 	switch (reg_size) {
+		case 0x400: { /* 1kb */
+			return RTLBHI_SIZE_1K;
+		}
 		case 0x1000: { /* 4k field */
 			return RTLBHI_SIZE_4K;
+		}
+		case 0x4000: {/* 16k field */
+			return RTLBHI_SIZE_16K;
 		}
 		case 0x10000: {/* 64k field */
 			return RTLBHI_SIZE_64K;
 		}
+		case 0x40000: { /* 256 kb*/
+			return RTLBHI_SIZE_256K;
+		}
 		case 0x100000: {/* 1M field */
 			return RTLBHI_SIZE_1M;
+		}
+		case 0x400000: { /* 4M field*/
+			return RTLBHI_SIZE_4M;
 		}
 		case 0x1000000: {/* 16M field */
 			return RTLBHI_SIZE_16M;

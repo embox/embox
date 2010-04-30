@@ -15,6 +15,7 @@ static traps_env_t test_env[1];
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 	switch(type) {
 	case TRAP_TYPE_HARDTRAP: {
+		hwtrap_handler[number] = handler;
 		break;
 	}
 	case TRAP_TYPE_INTERRUPT: {
@@ -52,9 +53,17 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 			);
 #endif
 	__asm__ __volatile__ (
+			/* we have already loaded parametrs
+			 * "add  r5, %0;\n\t"
+			"add  r6, %0;\n\t"
+			*/
 			"brki  r16, 0x8;\n\t"
 			"nop;\n\t"
-			"nop;\n\t");
+			"nop;\n\t"
+			/*: for loaded parametrs
+			:"r" (number), "r"(data)
+			*/
+			 );
 	return 0;
 }
 

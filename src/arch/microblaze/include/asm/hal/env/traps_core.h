@@ -15,7 +15,7 @@
 #define MAX_SOFTTRAP_NUMBER  0x10
 #define MAX_INTERRUPT_NUMBER 0x10
 /** Defines handler for traps_dispatcher in microblaze archecture */
-typedef void (*__trap_handler)(uint32_t nr, void *data);
+typedef int (*__trap_handler)(uint32_t nr, void *data);
 
 /** Defines traps environment for microblaze structure */
 typedef struct __traps_env {
