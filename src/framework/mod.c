@@ -14,8 +14,10 @@
 #include <embox/mod.h>
 
 #define MOD_FLAG_ENABLED       (1 << 0)
-#define MOD_FLAG_OPFAILED      (1 << 1)
-#define MOD_FLAG_OPINPROGRESS  (1 << 2)
+
+// TODO unused for now... -- Eldar
+#define MOD_FLAG_OPFAILED      (0 << 1)
+#define MOD_FLAG_OPINPROGRESS  (0 << 2)
 
 #define mod_flag_tst(mod, mask)   ((mod)->private->flags &   (mask))
 #define mod_flag_tgl(mod, mask) do (mod)->private->flags ^=  (mask); while(0)
@@ -28,9 +30,9 @@ static bool mod_deps_satisfied(const struct mod *mod, bool op);
 /* Define generic package. */
 MOD_PACKAGE_DEF(generic, "generic");
 
-inline static mod_op_t mod_op_deref(const struct mod *mod, size_t op_offset) {
+inline static mod_op_t mod_op_deref(const struct mod *mod, bool op) {
 	if (NULL != mod->api && NULL != mod->api->ops) {
-		return *(mod_op_t *) ((size_t) mod->api->ops + op_offset);
+		return op ? mod->api->ops->enable : mod->api->ops->disable;
 	}
 	return NULL;
 }
@@ -172,16 +174,14 @@ static int mod_perform(const struct mod *mod, bool op) {
 // XXX What's about recursive invocations from mod ops? -- Eldar
 // TODO introduce -ELOOP or something else.
 static int mod_perform_nodep(const struct mod *mod, bool op) {
-	size_t op_offset = op ? offsetof(struct mod_ops, enable)
-			: offsetof(struct mod_ops, disable);
 	mod_op_t mod_op;
 
 	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
 	}
 
-	if (NULL != (mod_op = mod_op_deref(mod, op_offset)) && 0 != mod_op(
-			(struct mod *) mod)) {
+	mod_op = mod_op_deref(mod, op);
+	if (NULL != mod_op && 0 != mod_op((struct mod *) mod)) {
 		mod_flag_set(mod, MOD_FLAG_OPFAILED);
 		return -EINTR;
 	}
