@@ -13,9 +13,8 @@
 #include <string.h>
 /* declare test in system */
 EMBOX_TEST(run);
-static char addr[0x1000 * 3];
+//static char addr[0x1000 * 3];
 typedef void (*worker_ptr)(void);
-worker_ptr *pointer;
 
 static int is_a_done = 0;
 static int is_b_done = 0;
@@ -25,6 +24,7 @@ static void worker_a(void) {
 			".align 0x1000\n\t"
 			"worker_a_aligned:\n\t"
 	);
+	is_a_done = 1;
 }
 
 static void worker_b(void) {
@@ -32,11 +32,14 @@ static void worker_b(void) {
 			".align 0x1000\n\t"
 			"worker_b_aligned:\n\t"
 	);
+	is_b_done = 1;
 }
 
 static int run() {
 	extern char _text_start, __stack, _data_start;
 	extern char worker_a_aligned, worker_b_aligned;
+	worker_ptr temp;
+
 	int status = 0;
 	int i;
 	mmu_env_t prev_mmu_env;
@@ -45,10 +48,11 @@ static int run() {
 	mmu_save_env(&prev_mmu_env);
 	cur_mmu_env = testmmu_env();
 	mmu_set_env(cur_mmu_env);
-	printf("%x %x\n", &worker_a_aligned, &worker_b_aligned);
-	pointer = (worker_ptr *) (((unsigned long)addr + 0x1000) & ~0xfff);
-	*pointer = &worker_a;
-	*((worker_ptr *) (((unsigned long) pointer) + 0x1000 )) = &worker_b;
+
+	/* have to do this, otherwise compiler throw out
+	 * worker_a and worker_b */
+	temp = &worker_a;
+	temp = &worker_b;
 
 	t1 = mmu_create_context();
     t2 = mmu_create_context();
@@ -62,18 +66,18 @@ static int run() {
 					MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 		}
 	}
-	mmu_map_region(t1, (paddr_t) pointer, 0xf0080000, 0x1000,
+	mmu_map_region(t1, (paddr_t) &worker_a_aligned, 0xf0080000, 0x1000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
-	mmu_map_region(t2, (paddr_t) (((unsigned long) pointer) + 0x1000), 0xf0080000, 0x1000,
+	mmu_map_region(t2, (paddr_t) &worker_b_aligned, 0xf0080000, 0x1000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
 	mmu_on();
 	switch_mm(0, t1);
-	(*((worker_ptr *) 0xf0080000))();
+	(*((worker_ptr) 0xf0080000))();
 	mmu_off();
 	switch_mm(t1, t2);
 	mmu_on();
-	(*((worker_ptr *) 0xf0080000))();
+	(*((worker_ptr) 0xf0080000))();
 	mmu_off();
 	printf("a is %d b is %d\n",is_a_done, is_b_done);
 	status = !(is_a_done && is_b_done);
