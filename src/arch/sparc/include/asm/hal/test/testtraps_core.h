@@ -12,4 +12,8 @@
 #include <types.h>
 #include <hal/env/traps_core.h>
 
+extern trap_handler_t test_handler[CONFIG_TRAP_TABLE_SIZE];
+
+extern uint32_t *__test_trap_table;
+
 #endif /* SPARC_TESTTRAPS_H_ */

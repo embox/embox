@@ -13,9 +13,6 @@
 
 static traps_env_t test_env[1];
 
-extern trap_handler_t test_handler[CONFIG_TRAP_TABLE_SIZE];
-extern uint32_t *__test_trap_table;
-
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 	switch(type) {
 	case TRAP_TYPE_HARDTRAP:
