@@ -14,39 +14,29 @@
 /* declare test in system */
 EMBOX_TEST(run);
 static char addr[0x1000 * 3];
-typedef void (*worker_ptr)();
+typedef void (*worker_ptr)(void);
 worker_ptr *pointer;
 
 static int is_a_done = 0;
 static int is_b_done = 0;
-static void worker_a() {
+
+static void worker_a(void) {
 	__asm__  __volatile__ (
 			".align 0x1000\n\t"
-			"worker_a_aligned:"
-			//"sethi 0, %%g1\n\t"
-			//"st %%g1, [%0]\n\t"
-		: "=r"(is_a_done)
-		:
-		: "g1"
+			"worker_a_aligned:\n\t"
 	);
 }
 
-static void worker_b() {
+static void worker_b(void) {
 	__asm__   __volatile__(
 			".align 0x1000\n\t"
-			"worker_b_aligned:"
-			//"sethi 0, %%g1\n\t"
-			//"st %%g1, [%0]\n\t"
-		: "=r"(is_b_done)
-		:
-		: "g1"
+			"worker_b_aligned:\n\t"
 	);
 }
-
 
 static int run() {
 	extern char _text_start, __stack, _data_start;
-	extern unsigned long worker_a_aligned, worker_b_aligned;
+	extern char worker_a_aligned, worker_b_aligned;
 	int status = 0;
 	int i;
 	mmu_env_t prev_mmu_env;
@@ -55,7 +45,7 @@ static int run() {
 	mmu_save_env(&prev_mmu_env);
 	cur_mmu_env = testmmu_env();
 	mmu_set_env(cur_mmu_env);
-	printf("%x %x\n", worker_a_aligned, worker_b_aligned);
+	printf("%x %x\n", &worker_a_aligned, &worker_b_aligned);
 	pointer = (worker_ptr *) (((unsigned long)addr + 0x1000) & ~0xfff);
 	*pointer = &worker_a;
 	*((worker_ptr *) (((unsigned long) pointer) + 0x1000 )) = &worker_b;
