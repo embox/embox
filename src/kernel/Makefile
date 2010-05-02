@@ -8,6 +8,8 @@ $_CPPFLAGS += -D__KERNEL__
 #$_LDFLAGS  += -T $($_SELFDIR)/nosys.lds
 $_LDFLAGS  += $($_SELFDIR)/nosys.lds
 
+$(IMAGE): $($_SELFDIR)/nosys.lds
+
 $_MODS_CORE += main
 
 $_MODS += irq timer printk softirq thread job

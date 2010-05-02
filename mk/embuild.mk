@@ -141,8 +141,10 @@ wildcard_srcs = $(wildcard $(1:%=$(dir)/%))
 mod_package = $(basename $(unit))
 mod_name = $(patsubst .%,%,$(suffix $(unit)))
 
-unit_symbol = $($_$1-$(unit)) \
-  $(if $(filter $($_PACKAGE),$(mod_package)),$($_$1-$(mod_name)))
+unit_symbol = $(foreach symbol,$1, \
+  $($_$(symbol)-$(unit)) \
+  $(if $(filter $($_PACKAGE),$(mod_package)),$($_$(symbol)-$(mod_name))) \
+)
 
 unit_srcs_check_warn = \
   $(info $(warning_str) \
@@ -201,6 +203,7 @@ __UNITS_PROCESS = $(info Processing units) \
   )
 
 # Deal with mods and libs dependencies
+symbol_dag_walk = $(foreach u,$1,$u $(call $0,$($2-$u),$2))
 
 # User should list only existing units in dependency list. Check it is true.
 # Params:
@@ -216,32 +219,59 @@ unit_deps_filter = \
     $(dep) \
   )
 
-mod_deps_filter = $(call unit_deps_filter,$(call canonize_mod_name,$1),$(MODS))
-lib_deps_filter = $(call unit_deps_filter,$1,$(LIBS))
+# Mod deps are curiously enough simple.
 
-define define_deps_symbols_prepare
-  DEPS-$(unit) :=
+mod_deps_per_directory = $(call unit_deps_filter, \
+  $(call canonize_mod_name,$(call unit_symbol,DEPS)),$(MODS) \
+)
+define define_mod_deps_per_directory
+  DEPS-$(unit) := $(DEPS-$(unit)) $(mod_deps_per_directory)
 endef
-
-define define_deps_symbols_per_directory
-  DEPS-$(unit) := $(DEPS-$(unit)) $(call $(deps_filter),$(call unit_symbol,DEPS))
-endef
-
-define define_deps_symbols
+define define_mod_deps
   DEPS-$(unit) := $(sort $(DEPS-$(unit)))
 endef
 
-# Invokes define_deps_symbols_xxx in right order for each unit from the
-# specified list.
-# Params:
-#  1. Units list
-#  2. Dependency filter callback var name
-invoke_define_deps_symbols = \
-  $(foreach unit,$(1),$(foreach deps_filter,$(2), \
-    $(eval $(value define_deps_symbols_prepare)) \
-    $(foreach dir,$(DIRS),$(eval $(value define_deps_symbols_per_directory))) \
-    $(eval $(value define_deps_symbols)) \
-  ))
+invoke_define_mod_deps = \
+  $(foreach unit,$(MODS), \
+    $(foreach dir,$(DIRS),$(eval $(value define_mod_deps_per_directory))) \
+    $(eval $(value define_mod_deps)) \
+  )
+
+# Libs are more complicated because of the need to deal with USES/SUBS stuff.
+
+lib_uses_per_directory = \
+  $(call unit_deps_filter,$(call unit_symbol,USES),$(LIBS))
+lib_subs_per_directory = \
+  $(call unit_deps_filter,$(call unit_symbol,SUBS),$(LIBS))
+
+define define_lib_deps_per_directory
+  USES-$(unit) := $(USES-$(unit)) $(lib_uses_per_directory)
+  SUBS-$(unit) := $(SUBS-$(unit)) $(lib_subs_per_directory)
+endef
+define define_lib_deps
+  USES-$(unit) := $(sort $(USES-$(unit)))
+  SUBS-$(unit) := $(sort $(SUBS-$(unit)))
+  DEPS-$(unit) := $(USES-$(unit)) $(SUBS-$(unit))
+endef
+
+invoke_define_lib_deps = \
+  $(foreach unit,$(LIBS), \
+    $(foreach dir,$(DIRS),$(eval $(value define_lib_deps_per_directory))) \
+    $(eval $(value define_lib_deps)) \
+  )
+
+lib_subs_super_graph = \
+  $(foreach l,$(LIBS),$(if $(filter $1,$(call symbol_dag_walk,$l,SUBS)),$l))
+
+define define_lib_deps_postprocess
+  DEPS-$(unit) := $(sort $(DEPS-$(unit)) \
+    $(call lib_subs_super_graph,$(USES-$(unit))))
+endef
+
+invoke_define_lib_deps_postprocess = \
+  $(foreach unit,$(LIBS), \
+    $(eval $(value define_lib_deps_postprocess)) \
+  )
 
 # After dependency info has been collected for all units we should check that
 # the dependency graphs are true DAGs.
@@ -262,19 +292,29 @@ unit_dep_pairs = $(join $(1:%=%/),$(2))
 
 # Define dependency info for each unit and then perform graph check.
 __DEPS_PROCESS = $(info Processing dependencies) \
-  $(call invoke_define_deps_symbols,$(MODS),mod_deps_filter) \
-  $(call invoke_define_deps_symbols,$(LIBS),lib_deps_filter) \
-  $(foreach unit,$(MODS) $(LIBS), \
-    $(call deps_detect_cycles,$(DEPS-$(unit))) \
-  )
+  $(invoke_define_mod_deps) \
+  $(invoke_define_lib_deps) \
+  $(foreach unit,$(MODS) $(LIBS),$(call deps_detect_cycles,$(DEPS-$(unit)))) \
+  $(invoke_define_lib_deps_postprocess) \
+  $(foreach unit,$(LIBS),$(call deps_detect_cycles,$(DEPS-$(unit))))
 
 # The sub-graph of all module dependencies (either direct or indirect).
-MOD_DEPS_DAG = $(sort $(call deps_dag_walk,$1))
-deps_dag_walk = $(foreach unit,$1,$(call $0,$(DEPS-$(unit))) $(unit))
+MOD_DEPS_DAG = $(sort $(call symbol_dag_walk,$1,DEPS))
 
-#t-sort = $(call __t-sort,$1,$(firstword $(foreach n,$1,$(if ,,$n))))
-#__t-sort = \
-#  $2 $(foreach n,$(DEPS-$1),$(call $0,$n))
+# Params:
+#  1. List of units remaining unsorted
+#  2. List of already sorted units
+t-sort = \
+  $(if $(strip $1), \
+    $(call $0, \
+      $(filter-out $2,$1), \
+      $2 $(filter-out $2,$(foreach n,$1,$(if $(filter-out $2,$(DEPS-$n)),,$n))) \
+    ), \
+    $(strip $2) \
+  )
+
+reverse = \
+  $(strip $(if $1,$(call $0,$(wordlist 2,$(words $1),$1)) $(firstword $1)))
 
 # The real work is done here.
 # This code is evaluated during symbol cache generation.
@@ -287,7 +327,8 @@ MODS := $(sort $(__MODS) $(MODS_CORE))# Essential mods are so essential...
 LIBS := $(__LIBS)
 $(__UNITS_PROCESS)
 $(__DEPS_PROCESS)
-# TODO perform t-sort on LIBS
+MODS := $(call t-sort,$(MODS))
+LIBS := $(call reverse,$(call t-sort,$(LIBS)))
 $(info Done.)
 else
 # If possible, get information from cache.

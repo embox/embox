@@ -13,4 +13,4 @@ $_MODS += traps
 # Overrides some libc routines with optimized ones.
 $_LIBS += libarch.a
 # Force libarch.a to be linked into the image prior to default libc.a
-$_DEPS-libarch.a += libc.a
+$_SUBS-libarch.a += libc.a

@@ -1,5 +1,6 @@
 
 $_LIBS += libframework.a
+$_USES-libframework.a += libc.a
 
 $_SRCS-libframework.a += *.c
 

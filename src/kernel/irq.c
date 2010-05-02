@@ -113,14 +113,15 @@ static void irq_enter(void) {
 
 static void irq_leave(void) {
 	ipl_t ipl;
+	unsigned int nesting_count;
 
 	ipl = ipl_save();
-	if (0 == --irq_nesting_count) {
+	if (0 == (nesting_count = --irq_nesting_count)) {
 		/* Leaving the interrupt context. */
 		softirq_dispatch();
 	}
 	ipl_restore(ipl);
-	if (0 == irq_nesting_count) {
+	if (0 == nesting_count) {
 		ipl_enable();
 	}
 	scheduler_unlock();

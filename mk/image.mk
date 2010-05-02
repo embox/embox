@@ -68,8 +68,6 @@ override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
 
-LDLIBS = -L$(LIB_DIR) $(LIBS:lib%.a=-l%)
-
 LDSCRIPT = $(OBJ_DIR)/$(TARGET).lds
 
 SRC_TO_OBJ = $(patsubst $(ROOT_DIR)%,$(OBJ_DIR)%.o,$(basename $1))
@@ -96,8 +94,10 @@ $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
 	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) -c $<
 
 $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
-	$(LD) $(LDFLAGS) -o $@ $(OBJS_BUILD:%= \$N	%) \
-	$(DEPSINJECT_OBJ) $(LDLIBS) -M > $@.map
+	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$N		%) \
+		$(DEPSINJECT_OBJ) \
+	-L$(LIB_DIR) $(LIBS:lib%.a=\$N		-l%) \
+	-o $@ -M > $@.map
 
 $(IMAGE_DIS): $(IMAGE)
 	$(OBJDUMP) -S $< > $@

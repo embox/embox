@@ -36,7 +36,7 @@ BUILD_DIR     := $(ROOT_DIR)/build/$(if $(PATCH_NAME),patch_$(PATCH_NAME),base)
 
 BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
-LIB_DIR        := $(OBJ_DIR)
+LIB_DIR        := $(BUILD_DIR)/lib
 DOT_DIR        := $(BUILD_DIR)/dot
 DOCS_DIR       := $(BUILD_DIR)/docs
 CODEGEN_DIR    := $(BUILD_DIR)/codegen
