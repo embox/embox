@@ -12,6 +12,7 @@
 #define THREAD_H_
 
 #include <hal/context.h>
+#include <lib/list.h>
 
 typedef int thread_id_t;
 typedef int thread_priority_t;
@@ -21,12 +22,28 @@ typedef struct thread * thread_pt;
  * Structure, describing threads.
  */
 struct thread {
+	/**
+	 * Context of thread
+	 */
 	struct context thread_context;
+	/**
+	 * Something for mutexes. Maybe. I don't know.)
+	 */
 	struct thread *next_locked_thread;
+	/**
+	 * Function, running in thread
+	 */
 	void (*run)(void);
+	/**
+	 * List item, corresponding to thread.
+	 */
+	struct list_head list;
+	/**
+	 * Flag, which shows, whether tread can be changed.
+	 */
+	bool must_be_switched;
 	thread_id_t id;
 	thread_priority_t priority;
-	bool must_be_switched;
 };
 
 /**

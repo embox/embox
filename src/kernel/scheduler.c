@@ -12,6 +12,7 @@
 #include <kernel/timer.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <lib/list.h>
 
 #define THREAD_STACK_SIZE 0x1000
 #define THREADS_TIMER_ID 17
@@ -38,33 +39,22 @@ static struct thread *prev_thread;
  */
 static struct thread *current_thread;
 /**
+ * Position of currently working thread in the list.
+ * It is needed when we want to delete thread.
+ */
+static struct thread *current_pos;
+/**
  * Stack for idle_thread.
  */
 static char idle_thread_stack[THREAD_STACK_SIZE];
 /**
  * List item, pointing at begin of the list.
  */
-static struct thread_list *begin;
-/**
- * List item, pointing at currently executed tread.
- */
-static struct thread_list *current_pos;
-/**
- * List item, pointing at tread, deleted from the list.
- */
-struct thread_list *del_pos;
+static struct thread *list_begin;
 /**
  * Redundant thread, which will never work.
  */
 static struct thread redundant_thread;
-
-/**
- * Structure, describing list, containing threads.
- */
-struct thread_list {
-	struct thread_list *prev, *next;
-	struct thread *data;
-};
 
 /**
  * Function, which makes nothing.
@@ -78,19 +68,17 @@ static void idle_run(void) {
 void scheduler_init(void) {
 	thread_create(&idle_thread, idle_run, idle_thread_stack
 			+ sizeof(idle_thread_stack));
-	begin = (struct thread_list *)malloc(sizeof(struct thread));
-	current_pos = begin;
-	begin->data = &idle_thread;
-	begin->next = begin->prev = begin;
+	INIT_LIST_HEAD(&idle_thread.list);
 	current_thread = &idle_thread;
-	prev_thread = &idle_thread;
+	current_pos = &idle_thread;
+	list_begin = &idle_thread;
 	current_thread->must_be_switched = false;
 }
 
 void scheduler_start(void) {
 	TRACE("\nStart scheduler\n");
-	for (struct thread_list *aaa = begin->next; aaa != begin ;aaa = aaa->next) {
-		TRACE("%d ", aaa->data->id);
+	list_for_each_entry(current_thread, &list_begin->list, list) {
+		TRACE("%d ", current_thread->id);
 	}
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_TICKS, scheduler_tick);
 	preemption_count--;
@@ -110,17 +98,16 @@ void scheduler_unlock(void) {
 }
 
 void scheduler_dispatch(void) {
-//	assert(preemption_count == 0);
 	if (preemption_count == 0 && current_thread->must_be_switched) {
 		preemption_count++;
 		prev_thread = current_thread;
-		current_pos = current_pos->next;
-		current_thread = current_pos->data;
-		current_thread->must_be_switched = false;
+		current_thread = list_entry(current_pos->list.next, struct thread, list);
+		current_pos = current_thread;
+		current_pos->must_be_switched = false;
 		TRACE("%d %d\n", prev_thread->id, current_thread->id);
-		preemption_count--;
-		while  (preemption_count != 0) {
+		while  (preemption_count != 1) {
 		}
+		preemption_count--;
 		context_switch(&prev_thread->thread_context, &current_thread->thread_context);
 	}
 }
@@ -136,34 +123,20 @@ void scheduler_tick(uint32_t id) {
 }
 
 void scheduler_add(struct thread *added_thread) {
-	struct thread_list *new_list_item =
-		(struct thread_list *)malloc(sizeof(struct thread));
-	new_list_item->prev = begin->prev;
-	new_list_item->next = begin;
-	begin->prev->next = new_list_item;
-	begin->prev = new_list_item;
-	new_list_item->data = added_thread;
+//	INIT_LIST_HEAD(&added_thread->list);
+	list_add(&added_thread->list, list_begin->list.prev);
 }
 
 int scheduler_remove(struct thread *removed_thread) {
-	if (removed_thread == NULL) {
+	if (removed_thread == NULL || removed_thread == list_begin) {
 		return -EINVAL;
 	}
 	scheduler_lock();
-	for (del_pos = begin->next; del_pos != begin &&
-		del_pos->data != removed_thread; del_pos = del_pos->next) {
-	}
-	if (del_pos == begin) {
-		return -EINVAL;
-	}
-	del_pos->prev->next = del_pos->next;
-	del_pos->next->prev = del_pos->prev;
-	if (current_pos == del_pos) {
-		assert(current_thread == removed_thread);
-		current_pos = del_pos->prev;
+	if (current_thread == removed_thread) {
+		current_pos = list_entry(current_thread->list.prev, struct thread, list);
 		current_thread->must_be_switched = true;
 	}
-	free(del_pos);
+	list_del(&removed_thread->list);
 	scheduler_unlock();
 	return 0;
 }

@@ -24,18 +24,20 @@ static struct thread *mult_thread;
 EMBOX_TEST(run_test);
 
 /**
- * Endlessly writes "+".
+ * Writes "+".
+ * Deletes minus_thread.
  */
 static void plus_run(void) {
 	thread_delete(minus_thread);
-	/*	while (true) {
-			TRACE("+");
-		}*/
-	TRACE("+");
+/*	while (true) {
+		TRACE("+");
+	}
+*/	TRACE("+");
 }
 
 /**
  * Endlessly writes "-".
+ * Will be deleted.
  */
 static void minus_run(void) {
 	while (true) {
@@ -54,12 +56,15 @@ static void mult_run(void) {
 
 /**
  * Test, which infinitely writes "?", "+" and "*" on the screen.
- * Thread, which writes "*", will be deleted during the execution.
+ * Thread, which writes "-", will be deleted in plus_thread.
+ *
+ * It still doesn't work.
  *
  * @retval 0 if test is passed
  * @retval -EINVAL if an error occurs.
  */
 static int run_test() {
+	TRACE("\n");
 	scheduler_init();
 
 	plus_thread = thread_new();
