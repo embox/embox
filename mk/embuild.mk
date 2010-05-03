@@ -27,8 +27,8 @@ endif
 # Traverse always defines SELFDIR before entering sub-makefile.
 dir = $(SELFDIR)
 
-DIRS := $(call TRAVERSE,$(SRC_DIR),Makefile) \
-  $(if $(PLATFORM),$(call TRAVERSE,$(PLATFORM_DIR),Makefile))
+DIRS := $(call TRAVERSE,$(SRC_DIR),Makefile.em) \
+  $(if $(PLATFORM),$(call TRAVERSE,$(PLATFORM_DIR),Makefile.em))
 
 # LDFLAGS are common for the entire image.
 # Collect per-directory $_LDFLAGS definitions.
