@@ -316,6 +316,12 @@ t-sort = \
 reverse = \
   $(strip $(if $1,$(call $0,$(wordlist 2,$(words $1),$1)) $(firstword $1)))
 
+define mod_deps_resort
+  DEPS-$(mod) := $(foreach m,$(MODS),$(if $(filter $m,$(DEPS-$(mod))),$m))
+endef
+
+__MOD_DEPS_RESORT = $(foreach mod,$(MODS),$(eval $(value mod_deps_resort)))
+
 # The real work is done here.
 # This code is evaluated during symbol cache generation.
 ifdef EMBUILD_DUMP_CREATE
@@ -329,6 +335,7 @@ $(__UNITS_PROCESS)
 $(__DEPS_PROCESS)
 MODS := $(call t-sort,$(MODS))
 LIBS := $(call reverse,$(call t-sort,$(LIBS)))
+$(__MOD_DEPS_RESORT)
 $(info Done.)
 else
 # If possible, get information from cache.
