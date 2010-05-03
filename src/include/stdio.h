@@ -78,6 +78,18 @@ extern int fclose(FILE *fp);
  */
 extern int remove(const char *pathname);
 
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+/**
+ * Sets the file position indicator for the stream pointed to by stream.
+ * The new position, measured in bytes, is obtained by adding offset bytes to
+ * the position specified by whence.  If whence is set to SEEK_SET, SEEK_CUR,
+ *  or SEEK_END, the offset is relative to the start of the file, the current
+ *  position indicator, or end-of-file, respectively
+ */
+extern int fseek ( FILE * stream, long int offset, int origin );
+
 #if defined(CONFIG_TRACE)
 # ifdef __EMBOX__
 #  define TRACE(...)  printf(__VA_ARGS__)

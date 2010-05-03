@@ -84,3 +84,7 @@ int remove(const char *pathname) {
 	}
 	return 0;
 }
+
+int fseek ( FILE * stream, long int offset, int origin ) {
+	return 0;
+}
