@@ -113,7 +113,7 @@ unit_def = \
 # (with their dependencies satisfied, of course).
 __MODS_CORE = $(info Listing core mods) $(call mod_collect,MODS_CORE)
 # Regular mods.
-__MODS           = $(info Listing mods) $(call mod_collect,MODS)
+__MODS      = $(info Listing mods) $(call mod_collect,MODS)
 
 mod_collect = $(sort \
   $(foreach dir,$(DIRS),$(call unit_def,$(call canonize_mod_name,$($_$1)))) \
@@ -130,7 +130,7 @@ canonize_mod_name = \
   )
 
 # Libraries.
-__LIBS           = $(info Listing libs) $(call lib_collect,LIBS)
+__LIBS = $(info Listing libs) $(call lib_collect,LIBS)
 
 lib_collect = $(sort $(foreach dir,$(DIRS),$(call unit_def,$($_$1))))
 
