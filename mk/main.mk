@@ -226,7 +226,7 @@ menuconfig: PROFILE := `dialog \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
 menuconfig:
-	make PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
+	$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) -nw $(CONF_DIR)/*.conf
 
 xconfig: PROJECT := `Xdialog \
@@ -240,5 +240,5 @@ xconfig: PROFILE := `Xdialog \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
 xconfig:
-	make PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
+	$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) $(CONF_DIR)/*.conf

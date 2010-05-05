@@ -7,6 +7,7 @@
 #include <string.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
+#include <linux/init.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(unit_init);
@@ -45,7 +46,7 @@ static FSOP_DESCRIPTION rootfs_op = {
 	.get_file_list_iterator = get_file_list_iterator
 };
 
-static int unit_init() {
+static int __init unit_init() {
 	size_t i;
 	for (i = 0; i < NUMBER_OF_FS; i++) {
 		if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)) {
