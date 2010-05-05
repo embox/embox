@@ -39,12 +39,7 @@
 /**
  * unsigned char 1-byte
  */
-#define uchar unsigned char
-
-			/******OTHER DEFINES******/
-
-#define ulong unsigned long
-#define ushort unsigned short
+#define uint8_t unsigned char
 
 			/******CONSTANTS******/
 
@@ -57,6 +52,7 @@
 #define MAX_SYMBOL_STRING_TABLE_LENGTH 50000
 #define MAX_REL_ARRAY_LENGTH 10000
 #define MAX_RELA_ARRAY_LENGTH 10000
+#define MAX_NAME_LENGTH 150
 
 /**
  * Length in bytes of main field in Elf-header structure
@@ -101,7 +97,7 @@
  * ELF Header. Code style from specification.
  */
 typedef struct{
-	uchar e_ident[EI_NIDENT];
+	uint8_t e_ident[EI_NIDENT];
 	Elf32_Half e_type;
 	Elf32_Half e_machine;
 	Elf32_Word e_version;
@@ -154,8 +150,8 @@ typedef struct{
 	Elf32_Word st_name;
 	Elf32_Addr st_value;
 	Elf32_Word st_size;
-	uchar st_info;
-	uchar st_other;
+	uint8_t st_info;
+	uint8_t st_other;
 	Elf32_Half st_shndx;
 } Elf32_Sym;
 
@@ -199,7 +195,7 @@ typedef struct{
  * @param reversed - integer from specification
  *                 - property talking about data type
  */
-ulong elf_reverse_long(ulong num, uchar reversed);
+uint32_t elf_reverse_long(uint32_t num, uint8_t reversed);
 
 
 /**
@@ -211,7 +207,7 @@ ulong elf_reverse_long(ulong num, uchar reversed);
  * @param reversed - integer from specification
  *                 - property talking about data type
  */
-ushort elf_reverse_short(ushort num, uchar reversed);
+uint16_t elf_reverse_short(uint16_t num, uint8_t reversed);
 
 
 /**
@@ -224,7 +220,7 @@ ushort elf_reverse_short(ushort num, uchar reversed);
  * @return error code
  * @retval 0 - success
  */
-int elf_read_header(FILE * fo, Elf32_Ehdr * header);
+int32_t elf_read_header(FILE * fo, Elf32_Ehdr * header);
 
 /**
  * Read table of section's headers
@@ -237,7 +233,7 @@ int elf_read_header(FILE * fo, Elf32_Ehdr * header);
  * @retval 0 - success
  * @retval 1 - empty table
  */
-int elf_read_sections_table(FILE * fo, Elf32_Ehdr * header,
+int32_t elf_read_sections_table(FILE * fo, Elf32_Ehdr * header,
 							Elf32_Shdr * section_header_table);
 
 /**
@@ -251,7 +247,7 @@ int elf_read_sections_table(FILE * fo, Elf32_Ehdr * header,
  * @retval 0 - success
  * @retval 1 - empty program header table
  */
-int elf_read_segments_table(FILE * fo, Elf32_Ehdr * header,
+int32_t elf_read_segments_table(FILE * fo, Elf32_Ehdr * header,
 							Elf32_Phdr * segment_header_table);
 
 /**
@@ -269,11 +265,11 @@ int elf_read_segments_table(FILE * fo, Elf32_Ehdr * header,
  * @retval 1 - not found in sections, "length" must be 0
  * @retval 2 - section header's table is empty
  */
-int elf_read_string_table(FILE * fo, Elf32_Ehdr * header,
+int32_t elf_read_string_table(FILE * fo, Elf32_Ehdr * header,
 						  Elf32_Shdr * section_header_table,
-						  char * names, int * length);
+						  int8_t * names, int32_t * length);
 
-/** TODO
+/**
  * Read symbol string table from sections and put it into names. Find
  * SHT_STRTAB and read it to array, number of symbols - to length. Symbol
  * string table contains names of symbols
@@ -282,16 +278,34 @@ int elf_read_string_table(FILE * fo, Elf32_Ehdr * header,
  * @param header - head structure in file, describing main elements positions
  * @param section_header_table - array where func take info about sections
  * @param names - array where will be stored string, starts and ends with "/0"
- * @param length - really used bytes in names
+ * 		  which are names of symbols - with is return value
+ * @param section_names array with names of sections
+ * @param ret_length - really used bytes in names
  *
  * @return error code
  * @retval 0 - success
  * @retval 1 - not found in sections, "length" must be 0
  * @retval 2 - section header's table is empty
+ * @retval 3 - empty array with sections name
  */
-int elf_read_symbol_string_table(FILE * fo, Elf32_Ehdr * header,
+int32_t elf_read_symbol_string_table(FILE * fo, Elf32_Ehdr * header,
 								 Elf32_Shdr * section_header_table,
-								 char * names, int * length);
+								 int8_t * sections_names,
+								 int8_t * names, int32_t * ret_length);
+
+/**
+ * return name of string from names_array, starting from index index
+ * and till first '/0', put it into name
+ *
+ * @param names_array - consist of strings(names)
+ * @param index - index of substring in array
+ * @param name - returns name in this array
+ *
+ * @return length of name
+ * @retval 0 - more then MAX_NAME_LENGTH name - error
+ * @retval >0 - real length
+ */
+int32_t read_name(int8_t * names_array, int32_t index, int8_t * name);
 
 /**
  * Find SHT_SYMTAB and write it to array, number of symbols - to count
@@ -307,9 +321,9 @@ int elf_read_symbol_string_table(FILE * fo, Elf32_Ehdr * header,
  * @retval 1 - not found in sections, "count" must be 0
  * @retval 2 - section header's table is empty
  */
-int elf_read_symbol_table(FILE * fo, Elf32_Ehdr * header,
+int32_t elf_read_symbol_table(FILE * fo, Elf32_Ehdr * header,
 						  Elf32_Shdr * section_header_table,
-						  Elf32_Sym * symbol_table, int * count);
+						  Elf32_Sym * symbol_table, int32_t * count);
 
 /**
  * find and read ALL rel structures from file and number of them puts to count
@@ -326,9 +340,9 @@ int elf_read_symbol_table(FILE * fo, Elf32_Ehdr * header,
  * @retval 2 - section header's table is empty
  * @retval 3 - must be never returned
  */
-int elf_read_rel_table(FILE * fo, Elf32_Ehdr * header,
+int32_t elf_read_rel_table(FILE * fo, Elf32_Ehdr * header,
 				       Elf32_Shdr * section_header_table,
-					   Elf32_Rel * rel_table, int * count);
+					   Elf32_Rel * rel_table, int32_t * count);
 
 /**
  * find and read ALL rela structures from file and number of them puts to count
@@ -344,9 +358,8 @@ int elf_read_rel_table(FILE * fo, Elf32_Ehdr * header,
  * @retval 1 - not found in sections, "count" must be 0
  * @retval 2 - section header's table is empty
  */
-int elf_read_rela_table(FILE * fo, Elf32_Ehdr * header,
+int32_t elf_read_rela_table(FILE * fo, Elf32_Ehdr * header,
 						Elf32_Shdr * section_header_table,
-						Elf32_Rela * rela_table, int * count);
+						Elf32_Rela * rela_table, int32_t * count);
 
 #endif /* elf_elfReader_H_ */
-
