@@ -7,10 +7,11 @@ include $(MK_DIR)/util.mk
 IMAGE      = $(BIN_DIR)/$(TARGET)
 IMAGE_DIS  = $(BIN_DIR)/$(TARGET).dis
 IMAGE_SREC = $(BIN_DIR)/$(TARGET).srec
+IMAGE_SIZE = $(BIN_DIR)/$(TARGET).size
 
 .PHONY: image
 image: image_init
-image: $(IMAGE) $(IMAGE_SREC)
+image: $(IMAGE) $(IMAGE_SREC) $(IMAGE_SIZE)
 ifeq ($(DISASSEMBLE),y)
 image: $(IMAGE_DIS)
 endif
@@ -36,6 +37,7 @@ AS      = $(CROSS_COMPILE)as
 LD      = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 OBJCOPY = $(CROSS_COMPILE)objcopy
+SIZE    = size
 
 # Expand user defined flags and append them after default ones.
 
@@ -100,8 +102,23 @@ $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
 	-o $@ -M > $@.map
 
 $(IMAGE_DIS): $(IMAGE)
-	$(OBJDUMP) -S $< > $@
+	@$(OBJDUMP) -S $< > $@
 
 $(IMAGE_SREC): $(IMAGE)
-	$(OBJCOPY) -O srec $< $@
+	@$(OBJCOPY) -O srec $< $@
+
+define image_size_sort
+	@echo "" >> $@
+	@echo "sort by text $2" >> $@
+	@cat $@.tmp | sort -g -k $1 >> $@
+endef
+
+$(IMAGE_SIZE): $(IMAGE) $(OBJS_BUILD) $(DEPSINJECT_OBJ)
+	@$(SIZE) $^ > $@.tmp
+	@echo "size util generated output for $(TARGET)" > $@
+	$(call image_size_sort,1,text)
+	$(call image_size_sort,2,data)
+	$(call image_size_sort,3,bss)
+	$(call image_size_sort,4,total)
+	@$(RM) $@.tmp
 
