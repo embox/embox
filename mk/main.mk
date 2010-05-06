@@ -231,12 +231,12 @@ menuconfig:
 
 xconfig: PROJECT := `Xdialog \
                 --stdout --backtitle "Configuration template selection" \
-                --radiolist "Select project to load:" 10 40 \
+                --radiolist "Select project to load:" 20 40 \
                 $(shell echo $(TEMPLATES) | wc -w) \
                 $(patsubst %,% "" off,$(TEMPLATES))`
 xconfig: PROFILE := `Xdialog \
                 --stdout --backtitle "Configuration template selection" \
-                --radiolist "Select profile to load:" 10 40 \
+                --radiolist "Select profile to load:" 20 40 \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
 xconfig:
