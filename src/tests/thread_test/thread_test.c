@@ -13,7 +13,6 @@
 
 #define TREAD_STACK_SIZE 0x1000
 
-
 static char plus_stack[TREAD_STACK_SIZE];
 static char minus_stack[TREAD_STACK_SIZE];
 static char mult_stack[TREAD_STACK_SIZE];
@@ -21,18 +20,19 @@ static struct thread *plus_thread;
 static struct thread *minus_thread;
 static struct thread *mult_thread;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run_test)
+;
 
 /**
  * Writes "+".
  * Deletes minus_thread.
  */
 static void plus_run(void) {
-	thread_delete(minus_thread);
-/*	while (true) {
-		TRACE("+");
-	}
-*/	TRACE("+");
+	thread_stop(minus_thread);
+	/*	while (true) {
+	 TRACE("+");
+	 }
+	 */TRACE("+");
 }
 
 /**
@@ -67,21 +67,17 @@ static int run_test() {
 	TRACE("\n");
 	scheduler_init();
 
-	plus_thread = thread_new();
-	minus_thread = thread_new();
-	mult_thread = thread_new();
-
-	thread_create(plus_thread, plus_run, plus_stack + sizeof(plus_stack));
-	thread_create(minus_thread, minus_run, minus_stack + sizeof(minus_stack));
-	thread_create(mult_thread, mult_run, mult_stack + sizeof(mult_stack));
-
-	scheduler_add(plus_thread);
-	scheduler_add(minus_thread);
-	scheduler_add(mult_thread);
+	plus_thread = thread_create(plus_run, plus_stack + TREAD_STACK_SIZE);
+	minus_thread = thread_create(minus_run, minus_stack + TREAD_STACK_SIZE);
+	mult_thread = thread_create(mult_run, mult_stack + TREAD_STACK_SIZE);
 
 	assert(plus_thread != NULL);
 	assert(minus_thread != NULL);
 	assert(mult_thread != NULL);
+
+	thread_start(plus_thread);
+	thread_start(minus_thread);
+	thread_start(mult_thread);
 
 	TRACE("\nBefore start\n");
 	scheduler_start();

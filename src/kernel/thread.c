@@ -10,15 +10,49 @@
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <errno.h>
+#include <embox/unit.h>
 #include <kernel/scheduler.h>
 #include <assert.h>
 
 #define MAX_THREADS_COUNT 32
+#define THREAD_STACK_SIZE 0x1000
 
+EMBOX_UNIT_INIT(threads_init)
+;
+
+/**
+ * Thread, which makes nothing.
+ * Is used to be working when there is no another process.
+ */
+struct thread *idle_thread;
+/**
+ * Stack for idle_thread.
+ */
+static char idle_thread_stack[THREAD_STACK_SIZE];
+/**
+ * Function, which makes nothing. For idle_thread.
+ */
+static void idle_run(void) {
+	while (true) {
+		TRACE("?");
+	}
+}
+
+/**
+ * Last zombie thread.
+ */
+static struct thread *last_zombie;
 /**
  * Pool, containing threads.
  */
 static struct thread threads_pool[MAX_THREADS_COUNT];
+
+static int threads_init(void) {
+	idle_thread
+			= thread_create(idle_run, idle_thread_stack + THREAD_STACK_SIZE);
+	INIT_LIST_HEAD(&idle_thread->sched_list);
+	return 0;
+}
 
 /**
  * Transforms function "run" in thread into function which can
@@ -30,7 +64,7 @@ void thread_run(int thread_pointer) {
 	TRACE("\nThread ID = %d\n", running_thread->id);
 	assert(running_thread != NULL);
 	running_thread->run();
-	thread_delete(running_thread);
+	thread_stop(running_thread);
 }
 
 /**
@@ -38,12 +72,18 @@ void thread_run(int thread_pointer) {
  */
 static int mask = 0;
 
-struct thread * thread_new(void) {
+/**
+ * Allocates memory for new thread.
+ *
+ * @return pointer to alloted thread
+ * @retval NULL if there are not free threads
+ */
+static struct thread * thread_new(void) {
+	struct thread *created_thread;
 	for (int i = 0; i < MAX_THREADS_COUNT; i++) {
 		if (((mask >> i) & 1) == 0) {
-			struct thread *created_thread;
 			created_thread = threads_pool + i;
-			created_thread->id = i + 1;
+			created_thread->id = i;
 			TRACE("Alloted thread ID = %d\n", created_thread->id);
 			mask |= (1 << i);
 			return created_thread;
@@ -52,25 +92,51 @@ struct thread * thread_new(void) {
 	return NULL;
 }
 
-int thread_create(struct thread *created_thread, void run(void),
-		void *stack_address) {
+struct thread *thread_create(void run(void), void *stack_address) {
+	struct thread *created_thread = thread_new();
 	if (created_thread == NULL || run == NULL || stack_address == NULL) {
-		return -EINVAL;
+		return NULL;
 	}
+	created_thread->state = stopped;
 	created_thread->run = run;
-	context_init(&created_thread->thread_context, true);
-	context_set_entry(&created_thread->thread_context, &thread_run,
+	context_init(&created_thread->context, true);
+	context_set_entry(&created_thread->context, &thread_run,
 			(int) created_thread);
-	context_set_stack(&created_thread->thread_context, stack_address);
-	return 0;
+	context_set_stack(&created_thread->context, stack_address);
+	return created_thread;
 }
 
-int thread_delete(struct thread *deleted_thread) {
+void thread_start(struct thread *thread) {
+	thread->state = running;
+	scheduler_add(thread);
+}
+
+/**
+ * Deletes chosen thread.
+ */
+static int thread_delete(struct thread *deleted_thread) {
 	if (deleted_thread == NULL) {
 		return -EINVAL;
 	}
+	TRACE("\nDeleting %d\n", deleted_thread->id);
+	deleted_thread->state = stopped;
+	list_del(&deleted_thread->sched_list);
 	mask &= ~(1 << (deleted_thread - threads_pool));
-	scheduler_remove(deleted_thread);
+	return 0;
+}
+
+int thread_stop(struct thread *stopped_thread) {
+	if (stopped_thread == NULL || stopped_thread == idle_thread) {
+		return -EINVAL;
+	}
+	scheduler_lock();
+	TRACE("\nStopping %d\n", stopped_thread->id);
+	if (last_zombie != NULL) {
+		thread_delete(last_zombie);
+	}
+	last_zombie = stopped_thread;
+	scheduler_remove(stopped_thread);
+	scheduler_unlock();
 	return 0;
 }
 

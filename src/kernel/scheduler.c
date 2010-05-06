@@ -9,27 +9,29 @@
 #include <hal/context.h>
 #include <kernel/scheduler.h>
 #include <errno.h>
+#include <embox/unit.h>
 #include <kernel/timer.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <lib/list.h>
 
-#define THREAD_STACK_SIZE 0x1000
+/**
+ * Timer, which calls scheduler_tick.
+ */
 #define THREADS_TIMER_ID 17
-#define THREADS_TIMER_TICKS 5
-#define SCHEDULER_INTERVAL 50
+/**
+ * Interval, what scheduler_tick is called in.
+ */
+#define THREADS_TIMER_INTERVAL 100
+
+//EMBOX_UNIT_INIT(scheduler_init);
+
 
 /**
- * If it doesn't equal to zero, it means
- * that we are located in critical section
- * and cant's switch between threads.
+ * If it doesn't equal to zero,
+ * we are located in critical section
+ * and can't switch between threads.
  */
 static int preemption_count = 1;
-/**
- * Thread, which makes nothing.
- * Is used to be working when there is no another process.
- */
-static struct thread idle_thread;
 /**
  * Thread, which have just worked.
  */
@@ -39,52 +41,36 @@ static struct thread *prev_thread;
  */
 static struct thread *current_thread;
 /**
- * Position of currently working thread in the list.
- * It is needed when we want to delete thread.
- */
-static struct thread *current_pos;
-/**
- * Stack for idle_thread.
- */
-static char idle_thread_stack[THREAD_STACK_SIZE];
-/**
  * List item, pointing at begin of the list.
  */
-static struct thread *list_begin;
-/**
- * Redundant thread, which will never work.
- */
-static struct thread redundant_thread;
-
-/**
- * Function, which makes nothing.
- */
-static void idle_run(void) {
-	while (true) {
-		TRACE("?");
-	}
-}
+static struct list_head *list_begin;
 
 void scheduler_init(void) {
-	thread_create(&idle_thread, idle_run, idle_thread_stack
-			+ sizeof(idle_thread_stack));
-	INIT_LIST_HEAD(&idle_thread.list);
-	current_thread = &idle_thread;
-	current_pos = &idle_thread;
-	list_begin = &idle_thread;
-	current_thread->must_be_switched = false;
+	current_thread = idle_thread;
+	list_begin = &idle_thread->sched_list;
+	current_thread->reschedule = false;
+}
+
+/**
+ * Is regularly called to show that current thread to be changed.
+ * @param id nothing significant
+ */
+static void scheduler_tick(uint32_t id) {
+	TRACE("\nTick\n");
+	current_thread->reschedule = true;
 }
 
 void scheduler_start(void) {
+	/** Redundant thread, which will never work. */
+	static struct thread redundant_thread;
 	TRACE("\nStart scheduler\n");
-	list_for_each_entry(current_thread, &list_begin->list, list) {
+	list_for_each_entry(current_thread, list_begin, sched_list) {
 		TRACE("%d ", current_thread->id);
 	}
-	set_timer(THREADS_TIMER_ID, THREADS_TIMER_TICKS, scheduler_tick);
+	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
 	preemption_count--;
-	context_switch(&redundant_thread.thread_context, &idle_thread.thread_context);
+	context_switch(&redundant_thread.context, &idle_thread->context);
 }
-
 
 void scheduler_lock(void) {
 	preemption_count++;
@@ -92,51 +78,41 @@ void scheduler_lock(void) {
 
 void scheduler_unlock(void) {
 	preemption_count--;
-	if (preemption_count == 0 && current_thread->must_be_switched) {
+	if (preemption_count == 0 && current_thread->reschedule) {
 		scheduler_dispatch();
 	}
 }
 
-void scheduler_dispatch(void) {
-	if (preemption_count == 0 && current_thread->must_be_switched) {
-		preemption_count++;
-		prev_thread = current_thread;
-		current_thread = list_entry(current_pos->list.next, struct thread, list);
-		current_pos = current_thread;
-		current_pos->must_be_switched = false;
-		TRACE("%d %d\n", prev_thread->id, current_thread->id);
-		while  (preemption_count != 1) {
-		}
-		preemption_count--;
-		context_switch(&prev_thread->thread_context, &current_thread->thread_context);
-	}
+static void preemption_inc(void) {
+	preemption_count++;
 }
 
-void scheduler_tick(uint32_t id) {
-	static int counter = 0;
-	TRACE("\nTick\n");
-	if (counter >= SCHEDULER_INTERVAL) {
-		counter = 0;
-		current_thread->must_be_switched = true;
+void scheduler_dispatch(void) {
+	if (preemption_count == 0 && current_thread->reschedule) {
+		preemption_inc();
+		prev_thread = current_thread;
+		current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
+		if (current_thread->state == zombie) {
+			list_del(&current_thread->sched_list);
+			current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
+		}
+		current_thread->reschedule = false;
+		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
+		preemption_count--;
+		context_switch(&prev_thread->context, &current_thread->context);
 	}
-	counter++;
 }
 
 void scheduler_add(struct thread *added_thread) {
-//	INIT_LIST_HEAD(&added_thread->list);
-	list_add(&added_thread->list, list_begin->list.prev);
+	list_add(&added_thread->sched_list, list_begin->prev);
 }
 
 int scheduler_remove(struct thread *removed_thread) {
-	if (removed_thread == NULL || removed_thread == list_begin) {
+	if (removed_thread == NULL || removed_thread == idle_thread) {
 		return -EINVAL;
 	}
 	scheduler_lock();
-	if (current_thread == removed_thread) {
-		current_pos = list_entry(current_thread->list.prev, struct thread, list);
-		current_thread->must_be_switched = true;
-	}
-	list_del(&removed_thread->list);
+	removed_thread->reschedule = true;
 	scheduler_unlock();
 	return 0;
 }

@@ -103,8 +103,8 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 static volatile unsigned int irq_nesting_count;
 
 static void irq_enter(void) {
-	scheduler_lock();
 	ipl_t ipl;
+	scheduler_lock();
 
 	ipl = ipl_save();
 	irq_nesting_count++;

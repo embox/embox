@@ -16,7 +16,14 @@
 
 typedef int thread_id_t;
 typedef int thread_priority_t;
-typedef struct thread * thread_pt;
+typedef enum {
+	running,//!< Running
+	waiting,//!< Waiting
+	stopped,//!< Stopped
+	zombie  //!< Zombie
+} thread_state_t;
+
+extern struct thread *idle_thread;
 
 /**
  * Structure, describing threads.
@@ -25,11 +32,7 @@ struct thread {
 	/**
 	 * Context of thread
 	 */
-	struct context thread_context;
-	/**
-	 * Something for mutexes. Maybe. I don't know.)
-	 */
-	struct thread *next_locked_thread;
+	struct context context;
 	/**
 	 * Function, running in thread
 	 */
@@ -37,13 +40,17 @@ struct thread {
 	/**
 	 * List item, corresponding to thread.
 	 */
-	struct list_head list;
+	struct list_head sched_list;
 	/**
 	 * Flag, which shows, whether tread can be changed.
 	 */
-	bool must_be_switched;
+	bool reschedule;
 	thread_id_t id;
 	thread_priority_t priority;
+	/**
+	 * States, which thread can be in.
+	 */
+    thread_state_t state;
 };
 
 /**
@@ -55,21 +62,18 @@ struct thread {
  * @return 0 if all parameters are correct
  * @return -EINVAL if one of parameters is NULL
  */
-int thread_create(struct thread *created_thread, void run(void),
-		void *stack_address);
+struct thread *thread_create(void run(void), void *stack_address);
 
 /**
- * Deletes chosen thread.
+ * Starts a thread.
  */
-int thread_delete(struct thread *deleted_thread);
+void thread_start(struct thread *thread);
+
+//int thread_delete(struct thread *deleted_thread);
 
 /**
- * Allocates memory for new thread.
- *
- * @return pointer to alloted thread
- * @retval NULL if there are not free threads
+ * Stops chosen thread.
  */
-struct thread * thread_new(void);
-
+int thread_stop(struct thread *stopped_thread);
 
 #endif /* THREAD_H_ */

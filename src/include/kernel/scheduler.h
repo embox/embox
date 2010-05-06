@@ -13,7 +13,7 @@
 #include <kernel/thread.h>
 
 /**
- * Initializes threads:  describes idle_thread.
+ * Initializes scheduler.
  */
 void scheduler_init(void);
 
@@ -39,13 +39,6 @@ void scheduler_unlock(void);
  * Changes executable thread.
  */
 void scheduler_dispatch(void);
-
-/**
- * Is regularly called to show that current thread to be changed.
- *
- * @param id nothing significant
- */
-void scheduler_tick(uint32_t id);
 
 /**
  * Adds thread into the list of executable threads.
