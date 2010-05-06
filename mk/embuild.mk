@@ -394,7 +394,7 @@ $(foreach mod,$(MODS_CORE), \
   $(eval RUNLEVEL-$(mod) := 0)\
 )
 
-# XXX just for now. -- Eldar
+# XXX just for now, agrh... -- Eldar
 $(foreach mod,$(MODS_ENABLE),$(if $(RUNLEVEL-$(mod)),, \
   $(eval RUNLEVEL-$(mod) := 2)\
 ))
