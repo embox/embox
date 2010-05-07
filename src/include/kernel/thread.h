@@ -8,8 +8,8 @@
  * @author Avdyukhin Dmitry
  */
 
-#ifndef THREAD_H_
-#define THREAD_H_
+#ifndef _THREAD_H_
+#define _THREAD_H_
 
 #include <hal/context.h>
 #include <lib/list.h>
