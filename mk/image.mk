@@ -107,18 +107,21 @@ $(IMAGE_DIS): $(IMAGE)
 $(IMAGE_SREC): $(IMAGE)
 	@$(OBJCOPY) -O srec $< $@
 
-define image_size_sort
-	@echo "" >> $@
-	@echo "sort by text $2" >> $@
-	@cat $@.tmp | sort -g -k $1 >> $@
-endef
+image_size_sort = \
+	echo "" >> $@;                    \
+	echo "sort by text $2" >> $@;     \
+	cat $@.tmp | sort -g -k $1 >> $@;
 
 $(IMAGE_SIZE): $(IMAGE) $(OBJS_BUILD) $(DEPSINJECT_OBJ)
-	@$(SIZE) $^ > $@.tmp
-	@echo "size util generated output for $(TARGET)" > $@
-	$(call image_size_sort,1,text)
-	$(call image_size_sort,2,data)
-	$(call image_size_sort,3,bss)
-	$(call image_size_sort,4,total)
+	@if $(SIZE) $^ 1> $@.tmp 2> /dev/null; \
+	then                                   \
+		echo "size util generated output for $(TARGET)" > $@; \
+		$(call image_size_sort,1,text)     \
+		$(call image_size_sort,2,data)     \
+		$(call image_size_sort,3,bss)      \
+		$(call image_size_sort,4,total)    \
+	else                                   \
+		echo "size util not found" > $@;   \
+	fi;
 	@$(RM) $@.tmp
 
