@@ -38,13 +38,9 @@ static void idle_run(void) {
 	}
 }
 
-/**
- * Last zombie thread.
- */
+/** Last zombie thread. */
 static struct thread *last_zombie;
-/**
- * Pool, containing threads.
- */
+/** Pool, containing threads. */
 static struct thread threads_pool[MAX_THREADS_COUNT];
 
 static int threads_init(void) {
@@ -67,9 +63,7 @@ void thread_run(int thread_pointer) {
 	thread_stop(running_thread);
 }
 
-/**
- * A mask, which shows, what places for new threads are free.
- */
+/** A mask, which shows, what places for new threads are free. */
 static int mask = 0;
 
 /**
@@ -92,12 +86,12 @@ static struct thread * thread_new(void) {
 	return NULL;
 }
 
-struct thread *thread_create(void run(void), void *stack_address) {
+struct thread *thread_create(void (*run)(void), void *stack_address) {
 	struct thread *created_thread = thread_new();
 	if (created_thread == NULL || run == NULL || stack_address == NULL) {
 		return NULL;
 	}
-	created_thread->state = stopped;
+	created_thread->state = THREAD_STATE_STOP;
 	created_thread->run = run;
 	context_init(&created_thread->context, true);
 	context_set_entry(&created_thread->context, &thread_run,
@@ -107,19 +101,17 @@ struct thread *thread_create(void run(void), void *stack_address) {
 }
 
 void thread_start(struct thread *thread) {
-	thread->state = running;
+	thread->state = THREAD_STATE_RUN;
 	scheduler_add(thread);
 }
 
-/**
- * Deletes chosen thread.
- */
+/** Deletes chosen thread. */
 static int thread_delete(struct thread *deleted_thread) {
 	if (deleted_thread == NULL) {
 		return -EINVAL;
 	}
 	TRACE("\nDeleting %d\n", deleted_thread->id);
-	deleted_thread->state = stopped;
+	deleted_thread->state = THREAD_STATE_STOP;
 	list_del(&deleted_thread->sched_list);
 	mask &= ~(1 << (deleted_thread - threads_pool));
 	return 0;

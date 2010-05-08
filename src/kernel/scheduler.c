@@ -23,8 +23,6 @@
  */
 #define THREADS_TIMER_INTERVAL 100
 
-//EMBOX_UNIT_INIT(scheduler_init);
-
 
 /**
  * If it doesn't equal to zero,
@@ -32,10 +30,6 @@
  * and can't switch between threads.
  */
 static int preemption_count = 1;
-/**
- * Thread, which have just worked.
- */
-static struct thread *prev_thread;
 /**
  * Thread, which works now.
  */
@@ -86,17 +80,26 @@ void scheduler_unlock(void) {
 static void preemption_inc(void) {
 	preemption_count++;
 }
+/**
+ * Move current_thread pointer to the next thread.
+ * @param prev_thread thread, which have worked just now.
+ */
+static void thread_move_next(struct thread *prev_thread) {
+	current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
+	if (current_thread->state == THREAD_STATE_ZOMBIE) {
+		list_del(&current_thread->sched_list);
+		current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
+	}
+	current_thread->reschedule = false;
+}
 
 void scheduler_dispatch(void) {
+	/** Thread, which have worked just now. */
+	struct thread *prev_thread;
 	if (preemption_count == 0 && current_thread->reschedule) {
 		preemption_inc();
 		prev_thread = current_thread;
-		current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
-		if (current_thread->state == zombie) {
-			list_del(&current_thread->sched_list);
-			current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
-		}
-		current_thread->reschedule = false;
+		thread_move_next(prev_thread);
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
 		preemption_count--;
 		context_switch(&prev_thread->context, &current_thread->context);
@@ -104,7 +107,7 @@ void scheduler_dispatch(void) {
 }
 
 void scheduler_add(struct thread *added_thread) {
-	list_add(&added_thread->sched_list, list_begin->prev);
+	list_add_tail(&added_thread->sched_list, list_begin);
 }
 
 int scheduler_remove(struct thread *removed_thread) {

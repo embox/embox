@@ -1,7 +1,6 @@
 /**
  * @file
  * @brief Defines methods to manipulate with threads (scheduler).
- * Implementation look at src/kernel/thread.c.
  *
  * @date 22.04.2010
  * @author Avdyukhin Dmitry
@@ -12,14 +11,10 @@
 
 #include <kernel/thread.h>
 
-/**
- * Initializes scheduler.
- */
+/** Initializes scheduler.  */
 void scheduler_init(void);
 
-/**
- * Start working with threads.
- */
+/** Start working with threads. */
 void scheduler_start(void);
 
 /**
@@ -35,14 +30,11 @@ void scheduler_lock(void);
  */
 void scheduler_unlock(void);
 
-/**
- * Changes executable thread.
- */
+/** Changes executable thread. */
 void scheduler_dispatch(void);
 
 /**
  * Adds thread into the list of executable threads.
- *
  * @param added_thread thread to be added into the list
  */
 void scheduler_add(struct thread *added_thread);

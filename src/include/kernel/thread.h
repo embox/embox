@@ -1,8 +1,7 @@
 /**
  * @file
  * @brief Defines structure of threads and methods,
- * working with them. Implementation look at
- * src/kernel/thread.c
+ * which allows working with them.
  *
  * @date 22.04.2010
  * @author Avdyukhin Dmitry
@@ -17,11 +16,11 @@
 typedef int thread_id_t;
 typedef int thread_priority_t;
 typedef enum {
-	running,//!< Running
-	waiting,//!< Waiting
-	stopped,//!< Stopped
-	zombie  //!< Zombie
-} thread_state_t;
+	THREAD_STATE_RUN,
+	THREAD_STATE_WAIT,
+	THREAD_STATE_STOP,
+	THREAD_STATE_ZOMBIE
+} THREAD_STATE;
 
 extern struct thread *idle_thread;
 
@@ -29,28 +28,18 @@ extern struct thread *idle_thread;
  * Structure, describing threads.
  */
 struct thread {
-	/**
-	 * Context of thread
-	 */
+	/** Context of thread. */
 	struct context context;
-	/**
-	 * Function, running in thread
-	 */
+	/** Function, running in thread. */
 	void (*run)(void);
-	/**
-	 * List item, corresponding to thread.
-	 */
+	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
-	/**
-	 * Flag, which shows, whether tread can be changed.
-	 */
+	/** Flag, which shows, whether tread can be changed. */
 	bool reschedule;
 	thread_id_t id;
 	thread_priority_t priority;
-	/**
-	 * States, which thread can be in.
-	 */
-    thread_state_t state;
+	/** States, which thread can be in. */
+    THREAD_STATE state;
 };
 
 /**
@@ -62,18 +51,12 @@ struct thread {
  * @return 0 if all parameters are correct
  * @return -EINVAL if one of parameters is NULL
  */
-struct thread *thread_create(void run(void), void *stack_address);
+struct thread *thread_create(void (*run)(void), void *stack_address);
 
-/**
- * Starts a thread.
- */
+/** Starts a thread.  */
 void thread_start(struct thread *thread);
 
-//int thread_delete(struct thread *deleted_thread);
-
-/**
- * Stops chosen thread.
- */
+/** Stops chosen thread. */
 int thread_stop(struct thread *stopped_thread);
 
 #endif /* THREAD_H_ */
