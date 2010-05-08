@@ -6,29 +6,30 @@
  * @author Avdyukhin Dmitry
  */
 
+#include <assert.h>
+#include <errno.h>
+
 #include <kernel/thread.h>
+#include <kernel/scheduler.h>
 #include <hal/context.h>
 #include <hal/arch.h>
-#include <errno.h>
+#include <hal/ipl.h>
 #include <embox/unit.h>
-#include <kernel/scheduler.h>
-#include <assert.h>
 
 #define MAX_THREADS_COUNT 32
 #define THREAD_STACK_SIZE 0x1000
 
-EMBOX_UNIT_INIT(threads_init)
-;
+EMBOX_UNIT_INIT(threads_init);
 
 /**
  * Thread, which makes nothing.
  * Is used to be working when there is no another process.
  */
 struct thread *idle_thread;
-/**
- * Stack for idle_thread.
- */
+
+/** Stack for idle_thread. */
 static char idle_thread_stack[THREAD_STACK_SIZE];
+
 /**
  * Function, which makes nothing. For idle_thread.
  */
@@ -57,6 +58,8 @@ static int threads_init(void) {
  */
 void thread_run(int thread_pointer) {
 	struct thread *running_thread = (struct thread *) thread_pointer;
+
+	ipl_enable();
 	TRACE("\nThread ID = %d\n", running_thread->id);
 	assert(running_thread != NULL);
 	running_thread->run();

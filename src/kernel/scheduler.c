@@ -6,23 +6,21 @@
  * @author Avdyukhin Dmitry
  */
 
-#include <hal/context.h>
-#include <kernel/scheduler.h>
 #include <errno.h>
-#include <embox/unit.h>
-#include <kernel/timer.h>
 #include <stdlib.h>
 #include <lib/list.h>
 
-/**
- * Timer, which calls scheduler_tick.
- */
-#define THREADS_TIMER_ID 17
-/**
- * Interval, what scheduler_tick is called in.
- */
-#define THREADS_TIMER_INTERVAL 100
+#include <kernel/scheduler.h>
+#include <kernel/timer.h>
+#include <hal/context.h>
+#include <hal/ipl.h>
+#include <embox/unit.h>
 
+/** Timer, which calls scheduler_tick. */
+#define THREADS_TIMER_ID 17
+
+/** Interval, what scheduler_tick is called in. */
+#define THREADS_TIMER_INTERVAL 100
 
 /**
  * If it doesn't equal to zero,
@@ -30,13 +28,11 @@
  * and can't switch between threads.
  */
 static int preemption_count = 1;
-/**
- * Thread, which works now.
- */
+
+/** Thread, which works now. */
 static struct thread *current_thread;
-/**
- * List item, pointing at begin of the list.
- */
+
+/** List item, pointing at begin of the list. */
 static struct list_head *list_begin;
 
 void scheduler_init(void) {
@@ -55,15 +51,19 @@ static void scheduler_tick(uint32_t id) {
 }
 
 void scheduler_start(void) {
-	/** Redundant thread, which will never work. */
-	static struct thread redundant_thread;
+	/* Redundant thread, which will never work. */
+	struct thread redundant_thread;
+
 	TRACE("\nStart scheduler\n");
 	list_for_each_entry(current_thread, list_begin, sched_list) {
 		TRACE("%d ", current_thread->id);
 	}
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
+
+	ipl_disable();
 	preemption_count--;
 	context_switch(&redundant_thread.context, &idle_thread->context);
+	/* NOTREACHED */
 }
 
 void scheduler_lock(void) {
@@ -94,15 +94,20 @@ static void thread_move_next(struct thread *prev_thread) {
 }
 
 void scheduler_dispatch(void) {
-	/** Thread, which have worked just now. */
+	/* Thread, which have worked just now. */
 	struct thread *prev_thread;
+	ipl_t ipl;
+
 	if (preemption_count == 0 && current_thread->reschedule) {
 		preemption_inc();
 		prev_thread = current_thread;
 		thread_move_next(prev_thread);
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
+
+		ipl = ipl_save();
 		preemption_count--;
 		context_switch(&prev_thread->context, &current_thread->context);
+		ipl_restore(ipl);
 	}
 }
 

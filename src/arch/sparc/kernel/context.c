@@ -13,17 +13,20 @@
 
 #include <hal/context.h>
 #include <asm/psr.h>
+#include <asm/wim.h>
+#include <asm/stack.h>
 
 void context_init(struct context *ctx, bool privileged) {
 	// TODO initial context state... -- Eldar
-//	ctx->regs.psr = PSR_S | PSR_ET;
+	ctx->kregs.psr = PSR_S | PSR_ET;
 	if (privileged) {
-		ctx->regs.psr |= PSR_PS;
+		ctx->kregs.psr |= PSR_PS;
 	}
+	ctx->kregs.wim = WIM_INIT;
 }
 
 void context_set_stack(struct context *ctx, void *sp) {
-	ctx->regs.ins[6] = (uint32_t) sp;
+	ctx->kregs.ksp = (uint32_t) sp - STACK_FRAME_SZ;
 }
 
 struct context *current_ctx; // XXX I'll fix it soon. -- Eldar
@@ -32,6 +35,10 @@ void context_set_entry(struct context *ctx, void (*pc)(int), int arg) {
 		ctx = current_ctx;
 	}
 	assert(ctx != NULL);
-	ctx->regs.ins[7] = (uint32_t) pc - 8;
-	ctx->regs.ins[0] = (uint32_t) arg;
+//	struct stack_frame *frame = (struct stack_frame *) ctx->kregs.sp;
+	ctx->kregs.ret = (uint32_t) pc - 8;
+	ctx->kregs.arg = (uint32_t) arg;
+//	frame->reg_window.ins[0] = arg;
+//	frame->reg_window.ins[1] = 0xdeadbeef;
 }
+

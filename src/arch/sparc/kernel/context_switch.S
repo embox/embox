@@ -6,7 +6,11 @@
  * @author Eldar Abusalimov
  */
 
+#define HAL_CONTEXT_H_
+#include <asm/hal/context.h>
+
 #include <asm/regs.h>
+#include <asm/wim.h>
 #include <asm/ptrace.h>
 #include <asm/stack.h>
 
@@ -17,11 +21,31 @@
 context_switch:
 	save %sp, -STACK_FRAME_SZ, %sp
 
-	call winflush
-	 mov %i1, %local
+	st %fp, [%i0 + CTX_KSP]
+	st %i7, [%i0 + CTX_RET]
+	st %i0, [%i0 + CTX_ARG]
 
-	STORE_PT_ALL(i0 - STACK_FRAME_SZ, temp, temp, temp, temp)
-	LOAD_PT_ALL(local - STACK_FRAME_SZ, temp, temp, temp, temp)
+	rd %psr, %t_psr
+	st %t_psr, [%i0 + CTX_PSR]
+
+	call winflush
+	 nop
+
+	mov %i1, %g1
+
+	ld [%g1 + CTX_PSR], %t_psr
+	wr %t_psr, %g0, %psr
+	 ! don't wait
+
+	mov WIM_INIT, %t_wim
+	sll %t_wim, %t_psr, %t_wim
+	srl %t_wim, CONFIG_NWINDOWS, %temp
+	wr %t_wim, %temp, %wim
+	 ! don't wait
+
+	ld [%g1 + CTX_KSP], %fp
+	ld [%g1 + CTX_RET], %i7
+	ld [%g1 + CTX_ARG], %i0
 
 	ret
 	 restore
