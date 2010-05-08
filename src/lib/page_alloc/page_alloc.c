@@ -11,22 +11,26 @@
 #include <errno.h>
 #include <lib/page_alloc.h>
 
-#ifndef PAGE_QUANTITY
-# define PAGE_QUANTITY 0x10
+#ifndef EXTENDED_TEST
+extern char _heap_start;
+extern char _heap_end;
 #endif
-#ifndef PAGE_SIZE
-# define PAGE_SIZE 0x100
+
+// CONFIG_PAGE_SIZE
+
+#ifndef PAGE_QUANTITY
+# define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
 #endif
 
 int page_alloc_hasinit = 0;
 
 #ifdef EXTENDED_TEST
 
-static uint8_t page_pool[PAGE_QUANTITY][PAGE_SIZE];
+static uint8_t page_pool[PAGE_QUANTITY][CONFIG_PAGE_SIZE];
 static pmark_t *cmark_p = (pmark_t *) page_pool;
 #else
-#define START_MEMORY_ADDR 0x40000000
-static pmark_t *cmark_p = (pmark_t *)START_MEMORY_ADDR;
+//#define START_MEMORY_ADDR 0x40000000
+static pmark_t *cmark_p = (pmark_t *) &_heap_start;
 #endif
 
 #ifdef EXTENDED_TEST
@@ -86,7 +90,7 @@ pmark_t *page_alloc(void) {
 
 	/* change list and return value */
 	if (pcur->psize > 1 ) { /* 1 := psize */
-		tt = (unsigned long) pcur + (unsigned long) PAGE_SIZE *
+		tt = (unsigned long) pcur + (unsigned long) CONFIG_PAGE_SIZE *
 			(unsigned long) 1;  /* 1:= psize */
 		pcur->psize -= 1; /* 1 := psize */
 		tmp = cmark_p->pnext;
