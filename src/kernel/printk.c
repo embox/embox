@@ -27,7 +27,7 @@ int __attribute__ ((format (printf, 1, 2))) printk(const char *format, ...) {
 	int ret;
 
 	va_start(args, format);
-	ret = printf(format, args);
+	ret = vprintf(format, args);
 	va_end(args);
 
 	return ret;

@@ -171,7 +171,7 @@ static int print(char **out, const char *format, va_list args) {
 			if (*format == '\0')
 				break;
 			if (*format == '%')
-				goto out;
+				goto out_print;
 			if (*format == '-') {
 				++format;
 				pad = PAD_RIGHT;
@@ -226,7 +226,7 @@ static int print(char **out, const char *format, va_list args) {
 				continue;
 			}
 		} else {
-			out: printchar(out, *format);
+			out_print: printchar(out, *format);
 			++pc;
 		}
 	}
@@ -236,9 +236,17 @@ static int print(char **out, const char *format, va_list args) {
 	return pc;
 }
 
+int vprintf(const char *format, va_list args) {
+	return print(0, format, args);
+}
+
+int vsprintf(char *out, const char *format, va_list args) {
+	return print(&out, format, args);
+}
+
 int printf(const char *format, ...) {
-	va_list args;
 	int ret;
+	va_list args;
 
 	va_start(args, format);
 	ret = print(0, format, args);
@@ -248,11 +256,11 @@ int printf(const char *format, ...) {
 }
 
 int sprintf(char *out, const char *format, ...) {
-	va_list args;
 	int ret;
+	va_list args;
 
 	va_start(args, format);
-	ret = print(&out, format, args);
+	ret = vsprintf(out, format, args);
 	va_end(args);
 
 	return ret;

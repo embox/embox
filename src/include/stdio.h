@@ -5,9 +5,11 @@
  * @author Nikolay Korotky
  * @author Eldar Abusalimov
  */
+
 #ifndef STDIO_H_
 #define STDIO_H_
 
+#include <stdarg.h>
 #include <types.h>
 
 #define EOF (-1)
@@ -38,6 +40,10 @@ extern int printf(const char *format, ...);
  * Write formatted output into S, according to the format string FORMAT.
  */
 extern int sprintf(char *s, const char *format, ...);
+
+int vprintf(const char *format, va_list args);
+
+int vsprintf(char *s, const char *format, va_list args);
 
 /**
  * Read formatted input from stdin according to the format string FORMAT.
