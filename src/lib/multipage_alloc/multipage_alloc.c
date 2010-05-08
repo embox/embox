@@ -11,10 +11,16 @@
 #include <errno.h>
 #include <lib/multipage_alloc.h>
 
+#ifndef EXTENDED_TEST
 extern char _heap_start;
 extern char _heap_end;
+# define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
+#else
+extern char *_heap_start;
+extern char *_heap_end;
+# define PAGE_QUANTITY ( ((size_t) (_heap_end - _heap_start) ) / CONFIG_PAGE_SIZE )
+#endif
 
-#define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
 
 typedef int taddr;		/* addres in tree */
 char* heap_start;		/* real heap_start */
@@ -114,3 +120,13 @@ void multipage_free( void * ptr ) {
 	robin_taddr( ptr );
 }
 
+#ifdef EXTENDED_TEST
+
+extern void multipage_info() {
+	printf("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
+	printf("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
+	printf("\n\theap start: %16x \n\theap end: %16x \n",(unsigned long) _heap_start,(unsigned long) _heap_end);
+
+}
+
+#endif
