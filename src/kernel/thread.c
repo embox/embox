@@ -56,14 +56,19 @@ static int threads_init(void) {
  * execute "run" and delete thread from scheduler.
  * @param thread_pointer pointer at thread.
  */
-void thread_run(int thread_pointer) {
-	struct thread *running_thread = (struct thread *) thread_pointer;
+static void thread_run(int data) {
+	struct thread *thread = (struct thread *) data;
+
+	assert(thread != NULL);
 
 	ipl_enable();
-	TRACE("\nThread ID = %d\n", running_thread->id);
-	assert(running_thread != NULL);
-	running_thread->run();
-	thread_stop(running_thread);
+	TRACE("\nThread ID = %d\n", thread->id);
+	thread->run();
+
+	thread_stop(thread);
+
+	/* NOTREACHED */
+	assert(false);
 }
 
 /** A mask, which shows, what places for new threads are free. */
