@@ -6,4 +6,5 @@
 //#define STACK_POP_FROM_HEAD		/* or tail */ // I'm not sure that is working
 #define TEST_COUNT 100
 #define MAX_PAGE_FOR_ALLOC 0x10000
+#define CONFIG_PAGE_SIZE 0x100
 

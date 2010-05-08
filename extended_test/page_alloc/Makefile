@@ -6,7 +6,7 @@
 #CC = gcc -I $(INCLUDES) -imacros $(MACROS) # -D EXTENDED_TEST
 #CC = gcc -include ../../src/include/lib/page_alloc.h -imacros $(MACROS) # -D EXTENDED_TEST
 #CC = gcc -include ../../src/include/lib/page_alloc.h -D EXTENDED_TEST
-CC = gcc -g -I ./ -D EXTENDED_TEST
+CC = gcc -g -I ./ -D EXTENDED_TEST -imacros config.h
 
 .PHONY: test
 test: clean page_alloc ./test_page_alloc.c ./config.h ../../src/include/lib/page_alloc.h

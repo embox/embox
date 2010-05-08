@@ -63,7 +63,7 @@ int page_alloc_init(void) {
 }
 
 /* allocate page */
-pmark_t *page_alloc(void) {
+void *page_alloc(void) {
 	/* size_t psize = 1; */
 	pmark_t *pcur,*tmp,*tt;
 
@@ -90,8 +90,8 @@ pmark_t *page_alloc(void) {
 
 	/* change list and return value */
 	if (pcur->psize > 1 ) { /* 1 := psize */
-		tt = (unsigned long) pcur + (unsigned long) CONFIG_PAGE_SIZE *
-			(unsigned long) 1;  /* 1:= psize */
+		tt = (pmark_t *) ((unsigned long) pcur + (unsigned long) CONFIG_PAGE_SIZE *
+			(unsigned long) 1);  /* 1:= psize */
 		pcur->psize -= 1; /* 1 := psize */
 		tmp = cmark_p->pnext;
 		cmark_p->pprev->pnext = tt;
@@ -113,7 +113,8 @@ pmark_t *page_alloc(void) {
 }
 
 /* free page that was allocated */
-void page_free(pmark_t *paddr) {
+void page_free(void *addr) {
+	pmark_t *paddr = (pmark_t*) addr;
 	#if 0
 	if (paddr == NULL) {
 		printf("PAGE FREE: try free NULL pointer!!!\n");
