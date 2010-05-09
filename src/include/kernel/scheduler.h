@@ -11,10 +11,14 @@
 
 #include <kernel/thread.h>
 
-/** Initializes scheduler.  */
+/**
+ * Initializes scheduler.
+ */
 void scheduler_init(void);
 
-/** Start working with threads. */
+/**
+ * Start working with threads.
+ */
 void scheduler_start(void);
 
 /**
@@ -30,7 +34,9 @@ void scheduler_lock(void);
  */
 void scheduler_unlock(void);
 
-/** Changes executable thread. */
+/**
+ * Changes currently executed thread.
+ */
 void scheduler_dispatch(void);
 
 /**

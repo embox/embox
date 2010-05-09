@@ -121,9 +121,6 @@ static void irq_leave(void) {
 		softirq_dispatch();
 	}
 	ipl_restore(ipl);
-	if (0 == nesting_count) {
-		ipl_enable();
-	}
 	scheduler_unlock();
 }
 

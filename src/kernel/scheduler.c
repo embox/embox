@@ -29,9 +29,6 @@
  */
 static int preemption_count = 1;
 
-/** Thread, which works now. */
-static struct thread *current_thread;
-
 /** List item, pointing at begin of the list. */
 static struct list_head *list_begin;
 

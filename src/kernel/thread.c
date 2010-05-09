@@ -21,11 +21,8 @@
 
 EMBOX_UNIT_INIT(threads_init);
 
-/**
- * Thread, which makes nothing.
- * Is used to be working when there is no another process.
- */
 struct thread *idle_thread;
+struct thread *current_thread;
 
 /** Stack for idle_thread. */
 static char idle_thread_stack[THREAD_STACK_SIZE];
@@ -113,14 +110,18 @@ void thread_start(struct thread *thread) {
 	scheduler_add(thread);
 }
 
-/** Deletes chosen thread. */
+/**
+ * Deletes chosen thread.
+ */
 static int thread_delete(struct thread *deleted_thread) {
 	if (deleted_thread == NULL) {
 		return -EINVAL;
 	}
 	TRACE("\nDeleting %d\n", deleted_thread->id);
 	deleted_thread->state = THREAD_STATE_STOP;
-	list_del(&deleted_thread->sched_list);
+	if (deleted_thread->sched_list.next != NULL) {
+		list_del(&deleted_thread->sched_list);
+	}
 	mask &= ~(1 << (deleted_thread - threads_pool));
 	return 0;
 }
@@ -135,8 +136,14 @@ int thread_stop(struct thread *stopped_thread) {
 		thread_delete(last_zombie);
 	}
 	last_zombie = stopped_thread;
+	stopped_thread->state = THREAD_STATE_ZOMBIE;
 	scheduler_remove(stopped_thread);
 	scheduler_unlock();
 	return 0;
 }
 
+void thread_yield(void) {
+	scheduler_lock();
+	current_thread->reschedule = true;
+	scheduler_unlock();
+}

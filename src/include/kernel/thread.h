@@ -20,9 +20,18 @@ typedef enum {
 	THREAD_STATE_WAIT,
 	THREAD_STATE_STOP,
 	THREAD_STATE_ZOMBIE
-} THREAD_STATE;
+} thread_state_t;
 
+/**
+ * Thread, which makes nothing.
+ * Is used to be working when there is no another process.
+ */
 extern struct thread *idle_thread;
+
+/**
+ * Thread, which is working now.
+ */
+extern struct thread *current_thread;
 
 /**
  * Structure, describing threads.
@@ -39,7 +48,7 @@ struct thread {
 	thread_id_t id;
 	thread_priority_t priority;
 	/** States, which thread can be in. */
-    THREAD_STATE state;
+    thread_state_t state;
 };
 
 /**
@@ -53,10 +62,21 @@ struct thread {
  */
 struct thread *thread_create(void (*run)(void), void *stack_address);
 
-/** Starts a thread.  */
+/**
+ * Starts a thread.
+ */
 void thread_start(struct thread *thread);
 
-/** Stops chosen thread. */
+/**
+ * Stops chosen thread.
+ * Makes it a zombie.
+ */
 int thread_stop(struct thread *stopped_thread);
+
+/**
+ * Switches context to another thread.
+ * Currently working thread leaves CPU for some time.
+ */
+void thread_yield(void);
 
 #endif /* THREAD_H_ */

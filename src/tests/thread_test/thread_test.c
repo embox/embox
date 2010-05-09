@@ -11,14 +11,16 @@
 #include <errno.h>
 #include <assert.h>
 
-#define TREAD_STACK_SIZE 0x1000
+#define THREAD_STACK_SIZE 0x1000
 
-static char plus_stack[TREAD_STACK_SIZE];
-static char minus_stack[TREAD_STACK_SIZE];
-static char mult_stack[TREAD_STACK_SIZE];
+static char plus_stack[THREAD_STACK_SIZE];
+static char minus_stack[THREAD_STACK_SIZE];
+static char mult_stack[THREAD_STACK_SIZE];
+static char natural_stack[THREAD_STACK_SIZE];
 static struct thread *plus_thread;
 static struct thread *minus_thread;
 static struct thread *mult_thread;
+static struct thread *natural_thread;
 
 EMBOX_TEST(run_test)
 ;
@@ -29,10 +31,8 @@ EMBOX_TEST(run_test)
  */
 static void plus_run(void) {
 	thread_stop(minus_thread);
-	/*	while (true) {
-	 TRACE("+");
-	 }
-	 */TRACE("+");
+	thread_yield();
+	TRACE("+");
 }
 
 /**
@@ -55,7 +55,17 @@ static void mult_run(void) {
 }
 
 /**
- * Test, which infinitely writes "?", "+" and "*" on the screen.
+ * Endlessly writes natural numbers.
+ */
+static void natural_run(void) {
+	for (int i = 1; ; i++) {
+		TRACE("%d ", i);
+	}
+}
+
+/**
+ * Test, which infinitely writes "?", "+", "*" and
+ * natural numbers (until overflow) on the screen.
  * Thread, which writes "-", will be deleted in plus_thread.
  *
  * It still doesn't work.
@@ -67,15 +77,18 @@ static int run_test() {
 	TRACE("\n");
 	scheduler_init();
 
-	plus_thread = thread_create(plus_run, plus_stack + TREAD_STACK_SIZE);
-	minus_thread = thread_create(minus_run, minus_stack + TREAD_STACK_SIZE);
-	mult_thread = thread_create(mult_run, mult_stack + TREAD_STACK_SIZE);
+	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
+	natural_thread = thread_create(natural_run, natural_stack + THREAD_STACK_SIZE);
+	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
+	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
 
 	assert(plus_thread != NULL);
 	assert(minus_thread != NULL);
 	assert(mult_thread != NULL);
+	assert(natural_thread != NULL);
 
 	thread_start(plus_thread);
+	thread_start(natural_thread);
 	thread_start(minus_thread);
 	thread_start(mult_thread);
 
