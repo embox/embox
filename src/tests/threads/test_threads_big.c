@@ -68,8 +68,6 @@ static void natural_run(void) {
  * natural numbers (until overflow) on the screen.
  * Thread, which writes "-", will be deleted in plus_thread.
  *
- * It still doesn't work.
- *
  * @retval 0 if test is passed
  * @retval -EINVAL if an error occurs.
  */
@@ -94,7 +92,9 @@ static int run_test() {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-	TRACE("\nAfter start\n");
+
+	/* NOTREACHED */
+	assert(false);
 
 	return 0;
 }

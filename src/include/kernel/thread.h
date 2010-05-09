@@ -45,20 +45,21 @@ struct thread {
 	struct list_head sched_list;
 	/** Flag, which shows, whether tread can be changed. */
 	bool reschedule;
+	/** Thread's identifier. Unique for each thread. */
 	thread_id_t id;
+	/** Thread's priority among another threads. */
 	thread_priority_t priority;
-	/** States, which thread can be in. */
+	/** State, in which thread is now. */
     thread_state_t state;
 };
 
 /**
  * Creates new thread
  *
- * @param created_thread pointer to created thread
- * @param run function executed in created thread
- * @param stack_address address of thread's stack
- * @return 0 if all parameters are correct
- * @return -EINVAL if one of parameters is NULL
+ * @param run function executed in created thread.
+ * @param stack_address address of thread's stack.
+ * @return pointer to new thread if all parameters are correct.
+ * @return NULL if one of parameters is NULL or all places for threads are occupied.
  */
 struct thread *thread_create(void (*run)(void), void *stack_address);
 
@@ -69,6 +70,7 @@ void thread_start(struct thread *thread);
 
 /**
  * Stops chosen thread.
+ * Deletes previous zombie.
  * Makes it a zombie.
  */
 int thread_stop(struct thread *stopped_thread);

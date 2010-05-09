@@ -32,7 +32,7 @@ static char idle_thread_stack[THREAD_STACK_SIZE];
  */
 static void idle_run(void) {
 	while (true) {
-		TRACE("?");
+		idle_thread->reschedule = true;
 	}
 }
 
@@ -56,12 +56,11 @@ static int threads_init(void) {
 static void thread_run(int data) {
 	struct thread *thread = (struct thread *) data;
 
-	assert(thread != NULL);
-
 	ipl_enable();
-	TRACE("\nThread ID = %d\n", thread->id);
-	thread->run();
 
+	assert(thread != NULL);
+	TRACE("\nStarting %d\n", thread->id);
+	thread->run();
 	thread_stop(thread);
 
 	/* NOTREACHED */
