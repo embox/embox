@@ -40,7 +40,7 @@
 typedef interrupt_nr_t irq_nr_t;
 
 /**
- * IRQ handler return type.
+ * IRQ handler return type. Must be either #IRQ_HANDLED or #IRQ_NONE.
  */
 typedef bool irq_return_t;
 
@@ -61,7 +61,7 @@ typedef unsigned long irq_flags_t;
 /**
  * Initializes IRQ subsystem.
  */
-void irq_init(void);
+extern void irq_init(void);
 
 /**
  * Attaches @link #irq_handler_t interrupt service routine @endlink to the
@@ -81,8 +81,8 @@ void irq_init(void);
  *                number
  * @retval -ENOSYS if kernel is compiled without IRQ support
  */
-int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, irq_flags_t flags,
-		void *data, const char *dev_name);
+extern int irq_attach(irq_nr_t irq_nr, irq_handler_t handler,
+		irq_flags_t flags, void *data, const char *dev_name);
 
 /**
  * Detaches ISR from the specified @link #irq_nr_t IRQ number @endlink.
@@ -95,14 +95,14 @@ int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, irq_flags_t flags,
  * @retval -EINVAL if @c irq_nr is not @link #irq_nr_valid() valid @endlink
  * @retval -ENOSYS if kernel is compiled without IRQ support
  */
-int irq_detach(irq_nr_t irq_nr, void *data);
+extern int irq_detach(irq_nr_t irq_nr, void *data);
 
 #ifdef __HAL__
 /**
  * Called by HAL code.
  * @param interrupt_nr the number of interrupt to dispatch
  */
-void irq_dispatch(interrupt_nr_t interrupt_nr);
+extern void irq_dispatch(interrupt_nr_t interrupt_nr);
 #endif /* __HAL__ */
 
 #endif /* IRQ_H_ */
