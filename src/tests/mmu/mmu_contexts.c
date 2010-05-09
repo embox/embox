@@ -55,7 +55,7 @@ static int run() {
 	temp = &worker_b;
 
 	t1 = mmu_create_context();
-    t2 = mmu_create_context();
+	t2 = mmu_create_context();
 	for (i = 0; i <= 2; i++) {
 		mmu_map_region((mmu_ctx_t) i, (uint32_t) &_text_start,
 				(uint32_t) &_text_start, 0x1000000,
@@ -79,7 +79,8 @@ static int run() {
 	mmu_on();
 	(*((worker_ptr) 0xf0080000))();
 	mmu_off();
-	printf("a is %d b is %d\n",is_a_done, is_b_done);
+	switch_mm(t2, 0);
+	//printf("a is %d b is %d\n",is_a_done, is_b_done);
 	status = !(is_a_done && is_b_done);
 	return status;
 }
