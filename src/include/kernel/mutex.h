@@ -10,6 +10,7 @@
 #ifndef MUTEX_H_
 #define MUTEX_H_
 
+#include <lib/list.h>
 #include <kernel/thread.h>
 
 /**
@@ -17,7 +18,7 @@
  */
 struct mutex {
 	struct thread *bound_thread;
-	/* struct list_head *locked_thread_list;*/
+	struct list_head *locked_thread_list;
 	int lockscount;
 };
 

@@ -27,6 +27,7 @@ $_DEPS-main += softirq
 ifdef CONFIG_THREAD
 $_DEPS-main += core.kernel.thread
 $_DEPS-main += embox.hal.context
+$_SRCS-thread += mutex.c
 $_SRCS-thread += thread.c
 $_SRCS-thread += scheduler.c
 endif
