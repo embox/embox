@@ -33,12 +33,12 @@ context_switch:
 
 	mov %i1, %g1
 
-	ld [%g1 + CTX_PSR], %t_psr
-	wr %t_psr, %g0, %psr
+	ld [%g1 + CTX_PSR], %g2
+	wr %g2, %g0, %psr
 	 ! don't wait
 
 	mov WIM_INIT, %t_wim
-	sll %t_wim, %t_psr, %t_wim
+	sll %t_wim, %g2, %t_wim
 	srl %t_wim, CONFIG_NWINDOWS, %temp
 	wr %t_wim, %temp, %wim
 	 ! don't wait
