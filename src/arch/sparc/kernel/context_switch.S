@@ -35,7 +35,7 @@ context_switch:
 
 	ld [%g1 + CTX_PSR], %g2
 	wr %g2, %g0, %psr
-	 ! don't wait
+	 nop; nop; nop ! switching windows affects locals
 
 	mov WIM_INIT, %t_wim
 	sll %t_wim, %g2, %t_wim
