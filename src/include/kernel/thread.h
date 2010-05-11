@@ -18,6 +18,7 @@ typedef int thread_priority_t;
 typedef enum {
 	THREAD_STATE_RUN,
 	THREAD_STATE_WAIT,
+	THREAD_STATE_SLEEP,
 	THREAD_STATE_STOP,
 	THREAD_STATE_ZOMBIE
 } thread_state_t;
@@ -43,6 +44,10 @@ struct thread {
 	void (*run)(void);
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
+	/** List item, corresponding to thread in list of sleeping threads. */
+	struct list_head sleep_list;
+	/** List item, corresponding to thread in list of waiting threads. */
+	struct list_head wait_list;
 	/** Flag, which shows, whether tread can be changed. */
 	bool reschedule;
 	/** Thread's identifier. Unique for each thread. */

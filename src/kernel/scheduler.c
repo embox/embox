@@ -30,11 +30,17 @@
 static int preemption_count = 1;
 
 /** List item, pointing at begin of the list. */
-static struct list_head *list_begin;
+static struct list_head *list_begin_sched;
+/** List item, pointing at begin of the (waiting) list. */
+static struct list_head *list_begin_wait;
+/** List item, pointing at begin of the (sleeping) list. */
+static struct list_head *list_begin_sleep;
 
 int scheduler_init(void) {
 	current_thread = idle_thread;
-	list_begin = &idle_thread->sched_list;
+	list_begin_sched = &idle_thread->sched_list;
+	list_begin_wait = &idle_thread->wait_list;
+	list_begin_sleep = &idle_thread->sleep_list;
 	current_thread->reschedule = false;
 	return 0;
 }
@@ -50,7 +56,7 @@ static void scheduler_tick(uint32_t id) {
 
 void scheduler_start(void) {
 	TRACE("\nStart scheduler\n");
-	list_for_each_entry(current_thread, list_begin, sched_list) {
+	list_for_each_entry(current_thread, list_begin_sched, sched_list) {
 		TRACE("%d ", current_thread->id);
 	}
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
@@ -104,7 +110,7 @@ void scheduler_dispatch(void) {
 }
 
 void scheduler_add(struct thread *added_thread) {
-	list_add_tail(&added_thread->sched_list, list_begin);
+	list_add_tail(&added_thread->sched_list, list_begin_sched);
 }
 
 int scheduler_remove(struct thread *removed_thread) {
@@ -115,4 +121,21 @@ int scheduler_remove(struct thread *removed_thread) {
 	removed_thread->reschedule = true;
 	scheduler_unlock();
 	return 0;
+}
+
+int scheduler_add_sleep(struct thread *added_thread) {
+	if (added_thread == NULL || added_thread == idle_thread) {
+		return -EINVAL;
+	}
+	&added_thread->state = THREAD_STATE_SLEEP;
+	list_add_tail(&added_thread->sleep_list, list_begin_sleep);
+	list_del(&added_thread->sched_list);
+	return 0;
+}
+
+void scheduler_wake_up(void) {
+	while (list_begin_wait->next != NULL) {
+		//sleep to wait
+		list_add_tail(list_begin_wait->next, list_begin_sleep);
+		list_del(&list_begin_wait->next);
 }

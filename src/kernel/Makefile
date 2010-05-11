@@ -30,6 +30,7 @@ $_DEPS-main += embox.hal.context
 $_SRCS-thread += mutex.c
 $_SRCS-thread += thread.c
 $_SRCS-thread += scheduler.c
+$_SRCS-thread += convar.c
 endif
 
 ifdef CONFIG_MMU_SUPPORT

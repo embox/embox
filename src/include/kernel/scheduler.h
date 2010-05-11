@@ -53,4 +53,17 @@ void scheduler_add(struct thread *added_thread);
  */
 int scheduler_remove(struct thread *removed_thread);
 
+/**
+ * Add a thread to the list of sleeping threads.
+ * @param added_thread deleted thread
+ * @retval 0 if thread was successfully added.
+ * @retval -EINVAL if @c added_thread is NULL or &idle_thread.
+ */
+int scheduler_add_sleep(struct thread *added_thread);
+
+/**
+ * Transfer threads from sleeping list to list of waiting.
+ */
+void scheduler_wake_up(void);
+
 #endif /* SCHEDULER_H_ */
