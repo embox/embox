@@ -61,7 +61,7 @@ SECTIONS {
 	.stack (NOLOAD): {
 		ALIGNMENT();
 		_stack_bottom = .;
-		. += STACK_SIZE;
+		. += CONFIG_STACK_SIZE;
 		ALIGNMENT();
 		_stack_top = .;
 		_stack = _stack_top;
