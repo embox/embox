@@ -21,6 +21,7 @@ AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 -include $(build_mk) $(mods_mk)
 
 TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
+TARGET := $(TARGET)$(if $(LOCALVERSION),-$(LOCALVERSION))
 
 .PHONY: check_config check_conf_dir
 check_config: check_conf_dir $(CONF_FILES)
