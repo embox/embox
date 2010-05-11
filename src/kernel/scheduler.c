@@ -32,10 +32,11 @@ static int preemption_count = 1;
 /** List item, pointing at begin of the list. */
 static struct list_head *list_begin;
 
-void scheduler_init(void) {
+int scheduler_init(void) {
 	current_thread = idle_thread;
 	list_begin = &idle_thread->sched_list;
 	current_thread->reschedule = false;
+	return 0;
 }
 
 /**
@@ -48,19 +49,13 @@ static void scheduler_tick(uint32_t id) {
 }
 
 void scheduler_start(void) {
-	/* Redundant thread, which will never work. */
-	struct thread redundant_thread;
-
 	TRACE("\nStart scheduler\n");
 	list_for_each_entry(current_thread, list_begin, sched_list) {
 		TRACE("%d ", current_thread->id);
 	}
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
 
-	ipl_disable();
-	preemption_count--;
-	context_switch(&redundant_thread.context, &idle_thread->context);
-	/* NOTREACHED */
+	scheduler_unlock();
 }
 
 void scheduler_lock(void) {

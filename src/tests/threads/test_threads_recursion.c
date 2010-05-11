@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Tests thread with infinite recursion.
+ * @brief Tests thread with recursion.
  *
  * @date 09.05.2010
  * @author Dmitry Avdyukhin
@@ -13,7 +13,7 @@
 #include <assert.h>
 
 #define THREAD_STACK_SIZE 0x1000
-#define MAX_DEPTH 2
+#define MAX_DEPTH 80
 static char recursion_stack[THREAD_STACK_SIZE];
 static struct thread *recursion_thread;
 
@@ -37,16 +37,14 @@ void f(int i) {
  * Shows natural numbers.
  */
 static void recursion_run(void) {
-	while (true) {
-		f(1);
-	}
+	f(1);
 }
 
 
 /**
- * Test, which writes natural numbers using recursion.
+ * Test, which writes some numbers using recursion.
  *
- * If MAX_DEPTH > 2, then error occurs.
+ * If MAX_DEPTH = 100, then error occurs (maybe stack overflow).
  *
  * @retval 0 if test is passed
  * @retval -EINVAL if an error occurs.
@@ -65,7 +63,5 @@ static int run_test() {
 	TRACE("\nBefore start\n");
 	scheduler_start();
 
-	/* NOTREACHED */
-	assert(false);
 	return 0;
 }

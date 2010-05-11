@@ -14,7 +14,7 @@
 /**
  * Initializes scheduler.
  */
-void scheduler_init(void);
+int scheduler_init(void);
 
 /**
  * Start working with threads.

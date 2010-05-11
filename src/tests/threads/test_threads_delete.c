@@ -55,7 +55,8 @@ static void mult_run(void) {
  * Will be started in natural_thread.
  */
 static void plus_run(void) {
-	while (true) {
+	int i;
+	for (i = 1; i < 1000; i++) {
 		TRACE("+");
 	}
 }
@@ -65,7 +66,7 @@ static void plus_run(void) {
  * Writes natural numbers.
  */
 static void main_run(void) {
-	int i = 1;
+	int i;
 
 	thread_stop(minus_thread);
 	thread_stop(mult_thread);
@@ -74,8 +75,8 @@ static void main_run(void) {
 	thread_start(plus_thread);
 	assert(plus_thread->id == 3);
 
-	while (true) {
-		TRACE("%d ", i++);
+	for (i = 1; i < 100; i++) {
+		TRACE("%d ", i);
 	}
 }
 
@@ -109,7 +110,5 @@ static int run_test() {
 	TRACE("\nBefore start\n");
 	scheduler_start();
 
-	/* NOTREACHED */
-	assert(false);
 	return 0;
 }

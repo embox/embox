@@ -65,7 +65,7 @@ static void natural_run(void) {
 
 /**
  * Test, which infinitely writes "?", "+", "*" and
- * natural numbers (until overflow) on the screen.
+ * natural numbers on the screen.
  * Thread, which writes "-", will be deleted in plus_thread.
  *
  * @retval 0 if test is passed
@@ -92,9 +92,6 @@ static int run_test() {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-
-	/* NOTREACHED */
-	assert(false);
 
 	return 0;
 }

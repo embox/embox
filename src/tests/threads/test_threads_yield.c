@@ -25,8 +25,9 @@ EMBOX_TEST(run_test)
  * Endlessly Writes "+" and calls minus_run.
  */
 static void plus_run(void) {
-	while (true) {
-		TRACE("+");
+	int i;
+	for (i = 0; i < 10; i++) {
+		TRACE("+ ");
 		thread_yield();
 	}
 }
@@ -35,8 +36,9 @@ static void plus_run(void) {
  * Endlessly writes "-" and calls plus_run.
  */
 static void minus_run(void) {
-	while (true) {
-		TRACE("-");
+	int i;
+	for (i = 0; i < 10; i++) {
+		TRACE("- ");
 		thread_yield();
 	}
 }
@@ -64,7 +66,5 @@ static int run_test() {
 	TRACE("\nBefore start\n");
 	scheduler_start();
 
-	/* NOTREACHED */
-	assert(false);
 	return 0;
 }
