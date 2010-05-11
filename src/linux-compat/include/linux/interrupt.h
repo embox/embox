@@ -61,6 +61,6 @@ extern void open_softirq(int nr, void(*action)(struct softirq_action *),
 
 #define raise_softirq(nr) softirq_raise(nr)
 
-/*typedef irq_return_t irqreturn_t;*/
+typedef irq_return_t irqreturn_t;
 
 #endif /* LINUX_INTERRUPT_H_ */
