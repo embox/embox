@@ -10,7 +10,8 @@
 #include <stdlib.h>
 #include <lib/list.h>
 
-#include <kernel/scheduler.h>
+#include <kernel/heap_scheduler.h>
+#include <kernel/thread_heap.h>
 #include <kernel/timer.h>
 #include <hal/context.h>
 #include <hal/ipl.h>
@@ -22,6 +23,11 @@
 /** Interval, what scheduler_tick is called in. */
 #define THREADS_TIMER_INTERVAL 100
 
+/** List item, pointing at begin of the (waiting) list. */
+static struct list_head *list_begin_wait;
+/** List item, pointing at begin of the (sleeping) list. */
+static struct list_head *list_begin_sleep;
+
 /**
  * If it doesn't equal to zero,
  * we are located in critical section
@@ -29,20 +35,11 @@
  */
 static int preemption_count = 1;
 
-/** List item, pointing at begin of the list. */
-static struct list_head *list_begin_sched;
-/** List item, pointing at begin of the (waiting) list. */
-static struct list_head *list_begin_wait;
-/** List item, pointing at begin of the (sleeping) list. */
-static struct list_head *list_begin_sleep;
-
 int scheduler_init(void) {
-	INIT_LIST_HEAD(&idle_thread->sched_list);
 	current_thread = idle_thread;
-	list_begin_sched = &idle_thread->sched_list;
 	list_begin_wait = &idle_thread->wait_list;
 	list_begin_sleep = &idle_thread->sleep_list;
-	current_thread->reschedule = false;
+	current_thread->reschedule = true;
 	return 0;
 }
 
@@ -51,17 +48,13 @@ int scheduler_init(void) {
  * @param id nothing significant
  */
 static void scheduler_tick(uint32_t id) {
-	TRACE("\nTick\n");
+	//TRACE("\nTick\n");
 	current_thread->reschedule = true;
 }
 
 void scheduler_start(void) {
-	TRACE("\nStart scheduler\n");
-	list_for_each_entry(current_thread, list_begin_sched, sched_list) {
-		TRACE("%d ", current_thread->id);
-	}
+	//TRACE("\nStart scheduler\n");
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
-
 	scheduler_unlock();
 }
 
@@ -79,16 +72,18 @@ void scheduler_unlock(void) {
 static void preemption_inc(void) {
 	preemption_count++;
 }
+
 /**
  * Move current_thread pointer to the next thread.
  * @param prev_thread thread, which have worked just now.
  */
-static void thread_move_next(struct thread *prev_thread) {
-	current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
-	if (current_thread->state == THREAD_STATE_ZOMBIE) {
-		list_del(&current_thread->sched_list);
-		current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
+static inline void thread_move_next(struct thread *prev_thread) {
+	if (current_thread->state == THREAD_STATE_RUN) {
+		heap_insert(current_thread);
 	}
+	//heap_print();
+	current_thread = heap_extract();
+	//heap_print();
 	current_thread->reschedule = false;
 }
 
@@ -101,7 +96,7 @@ void scheduler_dispatch(void) {
 		preemption_inc();
 		prev_thread = current_thread;
 		thread_move_next(prev_thread);
-		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
+		//TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
 
 		ipl = ipl_save();
 		preemption_count--;
@@ -111,7 +106,7 @@ void scheduler_dispatch(void) {
 }
 
 void scheduler_add(struct thread *added_thread) {
-	list_add_tail(&added_thread->sched_list, list_begin_sched);
+	heap_insert(added_thread);
 }
 
 int scheduler_remove(struct thread *removed_thread) {
@@ -119,8 +114,8 @@ int scheduler_remove(struct thread *removed_thread) {
 		return -EINVAL;
 	}
 	scheduler_lock();
-	if (removed_thread->sched_list.next != NULL) {
-		list_del(&removed_thread->sched_list);
+	if (heap_contains(removed_thread)) {
+		heap_delete(removed_thread);
 	}
 	scheduler_unlock();
 	return 0;

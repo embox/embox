@@ -44,6 +44,8 @@ struct thread {
 	void (*run)(void);
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
+	/** Index of thread in heap. */
+	int heap_index;
 	/** List item, corresponding to thread in list of sleeping threads. */
 	struct list_head sleep_list;
 	/** List item, corresponding to thread in list of waiting threads. */

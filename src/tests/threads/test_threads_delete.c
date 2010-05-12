@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <kernel/thread.h>
-#include <kernel/scheduler.h>
+#include <kernel/heap_scheduler.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -73,7 +73,6 @@ static void main_run(void) {
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
 	assert(plus_thread != NULL);
 	thread_start(plus_thread);
-	assert(plus_thread->id == 3);
 
 	for (i = 1; i < 100; i++) {
 		TRACE("%d ", i);
@@ -85,8 +84,8 @@ static void main_run(void) {
  * Minus_thread and mult_run will be deleted.
  * Plus_run will be started in natural_run.
  * After deleting some threads:
- *   1)Plus_run id must be equal to 3.
- *   2)Must work only threads with id: 0, 1, 3.
+ *   1)Plus_run id must be equal to 2.
+ *   2)Must work only threads with id: 0, 1, 2.
  *
  * @retval 0 if test is passed
  * @retval -EINVAL if an error occurs.

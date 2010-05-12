@@ -7,7 +7,7 @@
  */
 #include <embox/test.h>
 #include <kernel/thread.h>
-#include <kernel/scheduler.h>
+#include <kernel/heap_scheduler.h>
 #include <errno.h>
 #include <assert.h>
 

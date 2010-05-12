@@ -29,7 +29,8 @@ $_DEPS-main += core.kernel.thread
 $_DEPS-main += embox.hal.context
 $_SRCS-thread += mutex.c
 $_SRCS-thread += thread.c
-$_SRCS-thread += scheduler.c
+$_SRCS-thread += heap_scheduler.c
+$_SRCS-thread += thread_heap.c
 $_SRCS-thread += convar.c
 endif
 

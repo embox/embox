@@ -10,7 +10,7 @@
 #include <errno.h>
 
 #include <kernel/thread.h>
-#include <kernel/scheduler.h>
+#include <kernel/heap_scheduler.h>
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
@@ -42,9 +42,9 @@ static struct thread *last_zombie;
 static struct thread threads_pool[MAX_THREADS_COUNT];
 
 static int threads_init(void) {
-	idle_thread
-			= thread_create(idle_run, idle_thread_stack + THREAD_STACK_SIZE);
-	INIT_LIST_HEAD(&idle_thread->sched_list);
+	idle_thread = thread_create(idle_run, idle_thread_stack + THREAD_STACK_SIZE);
+	idle_thread->priority = 0;
+	idle_thread->state = THREAD_STATE_RUN;
 	return 0;
 }
 
@@ -97,6 +97,7 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	}
 	created_thread->state = THREAD_STATE_STOP;
 	created_thread->run = run;
+	created_thread->priority = 1;
 	context_init(&created_thread->context, true);
 	context_set_entry(&created_thread->context, &thread_run,
 			(int) created_thread);
@@ -117,10 +118,8 @@ static int thread_delete(struct thread *deleted_thread) {
 		return -EINVAL;
 	}
 	TRACE("\nDeleting %d\n", deleted_thread->id);
+	scheduler_remove(deleted_thread);
 	deleted_thread->state = THREAD_STATE_STOP;
-	if (deleted_thread->sched_list.next != NULL) {
-		list_del(&deleted_thread->sched_list);
-	}
 	mask &= ~(1 << (deleted_thread - threads_pool));
 	return 0;
 }
@@ -134,9 +133,13 @@ int thread_stop(struct thread *stopped_thread) {
 	if (last_zombie != NULL) {
 		thread_delete(last_zombie);
 	}
-	last_zombie = stopped_thread;
-	stopped_thread->state = THREAD_STATE_ZOMBIE;
-	scheduler_remove(stopped_thread);
+	if (current_thread != stopped_thread) {
+		thread_delete(stopped_thread);
+	} else {
+		last_zombie = stopped_thread;
+		stopped_thread->state = THREAD_STATE_ZOMBIE;
+		stopped_thread->reschedule = true;
+	}
 	scheduler_unlock();
 	return 0;
 }
