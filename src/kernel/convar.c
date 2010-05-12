@@ -7,11 +7,16 @@
  */
 
 #include <kernel/scheduler.h>
+#include <kernel/convar.h>
 
-int convar_add_sleep(struct thread *added_thread) {
-	return scheduler_add_sleep(added_thread);
+void canvar_init(struct condition_variable *variable) {
+	variable->list_begin_convar = &idle_thread->sleep_list;
 }
 
-void convar_wake_up(void) {
-	scheduler_wake_up();
+int convar_add_sleep(struct thread *added_thread, struct condition_variable *variable) {
+	scheduler_add_sleep(added_thread, variable);
+}
+
+void convar_wake_up(struct condition_variable *variable) {
+	scheduler_wake_up(variable);
 }
