@@ -44,7 +44,7 @@ AUTOCONF_DIR   := $(CODEGEN_DIR)
 
 RM     := rm -f
 CP     := cp
-EDIT   := emacs
+EDIT   := vim
 PRINTF := printf
 SHELL  := bash
 
