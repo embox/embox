@@ -123,25 +123,25 @@ int scheduler_remove(struct thread *removed_thread) {
 	return 0;
 }
 
-int scheduler_add_sleep(struct thread *added_thread, struct condition_variable *variable) {
-	if (added_thread == NULL || added_thread == idle_thread) {
+int scheduler_convar_wait(struct mutex *added_mutex, struct condition_variable *variable) {
+	if (added_mutex == NULL || added_mutex == idle_mutex) {
 		return -EINVAL;
 	}
-	added_thread->state = THREAD_STATE_SLEEP;
-	list_add_tail(&added_thread->sleep_list, variable->list_begin_convar);
-	list_del(&added_thread->sched_list);
+	&added_mutex->bound_thread->state = THREAD_STATE_SLEEP;
+	list_add_tail(&added_mutex->sleeped_thread_list, variable->list_begin_convar);
+	mutex_unlock(added_mutex);
 	return 0;
 }
 
-void scheduler_wake_up(struct condition_variable *variable) {
-	struct thread trans_thread;
-	struct list_head convar_list;
+void scheduler_convar_signal(struct condition_variable *variable) {
+	struct mutex trans_mutex;
+	struct list_head *convar_list;
 	convar_list = &variable->list_begin_convar;
 	while (convar_list->next != NULL) {
 		convar_list = convar_list->next;
-		trans_thread = list_entry(convar_list, struct thread, sleep_list);
-		list_del(&trans_thread->sleep_list);
-		&trans_thread->state = THREAD_STATE_WAIT;
-		list_add_tail(&trans_thread->wait_list, list_begin_wait);
+		trans_mutex = list_entry(convar_list, struct mutex, sleeped_thread_list);
+		list_del(&trans_mutex->sleeped_thread_list);
+		&trans_mutex->bound_thread->state = THREAD_STATE_RUN;
+		mutex_lock(trans_mutex);
 	}
 }

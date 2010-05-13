@@ -19,6 +19,8 @@
 struct mutex {
 	struct thread *bound_thread;
 	struct list_head *locked_thread_list;
+	/** Begin of the list for condition variable. */
+	struct list_head *sleeped_thread_list;
 	int lockscount;
 };
 

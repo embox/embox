@@ -13,6 +13,8 @@
 #include <kernel/mutex.h>
 #include <kernel/scheduler.h>
 
+struct mutex *idle_mutex;
+
 void mutex_lock(struct mutex *free_mutex) {
 	scheduler_lock();
 	if (free_mutex->bound_thread == NULL || free_mutex->bound_thread
@@ -22,8 +24,8 @@ void mutex_lock(struct mutex *free_mutex) {
 		scheduler_unlock();
 		return;
 	}
+	free_mutex->bound_thread->state = THREAD_STATE_WAIT;
 	list_add_tail(current_thread, free_mutex->locked_thread_list);
-	/*TODO Set the state of the current thread to waiting.*/
 	scheduler_unlock();
 	/* if the current thread reaches his time limit before calling scheduler_dispatch()
 	 * then scheduler_dispatch() will cause the current thread to loose some of its time
@@ -39,11 +41,12 @@ void mutex_unlock(struct mutex *locked_mutex) {
 			scheduler_lock();
 			struct thread* locked_thread
 				= list_entry(locked_mutex, struct mutex, locked_thread_list);
-			/*TODO Set the state of the locked_thread* thread to active
-			 there must be no interruptions to prevent this thread from locking again by
+			locked_thread->state = THREAD_STATE_RUN;
+			/*TODO
+			 There must be no interruptions to prevent this thread from locking again by
 			 mutex_lock(). It may create some trouble.
 			 */
-			list_del(locked_thread);
+			list_del(&locked_thread);
 			locked_mutex->bound_thread = NULL;
 			scheduler_unlock();
 		}

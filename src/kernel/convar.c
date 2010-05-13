@@ -10,13 +10,17 @@
 #include <kernel/convar.h>
 
 void canvar_init(struct condition_variable *variable) {
-	variable->list_begin_convar = &idle_thread->sleep_list;
+	variable->list_begin_convar = &idle_mutex->sleeped_thread_list;
 }
 
-int convar_add_sleep(struct thread *added_thread, struct condition_variable *variable) {
-	scheduler_add_sleep(added_thread, variable);
+int convar_wait(struct mutex *added_mutex, struct condition_variable *variable) {
+	scheduler_convar_wait(added_mutex, variable);
 }
 
-void convar_wake_up(struct condition_variable *variable) {
-	scheduler_wake_up(variable);
+void convar_signal(struct condition_variable *variable) {
+	scheduler_convar_signal(variable);
+}
+
+void convar_destroy(struct condition_variable *variable) {
+	variable->list_begin_convar = NULL;
 }

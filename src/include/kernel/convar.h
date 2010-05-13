@@ -9,7 +9,7 @@
 #ifndef CONVAR_H_
 #define CONVAR_H_
 
-#include <kernel/thread.h>
+#include <kernel/mutex.h>
 
 /**
  * Struct of condition variable.
@@ -26,14 +26,19 @@ void convar_init(void);
 
 /**
  * Add a thread to the list of sleeping threads.
- * @param removed_thread deleted thread.
+ * @param added_mutex is mutex for sleeping.
  * @retval result of scheduler_add_sleep.
  */
-int convar_add_sleep(struct thread *added_thread, struct condition_variable *variable);
+int convar_wait(struct mutex *added_mutex, struct condition_variable *variable);
 
 /**
  * Wake up of sleeping threads.
  */
-void convar_wake_up(struct condition_variable *variable);
+void convar_signal(struct condition_variable *variable);
+
+/**
+ * Destroy of condition variable.
+ */
+void convar_destroy(struct condition_variable *variable);
 
 #endif /* CONVAR_H_ */

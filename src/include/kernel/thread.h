@@ -53,10 +53,6 @@ struct thread {
 	 * with the same priority and "right" run_count.
 	 */
 	bool run_count;
-	/** List item, corresponding to thread in list of sleeping threads. */
-	struct list_head sleep_list;
-	/** List item, corresponding to thread in list of waiting threads. */
-	struct list_head wait_list;
 	/** Flag, which shows, whether tread can be changed. */
 	bool reschedule;
 	/** Thread's identifier. Unique for each thread. */
