@@ -28,51 +28,6 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 //-------------Utils---------------------------------------------------
 
-#if 0
-#define REGISTER_DEVICES(dev_table) dev_table, array_len(dev_table)
-
-
-/**
- * \struct PNP_DEVICE_INFO
- */
-typedef struct _PNP_DEVICE_INFO {
-	const uint8_t vendor_id;
-	const uint16_t device_id;
-	const char *name;
-} PNP_DEVICE_INFO;
-
-PNP_DEVICE_INFO gaisler_pnp_devices_table [] = {
-	#include <gaisler_pnp_devices_table.inc>
-};
-PNP_DEVICE_INFO esa_pnp_devices_table [] = {
-	#include <esa_pnp_devices_table.inc>
-};
-
-/**
- * \struct PNP_VENDOR_INFO
- */
-typedef struct _PNP_VENDOR_INFO {
-	const uint8_t vendor_id;
-	const char *name;
-	PNP_DEVICE_INFO *dev_table ;
-} PNP_VENDOR_INFO;
-
-
-static PNP_VENDOR_INFO const vendors_table[] = {
-	//#include <pnp_vendors_table.inc>
-};
-
-static PNP_DEVICE_INFO const devs_table[] = {
-	/*#include <gaisler_pnp_devices_table.inc>*/
-/*#include <gaisler_pnp_devices_table.inc>
-	,
-	#include <esa_pnp_devices_table.inc>*/
-};
-
-#define VENDORS_TABLE_LEN        array_len(vendors_table)
-#define DEVICES_TABLE_LEN        array_len(devs_table)
-#endif
-
 
 inline static void print_table_row(int n, int ven_id, int dev_id,
 		const char *ven_name, const char *dev_name, int ver, int irq) {
@@ -270,12 +225,14 @@ static void show_ahbm(int dev_num){
 	if(dev_num < 0) {
 		print_ahbm_pnp_devs();
 	}
+	return;
 	print_ahbm_pnp_dev(dev_num);
 }
 
 static void show_ahbsl(int dev_num){
 	if(dev_num < 0) {
 		print_ahbsl_pnp_devs();
+		return;
 	}
 	print_ahbsl_pnp_dev(dev_num);
 }
@@ -283,6 +240,7 @@ static void show_ahbsl(int dev_num){
 static void show_apb(int dev_num){
 	if (dev_num < 0) {
 		print_apb_pnp_devs();
+		return;
 	}
 	print_apb_pnp_dev(dev_num);
 }
