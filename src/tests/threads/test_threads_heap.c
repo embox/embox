@@ -12,10 +12,10 @@
 #include <assert.h>
 
 #define THREAD_STACK_SIZE 0x1000
-#define threads_count 10
+#define THREADS_COUNT 10
 
-static char stacks[threads_count][THREAD_STACK_SIZE];
-static struct thread *threads[threads_count];
+static char stacks[THREADS_COUNT][THREAD_STACK_SIZE];
+static struct thread *threads[THREADS_COUNT];
 
 EMBOX_TEST(run_test)
 ;
@@ -40,7 +40,7 @@ static int run_test() {
 	int i;
 	TRACE("\n");
 	scheduler_init();
-	for (i = 0; i < threads_count; i++) {
+	for (i = 0; i < THREADS_COUNT; i++) {
 		threads[i] = thread_create(threads_run, stacks[i] + THREAD_STACK_SIZE);
 		assert(threads[i] != NULL);
 		threads[i]->priority = i+1;

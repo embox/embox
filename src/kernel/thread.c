@@ -17,7 +17,7 @@
 #include <embox/unit.h>
 
 #define MAX_THREADS_COUNT 32
-#define THREAD_STACK_SIZE 0x1000
+#define THREAD_STACK_SIZE 0x10000
 
 EMBOX_UNIT_INIT(threads_init);
 
@@ -56,10 +56,10 @@ static int threads_init(void) {
 static void thread_run(int data) {
 	struct thread *thread = (struct thread *) data;
 
-	ipl_enable();
-
 	assert(thread != NULL);
-	TRACE("\nStarting %d\n", thread->id);
+	TRACE("\nStarting Thread %d\n", thread->id);
+
+	ipl_enable();
 	thread->run();
 	thread_stop(thread);
 
@@ -82,7 +82,7 @@ static struct thread * thread_new(void) {
 		if (((mask >> i) & 1) == 0) {
 			created_thread = threads_pool + i;
 			created_thread->id = i;
-			TRACE("Alloted thread ID = %d\n", created_thread->id);
+			//TRACE("Alloted thread ID = %d\n", created_thread->id);
 			mask |= (1 << i);
 			return created_thread;
 		}
@@ -99,8 +99,7 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	created_thread->run = run;
 	created_thread->priority = 1;
 	context_init(&created_thread->context, true);
-	context_set_entry(&created_thread->context, &thread_run,
-			(int) created_thread);
+	context_set_entry(&created_thread->context, &thread_run, (int) created_thread);
 	context_set_stack(&created_thread->context, stack_address);
 	return created_thread;
 }

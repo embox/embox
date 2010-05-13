@@ -39,7 +39,7 @@ static void plus_run(void) {
  */
 static void minus_run(void) {
 	int i;
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 110; i++) {
 		TRACE("- ");
 		thread_yield();
 	}
@@ -50,7 +50,7 @@ static void minus_run(void) {
  */
 static void mult_run(void) {
 	int i;
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 120; i++) {
 		TRACE("* ");
 		thread_yield();
 	}

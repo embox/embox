@@ -74,7 +74,7 @@ static void main_run(void) {
 	assert(plus_thread != NULL);
 	thread_start(plus_thread);
 
-	for (i = 1; i < 100; i++) {
+	for (i = 1; i < 300; i++) {
 		TRACE("%d ", i);
 	}
 }

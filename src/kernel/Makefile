@@ -12,7 +12,7 @@ $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 
-$_MODS += irq timer printk softirq thread job
+$_MODS += irq timer printk softirq thread scheduler job
 
 $_SRCS-main += main.c
 $_SRCS-main += init.c
@@ -25,13 +25,15 @@ $_DEPS-main += printk
 $_DEPS-main += softirq
 
 ifdef CONFIG_THREAD
-$_DEPS-main += core.kernel.thread
+$_DEPS-main += thread scheduler
 $_DEPS-main += embox.hal.context
 $_SRCS-thread += mutex.c
 $_SRCS-thread += thread.c
-$_SRCS-thread += heap_scheduler.c
 $_SRCS-thread += thread_heap.c
 $_SRCS-thread += convar.c
+
+$_SRCS-scheduler += heap_scheduler.c
+
 endif
 
 ifdef CONFIG_MMU_SUPPORT

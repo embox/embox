@@ -46,6 +46,13 @@ struct thread {
 	struct list_head sched_list;
 	/** Index of thread in heap. */
 	int heap_index;
+	/**
+	 * For each priority there is a state.
+	 * We can start a thread iff his run_count equals to
+	 * priority_state of his priority or there is no threads
+	 * with the same priority and "right" run_count.
+	 */
+	bool run_count;
 	/** List item, corresponding to thread in list of sleeping threads. */
 	struct list_head sleep_list;
 	/** List item, corresponding to thread in list of waiting threads. */

@@ -17,6 +17,8 @@
 #include <hal/ipl.h>
 #include <embox/unit.h>
 
+//EMBOX_UNIT_INIT(scheduler_init);
+
 /** Timer, which calls scheduler_tick. */
 #define THREADS_TIMER_ID 17
 
@@ -48,12 +50,10 @@ int scheduler_init(void) {
  * @param id nothing significant
  */
 static void scheduler_tick(uint32_t id) {
-	//TRACE("\nTick\n");
 	current_thread->reschedule = true;
 }
 
 void scheduler_start(void) {
-	//TRACE("\nStart scheduler\n");
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
 	scheduler_unlock();
 }
@@ -135,6 +135,6 @@ void scheduler_wake_up(void) {
 	while (list_begin_wait->next != NULL) {
 		//sleep to wait
 		list_add_tail(list_begin_wait->next, list_begin_sleep);
-		list_del(&list_begin_wait->next);
+		list_del(list_begin_wait->next);
 	}
 }

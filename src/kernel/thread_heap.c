@@ -9,10 +9,21 @@
 #include <kernel/thread_heap.h>
 
 /** Maximal count of threads. */
-#define MAX_THREAD_COUNT 1000
+#define MAX_THREAD_COUNT 0x400
+/** Maximal value of priority. */
+#define MAX_PRIORITY 256
 
 /** Heap of executed threads. */
 static struct thread *threads[MAX_THREAD_COUNT];
+
+/**
+ * For each priority there is a state.
+ * We can start a thread iff his run_count equals to
+ * priority_state of his priority or there is no threads
+ * with the same priority and "right" run_count.
+ * When there is no such threads we change priority_state of this priority
+ */
+static bool priority_state[MAX_PRIORITY];
 
 /** Count of currently executed threads.  */
 static int threads_count;
@@ -48,13 +59,17 @@ static void swap(int i, int j) {
 /**
  * Compares priorities of two threads.
  *
- * @param i index of the first thread
- * @param j index of the second thread
- * @return true if first thread's priority is greater then second one's.
+ * @param first first thread
+ * @param second second thread
+ * @return true if first thread's priority is greater then second one's
+ * taking into consideration their run_states.
  * @return false otherwise.
  */
-static inline bool greater(int i, int j) {
-	return (threads[i]->priority > threads[j]->priority);
+static inline bool greater(struct thread *first, struct thread *second) {
+	return (first->priority > second->priority ||
+			(first->priority == second->priority &&
+			(first->run_count ^ second->run_count) &&
+			first->run_count == priority_state[first->priority]));
 }
 
 /**
@@ -62,13 +77,17 @@ static inline bool greater(int i, int j) {
  * @param s the lowest unbalanced vertex.
  */
 static void restore_up(int s) {
+	threads[0] = threads[s];
 	for (; s > 1; s /= 2) {
-		if (greater(s, s / 2)) {
-			swap(s, s / 2);
+		if (greater(threads[0], threads[s / 2])) {
+			threads[s] = threads[s / 2];
+			threads[s]->heap_index = s;
 		} else {
 			break;
 		}
 	}
+	threads[s] = threads[0];
+	threads[s]->heap_index = s;
 }
 
 /**
@@ -77,20 +96,24 @@ static void restore_up(int s) {
  */
 static void restore_down(int s) {
 	int maxi;
+	threads[0] = threads[s];
 	for (; left(s) <= threads_count; s = maxi) {
-		maxi = s;
-		if (greater(left(s), maxi)) {
-			maxi = left(maxi);
+		maxi = 0;
+		if (greater(threads[left(s)], threads[0])) {
+			maxi = left(s);
 		}
-		if (right(s) <= threads_count && greater(right(s), maxi)) {
+		if (right(s) <= threads_count && greater(threads[right(s)], threads[maxi])) {
 			maxi = right(s);
 		}
-		if (maxi != s) {
-			swap(s, maxi);
+		if (maxi != 0) {
+			threads[s] = threads[maxi];
+			threads[s]->heap_index = s;
 		} else {
 			break;
 		}
 	}
+	threads[s] = threads[0];
+	threads[s]->heap_index = s;
 }
 
 void heap_insert(struct thread *thread) {
@@ -107,7 +130,7 @@ void heap_delete(struct thread *thread) {
 	if (index == threads_count + 1) {
 		return;
 	}
-	if (index > 1 && greater(index, index / 2)) {
+	if (index > 1 && greater(threads[index], threads[index / 2])) {
 		restore_up(index);
 	} else {
 		restore_down(index);
@@ -115,9 +138,14 @@ void heap_delete(struct thread *thread) {
 }
 
 struct thread *heap_extract(void) {
+	struct thread *result = threads[1];
 	swap(1, threads_count);
 	threads_count--;
 	restore_down(1);
+	result->run_count ^= 1;
+	if (result->run_count == priority_state[result->priority]) {
+		priority_state[result->priority] ^= 1;
+	}
 	return threads[threads_count + 1];
 }
 
