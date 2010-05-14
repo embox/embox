@@ -33,7 +33,7 @@ static int run() {
 
 	if (&__stack > (&_text_start + 0x1000000)) {
 		/* if have to map data sections */
-		mmu_map_region((mmu_ctx_t)0, _data_start, _data_start, 0x1000000,
+		mmu_map_region((mmu_ctx_t)0, &_data_start, &_data_start, 0x1000000,
 				MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
 	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr, 0xf0080000, 0x40000,

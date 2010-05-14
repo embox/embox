@@ -152,7 +152,7 @@ void table_free(unsigned long *table, int level) {
 #endif
 	for (i = 0; i < sizes[level-1]; i++ ) {
 		unsigned long t = *(table + i);
-		if (t & MMU_ET_PTD != 0) {
+		if (0 != (t & MMU_ET_PTD)) {
 #ifdef DEBUG
 			printf("on %x to %x\n", table + i, (t & MMU_PTD_PMASK) << 4);
 #endif
@@ -161,7 +161,7 @@ void table_free(unsigned long *table, int level) {
 	}
 	((page_header_t *) page)->free += size;
 	if (((page_header_t *) page)->free == PAGE_SIZE - PAGE_HEADER_SIZE && page != cur_page) {
-		mypage_free(page);
+		mypage_free((pmark_t *)page);
 	}
 }
 
@@ -181,7 +181,7 @@ static unsigned long offsets[] = {
 	MMU_PTABLE_MASK_OFFSET,
 	0
 };
-
+/*
 static unsigned long masks[] = {
 	0xffffffff,
 	MMU_GTABLE_MASK,
@@ -189,10 +189,10 @@ static unsigned long masks[] = {
 	MMU_PTABLE_MASK,
 	MMU_PAGE_MASK
 };
-
+*/
 static unsigned long *context[] = {NULL, NULL, NULL, NULL, NULL };
 
-typedef void (*setter)(unsigned long ptd, unsigned long pte);
+typedef void (*setter)(pte_t * ptd, pte_t * pte);
 
 static setter setters[] = {
 	NULL,
@@ -225,6 +225,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	unsigned long pte;
 	context[1] = (unsigned long *) (((*(((unsigned long *) cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4));
 
+	printf("***\n");
 	/* assuming addresses aligned to page size */
 	phy_addr &= ~MMU_PAGE_MASK;
 	virt_addr &= ~MMU_PAGE_MASK;
@@ -237,11 +238,11 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	while ( treg_size > 0) {
 		for (cur_level = 1; cur_level < 4; cur_level++) {
 			cur_offset = ((virt_addr & masks[cur_level]) >> offsets[cur_level]);
-#ifdef DEBUG
+#ifndef DEBUG
 			printf("level %d; vaddr 0x%8x; paddr 0x%8x; context 0x%8x\n",
-				cur_level, virt_addr, phy_addr, context[cur_level]);
+				cur_level, (uint32_t)virt_addr, (uint32_t)phy_addr, context[cur_level]);
 #endif
-			/* if mapping vaddr is alligned and if required size is pretty fit */
+			/* if mapping vaddr is aligned and if required size is pretty fit */
 			if ((virt_addr % levels[cur_level] == 0) &&
 			       (levels[cur_level] <= treg_size)) {
 			    break;
@@ -249,13 +250,15 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 			/* else route - will do more fragmentation */
 			if (*(context[cur_level] + cur_offset) == 0) {
 				/* there is no middle page - creating */
-				pmark_t *table = table_alloc(MMU_PMD_TABLE_SIZE);
+				pmark_t *table = (pmark_t *)table_alloc(MMU_PMD_TABLE_SIZE);
 				if (table == NULL) {
 					return -1;
 				}
 				/* setting it's pointer to a prev level page */
 				(*setters[cur_level])(context[cur_level] + cur_offset,
 					(void *) table);
+				printf("context[%d] = 0x%X\n",
+								cur_level, table);
 			}
 			/* going to the next level map */
 			pte = *((unsigned long *) context[cur_level] + cur_offset);
@@ -336,7 +339,7 @@ void mmu_delete_context(mmu_ctx_t ctx) {
 #ifdef DEBUG
    printf("delete %d\n",ctx);
 #endif
-   table_free(((unsigned long) *( cur_env->ctx + ctx) & MMU_CTX_PMASK) << 4, 1);
+   table_free((unsigned long *) (((unsigned long) (*( cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4), 1);
 }
 
 void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {

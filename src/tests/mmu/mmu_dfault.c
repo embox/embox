@@ -20,11 +20,22 @@
 EMBOX_TEST(run);
 
 #define MMU_DFAULT 0x09
+#define MMU_IFAULT 0x01
 
 static char addr;
 
 /* MMU data access exception handler */
 static int dfault_handler(uint32_t trap_nr, void *data) {
+	printf("mmu dfault");
+	while(1);
+
+	return 0;
+}
+
+/* MMU data access exception handler */
+static int ifault_handler(uint32_t trap_nr, void *data) {
+	printf("mmu ifault");
+	while(1);
 	return 0;
 }
 
@@ -46,7 +57,7 @@ static int run() {
 
 	if (&__stack > (&_text_start + 0x1000000)) {
 		/* if have to map data sections */
-		mmu_map_region((mmu_ctx_t)0, _data_start, _data_start,
+		mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_start, (vaddr_t)&_data_start,
 				0x1000000, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
 
@@ -55,18 +66,20 @@ static int run() {
 
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
 
-	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr, 0xf0080000, 0x40000,
-			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_IFAULT, ifault_handler);
+
+	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr, 0xf0000000, 0x1000000,
+			MMU_PAGE_CACHEABLE /*| MMU_PAGE_WRITEABLE */| MMU_PAGE_EXECUTEABLE);
 
 	mmu_on();
 
-	*((volatile unsigned long *)0xf0080000) = 0x11111111;
+	*((volatile unsigned long *)0xf0000000) = 0x11111111;
 
-	mmu_page_set_flags((mmu_ctx_t)0, 0xf0080000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
+	//mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
 
 	/* Data access exception */
-	*((volatile unsigned long *)0xf0080000) = 0x77777777;
-	var = *((volatile unsigned long *)0xf0080000);
+	*((volatile unsigned long *)0xf0000000) = 0x77777777;
+	var = *((volatile unsigned long *)0xf0000000);
 
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
