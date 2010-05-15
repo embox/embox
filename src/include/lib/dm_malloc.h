@@ -4,57 +4,59 @@
  * @date 02.05.2010
  * @author Michail Skorginskii
  */
-#ifndef __DYNALLOC_H
-#define __DYNALLOC_H
+#ifndef __DM_MALLOC_H
+#define __DM_MALLOC_H
 
 /*TODO: write doxygen comments*/
 /*TODO: make CONFIG macros*/
 
-/*TODO: write test*/
-
-/*
- * mem block struct
- * TODO: comments
- * TODO: typedef - wtf
- */
 #include <lib/list.h>
-/*
- * TODO: free to bool. bool is too big for this thing
+
+/* PROC means that block is used by some process
+ * HOLE means that block is free
  */
+#define REPEAT(times) \
+	for (int INC_REP=0; INC_REP < times; INC_REP++)
+#define PROC 0
+#define HOLE 1
 typedef struct mem_block {
-	char 	free;
-	void    *adr;
-	size_t  size;
-	struct mem_block *next;
-	struct mem_block *prev;
+	struct list_head *next, *prev;
+	void   *adr;
+	size_t size;
+	bool free;
 } mem_block_t;
-/*  */
-/**
- * all memory
- */
-static mem_block_t *mem;
-static mem_block_t *mem_h;
 
 /**
  * allocation init
- * nothing returns, just initiliaze
+ * allocates 8 pages to make initial list
  */
-void dm_malloc_init(void);
+int dm_malloc_init(void);
 
 /**
  * dynamic allocator
  * return pointer to mem vector
+ * or return 0 if there are no memory
  */
-void* dm_alloc(size_t size);
+void* dm_malloc(size_t size);
 
 /**
- * TODO: write comments
- *
+ * free memory at *ptr
  */
 void dm_free(void *ptr);
 
 /* TODO: write calloc and realloc functions
  * TODO: google what is calloc and realloc
  */
-#endif /* __DYNALLOC_H_ */
 
+#endif /* __DM_MALLOC_H_ */
+
+/* TODOfixed: write test
+ * TODOnotneed: comments
+ * TODOfixed: typedef - wtf
+ * TODOfixed: think about exceptional situation
+ * 		 and write code
+ * TODOfixed write .h
+ * TODOfixed write Makefile: we don't need a make file
+ * TODOfixed refactor init function
+ * TODOfixed allocate wn_page's
+ */

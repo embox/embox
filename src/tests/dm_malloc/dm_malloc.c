@@ -23,10 +23,21 @@ typedef struct test_struct
 
 static int run(void) {
 	int result = 0;
+	int g;
+
 	test_struct_t *p;
-	p = dm_malloc(sizeof(test_struct_t));
-	p->i = 0;
-	TRACE(p->i);
+	p = (test_struct_t*) dm_malloc( sizeof(test_struct_t) );
+
+	printf("\n Allocated adress is %d", dm_malloc( 1 ) );
+
+	if (p == 0) {
+		return -1;
+	}
+
+	p->i = 666;
+	TRACE("\nTrace: ");
+	g = p->i;
+	printf("%d\n", p->i);
 	dm_free(p);
 
 	return result;
