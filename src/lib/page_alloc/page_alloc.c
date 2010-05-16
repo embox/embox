@@ -19,7 +19,7 @@ extern char _heap_end;
 // CONFIG_PAGE_SIZE
 
 #ifndef PAGE_QUANTITY
-#define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
+# define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
 #endif
 
 int page_alloc_hasinit = 0;
