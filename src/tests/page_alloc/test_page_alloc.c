@@ -135,7 +135,7 @@ static int run(void) {
 
 	} while (first!=last); /* queue is not empty */
 
-	printf("allowed %d free %d: ",callowed,cfree);
+	printf("was allowed %d was free %d: ",callowed,cfree);
 
 	return callowed == cfree ? 0 : 1;
 }
