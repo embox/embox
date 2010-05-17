@@ -173,7 +173,7 @@ static unsigned long levels[] = {
 	MMU_PAGE_MASK + 1,
 	1
 };
-
+/*
 static unsigned long offsets[] = {
 	32,
 	MMU_GTABLE_MASK_OFFSET,
@@ -181,7 +181,7 @@ static unsigned long offsets[] = {
 	MMU_PTABLE_MASK_OFFSET,
 	0
 };
-/*
+
 static unsigned long masks[] = {
 	0xffffffff,
 	MMU_GTABLE_MASK,
@@ -225,7 +225,6 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	unsigned long pte;
 	context[1] = (unsigned long *) (((*(((unsigned long *) cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4));
 
-	printf("***\n");
 	/* assuming addresses aligned to page size */
 	phy_addr &= ~MMU_PAGE_MASK;
 	virt_addr &= ~MMU_PAGE_MASK;
@@ -238,7 +237,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	while ( treg_size > 0) {
 		for (cur_level = 1; cur_level < 4; cur_level++) {
 			cur_offset = ((virt_addr & masks[cur_level]) >> offsets[cur_level]);
-#ifndef DEBUG
+#ifdef DEBUG
 			printf("level %d; vaddr 0x%8x; paddr 0x%8x; context 0x%8x\n",
 				cur_level, (uint32_t)virt_addr, (uint32_t)phy_addr, context[cur_level]);
 #endif
@@ -257,8 +256,6 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 				/* setting it's pointer to a prev level page */
 				(*setters[cur_level])(context[cur_level] + cur_offset,
 					(void *) table);
-				printf("context[%d] = 0x%X\n",
-								cur_level, table);
 			}
 			/* going to the next level map */
 			pte = *((unsigned long *) context[cur_level] + cur_offset);

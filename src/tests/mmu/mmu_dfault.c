@@ -22,7 +22,10 @@ EMBOX_TEST(run);
 #define MMU_DFAULT 0x09
 #define MMU_IFAULT 0x01
 
-static char addr;
+#define VADDR(phyaddr) ((0xf0000000 - (uint32_t)(&_data_start)) \
+		+ ((uint32_t)(phyaddr) - (uint32_t)(&_data_start)))
+
+static uint32_t addr;
 
 /* MMU data access exception handler */
 static int dfault_handler(uint32_t trap_nr, void *data) {
@@ -44,6 +47,8 @@ static int run() {
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
 	unsigned long var;
+	//uint32_t vaddr = ((0xf0000000 - (uint32_t)(&_data_start)) + ((uint32_t)(&addr) - (uint32_t)(&_data_start)));
+	uint32_t vaddr = VADDR(&addr);
 
 	mmu_save_env(&prev_mmu_env);
 	mmu_set_env(testmmu_env());
@@ -68,18 +73,19 @@ static int run() {
 
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_IFAULT, ifault_handler);
 
-	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr, 0xf0000000, 0x1000000,
-			MMU_PAGE_CACHEABLE /*| MMU_PAGE_WRITEABLE */| MMU_PAGE_EXECUTEABLE);
+	mmu_map_region((mmu_ctx_t)0, (paddr_t)(&addr), 0xf0000000, 0x1000,
+			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
 	mmu_on();
 
-	*((volatile unsigned long *)0xf0000000) = 0x11111111;
+	*((volatile uint32_t *)vaddr) = 0x11111111;
 
-	//mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
+
+	mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
 
 	/* Data access exception */
-	*((volatile unsigned long *)0xf0000000) = 0x77777777;
-	var = *((volatile unsigned long *)0xf0000000);
+	*((volatile uint32_t *)vaddr) = 0x77777777;
+	var = *((volatile uint32_t *)vaddr);
 
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
