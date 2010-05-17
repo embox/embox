@@ -10,6 +10,8 @@
 #define _SCHEDULER_H_
 
 #include <kernel/thread.h>
+#include <kernel/convar.h>
+#include <kernel/mutex.h>
 
 /**
  * Initializes scheduler.
@@ -59,12 +61,12 @@ int scheduler_remove(struct thread *removed_thread);
  * @retval 0 if thread was successfully added.
  * @retval -EINVAL if @c added_thread is NULL or &idle_thread.
  */
-int scheduler_add_sleep(struct thread *added_thread);
+int scheduler_convar_wait(struct mutex *added_mutex, struct condition_variable *variable);
 
 /**
  * Transfer threads from sleeping list to list of waiting.
  */
-void scheduler_wake_up(void);
+void scheduler_convar_signal(struct condition_variable *variable);
 
 
 #endif /* SCHEDULER_H_ */

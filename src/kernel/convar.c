@@ -8,11 +8,11 @@
 
 #include <kernel/scheduler.h>
 #include <kernel/convar.h>
-
 void canvar_init(struct condition_variable *variable) {
+#if 0
 	variable->list_begin_convar = &idle_mutex->sleeped_thread_list;
+#endif
 }
-
 int convar_wait(struct mutex *added_mutex, struct condition_variable *variable) {
 	scheduler_convar_wait(added_mutex, variable);
 }

@@ -31,14 +31,20 @@ static int preemption_count = 1;
 
 /** List item, pointing at begin of the list. */
 static struct list_head *list_begin_sched;
+#if 0
 /** List item, pointing at begin of the (waiting) list. */
 static struct list_head *list_begin_wait;
+/** List item, pointing at begin of the (sleeping) list. */
+static struct list_head *list_begin_sleep;
+#endif
 
 int scheduler_init(void) {
 	INIT_LIST_HEAD(&idle_thread->sched_list);
 	current_thread = idle_thread;
 	list_begin_sched = &idle_thread->sched_list;
+#if 0
 	list_begin_wait = &idle_thread->wait_list;
+#endif
 	current_thread->reschedule = false;
 	return 0;
 }
@@ -124,6 +130,7 @@ int scheduler_remove(struct thread *removed_thread) {
 }
 
 int scheduler_convar_wait(struct mutex *added_mutex, struct condition_variable *variable) {
+#if 0
 	if (added_mutex == NULL || added_mutex == idle_mutex) {
 		return -EINVAL;
 	}
@@ -131,9 +138,11 @@ int scheduler_convar_wait(struct mutex *added_mutex, struct condition_variable *
 	list_add_tail(&added_mutex->sleeped_thread_list, variable->list_begin_convar);
 	mutex_unlock(added_mutex);
 	return 0;
+#endif
 }
 
 void scheduler_convar_signal(struct condition_variable *variable) {
+#if 0
 	struct mutex trans_mutex;
 	struct list_head *convar_list;
 	convar_list = &variable->list_begin_convar;
@@ -144,4 +153,5 @@ void scheduler_convar_signal(struct condition_variable *variable) {
 		&trans_mutex->bound_thread->state = THREAD_STATE_RUN;
 		mutex_lock(trans_mutex);
 	}
+#endif
 }
