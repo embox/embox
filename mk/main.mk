@@ -44,7 +44,6 @@ AUTOCONF_DIR   := $(CODEGEN_DIR)
 
 RM     := rm -f
 CP     := cp
-EDIT   := vim
 PRINTF := printf
 SHELL  := bash
 
@@ -225,9 +224,12 @@ menuconfig: PROFILE := `dialog \
                 --radiolist "Select profile to load:" 10 40 \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
+menuconfig: EDIT := `dialog \
+                --stdout --backtitle "Editor selection" \
+                --radiolist "Select editor:" 10 40 2 "emacs -nw" "" on vim "" off`
 menuconfig:
 	$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
-	@$(EDIT) -nw $(CONF_DIR)/*.conf
+	@$(EDIT) $(CONF_DIR)/*.conf
 
 xconfig: PROJECT := `Xdialog \
                 --stdout --backtitle "Configuration template selection" \
@@ -239,6 +241,9 @@ xconfig: PROFILE := `Xdialog \
                 --radiolist "Select profile to load:" 20 40 \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
+xconfig: EDIT := `Xdialog \
+                --stdout --backtitle "Editor selection" \
+                --radiolist "Select editor:" 20 40 2 emacs "" on gvim "" off`
 xconfig:
 	$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) $(CONF_DIR)/*.conf
