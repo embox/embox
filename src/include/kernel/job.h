@@ -29,6 +29,6 @@ extern int job_exec(int (*exec)(int argsc, char **argsv), int argsc, char **args
 /**
  * Restore the point after ctrl+f
  */
-extern void job_abort(void);
+extern void job_abort(int);
 
 #endif /* JOB_H_ */

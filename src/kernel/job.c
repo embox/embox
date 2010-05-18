@@ -28,7 +28,7 @@ int job_exec(int (*exec)(int argsc, char **argsv), int argsc,char **argsv) {
 	}
 }
 
-void job_abort(){
+void job_abort(int i){
 	// TODO not always calling longjmp. -- Alexey
 	longjmp(current_job, LONGJMP_ABORT);
 }
