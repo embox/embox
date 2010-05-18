@@ -12,8 +12,10 @@
 
 #include <lib/page_alloc.h>
 
-#define TEST_COUNT 0x100
-#define TEST_STACK_SIZE	(2*TEST_COUNT+2)
+#define VST
+
+#define TEST_COUNT 4
+#define TEST_STACK_SIZE	(20*TEST_COUNT+2)
 
 #if 0
 //#define DONOTUSE_PAGE_ALLOC           /* for testing test of page alloc =) */
@@ -107,6 +109,52 @@ void memory_check() {
 EMBOX_TEST(run);
 
 static int run(void) {
+#ifdef VST
+
+#ifndef EXTENDED_TEST
+extern char _heap_start;
+extern char _heap_end;
+#endif
+
+#define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
+
+	void * pointers[TEST_STACK_SIZE];
+	void **first,**last;
+	int test_id=0;
+	int i;
+	int callowed=0,cfree=0;
+	first = pointers; last = pointers;
+
+	printf("\nTest page_alloc. Size of pool: %d (pages).\n",PAGE_QUANTITY);
+
+	/* push 2 pop 1 - while it is best idea */
+
+	do {
+		if (++test_id<TEST_COUNT) {
+
+			for (i=0;i<8;++i) {
+
+				if (NULL == (*last = page_alloc())) {
+					printf("Alloc page: %d\n",NULL);
+				} else {
+					printf("Alloc page: %d\n",last);
+					last = ++last < pointers+TEST_STACK_SIZE ? last : pointers;
+					++callowed;
+				}
+			}
+
+		}
+		printf("Free page: %d\n",first);
+		page_free(*first);
+		first = ++first < pointers+TEST_STACK_SIZE ? first : pointers;
+		cfree += 1;
+
+	} while (first!=last); /* queue is not empty */
+
+	printf("was allowed %d was free %d: ",callowed,cfree);
+
+	return callowed == cfree ? 0 : 1;
+#else
 	void * pointers[TEST_STACK_SIZE];
 	void **first,**last;
 	int test_id=0;
@@ -138,5 +186,6 @@ static int run(void) {
 	printf("was allowed %d was free %d: ",callowed,cfree);
 
 	return callowed == cfree ? 0 : 1;
+#endif
 }
 
