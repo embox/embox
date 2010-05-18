@@ -6,6 +6,7 @@
 
 #include <embox/test.h>
 #include <lib/dm_malloc.h>
+#include <lib/list.h>
 
 EMBOX_TEST(run);
 
@@ -16,29 +17,29 @@ EMBOX_TEST(run);
  * @retval 0 on success
  * @retval nonzero on failure
  */
-typedef struct test_struct
-{
-	int i;
-} test_struct_t;
+struct list {
+	struct list_head *next, *prev;
+	int p;
+};
+
+static LIST_HEAD(int_list);
 
 static int run(void) {
 	int result = 0;
-	int g;
+	int i;
+	struct list *tmp;
 
-	test_struct_t *p;
-	p = (test_struct_t*) dm_malloc( sizeof(test_struct_t) );
-
-	printf("\n Allocated adress is %d", dm_malloc( 1 ) );
-
-	if (p == 0) {
-		return -1;
+	putchar('\n');
+	for(i = 0; i <= 4; i++) {
+		tmp = dm_malloc(sizeof(struct list));
+		tmp->p = i*2;
+		list_add( (struct list_head*) tmp, &int_list);
+		printf("element %d added... Equal %d\n", i, tmp->p);
 	}
 
-	p->i = 666;
-	TRACE("\nTrace: ");
-	g = p->i;
-	printf("%d\n", p->i);
-	dm_free(p);
-
+	list_for_each( (struct list_head*) tmp, &int_list) {
+		printf("element %d equal %d\n",tmp->p/2, tmp->p);
+	}
+	TRACE("\tTEST ");
 	return result;
 }

@@ -54,9 +54,10 @@ void dm_free(void *ptr);
  * TODOnotneed: comments
  * TODOfixed: typedef - wtf
  * TODOfixed: think about exceptional situation
- * 		 and write code
+ * 		and write code
  * TODOfixed write .h
  * TODOfixed write Makefile: we don't need a make file
  * TODOfixed refactor init function
  * TODOfixed allocate wn_page's
+ * TODOfixed think what alg is more good
  */
