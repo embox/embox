@@ -19,8 +19,10 @@
 	for (int INC_REP=0; INC_REP < times; INC_REP++)
 #define PROC 0
 #define HOLE 1
+
 typedef struct mem_block {
 	struct list_head *next, *prev;
+	/* remove that */
 	void   *adr;
 	size_t size;
 	bool free;

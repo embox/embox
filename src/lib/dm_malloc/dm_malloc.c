@@ -137,15 +137,30 @@ void* dm_malloc(size_t size) {
  */
 void dm_free(void *ptr) {
 	/*TODO if there are neiboors, we must merge them */
-	struct list_head *iterator;
-	mem_block_t *block;
+	mem_block_t *iterator;
+	struct list_head *tmp;
 
-	list_for_each(iterator, &mem_list) {
-		if ( ((mem_block_t*)iterator)->adr == ptr ) {
-			block = (mem_block_t*)iterator;
+	list_for_each((struct list_head*)iterator, &mem_list) {
+		if ( iterator->adr == ptr ) {
+
+			// one direction
+			tmp = (struct list_head *) iterator;
+			while ( ((mem_block_t *)tmp->next)->free != PROC) {
+				tmp = tmp->next;
+				iterator->size = iterator->size + ((mem_block_t *)tmp)->size;
+				list_del(tmp);
+			}
+			iterator->free = HOLE;
+			// second direction
+			tmp = (struct list_head*) iterator;
+			while ( ((mem_block_t *)tmp->prev)->free != PROC) {
+				tmp = tmp->prev;
+				((mem_block_t *)tmp)->size += iterator->size;
+				iterator = tmp;
+				list_del(tmp->next);
+			}
 			break;
 		}
-		block->free = HOLE;
 	}
 }
 
