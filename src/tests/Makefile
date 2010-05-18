@@ -4,3 +4,13 @@ $_SUBDIRS := $(filter-out _template,$($_SUBDIRS))
 $_PACKAGE := embox.test
 
 $_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
+
+# Util for adding new test.
+
+_TEST_TEMPLATE = _template
+
+add_test:
+	@[[ -d $(TEST_NAME) ]] || mkdir -p $(TEST_NAME)
+	cat $(_TEST_TEMPLATE)/Makefile > $(TEST_NAME)/Makefile
+	cat $(_TEST_TEMPLATE)/test.c > $(TEST_NAME)/$(TEST_NAME).c
+	svn add $(TEST_NAME)
