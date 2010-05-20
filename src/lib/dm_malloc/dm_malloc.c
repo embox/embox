@@ -14,7 +14,7 @@
 #include <lib/page_alloc.h>
 #include <lib/multipage_alloc.h>
 #include <lib/dm_malloc.h>
-
+#include <lib/list.h>
 /* TODO: think about page free
  * There shoud be limit of memory
  * We shoud know what block is the pages
@@ -139,8 +139,10 @@ void dm_free(void *ptr) {
 	/*TODO if there are neiboors, we must merge them */
 	mem_block_t *iterator;
 	struct list_head *tmp;
+	struct list_head *p;
 
-	list_for_each((struct list_head*)iterator, &mem_list) {
+	list_for_each(p, &mem_list) {
+		iterator = (mem_block_t *)p;
 		if ( iterator->adr == ptr ) {
 
 			// one direction
