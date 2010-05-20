@@ -11,6 +11,7 @@
 #include <embox/kernel.h>
 #include <drivers/amba_registry.h>
 #include <embox/unit.h>
+#include <linux/init.h>
 
 EMBOX_UNIT_INIT(init);
 
@@ -52,7 +53,7 @@ static inline amba_registry_device_entry_t *find_device_entry(
 	return NULL;
 }
 
-static inline void add_dev_to_ven(const amba_registry_device_info_t * dev,
+inline void add_dev_to_ven(const amba_registry_device_info_t * dev,
 		amba_registry_device_entry_t *entry) {
 	amba_registry_vendor_entry_t *ven_entry;
 	if( NULL == (ven_entry = find_vendor_entry(dev->ven_id))) {
@@ -66,7 +67,7 @@ static inline void add_dev_to_ven(const amba_registry_device_info_t * dev,
 	list_add((struct list_head *) entry, &ven_entry->dev_list);
 }
 
-static int init(void) {
+static int __init init(void) {
 	int i;
 	for (i = 0; i < array_len(vendors_table); i++) {
 		(&vendors_pool[i])->ven_info

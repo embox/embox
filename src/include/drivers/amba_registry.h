@@ -73,4 +73,10 @@ extern char* amba_registry_get_ven_name(uint8_t ven_id);
  */
 extern char* amba_registry_get_dev_name(uint8_t ven_id, uint16_t dev_id);
 
+/**
+ * Add device to vendor list.
+ */
+void add_dev_to_ven(const amba_registry_device_info_t * dev,
+                amba_registry_device_entry_t *entry);
+
 #endif /* AMBA_REGISTRY_H_ */
