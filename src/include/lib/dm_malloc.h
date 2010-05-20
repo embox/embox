@@ -10,7 +10,6 @@
 /*TODO: write doxygen comments*/
 /*TODO: make CONFIG macros*/
 
-#include <lib/list.h>
 
 /* PROC means that block is used by some process
  * HOLE means that block is free
