@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <types.h>
 
-#include <asm/ptrace.h>
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <kernel/irq.h>
