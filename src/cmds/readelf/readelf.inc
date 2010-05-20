@@ -13,4 +13,4 @@
 "\t-a \t show rela\n"
 "\t-m \t show symbol table\n"
 "AUTHORS\n"
-"\t<author>"
+"\tAnatoly Trosinenko, Aleksandr Kirov"
