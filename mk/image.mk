@@ -90,10 +90,10 @@ OBJ_SUBDIRS := \
 $(OBJS_ALL): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
 
 $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.c
-	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) -std=gnu99 -c $<
+	$(CC) -o $@ $(CFLAGS) $(CPPFLAGS) -std=gnu99 -c $<
 
 $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
-	$(CC) -o $@ $(CPPFLAGS) $(CFLAGS) -c $<
+	$(CC) -o $@ $(CFLAGS) $(CPPFLAGS) -c $<
 
 $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
 	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$N		%) \
