@@ -44,6 +44,7 @@
 #define MSR_BE_MASK    REVERSE_MASK(MSR_BE_BIT)
 #define MSR_C_MASK     REVERSE_MASK(MSR_C_BIT)
 
+#define XILINX_USE_MSR_INSTR
 /* code from u-boot (modified)*/
 /* use machine status register USE_MSR_REG */
 #ifdef XILINX_USE_MSR_INSTR
@@ -69,7 +70,6 @@ static inline void msr_clr(uint32_t val) {
  * @val bit's mask want to be set
  */
 static inline void msr_set(uint32_t val) {
-#if 0
 	register unsigned tmp;
 	__asm__ __volatile__ (
 			"mfs	%0, rmsr;\n\t"
@@ -79,14 +79,12 @@ static inline void msr_set(uint32_t val) {
 			: "=r" (tmp)
 			: "r" (val)
 			: "memory");
-#endif
 }
 /**
  * Clears some bits in msr register
  * @val bit's mask want to be cleared
  */
 static inline void msr_clr(uint32_t val) {
-#if 0
 	register unsigned tmp;
 	__asm__ __volatile__ (
 			"mfs	%0, rmsr;\n\t"
@@ -96,7 +94,6 @@ static inline void msr_clr(uint32_t val) {
 			: "=r" (tmp)
 			: "r" (val)
 			: "memory");
-#endif
 }
 #endif
 
@@ -128,5 +125,11 @@ static inline void msr_set_bit(int bit) {
 static inline void msr_clr_bit(int bit) {
 	msr_clr(REVERSE_MASK(bit));
 }
+
+static inline uint32_t msr_get_bit(int bit) {
+	return msr_get_value() | REVERSE_MASK(bit);
+}
+
+
 
 #endif /* MSR_H_ */

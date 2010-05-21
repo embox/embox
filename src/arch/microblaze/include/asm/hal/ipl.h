@@ -26,11 +26,29 @@ inline static void ipl_init(void) {
 }
 
 inline static __ipl_t ipl_save(void) {
+#if 0
+	/* it will be better to use irq_ctrl mask but we can't expect every
+	 * irq_ctrl driver has implemented own get_mask and set mask functions
+	 */
 	__ipl_t ipl_status = irqc_get_mask();
 	irqc_set_mask(0);
+
+	return ipl_status;
+#endif
+
+	__ipl_t ipl_status = msr_get_bit(MSR_IE_BIT);
+
+	msr_clr_bit(MSR_IE_BIT);
+
 	return ipl_status;
 }
 
 inline static void ipl_restore(__ipl_t ipl) {
+#if 0
+	/* it will be better to use irq_ctrl mask but we can't expect every
+	 * irq_ctrl driver has implemented own get_mask and set mask functions
+	 */
 	irqc_set_mask(ipl);
+#endif
+	msr_set_value(msr_get_value() | ipl);
 }
