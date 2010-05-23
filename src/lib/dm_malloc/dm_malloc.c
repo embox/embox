@@ -1,25 +1,21 @@
 /**
  * @file
  *
+ * @brief source file of dynamic memory allocator
+ *
  * @date 02.05.2010
  *
  * @auther Michail Skorginskii
  *
  */
 
-/*TODO: write doxygen comments*/
-/*TODO: read and rewrtie sources with code-style*/
-/*TODO: make optimisation of first fir*/
-
 #include <lib/page_alloc.h>
 #include <lib/multipage_alloc.h>
 #include <lib/dm_malloc.h>
 #include <lib/list.h>
-/* TODO: think about page free
- * There shoud be limit of memory
- * We shoud know what block is the pages
- */
 
+/* adress of free memory block */
+#define ADRESS(block) (block+sizeof(mem_block_t)+1)
 /* has memory allocation has inited? */
 bool dm_inited = false;
 /* the most big mem_block */
@@ -27,8 +23,6 @@ static size_t most_bigest_pa;
 /* memory list */
 static LIST_HEAD(mem_list);
 /**
- * return a pointer to allocated mem_block
- * pages
  */
 inline mem_block_t* allocate_mem_block(int pages)
 {
@@ -37,10 +31,6 @@ inline mem_block_t* allocate_mem_block(int pages)
 	if ( tmp_alloc == 0) {
 		return 0;
 	}
-	tmp_alloc->adr  =
-		tmp_alloc
-		+ sizeof(mem_block_t)
-		+ 1;
 	tmp_alloc->size =
 		CONFIG_PAGE_SIZE
 		* pages
@@ -70,32 +60,24 @@ inline mem_block_t* eat_mem(size_t size, mem_block_t* ext) {
 		return ext;
 	}
 	/* block from wich bit a mem */
-	mem_block_t *big_tmp;
+	mem_block_t *tmp;
 
 	/* memory reallocation */
-	big_tmp =
+	tmp =
 		ext
 		+ sizeof(mem_block_t)
 		+ size;
-	big_tmp->adr =
-		big_tmp
-		+ sizeof(mem_block_t)
-		+ 1;
-	big_tmp->size =
+	tmp->size =
 		ext->size
 		- size
 		- 1;
-	big_tmp->free = HOLE;
+	tmp->free = HOLE;
 	/* reallocatation */
-	ext->adr =
-		ext
-		+ sizeof(mem_block_t)
-		+ 1;
 	ext->size = size;
 	ext->free = PROC;
 	/* add tail */
 	list_add_tail(
-		(struct list_head*) big_tmp,
+		(struct list_head*) tmp,
 		(struct list_head*) ext
 	);
 	return ext;
@@ -111,12 +93,13 @@ void* dm_malloc(size_t size) {
 	/* we have a boats */
 	if (most_bigest_pa >= size) {
 		struct list_head *tmp;
+		mem_block_t *tmp_mem;
 
 		list_for_each(tmp, &mem_list) {
-			if (
-			   ((mem_block_t*)tmp) ->free    == HOLE
-			&& ((mem_block_t*)tmp) ->size >= size ) {
-				return eat_mem(size, ((mem_block_t*)tmp))->adr;
+			tmp_mem = (mem_block_t*) tmp;
+			if (tmp_mem->free == HOLE && tmp_mem->size >= size) {
+				tmp_mem = eat_mem(size, tmp_mem);
+				return ADRESS(tmp_mem);
 			}
 		}
 	}
@@ -124,9 +107,12 @@ void* dm_malloc(size_t size) {
 	else {
 		mem_block_t *tmp;
 		/* FIXME we must allocate by power of the 2 */
-		tmp = allocate_mem_block(size / CONFIG_PAGE_SIZE);
+		int pot = size / CONFIG_PAGE_SIZE;
+
+		tmp = allocate_mem_block(pot);
 		list_add((struct list_head*)tmp, &mem_list);
-		return eat_mem(size, tmp)->adr;
+		tmp = eat_mem(size, tmp);
+		return ADRESS(tmp);
 	}
 	/* fuck, there are somthing wrong */
 	return 0;
@@ -136,14 +122,13 @@ void* dm_malloc(size_t size) {
  * free memory at ptr
  */
 void dm_free(void *ptr) {
-	/*TODO if there are neiboors, we must merge them */
 	mem_block_t *iterator;
 	struct list_head *tmp;
 	struct list_head *p;
 
 	list_for_each(p, &mem_list) {
 		iterator = (mem_block_t *)p;
-		if ( iterator->adr == ptr ) {
+		if ( ADRESS(iterator) == ptr ) {
 
 			// one direction
 			tmp = (struct list_head *) iterator;
@@ -153,6 +138,7 @@ void dm_free(void *ptr) {
 				list_del(tmp);
 			}
 			iterator->free = HOLE;
+
 			// second direction
 			tmp = (struct list_head*) iterator;
 			while ( ((mem_block_t *)tmp->prev)->free != PROC) {
@@ -161,6 +147,7 @@ void dm_free(void *ptr) {
 				iterator = tmp;
 				list_del(tmp->next);
 			}
+
 			break;
 		}
 	}
