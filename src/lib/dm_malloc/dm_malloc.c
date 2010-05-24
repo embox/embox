@@ -21,8 +21,7 @@ static size_t most_bigest_pa = 0;
 /* memory list */
 static LIST_HEAD(mem_list);
 
-inline mem_block_t* allocate_mem_block(int pages)
-{
+inline mem_block_t* allocate_mem_block(int pages) {
 	mem_block_t *tmp_alloc;
 	tmp_alloc = (mem_block_t*) multipage_alloc(pages);
 	if ( tmp_alloc == 0) {
@@ -41,11 +40,12 @@ inline mem_block_t* allocate_mem_block(int pages)
 }
 
 inline mem_block_t* eat_mem(size_t size, mem_block_t* ext) {
+        /* block from wich bit a mem */
+        mem_block_t *tmp;
+
 	if (ext->size == size) {
 		return ext;
 	}
-	/* block from wich bit a mem */
-	mem_block_t *tmp;
 
 	/* memory reallocation */
 	tmp =
@@ -127,7 +127,7 @@ void dm_free(void *ptr) {
 			while ( ((mem_block_t *)tmp->prev)->free != PROC) {
 				tmp = tmp->prev;
 				((mem_block_t *)tmp)->size += iterator->size;
-				iterator = tmp;
+				iterator = (mem_block_t *)tmp;
 				list_del(tmp->next);
 			}
 

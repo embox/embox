@@ -16,18 +16,19 @@
 
 #include <types.h>
 #include <embox/test.h>
+#include <string.h>
 
 EMBOX_TEST(run);
 
 static int run() {
 	char buf[2];
-	static char* proposals[64];
-	proposals[0] = "a"; 					/* for mem allocation only */
 	static char space = ' ';
-/*	static char space1 = ' ';	*/		/* with this line works correctly */
+/*      static char space1 = ' ';*/ /* with this line works correctly */
+	static char* proposals[64];
+	proposals[0] = "a"; /* for mem allocation only */
 	buf[0] = space;
 	buf[1] = '\0';
-/*	printf("%s\n", buf); 		*/
+/*	printf("%s\n", buf);*/
 
-    return strcmp(buf, " ");
+	return strcmp(buf, " ");
 }

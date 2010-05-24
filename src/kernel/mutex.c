@@ -25,7 +25,7 @@ void mutex_lock(struct mutex *free_mutex) {
 		return;
 	}
 	free_mutex->bound_thread->state = THREAD_STATE_WAIT;
-	list_add_tail(current_thread, free_mutex->locked_thread_list);
+	list_add_tail((struct list_head*)current_thread, free_mutex->locked_thread_list);
 	scheduler_unlock();
 	/* if the current thread reaches his time limit before calling scheduler_dispatch()
 	 * then scheduler_dispatch() will cause the current thread to loose some of its time
@@ -35,18 +35,20 @@ void mutex_lock(struct mutex *free_mutex) {
 }
 
 void mutex_unlock(struct mutex *locked_mutex) {
+	struct thread* locked_thread;
 	if (locked_mutex->bound_thread != current_thread) {
 		--locked_mutex->lockscount;
 		if (locked_mutex->lockscount == 0) {
 			scheduler_lock();
-			struct thread* locked_thread
-				= list_entry(locked_mutex, struct mutex, locked_thread_list);
+			locked_thread = (struct thread *)list_entry(
+					    (struct list_head *)locked_mutex,
+					    struct mutex, locked_thread_list);
 			locked_thread->state = THREAD_STATE_RUN;
 			/*TODO
-			 There must be no interruptions to prevent this thread from locking again by
-			 mutex_lock(). It may create some trouble.
+			 There must be no interruptions to prevent this thread from
+			 locking again by mutex_lock(). It may create some trouble.
 			 */
-			list_del(&locked_thread);
+			list_del((struct list_head *)&locked_thread);
 			locked_mutex->bound_thread = NULL;
 			scheduler_unlock();
 		}

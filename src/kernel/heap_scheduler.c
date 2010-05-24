@@ -133,8 +133,8 @@ int scheduler_convar_wait(struct mutex *added_mutex, struct condition_variable *
 	&added_mutex->bound_thread->state = THREAD_STATE_SLEEP;
 	list_add_tail(&added_mutex->sleeped_thread_list, variable->list_begin_convar);
 	mutex_unlock(added_mutex);
-	return 0;
 #endif
+	return 0;
 }
 
 void scheduler_convar_signal(struct condition_variable *variable) {
