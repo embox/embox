@@ -12,9 +12,8 @@
  * TODO
  * 1) make CONFIG macros
  * 2) details
- * 3) google Algorithms
- * 4) calloc && realloc
- * 5) make optimistation of dm_alloc()
+ * 3) calloc && realloc
+ * 4) make optimistation of dm_alloc()
  *
  * TODO fixed
  * 1)  write test
@@ -29,6 +28,7 @@
  * 10) write doxygen comments
  * 11) think what alg is more good
  * 12) free
+ * 13) google Algorithms
  */
 
 #ifndef __DM_MALLOC_H

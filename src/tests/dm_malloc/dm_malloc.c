@@ -30,23 +30,23 @@ static int run(void) {
 	struct list *tmp;
 
 	putchar('\n');
+	printf("\t\t = Allocate list =\n");
 	for(i = 0; i <= 4; i++) {
 		tmp = dm_malloc(sizeof(struct list));
 		tmp->p = i*2;
 		list_add( (struct list_head*) tmp, &int_list);
-		printf("element %d added... Equal %d\n", i, tmp->p);
+		printf("tmp[%d] = %d | ", i, tmp->p);
 	}
 
+	printf("\n\t\t = Test our list =\n");
 	list_for_each( (struct list_head*) tmp, &int_list) {
-		printf("element %d equal %d\n",tmp->p/2, tmp->p);
+		printf("tmp[%d] = %d | ",tmp->p/2,tmp->p);
 	}
 
+	printf("\n\t\t = Test free =\n");
 	list_for_each( (struct list_head*) tmp, &int_list) {
-		printf("element %d free... \n", tmp->p/2);
-		/*if ((tmp->p/2)==3) {
-			break;
-		}*/
+		printf("now tmp[%d] if free | ", tmp->p/2);
 	}
-	TRACE("test");
+	TRACE("\ntest ");
 	return result;
 }

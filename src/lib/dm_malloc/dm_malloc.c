@@ -96,7 +96,7 @@ void* dm_malloc(size_t size) {
 		tmp = eat_mem(size, tmp);
 		return ADRESS(tmp);
 	}
-	/* fuck, there are somthing wrong */
+	/* #$%&, there are somthing wrong */
 	return 0;
 }
 
