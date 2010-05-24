@@ -290,7 +290,7 @@ static int exec(int argsc, char **argsv) {
 				return -1;
 			}
 			if (1 != sscanf(optarg,"%d", &dev_number)) {
-				LOG_ERROR("parsing: enter validly dev_number '-b'\n");
+				LOG_ERROR("parsing: enter validly dev_number '-n'\n");
 				show_help();
 				return -1;
 			}

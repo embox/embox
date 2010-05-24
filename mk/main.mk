@@ -226,7 +226,7 @@ menuconfig: PROFILE := `dialog \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
 menuconfig: EDIT := `dialog \
                 --stdout --backtitle "Editor selection" \
-                --radiolist "Select editor:" 10 40 2 "emacs -nw" "" on vim "" off`
+                --radiolist "Select editor:" 10 40 2 "emacs -nw -Q" "" on vim "" off`
 menuconfig:
 	$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) $(CONF_DIR)/*.conf
