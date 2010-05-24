@@ -58,12 +58,6 @@ typedef struct mem_block {
 } mem_block_t;
 
 /**
- * allocation init
- * allocates 8 pages to make initial list
- */
-int dm_malloc_init(void);
-
-/**
  * dynamic allocator
  * return pointer to mem vector
  * or return 0 if there are no memory

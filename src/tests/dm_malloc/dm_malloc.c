@@ -43,9 +43,9 @@ static int run(void) {
 
 	list_for_each( (struct list_head*) tmp, &int_list) {
 		printf("element %d free... \n", tmp->p/2);
-		if ((tmp->p/2)==3) {
+		/*if ((tmp->p/2)==3) {
 			break;
-		}
+		}*/
 	}
 	TRACE("test");
 	return result;
