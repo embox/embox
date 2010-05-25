@@ -25,3 +25,5 @@ $_DEPS-mmu_contexts += embox.hal.mm.mmu
 
 $_DEPS-mmu_write_protection += embox.hal.test.mmu
 $_DEPS-mmu_write_protection += embox.hal.test.traps
+$_DEPS-mmu_write_protection += embox.hal.mm.mmu
+$_DEPS-mmu_write_protection += embox.hal.traps
