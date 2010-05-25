@@ -132,10 +132,10 @@ inline static void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
 		return;
 	}
 	//printf("good pte = 0x%X\n", pte);
-	pte_value = (*pte) & (~0xFF);
+	pte_value = (*pte) & (~0x1C);
 
 	mmu_set_pte(pte,
-			pte_value | flags);
+			pte_value | ((flags & 0x7) << 2));
 }
 
 inline static void mmu_page_mark_valid(mmu_ctx_t ctx, vaddr_t vaddr) {
