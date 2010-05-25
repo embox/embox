@@ -197,6 +197,8 @@ static int print(char **out, const char *format, va_list args) {
 			case 'd':
 				pc += printi(out, va_arg( args, int ), 10, 1, width, pad, 'a');
 				continue;
+			case 'p':
+				/*TODO: printf haven't realized pointer variable operations*/
 			case 'x':
 				pc += printi(out, va_arg( args, int ), 16, 0, width, pad, 'a');
 				continue;
@@ -217,9 +219,6 @@ static int print(char **out, const char *format, va_list args) {
 				scr[0] = (char) va_arg( args, int );
 				scr[1] = '\0';
 				pc += prints(out, scr, width, pad);
-				continue;
-			case 'p':
-				/*TODO: printf haven't realized pointer variable operations*/
 				continue;
 			case 'f':
 				/*TODO: printf haven't realized float variable operations*/

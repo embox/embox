@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <shell_command.h>
 #include <elf/elf_reader.h>
+#include <string.h>
 
 #define COMMAND_NAME     "readelf"
 #define COMMAND_DESC_MSG "shows information about ELF binaries"
@@ -156,34 +157,34 @@ void print_header(Elf32_Ehdr *head) {
         break;
     case 1: printf("EV_CURRENT - Current version");
         break;
-    default: printf("Unknown version (%d)", x);
+    default: printf("Unknown version (%u)", x);
     }
     printf("\n");
 
     printf("e_entry - Virtual adress first to transfer control and start \
-		   process (if no entry point then 0) : %ld \n",    \
+		   process (if no entry point then 0) : %u\n",
 		   rev_long(head->e_entry, head->e_ident[5]));
     printf("e_phoff - Program header table's file offset \
-		   (0 if no such one) : %ld \n",    \
+		   (0 if no such one) : %u\n",
 		   rev_long(head->e_phoff, head->e_ident[5]));
     printf("e_shoff - Section header table's file offset \
-		   (0 if no such one) : %ld \n",    \
+		   (0 if no such one) : %u\n",
            rev_long(head->e_shoff, head->e_ident[5]));
     printf("e_flags - Processor specific flags associated \
- 		   with file : %ld \n",    \
+ 		   with file : %u\n",
 		   rev_long(head->e_flags, head->e_ident[5]));
-    printf("e_ehsize - ELF header's size : 0x%x \n",    \
+    printf("e_ehsize - ELF header's size : 0x%x \n",
  	       rev_short(head->e_ehsize, head->e_ident[5]));
     printf("e_phentsize - Size of entry in file's program \
-		   header table : 0x%x \n",    \
+		   header table : 0x%x \n",
 		   rev_short(head->e_phentsize, head->e_ident[5]));
-    printf("e_phnum - Number of entries in program header table : 0x%x \n",    \
+    printf("e_phnum - Number of entries in program header table : 0x%x \n",
 		   rev_short(head->e_phnum, head->e_ident[5]));
-    printf("e_shentsize - Section header's size : 0x%x \n",    \
+    printf("e_shentsize - Section header's size : 0x%x \n",
  		   rev_short(head->e_shentsize, head->e_ident[5]));
-    printf("e_shnum - Number of entries in the section header table :0x%x \n",    \
+    printf("e_shnum - Number of entries in the section header table :0x%x \n",
 		   rev_short(head->e_shnum, head->e_ident[5]));
-    printf("e_shstrndx - Section table header table index of the entry : 0x%x \n",    \
+    printf("e_shstrndx - Section table header table index of the entry : 0x%x \n",
 		   rev_short(head->e_shstrndx, head->e_ident[5]));
 }
 
@@ -204,7 +205,7 @@ void print_section_head(Elf32_Shdr *section_header, uint8_t rev,   \
     Elf32_Word flags;
 
     printf("\n -- section info --\n\n");
-    printf("sh_name - name of section : %lu - ",   \
+    printf("sh_name - name of section : %u - ",
 		rev_long(section_header->sh_name, rev));
 
     if (string_table == NULL || rev_long(section_header->sh_name, rev) == 0) {
@@ -275,25 +276,25 @@ void print_section_head(Elf32_Shdr *section_header, uint8_t rev,   \
     }
     printf("\n");
 
-    printf("sh_addr - first byte in memory image of process : %ld \n",   \
+    printf("sh_addr - first byte in memory image of process : %u\n",
 		   rev_long(section_header->sh_addr, rev));
 
-    printf("sh_offset - first byte of section in file : %ld \n",   \
+    printf("sh_offset - first byte of section in file : %u\n",
            rev_long(section_header->sh_offset, rev));
 
-    printf("sh_size - section size : %ld \n",   \
+    printf("sh_size - section size : %u \n",
 		   rev_long(section_header->sh_size, rev));
 
-    printf("sh_link - section header table index link: %ld \n",   \
+    printf("sh_link - section header table index link: %u\n",
 		   rev_long(section_header->sh_link, rev));
 
-    printf("sh_info - extra information: %ld \n",   \
+    printf("sh_info - extra information: %u\n",
 		   rev_long(section_header->sh_info, rev));
 
-    printf("sh_addralign - : %ld \n",   \
+    printf("sh_addralign - : %u\n",
            rev_long(section_header->sh_addralign, rev));
 
-    printf("sh_entsize - : %ld \n",
+    printf("sh_entsize - : %u\n",
             rev_long(section_header->sh_entsize, rev));
 }
 
@@ -331,25 +332,25 @@ void print_segment_head(Elf32_Phdr * segment_header, uint8_t reversed) {
     }
     printf("\n");
 
-    printf("p_offset - first byte of segment in file : %ld \n",   \
+    printf("p_offset - first byte of segment in file : %u\n",
 		   rev_long(segment_header->p_offset, reversed));
 
-    printf("p_vaddr - virtual address for first byte : %ld \n",   \
+    printf("p_vaddr - virtual address for first byte : %u\n",
 		   rev_long(segment_header->p_vaddr, reversed));
 
-    printf("p_paddr - segments physical address : %ld \n",   \
+    printf("p_paddr - segments physical address : %u\n",
 		   rev_long(segment_header->p_paddr, reversed));
 
-    printf("p_filesz - size of file image of the  segment : %ld \n",   \
+    printf("p_filesz - size of file image of the  segment : %u\n",
 		   rev_long(segment_header->p_filesz, reversed));
 
-    printf("p_memsz - size of memory image of the segment : %ld \n",   \
+    printf("p_memsz - size of memory image of the segment : %u\n",
 		   rev_long(segment_header->p_memsz, reversed));
 
-    printf("p_flags - flags relevant for the segment : %ld \n",   \
+    printf("p_flags - flags relevant for the segment : %u\n",
  		   rev_long(segment_header->p_flags, reversed));
 
-    printf("p_align - segments are aligned in memory and in the file : %ld \n",   \
+    printf("p_align - segments are aligned in memory and in the file : %u\n",
  		   rev_long(segment_header->p_align, reversed));
 }
 
@@ -360,8 +361,8 @@ void print_rel(Elf32_Rel * rel_array, int count, int reversed) {
         printf("\n");
 
         for (i = 0; i < count; i++) {
-            printf("\nr_offset : %ld", rev_long(rel_array[i].r_offset, reversed));
-            printf("\nr_info : %ld\n", rev_long(rel_array[i].r_info, reversed));
+            printf("\nr_offset : %u", rev_long(rel_array[i].r_offset, reversed));
+            printf("\nr_info : %u\n", rev_long(rel_array[i].r_info, reversed));
         }
     } else {
         printf("\n\nList of Elf32_Rel structures if empty\n");
@@ -375,9 +376,9 @@ void print_rela(Elf32_Rela * rela_array, int count, int reversed) {
         printf("\n");
 
         for (i = 0; i < count; i++) {
-            printf("\nr_offset : %ld", rev_long(rela_array[i].r_offset, reversed));
-            printf("\nr_info : %ld", rev_long(rela_array[i].r_info, reversed));
-            printf("\nr_addend : %ld\n", rev_long(rela_array[i].r_addend, reversed));
+            printf("\nr_offset : %u", rev_long(rela_array[i].r_offset, reversed));
+            printf("\nr_info : %u", rev_long(rela_array[i].r_info, reversed));
+            printf("\nr_addend : %u\n", rev_long(rela_array[i].r_addend, reversed));
         }
     } else {
         printf("\nList of Elf32_Rela structures if empty\n");
@@ -385,7 +386,7 @@ void print_rela(Elf32_Rela * rela_array, int count, int reversed) {
 }
 
 /* TODO names*/
-void print_symb(Elf32_Sym * symb, char * names,   \
+void print_symb(Elf32_Sym * symb, char * names,
         int counter, char reversed) {
     int i;
 
@@ -393,17 +394,17 @@ void print_symb(Elf32_Sym * symb, char * names,   \
     if (counter != 0) {
         for (i = 0; i < counter; i++) {
             printf("\n Symbol #%d \n", i);
-            printf("st_name - name of symbol, index : %ld and name : ",   \
+            printf("st_name - name of symbol, index : %u and name : ",
  				   rev_long(symb[i].st_name, reversed));
             if ((names != NULL) && (rev_long(symb[i].st_name, reversed) != 0)) {
                 printf("%s", &(names[rev_long(symb[i].st_name, reversed)]));
             }
             printf("\n");
 
-            printf("st_value - value of symbol : %ld \n",   \
+            printf("st_value - value of symbol : %u\n",   \
 				   rev_long(symb[i].st_value, reversed));
 
-            printf("st_size - size of object : %ld \n",   \
+            printf("st_size - size of object : %u\n",   \
 				   rev_long(symb[i].st_size, reversed));
 
             printf("st_info - type and binding attributes : %c \n",   \
@@ -493,14 +494,14 @@ static int exec(int argsc, char **argsv) {
         return 1;
     }
     // TODO strerror -> elf_error
-    if (e = elf_read_header(f, &head)) {
+    if ((e = elf_read_header(f, &head))) {
         printf("Cannot read header: %d\n", e);
         return 1;
     }
     // TODO use correct sections[] length
     sections_count = rev_short(head.e_shnum, head.e_ident[5]);
     if (show_sections || show_rel || show_rela || show_symb || show_names) {
-        if (e = elf_read_sections_table(f, &head, sections)) {
+        if ((e = elf_read_sections_table(f, &head, sections))) {
             printf("Cannot read sections table: %d\n", e);
             show_sections = 0;
             show_rel = 0;
@@ -510,7 +511,7 @@ static int exec(int argsc, char **argsv) {
         }
     }
     if (show_sections) {
-        if (e = elf_read_string_table(f, &head, sections, names, &names_l)) {
+        if ((e = elf_read_string_table(f, &head, sections, names, &names_l))) {
             printf("Cannot read string table: %d\n", e);
             names_l = 0;
             show_sections = 0;
@@ -518,30 +519,30 @@ static int exec(int argsc, char **argsv) {
         }
     }
     if (show_segments) {
-        if (e = elf_read_segments_table(f, &head, segments)) {
+        if ((e = elf_read_segments_table(f, &head, segments))) {
             printf("Cannot read segments table (program header): %d\n", e);
             show_segments = 0;
         }
     }
     if (show_rel) {
-        if (e = elf_read_rel_table(f, &head, sections, rel, &rel_count)) {
+        if ((e = elf_read_rel_table(f, &head, sections, rel, &rel_count))) {
             printf("Cannot read rel table: %d\n", e);
             show_rel = 0;
         }
     }
     if (show_rela) {
-        if (e = elf_read_rela_table(f, &head, sections, rela, &rela_count)) {
+        if ((e = elf_read_rela_table(f, &head, sections, rela, &rela_count))) {
             printf("Cannot read rela table: %d\n", e);
             show_rela = 0;
         }
     }
     if (show_symb) {
-        if (e = elf_read_symbol_table(f, &head, sections, symb, &symb_count)) {
+        if ((e = elf_read_symbol_table(f, &head, sections, symb, &symb_count))) {
             printf("Cannot read symbol table: %d\n", e);
             show_symb = 0;
         }
-        if (e = elf_read_symbol_string_table(f, &head, sections, names, \
-                symb_names, &symb_names_l)) {
+        if ((e = elf_read_symbol_string_table(f, &head, sections, names,
+                symb_names, &symb_names_l))) {
             printf("Cannot read symbol names: %d\n", e);
             symb_names_l = 0;
         }
@@ -558,7 +559,7 @@ static int exec(int argsc, char **argsv) {
     if (show_sections) {
         printf("\n %d sections: \n", sections_count);
         for (i = 0; i < sections_count; i++) {
-            print_section_head(&(sections[i]), head.e_ident[5],   \
+            print_section_head(&(sections[i]), head.e_ident[5],
                 (names_l != 0) ? names : NULL);
         }
     }

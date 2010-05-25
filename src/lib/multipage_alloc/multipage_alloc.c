@@ -100,7 +100,7 @@ int taddr_in_tree( taddr addr ) {
 #ifdef EXTENDED_TEST
 	extern
 #endif
-void multipage_init() {
+void multipage_init(void) {
 	int sizeoftree;
 	int qpt;
 

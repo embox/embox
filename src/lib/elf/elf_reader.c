@@ -196,7 +196,7 @@ int32_t read_name(int8_t * names_array, int32_t index, int8_t * name) {
 	do {
 		name[i-index] = names_array[i];
 		i++;
-	} while ((names_array[i-1] != '/0') &&
+	} while ((names_array[i-1] != '\0') &&
 			 (i < MAX_NAME_LENGTH));
 
 	if ( i == MAX_NAME_LENGTH ) {

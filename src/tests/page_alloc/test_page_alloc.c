@@ -135,16 +135,16 @@ extern char _heap_end;
 			for (i=0;i<8;++i) {
 
 				if (NULL == (*last = page_alloc())) {
-					printf("Alloc page: %d\n",NULL);
+					printf("Alloc page: %p\n", (void*)NULL);
 				} else {
-					printf("Alloc page: %d\n",last);
+					printf("Alloc page: %p\n", (void*)last);
 					last = ++last < pointers+TEST_STACK_SIZE ? last : pointers;
 					++callowed;
 				}
 			}
 
 		}
-		printf("Free page: %d\n",first);
+		printf("Free page: %p\n", (void*)first);
 		page_free(*first);
 		first = ++first < pointers+TEST_STACK_SIZE ? first : pointers;
 		cfree += 1;

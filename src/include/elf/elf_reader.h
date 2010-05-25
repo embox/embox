@@ -257,7 +257,7 @@ int32_t elf_read_segments_table(FILE * fo, Elf32_Ehdr * header,
  * @param fo - file descriptor to get information from
  * @param header - head structure in file, describing main elements positions
  * @param section_header_table - array where func take info about sections
- * @param names - array where will be stored string, starts and ends with "/0"
+ * @param names - array where will be stored string, starts and ends with "\0"
  * @param length - really used bytes in names
  *
  * @return error code

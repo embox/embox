@@ -176,6 +176,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 			}
 				continue;
+			case 'u':
 			case 'd': {
 				int dst;
 				dst = scan_int(in, 10, widht);
@@ -186,7 +187,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 			}
 				continue;
 #if 0
-				case 'D': {
+			case 'D': {
 					double dst;
 					dst = scan_double(in,10,widht);
 					va_arg ( args, int ) = dst;

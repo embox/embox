@@ -94,15 +94,15 @@ typedef struct {
  * `low' values hold the most- and least-significant bits, respectively.
  */
 enum {
-	float64_default_nan_high = 0x7FFFFFFF,
-	float64_default_nan_low  = 0xFFFFFFFF
+	float64_default_nan_high = (int)0x7FFFFFFF,
+	float64_default_nan_low  = (int)0xFFFFFFFF
 };
 
 /**
  * The pattern for a default generated single-precision NaN.
  */
 enum {
-	float32_default_nan = 0x7FFFFFFF
+	float32_default_nan = (int)0x7FFFFFFF
 };
 
 /**
