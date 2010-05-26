@@ -34,7 +34,6 @@ inline static bool mmu_entry_is_valid(pte_t *pte) {
 }
 
 inline static pte_t *mmu_get_next_level_pte(pte_t *ptp, int idx) {
-	/*printf("idx [0x%X] pte = 0x%X value = 0x%X\n", idx, ptp, *(ptp + idx));*/
 	return (pte_t*)((uint32_t*)((((uint32_t)(*(ptp + idx)) << 4)) & (MMU_PTE_PMASK)));
 }
 
@@ -55,21 +54,15 @@ static unsigned long masks[] = {
 };
 
 inline static pte_t *mmu_page_get_entry(mmu_ctx_t ctx, vaddr_t vaddr) {
-	//unsigned long *context[] = {NULL, NULL, NULL, NULL, NULL };
 	pte_t *pte = GET_PGD(ctx);
 	int level = 1;
-	/*printf("pgt = 0x%X value = 0x%X\n", pte, *(pte + 0xF0));*/
-	//uint32_t addr_mask = masks[level];
+
 	for(level; level < 4; level ++) {
 		if (mmu_entry_is_pte(pte + ((vaddr & masks[level]) >> offsets[level])) /*&& mmu_entry_is_valid(pte)*/) {
-			/*printf("find [%d] pte = 0x%X\n", level, pte);*/
-			return pte;
+			return (pte + ((vaddr & masks[level]) >> offsets[level]));
 		}
 		pte = mmu_get_next_level_pte(pte, (vaddr & masks[level]) >> offsets[level]);
-
-		//printf("level [%d] pte = 0x%X\n", level, pte);
 	}
-	//printf("null [%d] pte = 0x%X\n", level, pte);
 	return NULL;
 }
 
@@ -106,44 +99,25 @@ inline static mmu_page_flags_t mmu_page_get_flags(mmu_ctx_t ctx, vaddr_t vaddr) 
 	flags = GET_FLAGS(ctx, vaddr);
 	return *flags;
 }
-#if 0
-inline static void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
-			mmu_page_flags_t flags) {
-	pmd_t *m0 = GET_PMD(ctx);
-	mmu_page_flags_t *tmp;
-	flags = flags << 1;
-	if(flags & (MMU_PAGE_CACHEABLE << 1)) {
-		flags |= MMU_PTE_CACHE;
-	}
-	vaddr &= ~MMU_PAGE_MASK & MMU_MTABLE_MASK;
-	tmp = GET_FLAGS(ctx, vaddr);
-	mmu_set_pte(m0 + (vaddr >> MMU_MTABLE_MASK_OFFSET),
-			(*tmp & 0xFFFFFF03) | flags);
-}
-#endif
 
 inline static void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
 			mmu_page_flags_t flags) {
 	pte_t pte_value;
 	pte_t *pte = mmu_page_get_entry(ctx, vaddr);
-	if (NULL == pte)
-	{
-		//printf("pte = 0x%X\n", pte);
+	if (NULL == pte) {
 		return;
 	}
-	//printf("good pte = 0x%X\n", pte);
-	pte_value = (*pte) & (~0x1C);
+
+	pte_value = (*pte) & (~0x1C) ;
 
 	mmu_set_pte(pte,
 			pte_value | ((flags & 0x7) << 2));
 }
 
 inline static void mmu_page_mark_valid(mmu_ctx_t ctx, vaddr_t vaddr) {
-
 }
 
 inline static void mmu_page_mark_invalide(mmu_ctx_t ctx, vaddr_t vaddr) {
-
 }
 
 #endif /* SPARC_MMU_PAGE_H_ */

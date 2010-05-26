@@ -16,13 +16,16 @@
 #define UTLB_QUANTITY_RECORDS    0x40
 
 
-#define RTLBLO_I_BIT      REVERSE_BIT(29)
-#define RTLBLO_EX_BIT     REVERSE_BIT(22)
-#define RTLBLO_WR_BIT     REVERSE_BIT(23)
+#define RTLBLO_I_BIT           REVERSE_BIT(29)
+#define RTLBLO_EX_BIT          REVERSE_BIT(22)
+#define RTLBLO_WR_BIT          REVERSE_BIT(23)
 
-#define RTLBHI_SIZE_BIT   REVERSE_BIT(24)
-#define RTLBHI_V_BIT      REVERSE_BIT(25)
+#define RTLBHI_SIZE_BIT        REVERSE_BIT(24)
+#define RTLBHI_V_BIT           REVERSE_BIT(25)
 
+#define __MMU_PAGE_CHACHEABLE  (1 << (RTLBLO_I_BIT))
+#define __MMU_PAGE_WRITEALE    (1 << RTLBLO_EX_BIT))
+#define __MMU_PAGE_EXECUTEABLE (1 << RTLBLO_WR_BIT))
 
 #define RTLBHI_SIZE_1K    0x0
 #define RTLBHI_SIZE_4K    0x1

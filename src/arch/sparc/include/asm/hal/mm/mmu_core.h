@@ -148,6 +148,11 @@ typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
 #define MMU_PTE_RE         0x2
 #define MMU_PTE_EO         0x4
 
+#define __MMU_PAGE_CACHEABLE   MMU_PTE_CACHE
+#define __MMU_PAGE_WRITEABLE   MMU_PTE_RW
+#define __MMU_PAGE_EXECUTEABLE MMU_PTE_RE
+
+
 /* Physical page extraction from PTP's and PTE's. */
 #define MMU_CTX_PMASK      0xfffffff0
 #define MMU_PTD_PMASK      0xfffffff0

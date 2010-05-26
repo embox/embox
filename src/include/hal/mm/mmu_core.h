@@ -14,11 +14,11 @@
 
 
 /** Allows caching for this page*/
-#define MMU_PAGE_CACHEABLE    0x1
+#define MMU_PAGE_CACHEABLE    __MMU_PAGE_CACHEABLE
 /** Allows writing to this page*/
-#define MMU_PAGE_WRITEABLE    0x2
+#define MMU_PAGE_WRITEABLE    __MMU_PAGE_WRITEABLE
 /** Allows execute program code from this page*/
-#define MMU_PAGE_EXECUTEABLE  0x4
+#define MMU_PAGE_EXECUTEABLE  __MMU_PAGE_EXECUTEABLE
 
 
 typedef __mmu_paddr_t paddr_t;

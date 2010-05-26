@@ -2,9 +2,8 @@
  * @file
  *
  * @date 25.05.2010
- * @Author Anton Bondarev
+ * @author Anton Bondarev
  */
-
 
 #include <types.h>
 
@@ -26,17 +25,16 @@ static uint32_t addr;
 
 /* MMU data access exception handler */
 static int dfault_handler(uint32_t trap_nr, void *data) {
-
-	/* skip instruction */
-	return 0;
+	//TODO mmu 0xf0000000 directly is bad style
+	mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_WRITEABLE );
+	/* repeat instruction */
+	return 1;
 }
 
 static int run() {
 	extern char _text_start, __stack, _data_start;
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
-
-
 	uint32_t vaddr = VADDR(&addr);
 
 	mmu_save_env(&prev_mmu_env);
@@ -54,7 +52,10 @@ static int run() {
 		mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_start, (vaddr_t)&_data_start,
 				0x1000000, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
-
+//TODO mmu fix direct io map
+/*	mmu_map_region((mmu_ctx_t)0, (uint32_t) 0x80000000,
+			(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE );
+*/
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
 
 	mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_start, 0xf0000000, 0x1000000,
@@ -64,8 +65,9 @@ static int run() {
 
 	*((volatile uint32_t *)vaddr) = 0x11111111;
 
+
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
 
-	return (addr == 0x11111111) ? -1 : 0;
+	return (addr != 0x11111111) ? -1 : 0;
 }
