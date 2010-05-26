@@ -26,7 +26,7 @@
 
 #define __MMU_PAGE_CACHEABLE    (1 << RTLBLO_I_BIT)
 #define __MMU_PAGE_WRITEABLE    (1 << RTLBLO_WR_BIT)
-#define __MMU_PAGE_EXECUTEABLE  (1 << RTLBLO_WR_BIT)
+#define __MMU_PAGE_EXECUTEABLE  (1 << RTLBLO_EX_BIT)
 
 #define RTLBHI_SIZE_1K    0x0
 #define RTLBHI_SIZE_4K    0x1
