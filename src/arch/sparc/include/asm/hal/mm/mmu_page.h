@@ -99,6 +99,7 @@ inline static mmu_page_flags_t mmu_page_get_flags(mmu_ctx_t ctx, vaddr_t vaddr) 
 	flags = GET_FLAGS(ctx, vaddr);
 	return *flags;
 }
+#include "asm/cache.h"
 
 inline static void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
 			mmu_page_flags_t flags) {
@@ -112,6 +113,10 @@ inline static void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
 
 	mmu_set_pte(pte,
 			pte_value | ((flags & 0x7) << 2));
+
+/*	mmu_flush_cache_all(); */
+	mmu_flush_tlb_all();
+
 }
 
 inline static void mmu_page_mark_valid(mmu_ctx_t ctx, vaddr_t vaddr) {
