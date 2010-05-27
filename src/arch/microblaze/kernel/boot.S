@@ -8,7 +8,7 @@
 #include <asm/linkage.h>
 #include <asm/mb_regs.h>
 
-#if 0
+
 //FIXME Microblaze boot code
 	.org  0x00
 _start:
@@ -25,7 +25,7 @@ _vector_debug_sw_break:
 	.org  0x20
 _vector_hw_exception:
         brai    _hw_exception_handler
-#endif
+
 	.section    ".text"
 	.align  4
  	.weak hardware_init_hook
@@ -47,6 +47,7 @@ C_ENTRY(boot_start):
 at the first we set 0xb000 0000 (code IMM instruction) and 0xb808 0000 (code BRAI instruction)
 how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide */
 	/* add opcode instruction for 32bit jump - 2 instruction imm & brai*/
+#if 0
 	addik	r6, r0, 0xb0000000      /* hex b000 opcode imm */
 	swi	r6, r0, 0x0                 /* reset address */
 	swi	r6, r0, 0x8                 /* user vector exception */
@@ -71,6 +72,8 @@ how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide 
 	/*Hardware exception*/
 	SET_HANDLER(0x20, _hw_exception_handler);
 
+
+#endif
 	/* enable instruction and data cache */
 	mfs	r12, rmsr
 	ori	r12, r12, 0xa0
@@ -84,7 +87,7 @@ how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide 
 clear_bss:
 #define cur_addr r11
 #define end_addr r12
-#define cmp_reg r6
+#define cmp_reg  r6
 	addik  cur_addr, reg_zero, _bstart /*set start address for bss*/
 	addik  end_addr, reg_zero, _bend   /*set end address for bss section*/
 1:
@@ -95,8 +98,22 @@ clear_bss:
 	addi  cur_addr, cur_addr, 4        /* increment to next loc */
 	brai    1b
 	nop
-
 2:
+
+	/*set stack pointer*/
+	addi  reg_sp, reg_zero, _stack
+
+	addik r5, r0, _data_vma
+	addik r6, r0, _data_lma
+	cmp   r7, r6, r5
+	beqi  r7, 1f
+	 nop
+	addik r7, r0, _data_len
+
+ 	brlid r15, memcpy
+	nop
+1:
+
 	mfs	r12, rmsr
 	ori	r12, r12, 0x2
 	mts	rmsr, r12
@@ -105,7 +122,6 @@ clear_bss:
 	REGS_INIT();
 	/*set stack pointer*/
 	addi  reg_sp, reg_zero, _stack
-
 
 /*call hardware_init_hook if it set */
 	addik reg_tmp1, reg_zero, hardware_init_hook
