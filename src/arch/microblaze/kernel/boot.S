@@ -9,23 +9,6 @@
 #include <asm/mb_regs.h>
 
 
-//FIXME Microblaze boot code
-	.org  0x00
-_start:
-        brai    boot_start
-	.org  0x08
-_vector_sw_exception:
-        brai    _user_exception
-	.org  0x10
-_vector_interrupt:
-        brai    _interrupt_handler
-	.org  0x18
-_vector_debug_sw_break:
-	brai    _debug_exception
-	.org  0x20
-_vector_hw_exception:
-        brai    _hw_exception_handler
-
 	.section    ".text"
 	.align  4
  	.weak hardware_init_hook
@@ -43,11 +26,16 @@ _vector_hw_exception:
 C_ENTRY(boot_start):
 	mts	rmsr, reg_zero	/* disable cache, interrupts, exceptions */
 
+	addik r6, r0, _start
+	beqi  r6, 1f
+	nop
+
+set_trap_table:
 /*now we will be set interrrupts and other vectors.
 at the first we set 0xb000 0000 (code IMM instruction) and 0xb808 0000 (code BRAI instruction)
 how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide */
 	/* add opcode instruction for 32bit jump - 2 instruction imm & brai*/
-#if 0
+
 	addik	r6, r0, 0xb0000000      /* hex b000 opcode imm */
 	swi	r6, r0, 0x0                 /* reset address */
 	swi	r6, r0, 0x8                 /* user vector exception */
@@ -72,16 +60,14 @@ how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide 
 	/*Hardware exception*/
 	SET_HANDLER(0x20, _hw_exception_handler);
 
-
-#endif
+1:
 	/* enable instruction and data cache */
 	mfs	r12, rmsr
 	ori	r12, r12, 0xa0
 	mts	rmsr, r12
 
 
-
-/*text section and data section was copied by internal loader*/
+/*TODO MICROBLAZE boot code text section and data section was copied by internal loader*/
 
 	/* clear BSS segments */
 clear_bss:
@@ -113,7 +99,7 @@ clear_bss:
  	brlid r15, memcpy
 	nop
 1:
-
+	/*interupts enabled*/
 	mfs	r12, rmsr
 	ori	r12, r12, 0x2
 	mts	rmsr, r12
