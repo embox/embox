@@ -47,11 +47,11 @@ void interrupt_init(void){
 }
 
 void interrupt_enable(interrupt_nr_t irq_num){
-	set_bit(irqc->ier, irq_num);
+	set_bit(&irqc->ier, irq_num);
 }
 
 void interrupt_disable(interrupt_nr_t irq_num){
-	clear_bit(irqc->ier, irq_num);
+	clear_bit(&irqc->ier, irq_num);
 }
 
 
@@ -62,7 +62,7 @@ void interrupt_force(interrupt_nr_t irq_num){
 }
 
 void interrupt_clear(interrupt_nr_t irq_num){
-	set_bit(irqc->iar,irq_num);
+	set_bit(&irqc->iar,irq_num);
 }
 
 /*
