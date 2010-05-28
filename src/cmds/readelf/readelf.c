@@ -434,7 +434,7 @@ static int exec(int argsc, char **argsv) {
     Elf32_Rel rel[MAX_REL];
     Elf32_Rela rela[MAX_RELA];
     Elf32_Sym symb[MAX_SYMB];
-    char names[MAX_NAMES_LENGTH];
+    int8_t names[MAX_NAMES_LENGTH];
     char symb_names[MAX_SYMB_NAMES];
     int names_l, sections_count, rel_count, rela_count, symb_count, symb_names_l;
 

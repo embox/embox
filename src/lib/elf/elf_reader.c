@@ -223,7 +223,7 @@ int32_t elf_read_symbol_string_table(FILE * fo, Elf32_Ehdr * header,
 			/*We find SHT_STRTAB - sh_type with value - 3*/
 			if (elf_reverse_long(section_header_table[i].sh_type,
 				header->e_ident[5]) == 2 ) {
-				int16_t section_name[100];
+				int8_t section_name[100];
 
 				int32_t length = read_name(sections_names ,elf_reverse_long(
 						section_header_table[i].sh_name,

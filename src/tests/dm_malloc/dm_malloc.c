@@ -27,24 +27,27 @@ static LIST_HEAD(int_list);
 static int run(void) {
 	int result = 0;
 	int i;
+	struct list_head *tmp_h;
 	struct list *tmp;
 
 	putchar('\n');
 	printf("\t\t = Allocate list =\n");
 	for(i = 0; i <= 4; i++) {
-		tmp = dm_malloc(sizeof(struct list));
+		tmp = (struct list *)dm_malloc(sizeof(struct list));
 		tmp->p = i*2;
 		list_add( (struct list_head*) tmp, &int_list);
 		printf("tmp[%d] = %d | ", i, tmp->p);
 	}
 
 	printf("\n\t\t = Test our list =\n");
-	list_for_each( (struct list_head*) tmp, &int_list) {
+	list_for_each( tmp_h, &int_list) {
+		tmp = (struct list *)tmp_h;
 		printf("tmp[%d] = %d | ",tmp->p/2,tmp->p);
 	}
 
 	printf("\n\t\t = Test free =\n");
-	list_for_each( (struct list_head*) tmp, &int_list) {
+	list_for_each( tmp_h, &int_list) {
+		tmp = (struct list *)tmp_h;
 		printf("now tmp[%d] if free | ", tmp->p/2);
 	}
 	TRACE("\ntest ");
