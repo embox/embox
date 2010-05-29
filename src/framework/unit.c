@@ -14,8 +14,10 @@
 static int unit_mod_enable(struct mod *mod);
 static int unit_mod_disable(struct mod *mod);
 
-struct mod_ops __unit_mod_ops = { .enable = &unit_mod_enable,
-		.disable = &unit_mod_disable };
+const struct mod_ops __unit_mod_ops = {
+		.enable  = &unit_mod_enable,
+		.disable = &unit_mod_disable,
+};
 
 static int unit_mod_enable(struct mod *mod) {
 	int ret = 0;

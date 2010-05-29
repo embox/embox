@@ -12,7 +12,6 @@
 
 #include "console.h"
 #include <kernel/diag.h>
-#include <kernel/job.h>
 #include <string.h>
 #include <drivers/terminal.h>
 
@@ -25,8 +24,6 @@
 		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, ##__VA_ARGS__)
 
 CONSOLE *cur_console = NULL;
-
-//static int adr;
 
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;

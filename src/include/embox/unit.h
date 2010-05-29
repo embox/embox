@@ -37,7 +37,7 @@
 	static int _fini(void); \
 	__EMBOX_UNIT(NULL, _fini)
 
-extern struct mod_ops __unit_mod_ops;
+extern const struct mod_ops __unit_mod_ops;
 
 /**
  * Unit init/fini operations signature.

@@ -14,16 +14,19 @@
 
 #include <types.h>
 #include <errno.h>
-#include <embox/kernel.h>
+#include <string.h>
 
+#include <embox/kernel.h>
 #include <embox/test.h>
 #include <embox/mod.h>
 
 static int test_mod_enable(struct mod *mod);
 static int test_mod_invoke(struct mod *mod, void *data);
 
-struct mod_ops __test_mod_ops = { .enable = &test_mod_enable,
-		.invoke = &test_mod_invoke };
+const struct mod_ops __test_mod_ops = {
+		.enable = &test_mod_enable,
+		.invoke = &test_mod_invoke,
+};
 
 MOD_TAG_DEF(test, "test");
 
@@ -49,7 +52,14 @@ int test_invoke(struct test *test) {
 	if (0 == (result = test->run())) {
 		TRACE("passed\n");
 	} else {
+#if 0
+		struct test_failure *failure = (struct test_failure *) result;
+		TRACE("failed: %s (0x%08x), at %s : %d, in function %s\n",
+				failure->info->reason, (unsigned int) failure->info->data,
+				failure->file, failure->line, failure->func);
+#else
 		TRACE("failed\n");
+#endif
 	}
 
 	return (test->private->result = result);

@@ -51,11 +51,18 @@
 
 #define test_fail(_reason) test_fail_data(_reason, NULL)
 
+#define TEST_ASSERT(cond) \
+	do { \
+		typeof(cond) __cond = (cond); \
+		if (!__cond) \
+			return test_fail_data("Condition check failed: " #cond, __cond); \
+	} while(0)
+
 #define test_fail_data(_reason, _data) __extension__ ({ \
 		__TEST_FAILURE_INFO_DEF(__test_failure_info); \
 		__TEST_FAILURE_DEF(__test_failure, &__test_failure_info); \
-		__test_failure_info.reason = _reason; \
-		__test_failure_info.data = (void *) _data; \
+		__test_failure_info.reason = (_reason); \
+		__test_failure_info.data = (void *) (_data); \
 		(int) &__test_failure; \
 	})
 
@@ -70,7 +77,17 @@
 				.info = _info, \
 		}
 
-extern struct mod_ops __test_mod_ops;
+#define test_foreach(t) \
+		__test_foreach_guard(t, __LINE__)
+#define __test_foreach_guard(t, guard) \
+		__test_foreach_guard_expand(t, guard)
+#define __test_foreach_guard_expand(t, guard) \
+		__test_foreach(t, __test_iterator_##guard)
+#define __test_foreach(t, i) \
+		for(struct test_iterator i##_alloc, *i = test_get_all(&i##_alloc); \
+			(t = test_iterator_has_next(i) ? test_iterator_next(i) : NULL);)
+
+extern const struct mod_ops __test_mod_ops;
 
 /**
  * Each test implements this interface.

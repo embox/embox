@@ -29,12 +29,9 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static void print_tests(void) {
 	struct test *test;
-	struct test_iterator iterator;
 	int i = 0;
 
-	test_get_all(&iterator);
-	while(test_iterator_has_next(&iterator)) {
-		test = test_iterator_next(&iterator);
+	test_foreach(test) {
 		TRACE("%3d. ", ++i);
 
 		if (NULL != test->name) {
@@ -80,11 +77,8 @@ static bool is_test_name(const char *input_name, const char *test_name) {
 
 static struct test *get_test_by_name(char *name) {
 	struct test *test;
-	struct test_iterator iterator;
 
-	test_get_all(&iterator);
-	while(test_iterator_has_next(&iterator)) {
-		test = test_iterator_next(&iterator);
+	test_foreach(test) {
 		if (is_test_name(name, test->name)) {
 			return test;
 		}
@@ -95,20 +89,15 @@ static struct test *get_test_by_name(char *name) {
 
 static struct test *get_test(int nr) {
 	struct test *test = NULL;
-	struct test_iterator iterator;
-	int i;
+	int i = 0;
 
 	if (nr <= 0) {
 		TRACE("Invalid test number: %d\n", nr);
 		return NULL;
 	}
 
-	test_get_all(&iterator);
-	for (i = 0; i != nr; ++i) {
-		if (test_iterator_has_next(&iterator)) {
-			test = test_iterator_next(&iterator);
-		} else {
-			test = NULL;
+	test_foreach(test) {
+		if(++i == nr) {
 			break;
 		}
 	}
