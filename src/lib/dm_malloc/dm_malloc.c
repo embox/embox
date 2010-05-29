@@ -16,8 +16,10 @@
 
 /* adress of free memory block */
 #define ADRESS(block) (block+sizeof(mem_block_t)+1)
+
 /* the most big mem_block */
 static size_t most_bigest_pa = 0;
+
 /* memory list */
 static LIST_HEAD(mem_list);
 
@@ -57,9 +59,11 @@ inline mem_block_t* eat_mem(size_t size, mem_block_t* ext) {
 		- size
 		- 1;
 	tmp->free = HOLE;
+
 	/* reallocatation */
 	ext->size = size;
 	ext->free = PROC;
+
 	/* add tail */
 	list_add_tail(
 		(struct list_head*) tmp,
@@ -107,6 +111,7 @@ void dm_free(void *ptr) {
 	mem_block_t *iterator;
 	struct list_head *tmp;
 	struct list_head *p;
+
 	/* logic */
 	list_for_each(p, &mem_list) {
 		iterator = (mem_block_t *)p;
