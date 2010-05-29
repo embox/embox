@@ -1,12 +1,12 @@
-
 /**
+ * @file
+ * @brief ELF (Executable and Linkable Format) writer.
+ *
  * @date May 1, 2010
  * @author Aleksandr Kirov
  */
 
-#include "elf_reader.h"
-
-		/******LIBRARY INTERFACE******/
+#include <lib/elf_reader.h>
 
 /**
  * Function prints consistens of elf header according the specification

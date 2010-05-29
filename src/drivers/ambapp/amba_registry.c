@@ -34,7 +34,7 @@ static LIST_HEAD(head_vendor_list);
 
 static inline amba_registry_vendor_entry_t *find_vendor_entry(uint8_t ven_id) {
 	struct list_head * p;
-	list_for_each(p, (&head_vendor_list)) {
+	list_for_each(p, &head_vendor_list) {
 		if (((amba_registry_vendor_entry_t *) p)->ven_info->ven_id == ven_id) {
 			return (amba_registry_vendor_entry_t *) p;
 		}

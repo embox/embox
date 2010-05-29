@@ -1,5 +1,7 @@
-
 /**
+ * @file
+ * @brief ELF (Executable and Linkable Format) writer.
+ *
  * @date May 1, 2010
  * @author Aleksandr Kirov
  */
