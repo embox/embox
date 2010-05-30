@@ -6,7 +6,6 @@
  * @date 02.05.2010
  *
  * @auther Michail Skorginskii
- *
  */
 
 #include <lib/page_alloc.h>
@@ -14,12 +13,7 @@
 #include <lib/dm_malloc.h>
 #include <lib/list.h>
 
-/* adress of free memory block */
-#define ADRESS(block) (block+sizeof(mem_block_t)+1)
-
-/* memory list */
-static LIST_HEAD(mem_list);
-
+/* auxiliry function. allocate block of memory */
 inline mem_block_t* allocate_mem_block(int pages) {
 	mem_block_t *tmp_alloc;
 
@@ -37,6 +31,7 @@ inline mem_block_t* allocate_mem_block(int pages) {
 	return tmp_alloc;
 }
 
+/* auxiliry function. Eat mem. */
 inline mem_block_t* eat_mem(size_t size, mem_block_t* ext) {
         /* block from wich bit a mem */
         mem_block_t *tmp;
@@ -99,10 +94,7 @@ void* dm_malloc(size_t size) {
 	return 0;
 }
 
-/*
- * free memory at ptr
- */
-void dm_free(void *ptr) {
+int dm_free(void *ptr) {
 	mem_block_t *iterator;
 	struct list_head *tmp;
 	struct list_head *p;
@@ -137,7 +129,8 @@ void dm_free(void *ptr) {
 	return -1;
 }
 
-/*TODO: write dynammic memory allocaton :) */
 #undef PROC
 #undef HOLE
 #undef REPEAT
+#undef ADRESS
+
