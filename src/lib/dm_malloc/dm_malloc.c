@@ -13,6 +13,9 @@
 #include <lib/dm_malloc.h>
 #include <lib/list.h>
 
+/* memory list */
+static LIST_HEAD(mem_list);
+
 /* auxiliry function. allocate block of memory */
 inline mem_block_t* allocate_mem_block(int pages) {
 	mem_block_t *tmp_alloc;

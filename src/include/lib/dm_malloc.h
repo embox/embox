@@ -72,7 +72,7 @@ typedef struct mem_block {
 /**
  * Internal memory representation.
  */
-static LIST_HEAD(mem_list);
+//static LIST_HEAD(mem_list);
 
 /**
  * Dynamic memory allocator arbitrary size.
