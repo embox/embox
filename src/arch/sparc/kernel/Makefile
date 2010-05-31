@@ -37,3 +37,6 @@ ifdef CONFIG_AMBAPP
   $_DEPS-clock     += embox.driver.ambapp
   $_DEPS-interrupt += embox.driver.ambapp
 endif
+
+$_SRCS-prom += prom.c
+
