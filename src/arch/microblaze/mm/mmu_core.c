@@ -28,20 +28,25 @@ static mmu_env_t *cur_env;
 static uint32_t cur_utlb_idx;
 
 /* Setup module starting function */
-EMBOX_UNIT_INIT(mmu_init)
-;
+EMBOX_UNIT_INIT(mmu_init);
+
 
 static inline void mmu_save_status(uint32_t *status) {
+#if 0
 	register uint32_t msr;
 	__asm__ __volatile__ ("mfs     %0, rmsr;\n\t"
-			"andni   %0, r0, %2;\n\t"
+			"andni   %0, %0, %2;\n\t"
 			"swi   %0, %1, 0;\n\t" :
 			"=r"(msr) :
 			"r"(status), "i"(MSR_VM_MASK) :
 			"memory" );
+#endif
+	*status = msr_get_value();
+	*status &= ~(MSR_VM_MASK);
 }
 
 static inline void mmu_restore_status(uint32_t *status) {
+#if 0
 	register uint32_t msr, tmp;
 	__asm__ __volatile__ ("lwi  %0, %1, 0;\n\t"
 			"mfs     %0, rmsr;\n\t"
@@ -50,6 +55,8 @@ static inline void mmu_restore_status(uint32_t *status) {
 			"=r"(msr), "=&r"(tmp):
 			"r"(status), "i"(MSR_VM_MASK) :
 			"memory" );
+#endif
+	msr_set_value(msr_get_value() | ((*status) & ~(MSR_VM_MASK)));
 }
 
 void mmu_on(void) {
@@ -93,25 +100,10 @@ static inline void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi) {
 	*tlbhi = tmp2;
 }
 
-//static inline uint32_t get_rtlblo(uint32_t idx) {
-//	register uint32_t retval;
-//	__asm__ __volatile__("mts rtlbx, %0;\n\t"
-//			"mts rtlbx, %0;\n\t"
-//			: "=r" (retval)
-//			: "r" (idx));
-//	return retval;
-//}
-
-//static inline uint32_t get_rtlbhi(uint32_t idx) {
-//
-//}
-
 void mmu_save_table(__mmu_table_t utlb) {
 	int i;
 	for (i = 0; i < UTLB_QUANTITY_RECORDS; i++) {
 		get_utlb_record(i, &(&utlb[i])->tlblo, &(&utlb[i])->tlbhi);
-//		(&utlb[i])->tlblo = get_rtlblo(i);
-//		(&utlb[i])->tlbhi = get_rtlbhi(i);
 	}
 }
 
@@ -173,6 +165,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 			((flags & MMU_PAGE_EXECUTEABLE) ? 1 : 0),
 			((flags & MMU_PAGE_WRITEABLE) ? 1 : 0));
 
+	/*printf("tlblo = 0x%X tlbhi=0x%X\n", tlblo, tlbhi);*/
 	set_utlb_record((cur_utlb_idx++) % UTLB_QUANTITY_RECORDS, tlblo, tlbhi);
 
 	return reg_size;
@@ -197,10 +190,11 @@ void mmu_restore_env(mmu_env_t *env) {
 }
 
 void mmu_save_env(mmu_env_t *env) {
-		unsigned int ipl = ipl_save();
+	unsigned int ipl = ipl_save();
 
 	mmu_save_status(&(cur_env->status));
 
+	cur_env->status = 0;
 	/* disable virtual mode*/
 	mmu_off();
 

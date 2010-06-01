@@ -30,13 +30,15 @@ static int run() {
 	mmu_set_env(testmmu_env());
 
 	/* map one to one section text and may be whole image with stack */
-	mmu_map_region((mmu_ctx_t)0, (uint32_t) &_text_start, (uint32_t) &_text_start, 0x1000000,
-			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+	mmu_map_region((mmu_ctx_t) 0, (uint32_t) &_text_start,
+			(uint32_t) &_text_start, 0x1000000, MMU_PAGE_CACHEABLE
+					| MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
 	if (&__stack > (&_text_start + 0x1000000)) {
 		/* if have to map data sections */
-		mmu_map_region((mmu_ctx_t)0, _data_start, _data_start, 0x1000000, MMU_PAGE_CACHEABLE
-				| MMU_PAGE_WRITEABLE);
+		mmu_map_region((mmu_ctx_t) 0, (paddr_t) &_data_start,
+				(vaddr_t) &_data_start, 0x1000000,
+				(uint32_t)(MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE));
 	}
 
 	mmu_on();

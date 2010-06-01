@@ -13,15 +13,18 @@
 
 /* declare test in system */
 EMBOX_TEST(run);
-static char addr[0x1000 * 3];
-//static char *pointer;
+
+#define VADDR(phyaddr) (0xf0000000 + ((uint32_t)(phyaddr) - (uint32_t)(&_data_start)))
+
+static uint32_t addr;
 
 /* starting function for test */
 static int run() {
 	extern char _text_start, __stack, _data_start;
 	int status = 0;
-//	int i;
+
 	mmu_env_t prev_mmu_env;
+	uint32_t vaddr = VADDR(&addr);
 
 	mmu_save_env(&prev_mmu_env);
 	mmu_set_env(testmmu_env());
@@ -33,23 +36,26 @@ static int run() {
 
 	if (&__stack > (&_text_start + 0x1000000)) {
 		/* if have to map data sections */
-		mmu_map_region((mmu_ctx_t)0, (uint32_t) &_data_start,
-				(uint32_t) &_data_start, 0x1000000,
+		mmu_map_region((mmu_ctx_t)0, (paddr_t) &_data_start,
+				(vaddr_t) &_data_start, 0x1000000,
 				MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
-	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr, 0xf0080000, 0x40000,
-			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+	mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_start, 0xf0000000, 0x1000000,
+			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
+
 	mmu_on();
-	if ((*((unsigned long *)0xf0080000)) != (*((unsigned long *)&addr))) {
+
+	if ((*((volatile uint32_t *)vaddr)) != (*((unsigned long *)&addr))) {
 		status = -1;
 	}
 
 	/* test read/write */
-	*((volatile unsigned long *)0xf0091004) = 0x87654321;
-	if ( (*((volatile unsigned long *)0xf0091004)) != 0x87654321 ) {
-		status = -1;
+	*((volatile uint32_t *)vaddr) = 0x87654321;
+	if ( (*((volatile uint32_t *)vaddr) ) != 0x87654321 ) {
+		status = -2;
 	}
 
 	mmu_restore_env(&prev_mmu_env);
+
 	return status;
 }
