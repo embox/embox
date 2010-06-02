@@ -7,7 +7,10 @@
 "\t\tu - Das U-Boot format\n"
 "\t\tr - raw format (default)\n"
 "\t-a addr   - entry point address\n"
-"\t-i        - show image info, dont boot\n"
+"EXAMPLES\n"
+"\tboot -a 0x40000000\n"
+"SEE ALSO\n"
+"\ttftp, goto\n"
 "AUTHORS\n"
 "\tNikolay Korotky"
 

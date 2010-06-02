@@ -12,19 +12,7 @@
 #include <kernel/printk.h>
 #include <string.h>
 
-#define __pa(x) __nocache_pa(x)
-#define __va(x) __nocache_va(x)
-
-#define M_LEON       0x30
-#define M_LEON3_SOC  0x01
-#define LEON_PREGS   0x80000000
-#define LEON_SRLD    0x64
-
-/* ram configuration */
-#define LEONSETUP_MEM_BASEADDR 0x40000000
-
-/* for __va */
-#define phys_base LEONSETUP_MEM_BASEADDR
+#define KERNEL_ARGS "console=ttyS0,38400 rdinit=/sbin/init"
 
 static void leon_reboot(char *bcommand);
 static void leon_halt(void);
@@ -249,7 +237,7 @@ struct leon_prom_info spi = {
         "clock-frequency",
         "uart1_baud",
         "uart2_baud",
-        "console=ttyS0,38400 rdinit=/sbin/init"
+        KERNEL_ARGS
 };
 
 static void leon_reboot(char *bcommand) {
@@ -384,4 +372,3 @@ void leon_prom_init(void) {
                 cksum ^= *ptr++;
         spi.idprom.id_cksum = cksum;
 }
-

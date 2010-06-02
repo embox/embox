@@ -13,6 +13,20 @@
 
 #ifndef __ASSEMBLY__
 
+#define M_LEON       0x30
+#define M_LEON3_SOC  0x01
+#define LEON_PREGS   0x80000000
+#define LEON_SRLD    0x64
+
+/* ram configuration */
+#define LEONSETUP_MEM_BASEADDR 0x40000000
+
+/* for __va */
+//#define phys_base LEONSETUP_MEM_BASEADDR
+
+#define __pa(x) __nocache_pa(x)
+#define __va(x) __nocache_va(x)
+
 /**
  * V0 prom device operations.
  */
@@ -361,6 +375,7 @@ struct leon_prom_info {
 
 extern struct leon_prom_info spi;
 
+extern void mark(void);
 extern void leon_prom_init(void);
 
 #endif /* !(__ASSEMBLY__) */
