@@ -1,0 +1,13 @@
+"NAME\n"
+"\tboot - boot application image from memory\n"
+"SYNOPSIS\n"
+"\tboot [-f format] [-i] -a addr\n"
+"DESCRIPTION\n"
+"\t-f format - image format\n"
+"\t\tu - Das U-Boot format\n"
+"\t\tr - raw format (default)\n"
+"\t-a addr   - entry point address\n"
+"\t-i        - show image info, dont boot\n"
+"AUTHORS\n"
+"\tNikolay Korotky"
+
