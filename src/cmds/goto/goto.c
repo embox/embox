@@ -19,7 +19,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 typedef void (*IMAGE_ENTRY)(void);
 
-void go_to(unsigned int addr) {
+static void go_to(unsigned int addr) {
 	interrupt_nr_t interrupt_nr;
 	printf("Try goto 0x%08X\n", addr);
 #if 0
@@ -50,7 +50,7 @@ static int exec(int argsc, char **argsv){
 				go_to(addr);
 				return 0;
 			}
-			LOG_ERROR("goto: invalid value \"%s\".\n\the number expected.\n", optarg);
+			LOG_ERROR("goto: invalid value \"%s\".\nthe number expected.\n", optarg);
 			return -1;
 		case -1:
 			break;

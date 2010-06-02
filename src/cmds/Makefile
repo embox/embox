@@ -14,5 +14,5 @@ add_cmd:
 	@[[ -d $(CMD_NAME) ]] || mkdir -p $(CMD_NAME)
 	cat $(_CMD_TEMPLATE)/Makefile_template | $(FILTER) > $(CMD_NAME)/Makefile
 	cat $(_CMD_TEMPLATE)/cmd_template.c | $(FILTER) > $(CMD_NAME)/$(CMD_NAME).c
-	cat $(_CMD_TEMPLATE)/cmd_template_help.inc | $(FILTER) > $(CMD_NAME)/$(CMD_NAME)_help.c
+	cat $(_CMD_TEMPLATE)/cmd_template_help.inc | $(FILTER) > $(CMD_NAME)/$(CMD_NAME)_help.inc
 	svn add $(CMD_NAME)
