@@ -10,12 +10,13 @@
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 
+//FIXME: Actually, whole FS is unfinished now.
+static unsigned int base_addr = 0x40004000;
+
 FILE *fopen(const char *path, const char *mode) {
 	RAMFS_CREATE_PARAM param;
 	FSOP_DESCRIPTION *fsop;
 	FILE *fd;
-	//FIXME: Actually, whole FS is unfinished now.
-	unsigned int base_addr = 0x40000000;
 	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))) {
 		LOG_ERROR("Can't find ramfs disk\n");
 		return NULL;

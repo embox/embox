@@ -24,7 +24,6 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 #define KERNBASE        0xf0000000  /* First address the kernel will eventually be */
 #define LOAD_ADDR       0x4000      /* prom jumps to us here unless this is elf /boot */
-//#define LEONSETUP_MEM_BASEADDR    0x40000000
 
 /**
  * OpenProm routine.
@@ -37,6 +36,11 @@ static void bootm_kernel(unsigned int addr) {
         for (interrupt_nr = 0; interrupt_nr < INTERRUPT_NRS_TOTAL; ++interrupt_nr) {
                 interrupt_disable(interrupt_nr);
         }
+
+        /* disable mmu */
+        mmu_off();
+//        __asm__ __volatile__("flush\n\t");
+
         /* init prom info struct */
         leon_prom_init();
         /* mark as used for bootloader */
@@ -58,7 +62,7 @@ static void bootm_kernel(unsigned int addr) {
                        MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
         mmu_set_context(0);
-        __asm__ __volatile__("flush\n\t");
+//        __asm__ __volatile__("flush\n\t");
         mmu_on();
         mmu_flush_tlb_all();
         /* call kernel */
@@ -89,11 +93,11 @@ static int uimage_info(unsigned int addr) {
 
 static int exec(int argsc, char **argsv) {
 	int nextOption;
-	char format;
+	char format = 'r';
 	unsigned int addr;
 	getopt_init();
 	do {
-    		nextOption = getopt(argsc - 1, argsv, "f:a:h");
+    		nextOption = getopt(argsc, argsv, "f:a:h");
     		switch(nextOption) {
     		case 'f':
         		if (1 != sscanf(optarg, "%c", &format)) {

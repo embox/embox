@@ -24,7 +24,7 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-int raw_echo_server(void) {
+static int raw_echo_server(void) {
 	int fd, fromlen;
 	struct sockaddr_in from;
 	char datagram[1024];
@@ -61,12 +61,12 @@ int raw_echo_server(void) {
 	return 0;
 }
 
-int raw_client(void) {
+static int raw_client(void) {
 	//TODO:
 	return 0;
 }
 
-int udp_echo_server(void) {
+static int udp_echo_server(void) {
 	int fd, len, fromlen;
 	struct sockaddr_in server, from;
 	char buf[1024];
@@ -90,7 +90,7 @@ int udp_echo_server(void) {
 	return 0;
 }
 
-int udp_client(void) {
+static int udp_client(void) {
 	int fd, len;
 	struct sockaddr_in server, from;
 	char buf[256] = "test";

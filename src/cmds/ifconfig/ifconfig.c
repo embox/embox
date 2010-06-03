@@ -14,7 +14,9 @@
 
 #define COMMAND_NAME     "ifconfig"
 #define COMMAND_DESC_MSG "configure a network interface"
-#define HELP_MSG         "Usage:[-a ipaddr] [-m macaddr] [-p mask] [-u|d] [-r 0|1] [-f 0|1] [-c 0|1] [-g 0|1] [-l mtu] [-b address] [-i irq_num] [-t maxtxqueue] [-w brdcstaddr] [-z [destaddr]][-x name|interface]"
+#define HELP_MSG         "Usage:[-a ipaddr] [-m macaddr] [-p mask] [-u|d] \
+[-r 0|1] [-f 0|1] [-c 0|1] [-g 0|1] [-l mtu] [-b address] [-i irq_num] \
+[-t maxtxqueue] [-w brdcstaddr] [-z [destaddr]][-x name|interface]"
 
 static const char *man_page =
 	#include "ifconfig_help.inc"

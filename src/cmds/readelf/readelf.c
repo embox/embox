@@ -26,7 +26,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 extern int errno;
 
-uint32_t rev_long(uint32_t n, uint8_t reversed) {
+static uint32_t rev_long(uint32_t n, uint8_t reversed) {
         if (reversed == 2) {
                 return ((n & 0x000000ff) << 24)
                        + ((n & 0x0000ff00) << 8)
@@ -37,7 +37,7 @@ uint32_t rev_long(uint32_t n, uint8_t reversed) {
         }
 }
 
-uint16_t rev_short(uint16_t n, uint8_t reversed) {
+static uint16_t rev_short(uint16_t n, uint8_t reversed) {
         if (reversed == 2) {
                 return ((n & 0x00ff) << 8) + ((n & 0xff00) >> 8);
         } else {
@@ -45,7 +45,7 @@ uint16_t rev_short(uint16_t n, uint8_t reversed) {
         }
 }
 
-void print_header(Elf32_Ehdr *head) {
+static void print_header(Elf32_Ehdr *head) {
         int i, x;
         printf("e_ident : ");
 
@@ -207,7 +207,7 @@ void print_header(Elf32_Ehdr *head) {
                rev_short(head->e_shstrndx, head->e_ident[5]));
 }
 
-void print_sections(Elf32_Shdr *sections, int8_t *names, int count, uint8_t rev) {
+static void print_sections(Elf32_Shdr *sections, int8_t *names, int count, uint8_t rev) {
         size_t i;
         if (names == NULL) {
                 return;
@@ -218,7 +218,7 @@ void print_sections(Elf32_Shdr *sections, int8_t *names, int count, uint8_t rev)
         }
 }
 
-void print_section_head(Elf32_Shdr *section_header, uint8_t rev,
+static void print_section_head(Elf32_Shdr *section_header, uint8_t rev,
                         int8_t *string_table) {
         int x;
         Elf32_Word flags;
@@ -329,7 +329,7 @@ void print_section_head(Elf32_Shdr *section_header, uint8_t rev,
                rev_long(section_header->sh_entsize, rev));
 }
 
-void print_segment_head(Elf32_Phdr * segment_header, uint8_t reversed) {
+static void print_segment_head(Elf32_Phdr * segment_header, uint8_t reversed) {
         int x;
 
         printf("\n -- segment info --\n\n");
@@ -393,7 +393,7 @@ void print_segment_head(Elf32_Phdr * segment_header, uint8_t reversed) {
                rev_long(segment_header->p_align, reversed));
 }
 
-void print_rel(Elf32_Rel *rel_array, int count, int reversed) {
+static void print_rel(Elf32_Rel *rel_array, int count, int reversed) {
         size_t i;
 
         if (count != 0) {
@@ -408,7 +408,7 @@ void print_rel(Elf32_Rel *rel_array, int count, int reversed) {
         }
 }
 
-void print_rela(Elf32_Rela *rela_array, int count, int reversed) {
+static void print_rela(Elf32_Rela *rela_array, int count, int reversed) {
         size_t i;
 
         if (count != 0) {
@@ -425,7 +425,7 @@ void print_rela(Elf32_Rela *rela_array, int count, int reversed) {
 }
 
 /* TODO names*/
-void print_symb(Elf32_Sym *symb, int8_t *names,
+static void print_symb(Elf32_Sym *symb, int8_t *names,
                 int counter, char reversed) {
         size_t i;
 

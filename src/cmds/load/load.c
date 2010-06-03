@@ -25,7 +25,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 #if 0
 #define ENTRY_PTR 0x40000000
 #endif
-int copy_image(char *file_name) {
+static int copy_image(char *file_name) {
 	void *romfile;
 	void *ramfile;
 	char romfname[0x40];

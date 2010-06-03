@@ -40,7 +40,7 @@ static int create_socket(struct sockaddr_in *addr) {
 	return sock;
 }
 
-int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
+static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
 	int desc;
 	size_t size, fromlen, dsize = 0;
 	struct sockaddr_in from;

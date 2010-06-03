@@ -59,8 +59,8 @@ inline static void show_bar_info(AMBA_BAR_INFO *bar) {
 		TRACE("%X\n", bar->start);
 	}
 }
-
-void show_bars_infos(AMBA_DEV *dev) {
+#if 0
+static void show_bars_infos(AMBA_DEV *dev) {
 	int i;
 	for (i = 0; i < array_len(dev->bar); i++) {
 		if (dev->bar[i].used) {
@@ -69,7 +69,7 @@ void show_bars_infos(AMBA_DEV *dev) {
 		}
 	}
 }
-
+#endif
 const char UNKNOWN[] = "<unknown>";
 
 static void show_dev(AMBA_DEV *dev, bool show_user) {
@@ -120,7 +120,7 @@ static int print_ahb_entries(int amount, bool is_master) {
 /**
  * Print list of all connected plug and play devices on ahb master bus
  */
-int print_ahbm_pnp_devs(void) {
+static int print_ahbm_pnp_devs(void) {
 	int count = 0;
 	TRACE("\nAHB masters..\n");
 	print_table_head();
@@ -131,7 +131,7 @@ int print_ahbm_pnp_devs(void) {
 /**
  * Print list of all connected plug and play devices on ahb slave bus
  */
-int print_ahbsl_pnp_devs(void) {
+static int print_ahbsl_pnp_devs(void) {
 	int count = 0;
 	TRACE("\nAHB slaves..\n");
 	print_table_head();
@@ -142,18 +142,18 @@ int print_ahbsl_pnp_devs(void) {
 /**
  * Print list of all connected plug and play devices on apb bus
  */
-int print_apb_pnp_devs(void) {
+static int print_apb_pnp_devs(void) {
 	int count = 0;
 	TRACE("\nAPB slaves..\n");
 	print_table_head();
 	count += print_apb_entries(APB_QUANTITY);
 	return count;
 }
-
+#if 0
 /**
  * Print list of all connected plug and play devices on ahb && apb buses
  */
-void print_all_pnp_devs(void) {
+static void print_all_pnp_devs(void) {
 	int count = 0;
 	TRACE("\nListing AMBA PNP devices..\n");
 	count +=print_ahbm_pnp_devs();
@@ -163,8 +163,8 @@ void print_all_pnp_devs(void) {
 	count += print_apb_pnp_devs();
 	TRACE("\n..Total: %d\n\n", count);
 }
-
-void print_ahbm_pnp_dev(uint32_t slot) {
+#endif
+static void print_ahbm_pnp_dev(uint32_t slot) {
 	AMBA_DEV dev;
 	if (slot >AHB_MASTERS_QUANTITY) {
     		LOG_ERROR("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
@@ -182,7 +182,7 @@ void print_ahbm_pnp_dev(uint32_t slot) {
 	}
 }
 
-void print_ahbsl_pnp_dev(uint32_t slot) {
+static void print_ahbsl_pnp_dev(uint32_t slot) {
 	AMBA_DEV dev;
 	if (slot >AHB_SLAVES_QUANTITY) {
 		LOG_ERROR("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
@@ -200,7 +200,7 @@ void print_ahbsl_pnp_dev(uint32_t slot) {
 	}
 }
 
-void print_apb_pnp_dev(uint32_t slot) {
+static void print_apb_pnp_dev(uint32_t slot) {
 	AMBA_DEV dev;
 	if (slot > APB_QUANTITY) {
 		TRACE("print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);

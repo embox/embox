@@ -16,11 +16,7 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-char mem_keys[] = {
-	'a', 'n', 'h'
-};
-
-void mem_print(uint32_t *addr, unsigned int amount) {
+static void mem_print(uint32_t *addr, unsigned int amount) {
 	long i = 0;
 	uint32_t *cur_addr = (uint32_t *) ((uint32_t) addr & 0xFFFFFFFC);
 	while (i < amount) {
@@ -36,7 +32,7 @@ void mem_print(uint32_t *addr, unsigned int amount) {
 	}
 }
 
-typedef void TEST_MEM_FUNC(uint32_t *addr, unsigned int amount);
+//typedef void TEST_MEM_FUNC(uint32_t *addr, unsigned int amount);
 
 static int exec(int argsc, char **argsv) {
 	uint32_t *address = (uint32_t *) 0x70000000L;
