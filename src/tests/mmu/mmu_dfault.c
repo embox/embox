@@ -29,16 +29,16 @@ static uint32_t addr;
 
 /* MMU data access exception handler */
 static int dfault_handler(uint32_t trap_nr, void *data) {
-	printf("mmu dfault");
-	while(1);
+	//printf("mmu dfault");
+	//while(1);
 
 	return 0;
 }
 
 /* MMU data access exception handler */
 static int ifault_handler(uint32_t trap_nr, void *data) {
-	printf("mmu ifault");
-	while(1);
+	//printf("mmu ifault");
+	//while(1);
 	return 0;
 }
 

@@ -15,9 +15,6 @@
 struct pt_regs {
 	/*stack*/
 	uint32_t regs[32];
-	uint32_t msr;
-	/*other information*/
-	uint32_t pc;
 }pt_regs_t;
 
 #endif /* MB_PTRACE_H_ */
