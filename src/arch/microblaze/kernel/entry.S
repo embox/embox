@@ -496,7 +496,7 @@ C_ENTRY(_hw_exception_handler):
 	lwi	r2, r1, 0
 	addi	r1, r1, 8
 
-	msrset	r0, 8
+	msrset	r0, 512
 	nop
 	nop
 	nop
