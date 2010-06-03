@@ -14,8 +14,6 @@
 /* declare test in system */
 EMBOX_TEST(run);
 
-#define VADDR(phyaddr) (0xf0000000 + ((uint32_t)(phyaddr) - (uint32_t)(&_data_start)))
-
 static uint32_t addr;
 
 /* starting function for test */
