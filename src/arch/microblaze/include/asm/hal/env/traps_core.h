@@ -11,9 +11,14 @@
 #include <types.h>
 
 /*FIXME move UTLB_QUANTITY_RECORDS to arch dependent config*/
-#define MAX_HWTRAP_NUMBER    0x8
+#define MAX_HWTRAP_NUMBER    0x14
 #define MAX_SOFTTRAP_NUMBER  0x10
 #define MAX_INTERRUPT_NUMBER 0x10
+
+#define DIVZERO_FAULT        0x5
+#define MMU_DFAULT           0x12
+#define MMU_IFAULT           0x13
+
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);
 

@@ -428,7 +428,8 @@ C_ENTRY(_hw_exception_handler):
 	addi	r1, r1, -4
 	swi	r31, r1, 0
 	/* set first param*/
-	addi	r5, r0 , 0x09
+	mfs		r5, resr
+	andi	r5, r5, 0x1f
 	/* set third param */
 	addi	r7, r1, 0
 

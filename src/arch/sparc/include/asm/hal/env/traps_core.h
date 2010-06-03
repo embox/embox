@@ -16,6 +16,10 @@
 /*FIXME move MMU_TABLE_SIZE to arch dependent config*/
 #define TRAP_TABLE_SIZE      (256)
 
+#define DIVZERO_FAULT        0x2A
+#define MMU_DFAULT           0x09
+#define MMU_IFAULT           0x01
+
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);
 

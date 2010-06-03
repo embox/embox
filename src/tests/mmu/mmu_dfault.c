@@ -19,9 +19,6 @@
 /* declare test in system */
 EMBOX_TEST(run);
 
-#define MMU_DFAULT 0x09
-#define MMU_IFAULT 0x01
-
 #define VADDR(phyaddr) ((0xf0000000 - (uint32_t)(&_data_start)) \
 		+ ((uint32_t)(phyaddr) - (uint32_t)(&_data_start)))
 

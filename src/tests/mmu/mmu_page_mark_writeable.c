@@ -18,7 +18,7 @@
 EMBOX_TEST(run);
 
 //TODO mmu move to common mmu header
-#define MMU_DFAULT 0x09
+
 #define VADDR(phyaddr) (0xf0000000 + ((uint32_t)(phyaddr) - (uint32_t)(&_data_start)))
 
 static uint32_t addr;
