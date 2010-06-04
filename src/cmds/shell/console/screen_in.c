@@ -140,9 +140,11 @@ static irq_return_t uart_irq_handler(softirq_nr_t irq, void *data) {
 }
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
+#ifndef CONFIG_SOFTIRQ
 	static TERMINAL_TOKEN token;
 	static TERMINAL_TOKEN_PARAMS params[1];
 	char ch;
+#endif
 	if ((this == NULL) || this->running) {
 		return;
 	}
