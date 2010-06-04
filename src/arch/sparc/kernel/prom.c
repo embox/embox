@@ -9,6 +9,7 @@
 
 #include <asm/prom.h>
 #include <hal/mm/mmu_core.h>
+#include <hal/mm/mmu_page.h>
 #include <kernel/printk.h>
 #include <string.h>
 
@@ -192,7 +193,7 @@ struct leon_prom_info spi = {
 
 #undef  CPUENTRY
 #define CPUENTRY(idx) \
-          { 1, __va(spi.cpu_properties##idx) }, /* cpu <idx> */
+          { 0, __va(spi.cpu_properties##idx) }, /* cpu <idx> */
                 CPUENTRY(1)
                 CPUENTRY(2)
                 CPUENTRY(3)

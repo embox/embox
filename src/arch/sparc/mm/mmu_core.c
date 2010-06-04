@@ -54,6 +54,7 @@ void mmu_restore_table(uint32_t *status) {
 
 void mmu_on(void) {
 	unsigned long val;
+	mmu_set_ctable_ptr(cur_env->ctx);
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
 	val |= 0x1;
 	mmu_set_mmureg(LEON_CNR_CTRL, val);

@@ -40,7 +40,8 @@ static void bootm_kernel(unsigned int addr) {
         /* disable mmu */
         mmu_off();
 //        __asm__ __volatile__("flush\n\t");
-
+        asm __volatile__ ("set 0x7fffff60, %fp\n"
+                          "add %fp, -0x60, %sp\n");
         /* init prom info struct */
         leon_prom_init();
         /* mark as used for bootloader */
@@ -49,6 +50,12 @@ static void bootm_kernel(unsigned int addr) {
         mmu_map_region((mmu_ctx_t)0, (uint32_t) &_text_start,
                        (uint32_t) &_text_start, 0x1000000,
                        MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+        mmu_map_region((mmu_ctx_t)0, (uint32_t) 0x44000000,
+        		(uint32_t) 0xf4000000, 0x1000000,
+        		MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+        mmu_map_region((mmu_ctx_t)0, (uint32_t) 0x7f000000,
+                        (uint32_t) 0x7f000000, 0x1000000,
+                        MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
         if (&__stack > (&_text_start + 0x1000000)) {
                 /* if have to map data sections */
                 mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_start, (vaddr_t)&_data_start,
@@ -66,6 +73,7 @@ static void bootm_kernel(unsigned int addr) {
         mmu_on();
         mmu_flush_tlb_all();
         /* call kernel */
+
         kernel = (void (*)(struct linux_romvec*))(KERNBASE + LOAD_ADDR);
         kernel(__va(&spi.romvec));
 }
@@ -89,6 +97,17 @@ static int uimage_info(unsigned int addr) {
         printf("Compression Type: 0x%08X\n", hdr->ih_comp);
         printf("Image Name: %s\n", hdr->ih_name);
         return 0;
+}
+
+/**
+ * Das U-Boot routine.
+ */
+static void ubootm_kernel(unsigned int addr) {
+	void (*kernel) (struct linux_romvec *);
+	image_header_t *hdr = (image_header_t *)addr;
+	kernel = (void (*)(struct linux_romvec *))hdr->ih_ep;
+	//TODO: mmu on and so far
+	kernel(__va(&spi.romvec));
 }
 
 static int exec(int argsc, char **argsv) {
@@ -124,6 +143,7 @@ static int exec(int argsc, char **argsv) {
 	switch (format) {
 	case 'u':
     		uimage_info(addr);
+    		ubootm_kernel(addr);
 		break;
 	case 'r':
     		bootm_kernel(addr);

@@ -20,12 +20,10 @@
 
 /* ram configuration */
 #define LEONSETUP_MEM_BASEADDR 0x40000000
+#define PAGE_OFFSET            0xf0000000
 
-/* for __va */
-//#define phys_base LEONSETUP_MEM_BASEADDR
-
-#define __pa(x) __nocache_pa(x)
-#define __va(x) __nocache_va(x)
+#define __pa(x)     ((unsigned long)(x) - PAGE_OFFSET + LEONSETUP_MEM_BASEADDR)
+#define __va(x)     ((void *)((unsigned long) (x) - LEONSETUP_MEM_BASEADDR + PAGE_OFFSET))
 
 /**
  * V0 prom device operations.
