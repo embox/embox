@@ -11,6 +11,8 @@
 
 #include <stddef.h>
 
+#include <util/macro.h>
+
 /*
  * Implementation note:
  * Many macros uses some of their arguments to construct symbol names. This
@@ -24,8 +26,6 @@
 # endif /* __EMBUILD_MOD__ */
 #endif /* __EMBUILD_DEPSINJECT__ */
 
-#define __STRINGIFY(str) #str
-
 /* Linker sections stuff. */
 
 /*
@@ -37,8 +37,8 @@
  * multiple compilation units.
  */
 
-#define __MOD_SECTION(s_mod, section, order, tag) \
-	".mod"__STRINGIFY(__##section##__$$##s_mod##$$__##order##_##tag)".rodata"
+#define __MOD_SECTION(s_mod, section, ord, tag) \
+	".mod" MACRO_STRING(__##section##__$$##s_mod##$$__##ord##_##tag) ".rodata"
 
 #define __MOD_SECTION_HEAD(s_mod, section) __MOD_SECTION(s_mod, section,0,head)
 #define __MOD_SECTION_BODY(s_mod, section) __MOD_SECTION(s_mod, section,1,body)
