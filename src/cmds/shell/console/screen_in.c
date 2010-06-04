@@ -149,8 +149,11 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	this->running = true;
 
 	this->callback = cb;
+#ifdef CONFIG_SOFTIRQ
 	softirq_install(UART_SOFTIRQ_NR, uart_softirq_handler, NULL);
 	uart_set_irq_handler(uart_irq_handler);
+	while(1) {}
+#else
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			params)) {
 		ch = token & 0xFF;
@@ -160,6 +163,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 			handle_ctrl_token(this, token, params);
 		}
 	}
+#endif
 	assert(this->callback == NULL);
 	this->running = false;
 }
