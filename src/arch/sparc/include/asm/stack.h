@@ -10,11 +10,16 @@
 #define SPARC_STACK_H_
 
 #include <types.h>
+
 #include <asm/winmacro.h>
+
+/** SPARC stack is doubleword aligned. */
+#define STACK_ALIGNMENT 8
 
 #ifndef __ASSEMBLER__
 
-#define STACK_FRAME_SZ sizeof(struct stack_frame)
+/** The size of minimal required stack frame. */
+#define STACK_FRAME_SZ  sizeof(struct stack_frame)
 
 /**
  * Stack frame structure accordingly to the SPARC v8 Software Considerations.
@@ -28,7 +33,7 @@ struct stack_frame {
 	uint32_t xargs[6];
 	/** TODO I don't know. Seems to be just a place holder. -- Eldar */
 	uint32_t xxargs[1];
-}__attribute__ ((aligned (8)));
+}__attribute__ ((aligned (STACK_ALIGNMENT)));
 
 #else /* __ASSEMBLER__ */
 

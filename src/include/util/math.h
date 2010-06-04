@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef MATH_H_
-#define MATH_H_
+#ifndef UTIL_MATH_H_
+#define UTIL_MATH_H_
 
 /**
  * Returns the absolute value of an argument. If the argument is not negative,
@@ -72,4 +72,4 @@
 	__clamp_val; \
 })
 
-#endif /* MATH_H_ */
+#endif /* UTIL_MATH_H_ */

@@ -163,6 +163,8 @@
  * @author Eldar Abusalimov
  */
 
+#include <util/binalign.h>
+
 #include <asm/regs.h>
 #include <asm/psr.h>
 #include <asm/wim.h>
@@ -176,10 +178,10 @@
 
 /* Trap pre-setup. */
 
-/** Stack align (rounds "x" up to doubleword boundary) */
-#define SA(x) (((x)+7)&(~7))
-/** Trap frame size */
-#define TRAP_FRAME_SZ (STACK_FRAME_SZ + PTRACE_REGS_SZ)
+/** Stack align (rounds "x" up to doubleword boundary). */
+#define STACK_ALIGN(x) binalign_bound(x, STACK_ALIGNMENT)
+/** Trap frame size. */
+#define TRAP_FRAME_SZ  STACK_ALIGN(STACK_FRAME_SZ + PTRACE_REGS_SZ)
 
 /** Used for new WIM calculation and inter-window reference. */
 #define g_newwim     g1
@@ -244,12 +246,12 @@ tsb_kernel:
 	 */
 
 	/* Write the CPU state (globals, PSR, PC, nPC, Y, ...). */
-	STORE_PT_ALL(fp - SA(TRAP_FRAME_SZ), t_psr, t_pc, t_npc, g_temp)
+	STORE_PT_ALL(fp - TRAP_FRAME_SZ, t_psr, t_pc, t_npc, g_temp)
 
 	/* Test WIM for window overflow. */
 	andcc %t_wim, %t_twinmask, %g0
 	bne tsb_kernel_wof
-	 add %fp, -SA(TRAP_FRAME_SZ), %t_ksp
+	 add %fp, -TRAP_FRAME_SZ, %t_ksp
 
 	/* You're lucky guy, you've come from the kernel,
 	 * and there was no overflow when entering the trap window.
@@ -290,7 +292,7 @@ tsb_save_kernel_window:
 tsb_user:
 	/* For user mode:
 	 * Set pointer to the top of the empty kernel stack. */
-	set __stack - SA(TRAP_FRAME_SZ), %t_ksp
+	set __stack - TRAP_FRAME_SZ, %t_ksp
 
 	/* Write the cpu state (globals, psr, pc, npc, y, ...) */
 	STORE_PT_ALL(t_ksp, t_psr, t_pc, t_npc, g_temp)

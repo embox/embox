@@ -65,14 +65,15 @@ WEAK(0x78); WEAK(0x79); WEAK(0x7A); WEAK(0x7B); ! 78 - 7B undefined
 WEAK(0x7C); WEAK(0x7D); WEAK(0x7E); WEAK(0x7F); ! 7C - 7F undefined
 
 /* Software traps */
-SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  ! 80 - 83
+SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;              ! 80 - 82
+                                    SOFT_TRAP;  ! 83 TODO flush windows -- Eldar
 SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  ! 84 - 87
 SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  ! 88 - 8B
 SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  ! 8C - 8F
 SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  ! 90 - 93
 SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  ! 94 - 97
 SOFT_TRAP;                                      ! 98
-            EMBOX_SYSTEM_CALL;                  ! 99 EMBoX system call
+            EMBOX_SYSTEM_CALL;                  ! 99 embox system call
                         SOFT_TRAP;  SOFT_TRAP;  ! 9A - 9B
 SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  ! 9C - 9F
 SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  SOFT_TRAP;  ! A0 - A3
