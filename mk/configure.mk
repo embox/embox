@@ -3,6 +3,7 @@
 #
 
 HOSTCC  = gcc
+HOSTCC_MAJOR := $(shell $(HOSTCC) -v 2>&1 | grep version | cut -d' ' -f3  | cut -d'.' -f1)
 HOSTCPP = $(HOSTCC) -E
 
 build_conf   := $(CONF_DIR)/build.conf
@@ -47,13 +48,19 @@ $(AUTOCONF_DIR)/start_script.inc: \
         $(wildcard $(BASE_CONF_DIR)/start_script.inc))
 	$(if $<,cp -f $< $@,@echo 'ERROR: start_script.inc not found';exit 1)
 
+ifeq ($(HOSTCC_MAJOR), 4)
+HOSTCC_CPPFLAGS := -iquote $(PATCH_CONF_DIR) -iquote $(BASE_CONF_DIR)
+else
+HOSTCC_CPPFLAGS := -I $(PATCH_CONF_DIR) -I $(BASE_CONF_DIR) -I-
+endif
+
 $(build_mk) $(mods_mk) :
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
+	$(HOSTCPP) -Wp, -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' > $@
 
 $(config_h) $(config_lds_h) :
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
+	$(HOSTCPP) -Wp, -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' | sed 's/$$define/#define/g' > $@
 
