@@ -198,7 +198,6 @@ C_ENTRY(_interrupt_handler):
 
 C_ENTRY(_user_exception):
 C_ENTRY(_debug_exception):
-#if 1
 	addi	r1, r1, -4
 	swi	r2, r1, 0
 	addi	r1, r1, -4
