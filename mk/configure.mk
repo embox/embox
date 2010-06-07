@@ -48,12 +48,12 @@ $(AUTOCONF_DIR)/start_script.inc: \
 	$(if $<,cp -f $< $@,@echo 'ERROR: start_script.inc not found';exit 1)
 
 $(build_mk) $(mods_mk) :
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -iquote $(PATCH_CONF_DIR) -iquote $(BASE_CONF_DIR) $(DEFS:%=-D%) \
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' > $@
 
 $(config_h) $(config_lds_h) :
-	$(HOSTCPP) -Wp, -P -undef -nostdinc -iquote $(PATCH_CONF_DIR) -iquote $(BASE_CONF_DIR) $(DEFS:%=-D%) \
+	$(HOSTCPP) -Wp, -P -undef -nostdinc -I$(PATCH_CONF_DIR) -I$(BASE_CONF_DIR) -I- $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' | sed 's/$$define/#define/g' > $@
 
