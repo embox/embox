@@ -350,23 +350,10 @@ C_ENTRY(_debug_exception):
 	rtbd r16,8
 	nop
 	nop
-#else
-	brai boot_start
-	nop
-	nop
-#endif
 
-/*C_ENTRY(_debug_exception):
-	brai boot_start
-	nop
-	nop
-*/
+
+
 C_ENTRY(_hw_exception_handler):
-#if 0
-	brai boot_start
-	nop
-	nop
-#else
 	addi	r1, r1, -8
 	swi	r2, r1, 0
 	addi	r1, r1, -4
@@ -497,13 +484,8 @@ C_ENTRY(_hw_exception_handler):
 	lwi	r2, r1, 0
 	addi	r1, r1, 8
 
-	msrset	r0, 512
-	nop
-	nop
-	nop
-
 	rted r17, 0
 	nop
-	nop
-#endif
+
+
 
