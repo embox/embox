@@ -61,25 +61,39 @@ static inline void mmu_restore_status(uint32_t *status) {
 
 void mmu_on(void) {
 	register uint32_t msr;
+#if 0
 	__asm__ __volatile__ ("mfs     %0, rmsr;\n\t"
 			"ori   %0, r0, %1;\n\t"
 			"mts     rmsr, %0;\n\t" :
 			"=r"(msr) :
 			"i"(MSR_VM_MASK) :
 			"memory" );
+#else
+	__asm__ __volatile__ ("msrset  %0, %1;\n\t" :
+			"=r"(msr) :
+			"i"(MSR_VM_MASK) :
+			"memory" );
+#endif
 }
 
 void mmu_off(void) {
 	register uint32_t msr;
+#if 0
 	__asm__ __volatile__ ("mfs     %0, rmsr;\n\t"
 			"andni   %0, r0, %1;\n\t"
 			"mts     rmsr, %0;\n\t" :
 			"=r"(msr) :
 			"i"(MSR_VM_MASK) :
 			"memory" );
+#else
+	__asm__ __volatile__ ("msrclr  %0, %1;\n\t" :
+				"=r"(msr) :
+				"i"(MSR_VM_MASK) :
+				"memory" );
+#endif
 }
 
-static inline void set_utlb_record(int tlbx, uint32_t tlblo, uint32_t tlbhi) {
+void set_utlb_record(int tlbx, uint32_t tlblo, uint32_t tlbhi) {
 	__asm__ __volatile__ ("mts rtlbx, %0;\n\t"
 			"mts rtlblo, %1;\n\t"
 			"mts rtlbhi, %2;\n\t"
@@ -88,7 +102,7 @@ static inline void set_utlb_record(int tlbx, uint32_t tlblo, uint32_t tlbhi) {
 			: "memory" );
 }
 
-static inline void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi) {
+void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi) {
 	uint32_t tmp1, tmp2;
 	__asm__ __volatile__ ("mts rtlbx, %2;\n\t"
 				"mfs %0, rtlblo;\n\t"
@@ -98,6 +112,7 @@ static inline void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi) {
 				: "memory" );
 	*tlblo = tmp1;
 	*tlbhi = tmp2;
+	//TRACE("get_utlb: tmp1 = 0x%x, tmp2 = 0x%x\n", tmp1, tmp2);
 }
 
 void mmu_save_table(__mmu_table_t utlb) {
@@ -160,15 +175,19 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 
 	/* setup tlbhi register firelds */
 	/*(var, phy_addr, cacheable, ex, wr)*/
+
 	RTLBLO_SET(tlblo, phy_addr,
 			((flags & MMU_PAGE_CACHEABLE) ? 1 : 0) ,
 			((flags & MMU_PAGE_EXECUTEABLE) ? 1 : 0),
 			((flags & MMU_PAGE_WRITEABLE) ? 1 : 0));
 
-	/*printf("tlblo = 0x%X tlbhi=0x%X\n", tlblo, tlbhi);*/
+//	TRACE("\n\nin mmu_map_region: ctx = 0x%x, phy_addr = 0x%x, virt_addr = 0x%x,"
+//			" reg_size = 0x%x, flags = 0x%x\n",
+//			ctx, phy_addr, virt_addr, reg_size, flags);
+//	TRACE("\ttlblo = 0x%X tlbhi=0x%X\n", tlblo, tlbhi);
 	set_utlb_record((cur_utlb_idx++) % UTLB_QUANTITY_RECORDS, tlblo, tlbhi);
 
-	return reg_size;
+	return cur_utlb_idx;
 }
 
 void mmu_restore_env(mmu_env_t *env) {
@@ -233,3 +252,4 @@ static int mmu_init(void) {
 	cur_env = &system_env;
 	return 0;
 }
+
