@@ -27,11 +27,7 @@ void interrupt_handler(void) {
 			if (irq_stat & (1 << irq_num)) {
 				//TODO we must clear whole pending register
 				interrupt_clear(irq_num);
-				if (blin_timer == 1) {
-					printf ("timer invoked\n");
 
-					while(1);
-				}
 				/*now we allow nested irq*/
 				msr_set_bit(MSR_IE_BIT);
 #ifdef CONFIG_IRQ
