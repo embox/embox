@@ -12,7 +12,7 @@ typedef unsigned int __interrupt_mask_t;
 /**
  * return isr register for mb_intc
  */
-extern __interrupt_mask_t irqc_get_isr_reg(void);
+extern __interrupt_mask_t interrupt_get_status(void);
 
 extern void irqc_set_mask(__interrupt_mask_t mask);
 extern __interrupt_mask_t irqc_get_mask(void);

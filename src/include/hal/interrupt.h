@@ -42,6 +42,15 @@
 typedef __interrupt_nr_t interrupt_nr_t;
 
 /**
+ * Type representing interrupt mask(pending) register.
+ *
+ * @note Implementation should provide @c __interrupt_nr_t type indicating
+ * unsigned (it is essential!) integer suitable to hold up to
+ * (1 << #INTERRUPT_NRS_TOTAL)  values.
+ */
+typedef __interrupt_mask_t interrupt_mask_t;
+
+/**
  * Initializes interrupt controller.
  *
  * @note Implementation have to perform basic controller initialization,
@@ -76,5 +85,12 @@ void interrupt_clear(interrupt_nr_t interrupt_nr);
  * @param interrupt_nr the IRQ number to force
  */
 void interrupt_force(interrupt_nr_t interrupt_nr);
+
+/**
+ * Receives status of interrupt controller.
+ *
+ * @return pending register from interrupt controller
+ */
+interrupt_mask_t interrupt_get_status(void);
 
 #endif /* HAL_INTERRUPT_H_ */

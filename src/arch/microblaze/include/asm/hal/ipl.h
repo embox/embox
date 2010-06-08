@@ -38,7 +38,7 @@ inline static __ipl_t ipl_save(void) {
 
 	__ipl_t ipl_status = msr_get_bit(MSR_IE_BIT);
 
-	msr_clr_bit(MSR_IE_BIT);
+	//msr_clr_bit(MSR_IE_BIT);
 
 	return ipl_status;
 }
@@ -50,5 +50,6 @@ inline static void ipl_restore(__ipl_t ipl) {
 	 */
 	irqc_set_mask(ipl);
 #endif
+	//printf ("ipl = 0x%X\n", ipl);
 	msr_set_value(msr_get_value() | ipl);
 }

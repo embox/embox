@@ -69,7 +69,7 @@ void interrupt_clear(interrupt_nr_t irq_num){
  * Microblaze specific functions:
  */
 
-__interrupt_mask_t irqc_get_isr_reg(void) {
+__interrupt_mask_t interrupt_get_status(void) {
 	return irqc->isr;
 }
 

@@ -49,6 +49,7 @@ void interrupt_clear(interrupt_nr_t interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	assert(NULL != dev_regs);
 	REG_ORIN(&dev_regs->clear, 1 << interrupt_nr);
+	REG_ANDIN(&dev_regs->force, ~(1 << interrupt_nr));
 }
 
 void interrupt_force(interrupt_nr_t interrupt_nr) {
@@ -70,6 +71,10 @@ void interrupt_init(void) {
 	REG_STORE(&dev_regs->pending, 0x0);
 	REG_STORE(&dev_regs->force, 0x0);
 	REG_STORE(&dev_regs->clear, ~0x0);
+}
+
+interrupt_mask_t interrupt_get_status(void) {
+	return (REG_LOAD(&dev_regs->pending)) | REG_LOAD(&dev_regs->force);
 }
 
 #ifdef CONFIG_AMBAPP

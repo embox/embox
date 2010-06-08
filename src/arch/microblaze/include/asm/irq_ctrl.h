@@ -17,7 +17,7 @@ typedef unsigned int irq_mask_t;
 /**
  * return isr register for mb_intc
  */
-extern irq_mask_t irqc_get_isr_reg(void);
+extern irq_mask_t interrupt_get_status(void);
 
 #endif /*__ASSEMBLER__*/
 

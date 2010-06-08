@@ -24,9 +24,9 @@
 #define MSR_ICE_BIT    26
 #define MSR_FSL_BIT    27
 #define MSR_BIP_BIT    28
-#define MSR_IE_BIT     29
-#define MSR_BE_BIT     30
-#define MSR_C_BIT      31
+#define MSR_C_BIT      29
+#define MSR_IE_BIT     30
+#define MSR_BE_BIT     31
 
 #define MSR_VMS_MASK   REVERSE_MASK(MSR_VMS_BIT)
 #define MSR_VM_MASK    REVERSE_MASK(MSR_VM_BIT)
@@ -127,7 +127,7 @@ static inline void msr_clr_bit(int bit) {
 }
 
 static inline uint32_t msr_get_bit(int bit) {
-	return msr_get_value() | REVERSE_MASK(bit);
+	return msr_get_value() & REVERSE_MASK(bit);
 }
 
 
