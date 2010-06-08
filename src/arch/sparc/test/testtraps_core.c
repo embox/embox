@@ -17,16 +17,16 @@ void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 	switch(type) {
 	case TRAP_TYPE_HARDTRAP:
 		if(number < CONFIG_MAX_RESERVED_TRAP) {
-			test_handler[number] = handler;
+			test_handlers[number] = handler;
 		} else {
-			test_handler[number + CONFIG_MIN_HWTRAP_NUMBER] = handler;
+			test_handlers[number + CONFIG_MIN_HWTRAP_NUMBER] = handler;
 		}
 		break;
 	case TRAP_TYPE_INTERRUPT:
-		test_handler[number + CONFIG_MIN_INTERRUPT_NUMBER] = handler;
+		test_handlers[number + CONFIG_MIN_INTERRUPT_NUMBER] = handler;
 		break;
 	case TRAP_TYPE_SOFTTRAP:
-		test_handler[number + CONFIG_MIN_SOFTTRAP_NUMBER] = handler;
+		test_handlers[number + CONFIG_MIN_SOFTTRAP_NUMBER] = handler;
 		break;
 	default:
 		return;

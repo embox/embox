@@ -12,7 +12,7 @@
 #include <types.h>
 #include <hal/env/traps_core.h>
 
-extern trap_handler_t test_handler[CONFIG_TRAP_TABLE_SIZE];
+extern trap_handler_t test_handlers[CONFIG_TRAP_TABLE_SIZE];
 
 extern uint32_t *__test_trap_table;
 
