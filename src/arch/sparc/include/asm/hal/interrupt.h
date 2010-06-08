@@ -5,3 +5,4 @@
 #define __INTERRUPT_NRS_TOTAL 16
 
 typedef unsigned char __interrupt_nr_t;
+typedef unsigned short __interrupt_mask_t;
