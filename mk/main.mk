@@ -85,7 +85,7 @@ build_patch_targets := \
 all: $(build_patch_targets) build_base_target
 	@echo 'Build complete'
 
-$(build_patch_targets): export PATCH_NAME:=$(basename $@)
+$(build_patch_targets): export PATCH_NAME=$(basename $@)
 $(build_patch_targets) build_base_target: export BUILD_TARGET=1
 $(build_patch_targets) build_base_target:
 	$(MAKE) --no-print-directory build
