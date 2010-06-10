@@ -8,7 +8,6 @@ ENTRY(start)
 MEMORY {
 	MEMORY_REGION(sdram)
 	MEMORY_REGION(flash)
-	MEMORY_REGION(internal)
 }
 
 /*_stack = _bend + 0x10000;*/
@@ -26,7 +25,7 @@ SECTIONS {
 		*(.text)
 		*(.init.text)
 		ALIGNMENT();
-	    *(.eh_frame)
+		*(.eh_frame)
 		ALIGNMENT();
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
