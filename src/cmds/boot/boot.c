@@ -14,7 +14,7 @@
 
 #define COMMAND_NAME     "boot"
 #define COMMAND_DESC_MSG "boot application image from memory"
-#define HELP_MSG         "Usage: boot [-f format] [-i] -a addr"
+#define HELP_MSG         "Usage: boot [-f format] -a addr"
 
 static const char *man_page =
 #include "boot_help.inc"
@@ -86,15 +86,55 @@ static int uimage_info(unsigned int addr) {
         printf("## Checking uImage at 0x%08X ...\n", addr);
         printf("Image Header Magic Number: 0x%08X\n", hdr->ih_magic);
         printf("Image Header CRC Checksum: 0x%08X\n", hdr->ih_hcrc);
-        printf("Image Creation Timestamp: 0x%08X\n", hdr->ih_time);
+        printf("Image Creation Timestamp: %d\n", hdr->ih_time);
         printf("Image Data Size: 0x%08X\n", hdr->ih_size);
         printf("Data  Load  Address: 0x%08X\n", hdr->ih_load);
         printf("Entry Point Address: 0x%08X\n", hdr->ih_ep);
         printf("Image Data CRC Checksum: 0x%08X\n", hdr->ih_dcrc);
-        printf("Operating System: 0x%08X\n", hdr->ih_os);
-        printf("CPU architecture: 0x%08X\n", hdr->ih_arch);
-        printf("Image Type: 0x%08X\n", hdr->ih_type);
-        printf("Compression Type: 0x%08X\n", hdr->ih_comp);
+        printf("Operating System: ");
+        switch(hdr->ih_os) {
+        case IH_OS_LINUX:
+    		printf("linux\n");
+    		break;
+    	case -1:
+    		printf("unknown\n");
+    	}
+        printf("CPU architecture: ");
+        switch(hdr->ih_arch) {
+        case IH_ARCH_SPARC:
+    		printf("sparc\n");
+    		break;
+        case IH_ARCH_MICROBLAZE:
+    		printf("microblaze\n");
+    		break;
+    	case -1:
+    		printf("unknown\n");
+        }
+        printf("Image Type: ");
+        switch(hdr->ih_type) {
+        case IH_TYPE_KERNEL:
+    		printf("OS Kernel Image\n");
+    		break;
+    	case -1:
+    		printf("unknown\n");
+        }
+        printf("Compression Type: ");
+        switch(hdr->ih_comp) {
+        case IH_COMP_NONE:
+    		printf("none\n");
+    		break;
+    	case IH_COMP_GZIP:
+    		printf("gzip\n");
+    		break;
+    	case IH_COMP_BZIP2:
+    		printf("bzip2\n");
+    		break;
+    	case IH_COMP_LZMA:
+    		printf("lzma\n");
+    		break;
+    	case -1:
+    		printf("unknown\n");
+    	}
         printf("Image Name: %s\n", hdr->ih_name);
         return 0;
 }
@@ -103,10 +143,50 @@ static int uimage_info(unsigned int addr) {
  * Das U-Boot routine.
  */
 static void ubootm_kernel(unsigned int addr) {
-	void (*kernel) (struct linux_romvec *);
-	image_header_t *hdr = (image_header_t *)addr;
-	kernel = (void (*)(struct linux_romvec *))hdr->ih_ep;
-	//TODO: mmu on and so far
+        interrupt_nr_t interrupt_nr;
+        extern unsigned int _text_start, _data_start, __stack;
+        void (*kernel)(struct linux_romvec *);
+        image_header_t *hdr = (image_header_t *)addr;
+        kernel = (void (*)(struct linux_romvec *))hdr->ih_ep;
+
+        for (interrupt_nr = 0; interrupt_nr < INTERRUPT_NRS_TOTAL; ++interrupt_nr) {
+                interrupt_disable(interrupt_nr);
+        }
+
+        /* disable mmu */
+        mmu_off();
+        asm __volatile__ ("set 0x7fffff60, %fp\n"
+                          "add %fp, -0x60, %sp\n");
+        /* init prom info struct */
+        leon_prom_init();
+        /* mark as used for bootloader */
+        mark();
+
+        mmu_map_region((mmu_ctx_t)0, (uint32_t) &_text_start,
+                       (uint32_t) &_text_start, 0x1000000,
+                       MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+        mmu_map_region((mmu_ctx_t)0, (uint32_t) 0x44000000,
+        		(uint32_t) 0xf4000000, 0x1000000,
+        		MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+        mmu_map_region((mmu_ctx_t)0, (uint32_t) 0x7f000000,
+                        (uint32_t) 0x7f000000, 0x1000000,
+                        MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+        if (&__stack > (&_text_start + 0x1000000)) {
+                /* if have to map data sections */
+                mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_start, (vaddr_t)&_data_start,
+                               0x1000000, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
+        }
+        //TODO mmu fix direct io map
+        mmu_map_region((mmu_ctx_t)0, (uint32_t) 0x80000000,
+                       (uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE );
+
+        mmu_map_region((mmu_ctx_t)0, (paddr_t)0x40000000, KERNBASE, 0x1000000,
+                       MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+
+        mmu_set_context(0);
+        mmu_on();
+        mmu_flush_tlb_all();
+
 	kernel(__va(&spi.romvec));
 }
 

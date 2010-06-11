@@ -1,7 +1,7 @@
 "NAME\n"
 "\tboot - boot application image from memory\n"
 "SYNOPSIS\n"
-"\tboot [-f format] [-i] -a addr\n"
+"\tboot [-f format] -a addr\n"
 "DESCRIPTION\n"
 "\t-f format - image format\n"
 "\t\tu - Das U-Boot format\n"
