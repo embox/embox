@@ -11,7 +11,10 @@
 #include <fs/ramfs.h>
 
 //FIXME: Actually, whole FS is unfinished now.
-static unsigned int base_addr = 0x40004000;
+unsigned int file_base_addr;
+//unsigned int file_base_addr = 0x40000000; /* for piggy */
+//unsigned int file_base_addr = 0x40004000; /* for prom boot */
+//unsigned int file_base_addr = 0x40003FC0; /* for u-boot */
 
 FILE *fopen(const char *path, const char *mode) {
 	RAMFS_CREATE_PARAM param;
@@ -24,7 +27,7 @@ FILE *fopen(const char *path, const char *mode) {
 	if((fd = rootfs_fopen(path, mode)) == NULL) {
 		param.size = 0x1000000;
 		param.mode = FILE_MODE_RWX;
-		param.start_addr = (unsigned int) (base_addr);
+		param.start_addr = (unsigned int) (file_base_addr);
 		sprintf(param.name, basename(path));
 		if (-1 == fsop->create_file(&param)) {
 			LOG_ERROR("Can't create ramfs disk\n");

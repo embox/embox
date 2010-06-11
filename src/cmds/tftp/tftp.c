@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TFTP client
+ * @brief Easy TFTP client
  *
  * @date 12.03.10
  * @author Nikolay Korotky
@@ -12,13 +12,15 @@
 
 #define COMMAND_NAME     "tftp"
 #define COMMAND_DESC_MSG "TFTP client"
-#define HELP_MSG         "Usage: tftp <server> <file>"
+#define HELP_MSG         "Usage: tftp <server> <file> [load_addr]"
 
 static const char *man_page =
 	#include "tftp_help.inc"
 ;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+
+#define MAX_FILENAME_LEN 0x40
 
 static int create_socket(struct sockaddr_in *addr) {
 	int sock;
@@ -30,7 +32,7 @@ static int create_socket(struct sockaddr_in *addr) {
 
 	addr->sin_family = AF_INET;
 	addr->sin_addr.s_addr = htonl(INADDR_ANY);
-	addr->sin_port = htons(666);
+	addr->sin_port = htons(666); /* TODO: catch some availible port */
 
 	if (bind(sock, (struct sockaddr *)addr, sizeof(struct sockaddr_in)) == -1) {
 		printf("Attachement socket impossible.\n");
@@ -62,6 +64,12 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 	strcpy(cp, mode);
 	cp += strlen(mode);
 	*cp++ = '\0';
+	strcpy(cp, "tsize");
+	cp += strlen("tsize");
+	*cp++ = '\0';
+	strcpy(cp, "0");
+	cp += strlen("0");
+	*cp++ = '\0';
 	size = (unsigned long)cp - (unsigned long)ackbuf;
 	fromlen = sizeof(struct sockaddr_in);
 	sendto(desc, ap, size, 0, (struct sockaddr *)to, fromlen);
@@ -86,6 +94,15 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 					break;
 				}
 			}
+			if(dp->th_opcode == OACK) {
+				/* TODO: check availible memory capacity */
+				ap->th_opcode = htons((short)ACK);
+				ap->th_block = dp->th_block;
+				if(sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen) < 0) {
+					printf("Error occured\n");
+				}
+				break;
+			}
 		}
 	}
 	printf("Downloaded: %d bytes\n", dsize);
@@ -94,19 +111,23 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 }
 
 static int exec(int argsc, char **argsv) {
+	extern unsigned int file_base_addr;
 	struct sockaddr_in server;
 	FILE *f;
-	char fname[0x40];
+	char fname[MAX_FILENAME_LEN];
 
 	if (argsc < 3) {
 		show_help();
 		return -1;
 	}
 	server.sin_family = AF_INET;
-	server.sin_port = htons(69);
+	server.sin_port = htons(TFTP_TRANSFER_PORT);
 	server.sin_addr.s_addr = inet_addr(argsv[1]);
 
 	sprintf(fname, "%s%s", "/ramfs/", argsv[2]);
+	if (sscanf(argsv[3], "0x%x", &file_base_addr) < 0) {
+		file_base_addr = 0x40004000; /* default for prom boot */
+	}
 	f = fopen(fname, "wb");
 	tftp_receive(&server, "octet", argsv[2], f);
 	fclose(f);

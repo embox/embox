@@ -15,8 +15,10 @@
 /*
  * Trivial File Transfer Protocol (IEN-133)
  */
-#define SEGSIZE 512       /* data segment size */
+#define SEGSIZE 200       /* data segment size */
 #define PKTSIZE SEGSIZE+4 /* full packet size */
+
+#define TFTP_TRANSFER_PORT 69 /* default well known port */
 
 /*
  * Packet types.
