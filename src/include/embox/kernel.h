@@ -14,6 +14,8 @@
 #include <linux/types.h>
 #endif
 
-#define array_len(array)		(sizeof(array) / sizeof(array[0]))
+#define ARRAY_SIZE(arr)                 (sizeof(arr) / sizeof((arr)[0]))
+/* deprecated */
+#define array_len(array)                ARRAY_SIZE(array)
 
 #endif /* EMBOX_KERNEL_H_ */

@@ -30,18 +30,27 @@ static int init_mod_disable(struct mod *mod);
 static int fini_mod_enable(struct mod *mod);
 static int fini_mod_disable(struct mod *mod);
 
-struct mod_ops __runlevel_init_mod_ops = { .enable = init_mod_enable,
-		.disable = init_mod_disable };
-struct mod_ops __runlevel_fini_mod_ops = { .enable = fini_mod_enable,
-		.disable = fini_mod_disable };
+struct mod_ops __runlevel_init_mod_ops = {
+	.enable = init_mod_enable,
+	.disable = init_mod_disable
+};
+
+struct mod_ops __runlevel_fini_mod_ops = {
+	.enable = fini_mod_enable,
+	.disable = fini_mod_disable
+};
 
 RUNLEVEL_DEF(0);
 RUNLEVEL_DEF(1);
 RUNLEVEL_DEF(2);
 RUNLEVEL_DEF(3);
 
-static const struct runlevel runlevels[RUNLEVEL_NRS_TOTAL] = { RUNLEVEL(0),
-		RUNLEVEL(1), RUNLEVEL(2), RUNLEVEL(3), };
+static const struct runlevel runlevels[RUNLEVEL_NRS_TOTAL] = {
+	RUNLEVEL(0),
+	RUNLEVEL(1),
+	RUNLEVEL(2),
+	RUNLEVEL(3),
+};
 
 static runlevel_nr_t init_level = -1, fini_level = -1;
 
@@ -49,8 +58,8 @@ static int init_mod_enable(struct mod *mod) {
 	int ret;
 	int level = (runlevel_nr_t) mod_data(mod);
 
-	if (runlevel_nr_valid(level - 1) && 0 != (ret = mod_enable(runlevels[level
-			- 1].init_mod))) {
+	if (runlevel_nr_valid(level - 1) &&
+		0 != (ret = mod_enable(runlevels[level - 1].init_mod))) {
 		return ret;
 	}
 	init_level = level;
@@ -63,8 +72,8 @@ static int init_mod_disable(struct mod *mod) {
 	int ret;
 	int level = (runlevel_nr_t) mod_data(mod);
 
-	if (runlevel_nr_valid(level + 1) && 0 != (ret = mod_disable(runlevels[level
-			+ 1].init_mod))) {
+	if (runlevel_nr_valid(level + 1) &&
+		0 != (ret = mod_disable(runlevels[level + 1].init_mod))) {
 		return ret;
 	}
 	init_level = level - 1;
@@ -77,8 +86,8 @@ static int fini_mod_enable(struct mod *mod) {
 	int ret;
 	int level = (runlevel_nr_t) mod_data(mod);
 
-	if (runlevel_nr_valid(level - 1) && 0 != (ret = mod_enable(runlevels[level
-			- 1].fini_mod))) {
+	if (runlevel_nr_valid(level - 1) &&
+		0 != (ret = mod_enable(runlevels[level - 1].fini_mod))) {
 		return ret;
 	}
 	fini_level = level;
@@ -90,8 +99,8 @@ static int fini_mod_disable(struct mod *mod) {
 	int ret;
 	int level = (runlevel_nr_t) mod_data(mod);
 
-	if (runlevel_nr_valid(level + 1) && 0 != (ret = mod_disable(runlevels[level
-			+ 1].fini_mod))) {
+	if (runlevel_nr_valid(level + 1) &&
+		0 != (ret = mod_disable(runlevels[level + 1].fini_mod))) {
 		return ret;
 	}
 	fini_level = level - 1;

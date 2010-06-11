@@ -98,8 +98,8 @@ int mod_invoke(const struct mod *mod, void *data) {
 	if (NULL == mod) {
 		return -EINVAL;
 	}
-	if (NULL == mod->api || NULL == mod->api->ops || NULL == (invoke
-			= mod->api->ops->invoke)) {
+	if (NULL == mod->api || NULL == mod->api->ops ||
+			NULL == (invoke = mod->api->ops->invoke)) {
 		return -ENOTSUP;
 	}
 	return invoke((struct mod *) mod, data);

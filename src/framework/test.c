@@ -24,8 +24,8 @@ static int test_mod_enable(struct mod *mod);
 static int test_mod_invoke(struct mod *mod, void *data);
 
 const struct mod_ops __test_mod_ops = {
-		.enable = &test_mod_enable,
-		.invoke = &test_mod_invoke,
+	.enable = &test_mod_enable,
+	.invoke = &test_mod_invoke,
 };
 
 MOD_TAG_DEF(test, "test");
