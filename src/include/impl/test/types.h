@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef TEST_TYPES_H_
-#define TEST_TYPES_H_
+#ifndef IMPL_TEST_TYPES_H_
+#define IMPL_TEST_TYPES_H_
 
 /**
  * Each test implements this interface.
@@ -33,4 +33,4 @@ struct test_private {
 	int result;
 };
 
-#endif /* TEST_TYPES_H_ */
+#endif /* IMPL_TEST_TYPES_H_ */
