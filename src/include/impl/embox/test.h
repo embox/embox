@@ -12,6 +12,8 @@
 
 #include <embox/mod.h>
 
+#include <impl/test/types.h>
+
 #define __EMBOX_TEST(_run) \
 	static const struct test __test__; \
 	extern const struct mod_ops __test_mod_ops; \

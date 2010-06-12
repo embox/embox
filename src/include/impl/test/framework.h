@@ -14,6 +14,8 @@
 #include <embox/mod.h>
 #include <util/macro.h>
 
+#include <impl/test/types.h>
+
 #define __test_foreach(t) MACRO_INVOKE(__test_foreach_iterator, \
 		t, MACRO_CONCAT(__test_iterator_, __LINE__))
 #define __test_foreach_iterator(t, i) \

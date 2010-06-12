@@ -21,8 +21,6 @@
 #ifndef EMBOX_TEST_H_
 #define EMBOX_TEST_H_
 
-#include <test/types.h>
-
 #include <impl/embox/test.h>
 
 #define EMBOX_TEST(run) __EMBOX_TEST(run)
