@@ -9,6 +9,7 @@
 #ifndef EMBOX_MOD_H_
 #define EMBOX_MOD_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #include <util/macro.h>
