@@ -31,14 +31,14 @@ static bool mod_deps_satisfied(const struct mod *mod, bool op);
 MOD_PACKAGE_DEF(generic, "generic");
 
 inline static mod_op_t mod_op_deref(const struct mod *mod, bool op) {
-	if (NULL != mod->api && NULL != mod->api->ops) {
-		return op ? mod->api->ops->enable : mod->api->ops->disable;
+	if (NULL != mod->info && NULL != mod->info->ops) {
+		return op ? mod->info->ops->enable : mod->info->ops->disable;
 	}
 	return NULL;
 }
 
 inline static void *mod_data_deref(const struct mod *mod) {
-	return (NULL != mod->api) ? mod->api->data : NULL;
+	return (NULL != mod->info) ? mod->info->data : NULL;
 }
 
 struct mod_iterator *mod_requires(const struct mod *mod,
@@ -98,8 +98,8 @@ int mod_invoke(const struct mod *mod, void *data) {
 	if (NULL == mod) {
 		return -EINVAL;
 	}
-	if (NULL == mod->api || NULL == mod->api->ops ||
-			NULL == (invoke = mod->api->ops->invoke)) {
+	if (NULL == mod->info || NULL == mod->info->ops ||
+			NULL == (invoke = mod->info->ops->invoke)) {
 		return -ENOTSUP;
 	}
 	return invoke((struct mod *) mod, data);

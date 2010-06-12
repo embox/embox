@@ -15,7 +15,7 @@
 #define __EMBOX_TEST(_run) \
 	static const struct test __test__; \
 	extern const struct mod_ops __test_mod_ops; \
-	MOD_SELF_API_TAGGED_DEF(&__test__, &__test_mod_ops, test); \
+	MOD_SELF_INFO_TAGGED_DEF(&__test__, &__test_mod_ops, test); \
 	extern const char MOD_SELF_NAME[]; \
 	static int _run(void); \
 	static struct test_private __test_private__; \

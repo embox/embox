@@ -22,7 +22,7 @@
 			.fini = _fini, \
 			.name = MOD_SELF_NAME \
 		}; \
-	MOD_SELF_API_DEF(&__unit__, &__unit_mod_ops)
+	MOD_SELF_INFO_DEF(&__unit__, &__unit_mod_ops)
 
 #define EMBOX_UNIT(_init, _fini) \
 	static int _init(void); \
