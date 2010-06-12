@@ -13,7 +13,7 @@
 #include <stdbool.h>
 
 #include <shell_command.h>
-#include <embox/test.h>
+#include <test/framework.h>
 
 #define COMMAND_NAME     "test"
 #define COMMAND_DESC_MSG "works with express test subsystem"

@@ -17,8 +17,8 @@
 #include <string.h>
 
 #include <embox/kernel.h>
-#include <embox/test.h>
 #include <embox/mod.h>
+#include <test/framework.h>
 
 static int test_mod_enable(struct mod *mod);
 static int test_mod_invoke(struct mod *mod, void *data);
@@ -63,24 +63,5 @@ int test_invoke(struct test *test) {
 	}
 
 	return (test->private->result = result);
-}
-
-struct test_iterator *test_get_all(struct test_iterator *iterator) {
-	if (NULL == iterator) {
-		return NULL;
-	}
-	mod_tagged(MOD_TAG_PTR(test), &iterator->mod_iterator);
-	return iterator;
-}
-
-inline bool test_iterator_has_next(struct test_iterator *iterator) {
-	return NULL != iterator && mod_iterator_has_next(&iterator->mod_iterator);
-}
-
-struct test *test_iterator_next(struct test_iterator *iterator) {
-	if (!test_iterator_has_next(iterator)) {
-		return NULL;
-	}
-	return (struct test *) mod_data(mod_iterator_next(&iterator->mod_iterator));
 }
 
