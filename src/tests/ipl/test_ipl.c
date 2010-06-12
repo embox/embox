@@ -8,10 +8,11 @@
 
 #include <embox/test.h>
 #include <hal/ipl.h>
+#include <test/misc.h>
+
+#define TEST_IRQ_NR 10
 
 EMBOX_TEST(run);
-
-EMBOX_TEST_IMPORT(run_irq_force);
 
 static int run(void) {
 	ipl_t ipl;
@@ -19,7 +20,7 @@ static int run(void) {
 
 	ipl = ipl_save();
 
-	ret = (0 == run_irq_force()) ? -1 : 0;
+	ret = (0 == test_misc_irq_force(TEST_IRQ_NR)) ? -1 : 0;
 
 	ipl_restore(ipl);
 

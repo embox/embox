@@ -4,6 +4,8 @@
  * @auther Michail Skorginskii
  */
 
+#include <stdio.h>
+
 #include <embox/test.h>
 #include <lib/dm_malloc.h>
 #include <lib/list.h>
