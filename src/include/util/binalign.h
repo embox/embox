@@ -9,6 +9,8 @@
 #ifndef UTIL_BINALIGN_H_
 #define UTIL_BINALIGN_H_
 
+#include <impl/util/binalign.h>
+
 /**
  * Aligns the @c x value up to the @c 2^power boundary.
  *
@@ -17,10 +19,7 @@
  *
  * @return the minimal @c 2^power aligned value closest to the @c x
  */
-#define binalign(x, power) \
-		binalign_bound(x, 0x1 << (power))
-
-#ifndef __ASSEMBLER__
+#define binalign(x, power) __binalign(x, power)
 
 /**
  * Aligns the @c x value up to the specified boundary.
@@ -32,17 +31,7 @@
  *
  * @note the @c bound must the power of two value
  */
-#define binalign_bound(x, bound) \
-		__binalign_mask(x, (typeof(x)) (bound) - 1)
-
-#else /* __ASSEMBLER__ */
-
-#define binalign_bound(x, bound) \
-		__binalign_mask(x, (bound) - 1)
-
-#endif /* __ASSEMBLER__ */
-
-#define __binalign_mask(x, mask)       (((x) + (mask)) & ~(mask))
+#define binalign_bound(x, bound) __binalign_bound(x, bound)
 
 #ifndef __ASSEMBLER__
 
@@ -56,8 +45,7 @@
  *
  * @see #binalign()
  */
-#define binalign_check(x, power) \
-		binalign_check_bound(x, 0x1 << (power))
+#define binalign_check(x, power) __binalign_check(x, power)
 
 /**
  * Checks whether @c x is aligned to the specified boundary.
@@ -70,10 +58,7 @@
  * @note the @c bound must the power of two value
  * @see #binalign_bound()
  */
-#define binalign_check_bound(x, bound) \
-		__binalign_check_mask(x, (typeof(x)) (bound) - 1)
-
-#define __binalign_check_mask(x, mask)  ((x) & (mask) == 0)
+#define binalign_check_bound(x, bound) __binalign_check_bound(x, bound)
 
 #endif /* __ASSEMBLER__ */
 

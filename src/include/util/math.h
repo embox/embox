@@ -9,6 +9,8 @@
 #ifndef UTIL_MATH_H_
 #define UTIL_MATH_H_
 
+#include <impl/util/math.h>
+
 /**
  * Returns the absolute value of an argument. If the argument is not negative,
  * the argument is returned. If the argument is negative, the negation of the
@@ -18,10 +20,7 @@
  *
  * @return the absolute value of the argument
  */
-#define abs(x) __extension__ ({ \
-	typeof(x) __abs_x = (x);    \
-	__abs_x < 0 ? -__abs_x : __abs_x; \
-})
+#define abs(x) __abs(x)
 
 /**
  * Returns the greater of two values.
@@ -31,11 +30,7 @@
  *
  * @return the larger of @c a and @c b
  */
-#define min(a, b) __extension__ ({ \
-	typeof(a) __min_a = (a);       \
-	typeof(b) __min_b = (b);       \
-	__min_a < __min_b ? __min_a : __min_b; \
-})
+#define min(a, b) __min(a, b)
 
 /**
  * Returns the smaller of two values.
@@ -45,11 +40,7 @@
  *
  * @return the smaller of @c a and @c b
  */
-#define max(a, b) __extension__ ({ \
-	typeof(a) __max_a = (a);       \
-	typeof(b) __max_b = (b);       \
-	__max_a > __max_b ? __max_a : __max_b; \
-})
+#define max(a, b) __max(a, b)
 
 /**
  * Limits value to the specified boundary.
@@ -59,17 +50,10 @@
  * @param hi upper bound
  *
  * @return clamped value
- * @retval @c lo if @c val < @c lo
- * @retval @c hi if @c val > @c hi
+ * @retval @c lo if @c val is less than @c lo
+ * @retval @c hi if @c val is greater than @c hi
  * @retval @c val otherwise
  */
-#define clamp(val, lo, hi) __extension__ ({ \
-	typeof(val) __clamp_val = (val);        \
-	typeof(lo)  __clamp_lo  = (lo);         \
-	typeof(hi)  __clamp_hi  = (hi);         \
-	__clamp_val < __clamp_lo ? __clamp_lo : \
-	__clamp_val > __clamp_hi ? __clamp_hi : \
-	__clamp_val; \
-})
+#define clamp(val, lo, hi) __clamp(val, lo, hi)
 
 #endif /* UTIL_MATH_H_ */
