@@ -9,9 +9,12 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <embox/kernel.h>
 
-#include <embox/mod.h>
+#include <mod/framework.h>
+#include <mod/ops.h>
+#include <mod/tag.h>
+#include <impl/mod/info.h>
+#include <impl/mod/types.h>
 
 #define MOD_FLAG_ENABLED       (1 << 0)
 
@@ -27,8 +30,6 @@
 static int mod_perform(const struct mod *mod, bool op);
 static int mod_perform_nodep(const struct mod *mod, bool op);
 static bool mod_deps_satisfied(const struct mod *mod, bool op);
-/* Define generic package. */
-MOD_PACKAGE_DEF(generic, "generic");
 
 inline static mod_op_t mod_op_deref(const struct mod *mod, bool op) {
 	if (NULL != mod->info && NULL != mod->info->ops) {

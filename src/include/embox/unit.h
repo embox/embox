@@ -13,7 +13,7 @@
 
 #include <stddef.h>
 #include <embox/kernel.h>
-#include <embox/mod.h>
+#include <mod/bind.h>
 
 #define __EMBOX_UNIT(_init, _fini) \
 	extern const char MOD_SELF_NAME[]; \

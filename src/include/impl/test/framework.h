@@ -11,7 +11,8 @@
 # error "Do not include this file directly, use <test/framework.h> instead!"
 #endif /* TEST_FRAMEWORK_H_ */
 
-#include <embox/mod.h>
+#include <mod/framework.h>
+#include <mod/tag.h>
 #include <util/macro.h>
 
 #include <impl/test/types.h>

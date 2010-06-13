@@ -10,7 +10,7 @@
 # error "Do not include this file directly, use <embox/test.h> instead!"
 #endif /* EMBOX_TEST_H_ */
 
-#include <embox/mod.h>
+#include <mod/bind.h>
 
 #include <impl/test/types.h>
 

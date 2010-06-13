@@ -10,7 +10,17 @@
 #include <embox/kernel.h>
 
 #include <embox/runlevel.h>
-#include <embox/mod.h>
+
+#include <mod/ops.h>
+#include <mod/framework.h>
+
+// XXX rewrite this shit. -- Eldar
+#define __EMBUILD_MOD__
+#include <mod/bind.h>
+
+// XXX rewrite this shit. -- Eldar
+#define __EMBUILD__
+#include <mod/embuild.h>
 
 #define __RUNLEVEL_MOD_DEF(op, nr) \
 	MOD_DEF(runlevel##nr##_##op, generic, "runlevel"#nr"_"#op); \
@@ -44,6 +54,10 @@ RUNLEVEL_DEF(0);
 RUNLEVEL_DEF(1);
 RUNLEVEL_DEF(2);
 RUNLEVEL_DEF(3);
+
+struct runlevel {
+	const struct mod *init_mod, *fini_mod;
+};
 
 static const struct runlevel runlevels[RUNLEVEL_NRS_TOTAL] = {
 	RUNLEVEL(0),

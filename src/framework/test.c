@@ -17,7 +17,9 @@
 #include <string.h>
 
 #include <embox/kernel.h>
-#include <embox/mod.h>
+#include <mod/framework.h>
+#include <mod/ops.h>
+#include <mod/tag.h>
 #include <test/framework.h>
 
 static int test_mod_enable(struct mod *mod);

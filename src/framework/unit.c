@@ -8,8 +8,12 @@
 
 #include <string.h>
 
+#include <mod/ops.h>
+#include <mod/framework.h>
+
+// XXX rewrite this shit. -- Eldar
+#define __EMBUILD_MOD__
 #include <embox/unit.h>
-#include <embox/mod.h>
 
 static int unit_mod_enable(struct mod *mod);
 static int unit_mod_disable(struct mod *mod);

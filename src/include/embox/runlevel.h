@@ -9,8 +9,6 @@
 #ifndef EMBOX_RUNLEVEL_H_
 #define EMBOX_RUNLEVEL_H_
 
-#include <embox/mod.h>
-
 #if 0
 #define RUNLEVEL_SYSTEM     0
 #define RUNLEVEL_MODULE     1
@@ -34,10 +32,6 @@
 
 /** Type representing the run level. */
 typedef int runlevel_nr_t;
-
-struct runlevel {
-	const struct mod *init_mod, *fini_mod;
-};
 
 extern int runlevel_enter(runlevel_nr_t level);
 extern int runlevel_leave(runlevel_nr_t level);
