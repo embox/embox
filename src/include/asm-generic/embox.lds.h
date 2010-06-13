@@ -34,11 +34,12 @@
 	*(.rodata*)                    \
 	*(.const)                      \
 	                               \
+	*(SORT(.array_diffuse.*.rodata)) \
+	                               \
 	ALIGNMENT();                   \
 	__mods_start = . ;             \
 		*(.mod.rodata)             \
 	__mods_end = .;                \
-	*(SORT(.mod*.rodata))          \
 	                               \
 	ALIGNMENT();                   \
 	__express_tests_start = . ;    \
