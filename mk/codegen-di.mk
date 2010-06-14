@@ -28,15 +28,40 @@ c_package = $(call c_escape,$(package))
 
 c_escape = $(subst .,$$,$(1))
 
-generate_package_defs = $(strip \n/* Package definitions. */\
+eol-trim = $(if $(findstring $() \n,$1),$(call $0,$(subst $() \n,\n,$1)),$1)
+
+cond_flags =   $(if $(strip $(CFLAGS-$2) $(CPPFLAGS-$2)), \
+    $1 $(strip $(CFLAGS-$2) $(CPPFLAGS-$2)) \
+  ) \
+
+package_def = \
+  \n\n/* \
+  \n * Package: $(package) \
+  $(call cond_flags,\n *   FLAGS:,$(package)) \
+  \n */ \
+  \nMOD_PACKAGE_DEF($(c_package), "$(package)");
+
+generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
   $(foreach package,$(sort generic $(basename $(MODS_BUILD))), \
-    \nMOD_PACKAGE_DEF($(c_package), "$(package)"); \
+    $(package_def) \
   ) \
 )\n
 
-generate_mod_defs = $(strip \n/* Mod definitions. */\
+mod_def = \
+  \n\n/* \
+  \n * Mod: $(mod) \
+  $(call cond_flags,\n *   FLAGS:,$(mod)) \
+  \n * Sources: \
+  $(foreach src,$(SRCS-$(mod)), \
+    \n *    $(src) \
+    $(call cond_flags,\n *       FLAGS:,$(abspath $(src))) \
+  ) \
+  \n */ \
+  \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)");
+
+generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
   $(foreach mod,$(MODS_BUILD), \
-    \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)"); \
+    $(mod_def) \
   ) \
 )\n
 
@@ -63,11 +88,14 @@ generate_root_mods = $(strip \n/* Root modules. */\
   ) \
 )\n
 
-generate_includes = \n\n\#include <mod/embuild.h>\n
+generate_header = \
+  /* Auto-generated EMBuild Dependency Injection model file. Do not edit. */\n
+
+generate_includes = \n\#include <stddef.h>\n\#include <mod/embuild.h>\n
 
 $(DEPSINJECT_SRC) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
   $(AUTOCONF_DIR)/mods.mk
-	@$(PRINTF) '/* Auto-generated EMBuild deps injection file. Do not edit. */\n' > $@
+	@$(PRINTF) '$(generate_header)' > $@
 	@$(PRINTF) '$(generate_includes)' >> $@
 	@$(PRINTF) '$(generate_package_defs)' >> $@
 	@$(PRINTF) '$(generate_mod_defs)' >> $@
