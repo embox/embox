@@ -44,6 +44,8 @@
 #define MSR_BE_MASK    REVERSE_MASK(MSR_BE_BIT)
 #define MSR_C_MASK     REVERSE_MASK(MSR_C_BIT)
 
+#ifndef __ASSEMBLER__
+
 #define XILINX_USE_MSR_INSTR
 /* code from u-boot (modified)*/
 /* use machine status register USE_MSR_REG */
@@ -131,5 +133,6 @@ static inline uint32_t msr_get_bit(int bit) {
 }
 
 
+#endif
 
 #endif /* MSR_H_ */

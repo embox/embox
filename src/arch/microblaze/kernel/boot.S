@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 #include <asm/linkage.h>
-#include <asm/mb_regs.h>
+#include <asm/regs.h>
 
 
 	.section    ".text"

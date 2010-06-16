@@ -1,5 +1,5 @@
 #include <asm/linkage.h>
-#include <asm/mb_regs.h>
+#include <asm/regs.h>
 
 	.section ".trap_table"
 	.balign 0x8
