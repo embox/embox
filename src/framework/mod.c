@@ -12,7 +12,6 @@
 
 #include <mod/framework.h>
 #include <mod/ops.h>
-#include <mod/tag.h>
 #include <impl/mod/info.h>
 #include <impl/mod/types.h>
 
@@ -59,16 +58,6 @@ struct mod_iterator *mod_provides(const struct mod *mod,
 	iterator->p_mod = mod->provides;
 	return iterator;
 }
-
-struct mod_iterator *mod_tagged(const struct mod_tag *tag,
-		struct mod_iterator *iterator) {
-	if (NULL == tag || NULL == iterator) {
-		return NULL;
-	}
-	iterator->p_mod = tag->mods;
-	return iterator;
-}
-
 
 inline bool mod_iterator_has_next(struct mod_iterator *iterator) {
 	return NULL != iterator && NULL != iterator->p_mod && NULL

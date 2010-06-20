@@ -26,29 +26,16 @@
 #include "decls.h"
 #include "info.h"
 
-// XXX for tags
-#include <mod/tag.h>
 #include "array.h"
 
 /* Here goes public macros API implementation. */
 
 #define __MOD_PTR(s_mod) (&__MOD(s_mod))
 
-#define __MOD_INFO_DEF(s_mod, mod_data, mod_ops) \
-		__MOD_INFO_DEF__(s_mod, mod_data, mod_ops, NULL)
-
-// XXX mod tags are deprecated. -- Eldar
-#define __MOD_INFO_TAGGED_DEF(s_mod, mod_data, mod_ops, s_tag) \
-		__MOD_DECL(s_mod); \
-		__MOD_TAG_DECL(s_tag); \
-		__MOD_ARRAY_ADD(s_tag, tagged, s_mod); \
-		__MOD_INFO_DEF__(s_mod, mod_data, mod_ops, MOD_TAG_PTR(s_tag))
-
-#define __MOD_INFO_DEF__(s_mod, _mod_data, _mod_ops, _mod_tag) \
+#define __MOD_INFO_DEF(s_mod, _mod_data, _mod_ops) \
 		const struct mod_info __MOD_INFO(s_mod) = { \
 				.data = (void *) _mod_data, \
 				.ops = (struct mod_ops *) _mod_ops, \
-				.tag = (struct mod_tag *) _mod_tag, \
 			}
 
 /*
@@ -70,8 +57,4 @@
 
 #define __MOD_SELF_INFO_DEF(_mod_data, _mod_ops) \
 		__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops)
-
-// XXX mod tags are deprecated. -- Eldar
-#define __MOD_SELF_INFO_TAGGED_DEF(_mod_data, _mod_ops, s_tag) \
-		__MOD_INFO_TAGGED_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops, s_tag)
 

@@ -10,7 +10,6 @@
 #define IMPL_MOD_INFO_H_
 
 struct mod_ops;
-struct mod_tag;
 
 /**
  * Mods framework manages each mod through a special interface so-called
@@ -21,8 +20,6 @@ struct mod_info {
 	void *data;
 	/** (optional) Available operations. */
 	struct mod_ops *ops;
-	/** (optional) Mod tag. */
-	struct mod_tag *tag;
 };
 
 #endif /* IMPL_MOD_INFO_H_ */

@@ -13,7 +13,6 @@
 
 #define __MOD(s_mod)              __mod__$$##s_mod
 #define __MOD_INFO(s_mod)         __mod_info__$$##s_mod
-#define __MOD_TAG(s_tag)          __mod_tag__$$##s_tag
 #define __MOD_NAME(s_mod)         __mod_name__$$##s_mod
 #define __MOD_PRIVATE(s_mod)      __mod_private__$$##s_mod
 #define __MOD_PACKAGE(s_package)  __mod_package__$$##s_package
@@ -28,9 +27,5 @@
 
 #define __MOD_INFO_DECL(s_mod) \
 	extern const struct mod_info __MOD_INFO(s_mod) __attribute__ ((weak))
-
-#define __MOD_TAG_DECL(s_tag) \
-	extern const struct mod_tag __MOD_TAG(s_tag)
-
 
 #endif /* IMPL_MOD_DECLS_H_ */
