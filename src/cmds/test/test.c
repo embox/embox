@@ -35,7 +35,7 @@ static void print_tests(void) {
 		TRACE("%3d. ", ++i);
 
 		if (NULL != test->name) {
-			TRACE("%10s\n", test->name);
+			TRACE("%s\n", test->name);
 		} else {
 			TRACE(DEFAULT_NAME_STR);
 		}
