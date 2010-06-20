@@ -1,13 +1,13 @@
 /**
  * @file
- * @brief TODO
+ * @brief Guard symbols implementation using line numbers.
  *
  * @date 14.06.2010
  * @author Eldar Abusalimov
  */
 
 #ifndef UTIL_GUARD_H_
-# error "Do not include this file directly, use <util/array.h> instead!"
+# error "Do not include this file directly, use <util/guard.h> instead!"
 #endif /* UTIL_GUARD_H_ */
 
 #include <util/macro.h>
