@@ -16,11 +16,10 @@
 #include <errno.h>
 #include <string.h>
 
-#include <embox/kernel.h>
+#include <test/framework.h>
 #include <mod/framework.h>
 #include <mod/ops.h>
-#include <mod/tag.h>
-#include <test/framework.h>
+#include <util/array.h>
 
 static int test_mod_enable(struct mod *mod);
 static int test_mod_invoke(struct mod *mod, void *data);
@@ -30,7 +29,7 @@ const struct mod_ops __test_mod_ops = {
 	.invoke = &test_mod_invoke,
 };
 
-MOD_TAG_DEF(test, "test");
+ARRAY_DIFFUSE_DEF(const struct test, __test_registry);
 
 static int test_mod_enable(struct mod *mod) {
 	return test_mod_invoke(mod, NULL);

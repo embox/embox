@@ -11,19 +11,21 @@
 #endif /* EMBOX_TEST_H_ */
 
 #include <mod/bind.h>
+#include <util/array.h>
 
 #include <impl/test/types.h>
 
 #define __EMBOX_TEST(_run) \
-	static const struct test __test__; \
-	extern const struct mod_ops __test_mod_ops; \
-	MOD_SELF_INFO_TAGGED_DEF(&__test__, &__test_mod_ops, test); \
-	extern const char MOD_SELF_NAME[]; \
 	static int _run(void); \
-	static struct test_private __test_private__; \
-	static const struct test __test__ = { \
-			.private = &__test_private__, \
+	static struct test_private __test_private; \
+	ARRAY_DIFFUSE_ADD_NAMED(__test_registry, __test, { \
+			.private = &__test_private, \
 			.run = _run, \
 			.name = MOD_SELF_NAME \
-		}
+		}); \
+	MOD_SELF_INFO_DEF(__test, &__test_mod_ops)
 
+extern const struct mod_ops __test_mod_ops;
+// TODO move into mod/bind.h -- Eldar
+extern const char MOD_SELF_NAME[];
+extern const struct test __test_registry[];
