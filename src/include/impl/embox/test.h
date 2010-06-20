@@ -23,7 +23,7 @@
 			.run = _run, \
 			.name = MOD_SELF_NAME \
 		}); \
-	MOD_SELF_INFO_DEF(__test, &__test_mod_ops)
+	MOD_BIND(__test, &__test_mod_ops)
 
 extern const struct mod_ops __test_mod_ops;
 // TODO move into mod/bind.h -- Eldar

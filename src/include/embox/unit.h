@@ -16,13 +16,12 @@
 #include <mod/bind.h>
 
 #define __EMBOX_UNIT(_init, _fini) \
-	extern const char MOD_SELF_NAME[]; \
-	static const struct unit __unit__ = { \
+	static const struct unit __unit = { \
 			.init = _init, \
 			.fini = _fini, \
 			.name = MOD_SELF_NAME \
 		}; \
-	MOD_SELF_INFO_DEF(&__unit__, &__unit_mod_ops)
+	MOD_BIND(&__unit, &__unit_mod_ops)
 
 #define EMBOX_UNIT(_init, _fini) \
 	static int _init(void); \
@@ -38,6 +37,8 @@
 	__EMBOX_UNIT(NULL, _fini)
 
 extern const struct mod_ops __unit_mod_ops;
+// TODO move into mod/bind.h -- Eldar
+extern const char MOD_SELF_NAME[];
 
 /**
  * Unit init/fini operations signature.

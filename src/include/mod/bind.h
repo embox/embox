@@ -30,18 +30,6 @@
 		__MOD_INFO_DEF(s_mod, mod_data, mod_ops)
 
 /**
- * Does the same as #MOD_INFO_DEF() and also tags the current mod with the
- * specified tag.
- *
- * @param s_mod symbol name of the module
- * @param mod_data pointer to the module specific data (if any)
- * @param mod_ops pointer to the #mod_ops structure (if any)
- * @param s_tag symbol name of the tag defined with #MOD_TAG_DEF() macro
- */
-#define MOD_INFO_TAGGED_DEF(s_mod, mod_data, mod_ops, s_tag) \
-		__MOD_INFO_TAGGED_DEF(s_mod, mod_data, mod_ops, s_tag)
-
-/**
  * Pointer to the #mod structure of the module associated with current
  * compilation unit.
  *
@@ -55,28 +43,13 @@
 #define MOD_SELF_NAME __MOD_SELF_NAME
 
 /**
- * Associates the specified mod data and operations with the current mod.
+ * Binds the specified mod data and operations to the mod associated with the
+ * current compilation unit.
  *
- * @param _mod_data pointer to the module specific data (if any)
- * @param _mod_ops pointer to the #mod_ops structure (if any)
- *
- * @see MOD_INFO_DEF()
+ * @param mod_data pointer to the module specific data (if any)
+ * @param mod_ops pointer to the #mod_ops structure (if any)
  */
-#define MOD_SELF_INFO_DEF(_mod_data, _mod_ops) \
-		__MOD_SELF_INFO_DEF(_mod_data, _mod_ops)
-
-/**
- * Defines the mod interface as #MOD_SELF_INFO_DEF() does and also tags the
- * current mod with the specified tag.
- *
- * @param _mod_data pointer to the module specific data (if any)
- * @param _mod_ops pointer to the #mod_ops structure (if any)
- * @param s_tag symbol name of the tag defined with #MOD_TAG_DEF() macro
- *
- * @see MOD_INFO_TAGGED_DEF()
- */
-#define MOD_SELF_INFO_TAGGED_DEF(_mod_data, _mod_ops, s_tag) \
-		__MOD_SELF_INFO_TAGGED_DEF(_mod_data, _mod_ops, s_tag)
-
+#define MOD_BIND(mod_data, mod_ops) \
+		__MOD_BIND(mod_data, mod_ops)
 
 #endif /* MOD_BIND_H_ */

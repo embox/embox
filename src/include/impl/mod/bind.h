@@ -55,6 +55,6 @@
 
 #define __MOD_SELF_NAME __MOD_SELF(__MOD_NAME)
 
-#define __MOD_SELF_INFO_DEF(_mod_data, _mod_ops) \
+#define __MOD_BIND(_mod_data, _mod_ops) \
 		__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops)
 
