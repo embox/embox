@@ -14,8 +14,9 @@
 #include <linux/types.h>
 #endif
 
-#define ARRAY_SIZE(arr)                 (sizeof(arr) / sizeof((arr)[0]))
-/* deprecated */
+#include <util/array.h>
+
+/* TODO deprecated. -- Eldar, Nikolay */
 #define array_len(array)                ARRAY_SIZE(array)
 
 #endif /* EMBOX_KERNEL_H_ */
