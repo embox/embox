@@ -13,6 +13,7 @@
 #define COMMAND_NAME     "tftp"
 #define COMMAND_DESC_MSG "TFTP client"
 #define HELP_MSG         "Usage: tftp <server> <file> [load_addr]"
+#define DEFAULT_ADDDRESS (0x40004000)
 
 static const char *man_page =
 	#include "tftp_help.inc"
@@ -32,7 +33,7 @@ static int create_socket(struct sockaddr_in *addr) {
 
 	addr->sin_family = AF_INET;
 	addr->sin_addr.s_addr = htonl(INADDR_ANY);
-	addr->sin_port = htons(666); /* TODO: catch some availible port */
+	addr->sin_port = htons(38666); /* TODO: catch some availible port */
 
 	if (bind(sock, (struct sockaddr *)addr, sizeof(struct sockaddr_in)) == -1) {
 		printf("Attachement socket impossible.\n");
@@ -125,8 +126,11 @@ static int exec(int argsc, char **argsv) {
 	server.sin_addr.s_addr = inet_addr(argsv[1]);
 
 	sprintf(fname, "%s%s", "/ramfs/", argsv[2]);
-	if (sscanf(argsv[3], "0x%x", &file_base_addr) < 0) {
-		file_base_addr = 0x40004000; /* default for prom boot */
+
+
+	if (1 != (sscanf(argsv[3], "0x%x", &file_base_addr))) {
+		TRACE("default address = 0x%X\n", DEFAULT_ADDDRESS);
+		file_base_addr = DEFAULT_ADDDRESS;
 	}
 	f = fopen(fname, "wb");
 	tftp_receive(&server, "octet", argsv[2], f);
