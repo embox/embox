@@ -135,27 +135,28 @@ void uart_softirq_handler(softirq_nr_t softirq_nr, void *data) {
 	}
 }
 static irq_return_t uart_irq_handler(softirq_nr_t irq, void *data) {
+	printf ("soft irq raise\n\n");
 	softirq_raise(UART_SOFTIRQ_NR);
 	return IRQ_HANDLED;
 }
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
-#ifndef CONFIG_SOFTIRQ
+//#ifndef CONFIG_SOFTIRQ
 	static TERMINAL_TOKEN token;
 	static TERMINAL_TOKEN_PARAMS params[1];
 	char ch;
-#endif
+//#endif
 	if ((this == NULL) || this->running) {
 		return;
 	}
 	this->running = true;
 
 	this->callback = cb;
-#ifdef CONFIG_SOFTIRQ
-	softirq_install(UART_SOFTIRQ_NR, uart_softirq_handler, NULL);
-	uart_set_irq_handler(uart_irq_handler);
-	while(1) {}
-#else
+//#ifdef CONFIG_SOFTIRQ
+//	softirq_install(UART_SOFTIRQ_NR, uart_softirq_handler, NULL);
+	//uart_set_irq_handler(uart_irq_handler);
+//	while(1) {uart_getc();};
+//#else
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			params)) {
 		ch = token & 0xFF;
@@ -165,7 +166,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 			handle_ctrl_token(this, token, params);
 		}
 	}
-#endif
+//#endif
 	assert(this->callback == NULL);
 	this->running = false;
 }
