@@ -14,39 +14,25 @@
 struct _SCREEN;
 
 typedef struct _SCREEN_CALLBACK {
-	int (*on_char)(struct _SCREEN_CALLBACK *, struct _SCREEN *view, int ch);
-	int (*on_cursor_up)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_cursor_down)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_cursor_left)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_cursor_right)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_new_line)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_backspace)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_delete)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_insert)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_home)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_end)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_tab)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_etx)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_eot)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_dc2)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_dc4)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-			int by);
-	int (*on_ack)(struct _SCREEN_CALLBACK *, struct _SCREEN *view,
-				int by);
+#define CALLBACK_ENTRY(key) int (*on_##key)(struct _SCREEN_CALLBACK *, \
+	struct _SCREEN *view, int by);
+	CALLBACK_ENTRY(char)
+	CALLBACK_ENTRY(cursor_up)
+	CALLBACK_ENTRY(cursor_down)
+	CALLBACK_ENTRY(cursor_left)
+	CALLBACK_ENTRY(cursor_right)
+	CALLBACK_ENTRY(new_line)
+	CALLBACK_ENTRY(backspace)
+	CALLBACK_ENTRY(delete)
+	CALLBACK_ENTRY(insert)
+	CALLBACK_ENTRY(home)
+	CALLBACK_ENTRY(end)
+	CALLBACK_ENTRY(tab)
+	CALLBACK_ENTRY(etx)
+	CALLBACK_ENTRY(eot)
+	CALLBACK_ENTRY(dc2)
+	CALLBACK_ENTRY(dc4)
+	CALLBACK_ENTRY(ack)
 	void *outer;
 } SCREEN_CALLBACK;
 

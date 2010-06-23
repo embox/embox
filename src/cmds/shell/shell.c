@@ -33,7 +33,7 @@ void skip_word(char **str) {
 }
 
 static int parse_str(char *cmdline, char **words) {
-	int cnt = 0;
+	size_t cnt = 0;
 	while (*cmdline != '\0') {
 		if (' ' == *cmdline) {
 			*cmdline++ = '\0';
@@ -55,7 +55,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	if (0 == (words_counter = parse_str(cmdline, words))) {
 		return; /* Only spaces were entered */
 	}
-	if(NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))){
+	if (NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))){
 		printf("%s: Command not found\n", words[0]);
 		return;
 	}
@@ -116,10 +116,10 @@ static void job_abort_callback(CONSOLE_CALLBACK *cb, CONSOLE *console) {
 static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 	static const char *script_commands[] = {
 #include <start_script.inc>
-			};
+	};
 
 	char buf[CMDLINE_MAX_LENGTH + 1];
-	int i;
+	size_t i;
 	for (i = 0; i < array_len(script_commands); i++) {
 		strncpy(buf, script_commands[i], sizeof(buf));
 		printf("> %s \n", buf);

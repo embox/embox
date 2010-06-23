@@ -135,7 +135,6 @@ void uart_softirq_handler(softirq_nr_t softirq_nr, void *data) {
 	}
 }
 static irq_return_t uart_irq_handler(softirq_nr_t irq, void *data) {
-	printf ("soft irq raise\n\n");
 	softirq_raise(UART_SOFTIRQ_NR);
 	return IRQ_HANDLED;
 }
