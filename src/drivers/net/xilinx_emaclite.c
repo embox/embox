@@ -223,7 +223,7 @@ static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {
 	if (NULL != get_rx_buff()) {
 		pack_receiving(dev_id);
 	}
-	return 0;
+	return IRQ_HANDLED;
 }
 /*default 00-00-5E-00-FA-CE*/
 const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
@@ -298,10 +298,14 @@ static net_device_stats_t *get_eth_stat(net_device_t *dev) {
 }
 
 static const struct net_device_ops _netdev_ops = {
-		.ndo_start_xmit = start_xmit, .ndo_open = open, .ndo_stop = stop,
-		.ndo_get_stats = get_eth_stat, .ndo_set_mac_address = set_mac_address };
+	.ndo_start_xmit = start_xmit,
+	.ndo_open = open,
+	.ndo_stop = stop,
+	.ndo_get_stats = get_eth_stat,
+	.ndo_set_mac_address = set_mac_address
+};
 
-static int __init unit_init() {
+static int __init unit_init(void) {
 	/*if some module lock irq number we break initializing*/
 	net_device_t *net_device;
 	/*initialize net_device structures and save information about them to local massive*/
