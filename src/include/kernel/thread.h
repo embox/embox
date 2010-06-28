@@ -12,6 +12,7 @@
 
 #include <hal/context.h>
 #include <lib/list.h>
+#include <queue.h>
 
 typedef int thread_id_t;
 typedef int thread_priority_t;
@@ -51,6 +52,7 @@ struct thread {
 	 * We can start a thread iff his run_count equals to
 	 * priority_state of his priority or there is no threads
 	 * with the same priority and "right" run_count.
+	 * Is needed for heap_scheduler.
 	 */
 	bool run_count;
 	/** Flag, which shows, whether tread can be changed. */
@@ -61,6 +63,10 @@ struct thread {
 	thread_priority_t priority;
 	/** State, in which thread is now. */
     thread_state_t state;
+	/** Shows if thread is waiting for message. */
+    bool need_message;
+    /** Queue of messages, sent to this thread. */
+    queue messages;
 };
 
 /**

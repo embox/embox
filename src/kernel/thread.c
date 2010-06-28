@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <queue.h>
 
 #include <kernel/thread.h>
 #include <kernel/heap_scheduler.h>
