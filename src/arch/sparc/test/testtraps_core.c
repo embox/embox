@@ -18,8 +18,9 @@ void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 	case TRAP_TYPE_HARDTRAP:
 		if(number < CONFIG_MAX_RESERVED_TRAP) {
 			test_handlers[number] = handler;
-		} else {
-			test_handlers[number + CONFIG_MIN_HWTRAP_NUMBER] = handler;
+		}
+		if (number >= CONFIG_MIN_HWTRAP_NUMBER && number <= CONFIG_MAX_HWTRAP_NUMBER) {
+			test_handlers[number] = handler;
 		}
 		break;
 	case TRAP_TYPE_INTERRUPT:
