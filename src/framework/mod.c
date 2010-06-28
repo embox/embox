@@ -10,8 +10,7 @@
 #include <stdbool.h>
 #include <errno.h>
 
-#include <mod/framework.h>
-#include <mod/ops.h>
+#include <mod/core.h>
 #include <impl/mod/info.h>
 #include <impl/mod/types.h>
 
@@ -80,19 +79,6 @@ void *mod_data(const struct mod *mod) {
 		return NULL;
 	}
 	return mod_data_deref(mod);
-}
-
-int mod_invoke(const struct mod *mod, void *data) {
-	mod_invoke_t invoke;
-
-	if (NULL == mod) {
-		return -EINVAL;
-	}
-	if (NULL == mod->info || NULL == mod->info->ops ||
-			NULL == (invoke = mod->info->ops->invoke)) {
-		return -ENOTSUP;
-	}
-	return invoke((struct mod *) mod, data);
 }
 
 int mod_enable(const struct mod *mod) {

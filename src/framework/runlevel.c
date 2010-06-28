@@ -11,8 +11,7 @@
 
 #include <embox/runlevel.h>
 
-#include <mod/ops.h>
-#include <mod/framework.h>
+#include <mod/core.h>
 
 // XXX rewrite this shit. -- Eldar
 #define __EMBUILD_MOD__

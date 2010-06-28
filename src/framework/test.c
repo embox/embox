@@ -17,25 +17,18 @@
 #include <string.h>
 
 #include <test/framework.h>
-#include <mod/framework.h>
-#include <mod/ops.h>
+#include <mod/core.h>
 #include <util/array.h>
 
 static int test_mod_enable(struct mod *mod);
-static int test_mod_invoke(struct mod *mod, void *data);
 
 const struct mod_ops __test_mod_ops = {
 	.enable = &test_mod_enable,
-	.invoke = &test_mod_invoke,
 };
 
 ARRAY_DIFFUSE_DEF(const struct test, __test_registry);
 
 static int test_mod_enable(struct mod *mod) {
-	return test_mod_invoke(mod, NULL);
-}
-
-static int test_mod_invoke(struct mod *mod, void *data) {
 	return test_invoke((struct test *) mod_data(mod));
 }
 

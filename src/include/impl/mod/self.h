@@ -11,7 +11,7 @@
 #endif /* MOD_SELF_H_ */
 
 #ifndef __EMBUILD_MOD__
-#  error "Do not include without __EMBUILD_MOD__ defined (e.g. from lib code)!"
+# error "Do not include without __EMBUILD_MOD__ defined (e.g. from lib code)!"
 #endif /* __EMBUILD_MOD__ */
 
 #include "decls.h"

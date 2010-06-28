@@ -15,7 +15,7 @@
 #include <shell_command.h>
 #include <test/framework.h>
 // XXX for struct mod. -- Eldar
-#include <mod/framework.h>
+#include <mod/core.h>
 
 #define COMMAND_NAME     "test"
 #define COMMAND_DESC_MSG "works with express test subsystem"

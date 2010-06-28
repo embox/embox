@@ -9,7 +9,7 @@
 #include <types.h>
 
 #include <shell_command.h>
-#include <mod/framework.h>
+#include <mod/core.h>
 
 static const char *man_page =
 		"I am too lazy to fill these stupid man pages. \n"

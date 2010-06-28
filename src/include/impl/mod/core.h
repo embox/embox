@@ -6,9 +6,9 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef MOD_FRAMEWORK_H_
-# error "Do not include this file directly, use <mod/framework.h> instead!"
-#endif /* MOD_FRAMEWORK_H_ */
+#ifndef MOD_CORE_H_
+# error "Do not include this file directly, use <mod/core.h> instead!"
+#endif /* MOD_CORE_H_ */
 
 #include "types.h"
 

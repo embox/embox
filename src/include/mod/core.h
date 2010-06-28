@@ -1,17 +1,17 @@
 /**
  * @file
- * @brief TODO
+ * @brief EMBOX Dependency Injection core API
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov
  */
 
-#ifndef MOD_FRAMEWORK_H_
-#define MOD_FRAMEWORK_H_
+#ifndef MOD_CORE_H_
+#define MOD_CORE_H_
 
 #include <stdbool.h>
 
-#include <impl/mod/framework.h>
+#include <impl/mod/core.h>
 
 /**
  * TODO Module info emitted by EMBuild dependency injection model generator.
@@ -30,6 +30,29 @@ struct mod_package;
  * Used to iterate over various mod lists.
  */
 struct mod_iterator;
+
+/**
+ * Performs an operation with the module. The semantics of the operation is
+ * module-specific. If the module has no operation assigned (#mod_ops structure
+ * contains @c NULL pointer fields), the meaning is that module operation
+ * always succeeds (as if the corresponding function returns 0).
+ *
+ * @param self pointer to the #mod struct.
+ * @return error code
+ * @retval 0 if operation succeeds
+ * @retval nonzero on error
+ */
+typedef int (*mod_op_t)(struct mod *self);
+
+/**
+ * Module operations.
+ * TODO more docs. -- Eldar
+ * @note Do not call these functions directly!
+ */
+struct mod_ops {
+	/** (optional) Module state change operation. */
+	mod_op_t enable, disable;
+};
 
 /**
  * Enables the specified mod resolving its dependencies. This implies that all
@@ -94,20 +117,6 @@ extern int mod_enable_nodep(const struct mod *mod);
 extern int mod_disable_nodep(const struct mod *mod);
 
 /**
- * Invokes the module if it has provided the corresponding operation.
- * Please note that framework does not track the current state of the mod or
- * its dependencies, this means that the mod will be invoked even if it is not
- * enabled now.
- *
- * @param mod the mod on which to call @link mod_ops#invoke @endlink method
- * @param data optional argument to pass to the @c invoke method
- * @return invocation result
- * @retval -EINVAL if the @c mod argument is @c NULL
- * @retval -ENOTSUP if the mod does not support invoke method
- */
-extern int mod_invoke(const struct mod *mod, void *data);
-
-/**
  * Tells whether the specified mod is enabled or not.
  *
  * @param mod the mod to check
@@ -169,32 +178,4 @@ extern struct mod *mod_iterator_next(struct mod_iterator *iterator);
  */
 extern bool mod_iterator_has_next(struct mod_iterator *iterator);
 
-#if 0
-/* TODO there is no way to implement these functions at now. -- Eldar */
-
-/**
- * Sets the mod-specific data.
- *
- * @param mod the mod which's data to get
- * @param data the data to associate with the mod
- */
-extern void mod_data_set(const struct mod *mod, void *data);
-
-/**
- * Gets the #mod_ops of the specified mod.
- *
- * @param mod the mod which's ops to get
- * @return the mod operations structure
- */
-extern struct mod_ops *mod_ops_get(const struct mod *mod);
-
-/**
- * Sets the mod-specific data.
- *
- * @param mod the mod which's data to get
- * @param ops the data to associate with the mod
- */
-extern void mod_ops_set(const struct mod *mod, struct mod_ops *ops);
-#endif
-
-#endif /* MOD_FRAMEWORK_H_ */
+#endif /* MOD_CORE_H_ */

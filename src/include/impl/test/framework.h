@@ -50,7 +50,7 @@ inline static struct test *test_iterator_next(struct test_iterator *iterator) {
 
 
 // XXX for struct mod. -- Eldar
-#include <mod/framework.h>
+#include <mod/core.h>
 inline static const char *test_name(struct test *test) {
 	return NULL != test ? test->mod->name : NULL;
 }
