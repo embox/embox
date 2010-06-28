@@ -15,7 +15,7 @@
 #else
 # include <bits/types.h>
 # include <unistd.h>
-# include <cdio/types.h>
+# include <linux/types.h>
 #endif
 
 void* multipage_alloc(size_t page_quantity);
