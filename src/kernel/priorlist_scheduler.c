@@ -32,6 +32,11 @@ typedef struct thread1 {
 	int id;
 } thread_t;
 
+struct thread1 {
+	int id;
+};
+typedef struct thread1 thread_t;
+
 typedef struct thread_head {
 	struct list_head *next;
 	struct list_head *prev;
