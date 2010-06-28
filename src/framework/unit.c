@@ -31,7 +31,7 @@ static int unit_mod_enable(struct mod *mod) {
 		return 0;
 	}
 
-	TRACE("unit: initializing %s: ", unit->name);
+	TRACE("unit: initializing %s: ", mod->name);
 	if (0 == (ret = unit->init())) {
 		TRACE("done\n");
 	} else {
@@ -49,7 +49,7 @@ static int unit_mod_disable(struct mod *mod) {
 		return 0;
 	}
 
-	TRACE("unit: finalizing %s: ", unit->name);
+	TRACE("unit: finalizing %s: ", mod->name);
 	if (0 == (ret = unit->fini())) {
 		TRACE("done\n");
 	} else {

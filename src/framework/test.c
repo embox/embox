@@ -49,7 +49,7 @@ int test_invoke(struct test *test) {
 		return -EBADF;
 	}
 
-	TRACE("test: running %s: ", test->name);
+	TRACE("test: running %s: ", test->mod->name);
 	if (0 == (result = test->run())) {
 		TRACE("passed\n");
 	} else {

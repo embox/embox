@@ -10,7 +10,7 @@
 # error "Do not include this file directly, use <embox/test.h> instead!"
 #endif /* EMBOX_TEST_H_ */
 
-#include <mod/bind.h>
+#include <mod/self.h>
 #include <util/array.h>
 
 #include <impl/test/types.h>
@@ -21,11 +21,9 @@
 	ARRAY_DIFFUSE_ADD_NAMED(__test_registry, __test, { \
 			.private = &__test_private, \
 			.run = _run, \
-			.name = MOD_SELF_NAME \
+			.mod = &mod_self \
 		}); \
-	MOD_BIND(__test, &__test_mod_ops)
+	MOD_SELF_BIND(__test, &__test_mod_ops)
 
 extern const struct mod_ops __test_mod_ops;
-// TODO move into mod/bind.h -- Eldar
-extern const char MOD_SELF_NAME[];
 extern const struct test __test_registry[];

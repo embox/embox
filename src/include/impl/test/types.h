@@ -25,8 +25,8 @@ struct test {
 	struct test_private *private;
 	/** The test itself. */
 	test_run_t run;
-	/** Test name (defaults to the corresponding mod name). */
-	const char *name;
+	/** The corresponding mod. */
+	const struct mod *mod;
 };
 
 struct test_private {

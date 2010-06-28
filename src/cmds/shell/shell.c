@@ -114,7 +114,7 @@ static void job_abort_callback(CONSOLE_CALLBACK *cb, CONSOLE *console) {
 }
 
 static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
-	static const char *script_commands[] = {
+	__extension__ static const char *script_commands[] = {
 #include <start_script.inc>
 	};
 

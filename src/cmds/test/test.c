@@ -14,6 +14,8 @@
 
 #include <shell_command.h>
 #include <test/framework.h>
+// XXX for struct mod. -- Eldar
+#include <mod/framework.h>
 
 #define COMMAND_NAME     "test"
 #define COMMAND_DESC_MSG "works with express test subsystem"
@@ -34,8 +36,8 @@ static void print_tests(void) {
 	test_foreach(test) {
 		TRACE("%3d. ", ++i);
 
-		if (NULL != test->name) {
-			TRACE("%s\n", test->name);
+		if (NULL != test->mod->name) {
+			TRACE("%s\n", test->mod->name);
 		} else {
 			TRACE(DEFAULT_NAME_STR);
 		}
@@ -79,7 +81,7 @@ static struct test *get_test_by_name(char *name) {
 	struct test *test;
 
 	test_foreach(test) {
-		if (is_test_name(name, test->name)) {
+		if (is_test_name(name, test->mod->name)) {
 			return test;
 		}
 	}

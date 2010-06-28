@@ -11,7 +11,6 @@
 # error "Do not include this file directly, use <test/framework.h> instead!"
 #endif /* TEST_FRAMEWORK_H_ */
 
-#include <mod/framework.h>
 #include <util/macro.h>
 #include <util/array.h>
 
@@ -50,6 +49,8 @@ inline static struct test *test_iterator_next(struct test_iterator *iterator) {
 }
 
 
+// XXX for struct mod. -- Eldar
+#include <mod/framework.h>
 inline static const char *test_name(struct test *test) {
-	return NULL != test ? test->name : NULL;
+	return NULL != test ? test->mod->name : NULL;
 }
