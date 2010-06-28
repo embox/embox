@@ -14,8 +14,6 @@
 /* declare test in system */
 EMBOX_TEST(run);
 
-#define DIV_BY_ZERO     0x2a
-
 static volatile uint32_t a = 17;
 static was_in_trap = 0;
 /* MMU data access exception handler */
@@ -34,7 +32,7 @@ static int run() {
 	traps_save_env(&old_env);
 	traps_set_env(testtraps_env());
 
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, DIV_BY_ZERO, dfault_handler);
+	testtraps_set_handler(TRAP_TYPE_HARDTRAP, DIVZERO_FAULT, dfault_handler);
 
 	a = (23 / zero);
 
