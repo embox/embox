@@ -32,10 +32,11 @@ typedef struct thread1 {
 	int id;
 } thread_t;
 
-struct thread1 {
+/*struct thread1 {
 	int id;
 };
-typedef struct thread1 thread_t;
+
+typedef struct thread1 thread_t;*/
 
 typedef struct thread_head {
 	struct list_head *next;
@@ -57,6 +58,7 @@ static priority_head_t priority_pool[MAX_PRIORITY];
 #define priority_head          (&priority_pool[0])
 
 static thread_head_t thread_head_pool[MAX_PRIORITY];
+/* this is the list */
 static LIST_HEAD(free_threads_list_head);
 #define free_threads_list (&free_threads_list_head)
 

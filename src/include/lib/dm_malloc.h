@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Dynamic memory allocator arbitrary size.
+ * @brief Dynamic memory allocator arbitrary size. Terehov style >_>
  *
  * @details TODO
  *
@@ -11,25 +11,22 @@
  *
  * TODO
  * 1) Replace malloc module.
- * 2) Retvals with names.
- * 3) Calloc && realloc.
- * 4) Page free problem.
- * 5) Memory adress problem.
- * 6) Uniformity  JUST FUKING TODO IT!
+ * 2) Calloc && realloc.
+ * 3) Uniformity
  */
 
 #ifndef __DM_MALLOC_H
 #define __DM_MALLOC_H
 
 /**
- * Repeat code under brackets { } N times.
- *
- * @param how much time macros repeat code.
- *
- * @note this macros is undefined in the end of this module.
+ * auxiliry
  */
-#define REPEAT(times) \
-	for (int INC_REP=0; INC_REP < times; INC_REP++)
+#define PAGE_SIZE 0x100
+
+/**
+ * auxiliry
+ */
+#define MALLOC_SIZE 0x2
 
 /**
  * Show that block is busy.
@@ -48,31 +45,18 @@
 #define HOLE 1
 
 /**
- * Calculate begining of the memory block.
- *
- * @param memory block. type is 'mem_block_t'
- *
- * @return begin of the memory block
- *
- * @note it is not a function ;)
+ * to be writen
  */
-#define ADRESS(block) (block+sizeof(mem_block_t)+1)
-
-/**
- * Memory block structure.
- *
- * @note struct list_head *next, *prev must be always at the top in the same order.
- */
-typedef struct mem_block {
-	struct list_head *next, *prev;
+typedef struct tag {
 	size_t size;
 	bool free;
-} mem_block_t;
+} tag_t;
 
 /**
- * Internal memory representation.
+ * return adress
+ * mem = begin of hole block
  */
-//static LIST_HEAD(mem_list);
+#define ADRESS(mem) (void *) (mem+sizeof(struct list_head)+sizeof(tag_t))
 
 /**
  * Dynamic memory allocator arbitrary size.
@@ -88,12 +72,16 @@ void* dm_malloc(size_t size);
  * Free memory function.
  *
  * @param pointer at the memory, that must be free
- *
- * @retval 0 if everething is OK
- * @retval -1 if there are no memory block with such adress
  */
-int dm_free(void *ptr);
+void dm_free(void *ptr);
+
+/**
+ * module info
+ *
+ * output information about all memory blocks
+ * @note that it s auxiliary function
+ */
+void dm_info(void);
 
 #endif /* __DM_MALLOC_H_ */
-
 

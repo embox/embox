@@ -9,6 +9,7 @@
 #include <embox/test.h>
 #include <lib/dm_malloc.h>
 #include <lib/list.h>
+#include <lib/multipage_alloc.h>
 
 EMBOX_TEST(run);
 
@@ -28,6 +29,7 @@ static LIST_HEAD(int_list);
 
 static int run(void) {
 	int result = 0;
+
 	int i;
 	struct list_head *tmp_h;
 	struct list *tmp;
@@ -53,5 +55,6 @@ static int run(void) {
 		printf("now tmp[%d] if free | ", tmp->p/2);
 	}
 	TRACE("\ntest ");
+
 	return result;
 }

@@ -13,123 +13,123 @@
 #include <lib/dm_malloc.h>
 #include <lib/list.h>
 
+/* some auxilraty stuff */
+#define MALLOC_SIZE 8
+#define PAGE_SIZE 0x1000
+/* some stuff for easey programming */
+inline static void allocate_mem_block(int pages);
+inline static void eat_mem(size_t size, void *ext);
 /* memory list */
-static LIST_HEAD(mem_list);
+static LIST_HEAD(mem_pool);
+/* inited? */
+bool inited=false;
 
-/* auxiliry function. allocate block of memory */
-inline mem_block_t* allocate_mem_block(int pages) {
-	mem_block_t *tmp_alloc;
+void* dm_malloc(size_t size) {
+	/* declarations */
+	void *tmp;
 
-	tmp_alloc = (mem_block_t*) multipage_alloc(pages);
-	if ( tmp_alloc == 0) {
-		return 0;
+	if (!inited) {
+		allocate_mem_block(MALLOC_SIZE);
+		!inited;
 	}
-	tmp_alloc->size =
-		CONFIG_PAGE_SIZE
-		* pages
-		- sizeof(mem_block_t)
-		- 1;
-	tmp_alloc->free = HOLE;
-
-	return tmp_alloc;
+	/* find block */
+	list_for_each( ((struct list_head *) tmp), &mem_pool) {
+		if ( ((tag_t *) (tmp - sizeof(tag_t)))->size >= size ) {
+			eat_mem(size, (tmp - sizeof(tag_t)));
+			/* and return */
+			return tmp;
+		}
+	}
+	/* fuck, there are somthing wrong */
+	return 0;
 }
 
-/* auxiliry function. Eat mem. */
-inline mem_block_t* eat_mem(size_t size, mem_block_t* ext) {
-        /* block from wich bit a mem */
-        mem_block_t *tmp;
+void dm_free(void *ptr) {
+	/* declarations */
+	void * tmp;
+	ptr = ptr - sizeof(tag_t);
+	/* forward direction */
+	tmp = ((tag_t*) ptr)->size + ptr;
+	if ( ((tag_t*) tmp)->free == HOLE) {
+		((tag_t *) ptr)->size += ((tag_t *) tmp)->size;
+		list_del(((struct list_head *) tmp+sizeof(tag_t)));
+	}
+	/* backward dircetion */
+	tmp = ptr - sizeof(tag_t);
+	if ( ((tag_t*) tmp)->free == HOLE) {
+		tmp = tmp - ((tag_t *)tmp)->size + sizeof(tag_t);
 
-	if (ext->size == size) {
+		((tag_t *) tmp)->size += ((tag_t *) ptr)->size;
+		list_del(((struct list_head *) ptr+sizeof(tag_t)));
+		ptr = tmp;
+	}
+	/* write tag's */
+	((tag_t *)ptr)->free = HOLE;
+	((tag_t *) (((tag_t *)ptr)->size + ptr))->free = HOLE;
+	((tag_t *) (((tag_t *)ptr)->size + ptr))->size = ((tag_t *) ptr)->size;
+	/* somthing wrong */
+}
+
+/* auxiliry function. allocate block of memory TODO add the nding memory work*/
+inline static void allocate_mem_block(int pages) {
+	/* declarations */
+	void *tmp;
+
+	tmp = multipage_alloc(pages);
+	if ( tmp == 0) {
+		return 0;
+	}
+	TRACE("PONG!");
+	/* calculate size etc. */
+	((tag_t*)tmp)->size =
+		PAGE_SIZE
+		* pages
+		- sizeof(tag_t) * 2
+		- sizeof(struct list_head);
+	((tag_t*)tmp)->free = HOLE;
+
+	/* add to list */
+	list_add( ((struct list_head*) (tmp + sizeof(tag_t))) , &mem_pool);
+
+	/* write structure at the end */
+	/* while we do not need it i was not write it*/
+}
+/* auxiliry function. Eat mem. TODO add the ending memory work */
+inline static void eat_mem(size_t size, void *ext) {
+	/* decalations */
+	void *tmp, *tmp_end;
+
+	if ( ((tag_t*) ext)->size == size) {
 		return ext;
 	}
 
 	/* memory reallocation */
 	tmp =
 		ext
-		+ sizeof(mem_block_t)
+		+ sizeof(tag_t)
+		+ sizeof(struct list_head*)
 		+ size;
-	tmp->size =
-		ext->size
-		- size
-		- 1;
-	tmp->free = HOLE;
+	((tag_t *) tmp)->size =
+		((tag_t *) ext)->size
+		- size;
+	((tag_t *) tmp)->free = HOLE;
+
+	/* end mem */
+	tmp_end = tmp
+		/*+ sizeof(tag_t); you know why i do this?*/
+		+ sizeof(struct list_head);
+		/*- sizeof(tag_t); if not - see it*/
+	((tag_t *) tmp_end)->size = ((tag_t *) tmp)->size;
+	((tag_t *) tmp_end)->free = ((tag_t *) tmp)->free;
 
 	/* reallocatation */
-	ext->size = size;
-	ext->free = PROC;
+	((tag_t*)ext)->size = size;
+	((tag_t*)ext)->free = PROC;
 
 	/* add tail */
-	list_add_tail(
-		(struct list_head*) tmp,
-		(struct list_head*) ext
-	);
-	return ext;
-}
-
-void* dm_malloc(size_t size) {
-	struct list_head *tmp;
-	mem_block_t *tmp_mem;
-	int pot;
-
-	/* logic */
-	list_for_each(tmp, &mem_list) {
-		tmp_mem = (mem_block_t*) tmp;
-		if (tmp_mem->free == HOLE && tmp_mem->size >= size) {
-			tmp_mem = eat_mem(size, tmp_mem);
-			return ADRESS(tmp_mem);
-		}
-	}
-
-	/* if we hav't anought memory */
-	pot = size / CONFIG_PAGE_SIZE;
-	/* FIXME we must allocate by power of the 2 */
-	/* logic */
-	tmp_mem = allocate_mem_block(pot);
-	/* there are no memory */
-	if (tmp == 0) {
-		return 0;
-	}
-	list_add((struct list_head*)tmp_mem, &mem_list);
-	tmp_mem = eat_mem(size, tmp_mem);
-	return ADRESS(tmp_mem);
-
-	/* #$%&, there are somthing wrong */
-	return 0;
-}
-
-int dm_free(void *ptr) {
-	mem_block_t *iterator;
-	struct list_head *tmp;
-	struct list_head *p;
-
-	/* logic */
-	list_for_each(p, &mem_list) {
-		iterator = (mem_block_t *)p;
-		if ( ADRESS(iterator) == ptr ) {
-
-			iterator->free = HOLE;
-
-			// one direction
-			tmp = (struct list_head *) iterator;
-			while ( ((mem_block_t *)tmp->next)->free != PROC) {
-				tmp = tmp->next;
-				iterator->size = iterator->size + ((mem_block_t *)tmp)->size;
-				list_del(tmp);
-			}
-
-			// second direction
-			tmp = (struct list_head*) iterator;
-			while ( ((mem_block_t *)tmp->prev)->free != PROC) {
-				tmp = tmp->prev;
-				((mem_block_t *)tmp)->size += iterator->size;
-				iterator = (mem_block_t *)tmp;
-				list_del(tmp->next);
-			}
-
-			return 0;
-		}
-	}
-	return -1;
+	list_add((struct list_head*) tmp, &mem_pool);
+	list_del(ext);
+	TRACE("PING!");
 }
 
 #undef PROC
