@@ -5,13 +5,14 @@
 include $(MK_DIR)/util.mk
 
 IMAGE      = $(BIN_DIR)/$(TARGET)
-IMAGE_DIS  = $(BIN_DIR)/$(TARGET).dis
-IMAGE_SREC = $(BIN_DIR)/$(TARGET).srec
-IMAGE_SIZE = $(BIN_DIR)/$(TARGET).size
+IMAGE_DIS  = $(IMAGE).dis
+IMAGE_SREC = $(IMAGE).srec
+IMAGE_SIZE = $(IMAGE).size
+IMAGE_PIGGY= $(IMAGE).piggy
 
 .PHONY: image
 image: image_init
-image: $(IMAGE) $(IMAGE_SREC) $(IMAGE_SIZE)
+image: $(IMAGE) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
 ifeq ($(DISASSEMBLE),y)
 image: $(IMAGE_DIS)
 endif
@@ -112,6 +113,11 @@ $(IMAGE_DIS): $(IMAGE)
 
 $(IMAGE_SREC): $(IMAGE)
 	@$(OBJCOPY) -O srec $< $@
+
+$(IMAGE_PIGGY): $(IMAGE)
+	@$(OBJCOPY) -O binary -R .note -R .comment -S $< $@.tmp
+	@$(LD) -r -b binary $@.tmp -o $@
+	@$(RM) $@.tmp
 
 image_size_sort = \
 	echo "" >> $@;                    \
