@@ -13,6 +13,7 @@
 #include <hal/context.h>
 #include <lib/list.h>
 #include <queue.h>
+#include <string.h>
 
 typedef int thread_id_t;
 typedef int thread_priority_t;
@@ -23,6 +24,17 @@ typedef enum {
 	THREAD_STATE_STOP,
 	THREAD_STATE_ZOMBIE
 } thread_state_t;
+
+typedef int msg_t;
+typedef int msg_data_t;
+struct message {
+	/* Message type. */
+	msg_t type;
+	/* Information in message. */
+	msg_data_t data;
+	/* Node in queue of messages. */
+	struct list_head *list;
+};
 
 /**
  * Thread, which makes nothing.
@@ -96,5 +108,36 @@ int thread_stop(struct thread *stopped_thread);
  * Currently working thread leaves CPU for some time.
  */
 void thread_yield(void);
+
+/**
+ *
+ * @param message sended message
+ * @param thread thread to receive message
+ */
+void msg_send(struct message *message, struct thread *thread);
+
+/**
+ * Allows thread to receive a message.
+ *
+ * @param thread thread, which wants to take a message.
+ * @return received message (wait until there will be such a message).
+ */
+struct message *msg_receive(struct thread *thread);
+
+/**
+ * Allots memory for new message to send to thread.
+ *
+ * @return pointer to new message.
+ */
+struct message *msg_new(void);
+
+/**
+ * Free memory from the message.
+ *
+ * @param message deleted message.
+ * @return -1 if message is NULL
+ * @return 0 otherwise.
+ */
+int msg_erase(struct message *message);
 
 #endif /* THREAD_H_ */
