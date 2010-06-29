@@ -19,7 +19,7 @@
 #endif
 
 void* multipage_alloc(size_t page_quantity);
-void  multipage_free (void * pointer);
+void multipage_free (void * pointer);
 
 #endif /* __MULTIPAGE_ALLOC_H_ */
 
