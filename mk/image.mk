@@ -10,7 +10,7 @@ IMAGE_SREC = $(IMAGE).srec
 IMAGE_SIZE = $(IMAGE).size
 IMAGE_PIGGY= $(IMAGE).piggy
 
-.PHONY: image
+.PHONY: image image_init image_fini
 image: image_init
 image: $(IMAGE) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
 ifeq ($(DISASSEMBLE),y)
