@@ -29,22 +29,19 @@
  */
 static int preemption_count = 1;
 
-/** List item, pointing at begin of the list. */
-static struct list_head *list_begin_sched;
-#if 0
-/** List item, pointing at begin of the (waiting) list. */
-static struct list_head *list_begin_wait;
-/** List item, pointing at begin of the (sleeping) list. */
-static struct list_head *list_begin_sleep;
-#endif
+/** List item, pointing at begin of the list of
+ *  running threads.
+ */
+static struct list_head *list_head_run;
+/** List item, pointing at begin of the list
+ * 	of waiting threads
+ */
+static struct list_head *list_head_wait;
 
 int scheduler_init(void) {
 	INIT_LIST_HEAD(&idle_thread->sched_list);
 	current_thread = idle_thread;
-	list_begin_sched = &idle_thread->sched_list;
-#if 0
-	list_begin_wait = &idle_thread->wait_list;
-#endif
+	list_head_run = &idle_thread->sched_list;
 	current_thread->reschedule = false;
 	return 0;
 }
@@ -60,7 +57,7 @@ static void scheduler_tick(uint32_t id) {
 
 void scheduler_start(void) {
 	TRACE("\nStart scheduler\n");
-	list_for_each_entry(current_thread, list_begin_sched, sched_list) {
+	list_for_each_entry(current_thread, list_head_run, sched_list) {
 		TRACE("%d ", current_thread->id);
 	}
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
@@ -123,7 +120,7 @@ void scheduler_dispatch(void) {
 }
 
 void scheduler_add(struct thread *added_thread) {
-	list_add_tail(&added_thread->sched_list, list_begin_sched);
+	list_add_tail(&added_thread->sched_list, list_head_run);
 }
 
 int scheduler_remove(struct thread *removed_thread) {
@@ -138,29 +135,31 @@ int scheduler_remove(struct thread *removed_thread) {
 	return 0;
 }
 
-int scheduler_convar_wait(struct mutex *added_mutex, struct condition_variable *variable) {
-#if 0
-	if (added_mutex == NULL || added_mutex == idle_mutex) {
-		return -EINVAL;
-	}
-	&added_mutex->bound_thread->state = THREAD_STATE_SLEEP;
-	list_add_tail(&added_mutex->sleeped_thread_list, variable->list_begin_convar);
-	mutex_unlock(added_mutex);
-#endif
+int thread_lock(struct thread *thread, struct event *event)
+{
+	struct thread *old_thread = thread;
+	ipl_t ipl;
+
+	preemption_inc();
+
+	list_add(&thread->sched_list, list_head_wait);
+	thread_move_next(thread);
+	list_del(&old_thread->sched_list);
+	old_thread->state = THREAD_STATE_WAIT;
+	list_add(&old_thread->sched_list,event->threads);
+
+	TRACE("Blocking %d\n", old_thread->id);
+
+	ipl = ipl_save();
+	preemption_count--;
+	context_switch(&old_thread->context, &thread->context);
+	ipl_restore(ipl);
+
 	return 0;
 }
 
-void scheduler_convar_signal(struct condition_variable *variable) {
-#if 0
-	struct mutex trans_mutex;
-	struct list_head *convar_list;
-	convar_list = &variable->list_begin_convar;
-	while (convar_list->next != NULL) {
-		convar_list = convar_list->next;
-		trans_mutex = list_entry(convar_list, struct mutex, sleeped_thread_list);
-		list_del(&trans_mutex->sleeped_thread_list);
-		&trans_mutex->bound_thread->state = THREAD_STATE_RUN;
-		mutex_lock(trans_mutex);
-	}
-#endif
+int thread_unlock(struct event *event)
+{
+
+	return 0;
 }
