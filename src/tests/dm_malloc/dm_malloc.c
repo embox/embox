@@ -38,6 +38,9 @@ static int run(void) {
 	printf("\t\t = Allocate list =\n");
 	for(i = 0; i <= 4; i++) {
 		tmp = (struct list *)dm_malloc(sizeof(struct list));
+		if ( tmp == 0 ) {
+			return -1;
+		}
 		tmp->p = i*2;
 		list_add( (struct list_head*) tmp, &int_list);
 		printf("tmp[%d] = %d | ", i, tmp->p);

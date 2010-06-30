@@ -14,7 +14,7 @@
 #include <lib/list.h>
 
 /* some stuff for easey programming */
-inline static int allocate_mem_block(int pages);
+inline static int  allocate_mem_block(int pages);
 inline static void eat_mem(size_t size, tag_free_t *ext);
 /* memory list */
 static LIST_HEAD(mem_pool);
@@ -25,21 +25,25 @@ void* dm_malloc(size_t size) {
 	/* declarations */
 	tag_free_t *tmp_begin;
 	struct list_head *tmp_loop;
-
+	/* we inited */
 	if (!inited) {
-		allocate_mem_block(MALLOC_SIZE);
+		int expr = allocate_mem_block(MALLOC_SIZE);
+		if ( expr  == 0 ) {
+			return 0;
+		}
 		inited = !inited;
 	}
-
 	/* find block */
 	list_for_each(tmp_loop, &mem_pool) {
-		tmp_begin = (tag_free_t*) (tmp_loop - sizeof(tag_t));
+		tmp_begin = (tag_free_t*) tmp_loop;
+		TRACE("PING! ");
 		if (tmp_begin->tag.size >= size) {
 			eat_mem(size, tmp_begin );
 			/* and return */
 			return ADRESS(tmp_begin);
 		}
 	}
+	TRACE(" \n === INFERNAL FUCK! === \n ");
 	/* fuck, there are something wrong */
 	return 0;
 }
@@ -79,7 +83,7 @@ void dm_free(void *ptr) {
 	tmp_end->free = HOLE;
 }
 
-/* auxiliry function. allocate block of memory TODO add the nding memory work*/
+/* auxiliry function. allocate block of memory TODO add the ending memory work */
 inline static int allocate_mem_block(int pages) {
 	/* declarations */
 	tag_free_t *tmp_begin;
@@ -91,8 +95,7 @@ inline static int allocate_mem_block(int pages) {
 	}
 	/* calculate size etc. */
 	tmp_begin->tag.size =
-		PAGE_SIZE
-		* pages
+		PAGE_SIZE * pages
 		- sizeof(tag_free_t)
 		- sizeof(tag_t);
 	tmp_begin->tag.free = HOLE;
@@ -138,6 +141,7 @@ inline static void eat_mem(size_t size, tag_free_t* ext) {
 	tmp_end->free = HOLE;
 	/* add to list */
 	list_add( (struct list_head*) tmp_begin, &mem_pool);
+	printf("PONG!\n");
 }
 
 #undef PROC
