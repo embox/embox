@@ -31,11 +31,14 @@ EMBOX_TEST(run_test)
 static void first_run(void) {
 	int i;
 	struct message *msg = msg_new();
+	struct message *sec_msg = msg_new();
 	sent_msg = msg;
 	assert(msg != NULL);
 	msg->type = 1;
+	sec_msg->type = 3;
 	/* Makes nothing, because have wrong type. */
 	msg_send(msg, second_thread);
+	msg_send(sec_msg, second_thread);
 	for (i = 0; i < 1000; i++) {
 		TRACE("1");
 	}
@@ -48,12 +51,14 @@ static void first_run(void) {
  * Waits for a proper message. Then writes "22222...".
  */
 static void second_run(void) {
-	struct message *msg;
+	struct message *msg = NULL;
 	/* Waits for message with type 2. */
 	do {
+		if (msg != NULL) {
+			msg_erase(msg);
+		}
 		msg = msg_receive(second_thread);
 		TRACE("\nMessage type = %d\n", msg->type);
-		assert(msg == sent_msg);
 	} while (msg->type != 2);
 
 	msg_erase(msg);
