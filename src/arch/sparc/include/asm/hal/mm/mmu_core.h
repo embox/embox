@@ -18,6 +18,8 @@
 typedef uint32_t __mmu_paddr_t;
 typedef uint32_t __mmu_vaddr_t;
 typedef uint32_t __mmu_pgd_t;
+typedef uint32_t __mmu_pmd_t;
+typedef uint32_t __mmu_pte_t;
 
 typedef uint32_t __mmu_page_flags_t;
 
@@ -105,11 +107,11 @@ typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
 /** MMU three-level mapping */
 
 /** Level-3 Table:64 entries, 4 bytes a piece */
-#define MMU_PTE_TABLE_SIZE   0x100
+#define __MMU_PTE_TABLE_SIZE   0x100
 /** Level-2 Table:64 entries, 4 bytes a piece */
-#define MMU_PMD_TABLE_SIZE   0x100
+#define __MMU_PMD_TABLE_SIZE   0x100
 /** Level-1 Table: 256 entries, 4 bytes a piece */
-#define MMU_PGD_TABLE_SIZE   0x400
+#define __MMU_PGD_TABLE_SIZE   0x400
 
 /** 4K-byte pages */
 #define PAGE_SIZE            (1<<12)
@@ -125,8 +127,8 @@ typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
 #define MMU_PTE_CACHE        0x80
 #define MMU_PTE_MODIFIED     0x40
 #define MMU_PTE_REF          0x20
-//#define MMU_PTE_EXEC         0x08
-//#define MMU_PTE_WRITE        0x04
+#define MMU_PTE_EXEC         0x08
+#define MMU_PTE_WRITE        0x04
 //#define MMU_PTE_PRIV         0x1c
 //#define MMU_PTE_PRIV_RDONLY  0x18
 #define MMU_PTE_ET           0x2
@@ -166,6 +168,7 @@ typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
 
 typedef unsigned long pte_t;
 typedef unsigned long pmd_t;
+typedef unsigned long pld_t;
 typedef unsigned long pgd_t;
 typedef unsigned long ctxd_t;
 
@@ -184,13 +187,13 @@ typedef unsigned long ctxd_t;
 #define __nocache_va(PADDR)  PADDR
 #define __nocache_fix(VADDR) VADDR
 
-#define MMU_GTABLE_MASK         0xFF000000
-#define MMU_GTABLE_MASK_OFFSET  24
-#define MMU_MTABLE_MASK         0x00FC0000
-#define MMU_MTABLE_MASK_OFFSET  18
-#define MMU_PTABLE_MASK         0x0003F000
-#define MMU_PTABLE_MASK_OFFSET  12
-#define MMU_PAGE_MASK           0xFFF
+#define __MMU_GTABLE_MASK         0xFF000000
+#define __MMU_GTABLE_MASK_OFFSET  24
+#define __MMU_MTABLE_MASK         0x00FC0000
+#define __MMU_MTABLE_MASK_OFFSET  18
+#define __MMU_PTABLE_MASK         0x0003F000
+#define __MMU_PTABLE_MASK_OFFSET  12
+#define __MMU_PAGE_MASK           0xFFF
 
 /**
  * Describes structure for MMU environment for SPARC architecture.
@@ -296,4 +299,29 @@ static inline void mmu_pmd_set(pmd_t * pmdp, pte_t * ptep) {
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) ptep) >> 4)));
 }
 
+static inline pmd_t *mmu_pgd_get(pgd_t * pgdp) {
+	return (pmd_t *) ((((unsigned long) *pgdp) & MMU_PTD_PMASK) << 4);
+}
+
+/* possible misunderstand: pte is decsribing pointer to physical page,
+ * here it's mean the last-level-page-catalog  */
+static inline pte_t *mmu_pmd_get(pmd_t * pmdp) {
+	return (pte_t *) ((((unsigned long) *pmdp) & MMU_PTD_PMASK) << 4);
+}
+
+static inline pte_t mmu_pte_format(__mmu_paddr_t addr, __mmu_page_flags_t flags) {
+	return (((addr >> 4) ) & MMU_PTE_PMASK) | flags | MMU_PTE_ET;
+}
+
+static inline __paddr_t mmu_pte_extract(pte_t pte) {
+	return (pte & MMU_PTE_PMASK) << 4;
+}
+
+static inline __mmu_page_flags_t mmu_flags_extract(pte_t pte) {
+	return (pte & 0xff);
+}
+
+static inline int mmu_is_pte(pte_t pte) {
+	return pte & MMU_PTE_ET;
+}
 #endif /* SPARC_MMU_CORE_H_ */
