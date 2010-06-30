@@ -32,7 +32,7 @@ static int run(void) {
 	int result = 0;
 	queue_init(&a_queue);
 
-	for (i = 0; i < 10; i++) {
+	for (i = 1; i < 2; i++) {
 		TRACE("%d", queue_empty(&a_queue));
 		numbers[i].a = i;
 		queue_add(&numbers[i].list, &a_queue);
@@ -43,6 +43,7 @@ static int run(void) {
 		TRACE("%d ",
 				(struct my_int*)list_entry(queue_extr(&a_queue), struct my_int, list)->a);
 	}
+	TRACE("\n");
 
 	return result;
 }

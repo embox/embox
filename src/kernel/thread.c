@@ -174,7 +174,7 @@ static void make_run (struct thread *thread) {
 
 void msg_send(struct message *message, struct thread *thread) {
 	scheduler_lock();
-	queue_add(message, &thread->messages);
+	queue_add(&message->list, &thread->messages);
 	if (thread->need_message) {
 		thread->need_message = false;
 		make_run(thread);
@@ -192,7 +192,8 @@ struct message *msg_receive(struct thread *thread) {
 		scheduler_lock();
 	}
 	scheduler_unlock();
-	return list_entry(queue_extr(&thread->messages), struct message, list);
+	return (struct message *)list_entry(queue_extr(&thread->messages),
+			struct message, list);
 }
 
 struct message *msg_new(void) {

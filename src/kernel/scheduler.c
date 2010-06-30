@@ -98,12 +98,21 @@ static void thread_move_next(struct thread *prev_thread) {
 void scheduler_dispatch(void) {
 	/* Thread, which have worked just now. */
 	struct thread *prev_thread;
+	struct thread *last_prev_thread;
 	ipl_t ipl;
 
 	if (preemption_count == 0 && current_thread->reschedule) {
 		preemption_inc();
 		prev_thread = current_thread;
-		thread_move_next(prev_thread);
+
+		/* Search first running thread. */
+		last_prev_thread = current_thread;
+		thread_move_next(last_prev_thread);
+		while (current_thread->state != THREAD_STATE_RUN) {
+			last_prev_thread = current_thread;
+			thread_move_next(last_prev_thread);
+		}
+
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
 
 		ipl = ipl_save();

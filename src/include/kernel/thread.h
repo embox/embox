@@ -27,13 +27,17 @@ typedef enum {
 
 typedef int msg_t;
 typedef int msg_data_t;
+
+/**
+ * Structure, describing messages, sent to threads.
+ */
 struct message {
 	/* Message type. */
 	msg_t type;
 	/* Information in message. */
 	msg_data_t data;
 	/* Node in queue of messages. */
-	struct list_head *list;
+	struct list_head list;
 };
 
 /**
@@ -110,8 +114,9 @@ int thread_stop(struct thread *stopped_thread);
 void thread_yield(void);
 
 /**
+ * Send message to thread.
  *
- * @param message sended message
+ * @param message sent message
  * @param thread thread to receive message
  */
 void msg_send(struct message *message, struct thread *thread);
