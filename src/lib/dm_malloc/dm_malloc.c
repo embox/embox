@@ -36,7 +36,6 @@ void* dm_malloc(size_t size) {
 	/* find block */
 	list_for_each(tmp_loop, &mem_pool) {
 		tmp_begin = (tag_free_t*) tmp_loop;
-		TRACE("PING! ");
 		if (tmp_begin->tag.size >= size) {
 			eat_mem(size, tmp_begin );
 			/* and return */
@@ -63,7 +62,7 @@ void dm_free(void *ptr) {
 		tmp_end->size = tmp_end->size + ptr_begin->tag.size;
 		ptr_begin->tag.size = tmp_end->size;
 	}
-	/* backward dircetion */
+	/* backward direction */
 	tmp_end = (tag_t*) (ptr_begin - sizeof(tag_t));
 	if (tmp_end->free == HOLE) {
 		/* del tag & moving adreses */
@@ -81,6 +80,19 @@ void dm_free(void *ptr) {
 	tmp_begin->tag.free = HOLE;
 	tmp_end =  END_TAG(tmp_begin);
 	tmp_end->free = HOLE;
+}
+
+void dm_info() {
+	tag_free_t *tmp_begin;
+	tag_t      *tmp_end;
+	struct list_head* tmp_loop;
+	int size, free;
+
+	list_for_each(tmp_loop, &mem_pool) {
+		tmp_begin = (tag_free_t *) tmp_loop;
+		size = tmp_begin->tag.size;
+		free = tmp_begin->tag.free;
+	}
 }
 
 /* auxiliry function. allocate block of memory TODO add the ending memory work */
@@ -118,12 +130,11 @@ inline static void eat_mem(size_t size, tag_free_t* ext) {
 		list_del((struct list_head*) ext);
 		ext->tag.free = PROC;
 	}
-
 	/* delete ext */
 	list_del((struct list_head*) ext);
 	/* begin tag write */
 	size_tmp = ext->tag.size;
-	ext->tag.size = ext->tag.size - size;
+	ext->tag.size = size;
 	ext->tag.free = PROC;
 	/* end tag write */
 	tmp_end = END_TAG(ext);
@@ -133,15 +144,13 @@ inline static void eat_mem(size_t size, tag_free_t* ext) {
 	tmp_begin = (tag_free_t*) (tmp_end + sizeof(tag_t));
 	tmp_end   = END_TAG(tmp_begin);
 	/* write begin tag */
-	/* think some more about adreses TODO */
-	tmp_begin->tag.size = size_tmp - ext->tag.size;
+	tmp_begin->tag.size = size_tmp - ext->tag.size - 2*sizeof(tag_t);
 	tmp_begin->tag.free = HOLE;
 	/* write end tag */
 	tmp_end->size = tmp_begin->tag.size;
 	tmp_end->free = HOLE;
 	/* add to list */
 	list_add( (struct list_head*) tmp_begin, &mem_pool);
-	printf("PONG!\n");
 }
 
 #undef PROC
