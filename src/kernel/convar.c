@@ -14,6 +14,7 @@ void canvar_init(struct condition_variable *variable) {
 #endif
 }
 
+#if 0
 int convar_wait(struct mutex *added_mutex, struct condition_variable *variable) {
 	return scheduler_convar_wait(added_mutex, variable);
 }
@@ -21,6 +22,7 @@ int convar_wait(struct mutex *added_mutex, struct condition_variable *variable) 
 void convar_signal(struct condition_variable *variable) {
 	scheduler_convar_signal(variable);
 }
+#endif
 
 void convar_destroy(struct condition_variable *variable) {
 	variable->list_begin_convar = NULL;
