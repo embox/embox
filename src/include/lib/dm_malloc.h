@@ -34,7 +34,7 @@
  * @note 0 means that mem_block is busy.
  * @note this macross is undefined in the end of this module.
  */
-#define PROC 0
+#define PROC true
 
 /**
  * Show that block is free.
@@ -42,7 +42,7 @@
  * @note 1 means that mem_block is free.
  * @note this macross is undefined in the end of this module.
  */
-#define HOLE 1
+#define HOLE false
 
 /**
  * to be writen
@@ -52,11 +52,27 @@ typedef struct tag {
 	bool free;
 } tag_t;
 
+typedef struct tag_free {
+	struct list_head *next, *prev;
+	tag_t tag;
+} tag_free_t;
+
 /**
+ * TODO
  * return adress
  * mem = begin of hole block
  */
-#define ADRESS(mem) (void *) (mem+sizeof(struct list_head)+sizeof(tag_t))
+#define ADRESS(begin) (void *) (begin + sizeof(tag_free_t))
+/**
+ *
+ *
+ */
+#define END_TAG(begin) (tag_t*) (begin + sizeof(tag_free_t) + begin->tag.size - sizeof(tag_t))
+/**
+ *
+ *
+ */
+#define BEGIN_TAG(end) (tag_free_t*) (end - end->size - sizeof(tag_free_t))
 
 /**
  * Dynamic memory allocator arbitrary size.
