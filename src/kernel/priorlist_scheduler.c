@@ -101,13 +101,12 @@ static LIST_HEAD(free_threads_list_head);
 static thread_head_t *alloc_thread_head(thread_t *thr) {
 	thread_head_t *head;
 	if (list_empty(free_threads_list)) {
-		return NULL;//% - зачем это? Почему так надо???
+		return NULL;
 	}
 	head = (thread_head_t *) free_threads_list->next;
 	list_del((struct list_head *) free_threads_list->next);
-	head->thr;
+	head->thr = thr;
 	return head;
-	//MAGIC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!!!!!!!!!!!!!!!!
 
 }
 
@@ -123,29 +122,12 @@ static void free_thread_head(thread_head_t *head) {
 	list_add((struct list_head *) head, free_threads_list);
 }
 
-/*why*/
-#if 0
-static void hold_priority(thread *pthread, int priority) {
-	int i;
-	list_for_each(pos, head) {
-		if (priority_pool.priority_id = priority) {
-			break;
-		}
-
-		list_add(*pthrread);
-	}
-	if (!priority_pool.priority_id = priority) {
-		priority_pool.add_id(priority);
-	}
-	priority_pool.thread_plist.list_add(thread * pthread);
-}
-#endif
 
 /**
  * it's need for blocking
  */
 static int preemption_count = 1;
-static int changed_max_priority = 0;
+
 
 /**
  *adding new priority structure to priority list
@@ -157,16 +139,16 @@ static int changed_max_priority = 0;
 static void add_new_priority(thread_head_t *thr_head, int priority) {
 	/*allocate new  priority header*/
 	priority_head_t *new_priority = alloc_priority();
-	priority_head_t *current_pr = priority_head->next;
-	priority_head_t *help;
+	priority_head_t *current_pr = (priority_head_t *)priority_head->next;
+	priority_head_t *tmp;
 	while (current_pr->priority_id>priority)
-		current_pr = current_pr->next;
+		current_pr = (priority_head_t *)current_pr->next;
 
-	help = current_pr->next;
-	new_priority->next = help;
-	new_priority->prev = current_pr;
-	help->prev = new_priority;
-	current_pr->next = new_priority;
+	tmp = (priority_head_t *) current_pr->next;
+	new_priority->next = (struct list_head *)tmp;
+	new_priority->prev = (struct list_head *)current_pr;
+	tmp->prev = (struct list_head *)new_priority;
+	current_pr->next = (struct list_head *)new_priority;
 
 	new_priority->priority_id = priority;
 	new_priority->thread_list = thr_head;
@@ -328,6 +310,7 @@ int scheduler_remove(struct thread *removed_thread) {
 	}
 	scheduler_lock();
 	removed_thread->reschedule = true;
+	//free_thread_head(removed_thread);
 	scheduler_unlock();
 	return 0;
 }
