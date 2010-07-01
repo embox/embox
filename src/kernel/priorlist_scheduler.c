@@ -30,16 +30,17 @@
  */
 
 
+/*My comment
 typedef struct thread1 {
 	int id;
 } thread_t;
 
 
-/*struct thread1 {
+struct thread1 {
   	int id;
 	};
 
-typedef struct thread1 thread_t;*/
+typedref struct thread1 thread_t;*/
 
 /**
  * structure thread in structure priority
@@ -47,7 +48,7 @@ typedef struct thread1 thread_t;*/
 typedef struct thread_head {
 	struct list_head *next;
 	struct list_head *prev;
-	thread_t *thr;
+	struct thread *thr;
 } thread_head_t;
 
 /**
@@ -74,7 +75,9 @@ typedef struct priority_head {
  * Pools for thread and priority
  */
 static priority_head_t priority_pool[MAX_PRIORITY];
-#define priority_head          (&priority_pool[0]) /* - голова списка приоритетов - нулевай приоритет, за ним идёт максимальный*/
+/*head of priority list - null priority, next - max priority*/
+#define priority_head          (&priority_pool[0])
+static int free_pool_priority = 1; // need for allocation
 static priority_head_t *cur_prior;
 
 static thread_head_t thread_head_pool[NUMBER_THREAD];
@@ -91,22 +94,30 @@ static LIST_HEAD(free_threads_list_head);
 
 /**
  * allocation head of thread in memory
- * TODO: посмотреть и разобратся, возможно не дописано...
+ * MAST:
+ * 1. alloc memory
+ * 2. made structure
  */
 static thread_head_t *alloc_thread_head(thread_t *thr) {
 	thread_head_t *head;
 	if (list_empty(free_threads_list)) {
-		return NULL;
+		return NULL;//% - зачем это? Почему так надо???
 	}
 	head = (thread_head_t *) free_threads_list->next;
 	list_del((struct list_head *) free_threads_list->next);
 	head->thr;
 	return head;
+	//MAGIC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!!!!!!!!!!!!!!!!
+
 }
+
+static priority_head_t * alloc_priority(void){
+	return(&priority_pool[free_pool_priority++]);
+}
+
 
 /**
  * delete head of thread
- *
  */
 static void free_thread_head(thread_head_t *head) {
 	list_add((struct list_head *) head, free_threads_list);
@@ -138,10 +149,29 @@ static int changed_max_priority = 0;
 
 /**
  *adding new priority structure to priority list
- *TODO: write =)
+ *we mast:
+ *1. allocation memory
+ *2. add priority
+ *3. sort
  */
 static void add_new_priority(thread_head_t *thr_head, int priority) {
 	/*allocate new  priority header*/
+	priority_head_t *new_priority = alloc_priority();
+	priority_head_t *current_pr = priority_head->next;
+	priority_head_t *help;
+	while (current_pr->priority_id>priority)
+		current_pr = current_pr->next;
+
+	help = current_pr->next;
+	new_priority->next = help;
+	new_priority->prev = current_pr;
+	help->prev = new_priority;
+	current_pr->next = new_priority;
+
+	new_priority->priority_id = priority;
+	new_priority->thread_list = thr_head;
+	return;
+
 	/*set pointer to first thread header*/
 }
 
@@ -166,19 +196,20 @@ static thread_head_t * get_list_by_priority(int priority) {
  *adding thread with priority to thread list
  *or adding priority to priority list and thread to thread list
  */
-static void add_thread_by_priority(thread_t *thr, int priority) {
+static void add_thread_by_priority(struct thread*thr, int priority) {
 	thread_head_t *list_head;
 	thread_head_t *thr_head;
+	/*check - is priority?*/
 	if (NULL == (thr_head = alloc_thread_head(thr))) {
-		return;
+		return; //empty
 	}
 
 	if (NULL == (list_head = get_list_by_priority(priority))) {
 		/*adding first thread that priority to list*/
 		add_new_priority(thr_head, priority);
-		return;
+		return;// No, add new priority
 	}
-	list_add((struct list_head *) thr_head, (struct list_head *) list_head);
+	list_add((struct list_head *) thr_head, (struct list_head *) list_head); //Yes
 }
 
 /** List item, pointing at begin of the list. */
@@ -249,20 +280,16 @@ void scheduler_unlock(void) {
  */
 
 static void thread_move_next(struct thread *prev_thread) {
-	if (changed_max_priority == 0){
-	current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
-	}
-	else {
-		//free current thread
-		cur_prior->thread_list = cur_prior->thread_list->next;
+	//free current thread
+	cur_prior->thread_list = cur_prior->thread_list->next;
 
-		cur_prior = ((priority_head_t *)(priority_head->next));
-		current_thread  = ((priority_head_t *)(priority_head->next))->thread_list;
-	}
+	cur_prior = ((priority_head_t *)(priority_head->next));
+	current_thread  = ((priority_head_t *)(priority_head->next))->thread_list;
+
 	if (current_thread->state == THREAD_STATE_ZOMBIE) {
 		list_del(&current_thread->sched_list);
 		current_thread
-				= list_entry(prev_thread->sched_list.next, struct thread, sched_list);
+			= list_entry(prev_thread->sched_list.next, struct thread, sched_list);
 	}
 	current_thread->reschedule = false;
 }
@@ -289,9 +316,12 @@ void scheduler_dispatch(void) {
 }
 
 void scheduler_add(struct thread *added_thread) {
-	list_add_tail(&added_thread->sched_list, list_begin);
+		add_thread_by_priority(added_thread, added_thread->priority);
 }
 
+/**
+ * TODO посмотреть и разбратся - так или не так...
+ */
 int scheduler_remove(struct thread *removed_thread) {
 	if (removed_thread == NULL || removed_thread == idle_thread) {
 		return -EINVAL;
