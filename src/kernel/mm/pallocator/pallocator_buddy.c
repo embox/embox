@@ -1,11 +1,15 @@
 /**
  * @file
- * @brief multipage allocator
+ * @brief multipage allocator buddy algorithm
  * @details Use `page allocator' when we need allocate or free only one page,
  * else see `multipage allocator' or `malloc'.
  *
- * @date 28.04.10
+ * @date 01.07.10
  * @author Fedor Burdun
+ */
+
+/* MY MARKS
+ * TFMBR - this function must be rewriting
  */
 
 #include <errno.h>
@@ -25,6 +29,10 @@ extern char *_heap_end;
 
 #define PAGE_QUANTITY ( (((size_t) HEAP_END_PTR - (size_t) HEAP_START_PTR) ) / CONFIG_PAGE_SIZE )
 
+#define SET_BIT1(ind,bit) set_bits( ind , get_bits(ind) | 1 )
+#define SET_BIT0(ind,bit) set_bits( ind , get_bits(ind) & (255^bit) )
+#define HAS_BIT(ind,bit) ( get_bits(ind) | bit )
+
 typedef size_t taddr;		/* addres in tree */
 char* heap_start;		/* real heap_start */
 size_t sizeofpool;			/* real size of heap */
@@ -33,6 +41,7 @@ size_t maxblocksize;
 
 /**
  * bit pack
+ * no real bit pack. only array mapping
  */
 void set_bits( taddr addr , char bit ) {
 	(HEAP_START_PTR) [addr] = bit;
@@ -42,23 +51,7 @@ char get_bits( taddr addr ) {
 	return (HEAP_START_PTR) [addr];
 }
 
-#if 0
-void set_bits( taddr addr , char bit ) {
-	//char tail = addr && 7;
-	//addr >>= 3;
-	if (bit) {
-		(HEAP_START_PTR)[addr >> 3] |= 1 << (addr & 7);
-	} else {
-		(HEAP_START_PTR)[addr >> 3] &= 255 ^ (1 << (addr & 7));
-	}
-}
-
-char get_bits( taddr addr ) {
-	return ( (HEAP_START_PTR)[addr >> 3] & (1 << (addr & 7)) ) ? 1 : 0 ;
-}
-#endif
-
-/**
+/**		TFMBR!!!!
  * initialization of tree
  * Mark block if it isn't in heap.
  */
@@ -88,7 +81,7 @@ void rec_init( taddr addr , char * ptr , size_t size ) {
 	}
 }
 
-/**
+/**		TFMBR!!!
  * Check addr in tree or not.
  */
 int taddr_in_tree( taddr addr ) {
@@ -98,7 +91,7 @@ int taddr_in_tree( taddr addr ) {
 	return len+addr <= sizeofpool; // ?!?!? <= or <
 }
 
-/**
+/**		TFMBR!!!
  * initialization of allocator
  */
 #ifdef EXTENDED_TEST
@@ -201,19 +194,53 @@ void * find_block_avail( taddr addr ) {
 }
 
 /**
+ * check block for alloc
+ */
+inline int is_avail(taddr addr) {
+	return !get_bits(addr);
+}
+
+/**
+ * check block in heap or not
+ */
+inline int in_heap(taddr addr,size_t length) {
+#ifdef EXTENDED_TEST_no
+	printf("<< %d len %d\n",addr,length);
+#endif
+	return ( (long long) taddr_to_ptr(addr) + length*CONFIG_PAGE_SIZE <= (long long) _heap_end );
+}
+
+/**
+ * profit
+ * return NULL if has no block
+ */
+taddr find_by_size( size_t size ) {
+	taddr i;
+	taddr start = maxblocksize/size; /* start index */ // ?!?!?!? no profit!!!!! maxblocksize +/- ^2
+	for ( i=0; (i<start)&&(!is_avail(i+start)); ++i );
+	if ( in_heap(start+i,size) )
+		return start+i;
+	else
+		return NULL;
+}
+
+/**
  * allocator
  */
 void * multipage_alloc( size_t size ) {
-	size_t size_fr;
-	void * ptr = NULL;
-	if (!hasinit) {
-		multipage_init();
-		hasinit = 1;
+	size_t size_fr; /* for return */
+	taddr block,parent,taddr_fr;
+	/* block is proper and empty */
+	for ( size_fr=1 ; (size_fr < maxblocksize) &&
+		( NULL != (block = find_by_size(size_fr)) ) ; size_fr<<=1 );
+	set_bits(block,1|2);
+	taddr_fr = block;
+	for (; block >= 1 ; ) {
+		parent = block >> 1;
+		SET_BIT1(parent,block & 1 ? 2 : 1); /* unmark from left or right child for node */
+		block = parent;
 	}
-	for ( size_fr=1 ; ( size_fr < size ) ; size_fr<<=1 );
-	for ( ; (size_fr <= maxblocksize) && !(ptr=find_block_avail(maxblocksize/size_fr)) ; size_fr<<=1 ); // WHY maxblocksize/size_fr ??
-	//may be enought only ptr=find_block_avail(size_fr) because if size_fr isn't available, than size_fr*2 also isn't available
-	return ptr;
+	return taddr_to_ptr(taddr_fr);
 }
 
 /**
@@ -244,11 +271,27 @@ void robin_taddr( void * ptr ) {
  * free block, that was allocated
  */
 void multipage_free( void * ptr ) {
-	if ( ptr == NULL ) {
-		/* errno = XXX */
-		return;
+	taddr parent,before;
+	taddr addr = ((size_t) ptr - (size_t) heap_start)/CONFIG_PAGE_SIZE;
+	addr += maxblocksize; /* must be size of root element (==?!?!) */
+	/* in OLD version was different and WORK!!! */
+	for (; (addr>0)&&(!get_bits(addr))&& !(before & 1) ; addr = (before = addr) >> 1 );
+	/* addr was allocated */
+	if (get_bits(addr)==3) {
+		set_bits(addr,0);
+		for (; addr > 1 ;) {
+			/* expected that bits[addr] == 0 */
+			parent = addr/2;
+			SET_BIT0(parent,addr & 1 ? 2 : 1); /* unmark from left or right child for node */
+			/* if unmarked left and right node then unmark parent */
+			if (!(get_bits(parent) | get_bits(parent^1))) {
+				addr = parent;
+			} else {
+				break;
+			}
+			addr = parent;
+		}
 	}
-	robin_taddr( ptr );
 }
 
 /**
