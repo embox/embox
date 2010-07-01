@@ -11,6 +11,7 @@
 #define _THREAD_H_
 
 #include <hal/context.h>
+#include <kernel/scheduler.h>
 #include <lib/list.h>
 #include <queue.h>
 #include <string.h>
@@ -61,6 +62,8 @@ struct thread {
 	void (*run)(void);
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
+	/** List item, corresponding to thread in list of waiting threads. */
+	struct list_head wait_list;
 	/** Index of thread in heap. */
 	int heap_index;
 	/**

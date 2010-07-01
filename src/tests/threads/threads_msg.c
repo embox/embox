@@ -87,6 +87,9 @@ static int run_test() {
 	assert(first_thread != NULL);
 	assert(second_thread != NULL);
 
+	first_thread->priority = 1;
+	second_thread->priority = 2;
+
 	thread_start(first_thread);
 	thread_start(second_thread);
 

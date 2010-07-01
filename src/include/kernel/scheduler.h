@@ -65,5 +65,12 @@ void scheduler_add(struct thread *added_thread);
  */
 int scheduler_remove(struct thread *removed_thread);
 
+/**
+ *
+ * @param thread thread to lock.
+ * @param event ???
+ * @return 0 if operation executed successfully.
+ */
+int thread_lock(struct thread *thread, struct event *event);
 
 #endif /* SCHEDULER_H_ */
