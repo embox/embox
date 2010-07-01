@@ -8,8 +8,22 @@
  * @author Fedor Burdun
  */
 
-/* MY MARKS
+/**
+ * `taddr' is index in binary tree
+ * left child of node with index `addr' is addr*2
+ * right child -/-/- is addr*2+1
+ * addr of root is 1
+ *
+ * BITS:
+ *  1 - left subtree partially released
+ *  2 - right subtree partially released
+ *  4 - node is released
+ */
+
+/* MY code MARKS
  * TFMBR - this function must be rewriting
+ * TFwR  - this function was rewriting
+ * TFW   - this function work (while don't see any bugs)
  */
 
 #include <errno.h>
@@ -29,57 +43,67 @@ extern char *_heap_end;
 
 #define PAGE_QUANTITY ( (((size_t) HEAP_END_PTR - (size_t) HEAP_START_PTR) ) / CONFIG_PAGE_SIZE )
 
-#define SET_BIT1(ind,bit) set_bits( ind , get_bits(ind) | 1 )
-#define SET_BIT0(ind,bit) set_bits( ind , get_bits(ind) & (255^bit) )
-#define HAS_BIT(ind,bit) ( get_bits(ind) | bit )
+#define SET_BIT1(ind,bit) set_bits( ind , get_bits(ind) | (bit) )
+#define SET_BIT0(ind,bit) set_bits( ind , get_bits(ind) & (255^(bit)) )
+#define HAS_BIT(ind,bit) ( get_bits(ind) & (bit) )
 
-typedef size_t taddr;		/* addres in tree */
+
+typedef size_t taddr;	/* addres in tree */
 char* heap_start;		/* real heap_start */
-size_t sizeofpool;			/* real size of heap */
+size_t sizeofpool;		/* real size of heap */
 int hasinit = 0;
-size_t maxblocksize;
+size_t maxblocksize;	/* size of real max block (may be not root) */
+size_t rootblocksize;	/* size of root block */
 
 /**
  * bit pack
  * no real bit pack. only array mapping
+ * addr - 1 because root is 1
  */
-void set_bits( taddr addr , char bit ) {
-	(HEAP_START_PTR) [addr] = bit;
+inline void set_bits( taddr addr , char bit ) {
+	(HEAP_START_PTR) [addr-1] = bit;
 }
 
-char get_bits( taddr addr ) {
-	return (HEAP_START_PTR) [addr];
+inline char get_bits( taddr addr ) {
+	return (HEAP_START_PTR) [addr-1];
 }
 
-/**		TFMBR!!!!
+/**		TFW
  * initialization of tree
  * Mark block if it isn't in heap.
+ *
+ * return 1 if subtree isn't in heap
+ * return 0 if node with subtree is in heap
  */
-void rec_init( taddr addr , char * ptr , size_t size ) {
+int dfs_init( taddr addr , char * ptr , size_t size ) {
+	int marked = 0;
+
 	if ( (ptr + ( size * CONFIG_PAGE_SIZE ) ) <= HEAP_END_PTR ) {
-
-		#ifdef EXTENDED_TEST_
-			printf("rec_init: \n\taddr:(dec) %ld\n\tbegin:(hex) \t%08x\n\tend:(hex) \t%08x",
-				addr , ptr , (ptr+(size*CONFIG_PAGE_SIZE)) );
-			printf("rec_init: set bit 0 on taddr: %ld \n",addr);
-		#endif
-
+		/* block is in heap */
 		set_bits( addr , 0 );
 	} else {
-
-		#ifdef EXTENDED_TEST_
-			printf("rec_init: \n\taddr:(dec) %ld\n\tbegin:(hex) \t%08x\n\tend:(hex) \t%08x",
-				addr , ptr , (ptr+(size*CONFIG_PAGE_SIZE)) );
-			printf("rec_init: set bit 1 on taddr: %ld \n",addr);
-		#endif
-
-		set_bits( addr , 1 );
+		/* block isn't in heap */
+		set_bits( addr , 8 );
+		marked = 1;
 	}
+
+	/* if it's no leaf */
 	if ( size > 1 ) {
-		rec_init( 2*addr , ptr , size/2 );
-		rec_init( 2*addr+1 , ptr + CONFIG_PAGE_SIZE*size/2 , size/2 );
+		/* initialize left subtree */
+		if ( dfs_init( 2*addr , ptr , size/2 ) ) {
+			SET_BIT1( addr , 1 );
+			marked = 1;
+		}
+		/* initialize right subtree */
+		if ( dfs_init( 2*addr+1 , ptr + CONFIG_PAGE_SIZE*size/2 , size/2 ) ) {
+			SET_BIT1( addr , 2 );
+			marked = 1;
+		}
 	}
+	return marked;
 }
+
+#if 0 																//NOT USED CODE
 
 /**		TFMBR!!!
  * Check addr in tree or not.
@@ -90,8 +114,9 @@ int taddr_in_tree( taddr addr ) {
 		len <<= 1;
 	return len+addr <= sizeofpool; // ?!?!? <= or <
 }
+#endif
 
-/**		TFMBR!!!
+/**		TFW
  * initialization of allocator
  */
 #ifdef EXTENDED_TEST
@@ -101,18 +126,20 @@ void multipage_init(void) {
 	int sizeoftree;
 	int qpt;
 
+	int page_quantity = PAGE_QUANTITY;
 	/* calculate maxblocksize */
-	for ( maxblocksize=1 ; maxblocksize<PAGE_QUANTITY ; maxblocksize*=2 );
-	sizeoftree = 2*maxblocksize / 1; /* change 1 to 8 (bit pack) */
-	// sizeoftree = maxblocksize / 4;
+	for ( rootblocksize=1 ; rootblocksize < page_quantity ; rootblocksize*=2 );
+	sizeoftree = 2*rootblocksize; /* one byte for one page (no bit pack) */
 
 	/* (sizeoftree - 1) / 0x1000 + 1 // quantity of pages for tree */
-	qpt = ((sizeoftree - 1)/CONFIG_PAGE_SIZE+1);
+	qpt = ( (sizeoftree - 1) / CONFIG_PAGE_SIZE + 1 );
 
 	heap_start = (HEAP_START_PTR) + CONFIG_PAGE_SIZE * qpt;
 	sizeofpool = PAGE_QUANTITY - qpt;
 
-	rec_init( 1 , heap_start , maxblocksize );
+	maxblocksize = rootblocksize == sizeofpool ? rootblocksize : rootblocksize / 2;
+
+	dfs_init( 1 , heap_start , rootblocksize );
 }
 
 /**
@@ -120,168 +147,95 @@ void multipage_init(void) {
  */
 void * taddr_to_ptr( taddr addr ) {
 	//taddr saddr = addr;
-	for ( ; addr<maxblocksize ; addr*=2 ) ;
-	return heap_start + (addr-maxblocksize)*CONFIG_PAGE_SIZE;
-}
-
-/**
- * free block by taddr
- */
-void free_addr( taddr addr ) {
-	if (get_bits(addr)) {
-		set_bits( addr , 0 );
-	}
-
-	if (!get_bits(addr^1)) {
-		free_addr( addr/2 );
-	}
-}
-
-void free_down( taddr addr ) {
-	if (addr>=(maxblocksize<<1)) {
-		return;
-	}
-
-	set_bits( addr , 0 );
-
-	free_down( addr<<1 );
-	free_down( (addr<<1)+1 );
-}
-
-/**
- * mark blocks
- */
-void mark_blocks( taddr block ) {
-	if (block>=2*maxblocksize) return;
-	set_bits(block,1);
-	mark_blocks(block*2);
-	mark_blocks(block*2+1);
-}
-
-/**
- * check, block is available or not
- */
-int avail( taddr block ) {
-	if (block>=maxblocksize) {
-		return !get_bits(block) && (block-maxblocksize < sizeofpool);
-	}
-	return !get_bits(block) && avail(block*2) && avail(block*2+1);
-}
-
-/**
- * check, block is marked or not
- */
-int marked( taddr block ) {
-	if (block>=maxblocksize) {
-		return get_bits(block) && (block-maxblocksize < sizeofpool);
-	}
-	return get_bits(block) && marked(block*2) && marked(block*2+1);
-}
-
-/**
- * find first proper block
- * addr is addres of first block needed size
- */
-void * find_block_avail( taddr addr ) {
-	taddr i;
-	for ( i=0 ; (i<addr)&&(!avail(addr+i)) ; ++i ); // better if 'for' will be from size to 0
-	if ( i < addr ) {
-		mark_blocks(addr+i);
-		return taddr_to_ptr(addr+i);
-	} else {
-		return NULL;
-	}
+	for ( ; addr<rootblocksize ; addr*=2 ) ;
+	return heap_start + (addr-rootblocksize)*CONFIG_PAGE_SIZE;
 }
 
 /**
  * check block for alloc
  */
-inline int is_avail(taddr addr) {
-	return !get_bits(addr);
+inline int is_avail( taddr addr ) {
+	return !get_bits( addr );
 }
 
 /**
  * check block in heap or not
  */
-inline int in_heap(taddr addr,size_t length) {
-#ifdef EXTENDED_TEST_no
-	printf("<< %d len %d\n",addr,length);
-#endif
-	return ( (long long) taddr_to_ptr(addr) + length*CONFIG_PAGE_SIZE <= (long long) _heap_end );
+inline int in_heap( taddr addr, size_t length ) {
+	return ( (unsigned long long) taddr_to_ptr( addr ) +
+		length*CONFIG_PAGE_SIZE <= (unsigned long long) _heap_end );
 }
 
-/**
- * profit
- * return NULL if has no block
+/**		TFwR
+ * find first available proper block for reserve.
+ * return 0 if same block don't exist.
  */
-taddr find_by_size( size_t size ) {
-	taddr i;
-	taddr start = maxblocksize/size; /* start index */ // ?!?!?!? no profit!!!!! maxblocksize +/- ^2
-	for ( i=0; (i<start)&&(!is_avail(i+start)); ++i );
-	if ( in_heap(start+i,size) )
-		return start+i;
-	else
-		return NULL;
+taddr dfs_find( taddr lroot, size_t cursize, size_t size ) {
+	/* must check above that size != 0 */
+	/* enough codition ( it's reserved or no proper )
+		(if lroot not belongs main tree, than cursize == 0) */
+#ifdef EXTENDED_TEST_
+	printf("\n\n TESTDFS  %d %d %d\n", lroot , get_bits(lroot), HAS_BIT( lroot , 4 ));
+#endif
+	if ( cursize < size || HAS_BIT( lroot , 4 ) ) return 0;
+	taddr child_return;
+	/* find in left subtree */
+	if (child_return = dfs_find( lroot*2 , cursize/2 , size ))
+		return child_return;
+	/* find in right subtree */
+	if (child_return = dfs_find( lroot*2+1 , cursize/2 , size ))
+		return child_return;
+	/* may be it is current block*/
+	if ( is_avail( lroot ) && in_heap( lroot, cursize) ) return lroot;
+	/* no exist proper block */
+	return 0;
 }
 
-/**
+/** 	TFwR
  * allocator
  */
 void * multipage_alloc( size_t size ) {
 	size_t size_fr; /* for return */
 	taddr block,parent,taddr_fr;
-	/* block is proper and empty */
-	for ( size_fr=1 ; (size_fr < maxblocksize) &&
-		( NULL != (block = find_by_size(size_fr)) ) ; size_fr<<=1 );
-	set_bits(block,1|2);
+
+	/* initialization of allocator */
+    if (!hasinit) {
+        multipage_init();
+        hasinit = 1;
+    }
+
+	/* find proper block */
+	if ( !( block = dfs_find( /* root of tree */ 1 , rootblocksize , size ) ) )
+		return NULL; /* no exist proper block */
+
+	set_bits(block,4);
 	taddr_fr = block;
-	for (; block >= 1 ; ) {
-		parent = block >> 1;
-		SET_BIT1(parent,block & 1 ? 2 : 1); /* unmark from left or right child for node */
-		block = parent;
+	for (; block > 1 ; block = parent ) {
+		SET_BIT1( parent = block >> 1 , block & 1 ? 2 : 1 );
+			/* mark from left or right child for node */
 	}
 	return taddr_to_ptr(taddr_fr);
 }
 
-/**
- * find block, that was allocated
- * 			DON"T WORK DON"T WORK AAAAAAA!!!!!!!!!!!
- */
-void robin_taddr( void * ptr ) {
-	taddr before;
-	taddr saddr = ((size_t) ptr - (size_t) heap_start)/CONFIG_PAGE_SIZE;
-	saddr += maxblocksize;
-
-	for ( ; !(saddr & 1) && marked(saddr) ; saddr=(before=saddr)>>1 );  // ?!?!?!?! DON"T UNDERSTAND IT
-
-	if (marked(saddr)) {
-		free_addr( saddr );
-		free_down( saddr );
-		return;
-	}
-
-	if (marked(before)) {
-		free_addr( before );
-		free_down( before );
-		return;
-	}
-}
-
-/**
+/**		TFMBR
  * free block, that was allocated
  */
 void multipage_free( void * ptr ) {
-	taddr parent,before;
-	taddr addr = ((size_t) ptr - (size_t) heap_start)/CONFIG_PAGE_SIZE;
-	addr += maxblocksize; /* must be size of root element (==?!?!) */
+#ifdef EXTENDED_TEST
+	printf("run free\n");
+	if ( ptr == NULL ) return;
+#endif
+	taddr parent,before,addr;
+	addr = ((size_t) ptr - (size_t) heap_start)/CONFIG_PAGE_SIZE;
+	addr = rootblocksize + ((size_t) ptr - (size_t) heap_start)/CONFIG_PAGE_SIZE;
 	/* in OLD version was different and WORK!!! */
-	for (; (addr>0)&&(!get_bits(addr))&& !(before & 1) ; addr = (before = addr) >> 1 );
+	for ( before=0 ; (addr>0) && (!get_bits(addr)) && !(before & 1) ; addr = (before = addr) >> 1 );
 	/* addr was allocated */
-	if (get_bits(addr)==3) {
+	if (get_bits(addr)==4) { /* else if don't equal 0 algorithm has ERROR!!! */
 		set_bits(addr,0);
 		for (; addr > 1 ;) {
 			/* expected that bits[addr] == 0 */
-			parent = addr/2;
+			parent = addr >> 1;
 			SET_BIT0(parent,addr & 1 ? 2 : 1); /* unmark from left or right child for node */
 			/* if unmarked left and right node then unmark parent */
 			if (!(get_bits(parent) | get_bits(parent^1))) {
