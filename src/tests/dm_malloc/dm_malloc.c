@@ -36,26 +36,26 @@ static int run(void) {
 
 	putchar('\n');
 	printf("\t\t = Allocate list =\n");
-	for(i = 0; i <= 16; i++) {
+	for(i = 0; i <= 10; i++) {
 		tmp = (struct list *)dm_malloc(sizeof(struct list));
 		if ( tmp == 0 ) {
 			return -1;
 		}
 		tmp->p = i;
 		list_add( (struct list_head*) tmp, &int_list);
-		printf("tmp[%d] = %d | ", i, tmp->p);
+		printf("tmp[%d] = %d \n ", i, tmp->p);
 	}
 
-	printf("\n\t\t = Test our list =\n");
+	printf("\n\n\t\t = Test our list =\n");
 	list_for_each( tmp_h, &int_list) {
 		tmp = (struct list *)tmp_h;
-		printf("tmp[%d] = %d | ",tmp->p,tmp->p);
+		printf("tmp[%d] = %d \n ",tmp->p,tmp->p);
 	}
 
-	printf("\n\t\t = Test free =\n");
+	printf("\n\n\t\t = Test free =\n");
 	list_for_each( tmp_h, &int_list) {
 		tmp = (struct list *)tmp_h;
-		printf("now tmp[%d] if free | ", tmp->p);
+		printf("now tmp[%d] is free \n ", tmp->p);
 	}
 	TRACE("\ntest ");
 

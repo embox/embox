@@ -25,6 +25,10 @@ void* dm_malloc(size_t size) {
 	/* declarations */
 	tag_free_t *tmp_begin;
 	struct list_head *tmp_loop;
+	/* some securuty actions */
+	if (size < (sizeof(tag_t)+sizeof(tag_free_t)+1)) {
+		size = sizeof(tag_t)+sizeof(tag_free_t)+1;
+	}
 	/* we inited */
 	if (!inited) {
 		int expr = allocate_mem_block(MALLOC_SIZE);
@@ -80,19 +84,6 @@ void dm_free(void *ptr) {
 	tmp_begin->tag.free = HOLE;
 	tmp_end =  END_TAG(tmp_begin);
 	tmp_end->free = HOLE;
-}
-
-void dm_info() {
-	tag_free_t *tmp_begin;
-	tag_t      *tmp_end;
-	struct list_head* tmp_loop;
-	int size, free;
-
-	list_for_each(tmp_loop, &mem_pool) {
-		tmp_begin = (tag_free_t *) tmp_loop;
-		size = tmp_begin->tag.size;
-		free = tmp_begin->tag.free;
-	}
 }
 
 /* auxiliry function. allocate block of memory TODO add the ending memory work */

@@ -58,9 +58,7 @@ typedef struct tag_free {
 } tag_free_t;
 
 /**
- * TODO
  * return adress
- * mem = begin of hole block
  */
 #define ADRESS(begin) (void *) (begin + sizeof(tag_free_t))
 /**
@@ -90,14 +88,6 @@ void* dm_malloc(size_t size);
  * @param pointer at the memory, that must be free
  */
 void dm_free(void *ptr);
-
-/**
- * module info
- *
- * output information about all memory blocks
- * @note that it s auxiliary function
- */
-void dm_info(void);
 
 #endif /* __DM_MALLOC_H_ */
 
