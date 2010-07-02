@@ -11,6 +11,17 @@
 #include <errno.h>
 #include <kernel/mm/opallocator.h>
 
+/** Structure of page marker. It occupies at the begin of each free memory
+ * block
+ * psize - count of page
+ * pnext, pprev - pointers other free blocks
+ */
+typedef struct pmark {
+	size_t psize;
+	struct pmark *pnext;
+	struct pmark *pprev;
+}pmark_t;
+
 #ifndef EXTENDED_TEST
 extern char _heap_start;
 extern char _heap_end;
@@ -63,7 +74,7 @@ int page_alloc_init(void) {
 }
 
 /* allocate page */
-void *page_alloc(void) {
+void *opalloc(void) {
 	/* size_t psize = 1; */
 	pmark_t *pcur,*tmp,*tt;
 
@@ -113,7 +124,7 @@ void *page_alloc(void) {
 }
 
 /* free page that was allocated */
-void page_free(void *addr) {
+void opfree(void *addr) {
 	pmark_t *paddr = (pmark_t*) addr;
 	#if 0
 	if (paddr == NULL) {

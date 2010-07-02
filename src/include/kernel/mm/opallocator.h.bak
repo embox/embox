@@ -10,7 +10,24 @@
 #ifndef __PAGE_ALLOC_H_
 #define __PAGE_ALLOC_H_
 
-#include <types.h>
+#ifndef EXTENDED_TEST
+# include <types.h>
+#else
+# include <bits/types.h>
+# include <unistd.h>
+# include <cdio/types.h>
+#endif
+
+/** Structure of page marker. It occupies at the begin of each free memory
+ * block
+ * psize - count of page
+ * pnext, pprev - pointers other free blocks
+ */
+typedef struct pmark {
+	size_t psize;
+	struct pmark *pnext;
+	struct pmark *pprev;
+}pmark_t;
 
 /**
  * Allocates one physical memory page from the pool. We return pointer to page
@@ -21,7 +38,7 @@
  * @retval Address of allocated page on success
  * @retval NULL on fail
  */
-void *opalloc( void );
+void *page_alloc(void);
 
 /**
  * Frees one page from the pool. This page must be allocated with
@@ -31,7 +48,20 @@ void *opalloc( void );
  * @return Function doesn't return value
  *
  */
-void opfree( void* paddr );
+void page_free(void *paddr);
+
+#ifdef EXTENDED_TEST
+
+#define PAGE_QUANTITY 0x10
+#define PAGE_SIZE 0x100
+
+/* return pool pointer, need for test */
+pmark_t* get_cmark_p();
+
+/* evident initialize of page alloc, need for test */
+int page_alloc_init(void);
+
+#endif
 
 #endif /* __PAGE_ALLOC_H_ */
 

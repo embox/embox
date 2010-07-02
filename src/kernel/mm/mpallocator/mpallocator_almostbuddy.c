@@ -203,7 +203,7 @@ void * find_block_avail( taddr addr ) {
 /**
  * allocator
  */
-void * multipage_alloc( size_t size ) {
+void * mpalloc( size_t size ) {
 	size_t size_fr;
 	void * ptr = NULL;
 	if (!hasinit) {
@@ -242,7 +242,7 @@ void robin_taddr( void * ptr ) {
 /**
  * free block, that was allocated
  */
-void multipage_free( void * ptr ) {
+void mpfree( void * ptr ) {
 	if ( ptr == NULL ) {
 		/* errno = XXX */
 		return;

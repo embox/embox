@@ -9,9 +9,9 @@ typedef struct {
 uint8_t *cur_page = NULL;
 size_t cur_rest = 0;
 
-static pmark_t *clear_page_alloc(void) {
+static void *clear_page_alloc(void) {
 	uint32_t i;
-	pmark_t *t = page_alloc();
+	void *t = opalloc();
 	for (i = 0; i < PAGE_SIZE >> 2; i++) {
 		*(((uint32_t *) t) + i) = 0;
 	}
@@ -65,7 +65,7 @@ void mmu_table_free(unsigned long *table, int level) {
 	}
 	((page_header_t *) page)->free += size;
 	if (((page_header_t *) page)->free == PAGE_SIZE - PAGE_HEADER_SIZE && page != cur_page) {
-		page_free((pmark_t *)page);
+		opfree((void *)page);
 	}
 }
 

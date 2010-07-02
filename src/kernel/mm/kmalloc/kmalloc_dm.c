@@ -21,7 +21,7 @@ static LIST_HEAD(mem_pool);
 /* inited? */
 bool inited=false;
 
-void* dm_malloc(size_t size) {
+void* kmalloc(size_t size) {
 	/* declarations */
 	tag_free_t *tmp_begin;
 	struct list_head *tmp_loop;
@@ -51,7 +51,7 @@ void* dm_malloc(size_t size) {
 	return 0;
 }
 
-void dm_free(void *ptr) {
+void kfree(void *ptr) {
 	/* declarations */
 	tag_free_t *tmp_begin, *ptr_begin;
 	tag_t      *tmp_end;
@@ -92,7 +92,7 @@ inline static int allocate_mem_block(int pages) {
 	tag_free_t *tmp_begin;
 	tag_t* tmp_end;
 
-	tmp_begin = (tag_free_t *) multipage_alloc(pages);
+	tmp_begin = (tag_free_t *) mpalloc(pages);
 	if ( tmp_begin == 0) {
 		return 0;
 	}

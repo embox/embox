@@ -67,7 +67,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 				printf("no mapping\n");
 #endif
 				/* there is no middle page - creating */
-				pmark_t *table = (pmark_t *) mmu_table_alloc(mmu_page_table_sizes[cur_level + 1]);
+				void *table = (void *) mmu_table_alloc(mmu_page_table_sizes[cur_level + 1]);
 				if (table == NULL) {
 					return -1;
 				}

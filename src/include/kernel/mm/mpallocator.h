@@ -10,16 +10,10 @@
 #ifndef __MULTIPAGE_ALLOC_H_
 #define __MULTIPAGE_ALLOC_H_
 
-#ifndef EXTENDED_TEST
-# include <types.h>
-#else
-# include <bits/types.h>
-# include <unistd.h>
-# include <linux/types.h>
-#endif
+#include <types.h>
 
-void* multipage_alloc(size_t page_quantity);
-void multipage_free (void * pointer);
+void*	mpalloc( size_t page_quantity );
+void	mpfree( void* pointer );
 
 #endif /* __MULTIPAGE_ALLOC_H_ */
 

@@ -16,9 +16,9 @@ EMBOX_TEST(run);
 
 static int run(void) {
 	printf("Special for Michail: ");
-	void * ptr = multipage_alloc(4);
+	void * ptr = mpalloc(4);
 	printf("was selected ptr[%d]; ", ptr);
-	multipage_free(ptr);
+	mpfree(ptr);
 	printf("was free. \n");
 	return 0;
 }

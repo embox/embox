@@ -194,7 +194,7 @@ taddr dfs_find( taddr lroot, size_t cursize, size_t size ) {
 /** 	TFwR
  * allocator
  */
-void * multipage_alloc( size_t size ) {
+void * mpalloc( size_t size ) {
 	size_t size_fr; /* for return */
 	taddr block,parent,taddr_fr;
 
@@ -220,7 +220,7 @@ void * multipage_alloc( size_t size ) {
 /**		TFMBR
  * free block, that was allocated
  */
-void multipage_free( void * ptr ) {
+void mpfree( void * ptr ) {
 #ifdef EXTENDED_TEST
 	printf("run free\n");
 	if ( ptr == NULL ) return;

@@ -80,14 +80,14 @@ typedef struct tag_free {
  * @return pointer to the memory of the requested size.
  * @retval 0 if there are no memory
  */
-void* dm_malloc(size_t size);
+void* kmalloc(size_t size);
 
 /**
  * Free memory function.
  *
  * @param pointer at the memory, that must be free
  */
-void dm_free(void *ptr);
+void kfree(void *ptr);
 
 #endif /* __DM_MALLOC_H_ */
 

@@ -134,7 +134,7 @@ extern char _heap_end;
 
 			for (i=0;i<8;++i) {
 
-				if (NULL == (*last = page_alloc())) {
+				if (NULL == (*last = opalloc())) {
 					printf("Alloc page: %p\n", (void*)NULL);
 				} else {
 					printf("Alloc page: %p\n", (void*)last);
@@ -145,7 +145,7 @@ extern char _heap_end;
 
 		}
 		printf("Free page: %p\n", (void*)first);
-		page_free(*first);
+		opfree(*first);
 		first = ++first < pointers+TEST_STACK_SIZE ? first : pointers;
 		cfree += 1;
 

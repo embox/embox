@@ -37,7 +37,7 @@ static int run(void) {
 	putchar('\n');
 	printf("\t\t = Allocate list =\n");
 	for(i = 0; i <= 10; i++) {
-		tmp = (struct list *)dm_malloc(sizeof(struct list));
+		tmp = (struct list *)kmalloc(sizeof(struct list));
 		if ( tmp == 0 ) {
 			return -1;
 		}
