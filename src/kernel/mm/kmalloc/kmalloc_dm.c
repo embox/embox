@@ -10,7 +10,7 @@
 
 #include <kernel/mm/mpallocator.h>
 #include <kernel/mm/mpallocator.h>
-#include <lib/dm_malloc.h>
+#include <kernel/mm/kmalloc.h>
 #include <lib/list.h>
 
 /* some stuff for easey programming */

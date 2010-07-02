@@ -7,9 +7,9 @@
 #include <stdio.h>
 
 #include <embox/test.h>
-#include <lib/dm_malloc.h>
+#include <kernel/mm/kmalloc.h>
 #include <lib/list.h>
-#include <lib/multipage_alloc.h>
+#include <kernel/mm/mpallocator.h>
 
 EMBOX_TEST(run);
 

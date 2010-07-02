@@ -26,5 +26,6 @@
 
 ##
 # Default values. Do not edit.
-$_MODS += dm_malloc
-$_SRCS-dm_malloc += *.c
+$_MODS += kmalloc
+$_SRCS-kmalloc += *.c
+
