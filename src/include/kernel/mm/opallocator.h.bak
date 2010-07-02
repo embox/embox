@@ -38,7 +38,7 @@ typedef struct pmark {
  * @retval Address of allocated page on success
  * @retval NULL on fail
  */
-void *page_alloc(void);
+void *opalloc(void);
 
 /**
  * Frees one page from the pool. This page must be allocated with
@@ -48,7 +48,7 @@ void *page_alloc(void);
  * @return Function doesn't return value
  *
  */
-void page_free(void *paddr);
+void opfree(void *paddr);
 
 #ifdef EXTENDED_TEST
 
