@@ -9,7 +9,7 @@
 
 #include <malloc.h>
 #include <stdio.h>
-#include <lib/multipage_alloc.h>
+#include <kernel/mm/mpallocator.h>
 
 #include "config.h"
 
@@ -35,26 +35,26 @@ int main() {
 	multipage_info();
 
 	printf("Try alloc 1 pages\n");
-	void * var3 = multipage_alloc(1);
+	void * var3 = mpalloc(1);
 	printf("ALLOC: %08x\n",var3);
 	multipage_info();
 	printf("Try alloc 2 pages\n");
-	void * var = multipage_alloc(2);
+	void * var = mpalloc(2);
 	printf("ALLOC: %08x\n",var);
 	multipage_info();
 	printf("Try alloc 1 pages\n");
-	void * var2 = multipage_alloc(1);
+	void * var2 = mpalloc(1);
 	printf("ALLOC: %08x\n",var2);
 	multipage_info();
 
 	printf("Try free 2's\n");
-	multipage_free(var);
+	mpfree(var);
 	multipage_info();
 	printf("Try free 3's\n");
-	multipage_free(var2);
+	mpfree(var2);
 	multipage_info();
 	printf("Try free 1's\n");
-	multipage_free(var3);
+	mpfree(var3);
 	multipage_info();
 }
 

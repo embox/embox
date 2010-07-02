@@ -9,7 +9,7 @@
 
 #include <malloc.h>
 #include <stdio.h>
-#include <lib/multipage_alloc.h>
+#include <kernel/mm/mpallocator.h>
 
 #include "config.h"
 
@@ -44,7 +44,7 @@ test_list_t* page_set_alloc( int count ) {
 	test_list_t* tmp = NULL;
 	tmp = malloc(sizeof(test_list_t));
 	tmp->next = NULL;
-	tmp->page = multipage_alloc(count);
+	tmp->page = mpalloc(count);
 	#ifdef VERBOSE_DEBUG_OUT
 	printf("ALLOC: %08x\n",tmp->page);
 	multipage_info();
@@ -56,7 +56,7 @@ test_list_t* page_set_alloc( int count ) {
  * free set of page
  */
 void free_page_set(test_list_t *list) {
-	multipage_free(list->page);
+	mpfree(list->page);
 	#ifdef VERBOSE_DEBUG_OUT
 	printf("FREE: %08x\n",list->page);
 	multipage_info();

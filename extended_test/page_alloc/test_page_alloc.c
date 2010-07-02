@@ -9,9 +9,15 @@
 
 #include <malloc.h>
 #include <stdio.h>
-#include <lib/page_alloc.h>
+#include <kernal/mm/opallcator.h>
 
 #include "config.h"
+
+typedef struct pmark {
+	size_t psize;
+	struct pmark *pnext;
+	struct pmark *pprev;
+}pmark_t;
 
 /**
  * set of page structure
