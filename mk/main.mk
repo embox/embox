@@ -214,36 +214,39 @@ endif
 			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
 	@echo Config was saved.
 
-menuconfig: PROJECT := `dialog \
+menuconfig: PROJECT = $(shell dialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select project to load:" 10 40 \
                 $(shell echo $(TEMPLATES) | wc -w) \
-                $(patsubst %,% "" off,$(TEMPLATES))`
-menuconfig: PROFILE := `dialog \
+                $(patsubst %,% "" off,$(TEMPLATES)) | tee .tmp)
+menuconfig: PROFILE = $(shell dialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select profile to load:" 10 40 \
-                $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
-                $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
+                $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*)) | wc -w) \
+                $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*))))
 menuconfig: EDIT := `dialog \
                 --stdout --backtitle "Editor selection" \
-                --radiolist "Select editor:" 10 40 2 "emacs -nw -Q" "" on vim "" off`
+                --radiolist "Select editor:" 20 40 2 "emacs -nw -Q" "" on vim "" off`
 menuconfig:
-	$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
+	@$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) $(CONF_DIR)/*.conf
+	@$(RM) .tmp
 
-xconfig: PROJECT := `Xdialog \
+xconfig: PROJECT = $(shell Xdialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select project to load:" 20 40 \
                 $(shell echo $(TEMPLATES) | wc -w) \
-                $(patsubst %,% "" off,$(TEMPLATES))`
-xconfig: PROFILE := `Xdialog \
+                $(patsubst %,% "" off,$(TEMPLATES)) | tee .tmp)
+xconfig: PROFILE = $(shell Xdialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select profile to load:" 20 40 \
-                $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)) | wc -w) \
-                $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/sparc/*)))`
+                $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*)) | wc -w) \
+                $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*))))
 xconfig: EDIT := `Xdialog \
                 --stdout --backtitle "Editor selection" \
                 --radiolist "Select editor:" 20 40 2 emacs "" on gvim "" off`
 xconfig:
-	$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
+	@$(MAKE) PROFILE=$(PROFILE) PROJECT=$(PROJECT) config
 	@$(EDIT) $(CONF_DIR)/*.conf
+	@$(RM) .tmp
+
