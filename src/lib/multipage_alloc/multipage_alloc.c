@@ -218,14 +218,13 @@ void * multipage_alloc( size_t size ) {
 
 /**
  * find block, that was allocated
- * 			DON"T WORK DON"T WORK AAAAAAA!!!!!!!!!!!
  */
 void robin_taddr( void * ptr ) {
-	taddr before;
+	taddr before = 0; /* for no warinings */
 	taddr saddr = ((size_t) ptr - (size_t) heap_start)/CONFIG_PAGE_SIZE;
 	saddr += maxblocksize;
 
-	for ( ; !(saddr & 1) && marked(saddr) ; saddr=(before=saddr)>>1 );  // ?!?!?!?! DON"T UNDERSTAND IT
+	for ( ; !(saddr & 1) && marked(saddr) ; saddr=(before=saddr)>>1 );
 
 	if (marked(saddr)) {
 		free_addr( saddr );
@@ -249,6 +248,7 @@ void multipage_free( void * ptr ) {
 		return;
 	}
 	robin_taddr( ptr );
+
 }
 
 /**
