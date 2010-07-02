@@ -20,7 +20,7 @@
  * Now contains just a list of associated threads.
  */
 struct event {
-	struct list_head *threads;
+	struct list_head threads_list;
 };
 
 /**

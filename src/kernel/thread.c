@@ -93,7 +93,6 @@ static struct thread * thread_new(void) {
 		if (((mask >> i) & 1) == 0) {
 			created_thread = threads_pool + i;
 			created_thread->id = i;
-			//TRACE("Alloted thread ID = %d\n", created_thread->id);
 			mask |= (1 << i);
 			return created_thread;
 		}
@@ -144,6 +143,7 @@ int thread_stop(struct thread *stopped_thread) {
 	TRACE("\nStopping %d\n", stopped_thread->id);
 	if (last_zombie != NULL) {
 		thread_delete(last_zombie);
+		last_zombie = NULL;
 	}
 	if (current_thread != stopped_thread) {
 		thread_delete(stopped_thread);

@@ -30,14 +30,8 @@
  */
 static int preemption_count = 1;
 
-/** List item, pointing at begin of the list
- * 	of waiting threads
- */
-static struct list_head list_head_wait;
-
 int scheduler_init(void) {
 	_scheduler_init();
-	INIT_LIST_HEAD(&list_head_wait);
 	current_thread = idle_thread;
 	current_thread->reschedule = false;
 	return 0;
@@ -74,11 +68,19 @@ static void preemption_inc(void) {
 	preemption_count++;
 }
 
+void scheduler_switch(struct thread old_thread, struct thread new_thread) {
+	ipl_t ipl;
+
+	ipl = ipl_save();
+	preemption_count--;
+	context_switch(&old_thread.context, &new_thread.context);
+	ipl_restore(ipl);
+}
+
 void scheduler_dispatch(void) {
 	/* Thread, which have worked just now. */
 	struct thread *prev_thread;
 	struct thread *last_prev_thread;
-	ipl_t ipl;
 
 	if (preemption_count == 0 && current_thread->reschedule) {
 		preemption_inc();
@@ -93,10 +95,7 @@ void scheduler_dispatch(void) {
 		current_thread->reschedule = false;
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
 
-		ipl = ipl_save();
-		preemption_count--;
-		context_switch(&prev_thread->context, &current_thread->context);
-		ipl_restore(ipl);
+		scheduler_switch(*prev_thread, *current_thread);
 	}
 }
 
@@ -114,29 +113,39 @@ int scheduler_remove(struct thread *removed_thread) {
 	return 0;
 }
 
-int thread_lock(struct thread *thread, struct event *event) {
+int scheduler_sleep(struct thread *thread, struct event *event) {
 	struct thread *old_thread = thread;
-	ipl_t ipl;
 
 	preemption_inc();
 
-	list_add(&thread->wait_list, &list_head_wait);
 	thread_move_next(thread);
-	list_del(&old_thread->sched_list);
+	list_del_init(&old_thread->sched_list);
 	old_thread->state = THREAD_STATE_WAIT;
-	list_add(&old_thread->sched_list,event->threads);
+	list_add(&old_thread->sched_list, &event->threads_list);
 
-	TRACE("Blocking %d\n", old_thread->id);
+	TRACE("Locking %d\n", old_thread->id);
 
-	ipl = ipl_save();
-	preemption_count--;
-	context_switch(&old_thread->context, &thread->context);
-	ipl_restore(ipl);
+	scheduler_switch(*old_thread, *thread);
 
 	return 0;
 }
 
-int thread_unlock(struct event *event) {
+int scheduler_wakeup(struct event *event) {
+	struct thread *thread;
+	struct list_head *event_head = event->threads_list.next;
+	scheduler_lock();
+	list_del(&event->threads_list);
+	list_for_each_entry(thread, event_head, sched_list) {
+		list_del_init(&thread->sched_list);
+		scheduler_add(thread);
+		thread->state = THREAD_STATE_RUN;
+		scheduler_add(thread);
+
+		TRACE("Unlocking %d\n", thread->id);
+
+	}
+
+	scheduler_unlock();
 
 	return 0;
 }

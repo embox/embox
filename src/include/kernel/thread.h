@@ -21,7 +21,6 @@ typedef int thread_priority_t;
 typedef enum {
 	THREAD_STATE_RUN,
 	THREAD_STATE_WAIT,
-	THREAD_STATE_SLEEP,
 	THREAD_STATE_STOP,
 	THREAD_STATE_ZOMBIE
 } thread_state_t;
@@ -62,8 +61,6 @@ struct thread {
 	void (*run)(void);
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
-	/** List item, corresponding to thread in list of waiting threads. */
-	struct list_head wait_list;
 	/** Index of thread in heap. */
 	int heap_index;
 	/**
