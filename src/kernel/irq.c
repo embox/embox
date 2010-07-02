@@ -22,22 +22,7 @@
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
 #include <kernel/scheduler.h>
-
-struct irq_action {
-	irq_handler_t handler;
-	irq_flags_t flags;
-	void *dev_id;
-	const char *dev_name;
-	unsigned int count_handled;
-	unsigned int count_unhandled;
-};
-
-struct irq_entry {
-	struct irq_action *action;
-	unsigned int count;
-};
-
-static struct irq_entry irq_table[IRQ_NRS_TOTAL];
+#include <hal/env/irq_env.h>
 
 /*
  * Temporal solution while preparing to introduce shared IRQs. This is just a
@@ -47,8 +32,13 @@ static struct irq_entry irq_table[IRQ_NRS_TOTAL];
  */
 static struct irq_action irq_actions[IRQ_NRS_TOTAL];
 
+static irq_env_t system_irq_env;
+
+#define irq_table ((&system_irq_env)->irq_table)
+
 void irq_init(void) {
 	interrupt_init();
+	irq_set_env(&system_irq_env);
 }
 
 int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, irq_flags_t flags,
