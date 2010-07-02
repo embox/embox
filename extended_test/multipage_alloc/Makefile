@@ -6,9 +6,9 @@ test: clean multipage_alloc ./test_multipage_alloc.c ./config.h ../../src/includ
 	@cp -f ../../src/include/lib/multipage_alloc.h ./lib/
 	$(CC) ./test_multipage_alloc.c multipage_alloc.o -o test_multipage_alloc
 
-multipage_alloc: ../../src/lib/multipage_alloc/multipage_alloc.c
+multipage_alloc: ../../src/kernel/mm/pallocator/pallocator_almostbuddy.c
 	@cp -f ../../src/include/lib/multipage_alloc.h ./lib/
-	$(CC) ../../src/lib/multipage_alloc/multipage_alloc.c -c -o multipage_alloc.o
+	$(CC) ../../src/kernel/mm/pallocator/pallocator_almostbuddy.c -c -o multipage_alloc.o
 
 clean:
 	@echo Remove some file

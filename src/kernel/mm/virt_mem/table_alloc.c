@@ -1,6 +1,6 @@
 #include <kernel/mm/virt_mem/table_alloc.h>
 #include <kernel/mm/virt_mem/mmu_core.h>
-#include <lib/page_alloc.h>
+#include <kernel/mm/opallocator.h>
 #include <hal/mm/mmu_core.h>
 
 typedef struct {

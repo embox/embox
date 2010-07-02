@@ -8,8 +8,8 @@
  * @auther Michail Skorginskii
  */
 
-#include <lib/page_alloc.h>
-#include <lib/multipage_alloc.h>
+#include <kernel/mm/mpallocator.h>
+#include <kernel/mm/mpallocator.h>
 #include <lib/dm_malloc.h>
 #include <lib/list.h>
 

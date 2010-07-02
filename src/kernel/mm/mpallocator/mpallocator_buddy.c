@@ -27,7 +27,7 @@
  */
 
 #include <errno.h>
-#include <lib/multipage_alloc.h>
+#include <kernel/mm/mpallocator.h>
 
 #ifndef EXTENDED_TEST
 extern char _heap_start;

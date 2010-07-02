@@ -9,7 +9,7 @@
  */
 
 #include <errno.h>
-#include <lib/page_alloc.h>
+#include <kernel/mm/opallocator.h>
 
 #ifndef EXTENDED_TEST
 extern char _heap_start;
