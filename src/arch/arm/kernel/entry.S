@@ -80,7 +80,7 @@ FIQHandler:
 
 /** Initialize stack */
 .RAM_TOP:
-    .word __TOP_STACK
+    .word __stack_top
 ResetHandler:
     ldr sp, .RAM_TOP
 
@@ -108,22 +108,45 @@ ResetHandler:
 
 /** Initialize memory */
     mov     r0, #0
-    ldr     r1, =__bss_start__
-    ldr     r2, =__bss_end__
+    ldr     r1, =__bss_start
+    ldr     r2, =__bss_end
 LoopZI:
     cmp     r1, r2
     strlo   r0, [r1], #4
     blo     LoopZI
 
-    ldr     r1, =_etext
-    ldr     r2, =_data
-    ldr     r3, =_edata
-LoopRel:
+    ldr     r1, =_data_lma
+    ldr     r2, =_data_vma
+    ldr     r3, =_data_end
+LoopCpData:
     cmp     r2, r3
     ldrlo   r0, [r1], #4
     strlo   r0, [r2], #4
-    blo     LoopRel
+    blo     LoopCpData
 
+    ldr     r1, =_text_lma
+    ldr     r2, =_text_vma
+    ldr     r3, =_text_end
+LoopCpText:
+    cmp     r2, r3
+    ldrlo   r0, [r1], #4
+    strlo   r0, [r2], #4
+    blo     LoopCpText
+
+    ldr     r1, =_reloc_lma
+    ldr     r2, =_reloc_vma
+    ldr     r3, =_reloc_end
+LoopCpReloc:
+    cmp     r2, r3
+    ldrlo   r0, [r1], #4
+    strlo   r0, [r2], #4
+    blo     LoopCpReloc
+
+    ldr		r0, =hardware_init_hook
+    bne		r0
+
+    ldr		r0, =sofrware_init_hook
+    bne		r0
 /** Main */
-    ldr     r0,=main
-    bx      r0
+    ldr     pc, =main
+/** bx      r0 */
