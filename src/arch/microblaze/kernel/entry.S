@@ -1,4 +1,5 @@
 #include <asm/linkage.h>
+#include <asm/ptrace.h>
 #include <asm/regs.h>
 
 	.section ".trap_table"
@@ -21,34 +22,22 @@ C_ENTRY(_hardreset):
 	brai boot_start
 	nop
 	nop
-
+//XXX Microblaze not suport nested irq
 C_ENTRY(_interrupt_handler):
 #if 0
-//FIXME Microblaze traps table code
+	addik	r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
+	nop
 	SAVE_REGS
 
 	brlid	r15, interrupt_handler
 	nop
-	nop
+
 	RESTORE_REGS
+	addik	r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */
 
-/*	nop
-	addi	r1, r1, -4
-	swi	r12, r1, 0
-	mfs	r12, rmsr
-	ori	r12, r12, 2
-	mts	rmsr, r12
-	lwi	r12, r1, 0
-	addi	r1, r1, 4
 	nop
-	*/
-	msrclr -1
-	msrset	r0, 2
-
-	bra	 r14
+	rtid	 r14, 0 /*return and enable interrupts*/
 	nop
-	nop
-
 #else
 
 	addi	r1, r1, -4
@@ -175,6 +164,8 @@ C_ENTRY(_interrupt_handler):
 	lwi	r2, r1, 0
 	addi	r1, r1, 4
 
+	rtid	 r14, 0 /*return and enable interrupts*/
+	nop
 	/* enable_interrupt */
 //#ifdef XILINX_USE_MSR_INSTR
 	msrset	r0, 2
@@ -198,6 +189,23 @@ C_ENTRY(_interrupt_handler):
 
 C_ENTRY(_user_exception):
 C_ENTRY(_debug_exception):
+#if 0
+	addik	r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
+	SAVE_REGS
+
+	brlid	r15, mb_exception_dispatcher
+	/* set third param */
+	addik	r7, r1, STATE_SAVE_SIZE
+
+	RESTORE_REGS
+	addik	r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */
+
+	/*return and clear msr[BIP] bit*/
+	rtbd r16,8
+	nop
+
+#else
+
 	addi	r1, r1, -4
 	swi	r2, r1, 0
 	addi	r1, r1, -4
@@ -324,23 +332,8 @@ C_ENTRY(_debug_exception):
 	lwi	r2, r1, 0
 	addi	r1, r1, 4
 
-	/* enable_interrupt */
-//#ifdef XILINX_USE_MSR_INSTR
-//	msrset	r0, 2
-//#else
-	/* FIXME unstable in stressed mode - two irqs */
-/*	nop
-	addi	r1, r1, -4
-	swi	r12, r1, 0
-	mfs	r12, rmsr
-	ori	r12, r12, 2
-	mts	rmsr, r12
-	lwi	r12, r1, 0
-	addi	r1, r1, 4
-	nop
-#endif
-*/
-	//rtsd r15,4
+
+///chush we set msr[BIP] here? than clear it by rtbd:)
 		msrset	r0, 8
 	nop
 	nop
@@ -350,9 +343,27 @@ C_ENTRY(_debug_exception):
 	nop
 	nop
 
+#endif
 
 
 C_ENTRY(_hw_exception_handler):
+#if 0
+	addik	r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
+	SAVE_REGS
+	/* set first param*/
+	mfs		r5, resr
+	andi	r5, r5, 0x1f
+	brlid	r15, mb_exception_dispatcher
+	/* set third param */
+	addik	r7, r1, STATE_SAVE_SIZE
+
+	RESTORE_REGS
+	addik	r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */
+
+	rted r17, 0
+	nop
+
+#else
 	addi	r1, r1, -8
 	swi	r2, r1, 0
 	addi	r1, r1, -4
@@ -485,6 +496,6 @@ C_ENTRY(_hw_exception_handler):
 
 	rted r17, 0
 	nop
-
+#endif
 
 
