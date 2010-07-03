@@ -15,8 +15,8 @@
  * 3) Uniformity
  */
 
-#ifndef __DM_MALLOC_H
-#define __DM_MALLOC_H
+#ifndef __KMALLOC_H
+#define __KMALLOC_H
 
 /**
  * auxiliry
@@ -89,5 +89,5 @@ void* kmalloc(size_t size);
  */
 void kfree(void *ptr);
 
-#endif /* __DM_MALLOC_H_ */
+#endif /* __KMALLOC_H_ */
 
