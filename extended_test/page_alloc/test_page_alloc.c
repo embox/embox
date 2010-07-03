@@ -9,15 +9,9 @@
 
 #include <malloc.h>
 #include <stdio.h>
-#include <kernal/mm/opallcator.h>
+#include <kernel/mm/opallocator.h>
 
 #include "config.h"
-
-typedef struct pmark {
-	size_t psize;
-	struct pmark *pnext;
-	struct pmark *pprev;
-}pmark_t;
 
 /**
  * set of page structure
@@ -43,7 +37,7 @@ test_list_t* page_set_alloc( int count ) {
 		printf("\t\t\tMALLOC (page set): %08x\n",tmp);
 		#endif
 		#ifndef DONOTUSE_PAGE_ALLOC
-		if (!(tmp->page = page_alloc())) {
+		if (!(tmp->page = opalloc())) {
 			#ifdef VERBOSE_DEBUG_OUT
 			printf("\t\tPAGE_ALLOC: No memory enough\n");
 			#else
@@ -70,7 +64,7 @@ void free_page_set(test_list_t *list) {
 		#endif
 		list = cur->next;
 		#ifndef DONOTUSE_PAGE_ALLOC
-		page_free(cur->page);
+		opfree(cur->page);
 		#endif
 		#ifdef VERBOSE_DEBUG_OUT_MALLOC
 		printf("\t\t\tFREE (page set): %08x\n",cur);

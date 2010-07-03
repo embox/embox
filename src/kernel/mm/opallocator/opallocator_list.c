@@ -16,13 +16,13 @@
  * psize - count of page
  * pnext, pprev - pointers other free blocks
  */
+#ifndef EXTENDED_TEST
 typedef struct pmark {
 	size_t psize;
 	struct pmark *pnext;
 	struct pmark *pprev;
 }pmark_t;
 
-#ifndef EXTENDED_TEST
 extern char _heap_start;
 extern char _heap_end;
 #endif
