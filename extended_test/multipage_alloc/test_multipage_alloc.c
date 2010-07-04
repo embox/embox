@@ -224,6 +224,8 @@ int main() {
 		do_allpage();
 		#endif
 	}
+	printf("Last info\n");
+	multipage_info();
 
 	printf("END: ");
 	memory_check();

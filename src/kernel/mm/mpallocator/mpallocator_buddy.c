@@ -17,7 +17,8 @@
  * BITS:
  *  1 - left subtree partially released
  *  2 - right subtree partially released
- *  4 - node is released
+ *  4 - node is released or released all of chlidren
+ *  8 - node isn't in heap
  */
 
 /* MY code MARKS
@@ -46,6 +47,8 @@ extern char *_heap_end;
 #define SET_BIT1(ind,bit) set_bits( ind , get_bits(ind) | (bit) )
 #define SET_BIT0(ind,bit) set_bits( ind , get_bits(ind) & (255^(bit)) )
 #define HAS_BIT(ind,bit) ( get_bits(ind) & (bit) )
+
+#define ANY_OPTIMIZATION
 
 
 typedef size_t taddr;	/* addres in tree */
@@ -213,6 +216,12 @@ void * mpalloc( size_t size ) {
 	for (; block > 1 ; block = parent ) {
 		SET_BIT1( parent = block >> 1 , block & 1 ? 2 : 1 );
 			/* mark from left or right child for node */
+		#ifdef ANY_OPTIMIZATION
+		/* if children was released then parent released */
+		if ( HAS_BIT(block, 4) && HAS_BIT(block^1, 4) ) {
+			SET_BIT1( parent , 4 );
+		}
+		#endif
 	}
 	return taddr_to_ptr(taddr_fr);
 }
@@ -232,13 +241,22 @@ void mpfree( void * ptr ) {
 	for ( before=0 ; (addr>0) && (!get_bits(addr)) && !(before & 1) ; addr = (before = addr) >> 1 );
 	/* addr was allocated */
 	if (get_bits(addr)==4) { /* else if don't equal 0 algorithm has ERROR!!! */
-		set_bits(addr,0);
+		#ifdef ANY_OPTIMIZATION
+		/* now exist alow block */
+		for (parent=addr ; parent >= 1 ; parent >>= 1 ) {
+			SET_BIT0(parent, 4);
+		}
+		#else
+		set_bits(addr, 0);
+		#endif
+		/* it code wrong! */
 		for (; addr > 1 ;) {
 			/* expected that bits[addr] == 0 */
 			parent = addr >> 1;
 			SET_BIT0(parent,addr & 1 ? 2 : 1); /* unmark from left or right child for node */
-			/* if unmarked left and right node then unmark parent */
-			if (!(get_bits(parent) | get_bits(parent^1))) {
+			/* if unmarked left or right node then unmark parent (needed mark) */
+			/* if (!(get_bits(parent) | get_bits(parent^1))) { */
+			if (!get_bits(parent)) {
 				addr = parent;
 			} else {
 				break;

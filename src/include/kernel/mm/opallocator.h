@@ -7,8 +7,8 @@
  * @author Fedor Burdun
  */
 
-#ifndef __PAGE_ALLOC_H_
-#define __PAGE_ALLOC_H_
+#ifndef __OPALLOCATOR_H_
+#define __OPALLOCATOR_H_
 
 #include <types.h>
 
@@ -33,5 +33,5 @@ void *opalloc( void );
  */
 void opfree( void* paddr );
 
-#endif /* __PAGE_ALLOC_H_ */
+#endif /* __OPALLOCATOR_H_ */
 
