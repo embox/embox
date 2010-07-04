@@ -79,6 +79,8 @@ struct pt_regs {
 /* save processor registers to current stack frame */
 #define SAVE_REGS \
 	swi	r2, r1, PTO+PT_R2;     \
+	swi	r3, r1, PTO+PT_R3;     \
+	swi	r4, r1, PTO+PT_R4;     \
 	swi	r5, r1, PTO+PT_R5;     \
 	swi	r6, r1, PTO+PT_R6;     \
 	swi	r7, r1, PTO+PT_R7;     \
@@ -114,6 +116,8 @@ struct pt_regs {
 	mts	rmsr , r11;             \
 	nop;                        \
 	lwi	r2, r1, PTO+PT_R2;      \
+	lwi	r3, r1, PTO+PT_R3;      \
+	lwi	r4, r1, PTO+PT_R4;      \
 	lwi	r5, r1, PTO+PT_R5;      \
 	lwi	r6, r1, PTO+PT_R6;      \
 	lwi	r7, r1, PTO+PT_R7;      \
