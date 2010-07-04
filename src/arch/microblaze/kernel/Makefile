@@ -1,7 +1,11 @@
 
 $_MODS_CORE += locore context
 
+#FIXME open_prom module must be specify
+$_SRCS-prom + = prom.c
+
 $_SRCS-locore += interrupt_handler.c sys.c entry.S boot.S mb_trap_dispatcher.c
+
 $_SRCS-arch += arch.c
 $_SRCS-context += context.c
 $_SRCS-traps += traps_core.c
