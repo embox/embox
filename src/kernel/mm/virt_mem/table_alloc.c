@@ -43,7 +43,7 @@ unsigned long *mmu_table_alloc(size_t size) {
 	printf("page %x; page->free %x; cur_rest %x; size %x, return %x\n", page, ((page_header_t *) page)->free, cur_rest, size, t);
 #endif
 	((page_header_t *) page)->free -= size;
-	return (pmd_t *) t;
+	return (mmu_pmd_t *) t;
 }
 
 void mmu_table_free(unsigned long *table, int level) {

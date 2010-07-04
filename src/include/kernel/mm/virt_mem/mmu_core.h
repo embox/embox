@@ -2,7 +2,7 @@
 #define DEBUG
 
 typedef void (*mmu_page_table_set_t)(mmu_pte_t * ptd, mmu_pte_t * pte);
-typedef pmd_t* (*mmu_page_table_get_t)(mmu_pte_t ptd);
+typedef mmu_pmd_t* (*mmu_page_table_get_t)(mmu_pte_t ptd);
 
 static unsigned long mmu_page_table_sizes[] = {
 	0,

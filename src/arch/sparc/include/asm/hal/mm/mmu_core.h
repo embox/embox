@@ -13,18 +13,7 @@
 
 #include <types.h>
 #include <asm/asi.h>
-
-
-typedef uint32_t __mmu_paddr_t;
-typedef uint32_t __mmu_vaddr_t;
-typedef uint32_t __mmu_pgd_t;
-typedef uint32_t __mmu_pmd_t;
-typedef uint32_t __mmu_pte_t;
-
-typedef uint32_t __mmu_page_flags_t;
-
-typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
-
+#include <hal/mm/mmu_types.h>
 /**
  * MMU registers.
  * Note: MMU mapped via an Alternate Address Space of the CPU (ASI_M_MMUREGS).
@@ -165,12 +154,13 @@ typedef uint16_t __mmu_ctx; /* 256 process id and error error code*/
  * it must contain the value 1.
  */
 #define MMU_ET_PTD           0x1
-
+#if 0
 typedef unsigned long pte_t;
 typedef unsigned long pmd_t;
 typedef unsigned long pld_t;
 typedef unsigned long pgd_t;
 typedef unsigned long ctxd_t;
+#endif
 
 #define pte_val(x)    (x)
 #define pmd_val(x)    (x)
@@ -195,21 +185,6 @@ typedef unsigned long ctxd_t;
 #define __MMU_PTABLE_MASK_OFFSET  12
 #define __MMU_PAGE_MASK           0xFFF
 
-/**
- * Describes structure for MMU environment for SPARC architecture.
- */
-typedef struct __mmu_env {
-	uint32_t status;          /**< MMU enabled/disabled */
-
-	ctxd_t *ctx;              /**< context table */
-	uint32_t cur_ctx;
-
-	uint32_t data_fault_cnt;  /**< Counter for data page faults */
-	uint32_t inst_fault_cnt;  /**< Counter for instruction page faults */
-	uint32_t fault_addr;      /**< Last fault address */
-}__mmu_env_t;
-
-typedef uint16_t __mmu_ctx_t;   /* 256 process id and error error code*/
 
 /** Set MMU reg */
 static inline void mmu_set_mmureg(unsigned long addr_reg,
@@ -279,49 +254,49 @@ static  unsigned long mmu_swap(unsigned long *addr, unsigned long value) {
 }
 
 /** Set page table entry with value */
-static void mmu_set_pte(pte_t *ptep, pte_t pteval) {
+static void mmu_set_pte(mmu_pte_t *ptep, mmu_pte_t pteval) {
 	mmu_swap((unsigned long *)ptep, pte_val(pteval));
 }
 
 /* XXX should we hyper_flush_whole_icache here - Anton */
-static inline void mmu_ctxd_set(ctxd_t *ctxp, pgd_t *pgdp) {
-	mmu_set_pte((pte_t *)ctxp,
+static inline void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp) {
+	mmu_set_pte((mmu_pte_t *)ctxp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pgdp) >> 4)));
 }
 
-static inline void mmu_pgd_set(pgd_t * pgdp, pmd_t * pmdp) {
-	mmu_set_pte((pte_t *)pgdp,
+static inline void mmu_pgd_set(mmu_pgd_t * pgdp, mmu_pmd_t * pmdp) {
+	mmu_set_pte((mmu_pte_t *)pgdp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pmdp) >> 4)));
 }
 
-static inline void mmu_pmd_set(pmd_t * pmdp, pte_t * ptep) {
-	mmu_set_pte((pte_t *)pmdp,
+static inline void mmu_pmd_set(mmu_pmd_t * pmdp, mmu_pte_t * ptep) {
+	mmu_set_pte((mmu_pte_t *)pmdp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) ptep) >> 4)));
 }
 
-static inline pmd_t *mmu_pgd_get(pgd_t * pgdp) {
-	return (pmd_t *) ((((unsigned long) *pgdp) & MMU_PTD_PMASK) << 4);
+static inline mmu_pmd_t *mmu_pgd_get(mmu_pgd_t * pgdp) {
+	return (mmu_pmd_t *) ((((unsigned long) *pgdp) & MMU_PTD_PMASK) << 4);
 }
 
 /* possible misunderstand: pte is decsribing pointer to physical page,
  * here it's mean the last-level-page-catalog  */
-static inline pte_t *mmu_pmd_get(pmd_t * pmdp) {
-	return (pte_t *) ((((unsigned long) *pmdp) & MMU_PTD_PMASK) << 4);
+static inline mmu_pte_t *mmu_pmd_get(mmu_pmd_t * pmdp) {
+	return (mmu_pte_t *) ((((unsigned long) *pmdp) & MMU_PTD_PMASK) << 4);
 }
 
-static inline pte_t mmu_pte_format(__mmu_paddr_t addr, __mmu_page_flags_t flags) {
+static inline mmu_pte_t mmu_pte_format(paddr_t addr, mmu_page_flags_t flags) {
 	return (((addr >> 4) ) & MMU_PTE_PMASK) | flags | MMU_PTE_ET;
 }
 
-static inline __paddr_t mmu_pte_extract(pte_t pte) {
+static inline paddr_t mmu_pte_extract(mmu_pte_t pte) {
 	return (pte & MMU_PTE_PMASK) << 4;
 }
 
-static inline __mmu_page_flags_t mmu_flags_extract(pte_t pte) {
+static inline mmu_page_flags_t mmu_flags_extract(mmu_pte_t pte) {
 	return (pte & 0xff);
 }
 
-static inline int mmu_is_pte(pte_t pte) {
+static inline int mmu_is_pte(mmu_pte_t pte) {
 	return pte & MMU_PTE_ET;
 }
 #endif /* SPARC_MMU_CORE_H_ */

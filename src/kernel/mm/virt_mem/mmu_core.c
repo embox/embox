@@ -12,7 +12,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	uint8_t cur_level;
 	uint32_t cur_offset;
 	signed long treg_size;
-	pte_t pte;
+	mmu_pte_t pte;
 	paddr_t paddr;
 	vaddr_t vaddr = 0;
 	context[1] = (unsigned long *) mmu_get_root(ctx);
@@ -76,7 +76,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 					(void *) table);
 			}
 			/* going to the next level map */
-			pte = (pte_t)(((unsigned long *) context[cur_level]) + cur_offset);
+			pte = (mmu_pte_t)(((unsigned long *) context[cur_level]) + cur_offset);
 			context[cur_level + 1] = (*mmu_page_table_gets[cur_level])(pte);
 		}
 		/* we are on the best fitting level - creating mapping */

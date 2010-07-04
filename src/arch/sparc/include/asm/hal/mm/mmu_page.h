@@ -8,33 +8,34 @@
 #ifndef SPARC_MMU_PAGE_H_
 #define SPARC_MMU_PAGE_H_
 
+#include <hal/mm/mmu_types.h>
 #include <hal/mm/mmu_core.h>
 
 extern mmu_env_t *cur_env;
 
 #define GET_PGD(ctx) \
-	((pgd_t*)((unsigned long)(*(cur_env->ctx + ctx) << 4) & MMU_PTE_PMASK))
+	((mmu_pgd_t*)((unsigned long)(*(cur_env->ctx + ctx) << 4) & MMU_PTE_PMASK))
 
 #define GET_PMD(ctx) \
-	((pmd_t*)((unsigned long)((*GET_PGD(ctx)) << 4) & MMU_PTE_PMASK))
+	((mmu_pmd_t*)((unsigned long)((*GET_PGD(ctx)) << 4) & MMU_PTE_PMASK))
 
 #define GET_PTE(ctx) \
-	((pte_t*)((unsigned long)((*GET_PMD(ctx)) << 4) & MMU_PTE_PMASK))
+	((mmu_pte_t*)((unsigned long)((*GET_PMD(ctx)) << 4) & MMU_PTE_PMASK))
 
 #define GET_FLAGS(ctx, vaddr) \
 	((mmu_page_flags_t*)(GET_PMD(ctx) + (vaddr >> MMU_MTABLE_MASK_OFFSET)))
 
 
-inline static bool mmu_entry_is_pte(pte_t *pte) {
+inline static bool mmu_entry_is_pte(mmu_pte_t *pte) {
 	return (0x2 == (0x3 & (uint32_t)(*pte))) ? true : false;
 }
 
-inline static bool mmu_entry_is_valid(pte_t *pte) {
+inline static bool mmu_entry_is_valid(mmu_pte_t *pte) {
 	return (0x0 != (0x3 & (uint32_t)(*pte))) ? true : false;
 }
 
-inline static pte_t *mmu_get_next_level_pte(pte_t *ptp, int idx) {
-	return (pte_t*)((uint32_t*)((((uint32_t)(*(ptp + idx)) << 4)) & (MMU_PTE_PMASK)));
+inline static mmu_pte_t *mmu_get_next_level_pte(mmu_pte_t *ptp, int idx) {
+	return (mmu_pte_t*)((uint32_t*)((((uint32_t)(*(ptp + idx)) << 4)) & (MMU_PTE_PMASK)));
 }
 
 static unsigned long offsets[] = {
@@ -53,8 +54,8 @@ static unsigned long masks[] = {
 	MMU_PAGE_MASK
 };
 
-inline static pte_t *mmu_page_get_entry(mmu_ctx_t ctx, vaddr_t vaddr) {
-	pte_t *pte = GET_PGD(ctx);
+inline static mmu_pte_t *mmu_page_get_entry(mmu_ctx_t ctx, vaddr_t vaddr) {
+	mmu_pte_t *pte = GET_PGD(ctx);
 	int level = 1;
 
 	for(level; level < 4; level ++) {
@@ -67,7 +68,7 @@ inline static pte_t *mmu_page_get_entry(mmu_ctx_t ctx, vaddr_t vaddr) {
 }
 
 inline static void mmu_page_mark_writable(mmu_ctx_t ctx, vaddr_t vaddr) {
-	pmd_t *m0 = GET_PMD(ctx);
+	mmu_pmd_t *m0 = GET_PMD(ctx);
 	mmu_page_flags_t *flags;
 	vaddr &= ~MMU_PAGE_MASK & MMU_MTABLE_MASK;
 	flags = GET_FLAGS(ctx, vaddr);
@@ -76,7 +77,7 @@ inline static void mmu_page_mark_writable(mmu_ctx_t ctx, vaddr_t vaddr) {
 }
 
 inline static void mmu_page_mark_executeable(mmu_ctx_t ctx, vaddr_t vaddr) {
-	pmd_t *m0 = GET_PGD(ctx);
+	mmu_pmd_t *m0 = GET_PGD(ctx);
 	mmu_page_flags_t *flags;
 	vaddr &= ~MMU_PAGE_MASK & MMU_MTABLE_MASK;
 	flags = GET_FLAGS(ctx, vaddr);
@@ -85,7 +86,7 @@ inline static void mmu_page_mark_executeable(mmu_ctx_t ctx, vaddr_t vaddr) {
 }
 
 inline static void mmu_page_mark_cacheable(mmu_ctx_t ctx, vaddr_t vaddr) {
-	pmd_t *m0 = GET_PMD(ctx);
+	mmu_pmd_t *m0 = GET_PMD(ctx);
 	mmu_page_flags_t *flags;
 	vaddr &= ~MMU_PAGE_MASK & MMU_MTABLE_MASK;
 	flags = GET_FLAGS(ctx, vaddr);
@@ -103,8 +104,8 @@ inline static mmu_page_flags_t mmu_page_get_flags(mmu_ctx_t ctx, vaddr_t vaddr) 
 
 inline static void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
 			mmu_page_flags_t flags) {
-	pte_t pte_value;
-	pte_t *pte = mmu_page_get_entry(ctx, vaddr);
+	mmu_pte_t pte_value;
+	mmu_pte_t *pte = mmu_page_get_entry(ctx, vaddr);
 	if (NULL == pte) {
 		return;
 	}

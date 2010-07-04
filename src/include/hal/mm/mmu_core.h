@@ -10,6 +10,7 @@
 #ifndef MMU_CORE_H_
 #define MMU_CORE_H_
 
+#include <hal/mm/mmu_types.h>
 #include <asm/hal/mm/mmu_core.h>
 
 
@@ -36,26 +37,6 @@
 #define MMU_PMD_TABLE_SIZE		__MMU_PMD_TABLE_SIZE
 #define MMU_PGD_TABLE_SIZE		__MMU_PGD_TABLE_SIZE
 
-typedef __mmu_paddr_t paddr_t;
-typedef __mmu_vaddr_t vaddr_t;
-
-typedef __mmu_page_flags_t mmu_page_flags_t;
-
-/** pgd - page global directory (page table for specific process) */
-typedef __mmu_pgd_t mmu_pgd_t;
-
-/** pgd - page middle directory (page table for specific process) */
-typedef __mmu_pmd_t mmu_pmd_t;
-/** pgd - page table entry (page table for specific process) */
-typedef __mmu_pte_t mmu_pte_t;
-
-/**
- * Defines type for structure of MMU environment. This structure must be
- * describe in platform specific part in file <asm/hal/mm/mmu_core.h>.
- */
-typedef __mmu_env_t mmu_env_t;
-
-typedef __mmu_ctx_t mmu_ctx_t;
 
 /** Error code for MMU module operation*/
 #define MMU_RRTURN_ERROR     (mmu_ctx)(-1)
@@ -142,7 +123,7 @@ extern void mmu_delete_context(mmu_ctx_t ctx);
  * @param ptep - address of entry in table
  * @param pteval - formated value to write in table
  */
-extern void mmu_set_pte(pte_t *ptep, pte_t pteval);
+extern void mmu_set_pte(mmu_pte_t *ptep, mmu_pte_t pteval);
 
 /**
  * Set context table
@@ -150,7 +131,7 @@ extern void mmu_set_pte(pte_t *ptep, pte_t pteval);
  * @param ctxp - address of entry in table
  * @param pgdp - formated address to write in table
  */
-extern void mmu_ctxd_set(ctxd_t *ctxp, pgd_t *pgdp);
+extern void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp);
 
 /**
  * Set global table
@@ -158,7 +139,7 @@ extern void mmu_ctxd_set(ctxd_t *ctxp, pgd_t *pgdp);
  * @param pgdp - address of entry in table
  * @param pmdp - formated address to write in table
  */
-extern void mmu_pgd_set(pgd_t * pgdp, pmd_t * pmdp);
+extern void mmu_pgd_set(mmu_pgd_t * pgdp, mmu_pmd_t * pmdp);
 
 /**
  * Set middle table
@@ -166,21 +147,21 @@ extern void mmu_pgd_set(pgd_t * pgdp, pmd_t * pmdp);
  * @param pmdp - address of entry in table
  * @param ptep - formated address to write in table
  */
-extern void mmu_pmd_set(pmd_t * pmdp, pte_t * ptep);
+extern void mmu_pmd_set(mmu_pmd_t * pmdp, mmu_pte_t * ptep);
 
 /**
  * Get middle table
  *
  * @param pgdp - address of entry in table
  */
-extern pmd_t *mmu_pgd_get(pgd_t * pgdp);
+extern mmu_pmd_t *mmu_pgd_get(mmu_pgd_t * pgdp);
 
 /**
  * Get entry table
  *
  * @param pmdp - address of entry in table
  */
-extern pte_t *mmu_pmd_get(pmd_t * pmdp);
+extern mmu_pte_t *mmu_pmd_get(mmu_pmd_t * pmdp);
 
 /**
  * Format page entry with specified address and flags
@@ -188,21 +169,21 @@ extern pte_t *mmu_pmd_get(pmd_t * pmdp);
  * @param addr - physical address
  * @param flags - flags of entry
  */
-extern pte_t mmu_pte_format(__mmu_paddr_t addr, __mmu_page_flags_t flags);
+extern mmu_pte_t mmu_pte_format(__mmu_paddr_t addr, __mmu_page_flags_t flags);
 
 /**
  * Get physical address from page entry
  *
  * @param pte - page entry
  */
-extern paddr_t mmu_pte_extract(pte_t pte);
+extern paddr_t mmu_pte_extract(mmu_pte_t pte);
 
 /**
  * Get flags from page entry
  *
  * @param pte - page entry
  */
-extern mmu_page_flags_t mmu_flags_extract(pte_t pte);
+extern mmu_page_flags_t mmu_flags_extract(mmu_pte_t pte);
 
 /**
  * Checks if the pte is pte.
@@ -210,7 +191,7 @@ extern mmu_page_flags_t mmu_flags_extract(pte_t pte);
  *
  * @param pte - page entry
  */
-extern int mmu_is_pte(pte_t pte);
+extern int mmu_is_pte(mmu_pte_t pte);
 
 /**
  * Translate flags to arch specified
@@ -226,5 +207,5 @@ extern __mmu_page_flags_t mmu_flags_translate(mmu_page_flags_t flags);
  * @param ctx - context
  * @retval pointer to first pgd of memory
  */
-extern pgd_t * mmu_get_root(mmu_ctx_t ctx);
+extern mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx);
 #endif /* MMU_CORE_H_ */

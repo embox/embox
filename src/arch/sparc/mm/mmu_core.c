@@ -10,8 +10,11 @@
  */
 #include <types.h>
 #include <string.h>
+
+#include <hal/mm/mmu_types.h>
 #include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/mmu_page.h>
+
 #include <asm/asi.h>
 #include <embox/unit.h>
 #include <kernel/mm/virt_mem/table_alloc.h>
@@ -21,10 +24,10 @@
 static mmu_env_t system_env;
 /*static*/ mmu_env_t *cur_env;
 
-extern pgd_t sys_pg0;
-extern pmd_t sys_pm0;
-extern pte_t sys_pt0;
-extern ctxd_t sys_ctx;
+extern mmu_pgd_t sys_pg0;
+extern mmu_pmd_t sys_pm0;
+extern mmu_pte_t sys_pt0;
+extern mmu_ctx_t sys_ctx;
 
 /* Setup module starting function */
 EMBOX_UNIT_INIT(mmu_init)
@@ -70,8 +73,8 @@ void mmu_off(void) {
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 }
 
-pgd_t * mmu_get_root(mmu_ctx_t ctx) {
-	return (pgd_t *) (((*(((unsigned long *) cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4));
+mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
+	return (mmu_pgd_t *) (((*(((unsigned long *) cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4));
 }
 
 __mmu_page_flags_t mmu_flags_translate(mmu_page_flags_t flags) {
