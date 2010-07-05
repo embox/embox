@@ -9,5 +9,6 @@
  */
 
 #include <drivers/devhan.h>
+#include <drivers/driver.h>
 
  /* XXX WRITE CODE */

@@ -15,4 +15,3 @@ struct device {
 	void (* handler) ( void );
 };
 
-
