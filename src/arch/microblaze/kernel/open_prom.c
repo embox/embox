@@ -6,4 +6,9 @@
  */
 #include <asm/prom.h>
 
-struct cpu_open_prom spi;
+//struct cpu_open_prom spi;
+
+void bootm_linux(unsigned int load_addr, unsigned int entry_point) {
+    //TODO:
+}
+

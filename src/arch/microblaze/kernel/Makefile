@@ -22,3 +22,6 @@ $_DEPS-interrupt += $(CONFIG_SYS_INTCRL_DEFINED)
 else
 $_SRCS-interrupt += mb_irq_ctrl.c
 endif
+
+$_SRCS-prom += open_prom.c
+

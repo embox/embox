@@ -27,7 +27,10 @@
 #define __pa(x)     ((unsigned long)(x) - PAGE_OFFSET + LEONSETUP_MEM_BASEADDR)
 #define __va(x)     ((void *)((unsigned long) (x) - LEONSETUP_MEM_BASEADDR + PAGE_OFFSET))
 
-
+#define KERNEL_ARGS "console=ttyS0,38400 rdinit=/sbin/init"
+#define KERNBASE    0xf0000000  /* First address the kernel will eventually be */
+#define LOAD_ADDR   (KERNBASE + 0x4000)      /* prom jumps to us here unless this is elf /boot */
+#define BAUDRATE    38400
 
 /** ------------------- Leon 3 specific ----------------- */
 
@@ -110,10 +113,7 @@ struct leon_prom_info {
         char arg[];
 };
 
-extern struct leon_prom_info spi;
-
-extern void mark(void);
-extern void leon_prom_init(void);
+extern void bootm_linux(unsigned int load_addr, unsigned int entry_point);
 
 #endif /* !(__ASSEMBLY__) */
 
