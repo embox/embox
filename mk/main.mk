@@ -106,10 +106,10 @@ docs:
 dot: $(GRAPH_PS)
 	@echo 'Dot complete'
 
-clean: _clean
+clean c: _clean
 	@echo 'Clean complete'
 
-distclean: _distclean
+distclean dc: _distclean
 	@echo 'Distclean complete'
 
 _clean:
@@ -180,7 +180,7 @@ CUR_CONFIG_FILES := $(filter-out $(notdir $(BACKUP_DIR)),\
 						$(notdir $(wildcard $(BASE_CONF_DIR)/*)))
 # It would be better to use check_config from configure.mk,
 # But I cant imagine any normal condition to include it.
-saveconfig:
+saveconfig s:
 ifndef PROJECT
 	@echo 'Error: PROJECT undefined'
 	@echo 'Usage: "make PROJECT=<project> PROFILE=<new profile name> saveconfig"'
@@ -214,38 +214,38 @@ endif
 			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
 	@echo Config was saved.
 
-menuconfig: PROJECT = $(shell dialog \
+menuconfig m: PROJECT = $(shell dialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select project to load:" 10 40 \
                 $(shell echo $(TEMPLATES) | wc -w) \
                 $(patsubst %,% "" off,$(TEMPLATES)) | tee .tmp)
-menuconfig: PROFILE = $(shell dialog \
+menuconfig m: PROFILE = $(shell dialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select profile to load:" 10 40 \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*))))
-menuconfig: EDIT := `dialog \
+menuconfig m: EDIT := `dialog \
                 --stdout --backtitle "Editor selection" \
                 --radiolist "Select editor:" 20 40 2 "emacs -nw -Q" "" on vim "" off`
-menuconfig:
+menuconfig m:
 	@$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) $(CONF_DIR)/*.conf
 	@$(RM) .tmp
 
-xconfig: PROJECT = $(shell Xdialog \
+xconfig x: PROJECT = $(shell Xdialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select project to load:" 20 40 \
                 $(shell echo $(TEMPLATES) | wc -w) \
                 $(patsubst %,% "" off,$(TEMPLATES)) | tee .tmp)
-xconfig: PROFILE = $(shell Xdialog \
+xconfig x: PROFILE = $(shell Xdialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select profile to load:" 20 40 \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*))))
-xconfig: EDIT := `Xdialog \
+xconfig x: EDIT := `Xdialog \
                 --stdout --backtitle "Editor selection" \
                 --radiolist "Select editor:" 20 40 2 emacs "" on gvim "" off`
-xconfig:
+xconfig x:
 	@$(MAKE) PROFILE=$(PROFILE) PROJECT=$(PROJECT) config
 	@$(EDIT) $(CONF_DIR)/*.conf
 	@$(RM) .tmp
