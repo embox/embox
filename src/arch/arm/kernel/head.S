@@ -146,11 +146,12 @@ LoopCpReloc:
     strlo   r0, [r2], #4
     blo     LoopCpReloc
 
-    //ldr		r0, =hardware_init_hook
-    //bl		=hardware_init_hook
+    ldr		r0, =hardware_init_hook
+    blne		=hardware_init_hook
 
-    //ldr		r0, =software_init_hook
-    //bl
+    ldr		r0, =software_init_hook
+    blne		=software_init_hook
+
 /** Main */
     ldr     pc, =main
 /** bx      r0 */
