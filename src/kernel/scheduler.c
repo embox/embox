@@ -42,7 +42,9 @@ int scheduler_init(void) {
  * @param id nothing significant
  */
 static void scheduler_tick(uint32_t id) {
+#if CONFIG_DEBUG_SCHEDULER
 	TRACE("\nTick\n");
+#endif
 	current_thread->reschedule = true;
 }
 
@@ -81,6 +83,7 @@ void scheduler_dispatch(void) {
 	/* Thread, which have worked just now. */
 	struct thread *prev_thread;
 	struct thread *last_prev_thread;
+	ipl_t ipl;
 
 	if (preemption_count == 0 && current_thread->reschedule) {
 		preemption_inc();
@@ -88,6 +91,7 @@ void scheduler_dispatch(void) {
 		/* Search first running thread. */
 		last_prev_thread = current_thread;
 		thread_move_next(last_prev_thread);
+		/* TODO Temporary modification. While there are no states. */
 		while (current_thread->state != THREAD_STATE_RUN) {
 			last_prev_thread = current_thread;
 			thread_move_next(last_prev_thread);
@@ -95,7 +99,10 @@ void scheduler_dispatch(void) {
 		current_thread->reschedule = false;
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
 
-		scheduler_switch(*prev_thread, *current_thread);
+		ipl = ipl_save();
+        preemption_count--;
+        context_switch(&prev_thread->context, &current_thread->context);
+        ipl_restore(ipl);
 	}
 }
 

@@ -17,9 +17,9 @@ struct my_int {
 	struct list_head list;
 };
 
-queue a_queue;
-int i;
-struct my_int numbers[10];
+static queue_t a_queue;
+static int i;
+static struct my_int numbers[10];
 
 /**
  * The test itself.

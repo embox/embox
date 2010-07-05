@@ -182,17 +182,17 @@ void msg_send(struct message *message, struct thread *thread) {
 	scheduler_unlock();
 }
 
-struct message *msg_receive(struct thread *thread) {
+struct message *msg_receive(void) {
 	scheduler_lock();
-	if (queue_empty(&thread->messages)) {
-		thread->need_message = true;
-		thread->reschedule = true;
-		make_wait(thread);
+	if (queue_empty(&current_thread->messages)) {
+		current_thread->need_message = true;
+		current_thread->reschedule = true;
+		make_wait(current_thread);
 		scheduler_unlock();
 		scheduler_lock();
 	}
 	scheduler_unlock();
-	return (struct message *)list_entry(queue_extr(&thread->messages),
+	return (struct message *)list_entry(queue_extr(&current_thread->messages),
 			struct message, list);
 }
 

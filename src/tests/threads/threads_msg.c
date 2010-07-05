@@ -34,10 +34,8 @@ static void first_run(void) {
 	struct message *sec_msg = msg_new();
 	sent_msg = msg;
 	assert(msg != NULL);
-	msg->type = 1;
 	sec_msg->type = 3;
 	/* Makes nothing, because have wrong type. */
-	msg_send(msg, second_thread);
 	msg_send(sec_msg, second_thread);
 	for (i = 0; i < 1000; i++) {
 		TRACE("1");
@@ -57,7 +55,7 @@ static void second_run(void) {
 		if (msg != NULL) {
 			msg_erase(msg);
 		}
-		msg = msg_receive(second_thread);
+		msg = msg_receive();
 		TRACE("\nMessage type = %d\n", msg->type);
 	} while (msg->type != 2);
 
