@@ -3,7 +3,6 @@
  * @brief Implementation of methods in scheduler.h
  *
  * @date 22.04.2010
- * @author Avdyukhin Dmitry
  * @author Darya Dzendzik
  */
 
@@ -29,7 +28,8 @@
  * and can't switch between threads.
  */
 
-/*My comment
+/*TODO delete some coments
+My comment
  typedef struct thread1 {
  int id;
  } thread_t;
@@ -67,7 +67,7 @@ typedef struct priority_head {
  */
 #define MAX_PRIORITY 0x10
 #define THREAD_PRIOR6ITY_IDLE 0
-#define NUMBER_THREAD 2 //0x10
+#define NUMBER_THREAD 4 //0x10
 /**
  * Pools for thread and priority
  */
@@ -77,13 +77,13 @@ static priority_head_t priority_pool[MAX_PRIORITY];
 static priority_head_t *cur_prior;
 
 static thread_head_t thread_head_pool[NUMBER_THREAD];
-
+#define free_thread_list          (&thread_head_pool[0]) //check need????
 struct list_head *free_threads_list;
 
 /**
  * allocation head of thread in memory
  * free_thresd_list - pool
- * TODO: memory from pool!!!!!
+ * TODO: memory from pool!!!!!  see check
  * MUST:
  * 1. alloc memory from pool
  * 2. made structure
