@@ -59,8 +59,10 @@ struct thread {
 	struct context context;
 	/** Function, running in thread. */
 	void (*run)(void);
+
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
+
 	/** Index of thread in heap. */
 	int heap_index;
 	/**
@@ -71,6 +73,7 @@ struct thread {
 	 * Is needed for heap_scheduler.
 	 */
 	bool run_count;
+
 	/** Flag, which shows, whether tread can be changed. */
 	bool reschedule;
 	/** Thread's identifier. Unique for each thread. */
@@ -82,7 +85,7 @@ struct thread {
 	/** Shows if thread is waiting for message. */
     bool need_message;
     /** Queue of messages, sent to this thread. */
-    queue messages;
+    queue_t messages;
 };
 
 /**
@@ -127,7 +130,7 @@ void msg_send(struct message *message, struct thread *thread);
  * @param thread thread, which wants to take a message.
  * @return received message (wait until there will be such a message).
  */
-struct message *msg_receive(struct thread *thread);
+struct message *msg_receive(void);
 
 /**
  * Allots memory for new message to send to thread.
