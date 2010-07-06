@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Load image file.
+ * @brief Load image file into memory.
  *
  * @date 03.07.2009
  * @author Sergey Kuzmin
@@ -12,9 +12,8 @@
 #include <stdio.h>
 
 #define COMMAND_NAME     "load"
-#define COMMAND_DESC_MSG "load image file"
-#define HELP_MSG         "Usage: load [-a addr] [-f filename] [-p protocol] \
-	[-t type][-h]"
+#define COMMAND_DESC_MSG "load image file into memory"
+#define HELP_MSG         "Usage: load [-a addr] [-f rom_filename] [-h]"
 
 static const char *man_page =
 	#include "load_help.inc"
@@ -23,8 +22,6 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 #if 0
-#define ENTRY_PTR 0x40000000
-#endif
 static int copy_image(char *file_name) {
 	void *romfile;
 	void *ramfile;
@@ -47,12 +44,16 @@ static int copy_image(char *file_name) {
 	}
 	return 0;
 }
+#endif
 
 static int exec(int argsc, char **argsv) {
+	extern char _piggy_start, _piggy_end;
+#if 0
 	RAMFS_CREATE_PARAM param;
+	FSOP_DESCRIPTION *fsop;
+#endif
 	char *file_name = NULL;
 	unsigned int base_addr;
-	FSOP_DESCRIPTION *fsop;
 	int nextOption;
 	getopt_init();
 	do {
@@ -78,7 +79,7 @@ static int exec(int argsc, char **argsv) {
 			return 0;
 		}
 	} while (-1 != nextOption);
-
+#if 0
 	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))) {
 		LOG_ERROR("Can't find ramfs disk");
 		return -1;
@@ -91,5 +92,13 @@ static int exec(int argsc, char **argsv) {
 		LOG_ERROR("Can't create ramfs disk\n");
 		return -1;
 	}
-	return copy_image(file_name);
+	if (-1 == copy_image(file_name)) {
+		LOG_ERROR("Can't copy image\n");
+		return -1;
+	}
+#endif
+	//TODO: workaround
+        memcpy((void *) base_addr, &_piggy_start, (unsigned int) &_piggy_end
+                        - (unsigned int) &_piggy_start);
+	return 0;
 }

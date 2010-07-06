@@ -7,6 +7,7 @@
  */
 #include <shell_command.h>
 #include <hal/interrupt.h>
+#include <hal/ipl.h>
 
 #define COMMAND_NAME     "goto"
 #define COMMAND_DESC_MSG "execute image file"
@@ -22,9 +23,7 @@ typedef void (*IMAGE_ENTRY)(void);
 static void go_to(unsigned int addr) {
 	interrupt_nr_t interrupt_nr;
 	printf("Try goto 0x%08X\n", addr);
-#if 0
-	timers_off();
-#endif
+	ipl_disable();
 	for (interrupt_nr = 0; interrupt_nr < INTERRUPT_NRS_TOTAL; ++interrupt_nr) {
 		interrupt_disable(interrupt_nr);
 	}
