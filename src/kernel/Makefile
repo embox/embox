@@ -32,7 +32,6 @@ $_SRCS-thread += thread.c
 $_SRCS-thread += thread_heap.c
 $_SRCS-thread += convar.c
 $_SRCS-thread += scheduler.c
-#$_SRCS-thread += list_scheduler.c
 
 $_SRCS-scheduler     += $(CONFIG_THREAD)
 endif

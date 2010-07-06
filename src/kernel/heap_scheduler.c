@@ -31,13 +31,13 @@ void _scheduler_init(void) {
 }
 
 struct thread *_scheduler_next(struct thread *prev_thread) {
-	struct thread *current_thread;
+	struct thread *next_thread;
 	if (prev_thread->state == THREAD_STATE_RUN) {
 		heap_insert(prev_thread);
 	}
-	current_thread = heap_extract();
-	current_thread->reschedule = false;
-	return current_thread;
+	next_thread = heap_extract();
+	next_thread->reschedule = false;
+	return next_thread;
 }
 
 void _scheduler_remove(struct thread *removed_thread) {

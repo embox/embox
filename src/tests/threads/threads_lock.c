@@ -40,10 +40,10 @@ static void plus_run(void) {
 
 /**
  * endlessly writes '-'
- * locks plus_thread
+ * then goes to sleep
  */
 static void minus_run(void) {
-	scheduler_sleep(plus_thread, &event);
+	scheduler_sleep(minus_thread, &event);
 	while (true) {
 		TRACE("-");
 	}
@@ -52,10 +52,10 @@ static void minus_run(void) {
 
 /**
  * endlessly writes '-'
- * unlocks plus_thread
+ * unlocks minus_thread
  */
 static void mult_run(void) {
-	scheduler_wakeup(&event);
+//	scheduler_wakeup(&event);
 	while (true) {
 		TRACE("*");
 	}

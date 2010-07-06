@@ -32,8 +32,6 @@ static char idle_thread_stack[THREAD_STACK_SIZE];
 /** A mask, which shows, what places for new threads are free. */
 static int mask = 0;
 
-/** Last zombie thread. */
-static struct thread *last_zombie;
 /** Pool, containing threads. */
 static struct thread threads_pool[MAX_THREADS_COUNT];
 
@@ -134,23 +132,25 @@ static int thread_delete(struct thread *deleted_thread) {
 	return 0;
 }
 
-int thread_stop(struct thread *stopped_thread) {
-	if (stopped_thread == NULL || stopped_thread == idle_thread) {
+int thread_stop(struct thread *thread) {
+	/** Last zombie thread. */
+	static struct thread *zombie;
+
+	if (thread == NULL || thread == idle_thread) {
 		return -EINVAL;
 	}
 	scheduler_lock();
-	TRACE("\nStopping %d\n", stopped_thread->id);
-	if (last_zombie != NULL) {
-		thread_delete(last_zombie);
-		last_zombie = NULL;
+	TRACE("\nStopping %d\n", thread->id);
+	if (zombie != NULL) {
+		thread_delete(zombie);
+		zombie = NULL;
 	}
-	scheduler_remove(stopped_thread);
-	if (current_thread != stopped_thread) {
-		thread_delete(stopped_thread);
+	scheduler_remove(thread);
+	if (current_thread != thread) {
+		thread_delete(thread);
 	} else {
-		last_zombie = stopped_thread;
-		stopped_thread->state = THREAD_STATE_ZOMBIE;
-		stopped_thread->reschedule = true;
+		zombie = thread;
+		thread->state = THREAD_STATE_ZOMBIE;
 	}
 	scheduler_unlock();
 	return 0;
