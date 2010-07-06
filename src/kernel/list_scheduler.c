@@ -33,12 +33,11 @@ void _scheduler_init(void) {
 	list_head_run = &idle_thread->sched_list;
 }
 
-void thread_move_next(struct thread *prev_thread) {
-	current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
-	if (current_thread->state == THREAD_STATE_ZOMBIE) {
-		list_del(&current_thread->sched_list);
-		current_thread = list_entry(prev_thread->sched_list.next, struct thread, sched_list);
+struct thread *_scheduler_next(struct thread *prev_thread) {
+	if (prev_thread->sched_list.next == NULL) {
+		return idle_thread;
 	}
+	return list_entry(prev_thread->sched_list.next, struct thread, sched_list);
 }
 
 void _scheduler_remove(struct thread *removed_thread) {

@@ -90,11 +90,11 @@ void scheduler_dispatch(void) {
 		prev_thread = current_thread;
 		/* Search first running thread. */
 		last_prev_thread = current_thread;
-		thread_move_next(last_prev_thread);
+		current_thread = _scheduler_next(last_prev_thread);
 		/* TODO Temporary modification. While there are no states. */
 		while (current_thread->state != THREAD_STATE_RUN) {
 			last_prev_thread = current_thread;
-			thread_move_next(last_prev_thread);
+			current_thread = _scheduler_next(last_prev_thread);
 		}
 		current_thread->reschedule = false;
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
@@ -125,7 +125,7 @@ int scheduler_sleep(struct thread *thread, struct event *event) {
 
 	preemption_inc();
 
-	thread_move_next(thread);
+	current_thread = _scheduler_next(thread);
 	list_del_init(&old_thread->sched_list);
 	old_thread->state = THREAD_STATE_WAIT;
 	list_add(&old_thread->sched_list, &event->threads_list);

@@ -31,7 +31,7 @@ void _scheduler_init(void);
  * Move current_thread pointer to the next thread.
  * @param prev_thread thread, which have worked just now.
  */
-void thread_move_next(struct thread *prev_thread);
+struct thread *_scheduler_next(struct thread *prev_thread);
 
 /**
  * Removes thread from the scheduler.

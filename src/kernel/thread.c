@@ -129,7 +129,6 @@ static int thread_delete(struct thread *deleted_thread) {
 		return -EINVAL;
 	}
 	TRACE("\nDeleting %d\n", deleted_thread->id);
-	scheduler_remove(deleted_thread);
 	deleted_thread->state = THREAD_STATE_STOP;
 	mask &= ~(1 << (deleted_thread - threads_pool));
 	return 0;
@@ -145,6 +144,7 @@ int thread_stop(struct thread *stopped_thread) {
 		thread_delete(last_zombie);
 		last_zombie = NULL;
 	}
+	scheduler_remove(stopped_thread);
 	if (current_thread != stopped_thread) {
 		thread_delete(stopped_thread);
 	} else {
