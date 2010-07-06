@@ -69,8 +69,9 @@ static void thread_run(int data) {
 	struct thread *thread = (struct thread *) data;
 
 	assert(thread != NULL);
+#ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("\nStarting Thread %d\n", thread->id);
-
+#endif
 	ipl_enable();
 	thread->run();
 	thread_stop(thread);
@@ -126,7 +127,9 @@ static int thread_delete(struct thread *deleted_thread) {
 	if (deleted_thread == NULL) {
 		return -EINVAL;
 	}
+#ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("\nDeleting %d\n", deleted_thread->id);
+#endif
 	deleted_thread->state = THREAD_STATE_STOP;
 	mask &= ~(1 << (deleted_thread - threads_pool));
 	return 0;
@@ -140,7 +143,9 @@ int thread_stop(struct thread *thread) {
 		return -EINVAL;
 	}
 	scheduler_lock();
+#ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("\nStopping %d\n", thread->id);
+#endif
 	if (zombie != NULL) {
 		thread_delete(zombie);
 		zombie = NULL;

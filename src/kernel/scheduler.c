@@ -42,14 +42,16 @@ int scheduler_init(void) {
  * @param id nothing significant
  */
 static void scheduler_tick(uint32_t id) {
-#if CONFIG_DEBUG_SCHEDULER
+#ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("\nTick\n");
 #endif
 	current_thread->reschedule = true;
 }
 
 void scheduler_start(void) {
+#ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("\nStart scheduler\n");
+#endif
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
 	_scheduler_start();
 	scheduler_unlock();
@@ -95,9 +97,9 @@ void scheduler_dispatch(void) {
 		}
 		current_thread = next_thread;
 		current_thread->reschedule = false;
-
+#ifdef CONFIG_DEBUG_SCHEDULER
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
-
+#endif
 		ipl = ipl_save();
 		preemption_count--;
 		context_switch(&prev_thread->context, &current_thread->context);
@@ -130,9 +132,9 @@ int scheduler_sleep(struct event *event) {;
 	scheduler_remove(old_thread);
 	old_thread->state = THREAD_STATE_WAIT;
 	list_add(&old_thread->sched_list, &event->threads_list);
-
+#ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("Locking %d\n", old_thread->id);
-
+#endif
 	preemption_count--;
 
 	scheduler_switch(*old_thread, *current_thread);
@@ -151,9 +153,9 @@ int scheduler_wakeup(struct event *event) {
 		scheduler_add(thread);
 		thread->state = THREAD_STATE_RUN;
 		scheduler_add(thread);
-
+#ifdef CONFIG_DEBUG_SCHEDULER
 		TRACE("Unlocking %d\n", thread->id);
-
+#endif
 	}
 
 	preemption_count--;
