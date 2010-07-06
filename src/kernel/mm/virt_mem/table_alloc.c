@@ -3,6 +3,9 @@
 #include <kernel/mm/opallocator.h>
 #include <hal/mm/mmu_core.h>
 
+/* must be aligned for sizes of all tables */
+#define PAGE_HEADER_SIZE 0x400
+
 typedef struct {
 	uint32_t free;
 } page_header_t;
@@ -12,20 +15,21 @@ size_t cur_rest = 0;
 static void *clear_page_alloc(void) {
 	uint32_t i;
 	void *t = opalloc();
-	for (i = 0; i < PAGE_SIZE >> 2; i++) {
+	for (i = 0; i < MMU_PAGE_SIZE >> 2; i++) {
 		*(((uint32_t *) t) + i) = 0;
 	}
 	return t;
 }
 
+#define DEBUG
 unsigned long *mmu_table_alloc(size_t size) {
 	uint8_t *t, *page;
 	if (cur_rest < size) {
 		cur_page = (uint8_t *) clear_page_alloc();
 #ifdef DEBUG
-		printf("---requesting new page %x\n",cur_page);
+		printf("---requesting new page %x, page_header_size %x\n",cur_page,PAGE_HEADER_SIZE);
 #endif
-		cur_rest = PAGE_SIZE - PAGE_HEADER_SIZE;
+		cur_rest = MMU_PAGE_SIZE - PAGE_HEADER_SIZE;
 		((page_header_t *) cur_page)->free = cur_rest;
 		cur_page += PAGE_HEADER_SIZE;
 	}
@@ -37,7 +41,7 @@ unsigned long *mmu_table_alloc(size_t size) {
 	cur_rest -= size;
 	page = (uint8_t *) (((unsigned long) cur_page) & ~MMU_PAGE_MASK);
 	if (cur_rest == 0) {
-		page -= PAGE_SIZE;
+		page -= MMU_PAGE_SIZE;
 	}
 #ifdef DEBUG
 	printf("page %x; page->free %x; cur_rest %x; size %x, return %x\n", page, ((page_header_t *) page)->free, cur_rest, size, t);
@@ -64,7 +68,7 @@ void mmu_table_free(unsigned long *table, int level) {
 		}
 	}
 	((page_header_t *) page)->free += size;
-	if (((page_header_t *) page)->free == PAGE_SIZE - PAGE_HEADER_SIZE && page != cur_page) {
+	if (((page_header_t *) page)->free == MMU_PAGE_SIZE - PAGE_HEADER_SIZE && page != cur_page) {
 		opfree((void *)page);
 	}
 }

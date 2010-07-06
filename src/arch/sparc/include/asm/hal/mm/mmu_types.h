@@ -18,7 +18,7 @@ typedef uint32_t __mmu_pte_t;
 
 typedef uint32_t __mmu_page_flags_t;
 
-typedef uint16_t __mmu_ctx_t; /* 256 process id and error error code*/
+typedef uint32_t __mmu_ctx_t; /* 256 process id and error error code*/
 
 /**
  * Describes structure for MMU environment for SPARC architecture.

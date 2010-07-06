@@ -2,16 +2,16 @@
 #include <kernel/mm/virt_mem/table_alloc.h>
 #include <kernel/mm/virt_mem/mmu_core.h>
 #include <kernel/mm/opallocator.h>
+#include <util/math.h>
 
-
-static unsigned long *context[] = {NULL, NULL, NULL, NULL, NULL };
-
-
+#define DEBUG
+static mmu_pte_t *context[] = {NULL, NULL, NULL, NULL, NULL };
 int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, mmu_page_flags_t flags) {
 	uint8_t cur_level;
 	uint32_t cur_offset;
 	signed long treg_size;
+	int i;
 	mmu_pte_t pte;
 	paddr_t paddr;
 	vaddr_t vaddr = 0;
@@ -21,21 +21,23 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	virt_addr &= ~MMU_PAGE_MASK;
 	reg_size &= ~MMU_PAGE_MASK;
 	treg_size = reg_size & (~(MMU_PAGE_MASK ));
-	/* translate general flags to arch-specified */
-	flags = mmu_flags_translate(flags);
 	/* will map the best fitting area on each step
 	 * will choose smaller area, while not found the best fitting */
 	while ( treg_size > 0) {
 		for (cur_level = 1; cur_level < 4; cur_level++) {
-			cur_offset = ((virt_addr & mmu_table_masks[cur_level]) >> mmu_table_offsets[cur_level]);
+			cur_offset = ((virt_addr & mmu_table_masks[cur_level]) >> blog2(mmu_table_masks[cur_level]));
 #ifdef DEBUG
-			printf("level %d; vaddr 0x%8x; paddr 0x%8x; context 0x%8x\n",
-				cur_level, (uint32_t)virt_addr, (uint32_t)phy_addr, context[cur_level]);
+			printf("level %d; vaddr 0x%8x; paddr 0x%8x; context 0x%8x offset 0x%8x\n",
+				cur_level, (uint32_t)virt_addr, (uint32_t)phy_addr, context[cur_level], cur_offset);
 #endif
 			vaddr += mmu_level_capacity[cur_level] * cur_offset;
 			/* if mapping vaddr is aligned and if required size is pretty fit */
+#ifdef DEBUG
+			printf("%x %x \n", treg_size, mmu_level_capacity[cur_level]);
+#endif
 			if ((virt_addr % mmu_level_capacity[cur_level] == 0) &&
-			       (mmu_level_capacity[cur_level] == treg_size)) {
+				//(phy_addr % mmu_level_capacity[cur_level] == 0) &&
+				(mmu_level_capacity[cur_level] <= treg_size)) {
 #ifdef DEBUG
 				printf("exiting\n");
 #endif
@@ -62,7 +64,8 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 				}
 			}
 			/* if there is no next-level page table */
-			if (*(context[cur_level] + cur_offset) == 0) {
+			printf("0x%x, 0x%x\n",*(context[cur_level] + cur_offset), mmu_valid_entry(*(context[cur_level] + cur_offset)));
+			if (!mmu_valid_entry(*(context[cur_level] + cur_offset))) {
 #ifdef DEBUG
 				printf("no mapping\n");
 #endif
@@ -76,13 +79,18 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 					(void *) table);
 			}
 			/* going to the next level map */
-			pte = (mmu_pte_t)(((unsigned long *) context[cur_level]) + cur_offset);
+			pte = (mmu_pte_t) (context[cur_level] + cur_offset);
 			context[cur_level + 1] = (*mmu_page_table_gets[cur_level])(pte);
+
+#ifdef DEBUG
+			printf("next pte is 0x%8x\n", *((unsigned long *) pte));
+			printf("going down to 0x%8x\n", context[cur_level + 1]);
+#endif
 		}
 		/* we are on the best fitting level - creating mapping */
 		mmu_set_pte(context[cur_level] + cur_offset, mmu_pte_format(phy_addr, flags));
 #ifdef DEBUG
-		printf("%x\n", mmu_pte_format(phy_addr, flags));
+		printf("pte is %x\n", mmu_pte_format(phy_addr, flags));
 #endif
 		/* reducing mapping area */
 		treg_size -= mmu_level_capacity[cur_level];
