@@ -105,6 +105,9 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 				break;
 			}
 		}
+#if 0
+		sleep(1); /* for microblaze only (bug with ipl save/restore) */
+#endif
 	}
 	printf("Downloaded: %d bytes\n", dsize);
 	close(desc);

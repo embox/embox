@@ -9,8 +9,12 @@ $_CPPFLAGS += -I$($_SELFDIR)/_misc/include
 
 _TEST_TEMPLATE = _template
 
-add_test:
+add_test at:
 	@[[ -d $(TEST_NAME) ]] || mkdir -p $(TEST_NAME)
 	cat $(_TEST_TEMPLATE)/Makefile > $(TEST_NAME)/Makefile
 	cat $(_TEST_TEMPLATE)/test.c > $(TEST_NAME)/$(TEST_NAME).c
 	svn add $(TEST_NAME)
+
+help h:
+	@echo 'TEST_NAME=test_name make at'
+

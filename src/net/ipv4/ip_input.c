@@ -73,8 +73,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			stats->rx_err ++;
 			return NET_RX_DROP;
 		}
-		if (ip_options_handle_srr(skb))
-		{
+		if (ip_options_handle_srr(skb)) {
 			stats->tx_err ++;
 			return NET_RX_DROP;
 		}

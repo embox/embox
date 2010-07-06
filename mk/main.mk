@@ -224,9 +224,9 @@ menuconfig m: PROFILE = $(shell dialog \
                 --radiolist "Select profile to load:" 10 40 \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*))))
-menuconfig m: EDIT := `dialog \
+menuconfig m: EDIT = $(shell dialog \
                 --stdout --backtitle "Editor selection" \
-                --radiolist "Select editor:" 20 40 2 "emacs -nw -Q" "" on vim "" off`
+                --radiolist "Select editor:" 20 40 2 "emacs -nw -Q" "" on vim "" off)
 menuconfig m:
 	@$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
 	@$(EDIT) $(CONF_DIR)/*.conf
@@ -242,9 +242,9 @@ xconfig x: PROFILE = $(shell Xdialog \
                 --radiolist "Select profile to load:" 20 40 \
                 $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*)) | wc -w) \
                 $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*))))
-xconfig x: EDIT := `Xdialog \
+xconfig x: EDIT = $(shell Xdialog \
                 --stdout --backtitle "Editor selection" \
-                --radiolist "Select editor:" 20 40 2 emacs "" on gvim "" off`
+                --radiolist "Select editor:" 20 40 2 emacs "" on gvim "" off)
 xconfig x:
 	@$(MAKE) PROFILE=$(PROFILE) PROJECT=$(PROJECT) config
 	@$(EDIT) $(CONF_DIR)/*.conf
