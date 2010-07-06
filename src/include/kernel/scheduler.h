@@ -16,14 +16,6 @@
 
 
 /**
- * Structure which describes events.
- * Now contains just a list of associated threads.
- */
-struct event {
-	struct list_head threads_list;
-};
-
-/**
  * Initializes scheduler.
  */
 int scheduler_init(void);
@@ -85,5 +77,12 @@ int scheduler_sleep(struct event *event);
  * @param event - event
  */
 int scheduler_wakeup(struct event *event);
+
+/**
+ * Initialize an event.
+ *
+ * @param event the initialized event.
+ */
+void event_init(struct event *event);
 
 #endif /* SCHEDULER_H_ */

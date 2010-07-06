@@ -36,12 +36,14 @@ static void first_run(void) {
 	assert(msg != NULL);
 	sec_msg->type = 3;
 	/* Makes nothing, because have wrong type. */
+	TRACE("Sending bad message.\n");
 	msg_send(sec_msg, second_thread);
 	for (i = 0; i < 1000; i++) {
 		TRACE("1");
 	}
 	msg->type = 2;
 	/* Must unblock second thread. */
+	TRACE("Sending good message.\n");
 	msg_send(msg, second_thread);
 }
 

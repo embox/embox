@@ -10,7 +10,6 @@
 #include <errno.h>
 #include <queue.h>
 
-#include <kernel/thread.h>
 #include <kernel/scheduler.h>
 #include <hal/context.h>
 #include <hal/arch.h>
@@ -109,6 +108,7 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	created_thread->priority = 1;
 	created_thread->need_message = false;
 	queue_init(&created_thread->messages);
+	event_init(&created_thread->msg_event);
 	context_init(&created_thread->context, true);
 	context_set_entry(&created_thread->context, &thread_run, (int) created_thread);
 	context_set_stack(&created_thread->context, stack_address);
@@ -167,36 +167,21 @@ void thread_yield(void) {
 	scheduler_unlock();
 }
 
-/** TODO */
-static void make_wait (struct thread *thread) {
-	thread->state = THREAD_STATE_WAIT;
-}
-
-/** TODO */
-static void make_run (struct thread *thread) {
-	thread->state = THREAD_STATE_RUN;
-}
-
 void msg_send(struct message *message, struct thread *thread) {
 	scheduler_lock();
 	queue_add(&message->list, &thread->messages);
 	if (thread->need_message) {
 		thread->need_message = false;
-		make_run(thread);
+		scheduler_wakeup(&thread->msg_event);
 	}
 	scheduler_unlock();
 }
 
 struct message *msg_receive(void) {
-	scheduler_lock();
 	if (queue_empty(&current_thread->messages)) {
 		current_thread->need_message = true;
-		current_thread->reschedule = true;
-		make_wait(current_thread);
-		scheduler_unlock();
-		scheduler_lock();
+		scheduler_sleep(&current_thread->msg_event);
 	}
-	scheduler_unlock();
 	return (struct message *)list_entry(queue_extr(&current_thread->messages),
 			struct message, list);
 }

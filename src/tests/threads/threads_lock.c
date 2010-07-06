@@ -75,7 +75,7 @@ static int run_test(void) {
 
 	scheduler_init();
 
-	INIT_LIST_HEAD(&event.threads_list);
+	event_init(&event);
 
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
 	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);

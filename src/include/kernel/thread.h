@@ -11,7 +11,7 @@
 #define _THREAD_H_
 
 #include <hal/context.h>
-#include <kernel/scheduler.h>
+//#include <kernel/scheduler.h>
 #include <lib/list.h>
 #include <queue.h>
 #include <string.h>
@@ -27,6 +27,15 @@ typedef enum {
 
 typedef int msg_t;
 typedef int msg_data_t;
+
+
+/**
+ * Structure which describes events.
+ * Now contains just a list of associated threads.
+ */
+struct event {
+	struct list_head threads_list;
+};
 
 /**
  * Structure, describing messages, sent to threads.
@@ -90,6 +99,8 @@ struct thread {
     bool need_message;
     /** Queue of messages, sent to this thread. */
     queue_t messages;
+    /** Event, appearing when thread receives message. */
+    struct event msg_event;
 };
 
 /**

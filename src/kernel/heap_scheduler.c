@@ -12,12 +12,6 @@
 #include <kernel/scheduler.h>
 #include <kernel/thread_heap.h>
 
-/**
- * List item, pointing at the beginning of the
- * 	list of running threads.
- */
-static struct list_head *list_head_run;
-
 void _scheduler_start(void) {
 	/* Nothing to do. */
 }

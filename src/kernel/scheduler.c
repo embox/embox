@@ -83,23 +83,21 @@ void scheduler_switch(struct thread old_thread, struct thread new_thread) {
 
 void scheduler_dispatch(void) {
 	ipl_t ipl;
-	struct thread *prev_thread, *next_thread;
+	struct thread *prev_thread;
 
 	if (preemption_count == 0 && current_thread->reschedule) {
 		preemption_inc();
 		prev_thread = current_thread;
-		/* Search first running thread. */
-
-		next_thread = _scheduler_next(current_thread);
-		/* TODO Temporary modification. While there are no states. */
-		while (next_thread->state != THREAD_STATE_RUN) {
-			next_thread = _scheduler_next(next_thread);
-		}
-		current_thread = next_thread;
+		current_thread = _scheduler_next(current_thread);
 		current_thread->reschedule = false;
+		/* TODO WHAT IS IT??????
+		 * It must be in scheduler_sleep.
+		 * I want to know some reasons not to delete this part. */
+#if 0
 		if (prev_thread->state == THREAD_STATE_WAIT) {
 			scheduler_remove(prev_thread);
 		}
+#endif
 
 #ifdef CONFIG_DEBUG_SCHEDULER
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
@@ -128,22 +126,21 @@ int scheduler_remove(struct thread *removed_thread) {
 }
 
 int scheduler_sleep(struct event *event) {
-	preemption_inc();
+	scheduler_lock();
 	current_thread->state = THREAD_STATE_WAIT;
-	current_thread->reschedule = true;
 	list_add(&current_thread->wait_list, &event->threads_list);
+	scheduler_remove(current_thread);
 #ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("Locking %d\n", current_thread->id);
 #endif
-	preemption_count--;
-	scheduler_dispatch();
+	scheduler_unlock();
 	return 0;
 }
 
 int scheduler_wakeup(struct event *event) {
 	struct thread *thread;
 	struct thread *tmp_thread;
-	preemption_inc();
+	scheduler_lock();
 	list_for_each_entry_safe(thread, tmp_thread, &event->threads_list, wait_list) {
 		list_del_init(&thread->wait_list);
 		thread->state = THREAD_STATE_RUN;
@@ -152,8 +149,10 @@ int scheduler_wakeup(struct event *event) {
 		TRACE("Unlocking %d\n", thread->id);
 #endif
 	}
-
-	preemption_count--;
-
+	scheduler_unlock();
 	return 0;
+}
+
+void event_init(struct event *event) {
+	INIT_LIST_HEAD(&event->threads_list);
 }
