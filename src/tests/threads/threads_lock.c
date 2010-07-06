@@ -18,10 +18,12 @@
 static char plus_stack[THREAD_STACK_SIZE];
 static char minus_stack[THREAD_STACK_SIZE];
 static char mult_stack[THREAD_STACK_SIZE];
+static char div_stack[THREAD_STACK_SIZE];
 
 struct thread *plus_thread;
 struct thread *minus_thread;
 struct thread *mult_thread;
+struct thread *div_thread;
 
 struct event event;
 
@@ -39,11 +41,10 @@ static void plus_run(void) {
 }
 
 /**
- * endlessly writes '-'
- * then goes to sleep
+ * goes to sleep
  */
 static void minus_run(void) {
-	scheduler_sleep(minus_thread, &event);
+	scheduler_sleep(&event);
 	while (true) {
 		TRACE("-");
 	}
@@ -52,13 +53,19 @@ static void minus_run(void) {
 
 /**
  * endlessly writes '-'
- * unlocks minus_thread
  */
 static void mult_run(void) {
-//	scheduler_wakeup(&event);
 	while (true) {
 		TRACE("*");
 	}
+}
+
+/**
+ * unlocks minus thread then writes "/"
+ */
+static void div_run(void) {
+	scheduler_wakeup(&event);
+	TRACE("/");
 }
 
 
@@ -73,14 +80,17 @@ static int run_test(void) {
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
 	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
 	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
+	div_thread = thread_create(div_run, div_stack + THREAD_STACK_SIZE);
 
 	assert(plus_thread != NULL);
 	assert(minus_thread != NULL);
 	assert(mult_thread != NULL);
+	assert(div_thread != NULL);
 
 	thread_start(plus_thread);
 	thread_start(minus_thread);
 	thread_start(mult_thread);
+	thread_start(div_thread);
 
 	TRACE("\nBefore start\n");
 	scheduler_start();

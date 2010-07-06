@@ -73,4 +73,17 @@ int scheduler_remove(struct thread *removed_thread);
  */
 int thread_lock(struct thread *thread, struct event *event);
 
+/**
+ * puts current thread to sleep
+ * adds it to list of given event
+ * @param event - event
+ */
+int scheduler_sleep(struct event *event);
+
+/**
+ * wakes up all threads, to given event
+ * @param event - event
+ */
+int scheduler_wakeup(struct event *event);
+
 #endif /* SCHEDULER_H_ */

@@ -54,7 +54,7 @@ extern struct thread *current_thread;
 /**
  * Structure, describing threads.
  */
-typedef struct thread {
+struct thread {
 	/** Context of thread. */
 	struct context context;
 	/** Function, running in thread. */
@@ -63,8 +63,9 @@ typedef struct thread {
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
 
-	/** TODO. */
+	/** List item, corresponding to thread in list of some event. */
 	struct list_head wait_list;
+
 
 	/** Index of thread in heap. */
 	int heap_index;
@@ -89,7 +90,7 @@ typedef struct thread {
     bool need_message;
     /** Queue of messages, sent to this thread. */
     queue_t messages;
-} thread_t;
+};
 
 /**
  * Creates new thread
