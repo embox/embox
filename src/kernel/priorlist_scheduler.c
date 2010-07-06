@@ -106,10 +106,10 @@ static void add_new_priority(thread_head_t *thr_head, int priority) {
 	while (current_pr->priority_id > priority)
 		current_pr = (priority_head_t *) current_pr->next;
 
-	list_add(new_priority, current_pr);
+	list_add((struct list_head *) new_priority, (struct list_head *) current_pr);
 	new_priority->priority_id = priority;
 	new_priority->thread_list = thr_head;
-	thr_head->next = thr_head->prev = thr_head;
+	thr_head->next = ((struct list_head *) thr_head)->prev = (struct list_head *) thr_head;
 	return;
 }
 
@@ -163,7 +163,7 @@ int scheduler_init(void) {
 	current_thread->reschedule = false;
 
 	/*we initialize zero element we always have idle_thread */
-	priority_head->next = priority_head->prev = priority_head;
+	priority_head->next = ((struct list_head *) priority_head)->prev =(struct list_head *) priority_head;
 	priority_head->priority_id = 0;
 	priority_head->thread_list = alloc_thread_head(idle_thread);
 
@@ -190,10 +190,6 @@ void scheduler_start(void) {
 	struct thread redundant_thread;
 	ipl_t ipl;
 
-	TRACE("\nStart scheduler\n");
-//	list_for_each_entry(current_thread, priority_head, sched_list) {
-//		TRACE("%d ", current_thread->id);
-//	}
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
 
 	ipl = ipl_save();
@@ -227,7 +223,7 @@ void scheduler_unlock(void) {
 
  void thread_move_next(struct thread *prev_thread) {
 	//free current thread
-	cur_prior->thread_list = cur_prior->thread_list->next;
+	cur_prior->thread_list = (thread_head_t *) (cur_prior->thread_list->next);
 
 	cur_prior = ((priority_head_t *) (priority_head->next));
 	current_thread = (((priority_head_t *) (priority_head->next))->thread_list)->thr;
