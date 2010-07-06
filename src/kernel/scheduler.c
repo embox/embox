@@ -97,9 +97,14 @@ void scheduler_dispatch(void) {
 		}
 		current_thread = next_thread;
 		current_thread->reschedule = false;
+		if (prev_thread->state == THREAD_STATE_WAIT) {
+			scheduler_remove(prev_thread);
+		}
+
 #ifdef CONFIG_DEBUG_SCHEDULER
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
 #endif
+
 		ipl = ipl_save();
 		preemption_count--;
 		context_switch(&prev_thread->context, &current_thread->context);
@@ -122,35 +127,25 @@ int scheduler_remove(struct thread *removed_thread) {
 	return 0;
 }
 
-int scheduler_sleep(struct event *event) {;
-	struct thread *old_thread = current_thread;
-
+int scheduler_sleep(struct event *event) {
 	preemption_inc();
-
-	current_thread = _scheduler_next(current_thread);
-	current_thread->reschedule = false;
-	scheduler_remove(old_thread);
-	old_thread->state = THREAD_STATE_WAIT;
-	list_add(&old_thread->sched_list, &event->threads_list);
+	current_thread->state = THREAD_STATE_WAIT;
+	current_thread->reschedule = true;
+	list_add(&current_thread->wait_list, &event->threads_list);
 #ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("Locking %d\n", old_thread->id);
+	TRACE("Locking %d\n", current_thread->id);
 #endif
 	preemption_count--;
-
-	scheduler_switch(*old_thread, *current_thread);
-
+	scheduler_dispatch();
 	return 0;
 }
 
 int scheduler_wakeup(struct event *event) {
 	struct thread *thread;
-	//	struct list_head *event_head = event->threads_list.next;
+	struct thread *tmp_thread;
 	preemption_inc();
-	//	list_del(&event->threads_list);
-	//	list_for_each_entry(thread, event_head, sched_list) {
-	list_for_each_entry(thread, &event->threads_list, sched_list) {
-		list_del_init(&thread->sched_list);
-		scheduler_add(thread);
+	list_for_each_entry_safe(thread, tmp_thread, &event->threads_list, wait_list) {
+		list_del_init(&thread->wait_list);
 		thread->state = THREAD_STATE_RUN;
 		scheduler_add(thread);
 #ifdef CONFIG_DEBUG_SCHEDULER
