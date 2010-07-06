@@ -15,18 +15,13 @@
 #include <hal/context.h>
 #include <hal/ipl.h>
 #include <embox/unit.h>
+#include <kernel/scheduler_base.h>
 
 /** Timer, which calls scheduler_tick. */
 #define THREADS_TIMER_ID 17
 
 /** Interval, what scheduler_tick is called in. */
 #define THREADS_TIMER_INTERVAL 100
-
-/**
- * If it doesn't equal to zero,
- * we are located in critical section
- * and can't switch between threads.
- */
 
 /**
  * structure thread in structure priority
@@ -91,13 +86,6 @@ static priority_head_t * alloc_priority(int priority) {
 }
 
 /**
- * add head of thread
- */
-static void free_thread_head(thread_head_t *head) {
-	list_add((struct list_head *) head, (struct list_head *)free_threads_list);
-}
-
-/**
  * it's need for blocking
  */
 static int preemption_count = 1;
@@ -113,7 +101,7 @@ static void add_new_priority(thread_head_t *thr_head, int priority) {
 	/*allocate new  priority header*/
 	priority_head_t *new_priority = alloc_priority(priority);
 	priority_head_t *current_pr = (priority_head_t *) priority_head->next;
-	priority_head_t *tmp;
+	//priority_head_t *tmp;
 
 	while (current_pr->priority_id > priority)
 		current_pr = (priority_head_t *) current_pr->next;
@@ -162,8 +150,6 @@ static void add_thread_by_priority(struct thread*thr, int priority) {
 	list_add((struct list_head *) thr_head, (struct list_head *) list_head); //Yes
 }
 
-/** List item, pointing at begin of the list. */
-#define IDLE_PRIORITY = 0
 /**
  * filling list of priority
  */
@@ -194,6 +180,7 @@ static void scheduler_tick(uint32_t id) {
 	TRACE("\nTick\n");
 	current_thread->reschedule = true;
 }
+
 /**
  * scheduler start to work
  */
@@ -238,7 +225,7 @@ void scheduler_unlock(void) {
  * @param prev_thread thread, which have worked just now.
  */
 
-static void thread_move_next(struct thread *prev_thread) {
+ void thread_move_next(struct thread *prev_thread) {
 	//free current thread
 	cur_prior->thread_list = cur_prior->thread_list->next;
 
