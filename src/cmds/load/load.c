@@ -10,6 +10,7 @@
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <stdio.h>
+#include <string.h>
 
 #define COMMAND_NAME     "load"
 #define COMMAND_DESC_MSG "load image file into memory"

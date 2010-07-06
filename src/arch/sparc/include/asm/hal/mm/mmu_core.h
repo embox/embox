@@ -306,6 +306,6 @@ static inline int mmu_is_pte(mmu_pte_t pte) {
 }
 
 extern inline int mmu_valid_entry(mmu_pte_t pte) {
-	return ((unsigned int) mmu_is_pte) & MMU_PTE_ET | (((unsigned int) pte) & MMU_ET_PTD);
+	return (((unsigned int) mmu_is_pte) & MMU_PTE_ET) | (((unsigned int) pte) & MMU_ET_PTD);
 }
 #endif /* SPARC_MMU_CORE_H_ */

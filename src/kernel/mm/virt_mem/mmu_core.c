@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @date 30.06.10
+ * @author Anton Kozlov
+ */
+
 #include <hal/mm/mmu_core.h>
 #include <kernel/mm/virt_mem/table_alloc.h>
 #include <kernel/mm/virt_mem/mmu_core.h>
@@ -6,14 +13,16 @@
 
 #define DEBUG
 static mmu_pte_t *context[] = {NULL, NULL, NULL, NULL, NULL };
+
+/* FIXME: cleanup function, actually, this is a Spaghetti code */
 int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, mmu_page_flags_t flags) {
 	uint8_t cur_level;
 	uint32_t cur_offset;
 	signed long treg_size;
-	int i;
 	mmu_pte_t pte;
 	paddr_t paddr;
+	void *table;
 	vaddr_t vaddr = 0;
 	context[1] = (unsigned long *) mmu_get_root(ctx);
 	/* assuming addresses aligned to page size */
@@ -70,7 +79,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 				printf("no mapping\n");
 #endif
 				/* there is no middle page - creating */
-				void *table = (void *) mmu_table_alloc(mmu_page_table_sizes[cur_level + 1]);
+				table = (void *) mmu_table_alloc(mmu_page_table_sizes[cur_level + 1]);
 				if (table == NULL) {
 					return -1;
 				}

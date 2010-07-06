@@ -36,12 +36,13 @@ int diag_has_symbol(void) {
 }
 
 void diag_putc(char ch) {
-#if 0
+#ifndef CONFIG_ONE_PLUS_ONE
 	volatile int i;
 	for (i = 0; i < 0x1000; i++) {
 	}
-#endif
+#else
 	while (!(0x4 & REG_LOAD((volatile uint32_t *) (APBUART_BASE + STATUS_REG)))) {
 	}
+#endif
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + DATA_REG), (uint32_t) ch);
 }

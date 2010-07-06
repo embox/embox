@@ -15,7 +15,7 @@ typedef struct net_buff_info {
 	/*it must be first member! We use casting in net_buff_free function*/
 	unsigned char buff[CONFIG_ETHERNET_V2_FRAME_SIZE];
 	struct list_head list;
-} net_buff_info_t;
+} net_buff_info_t __attribute__((aligned(0x10)));
 
 static LIST_HEAD(head_free_pack);
 

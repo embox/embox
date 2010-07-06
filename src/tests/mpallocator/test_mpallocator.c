@@ -15,9 +15,10 @@
 EMBOX_TEST(run);
 
 static int run(void) {
+	void *ptr;
 	printf("Special for Michail: ");
-	void * ptr = mpalloc(4);
-	printf("was selected ptr[%d]; ", ptr);
+	ptr = mpalloc(4);
+	printf("was selected ptr[%d]; ", (unsigned int)ptr);
 	mpfree(ptr);
 	printf("was free. \n");
 	return 0;
