@@ -63,6 +63,9 @@ typedef struct thread {
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
 
+	/** TODO. */
+	struct list_head wait_list;
+
 	/** Index of thread in heap. */
 	int heap_index;
 	/**
