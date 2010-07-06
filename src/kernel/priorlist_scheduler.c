@@ -84,6 +84,12 @@ static thread_head_t *alloc_thread_head(thread_t *thr) {
 static priority_head_t * alloc_priority(int priority) {
 	return (&priority_pool[priority]);
 }
+/**
+ * delete head of thread
+ */
+static void free_thread_head(thread_head_t *removed_thread) {
+	list_del((struct list_head *) removed_thread);
+}
 
 /**
  * it's need for blocking
@@ -270,7 +276,7 @@ int scheduler_remove(struct thread *removed_thread) {
 	}
 	scheduler_lock();
 	removed_thread->reschedule = true;
-	//free_thread_head(removed_thread);
+	free_thread_head((thread_head_t *) removed_thread);
 	scheduler_unlock();
 	return 0;
 }
