@@ -12,7 +12,7 @@
 
 #include <hal/mm/mmu_types.h>
 #include <asm/hal/mm/mmu_core.h>
-
+#include <util/math.h>
 
 /** Allows caching for this page*/
 #define MMU_PAGE_CACHEABLE    __MMU_PAGE_CACHEABLE
@@ -25,17 +25,33 @@
  * Consider 3-level mapping with GLOBAL, MIDDLE, PAGE tables.
  * This should be defined in particulars archs.
  */
+
+#if 0
 #define MMU_GTABLE_MASK         __MMU_GTABLE_MASK
 #define MMU_GTABLE_MASK_OFFSET  __MMU_GTABLE_MASK_OFFSET
-#define MMU_MTABLE_MASK			__MMU_MTABLE_MASK
+#define MMU_MTABLE_MASK		__MMU_MTABLE_MASK
 #define MMU_MTABLE_MASK_OFFSET  __MMU_MTABLE_MASK_OFFSET
 #define MMU_PTABLE_MASK         __MMU_PTABLE_MASK
 #define MMU_PTABLE_MASK_OFFSET  __MMU_PTABLE_MASK_OFFSET
 #define MMU_PAGE_MASK           __MMU_PAGE_MASK
+#endif
 
-#define MMU_PTE_TABLE_SIZE		__MMU_PTE_TABLE_SIZE
-#define MMU_PMD_TABLE_SIZE		__MMU_PMD_TABLE_SIZE
-#define MMU_PGD_TABLE_SIZE		__MMU_PGD_TABLE_SIZE
+#define MMU_VADDR_SPACE		__MMU_VADR_SPACE
+#define MMU_PTABLE_SIZE		__MMU_PTABLE_SIZE
+#define MMU_MTABLE_SIZE		__MMU_MTABLE_SIZE
+#define MMU_GTABLE_SIZE  	__MMU_GTABLE_SIZE
+#define MMU_PAGE_SIZE		__MMU_PAGE_SIZE
+
+#define __mmu_mask_calc(prev_size, tab_size) ((unsigned long) (prev_size * (tab_size - 1)))
+#define __mmu_mask_offset_calc(mask) ((unsigned long) (blog2(mask & (~mask + 1))))
+
+#define MMU_PAGE_MASK		(MMU_PAGE_SIZE - 1)
+#define MMU_PTABLE_MASK		__mmu_mask_calc(MMU_PAGE_SIZE, MMU_PTABLE_SIZE )
+//#define MMU_PTABLE_MASK_OFFSET	__mmu_mask_offset_calc(MMU_PTABLE_MASK)
+#define MMU_MTABLE_MASK		__mmu_mask_calc(MMU_PTABLE_SIZE * MMU_PAGE_SIZE, MMU_MTABLE_SIZE )
+//#define MMU_MTABLE_MASK_OFFSET  __mmu_mask_offset_calc(MMU_MTABLE_MASK)
+#define MMU_GTABLE_MASK		__mmu_mask_calc(MMU_MTABLE_SIZE * MMU_PTABLE_SIZE * MMU_PAGE_SIZE, MMU_GTABLE_SIZE)
+//#define MMU_GTABLE_MASK_OFFSET  __mmu_mask_offset_calc(MMU_GTABLE_MASK)
 
 
 /** Error code for MMU module operation*/
@@ -194,12 +210,12 @@ extern mmu_page_flags_t mmu_flags_extract(mmu_pte_t pte);
 extern int mmu_is_pte(mmu_pte_t pte);
 
 /**
- * Translate flags to arch specified
+ * Checks if the pte is pte.
+ * Some archs allow using pte in pmd or pgd
  *
- * @param flags - pointer to flags in general format
- * @retval flags in arch specified format
+ * @param pte - page entry
  */
-extern __mmu_page_flags_t mmu_flags_translate(mmu_page_flags_t flags);
+extern int mmu_valid_entry(mmu_pte_t pte);
 
 /**
  * Get root pointer of context

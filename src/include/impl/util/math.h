@@ -35,3 +35,12 @@
 	__clamp_val > __clamp_hi ? __clamp_hi : \
 	__clamp_val; \
 })
+
+static inline int blog2(int val) {
+    int j = 0;
+    while (!(val & 1)) {
+	j++;
+	val >>= 1;
+    }
+    return j;
+}

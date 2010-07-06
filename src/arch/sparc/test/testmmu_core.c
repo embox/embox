@@ -28,14 +28,14 @@ mmu_env_t *testmmu_env(void) {
 		".align %3\n\t"
 		"pt0: .skip %3\n\t"
 		".text\n"
-		: : "i" (PAGE_SIZE),
-		"i"(MMU_PGD_TABLE_SIZE) ,
-		"i"(MMU_PMD_TABLE_SIZE) ,
-		"i"(MMU_PTE_TABLE_SIZE)
+		: : "i" (LEON_CNR_CTX_NCTX),
+		"i"(MMU_GTABLE_SIZE) ,
+		"i"(MMU_MTABLE_SIZE) ,
+		"i"(MMU_PTABLE_SIZE)
 	);
 
-	(&env)->ctx = &ctx;
-	(&env)->cur_ctx = 0;
+	(&env)->ctx = (mmu_ctx_t *) &ctx;
+	(&env)->cur_ctx = (mmu_ctx_t) 0;
 	mmu_ctxd_set((&env)->ctx, &pg0);
 	mmu_pgd_set(&pg0, &pm0);
 	mmu_pmd_set(&pm0, &pt0);

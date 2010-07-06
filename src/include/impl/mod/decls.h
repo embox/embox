@@ -13,8 +13,8 @@
 
 /* Internal variable names inside mods-private namespace. */
 
-#define __MOD(s_mod)      MACRO_CONCAT(__mod__$$,s_mod)
-#define __MOD_INFO(s_mod) MACRO_CONCAT(__mod_info__$$,s_mod)
+#define __MOD(s_mod)      MACRO_CONCAT(__mod__,s_mod)
+#define __MOD_INFO(s_mod) MACRO_CONCAT(__mod_info__,s_mod)
 
 /* Internal declarations. */
 

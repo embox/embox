@@ -77,20 +77,6 @@ mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
 	return (mmu_pgd_t *) (((*(((unsigned long *) cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4));
 }
 
-__mmu_page_flags_t mmu_flags_translate(mmu_page_flags_t flags) {
-	uint32_t ret = 0;
-	if (flags & MMU_PAGE_CACHEABLE) {
-		ret |= MMU_PTE_CACHE;
-	}
-	if (flags & MMU_PAGE_EXECUTEABLE) {
-		ret |= MMU_PTE_EXEC;
-	}
-	if (flags & MMU_PAGE_WRITEABLE) {
-		ret |= MMU_PTE_WRITE;
-	}
-	return ret;
-}
-
 void mmu_restore_env(mmu_env_t *env) {
 	/* disable virtual mode*/
 	mmu_off();
@@ -133,6 +119,7 @@ void mmu_set_env(mmu_env_t *env) {
 
 static uint8_t used_context[LEON_CNR_CTX_NCTX];
 
+#define DEBUG
 mmu_ctx_t mmu_create_context(void) {
 	int i;
 	for (i = 0; i < LEON_CNR_CTX_NCTX; i++) {
@@ -144,7 +131,7 @@ mmu_ctx_t mmu_create_context(void) {
 #endif
 	if (i >= LEON_CNR_CTX_NCTX)
 		return -1;
-	mmu_ctxd_set(cur_env->ctx + i, mmu_table_alloc(MMU_PGD_TABLE_SIZE));
+	mmu_ctxd_set(cur_env->ctx + i, mmu_table_alloc(MMU_GTABLE_SIZE));
 	used_context[i] = 1;
 	return i;
 }
@@ -181,10 +168,10 @@ static int mmu_init(void) {
 		".align %3\n\t"
 		"sys_pt0: .skip %3\n\t"
 		".text\n"
-		: : "i" (PAGE_SIZE),
-		"i"(MMU_PGD_TABLE_SIZE) ,
-		"i"(MMU_PMD_TABLE_SIZE) ,
-		"i"(MMU_PTE_TABLE_SIZE)
+		: : "i" (LEON_CNR_CTX_NCTX),
+		"i"(MMU_GTABLE_SIZE) ,
+		"i"(MMU_MTABLE_SIZE) ,
+		"i"(MMU_PTABLE_SIZE)
 	);
 	(&system_env)->status = 0;
 	(&system_env)->fault_addr = 0;

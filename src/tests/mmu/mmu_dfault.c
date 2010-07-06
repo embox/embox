@@ -75,12 +75,13 @@ static int run() {
 	*((volatile uint32_t *)vaddr) = 0x11111111;
 
 
-	mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
+	//mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
 
 	/* Data access exception */
-	*((volatile uint32_t *)vaddr) = 0x77777777;
-	var = *((volatile uint32_t *)vaddr);
+	//*((volatile uint32_t *)vaddr) = 0x77777777;
+	//var = *((volatile uint32_t *)vaddr);
 
+	//printf("test\n");
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
 

@@ -20,10 +20,10 @@ static int flag = 0;
 EMBOX_TEST(run);
 int handler(uint32_t nr, void *data) {
 	//mmu_off();
-	printf("IT'S A TRAP!\n");
+	//printf("IT'S A TRAP!\n");
 	//mmu_map_region(t1, (unsigned long *) ((unsigned long) &page + PAGE_SIZE), 0xf0080000, PAGE_SIZE,
 					//MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
-	//flag++;
+	flag++;
 	//mmu_on();
 	return 0;
 }
@@ -46,12 +46,12 @@ static int run(void) {
 	printf("handler on %x; tbr %x; in env %x, trap_table %x\n", &handler, tbr_tba_get(), test_env->base_addr, &__test_trap_table);
 	t1 = mmu_create_context();
 	switch_mm(0,t1);
+	//testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x2a , &handler); // div by zero
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x2c - CONFIG_MIN_HWTRAP_NUMBER, &handler); //data mmu miss
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x29 - CONFIG_MIN_HWTRAP_NUMBER, &handler); //data mmu error
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x9, &handler);  //data except
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x3c - CONFIG_MIN_HWTRAP_NUMBER, &handler); //instr mmu miss
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x1, &handler);  //instr excpt
-	//testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x2a, &handler); // div by zero
 	printf("text_start %x; stack %x, data_start %x\n", &_text_start, &__stack, &_data_start);
 /* instr mmu miss */
 #if 1
@@ -81,13 +81,14 @@ static int run(void) {
 	//segfault -- bad
 	mmu_on();
 
+	//t = 1 / 0;
 	*((unsigned long *) 0xf0080000) = 0;
 
 	mmu_off();
 #endif
 	switch_mm(t1,0);
 	mmu_delete_context(t1);
-	printf("t is %d\n",t);
+	printf("flag is %d\n",flag);
 	//traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
 

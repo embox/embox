@@ -23,9 +23,9 @@
  * To prevent a confusion all such arguments are prefixed by 's_' (symbol).
  */
 
-#define __MOD_PRIVATE(s_mod)      __mod_private__$$##s_mod
-#define __MOD_PACKAGE(s_package)  __mod_package__$$##s_package
-#define __MOD_ARRAY(s_mod, s_array) __mod_##s_array##__$$##s_mod
+#define __MOD_PRIVATE(s_mod)      __mod_private__##s_mod
+#define __MOD_PACKAGE(s_package)  __mod_package__##s_package
+#define __MOD_ARRAY(s_mod, s_array) __mod_##s_array##__##s_mod
 
 #define __MOD_PRIVATE_DEF(s_mod) \
 	static struct mod_private __MOD_PRIVATE(s_mod)

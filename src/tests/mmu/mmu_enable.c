@@ -29,12 +29,13 @@ static int run() {
 	mmu_save_env(&prev_mmu_env);
 	mmu_set_env(testmmu_env());
 
+	printf("\n\nGTABLE MASK %8x \nMTABLE MASK %8x\nPTABLE_MASK %8x\n\n", MMU_GTABLE_MASK, MMU_MTABLE_MASK, MMU_PTABLE_MASK);
 	/* map one to one section text and may be whole image with stack */
 	mmu_map_region((mmu_ctx_t) 0, (uint32_t) &_text_start,
 			(uint32_t) &_text_start, 0x1000000, MMU_PAGE_CACHEABLE
 					| MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 
-	if (&__stack > (&_text_start + 0x1000000)) {
+	if (&__stack > (&_text_start + 0x10000000)) {
 		/* if have to map data sections */
 		mmu_map_region((mmu_ctx_t) 0, (paddr_t) &_data_start,
 				(vaddr_t) &_data_start, 0x1000000,
@@ -42,7 +43,7 @@ static int run() {
 	}
 
 	mmu_on();
-
 	mmu_restore_env(&prev_mmu_env);
+
 	return 0;
 }

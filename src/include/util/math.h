@@ -56,4 +56,12 @@
  */
 #define clamp(val, lo, hi) __clamp(val, lo, hi)
 
+
+/**
+ * First 1 in val
+ * @param val Value
+ * @return Number of first 1 in Value
+ */
+static inline int blog2(int val);
+
 #endif /* UTIL_MATH_H_ */

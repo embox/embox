@@ -21,7 +21,7 @@ static int run() {
 	/* uncommenting this line changes results of the test
 	 * when optimization level is o0 */
 
-	/* while(a==1); */
+	 //while(a==1);
 
-	return 1<<a == 4;
+	return 1<<a != 4;
 }

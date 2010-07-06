@@ -20,6 +20,7 @@ trap_handler_t test_handlers[CONFIG_TRAP_TABLE_SIZE];
 
 void test_trap_handler(uint8_t tt, uint32_t *data, struct pt_regs *regs) {
 	if (NULL == test_handlers[tt]) {
+		printf("asdf");
 		return;
 	}
 	if (0 == test_handlers[tt](tt, (void *)data)) {

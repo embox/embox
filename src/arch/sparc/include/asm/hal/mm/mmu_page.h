@@ -10,6 +10,7 @@
 
 #include <hal/mm/mmu_types.h>
 #include <hal/mm/mmu_core.h>
+#include <kernel/mm/virt_mem/mmu_core.h>
 
 extern mmu_env_t *cur_env;
 
@@ -38,31 +39,15 @@ inline static mmu_pte_t *mmu_get_next_level_pte(mmu_pte_t *ptp, int idx) {
 	return (mmu_pte_t*)((uint32_t*)((((uint32_t)(*(ptp + idx)) << 4)) & (MMU_PTE_PMASK)));
 }
 
-static unsigned long offsets[] = {
-	32,
-	MMU_GTABLE_MASK_OFFSET,
-	MMU_MTABLE_MASK_OFFSET,
-	MMU_PTABLE_MASK_OFFSET,
-	0
-};
-
-static unsigned long masks[] = {
-	0xffffffff,
-	MMU_GTABLE_MASK,
-	MMU_MTABLE_MASK,
-	MMU_PTABLE_MASK,
-	MMU_PAGE_MASK
-};
-
 inline static mmu_pte_t *mmu_page_get_entry(mmu_ctx_t ctx, vaddr_t vaddr) {
 	mmu_pte_t *pte = GET_PGD(ctx);
 	int level = 1;
 
 	for(level; level < 4; level ++) {
-		if (mmu_entry_is_pte(pte + ((vaddr & masks[level]) >> offsets[level])) /*&& mmu_entry_is_valid(pte)*/) {
-			return (pte + ((vaddr & masks[level]) >> offsets[level]));
+		if (mmu_entry_is_pte(pte + ((vaddr & mmu_table_masks[level]) >> blog2(mmu_table_masks[level]))) /*&& mmu_entry_is_valid(pte)*/) {
+			return (pte + ((vaddr & mmu_table_masks[level]) >> blog2(mmu_table_masks[level])));
 		}
-		pte = mmu_get_next_level_pte(pte, (vaddr & masks[level]) >> offsets[level]);
+		pte = mmu_get_next_level_pte(pte, (vaddr & mmu_table_masks[level]) >> blog2(mmu_table_masks[level]));
 	}
 	return NULL;
 }

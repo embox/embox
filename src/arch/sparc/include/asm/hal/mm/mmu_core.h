@@ -96,14 +96,17 @@
 /** MMU three-level mapping */
 
 /** Level-3 Table:64 entries, 4 bytes a piece */
-#define __MMU_PTE_TABLE_SIZE   0x100
+#define __MMU_PTABLE_SIZE   0x40
 /** Level-2 Table:64 entries, 4 bytes a piece */
-#define __MMU_PMD_TABLE_SIZE   0x100
+#define __MMU_MTABLE_SIZE   0x40
 /** Level-1 Table: 256 entries, 4 bytes a piece */
-#define __MMU_PGD_TABLE_SIZE   0x400
+#define __MMU_GTABLE_SIZE   0x100
+
+/* size of table entry */
+#define __MMU_ENTRY_SIZE    4
 
 /** 4K-byte pages */
-#define PAGE_SIZE            (1<<12)
+#define __MMU_PAGE_SIZE            (1<<12)
 
 /* The PTE non-page bits.  Some notes:
  * 1) cache, modified, valid, and ref are frobbable
@@ -140,8 +143,8 @@
 #define MMU_PTE_EO         0x4
 
 #define __MMU_PAGE_CACHEABLE   MMU_PTE_CACHE
-#define __MMU_PAGE_WRITEABLE   MMU_PTE_RW
-#define __MMU_PAGE_EXECUTEABLE MMU_PTE_RE
+#define __MMU_PAGE_WRITEABLE   MMU_PTE_WRITE
+#define __MMU_PAGE_EXECUTEABLE MMU_PTE_EXEC
 
 
 /* Physical page extraction from PTP's and PTE's. */
@@ -176,7 +179,7 @@ typedef unsigned long ctxd_t;
 #define __nocache_pa(VADDR)  VADDR
 #define __nocache_va(PADDR)  PADDR
 #define __nocache_fix(VADDR) VADDR
-
+#if 1
 #define __MMU_GTABLE_MASK         0xFF000000
 #define __MMU_GTABLE_MASK_OFFSET  24
 #define __MMU_MTABLE_MASK         0x00FC0000
@@ -184,8 +187,11 @@ typedef unsigned long ctxd_t;
 #define __MMU_PTABLE_MASK         0x0003F000
 #define __MMU_PTABLE_MASK_OFFSET  12
 #define __MMU_PAGE_MASK           0xFFF
+#endif
 
-
+#define MMU_GTABLE_MASK_OFFSET __MMU_GTABLE_MASK_OFFSET
+#define MMU_MTABLE_MASK_OFFSET __MMU_MTABLE_MASK_OFFSET
+#define MMU_PTABLE_MASK_OFFSET __MMU_PTABLE_MASK_OFFSET
 /** Set MMU reg */
 static inline void mmu_set_mmureg(unsigned long addr_reg,
 				unsigned long regval) {
@@ -218,6 +224,7 @@ static inline unsigned long mmu_get_ctable_ptr(void) {
 	retval = mmu_get_mmureg(LEON_CNR_CTXP);
 	return (retval & MMU_CTX_PMASK) << 4;
 }
+
 
 #define mmu_set_context(context) mmu_set_mmureg(LEON_CNR_CTX, context)
 #define mmu_get_context() mmu_get_mmureg(LEON_CNR_CTX)
@@ -278,8 +285,6 @@ static inline mmu_pmd_t *mmu_pgd_get(mmu_pgd_t * pgdp) {
 	return (mmu_pmd_t *) ((((unsigned long) *pgdp) & MMU_PTD_PMASK) << 4);
 }
 
-/* possible misunderstand: pte is decsribing pointer to physical page,
- * here it's mean the last-level-page-catalog  */
 static inline mmu_pte_t *mmu_pmd_get(mmu_pmd_t * pmdp) {
 	return (mmu_pte_t *) ((((unsigned long) *pmdp) & MMU_PTD_PMASK) << 4);
 }
@@ -298,5 +303,9 @@ static inline mmu_page_flags_t mmu_flags_extract(mmu_pte_t pte) {
 
 static inline int mmu_is_pte(mmu_pte_t pte) {
 	return pte & MMU_PTE_ET;
+}
+
+extern inline int mmu_valid_entry(mmu_pte_t pte) {
+	return ((unsigned int) mmu_is_pte) & MMU_PTE_ET | (((unsigned int) pte) & MMU_ET_PTD);
 }
 #endif /* SPARC_MMU_CORE_H_ */
