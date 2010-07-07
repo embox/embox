@@ -13,7 +13,8 @@
 
 #include <asm/types.h>
 
-#define offsetof(type, member) ((size_t) &((type *) 0x0)->member)
+#define offsetof(type, member) \
+	((size_t) &((type *) 0x0)->member)
 
 #ifndef NULL
 #define NULL ((void *) 0x0)
