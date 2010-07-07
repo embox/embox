@@ -12,6 +12,9 @@
  */
 
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <embox/test.h>
 
 EMBOX_TEST(run)

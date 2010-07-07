@@ -40,7 +40,7 @@ static int uimage_info(unsigned int addr) {
 	case IH_OS_LINUX:
 		printf("linux\n");
 		break;
-	case -1:
+	default:
 		printf("unknown\n");
 	}
 	printf("CPU architecture: ");
@@ -51,7 +51,7 @@ static int uimage_info(unsigned int addr) {
 	case IH_ARCH_MICROBLAZE:
 		printf("microblaze\n");
 		break;
-	case -1:
+	default:
 		printf("unknown\n");
 	}
 	printf("Image Type: ");
@@ -59,7 +59,7 @@ static int uimage_info(unsigned int addr) {
 	case IH_TYPE_KERNEL:
 		printf("OS Kernel Image\n");
 		break;
-	case -1:
+	default:
 		printf("unknown\n");
 	}
 	printf("Compression Type: ");
@@ -76,7 +76,7 @@ static int uimage_info(unsigned int addr) {
 	case IH_COMP_LZMA:
 		printf("lzma\n");
 		break;
-	case -1:
+	default:
 		printf("unknown\n");
 	}
 	printf("Image Name: %s\n", hdr->ih_name);

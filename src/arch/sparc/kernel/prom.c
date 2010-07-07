@@ -371,7 +371,7 @@ void leon_prom_init(void) {
 	spi.idprom.id_cksum = cksum;
 }
 
-static linux_mmu_init(unsigned int addr) {
+static void linux_mmu_init(unsigned int addr) {
 	extern unsigned int _text_start, _data_start, __stack;
 
 	/* disable mmu */
