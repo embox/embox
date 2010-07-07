@@ -77,6 +77,9 @@ mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
 	return (mmu_pgd_t *) (((*(((unsigned long *) cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4));
 }
 
+int mmu_valid_entry(mmu_pte_t pte) {
+	return (((unsigned int) mmu_is_pte) & MMU_PTE_ET) | (((unsigned int) pte) & MMU_ET_PTD);
+}
 void mmu_restore_env(mmu_env_t *env) {
 	/* disable virtual mode*/
 	mmu_off();

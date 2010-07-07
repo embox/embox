@@ -105,6 +105,9 @@
 /* size of table entry */
 #define __MMU_ENTRY_SIZE    4
 
+/* must be aligned for sizes of all tables */
+#define PAGE_HEADER_SIZE 0x400
+
 /** 4K-byte pages */
 #define __MMU_PAGE_SIZE            (1<<12)
 
@@ -225,7 +228,6 @@ static inline unsigned long mmu_get_ctable_ptr(void) {
 	return (retval & MMU_CTX_PMASK) << 4;
 }
 
-
 #define mmu_set_context(context) mmu_set_mmureg(LEON_CNR_CTX, context)
 #define mmu_get_context() mmu_get_mmureg(LEON_CNR_CTX)
 
@@ -305,7 +307,4 @@ static inline int mmu_is_pte(mmu_pte_t pte) {
 	return pte & MMU_PTE_ET;
 }
 
-extern inline int mmu_valid_entry(mmu_pte_t pte) {
-	return (((unsigned int) mmu_is_pte) & MMU_PTE_ET) | (((unsigned int) pte) & MMU_ET_PTD);
-}
 #endif /* SPARC_MMU_CORE_H_ */
