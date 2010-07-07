@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <lib/list.h>
+#include <kernel/thread.h>
 
 #include <kernel/scheduler.h>
 #include <kernel/timer.h>
@@ -159,10 +160,10 @@ static void add_thread_by_priority(struct thread*thr, int priority) {
 /**
  * filling list of priority
  */
-int scheduler_init(void) {
+void _scheduler_init(void) {
 	int i;
 	for (i = 1; i < NUMBER_THREAD; i++) {
-		TRACE("ttt = 0x%X\n",&thread_head_pool[i]);
+		//TRACE("ttt = 0x%X\n", &thread_head_pool[i]);
 		list_add((struct list_head *) (&thread_head_pool[i]), (struct list_head *) free_threads_list);
 	}
 	current_thread = idle_thread;
@@ -175,7 +176,7 @@ int scheduler_init(void) {
 
 	cur_prior = priority_head;
 
-	return (0);
+
 }
 
 /**
@@ -190,7 +191,7 @@ static void scheduler_tick(uint32_t id) {
 /**
  * scheduler start to work
  */
-void scheduler_start(void) {
+void _scheduler_start(void) {
 
 	/* Redundant thread, which will never work. */
 	struct thread redundant_thread;
@@ -206,28 +207,11 @@ void scheduler_start(void) {
 }
 
 /**
- * blocking
- */
-void scheduler_lock(void) {
-	preemption_count++;
-}
-
-/**
- * unblocking
- */
-void scheduler_unlock(void) {
-	preemption_count--;
-	if (preemption_count == 0 && current_thread->reschedule) {
-		scheduler_dispatch();
-	}
-}
-
-/**
  * Move current_thread pointer to the next thread.
  * @param prev_thread thread, which have worked just now.
  */
-
- void thread_move_next(struct thread *prev_thread) {
+struct thread *_scheduler_next(struct thread *prev_thread) {
+// void thread_move_next(struct thread *prev_thread) {
 	//free current thread
 	cur_prior->thread_list = (thread_head_t *) (cur_prior->thread_list->next);
 
@@ -240,8 +224,9 @@ void scheduler_unlock(void) {
 				= list_entry(prev_thread->sched_list.next, struct thread, sched_list);
 	}
 	current_thread->reschedule = false;
+	return (current_thread);
 }
-
+#if 0
 /**
  * main function - switch thread
  */
@@ -262,21 +247,20 @@ void scheduler_dispatch(void) {
 		ipl_restore(ipl);
 	}
 }
-
-void scheduler_add(struct thread *added_thread) {
+#endif
+void _scheduler_add(struct thread *added_thread) {
 	add_thread_by_priority(added_thread, added_thread->priority);
 }
 
 /**
  * TODO watch...
  */
-int scheduler_remove(struct thread *removed_thread) {
+void _scheduler_remove(struct thread *removed_thread) {
 	if (removed_thread == NULL || removed_thread == idle_thread) {
-		return -EINVAL;
 	}
 	scheduler_lock();
 	removed_thread->reschedule = true;
 	free_thread_head((thread_head_t *) removed_thread);
 	scheduler_unlock();
-	return 0;
+
 }

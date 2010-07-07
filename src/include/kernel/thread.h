@@ -5,6 +5,7 @@
  *
  * @date 22.04.2010
  * @author Avdyukhin Dmitry
+ *
  */
 
 #ifndef _THREAD_H_
@@ -63,7 +64,7 @@ extern struct thread *current_thread;
 /**
  * Structure, describing threads.
  */
-struct thread {
+typedef struct thread {
 	/** Context of thread. */
 	struct context context;
 	/** Function, running in thread. */
@@ -101,7 +102,7 @@ struct thread {
     queue_t messages;
     /** Event, appearing when thread receives message. */
     struct event msg_event;
-};
+} thread_t;
 
 /**
  * Creates new thread
