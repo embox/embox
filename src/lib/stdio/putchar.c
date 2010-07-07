@@ -7,16 +7,8 @@
  */
 
 #include <stdio.h>
-#include <kernel/diag.h>
 
 int putchar(int c) {
-	static char prev = 0;
-
-	if (c == '\n' && prev != '\r') {
-		diag_putc('\r');
-	}
-	diag_putc((char) c);
-
-	return (prev = c);
+	return fputc(STDOUT,c);
 }
 

@@ -7,14 +7,12 @@
  */
 
 #include <stdio.h>
-#include <kernel/diag.h>
 
 int getchar(void) {
-	return (int) diag_getc();
+	return fgetc(STDIN);
 }
 
 int ungetchar(int ch) {
-	diag_putc((char) ch);
-	return ch;
+	return fungetc(STDIN,ch);
 }
 

@@ -14,7 +14,9 @@
 
 #define EOF (-1)
 
-typedef void FILE;
+typedef int FILE;
+
+static FILE STDIN,STDOUT;
 
 /**
  * Writes the string s and a trailing newline to stdout.
@@ -22,6 +24,9 @@ typedef void FILE;
 extern int puts(const char *s);
 
 extern int putchar(int c);
+
+extern int fputc(FILE f, int c);
+extern int fgetc(FILE f);
 
 /**
  * Read a line from stdin into the buffer pointed to by s until

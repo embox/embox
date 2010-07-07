@@ -5,10 +5,12 @@
 #include <types.h>
 #include <errno.h>
 
+#include <kernel/uart.h> /* header added by Fijiol */
 #include <kernel/irq.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 #include <kernel/printk.h>
+#include <dev/char_device.h>
 
 #define UART_SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
@@ -92,7 +94,12 @@ int uart_init(void) {
 
 void uart_putc(char ch) {
 	volatile int i;
+	#if 0
+	if (0) // -- add by fijiol
 	for (i = 0; i < 0x1000; i++) {
+	}
+	#endif
+	while (!(0x4 & REG_LOAD(&dev_regs->status))) {
 	}
 	REG_STORE(&dev_regs->data, (uint32_t) ch);
 }
@@ -154,4 +161,6 @@ int uart_remove_irq_handler(void) {
 }
 
 #endif
+
+/* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
