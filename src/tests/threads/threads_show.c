@@ -22,8 +22,7 @@ static struct thread *minus_thread;
 static struct thread *mult_thread;
 static struct thread *highest_thread;
 
-EMBOX_TEST(run_test)
-;
+EMBOX_TEST(run_test);
 
 /**
  * Endlessly Writes "!". Thread with the highest priority.
