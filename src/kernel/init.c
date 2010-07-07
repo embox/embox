@@ -51,7 +51,6 @@ static void kernel_init(void) {
 	irq_init();
 	softirq_init();
 
-	timer_init();
 	uart_init(); // XXX
 
 	ipl_init();

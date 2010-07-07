@@ -11,6 +11,9 @@
 #include <time.h>
 #include <embox/kernel.h> /*for array_len*/
 #include <string.h>
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(timer_init);
 
 typedef struct sys_tmr {
 	volatile int	f_enable;
@@ -101,12 +104,13 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  *
  * @return 0 if success
  */
-int timer_init(void) {
+static int timer_init(void) {
 	int i;
 	cnt_sys_time = 0;
 	for (i = 0; i < array_len(sys_timers); i++) {
 		set_sys_timer_disable(i);
 	}
+	printk("fffffff\n");
 	clock_init();
 	clock_setup(1000);
 	return 0;
