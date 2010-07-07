@@ -39,7 +39,7 @@ typedef struct thread_head {
 typedef struct priority_head {
 	struct list_head *next;
 	struct list_head *prev;
-	int priority_id;
+	thread_id_t priority_id;
 	thread_head_t *thread_list;
 } priority_head_t;
 
@@ -56,7 +56,7 @@ typedef struct priority_head {
  */
 static priority_head_t priority_pool[MAX_PRIORITY];
 /*head of priority list - null priority, next - max priority*/
-#define priority_head          (&priority_pool[0])
+static priority_head_t *priority_head = (&priority_pool[0]);
 static priority_head_t *cur_prior;
 
 static thread_head_t thread_head_pool[NUMBER_THREAD];
@@ -82,7 +82,7 @@ static thread_head_t *alloc_thread_head(thread_t *thr) {
 
 }
 
-static priority_head_t * alloc_priority(int priority) {
+static priority_head_t * alloc_priority(thread_priority_t priority) {
 	return (&priority_pool[priority]);
 }
 /**
@@ -104,7 +104,7 @@ static int preemption_count = 1;
  *2. add priority
  *3. sort
  */
-static void add_new_priority(thread_head_t *thr_head, int priority) {
+static void add_new_priority(thread_head_t *thr_head, thread_priority_t priority) {
 	/*allocate new  priority header*/
 	priority_head_t *new_priority = alloc_priority(priority);
 	priority_head_t *current_pr = (priority_head_t *) priority_head->next;
@@ -123,7 +123,7 @@ static void add_new_priority(thread_head_t *thr_head, int priority) {
 /**
  * get list by priority
  */
-static thread_head_t * get_list_by_priority(int priority) {
+static thread_head_t * get_list_by_priority(thread_priority_t priority) {
 	struct list_head *p;
 
 	if (idle_thread->priority == priority) { // TREAD_PRIORITY_IDLE -> idle_thread
@@ -141,7 +141,7 @@ static thread_head_t * get_list_by_priority(int priority) {
  *adding thread with priority to thread list
  *or adding priority to priority list and thread to thread list
  */
-static void add_thread_by_priority(struct thread*thr, int priority) {
+static void add_thread_by_priority(struct thread*thr, thread_priority_t  priority) {
 	thread_head_t *list_head;
 	thread_head_t *thr_head;
 	/*check - is priority?*/
@@ -163,11 +163,11 @@ static void add_thread_by_priority(struct thread*thr, int priority) {
 void _scheduler_init(void) {
 	int i;
 	for (i = 1; i < NUMBER_THREAD; i++) {
-		//TRACE("ttt = 0x%X\n", &thread_head_pool[i]);
+//		TRACE("ttt = 0x%X\n", &thread_head_pool[i]);
 		list_add((struct list_head *) (&thread_head_pool[i]), (struct list_head *) free_threads_list);
 	}
-	current_thread = idle_thread;
-	current_thread->reschedule = false;
+	//current_thread = idle_thread;
+	//current_thread->reschedule = false;
 
 	/*we initialize zero element we always have idle_thread */
 	priority_head->next = ((struct list_head *) priority_head)->prev =(struct list_head *) priority_head;
@@ -186,6 +186,7 @@ void _scheduler_init(void) {
 static void scheduler_tick(uint32_t id) {
 	TRACE("\nTick\n");
 	current_thread->reschedule = true;
+	scheduler_dispatch();
 }
 
 /**
@@ -211,7 +212,6 @@ void _scheduler_start(void) {
  * @param prev_thread thread, which have worked just now.
  */
 struct thread *_scheduler_next(struct thread *prev_thread) {
-// void thread_move_next(struct thread *prev_thread) {
 	//free current thread
 	cur_prior->thread_list = (thread_head_t *) (cur_prior->thread_list->next);
 
@@ -239,7 +239,7 @@ void scheduler_dispatch(void) {
 	if (preemption_count == 0 && current_thread->reschedule) {
 		preemption_count++;
 		prev_thread = current_thread;
-		thread_move_next(current_thread);
+		_scheduler_next(current_thread);
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
 		ipl = ipl_save();
 		preemption_count--;
