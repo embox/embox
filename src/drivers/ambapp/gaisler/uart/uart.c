@@ -93,13 +93,7 @@ int uart_init(void) {
 }
 
 void uart_putc(char ch) {
-	volatile int i;
-	#if 0
-	if (0) // -- add by fijiol
-	for (i = 0; i < 0x1000; i++) {
-	}
-	#endif
-	while (!(0x4 & REG_LOAD(&dev_regs->status))) {
+	while (!(UART_STAT_TE & REG_LOAD(&dev_regs->status))) {
 	}
 	REG_STORE(&dev_regs->data, (uint32_t) ch);
 }
@@ -133,34 +127,26 @@ static int dev_regs_init() {
 # error "Either CONFIG_AMBAPP or CONFIG_APBUART_BASE must be defined"
 #endif /* CONFIG_AMBAPP */
 
-#if 1
 
 static bool handler_was_set = false;
 
 int uart_set_irq_handler(irq_handler_t pfunc) {
-//	ASSERT_INIT_DONE ();
-
 	REG_ORIN((&dev_regs->ctrl), UART_CTRL_RI);
 
 	irq_attach(irq_num, pfunc,0,NULL,"uart");
 	handler_was_set = true;
-	//irq_set_handler(irq, pfunc);
 	return 0;
 }
 
 int uart_remove_irq_handler(void) {
-//	ASSERT_INIT_DONE ();
-
 	REG_ANDIN((&dev_regs->ctrl), ~UART_CTRL_RI);
 	if (handler_was_set) {
 		irq_detach(irq_num, NULL);
 		handler_was_set = false;
 	}
-	//irq_set_handler(irq, NULL);
+
 	return 0;
 }
-
-#endif
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 

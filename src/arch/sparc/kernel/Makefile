@@ -19,7 +19,7 @@ $_SRCS-arch      += arch.c
 $_SRCS-context   += context.c context_switch.S
 
 ifdef CONFIG_SYS_TIMER
-$_SRCS-clock     += $(CONFIG_SYS_TIMER)
+$_DEPS-clock     += $(CONFIG_SYS_TIMER)
 else
 $_SRCS-clock     += clock_gptimer.c
 endif
