@@ -4,6 +4,7 @@
  *
  * @date 22.04.2010
  * @author Avdyukhin Dmitry
+ * @author Skorodumov Kirill
  */
 
 #include <errno.h>
@@ -70,15 +71,6 @@ void scheduler_unlock(void) {
 
 static void preemption_inc(void) {
 	preemption_count++;
-}
-
-void scheduler_switch(struct thread old_thread, struct thread new_thread) {
-	ipl_t ipl;
-
-	ipl = ipl_save();
-	preemption_count--;
-	context_switch(&old_thread.context, &new_thread.context);
-	ipl_restore(ipl);
 }
 
 void scheduler_dispatch(void) {
