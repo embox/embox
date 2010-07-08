@@ -56,3 +56,8 @@ ifdef CONFIG_TIMER
   $_SRCS-timer   += timer.c
   $_DEPS-timer   += embox.hal.clock
 endif
+ifdef CONFIG_DRIVER_SUBSYSTEM
+# embox.kernel.drv_subsys
+  $_MODS += drv_subsys
+  $_SRCS-drv_subsys += driver.c
+endif
