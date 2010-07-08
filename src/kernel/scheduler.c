@@ -82,14 +82,6 @@ void scheduler_dispatch(void) {
 		prev_thread = current_thread;
 		current_thread = _scheduler_next(current_thread);
 		current_thread->reschedule = false;
-		/* TODO WHAT IS IT??????
-		 * It must be in scheduler_sleep.
-		 * I want to know some reasons not to delete this part. */
-#if 0
-		if (prev_thread->state == THREAD_STATE_WAIT) {
-			scheduler_remove(prev_thread);
-		}
-#endif
 
 #ifdef CONFIG_DEBUG_SCHEDULER
 		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
@@ -141,6 +133,20 @@ int scheduler_wakeup(struct event *event) {
 		TRACE("Unlocking %d\n", thread->id);
 #endif
 	}
+	scheduler_unlock();
+	return 0;
+}
+
+int scheduler_wakeup_first(struct event *event) {
+	struct thread *thread;
+	scheduler_lock();
+	thread = list_entry(event->threads_list.next, struct thread, wait_list);
+	list_del_init(&thread->wait_list);
+	thread->state = THREAD_STATE_RUN;
+	scheduler_add(thread);
+#ifdef CONFIG_DEBUG_SCHEDULER
+		TRACE("Unlocking %d\n", thread->id);
+#endif
 	scheduler_unlock();
 	return 0;
 }

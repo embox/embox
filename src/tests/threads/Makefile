@@ -1,5 +1,5 @@
 
-$_MODS += threads_lock threads_big threads_show threads_delete threads_recursion threads_heap threads_msg
+$_MODS += threads_mutex threads_lock threads_big threads_show threads_delete threads_recursion threads_heap threads_msg
 
 $_SRCS-threads_big += *threads_big.c
 $_SRCS-threads_show += *threads_show.c
@@ -8,3 +8,4 @@ $_SRCS-threads_recursion += *threads_recursion.c
 $_SRCS-threads_heap += *threads_heap.c
 $_SRCS-threads_msg += *threads_msg.c
 $_SRCS-threads_lock += *threads_lock.c
+$_SRCS-threads_mutex += *threads_mutex.c

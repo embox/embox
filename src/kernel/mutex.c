@@ -4,6 +4,7 @@
  *
  * @date 05.05.2010
  * @author Nikolay Malkovsky
+ * @author Skorodumov Kirill
  */
 
 #include <errno.h>
@@ -15,55 +16,39 @@
 
 struct mutex *idle_mutex;
 
-void mutex_lock(struct mutex *free_mutex) {
+void mutex_init(struct mutex *mutex) {
+	event_init(&mutex->event);
+	mutex->lockscount = 0;
+}
+
+void mutex_lock(struct mutex *mutex) {
 	scheduler_lock();
-	if (free_mutex->bound_thread == NULL || free_mutex->bound_thread
-			== current_thread) {
-		++free_mutex->lockscount;
-		free_mutex->bound_thread = current_thread;
-		scheduler_unlock();
-		return;
+	if (mutex->lockscount == 0) {
+		mutex->lockscount++;
 	}
-	free_mutex->bound_thread->state = THREAD_STATE_WAIT;
-	list_add_tail((struct list_head*)current_thread, free_mutex->locked_thread_list);
+	else {
+		scheduler_sleep(&mutex->event);
+	}
 	scheduler_unlock();
-	/* if the current thread reaches his time limit before calling scheduler_dispatch()
-	 * then scheduler_dispatch() will cause the current thread to loose some of its time
-	 * when becomes active.
-	 */
-	scheduler_dispatch();
 }
 
-void mutex_unlock(struct mutex *locked_mutex) {
-	struct thread* locked_thread;
-	if (locked_mutex->bound_thread != current_thread) {
-		--locked_mutex->lockscount;
-		if (locked_mutex->lockscount == 0) {
-			scheduler_lock();
-			locked_thread = (struct thread *)list_entry(
-					    (struct list_head *)locked_mutex,
-					    struct mutex, locked_thread_list);
-			locked_thread->state = THREAD_STATE_RUN;
-			/*TODO
-			 There must be no interruptions to prevent this thread from
-			 locking again by mutex_lock(). It may create some trouble.
-			 */
-			list_del((struct list_head *)&locked_thread);
-			locked_mutex->bound_thread = NULL;
-			scheduler_unlock();
-		}
+void mutex_unlock(struct mutex *mutex) {
+	if (list_empty(&mutex->event.threads_list)) {
+		mutex->lockscount--;
+	}
+	else {
+		scheduler_wakeup_first(&mutex->event);
 	}
 }
 
-int mutex_trylock(struct mutex *free_mutex) {
+int mutex_trylock(struct mutex *mutex) {
 	scheduler_lock();
-	if (free_mutex->bound_thread == NULL || free_mutex->bound_thread
-			== current_thread) {
-		++free_mutex->lockscount;
-		free_mutex->bound_thread = current_thread;
-		scheduler_unlock();
+	if (mutex->lockscount == 0) {
+		mutex->lockscount++;
 		return 0;
 	}
+	else {
+		return -EAGAIN;
+	}
 	scheduler_unlock();
-	return -EAGAIN;
 }

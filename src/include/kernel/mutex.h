@@ -17,12 +17,17 @@
  * Defines Mutex structure.
  */
 struct mutex {
-	struct thread *bound_thread;
-	struct list_head *locked_thread_list;
+	struct event event;
 	/** Begin of the list for condition variable. */
 	struct list_head *sleeped_thread_list;
 	int lockscount;
 };
+
+/**
+ * initializes given mutex
+ * @param mutex mutex to initialize
+ */
+void mutex_init(struct mutex *mutex);
 
 /**
  * Locks the mutex, binds it to the current thread and increases lockscount.

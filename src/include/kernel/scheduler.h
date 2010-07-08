@@ -4,6 +4,7 @@
  *
  * @date 22.04.2010
  * @author Avdyukhin Dmitry
+ * @author Skorodumov Kirill
  */
 
 #ifndef _SCHEDULER_H_
@@ -77,6 +78,12 @@ int scheduler_sleep(struct event *event);
  * @param event - event
  */
 int scheduler_wakeup(struct event *event);
+
+/**
+ * wakes up only first thread in the list of the event
+ * @param event - event
+ */
+int scheduler_wakeup_first(struct event *event);
 
 /**
  * Initialize an event.
