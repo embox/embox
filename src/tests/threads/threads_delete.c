@@ -31,6 +31,7 @@ EMBOX_TEST(run_test)
  * Will be stopped and deleted.
  */
 static void minus_run(void) {
+	thread_yield();
 	/* NOTREACHED */
 	assert(false);
 	while (true) {
@@ -43,6 +44,7 @@ static void minus_run(void) {
  * Will be stopped but not deleted.
  */
 static void mult_run(void) {
+	thread_yield();
 	/* NOTREACHED */
 	assert(false);
 	while (true) {

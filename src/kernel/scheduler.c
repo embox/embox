@@ -84,7 +84,7 @@ void scheduler_dispatch(void) {
 		current_thread->reschedule = false;
 
 #ifdef CONFIG_DEBUG_SCHEDULER
-		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
+		TRACE("\nSwitching from %d to %d\n", prev_thread->id, current_thread->id);
 #endif
 
 		ipl = ipl_save();
@@ -115,7 +115,7 @@ int scheduler_sleep(struct event *event) {
 	list_add(&current_thread->wait_list, &event->threads_list);
 	scheduler_remove(current_thread);
 #ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("Locking %d\n", current_thread->id);
+	TRACE("\nLocking %d\n", current_thread->id);
 #endif
 	scheduler_unlock();
 	return 0;
@@ -130,7 +130,7 @@ int scheduler_wakeup(struct event *event) {
 		thread->state = THREAD_STATE_RUN;
 		scheduler_add(thread);
 #ifdef CONFIG_DEBUG_SCHEDULER
-		TRACE("Unlocking %d\n", thread->id);
+		TRACE("\nUnlocking %d\n", thread->id);
 #endif
 	}
 	scheduler_unlock();
@@ -145,7 +145,7 @@ int scheduler_wakeup_first(struct event *event) {
 	thread->state = THREAD_STATE_RUN;
 	scheduler_add(thread);
 #ifdef CONFIG_DEBUG_SCHEDULER
-		TRACE("Unlocking %d\n", thread->id);
+		TRACE("\nUnlocking %d\n", thread->id);
 #endif
 	scheduler_unlock();
 	return 0;

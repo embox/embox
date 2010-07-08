@@ -27,17 +27,7 @@ typedef enum {
 } thread_state_t;
 
 typedef int msg_t;
-typedef int msg_data_t;
-
-/**
- * structure thread in structure priority
- */
-typedef struct thread_head {
-	struct list_head *next;
-	struct list_head *prev;
-	struct thread *thr;
-} thread_head_t;
-
+typedef void * msg_data_t;
 
 /**
  * Structure which describes events.
@@ -111,7 +101,6 @@ typedef struct thread {
     queue_t messages;
     /** Event, appearing when thread receives message. */
     struct event msg_event;
-    thread_head_t *thread_head;
 } thread_t;
 
 /**

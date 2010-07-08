@@ -25,110 +25,85 @@
 #define THREADS_TIMER_INTERVAL 100
 
 /**
- * structure priority in list
+ * Structure priority in list.
  */
 typedef struct priority_head {
 	struct list_head *next;
 	struct list_head *prev;
+
 	thread_id_t priority_id;
-	thread_head_t *thread_list;
+	/** List of threads with priority = priority_id. */
+	struct list_head *thread_list;
 } priority_head_t;
 
 /**
- * define max priority 16
- * idle thread has priority = 0
- * define max number thread 16
+ * Maximum priority equals to 16.
  */
 #define MAX_PRIORITY 0x10
-#define THREAD_PRIOR6ITY_IDLE 0
-#define NUMBER_THREAD 0x10
 /**
- * Pools for thread and priority
+ * Pools for thread and priority.
  */
-static priority_head_t priority_pool[MAX_PRIORITY];
-/*head of priority list - null priority, next - max priority*/
-static priority_head_t *priority_head = (priority_pool);
+static priority_head_t priority_pool[MAX_PRIORITY+1];
+/* Head of priority list - null priority , next - max priority. Contains idle_thread.*/
+static priority_head_t *priority_head = priority_pool;
+/* Priority_head, containing currently working thread. */
 static priority_head_t *cur_prior;
 
-static thread_head_t thread_head_pool[NUMBER_THREAD];
 
-static LIST_HEAD(free_threads_list1);
-#define free_threads_list (&free_threads_list1)
 /**
- * allocation head of thread in memory
- * free_thresd_list - pool
- * MUST:
- * 1. alloc memory from pool
- * 2. made structure
+ * Allocates priority_head for chosen priority.
  */
-static thread_head_t *alloc_thread_head(thread_t *thr) {
-	thread_head_t *head;
-	if (list_empty((struct list_head *)free_threads_list)) {
-		return NULL;
-	}
-	head = (thread_head_t *) free_threads_list->next;
-	list_del((struct list_head *) free_threads_list->next);
-	head->thr = thr;
-	thr->thread_head = head;
-	return head;
-
-}
-
 static priority_head_t * alloc_priority(thread_priority_t priority) {
-	return (&priority_pool[priority]);
+	return (priority_pool+priority);
 }
 /**
- * delete head of thread
+ * Delete thread from list in priorlist_head.
+ * If thread was the only with its priority, delete corresponding priorlist_head.
  */
-static void remov_thread_head(thread_head_t *removed_thread) {
-	list_add((struct list_head *) removed_thread, (struct list_head *) free_threads_list);
-	if ((struct list_head *)&removed_thread == removed_thread->next){
-		list_del((struct list_head *)&priority_pool[removed_thread->thr->priority]);
-		return;
+static void remove_thread(struct thread *removed_thread) {
+	/* Check if removed one was the only thread with its priority. */
+	if (list_empty(&removed_thread->sched_list)) {
+		list_del((struct list_head *) &priority_pool[removed_thread->priority]);
+	} else {
+		/* Check if current thread_list of priority equals to removed thread. */
+		if (priority_pool[removed_thread->priority].thread_list == &removed_thread->sched_list) {
+			priority_pool[removed_thread->priority].thread_list =
+				priority_pool[removed_thread->priority].thread_list->next;
+		}
+		/* Now we can delete thread from list. */
+		list_del(&removed_thread->sched_list);
 	}
-	if (priority_pool[removed_thread->thr->priority].thread_list == removed_thread){
-	priority_pool[removed_thread->thr->priority].thread_list = (thread_head_t *)
-			priority_pool[removed_thread->thr->priority].thread_list->next;
-	}
-	list_del((struct list_head *) removed_thread);
 }
 
 /**
- * it's need for blocking
+ * Add new priority_head to priority list.
+ * 1. Allocate memory;
+ * 2. Add priority;
+ * 3. Sort.
  */
-//static int preemption_count = 1;
-
-/**
- *adding new priority structure to priority list
- *we mast:
- *1. allocation memory
- *2. add priority
- *3. sort
- */
-static void add_new_priority(thread_head_t *thr_head, thread_priority_t priority) {
-	/*allocate new  priority header*/
+static void add_new_priority(struct thread *thread, thread_priority_t priority) {
+	/* Allocate new  priority_head. */
 	priority_head_t *new_priority = alloc_priority(priority);
 	priority_head_t *current_pr = (priority_head_t *) priority_head->next;
-	//priority_head_t *tmp;
 
 	while (current_pr->priority_id > priority) {
 		current_pr = (priority_head_t *) current_pr->next;
 	}
-	list_add((struct list_head *) new_priority, ((struct list_head *) current_pr)->prev);
+	list_add((struct list_head *) new_priority,
+			((struct list_head *) current_pr)->prev);
 	new_priority->priority_id = priority;
-	new_priority->thread_list = thr_head;
-	INIT_LIST_HEAD((struct list_head *)thr_head);
-	//thr_head->next = ((struct list_head *) thr_head)->prev = (struct list_head *) thr_head;
+	new_priority->thread_list = &thread->sched_list;
+	INIT_LIST_HEAD(&thread->sched_list);
 	return;
 }
 
 /**
- * get list by priority
+ * Get list of threads with chosen priority.
  */
-static thread_head_t * get_list_by_priority(thread_priority_t priority) {
+static struct list_head * get_priority_list(thread_priority_t priority) {
 	struct list_head *p;
 
-	if (idle_thread->priority == priority) { // TREAD_PRIORITY_IDLE -> idle_thread
+	if (idle_thread->priority == priority) {
 		return priority_head->thread_list;
 	}
 	list_for_each(p, (struct list_head *)priority_head) {
@@ -140,43 +115,32 @@ static thread_head_t * get_list_by_priority(thread_priority_t priority) {
 }
 
 /**
- *adding thread with priority to thread list
- *or adding priority to priority list and thread to thread list
+ * Adds thread with priority to thread list
+ * or adds priority to priority list and thread to thread list.
  */
-static void add_thread_by_priority(struct thread*thr, thread_priority_t  priority) {
-	thread_head_t *list_head;
-	thread_head_t *thr_head;
-	/*check - is priority?*/
-	if (NULL == (thr_head = alloc_thread_head(thr))) {
-		return; //empty
-	}
+static void add_thread_by_priority(struct thread *thread, thread_priority_t priority) {
+	struct list_head *list_head;
 
-	if (NULL == (list_head = get_list_by_priority(priority))) {
-		/*adding first thread that priority to list*/
-		add_new_priority(thr_head, priority);
-		return;// No, add new priority
+	/* Find priority_head with corresponding priority_id. */
+	list_head = get_priority_list(priority);
+	if (NULL == list_head) {
+		add_new_priority(thread, priority);
+		return;
 	}
-	list_add((struct list_head *) thr_head, (struct list_head *) list_head); //Yes
+	list_add(&thread->sched_list, list_head);
 }
 
 /**
- * filling list of priority
+ * Initialises list of priority.
  */
 void _scheduler_init(void) {
-	int i;
-	for (i = 1; i < NUMBER_THREAD; i++) {
-		list_add((struct list_head *) (&thread_head_pool[i]), (struct list_head *) free_threads_list);
-	}
-
-	/*we initialize zero element we always have idle_thread */
+	/* Initializes zero element (we always have idle_thread). */
 	INIT_LIST_HEAD((struct list_head *)priority_head);
-	//priority_head->next = ((struct list_head *) priority_head)->prev =(struct list_head *) priority_head;
 	priority_head->priority_id = 0;
-	priority_head->thread_list = alloc_thread_head(idle_thread);
-	INIT_LIST_HEAD((struct list_head *)priority_head->thread_list);
+	priority_head->thread_list = &idle_thread->sched_list;
+	INIT_LIST_HEAD(priority_head->thread_list);
 
 	cur_prior = priority_head;
-
 
 }
 
@@ -193,16 +157,10 @@ void _scheduler_start(void) {
 struct thread *_scheduler_next(struct thread *prev_thread) {
 	//free current thread
 	struct thread *current_thread;
-	cur_prior->thread_list = (thread_head_t *) (cur_prior->thread_list->next);
 
-	cur_prior = ((priority_head_t *) (priority_head->next));
-	current_thread = (((priority_head_t *) (priority_head->next))->thread_list)->thr;
-
-	if (current_thread->state == THREAD_STATE_ZOMBIE) {
-		list_del(&current_thread->sched_list);
-		current_thread
-				= list_entry(prev_thread->sched_list.next, struct thread, sched_list);
-	}
+	cur_prior = (priority_head_t *) (priority_head->next);
+	cur_prior->thread_list = cur_prior->thread_list->next;
+	current_thread = list_entry(cur_prior->thread_list, struct thread, sched_list);
 	current_thread->reschedule = false;
 	return (current_thread);
 }
@@ -216,7 +174,7 @@ void _scheduler_add(struct thread *added_thread) {
  */
 void _scheduler_remove(struct thread *removed_thread) {
 	if (removed_thread == NULL || removed_thread == idle_thread) {
-	return;
+		return;
 	}
-	remov_thread_head(removed_thread->thread_head);
+	remove_thread(removed_thread);
 }

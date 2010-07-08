@@ -69,9 +69,13 @@ static void mult_run(void) {
 }
 
 /**
- * Test, which infinitely writes "+", "-" and "*".
- * Before them he ran thread with "!" because it has the highest priority.
- * This threads show one symbol and switch context.
+ * Test, which a lot of times writes "+", "-", "*" and "!".
+ * Because of priorities they are printed in such order:
+ * 1) "+" and "+".
+ * 2) "!";
+ * 3) "*";
+ * For each symbol there is a thread, which shows it.
+ * These threads show one symbol and switch context.
  *
  * @retval 0 if test is passed
  * @retval -EINVAL if an error occurs.

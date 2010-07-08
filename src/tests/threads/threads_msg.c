@@ -45,6 +45,7 @@ static void first_run(void) {
 	/* Must unblock second thread. */
 	TRACE("Sending good message.\n");
 	msg_send(msg, second_thread);
+	msg_receive();
 }
 
 /**
@@ -65,6 +66,8 @@ static void second_run(void) {
 	for (int i = 0; i < 1000; i++) {
 		TRACE("2");
 	}
+	msg = msg_new();
+	msg_send(msg, first_thread);
 }
 
 /**
@@ -73,6 +76,7 @@ static void second_run(void) {
  * Then the first one a lot of times writes "1". Then first thread sends message to
  *   second and unblocks it.
  * Second thread some times writes "2".
+ * First thread can't die until the end of second (waits for a message).
  *
  * @retval 0 if test is passed
  * @retval -EINVAL if an error occurs.

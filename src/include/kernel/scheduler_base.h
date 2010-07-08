@@ -13,6 +13,11 @@
 #include <kernel/scheduler.h>
 
 /**
+ * Function, executed when thread initializes.
+ */
+void _scheduler_init(void);
+
+/**
  * Function, executed when thread starts.
  */
 void _scheduler_start(void);
@@ -21,11 +26,6 @@ void _scheduler_start(void);
  * Add new thread in scheduler.
  */
 void _scheduler_add(struct thread *added_thread);
-
-/**
- * Function, executed when thread initializes.
- */
-void _scheduler_init(void);
 
 /**
  * Move current_thread pointer to the next thread.
