@@ -19,13 +19,14 @@
 
 .weak hardware_init_hook
 .weak software_init_hook
+.weak kerenl_start
 
 .text
     .align 4
 
     .global start
-start:
 
+start:
     ldr pc, ResetHandlerAddr
     ldr pc, UndefHandlerAddr
     ldr pc, SWIHandlerAddr
@@ -86,7 +87,7 @@ FIQHandler:
 .RAM_TOP:
     .word _stack_top
 ResetHandler:
-    ldr sp, .RAM_TOP
+    ldr r0, .RAM_TOP
 
     msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
     mov sp, r0
@@ -109,6 +110,7 @@ ResetHandler:
     sub r0, r0, #UND_STACK_SIZE
 
     msr CPSR_c, #ARM_MODE_USR
+    mov sp, r0
 
 /** Initialize memory */
     mov     r0, #0
@@ -146,12 +148,15 @@ LoopCpReloc:
     strlo   r0, [r2], #4
     blo     LoopCpReloc
 
-    ldr		r0, =hardware_init_hook
-    blne		=hardware_init_hook
+    ldr   r0, =hardware_init_hook
+    blne  =hardware_init_hook
 
-    ldr		r0, =software_init_hook
-    blne		=software_init_hook
+    ldr   r0, =software_init_hook
+    blne  =software_init_hook
 
-/** Main */
-    ldr     pc, =main
-/** bx      r0 */
+/** Kernel start */
+    ldr     pc, =kernel_start
+
+die:
+    cmp	    r0, r0
+    ble	    die
