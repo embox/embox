@@ -20,7 +20,6 @@ static char plus_stack[THREAD_STACK_SIZE];
 static char minus_stack[THREAD_STACK_SIZE];
 static char mult_stack[THREAD_STACK_SIZE];
 static char div_stack[THREAD_STACK_SIZE];
-//static char highest_stack[THREAD_STACK_SIZE];
 
 
 struct thread *plus_thread;
@@ -86,19 +85,6 @@ static void div_run(void) {
 	}
 }
 
-
-/**
- * Unlocks minus thread then writes 100 "!" then yields. Thread with the highest priority.
- */
-static void highest_run(void) {
-	int i;
-	for (i = 0; i < 100; i++) {
-		TRACE("!");
-		thread_yield();
-	}
-}
-
-
 static int run_test(void) {
 
 	TRACE("\n");
@@ -111,16 +97,11 @@ static int run_test(void) {
 	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
 	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
 	div_thread = thread_create(div_run, div_stack + THREAD_STACK_SIZE);
-	//highest_thread = thread_create(highest_run, highest_stack + THREAD_STACK_SIZE);
-
 
 	assert(plus_thread != NULL);
 	assert(minus_thread != NULL);
 	assert(mult_thread != NULL);
 	assert(div_thread != NULL);
-	//assert(highest_thread != NULL);
-
-	//highest_thread->priority = 2;
 
 	thread_start(plus_thread);
 	thread_start(minus_thread);
