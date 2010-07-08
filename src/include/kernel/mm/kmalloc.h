@@ -17,16 +17,6 @@
 #define __KMALLOC_H
 
 /**
- * auxiliry
- */
-/*#define PAGE_SIZE 0x100*/
-
-/**
- * auxiliry
- */
-/*#define MALLOC_SIZE 0x2*/
-
-/**
  * Dynamic memory allocator arbitrary size.
  *
  * @param size is requested memory size.
