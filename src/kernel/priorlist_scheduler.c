@@ -25,15 +25,6 @@
 #define THREADS_TIMER_INTERVAL 100
 
 /**
- * structure thread in structure priority
- */
-typedef struct thread_head {
-	struct list_head *next;
-	struct list_head *prev;
-	struct thread *thr;
-} thread_head_t;
-
-/**
  * structure priority in list
  */
 typedef struct priority_head {
@@ -50,13 +41,13 @@ typedef struct priority_head {
  */
 #define MAX_PRIORITY 0x10
 #define THREAD_PRIOR6ITY_IDLE 0
-#define NUMBER_THREAD 4 //0x10
+#define NUMBER_THREAD 0x10
 /**
  * Pools for thread and priority
  */
 static priority_head_t priority_pool[MAX_PRIORITY];
 /*head of priority list - null priority, next - max priority*/
-static priority_head_t *priority_head = (&priority_pool[0]);
+static priority_head_t *priority_head = (priority_pool);
 static priority_head_t *cur_prior;
 
 static thread_head_t thread_head_pool[NUMBER_THREAD];
@@ -78,6 +69,7 @@ static thread_head_t *alloc_thread_head(thread_t *thr) {
 	head = (thread_head_t *) free_threads_list->next;
 	list_del((struct list_head *) free_threads_list->next);
 	head->thr = thr;
+	thr->thread_head = head;
 	return head;
 
 }
@@ -110,13 +102,14 @@ static void add_new_priority(thread_head_t *thr_head, thread_priority_t priority
 	priority_head_t *current_pr = (priority_head_t *) priority_head->next;
 	//priority_head_t *tmp;
 
-	while (current_pr->priority_id > priority)
+	while (current_pr->priority_id > priority) {
 		current_pr = (priority_head_t *) current_pr->next;
-
+	}
 	list_add((struct list_head *) new_priority, (struct list_head *) current_pr);
 	new_priority->priority_id = priority;
 	new_priority->thread_list = thr_head;
-	thr_head->next = ((struct list_head *) thr_head)->prev = (struct list_head *) thr_head;
+	INIT_LIST_HEAD((struct list_head *)thr_head);
+	//thr_head->next = ((struct list_head *) thr_head)->prev = (struct list_head *) thr_head;
 	return;
 }
 
@@ -167,9 +160,11 @@ void _scheduler_init(void) {
 	}
 
 	/*we initialize zero element we always have idle_thread */
-	priority_head->next = ((struct list_head *) priority_head)->prev =(struct list_head *) priority_head;
+	INIT_LIST_HEAD((struct list_head *)priority_head);
+	//priority_head->next = ((struct list_head *) priority_head)->prev =(struct list_head *) priority_head;
 	priority_head->priority_id = 0;
 	priority_head->thread_list = alloc_thread_head(idle_thread);
+	INIT_LIST_HEAD((struct list_head *)priority_head->thread_list);
 
 	cur_prior = priority_head;
 
@@ -189,6 +184,7 @@ void _scheduler_start(void) {
  */
 struct thread *_scheduler_next(struct thread *prev_thread) {
 	//free current thread
+	struct thread *current_thread;
 	cur_prior->thread_list = (thread_head_t *) (cur_prior->thread_list->next);
 
 	cur_prior = ((priority_head_t *) (priority_head->next));
@@ -213,9 +209,10 @@ void _scheduler_add(struct thread *added_thread) {
 void _scheduler_remove(struct thread *removed_thread) {
 	if (removed_thread == NULL || removed_thread == idle_thread) {
 	}
-	scheduler_lock();
-	removed_thread->reschedule = true;
-	free_thread_head((thread_head_t *) removed_thread);
-	scheduler_unlock();
+	//scheduler_lock();
+	//removed_thread->reschedule = true;
+	//free_thread_head((thread_head_t *) removed_thread);
+	free_thread_head(removed_thread->thread_head);
+	//scheduler_unlock();
 
 }
