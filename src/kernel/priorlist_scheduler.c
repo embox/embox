@@ -80,7 +80,16 @@ static priority_head_t * alloc_priority(thread_priority_t priority) {
 /**
  * delete head of thread
  */
-static void free_thread_head(thread_head_t *removed_thread) {
+static void remov_thread_head(thread_head_t *removed_thread) {
+	list_add((struct list_head *) removed_thread, (struct list_head *) free_threads_list);
+	if (removed_thread == (thread_head_t *) removed_thread->next){
+		list_del((struct list_head *)&priority_pool[removed_thread->thr->priority]);
+		return;
+	}
+	if (priority_pool[removed_thread->thr->priority].thread_list == removed_thread){
+	priority_pool[removed_thread->thr->priority].thread_list = (thread_head_t *)
+			priority_pool[removed_thread->thr->priority].thread_list->next;
+	}
 	list_del((struct list_head *) removed_thread);
 }
 
@@ -105,7 +114,7 @@ static void add_new_priority(thread_head_t *thr_head, thread_priority_t priority
 	while (current_pr->priority_id > priority) {
 		current_pr = (priority_head_t *) current_pr->next;
 	}
-	list_add((struct list_head *) new_priority, (struct list_head *) current_pr);
+	list_add((struct list_head *) new_priority, ((struct list_head *) current_pr)->prev);
 	new_priority->priority_id = priority;
 	new_priority->thread_list = thr_head;
 	INIT_LIST_HEAD((struct list_head *)thr_head);
@@ -175,7 +184,6 @@ void _scheduler_init(void) {
  * scheduler start to work
  */
 void _scheduler_start(void) {
-
 }
 
 /**
@@ -208,11 +216,7 @@ void _scheduler_add(struct thread *added_thread) {
  */
 void _scheduler_remove(struct thread *removed_thread) {
 	if (removed_thread == NULL || removed_thread == idle_thread) {
+	return;
 	}
-	//scheduler_lock();
-	//removed_thread->reschedule = true;
-	//free_thread_head((thread_head_t *) removed_thread);
-	free_thread_head(removed_thread->thread_head);
-	//scheduler_unlock();
-
+	remov_thread_head(removed_thread->thread_head);
 }
