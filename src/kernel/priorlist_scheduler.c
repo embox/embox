@@ -82,7 +82,7 @@ static priority_head_t * alloc_priority(thread_priority_t priority) {
  */
 static void remov_thread_head(thread_head_t *removed_thread) {
 	list_add((struct list_head *) removed_thread, (struct list_head *) free_threads_list);
-	if (removed_thread == (thread_head_t *) removed_thread->next){
+	if ((struct list_head *)&removed_thread == removed_thread->next){
 		list_del((struct list_head *)&priority_pool[removed_thread->thr->priority]);
 		return;
 	}
