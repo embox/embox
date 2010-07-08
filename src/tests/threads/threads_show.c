@@ -85,6 +85,8 @@ static int run_test() {
 	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
 	highest_thread = thread_create(highest_run, highest_stack + THREAD_STACK_SIZE);
 	highest_thread->priority = 2;
+	plus_thread->priority = 3;
+	minus_thread->priority = 3;
 	assert(plus_thread != NULL);
 	assert(minus_thread != NULL);
 	assert(highest_thread != NULL);
