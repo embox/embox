@@ -95,7 +95,7 @@ static void free_thread_head(thread_head_t *removed_thread) {
 /**
  * it's need for blocking
  */
-static int preemption_count = 1;
+//static int preemption_count = 1;
 
 /**
  *adding new priority structure to priority list
@@ -163,11 +163,8 @@ static void add_thread_by_priority(struct thread*thr, thread_priority_t  priorit
 void _scheduler_init(void) {
 	int i;
 	for (i = 1; i < NUMBER_THREAD; i++) {
-//		TRACE("ttt = 0x%X\n", &thread_head_pool[i]);
 		list_add((struct list_head *) (&thread_head_pool[i]), (struct list_head *) free_threads_list);
 	}
-	//current_thread = idle_thread;
-	//current_thread->reschedule = false;
 
 	/*we initialize zero element we always have idle_thread */
 	priority_head->next = ((struct list_head *) priority_head)->prev =(struct list_head *) priority_head;
@@ -180,31 +177,10 @@ void _scheduler_init(void) {
 }
 
 /**
- * Is regularly called to show that current thread to be changed.
- * @param id nothing significant
- */
-static void scheduler_tick(uint32_t id) {
-	TRACE("\nTick\n");
-	current_thread->reschedule = true;
-	scheduler_dispatch();
-}
-
-/**
  * scheduler start to work
  */
 void _scheduler_start(void) {
 
-	/* Redundant thread, which will never work. */
-	struct thread redundant_thread;
-	ipl_t ipl;
-
-	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
-
-	ipl = ipl_save();
-	preemption_count--;
-	context_switch(&redundant_thread.context, &idle_thread->context);
-	/* NOTREACHED */
-	ipl_restore(ipl);
 }
 
 /**
@@ -226,28 +202,7 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
 	current_thread->reschedule = false;
 	return (current_thread);
 }
-#if 0
-/**
- * main function - switch thread
- */
-void scheduler_dispatch(void) {
-	/* Thread, which have worked just now. */
 
-	struct thread *prev_thread;
-	ipl_t ipl;
-
-	if (preemption_count == 0 && current_thread->reschedule) {
-		preemption_count++;
-		prev_thread = current_thread;
-		_scheduler_next(current_thread);
-		TRACE("Switching from %d to %d\n", prev_thread->id, current_thread->id);
-		ipl = ipl_save();
-		preemption_count--;
-		context_switch(&prev_thread->context, &current_thread->context);
-		ipl_restore(ipl);
-	}
-}
-#endif
 void _scheduler_add(struct thread *added_thread) {
 	add_thread_by_priority(added_thread, added_thread->priority);
 }
