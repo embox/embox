@@ -8,7 +8,6 @@
  */
 
 #include <errno.h>
-#include <stdlib.h>
 #include <lib/list.h>
 
 #include <kernel/scheduler.h>

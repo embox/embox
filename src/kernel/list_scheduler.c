@@ -10,7 +10,7 @@
 #define _LIST_SCHEDULER_
 
 #include <lib/list.h>
-#include <kernel/scheduler.h>
+#include <kernel/scheduler_base.h>
 
 /**
  * List item, pointing at the beginning of the

@@ -8,8 +8,7 @@
 #ifndef _HEAP_SCHEDULER_
 #define _HEAP_SCHEDULER_
 
-#include <lib/list.h>
-#include <kernel/scheduler.h>
+#include <kernel/scheduler_base.h>
 #include <kernel/thread_heap.h>
 
 void _scheduler_start(void) {
