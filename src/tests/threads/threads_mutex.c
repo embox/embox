@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Testing functions thread_lock and thread_unlock
+ * @brief Testing mutexes.
  *
  * @date 30.06.2010
  * @author Skorodumov Kirill
@@ -45,7 +45,7 @@ static void plus_run(void) {
 }
 
 /**
- *
+ * Locks mutex end writes "-"
  */
 static void minus_run(void) {
 	int i;
@@ -61,7 +61,7 @@ static void minus_run(void) {
 
 
 /**
- * endlessly writes '*'
+ * Locks and writes '*'
  */
 static void mult_run(void) {
 	int i;
@@ -76,15 +76,20 @@ static void mult_run(void) {
 }
 
 /**
- * Starts highest_thread then endlessly writes "/"
+ * Endlessly writes "/"
  */
 static void div_run(void) {
-	//thread_start(highest_thread);
 	while (true) {
 		TRACE("/");
 	}
 }
 
+/**
+ * Test which writes "+","-","*" and "/"
+ * minus_thread and mult_thread uses same mutex
+ * to test how it works.
+ * @return 0 if test finishes successfully.
+ */
 static int run_test(void) {
 
 	TRACE("\n");

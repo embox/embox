@@ -76,7 +76,7 @@ static void div_run(void) {
 
 
 /**
- * Unlocks minus thread then writes 100 "!" then yields. Thread with the highest priority.
+ * Unlocks minus thread then writes "!" then yields 100 times. Thread with the highest priority.
  */
 static void highest_run(void) {
 	int i;
@@ -87,7 +87,13 @@ static void highest_run(void) {
 	}
 }
 
-
+/**
+ * Test which writes "+","-","*" and "/"
+ * Minus_thread goes to sleep then will be awaken
+ * by highest_thread. Highest_thread is started by div_thread
+ * and has highest priority.
+ * @return 0 if test finishes successfully.
+ */
 static int run_test(void) {
 
 	TRACE("\n");
