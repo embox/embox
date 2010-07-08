@@ -13,6 +13,50 @@
 #include <kernel/mm/kmalloc.h>
 #include <lib/list.h>
 
+/**
+ * to be writen
+ */
+typedef struct tag {
+	size_t size;
+	bool free;
+} tag_t;
+
+typedef struct tag_free {
+	struct list_head *next, *prev;
+	tag_t tag;
+} tag_free_t;
+
+/**
+ * Show that block is busy.
+ *
+ * @note 0 means that mem_block is busy.
+ * @note this macross is undefined in the end of this module.
+ */
+#define PROC true
+
+/**
+ * Show that block is free.
+ *
+ * @note 1 means that mem_block is free.
+ * @note this macross is undefined in the end of this module.
+ */
+#define HOLE false
+
+/**
+ * return adress
+ */
+#define ADRESS(begin) (void *) (begin + sizeof(tag_free_t))
+/**
+ *
+ *
+ */
+#define END_TAG(begin) (tag_t*) (begin + sizeof(tag_free_t) + begin->tag.size - sizeof(tag_t))
+/**
+ *
+ *
+ */
+#define BEGIN_TAG(end) (tag_free_t*) (end - end->size - sizeof(tag_free_t))
+
 /* some stuff for easey programming */
 inline static int  allocate_mem_block(int pages);
 inline static void eat_mem(size_t size, tag_free_t *ext);
