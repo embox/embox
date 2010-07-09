@@ -12,7 +12,6 @@
 #define _THREAD_H_
 
 #include <hal/context.h>
-//#include <kernel/scheduler.h>
 #include <lib/list.h>
 #include <queue.h>
 #include <string.h>
@@ -69,12 +68,12 @@ typedef struct thread {
 	/** Function, running in thread. */
 	void (*run)(void);
 
-	/** List item, corresponding to thread in list of executed threads. */
+	/** Does thread exist? (For it memory was alloted and it was not deleted) */
+    bool exist;
+
+
+    /** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
-
-	/** List item, corresponding to thread in list of some event. */
-	struct list_head wait_list;
-
 
 	/** Index of thread in heap. */
 	int heap_index;
@@ -86,6 +85,7 @@ typedef struct thread {
 	 * Is needed for heap_scheduler.
 	 */
 	bool run_count;
+
 
 	/** Flag, which shows, whether tread can be changed. */
 	bool reschedule;
@@ -101,6 +101,8 @@ typedef struct thread {
     queue_t messages;
     /** Event, appearing when thread receives message. */
     struct event msg_event;
+	/** List item, corresponding to thread in list of some event. */
+	struct list_head wait_list;
 } thread_t;
 
 /**

@@ -11,20 +11,18 @@
 #define _SCHEDULER_H_
 
 #include <kernel/thread.h>
-#include <kernel/mutex.h>
-#include <kernel/convar.h>
-#include <lib/list.h>
-
-
-/**
- * Initializes scheduler.
- */
-int scheduler_init(void);
 
 /**
  * Start working with threads.
  */
 void scheduler_start(void);
+
+/**
+ * !!!!Can be called only in idle_thread!!!!
+ * Stops working with threads. After it contexts can't be switched.
+ * Then scheduler_start can be recalled.
+ */
+void scheduler_stop(void);
 
 /**
  * Is called after entering a regular critical section.

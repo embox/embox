@@ -52,6 +52,7 @@ static int threads_init(void) {
 	int i;
 	for (i = 0; i < MAX_MSG_COUNT; i++) {
 		msg_mask[i] = 0;
+		threads_pool[i].exist = false;
 	}
 	idle_thread = thread_create(idle_run, idle_thread_stack + THREAD_STACK_SIZE);
 	idle_thread->priority = 0;
@@ -92,6 +93,7 @@ static struct thread * thread_new(void) {
 			created_thread = threads_pool + i;
 			created_thread->id = i;
 			mask |= (1 << i);
+			created_thread->exist = true;
 			return created_thread;
 		}
 	}
@@ -112,6 +114,9 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	context_init(&created_thread->context, true);
 	context_set_entry(&created_thread->context, &thread_run, (int) created_thread);
 	context_set_stack(&created_thread->context, stack_address);
+#ifdef CONFIG_DEBUG_SCHEDULER
+	TRACE("Alloted thread id = %d\n", created_thread->id);
+#endif
 	return created_thread;
 }
 
@@ -131,15 +136,16 @@ static int thread_delete(struct thread *deleted_thread) {
 	TRACE("\nDeleting %d\n", deleted_thread->id);
 #endif
 	deleted_thread->state = THREAD_STATE_STOP;
+	deleted_thread->exist = false;
 	mask &= ~(1 << (deleted_thread - threads_pool));
 	return 0;
 }
 
 int thread_stop(struct thread *thread) {
-	/** Last zombie thread. */
+	/* Last zombie thread. */
 	static struct thread *zombie;
 
-	if (thread == NULL || thread == idle_thread) {
+	if (thread == NULL || thread == idle_thread || thread == zombie || !thread->exist) {
 		return -EINVAL;
 	}
 	scheduler_lock();
@@ -157,6 +163,7 @@ int thread_stop(struct thread *thread) {
 		zombie = thread;
 		thread->state = THREAD_STATE_ZOMBIE;
 	}
+
 	scheduler_unlock();
 	return 0;
 }

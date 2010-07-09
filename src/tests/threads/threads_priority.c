@@ -39,7 +39,7 @@ static void threads_run(void) {
 static int run_test() {
 	int i;
 	TRACE("\n");
-	scheduler_init();
+
 	for (i = 0; i < THREADS_COUNT; i++) {
 		threads[i] = thread_create(threads_run, stacks[i] + THREAD_STACK_SIZE);
 		assert(threads[i] != NULL);
@@ -49,6 +49,6 @@ static int run_test() {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-
+	scheduler_stop();
 	return 0;
 }

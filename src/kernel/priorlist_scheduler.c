@@ -124,6 +124,10 @@ void _scheduler_start(void) {
 	/* Nothing to do. */
 }
 
+void _scheduler_stop(void) {
+	/* Nothing to do. */
+}
+
 /**
  * Move current_thread pointer to the next thread.
  * @param prev_thread thread, which have worked just now.

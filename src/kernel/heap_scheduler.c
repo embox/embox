@@ -11,16 +11,20 @@
 #include <kernel/scheduler_base.h>
 #include <kernel/thread_heap.h>
 
+void _scheduler_init(void) {
+	/* Nothing to do. */
+}
+
 void _scheduler_start(void) {
+	/* Nothing to do. */
+}
+
+void _scheduler_stop(void) {
 	/* Nothing to do. */
 }
 
 void _scheduler_add(struct thread *added_thread) {
 	heap_insert(added_thread);
-}
-
-void _scheduler_init(void) {
-	/* Nothing to do. */
 }
 
 struct thread *_scheduler_next(struct thread *prev_thread) {

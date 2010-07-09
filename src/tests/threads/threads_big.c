@@ -40,7 +40,8 @@ static void plus_run(void) {
  * Will be deleted.
  */
 static void minus_run(void) {
-	while (true) {
+	int i;
+	for (i = 0; i < 100; i++) {
 		TRACE("-");
 	}
 }
@@ -49,7 +50,8 @@ static void minus_run(void) {
  * Endlessly writes "*".
  */
 static void mult_run(void) {
-	while (true) {
+	int i;
+	for (i = 0; i < 100; i++) {
 		TRACE("*");
 	}
 }
@@ -58,7 +60,7 @@ static void mult_run(void) {
  * Endlessly writes natural numbers.
  */
 static void natural_run(void) {
-	for (int i = 1; ; i++) {
+	for (int i = 1; i < 100; i++) {
 		TRACE("%d ", i);
 	}
 }
@@ -73,7 +75,6 @@ static void natural_run(void) {
  */
 static int run_test() {
 	TRACE("\n");
-	scheduler_init();
 
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
 	natural_thread = thread_create(natural_run, natural_stack + THREAD_STACK_SIZE);
@@ -92,6 +93,6 @@ static int run_test() {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-
+	scheduler_stop();
 	return 0;
 }

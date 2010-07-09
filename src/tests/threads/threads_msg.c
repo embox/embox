@@ -46,6 +46,7 @@ static void first_run(void) {
 	TRACE("Sending good message.\n");
 	msg_send(msg, second_thread);
 	msg_receive();
+	TRACE("\nFirst thread received an answer from second one.\n");
 }
 
 /**
@@ -83,7 +84,6 @@ static void second_run(void) {
  */
 static int run_test() {
 	TRACE("\n");
-	scheduler_init();
 
 	first_thread = thread_create(first_run, first_stack + THREAD_STACK_SIZE);
 	second_thread = thread_create(second_run, second_stack + THREAD_STACK_SIZE);
@@ -99,6 +99,6 @@ static int run_test() {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-
+	scheduler_stop();
 	return 0;
 }

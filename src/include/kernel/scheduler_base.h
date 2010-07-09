@@ -23,6 +23,12 @@ void _scheduler_init(void);
 void _scheduler_start(void);
 
 /**
+ * Function, executed when scheduler stops.
+ * Must be made in such way, that allows correctly call then scheduler_start.
+ */
+void _scheduler_stop(void);
+
+/**
  * Add new thread in scheduler.
  */
 void _scheduler_add(struct thread *added_thread);

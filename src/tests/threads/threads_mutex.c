@@ -39,7 +39,8 @@ EMBOX_TEST(run_test)
  * endlessly writes '+'
  */
 static void plus_run(void) {
-	while (true) {
+	int i;
+	for (i = 0; i < 1000; i++) {
 		TRACE("+");
 	}
 }
@@ -79,7 +80,8 @@ static void mult_run(void) {
  * Endlessly writes "/"
  */
 static void div_run(void) {
-	while (true) {
+	int i;
+	for (i = 0; i < 100; i++) {
 		TRACE("/");
 	}
 }
@@ -91,10 +93,7 @@ static void div_run(void) {
  * @return 0 if test finishes successfully.
  */
 static int run_test(void) {
-
 	TRACE("\n");
-
-	scheduler_init();
 
 	mutex_init(&mutex);
 
@@ -115,6 +114,6 @@ static int run_test(void) {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-
+	scheduler_stop();
 	return 0;
 }

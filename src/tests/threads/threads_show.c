@@ -82,7 +82,6 @@ static void mult_run(void) {
  */
 static int run_test() {
 	TRACE("\n");
-	scheduler_init();
 
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
 	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
@@ -102,6 +101,6 @@ static int run_test() {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-
+	scheduler_stop();
 	return 0;
 }

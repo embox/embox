@@ -13,7 +13,7 @@
 #include <assert.h>
 
 #define THREAD_STACK_SIZE 0x1000
-#define MAX_DEPTH 80
+#define MAX_DEPTH 100
 static char recursion_stack[THREAD_STACK_SIZE];
 static struct thread *recursion_thread;
 
@@ -51,7 +51,6 @@ static void recursion_run(void) {
  */
 static int run_test() {
 	TRACE("\n");
-	scheduler_init();
 
 	recursion_thread =
 		thread_create(recursion_run, recursion_stack + THREAD_STACK_SIZE);
@@ -62,6 +61,6 @@ static int run_test() {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-
+	scheduler_stop();
 	return 0;
 }

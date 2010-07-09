@@ -39,7 +39,8 @@ EMBOX_TEST(run_test)
  * endlessly writes '+'
  */
 static void plus_run(void) {
-	while (true) {
+	int i;
+	for (i = 0; i < 1000; i++) {
 		TRACE("+");
 	}
 }
@@ -48,8 +49,9 @@ static void plus_run(void) {
  * goes to sleep
  */
 static void minus_run(void) {
+	int i;
 	scheduler_sleep(&event);
-	while (true) {
+	for (i = 0; i < 1000; i++) {
 		TRACE("-");
 	}
 }
@@ -59,7 +61,8 @@ static void minus_run(void) {
  * endlessly writes '-'
  */
 static void mult_run(void) {
-	while (true) {
+	int i;
+	for (i = 0; i < 1000; i++) {
 		TRACE("*");
 	}
 }
@@ -68,8 +71,9 @@ static void mult_run(void) {
  *
  */
 static void div_run(void) {
+	int i;
 	thread_start(highest_thread);
-	while (true) {
+	for (i = 0; i < 1000; i++) {
 		TRACE("/");
 	}
 }
@@ -95,10 +99,7 @@ static void highest_run(void) {
  * @return 0 if test finishes successfully.
  */
 static int run_test(void) {
-
 	TRACE("\n");
-
-	scheduler_init();
 
 	event_init(&event);
 
@@ -124,6 +125,6 @@ static int run_test(void) {
 
 	TRACE("\nBefore start\n");
 	scheduler_start();
-
+	scheduler_stop();
 	return 0;
 }
