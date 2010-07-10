@@ -8,7 +8,7 @@ ENTRY(start)
 MEMORY {
 	MEMORY_REGION(sdram)
 	MEMORY_REGION(flash)
-	MEMORY_REGION(internal)
+	/*MEMORY_REGION(internal) */
 }
 
 /*_stack = _bend + 0x10000;*/
@@ -22,7 +22,7 @@ _text_end = _text_vma + _text_len;
 SECTIONS {
 
 	.text : {
-		*(.trap_table.text)
+/*		*(.trap_table.text) */
 		*(.text)
 		*(.init.text)
 		ALIGNMENT();
@@ -44,7 +44,7 @@ SECTIONS {
 		LDS_INPUT_RODATA
 		ALIGNMENT();
 		_piggy_start = .;
-		PIGGY
+		/*PIGGY */
 		_piggy_end = .;
 		ALIGNMENT();
 	} SECTION_REGION(rodata)
