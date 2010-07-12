@@ -22,14 +22,13 @@ static char mult_stack[THREAD_STACK_SIZE];
 static char div_stack[THREAD_STACK_SIZE];
 
 
-struct thread *plus_thread;
-struct thread *minus_thread;
-struct thread *mult_thread;
-struct thread *div_thread;
-struct thread *highest_thread;
+static struct thread *plus_thread;
+static struct thread *minus_thread;
+static struct thread *mult_thread;
+static struct thread *div_thread;
 
 
-struct mutex mutex;
+static struct mutex mutex;
 
 EMBOX_TEST(run_test)
 ;
@@ -51,11 +50,14 @@ static void plus_run(void) {
 static void minus_run(void) {
 	int i;
 	mutex_lock(&mutex);
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 500; i++) {
 		TRACE("-");
 	}
+	TRACE("\nUnlock mutex by minus\n");
 	mutex_unlock(&mutex);
-	while (true) {
+	/* TODO If make i < 500, there will be an error.
+	 * We think, it is a tsim's error. */
+	for (i = 0; i < 1000; i++) {
 		TRACE("-");
 	}
 }
@@ -67,11 +69,12 @@ static void minus_run(void) {
 static void mult_run(void) {
 	int i;
 	mutex_lock(&mutex);
-	for (i = 0; i < 1000; i++) {
+	for (i = 0; i < 500; i++) {
 			TRACE("*");
 	}
+	TRACE("\nUnlock mutex by mult\n");
 	mutex_unlock(&mutex);
-	while (true) {
+	for (i = 0; i < 500; i++) {
 		TRACE("*");
 	}
 }
