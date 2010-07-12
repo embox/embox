@@ -21,7 +21,6 @@
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
-#include <kernel/scheduler.h>
 #include <hal/env/irq_env.h>
 
 /*
