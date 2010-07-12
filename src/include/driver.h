@@ -108,12 +108,12 @@ device_desc device_select( const char *desc );
 
 #if 1
 /* shared device's interface */
-int device_open  ( device_desc *dev , int mode );
-int device_close ( device_desc *dev );
-int device_read  ( device_desc *dev , char *buf    , size_t n  );
-int device_write ( device_desc *dev , char *buf    , size_t n  );
-int device_ioctl ( device_desc *dev , io_cmd c     , void *arg );
-int device_devctl( device_desc *dev , device_cmd c , void *arg );
+int device_open  ( device_desc dev , int mode );
+int device_close ( device_desc dev );
+int device_read  ( device_desc dev , char *buf    , size_t n  );
+int device_write ( device_desc dev , char *buf    , size_t n  );
+int device_ioctl ( device_desc dev , io_cmd c     , void *arg );
+int device_devctl( device_desc dev , device_cmd c , void *arg );
 #endif
 
 #endif /* __DRIVER_H_ */

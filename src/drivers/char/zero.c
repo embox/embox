@@ -11,7 +11,6 @@
 
 #define START_AS_MOD
 
-#if 1
 /*
  * inner function
  */
@@ -35,12 +34,10 @@ int zero_close  ( device_t dev ) {
 }
 
 int zero_read   ( device_t dev , char *buf    , size_t n  ) {
-#if 1
 	int i;
 	for ( i=0 ; i<n ; ++i ) {
 		buf[i] = (char) getc();
 	}
-#endif
 	return 0;
 }
 
@@ -61,7 +58,6 @@ int zero_devctl ( device_t dev , device_cmd c , void *arg ) {
  * interface for registry in embox as driver
  */
 int zero_load( driver_t *drv ) {
-#if 1
 	drv->name 		= "Zero Device Driver";
 	drv->ops.open 	= zero_open;
 	drv->ops.close 	= zero_close;
@@ -72,23 +68,17 @@ int zero_load( driver_t *drv ) {
 	drv->flags		= 0;
 	drv->private	= NULL;
 	drv->private_s	= sizeof(device_t*);
-#endif
 }
 
 int zero_probe( driver_t *drv , void *arg ) {
-#if 1
 	drv->private = device_create( drv , "dev_zero" , 0 , 0 );
-#endif
 }
 
 int zero_unload( driver_t *drv ) {
-#if 1
 	device_destroy( drv->private );
 	drv->private = NULL;
 	drv->private_s = 0;
-#endif
 }
-#endif
 
 /*
  * interface for registry in embox as module (while don't exist driver's framework)
@@ -97,14 +87,11 @@ int zero_unload( driver_t *drv ) {
 /*
  * for work need add to mods-? mods( ?.zero , 1 ) or ?
  */
-#if 1
-driver_t *drv;
-driver_t drv_wm; /* without malloc */
-#endif
+static driver_t *drv;
+static driver_t drv_wm; /* without malloc */
 
 static int zero_start(void) {
 	printf("\e[1;34mZero driver was started!\e[0;0m\n");
-#if 1
 	if (0)
 	if (NULL == (drv = kmalloc( sizeof( driver_t ) )) ) {
 		printf("No memory enough for start Zero driver\n");
@@ -118,17 +105,14 @@ static int zero_start(void) {
 	zero_load( &drv_wm );
 	zero_probe( &drv_wm , NULL );
 	#endif
-#endif
 	return 0;
 }
 
 static int zero_stop(void) {
-#if 1
-	zero_unload( drv );
+	zero_unload( &drv_wm );
 	#if 0
 	kfree( drv );
 	#endif
-#endif
 	return 0;
 }
 

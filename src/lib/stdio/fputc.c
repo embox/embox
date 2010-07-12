@@ -10,6 +10,6 @@
 #include <kernel/uart.h>
 
 int fputc(FILE f, int c) {
-	return 0;
+	return device_write( f , (char*)&c , sizeof(char));
 }
 

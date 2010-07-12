@@ -15,7 +15,7 @@
 
 #define EOF (-1)
 
-static FILE stdin, stdout;
+extern FILE stdin, stdout;
 
 extern int fputc(FILE f, int c);
 extern int fgetc(FILE f);

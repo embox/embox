@@ -1,3 +1,4 @@
+#include <stdio.h>
 
-/* static FILE stdin, stdout; */
+FILE stdin, stdout;
 

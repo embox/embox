@@ -96,22 +96,40 @@ device_desc device_select( const char *desc ) {
 
 #if 1
 /* shared device's interface */
-int device_open  ( device_desc *dev , int mode ) {
+int device_open  ( device_desc dev , int mode ) {
+	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
+	/* may be must add some check ptr? */
+	device_pool[dev].driver->ops.open( &device_pool[dev] , mode );
 }
 
-int device_close ( device_desc *dev ) {
+int device_close ( device_desc dev ) {
+	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
+	/* may be must add some check ptr? */
+	device_pool[dev].driver->ops.close( &device_pool[dev] );
 }
 
-int device_read  ( device_desc *dev , char *buf    , size_t n  ) {
+int device_read  ( device_desc dev , char *buf    , size_t n  ) {
+	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
+	/* may be must add some check ptr? */
+	device_pool[dev].driver->ops.read( &device_pool[dev] , buf , n );
 }
 
-int device_write ( device_desc *dev , char *buf    , size_t n  ) {
+int device_write ( device_desc dev , char *buf    , size_t n  ) {
+	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
+	/* may be must add some check ptr? */
+	device_pool[dev].driver->ops.write( &device_pool[dev] , buf , n );
 }
 
-int device_ioctl ( device_desc *dev , io_cmd c     , void *arg ) {
+int device_ioctl ( device_desc dev , io_cmd c     , void *arg ) {
+	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
+	/* may be must add some check ptr? */
+	device_pool[dev].driver->ops.ioctl( &device_pool[dev] , c , arg );
 }
 
-int device_devctl( device_desc *dev , device_cmd c , void *arg ) {
+int device_devctl( device_desc dev , device_cmd c , void *arg ) {
+	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
+	/* may be must add some check ptr? */
+	device_pool[dev].driver->ops.devctl( &device_pool[dev] , c , arg );
 }
 #endif
 

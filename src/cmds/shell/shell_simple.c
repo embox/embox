@@ -4,13 +4,29 @@
 #include <shell.h>
 #include <embox/unit.h>
 #include <shell_command.h>
+#include <driver.h>
 
 EMBOX_UNIT(shell_start, shell_stop);
 
 static int shell_start(void) {
+	stdin = stdout = device_select( CONFIG_DEV_STDIO );
+	printf("stdio: %d %d \n", stdin, stdout );
+
 	printf("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
 
 	printf("\n\n\e[1;34m Just for fun MESSAGE :D\e[0;0m\n\n");
+
+	printf("Test added fi_uart device\n");
+
+	while (true) {
+		int tmp;
+		tmp=fgetc(stdin);
+		printf("%d ",tmp);
+		fputc(stdout,tmp);
+		if (tmp==10) break;
+	}
+
+	printf("Test is done.\n");
 
 	while (true) {
 		int tmp;

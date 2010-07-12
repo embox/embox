@@ -11,10 +11,16 @@
 #include <driver.h>
 
 int fgetc(FILE f) {
-	return 0;
+	char ch;
+	int ret;
+	if (!(ret=device_read( f , &ch , sizeof(char) ))) {
+		return ch;
+	} else {
+		return -1;
+	}
 }
 
 int fungetc(FILE f, int ch) {
-	return 0;
+	return device_write( f , &ch , sizeof(char) );
 }
 
