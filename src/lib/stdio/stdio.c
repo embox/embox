@@ -1,0 +1,3 @@
+
+/* static FILE stdin, stdout; */
+

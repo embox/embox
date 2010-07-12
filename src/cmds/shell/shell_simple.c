@@ -12,9 +12,12 @@ static int shell_start(void) {
 
 	printf("\n\n\e[1;34m Just for fun MESSAGE :D\e[0;0m\n\n");
 
-	if (0)
 	while (true) {
-		putchar(getchar());
+		int tmp;
+		tmp=getchar();
+		printf("%d ",tmp);
+		putchar(tmp);
+		if (tmp==10) break;
 	}
 	return 0;
 }

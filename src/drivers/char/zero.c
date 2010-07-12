@@ -5,17 +5,13 @@
  * @description /dev/zero char device and example for write driver in OS "EMBOX"
  */
 
+#include <embox/unit.h>
 #include <driver.h>
+#include <stdio.h>
 
 #define START_AS_MOD
 
-
-#ifdef START_AS_MOD
-EMBOX_MOD( zero_asmod_start , zero_asmod_stop );
-#else /* !START_AS_MOD */
-EMBOX_DEVICE( zero_load , zero_probe , zero_unload );
-#endif /* START_AS_MOD */
-
+#if 1
 /*
  * inner function
  */
@@ -75,13 +71,13 @@ int zero_load( driver_t *drv ) {
 	drv->ops.devctl = zero_devctl;
 	drv->flags		= 0;
 	drv->private	= NULL;
-	drv->private_s	= sizeof(*device_t);
+	drv->private_s	= sizeof(device_t*);
 #endif
 }
 
 int zero_probe( driver_t *drv , void *arg ) {
 #if 1
-	drv->private = device_create( drv , "Zero Device" , 0 , 0 );
+	drv->private = device_create( drv , "dev_zero" , 0 , 0 );
 #endif
 }
 
@@ -92,29 +88,55 @@ int zero_unload( driver_t *drv ) {
 	drv->private_s = 0;
 #endif
 }
+#endif
 
 /*
  * interface for registry in embox as module (while don't exist driver's framework)
  */
-#if START_AS_MOD
+#ifdef START_AS_MOD
 /*
  * for work need add to mods-? mods( ?.zero , 1 ) or ?
  */
-driver_t *drv;
-
-static int zero_asmod_start(void) {
 #if 1
-	drv = kmalloc( sizeof( driver_t ) );
-	zero_load( drv );
-	zero_probe( drv );
+driver_t *drv;
+driver_t drv_wm; /* without malloc */
 #endif
+
+static int zero_start(void) {
+	printf("\e[1;34mZero driver was started!\e[0;0m\n");
+#if 1
+	if (0)
+	if (NULL == (drv = kmalloc( sizeof( driver_t ) )) ) {
+		printf("No memory enough for start Zero driver\n");
+		return 1;
+	}
+	#if 0
+	printf("%d\n",drv);
+	zero_load( drv );
+	zero_probe( drv , NULL );
+	#else
+	zero_load( &drv_wm );
+	zero_probe( &drv_wm , NULL );
+	#endif
+#endif
+	return 0;
 }
 
-static int zero_asmod_stop(void) {
+static int zero_stop(void) {
 #if 1
 	zero_unload( drv );
+	#if 0
 	kfree( drv );
+	#endif
 #endif
+	return 0;
 }
+
+EMBOX_UNIT( zero_start , zero_stop );
+
 #else
+
+EMBOX_DEVICE( zero_load , zero_probe , zero_unload );
+
+#endif
 

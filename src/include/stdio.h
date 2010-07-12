@@ -11,12 +11,14 @@
 
 #include <stdarg.h>
 #include <types.h>
+#include <driver.h>
 
 #define EOF (-1)
 
-typedef int FILE;
+static FILE stdin, stdout;
 
-static FILE STDIN,STDOUT;
+extern int fputc(FILE f, int c);
+extern int fgetc(FILE f);
 
 /**
  * Writes the string s and a trailing newline to stdout.
@@ -24,9 +26,6 @@ static FILE STDIN,STDOUT;
 extern int puts(const char *s);
 
 extern int putchar(int c);
-
-extern int fputc(FILE f, int c);
-extern int fgetc(FILE f);
 
 /**
  * Read a line from stdin into the buffer pointed to by s until

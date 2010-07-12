@@ -10,6 +10,8 @@
 
 #ifndef __ASSEMBLER__
 
+#include <asm/types.h>
+
 #ifndef __size_t_defined
 #define __size_t_defined
 typedef int size_t; /**<Used for sizes of objects*/

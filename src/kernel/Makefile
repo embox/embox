@@ -60,4 +60,5 @@ ifdef CONFIG_DRIVER_SUBSYSTEM
 # embox.kernel.drv_subsys
   $_MODS += drv_subsys
   $_SRCS-drv_subsys += driver.c
+  $_DEPS-drv_subsys += embox.hal.mm.kmalloc
 endif

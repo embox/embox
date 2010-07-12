@@ -8,13 +8,13 @@
 
 #include <stdio.h>
 #include <kernel/uart.h>
+#include <driver.h>
 
 int fgetc(FILE f) {
-	return (int) uart_getc();
+	return 0;
 }
 
 int fungetc(FILE f, int ch) {
-	uart_putc((char) ch);
-	return ch;
+	return 0;
 }
 

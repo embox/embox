@@ -75,7 +75,7 @@ void* kmalloc(size_t size) {
 	}
 	/* we inited */
 	if (!inited) {
-		int expr = allocate_mem_block(MALLOC_SIZE);
+		int expr = allocate_mem_block(CONFIG_MALLOC_SIZE);
 		if ( expr  == 0 ) {
 			return 0;
 		}
@@ -142,7 +142,7 @@ inline static int allocate_mem_block(int pages) {
 	}
 	/* calculate size etc. */
 	tmp_begin->tag.size =
-		PAGE_SIZE * pages
+		CONFIG_PAGE_SIZE * pages
 		- sizeof(tag_free_t)
 		- sizeof(tag_t);
 	tmp_begin->tag.free = HOLE;
