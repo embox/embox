@@ -6,3 +6,6 @@ $_SUBDIRS :=
 $_LIBS += libc.a
 
 $_SRCS-libc.a += */*.c
+
+# Need for stdio
+$_DEPS-libc.a += core.kernel.drv_subsys

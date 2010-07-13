@@ -5,6 +5,11 @@
  * @description realization of device manipulation
  */
 
+/*
+ * TO-DO Fix on -O0/-O2 optimization
+ * must work device_read
+ */
+
 #include <driver.h>
 #include <string.h>
 
@@ -97,36 +102,82 @@ device_desc device_select( const char *desc ) {
 #if 1
 /* shared device's interface */
 int device_open  ( device_desc dev , int mode ) {
+	/* init pool */
+	if (!has_init) {
+		pool_init();
+		has_init = 1;
+	}
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.open( &device_pool[dev] , mode );
 }
 
 int device_close ( device_desc dev ) {
+	/* init pool */
+	if (!has_init) {
+		pool_init();
+		has_init = 1;
+	}
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.close( &device_pool[dev] );
 }
 
 int device_read  ( device_desc dev , char *buf    , size_t n  ) {
-	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
+	/* init pool */
+	if (!has_init) {
+		pool_init();
+		has_init = 1;
+	}
+	printf("device_read %d %s; empty_dev %s\n",dev,device_pool[dev].desc,empty_dev);
+	printf("%d %d\n",&device_pool[dev].desc,&empty_dev);
+	/* if ( dev<0 | dev>=CONFIG_DEV_MAX_COUNT ) return 0; */
+	if ( device_pool[dev].desc == empty_dev ) {
+		#if 0
+		for (;1;);
+		//printf("\e[1;31mnow corrupt!\n");
+		/*
+		for (--n;n>=0;--n) {
+			buf[n]='\0';
+		} */
+		#endif
+		return 0; /* null device :) */
+	}
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.read( &device_pool[dev] , buf , n );
 }
 
 int device_write ( device_desc dev , char *buf    , size_t n  ) {
+	/* init pool */
+	if (!has_init) {
+		pool_init();
+		has_init = 1;
+	}
+	/* if ( dev<0 | dev>=CONFIG_DEV_MAX_COUNT ) return 0; */
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
+	if ( ! (device_pool[dev].driver || device_pool[dev].driver->ops.read )) return 0;
+
 	device_pool[dev].driver->ops.write( &device_pool[dev] , buf , n );
 }
 
 int device_ioctl ( device_desc dev , io_cmd c     , void *arg ) {
+	/* init pool */
+	if (!has_init) {
+		pool_init();
+		has_init = 1;
+	}
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.ioctl( &device_pool[dev] , c , arg );
 }
 
 int device_devctl( device_desc dev , device_cmd c , void *arg ) {
+	/* init pool */
+	if (!has_init) {
+		pool_init();
+		has_init = 1;
+	}
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.devctl( &device_pool[dev] , c , arg );

@@ -1,4 +1,5 @@
 #include <stdio.h>
 
-FILE stdin, stdout;
+FILE stdin = 0;
+FILE stdout= 0;
 

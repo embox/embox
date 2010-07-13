@@ -22,7 +22,7 @@
 
 $_test_name := dev_zero
 $_test_srcs := test_dev_zero.c
-$_test_deps := core.kernel.driver_subsys
+$_test_deps := core.kernel.drv_subsys
 
 ##
 # Default values. Do not edit.
