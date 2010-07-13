@@ -23,7 +23,7 @@ int putchar(int c) {
 	static char prev = 0;
 
 	if (c == '\n' && prev != '\r') {
-		putc('\r');
+		long_long_name_for_only_this_file_putc('\r');
 	}
 	//diag_putc((char) c);
 	long_long_name_for_only_this_file_putc((char) c);

@@ -26,7 +26,7 @@ static int shell_start(void) {
 		if (tmp==10) break;
 	}
 
-	printf("Test is done.\n");
+	printf("\n\e[1;34mTest is done.\e[0;0m\n");
 
 	while (true) {
 		int tmp;
