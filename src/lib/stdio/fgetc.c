@@ -10,6 +10,8 @@
 #include <kernel/uart.h>
 #include <driver.h>
 
+#ifdef CONFIG_DRIVER_SUBSYSTEM
+
 int fgetc(FILE f) {
 	char ch;
 	int ret;
@@ -23,4 +25,4 @@ int fgetc(FILE f) {
 int fungetc(FILE f, int ch) {
 	return device_write( f , &ch , sizeof(char) );
 }
-
+#endif

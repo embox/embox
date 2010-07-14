@@ -9,29 +9,34 @@
 EMBOX_UNIT(shell_start, shell_stop);
 
 static int shell_start(void) {
-	stdin = stdout = device_select( CONFIG_DEV_STDIO );
-	printf("stdio: %d %d \n", stdin, stdout );
+	FILE dev;
+	printk("before select device!\n");
+	dev = device_select( CONFIG_DEV_STDIO );
+	printk("selected device == %d \n",dev);
+	stdin = stdout = dev;
 
-	printf("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
+	printk("stdio: %d %d \n", stdin, stdout );
 
-	printf("\n\n\e[1;34m Just for fun MESSAGE :D\e[0;0m\n\n");
+	printk("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
 
-	printf("Test added fi_uart device\n");
+	printk("\n\n\e[1;34m Just for fun MESSAGE :D\e[0;0m\n\n");
+
+	printk("Test added fi_uart device\n");
 
 	while (true) {
 		int tmp;
 		tmp=fgetc(stdin);
-		printf("%d ",tmp);
+		printk("%d ",tmp);
 		fputc(stdout,tmp);
 		if (tmp==10) break;
 	}
 
-	printf("\n\e[1;34mTest is done.\e[0;0m\n");
+	printk("\n\e[1;34mTest is done.\e[0;0m\n");
 
 	while (true) {
 		int tmp;
 		tmp=getchar();
-		printf("%d ",tmp);
+		printk("%d ",tmp);
 		putchar(tmp);
 		if (tmp==10) break;
 	}

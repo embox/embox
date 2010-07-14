@@ -12,6 +12,8 @@
 
 #include <driver.h>
 #include <string.h>
+#include <hal/ipl.h>
+#include <stdio.h>
 
 #define CONFIG_DEV_MAX_COUNT 0xff
 
@@ -73,7 +75,7 @@ device_t 	*device_create( driver_t *this , const char *name , device_flags flags
 
 int 		device_destroy( device_t *dev ) {
 			/* free memory */
-#if 0
+#if 1
 	/* free memory */
 	kfree( dev->private );
 	/* set default value */
@@ -85,7 +87,8 @@ int 		device_destroy( device_t *dev ) {
 	dev->private_s= 0;
 	/* insert in list of empty */
 	dev->private	= device_pool[0].private;
-	device_pool[0].private = ((unsigned long long) device_pool - (unsigned long long) dev)/sizeof(device_t);
+	device_pool[0].private = (void*) (((unsigned long) device_pool -
+		(unsigned long ) dev)/(unsigned long)sizeof(device_t));
 #endif
 }
 
@@ -110,6 +113,7 @@ int device_open  ( device_desc dev , int mode ) {
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.open( &device_pool[dev] , mode );
+	return 0;
 }
 
 int device_close ( device_desc dev ) {
@@ -121,6 +125,7 @@ int device_close ( device_desc dev ) {
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.close( &device_pool[dev] );
+	return 0;
 }
 
 int device_read  ( device_desc dev , char *buf    , size_t n  ) {
@@ -129,22 +134,21 @@ int device_read  ( device_desc dev , char *buf    , size_t n  ) {
 		pool_init();
 		has_init = 1;
 	}
+#if 0
 	printf("device_read %d %s; empty_dev %s\n",dev,device_pool[dev].desc,empty_dev);
 	printf("%d %d\n",&device_pool[dev].desc,&empty_dev);
+#endif
 	/* if ( dev<0 | dev>=CONFIG_DEV_MAX_COUNT ) return 0; */
 	if ( device_pool[dev].desc == empty_dev ) {
-		#if 0
-		for (;1;);
-		//printf("\e[1;31mnow corrupt!\n");
-		/*
+		if (0)
 		for (--n;n>=0;--n) {
 			buf[n]='\0';
-		} */
-		#endif
+		}
 		return 0; /* null device :) */
 	}
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.read( &device_pool[dev] , buf , n );
+	return 0;
 }
 
 int device_write ( device_desc dev , char *buf    , size_t n  ) {
@@ -159,6 +163,7 @@ int device_write ( device_desc dev , char *buf    , size_t n  ) {
 	if ( ! (device_pool[dev].driver || device_pool[dev].driver->ops.read )) return 0;
 
 	device_pool[dev].driver->ops.write( &device_pool[dev] , buf , n );
+	return 0;
 }
 
 int device_ioctl ( device_desc dev , io_cmd c     , void *arg ) {
@@ -170,6 +175,7 @@ int device_ioctl ( device_desc dev , io_cmd c     , void *arg ) {
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.ioctl( &device_pool[dev] , c , arg );
+	return 0;
 }
 
 int device_devctl( device_desc dev , device_cmd c , void *arg ) {
@@ -181,6 +187,7 @@ int device_devctl( device_desc dev , device_cmd c , void *arg ) {
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
 	device_pool[dev].driver->ops.devctl( &device_pool[dev] , c , arg );
+	return 0;
 }
 #endif
 

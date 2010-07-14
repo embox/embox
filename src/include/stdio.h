@@ -102,7 +102,8 @@ extern int fseek ( FILE * stream, long int offset, int origin );
 
 #if defined(CONFIG_TRACE)
 # ifdef __EMBOX__
-#  define TRACE(...)  printf(__VA_ARGS__)
+#  define TRACE(...)  printk(__VA_ARGS__) /* may be I don't understand anything,
+		but I change `printf' to `printk' -- Fedor Burdun */
 # else
 #  define TRACE(...)  printk(__VA_ARGS__)
 # endif

@@ -47,6 +47,8 @@ ifdef CONFIG_IRQ
 endif
 ifdef CONFIG_PRINTK
   $_SRCS-printk  += printk.c
+  #$_SRCS-printk  += printk/putchar.c ../lib/stdio/printf.c
+  $_SRCS-printk  += printk/putchar.c printk/printf.c
   $_DEPS-printk  += $(CONFIG_MOD_DIAG)
 endif
 ifdef CONFIG_SOFTIRQ
@@ -57,7 +59,7 @@ ifdef CONFIG_TIMER
   $_DEPS-timer   += embox.hal.clock
 endif
 ifdef CONFIG_DRIVER_SUBSYSTEM
-# embox.kernel.drv_subsys
+# It's core.kernel.drv_subsys
   $_MODS += drv_subsys
   $_SRCS-drv_subsys += driver.c
   $_DEPS-drv_subsys += embox.hal.mm.kmalloc

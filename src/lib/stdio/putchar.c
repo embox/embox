@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 #ifdef CONFIG_HARD_UART_OUT
-int long_long_name_for_only_this_file_putc(int c) {
+int putchar_putc(int c) {
 	#ifndef CONFIG_HARD_DIAGUART
 	return uart_putc((char) c);
 	#else
@@ -23,14 +23,19 @@ int putchar(int c) {
 	static char prev = 0;
 
 	if (c == '\n' && prev != '\r') {
-		long_long_name_for_only_this_file_putc('\r');
+		putchar_putc('\r');
 	}
-	//diag_putc((char) c);
-	long_long_name_for_only_this_file_putc((char) c);
+	putchar_putc((char) c);
 
 	return (prev = c);
 #else
+
+# ifdef CONFIG_DRIVER_SUBSYSTEM
+	/* uart_putc((char) c); */
 	return fputc(stdout,c);
+# else
+#  error Libc.a: INCLUDE option DRIVER_SUBSYSTEM or HARD_UART_OUT for output in option-driver.conf.
+# endif
 #endif
 }
 
