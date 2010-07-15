@@ -28,4 +28,5 @@
 # Default values. Do not edit.
 $_MODS += kmalloc
 $_SRCS-kmalloc += *.c
+$_DEPS-kmalloc += embox.hal.mm.kmalloc
 
