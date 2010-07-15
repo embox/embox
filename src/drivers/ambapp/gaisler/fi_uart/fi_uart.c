@@ -1,8 +1,12 @@
 #include <embox/unit.h>
 #include <driver.h>
+#include <kernel/printk.h>
 #include <stdio.h>
 
 #define UART_DIAG_REALIZATION
+#if 0
+# define DEBUG_FI_UART
+#endif
 
 #ifdef UART_DIAG_REALIZATION
 /**
@@ -43,6 +47,9 @@ int fi_uart_has_symbol(void) {
 }
 
 void fi_uart_putc(char ch) {
+#ifdef DEBUG_FI_UART
+	TRACE("fi_uart_putc %d %c\n",(int)ch, ch);
+#endif
 	while (!(0x4 & REG_LOAD((volatile uint32_t *) (APBUART_BASE + STATUS_REG)))) {
 	}
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + DATA_REG), (uint32_t) ch);
@@ -224,9 +231,7 @@ int fi_uart_close  ( device_t dev ) {
 
 int fi_uart_read   ( device_t dev , char *buf    , size_t n  ) {
 	int i;
-	printf("fi_uart read %d\n",n);
 	for ( i=0 ; i<n ; ++i ) {
-		printf("fi_uart do %d\n",i);
 		buf[i] = (char) fi_uart_getc();
 	}
 	return 0;
@@ -234,7 +239,9 @@ int fi_uart_read   ( device_t dev , char *buf    , size_t n  ) {
 
 int fi_uart_write  ( device_t dev , char *buf    , size_t n  ) {
 	int i;
-	printf("fi_uart write\n");
+#ifdef DEBUG_FI_UART
+	TRACE("fi_uart_write %d %d %d %c\n",dev,n,buf,*buf);
+#endif
 	for ( i=0 ; i<n ; ++i ) {
 		fi_uart_putc( buf[i] );
 	}
@@ -264,16 +271,19 @@ int fi_uart_load( driver_t *drv ) {
 	drv->flags		= 0;
 	drv->private	= NULL;
 	drv->private_s	= sizeof(device_t*);
+	return 0;
 }
 
 int fi_uart_probe( driver_t *drv , void *arg ) {
 	drv->private = device_create( drv , "dev_fi_uart01" , 0 , 0 );
+	return 0;
 }
 
 int fi_uart_unload( driver_t *drv ) {
 	device_destroy( drv->private );
 	drv->private = NULL;
 	drv->private_s = 0;
+	return 0;
 }
 
 /*
@@ -287,14 +297,13 @@ driver_t *drv;
 driver_t drv_wm; /* without malloc */
 
 static int fi_uart_start(void) {
-	printf("\e[1;34mGaisler fi_uart driver was started!\e[0;0m\n");
+	TRACE("\e[1;34mGaisler fi_uart driver was started!\e[0;0m\n");
 	if (0)
 	if (NULL == (drv = kmalloc( sizeof( driver_t ) )) ) {
-		printf("No memory enough for start gaisler fi_uart driver\n");
+		TRACE("No memory enough for start gaisler fi_uart driver\n");
 		return 1;
 	}
 	#if 0
-	printf("%d\n",drv);
 	fi_uart_load( drv );
 	fi_uart_probe( drv , NULL );
 	#else

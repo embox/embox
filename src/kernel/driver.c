@@ -160,7 +160,7 @@ int device_write ( device_desc dev , char *buf    , size_t n  ) {
 	/* if ( dev<0 | dev>=CONFIG_DEV_MAX_COUNT ) return 0; */
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
-	if ( ! (device_pool[dev].driver || device_pool[dev].driver->ops.read )) return 0;
+	if ( ! (device_pool[dev].driver || device_pool[dev].driver->ops.read )) return 0; /* check like it */
 
 	device_pool[dev].driver->ops.write( &device_pool[dev] , buf , n );
 	return 0;

@@ -7,7 +7,7 @@
 
 #include <embox/unit.h>
 #include <driver.h>
-#include <stdio.h>
+#include <kernel/printk.h>
 
 #define START_AS_MOD
 
@@ -91,10 +91,10 @@ static driver_t *drv;
 static driver_t drv_wm; /* without malloc */
 
 static int zero_start(void) {
-	printf("\e[1;34mZero driver was started!\e[0;0m\n");
+	printk("\e[1;34mZero driver was started!\e[0;0m\n");
 	if (0)
 	if (NULL == (drv = kmalloc( sizeof( driver_t ) )) ) {
-		printf("No memory enough for start Zero driver\n");
+		printk("No memory enough for start Zero driver\n");
 		return 1;
 	}
 	#if 0

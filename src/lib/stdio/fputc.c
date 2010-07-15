@@ -10,9 +10,15 @@
 #include <kernel/uart.h>
 #include <driver.h>
 
+#include <kernel/printk.h> /* only for debug */
+
 #ifdef CONFIG_DRIVER_SUBSYSTEM
 int fputc(FILE f, int c) {
-	return device_write( f , (char*)&c , sizeof(char));
+#if 0
+	printk("try fputc. device_desc: %d, code of char: %d, char: %c\n",f,c,c);
+#endif
+	char tmp = c;
+	return device_write( f , &tmp , sizeof(char));
 }
 #endif
 
