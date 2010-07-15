@@ -269,25 +269,34 @@ void mpfree( void * ptr ) {
 /**
  * some functions for debug
  */
-#ifdef EXTENDED_TEST
+//#ifdef EXTENDED_TEST
+#if 1
+
+#if 0
+# define MULTIPAGE_TRACE printk
+#else
+# define MULTIPAGE_TRACE printf
+#endif
 
 extern void multipage_info() {
 	char *ptr;
-	printf("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
-	printf("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
-	printf("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
-	printf("\tpool start: %08x \n\tpool end: %08x \n",(unsigned long) HEAP_START_PTR,
+	MULTIPAGE_TRACE("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
+	MULTIPAGE_TRACE("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
+	MULTIPAGE_TRACE("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
+	MULTIPAGE_TRACE("\tpool start: %08x \n\tpool end: %08x \n",(unsigned long) HEAP_START_PTR,
 		(unsigned long) HEAP_END_PTR);
-	printf("\treal heap start (for return): %08x\n",(unsigned long) heap_start);
-	printf("\tmaxblocksize=(dec)%ld\n",maxblocksize);
-	printf("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
-	printf("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
-	printf("\n\tTree:\n\t\t");
-	for ( ptr=HEAP_START_PTR ; ptr<heap_start ; ++ptr ) {
-		printf("%ld ",*ptr);
+	MULTIPAGE_TRACE("\treal heap start (for return): %08x\n",(unsigned long) heap_start);
+	MULTIPAGE_TRACE("\tmaxblocksize=(dec)%ld\n",maxblocksize);
+	MULTIPAGE_TRACE("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
+	MULTIPAGE_TRACE("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
+	MULTIPAGE_TRACE("\n\tTree:\n\t\t");
+	for ( ptr=HEAP_START_PTR ; ptr<(_heap_start+2*rootblocksize) ; ++ptr ) {
+		MULTIPAGE_TRACE("%ld ",*ptr);
 	}
-	printf("\n");
-	printf("info end\n");
+	MULTIPAGE_TRACE("\n");
+	MULTIPAGE_TRACE("info end\n");
 }
+
+#undef MULTIPAGE_TRACE
 
 #endif
