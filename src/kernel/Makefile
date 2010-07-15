@@ -12,7 +12,7 @@ $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 
-$_MODS += irq timer printk softirq thread scheduler job
+$_MODS += irq timer printk softirq thread scheduler job elf
 
 $_SRCS-main += main.c
 $_SRCS-main += init.c
@@ -57,6 +57,10 @@ endif
 ifdef CONFIG_TIMER
   $_SRCS-timer   += timer.c
   $_DEPS-timer   += embox.hal.clock
+endif
+ifdef CONFIG_ELF
+  $_DEPS-main += elf
+  $_SRCS-elf += elf_executer.c
 endif
 ifdef CONFIG_DRIVER_SUBSYSTEM
 # It's core.kernel.drv_subsys
