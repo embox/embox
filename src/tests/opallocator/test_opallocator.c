@@ -73,14 +73,14 @@ size_t allow_page_count() {
  */
 void do_allpage() {
 	pmark_t* pcur = get_cmark_p();
-	printf("Print map of memory: \n");
+	TRACE("Print map of memory: \n");
 	if (pcur == NULL) { /* don't exist list of empty page */
-		printf("\tList of free page is empty\n");
+		TRACE("\tList of free page is empty\n");
 		return;
 	}
 
 	do {
-		printf("\tStruct: %08x\n\t\tsize: %d\n\t\tnext: %08x\n\t\tprev: %08x\n\n",
+		TRACE("\tStruct: %08x\n\t\tsize: %d\n\t\tnext: %08x\n\t\tprev: %08x\n\n",
 			pcur, pcur->psize, pcur->pnext, pcur->pprev);
 		pcur = pcur->pnext;
 	} while (pcur != get_cmark_p());
@@ -97,9 +97,9 @@ int count_of_error = 0;
 void memory_check() {
 	size_t allocp = allow_page_count();
 	size_t freep  = free_page_count();
-	printf("Allocated: %d ; Free %d \n", allocp , freep );
+	TRACE("Allocated: %d ; Free %d \n", allocp , freep );
 	if (allocp+freep != PAGE_QUANTITY) {
-		printf("WARNING: Sum of allocated and free page don't equal page quality!!! \n");
+		TRACE("WARNING: Sum of allocated and free page don't equal page quality!!! \n");
 		++count_of_error;
 	}
 }
@@ -125,7 +125,7 @@ extern char _heap_end;
 	int callowed=0,cfree=0;
 	first = pointers; last = pointers;
 
-	printf("\nTest page_alloc. Size of pool: %d (pages).\n",PAGE_QUANTITY);
+	TRACE("\nTest page_alloc. Size of pool: %d (pages).\n",PAGE_QUANTITY);
 
 	/* push 2 pop 1 - while it is best idea */
 
@@ -135,23 +135,23 @@ extern char _heap_end;
 			for (i=0;i<8;++i) {
 
 				if (NULL == (*last = opalloc())) {
-					printf("Alloc page: %p\n", (void*)NULL);
+					TRACE("Alloc page: %p\n", (void*)NULL);
 				} else {
-					printf("Alloc page: %p\n", (void*)last);
+					TRACE("Alloc page: %p\n", (void*)last);
 					last = ++last < pointers+TEST_STACK_SIZE ? last : pointers;
 					++callowed;
 				}
 			}
 
 		}
-		printf("Free page: %p\n", (void*)first);
+		TRACE("Free page: %p\n", (void*)first);
 		opfree(*first);
 		first = ++first < pointers+TEST_STACK_SIZE ? first : pointers;
 		cfree += 1;
 
 	} while (first!=last); /* queue is not empty */
 
-	printf("was allowed %d was free %d: ",callowed,cfree);
+	TRACE("was allowed %d was free %d: ",callowed,cfree);
 
 	return callowed == cfree ? 0 : 1;
 #else
@@ -183,7 +183,7 @@ extern char _heap_end;
 
 	} while (first!=last); /* queue is not empty */
 
-	printf("was allowed %d was free %d: ",callowed,cfree);
+	TRACE("was allowed %d was free %d: ",callowed,cfree);
 
 	return callowed == cfree ? 0 : 1;
 #endif

@@ -35,7 +35,7 @@ static int run(void) {
 	struct list *tmp;
 
 	putchar('\n');
-	printf("\t\t = Allocate list =\n");
+	TRACE("\t\t = Allocate list =\n");
 	for(i = 0; i <= 10; i++) {
 		tmp = (struct list *)kmalloc(sizeof(struct list));
 		if ( tmp == 0 ) {
@@ -43,19 +43,19 @@ static int run(void) {
 		}
 		tmp->p = i;
 		list_add( (struct list_head*) tmp, &int_list);
-		printf("tmp[%d] = %d \n ", i, tmp->p);
+		TRACE("tmp[%d] = %d \n ", i, tmp->p);
 	}
 
-	printf("\n\n\t\t = Test our list =\n");
+	TRACE("\n\n\t\t = Test our list =\n");
 	list_for_each( tmp_h, &int_list) {
 		tmp = (struct list *)tmp_h;
-		printf("tmp[%d] = %d \n ",tmp->p,tmp->p);
+		TRACE("tmp[%d] = %d \n ",tmp->p,tmp->p);
 	}
 
-	printf("\n\n\t\t = Test free =\n");
+	TRACE("\n\n\t\t = Test free =\n");
 	list_for_each( tmp_h, &int_list) {
 		tmp = (struct list *)tmp_h;
-		printf("now tmp[%d] is free \n ", tmp->p);
+		TRACE("now tmp[%d] is free \n ", tmp->p);
 	}
 	TRACE("\ntest ");
 
