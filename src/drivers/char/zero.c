@@ -68,16 +68,19 @@ int zero_load( driver_t *drv ) {
 	drv->flags		= 0;
 	drv->private	= NULL;
 	drv->private_s	= sizeof(device_t*);
+	return 0;
 }
 
 int zero_probe( driver_t *drv , void *arg ) {
 	drv->private = device_create( drv , "dev_zero" , 0 , 0 );
+	return 0;
 }
 
 int zero_unload( driver_t *drv ) {
 	device_destroy( drv->private );
 	drv->private = NULL;
 	drv->private_s = 0;
+	return 0;
 }
 
 /*
