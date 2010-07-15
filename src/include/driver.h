@@ -23,8 +23,10 @@ typedef device_desc FILE;
 //#define FILE device_desc;
 
 typedef struct device 		device_t;
-typedef struct io_context 	io_context_t;
 typedef struct driver 		driver_t;
+#ifdef CONFIG_DEV_IO_CONTEXT
+typedef struct io_context 	io_context_t;
+#endif
 
 /*
  * this interface for char device will not support fseek (call ioctl with some argument)
@@ -52,9 +54,11 @@ typedef struct device_ops {
  * Need it or NOT ?
  * io context, that show path to route flow of data
  */
+#ifdef CONFIG_DEV_IO_CONTEXT
 struct io_context {
 	device_desc in, out; /* FILE in, out; */
 };
+#endif
 
 /*
  * device information, that accesiable for kernel
@@ -62,7 +66,9 @@ struct io_context {
 struct device {
 	const char 			*desc;		/* char description of device */
 	device_flags		flags;		/* some flag, allows read/write or some operations? */
+#ifdef CONFIG_DEV_IO_CONTEXT
 	io_context_t 		ioc;		/* in/out context */
+#endif
 	driver_t 			*driver;	/* driver, that controlled its device */
 	size_t 				private_s; 	/* description of private data */
 	void 				*private;

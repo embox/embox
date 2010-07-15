@@ -30,8 +30,10 @@ void pool_init() {
 		/* memset( &device_pool[i] , 0 , sizeof( device_t ) ); */
 		device_pool[i].desc 	= empty_dev;
 		device_pool[i].flags	= 0;
+#ifdef CONFIG_DEV_IO_CONTEXT
 		device_pool[i].ioc.in	= 0;
 		device_pool[i].ioc.out	= 0;
+#endif
 		device_pool[i].driver 	= NULL;
 		device_pool[i].private_s= 0;
 		device_pool[i].private	= NULL;
@@ -81,8 +83,10 @@ int 		device_destroy( device_t *dev ) {
 	/* set default value */
 	dev->desc 		= empty_dev;
 	dev->flags		= 0;
+#ifdef CONFIG_DEV_IO_CONTEXT
 	dev->ioc.in		= 0;
 	dev->ioc.out	= 0;
+#endif
 	dev->driver 	= NULL;
 	dev->private_s= 0;
 	/* insert in list of empty */
