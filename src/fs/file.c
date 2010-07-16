@@ -90,5 +90,17 @@ int remove(const char *pathname) {
 }
 
 int fseek ( FILE * stream, long int offset, int origin ) {
-	return 0;
+	FILEOP **fop = (FILEOP **)stream;
+
+	if (NULL == fop) {
+			LOG_ERROR("fop is NULL handler\n");
+			return -1;
+	}
+
+	if (NULL == (*fop)->fseek){
+			LOG_ERROR("fop->fseek is NULL handler\n");
+			return -1;
+	}
+
+	return (*fop)->fseek(stream, offset, whence);
 }
