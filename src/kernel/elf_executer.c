@@ -17,17 +17,14 @@ int elf_execute(FILE *file) {
 	Elf32_Ehdr *EH;
 	Elf32_Phdr *EPH;
 	int counter;
-	int ent_size;
 	int (*function_main)(int argc, char *argv[]);
 	int result;
 	EH = (Elf32_Ehdr *)file;
-	/* TODO bad sizes. */
 	EPH = (Elf32_Phdr *)((char *)EH + EH->e_phoff);
 
 	counter = EH->e_phnum;
 	printf("\n");
 	while(counter--) {
-		ent_size = EH->e_phentsize;
 		if (EPH->p_type == 1) { /* Type = PT_LOAD. */
 			/* Physical address equals to virtual. */
 			memcpy((void *)EPH->p_vaddr, (char *)EH + EPH->p_offset, EPH->p_memsz);

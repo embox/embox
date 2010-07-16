@@ -121,6 +121,11 @@ struct thread *thread_create(void (*run)(void), void *stack_address);
 void thread_start(struct thread *thread);
 
 /**
+ * Changes thread's priority.
+ */
+void thread_change_priority(struct thread *thread, int new_priority);
+
+/**
  * Stops chosen thread.
  * Deletes previous zombie.
  * Makes it a zombie.

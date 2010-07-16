@@ -125,6 +125,14 @@ void thread_start(struct thread *thread) {
 	scheduler_add(thread);
 }
 
+void thread_change_priority(struct thread *thread, int new_priority) {
+	scheduler_lock();
+	scheduler_remove(thread);
+	thread->priority = new_priority;
+	scheduler_add(thread);
+	scheduler_unlock();
+}
+
 /**
  * Deletes chosen thread.
  */
