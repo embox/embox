@@ -265,6 +265,18 @@ static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *fil
 }
 
 static int ramfs_fseek(void *file, long offset, int whence) {
-	//FILE_HANDLER *fh = (FILE_HANDLER *) file;
+	FILE_HANDLER *fh = (FILE_HANDLER *) file;
+	int new_offset = offset + whence;
+
+	if (file == NULL) {
+		return -2; /*Null file descriptor*/
+	}
+
+	if (new_offset >= fh->fdesc->size) {
+		return -1; /*Non-valid offset*/
+	}
+
+	fh->cur_pointer = new_offset;
+
 	return 0;
 }
