@@ -16,11 +16,11 @@ EMBOX_TEST(run);
 
 static int run(void) {
 	void *ptr;
-	TRACE("Special for Michail: ");
-	multipage_info();
-	ptr = mpalloc(4);
-	multipage_info();
-	TRACE("was selected ptr[%d]; ", (unsigned int)ptr);
+	TRACE("\n\e[1;31mSpecial for Michail: \e[0;0m");
+	/* multipage_info(); */
+	ptr = mpalloc(1);
+	TRACE("was selected ptr: %d ; ", (unsigned int)ptr);
+	/* multipage_info(); */
 	mpfree(ptr);
 	TRACE("was free. ");
 	return 0;

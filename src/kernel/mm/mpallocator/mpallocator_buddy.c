@@ -40,6 +40,7 @@ extern char *_heap_start;
 extern char *_heap_end;
 # define HEAP_START_PTR 	_heap_start
 # define HEAP_END_PTR		_heap_end
+# define TRACE printf
 #endif
 
 #define PAGE_QUANTITY ( (((size_t) HEAP_END_PTR - (size_t) HEAP_START_PTR) ) / CONFIG_PAGE_SIZE )
@@ -48,8 +49,13 @@ extern char *_heap_end;
 #define SET_BIT0(ind,bit) set_bits( ind , get_bits(ind) & (255^(bit)) )
 #define HAS_BIT(ind,bit) ( get_bits(ind) & (bit) )
 
-#define ANY_OPTIMIZATION
+#if 1
+# define ANY_OPTIMIZATION
+#endif
 
+#if 0
+# define MPALLOCATOR_DEBUG
+#endif
 
 typedef size_t taddr;	/* addres in tree */
 char* heap_start;		/* real heap_start */
@@ -71,7 +77,7 @@ inline char get_bits( taddr addr ) {
 	return (HEAP_START_PTR) [addr-1];
 }
 
-/**		TFW
+/**
  * initialization of tree
  * Mark block if it isn't in heap.
  *
@@ -106,20 +112,7 @@ int dfs_init( taddr addr , char * ptr , size_t size ) {
 	return marked;
 }
 
-#if 0 																//NOT USED CODE
-
-/**		TFMBR!!!
- * Check addr in tree or not.
- */
-int taddr_in_tree( taddr addr ) {
-	size_t len = 1;
-	for ( ; addr < maxblocksize ; addr <<= 1 )
-		len <<= 1;
-	return len+addr <= sizeofpool; // ?!?!? <= or <
-}
-#endif
-
-/**		TFW
+/**
  * initialization of allocator
  */
 #ifdef EXTENDED_TEST
@@ -165,11 +158,11 @@ inline int is_avail( taddr addr ) {
  * check block in heap or not
  */
 inline int in_heap( taddr addr, size_t length ) {
-	return ( (unsigned long long) taddr_to_ptr( addr ) +
-		length*CONFIG_PAGE_SIZE <= (unsigned long long) _heap_end );
+	return ( ((unsigned long) taddr_to_ptr( addr ) + (unsigned long)
+		length*CONFIG_PAGE_SIZE) <= (unsigned long) HEAP_END_PTR );
 }
 
-/**		TFwR
+/**
  * find first available proper block for reserve.
  * return 0 if same block don't exist.
  */
@@ -177,9 +170,6 @@ taddr dfs_find( taddr lroot, size_t cursize, size_t size ) {
 	/* must check above that size != 0 */
 	/* enough codition ( it's reserved or no proper )
 		(if lroot not belongs main tree, than cursize == 0) */
-#ifdef EXTENDED_TEST_
-	printf("\n\n TESTDFS  %d %d %d\n", lroot , get_bits(lroot), HAS_BIT( lroot , 4 ));
-#endif
 	if ( cursize < size || HAS_BIT( lroot , 4 ) ) return 0;
 	taddr child_return;
 	/* find in left subtree */
@@ -194,7 +184,7 @@ taddr dfs_find( taddr lroot, size_t cursize, size_t size ) {
 	return 0;
 }
 
-/** 	TFwR
+/**
  * allocator
  */
 void * mpalloc( size_t size ) {
@@ -231,7 +221,6 @@ void * mpalloc( size_t size ) {
  */
 void mpfree( void * ptr ) {
 #ifdef EXTENDED_TEST
-	printf("run free\n");
 	if ( ptr == NULL ) return;
 #endif
 	taddr parent,before,addr;
@@ -269,34 +258,54 @@ void mpfree( void * ptr ) {
 /**
  * some functions for debug
  */
-//#ifdef EXTENDED_TEST
-#if 1
-
-#if 0
-# define MULTIPAGE_TRACE printk
-#else
-# define MULTIPAGE_TRACE printf
-#endif
+#ifdef EXTENDED_TEST
 
 extern void multipage_info() {
 	char *ptr;
-	MULTIPAGE_TRACE("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
-	MULTIPAGE_TRACE("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
-	MULTIPAGE_TRACE("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
-	MULTIPAGE_TRACE("\tpool start: %08x \n\tpool end: %08x \n",(unsigned long) HEAP_START_PTR,
+	/* initialization of allocator */
+    if (!hasinit) {
+        multipage_init();
+        hasinit = 1;
+    }
+
+#if 0 /* test of bits arifmetics */
+#define VAR (HEAP_START_PTR)[var-1]
+
+    int var = 5;
+    set_bits(var,0);
+    TRACE("\n");
+
+    TRACE("%d\n",VAR);
+    SET_BIT1(var,4);
+    TRACE("%d\n",VAR);
+    SET_BIT1(var,2);
+    TRACE("%d\n",VAR);
+    if (HAS_BIT(var,4)) {
+        TRACE("Has bit 4\n");
+    }
+    SET_BIT0(var,4);
+    TRACE("%d\n",VAR);
+
+#undef VAR
+#endif
+
+
+	TRACE("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
+	TRACE("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
+	TRACE("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
+	TRACE("\tpool start: %08x \n\tpool end: %08x \n",(unsigned long) HEAP_START_PTR,
 		(unsigned long) HEAP_END_PTR);
-	MULTIPAGE_TRACE("\treal heap start (for return): %08x\n",(unsigned long) heap_start);
-	MULTIPAGE_TRACE("\tmaxblocksize=(dec)%ld\n",maxblocksize);
-	MULTIPAGE_TRACE("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
-	MULTIPAGE_TRACE("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
-	MULTIPAGE_TRACE("\n\tTree:\n\t\t");
-	for ( ptr=HEAP_START_PTR ; ptr<(_heap_start+2*rootblocksize) ; ++ptr ) {
-		MULTIPAGE_TRACE("%ld ",*ptr);
+	TRACE("\treal heap start (for return): %08x\n",(unsigned long) heap_start);
+	TRACE("\tmaxblocksize=(dec)%ld\n",maxblocksize);
+	TRACE("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
+	TRACE("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
+	TRACE("\n\tTree:\n\t\t");
+	for ( ptr=HEAP_START_PTR ; ptr<(HEAP_START_PTR+2*rootblocksize-1) ; ++ptr ) {
+		TRACE("%ld ",*ptr);
 	}
-	MULTIPAGE_TRACE("\n");
-	MULTIPAGE_TRACE("info end\n");
+	TRACE("\n");
+	TRACE("info end\n");
 }
 
-#undef MULTIPAGE_TRACE
 
 #endif
