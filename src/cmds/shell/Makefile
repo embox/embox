@@ -3,9 +3,10 @@ $_MODS += shell
 
 ifdef CONFIG_SHELL_SOURCE
 
-  ifdef CONFIG_HARD_UART_OUT # old or new version shell with hard out to uart
+  ifeq ($(CONFIG_SHELL_SOURCE), shell.c) # old
 
-    $_SRCS-shell += $(CONFIG_SHELL_SOURCE) shell_command.c console/*.c
+    $_SRCS-shell += shell.c shell_command.c console/*.c
+#    $_DEPS-shell += core.kernel.job embox.hal.context
     $_DEPS-shell += core.kernel.job embox.hal.context embox.driver.apbuart embox.driver.diag_apbuart
 
     $_CPPFLAGS-shell += -I$(AUTOCONF_DIR)
@@ -13,7 +14,8 @@ ifdef CONFIG_SHELL_SOURCE
     # In fact only shell.o depends on start_script, but shell.c is acceptible too.
     $($_SELFDIR)/shell.c : $(AUTOCONF_DIR)/start_script.inc
 
-  else # only new shell without hard output ------------------------------------
+
+  else # new
 
     $_SRCS-shell += $(CONFIG_SHELL_SOURCE) shell_command.c
     $_DEPS-shell += core.kernel.job embox.hal.context core.kernel.drv_subsys
@@ -36,4 +38,3 @@ else # oldest version of shell -----------------------------------------------
   $($_SELFDIR)/shell.c : $(AUTOCONF_DIR)/start_script.inc
 
 endif
-

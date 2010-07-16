@@ -34,7 +34,16 @@ int putchar(int c) {
 	/* uart_putc((char) c); */
 	return fputc(stdout,c);
 # else
-#  error Libc.a: INCLUDE option DRIVER_SUBSYSTEM or HARD_UART_OUT for output in option-driver.conf.
+/* #  error Libc.a: INCLUDE option DRIVER_SUBSYSTEM or HARD_UART_OUT for output in option-driver.conf. */
+	/* default */
+	static char prev = 0;
+
+	if (c == '\n' && prev != '\r') {
+		diag_putc('\r');
+	}
+	diag_putc((char) c);
+
+	return (prev = c);
 # endif
 #endif
 }
