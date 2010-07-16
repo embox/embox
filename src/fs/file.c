@@ -102,5 +102,5 @@ int fseek ( FILE * stream, long int offset, int origin ) {
 			return -1;
 	}
 
-	return (*fop)->fseek(stream, offset, whence);
+	return (*fop)->fseek(stream, offset, origin);
 }
