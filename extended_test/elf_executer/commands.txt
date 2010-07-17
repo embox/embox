@@ -1,0 +1,20 @@
+Step 1
+Create object file without linking
+gcc -c test_prog.c -o test_prog
+
+Step 2
+Link object file of executable program according to lds config
+ld -nostdlib -T test_prog.lds -o test_prog_linked test_prog
+
+Step 3 (not obligative)
+Create disassembled file
+objdump -S test_prog_linked>test_prog_linked.dis
+
+Step 4
+Assemble the program which will execute the first prog
+gcc elf_writer.c -o elf_writer
+
+Step 5
+Execute and see result
+./elf_writer test_prog_linked
+

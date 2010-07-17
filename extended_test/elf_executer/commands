@@ -1,7 +1,0 @@
-gcc -c test_prog.c -o test_prog
-ld -nostdlib -T test_prog.lds -o test_prog_linked test_prog
-objdump -S test_prog_linked>test_prog_linked.dis
-
-gcc elf_writer.c -o elf_writer
-./elf_writer test_prog_linked
-
