@@ -12,16 +12,25 @@
 #include <hal/reg.h>
 
 #define make_reg(offset) ((unsigned long *) (BASE_ADDR + offset))
-#define BASE_ADDR 0xfffd0000
+#define BASE_ADDR 0xfffc0000
 #define US_CR	  make_reg(0x0)
 #define US_MR	  make_reg(0x4)
 #define US_CSR	  make_reg(0x14)
 #define US_RHR	  make_reg(0x18)
 #define US_THR	  make_reg(0x1c)
+#define US_BRGR	  make_reg(0x20)
+#define PIO_PDR	  0xfffff4004
+#define PMC_PCER  0xfffffc10
+#define PDC_PTCR  make_reg(0x120)
 
 void diag_init(void) {
+	REG_STORE(PIO_PDR, 0x60);
+	REG_STORE(US_CR, 0xac); /*resetting & disabling RX, TX */
+	REG_STORE(US_MR, 0x8c0);
+	REG_STORE(US_BRGR, 313);
+	REG_STORE(PMC_PCER, 0x40);
+	//REG_STORE(PDC_PTCR, 11);
 	REG_STORE(US_CR, 0x50); /*enabling RX, TX */
-	REG_STORE(US_CR, 0x0c); /*resetting RX, TX */
 }
 
 char diag_getc(void) {
