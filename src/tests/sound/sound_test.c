@@ -138,8 +138,7 @@ const     SAMPLEWORD TonePattern[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
   }
 };
 
-EMBOX_TEST(run_test)
-;
+EMBOX_TEST(run_test);
 
 ULONG     SoundSampleRate(UWORD Rate)
 {
@@ -346,10 +345,10 @@ int main(){
 
 
 	SoundFreq( 99, 99, 2);
-	printf("FRQ strting\n");
+	TRACE("FRQ starting\n");
 	SoundStart(5, 2, 321, 3);
-	printf("sound strting\n");
+	TRACE("sound starting\n");
 	SoundStop();
-	printf("stops\n");
+	TRACE("stops\n");
 		return 0;
 }
