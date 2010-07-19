@@ -1,4 +1,0 @@
-
-$_MODS += at91_sound
-
-$_SRCS-at91_sound += sound_test.c
