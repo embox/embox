@@ -130,5 +130,7 @@ int device_devctl( device_desc dev , device_cmd c , void *arg );
 /* arg <=> int* */
 #define IOCTLP_NONBLOCKINGIO	0x0001
 
+#define DCTL_UNKNOW_OPERATION	0x0001
+
 #endif /* __DRIVER_H_ */
 

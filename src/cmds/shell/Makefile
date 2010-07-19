@@ -17,8 +17,8 @@ ifdef CONFIG_SHELL_SOURCE
 
   else # new
 
-    $_SRCS-shell += $(CONFIG_SHELL_SOURCE) shell_command.c
-    $_DEPS-shell += core.kernel.job embox.hal.context core.kernel.drv_subsys
+    $_SRCS-shell += $(CONFIG_SHELL_SOURCE)
+    $_DEPS-shell += core.kernel.job embox.hal.context core.kernel.drv_subsys core.kernel.scheduler core.kernel.thread
 
     $_CPPFLAGS-shell += -I$(AUTOCONF_DIR)
 

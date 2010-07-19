@@ -25,15 +25,15 @@ int putc(int v) {
 /*
  * interface for IO
  */
-int zero_open   ( device_t dev , int mode ) {
+int zero_open   ( device_t *dev , int mode ) {
 	return 0;
 }
 
-int zero_close  ( device_t dev ) {
+int zero_close  ( device_t *dev ) {
 	return 0;
 }
 
-int zero_read   ( device_t dev , char *buf    , size_t n  ) {
+int zero_read   ( device_t *dev , char *buf    , size_t n  ) {
 	int i;
 	for ( i=0 ; i<n ; ++i ) {
 		buf[i] = (char) getc();
@@ -41,15 +41,15 @@ int zero_read   ( device_t dev , char *buf    , size_t n  ) {
 	return 0;
 }
 
-int zero_write  ( device_t dev , char *buf    , size_t n  ) {
+int zero_write  ( device_t *dev , char *buf    , size_t n  ) {
 	return 0;
 }
 
-int zero_ioctl  ( device_t dev , io_cmd c     , void *arg ) {
+int zero_ioctl  ( device_t *dev , io_cmd c     , void *arg ) {
 	return 0;
 }
 
-int zero_devctl ( device_t dev , device_cmd c , void *arg ) {
+int zero_devctl ( device_t *dev , device_cmd c , void *arg ) {
 	return 0;
 }
 

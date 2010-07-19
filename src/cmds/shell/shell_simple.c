@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <shell.h>
 #include <embox/unit.h>
-#include <shell_command.h>
 #include <driver.h>
+#include <kernel/thread.h>
+#include <kernel/scheduler.h>
+#include <kernel/printk.h>
 
 EMBOX_UNIT(shell_start, shell_stop);
 
@@ -14,6 +16,17 @@ static int shell_start(void) {
 	stdin = stdout = dev;
 	printf("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
 	printf("\n\n\e[1;34m Just for fun MESSAGE :D\e[0;0m\n\n");
+
+
+/* bind iTerminal with fi_uart */
+	device_desc stdio, iterminal;
+	//scheduler_start();
+	printk("scheduler_start!!!\n");
+	iterminal = device_select( "dev_itty01" );
+	printk("id of itty01: %d\n",iterminal);
+	stdio = device_select( CONFIG_DEV_STDIO );
+	device_devctl( iterminal , 0x101 , &stdio );
+/* */
 
 #if 0 /* some code that may write and run all command */
 	SHELL_COMMAND_DESCRIPTOR *scd;
@@ -56,8 +69,6 @@ static int shell_start(void) {
 			printk("wait...\n");
 		}
 	}
-
-
 return 0;
 #endif
 
@@ -65,10 +76,10 @@ return 0;
 	while (true) {
 		int tmp;
 		tmp=getchar();
-		#if 1
-		printk("%d ",tmp);
-		#endif
 		putchar(tmp);
+		#if 1
+		printk(" main: %d\n",tmp);
+		#endif
 		if (tmp==10) break;
 	}
 	return 0;
