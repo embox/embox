@@ -70,6 +70,7 @@ device_t 	*device_create( driver_t *this , const char *name , device_flags flags
 	fr->flags = flags;
 	fr->private_s = private_s;
 	fr->private = kmalloc( private_s );
+	memset( fr->private , 0 , private_s );
 	/* return same device structure */
 	return fr;
 #endif
@@ -106,7 +107,6 @@ device_desc device_select( const char *desc ) {
 	return 0;
 }
 
-#if 1
 /* shared device's interface */
 int device_open  ( device_desc dev , int mode ) {
 	/* init pool */
@@ -116,8 +116,7 @@ int device_open  ( device_desc dev , int mode ) {
 	}
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
-	device_pool[dev].driver->ops.open( &device_pool[dev] , mode );
-	return 0;
+	return device_pool[dev].driver->ops.open( &device_pool[dev] , mode );
 }
 
 int device_close ( device_desc dev ) {
@@ -128,8 +127,7 @@ int device_close ( device_desc dev ) {
 	}
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
-	device_pool[dev].driver->ops.close( &device_pool[dev] );
-	return 0;
+	return device_pool[dev].driver->ops.close( &device_pool[dev] );
 }
 
 int device_read  ( device_desc dev , char *buf    , size_t n  ) {
@@ -151,8 +149,7 @@ int device_read  ( device_desc dev , char *buf    , size_t n  ) {
 		return 0; /* null device :) */
 	}
 	/* may be must add some check ptr? */
-	device_pool[dev].driver->ops.read( &device_pool[dev] , buf , n );
-	return 0;
+	return device_pool[dev].driver->ops.read( &device_pool[dev] , buf , n );
 }
 
 int device_write ( device_desc dev , char *buf    , size_t n  ) {
@@ -166,8 +163,7 @@ int device_write ( device_desc dev , char *buf    , size_t n  ) {
 	/* may be must add some check ptr? */
 	if ( ! (device_pool[dev].driver || device_pool[dev].driver->ops.read )) return 0; /* check like it */
 
-	device_pool[dev].driver->ops.write( &device_pool[dev] , buf , n );
-	return 0;
+	return device_pool[dev].driver->ops.write( &device_pool[dev] , buf , n );
 }
 
 int device_ioctl ( device_desc dev , io_cmd c     , void *arg ) {
@@ -176,10 +172,10 @@ int device_ioctl ( device_desc dev , io_cmd c     , void *arg ) {
 		pool_init();
 		has_init = 1;
 	}
+
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
-	device_pool[dev].driver->ops.ioctl( &device_pool[dev] , c , arg );
-	return 0;
+	return device_pool[dev].driver->ops.ioctl( &device_pool[dev] , c , arg );
 }
 
 int device_devctl( device_desc dev , device_cmd c , void *arg ) {
@@ -190,8 +186,6 @@ int device_devctl( device_desc dev , device_cmd c , void *arg ) {
 	}
 	if ( device_pool[dev].desc == empty_dev ) return 0; /* null device :) */
 	/* may be must add some check ptr? */
-	device_pool[dev].driver->ops.devctl( &device_pool[dev] , c , arg );
-	return 0;
+	return device_pool[dev].driver->ops.devctl( &device_pool[dev] , c , arg );
 }
-#endif
 

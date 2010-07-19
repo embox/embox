@@ -15,6 +15,7 @@ static int shell_start(void) {
 	printf("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
 	printf("\n\n\e[1;34m Just for fun MESSAGE :D\e[0;0m\n\n");
 
+#if 0 /* some code that may write and run all command */
 	SHELL_COMMAND_DESCRIPTOR *scd;
 	int return_code;
 	char c;
@@ -40,18 +41,32 @@ static int shell_start(void) {
 			printf("\e[0;33mreturn code: %d\e[0;0m\n\n",return_code);
 		}
 	}
+#endif
+
+#if 0
+	int arg = IOCTLP_NONBLOCKINGIO;
+	device_ioctl( dev , IOCTL_SET_BASE_OPTIONS , &arg );
+
+	while (true) {
+		char ch = '\0';
+		if (device_read( dev , &ch , 1 )>=0) {
+			device_write( dev , &ch , 1 );
+			printk(" %d\n", (int)ch);
+		} else {
+			printk("wait...\n");
+		}
+	}
 
 
-
-
-
+return 0;
+#endif
 
 
 	while (true) {
 		int tmp;
 		tmp=getchar();
-		#if 0
-		printf("%d ",tmp);
+		#if 1
+		printk("%d ",tmp);
 		#endif
 		putchar(tmp);
 		if (tmp==10) break;

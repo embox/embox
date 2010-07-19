@@ -8,7 +8,7 @@
 #ifndef __DRIVER_H_
 #define __DRIVER_H_
 
-//#include <kernel/mm/kmalloc.h>
+#include <kernel/mm/kmalloc.h>
 #include <kernel/irq.h>
 #include <sys/types.h>
 #include <stddef.h>
@@ -112,7 +112,6 @@ device_desc device_select( const char *desc );
 			/* select device by description string (devFS?) */
 			/* if can't find device, return /dev/null */
 
-#if 1
 /* shared device's interface */
 int device_open  ( device_desc dev , int mode );
 int device_close ( device_desc dev );
@@ -120,7 +119,16 @@ int device_read  ( device_desc dev , char *buf    , size_t n  );
 int device_write ( device_desc dev , char *buf    , size_t n  );
 int device_ioctl ( device_desc dev , io_cmd c     , void *arg );
 int device_devctl( device_desc dev , device_cmd c , void *arg );
-#endif
+
+/* IOCTL options */
+#define IOCTLR_UNKNOW_OPERATION	0x0001
+#define IOCTLR_OK				0x0001
+
+#define IOCTL_SET_BASE_OPTIONS	0x0001
+/* arg <=> int* */
+#define IOCTL_GET_BASE_OPTIONS	0x0002
+/* arg <=> int* */
+#define IOCTLP_NONBLOCKINGIO	0x0001
 
 #endif /* __DRIVER_H_ */
 

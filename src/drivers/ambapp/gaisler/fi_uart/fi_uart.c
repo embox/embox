@@ -31,6 +31,10 @@
 #define SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
 
+typedef struct uart_private {
+	int ioctl_base_flags;
+} uart_private_t;
+
 void fi_uart_init(void) {
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + SCALER_REG), SCALER_VAL);
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + CTRL_REG), 0x3);
@@ -56,11 +60,12 @@ void fi_uart_putc(char ch) {
 }
 
 #else /* UART_DIAG_REALIZATION */
-
+#error MODIFY IT /* non realized non-blocked i/o */
 /**
  * @file fi_fi_uart.c (file inteface)
  */
 
+#if 0
 #include <types.h>
 #include <errno.h>
 
@@ -69,7 +74,6 @@ void fi_uart_putc(char ch) {
 #include <drivers/amba_pnp.h>
 #include <kernel/printk.h>
 #include <dev/char_device.h>
-
 
 #define UART_SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
@@ -208,6 +212,7 @@ int fi_uart_remove_irq_handler(void) {
 }
 
 /* ADD_CHAR_DEVICE(TTY1,fi_uart_getc,fi_uart_getc); */
+#endif
 #endif /* UART_DIAG_REALIZATION */
 
 /* shared interface */
@@ -221,38 +226,59 @@ int fi_uart_remove_irq_handler(void) {
 /*
  * interface for IO
  */
-int fi_uart_open   ( device_t dev , int mode ) {
+int fi_uart_open   ( device_t *dev , int mode ) {
 	return 0;
 }
 
-int fi_uart_close  ( device_t dev ) {
+int fi_uart_close  ( device_t *dev ) {
 	return 0;
 }
 
-int fi_uart_read   ( device_t dev , char *buf    , size_t n  ) {
+int fi_uart_read   ( device_t *dev , char *buf    , size_t n  ) {
 	int i;
-	for ( i=0 ; i<n ; ++i ) {
-		buf[i] = (char) fi_uart_getc();
+	if ( ((uart_private_t*)(dev->private))->ioctl_base_flags & IOCTLP_NONBLOCKINGIO ) {
+		for ( i=0 ; (i<n)&&(fi_uart_has_symbol()) ; ++i ) {
+			buf[i] = (char) fi_uart_getc();
+		}
+		return i;
+	} else {
+		for ( i=0 ; i<n ; ++i ) {
+			buf[i] = (char) fi_uart_getc();
+		}
+		return 0;
 	}
-	return 0;
 }
 
-int fi_uart_write  ( device_t dev , char *buf    , size_t n  ) {
+int fi_uart_write  ( device_t *dev , char *buf    , size_t n  ) {
 	int i;
-#ifdef DEBUG_FI_UART
-	TRACE("fi_uart_write %d %d %d %c\n",dev,n,buf,*buf);
-#endif
-	for ( i=0 ; i<n ; ++i ) {
-		fi_uart_putc( buf[i] );
+	if ( ((uart_private_t*)(dev->private))->ioctl_base_flags & IOCTLP_NONBLOCKINGIO ) {
+		for ( i=0 ; (i<n) ; ++i ) {
+			fi_uart_putc( buf[i] );
+		}
+		return i;
+	} else {
+		for ( i=0 ; i<n ; ++i ) {
+			fi_uart_putc( buf[i] );
+		}
+		return 0;
 	}
-	return 0;
 }
 
-int fi_uart_ioctl  ( device_t dev , io_cmd c     , void *arg ) {
-	return 0;
+int fi_uart_ioctl  ( device_t *dev , io_cmd c     , void *arg ) {
+	printk("device: %ld, cmd: %d, arg: %ld\n",  dev, c , *(int*)arg);
+	switch (c) {
+		case IOCTL_SET_BASE_OPTIONS: {
+			((uart_private_t*)(dev->private))->ioctl_base_flags = *((int*)arg); /* debug me */
+		} break;
+		case IOCTL_GET_BASE_OPTIONS: {
+			arg = &(((uart_private_t*)(dev->private))->ioctl_base_flags);
+		} break;
+		default: return IOCTLR_UNKNOW_OPERATION;
+	}
+	return IOCTLR_OK;
 }
 
-int fi_uart_devctl ( device_t dev , device_cmd c , void *arg ) {
+int fi_uart_devctl ( device_t *dev , device_cmd c , void *arg ) {
 	return 0;
 }
 
@@ -275,7 +301,7 @@ int fi_uart_load( driver_t *drv ) {
 }
 
 int fi_uart_probe( driver_t *drv , void *arg ) {
-	drv->private = device_create( drv , "dev_fi_uart01" , 0 , 0 );
+	drv->private = device_create( drv , "dev_fi_uart01" , 0 , sizeof(uart_private_t) );
 	return 0;
 }
 
@@ -294,30 +320,22 @@ int fi_uart_unload( driver_t *drv ) {
  * for work need add to mods-? mods( ?.fi_uart , 1 ) or ?
  */
 driver_t *drv;
-driver_t drv_wm; /* without malloc */
+/* driver_t drv_wm; // without malloc */
 
 static int fi_uart_start(void) {
 	TRACE("\e[1;34mGaisler fi_uart driver was started!\e[0;0m\n");
-	if (0)
 	if (NULL == (drv = kmalloc( sizeof( driver_t ) )) ) {
 		TRACE("No memory enough for start gaisler fi_uart driver\n");
 		return 1;
 	}
-	#if 0
 	fi_uart_load( drv );
 	fi_uart_probe( drv , NULL );
-	#else
-	fi_uart_load( &drv_wm );
-	fi_uart_probe( &drv_wm , NULL );
-	#endif
 	return 0;
 }
 
 static int fi_uart_stop(void) {
-	fi_uart_unload( &drv_wm );
-	#if 0
+	fi_uart_unload( drv );
 	kfree( drv );
-	#endif
 	return 0;
 }
 

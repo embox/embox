@@ -16,6 +16,8 @@
 #ifndef __KMALLOC_H
 #define __KMALLOC_H
 
+#include <sys/types.h>
+
 /**
  * Dynamic memory allocator arbitrary size.
  *
