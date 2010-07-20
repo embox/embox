@@ -138,7 +138,7 @@ const     SAMPLEWORD TonePattern[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
   }
 };
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run_sound);
 
 ULONG     SoundSampleRate(UWORD Rate)
 {
@@ -321,7 +321,7 @@ void SoundFreq(UWORD Freq,UWORD mS,UBYTE Step){
   SOUNDIntEnable;
 }
 
-int main(){
+int run_sound(){
      SOUNDIntDisable;
      SoundReady                  = TRUE;
      MelodyPointer               = 0;
