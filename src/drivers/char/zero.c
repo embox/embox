@@ -6,7 +6,7 @@
  */
 
 #include <embox/unit.h>
-#include <driver.h>
+#include <kernel/driver.h>
 #include <kernel/printk.h>
 
 #define START_AS_MOD

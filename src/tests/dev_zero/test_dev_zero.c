@@ -7,7 +7,7 @@
  */
 
 #include <embox/test.h>
-#include <driver.h>
+#include <kernel/driver.h>
 #include <stdio.h>
 
 EMBOX_TEST(run);

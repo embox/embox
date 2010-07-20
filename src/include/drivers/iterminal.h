@@ -8,7 +8,7 @@
 #ifndef __ITERMINAL_H_
 #define __ITERMINAL_H_
 
-#include <driver.h>
+#include <kernel/driver.h>
 
 #define ITERM_DC_SET_IO		0x0101
 #define ITERM_DC_SET_IN		0x0102

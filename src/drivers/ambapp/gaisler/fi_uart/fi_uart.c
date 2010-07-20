@@ -1,5 +1,5 @@
 #include <embox/unit.h>
-#include <driver.h>
+#include <kernel/driver.h>
 #include <kernel/printk.h>
 #include <stdio.h>
 

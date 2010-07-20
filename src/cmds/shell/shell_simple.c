@@ -3,10 +3,11 @@
 #include <stdio.h>
 #include <shell.h>
 #include <embox/unit.h>
-#include <driver.h>
+#include <kernel/driver.h>
 #include <kernel/thread.h>
 #include <kernel/scheduler.h>
 #include <kernel/printk.h>
+#include <drivers/iterminal.h>
 
 EMBOX_UNIT(shell_start, shell_stop);
 
@@ -19,14 +20,22 @@ static int shell_start(void) {
 
 
 /* bind iTerminal with fi_uart */
+	scheduler_start();
+
 	device_desc stdio, iterminal;
-	//scheduler_start();
+#if 0
 	printk("scheduler_start!!!\n");
+#endif
 	iterminal = device_select( "dev_itty01" );
 	printk("id of itty01: %d\n",iterminal);
 	stdio = device_select( CONFIG_DEV_STDIO );
-	device_devctl( iterminal , 0x101 , &stdio );
+	device_devctl( iterminal , ITERM_DC_SET_IN , &stdio );
+
 /* */
+
+	return 0;
+
+	for (;1;);
 
 #if 0 /* some code that may write and run all command */
 	SHELL_COMMAND_DESCRIPTOR *scd;

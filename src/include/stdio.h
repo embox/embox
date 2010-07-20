@@ -11,7 +11,7 @@
 
 #include <stdarg.h>
 #include <types.h>
-#include <driver.h>
+#include <kernel/driver.h>
 
 #define EOF (-1)
 

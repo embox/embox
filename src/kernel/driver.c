@@ -10,7 +10,7 @@
  * must work device_read
  */
 
-#include <driver.h>
+#include <kernel/driver.h>
 #include <string.h>
 #include <hal/ipl.h>
 #include <stdio.h>
