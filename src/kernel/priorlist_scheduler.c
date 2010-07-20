@@ -20,8 +20,7 @@
  * Structure priority in list.
  */
 typedef struct priority_head {
-	struct list_head *next;
-	struct list_head *prev;
+	struct list_head priority_list;
 
 	thread_id_t priority_id;
 	/** List of threads with priority = priority_id. */
@@ -57,13 +56,14 @@ static priority_head_t * alloc_priority(thread_priority_t priority) {
 static void add_new_priority(struct thread *thread, thread_priority_t priority) {
 	/* Allocate new  priority_head. */
 	priority_head_t *new_priority = alloc_priority(priority);
-	priority_head_t *current_pr = (priority_head_t *) priority_head->next;
+	priority_head_t *current_pr;
 
-	while (current_pr->priority_id > priority) {
-		current_pr = (priority_head_t *) current_pr->next;
+	list_for_each_entry(current_pr, &priority_head->priority_list, priority_list) {
+		if (current_pr->priority_id > priority) {
+			break;
+		}
 	}
-	list_add((struct list_head *) new_priority,
-			((struct list_head *) current_pr)->prev);
+	list_add(&new_priority->priority_list, &current_pr->priority_list);
 	new_priority->priority_id = priority;
 	new_priority->thread_list = &thread->sched_list;
 	INIT_LIST_HEAD(&thread->sched_list);
@@ -108,10 +108,10 @@ void _scheduler_add(struct thread *added_thread) {
  */
 void _scheduler_init(void) {
 	/* Initializes zero element (we always have idle_thread). */
-	INIT_LIST_HEAD((struct list_head *)priority_head);
+	INIT_LIST_HEAD(&priority_head->priority_list);
 	priority_head->priority_id = 0;
 	priority_head->thread_list = &idle_thread->sched_list;
-	INIT_LIST_HEAD(priority_head->thread_list);
+	INIT_LIST_HEAD((priority_head->thread_list));
 
 	cur_prior = priority_head;
 
@@ -135,7 +135,7 @@ void _scheduler_stop(void) {
 struct thread *_scheduler_next(struct thread *prev_thread) {
 	struct thread *current_thread;
 
-	cur_prior = (priority_head_t *)priority_head->next;
+	cur_prior = (priority_head_t *)priority_head->priority_list.next;
 	cur_prior->thread_list = cur_prior->thread_list->next;
 	current_thread = list_entry(cur_prior->thread_list, struct thread, sched_list);
 	current_thread->reschedule = false;
