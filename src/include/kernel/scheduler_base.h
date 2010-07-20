@@ -41,6 +41,7 @@ struct thread *_scheduler_next(struct thread *prev_thread);
 
 /**
  * Removes thread from the scheduler.
+ * If thread doesn't exist in scheduler, there must be NO ERROR!!!
  * @param removed_thread thread to remove.
  */
 void _scheduler_remove(struct thread *removed_thread);

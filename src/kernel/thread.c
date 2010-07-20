@@ -16,7 +16,7 @@
 #include <hal/ipl.h>
 #include <embox/unit.h>
 
-#define MAX_THREADS_COUNT 32
+#define MAX_THREADS_COUNT 0x100
 #define THREAD_STACK_SIZE 0x10000
 #define MAX_MSG_COUNT 100
 
@@ -29,7 +29,7 @@ struct thread *current_thread;
 static char idle_thread_stack[THREAD_STACK_SIZE];
 
 /** A mask, which shows, what places for new threads are free. */
-static int mask = 0;
+static int mask[MAX_THREADS_COUNT];
 
 /** Pool, containing threads. */
 static struct thread threads_pool[MAX_THREADS_COUNT];
@@ -89,10 +89,10 @@ static void thread_run(int data) {
 static struct thread * thread_new(void) {
 	struct thread *created_thread;
 	for (int i = 0; i < MAX_THREADS_COUNT; i++) {
-		if (((mask >> i) & 1) == 0) {
+		if (mask[i] == 0) {
 			created_thread = threads_pool + i;
 			created_thread->id = i;
-			mask |= (1 << i);
+			mask[i] = 1;
 			created_thread->exist = true;
 			return created_thread;
 		}
@@ -105,15 +105,15 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	if (created_thread == NULL || run == NULL || stack_address == NULL) {
 		return NULL;
 	}
-	created_thread->state = THREAD_STATE_STOP;
 	created_thread->run = run;
+	context_init(&created_thread->context, true);
+	context_set_entry(&created_thread->context, &thread_run, (int) created_thread);
+	context_set_stack(&created_thread->context, stack_address);
+	created_thread->state = THREAD_STATE_STOP;
 	created_thread->priority = 1;
 	created_thread->need_message = false;
 	queue_init(&created_thread->messages);
 	event_init(&created_thread->msg_event);
-	context_init(&created_thread->context, true);
-	context_set_entry(&created_thread->context, &thread_run, (int) created_thread);
-	context_set_stack(&created_thread->context, stack_address);
 #ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("Alloted thread id = %d\n", created_thread->id);
 #endif
@@ -145,7 +145,7 @@ static int thread_delete(struct thread *deleted_thread) {
 #endif
 	deleted_thread->state = THREAD_STATE_STOP;
 	deleted_thread->exist = false;
-	mask &= ~(1 << (deleted_thread - threads_pool));
+	mask[deleted_thread - threads_pool] = 0;
 	return 0;
 }
 

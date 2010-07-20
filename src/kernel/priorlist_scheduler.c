@@ -28,9 +28,9 @@ typedef struct priority_head {
 } priority_head_t;
 
 /**
- * Maximum priority equals to 16.
+ * Maximum priority equals to 256.
  */
-#define MAX_PRIORITY 0x10
+#define MAX_PRIORITY 0x100
 /**
  * Pools for thread and priority.
  */
@@ -147,9 +147,13 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
  * If thread was the only with its priority, delete corresponding priorlist_head.
  */
 void _scheduler_remove(struct thread *removed_thread) {
+	if (removed_thread->sched_list.next == 0) {
+		return;
+	}
 	/* Check if removed one was the only thread with its priority. */
 	if (list_empty(&removed_thread->sched_list)) {
 		list_del((struct list_head *) &priority_pool[removed_thread->priority]);
+		removed_thread->sched_list.next = 0;
 	} else {
 		/* Check if current thread_list of priority equals to removed thread. */
 		if (priority_pool[removed_thread->priority].thread_list

@@ -14,7 +14,7 @@ EMBOX_TEST(run);
 /**
  * Executed file address.
  */
-#define FILE_ADDRESS 0x45000000
+#define FILE_ADDRESS 0x46000000
 
 /**
  * The test itself.

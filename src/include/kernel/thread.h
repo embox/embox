@@ -62,31 +62,13 @@ extern struct thread *current_thread;
 /**
  * Structure, describing threads.
  */
-typedef struct thread {
+struct thread {
 	/** Context of thread. */
 	struct context context;
 	/** Function, running in thread. */
 	void (*run)(void);
-
 	/** Does thread exist? (For it memory was alloted and it was not deleted) */
     bool exist;
-
-
-    /** List item, corresponding to thread in list of executed threads. */
-	struct list_head sched_list;
-
-	/** Index of thread in heap. */
-	int heap_index;
-	/**
-	 * For each priority there is a state.
-	 * We can start a thread iff his run_count equals to
-	 * priority_state of his priority or there is no threads
-	 * with the same priority and "right" run_count.
-	 * Is needed for heap_scheduler.
-	 */
-	bool run_count;
-
-
 	/** Flag, which shows, whether tread can be changed. */
 	bool reschedule;
 	/** Thread's identifier. Unique for each thread. */
@@ -103,7 +85,25 @@ typedef struct thread {
     struct event msg_event;
 	/** List item, corresponding to thread in list of some event. */
 	struct list_head wait_list;
-} thread_t;
+
+	/*----- Scheduler-dependent fields -------*/
+
+	/* List and priorlist. */
+	/** List item, corresponding to thread in list of executed threads. */
+	struct list_head sched_list;
+
+	/* Heap. */
+	/** Index of thread in heap. */
+	int heap_index;
+	/**
+	 * For each priority there is a state.
+	 * We can start a thread iff his run_count equals to
+	 * priority_state of his priority or there is no threads
+	 * with the same priority and "right" run_count.
+	 * Is needed for heap_scheduler.
+	 */
+	bool run_count;
+};
 
 /**
  * Creates new thread

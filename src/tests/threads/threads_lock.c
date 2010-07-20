@@ -109,6 +109,7 @@ static int run_test(void) {
 	div_thread = thread_create(div_run, div_stack + THREAD_STACK_SIZE);
 	highest_thread = thread_create(highest_run, highest_stack + THREAD_STACK_SIZE);
 
+	scheduler_remove(highest_thread);
 
 	assert(plus_thread != NULL);
 	assert(minus_thread != NULL);
