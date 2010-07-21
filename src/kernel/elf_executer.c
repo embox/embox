@@ -37,7 +37,6 @@ int elf_execute(FILE *file) {
 
 
 	function_main = (int (*)(int argc, char *argv[]))EH->e_entry;
-	//function_main = (int (*)(int argc, char *argv[]))file;
 	result = (*function_main) (0, 0);
 
 	printf("\n result : %d\n", result);
