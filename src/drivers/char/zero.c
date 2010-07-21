@@ -2,7 +2,7 @@
  * @file
  * @author Fedor Burdun
  * @date 08.07.2010
- * @description /dev/zero char device and example for write driver in OS "EMBOX"
+ * @brief /dev/zero char device and example for write driver in OS "EMBOX"
  */
 
 #include <embox/unit.h>
@@ -91,31 +91,23 @@ int zero_unload( driver_t *drv ) {
  * for work need add to mods-? mods( ?.zero , 1 ) or ?
  */
 static driver_t *drv;
-static driver_t drv_wm; /* without malloc */
+//static driver_t drv_wm; /* without malloc */
 
 static int zero_start(void) {
 	printk("\e[1;34mZero driver was started!\e[0;0m\n");
-	if (0)
+
 	if (NULL == (drv = kmalloc( sizeof( driver_t ) )) ) {
 		printk("No memory enough for start Zero driver\n");
 		return 1;
 	}
-	#if 0
-	printf("%d\n",drv);
 	zero_load( drv );
 	zero_probe( drv , NULL );
-	#else
-	zero_load( &drv_wm );
-	zero_probe( &drv_wm , NULL );
-	#endif
 	return 0;
 }
 
 static int zero_stop(void) {
-	zero_unload( &drv_wm );
-	#if 0
+	zero_unload( drv );
 	kfree( drv );
-	#endif
 	return 0;
 }
 
