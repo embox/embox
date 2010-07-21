@@ -1,0 +1,6 @@
+
+$_MODS += <CMD_NAME>
+
+$_SRCS-<CMD_NAME> += *.c
+
+$_DEPS-<CMD_NAME> += <REQ_MODS>
