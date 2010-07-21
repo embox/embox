@@ -5,13 +5,12 @@
  * @author Darya Dzendzik
 */
 
-
 #include "AT91SAM7S256_inc.h"
 
-typedef   unsigned short int    UWORD;
-typedef   unsigned char         UBYTE;
-typedef   unsigned long         ULONG;
-typedef   signed short int      SWORD;
+typedef   unsigned short int	UWORD;
+typedef   unsigned char			UBYTE;
+typedef   unsigned long			ULONG;
+typedef   signed short int		SWORD;
 typedef   struct
 {
     SWORD      Valprev;                           // Previous output value
@@ -54,9 +53,8 @@ typedef   struct
 #define   SAMPLECENTER          (((SAMPLEMAX - SAMPLEMIN) / 2) + SAMPLEMIN)
 #define   SAMPLECONSTANT        3    // >> == (SAMPLEMAX / SAMPLEWORDBITS)
 
-
-SAMPLEWORD ToneBuffer[SAMPLETONENO];
-SAMPLEWORD SampleBuffer[SAMPLEBUFFERS][SAMPLEWORDS];
+SAMPLEWORD		ToneBuffer[SAMPLETONENO];
+SAMPLEWORD 		SampleBuffer[SAMPLEBUFFERS][SAMPLEWORDS];
 UBYTE     SoundReady;                // Sound channel ready (idle)
 UWORD     MelodyPointer;
 UBYTE     SoundDivider;              // Volume
@@ -284,6 +282,8 @@ UBYTE     SoundStop(void)
 
 void SoundFreq(UWORD Freq,UWORD mS,UBYTE Step){
   UBYTE   Tmp;
+
+  /*checking korektnosti input data*/
   if (mS < DURATION_MIN){
     mS = DURATION_MIN;
   }
@@ -302,6 +302,7 @@ void SoundFreq(UWORD Freq,UWORD mS,UBYTE Step){
     Step = 0;
     Freq = 1000;
   }
+
   SoundDivider          = Step;
   SoundSamplesLeft      = 0;
   SoundSamplesLeftNext  = 0;
@@ -314,9 +315,9 @@ void SoundFreq(UWORD Freq,UWORD mS,UBYTE Step){
   ToneCyclesReady  = ((ULONG)Freq * (ULONG)2L) / 1000L + 1L;
 
   *(unsigned*)AT91C_SSC_TNPR = (unsigned int)ToneBuffer;
- // *((void *)AT91C_SSC_TNPR)  = (unsigned int)ToneBuffer;
-  *(unsigned*)AT91C_SSC_TNCR  = SAMPLETONENO;
-  *(unsigned*)AT91C_SSC_PTCR  = AT91C_PDC_TXTEN;
+// *((void *)AT91C_SSC_TNPR)  = (unsigned int)ToneBuffer;
+  *(unsigned*)AT91C_SSC_TNCR = SAMPLETONENO;
+  *(unsigned*)AT91C_SSC_PTCR = AT91C_PDC_TXTEN;
   SoundReady       = FALSE;
   SOUNDIntEnable;
 }
@@ -341,8 +342,6 @@ int run_sound(){
      *(unsigned*)AT91C_SSC_CR               = AT91C_SSC_TXEN;             /* TX enable          */
      *(unsigned*)AT91C_AIC_ICCR             = (1L << AT91C_ID_SSC);       /* Clear interrupt    */
      *(unsigned*)AT91C_AIC_IECR             = (1L << AT91C_ID_SSC);       /* Enable int. controller */
-
-
 
 	SoundFreq( 99, 99, 2);
 	TRACE("FRQ starting\n");
