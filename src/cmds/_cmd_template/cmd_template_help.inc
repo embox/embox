@@ -1,8 +1,0 @@
-"NAME\n"
-"\tcmd_template - <brief>\n"
-"SYNOPSIS\n"
-"\t<synopsis>\n"
-"DESCRIPTION\n"
-"\t<description>\n"
-"AUTHORS\n"
-"\t<author>"
