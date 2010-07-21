@@ -336,7 +336,7 @@ int run_sound(){
      *(unsigned*)AT91C_PIOA_CODR            = AT91C_PA17_TD;
      *(unsigned*)AT91C_PIOA_IDR             = AT91C_PA17_TD;
      *(unsigned*)AT91C_SSC_CR               = AT91C_SSC_SWRST;
-     //AT91C_AIC_SMR[AT91C_ID_SSC] = AT91C_AIC_PRIOR_LOWEST | AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED;     /* Set priority       */
+     AT91C_AIC_SMR[AT91C_ID_SSC] = AT91C_AIC_PRIOR_LOWEST | AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED;   /* Set priority*/
      *(unsigned*)AT91C_SSC_TCMR             = AT91C_SSC_CKS_DIV + AT91C_SSC_CKO_CONTINOUS + AT91C_SSC_START_CONTINOUS;
      *(unsigned*)AT91C_SSC_TFMR             = (SAMPLEWORDBITS - 1) + ((SAMPLEWORDS & 0xF) << 8) + AT91C_SSC_MSBF;
      *(unsigned*)AT91C_SSC_CR               = AT91C_SSC_TXEN;             /* TX enable          */
@@ -345,9 +345,9 @@ int run_sound(){
 
 	SoundFreq( 99, 99, 2);
 	TRACE("FRQ starting\n");
-	SoundStart(5, 2, 321, 3);
-	TRACE("sound starting\n");
-	SoundStop();
-	TRACE("stops\n");
+//	SoundStart(5, 2, 321, 3);
+//	TRACE("sound starting\n");
+//	SoundStop();
+//	TRACE("stops\n");
 		return 0;
 }
