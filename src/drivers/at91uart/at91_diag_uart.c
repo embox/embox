@@ -19,16 +19,21 @@
 #define US_RHR	  make_reg(0x18)
 #define US_THR	  make_reg(0x1c)
 #define US_BRGR	  make_reg(0x20)
-#define PIO_PDR	  0xfffff4004
+#define US_TTGR	  make_reg(0x28)
+#define PIO_PDR	  0xfffff404
+#define PIO_ASR	  0xfffff470
+#define PIO_BSR	  0xfffff474
 #define PMC_PCER  0xfffffc10
 #define PDC_PTCR  make_reg(0x120)
 
 void diag_init(void) {
-	REG_STORE(PIO_PDR, 0x60);
+	REG_STORE(PIO_PDR, 0x60); //0x60
+	REG_STORE(PIO_ASR, 0x60);
 	REG_STORE(US_CR, 0xac); /*resetting & disabling RX, TX */
+	REG_STORE(US_BRGR, 313); // for 9600
 	REG_STORE(US_MR, 0x8c0);
-	REG_STORE(US_BRGR, 313);
 	REG_STORE(PMC_PCER, 0x40);
+	REG_STORE(US_TTGR, 0);
 	//REG_STORE(PDC_PTCR, 11);
 	REG_STORE(US_CR, 0x50); /*enabling RX, TX */
 }
