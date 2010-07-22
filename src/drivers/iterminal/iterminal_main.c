@@ -60,8 +60,9 @@ inline int next_token( const char *buf, int *cur_pos ) {
 	return 0;
 }
 
+#if 0
 int call( device_t *dev , int token , char *out_buffer /* return it, int out_buffer_s */) {
-	if ( ! PRIVATE(dev)->call_state ) {
+	if ( ! PRIVATE(dev)->call_state ) { /* cmd line? */
 		switch ( token ) {
 			/*
 			 * some magic switch, that may be copied from previous shell
@@ -82,6 +83,7 @@ int call( device_t *dev , int token , char *out_buffer /* return it, int out_buf
 			/*
 			 * write to out_buffer as is
 			 */
+             dev=
 			break;
 		}
 	} else {
@@ -101,6 +103,7 @@ int call( device_t *dev , int token , char *out_buffer /* return it, int out_buf
 	}
 	return 0;
 }
+#endif
 
 int iterminal_main( device_t *dev ) {
 
