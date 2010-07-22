@@ -44,6 +44,7 @@ typedef struct device_ops {
 /* return code for -open(), -close(), -read(), -write(), ioctl() */
 #define ERROR_IO_UNKNOWN 			0x0001
 #define ERROR_IO_DONT_SUPPORT 		0x0002
+#define ERROR_IO_BUFSIZE			0x0003
 
 /* return code for devctl(), device_create(), device_destroy() */
 #define ERROR_DEV_UNKNOWN 			0x0001

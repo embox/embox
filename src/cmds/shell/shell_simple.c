@@ -26,10 +26,37 @@ static int shell_start(void) {
 #if 0
 	printk("scheduler_start!!!\n");
 #endif
+
+#if 0
 	iterminal = device_select( "dev_itty01" );
 	printk("id of itty01: %d\n",iterminal);
 	stdio = device_select( CONFIG_DEV_STDIO );
 	device_devctl( iterminal , ITERM_DC_SET_IN , &stdio );
+#endif
+
+	int i;
+	char buf[256];
+	device_desc pipe = device_select( "/dev/pipeXX" );
+	printk("pipe: %d\n",pipe);
+	for (;1;) {
+		for (i=50;i<67;++i) {
+			buf[i] = (char) i;
+		}
+		printk("original:\n");
+		for (i=50;i<67;++i) {
+			printk("%c",buf[i]);
+		}
+		printk("\n");
+		printk("from pipe:\n");
+		device_write( pipe , &buf[50] , 17 );
+		for (int i=0;i<234;++i)
+			buf[i] = 0;
+		device_read( pipe , &buf[50] , 17 );
+		for (i=50;i<67;++i) {
+			printk("%c",buf[i]);
+		}
+		printk("\n");
+	}
 
 /* */
 
