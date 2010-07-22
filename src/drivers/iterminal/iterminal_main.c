@@ -9,8 +9,6 @@
 #include <kernel/printk.h>
 #include <stdio.h>
 #include <drivers/iterminal.h>
-#include "iterminal_main.c"
-
 
 #define FROM_IN 0x01
 #define FROM_OUT 0x02
@@ -62,6 +60,8 @@ inline int next_token( const char *buf, int *cur_pos ) {
 	return 0;
 }
 
+
+#include "iterminal_main.c"
 #if 0
 int call( device_t *dev , int token , char *out_buffer /* return it, int out_buffer_s */) {
 	if ( ! PRIVATE(dev)->call_state ) { /* cmd line? */
