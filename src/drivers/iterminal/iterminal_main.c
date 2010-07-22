@@ -29,6 +29,7 @@ inline void iterminal_main_init( device_t *dev , int from_flag ) {
 		break;
 
 		default:
+		break;
 	}
 	return ;
 }
@@ -59,14 +60,14 @@ inline int next_token( const char *buf, int *cur_pos ) {
 	return 0;
 }
 
-int call( int token , char *out_buffer , int out_buffer_s ) {
+int call( device_t *dev , int token , char *out_buffer /* return it, int out_buffer_s */) {
 	if ( ! PRIVATE(dev)->call_state ) {
 		switch ( token ) {
 			/*
 			 * some magic switch, that may be copied from previous shell
 			 */
 
-			#ifdef 0x0
+			#if 0x0
 			case TOKEN_ENTER:
 				/* change call_state */
 				/* create 2 pipe device
@@ -117,7 +118,7 @@ int iterminal_main( device_t *dev ) {
 			/*
 			 * general work
 			 */
-			PRIVATE(dev)->buffer_out_s = call( next_token( PRIVATE(dev)->buffer_in , &pos ) ,
+			PRIVATE(dev)->buffer_out_s = call( dev , next_token( PRIVATE(dev)->buffer_in , &pos ) ,
 				PRIVATE(dev)->buffer_out );
 			/*
 			 * output, that may be below ( outside the cycle )

@@ -16,21 +16,22 @@
 #define ITERM_DC_GET_IN		0x0104
 #define ITERM_DC_GET_OUT	0x0105
 
+#define ITERM_BUFFER_SIZE 0x100
+
 typedef struct iterminal_private {
 	device_desc before_in, before_out; /* for control time of change */
 	device_desc in,out;
 
 #if 1 /* under construction */
 
-#define BUFFER_SIZE 0x100
-	int 	is_live;					/* flag of time of life */
-	int 	call_state; 				/* state of call (task or cmdline edit) */
+	int 	is_live;						/* flag of time of life */
+	int 	call_state;	 					/* state of call (task or cmdline edit) */
 
-	char 	buffer_in[BUFFER_SIZE]; 	/* buffer for read from input device */
-	int 	buffer_in_s;				/* size of input buffer */
+	char 	buffer_in[ITERM_BUFFER_SIZE]; 	/* buffer for read from input device */
+	int 	buffer_in_s;					/* size of input buffer */
 
-	char 	buffer_out[BUFFER_SIZE]; 	/* --/--/-- */
-	int 	buffer_out_s;				/* --/--/-- */
+	char 	buffer_out[ITERM_BUFFER_SIZE]; 	/* --/--/-- */
+	int 	buffer_out_s;					/* --/--/-- */
 
 	device_desc pipe_to, pipe_from; /* some pipes for exchange data with child task */
 
