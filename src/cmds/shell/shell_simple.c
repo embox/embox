@@ -19,18 +19,19 @@ static int shell_start(void) {
 	printf("\n\n\e[1;34m Just for fun MESSAGE :D\e[0;0m\n\n");
 
 
-/* bind iTerminal with fi_uart */
 	scheduler_start();
 
 	device_desc stdio, iterminal;
 
-#if 1
+#if 1 /* iTerminal init */
+/* bind iTerminal with fi_uart */
 	iterminal = device_select( "dev_itty01" );
 	printk("id of itty01: %d\n",iterminal);
 	stdio = device_select( CONFIG_DEV_STDIO );
 	device_devctl( iterminal , ITERM_DC_SET_IO , &stdio );
 #endif
 
+#if 0 /* pipe test */
 	int i;
 	char buf[256];
 	device_desc pipe = device_select( "/dev/pipeXX" );
@@ -54,6 +55,7 @@ static int shell_start(void) {
 		}
 		printk("\n");
 	}
+#endif
 
 /* */
 

@@ -91,8 +91,6 @@ void iterminal_run(void) {
 int iterminal_probe( driver_t *drv , void *arg ) {
 	struct thread *th;
 	drv->private = device_create( drv , "dev_itty01" , 0 , sizeof(iterminal_private_t) );
-	/* thread create */
-	printk("before start \e[1;32mi\e[1;34mTerminal\e[0;0m in new thread.\n");
 	th = thread_create( iterminal_run, stack + THREAD_STACK_SIZE );
 	thread_start(th);
 	return 0;
