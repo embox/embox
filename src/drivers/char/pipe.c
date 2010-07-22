@@ -1,7 +1,7 @@
 /**
  * @file
  * @author Fedor Burdun
- * @date 08.07.2010
+ * @date 22.07.2010
  * @brief pipe device driver
  */
 
@@ -170,13 +170,11 @@ int pipe_probe( driver_t *drv , void *arg ) {
 	if (!arg) {
 		drv->private = device_create( drv , "/dev/pipeXX" , 0 , 0 );
 	} else {
-#if 0x0
 		/* need interface to get device_desc */
 		/* drv->private[drv->last ++] = device_create( drv , arg , 0 , 0 ); */
 		device_create( drv , arg , 0 , 0 );
 		/* or */
 		/* arg = drv->private[drv->last-1]; */
-#endif
 	}
 	return 0;
 }

@@ -23,15 +23,12 @@ static int shell_start(void) {
 	scheduler_start();
 
 	device_desc stdio, iterminal;
-#if 0
-	printk("scheduler_start!!!\n");
-#endif
 
-#if 0
+#if 1
 	iterminal = device_select( "dev_itty01" );
 	printk("id of itty01: %d\n",iterminal);
 	stdio = device_select( CONFIG_DEV_STDIO );
-	device_devctl( iterminal , ITERM_DC_SET_IN , &stdio );
+	device_devctl( iterminal , ITERM_DC_SET_IO , &stdio );
 #endif
 
 	int i;

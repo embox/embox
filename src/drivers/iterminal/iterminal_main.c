@@ -19,13 +19,16 @@
 #define PRIVATE(dev) ((iterminal_private_t*)(dev->private))
 
 inline void iterminal_main_init( device_t *dev , int from_flag ) {
+	int flags = IOCTLP_NONBLOCKINGIO;
 	switch ( from_flag ) {
 		case FROM_IN:
-		/* try to switch non-blocking mode input device */
+			/* try to switch non-blocking mode input device */
+			device_ioctl( IN , IOCTL_SET_BASE_OPTIONS , &flags );
 		break;
 
 		case FROM_OUT:
-		/* try to switch non-blocking mode output device */
+			/* try to switch non-blocking mode output device */
+			device_ioctl( OUT , IOCTL_SET_BASE_OPTIONS , &flags );
 		break;
 
 		default:
@@ -61,7 +64,7 @@ inline int next_token( const char *buf, int *cur_pos ) {
 }
 
 
-#include "iterminal_main.c"
+#include "iterminal_call.c"
 #if 0
 int call( device_t *dev , int token , char *out_buffer /* return it, int out_buffer_s */) {
 	if ( ! PRIVATE(dev)->call_state ) { /* cmd line? */
@@ -112,25 +115,31 @@ int iterminal_main( device_t *dev ) {
 	printk("iterminal_main\n");
 
 	while ( PRIVATE(dev)->is_live ) {
-		/* some code for read from in(dev)
-		 *
-		 * device_read( in(dev) , PRIVATE(dev)->buffer_in , PRIVATE(dev)->buffer_in_s );
-		 *
-		 */
+		/* some code for read from in(dev) */
+
+		PRIVATE(dev)->buffer_in_s =
+			device_read( in(dev) , PRIVATE(dev)->buffer_in , ITERM_BUFFER_SIZE - PRIVATE(dev)->buffer_in_s );
 		int pos = 0;
 
 		while ( has_next_token( PRIVATE(dev)->buffer_in , pos ) ) {
 			/*
 			 * general work
 			 */
-			PRIVATE(dev)->buffer_out_s = call( dev , next_token( PRIVATE(dev)->buffer_in , &pos ) ,
-				PRIVATE(dev)->buffer_out );
-			/*
-			 * output, that may be below ( outside the cycle )
-			 *
-			 * device_write ( out(dev) , PRIVATE(dev)->buffer_out , PRIVATE(dev)->buffer_out_s );
-			 *
-			 */
+			PRIVATE(dev)->buffer_out_s = call( dev , next_token( PRIVATE(dev)->buffer_in , &pos ) , ITERM_BUFFER_SIZE );
+
+			/* output */
+			if (PRIVATE(dev)->buffer_out_s>0) {
+				device_write( out(dev) , PRIVATE(dev)->buffer_out , PRIVATE(dev)->buffer_out_s );
+			}
+		}
+		if (pos<PRIVATE(dev)->buffer_in_s) {
+			int cur;
+			for ( cur = 0 ; pos<PRIVATE(dev)->buffer_in_s ; ++pos ) {
+				PRIVATE(dev)->buffer_in[cur++] = PRIVATE(dev)->buffer_in[pos];
+			}
+			PRIVATE(dev)->buffer_in_s = pos;
+		} else {
+			PRIVATE(dev)->buffer_in_s = 0;
 		}
 	}
 
