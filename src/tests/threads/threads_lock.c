@@ -84,7 +84,9 @@ static void div_run(void) {
  */
 static void highest_run(void) {
 	int i;
+	TRACE("Highest");
 	scheduler_wakeup(&event);
+	TRACE("Highest cont");
 	for (i = 0; i < 100; i++) {
 		TRACE("!");
 		thread_yield();

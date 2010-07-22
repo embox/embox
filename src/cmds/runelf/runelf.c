@@ -42,13 +42,11 @@ static int exec(int argsc, char **argsv) {
 				return -1;
 			}
 			if (sscanf(optarg, "0x%x", &file) > 0) {
-				run();
-#if 0
+//				run();
 				thread = thread_create(run, thread_stack + THREAD_STACK_SIZE);
 				thread_start(thread);
 				scheduler_start();
 				scheduler_stop();
-#endif
 				return 0;
 			}
 			TRACE("runelf: invalid value \"%s\".\nthe number expected.\n", optarg);

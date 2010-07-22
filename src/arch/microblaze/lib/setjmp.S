@@ -1,6 +1,8 @@
 #include <asm/linkage.h>
 #include <asm/setjmp.h>
 
+	.section ".text"
+
 C_ENTRY(setjmp):
 	/* Save registers relative to r5 (arg0)*/
 	swi	r1, r5, JB_SP             /* stack pointer */

@@ -31,8 +31,9 @@ $_SRCS-thread += mutex.c
 $_SRCS-thread += thread.c
 $_SRCS-thread += thread_heap.c
 $_SRCS-thread += convar.c
-$_SRCS-scheduler += scheduler.c
 
+$_DEPS-scheduler += thread
+$_SRCS-scheduler += scheduler.c
 $_SRCS-scheduler     += $(CONFIG_THREAD)
 endif
 

@@ -61,6 +61,10 @@ void scheduler_start(void) {
 	idle_thread->reschedule = true;
 	_scheduler_start();
 	scheduler_unlock();
+#ifdef CONFIG_DEBUG_SCHEDULER
+	TRACE("\nPreemtion count = %d", preemption_count);
+	TRACE("\nCurrent thread reschedule = %d\n", current_thread->reschedule);
+#endif
 }
 
 void scheduler_lock(void) {
@@ -91,7 +95,6 @@ void scheduler_dispatch(void) {
 #ifdef CONFIG_DEBUG_SCHEDULER
 		TRACE("\nSwitching from %d to %d\n", prev_thread->id, current_thread->id);
 #endif
-
 		ipl = ipl_save();
 		preemption_count--;
 		context_switch(&prev_thread->context, &current_thread->context);
@@ -108,6 +111,7 @@ void scheduler_stop(void) {
 #ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("\nStop scheduler\n");
 #endif
+	close_timer (THREADS_TIMER_ID);
 	_scheduler_stop();
 }
 
@@ -158,7 +162,7 @@ int scheduler_wakeup_first(struct event *event) {
 	thread->state = THREAD_STATE_RUN;
 	scheduler_add(thread);
 #ifdef CONFIG_DEBUG_SCHEDULER
-		TRACE("\nUnlocking %d\n", thread->id);
+	TRACE("\nUnlocking %d\n", thread->id);
 #endif
 	scheduler_unlock();
 	return 0;
