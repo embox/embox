@@ -9,6 +9,8 @@
 #include <kernel/printk.h>
 #include <stdio.h>
 #include <drivers/iterminal.h>
+#include "iterminal_main.c"
+
 
 #define FROM_IN 0x01
 #define FROM_OUT 0x02
