@@ -194,7 +194,6 @@ int pipe_unload( driver_t *drv ) {
  * for work need add to mods-? mods( ?.pipe , 1 ) or ?
  */
 static driver_t *drv;
-static driver_t drv_wm; /* without malloc */
 
 static int pipe_start(void) {
 	printk("\e[1;34mPipe driver was started!\e[0;0m\n");
@@ -202,14 +201,8 @@ static int pipe_start(void) {
 		printk("No memory enough for start Pipe driver\n");
 		return 1;
 	}
-	#if 0
-	printf("%d\n",drv);
 	pipe_load( drv );
 	pipe_probe( drv , NULL );
-	#else
-	pipe_load( &drv_wm );
-	pipe_probe( &drv_wm , NULL );
-	#endif
 	return 0;
 }
 
