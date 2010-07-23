@@ -19,12 +19,13 @@
 
 .weak hardware_init_hook
 .weak software_init_hook
-.weak kerenl_start
+.weak kernel_start
 
-.text
     .align 4
 
     .global start
+
+.section .expt_text, "x"
 
 start:
     ldr pc, ResetHandlerAddr
@@ -42,12 +43,14 @@ UndefHandlerAddr:
     .word UndefHandler
 SWIHandlerAddr:
     .word SWIHandler
+    //.word SWI_handler
 PrefetchAbtHandlerAddr:
     .word PrefetchAbtHandler
 DataAbtHandlerAddr:
     .word DataAbtHandler
 IRQHandlerAddr:
-    .word IRQHandler
+    //.word IRQHandler
+    .word IRQ_handler
 FIQHandlerAddr:
     .word FIQHandler
 
@@ -83,10 +86,21 @@ FIQHandler:
 .EQU I_BIT, 0x80
 .EQU F_BIT, 0x40
 
+
+.text
 /** Initialize stack */
 .RAM_TOP:
     .word _stack_top
 ResetHandler:
+    msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+    ldr	    r0, =0
+    ldr	    r1, =start
+LoopExcpt:
+    ldr	    r2, [r1], #0x4
+    str	    r2, [r0], #0x4
+    cmp	    r0, #0x20
+    bne    LoopExcpt
+
     ldr r0, .RAM_TOP
 
     msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
@@ -107,9 +121,9 @@ ResetHandler:
 
     msr CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
     mov sp, r0
-    sub r0, r0, #UND_STACK_SIZE
+    sub r1, r0, #UND_STACK_SIZE
 
-    msr CPSR_c, #ARM_MODE_USR
+    msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
     mov sp, r0
 
 /** Initialize memory */
@@ -148,14 +162,17 @@ LoopCpReloc:
     strlo   r0, [r2], #4
     blo     LoopCpReloc
 
-    ldr   r0, =hardware_init_hook
-    blne  =hardware_init_hook
+InitHook:
+    ldr     r0, =hardware_init_hook
+    blne    =hardware_init_hook
 
-    ldr   r0, =software_init_hook
-    blne  =software_init_hook
+    ldr     r0, =software_init_hook
+    blne    =software_init_hook
 
+    ldr	    lr, =kernel_start
+    push    {lr}
 /** Kernel start */
-    ldr     pc, =kernel_start
+    ldr	    pc, =kernel_start
 
 die:
     cmp	    r0, r0

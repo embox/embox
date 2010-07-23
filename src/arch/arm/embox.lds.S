@@ -20,9 +20,14 @@ _text_start = _text_vma;
 _text_end = _text_vma + _text_len;
 /*_reloc_end = _reloc_start + _reloc_len; */
 SECTIONS {
-
-	.text : {
-/*		*(.trap_table.text) */
+/*
+	.etext : {
+		*(.expt_text)
+		*(.entry_text)
+	}
+*/	.text : {
+		*(.expt_text)
+		*(.entry_text)
 		*(.text)
 		*(.init.text)
 		ALIGNMENT();
