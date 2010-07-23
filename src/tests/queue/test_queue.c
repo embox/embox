@@ -32,7 +32,7 @@ static int run(void) {
 	int result = 0;
 	queue_init(&a_queue);
 
-	for (i = 1; i < 2; i++) {
+	for (i = 1; i < 10; i++) {
 		TRACE("%d", queue_empty(&a_queue));
 		numbers[i].a = i;
 		queue_add(&numbers[i].list, &a_queue);

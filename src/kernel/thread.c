@@ -65,17 +65,13 @@ static int threads_init(void) {
  * execute "run" and delete thread from scheduler.
  * @param thread_pointer pointer at thread.
  */
-static void thread_run(int data) {
-	struct thread *thread = (struct thread *) data;
-
-	assert(thread != NULL);
+static void thread_run(void) {
 #ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nStarting Thread %d\n", thread->id);
+	TRACE("\nStarting Thread %d\n", current_thread->id);
 #endif
 	ipl_enable();
-	thread->run();
-	thread_stop(thread);
-
+	current_thread->run();
+	thread_stop(current_thread);
 	/* NOTREACHED */
 	assert(false);
 }
@@ -152,7 +148,10 @@ static int thread_delete(struct thread *deleted_thread) {
 int thread_stop(struct thread *thread) {
 	/* Last zombie thread. */
 	static struct thread *zombie;
-
+#ifdef CONFIG_DEBUG_SCHEDULER
+	TRACE("\nI = 0x%x; D = 0x%x; Z = 0x%x;\n", (unsigned int)idle_thread,
+			(unsigned int)thread, (unsigned int)zombie);
+#endif
 	if (thread == NULL || thread == idle_thread || thread == zombie || !thread->exist) {
 		return -EINVAL;
 	}
@@ -172,6 +171,9 @@ int thread_stop(struct thread *thread) {
 		thread->state = THREAD_STATE_ZOMBIE;
 	}
 
+#ifdef CONFIG_DEBUG_SCHEDULER
+	TRACE("\nZombying 0x%x\n", (unsigned int)thread);
+#endif
 	scheduler_unlock();
 	return 0;
 }
