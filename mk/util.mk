@@ -78,8 +78,8 @@ f-wildcard = $(patsubst %/,%,$(filter-out %/,$(wildcard $(1:%=%/))))
 
 # The most general way to get error/warning string.
 # First argument should contain the location to print (directory and file).
-error_str_file   = $1:1: EMBuild error::
-warning_str_file = $1:1: EMBuild warning::
+error_str_file   = $1:1: error:
+warning_str_file = $1:1: warning:
 
 # Print location using the first argument as directory
 # and 'Makefile' as file within the directory.
