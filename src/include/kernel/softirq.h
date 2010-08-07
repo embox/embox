@@ -12,6 +12,8 @@
 #ifndef SOFTIRQ_H_
 #define SOFTIRQ_H_
 
+#include <kernel/critical.h>
+
 /**
  * Total amount of possible soft IRQs.
  */
@@ -25,7 +27,7 @@
 /**
  * Type representing soft IRQ number.
  */
-typedef unsigned char softirq_nr_t;
+typedef unsigned int softirq_nr_t;
 
 /**
  * Deferred Interrupt Service Routine type.
@@ -69,12 +71,30 @@ extern int softirq_install(softirq_nr_t nr, softirq_handler_t handler,
  */
 extern int softirq_raise(softirq_nr_t nr);
 
-#ifdef __KERNEL__
 /**
  * Called by IRQ-related kernel code when leaving the interrupt context with
  * max IPL (all IRQ disabled).
+ * TODO
  */
 extern void softirq_dispatch(void);
-#endif /* __KERNEL__ */
+
+inline static void softirq_disable(void) {
+	critical_enter_softirq();
+}
+
+inline static void softirq_enable_silent(void) {
+	critical_leave_softirq();
+}
+
+inline static void softirq_check_invoke(void) {
+	if (critical_allows_softirq()) {
+		softirq_dispatch();
+	}
+}
+
+inline static void softirq_enable(void) {
+	softirq_enable_silent();
+	softirq_check_invoke();
+}
 
 #endif /* SOFTIRQ_H_ */
