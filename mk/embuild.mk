@@ -30,6 +30,13 @@ dir = $(SELFDIR)
 DIRS := $(call TRAVERSE,$(SRC_DIR),Makefile.em) \
   $(if $(PLATFORM),$(call TRAVERSE,$(PLATFORM_DIR),Makefile.em))
 
+ifdef EMBUILD_DEBUG
+embuild_vars = $(filter EMBUILD/%,$(.VARIABLES))
+$(foreach v,$(embuild_vars), \
+  $(info $v = $($v)) \
+)
+endif
+
 # LDFLAGS are common for the entire image.
 # Collect per-directory $_LDFLAGS definitions.
 __LDFLAGS = $(strip $(foreach dir,$(DIRS),$($_LDFLAGS)))
