@@ -751,7 +751,7 @@ ifdef __gmsl_have_eval
 #            3: The value associated with the key
 # Returns:   None
 # ----------------------------------------------------------------------------
-set = $(__gmsl_tr3)$(call assert_no_dollar,$0,$1$2$3)$(eval __gmsl_aa_$1_$2 = $3)
+set = $(__gmsl_tr3)$(call assert_no_dollar,$0,$1$2$3)$(eval __gmsl_aa_$1_$$$$_$2 = $3)
 
 # ----------------------------------------------------------------------------
 # Function:  get
@@ -759,16 +759,16 @@ set = $(__gmsl_tr3)$(call assert_no_dollar,$0,$1$2$3)$(eval __gmsl_aa_$1_$2 = $3
 #            2: The key to retrieve
 # Returns:   The value stored in the array for that key
 # ----------------------------------------------------------------------------
-get = $(strip $(__gmsl_tr2)$(call assert_no_dollar,$0,$1$2)$(if $(filter-out undefined,$(origin __gmsl_aa_$1_$2)), \
-    $(__gmsl_aa_$1_$2)))
+get = $(strip $(__gmsl_tr2)$(call assert_no_dollar,$0,$1$2)$(if $(filter-out undefined,$(origin __gmsl_aa_$1_$$_$2)), \
+    $(__gmsl_aa_$1_$$_$2)))
 
 # ----------------------------------------------------------------------------
 # Function:  keys
 # Arguments: 1: Name of associative array
 # Returns:   Returns a list of all defined keys in the array
 # ----------------------------------------------------------------------------
-keys = $(__gmsl_tr1)$(call assert_no_dollar,$0,$1)$(sort $(patsubst __gmsl_aa_$1_%,%, \
-                  $(filter __gmsl_aa_$1_%,$(.VARIABLES))))
+keys = $(__gmsl_tr1)$(call assert_no_dollar,$0,$1)$(sort $(patsubst __gmsl_aa_$1_$$_%,%, \
+                  $(filter __gmsl_aa_$1_$$_%,$(.VARIABLES))))
 
 # ----------------------------------------------------------------------------
 # Function:  defined
