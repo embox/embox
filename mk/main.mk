@@ -5,11 +5,13 @@
 # The first target is "all"
 all:
 
-ifeq ($(MAKE_VERSION),3.80)
+# Check Make version (we need at least GNU Make 3.81)
+# .FEATURES built-in variable has been introduced exactly in GNU Make 3.81.
+ifneq ($(origin .FEATURES),default)
 define ERROR
-Unsupported GNU Make version.
-Unfortunatelly EMBuild does not work properly with GNU Make $(MAKE_VERSION)
-This is a known issue. Please use GNU Make version 3.81
+Unsupported Make version.
+Unfortunatelly EMBuild does not work properly with GNU Make $(MAKE_VERSION).
+This is a known issue. Please use GNU Make 3.81 or above
 endef
 $(error $(ERROR))
 endif
@@ -33,6 +35,8 @@ PATCH_CONF_DIR := $(ROOT_DIR)/conf/$(PATCH_NAME)
 BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 
 BUILD_DIR     := $(ROOT_DIR)/build/$(if $(PATCH_NAME),patch_$(PATCH_NAME),base)
+
+EMBUILD_DIR    := $(MK_DIR)/embuild
 
 BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
