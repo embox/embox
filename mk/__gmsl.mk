@@ -320,7 +320,7 @@ split = $(__gmsl_tr2)$(strip $(subst $1, ,$2))
 # Returns:   Merges a list into a single string, list elements are separated
 #            by the character in the first argument
 # ----------------------------------------------------------------------------
-merge = $(__gmsl_tr2)$(strip $(if $2,                                     \
+merge = $(__gmsl_tr2)$(strip $(if $(strip $2),                            \
             $(if $(call seq,1,$(words $2)),                               \
                 $2,$(call first,$2)$1$(call merge,$1,$(call rest,$2)))))
 
