@@ -10,7 +10,7 @@
 
 #include <kernel/driver.h>
 
-/* some ASCII code */
+/* some ASCII code *//*{{{*/
 #define NULL 0x00 /* null */
 #define SOH  0x01 /* start of heading */
 #define STX  0x02 /* start of text */
@@ -23,8 +23,8 @@
 #define CAN  0x18 /* cancel */
 #define ESC  0x1B /* escape, next symbols are something special */
 #define DEL  0x7F /* delete */
-
-/*Header for code\encode */
+ /*}}}*/
+/*Header for code\encode *//*{{{*/
 
  #include <types.h>
 #include <drivers/vtparse.h>
@@ -46,8 +46,8 @@
 
 #define ENCODE_CS(code)                      ENCODE_CS_(0, 0, code)
 #define ENCODE_ESC(code)                     ENCODE_ESC_(0, 0, code)
-#define ENCODE_EXEC(code)                    ENCODE(VT_ACTION_EXECUTE, 0, 0, code)
-/* Table */
+#define ENCODE_EXEC(code)                    ENCODE(VT_ACTION_EXECUTE, 0, 0, code)/*}}}*/
+/* Table *//*{{{*/
 /* CURSOR TOKEN */
 #define TERMINAL_TOKEN_EMPTY                 ENCODE(0,0,0,0)
 /* Cursor Up */
@@ -83,7 +83,7 @@
  * Cursor position does not change
  */
 #define TERMINAL_TOKEN_ERASE_LINE            ENCODE_CS('K')
-/*}}}*/
+/*}}}*//*}}}*/
 /** ASCII table **//*{{{*/
 
 /* Null */
@@ -200,32 +200,32 @@
 #define TERMINAL_TOKEN_PARAM_SGR_BG_BLUE	44
 #define TERMINAL_TOKEN_PARAM_SGR_BG_MAGENTA	45
 #define TERMINAL_TOKEN_PARAM_SGR_BG_CYAN	46
-#define TERMINAL_TOKEN_PARAM_SGR_BG_WHITE	47
+#define TERMINAL_TOKEN_PARAM_SGR_BG_WHITE	47/*}}}*/
 
-#define ITERM_DC_SET_IO		0x0101
-#define ITERM_DC_SET_IN		0x0102
-#define ITERM_DC_SET_OUT	0x0103
-#define ITERM_DC_GET_IN		0x0104
-#define ITERM_DC_GET_OUT	0x0105
+#define ITERM_DC_SET_IO     0x0101
+#define ITERM_DC_SET_IN     0x0102
+#define ITERM_DC_SET_OUT    0x0103
+#define ITERM_DC_GET_IN     0x0104
+#define ITERM_DC_GET_OUT    0x0105
 
 #define ITERM_BUFFER_SIZE 0x100
 
 typedef struct iterminal_private {
-	device_desc before_in, before_out; /* for control time of change */
-	device_desc in,out;
+    device_desc before_in, before_out; /* for control time of change */
+    device_desc in,out;
 
 #if 1 /* under construction */
 
-	int 	is_live;						/* flag of time of life */
-	int 	call_state;	 					/* state of call (task or cmdline edit) */
+    int     is_live;                        /* flag of time of life */
+    int     call_state;                     /* state of call (task or cmdline edit) */
 
-	char 	buffer_in[ITERM_BUFFER_SIZE]; 	/* buffer for read from input device */
-	int 	buffer_in_s;					/* size of input buffer */
+    char    buffer_in[ITERM_BUFFER_SIZE];   /* buffer for read from input device */
+    int     buffer_in_s;                    /* size of input buffer */
 
-	char 	buffer_out[ITERM_BUFFER_SIZE]; 	/* --/--/-- */
-	int 	buffer_out_s;					/* --/--/-- */
+    char    buffer_out[ITERM_BUFFER_SIZE];  /* --/--/-- */
+    int     buffer_out_s;                   /* --/--/-- */
 
-	device_desc pipe_to, pipe_from; /* some pipes for exchange data with child task */
+    device_desc pipe_to, pipe_from; /* some pipes for exchange data with child task */
 
 #endif
 } iterminal_private_t;
