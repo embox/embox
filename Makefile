@@ -1,12 +1,28 @@
 #
-# EMBOX root Makefile
+# EMBOX root Makefile.
 #
-# This file just have to define ROOT_DIR variable and to include maik.mk
+# This file have just to setup proper make flags and to invoke mk/main.mk
 # which will perform the real work.
 #
 # Author: Eldar Abusalimov
 #
 
-ROOT_DIR:=.#$(CURDIR)
+MK_DIR := $(abspath mk)
 
-include $(ROOT_DIR)/mk/main.mk
+ifdef mk_ready
+include main.mk
+else
+
+MAKEFLAGS += --include-dir=$(MK_DIR)
+MAKEFLAGS += --no-builtin-rules
+MAKEFLAGS += --no-builtin-variables
+MAKEFLAGS += --no-print-directory
+#MAKEFLAGS += --warn-undefined-variables
+
+.DEFAULT_GOAL := all
+
+% :
+	@$(MAKE) mk_ready=1 $@
+
+endif
+

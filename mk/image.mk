@@ -33,6 +33,7 @@ checksum:
 # Not yet implemented
 
 CC      = $(CROSS_COMPILE)gcc
+CPP     = $(CC) -E
 AR      = $(CROSS_COMPILE)ar
 AS      = $(CROSS_COMPILE)as
 LD      = $(CROSS_COMPILE)ld

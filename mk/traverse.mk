@@ -79,7 +79,7 @@ include $(MK_DIR)/util.mk
 #   If not specified traverse will search for files named Makefile and makefile
 #
 TRAVERSE = \
-  $(call assert_called,$0,TRAVERSE) \
+  $(call assert_called,TRAVERSE,$0) \
   $(foreach __traverse_root,$(patsubst %/,%,$(wildcard $(1:%=%/))), \
     $(eval __traverse_return := ) \
     $(eval $(call __traverse_invoke,$(__traverse_root),$2)) \

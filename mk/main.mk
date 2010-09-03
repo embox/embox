@@ -2,23 +2,30 @@
 # EMBOX main Makefile
 #
 
-# The first target is "all"
-all:
-
 # Check Make version (we need at least GNU Make 3.81)
 # .FEATURES built-in variable has been introduced exactly in GNU Make 3.81.
 ifneq ($(origin .FEATURES),default)
-define ERROR
+define error_msg
 Unsupported Make version.
 Unfortunatelly EMBuild does not work properly with GNU Make $(MAKE_VERSION).
 This is a known issue. Please use GNU Make 3.81 or above
 endef
-$(error $(ERROR))
 endif
 
-ifndef ROOT_DIR
-$(error ROOT_DIR undefined)
+# Root makefile runs this using single goal per invocation. Check it.
+ifneq ($(words $(MAKECMDGOALS)),1)
+define error_msg
+Illegal invocation (non-single make goal).
+Please use root makefile to run the build
+endef
 endif
+
+# Fail here if things are bad...
+ifdef error_msg
+$(error $(error_msg))
+endif
+
+ROOT_DIR       := .#
 
 MK_DIR         := $(ROOT_DIR)/mk
 SCRIPTS_DIR    := $(ROOT_DIR)/scripts
@@ -53,10 +60,10 @@ SHELL  := bash
 
 TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 
-include $(MK_DIR)/rules.mk
-include $(MK_DIR)/util.mk
+include rules.mk
+include util.mk
 
-include $(MK_DIR)/gmsl.mk
+include gmsl.mk
 
 makegoals := $(MAKECMDGOALS)
 ifeq ($(makegoals),)
@@ -94,7 +101,7 @@ all: $(build_patch_targets) build_base_target
 $(build_patch_targets): export PATCH_NAME=$(basename $@)
 $(build_patch_targets) build_base_target: export BUILD_TARGET=1
 $(build_patch_targets) build_base_target:
-	$(MAKE) --no-print-directory build
+	$(MAKE) build
 
 build: check_config prepare image
 	@echo '$(or $(PATCH_NAME),Base) build complete'
