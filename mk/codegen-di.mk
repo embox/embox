@@ -26,7 +26,7 @@ c_mod = $(call c_escape,$(mod))
 c_dep = $(call c_escape,$(dep))
 c_package = $(call c_escape,$(package))
 
-c_escape = $(subst .,$$,$(1))
+c_escape = $(subst .,__,$(1))
 
 eol-trim = $(if $(findstring $() \n,$1),$(call $0,$(subst $() \n,\n,$1)),$1)
 
@@ -84,7 +84,7 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
 
 generate_root_mods = $(strip \n/* Root modules. */\
   $(foreach mod,$(filter-out $(foreach m,$(MODS_BUILD),$(DEPS-$m)),$(MODS_BUILD)), \
-    \nMOD_ROOT_DEF($(subst .,$$,$(mod))); \
+    \nMOD_ROOT_DEF($(subst .,__,$(mod))); \
   ) \
 )\n
 

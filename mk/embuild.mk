@@ -372,7 +372,7 @@ endef
 define define_mod_obj_rules
   $(OBJS-$(unit)) : override CPPFLAGS += $(CPPFLAGS-$(mod_package))
   $(OBJS-$(unit)) : override CFLAGS   += $(CFLAGS-$(mod_package))
-  $(OBJS-$(unit)) : override CPPFLAGS += -D__EMBUILD_MOD__='$(subst .,$$,$(unit))'
+  $(OBJS-$(unit)) : override CPPFLAGS += -D__EMBUILD_MOD__='$(subst .,__,$(unit))'
 endef
 
 $(foreach unit,$(LIBS), \
