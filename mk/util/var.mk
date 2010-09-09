@@ -5,8 +5,10 @@
 #
 
 
-define var_info
-$(call assert_called,var_info,$0) \
+var_info = $(call assert_called,var_info,$0)$(info $(call var_dump,$1))
+
+define var_dump
+$(call assert_called,var_dump,$0) \
   $(call assert,$1,Variable name is empty) Variable [$1] info:
    flavor: [$(flavor $1)]
    origin: [$(origin $1)]
@@ -29,41 +31,29 @@ ${eval $( \
 )}
 
 __var_assign_template_mk_def = ${eval $(                \
-  )$(\n)define __var_assign_$(strip $1)_mk$(            \
+  )$(\n)define $1$(                                     \
   )$(\n)$(call __var_define_mk,__var_assign_tmp,$$2)$(  \
   )$(\n)$$1 $2 $$$$(__var_assign_tmp)$(                 \
   )$(\n)endef$(                                         \
 )}
 
-$(call __var_assign_template_mk_def,simple,:=)
-$(call __var_assign_template_mk_def,append,+=)
-$(call __var_assign_template_mk_def,conditional,?=)
+$(call __var_assign_template_mk_def,__var_assign_simple_mk,:=)
+$(call __var_assign_template_mk_def,__var_assign_append_mk,+=)
+$(call __var_assign_template_mk_def,__var_assign_cond_mk,?=)
 
-ifeq (0,1)
-var_assign_recursive = \
-  $(call assert_called,var_assign_recursive,$0)$(call __var_assign,$1 =,$2)
-var_assign_recursive = \
-  ${eval $(__var_assign_recursive_mk)}
-
-else
-
+ifndef MK_UTIL_VAR_NO_OPTIMIZE
 ${eval $(                                             \
   )$(\n)define var_assign_recursive$(                 \
   )$(\n)$${eval $(value __var_assign_recursive_mk)}$( \
   )$(\n)endef$(                                       \
 )}
+else
+var_assign_recursive = ${eval $(__var_assign_recursive_mk)}
 endif
 
-var_assign_simple = \
-  $(call assert_called,var_assign_simple,$0)$(call __var_assign,$1:=,$2)
-var_assign_simple = \
-  ${eval $(__var_assign_simple_mk)}
-
-var_assign_append = \
-  $(call assert_called,var_assign_append,$0)$(call __var_assign,$1+=,$2)
-
-var_assign_conditional = \
-  $(call assert_called,var_assign_conditional,$0)$(call __var_assign,$1?=,$2)
+var_assign_simple = ${eval $(__var_assign_simple_mk)}
+var_assign_append = ${eval $(__var_assign_append_mk)}
+var_assign_cond   = ${eval $(__var_assign_cond_mk)}
 
 ifeq ($(MAKE_VERSION),3.81)
 var_assign_undefined = $(strip \
@@ -74,13 +64,6 @@ else # Since version 3.82 GNU Make provides true 'undefine' directive.
 var_assign_undefined = \
   $(call assert_called,var_assign_undefined,$0)$(call __var_assign,undefine $1,)
 endif
-
-__var_assign = $(strip \
-  $(call assert,$(strip $1),Must specify target variable name) \
-  $(call assert,$(filter undefined file,$(origin $1)), \
-    Invalid origin of target variable [$1] : [$(origin $1)]) \
-  $(eval $(call escape,$1) $(empty)$2$(empty)) \
-)
 
 var_define   = \
   $(call assert_called,var_define,$0)$(call var_assign_recursive,$1,$2)
