@@ -277,51 +277,6 @@ __map_entry = \
   $(__map_entry_prefix)$(call dollar_encode,$1)_$$_$(call dollar_encode,$2)
 __map_entry_prefix := __map_entry_
 
-### Version utils.
-
-make_version_major =
-
-__make_version_cmp_strict = \
-  $(call assert,$2,Must specify to compare with) \
-  $(call or, \
-    $(call $1,$(make_version_major),$(call make_version_major,$2)), \
-    $(call and, \
-      $(call eq,$(make_version_major),$(call make_version_major,$2)), \
-      $(call $1,$(make_version_minor),$(call make_version_minor,$2)) \
-    ) \
-  ) \
-)
-
-make_version_gt = $(call __gmsl_make_bool, \
-  $(call assert_called,make_version_gt,$0) \
-  $(call __make_version_cmp_strict,gt,$1) \
-)
-make_version_lt = $(call __gmsl_make_bool, \
-  $(call assert_called,make_version_lt,$0) \
-  $(call __make_version_cmp_strict,lt,$1) \
-)
-make_version_gte = $(call __gmsl_make_bool, \
-  $(call assert_called,make_version_gte,$0) \
-  $(call not,$(call make_version_lt,$1)) \
-)
-make_version_lte = $(call __gmsl_make_bool, \
-  $(call assert_called,make_version_lte,$0) \
-  $(call not,$(call make_version_gt,$1)) \
-)
-make_version_eq = $(call __gmsl_make_bool, \
-  $(call assert_called,make_version_eq,$0) \
-  $(call not,$(call or,$(call make_version_gt,$1)$(call make_version_lt,$1))) \
-)
-make_version_neq = $(call __gmsl_make_bool, \
-  $(call assert_called,make_version_neq,$0) \
-  $(call or,$(call make_version_gt,$1)$(call make_version_lt,$1)) \
-)
-
-gte = $(__gmsl_tr2)$(call __gmsl_int_wrap2,int_gte,$1,$2)
-lt = $(__gmsl_tr2)$(call __gmsl_int_wrap2,int_lt,$1,$2)
-lte = $(__gmsl_tr2)$(call __gmsl_int_wrap2,int_lte,$1,$2)
-eq = $(__gmsl_tr2)$(call __gmsl_int_wrap2,int_eq,$1,$2)
-ne = $(__gmsl_tr2)$(call __gmsl_int_wrap2,int_ne,$1,$2)
 
 ##
 # r-patsubst stands for recursive patsubst.
