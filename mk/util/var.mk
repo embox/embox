@@ -18,7 +18,7 @@ expansion: [$($1)]
 endef
 
 __var_make_version := $(if $(call make_version_gte,3.82),3.82,$(MAKE_VERSION))
-include $(dir $(self_makefile))/var-$(__var_make_version).mk
+include $(self_makefile_dir)/var-$(__var_make_version).mk
 
 # XXX rewrite everything below. -- Eldar
 
