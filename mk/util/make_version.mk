@@ -7,17 +7,19 @@
 
 ### Version utils.
 
-make_version_major = $(call __make_version_part,make_version_major,$0,$1)
-make_version_minor = $(call __make_version_part,make_version_minor,$0,$1)
+make_version_major = \
+  $(call __make_version_part,make_version_major,$(value 0),$(value 1))
+make_version_minor = \
+  $(call __make_version_part,make_version_minor,$(value 0),$(value 1))
 
 __make_version_part = $(strip \
   $(if $(call called,$1,$2), \
-    $(or $(call __$1,$3),$(call assert,$(false),Invalid argument [$3]), \
+    $(or $(call __$1,$3),$(call assert,$(false),Invalid argument [$3])), \
     $(call __$1,$(MAKE_VERSION)) \
   ) \
 )
 
-__make_version = $(subst ,.,$(\space),$1)
+__make_version = $(subst .,$(\space),$1)
 __make_version_major = $(word 1,$(__make_version))
 __make_version_minor = $(word 2,$(__make_version))
 
