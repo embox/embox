@@ -31,6 +31,7 @@ $(foreach op,simple append cond,$(call __var_assign_multiline_mk_def,$(op)))
 # at least "ifdef" conditionals and "+=" assignment will behave as expected.
 __var_assign_undefined_mk = $1 =
 
-__var_assign_inline := multiline_recursive undefined
-__var_assign_inline += $(__var_assign_ops:%=singleline_%)
+__var_assign_inline := \
+  $(filter-out $(addprefix multiline_,simple append cond), \
+     $(__var_assign_lines_ops))
 
