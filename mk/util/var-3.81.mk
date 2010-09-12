@@ -1,9 +1,8 @@
 #
-# Some useful stuff lives here.
+# Variable assignment functions for GNU Make 3.81
 #
 # Author: Eldar Abusalimov
 #
-
 
 __var_assign_singleline_recursive_mk = $1 = $2
 __var_assign_singleline_simple_mk    = $1:= $2
@@ -28,24 +27,10 @@ __var_assign_multiline_mk_def = ${eval $( \
 
 $(foreach op,simple append cond,$(call __var_assign_multiline_mk_def,$(op)))
 
-MK_UTIL_VAR_NO_OPTIMIZE = 1
-ifndef MK_UTIL_VAR_NO_OPTIMIZE
-${eval $( \
-  )define var_assign_multiline_recursive$(\n                 \
-  )$${eval $(value __var_assign_multiline_recursive_mk)}$(\n \
-  )endef$(                                                   \
-)}
-else
-#var_assign_recursive = \
-  ${eval $(if $(findstring $(\n),$2),,$(__var_assign_recursive_mk))}
-var_assign_multiline_recursive = ${eval $(__var_assign_multiline_recursive_mk)}
-endif
-
-var_assign_multiline_simple = ${eval $(__var_assign_multiline_simple_mk)}
-var_assign_multiline_append = ${eval $(__var_assign_multiline_append_mk)}
-var_assign_multiline_cond   = ${eval $(__var_assign_multiline_cond_mk)}
-
 # This is not true undefine, but
 # at least "ifdef" conditionals and "+=" assignment will behave as expected.
-var_assign_undefined = ${eval $1 =}
+__var_assign_undefined_mk = $1 =
+
+__var_assign_inline := multiline_recursive undefined
+__var_assign_inline += $(__var_assign_ops:%=singleline_%)
 
