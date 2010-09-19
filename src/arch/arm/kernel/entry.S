@@ -5,15 +5,17 @@
  *
  * @author Anton Kozlov
  */
-
+/* TODO this constant defines AIC registers map interrupt controller move it from hear*/
 #define AIC_ISR		0xfffff108
 #define AIC_EOICR	0xfffff130
 #define AIC_IVR		0xfffff100
+
 .text
 .align 4
 .global	SWI_handler
 .global	IRQ_handler
 
+/* why in spatial section */
 .section .entry_text, "x"
 
 IRQ_handler:

@@ -2,7 +2,7 @@
  * @file
  *
  * @date 28.03.2010
- * @author Nikolay Korotky
+ * @author Nikolay Korotky realy:)
  */
 
 /**
@@ -26,14 +26,16 @@
     .global start
 
 .section .expt_text, "x"
-
+/* trap table
+ * this code specific for ARM7TDMI cores
+ */
 start:
     ldr pc, ResetHandlerAddr
     ldr pc, UndefHandlerAddr
     ldr pc, SWIHandlerAddr
     ldr pc, PrefetchAbtHandlerAddr
     ldr pc, DataAbtHandlerAddr
-    nop
+    nop /*bad exception _not_used:		.word not_used*/
     ldr pc, IRQHandlerAddr
     ldr pc, FIQHandlerAddr
 
@@ -68,11 +70,13 @@ IRQHandler:
 FIQHandler:
     B FIQHandler
 
+/* TODO these are common constant move them to header */
 /** Describe stacks' sizes */
-.EQU IRQ_STACK_SIZE, 0x100
-.EQU FIQ_STACK_SIZE, 0x100
-.EQU ABT_STACK_SIZE, 0x100
-.EQU UND_STACK_SIZE, 0x100
+/*TODO stack size must set in config file*/
+.EQU IRQ_STACK_SIZE, 0x100 /* irq mode */
+.EQU FIQ_STACK_SIZE, 0x100 /* fast irq mode */
+.EQU ABT_STACK_SIZE, 0x100 /* abort mode */
+.EQU UND_STACK_SIZE, 0x100 /* undefined mode undefined instruction has been occured*/
 .EQU SVC_STACK_SIZE, 0x100
 
 .EQU ARM_MODE_FIQ, 0x11
