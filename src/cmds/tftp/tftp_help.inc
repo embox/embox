@@ -13,7 +13,7 @@
 "EXAMPLES\n"
 "\tFor sparc:\n"
 "\ttftp 192.168.0.59 piggy 0x40000000\n"
-"\ttftp 192.168.0.59 image 0x40004000\n"
+"\ttftp 192.168.0.59 image.bin 0x40004000\n"
 "\ttftp 192.168.0.59 uImage 0x40003FC0\n"
 "\tFor microblaze:\n"
 "\ttftp 192.168.0.59 uImage 0x44100000\n"

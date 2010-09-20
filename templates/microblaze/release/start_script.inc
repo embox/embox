@@ -2,3 +2,5 @@
 "ifconfig -a 192.168.0.80 -p 255.255.255.0 -m AA:BB:CC:DD:EE:1 -u eth0",
 "route -n 192.168.0.0 -m 255.255.255.0 -d eth0 add",
 //"tftp 192.168.0.59 uImage 0x44100000",
+//"load -f piggy -a 0x44100000",
+//"goto -a 0x44100000",
