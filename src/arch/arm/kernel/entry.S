@@ -49,7 +49,10 @@ SWI_handler:
 
 	mov	LR, PC
 	ldr	PC, =softirq_dispatch
+#if 0
+	//TODO what does mean si_handler
 	ldr	PC, =si_handler
+#endif
 
 	pop	{r0-r4,	LR}
 

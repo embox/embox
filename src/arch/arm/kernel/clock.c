@@ -29,7 +29,10 @@ irq_return_t clock_handler(int irq_num, void *dev_id) {
 		REG_ORIN(PIT_MR, PIT_INTERRUPT_ENABLE | PIT_ENABLE); /*p 82, before last paragraph */
 		if (ticks >= delay) {
 			ticks = 0;
+#if 0
+			//TODO what does mean si_handler
 			si_handler();
+#endif
 		}
 		clock_tick_handler(irq_num, dev_id);
 	}
