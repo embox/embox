@@ -11,8 +11,8 @@ $_LDFLAGS  += $($_SELFDIR)/nosys.lds
 $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
-
-$_MODS += irq timer printk softirq thread scheduler job elf
+# TODO too more mods fro core.kernel
+$_MODS += irq timer printk softirq thread scheduler job elf drv_subsys
 
 $_SRCS-main += main.c
 $_SRCS-main += init.c

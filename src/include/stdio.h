@@ -11,6 +11,7 @@
 
 #include <stdarg.h>
 #include <types.h>
+#include <kernel/printk.h>
 #include <kernel/driver.h>
 
 #define EOF (-1)
