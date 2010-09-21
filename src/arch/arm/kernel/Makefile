@@ -5,7 +5,11 @@ $_SRCS-locore += head.S
 
 $_SRCS-arch += arch.c
 
-$_SRCS-interrupt += interrupt.c entry.S
+$_SRCS-interrupt += entry.S
 
-$_SRCS-clock += clock.c
+
+DEFAULT_SYS_TIMER = embox.driver.timers.at91_timer
+DEFAULT_SYS_IRQCTRL = embox.driver.interrupts.at91_interrupt
+
+include $(MK_DIR)/system.mk
 
