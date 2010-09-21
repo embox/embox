@@ -55,6 +55,7 @@ struct leon_prom_info {
         int baudrates[2];
         struct property root_properties[4];
         struct property cpu_properties[7];
+        struct property uart_properties[7];
 #undef  CPUENTRY
 #define CPUENTRY(idx) struct property cpu_properties##idx[4];
         CPUENTRY(1)
@@ -99,8 +100,9 @@ struct leon_prom_info {
         struct linux_arguments_v0 *bootargs_p;
         struct linux_arguments_v0 bootargs;
         struct linux_romvec romvec;
-        struct node nodes[35];
+        struct node nodes[36];
         char s_device_type[12];
+        char s_device_name[5];
         char s_cpu[4];
         char s_mid[4];
         char s_idprom[7];
@@ -110,7 +112,19 @@ struct leon_prom_info {
         char s_frequency[16];
         char s_uart1_baud[11];
         char s_uart2_baud[11];
-        char arg[];
+        char s_serial[7];
+        char pv_stdin;
+        char pv_stdout;
+        char s_uart_name[16];
+        char s_uart_vendor[7];
+        char s_uart_device[7];
+        char s_uart_interrupts[11];
+        char s_uart_reg[4];
+        int uart_vendor;
+        int uart_device;
+        int uart_interrupts;
+        int uart_reg;
+        char arg[256];
 };
 
 extern void bootm_linux(unsigned int load_addr, unsigned int entry_point);

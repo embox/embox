@@ -28,70 +28,176 @@ static char *no_nextprop(int node,char *name);
 
 /* static prom info */
 static struct leon_prom_info spi = {
-		0, /* freq_khz */
-		256, /* leon_nctx */
-		{
+	2000, /* freq_khz */
+	256, /* leon_nctx */
+	{
 #undef  CPUENTRY
 #define CPUENTRY(idx)  idx,
-				CPUENTRY(0)
-				CPUENTRY(1)
-				CPUENTRY(2)
-				CPUENTRY(3)
-				CPUENTRY(4)
-				CPUENTRY(5)
-				CPUENTRY(6)
-				CPUENTRY(7)
-				CPUENTRY(8)
-				CPUENTRY(9)
-				CPUENTRY(10)
-				CPUENTRY(11)
-				CPUENTRY(12)
-				CPUENTRY(13)
-				CPUENTRY(14)
-				CPUENTRY(15)
-				CPUENTRY(16)
-				CPUENTRY(17)
-				CPUENTRY(18)
-				CPUENTRY(19)
-				CPUENTRY(20)
-				CPUENTRY(21)
-				CPUENTRY(22)
-				CPUENTRY(23)
-				CPUENTRY(24)
-				CPUENTRY(25)
-				CPUENTRY(26)
-				CPUENTRY(27)
-				CPUENTRY(28)
-				CPUENTRY(29)
-				CPUENTRY(30)
-				31
-		},
-		{ /* baudrates */
-				BAUDRATE, BAUDRATE
-		},
-		{ /* root_properties */
-				{__va(spi.s_device_type), (char*)__va(spi.s_idprom), 4},
-				{__va(spi.s_idprom), (char *)__va(&spi.idprom), sizeof(struct idprom)},
-				{__va(spi.s_compatability), __va(spi.s_leon2), 5},
-				{NULL, NULL, -1}
-		},
-		{ /* cpu_properties */
-				{__va(spi.s_device_type), __va(spi.s_cpu), 4},
-				{__va(spi.s_mid), (char*)__va(&spi.mids[0]), 4},
-				{__va(spi.s_mmu_nctx), (char *)__va(&spi.leon_nctx), 4},
-				{__va(spi.s_frequency), (char *)__va(&spi.freq_khz), 4},
-				{__va(spi.s_uart1_baud), (char *)__va(&spi.baudrates[0]), 4},
-				{__va(spi.s_uart2_baud), (char *)__va(&spi.baudrates[1]), 4},
-				{NULL, NULL, -1}
+		CPUENTRY(0)
+		CPUENTRY(1)
+		CPUENTRY(2)
+		CPUENTRY(3)
+		CPUENTRY(4)
+		CPUENTRY(5)
+		CPUENTRY(6)
+		CPUENTRY(7)
+		CPUENTRY(8)
+		CPUENTRY(9)
+		CPUENTRY(10)
+		CPUENTRY(11)
+		CPUENTRY(12)
+		CPUENTRY(13)
+		CPUENTRY(14)
+		CPUENTRY(15)
+		CPUENTRY(16)
+		CPUENTRY(17)
+		CPUENTRY(18)
+		CPUENTRY(19)
+		CPUENTRY(20)
+		CPUENTRY(21)
+		CPUENTRY(22)
+		CPUENTRY(23)
+		CPUENTRY(24)
+		CPUENTRY(25)
+		CPUENTRY(26)
+		CPUENTRY(27)
+		CPUENTRY(28)
+		CPUENTRY(29)
+		CPUENTRY(30)
+		31
+	},
+	{ /* baudrates */
+		BAUDRATE, BAUDRATE
+	},
+	{ /* root_properties */
+		{__va(spi.s_device_type), (char*)__va(spi.s_idprom), 7},
+		{__va(spi.s_idprom), (char *)__va(&spi.idprom), sizeof(struct idprom)},
+		{__va(spi.s_compatability), __va(spi.s_leon2), 5},
+		{NULL, NULL, -1}
+	},
+	{ /* cpu_properties */
+		{__va(spi.s_device_type), __va(spi.s_cpu), 4},
+		{__va(spi.s_mid), (char*)__va(&spi.mids[0]), 4},
+		{__va(spi.s_mmu_nctx), (char *)__va(&spi.leon_nctx), 4},
+		{__va(spi.s_frequency), (char *)__va(&spi.freq_khz), 4},
+		{__va(spi.s_uart1_baud), (char *)__va(&spi.baudrates[0]), 4},
+		{__va(spi.s_uart2_baud), (char *)__va(&spi.baudrates[1]), 4},
+		{NULL, NULL, -1}
+	},
+        { /* uart_properties */
+                 {__va(spi.s_device_name), __va(spi.s_uart_name), 16},
+                 {__va(spi.s_device_type), __va(spi.s_serial), 7},
+                 {__va(spi.s_uart_vendor), (char *)__va(&spi.uart_vendor), 4},
+                 {__va(spi.s_uart_device), (char *)__va(&spi.uart_device), 4},
+                 {__va(spi.s_uart_interrupts), (char *)__va(&spi.uart_interrupts), 4},
+                 {__va(spi.s_uart_reg), (char *)__va(&spi.uart_reg), 4},
+                 {NULL, NULL, -1}
         },
 #undef  CPUENTRY
 #define CPUENTRY(idx) \
-		{ /* cpu_properties */ \
-			{__va(spi.s_device_type), (char*)__va(spi.s_cpu), 4}, \
-			{__va(spi.s_mid), (char*)__va(&spi.mids[idx]), 4}, \
-			{__va(spi.s_frequency), (char *)__va(&spi.freq_khz), 4}, \
-			{NULL, NULL, -1} \
+	{ /* cpu_properties */ \
+		{__va(spi.s_device_type), (char*)__va(spi.s_cpu), 4}, \
+		{__va(spi.s_mid), (char*)__va(&spi.mids[idx]), 4}, \
+		{__va(spi.s_frequency), (char *)__va(&spi.freq_khz), 4}, \
+		{NULL, NULL, -1} \
+	},
+	CPUENTRY(1)
+	CPUENTRY(2)
+	CPUENTRY(3)
+	CPUENTRY(4)
+	CPUENTRY(5)
+	CPUENTRY(6)
+	CPUENTRY(7)
+	CPUENTRY(8)
+	CPUENTRY(9)
+	CPUENTRY(10)
+	CPUENTRY(11)
+	CPUENTRY(12)
+	CPUENTRY(13)
+	CPUENTRY(14)
+	CPUENTRY(15)
+	CPUENTRY(16)
+	CPUENTRY(17)
+	CPUENTRY(18)
+	CPUENTRY(19)
+	CPUENTRY(20)
+	CPUENTRY(21)
+	CPUENTRY(22)
+	CPUENTRY(23)
+	CPUENTRY(24)
+	CPUENTRY(25)
+	CPUENTRY(26)
+	CPUENTRY(27)
+	CPUENTRY(28)
+	CPUENTRY(29)
+	CPUENTRY(30)
+	CPUENTRY(31)
+	{ /* idprom */
+		0x01, /* format */
+		M_LEON | M_LEON3_SOC /* maybe 0x01? */, /* machine type */
+		{0,0,0,0,0,0}, /* eth */
+		0, /* date */
+		0, /* sernum */
+		0, /* checksum */
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} /* reserved */
+	},
+	{ /* nodeops */
+		__va(no_nextnode),
+		__va(no_child),
+		__va(no_proplen),
+		__va(no_getprop),
+		__va(no_setprop),
+		__va(no_nextprop)
+	},
+	__va(&spi.totphys), /* totphys_p */
+	{ /* totphys */
+		NULL,
+		(char *)LEONSETUP_MEM_BASEADDR,
+		0,
+	},
+	__va(&spi.avail), /* avail_p */
+	{ /* avail */
+		NULL,
+		(char *)LEONSETUP_MEM_BASEADDR,
+		0,
+	},
+	NULL, /* prommap_p */
+	NULL, /* synchook  */
+	__va(&spi.bootargs), /* bootargs_p */
+	{ /* bootargs */
+		{ NULL, __va(spi.arg), NULL /*...*/
 		},
+		/*...*/
+	},
+	{ /* romvec */
+		0,
+		0, /* sun4c v0 prom */
+		0, 0,
+		{ __va(&spi.totphys_p), __va(&spi.prommap_p), __va(&spi.avail_p) },
+		__va(&spi.nodeops),
+		NULL, { NULL /* ... */ },
+		__va(&spi.pv_stdin), __va(&spi.pv_stdout),
+		NULL, NULL,  /* pv_getchar, pv_putchar */
+		__va(leon_nbgetchar), __va(leon_nbputchar),
+		NULL,
+		__va(leon_reboot),
+		NULL,
+		NULL,
+		NULL,
+		__va(leon_halt),
+		__va(&spi.synchook),
+		{ NULL },
+		__va(&spi.bootargs_p)
+		/*...*/
+	},
+	{ /* nodes */
+		{ 0, __va(spi.root_properties+3) /* NULL, NULL, -1 */ },
+		{ 0, __va(spi.root_properties) },
+		{ 1, __va(spi.cpu_properties) }, /* cpu 0, must be spi.nodes[2] see leon_prom_init()*/
+		{ 1, __va(spi.uart_properties) },
+#undef  CPUENTRY
+#define CPUENTRY(idx) \
+	{ 0, __va(spi.cpu_properties##idx) }, /* cpu <idx> */
 		CPUENTRY(1)
 		CPUENTRY(2)
 		CPUENTRY(3)
@@ -123,120 +229,37 @@ static struct leon_prom_info spi = {
 		CPUENTRY(29)
 		CPUENTRY(30)
 		CPUENTRY(31)
-
-		{ /* idprom */
-			0x01, /* format */
-			M_LEON | M_LEON3_SOC /* maybe 0x01? */, /* machine type */
-			{0,0,0,0,0,0}, /* eth */
-			0, /* date */
-			0, /* sernum */
-			0, /* checksum */
-			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} /* reserved */
-		},
-		{ /* nodeops */
-				__va(no_nextnode),
-				__va(no_child),
-				__va(no_proplen),
-				__va(no_getprop),
-				__va(no_setprop),
-				__va(no_nextprop)
-		},
-		__va(&spi.totphys), /* totphys_p */
-		{ /* totphys */
-				NULL,
-				(char *)LEONSETUP_MEM_BASEADDR,
-				0,
-		},
-		__va(&spi.avail), /* avail_p */
-		{ /* avail */
-				NULL,
-				(char *)LEONSETUP_MEM_BASEADDR,
-				0,
-		},
-		NULL, /* prommap_p */
-		NULL, /* synchook  */
-		__va(&spi.bootargs), /* bootargs_p */
-		{ /* bootargs */
-				{ NULL, __va(spi.arg), NULL /*...*/
-				},
-				/*...*/
-		},
-		{ /* romvec */
-				0,
-				0, /* sun4c v0 prom */
-				0, 0,
-				{ __va(&spi.totphys_p), __va(&spi.prommap_p), __va(&spi.avail_p) },
-				__va(&spi.nodeops),
-				NULL, { NULL /* ... */ },
-				NULL, NULL,
-				NULL, NULL,  /* pv_getchar, pv_putchar */
-				__va(leon_nbgetchar), __va(leon_nbputchar),
-				NULL,
-				__va(leon_reboot),
-				NULL,
-				NULL,
-				NULL,
-				__va(leon_halt),
-				__va(&spi.synchook),
-				{ NULL },
-				__va(&spi.bootargs_p)
-				/*...*/
-		},
-		{ /* nodes */
-				{ 0, __va(spi.root_properties+3) /* NULL, NULL, -1 */ },
-				{ 0, __va(spi.root_properties) },
-				{ 1, __va(spi.cpu_properties) }, /* cpu 0, must be spi.nodes[2] see leon_prom_init()*/
-
-#undef  CPUENTRY
-#define CPUENTRY(idx) \
-		{ 0, __va(spi.cpu_properties##idx) }, /* cpu <idx> */
-				CPUENTRY(1)
-				CPUENTRY(2)
-				CPUENTRY(3)
-				CPUENTRY(4)
-				CPUENTRY(5)
-				CPUENTRY(6)
-				CPUENTRY(7)
-				CPUENTRY(8)
-				CPUENTRY(9)
-				CPUENTRY(10)
-				CPUENTRY(11)
-				CPUENTRY(12)
-				CPUENTRY(13)
-				CPUENTRY(14)
-				CPUENTRY(15)
-				CPUENTRY(16)
-				CPUENTRY(17)
-				CPUENTRY(18)
-				CPUENTRY(19)
-				CPUENTRY(20)
-				CPUENTRY(21)
-				CPUENTRY(22)
-				CPUENTRY(23)
-				CPUENTRY(24)
-				CPUENTRY(25)
-				CPUENTRY(26)
-				CPUENTRY(27)
-				CPUENTRY(28)
-				CPUENTRY(29)
-				CPUENTRY(30)
-				CPUENTRY(31)
-				{ -1,__va(spi.root_properties+3) /* NULL, NULL, -1 */ }
-		},
-		"device_type",
-		"cpu",
-		"mid",
-		"idprom",
-		"compatability",
-		"leon2",
-		"mmu-nctx",
-		"clock-frequency",
-		"uart1_baud",
-		"uart2_baud",
-		KERNEL_ARGS
+		{ -1,__va(spi.root_properties+3) /* NULL, NULL, -1 */ }
+	},
+	"device_type",
+	"name",
+	"cpu",
+	"mid",
+	"idprom",
+	"compatability",
+	"leon2",
+	"mmu-nctx",
+	"clock-frequency",
+	"uart1_baud",
+	"uart2_baud",
+	"serial",
+	PROMDEV_TTYA,
+	PROMDEV_TTYA,
+	"GAISLER_APBUART",
+	"vendor",
+	"device",
+	"interrupts",
+	"reg",
+	0x1,
+	0x0C,
+	0x2,
+	0x80000100,
+	KERNEL_ARGS
 };
 
 static void leon_reboot(char *bcommand) {
+	/* Reboot the CPU = jump to beginning of flash again. */
+
 	while (1) {
 		printk(__va("Can't reboot\n"));
 	};

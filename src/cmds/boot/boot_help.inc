@@ -12,7 +12,7 @@
 "\tboot -a 0x40004000\n"
 "\tboot -f u -a 0x40003FC0\n"
 "\tFor microblaze:\n"
-"\tboot -f u -a 0x44100000\n"
+"\tboot -f u -a 0x45000000\n"
 "SEE ALSO\n"
 "\ttftp, goto\n"
 "AUTHORS\n"
