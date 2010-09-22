@@ -101,24 +101,6 @@ var_info = $(call assert_called,var_info,$0)$(info $(call var_dump,$1))
 #       (see GNU Make manual).
 #
 
-var_assign_undefined
-var_assign_recursive
-var_assign_simple
-var_assign_append
-var_assign_cond
-=
-=:
-=+
-=?
-var_assign_singleline_recursive
-var_assign_singleline_simple
-var_assign_singleline_append
-var_assign_singleline_cond
-var_assign_multiline_recursive
-var_assign_multiline_simple
-var_assign_multiline_append
-var_assign_multiline_cond
-
 # Here goes the implementation.
 
 # Include version-specific file.
