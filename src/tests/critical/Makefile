@@ -26,7 +26,7 @@
 
 ##
 # Default values. Do not edit.
-$_test_name ?= $($_SELF)
+$_test_name ?= $(notdir $($_SELFDIR))
 $_test_srcs ?= *.c
 
 $_MODS += $($_test_name)

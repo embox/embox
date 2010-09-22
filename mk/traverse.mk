@@ -32,16 +32,16 @@ include $(MK_DIR)/util.mk
 #
 # Usage:
 #
-# Part of root Makefile using TRAVERSE may look like:
+# Part of root Makefile using traverse may look like:
 ##
 #   include $(MK_DIR)/traverse.mk
 #
 #   # Guard symbol used in subdirs.
-#   _ = EMBUILD/$(abspath $(dir))/
+#   _ = traversed/$(abspath $(dir))/
 #
 #   # Traverse always defines SELFDIR before entering sub-makefile.
 #   dir = $(SELFDIR)
-#   DIRS := $(call TRAVERSE,$(SRC_DIR),node.mk)
+#   DIRS := $(call traverse,$(SRC_DIR),node.mk)
 #
 #   # Get list of all objects.
 #   OBJS := $(foreach dir,$(DIRS),$(wildcard $($_OBJS:%=$(dir)/%)))
@@ -62,8 +62,8 @@ include $(MK_DIR)/util.mk
 # collisions, and it also helps to determine where did a variable come from.
 #
 # By default traverse searches the whole directory tree, but this behavior can
-# be overridden by setting $_SUBDIRS variable in any node.mk file, e.g.:
-#   $_SUBDIRS := $(filter-out include,$($_SUBDIRS))
+# be overridden by setting SUBDIRS variable in any node.mk file, e.g.:
+#   SUBDIRS := $(filter-out include,$(SUBDIRS))
 # This expression will exclude sub-directory named "include" from searching.
 #
 # Enjoy!
@@ -78,13 +78,12 @@ include $(MK_DIR)/util.mk
 #  2. (optional) File name of node descriptor containing info about subdirs
 #   If not specified traverse will search for files named Makefile and makefile
 #
-TRAVERSE = \
-  $(call assert_called,TRAVERSE,$0) \
-  $(foreach __traverse_root,$(patsubst %/,%,$(wildcard $(1:%=%/))), \
-    $(eval __traverse_return := ) \
-    $(eval $(call __traverse_invoke,$(__traverse_root),$2)) \
-    $(__traverse_return) \
-  )
+traverse = $(strip \
+  $(call assert_called,traverse,$0) \
+  $(foreach __traverse_root,$(call d-wildcard,$1), \
+    $(call __traverse_invoke,$(__traverse_root),$2) \
+  ) \
+)
 
 #
 # A kind of wrapper for __traverse_process that allows us to use unescaped code
@@ -95,96 +94,70 @@ TRAVERSE = \
 #  1. Directory containing the node descriptor to process
 #  2. Descriptor file name
 #
-define __traverse_invoke
+__traverse_invoke = $1 \
+  $(foreach subdir,$(__traverse_process),$(call $0,$1/$(subdir),$2))
 
-  # We use such long prefixed name to prevent global namespace pollution.
-  __traverse_node_dir  := $1
-  __traverse_node_file := $2
-  $(value __traverse_process)
+__traverse_process = \
+  $(eval $(value __traverse_process_mk))$(__traverse_process_result)
 
-  # Perform recursive walking over sub-directories.
-  # It's important to note that __traverse_process_result variable is expanded
-  # only once and before entering child subroutines (which will overwrite this
-  # variable), hence we have not to construct any stacks and so on.
-  $$(foreach subdir,$$(__traverse_process_result),$$(eval \
-    $$(call __traverse_invoke,$1/$$(subdir),$2) \
-  ))
+#
+# The main routine used for recursive processing of tree nodes.
+#
+define __traverse_process_mk
+  # Provide the node location.
+  SELFDIR := $1
+  # Sometimes it is useful to define variables as recursively expanded.
+  $_SELFDIR := $(SELFDIR)
+
+  # Default SUBDIRS to expansion of *.
+  SUBDIRS := $(call __traverse_subdirs_wildcard,$1,*)
+
+  __traverse_include := $(__traverse_node_file_wildcard)
+  ifneq ($(__traverse_include),)
+    # Go!
+    include $(__traverse_include)
+  else
+    $(info $(call error_str_file,$(__traverse_parent_node_file)) \
+      Node file not found in subdirectory $1: \
+      neither $(if $2,$2 nor \
+      )$(if $(filter Makefile,$2),,Makefile nor \
+      )$(if $(filter makefile,$2),,makefile \
+      )does not exist. Skipping)
+    # TODO defer error processing. -- Eldar
+    $(error Error traversing source tree)
+    SUBDIRS :=
+  endif
+
+  # Prepare return value.
+  __traverse_process_result := $(call __traverse_subdirs_wildcard,$1,$(SUBDIRS))
 
 endef
 
 #
-# Param: subdirectories list relative to __traverse_node_dir
-# possibly containing wildcard expressions.
+# Params:
+#  1. Base directory
+#  2. Subdirectories list relative to the base dir possibly containing wildcard
+#     expressions.
 #
 # In a nutshell:
-#   Expand d-wildcards for sub-dirs within current node directory.
+#   Expand d-wildcards for sub-dirs within the base dir.
 #   Get back to sub-dirs relative names and remove duplicates.
 #
-__traverse_subdirs_wildcard = $(sort \
-  $(patsubst $(__traverse_node_dir)/%,%, \
-    $(call d-wildcard,$(1:%=$(__traverse_node_dir)/%)) \
-  ) \
-)
+__traverse_subdirs_wildcard = \
+  $(sort $(patsubst $1/%,%,$(call d-wildcard,$(2:%=$1/%))))
 
 __traverse_node_file_wildcard = $(strip \
-  $(or \
-    $(wildcard $(__traverse_node_file:%=$1/%)), \
-    $(wildcard $1/Makefile), \
-    $(wildcard $1/makefile), \
+  $(or $ \
+    $(wildcard $(2:%=$1/%)),$ \
+    $(wildcard $1/Makefile),$ \
+    $(wildcard $1/makefile),$ \
   ) \
 )
 
 __traverse_parent_node_file = $(strip \
   $(patsubst $(abspath $(__traverse_root))/%,$(__traverse_root)/%, \
-    $(abspath $(call __traverse_node_file_wildcard,$(__traverse_node_dir)/..)) \
+    $(abspath $(call __traverse_node_file_wildcard,$1/..,$2)) \
   ) \
 )
-
-#
-# The main routine used for recursive processing of tree nodes.
-#
-define __traverse_process
- # Check input arguments
- ifeq ($(wildcard $(__traverse_node_dir)),)
-  $(warning EMBuild traverse warning $N \
-    Node not found: $(__traverse_node_dir))
-  __traverse_process_result :=
- else
-
-  # Provide the node location.
-  SELFDIR := $(__traverse_node_dir)
-  SELF    := $(notdir $(SELFDIR))
-
-  # Sometimes it is useful to define variables as recursively expanded.
-  $_SELFDIR := $(SELFDIR)
-  $_SELF    := $(SELF)
-
-  # Default to expansion of *.
-  $_SUBDIRS := $(call __traverse_subdirs_wildcard,*)
-
-  __traverse_include := \
-    $(call __traverse_node_file_wildcard,$(__traverse_node_dir))
-  ifneq ($(__traverse_include),)
-    # Go!
-    include $(__traverse_include)
-    # Append current node to the resulting node list.
-    __traverse_return += $(__traverse_node_dir)
-  else
-    $(info $(call warning_str_file,$(__traverse_parent_node_file)) \
-      Node descriptor not found in subdirectory $(__traverse_node_dir) $N \
-      neither $(if $(__traverse_node_file), \
-        $(__traverse_node_file) nor) \
-      $(if $(filter Makefile,$(__traverse_node_file)),,Makefile nor) \
-      $(if $(filter makefile,$(__traverse_node_file)),,makefile) \
-      does not exist $N \
-      Skipping)
-    $_SUBDIRS :=
-  endif
-
-  # Prepare return value.
-  __traverse_process_result := $(call __traverse_subdirs_wildcard,$($_SUBDIRS))
-
- endif
-endef
 
 endif # _traverse_mk_

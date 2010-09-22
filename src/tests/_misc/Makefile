@@ -1,5 +1,5 @@
 
-$_SUBDIRS :=
+SUBDIRS :=
 
 $_LIBS += libtest.a
 $_USES-libtest.a += libc.a

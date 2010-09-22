@@ -27,7 +27,7 @@ endif
 # Traverse always defines SELFDIR before entering sub-makefile.
 dir = $(SELFDIR)
 
-DIRS := $(call TRAVERSE,$(SRC_DIR),Makefile.em) \
+DIRS := $(call traverse,$(SRC_DIR),Makefile.em) \
   $(if $(PLATFORM),$(call TRAVERSE,$(PLATFORM_DIR),Makefile.em))
 
 ifdef EMBUILD_DEBUG
