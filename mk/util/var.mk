@@ -88,8 +88,8 @@ endif
 __var_assign_def_noinline = ${eval $1 = $${eval $$($2)}}
 
 $(foreach xline,inline noinline, \
-  $(foreach def,$(__var_assign_lines_ops_$(xline):%=var_assign_%), \
-    $(call __var_assign_def_$(xline),$(def),__$(def)_mk) \
+  $(foreach def,$(__var_assign_lines_ops_$(xline)), \
+    $(call __var_assign_def_$(xline),var_assign_$(def),__var_assign_$(def)_mk) \
   ) \
 )
 
@@ -110,7 +110,7 @@ $(foreach op,$(__var_assign_ops), \
 # If you are trying to understand how does it work,
 # just enable the following block.
 # -- Eldar
-ifeq (1,1)
+ifeq (1,0)
 __var_info_simplified = $(info $1 = $(value $(strip $1))$(\n))
 $(call __var_info_simplified,var_assign_undefined)
 $(call __var_info_simplified,var_assign_recursive)
@@ -141,18 +141,10 @@ endif
 
 # XXX rewrite everything below. -- Eldar
 
-var_define   = \
-  $(call assert_called,var_define,$0)$(call var_assign_recursive,$1,$2)
-var_undefine = \
-  $(call assert_called,var_undefine,$0)$(call var_assign_undefined,$1,$2)
-
-var_swap = $(strip \
-  $(call assert_called,var_swap,$0) \
-  $(call __var_swap,$1,$2,__var_swap_tmp) \
-)
-__var_swap = \
-  $(call var_assign_$(flavor $1),$3,$(value $1)) \
-  $(call var_assign_$(flavor $2),$1,$(value $2)) \
+var_swap = $(call __var_swap,$1,$2,__var_swap_tmp)
+__var_swap = $ \
+  $(call var_assign_$(flavor $1),$3,$(value $1))$ \
+  $(call var_assign_$(flavor $2),$1,$(value $2))$ \
   $(call var_assign_$(flavor $3),$2,$(value $3))
 
 var_save = $(strip \
