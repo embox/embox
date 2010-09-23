@@ -15,7 +15,7 @@
 .global	SWI_handler
 .global	IRQ_handler
 
-/* why in spatial section */
+/* why in special section */
 .section .entry_text, "x"
 
 IRQ_handler:
