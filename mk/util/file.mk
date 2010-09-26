@@ -40,6 +40,18 @@ d-wildcard = $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
 #
 f-wildcard = $(patsubst %/,%,$(filter-out %/,$(wildcard $(1:%=%/))))
 
+#
+# XXX docs were copy-pasted from traverse.mk -- Eldar
+#
+# Params:
+#  1. Base directory
+#  2. Subdirectories list relative to the base dir possibly containing wildcard
+#     expressions.
+#
+# In a nutshell:
+#   Expand d-wildcards for sub-dirs within the base dir.
+#   Get back to sub-dirs relative names and remove duplicates.
+#
 d-wildcard_relative = $(call __wildcard_relative,d-wildcard,$1,$2)
 f-wildcard_relative = $(call __wildcard_relative,f-wildcard,$1,$2)
   wildcard_relative = $(call __wildcard_relative,  wildcard,$1,$2)

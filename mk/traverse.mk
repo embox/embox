@@ -24,10 +24,9 @@
 # SUCH DAMAGE.
 #
 
-ifndef _traverse_mk_
-_traverse_mk_ := 1
+ifndef $(already_included)
 
-include $(MK_DIR)/util.mk
+include util/file.mk
 
 #
 # Usage:
@@ -98,7 +97,7 @@ __traverse_invoke = $1 \
   $(foreach subdir,$(__traverse_process),$(call $0,$1/$(subdir),$2))
 
 __traverse_process = \
-  $(eval $(value __traverse_process_mk))$(__traverse_process_result)
+  ${eval $(value __traverse_process_mk)}$(__traverse_process_result)
 
 #
 # The main routine used for recursive processing of tree nodes.
@@ -107,12 +106,14 @@ define __traverse_process_mk
   # Provide the node location.
   SELFDIR := $1
   # Sometimes it is useful to define variables as recursively expanded.
-  $_SELFDIR := $(SELFDIR)
+  $_SELFDIR := $(SELFDIR)# TODO try to avoid it
 
   # Default SUBDIRS to expansion of *.
-  SUBDIRS := $(call __traverse_subdirs_wildcard,$1,*)
+  __traverse_subdirs := $(call d-wildcard_relative,$1,*)
+  SUBDIRS := $(__traverse_subdirs)
 
-  __traverse_include := $(__traverse_node_file_wildcard)
+  __traverse_include := \
+    $(call f-wildcard_first,$(addprefix $1/,$2 Makefile makefile))
   ifneq ($(__traverse_include),)
     # Go!
     include $(__traverse_include)
@@ -129,30 +130,10 @@ define __traverse_process_mk
   endif
 
   # Prepare return value.
-  __traverse_process_result := $(call __traverse_subdirs_wildcard,$1,$(SUBDIRS))
+  __traverse_process_result := \
+    $(filter $(__traverse_subdirs),$(call d-wildcard_relative,$1,$(SUBDIRS)))
 
 endef
-
-#
-# Params:
-#  1. Base directory
-#  2. Subdirectories list relative to the base dir possibly containing wildcard
-#     expressions.
-#
-# In a nutshell:
-#   Expand d-wildcards for sub-dirs within the base dir.
-#   Get back to sub-dirs relative names and remove duplicates.
-#
-__traverse_subdirs_wildcard = \
-  $(sort $(patsubst $1/%,%,$(call d-wildcard,$(2:%=$1/%))))
-
-__traverse_node_file_wildcard = $(strip \
-  $(or $ \
-    $(wildcard $(2:%=$1/%)),$ \
-    $(wildcard $1/Makefile),$ \
-    $(wildcard $1/makefile),$ \
-  ) \
-)
 
 __traverse_parent_node_file = $(strip \
   $(patsubst $(abspath $(__traverse_root))/%,$(__traverse_root)/%, \
@@ -160,4 +141,4 @@ __traverse_parent_node_file = $(strip \
   ) \
 )
 
-endif # _traverse_mk_
+endif # $(already_included)
