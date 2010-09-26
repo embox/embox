@@ -110,7 +110,6 @@ static int timer_init(void) {
 	for (i = 0; i < array_len(sys_timers); i++) {
 		set_sys_timer_disable(i);
 	}
-	printk("fffffff\n");
 	clock_init();
 	clock_setup(1000);
 	return 0;
