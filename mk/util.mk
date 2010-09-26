@@ -42,8 +42,8 @@ self_makefile = $(abspath $(lastword $(MAKEFILE_LIST)))
 self_makefile_dir = $(dir $(self_makefile))
 
 ##
-# Expands to empty string for the first time, and to 'true' for subsequent
-# invocations. Should be used before any include directives.
+# Expands to empty string for the first time, and to 'already_included' for
+# any subsequent invocation. Should be used before any include directives.
 #
 # Thus, the typical usage of this function is:
 #
@@ -51,9 +51,9 @@ self_makefile_dir = $(dir $(self_makefile))
 #      ...
 #    endif #$(already_included)
 #
-already_included = \
-  $(or $(call get,included,$(self_makefile)), \
-       $(call set,included,$(self_makefile),true))
+already_included = $(if $(filter-out 1,$(__already_included_count)),$0)
+__already_included_count = \
+  $(words $(filter $(self_makefile),$(abspath $(MAKEFILE_LIST))))
 
 called = $(call seq,$1,$2)
 
@@ -141,41 +141,6 @@ __expansion_name = __expansion_of_$1_$$__$(strip $(call merge \
 # Usage: $(call r-patsubst,pattern,replacement,text)
 #
 r-patsubst = $(if $(filter $1,$3),$(call $0,$1,$2,$(3:$1=$2)),$3)
-
-##
-# Extended version of wildcard that understands double asterisk pattern (**).
-#
-# Usage: $(call r-wildcard,pattern)
-#
-# NOTE: does not handle properly more than one ** tokens.
-#
-r-wildcard = $(strip $(call __r-wildcard,$1,$(wildcard $1)))
-
-__r-wildcard = \
-  $(if $(and $(findstring **,$1),$2), \
-    $(call $0,$(subst **,**/*,$1),$(wildcard $(subst **,**/*,$1))) \
-  ) $2
-
-# Directory/file versions of wildcard.
-# Both of them are based on the fact that wildcard expansion of the expression
-# containing the trailing slash drops the slash for files but leaves it for
-# directories.
-
-##
-# Directory-only wildcard. This version of wildcard filters out any files
-# leaving only directories.
-#
-# Usage: $(call d-wildcard,pattern)
-#
-d-wildcard = $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
-
-##
-# File-only wildcard. This version of wildcard leaves only files in the
-# expansion result.
-#
-# Usage: $(call f-wildcard,pattern)
-#
-f-wildcard = $(patsubst %/,%,$(filter-out %/,$(wildcard $(1:%=%/))))
 
 # Make-style error and warning strings.
 
