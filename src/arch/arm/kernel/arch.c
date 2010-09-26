@@ -3,7 +3,7 @@
  * @brief arch init
  *
  * @date 21.06.2010
- * @author Nikolay Korotky
+ * @author Anton Kozlov
  */
 
 #include <hal/reg.h>
@@ -19,10 +19,10 @@
 #define PMC_SR      pmc_makereg(0x68)
 
 void arch_init(void) {
-	//to disable watchdog ?
+	//XXX to disable watchdog
 
-#if 0 //it appeared in trying getting interrupts
-	REG_STORE(CKGR_MOR,0x00000701);
+#if 1 //it appeared in trying getting interrupts
+	REG_STORE(CKGR_MOR,0x00000801);
 	//set moscen (oscount?)
 	//poll moscs
 	while (!(REG_LOAD(PMC_SR) & 0x01));

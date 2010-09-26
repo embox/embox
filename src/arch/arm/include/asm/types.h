@@ -2,12 +2,12 @@
  * @file
  * @brief Necessary arch-dependent typedefs.
  *
- * @date 25.11.2009
- * @author Eldar Abusalimov
+ * @date 01.07.2010
+ * @author Anton Kozlov
  */
 
-#ifndef SPARC_TYPES_H_
-#define SPARC_TYPES_H_
+#ifndef ARM_TYPES_H_
+#define ARM_TYPES_H_
 
 #define __WORDSIZE 32
 
@@ -30,6 +30,8 @@ typedef unsigned int __vsize_t;
 typedef unsigned int  __size_t;
 typedef signed int __ptrdiff_t;
 
+typedef volatile unsigned int AT91_REG;// Hardware register definition
+
 #endif /* __ASSEMBLER__ */
 
-#endif /* SPARC_TYPES_H_ */
+#endif /* ARM_TYPES_H_ */

@@ -20,20 +20,19 @@
 
 IRQ_handler:
 	nop
-	ldr	r1, =AIC_IVR
-	ldr	r2, [r1]
+	ldr	r0, =AIC_IVR
+	ldr	r2, [r0]
 	ldr	r1, =AIC_ISR
-	ldr	r2, [r1]
+	ldr	r0, [r1]
 	ldr	r4, =0x1f
-	and	r1, r4
+	and	r0, r4
 	sub	LR, LR, #4
-
 	mrs	r2, SPSR
 	push	{r0-r4, LR}
 
-	mov	LR, PC
-	//ldr	PC, =irq_dispatch
-	ldr	PC, =clock_handler
+	add	LR, PC, #4
+	mov	r1, #0
+	ldr	PC, =irq_dispatch
 
 	pop	{r0-r4,	LR}
 

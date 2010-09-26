@@ -28,6 +28,8 @@
 .section .expt_text, "x"
 /* trap table
  * this code specific for ARM7TDMI cores
+ *
+ * actually, this is general for all ARM cores
  */
 start:
     ldr pc, ResetHandlerAddr
@@ -45,14 +47,13 @@ UndefHandlerAddr:
     .word UndefHandler
 SWIHandlerAddr:
     .word SWIHandler
-    //.word SWI_handler
 PrefetchAbtHandlerAddr:
     .word PrefetchAbtHandler
 DataAbtHandlerAddr:
     .word DataAbtHandler
 IRQHandlerAddr:
-    //.word IRQHandler
-    .word IRQ_handler
+    .word IRQHandler
+    //.word IRQ_handler
 FIQHandlerAddr:
     .word FIQHandler
 
@@ -70,14 +71,12 @@ IRQHandler:
 FIQHandler:
     B FIQHandler
 
-/* TODO these are common constant move them to header */
 /** Describe stacks' sizes */
-/*TODO stack size must set in config file*/
-.EQU IRQ_STACK_SIZE, 0x100 /* irq mode */
-.EQU FIQ_STACK_SIZE, 0x100 /* fast irq mode */
-.EQU ABT_STACK_SIZE, 0x100 /* abort mode */
-.EQU UND_STACK_SIZE, 0x100 /* undefined mode undefined instruction has been occured*/
-.EQU SVC_STACK_SIZE, 0x100
+.EQU IRQ_STACK_SIZE, CONFIG_ARM_IRQ_STACK_SIZE /* irq mode */
+.EQU FIQ_STACK_SIZE, CONFIG_ARM_FIQ_STACK_SIZE /* fast irq mode */
+.EQU ABT_STACK_SIZE, CONFIG_ARM_ABT_STACK_SIZE /* abort mode */
+.EQU UND_STACK_SIZE, CONFIG_ARM_UND_STACK_SIZE /* undefined mode undefined instruction has been occured*/
+.EQU SVC_STACK_SIZE, CONFIG_ARM_SVC_STACK_SIZE
 
 .EQU ARM_MODE_FIQ, 0x11
 .EQU ARM_MODE_IRQ, 0x12
@@ -175,6 +174,8 @@ InitHook:
 
     ldr	    lr, =kernel_start
     push    {lr}
+/* enabling interrupts */
+    msr	    CPSR_c, #ARM_MODE_SVC
 /** Kernel start */
     ldr	    pc, =kernel_start
 

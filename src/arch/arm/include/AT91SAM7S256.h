@@ -42,7 +42,6 @@
 #ifndef AT91SAM7S256_H
 #define AT91SAM7S256_H
 
-typedef volatile unsigned int AT91_REG;// Hardware register definition
 
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR System Peripherals
@@ -174,44 +173,7 @@ typedef struct _AT91S_SYS {
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Advanced Interrupt Controller
 // *****************************************************************************
-typedef struct _AT91S_AIC {
-	AT91_REG	 AIC_SMR[32]; 	// Source Mode Register
-	AT91_REG	 AIC_SVR[32]; 	// Source Vector Register
-	AT91_REG	 AIC_IVR; 	// IRQ Vector Register
-	AT91_REG	 AIC_FVR; 	// FIQ Vector Register
-	AT91_REG	 AIC_ISR; 	// Interrupt Status Register
-	AT91_REG	 AIC_IPR; 	// Interrupt Pending Register
-	AT91_REG	 AIC_IMR; 	// Interrupt Mask Register
-	AT91_REG	 AIC_CISR; 	// Core Interrupt Status Register
-	AT91_REG	 Reserved0[2]; 	//
-	AT91_REG	 AIC_IECR; 	// Interrupt Enable Command Register
-	AT91_REG	 AIC_IDCR; 	// Interrupt Disable Command Register
-	AT91_REG	 AIC_ICCR; 	// Interrupt Clear Command Register
-	AT91_REG	 AIC_ISCR; 	// Interrupt Set Command Register
-	AT91_REG	 AIC_EOICR; 	// End of Interrupt Command Register
-	AT91_REG	 AIC_SPU; 	// Spurious Vector Register
-	AT91_REG	 AIC_DCR; 	// Debug Control Register (Protect)
-	AT91_REG	 Reserved1[1]; 	//
-	AT91_REG	 AIC_FFER; 	// Fast Forcing Enable Register
-	AT91_REG	 AIC_FFDR; 	// Fast Forcing Disable Register
-	AT91_REG	 AIC_FFSR; 	// Fast Forcing Status Register
-} AT91S_AIC, *AT91PS_AIC;
-
-// -------- AIC_SMR : (AIC Offset: 0x0) Control Register --------
-#define AT91C_AIC_PRIOR       ((unsigned int) 0x7 <<  0) // (AIC) Priority Level
-#define 	AT91C_AIC_PRIOR_LOWEST               ((unsigned int) 0x0) // (AIC) Lowest priority level
-#define 	AT91C_AIC_PRIOR_HIGHEST              ((unsigned int) 0x7) // (AIC) Highest priority level
-#define AT91C_AIC_SRCTYPE     ((unsigned int) 0x3 <<  5) // (AIC) Interrupt Source Type
-#define 	AT91C_AIC_SRCTYPE_INT_LEVEL_SENSITIVE  ((unsigned int) 0x0 <<  5) // (AIC) Internal Sources Code Label Level Sensitive
-#define 	AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED   ((unsigned int) 0x1 <<  5) // (AIC) Internal Sources Code Label Edge triggered
-#define 	AT91C_AIC_SRCTYPE_EXT_HIGH_LEVEL       ((unsigned int) 0x2 <<  5) // (AIC) External Sources Code Label High-level Sensitive
-#define 	AT91C_AIC_SRCTYPE_EXT_POSITIVE_EDGE    ((unsigned int) 0x3 <<  5) // (AIC) External Sources Code Label Positive Edge triggered
-// -------- AIC_CISR : (AIC Offset: 0x114) AIC Core Interrupt Status Register --------
-#define AT91C_AIC_NFIQ        ((unsigned int) 0x1 <<  0) // (AIC) NFIQ Status
-#define AT91C_AIC_NIRQ        ((unsigned int) 0x1 <<  1) // (AIC) NIRQ Status
-// -------- AIC_DCR : (AIC Offset: 0x138) AIC Debug Control Register (Protect) --------
-#define AT91C_AIC_DCR_PROT    ((unsigned int) 0x1 <<  0) // (AIC) Protection Mode
-#define AT91C_AIC_DCR_GMSK    ((unsigned int) 0x1 <<  1) // (AIC) General Mask
+//#include <AT91SAM7_AIC.h>
 
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Peripheral DMA Controller
@@ -307,48 +269,6 @@ typedef struct _AT91S_DBGU {
 #define AT91C_US_FORCE_NTRST  ((unsigned int) 0x1 <<  0) // (DBGU) Force NTRST in JTAG
 
 // *****************************************************************************
-//              SOFTWARE API DEFINITION  FOR Parallel Input Output Controler
-// *****************************************************************************
-typedef struct _AT91S_PIO {
-	AT91_REG	 PIO_PER; 	// PIO Enable Register
-	AT91_REG	 PIO_PDR; 	// PIO Disable Register
-	AT91_REG	 PIO_PSR; 	// PIO Status Register
-	AT91_REG	 Reserved0[1]; 	//
-	AT91_REG	 PIO_OER; 	// Output Enable Register
-	AT91_REG	 PIO_ODR; 	// Output Disable Registerr
-	AT91_REG	 PIO_OSR; 	// Output Status Register
-	AT91_REG	 Reserved1[1]; 	//
-	AT91_REG	 PIO_IFER; 	// Input Filter Enable Register
-	AT91_REG	 PIO_IFDR; 	// Input Filter Disable Register
-	AT91_REG	 PIO_IFSR; 	// Input Filter Status Register
-	AT91_REG	 Reserved2[1]; 	//
-	AT91_REG	 PIO_SODR; 	// Set Output Data Register
-	AT91_REG	 PIO_CODR; 	// Clear Output Data Register
-	AT91_REG	 PIO_ODSR; 	// Output Data Status Register
-	AT91_REG	 PIO_PDSR; 	// Pin Data Status Register
-	AT91_REG	 PIO_IER; 	// Interrupt Enable Register
-	AT91_REG	 PIO_IDR; 	// Interrupt Disable Register
-	AT91_REG	 PIO_IMR; 	// Interrupt Mask Register
-	AT91_REG	 PIO_ISR; 	// Interrupt Status Register
-	AT91_REG	 PIO_MDER; 	// Multi-driver Enable Register
-	AT91_REG	 PIO_MDDR; 	// Multi-driver Disable Register
-	AT91_REG	 PIO_MDSR; 	// Multi-driver Status Register
-	AT91_REG	 Reserved3[1]; 	//
-	AT91_REG	 PIO_PPUDR; 	// Pull-up Disable Register
-	AT91_REG	 PIO_PPUER; 	// Pull-up Enable Register
-	AT91_REG	 PIO_PPUSR; 	// Pull-up Status Register
-	AT91_REG	 Reserved4[1]; 	//
-	AT91_REG	 PIO_ASR; 	// Select A Register
-	AT91_REG	 PIO_BSR; 	// Select B Register
-	AT91_REG	 PIO_ABSR; 	// AB Select Status Register
-	AT91_REG	 Reserved5[9]; 	//
-	AT91_REG	 PIO_OWER; 	// Output Write Enable Register
-	AT91_REG	 PIO_OWDR; 	// Output Write Disable Register
-	AT91_REG	 PIO_OWSR; 	// Output Write Status Register
-} AT91S_PIO, *AT91PS_PIO;
-
-
-// *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Clock Generator Controler
 // *****************************************************************************
 typedef struct _AT91S_CKGR {
@@ -384,64 +304,6 @@ typedef struct _AT91S_CKGR {
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Power Management Controler
 // *****************************************************************************
-typedef struct _AT91S_PMC {
-	AT91_REG	 PMC_SCER; 	// System Clock Enable Register
-	AT91_REG	 PMC_SCDR; 	// System Clock Disable Register
-	AT91_REG	 PMC_SCSR; 	// System Clock Status Register
-	AT91_REG	 Reserved0[1]; 	//
-	AT91_REG	 PMC_PCER; 	// Peripheral Clock Enable Register
-	AT91_REG	 PMC_PCDR; 	// Peripheral Clock Disable Register
-	AT91_REG	 PMC_PCSR; 	// Peripheral Clock Status Register
-	AT91_REG	 Reserved1[1]; 	//
-	AT91_REG	 PMC_MOR; 	// Main Oscillator Register
-	AT91_REG	 PMC_MCFR; 	// Main Clock  Frequency Register
-	AT91_REG	 Reserved2[1]; 	//
-	AT91_REG	 PMC_PLLR; 	// PLL Register
-	AT91_REG	 PMC_MCKR; 	// Master Clock Register
-	AT91_REG	 Reserved3[3]; 	//
-	AT91_REG	 PMC_PCKR[3]; 	// Programmable Clock Register
-	AT91_REG	 Reserved4[5]; 	//
-	AT91_REG	 PMC_IER; 	// Interrupt Enable Register
-	AT91_REG	 PMC_IDR; 	// Interrupt Disable Register
-	AT91_REG	 PMC_SR; 	// Status Register
-	AT91_REG	 PMC_IMR; 	// Interrupt Mask Register
-} AT91S_PMC, *AT91PS_PMC;
-
-// -------- PMC_SCER : (PMC Offset: 0x0) System Clock Enable Register --------
-#define AT91C_PMC_PCK         ((unsigned int) 0x1 <<  0) // (PMC) Processor Clock
-#define AT91C_PMC_UDP         ((unsigned int) 0x1 <<  7) // (PMC) USB Device Port Clock
-#define AT91C_PMC_PCK0        ((unsigned int) 0x1 <<  8) // (PMC) Programmable Clock Output
-#define AT91C_PMC_PCK1        ((unsigned int) 0x1 <<  9) // (PMC) Programmable Clock Output
-#define AT91C_PMC_PCK2        ((unsigned int) 0x1 << 10) // (PMC) Programmable Clock Output
-// -------- PMC_SCDR : (PMC Offset: 0x4) System Clock Disable Register --------
-// -------- PMC_SCSR : (PMC Offset: 0x8) System Clock Status Register --------
-// -------- CKGR_MOR : (PMC Offset: 0x20) Main Oscillator Register --------
-// -------- CKGR_MCFR : (PMC Offset: 0x24) Main Clock Frequency Register --------
-// -------- CKGR_PLLR : (PMC Offset: 0x2c) PLL B Register --------
-// -------- PMC_MCKR : (PMC Offset: 0x30) Master Clock Register --------
-#define AT91C_PMC_CSS         ((unsigned int) 0x3 <<  0) // (PMC) Programmable Clock Selection
-#define 	AT91C_PMC_CSS_SLOW_CLK             ((unsigned int) 0x0) // (PMC) Slow Clock is selected
-#define 	AT91C_PMC_CSS_MAIN_CLK             ((unsigned int) 0x1) // (PMC) Main Clock is selected
-#define 	AT91C_PMC_CSS_PLL_CLK              ((unsigned int) 0x3) // (PMC) Clock from PLL is selected
-#define AT91C_PMC_PRES        ((unsigned int) 0x7 <<  2) // (PMC) Programmable Clock Prescaler
-#define 	AT91C_PMC_PRES_CLK                  ((unsigned int) 0x0 <<  2) // (PMC) Selected clock
-#define 	AT91C_PMC_PRES_CLK_2                ((unsigned int) 0x1 <<  2) // (PMC) Selected clock divided by 2
-#define 	AT91C_PMC_PRES_CLK_4                ((unsigned int) 0x2 <<  2) // (PMC) Selected clock divided by 4
-#define 	AT91C_PMC_PRES_CLK_8                ((unsigned int) 0x3 <<  2) // (PMC) Selected clock divided by 8
-#define 	AT91C_PMC_PRES_CLK_16               ((unsigned int) 0x4 <<  2) // (PMC) Selected clock divided by 16
-#define 	AT91C_PMC_PRES_CLK_32               ((unsigned int) 0x5 <<  2) // (PMC) Selected clock divided by 32
-#define 	AT91C_PMC_PRES_CLK_64               ((unsigned int) 0x6 <<  2) // (PMC) Selected clock divided by 64
-// -------- PMC_PCKR : (PMC Offset: 0x40) Programmable Clock Register --------
-// -------- PMC_IER : (PMC Offset: 0x60) PMC Interrupt Enable Register --------
-#define AT91C_PMC_MOSCS       ((unsigned int) 0x1 <<  0) // (PMC) MOSC Status/Enable/Disable/Mask
-#define AT91C_PMC_LOCK        ((unsigned int) 0x1 <<  2) // (PMC) PLL Status/Enable/Disable/Mask
-#define AT91C_PMC_MCKRDY      ((unsigned int) 0x1 <<  3) // (PMC) MCK_RDY Status/Enable/Disable/Mask
-#define AT91C_PMC_PCK0RDY     ((unsigned int) 0x1 <<  8) // (PMC) PCK0_RDY Status/Enable/Disable/Mask
-#define AT91C_PMC_PCK1RDY     ((unsigned int) 0x1 <<  9) // (PMC) PCK1_RDY Status/Enable/Disable/Mask
-#define AT91C_PMC_PCK2RDY     ((unsigned int) 0x1 << 10) // (PMC) PCK2_RDY Status/Enable/Disable/Mask
-// -------- PMC_IDR : (PMC Offset: 0x64) PMC Interrupt Disable Register --------
-// -------- PMC_SR : (PMC Offset: 0x68) PMC Status Register --------
-// -------- PMC_IMR : (PMC Offset: 0x6c) PMC Interrupt Mask Register --------
 
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Reset Controller Interface
@@ -501,23 +363,7 @@ typedef struct _AT91S_RTTC {
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Periodic Interval Timer Controller Interface
 // *****************************************************************************
-typedef struct _AT91S_PITC {
-	AT91_REG	 PITC_PIMR; 	// Period Interval Mode Register
-	AT91_REG	 PITC_PISR; 	// Period Interval Status Register
-	AT91_REG	 PITC_PIVR; 	// Period Interval Value Register
-	AT91_REG	 PITC_PIIR; 	// Period Interval Image Register
-} AT91S_PITC, *AT91PS_PITC;
-
-// -------- PITC_PIMR : (PITC Offset: 0x0) Periodic Interval Mode Register --------
-#define AT91C_PITC_PIV        ((unsigned int) 0xFFFFF <<  0) // (PITC) Periodic Interval Value
-#define AT91C_PITC_PITEN      ((unsigned int) 0x1 << 24) // (PITC) Periodic Interval Timer Enabled
-#define AT91C_PITC_PITIEN     ((unsigned int) 0x1 << 25) // (PITC) Periodic Interval Timer Interrupt Enable
-// -------- PITC_PISR : (PITC Offset: 0x4) Periodic Interval Status Register --------
-#define AT91C_PITC_PITS       ((unsigned int) 0x1 <<  0) // (PITC) Periodic Interval Timer Status
-// -------- PITC_PIVR : (PITC Offset: 0x8) Periodic Interval Value Register --------
-#define AT91C_PITC_CPIV       ((unsigned int) 0xFFFFF <<  0) // (PITC) Current Periodic Interval Value
-#define AT91C_PITC_PICNT      ((unsigned int) 0xFFF << 20) // (PITC) Periodic Interval Counter
-// -------- PITC_PIIR : (PITC Offset: 0xc) Periodic Interval Image Register --------
+//#include <AT91SAM7_PIT.h>
 
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Watchdog Timer Controller Interface
@@ -921,101 +767,6 @@ typedef struct _AT91S_SSC {
 // -------- SSC_IMR : (SSC Offset: 0x4c) SSC Interrupt Mask Register --------
 
 // *****************************************************************************
-//              SOFTWARE API DEFINITION  FOR Usart
-// *****************************************************************************
-typedef struct _AT91S_USART {
-	AT91_REG	 US_CR; 	// Control Register
-	AT91_REG	 US_MR; 	// Mode Register
-	AT91_REG	 US_IER; 	// Interrupt Enable Register
-	AT91_REG	 US_IDR; 	// Interrupt Disable Register
-	AT91_REG	 US_IMR; 	// Interrupt Mask Register
-	AT91_REG	 US_CSR; 	// Channel Status Register
-	AT91_REG	 US_RHR; 	// Receiver Holding Register
-	AT91_REG	 US_THR; 	// Transmitter Holding Register
-	AT91_REG	 US_BRGR; 	// Baud Rate Generator Register
-	AT91_REG	 US_RTOR; 	// Receiver Time-out Register
-	AT91_REG	 US_TTGR; 	// Transmitter Time-guard Register
-	AT91_REG	 Reserved0[5]; 	//
-	AT91_REG	 US_FIDI; 	// FI_DI_Ratio Register
-	AT91_REG	 US_NER; 	// Nb Errors Register
-	AT91_REG	 Reserved1[1]; 	//
-	AT91_REG	 US_IF; 	// IRDA_FILTER Register
-	AT91_REG	 Reserved2[44]; 	//
-	AT91_REG	 US_RPR; 	// Receive Pointer Register
-	AT91_REG	 US_RCR; 	// Receive Counter Register
-	AT91_REG	 US_TPR; 	// Transmit Pointer Register
-	AT91_REG	 US_TCR; 	// Transmit Counter Register
-	AT91_REG	 US_RNPR; 	// Receive Next Pointer Register
-	AT91_REG	 US_RNCR; 	// Receive Next Counter Register
-	AT91_REG	 US_TNPR; 	// Transmit Next Pointer Register
-	AT91_REG	 US_TNCR; 	// Transmit Next Counter Register
-	AT91_REG	 US_PTCR; 	// PDC Transfer Control Register
-	AT91_REG	 US_PTSR; 	// PDC Transfer Status Register
-} AT91S_USART, *AT91PS_USART;
-
-// -------- US_CR : (USART Offset: 0x0) Debug Unit Control Register --------
-#define AT91C_US_STTBRK       ((unsigned int) 0x1 <<  9) // (USART) Start Break
-#define AT91C_US_STPBRK       ((unsigned int) 0x1 << 10) // (USART) Stop Break
-#define AT91C_US_STTTO        ((unsigned int) 0x1 << 11) // (USART) Start Time-out
-#define AT91C_US_SENDA        ((unsigned int) 0x1 << 12) // (USART) Send Address
-#define AT91C_US_RSTIT        ((unsigned int) 0x1 << 13) // (USART) Reset Iterations
-#define AT91C_US_RSTNACK      ((unsigned int) 0x1 << 14) // (USART) Reset Non Acknowledge
-#define AT91C_US_RETTO        ((unsigned int) 0x1 << 15) // (USART) Rearm Time-out
-#define AT91C_US_DTREN        ((unsigned int) 0x1 << 16) // (USART) Data Terminal ready Enable
-#define AT91C_US_DTRDIS       ((unsigned int) 0x1 << 17) // (USART) Data Terminal ready Disable
-#define AT91C_US_RTSEN        ((unsigned int) 0x1 << 18) // (USART) Request to Send enable
-#define AT91C_US_RTSDIS       ((unsigned int) 0x1 << 19) // (USART) Request to Send Disable
-// -------- US_MR : (USART Offset: 0x4) Debug Unit Mode Register --------
-#define AT91C_US_USMODE       ((unsigned int) 0xF <<  0) // (USART) Usart mode
-#define 	AT91C_US_USMODE_NORMAL               ((unsigned int) 0x0) // (USART) Normal
-#define 	AT91C_US_USMODE_RS485                ((unsigned int) 0x1) // (USART) RS485
-#define 	AT91C_US_USMODE_HWHSH                ((unsigned int) 0x2) // (USART) Hardware Handshaking
-#define 	AT91C_US_USMODE_MODEM                ((unsigned int) 0x3) // (USART) Modem
-#define 	AT91C_US_USMODE_ISO7816_0            ((unsigned int) 0x4) // (USART) ISO7816 protocol: T = 0
-#define 	AT91C_US_USMODE_ISO7816_1            ((unsigned int) 0x6) // (USART) ISO7816 protocol: T = 1
-#define 	AT91C_US_USMODE_IRDA                 ((unsigned int) 0x8) // (USART) IrDA
-#define 	AT91C_US_USMODE_SWHSH                ((unsigned int) 0xC) // (USART) Software Handshaking
-#define AT91C_US_CLKS         ((unsigned int) 0x3 <<  4) // (USART) Clock Selection (Baud Rate generator Input Clock
-#define 	AT91C_US_CLKS_CLOCK                ((unsigned int) 0x0 <<  4) // (USART) Clock
-#define 	AT91C_US_CLKS_FDIV1                ((unsigned int) 0x1 <<  4) // (USART) fdiv1
-#define 	AT91C_US_CLKS_SLOW                 ((unsigned int) 0x2 <<  4) // (USART) slow_clock (ARM)
-#define 	AT91C_US_CLKS_EXT                  ((unsigned int) 0x3 <<  4) // (USART) External (SCK)
-#define AT91C_US_CHRL         ((unsigned int) 0x3 <<  6) // (USART) Clock Selection (Baud Rate generator Input Clock
-#define 	AT91C_US_CHRL_5_BITS               ((unsigned int) 0x0 <<  6) // (USART) Character Length: 5 bits
-#define 	AT91C_US_CHRL_6_BITS               ((unsigned int) 0x1 <<  6) // (USART) Character Length: 6 bits
-#define 	AT91C_US_CHRL_7_BITS               ((unsigned int) 0x2 <<  6) // (USART) Character Length: 7 bits
-#define 	AT91C_US_CHRL_8_BITS               ((unsigned int) 0x3 <<  6) // (USART) Character Length: 8 bits
-#define AT91C_US_SYNC         ((unsigned int) 0x1 <<  8) // (USART) Synchronous Mode Select
-#define AT91C_US_NBSTOP       ((unsigned int) 0x3 << 12) // (USART) Number of Stop bits
-#define 	AT91C_US_NBSTOP_1_BIT                ((unsigned int) 0x0 << 12) // (USART) 1 stop bit
-#define 	AT91C_US_NBSTOP_15_BIT               ((unsigned int) 0x1 << 12) // (USART) Asynchronous (SYNC=0) 2 stop bits Synchronous (SYNC=1) 2 stop bits
-#define 	AT91C_US_NBSTOP_2_BIT                ((unsigned int) 0x2 << 12) // (USART) 2 stop bits
-#define AT91C_US_MSBF         ((unsigned int) 0x1 << 16) // (USART) Bit Order
-#define AT91C_US_MODE9        ((unsigned int) 0x1 << 17) // (USART) 9-bit Character length
-#define AT91C_US_CKLO         ((unsigned int) 0x1 << 18) // (USART) Clock Output Select
-#define AT91C_US_OVER         ((unsigned int) 0x1 << 19) // (USART) Over Sampling Mode
-#define AT91C_US_INACK        ((unsigned int) 0x1 << 20) // (USART) Inhibit Non Acknowledge
-#define AT91C_US_DSNACK       ((unsigned int) 0x1 << 21) // (USART) Disable Successive NACK
-#define AT91C_US_MAX_ITER     ((unsigned int) 0x1 << 24) // (USART) Number of Repetitions
-#define AT91C_US_FILTER       ((unsigned int) 0x1 << 28) // (USART) Receive Line Filter
-// -------- US_IER : (USART Offset: 0x8) Debug Unit Interrupt Enable Register --------
-#define AT91C_US_RXBRK        ((unsigned int) 0x1 <<  2) // (USART) Break Received/End of Break
-#define AT91C_US_TIMEOUT      ((unsigned int) 0x1 <<  8) // (USART) Receiver Time-out
-#define AT91C_US_ITERATION    ((unsigned int) 0x1 << 10) // (USART) Max number of Repetitions Reached
-#define AT91C_US_NACK         ((unsigned int) 0x1 << 13) // (USART) Non Acknowledge
-#define AT91C_US_RIIC         ((unsigned int) 0x1 << 16) // (USART) Ring INdicator Input Change Flag
-#define AT91C_US_DSRIC        ((unsigned int) 0x1 << 17) // (USART) Data Set Ready Input Change Flag
-#define AT91C_US_DCDIC        ((unsigned int) 0x1 << 18) // (USART) Data Carrier Flag
-#define AT91C_US_CTSIC        ((unsigned int) 0x1 << 19) // (USART) Clear To Send Input Change Flag
-// -------- US_IDR : (USART Offset: 0xc) Debug Unit Interrupt Disable Register --------
-// -------- US_IMR : (USART Offset: 0x10) Debug Unit Interrupt Mask Register --------
-// -------- US_CSR : (USART Offset: 0x14) Debug Unit Channel Status Register --------
-#define AT91C_US_RI           ((unsigned int) 0x1 << 20) // (USART) Image of RI Input
-#define AT91C_US_DSR          ((unsigned int) 0x1 << 21) // (USART) Image of DSR Input
-#define AT91C_US_DCD          ((unsigned int) 0x1 << 22) // (USART) Image of DCD Input
-#define AT91C_US_CTS          ((unsigned int) 0x1 << 23) // (USART) Image of CTS Input
-
-// *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Two-wire Interface
 // *****************************************************************************
 typedef struct _AT91S_TWI {
@@ -1387,25 +1138,6 @@ typedef struct _AT91S_UDP {
 //               REGISTER ADDRESS DEFINITION FOR AT91SAM7S256
 // *****************************************************************************
 // ========== Register definition for SYS peripheral ==========
-// ========== Register definition for AIC peripheral ==========
-#define AT91C_AIC_IVR   ((AT91_REG *) 	0xFFFFF100) // (AIC) IRQ Vector Register
-#define AT91C_AIC_SMR   ((AT91_REG *) 	0xFFFFF000) // (AIC) Source Mode Register
-#define AT91C_AIC_FVR   ((AT91_REG *) 	0xFFFFF104) // (AIC) FIQ Vector Register
-#define AT91C_AIC_DCR   ((AT91_REG *) 	0xFFFFF138) // (AIC) Debug Control Register (Protect)
-#define AT91C_AIC_EOICR ((AT91_REG *) 	0xFFFFF130) // (AIC) End of Interrupt Command Register
-#define AT91C_AIC_SVR   ((AT91_REG *) 	0xFFFFF080) // (AIC) Source Vector Register
-#define AT91C_AIC_FFSR  ((AT91_REG *) 	0xFFFFF148) // (AIC) Fast Forcing Status Register
-#define AT91C_AIC_ICCR  ((AT91_REG *) 	0xFFFFF128) // (AIC) Interrupt Clear Command Register
-#define AT91C_AIC_ISR   ((AT91_REG *) 	0xFFFFF108) // (AIC) Interrupt Status Register
-#define AT91C_AIC_IMR   ((AT91_REG *) 	0xFFFFF110) // (AIC) Interrupt Mask Register
-#define AT91C_AIC_IPR   ((AT91_REG *) 	0xFFFFF10C) // (AIC) Interrupt Pending Register
-#define AT91C_AIC_FFER  ((AT91_REG *) 	0xFFFFF140) // (AIC) Fast Forcing Enable Register
-#define AT91C_AIC_IECR  ((AT91_REG *) 	0xFFFFF120) // (AIC) Interrupt Enable Command Register
-#define AT91C_AIC_ISCR  ((AT91_REG *) 	0xFFFFF12C) // (AIC) Interrupt Set Command Register
-#define AT91C_AIC_FFDR  ((AT91_REG *) 	0xFFFFF144) // (AIC) Fast Forcing Disable Register
-#define AT91C_AIC_CISR  ((AT91_REG *) 	0xFFFFF114) // (AIC) Core Interrupt Status Register
-#define AT91C_AIC_IDCR  ((AT91_REG *) 	0xFFFFF124) // (AIC) Interrupt Disable Command Register
-#define AT91C_AIC_SPU   ((AT91_REG *) 	0xFFFFF134) // (AIC) Spurious Vector Register
 // ========== Register definition for PDC_DBGU peripheral ==========
 #define AT91C_DBGU_TCR  ((AT91_REG *) 	0xFFFFF30C) // (PDC_DBGU) Transmit Counter Register
 #define AT91C_DBGU_RNPR ((AT91_REG *) 	0xFFFFF310) // (PDC_DBGU) Receive Next Pointer Register
@@ -1430,56 +1162,10 @@ typedef struct _AT91S_UDP {
 #define AT91C_DBGU_THR  ((AT91_REG *) 	0xFFFFF21C) // (DBGU) Transmitter Holding Register
 #define AT91C_DBGU_RHR  ((AT91_REG *) 	0xFFFFF218) // (DBGU) Receiver Holding Register
 #define AT91C_DBGU_IER  ((AT91_REG *) 	0xFFFFF208) // (DBGU) Interrupt Enable Register
-// ========== Register definition for PIOA peripheral ==========
-#define AT91C_PIOA_ODR  ((AT91_REG *) 	0xFFFFF414) // (PIOA) Output Disable Registerr
-#define AT91C_PIOA_SODR ((AT91_REG *) 	0xFFFFF430) // (PIOA) Set Output Data Register
-#define AT91C_PIOA_ISR  ((AT91_REG *) 	0xFFFFF44C) // (PIOA) Interrupt Status Register
-#define AT91C_PIOA_ABSR ((AT91_REG *) 	0xFFFFF478) // (PIOA) AB Select Status Register
-#define AT91C_PIOA_IER  ((AT91_REG *) 	0xFFFFF440) // (PIOA) Interrupt Enable Register
-#define AT91C_PIOA_PPUDR ((AT91_REG *) 	0xFFFFF460) // (PIOA) Pull-up Disable Register
-#define AT91C_PIOA_IMR  ((AT91_REG *) 	0xFFFFF448) // (PIOA) Interrupt Mask Register
-#define AT91C_PIOA_PER  ((AT91_REG *) 	0xFFFFF400) // (PIOA) PIO Enable Register
-#define AT91C_PIOA_IFDR ((AT91_REG *) 	0xFFFFF424) // (PIOA) Input Filter Disable Register
-#define AT91C_PIOA_OWDR ((AT91_REG *) 	0xFFFFF4A4) // (PIOA) Output Write Disable Register
-#define AT91C_PIOA_MDSR ((AT91_REG *) 	0xFFFFF458) // (PIOA) Multi-driver Status Register
-#define AT91C_PIOA_IDR  ((AT91_REG *) 	0xFFFFF444) // (PIOA) Interrupt Disable Register
-#define AT91C_PIOA_ODSR ((AT91_REG *) 	0xFFFFF438) // (PIOA) Output Data Status Register
-#define AT91C_PIOA_PPUSR ((AT91_REG *) 	0xFFFFF468) // (PIOA) Pull-up Status Register
-#define AT91C_PIOA_OWSR ((AT91_REG *) 	0xFFFFF4A8) // (PIOA) Output Write Status Register
-#define AT91C_PIOA_BSR  ((AT91_REG *) 	0xFFFFF474) // (PIOA) Select B Register
-#define AT91C_PIOA_OWER ((AT91_REG *) 	0xFFFFF4A0) // (PIOA) Output Write Enable Register
-#define AT91C_PIOA_IFER ((AT91_REG *) 	0xFFFFF420) // (PIOA) Input Filter Enable Register
-#define AT91C_PIOA_PDSR ((AT91_REG *) 	0xFFFFF43C) // (PIOA) Pin Data Status Register
-#define AT91C_PIOA_PPUER ((AT91_REG *) 	0xFFFFF464) // (PIOA) Pull-up Enable Register
-#define AT91C_PIOA_OSR  ((AT91_REG *) 	0xFFFFF418) // (PIOA) Output Status Register
-#define AT91C_PIOA_ASR  ((AT91_REG *) 	0xFFFFF470) // (PIOA) Select A Register
-#define AT91C_PIOA_MDDR ((AT91_REG *) 	0xFFFFF454) // (PIOA) Multi-driver Disable Register
-#define AT91C_PIOA_CODR ((AT91_REG *) 	0xFFFFF434) // (PIOA) Clear Output Data Register
-#define AT91C_PIOA_MDER ((AT91_REG *) 	0xFFFFF450) // (PIOA) Multi-driver Enable Register
-#define AT91C_PIOA_PDR  ((AT91_REG *) 	0xFFFFF404) // (PIOA) PIO Disable Register
-#define AT91C_PIOA_IFSR ((AT91_REG *) 	0xFFFFF428) // (PIOA) Input Filter Status Register
-#define AT91C_PIOA_OER  ((AT91_REG *) 	0xFFFFF410) // (PIOA) Output Enable Register
-#define AT91C_PIOA_PSR  ((AT91_REG *) 	0xFFFFF408) // (PIOA) PIO Status Register
 // ========== Register definition for CKGR peripheral ==========
 #define AT91C_CKGR_MOR  ((AT91_REG *) 	0xFFFFFC20) // (CKGR) Main Oscillator Register
 #define AT91C_CKGR_PLLR ((AT91_REG *) 	0xFFFFFC2C) // (CKGR) PLL Register
 #define AT91C_CKGR_MCFR ((AT91_REG *) 	0xFFFFFC24) // (CKGR) Main Clock  Frequency Register
-// ========== Register definition for PMC peripheral ==========
-#define AT91C_PMC_IDR   ((AT91_REG *) 	0xFFFFFC64) // (PMC) Interrupt Disable Register
-#define AT91C_PMC_MOR   ((AT91_REG *) 	0xFFFFFC20) // (PMC) Main Oscillator Register
-#define AT91C_PMC_PLLR  ((AT91_REG *) 	0xFFFFFC2C) // (PMC) PLL Register
-#define AT91C_PMC_PCER  ((AT91_REG *) 	0xFFFFFC10) // (PMC) Peripheral Clock Enable Register
-#define AT91C_PMC_PCKR  ((AT91_REG *) 	0xFFFFFC40) // (PMC) Programmable Clock Register
-#define AT91C_PMC_MCKR  ((AT91_REG *) 	0xFFFFFC30) // (PMC) Master Clock Register
-#define AT91C_PMC_SCDR  ((AT91_REG *) 	0xFFFFFC04) // (PMC) System Clock Disable Register
-#define AT91C_PMC_PCDR  ((AT91_REG *) 	0xFFFFFC14) // (PMC) Peripheral Clock Disable Register
-#define AT91C_PMC_SCSR  ((AT91_REG *) 	0xFFFFFC08) // (PMC) System Clock Status Register
-#define AT91C_PMC_PCSR  ((AT91_REG *) 	0xFFFFFC18) // (PMC) Peripheral Clock Status Register
-#define AT91C_PMC_MCFR  ((AT91_REG *) 	0xFFFFFC24) // (PMC) Main Clock  Frequency Register
-#define AT91C_PMC_SCER  ((AT91_REG *) 	0xFFFFFC00) // (PMC) System Clock Enable Register
-#define AT91C_PMC_IMR   ((AT91_REG *) 	0xFFFFFC6C) // (PMC) Interrupt Mask Register
-#define AT91C_PMC_IER   ((AT91_REG *) 	0xFFFFFC60) // (PMC) Interrupt Enable Register
-#define AT91C_PMC_SR    ((AT91_REG *) 	0xFFFFFC68) // (PMC) Status Register
 // ========== Register definition for RSTC peripheral ==========
 #define AT91C_RSTC_RCR  ((AT91_REG *) 	0xFFFFFD00) // (RSTC) Reset Control Register
 #define AT91C_RSTC_RMR  ((AT91_REG *) 	0xFFFFFD08) // (RSTC) Reset Mode Register
@@ -1489,11 +1175,6 @@ typedef struct _AT91S_UDP {
 #define AT91C_RTTC_RTMR ((AT91_REG *) 	0xFFFFFD20) // (RTTC) Real-time Mode Register
 #define AT91C_RTTC_RTVR ((AT91_REG *) 	0xFFFFFD28) // (RTTC) Real-time Value Register
 #define AT91C_RTTC_RTAR ((AT91_REG *) 	0xFFFFFD24) // (RTTC) Real-time Alarm Register
-// ========== Register definition for PITC peripheral ==========
-#define AT91C_PITC_PIVR ((AT91_REG *) 	0xFFFFFD38) // (PITC) Period Interval Value Register
-#define AT91C_PITC_PISR ((AT91_REG *) 	0xFFFFFD34) // (PITC) Period Interval Status Register
-#define AT91C_PITC_PIIR ((AT91_REG *) 	0xFFFFFD3C) // (PITC) Period Interval Image Register
-#define AT91C_PITC_PIMR ((AT91_REG *) 	0xFFFFFD30) // (PITC) Period Interval Mode Register
 // ========== Register definition for WDTC peripheral ==========
 #define AT91C_WDTC_WDCR ((AT91_REG *) 	0xFFFFFD40) // (WDTC) Watchdog Control Register
 #define AT91C_WDTC_WDSR ((AT91_REG *) 	0xFFFFFD48) // (WDTC) Watchdog Status Register
@@ -1584,58 +1265,6 @@ typedef struct _AT91S_UDP {
 #define AT91C_SSC_CR    ((AT91_REG *) 	0xFFFD4000) // (SSC) Control Register
 #define AT91C_SSC_IMR   ((AT91_REG *) 	0xFFFD404C) // (SSC) Interrupt Mask Register
 #define AT91C_SSC_RFMR  ((AT91_REG *) 	0xFFFD4014) // (SSC) Receive Frame Mode Register
-// ========== Register definition for PDC_US1 peripheral ==========
-#define AT91C_US1_RNCR  ((AT91_REG *) 	0xFFFC4114) // (PDC_US1) Receive Next Counter Register
-#define AT91C_US1_PTCR  ((AT91_REG *) 	0xFFFC4120) // (PDC_US1) PDC Transfer Control Register
-#define AT91C_US1_TCR   ((AT91_REG *) 	0xFFFC410C) // (PDC_US1) Transmit Counter Register
-#define AT91C_US1_PTSR  ((AT91_REG *) 	0xFFFC4124) // (PDC_US1) PDC Transfer Status Register
-#define AT91C_US1_TNPR  ((AT91_REG *) 	0xFFFC4118) // (PDC_US1) Transmit Next Pointer Register
-#define AT91C_US1_RCR   ((AT91_REG *) 	0xFFFC4104) // (PDC_US1) Receive Counter Register
-#define AT91C_US1_RNPR  ((AT91_REG *) 	0xFFFC4110) // (PDC_US1) Receive Next Pointer Register
-#define AT91C_US1_RPR   ((AT91_REG *) 	0xFFFC4100) // (PDC_US1) Receive Pointer Register
-#define AT91C_US1_TNCR  ((AT91_REG *) 	0xFFFC411C) // (PDC_US1) Transmit Next Counter Register
-#define AT91C_US1_TPR   ((AT91_REG *) 	0xFFFC4108) // (PDC_US1) Transmit Pointer Register
-// ========== Register definition for US1 peripheral ==========
-#define AT91C_US1_IF    ((AT91_REG *) 	0xFFFC404C) // (US1) IRDA_FILTER Register
-#define AT91C_US1_NER   ((AT91_REG *) 	0xFFFC4044) // (US1) Nb Errors Register
-#define AT91C_US1_RTOR  ((AT91_REG *) 	0xFFFC4024) // (US1) Receiver Time-out Register
-#define AT91C_US1_CSR   ((AT91_REG *) 	0xFFFC4014) // (US1) Channel Status Register
-#define AT91C_US1_IDR   ((AT91_REG *) 	0xFFFC400C) // (US1) Interrupt Disable Register
-#define AT91C_US1_IER   ((AT91_REG *) 	0xFFFC4008) // (US1) Interrupt Enable Register
-#define AT91C_US1_THR   ((AT91_REG *) 	0xFFFC401C) // (US1) Transmitter Holding Register
-#define AT91C_US1_TTGR  ((AT91_REG *) 	0xFFFC4028) // (US1) Transmitter Time-guard Register
-#define AT91C_US1_RHR   ((AT91_REG *) 	0xFFFC4018) // (US1) Receiver Holding Register
-#define AT91C_US1_BRGR  ((AT91_REG *) 	0xFFFC4020) // (US1) Baud Rate Generator Register
-#define AT91C_US1_IMR   ((AT91_REG *) 	0xFFFC4010) // (US1) Interrupt Mask Register
-#define AT91C_US1_FIDI  ((AT91_REG *) 	0xFFFC4040) // (US1) FI_DI_Ratio Register
-#define AT91C_US1_CR    ((AT91_REG *) 	0xFFFC4000) // (US1) Control Register
-#define AT91C_US1_MR    ((AT91_REG *) 	0xFFFC4004) // (US1) Mode Register
-// ========== Register definition for PDC_US0 peripheral ==========
-#define AT91C_US0_TNPR  ((AT91_REG *) 	0xFFFC0118) // (PDC_US0) Transmit Next Pointer Register
-#define AT91C_US0_RNPR  ((AT91_REG *) 	0xFFFC0110) // (PDC_US0) Receive Next Pointer Register
-#define AT91C_US0_TCR   ((AT91_REG *) 	0xFFFC010C) // (PDC_US0) Transmit Counter Register
-#define AT91C_US0_PTCR  ((AT91_REG *) 	0xFFFC0120) // (PDC_US0) PDC Transfer Control Register
-#define AT91C_US0_PTSR  ((AT91_REG *) 	0xFFFC0124) // (PDC_US0) PDC Transfer Status Register
-#define AT91C_US0_TNCR  ((AT91_REG *) 	0xFFFC011C) // (PDC_US0) Transmit Next Counter Register
-#define AT91C_US0_TPR   ((AT91_REG *) 	0xFFFC0108) // (PDC_US0) Transmit Pointer Register
-#define AT91C_US0_RCR   ((AT91_REG *) 	0xFFFC0104) // (PDC_US0) Receive Counter Register
-#define AT91C_US0_RPR   ((AT91_REG *) 	0xFFFC0100) // (PDC_US0) Receive Pointer Register
-#define AT91C_US0_RNCR  ((AT91_REG *) 	0xFFFC0114) // (PDC_US0) Receive Next Counter Register
-// ========== Register definition for US0 peripheral ==========
-#define AT91C_US0_BRGR  ((AT91_REG *) 	0xFFFC0020) // (US0) Baud Rate Generator Register
-#define AT91C_US0_NER   ((AT91_REG *) 	0xFFFC0044) // (US0) Nb Errors Register
-#define AT91C_US0_CR    ((AT91_REG *) 	0xFFFC0000) // (US0) Control Register
-#define AT91C_US0_IMR   ((AT91_REG *) 	0xFFFC0010) // (US0) Interrupt Mask Register
-#define AT91C_US0_FIDI  ((AT91_REG *) 	0xFFFC0040) // (US0) FI_DI_Ratio Register
-#define AT91C_US0_TTGR  ((AT91_REG *) 	0xFFFC0028) // (US0) Transmitter Time-guard Register
-#define AT91C_US0_MR    ((AT91_REG *) 	0xFFFC0004) // (US0) Mode Register
-#define AT91C_US0_RTOR  ((AT91_REG *) 	0xFFFC0024) // (US0) Receiver Time-out Register
-#define AT91C_US0_CSR   ((AT91_REG *) 	0xFFFC0014) // (US0) Channel Status Register
-#define AT91C_US0_RHR   ((AT91_REG *) 	0xFFFC0018) // (US0) Receiver Holding Register
-#define AT91C_US0_IDR   ((AT91_REG *) 	0xFFFC000C) // (US0) Interrupt Disable Register
-#define AT91C_US0_THR   ((AT91_REG *) 	0xFFFC001C) // (US0) Transmitter Holding Register
-#define AT91C_US0_IF    ((AT91_REG *) 	0xFFFC004C) // (US0) IRDA_FILTER Register
-#define AT91C_US0_IER   ((AT91_REG *) 	0xFFFC0008) // (US0) Interrupt Enable Register
 // ========== Register definition for TWI peripheral ==========
 #define AT91C_TWI_IER   ((AT91_REG *) 	0xFFFB8024) // (TWI) Interrupt Enable Register
 #define AT91C_TWI_CR    ((AT91_REG *) 	0xFFFB8000) // (TWI) Control Register
@@ -1734,106 +1363,6 @@ typedef struct _AT91S_UDP {
 #define AT91C_UDP_TXVC  ((AT91_REG *) 	0xFFFB0074) // (UDP) Transceiver Control Register
 #define AT91C_UDP_GLBSTATE ((AT91_REG *) 	0xFFFB0004) // (UDP) Global State Register
 #define AT91C_UDP_IER   ((AT91_REG *) 	0xFFFB0010) // (UDP) Interrupt Enable Register
-
-// *****************************************************************************
-//               PIO DEFINITIONS FOR AT91SAM7S256
-// *****************************************************************************
-#define AT91C_PIO_PA0        ((unsigned int) 1 <<  0) // Pin Controlled by PA0
-#define AT91C_PA0_PWM0     ((unsigned int) AT91C_PIO_PA0) //  PWM Channel 0
-#define AT91C_PA0_TIOA0    ((unsigned int) AT91C_PIO_PA0) //  Timer Counter 0 Multipurpose Timer I/O Pin A
-#define AT91C_PIO_PA1        ((unsigned int) 1 <<  1) // Pin Controlled by PA1
-#define AT91C_PA1_PWM1     ((unsigned int) AT91C_PIO_PA1) //  PWM Channel 1
-#define AT91C_PA1_TIOB0    ((unsigned int) AT91C_PIO_PA1) //  Timer Counter 0 Multipurpose Timer I/O Pin B
-#define AT91C_PIO_PA10       ((unsigned int) 1 << 10) // Pin Controlled by PA10
-#define AT91C_PA10_DTXD     ((unsigned int) AT91C_PIO_PA10) //  DBGU Debug Transmit Data
-#define AT91C_PA10_NPCS2    ((unsigned int) AT91C_PIO_PA10) //  SPI Peripheral Chip Select 2
-#define AT91C_PIO_PA11       ((unsigned int) 1 << 11) // Pin Controlled by PA11
-#define AT91C_PA11_NPCS0    ((unsigned int) AT91C_PIO_PA11) //  SPI Peripheral Chip Select 0
-#define AT91C_PA11_PWM0     ((unsigned int) AT91C_PIO_PA11) //  PWM Channel 0
-#define AT91C_PIO_PA12       ((unsigned int) 1 << 12) // Pin Controlled by PA12
-#define AT91C_PA12_MISO     ((unsigned int) AT91C_PIO_PA12) //  SPI Master In Slave
-#define AT91C_PA12_PWM1     ((unsigned int) AT91C_PIO_PA12) //  PWM Channel 1
-#define AT91C_PIO_PA13       ((unsigned int) 1 << 13) // Pin Controlled by PA13
-#define AT91C_PA13_MOSI     ((unsigned int) AT91C_PIO_PA13) //  SPI Master Out Slave
-#define AT91C_PA13_PWM2     ((unsigned int) AT91C_PIO_PA13) //  PWM Channel 2
-#define AT91C_PIO_PA14       ((unsigned int) 1 << 14) // Pin Controlled by PA14
-#define AT91C_PA14_SPCK     ((unsigned int) AT91C_PIO_PA14) //  SPI Serial Clock
-#define AT91C_PA14_PWM3     ((unsigned int) AT91C_PIO_PA14) //  PWM Channel 3
-#define AT91C_PIO_PA15       ((unsigned int) 1 << 15) // Pin Controlled by PA15
-#define AT91C_PA15_TF       ((unsigned int) AT91C_PIO_PA15) //  SSC Transmit Frame Sync
-#define AT91C_PA15_TIOA1    ((unsigned int) AT91C_PIO_PA15) //  Timer Counter 1 Multipurpose Timer I/O Pin A
-#define AT91C_PIO_PA16       ((unsigned int) 1 << 16) // Pin Controlled by PA16
-#define AT91C_PA16_TK       ((unsigned int) AT91C_PIO_PA16) //  SSC Transmit Clock
-#define AT91C_PA16_TIOB1    ((unsigned int) AT91C_PIO_PA16) //  Timer Counter 1 Multipurpose Timer I/O Pin B
-#define AT91C_PIO_PA17       ((unsigned int) 1 << 17) // Pin Controlled by PA17
-#define AT91C_PA17_TD       ((unsigned int) AT91C_PIO_PA17) //  SSC Transmit data
-#define AT91C_PA17_PCK1     ((unsigned int) AT91C_PIO_PA17) //  PMC Programmable Clock Output 1
-#define AT91C_PIO_PA18       ((unsigned int) 1 << 18) // Pin Controlled by PA18
-#define AT91C_PA18_RD       ((unsigned int) AT91C_PIO_PA18) //  SSC Receive Data
-#define AT91C_PA18_PCK2     ((unsigned int) AT91C_PIO_PA18) //  PMC Programmable Clock Output 2
-#define AT91C_PIO_PA19       ((unsigned int) 1 << 19) // Pin Controlled by PA19
-#define AT91C_PA19_RK       ((unsigned int) AT91C_PIO_PA19) //  SSC Receive Clock
-#define AT91C_PA19_FIQ      ((unsigned int) AT91C_PIO_PA19) //  AIC Fast Interrupt Input
-#define AT91C_PIO_PA2        ((unsigned int) 1 <<  2) // Pin Controlled by PA2
-#define AT91C_PA2_PWM2     ((unsigned int) AT91C_PIO_PA2) //  PWM Channel 2
-#define AT91C_PA2_SCK0     ((unsigned int) AT91C_PIO_PA2) //  USART 0 Serial Clock
-#define AT91C_PIO_PA20       ((unsigned int) 1 << 20) // Pin Controlled by PA20
-#define AT91C_PA20_RF       ((unsigned int) AT91C_PIO_PA20) //  SSC Receive Frame Sync
-#define AT91C_PA20_IRQ0     ((unsigned int) AT91C_PIO_PA20) //  External Interrupt 0
-#define AT91C_PIO_PA21       ((unsigned int) 1 << 21) // Pin Controlled by PA21
-#define AT91C_PA21_RXD1     ((unsigned int) AT91C_PIO_PA21) //  USART 1 Receive Data
-#define AT91C_PA21_PCK1     ((unsigned int) AT91C_PIO_PA21) //  PMC Programmable Clock Output 1
-#define AT91C_PIO_PA22       ((unsigned int) 1 << 22) // Pin Controlled by PA22
-#define AT91C_PA22_TXD1     ((unsigned int) AT91C_PIO_PA22) //  USART 1 Transmit Data
-#define AT91C_PA22_NPCS3    ((unsigned int) AT91C_PIO_PA22) //  SPI Peripheral Chip Select 3
-#define AT91C_PIO_PA23       ((unsigned int) 1 << 23) // Pin Controlled by PA23
-#define AT91C_PA23_SCK1     ((unsigned int) AT91C_PIO_PA23) //  USART 1 Serial Clock
-#define AT91C_PA23_PWM0     ((unsigned int) AT91C_PIO_PA23) //  PWM Channel 0
-#define AT91C_PIO_PA24       ((unsigned int) 1 << 24) // Pin Controlled by PA24
-#define AT91C_PA24_RTS1     ((unsigned int) AT91C_PIO_PA24) //  USART 1 Ready To Send
-#define AT91C_PA24_PWM1     ((unsigned int) AT91C_PIO_PA24) //  PWM Channel 1
-#define AT91C_PIO_PA25       ((unsigned int) 1 << 25) // Pin Controlled by PA25
-#define AT91C_PA25_CTS1     ((unsigned int) AT91C_PIO_PA25) //  USART 1 Clear To Send
-#define AT91C_PA25_PWM2     ((unsigned int) AT91C_PIO_PA25) //  PWM Channel 2
-#define AT91C_PIO_PA26       ((unsigned int) 1 << 26) // Pin Controlled by PA26
-#define AT91C_PA26_DCD1     ((unsigned int) AT91C_PIO_PA26) //  USART 1 Data Carrier Detect
-#define AT91C_PA26_TIOA2    ((unsigned int) AT91C_PIO_PA26) //  Timer Counter 2 Multipurpose Timer I/O Pin A
-#define AT91C_PIO_PA27       ((unsigned int) 1 << 27) // Pin Controlled by PA27
-#define AT91C_PA27_DTR1     ((unsigned int) AT91C_PIO_PA27) //  USART 1 Data Terminal ready
-#define AT91C_PA27_TIOB2    ((unsigned int) AT91C_PIO_PA27) //  Timer Counter 2 Multipurpose Timer I/O Pin B
-#define AT91C_PIO_PA28       ((unsigned int) 1 << 28) // Pin Controlled by PA28
-#define AT91C_PA28_DSR1     ((unsigned int) AT91C_PIO_PA28) //  USART 1 Data Set ready
-#define AT91C_PA28_TCLK1    ((unsigned int) AT91C_PIO_PA28) //  Timer Counter 1 external clock input
-#define AT91C_PIO_PA29       ((unsigned int) 1 << 29) // Pin Controlled by PA29
-#define AT91C_PA29_RI1      ((unsigned int) AT91C_PIO_PA29) //  USART 1 Ring Indicator
-#define AT91C_PA29_TCLK2    ((unsigned int) AT91C_PIO_PA29) //  Timer Counter 2 external clock input
-#define AT91C_PIO_PA3        ((unsigned int) 1 <<  3) // Pin Controlled by PA3
-#define AT91C_PA3_TWD      ((unsigned int) AT91C_PIO_PA3) //  TWI Two-wire Serial Data
-#define AT91C_PA3_NPCS3    ((unsigned int) AT91C_PIO_PA3) //  SPI Peripheral Chip Select 3
-#define AT91C_PIO_PA30       ((unsigned int) 1 << 30) // Pin Controlled by PA30
-#define AT91C_PA30_IRQ1     ((unsigned int) AT91C_PIO_PA30) //  External Interrupt 1
-#define AT91C_PA30_NPCS2    ((unsigned int) AT91C_PIO_PA30) //  SPI Peripheral Chip Select 2
-#define AT91C_PIO_PA31       ((unsigned int) 1 << 31) // Pin Controlled by PA31
-#define AT91C_PA31_NPCS1    ((unsigned int) AT91C_PIO_PA31) //  SPI Peripheral Chip Select 1
-#define AT91C_PA31_PCK2     ((unsigned int) AT91C_PIO_PA31) //  PMC Programmable Clock Output 2
-#define AT91C_PIO_PA4        ((unsigned int) 1 <<  4) // Pin Controlled by PA4
-#define AT91C_PA4_TWCK     ((unsigned int) AT91C_PIO_PA4) //  TWI Two-wire Serial Clock
-#define AT91C_PA4_TCLK0    ((unsigned int) AT91C_PIO_PA4) //  Timer Counter 0 external clock input
-#define AT91C_PIO_PA5        ((unsigned int) 1 <<  5) // Pin Controlled by PA5
-#define AT91C_PA5_RXD0     ((unsigned int) AT91C_PIO_PA5) //  USART 0 Receive Data
-#define AT91C_PA5_NPCS3    ((unsigned int) AT91C_PIO_PA5) //  SPI Peripheral Chip Select 3
-#define AT91C_PIO_PA6        ((unsigned int) 1 <<  6) // Pin Controlled by PA6
-#define AT91C_PA6_TXD0     ((unsigned int) AT91C_PIO_PA6) //  USART 0 Transmit Data
-#define AT91C_PA6_PCK0     ((unsigned int) AT91C_PIO_PA6) //  PMC Programmable Clock Output 0
-#define AT91C_PIO_PA7        ((unsigned int) 1 <<  7) // Pin Controlled by PA7
-#define AT91C_PA7_RTS0     ((unsigned int) AT91C_PIO_PA7) //  USART 0 Ready To Send
-#define AT91C_PA7_PWM3     ((unsigned int) AT91C_PIO_PA7) //  PWM Channel 3
-#define AT91C_PIO_PA8        ((unsigned int) 1 <<  8) // Pin Controlled by PA8
-#define AT91C_PA8_CTS0     ((unsigned int) AT91C_PIO_PA8) //  USART 0 Clear To Send
-#define AT91C_PA8_ADTRG    ((unsigned int) AT91C_PIO_PA8) //  ADC External Trigger
-#define AT91C_PIO_PA9        ((unsigned int) 1 <<  9) // Pin Controlled by PA9
-#define AT91C_PA9_DRXD     ((unsigned int) AT91C_PIO_PA9) //  DBGU Debug Receive Data
-#define AT91C_PA9_NPCS1    ((unsigned int) AT91C_PIO_PA9) //  SPI Peripheral Chip Select 1
 
 // *****************************************************************************
 //               PERIPHERAL ID DEFINITIONS FOR AT91SAM7S256

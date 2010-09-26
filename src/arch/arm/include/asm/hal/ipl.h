@@ -1,14 +1,8 @@
 /**
  * @file
  *
- * @brief Implements interrupt process level for microblaze architecture
- *
- * @details Microblaze hasn't ipl level on chip. We use interrupt controller
- * mask/unmask operations for implementing ipl. While initialize we enable bit
- * @link #MSR_IE_BIT @endlink for interrupts enable in MSR register.
- *
- * @date 13.03.10
- * @author Alexey Fomin
+ * @date 01.07.10
+ * @author Anton Kozlov
  */
 
 #ifndef HAL_IPL_H_
