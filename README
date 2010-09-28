@@ -13,6 +13,7 @@ manager interface. Only required parts of the system are included into final ima
 The required parts are defined during configuration of system or in run time.
 
 Quickstart guide
+----------------
 
 make PROJECT=<project> PROFILE=<profile> config
 (make menuconfig, make xconfig)
@@ -20,6 +21,14 @@ make all
 (make docs, make dot)
 
 To be continued...
+
+Platforms
+---------
+
+    Virtex-5 LXT FPGA ML505 Evaluation Platform
+    HW-SPAR3AN-SK-UNI-G Starter Kit
+    SAM7-P256 development board for AT91SAM7S256 ARM7TDMI-S
+    Lego Mindstorms NXT Atmel AT91SAM7S256 ARM7TDMI
 
 Please visit the official web page of EMBOX, for more information.
 The URL is <http://code.google.com/p/embox>.
