@@ -11,10 +11,8 @@
 #include <kernel/irq.h>
 #include <types.h>
 #include <hal/interrupt.h>
-#include <AT91SAM7_PIT.h>
-#include <AT91SAM7S256.h>
+#include <drivers/at91sam7s256.h>
 
-#define CLOCK_IRQ   1
 static int ticks = 0;
 static int delay = 0;
 irq_return_t clock_handler(int irq_num, void *dev_id) {
@@ -30,7 +28,7 @@ irq_return_t clock_handler(int irq_num, void *dev_id) {
 }
 
 void clock_init(void) {
-	irq_attach((irq_nr_t) CLOCK_IRQ, (irq_handler_t) &clock_handler, 0, NULL, "at91 PIT");
+	irq_attach((irq_nr_t) AT91C_PIT_IRQ, (irq_handler_t) &clock_handler, 0, NULL, "at91 PIT");
 }
 
 

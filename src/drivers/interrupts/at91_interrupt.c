@@ -11,19 +11,15 @@
 #include <hal/reg.h>
 #include <asm/psr.h>
 #include <types.h>
-#include <AT91SAM7_AIC.h>
-#include <AT91SAM7_PIO.h>
-#include <AT91SAM7_PMC.h>
-#include <AT91SAM7S256.h>
+#include <drivers/at91sam7s256.h>
 
 void interrupt_init(void) {
-	//__set_cpsr(__get_cpsr() & (~(IRQ_BIT | FIQ_BIT)));
-	REG_STORE(AT91C_PMC_PCER, 1 << 30);
+	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0);
 	//REG_STORE(AIC_DCR, 1);
-	REG_STORE(AT91C_PIOA_PDR, 1 << 20);
-	REG_STORE(AT91C_PIOA_BSR, 1 << 20);
-	REG_STORE(AT91C_AIC_IDCR, ~0);
-	REG_STORE(AT91C_AIC_ICCR, ~0);
+	REG_STORE(AT91C_PIOA_PDR, AT91C_PA20_IRQ0);
+	REG_STORE(AT91C_PIOA_BSR, AT91C_PA20_IRQ0);
+	REG_STORE(AT91C_AIC_IDCR, ~0); /* disabling all interrupts */
+	REG_STORE(AT91C_AIC_ICCR, ~0); /* clearing all pending interrupts */
 }
 
 void interrupt_enable(interrupt_nr_t interrupt_nr) {

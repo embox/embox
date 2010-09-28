@@ -16,7 +16,7 @@
 .global	IRQ_handler
 
 /* why in special section */
-.section .entry_text, "x"
+/*.section .entry_text, "x" */
 
 IRQ_handler:
 	nop
@@ -48,10 +48,6 @@ SWI_handler:
 
 	mov	LR, PC
 	ldr	PC, =softirq_dispatch
-#if 0
-	//TODO what does mean si_handler
-	ldr	PC, =si_handler
-#endif
 
 	pop	{r0-r4,	LR}
 

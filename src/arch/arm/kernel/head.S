@@ -2,19 +2,19 @@
  * @file
  *
  * @date 28.03.2010
- * @author Nikolay Korotky realy:)
+ * @author nikolay korotky realy:)
  */
 
 /**
- * Exceptions table:
- * 0x00 - Reset
- * 0x04 - Undefined
+ * exceptions table:
+ * 0x00 - reset
+ * 0x04 - undefined
  * 0x08 - SWI
- * 0x0C - Prefetch Abort
- * 0x10 - Data Abort
- * 0x14 - Reserved
+ * 0x0C - prefetch abort
+ * 0x10 - data abort
+ * 0x14 - reserved
  * 0x18 - IRQ
- * 0x1C - FIQ (Fast IRQ)
+ * 0x1C - FIQ (_fast IRQ)
  */
 
 .weak hardware_init_hook
@@ -25,58 +25,50 @@
 
     .global start
 
-.section .expt_text, "x"
+.section .trap_table, "x"
 /* trap table
  * this code specific for ARM7TDMI cores
  *
  * actually, this is general for all ARM cores
  */
 start:
-    ldr pc, ResetHandlerAddr
-    ldr pc, UndefHandlerAddr
-    ldr pc, SWIHandlerAddr
-    ldr pc, PrefetchAbtHandlerAddr
-    ldr pc, DataAbtHandlerAddr
-    nop /*bad exception _not_used:		.word not_used*/
-    ldr pc, IRQHandlerAddr
-    ldr pc, FIQHandlerAddr
+    ldr pc, reset_handler_addr
+    ldr pc, undef_handler_addr
+    ldr pc, SWI_handler_addr
+    ldr pc, prefetch_abt_handler_addr
+    ldr pc, data_abt_handler_addr
+    nop /*bad exception not_used:		.word not_used*/
+    ldr pc, IRQ_handler_addr
+    ldr pc, FIQ_handler_addr
 
-ResetHandlerAddr:
-    .word ResetHandler
-UndefHandlerAddr:
-    .word UndefHandler
-SWIHandlerAddr:
-    .word SWIHandler
-PrefetchAbtHandlerAddr:
-    .word PrefetchAbtHandler
-DataAbtHandlerAddr:
-    .word DataAbtHandler
-IRQHandlerAddr:
-    .word IRQHandler
-    //.word IRQ_handler
-FIQHandlerAddr:
-    .word FIQHandler
+reset_handler_addr:
+    .word reset_handler
+undef_handler_addr:
+    .word undef_handler
+SWI_handler_addr:
+    .word SWI_handler
+prefetch_abt_handler_addr:
+    .word prefetch_abt_handler
+data_abt_handler_addr:
+    .word data_abt_handler
+IRQ_handler_addr:
+    .word IRQ_handler
+FIQ_handler_addr:
+    .word FIQ_handler
 
-/** Stubs */
-UndefHandler:
-    B UndefHandler
-SWIHandler:
-    B SWIHandler
-PrefetchAbtHandler:
-    B PrefetchAbtHandler
-DataAbtHandler:
-    B DataAbtHandler
-IRQHandler:
-    B IRQHandler
-FIQHandler:
-    B FIQHandler
-
-/** Describe stacks' sizes */
-.EQU IRQ_STACK_SIZE, CONFIG_ARM_IRQ_STACK_SIZE /* irq mode */
-.EQU FIQ_STACK_SIZE, CONFIG_ARM_FIQ_STACK_SIZE /* fast irq mode */
-.EQU ABT_STACK_SIZE, CONFIG_ARM_ABT_STACK_SIZE /* abort mode */
-.EQU UND_STACK_SIZE, CONFIG_ARM_UND_STACK_SIZE /* undefined mode undefined instruction has been occured*/
-.EQU SVC_STACK_SIZE, CONFIG_ARM_SVC_STACK_SIZE
+/** stubs */
+undef_handler:
+    B undef_handler
+SWI_handler:
+    B SWI_handler
+prefetch_abt_handler:
+    B prefetch_abt_handler
+data_abt_handler:
+    B data_abt_handler
+IRQ_handler:
+    B IRQ_handler
+FIQ_handler:
+    B FIQ_handler
 
 .EQU ARM_MODE_FIQ, 0x11
 .EQU ARM_MODE_IRQ, 0x12
@@ -85,87 +77,87 @@ FIQHandler:
 .EQU ARM_MODE_UND, 0x1B
 .EQU ARM_MODE_USR, 0x10
 
-/** Disable IRQ, FIQ */
+/** disable IRQ, FIQ */
 .EQU I_BIT, 0x80
 .EQU F_BIT, 0x40
 
 
 .text
-/** Initialize stack */
+/** initialize stack */
 .RAM_TOP:
     .word _stack_top
-ResetHandler:
+reset_handler:
     msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
     ldr	    r0, =0
     ldr	    r1, =start
-LoopExcpt:
+loop_excpt:
     ldr	    r2, [r1], #0x4
     str	    r2, [r0], #0x4
     cmp	    r0, #0x20
-    bne    LoopExcpt
+    bne    loop_excpt
 
     ldr r0, .RAM_TOP
 
     msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
     mov sp, r0
-    sub r0, r0, #FIQ_STACK_SIZE
+    sub r0, r0, #CONFIG_ARM_FIQ_STACK_SIZE
 
     msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
     mov sp, r0
-    sub r0, r0, #IRQ_STACK_SIZE
+    sub r0, r0, #CONFIG_ARM_IRQ_STACK_SIZE
 
     msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
     mov sp, r0
-    sub r0, r0, #SVC_STACK_SIZE
+    sub r0, r0, #CONFIG_ARM_SVC_STACK_SIZE
 
     msr CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
     mov sp, r0
-    sub r0, r0, #ABT_STACK_SIZE
+    sub r0, r0, #CONFIG_ARM_ABT_STACK_SIZE
 
     msr CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
     mov sp, r0
-    sub r1, r0, #UND_STACK_SIZE
+    sub r1, r0, #CONFIG_ARM_UND_STACK_SIZE
 
     msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
     mov sp, r0
 
-/** Initialize memory */
+/** initialize memory */
     mov     r0, #0
     ldr     r1, =_bstart
     ldr     r2, =_bend
-LoopZI:
+loopZI:
     cmp     r1, r2
     strlo   r0, [r1], #4
-    blo     LoopZI
+    blo     loopZI
 
     ldr     r1, =_data_lma
     ldr     r2, =_data_vma
     ldr     r3, =_data_end
-LoopCpData:
+loop_cp_data:
     cmp     r2, r3
     ldrlo   r0, [r1], #4
     strlo   r0, [r2], #4
-    blo     LoopCpData
+    blo     loop_cp_data
 
     ldr     r1, =_text_lma
     ldr     r2, =_text_vma
     ldr     r3, =_text_end
-LoopCpText:
+loop_cp_text:
     cmp     r2, r3
     ldrlo   r0, [r1], #4
     strlo   r0, [r2], #4
-    blo     LoopCpText
+    blo     loop_cp_text
 
     ldr     r1, =_reloc_lma
     ldr     r2, =_reloc_vma
     ldr     r3, =_reloc_text_end
-LoopCpReloc:
+loop_cp_reloc:
     cmp     r2, r3
     ldrlo   r0, [r1], #4
     strlo   r0, [r2], #4
-    blo     LoopCpReloc
+    blo     loop_cp_reloc
 
-InitHook:
+init_hook:
     ldr     r0, =hardware_init_hook
     blne    =hardware_init_hook
 
@@ -176,7 +168,7 @@ InitHook:
     push    {lr}
 /* enabling interrupts */
     msr	    CPSR_c, #ARM_MODE_SVC
-/** Kernel start */
+/** kernel start */
     ldr	    pc, =kernel_start
 
 die:

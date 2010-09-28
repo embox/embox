@@ -17,8 +17,10 @@ typedef void (*TIMER_FUNC)(uint32_t id);
 
 /**
  * Initialization of the timers subsystem.
+ * int timer_init(void);
+ * We don't need it, since it calling by UNIT framework and must be
+ * used only by the framework
  */
-static int timer_init(void);
 
 /**
  * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.

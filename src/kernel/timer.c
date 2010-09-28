@@ -104,7 +104,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  *
  * @return 0 if success
  */
-static int timer_init(void) {
+int timer_init(void) {
 	int i;
 	cnt_sys_time = 0;
 	for (i = 0; i < array_len(sys_timers); i++) {
