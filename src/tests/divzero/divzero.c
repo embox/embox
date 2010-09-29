@@ -9,7 +9,7 @@
 
 #include <embox/test.h>
 #include <hal/env/traps_core.h>
-#include <hal/test/testtraps_core.h>
+#include <hal/test/traps_core.h>
 
 /* declare test in system */
 EMBOX_TEST(run);

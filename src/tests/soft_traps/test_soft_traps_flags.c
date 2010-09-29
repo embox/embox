@@ -9,7 +9,7 @@
 
 #include <types.h>
 #include <embox/test.h>
-#include <hal/test/testtraps_core.h>
+#include <hal/test/traps_core.h>
 
 
 #define TEST_SOFT_TRAP_NUMBER 0x10

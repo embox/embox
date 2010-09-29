@@ -13,8 +13,8 @@
 #include <hal/mm/mmu_core.h>
 #include <hal/mm/mmu_page.h>
 #include <hal/env/traps_core.h>
-#include <hal/test/testmmu_core.h>
-#include <hal/test/testtraps_core.h>
+#include <hal/test/mmu_core.h>
+#include <hal/test/traps_core.h>
 
 /* declare test in system */
 EMBOX_TEST(run);

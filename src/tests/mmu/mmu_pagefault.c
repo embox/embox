@@ -10,8 +10,8 @@
 #include <embox/test.h>
 #include <hal/mm/mmu_core.h>
 #include <hal/env/traps_core.h>
-#include <hal/test/testmmu_core.h>
-#include <hal/test/testtraps_core.h>
+#include <hal/test/mmu_core.h>
+#include <hal/test/traps_core.h>
 #include <asm/tbr.h>
 uint8_t page[PAGE_SIZE * 2];
 mmu_ctx_t t1;

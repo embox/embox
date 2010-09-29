@@ -16,7 +16,7 @@
 
 #include <embox/test.h>
 #include <hal/mm/mmu_core.h>
-#include <hal/test/testmmu_core.h>
+#include <hal/test/mmu_core.h>
 
 /* declare test in system */
 EMBOX_TEST(run);
