@@ -14,7 +14,7 @@
 #define	ULONG_MAX	((unsigned long)(~0L))		/* 0xFFFFFFFF */
 #define	LONG_MAX	((long)(ULONG_MAX >> 1))	/* 0x7FFFFFFF */
 #define	LONG_MIN	((long)(~LONG_MAX))		/* 0x80000000 */
-#if 0
+#if 1
 long strtol(const char *nptr, char **endptr, int base) {
 	const char *s = nptr;
 	unsigned long acc;

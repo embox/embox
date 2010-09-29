@@ -1,11 +1,10 @@
 /**
- * @file at91_olimex_debug_led.c
+ * @file
  * @brief Controlling leds on Olimex Debug board
  *
  * @date 26.09.2010
  * @author Anton Kozlov
  */
-
 
 #include <hal/reg.h>
 #include <types.h>
@@ -32,6 +31,7 @@ void led1_on() {
 void led1_off() {
     REG_STORE(AT91C_PIOA_SODR, AT91C_PIO_PA17);
 }
+
 void led2_on() {
     REG_STORE(AT91C_PIOA_CODR, AT91C_PIO_PA18);
 }
