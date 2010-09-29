@@ -11,8 +11,7 @@
 
 #define COMMAND_NAME     "runelf"
 #define COMMAND_DESC_MSG "execute elf file"
-#define HELP_MSG \
-	"Usage: runelf [-h] [-a addr]"
+#define HELP_MSG "Usage: runelf [-h] [-a addr]"
 
 #define THREAD_STACK_SIZE 0x10000
 
@@ -26,7 +25,7 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-static void run(void){
+static void run(void) {
 	elf_execute((FILE *)file);
 }
 
@@ -52,10 +51,9 @@ static int exec(int argsc, char **argsv) {
 			TRACE("runelf: invalid value \"%s\".\nthe number expected.\n", optarg);
 			return -1;
 		case 'h':
-			show_man_page();
+			show_help();
 			return 0;
 		case -1:
-			show_help();
 			return 0;
 		default:
 			TRACE("runelf: invalid arguments.\n", optarg);

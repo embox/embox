@@ -9,5 +9,7 @@
 "\t-h       - show this help.\n"
 "EXAMPLES\n"
 "\trunelf -a 0x46000000\n"
+"SEE ALSO\n"
+"\treadelf\n"
 "AUTHORS\n"
 "\tAvdyukhin Dmitry\n"
