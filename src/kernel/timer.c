@@ -6,69 +6,56 @@
 #include <unistd.h>
 #include <kernel/irq.h>
 #include <hal/clock.h>
-#include <hal/arch.h>
 #include <kernel/timer.h>
 #include <time.h>
-#include <embox/kernel.h> /*for array_len*/
+#include <util/array.h>
 #include <string.h>
 #include <embox/unit.h>
+#include <lib/list.h>
+#include <hal/arch.h>
 
 EMBOX_UNIT_INIT(timer_init);
 
 typedef struct sys_tmr {
-	volatile int	f_enable;
-	volatile uint32_t   id;
-	volatile uint32_t   load;
-	volatile uint32_t   cnt;
-	volatile TIMER_FUNC handle;
+	struct list_head *next, *prev;
+	uint32_t   id;
+	uint32_t   load;
+	uint32_t   cnt;
+	TIMER_FUNC handle;
 } sys_tmr_t;
+
 
 static volatile uint32_t cnt_ms_sleep; /**< for sleep function */
 static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
 static sys_tmr_t sys_timers[_SC_TIMER_MAX];
 
-/**
- * Enable the timer.
- * @param num the timer index in the timers array
- */
-static void set_sys_timer_enable (int num) {
-	sys_timers[num].f_enable = 1;
-}
+static LIST_HEAD(free_sys_timers_list);
+static LIST_HEAD(sys_timers_list);
 
-/**
- * Disable the timer.
- * @param num the timer index in the timers array
- */
-static void set_sys_timer_disable (int num) {
-	sys_timers[num].f_enable = 0;
-}
 
 uint32_t cnt_system_time(void) {
 	return cnt_sys_time;
 }
 
 int set_timer (uint32_t id, uint32_t ticks, TIMER_FUNC handle) {
-	int i;
-	for (i = 0; i < array_len (sys_timers); i++) {
-		if (!sys_timers[i].f_enable) {
-			sys_timers[i].handle = handle;
-			sys_timers[i].load = ticks;
-			sys_timers[i].cnt = ticks;
-			sys_timers[i].id = id;
-			set_sys_timer_enable(i);
-			return 1;
-		}
+	sys_tmr_t *new_timer;
+	if(list_empty(&free_sys_timers_list)) {
+		return 0;
 	}
-	return 0;
+	new_timer = (sys_tmr_t *)free_sys_timers_list.next;
+	new_timer->cnt = new_timer->load = ticks;
+	new_timer->id = id;
+	new_timer->handle = handle;
+	list_move_tail((struct list_head *)new_timer, &sys_timers_list);
+	return id;
 }
 
 void close_timer (uint32_t id) {
-	int i;
-	for (i = 0; i < array_len (sys_timers); i++) {
-		if (id == sys_timers[i].id) {
-			sys_timers[i].f_enable = 0;
-			sys_timers[i].handle = NULL;
+	struct list_head *p;
+	list_for_each(p, &free_sys_timers_list) {
+		if (id == ((sys_tmr_t *)p)->id) {
+			list_move_tail(p, &sys_timers_list);
 		}
 	}
 }
@@ -79,13 +66,13 @@ void close_timer (uint32_t id) {
  * to the counter and the function is executed.
  */
 static void inc_sys_timers (void) {
-	int i;
-	for (i = 0; i < array_len (sys_timers); i++) {
-		if (sys_timers[i].f_enable && !(sys_timers[i].cnt--)) {
-			sys_timers[i].cnt = sys_timers[i].load;
-			if (sys_timers[i].handle) {
-				sys_timers[i].handle(sys_timers[i].id);
-			}
+	struct list_head *tmp;
+	sys_tmr_t * tmr;
+	list_for_each(tmp, &sys_timers_list) {
+		tmr = (sys_tmr_t *) tmp;
+		if(0 == tmr->cnt--){
+			tmr->handle(tmr->id);
+			tmr->cnt = tmr->load;
 		}
 	}
 }
@@ -108,13 +95,14 @@ int timer_init(void) {
 	int i;
 	cnt_sys_time = 0;
 	for (i = 0; i < array_len(sys_timers); i++) {
-		set_sys_timer_disable(i);
+		list_add((struct list_head *)&sys_timers[i], &free_sys_timers_list);
 	}
 	clock_init();
 	clock_setup(1000);
 	return 0;
 }
 
+/*system library function */
 int usleep(useconds_t usec) {
 	cnt_ms_sleep = 0;
 
@@ -124,31 +112,6 @@ int usleep(useconds_t usec) {
 	return 0;
 }
 
-unsigned int sleep(unsigned int seconds) {
-	return usleep(seconds*1000);
+uint32_t sleep(uint32_t seconds) {
+	return usleep(seconds * 1000);
 }
-
-#if 0
-/*TODO now save only one timer context*/
-#define MAX_SAVE_CONTEXT	  2
-
-static sys_tmr_t save_timers_buffer[_SC_TIMER_MAX][MAX_SAVE_CONTEXT];
-static int save_context_number = 0;
-
-int timers_context_save () {
-	int context_number = 0;
-	memcpy(save_timers_buffer[context_number], sys_timers,
-				sizeof (sys_timers));
-	return context_number;
-}
-
-int timers_context_restore (int context_number) {
-	memcpy(sys_timers, save_timers_buffer[context_number],
-							sizeof (sys_timers));
-	return context_number;
-}
-
-void timers_off () {
-	platform_timers_off ();
-}
-#endif
