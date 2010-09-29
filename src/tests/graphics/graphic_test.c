@@ -7,6 +7,7 @@
 */
 #include <types.h>
 #include <drivers/at91sam7s256.h>
+#include <embox/test.h>
 #include "graphics_test.h"
 
 EMBOX_TEST(run_graphic);
