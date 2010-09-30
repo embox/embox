@@ -81,14 +81,3 @@ __interrupt_mask_t irqc_get_mask(void){
 	return irqc->ier;
 }
 
-/* Following functions never be used */
-#if 0
-int irqc_get_status(interrupt_nr_t irq_num){
-	return get_bit(irqc->ier, irq_num);
-}
-
-int irqc_disable_all(void){
-	irqc->mer &= ~MER_ME;
-	return 0;
-}
-#endif

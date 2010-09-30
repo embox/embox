@@ -31,15 +31,6 @@ SECTIONS {
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
-	.reloc : {
-		ALIGNMENT();
-		_reloc_text_start = .;
-		*(.reloc.text)
-		ALIGNMENT();
-		_reloc_text_end = .;
-	} SECTION_REGION(reloc)
-	SECTION_SYMBOLS(reloc)
-
 	.rodata (NOLOAD) : {
 		LDS_INPUT_RODATA
 		ALIGNMENT();
@@ -49,6 +40,15 @@ SECTIONS {
 		ALIGNMENT();
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
+
+	.reloc : {
+		ALIGNMENT();
+		_reloc_text_start = .;
+		*(.reloc.text)
+		ALIGNMENT();
+		_reloc_text_end = .;
+	} SECTION_REGION(reloc)
+	SECTION_SYMBOLS(reloc)
 
 	.data : {
 		ALIGNMENT();
@@ -76,13 +76,4 @@ SECTIONS {
 		_stack = _stack_top;
 		__stack = _stack;
 	} SECTION_REGION(stack)
-
-	.heap (NOLOAD): {
-		. = ALIGN(CONFIG_PAGE_SIZE);
-		_heap_start = .;
-		. += CONFIG_HEAP_SIZE;
-		. = ALIGN(CONFIG_PAGE_SIZE);
-		_heap_end = .;
-	} SECTION_REGION(heap)
-	SECTION_SYMBOLS(heap)
 }
