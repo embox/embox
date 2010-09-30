@@ -485,7 +485,7 @@ static int exec(int argsc, char **argsv) {
         cnt = 0;
         do {
                 cnt++;
-                op = getopt(argsc, argsv, "hspramt");
+                op = getopt(argsc - 1, argsv, "hspramt");
                 switch (op) {
                 case 'h':
                         show_head = 1;

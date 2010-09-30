@@ -60,14 +60,14 @@ static int __init unit_init() {
 }
 
 FILE_NAME_STRUCT *parse_file_name(const char *file_name,
-							FILE_NAME_STRUCT *file_name_struct){
+					FILE_NAME_STRUCT *file_name_struct) {
 	size_t i;
-	if ('/' != file_name[0]){
+	if ('/' != file_name[0]) {
 		return NULL;
 	}
 	file_name_struct->fs_name[0] = '/';
-	for (i = 1; i < array_len(file_name_struct->fs_name); i ++){
-		if ('/' == file_name[i]){
+	for (i = 1; i < array_len(file_name_struct->fs_name); i ++) {
+		if ('/' == file_name[i]) {
 			file_name_struct->fs_name[i] = 0;
 			file_name_struct->file_name = (char *)&file_name[i + 1];
 			return file_name_struct;
@@ -80,11 +80,11 @@ FILE_NAME_STRUCT *parse_file_name(const char *file_name,
 FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name){
 	size_t i;
 	//printf("fs_name %10s\n", fs_name);
-	if (0 == strncmp(fs_name, "/",CONFIG_FS_MAX_DISK_NAME_LENGTH)){
+	if (0 == strncmp(fs_name, "/", CONFIG_FS_MAX_DISK_NAME_LENGTH)) {
 		return &rootfs_op;
 	}
 	for (i = 0; i < NUMBER_OF_FS; i++){
-		if (0 == strncmp(fs_list[i].name, fs_name + 1, array_len(fs_list[i].name))){
+		if (0 == strncmp(fs_list[i].name, fs_name + 1, array_len(fs_list[i].name))) {
 			return (FSOP_DESCRIPTION *)fs_list[i].fsop;
 		}
 	}
@@ -94,18 +94,18 @@ FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name){
 void *rootfs_fopen(const char *file_name, const char *mode) {
 	FILE_NAME_STRUCT fname_struct;
 	FSOP_DESCRIPTION *fsop;
-	if (NULL == parse_file_name(file_name, &fname_struct)){
+	if (NULL == parse_file_name(file_name, &fname_struct)) {
 		TRACE("can't parse file name %s\n (may be wrong format)\n", file_name);
 		return NULL;
 	}
 	//TRACE("try open: disk %s\tfile %s\n", fname_struct.fs_name,
-	//										fname_struct.file_name);
-	if (NULL == (fsop = rootfs_get_fsopdesc((char*)fname_struct.fs_name))){
+	//							fname_struct.file_name);
+	if (NULL == (fsop = rootfs_get_fsopdesc((char*)fname_struct.fs_name))) {
 		TRACE("can't find file system description for file %s\n"
 				"(may be file %s didn't create)\n", file_name, file_name);
 		return NULL;
 	}
-	if (NULL == fsop->open_file){
+	if (NULL == fsop->open_file) {
 		TRACE("can't find open_file function wrong fs operation "
 				"descriptor for file %s\n", file_name);
 		return NULL;

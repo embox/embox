@@ -15,7 +15,7 @@
    A header for a filename "TRAILER!!!" indicates the end of the archive.  */
 
 /* New ASCII Format */
-struct cpio_newc_header {
+typedef struct {
         char c_magic[6];    /* must be "070701" */
         char c_ino[8];
         char c_mode[8];
@@ -30,7 +30,7 @@ struct cpio_newc_header {
         char c_rdevminor[8];
         char c_namesize[8];
         char c_check[8];
-};
+} cpio_newc_header;
 
 /* Value for the field `c_magic'.  */
 #define MAGIC	"070701"

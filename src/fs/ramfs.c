@@ -8,6 +8,7 @@
 #include <string.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
+#include <linux/init.h>
 
 typedef struct _FILE_DESC {
 	unsigned int start_addr;
@@ -63,7 +64,7 @@ static FILE_INFO * file_list_iterator(FILE_INFO *finfo) {
 	strncpy(finfo->file_name, fdesc[file_list_cnt].name, array_len(finfo->file_name));
 	finfo->mode = fdesc[file_list_cnt].mode;
 	finfo->size_in_bytes = fdesc[file_list_cnt].size;
-	finfo->size_on_disk = 0;
+	finfo->size_on_disk = fdesc[file_list_cnt].size;
 	file_list_cnt++;
 	return finfo;
 }
@@ -109,10 +110,9 @@ static FILE_HANDLER * find_free_handler(void) {
 	return NULL;
 }
 
-static int init(void) {
+static int __init init(void) {
 	extern char _data_start, _data_end,
-				_text_start, _text_end,
-				_piggy_end, _piggy_start;
+				_text_start, _text_end;
 	RAMFS_CREATE_PARAM param;
 	TRACE("Init RAMFS\n");
 
@@ -128,14 +128,6 @@ static int init(void) {
 	param.start_addr = (unsigned int) (&_data_start);
 	param.mode = FILE_MODE_RWX;
 	create_file(&param);
-	/* create file /ramfs/piggy if need */
-	if (&_piggy_end - &_piggy_start) {
-		strncpy(param.name, "piggy", array_len(param.name));
-		param.size = (unsigned int )(&_piggy_end - &_piggy_start);
-		param.start_addr = (unsigned int )(&_piggy_start);
-		param.mode = FILE_MODE_RWX;
-		create_file(&param);
-	}
 	return 0;
 }
 
@@ -176,7 +168,7 @@ static int create_file(void *params) {
 
 	strncpy(fd->name, par->name, array_len(fd->name));
 	fd->start_addr = par->start_addr;
-	fd->size = 0/*par->size*/;
+	fd->size = par->size;
 	fd->mode = par->mode;
 	fd->is_busy = 1;
 	return 0;

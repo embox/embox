@@ -3,4 +3,4 @@ $_MODS += readelf
 
 $_SRCS-readelf += *.c
 
-$_DEPS-readelf +=
+$_DEPS-readelf += embox.fs.file
