@@ -158,11 +158,12 @@ loop_cp_reloc:
     blo     loop_cp_reloc
 
 init_hook:
+    nop
     ldr     r0, =hardware_init_hook
-    blne    =hardware_init_hook
+    blne    hardware_init_hook
 
     ldr     r0, =software_init_hook
-    blne    =software_init_hook
+    blne    software_init_hook
 
     ldr	    lr, =kernel_start
     push    {lr}
@@ -170,7 +171,7 @@ init_hook:
     msr	    CPSR_c, #ARM_MODE_SVC
 /** kernel start */
     ldr	    pc, =kernel_start
-
+hardware_init_hook:
 die:
     cmp	    r0, r0
     ble	    die
