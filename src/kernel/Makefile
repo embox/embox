@@ -69,3 +69,7 @@ ifdef CONFIG_DRIVER_SUBSYSTEM
   $_SRCS-drv_subsys += driver.c
   $_DEPS-drv_subsys += embox.hal.mm.kmalloc
 endif
+
+ifdef CONFIG_WATCHDOG
+  $_DEPS-main += $(CONFIG_WATCHDOG)
+endif
