@@ -13,15 +13,19 @@
 #include <hal/interrupt.h>
 #include <drivers/at91sam7s256.h>
 
+#define USECOND (CONFIG_SYS_CLOCK / (16 * 1000000))
+
 static int ticks = 0;
 static int delay = 0;
 irq_return_t clock_handler(int irq_num, void *dev_id) {
 	if (REG_LOAD(AT91C_PITC_PISR)) {
 		//REG_ORIN(PIT_MR, PIT_INTERRUPT_ENABLE | PIT_ENABLE); /*p 82, before last paragraph */
+#if 0
 		ticks ++;
 		if (ticks >= delay) {
 			ticks = 0;
 		}
+#endif
 		clock_tick_handler(irq_num, dev_id);
 	}
         return IRQ_HANDLED;
@@ -34,7 +38,8 @@ void clock_init(void) {
 
 void clock_setup(useconds_t useconds) {
 	delay = useconds;
-	REG_STORE(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN | (REG_LOAD(AT91C_CKGR_MCFR) & 0xffff) /1000);
+	REG_STORE(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN | \
+	    (useconds * USECOND));
 	REG_LOAD(AT91C_PITC_PIVR);
 }
 
