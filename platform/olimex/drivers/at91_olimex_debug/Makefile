@@ -1,3 +1,5 @@
+$_PACKAGE := embox.platform.driver
+
 $_MODS += at91_olimex_debug_led
 
 $_SRCS-at91_olimex_debug_led += at91_olimex_debug_led.c

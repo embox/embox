@@ -5,6 +5,8 @@
  * @author Anton Kozlov
  */
 
+#include <types.h>
+
 typedef struct _AT91S_AIC {
 	AT91_REG	 AIC_SMR[32]; 	// Source Mode Register
 	AT91_REG	 AIC_SVR[32]; 	// Source Vector Register

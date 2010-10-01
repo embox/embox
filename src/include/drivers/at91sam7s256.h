@@ -39,6 +39,8 @@
 // CVS Reference       : /PWM_6044D.pl/1.1/Tue Apr 27 14:53:52 2004//
 //  ----------------------------------------------------------------------------
 
+#include <types.h>
+
 #ifndef AT91SAM7S256_H
 #define AT91SAM7S256_H
 
@@ -217,39 +219,7 @@ typedef struct _AT91S_PDC {
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Clock Generator Controler
 // *****************************************************************************
-typedef struct _AT91S_CKGR {
-	AT91_REG	 CKGR_MOR; 	// Main Oscillator Register
-	AT91_REG	 CKGR_MCFR; 	// Main Clock  Frequency Register
-	AT91_REG	 Reserved0[1]; 	//
-	AT91_REG	 CKGR_PLLR; 	// PLL Register
-} AT91S_CKGR, *AT91PS_CKGR;
-
-// -------- CKGR_MOR : (CKGR Offset: 0x0) Main Oscillator Register --------
-#define AT91C_CKGR_MOSCEN     ((unsigned int) 0x1 <<  0) // (CKGR) Main Oscillator Enable
-#define AT91C_CKGR_OSCBYPASS  ((unsigned int) 0x1 <<  1) // (CKGR) Main Oscillator Bypass
-#define AT91C_CKGR_OSCOUNT    ((unsigned int) 0xFF <<  8) // (CKGR) Main Oscillator Start-up Time
-// -------- CKGR_MCFR : (CKGR Offset: 0x4) Main Clock Frequency Register --------
-#define AT91C_CKGR_MAINF      ((unsigned int) 0xFFFF <<  0) // (CKGR) Main Clock Frequency
-#define AT91C_CKGR_MAINRDY    ((unsigned int) 0x1 << 16) // (CKGR) Main Clock Ready
-// -------- CKGR_PLLR : (CKGR Offset: 0xc) PLL B Register --------
-#define AT91C_CKGR_DIV        ((unsigned int) 0xFF <<  0) // (CKGR) Divider Selected
-#define 	AT91C_CKGR_DIV_0                    ((unsigned int) 0x0) // (CKGR) Divider output is 0
-#define 	AT91C_CKGR_DIV_BYPASS               ((unsigned int) 0x1) // (CKGR) Divider is bypassed
-#define AT91C_CKGR_PLLCOUNT   ((unsigned int) 0x3F <<  8) // (CKGR) PLL Counter
-#define AT91C_CKGR_OUT        ((unsigned int) 0x3 << 14) // (CKGR) PLL Output Frequency Range
-#define 	AT91C_CKGR_OUT_0                    ((unsigned int) 0x0 << 14) // (CKGR) Please refer to the PLL datasheet
-#define 	AT91C_CKGR_OUT_1                    ((unsigned int) 0x1 << 14) // (CKGR) Please refer to the PLL datasheet
-#define 	AT91C_CKGR_OUT_2                    ((unsigned int) 0x2 << 14) // (CKGR) Please refer to the PLL datasheet
-#define 	AT91C_CKGR_OUT_3                    ((unsigned int) 0x3 << 14) // (CKGR) Please refer to the PLL datasheet
-#define AT91C_CKGR_MUL        ((unsigned int) 0x7FF << 16) // (CKGR) PLL Multiplier
-#define AT91C_CKGR_USBDIV     ((unsigned int) 0x3 << 28) // (CKGR) Divider for USB Clocks
-#define 	AT91C_CKGR_USBDIV_0                    ((unsigned int) 0x0 << 28) // (CKGR) Divider output is PLL clock output
-#define 	AT91C_CKGR_USBDIV_1                    ((unsigned int) 0x1 << 28) // (CKGR) Divider output is PLL clock output divided by 2
-#define 	AT91C_CKGR_USBDIV_2                    ((unsigned int) 0x2 << 28) // (CKGR) Divider output is PLL clock output divided by 4
-
-// *****************************************************************************
-//              SOFTWARE API DEFINITION  FOR Power Management Controler
-// *****************************************************************************
+#include <drivers/at91sam7_ckgr.h>
 
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Reset Controller Interface
@@ -314,27 +284,7 @@ typedef struct _AT91S_RTTC {
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Watchdog Timer Controller Interface
 // *****************************************************************************
-typedef struct _AT91S_WDTC {
-	AT91_REG	 WDTC_WDCR; 	// Watchdog Control Register
-	AT91_REG	 WDTC_WDMR; 	// Watchdog Mode Register
-	AT91_REG	 WDTC_WDSR; 	// Watchdog Status Register
-} AT91S_WDTC, *AT91PS_WDTC;
-
-// -------- WDTC_WDCR : (WDTC Offset: 0x0) Periodic Interval Image Register --------
-#define AT91C_WDTC_WDRSTT     ((unsigned int) 0x1 <<  0) // (WDTC) Watchdog Restart
-#define AT91C_WDTC_KEY        ((unsigned int) 0xFF << 24) // (WDTC) Watchdog KEY Password
-// -------- WDTC_WDMR : (WDTC Offset: 0x4) Watchdog Mode Register --------
-#define AT91C_WDTC_WDV        ((unsigned int) 0xFFF <<  0) // (WDTC) Watchdog Timer Restart
-#define AT91C_WDTC_WDFIEN     ((unsigned int) 0x1 << 12) // (WDTC) Watchdog Fault Interrupt Enable
-#define AT91C_WDTC_WDRSTEN    ((unsigned int) 0x1 << 13) // (WDTC) Watchdog Reset Enable
-#define AT91C_WDTC_WDRPROC    ((unsigned int) 0x1 << 14) // (WDTC) Watchdog Timer Restart
-#define AT91C_WDTC_WDDIS      ((unsigned int) 0x1 << 15) // (WDTC) Watchdog Disable
-#define AT91C_WDTC_WDD        ((unsigned int) 0xFFF << 16) // (WDTC) Watchdog Delta Value
-#define AT91C_WDTC_WDDBGHLT   ((unsigned int) 0x1 << 28) // (WDTC) Watchdog Debug Halt
-#define AT91C_WDTC_WDIDLEHLT  ((unsigned int) 0x1 << 29) // (WDTC) Watchdog Idle Halt
-// -------- WDTC_WDSR : (WDTC Offset: 0x8) Watchdog Status Register --------
-#define AT91C_WDTC_WDUNF      ((unsigned int) 0x1 <<  0) // (WDTC) Watchdog Underflow
-#define AT91C_WDTC_WDERR      ((unsigned int) 0x1 <<  1) // (WDTC) Watchdog Error
+#include <drivers/at91sam7_wd.h>
 
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR Voltage Regulator Mode Controller Interface
@@ -1108,10 +1058,6 @@ typedef struct _AT91S_UDP {
 #define AT91C_DBGU_THR  ((AT91_REG *) 	0xFFFFF21C) // (DBGU) Transmitter Holding Register
 #define AT91C_DBGU_RHR  ((AT91_REG *) 	0xFFFFF218) // (DBGU) Receiver Holding Register
 #define AT91C_DBGU_IER  ((AT91_REG *) 	0xFFFFF208) // (DBGU) Interrupt Enable Register
-// ========== Register definition for CKGR peripheral ==========
-#define AT91C_CKGR_MOR  ((AT91_REG *) 	0xFFFFFC20) // (CKGR) Main Oscillator Register
-#define AT91C_CKGR_PLLR ((AT91_REG *) 	0xFFFFFC2C) // (CKGR) PLL Register
-#define AT91C_CKGR_MCFR ((AT91_REG *) 	0xFFFFFC24) // (CKGR) Main Clock  Frequency Register
 // ========== Register definition for RSTC peripheral ==========
 #define AT91C_RSTC_RCR  ((AT91_REG *) 	0xFFFFFD00) // (RSTC) Reset Control Register
 #define AT91C_RSTC_RMR  ((AT91_REG *) 	0xFFFFFD08) // (RSTC) Reset Mode Register
@@ -1121,10 +1067,6 @@ typedef struct _AT91S_UDP {
 #define AT91C_RTTC_RTMR ((AT91_REG *) 	0xFFFFFD20) // (RTTC) Real-time Mode Register
 #define AT91C_RTTC_RTVR ((AT91_REG *) 	0xFFFFFD28) // (RTTC) Real-time Value Register
 #define AT91C_RTTC_RTAR ((AT91_REG *) 	0xFFFFFD24) // (RTTC) Real-time Alarm Register
-// ========== Register definition for WDTC peripheral ==========
-#define AT91C_WDTC_WDCR ((AT91_REG *) 	0xFFFFFD40) // (WDTC) Watchdog Control Register
-#define AT91C_WDTC_WDSR ((AT91_REG *) 	0xFFFFFD48) // (WDTC) Watchdog Status Register
-#define AT91C_WDTC_WDMR ((AT91_REG *) 	0xFFFFFD44) // (WDTC) Watchdog Mode Register
 // ========== Register definition for VREG peripheral ==========
 #define AT91C_VREG_MR   ((AT91_REG *) 	0xFFFFFD60) // (VREG) Voltage Regulator Mode Register
 // ========== Register definition for MC peripheral ==========
