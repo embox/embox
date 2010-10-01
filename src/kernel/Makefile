@@ -12,7 +12,7 @@ $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 # TODO too more mods fro core.kernel
-$_MODS += irq timer printk softirq thread scheduler job elf drv_subsys
+$_MODS += irq timer printk softirq job elf drv_subsys
 
 $_SRCS-main += main.c
 $_SRCS-main += init.c
@@ -25,16 +25,7 @@ $_DEPS-main += printk
 $_DEPS-main += softirq
 
 ifdef CONFIG_THREAD
-$_DEPS-main += thread scheduler
-$_DEPS-main += embox.hal.context
-$_SRCS-thread += mutex.c
-$_SRCS-thread += thread.c
-$_SRCS-thread += thread_heap.c
-$_SRCS-thread += convar.c
-
-$_DEPS-scheduler += thread
-$_SRCS-scheduler += scheduler.c
-$_SRCS-scheduler     += $(CONFIG_THREAD)
+$_DEPS-main += core.kernel.threads.core
 endif
 
 ifdef CONFIG_MMU_SUPPORT
