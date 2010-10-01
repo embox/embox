@@ -41,7 +41,7 @@ ifdef CONFIG_PRINTK
   $_SRCS-printk  += printk.c
   #$_SRCS-printk  += printk/putchar.c ../lib/stdio/printf.c
   $_SRCS-printk  += printk/putchar.c printk/printf.c
-  $_DEPS-printk  += $(CONFIG_MOD_DIAG)
+  $_DEPS-printk  += embox.driver.abstract.mod_diag
 endif
 ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
@@ -62,5 +62,5 @@ ifdef CONFIG_DRIVER_SUBSYSTEM
 endif
 
 ifdef CONFIG_WATCHDOG
-  $_DEPS-main += $(CONFIG_WATCHDOG)
+  $_DEPS-main += embox.driver.abstract.watchdog
 endif
