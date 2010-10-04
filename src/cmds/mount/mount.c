@@ -38,6 +38,7 @@ static int mount_cpio_ramfs(const char *dir) {
 		TRACE("No availible ramfs\n");
 		return -1;
 	}
+	TRACE("cpio ramfs at 0x%08x\n", &_ramfs_start);
 	cpio_h = (cpio_newc_header *)&_ramfs_start;
 	if (!strcmp(cpio_h->c_magic, "070701")) {
 		TRACE("Newc ASCII CPIO format not recognized!\n");
@@ -51,7 +52,7 @@ static int mount_cpio_ramfs(const char *dir) {
 
 	strncpy(param.name, (char*)cpio_h + sizeof(cpio_newc_header), parsed[11]);
 	param.size = parsed[6];
-	param.start_addr = (unsigned int)(cpio_h + sizeof(cpio_newc_header) + parsed[11]);
+	param.start_addr = (unsigned long)cpio_h + sizeof(cpio_newc_header) + parsed[11];
 	param.mode = parsed[1];
 	if (NULL == (fsop = rootfs_get_fsopdesc(dir))) {
 		LOG_ERROR("Can't find %s\n", dir);

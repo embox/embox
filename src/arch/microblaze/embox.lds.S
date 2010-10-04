@@ -35,7 +35,7 @@ SECTIONS {
 		ALIGNMENT();
 		_ramfs_start = .;
 		*(.ramfs)
-    	_ramfs_end = .;
+		_ramfs_end = .;
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
 

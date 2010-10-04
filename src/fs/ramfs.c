@@ -6,17 +6,8 @@
  * @author Anton Bondarev
  */
 #include <string.h>
-#include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <linux/init.h>
-
-typedef struct _FILE_DESC {
-	unsigned int start_addr;
-	unsigned int size;
-	char name[CONFIG_MAX_LENGTH_FILE_NAME];
-	unsigned int mode;
-	unsigned int is_busy;
-} FILE_DESC;
 
 static int file_desc_cnt;
 
@@ -39,13 +30,6 @@ static FILEOP fop = {
 static int create_file(void *params);
 
 #define FILE_HANDLERS_QUANTITY 0x10
-
-typedef struct _FILE_HANDLER {
-	FILEOP *fileop;
-	FILE_DESC *fdesc;
-	int cur_pointer;
-	unsigned int mode;
-} FILE_HANDLER;
 
 static FILE_HANDLER file_handlers[FILE_HANDLERS_QUANTITY];
 
@@ -118,14 +102,14 @@ static int __init init(void) {
 
 	/* create file /rams/section_text */
 	strncpy(param.name, "section_text", array_len(param.name));
-	param.size = (unsigned int) (&_text_end - &_text_start);
-	param.start_addr = (unsigned int) (&_text_start);
+	param.size = (unsigned long) (&_text_end - &_text_start);
+	param.start_addr = (unsigned long) (&_text_start);
 	param.mode = FILE_MODE_RWX;
 	create_file(&param);
 	/* create file /ramfs/section_data */
 	strncpy(param.name, "section_data", array_len(param.name));
-	param.size = (unsigned int) (&_data_end - &_data_start);
-	param.start_addr = (unsigned int) (&_data_start);
+	param.size = (unsigned long) (&_data_end - &_data_start);
+	param.start_addr = (unsigned long) (&_data_start);
 	param.mode = FILE_MODE_RWX;
 	create_file(&param);
 	return 0;
@@ -136,7 +120,7 @@ static void *open_file(const char *file_name, const char *mode) {
 	FILE_DESC *fd;
 
 	if (NULL == (fd = find_file_desc(file_name))){
-		//TRACE("can't find file %s\n", file_name);
+		TRACE("can't find file %s\n", file_name);
 		return NULL;
 	}
 

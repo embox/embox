@@ -11,10 +11,11 @@
 #include <fs/ramfs.h>
 #include <stdio.h>
 #include <string.h>
+#include <lib/cpio.h>
 
 #define COMMAND_NAME     "load"
 #define COMMAND_DESC_MSG "load image file into memory"
-#define HELP_MSG         "Usage: load [-a addr] [-f rom_filename] [-h]"
+#define HELP_MSG         "Usage: load [-a addr] [-f filename] [-h]"
 
 static const char *man_page =
 	#include "load_help.inc"
@@ -48,11 +49,11 @@ static int copy_image(char *file_name) {
 #endif
 
 static int exec(int argsc, char **argsv) {
-	extern char _piggy_start, _piggy_end;
-#if 0
+	extern char _ramfs_start, _ramfs_end;
+	char *start, *end;
 	RAMFS_CREATE_PARAM param;
 	FSOP_DESCRIPTION *fsop;
-#endif
+	FILE_HANDLER *fh;
 	char *file_name = NULL;
 	unsigned int base_addr;
 	int nextOption;
@@ -80,12 +81,12 @@ static int exec(int argsc, char **argsv) {
 			return 0;
 		}
 	} while (-1 != nextOption);
-#if 0
-	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))) {
-		LOG_ERROR("Can't find ramfs disk");
+
+	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs"))) {
+		LOG_ERROR("Can't find /ramfs disk");
 		return -1;
 	}
-
+#if 0
 	param.size = 0x1000000;
 	param.start_addr = (unsigned int) (base_addr);
 	sprintf(param.name, "%s%s", file_name, "_loaded");
@@ -99,7 +100,8 @@ static int exec(int argsc, char **argsv) {
 	}
 #endif
 	//TODO: workaround
-        memcpy((void *) base_addr, &_piggy_start, (unsigned int) &_piggy_end
-                        - (unsigned int) &_piggy_start);
+	fh = fsop->open_file(file_name, "r");
+	TRACE("loading...addr=0x%08x, size=%d\n", fh->fdesc->start_addr, fh->fdesc->size);
+	memcpy((void *) base_addr, fh->fdesc->start_addr, fh->fdesc->size);
 	return 0;
 }

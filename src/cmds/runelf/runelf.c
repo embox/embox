@@ -17,7 +17,7 @@
 
 static struct thread *thread;
 static char thread_stack[THREAD_STACK_SIZE];
-static unsigned int file;
+static unsigned int file_addr;
 
 static const char *man_page =
 	#include "runelf_help.inc"
@@ -26,7 +26,7 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static void run(void) {
-	elf_execute((FILE *)file);
+	elf_execute((FILE *)file_addr);
 }
 
 static int exec(int argsc, char **argsv) {
@@ -40,8 +40,8 @@ static int exec(int argsc, char **argsv) {
 				TRACE("runelf: missed address value\n");
 				return -1;
 			}
-			if (sscanf(optarg, "0x%x", &file) > 0) {
-//				run();
+			if (sscanf(optarg, "0x%x", &file_addr) > 0) {
+				run();
 				thread = thread_create(run, thread_stack + THREAD_STACK_SIZE);
 				thread_start(thread);
 				scheduler_start();
