@@ -6,13 +6,14 @@ include $(MK_DIR)/util.mk
 
 IMAGE      = $(BIN_DIR)/$(TARGET)
 IMAGE_DIS  = $(IMAGE).dis
+IMAGE_BIN  = $(IMAGE).bin
 IMAGE_SREC = $(IMAGE).srec
 IMAGE_SIZE = $(IMAGE).size
 IMAGE_PIGGY= $(IMAGE).piggy
 
 .PHONY: image image_init image_fini
 image: image_init
-image: $(IMAGE) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
+image: $(IMAGE) $(IMAGE_SREC) $(IMAGE_BIN) $(IMAGE_SIZE) $(IMAGE_PIGGY)
 ifeq ($(DISASSEMBLE),y)
 image: $(IMAGE_DIS)
 endif
@@ -107,13 +108,16 @@ $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
 	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$N		%) \
 		$(DEPSINJECT_OBJ) \
 	-L$(LIB_DIR) $(LIBS:lib%.a=\$N		-l%) \
-	-o $@ -M > $@.map
+	-o $@ -Map $@.map
 
 $(IMAGE_DIS): $(IMAGE)
 	@$(OBJDUMP) -S $< > $@
 
 $(IMAGE_SREC): $(IMAGE)
 	@$(OBJCOPY) -O srec $< $@
+
+$(IMAGE_BIN): $(IMAGE)
+	@$(OBJCOPY) -O binary $< $@
 
 $(IMAGE_PIGGY): $(IMAGE)
 	@$(OBJCOPY) -O binary -R .note -R .comment -S $< $@.tmp
