@@ -49,9 +49,9 @@ static int copy_image(char *file_name) {
 #endif
 
 static int exec(int argsc, char **argsv) {
-	extern char _ramfs_start, _ramfs_end;
-	char *start, *end;
+#if 0
 	RAMFS_CREATE_PARAM param;
+#endif
 	FSOP_DESCRIPTION *fsop;
 	FILE_HANDLER *fh;
 	char *file_name = NULL;
