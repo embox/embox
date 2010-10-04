@@ -1,8 +1,7 @@
 
 $_MODS_CORE += locore context
 
-#FIXME open_prom module must be specify
-$_SRCS-prom + = prom.c
+$_SRCS-prom += open_prom.c
 
 $_SRCS-locore += interrupt_handler.c sys.c entry.S boot.S mb_trap_dispatcher.c
 
@@ -10,18 +9,13 @@ $_SRCS-arch += arch.c
 $_SRCS-context += context.c
 $_SRCS-traps += traps_core.c
 
+DEFAULT_SYS_TIMER = embox.driver.timers.mb_timer
+DEFAULT_SYS_IRQCTRL = embox.driver.interrupts.mb_interrupt
+DEFAULT_SYS_MOD_DIAG = embox.driver.serial.xuartlite
 
-ifdef CONFIG_SYS_TIMER_DEFINED
-$_DEPS-clock += $(CONFIG_SYS_TIMER_DEFINED)
-else
-$_SRCS-clock     += mb_timers.c
-endif
+include $(MK_DIR)/system.mk
 
-ifdef CONFIG_SYS_INTCRL_DEFINED
-$_DEPS-interrupt += $(CONFIG_SYS_INTCRL_DEFINED)
-else
-$_SRCS-interrupt += mb_irq_ctrl.c
-endif
 
-$_SRCS-prom += open_prom.c
+
+
 

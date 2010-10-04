@@ -1,3 +1,4 @@
+$_PACKAGE := embox.driver.serial
 
 $_MODS += apbuart diag_apbuart
 
