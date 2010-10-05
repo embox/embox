@@ -7,6 +7,7 @@
 #include <string.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
+#include <fs/fs.h>
 #include <linux/init.h>
 #include <embox/unit.h>
 
@@ -48,6 +49,7 @@ static FSOP_DESCRIPTION rootfs_op = {
 
 static int __init unit_init() {
 	size_t i;
+	init_rootfs();
 	for (i = 0; i < NUMBER_OF_FS; i++) {
 		if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)) {
 			LOG_ERROR("fs with id has wrong operations desc\n");

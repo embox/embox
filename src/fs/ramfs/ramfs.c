@@ -96,14 +96,18 @@ static FILE_HANDLER * find_free_handler(void) {
 }
 
 static file_system_type ramfs_fs_type = {
-        .name           = "ramfs",
+        .name = "ramfs",
 };
 
-static int __init init(void) {
+static file_system_type rootfs_fs_type = {
+	.name = "rootfs",
+};
+
+static int __init ramfs_init(void) {
+#if 0
 	extern char _data_start, _data_end,
 				_text_start, _text_end;
 	RAMFS_CREATE_PARAM param;
-	TRACE("Init RAMFS\n");
 
 	/* create file /rams/section_text */
 	strncpy(param.name, "section_text", array_len(param.name));
@@ -117,7 +121,12 @@ static int __init init(void) {
 	param.start_addr = (unsigned long) (&_data_start);
 	param.mode = FILE_MODE_RWX;
 	create_file(&param);
+#endif
 	return register_filesystem(&ramfs_fs_type);
+}
+
+int __init init_rootfs(void) {
+	return register_filesystem(&rootfs_fs_type);
 }
 
 static void *open_file(const char *file_name, const char *mode) {
@@ -188,7 +197,7 @@ static int get_descriptors_info(void *params) {
 }
 
 FSOP_DESCRIPTION ramfsop = {
-	init,
+	ramfs_init,
 	open_file,
 	create_file,
 	resize_file,

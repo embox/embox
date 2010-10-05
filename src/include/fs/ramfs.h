@@ -33,4 +33,6 @@ typedef struct _FILE_HANDLER {
 
 extern FSOP_DESCRIPTION ramfsop;
 
+extern int init_rootfs(void);
+
 #endif /* FS_RAMFS_H_ */

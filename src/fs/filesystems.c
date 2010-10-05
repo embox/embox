@@ -7,6 +7,7 @@
  */
 
 #include <fs/fs.h>
+#include <stdio.h>
 #include <errno.h>
 
 static file_system_type *file_systems;
@@ -32,6 +33,7 @@ int register_filesystem(file_system_type *fs) {
 		res = -EBUSY;
 	else
 		*p = fs;
+	TRACE("register %s\n", fs->name);
 	return res;
 }
 
