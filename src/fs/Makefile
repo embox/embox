@@ -5,6 +5,7 @@ $_MODS += rootfs file
 
 $_SRCS-rootfs += rootfs.c
 $_SRCS-file += file.c
+$_SRCS-file += filesystems.c
 
 $_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
 

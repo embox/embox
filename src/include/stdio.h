@@ -67,6 +67,12 @@ extern int sscanf(char *out, const char *format, ...);
 extern FILE *fopen(const char *path, const char *mode);
 
 /**
+ * Opens the file whose file descriptor is the fd
+ * and associates a stream with it.
+ */
+extern FILE *fdopen(int fd, const char *mode);
+
+/**
  * Read nmemb elements of data, each size bytes long, from the stream
  * pointed to by stream, storing them at the location given by ptr.
  */

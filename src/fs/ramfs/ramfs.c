@@ -7,6 +7,7 @@
  */
 #include <string.h>
 #include <fs/ramfs.h>
+#include <fs/fs.h>
 #include <linux/init.h>
 
 static int file_desc_cnt;
@@ -94,6 +95,10 @@ static FILE_HANDLER * find_free_handler(void) {
 	return NULL;
 }
 
+static file_system_type ramfs_fs_type = {
+        .name           = "ramfs",
+};
+
 static int __init init(void) {
 	extern char _data_start, _data_end,
 				_text_start, _text_end;
@@ -112,7 +117,7 @@ static int __init init(void) {
 	param.start_addr = (unsigned long) (&_data_start);
 	param.mode = FILE_MODE_RWX;
 	create_file(&param);
-	return 0;
+	return register_filesystem(&ramfs_fs_type);
 }
 
 static void *open_file(const char *file_name, const char *mode) {
