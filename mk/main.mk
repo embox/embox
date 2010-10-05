@@ -52,6 +52,7 @@ DOT_DIR        := $(BUILD_DIR)/dot
 DOCS_DIR       := $(BUILD_DIR)/docs
 CODEGEN_DIR    := $(BUILD_DIR)/codegen
 AUTOCONF_DIR   := $(CODEGEN_DIR)
+ROMFS_DIR      := $(ROOT_DIR)/romfs
 
 RM     := rm -f
 CP     := cp
@@ -93,7 +94,7 @@ build_patch_targets := \
   )
 
 .PHONY: all build prepare docs dot clean config xconfig menuconfig
-.PHONY: $(build_patch_targets) build_base_target
+.PHONY: $(build_patch_targets) build_base_target romfs create_romfs
 
 all: $(build_patch_targets) build_base_target
 	@echo 'Build complete'
@@ -118,6 +119,12 @@ docs:
 
 dot: $(GRAPH_PS)
 	@echo 'Dot complete'
+
+create_romfs: build
+	@$(RM) -rv $(ROMFS_DIR)
+	@mkdir -p $(ROMFS_DIR)
+	$(CP) $(BUILD_DIR)/bin/embox $(ROMFS_DIR)
+	find $(ROMFS_DIR) -depth -print | cpio -H newc -ov > $(ROOT_DIR)/ramfs.cpio
 
 clean c: _clean
 	@echo 'Clean complete'
