@@ -8,7 +8,6 @@ ENTRY(start)
 MEMORY {
 	MEMORY_REGION(sdram)
 	MEMORY_REGION(flash)
-	MEMORY_REGION(internal)
 }
 
 /*_stack = _bend + 0x10000;*/
