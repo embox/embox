@@ -1,4 +1,8 @@
 /**
+ * @file
+ *
+ * @date 07.07.10
+ * @author Fedor Burdun
  */
 
 #ifndef __UART_H_
