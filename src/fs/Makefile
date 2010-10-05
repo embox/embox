@@ -1,10 +1,8 @@
 
 $_PACKAGE := embox.fs
 
-$_MODS += ramfs rootfs file
+$_MODS += rootfs file
 
-$_SRCS-ramfs += ramfs.c
-$_SRCS-ramfs += ramfs_cpio.S
 $_SRCS-rootfs += rootfs.c
 $_SRCS-file += file.c
 

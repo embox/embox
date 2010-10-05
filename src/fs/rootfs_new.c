@@ -85,7 +85,7 @@ FDESC open (const char *file_path, int flags) {
 	}
 	TRACE("found free idx %d\n", ofile_idx);
 
-	const char* filename = get_file_name(file_path);
+	const char* filename = basename(file_path);
 	if (filename == NULL) {
 		TRACE("can't parse file path %s\n (may be wrong format)\n", file_path);
 		return FDESC_INVALID;
@@ -195,7 +195,7 @@ bool fclose (FDESC file_desc) {
 }
 
 bool remove (const char* file_path) {
-	const char* filename = get_file_name(file_path);
+	const char* filename = basename(file_path);
 	if (filename == NULL) {
 		TRACE("can't parse file path %s\n (may be wrong format)\n", file_path);
 		return FDESC_INVALID;
