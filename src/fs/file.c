@@ -38,6 +38,10 @@ FILE *fopen(const char *path, const char *mode) {
 	return fd;
 }
 
+FILE *fdopen(int fd, const char *mode) {
+	return NULL;
+}
+
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 	FILEOP **fop = (FILEOP **)file;
 	if (NULL == fop){
@@ -89,17 +93,17 @@ int remove(const char *pathname) {
 	return 0;
 }
 
-int fseek ( FILE * stream, long int offset, int origin ) {
+int fseek(FILE * stream, long int offset, int origin) {
 	FILEOP **fop = (FILEOP **)stream;
 
 	if (NULL == fop) {
-			LOG_ERROR("fop is NULL handler\n");
-			return -1;
+		LOG_ERROR("fop is NULL handler\n");
+		return -1;
 	}
 
 	if (NULL == (*fop)->fseek){
-			LOG_ERROR("fop->fseek is NULL handler\n");
-			return -1;
+		LOG_ERROR("fop->fseek is NULL handler\n");
+		return -1;
 	}
 
 	return (*fop)->fseek(stream, offset, origin);
