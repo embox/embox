@@ -9,46 +9,38 @@
 #include <fs/fs.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
-static file_system_type *file_systems;
+static LIST_HEAD(file_systems);
 
-static file_system_type **find_filesystem(const char *name, unsigned len) {
-	file_system_type **p;
-	for(p = &file_systems; *p; p = &(*p)->next) {
-		if (strlen((*p)->name) == len &&
-		    strncmp((*p)->name, name, len) == 0)
-			break;
+file_system_driver_t *find_filesystem(const char *name) {
+	struct list_head *p;
+	list_for_each(p, &file_systems) {
+		if(0 == strcmp(((file_system_driver_t *)p)->name, name)) {
+			return (file_system_driver_t *)p;
+		}
 	}
-	return p;
+	return NULL;
 }
 
-int register_filesystem(file_system_type *fs) {
+int register_filesystem(file_system_driver_t *fs) {
 	int res = 0;
-	file_system_type **p;
-	if (fs->next)
+	file_system_driver_t *p;
+
+	p = find_filesystem(fs->name);
+	if (NULL != p) {
 		return -EBUSY;
-	INIT_LIST_HEAD(&fs->fs_supers);
-	p = find_filesystem(fs->name, strlen(fs->name));
-	if (*p)
-		res = -EBUSY;
-	else
-		*p = fs;
+	}
+	list_add((struct list_head *)fs, &file_systems);
 	TRACE("register %s\n", fs->name);
 	return res;
 }
 
-int unregister_filesystem(file_system_type *fs) {
-	file_system_type **tmp;
-
-	tmp = &file_systems;
-	while (*tmp) {
-		if (fs == *tmp) {
-			*tmp = fs->next;
-			fs->next = NULL;
-			return 0;
-		}
-		tmp = &(*tmp)->next;
+int unregister_filesystem(file_system_driver_t *fs) {
+	if(NULL == fs) {
+		return -EINVAL;
 	}
-        return -EINVAL;
+	list_del_init((struct list_head *)fs);
+	return -EINVAL;
 }
 

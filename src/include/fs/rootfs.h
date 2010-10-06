@@ -8,7 +8,6 @@
 #define FS_ROOTFS_H_
 
 #include <types.h>
-#include <embox/kernel.h>
 
 #define FILE_MODE_RO    0x1 /*read only     */
 #define FILE_MODE_WO    0x2 /*write only    */
@@ -37,7 +36,7 @@ typedef int (*FS_GETDESCRIPTORSINFO_FUNC)(void *params);
 typedef int (*FS_INIT_FUNC)(void);
 typedef FS_FILE_ITERATOR (*FS_GETFILELISTITERATOR_FUNC) (void);
 
-typedef struct _FSOP_DESCRIPTION {
+typedef struct fsop_desc {
 	FS_INIT_FUNC init;
 	FS_OPEN_FILE_FUNC open_file;
 	FS_CREATE_FUNC create_file;
@@ -47,10 +46,9 @@ typedef struct _FSOP_DESCRIPTION {
 	FS_GETFREESPACE_FUNC get_freespace;
 	FS_GETDESCRIPTORSINFO_FUNC get_descriptors_info;
 	FS_GETFILELISTITERATOR_FUNC get_file_list_iterator;
-} FSOP_DESCRIPTION;
+} fsop_desc_t;
 
-//int rootfs_init(void);
-FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name);
+fsop_desc_t *rootfs_get_fsopdesc(char *fs_name);
 
 typedef void *(*FILEOP_OPEN)(const char *file_name, const char *mode);
 typedef int (*FILEOP_CLOSE)(void * file);
@@ -58,13 +56,13 @@ typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
 typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
 typedef int (*FILEOP_FSEEK)(void *file, long offset, int whence);
 
-typedef struct _FILEOP{
+typedef struct file_op {
 	FILEOP_OPEN fopen;
 	FILEOP_CLOSE close;
 	FILEOP_READ read;
 	FILEOP_WRITE write;
 	FILEOP_FSEEK fseek;
-} FILEOP;
+} file_op_t;
 
 typedef struct _FILE_NAME_STRUCT {
 	/* fs name (flash ramdisc and so on) */
@@ -73,7 +71,7 @@ typedef struct _FILE_NAME_STRUCT {
 } FILE_NAME_STRUCT;
 
 FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_name_struct);
-FSOP_DESCRIPTION *rootfs_get_fsopdesc(char *fs_name);
+fsop_desc_t *rootfs_get_fsopdesc(char *fs_name);
 
 void *rootfs_fopen(const char *file_name, const char *mode);
 

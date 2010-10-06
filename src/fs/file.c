@@ -18,7 +18,7 @@ unsigned long file_base_addr;
 
 FILE *fopen(const char *path, const char *mode) {
 	RAMFS_CREATE_PARAM param;
-	FSOP_DESCRIPTION *fsop;
+	fsop_desc_t *fsop;
 	FILE *fd;
 	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs"))) {
 		LOG_ERROR("Can't find /ramfs disk\n");
@@ -43,7 +43,7 @@ FILE *fdopen(int fd, const char *mode) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	FILEOP **fop = (FILEOP **)file;
+	file_op_t **fop = (file_op_t **)file;
 	if (NULL == fop){
 		LOG_ERROR("fop is NULL handler\n");
 		return -1;
@@ -56,7 +56,7 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
-	FILEOP **fop = (FILEOP **)file;
+	file_op_t **fop = (file_op_t **)file;
 	if (NULL == fop){
 		LOG_ERROR("fop is NULL handler\n");
 		return -1;
@@ -69,7 +69,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 }
 
 int fclose(FILE *fp) {
-	FILEOP **fop = (FILEOP **)fp;
+	file_op_t **fop = (file_op_t **)fp;
 	if (NULL == fop)
 		return EOF;
 	if (NULL == (*fop)->close){
@@ -80,7 +80,7 @@ int fclose(FILE *fp) {
 
 int remove(const char *pathname) {
 	RAMFS_CREATE_PARAM param;
-	FSOP_DESCRIPTION *fsop;
+	fsop_desc_t *fsop;
 	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))) {
 		LOG_ERROR("Can't find ramfs disk\n");
 		return -1;
@@ -94,7 +94,7 @@ int remove(const char *pathname) {
 }
 
 int fseek(FILE * stream, long int offset, int origin) {
-	FILEOP **fop = (FILEOP **)stream;
+	file_op_t **fop = (file_op_t **)stream;
 
 	if (NULL == fop) {
 		LOG_ERROR("fop is NULL handler\n");

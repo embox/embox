@@ -48,7 +48,7 @@ static void print_long_list(FS_FILE_ITERATOR iter_func) {
 static int exec(int argsc, char **argsv) {
 	char *path = "/";
 	int long_list = 0;
-	FSOP_DESCRIPTION *fsop;
+	fsop_desc_t *fsop;
 	FS_FILE_ITERATOR iter_func;
 
 	int nextOption;

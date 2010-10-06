@@ -31,7 +31,7 @@ static int mount_cpio_ramfs(const char *dir) {
 	char buf[9];
 	char *s;
 	int i;
-	FSOP_DESCRIPTION *fsop;
+	fsop_desc_t *fsop;
 	RAMFS_CREATE_PARAM param;
 	buf[8] = '\0';
 	if(&_ramfs_end == &_ramfs_start) {

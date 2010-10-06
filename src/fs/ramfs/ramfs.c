@@ -9,6 +9,7 @@
 #include <fs/ramfs.h>
 #include <fs/fs.h>
 #include <linux/init.h>
+#include <embox/kernel.h>
 
 static int file_desc_cnt;
 
@@ -20,7 +21,7 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file);
 static int ramfs_fseek(void *file, long offset, int whence);
 
-static FILEOP fop = {
+static file_op_t fop = {
 	ramfs_fopen,
 	ramfs_fclose,
 	ramfs_fread,
@@ -95,11 +96,11 @@ static FILE_HANDLER * find_free_handler(void) {
 	return NULL;
 }
 
-static file_system_type ramfs_fs_type = {
+static file_system_driver_t ramfs_fs_type = {
         .name = "ramfs",
 };
 
-static file_system_type rootfs_fs_type = {
+static file_system_driver_t rootfs_fs_type = {
 	.name = "rootfs",
 };
 
@@ -196,7 +197,7 @@ static int get_descriptors_info(void *params) {
 	return 0;
 }
 
-FSOP_DESCRIPTION ramfsop = {
+fsop_desc_t ramfsop = {
 	ramfs_init,
 	open_file,
 	create_file,

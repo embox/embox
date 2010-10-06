@@ -25,13 +25,13 @@ typedef struct _FILE_DESC {
 } FILE_DESC;
 
 typedef struct _FILE_HANDLER {
-        FILEOP *fileop;
+        file_op_t *fileop;
         FILE_DESC *fdesc;
         int cur_pointer;
         unsigned int mode;
 } FILE_HANDLER;
 
-extern FSOP_DESCRIPTION ramfsop;
+extern fsop_desc_t ramfsop;
 
 extern int init_rootfs(void);
 

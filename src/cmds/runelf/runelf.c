@@ -56,7 +56,7 @@ static int exec(int argsc, char **argsv) {
 		case -1:
 			return 0;
 		default:
-			TRACE("runelf: invalid arguments.\n", optarg);
+			TRACE("runelf: invalid arguments. \"%s\"\n", optarg);
 			return -1;
 		}
 	} while (op != -1);

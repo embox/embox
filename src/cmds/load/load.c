@@ -52,7 +52,7 @@ static int exec(int argsc, char **argsv) {
 #if 0
 	RAMFS_CREATE_PARAM param;
 #endif
-	FSOP_DESCRIPTION *fsop;
+	fsop_desc_t *fsop;
 	FILE_HANDLER *fh;
 	char *file_name = NULL;
 	unsigned int base_addr;
