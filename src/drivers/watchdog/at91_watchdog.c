@@ -20,7 +20,7 @@ void watchdog_enable() {
 
 /* Disable watchdog */
 void watchdog_disable() {
-	REG_ORIN(AT91C_WDTC_WDMR, ~(AT91C_WDTC_WDDIS));
+	REG_STORE(AT91C_WDTC_WDMR, AT91C_WDTC_WDDIS);
 }
 
 /* Keep-a-live */
