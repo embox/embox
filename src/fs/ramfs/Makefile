@@ -5,7 +5,7 @@ $_SRCS-ramfs += ramfs.c
 $_SRCS-ramfs += ramfs_cpio.S
 
 #describe special section
-ifdef CONFIG_RAMFS
+ifdef CONFIG_RAMFS_CPIO
 $_LDFLAGS += $($_lds)
 
 $_lds := $(OBJ_DIR)/fs/ramfs/ramfs.lds

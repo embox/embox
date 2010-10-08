@@ -28,5 +28,5 @@ static int exec(int argsc, char **argsv) {
 
 	file_path = argsv[0];
 
-	return remove(file_path);
+	return 0;	//remove(file_path);
 }

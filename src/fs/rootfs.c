@@ -12,19 +12,10 @@
 #include <embox/unit.h>
 #include <util/array.h>
 
-EMBOX_UNIT_INIT(unit_init);
 
-typedef struct fs_desc {
-	const char * name;
-	const fsop_desc_t *fsop;
-} fs_desc_t;
 
-static fs_desc_t const fs_list[] = {
-	#include "rootfs_desc.inc"
-};
 
-#define NUMBER_OF_FS    array_len(fs_list)
-
+#if 0
 static int file_list_cnt;
 
 static FILE_INFO * file_list_iterator(FILE_INFO *finfo){
@@ -48,30 +39,10 @@ static fsop_desc_t rootfs_op = {
 	.get_file_list_iterator = get_file_list_iterator
 };
 
-static int __init unit_init() {
-	size_t i;
+#endif
+
 
 #if 0
-	init_rootfs();
-	for (i = 0; i < NUMBER_OF_FS; i++) {
-		if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)) {
-			LOG_ERROR("fs with id has wrong operations desc\n");
-			continue;
-		}
-		fs_list[i].fsop ->init();
-	}
-#endif
-	for (i = 0; i < NUMBER_OF_FS; i++) {
-		if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)) {
-			LOG_ERROR("fs with id has wrong operations desc\n");
-			continue;
-		}
-		register_filesystem(alloc_fs_drivers());
-
-	}
-	return 0;
-}
-
 FILE_NAME_STRUCT *parse_file_name(const char *file_name,
 					FILE_NAME_STRUCT *file_name_struct) {
 	size_t i;
@@ -124,3 +95,4 @@ void *rootfs_fopen(const char *file_name, const char *mode) {
 	}
 	return fsop->open_file(fname_struct.file_name, mode);
 }
+#endif

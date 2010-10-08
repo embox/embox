@@ -31,8 +31,10 @@ static int mount_cpio_ramfs(const char *dir) {
 	char buf[9];
 	char *s;
 	int i;
+
 	fsop_desc_t *fsop;
 	RAMFS_CREATE_PARAM param;
+#if 0
 	buf[8] = '\0';
 	if(&_ramfs_end == &_ramfs_start) {
 		TRACE("No availible ramfs\n");
@@ -54,10 +56,13 @@ static int mount_cpio_ramfs(const char *dir) {
 	param.size = parsed[6];
 	param.start_addr = (unsigned long)cpio_h + sizeof(cpio_newc_header) + parsed[11];
 	param.mode = parsed[1];
+
 	if (NULL == (fsop = rootfs_get_fsopdesc(dir))) {
 		LOG_ERROR("Can't find %s\n", dir);
 		return -1;
 	}
+#endif
+
 	return fsop->create_file(&param);
 }
 

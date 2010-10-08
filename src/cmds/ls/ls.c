@@ -72,7 +72,7 @@ static int exec(int argsc, char **argsv) {
 	if(argsc > 1) {
 		path = argsv[argsc - 1];
 	}
-
+#if 0
 	if (NULL == (fsop = rootfs_get_fsopdesc(path))){
 		LOG_ERROR("can't find fs %s\n", path);
 		return 0;
@@ -90,6 +90,7 @@ static int exec(int argsc, char **argsv) {
 	} else {
 		print_list(iter_func);
 	}
+#endif
 
 	return 0;
 }

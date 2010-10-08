@@ -11,6 +11,9 @@
 #include <linux/init.h>
 #include <embox/kernel.h>
 
+
+
+
 static int file_desc_cnt;
 
 static FILE_DESC fdesc[CONFIG_MAX_FILE_QUANTITY];
@@ -197,7 +200,7 @@ static int get_descriptors_info(void *params) {
 	return 0;
 }
 
-fsop_desc_t ramfsop = {
+static fsop_desc_t fsop = {
 	ramfs_init,
 	open_file,
 	create_file,
@@ -208,6 +211,8 @@ fsop_desc_t ramfsop = {
 	get_descriptors_info,
 	get_file_list_iterator
 };
+static file_system_driver_t drv = {"ramfs", &fop, &fsop};
+DECLARE_FILE_SYSTEM_DRIVER(drv);
 
 static void *ramfs_fopen(const char *file_name, const char *mode) {
 	//TRACE("ramfs file %s was opened\n", file_name);
