@@ -14,9 +14,12 @@
 .align 4
 .global	SWI_handler
 .global	IRQ_handler
-
+.global IRQ_def_handler
 /* why in special section */
 /*.section .entry_text, "x" */
+
+IRQ_def_handler :
+	b IRQ_def_handler
 
 IRQ_handler:
 	nop

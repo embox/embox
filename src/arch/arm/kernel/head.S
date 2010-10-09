@@ -2,7 +2,7 @@
  * @file
  *
  * @date 28.03.2010
- * @author nikolay korotky realy:)
+ * @author Anton Kozlov
  */
 
 /**
@@ -24,6 +24,7 @@
     .align 4
 
     .global start
+.extern IRQ_handler
 
 .section .trap_table, "x"
 /* trap table
@@ -59,14 +60,10 @@ FIQ_handler_addr:
 /** stubs */
 undef_handler:
     B undef_handler
-SWI_handler:
-    B SWI_handler
 prefetch_abt_handler:
     B prefetch_abt_handler
 data_abt_handler:
     B data_abt_handler
-IRQ_handler:
-    B IRQ_handler
 FIQ_handler:
     B FIQ_handler
 
@@ -171,7 +168,5 @@ init_hook:
     msr	    CPSR_c, #ARM_MODE_SVC
 /** kernel start */
     ldr	    pc, =kernel_start
-hardware_init_hook:
 die:
-    cmp	    r0, r0
-    ble	    die
+    b 	    die

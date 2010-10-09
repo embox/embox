@@ -19,8 +19,8 @@ static useconds_t delay = 0;
 
 irq_return_t clock_handler(int irq_num, void *dev_id) {
 	if (REG_LOAD(AT91C_PITC_PISR)) {
-		//clock_setup(delay);
 		REG_LOAD(AT91C_PITC_PIVR);
+		REG_ORIN(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN);
 		clock_tick_handler(irq_num, dev_id);
 	}
         return IRQ_HANDLED;

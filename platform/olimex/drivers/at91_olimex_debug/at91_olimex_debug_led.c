@@ -8,8 +8,8 @@
 
 #include <hal/reg.h>
 #include <types.h>
-#include <at91sam7_pio.h>
-#include <at91_olimex_debug_led.h>
+#include <drivers/at91sam7_pio.h>
+//#include <drivers/at91_olimex_debug_led.h>
 #if 0
 #define PIO_PER	  0xfffff400
 #define PIO_PDR	  0xfffff404
@@ -22,6 +22,15 @@ void led_init() {
     REG_STORE(AT91C_PIOA_PER, AT91C_PIO_PA17 | AT91C_PIO_PA18);
     REG_STORE(AT91C_PIOA_OER, AT91C_PIO_PA17 | AT91C_PIO_PA18);
     REG_STORE(AT91C_PIOA_SODR, AT91C_PIO_PA17 | AT91C_PIO_PA18);
+
+#if 0
+    *AT91C_PIOA_OWDR = AT91C_PA17_TD;
+    *AT91C_PIOA_MDDR = AT91C_PA17_TD;
+    //*AT91C_PIOA_PPUDR = AT91C_PA17_TD;
+    //*AT91C_PIOA_IFDR = AT91C_PA17_TD;
+    //*AT91C_PIOA_CODR = AT91C_PA17_TD;
+    *AT91C_PIOA_IDR = AT91C_PA17_TD;
+#endif
 }
 
 void led1_on() {
@@ -43,7 +52,10 @@ void led2_off() {
 /* funny functions reperesents ints binary by leds */
 #if 0
 void delay(int n) {
-    while(n--);
+    int i = n;
+    while(i) {
+	i -= 1;
+    }
 }
 
 /* 'print' a, assuming it takes not more than n binary digits */

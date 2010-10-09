@@ -31,7 +31,11 @@ int uart_init(void);
 void kernel_start(void) {
 
 	kernel_init();
+
+	timer_init();
+	blinking_led();
 	init();
+
 
 	main();
 

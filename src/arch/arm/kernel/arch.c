@@ -38,13 +38,8 @@ static void perepherial_disable(void) {
 
 void arch_init(void) {
 	watchdog_disable();
-	perepherial_disable();
 	initialize_main_clock();
 	initialize_memory_controller();
-	REG_STORE(AT91C_PITC_PIMR, 0);
-	REG_STORE(AT91C_TC0_CCR, AT91C_TC_CLKDIS);
-	REG_STORE(AT91C_TC1_CCR, AT91C_TC_CLKDIS);
-	REG_STORE(AT91C_TC2_CCR, AT91C_TC_CLKDIS);
 }
 
 void arch_idle(void) {

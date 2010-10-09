@@ -13,18 +13,18 @@
 #include <embox/kernel.h>
 
 /* Init leds */
-extern void led_init();
+extern void led_init(void);
 
 /* Set first led on */
-extern void led1_on();
+extern void led1_on(void);
 
 /* Set first led off */
-extern void led1_off();
+extern void led1_off(void);
 
 /* Set second led on */
-extern void led2_on();
+extern void led2_on(void);
 
 /* Set second led off */
-extern void led2_off();
+extern void led2_off(void);
 
 #endif /* _AT91_DEBUG_H_ */
