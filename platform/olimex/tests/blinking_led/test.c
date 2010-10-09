@@ -45,7 +45,7 @@ int blinking_led(void) {
 	    led1_off();
 	    delay(del);
 		//sleep(1);
-	    //del += INC;
+	    del += INC;
 	}
 
 	return 0;
