@@ -13,7 +13,7 @@ $_DEPS-interrupt += $(DEFAULT_SYS_IRQCTRL)
 endif
 
 ifdef CONFIG_MOD_DIAG
-$_DEPS-embox.driver.abstract.mod_diag     += $(CONFIG_SYS_MOD_DIAG)
+$_DEPS-embox.driver.abstract.mod_diag     += $(CONFIG_MOD_DIAG)
 else
 #default timer
 $_DEPS-embox.driver.abstract.mod_diag     += $(DEFAULT_SYS_DIAG)
