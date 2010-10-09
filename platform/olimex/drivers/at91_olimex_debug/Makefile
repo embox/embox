@@ -1,4 +1,4 @@
-$_PACKAGE := embox.platform.driver
+$_PACKAGE := $(PLATFORM).driver
 
 $_MODS += at91_olimex_debug_led
 

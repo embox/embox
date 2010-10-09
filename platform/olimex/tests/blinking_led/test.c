@@ -12,7 +12,7 @@
 #include <drivers/at91sam7s256.h>
 #include <unistd.h>
 
-//EMBOX_TEST(blinking_led);
+EMBOX_TEST(blinking_led);
 
 /**
  * The test itself.
@@ -32,11 +32,10 @@ void delay(int d) {
     }
 }
 
-int blinking_led(void) {
+static int blinking_led(void) {
 
 	volatile int del = DELAY;
 
-	led_init();
 
 	while (1) {
 	    led1_on();

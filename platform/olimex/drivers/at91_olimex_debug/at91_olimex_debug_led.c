@@ -9,7 +9,8 @@
 #include <hal/reg.h>
 #include <types.h>
 #include <drivers/at91sam7_pio.h>
-//#include <drivers/at91_olimex_debug_led.h>
+#include <embox/unit.h>
+
 #if 0
 #define PIO_PER	  0xfffff400
 #define PIO_PDR	  0xfffff404
@@ -18,7 +19,9 @@
 #define PIO_CODR  0xfffff434
 #endif
 
-void led_init() {
+EMBOX_UNIT_INIT(led_init);
+
+static int led_init(void) {
     REG_STORE(AT91C_PIOA_PER, AT91C_PIO_PA17 | AT91C_PIO_PA18);
     REG_STORE(AT91C_PIOA_OER, AT91C_PIO_PA17 | AT91C_PIO_PA18);
     REG_STORE(AT91C_PIOA_SODR, AT91C_PIO_PA17 | AT91C_PIO_PA18);
