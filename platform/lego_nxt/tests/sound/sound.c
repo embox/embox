@@ -8,7 +8,7 @@
 #include <types.h>
 #include <embox/test.h>
 #include <drivers/sound.h>
-
+#define   SOUNDVOLUMESTEPS      4
 
 EMBOX_TEST(run_sound);
 
