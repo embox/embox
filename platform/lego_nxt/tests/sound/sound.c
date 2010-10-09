@@ -66,7 +66,7 @@ static const     uint32_t patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
   }
 };
 
-static int run_test(void) {
+static int run_sound(void) {
 	int i;
 	uint32_t f;
 	for (i=0;i<5;i++) {
