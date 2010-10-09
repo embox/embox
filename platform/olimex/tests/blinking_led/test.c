@@ -40,11 +40,11 @@ int blinking_led(void) {
 
 	while (1) {
 	    led1_on();
-	    //delay(del);
-		sleep(1);
+	    delay(del);
+		//sleep(1);
 	    led1_off();
-	    //delay(del);
-		sleep(1);
+	    delay(del);
+		//sleep(1);
 	    //del += INC;
 	}
 
