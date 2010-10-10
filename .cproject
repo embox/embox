@@ -121,6 +121,11 @@
 					</scannerInfoProvider>
 				</profile>
 			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+				<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+					<path value=""/>
+				</doc-comment-owner>
+			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 				<buildTargets>
 					<target name="xconfig" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
@@ -211,12 +216,15 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>
 					</target>
+					<target name="config sparc debug" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>PROJECT=sparc PROFILE=debug</buildArguments>
+						<buildTarget>config</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+						<runAllBuilders>true</runAllBuilders>
+					</target>
 				</buildTargets>
-			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
-				<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
-					<path value=""/>
-				</doc-comment-owner>
 			</storageModule>
 		</cconfiguration>
 	</storageModule>
