@@ -2,9 +2,9 @@
 SECTIONS {
 	.rodata (NOLOAD) : {
 		ALIGNMENT();
-		_initfs_start = .;
+		_drivers_fs_start = .;
 		*(.drivers.fs)
-		_initfs_end = .;
+		_drivers_fs_end = .;
 		ALIGNMENT();
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)

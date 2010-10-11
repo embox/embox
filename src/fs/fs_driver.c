@@ -14,10 +14,10 @@
 typedef struct fs_driver_head {
 	struct list_head *next;
 	struct list_head *prev;
-	file_system_driver_t *drv;
-}fs_driver_head_t;
+	file_system_driver_t drv;
+} fs_driver_head_t;
 
-static fs_driver_head_t pool[4];
+static fs_driver_head_t pool[CONFIG_MAX_FS_DRIVERS];
 static LIST_HEAD(free_list);
 
 #define drv_to_head(fs_drv) (uint32_t)(fs_drv - offsetof(fs_driver_head_t, drv))
@@ -37,11 +37,11 @@ file_system_driver_t *alloc_fs_drivers(void) {
 	if(list_empty(&free_list)) {
 		return NULL;
 	}
-	drv = ((fs_driver_head_t *)(free_list.next))->drv;
+	drv = &(((fs_driver_head_t *)(free_list.next))->drv);
 
 	list_del_init(&free_list);
 
-	return NULL;
+	return drv;
 }
 
 void free_fs_drivers(file_system_driver_t *fs_drv) {

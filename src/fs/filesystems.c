@@ -18,23 +18,55 @@ typedef struct fs_driver_head {
 	struct list_head *next;
 	struct list_head *prev;
 	file_system_driver_t *drv;
-}fs_driver_head_t;
+} fs_driver_head_t;
 
-static int unit_init(void) {
-	size_t i;
+static fs_driver_head_t pool[CONFIG_MAX_FS_DRIVERS];
+static LIST_HEAD(free_list);
+static LIST_HEAD(file_systems);
 
-//	for (i = 0; i < NUMBER_OF_FS; i++) {
-//		if ((NULL == fs_list[i].fsop) || (NULL == fs_list[i].fsop ->init)) {
-//			LOG_ERROR("fs with id has wrong operations desc\n");
-//			continue;
-//		}
-//		register_filesystem(alloc_fs_drivers());
-//	}
+#define drv_to_head(fs_drv) (uint32_t)(fs_drv - offsetof(fs_driver_head_t, drv))
 
-	return 0;
+
+static void init_pool(void) {
+	int i;
+	for(i = 0; i < ARRAY_SIZE(pool); i ++) {
+		list_add((struct list_head *)&pool[i], &free_list);
+	}
 }
 
-static LIST_HEAD(file_systems);
+static fs_driver_head_t *alloc(file_system_driver_t *drv) {
+	fs_driver_head_t *head;
+	if(list_empty(&free_list)) {
+		return NULL;
+	}
+	head = (fs_driver_head_t *)free_list.next;
+	head->drv = drv;
+	list_move((struct list_head*)head, &file_systems);
+	TRACE("register %s\n", drv->name);
+	return head;
+}
+
+static void free(file_system_driver_t *drv) {
+	list_move((struct list_head*)drv_to_head(drv), &free_list);
+	TRACE("unregister %s\n", drv->name);
+	return;
+}
+
+static int unit_init(void) {
+	extern file_system_driver_t *_drivers_fs_start, *_drivers_fs_end;
+	file_system_driver_t **drv = &_drivers_fs_start;
+	fs_driver_head_t *head;
+
+	init_pool();
+
+	for (; ((uint32_t)drv) < (uint32_t)&_drivers_fs_end; drv ++) {
+		if (NULL == (head = alloc(*drv))) {
+			return 0;
+		}
+	}
+
+	return ENOERR;
+}
 
 file_system_driver_t *find_filesystem(const char *name) {
 	struct list_head *p;
@@ -48,22 +80,29 @@ file_system_driver_t *find_filesystem(const char *name) {
 
 int register_filesystem(file_system_driver_t *fs) {
 	int res = 0;
-//	file_system_driver_t *p;
-//
-//	p = find_filesystem(fs->name);
-//	if (NULL != p) {
-//		return -EBUSY;
-//	}
-//	list_add((struct list_head *)fs, &file_systems);
-//	TRACE("register %s\n", fs->name);
+	file_system_driver_t *p;
+
+	if (NULL == fs) {
+		return EINVAL;
+	}
+
+	p = find_filesystem(fs->name);
+	if (NULL != p) {
+		return -EBUSY;
+	}
+	if(NULL == alloc(fs)) {
+		return -EBUSY;
+	}
+
 	return res;
 }
 
 int unregister_filesystem(file_system_driver_t *fs) {
-//	if(NULL == fs) {
-//		return -EINVAL;
-//	}
-//	list_del_init((struct list_head *)fs);
-	return -EINVAL;
+	if(NULL == fs) {
+		return -EINVAL;
+	}
+	free(fs);
+
+	return ENOERR;
 }
 
