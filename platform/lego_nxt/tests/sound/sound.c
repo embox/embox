@@ -12,7 +12,7 @@
 
 EMBOX_TEST(run_sound);
 
-static const     uint32_t patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
+static const uint32_t patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
 {
   {
     0xF0F0F0F0,0xF0F0F0F0,                        // Step 0 = silence

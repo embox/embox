@@ -8,13 +8,14 @@
  */
 #include <types.h>
 #include <embox/unit.h>
+#include <linux/init.h>
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/sound.h>
 
 EMBOX_UNIT_INIT(sound_init);
 
-static int sound_init(void) {
+static int __init sound_init(void) {
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SSC)); /* Enable MCK clock   */
 	REG_STORE(AT91C_PIOA_PER, AT91C_PA17_TD); /* Disable TD on PA17  */
 	REG_STORE(AT91C_PIOA_ODR, AT91C_PA17_TD);

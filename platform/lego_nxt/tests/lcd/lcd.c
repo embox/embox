@@ -16,6 +16,7 @@ void draw_embox(int dx, int dy);
 
 static int run_lcd(void) {
 	int dx = 10, dy = 10;
+	display_string("Embox");
 	//draw_embox(dx, dy);
 	return 0;
 }
