@@ -48,21 +48,10 @@ typedef struct fsop_desc {
 	FS_GETFILELISTITERATOR_FUNC get_file_list_iterator;
 } fsop_desc_t;
 
+#include <fs/file.h>
+#if 0
 fsop_desc_t *rootfs_get_fsopdesc(char *fs_name);
 
-typedef void *(*FILEOP_OPEN)(const char *file_name, const char *mode);
-typedef int (*FILEOP_CLOSE)(void * file);
-typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
-typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
-typedef int (*FILEOP_FSEEK)(void *file, long offset, int whence);
-
-typedef struct file_op {
-	FILEOP_OPEN fopen;
-	FILEOP_CLOSE close;
-	FILEOP_READ read;
-	FILEOP_WRITE write;
-	FILEOP_FSEEK fseek;
-} file_op_t;
 
 typedef struct _FILE_NAME_STRUCT {
 	/* fs name (flash ramdisc and so on) */
@@ -74,5 +63,6 @@ FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_
 fsop_desc_t *rootfs_get_fsopdesc(char *fs_name);
 
 void *rootfs_fopen(const char *file_name, const char *mode);
+#endif
 
 #endif /* FS_ROOTFS_H_ */
