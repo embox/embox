@@ -64,5 +64,3 @@ endif
 ifdef CONFIG_WATCHDOG
   $_DEPS-main += embox.driver.abstract.watchdog
 endif
-
-$_DEPS-main += olimex.test.blinking_led
