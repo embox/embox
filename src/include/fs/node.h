@@ -11,14 +11,14 @@
 
 #include <fs/fs.h>
 
-#define CONFIG_QUANTITY_NODE 0x10
+#define CONFIG_QUANTITY_NODE 0x100
 
 typedef struct node {
 	const char            name[CONFIG_MAX_LENGTH_FILE_NAME];
-	//FILE_INFO          *info;
+	void                 *file_info;
 	file_system_driver_t *fs_type;
-	struct list_head     *neighbors;
-	struct list_head     *leaves;
+	struct node          *neighbors;
+	struct node          *leaves;
 } node_t;
 
 extern node_t *alloc_node(const char *name);
