@@ -5,6 +5,9 @@
  * @author Alexey Fomin
  */
 
+#include <embox/test.h>
+#include <drivers/lcd.h>
+
 /* It's a temporary solution with generated function.
  * Just to show we're alive. */
 
