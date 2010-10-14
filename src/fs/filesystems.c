@@ -26,7 +26,6 @@ static LIST_HEAD(file_systems);
 
 #define drv_to_head(fs_drv) (uint32_t)(fs_drv - offsetof(fs_driver_head_t, drv))
 
-
 static void init_pool(void) {
 	int i;
 	for(i = 0; i < ARRAY_SIZE(pool); i ++) {

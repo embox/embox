@@ -19,7 +19,7 @@ static size_t rootfs_read(void *buf, size_t size, size_t count, void *file);
 static size_t rootfs_write(const void *buf, size_t size, size_t count, void *file);
 static int rootfs_seek(void *file, long offset, int whence);
 
-static file_op_t rootfs_fop = {
+static file_operations_t rootfs_fop = {
 	rootfs_open,
 	rootfs_close,
 	rootfs_read,

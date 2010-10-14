@@ -11,9 +11,6 @@
 #include <linux/init.h>
 #include <embox/kernel.h>
 
-
-
-
 static int file_desc_cnt;
 
 static FILE_DESC fdesc[CONFIG_MAX_FILE_QUANTITY];
@@ -24,7 +21,7 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file);
 static int ramfs_fseek(void *file, long offset, int whence);
 
-static file_op_t fop = {
+static file_operations_t fop = {
 	ramfs_fopen,
 	ramfs_fclose,
 	ramfs_fread,
@@ -50,7 +47,7 @@ static FILE_INFO * file_list_iterator(FILE_INFO *finfo) {
 			return NULL;
 		file_list_cnt++;
 	}
-	strncpy(finfo->file_name, fdesc[file_list_cnt].name, array_len(finfo->file_name));
+	strncpy(finfo->file_name, fdesc[file_list_cnt].name, ARRAY_SIZE(finfo->file_name));
 	finfo->mode = fdesc[file_list_cnt].mode;
 	finfo->size_in_bytes = fdesc[file_list_cnt].size;
 	finfo->size_on_disk = fdesc[file_list_cnt].size;
@@ -79,7 +76,7 @@ static FILE_DESC *find_free_desc(void) {
 static FILE_DESC * find_file_desc(const char * file_name) {
 	size_t i;
 	for (i = 0; i < CONFIG_MAX_FILE_QUANTITY; i++) {
-		if (0 == strncmp(fdesc[i].name, file_name, array_len(fdesc[i].name))) {
+		if (0 == strncmp(fdesc[i].name, file_name, ARRAY_SIZE(fdesc[i].name))) {
 			return &fdesc[i];
 		}
 	}
@@ -103,10 +100,6 @@ static file_system_driver_t ramfs_fs_type = {
         .name = "ramfs",
 };
 
-static file_system_driver_t rootfs_fs_type = {
-	.name = "rootfs",
-};
-
 static int __init ramfs_init(void) {
 #if 0
 	extern char _data_start, _data_end,
@@ -114,23 +107,19 @@ static int __init ramfs_init(void) {
 	RAMFS_CREATE_PARAM param;
 
 	/* create file /rams/section_text */
-	strncpy(param.name, "section_text", array_len(param.name));
+	strncpy(param.name, "section_text", ARRAY_SIZE(param.name));
 	param.size = (unsigned long) (&_text_end - &_text_start);
 	param.start_addr = (unsigned long) (&_text_start);
 	param.mode = FILE_MODE_RWX;
 	create_file(&param);
 	/* create file /ramfs/section_data */
-	strncpy(param.name, "section_data", array_len(param.name));
+	strncpy(param.name, "section_data", ARRAY_SIZE(param.name));
 	param.size = (unsigned long) (&_data_end - &_data_start);
 	param.start_addr = (unsigned long) (&_data_start);
 	param.mode = FILE_MODE_RWX;
 	create_file(&param);
 #endif
 	return register_filesystem(&ramfs_fs_type);
-}
-
-int __init init_rootfs(void) {
-	return register_filesystem(&rootfs_fs_type);
 }
 
 static void *open_file(const char *file_name, const char *mode) {
@@ -168,7 +157,7 @@ static int create_file(void *params) {
 		return -1;
 	}
 
-	strncpy(fd->name, par->name, array_len(fd->name));
+	strncpy(fd->name, par->name, ARRAY_SIZE(fd->name));
 	fd->start_addr = par->start_addr;
 	fd->size = par->size;
 	fd->mode = par->mode;

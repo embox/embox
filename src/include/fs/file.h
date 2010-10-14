@@ -8,18 +8,28 @@
 #ifndef FILE_H_
 #define FILE_H_
 
+#include <types.h>
+
+typedef struct file {
+	const char                    *f_path;
+	const struct file_operations  *f_op;
+	spinlock_t                     f_lock;
+	unsigned int                   f_mode;
+	unsigned int                   f_pos;
+} file_t;
+
 typedef void *(*FILEOP_OPEN)(const char *file_name, const char *mode);
 typedef int (*FILEOP_CLOSE)(void * file);
 typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
 typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
 typedef int (*FILEOP_FSEEK)(void *file, long offset, int whence);
 
-typedef struct file_op {
-	FILEOP_OPEN fopen;
+typedef struct file_operations {
+	FILEOP_OPEN  fopen;
 	FILEOP_CLOSE close;
-	FILEOP_READ read;
+	FILEOP_READ  read;
 	FILEOP_WRITE write;
 	FILEOP_FSEEK fseek;
-} file_op_t;
+} file_operations_t;
 
 #endif /* FILE_H_ */

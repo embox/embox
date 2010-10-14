@@ -16,12 +16,12 @@
  * our system.
  */
 typedef struct file_system_driver {
-	const char *name;
-	file_op_t *file_op;
-	fsop_desc_t *fsop;
+	const char          *name;
+	file_operations_t   *file_op;
+	fsop_desc_t         *fsop;
 #if 0
-int fs_flags;
-struct list_head fs_supers;
+	int fs_flags;
+	struct list_head fs_supers;
 #endif
 } file_system_driver_t;
 

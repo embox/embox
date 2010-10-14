@@ -25,7 +25,7 @@ typedef struct _FILE_DESC {
 } FILE_DESC;
 
 typedef struct _FILE_HANDLER {
-        file_op_t *fileop;
+        file_operations_t *fileop;
         FILE_DESC *fdesc;
         int cur_pointer;
         unsigned int mode;

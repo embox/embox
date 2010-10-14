@@ -34,7 +34,7 @@ static fsop_desc_t devfs_fsop = {
         devfs_delete
 };
 
-static file_op_t devfs_fop = {
+static file_operations_t devfs_fop = {
         devfs_open,
         devfs_close,
         NULL,
