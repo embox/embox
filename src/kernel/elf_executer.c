@@ -33,7 +33,7 @@ int elf_execute(FILE *file) {
 		EPH += 1;
 	}
 
-	printf("\nData allocated. \nTrying to start at %ld(0x%x)\n", EH->e_entry, EH->e_entry);
+	printf("\nData allocated. \nTrying to start at %ld(0x%x)\n", EH->e_entry, (uint32_t)EH->e_entry);
 
 
 	function_main = (int (*)(int argc, char *argv[]))EH->e_entry;

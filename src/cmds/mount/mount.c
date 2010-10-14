@@ -18,10 +18,11 @@
 #define HELP_MSG         "Usage: mount [-h] src dir"
 
 static const char *man_page =
-	#include "mount_help.inc"
+#include "mount_help.inc"
 ;
 
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
+;
 
 //TODO: workaround.
 static int mount_cpio_ramfs(const char *dir) {
@@ -69,13 +70,21 @@ static int mount_cpio_ramfs(const char *dir) {
 static int exec(int argsc, char **argsv) {
 	int nextOption;
 	char *src, *dir;
+	char fs_type[0x20];
+
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "h");
+		nextOption = getopt(argsc, argsv, "ht:");
 		switch (nextOption) {
 		case 'h':
 			show_help();
 			return 0;
+		case 't':
+			if (0 == sscanf(optarg, "%s", fs_type)) {
+				LOG_ERROR("wrong -i argument %s\n", optarg);
+				return -1;
+			}
+			TRACE("type is %s\n", fs_type);
 		case -1:
 			break;
 		default:
@@ -83,14 +92,15 @@ static int exec(int argsc, char **argsv) {
 		}
 	} while (-1 != nextOption);
 
-	if(argsc > 2) {
+	if (argsc > 2) {
 		src = argsv[argsc - 2];
 		dir = argsv[argsc - 1];
 	}
-	if(!strcmp(src, "cpio")) {
-		TRACE("mount %s...\n", src);
-		mount_cpio_ramfs(dir);
-	}
+//	if (!strcmp(src, "cpio")) {
+//		TRACE("mount %s...\n", src);
+//		mount_cpio_ramfs(dir);
+//	}
+
 
 	return 0;
 }
