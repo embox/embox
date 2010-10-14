@@ -23,27 +23,33 @@ IRQ_def_handler :
 
 IRQ_handler:
 	nop
+	sub	LR, LR, #4
+	push	{r0-r12, r14}
+	mrs		r0, SPSR
+	push	{r0}
+
 	ldr	r0, =AIC_IVR
 	ldr	r2, [r0]
 	ldr	r1, =AIC_ISR
 	ldr	r0, [r1]
 	ldr	r4, =0x1f
 	and	r0, r4
-	sub	LR, LR, #4
-	mrs	r2, SPSR
-	push	{r0-r4, LR}
 
-	add	LR, PC, #4
 	mov	r1, #0
+	mov	LR, PC
 	ldr	PC, =irq_dispatch
 
-	pop	{r0-r4,	LR}
 
 	ldr	r1, =AIC_EOICR
 	str	r0, [r1]
 
-	msr	CPSR, r2
+	pop		{r0}
+	msr		CPSR, r0
+
+	pop		{r0-r12, r14}
 	mov	PC, LR
+
+	b die
 
 SWI_handler:
 	mrs	r2, SPSR
@@ -57,3 +63,5 @@ SWI_handler:
 	msr	CPSR, r2
 	mov	PC, LR
 
+die:
+	b die
