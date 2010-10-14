@@ -38,14 +38,14 @@ typedef FS_FILE_ITERATOR (*FS_GETFILELISTITERATOR_FUNC) (void);
 
 typedef struct fsop_desc {
 	FS_INIT_FUNC init;
-	FS_OPEN_FILE_FUNC open_file;
+//	FS_OPEN_FILE_FUNC open_file;
 	FS_CREATE_FUNC create_file;
-	FS_RESIZE_FUNC resize_file;
+//	FS_RESIZE_FUNC resize_file;
 	FS_DELETE_FUNC delete_file;
-	FS_GETCAPACITY_FUNC get_capacity;
-	FS_GETFREESPACE_FUNC get_freespace;
-	FS_GETDESCRIPTORSINFO_FUNC get_descriptors_info;
-	FS_GETFILELISTITERATOR_FUNC get_file_list_iterator;
+//	FS_GETCAPACITY_FUNC get_capacity;
+//	FS_GETFREESPACE_FUNC get_freespace;
+//	FS_GETDESCRIPTORSINFO_FUNC get_descriptors_info;
+//	FS_GETFILELISTITERATOR_FUNC get_file_list_iterator;
 } fsop_desc_t;
 
 #include <fs/file.h>
