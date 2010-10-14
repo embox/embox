@@ -28,13 +28,13 @@ static int devfs_close(FILE *file) {
         return 0;
 }
 
-static fsop_desc_t fsop = {
+static fsop_desc_t devfs_fsop = {
         devfs_init,
         devfs_create,
         devfs_delete
 };
 
-static file_op_t fop = {
+static file_op_t devfs_fop = {
         devfs_open,
         devfs_close,
         NULL,
@@ -45,8 +45,8 @@ static file_op_t fop = {
 
 static file_system_driver_t devfs_drv = {
 	"devfs",
-	&fop,
-	&fsop
+	&devfs_fop,
+	&devfs_fsop
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(devfs_drv);

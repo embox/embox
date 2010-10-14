@@ -9,62 +9,67 @@
 #include <fs/ramfs.h>
 #include <fs/fs.h>
 #include <linux/init.h>
-#include <embox/kernel.h>
+//#include <embox/kernel.h>
 
 static FILE_DESC fdesc[CONFIG_MAX_FILE_QUANTITY];
 
-static void *fopen(const char *path, const char *mode);
-static int fclose(void * file);
-static size_t fread(void *buf, size_t size, size_t count, void *file);
-static size_t fwrite(const void *buf, size_t size, size_t count, void *file);
-static int fseek(void *file, long offset, int whence);
+static void *rootfs_open(const char *path, const char *mode);
+static int rootfs_close(void *file);
+static size_t rootfs_read(void *buf, size_t size, size_t count, void *file);
+static size_t rootfs_write(const void *buf, size_t size, size_t count, void *file);
+static int rootfs_seek(void *file, long offset, int whence);
 
-static file_op_t fop = {
-	fopen,
-	fclose,
-	fread,
-	fwrite,
-	fseek,
-	ioctrl
+static file_op_t rootfs_fop = {
+	rootfs_open,
+	rootfs_close,
+	rootfs_read,
+	rootfs_write,
+	rootfs_seek,
+	NULL
 };
 
-static int init(void) {
-}
-
-
-static int create(void *params) {
+static int rootfs_init(void) {
 	return 0;
 }
 
-static int delete(const char * file_name) {
+static int rootfs_create(void *params) {
 	return 0;
 }
 
-static fsop_desc_t fsop = {
-	init,
-	create,
-	delete
+static int rootfs_delete(const char *file_name) {
+	return 0;
+}
+
+static fsop_desc_t rootfs_fsop = {
+	rootfs_init,
+	rootfs_create,
+	rootfs_delete
 };
 
-static file_system_driver_t drv = {"rootfs", &fop, &fsop};
-DECLARE_FILE_SYSTEM_DRIVER(drv);
+static file_system_driver_t rootfs_drv = {
+	"rootfs",
+	&rootfs_fop,
+	&rootfs_fsop
+};
 
-static void *_fopen(const char *file_name, const char *mode) {
+DECLARE_FILE_SYSTEM_DRIVER(rootfs_drv);
+
+static void *rootfs_open(const char *file_name, const char *mode) {
 	return NULL;
 }
 
-static int fclose(void * file) {
+static int rootfs_close(void * file) {
 	return 0;
 }
 
-static size_t fread(void *buf, size_t size, size_t count, void *file) {
+static size_t rootfs_read(void *buf, size_t size, size_t count, void *file) {
 	return 0;
 }
 
-static size_t fwrite(const void *buf, size_t size, size_t count, void *file) {
+static size_t rootfs_write(const void *buf, size_t size, size_t count, void *file) {
 	return 0;
 }
 
-static int fseek(void *file, long offset, int whence) {
+static int rootfs_seek(void *file, long offset, int whence) {
 	return 0;
 }
