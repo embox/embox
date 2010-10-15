@@ -36,7 +36,7 @@ static int rootfs_init(void) {
 	return 0;
 }
 
-node_t *root_fs_get_node(void) {
+node_t *rootfs_get_node(void) {
 	return root_node;
 }
 
