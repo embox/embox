@@ -12,9 +12,9 @@
 #include <lib/list.h>
 
 typedef struct fs_driver_head {
-	struct list_head *next;
-	struct list_head *prev;
-	file_system_driver_t drv;
+	struct list_head     *next;
+	struct list_head     *prev;
+	file_system_driver_t  drv;
 } fs_driver_head_t;
 
 static fs_driver_head_t pool[CONFIG_MAX_FS_DRIVERS];
@@ -25,7 +25,7 @@ static LIST_HEAD(free_list);
 EMBOX_UNIT_INIT(unit_init);
 
 static int __init unit_init(void) {
-	int i;
+	size_t i;
 	for(i = 0; i < ARRAY_SIZE(pool); i ++) {
 		list_add((struct list_head *)&pool[i], &free_list);
 	}
@@ -49,6 +49,5 @@ void free_fs_drivers(file_system_driver_t *fs_drv) {
 		return;
 	}
 	list_add((struct list_head *)drv_to_head(fs_drv), &free_list);
-
 }
 

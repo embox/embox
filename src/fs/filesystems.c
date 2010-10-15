@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <linux/init.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(unit_init);
@@ -27,7 +28,7 @@ static LIST_HEAD(file_systems);
 #define drv_to_head(fs_drv) (uint32_t)(fs_drv - offsetof(fs_driver_head_t, drv))
 
 static void init_pool(void) {
-	int i;
+	size_t i;
 	for(i = 0; i < ARRAY_SIZE(pool); i ++) {
 		list_add((struct list_head *)&pool[i], &free_list);
 	}
@@ -51,7 +52,7 @@ static void free(file_system_driver_t *drv) {
 	return;
 }
 
-static int unit_init(void) {
+static int __init unit_init(void) {
 	extern file_system_driver_t *_drivers_fs_start, *_drivers_fs_end;
 	file_system_driver_t **drv = &_drivers_fs_start;
 	fs_driver_head_t *head;
