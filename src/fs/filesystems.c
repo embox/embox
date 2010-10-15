@@ -55,6 +55,7 @@ static int unit_init(void) {
 	extern file_system_driver_t *_drivers_fs_start, *_drivers_fs_end;
 	file_system_driver_t **drv = &_drivers_fs_start;
 	fs_driver_head_t *head;
+	file_system_driver_t *root_fs;
 
 	init_pool();
 
@@ -62,7 +63,13 @@ static int unit_init(void) {
 		if (NULL == (head = alloc(*drv))) {
 			return 0;
 		}
-		(*drv)->fsop->init();
+	}
+
+	if (NULL == (root_fs = find_filesystem("rootfs"))) {
+		TRACE("File systems not found rootfs driver\n");
+	}
+	else {
+		root_fs->fsop->init();
 	}
 
 	return ENOERR;

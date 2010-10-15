@@ -62,6 +62,8 @@ extern file_system_driver_t *alloc_fs_drivers(void);
  */
 extern void free_fs_drivers(file_system_driver_t *);
 
+extern file_system_driver_t *find_filesystem(const char *name);
+
 /**
  * register a new filesystem
  * @param fs the file system structure
