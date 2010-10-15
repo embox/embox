@@ -3,6 +3,7 @@
  *
  * @date 11.10.10
  * @author Nikolay Korotky
+ * @author Darya Dzendzik
  */
 
 #include <hal/reg.h>
@@ -175,3 +176,21 @@ void display_string(const char *str) {
 	}
 	nxt_lcd_force_update();
 }
+
+static int min(int a, int b) {
+	if (a < b)
+		return a;
+	return b;
+}
+
+int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, char buff[]){
+	uint8_t i,j;
+   	uint16_t buf_pos = 0;
+	for (i = x; i < min(NXT_LCD_WIDTH, x + width); i++) {
+		for (j = y; j < min(NXT_LCD_DEPTH, y + heigth); j++) {
+			display_buffer[i][j] = buff[buf_pos++];
+		}
+	}
+	nxt_lcd_force_update();
+	return buf_pos;
+};
