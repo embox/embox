@@ -17,7 +17,8 @@ EMBOX_UNIT_INIT(sound_init);
 
 static int __init sound_init(void) {
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SSC)); /* Enable MCK clock   */
-	REG_STORE(AT91C_PIOA_PER, AT91C_PA17_TD); /* Disable TD on PA17  */
+	//REG_STORE(AT91C_PIOA_PER, AT91C_PA17_TD); /* Disable TD on PA17  */ //???
+	REG_STORE(AT91C_PIOA_PDR, AT91C_PA17_TD);
 	REG_STORE(AT91C_PIOA_ODR, AT91C_PA17_TD);
 	REG_STORE(AT91C_PIOA_OWDR, AT91C_PA17_TD);
 	REG_STORE(AT91C_PIOA_MDDR, AT91C_PA17_TD);
@@ -31,12 +32,14 @@ static int __init sound_init(void) {
 			+ AT91C_SSC_START_CONTINOUS);
 	REG_STORE(AT91C_SSC_TFMR, (SAMPLEWORDBITS - 1) + ((SAMPLEWORDS & 0xF) << 8) + AT91C_SSC_MSBF);
 	REG_STORE(AT91C_SSC_CR, AT91C_SSC_TXEN); /* TX enable          */
-	REG_STORE(AT91C_AIC_ICCR, (1L << AT91C_ID_SSC)); /* Clear interrupt    */
-	REG_STORE(AT91C_AIC_IECR, (1L << AT91C_ID_SSC)); /* Enable int. controller */
+	//REG_STORE(AT91C_AIC_ICCR, (1L << AT91C_ID_SSC)); /* Clear interrupt    */
+	//REG_STORE(AT91C_AIC_IECR, (1L << AT91C_ID_SSC)); /* Enable int. controller */
+	REG_STORE(AT91C_SSC_IER, AT91C_SSC_ENDTX);
 	return 0;
 }
 
-void sound_next_sample(uint32_t freq, uint32_t ms, uint32_t buff[SAMPLETONENO]) {
+void sound_next_sample(uint32_t freq, uint32_t ms, uint32_t buff[SAMPLETONENO],
+				uint32_t next_ms, uint32_t next_buff[SAMPLETONENO]) {
 	/*check correct input data*/
 	if (ms < DURATION_MIN) {
 		ms = DURATION_MIN;
@@ -53,7 +56,9 @@ void sound_next_sample(uint32_t freq, uint32_t ms, uint32_t buff[SAMPLETONENO]) 
 	}
 
 	REG_STORE(AT91C_SSC_CMR, ((CONFIG_SYS_CLOCK / (2L * 512L)) / freq) + 1L);
-	REG_STORE(AT91C_SSC_TNPR, (uint32_t) buff);
+	REG_STORE(AT91C_SSC_TNPR, (uint32_t) next_buff);
 	REG_STORE(AT91C_SSC_TNCR, SAMPLETONENO);
+	REG_STORE(AT91C_SSC_TPR, (uint32_t) buff);
+	REG_STORE(AT91C_SSC_TCR, SAMPLETONENO);
 	REG_STORE(AT91C_SSC_PTCR, AT91C_PDC_TXTEN);
 }
