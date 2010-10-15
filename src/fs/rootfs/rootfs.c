@@ -10,7 +10,6 @@
 #include <fs/fs.h>
 #include <linux/init.h>
 #include <fs/node.h>
-//#include <embox/kernel.h>
 
 //static FILE_DESC fdesc[CONFIG_MAX_FILE_QUANTITY];
 
@@ -35,6 +34,10 @@ static node_t *root_node;
 static int rootfs_init(void) {
 	root_node = alloc_node("/");
 	return 0;
+}
+
+node_t *root_fs_get_node(void) {
+	return root_node;
 }
 
 static int rootfs_create(void *params) {

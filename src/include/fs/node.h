@@ -11,8 +11,6 @@
 
 #include <fs/fs.h>
 
-#define CONFIG_QUANTITY_NODE 0x100
-
 typedef struct node {
 	const char            name[CONFIG_MAX_LENGTH_FILE_NAME];
 	void                 *file_info;

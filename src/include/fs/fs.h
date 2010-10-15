@@ -8,7 +8,28 @@
 #define FS_H_
 
 #include <lib/list.h>
-#include <fs/rootfs.h>
+#include <fs/file.h>
+
+//typedef void *(*FS_OPEN_FILE_FUNC)(const char *file_name, const char *mode);
+typedef int (*FS_CREATE_FUNC)(void *params);
+//typedef int (*FS_RESIZE_FUNC)(void *params);
+typedef int (*FS_DELETE_FUNC)(const char *file_name);
+//typedef int (*FS_GETCAPACITY_FUNC)(const char *file_name);
+//typedef int (*FS_GETFREESPACE_FUNC)(const char *file_name);
+//typedef int (*FS_GETDESCRIPTORSINFO_FUNC)(void *params);
+typedef int (*FS_INIT_FUNC)(void);
+
+typedef struct fsop_desc {
+        FS_INIT_FUNC init;
+//      FS_OPEN_FILE_FUNC open_file;
+        FS_CREATE_FUNC create_file;
+//      FS_RESIZE_FUNC resize_file;
+        FS_DELETE_FUNC delete_file;
+//      FS_GETCAPACITY_FUNC get_capacity;
+//      FS_GETFREESPACE_FUNC get_freespace;
+//      FS_GETDESCRIPTORSINFO_FUNC get_descriptors_info;
+//      FS_GETFILELISTITERATOR_FUNC get_file_list_iterator;
+} fsop_desc_t;
 
 /**
  * Structure of file system driver.
@@ -39,7 +60,7 @@ extern file_system_driver_t *alloc_fs_drivers(void);
 /**
  * free early allocated driver with function alloc_fs_drivers
  */
-extern void free_fs_drivers(file_system_driver_t *fs_drv);
+extern void free_fs_drivers(file_system_driver_t *);
 
 /**
  * register a new filesystem

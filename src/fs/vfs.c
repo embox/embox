@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 
-#include <fs/node.h>
+#include <fs/vfs.h>
 
 static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	char *p = path;
@@ -34,7 +34,8 @@ static int vfs_add_new_path(node_t *parrent, char *p_path, char *child_name) {
 	node_t *child;
 	child = alloc_node(child_name);
 	vfs_add_leaf(child, parrent);
-	while(NULL != (p_path = get_next_node_name(p_path, child_name, 0x20))) {
+	while(NULL != (p_path = get_next_node_name(p_path, child_name,
+					    CONFIG_MAX_LENGTH_FILE_NAME))) {
 		parrent = child;
 		child = alloc_node(child_name);
 		vfs_add_node(child, parrent);
@@ -43,8 +44,8 @@ static int vfs_add_new_path(node_t *parrent, char *p_path, char *child_name) {
 }
 
 int vfs_add_path(const char *path, node_t *parrent) {
-	node_t *parrent, node = NULL;
-	char node_name[0x20];
+	node_t *node = NULL;
+	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
 	char *p_path = path;
 
 	if (NULL == parrent) {
@@ -53,7 +54,7 @@ int vfs_add_path(const char *path, node_t *parrent) {
 	while(NULL != (p_path = get_next_node_name(p_path, node_name, sizeof(node_name)))) {
 		parrent = node;
 		if (NULL == (node = vfs_find_child(node_name, node))) {
-			return NULL;
+			return -1;
 		}
 	}
 
@@ -65,9 +66,9 @@ int vfs_del_leaf(node_t *nod) {
 }
 
 node_t *vfs_find_child(const char *name, node_t *parrent) {
-	node_t child = parrent->leaves;
+	node_t *child = parrent->leaves;
 	while (NULL != child) {
-		if(0 = strcmp(child->name, name)) {
+		if(0 == strcmp(child->name, name)) {
 			return child;
 		}
 		child = child->neighbors;
@@ -76,8 +77,8 @@ node_t *vfs_find_child(const char *name, node_t *parrent) {
 }
 
 node_t *vfs_find_node(const char *path, node_t *parrent) {
-	node_t *root, node = NULL;
-	char node_name[0x20];
+	node_t *root, *node = NULL;
+	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
 	char *p_path = path;
 
 	if (NULL == parrent) {
