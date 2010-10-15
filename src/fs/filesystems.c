@@ -62,6 +62,7 @@ static int unit_init(void) {
 		if (NULL == (head = alloc(*drv))) {
 			return 0;
 		}
+		register_filesystem(*drv);
 	}
 
 	return ENOERR;
