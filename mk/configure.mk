@@ -4,6 +4,7 @@
 
 HOSTCC  = gcc
 HOSTCC_MAJOR := $(shell $(HOSTCC) -v 2>&1 | grep version | cut -d' ' -f3  | cut -d'.' -f1)
+SVN_REV = `svn info $(ROOT_DIR) | grep Rev: | awk '{print $$4}'`
 HOSTCPP = $(HOSTCC) -E
 
 build_conf   := $(CONF_DIR)/build.conf
@@ -63,6 +64,7 @@ $(config_h) $(config_lds_h) :
 	$(HOSTCPP) -Wp, -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' | sed 's/$$define/#define/g' > $@
+	@echo "#define CONFIG_SVN_REV $(SVN_REV)" >> $@
 
 $(AUTOCONF_FILES) : $(MK_DIR)/configure.mk \
   | mkdir # this goal shouldn't force target to be updated
