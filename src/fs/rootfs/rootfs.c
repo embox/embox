@@ -28,11 +28,12 @@ static file_operations_t rootfs_fop = {
 //	NULL
 };
 
-
 static node_t *root_node;
 
 static int rootfs_init(void) {
 	root_node = alloc_node("/");
+	INIT_LIST_HEAD(&root_node->leaves);
+	INIT_LIST_HEAD(&root_node->neighbors);
 	return 0;
 }
 
