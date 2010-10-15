@@ -39,6 +39,9 @@ static int exec(int argsc, char **argsv) {
 	printf(" / _ \\ '_ ` _ \\|  _ < / _ \\ \\/ /\n");
 	printf("|  __/ | | | | | |_) | (_) >  <  \n");
 	printf(" \\___|_| |_| |_|____/ \\___/_/\\_\\\n");
-	printf("svn rev: %d\n", rev);
+	printf("Date: %12s\n", __DATE__);
+	printf("Time: %9s\n", __TIME__);
+	printf("Compiler: %s\n", __VERSION__);
+	printf("Revision: r%d\n", rev);
 	return 0;
 }
