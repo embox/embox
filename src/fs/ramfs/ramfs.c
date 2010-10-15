@@ -21,7 +21,7 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file);
 static int ramfs_fseek(void *file, long offset, int whence);
 
-static file_operations_t fop = {
+static file_operations_t ramfs_fop = {
 	ramfs_fopen,
 	ramfs_fclose,
 	ramfs_fread,
@@ -29,13 +29,13 @@ static file_operations_t fop = {
 	ramfs_fseek
 };
 
-static int create_file(void *params);
+#if 1
 
 #define FILE_HANDLERS_QUANTITY 0x10
 
 static FILE_HANDLER file_handlers[FILE_HANDLERS_QUANTITY];
 
-//static int file_handler_cnt;
+static int file_handler_cnt;
 
 static int file_list_cnt;
 
@@ -95,31 +95,10 @@ static FILE_HANDLER * find_free_handler(void) {
 	}
 	return NULL;
 }
-
-static file_system_driver_t ramfs_fs_type = {
-        .name = "ramfs",
-};
+#endif
 
 static int __init ramfs_init(void) {
-#if 0
-	extern char _data_start, _data_end,
-				_text_start, _text_end;
-	RAMFS_CREATE_PARAM param;
-
-	/* create file /rams/section_text */
-	strncpy(param.name, "section_text", ARRAY_SIZE(param.name));
-	param.size = (unsigned long) (&_text_end - &_text_start);
-	param.start_addr = (unsigned long) (&_text_start);
-	param.mode = FILE_MODE_RWX;
-	create_file(&param);
-	/* create file /ramfs/section_data */
-	strncpy(param.name, "section_data", ARRAY_SIZE(param.name));
-	param.size = (unsigned long) (&_data_end - &_data_start);
-	param.start_addr = (unsigned long) (&_data_start);
-	param.mode = FILE_MODE_RWX;
-	create_file(&param);
-#endif
-	return register_filesystem(&ramfs_fs_type);
+//	return register_filesystem(&ramfs_drv);
 }
 
 static void *open_file(const char *file_name, const char *mode) {
@@ -139,16 +118,12 @@ static void *open_file(const char *file_name, const char *mode) {
 	fh->fdesc = fd;
 	//TODO must check permitions
 	fh->mode = (unsigned int) *mode;
-	fh->fileop = &fop;
-	//printf ("fh = 0x%08X\tfop = 0x%08X\n", (unsigned)fh, (unsigned)&fop);
-	//printf ("fread = 0x%08X\n", (unsigned)fh->fileop->read);
-	//printf ("fwrite = 0x%08X\n", (unsigned)fh->fileop->write);
-	//printf ("start_addr = 0x%08X\t size = %d\n", fh->fdesc->start_addr, fh->fdesc->size);
+	fh->fileop = &ramfs_fop;
 	fh->fileop->fopen(file_name, mode);
 	return fh;
 }
 
-static int create_file(void *params) {
+static int ramfs_create(void *params) {
 	RAMFS_CREATE_PARAM *par = (RAMFS_CREATE_PARAM *) params;
 	FILE_DESC *fd;
 
@@ -169,16 +144,17 @@ static int resize_file(void *params) {
 	return -1;
 }
 
-static int delete_file(const char * file_name) {
+static int ramfs_delete(const char *fname) {
 	FILE_DESC *fd;
-	if (NULL == (fd = find_file_desc(file_name))) {
-		TRACE("file %s not found\n", file_name);
+	if (NULL == (fd = find_file_desc(fname))) {
+		TRACE("file %s not found\n", fname);
 		return -1;
 	}
 	fd->is_busy = 0;
 	return 0;
 }
 
+#if 0
 static int get_capacity(const char * file_name) {
 	return 0;
 }
@@ -188,20 +164,26 @@ static int get_freespace(const char * file_name) {
 static int get_descriptors_info(void *params) {
 	return 0;
 }
-
-static fsop_desc_t fsop = {
+#endif
+static fsop_desc_t ramfs_fsop = {
 	ramfs_init,
-	open_file,
-	create_file,
-	resize_file,
-	delete_file,
-	get_capacity,
-	get_freespace,
-	get_descriptors_info,
-	get_file_list_iterator
+//	open_file,
+	ramfs_create,
+//	resize_file,
+	ramfs_delete,
+//	get_capacity,
+//	get_freespace,
+//	get_descriptors_info,
+//	get_file_list_iterator
 };
-static file_system_driver_t drv = {"ramfs", &fop, &fsop};
-DECLARE_FILE_SYSTEM_DRIVER(drv);
+
+static file_system_driver_t ramfs_drv = {
+	"ramfs",
+	&ramfs_fop,
+	&ramfs_fsop
+};
+
+DECLARE_FILE_SYSTEM_DRIVER(ramfs_drv);
 
 static void *ramfs_fopen(const char *file_name, const char *mode) {
 	//TRACE("ramfs file %s was opened\n", file_name);
@@ -215,8 +197,6 @@ static int ramfs_fclose(void * file) {
 	return 0;
 }
 
-#define TRACE_FREQ 0x10000
-
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 	FILE_HANDLER *fh = (FILE_HANDLER *) file;
 
@@ -227,22 +207,12 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 
 	memcpy((void*)buf, (const void *)(fh->fdesc->start_addr + fh->cur_pointer), size * count);
 	fh->cur_pointer += size * count;
-#if 0
-	if (0 == (fh->cur_pointer & (TRACE_FREQ - 1))){
-		TRACE("cur = 0x%08X\t size = %d\n",fh->cur_pointer,fh->fdesc->size);
-	}
-#endif
 	return size * count;
 }
 
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file) {
 	FILE_HANDLER *fh = (FILE_HANDLER *) file;
 	FILE_DESC *fd = find_file_desc(fh->fdesc->name);
-#if 0
-	if (0 == fh->cur_pointer) {
-		TRACE("start write\n");
-	}
-#endif
 	memcpy((void *)(fh->fdesc->start_addr + fh->cur_pointer),buf, size * count);
 	fh->cur_pointer += size * count;
 	fd->size += size * count;

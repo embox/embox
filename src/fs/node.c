@@ -46,6 +46,8 @@ node_t *alloc_node(const char *name) {
 	list_del((&head_node)->next);
 	nod = &(head->nod);
 	strcpy((char*)nod->name, name);
+	INIT_LIST_HEAD(&nod->leaves);
+	INIT_LIST_HEAD(&nod->neighbors);
 	return nod;
 }
 

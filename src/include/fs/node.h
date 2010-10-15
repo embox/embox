@@ -15,8 +15,8 @@ typedef struct node {
 	const char            name[CONFIG_MAX_LENGTH_FILE_NAME];
 	void                 *file_info;
 	file_system_driver_t *fs_type;
-	struct list_head neighbors;
-	struct list_head leaves;
+	struct list_head      neighbors;
+	struct list_head      leaves;
 } node_t;
 
 extern node_t *alloc_node(const char *name);

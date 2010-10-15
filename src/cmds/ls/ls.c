@@ -7,7 +7,8 @@
  */
 #include <shell_command.h>
 #include <string.h>
-#include <fs/rootfs.h>
+#include <fs/file.h>
+#include <fs/vfs.h>
 
 #define COMMAND_NAME     "ls"
 #define COMMAND_DESC_MSG "list directory contents"
@@ -19,6 +20,7 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
+#if 0
 static void print_list(FS_FILE_ITERATOR iter_func) {
 	FILE_INFO file_info;
 	while (NULL != iter_func(&file_info)){
@@ -44,12 +46,13 @@ static void print_long_list(FS_FILE_ITERATOR iter_func) {
 				file_info.size_in_bytes, file_info.size_on_disk);
 	}
 }
+#endif
 
 static int exec(int argsc, char **argsv) {
 	char *path = "/";
 	int long_list = 0;
-	fsop_desc_t *fsop;
-	FS_FILE_ITERATOR iter_func;
+	node_t *nod;
+	struct list_head *p;
 
 	int nextOption;
 	getopt_init();
@@ -72,25 +75,11 @@ static int exec(int argsc, char **argsv) {
 	if(argsc > 1) {
 		path = argsv[argsc - 1];
 	}
-#if 0
-	if (NULL == (fsop = rootfs_get_fsopdesc(path))){
-		LOG_ERROR("can't find fs %s\n", path);
-		return 0;
-	}
-	if (NULL == fsop->get_file_list_iterator){
-		LOG_ERROR("wrong fs desc %s\n", path);
-	}
-	if (NULL == (iter_func = fsop->get_file_list_iterator())){
-		LOG_ERROR("can't find iterator func for fs %s\n", path);
-		return 0;
-	}
 
-	if(long_list) {
-		print_long_list(iter_func);
-	} else {
-		print_list(iter_func);
+	nod = vfs_find_node(path, NULL);
+	list_for_each(p, &(nod->leaves)) {
+		printf("%s\n", (node_t*)list_entry(p, node_t, neighbors)->name);
 	}
-#endif
 
 	return 0;
 }

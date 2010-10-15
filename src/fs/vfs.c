@@ -24,6 +24,7 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 		while('/' == *p ) {
 			p ++;
 		}
+		*b = '\0';
 		return p;
 	}
 
@@ -39,19 +40,20 @@ static int vfs_add_new_path(node_t *parrent, char *p_path, char *child_name) {
 	node_t *child;
 	child = alloc_node(child_name);
 	vfs_add_leaf(child, parrent);
-	while(NULL != (p_path = get_next_node_name(p_path, child_name, 0x20))) {
+	while(NULL != (p_path = get_next_node_name(p_path, child_name, CONFIG_MAX_FILE_QUANTITY))) {
 		parrent = child;
 		child = alloc_node(child_name);
 		vfs_add_leaf(child, parrent);
 	}
 	return 0;
 }
+
 extern node_t *vfs_find_child(const char *name, node_t *parrent);
 extern node_t *rootfs_get_node (void);
 
 int vfs_add_path(const char *path, node_t *parrent) {
 	node_t *node = NULL;
-	char node_name[0x20];
+	char node_name[CONFIG_MAX_FILE_QUANTITY];
 	char *p_path = (char *)path;
 
 	if (NULL == parrent) {
@@ -86,7 +88,7 @@ node_t *vfs_find_child(const char *name, node_t *parrent) {
 
 node_t *vfs_find_node(const char *path, node_t *parrent) {
 	node_t *node = NULL;
-	char node_name[0x20];
+	char node_name[CONFIG_MAX_FILE_QUANTITY];
 	char *p_path = (char *)path;
 
 	if (NULL == parrent) {
