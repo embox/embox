@@ -3,6 +3,15 @@
  * @author Fedor Burdun
  * @date 19.07.2010
  * @description /dev/iterminal
+ *
+ * @auther Michail Skorginskii
+ * @changes I made some simple refactor - renaming, delete and some part of code,
+ *           wich i can't understad. We make simple terminal, right?
+ *
+ * @decription In fact, this is tty driver, that provides interfaces for shell developer
+ *             It shoud provide such opportunitys:
+ *              - read and write a simple string
+ *              - XXX think what opportunities must provide the tty driver -- rasmikun
  */
 
 #include <embox/unit.h>
@@ -11,6 +20,8 @@
 #include <shell_command.h>
 #include <kernel/thread.h>
 #include <drivers/iterminal.h>
+#include <drivers/vtbuild.h>
+#include <drivers/vtparse.h>
 
 #define START_AS_MOD
 
@@ -42,25 +53,10 @@ int iterminal_ioctl  ( device_t *dev , io_cmd c     , void *arg ) {
 }
 
 int iterminal_devctl ( device_t *dev , device_cmd c , void *arg ) {
-	switch (c) {
-		case ITERM_DC_SET_IO: {
-			((iterminal_private_t*)(dev->private))->in =
-				((iterminal_private_t*)(dev->private))->out = *(int*)arg;
-		} break;
-		case ITERM_DC_SET_IN: {
-			((iterminal_private_t*)(dev->private))->in = *(int*)arg;
-		} break;
-		case ITERM_DC_SET_OUT: {
-			((iterminal_private_t*)(dev->private))->out = *(int*)arg;
-		} break;
-		case ITERM_DC_GET_IN: {
-			arg = &(((iterminal_private_t*)(dev->private))->in);
-		} break;
-		case ITERM_DC_GET_OUT: {
-			arg = &(((iterminal_private_t*)(dev->private))->out);
-		} break;
-		default: return DCTL_UNKNOW_OPERATION;
-	}
+    switch (c) {
+        /* We must decide how we can rule the ttu device TODO -- rasmikun
+        */
+    }
 	return 0;
 }
 
@@ -69,7 +65,7 @@ int iterminal_devctl ( device_t *dev , device_cmd c , void *arg ) {
  * interface for registry in embox as driver
  */
 int iterminal_load( driver_t *drv ) {
-	drv->name 		= "iTerminal embox driver";
+	drv->name 		= "iTerminal driver";
 	drv->ops.open 	= iterminal_open;
 	drv->ops.close 	= iterminal_close;
 	drv->ops.read 	= iterminal_read;
@@ -104,7 +100,9 @@ int iterminal_unload( driver_t *drv ) {
 }
 
 /*
- * interface for registry in embox as module (while don't exist driver's framework)
+ * interface for registry in embox as module (FIXME while don't exist driver's framework)
+ *
+ * FIXME rewrite all thease functions for their real need's
  */
 #ifdef START_AS_MOD
 /*
