@@ -14,13 +14,15 @@
 static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	char *p = (char *)path;
 	char *b = buff;
-	while('/' == *p ++) {
+	while('/' == *p) {
+		p ++;
 	}
-	while(('/' != *p) || ('\0' != *p) || (buff_len != 0)) {
-		*b++ = *p ++;
+	while(('/' != *p) && ('\0' != *p) && (buff_len != 0)) {
+		*b ++ = *p ++;
 	}
 	if (b != buff) {
-		while('/' == *p ++) {
+		while('/' == *p ) {
+			p ++;
 		}
 		return p;
 	}
