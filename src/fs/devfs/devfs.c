@@ -8,7 +8,7 @@
 
 #include <fs/fs.h>
 
-static int devfs_init(void) {
+static int devfs_init(void * par) {
 //	return register_filesystem(&devfs_drv);
 }
 

@@ -8,6 +8,7 @@
 #include <shell_command.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
+#include <fs/vfs.h>
 #include <lib/list.h>
 #include <lib/cpio.h>
 #include <stdlib.h>
@@ -23,7 +24,7 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
 ;
-
+#if 0
 //TODO: workaround.
 static int mount_cpio_ramfs(const char *dir) {
 	extern char _ramfs_start, _ramfs_end;
@@ -35,7 +36,7 @@ static int mount_cpio_ramfs(const char *dir) {
 
 	fsop_desc_t *fsop;
 	RAMFS_CREATE_PARAM param;
-#if 0
+
 	buf[8] = '\0';
 	if(&_ramfs_end == &_ramfs_start) {
 		TRACE("No availible ramfs\n");
@@ -62,16 +63,19 @@ static int mount_cpio_ramfs(const char *dir) {
 		LOG_ERROR("Can't find %s\n", dir);
 		return -1;
 	}
-#endif
+
 
 	return fsop->create_file(&param);
 }
-
+#endif
 static int exec(int argsc, char **argsv) {
 	int nextOption;
 	char *src, *dir;
 	char fs_type[0x20];
+	node_t *node;
+	file_system_driver_t * drv;
 
+	fs_type[0] = '\0';
 	getopt_init();
 	do {
 		nextOption = getopt(argsc, argsv, "ht:");
@@ -96,11 +100,11 @@ static int exec(int argsc, char **argsv) {
 		src = argsv[argsc - 2];
 		dir = argsv[argsc - 1];
 	}
-//	if (!strcmp(src, "cpio")) {
-//		TRACE("mount %s...\n", src);
-//		mount_cpio_ramfs(dir);
-//	}
 
+	vfs_add_path(argsv[argsc - 1], NULL);
+	node = vfs_find_node(argsv[argsc - 1], NULL);
+	drv = find_filesystem(fs_type);
+	drv->fsop->init(node);
 
 	return 0;
 }

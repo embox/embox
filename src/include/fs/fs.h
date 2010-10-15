@@ -10,6 +10,7 @@
 #include <lib/list.h>
 #include <fs/file.h>
 
+
 //typedef void *(*FS_OPEN_FILE_FUNC)(const char *file_name, const char *mode);
 typedef int (*FS_CREATE_FUNC)(void *params);
 //typedef int (*FS_RESIZE_FUNC)(void *params);
@@ -17,7 +18,7 @@ typedef int (*FS_DELETE_FUNC)(const char *file_name);
 //typedef int (*FS_GETCAPACITY_FUNC)(const char *file_name);
 //typedef int (*FS_GETFREESPACE_FUNC)(const char *file_name);
 //typedef int (*FS_GETDESCRIPTORSINFO_FUNC)(void *params);
-typedef int (*FS_INIT_FUNC)(void);
+typedef int (*FS_INIT_FUNC)(void *par);
 
 typedef struct fsop_desc {
         FS_INIT_FUNC init;

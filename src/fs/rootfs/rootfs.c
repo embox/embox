@@ -30,7 +30,7 @@ static file_operations_t rootfs_fop = {
 
 static node_t *root_node;
 
-static int rootfs_init(void) {
+static int rootfs_init(void * par) {
 	root_node = alloc_node("/");
 	return 0;
 }

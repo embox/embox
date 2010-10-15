@@ -70,7 +70,7 @@ static int __init unit_init(void) {
 		TRACE("File systems not found rootfs driver\n");
 	}
 	else {
-		root_fs->fsop->init();
+		root_fs->fsop->init(NULL);
 	}
 
 	return ENOERR;

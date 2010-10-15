@@ -97,8 +97,8 @@ static FILE_HANDLER * find_free_handler(void) {
 }
 #endif
 
-static int __init ramfs_init(void) {
-//	return register_filesystem(&ramfs_drv);
+static int __init ramfs_init(void * par) {
+	TRACE("RAMFS: inited\n");
 }
 
 static void *open_file(const char *file_name, const char *mode) {
@@ -154,27 +154,11 @@ static int ramfs_delete(const char *fname) {
 	return 0;
 }
 
-#if 0
-static int get_capacity(const char * file_name) {
-	return 0;
-}
-static int get_freespace(const char * file_name) {
-	return 0;
-}
-static int get_descriptors_info(void *params) {
-	return 0;
-}
-#endif
+
 static fsop_desc_t ramfs_fsop = {
 	ramfs_init,
-//	open_file,
 	ramfs_create,
-//	resize_file,
-	ramfs_delete,
-//	get_capacity,
-//	get_freespace,
-//	get_descriptors_info,
-//	get_file_list_iterator
+	ramfs_delete
 };
 
 static file_system_driver_t ramfs_drv = {
