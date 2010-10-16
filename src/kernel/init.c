@@ -32,7 +32,6 @@ void kernel_start(void) {
 
 	kernel_init();
 
-	timer_init();
 	init();
 
 	main();

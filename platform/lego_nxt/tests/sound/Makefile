@@ -2,4 +2,4 @@
 $_CPPFLAGS += -I$($_PLATFORM)/include
 $_MODS += nxt_sound
 $_SRCS-nxt_sound += sound.c
-$_DEPS-nxt_sound += embox.platform.driver.nxt_sound
+$_DEPS-nxt_sound += $(PLATFORM).driver.nxt_sound
