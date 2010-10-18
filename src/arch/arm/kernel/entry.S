@@ -1,8 +1,8 @@
 /**
  * @file
- *
  * @brief Low-level interrupt handler
  *
+ * @date 23.07.10
  * @author Anton Kozlov
  */
 /* TODO this constant defines AIC registers map interrupt controller move it from hear*/

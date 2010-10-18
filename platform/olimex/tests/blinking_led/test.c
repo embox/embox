@@ -1,5 +1,5 @@
 /**
- * @file test.c
+ * @file
  * @brief timer test -- blinking led
  *
  * @date 01.10.2010
@@ -29,6 +29,9 @@ void delay(int d) {
 		i += 1;
 	}
 }
+
+extern void led1_on(void);
+extern void led1_off(void);
 
 static int blinking_led(void) {
 	volatile int del = DELAY;

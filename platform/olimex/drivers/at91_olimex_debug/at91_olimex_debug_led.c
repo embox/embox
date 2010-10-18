@@ -34,21 +34,22 @@ static int led_init(void) {
     //*AT91C_PIOA_CODR = AT91C_PA17_TD;
     *AT91C_PIOA_IDR = AT91C_PA17_TD;
 #endif
+    return 0;
 }
 
-void led1_on() {
+void led1_on(void) {
     REG_STORE(AT91C_PIOA_CODR, AT91C_PIO_PA17);
 }
 
-void led1_off() {
+void led1_off(void) {
     REG_STORE(AT91C_PIOA_SODR, AT91C_PIO_PA17);
 }
 
-void led2_on() {
+void led2_on(void) {
     REG_STORE(AT91C_PIOA_CODR, AT91C_PIO_PA18);
 }
 
-void led2_off() {
+void led2_off(void) {
     REG_STORE(AT91C_PIOA_SODR, AT91C_PIO_PA18);
 }
 
