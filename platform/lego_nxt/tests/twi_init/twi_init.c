@@ -1,7 +1,8 @@
 /**
- * @file twi_init.c
+ * @file
  * @brief TWI init test
  *
+ * @date 16.10.10
  * @author Anton Kozlov
  */
 
@@ -10,7 +11,6 @@
 #include <string.h>
 #include <hal/reg.h>
 #include <drivers/twi.h>
-
 
 EMBOX_TEST(run);
 
@@ -35,11 +35,9 @@ static int run(void) {
 	data_avr.output_mode = 0;
 	data_avr.input_power = 0;
 
-
 	while (1) {
 		twi_send(NXT_AVR_ADDRESS, (const uint8_t *) &data_avr, sizeof(data_avr));
 	}
-
 
 	return result;
 }

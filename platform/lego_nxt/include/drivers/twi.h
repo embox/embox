@@ -1,4 +1,5 @@
-/* @file twi.h
+/**
+ * @file
  * @brief TWI communication for Lego AVR
  *
  * @date 15.10.2010

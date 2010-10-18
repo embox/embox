@@ -5,13 +5,15 @@
  * @author Darya Dzendzik
  */
 
-
 #include <embox/test.h>
 #include <drivers/lcd.h>
+#include <types.h>
 
 /* picture "embox"*/
 
 EMBOX_TEST(run_picture);
+
+extern int display_draw(uint8_t, uint8_t, uint8_t, uint8_t, char *);
 
 static int run_picture(void) {
 /*Part of "E" "M" "B" "O" */

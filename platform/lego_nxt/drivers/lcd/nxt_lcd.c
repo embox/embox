@@ -10,6 +10,7 @@
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/lcd.h>
+#include <string.h>
 
 EMBOX_UNIT_INIT(lcd_init);
 
@@ -155,7 +156,7 @@ static void nxt_lcd_power_up(void) {
 
 void nxt_lcd_force_update(void) {
 	int i;
-	__u8 *disp = display_buffer;
+	__u8 *disp = (__u8*)display_buffer;
 	REG_STORE(AT91C_SPI_IER, AT91C_SPI_ENDTX);
 
 	for (i = 0; i < NXT_LCD_DEPTH; i++) {
