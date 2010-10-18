@@ -32,10 +32,6 @@ SECTIONS {
 
 	.rodata (NOLOAD) : {
 		LDS_INPUT_RODATA
-		ALIGNMENT();
-		_ramfs_start = .;
-		*(.ramfs)
-		_ramfs_end = .;
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
 
