@@ -71,15 +71,34 @@ static const uint32_t patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
 extern void sound_next_sample(uint32_t, uint32_t,
 		    uint32_t *, uint32_t, uint32_t *);
 
-int i = 0;
-uint32_t f = (uint32_t)440;
+enum FREQ_TONE  {
+		TONE_C = 262,
+		TONE_D = 294,
+		TONE_E = 330,
+		TONE_F = 349,
+		TONE_G = 392,
+		TONE_A = 440,
+		TONE_H = 494
+};
+static uint32_t freq_tone[] = {TONE_C, TONE_E, TONE_G};
+#define DURETION 500
 
 irq_return_t sound_interrupt (int irq_num, void *dev_id) {
-	i++;
-	if (i == 5) {
+	static int i = 0;
+	static uint32_t f = 0;
+	static int time = 0;
+	if (++i == 5) {
+		if (time ++ == 10) {
+			time = 0;
+			if (3 == f ++) {
+				f = 0;
+			}
+		}
+
 		i = 0;
 	}
-	sound_next_sample(f, 500, patterns[i], 500, patterns[i+1]);
+
+	sound_next_sample(freq_tone[f], DURETION, (uint32_t *)patterns[i], DURETION, (uint32_t *)patterns[i+1]);
 	return IRQ_HANDLED;
 }
 
@@ -87,6 +106,6 @@ static int run_sound(void) {
 
 	irq_attach((irq_nr_t) AT91C_ID_SSC,
 		(irq_handler_t) &sound_interrupt, 0, NULL, "at91 PIT");
-	sound_next_sample(f, 500, patterns[i], 500, patterns[i+1]);
+	sound_next_sample(220, DURETION, (uint32_t *)patterns[0], DURETION, (uint32_t *)patterns[1]);
 	return 0;
 }
