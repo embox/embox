@@ -7,6 +7,7 @@ $_DEPS-ramfs += core
 #describe special section
 ifdef CONFIG_RAMFS_CPIO
 
+$_SRCS-ramfs += initramfs.c
 $_SRCS-ramfs += ramfs_cpio.S
 $_LDFLAGS += $($_lds)
 

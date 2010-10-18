@@ -32,6 +32,7 @@ static node_t *root_node;
 
 static int rootfs_init(void * par) {
 	root_node = alloc_node("/");
+	unpack_to_rootfs();
 	return 0;
 }
 
