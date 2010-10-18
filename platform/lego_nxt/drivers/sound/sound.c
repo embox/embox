@@ -27,10 +27,12 @@ static int __init sound_init(void) {
 	REG_STORE(AT91C_PIOA_CODR, AT91C_PA17_TD);
 	REG_STORE(AT91C_PIOA_IDR, AT91C_PA17_TD);
 	REG_STORE(AT91C_SSC_CR, AT91C_SSC_SWRST);
-	REG_STORE((uint32_t)AT91C_AIC_SMR[AT91C_ID_SSC], AT91C_AIC_PRIOR_LOWEST	| AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED); /* Set priority*/
-	REG_STORE(AT91C_SSC_TCMR, AT91C_SSC_CKS_DIV + AT91C_SSC_CKO_CONTINOUS
-			+ AT91C_SSC_START_CONTINOUS);
-	REG_STORE(AT91C_SSC_TFMR, (SAMPLEWORDBITS - 1) + ((SAMPLEWORDS & 0xF) << 8) + AT91C_SSC_MSBF);
+	REG_STORE((uint32_t)AT91C_AIC_SMR[AT91C_ID_SSC],
+		AT91C_AIC_PRIOR_LOWEST | AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED); /* Set priority*/
+	REG_STORE(AT91C_SSC_TCMR, AT91C_SSC_CKS_DIV +
+		AT91C_SSC_CKO_CONTINOUS + AT91C_SSC_START_CONTINOUS);
+	REG_STORE(AT91C_SSC_TFMR, (SAMPLEWORDBITS - 1) +
+		((SAMPLEWORDS & 0xF) << 8) + AT91C_SSC_MSBF);
 	REG_STORE(AT91C_SSC_CR, AT91C_SSC_TXEN); /* TX enable          */
 	//REG_STORE(AT91C_AIC_ICCR, (1L << AT91C_ID_SSC)); /* Clear interrupt    */
 	//REG_STORE(AT91C_AIC_IECR, (1L << AT91C_ID_SSC)); /* Enable int. controller */
@@ -38,8 +40,8 @@ static int __init sound_init(void) {
 	return 0;
 }
 
-void sound_next_sample(uint32_t freq, uint32_t ms, uint32_t buff[SAMPLETONENO],
-				uint32_t next_ms, uint32_t next_buff[SAMPLETONENO]) {
+void sound_next_sample(uint32_t freq, uint32_t ms, uint32_t *buff,
+			    uint32_t next_ms, uint32_t *next_buff) {
 	/*check correct input data*/
 	if (ms < DURATION_MIN) {
 		ms = DURATION_MIN;

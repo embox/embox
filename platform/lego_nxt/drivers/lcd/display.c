@@ -7,6 +7,7 @@
  */
 
 #include <hal/reg.h>
+#include <util/math.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/lcd.h>
 
@@ -177,13 +178,7 @@ void display_string(const char *str) {
 	nxt_lcd_force_update();
 }
 
-static int min(int a, int b) {
-	if (a < b)
-		return a;
-	return b;
-}
-
-int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, char buff[]){
+int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, char *buff){
 	uint8_t i,j;
    	uint16_t buf_pos = 0;
 	for (i = x; i < min(NXT_LCD_WIDTH, x + width); i++) {
@@ -193,4 +188,5 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, char buff[
 	}
 	nxt_lcd_force_update();
 	return buf_pos;
-};
+}
+

@@ -14,9 +14,9 @@
 #define NXT_LCD_DEPTH 8
 #define NXT_LCD_WIDTH 100
 
-#define N_CHARS 128
-#define FONT_WIDTH 5
-#define CELL_WIDTH (FONT_WIDTH + 1)
+#define N_CHARS            128
+#define FONT_WIDTH         5
+#define CELL_WIDTH         (FONT_WIDTH + 1)
 #define DISPLAY_CHAR_WIDTH (NXT_LCD_WIDTH/(CELL_WIDTH))
 #define DISPLAY_CHAR_DEPTH (NXT_LCD_DEPTH)
 
