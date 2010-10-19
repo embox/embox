@@ -193,6 +193,7 @@ static int ramfs_create(void *params) {
 	fd->start_addr = par->start_addr;
 	fd->size       = par->size;
 	fd->mode       = par->mode;
+	fd->mtime      = par->mtime;
 
 	return 0;
 }

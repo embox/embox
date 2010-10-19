@@ -9,6 +9,7 @@
 #include <string.h>
 #include <fs/file.h>
 #include <fs/vfs.h>
+#include <fs/ramfs.h>
 
 #define COMMAND_NAME     "ls"
 #define COMMAND_DESC_MSG "list directory contents"
@@ -16,20 +17,25 @@
 
 static const char *man_page =
 	#include "ls_help.inc"
-	;
+;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static void print_long_list(char *path, node_t *nod, int recursive) {
 	struct list_head *p;
-	char mode[] = "---";
-	printf("%16s | %4s | %10s \n", "name", "mode", "size");
+	node_t *item;
+	//TODO: workaround.
+	ramfs_file_description_t *desc;
+	printf("%s\t%s\t%s\t\t%s\n", "mode", "size", "mtime", "name");
 
 	list_for_each(p, &(nod->leaves)) {
-		printf("%16s | %4s | %d \n",
-			(char *)((node_t*)list_entry(p, node_t, neighbors))->name,
-			"xxx",
-			0);
+		item = (node_t*)list_entry(p, node_t, neighbors);
+		desc = (ramfs_file_description_t *)item->file_info;
+		printf("%d\t%d\t%d\t%s\n",
+			desc->mode,
+			desc->size,
+			desc->mtime,
+			(char *)item->name);
 	}
 }
 
@@ -45,16 +51,17 @@ static void print_folder(char *path, node_t *nod, int recursive) {
 				print_folder(path, (node_t*)list_entry(p, node_t, neighbors), recursive);
 			}
 		} else {
-			printf("%s\n",  (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
+			printf("%s\n", (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
 		}
 	}
 }
+
 typedef void (*print_func_t)(char *path, node_t *nod, int recursive);
 
 static int exec(int argsc, char **argsv) {
 	int long_list = 0;
 	node_t *nod;
-	char path[0x100];
+	char path[CONFIG_MAX_LENGTH_FILE_NAME];
 
 	int recursive = 0;
 	volatile print_func_t print_func = print_folder;
@@ -81,7 +88,7 @@ static int exec(int argsc, char **argsv) {
 		}
 	} while(-1 != nextOption);
 
-	if(argsc > 2) {
+	if(argsc > 1) {
 		sprintf(path, "%s", argsv[argsc - 1]);
 	}
 	else {

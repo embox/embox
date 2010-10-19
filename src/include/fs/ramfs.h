@@ -14,12 +14,14 @@ typedef struct _ramfs_create_param {
 	size_t        size;
 	char          name[CONFIG_MAX_LENGTH_FILE_NAME];
 	unsigned int  mode;
+	unsigned int  mtime;
 } ramfs_create_param_t;
 
 typedef struct _ramfs_file_description {
         unsigned long start_addr;
         unsigned int  size;
         unsigned int  mode;
+        unsigned int  mtime;
         int           cur_pointer;
         int           lock;
 } ramfs_file_description_t;

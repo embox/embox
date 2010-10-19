@@ -25,7 +25,7 @@ static file_system_driver_t *init_fs;
 static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
 	char *s;
 	size_t i;
-	unsigned long parsed[12], file_size, start_addr, mode;
+	unsigned long parsed[12], file_size, start_addr, mode, mtime;
 	ramfs_create_param_t param;
 	char buf[9];
 	buf[8] = '\0';
@@ -48,6 +48,7 @@ static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
 	file_size  = parsed[6];
 	start_addr = (unsigned long)cpio_h + sizeof(cpio_newc_header) + N_ALIGN(parsed[11]);
 	mode       = parsed[1];
+	mtime      = parsed[5];
 
 	if(0 == strcmp(name, "TRAILER!!!")) {
 		return NULL;
@@ -56,6 +57,7 @@ static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
 		strncpy(param.name, name, parsed[11]);
 		param.size = file_size;
 		param.mode = mode;
+		param.mtime = mtime;
 		param.start_addr = start_addr;
 		init_fs->fsop->create_file(&param);
 	}
@@ -78,7 +80,6 @@ int unpack_to_rootfs(void) {
 	cpio_h = (cpio_newc_header *)&_ramfs_start;
 	while(NULL != (cpio_next = parse_item(cpio_h, buff_name))) {
 		cpio_h = cpio_next;
-		TRACE("%s\n", buff_name);
 	}
 
 	return 0;
