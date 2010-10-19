@@ -197,13 +197,6 @@ static int ramfs_create(void *params) {
 	return 0;
 }
 
-#if 0
-static int resize_file(void *params) {
-	//TODO: need for download file via tftp.
-	return -1;
-}
-#endif
-
 static int ramfs_delete(const char *fname) {
 	ramfs_file_description_t *fd;
 	node_t *nod = vfs_find_node(fname, NULL);
