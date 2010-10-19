@@ -10,6 +10,10 @@
 #include <lib/list.h>
 #include <fs/file.h>
 
+#define SEEK_SET        0       /* seek relative to beginning of file */
+#define SEEK_CUR        1       /* seek relative to current file position */
+#define SEEK_END        2       /* seek relative to end of file */
+#define SEEK_MAX        SEEK_END
 
 //typedef void *(*FS_OPEN_FILE_FUNC)(const char *file_name, const char *mode);
 typedef int (*FS_CREATE_FUNC)(void *params);

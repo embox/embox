@@ -5,7 +5,7 @@
  * @date 29.09.10
  * @author Nikolay Korotky
  */
-#include <fs/rootfs.h>
+#include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <lib/list.h>
 #include <lib/cpio.h>
@@ -20,10 +20,13 @@
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
 #define F_ALIGN(len) (((len) + 3) & ~3)
 
+static file_system_driver_t *init_fs;
+
 static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
 	char *s;
 	size_t i;
 	unsigned long parsed[12], file_size, start_addr, mode;
+	ramfs_create_param_t param;
 	char buf[9];
 	buf[8] = '\0';
 	if (memcmp(cpio_h->c_magic, MAGIC_OLD_BINARY, 6)==0) {
@@ -50,7 +53,11 @@ static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
 		return NULL;
 	} else {
 		//TODO: set start_addr, file_size, mode.
-		vfs_add_path(name, NULL);
+		strncpy(param.name, name, parsed[11]);
+		param.size = file_size;
+		param.mode = mode;
+		param.start_addr = start_addr;
+		init_fs->fsop->create_file(&param);
 	}
 	return (cpio_newc_header*)F_ALIGN(start_addr + file_size);
 }
@@ -58,13 +65,15 @@ static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
 int unpack_to_rootfs(void) {
 	extern char _ramfs_start, _ramfs_end;
 	cpio_newc_header *cpio_h, *cpio_next;
-	unsigned char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];
 
 	if(&_ramfs_end == &_ramfs_start) {
 		TRACE("No availible initramfs\n");
 		return -1;
 	}
-	TRACE("cpio initramfs at 0x%08x\n", &_ramfs_start);
+	TRACE("cpio initramfs at 0x%08x\n", (unsigned int)&_ramfs_start);
+
+	init_fs = find_filesystem("ramfs");
 
 	cpio_h = (cpio_newc_header *)&_ramfs_start;
 	while(NULL != (cpio_next = parse_item(cpio_h, buff_name))) {

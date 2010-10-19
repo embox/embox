@@ -50,7 +50,7 @@ static int copy_image(char *file_name) {
 
 static int exec(int argsc, char **argsv) {
 #if 0
-	RAMFS_CREATE_PARAM param;
+	ramfs_create_param_t param;
 #endif
 	fsop_desc_t *fsop;
 	FILE_HANDLER *fh;

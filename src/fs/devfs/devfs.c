@@ -10,6 +10,7 @@
 
 static int devfs_init(void * par) {
 //	return register_filesystem(&devfs_drv);
+	return 0;
 }
 
 static int devfs_create(void *params) {
@@ -24,7 +25,7 @@ static void *devfs_open(const char *fname, const char *mode) {
         return NULL;
 }
 
-static int devfs_close(FILE *file) {
+static int devfs_close(void *file) {
         return 0;
 }
 
@@ -37,7 +38,6 @@ static fsop_desc_t devfs_fsop = {
 static file_operations_t devfs_fop = {
         devfs_open,
         devfs_close,
-        NULL,
         NULL,
         NULL,
         NULL

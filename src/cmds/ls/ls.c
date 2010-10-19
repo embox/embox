@@ -26,10 +26,12 @@ static void print_long_list(char *path, node_t *nod, int recursive) {
 	printf("%16s | %4s | %10s \n", "name", "mode", "size");
 
 	list_for_each(p, &(nod->leaves)) {
-		printf("%16s | %4s | %d \n",  (char *)((node_t*)list_entry(p, node_t, neighbors))->name, "xxx", 0);
+		printf("%16s | %4s | %d \n",
+			(char *)((node_t*)list_entry(p, node_t, neighbors))->name,
+			"xxx",
+			0);
 	}
 }
-
 
 static void print_folder(char *path, node_t *nod, int recursive) {
 	struct list_head *p;

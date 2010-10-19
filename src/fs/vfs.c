@@ -36,7 +36,7 @@ int vfs_add_leaf(node_t *child, node_t *parrent) {
 	return 0;
 }
 
-static int vfs_add_new_path(node_t *parrent, char *p_path, char *child_name) {
+static node_t *vfs_add_new_path(node_t *parrent, char *p_path, char *child_name) {
 	node_t *child;
 	child = alloc_node(child_name);
 	vfs_add_leaf(child, parrent);
@@ -45,13 +45,13 @@ static int vfs_add_new_path(node_t *parrent, char *p_path, char *child_name) {
 		child = alloc_node(child_name);
 		vfs_add_leaf(child, parrent);
 	}
-	return 0;
+	return child;
 }
 
 extern node_t *vfs_find_child(const char *name, node_t *parrent);
 extern node_t *rootfs_get_node (void);
 
-int vfs_add_path(const char *path, node_t *parrent) {
+node_t *vfs_add_path(const char *path, node_t *parrent) {
 	node_t *node = NULL;
 	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
 	char *p_path = (char *)path;
@@ -66,7 +66,7 @@ int vfs_add_path(const char *path, node_t *parrent) {
 		}
 	}
 
-	return 0;
+	return NULL;
 }
 
 int vfs_del_leaf(node_t *nod) {
