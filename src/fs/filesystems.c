@@ -64,14 +64,18 @@ static int __init unit_init(void) {
 		if (NULL == (head = alloc(*drv))) {
 			return 0;
 		}
+		(*drv)->fsop->init(NULL);
 	}
 
 	if (NULL == (root_fs = find_filesystem("rootfs"))) {
 		TRACE("File systems not found rootfs driver\n");
 	}
 	else {
-		root_fs->fsop->init(NULL);
+//		root_fs->fsop->init(NULL);
 	}
+
+	extern void lsof_map_init(void);
+	lsof_map_init();
 
 	return ENOERR;
 }

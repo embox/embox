@@ -18,7 +18,7 @@
 typedef struct ramfs_file_description_head {
         struct list_head         *next;
         struct list_head         *prev;
-        ramfs_file_description_t *desc;
+        ramfs_file_description_t  desc;
 } ramfs_file_description_head_t;
 
 static ramfs_file_description_head_t fdesc_pool[CONFIG_QUANTITY_NODE];
@@ -208,7 +208,7 @@ static int ramfs_delete(const char *fname) {
 }
 
 static int __init ramfs_init(void * par) {
-        init_ramfs_info_pool();
-        TRACE("RAMFS: inited\n");
-        return 0;
+	init_ramfs_info_pool();
+	TRACE("RAMFS: inited\n");
+	return 0;
 }

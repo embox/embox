@@ -39,7 +39,7 @@ static void cache_fd(const char *path, FILE *file) {
 	}
 	head = (lsof_map_t *)free_list.next;
 	head->fd = file;
-	memcpy((void*)head->path, (const void*)path, strlen(path));
+	strcpy((void*)head->path, path);
 	list_move((struct list_head*)head, &fd_cache);
 }
 
@@ -48,27 +48,29 @@ static void uncache_fd(FILE *file) {
 }
 
 static lsof_map_t *find_fd(FILE *file) {
-	lsof_map_t *fd;
 	struct list_head *p;
 	list_for_each(p, &fd_cache) {
 		if(((lsof_map_t *)p)->fd == file) {
 			return (lsof_map_t *)p;
 		}
 	}
+	TRACE("File maybe not opened\n");
 	return NULL;
 }
 
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod = vfs_find_node(path, NULL);
+	file_system_driver_t *drv;
 	FILE *file;
 	if (nod == NULL) {
 		//TODO: create file.
 	}
-	if (NULL == nod->fs_type->file_op->fopen) {
+	drv = nod->fs_type;
+	if (NULL == drv->file_op->fopen) {
 		LOG_ERROR("fop->fopen is NULL handler\n");
 		return NULL;
 	}
-	file = nod->fs_type->file_op->fopen(path, mode);
+	file = drv->file_op->fopen(path, mode);
 	cache_fd(path, file);
 	return file;
 }
@@ -78,42 +80,56 @@ FILE *fdopen(int fd, const char *mode) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	node_t *nod = vfs_find_node(find_fd(file)->path, NULL);
+	lsof_map_t *lsof;
+	node_t *nod;
+	file_system_driver_t *drv;
+	lsof = find_fd(file);
+	nod = vfs_find_node(lsof->path, NULL);
 	if (NULL == nod) {
 		LOG_ERROR("node is NULL\n");
 		return -1;
 	}
-	if (NULL == nod->fs_type->file_op->fwrite) {
+	drv = nod->fs_type;
+	if (NULL == drv->file_op->fwrite) {
 		LOG_ERROR("fop->fwrite is NULL handler\n");
 		return -1;
 	}
-	return nod->fs_type->file_op->fwrite(buf, size, count, file);
+	return drv->file_op->fwrite(buf, size, count, file);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
-	node_t *nod = vfs_find_node(find_fd(file)->path, NULL);
+	lsof_map_t *lsof;
+	node_t *nod;
+	file_system_driver_t *drv;
+	lsof = find_fd(file);
+	nod = vfs_find_node(lsof->path, NULL);
 	if (NULL == nod){
 		LOG_ERROR("node is NULL\n");
 		return -1;
 	}
-	if (NULL == nod->fs_type->file_op->fread) {
+	drv = nod->fs_type;
+	if (NULL == drv->file_op->fread) {
 		LOG_ERROR("fop->fread is NULL handler\n");
 		return -1;
 	}
-	return nod->fs_type->file_op->fread(buf, size, count, file);
+	return drv->file_op->fread(buf, size, count, file);
 }
 
 int fclose(FILE *fp) {
-	node_t *nod = vfs_find_node(find_fd(fp)->path, NULL);
-
+	lsof_map_t *lsof;
+	node_t *nod;
+	file_system_driver_t *drv;
+	lsof = find_fd(fp);
+	nod = vfs_find_node(lsof->path, NULL);
 	if (NULL == nod) {
 		return EOF;
 	}
-	if (NULL == nod->fs_type->file_op->fclose) {
+	drv = nod->fs_type;
+	if (NULL == drv->file_op->fclose) {
 		return EOF;
 	}
 	uncache_fd(fp);
-	return nod->fs_type->file_op->fclose(fp);
+	return drv->file_op->fclose(fp);
 }
 #if 0
 int remove(const char *pathname) {
