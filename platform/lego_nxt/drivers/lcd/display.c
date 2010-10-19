@@ -10,6 +10,7 @@
 #include <util/math.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/lcd.h>
+#include <string.h>
 
 extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
 
@@ -175,10 +176,18 @@ void display_string(const char *str) {
 		}
 		str++;
 	}
+
 	nxt_lcd_force_update();
 }
 
-int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, char *buff){
+void display_clear_screan(void) {
+	memset((void *)display_buffer, 0x0, NXT_LCD_WIDTH*NXT_LCD_DEPTH);
+	nxt_lcd_force_update();
+
+}
+
+#if 0
+int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, uint8_t *buff){
 	uint8_t i,j;
    	uint16_t buf_pos = 0;
 	for (i = x; i < min(NXT_LCD_WIDTH, x + width); i++) {
@@ -187,6 +196,26 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, char *buff
 		}
 	}
 	nxt_lcd_force_update();
-	return buf_pos;
+	return 0;
 }
+#else
+int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *buff){
+   	uint32_t x_offset, y_offset;
+   	y *= 8;
+   	width *= 8;
+   	if((x > NXT_LCD_WIDTH) || (y > 64)) {
+   		return 0;
+   	}
 
+   	width = min((NXT_LCD_WIDTH - x), width);
+   	height = min((64 - y), height);
+
+   	for(y_offset = 0; y_offset < 8; y_offset += 8) {
+		for(x_offset = 0; x_offset < width; x_offset ++) {
+   			display_buffer[(y + y_offset) >> 3][x + x_offset] = buff[(y_offset >> 3) + x_offset];
+		}
+   	}
+	nxt_lcd_force_update();
+	return 0;
+}
+#endif
