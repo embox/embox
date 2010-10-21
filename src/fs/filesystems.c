@@ -16,8 +16,8 @@
 EMBOX_UNIT_INIT(unit_init);
 
 typedef struct fs_driver_head {
-	struct list_head *next;
-	struct list_head *prev;
+	struct list_head     *next;
+	struct list_head     *prev;
 	file_system_driver_t *drv;
 } fs_driver_head_t;
 

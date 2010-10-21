@@ -16,7 +16,7 @@
 typedef struct node_head {
 	struct list_head *prev;
 	struct list_head *next;
-	node_t nod;
+	node_t            nod;
 } node_head_t;
 
 static node_head_t node_pool[CONFIG_QUANTITY_NODE];

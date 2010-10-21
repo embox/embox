@@ -22,7 +22,7 @@
 
 static file_system_driver_t *init_fs;
 
-static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
+static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 	char *s;
 	size_t i;
 	unsigned long parsed[12], file_size, start_addr, mode, mtime;
@@ -43,10 +43,10 @@ static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
 		parsed[i] = strtol(buf, NULL, 16);
 	}
 
-	strncpy(name, (char*)cpio_h + sizeof(cpio_newc_header), parsed[11]);
+	strncpy(name, (char*)cpio_h + sizeof(cpio_newc_header_t), parsed[11]);
 	name[parsed[11]] = '\0';
 	file_size  = parsed[6];
-	start_addr = (unsigned long)cpio_h + sizeof(cpio_newc_header) + N_ALIGN(parsed[11]);
+	start_addr = (unsigned long)cpio_h + sizeof(cpio_newc_header_t) + N_ALIGN(parsed[11]);
 	mode       = parsed[1];
 	mtime      = parsed[5];
 
@@ -61,12 +61,12 @@ static cpio_newc_header *parse_item(cpio_newc_header *cpio_h, char *name) {
 		param.start_addr = start_addr;
 		init_fs->fsop->create_file(&param);
 	}
-	return (cpio_newc_header*)F_ALIGN(start_addr + file_size);
+	return (cpio_newc_header_t*)F_ALIGN(start_addr + file_size);
 }
 
 int unpack_to_rootfs(void) {
 	extern char _ramfs_start, _ramfs_end;
-	cpio_newc_header *cpio_h, *cpio_next;
+	cpio_newc_header_t *cpio_h, *cpio_next;
 	char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];
 
 	if(&_ramfs_end == &_ramfs_start) {
@@ -77,7 +77,7 @@ int unpack_to_rootfs(void) {
 
 	init_fs = find_filesystem("ramfs");
 
-	cpio_h = (cpio_newc_header *)&_ramfs_start;
+	cpio_h = (cpio_newc_header_t *)&_ramfs_start;
 	while(NULL != (cpio_next = parse_item(cpio_h, buff_name))) {
 		cpio_h = cpio_next;
 	}

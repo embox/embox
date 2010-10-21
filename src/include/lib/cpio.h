@@ -15,29 +15,33 @@
    A header for a filename "TRAILER!!!" indicates the end of the archive.  */
 
 /* New ASCII Format */
-typedef struct {
-	char c_magic[6];    /* must be "070701" */
+typedef struct cpio_newc_header {
+	/* must be "070701" */
+	char c_magic[6];
+	/** The inode numbers from the disk. */
 	char c_ino[8];
+	/** The mode specifies both the regular permissions and the file type.*/
 	char c_mode[8];
+	/** The numeric user id and group id of the owner. */
 	char c_uid[8];
 	char c_gid[8];
+	/** The number of links to this file.*/
 	char c_nlink[8];
+	/** Modification time of the file, indicated as the
+	    number of seconds since the start of the Unix epoch. */
 	char c_mtime[8];
-	/**
-	 * Must be 0 for FIFOs and directories.
-	 */
+	/** Must be 0 for FIFOs and directories. */
 	char c_filesize[8];
 	char c_devmajor[8];
 	char c_devminor[8];
 	char c_rdevmajor[8];
 	char c_rdevminor[8];
+	/** The number of bytes in the pathname that follows the header.*/
 	char c_namesize[8];
-	/**
-	 * This field is always set to zero by writers and ignored by
-	 * readers.  See the next section for more details.
-	 */
+	/** This field is always set to zero by writers and ignored by
+	    readers.  See the next section for more details. */
 	char c_check[8];
-} cpio_newc_header;
+} cpio_newc_header_t;
 
 /* Value for the field `c_magic'.  */
 #define MAGIC_NEWC       "070701"
