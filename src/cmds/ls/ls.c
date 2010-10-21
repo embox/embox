@@ -7,6 +7,7 @@
  */
 #include <shell_command.h>
 #include <string.h>
+#include <time.h>
 #include <fs/file.h>
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
@@ -26,15 +27,17 @@ static void print_long_list(char *path, node_t *nod, int recursive) {
 	node_t *item;
 	//TODO: workaround.
 	ramfs_file_description_t *desc;
-	printf("%s\t%s\t%s\t\t%s\n", "mode", "size", "mtime", "name");
+	char time_buff[17];
+	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
 
 	list_for_each(p, &(nod->leaves)) {
 		item = (node_t*)list_entry(p, node_t, neighbors);
 		desc = (ramfs_file_description_t *)item->file_info;
-		printf("%d\t%d\t%d\t%s\n",
+		ctime(&desc->mtime, time_buff);
+		printf("%d\t%d\t%s\t%s\n",
 			desc->mode,
 			desc->size,
-			desc->mtime,
+			time_buff,
 			(char *)item->name);
 	}
 }
