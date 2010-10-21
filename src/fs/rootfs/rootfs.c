@@ -11,13 +11,11 @@
 #include <linux/init.h>
 #include <fs/node.h>
 
-//static FILE_DESC fdesc[CONFIG_MAX_FILE_QUANTITY];
-
-static void *rootfs_open(const char *path, const char *mode);
-static int rootfs_close(void *file);
-static size_t rootfs_read(void *buf, size_t size, size_t count, void *file);
-static size_t rootfs_write(const void *buf, size_t size, size_t count, void *file);
-static int rootfs_seek(void *file, long offset, int whence);
+static void   *rootfs_open(const char *path, const char *mode);
+static int     rootfs_close(void *file);
+static size_t  rootfs_read(void *buf, size_t size, size_t count, void *file);
+static size_t  rootfs_write(const void *buf, size_t size, size_t count, void *file);
+static int     rootfs_seek(void *file, long offset, int whence);
 
 static file_operations_t rootfs_fop = {
 	rootfs_open,
