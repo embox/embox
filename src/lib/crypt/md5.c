@@ -67,7 +67,7 @@ unsigned char *count_md5(unsigned char *addr, unsigned char *end_addr, unsigned 
  * For reference, here is the program that computed the T values.
  */
 #if 0
-#include <math.h>
+#include <util/math.h>
 main()
 {
     int i;

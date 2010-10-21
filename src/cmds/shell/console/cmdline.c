@@ -6,7 +6,7 @@
  * @author Eldar Abusalimov
  */
 #include "cmdline.h"
-#include <math.h>
+#include <util/math.h>
 #include <string.h>
 #include <embox/kernel.h>
 
