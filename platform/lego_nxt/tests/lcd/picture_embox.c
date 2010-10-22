@@ -124,7 +124,7 @@ static int run_picture(void) {
 			display_clear_screan();
 		}
 	}
-
+	for(i=0; i<5; i++){
 	/*stay*/
 	/*e*/
 	/*2*/	display_draw(2, 3, 1, 8, &pict_buff1[0]);
@@ -641,6 +641,7 @@ static int run_picture(void) {
 	/*32*/	display_draw(74, 5, 1, 8, &pict_buff8[0]);
 	/*33*/	display_draw(82, 5, 1, 8, &pict_buff10[0]);
 	/*34*/	display_draw(90, 5, 1, 8, &pict_buff7[0]);
+	}
 
 #endif
 	return 0;
