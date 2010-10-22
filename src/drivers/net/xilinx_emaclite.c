@@ -169,6 +169,9 @@ static void pack_receiving(void *dev_id) {
 	uint16_t len, proto_type;
 	uint32_t tmp;
 	sk_buff_t *skb;
+	const struct net_device_ops *ops;
+	struct net_device_stats *stats;
+	int rx_rc;
 
 	/* Get the protocol type of the ethernet frame that arrived */
 	tmp = *(volatile uint32_t *) (RX_PACK + 0xC);
@@ -212,8 +215,17 @@ static void pack_receiving(void *dev_id) {
 	skb->mac.ethh = (ethhdr_t *) skb->data;
 	skb->protocol = skb->mac.ethh->h_proto;
 
+	/* update device statistic */
 	skb->dev = dev_id;
-	netif_rx(skb);
+	ops = skb->dev->netdev_ops;
+	stats = ops->ndo_get_stats(skb->dev);
+	stats->rx_packets++;
+	stats->rx_bytes += skb->len;
+
+	rx_rc = netif_rx(skb);
+	if (NET_RX_DROP == rx_rc) {
+		stats->rx_dropped++;
+	}
 }
 
 /**
@@ -294,7 +306,7 @@ static int set_mac_address(struct net_device *dev, void *addr) {
  * Get RX/TX stats
  */
 static net_device_stats_t *get_eth_stat(net_device_t *dev) {
-	return NULL;
+	return &(dev->stats);
 }
 
 static const struct net_device_ops _netdev_ops = {
