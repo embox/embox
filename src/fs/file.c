@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <lib/list.h>
 #include <fs/rootfs.h>
+#include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <embox/kernel.h>
 
@@ -63,7 +64,14 @@ FILE *fopen(const char *path, const char *mode) {
 	file_system_driver_t *drv;
 	FILE *file;
 	if (nod == NULL) {
-		//TODO: create file.
+		//FIXME: ahtung! workaround.
+		ramfs_create_param_t param;
+		strcpy(param.name, path);
+		param.size = 0;
+		param.start_addr = 0x44100000;
+		drv = find_filesystem("ramfs");
+		drv->fsop->create_file(&param);
+		nod = vfs_find_node(path, NULL);
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fopen) {

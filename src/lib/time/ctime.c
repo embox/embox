@@ -30,9 +30,9 @@ char *ctime(const time_t *t, char *buff) {
 		if( month == 2) {
 			day_of_month = (year % 4) ? MONTH_29 : MONTH_28;
 		} else if (month < 8) {
-			day_of_month = (month % 2 ? MONTH_31 : MONTH_30);
+			day_of_month = (month % 2) ? MONTH_31 : MONTH_30;
 		} else {
-			day_of_month = (month % 2 ? MONTH_30 : MONTH_31);
+			day_of_month = (month % 2) ? MONTH_30 : MONTH_31;
 		}
 	}
 	while (time - DAY_LENGHT >= 0) {

@@ -111,7 +111,7 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file) {
 	ramfs_file_description_t *fd;
 	fd = (ramfs_file_description_t*)file;
-	size_t size_to_write;
+	size_t size_to_write = size*count;
 
 	if (fd == NULL) {
 		return -2; /*Null file descriptor*/
@@ -119,7 +119,8 @@ static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *fil
 
 	//FIXME: don't expand memory, need file ramfs_resize.
 	if (size*count >= (fd->size - fd->cur_pointer)) {
-		size_to_write = fd->size - fd->cur_pointer;
+		fd->size += size*count;
+		//size_to_write = fd->size - fd->cur_pointer;
 	}
 
 	memcpy((void *)(fd->start_addr + fd->cur_pointer), buf, size_to_write);

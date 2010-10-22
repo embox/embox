@@ -1,10 +1,9 @@
 /**
  * @file
- * @brief
+ * @brief ELF object file execute
  *
  * @date 15.07.2010
  * @author Avdyukhin Dmitry
- *
  */
 
 #include <lib/elf_reader.h>
@@ -24,7 +23,6 @@ int elf_execute(FILE *file) {
 	EPH = (Elf32_Phdr *)((char *)EH + EH->e_phoff);
 
 	counter = EH->e_phnum;
-	printf("\n");
 	while(counter--) {
 		if (EPH->p_type == 1) { /* Type = PT_LOAD. */
 			/* Physical address equals to virtual. */
@@ -33,11 +31,12 @@ int elf_execute(FILE *file) {
 		EPH += 1;
 	}
 
-	printf("\nData allocated. \nTrying to start at %ld(0x%x)\n", EH->e_entry, (uint32_t)EH->e_entry);
+	printf("Data allocated.\n");
+	printf("Trying to start at %ld(0x%x)\n", EH->e_entry, (uint32_t)EH->e_entry);
 
 
 	function_main = (int (*)(int argc, char *argv[]))EH->e_entry;
-	result = (*function_main) (0, 0);
+	result = (*function_main) (0, NULL);
 
 	printf("\n result : %d\n", result);
 	return 0;
