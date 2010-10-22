@@ -275,6 +275,7 @@ static int arp_process(sk_buff_t *skb) {
 
 	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)
 			|| arp->ar_tip != in_dev_get(skb->dev)->ifa_address) {
+		kfree_skb(skb);
 		return 0;
 	}
 
