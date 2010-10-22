@@ -5,8 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef MICROMLAZE_OPEN_PROM_H_
-#define MICROBLAZE_OPEN_PROM_H_
+#ifndef MICROBLAZE_PROM_H_
+#define MICROBLAZE_PROM_H_
 
 #include <open_prom.h>
 
@@ -20,4 +20,4 @@ typedef struct cpu_open_prom {
 
 extern void bootm_linux(unsigned int load_addr, unsigned int entry_point);
 
-#endif /* MICROMLAZE_OPEN_PROM_H_ */
+#endif /* MICROBLAZE_PROM_H_ */

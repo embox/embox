@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Microblaze implementation traps framework
  *
  * @date 15.03.2010
@@ -29,14 +28,17 @@ static inline void traps_status_save(uint32_t *status) {
 }
 
 static inline void traps_status_restore(uint32_t *status) {
-	(*status & MSR_EE_MASK) ? msr_set_bit(MSR_EE_BIT) : msr_clr_bit(MSR_EE_BIT);
+	(*status & MSR_EE_MASK) ? msr_set_bit(MSR_EE_BIT) :
+				    msr_clr_bit(MSR_EE_BIT);
 }
 
 void traps_save_env(traps_env_t *env) {
 	if (NULL != old_env) {
 		env->base_addr = 0; /*always 0*/
-		memcpy(&(&cur_env)->hw_traps, hwtrap_handler, array_len(&(&cur_env)->hw_traps));
-		memcpy(&(&cur_env)->soft_traps, sotftrap_handler, array_len(&(&cur_env)->soft_traps));
+		memcpy(&(&cur_env)->hw_traps, hwtrap_handler,
+				array_len(&(&cur_env)->hw_traps));
+		memcpy(&(&cur_env)->soft_traps, sotftrap_handler,
+				array_len(&(&cur_env)->soft_traps));
 		old_env = &cur_env;
 	}
 	(&cur_env)->status = msr_get_value();

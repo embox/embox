@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Defines specific features for MMU in Microblaze architecture.
  *
  * @date 15.03.2010
@@ -35,8 +34,8 @@
 #define RTLBHI_SIZE_4M    0x6
 #define RTLBHI_SIZE_16M   0x7
 
-#define RTLBLO_SET(var, phy_addr, cacheable, ex, wr) \
-	var = (phy_addr                     | \
+#define RTLBLO_SET(var, phy_addr, cacheable, ex, wr)  \
+	var = (phy_addr |                             \
 			(cacheable << RTLBLO_I_BIT) | \
 			(ex << RTLBLO_EX_BIT)       | \
 			(wr << RTLBLO_WR_BIT))
@@ -44,7 +43,5 @@
 #define RTLBHI_SET(var, virt_addr, size) \
 	var = (virt_addr | (size << RTLBHI_SIZE_BIT) | \
 			(1 << RTLBHI_V_BIT))
-
-
 
 #endif /* MICROBLAZE_MMU_CORE_H_ */

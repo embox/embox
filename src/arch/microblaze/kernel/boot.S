@@ -1,8 +1,8 @@
 /**
  * @file
- *
  * @brief Low-level boot code for microblaze architecture.
  *
+ * @date 25.11.09
  * @author Anton Bondarev
  */
 #include <asm/linkage.h>

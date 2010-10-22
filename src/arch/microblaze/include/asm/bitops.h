@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Microblaze specific bit operations
  *
  * @date 17.03.2010
@@ -15,6 +14,6 @@
 /**< macros reverts bit's number for microblaze arch*/
 #define REVERSE_MASK(bit_num) (1<<(31-bit_num))
 
-#define REVERSE_BIT(bit_num) (31-bit_num)
+#define REVERSE_BIT(bit_num)  (31-bit_num)
 
 #endif /* MICROBLAZE_BITOPS_H_ */

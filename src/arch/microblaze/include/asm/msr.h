@@ -1,14 +1,14 @@
 /**
  * @file
- *
  * @brief Includes framework for working with msr register in microblaze cpu
  *
  * @date 11.01.2010
  * @author Alexey Fomin
  */
 
-#ifndef MSR_H_
-#define MSR_H_
+#ifndef MICROBLAZE_MSR_H_
+#define MICROBLAZE_MSR_H_
+
 #include <types.h>
 #include <asm/bitops.h>
 
@@ -74,14 +74,16 @@ static inline void msr_clr(uint32_t val) {
 static inline void msr_set(uint32_t val) {
 	register unsigned tmp;
 	__asm__ __volatile__ (
-			"mfs	%0, rmsr;\n\t"
-			"ori	%0, %0, %1;\n\t"
-			"mts	rmsr, %0;\n\t"
-			"nop;"
-			: "=r" (tmp)
-			: "r" (val)
-			: "memory");
+		"mfs	%0, rmsr;\n\t"
+		"ori	%0, %0, %1;\n\t"
+		"mts	rmsr, %0;\n\t"
+		"nop;"
+		: "=r" (tmp)
+		: "r" (val)
+		: "memory"
+	);
 }
+
 /**
  * Clears some bits in msr register
  * @val bit's mask want to be cleared
@@ -89,16 +91,16 @@ static inline void msr_set(uint32_t val) {
 static inline void msr_clr(uint32_t val) {
 	register unsigned tmp;
 	__asm__ __volatile__ (
-			"mfs	%0, rmsr;\n\t"
-			"andni	%0, %0, %1;\n\t"
-			"mts	rmsr, %0;\n\t"
-			"nop;"
-			: "=r" (tmp)
-			: "r" (val)
-			: "memory");
+		"mfs	%0, rmsr;\n\t"
+		"andni	%0, %0, %1;\n\t"
+		"mts	rmsr, %0;\n\t"
+		"nop;"
+		: "=r" (tmp)
+		: "r" (val)
+		: "memory"
+	);
 }
-#endif
-
+#endif /* XILINX_USE_MSR_INSTR */
 
 /**
  * Clears some bits in msr register
@@ -107,17 +109,18 @@ static inline void msr_clr(uint32_t val) {
 static inline uint32_t msr_get_value(void) {
 	register unsigned msr;
 	__asm__ __volatile__ (
-			"mfs	%0, rmsr;\n\t"
-			: "=r" (msr)
-			);
+		"mfs	%0, rmsr;\n\t"
+		: "=r" (msr)
+	);
 	return msr;
 }
 
 static inline void msr_set_value(uint32_t val) {
 	__asm__ __volatile__ (
-			"mts	rmsr, %0;\n\t"
-			"nop;\n\t"
-			: "=r" (val));
+		"mts	rmsr, %0;\n\t"
+		"nop;\n\t"
+		: "=r" (val)
+	);
 }
 
 static inline void msr_set_bit(int bit) {
@@ -132,7 +135,6 @@ static inline uint32_t msr_get_bit(int bit) {
 	return msr_get_value() & REVERSE_MASK(bit);
 }
 
+#endif /* __ASSEMBLER__ */
 
-#endif
-
-#endif /* MSR_H_ */
+#endif /* MICROBLAZE_MSR_H_ */
