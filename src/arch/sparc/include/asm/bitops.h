@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Sparc specific bit operations
  *
  * @date 17.03.2010

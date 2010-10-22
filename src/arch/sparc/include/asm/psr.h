@@ -42,11 +42,11 @@
 static inline unsigned int get_psr(void) {
 	unsigned int psr;
 	__asm__ __volatile__(
-			"rd     %%psr, %0\n\t"
-			"nop; nop; nop;\n\t"
-			: "=r" (psr)
-			: /* no inputs */
-			: "memory"
+		"rd     %%psr, %0\n\t"
+		"nop; nop; nop;\n\t"
+		: "=r" (psr)
+		: /* no inputs */
+		: "memory"
 	);
 
 	return psr;
@@ -54,11 +54,11 @@ static inline unsigned int get_psr(void) {
 
 static inline void put_psr(unsigned int new_psr) {
 	__asm__ __volatile__(
-			"wr     %0, 0x0, %%psr\n\t"
-			"nop; nop; nop;\n\t"
-			: /* no outputs */
-			: "r" (new_psr)
-			: "memory", "cc"
+		"wr     %0, 0x0, %%psr\n\t"
+		"nop; nop; nop;\n\t"
+		: /* no outputs */
+		: "r" (new_psr)
+		: "memory", "cc"
 	);
 }
 

@@ -30,11 +30,11 @@ extern mmu_pte_t sys_pt0;
 extern mmu_ctx_t sys_ctx;
 
 /* Setup module starting function */
-EMBOX_UNIT_INIT(mmu_init)
-;
+EMBOX_UNIT_INIT(mmu_init);
 
 void mmu_save_status(uint32_t *status) {
-	__asm__ __volatile__("sta %0, [%1] %2\n\t"
+	__asm__ __volatile__(
+		"sta %0, [%1] %2\n\t"
 		:
 		: "r"(status), "r"(LEON_CNR_CTRL), "i"(ASI_M_MMUREGS)
 		: "memory"
@@ -42,7 +42,8 @@ void mmu_save_status(uint32_t *status) {
 }
 
 void mmu_restore_status(uint32_t *status) {
-	__asm__ __volatile__("lda [%1] %2, %0\n\t"
+	__asm__ __volatile__(
+		"lda [%1] %2, %0\n\t"
 		: "=r" (status)
 		: "r" (LEON_CNR_CTRL), "i" (ASI_M_MMUREGS)
 	);
@@ -74,11 +75,13 @@ void mmu_off(void) {
 }
 
 mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
-	return (mmu_pgd_t *) (((*(((unsigned long *) cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4));
+	return (mmu_pgd_t *) (((*(((unsigned long *) cur_env->ctx + ctx)) &
+					    MMU_CTX_PMASK) << 4));
 }
 
 int mmu_valid_entry(mmu_pte_t pte) {
-	return (((unsigned int) mmu_is_pte) & MMU_PTE_ET) | (((unsigned int) pte) & MMU_ET_PTD);
+	return (((unsigned int) mmu_is_pte) & MMU_PTE_ET) |
+			    (((unsigned int) pte) & MMU_ET_PTD);
 }
 void mmu_restore_env(mmu_env_t *env) {
 	/* disable virtual mode*/
@@ -140,11 +143,11 @@ mmu_ctx_t mmu_create_context(void) {
 }
 
 void mmu_delete_context(mmu_ctx_t ctx) {
-   used_context[ctx] = 0;
+	used_context[ctx] = 0;
 #ifdef DEBUG
-   printf("delete %d\n",ctx);
+	printf("delete %d\n",ctx);
 #endif
-   mmu_table_free((unsigned long *) (((unsigned long) (*( cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4), 1);
+	mmu_table_free((unsigned long *) (((unsigned long) (*( cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4), 1);
 }
 
 void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {

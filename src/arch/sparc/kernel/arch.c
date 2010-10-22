@@ -20,7 +20,6 @@ void arch_idle(void) {
 void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
 	ipl_disable();
 	// TODO DUMP regs and memory -- Eldar
-	while (1) {
-	}
+	while (1) {}
 }
 

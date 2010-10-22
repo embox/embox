@@ -27,8 +27,8 @@
  * Note that the traps must be disabled when entering restore routine.
  */
 #define RESTORE_ALL \
-	ba trap_setup_end;     \
-	 rd %wim, %t_wim;
+	ba trap_setup_end; \
+	rd %wim, %t_wim;
 
 #endif /* __ASSEMBLER__ */
 

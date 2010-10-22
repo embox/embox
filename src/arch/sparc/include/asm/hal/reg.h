@@ -14,18 +14,22 @@
 /* do a physical address bypass write, i.e. for 0x80000000 */
 static __inline__ void __leon_store_reg(unsigned long paddr,
 		unsigned long value) {
-	__asm__ __volatile__("sta %0, [%1] %2\n\t"
-			:
-			: "r"(value), "r"(paddr), "i"(ASI_LEON_BYPASS)
-			: "memory");
+	__asm__ __volatile__(
+		"sta %0, [%1] %2\n\t"
+		:
+		: "r"(value), "r"(paddr), "i"(ASI_LEON_BYPASS)
+		: "memory"
+	);
 }
 
 /* do a physical address bypass load, i.e. for 0x80000000 */
 static __inline__ unsigned long __leon_load_reg(unsigned long paddr) {
 	unsigned long retval;
-	__asm__ __volatile__("lda [%1] %2, %0\n\t"
-			: "=r"(retval)
-			: "r"(paddr), "i"(ASI_LEON_BYPASS));
+	__asm__ __volatile__(
+		"lda [%1] %2, %0\n\t"
+		: "=r"(retval)
+		: "r"(paddr), "i"(ASI_LEON_BYPASS)
+	);
 	return retval;
 }
 
