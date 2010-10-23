@@ -11,6 +11,7 @@
 #include <string.h>
 #include <hal/reg.h>
 #include <drivers/twi.h>
+#include <unistd.h>
 
 EMBOX_TEST(run);
 
@@ -25,8 +26,14 @@ static to_avr data_avr;
  * @retval 0 on success
  * @retval nonzero on failure
  */
+
+#define DEL 10
+static from_avr data_from_avr;
 static int run(void) {
 	int result = 0;
+	int old_state = 0;
+	int state_count = DEL;
+
 	twi_init();
 	twi_write(NXT_AVR_ADDRESS, (const uint8_t *) avr_brainwash_string, strlen(avr_brainwash_string));
 
@@ -36,7 +43,24 @@ static int run(void) {
 	data_avr.input_power = 0;
 
 	while (1) {
+		int new_state = 0;
 		twi_send(NXT_AVR_ADDRESS, (const uint8_t *) &data_avr, sizeof(data_avr));
+		usleep(1);
+		twi_receive(NXT_AVR_ADDRESS, (uint8_t *) &data_from_avr, sizeof(data_from_avr));
+		new_state = data_from_avr.buttonsVal > 1500;
+		if (new_state == old_state) {
+			if (!state_count--) {
+				if (new_state) { //button pressed
+					//nxt_lcd_set_all_pixels_on(1);
+					//switch_bank();
+				} else { //button released
+				}
+			}
+		} else { //floating value
+			old_state = new_state;
+			state_count = DEL;
+			//nxt_lcd_set_all_pixels_on(0);
+		}
 	}
 
 	return result;

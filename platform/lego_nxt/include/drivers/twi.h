@@ -19,6 +19,14 @@ typedef struct{
 	uint8_t input_power;
 } __attribute__((packed)) to_avr;
 
+typedef struct {
+  // Raw values
+  uint16_t adc_value[NXT_AVR_N_INPUTS];
+  uint16_t buttonsVal;
+  uint16_t extra;
+  uint8_t csum;
+} __attribute__((packed)) from_avr;
+
 void twi_init(void);
 
 /**
@@ -31,3 +39,11 @@ void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count);
  * e.g. first initializing, etc.
  */
 void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes);
+
+/**
+ * Receive from TWI
+ *
+ * @retval 0 -- checksum is correct
+ * @retval 1 -- checksum is incorrect
+ */
+int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count);

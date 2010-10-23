@@ -102,3 +102,25 @@ void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
 	twi_write(dev_addr, out_buff, count + 1);
 }
 
+int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
+	uint8_t *ptr = data;
+	uint8_t checkbyte = 0;
+    *AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO|AT91C_TWI_MREAD|((dev_addr & 0x7f) << 16);
+    *AT91C_TWI_CR = AT91C_TWI_START;
+	while (count-- > 1) {
+		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
+		*ptr = REG_LOAD(AT91C_TWI_RHR);
+		checkbyte += *ptr;
+		ptr++;
+	}
+
+    *AT91C_TWI_CR = AT91C_TWI_STOP;
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
+	*ptr = REG_LOAD(AT91C_TWI_RHR);
+	checkbyte += *ptr;
+
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP));
+
+	return ((checkbyte == 0xff) ? 1 : 0);
+
+}

@@ -80,8 +80,18 @@ enum FREQ_TONE  {
 		TONE_A = 440,
 		TONE_H = 494
 };
-static uint32_t freq_tone[] = {TONE_C, TONE_E, TONE_G};
+static uint32_t freq_tone[2][3] = {
+	{TONE_C, TONE_E, TONE_G},
+	{TONE_C, TONE_E, TONE_F}
+};
+
 #define DURETION 500
+
+static int bank_num = 0;
+
+void switch_bank(void) {
+	bank_num = (bank_num++) & 1;
+}
 
 irq_return_t sound_interrupt (int irq_num, void *dev_id) {
 	static int i = 0;
@@ -98,12 +108,11 @@ irq_return_t sound_interrupt (int irq_num, void *dev_id) {
 		i = 0;
 	}
 
-	sound_next_sample(freq_tone[f], DURETION, (uint32_t *)patterns[i], DURETION, (uint32_t *)patterns[i+1]);
+	sound_next_sample(freq_tone[bank_num][f], DURETION, (uint32_t *)patterns[i], DURETION, (uint32_t *)patterns[i+1]);
 	return IRQ_HANDLED;
 }
 
 static int run_sound(void) {
-
 	irq_attach((irq_nr_t) AT91C_ID_SSC,
 		(irq_handler_t) &sound_interrupt, 0, NULL, "at91 PIT");
 	sound_next_sample(220, DURETION, (uint32_t *)patterns[0], DURETION, (uint32_t *)patterns[1]);
