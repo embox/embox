@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief The kernel initialization sequence.
  *
  * @date 21.03.09

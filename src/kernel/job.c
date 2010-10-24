@@ -5,7 +5,6 @@
  * @date 12.04.2010
  * @author Alexey Kryachko
  * @author Maxim Okhotsky
- *
  */
 
 #include <kernel/job.h>
@@ -16,14 +15,12 @@ static jmp_buf current_job;
 #define LONGJMP_ABORT 1
 
 int job_exec(int (*exec)(int argsc, char **argsv), int argsc,char **argsv) {
-	if (exec == NULL)
-	{
+	if (exec == NULL) {
 		return -EINVAL;
 	}
-	if (setjmp(current_job) == 0)
-	{
+	if (setjmp(current_job) == 0) {
 		return exec(argsc,argsv);
-	}else{
+	} else {
 		return -EINTR;
 	}
 }

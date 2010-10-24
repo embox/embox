@@ -6,8 +6,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef ASM_AMBAPP_H__
-#define ASM_AMBAPP_H__
+#ifndef ASM_AMBAPP_H_
+#define ASM_AMBAPP_H_
 
 #include <drivers/amba_pnp.h>
 

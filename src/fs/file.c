@@ -68,6 +68,7 @@ FILE *fopen(const char *path, const char *mode) {
 		ramfs_create_param_t param;
 		strcpy(param.name, path);
 		param.size = 0;
+		param.mode = 0;
 		param.start_addr = 0x44100000;
 		drv = find_filesystem("ramfs");
 		drv->fsop->create_file(&param);

@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @date 30.06.10
+ * @author Anton Kozlov
+ */
+
 #include <kernel/mm/virt_mem/table_alloc.h>
 #include <kernel/mm/virt_mem/mmu_core.h>
 #include <kernel/mm/opallocator.h>

@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef AIO_H_
-#define AIO_H_
+#ifndef LINUX_AIO_H_
+#define LINUX_AIO_H_
 
 #include <lib/list.h>
 /**
@@ -16,10 +16,10 @@
  * Now it use only for compatible socket interface.
  */
 struct kiocb {
-	struct list_head	ki_run_list;
-	long			ki_flags;
-	int			ki_users;
-	unsigned		ki_key;		/* id of this request */
+	struct list_head  ki_run_list;
+	long              ki_flags;
+	int               ki_users;
+	unsigned          ki_key;   /* id of this request */
 };
 
-#endif /* AIO_H_ */
+#endif /* LINUX_AIO_H_ */

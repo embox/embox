@@ -1,14 +1,11 @@
 /**
  * @file
- *
- * @brief source file of dynamic memory allocator
+ * @brief Dynamic memory allocator
  *
  * @date 02.05.2010
- *
  * @auther Michail Skorginskii
  */
 
-#include <kernel/mm/mpallocator.h>
 #include <kernel/mm/mpallocator.h>
 #include <kernel/mm/kmalloc.h>
 #include <lib/list.h>
@@ -18,7 +15,7 @@
  */
 typedef struct tag {
 	size_t size;
-	bool free;
+	bool   free;
 } tag_t;
 
 typedef struct tag_free {
@@ -46,36 +43,32 @@ typedef struct tag_free {
  * return adress
  */
 #define ADRESS(begin) (void *) (begin + sizeof(tag_free_t))
-/**
- *
- *
- */
+
 #define END_TAG(begin) (tag_t*) (begin + sizeof(tag_free_t) + begin->tag.size - sizeof(tag_t))
-/**
- *
- *
- */
+
 #define BEGIN_TAG(end) (tag_free_t*) (end - end->size - sizeof(tag_free_t))
 
 /* some stuff for easey programming */
 inline static int  allocate_mem_block(int pages);
 inline static void eat_mem(size_t size, tag_free_t *ext);
+
 /* memory list */
 static LIST_HEAD(mem_pool);
-/* inited? */
-bool inited=false;
 
-void* kmalloc(size_t size) {
-	/* declarations */
+/* inited? */
+bool inited = false;
+
+void *kmalloc(size_t size) {
 	tag_free_t *tmp_begin;
 	struct list_head *tmp_loop;
+	int expr;
 	/* some securuty actions */
 	if (size < (sizeof(tag_t)+sizeof(tag_free_t)+1)) {
 		size = sizeof(tag_t)+sizeof(tag_free_t)+1;
 	}
 	/* we inited */
 	if (!inited) {
-		int expr = allocate_mem_block(CONFIG_MALLOC_SIZE);
+		expr = allocate_mem_block(CONFIG_MALLOC_SIZE);
 		if ( expr  == 0 ) {
 			return 0;
 		}

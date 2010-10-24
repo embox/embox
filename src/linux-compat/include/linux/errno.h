@@ -6,8 +6,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef _LINUX_ERRNO_H
-#define _LINUX_ERRNO_H
+#ifndef LINUX_ERRNO_H_
+#define LINUX_ERRNO_H_
 
 #include <errno.h>
 

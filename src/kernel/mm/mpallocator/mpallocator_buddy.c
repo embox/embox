@@ -192,10 +192,10 @@ void * mpalloc( size_t size ) {
 	taddr block,parent,taddr_fr;
 
 	/* initialization of allocator */
-    if (!hasinit) {
-        multipage_init();
-        hasinit = 1;
-    }
+	if (!hasinit) {
+    		multipage_init();
+    		hasinit = 1;
+	}
 
 	/* find proper block */
 	if ( !( block = dfs_find( /* root of tree */ 1 , rootblocksize , size ) ) )
@@ -263,32 +263,31 @@ void mpfree( void * ptr ) {
 extern void multipage_info() {
 	char *ptr;
 	/* initialization of allocator */
-    if (!hasinit) {
-        multipage_init();
-        hasinit = 1;
-    }
+	if (!hasinit) {
+    		multipage_init();
+    		hasinit = 1;
+	}
 
 #if 0 /* test of bits arifmetics */
 #define VAR (HEAP_START_PTR)[var-1]
 
-    int var = 5;
-    set_bits(var,0);
-    TRACE("\n");
+	int var = 5;
+	set_bits(var,0);
+	TRACE("\n");
 
-    TRACE("%d\n",VAR);
-    SET_BIT1(var,4);
-    TRACE("%d\n",VAR);
-    SET_BIT1(var,2);
-    TRACE("%d\n",VAR);
-    if (HAS_BIT(var,4)) {
-        TRACE("Has bit 4\n");
-    }
-    SET_BIT0(var,4);
-    TRACE("%d\n",VAR);
+	TRACE("%d\n",VAR);
+	SET_BIT1(var,4);
+	TRACE("%d\n",VAR);
+	SET_BIT1(var,2);
+	TRACE("%d\n",VAR);
+	if (HAS_BIT(var,4)) {
+		TRACE("Has bit 4\n");
+	}
+	SET_BIT0(var,4);
+	TRACE("%d\n",VAR);
 
 #undef VAR
 #endif
-
 
 	TRACE("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
 	TRACE("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
@@ -306,6 +305,5 @@ extern void multipage_info() {
 	TRACE("\n");
 	TRACE("info end\n");
 }
-
 
 #endif

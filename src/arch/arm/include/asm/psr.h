@@ -6,6 +6,9 @@
  * @author Anton Kozlov
  */
 
+#ifndef ARM_PSR_H_
+#define ARM_PSR_H_
+
 static inline unsigned __get_cpsr(void) {
 	unsigned long retval;
 	asm volatile (" mrs  %0, cpsr" : "=r" (retval) : /* no inputs */);
@@ -15,4 +18,6 @@ static inline unsigned __get_cpsr(void) {
 static inline void __set_cpsr(unsigned val) {
 	asm volatile (" msr  cpsr, %0" : /* no outputs */ : "r" (val) );
 }
+
+#endif /* ARM_PSR_H_ */
 

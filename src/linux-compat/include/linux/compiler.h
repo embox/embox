@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef COMPILER_H_
-#define COMPILER_H_
+#ifndef LINUX_COMPILER_H_
+#define LINUX_COMPILER_H_
 
 /* In linux it defined as "noderef". It means that pointer cannot be
  * dereferenced. And use in sys_calls because this variable must be copied by
@@ -30,4 +30,4 @@
 # define __release(x) (void)0
 # define __cond_lock(x,c) (c)
 
-#endif /* COMPILER_H_ */
+#endif /* LINUX_COMPILER_H_ */

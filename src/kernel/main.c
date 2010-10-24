@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Main function.
  *
  * @date 27.11.08
