@@ -128,7 +128,8 @@ static void nxt_lcd_enable(__u32 on) {
 	nxt_lcd_command(0xAE | ((on) ? 1 : 0));
 }
 
-static void nxt_lcd_set_all_pixels_on(__u32 on) {
+/* just it's great for debuggin */
+void nxt_lcd_set_all_pixels_on(__u32 on) {
 	nxt_lcd_command(0xA4 | ((on) ? 1 : 0));
 }
 

@@ -5,4 +5,4 @@ $_SRCS-nxt_lcd += lcd.c
 $_DEPS-nxt_lcd += $(PLATFORM).driver.nxt_lcd
 
 $_SRCS-nxt_lcd_picture += picture_embox.c
-$_DEPS-nxt_lcd_picture += $(PLATFORM).driver.nxt_lcd
+$_DEPS-nxt_lcd_picture += $(PLATFORM).driver.nxt_lcd $(PLATFORM).driver.nxt_avr_init

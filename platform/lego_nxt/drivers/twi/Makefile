@@ -1,4 +1,4 @@
 
-$_MODS += nxt_avr_comm
+$_MODS += nxt_at91_avr_comm
 
-$_SRCS-nxt_avr_comm += twi.c
+$_SRCS-nxt_at91_avr_comm += twi.c
