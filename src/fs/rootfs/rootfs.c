@@ -30,7 +30,9 @@ static node_t *root_node;
 
 static int rootfs_init(void * par) {
 	root_node = alloc_node("/");
+#ifdef CONFIG_RAMFS_CPIO
 	unpack_to_rootfs();
+#endif
 	return 0;
 }
 

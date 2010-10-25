@@ -186,7 +186,10 @@ static int ramfs_create(void *params) {
 	ramfs_file_description_t *fd;
 
 	par = (ramfs_create_param_t *)params;
-	nod = vfs_add_path(par->name, NULL);
+	if (NULL == (nod = vfs_add_path(par->name, NULL))) {
+		return 0;/*file already exist*/
+	}
+
 	fd  = ramfs_info_alloc();
 	nod->fs_type   = &ramfs_drv;
 	nod->file_info = (void *)fd;
