@@ -87,10 +87,10 @@ static uint32_t freq_tone[2][3] = {
 
 #define DURETION 500
 
-static int bank_num = 0;
+static uint32_t bank_num = 0;
 
 void switch_bank(void) {
-	bank_num = (bank_num++) & 1;
+	bank_num ++;
 }
 
 irq_return_t sound_interrupt (int irq_num, void *dev_id) {
@@ -108,7 +108,7 @@ irq_return_t sound_interrupt (int irq_num, void *dev_id) {
 		i = 0;
 	}
 
-	sound_next_sample(freq_tone[bank_num][f], DURETION, (uint32_t *)patterns[i], DURETION, (uint32_t *)patterns[i+1]);
+	sound_next_sample(freq_tone[bank_num & 0x1][f], DURETION, (uint32_t *)patterns[i], DURETION, (uint32_t *)patterns[i+1]);
 	return IRQ_HANDLED;
 }
 
