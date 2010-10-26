@@ -16,6 +16,7 @@ static int     rootfs_close(void *file);
 static size_t  rootfs_read(void *buf, size_t size, size_t count, void *file);
 static size_t  rootfs_write(const void *buf, size_t size, size_t count, void *file);
 static int     rootfs_seek(void *file, long offset, int whence);
+static int rootfs_ioctl(void *file, int request, ...);
 
 static file_operations_t rootfs_fop = {
 	rootfs_open,
@@ -23,7 +24,7 @@ static file_operations_t rootfs_fop = {
 	rootfs_read,
 	rootfs_write,
 	rootfs_seek,
-//	NULL
+	rootfs_ioctl,
 };
 
 static node_t *root_node;
@@ -81,3 +82,8 @@ static size_t rootfs_write(const void *buf, size_t size, size_t count, void *fil
 static int rootfs_seek(void *file, long offset, int whence) {
 	return 0;
 }
+
+static int rootfs_ioctl(void *file, int request, ...) {
+	return 0;
+}
+

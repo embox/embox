@@ -60,13 +60,15 @@ static int     ramfs_fclose(void *file);
 static size_t  ramfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t  ramfs_fwrite(const void *buf, size_t size, size_t count, void *file);
 static int     ramfs_fseek(void *file, long offset, int whence);
+static int     ramfs_ioctl(void *file, int request, ...);
 
 static file_operations_t ramfs_fop = {
 	ramfs_fopen,
 	ramfs_fclose,
 	ramfs_fread,
 	ramfs_fwrite,
-	ramfs_fseek
+	ramfs_fseek,
+	ramfs_ioctl
 };
 
 static void *ramfs_fopen(const char *file_name, const char *mode) {
@@ -92,8 +94,9 @@ static int ramfs_fclose(void *file) {
 
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 	ramfs_file_description_t *fd;
-	fd = (ramfs_file_description_t*)file;
 	size_t size_to_read = size*count;
+	fd = (ramfs_file_description_t*)file;
+
 
 	if (fd == NULL) {
 		return -2; /*Null file descriptor*/
@@ -110,8 +113,9 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file) {
 	ramfs_file_description_t *fd;
-	fd = (ramfs_file_description_t*)file;
 	size_t size_to_write = size*count;
+	fd = (ramfs_file_description_t*)file;
+
 
 	if (fd == NULL) {
 		return -2; /*Null file descriptor*/
@@ -130,8 +134,8 @@ static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *fil
 
 static int ramfs_fseek(void *file, long offset, int whence) {
 	ramfs_file_description_t *fd;
-	fd = (ramfs_file_description_t*)file;
 	int new_offset;
+	fd = (ramfs_file_description_t*)file;
 
 	if (fd == NULL) {
 		return -2; /*Null file descriptor*/
@@ -159,6 +163,20 @@ static int ramfs_fseek(void *file, long offset, int whence) {
 
         return 0;
 }
+
+static int ramfs_ioctl(void *file, int request, ...) {
+	ramfs_file_description_t *fd;
+	uint32_t *addr;
+	va_list args;
+
+	va_start(args, request);
+	addr = (uint32_t *) va_arg( args, int );
+	va_end(args);
+	fd = (ramfs_file_description_t*)file;
+	*addr =  fd->start_addr;
+	return 0;
+}
+
 
 /* File system operations */
 
@@ -217,3 +235,4 @@ static int __init ramfs_init(void * par) {
 	TRACE("RAMFS: inited\n");
 	return 0;
 }
+

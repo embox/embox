@@ -23,7 +23,7 @@ typedef int    (*FILEOP_CLOSE)(void * file);
 typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
 typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
 typedef int    (*FILEOP_FSEEK)(void *file, long offset, int whence);
-//typedef int (*FILEOP_IOCTRL)(void *file, long offset, int whence);
+typedef int    (*FILEOP_IOCTRL)(void *file, int request, ...);
 
 typedef struct file_operations {
 	FILEOP_OPEN  fopen;
@@ -31,7 +31,7 @@ typedef struct file_operations {
 	FILEOP_READ  fread;
 	FILEOP_WRITE fwrite;
 	FILEOP_FSEEK fseek;
-//	FILEOP_IOCTRL ioctrl;
+	FILEOP_IOCTRL ioctrl;
 } file_operations_t;
 
 #endif /* FILE_H_ */

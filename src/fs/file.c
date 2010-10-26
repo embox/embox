@@ -36,7 +36,7 @@ void lsof_map_init(void) {
 static void cache_fd(const char *path, FILE *file) {
 	lsof_map_t *head;
 	if(list_empty(&free_list)) {
-		return NULL;
+		return;
 	}
 	head = (lsof_map_t *)free_list.next;
 	head->fd = file;
@@ -92,6 +92,7 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 	lsof_map_t *lsof;
 	node_t *nod;
 	file_system_driver_t *drv;
+
 	lsof = find_fd(file);
 	nod = vfs_find_node(lsof->path, NULL);
 	if (NULL == nod) {
@@ -140,22 +141,6 @@ int fclose(FILE *fp) {
 	uncache_fd(fp);
 	return drv->file_op->fclose(fp);
 }
-#if 0
-int remove(const char *pathname) {
-	ramfs_create_param_t param;
-	fsop_desc_t *fsop;
-	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs/"))) {
-		LOG_ERROR("Can't find ramfs disk\n");
-		return -1;
-	}
-	sprintf(param.name, basename(pathname));
-	if (-1 == fsop->delete_file(param.name)) {
-		LOG_ERROR("Can't delete ramfs disk\n");
-		return -1;
-	}
-	return 0;
-}
-#endif
 
 int fseek(FILE * stream, long int offset, int origin) {
 	file_operations_t **fop = (file_operations_t **)stream;
