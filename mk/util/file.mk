@@ -62,7 +62,7 @@ d-wildcard_first = $(call __wildcard_first,d-wildcard,$1)
 f-wildcard_first = $(call __wildcard_first,f-wildcard,$1)
   wildcard_first = $(call __wildcard_first,  wildcard,$1)
 __wildcard_first = $(__gmsl_tr2)$(or $(call $1,$(firstword $2)),$ \
-                        $(call $0,$(wordlist 2,$(words $2))))
+                        $(call $0,$1,$(call rest,$2)))
 
 d-wildcard_relative_first = $(call __wildcard_relative,d-wildcard_first,$1,$2)
 f-wildcard_relative_first = $(call __wildcard_relative,f-wildcard_first,$1,$2)
