@@ -65,7 +65,6 @@ typedef volatile struct mb_timers {
 static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
 
-
 /*we must use proxy for interrupt handler because we must clean bit in register
  * timer.
  */

@@ -86,8 +86,7 @@ static void switch_rx_buff(void) {
 #ifdef PINPONG_BUFFER
 	if (current_rx_regs == emaclite->rx_ping) {
 		current_rx_regs = emaclite->rx_ping;
-	}
-	else {
+	} else {
 		current_rx_regs = emaclite->rx_pong;
 	}
 #else
@@ -99,8 +98,7 @@ static void switch_tx_buff(void) {
 #ifdef PINPONG_BUFFER
 	if (current_tx_regs == emaclite->tx_ping) {
 		current_tx_regs = emaclite->tx_ping;
-	}
-	else {
+	} else {
 		current_tx_regs = emaclite->tx_pong;
 	}
 #else
@@ -180,21 +178,18 @@ static void pack_receiving(void *dev_id) {
 	/* Check if received ethernet frame is a raw ethernet frame
 	 * or an IP packet or an ARP packet */
 	switch (proto_type) {
-	case ETH_P_IP: {
+	case ETH_P_IP:
 		len = (((*(volatile uint32_t *) (RX_PACK + 0x10))) >> 16) & 0xFFFF;
 		len += ETH_HLEN + ETH_FCS_LEN;
 		break;
-	}
-	case ETH_P_ARP: {
+	case ETH_P_ARP:
 		len = 28 + ETH_HLEN + ETH_FCS_LEN;
 		break;
-	}
-	default: {
+	default:
 		/* Field contains type other than IP or ARP, use max
 		 * frame size and let user parse it */
 		len = ETH_FRAME_LEN;
 		break;
-	}
 	}
 
 	/* Read from the EmacLite device */
@@ -320,7 +315,8 @@ static const struct net_device_ops _netdev_ops = {
 static int __init unit_init(void) {
 	/*if some module lock irq number we break initializing*/
 	net_device_t *net_device;
-	/*initialize net_device structures and save information about them to local massive*/
+	/*initialize net_device structures and save
+	 * information about them to local massive */
 	if (NULL != (net_device = alloc_etherdev(0))) {
 		net_device->netdev_ops = &_netdev_ops;
 		net_device->irq = XILINX_EMACLITE_IRQ_NUM;

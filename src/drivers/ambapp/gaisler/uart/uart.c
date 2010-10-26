@@ -1,5 +1,5 @@
 /**
- * \file uart.c
+ * @file
  */
 
 #include <types.h>
