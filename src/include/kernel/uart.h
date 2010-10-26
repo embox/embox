@@ -5,13 +5,14 @@
  * @author Fedor Burdun
  */
 
-#ifndef __UART_H_
+#ifndef UART_H_
+#define UART_H_
 
-int uart_init(void);
+extern int uart_init(void);
 
-void uart_putc(char ch);
+extern void uart_putc(char ch);
 
-char uart_getc(void);
+extern char uart_getc(void);
 
 /*
 int uart_set_irq_handler(irq_handler_t pfunc);
@@ -19,4 +20,4 @@ int uart_set_irq_handler(irq_handler_t pfunc);
 int uart_remove_irq_handler(void) ;
 */
 
-#endif /* __UART_H_ */
+#endif /* UART_H_ */

@@ -1,4 +1,4 @@
-/* @file AT91SAM7_US.h
+/* @file
  * @brief USART Controller interface
  *
  * @date 26.09.2010

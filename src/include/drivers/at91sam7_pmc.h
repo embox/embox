@@ -1,4 +1,4 @@
-/* @file AT91SAM7_PMC.h
+/* @file
  * @brief Power Managment Controller interface
  *
  * @date 26.09.2010

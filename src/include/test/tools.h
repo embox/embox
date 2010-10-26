@@ -29,15 +29,15 @@
 	})
 
 #define __TEST_FAILURE_INFO_DEF(s_var) \
-		static struct test_failure_info s_var
+	static struct test_failure_info s_var
 
 #define __TEST_FAILURE_DEF(s_var, _info) \
-		static const struct test_failure s_var = { \
-				.func = __func__, \
-				.file = __FILE__, \
-				.line = __LINE__, \
-				.info = _info, \
-		}
+	static const struct test_failure s_var = { \
+		.func = __func__, \
+		.file = __FILE__, \
+		.line = __LINE__, \
+		.info = _info,    \
+	}
 
 struct test_failure_info;
 

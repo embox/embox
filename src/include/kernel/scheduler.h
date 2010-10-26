@@ -15,38 +15,38 @@
 /**
  * Start working with threads.
  */
-void scheduler_start(void);
+extern void scheduler_start(void);
 
 /**
  * !!!!Can be called only in idle_thread!!!!
  * Stops working with threads. After it contexts can't be switched.
  * Then scheduler_start can be recalled.
  */
-void scheduler_stop(void);
+extern void scheduler_stop(void);
 
 /**
  * Is called after entering a regular critical section.
  * Increases preemption_count.
  */
-void scheduler_lock(void);
+extern void scheduler_lock(void);
 
 /**
  * Is called after escaping last critical section.
  * Decreases preemption_count. If the latter one becomes zero,
  * calls scheduler_dispatch.
  */
-void scheduler_unlock(void);
+extern void scheduler_unlock(void);
 
 /**
  * Changes currently executed thread.
  */
-void scheduler_dispatch(void);
+extern void scheduler_dispatch(void);
 
 /**
  * Adds thread into the list of executable threads.
  * @param added_thread thread to be added into the list
  */
-void scheduler_add(struct thread *added_thread);
+extern void scheduler_add(struct thread *added_thread);
 
 /**
  * Removes a thread from the list of executable threads.
@@ -54,7 +54,7 @@ void scheduler_add(struct thread *added_thread);
  * @retval 0 if thread was successfully removed.
  * @retval -EINVAL if @c removed_thread is NULL or &idle_thread.
  */
-int scheduler_remove(struct thread *removed_thread);
+extern int scheduler_remove(struct thread *removed_thread);
 
 /**
  *
@@ -62,32 +62,32 @@ int scheduler_remove(struct thread *removed_thread);
  * @param event ???
  * @return 0 if operation executed successfully.
  */
-int thread_lock(struct thread *thread, struct event *event);
+extern int thread_lock(struct thread *thread, struct event *event);
 
 /**
  * puts current thread to sleep
  * adds it to list of given event
  * @param event - event
  */
-int scheduler_sleep(struct event *event);
+extern int scheduler_sleep(struct event *event);
 
 /**
  * wakes up all threads, to given event
  * @param event - event
  */
-int scheduler_wakeup(struct event *event);
+extern int scheduler_wakeup(struct event *event);
 
 /**
  * wakes up only first thread in the list of the event
  * @param event - event
  */
-int scheduler_wakeup_first(struct event *event);
+extern int scheduler_wakeup_first(struct event *event);
 
 /**
  * Initialize an event.
  *
  * @param event the initialized event.
  */
-void event_init(struct event *event);
+extern void event_init(struct event *event);
 
 #endif /* SCHEDULER_H_ */

@@ -1,4 +1,4 @@
-/* @file at91_watchdog.c
+/* @file
  * @brief AT91 watchdog driver
  *
  * @date 29.09.2010

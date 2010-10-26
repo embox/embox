@@ -4,11 +4,10 @@
  * @date 02.09.2009
  * @author Andrey Baboshin
  */
-#ifndef _TIMERS_H_
-#define _TIMERS_H_
+#ifndef TIMER_H_
+#define TIMER_H_
 
 #include <types.h>
-
 #include <kernel/irq.h>
 
 #ifndef __ASSEMBLER__
@@ -33,31 +32,31 @@ typedef void (*TIMER_FUNC)(uint32_t id);
  * @retval 1 if the timer is set
  * @retval 0 if the timer isn't set
  */
-int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
+extern int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
 
 /**
  * Shut down timer with 'id' identity
  *
  * @param id timer identifier
  */
-void close_timer(uint32_t id);
+extern void close_timer(uint32_t id);
 
 /**
  * Save timers context. Now saving only one context.
  */
-int timers_context_save(void);
+extern int timers_context_save(void);
 
 /**
  * Restore context by it number.
  */
-int timers_context_restore(int context_number);
+extern int timers_context_restore(int context_number);
 
 /**
  * Shutdown timers subsystem.
  */
-void timers_off(void);
+extern void timers_off(void);
 
-uint32_t cnt_system_time(void);
+extern uint32_t cnt_system_time(void);
 
 #endif /*__ASSEMBLER__*/
-#endif /*_TIMERS_H_*/
+#endif /* TIMER_H_ */

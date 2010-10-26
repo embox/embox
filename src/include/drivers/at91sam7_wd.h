@@ -1,4 +1,4 @@
-/* @file at91sam7_wd.h
+/* @file
  * @brief Watchdog interface
  *
  * @date 26.09.2010

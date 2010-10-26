@@ -84,7 +84,7 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 				//printf("data: %s\n", dp->th_data);
 				fwrite(dp->th_data, size - 4, 1, file);
 				dsize += size - 4;
-				if(dsize % 0x200 == 0) printf("Download: %d bytes\r", dsize);
+				if(dsize % 0x1000 == 0) printf("Download: %d bytes\r", dsize);
 				ap->th_opcode = htons((short)ACK);
 				ap->th_block = dp->th_block;
 				if(sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen) < 0) {

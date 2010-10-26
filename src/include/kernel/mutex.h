@@ -27,7 +27,7 @@ struct mutex {
  * initializes given mutex
  * @param mutex mutex to initialize
  */
-void mutex_init(struct mutex *mutex);
+extern void mutex_init(struct mutex *mutex);
 
 /**
  * Locks the mutex, binds it to the current thread and increases lockscount.
@@ -37,7 +37,7 @@ void mutex_init(struct mutex *mutex);
  *
  * @param free_mutex Mutex to lock.
  */
-void mutex_lock(struct mutex *free_mutex);
+extern void mutex_lock(struct mutex *free_mutex);
 
 /**
  * Unleashes the mutex from lock and unbinds it, if lockscount
@@ -45,7 +45,7 @@ void mutex_lock(struct mutex *free_mutex);
  *
  * @param locked_mutex Previously locked mutex.
  */
-void mutex_unlock(struct mutex *locked_mutex);
+extern void mutex_unlock(struct mutex *locked_mutex);
 
 /**
  * Tries to lock the mutex.
@@ -53,6 +53,6 @@ void mutex_unlock(struct mutex *locked_mutex);
  *
  * @param free_mutex Mutex to lock.
  */
-int mutex_trylock(struct mutex *free_mutex);
+extern int mutex_trylock(struct mutex *free_mutex);
 
 #endif /* MUTEX_H_ */

@@ -1,4 +1,4 @@
-/* @file AT91SAM7_PIT.h
+/* @file
  * @brief Periodical Interval Timer interface
  *
  * @date 26.09.2010

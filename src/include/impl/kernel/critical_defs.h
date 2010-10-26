@@ -23,11 +23,11 @@
 /* internal helper macros. */
 
 #define __CRITICAL_MASK(name) \
-		__CRITICAL_MASK__(__CRITICAL_##name##_BITS, __CRITICAL_##name##_SHIFT)
+	__CRITICAL_MASK__(__CRITICAL_##name##_BITS, __CRITICAL_##name##_SHIFT)
 #define __CRITICAL_MASK__(bits, shift) (((0x1UL << (bits)) - 1) << (shift))
 
 #define __CRITICAL_HIGH(name) \
-		__CRITICAL_HIGH__(__CRITICAL_##name##_BITS, __CRITICAL_##name##_SHIFT)
+	__CRITICAL_HIGH__(__CRITICAL_##name##_BITS, __CRITICAL_##name##_SHIFT)
 #define __CRITICAL_HIGH__(bits, shift) (~((0x1UL << (shift)) - 1))
 
 #define __CRITICAL_COUNT(name) \

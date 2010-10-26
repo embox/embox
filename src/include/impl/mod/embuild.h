@@ -44,19 +44,19 @@
 /* Macro API impl. */
 
 #define __MOD_DEF(s_mod, s_mod_pkg, mod_name) \
-		__MOD_INFO_DECL(s_mod); \
-		__MOD_PACKAGE_DECL(s_mod_pkg); \
-		__MOD_ARRAY_DEF(s_mod, requires); \
-		__MOD_ARRAY_DEF(s_mod, provides); \
-		__MOD_PRIVATE_DEF(s_mod); \
-		const struct mod __MOD(s_mod) = { \
-				.private  = &__MOD_PRIVATE(s_mod), \
-				.info     = (struct mod_info *) &__MOD_INFO(s_mod), \
-				.package  = (struct mod_package *) &__MOD_PACKAGE(s_mod_pkg), \
-				.name     = mod_name, \
-				.requires = (struct mod **) &__MOD_ARRAY(s_mod, requires), \
-				.provides = (struct mod **) &__MOD_ARRAY(s_mod, provides), \
-			}
+	__MOD_INFO_DECL(s_mod); \
+	__MOD_PACKAGE_DECL(s_mod_pkg); \
+	__MOD_ARRAY_DEF(s_mod, requires); \
+	__MOD_ARRAY_DEF(s_mod, provides); \
+	__MOD_PRIVATE_DEF(s_mod); \
+	const struct mod __MOD(s_mod) = { \
+		.private  = &__MOD_PRIVATE(s_mod), \
+		.info     = (struct mod_info *) &__MOD_INFO(s_mod), \
+		.package  = (struct mod_package *) &__MOD_PACKAGE(s_mod_pkg), \
+		.name     = mod_name, \
+		.requires = (struct mod **) &__MOD_ARRAY(s_mod, requires), \
+		.provides = (struct mod **) &__MOD_ARRAY(s_mod, provides), \
+	}
 
 #define __MOD_DEP_DEF(s_mod, s_dep) \
 		__MOD_DECL(s_mod); \

@@ -37,7 +37,8 @@ extern unsigned char _ctype[];
 #define islower(c)      ((__ismask(c)&(_L)) != 0)
 /* Checks for any printable character including space. */
 #define isprint(c)      ((__ismask(c)&(_P|_U|_L|_D|_SP)) != 0)
-/* Checks for any printable character which is not a space or an alphanumeric character. */
+/* Checks for any printable character which is not a space
+ * or an alphanumeric character. */
 #define ispunct(c)      ((__ismask(c)&(_P)) != 0)
 /* Checks for white-space characters. */
 #define isspace(c)      ((__ismask(c)&(_S)) != 0)
@@ -46,7 +47,8 @@ extern unsigned char _ctype[];
 /* Checks for a hexadecimal digits. */
 #define isxdigit(c)     ((__ismask(c)&(_D|_X)) != 0)
 
-/* Checks whether c is a 7-bit unsigned char value that fits into the ASCII character set. */
+/* Checks whether c is a 7-bit unsigned char value that
+ * fits into the ASCII character set. */
 #define isascii(c) (((unsigned char)(c))<=0x7f)
 #define toascii(c) (((unsigned char)(c))&0x7f)
 

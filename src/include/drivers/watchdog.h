@@ -1,10 +1,10 @@
-/* @file watchdog.h
+/**
+ * @file
  * @brief General interface for watchdog
  *
  * @date 29.09.2010
  * @author Anton Kozlov
  */
-
 
 /* Init watchdog */
 void watchdog_init(void);

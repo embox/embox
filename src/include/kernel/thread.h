@@ -68,7 +68,7 @@ struct thread {
 	/** Function, running in thread. */
 	void (*run)(void);
 	/** Does thread exist? (For it memory was alloted and it was not deleted) */
-    bool exist;
+	bool exist;
 	/** Flag, which shows, whether tread can be changed. */
 	bool reschedule;
 	/** Thread's identifier. Unique for each thread. */
@@ -76,13 +76,13 @@ struct thread {
 	/** Thread's priority among another threads. */
 	thread_priority_t priority;
 	/** State, in which thread is now. */
-    thread_state_t state;
+	thread_state_t state;
 	/** Shows if thread is waiting for message. */
-    bool need_message;
-    /** Queue of messages, sent to this thread. */
-    queue_t messages;
-    /** Event, appearing when thread receives message. */
-    struct event msg_event;
+	bool need_message;
+	/** Queue of messages, sent to this thread. */
+	queue_t messages;
+	/** Event, appearing when thread receives message. */
+	struct event msg_event;
 	/** List item, corresponding to thread in list of some event. */
 	struct list_head wait_list;
 
@@ -113,30 +113,30 @@ struct thread {
  * @return pointer to new thread if all parameters are correct.
  * @return NULL if one of parameters is NULL or all places for threads are occupied.
  */
-struct thread *thread_create(void (*run)(void), void *stack_address);
+extern struct thread *thread_create(void (*run)(void), void *stack_address);
 
 /**
  * Starts a thread.
  */
-void thread_start(struct thread *thread);
+extern void thread_start(struct thread *thread);
 
 /**
  * Changes thread's priority.
  */
-void thread_change_priority(struct thread *thread, int new_priority);
+extern void thread_change_priority(struct thread *thread, int new_priority);
 
 /**
  * Stops chosen thread.
  * Deletes previous zombie.
  * Makes it a zombie.
  */
-int thread_stop(struct thread *stopped_thread);
+extern int thread_stop(struct thread *stopped_thread);
 
 /**
  * Switches context to another thread.
  * Currently working thread leaves CPU for some time.
  */
-void thread_yield(void);
+extern void thread_yield(void);
 
 /**
  * Send message to thread.
@@ -144,7 +144,7 @@ void thread_yield(void);
  * @param message sent message
  * @param thread thread to receive message
  */
-void msg_send(struct message *message, struct thread *thread);
+extern void msg_send(struct message *message, struct thread *thread);
 
 /**
  * Allows thread to receive a message.
@@ -152,14 +152,14 @@ void msg_send(struct message *message, struct thread *thread);
  * @param thread thread, which wants to take a message.
  * @return received message (wait until there will be such a message).
  */
-struct message *msg_receive(void);
+extern struct message *msg_receive(void);
 
 /**
  * Allots memory for new message to send to thread.
  *
  * @return pointer to new message.
  */
-struct message *msg_new(void);
+extern struct message *msg_new(void);
 
 /**
  * Free memory from the message.
@@ -168,6 +168,6 @@ struct message *msg_new(void);
  * @return -1 if message is NULL
  * @return 0 otherwise.
  */
-int msg_erase(struct message *message);
+extern int msg_erase(struct message *message);
 
 #endif /* THREAD_H_ */

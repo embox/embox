@@ -7,13 +7,13 @@
  * @author Fedor Burdun
  */
 
-#ifndef __MPALLOCATOR_H_
-#define __MPALLOCATOR_H_
+#ifndef MPALLOCATOR_H_
+#define MPALLOCATOR_H_
 
 #include <types.h>
 
-void*	mpalloc( size_t page_quantity );
-void	mpfree( void* pointer );
+extern void*	mpalloc( size_t page_quantity );
+extern void	mpfree( void* pointer );
 
-#endif /* __MPALLOCATOR_H_ */
+#endif /* MPALLOCATOR_H_ */
 

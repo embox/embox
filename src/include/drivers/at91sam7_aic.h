@@ -1,4 +1,4 @@
-/* @file AT91SAM7_AIC.h
+/* @file
  * @brief Interrupt Controller interface
  *
  * @date 26.09.2010

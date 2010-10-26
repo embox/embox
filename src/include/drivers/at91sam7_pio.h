@@ -1,4 +1,4 @@
-/* @file AT91SAM7_PIO.h
+/* @file
  * @brief Parallel Input/Output Controller interface
  *
  * @date 26.09.2010

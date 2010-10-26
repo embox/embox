@@ -40,7 +40,7 @@ inline static void print_table_head(void) {
 			"Vendor Name", "Device Name","ver", "irq");
 }
 
-inline static void show_bars_type(AMBA_BAR_INFO *bar) {
+inline static void show_bars_type(amba_bar_info_t *bar) {
 	switch (bar->type) {
 	case 1:
 		TRACE("\tapb:");
@@ -53,14 +53,14 @@ inline static void show_bars_type(AMBA_BAR_INFO *bar) {
 	}
 }
 
-inline static void show_bar_info(AMBA_BAR_INFO *bar) {
+inline static void show_bar_info(amba_bar_info_t *bar) {
 	if (bar->used) {
 		show_bars_type(bar);
 		TRACE("%X\n", bar->start);
 	}
 }
 #if 0
-static void show_bars_infos(AMBA_DEV *dev) {
+static void show_bars_infos(amba_dev_t *dev) {
 	int i;
 	for (i = 0; i < array_len(dev->bar); i++) {
 		if (dev->bar[i].used) {
@@ -72,7 +72,7 @@ static void show_bars_infos(AMBA_DEV *dev) {
 #endif
 const char UNKNOWN[] = "<unknown>";
 
-static void show_dev(AMBA_DEV *dev, bool show_user) {
+static void show_dev(amba_dev_t *dev, bool show_user) {
 
 	char *ven_name, *dev_name;
 	if (NULL == dev) return;
@@ -92,7 +92,7 @@ static void show_dev(AMBA_DEV *dev, bool show_user) {
 
 static int print_apb_entries(int amount) {
 	int i, count = 0;
-	AMBA_DEV dev;
+	amba_dev_t dev;
 
 	for (i = 0; i < amount/4; i++) {
 		if(-1 != fill_amba_dev(&dev, i, false, false)){
@@ -105,7 +105,7 @@ static int print_apb_entries(int amount) {
 
 static int print_ahb_entries(int amount, bool is_master) {
 	int i, count = 0;
-	AMBA_DEV dev;
+	amba_dev_t dev;
 
 	for (i = 0; i < amount; i++) {
 
@@ -165,7 +165,7 @@ static void print_all_pnp_devs(void) {
 }
 #endif
 static void print_ahbm_pnp_dev(uint32_t slot) {
-	AMBA_DEV dev;
+	amba_dev_t dev;
 	if (slot >AHB_MASTERS_QUANTITY) {
     		LOG_ERROR("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
     		return;
@@ -183,7 +183,7 @@ static void print_ahbm_pnp_dev(uint32_t slot) {
 }
 
 static void print_ahbsl_pnp_dev(uint32_t slot) {
-	AMBA_DEV dev;
+	amba_dev_t dev;
 	if (slot >AHB_SLAVES_QUANTITY) {
 		LOG_ERROR("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
@@ -201,7 +201,7 @@ static void print_ahbsl_pnp_dev(uint32_t slot) {
 }
 
 static void print_apb_pnp_dev(uint32_t slot) {
-	AMBA_DEV dev;
+	amba_dev_t dev;
 	if (slot > APB_QUANTITY) {
 		TRACE("print_apb_pnp_dev: Too big arg. The quantity of APB devices is %d\n",APB_QUANTITY);
 		return;

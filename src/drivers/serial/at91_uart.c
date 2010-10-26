@@ -1,5 +1,5 @@
 /**
- * @file at91_uart.c
+ * @file
  * @brief TODO
  *
  * @date 7.06.2010

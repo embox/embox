@@ -4,7 +4,6 @@
  *
  * @date 15.07.2010
  * @author Avdyukhin Dmitry
- *
  */
 
 #ifndef ELF_EXECUTER_H_
@@ -18,6 +17,6 @@
  * @param file executed file
  * @return 0 if there was no error.
  */
-int elf_execute(FILE *file);
+extern int elf_execute(FILE *file);
 
 #endif /* ELF_EXECUTER_H_ */

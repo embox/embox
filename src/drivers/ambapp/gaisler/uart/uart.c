@@ -106,7 +106,7 @@ char uart_getc(void) {
 
 #ifdef CONFIG_AMBAPP
 static int dev_regs_init() {
-	AMBA_DEV amba_dev;
+	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, CONFIG_VENDOR_ID_GAISLER,
 					CONFIG_DEV_ID_GAISLER_UART, false, false)) {
 		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",

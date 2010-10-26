@@ -1,14 +1,13 @@
 /**
  * @file
- *
  * @brief Describes interface for testing trap's environment
  *
  * @date 15.03.2010
  * @author Anton Bondarev
  */
 
-#ifndef TESTTRAPS_H_
-#define TESTTRAPS_H_
+#ifndef TESTTRAPS_CORE_H_
+#define TESTTRAPS_CORE_H_
 
 #include <types.h>
 #include <hal/env/traps_core.h>
@@ -38,5 +37,5 @@ extern int testtraps_fire_softtrap(uint32_t number, void *data);
  */
 extern traps_env_t *testtraps_env(void);
 
-#endif /* TESTTRAPS_H_ */
+#endif /* TESTTRAPS_CORE_H_ */
 

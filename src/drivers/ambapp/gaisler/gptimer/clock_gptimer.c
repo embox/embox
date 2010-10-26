@@ -128,7 +128,7 @@ void clock_init(void) {
 
 #ifdef CONFIG_AMBAPP
 static int dev_regs_init(irq_nr_t *irq_nr) {
-	AMBA_DEV amba_dev;
+	amba_dev_t amba_dev;
 
 	assert(NULL != irq_nr);
 	if (-1 == capture_amba_dev(&amba_dev, CONFIG_VENDOR_ID_GAISLER,

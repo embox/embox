@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @date 30.06.10
+ * @author Anton Kozlov
+ */
+
 #include <hal/mm/mmu_core.h>
 
 typedef void (*mmu_page_table_set_t)(mmu_pte_t * ptd, mmu_pte_t * pte);

@@ -7,8 +7,8 @@
  * @author Fedor Burdun
  */
 
-#ifndef __OPALLOCATOR_H_
-#define __OPALLOCATOR_H_
+#ifndef OPALLOCATOR_H_
+#define OPALLOCATOR_H_
 
 #include <types.h>
 
@@ -21,7 +21,7 @@
  * @retval Address of allocated page on success
  * @retval NULL on fail
  */
-void *opalloc( void );
+extern void *opalloc( void );
 
 /**
  * Frees one page from the pool. This page must be allocated with
@@ -31,7 +31,7 @@ void *opalloc( void );
  * @return Function doesn't return value
  *
  */
-void opfree( void* paddr );
+extern void opfree( void* paddr );
 
-#endif /* __OPALLOCATOR_H_ */
+#endif /* OPALLOCATOR_H_ */
 

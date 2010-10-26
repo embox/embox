@@ -4,8 +4,7 @@
  *
  * @date 12.04.2010
  * @author Alexey Kryachko
- * 			Maxim Okhotsky
- *
+ * @author Maxim Okhotsky
  */
 
 #ifndef JOB_H_

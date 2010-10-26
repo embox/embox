@@ -15,27 +15,26 @@
  * Save thread in heap of threads.
  * @param thread saved thread
  */
-void heap_insert(struct thread *thread);
+extern void heap_insert(struct thread *thread);
 
 /**
  * Delete thread from heap of threads.
  * @param thread deleted thread
  */
-void heap_delete(struct thread *thread);
+extern void heap_delete(struct thread *thread);
 
 /**
  * Extract thread from heap of threads.
  */
-struct thread *heap_extract(void);
+extern struct thread *heap_extract(void);
 
 /**
  * Check whether thread is in heap.
  * @param thread found thread.
  * @return true iff thread is in heap.
  */
-bool heap_contains (struct thread *thread);
+extern bool heap_contains (struct thread *thread);
 
-void heap_print(void);
-
+extern void heap_print(void);
 
 #endif /* THREAD_HEAP_H_ */

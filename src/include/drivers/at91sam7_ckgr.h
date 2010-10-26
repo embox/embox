@@ -1,4 +1,4 @@
-/* @file at91sam7_ckgr.h
+/* @file
  * @brief Clock Generator Controller interface
  *
  * @date 29.09.2010
