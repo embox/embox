@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Tests function heap_scheduler.
+ * @details Run threads in order with decreasing priorities.
  *
  * @date 11.05.2010
  * @author Dmitry Avdyukhin
@@ -17,27 +18,20 @@
 static char stacks[THREADS_COUNT][THREAD_STACK_SIZE];
 static struct thread *threads[THREADS_COUNT];
 
-EMBOX_TEST(run_test)
-;
+EMBOX_TEST(run_test);
+
 /**
  * Writes id of current thread.
  */
 static void threads_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 10; i++) {
 		TRACE("%d ", current_thread->id);
 	}
 }
 
-
-/**
- * Run threads in order with decreasing priorities.
- *
- * @retval 0 if test is passed
- * @retval -EINVAL if an error occurs.
- */
 static int run_test() {
-	int i;
+	size_t i;
 	TRACE("\n");
 
 	for (i = 0; i < THREADS_COUNT; i++) {

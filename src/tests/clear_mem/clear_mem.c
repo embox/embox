@@ -1,5 +1,5 @@
 /**
- * @file clear_mem.c
+ * @file
  *
  * @date 19.02.10
  * @author Alexey Fomin

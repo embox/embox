@@ -1,8 +1,8 @@
 /**
- * \file compiler_o0.c
+ * @file
  *
- * \date 10.03.2010
- * \author Alexey Fomin
+ * @date 10.03.2010
+ * @author Alexey Fomin
  */
 
 #include <embox/test.h>

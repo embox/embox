@@ -1,6 +1,9 @@
 /**
  * @file
- * @brief Tests threads.
+ * @brief Tests threads
+ * @details Test, which infinitely writes "?", "+", "*" and
+ * natural numbers on the screen.
+ * Thread, which writes "-", will be deleted in plus_thread.
  *
  * @date 18.04.2010
  * @author Dmitry Avdyukhin
@@ -22,8 +25,7 @@ static struct thread *minus_thread;
 static struct thread *mult_thread;
 static struct thread *natural_thread;
 
-EMBOX_TEST(run_test)
-;
+EMBOX_TEST(run_test);
 
 /**
  * Writes "+".
@@ -40,7 +42,7 @@ static void plus_run(void) {
  * Will be deleted.
  */
 static void minus_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("-");
 	}
@@ -50,7 +52,7 @@ static void minus_run(void) {
  * Endlessly writes "*".
  */
 static void mult_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("*");
 	}
@@ -60,19 +62,12 @@ static void mult_run(void) {
  * Endlessly writes natural numbers.
  */
 static void natural_run(void) {
-	for (int i = 1; i < 100; i++) {
+	size_t i;
+	for (i = 1; i < 100; i++) {
 		TRACE("%d ", i);
 	}
 }
 
-/**
- * Test, which infinitely writes "?", "+", "*" and
- * natural numbers on the screen.
- * Thread, which writes "-", will be deleted in plus_thread.
- *
- * @retval 0 if test is passed
- * @retval -EINVAL if an error occurs.
- */
 static int run_test() {
 	TRACE("\n");
 

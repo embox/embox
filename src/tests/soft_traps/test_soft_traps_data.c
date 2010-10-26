@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Test checks correctness of transmission parameters during soft trap's
  *        processing
  *
@@ -11,7 +10,6 @@
 #include <types.h>
 #include <embox/test.h>
 #include <hal/test/traps_core.h>
-
 
 #define TEST_SOFT_TRAP_NUMBER 0x10
 

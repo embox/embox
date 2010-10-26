@@ -1,6 +1,8 @@
 /**
  * @file
  * @brief Tests thread with recursion.
+ * @details Test, which writes some numbers using recursion.
+ * If MAX_DEPTH = 100, then error occurs (maybe stack overflow).
  *
  * @date 09.05.2010
  * @author Dmitry Avdyukhin
@@ -17,14 +19,13 @@
 static char recursion_stack[THREAD_STACK_SIZE];
 static struct thread *recursion_thread;
 
-EMBOX_TEST(run_test)
-;
+EMBOX_TEST(run_test);
 
 /**
  * Shows natural number on the screen and maybe calls itself.
  * @param i shown number. if i < MAX_DEPTH f calls itself.
  */
-void f(int i) {
+static void f(int i) {
 	TRACE("%d ", i);
 	if (i < MAX_DEPTH) {
 		f(i+1);
@@ -40,15 +41,6 @@ static void recursion_run(void) {
 	f(1);
 }
 
-
-/**
- * Test, which writes some numbers using recursion.
- *
- * If MAX_DEPTH = 100, then error occurs (maybe stack overflow).
- *
- * @retval 0 if test is passed
- * @retval -EINVAL if an error occurs.
- */
 static int run_test() {
 	TRACE("\n");
 
@@ -56,7 +48,6 @@ static int run_test() {
 		thread_create(recursion_run, recursion_stack + THREAD_STACK_SIZE);
 
 	assert(recursion_thread != NULL);
-
 	thread_start(recursion_thread);
 
 	TRACE("\nBefore start\n");

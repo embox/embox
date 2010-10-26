@@ -18,18 +18,11 @@ struct my_int {
 };
 
 static queue_t a_queue;
-static int i;
 static struct my_int numbers[10];
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
 static int run(void) {
 	int result = 0;
+	size_t i;
 	queue_init(&a_queue);
 
 	for (i = 1; i < 10; i++) {

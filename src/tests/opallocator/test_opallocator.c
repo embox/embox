@@ -9,7 +9,6 @@
 
 #include <embox/test.h>
 #include <stdio.h>
-
 #include <kernel/mm/opallocator.h>
 
 #define VST
@@ -18,23 +17,21 @@
 #define TEST_STACK_SIZE	(20*TEST_COUNT+2)
 
 #if 0
-//#define DONOTUSE_PAGE_ALLOC           /* for testing test of page alloc =) */
-//#define INTERACTIVE_TEST                      /* */
-//#define VERBOSE_DEBUG_OUT                     /* Some advanced output (list of page marks) */
+//#define DONOTUSE_PAGE_ALLOC       /* for testing test of page alloc =) */
+//#define INTERACTIVE_TEST          /* */
+//#define VERBOSE_DEBUG_OUT         /* Some advanced output (list of page marks) */
 //#define VERBOSE_DEBUG_OUT_MALLOC
-//#define STACK_POP_FROM_HEAD           /* or tail */
+//#define STACK_POP_FROM_HEAD       /* or tail */
 #define TEST_COUNT 10
 #define MAX_PAGE_FOR_ALLOC 0x10
-
-
 
 /**
  * count the number of free pages
  */
-size_t free_page_count() {
-	#ifdef DONOTUSE_PAGE_ALLOC
+static size_t free_page_count(void) {
+#ifdef DONOTUSE_PAGE_ALLOC
 	return 0;
-	#endif
+#endif
 	/* go from prev to next */
 	if (get_cmark_p()==NULL) {
 		return 0;
@@ -51,10 +48,10 @@ size_t free_page_count() {
 /**
  * count the number of allowed pages
  */
-size_t allow_page_count() {
-	#ifdef DONOTUSE_PAGE_ALLOC
+static size_t allow_page_count() {
+#ifdef DONOTUSE_PAGE_ALLOC
 	return 0;
-	#endif
+#endif
 	/* go from next to prev */
 	if (get_cmark_p()==NULL) {
 		return PAGE_QUANTITY;
@@ -71,7 +68,7 @@ size_t allow_page_count() {
 /**
  * Debug output memory (print list of markers)
  */
-void do_allpage() {
+static void do_allpage() {
 	pmark_t* pcur = get_cmark_p();
 	TRACE("Print map of memory: \n");
 	if (pcur == NULL) { /* don't exist list of empty page */
@@ -89,12 +86,12 @@ void do_allpage() {
 /**
  * memory error counter
  */
-int count_of_error = 0;
+static int count_of_error = 0;
 
 /**
  * simply memory checker (sum free and alocated memory must be equal size of pool)
  */
-void memory_check() {
+static void memory_check() {
 	size_t allocp = allow_page_count();
 	size_t freep  = free_page_count();
 	TRACE("Allocated: %d ; Free %d \n", allocp , freep );
@@ -112,8 +109,8 @@ static int run(void) {
 #ifdef VST
 
 #ifndef EXTENDED_TEST
-extern char _heap_start;
-extern char _heap_end;
+	extern char _heap_start;
+	extern char _heap_end;
 #endif
 
 #define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
@@ -121,7 +118,7 @@ extern char _heap_end;
 	void * pointers[TEST_STACK_SIZE];
 	void **first,**last;
 	int test_id=0;
-	int i;
+	size_t i;
 	int callowed=0,cfree=0;
 	first = pointers; last = pointers;
 
@@ -159,7 +156,8 @@ extern char _heap_end;
 	void **first,**last;
 	int test_id=0;
 	int callowed=0,cfree=0;
-	first = pointers; last = pointers;
+	first = pointers;
+	last = pointers;
 
 	/* push 2 pop 1 - while it is best idea */
 
@@ -188,4 +186,3 @@ extern char _heap_end;
 	return callowed == cfree ? 0 : 1;
 #endif
 }
-

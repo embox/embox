@@ -1,14 +1,11 @@
 /**
  * @file
- *
  * @brief test for allocation static variables
- *
  * @details At first array of char's allocates.
- * 			Then we write " " to the string.
- * 			At last we check value recorded to the string.
- *
- * 			This problem has not relevant to string,
- * 			possible it connected with memory allocation.
+ * Then we write " " to the string.
+ * At last we check value recorded to the string.
+ * This problem has not relevant to string,
+ * possible it connected with memory allocation.
  *
  * @date 10.03.2010
  * @author Alexander Batyukov

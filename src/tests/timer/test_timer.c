@@ -1,5 +1,6 @@
 /**
  * @file
+ *
  * @date 28.01.2009
  * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */

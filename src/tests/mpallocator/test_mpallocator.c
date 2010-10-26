@@ -9,7 +9,6 @@
 
 #include <embox/test.h>
 #include <stdio.h>
-
 #include <kernel/mm/mpallocator.h>
 
 EMBOX_TEST(run);

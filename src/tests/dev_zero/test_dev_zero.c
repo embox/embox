@@ -1,9 +1,10 @@
 /**
  * @file
  * @brief This file is derived from EMBOX test template.
+ * @description simple test for Zero device
+ *
  * @author Fedor Burdun
  * @date 12.07.2010
- * @description simple test for Zero device
  */
 
 #include <embox/test.h>

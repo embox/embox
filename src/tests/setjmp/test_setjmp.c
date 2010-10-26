@@ -17,14 +17,14 @@ static int run(void) {
 	jmp_buf jb;
 
 	switch (setjmp(jb)) {
-		case 0:
-			longjmp(jb, TEST_JUMP_VALUE);
-			TRACE("longjmp returned\n");
-			return -1;
-		case TEST_JUMP_VALUE:
-			return 0;
-		default:
-			TRACE("setjmp unexpected return value\n");
-			return -1;
+	case 0:
+		longjmp(jb, TEST_JUMP_VALUE);
+		TRACE("longjmp returned\n");
+		return -1;
+	case TEST_JUMP_VALUE:
+		return 0;
+	default:
+		TRACE("setjmp unexpected return value\n");
+		return -1;
 	}
 }

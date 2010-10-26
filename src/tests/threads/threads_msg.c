@@ -1,6 +1,12 @@
 /**
  * @file
  * @brief Tests messages.
+ * @details Test, starting two threads.
+ * First thread sends second message of wrong type and doesn't unblock the last one.
+ * Then the first one a lot of times writes "1".
+ * Then first thread sends message to second and unblocks it.
+ * Second thread some times writes "2".
+ * First thread can't die until the end of second (waits for a message).
  *
  * @date 30.06.2010
  * @author Dmitry Avdyukhin
@@ -20,16 +26,14 @@ static struct thread *second_thread;
 
 static struct message *sent_msg;
 
-EMBOX_TEST(run_test)
-;
-
+EMBOX_TEST(run_test);
 
 /**
  * In the beginning send a message to second, which don't unblock it.
  * Writes "1111...". In the end unblock second thread with proper message.
  */
 static void first_run(void) {
-	int i;
+	size_t i;
 	struct message *msg = msg_new();
 	struct message *sec_msg = msg_new();
 	sent_msg = msg;
@@ -53,6 +57,7 @@ static void first_run(void) {
  * Waits for a proper message. Then writes "22222...".
  */
 static void second_run(void) {
+	size_t i;
 	struct message *msg = NULL;
 	/* Waits for message with type 2. */
 	do {
@@ -64,24 +69,13 @@ static void second_run(void) {
 	} while (msg->type != 2);
 
 	msg_erase(msg);
-	for (int i = 0; i < 1000; i++) {
+	for (i = 0; i < 1000; i++) {
 		TRACE("2");
 	}
 	msg = msg_new();
 	msg_send(msg, first_thread);
 }
 
-/**
- * Test, starting two threads.
- * First thread sends second message of wrong type and doesn't unblock the last one.
- * Then the first one a lot of times writes "1". Then first thread sends message to
- *   second and unblocks it.
- * Second thread some times writes "2".
- * First thread can't die until the end of second (waits for a message).
- *
- * @retval 0 if test is passed
- * @retval -EINVAL if an error occurs.
- */
 static int run_test() {
 	TRACE("\n");
 
