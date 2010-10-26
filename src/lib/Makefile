@@ -1,11 +1,13 @@
 
 # Do not process sub-lib makefiles
 # may be this is not the best solution, but just for now... -- Eldar
-$_SUBDIRS :=
+SUBDIRS :=
 
 $_LIBS += libc.a
 
 $_SRCS-libc.a += */*.c
+
+# XXX libraries don't support DEPS property. -- Eldar
 
 # all that written below don't work
 $_DEPS-libc.a += core.kernel.drv_subsys

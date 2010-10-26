@@ -1,4 +1,4 @@
 
-$_SUBDIRS := $(filter-out include,$($_SUBDIRS))
+SUBDIRS := $(filter-out include,$(SUBDIRS))
 
 $_PACKAGE := embox
