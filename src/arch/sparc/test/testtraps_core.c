@@ -8,7 +8,7 @@
  */
 
 #include <types.h>
-#include <hal/test/testtraps_core.h>
+#include <hal/test/traps_core.h>
 #include <asm/head.h>
 
 static traps_env_t test_env[1];

@@ -6,12 +6,12 @@
  * @author Aleksandr Kirov
  */
 
+#ifndef LIB_ELF_READER_H_
+#define LIB_ELF_READER_H_
+
 #include <stdio.h>
 #include <types.h>
 #include <errno.h>
-
-#ifndef LIB_ELF_READER_H_
-#define LIB_ELF_READER_H_
 
 #define Elf32_Addr         unsigned long
 #define Elf32_Half         unsigned short

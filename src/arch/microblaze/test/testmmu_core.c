@@ -7,7 +7,7 @@
 
 #include <types.h>
 #include <hal/mm/mmu_core.h>
-#include <hal/test/testmmu_core.h>
+#include <hal/test/mmu_core.h>
 
 /* buffer for all records in MMU table */
 static __mmu_table_t utlb;
