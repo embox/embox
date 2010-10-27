@@ -23,7 +23,7 @@ static net_buff_info_t pack_pool[CONFIG_PACK_POOL_SIZE];
 
 int __init net_buff_init(void) {
 	size_t i;
-	for (i = 0; i < array_len(pack_pool); i ++) {
+	for (i = 0; i < ARRAY_SIZE(pack_pool); i++) {
 		list_add(&(&pack_pool[i])->list, &head_free_pack);
 	}
 	return 0;

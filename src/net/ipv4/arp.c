@@ -27,7 +27,7 @@
 
 arp_table_t arp_tables[ARP_CACHE_SIZE];
 
-#define ARP_TABLE_SIZE array_len(arp_tables)
+#define ARP_TABLE_SIZE ARRAY_SIZE(arp_tables)
 
 #define ARP_TIMER_ID 12
 

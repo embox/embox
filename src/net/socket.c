@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <net/socket.h>
 #include <net/udp.h>
 #include <net/ip.h>
@@ -35,30 +36,46 @@ int __init sock_init(void) {
 /* TODO: remove all below from here */
 
 int socket(int domain, int type, int protocol) {
+	int err;
 	struct socket *res;
-	sock_create_kern(domain, type, protocol, &res);
-	return sock_get_fd(res);
+	err = sock_create_kern(domain, type, protocol, &res);
+	if (err < 0) {
+		return err;
+	} else {
+		return sock_get_fd(res);
+	}
 }
 
 int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
+	if (sock == NULL) {
+		return -EBADF;
+	}
 	return kernel_connect(sock, addr, addrlen, 0);
 }
 
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
+	if (sock == NULL) {
+		return -EBADF;
+	}
 	return kernel_bind(sock, addr, addrlen);
 }
 
 int close(int sockfd) {
 	struct socket *sock = sockfd_lookup(sockfd);
-	kernel_sock_release(sock);
-	return 0;
+	if (sock == NULL) {
+		return -EBADF;
+	}
+	return kernel_sock_release(sock);
 }
 
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *dest_addr, socklen_t addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
+	if (sock == NULL) {
+		return -EBADF;
+	}
 	struct sockaddr_in *daddr = (struct sockaddr_in *)dest_addr;
 	struct inet_sock *inet = inet_sk(sock->sk);
 	struct iovec iov;
@@ -82,6 +99,9 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *src_addr, socklen_t *addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
+	if (sock == NULL) {
+		return -EBADF;
+	}
 	struct sockaddr_in *saddr = (struct sockaddr_in *)src_addr;
 	struct inet_sock *inet = inet_sk(sock->sk);
 	struct iovec iov;

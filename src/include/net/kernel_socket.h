@@ -18,7 +18,7 @@
  *
  * @param sock socket to close
  */
-extern void kernel_sock_release(struct socket *sock);
+extern int kernel_sock_release(struct socket *sock);
 
 /**
  * Initialize kernel sockets.
