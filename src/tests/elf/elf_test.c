@@ -7,7 +7,7 @@
  */
 
 #include <embox/test.h>
-#include <kernel/elf_executer.h>
+#include <lib/libelf.h>
 
 EMBOX_TEST(run);
 

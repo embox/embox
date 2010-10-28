@@ -6,159 +6,10 @@
  * @author Aleksandr Kirov
  */
 
-#ifndef LIB_ELF_READER_H_
-#define LIB_ELF_READER_H_
+#ifndef LIB_ELF_H_
+#define LIB_ELF_H_
 
-#include <stdio.h>
-#include <types.h>
-#include <errno.h>
-
-#define Elf32_Addr         unsigned long
-#define Elf32_Half         unsigned short
-#define Elf32_Off          unsigned long
-#define Elf32_Sword        signed long
-#define Elf32_Word         unsigned long
-
-/**
- * Until dynamic memory applied array length constrain used
- */
-#define MAX_NUMBER_OF_SECTIONS          100
-#define MAX_STRING_TABLE_LENGTH         500
-#define MAX_SYMBOL_TABLE_LENGTH         3000
-#define MAX_SYMBOL_STRING_TABLE_LENGTH  50000
-#define MAX_REL_ARRAY_LENGTH            10000
-#define MAX_RELA_ARRAY_LENGTH           10000
-#define MAX_NAME_LENGTH                 150
-
-#define MAX_SEGMENTS     100
-#define MAX_SYMB         1000
-#define MAX_SYMB_NAMES   100000
-
-/**
- * Length in bytes of main field in Elf-header structure
- */
-#define EI_NIDENT           16
-
-/**
- * Code of information in symbols descriptions. Watch Elf-specification.
- */
-#define ELF32_ST_BIND(i)    ((i))>>4)
-
-/**
- * Code of information in symbols descriptions. Watch Elf-specification.
- */
-#define ELF32_ST_TYPE(i)    ((i)&0xf)
-
-/**
- * Code of information in symbols descriptions. Watch Elf-specification.
- */
-#define ELF32_ST_INFO(b,t)  (((b)<<4)+((t)&0xf))
-
-/**
- * Code of information in Relocation table. Watch Elf-specification.
- */
-#define ELF32_R_SYM(i)      ((i)>>8)
-
-/**
- * Code of information in Relocation table. Watch Elf-specification.
- */
-#define ELF32_R_TYPE(i)     ((unsigned char) (i))
-
-/**
- * Code of information in Relocation table. Watch Elf-specification.
- */
-#define ELF32_R_INFO(s,t)   (((s)<<8)+(unsigned char)(t))
-
-/**
- * ELF Header. Code style from specification.
- */
-typedef struct {
-	uint8_t    e_ident[EI_NIDENT];
-	Elf32_Half e_type;
-	Elf32_Half e_machine;
-	Elf32_Word e_version;
-	Elf32_Addr e_entry;
-	Elf32_Off  e_phoff;
-	Elf32_Off  e_shoff;
-	Elf32_Word e_flags;
-	Elf32_Half e_ehsize;
-	Elf32_Half e_phentsize;
-	Elf32_Half e_phnum;
-	Elf32_Half e_shentsize;
-	Elf32_Half e_shnum;
-	Elf32_Half e_shstrndx;
-} Elf32_Ehdr;
-
-/**
- * ELF Section header. Code style from specification
- */
-typedef struct {
-	Elf32_Word sh_name;
-	Elf32_Word sh_type;
-	Elf32_Word sh_flags;
-	Elf32_Addr sh_addr;
-	Elf32_Off  sh_offset;
-	Elf32_Word sh_size;
-	Elf32_Word sh_link;
-	Elf32_Word sh_info;
-	Elf32_Word sh_addralign;
-	Elf32_Word sh_entsize;
-} Elf32_Shdr;
-
-/**
- * ELF Program Segment header. Code style from specification
- */
-typedef struct {
-	Elf32_Word p_type;
-	Elf32_Off  p_offset;
-	Elf32_Addr p_vaddr;
-	Elf32_Addr p_paddr;
-	Elf32_Word p_filesz;
-	Elf32_Word p_memsz;
-	Elf32_Word p_flags;
-	Elf32_Word p_align;
-} Elf32_Phdr;
-
-/**
- * Symbol table entry. Code style from specification
- */
-typedef struct {
-	Elf32_Word st_name;
-	Elf32_Addr st_value;
-	Elf32_Word st_size;
-	uint8_t    st_info;
-	uint8_t    st_other;
-	Elf32_Half st_shndx;
-} Elf32_Sym;
-
-/**
- * Relocation table entry in sections with SHT_REL type.
- * Code style from specification
- */
-typedef struct {
-	Elf32_Addr r_offset;
-	Elf32_Word r_info;
-} Elf32_Rel;
-
-/**
- * Relocation table entry in sections with SHT_RELA type.
- * Code style from specification
- */
-typedef struct{
-	Elf32_Addr  r_offset;
-	Elf32_Word  r_info;
-	Elf32_Sword r_addend;
-} Elf32_Rela;
-
-#if 0
-/*Collection of information about elf*/
-typedef struct {
-	Elf32_Ehdr header;
-	Elf32_Shdr sectionHeaders[MAX_NUMBER_OF_SECTIONS];
-	Elf32_Phdr segmentHeaders[MAX_NUMBER_OF_SECTIONS];
-	char stringTable[MAX_STRING_TABLE_LENGTH];
-} ElfFile;
-#endif
+#include <lib/elf_types.h>
 
 /**
  * Function reverses order of bytes in received integer with size 4-bytes
@@ -322,5 +173,13 @@ extern int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *header,
 				Elf32_Shdr *section_header_table,
 				Elf32_Rela *rela_table, int32_t *count);
 
-#endif /* LIB_ELF_READER_H_ */
+/**
+ * Execute elf file.
+ *
+ * @param file executed file
+ * @return 0 if there was no error.
+ */
+extern int elf_execute(FILE *file);
+
+#endif /* LIB_ELF_H_ */
 

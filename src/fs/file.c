@@ -27,10 +27,10 @@ static LIST_HEAD(fd_cache);
 #define fd_to_head(file) (uint32_t)(file - offsetof(lsof_map_t, fd))
 
 void lsof_map_init(void) {
-        size_t i;
-        for (i = 0; i < ARRAY_SIZE(lsof_pool); i++) {
-                list_add((struct list_head *) &lsof_pool[i], &free_list);
-        }
+	size_t i;
+	for (i = 0; i < ARRAY_SIZE(lsof_pool); i++) {
+		list_add((struct list_head *) &lsof_pool[i], &free_list);
+	}
 }
 
 static void cache_fd(const char *path, FILE *file) {

@@ -11,7 +11,7 @@
 
 #include <ctype.h>
 #include <shell_command.h>
-#include <lib/elf_reader.h>
+#include <lib/libelf.h>
 #include <string.h>
 
 #define COMMAND_NAME     "readelf"
@@ -461,11 +461,9 @@ static void print_symb(Elf32_Sym *symb, int8_t *names,
 }
 
 static int exec(int argsc, char **argsv) {
-        int op, e;
-        int i;
+        int op, e, i, cnt;
         char show_head = 0, show_sections = 0, show_segments = 0, show_rel = 0,
-                                            show_rela = 0, show_symb = 0, show_names = 0;
-        int cnt;
+                                    show_rela = 0, show_symb = 0, show_names = 0;
         FILE *f;
         Elf32_Ehdr head;
         Elf32_Shdr sections[MAX_NUMBER_OF_SECTIONS];

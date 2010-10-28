@@ -6,8 +6,7 @@
  * @author Avdyukhin Dmitry
  */
 
-#include <lib/elf_reader.h>
-#include <kernel/elf_executer.h>
+#include <lib/libelf.h>
 #include <string.h>
 #include <types.h>
 #include <errno.h>
@@ -15,20 +14,28 @@
 
 int elf_execute(FILE *file) {
 	int (*function_main)(int argc, char *argv[]);
-	int result;
+	int result, counter;
 	Elf32_Ehdr *EH;
 	Elf32_Phdr *EPH;
-	int counter;
 	EH = (Elf32_Ehdr *)file;
+
+	if (EH->e_ident[0] != ELFMAG0 ||
+	    EH->e_ident[1] != ELFMAG1 ||
+	    EH->e_ident[2] != ELFMAG2 ||
+	    EH->e_ident[3] != ELFMAG3) {
+		return -1;
+	}
+
 	EPH = (Elf32_Phdr *)((char *)EH + EH->e_phoff);
 
 	counter = EH->e_phnum;
 	while(counter--) {
-		if (EPH->p_type == 1) { /* Type = PT_LOAD. */
+		if (EPH->p_type == PT_LOAD) {
 			/* Physical address equals to virtual. */
 			memcpy((void *)EPH->p_vaddr, (char *)EH + EPH->p_offset, EPH->p_memsz);
 		}
-		EPH += 1;
+		//EPH += 1;
+		EPH = (Elf32_Phdr *)((unsigned char *)EPH + EH->e_phentsize);
 	}
 
 	printf("Data allocated.\n");

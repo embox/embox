@@ -7,7 +7,7 @@
  */
 #include <shell_command.h>
 #include <kernel/scheduler.h>
-#include <kernel/elf_executer.h>
+#include <lib/libelf.h>
 
 #define COMMAND_NAME     "runelf"
 #define COMMAND_DESC_MSG "execute elf file"
