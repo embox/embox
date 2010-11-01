@@ -153,11 +153,6 @@ int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);
 
-	//----
-//	uint32_t *addr = (uint32_t *) va_arg(args, int);
-//	TRACE("DEBUG: 1-1 0x%08x\n", addr);
-	//---
-
 	nod = (node_t *)fp;
 	if (NULL == nod) {
 		return -EBADF;
