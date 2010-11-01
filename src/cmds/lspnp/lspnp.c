@@ -62,7 +62,7 @@ inline static void show_bar_info(amba_bar_info_t *bar) {
 #if 0
 static void show_bars_infos(amba_dev_t *dev) {
 	int i;
-	for (i = 0; i < array_len(dev->bar); i++) {
+	for (i = 0; i < ARRAY_SIZE(dev->bar); i++) {
 		if (dev->bar[i].used) {
 			show_bars_type(&dev->bar[i]);
 			TRACE("%X\n", dev->bar[i].start);

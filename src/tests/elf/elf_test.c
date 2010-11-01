@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Test function elf_execute.
+ * @brief Test function elf_execve.
  *
  * @date 20.07.2010.
  * @author Avdyukhin Dmitry.
@@ -16,17 +16,6 @@ EMBOX_TEST(run);
  */
 #define FILE_ADDRESS 0x46000000
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
 static int run(void) {
-	int result = 0;
-
-	elf_execute((FILE *)FILE_ADDRESS);
-
-	return result;
+	return elf_execve((unsigned long *)FILE_ADDRESS, NULL);
 }

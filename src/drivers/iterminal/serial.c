@@ -34,7 +34,7 @@ int serial_ioctl(device_t *dev, io_cmd c, void *arg) {
 
 int serial_devctl(device_t *dev, device_cmd c, void *arg) {
 	switch (c) {
-        // we must make choise between real dribers
+		// we must make choise between real drivers
 	}
 	return 0;
 }

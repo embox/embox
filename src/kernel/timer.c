@@ -97,7 +97,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 int timer_init(void) {
 	int i;
 	cnt_sys_time = 0;
-	for (i = 0; i < array_len(sys_timers); i++) {
+	for (i = 0; i < ARRAY_SIZE(sys_timers); i++) {
 		list_add((struct list_head *)&sys_timers[i], &free_sys_timers_list);
 	}
 	clock_init();

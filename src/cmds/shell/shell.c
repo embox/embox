@@ -120,7 +120,7 @@ static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	size_t i;
-	for (i = 0; i < array_len(script_commands); i++) {
+	for (i = 0; i < ARRAY_SIZE(script_commands); i++) {
 		strncpy(buf, script_commands[i], sizeof(buf));
 		printf("> %s \n", buf);
 		exec_callback(callback, console, buf);

@@ -23,7 +23,7 @@ irq_return_t clock_handler(int irq_num, void *dev_id) {
 		REG_ORIN(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN);
 		clock_tick_handler(irq_num, dev_id);
 	}
-        return IRQ_HANDLED;
+	return IRQ_HANDLED;
 }
 
 void clock_init(void) {

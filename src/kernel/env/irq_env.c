@@ -16,7 +16,7 @@ void irq_save_env(irq_env_t *env) {
 
 	ipl = ipl_save();
 
-	memcpy(cur_env, env, sizeof(irq_env_t));
+	memcpy(cur_env, env , sizeof(irq_env_t) );
 
 	ipl_restore(ipl);
 }

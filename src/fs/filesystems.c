@@ -27,6 +27,8 @@ static LIST_HEAD(file_systems);
 
 #define drv_to_head(fs_drv) (uint32_t)(fs_drv - offsetof(fs_driver_head_t, drv))
 
+extern void lsof_map_init(void);
+
 static void init_pool(void) {
 	size_t i;
 	for(i = 0; i < ARRAY_SIZE(pool); i ++) {
@@ -74,7 +76,6 @@ static int __init unit_init(void) {
 //		root_fs->fsop->init(NULL);
 	}
 
-	extern void lsof_map_init(void);
 	lsof_map_init();
 
 	return ENOERR;

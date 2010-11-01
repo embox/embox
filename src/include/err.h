@@ -4,8 +4,8 @@
  * @date 25.11.09
  * @author Nikolay Korotky
  */
-#ifndef _ERR_H_
-#define _ERR_H_
+#ifndef ERR_H_
+#define ERR_H_
 
 #include <stdio.h>
 
@@ -29,4 +29,4 @@
 # define LOG_DEBUG(...)  do ; while(0)
 #endif
 
-#endif /* _ERR_H_ */
+#endif /* ERR_H_ */

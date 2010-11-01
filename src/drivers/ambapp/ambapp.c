@@ -152,7 +152,7 @@ inline static void fill_ahb_bar_info(amba_bar_info_t *bar, uint32_t ba_reg) {
 
 inline static void fill_ahb_bar_infos(amba_dev_t *dev, AHB_SLOT *ahb_slot) {
 	int i;
-	for (i = 0; i < array_len(dev->bar); i++) {
+	for (i = 0; i < ARRAY_SIZE(dev->bar); i++) {
 		fill_ahb_bar_info(&dev->bar[i], ahb_slot->ba_reg[i]);
 	}
 }

@@ -179,7 +179,7 @@ extern int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *header,
  * @param file executed file
  * @return 0 if there was no error.
  */
-extern int elf_execute(FILE *file);
+extern int elf_execve(unsigned long *file_addr, char *const argv[]);
 
 #endif /* LIB_ELF_H_ */
 

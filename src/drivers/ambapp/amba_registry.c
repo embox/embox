@@ -25,10 +25,10 @@ static amba_registry_vendor_info_t const vendors_table[] = {
 
 static amba_registry_vendor_info_t unknown_vendor[1];
 
-static amba_registry_vendor_entry_t vendors_pool[array_len(vendors_table)];
+static amba_registry_vendor_entry_t vendors_pool[ARRAY_SIZE(vendors_table)];
 static amba_registry_vendor_entry_t unknown_vendor_entry[1];
 
-static amba_registry_device_entry_t devices_pool[array_len(devices_table)];
+static amba_registry_device_entry_t devices_pool[ARRAY_SIZE(devices_table)];
 
 static LIST_HEAD(head_vendor_list);
 
@@ -69,7 +69,7 @@ inline void add_dev_to_ven(const amba_registry_device_info_t * dev,
 
 static int __init init(void) {
 	int i;
-	for (i = 0; i < array_len(vendors_table); i++) {
+	for (i = 0; i < ARRAY_SIZE(vendors_table); i++) {
 		(&vendors_pool[i])->ven_info
 				= (amba_registry_vendor_info_t *) &vendors_table[i];
 		INIT_LIST_HEAD(&((&vendors_pool[i])->dev_list));
@@ -78,7 +78,7 @@ static int __init init(void) {
 	}
 	unknown_vendor_entry->ven_info = unknown_vendor;
 
-	for (i = 0; i < array_len(devices_table); i++) {
+	for (i = 0; i < ARRAY_SIZE(devices_table); i++) {
 		add_dev_to_ven(&devices_table[i], &devices_pool[i]);
 	}
 

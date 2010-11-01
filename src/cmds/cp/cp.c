@@ -6,7 +6,7 @@
  * @author Roman Evstifeev
  */
 #include <shell_command.h>
-#include <fs/file_new.h>
+#include <fs/file.h>
 
 #define COMMAND_NAME     "cp"
 #define COMMAND_DESC_MSG "cp file"

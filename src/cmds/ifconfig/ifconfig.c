@@ -135,7 +135,7 @@ static int exec(int argsc, char **argsv) {
 
 		case 'x': /* find interface by name */
 			sscanf(optarg, "eth%d", &i);
-			strncpy(iname, optarg, array_len(iname));
+			strncpy(iname, optarg, ARRAY_SIZE(iname));
 			TRACE("iface = %s\n", optarg);
 			if (!(in_dev = inet_dev_find_by_name(optarg))) {
 				LOG_ERROR("can't find interface %s\n", optarg);
@@ -234,7 +234,7 @@ static int exec(int argsc, char **argsv) {
 	}
 	if (argsc > 1) {
 		sscanf(argsv[argsc - 1], "eth%d", &i);
-		strncpy(iname, argsv[argsc - 1], array_len(iname));
+		strncpy(iname, argsv[argsc - 1], ARRAY_SIZE(iname));
 		if (up) {
 			ifdev_up(iname);	/* up net iface */
 		}

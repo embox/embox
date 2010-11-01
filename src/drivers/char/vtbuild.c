@@ -25,7 +25,7 @@ VTBUILDER * vtbuild_init(VTBUILDER *this, void(*putc)(VTBUILDER *builder,
 
 static void build_param(VTBUILDER *this, int n) {
 	static char buf[BUF_SIZE];
-        int i = 0;
+	int i = 0;
 	if (n < 0) {
 		return;
 	}

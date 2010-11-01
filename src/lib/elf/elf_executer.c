@@ -12,12 +12,12 @@
 #include <errno.h>
 #include <stdio.h>
 
-int elf_execute(FILE *file) {
+int elf_execve(unsigned long *file_addr, char *const argv[]) {
 	int (*function_main)(int argc, char *argv[]);
 	int result, counter;
 	Elf32_Ehdr *EH;
 	Elf32_Phdr *EPH;
-	EH = (Elf32_Ehdr *)file;
+	EH = (Elf32_Ehdr *)file_addr;
 
 	if (EH->e_ident[0] != ELFMAG0 ||
 	    EH->e_ident[1] != ELFMAG1 ||
@@ -41,10 +41,9 @@ int elf_execute(FILE *file) {
 	printf("Data allocated.\n");
 	printf("Trying to start at %ld(0x%x)\n", EH->e_entry, (uint32_t)EH->e_entry);
 
-
 	function_main = (int (*)(int argc, char *argv[]))EH->e_entry;
-	result = (*function_main) (0, NULL);
+	result = (*function_main) (0, argv);
 
 	printf("\n result : %d\n", result);
-	return 0;
+	return result;
 }

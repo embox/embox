@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <lib/list.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
@@ -84,20 +85,12 @@ FILE *fopen(const char *path, const char *mode) {
 	return file;
 }
 
-FILE *fdopen(int fd, const char *mode) {
-	return NULL;
-}
-
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	lsof_map_t *lsof;
 	node_t *nod;
 	file_system_driver_t *drv;
-
-	lsof = find_fd(file);
-	nod = vfs_find_node(lsof->path, NULL);
+	nod = (node_t *)file;
 	if (NULL == nod) {
-		LOG_ERROR("node is NULL\n");
-		return -1;
+		return -EBADF;
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fwrite) {
@@ -108,14 +101,11 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
-	lsof_map_t *lsof;
 	node_t *nod;
 	file_system_driver_t *drv;
-	lsof = find_fd(file);
-	nod = vfs_find_node(lsof->path, NULL);
+	nod = (node_t *)file;
 	if (NULL == nod){
-		LOG_ERROR("node is NULL\n");
-		return -1;
+		return -EBADF;
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fread) {
@@ -126,34 +116,56 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 }
 
 int fclose(FILE *fp) {
-	lsof_map_t *lsof;
 	node_t *nod;
 	file_system_driver_t *drv;
-	lsof = find_fd(fp);
-	nod = vfs_find_node(lsof->path, NULL);
+	nod = (node_t *)fp;
 	if (NULL == nod) {
-		return EOF;
+		return -EBADF;
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fclose) {
-		return EOF;
+		return -EOF;
 	}
 	uncache_fd(fp);
 	return drv->file_op->fclose(fp);
 }
 
-int fseek(FILE * stream, long int offset, int origin) {
-	file_operations_t **fop = (file_operations_t **)stream;
+int fseek(FILE *stream, long int offset, int origin) {
+	node_t *nod;
+	file_system_driver_t *drv;
+	nod = (node_t *)stream;
 
-	if (NULL == fop) {
-		LOG_ERROR("fop is NULL handler\n");
-		return -1;
+	if (NULL == nod) {
+		return -EBADF;
 	}
-
-	if (NULL == (*fop)->fseek){
+	drv = nod->fs_type;
+	if (NULL == drv->file_op->fseek){
 		LOG_ERROR("fop->fseek is NULL handler\n");
 		return -1;
 	}
 
-	return (*fop)->fseek(stream, offset, origin);
+	return drv->file_op->fseek(stream, offset, origin);
 }
+
+int fioctl(FILE *fp, int request, ...) {
+	node_t *nod;
+	file_system_driver_t *drv;
+	va_list args;
+	va_start(args, request);
+
+	//----
+//	uint32_t *addr = (uint32_t *) va_arg(args, int);
+//	TRACE("DEBUG: 1-1 0x%08x\n", addr);
+	//---
+
+	nod = (node_t *)fp;
+	if (NULL == nod) {
+		return -EBADF;
+	}
+	drv = nod->fs_type;
+	if (NULL == drv->file_op->ioctrl) {
+		return -1;
+	}
+	return drv->file_op->ioctrl(fp, request, args);
+}
+

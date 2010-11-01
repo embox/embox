@@ -26,7 +26,8 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
 	char *file_name = NULL;
-	unsigned int load_addr;
+	unsigned long load_addr, file_addr;
+	FILE *file;
 	node_t *node;
 	//FIXME: ramfs dependence
 	ramfs_file_description_t *desc;
@@ -42,8 +43,9 @@ static int exec(int argsc, char **argsv) {
 			file_name = optarg;
 			break;
 		case 'a':
-			if ((optarg != NULL) && (!sscanf(optarg, "0x%x", &load_addr))
-					&& (!sscanf(optarg, "%d", (int *) &load_addr))) {
+			if ((optarg != NULL) &&
+			    (!sscanf(optarg, "0x%x", &load_addr)) &&
+			    (!sscanf(optarg, "%d", (int *) &load_addr))) {
 				LOG_ERROR("hex value expected.\n");
 				show_help();
 				return -1;
@@ -56,10 +58,13 @@ static int exec(int argsc, char **argsv) {
 		}
 	} while (-1 != nextOption);
 
+	file = fopen(file_name, "r");
+	fioctl(file, 0, &file_addr);
+
 	node = vfs_find_node(file_name, NULL);
 	desc = (ramfs_file_description_t *)node->file_info;
 
-	TRACE("loading...addr=0x%08x, size=%d\n", desc->start_addr, desc->size);
-	memcpy((void *) load_addr, desc->start_addr, desc->size);
+	TRACE("loading...addr=0x%08x, size=%d\n", file_addr, desc->size);
+	memcpy((void *) load_addr, file_addr, desc->size);
 	return 0;
 }

@@ -9,6 +9,7 @@
  *	- rework using vfs
  */
 #include <string.h>
+#include <errno.h>
 #include <fs/ramfs.h>
 #include <fs/fs.h>
 #include <fs/vfs.h>
@@ -60,7 +61,7 @@ static int     ramfs_fclose(void *file);
 static size_t  ramfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t  ramfs_fwrite(const void *buf, size_t size, size_t count, void *file);
 static int     ramfs_fseek(void *file, long offset, int whence);
-static int     ramfs_ioctl(void *file, int request, ...);
+static int     ramfs_ioctl(void *file, int request, va_list args);
 
 static file_operations_t ramfs_fop = {
 	ramfs_fopen,
@@ -82,24 +83,26 @@ static void *ramfs_fopen(const char *file_name, const char *mode) {
 	fd = (ramfs_file_description_t*)nod->file_info;
 	fd->cur_pointer = 0;
 	fd->lock = 1;
-	return fd;
+	return nod;
 }
 
 static int ramfs_fclose(void *file) {
 	ramfs_file_description_t *fd;
-	fd = (ramfs_file_description_t*)file;
+	node_t *nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->file_info;
 	fd->lock = 0;
 	return 0;
 }
 
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 	ramfs_file_description_t *fd;
+	node_t *nod;
 	size_t size_to_read = size*count;
-	fd = (ramfs_file_description_t*)file;
-
+	nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->file_info;
 
 	if (fd == NULL) {
-		return -2; /*Null file descriptor*/
+		return -ENOENT;
 	}
 
 	if (size*count >= (fd->size - fd->cur_pointer)) {
@@ -113,12 +116,13 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file) {
 	ramfs_file_description_t *fd;
+	node_t *nod;
 	size_t size_to_write = size*count;
-	fd = (ramfs_file_description_t*)file;
-
+	nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->file_info;
 
 	if (fd == NULL) {
-		return -2; /*Null file descriptor*/
+		return -ENOENT;
 	}
 
 	//FIXME: don't expand memory, need file ramfs_resize.
@@ -134,11 +138,13 @@ static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *fil
 
 static int ramfs_fseek(void *file, long offset, int whence) {
 	ramfs_file_description_t *fd;
+	node_t *nod;
 	int new_offset;
-	fd = (ramfs_file_description_t*)file;
+	nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->file_info;
 
 	if (fd == NULL) {
-		return -2; /*Null file descriptor*/
+		return -ENOENT;
 	}
 
 	switch(whence) {
@@ -160,23 +166,23 @@ static int ramfs_fseek(void *file, long offset, int whence) {
 	}
 
 	fd->cur_pointer = new_offset;
-
         return 0;
 }
 
-static int ramfs_ioctl(void *file, int request, ...) {
+static int ramfs_ioctl(void *file, int request, va_list ar) {
 	ramfs_file_description_t *fd;
+	node_t *nod;
 	uint32_t *addr;
 	va_list args;
-
-	va_start(args, request);
-	addr = (uint32_t *) va_arg( args, int );
+	//TODO: switch through "request" ID.
+	va_copy(args, ar);
+	addr = (uint32_t *) va_arg(args, unsigned long);
 	va_end(args);
-	fd = (ramfs_file_description_t*)file;
-	*addr =  fd->start_addr;
+	nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->file_info;
+	*addr = fd->start_addr;
 	return 0;
 }
-
 
 /* File system operations */
 

@@ -33,7 +33,7 @@ static void print_long_list(char *path, node_t *nod, int recursive) {
 	list_for_each(p, &(nod->leaves)) {
 		item = (node_t*)list_entry(p, node_t, neighbors);
 		desc = (ramfs_file_description_t *)item->file_info;
-		ctime(&desc->mtime, time_buff);
+		ctime((time_t *)&desc->mtime, time_buff);
 		printf("%d\t%d\t%s\t%s\n",
 			desc->mode,
 			desc->size,

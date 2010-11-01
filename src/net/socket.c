@@ -73,10 +73,10 @@ int close(int sockfd) {
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *dest_addr, socklen_t addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
+	struct sockaddr_in *daddr = (struct sockaddr_in *)dest_addr;
 	if (sock == NULL) {
 		return -EBADF;
 	}
-	struct sockaddr_in *daddr = (struct sockaddr_in *)dest_addr;
 	struct inet_sock *inet = inet_sk(sock->sk);
 	struct iovec iov;
 	struct msghdr m;
@@ -99,10 +99,10 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *src_addr, socklen_t *addrlen) {
 	struct socket *sock = sockfd_lookup(sockfd);
+	struct sockaddr_in *saddr = (struct sockaddr_in *)src_addr;
 	if (sock == NULL) {
 		return -EBADF;
 	}
-	struct sockaddr_in *saddr = (struct sockaddr_in *)src_addr;
 	struct inet_sock *inet = inet_sk(sock->sk);
 	struct iovec iov;
 	struct msghdr m;
