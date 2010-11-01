@@ -40,7 +40,7 @@ AS      = $(CROSS_COMPILE)as
 LD      = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 OBJCOPY = $(CROSS_COMPILE)objcopy
-SIZE    = size
+SIZE    = $(CROSS_COMPILE)size
 
 ifeq ($(C),1)
 CHECK   = sparse
