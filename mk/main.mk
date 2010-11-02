@@ -126,7 +126,7 @@ create_romfs: build
 	@$(RM) -rv $(ROMFS_DIR)
 	@mkdir -p $(ROMFS_DIR)
 	$(CP) $(BUILD_DIR)/bin/embox $(ROMFS_DIR)
-	find $(ROMFS_DIR) -depth -print | cpio -H newc -ov > $(ROOT_DIR)/ramfs.cpio
+	pushd $(ROMFS_DIR);	find ./ -depth -print | cpio -H newc -ov > ../ramfs.cpio; popd;
 
 clean c: _clean
 	@echo 'Clean complete'
