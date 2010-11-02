@@ -65,7 +65,7 @@ static int threads_init(void) {
  * execute "run" and delete thread from scheduler.
  * @param thread_pointer pointer at thread.
  */
-static void thread_run(void) {
+static void thread_run(int par) {
 #ifdef CONFIG_DEBUG_SCHEDULER
 	TRACE("\nStarting Thread %d\n", current_thread->id);
 #endif
@@ -103,7 +103,7 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	}
 	created_thread->run = run;
 	context_init(&created_thread->context, true);
-	context_set_entry(&created_thread->context, &thread_run, (int) created_thread);
+	context_set_entry(&created_thread->context, thread_run, (int) created_thread);
 	context_set_stack(&created_thread->context, stack_address);
 	created_thread->state = THREAD_STATE_STOP;
 	created_thread->priority = 1;
