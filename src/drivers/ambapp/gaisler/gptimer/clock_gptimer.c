@@ -88,6 +88,7 @@ static int dev_regs_init(irq_nr_t *irq_nr);
 void clock_setup(useconds_t useconds) {
 	if (useconds > 0) {
 		REG_STORE(&dev_regs->timer[0].reload, useconds);
+		REG_STORE(&dev_regs->timer[0].counter, 0);
 		REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
 	} else {
 		REG_STORE(&dev_regs->timer[0].ctrl, 0x0);
