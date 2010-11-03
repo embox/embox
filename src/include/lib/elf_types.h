@@ -117,10 +117,44 @@ typedef struct {
 /*
  * e_ident
  */
+#define EI_MAG0         0
+#define EI_MAG1         1
+#define EI_MAG2         2
+#define EI_MAG3         3
+#define EI_CLASS        4
+#define EI_DATA         5
+#define EI_VERSION      6
+#define EI_OSABI        7
+#define EI_ABIVERSION   8
+#define EI_PAD          9
+
 #define ELFMAG0         0x7f
 #define ELFMAG1         'E'
 #define ELFMAG2         'L'
 #define ELFMAG3         'F'
+
+/*
+ * e_ident[EI_CLASS]
+ */
+#define ELFCLASSNONE    0
+#define ELFCLASS32      1
+#define ELFCLASS64      2
+#define ELFCLASSNUM     3
+
+/*
+ * e_ident[EI_DATA]
+ */
+#define ELFDATANONE     0
+#define ELFDATA2LSB     1
+#define ELFDATA2MSB     2
+#define ELFDATANUM      3
+
+/*
+ * e_ident[EI_OSABI]
+ */
+#define ELFOSABI_NONE           0       /* No extensions or unspecified */
+#define ELFOSABI_SYSV           ELFOSABI_NONE
+#define ELFOSABI_LINUX          3       /* Linux */
 
 /*
  * e_type
@@ -135,13 +169,15 @@ typedef struct {
  * e_machine
  */
 #define EM_NONE         0       /* No machine */
-#define EM_SPARC        2       /* SPARC */
+#define EM_SPARC        2       /* SUN Sparc */
+#define EM_MICROBLAZE   189     /* Xilinx MicroBlaze 32-bit RISC soft processor core */
 
 /*
  * e_ident[EI_VERSION], e_version
  */
 #define EV_NONE         0
 #define EV_CURRENT      1
+#define EV_NUM          2
 
 /**
  * ELF Section header. Code style from specification
