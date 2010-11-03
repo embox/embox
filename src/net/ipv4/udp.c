@@ -16,7 +16,7 @@
 #include <net/protocol.h>
 #include <net/inet_common.h>
 
-static struct udp_sock *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
+static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 					__be16 dest, size_t len) {
@@ -67,7 +67,7 @@ static void udp_lib_hash(struct sock *sk) {
 	size_t i;
 	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		if(udp_hash[i] == NULL) {
-			udp_hash[i] = (struct udp_sock*)sk;
+			udp_hash[i] = (udp_sock_t *)sk;
 			break;
 		}
 	}
@@ -76,7 +76,7 @@ static void udp_lib_hash(struct sock *sk) {
 static void udp_lib_unhash(struct sock *sk) {
 	size_t i;
 	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
-		if(udp_hash[i] == (struct udp_sock*)sk) {
+		if(udp_hash[i] == (udp_sock_t *)sk) {
 			udp_hash[i] = NULL;
 			break;
 		}
