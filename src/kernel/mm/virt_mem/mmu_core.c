@@ -14,6 +14,47 @@
 #define DEBUG
 static mmu_pte_t *context[] = {NULL, NULL, NULL, NULL, NULL };
 
+unsigned long mmu_page_table_sizes[] = {
+	0,
+	MMU_GTABLE_SIZE * sizeof(mmu_pte_t),
+	MMU_MTABLE_SIZE * sizeof(mmu_pte_t),
+	MMU_PTABLE_SIZE * sizeof(mmu_pte_t),
+	0
+};
+
+unsigned long mmu_table_masks[] = {
+	-1,
+	MMU_GTABLE_MASK, /* warning: integer overflow in expression */
+	MMU_MTABLE_MASK,
+	MMU_PTABLE_MASK,
+	MMU_PAGE_MASK,
+	0
+};
+
+unsigned long mmu_level_capacity[] = {
+	-1,
+	MMU_MTABLE_SIZE * MMU_PTABLE_SIZE * MMU_PAGE_SIZE,
+	MMU_PTABLE_SIZE * MMU_PAGE_SIZE,
+	MMU_PAGE_SIZE,
+	1
+};
+
+mmu_page_table_set_t mmu_page_table_sets[] = {
+	NULL,
+	&mmu_pgd_set,
+	&mmu_pmd_set,
+	&mmu_set_pte, /* warning: initialization from incompatible pointer type */
+	NULL
+};
+
+mmu_page_table_get_t mmu_page_table_gets[] = {
+	NULL,
+	&mmu_pgd_get, /* warning: initialization from incompatible pointer type */
+	&mmu_pmd_get,
+	&mmu_pmd_get,
+	NULL
+};
+
 /* FIXME: cleanup function, actually, this is a Spaghetti code */
 int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, mmu_page_flags_t flags) {
@@ -34,10 +75,12 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	 * will choose smaller area, while not found the best fitting */
 	while ( treg_size > 0) {
 		for (cur_level = 1; cur_level < 4; cur_level++) {
-			cur_offset = ((virt_addr & mmu_table_masks[cur_level]) >> blog2(mmu_table_masks[cur_level]));
+			cur_offset = ((virt_addr & mmu_table_masks[cur_level])
+				>> blog2(mmu_table_masks[cur_level]));
 #ifdef DEBUG
 			printf("level %d; vaddr 0x%8x; paddr 0x%8x; context 0x%8x offset 0x%8x\n",
-				cur_level, (uint32_t)virt_addr, (uint32_t)phy_addr, context[cur_level], cur_offset);
+				cur_level, (uint32_t)virt_addr,
+				(uint32_t)phy_addr, context[cur_level], cur_offset);
 #endif
 			vaddr += mmu_level_capacity[cur_level] * cur_offset;
 			/* if mapping vaddr is aligned and if required size is pretty fit */
@@ -50,7 +93,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 #ifdef DEBUG
 				printf("exiting\n");
 #endif
-			    break;
+				break;
 			}
 			/* if there is mapping allready */
 			//TODO untested!
@@ -62,18 +105,23 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 				*(context[cur_level] + cur_offset) = 0;
 				/* need to divide -- old part rests from left */
 				if (vaddr < virt_addr && (virt_addr - vaddr > 0)) {
-					mmu_map_region(ctx, paddr, vaddr, virt_addr - vaddr, mmu_flags_extract(*(context[cur_level] + cur_offset)));
+					mmu_map_region(ctx, paddr, vaddr,
+						virt_addr - vaddr,
+						mmu_flags_extract(*(context[cur_level] + cur_offset)));
 				}
 				/* old part remains from right */
 				else {
 					if (mmu_level_capacity[cur_level] - treg_size > 0) {
-						mmu_map_region(ctx, paddr + treg_size, vaddr + treg_size, mmu_level_capacity[cur_level] - treg_size,
-								mmu_flags_extract(*(context[cur_level] + cur_offset)));
+						mmu_map_region(ctx, paddr + treg_size,
+							vaddr + treg_size,
+							mmu_level_capacity[cur_level] - treg_size,
+							mmu_flags_extract(*(context[cur_level] + cur_offset)));
 					}
 				}
 			}
 			/* if there is no next-level page table */
-			printf("0x%x, 0x%x\n",*(context[cur_level] + cur_offset), mmu_valid_entry(*(context[cur_level] + cur_offset)));
+			printf("0x%x, 0x%x\n", *(context[cur_level] + cur_offset),
+				mmu_valid_entry(*(context[cur_level] + cur_offset)));
 			if (!mmu_valid_entry(*(context[cur_level] + cur_offset))) {
 #ifdef DEBUG
 				printf("no mapping\n");
