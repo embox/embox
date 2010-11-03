@@ -158,9 +158,9 @@ int fioctl(FILE *fp, int request, ...) {
 		return -EBADF;
 	}
 	drv = nod->fs_type;
-	if (NULL == drv->file_op->ioctrl) {
+	if (NULL == drv->file_op->ioctl) {
 		return -1;
 	}
-	return drv->file_op->ioctrl(fp, request, args);
+	return drv->file_op->ioctl(fp, request, args);
 }
 
