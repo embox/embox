@@ -36,7 +36,7 @@ int elf_execve(unsigned long *file_addr, char *argv[]) {
 	while(counter--) {
 		if (EPH->p_type == PT_LOAD) {
 			/* Physical address equals to virtual. */
-			memcpy((void *)EPH->p_vaddr, (char *)EH + EPH->p_offset, EPH->p_memsz);
+			memcpy((void *)EPH->p_paddr, (char *)EH + EPH->p_offset, EPH->p_memsz);
 		}
 		EPH = (Elf32_Phdr *)((unsigned char *)EPH + EH->e_phentsize);
 	}
