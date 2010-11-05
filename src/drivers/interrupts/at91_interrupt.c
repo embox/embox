@@ -41,7 +41,6 @@ void interrupt_enable(interrupt_nr_t interrupt_nr) {
 void interrupt_disable(interrupt_nr_t interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(AT91C_AIC_IDCR, 1 << interrupt_nr);
-	//REG_ANDIN(AT91C_AIC_IECR, ~(1 << interrupt_nr));
 }
 
 void interrupt_clear(interrupt_nr_t interrupt_nr) {

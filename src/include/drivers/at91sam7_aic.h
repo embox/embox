@@ -6,7 +6,7 @@
  */
 
 #include <types.h>
-
+#if 1
 typedef struct _AT91S_AIC {
 	AT91_REG	 AIC_SMR[32]; 	// Source Mode Register
 	AT91_REG	 AIC_SVR[32]; 	// Source Vector Register
@@ -29,6 +29,8 @@ typedef struct _AT91S_AIC {
 	AT91_REG	 AIC_FFDR; 	// Fast Forcing Disable Register
 	AT91_REG	 AIC_FFSR; 	// Fast Forcing Status Register
 } AT91S_AIC, *AT91PS_AIC;
+
+#endif
 
 // -------- AIC_SMR : (AIC Offset: 0x0) Control Register --------
 #define AT91C_AIC_PRIOR       ((unsigned int) 0x7 <<  0) // (AIC) Priority Level

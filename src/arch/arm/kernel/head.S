@@ -17,6 +17,8 @@
  * 0x1C - FIQ (_fast IRQ)
  */
 
+#include <asm/modes.h>
+
 .weak hardware_init_hook
 .weak software_init_hook
 .weak kernel_start
@@ -67,18 +69,6 @@ data_abt_handler:
 FIQ_handler:
     B FIQ_handler
 
-.EQU ARM_MODE_FIQ, 0x11
-.EQU ARM_MODE_IRQ, 0x12
-.EQU ARM_MODE_SVC, 0x13
-.EQU ARM_MODE_ABT, 0x17
-.EQU ARM_MODE_UND, 0x1B
-.EQU ARM_MODE_USR, 0x10
-
-/** disable IRQ, FIQ */
-.EQU I_BIT, 0x80
-.EQU F_BIT, 0x40
-
-
 .text
 /** initialize stack */
 .RAM_TOP:
@@ -115,7 +105,7 @@ loop_excpt:
     mov sp, r0
     sub r1, r0, #CONFIG_ARM_UND_STACK_SIZE
 
-    msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+    msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
     mov sp, r0
 
 /** initialize memory */
@@ -165,7 +155,7 @@ init_hook:
     ldr	    lr, =kernel_start
     push    {lr}
 /* enabling interrupts */
-    msr	    CPSR_c, #ARM_MODE_SVC
+    msr	    CPSR_c, #ARM_MODE_SYS
 /** kernel start */
     ldr	    pc, =kernel_start
 die:
