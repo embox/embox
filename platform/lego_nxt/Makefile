@@ -1,5 +1,5 @@
 
-$_SUBDIRS := $(filter-out include,$($_SUBDIRS))
+SUBDIRS := $(filter-out include,$(SUBDIRS))
 
 #$_DEPS-core.kernel.main += $(PLATFORM).init
 #$_MODS += init
