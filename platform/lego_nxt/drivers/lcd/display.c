@@ -210,7 +210,7 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *b
    	width = min((NXT_LCD_WIDTH - x), width);
    	height = min((64 - y), height);
 
-   	for(y_offset = 0; y_offset < 8; y_offset += 8) {
+   	for(y_offset = 0; y_offset < height; y_offset += 8) {
 		for(x_offset = 0; x_offset < width; x_offset ++) {
    			display_buffer[(y + y_offset) >> 3][x + x_offset] = buff[(y_offset >> 3) + x_offset];
 		}
