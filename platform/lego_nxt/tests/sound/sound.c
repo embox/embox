@@ -14,7 +14,7 @@
 
 EMBOX_TEST(run_sound);
 
-static const uint32_t patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
+static const SAMPLEWORD patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
 {
   {
     0xF0F0F0F0,0xF0F0F0F0, // Step 0 = silence
@@ -85,7 +85,7 @@ static uint32_t freq_tone[2][3] = {
 	{TONE_C, TONE_E, TONE_F}
 };
 
-#define DURETION 500
+#define DURATION 500
 
 static uint32_t bank_num = 0;
 
@@ -93,7 +93,7 @@ void switch_bank(void) {
 	bank_num ++;
 }
 
-irq_return_t sound_interrupt (int irq_num, void *dev_id) {
+SAMPLEWORD *sound_handler(void) {
 	static int i = 0;
 	static uint32_t f = 0;
 	static int time = 0;
@@ -108,13 +108,16 @@ irq_return_t sound_interrupt (int irq_num, void *dev_id) {
 		i = 0;
 	}
 
-	sound_next_sample(freq_tone[bank_num & 0x1][f], DURETION, (uint32_t *)patterns[i], DURETION, (uint32_t *)patterns[i+1]);
-	return IRQ_HANDLED;
+	return patterns[i];
 }
 
-static int run_sound(void) {
-	irq_attach((irq_nr_t) AT91C_ID_SSC,
-		(irq_handler_t) &sound_interrupt, 0, NULL, "at91 PIT");
-	sound_next_sample(220, DURETION, (uint32_t *)patterns[0], DURETION, (uint32_t *)patterns[1]);
+static int run_sound(void)
+	int count = 5;
+	while (count--) {{
+		sound_start_play(TONE_C, DURATION, patterns[0], patterns[1], sound_handler);
+		sound_start_play(TONE_E, DURATION, patterns[0], patterns[1], sound_handler);
+		sound_start_play(TONE_G, DURATION, patterns[0], patterns[1], sound_handler);
+	}
+
 	return 0;
 }

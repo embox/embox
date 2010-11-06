@@ -46,12 +46,31 @@ static int __init sound_init(void) {
 	return 0;
 }
 
-void sound_next_sample(uint32_t freq, uint32_t ms, uint32_t *buff,
-			    uint32_t next_ms, uint32_t *next_buff) {
-	/*check correct input data*/
-	if (ms < DURATION_MIN) {
-		ms = DURATION_MIN;
-	}
+static sound_handler_t current_handler = NULL;
+static bool continuous = false;
+static useconds_t last_to_play = 0;
+static useconds_t last_sys_time = 0;
+
+static irq_return_t sound_interrupt (int irq_num, void *dev_id) {
+	SAMPLEWORD *next_buff = current_handler();
+	REG_STORE(AT91C_SSC_TNPR, (uint32_t) next_buff);
+	REG_STORE(AT91C_SSC_TNCR, SAMPLETONENO);
+
+	return IRQ_HANDLED;
+}
+
+void sound_stop_play(void) {
+		REG_STORE(AT91C_SSC_PTCR, AT91C_PDC_TXTDIS);
+}
+
+void sound_start_play(uint32_t freq, uint32_t ms,
+		SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd ) {
+
+	irq_attach((irq_nr_t) AT91C_ID_SSC,
+		(irq_handler_t) &sound_interrupt, 0, NULL, "Sound Buffer Transfer End");
+
+	current_handler = sound_hnd;
+
 	if (freq) {
 		if (freq < FREQUENCY_MIN) {
 			freq = FREQUENCY_MIN;
@@ -64,9 +83,17 @@ void sound_next_sample(uint32_t freq, uint32_t ms, uint32_t *buff,
 	}
 
 	REG_STORE(AT91C_SSC_CMR, ((CONFIG_SYS_CLOCK / (2L * 512L)) / freq) + 1L);
+
 	REG_STORE(AT91C_SSC_TNPR, (uint32_t) next_buff);
 	REG_STORE(AT91C_SSC_TNCR, SAMPLETONENO);
+
 	REG_STORE(AT91C_SSC_TPR, (uint32_t) buff);
 	REG_STORE(AT91C_SSC_TCR, SAMPLETONENO);
+
 	REG_STORE(AT91C_SSC_PTCR, AT91C_PDC_TXTEN);
+
+	if (ms != 0) {
+		sleep(ms);
+		sound_stop_play();
+	}
 }
