@@ -237,7 +237,6 @@ static int snake_update(void) {
 		draw(p,SNK);
 		fruit_draw();
 		nxt_lcd_force_update();
-		switch_bank();
 		break;
 	case ' ':
 	case '.':

@@ -19,7 +19,7 @@
 #define   SAMPLEWORDS           8
 
 /* next samplebuffer, called when needed by framework */
-typedef SAMPLEWORD (*sound_handler_t)(void)
+typedef SAMPLEWORD *(*sound_handler_t)(void)
 
 /* start playing sound with initial buffers
  * @param ms = 0: continuous playing, stops only at explicit stop

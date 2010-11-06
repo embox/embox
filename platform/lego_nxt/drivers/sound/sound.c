@@ -9,6 +9,7 @@
 #include <types.h>
 #include <embox/unit.h>
 #include <linux/init.h>
+#include <unistd.h>
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/sound.h>
@@ -47,12 +48,9 @@ static int __init sound_init(void) {
 }
 
 static sound_handler_t current_handler = NULL;
-static bool continuous = false;
-static useconds_t last_to_play = 0;
-static useconds_t last_sys_time = 0;
 
 static irq_return_t sound_interrupt (int irq_num, void *dev_id) {
-	SAMPLEWORD *next_buff = current_handler();
+	SAMPLEWORD *next_buff = (*current_handler)();
 	REG_STORE(AT91C_SSC_TNPR, (uint32_t) next_buff);
 	REG_STORE(AT91C_SSC_TNCR, SAMPLETONENO);
 
@@ -63,7 +61,7 @@ void sound_stop_play(void) {
 		REG_STORE(AT91C_SSC_PTCR, AT91C_PDC_TXTDIS);
 }
 
-void sound_start_play(uint32_t freq, uint32_t ms,
+void sound_start_play(uint32_t freq, useconds_t ms,
 		SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd ) {
 
 	irq_attach((irq_nr_t) AT91C_ID_SSC,
@@ -93,7 +91,7 @@ void sound_start_play(uint32_t freq, uint32_t ms,
 	REG_STORE(AT91C_SSC_PTCR, AT91C_PDC_TXTEN);
 
 	if (ms != 0) {
-		sleep(ms);
+		usleep(ms);
 		sound_stop_play();
 	}
 }
