@@ -14,8 +14,8 @@
 
 extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
 
-int display_x;
-int display_y;
+static int display_x;
+static int display_y;
 
 __u8 font[N_CHARS][FONT_WIDTH] = {
 /* 0x00 */ {0x3E, 0x36, 0x2A, 0x36, 0x3E},
@@ -180,25 +180,12 @@ void display_string(const char *str) {
 	nxt_lcd_force_update();
 }
 
-void display_clear_screan(void) {
+void display_clear_screen(void) {
 	memset((void *)display_buffer, 0x0, NXT_LCD_WIDTH*NXT_LCD_DEPTH);
 	nxt_lcd_force_update();
 
 }
 
-#if 0
-int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, uint8_t *buff){
-	uint8_t i,j;
-   	uint16_t buf_pos = 0;
-	for (i = x; i < min(NXT_LCD_WIDTH, x + width); i++) {
-		for (j = y; j < min(NXT_LCD_DEPTH, y + heigth); j++) {
-			display_buffer[i][j] = buff[buf_pos++];
-		}
-	}
-	nxt_lcd_force_update();
-	return 0;
-}
-#else
 int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *buff){
    	uint32_t x_offset, y_offset;
    	y *= 8;
@@ -218,4 +205,3 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *b
 	nxt_lcd_force_update();
 	return 0;
 }
-#endif

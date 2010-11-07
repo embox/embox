@@ -1,8 +1,11 @@
 
 $_CPPFLAGS += -I$($_PLATFORM)/include
-$_MODS += nxt_lcd nxt_lcd_picture
+$_MODS += nxt_lcd nxt_lcd_picture nxt_splash
 $_SRCS-nxt_lcd += lcd.c
 $_DEPS-nxt_lcd += $(PLATFORM).driver.nxt_lcd
 
 $_SRCS-nxt_lcd_picture += picture_embox.c
-$_DEPS-nxt_lcd_picture += $(PLATFORM).driver.nxt_lcd $(PLATFORM).driver.nxt_avr_init
+$_DEPS-nxt_lcd_picture += $(PLATFORM).driver.nxt_lcd
+
+$_SRCS-nxt_splash += abc_embox.c
+$_DEPS-nxt_splash += $(PLATFORM).driver.nxt_lcd
