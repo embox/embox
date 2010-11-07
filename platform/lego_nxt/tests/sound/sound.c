@@ -89,31 +89,19 @@ static uint32_t freq_tone[2][3] = {
 
 static uint32_t bank_num = 0;
 
-void switch_bank(void) {
-	bank_num ++;
-}
+static int i = 0;
 
 SAMPLEWORD *sound_handler(void) {
-	static int i = 0;
-	static uint32_t f = 0;
-	static int time = 0;
 	if (++i == 5) {
-		if (time ++ == 10) {
-			time = 0;
-			if (3 == f ++) {
-				f = 0;
-			}
-		}
-
 		i = 0;
 	}
 
 	return patterns[i];
 }
 
-static int run_sound(void)
+static int run_sound(void) {
 	int count = 5;
-	while (count--) {{
+	while (count--) {
 		sound_start_play(TONE_C, DURATION, patterns[0], patterns[1], sound_handler);
 		sound_start_play(TONE_E, DURATION, patterns[0], patterns[1], sound_handler);
 		sound_start_play(TONE_G, DURATION, patterns[0], patterns[1], sound_handler);
