@@ -40,7 +40,7 @@
 //  ----------------------------------------------------------------------------
 
 #ifndef AT91SAM7S256_H_
-#define
+#define AT91SAM7S256_H_
 
 #include <types.h>
 
@@ -1220,3 +1220,6 @@ typedef struct _AT91S_UDP {
 #define AT91C_IFLASH_SIZE	 ((unsigned int) 0x00040000) // Internal ROM size in byte (256 Kbyte)
 
 #endif
+
+#endif /* AT91SAM7S256_H_ */
+
