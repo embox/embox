@@ -27,7 +27,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 extern int errno;
 
 static uint32_t rev_long(uint32_t n, uint8_t reversed) {
-        if (reversed == 2) {
+        if (reversed == ELFDATA2LSB) {
                 return ((n & 0x000000ff) << 24)
                        + ((n & 0x0000ff00) << 8)
                        + ((n & 0x00ff0000) >> 8)
@@ -38,7 +38,7 @@ static uint32_t rev_long(uint32_t n, uint8_t reversed) {
 }
 
 static uint16_t rev_short(uint16_t n, uint8_t reversed) {
-        if (reversed == 2) {
+        if (reversed == ELFDATA2LSB) {
                 return ((n & 0x00ff) << 8) + ((n & 0xff00) >> 8);
         } else {
                 return n;
@@ -64,7 +64,6 @@ static const header_item_t header_data_desc[] = {
 
 static const header_item_t header_osabi_desc[] = {
 	{ ELFOSABI_NONE,      "UNIX - System V"      },
-#ifdef ALL_ELF
 	{ ELFOSABI_HPUX,      "UNIX - HP-UX"         },
 	{ ELFOSABI_NETBSD,    "UNIX - NetBSD"        },
 	{ ELFOSABI_LINUX,     "UNIX - Linux"         },
@@ -81,28 +80,20 @@ static const header_item_t header_osabi_desc[] = {
 	{ ELFOSABI_AROS,      "AROS"                 },
 	{ ELFOSABI_STANDALONE,"Standalone App"       },
 	{ ELFOSABI_ARM,       "ARM"                  },
-#endif
 };
 
 static const header_item_t header_type_desc[] = {
 	{ ET_NONE,  "NONE (None)"             },
-#ifdef ALL_ELF
 	{ ET_REL,   "REL (Relocatable file)"  },
-#endif
 	{ ET_EXEC,  "EXEC (Executable file)"  },
-#ifdef ALL_ELF
 	{ ET_DYN,   "DYN (Shared object file)"},
 	{ ET_CORE,  "CORE (Core file)"        },
-#endif
 };
 
 static const header_item_t header_mach_desc[] = {
 	{ EM_NONE,           "None"                                   },
-#ifdef ALL_ELF
 	{ EM_M32,            "WE32100"                                },
-#endif
 	{ EM_SPARC,          "Sparc"                                  },
-#ifdef ALL_ELF
 	{ EM_SPU,            "SPU"                                    },
 	{ EM_386,            "Intel 80386"                            },
 	{ EM_68K,            "MC68000"                                },
@@ -208,15 +199,12 @@ static const header_item_t header_mach_desc[] = {
 	{ EM_CYGNUS_MEP,     "Toshiba MeP Media Engine"       },
 	{ EM_CR16,           "National Semiconductor's CR16"  },
 	{ EM_CR16_OLD,       "National Semiconductor's CR16"  },
-#endif
 	{ EM_MICROBLAZE,     "Xilinx MicroBlaze"              },
-#ifdef ALL_ELF
 	{ EM_MICROBLAZE_OLD, "Xilinx MicroBlaze"              },
-#endif
 };
 
 static void print_header(Elf32_Ehdr *head) {
-	int i, x;
+	size_t i;
 	printf("ELF Header:\n");
 	printf("  Magic:   ");
 	for (i = 0; i < EI_NIDENT; i++) {
@@ -240,13 +228,12 @@ static void print_header(Elf32_Ehdr *head) {
 	printf("  ABI Version:                       %d\n",
 		head->e_ident[EI_ABIVERSION]);
 	printf("  Type:                              %s\n",
-		header_type_desc[rev_short(head->e_type, head->e_ident[EI_DATA])]);
+		header_type_desc[rev_short(head->e_type, head->e_ident[EI_DATA])].desc);
 	printf("  Machine:                           %s\n",
-		header_mach_desc[rev_short(head->e_machine, head->e_ident[EI_DATA])]);
-
+		header_mach_desc[rev_short(head->e_machine, head->e_ident[EI_DATA])].desc);
         printf("  Version:                           0x%lx\n",
     		rev_long(head->e_version, head->e_ident[EI_DATA]));
-        printf("  Entry point address:               0x%08u\n",
+        printf("  Entry point address:               0x%08x\n",
                rev_long(head->e_entry, head->e_ident[EI_DATA]));
         printf("  Start of program headers:          %u (bytes into file)\n",
                rev_long(head->e_phoff, head->e_ident[EI_DATA]));
