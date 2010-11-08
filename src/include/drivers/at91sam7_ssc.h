@@ -1,4 +1,7 @@
 
+#ifndef AT91SAM7_SSC_H_
+#define AT91SAM7_SSC_H_
+
 typedef struct _AT91S_SSC {
 	AT91_REG	 SSC_CR; 	// Control Register
 	AT91_REG	 SSC_CMR; 	// Clock Mode Register
@@ -119,3 +122,6 @@ typedef struct _AT91S_SSC {
 #define AT91C_SSC_CR    ((AT91_REG *) 	0xFFFD4000) // (SSC) Control Register
 #define AT91C_SSC_IMR   ((AT91_REG *) 	0xFFFD404C) // (SSC) Interrupt Mask Register
 #define AT91C_SSC_RFMR  ((AT91_REG *) 	0xFFFD4014) // (SSC) Receive Frame Mode Register
+
+#endif /* AT91SAM7_SSC_H_ */
+

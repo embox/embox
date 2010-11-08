@@ -42,11 +42,12 @@ typedef struct tag_free {
 /**
  * return adress
  */
-#define ADRESS(begin) (void *) (begin + sizeof(tag_free_t))
+#define ADRESS(begin) (void *)(begin + sizeof(tag_free_t))
 
-#define END_TAG(begin) (tag_t*) (begin + sizeof(tag_free_t) + begin->tag.size - sizeof(tag_t))
+#define END_TAG(begin) (tag_t*)(begin + sizeof(tag_free_t) \
+				+ begin->tag.size - sizeof(tag_t))
 
-#define BEGIN_TAG(end) (tag_free_t*) (end - end->size - sizeof(tag_free_t))
+#define BEGIN_TAG(end) (tag_free_t*)(end - end->size - sizeof(tag_free_t))
 
 /* some stuff for easey programming */
 inline static int  allocate_mem_block(int pages);
@@ -63,13 +64,13 @@ void *kmalloc(size_t size) {
 	struct list_head *tmp_loop;
 	int expr;
 	/* some securuty actions */
-	if (size < (sizeof(tag_t)+sizeof(tag_free_t)+1)) {
-		size = sizeof(tag_t)+sizeof(tag_free_t)+1;
+	if (size < (sizeof(tag_t) + sizeof(tag_free_t) + 1)) {
+		size = sizeof(tag_t) + sizeof(tag_free_t) + 1;
 	}
 	/* we inited */
 	if (!inited) {
 		expr = allocate_mem_block(CONFIG_MALLOC_SIZE);
-		if ( expr  == 0 ) {
+		if (expr  == 0) {
 			return 0;
 		}
 		inited = !inited;
@@ -89,7 +90,6 @@ void *kmalloc(size_t size) {
 }
 
 void kfree(void *ptr) {
-	/* declarations */
 	tag_free_t *tmp_begin, *ptr_begin;
 	tag_t      *tmp_end;
 	ptr_begin = (tag_free_t *) ptr;
@@ -125,7 +125,6 @@ void kfree(void *ptr) {
 
 /* auxiliry function. allocate block of memory TODO add the ending memory work */
 inline static int allocate_mem_block(int pages) {
-	/* declarations */
 	tag_free_t *tmp_begin;
 	tag_t* tmp_end;
 
@@ -149,13 +148,12 @@ inline static int allocate_mem_block(int pages) {
 }
 /* auxiliry function. Eat mem. add the ending memory work */
 inline static void eat_mem(size_t size, tag_free_t* ext) {
-	/* decalations */
 	tag_free_t *tmp_begin;
 	tag_t *tmp_end;
 	size_t size_tmp;
 
 	if ( ext->tag.size == size) {
-		list_del((struct list_head*) ext);
+		list_del((struct list_head*)ext);
 		ext->tag.free = PROC;
 	}
 	/* delete ext */
@@ -169,16 +167,16 @@ inline static void eat_mem(size_t size, tag_free_t* ext) {
 	tmp_end->size = ext->tag.size;
 	tmp_end->free = PROC;
 	/* write new block  adresses */
-	tmp_begin = (tag_free_t*) (tmp_end + sizeof(tag_t));
+	tmp_begin = (tag_free_t*)(tmp_end + sizeof(tag_t));
 	tmp_end   = END_TAG(tmp_begin);
 	/* write begin tag */
-	tmp_begin->tag.size = size_tmp - ext->tag.size - 2*sizeof(tag_t);
+	tmp_begin->tag.size = size_tmp - ext->tag.size - 2 * sizeof(tag_t);
 	tmp_begin->tag.free = HOLE;
 	/* write end tag */
 	tmp_end->size = tmp_begin->tag.size;
 	tmp_end->free = HOLE;
 	/* add to list */
-	list_add( (struct list_head*) tmp_begin, &mem_pool);
+	list_add((struct list_head*)tmp_begin, &mem_pool);
 }
 
 #undef PROC

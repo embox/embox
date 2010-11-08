@@ -39,6 +39,9 @@
 // CVS Reference       : /PWM_6044D.pl/1.1/Tue Apr 27 14:53:52 2004//
 //  ----------------------------------------------------------------------------
 
+#ifndef AT91SAM7S256_H_
+#define
+
 #include <types.h>
 
 #ifndef AT91SAM7S256_H

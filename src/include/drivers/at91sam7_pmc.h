@@ -1,10 +1,13 @@
-/* @file
+/**
+ * @file
  * @brief Power Managment Controller interface
  *
  * @date 26.09.2010
  * @author Anton Kozlov
  */
 
+#ifndef AT91SAM7_PMC_H_
+#define AT91SAM7_PMC_H_
 
 typedef struct _AT91S_PMC {
 	AT91_REG	 PMC_SCER; 	// System Clock Enable Register
@@ -81,4 +84,6 @@ typedef struct _AT91S_PMC {
 #define AT91C_PMC_IMR   ((AT91_REG *) 	0xFFFFFC6C) // (PMC) Interrupt Mask Register
 #define AT91C_PMC_IER   ((AT91_REG *) 	0xFFFFFC60) // (PMC) Interrupt Enable Register
 #define AT91C_PMC_SR    ((AT91_REG *) 	0xFFFFFC68) // (PMC) Status Register
+
+#endif /* AT91SAM7_PMC_H_ */
 

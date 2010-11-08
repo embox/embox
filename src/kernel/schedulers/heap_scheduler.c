@@ -5,8 +5,6 @@
  * @date 1.07.2010
  * @author Avdyukhin Dmitry
  */
-#ifndef _HEAP_SCHEDULER_
-#define _HEAP_SCHEDULER_
 
 #include <kernel/scheduler_base.h>
 #include <kernel/thread_heap.h>
@@ -43,4 +41,3 @@ void _scheduler_remove(struct thread *removed_thread) {
 	}
 }
 
-#endif

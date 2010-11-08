@@ -49,12 +49,13 @@ static void idle_run(void) {
 }
 
 static int threads_init(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < MAX_MSG_COUNT; i++) {
 		msg_mask[i] = 0;
 		threads_pool[i].exist = false;
 	}
-	idle_thread = thread_create(idle_run, idle_thread_stack + THREAD_STACK_SIZE);
+	idle_thread = thread_create(idle_run,
+		idle_thread_stack + THREAD_STACK_SIZE);
 	idle_thread->priority = 0;
 	idle_thread->state = THREAD_STATE_RUN;
 	return 0;
@@ -82,9 +83,10 @@ static void thread_run(int par) {
  * @return pointer to alloted thread
  * @retval NULL if there are not free threads
  */
-static struct thread * thread_new(void) {
+static struct thread *thread_new(void) {
+	size_t i;
 	struct thread *created_thread;
-	for (int i = 0; i < MAX_THREADS_COUNT; i++) {
+	for (i = 0; i < MAX_THREADS_COUNT; i++) {
 		if (mask[i] == 0) {
 			created_thread = threads_pool + i;
 			created_thread->id = i;
@@ -103,7 +105,8 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	}
 	created_thread->run = run;
 	context_init(&created_thread->context, true);
-	context_set_entry(&created_thread->context, thread_run, (int) created_thread);
+	context_set_entry(&created_thread->context,
+			thread_run, (int)created_thread);
 	context_set_stack(&created_thread->context, stack_address);
 	created_thread->state = THREAD_STATE_STOP;
 	created_thread->priority = 1;
@@ -152,7 +155,8 @@ int thread_stop(struct thread *thread) {
 	TRACE("\nI = 0x%x; D = 0x%x; Z = 0x%x;\n", (unsigned int)idle_thread,
 			(unsigned int)thread, (unsigned int)zombie);
 #endif
-	if (thread == NULL || thread == idle_thread || thread == zombie || !thread->exist) {
+	if (thread == NULL || thread == idle_thread ||
+		    thread == zombie || !thread->exist) {
 		return -EINVAL;
 	}
 	scheduler_lock();
@@ -199,12 +203,12 @@ struct message *msg_receive(void) {
 		current_thread->need_message = true;
 		scheduler_sleep(&current_thread->msg_event);
 	}
-	return (struct message *)list_entry(queue_extr(&current_thread->messages),
-			struct message, list);
+	return (struct message *)list_entry(
+		queue_extr(&current_thread->messages), struct message, list);
 }
 
 struct message *msg_new(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < MAX_MSG_COUNT; i++) {
 		if (!msg_mask[i]) {
 			msg_mask[i] = true;

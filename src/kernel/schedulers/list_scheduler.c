@@ -6,9 +6,6 @@
  * @author Avdyukhin Dmitry
  */
 
-#ifndef _LIST_SCHEDULER_
-#define _LIST_SCHEDULER_
-
 #include <lib/list.h>
 #include <kernel/scheduler_base.h>
 
@@ -42,9 +39,11 @@ void _scheduler_add(struct thread *added_thread) {
 
 struct thread *_scheduler_next(struct thread *prev_thread) {
 	if (prev_thread->sched_list.next == NULL) {
-		return list_entry(idle_thread->sched_list.next, struct thread, sched_list);
+		return list_entry(idle_thread->sched_list.next,
+			struct thread, sched_list);
 	}
-	return list_entry(prev_thread->sched_list.next, struct thread, sched_list);
+	return list_entry(prev_thread->sched_list.next,
+		struct thread, sched_list);
 }
 
 void _scheduler_remove(struct thread *removed_thread) {
@@ -53,4 +52,3 @@ void _scheduler_remove(struct thread *removed_thread) {
 	}
 }
 
-#endif

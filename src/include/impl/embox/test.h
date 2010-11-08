@@ -16,13 +16,13 @@
 #include <impl/test/types.h>
 
 #define __EMBOX_TEST(_run) \
-	static int _run(void); \
-	static struct test_private __test_private; \
+	static int _run(void);                             \
+	static struct test_private __test_private;         \
 	ARRAY_DIFFUSE_ADD_NAMED(__test_registry, __test, { \
-			.private = &__test_private, \
-			.run = _run, \
-			.mod = &mod_self \
-		}); \
+		.private = &__test_private,                \
+		.run = _run,                               \
+		.mod = &mod_self                           \
+	});                                                \
 	MOD_SELF_BIND(__test, &__test_mod_ops)
 
 extern const struct mod_ops __test_mod_ops;

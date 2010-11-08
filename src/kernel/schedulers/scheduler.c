@@ -9,7 +9,6 @@
 
 #include <errno.h>
 #include <lib/list.h>
-
 #include <kernel/scheduler.h>
 #include <kernel/scheduler_base.h>
 #include <kernel/timer.h>
@@ -93,7 +92,8 @@ void scheduler_dispatch(void) {
 		current_thread->reschedule = false;
 
 #ifdef CONFIG_DEBUG_SCHEDULER
-		TRACE("\nSwitching from %d to %d\n", prev_thread->id, current_thread->id);
+		TRACE("\nSwitching from %d to %d\n",
+			prev_thread->id, current_thread->id);
 #endif
 		ipl = ipl_save();
 		preemption_count--;
@@ -142,7 +142,8 @@ int scheduler_wakeup(struct event *event) {
 	struct thread *thread;
 	struct thread *tmp_thread;
 	scheduler_lock();
-	list_for_each_entry_safe(thread, tmp_thread, &event->threads_list, wait_list) {
+	list_for_each_entry_safe(thread, tmp_thread,
+			&event->threads_list, wait_list) {
 		list_del_init(&thread->wait_list);
 		thread->state = THREAD_STATE_RUN;
 		scheduler_add(thread);

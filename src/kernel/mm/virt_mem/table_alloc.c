@@ -16,6 +16,7 @@
 typedef struct {
 	uint32_t free;
 } page_header_t;
+
 uint8_t *cur_page = NULL;
 size_t cur_rest = 0;
 
@@ -34,7 +35,8 @@ unsigned long *mmu_table_alloc(size_t size) {
 	if (cur_rest < size) {
 		cur_page = (uint8_t *) clear_page_alloc();
 #ifdef DEBUG
-		printf("---requesting new page %x, page_header_size %x\n",cur_page,PAGE_HEADER_SIZE);
+		printf("---requesting new page %x, page_header_size %x\n",
+			cur_page,PAGE_HEADER_SIZE);
 #endif
 		cur_rest = MMU_PAGE_SIZE - PAGE_HEADER_SIZE;
 		((page_header_t *) cur_page)->free = cur_rest;
@@ -51,7 +53,8 @@ unsigned long *mmu_table_alloc(size_t size) {
 		page -= MMU_PAGE_SIZE;
 	}
 #ifdef DEBUG
-	printf("page %x; page->free %x; cur_rest %x; size %x, return %x\n", page, ((page_header_t *) page)->free, cur_rest, size, t);
+	printf("page %x; page->free %x; cur_rest %x; size %x, return %x\n",
+		page, ((page_header_t *) page)->free, cur_rest, size, t);
 #endif
 	((page_header_t *) page)->free -= size;
 	return (mmu_pmd_t *) t;
@@ -62,20 +65,25 @@ void mmu_table_free(unsigned long *table, int level) {
 	int i;
 	int size = mmu_page_table_sizes[level];
 #ifdef DEBUG
-	printf("table %x; level %x; page %x; size %x; is free %x\n", (unsigned long) table, level,
-			(unsigned long) page, size, ((page_header_t *) page)->free + size);
+	printf("table %x; level %x; page %x; size %x; is free %x\n",
+		(unsigned long) table, level,
+		(unsigned long) page, size,
+		((page_header_t *) page)->free + size);
 #endif
 	for (i = 0; i < mmu_page_table_sizes[level-1]; i++ ) {
 		unsigned long t = *(table + i);
 		if (!mmu_is_pte(t)) {
 #ifdef DEBUG
-			printf("on %x to %x\n", table + i, (t & MMU_PTD_PMASK) << 4);
+			printf("on %x to %x\n",
+				table + i, (t & MMU_PTD_PMASK) << 4);
 #endif
-			mmu_table_free((*mmu_page_table_gets[level])(t), level + 1);
+			mmu_table_free(
+				(*mmu_page_table_gets[level])(t), level + 1);
 		}
 	}
 	((page_header_t *) page)->free += size;
-	if (((page_header_t *) page)->free == MMU_PAGE_SIZE - PAGE_HEADER_SIZE && page != cur_page) {
+	if (((page_header_t *) page)->free == MMU_PAGE_SIZE - PAGE_HEADER_SIZE
+			&& page != cur_page) {
 		opfree((void *)page);
 	}
 }

@@ -1,9 +1,13 @@
-/* @file
+/**
+ * @file
  * @brief Clock Generator Controller interface
  *
  * @date 29.09.2010
  * @author Anton Kozlov
  */
+
+#ifndef AT91SAM7_CKGR_H_
+#define AT91SAM7_CKGR_H_
 
 #include <types.h>
 
@@ -44,3 +48,6 @@ typedef struct _AT91S_CKGR {
 #define AT91C_CKGR_MOR  ((AT91_REG *) 	0xFFFFFC20) // (CKGR) Main Oscillator Register
 #define AT91C_CKGR_PLLR ((AT91_REG *) 	0xFFFFFC2C) // (CKGR) PLL Register
 #define AT91C_CKGR_MCFR ((AT91_REG *) 	0xFFFFFC24) // (CKGR) Main Clock  Frequency Register
+
+#endif /* AT91SAM7_CKGR_H_ */
+
