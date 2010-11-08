@@ -18,11 +18,11 @@ ARRAY_DIFFUSE_DEF(const device_module_t, __device_registry);
 
 static file_system_driver_t devfs_drv;
 
-int devfs_init(void * par) {
+static int devfs_init(void * par) {
 	return 0;
 }
 
-int devfs_mount(void) {
+static int devfs_mount(void *par) {
 	node_t *nod, *devnod;
 	int i;
 
@@ -66,7 +66,7 @@ static size_t devfs_write(const void *buf, size_t size, size_t count, void *file
 	return 0;
 }
 
-static int devfs_ioctl(void *file, int request, ...) {
+static int devfs_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 

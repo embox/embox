@@ -13,7 +13,6 @@
 #include <util/array.h>
 
 #define __EMBOX_DEVICE(name, file_op) \
-	static device_module_t device_module = {name, file_op}; \
 	ARRAY_DIFFUSE_ADD(__device_registry, {name, file_op})
 
 extern const device_module_t __device_registry[];

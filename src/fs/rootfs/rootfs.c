@@ -16,7 +16,7 @@ static int     rootfs_close(void *file);
 static size_t  rootfs_read(void *buf, size_t size, size_t count, void *file);
 static size_t  rootfs_write(const void *buf, size_t size, size_t count, void *file);
 static int     rootfs_seek(void *file, long offset, int whence);
-static int rootfs_ioctl(void *file, int request, ...);
+static int rootfs_ioctl(void *file, int request, va_list args);
 
 static file_operations_t rootfs_fop = {
 	rootfs_open,
@@ -47,7 +47,7 @@ static int rootfs_delete(const char *file_name) {
 	return 0;
 }
 
-static int rootfs_mount(const char *file_name) {
+static int rootfs_mount(void *par) {
 	file_system_driver_t *fsdrv;
 	if(NULL != (fsdrv = find_filesystem("ramfs"))) {
 		fsdrv->fsop->mount(NULL);
@@ -93,7 +93,7 @@ static int rootfs_seek(void *file, long offset, int whence) {
 	return 0;
 }
 
-static int rootfs_ioctl(void *file, int request, ...) {
+static int rootfs_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 
