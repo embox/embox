@@ -150,3 +150,33 @@ int uart_remove_irq_handler(void) {
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
+#include <embox/device.h>
+#include <fs/file.h>
+/*
+ * file_operation
+ */
+static void *open(const char *fname, const char *mode) {
+	return NULL;
+}
+
+static int close(void *file) {
+	return 0;
+}
+
+static size_t read(void *buf, size_t size, size_t count, void *file) {
+	return 0;
+}
+
+static size_t write(const void *buf, size_t size, size_t count, void *file) {
+	return 0;
+}
+
+static file_operations_t file_op = {
+		.fread = read,
+		.fopen = open,
+		.fclose = close,
+		.fwrite = write
+};
+
+EMBOX_DEVICE("uart", &file_op);
+
