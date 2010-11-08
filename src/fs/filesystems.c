@@ -73,7 +73,7 @@ static int __init unit_init(void) {
 		TRACE("File systems not found rootfs driver\n");
 	}
 	else {
-//		root_fs->fsop->init(NULL);
+		root_fs->fsop->mount(NULL);
 	}
 
 	lsof_map_init();

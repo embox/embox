@@ -48,6 +48,7 @@ static void cache_fd(const char *path, FILE *file) {
 static void uncache_fd(FILE *file) {
 	list_move((struct list_head*)fd_to_head(file), &free_list);
 }
+
 #if 0
 static lsof_map_t *find_fd(FILE *file) {
 	struct list_head *p;
@@ -60,6 +61,7 @@ static lsof_map_t *find_fd(FILE *file) {
 	return NULL;
 }
 #endif
+
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod = vfs_find_node(path, NULL);
 	file_system_driver_t *drv;

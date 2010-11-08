@@ -18,11 +18,13 @@
 typedef int (*FS_CREATE_FUNC)(void *params);
 typedef int (*FS_DELETE_FUNC)(const char *file_name);
 typedef int (*FS_INIT_FUNC)(void *par);
+typedef int (*FS_MOUNT_FUNC)(void *par);
 
 typedef struct fsop_desc {
         FS_INIT_FUNC init;
         FS_CREATE_FUNC create_file;
         FS_DELETE_FUNC delete_file;
+        FS_MOUNT_FUNC mount;
 } fsop_desc_t;
 
 /**

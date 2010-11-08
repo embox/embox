@@ -189,11 +189,13 @@ static int ramfs_ioctl(void *file, int request, va_list ar) {
 static int ramfs_create(void *params);
 static int ramfs_delete(const char *fname);
 static int ramfs_init(void * par);
+static int ramfs_mount(void * par);
 
 static fsop_desc_t ramfs_fsop = {
 	ramfs_init,
 	ramfs_create,
-	ramfs_delete
+	ramfs_delete,
+	ramfs_mount
 };
 
 static file_system_driver_t ramfs_drv = {
@@ -238,7 +240,14 @@ static int ramfs_delete(const char *fname) {
 
 static int __init ramfs_init(void * par) {
 	init_ramfs_info_pool();
-	TRACE("RAMFS: inited\n");
+
 	return 0;
 }
 
+static int __init ramfs_mount(void * par) {
+#ifdef CONFIG_RAMFS_CPIO
+	//unpack_to_rootfs();
+	TRACE("RAMFS: inited\n");
+#endif
+	return 0;
+}

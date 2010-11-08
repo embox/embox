@@ -31,9 +31,7 @@ static node_t *root_node;
 
 static int rootfs_init(void * par) {
 	root_node = alloc_node("/");
-#ifdef CONFIG_RAMFS_CPIO
-	unpack_to_rootfs();
-#endif
+
 	return 0;
 }
 
@@ -49,10 +47,22 @@ static int rootfs_delete(const char *file_name) {
 	return 0;
 }
 
+static int rootfs_mount(const char *file_name) {
+	file_system_driver_t *fsdrv;
+//	if(NULL != (fsdrv = find_filesystem("ramfs"))) {
+//		fsdrv->fsop->mount(NULL);
+//	}
+	if(NULL != (fsdrv = find_filesystem("devfs"))) {
+		fsdrv->fsop->mount(NULL);
+	}
+	return 0;
+}
+
 static fsop_desc_t rootfs_fsop = {
 	rootfs_init,
 	rootfs_create,
-	rootfs_delete
+	rootfs_delete,
+	rootfs_mount
 };
 
 static file_system_driver_t rootfs_drv = {
