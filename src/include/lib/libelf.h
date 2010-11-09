@@ -20,7 +20,13 @@
  * @param reversed - integer from specification
  *                 - property talking about data type
  */
-extern uint32_t elf_reverse_long(uint32_t num, uint8_t reversed);
+#define L_REV(num, rev) \
+	(((rev) == ELFDATA2LSB) ?       \
+	((((num) & 0x000000ff) << 24)   \
+	+ (((num) & 0x0000ff00) << 8)   \
+	+ (((num) & 0x00ff0000) >> 8)   \
+	+ (((num) & 0xff000000) >> 24)) \
+	: (num))
 
 /**
  * Function reverses order of bytes in received integer with size 2-bytes
@@ -31,59 +37,63 @@ extern uint32_t elf_reverse_long(uint32_t num, uint8_t reversed);
  * @param reversed - integer from specification
  *                 - property talking about data type
  */
-extern uint16_t elf_reverse_short(uint16_t num, uint8_t reversed);
+#define S_REV(num, rev) \
+	(((rev) == ELFDATA2LSB) ?  \
+	((((num) & 0x00ff ) << 8)  \
+	+ (((num) & 0xff00) >> 8)) \
+	: (num))
 
 /**
  * Read header from fo and put it in header, returns error code
  *
  * @param fd - file descriptor to get information from
 			   recomended : fopen(<file_name>,"rb")
- * @param header - head structure in file, describing main elements positions
+ * @param head - head structure in file, describing main elements positions
  *
  * @return the number of items successfully read or error code.
  */
-extern int32_t elf_read_header(FILE *fd, Elf32_Ehdr *header);
+extern int32_t elf_read_header(FILE *fd, Elf32_Ehdr *head);
 
 /**
  * Read table of section's headers
  *
  * @param fd - file descriptor to get information from
- * @param header - head structure in file, describing main elements positions
- * @param section_header_table - array where will section's headers be stored
+ * @param head - head structure in file, describing main elements positions
+ * @param sh_table - array where will section's headers be stored
  *
  * @return the number of items successfully read or error code.
  */
-extern int32_t elf_read_sections_table(FILE *fd, Elf32_Ehdr *header,
-					Elf32_Shdr *section_header_table);
+extern int32_t elf_read_sections_table(FILE *fd, Elf32_Ehdr *head,
+					Elf32_Shdr *sh_table);
 
 /**
  * Read table of program segment's headers
  *
  * @param fd - file descriptor to get information from
- * @param header - head structure in file, describing main elements positions
- * @param segment_header_table - array where will section's headers be stored
+ * @param head - head structure in file, describing main elements positions
+ * @param st_table - array where will section's headers be stored
  *
  * @return the number of items successfully read or error code.
  */
-extern int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *header,
-					Elf32_Phdr *segment_header_table);
+extern int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *head,
+					Elf32_Phdr *st_table);
 
 /**
  * Read string table from sections and put it into names,
  * real length - to length
  *
  * @param fd - file descriptor to get information from
- * @param header - head structure in file, describing main elements positions
+ * @param head - head structure in file, describing main elements positions
  * @param section_header_table - array where func take info about sections
- * @param names - array where will be stored string, starts and ends with "\0"
+ * @param string_table - array where will be stored string
  * @param length - really used bytes in names
  *
  * @return the number of items successfully read or error code.
  * @retval -1 - not found in sections, "length" must be 0
  * @retval -2 - section header's table is empty
  */
-extern int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *header,
-	Elf32_Shdr *section_header_table, int8_t *names, int32_t *length);
+extern int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *head,
+			Elf32_Shdr *section_header_table, int8_t *string_table);
 
 /**
  * Read symbol string table from sections and put it into names. Find
@@ -91,11 +101,11 @@ extern int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *header,
  * string table contains names of symbols
  *
  * @param fd - file descriptor to get information from
- * @param header - head structure in file, describing main elements positions
+ * @param head - head structure in file, describing main elements positions
  * @param section_header_table - array where func take info about sections
- * @param names - array where will be stored string, starts and ends with "/0"
+ * @param symb_names - array where will be stored string,
  * 		  which are names of symbols - with is return value
- * @param section_names array with names of sections
+ * @param string_table array with names of sections
  * @param ret_length - really used bytes in names
  *
  * @return really used bytes in names or error code.
@@ -103,9 +113,9 @@ extern int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *header,
  * @retval -2 - section header's table is empty
  * @retval -3 - empty array with sections name
  */
-extern int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *header,
-		Elf32_Shdr *section_header_table,
-		int8_t *sections_names,  int8_t *names, int32_t *ret_length);
+extern int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *head,
+		Elf32_Shdr *section_header_table, int8_t *string_table,
+		int8_t *symb_names, int32_t *ret_length);
 
 /**
  * return name of string from names_array, starting from index index

@@ -46,22 +46,24 @@ typedef __libelf_u32_t    Elf32_Word;
 /**
  * Code of information in symbols descriptions. Watch Elf-specification.
  */
-#define ELF32_ST_BIND(i)    ((i))>>4)
+#define ELF32_ST_BIND(i)       ((i) >> 4)
 
 /**
  * Code of information in symbols descriptions. Watch Elf-specification.
  */
-#define ELF32_ST_TYPE(i)    ((i)&0xf)
+#define ELF32_ST_TYPE(i)       ((i) & 0xf)
+
+#define ELF32_ST_VISIBILITY(v) ((v) & 0x3)
 
 /**
  * Code of information in symbols descriptions. Watch Elf-specification.
  */
-#define ELF32_ST_INFO(b,t)  (((b)<<4)+((t)&0xf))
+#define ELF32_ST_INFO(b,t)     (((b) << 4) + ((t) & 0xf))
 
 /**
  * Code of information in Relocation table. Watch Elf-specification.
  */
-#define ELF32_R_SYM(i)      ((i)>>8)
+#define ELF32_R_SYM(i)         ((i) >> 8)
 
 /**
  * Code of information in Relocation table. Watch Elf-specification.
@@ -71,7 +73,7 @@ typedef __libelf_u32_t    Elf32_Word;
 /**
  * Code of information in Relocation table. Watch Elf-specification.
  */
-#define ELF32_R_INFO(s,t)   (((s)<<8)+(unsigned char)(t))
+#define ELF32_R_INFO(s,t)   (((s) << 8) + (unsigned char)(t))
 
 /**
  * p_type
@@ -501,6 +503,27 @@ typedef struct {
 #define SHT_REL         9      /* Relocation entries, no addends */
 #define SHT_SHLIB       10     /* Reserved, unspecified semantics */
 #define SHT_DYNSYM      11     /* Dynamic linking symbol table */
+
+/* Values for symb header, st_type field.  */
+
+#define STB_LOCAL       0      /* Symbol not visible outside obj */
+#define STB_GLOBAL      1      /* Symbol visible outside obj */
+#define STB_WEAK        2      /* Like globals, lower precedence */
+
+#define STT_NOTYPE      0      /* Symbol type is unspecified */
+#define STT_OBJECT      1      /* Symbol is a data object */
+#define STT_FUNC        2      /* Symbol is a code object */
+#define STT_SECTION     3      /* Symbol associated with a section */
+#define STT_FILE        4      /* Symbol gives a file name */
+#define STT_COMMON      5      /* An uninitialised common block */
+#define STT_TLS         6      /* Thread local data object */
+#define STT_RELC        8      /* Complex relocation expression */
+#define STT_SRELC       9      /* Signed Complex relocation expression */
+
+#define STV_DEFAULT     0      /* Visibility is specified by binding type */
+#define STV_INTERNAL    1      /* OS specific version of STV_HIDDEN */
+#define STV_HIDDEN      2      /* Can only be seen inside currect component */
+#define STV_PROTECTED   3      /* Treat as STB_LOCAL inside current component */
 
 /**
  * ELF Section header. Code style from specification
