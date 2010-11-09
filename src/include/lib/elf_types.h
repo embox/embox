@@ -487,6 +487,21 @@ typedef struct {
 #define EV_CURRENT      1
 #define EV_NUM          2
 
+/* Values for section header, sh_type field.  */
+
+#define SHT_NULL        0      /* Section header table entry unused */
+#define SHT_PROGBITS    1      /* Program specific (private) data */
+#define SHT_SYMTAB      2      /* Link editing symbol table */
+#define SHT_STRTAB      3      /* A string table */
+#define SHT_RELA        4      /* Relocation entries with addends */
+#define SHT_HASH        5      /* A symbol hash table */
+#define SHT_DYNAMIC     6      /* Information for dynamic linking */
+#define SHT_NOTE        7      /* Information that marks file */
+#define SHT_NOBITS      8      /* Section occupies no space in file */
+#define SHT_REL         9      /* Relocation entries, no addends */
+#define SHT_SHLIB       10     /* Reserved, unspecified semantics */
+#define SHT_DYNSYM      11     /* Dynamic linking symbol table */
+
 /**
  * ELF Section header. Code style from specification
  */

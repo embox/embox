@@ -82,7 +82,7 @@ extern int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *header,
  * @retval -1 - not found in sections, "length" must be 0
  * @retval -2 - section header's table is empty
  */
-extern int32_t elf_read_string_table(FILE * fd, Elf32_Ehdr *header,
+extern int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *header,
 	Elf32_Shdr *section_header_table, int8_t *names, int32_t *length);
 
 /**
