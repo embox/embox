@@ -12,7 +12,7 @@
 #include <drivers/lcd.h>
 #include <string.h>
 
-EMBOX_UNIT_INIT(lcd_init);
+EMBOX_UNIT_INIT(unit_lcd_init);
 
 #define CS_PIN  (1<<10)
 #define CD_PIN  (1<<12)
@@ -168,7 +168,11 @@ void nxt_lcd_force_update(void) {
 	}
 }
 
-static int __init lcd_init(void) {
+static int unit_lcd_init(void) {
+	lcd_init();
+}
+
+int __init lcd_init(void) {
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SPI)); /* Enable MCK clock     */
 	REG_STORE(AT91C_PIOA_PER, AT91C_PIO_PA12); /*EnableA0onPA12*/
 	REG_STORE(AT91C_PIOA_OER, AT91C_PIO_PA12);

@@ -151,10 +151,30 @@ __u8 font[N_CHARS][FONT_WIDTH] = {
 void display_char(int c) {
 	__u8 *b;
 	const __u8 *f, *fend;
+	if (c == '\n') {
+		display_x = 0;
+		display_y ++;
+	}
 
-	if ((unsigned int) c < N_CHARS &&
-	    (unsigned int) display_x < DISPLAY_CHAR_WIDTH &&
-	    (unsigned int) display_y < DISPLAY_CHAR_DEPTH) {
+	if ((unsigned int) display_x == DISPLAY_CHAR_WIDTH) {
+		display_x = 0;
+		display_y++;
+	};
+
+	if ((unsigned int) display_y == DISPLAY_CHAR_DEPTH) {
+		int i, j;
+		for (i = 0; i < NXT_LCD_DEPTH - 1; i++) {
+			for (j = 0; j < NXT_LCD_WIDTH; j++) {
+				display_buffer[i][j] = display_buffer[i+1][j];
+			}
+		}
+		display_y = DISPLAY_CHAR_DEPTH - 1;
+		for (j = 0; j < NXT_LCD_WIDTH; j++) {
+			display_buffer[display_y][j] = 0;
+		}
+	};
+
+	if ((unsigned int) c < N_CHARS) {
 		b = &display_buffer[display_y][display_x * CELL_WIDTH];
 		f = font[c];
 		fend = f + FONT_WIDTH;
@@ -163,21 +183,20 @@ void display_char(int c) {
 			*b++ = *f++;
 		} while( f < fend);
 	}
+	display_x++;
+	nxt_lcd_force_update();
 }
 
 void display_string(const char *str) {
 	while (*str) {
 		if (*str != '\n') {
 			display_char(*str);
-			display_x++;
 		} else {
 			display_x = 0;
 			display_y++;
 		}
 		str++;
 	}
-
-	nxt_lcd_force_update();
 }
 
 void display_clear_screen(void) {
