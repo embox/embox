@@ -45,9 +45,8 @@ int32_t elf_read_header(FILE *fd, Elf32_Ehdr *hdr) {
 int32_t elf_read_sections_table(FILE *fd, Elf32_Ehdr *hdr,
 				Elf32_Shdr *section_hdr_table) {
 	size_t size, nmemb;
-	long offset;
-	if (elf_reverse_long(hdr->e_shoff, hdr->e_ident[EI_DATA]) != 0) {
-		offset = elf_reverse_long(hdr->e_phoff, hdr->e_ident[EI_DATA]);
+	long offset = elf_reverse_long(hdr->e_shoff, hdr->e_ident[EI_DATA]);
+	if (offset) {
 		fseek(fd, offset, 0);
 		size = elf_reverse_short(hdr->e_shentsize, hdr->e_ident[EI_DATA]);
 		nmemb = elf_reverse_short(hdr->e_shnum, hdr->e_ident[EI_DATA]);
@@ -61,7 +60,7 @@ int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *hdr,
 	                        Elf32_Phdr *segment_hdr_table) {
 	size_t size, nmemb;
 	long offset = elf_reverse_long(hdr->e_phoff, hdr->e_ident[EI_DATA]);
-	if (offset != 0) {
+	if (offset) {
 		fseek(fd, offset, 0);
 		size = elf_reverse_short(hdr->e_shentsize, hdr->e_ident[EI_DATA]);
 		nmemb = elf_reverse_short(hdr->e_shnum, hdr->e_ident[EI_DATA]);
@@ -99,25 +98,24 @@ int32_t elf_read_symbol_table(FILE *fd, Elf32_Ehdr *hdr,
 	                      Elf32_Sym *symbol_table, int32_t *count) {
 	size_t size, i;
 	long offset;
-	if (elf_reverse_long(hdr->e_shoff, hdr->e_ident[EI_DATA]) == 0) {
-		/*empty table*/
+	uint8_t rev = hdr->e_ident[EI_DATA];
+	if (elf_reverse_long(hdr->e_shoff, rev) == 0) {
 		return -2;
 	}
 
 	*count = 0;
 
-	for (i = 0; i < elf_reverse_short(hdr->e_shnum, hdr->e_ident[EI_DATA]); i++) {
-		/*We find SHT_SYMTAB - sh_type with value - 2*/
+	for (i = 0; i < elf_reverse_short(hdr->e_shnum, rev); i++) {
 		if (elf_reverse_long(section_header_table[i].sh_type,
-			                     hdr->e_ident[EI_DATA]) == 2) {
+			                     rev) == SHT_SYMTAB) {
 			offset = elf_reverse_long(section_header_table[i].sh_offset,
-			    				hdr->e_ident[EI_DATA]);
+			    				rev);
 			fseek(fd, offset, 0);
-			size =  elf_reverse_long(section_header_table[i].sh_size,
-			    				hdr->e_ident[EI_DATA]);
+			size = elf_reverse_long(section_header_table[i].sh_size,
+			    				rev);
 			fread(symbol_table, size, 1, fd);
 			*count = elf_reverse_long(section_header_table[i].sh_size,
-			                        hdr->e_ident[EI_DATA]) / sizeof(Elf32_Sym);
+			                        rev) / sizeof(Elf32_Sym);
 			return *count;
 		}
 	}
@@ -129,23 +127,23 @@ int32_t elf_read_rel_table(FILE *fd, Elf32_Ehdr *hdr,
 	                   Elf32_Rel *rel_table, int32_t *count) {
 	size_t size, i;
 	long offset;
-	if (elf_reverse_long(hdr->e_shoff, hdr->e_ident[EI_DATA]) == 0) {
-		/*Section header table is empty*/
+	uint8_t rev = hdr->e_ident[EI_DATA];
+	if (elf_reverse_long(hdr->e_shoff, rev) == 0) {
 		return -2;
 	}
 	*count = 0;
 
-	for ( i = 0; i < elf_reverse_short(hdr->e_shnum, hdr->e_ident[EI_DATA]) ; i++) {
+	for ( i = 0; i < elf_reverse_short(hdr->e_shnum, rev) ; i++) {
 		/*We find SHT_REL - sh_type with value - 9*/
 		if (elf_reverse_long(section_hdr_table[i].sh_type,
-			                 hdr->e_ident[EI_DATA]) == 9) {
+			                 rev) == SHT_REL) {
 			offset = elf_reverse_long(section_hdr_table[i].sh_offset,
-						    hdr->e_ident[EI_DATA]);
+						    rev);
 			fseek(fd, offset, 0);
-			size = elf_reverse_long(section_hdr_table[i].sh_size, hdr->e_ident[EI_DATA]);
+			size = elf_reverse_long(section_hdr_table[i].sh_size, rev);
 			fread(rel_table + *count, size, 1, fd);
 			*count += elf_reverse_long(section_hdr_table[i].sh_size,
-				hdr->e_ident[EI_DATA]) / sizeof(Elf32_Rel);
+				rev) / sizeof(Elf32_Rel);
 		}
 	}
 	return (*count != 0) ? *count : -1;
@@ -165,7 +163,7 @@ int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *hdr,
 	for (i = 0; i < elf_reverse_short(hdr->e_shnum, hdr->e_ident[EI_DATA]) ; i++) {
 		/*We find SHT_RELA - sh_type with value - 4*/
 		if (elf_reverse_long(section_hdr_table[i].sh_type,
-			             hdr->e_ident[EI_DATA]) == 4) {
+			             hdr->e_ident[EI_DATA]) == SHT_RELA) {
 			offset = elf_reverse_long(section_hdr_table[i].sh_offset,
 						hdr->e_ident[EI_DATA]);
 			fseek(fd, offset, 0);
@@ -193,7 +191,7 @@ int32_t read_name(int8_t *names_array, int32_t index, int8_t *name) {
 int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 	                             Elf32_Shdr *section_hdr_table,
 	                             int8_t *sections_names,
-	                             int8_t *names, int32_t *ret_length) {
+	                             int8_t *symb_names, int32_t *ret_length) {
 	size_t size, i, length;
 	int8_t section_name[100];
 	long offset;
@@ -228,7 +226,7 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 
 			size = elf_reverse_long(section_hdr_table[i].sh_size,
 								    hdr->e_ident[EI_DATA]);
-			fread(names, size, 1, fd);
+			fread(symb_names, size, 1, fd);
 			*ret_length = elf_reverse_long(section_hdr_table[i].sh_size,
 			                                            hdr->e_ident[EI_DATA]);
 			return *ret_length;

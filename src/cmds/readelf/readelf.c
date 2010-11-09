@@ -262,23 +262,23 @@ static const header_item_t section_types[] = {
 	{ SHT_DYNSYM,      "DYNSYM"   },
 };
 
-#define SECTION_NAME(sec, string_table, string_table_length) \
-	((sec) == NULL ? "<none>"                              \
-	: string_table == NULL ? "<no-name>"                   \
-	: ((sec)->sh_name >= string_table_length ? "<corrupt>" \
+#define SECTION_NAME(sec, string_table) \
+	((sec) == NULL ? "<none>"                         \
+	: string_table == NULL ? "<no-name>"              \
+	: ((sec)->sh_name >= (sec)->sh_size ? "<corrupt>" \
 	: string_table + (sec)->sh_name))
 
 static void print_sections(Elf32_Ehdr *head, Elf32_Shdr *sections,
-					    int8_t *names, int count) {
+					    int8_t *string_table, int count) {
 	size_t i, x;
 	printf("There are %d section headers, starting at offset 0x%x:\n",
 		head->e_shnum, head->e_shoff);
 	printf("\nSection Headers:\n");
-	printf("  [Nr] Name\tType\tAddr\tOff\tSize\tES Flg Lk Inf Al\n");
+	printf("  [Nr] Name\t\tType       Addr     Off    Size   ES Flg Lk Inf Al\n");
 	for (i = 0; i < count; i++) {
 		x = elf_reverse_long((&sections[i])->sh_type, rev);
-		printf("  [%2d] %s\t%s\t%08x\t%06x\t%06x\t%02x\t%02x\t%02x\t%02x\t%02x\n", i,
-			SECTION_NAME(&sections[i], names, count),
+		printf("  [%2d] %-16s %-10s %08x %06x %06x %02x  %02x %2d  %2d %2d\n", i,
+			SECTION_NAME(&sections[i], string_table),
 			section_types[x].desc,
 			elf_reverse_long((&sections[i])->sh_addr,      rev),
 			elf_reverse_long((&sections[i])->sh_offset,    rev),
@@ -340,9 +340,10 @@ static void print_relocations(Elf32_Rel *rel_array, int count) {
 }
 
 /* ============== Print symbol table ========== */
-static void print_symb(Elf32_Sym *symb, int8_t *names, int counter) {
+static void print_symb(Elf32_Sym *symb, int8_t *string_table, int counter) {
         size_t i;
-        printf("Symbol table '%s' contains %d entries:\n", ".symtab", counter);
+        printf("Symbol table '%s' contains %d entries:\n",
+    		string_table + symb->st_name, counter);
         printf("   Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
 	for (i = 0; i < counter; i++) {
 		printf("    %d: %08x\t%d\t%c\t%c\t%c\t%d\t%s\n", i,
@@ -352,7 +353,7 @@ static void print_symb(Elf32_Sym *symb, int8_t *names, int counter) {
 			symb[i].st_info,
 			symb[i].st_other,
 			elf_reverse_short(symb[i].st_shndx, rev),
-			&(names[elf_reverse_long(symb[i].st_name, rev)]));
+			&(string_table[elf_reverse_long(symb[i].st_name, rev)]));
 	}
 }
 
@@ -426,7 +427,7 @@ static int exec(int argsc, char **argsv) {
 		return -1;
 	}
 	rev = elf_header.e_ident[EI_DATA];
-	//TODO: use correct sections[] length.
+	//TODO: use correct section_headers[] length.
 	sections_count = elf_reverse_short(elf_header.e_shnum, rev);
 
 	if (show_sections || show_reloc || show_symb) {
@@ -492,5 +493,6 @@ static int exec(int argsc, char **argsv) {
 		print_symb(dynamic_symbols,
 			(symb_names_l != 0) ? symb_names : NULL, symb_count);
 	}
+	fclose(elf_file);
 	return 0;
 }
