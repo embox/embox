@@ -12,7 +12,8 @@ $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 # TODO too more mods fro core.kernel
-$_MODS += irq timer printk softirq job drv_subsys
+$_MODS += irq timer softirq job drv_subsys #printk
+$_MODS += printk
 
 $_SRCS-main += main.c
 $_SRCS-main += init.c
@@ -21,7 +22,7 @@ $_SRCS-job += job.c
 $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq
 $_DEPS-main += timer
-$_DEPS-main += printk
+#$_DEPS-main += printk
 $_DEPS-main += softirq
 
 ifdef CONFIG_THREAD
@@ -37,12 +38,12 @@ ifdef CONFIG_IRQ
   $_DEPS-irq     += embox.hal.interrupt
   $_DEPS-irq     += softirq
 endif
-ifdef CONFIG_PRINTK
-  $_SRCS-printk  += printk.c
+#ifdef CONFIG_PRINTK
+ # $_SRCS-printk  += printk.c
   #$_SRCS-printk  += printk/putchar.c ../lib/stdio/printf.c
-  $_SRCS-printk  += printk/putchar.c printk/printf.c
-  $_DEPS-printk  += embox.driver.abstract.mod_diag
-endif
+  #$_SRCS-printk  += printk/putchar.c printk/printf.c
+ # $_DEPS-printk  += embox.driver.abstract.mod_diag
+#endif
 ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
 endif
