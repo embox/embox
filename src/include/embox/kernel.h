@@ -16,7 +16,4 @@
 
 #include <util/array.h>
 
-/* TODO deprecated. -- Eldar, Nikolay */
-#define array_len(array)                ARRAY_SIZE(array)
-
 #endif /* EMBOX_KERNEL_H_ */

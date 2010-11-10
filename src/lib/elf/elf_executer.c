@@ -22,10 +22,11 @@ int elf_execve(unsigned long *file_addr, char *argv[]) {
 
 	EH = (Elf32_Ehdr *)file_addr;
 
-	if (EH->e_ident[0] != ELFMAG0 ||
-	    EH->e_ident[1] != ELFMAG1 ||
-	    EH->e_ident[2] != ELFMAG2 ||
-	    EH->e_ident[3] != ELFMAG3) {
+	if (EH->e_ident[EI_MAG0] != ELFMAG0 ||
+	    EH->e_ident[EI_MAG1] != ELFMAG1 ||
+	    EH->e_ident[EI_MAG2] != ELFMAG2 ||
+	    EH->e_ident[EI_MAG3] != ELFMAG3) {
+		TRACE("not an ELF file\n");
 		return -1;
 	}
 
