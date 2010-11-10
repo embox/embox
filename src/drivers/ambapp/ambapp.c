@@ -233,6 +233,6 @@ int capture_amba_dev(amba_dev_t *dev, uint8_t ven_id, uint16_t dev_id, bool is_a
 }
 
 int free_amba_dev(amba_dev_t *dev) {
-	//TODO:
+	//TODO: we can't free device
 	return 0;
 }

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Defines panic macros
  *
  * @date 30.01.2010
  * @author Eldar Abusalimov

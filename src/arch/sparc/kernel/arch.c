@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implements ARCH interface for sparc processors
  *
  * @date 14.02.2010
  * @author Eldar Abusalimov
