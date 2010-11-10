@@ -13,11 +13,13 @@
 #include <hal/test/mmu_core.h>
 #include <hal/test/traps_core.h>
 #include <asm/tbr.h>
+
+EMBOX_TEST(run);
+
 uint8_t page[PAGE_SIZE * 2];
 mmu_ctx_t t1;
-
 static int flag = 0;
-EMBOX_TEST(run);
+
 int handler(uint32_t nr, void *data) {
 	//mmu_off();
 	//printf("IT'S A TRAP!\n");

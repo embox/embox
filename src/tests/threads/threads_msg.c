@@ -23,10 +23,9 @@ static char first_stack[THREAD_STACK_SIZE];
 static char second_stack[THREAD_STACK_SIZE];
 static struct thread *first_thread;
 static struct thread *second_thread;
-
 static struct message *sent_msg;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * In the beginning send a message to second, which don't unblock it.
@@ -76,7 +75,7 @@ static void second_run(void) {
 	msg_send(msg, first_thread);
 }
 
-static int run_test() {
+static int run(void) {
 	TRACE("\n");
 
 	first_thread = thread_create(first_run, first_stack + THREAD_STACK_SIZE);

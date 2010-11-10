@@ -29,7 +29,7 @@ static struct thread *minus_thread;
 static struct thread *mult_thread;
 static struct thread *plus_thread;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * Endlessly writes "-".
@@ -86,7 +86,7 @@ static void main_run(void) {
 	}
 }
 
-static int run_test() {
+static int run(void) {
 	TRACE("\n");
 
 	main_thread = thread_create(main_run, main_stack + THREAD_STACK_SIZE);

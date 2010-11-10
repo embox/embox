@@ -19,7 +19,7 @@
 static char recursion_stack[THREAD_STACK_SIZE];
 static struct thread *recursion_thread;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * Shows natural number on the screen and maybe calls itself.
@@ -41,7 +41,7 @@ static void recursion_run(void) {
 	f(1);
 }
 
-static int run_test() {
+static int run(void) {
 	TRACE("\n");
 
 	recursion_thread =

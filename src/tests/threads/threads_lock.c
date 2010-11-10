@@ -33,7 +33,7 @@ struct thread *highest_thread;
 
 struct event event;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * endlessly writes '+'
@@ -88,7 +88,7 @@ static void highest_run(void) {
 	}
 }
 
-static int run_test(void) {
+static int run(void) {
 	TRACE("\n");
 
 	event_init(&event);

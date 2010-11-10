@@ -1,4 +1,4 @@
-#TODO dependencies must set (irq and sys_timers)
-$_MODS += timer
+$_MODS       += timer
+$_SRCS-timer += timer.c
+$_DEPS-timer += irq
 
-$_SRCS-timer += *.c

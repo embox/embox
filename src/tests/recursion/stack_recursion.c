@@ -14,6 +14,6 @@
 
 EMBOX_TEST(run);
 
-static int run() {
+static int run(void) {
 	return test_misc_recursion(RECURSION_DEPTH);
 }

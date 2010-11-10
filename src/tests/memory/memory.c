@@ -17,8 +17,7 @@
 #include <stdio.h>
 #include <embox/test.h>
 
-EMBOX_TEST(run)
-;
+EMBOX_TEST(run);
 
 #define RAM_BASE_ADDR 	0x40000000
 /* We can't test memory with 0x0 offset because of ourselfs at 0x0 offset possible */

@@ -38,7 +38,7 @@ static void worker_b(void) {
 	is_b_done = 1;
 }
 
-static int run() {
+static int run(void) {
 	extern char _text_start, __stack, _data_start;
 	extern char worker_a_aligned, worker_b_aligned;
 	worker_ptr temp;

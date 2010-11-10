@@ -19,7 +19,7 @@ static void test_timer_handler(uint32_t id) {
 	tick_happened = true;
 }
 
-static int run() {
+static int run(void) {
 	long i;
 
 	/* Timer value changing means ok */

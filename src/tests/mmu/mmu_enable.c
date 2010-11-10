@@ -18,11 +18,10 @@
 #include <hal/mm/mmu_core.h>
 #include <hal/test/mmu_core.h>
 
-/* declare test in system */
 EMBOX_TEST(run);
 
 /* starting function for test */
-static int run() {
+static int run(void) {
 	extern char _text_start, __stack, _data_start;
 	mmu_env_t prev_mmu_env;
 

@@ -1,4 +1,2 @@
-
-$_MODS += ipl
-
-$_SRCS-ipl += *.c
+$_MODS     += ipl
+$_SRCS-ipl += ipl.c

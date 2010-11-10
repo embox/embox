@@ -1,6 +1,9 @@
 /**
  * @file
  * @brief This file is derived from EMBOX test template.
+ *
+ * @date
+ * @author
  */
 
 #include <embox/test.h>

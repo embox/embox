@@ -1,4 +1,2 @@
-
-$_MODS += mutex_test
-
-$_SRCS-mutex_test += *.c
+$_MODS       += mutex
+$_SRCS-mutex += mutex.c

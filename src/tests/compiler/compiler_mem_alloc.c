@@ -17,7 +17,7 @@
 
 EMBOX_TEST(run);
 
-static int run() {
+static int run(void) {
 	char buf[2];
 	static char space = ' ';
 /*      static char space1 = ' ';*/ /* with this line works correctly */

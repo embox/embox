@@ -13,7 +13,7 @@ EMBOX_TEST(run);
  * (for other archs it's always correct and meaningless)
  * it fails when -o0 is set for compiler
  * In that case nothing works correctly =/ */
-static int run() {
+static int run(void) {
 	int a = 1;
 
 	a = a + 1;

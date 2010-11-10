@@ -12,7 +12,6 @@
 #include <hal/test/mmu_core.h>
 #include <asm/hal/mm/mmu_core.h>
 
-/* declare test in system */
 EMBOX_TEST(run);
 
 static uint32_t addr;
@@ -26,7 +25,7 @@ unsigned long mmu_get_fault_addr(void) {
 }
 
 /* starting function for test */
-static int run() {
+static int run(void) {
 	extern char _text_start, __stack, _data_start;
 	int status = 0;
 
