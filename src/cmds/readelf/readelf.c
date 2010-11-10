@@ -451,7 +451,6 @@ static int exec(int argsc, char **argsv) {
 		return -1;
 	}
 	if ((err = elf_read_header(elf_file, &elf_header)) < 0) {
-		printf("Cannot read header: %d\n", err);
 		return -1;
 	}
 	rev = elf_header.e_ident[EI_DATA];

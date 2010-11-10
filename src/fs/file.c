@@ -106,7 +106,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	node_t *nod;
 	file_system_driver_t *drv;
 	nod = (node_t *)file;
-	if (NULL == nod){
+	if (NULL == nod) {
 		return -EBADF;
 	}
 	drv = nod->fs_type;
@@ -164,5 +164,15 @@ int fioctl(FILE *fp, int request, ...) {
 		return -1;
 	}
 	return drv->file_op->ioctl(fp, request, args);
+}
+
+int remove(const char *pathname) {
+	node_t *nod = vfs_find_node(pathname, NULL);
+	file_system_driver_t *drv = nod->fs_type;
+	if (NULL == drv->fsop->delete_file) {
+		LOG_ERROR("fsop->delete_file is NULL handler\n");
+		return -1;
+	}
+	return drv->fsop->delete_file(pathname);
 }
 

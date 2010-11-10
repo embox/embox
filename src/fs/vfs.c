@@ -74,7 +74,7 @@ node_t *vfs_add_path(const char *path, node_t *parrent) {
 }
 
 int vfs_del_leaf(node_t *nod) {
-
+	list_del(&(nod->neighbors));
 	return 0;
 }
 
