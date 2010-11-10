@@ -22,7 +22,7 @@ static void printchar(char **str, int c) {
 
 #include "print_impl.h"
 
-int printf(const char *format, ...) {
+int printk(const char *format, ...) {
 	int ret;
 	va_list args;
 
