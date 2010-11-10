@@ -16,7 +16,7 @@
 extern void IRQ_def_handler(void);
 
 void interrupt_init(void) {
-	size_t i = 0;
+	size_t i;
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0 |
 				1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA20_IRQ0 |

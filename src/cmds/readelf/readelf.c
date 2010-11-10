@@ -259,9 +259,9 @@ static const header_item_t section_types[] = {
 };
 
 #define SECTION_NAME(sec, string_table) \
-	((sec) == NULL ? "<none>"            \
-	: (string_table) == NULL ? "<no-name>" \
-	: (string_table) + (sec)->sh_name)
+	((sec) == NULL ? "<none>"                        \
+	: (string_table) == NULL ? "<no-name>"           \
+	: (const char*)((string_table) + (sec)->sh_name))
 
 static void print_sections(Elf32_Ehdr *head,
 			Elf32_Shdr *sections, int8_t *string_table) {
