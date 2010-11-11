@@ -62,18 +62,32 @@ static int translate_buttons(uint32_t buttons_val) {
 	return ret;
 }
 
+static bool avr_line_locked = false;
+
+#define LINE_LOCKED 1
+#define TALK_DONE 0
+
 static uint32_t avr_handler(void) {
 	int new_state = 0;
+
+	if (avr_line_locked) {
+		//return LINE_LOCKED;
+		return 0;
+	}
+
 	if (read_write++ & 1) {
+		avr_line_locked = true;
 		twi_send(NXT_AVR_ADDRESS, (const uint8_t *) &data_avr, sizeof(data_avr));
+		avr_line_locked = false;
 	} else {
+		avr_line_locked = true;
 		twi_receive(NXT_AVR_ADDRESS, (uint8_t *) &data_from_avr, sizeof(data_from_avr));
+		avr_line_locked = false; /*however, it's much prettier here*/
+
 		new_state = translate_buttons(data_from_avr.buttons_val);
 		if (new_state == old_state) {
 			if (!state_count) {
-				if (new_state) { //button pressed
-					//nxt_lcd_set_all_pixels_on(1);
-					//switch_bank();
+				if (new_state) { /*button pressed*/
 					buttons_state = new_state;
 					buttons_accum_state |= new_state;
 				}
@@ -81,14 +95,15 @@ static uint32_t avr_handler(void) {
 				state_count--;
 			}
 		} else {
-			if (!state_count) { //button just released
-				//nxt_lcd_set_all_pixels_on(0);
+			if (!state_count) { /*button just released*/
 			}
 			old_state = new_state;
 			state_count = DEL;
 		}
+		//avr_line_locked = false;
 	}
-	return 0;
+
+	return TALK_DONE;
 }
 
 static int init(void) {
@@ -102,7 +117,7 @@ static int init(void) {
 	data_avr.output_mode = 0;
 	data_avr.input_power = 0;
 
-	set_timer(0, 1, (TIMER_FUNC) avr_handler);
+	set_timer(0, 500, (TIMER_FUNC) avr_handler);
 
 	return result;
 }
