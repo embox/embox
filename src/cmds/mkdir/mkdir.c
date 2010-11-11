@@ -19,7 +19,7 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
-	char *path;
+	const char *path;
 
 	int nextOption;
 	getopt_init();

@@ -26,7 +26,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
 	char *file_name = NULL;
-	unsigned long load_addr, file_addr;
+	uint32_t load_addr, file_addr;
 	FILE *file;
 	node_t *node;
 	//FIXME: ramfs dependence
@@ -65,6 +65,6 @@ static int exec(int argsc, char **argsv) {
 	desc = (ramfs_file_description_t *)node->file_info;
 
 	TRACE("loading...addr=0x%08x, size=%d\n", file_addr, desc->size);
-	memcpy((void *) load_addr, file_addr, desc->size);
+	memcpy((void *)load_addr, (void *)file_addr, desc->size);
 	return 0;
 }

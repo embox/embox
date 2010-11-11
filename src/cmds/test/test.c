@@ -31,6 +31,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static void print_tests(void) {
 	struct test *test;
+	int i = 0;
 
 	test_foreach(test) {
 		TRACE("%3d. ", ++i);

@@ -27,8 +27,8 @@ static int exec(int argsc, char **argsv) {
 		nextOption = getopt(argsc - 1, argsv, "h");
 		switch (nextOption) {
 			case 'h': /* help message */
-			show_help();
-			return 0;
+				show_help();
+				return 0;
 			default:
 				break;
 		}

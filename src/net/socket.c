@@ -72,14 +72,16 @@ int close(int sockfd) {
 
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *dest_addr, socklen_t addrlen) {
-	struct socket *sock = sockfd_lookup(sockfd);
+	struct socket *sock;
+	struct inet_sock *inet;
+	struct iovec iov;
+	struct msghdr m;
 	struct sockaddr_in *daddr = (struct sockaddr_in *)dest_addr;
+	sock = sockfd_lookup(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
 	}
-	struct inet_sock *inet = inet_sk(sock->sk);
-	struct iovec iov;
-	struct msghdr m;
+	inet = inet_sk(sock->sk);
 	//TODO: temporary XXX
 	iov.iov_base = (void*)buf;
 	iov.iov_len = len;
@@ -98,14 +100,16 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *src_addr, socklen_t *addrlen) {
-	struct socket *sock = sockfd_lookup(sockfd);
+	struct socket *sock;
+	struct inet_sock *inet;
+	struct iovec iov;
+	struct msghdr m;
 	struct sockaddr_in *saddr = (struct sockaddr_in *)src_addr;
+	sock = sockfd_lookup(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
 	}
-	struct inet_sock *inet = inet_sk(sock->sk);
-	struct iovec iov;
-	struct msghdr m;
+	inet = inet_sk(sock->sk);
 	//TODO: temporary XXX
 	iov.iov_base = (void*)buf;
 	iov.iov_len = len;
