@@ -40,7 +40,7 @@ AS      = $(CROSS_COMPILE)as
 LD      = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 OBJCOPY = $(CROSS_COMPILE)objcopy
-SIZE    = size
+SIZE    = $(CROSS_COMPILE)size
 
 ifeq ($(C),1)
 CHECK   = sparse
@@ -140,6 +140,6 @@ $(IMAGE_SIZE): $(IMAGE) $(OBJS_BUILD) $(DEPSINJECT_OBJ)
 		$(call image_size_sort,4,total)    \
 		$(RM) $@.tmp;                      \
 	else                                   \
-		echo "size util not found" > $@;   \
+		echo "$(SIZE) util not found" > $@;   \
 	fi;
 

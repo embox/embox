@@ -28,7 +28,7 @@ endif
 dir = $(SELFDIR)
 
 DIRS := $(call traverse,$(SRC_DIR),Makefile.em) \
-  $(if $(PLATFORM),$(call TRAVERSE,$(PLATFORM_DIR),Makefile.em))
+  $(if $(PLATFORM),$(call traverse,$(PLATFORM_DIR),Makefile.em))
 
 ifdef EMBUILD_DEBUG
 embuild_vars = $(filter EMBUILD/%,$(.VARIABLES))

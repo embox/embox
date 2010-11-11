@@ -5,7 +5,7 @@
 # A library of functions to be used with GNU Make's $(call) that
 # provides functionality not available in standard GNU Make.
 #
-# Copyright (c) 2005-2007 John Graham-Cumming
+# Copyright (c) 2005-2010 John Graham-Cumming
 #
 # This file is part of GMSL
 #
@@ -42,7 +42,7 @@
 # This is the GNU Make Standard Library version number as a list with
 # three items: major, minor, revision
 
-gmsl_version := 1 0 11
+gmsl_version := 1 0 12
 
 # Used to output warnings and error from the library, it's possible to
 # disable any warnings or errors by overriding these definitions
@@ -102,6 +102,8 @@ ifneq ($(__gmsl_have_eval),$(true))
 $(call __gmsl_warning,GNU Make $(MAKE_VERSION) does not support $$$$(eval): some functions disabled)
 endif
 
+__gmsl_dollar := $$
+
 # ----------------------------------------------------------------------------
 # Function:  gmsl_compatible
 # Arguments: List containing the desired library version number (maj min rev)
@@ -123,12 +125,7 @@ gmsl_compatible = $(strip                                                 \
 # LOGICAL OPERATORS
 # ###########################################################################
 
-# ----------------------------------------------------------------------------
-# Function:  not
-# Arguments: 1: A boolean value
-# Returns:   Returns the opposite of the arg. (true -> false, false -> true)
-# ----------------------------------------------------------------------------
-not = $(if $1,$(false),$(true))
+# not is defined in gmsl
 
 # ----------------------------------------------------------------------------
 # Function:  and
@@ -294,7 +291,7 @@ __gmsl_make_bool = $(if $(strip $1),$(true),$(false))
 #            2: ...this string
 # Returns:   Returns $(true) if the two strings are identical
 # ----------------------------------------------------------------------------
-seq = $(__gmsl_tr2)$(if $(filter-out xx,x$(subst $1,,$2)$(subst $2,,$1)x),$(false),$(true))
+seq = $(__gmsl_tr2)$(if $1,$(if $2,$(if $(filter-out xx,x$(subst $1,,$2)$(subst $2,,$1)x),$(false),$(true)),$(call not,$(call __gmsl_make_bool,$1))),$(call not,$(call __gmsl_make_bool,$2)))
 
 # ----------------------------------------------------------------------------
 # Function:  sne
@@ -320,7 +317,7 @@ split = $(__gmsl_tr2)$(strip $(subst $1, ,$2))
 # Returns:   Merges a list into a single string, list elements are separated
 #            by the character in the first argument
 # ----------------------------------------------------------------------------
-merge = $(__gmsl_tr2)$(strip $(if $(strip $2),                            \
+merge = $(__gmsl_tr2)$(strip $(if $2,                                     \
             $(if $(call seq,1,$(words $2)),                               \
                 $2,$(call first,$2)$1$(call merge,$1,$(call rest,$2)))))
 
@@ -405,10 +402,10 @@ __gmsl_tab :=	#
 # 	     2: Start position (first character is 1)
 #	     3: End position (inclusive)
 # Returns:   A substring.
-# Note:      The string in $1 must not contain a ï¿½
+# Note:      The string in $1 must not contain a §
 # ----------------------------------------------------------------------------
 
-substr = $(__gmsl_tr3)$(call assert_no_dollar,$0,$1$2$3)$(strip $(eval __temp := $$(subst $$(__gmsl_space),ï¿½ ,$$1))$(foreach a,$(__gmsl_characters),$(eval __temp := $$(subst $$a,$$a$$(__gmsl_space),$(__temp))))$(eval __temp := $(wordlist $2,$3,$(__temp))))$(subst ï¿½,$(__gmsl_space),$(subst $(__gmsl_space),,$(__temp)))
+substr = $(__gmsl_tr3)$(call assert_no_dollar,$0,$1$2$3)$(strip $(eval __temp := $$(subst $$(__gmsl_space),§ ,$$1))$(foreach a,$(__gmsl_characters),$(eval __temp := $$(subst $$a,$$a$$(__gmsl_space),$(__temp))))$(eval __temp := $(wordlist $2,$3,$(__temp))))$(subst §,$(__gmsl_space),$(subst $(__gmsl_space),,$(__temp)))
 
 endif # __gmsl_have_eval
 
@@ -751,7 +748,7 @@ ifdef __gmsl_have_eval
 #            3: The value associated with the key
 # Returns:   None
 # ----------------------------------------------------------------------------
-set = $(__gmsl_tr3)$(call assert_no_dollar,$0,$1$2$3)$(eval __gmsl_aa_$1_$$$$_$2 = $3)
+set = $(__gmsl_tr3)$(call assert_no_dollar,$0,$1$2$3)$(eval __gmsl_aa_$1_$(__gmsl_space)_$2_gmsl_aa_$1 = $3)
 
 # ----------------------------------------------------------------------------
 # Function:  get
@@ -759,16 +756,15 @@ set = $(__gmsl_tr3)$(call assert_no_dollar,$0,$1$2$3)$(eval __gmsl_aa_$1_$$$$_$2
 #            2: The key to retrieve
 # Returns:   The value stored in the array for that key
 # ----------------------------------------------------------------------------
-get = $(strip $(__gmsl_tr2)$(call assert_no_dollar,$0,$1$2)$(if $(filter-out undefined,$(origin __gmsl_aa_$1_$$_$2)), \
-    $(__gmsl_aa_$1_$$_$2)))
+get = $(strip $(__gmsl_tr2)$(call assert_no_dollar,$0,$1$2)$(__gmsl_aa_$1_$(__gmsl_space)_$2_gmsl_aa_$1))
 
 # ----------------------------------------------------------------------------
 # Function:  keys
 # Arguments: 1: Name of associative array
 # Returns:   Returns a list of all defined keys in the array
 # ----------------------------------------------------------------------------
-keys = $(__gmsl_tr1)$(call assert_no_dollar,$0,$1)$(sort $(patsubst __gmsl_aa_$1_$$_%,%, \
-                  $(filter __gmsl_aa_$1_$$_%,$(.VARIABLES))))
+keys = $(__gmsl_tr1)$(call assert_no_dollar,$0,$1)$(sort $(patsubst _%_gmsl_aa_$1,%, \
+                  $(filter _%_gmsl_aa_$1,$(.VARIABLES))))
 
 # ----------------------------------------------------------------------------
 # Function:  defined
