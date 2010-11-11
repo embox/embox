@@ -134,10 +134,7 @@ void uart_softirq_handler(softirq_nr_t softirq_nr, void *data) {
 		handle_ctrl_token(this, token, params);
 	}
 }
-static irq_return_t uart_irq_handler(softirq_nr_t irq, void *data) {
-	softirq_raise(UART_SOFTIRQ_NR);
-	return IRQ_HANDLED;
-}
+
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 //#ifndef CONFIG_SOFTIRQ

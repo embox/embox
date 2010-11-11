@@ -1,4 +1,3 @@
 $_MODS       += timer
 $_SRCS-timer += timer.c
-$_DEPS-timer += irq
-
+$_DEPS-timer += core.kernel.timer

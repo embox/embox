@@ -17,12 +17,12 @@ $_SRCS-threads_msg       += threads_msg.c
 $_SRCS-threads_lock      += threads_lock.c
 $_SRCS-threads_mutex     += threads_mutex.c
 
-$_DEPS-threads_big       += core.kernel.threads
-$_DEPS-threads_show      += core.kernel.threads
-$_DEPS-threads_delete    += core.kernel.threads
-$_DEPS-threads_recursion += core.kernel.threads
-$_DEPS-threads_priority  += core.kernel.threads
-$_DEPS-threads_msg       += core.kernel.threads
-$_DEPS-threads_lock      += core.kernel.threads
-$_DEPS-threads_mutex     += core.kernel.threads
+$_DEPS-threads_big       += core.kernel.threads.core
+$_DEPS-threads_show      += core.kernel.threads.core
+$_DEPS-threads_delete    += core.kernel.threads.core
+$_DEPS-threads_recursion += core.kernel.threads.core
+$_DEPS-threads_priority  += core.kernel.threads.core
+$_DEPS-threads_msg       += core.kernel.threads.core
+$_DEPS-threads_lock      += core.kernel.threads.core
+$_DEPS-threads_mutex     += core.kernel.threads.core
 
