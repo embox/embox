@@ -85,13 +85,13 @@ loop_excpt:
 
     ldr r0, .RAM_TOP
 
-    msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
-    mov sp, r0
-    sub r0, r0, #CONFIG_ARM_FIQ_STACK_SIZE
-
     msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
     mov sp, r0
     sub r0, r0, #CONFIG_ARM_IRQ_STACK_SIZE
+
+    msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
+    mov sp, r0
+    sub r0, r0, #CONFIG_ARM_FIQ_STACK_SIZE
 
     msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
     mov sp, r0
@@ -152,11 +152,10 @@ init_hook:
     ldr     r0, =software_init_hook
     blne    software_init_hook
 
-    ldr	    lr, =kernel_start
-    push    {lr}
 /* enabling interrupts */
-    msr	    CPSR_c, #ARM_MODE_SYS
+    msr	    CPSR_c, #ARM_MODE_SVC
+
 /** kernel start */
-    ldr	    pc, =kernel_start
+	bl		kernel_start
 die:
     b 	    die
