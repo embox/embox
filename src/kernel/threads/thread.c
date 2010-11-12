@@ -67,9 +67,7 @@ static int threads_init(void) {
  * @param thread_pointer pointer at thread.
  */
 static void thread_run(int par) {
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nStarting Thread %d\n", current_thread->id);
-#endif
+	LOG_DEBUG("\nStarting Thread %d\n", current_thread->id);
 	ipl_enable();
 	current_thread->run();
 	thread_stop(current_thread);
@@ -113,9 +111,7 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	created_thread->need_message = false;
 	queue_init(&created_thread->messages);
 	event_init(&created_thread->msg_event);
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("Alloted thread id = %d\n", created_thread->id);
-#endif
+	LOG_DEBUG("Alloted thread id = %d\n", created_thread->id);
 	return created_thread;
 }
 
@@ -139,9 +135,7 @@ static int thread_delete(struct thread *deleted_thread) {
 	if (deleted_thread == NULL) {
 		return -EINVAL;
 	}
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nDeleting %d\n", deleted_thread->id);
-#endif
+	LOG_DEBUG("\nDeleting %d\n", deleted_thread->id);
 	deleted_thread->state = THREAD_STATE_STOP;
 	deleted_thread->exist = false;
 	mask[deleted_thread - threads_pool] = 0;
@@ -151,18 +145,14 @@ static int thread_delete(struct thread *deleted_thread) {
 int thread_stop(struct thread *thread) {
 	/* Last zombie thread. */
 	static struct thread *zombie;
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nI = 0x%x; D = 0x%x; Z = 0x%x;\n", (unsigned int)idle_thread,
+	LOG_DEBUG("\nI = 0x%x; D = 0x%x; Z = 0x%x;\n", (unsigned int)idle_thread,
 			(unsigned int)thread, (unsigned int)zombie);
-#endif
 	if (thread == NULL || thread == idle_thread ||
 		    thread == zombie || !thread->exist) {
 		return -EINVAL;
 	}
 	scheduler_lock();
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nStopping %d\n", thread->id);
-#endif
+	LOG_DEBUG("\nStopping %d\n", thread->id);
 	if (zombie != NULL) {
 		thread_delete(zombie);
 		zombie = NULL;
@@ -175,9 +165,7 @@ int thread_stop(struct thread *thread) {
 		thread->state = THREAD_STATE_ZOMBIE;
 	}
 
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nZombying 0x%x\n", (unsigned int)thread);
-#endif
+	LOG_DEBUG("\nZombying 0x%x\n", (unsigned int)thread);
 	scheduler_unlock();
 	return 0;
 }

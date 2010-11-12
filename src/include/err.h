@@ -17,13 +17,13 @@
 # define LOG_ERROR(...)  do ; while(0)
 #endif
 
-#if defined(_WARN)
-# define LOG_WARN(format, args...)   printf("WARN: "format, ##args)
+#if defined(CONFIG_WARN)
+# define LOG_WARN(...)  do {LOGGER();  printf("WARN: "__VA_ARGS__);} while(0)
 #else
 # define LOG_WARN(...)  do ; while(0)
 #endif
 
-#if defined(_DEBUG)
+#if defined(CONFIG_DEBUG)
 # define LOG_DEBUG(...)  do {LOGGER(); printf("DEBUG: "__VA_ARGS__);} while(0)
 #else
 # define LOG_DEBUG(...)  do ; while(0)

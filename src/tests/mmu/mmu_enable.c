@@ -28,7 +28,7 @@ static int run(void) {
 	mmu_save_env(&prev_mmu_env);
 	mmu_set_env(testmmu_env());
 
-	printf("\n\nGTABLE MASK %8x \nMTABLE MASK %8x\nPTABLE_MASK %8x\n\n",
+	printf("\n\nGTABLE MASK %8lx \nMTABLE MASK %8lx\nPTABLE_MASK %8lx\n\n",
 			MMU_GTABLE_MASK, MMU_MTABLE_MASK, MMU_PTABLE_MASK);
 	/* map one to one section text and may be whole image with stack */
 	mmu_map_region((mmu_ctx_t) 0, (uint32_t) &_text_start,

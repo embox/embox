@@ -11,7 +11,6 @@
 #include <kernel/mm/opallocator.h>
 #include <util/math.h>
 
-#define DEBUG
 static mmu_pte_t *context[] = {NULL, NULL, NULL, NULL, NULL };
 
 unsigned long mmu_page_table_sizes[] = {
@@ -77,30 +76,22 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		for (cur_level = 1; cur_level < 4; cur_level++) {
 			cur_offset = ((virt_addr & mmu_table_masks[cur_level])
 				>> blog2(mmu_table_masks[cur_level]));
-#ifdef DEBUG
-			printf("level %d; vaddr 0x%8x; paddr 0x%8x; context 0x%8x offset 0x%8x\n",
+			LOG_DEBUG("level %d; vaddr 0x%8x; paddr 0x%8x; context 0x%8x offset 0x%8x\n",
 				cur_level, (uint32_t)virt_addr,
 				(uint32_t)phy_addr, context[cur_level], cur_offset);
-#endif
 			vaddr += mmu_level_capacity[cur_level] * cur_offset;
 			/* if mapping vaddr is aligned and if required size is pretty fit */
-#ifdef DEBUG
-			printf("%x %x \n", treg_size, mmu_level_capacity[cur_level]);
-#endif
+			LOG_DEBUG("%x %x \n", treg_size, mmu_level_capacity[cur_level]);
 			if ((virt_addr % mmu_level_capacity[cur_level] == 0) &&
 				//(phy_addr % mmu_level_capacity[cur_level] == 0) &&
 				(mmu_level_capacity[cur_level] <= treg_size)) {
-#ifdef DEBUG
-				printf("exiting\n");
-#endif
+				LOG_DEBUG("exiting\n");
 				break;
 			}
 			/* if there is mapping allready */
 			//TODO untested!
 			if (mmu_is_pte(*(context[cur_level] + cur_offset))) {
-#ifdef DEBUG
-				printf("already mapped\n");
-#endif
+				LOG_DEBUG("already mapped\n");
 				paddr = mmu_pte_extract(*(context[cur_level] + cur_offset));
 				*(context[cur_level] + cur_offset) = 0;
 				/* need to divide -- old part rests from left */
@@ -123,9 +114,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 			printf("0x%x, 0x%x\n", *(context[cur_level] + cur_offset),
 				mmu_valid_entry(*(context[cur_level] + cur_offset)));
 			if (!mmu_valid_entry(*(context[cur_level] + cur_offset))) {
-#ifdef DEBUG
-				printf("no mapping\n");
-#endif
+				LOG_DEBUG("no mapping\n");
 				/* there is no middle page - creating */
 				table = (void *) mmu_table_alloc(mmu_page_table_sizes[cur_level + 1]);
 				if (table == NULL) {
@@ -139,16 +128,12 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 			pte = (mmu_pte_t) (context[cur_level] + cur_offset);
 			context[cur_level + 1] = (*mmu_page_table_gets[cur_level])(pte);
 
-#ifdef DEBUG
-			printf("next pte is 0x%8x\n", *((unsigned long *) pte));
-			printf("going down to 0x%8x\n", context[cur_level + 1]);
-#endif
+			LOG_DEBUG("next pte is 0x%8x\n", *((unsigned long *) pte));
+			LOG_DEBUG("going down to 0x%8x\n", context[cur_level + 1]);
 		}
 		/* we are on the best fitting level - creating mapping */
 		mmu_set_pte(context[cur_level] + cur_offset, mmu_pte_format(phy_addr, flags));
-#ifdef DEBUG
-		printf("pte is %x\n", mmu_pte_format(phy_addr, flags));
-#endif
+		LOG_DEBUG("pte is %x\n", mmu_pte_format(phy_addr, flags));
 		/* reducing mapping area */
 		treg_size -= mmu_level_capacity[cur_level];
 		phy_addr += mmu_level_capacity[cur_level];
@@ -156,3 +141,4 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	}
 	return 0;
 }
+

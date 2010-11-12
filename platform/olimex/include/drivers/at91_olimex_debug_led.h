@@ -6,8 +6,8 @@
  * @author Anton Kozlov
  */
 
-#ifndef _AT91_DEBUG_H_
-#define _AT91_DEBUG_H_
+#ifndef AT91_DEBUG_H_
+#define AT91_DEBUG_H_
 
 #include <types.h>
 #include <embox/kernel.h>
@@ -27,4 +27,5 @@ extern void led2_on(void);
 /* Set second led off */
 extern void led2_off(void);
 
-#endif /* _AT91_DEBUG_H_ */
+#endif /* AT91_DEBUG_H_ */
+

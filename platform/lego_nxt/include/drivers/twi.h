@@ -5,7 +5,7 @@
  * @date 15.10.2010
  * @author Anton Kozlov
  */
-#ifndef NXT_TWI_
+#ifndef NXT_TWI_H_
 #define NXT_TWI_H_
 
 #define NXT_AVR_ADDRESS 1
@@ -49,4 +49,5 @@ void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes);
  * @retval 1 -- checksum is incorrect
  */
 int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count);
+
 #endif /* NXT_TWI_H_ */
