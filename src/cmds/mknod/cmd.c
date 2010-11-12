@@ -33,7 +33,9 @@ static int exec(int argsc, char **argsv) {
 				break;
 		}
 	} while (-1 != nextOption);
-	vfs_add_path(argsv[argsc - 1], NULL);
 
+	if (argsc > 1) {
+		vfs_add_path(argsv[argsc - 1], NULL);
+	}
 	return 0;
 }

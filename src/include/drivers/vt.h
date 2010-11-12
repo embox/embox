@@ -37,8 +37,8 @@ typedef struct {
 } VT_TOKEN;
 
 /** ANSI Escape */
-#define ESC		'\033' /*'\e' warning: non-ISO-standard escape sequence, '\e'
-					 Use \033 instead. \e is a GNU shortcut. */
+#define ESC		'\033'
+
 /** ANSI Control Sequence Introducer */
 #define CSI		'['
 
