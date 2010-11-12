@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 17.10.2010
+ * @date 05.11.2010
  * @author Darya Dzendzik
  */
 
@@ -73,12 +73,12 @@ static void display_o(uint8_t x, uint8_t y){
 
 static void display_x(uint8_t x, uint8_t y){
 	display_draw(x, y, 1, 8, &pict_buff6[0]);
-	display_draw(x+1, y, 1, 8, &pict_buff11[0]);
-	display_draw(x+2, y, 1, 8, &pict_buff9[0]);
-	display_draw(x+1, y+1, 1, 8, &pict_buff5[0]);
+	display_draw(x+8, y, 1, 8, &pict_buff11[0]);
+	display_draw(x+16, y, 1, 8, &pict_buff9[0]);
+	display_draw(x+8, y+1, 1, 8, &pict_buff5[0]);
 	display_draw(x, y+2, 1, 8, &pict_buff8[0]);
-	display_draw(x+1, y+2, 1, 8, &pict_buff10[0]);
-	display_draw(x+2, y+2, 1, 8, &pict_buff7[0]);
+	display_draw(x+8, y+2, 1, 8, &pict_buff10[0]);
+	display_draw(x+16, y+2, 1, 8, &pict_buff7[0]);
 	nxt_lcd_force_update();
 }
 
@@ -93,19 +93,50 @@ static void display_clean_sp(uint8_t x, uint8_t y, int i, int j){
 }
 static int run_abc_embox(void) {
 	display_clear_screen();
-	display_e(2, 2);
-	display_m(18, 2);
-	display_b(42, 2);
-	display_o(58, 2);
-	display_x(74, 2);
-	usleep(1500);
+	display_e(2, 3);
+	display_m(18, 3);
+	display_b(42, 3);
+	display_o(58, 3);
+	display_x(74, 3);
+	usleep(500);
 	/*jamp*/
-	display_clean_sp(2, 2, 13, 3);
-	display_e(2, 1);
-	usleep(1500);
-	display_clean_sp(2, 1, 13, 3);
+	display_clean_sp(2, 3, 13, 3);
 	display_e(2, 2);
-	usleep(1500);
+	usleep(500);
+	display_clean_sp(2, 2, 13, 3);
+	display_e(2, 3);
+	usleep(500);
+
+	display_clean_sp(18, 3, 13, 3);
+	display_clean_sp(22, 3, 13, 3);
+	display_m(18, 2);
+	usleep(500);
+	display_clean_sp(18, 2, 13, 3);
+	display_clean_sp(22, 2, 13, 3);
+	display_m(18, 3);
+	usleep(500);
+
+	display_clean_sp(42, 3, 13, 3);
+	display_b(42, 2);
+	usleep(500);
+	display_clean_sp(42, 1, 13, 3);
+	display_clean_sp(42, 2, 13, 3);
+	display_b(42, 3);
+	usleep(500);
+
+	display_clean_sp(58, 3, 13, 3);
+	display_o(58, 2);
+	usleep(500);
+	display_clean_sp(58, 2, 13, 3);
+	display_o(58, 3);
+	usleep(500);
+
+	display_clean_sp(74, 3, 13, 3);
+	display_x(74, 2);
+	usleep(500);
+	display_clean_sp(74, 2, 13, 3);
+	display_x(74, 3);
+
 	return 0;
 }
 
