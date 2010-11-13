@@ -11,13 +11,21 @@
 # Usage: $(call r-wildcard,pattern)
 #
 # NOTE: does not handle properly more than one ** tokens.
+# TODO: too tricky, need some comments. -- Eldar
 #
-r-wildcard = $(strip $(call __r-wildcard,$1,$(wildcard $1)))
-
+r-wildcard = \
+  $(if $(filter 1,$(words $1)),$ \
+    $(call __r-wildcard,$(subst **,* *,$1)),$ \
+    $(foreach token,$(call $0,$(token)))$ \
+  )
 __r-wildcard = \
-  $(if $(and $(findstring **,$1),$2), \
-    $(call $0,$(subst **,**/*,$1),$(wildcard $(subst **,**/*,$1))) \
-  ) $2
+  $(if $(filter 1,$(words $1)),$(wildcard $1),$(if $(filter 2,$(words $1)),$ \
+    $(call __r-wildcard-expand,$ \
+        $(patsubst %*,%,$(word 1,$1)),*,$(patsubst *%,%,$(word 2,$1)),),$ \
+    $(error Handling more than one ** tokens is not implemented)$ \
+  ))
+__r-wildcard-expand = \
+  $(if $(wildcard $1$2),$(call $0,$1,$2/*,$3,$(wildcard $1$2$3))) $4
 
 # Directory/file versions of wildcard.
 # Both of them are based on the fact that wildcard expansion of the expression

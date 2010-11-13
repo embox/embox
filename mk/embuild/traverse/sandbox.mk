@@ -14,12 +14,15 @@ variables_after  := $(.VARIABLES)
 
 variables_sandboxed := $(filter-out $(variables_before),$(variables_after))
 
+include util.mk
+
 variable_dump = \
   define $$_$1\n$(subst $(\n),\n,$(subst \,\\,$($1)))\nendef
 variable_dump_all = \
   $(foreach var,$1,$(call variable_dump,$(var))\n)
 
 $(OBJ_DIR)/%.mk : $(SRC_DIR)/%.em
+	@mkdir -p $(@D)
 	@$(PRINTF) '# Auto-generated EMBuild entity. Do not edit.\n' > $@
-	@$(PRINTF) '$(call variable_dump_all,$(variables_sandboxed))' >> $@
+	$(PRINTF) '$(call variable_dump_all,$(variables_sandboxed))' >> $@
 
