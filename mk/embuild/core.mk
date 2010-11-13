@@ -15,7 +15,7 @@ export PRINTF := printf
 em_files = $(call traverse,$(SRC_DIR))
 entity_files = $(em_files:$(SRC_DIR)/%.em=$(OBJ_DIR)/%.mk)
 
-$(error $(em_files))
+#$(error $(em_files))
 
 include $(entity_files)
 
