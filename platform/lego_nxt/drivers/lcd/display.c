@@ -224,3 +224,25 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *b
 	nxt_lcd_force_update();
 	return 0;
 }
+
+int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q)
+{
+	uint32_t x_offset, y_offset;
+
+	if(q==0) {
+		for(y_offset = 0; y_offset < height; y_offset += 1) {
+			for(x_offset = 0; x_offset < width; x_offset ++) {
+				display_buffer[(y + y_offset) >> 3][x + x_offset] = 0;
+			}
+		}
+	}
+	else {
+		for(y_offset = 0; y_offset < height; y_offset += 1) {
+			for(x_offset = 0; x_offset < width; x_offset ++) {
+				display_buffer[(y + y_offset) >> 3][x + x_offset] = 0xFF;
+			}
+		}
+	}
+	nxt_lcd_force_update();
+	return 0;
+}
