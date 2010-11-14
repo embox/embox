@@ -7,24 +7,8 @@
 ifndef _util_mk_
 _util_mk_ := 1
 
+include util/common.mk
 include gmsl.mk
-
-empty :=
-
-\space :=
-\space +=
-
-$(\space) :=
-
-define \n
-
-
-endef
-
-         \n          := $(\n)
-$(\space)\n          := $(\n)
-$(\space)\n$(\space) := $(\n)
-         \n$(\space) := $(\n)
 
 escape = $(call assert_called,escape,$0)$(call dollar_encode,$1)
 
@@ -157,11 +141,5 @@ warning_str_dir  = $(call warning_str_file,$1/Makefile)
 # Generates error/warning string in $(dir)/Makefile.
 error_str        = $(call error_str_dir,$(dir))
 warning_str      = $(call warning_str_dir,$(dir))
-
-# Just for better output readability.
-define N
-
-
-endef
 
 endif # _util_mk_

@@ -20,7 +20,7 @@ entity_files = $(em_files:$(SRC_DIR)/%.em=$(OBJ_DIR)/%.mk)
 include $(entity_files)
 
 $(entity_files) : $(OBJ_DIR)/%.mk : $(SRC_DIR)/%.em
-	$(MAKE) -f mk/embuild/traverse/sandbox.mk EMBUILD_ENTITY=$* $@
+	$(MAKE) -f mk/embuild/traverse/em_file.mk EMBUILD_ENTITY=$* $@
 
 all:
 clean:
