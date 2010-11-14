@@ -4,28 +4,47 @@
 # Author: Eldar Abusalimov
 #
 
+#include util/core.mk
 
 ##
-# Extended version of wildcard that understands double asterisk pattern (**).
+# Function: r-wildcard
 #
-# Usage: $(call r-wildcard,pattern)
+# Extended version of wildcard that understands "double asterisk" pattern (**).
 #
-# NOTE: does not handle properly more than one ** tokens.
-# TODO: too tricky, need some comments. -- Eldar
+# Usage: $(call r-wildcard,pattern...)
+#
+# Note: does not handle properly more than one ** tokens in single pattern.
 #
 r-wildcard = \
   $(if $(filter 1,$(words $1)),$ \
     $(call __r-wildcard,$(subst **,* *,$1)),$ \
     $(foreach token,$(call $0,$(token)))$ \
-  )
+  )# Split argument and recall self for each single pattern.
+
+# Accepts single pattern with "**" replaced by "* *",
+# performs some checks and prepares the arguments for __r-wildcard-expand.
 __r-wildcard = \
   $(if $(filter 1,$(words $1)),$(wildcard $1),$(if $(filter 2,$(words $1)),$ \
     $(call __r-wildcard-expand,$ \
         $(patsubst %*,%,$(word 1,$1)),*,$(patsubst *%,%,$(word 2,$1)),),$ \
     $(error Handling more than one ** tokens is not implemented)$ \
   ))
-__r-wildcard-expand = \
-  $(if $(wildcard $1$2),$(call $0,$1,$2/*,$3,$(wildcard $1$2$3))) $4
+
+# Recursively performs wildcard expansion of double asrerisk for *, */*, ...
+#
+# Some examples:
+#  (good) foo/*/bar
+#      -> (single word after replacement, use simple wildcard)
+#  (good) foo/**/bar
+#      -> foo/* */bar
+#      -> foo/, *, /bar
+#      -> foo/, */*, /bar
+#      -> ... (expand wildcards while foo/*/*/.../ gives non-empty result)
+#  (bad)  foo/**/bar/**
+#      -> foo/* */bar/* *
+#      -> (3 words, fail with an error)
+__r-wildcard-expand = $4 \
+  $(if $(filter %/,$(wildcard $1$2/)),$(call $0,$1,$2/*,$3,$(wildcard $1$2$3)))
 
 # Directory/file versions of wildcard.
 # Both of them are based on the fact that wildcard expansion of the expression
@@ -33,18 +52,22 @@ __r-wildcard-expand = \
 # directories.
 
 ##
+# Function: d-wildcard
+#
 # Directory-only wildcard. This version of wildcard filters out any files
 # leaving only directories.
 #
-# Usage: $(call d-wildcard,pattern)
+# Usage: $(call d-wildcard,pattern...)
 #
 d-wildcard = $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
 
 ##
+# Function: f-wildcard
+#
 # File-only wildcard. This version of wildcard leaves only files in the
 # expansion result.
 #
-# Usage: $(call f-wildcard,pattern)
+# Usage: $(call f-wildcard,pattern...)
 #
 f-wildcard = $(patsubst %/,%,$(filter-out %/,$(wildcard $(1:%=%/))))
 
