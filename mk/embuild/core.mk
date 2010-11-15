@@ -15,12 +15,12 @@ export PRINTF := printf
 em_files = $(call traverse,$(SRC_DIR))
 entity_files = $(em_files:$(SRC_DIR)/%.em=$(OBJ_DIR)/%.mk)
 
-#$(error $(em_files))
-
-include $(entity_files)
+-include $(entity_files)
 
 $(entity_files) : $(OBJ_DIR)/%.mk : $(SRC_DIR)/%.em
-	$(MAKE) -f mk/embuild/traverse/em_file.mk EMBUILD_ENTITY=$* $@
+	$(MAKE) -f mk/embuild/traverse/emfile.mk all \
+		__EMBUILD_TRAVERSE_EMFILE_ROOT=$(SRC_DIR) \
+		__EMBUILD_TRAVERSE_EMFILE=$*.em \
 
 all:
 clean:
