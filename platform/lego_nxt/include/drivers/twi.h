@@ -12,8 +12,8 @@
 #define NXT_AVR_N_OUTPUTS 4
 #define NXT_AVR_N_INPUTS  4
 
-typedef struct{
-  // Raw values
+typedef struct {
+	// Raw values
 	uint8_t power;
 	uint8_t pwm_frequency;
 	int8_t output_percent[NXT_AVR_N_OUTPUTS];
@@ -22,11 +22,11 @@ typedef struct{
 } __attribute__((packed)) to_avr;
 
 typedef struct {
-  // Raw values
-  uint16_t adc_value[NXT_AVR_N_INPUTS];
-  uint16_t buttons_val;
-  uint16_t extra;
-  uint8_t csum;
+	// Raw values
+	uint16_t adc_value[NXT_AVR_N_INPUTS];
+	uint16_t buttons_val;
+	uint16_t extra;
+	uint8_t csum;
 } __attribute__((packed)) from_avr;
 
 void twi_init(void);

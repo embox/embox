@@ -13,8 +13,6 @@
 
 EMBOX_TEST(run_picture);
 
-extern int display_draw(uint8_t, uint8_t, uint8_t, uint8_t, char *);
-
 static int run_picture(void) {
 /*Part of "E" "M" "B" "O" */
 	char pict_buff1[8] = {0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF};

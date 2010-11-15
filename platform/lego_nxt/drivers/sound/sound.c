@@ -36,7 +36,8 @@ void sound_stop_play(void) {
 static int __init sound_init(void) {
 	int res = 0;
 	res = irq_attach((irq_nr_t) AT91C_ID_SSC,
-		(irq_handler_t) &sound_interrupt, 0, NULL, "Sound Buffer Transfer End");
+		(irq_handler_t) &sound_interrupt, 0,
+		NULL, "Sound Buffer Transfer End");
 	/* Enable MCK clock   */
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SSC));
 	/* Disable TD on PA17  */ //???
@@ -64,7 +65,7 @@ static int __init sound_init(void) {
 }
 
 void sound_start_play(uint32_t freq, useconds_t ms,
-		SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd ) {
+	SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd ) {
 
 	current_handler = sound_hnd;
 
@@ -94,3 +95,4 @@ void sound_start_play(uint32_t freq, useconds_t ms,
 		sound_stop_play();
 	}
 }
+

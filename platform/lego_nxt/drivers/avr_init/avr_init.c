@@ -37,6 +37,7 @@ static int buttons_accum_state = 0;
 uint32_t nxt_buttons_are_pressed(void) {
 	return buttons_state;
 }
+
 /* Buttons was pressed since last call */
 uint32_t nxt_buttons_was_pressed(void) {
 	uint32_t ret = buttons_accum_state;
@@ -77,11 +78,13 @@ static uint32_t avr_handler(void) {
 
 	if (read_write++ & 1) {
 		avr_line_locked = true;
-		twi_send(NXT_AVR_ADDRESS, (const uint8_t *) &data_avr, sizeof(data_avr));
+		twi_send(NXT_AVR_ADDRESS,
+			(const uint8_t *) &data_avr, sizeof(data_avr));
 		avr_line_locked = false;
 	} else {
 		avr_line_locked = true;
-		twi_receive(NXT_AVR_ADDRESS, (uint8_t *) &data_from_avr, sizeof(data_from_avr));
+		twi_receive(NXT_AVR_ADDRESS, (uint8_t *) &data_from_avr,
+			sizeof(data_from_avr));
 		avr_line_locked = false; /*however, it's much prettier here*/
 
 		new_state = translate_buttons(data_from_avr.buttons_val);
@@ -110,7 +113,8 @@ static int init(void) {
 	int result = 0;
 
 	twi_init();
-	twi_write(NXT_AVR_ADDRESS, (const uint8_t *) avr_brainwash_string, strlen(avr_brainwash_string));
+	twi_write(NXT_AVR_ADDRESS, (const uint8_t *) avr_brainwash_string,
+					strlen(avr_brainwash_string));
 
 	data_avr.power = 0;
 	data_avr.pwm_frequency = 0;

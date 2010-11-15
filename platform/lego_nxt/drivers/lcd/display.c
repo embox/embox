@@ -151,6 +151,8 @@ __u8 font[N_CHARS][FONT_WIDTH] = {
 void display_char(int c) {
 	__u8 *b;
 	const __u8 *f, *fend;
+	int i, j;
+
 	if (c == '\n') {
 		display_x = 0;
 		display_y ++;
@@ -162,10 +164,9 @@ void display_char(int c) {
 	};
 
 	if ((unsigned int) display_y == DISPLAY_CHAR_DEPTH) {
-		int i, j;
 		for (i = 0; i < NXT_LCD_DEPTH - 1; i++) {
 			for (j = 0; j < NXT_LCD_WIDTH; j++) {
-				display_buffer[i][j] = display_buffer[i+1][j];
+				display_buffer[i][j] = display_buffer[i + 1][j];
 			}
 		}
 		display_y = DISPLAY_CHAR_DEPTH - 1;
@@ -200,13 +201,13 @@ void display_string(const char *str) {
 }
 
 void display_clear_screen(void) {
-	memset((void *)display_buffer, 0x0, NXT_LCD_WIDTH*NXT_LCD_DEPTH);
+	memset((void *)display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
 	nxt_lcd_force_update();
-
 }
 
-int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *buff){
-   	uint32_t x_offset, y_offset;
+int display_draw(uint8_t x, uint8_t y, uint8_t width,
+			uint8_t height, uint8_t *buff) {
+   	uint32_t x_offset, y_offset, i, j, k;
    	y *= 8;
    	width *= 8;
    	if((x > NXT_LCD_WIDTH) || (y > 64)) {
@@ -218,31 +219,27 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *b
 
    	for(y_offset = 0; y_offset < height; y_offset += 8) {
 		for(x_offset = 0; x_offset < width; x_offset ++) {
-   			display_buffer[(y + y_offset) >> 3][x + x_offset] = buff[(y_offset >> 3) + x_offset];
+			i = (y + y_offset) >> 3;
+			j = x + x_offset;
+			k = (y_offset >> 3) + x_offset;
+   			display_buffer[i][j] = buff[k];
 		}
    	}
 	nxt_lcd_force_update();
 	return 0;
 }
 
-int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q)
-{
-	uint32_t x_offset, y_offset;
+int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q) {
+	uint32_t x_offset, y_offset, i, j;
 
-	if(q==0) {
-		for(y_offset = 0; y_offset < height; y_offset += 1) {
-			for(x_offset = 0; x_offset < width; x_offset ++) {
-				display_buffer[(y + y_offset) >> 3][x + x_offset] = 0;
-			}
-		}
-	}
-	else {
-		for(y_offset = 0; y_offset < height; y_offset += 1) {
-			for(x_offset = 0; x_offset < width; x_offset ++) {
-				display_buffer[(y + y_offset) >> 3][x + x_offset] = 0xFF;
-			}
+	for(y_offset = 0; y_offset < height; y_offset++) {
+		for(x_offset = 0; x_offset < width; x_offset++) {
+			i = (y + y_offset) >> 3;
+			j = x + x_offset;
+			display_buffer[i][j] = (q == 0 ? 0 : 0xFF);
 		}
 	}
 	nxt_lcd_force_update();
 	return 0;
 }
+

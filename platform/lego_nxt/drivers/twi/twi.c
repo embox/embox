@@ -39,7 +39,7 @@ void twi_reset(void) {
 	REG_STORE(AT91C_TWI_IDR, ~0);
 
 	*AT91C_PMC_PCER = (1 << AT91C_ID_PIOA) |  /* Need PIO too */
-	(1 << AT91C_ID_TWI);    /* TWI clock domain */
+			(1 << AT91C_ID_TWI);    /* TWI clock domain */
 
 	/* Set up pin as an IO pin for clocking till clean */
 	REG_STORE(AT91C_PIOA_MDER, AT91C_PA3_TWD | AT91C_PA4_TWCK);
@@ -105,8 +105,9 @@ void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
 int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
 	uint8_t *ptr = data;
 	uint8_t checkbyte = 0;
-    *AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO|AT91C_TWI_MREAD|((dev_addr & 0x7f) << 16);
-    *AT91C_TWI_CR = AT91C_TWI_START;
+	*AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO |
+			AT91C_TWI_MREAD | ((dev_addr & 0x7f) << 16);
+	*AT91C_TWI_CR = AT91C_TWI_START;
 	while (count-- > 1) {
 		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
 		*ptr = REG_LOAD(AT91C_TWI_RHR);
@@ -114,7 +115,7 @@ int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
 		ptr++;
 	}
 
-    *AT91C_TWI_CR = AT91C_TWI_STOP;
+	*AT91C_TWI_CR = AT91C_TWI_STOP;
 	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
 	*ptr = REG_LOAD(AT91C_TWI_RHR);
 	checkbyte += *ptr;

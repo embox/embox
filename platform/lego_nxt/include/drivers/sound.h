@@ -25,7 +25,7 @@ typedef SAMPLEWORD *(*sound_handler_t)(void);
  * @param ms = 0: continuous playing, stops only at explicit stop
  * @param ms != 0: playing specified time */
 void sound_start_play(uint32_t freq, useconds_t ms,
-		SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd);
+	SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd);
 
 /* stop playing anything */
 void sound_stop_play(void);

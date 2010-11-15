@@ -19,23 +19,26 @@ EMBOX_UNIT_INIT(unit_lcd_init);
 
 __u8 mode = 0xff;
 
-__u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
+__u8 display_buffer[NXT_LCD_DEPTH + 1][NXT_LCD_WIDTH];
 
 static void spi_set_mode(__u8 m) {
 	__u32 status;
 
 	/* nothing to do if we are already in the correct mode */
-	if (m == mode) return;
+	if (m == mode) {
+		return;
+	}
 
 	/* Wait until all bytes have been sent */
 	do {
 		status = *AT91C_SPI_SR;
 	} while (!(status & 0x200));
 	/* Set command or data mode */
-	if (m)
+	if (m) {
 		REG_STORE(AT91C_PIOA_SODR, CD_PIN);
-	else
+	} else {
 		REG_STORE(AT91C_PIOA_CODR, CD_PIN);
+	}
 	/* remember the current mode */
 	mode = m;
 }
@@ -53,7 +56,6 @@ static void nxt_spi_write(__u32 CD, const __u8 *data, __u32 nBytes) {
 		do {
 			status = *AT91C_SPI_SR;
 		} while (!(status & 0x200));
-
 	}
 }
 
@@ -217,5 +219,4 @@ int __init lcd_init(void) {
 	memset(display_buffer, 0, NXT_LCD_WIDTH*NXT_LCD_DEPTH);
 	return 0;
 }
-
 
