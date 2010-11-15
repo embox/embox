@@ -26,7 +26,7 @@
 
 ifndef $(already_included)
 
-include util/file.mk
+include util/wildcard.mk
 
 #
 # Usage:

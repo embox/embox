@@ -3,7 +3,7 @@
 #
 
 include util.mk
-include util/file.mk
+include util/wildcard.mk
 include util/var.mk
 
 traverse = $(call r-wildcard,$(1:%=%/**/*.em))

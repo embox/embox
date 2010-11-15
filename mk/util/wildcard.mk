@@ -4,12 +4,20 @@
 # Author: Eldar Abusalimov
 #
 
+ifndef __util_wildcard_mk
+__util_wildcard_mk := 1
+
 include util/common.mk
 
 ##
 # Function: r-wildcard
 #
 # Extended version of wildcard that understands "double asterisk" pattern (**).
+#
+# Params:
+#  1. Patterns containing wildcard characters (possibly including **)
+#
+# Returns: Wildcard expansion of the patterns.
 #
 # Usage: $(call r-wildcard,pattern...)
 #
@@ -50,12 +58,19 @@ __r-wildcard-expand = $4 \
 # Both of them are based on the fact that wildcard expansion of the expression
 # containing the trailing slash drops the slash for files but leaves it for
 # directories.
+#
+# TODO some strange behavior, check again. -- Eldar
 
 ##
 # Function: d-wildcard
 #
 # Directory-only wildcard. This version of wildcard filters out any files
 # leaving only directories.
+#
+# Params:
+#  1. Patterns containing wildcard characters
+#
+# Returns: Wildcard expansion of the patterns (directories only).
 #
 # Usage: $(call d-wildcard,pattern...)
 #
@@ -67,35 +82,84 @@ d-wildcard = $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
 # File-only wildcard. This version of wildcard leaves only files in the
 # expansion result.
 #
+# Params:
+#  1. Patterns containing wildcard characters
+#
+# Returns: Wildcard expansion of the patterns (files only).
+#
 # Usage: $(call f-wildcard,pattern...)
 #
-f-wildcard = $(patsubst %/,%,$(filter-out %/,$(wildcard $(1:%=%/))))
+f-wildcard = $(filter-out $(call d-wildcard,$1),$(wildcard $1))
+
+##
+# Function: wildcard_first
+#
+# Tries to expand each pattern sequentially until getting non-empty expansion.
+#
+# Params:
+#  1. Patterns containing wildcard characters
+#
+# Returns: The first non-empty wildcard expansion.
+#
+# Usage: $(call wildcard_first,pattern...)
+#
+wildcard_first = $(call __wildcard_first,  wildcard,$1)
+
+##
+# Function: d-wildcard_first
+#
+# Directory-only version of wildcard_first.
+#
+# See: wildcard_first, d-wildcard
+#
+d-wildcard_first = $(call __wildcard_first,d-wildcard,$1)
+
+##
+# Function: f-wildcard_first
+#
+# File-only version of wildcard_first.
+#
+# See: wildcard_first, f-wildcard
+#
+f-wildcard_first = $(call __wildcard_first,f-wildcard,$1)
+
+# Expand each pattern (arg 2) one by one sequentially using proper wildcard
+# version (arg 1) until getting non-empty expansion.
+__wildcard_first = $(if $2,$ \
+  $(or $(call $1,$(firstword $2)),$(call $0,$1,$(wordlist 2,$(words $2),$2))))
 
 #
-# XXX docs were copy-pasted from traverse.mk -- Eldar
+# TODO: all functions below are not used, may be drop them? -- Eldar
+#
+
+##
+# Function: wildcard_relative
+#
+# Performs wildcard expansion within the specified base directory.
 #
 # Params:
 #  1. Base directory
-#  2. Subdirectories list relative to the base dir possibly containing wildcard
-#     expressions.
+#  2. Wildcard patterns relative to the base directory
 #
-# In a nutshell:
-#   Expand d-wildcards for sub-dirs within the base dir.
-#   Get back to sub-dirs relative names and remove duplicates.
+# Returns: Wildcard expansion of the pattern within the base directory.
 #
+# Usage: $(call wildcard_relative,base,pattern...)
+#
+# TODO: this will not for absolute paths, may be drop it at all? -- Eldar
+#
+  wildcard_relative = $(call __wildcard_relative,  wildcard,$1,$2)
 d-wildcard_relative = $(call __wildcard_relative,d-wildcard,$1,$2)
 f-wildcard_relative = $(call __wildcard_relative,f-wildcard,$1,$2)
-  wildcard_relative = $(call __wildcard_relative,  wildcard,$1,$2)
-__wildcard_relative = $(__gmsl_tr3)$(foreach basedir,$(abspath $2),$ \
-  $(patsubst $(basedir)/%,%,$(call $1,$(3:%=$(basedir)/%))))
 
-d-wildcard_first = $(call __wildcard_first,d-wildcard,$1)
-f-wildcard_first = $(call __wildcard_first,f-wildcard,$1)
-  wildcard_first = $(call __wildcard_first,  wildcard,$1)
-__wildcard_first = $(__gmsl_tr2)$(or $(call $1,$(firstword $2)),$ \
-                        $(call $0,$1,$(call rest,$2)))
+# Expand wildcards (first argument) for patterns within the base dir
+# and get back to relative names.
+__wildcard_relative = \
+  $(foreach basedir,$(abspath $2),$ \
+    $(patsubst $(basedir)/%,%,$(call $1,$(3:%=$(basedir)/%)))$ \
+  )
 
 d-wildcard_relative_first = $(call __wildcard_relative,d-wildcard_first,$1,$2)
 f-wildcard_relative_first = $(call __wildcard_relative,f-wildcard_first,$1,$2)
   wildcard_relative_first = $(call __wildcard_relative,  wildcard_first,$1,$2)
 
+endif # __util_wildcard_mk
