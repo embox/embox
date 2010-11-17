@@ -41,7 +41,7 @@ static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 	switch (action) {
 	case VT_ACTION_PRINT:
 	case VT_ACTION_EXECUTE:
-	case VT_ACTION_CS_DISPATCH:
+	case VT_ACTION_CSI_DISPATCH:
 	case VT_ACTION_ESC_DISPATCH:
 		this->cb(this, this->token);
 		break;

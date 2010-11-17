@@ -53,7 +53,7 @@ void vtbuild(VTBUILDER *this, const VT_TOKEN *token) {
 			this->putc(this, token->attrs[i]);
 		}
 		break;
-	case VT_ACTION_CS_DISPATCH: {
+	case VT_ACTION_CSI_DISPATCH: {
 		this->putc(this, ESC);
 		this->putc(this, CSI);
 		if (token->params != NULL) {

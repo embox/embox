@@ -57,7 +57,7 @@ static bool is_valid_action(VT_ACTION action) {
 	switch (action) {
 	case VT_ACTION_PRINT:
 	case VT_ACTION_EXECUTE:
-	case VT_ACTION_CS_DISPATCH:
+	case VT_ACTION_CSI_DISPATCH:
 	case VT_ACTION_ESC_DISPATCH:
 		/* ok */
 		return true;

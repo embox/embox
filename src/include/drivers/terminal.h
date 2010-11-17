@@ -35,7 +35,7 @@ typedef struct {
 #define DECODE_CHAR2(token)                  ((token >> 8) & 0xFF)
 #define DECODE_CODE(token)                   ((token) & 0xFF)
 
-#define ENCODE_CS_(char1, char2, code)	     ENCODE(VT_ACTION_CS_DISPATCH, char1, char2, code)
+#define ENCODE_CS_(char1, char2, code)	     ENCODE(VT_ACTION_CSI_DISPATCH, char1, char2, code)
 #define ENCODE_ESC_(char1, char2, code)	     ENCODE(VT_ACTION_ESC_DISPATCH, char1, char2, code)
 
 #define ENCODE_CS(code)                      ENCODE_CS_(0, 0, code)

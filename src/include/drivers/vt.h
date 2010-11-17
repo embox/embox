@@ -14,7 +14,7 @@ typedef enum {
 	VT_ACTION_NONE         = 0,
 	VT_ACTION_CLEAR        = 1,
 	VT_ACTION_COLLECT      = 2,
-	VT_ACTION_CS_DISPATCH  = 3,
+	VT_ACTION_CSI_DISPATCH  = 3,
 	VT_ACTION_ESC_DISPATCH = 4,
 	VT_ACTION_EXECUTE      = 5,
 	VT_ACTION_HOOK         = 6,
