@@ -44,16 +44,34 @@ IRQ_handler:
 
 	/*going to higher level handler, passing first arg number of source interrupt */
 	mov	r1, #0
-
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT /* going to SVC mode, still disabling interrupts */
-	stmfd sp!, {lr} /* storing address of returning in interrupted program flow */
+	stmfd sp!, {lr} /* stoirqring address of returning in interrupted program flow */
 
+#ifdef CONFIG_MEASURE_IRQ
+	stmfd sp!, {r0}
+	bl measure_start
+	ldmfd sp, {r0}
+#endif
+
+#ifdef CONFIG_NESTED_INTERRUPTS
 	msr CPSR_c, #ARM_MODE_SVC /*ready to enable interrupt and go to dispatcher */
+#endif
+
 	bl irq_dispatch
 
+#ifdef CONFIG_NESTED_INTERRUPTS
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT /* need to clean up after dispatcher */
-	ldmfd sp!, {lr}
+#endif
 
+/*measure irq dispatch*/
+#ifdef CONFIG_MEASURE_IRQ
+	bl	measure_stop
+	mov r1, r0
+	ldmfd sp!, {r0}
+	bl measure_irq_process
+#endif
+
+	ldmfd sp!, {lr}
 	/* now interrupted program is unaffected, interrupt serviced, correctly exiting handler */
 	msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT /*disable interrupts, restoring state better uninterrupted */
 
@@ -74,16 +92,6 @@ IRQ_handler:
 	b die
 
 SWI_handler:
-	mrs	r2, SPSR
-	push	{r0-r4, LR}
-
-	mov	LR, PC
-	ldr	PC, =softirq_dispatch
-
-	pop	{r0-r4,	LR}
-
-	msr	CPSR, r2
-	mov	PC, LR
-
+	/*unimplemented */
 die:
 	b die
