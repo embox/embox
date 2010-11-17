@@ -63,9 +63,13 @@ static lsof_map_t *find_fd(FILE *file) {
 #endif
 
 FILE *fopen(const char *path, const char *mode) {
-	node_t *nod = vfs_find_node(path, NULL);
+	node_t *nod;
 	file_system_driver_t *drv;
+	file_operations_t *fop;
 	FILE *file;
+
+	nod = vfs_find_node(path, NULL);
+
 	if (nod == NULL) {
 		//FIXME: ahtung! workaround.
 		ramfs_create_param_t param;
@@ -76,6 +80,12 @@ FILE *fopen(const char *path, const char *mode) {
 		drv = find_filesystem("ramfs");
 		drv->fsop->create_file(&param);
 		nod = vfs_find_node(path, NULL);
+	}
+
+	if (NULL != nod->file_info) {
+		/*if fop set*/
+		fop = (file_operations_t *)nod->file_info;
+		return fop->fopen(path, mode);
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fopen) {
