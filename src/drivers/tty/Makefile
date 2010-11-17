@@ -1,5 +1,5 @@
-$_PACKAGE := embox.driver.watchdogs
+$_PACKAGE := embox.driver
 
-$_MODS += at91_watchdog
+$_MODS += tty
 
-$_SRCS-at91_watchdog += at91_watchdog.c
+$_SRCS-tty += tty.c
