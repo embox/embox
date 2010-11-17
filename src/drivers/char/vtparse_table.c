@@ -28,7 +28,7 @@
 	((VTPARSE_STATE_ ## vtparse_state) << 4)
 
 /* Uses GNU C designated initializers extension. */
-__extension__ const state_change_t STATE_TABLE[15][256] = {
+__extension__ const state_change_t vtparse_state_table[15][256] = {
 	[VTPARSE_STATE_ANYWHERE] = {
 		[0x18         ] = TRANSIT(EXECUTE, GROUND),
 		[0x1a         ] = TRANSIT(EXECUTE, GROUND),
@@ -195,7 +195,7 @@ __extension__ const state_change_t STATE_TABLE[15][256] = {
 	},
 };
 
-const VT_ACTION ENTRY_ACTIONS[] = {
+const VT_ACTION vtparse_state_entry_actions[] = {
 	[VTPARSE_STATE_CSI_ENTRY]       = VT_ACTION_CLEAR,
 	[VTPARSE_STATE_DCS_ENTRY]       = VT_ACTION_CLEAR,
 	[VTPARSE_STATE_DCS_PASSTHROUGH] = VT_ACTION_HOOK,
@@ -203,7 +203,7 @@ const VT_ACTION ENTRY_ACTIONS[] = {
 	[VTPARSE_STATE_OSC_STRING]      = VT_ACTION_OSC_START,
 };
 
-const VT_ACTION EXIT_ACTIONS[] = {
+const VT_ACTION vtparse_state_exit_actions[] = {
 	[VTPARSE_STATE_DCS_PASSTHROUGH] = VT_ACTION_UNHOOK,
 	[VTPARSE_STATE_OSC_STRING]      = VT_ACTION_OSC_END,
 };

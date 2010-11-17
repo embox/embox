@@ -115,8 +115,8 @@ static void do_state_change(VTPARSER *this, state_change_t change, char ch) {
 		 *   3. the entry action of the new state
 		 */
 
-		VT_ACTION exit_action = EXIT_ACTIONS[this->state];
-		VT_ACTION entry_action = ENTRY_ACTIONS[new_state];
+		VT_ACTION exit_action = vtparse_state_exit_actions[this->state];
+		VT_ACTION entry_action = vtparse_state_entry_actions[new_state];
 
 		if (exit_action)
 			do_action(this, exit_action, 0);
@@ -139,10 +139,10 @@ void vtparse(VTPARSER *this, unsigned char ch) {
 	/* If a transition is defined from the "anywhere" state, always
 	 * use that.  Otherwise use the transition from the current state. */
 
-	change = STATE_TABLE[VTPARSE_STATE_ANYWHERE][ch];
+	change = vtparse_state_table[VTPARSE_STATE_ANYWHERE][ch];
 
 	if (!change)
-		change = STATE_TABLE[this->state][ch];
+		change = vtparse_state_table[this->state][ch];
 
 	do_state_change(this, change, ch);
 }
