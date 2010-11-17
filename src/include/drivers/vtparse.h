@@ -11,6 +11,7 @@
  *     As we use only Plain, ESC and CSI-based tokens all the others are ignored
  *     (in spite of the fact that the Parser is capable to handle them correctly).
  */
+
 #ifndef VTPARSE_H_
 #define VTPARSE_H_
 

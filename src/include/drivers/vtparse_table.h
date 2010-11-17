@@ -28,7 +28,7 @@ enum vtparse_state {
 	VTPARSE_STATE_SOS_PM_APC_STRING   = 14
 };
 
-#define VTPARSE_STATES_TOTAL 15
+#define VTPARSE_STATES_TOTAL 14
 
 typedef enum vtparse_state vtparse_state_t;
 
