@@ -11,5 +11,6 @@
 #define READLINE_H_
 
 extern char *readline(const char *);
+extern void freeline(char *);
 
 #endif /* READLINE_H_ */

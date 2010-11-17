@@ -9,8 +9,6 @@
 #include <lib/readline.h>
 #include <drivers/tty.h>
 
-extern tty_device_t *cur_tty;
-
 char *readline(const char *promt) {
 	if (NULL == cur_tty) {
 		return NULL;
