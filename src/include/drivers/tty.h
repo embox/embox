@@ -15,16 +15,22 @@
 #define TTY_RXBUFF_SIZE 0x80
 #define TTY_TXBUFF_SIZE 0x80
 
+#include <fs/file.h>
+
 typedef struct tty_device {
 	uint8_t  out_buff[TTY_RXBUFF_SIZE + 1];
 	uint8_t  rx_buff[TTY_RXBUFF_SIZE + 1];
 	uint8_t  tx_buff[TTY_TXBUFF_SIZE + 1];
 	uint32_t rx_cnt;
 	bool     out_busy; /*whether out_buff is busy*/
+	file_operations_t *file_op;
 } tty_device_t;
 
+extern tty_device_t *cur_tty;
 
-extern int tty_register(void) ;
+extern int tty_register(tty_device_t *tty);
+
+extern int tty_unregister(tty_device_t *tty);
 
 extern int tty_get_uniq_number(void);
 
