@@ -10,7 +10,7 @@
 #define VT_TOKEN_MAX_CHARS     2
 #define VT_TOKEN_MAX_PARAMS    8
 
-typedef enum vt_action {
+enum vt_action {
 	VT_ACTION_NONE         = 0,
 	VT_ACTION_CLEAR        = 1,
 	VT_ACTION_COLLECT      = 2,
@@ -26,10 +26,12 @@ typedef enum vt_action {
 	VT_ACTION_PRINT        = 12,
 	VT_ACTION_PUT          = 13,
 	VT_ACTION_UNHOOK       = 14
-} VT_ACTION;
+};
+
+typedef enum vt_action vt_action_t;
 
 typedef struct {
-	VT_ACTION action;
+	vt_action_t action;
 	char      attrs[VT_TOKEN_MAX_CHARS];
 	int       attrs_len;
 	const int *params;

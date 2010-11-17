@@ -4,22 +4,14 @@
  * @date 04.02.2009
  * @author Eldar Abusalimov
  */
+
 #ifndef VTPARSE_TABLE_H_
 #define VTPARSE_TABLE_H_
 
+#include <stdint.h>
 #include <drivers/vt.h>
 
-#define VTPARSE_TRANSITION(action, state) \
-		((action) | ((state) << 4))
-
-#define VTPARSE_TRANSITION_ACTION(transition) \
-		((transition) & 0x0F)
-
-#define VTPARSE_TRANSITION_STATE(transition) \
-		((transition) >> 4)
-
 enum vtparse_state {
-	VTPARSE_STATE_ANYWHERE            = 0,
 	VTPARSE_STATE_CSI_ENTRY           = 1,
 	VTPARSE_STATE_CSI_IGNORE          = 2,
 	VTPARSE_STATE_CSI_INTERMEDIATE    = 3,
@@ -36,12 +28,53 @@ enum vtparse_state {
 	VTPARSE_STATE_SOS_PM_APC_STRING   = 14
 };
 
-typedef enum vtparse_state vtparse_state_t;
-typedef enum vtparse_state VTPARSE_STATE;
+#define VTPARSE_STATES_TOTAL 15
 
-typedef unsigned char vtparse_state_change_t;
-extern const vtparse_state_change_t vtparse_state_table[15][256];
-extern const VT_ACTION vtparse_state_entry_actions[15];
-extern const VT_ACTION vtparse_state_exit_actions[15];
+typedef enum vtparse_state vtparse_state_t;
+
+#define __VTPARSE_STATE_TABLE_INDEX(state) \
+		(state - 1)
+
+#define __VTPARSE_STATE_TRANSITION_ENTRY_ENCODE(action, state) \
+		((action) | ((state) << 4))
+
+#define __VTPARSE_STATE_ACTIONS_ENTRY_ENCODE(enter, leave) \
+		((enter) << 4 | (leave))
+
+typedef uint8_t __vtparse_state_transition_entry_t;
+typedef uint8_t __vtparse_state_actions_entry_t;
+
+static inline __vtparse_state_transition_entry_t
+		__vtparse_state_transition_entry(vtparse_state_t state, char ch) {
+	extern const __vtparse_state_transition_entry_t
+			__vtparse_state_transition_table[VTPARSE_STATES_TOTAL][0x100];
+	return __vtparse_state_transition_table
+			[__VTPARSE_STATE_TABLE_INDEX(state)][ch];
+}
+
+static inline __vtparse_state_actions_entry_t __vtparse_state_actions_entry(
+		vtparse_state_t state) {
+	extern const __vtparse_state_actions_entry_t
+			__vtparse_state_actions_table[VTPARSE_STATES_TOTAL];
+	return __vtparse_state_actions_table[__VTPARSE_STATE_TABLE_INDEX(state)];
+}
+
+static inline vtparse_state_t vtparse_state_transition(
+		vtparse_state_t state, char ch) {
+	return __vtparse_state_transition_entry(state, ch) >> 4;
+}
+
+static inline vtparse_state_t vtparse_state_action(
+		vtparse_state_t state, char ch) {
+	return __vtparse_state_transition_entry(state, ch) & 0xf;
+}
+
+static inline vt_action_t vtparse_state_action_enter(vtparse_state_t state) {
+	return __vtparse_state_actions_entry(state) >> 4;
+}
+
+static inline vt_action_t vtparse_state_action_leave(vtparse_state_t state) {
+	return __vtparse_state_actions_entry(state) & 0xf;
+}
 
 #endif /* VTPARSE_TABLE_H_ */

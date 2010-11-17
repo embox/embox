@@ -53,7 +53,7 @@ TERMINAL * terminal_init(TERMINAL *this, TERMINAL_IO *io) {
 	return this;
 }
 
-static bool is_valid_action(VT_ACTION action) {
+static bool is_valid_action(vt_action_t action) {
 	switch (action) {
 	case VT_ACTION_PRINT:
 	case VT_ACTION_EXECUTE:
@@ -88,7 +88,7 @@ static VT_TOKEN *vt_from_term_token(TERMINAL_TOKEN terminal_token,
 		TERMINAL_TOKEN_PARAMS *params) {
 	static VT_TOKEN vt_token[1];
 
-	VT_ACTION action = DECODE_ACTION(terminal_token);
+	vt_action_t action = DECODE_ACTION(terminal_token);
 	char char1 = DECODE_CHAR1(terminal_token);
 	char char2 = DECODE_CHAR2(terminal_token);
 	char code = DECODE_CODE(terminal_token);
@@ -115,7 +115,7 @@ static VT_TOKEN *vt_from_term_token(TERMINAL_TOKEN terminal_token,
 }
 
 static TERMINAL_TOKEN term_from_vt_token(VT_TOKEN *vt_token) {
-	VT_ACTION action;
+	vt_action_t action;
 	char *a;
 	int a_len;
 	char char1, char2, code;

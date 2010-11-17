@@ -23,7 +23,7 @@ struct vtparse;
 typedef void (*vtparse_callback_t)(struct vtparse*, VT_TOKEN*);
 
 struct vtparse {
-	VTPARSE_STATE state;
+	vtparse_state_t state;
 	vtparse_callback_t cb;
 	VT_TOKEN token[1];
 	int params[VT_TOKEN_MAX_PARAMS];

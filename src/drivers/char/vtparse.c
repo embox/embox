@@ -31,7 +31,7 @@ struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
 	return parser;
 }
 
-static void do_action(struct vtparse *parser, VT_ACTION action, char ch) {
+static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 	/* Some actions we handle internally (like parsing parameters), others
 	 * we hand to our client for processing */
 	VT_TOKEN *token = parser->token;
@@ -103,11 +103,10 @@ static void do_action(struct vtparse *parser, VT_ACTION action, char ch) {
 	}
 }
 
-static void do_state_change(struct vtparse *parser,
-		vtparse_state_change_t change, char ch) {
+void vtparse(struct vtparse *parser, unsigned char ch) {
 	/* A state change is an action and/or a new state to transition to. */
-	enum vtparse_state new_state = VTPARSE_TRANSITION_STATE(change);
-	VT_ACTION action = VTPARSE_TRANSITION_ACTION(change);
+	vtparse_state_t new_state = vtparse_state_transition(parser->state, ch);
+	vt_action_t action = vtparse_state_action(parser->state, ch);
 
 	if (new_state) {
 		/* Perform up to three actions:
@@ -116,25 +115,21 @@ static void do_state_change(struct vtparse *parser,
 		 *   3. the entry action of the new state
 		 */
 
-		VT_ACTION exit_action = vtparse_state_exit_actions[parser->state];
-		VT_ACTION entry_action = vtparse_state_entry_actions[new_state];
+		vt_action_t leave_action = vtparse_state_action_leave(parser->state);
+		vt_action_t enter_action = vtparse_state_action_enter(new_state);
 
-		if (exit_action)
-			do_action(parser, exit_action, 0);
+		if (leave_action)
+			do_action(parser, leave_action, 0);
 
 		if (action)
 			do_action(parser, action, ch);
 
-		if (entry_action)
-			do_action(parser, entry_action, 0);
+		if (enter_action)
+			do_action(parser, enter_action, 0);
 
 		parser->state = new_state;
 	} else {
 		do_action(parser, action, ch);
 	}
-}
-
-void vtparse(struct vtparse *parser, unsigned char ch) {
-	do_state_change(parser, vtparse_state_table[parser->state][ch], ch);
 }
 
