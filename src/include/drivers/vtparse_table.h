@@ -9,7 +9,7 @@
 
 #include <drivers/vt.h>
 
-typedef enum {
+enum vtparse_state {
 	VTPARSE_STATE_ANYWHERE            = 0,
 	VTPARSE_STATE_CSI_ENTRY           = 1,
 	VTPARSE_STATE_CSI_IGNORE          = 2,
@@ -25,10 +25,13 @@ typedef enum {
 	VTPARSE_STATE_GROUND              = 12,
 	VTPARSE_STATE_OSC_STRING          = 13,
 	VTPARSE_STATE_SOS_PM_APC_STRING   = 14
-} VTPARSE_STATE;
+};
 
-typedef unsigned char state_change_t;
-extern const state_change_t vtparse_state_table[15][256];
+typedef enum vtparse_state vtparse_state_t;
+typedef enum vtparse_state VTPARSE_STATE;
+
+typedef unsigned char vtparse_state_change_t;
+extern const vtparse_state_change_t vtparse_state_table[15][256];
 extern const VT_ACTION vtparse_state_entry_actions[15];
 extern const VT_ACTION vtparse_state_exit_actions[15];
 

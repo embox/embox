@@ -16,11 +16,11 @@
 
 /* Perform both action and the state change. */
 #define TRANSIT(vt_action, vtparse_state) \
-	((state_change_t) (__ACTION(vt_action) | __STATE(vtparse_state)))
+	((vtparse_state_change_t) (__ACTION(vt_action) | __STATE(vtparse_state)))
 
 /* Perform action without doing the state change. */
 #define ACTION(vt_action) \
-	((state_change_t) __ACTION(vt_action))
+	((vtparse_state_change_t) __ACTION(vt_action))
 
 #define __ACTION(vt_action) \
 	(VT_ACTION_ ## vt_action)
@@ -28,7 +28,7 @@
 	((VTPARSE_STATE_ ## vtparse_state) << 4)
 
 /* Uses GNU C designated initializers extension. */
-__extension__ const state_change_t vtparse_state_table[15][256] = {
+__extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 	[VTPARSE_STATE_ANYWHERE] = {
 		[0x18         ] = TRANSIT(EXECUTE, GROUND),
 		[0x1a         ] = TRANSIT(EXECUTE, GROUND),

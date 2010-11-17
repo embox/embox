@@ -17,7 +17,7 @@
 #define ACTION(state_change) (state_change & 0x0F)
 #define STATE(state_change)  (state_change >> 4)
 
-VTPARSER * vtparse_init(VTPARSER *this, VTPARSE_CALLBACK cb) {
+VTPARSER * vtparse_init(VTPARSER *this, vtparse_callback_t cb) {
 	if (this == NULL) {
 		return NULL;
 	}
@@ -103,7 +103,7 @@ static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 	}
 }
 
-static void do_state_change(VTPARSER *this, state_change_t change, char ch) {
+static void do_state_change(VTPARSER *this, vtparse_state_change_t change, char ch) {
 	/* A state change is an action and/or a new state to transition to. */
 	VTPARSE_STATE new_state = STATE(change);
 	VT_ACTION action = ACTION(change);
@@ -134,7 +134,7 @@ static void do_state_change(VTPARSER *this, state_change_t change, char ch) {
 }
 
 void vtparse(VTPARSER *this, unsigned char ch) {
-	static state_change_t change;
+	static vtparse_state_change_t change;
 
 	/* If a transition is defined from the "anywhere" state, always
 	 * use that.  Otherwise use the transition from the current state. */

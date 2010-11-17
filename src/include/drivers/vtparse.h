@@ -18,20 +18,20 @@
 #include <drivers/vtparse_table.h>
 #include <types.h>
 
-struct _VTPARSER;
+struct vtparse;
 
-typedef void (*VTPARSE_CALLBACK)(struct _VTPARSER*, VT_TOKEN*);
+typedef void (*vtparse_callback_t)(struct vtparse*, VT_TOKEN*);
 
-typedef struct _VTPARSER {
+typedef struct vtparse {
 	VTPARSE_STATE state;
-	VTPARSE_CALLBACK cb;
+	vtparse_callback_t cb;
 	VT_TOKEN token[1];
 	int params[VT_TOKEN_MAX_PARAMS];
 	void* user_data;
 } VTPARSER;
 
-VTPARSER * vtparse_init(VTPARSER *, VTPARSE_CALLBACK cb);
+struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb);
 
-void vtparse(VTPARSER *parser, unsigned char ch);
+void vtparse(struct vtparse *parser, unsigned char ch);
 
 #endif /* VTPARSE_H_ */
