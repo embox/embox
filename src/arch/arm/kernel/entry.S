@@ -24,7 +24,6 @@ IRQ_def_handler :
 	b IRQ_def_handler
 
 IRQ_handler:
-	nop
 	sub	LR, LR, #4
 
 	/* storing LP */
@@ -32,6 +31,13 @@ IRQ_handler:
 	/*storing SPSR and valuable regs*/
 	mrs		LR, SPSR
 	stmfd	sp!, {r0-r12, lr}
+
+#ifdef CONFIG_MEASURE_IRQ
+	bl measure_start
+	bl measure_stop
+	bl measure_irq_measure_overhead
+	bl measure_start
+#endif
 
 	/*reading IVR, making AIC knowledge of interrupt is taken in account */
 	ldr	r0, =AT91C_AIC_IVR
@@ -49,6 +55,8 @@ IRQ_handler:
 
 #ifdef CONFIG_MEASURE_IRQ
 	stmfd sp!, {r0}
+	bl measure_stop
+	bl measure_irq_head_process
 	bl measure_start
 	ldmfd sp, {r0}
 #endif
@@ -69,6 +77,7 @@ IRQ_handler:
 	mov r1, r0
 	ldmfd sp!, {r0}
 	bl measure_irq_process
+	bl measure_start
 #endif
 
 	ldmfd sp!, {lr}
@@ -78,6 +87,11 @@ IRQ_handler:
 	/*telling AIC "we've done"*/
 	ldr	r1, =AT91C_AIC_EOICR
 	str	r0, [r1]
+
+#ifdef CONFIG_MEASURE_IRQ
+	bl measure_stop
+	bl measure_irq_tail_process
+#endif
 
 	/*interrupts are disabled, so restoring goes OK */
 	ldmfd	sp!, {r0-r12, lr}

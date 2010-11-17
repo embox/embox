@@ -24,4 +24,20 @@ void measure_irq_process(interrupt_nr_t interrupt, uint32_t ticks);
  */
 void measure_irq_print();
 
+/**
+ * Process measuring of pre-dispatch irq handler
+ */
+void measure_irq_head_process(uint32_t ticks);
+
+/**
+ * Process measuring of post-dispatch irq handler
+ */
+void measure_irq_tail_process(uint32_t ticks);
+
+/**
+ * Process mesaure overhead, i.e. ticks spent on
+ * start + stop measure
+ */
+void measure_irq_measure_overhead(uint32_t ticks);
+
 #endif /* MEASURE_H_ */
