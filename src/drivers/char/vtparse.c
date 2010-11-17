@@ -15,7 +15,7 @@
 #include <embox/kernel.h>
 
 #include <drivers/vtparse.h>
-#include <drivers/vtparse_table.h>
+#include <drivers/vtparse_state.h>
 
 struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
 	if (parser == NULL) {

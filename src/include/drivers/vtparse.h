@@ -16,7 +16,7 @@
 #define VTPARSE_H_
 
 #include <drivers/vt.h>
-#include <drivers/vtparse_table.h>
+#include <drivers/vtparse_state.h>
 #include <types.h>
 
 struct vtparse;

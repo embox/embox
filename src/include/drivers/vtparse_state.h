@@ -5,8 +5,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef VTPARSE_TABLE_H_
-#define VTPARSE_TABLE_H_
+#ifndef VTPARSE_STATE_H_
+#define VTPARSE_STATE_H_
 
 #include <stdint.h>
 #include <drivers/vt.h>
@@ -77,4 +77,4 @@ static inline vt_action_t vtparse_state_action_leave(vtparse_state_t state) {
 	return __vtparse_state_actions_entry(state) & 0xf;
 }
 
-#endif /* VTPARSE_TABLE_H_ */
+#endif /* VTPARSE_STATE_H_ */
