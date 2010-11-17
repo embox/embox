@@ -21,27 +21,29 @@
 /* Perform action without doing the state change. */
 #define ACTION(action) \
 	/* Well, in fact, there is no state change. Parser does not perform   \
-	 * transition if state change field is 0 (= VTPARSE_STATE_ANYWHERE).*/\
+	         * transition if state change field is 0 (= VTPARSE_STATE_ANYWHERE).*/\
 	TRANSIT(action, ANYWHERE)
 
+/* Every state includes some common transitions. */
+#define ANYWHERE_TRANSITIONS \
+	[0x18         ] = TRANSIT(EXECUTE, GROUND),         \
+	[0x1a         ] = TRANSIT(EXECUTE, GROUND),         \
+	[0x80 ... 0x8f] = TRANSIT(EXECUTE, GROUND),         \
+	[0x91 ... 0x97] = TRANSIT(EXECUTE, GROUND),         \
+	[0x99         ] = TRANSIT(EXECUTE, GROUND),         \
+	[0x9a         ] = TRANSIT(EXECUTE, GROUND),         \
+	[0x9c         ] = TRANSIT(NONE, GROUND), /* TODO check it. */ \
+	[0x1b         ] = TRANSIT(NONE, ESCAPE),            \
+	[0x98         ] = TRANSIT(NONE, SOS_PM_APC_STRING), \
+	[0x9e         ] = TRANSIT(NONE, SOS_PM_APC_STRING), \
+	[0x9f         ] = TRANSIT(NONE, SOS_PM_APC_STRING), \
+	[0x90         ] = TRANSIT(NONE, DCS_ENTRY),         \
+	[0x9d         ] = TRANSIT(NONE, OSC_STRING),        \
+	[0x9b         ] = TRANSIT(NONE, CSI_ENTRY),
+
 /* Uses GNU C designated initializers extension. */
-__extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
-	[VTPARSE_STATE_ANYWHERE] = {
-		[0x18         ] = TRANSIT(EXECUTE, GROUND),
-		[0x1a         ] = TRANSIT(EXECUTE, GROUND),
-		[0x80 ... 0x8f] = TRANSIT(EXECUTE, GROUND),
-		[0x91 ... 0x97] = TRANSIT(EXECUTE, GROUND),
-		[0x99         ] = TRANSIT(EXECUTE, GROUND),
-		[0x9a         ] = TRANSIT(EXECUTE, GROUND),
-		[0x9c         ] = TRANSIT(EXECUTE, GROUND),
-		[0x1b         ] = TRANSIT(NONE, ESCAPE),
-		[0x98         ] = TRANSIT(NONE, SOS_PM_APC_STRING),
-		[0x9e         ] = TRANSIT(NONE, SOS_PM_APC_STRING),
-		[0x9f         ] = TRANSIT(NONE, SOS_PM_APC_STRING),
-		[0x90         ] = TRANSIT(NONE, DCS_ENTRY),
-		[0x9d         ] = TRANSIT(NONE, OSC_STRING),
-		[0x9b         ] = TRANSIT(NONE, CSI_ENTRY),
-	},
+__extension__
+const vtparse_state_change_t vtparse_state_table[15][0x100] = {
 	[VTPARSE_STATE_CSI_ENTRY] = {
 		[0x00 ... 0x17] = ACTION(EXECUTE),
 		[0x19         ] = ACTION(EXECUTE),
@@ -53,6 +55,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x3b         ] = TRANSIT(PARAM, CSI_PARAM),
 		[0x3c ... 0x3f] = TRANSIT(COLLECT, CSI_PARAM),
 		[0x40 ... 0x7e] = TRANSIT(CSI_DISPATCH,GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_CSI_IGNORE] = {
 		[0x00 ... 0x17] = ACTION(EXECUTE),
@@ -61,6 +64,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x20 ... 0x3f] = ACTION(IGNORE),
 		[0x7f         ] = ACTION(IGNORE),
 		[0x40 ... 0x7e] = TRANSIT(NONE, GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_CSI_INTERMEDIATE] = {
 		[0x00 ... 0x17] = ACTION(EXECUTE),
@@ -70,6 +74,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x7f         ] = ACTION(IGNORE),
 		[0x30 ... 0x3f] = TRANSIT(NONE, CSI_IGNORE),
 		[0x40 ... 0x7e] = TRANSIT(CSI_DISPATCH, GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_CSI_PARAM] = {
 		[0x00 ... 0x17] = ACTION(EXECUTE),
@@ -82,6 +87,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x3c ... 0x3f] = TRANSIT(NONE, CSI_IGNORE),
 		[0x20 ... 0x2f] = TRANSIT(COLLECT, CSI_INTERMEDIATE),
 		[0x40 ... 0x7e] = TRANSIT(CSI_DISPATCH, GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_DCS_ENTRY] = {
 		[0x00 ... 0x17] = ACTION(IGNORE),
@@ -94,13 +100,14 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x3b         ] = TRANSIT(PARAM, DCS_PARAM),
 		[0x3c ... 0x3f] = TRANSIT(COLLECT, DCS_PARAM),
 		[0x40 ... 0x7e] = TRANSIT(NONE, DCS_PASSTHROUGH),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_DCS_IGNORE] = {
 		[0x00 ... 0x17] = ACTION(IGNORE),
 		[0x19         ] = ACTION(IGNORE),
 		[0x1c ... 0x1f] = ACTION(IGNORE),
 		[0x20 ... 0x7f] = ACTION(IGNORE),
-		[0x9c         ] = TRANSIT(NONE, GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_DCS_INTERMEDIATE] = {
 		[0x00 ... 0x17] = ACTION(IGNORE),
@@ -110,6 +117,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x7f         ] = ACTION(IGNORE),
 		[0x30 ... 0x3f] = TRANSIT(NONE, DCS_IGNORE),
 		[0x40 ... 0x7e] = TRANSIT(NONE, DCS_PASSTHROUGH),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_DCS_PARAM] = {
 		[0x00 ... 0x17] = ACTION(IGNORE),
@@ -122,6 +130,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x3c ... 0x3f] = TRANSIT(NONE, DCS_IGNORE),
 		[0x20 ... 0x2f] = TRANSIT(COLLECT, DCS_INTERMEDIATE),
 		[0x40 ... 0x7e] = TRANSIT(NONE, DCS_PASSTHROUGH),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_DCS_PASSTHROUGH] = {
 		[0x00 ... 0x17] = ACTION(PUT),
@@ -129,7 +138,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x1c ... 0x1f] = ACTION(PUT),
 		[0x20 ... 0x7e] = ACTION(PUT),
 		[0x7f         ] = ACTION(IGNORE),
-		[0x9c         ] = TRANSIT(NONE, GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_ESCAPE] = {
 		[0x00 ... 0x17] = ACTION(EXECUTE),
@@ -153,6 +162,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x58         ] = TRANSIT(NONE, SOS_PM_APC_STRING),
 		[0x5e         ] = TRANSIT(NONE, SOS_PM_APC_STRING),
 		[0x5f         ] = TRANSIT(NONE, SOS_PM_APC_STRING),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_ESCAPE_INTERMEDIATE] = {
 		[0x00 ... 0x17] = ACTION(EXECUTE),
@@ -161,6 +171,7 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 		[0x20 ... 0x2f] = ACTION(COLLECT),
 		[0x7f         ] = ACTION(IGNORE),
 		[0x30 ... 0x7e] = TRANSIT(ESC_DISPATCH, GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_GROUND] = {
 		[0x00 ... 0x17] = ACTION(EXECUTE),
@@ -172,23 +183,21 @@ __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {
 #else
 		[0x7f         ] = ACTION(EXECUTE),
 #endif
-		[0x80 ... 0x8f] = ACTION(EXECUTE),
-		[0x91 ... 0x9a] = ACTION(EXECUTE),
-		[0x9c         ] = ACTION(EXECUTE),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_OSC_STRING] = {
 		[0x00 ... 0x17] = ACTION(IGNORE),
 		[0x19         ] = ACTION(IGNORE),
 		[0x1c ... 0x1f] = ACTION(IGNORE),
 		[0x20 ... 0x7f] = TRANSIT(OSC_PUT, ANYWHERE),
-		[0x9c         ] = TRANSIT(NONE, GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 	[VTPARSE_STATE_SOS_PM_APC_STRING] = {
 		[0x00 ... 0x17] = ACTION(IGNORE),
 		[0x19         ] = ACTION(IGNORE),
 		[0x1c ... 0x1f] = ACTION(IGNORE),
 		[0x20 ... 0x7f] = ACTION(IGNORE),
-		[0x9c         ] = TRANSIT(NONE, GROUND),
+		ANYWHERE_TRANSITIONS
 	},
 };
 

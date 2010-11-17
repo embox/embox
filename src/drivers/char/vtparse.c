@@ -135,15 +135,6 @@ static void do_state_change(struct vtparse *parser,
 }
 
 void vtparse(struct vtparse *parser, unsigned char ch) {
-	vtparse_state_change_t change =
-			vtparse_state_table[VTPARSE_STATE_ANYWHERE][ch];
-
-	/* If a transition is defined from the "anywhere" state, always
-	 * use that.  Otherwise use the transition from the current state. */
-	if (!change) {
-		change = vtparse_state_table[parser->state][ch];
-	}
-
-	do_state_change(parser, change, ch);
+	do_state_change(parser, vtparse_state_table[parser->state][ch], ch);
 }
 

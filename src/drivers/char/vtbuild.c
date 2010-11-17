@@ -7,11 +7,18 @@
  * @date 04.02.2009
  * @author Eldar Abusalimov
  */
+
 #include <drivers/vtbuild.h>
 #include <embox/kernel.h>
 #include <types.h>
 
 #define BUF_SIZE 10
+
+/** ANSI Escape */
+#define ESC		'\033'
+
+/** ANSI Control Sequence Introducer */
+#define CSI		'['
 
 VTBUILDER * vtbuild_init(VTBUILDER *this, void(*putc)(VTBUILDER *builder,
 		char ch)) {

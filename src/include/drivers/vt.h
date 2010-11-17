@@ -10,11 +10,11 @@
 #define VT_TOKEN_MAX_CHARS     2
 #define VT_TOKEN_MAX_PARAMS    8
 
-typedef enum {
+typedef enum vt_action {
 	VT_ACTION_NONE         = 0,
 	VT_ACTION_CLEAR        = 1,
 	VT_ACTION_COLLECT      = 2,
-	VT_ACTION_CSI_DISPATCH  = 3,
+	VT_ACTION_CSI_DISPATCH = 3,
 	VT_ACTION_ESC_DISPATCH = 4,
 	VT_ACTION_EXECUTE      = 5,
 	VT_ACTION_HOOK         = 6,
@@ -36,11 +36,5 @@ typedef struct {
 	int       params_len;
 	char      ch;
 } VT_TOKEN;
-
-/** ANSI Escape */
-#define ESC		'\033'
-
-/** ANSI Control Sequence Introducer */
-#define CSI		'['
 
 #endif /* VT_H_ */
