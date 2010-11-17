@@ -1,8 +1,15 @@
 /**
  * @file
+ * @brief State machine matrix for VTParse - DEC compatible parser.
+ * @details VTParse is an implementation of Paul Williams' DEC compatible state
+ * machine parser. For further information please refer
+ * to http://vt100.net/emu/dec_ansi_parser.
  *
  * @date 04.02.2009
+ * @author Joshua Haberman <joshua@reverberate.org>
+ *          - Initial implementation using code generation from Ruby script
  * @author Eldar Abusalimov
+ *          - Rewriting by hand using GNU C language extensions
  */
 
 #include <drivers/vtparse_table.h>
@@ -20,6 +27,7 @@
 #define __STATE(vtparse_state) \
 	((VTPARSE_STATE_ ## vtparse_state) << 4)
 
+/* Uses GNU C designated initializers extension. */
 __extension__ const state_change_t STATE_TABLE[15][256] = {
 	[VTPARSE_STATE_ANYWHERE] = {
 		[0x18         ] = TRANSIT(EXECUTE, GROUND),
