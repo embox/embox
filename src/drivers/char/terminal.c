@@ -18,7 +18,7 @@
 #include <drivers/terminal.h>
 #include <kernel/diag.h>
 
-static void vtparse_callback(VTPARSER*, VT_TOKEN*);
+static void vtparse_callback(struct vtparse *parser, VT_TOKEN*);
 
 static void vtbuild_putc(VTBUILDER *builder, char ch) {
 	TERMINAL* terminal = (TERMINAL*) builder->user_data;
@@ -151,7 +151,7 @@ static TERMINAL_TOKEN_PARAMS *terminal_prepare_params(TERMINAL *this,
 	return params;
 }
 
-static void vtparse_callback(VTPARSER *parser, VT_TOKEN *token) {
+static void vtparse_callback(struct vtparse *parser, VT_TOKEN *token) {
 	TERMINAL *terminal = (TERMINAL *) parser->user_data;
 	int *queue_len = &terminal->vt_token_queue_len;
 	if (*queue_len < VTPARSER_TOKEN_QUEUE_AMOUNT) {

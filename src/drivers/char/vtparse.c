@@ -11,30 +11,30 @@
  *           As we use only Plain, ESC and CSI-based tokens all the others are ignored
  *           (in spite of the fact that the Parser is capable to handle them correctly).
  */
-#include <drivers/vtparse.h>
+
 #include <embox/kernel.h>
 
-#define ACTION(state_change) (state_change & 0x0F)
-#define STATE(state_change)  (state_change >> 4)
+#include <drivers/vtparse.h>
+#include <drivers/vtparse_table.h>
 
-VTPARSER * vtparse_init(VTPARSER *this, vtparse_callback_t cb) {
-	if (this == NULL) {
+struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
+	if (parser == NULL) {
 		return NULL;
 	}
 
-	this->state = VTPARSE_STATE_GROUND;
-	this->token->params = this->params;
-	this->token->params_len = 0;
-	this->token->attrs_len = 0;
-	this->cb = cb;
+	parser->state = VTPARSE_STATE_GROUND;
+	parser->token->params = parser->params;
+	parser->token->params_len = 0;
+	parser->token->attrs_len = 0;
+	parser->cb = cb;
 
-	return this;
+	return parser;
 }
 
-static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
+static void do_action(struct vtparse *parser, VT_ACTION action, char ch) {
 	/* Some actions we handle internally (like parsing parameters), others
 	 * we hand to our client for processing */
-	VT_TOKEN *token = this->token;
+	VT_TOKEN *token = parser->token;
 	token->action = action;
 	token->ch = ch;
 
@@ -43,7 +43,7 @@ static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 	case VT_ACTION_EXECUTE:
 	case VT_ACTION_CSI_DISPATCH:
 	case VT_ACTION_ESC_DISPATCH:
-		this->cb(this, this->token);
+		parser->cb(parser, parser->token);
 		break;
 
 	case VT_ACTION_COLLECT: {
@@ -59,17 +59,17 @@ static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 	case VT_ACTION_PARAM: {
 		/* process the param character */
 		if (ch == ';') {
-			this->params[token->params_len++] = 0;
+			parser->params[token->params_len++] = 0;
 		} else {
 			/* the character is a digit */
 			int *current_param;
 
 			if (token->params_len == 0) {
 				token->params_len = 1;
-				this->params[0] = 0;
+				parser->params[0] = 0;
 			}
 
-			current_param = &this->params[token->params_len - 1];
+			current_param = &parser->params[token->params_len - 1];
 			*current_param *= 10;
 			*current_param += (ch - '0');
 		}
@@ -103,10 +103,11 @@ static void do_action(VTPARSER *this, VT_ACTION action, char ch) {
 	}
 }
 
-static void do_state_change(VTPARSER *this, vtparse_state_change_t change, char ch) {
+static void do_state_change(struct vtparse *parser,
+		vtparse_state_change_t change, char ch) {
 	/* A state change is an action and/or a new state to transition to. */
-	VTPARSE_STATE new_state = STATE(change);
-	VT_ACTION action = ACTION(change);
+	enum vtparse_state new_state = VTPARSE_TRANSITION_STATE(change);
+	VT_ACTION action = VTPARSE_TRANSITION_ACTION(change);
 
 	if (new_state) {
 		/* Perform up to three actions:
@@ -115,35 +116,34 @@ static void do_state_change(VTPARSER *this, vtparse_state_change_t change, char 
 		 *   3. the entry action of the new state
 		 */
 
-		VT_ACTION exit_action = vtparse_state_exit_actions[this->state];
+		VT_ACTION exit_action = vtparse_state_exit_actions[parser->state];
 		VT_ACTION entry_action = vtparse_state_entry_actions[new_state];
 
 		if (exit_action)
-			do_action(this, exit_action, 0);
+			do_action(parser, exit_action, 0);
 
 		if (action)
-			do_action(this, action, ch);
+			do_action(parser, action, ch);
 
 		if (entry_action)
-			do_action(this, entry_action, 0);
+			do_action(parser, entry_action, 0);
 
-		this->state = new_state;
+		parser->state = new_state;
 	} else {
-		do_action(this, action, ch);
+		do_action(parser, action, ch);
 	}
 }
 
-void vtparse(VTPARSER *this, unsigned char ch) {
-	static vtparse_state_change_t change;
+void vtparse(struct vtparse *parser, unsigned char ch) {
+	vtparse_state_change_t change =
+			vtparse_state_table[VTPARSE_STATE_ANYWHERE][ch];
 
 	/* If a transition is defined from the "anywhere" state, always
 	 * use that.  Otherwise use the transition from the current state. */
+	if (!change) {
+		change = vtparse_state_table[parser->state][ch];
+	}
 
-	change = vtparse_state_table[VTPARSE_STATE_ANYWHERE][ch];
-
-	if (!change)
-		change = vtparse_state_table[this->state][ch];
-
-	do_state_change(this, change, ch);
+	do_state_change(parser, change, ch);
 }
 

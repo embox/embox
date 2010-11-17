@@ -15,17 +15,14 @@
 #include <drivers/vtparse_table.h>
 
 /* Perform both action and the state change. */
-#define TRANSIT(vt_action, vtparse_state) \
-	((vtparse_state_change_t) (__ACTION(vt_action) | __STATE(vtparse_state)))
+#define TRANSIT(action, state) \
+	VTPARSE_TRANSITION(VT_ACTION_ ## action, VTPARSE_STATE_ ## state)
 
 /* Perform action without doing the state change. */
-#define ACTION(vt_action) \
-	((vtparse_state_change_t) __ACTION(vt_action))
-
-#define __ACTION(vt_action) \
-	(VT_ACTION_ ## vt_action)
-#define __STATE(vtparse_state) \
-	((VTPARSE_STATE_ ## vtparse_state) << 4)
+#define ACTION(action) \
+	/* Well, in fact, there is no state change. Parser does not perform   \
+	 * transition if state change field is 0 (= VTPARSE_STATE_ANYWHERE).*/\
+	TRANSIT(action, ANYWHERE)
 
 /* Uses GNU C designated initializers extension. */
 __extension__ const vtparse_state_change_t vtparse_state_table[15][256] = {

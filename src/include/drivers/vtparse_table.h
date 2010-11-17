@@ -9,6 +9,15 @@
 
 #include <drivers/vt.h>
 
+#define VTPARSE_TRANSITION(action, state) \
+		((action) | ((state) << 4))
+
+#define VTPARSE_TRANSITION_ACTION(transition) \
+		((transition) & 0x0F)
+
+#define VTPARSE_TRANSITION_STATE(transition) \
+		((transition) >> 4)
+
 enum vtparse_state {
 	VTPARSE_STATE_ANYWHERE            = 0,
 	VTPARSE_STATE_CSI_ENTRY           = 1,

@@ -210,7 +210,7 @@ typedef struct {
 typedef struct {
 	TERMINAL_IO io[1];
 	VTBUILDER   builder[1];
-	VTPARSER    parser[1];
+	struct vtparse parser[1];
 
 	/* NOTE: This value is tightly relies on vtparse algorithms. */
 #define VTPARSER_TOKEN_QUEUE_AMOUNT 3
