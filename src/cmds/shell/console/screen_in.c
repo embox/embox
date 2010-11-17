@@ -18,8 +18,8 @@
 #define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
 extern CONSOLE *cur_console;
 
-extern int uart_set_irq_handler(irq_handler_t);
-extern int uart_remove_irq_handler(void);
+//extern int uart_set_irq_handler(irq_handler_t);
+//extern int uart_remove_irq_handler(void);
 
 static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 	SCREEN_CALLBACK *cb = this->callback;
@@ -171,6 +171,6 @@ void screen_in_stop(SCREEN *this) {
 	if (this == NULL) {
 		return;
 	}
-	uart_remove_irq_handler();
+//	uart_remove_irq_handler();
 	this->callback = NULL;
 }
