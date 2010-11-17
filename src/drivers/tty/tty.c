@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <drivers/tty.h>
+#include <kernel/uart.h>
 
 tty_device_t *cur_tty;
 
@@ -22,6 +23,8 @@ int tty_register(tty_device_t *tty) {
 }
 
 int tty_unregister(tty_device_t *tty) {
+	tty->out_busy = false;
+	tty->rx_cnt = 0;
 	cur_tty = tty;
 	return 0;
 }
@@ -45,7 +48,8 @@ int tty_add_char(tty_device_t *tty, int ch) {
 		/*buffer is full. drop this symbol*/
 		return -1;
 	}
-	tty->rx_buff[tty->rx_cnt++];
+	tty->rx_buff[tty->rx_cnt++] = ch;
+	uart_putc(ch);
 	return 0;
 }
 
