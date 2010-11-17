@@ -11,6 +11,7 @@
 #define VT_TOKEN_MAX_PARAMS    8
 
 typedef enum {
+	VT_ACTION_NONE         = 0,
 	VT_ACTION_CLEAR        = 1,
 	VT_ACTION_COLLECT      = 2,
 	VT_ACTION_CS_DISPATCH  = 3,
