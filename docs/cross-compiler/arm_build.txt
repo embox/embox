@@ -1,0 +1,23 @@
+You can build gcc-4.4.4 for arm platform in the follow way.
+1.  Downloads binutils
+    http://ftp.gnu.org/gnu/binutils/binutils-2.20.tar.bz2
+2.  Configures it by the command
+    ./configure --prefix=/opt/arm-elf --target=arm-elf --enable-interwork --with-float=soft --disable-werror --with-gnu-ld --disable-nls --disable-multilib --with-gnu-as
+3.  Build them by the following command
+    make && make install
+4.  Downloads gcc-4.4.4
+    ftp://ftp.chg.ru/pub/gnu/gcc/gcc-4.4.4/gcc-4.4.4.tar.bz2
+5.  Unpack gcc into folder xxx/gcc/sources
+6.  Create folder xxx/gcc/build
+7.  Downloads mpfr library (The MPFR library is a C library for multiple-precision floating-point computations with correct rounding)
+    http://www.mpfr.org/mpfr-2.4.2/mpfr-2.4.2.tar.bz2
+    Version 3.0.0 has a problem during building
+8.  Unpack it into folder xxx/gcc/mpfr
+9.  Downloads gmp library (The GNU Multiple Precision Arithmetic Library)
+    ftp://ftp.gmplib.org/pub/gmp-5.0.1/gmp-5.0.1.tar.bz2
+10. Unpack it into folder xxx/gcc/gmp
+11. Enter in xxx/gcc/build and configures by the command
+    ../gcc-4.4.4/configure --prefix=/opt/arm-elf --target=arm-elf --enable-interwork --with-float=soft --disable-werror --with-gnu-ld --disable-nls --disable-multilib --with-gnu-as --without-headers --enable-languages="c" --disable-libssp
+12. Then build compiler by the command
+    make && make install
+
