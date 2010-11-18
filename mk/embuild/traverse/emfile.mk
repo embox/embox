@@ -5,23 +5,12 @@
 # Author: Eldar Abusalimov
 #
 
-__embuild_traverse_emfile_needs := \
+include util/envdef.mk
+
+$(call envdef_assert_defined, \
   __EMBUILD_TRAVERSE_EMFILE_ROOT \
-  __EMBUILD_TRAVERSE_EMFILE
-
-__embuild_traverse_emfile_needs_undefined := $(strip \
-  $(foreach var,$(__embuild_traverse_emfile_needs), \
-    $(if $(filter undefined,$(flavor $(var))),$(var)) \
-  ) \
-)
-
-ifneq ($(__embuild_traverse_emfile_needs_undefined),)
-define error_msg
-Traverser em-file sandbox needs the following variables to be defined:
-  $(__embuild_traverse_emfile_needs_undefined)
-endef
-$(error $(error_msg))
-endif
+  __EMBUILD_TRAVERSE_EMFILE      \
+,Traverser em-file sandbox needs these variables to be defined)
 
 __embuild_traverse_emfile_variables :=
 __embuild_traverse_emfile_variables := $(.VARIABLES)
