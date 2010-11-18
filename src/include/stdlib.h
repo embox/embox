@@ -29,6 +29,11 @@ extern double atof(const char *nptr);
 extern int atoi(const char *nptr);
 
 /**
+ * Convert an integer to a string.
+ */
+extern void itoa(char *buf, int base, int d);
+
+/**
  * Convert a string to a long integer.
  */
 extern long int atol(const char *nptr);
