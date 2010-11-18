@@ -49,7 +49,7 @@ static void build_single_param(struct vtbuild *builder, short n) {
 	} while (i > 0);
 }
 
-static void build_params(struct vtbuild *builder, short *params,
+static void build_params(struct vtbuild *builder, const short *params,
 		int params_len) {
 	if (params != NULL) {
 		if (params_len > 0) {
@@ -62,7 +62,8 @@ static void build_params(struct vtbuild *builder, short *params,
 	}
 }
 
-static void build_attrs(struct vtbuild *builder, char *attrs, int attrs_len) {
+static void build_attrs(struct vtbuild *builder, const char *attrs,
+		int attrs_len) {
 	if (attrs != NULL) {
 		for (int i = 0; i < attrs_len; i++) {
 			builder->cb(builder, attrs[i]);
