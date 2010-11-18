@@ -23,9 +23,9 @@ struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
 	}
 
 	parser->state = VTPARSE_STATE_GROUND;
-	parser->token->params = parser->params;
-	parser->token->params_len = 0;
-	parser->token->attrs_len = 0;
+	parser->token.params = parser->token_params;
+	parser->token.params_len = 0;
+	parser->token.attrs_len = 0;
 	parser->cb = cb;
 
 	return parser;
@@ -34,7 +34,7 @@ struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
 static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 	/* Some actions we handle internally (like parsing parameters), others
 	 * we hand to our client for processing */
-	VT_TOKEN *token = parser->token;
+	struct vt_token *token = &parser->token;
 	token->action = action;
 	token->ch = ch;
 
@@ -43,39 +43,50 @@ static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 	case VT_ACTION_EXECUTE:
 	case VT_ACTION_CSI_DISPATCH:
 	case VT_ACTION_ESC_DISPATCH:
-		parser->cb(parser, parser->token);
+		parser->cb(parser, &parser->token);
 		break;
 
-	case VT_ACTION_COLLECT: {
-		/* Append the character to the intermediate params */
+	case VT_ACTION_COLLECT:
+		if(token->attrs_len == -1) {
+			/* attrs buffer overflow. */
+			break;
+		}
 
-		if (token->attrs_len < VT_TOKEN_MAX_CHARS + 1) {
-			token->attrs[token->attrs_len++] = ch;
+		/* Append the character to the intermediate params. */
+		token->attrs[token->attrs_len++] = ch;
+		if (token->attrs_len == VT_TOKEN_ATTRS_MAX) {
+			token->attrs_len = -1;
 		}
 
 		break;
-	}
 
-	case VT_ACTION_PARAM: {
-		/* process the param character */
+	case VT_ACTION_PARAM:
+		if(token->params_len == -1) {
+			/* params buffer overflow. */
+			break;
+		}
+		/* Process the param character. */
 		if (ch == ';') {
-			parser->params[token->params_len++] = 0;
+			token->params[token->params_len++] = 0;
+			if (token->params_len == VTPARSE_TOKEN_PARAMS_MAX) {
+				token->params_len = -1;
+			}
+
 		} else {
 			/* the character is a digit */
-			int *current_param;
+			short *current_param;
 
 			if (token->params_len == 0) {
 				token->params_len = 1;
-				parser->params[0] = 0;
+				token->params[0] = 0;
 			}
 
-			current_param = &parser->params[token->params_len - 1];
+			current_param = &token->params[token->params_len - 1];
 			*current_param *= 10;
 			*current_param += (ch - '0');
 		}
 
 		break;
-	}
 
 	case VT_ACTION_CLEAR:
 		token->params_len = 0;

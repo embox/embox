@@ -19,11 +19,6 @@
 
 typedef int TERMINAL_TOKEN;
 
-typedef struct {
-	int data[VT_TOKEN_MAX_PARAMS];
-	int length;
-} TERMINAL_TOKEN_PARAMS;
-
 #define ENCODE(action, char1, char2, code) 	\
 	(((action & 0xFF) ^ VT_ACTION_PRINT) << 24 \
 		| ((char1 & 0xFF) << 16) \
@@ -209,7 +204,7 @@ typedef struct {
  */
 typedef struct {
 	TERMINAL_IO io[1];
-	VTBUILDER   builder[1];
+	struct vtbuild builder[1];
 	struct vtparse parser[1];
 
 	/* NOTE: This value is tightly relies on vtparse algorithms. */
@@ -224,16 +219,16 @@ typedef struct {
 	int vt_token_queue_len;
 	int vt_token_queue_head;
 
-	TERMINAL_TOKEN_PARAMS default_params[1];
-
 } TERMINAL;
 
-TERMINAL * terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
+TERMINAL *terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
 
 bool terminal_receive(TERMINAL *terminal, TERMINAL_TOKEN *token,
-		TERMINAL_TOKEN_PARAMS *params);
+		short **params, int *params_len);
 
 bool terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token,
+						short *params, int params_len);
+bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token,
 						int params_len, ...);
 
 #endif /* TERMINAL_H_ */

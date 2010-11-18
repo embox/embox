@@ -19,15 +19,17 @@
 #include <drivers/vtparse_state.h>
 #include <types.h>
 
+#define VTPARSE_TOKEN_PARAMS_MAX    8
+
 struct vtparse;
 
-typedef void (*vtparse_callback_t)(struct vtparse*, VT_TOKEN*);
+typedef void (*vtparse_callback_t)(struct vtparse *, struct vt_token *);
 
 struct vtparse {
 	vtparse_state_t state;
 	vtparse_callback_t cb;
-	VT_TOKEN token[1];
-	int params[VT_TOKEN_MAX_PARAMS];
+	struct vt_token token;
+	short token_params[VTPARSE_TOKEN_PARAMS_MAX];
 	void* user_data;
 };
 

@@ -8,11 +8,14 @@
  * @author Eldar Abusalimov
  */
 
-#include <drivers/vtbuild.h>
-#include <embox/kernel.h>
 #include <types.h>
 
-#define BUF_SIZE 10
+#include <drivers/vtbuild.h>
+#include <embox/kernel.h>
+#include <util/math.h>
+
+/* Enough to hold decimal numbers up to 99999. */
+#define PARAM_PRINT_BUFF_SIZE 5
 
 /** ANSI Escape */
 #define ESC		'\033'
@@ -20,64 +23,78 @@
 /** ANSI Control Sequence Introducer */
 #define CSI		'['
 
-VTBUILDER * vtbuild_init(VTBUILDER *this, void(*putc)(VTBUILDER *builder,
-		char ch)) {
-	if (this == NULL) {
+struct vtbuild *vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb) {
+	if (builder == NULL) {
 		return NULL;
 	}
 
-	this->putc = putc;
-	return this;
+	builder->cb = cb;
+	return builder;
 }
 
-static void build_param(VTBUILDER *this, int n) {
-	static char buf[BUF_SIZE];
+static void build_single_param(struct vtbuild *builder, short n) {
+	char buff[PARAM_PRINT_BUFF_SIZE];
 	int i = 0;
+
 	if (n < 0) {
 		return;
 	}
 
 	do {
-		buf[i++] = n % BUF_SIZE + '0';
-	} while ((n /= BUF_SIZE) > 0);
+		buff[i++] = n % 10 + '0';
+	} while ((n /= 10) > 0);
 
 	do {
-		this->putc(this, buf[--i]);
+		builder->cb(builder, buff[--i]);
 	} while (i > 0);
 }
 
-void vtbuild(VTBUILDER *this, const VT_TOKEN *token) {
-	int i;
+static void build_params(struct vtbuild *builder, short *params,
+		int params_len) {
+	if (params != NULL) {
+		if (params_len > 0) {
+			build_single_param(builder, params[0]);
+		}
+		for (int i = 1; i < params_len; i++) {
+			builder->cb(builder, ';');
+			build_single_param(builder, params[i]);
+		}
+	}
+}
+
+static void build_attrs(struct vtbuild *builder, char *attrs, int attrs_len) {
+	if (attrs != NULL) {
+		for (int i = 0; i < attrs_len; i++) {
+			builder->cb(builder, attrs[i]);
+		}
+	}
+}
+
+void vtbuild(struct vtbuild *builder, const struct vt_token *token) {
+
 	switch (token->action) {
 	case VT_ACTION_EXECUTE:
 	case VT_ACTION_PRINT:
-		this->putc(this, token->ch);
+		builder->cb(builder, token->ch);
 		break;
+
 	case VT_ACTION_ESC_DISPATCH:
-		this->putc(this, ESC);
-		this->putc(this, token->ch);
-		for (i = 0; i < token->attrs_len; i++) {
-			this->putc(this, token->attrs[i]);
-		}
+		builder->cb(builder, ESC);
+		/* TODO check, may be the following two lines should be swapped. -- Eldar*/
+		builder->cb(builder, token->ch);
+		build_attrs(builder, token->attrs,
+				min(token->attrs_len, VT_TOKEN_ATTRS_MAX));
 		break;
-	case VT_ACTION_CSI_DISPATCH: {
-		this->putc(this, ESC);
-		this->putc(this, CSI);
-		if (token->params != NULL) {
-			if (token->params_len > 0) {
-				build_param(this, token->params[0]);
-			}
-			for (i = 1; i < token->params_len; i++) {
-				this->putc(this, ';');
-				build_param(this, token->params[i]);
-			}
-		}
-		for (i = 0; i < token->attrs_len; i++) {
-			this->putc(this, token->attrs[i]);
-		}
-		this->putc(this, token->ch);
+
+	case VT_ACTION_CSI_DISPATCH:
+		builder->cb(builder, ESC);
+		builder->cb(builder, CSI);
+		build_params(builder, token->params, token->params_len);
+		build_attrs(builder, token->attrs,
+				min(token->attrs_len, VT_TOKEN_ATTRS_MAX));
+		builder->cb(builder, token->ch);
 		break;
-	}
+
 	case VT_ACTION_OSC_START:
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:

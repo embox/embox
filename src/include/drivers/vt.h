@@ -7,8 +7,7 @@
 #ifndef VT_H_
 #define VT_H_
 
-#define VT_TOKEN_MAX_CHARS     2
-#define VT_TOKEN_MAX_PARAMS    8
+#define VT_TOKEN_ATTRS_MAX     2
 
 enum vt_action {
 	VT_ACTION_NONE         = 0,
@@ -30,13 +29,15 @@ enum vt_action {
 
 typedef enum vt_action vt_action_t;
 
-typedef struct {
+struct vt_token {
 	vt_action_t action;
-	char      attrs[VT_TOKEN_MAX_CHARS];
-	int       attrs_len;
-	const int *params;
-	int       params_len;
-	char      ch;
-} VT_TOKEN;
+	char        ch;
+	char        attrs[VT_TOKEN_ATTRS_MAX];
+	char        attrs_len;
+	short      *params;
+	int         params_len;
+};
+
+typedef struct vt_token VT_TOKEN;
 
 #endif /* VT_H_ */
