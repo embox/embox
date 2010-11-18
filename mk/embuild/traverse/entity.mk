@@ -15,7 +15,7 @@ $(call envdef_assert_defined, \
   __EMBUILD_TRAVERSE_ENTITY_NAME \
   __EMBUILD_TRAVERSE_ENTITY_TYPE \
   __EMBUILD_TRAVERSE_ENTITY_FILE \
-  __EMBUILD_TRAVERSE_ENTITY
+  __EMBUILD_TRAVERSE_ENTITY      \
 ,Traverser entity sandbox needs these variables to be defined)
 
 __embuild_traverse_entity_variables :=
