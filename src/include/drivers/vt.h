@@ -38,6 +38,4 @@ struct vt_token {
 	int         params_len;
 };
 
-typedef struct vt_token VT_TOKEN;
-
 #endif /* VT_H_ */

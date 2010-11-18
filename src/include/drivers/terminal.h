@@ -214,7 +214,7 @@ typedef struct {
 	 * about parser state collected at callback invocation time.
 	 * NOTE: This structure is tightly relies on vtparse algorithms.
 	 */
-	VT_TOKEN vt_token_queue[VTPARSER_TOKEN_QUEUE_AMOUNT];
+	struct vt_token vt_token_queue[VTPARSER_TOKEN_QUEUE_AMOUNT];
 
 	int vt_token_queue_len;
 	int vt_token_queue_head;

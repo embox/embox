@@ -18,7 +18,7 @@
 #include <drivers/terminal.h>
 #include <kernel/diag.h>
 
-static void vtparse_callback(struct vtparse *parser, VT_TOKEN*);
+static void vtparse_callback(struct vtparse *parser, struct vt_token *);
 
 static void vtbuild_putc(struct vtbuild *builder, char ch) {
 	TERMINAL* terminal = (TERMINAL*) builder->user_data;
@@ -115,7 +115,7 @@ static struct vt_token *vt_from_term_token(struct vt_token *vt_token,
 	return vt_token;
 }
 
-static TERMINAL_TOKEN term_from_vt_token(VT_TOKEN *vt_token) {
+static TERMINAL_TOKEN term_from_vt_token(struct vt_token *vt_token) {
 	vt_action_t action;
 	char *a;
 	int a_len;
@@ -138,7 +138,7 @@ static TERMINAL_TOKEN term_from_vt_token(VT_TOKEN *vt_token) {
 	return ENCODE(action,char1,char2, code);
 }
 
-static void vtparse_callback(struct vtparse *parser, VT_TOKEN *token) {
+static void vtparse_callback(struct vtparse *parser, struct vt_token *token) {
 	TERMINAL *terminal = (TERMINAL *) parser->user_data;
 	int *queue_len = &terminal->vt_token_queue_len;
 	if (*queue_len < VTPARSER_TOKEN_QUEUE_AMOUNT) {
@@ -165,7 +165,7 @@ static char *ACTION_NAMES[] = { "<no action>", "CLEAR", "COLLECT", "CSI_DISPATCH
 bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 		short **params, int *params_len) {
 	int *p_len, *p_head;
-	VT_TOKEN *vt_token;
+	struct vt_token *vt_token;
 	if (this == NULL) {
 		return false;
 	}

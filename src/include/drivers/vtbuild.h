@@ -26,6 +26,6 @@ struct vtbuild {
 
 struct vtbuild *vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb);
 
-void vtbuild(struct vtbuild *builder, const VT_TOKEN *token);
+void vtbuild(struct vtbuild *builder, const struct vt_token *token);
 
 #endif /* VTBUILD_H_ */
