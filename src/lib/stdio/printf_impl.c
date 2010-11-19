@@ -3,10 +3,12 @@
  *
  * @brief
  *
- * @date 10.11.2010
+ * @date 19.11.2010
  * @author Anton Bondarev
  */
-
+#include <stdio.h>
+#include <stdarg.h>
+#include <types.h>
 /*
  Copyright 2001, 2002 Georges Menie (www.menie.org)
  stdarg version contributed by Christian Ettinger
@@ -29,7 +31,7 @@
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
 
-static int prints(char **out, const char *string, int width, int pad) {
+static int prints(void (*printchar_handler)(char **str, int c), char **out, const char *string, int width, int pad) {
 	/*TODO: optimizations needed to be enabled in gcc (-O2) to make register qualifier work*/
 	/*register*/int pc = 0, padchar = ' ';
 
@@ -48,16 +50,16 @@ static int prints(char **out, const char *string, int width, int pad) {
 	}
 	if (!(pad & PAD_RIGHT)) {
 		for (; width > 0; --width) {
-			printchar(out, padchar);
+			printchar_handler(out, padchar);
 			++pc;
 		}
 	}
 	for (; *string; ++string) {
-		printchar(out, *string);
+		printchar_handler(out, *string);
 		++pc;
 	}
 	for (; width > 0; --width) {
-		printchar(out, padchar);
+		printchar_handler(out, padchar);
 		++pc;
 	}
 
@@ -67,7 +69,7 @@ static int prints(char **out, const char *string, int width, int pad) {
 /* the following should be enough for 32 bit int */
 #define PRINT_BUF_LEN 12
 
-static int printi(char **out, int i, int b, int sg, int width, int pad,
+static int printi(void (*printchar_handler)(char **str, int c), char **out, int i, int b, int sg, int width, int pad,
 		int letbase) {
 	char print_buf[PRINT_BUF_LEN];
 	/*register*/
@@ -80,7 +82,7 @@ static int printi(char **out, int i, int b, int sg, int width, int pad,
 	if (i == 0) {
 		print_buf[0] = '0';
 		print_buf[1] = '\0';
-		return prints(out, print_buf, width, pad);
+		return prints(printchar_handler, out, print_buf, width, pad);
 	}
 
 	if (sg && b == 10 && i < 0) {
@@ -101,7 +103,7 @@ static int printi(char **out, int i, int b, int sg, int width, int pad,
 
 	if (neg) {
 		if (width && (pad & PAD_ZERO)) {
-			printchar(out, '-');
+			printchar_handler(out, '-');
 			++pc;
 			--width;
 		} else {
@@ -109,12 +111,12 @@ static int printi(char **out, int i, int b, int sg, int width, int pad,
 		}
 	}
 
-	return pc + prints(out, s, width, pad);
+	return pc + prints(printchar_handler, out, s, width, pad);
 }
 
 #define PRINTB_BUF_LEN 64
 
-static int printb(char **out, int i, int width, int dot) {
+static int printb(void (*printchar_handler)(char **str, int c), char **out, int i, int width, int dot) {
 	char print_buf[PRINTB_BUF_LEN];
 	/*register*/
 	char *s;
@@ -142,10 +144,10 @@ static int printb(char **out, int i, int width, int dot) {
 		++s;
 		dc--;
 	}
-	return prints(out, s, width + dc, 0);
+	return prints(printchar_handler, out, s, width + dc, 0);
 }
 
-static int print(char **out, const char *format, va_list args) {
+int print(void (*printchar_handler)(char **str, int c), char **out, const char *format, va_list args) {
 	/*register*/int width, pad;
 	/*register*/
 	int pc = 0;
@@ -178,41 +180,41 @@ static int print(char **out, const char *format, va_list args) {
 			switch (*format) {
 			case 's': {
 				char *s = (char *) va_arg( args, int );
-				pc += prints(out, s ? s : "(null)", width, pad);
+				pc += prints(printchar_handler, out, s ? s : "(null)", width, pad);
 			}
 				continue;
 			case 'd':
-				pc += printi(out, va_arg( args, int ), 10, 1, width, pad, 'a');
+				pc += printi(printchar_handler, out, va_arg( args, int ), 10, 1, width, pad, 'a');
 				continue;
 			case 'p':
 				/*TODO: printf haven't realized pointer variable operations*/
 			case 'x':
-				pc += printi(out, va_arg( args, int ), 16, 0, width, pad, 'a');
+				pc += printi(printchar_handler, out, va_arg( args, int ), 16, 0, width, pad, 'a');
 				continue;
 			case 'X':
-				pc += printi(out, va_arg( args, int ), 16, 0, width, pad, 'A');
+				pc += printi(printchar_handler, out, va_arg( args, int ), 16, 0, width, pad, 'A');
 				continue;
 			case 'u':
-				pc += printi(out, va_arg( args, int ), 10, 0, width, pad, 'a');
+				pc += printi(printchar_handler, out, va_arg( args, int ), 10, 0, width, pad, 'a');
 				continue;
 			case 'b':
-				pc += printb(out, va_arg( args, int ), width, 0);
+				pc += printb(printchar_handler, out, va_arg( args, int ), width, 0);
 				continue;
 			case 'B':
-				pc += printb(out, va_arg( args, int ), width, 1);
+				pc += printb(printchar_handler, out, va_arg( args, int ), width, 1);
 				continue;
 			case 'c':
 				/* char are converted to int then pushed on the stack */
 				scr[0] = (char) va_arg( args, int );
 				scr[1] = '\0';
-				pc += prints(out, scr, width, pad);
+				pc += prints(printchar_handler, out, scr, width, pad);
 				continue;
 			case 'f':
 				/*TODO: printf haven't realized float variable operations*/
 				continue;
 			}
 		} else {
-			out_print: printchar(out, *format);
+			out_print: printchar_handler(out, *format);
 			++pc;
 		}
 	}

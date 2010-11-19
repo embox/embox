@@ -20,14 +20,14 @@ static void printchar(char **str, int c) {
 	}
 }
 
-#include "print_impl.h"
+//#include "print_impl.h"
 
 int printk(const char *format, ...) {
 	int ret;
 	va_list args;
 
 	va_start(args, format);
-	ret = print(0, format, args);
+	ret = print(printchar, 0, format, args);
 	va_end(args);
 
 	return ret;
