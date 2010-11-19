@@ -33,7 +33,7 @@
 # A library of functions to be used with GNU Make's $(call) that
 # provides functionality not available in standard GNU Make.
 #
-# Copyright (c) 2005-2007 John Graham-Cumming
+# Copyright (c) 2005-2010 John Graham-Cumming
 #
 # This file is part of GMSL
 #
@@ -71,6 +71,8 @@
 #
 # Author: Eldar Abusalimov
 #
+
+# XXX review or drop out. -- Eldar
 
 #
 # Function:  map_put
