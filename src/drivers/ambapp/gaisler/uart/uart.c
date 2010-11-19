@@ -181,7 +181,7 @@ static void *open(const char *fname, const char *mode) {
 	tty.file_op = &file_op;
 	tty_register(&tty);
 	uart_set_irq_handler(irq_handler);
-	return NULL;
+	return (void *)&file_op;
 }
 
 static int close(void *file) {

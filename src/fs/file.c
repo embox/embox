@@ -85,7 +85,10 @@ FILE *fopen(const char *path, const char *mode) {
 	if (NULL != nod->file_info) {
 		/*if fop set*/
 		fop = (file_operations_t *)nod->file_info;
-		return fop->fopen(path, mode);
+		if (NULL == fop->fopen(path, mode)) {
+			return NULL;
+		}
+		return (FILE *)nod;
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fopen) {
@@ -130,9 +133,16 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 int fclose(FILE *fp) {
 	node_t *nod;
 	file_system_driver_t *drv;
+	file_operations_t *fop;
+
 	nod = (node_t *)fp;
 	if (NULL == nod) {
 		return -EBADF;
+	}
+	if (NULL != nod->file_info) {
+		/*if fop set*/
+		fop = (file_operations_t *)nod->file_info;
+		return fop->fclose(fp);
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fclose) {
