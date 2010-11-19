@@ -19,7 +19,7 @@ define \n
 endef
 \n := $(\n)
 
-\t :=	# eol
+\t := $(subst ,,	)
 
          \n          := $(\n)
 $(\space)\n          := $(\n)
