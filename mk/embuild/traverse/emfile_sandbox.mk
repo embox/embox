@@ -17,7 +17,7 @@ $(call envdef_assert_defined, \
 ,Traverser em-file sandbox needs these variables to be defined)
 
 # Go!
-emfile_variables := $(call sandbox, \
+#emfile_variables := $(call sandbox, \
   include $(__EMBUILD_TRAVERSE_EMFILE_ROOT)/$(__EMBUILD_TRAVERSE_EMFILE) \
 )
 

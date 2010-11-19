@@ -5,13 +5,51 @@
 # Author: Eldar Abusalimov
 #
 
+__sandbox_variables := __sandbox_variables $(.VARIABLES)
+include $(__EMBUILD_TRAVERSE_EMFILE_ROOT)/$(__EMBUILD_TRAVERSE_EMFILE)
+__sandbox_variables := $(filter-out $(__sandbox_variables),$(.VARIABLES))
+
+emfile_variables := $(__sandbox_variables)
+
+variables := $(.VARIABLES)
+
+include gmsl.mk
 include util/common.mk
+include util/math.mk
 include embuild/traverse/entity.mk
 
+dollar_encode = $(subst $$,$$$$,$1)
+dollar_decode = $(subst $$$$,$$,$1)
+
+variables_seq := $(call int_seq,x,$(variables:%=x))
+variables_esc := $(call dollar_encode,$(variables))
+
+variable_pairs = \
+  $(call pairmap,__variable_pairs_cb,x $(variables_seq),$(variables_seq) x)
+
+# 1. i
+# 2. i+1
+__variable_pairs_cb = $(call whitespace_escape,$ \
+  $(if $(findstring x,$1),$ \
+       $(firstword $(variables_esc)),$ \
+       $(if $(findstring x,$2),$ \
+            $(lastword $(variables_esc)),$ \
+            $(wordlist $1,$2,$(variables_esc))$ \
+        )$ \
+   )$ \
+)
+
 whitespace_escape = \
-  $(call prefix_subst,$(subst $$,$$$$,$1), ,_$$_,$(subst $$,$$$$,$2))
+  $(subst $(\space),_$$s,$(subst $(\t),_$$t,$(subst $(\n),_$$n,$1)))
 whitespace_unescape = \
-  $(subst $$$$,$$,$(subst _$$_, ,$2))
+  $(subst _$$s,$(\space),$(subst _$$t,$(\t),$(subst _$$n,$(\n),$1)))
+
+check_defined = $(if $(findstring undefined,$(flavor $1)),,$(info $1))
+$(foreach p,$(variable_pairs),$(call check_defined,$(call whitespace_unescape,$p)))
+
+pairs_escape = $(call __pairs_escape,$(subst $$,$$$$,$1))
+__pairs_escape = $(call pairmap,__pairs_escape_cb,_$$_$$_ $1,$1 _$$_$$_)
+__pairs_escape_cb = $1_$$_$2
 
 # TODO move somewhere. -- Eldar
 prefix_subst = \
