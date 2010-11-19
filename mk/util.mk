@@ -64,6 +64,9 @@ assert_called :=
 assert:=
 endif
 
+# XXX
+include util/math.mk
+
 args_nr = $(foreach __args_nr_i,1,$(__args_nr))
 __args_nr = \
   $(if $(filter-out undefined,$(origin $(__args_nr_i))), \
@@ -71,14 +74,9 @@ __args_nr = \
     $(__args_nr_i) \
   )
 
-sequence = $(if $(call lt,$1,$2) \
-  ,$(call __sequence_inc,$1,$2),$(call __sequence_dec,$2,$1))
-__sequence_inc = $1$(if $(call lt,$1,$2),$(call $0, $(call inc,$1),$2))
-__sequence_dec = $(if $(call lt,$1,$2),$(call $0,$(call inc,$1) ,$2))$1
-
 expand_once   = $(call expand_once_0,$1)
 __expand_once_def_all = \
-  $(foreach x,$(call sequence,0,9),$(eval $(value __expand_once_def_x)))
+  $(foreach x,$(call seq,0,9),$(eval $(value __expand_once_def_x)))
 define __expand_once_def_x
   expand_once_$x = $(foreach total_args,$x,$(__expand_once))
 endef
