@@ -10,6 +10,7 @@ __embuild_traverse_entity_types := api module library package
 ifdef __EMBUILD_TRAVERSE_ENTITY
 
 include util/envdef.mk
+include util/sandbox.mk
 
 $(call envdef_assert_defined, \
   __EMBUILD_TRAVERSE_ENTITY_NAME \
@@ -18,14 +19,10 @@ $(call envdef_assert_defined, \
   __EMBUILD_TRAVERSE_ENTITY      \
 ,Traverser entity sandbox needs these variables to be defined)
 
-__embuild_traverse_entity_variables :=
-__embuild_traverse_entity_variables := $(.VARIABLES)
-
-# Go!
-$(eval $(value __EMBUILD_TRAVERSE_ENTITY))
-
-__embuild_traverse_entity_variables := \
-  $(filter-out $(__embuild_traverse_entity_variables),$(.VARIABLES))
+# Gogogo!
+__embuild_traverse_entity_variables := $(call sandbox, \
+  $(value __EMBUILD_TRAVERSE_ENTITY) \
+)
 
 include util/common.mk
 

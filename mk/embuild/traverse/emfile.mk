@@ -6,20 +6,17 @@
 #
 
 include util/envdef.mk
+include util/sandbox.mk
 
 $(call envdef_assert_defined, \
   __EMBUILD_TRAVERSE_EMFILE_ROOT \
   __EMBUILD_TRAVERSE_EMFILE      \
 ,Traverser em-file sandbox needs these variables to be defined)
 
-__embuild_traverse_emfile_variables :=
-__embuild_traverse_emfile_variables := $(.VARIABLES)
-
 # Go!
-include $(__EMBUILD_TRAVERSE_EMFILE_ROOT)/$(__EMBUILD_TRAVERSE_EMFILE)
-
-__embuild_traverse_emfile_variables := \
-  $(filter-out $(__embuild_traverse_emfile_variables),$(.VARIABLES))
+__embuild_traverse_emfile_variables := $(call sandbox, \
+  include $(__EMBUILD_TRAVERSE_EMFILE_ROOT)/$(__EMBUILD_TRAVERSE_EMFILE) \
+)
 
 # Now we are free to include some other files.
 include embuild/traverse/entity.mk
