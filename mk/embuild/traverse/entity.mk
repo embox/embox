@@ -5,10 +5,12 @@
 # Author: Eldar Abusalimov
 #
 
-__embuild_traverse_entity_types := api module library package
+embuild_entity_types := api module library package
 
 ifdef __EMBUILD_TRAVERSE_ENTITY
 
+# Only essential scripts are included here to avoid possible collisions
+# with variables of sandboxed entity.
 include util/envdef.mk
 include util/sandbox.mk
 

@@ -18,7 +18,7 @@ entity_files = $(em_files:$(SRC_DIR)/%.em=$(OBJ_DIR)/%.mk)
 -include $(entity_files)
 
 $(entity_files) : $(OBJ_DIR)/%.mk : $(SRC_DIR)/%.em
-	$(MAKE) -f mk/embuild/traverse/emfile.mk all \
+	$(MAKE) -f mk/embuild/traverse/emfile_sandbox.mk all \
 		__EMBUILD_TRAVERSE_EMFILE_ROOT=$(SRC_DIR) \
 		__EMBUILD_TRAVERSE_EMFILE=$*.em \
 
