@@ -62,10 +62,10 @@ ifdef CONFIG_WATCHDOG
   $_DEPS-main += embox.driver.abstract.watchdog
 endif
 
-#ifdef CONFIG_MEASURE_IRQ
+ifdef CONFIG_MEASURE_IRQ
   $_MODS += measure
   $_SRCS-measure += measure.c
   $_DEPS-measure += $(CONFIG_MEASURE_IRQ)
   $_DEPS-timer += measure #XXX place before first IRQ requqest
-#endif
+endif
 
