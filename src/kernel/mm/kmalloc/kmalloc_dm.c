@@ -45,52 +45,57 @@ typedef struct tag_free {
 /**
  * return adress
  */
-#define ADRESS(begin) (void *) (begin + sizeof(tag_free_t))
+#define ADRESS(begin) (void*)begin + sizeof(tag_free_t)
 /**
  *
  *
  */
-#define END_TAG(begin) (tag_t*) (begin + sizeof(tag_free_t) + begin->tag.size - sizeof(tag_t))
+#define END_TAG(begin) (tag_t*) ((void*)begin + begin->tag.size + sizeof(tag_free_t))
 /**
  *
  *
  */
-#define BEGIN_TAG(end) (tag_free_t*) (end - end->size - sizeof(tag_free_t))
+#define BEGIN_TAG(end) (tag_free_t*) ((void*)end - end->size - sizeof(tag_free_t))
 
 /* some stuff for easey programming */
-inline static int  allocate_mem_block(int pages);
+inline static int allocate_mem_block(int pages);
 inline static void eat_mem(size_t size, tag_free_t *ext);
 /* memory list */
 static LIST_HEAD(mem_pool);
 /* inited? */
-bool inited=false;
+bool inited = false;
+
+tag_free_t* begin_pool_ptr;
 
 void* kmalloc(size_t size) {
 	/* declarations */
 	tag_free_t *tmp_begin;
 	struct list_head *tmp_loop;
+
+	if (size == 0)
+		return NULL;
 	/* some securuty actions */
-	if (size < (sizeof(tag_t)+sizeof(tag_free_t)+1)) {
-		size = sizeof(tag_t)+sizeof(tag_free_t)+1;
-	}
+	size = (size + sizeof(tag_t) - 1) & -(size_t) sizeof(tag_t);
+
 	/* we inited */
 	if (!inited) {
 		int expr = allocate_mem_block(CONFIG_MALLOC_SIZE);
-		if ( expr  == 0 ) {
+		if (expr == 0) {
 			return 0;
 		}
 		inited = !inited;
 	}
+
 	/* find block */
 	list_for_each(tmp_loop, &mem_pool) {
 		tmp_begin = (tag_free_t*) tmp_loop;
 		if (tmp_begin->tag.size >= size) {
-			eat_mem(size, tmp_begin );
+			eat_mem(size, tmp_begin);
 			/* and return */
 			return ADRESS(tmp_begin);
 		}
 	}
-	TRACE(" \n === INFERNAL FUCK! === \n ");
+	TRACE("\n === INFERNAL FUCK! === \n");
 	/* fuck, there are something wrong */
 	return 0;
 }
@@ -98,36 +103,47 @@ void* kmalloc(size_t size) {
 void kfree(void *ptr) {
 	/* declarations */
 	tag_free_t *tmp_begin, *ptr_begin;
-	tag_t      *tmp_end;
-	ptr_begin = (tag_free_t *) ptr;
+	tag_t *tmp_end;
+
+	if (ptr == NULL)
+		return;
+
+	ptr_begin = (tag_free_t *) (ptr - sizeof(tag_free_t));
+
+	if (ptr_begin->tag.free == HOLE || ptr_begin->tag.size == 0)
+		return;
 	/* forward direction */
-	tmp_begin = (tag_free_t*) (END_TAG(ptr_begin) + sizeof(tag_t));
-	if (tmp_begin->tag.free == HOLE) {
+	tmp_begin = (tag_free_t*) ((void*) END_TAG(ptr_begin) + sizeof(tag_t));
+	if ((void*) tmp_begin - (void*) begin_pool_ptr < CONFIG_PAGE_SIZE
+			* CONFIG_MALLOC_SIZE && tmp_begin->tag.free == HOLE) {
 		/* del tag & moving adresses*/
 		list_del((struct list_head *) tmp_begin);
 		tmp_end = END_TAG(tmp_begin);
 		/* rewrite tags */
-		tmp_end->size = tmp_end->size + ptr_begin->tag.size;
+		tmp_end->size = tmp_end->size + ptr_begin->tag.size
+				+ sizeof(tag_free_t) + sizeof(tag_t);
 		ptr_begin->tag.size = tmp_end->size;
 	}
 	/* backward direction */
-	tmp_end = (tag_t*) (ptr_begin - sizeof(tag_t));
-	if (tmp_end->free == HOLE) {
+	tmp_end = (tag_t*) ((void*) ptr_begin - sizeof(tag_t));
+	if ((void*) tmp_end - (void*) begin_pool_ptr > 0 && tmp_end->free == HOLE) {
 		/* del tag & moving adreses */
 		tmp_begin = BEGIN_TAG(tmp_end);
-		list_del((struct list_head*) ptr_begin);
+		list_del((struct list_head*) tmp_begin);
 		/* rewrite tag's */
-		tmp_begin->tag.size = ptr_begin->tag.size + tmp_begin->tag.size;
-		tmp_end = END_TAG(ptr_begin);
+		tmp_begin->tag.size = ptr_begin->tag.size + tmp_begin->tag.size
+				+ sizeof(tag_free_t) + sizeof(tag_t);
+		tmp_end = END_TAG(tmp_begin);
 		tmp_end->size = tmp_begin->tag.size;
 		/* move ptr */
-		ptr = (void*) tmp_begin;
+		ptr_begin = tmp_begin;
 	}
 	/* write tag's */
-	tmp_begin = ptr;
-	tmp_begin->tag.free = HOLE;
-	tmp_end =  END_TAG(tmp_begin);
+
+	ptr_begin->tag.free = HOLE;
+	tmp_end = END_TAG(ptr_begin);
 	tmp_end->free = HOLE;
+	list_add(ptr_begin, &mem_pool);
 }
 
 /* auxiliry function. allocate block of memory TODO add the ending memory work */
@@ -137,14 +153,13 @@ inline static int allocate_mem_block(int pages) {
 	tag_t* tmp_end;
 
 	tmp_begin = (tag_free_t *) mpalloc(pages);
-	if ( tmp_begin == 0) {
+	begin_pool_ptr = tmp_begin;
+	if (tmp_begin == 0) {
 		return 0;
 	}
 	/* calculate size etc. */
-	tmp_begin->tag.size =
-		CONFIG_PAGE_SIZE * pages
-		- sizeof(tag_free_t)
-		- sizeof(tag_t);
+	tmp_begin->tag.size = CONFIG_PAGE_SIZE * pages - sizeof(tag_free_t)
+			- sizeof(tag_t);
 	tmp_begin->tag.free = HOLE;
 	/* write tag at the end */
 	tmp_end = END_TAG(tmp_begin);
@@ -153,6 +168,7 @@ inline static int allocate_mem_block(int pages) {
 
 	/* add to list */
 	list_add((struct list_head*) tmp_begin, &mem_pool);
+	return 1;
 }
 /* auxiliry function. Eat mem. add the ending memory work */
 inline static void eat_mem(size_t size, tag_free_t* ext) {
@@ -161,9 +177,12 @@ inline static void eat_mem(size_t size, tag_free_t* ext) {
 	tag_t *tmp_end;
 	size_t size_tmp;
 
-	if ( ext->tag.size == size) {
+	if (ext->tag.size - size <= sizeof(tag_free_t) + sizeof(tag_t)) {
 		list_del((struct list_head*) ext);
 		ext->tag.free = PROC;
+		tmp_end = END_TAG(ext);
+		tmp_end->free = PROC;
+		return;
 	}
 	/* delete ext */
 	list_del((struct list_head*) ext);
@@ -173,19 +192,48 @@ inline static void eat_mem(size_t size, tag_free_t* ext) {
 	ext->tag.free = PROC;
 	/* end tag write */
 	tmp_end = END_TAG(ext);
+
 	tmp_end->size = ext->tag.size;
 	tmp_end->free = PROC;
 	/* write new block  adresses */
-	tmp_begin = (tag_free_t*) (tmp_end + sizeof(tag_t));
-	tmp_end   = END_TAG(tmp_begin);
+	tmp_begin = (tag_free_t*) ((void*) tmp_end + sizeof(tag_t));
+
 	/* write begin tag */
-	tmp_begin->tag.size = size_tmp - ext->tag.size - 2*sizeof(tag_t);
+	tmp_begin->tag.size = size_tmp - ext->tag.size - sizeof(tag_free_t)
+			- sizeof(tag_t);
+
+	tmp_end = END_TAG(tmp_begin);
 	tmp_begin->tag.free = HOLE;
 	/* write end tag */
 	tmp_end->size = tmp_begin->tag.size;
 	tmp_end->free = HOLE;
 	/* add to list */
-	list_add( (struct list_head*) tmp_begin, &mem_pool);
+	list_add((struct list_head*) tmp_begin, &mem_pool);
+}
+
+/**
+ * return list of free and busy blocks in heap
+ */
+void kmget_blocks_info(struct list_head* list) {
+	if (!inited) {
+		int expr = allocate_mem_block(CONFIG_MALLOC_SIZE);
+		if (expr == 0) {
+			return 0;
+		}
+		inited = !inited;
+	}
+
+	int pool_size = CONFIG_MALLOC_SIZE * CONFIG_PAGE_SIZE;
+	tag_free_t* tmp_ptr = begin_pool_ptr;
+
+	block_info_t* tmp_info;
+	do {
+		tmp_info = (block_info_t*) malloc(sizeof(block_info_t));
+		tmp_info->size = tmp_ptr->tag.size;
+		tmp_info->free = !(tmp_ptr->tag.free);
+		list_add((struct list_head*) tmp_info, list);
+		tmp_ptr = (tag_free_t*) ((void*) END_TAG(tmp_ptr) + sizeof(tag_t));
+	} while ((void*) tmp_ptr - (void*) begin_pool_ptr < pool_size);
 }
 
 #undef PROC
