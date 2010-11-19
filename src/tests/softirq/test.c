@@ -73,12 +73,6 @@ static int run(void) {
 	softirq_raise(HANDLER1_SOFTIRQ);
 	softirq_raise(HANDLER2_SOFTIRQ);
 
-	/*
-	 * test fall with sleep(0)
-	 * handlers called correctly, but for this function values of both flag1 and flag2
-	 * stay 0, in spite of volatile. I don't know why, may be some compiler error.
-	 */
-
 	sleep(1);
 
 	if ((flag1 == 0) || (flag2 == 0)) {
