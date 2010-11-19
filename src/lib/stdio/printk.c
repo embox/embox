@@ -11,6 +11,8 @@
 #include <stdarg.h>
 #include <types.h>
 
+int __print(void (*printchar_handler)(char **str, int c), char **out, const char *format, va_list args);
+
 static void printchar(char **str, int c) {
 	if (str) {
 		**str = c;
@@ -20,14 +22,12 @@ static void printchar(char **str, int c) {
 	}
 }
 
-//#include "print_impl.h"
-
 int printk(const char *format, ...) {
 	int ret;
 	va_list args;
 
 	va_start(args, format);
-	ret = print(printchar, 0, format, args);
+	ret = __print(printchar, 0, format, args);
 	va_end(args);
 
 	return ret;

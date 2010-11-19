@@ -30,6 +30,8 @@
 #include <stdarg.h>
 #include <types.h>
 
+int __print(void (*printchar_handler)(char **str, int c), char **out, const char *format, va_list args);
+
 static void printchar(char **str, int c) {
 	if (str) {
 		**str = c;
@@ -39,10 +41,9 @@ static void printchar(char **str, int c) {
 	}
 }
 
-//#include "print_impl.h"
 
 int vprintf(const char *format, va_list args) {
-	return print(printchar, 0, format, args);
+	return __print(printchar, 0, format, args);
 }
 
 int printf(const char *format, ...) {
@@ -57,7 +58,7 @@ int printf(const char *format, ...) {
 }
 
 int vsprintf(char *out, const char *format, va_list args) {
-	return print(printchar, &out, format, args);
+	return __print(printchar, &out, format, args);
 }
 
 int sprintf(char *out, const char *format, ...) {

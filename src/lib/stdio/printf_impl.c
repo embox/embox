@@ -147,7 +147,7 @@ static int printb(void (*printchar_handler)(char **str, int c), char **out, int 
 	return prints(printchar_handler, out, s, width + dc, 0);
 }
 
-int print(void (*printchar_handler)(char **str, int c), char **out, const char *format, va_list args) {
+int __print(void (*printchar_handler)(char **str, int c), char **out, const char *format, va_list args) {
 	/*register*/int width, pad;
 	/*register*/
 	int pc = 0;
