@@ -35,6 +35,12 @@ uint32_t tc_counter_value(uint8_t channel) {
 	return REG_LOAD(((uint8_t *) AT91C_TC0_CV) + channel * sizeof(AT91S_TCB));
 }
 
+bool tc_was_overflowed(uint8_t channel) {
+	assert(channel < 3);
+	return REG_LOAD(((uint8_t *) AT91C_TC0_SR) + channel * sizeof(AT91S_TCB)) &
+		AT91C_COVFS;
+
+
 void tc_stop(uint8_t channel) {
 	assert(channel < 3);
 	REG_STORE((uint8_t *) AT91C_TC0_CCR + channel * sizeof(AT91S_TCB),

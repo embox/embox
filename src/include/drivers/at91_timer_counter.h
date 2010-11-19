@@ -26,17 +26,17 @@
 /**
  * Timer init
  */
-void tc_init(uint8_t channel);
+extern void tc_init(uint8_t channel);
 
 /**
  * Configure timer for counting external events
  */
-void tc_config_input(uint8_t channel, uint8_t clock_mode );
+extern void tc_config_input(uint8_t channel, uint8_t clock_mode );
 
 /**
  * Run & zero counter
  */
-void tc_reset(uint8_t channel);
+extern void tc_reset(uint8_t channel);
 
 /**
  * Get counted events
@@ -47,7 +47,7 @@ uint32_t tc_counter_value(uint8_t channel);
 /**
  * Free hardware
  */
-void tc_stop(uint8_t channel);
+extern void tc_stop(uint8_t channel);
 
 #endif /*TIMER_COUNTER_H_*/
 

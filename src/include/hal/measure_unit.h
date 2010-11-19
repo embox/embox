@@ -6,31 +6,21 @@
  * @author Anton Kozlov
  */
 
-#ifndef MEASURE_H_
-#define MEASURE_H_
+#ifndef MEASURE_UNIT_H_
+#define MEASURE_UNIT_H_
 
 #include <types.h>
 
 /**
- * Enable measuring, init hardware, begin measure
+ * Get timer ticks between system ticks
+ * @return timer ticks
  */
-void measure_start(void);
+uint32_t measure_ticks(void);
 
 /**
- * Rerun tick counter
- * @return counted ticks from last start/reset
+ * Get count of unhandled system ticks
+ * @return count unhandled system ticks
  */
-uint32_t measure_reset(void);
+uint8_t unhandled_ticks(void);
 
-/**
- * Invalidate counted ticks, pause measure
- */
-void measure_pause(void);
-
-/**
- * Free hardware, disable measure ability
- * @return counted ticks
- */
-uint32_t measure_stop(void);
-
-#endif /* MEASURE_H_ */
+#endif /* MEASURE_UNIT_H_ */

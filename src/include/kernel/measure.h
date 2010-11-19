@@ -17,27 +17,27 @@
  * @param interrupt measured interrupt
  * @param ticks count of ticks spent in handler
  */
-void measure_irq_process(interrupt_nr_t interrupt, uint32_t ticks);
+extern void measure_irq_process(interrupt_nr_t interrupt, uint32_t ticks);
 
 /**
  * Output accumulated info
  */
-void measure_irq_print();
+extern void measure_irq_print(void);
 
 /**
  * Process measuring of pre-dispatch irq handler
  */
-void measure_irq_head_process(uint32_t ticks);
+extern void measure_irq_head_process(uint32_t ticks);
 
 /**
  * Process measuring of post-dispatch irq handler
  */
-void measure_irq_tail_process(uint32_t ticks);
+extern void measure_irq_tail_process(uint32_t ticks);
 
 /**
  * Process mesaure overhead, i.e. ticks spent on
  * start + stop measure
  */
-void measure_irq_measure_overhead(uint32_t ticks);
+extern void measure_irq_measure_overhead(uint32_t ticks);
 
 #endif /* MEASURE_H_ */

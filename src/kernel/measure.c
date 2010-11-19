@@ -41,7 +41,7 @@ void measure_irq_process(interrupt_nr_t interrupt, uint32_t ticks) {
 	irq_avg[interrupt] = (irq_avg[interrupt] + ticks) / 2;
 }
 
-void measure_irq_print() {
+void measure_irq_print(void) {
 	/*output for analyzes*/
 }
 
