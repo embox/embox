@@ -11,16 +11,24 @@
 
 #include <types.h>
 
+#define MEASURE_UNIT_TICK __MEASURE_UNIT_TICK
+
 /**
- * Get timer ticks between system ticks
- * @return timer ticks
+ * Get timer clocks between system ticks
+ * @return timer clocks
  */
-uint32_t measure_ticks(void);
+extern uint32_t measure_unit_clocks(void);
 
 /**
  * Get count of unhandled system ticks
  * @return count unhandled system ticks
  */
-uint8_t unhandled_ticks(void);
+extern uint8_t unhandled_ticks(void);
 
+/**
+ * Devices have various number of clocks per tick
+ * Kernel have to know it's number
+ * @return Number of clocks per tick
+ */
+extern uint32_t measure_unit_clocks_per_tick(void);
 #endif /* MEASURE_UNIT_H_ */
