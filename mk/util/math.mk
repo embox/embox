@@ -76,6 +76,8 @@
 ifndef __util_math_mk
 __util_math_mk := 1
 
+include util/__gmsl.mk
+
 # Integers a represented by lists with the equivalent number of x's.
 # For example the number 4 is x x x x.  The maximum integer that the
 # library can handle as _input_ is __gmsl_input_int which is defined
@@ -119,7 +121,8 @@ int_encode = $(wordlist 1,$1,$(__gmsl_input_int))
 # Helper function used to wrap an int_* function into a function that
 # takes a pair of integers, perhaps a function and returns an integer
 # result
-__gmsl_int_wrap = $(call int_decode,$(call $1,$(call int_encode,$2),$(call int_encode,$3)))
+__gmsl_int_wrap = \
+  $(call int_decode,$(call $1,$(call int_encode,$2),$(call int_encode,$3)))
 __gmsl_int_wrap1 = $(call int_decode,$(call $1,$(call int_encode,$2)))
 __gmsl_int_wrap2 = $(call $1,$(call int_encode,$2),$(call int_encode,$3))
 

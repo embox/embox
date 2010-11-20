@@ -76,6 +76,8 @@
 ifndef __util_list_mk
 __util_list_mk := 1
 
+include util/__gmsl.mk
+
 #
 # Function:  first (same as LISP's car, or head)
 # Arguments: 1: A list
