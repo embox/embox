@@ -129,7 +129,7 @@ map = $(strip $(foreach a,$2,$(call $1,$a,$(value 3))))
 #
 pairmap = $(strip \
   $(if $2$3,$(call $1,$(call first,$2),$(call first,$3),$(value 4)) \
-         $(call $0,$1,$(call  rest,$2),$(call  rest,$3))))
+         $(call $0,$1,$(call  rest,$2),$(call  rest,$3),$(value 4))))
 
 #
 # Function:  leq
