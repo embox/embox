@@ -9,10 +9,11 @@ __util_make_version_mk := 1
 
 include util/common.mk
 
+# $(value 0),$(value 1) suppress possible undefined variables warning.
 make_version_major = \
-  $(call __make_version_part,make_version_major,$0,$1)
+  $(call __make_version_part,make_version_major,$(value 0),$(value 1))
 make_version_minor = \
-  $(call __make_version_part,make_version_minor,$0,$1)
+  $(call __make_version_part,make_version_minor,$(value 0),$(value 1))
 
 __make_version_part = $(strip \
   $(if $(call called,$1,$2), \
