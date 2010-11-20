@@ -72,6 +72,9 @@
 # Author: Eldar Abusalimov
 #
 
+ifndef __util_math_mk
+__util_math_mk := 1
+
 # Integers a represented by lists with the equivalent number of x's.
 # For example the number 4 is x x x x.  The maximum integer that the
 # library can handle as _input_ is __gmsl_input_int which is defined
@@ -313,3 +316,4 @@ __int_seq = $(if $(call int_lt,$1,$2),$(call $0,$(call int_inc,$1),$2))
 ${eval __int_seq_inc = $$(call int_decode,$$1) $(value __int_seq)}
 ${eval __int_seq_dec = $(value __int_seq) $$(call int_decode,$$1)}
 
+endif # __util_math_mk

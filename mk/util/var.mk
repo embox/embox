@@ -37,6 +37,11 @@
 # Author: Eldar Abusalimov
 #
 
+ifndef __util_var_mk
+__util_var_mk := 1
+
+include util/common.mk
+
 #
 # Expands to the variable information string.
 # Information includes flavor, origin and value of the specified variable.
@@ -206,3 +211,4 @@ var_restore = $(strip \
   $(call var_assign_$(call get,__var_flavor,$1),$1,$(call get,__var_value,$1))\
 )
 
+endif # __util_var_mk

@@ -74,6 +74,9 @@
 
 # XXX review or drop out. -- Eldar
 
+ifndef __util_map_mk
+__util_map_mk := 1
+
 #
 # Function:  map_put
 # Arguments: 1: Name of associative array
@@ -138,3 +141,4 @@ __map_entry = \
   $(__map_entry_prefix)$(call dollar_encode,$1)_$$_$(call dollar_encode,$2)
 __map_entry_prefix := __map_entry_
 
+endif # __util_map_mk
