@@ -10,7 +10,7 @@ include util/common.mk
 include util/math.mk
 include util/list.mk
 
-# TODO only whitespace separated pairs for now... -- Eldar
+# TODO only single words and whitespace separated pairs for now... -- Eldar
 var_name_escape = $(call __var_name_escape,$(or $(value 1),$(.VARIABLES)))
 var_name_unescape = $(subst $$$$,$$,$(call __var_name_unescape_whitespace,$1))
 
@@ -22,7 +22,7 @@ __var_name_escape = \
    )
 
 __var_name_escape_combos = \
-  $(call __var_name_escape_combo_pairs,$1,$2)# TODO
+  $1 $(call __var_name_escape_combo_pairs,$1,$2)# TODO
 
 __var_name_escape_combo_pairs = \
   $(call pairmap,__var_name_escape_combo_pairs_pairmap,x $2,$2 x,$1)
@@ -31,11 +31,7 @@ __var_name_escape_combo_pairs = \
 # 2. i+1
 # 3. variables
 __var_name_escape_combo_pairs_pairmap = $(call __var_name_escape_whitespace,$ \
-  $(if $(findstring x,$1),$(firstword $3),$ \
-       $(if $(findstring x,$2),$(lastword $3),$ \
-            $(wordlist $1,$2,$3)$ \
-        )$ \
-   )$ \
+  $(if $(findstring x,$1$2),,$(wordlist $1,$2,$3))$ \
 )
 
 __var_name_escape_whitespace = \
