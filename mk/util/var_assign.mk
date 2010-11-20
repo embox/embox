@@ -37,8 +37,8 @@
 # Author: Eldar Abusalimov
 #
 
-ifndef __util_var_mk
-__util_var_mk := 1
+ifndef __util_var_assign_mk
+__util_var_assign_mk := 1
 
 include util/common.mk
 
@@ -211,4 +211,4 @@ var_restore = $(strip \
   $(call var_assign_$(call get,__var_flavor,$1),$1,$(call get,__var_value,$1))\
 )
 
-endif # __util_var_mk
+endif # __util_var_assign_mk
