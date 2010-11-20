@@ -22,17 +22,31 @@ __var_name_escape = \
    )
 
 __var_name_escape_combos = \
-  $1 $(call __var_name_escape_combo_pairs,$1,$2)# TODO
+  $1 $(call __var_name_escape_pairs,$1,$2)# TODO
 
-__var_name_escape_combo_pairs = \
-  $(call pairmap,__var_name_escape_combo_pairs_pairmap,x $2,$2 x,$1)
+__var_name_escape_pairs = \
+  $(call pairmap,__var_name_escape_pairs_pairmap,$$ $2,$2 $$,$1)
 
-# 1. i
-# 2. i+1
-# 3. variables
-__var_name_escape_combo_pairs_pairmap = $(call __var_name_escape_whitespace,$ \
-  $(if $(findstring x,$1$2),,$(wordlist $1,$2,$3))$ \
+# | iteration |   <1>   |   <2>   |   <3>   |   <4>  |
+# +-----------+---------+---------+---------+--------+
+# |  arg 1    |    $$   |    1    |    2    |    3   |
+# |  arg 2    |    1    |    2    |    3    |    $$  |
+# | result    |         | foo-bar | bar-baz |        |
+__var_name_escape_combo_pairmap = $(call __var_name_escape_whitespace,$ \
+  $(if $(findstring $$,$1$2),,$(wordlist $1,$2,$3))$ \
 )
+
+__var_name_escape_combo_XXX = \
+  $(call triplemap,__var_name_escape_combo_triplemap,$$ $2,$2 $$,$1)
+
+# | iteration |    <1>    |    <2>    |    <3>   |
+# +-----------+-----------+-----------+----------+
+# |  arg 1    |    $$     |foo-bar    |bar-baz   |
+# |  arg 2    |    foo-bar|    bar-baz|    $$    |
+# |  arg 3    |    foo    |    bar    |    baz   |
+# | result    |           |foo-bar-baz|          |
+__var_name_escape_combo_triplemap = \
+  $(if $(findstring $$,$1$2),,$(subst $3 ,,$1 )$2)
 
 __var_name_escape_whitespace = \
   $(subst $(\space),_$$s,$(subst $(\t),_$$t,$(subst $(\n),_$$n,$1)))
