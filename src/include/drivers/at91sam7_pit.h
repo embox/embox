@@ -35,5 +35,7 @@ typedef struct _AT91S_PITC {
 
 #define AT91C_PIT_IRQ 1
 
+#define AT91C_PIT_USECOND (CONFIG_SYS_CLOCK / (16 * 1000000))
+
 #endif /* AT91SAM7_PIT_H_ */
 

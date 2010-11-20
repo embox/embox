@@ -13,10 +13,6 @@
 #include <hal/interrupt.h>
 #include <drivers/at91sam7s256.h>
 
-#define USECOND (CONFIG_SYS_CLOCK / (16 * 1000000))
-
-static useconds_t delay = 0;
-
 irq_return_t clock_handler(int irq_num, void *dev_id) {
 	if (REG_LOAD(AT91C_PITC_PISR)) {
 		REG_LOAD(AT91C_PITC_PIVR);
@@ -32,9 +28,9 @@ void clock_init(void) {
 }
 
 void clock_setup(useconds_t useconds) {
-	delay = useconds;
 	REG_LOAD(AT91C_PITC_PIVR);
 	REG_STORE(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN |
-	    (useconds * USECOND));
+	    (useconds * AT91C_PIT_USECOND));
 }
+
 
