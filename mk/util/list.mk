@@ -25,7 +25,7 @@
 # SUCH DAMAGE.
 #
 
-# Some parts of this file are derived from GMSL.
+# Most parts of this file are derived from GMSL.
 
 #
 # GNU Make Standard Library (GMSL)
@@ -67,79 +67,114 @@
 #
 
 #
-# Associative arrays.
+# List manipulation functions.
 #
 # Author: John Graham-Cumming
 # Author: Eldar Abusalimov
 #
 
-# XXX review or drop out. -- Eldar
-
-ifndef __util_map_mk
-__util_map_mk := 1
+ifndef __util_list_mk
+__util_list_mk := 1
 
 #
-# Function:  map_put
-# Arguments: 1: Name of associative array
-#            2: The key value to associate
-#            3: The value associated with the key
-# Returns:   None
+# Function:  first (same as LISP's car, or head)
+# Arguments: 1: A list
+# Returns:   Returns the first element of a list
 #
-map_put = $(strip \
-  $(call assert_called,map_put,$0) \
-  $(__map_args_check) \
-  $(call var_assign_simple,$(__map_entry),$3) \
-)
+first = $(firstword $1)
 
 #
-# Function:  map_get
-# Arguments: 1: Name of associative array
-#            2: The key to retrieve
-# Returns:   The value stored in the array for that key
+# Function:  last
+# Arguments: 1: A list
+# Returns:   Returns the last element of a list
 #
-map_get = $(strip \
-  $(call assert_called,map_get,$0) \
-  $(__map_args_check) \
-  $(if $(filter-out undefined,$(origin $(__map_entry))),$($(__map_entry))) \
-)
+ifeq ($(__gmsl_have_lastword),$(true))
+last = $(lastword $1)
+else
+last = $(if $1,$(word $(words $1),$1))
+endif
 
 #
-# Function:  map_remove
-# Arguments: 1: Name of associative array
-#            2: The key value to remove
-# Returns:   None
+# Function:  rest (same as LISP's cdr, or tail)
+# Arguments: 1: A list
+# Returns:   Returns the list with the first element removed
 #
-map_remove = $(strip \
-  $(call assert_called,map_remove,$0) \
-  $(__map_args_check) \
-  $(call var_undefine,$(__map_entry),$3) \
-)
+rest = $(wordlist 2,$(words $1),$1)
 
 #
-# Function:  keys
-# Arguments: 1: Name of associative array
-# Returns:   Returns a list of all defined keys in the array
+# Function:  chop
+# Arguments: 1: A list
+# Returns:   Returns the list with the last element removed
 #
-map_keys = $(sort \
-  $(call assert_called,keys,$0) \
-  $(call assert,$(strip $1),Must specify map name) \
-  $(patsubst $(call __map_entry,$1,%),%, \
-    $(filter $(call __map_entry,$1,%),$(.VARIABLES)) \
-)
+chop = $(wordlist 2,$(words $1),x $1)
 
 #
-# Function:  defined
-# Arguments: 1: Name of associative array
-#            2: The key to test
-# Returns:   Returns true if the key is defined (i.e. not empty)
+# Function:  map
+# Arguments: 1: Name of function to $(call) for each element of list
+#            2: List to iterate over calling the function in 1
+#            3: Optional argument to pass when calling the function
+# Returns:   The list after calling the function on each element
 #
-map_defined = $(__gmsl_tr2)$(call assert_no_dollar,$0,$1$2)$(call sne,$(call get,$1,$2),)
+map = $(strip $(foreach a,$2,$(call $1,$a,$(value 3))))
 
-__map_args_check = \
-  $(call assert,$(and $(strip $1),$(strip $2)),Must specify map and key names)
+#
+# Function:  pairmap
+# Arguments: 1: Name of function to $(call) for each pair of elements
+#            2: List to iterate over calling the function in 1
+#            3: Second list to iterate over calling the function in 1
+#            4: Optional argument to pass when calling the function
+# Returns:   The list after calling the function on each pair of elements
+#
+pairmap = $(strip \
+  $(if $2$3,$(call $1,$(call first,$2),$(call first,$3),$(value 4)) \
+         $(call $0,$1,$(call  rest,$2),$(call  rest,$3))))
 
-__map_entry = \
-  $(__map_entry_prefix)$(call dollar_encode,$1)_$$_$(call dollar_encode,$2)
-__map_entry_prefix := __map_entry_
+#
+# Function:  leq
+# Arguments: 1: A list to compare against...
+#            2: ...this list
+# Returns:   Returns $(true) if the two lists are identical
+#
+leq = $(strip $(if $(call seq,$(words $1),$(words $2)),     \
+          $(call __gmsl_list_equal,$1,$2),$(false)))
 
-endif # __util_map_mk
+__gmsl_list_equal = $(if $(strip $1),                                       \
+                        $(if $(call seq,$(call first,$1),$(call first,$2)), \
+                            $(call __gmsl_list_equal,                       \
+                                $(call rest,$1),                            \
+                                $(call rest,$2)),                           \
+                            $(false)),                                      \
+                     $(true))
+
+#
+# Function:  lne
+# Arguments: 1: A list to compare against...
+#            2: ...this list
+# Returns:   Returns $(true) if the two lists are different
+#
+lne = $(call not,$(call leq,$1,$2))
+
+#
+# Function:  reverse
+# Arguments: 1: A list to reverse
+# Returns:   The list with its elements in reverse order
+#
+reverse =$(strip $(if $1,$(call reverse,$(call rest,$1)) \
+                        $(call first,$1)))
+
+#
+# Function:  uniq
+# Arguments: 1: A list from which to remove repeated elements
+# Returns:   The list with duplicate elements removed without reordering
+#
+uniq = $(strip $(if $1,$(call uniq,$(call chop,$1)) \
+            $(if $(filter $(call last,$1),$(call chop,$1)),,$(call last,$1))))
+
+#
+# Function:  length
+# Arguments: 1: A list
+# Returns:   The number of elements in the list
+#
+length = $(words $1)
+
+endif # __util_list_mk
