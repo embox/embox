@@ -13,12 +13,12 @@ include embuild/traverse/entity.mk
 
 emfile_error = $(call log_error,emfile,$(__emfile),[emfile] $1)
 
-emfile_variable_process = $(if $(filter 2,$(words $1)), \
+emfile_handle_variable = $(if $(filter 2,$(words $1)), \
   $(call emfile_variable_process_entity,$1,$(word 1,$1),$(word 2,$1)), \
   $(call emfile_variable_process_invalid,$1) \
 )
 
-emfile_variable_process_entity = \
+emfile_handle_variable_entity = \
   $(if $(call not,$(call entity_type_check,$2)), \
     $(call emfile_error,Invalid entity type: $2), \
     $(if $(call not,$(call entity_name_check,$3)), \
@@ -27,12 +27,18 @@ emfile_variable_process_entity = \
     ) \
   )
 
-emfile_variable_process_invalid = \
+emfile_handle_variable_invalid = \
   $(call emfile_error,Invalid em-file variable: $1)
 
-$(foreach v,$(call var_filter_out, \
-   $(__emfile_sandbox_variables_before),$(__emfile_sandbox_variables_after), \
-   emfile_variable_process),$(info Filtered: $v : [$(__emfile_entity_variable_$v)]))
+# TODO invoke it later. -- Eldar
+emfile_handle_all_variables := $(strip \
+  $(foreach v,$(call var_filter_out, \
+                     $(__emfile_sandbox_variables_before), \
+                     $(__emfile_sandbox_variables_after), \
+                         emfile_handle_variable), \
+    $(info Filtered: $v : [$(__emfile_entity_variable_$v)]) \
+  ) \
+)
 
 #$(foreach e,$(filter __error_%_emfile,$(.VARIABLES)), \
   $(warning Recorded error $(e:__error_%_emfile=%): $($e)))
