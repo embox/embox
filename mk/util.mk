@@ -124,20 +124,6 @@ __expansion_name = __expansion_of_$1_$$__$(strip $(call merge \
 #
 r-patsubst = $(if $(filter $1,$3),$(call $0,$1,$2,$(3:$1=$2)),$3)
 
-# Make-style error and warning strings.
-
-# The most general way to get error/warning string.
-# First argument should contain the location to print (directory and file).
-error_str_file   = $1:1: error:
-warning_str_file = $1:1: warning:
-
-# Print location using the first argument as directory
-# and 'Makefile' as file within the directory.
-error_str_dir    = $(call error_str_file,$1/Makefile)
-warning_str_dir  = $(call warning_str_file,$1/Makefile)
-
-# Generates error/warning string in $(dir)/Makefile.
-error_str        = $(call error_str_dir,$(dir))
-warning_str      = $(call warning_str_dir,$(dir))
+include util/log.mk
 
 endif # _util_mk_
