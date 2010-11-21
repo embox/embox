@@ -7,11 +7,19 @@
 
 include embuild/traverse/entity.mk
 include util/var_filter.mk
+include util/var_assign.mk
 
-sandbox_cb = $(info [$1])
+sandbox_variable_process = $(if $(filter 2,$(words $1)), \
+  $(call sandbox_variable_process_entity,$1,$(word 1,$1),$(word 2,$1)), \
+  $(call sandbox_variable_process_bogus,$1) \
+)
+
+sandbox_variable_process_entity = $(info entity variable [$2:$3])
+sandbox_variable_process_bogus  = $(info bogus variable [$1])
 
 $(error $(call var_filter_out, \
-   $(__sandbox_variables_before),$(__sandbox_variables_after),sandbox_cb))
+   $(__sandbox_variables_before),$(__sandbox_variables_after), \
+   sandbox_variable_process))
 
 __embuild_traverse_emfile_entity_variables = \
   $(filter $(embuild_entity_types:%=%-%),$(emfile_variables))
