@@ -1,7 +1,13 @@
 #
+# Provides 'filter' and 'filter-out' facilities for lists of arbitrary named
+# variables (e.g. with whitespaces in their names).
+#
 #   Date: Nov 19, 2010
 # Author: Eldar Abusalimov
 #
+
+ifndef __util_var_filter_mk
+__util_var_filter_mk := 1
 
 include util/var_name.mk
 
@@ -40,3 +46,5 @@ var_filter_out = $(call __var_filter,filter-out,$1,$2,$3)
 __var_filter = $(foreach __var, \
          $(call $1,$(call var_name_escape,$2),$(call var_name_escape,$3)) \
                  ,$(call $4,$(call var_name_unescape,$(__var))))
+
+endif # __util_var_filter_mk
