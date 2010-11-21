@@ -43,8 +43,9 @@ var_filter = $(call __var_filter,filter,$1,$2,$3)
 #
 var_filter_out = $(call __var_filter,filter-out,$1,$2,$3)
 
+# TODO % symbol will break this... -- Eldar
 __var_filter = $(foreach __var, \
-         $(call $1,$(call var_name_escape,$2),$(call var_name_escape,$3)) \
-                 ,$(call $4,$(call var_name_unescape,$(__var))))
+         $(call $1,$(call var_name_mangle,$2),$(call var_name_mangle,$3)) \
+                 ,$(call $4,$(call var_name_demangle,$(__var))))
 
 endif # __util_var_filter_mk
