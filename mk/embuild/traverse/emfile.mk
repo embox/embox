@@ -5,34 +5,7 @@
 # Author: Eldar Abusalimov
 #
 
-__sandbox_variables := __sandbox_variables $(.VARIABLES)
-include $(__EMBUILD_TRAVERSE_EMFILE_ROOT)/$(__EMBUILD_TRAVERSE_EMFILE)
-__sandbox_variables := $(filter-out $(__sandbox_variables),$(.VARIABLES))
-
-emfile_variables := $(__sandbox_variables)
-
-variables := $(.VARIABLES)
-
-include util/var_name.mk
 include embuild/traverse/entity.mk
-
-$(foreach var,$(call var_name_escape,$(variables)),$ \
-  $(info $(call var_name_unescape,$(var))))
-
-
-#$(foreach type,$(embuild_entity_types),$ \
-  $(foreach escaped,$(call whitespace_escape,$(type),$(embuild_emfile_variables)), \
-    $(strip $(call whitespace_unescape,$(type),$(escaped))) \
-  ) \
-)
-
-embuild_emfile_entity_variables_escaped = \
-  $(foreach type,$(embuild_entity_types), \
-    $(filter $(type)%,$(call whitespace_escape,$(type),$(emfile_variables))) \
-  )
-
-embuild_emfile_entity_unescape_type = $(word 1,$(call whitespace_unescape,$1))
-embuild_emfile_entity_unescape_name = $(word 2,$(call whitespace_unescape,$1))
 
 __embuild_traverse_emfile_entity_variables = \
   $(filter $(embuild_entity_types:%=%-%),$(emfile_variables))
