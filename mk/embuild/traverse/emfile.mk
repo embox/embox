@@ -6,6 +6,12 @@
 #
 
 include embuild/traverse/entity.mk
+include util/var_filter.mk
+
+sandbox_cb = $(info [$1])
+
+$(error $(call var_filter_out, \
+   $(__sandbox_variables_before),$(__sandbox_variables_after),sandbox_cb))
 
 __embuild_traverse_emfile_entity_variables = \
   $(filter $(embuild_entity_types:%=%-%),$(emfile_variables))
