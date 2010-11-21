@@ -5,7 +5,21 @@
 # Author: Eldar Abusalimov
 #
 
-embuild_entity_types := api module library package
+include gmsl.mk # TODO for 'tr' function. -- Eldar
+
+entity_types := api module library package
+
+entity_type_check = \
+  $(and \
+    $(filter 1,$(words $1)), \
+    $(filter $(entity_types),$1) \
+   )
+
+entity_name_check = \
+  $(and \
+    $(filter 1,$(words $1)), \
+    $(if $(call tr,$([A-Z]) $([a-z]) $([0-9]) _,,$1),,$1) \
+   )
 
 ifdef __EMBUILD_TRAVERSE_ENTITY
 
