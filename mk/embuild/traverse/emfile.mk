@@ -8,16 +8,10 @@
 include util/common.mk
 include util/var_filter.mk
 include util/var_assign.mk
+include util/log.mk
 include embuild/traverse/entity.mk
 
-__error_counter :=
-__error_counter_get_and_inc = \
-  $(__error_counter)${eval __error_counter += x}
-
-error_record = \
-  $(call var_assign_simple,__error_$(__error_counter_get_and_inc)_$1,$2)
-
-emfile_error = $(call error_record,emfile,$1)
+emfile_error = $(call log_error,emfile,$(__emfile),[emfile] $1)
 
 emfile_variable_process = $(if $(filter 2,$(words $1)), \
   $(call emfile_variable_process_entity,$1,$(word 1,$1),$(word 2,$1)), \
@@ -37,11 +31,13 @@ emfile_variable_process_invalid = \
   $(call emfile_error,Invalid em-file variable: $1)
 
 $(foreach v,$(call var_filter_out, \
-   $(__sandbox_variables_before),$(__sandbox_variables_after), \
+   $(__emfile_sandbox_variables_before),$(__emfile_sandbox_variables_after), \
    emfile_variable_process),$(info Filtered: $v : [$(__emfile_entity_variable_$v)]))
 
-$(foreach e,$(filter __error_%_emfile,$(.VARIABLES)), \
+#$(foreach e,$(filter __error_%_emfile,$(.VARIABLES)), \
   $(warning Recorded error $(e:__error_%_emfile=%): $($e)))
+
+$(call log_report_by_tag,emfile)
 
 $(error not yet implemented)
 

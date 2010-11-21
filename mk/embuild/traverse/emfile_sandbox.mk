@@ -15,13 +15,15 @@ $(call envdef_assert_defined, \
   __EMBUILD_TRAVERSE_EMFILE      \
 ,Traverser em-file sandbox needs these variables to be defined)
 
-__sandbox_variables_before :=
-__sandbox_variables_before := $(.VARIABLES)
+__emfile := $(__EMBUILD_TRAVERSE_EMFILE_ROOT)/$(__EMBUILD_TRAVERSE_EMFILE)
+
+__emfile_sandbox_variables_before :=
+__emfile_sandbox_variables_before := $(.VARIABLES)
 
 # Go!
-include $(__EMBUILD_TRAVERSE_EMFILE_ROOT)/$(__EMBUILD_TRAVERSE_EMFILE)
+include $(__emfile)
 
-__sandbox_variables_after  := $(.VARIABLES)
+__emfile_sandbox_variables_after  := $(.VARIABLES)
 
 # Process cathed variables.
 include embuild/traverse/emfile.mk
