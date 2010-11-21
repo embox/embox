@@ -132,19 +132,6 @@ pairmap = $(strip $(if $2$3,\
          $(call $0,$1,$(call  rest,$2),$(call  rest,$3),$(value 4))))
 
 #
-# Function:  triplemap
-# Arguments: 1: Name of function to $(call) for each triplet
-#            2: List to iterate over calling the function in 1
-#            3: Second list to iterate over calling the function in 1
-#            4: Third list to iterate over calling the function in 1
-#            5: Optional argument to pass when calling the function
-# Returns:   The list after calling the function on each triplet of elements
-#
-triplemap = $(strip $(if $2$3$4,\
-     $(call $1,$(call first,$2),$(call first,$3),$(call first,$4),$(value 5)) \
-  $(call $0,$1,$(call  rest,$2),$(call  rest,$3),$(call  rest,$4),$(value 5))))
-
-#
 # Function:  leq
 # Arguments: 1: A list to compare against...
 #            2: ...this list
