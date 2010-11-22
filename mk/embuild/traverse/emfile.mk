@@ -15,33 +15,79 @@ include util/log.mk
 
 include embuild/traverse/entity.mk
 
+# Wrapper around generic error logger.
+# Params:
+#  1. Error message
 emfile_error = $(call log_error,emfile,$(__emfile),[emfile] $1)
 
-emfile_handle_variable = $(if $(filter 2,$(words $1)), \
-  $(call emfile_handle_variable_entity,$1,$(word 1,$1),$(word 2,$1)), \
-  $(call emfile_handle_variable_invalid,$1) \
-)
+# Called for each user defined variable by var_filter_out. Detects double word
+# variable names and tries to interpret them as entities.
+# Params:
+#  1. Variable name as is
+emfile_handle_variable = \
+  $(if $(filter-out 2,$(words $1)), \
+    $(call emfile_error,Invalid em-file variable: $1), \
+    $(call emfile_handle_variable_maybe_entity,$(word 1,$1),$(word 2,$1),$1) \
+  )
 
-emfile_handle_variable_entity = \
-  $(if $(call not,$(call entity_check_type,$2)), \
-    $(call emfile_error,Invalid entity type: $2), \
-    $(if $(call not,$(call entity_check_name,$3)), \
-      $(call emfile_error,Invalid entity name: $3), \
-      $(call emfile_entity_variable_assign_and_echo,$(call entity,$2,$3),$1) \
+# Called for each double word named variable by emfile_handle_variable.
+# Such variable is a candidate to be an entity. Performs the necessary checks
+# for entity type and name, and passes them to the next checker function
+# on success.
+# Params:
+#  1. First word of the variable name (considered as entity type)
+#  2. Second word of the variable name (considered as entity name)
+#  3. Variable name as is
+emfile_handle_variable_maybe_entity = \
+  $(if $(call not,$(call entity_check_type,$1)), \
+    $(call emfile_error,Invalid entity type: $1), \
+    $(if $(call not,$(call entity_check_name,$2)), \
+      $(call emfile_error,Invalid entity name: $2), \
+      $(call emfile_handle_entity_type_name_checked,$1,$2,$3) \
     ) \
   )
 
+# Called for each valid entity (with type and name checked). Checks for
+# acceptability to define the specified entity in the particular emfile.
+emfile_handle_entity_type_name_checked = \
+  $(if $(call not,$(call emfile_entity_names_match,$2)), \
+    $(call emfile_error,$1 $2 can be defined either in \
+                        $2.em or in Embuild, not in $(notdir $(__emfile))), \
+    $(call emfile_entity_variable_assign_and_echo,$(call entity,$1,$2),$3) \
+  )
+
+# Checks whether entity named 'foo' is defined in foo.em or in Embuild.
+#  1. entity name
+# Returns: entity name if it is good, and nothing otherwise.
+emfile_entity_names_match = \
+  $(if $(filter $1 Embuild,$(basename $(notdir $(__emfile)))),$1)
+
+# Defines a variable for the specified entity and assigns the name of
+# user defined variable to it.
+# Params:
+#  1. entity
+#  2. User defined variable name as is
+# Returns: the first argument.
 emfile_entity_variable_assign_and_echo = \
-  $(call var_assign_simple,$(__emfile_entity_variable_name),$2)$1
+  $(call var_assign_simple,$(1:%=$(emfile_entity_variable_name_pattern)),$2)$1
 
-emfile_entity_variable = \
-  $((__emfile_entity_variable_name))
+# Pattern to construct the name of the variable which expands to the name
+# of user defined variable as is (e.g. 'module    foo').
+emfile_entity_variable_name_pattern := \
+  __emfile_entity_variable_name-%
 
-__emfile_entity_variable_name = \
-  __emfile_entity_variable-$1
+# Params:
+#  1. entity
+# Returns: variable name to get the original name of the variable corresponding
+#          to the specified entity.
+emfile_entity_variable_name = \
+  $($(1:%=$(emfile_entity_variable_name_pattern)))
 
-emfile_handle_variable_invalid = \
-  $(call emfile_error,Invalid em-file variable: $1)
+# Params:
+#  1. entity
+# Returns: value of user defined variable corresponding to the entity.
+emfile_entity_value = \
+  $(value $(emfile_entity_variable_name))
 
 # TODO invoke it later. -- Eldar
 emfile_handle_all_variables := $(strip \
@@ -49,7 +95,7 @@ emfile_handle_all_variables := $(strip \
                      $(__emfile_sandbox_variables_before), \
                      $(__emfile_sandbox_variables_after), \
                          emfile_handle_variable), \
-    $(info Filtered: $v : [$(__emfile_entity_variable_$v)]) \
+    $(info Filtered: $v : [$(call emfile_entity_variable_name,$v)]) \
   ) \
 )
 
