@@ -67,7 +67,7 @@ all: $(__embuild_traverse_emfile_entity_targets)
 
 #$(__embuild_traverse_entity_types:%=__embuild_traverse_emfile_%-%):
 $(__embuild_traverse_emfile_entity_targets): __embuild_traverse_emfile_module-%:
-	$(MAKE) -f mk/embuild/traverse/entity.mk all \
+	$(MAKE) -f mk/embuild/traverse/entity_sandbox.mk all \
 		__EMBUILD_TRAVERSE_ENTITY_NAME=$(dir $(__EMBUILD_TRAVERSE_EMFILE))/$*
 
 __embuild_traverse_emfile_module-%: \
