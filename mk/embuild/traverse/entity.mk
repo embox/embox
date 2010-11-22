@@ -5,6 +5,9 @@
 # Author: Eldar Abusalimov
 #
 
+ifndef __embuild_traverse_entity_mk
+__embuild_traverse_entity_mk := 1
+
 include gmsl.mk # TODO for 'tr' function. -- Eldar
 
 entity = $1-$2
@@ -33,4 +36,7 @@ entity_check_type = \
 entity_check_name = \
   $(and $(filter 1,$(words $1)), \
         $(if $(call tr,$([A-Z]) $([a-z]) $([0-9]) _,,$1),,$1))
+
+endif # __embuild_traverse_entity_mk
+
 

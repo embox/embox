@@ -5,10 +5,14 @@
 # Author: Eldar Abusalimov
 #
 
+ifndef __embuild_traverse_emfile_mk
+__embuild_traverse_emfile_mk := 1
+
 include util/common.mk
 include util/var_filter.mk
 include util/var_assign.mk
 include util/log.mk
+
 include embuild/traverse/entity.mk
 
 emfile_error = $(call log_error,emfile,$(__emfile),[emfile] $1)
@@ -23,12 +27,18 @@ emfile_handle_variable_entity = \
     $(call emfile_error,Invalid entity type: $2), \
     $(if $(call not,$(call entity_check_name,$3)), \
       $(call emfile_error,Invalid entity name: $3), \
-      $(call emfile_entity_variable_assign,$2,$3,$1)$2-$3 \
+      $(call emfile_entity_variable_assign_and_echo,$(call entity,$2,$3),$1) \
     ) \
   )
 
-emfile_entity_variable_assign = \
-  $(call var_assign_simple,__emfile_entity_variable_$1-$2,$3)
+emfile_entity_variable_assign_and_echo = \
+  $(call var_assign_simple,$(__emfile_entity_variable_name),$2)$1
+
+emfile_entity_variable = \
+  $((__emfile_entity_variable_name))
+
+__emfile_entity_variable_name = \
+  __emfile_entity_variable-$1
 
 emfile_handle_variable_invalid = \
   $(call emfile_error,Invalid em-file variable: $1)
@@ -82,4 +92,5 @@ __embuild_traverse_emfile_%: \
 $(__embuild_traverse_emfile_entity_targets): \
   export __EMBUILD_TRAVERSE_ENTITY = $(value $(@:__embuild_traverse_emfile_%=%))
 
+endif # __embuild_traverse_emfile_mk
 
