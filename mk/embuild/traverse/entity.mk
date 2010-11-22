@@ -33,6 +33,15 @@ entity_check_type = \
   $(and $(filter 1,$(words $1)), \
         $(filter $(entity_types),$1))
 
+define spec(entity_check_type)
+  $~scene = It should accept only these types: api module library package
+    foreach_given_arg = $(entity_types)
+    result_should_be  = $1
+  $~scene = Any other types should be rejected
+    foreach_given_arg = foo bar baz sdf blah
+    result_should_be  = $(empty)
+endef
+
 entity_check_name = \
   $(and $(filter 1,$(words $1)), \
         $(if $(call tr,$([A-Z]) $([a-z]) $([0-9]) _,,$1),,$1))
