@@ -7,19 +7,28 @@
 
 include gmsl.mk # TODO for 'tr' function. -- Eldar
 
+entity = \
+  $(if $(and $(call entity_type_check,$1),$(call entity_name_check,$2)),$1-$2)
+
+entity_type = $(call __entity_type,$(subst -, ,$1))
+__entity_type = $()
+
+entity_check = \
+  $(if $(filter 1,$(words $1)),$(call __entity_check,$(subst -, - ,$1)))
+__entity_check = \
+  $(if $(and $(filter 3,$(words $1)), \
+             $(call entity_check_type,$(word 1,$1)), \
+             $(call entity_check_name,$(word 2,$1))),$(subst $(\space),,$1))
+
 entity_types := api module library package
 
-entity_type_check = \
-  $(and \
-    $(filter 1,$(words $1)), \
-    $(filter $(entity_types),$1) \
-   )
+entity_check_type = \
+  $(and $(filter 1,$(words $1)), \
+        $(filter $(entity_types),$1))
 
-entity_name_check = \
-  $(and \
-    $(filter 1,$(words $1)), \
-    $(if $(call tr,$([A-Z]) $([a-z]) $([0-9]) _,,$1),,$1) \
-   )
+entity_check_name = \
+  $(and $(filter 1,$(words $1)), \
+        $(if $(call tr,$([A-Z]) $([a-z]) $([0-9]) _,,$1),,$1))
 
 ifdef __EMBUILD_TRAVERSE_ENTITY
 

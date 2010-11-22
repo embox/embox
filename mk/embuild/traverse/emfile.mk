@@ -14,18 +14,21 @@ include embuild/traverse/entity.mk
 emfile_error = $(call log_error,emfile,$(__emfile),[emfile] $1)
 
 emfile_handle_variable = $(if $(filter 2,$(words $1)), \
-  $(call emfile_variable_process_entity,$1,$(word 1,$1),$(word 2,$1)), \
-  $(call emfile_variable_process_invalid,$1) \
+  $(call emfile_handle_variable_entity,$1,$(word 1,$1),$(word 2,$1)), \
+  $(call emfile_handle_variable_invalid,$1) \
 )
 
 emfile_handle_variable_entity = \
-  $(if $(call not,$(call entity_type_check,$2)), \
+  $(if $(call not,$(call entity_check_type,$2)), \
     $(call emfile_error,Invalid entity type: $2), \
-    $(if $(call not,$(call entity_name_check,$3)), \
+    $(if $(call not,$(call entity_check_name,$3)), \
       $(call emfile_error,Invalid entity name: $3), \
-      $(call var_assign_simple,__emfile_entity_variable_$2-$3,$1)$2-$3 \
+      $(call emfile_entity_variable_assign,$2,$3,$1)$2-$3 \
     ) \
   )
+
+emfile_entity_variable_assign = \
+  $(call var_assign_simple,__emfile_entity_variable_$1-$2,$3)
 
 emfile_handle_variable_invalid = \
   $(call emfile_error,Invalid em-file variable: $1)
