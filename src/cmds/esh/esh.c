@@ -2,12 +2,14 @@
 #include <embox/unit.h>
 #include <kernel/printk.h>
 #include <shell_command.h>
+#include <lib/readline.h>
+#include <stdio.h>
 
+#if 0
 #define USE_READLINE
 //#define USE_FOPEN
 
 #ifdef USE_READLINE
-#include <lib/readline.h>
 #else
 #endif
 
@@ -23,19 +25,44 @@ char * __readline(char *arg) {
 	return cmd_2;
 }
 #endif
+#endif
 
 static int esh_start(void) {
-	int ret_code;
+#if 0
 	char cmd[255];
 	char promt[255];
 	char *cmd_ptr = &cmd[0];
 	char *promt_ptr = &promt[0];
-	SHELL_COMMAND_DESCRIPTOR *scd;
 	promt_ptr = ">";
+#endif
+
+	int ret_code;
+	SHELL_COMMAND_DESCRIPTOR *scd;
+	printk("\nModule `esh' started.\n");
+	printf("Printf test\n");
+
+	char *line;
+
+	FILE *ff = fopen("/dev/uart","r");
+
+	for (;;) {
+		/*cmd_ptr = __readline(promt_ptr); */
+		line = readline(CONFIG_SHELL_PROMPT);
+		shell_command_descriptor_find_first(line, -1);
+
+		#if 1
+			printk("CmdLine: %s, RunCommand: %s\n",line , scd->name);
+		#endif
+
+		ret_code = shell_command_exec(scd, 0, NULL);
+
+		freeline(line);
+	}
+
+	fclose(ff);
 
 
-	printk("Module `esh' started.\n");
-
+#if 0
 #ifdef USE_FOPEN
 	char tmp;
 	FILE *ff = fopen("/dev/uart","r");
@@ -56,6 +83,7 @@ static int esh_start(void) {
 		ret_code = shell_command_exec(scd, 0, NULL);
 	}
 #endif
+#endif
 
 	return 0;
 }
@@ -65,8 +93,6 @@ static int esh_stop(void) {
 }
 
 EMBOX_UNIT(esh_start, esh_stop);
-
-#undef USE_READLINE
 
 /* tmp */
 
