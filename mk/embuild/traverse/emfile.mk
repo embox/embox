@@ -50,11 +50,17 @@ __emfile_type = \
        $(if $(filter %.em,$1),multiple,$ \
          $(error invalid emfile: __emfile is [$(__emfile)]))))
 
+#
+# Steps:
+#  filter
+#  check
+#  define
+#
 
 emfile_handle_all = $(strip \
   $(call emfile_handle_all_xxx, \
       $(call emfile_handle_filter_entities_result, \
-          $(call emfile_filter_entities))) \
+          $(call emfile_filter))) \
 )
 
 emfile_handle_all_xxx = \
@@ -62,11 +68,11 @@ emfile_handle_all_xxx = \
     $(call emfile_define_entities,$(call emfile_entities_extract,$1)) \
    )
 
-emfile_filter_entities = \
+emfile_filter = \
   $(call var_filter_out, \
           $(__emfile_sandbox_variables_before), \
           $(__emfile_sandbox_variables_after), \
-              emfile_handle_variable)
+              emfile_filter_handle)
 
 emfile_handle_filter_entities_result = $(call emfile_errors_filter,$1) \
    $(call emfile_handle_entities,$(call emfile_entities_extract,$1))
@@ -116,18 +122,31 @@ __emfile_error_str_x_times_as_type = \
 __emfile_error_str_x_times = \
   $(if $(filter 1,$1),once,$(if $(filter 2,$1),twice,$1 times))
 
-# Called for each user defined variable by var_filter_out. Detects double word
-# variable names and tries to interpret them as entities.
+# Checks for acceptability to define the specified entity in the particular
+# emfile (whether entity named 'foo' is defined in foo.em or in Embuild).
 # Params:
-#  1. Variable name as is
-# Returns: valid entity corresponding for given variable name (if any)
-emfile_handle_variable = \
-  $(if $(filter-out 2,$(words $1)), \
-    $(call emfile_error,Invalid em-file variable: $1), \
-    $(call emfile_handle_variable_as_entity,$(word 1,$1),$(word 2,$1),$1) \
+#  1. entity
+# Returns: entity name if it is good, and error entry otherwise.
+# XXX
+emfile_filter_entity_checked = \
+  $(if $(filter-out $(call entity_name,$1) Embuild,$(basename $(notdir $(__emfile)))), \
+    $(call emfile_error,$1 $2 can be defined either in \
+                        $2.em or in Embuild, not in $(notdir $(__emfile))), \
+    $(call emfile_entity_variable_assign_and_echo,$(call entity,$1,$2),$3) \
   )
 
-# Called for each double word named variable by emfile_handle_variable.
+# Called for each user defined variable. Detects double word variable names
+# and tries to interpret them as entities.
+# Params:
+#  1. Variable name as is
+# Returns: valid entity corresponding for given variable name or error entry
+emfile_filter_handle = \
+  $(if $(filter-out 2,$(words $1)), \
+    $(call emfile_error,Invalid em-file variable: $1), \
+    $(call emfile_filter_try_entity,$(word 1,$1),$(word 2,$1),$1) \
+  )
+
+# Called for each double word named variable by emfile_filter_handle.
 # Such variable is a candidate to be an entity. Performs the necessary checks
 # for entity type and name, and passes them to the next checker function
 # on success.
@@ -135,57 +154,46 @@ emfile_handle_variable = \
 #  1. First word of the variable name (considered as entity type)
 #  2. Second word of the variable name (considered as entity name)
 #  3. Variable name as is
-emfile_handle_variable_as_entity = \
-  $(or $(strip $(call emfile_handle_variable_as_entity_check_for_bad_type,$1) \
-               $(call emfile_handle_variable_as_entity_check_for_bad_name,$2)),\
-       $(call emfile_handle_variable_entity_type_name_checked,$1,$2,$3))
+# Returns: entity entry if recognized a valid one, error entry otherwise
+emfile_filter_try_entity = \
+  $(or $(call emfile_errors_filter, \
+           $(call emfile_filter_try_entity_type,$1,$3) \
+           $(call emfile_filter_try_entity_name,$2,$3)), \
+       $(call emfile_filter_entity_checked,$(call entity,$1,$2),$3))
 
 # Params:
 #  1. Word considered as entity type
 #  2. Variable name as is
-# Returns: empty string on success, error entry on failure
-emfile_handle_variable_as_entity_check_for_bad_type= \
-  $(if $(call not,$(call entity_check_type,$1)), \
-    $(call emfile_error,Invalid em-file variable: $3. \
-                        '$1' is not recognized as a valid entity type) \
-   )
+# Returns: given type on success, error entry on failure
+emfile_filter_try_entity_type = \
+  $(or $(call entity_check_type,$1), \
+       $(call emfile_error,Invalid em-file variable: $2. \
+                        '$1' is not recognized as a valid entity type))
 
 # Params:
 #  1. Word considered as entity name
 #  2. Variable name as is
-# Returns: empty string on success, error entry on failure
-emfile_handle_variable_as_entity_check_for_bad_name = \
-  $(if $(call not,$(call entity_check_name,$1)), \
-    $(call emfile_error,Invalid em-file variable: $3. \
-                        '$1' is not a valid entity name), \
-   )
+# Returns: given name on success, error entry on failure
+emfile_filter_try_entity_name = \
+  $(or $(call entity_check_name,$1), \
+       $(call emfile_error,Invalid em-file variable: $2. \
+                        '$1' is not a valid entity name))
 
-# Called for each valid entity (with type and name checked). Checks for
-# acceptability to define the specified entity in the particular emfile.
+# Called for each valid entity (with type and name checked).
 # Params:
-#  1. entity type
-#  2. entity name
-#  3. Variable name as is
-emfile_handle_variable_entity_type_name_checked = \
-  $(if $(call not,$(call emfile_entity_names_match,$2)), \
-    $(call emfile_error,$1 $2 can be defined either in \
-                        $2.em or in Embuild, not in $(notdir $(__emfile))), \
-    $(call emfile_entity_variable_assign_and_echo,$(call entity,$1,$2),$3) \
-  )
+#  1. entity
+#  2. Variable name as is
+# Returns: entity entry
+emfile_filter_entity_checked = \
+  $(call emfile_entity,$(call emfile_filter_entity_assign_variable_name,$1,$2))
 
-# Checks whether entity named 'foo' is defined in foo.em or in Embuild.
-#  1. entity name
-# Returns: entity name if it is good, and nothing otherwise.
-emfile_entity_names_match = \
-  $(if $(filter $1 Embuild,$(basename $(notdir $(__emfile)))),$1)
-
-# Defines a variable for the specified entity and assigns the name of
-# user defined variable to it.
+# For given entity defines a variable which will hold the name of user defined
+# variable.
 # Params:
 #  1. entity
 #  2. User defined variable name as is
 # Returns: the first argument.
-emfile_entity_variable_assign_and_echo = \
+emfile_filter_entity_assign_variable_name = \
   $(call var_assign_simple,$(1:%=$(emfile_entity_variable_name_pattern)),$2)$1
 
 # Pattern to construct the name of the variable which expands to the name
