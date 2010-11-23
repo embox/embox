@@ -30,10 +30,28 @@ __emfile_type = \
        $(if $(filter %.em,$1),personal,$ \
          $(error invalid emfile: __emfile is [$(__emfile)]))))
 
+
+emfile_handle_all_variables = $(strip \
+  $(call emfile_handle_filtered_entities, \
+    $(call var_filter_out, \
+           $(__emfile_sandbox_variables_before), \
+           $(__emfile_sandbox_variables_after), \
+               emfile_handle_variable), \
+   ) \
+)
+
+emfile_handle_filtered_entities = \
+  $(foreach entity,$1, \
+    $(if $(filter-out 1,$(words $(filter $(entity),$1))), \
+      $(call emfile_error) \
+     ) \
+   )
+
 # Called for each user defined variable by var_filter_out. Detects double word
 # variable names and tries to interpret them as entities.
 # Params:
 #  1. Variable name as is
+# Returns: valid entity corresponding for given variable name (if any)
 emfile_handle_variable = \
   $(if $(filter-out 2,$(words $1)), \
     $(call emfile_error,Invalid em-file variable: $1), \
@@ -100,14 +118,7 @@ emfile_entity_value = \
   $(value $(emfile_entity_variable_name))
 
 # TODO invoke it later. -- Eldar
-emfile_handle_all_variables := $(strip \
-  $(foreach v,$(call var_filter_out, \
-                     $(__emfile_sandbox_variables_before), \
-                     $(__emfile_sandbox_variables_after), \
-                         emfile_handle_variable), \
-    $(info Filtered: $v : [$(call emfile_entity_variable_name,$v)]) \
-  ) \
-)
+emfile_handle_all_variables := $(emfile_handle_all_variables)
 
 #$(foreach e,$(filter __error_%_emfile,$(.VARIABLES)), \
   $(warning Recorded error $(e:__error_%_emfile=%): $($e)))

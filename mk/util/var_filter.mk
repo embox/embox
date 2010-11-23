@@ -22,10 +22,11 @@ include util/var_name.mk
 #  2. Variables list being filtered
 #  3. Function to call for each occurrence of variable from the first list
 #     in the second
+#  4. Optional argument to pass when calling the function
 #
 # Returns: result of calling the specified function on each filtered variable
 #
-var_filter = $(call __var_filter,filter,$1,$2,$3)
+var_filter = $(call __var_filter,filter,$1,$2,$3,$(value 4))
 
 #
 # Function: var_filter_out
@@ -38,14 +39,15 @@ var_filter = $(call __var_filter,filter,$1,$2,$3)
 #  2. Variables list being filtered
 #  3. Function to call for each variable of the second list which is not
 #     presented in the first one
+#  4. Optional argument to pass when calling the function
 #
 # Returns: result of calling the specified function on each filtered variable
 #
-var_filter_out = $(call __var_filter,filter-out,$1,$2,$3)
+var_filter_out = $(call __var_filter,filter-out,$1,$2,$3,$(value 4))
 
 # TODO % symbol will break this... -- Eldar
 __var_filter = $(foreach __var, \
          $(call $1,$(call var_name_mangle,$2),$(call var_name_mangle,$3)) \
-                 ,$(call $4,$(call var_name_demangle,$(__var))))
+                 ,$(call $4,$(call var_name_demangle,$(__var)),$5))
 
 endif # __util_var_filter_mk
