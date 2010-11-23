@@ -40,37 +40,44 @@ emfile_handle_all_variables = $(strip \
    ) \
 )
 
+# Params:
+#  1. all entities
 emfile_handle_filtered_entities = \
-  $(foreach entity,$1, \
-    $(if $(filter-out 1,$(words $(filter $(entity),$1))), \
-      $(call emfile_error,) \
-     ) \
-   )
+  $(call emfile_handle_filtered_entity_names,$1,$(call entity_names,$1))
 
-$(call emfile_handle_filtered_entities,$1,$(call entity_names,$1))
-emfile_handle_filtered_entities = \
-  $(if $(filter-out $(words $1),$(words $(sort $2))), \
-    $(foreach entity,$1, \
-      $(if $(filter-out 1,$(words $(filter $(call entity_name,$(entity)),$1))), \
-        $(call emfile_error,) \
-       ) \
-     )
+# Params:
+#  1. all entities
+#  2. entity names
+emfile_handle_filtered_entity_names = \
+  $(if $(filter-out $(words $2),$(words $(sort $2))), \
+    $(call emfile_handle_filtered_entities_things_are_bad,$1,$2) \
    )
 
 # Assumed to be cold, feel free.
+# Params:
+#  1. all entities
+#  2. entity names
 emfile_handle_filtered_entities_things_are_bad = \
-  $(foreach e_name,$2,$(call emfile_entity_name_check_uniq \
+  $(foreach e_name,$2,$(call emfile_entity_name_assure_uniq \
          ,$(e_name),$(call entity_types_for_name,$(e_name),$1)))
 
 # Params:
 #  1. entity name
 #  2. all entity types (probably with duplicates)
-emfile_entity_name_check_uniq = \
+emfile_entity_name_assure_uniq = \
   $(if $(filter-out 1,$(words $2)), \
-    $(call emfile_error,Entity named '$1' defined more than once: \
-        $(foreach e_type,$(sort $2),$ \
-           $(call __emfile_error_str_x_times_as_type,$(e_type),$2)$(\comma))) \
+    $(call emfile_entity_name_check_uniq_error,$1,$2,$(sort $2)) \
    ) \
+
+# Params:
+#  1. entity name
+#  2. all entity types (probably with duplicates)
+#  3. entity types with no duplicates
+emfile_entity_name_check_uniq_error = \
+  $(call emfile_error,Entity named '$1' defined more than once: \
+        $(foreach e_type,$(call chop,$3),$ \
+            $(call __emfile_error_str_x_times_as_type,$(e_type),$2)$(\comma)) \
+        $(call __emfile_error_str_x_times_as_type,$(call last,$3),$2))
 
 __emfile_error_str_x_times_as_type = \
   $(call __emfile_error_str_x_times,$(words $(filter $1,$2))) as '$1'

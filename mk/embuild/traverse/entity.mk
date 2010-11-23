@@ -33,7 +33,7 @@ entity_types_for_name = $(strip \
 __entity_type = $(word 1,$1)
 __entity_name = $(word 3,$1)
 
-__entity_split = $(subst -. - ,$1)
+__entity_split = $(subst -, - ,$1)
 
 entity_check = \
   $(if $(filter 1,$(words $1)),$(call __entity_check,$(__entity_split)))
