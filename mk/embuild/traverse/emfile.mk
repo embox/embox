@@ -43,9 +43,40 @@ emfile_handle_all_variables = $(strip \
 emfile_handle_filtered_entities = \
   $(foreach entity,$1, \
     $(if $(filter-out 1,$(words $(filter $(entity),$1))), \
-      $(call emfile_error) \
+      $(call emfile_error,) \
      ) \
    )
+
+$(call emfile_handle_filtered_entities,$1,$(call entity_names,$1))
+emfile_handle_filtered_entities = \
+  $(if $(filter-out $(words $1),$(words $(sort $2))), \
+    $(foreach entity,$1, \
+      $(if $(filter-out 1,$(words $(filter $(call entity_name,$(entity)),$1))), \
+        $(call emfile_error,) \
+       ) \
+     )
+   )
+
+# Assumed to be cold, feel free.
+emfile_handle_filtered_entities_things_are_bad = \
+  $(foreach e_name,$2,$(call emfile_entity_name_check_uniq \
+         ,$(e_name),$(call entity_types_for_name,$(e_name),$1)))
+
+# Params:
+#  1. entity name
+#  2. all entity types (probably with duplicates)
+emfile_entity_name_check_uniq = \
+  $(if $(filter-out 1,$(words $2)), \
+    $(call emfile_error,Entity named '$1' defined more than once: \
+        $(foreach e_type,$(sort $2),$ \
+           $(call __emfile_error_str_x_times_as_type,$(e_type),$2)$(\comma))) \
+   ) \
+
+__emfile_error_str_x_times_as_type = \
+  $(call __emfile_error_str_x_times,$(words $(filter $1,$2))) as '$1'
+
+__emfile_error_str_x_times = \
+  $(if $(filter 1,$1),once,$(if $(filter 2,$1),twice,$1 times))
 
 # Called for each user defined variable by var_filter_out. Detects double word
 # variable names and tries to interpret them as entities.

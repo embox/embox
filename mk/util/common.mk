@@ -26,6 +26,8 @@ $(\space)\n          := $(\n)
 $(\space)\n$(\space) := $(\n)
          \n$(\space) := $(\n)
 
+\comma := ,
+
 # Alias for \n (backward compatibility)
 N := $(\n)
 
