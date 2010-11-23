@@ -52,24 +52,24 @@ __emfile_type = \
 
 
 emfile_handle_all = $(strip \
-  $(if $(call emfile_errors_filter, \
-              $(call emfile_handle_filter_check_result, \
-                     $(call emfile_filter_entities_check))), \
-    $(call emfile_filter_entities_define) \
-   ) \
+  $(call emfile_handle_all_xxx, \
+      $(call emfile_handle_filter_entities_result, \
+          $(call emfile_filter_entities))) \
 )
 
-emfile_filter_entities_check  = $(call emfile_filter_entities,check)
-emfile_filter_entities_define = $(call emfile_filter_entities,define)
+emfile_handle_all_xxx = \
+  $(if $(call not,$(call emfile_errors_filter,$1)), \
+    $(call emfile_define_entities,$(call emfile_entities_extract,$1)) \
+   )
+
 emfile_filter_entities = \
-  $(foreach __phase,$1,$(call var_filter_out, \
+  $(call var_filter_out, \
           $(__emfile_sandbox_variables_before), \
           $(__emfile_sandbox_variables_after), \
-              emfile_handle_variable))
+              emfile_handle_variable)
 
-emfile_handle_filter_check_result = $(strip $(call emfile_errors_filter,$1) \
-  $(call emfile_handle_entities,$(call emfile_entities_extract,$1)) \
-)
+emfile_handle_filter_entities_result = $(call emfile_errors_filter,$1) \
+   $(call emfile_handle_entities,$(call emfile_entities_extract,$1))
 
 # Params:
 #  1. all entities
@@ -136,15 +136,15 @@ emfile_handle_variable = \
 #  2. Second word of the variable name (considered as entity name)
 #  3. Variable name as is
 emfile_handle_variable_as_entity = \
-  $(or $(strip $(emfile_handle_variable_as_entity_check_for_type_violations) \
-               $(emfile_handle_variable_as_entity_check_for_name_violations)),\
+  $(or $(strip $(call emfile_handle_variable_as_entity_check_for_bad_type,$1) \
+               $(call emfile_handle_variable_as_entity_check_for_bad_name,$2)),\
        $(call emfile_handle_variable_entity_type_name_checked,$1,$2,$3))
 
 # Params:
 #  1. Word considered as entity type
 #  2. Variable name as is
 # Returns: empty string on success, error entry on failure
-emfile_handle_variable_as_entity_check_for_type_violations = \
+emfile_handle_variable_as_entity_check_for_bad_type= \
   $(if $(call not,$(call entity_check_type,$1)), \
     $(call emfile_error,Invalid em-file variable: $3. \
                         '$1' is not recognized as a valid entity type) \
@@ -154,7 +154,7 @@ emfile_handle_variable_as_entity_check_for_type_violations = \
 #  1. Word considered as entity name
 #  2. Variable name as is
 # Returns: empty string on success, error entry on failure
-emfile_handle_variable_as_entity_check_for_name_violations = \
+emfile_handle_variable_as_entity_check_for_bad_name = \
   $(if $(call not,$(call entity_check_name,$1)), \
     $(call emfile_error,Invalid em-file variable: $3. \
                         '$1' is not a valid entity name), \
