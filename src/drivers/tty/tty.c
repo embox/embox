@@ -70,7 +70,7 @@ static uint32_t tty_scanline(uint8_t line[TTY_RXBUFF_SIZE + 1], uint32_t size) {
 void tty_freeline(tty_device_t *tty, uint8_t *line) {
 	uint32_t line_size;
 	if(0 != tty->rx_cnt) {
-		line_size = tty_scanline(tty->rx_buff, tty->rx_cnt);
+		line_size = tty_scanline((uint8_t*)tty->rx_buff, tty->rx_cnt);
 	}
 }
 

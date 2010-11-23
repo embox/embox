@@ -17,13 +17,13 @@
 
 #include <fs/file.h>
 
-typedef struct tty_device {
-	volatile uint8_t  out_buff[TTY_RXBUFF_SIZE + 1];
-	volatile uint8_t  rx_buff[TTY_RXBUFF_SIZE + 1];
-	volatile uint8_t  tx_buff[TTY_TXBUFF_SIZE + 1];
-	volatile uint32_t rx_cnt;
-	volatile bool     out_busy; /*whether out_buff is busy*/
-	volatile file_operations_t *file_op;
+typedef volatile struct tty_device {
+	uint8_t  out_buff[TTY_RXBUFF_SIZE + 1];
+	uint8_t  rx_buff[TTY_RXBUFF_SIZE + 1];
+	uint8_t  tx_buff[TTY_TXBUFF_SIZE + 1];
+	uint32_t rx_cnt;
+	bool     out_busy; /*whether out_buff is busy*/
+	file_operations_t *file_op;
 } tty_device_t;
 
 extern tty_device_t *cur_tty;
