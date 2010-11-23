@@ -20,6 +20,16 @@ include embuild/traverse/entity.mk
 #  1. Error message
 emfile_error = $(call log_error,emfile,$(__emfile),[emfile] $1)
 
+# Returns:
+#   'single'   for *.em, and
+#   'multiple' for Embuild
+emfile_type = $(call __emfile_type,$($(notdir $(__emfile))))
+__emfile_type = \
+  $(if $(filter 1,$(words $1)),$ \
+    $(if $(filter Embuild,$1),common,$ \
+       $(if $(filter %.em,$1),personal,$ \
+         $(error invalid emfile: __emfile is [$(__emfile)]))))
+
 # Called for each user defined variable by var_filter_out. Detects double word
 # variable names and tries to interpret them as entities.
 # Params:
