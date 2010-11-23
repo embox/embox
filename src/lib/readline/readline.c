@@ -13,6 +13,7 @@ char *readline(const char *promt) {
 	if (NULL == cur_tty) {
 		return NULL;
 	}
+	printf("%s", promt);
 	return (char *)tty_readline(cur_tty);
 }
 

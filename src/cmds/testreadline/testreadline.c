@@ -24,7 +24,8 @@ static int exec(int argsc, char **argsv) {
 	FILE *ff = fopen("/dev/uart","r");
 
 	line = readline(CONFIG_SHELL_PROMPT);
-	TRACE("\nreceived '%s'", line);
+
+	printf("\nreceived '%s'\n", line);
 	freeline(line);
 
 	fclose(ff);
