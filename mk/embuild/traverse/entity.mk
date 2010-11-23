@@ -10,7 +10,7 @@ __embuild_traverse_entity_mk := 1
 
 include gmsl.mk # TODO for 'tr' function. -- Eldar
 
-entity = $1-$2
+entity = __entity-$1-$2
 
 entity_print = $(subst -, ,$1)
 
@@ -30,15 +30,16 @@ entity_types_for_name = $(strip \
    ) \
 )
 
-__entity_type = $(word 1,$1)
-__entity_name = $(word 3,$1)
+__entity_type = $(word 3,$1)
+__entity_name = $(word 5,$1)
 
 __entity_split = $(subst -, - ,$1)
 
 entity_check = \
   $(if $(filter 1,$(words $1)),$(call __entity_check,$(__entity_split)))
 __entity_check = \
-  $(if $(and $(filter 3,$(words $1)), \
+  $(if $(and $(filter 5,$(words $1)), \
+             $(filter __entity,$(word 1,$1)), \
              $(call entity_check_type,$(__entity_type)), \
              $(call entity_check_name,$(__entity_name))),$(subst $(\space),,$1))
 

@@ -18,7 +18,27 @@ include embuild/traverse/entity.mk
 # Wrapper around generic error logger.
 # Params:
 #  1. Error message
-emfile_error = $(call log_error,emfile,$(__emfile),[emfile] $1)
+# Returns: error entry
+emfile_error = \
+  $(patsubst %,$(__emfile_error_pattern), \
+    $(call log_error_entry,emfile,$(__emfile),[emfile] $1))
+emfile_errors_extract = \
+  $(patsubst $(__emfile_error_pattern),%,$(emfile_errors_filter))
+emfile_errors_filter = \
+  $(filter $(__emfile_error_pattern),$1)
+__emfile_error_pattern = error(%)
+
+# Wraps entity so that it could be differed from e.g. error entries.
+# Params:
+#  1. entity
+# Returns: entity entry
+emfile_entity = \
+  $(1:%=$(__emfile_entity_pattern))
+emfile_entities_extract = \
+  $(patsubst $(__emfile_entity_pattern),%,$(emfile_entities_filter))
+emfile_entities_filter = \
+  $(filter $(__emfile_entity_pattern),$1)
+__emfile_entity_pattern = entity(%)
 
 # Returns:
 #   'single'   for *.em, and
@@ -26,44 +46,55 @@ emfile_error = $(call log_error,emfile,$(__emfile),[emfile] $1)
 emfile_type = $(call __emfile_type,$($(notdir $(__emfile))))
 __emfile_type = \
   $(if $(filter 1,$(words $1)),$ \
-    $(if $(filter Embuild,$1),common,$ \
-       $(if $(filter %.em,$1),personal,$ \
+    $(if $(filter Embuild,$1),single,$ \
+       $(if $(filter %.em,$1),multiple,$ \
          $(error invalid emfile: __emfile is [$(__emfile)]))))
 
 
-emfile_handle_all_variables = $(strip \
-  $(call emfile_handle_filtered_entities, \
-    $(call var_filter_out, \
-           $(__emfile_sandbox_variables_before), \
-           $(__emfile_sandbox_variables_after), \
-               emfile_handle_variable), \
+emfile_handle_all = $(strip \
+  $(if $(call emfile_errors_filter, \
+              $(call emfile_handle_filter_check_result, \
+                     $(call emfile_filter_entities_check))), \
+    $(call emfile_filter_entities_define) \
    ) \
+)
+
+emfile_filter_entities_check  = $(call emfile_filter_entities,check)
+emfile_filter_entities_define = $(call emfile_filter_entities,define)
+emfile_filter_entities = \
+  $(foreach __phase,$1,$(call var_filter_out, \
+          $(__emfile_sandbox_variables_before), \
+          $(__emfile_sandbox_variables_after), \
+              emfile_handle_variable))
+
+emfile_handle_filter_check_result = $(strip $(call emfile_errors_filter,$1) \
+  $(call emfile_handle_entities,$(call emfile_entities_extract,$1)) \
 )
 
 # Params:
 #  1. all entities
-emfile_handle_filtered_entities = \
-  $(call emfile_handle_filtered_entity_names,$1,$(call entity_names,$1))
+emfile_handle_entities = \
+  $(call emfile_handle_entities_names,$1,$(call entity_names,$1))
 
 # Params:
 #  1. all entities
 #  2. entity names
-emfile_handle_filtered_entity_names = \
+emfile_handle_entities_names = \
   $(if $(filter-out $(words $2),$(words $(sort $2))), \
-    $(call emfile_handle_filtered_entities_things_are_bad,$1,$2) \
+    $(call emfile_handle_entities_names_error,$1,$2) \
    )
 
-# Assumed to be cold, feel free.
+# Things are bad. Assumed to be cold, feel free.
 # Params:
 #  1. all entities
 #  2. entity names
-emfile_handle_filtered_entities_things_are_bad = \
+emfile_handle_entities_names_error = \
   $(foreach e_name,$2,$(call emfile_entity_name_assure_uniq \
          ,$(e_name),$(call entity_types_for_name,$(e_name),$1)))
 
 # Params:
 #  1. entity name
-#  2. all entity types (probably with duplicates)
+#  2. all entity types for the name (probably with duplicates)
 emfile_entity_name_assure_uniq = \
   $(if $(filter-out 1,$(words $2)), \
     $(call emfile_entity_name_check_uniq_error,$1,$2,$(sort $2)) \
@@ -71,7 +102,7 @@ emfile_entity_name_assure_uniq = \
 
 # Params:
 #  1. entity name
-#  2. all entity types (probably with duplicates)
+#  2. all entity types for the name (probably with duplicates)
 #  3. entity types with no duplicates
 emfile_entity_name_check_uniq_error = \
   $(call emfile_error,Entity named '$1' defined more than once: \
@@ -93,7 +124,7 @@ __emfile_error_str_x_times = \
 emfile_handle_variable = \
   $(if $(filter-out 2,$(words $1)), \
     $(call emfile_error,Invalid em-file variable: $1), \
-    $(call emfile_handle_variable_maybe_entity,$(word 1,$1),$(word 2,$1),$1) \
+    $(call emfile_handle_variable_as_entity,$(word 1,$1),$(word 2,$1),$1) \
   )
 
 # Called for each double word named variable by emfile_handle_variable.
@@ -104,18 +135,38 @@ emfile_handle_variable = \
 #  1. First word of the variable name (considered as entity type)
 #  2. Second word of the variable name (considered as entity name)
 #  3. Variable name as is
-emfile_handle_variable_maybe_entity = \
+emfile_handle_variable_as_entity = \
+  $(or $(strip $(emfile_handle_variable_as_entity_check_for_type_violations) \
+               $(emfile_handle_variable_as_entity_check_for_name_violations)),\
+       $(call emfile_handle_variable_entity_type_name_checked,$1,$2,$3))
+
+# Params:
+#  1. Word considered as entity type
+#  2. Variable name as is
+# Returns: empty string on success, error entry on failure
+emfile_handle_variable_as_entity_check_for_type_violations = \
   $(if $(call not,$(call entity_check_type,$1)), \
-    $(call emfile_error,Invalid entity type: $1), \
-    $(if $(call not,$(call entity_check_name,$2)), \
-      $(call emfile_error,Invalid entity name: $2), \
-      $(call emfile_handle_entity_type_name_checked,$1,$2,$3) \
-    ) \
-  )
+    $(call emfile_error,Invalid em-file variable: $3. \
+                        '$1' is not recognized as a valid entity type) \
+   )
+
+# Params:
+#  1. Word considered as entity name
+#  2. Variable name as is
+# Returns: empty string on success, error entry on failure
+emfile_handle_variable_as_entity_check_for_name_violations = \
+  $(if $(call not,$(call entity_check_name,$1)), \
+    $(call emfile_error,Invalid em-file variable: $3. \
+                        '$1' is not a valid entity name), \
+   )
 
 # Called for each valid entity (with type and name checked). Checks for
 # acceptability to define the specified entity in the particular emfile.
-emfile_handle_entity_type_name_checked = \
+# Params:
+#  1. entity type
+#  2. entity name
+#  3. Variable name as is
+emfile_handle_variable_entity_type_name_checked = \
   $(if $(call not,$(call emfile_entity_names_match,$2)), \
     $(call emfile_error,$1 $2 can be defined either in \
                         $2.em or in Embuild, not in $(notdir $(__emfile))), \
@@ -156,7 +207,7 @@ emfile_entity_value = \
   $(value $(emfile_entity_variable_name))
 
 # TODO invoke it later. -- Eldar
-emfile_handle_all_variables := $(emfile_handle_all_variables)
+emfile_handle_all := $(emfile_handle_all)
 
 #$(foreach e,$(filter __error_%_emfile,$(.VARIABLES)), \
   $(warning Recorded error $(e:__error_%_emfile=%): $($e)))

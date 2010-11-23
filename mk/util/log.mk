@@ -6,23 +6,29 @@
 ifndef __util_log_mk
 __util_log_mk := 1
 
-log = $(call __log_record,$(__log_tag),$2)
+log = $(and $(log_entry),)
 
-log_error   = $(call log,$1,$(call   error_str_file,$2)$3)
-log_warning = $(call log,$1,$(call warning_str_file,$2)$3)
+log_entry = $(call __log_entry,$(__log_tag),$2)
+
+log_error   = $(and $(log_error_entry),)
+log_warning = $(and $(log_warning_entry),)
+
+log_error_entry   = $(call log_entry,$1,$(call   error_str_file,$2)$3)
+log_warning_entry = $(call log_entry,$1,$(call warning_str_file,$2)$3)
 
 log_id_last = $(__log_counter_get)
 
-__log_record = \
-  ${eval $(__log_counter_inc_and_get:%=$(__log_id_by_tag_pattern)) := $$2}
+__log_entry = $(call __log_entry_record \
+  ,$(__log_counter_inc_and_get:%=$(__log_id_by_tag_pattern)),$2)
 
-__log_tag_by_id_pattern = __log_record_$(__log_id)_%
-__log_id_by_tag_pattern = __log_record_%_$(__log_tag)
+__log_entry_record = ${eval $$1 := $$2}$1
+
+__log_tag_by_id_pattern = __log-$(__log_id)-%
+__log_id_by_tag_pattern = __log-%-$(__log_tag)
 
 __log_id = $(word $1,)$1
 __log_tag = \
-  $(call assert,$(filter 0 1,$(words $(value 1))),Invalid log record tag: \
-           [$(value 1)])$(or $(strip $(value 1)),generic)
+  $(call assert,$(filter 1,$(words $1)),Invalid log tag: [$1])$(strip $1)
 
 log_ids_by_tag = \
   $(sort $(call __log_filter_patsubst,$(__log_id_by_tag_pattern)))
@@ -47,8 +53,8 @@ __log_counter_inc_and_get = \
 
 # The most general way to get error/warning string.
 # First argument should contain the location to print (directory and file).
-error_str_file   = $1:1: error:
-warning_str_file = $1:1: warning:
+error_str_file   = $1:0: error:
+warning_str_file = $1:0: warning:
 
 # Print location using the first argument as directory
 # and 'Makefile' as file within the directory.
