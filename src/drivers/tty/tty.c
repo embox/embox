@@ -38,7 +38,7 @@ int tty_get_uniq_number(void) {
 int tty_add_char(tty_device_t *tty, int ch) {
 	if ('\n' == ch && !tty->out_busy) {
 		/*add string to output buffer*/
-		memcpy(tty->out_buff, tty->rx_buff, tty->rx_cnt);
+		memcpy((void*)tty->out_buff,(const void*) tty->rx_buff, tty->rx_cnt);
 		tty->out_buff[tty->rx_cnt] = '\0';
 		tty->rx_cnt = 0;
 		tty->out_busy = true;
@@ -55,7 +55,7 @@ int tty_add_char(tty_device_t *tty, int ch) {
 
 uint8_t* tty_readline(tty_device_t *tty) {
 	while(!tty->out_busy);
-	return tty->out_buff;
+	return (uint8_t*)tty->out_buff;
 }
 
 static uint32_t tty_scanline(uint8_t line[TTY_RXBUFF_SIZE + 1], uint32_t size) {
