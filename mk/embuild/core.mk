@@ -10,6 +10,10 @@ export SRC_DIR = mk/test
 export OBJ_DIR = build/obj
 export PRINTF := printf
 
+#$(foreach v,$(.VARIABLES), \
+  $(if $(filter environment,$(origin $v)),${eval unexport $v}) \
+)
+
 em_files = $(call traverse,$(SRC_DIR))
 entity_files = $(em_files:$(SRC_DIR)/%.em=$(OBJ_DIR)/%.mk)
 
