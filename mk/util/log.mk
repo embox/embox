@@ -37,8 +37,9 @@ log_tag_by_id  = $(call __log_filter_patsubst,$(__log_tag_by_id_pattern))
 __log_filter          = $(filter $1,$(.VARIABLES))
 __log_filter_patsubst = $(patsubst $1,%,$(__log_filter))
 
-log_report_by_tag = $(call __log_report,$(__log_id_by_tag_pattern))
-log_report_by_id  = $(call __log_report,$(__log_tag_by_id_pattern))
+log_report_entries = $(call __log_report,$1)
+log_report_by_tag  = $(call __log_report,$(__log_id_by_tag_pattern))
+log_report_by_id   = $(call __log_report,$(__log_tag_by_id_pattern))
 
 __log_report = $(foreach e,$(__log_filter),$(info $($e)))
 

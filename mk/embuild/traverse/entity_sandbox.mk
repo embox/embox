@@ -19,7 +19,7 @@ __entity_sandbox_variables_before :=
 __entity_sandbox_variables_before := $(.VARIABLES)
 
 # Gogogo!
-${eval __EMBUILD_TRAVERSE_ENTITY_VALUE}
+${eval $(value __EMBUILD_TRAVERSE_ENTITY_VALUE)}
 
 __entity_sandbox_variables_after  := $(.VARIABLES)
 
@@ -36,9 +36,9 @@ variable_dump = \
 variable_dump_all = \
   $(foreach var,$1,$(call variable_dump,$(var))\n)
 
+.PHONY: all
+all: $(target)
 $(target) : $(prereq)
 	@mkdir -p $(@D)
 	@$(PRINTF) '# Auto-generated EMBuild entity. Do not edit.\n' > $@
 	$(PRINTF) '$(call variable_dump_all,$(__embuild_traverse_emfile_variables))' >> $@
-
-endif # __EMBUILD_TRAVERSE_ENTITY

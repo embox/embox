@@ -84,9 +84,8 @@ emfile_handle_all = $(strip \
 )
 
 emfile_handle_chain_results = \
-  $(if $(call not,$(call emfile_errors_filter,$1)), \
-    $(call emfile_define_entities,$(call emfile_entities_extract,$1)) \
-   )
+  $(or $(strip $(call emfile_errors_filter,$1)), \
+       $(call emfile_define_entities,$(call emfile_entities_extract,$1)))
 
 
 ######### Filtering
@@ -265,52 +264,6 @@ emfile_define_get_entity_value = \
 #          to the specified entity.
 emfile_define_get_entity_variable_name = \
   $($(1:%=$(emfile_filter_entity_variable_name_pattern)))
-
-########
-
-# TODO invoke it later. -- Eldar
-$(foreach e,$(call emfile_entities_filter,$(emfile_handle_all)), \
-  $(info valid entity: $(call emfile_entities_extract,$e):$(\n)$($e)) \
-)
-
-#$(foreach e,$(filter __error_%_emfile,$(.VARIABLES)), \
-  $(warning Recorded error $(e:__error_%_emfile=%): $($e)))
-
-$(call log_report_by_tag,emfile)
-
-$(error not yet implemented)
-
-__embuild_traverse_emfile_entity_variables = \
-  $(filter $(embuild_entity_types:%=%-%),$(emfile_variables))
-
-# Can't detect type of the entity (bogus type/name).
-__embuild_traverse_emfile_bogus_variables = \
-  $(filter-out __embuild_traverse_emfile_entity_variables, \
-           $(__embuild_traverse_emfile_variables))
-
-__embuild_traverse_emfile_entity_targets := \
-  $(__embuild_traverse_emfile_entity_variables:%=__embuild_traverse_emfile_%)
-
-.PHONY: all
-.PHONY: $(__embuild_traverse_emfile_entity_targets)
-all: $(__embuild_traverse_emfile_entity_targets)
-
-#$(__embuild_traverse_entity_types:%=__embuild_traverse_emfile_%-%):
-$(__embuild_traverse_emfile_entity_targets): __embuild_traverse_emfile_module-%:
-	$(MAKE) -f mk/embuild/traverse/entity_sandbox.mk all \
-		__EMBUILD_TRAVERSE_ENTITY_NAME=$(dir $(__EMBUILD_TRAVERSE_EMFILE))/$*
-
-__embuild_traverse_emfile_module-%: \
-  export __EMBUILD_TRAVERSE_ENTITY_NAME=$(dir $(__EMBUILD_TRAVERSE_EMFILE))/$*
-
-__embuild_traverse_emfile_module-%: \
-  export __EMBUILD_TRAVERSE_ENTITY_TYPE = module
-
-__embuild_traverse_emfile_%: \
-  export __EMBUILD_TRAVERSE_ENTITY_FILE = $(__EMBUILD_TRAVERSE_EMFILE_ROOT)/$(__EMBUILD_TRAVERSE_EMFILE)
-
-$(__embuild_traverse_emfile_entity_targets): \
-  export __EMBUILD_TRAVERSE_ENTITY = $(value $(@:__embuild_traverse_emfile_%=%))
 
 endif # __embuild_traverse_emfile_mk
 
