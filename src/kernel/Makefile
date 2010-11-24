@@ -65,7 +65,10 @@ endif
 ifdef CONFIG_MEASURE_IRQ
   $_MODS += measure
   $_SRCS-measure += measure.c
-  $_DEPS-measure += $(CONFIG_MEASURE_IRQ)
-  $_DEPS-main += measure timer #XXX place before first IRQ requqest
+  $_DEPS-measure += $(CONFIG_MEASURE_IRQ) timer
+  $_DEPS-main += measure
 endif
 
+ifdef CONFIG_MOD_DIAG
+  $_DEPS-main += $(CONFIG_MOD_DIAG)
+endif
