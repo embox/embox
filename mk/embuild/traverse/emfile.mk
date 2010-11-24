@@ -43,12 +43,17 @@ __emfile_entity_pattern = entity(%)
 # Returns:
 #   'single'   for *.em, and
 #   'multiple' for Embuild
-emfile_type = $(call __emfile_type,$($(notdir $(__emfile))))
+emfile_type = $(call __emfile_type,$(notdir $(__emfile)))
 __emfile_type = \
   $(if $(filter 1,$(words $1)),$ \
     $(if $(filter Embuild,$1),single,$ \
        $(if $(filter %.em,$1),multiple,$ \
          $(error invalid emfile: __emfile is [$(__emfile)]))))
+
+# Returns:
+#   basename for *.em files, and
+#   empty string for Embuild
+emfile_name = $(basename $(filter %.em,$(notdir $(__emfile))))
 
 #
 # Steps:
@@ -57,83 +62,38 @@ __emfile_type = \
 #  define
 #
 
+emfile_chain = $(call __emfile_chain,$(strip $1),)
+__emfile_chain = \
+  $(and $1,$(call $0,$(call rest,$1), \
+               $(call __emfile_chain_invoke,$(call first,$1),$2)))
+
+__emfile_chain_invoke = \
+  $(call emfile_errors_filter,$2) $(call $1,$(call emfile_entities_extract,$2))
+
 emfile_handle_all = $(strip \
-  $(call emfile_handle_all_xxx, \
-      $(call emfile_handle_filter_entities_result, \
-          $(call emfile_filter))) \
+  $(call emfile_handle_chain_results, \
+      $(call emfile_chain, \
+             emfile_filter \
+             emfile_check_entities_have_no_name_conflicts \
+             emfile_check_entities_are_named_in_place \
+       ) \
+   ) \
 )
 
-emfile_handle_all_xxx = \
+
+emfile_handle_chain_results = \
   $(if $(call not,$(call emfile_errors_filter,$1)), \
     $(call emfile_define_entities,$(call emfile_entities_extract,$1)) \
    )
+
+
+######### Filtering
 
 emfile_filter = \
   $(call var_filter_out, \
           $(__emfile_sandbox_variables_before), \
           $(__emfile_sandbox_variables_after), \
               emfile_filter_handle)
-
-emfile_handle_filter_entities_result = $(call emfile_errors_filter,$1) \
-   $(call emfile_handle_entities,$(call emfile_entities_extract,$1))
-
-# Params:
-#  1. all entities
-emfile_handle_entities = \
-  $(call emfile_handle_entities_names,$1,$(call entity_names,$1))
-
-# Params:
-#  1. all entities
-#  2. entity names
-emfile_handle_entities_names = \
-  $(if $(filter-out $(words $2),$(words $(sort $2))), \
-    $(call emfile_handle_entities_names_error,$1,$2) \
-   )
-
-# Things are bad. Assumed to be cold, feel free.
-# Params:
-#  1. all entities
-#  2. entity names
-emfile_handle_entities_names_error = \
-  $(foreach e_name,$2,$(call emfile_entity_name_assure_uniq \
-         ,$(e_name),$(call entity_types_for_name,$(e_name),$1)))
-
-# Params:
-#  1. entity name
-#  2. all entity types for the name (probably with duplicates)
-emfile_entity_name_assure_uniq = \
-  $(if $(filter-out 1,$(words $2)), \
-    $(call emfile_entity_name_check_uniq_error,$1,$2,$(sort $2)) \
-   ) \
-
-# Params:
-#  1. entity name
-#  2. all entity types for the name (probably with duplicates)
-#  3. entity types with no duplicates
-emfile_entity_name_check_uniq_error = \
-  $(call emfile_error,Entity named '$1' defined more than once: \
-        $(foreach e_type,$(call chop,$3),$ \
-            $(call __emfile_error_str_x_times_as_type,$(e_type),$2)$(\comma)) \
-        $(call __emfile_error_str_x_times_as_type,$(call last,$3),$2))
-
-__emfile_error_str_x_times_as_type = \
-  $(call __emfile_error_str_x_times,$(words $(filter $1,$2))) as '$1'
-
-__emfile_error_str_x_times = \
-  $(if $(filter 1,$1),once,$(if $(filter 2,$1),twice,$1 times))
-
-# Checks for acceptability to define the specified entity in the particular
-# emfile (whether entity named 'foo' is defined in foo.em or in Embuild).
-# Params:
-#  1. entity
-# Returns: entity name if it is good, and error entry otherwise.
-# XXX
-emfile_filter_entity_checked = \
-  $(if $(filter-out $(call entity_name,$1) Embuild,$(basename $(notdir $(__emfile)))), \
-    $(call emfile_error,$1 $2 can be defined either in \
-                        $2.em or in Embuild, not in $(notdir $(__emfile))), \
-    $(call emfile_entity_variable_assign_and_echo,$(call entity,$1,$2),$3) \
-  )
 
 # Called for each user defined variable. Detects double word variable names
 # and tries to interpret them as entities.
@@ -194,12 +154,84 @@ emfile_filter_entity_checked = \
 #  2. User defined variable name as is
 # Returns: the first argument.
 emfile_filter_entity_assign_variable_name = \
-  $(call var_assign_simple,$(1:%=$(emfile_entity_variable_name_pattern)),$2)$1
+  $(call var_assign_simple \
+    ,$(1:%=$(emfile_filter_entity_variable_name_pattern)),$2)$1
 
 # Pattern to construct the name of the variable which expands to the name
 # of user defined variable as is (e.g. 'module    foo').
-emfile_entity_variable_name_pattern := \
+emfile_filter_entity_variable_name_pattern := \
   __emfile_entity_variable_name-%
+
+######### Checking
+
+# Params:
+#  1. all entities
+# Return: Entity entries for properly named ones,
+#          error entries for the rest (if there are name conflicts).
+emfile_check_entities_have_no_name_conflicts = \
+  $(call emfile_check_names,$(sort $(call entity_names,$1)),$1)
+
+# Params:
+#  1. entity names with duplicates removed
+#  2. all entities
+# Return: Entity entries for properly named ones,
+#          error entries for the rest (if there are name conflicts).
+emfile_check_names = \
+  $(if $(filter-out $(words $1),$(words $2)), \
+    $(call emfile_check_names_conflicting,$1,$2), \
+    $(call emfile_entity,$2), \
+   )
+
+# Things are bad. Assumed to be cold, feel free.
+# Params:
+#  1. entity names with duplicates removed
+#  2. all entities
+# Return: Entity entries for properly named ones, error entries for the rest.
+emfile_check_names_conflicting = \
+  $(foreach e_name,$1,$(call emfile_check_name_is_unique \
+         ,$(e_name),$(call entity_types_for_name,$(e_name),$2)))
+
+# Params:
+#  1. entity name
+#  2. all entity types for the name (probably with duplicates)
+# Return: Valid entity entry if all is ok, error entry if conflict is detected.
+emfile_check_name_is_unique = \
+  $(if $(filter-out 1,$(words $2)), \
+    $(call emfile_check_name_unique_error,$1,$2,$(sort $2)), \
+    $(call emfile_entity,$(call entity,$1,$2)), \
+   ) \
+
+# Params:
+#  1. entity name
+#  2. all entity types for the name (probably with duplicates)
+#  3. entity types with no duplicates
+# Return: Error entry about naming conflict.
+emfile_check_name_unique_error = \
+  $(call emfile_error,Entity named '$1' defined more than once: \
+        $(foreach e_type,$(call chop,$3),$ \
+            $(call __emfile_error_str_x_times_as_type,$(e_type),$2)$(\comma)) \
+        $(call __emfile_error_str_x_times_as_type,$(call last,$3),$2))
+__emfile_error_str_x_times_as_type = \
+  $(call __emfile_error_str_x_times,$(words $(filter $1,$2))) as '$1'
+__emfile_error_str_x_times = \
+  $(if $(filter 1,$1),once,$(if $(filter 2,$1),twice,$1 times))
+
+# Checks for acceptability to define the specified entity in the particular
+# emfile (whether entity named 'foo' is defined in foo.em or in Embuild).
+# Params:
+#  1. entities list
+# Returns: entity entries for good ones, and error entries for the rest.
+emfile_check_entities_are_named_in_place = \
+  $(foreach e,$1, \
+    $(if $(call emfile_check_entity_named_in_place_$(emfile_type),$e), \
+      $(call emfile_entity,$e), \
+      $(call emfile_error,$(call entity_print,$e) can be defined either in \
+        $(call entity_name,$e).em or in Embuild, not in $(notdir $(__emfile)))\
+    ) \
+  )
+emfile_check_entity_named_in_place_single = \
+  $(filter $(call entity_name,$1),$(emfile_name))
+emfile_check_entity_named_in_place_multiple = $(true)
 
 # Params:
 #  1. entity
