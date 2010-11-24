@@ -80,7 +80,6 @@ emfile_handle_all = $(strip \
    ) \
 )
 
-
 emfile_handle_chain_results = \
   $(if $(call not,$(call emfile_errors_filter,$1)), \
     $(call emfile_define_entities,$(call emfile_entities_extract,$1)) \
@@ -233,21 +232,44 @@ emfile_check_entity_named_in_place_single = \
   $(filter $(call entity_name,$1),$(emfile_name))
 emfile_check_entity_named_in_place_multiple = $(true)
 
+##### Define
+
+emfile_define_entities = \
+  $(foreach e,$1,$(call emfile_define_entity,$e))
+
 # Params:
 #  1. entity
-# Returns: variable name to get the original name of the variable corresponding
-#          to the specified entity.
-emfile_entity_variable_name = \
-  $($(1:%=$(emfile_entity_variable_name_pattern)))
+emfile_define_entity = \
+  $(call emfile_define_entity_entry \
+       ,$(emfile_entity),$(emfile_define_get_entity_value))
+
+# Params:
+#  1. entity entry
+#  2. entity value
+# Returns: the given argument
+emfile_define_entity_entry = \
+  $(call var_assign_simple,$1,$2)$1
 
 # Params:
 #  1. entity
 # Returns: value of user defined variable corresponding to the entity.
-emfile_entity_value = \
-  $(value $(emfile_entity_variable_name))
+emfile_define_get_entity_value = \
+  $(value $(emfile_define_get_entity_variable_name))
 
+# Params:
+#  1. entity
+# Returns: variable name to get the original name of the variable corresponding
+#          to the specified entity.
+emfile_define_get_entity_variable_name = \
+  $($(1:%=$(emfile_filter_entity_variable_name_pattern)))
+
+########
+
+print_entity_if_any = $(if $1,$(info valid entity $1:$(\n)$($1)),$(warning $1))
 # TODO invoke it later. -- Eldar
-emfile_handle_all := $(emfile_handle_all)
+$(foreach entry,$(emfile_handle_all), \
+  $(call print_entity_if_any,$(call emfile_entity_filter,$(entry))) \
+)
 
 #$(foreach e,$(filter __error_%_emfile,$(.VARIABLES)), \
   $(warning Recorded error $(e:__error_%_emfile=%): $($e)))
