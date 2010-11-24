@@ -9,6 +9,7 @@
 #include <asm/multiboot.h>
 #include <drivers/vga.h> //workaround
 #include <stdlib.h>
+#include <asm/regs.h>
 
 /* Check if the bit BIT in FLAGS is set. */
 #define CHECK_FLAG(flags, bit) ((flags) & (1 << (bit)))
@@ -136,7 +137,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
         }
 
 	/* Are mmap_* valid?  */
-	if (CHECK_FLAG (mbi->flags, 6)) {
+	if (CHECK_FLAG(mbi->flags, 6)) {
 		memory_map_t *mmap;
 
 		early_printk("mmap_addr = 0x%x, mmap_length = 0x%x\n",
