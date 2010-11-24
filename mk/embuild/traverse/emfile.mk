@@ -20,25 +20,25 @@ include embuild/traverse/entity.mk
 #  1. Error message
 # Returns: error entry
 emfile_error = \
-  $(patsubst %,$(__emfile_error_pattern), \
+  $(patsubst %,$(emfile_error_pattern), \
     $(call log_error_entry,emfile,$(__emfile),[emfile] $1))
+emfile_error_pattern = error(%)
 emfile_errors_extract = \
-  $(patsubst $(__emfile_error_pattern),%,$(emfile_errors_filter))
+  $(patsubst $(emfile_error_pattern),%,$(emfile_errors_filter))
 emfile_errors_filter = \
-  $(filter $(__emfile_error_pattern),$1)
-__emfile_error_pattern = error(%)
+  $(filter $(emfile_error_pattern),$1)
 
 # Wraps entity so that it could be differed from e.g. error entries.
 # Params:
 #  1. entity
 # Returns: entity entry
 emfile_entity = \
-  $(1:%=$(__emfile_entity_pattern))
+  $(1:%=$(emfile_entity_pattern))
+emfile_entity_pattern = entity(%)
 emfile_entities_extract = \
-  $(patsubst $(__emfile_entity_pattern),%,$(emfile_entities_filter))
+  $(patsubst $(emfile_entity_pattern),%,$(emfile_entities_filter))
 emfile_entities_filter = \
-  $(filter $(__emfile_entity_pattern),$1)
-__emfile_entity_pattern = entity(%)
+  $(filter $(emfile_entity_pattern),$1)
 
 # Returns:
 #   'single'   for *.em, and
