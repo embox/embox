@@ -6,6 +6,9 @@
  * @author Nikolay Korotky
  */
 
+#ifndef X86_MULTIBOOT_H_
+#define X86_MULTIBOOT_H_
+
 /* The magic number for the Multiboot header.  */
 #define MULTIBOOT_HEADER_MAGIC		0x1BADB002
 
@@ -93,4 +96,5 @@ typedef struct memory_map {
 } memory_map_t;
 
 #endif /* __ASSEMBLER__ */
+#endif /* X86_MULTIBOOT_H_ */
 
