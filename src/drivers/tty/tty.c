@@ -55,6 +55,7 @@ int tty_add_char(tty_device_t *tty, int ch) {
 
 uint8_t* tty_readline(tty_device_t *tty) {
 	while(!tty->out_busy);
+	tty->out_busy = false;
 	return (uint8_t*)tty->out_buff;
 }
 
