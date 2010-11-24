@@ -13,39 +13,73 @@
 #include <lib/readline.h>
 #include <stdio.h>
 
-/* TO-DO add parse argument */
+#define CMDLINE_MAX_LENGTH 127
+
+/* TO-DO:
+ 	1) must work without embox.cmds.shell
+	2) some troubles with testreadline exit
+*/
+
+#if 1 /* while linked with old embox shell. Where must be located its functions ???? */
+/* *str becomes pointer to first non-space character*/
+static void skip_spaces(char **str) {
+    while (**str == ' ') {
+        (*str)++;
+    }
+}
+
+/* *str becomes pointer to first space or '\0' character*/
+static void skip_word(char **str) {
+    while (**str != '\0' && **str != ' ') {
+        (*str)++;
+    }
+}
+
+static int parse_str(char *cmdline, char **words) {
+    size_t cnt = 0;
+    while (*cmdline != '\0') {
+        if (' ' == *cmdline) {
+            *cmdline++ = '\0';
+            skip_spaces(&cmdline);
+        } else {
+            words[cnt++] = cmdline;
+            skip_word(&cmdline);
+        }
+    }
+    return cnt;
+}
+#endif
 
 static int esh_start(void) {
 
+    int words_counter = 0;
 	int ret_code;
-	SHELL_COMMAND_DESCRIPTOR *scd;
-	printk("\nModule `esh' started.\n");
-	printf("Printf test\n");
-
-	char *line;
+	SHELL_COMMAND_DESCRIPTOR *c_desc;
+    char *words[CMDLINE_MAX_LENGTH + 1];
+	char *cmdline;
 
 	FILE *ff = fopen("/dev/uart","r");
 
 	for (;;) {
-		/*cmd_ptr = __readline(promt_ptr); */
-		line = readline(CONFIG_SHELL_PROMPT);
+		cmdline = readline(CONFIG_SHELL_PROMPT);
 
-		//TRACE("\nreceived '%s' \n", line);
-		printf("\nreceived '%s' \n", line);
-
-		scd = shell_command_descriptor_find_first(line, -1);
-
-		if ((scd!=NULL)&&(scd->name!=NULL)) {
-				//TRACE("CmdLine: %s, RunCommand: %s\n",line , scd->name);
-				printf("CmdLine: %s, RunCommand: %s\n\n",line , scd->name);
+		if (0 == (words_counter = parse_str(cmdline, words))) {
+			continue; /* Only spaces were entered */
 		}
 
-		ret_code = shell_command_exec(scd, 0, NULL);
+		if (NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))){
+			printf("%s: Command not found\n", words[0]);
+			continue;
+		}
 
-		//TRACE("return code: %d\n",ret_code);
-		printf("return code: %d\n",ret_code);
+		if (NULL == c_desc->exec){
+			LOG_ERROR("shell command: wrong command descriptor\n");
+			continue;
+		}
+		shell_command_exec(c_desc, words_counter, words);
 
-		freeline(line);
+
+		freeline(cmdline);
 	}
 
 	fclose(ff);

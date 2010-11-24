@@ -42,6 +42,7 @@ int tty_add_char(tty_device_t *tty, int ch) {
 		tty->out_buff[tty->rx_cnt] = '\0';
 		tty->rx_cnt = 0;
 		tty->out_busy = true;
+		uart_putc(ch);
 		return 1;
 	}
 	if(tty->rx_cnt >= TTY_RXBUFF_SIZE) {
