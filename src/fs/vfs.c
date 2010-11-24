@@ -1,7 +1,7 @@
 /**
  * @file
- *
- * @brief Describes tree of virtual file system.
+ * @brief Describes tree of VFS (Virtual Filesystem Switch).
+ * @details An abstraction layer on top of a more concrete file systems.
  *
  * @date 12.10.2010
  * @author Anton Bondarev
