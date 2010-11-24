@@ -21,13 +21,10 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static int exec(int argsc, char **argsv) {
 	char *line;
 
-	FILE *ff = fopen("/dev/uart","r");
-
 	line = readline(CONFIG_SHELL_PROMPT);
 
-	printf("\nreceived '%s'\n", line);
+	printf("received '%s'\n", line);
 	freeline(line);
 
-	fclose(ff);
 	return 0;
 }

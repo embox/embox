@@ -58,7 +58,7 @@ static int esh_start(void) {
     char *words[CMDLINE_MAX_LENGTH + 1];
 	char *cmdline;
 
-	FILE *ff = fopen("/dev/uart","r");
+//	FILE *ff = fopen("/dev/uart","r");
 
 	for (;;) {
 		cmdline = readline(CONFIG_SHELL_PROMPT);
@@ -82,7 +82,7 @@ static int esh_start(void) {
 		freeline(cmdline);
 	}
 
-	fclose(ff);
+//	fclose(ff);
 
 	return 0;
 }
