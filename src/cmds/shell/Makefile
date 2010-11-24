@@ -1,13 +1,15 @@
 
-$_MODS += shell
+$_MODS += shell shell_command
+
+$_SRCS-shell_command = shell_command.c
 
 ifdef CONFIG_SHELL_SOURCE
 
   ifeq ($(CONFIG_SHELL_SOURCE), shell.c) # old
 
-    $_SRCS-shell += shell.c shell_command.c console/*.c
+    $_SRCS-shell += shell.c console/*.c
 #    $_DEPS-shell += core.kernel.job embox.hal.context
-    $_DEPS-shell += core.kernel.job embox.hal.context embox.driver.apbuart embox.driver.diag_apbuart
+    $_DEPS-shell += shell_command core.kernel.job embox.hal.context embox.driver.apbuart embox.driver.diag_apbuart
 
     $_CPPFLAGS-shell += -I$(AUTOCONF_DIR)
 
@@ -29,7 +31,7 @@ ifdef CONFIG_SHELL_SOURCE
 
 else # oldest version of shell -----------------------------------------------
 
-  $_SRCS-shell += shell.c shell_command.c console/*.c
+  $_SRCS-shell += shell.c console/*.c
   $_DEPS-shell += core.kernel.job embox.hal.context
 
   $_CPPFLAGS-shell += -I$(AUTOCONF_DIR)
