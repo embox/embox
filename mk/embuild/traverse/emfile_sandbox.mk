@@ -36,20 +36,25 @@ emfile_sandbox_result := $(emfile_handle_all)
 #  $(call emfile_entities_filter,$(emfile_sandbox_result))
 
 emfile_sandbox_target_pattern := emfile_sandbox_target-%
-emfile_sandbox_targets := \
-  $(emfile_sandbox_result:%=$(emfile_sandbox_target_pattern))
 
 emfile_sandbox_entity_target_pattern := \
   $(subst %,$(emfile_entity_pattern),$(emfile_sandbox_target_pattern))
 emfile_sandbox_error_target_pattern := \
   $(subst %,$(emfile_error_pattern),$(emfile_sandbox_target_pattern))
 
+emfile_sandbox_targets := \
+  $(emfile_sandbox_result:%=$(emfile_sandbox_target_pattern))
+
+emfile_sandbox_entity_targets := \
+  $(filter $(emfile_sandbox_entity_target_pattern),$(emfile_sandbox_targets))
+emfile_sandbox_error_targets := \
+  $(filter $(emfile_sandbox_error_target_pattern),$(emfile_sandbox_targets))
+
 .PHONY: all
 .PHONY: $(emfile_sandbox_targets)
 all: $(emfile_sandbox_targets)
 
-$(filter $(emfile_sandbox_entity_target_pattern),$(emfile_sandbox_targets)): \
-         $(emfile_sandbox_entity_target_pattern):
+$(emfile_sandbox_entity_targets): $(emfile_sandbox_entity_target_pattern):
 	$(MAKE) -f mk/embuild/traverse/entity_sandbox.mk all
 
 # TODO
@@ -63,8 +68,7 @@ $(emfile_sandbox_entity_target_pattern): \
 $(emfile_sandbox_entity_target_pattern): \
   export __EMBUILD_TRAVERSE_ENTITY_VALUE = $($(call emfile_entity,$*))
 
-$(filter $(emfile_sandbox_error_target_pattern),$(emfile_sandbox_targets)): \
-         $(emfile_sandbox_error_target_pattern):
+$(emfile_sandbox_error_targets): $(emfile_sandbox_error_target_pattern):
 	@echo $($*)
 
 # TODO exit with an error
