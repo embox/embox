@@ -4,7 +4,7 @@
 
 include util/wildcard.mk
 
-traverse = $(call r-wildcard,$(1:%=%/**/*.em))
+traverse = $(call r-wildcard,$(1:%=%**/*.em))
 
 export SRC_DIR = mk/test
 export OBJ_DIR = build/obj

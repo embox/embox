@@ -64,8 +64,11 @@ emfile_name = $(basename $(filter %.em,$(notdir $(__emfile))))
 
 emfile_chain = $(call __emfile_chain,$(strip $1),)
 __emfile_chain = \
-  $(and $1,$(call $0,$(call rest,$1), \
-               $(call __emfile_chain_invoke,$(call first,$1),$2)))
+  $(if $1, \
+    $(call $0,$(call rest,$1), \
+               $(call __emfile_chain_invoke,$(call first,$1),$2)), \
+    $2 \
+)
 
 __emfile_chain_invoke = \
   $(call emfile_errors_filter,$2) $(call $1,$(call emfile_entities_extract,$2))
@@ -178,7 +181,7 @@ emfile_check_entities_have_no_name_conflicts = \
 emfile_check_names = \
   $(if $(filter-out $(words $1),$(words $2)), \
     $(call emfile_check_names_conflicting,$1,$2), \
-    $(call emfile_entity,$2), \
+    $(call emfile_entity,$2) \
    )
 
 # Things are bad. Assumed to be cold, feel free.
@@ -265,10 +268,9 @@ emfile_define_get_entity_variable_name = \
 
 ########
 
-print_entity_if_any = $(if $1,$(info valid entity $1:$(\n)$($1)),$(warning $1))
 # TODO invoke it later. -- Eldar
-$(foreach entry,$(emfile_handle_all), \
-  $(call print_entity_if_any,$(call emfile_entity_filter,$(entry))) \
+$(foreach e,$(call emfile_entities_filter,$(emfile_handle_all)), \
+  $(info valid entity: $(call emfile_entities_extract,$e):$(\n)$($e)) \
 )
 
 #$(foreach e,$(filter __error_%_emfile,$(.VARIABLES)), \
