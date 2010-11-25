@@ -42,16 +42,7 @@ SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_first(char *search_str,
 	return NULL;
 }
 
-/**
- * find descriptor for shell command with pointed name
- * each command have to register own descriptor in system, by needs macros DECLARE_SHELL_COMMAND
- * that macros put pinter on registering descriptor to section ".shell_command".
- * And we can find this descriptor when we need to use it.
- *
- * @param command name
- * @return command descriptor if command was found in image
- * @return NULL another way
- */
+
 SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_next(
 		SHELL_COMMAND_DESCRIPTOR *cur_desc, char *search_str, int length) {
 	extern SHELL_COMMAND_DESCRIPTOR __shell_commands_end;
