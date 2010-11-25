@@ -1,7 +1,7 @@
 /**
  */
 #include <stdio.h>
-#include <shell.h>
+//#include <shell.h>
 #include <embox/unit.h>
 #include <kernel/driver.h>
 #include <kernel/thread.h>

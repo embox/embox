@@ -1,8 +1,6 @@
 
 $_MODS += shell shell_command
 
-$_SRCS-shell_command = shell_command.c
-
 ifdef CONFIG_SHELL_SOURCE
 
   ifeq ($(CONFIG_SHELL_SOURCE), shell.c) # old

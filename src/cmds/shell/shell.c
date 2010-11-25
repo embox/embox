@@ -9,7 +9,7 @@
 #include <ctype.h>
 
 #include "console/console.h"
-#include <shell.h>
+//#include <shell.h>
 #include <kernel/job.h>
 #include <hal/context.h>
 #include <shell_command.h>
