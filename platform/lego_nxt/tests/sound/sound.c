@@ -68,9 +68,6 @@ static const SAMPLEWORD patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
   }
 };
 
-extern void sound_next_sample(uint32_t, uint32_t,
-		    uint32_t *, uint32_t, uint32_t *);
-
 enum FREQ_TONE  {
 		TONE_C = 262,
 		TONE_D = 294,
@@ -96,15 +93,18 @@ SAMPLEWORD *sound_handler(void) {
 		i = 0;
 	}
 
-	return patterns[i];
+	return (SAMPLEWORD *) patterns[i];
 }
 
 static int run_sound(void) {
 	int count = 5;
 	while (count--) {
-		sound_start_play(TONE_C, DURATION, patterns[0], patterns[1], sound_handler);
-		sound_start_play(TONE_E, DURATION, patterns[0], patterns[1], sound_handler);
-		sound_start_play(TONE_G, DURATION, patterns[0], patterns[1], sound_handler);
+		sound_start_play(TONE_C, DURATION, (SAMPLEWORD *)patterns[0],
+				(SAMPLEWORD *) patterns[1], sound_handler);
+		sound_start_play(TONE_E, DURATION, (SAMPLEWORD *)patterns[0],
+			    (SAMPLEWORD *) patterns[1], sound_handler);
+		sound_start_play(TONE_G, DURATION, (SAMPLEWORD *)patterns[0],
+			    (SAMPLEWORD *) patterns[1], sound_handler);
 	}
 
 	return 0;

@@ -170,10 +170,6 @@ void nxt_lcd_force_update(void) {
 	}
 }
 
-static int unit_lcd_init(void) {
-	lcd_init();
-}
-
 int __init lcd_init(void) {
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SPI)); /* Enable MCK clock     */
 	REG_STORE(AT91C_PIOA_PER, AT91C_PIO_PA12); /*EnableA0onPA12*/
@@ -218,5 +214,9 @@ int __init lcd_init(void) {
 	nxt_lcd_power_up();
 	memset(display_buffer, 0, NXT_LCD_WIDTH*NXT_LCD_DEPTH);
 	return 0;
+}
+
+static int unit_lcd_init(void) {
+	return lcd_init();
 }
 

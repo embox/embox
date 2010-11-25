@@ -8,6 +8,7 @@
 
 #include <types.h>
 
+#include <drivers/lcd.h>
 #include <kernel/diag.h>
 
 void diag_init(void) {

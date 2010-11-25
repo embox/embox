@@ -130,7 +130,7 @@ static void fruit_draw(void) {
 
 static void refresh(void) {
 	int i, j;
-	display_clear_screan();
+	display_clear_screen();
 	for (i = 0; i < SIZE_Y; i++) {
 		for (j = 0; j < SIZE_X; j++) {
 			if (!space(field[f2d(j,i)])) {
@@ -274,7 +274,7 @@ static int valid(point p) {
 }
 
 static int exec() {
-	display_clear_screan();
+	display_clear_screen();
 	field_init();
 	diff = dxp;
 	while (snake_update()) {

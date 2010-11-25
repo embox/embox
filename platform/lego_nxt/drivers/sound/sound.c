@@ -19,10 +19,11 @@ EMBOX_UNIT_INIT(sound_init);
 static sound_handler_t current_handler = NULL;
 
 irq_return_t sound_interrupt (int irq_num, void *dev_id) {
+	SAMPLEWORD *next_buff;
 	if (current_handler == NULL) { /*inefficient */
 		return IRQ_HANDLED;
 	}
-	SAMPLEWORD *next_buff = (*current_handler)();
+	next_buff = (*current_handler)();
 	REG_STORE(AT91C_SSC_TNPR, (uint32_t) next_buff);
 	REG_STORE(AT91C_SSC_TNCR, SAMPLETONENO);
 
@@ -43,13 +44,6 @@ static int __init sound_init(void) {
 	/* Disable TD on PA17  */ //???
 	//REG_STORE(AT91C_PIOA_PER, AT91C_PA17_TD);
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA17_TD);
-	REG_STORE(AT91C_PIOA_ODR, AT91C_PA17_TD);
-	//REG_STORE(AT91C_PIOA_OWDR, AT91C_PA17_TD);
-	//REG_STORE(AT91C_PIOA_MDDR, AT91C_PA17_TD);
-	//REG_STORE(AT91C_PIOA_PPUDR, AT91C_PA17_TD);
-	//REG_STORE(AT91C_PIOA_IFDR, AT91C_PA17_TD);
-	//REG_STORE(AT91C_PIOA_CODR, AT91C_PA17_TD);
-	//REG_STORE(AT91C_PIOA_IDR, AT91C_PA17_TD);
 
 	REG_STORE(AT91C_SSC_CR, AT91C_SSC_SWRST);
 	REG_STORE(AT91C_SSC_TCMR, AT91C_SSC_CKS_DIV +
