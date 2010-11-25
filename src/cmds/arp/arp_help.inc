@@ -18,6 +18,6 @@
 "\tarp -d -a 10.0.0.2\n"
 "\t\tDelete the ARP table entry for 10.0.0.2.\n"
 "SEE ALSO\n"
-"\tifconfig\n"
+"\tifconfig, route\n"
 "AUTHORS\n"
 "\tNikolay Korotky"

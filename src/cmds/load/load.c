@@ -29,8 +29,7 @@ static int exec(int argsc, char **argsv) {
 	uint32_t load_addr, file_addr;
 	FILE *file;
 	node_t *node;
-	//FIXME: ramfs dependence
-	ramfs_file_description_t *desc;
+	stat_t sb;
 	int nextOption;
 	getopt_init();
 	do {
@@ -62,9 +61,9 @@ static int exec(int argsc, char **argsv) {
 	fioctl(file, 0, &file_addr);
 
 	node = vfs_find_node(file_name, NULL);
-	desc = (ramfs_file_description_t *)node->file_info;
+	stat(file_name, &sb);
 
-	TRACE("loading...addr=0x%08x, size=%d\n", file_addr, desc->size);
-	memcpy((void *)load_addr, (void *)file_addr, desc->size);
+	TRACE("loading...addr=0x%08x, size=%d\n", file_addr, sb.st_size);
+	memcpy((void *)load_addr, (void *)file_addr, sb.st_size);
 	return 0;
 }

@@ -80,7 +80,7 @@ static void *ramfs_fopen(const char *file_name, const char *mode) {
 		TRACE("can't find file %s\n", file_name);
 		return NULL;
 	}
-	fd = (ramfs_file_description_t*)nod->file_info;
+	fd = (ramfs_file_description_t*)nod->attr;
 	fd->cur_pointer = 0;
 	fd->lock = 1;
 	return nod;
@@ -89,7 +89,7 @@ static void *ramfs_fopen(const char *file_name, const char *mode) {
 static int ramfs_fclose(void *file) {
 	ramfs_file_description_t *fd;
 	node_t *nod = (node_t *)file;
-	fd = (ramfs_file_description_t*)nod->file_info;
+	fd = (ramfs_file_description_t*)nod->attr;
 	fd->lock = 0;
 	return 0;
 }
@@ -99,7 +99,7 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 	node_t *nod;
 	size_t size_to_read = size*count;
 	nod = (node_t *)file;
-	fd = (ramfs_file_description_t*)nod->file_info;
+	fd = (ramfs_file_description_t*)nod->attr;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -119,7 +119,7 @@ static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *fil
 	node_t *nod;
 	size_t size_to_write = size*count;
 	nod = (node_t *)file;
-	fd = (ramfs_file_description_t*)nod->file_info;
+	fd = (ramfs_file_description_t*)nod->attr;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -141,7 +141,7 @@ static int ramfs_fseek(void *file, long offset, int whence) {
 	node_t *nod;
 	int new_offset;
 	nod = (node_t *)file;
-	fd = (ramfs_file_description_t*)nod->file_info;
+	fd = (ramfs_file_description_t*)nod->attr;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -179,7 +179,7 @@ static int ramfs_ioctl(void *file, int request, va_list ar) {
 	addr = (uint32_t *) va_arg(args, unsigned long);
 	va_end(args);
 	nod = (node_t *)file;
-	fd = (ramfs_file_description_t*)nod->file_info;
+	fd = (ramfs_file_description_t*)nod->attr;
 	*addr = fd->start_addr;
 	return 0;
 }
@@ -218,7 +218,8 @@ static int ramfs_create(void *params) {
 
 	fd  = ramfs_info_alloc();
 	nod->fs_type   = &ramfs_drv;
-	nod->file_info = (void *)fd;
+	nod->file_info = (void *)&ramfs_fop;
+	nod->attr      = (void *)fd;
 
 	fd->start_addr = par->start_addr;
 	fd->size       = par->size;
@@ -231,7 +232,7 @@ static int ramfs_create(void *params) {
 static int ramfs_delete(const char *fname) {
 	ramfs_file_description_t *fd;
 	node_t *nod = vfs_find_node(fname, NULL);
-	fd = nod->file_info;
+	fd = nod->attr;
 
 	ramfs_info_free(fd);
 	vfs_del_leaf(nod);

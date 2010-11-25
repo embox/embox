@@ -13,6 +13,7 @@
 #include <types.h>
 #include <kernel/printk.h>
 #include <kernel/driver.h>
+#include <fs/file.h>
 
 #define EOF (-1)
 
@@ -111,6 +112,11 @@ extern int fseek(FILE *stream, long int offset, int origin);
  * Manipulate the underlying device parameters of special files.
  */
 extern int fioctl(FILE *fp, int request, ...);
+
+/**
+ * Get file status (size, mode, mtime and so on)
+ */
+extern int stat(const char *path, struct stat *buf);
 
 #if defined(CONFIG_TRACE)
 # define TRACE(...)  printk(__VA_ARGS__)

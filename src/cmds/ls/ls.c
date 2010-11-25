@@ -25,18 +25,17 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static void print_long_list(char *path, node_t *nod, int recursive) {
 	struct list_head *p;
 	node_t *item;
-	//TODO: workaround.
-	ramfs_file_description_t *desc;
+	stat_t sb;
 	char time_buff[17];
 	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
 
 	list_for_each(p, &(nod->leaves)) {
 		item = (node_t*)list_entry(p, node_t, neighbors);
-		desc = (ramfs_file_description_t *)item->file_info;
-		ctime((time_t *)&desc->mtime, time_buff);
+		stat((char *)item->name, &sb);
+		ctime((time_t *)&(sb.st_mtime), time_buff);
 		printf("%d\t%d\t%s\t%s\n",
-			desc->mode,
-			desc->size,
+			sb.st_mode,
+			sb.st_size,
 			time_buff,
 			(char *)item->name);
 	}

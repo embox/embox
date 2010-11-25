@@ -24,7 +24,7 @@ static int devfs_init(void * par) {
 
 static int devfs_mount(void *par) {
 	node_t *nod, *devnod;
-	int i;
+	size_t i;
 
 	if (NULL == (nod = vfs_add_path("/dev", NULL))) {
 		return 0;/*folder already exist*/
@@ -71,19 +71,19 @@ static int devfs_ioctl(void *file, int request, va_list args) {
 }
 
 static fsop_desc_t devfs_fsop = {
-		devfs_init,
-		devfs_create,
-		devfs_delete,
-		devfs_mount
+	devfs_init,
+	devfs_create,
+	devfs_delete,
+	devfs_mount
 };
 
 static file_operations_t devfs_fop = {
-		devfs_open,
-		devfs_close,
-		devfs_read,
-		devfs_write,
-		NULL,
-		devfs_ioctl
+	devfs_open,
+	devfs_close,
+	devfs_read,
+	devfs_write,
+	NULL,
+	devfs_ioctl
 };
 
 static file_system_driver_t devfs_drv = { "devfs", &devfs_fop, &devfs_fsop };
