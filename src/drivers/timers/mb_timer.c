@@ -29,7 +29,8 @@
 #define TIMER_UDT_BIT    30      /**< UDT */
 #define TIMER_MDT        31      /**< MDT */
 
-/** enable both timers t0 and t1. clearing this bit isn't change state ENT bit */
+/** enable both timers t0 and t1.
+ * clearing this bit isn't change state ENT bit */
 #define TIMER_ENABLE_ALL    REVERSE_MASK(TIMER_ENALL_BIT)
 /** interrupt was pending. Write '1' for clearing this bit*/
 #define TIMER_INT           REVERSE_MASK(TIMER_INT_BIT)
