@@ -9,9 +9,18 @@ ifndef __util_var_name_mk
 __util_var_name_mk := 1
 
 include util/common.mk
-include util/math.mk
-include util/list.mk
+include util/math.mk # sequences generator
+include util/list.mk # first/rest
 
+#
+# Escapes variables list in a special way so that it becomes possible to
+# iterate over it even if some variables contain whitespaces in their names.
+#
+# Params:
+#  1. (optional) Variables list.
+#     If not specified, the value of .VARIABLES built-in variable is used
+# Returns: TODO
+#
 var_name_mangle = $(call __var_name_escape1,$(or $(value 1),$(.VARIABLES)))
 var_name_demangle = $(subst $$$$,$$,$(call __var_name_unescape_whitespace,$1))
 
