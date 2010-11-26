@@ -6,6 +6,7 @@
  * @author Nikolay Korotky
  */
 #include <drivers/vga.h>
+#include <asm/regs.h>
 
 /** Save the X position. */
 static int xpos;
@@ -47,5 +48,17 @@ newline:
 	if (xpos >= COLUMNS) {
 		goto newline;
 	}
+}
+
+int vga_getc(void) {
+        return 0;
+}
+
+void diag_putc(int c) {
+	vga_putc(c);
+}
+
+int diag_getc() {
+	return vga_getc();
 }
 

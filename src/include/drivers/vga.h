@@ -27,5 +27,10 @@ extern void vga_clear_screen(void);
  */
 extern void vga_putc(int c);
 
+/**
+ * Get the character from the screen.
+ */
+extern int vga_getc(void);
+
 #endif /* VIDEO_VGA_H_ */
 
