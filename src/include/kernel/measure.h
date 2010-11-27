@@ -11,6 +11,7 @@
 
 #include <types.h>
 #include <hal/measure_unit.h>
+#include <hal/interrupt.h>
 
 typedef struct {
 	uint32_t ticks; /* system ticks */
@@ -18,17 +19,16 @@ typedef struct {
 	/* choosed so for good packing (is it good?) */
 } measure_time_t;
 
+extern measure_time_t irq_process[INTERRUPT_NRS_TOTAL];
+extern measure_time_t irq_head, irq_tail;
+extern measure_time_t measure_overhead;
+
 /**
  * Process measuring of single interrupt request
  * @param interrupt measured interrupt
  * @param ticks count of ticks spent in handler
  */
 extern void measure_irq_process(interrupt_nr_t interrupt, measure_time_t *time);
-
-/**
- * Output accumulated info
- */
-extern void measure_irq_print(void);
 
 /**
  * Process measuring of pre-dispatch irq handler
