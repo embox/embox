@@ -29,6 +29,7 @@ typedef struct kmem_cache {
 	// the number of objects stored on each slab
 	unsigned int num;
 	char name[CACHE_NAMELEN];
+	int hasinit;
 } kmem_cache_t;
 
 /**
