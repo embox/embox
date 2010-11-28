@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @brief Low-level system-call handling, trap handlers and context-switching
+ *
+ * @date 25.11.09
+ * @author Anton Bondarev
+ */
+
 #include <asm/linkage.h>
 #include <asm/ptrace.h>
 #include <asm/regs.h>
@@ -349,5 +357,4 @@ C_ENTRY(_hw_exception_handler):
 	rted r17, 0
 	nop
 #endif
-
 

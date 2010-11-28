@@ -25,8 +25,7 @@ void mutex_lock(struct mutex *mutex) {
 	scheduler_lock();
 	if (mutex->lockscount == 0) {
 		mutex->lockscount++;
-	}
-	else {
+	} else {
 		scheduler_sleep(&mutex->event);
 	}
 	scheduler_unlock();
@@ -35,8 +34,7 @@ void mutex_lock(struct mutex *mutex) {
 void mutex_unlock(struct mutex *mutex) {
 	if (list_empty(&mutex->event.threads_list)) {
 		mutex->lockscount--;
-	}
-	else {
+	} else {
 		scheduler_wakeup_first(&mutex->event);
 	}
 }
@@ -46,8 +44,7 @@ int mutex_trylock(struct mutex *mutex) {
 	if (mutex->lockscount == 0) {
 		mutex->lockscount++;
 		return 0;
-	}
-	else {
+	} else {
 		return -EAGAIN;
 	}
 	scheduler_unlock();

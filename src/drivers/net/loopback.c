@@ -17,6 +17,7 @@
 #include <net/net_pack_manager.h>
 #include <kernel/irq.h>
 #include <embox/unit.h>
+#include <linux/init.h>
 
 EMBOX_UNIT_INIT(unit_init);
 

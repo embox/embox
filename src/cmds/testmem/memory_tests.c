@@ -345,7 +345,7 @@ static memory_test_t memtest_array[] = {
  */
 TEST_MEM_FUNC *get_memtest_func(const char *test_name) {
 	int i;
-	for (i = 0; i < array_len(memtest_array); i++) {
+	for (i = 0; i < ARRAY_SIZE(memtest_array); i++) {
 		if (strcmp(optarg, memtest_array[i].test_name) == 0) {
 			return &memtest_array[i].func;
 		}

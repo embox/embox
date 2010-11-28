@@ -5,9 +5,9 @@
  * @author Anton Bondarev
  */
 
-#ifndef ASM_LINKAGE_H_
-#define ASM_LINKAGE_H_
+#ifndef MICROBLAZE_LINKAGE_H_
+#define MICROBLAZE_LINKAGE_H_
 
 #define C_ENTRY(name)	.globl name; .align 4; name
 
-#endif /* ASM_LINKAGE_H_ */
+#endif /* MICROBLAZE_LINKAGE_H_ */

@@ -168,7 +168,7 @@ typedef struct sockaddr {
 } sockaddr_t;
 
 /*TODO: move out of here*/
-int sock_init(void);
+extern int sock_init(void);
 
 /**
  * create an endpoint for communication.

@@ -6,7 +6,7 @@
  * @author Eldar Abusalimov
  */
 #include "cmdline.h"
-#include <math.h>
+#include <util/math.h>
 #include <string.h>
 #include <embox/kernel.h>
 
@@ -44,7 +44,7 @@ static bool cmdline_history_move_to(CMDLINE *cmdline, int to) {
 
 	if (cmdline->history_cursor == history->index) {
 		strncpy(history->array[history->index], cmdline->string,
-				array_len(history->array[history->index]));
+				ARRAY_SIZE(history->array[history->index]));
 	}
 
 	cmdline->history_cursor = new_pos;

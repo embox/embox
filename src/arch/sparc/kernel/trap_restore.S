@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Low-level trap post-setup and SPARC windows underflow routines.
  *
  * @details Here is described the algorithm itself. More general information

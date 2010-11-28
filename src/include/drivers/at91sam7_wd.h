@@ -1,9 +1,13 @@
-/* @file at91sam7_wd.h
+/**
+ * @file
  * @brief Watchdog interface
  *
  * @date 26.09.2010
  * @author Anton Kozlov
  */
+
+#ifndef AT91SAM7_WD_H_
+#define AT91SAM7_WD_H_
 
 #include <types.h>
 
@@ -33,3 +37,6 @@ typedef struct _AT91S_WDTC {
 #define AT91C_WDTC_WDCR ((AT91_REG *) 	0xFFFFFD40) // (WDTC) Watchdog Control Register
 #define AT91C_WDTC_WDSR ((AT91_REG *) 	0xFFFFFD48) // (WDTC) Watchdog Status Register
 #define AT91C_WDTC_WDMR ((AT91_REG *) 	0xFFFFFD44) // (WDTC) Watchdog Mode Register
+
+#endif /* AT91SAM7_WD_H_ */
+

@@ -8,7 +8,24 @@
 #define FS_H_
 
 #include <lib/list.h>
-#include <fs/rootfs.h>
+#include <fs/file.h>
+
+#define SEEK_SET        0       /* seek relative to beginning of file */
+#define SEEK_CUR        1       /* seek relative to current file position */
+#define SEEK_END        2       /* seek relative to end of file */
+#define SEEK_MAX        SEEK_END
+
+typedef int (*FS_CREATE_FUNC)(void *params);
+typedef int (*FS_DELETE_FUNC)(const char *file_name);
+typedef int (*FS_INIT_FUNC)(void *par);
+typedef int (*FS_MOUNT_FUNC)(void *par);
+
+typedef struct fsop_desc {
+        FS_INIT_FUNC init;
+        FS_CREATE_FUNC create_file;
+        FS_DELETE_FUNC delete_file;
+        FS_MOUNT_FUNC mount;
+} fsop_desc_t;
 
 /**
  * Structure of file system driver.
@@ -16,12 +33,12 @@
  * our system.
  */
 typedef struct file_system_driver {
-	const char *name;
-	file_op_t *file_op;
-	fsop_desc_t *fsop;
+	const char          *name;
+	file_operations_t   *file_op;
+	fsop_desc_t         *fsop;
 #if 0
-int fs_flags;
-struct list_head fs_supers;
+	int fs_flags;
+	struct list_head fs_supers;
 #endif
 } file_system_driver_t;
 
@@ -39,7 +56,9 @@ extern file_system_driver_t *alloc_fs_drivers(void);
 /**
  * free early allocated driver with function alloc_fs_drivers
  */
-extern void free_fs_drivers(file_system_driver_t *fs_drv);
+extern void free_fs_drivers(file_system_driver_t *);
+
+extern file_system_driver_t *find_filesystem(const char *name);
 
 /**
  * register a new filesystem

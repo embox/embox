@@ -9,7 +9,7 @@
 #include <ctype.h>
 
 #include "console/console.h"
-#include <shell.h>
+//#include <shell.h>
 #include <kernel/job.h>
 #include <hal/context.h>
 #include <shell_command.h>
@@ -120,7 +120,7 @@ static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	size_t i;
-	for (i = 0; i < array_len(script_commands); i++) {
+	for (i = 0; i < ARRAY_SIZE(script_commands); i++) {
 		strncpy(buf, script_commands[i], sizeof(buf));
 		printf("> %s \n", buf);
 		exec_callback(callback, console, buf);

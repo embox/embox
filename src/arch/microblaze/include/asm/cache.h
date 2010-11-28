@@ -1,12 +1,20 @@
-#ifndef __CACHE_H__
-#define __CACHE_H__
+/**
+ * @file
+ * @brief Cache operations
+ *
+ * @date 25.11.09
+ * @author Anton Bondarev
+ */
+
+#ifndef MICROBLAZE_CACHE_H__
+#define MICROBLAZE_CACHE_H__
 
 #include <asm/msr.h>
 
 /*TODO may be put it in config file*/
 #define CACHE_LINE_LENGTH    32
 
-inline static void cache_set_ctrl_reg(unsigned int ctrl_reg){
+inline static void cache_set_ctrl_reg(unsigned int ctrl_reg) {
 	/* stub*/
 }
 
@@ -39,4 +47,4 @@ inline static void cache_data_disable(void) {
 	msr_clr(MSR_DCE_MASK);
 }
 
-#endif /* ifndef __CACHE_H__*/
+#endif /* MICROBLAZE_CACHE_H__*/

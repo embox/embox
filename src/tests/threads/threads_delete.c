@@ -1,6 +1,12 @@
 /**
  * @file
  * @brief Tests functions thread_stop and thread_delete.
+ * @details Test, which writes natural numbers.
+ * Minus_thread and mult_run will be deleted.
+ * Plus_run will be started in natural_run.
+ * After deleting some threads:
+ *   1)Plus_run id must be equal to 2.
+ *   2)Must work only threads with id: 0, 1, 2.
  *
  * @date 09.05.2010
  * @author Dmitry Avdyukhin
@@ -23,8 +29,7 @@ static struct thread *minus_thread;
 static struct thread *mult_thread;
 static struct thread *plus_thread;
 
-EMBOX_TEST(run_test)
-;
+EMBOX_TEST(run);
 
 /**
  * Endlessly writes "-".
@@ -57,7 +62,7 @@ static void mult_run(void) {
  * Will be started in natural_thread.
  */
 static void plus_run(void) {
-	int i;
+	size_t i;
 	for (i = 1; i < 1000; i++) {
 		TRACE("+");
 	}
@@ -68,7 +73,7 @@ static void plus_run(void) {
  * Writes natural numbers.
  */
 static void main_run(void) {
-	int i;
+	size_t i;
 
 	thread_stop(minus_thread);
 	thread_stop(mult_thread);
@@ -81,18 +86,7 @@ static void main_run(void) {
 	}
 }
 
-/**
- * Test, which writes natural numbers.
- * Minus_thread and mult_run will be deleted.
- * Plus_run will be started in natural_run.
- * After deleting some threads:
- *   1)Plus_run id must be equal to 2.
- *   2)Must work only threads with id: 0, 1, 2.
- *
- * @retval 0 if test is passed
- * @retval -EINVAL if an error occurs.
- */
-static int run_test() {
+static int run(void) {
 	TRACE("\n");
 
 	main_thread = thread_create(main_run, main_stack + THREAD_STACK_SIZE);

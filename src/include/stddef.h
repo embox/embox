@@ -16,6 +16,8 @@
 #define offsetof(type, member) \
 	((size_t) &((type *) 0x0)->member)
 
+#define FIELD_SIZEOF(t, f) (sizeof(((t∗)0)−>f))
+
 #ifndef NULL
 #define NULL ((void *) 0x0)
 #endif

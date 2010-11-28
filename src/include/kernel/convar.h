@@ -22,23 +22,23 @@ struct condition_variable {
 /**
  * initialization of condition variable.
  */
-void convar_init(void);
+extern void convar_init(void);
 
 /**
  * Add a thread to the list of sleeping threads.
  * @param added_mutex is mutex for sleeping.
  * @retval result of scheduler_add_sleep.
  */
-int convar_wait(struct mutex *added_mutex, struct condition_variable *variable);
+extern int convar_wait(struct mutex *added_mutex, struct condition_variable *variable);
 
 /**
  * Wake up of sleeping threads.
  */
-void convar_signal(struct condition_variable *variable);
+extern void convar_signal(struct condition_variable *variable);
 
 /**
  * Destroy of condition variable.
  */
-void convar_destroy(struct condition_variable *variable);
+extern void convar_destroy(struct condition_variable *variable);
 
 #endif /* CONVAR_H_ */

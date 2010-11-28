@@ -67,9 +67,9 @@ static void swap(int i, int j) {
  */
 static inline bool greater(struct thread *first, struct thread *second) {
 	return (first->priority > second->priority ||
-			(first->priority == second->priority &&
-			(first->run_count ^ second->run_count) &&
-			first->run_count == priority_state[first->priority]));
+		(first->priority == second->priority &&
+		(first->run_count ^ second->run_count) &&
+		first->run_count == priority_state[first->priority]));
 }
 
 /**
@@ -102,7 +102,8 @@ static void restore_down(int s) {
 		if (greater(threads[left(s)], threads[0])) {
 			maxi = left(s);
 		}
-		if (right(s) <= threads_count && greater(threads[right(s)], threads[maxi])) {
+		if (right(s) <= threads_count &&
+		    greater(threads[right(s)], threads[maxi])) {
 			maxi = right(s);
 		}
 		if (maxi != 0) {
@@ -151,11 +152,12 @@ struct thread *heap_extract(void) {
 
 bool heap_contains (struct thread *thread) {
 	return (thread->heap_index <= threads_count &&
-			thread->heap_index > 0 && threads[thread->heap_index] == thread);
+		thread->heap_index > 0 && threads[thread->heap_index] == thread);
 }
 
 void heap_print(void) {
-	for (int i = 1; i <= threads_count; i++) {
+	size_t i;
+	for (i = 1; i <= threads_count; i++) {
 		TRACE("%d %d | ", threads[i]->id, threads[i]->priority);
 	}
 	TRACE("\n");

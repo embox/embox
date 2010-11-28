@@ -198,7 +198,8 @@ typedef unsigned long ctxd_t;
 /** Set MMU reg */
 static inline void mmu_set_mmureg(unsigned long addr_reg,
 				unsigned long regval) {
-	__asm__ __volatile__("sta %0, [%1] %2\n\t"
+	__asm__ __volatile__(
+		"sta %0, [%1] %2\n\t"
 		:
 		: "r"(regval), "r"(addr_reg), "i"(ASI_M_MMUREGS)
 		: "memory"
@@ -208,7 +209,8 @@ static inline void mmu_set_mmureg(unsigned long addr_reg,
 /** Get MMU reg */
 static inline unsigned long mmu_get_mmureg(unsigned long addr_reg) {
 	register int retval;
-	__asm__ __volatile__("lda [%1] %2, %0\n\t"
+	__asm__ __volatile__(
+		"lda [%1] %2, %0\n\t"
 		: "=r" (retval)
 		: "r" (addr_reg), "i" (ASI_M_MMUREGS)
 	);
@@ -232,7 +234,8 @@ static inline unsigned long mmu_get_ctable_ptr(void) {
 #define mmu_get_context() mmu_get_mmureg(LEON_CNR_CTX)
 
 static inline void mmu_flush_cache_all(void) {
-	__asm__ __volatile__("flush\n\t"
+	__asm__ __volatile__(
+		"flush\n\t"
 		"sta %%g0, [%%g0] %0\n\t"
 		:
 		: "i" (0x11) /* magic number detected */
@@ -242,7 +245,8 @@ static inline void mmu_flush_cache_all(void) {
 
 static inline void mmu_flush_tlb_all(void) {
 	mmu_flush_cache_all();
-	__asm__ __volatile__("sta %%g0, [%0] %1\n\t"
+	__asm__ __volatile__(
+		"sta %%g0, [%0] %1\n\t"
 		:
 		: "r" (0x400), "i" (0x18) /* magic number detected */
 		: "memory"
@@ -255,7 +259,8 @@ static inline void mmu_flush_tlb_all(void) {
  * with respect to ref/mod bits in the page tables.
  */
 static  unsigned long mmu_swap(unsigned long *addr, unsigned long value) {
-	__asm__ __volatile__("swap [%2], %0"
+	__asm__ __volatile__(
+		"swap [%2], %0"
 		: "=&r" (value)
 		: "0" (value), "r" (addr)
 	);

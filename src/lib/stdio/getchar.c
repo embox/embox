@@ -7,8 +7,10 @@
  */
 
 #include <stdio.h>
+#include <kernel/uart.h>
+#include <kernel/diag.h>
 
-int getchar_getc() {
+int getchar_getc(void) {
 	#ifndef CONFIG_HARD_DIAGUART
 	return uart_getc();
 	#else
@@ -18,9 +20,11 @@ int getchar_getc() {
 
 int getchar_putc(int c) {
 	#ifndef CONFIG_HARD_DIAGUART
-	return uart_putc((char) c);
+	uart_putc((char) c);
+	return 0;
 	#else
-	return diag_putc((char) c);
+	diag_putc((char) c);
+	return 0;
 	#endif
 }
 
@@ -46,7 +50,7 @@ int ungetchar(int ch) {
 	return fungetc(stdin,ch);
 # else
 	/* default */
-	getchar_getc((char) ch);
+	getchar_getc();
 	return ch;
 # endif
 #endif

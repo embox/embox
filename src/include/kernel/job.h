@@ -4,13 +4,14 @@
  *
  * @date 12.04.2010
  * @author Alexey Kryachko
- * 			Maxim Okhotsky
- *
+ * @author Maxim Okhotsky
  */
 
 #ifndef JOB_H_
 #define JOB_H_
 #include <setjmp.h>
+
+typedef int (*exec_handler_t)(int argsc, char **argsv);
 
 /**
  * Call the action of command with the restoration point
@@ -24,7 +25,7 @@
  * @retval -EINVAL if the void doesn't represent valid command
  * @retval -EINTR if the setjump doesn't return 0
  */
-extern int job_exec(int (*exec)(int argsc, char **argsv), int argsc, char **argsv);
+extern int job_exec(exec_handler_t exec, int argsc, char **argsv);
 
 /**
  * Restore the point after ctrl+f

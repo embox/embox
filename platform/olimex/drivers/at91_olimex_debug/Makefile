@@ -1,4 +1,3 @@
-$_PACKAGE := $(PLATFORM).driver
 
 $_MODS += at91_olimex_debug_led
 

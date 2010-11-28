@@ -1,12 +1,16 @@
-/* @file AT91SAM7_AIC.h
+/**
+ * @file
  * @brief Interrupt Controller interface
  *
  * @date 26.09.2010
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#ifndef AT91SAM7_AIC_H_
+#define AT91SAM7_AIC_H_
 
+#include <types.h>
+#if 1
 typedef struct _AT91S_AIC {
 	AT91_REG	 AIC_SMR[32]; 	// Source Mode Register
 	AT91_REG	 AIC_SVR[32]; 	// Source Vector Register
@@ -29,6 +33,8 @@ typedef struct _AT91S_AIC {
 	AT91_REG	 AIC_FFDR; 	// Fast Forcing Disable Register
 	AT91_REG	 AIC_FFSR; 	// Fast Forcing Status Register
 } AT91S_AIC, *AT91PS_AIC;
+
+#endif
 
 // -------- AIC_SMR : (AIC Offset: 0x0) Control Register --------
 #define AT91C_AIC_PRIOR       ((unsigned int) 0x7 <<  0) // (AIC) Priority Level
@@ -65,3 +71,6 @@ typedef struct _AT91S_AIC {
 #define AT91C_AIC_CISR  ((AT91_REG *) 	0xFFFFF114) // (AIC) Core Interrupt Status Register
 #define AT91C_AIC_IDCR  ((AT91_REG *) 	0xFFFFF124) // (AIC) Interrupt Disable Command Register
 #define AT91C_AIC_SPU   ((AT91_REG *) 	0xFFFFF134) // (AIC) Spurious Vector Register
+
+#endif /* AT91SAM7_AIC_H_ */
+

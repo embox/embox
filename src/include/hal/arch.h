@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Defines ARCH interface
  *
  * @date 25.11.2009
  * @author Eldar Abusalimov

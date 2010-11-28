@@ -8,8 +8,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef __SPARC_OPENPROM_H__
-#define __SPARC_OPENPROM_H__
+#ifndef SPARC_PROM_H_
+#define SPARC_PROM_H_
 
 #ifndef __ASSEMBLY__
 
@@ -29,7 +29,7 @@
 
 #define KERNEL_ARGS "console=ttyS0,38400 rdinit=/sbin/init"
 #define KERNBASE    0xf0000000  /* First address the kernel will eventually be */
-#define LOAD_ADDR   (KERNBASE + 0x4000)      /* prom jumps to us here unless this is elf /boot */
+#define LOAD_ADDR   (KERNBASE + 0x4000) /* prom jumps to us here unless this is elf /boot */
 #define BAUDRATE    38400
 
 /** ------------------- Leon 3 specific ----------------- */
@@ -131,5 +131,5 @@ extern void bootm_linux(unsigned int load_addr, unsigned int entry_point);
 
 #endif /* !(__ASSEMBLY__) */
 
-#endif
+#endif /* SPARC_PROM_H_ */
 

@@ -1,14 +1,11 @@
 /**
  * @file
- *
- * @brief source file of dynamic memory allocator
+ * @brief Dynamic memory allocator
  *
  * @date 02.05.2010
- *
- * @auther Michail Skorginskii
+ * @author Michail Skorginskii
  */
 
-#include <kernel/mm/mpallocator.h>
 #include <kernel/mm/mpallocator.h>
 #include <kernel/mm/kmalloc.h>
 #include <lib/list.h>
@@ -18,7 +15,7 @@
  */
 typedef struct tag {
 	size_t size;
-	bool free;
+	bool   free;
 } tag_t;
 
 typedef struct tag_free {
@@ -43,19 +40,13 @@ typedef struct tag_free {
 #define HOLE false
 
 /**
- * return adress
+ * return address
  */
-#define ADRESS(begin) (void*)begin + sizeof(tag_free_t)
-/**
- *
- *
- */
-#define END_TAG(begin) (tag_t*) ((void*)begin + begin->tag.size + sizeof(tag_free_t))
-/**
- *
- *
- */
-#define BEGIN_TAG(end) (tag_free_t*) ((void*)end - end->size - sizeof(tag_free_t))
+#define ADDRESS(begin) (void*) (begin + sizeof(tag_free_t))
+
+#define END_TAG(begin) (tag_t*) (begin + begin->tag.size + sizeof(tag_free_t))
+
+#define BEGIN_TAG(end) (tag_free_t*) (end - end->size - sizeof(tag_free_t))
 
 /* some stuff for easey programming */
 inline static int allocate_mem_block(int pages);
@@ -68,7 +59,6 @@ bool inited = false;
 tag_free_t* begin_pool_ptr;
 
 void* kmalloc(size_t size) {
-	/* declarations */
 	tag_free_t *tmp_begin;
 	struct list_head *tmp_loop;
 
@@ -92,7 +82,7 @@ void* kmalloc(size_t size) {
 		if (tmp_begin->tag.size >= size) {
 			eat_mem(size, tmp_begin);
 			/* and return */
-			return ADRESS(tmp_begin);
+			return ADDRESS(tmp_begin);
 		}
 	}
 	TRACE("\n === INFERNAL FUCK! === \n");
@@ -101,7 +91,6 @@ void* kmalloc(size_t size) {
 }
 
 void kfree(void *ptr) {
-	/* declarations */
 	tag_free_t *tmp_begin, *ptr_begin;
 	tag_t *tmp_end;
 
@@ -146,9 +135,8 @@ void kfree(void *ptr) {
 	list_add(ptr_begin, &mem_pool);
 }
 
-/* auxiliry function. allocate block of memory TODO add the ending memory work */
+/* auxiliary function. allocate block of memory TODO add the ending memory work */
 inline static int allocate_mem_block(int pages) {
-	/* declarations */
 	tag_free_t *tmp_begin;
 	tag_t* tmp_end;
 
@@ -170,9 +158,8 @@ inline static int allocate_mem_block(int pages) {
 	list_add((struct list_head*) tmp_begin, &mem_pool);
 	return 1;
 }
-/* auxiliry function. Eat mem. add the ending memory work */
+/* auxiliary function. Eat mem. add the ending memory work */
 inline static void eat_mem(size_t size, tag_free_t* ext) {
-	/* decalations */
 	tag_free_t *tmp_begin;
 	tag_t *tmp_end;
 	size_t size_tmp;
@@ -218,7 +205,7 @@ void kmget_blocks_info(struct list_head* list) {
 	if (!inited) {
 		int expr = allocate_mem_block(CONFIG_MALLOC_SIZE);
 		if (expr == 0) {
-			return 0;
+			return;
 		}
 		inited = !inited;
 	}
@@ -239,4 +226,4 @@ void kmget_blocks_info(struct list_head* list) {
 #undef PROC
 #undef HOLE
 #undef REPEAT
-#undef ADRESS
+#undef ADDRESS

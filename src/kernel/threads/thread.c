@@ -49,12 +49,13 @@ static void idle_run(void) {
 }
 
 static int threads_init(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < MAX_MSG_COUNT; i++) {
 		msg_mask[i] = 0;
 		threads_pool[i].exist = false;
 	}
-	idle_thread = thread_create(idle_run, idle_thread_stack + THREAD_STACK_SIZE);
+	idle_thread = thread_create(idle_run,
+		idle_thread_stack + THREAD_STACK_SIZE);
 	idle_thread->priority = 0;
 	idle_thread->state = THREAD_STATE_RUN;
 	return 0;
@@ -65,10 +66,8 @@ static int threads_init(void) {
  * execute "run" and delete thread from scheduler.
  * @param thread_pointer pointer at thread.
  */
-static void thread_run(void) {
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nStarting Thread %d\n", current_thread->id);
-#endif
+static void thread_run(int par) {
+	LOG_DEBUG("\nStarting Thread %d\n", current_thread->id);
 	ipl_enable();
 	current_thread->run();
 	thread_stop(current_thread);
@@ -82,9 +81,10 @@ static void thread_run(void) {
  * @return pointer to alloted thread
  * @retval NULL if there are not free threads
  */
-static struct thread * thread_new(void) {
+static struct thread *thread_new(void) {
+	size_t i;
 	struct thread *created_thread;
-	for (int i = 0; i < MAX_THREADS_COUNT; i++) {
+	for (i = 0; i < MAX_THREADS_COUNT; i++) {
 		if (mask[i] == 0) {
 			created_thread = threads_pool + i;
 			created_thread->id = i;
@@ -103,16 +103,15 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	}
 	created_thread->run = run;
 	context_init(&created_thread->context, true);
-	context_set_entry(&created_thread->context, &thread_run, (int) created_thread);
+	context_set_entry(&created_thread->context,
+			thread_run, (int)created_thread);
 	context_set_stack(&created_thread->context, stack_address);
 	created_thread->state = THREAD_STATE_STOP;
 	created_thread->priority = 1;
 	created_thread->need_message = false;
 	queue_init(&created_thread->messages);
 	event_init(&created_thread->msg_event);
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("Alloted thread id = %d\n", created_thread->id);
-#endif
+	LOG_DEBUG("Alloted thread id = %d\n", created_thread->id);
 	return created_thread;
 }
 
@@ -136,9 +135,7 @@ static int thread_delete(struct thread *deleted_thread) {
 	if (deleted_thread == NULL) {
 		return -EINVAL;
 	}
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nDeleting %d\n", deleted_thread->id);
-#endif
+	LOG_DEBUG("\nDeleting %d\n", deleted_thread->id);
 	deleted_thread->state = THREAD_STATE_STOP;
 	deleted_thread->exist = false;
 	mask[deleted_thread - threads_pool] = 0;
@@ -148,17 +145,14 @@ static int thread_delete(struct thread *deleted_thread) {
 int thread_stop(struct thread *thread) {
 	/* Last zombie thread. */
 	static struct thread *zombie;
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nI = 0x%x; D = 0x%x; Z = 0x%x;\n", (unsigned int)idle_thread,
+	LOG_DEBUG("\nI = 0x%x; D = 0x%x; Z = 0x%x;\n", (unsigned int)idle_thread,
 			(unsigned int)thread, (unsigned int)zombie);
-#endif
-	if (thread == NULL || thread == idle_thread || thread == zombie || !thread->exist) {
+	if (thread == NULL || thread == idle_thread ||
+		    thread == zombie || !thread->exist) {
 		return -EINVAL;
 	}
 	scheduler_lock();
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nStopping %d\n", thread->id);
-#endif
+	LOG_DEBUG("\nStopping %d\n", thread->id);
 	if (zombie != NULL) {
 		thread_delete(zombie);
 		zombie = NULL;
@@ -171,9 +165,7 @@ int thread_stop(struct thread *thread) {
 		thread->state = THREAD_STATE_ZOMBIE;
 	}
 
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("\nZombying 0x%x\n", (unsigned int)thread);
-#endif
+	LOG_DEBUG("\nZombying 0x%x\n", (unsigned int)thread);
 	scheduler_unlock();
 	return 0;
 }
@@ -199,12 +191,12 @@ struct message *msg_receive(void) {
 		current_thread->need_message = true;
 		scheduler_sleep(&current_thread->msg_event);
 	}
-	return (struct message *)list_entry(queue_extr(&current_thread->messages),
-			struct message, list);
+	return (struct message *)list_entry(
+		queue_extr(&current_thread->messages), struct message, list);
 }
 
 struct message *msg_new(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < MAX_MSG_COUNT; i++) {
 		if (!msg_mask[i]) {
 			msg_mask[i] = true;

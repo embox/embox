@@ -1,5 +1,5 @@
 
-$_SUBDIRS := $(filter-out _template,$($_SUBDIRS))
+SUBDIRS := $(filter-out _template,$(SUBDIRS))
 
 $_PACKAGE := embox.test
 

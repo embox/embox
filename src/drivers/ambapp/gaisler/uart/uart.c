@@ -1,5 +1,5 @@
 /**
- * \file uart.c
+ * @file
  */
 
 #include <types.h>
@@ -106,7 +106,7 @@ char uart_getc(void) {
 
 #ifdef CONFIG_AMBAPP
 static int dev_regs_init() {
-	AMBA_DEV amba_dev;
+	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, CONFIG_VENDOR_ID_GAISLER,
 					CONFIG_DEV_ID_GAISLER_UART, false, false)) {
 		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",
@@ -150,3 +150,61 @@ int uart_remove_irq_handler(void) {
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
+#ifdef CONFIG_TTY_DEVICE
+#include <embox/device.h>
+#include <fs/file.h>
+#include <drivers/tty.h>
+
+static tty_device_t tty;
+
+static void *open(const char *fname, const char *mode);
+static int close(void *file);
+static size_t read(void *buf, size_t size, size_t count, void *file);
+static size_t write(const void *buff, size_t size, size_t count, void *file);
+
+static file_operations_t file_op = {
+		.fread = read,
+		.fopen = open,
+		.fclose = close,
+		.fwrite = write
+};
+
+static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
+	tty_add_char(&tty, uart_getc());
+	return 0;
+}
+
+/*
+ * file_operation
+ */
+static void *open(const char *fname, const char *mode) {
+	tty.file_op = &file_op;
+	tty_register(&tty);
+	uart_set_irq_handler(irq_handler);
+	return (void *)&file_op;
+}
+
+static int close(void *file) {
+	tty_unregister(&tty);
+	uart_remove_irq_handler();
+	return 0;
+}
+
+static size_t read(void *buf, size_t size, size_t count, void *file) {
+	//TODO if we havn't irq
+	return 0;
+}
+
+static size_t write(const void *buff, size_t size, size_t count, void *file) {
+	size_t cnt = 0;
+	char *b = (char*)buff;
+
+	while(cnt != count * size) {
+		uart_putc(b[cnt]);
+	}
+	return 0;
+}
+
+
+EMBOX_DEVICE("uart", &file_op);
+#endif

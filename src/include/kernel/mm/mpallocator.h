@@ -7,8 +7,8 @@
  * @author Fedor Burdun
  */
 
-#ifndef __MPALLOCATOR_H_
-#define __MPALLOCATOR_H_
+#ifndef MPALLOCATOR_H_
+#define MPALLOCATOR_H_
 
 #include <types.h>
 
@@ -16,12 +16,12 @@ typedef struct block_info {
 	struct list_head *next, *prev;
 	size_t size;
 	bool free;
-}block_info_t;
+} block_info_t;
 
-void*	mpalloc( size_t page_quantity );
-void	mpfree( void* pointer );
+extern void *mpalloc(size_t page_quantity);
+extern void mpfree(void *pointer);
 
-void    mpget_blocks_info(struct list_head* list);
+extern void mpget_blocks_info(struct list_head* list);
 
-#endif /* __MPALLOCATOR_H_ */
+#endif /* MPALLOCATOR_H_ */
 

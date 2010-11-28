@@ -1,5 +1,5 @@
 
-$_SUBDIRS := $(filter-out include,$($_SUBDIRS))
+SUBDIRS := $(filter-out include,$(SUBDIRS))
 
 $_LIBS += liblinux.a
 $_USES-liblinux.a += libc.a

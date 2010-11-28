@@ -6,8 +6,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef _LINUX_KERNEL_H
-#define _LINUX_KERNEL_H
+#ifndef LINUX_KERNEL_H_
+#define LINUX_KERNEL_H_
 
 #include <kernel/printk.h>
 #include <kernel/panic.h>

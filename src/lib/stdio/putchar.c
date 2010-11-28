@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <kernel/diag.h>
 
 #ifdef CONFIG_HARD_UART_OUT
 int putchar_putc(int c) {

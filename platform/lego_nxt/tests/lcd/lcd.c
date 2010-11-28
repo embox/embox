@@ -5,6 +5,9 @@
  * @author Alexey Fomin
  */
 
+#include <embox/test.h>
+#include <drivers/lcd.h>
+
 /* It's a temporary solution with generated function.
  * Just to show we're alive. */
 
@@ -15,8 +18,9 @@ void nxt_lcd_put_pixel(int x, int y) {}
 void draw_embox(int dx, int dy);
 
 static int run_lcd(void) {
-	int dx = 10, dy = 10;
-	//draw_embox(dx, dy);
+//	int dx = 10, dy = 10;
+	display_string("Embox");
+//	draw_embox(dx, dy);
 	return 0;
 }
 

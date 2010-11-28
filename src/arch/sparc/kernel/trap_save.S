@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Low-level trap pre-setup and SPARC windows overflow routines.
  *
  * @details Here is described the algorithm itself. More general information

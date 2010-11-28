@@ -11,8 +11,8 @@
 
 #include <hal/ipl.h>
 
-#define local_irq_enable()  ipl_enable()
-#define local_irq_disable()	ipl_disable()
+#define local_irq_enable()       ipl_enable()
+#define local_irq_disable()      ipl_disable()
 
 #define local_irq_save(flags)    ((flags) = ipl_save())
 #define local_irq_restore(flags) ipl_restore(flags)

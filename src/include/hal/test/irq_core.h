@@ -5,13 +5,13 @@
  * @author Anton Bondarev
  */
 
-#ifndef TESTIRQ_CORE_H_
-#define TESTIRQ_CORE_H_
+#ifndef TEST_IRQ_CORE_H_
+#define TEST_IRQ_CORE_H_
 
-#include <asm/hal/test/testirq_core.h>
+#include <asm/hal/test/irq_core.h>
 
 extern void testirq_save_status(uint32_t *status);
 
 extern void testirq_restore_status(uint32_t *status);
 
-#endif /* TESTIRQ_CORE_H_ */
+#endif /* TEST_IRQ_CORE_H_ */

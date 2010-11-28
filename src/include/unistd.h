@@ -10,6 +10,7 @@
 #define UNISTD_H_
 
 #include <sys/types.h>
+
 #define _SC_TIMER_MAX 4 /**<system timers quantity */
 
 /**
@@ -18,6 +19,7 @@
  * @return 0 if time has elapsed if was error then return -1
  */
 unsigned int sleep(unsigned int seconds);
+
 /**
  * suspend execution for an interval of time
  * @param useconds interval in microseconds

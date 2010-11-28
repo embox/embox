@@ -9,6 +9,7 @@
 #include <shell_command.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
+#include <fs/vfs.h>
 #include <stdio.h>
 #include <string.h>
 #include <lib/cpio.h>
@@ -23,39 +24,12 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-#if 0
-static int copy_image(char *file_name) {
-	void *romfile;
-	void *ramfile;
-	char romfname[0x40];
-	char ramfname[0x40];
-	char buff[0x1000];
-
-	sprintf(romfname, "%s%s", "/ramfs/", file_name);
-	if (NULL == (romfile = fopen(romfname, "r"))) {
-		printf("Error:Can't open file %s\n", romfname);
-		return -1;
-	}
-	sprintf(ramfname, "%s%s", romfname, "_loaded");
-	if (NULL == (ramfile = fopen(ramfname, "w"))) {
-		LOG_ERROR("Can't create ramfs disk");
-		return -1;
-	}
-	while (0 < fread(buff, sizeof(buff), 1, romfile)) {
-		fwrite(buff, sizeof(buff), 1, ramfile);
-	}
-	return 0;
-}
-#endif
-
 static int exec(int argsc, char **argsv) {
-#if 0
-	RAMFS_CREATE_PARAM param;
-#endif
-	fsop_desc_t *fsop;
-	FILE_HANDLER *fh;
 	char *file_name = NULL;
-	unsigned int base_addr;
+	uint32_t load_addr, file_addr;
+	FILE *file;
+	node_t *node;
+	stat_t sb;
 	int nextOption;
 	getopt_init();
 	do {
@@ -68,8 +42,9 @@ static int exec(int argsc, char **argsv) {
 			file_name = optarg;
 			break;
 		case 'a':
-			if ((optarg != NULL) && (!sscanf(optarg, "0x%x", &base_addr))
-					&& (!sscanf(optarg, "%d", (int *) &base_addr))) {
+			if ((optarg != NULL) &&
+			    (!sscanf(optarg, "0x%x", &load_addr)) &&
+			    (!sscanf(optarg, "%d", (int *) &load_addr))) {
 				LOG_ERROR("hex value expected.\n");
 				show_help();
 				return -1;
@@ -82,26 +57,13 @@ static int exec(int argsc, char **argsv) {
 		}
 	} while (-1 != nextOption);
 
-	if (NULL == (fsop = rootfs_get_fsopdesc("/ramfs"))) {
-		LOG_ERROR("Can't find /ramfs disk");
-		return -1;
-	}
-#if 0
-	param.size = 0x1000000;
-	param.start_addr = (unsigned int) (base_addr);
-	sprintf(param.name, "%s%s", file_name, "_loaded");
-	if (-1 == fsop->create_file(&param)) {
-		LOG_ERROR("Can't create ramfs disk\n");
-		return -1;
-	}
-	if (-1 == copy_image(file_name)) {
-		LOG_ERROR("Can't copy image\n");
-		return -1;
-	}
-#endif
-	//TODO: workaround
-	fh = fsop->open_file(file_name, "r");
-	TRACE("loading...addr=0x%08x, size=%d\n", fh->fdesc->start_addr, fh->fdesc->size);
-	memcpy((void *) base_addr, fh->fdesc->start_addr, fh->fdesc->size);
+	file = fopen(file_name, "r");
+	fioctl(file, 0, &file_addr);
+
+	node = vfs_find_node(file_name, NULL);
+	stat(file_name, &sb);
+
+	TRACE("loading...addr=0x%08x, size=%d\n", file_addr, sb.st_size);
+	memcpy((void *)load_addr, (void *)file_addr, sb.st_size);
 	return 0;
 }

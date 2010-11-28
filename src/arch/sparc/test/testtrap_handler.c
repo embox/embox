@@ -6,7 +6,7 @@
  */
 
 #include <asm/ptrace.h>
-#include <hal/test/testtraps_core.h>
+#include <hal/test/traps_core.h>
 
 trap_handler_t test_handlers[CONFIG_TRAP_TABLE_SIZE];
 

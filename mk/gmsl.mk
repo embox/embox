@@ -5,7 +5,7 @@
 # A library of functions to be used with GNU Make's $(call) that
 # provides functionality not available in standard GNU Make.
 #
-# Copyright (c) 2005-2008 John Graham-Cumming
+# Copyright (c) 2005-2010 John Graham-Cumming
 #
 # This file is part of GMSL
 #
@@ -51,15 +51,19 @@ ifndef __gmsl_included
 true  := T
 false :=
 
+# ----------------------------------------------------------------------------
+# Function:  not
+# Arguments: 1: A boolean value
+# Returns:   Returns the opposite of the arg. (true -> false, false -> true)
+# ----------------------------------------------------------------------------
+not = $(if $1,$(false),$(true))
+
 # Prevent reinclusion of the library
 
 __gmsl_included := $(true)
 
-# The name of this file, without double underscore
-__gmsl_mk = gmsl.mk
-
 # Try to determine where this file is located.  If the caller did
-# include /foo/gmsl.mk then extract the /foo/ so that __gmsl.mk gets
+# include /foo/gmsl then extract the /foo/ so that __gmsl gets
 # included transparently
 
 ifneq ($(MAKEFILE_LIST),)
@@ -68,16 +72,16 @@ __gmsl_root := $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
 # If there are any spaces in the path in __gmsl_root then give up
 
 ifeq (1,$(words $(__gmsl_root)))
-__gmsl_root := $(patsubst %$(__gmsl_mk),%,$(__gmsl_root))
+__gmsl_root := $(patsubst %gmsl.mk,%,$(__gmsl_root))
 else
 __gmsl_root :=
 endif
 
-include $(__gmsl_root)__$(__gmsl_mk)
+include $(__gmsl_root)__gmsl.mk
 
 else
 
-include __$(__gmsl_mk)
+include __gmsl.mk
 
 endif
 

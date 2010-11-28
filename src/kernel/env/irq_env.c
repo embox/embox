@@ -9,7 +9,6 @@
 #include <hal/ipl.h>
 #include <hal/env/irq_env.h>
 
-
 static irq_env_t *cur_env;
 
 void irq_save_env(irq_env_t *env) {

@@ -2,8 +2,8 @@
  * @file
  * @brief TODO
  *
- * @date
- * @author
+ * @date 23.07.10
+ * @author Avdyukhin Dmitry
  */
 #include <types.h>
 #include <hal/context.h>

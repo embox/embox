@@ -7,7 +7,6 @@ $_SRCS-arch += arch.c
 
 $_SRCS-interrupt += entry.S
 
-
 DEFAULT_SYS_TIMER = embox.driver.timers.at91_timer
 DEFAULT_SYS_IRQCTRL = embox.driver.interrupts.at91_interrupt
 

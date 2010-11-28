@@ -48,10 +48,10 @@ void __init skb_init(void) {
 	/* Init net pack manager */
 	net_buff_init();
 
-	for (i = 1; i < array_len(sk_buff_pool); i++) {
+	for (i = 1; i < ARRAY_SIZE(sk_buff_pool); i++) {
 		list_add((struct list_head *) &sk_buff_pool[i], &head_free_skb);
 	}
-	for (i = 1; i < array_len(sk_queue_pool); i++) {
+	for (i = 1; i < ARRAY_SIZE(sk_queue_pool); i++) {
 		list_add((struct list_head *) &sk_queue_pool[i], &head_free_queue);
 	}
 }

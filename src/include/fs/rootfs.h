@@ -8,6 +8,7 @@
 #define FS_ROOTFS_H_
 
 #include <types.h>
+#include <fs/node.h>
 
 #define FILE_MODE_RO    0x1 /*read only     */
 #define FILE_MODE_WO    0x2 /*write only    */
@@ -26,43 +27,12 @@ typedef struct _FILE_INFO {
 
 typedef FILE_INFO *(*FS_FILE_ITERATOR)(FILE_INFO *file_info);
 
-typedef void *(*FS_OPEN_FILE_FUNC)(const char *file_name, const char *mode);
-typedef int (*FS_CREATE_FUNC)(void *params);
-typedef int (*FS_RESIZE_FUNC)(void *params);
-typedef int (*FS_DELETE_FUNC)(const char *file_name);
-typedef int (*FS_GETCAPACITY_FUNC)(const char *file_name);
-typedef int (*FS_GETFREESPACE_FUNC)(const char *file_name);
-typedef int (*FS_GETDESCRIPTORSINFO_FUNC)(void *params);
-typedef int (*FS_INIT_FUNC)(void);
 typedef FS_FILE_ITERATOR (*FS_GETFILELISTITERATOR_FUNC) (void);
 
-typedef struct fsop_desc {
-	FS_INIT_FUNC init;
-	FS_OPEN_FILE_FUNC open_file;
-	FS_CREATE_FUNC create_file;
-	FS_RESIZE_FUNC resize_file;
-	FS_DELETE_FUNC delete_file;
-	FS_GETCAPACITY_FUNC get_capacity;
-	FS_GETFREESPACE_FUNC get_freespace;
-	FS_GETDESCRIPTORSINFO_FUNC get_descriptors_info;
-	FS_GETFILELISTITERATOR_FUNC get_file_list_iterator;
-} fsop_desc_t;
-
+#include <fs/file.h>
+#if 0
 fsop_desc_t *rootfs_get_fsopdesc(char *fs_name);
 
-typedef void *(*FILEOP_OPEN)(const char *file_name, const char *mode);
-typedef int (*FILEOP_CLOSE)(void * file);
-typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
-typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
-typedef int (*FILEOP_FSEEK)(void *file, long offset, int whence);
-
-typedef struct file_op {
-	FILEOP_OPEN fopen;
-	FILEOP_CLOSE close;
-	FILEOP_READ read;
-	FILEOP_WRITE write;
-	FILEOP_FSEEK fseek;
-} file_op_t;
 
 typedef struct _FILE_NAME_STRUCT {
 	/* fs name (flash ramdisc and so on) */
@@ -74,5 +44,8 @@ FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_
 fsop_desc_t *rootfs_get_fsopdesc(char *fs_name);
 
 void *rootfs_fopen(const char *file_name, const char *mode);
+#endif
+
+extern node_t *root_fs_get_node(void);
 
 #endif /* FS_ROOTFS_H_ */

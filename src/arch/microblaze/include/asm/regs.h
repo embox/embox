@@ -1,12 +1,13 @@
 /*
  * @file
  * @brief aliases for register's name mentioned in microblaze API
+ *
  * @date 17.11.2009
  * @author Anton Bondarev
  */
 
-#ifndef MB_REGS_H_
-#define MB_REGS_H_
+#ifndef MICROBLAZE_REGS_H_
+#define MICROBLAZE_REGS_H_
 
 #define reg_zero   r0    /**< zero constant register*/
 #define reg_sp     r1    /**< stack pointer register*/
@@ -46,4 +47,4 @@
 	addi r31, reg_zero, 0;
 
 
-#endif /* MB_REGS_H_ */
+#endif /* MICROBLAZE_REGS_H_ */

@@ -27,8 +27,15 @@ endif
 # Traverse always defines SELFDIR before entering sub-makefile.
 dir = $(SELFDIR)
 
-DIRS := $(call TRAVERSE,$(SRC_DIR),Makefile.em) \
-  $(if $(PLATFORM),$(call TRAVERSE,$(PLATFORM_DIR),Makefile.em))
+DIRS := $(call traverse,$(SRC_DIR),Makefile.em) \
+  $(if $(PLATFORM),$(call traverse,$(PLATFORM_DIR),Makefile.em))
+# XXX -- Eldar
+
+DIRS := $(patsubst %/,%,$(dir \
+  $(foreach dir,$(DIRS), \
+    $(call f-wildcard_first,$(addprefix $(dir)/,Makefile.em Makefile makefile)) \
+  ) \
+))
 
 ifdef EMBUILD_DEBUG
 embuild_vars = $(filter EMBUILD/%,$(.VARIABLES))

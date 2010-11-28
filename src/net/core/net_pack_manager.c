@@ -23,7 +23,7 @@ static net_buff_info_t pack_pool[CONFIG_PACK_POOL_SIZE];
 
 int __init net_buff_init(void) {
 	size_t i;
-	for (i = 0; i < array_len(pack_pool); i ++) {
+	for (i = 0; i < ARRAY_SIZE(pack_pool); i++) {
 		list_add(&(&pack_pool[i])->list, &head_free_pack);
 	}
 	return 0;
@@ -41,7 +41,7 @@ unsigned char *net_buff_alloc(void) {
 	entry = (net_buff_info_t *)((&head_free_pack)->next);
 	list_del_init((struct list_head *)entry);
 	buff = (unsigned char *)list_entry((struct list_head *)entry,
-										net_buff_info_t, list);
+						net_buff_info_t, list);
 	ipl_restore(sp);
 	return buff;
 }

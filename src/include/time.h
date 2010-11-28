@@ -9,6 +9,10 @@
 
 #include <sys/types.h>
 
-clock_t clock(void);
+typedef __time_t time_t;
+
+extern char *ctime(const time_t *timep, char *buff);
+
+extern clock_t clock(void);
 
 #endif /* TIME_H_ */

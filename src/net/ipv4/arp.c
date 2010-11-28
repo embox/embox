@@ -27,7 +27,7 @@
 
 arp_table_t arp_tables[ARP_CACHE_SIZE];
 
-#define ARP_TABLE_SIZE array_len(arp_tables)
+#define ARP_TABLE_SIZE ARRAY_SIZE(arp_tables)
 
 #define ARP_TIMER_ID 12
 
@@ -275,6 +275,7 @@ static int arp_process(sk_buff_t *skb) {
 
 	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)
 			|| arp->ar_tip != in_dev_get(skb->dev)->ifa_address) {
+		kfree_skb(skb);
 		return 0;
 	}
 

@@ -11,8 +11,9 @@
 #include <hal/mm/mmu_core.h>
 #include <hal/test/mmu_core.h>
 #include <string.h>
-/* declare test in system */
+
 EMBOX_TEST(run);
+
 //static char addr[0x1000 * 3];
 typedef void (*worker_ptr)(void);
 
@@ -20,23 +21,24 @@ static int is_a_done = 0;
 static int is_b_done = 0;
 
 #define BIGADDR 0xf0080000
+
 static void worker_a(void) {
 	__asm__  __volatile__ (
-			".align 0x1000\n\t"
-			"worker_a_aligned:\n\t"
+		".align 0x1000\n\t"
+		"worker_a_aligned:\n\t"
 	);
 	is_a_done = 1;
 }
 
 static void worker_b(void) {
 	__asm__   __volatile__(
-			".align 0x1000\n\t"
-			"worker_b_aligned:\n\t"
+		".align 0x1000\n\t"
+		"worker_b_aligned:\n\t"
 	);
 	is_b_done = 1;
 }
 
-static int run() {
+static int run(void) {
 	extern char _text_start, __stack, _data_start;
 	extern char worker_a_aligned, worker_b_aligned;
 	worker_ptr temp;

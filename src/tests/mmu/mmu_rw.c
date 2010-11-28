@@ -12,21 +12,20 @@
 #include <hal/test/mmu_core.h>
 #include <asm/hal/mm/mmu_core.h>
 
-/* declare test in system */
 EMBOX_TEST(run);
 
 static uint32_t addr;
 
 unsigned long mmu_get_fault_reg(void) {
-    return mmu_get_mmureg(LEON_CNR_F);
+	return mmu_get_mmureg(LEON_CNR_F);
 }
 
 unsigned long mmu_get_fault_addr(void) {
-    return mmu_get_mmureg(LEON_CNR_FADDR);
+	return mmu_get_mmureg(LEON_CNR_FADDR);
 }
 
 /* starting function for test */
-static int run() {
+static int run(void) {
 	extern char _text_start, __stack, _data_start;
 	int status = 0;
 
@@ -51,7 +50,7 @@ static int run() {
 	mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_start, 0xf0000000, 0x1000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 
-	printf("%d\n",mmu_get_fault_reg());
+	printf("%lu\n", mmu_get_fault_reg());
 	mmu_on();
 
 	if ((*((volatile uint32_t *)vaddr)) != (*((unsigned long *)&addr))) {

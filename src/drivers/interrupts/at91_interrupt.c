@@ -16,14 +16,17 @@
 extern void IRQ_def_handler(void);
 
 void interrupt_init(void) {
-	int i = 0;
-	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0 |\
-							  1 << AT91C_ID_IRQ1 |\
-							  1 << AT91C_ID_FIQ);
-	REG_STORE(AT91C_PIOA_PDR, AT91C_PA20_IRQ0 | AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
-	REG_STORE(AT91C_PIOA_BSR, AT91C_PA20_IRQ0 | AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
+	size_t i;
+	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0 |
+				1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
+	REG_STORE(AT91C_PIOA_PDR, AT91C_PA20_IRQ0 |
+				AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
+	REG_STORE(AT91C_PIOA_BSR, AT91C_PA20_IRQ0 |
+				AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
 	for (i = 0; i < 32; i++) {
-		REG_STORE(AT91C_AIC_SVR[i], IRQ_def_handler);
+		REG_STORE(AT91C_AIC_SVR[i],(uint32_t)  &IRQ_def_handler);
+		REG_STORE(AT91C_AIC_SMR + i,
+			AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
 	}
 	REG_STORE(AT91C_AIC_IDCR, ~0); /* disabling all interrupts */
 	REG_STORE(AT91C_AIC_ICCR, ~0); /* clearing all pending interrupts */
@@ -31,7 +34,8 @@ void interrupt_init(void) {
 
 void interrupt_enable(interrupt_nr_t interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
-	REG_STORE(AT91C_AIC_SMR + interrupt_nr, AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
+	REG_STORE(AT91C_AIC_SMR + interrupt_nr,
+		AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
 	REG_STORE(AT91C_AIC_SVR + interrupt_nr, 0);
 	REG_STORE(AT91C_AIC_IECR, 1 << interrupt_nr);
 }
@@ -39,7 +43,6 @@ void interrupt_enable(interrupt_nr_t interrupt_nr) {
 void interrupt_disable(interrupt_nr_t interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(AT91C_AIC_IDCR, 1 << interrupt_nr);
-	//REG_ANDIN(AT91C_AIC_IECR, ~(1 << interrupt_nr));
 }
 
 void interrupt_clear(interrupt_nr_t interrupt_nr) {

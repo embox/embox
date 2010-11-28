@@ -2,10 +2,13 @@
 $_MODS = ramfs
 
 $_SRCS-ramfs += ramfs.c
-$_SRCS-ramfs += ramfs_cpio.S
+$_DEPS-ramfs += core
 
 #describe special section
 ifdef CONFIG_RAMFS_CPIO
+
+$_SRCS-ramfs += initramfs.c
+$_SRCS-ramfs += ramfs_cpio.S
 $_LDFLAGS += $($_lds)
 
 $_lds := $(OBJ_DIR)/fs/ramfs/ramfs.lds

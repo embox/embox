@@ -1,4 +1,3 @@
+$_MODS        += memory
+$_SRCS-memory += memory.c
 
-$_MODS += memory
-
-$_SRCS-memory += *.c

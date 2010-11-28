@@ -29,7 +29,8 @@
 #define TIMER_UDT_BIT    30      /**< UDT */
 #define TIMER_MDT        31      /**< MDT */
 
-/** enable both timers t0 and t1. clearing this bit isn't change state ENT bit */
+/** enable both timers t0 and t1.
+ * clearing this bit isn't change state ENT bit */
 #define TIMER_ENABLE_ALL    REVERSE_MASK(TIMER_ENALL_BIT)
 /** interrupt was pending. Write '1' for clearing this bit*/
 #define TIMER_INT           REVERSE_MASK(TIMER_INT_BIT)
@@ -64,7 +65,6 @@ typedef volatile struct mb_timers {
 
 static mb_timers_t *timers = (mb_timers_t *) XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
-
 
 /*we must use proxy for interrupt handler because we must clean bit in register
  * timer.

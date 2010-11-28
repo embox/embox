@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Implements MMU core interface @link #mmu_core.h @endllink
  *        for Microblaze architecture.
  *
@@ -34,12 +33,14 @@ EMBOX_UNIT_INIT(mmu_init);
 static inline void mmu_save_status(uint32_t *status) {
 #if 0
 	register uint32_t msr;
-	__asm__ __volatile__ ("mfs     %0, rmsr;\n\t"
-			"andni   %0, %0, %2;\n\t"
-			"swi   %0, %1, 0;\n\t" :
-			"=r"(msr) :
-			"r"(status), "i"(MSR_VM_MASK) :
-			"memory" );
+	__asm__ __volatile__ (
+		"mfs     %0, rmsr;\n\t"
+		"andni   %0, %0, %2;\n\t"
+		"swi   %0, %1, 0;\n\t" :
+		"=r"(msr) :
+		"r"(status), "i"(MSR_VM_MASK) :
+		"memory"
+	);
 #endif
 	*status = msr_get_value();
 	*status &= ~(MSR_VM_MASK);
@@ -48,13 +49,15 @@ static inline void mmu_save_status(uint32_t *status) {
 static inline void mmu_restore_status(uint32_t *status) {
 #if 0
 	register uint32_t msr, tmp;
-	__asm__ __volatile__ ("lwi  %0, %1, 0;\n\t"
-			"mfs     %0, rmsr;\n\t"
-			"or   %0, r0, %2;\n\t"
-			"mts   rmsr, %1, 0;\n\t" :
-			"=r"(msr), "=&r"(tmp):
-			"r"(status), "i"(MSR_VM_MASK) :
-			"memory" );
+	__asm__ __volatile__ (
+		"lwi  %0, %1, 0;\n\t"
+		"mfs     %0, rmsr;\n\t"
+		"or   %0, r0, %2;\n\t"
+		"mts   rmsr, %1, 0;\n\t" :
+		"=r"(msr), "=&r"(tmp):
+		"r"(status), "i"(MSR_VM_MASK) :
+		"memory"
+	);
 #endif
 	msr_set_value(msr_get_value() | ((*status) & ~(MSR_VM_MASK)));
 }
@@ -62,54 +65,66 @@ static inline void mmu_restore_status(uint32_t *status) {
 void mmu_on(void) {
 	register uint32_t msr;
 #if 0
-	__asm__ __volatile__ ("mfs     %0, rmsr;\n\t"
-			"ori   %0, r0, %1;\n\t"
-			"mts     rmsr, %0;\n\t" :
-			"=r"(msr) :
-			"i"(MSR_VM_MASK) :
-			"memory" );
+	__asm__ __volatile__ (
+		"mfs     %0, rmsr;\n\t"
+		"ori   %0, r0, %1;\n\t"
+		"mts     rmsr, %0;\n\t" :
+		"=r"(msr) :
+		"i"(MSR_VM_MASK) :
+		"memory"
+	);
 #else
-	__asm__ __volatile__ ("msrset  %0, %1;\n\t" :
-			"=r"(msr) :
-			"i"(MSR_VM_MASK) :
-			"memory" );
+	__asm__ __volatile__ (
+		"msrset  %0, %1;\n\t" :
+		"=r"(msr) :
+		"i"(MSR_VM_MASK) :
+		"memory"
+	);
 #endif
 }
 
 void mmu_off(void) {
 	register uint32_t msr;
 #if 0
-	__asm__ __volatile__ ("mfs     %0, rmsr;\n\t"
-			"andni   %0, r0, %1;\n\t"
-			"mts     rmsr, %0;\n\t" :
-			"=r"(msr) :
-			"i"(MSR_VM_MASK) :
-			"memory" );
+	__asm__ __volatile__ (
+		"mfs     %0, rmsr;\n\t"
+		"andni   %0, r0, %1;\n\t"
+		"mts     rmsr, %0;\n\t" :
+		"=r"(msr) :
+		"i"(MSR_VM_MASK) :
+		"memory"
+	);
 #else
-	__asm__ __volatile__ ("msrclr  %0, %1;\n\t" :
-				"=r"(msr) :
-				"i"(MSR_VM_MASK) :
-				"memory" );
+	__asm__ __volatile__ (
+		"msrclr  %0, %1;\n\t" :
+		"=r"(msr) :
+		"i"(MSR_VM_MASK) :
+		"memory"
+	);
 #endif
 }
 
 void set_utlb_record(int tlbx, uint32_t tlblo, uint32_t tlbhi) {
-	__asm__ __volatile__ ("mts rtlbx, %0;\n\t"
-			"mts rtlblo, %1;\n\t"
-			"mts rtlbhi, %2;\n\t"
-			:
-			: "r"(tlbx),"r"(tlblo), "r" (tlbhi)
-			: "memory" );
+	__asm__ __volatile__ (
+		"mts rtlbx, %0;\n\t"
+		"mts rtlblo, %1;\n\t"
+		"mts rtlbhi, %2;\n\t"
+		:
+		: "r"(tlbx),"r"(tlblo), "r" (tlbhi)
+		: "memory"
+	);
 }
 
 void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi) {
 	uint32_t tmp1, tmp2;
-	__asm__ __volatile__ ("mts rtlbx, %2;\n\t"
-				"mfs %0, rtlblo;\n\t"
-				"mfs %1, rtlbhi;\n\t"
-				: "=r"(tmp1),"=r" (tmp2)
-				: "r"(tlbx)
-				: "memory" );
+	__asm__ __volatile__ (
+		"mts rtlbx, %2;\n\t"
+		"mfs %0, rtlblo;\n\t"
+		"mfs %1, rtlbhi;\n\t"
+		: "=r"(tmp1),"=r" (tmp2)
+		: "r"(tlbx)
+		: "memory"
+	);
 	*tlblo = tmp1;
 	*tlbhi = tmp2;
 	//TRACE("get_utlb: tmp1 = 0x%x, tmp2 = 0x%x\n", tmp1, tmp2);
@@ -131,34 +146,24 @@ void mmu_restore_table(__mmu_table_t utlb) {
 
 static inline uint32_t reg_size_convert(size_t reg_size) {
 	switch (reg_size) {
-		case 0x400: { /* 1kb */
-			return RTLBHI_SIZE_1K;
-		}
-		case 0x1000: { /* 4k field */
-			return RTLBHI_SIZE_4K;
-		}
-		case 0x4000: {/* 16k field */
-			return RTLBHI_SIZE_16K;
-		}
-		case 0x10000: {/* 64k field */
-			return RTLBHI_SIZE_64K;
-		}
-		case 0x40000: { /* 256 kb*/
-			return RTLBHI_SIZE_256K;
-		}
-		case 0x100000: {/* 1M field */
-			return RTLBHI_SIZE_1M;
-		}
-		case 0x400000: { /* 4M field*/
-			return RTLBHI_SIZE_4M;
-		}
-		case 0x1000000: {/* 16M field */
-			return RTLBHI_SIZE_16M;
-		}
-		default: {
-			/* wrong size*/
-			return -1;
-		}
+	case 0x400: /* 1kb */
+		return RTLBHI_SIZE_1K;
+	case 0x1000: /* 4k field */
+		return RTLBHI_SIZE_4K;
+	case 0x4000: /* 16k field */
+		return RTLBHI_SIZE_16K;
+	case 0x10000: /* 64k field */
+		return RTLBHI_SIZE_64K;
+	case 0x40000: /* 256 kb*/
+		return RTLBHI_SIZE_256K;
+	case 0x100000: /* 1M field */
+		return RTLBHI_SIZE_1M;
+	case 0x400000: /* 4M field*/
+		return RTLBHI_SIZE_4M;
+	case 0x1000000: /* 16M field */
+		return RTLBHI_SIZE_16M;
+	default: /* wrong size*/
+		return -1;
 	}
 }
 

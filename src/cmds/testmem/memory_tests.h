@@ -1,5 +1,5 @@
 /**
- * @file memory_tests.h
+ * @file
  * @date Jul 29, 2009
  * @author Alexey Fomin
  * @author Daria Teplykh

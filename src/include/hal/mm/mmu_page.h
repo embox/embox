@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Interface for working with MMU table records.
  *
  * @details Implements interface for working with different types of MMU flag

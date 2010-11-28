@@ -42,7 +42,7 @@
  * a particular array.
  * Tag is just appended to the name of section (in debugging purposes). */
 #define __ARRAY_DIFFUSE_SECTION(s_array, order, tag) \
-		".array_diffuse." MACRO_STRING(s_array##_##order##_##tag) ".rodata"
+	".array_diffuse." MACRO_STRING(s_array##_##order##_##tag) ".rodata"
 
 /* Every array entry, group of entries or marker symbol is backed by an
  * individual array (empty for markers) defined as follows
@@ -56,34 +56,34 @@
 	__array_diffuse_private__##s_array##__##s_tag
 
 #define __ARRAY_DIFFUSE_PRIVATE_DEF(type, s_array, s_tag, section) \
-		__ARRAY_DIFFUSE_ENTRY_DEF(type, \
-				__ARRAY_DIFFUSE_PRIVATE(s_array, s_tag), section)
+	__ARRAY_DIFFUSE_ENTRY_DEF(type, \
+		__ARRAY_DIFFUSE_PRIVATE(s_array, s_tag), section)
 
 /* Here goes API implementation. */
 
 #define __ARRAY_DIFFUSE_DEF(element_type, array_name) \
-		__ARRAY_DIFFUSE_DEF_TERMINATED(element_type, array_name, /* empty */)
+	__ARRAY_DIFFUSE_DEF_TERMINATED(element_type, array_name, /* empty */)
 
 #define __ARRAY_DIFFUSE_DEF_TERMINATED(element_type, array_name, terminator) \
-		__ARRAY_DIFFUSE_ENTRY_DEF(element_type, array_name, \
-				__ARRAY_DIFFUSE_SECTION_HEAD(array_name)) = { /* empty */ }; \
-		__ARRAY_DIFFUSE_PRIVATE_DEF(element_type, array_name, tail, \
-				__ARRAY_DIFFUSE_SECTION_TAIL(array_name)) = { terminator }
+	__ARRAY_DIFFUSE_ENTRY_DEF(element_type, array_name, \
+		__ARRAY_DIFFUSE_SECTION_HEAD(array_name)) = { /* empty */ }; \
+	__ARRAY_DIFFUSE_PRIVATE_DEF(element_type, array_name, tail, \
+		__ARRAY_DIFFUSE_SECTION_TAIL(array_name)) = { terminator }
 
 #define __ARRAY_DIFFUSE_DEF_STATIC(element_type, array_name) \
-		__ARRAY_DIFFUSE_DEF(static element_type, array_name)
+	__ARRAY_DIFFUSE_DEF(static element_type, array_name)
 
 #define __ARRAY_DIFFUSE_DEF_TERMINATED_STATIC(element_type, name, terminator) \
-		__ARRAY_DIFFUSE_DEF_TERMINATED(static element_type, name, terminator)
+	__ARRAY_DIFFUSE_DEF_TERMINATED(static element_type, name, terminator)
 
 #define __ARRAY_DIFFUSE_ADD(array_name, ...) \
-		__ARRAY_DIFFUSE_ADD_NAMED(array_name, \
-				GUARD_SUFFIX(__ARRAY_DIFFUSE_PRIVATE(array_name, entry)), \
-				__VA_ARGS__)
+	__ARRAY_DIFFUSE_ADD_NAMED(array_name, \
+		GUARD_SUFFIX(__ARRAY_DIFFUSE_PRIVATE(array_name, entry)), \
+		__VA_ARGS__)
 
 #define __ARRAY_DIFFUSE_ADD_NAMED(array_name, ptr_name, ...) \
-		__ARRAY_DIFFUSE_ENTRY_DEF(static typeof(array_name[0]), ptr_name, \
-				__ARRAY_DIFFUSE_SECTION_BODY(array_name)) = { __VA_ARGS__ }
+	__ARRAY_DIFFUSE_ENTRY_DEF(static typeof(array_name[0]), ptr_name, \
+		__ARRAY_DIFFUSE_SECTION_BODY(array_name)) = { __VA_ARGS__ }
 
 #define __ARRAY_DIFFUSE_SIZE(array_name) __extension__ ({ \
 		extern typeof(array_name) __ARRAY_DIFFUSE_PRIVATE(array_name, tail); \

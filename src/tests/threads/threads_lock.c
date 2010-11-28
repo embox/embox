@@ -1,6 +1,10 @@
 /**
  * @file
  * @brief Testing functions thread_lock and thread_unlock
+ * @details Test which writes "+","-","*" and "/"
+ * Minus_thread goes to sleep then will be awaken
+ * by highest_thread. Highest_thread is started by div_thread
+ * and has highest priority.
  *
  * @date 30.06.2010
  * @author Skorodumov Kirill
@@ -21,25 +25,21 @@ static char mult_stack[THREAD_STACK_SIZE];
 static char div_stack[THREAD_STACK_SIZE];
 static char highest_stack[THREAD_STACK_SIZE];
 
-
 struct thread *plus_thread;
 struct thread *minus_thread;
 struct thread *mult_thread;
 struct thread *div_thread;
 struct thread *highest_thread;
 
-
 struct event event;
 
-EMBOX_TEST(run_test)
-;
-
+EMBOX_TEST(run);
 
 /**
  * endlessly writes '+'
  */
 static void plus_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 1000; i++) {
 		TRACE("+");
 	}
@@ -49,41 +49,36 @@ static void plus_run(void) {
  * goes to sleep
  */
 static void minus_run(void) {
-	int i;
+	size_t i;
 	scheduler_sleep(&event);
 	for (i = 0; i < 1000; i++) {
 		TRACE("-");
 	}
 }
 
-
 /**
  * endlessly writes '-'
  */
 static void mult_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 1000; i++) {
 		TRACE("*");
 	}
 }
 
-/**
- *
- */
 static void div_run(void) {
-	int i;
+	size_t i;
 	thread_start(highest_thread);
 	for (i = 0; i < 1000; i++) {
 		TRACE("/");
 	}
 }
 
-
 /**
  * Unlocks minus thread then writes "!" then yields 100 times. Thread with the highest priority.
  */
 static void highest_run(void) {
-	int i;
+	size_t i;
 	TRACE("Highest");
 	scheduler_wakeup(&event);
 	TRACE("Highest cont");
@@ -93,14 +88,7 @@ static void highest_run(void) {
 	}
 }
 
-/**
- * Test which writes "+","-","*" and "/"
- * Minus_thread goes to sleep then will be awaken
- * by highest_thread. Highest_thread is started by div_thread
- * and has highest priority.
- * @return 0 if test finishes successfully.
- */
-static int run_test(void) {
+static int run(void) {
 	TRACE("\n");
 
 	event_init(&event);

@@ -9,7 +9,6 @@
 #include <asm/winmacro.h>
 #include <asm/ptrace.h>
 
-
 void bad_trap_handler(uint8_t tt, struct pt_regs *r) {
 	struct reg_window *rw;
 

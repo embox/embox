@@ -1,6 +1,13 @@
 /**
  * @file
  * @brief Tests function thread_yield.
+ * @details Test, which a lot of times writes "+", "-", "*" and "!".
+ * Because of priorities they are printed in such order:
+ * 1) "+" and "+".
+ * 2) "!";
+ * 3) "*";
+ * For each symbol there is a thread, which shows it.
+ * These threads show one symbol and switch context.
  *
  * @date 09.05.2010
  * @author Dmitry Avdyukhin
@@ -22,13 +29,13 @@ static struct thread *minus_thread;
 static struct thread *mult_thread;
 static struct thread *highest_thread;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * Endlessly Writes "!". Thread with the highest priority.
  */
 static void highest_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("!");
 		thread_yield();
@@ -39,7 +46,7 @@ static void highest_run(void) {
  * Endlessly Writes "+".
  */
 static void plus_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("+");
 		thread_yield();
@@ -50,7 +57,7 @@ static void plus_run(void) {
  * Endlessly writes "-".
  */
 static void minus_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 110; i++) {
 		TRACE("-");
 		thread_yield();
@@ -61,26 +68,14 @@ static void minus_run(void) {
  * Endlessly writes "*".
  */
 static void mult_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 120; i++) {
 		TRACE("*");
 		thread_yield();
 	}
 }
 
-/**
- * Test, which a lot of times writes "+", "-", "*" and "!".
- * Because of priorities they are printed in such order:
- * 1) "+" and "+".
- * 2) "!";
- * 3) "*";
- * For each symbol there is a thread, which shows it.
- * These threads show one symbol and switch context.
- *
- * @retval 0 if test is passed
- * @retval -EINVAL if an error occurs.
- */
-static int run_test() {
+static int run(void) {
 	TRACE("\n");
 
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);

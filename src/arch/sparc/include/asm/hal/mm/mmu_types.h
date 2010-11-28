@@ -34,6 +34,4 @@ typedef struct __mmu_env {
 	uint32_t fault_addr;      /**< Last fault address */
 }__mmu_env_t;
 
-
-
 #endif /* SPARC_MMU_TYPES_H_ */

@@ -11,7 +11,7 @@
 
 #ifndef __ASSEMBLER__
 
-typedef char irq_num_t;
+typedef char         irq_num_t;
 typedef unsigned int irq_mask_t;
 
 /**

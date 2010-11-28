@@ -33,6 +33,7 @@ PROJECTS_DIR   := $(ROOT_DIR)/templates
 THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 PLATFORM_DIR   := $(ROOT_DIR)/platform
 SRC_DIR        := $(ROOT_DIR)/src
+DOCS_DIR       := $(ROOT_DIR)/docs
 
 CONF_DIR       := $(ROOT_DIR)/conf
 
@@ -49,7 +50,7 @@ BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
 LIB_DIR        := $(BUILD_DIR)/lib
 DOT_DIR        := $(BUILD_DIR)/dot
-DOCS_DIR       := $(BUILD_DIR)/docs
+DOCS_OUT_DIR   := $(BUILD_DIR)/docs
 CODEGEN_DIR    := $(BUILD_DIR)/codegen
 AUTOCONF_DIR   := $(CODEGEN_DIR)
 ROMFS_DIR      := $(ROOT_DIR)/romfs
@@ -60,6 +61,8 @@ PRINTF := printf
 SHELL  := bash
 
 TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
+
+include gmd.mk
 
 include rules.mk
 include util.mk
@@ -73,8 +76,8 @@ endif
 
 # XXX Fix this shit. -- Eldar
 
-# 'clean' and 'config' are handled in-place.
-ifneq ($(filter-out %clean %config,$(makegoals)),)
+# 'clean', 'docs' and 'config' are handled in-place.
+ifneq ($(filter-out %clean %config %docs,$(makegoals)),)
 # Root 'make all' does not need other makefiles too.
 ifneq ($(or $(filter-out $(makegoals),all),$(BUILD_TARGET)),)
 # Need to include it prior to walking the source tree
@@ -85,7 +88,7 @@ include $(MK_DIR)/image.mk
 include $(MK_DIR)/codegen-dot.mk
 endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
 endif # $(or $(filter-out $(makegoals),all),$(BUILD_TARGET))
-endif # $(filter-out %clean %config,$(makegoals))
+endif # $(filter-out %clean %config %docs,$(makegoals))
 
 __get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
 build_patch_targets := \
@@ -113,9 +116,11 @@ prepare:
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(LIB_DIR)
 	@mkdir -p $(AUTOCONF_DIR)
+	@mkdir -p $(DOCS_OUT_DIR)
 
 docs:
-	@mkdir -p $(DOCS_DIR) && doxygen
+	doxygen
+	@$(MAKE) -C $(DOCS_DIR)
 
 dot: $(GRAPH_PS)
 	@echo 'Dot complete'
@@ -124,7 +129,7 @@ create_romfs: build
 	@$(RM) -rv $(ROMFS_DIR)
 	@mkdir -p $(ROMFS_DIR)
 	$(CP) $(BUILD_DIR)/bin/embox $(ROMFS_DIR)
-	find $(ROMFS_DIR) -depth -print | cpio -H newc -ov > $(ROOT_DIR)/ramfs.cpio
+	pushd $(ROMFS_DIR); find ./ -depth -print | cpio -H newc -ov > ../ramfs.cpio; popd;
 
 clean c: _clean
 	@echo 'Clean complete'

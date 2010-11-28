@@ -6,8 +6,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef _LINUX_TYPES_H
-#define _LINUX_TYPES_H
+#ifndef LINUX_TYPES_H_
+#define LINUX_TYPES_H_
 
 #include <types.h>
 

@@ -1,22 +1,22 @@
 /**
  * @file
  * @brief This file includes platform specific settings.
- * @details This file includes microblaze specific settings. It's included into autoconf.h.
- * 			This file may be change by configure script.
+ * @details This file includes microblaze specific settings.
+ *          It's included into autoconf.h.
+ *          This file may be change by configure script.
  *
  * @date 19.11.2009
  * @author Anton Bondarev
  */
 
-#ifndef CPU_CONF_H_
-#define CPU_CONF_H_
+#ifndef MICROBLAZE_CPU_CONF_H_
+#define MICROBLAZE_CPU_CONF_H_
 
-#define MAX_IRQ_NUMBER      0x10
-
+#define MAX_IRQ_NUMBER              0x10
 
 /** System Clock Frequency */
 #define XILINX_CLOCK_FREQ           50000000
-#define CPU_CLOCK_FREQ				XILINX_CLOCK_FREQ
+#define CPU_CLOCK_FREQ	            XILINX_CLOCK_FREQ
 
 /** Microblaze is microblaze_0 */
 #define XILINX_USE_MSR_INSTR        1
@@ -76,4 +76,4 @@
 #endif
 #define XILINX_EMACLITE_IRQ_NUM     1
 
-#endif /* CPU_CONF_H_ */
+#endif /* MICROBLAZE_CPU_CONF_H_ */

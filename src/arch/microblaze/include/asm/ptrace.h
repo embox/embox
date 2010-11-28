@@ -1,14 +1,13 @@
 /**
  * @file
- *
  * @brief Microblaze specific definitions of trap processing
  *
  * @date 30.04.2010
  * @author Anton Bondarev
  */
 
-#ifndef MB_PTRACE_H_
-#define MB_PTRACE_H_
+#ifndef MICROBLAZE_PTRACE_H_
+#define MICROBLAZE_PTRACE_H_
 
 #ifndef __ASSEMBLER__
 
@@ -24,7 +23,7 @@ struct pt_regs {
 	reg_t esr;
 	reg_t fsr;
 	int pt_mode;
-}pt_regs_t;
+} pt_regs_t;
 
 #endif /* __ASSEMBLER__ */
 
@@ -107,14 +106,14 @@ struct pt_regs {
 	swi	r30, r1, PTO+PT_R30;   \
 	swi	r31, r1, PTO+PT_R31;   \
 	mfs	r11, rmsr;             \
-	nop;                       \
+	nop;                           \
 	swi	r11, r1, PTO+PT_MSR;
 
 /* restore processor registers from current stack frame */
 #define RESTORE_REGS \
 	lwi	r11, r1, PTO+PT_MSR;    \
 	mts	rmsr , r11;             \
-	nop;                        \
+	nop;                            \
 	lwi	r2, r1, PTO+PT_R2;      \
 	lwi	r3, r1, PTO+PT_R3;      \
 	lwi	r4, r1, PTO+PT_R4;      \
@@ -144,4 +143,5 @@ struct pt_regs {
 	lwi	r30, r1, PTO+PT_R30;    \
 	lwi	r31, r1, PTO+PT_R31;    \
 
-#endif /* MB_PTRACE_H_ */
+#endif /* MICROBLAZE_PTRACE_H_ */
+

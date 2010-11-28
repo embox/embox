@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Defines register convention for arm architecture
  *
  * @date 19.09.2010

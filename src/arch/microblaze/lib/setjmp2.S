@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @date 23.07.10
+ * @author Avdyukhin Dmitry
+ */
+
 #include <asm/linkage.h>
 #include <asm/setjmp.h>
 

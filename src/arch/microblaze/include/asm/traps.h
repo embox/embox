@@ -1,5 +1,12 @@
-#ifndef _TRAPS_H_
-#define _TRAPS_H_
+/**
+ * @file
+ *
+ * @date 25.11.09
+ * @author Anton Bondarev
+ */
+
+#ifndef MICROBLAZE_TRAPS_H_
+#define MICROBLAZE_TRAPS_H_
 
 #ifndef __ASSEMBLER__
 
@@ -62,13 +69,13 @@ typedef struct _TRAP_CONTEXT {
 	mov %psr, %t_psr;  \
 	sethi %hi(H), %t0; \
 	jmp %t0 + %lo(H);  \
-	 mov %wim, %t_wim;
+	mov %wim, %t_wim;
 
 #define TRAPL(H) \
 	mov %g0, %t_psr;   \
 	sethi %hi(H), %t0; \
 	jmp %t0 + %lo(H);  \
-	 mov %wim, %t_wim;
+	mov %wim, %t_wim;
 
 /* Unexpected trap will halt the processor by forcing it to error state */
 #define BAD_TRAP TRAP(bad_trap_dispatcher)
@@ -88,13 +95,12 @@ typedef struct _TRAP_CONTEXT {
 #define SAVE_ALL \
 	sethi %hi(trap_entry_begin), %t_retpc;            \
 	jmpl  %t_retpc + %lo(trap_entry_begin), %t_retpc; \
-	 nop;
+	nop;
 
 #define RESTORE_ALL \
 	sethi %hi(trap_entry_end), %t_retpc;       \
 	jmpl  %t_retpc + %lo(trap_entry_end), %g0; \
-	 nop;
-
+	nop;
 
 /* compute sizes by hand (see above) */
 #define STACKFRAME_SZ     (REG_WINDOW_SZ + (1+6+1)*4)
@@ -140,13 +146,13 @@ typedef struct _TRAP_CONTEXT {
 
 #define LOAD_PT_PRIV(base_reg, pt_psr, pt_pc, pt_npc) \
 	ld      [%base_reg + STACKFRAME_SZ + PT_PSR], %pt_psr; \
-	ld      [%base_reg + STACKFRAME_SZ + PT_PC], %pt_pc; \
+	ld      [%base_reg + STACKFRAME_SZ + PT_PC], %pt_pc;   \
 	ld      [%base_reg + STACKFRAME_SZ + PT_NPC], %pt_npc;
 
 #define LOAD_PT_ALL(base_reg, pt_psr, pt_pc, pt_npc, g_scratch) \
 	LOAD_PT_YREG(base_reg, g_scratch) \
-	LOAD_PT_GLOBALS(base_reg) \
-	LOAD_PT_INS(base_reg) \
+	LOAD_PT_GLOBALS(base_reg)         \
+	LOAD_PT_INS(base_reg)             \
 	LOAD_PT_PRIV(base_reg, pt_psr, pt_pc, pt_npc)
 
 #define STORE_PT_GLOBALS(base_reg) \
@@ -162,20 +168,20 @@ typedef struct _TRAP_CONTEXT {
 	std %i6, [%base_reg + STACKFRAME_SZ + PT_I6];
 
 #define STORE_PT_YREG(base_reg, scratch) \
-	rd      %y, %scratch; \
+	rd      %y, %scratch;            \
 	st      %scratch, [%base_reg + STACKFRAME_SZ + PT_Y];
 
 #define STORE_PT_PRIV(base_reg, pt_psr, pt_pc, pt_npc) \
 	st      %pt_psr, [%base_reg + STACKFRAME_SZ + PT_PSR]; \
-	st      %pt_pc,  [%base_reg + STACKFRAME_SZ + PT_PC]; \
+	st      %pt_pc,  [%base_reg + STACKFRAME_SZ + PT_PC];  \
 	st      %pt_npc, [%base_reg + STACKFRAME_SZ + PT_NPC];
 
 #define STORE_PT_ALL(base_reg, reg_psr, reg_pc, reg_npc, g_scratch) \
 	STORE_PT_PRIV(base_reg, reg_psr, reg_pc, reg_npc) \
-	STORE_PT_INS(base_reg) \
-	STORE_PT_GLOBALS(base_reg) \
+	STORE_PT_INS(base_reg)             \
+	STORE_PT_GLOBALS(base_reg)         \
 	STORE_PT_YREG(base_reg, g_scratch) \
 
 #endif /* __ASSEMBLER__ */
 
-#endif // _TRAPS_H_
+#endif /* MICROBLAZE_TRAPS_H_ */

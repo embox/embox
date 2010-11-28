@@ -9,30 +9,23 @@
 
 #include <fs/rootfs.h>
 
-typedef struct _RAMFS_CREATE_PARAM {
+typedef struct _ramfs_create_param {
 	unsigned long start_addr;
-	size_t size;
-	char name[CONFIG_MAX_LENGTH_FILE_NAME];
-	unsigned int mode;
-} RAMFS_CREATE_PARAM;
+	size_t        size;
+	char          name[CONFIG_MAX_LENGTH_FILE_NAME];
+	unsigned int  mode;
+	unsigned int  mtime;
+} ramfs_create_param_t;
 
-typedef struct _FILE_DESC {
+typedef struct _ramfs_file_description {
         unsigned long start_addr;
-        unsigned int size;
-        char name[CONFIG_MAX_LENGTH_FILE_NAME];
-        unsigned int mode;
-        unsigned int is_busy;
-} FILE_DESC;
+        unsigned int  size;
+        unsigned int  mode;
+        unsigned int  mtime;
+        int           cur_pointer;
+        int           lock;
+} ramfs_file_description_t;
 
-typedef struct _FILE_HANDLER {
-        file_op_t *fileop;
-        FILE_DESC *fdesc;
-        int cur_pointer;
-        unsigned int mode;
-} FILE_HANDLER;
-
-extern fsop_desc_t ramfsop;
-
-extern int init_rootfs(void);
+extern int unpack_to_rootfs(void);
 
 #endif /* FS_RAMFS_H_ */

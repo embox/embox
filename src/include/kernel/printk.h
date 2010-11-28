@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Printk declaration
  *
  * @date 13.02.2010
  * @author Eldar Abusalimov

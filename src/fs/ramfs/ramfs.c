@@ -4,275 +4,251 @@
  *
  * @date 29.06.2009
  * @author Anton Bondarev
+ *	- initial implementation
+ * @author Nikolay Korotky
+ *	- rework using vfs
  */
 #include <string.h>
+#include <errno.h>
 #include <fs/ramfs.h>
 #include <fs/fs.h>
+#include <fs/vfs.h>
 #include <linux/init.h>
 #include <embox/kernel.h>
 
+typedef struct ramfs_file_description_head {
+        struct list_head         *next;
+        struct list_head         *prev;
+        ramfs_file_description_t  desc;
+} ramfs_file_description_head_t;
 
+static ramfs_file_description_head_t fdesc_pool[CONFIG_QUANTITY_NODE];
+static LIST_HEAD(fdesc_free);
 
+#define desc_to_head(fdesc) (uint32_t)(fdesc - offsetof(ramfs_file_description_head_t, desc))
 
-static int file_desc_cnt;
+static void init_ramfs_info_pool(void) {
+        size_t i;
+        for(i = 0; i < ARRAY_SIZE(fdesc_pool); i ++) {
+                list_add((struct list_head *)&fdesc_pool[i], &fdesc_free);
+        }
+}
 
-static FILE_DESC fdesc[CONFIG_MAX_FILE_QUANTITY];
+static ramfs_file_description_t *ramfs_info_alloc(void) {
+        ramfs_file_description_head_t *head;
+        ramfs_file_description_t *desc;
 
-static void *ramfs_fopen(const char *path, const char *mode);
-static int ramfs_fclose(void * file);
-static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file);
-static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file);
-static int ramfs_fseek(void *file, long offset, int whence);
+        if(list_empty(&fdesc_free)) {
+                return NULL;
+        }
+        head = (ramfs_file_description_head_t *)(&fdesc_free)->next;
+        list_del((&fdesc_free)->next);
+        desc = &(head->desc);
+        return desc;
+}
 
-static file_op_t fop = {
+static void ramfs_info_free(ramfs_file_description_t *desc) {
+	if (NULL == desc) {
+		return;
+	}
+        list_add((struct list_head*)desc_to_head(desc), &fdesc_free);
+}
+
+/* File operations */
+
+static void   *ramfs_fopen(const char *path, const char *mode);
+static int     ramfs_fclose(void *file);
+static size_t  ramfs_fread(void *buf, size_t size, size_t count, void *file);
+static size_t  ramfs_fwrite(const void *buf, size_t size, size_t count, void *file);
+static int     ramfs_fseek(void *file, long offset, int whence);
+static int     ramfs_ioctl(void *file, int request, va_list args);
+
+static file_operations_t ramfs_fop = {
 	ramfs_fopen,
 	ramfs_fclose,
 	ramfs_fread,
 	ramfs_fwrite,
-	ramfs_fseek
+	ramfs_fseek,
+	ramfs_ioctl
 };
 
-static int create_file(void *params);
+static void *ramfs_fopen(const char *file_name, const char *mode) {
+	node_t *nod;
+	ramfs_file_description_t *fd;
 
-#define FILE_HANDLERS_QUANTITY 0x10
-
-static FILE_HANDLER file_handlers[FILE_HANDLERS_QUANTITY];
-
-//static int file_handler_cnt;
-
-static int file_list_cnt;
-
-static FILE_INFO * file_list_iterator(FILE_INFO *finfo) {
-	if (CONFIG_MAX_FILE_QUANTITY <= file_list_cnt)
-		return NULL;
-	while (!fdesc[file_list_cnt].is_busy) {
-		if (CONFIG_MAX_FILE_QUANTITY <= file_list_cnt)
-			return NULL;
-		file_list_cnt++;
-	}
-	strncpy(finfo->file_name, fdesc[file_list_cnt].name, array_len(finfo->file_name));
-	finfo->mode = fdesc[file_list_cnt].mode;
-	finfo->size_in_bytes = fdesc[file_list_cnt].size;
-	finfo->size_on_disk = fdesc[file_list_cnt].size;
-	file_list_cnt++;
-	return finfo;
-}
-
-static FS_FILE_ITERATOR get_file_list_iterator(void) {
-	file_list_cnt = 0;
-	return file_list_iterator;
-}
-
-static FILE_DESC *find_free_desc(void) {
-	size_t i;
-	if (CONFIG_MAX_FILE_QUANTITY <= file_desc_cnt)
-		return NULL;
-
-	for (i = 0; i < CONFIG_MAX_FILE_QUANTITY; i++) {
-		if (0 == fdesc[i].is_busy) {
-			return &fdesc[i];
-		}
-	}
-	return NULL;
-}
-
-static FILE_DESC * find_file_desc(const char * file_name) {
-	size_t i;
-	for (i = 0; i < CONFIG_MAX_FILE_QUANTITY; i++) {
-		if (0 == strncmp(fdesc[i].name, file_name, array_len(fdesc[i].name))) {
-			return &fdesc[i];
-		}
-	}
-	return NULL;
-}
-
-static FILE_HANDLER * find_free_handler(void) {
-	size_t i;
-	if (FILE_HANDLERS_QUANTITY <= file_desc_cnt)
-		return NULL;
-
-	for (i = 0; i < FILE_HANDLERS_QUANTITY; i++) {
-		if (0 == file_handlers[i].fileop) {
-			return &file_handlers[i];
-		}
-	}
-	return NULL;
-}
-
-static file_system_driver_t ramfs_fs_type = {
-        .name = "ramfs",
-};
-
-static file_system_driver_t rootfs_fs_type = {
-	.name = "rootfs",
-};
-
-static int __init ramfs_init(void) {
-#if 0
-	extern char _data_start, _data_end,
-				_text_start, _text_end;
-	RAMFS_CREATE_PARAM param;
-
-	/* create file /rams/section_text */
-	strncpy(param.name, "section_text", array_len(param.name));
-	param.size = (unsigned long) (&_text_end - &_text_start);
-	param.start_addr = (unsigned long) (&_text_start);
-	param.mode = FILE_MODE_RWX;
-	create_file(&param);
-	/* create file /ramfs/section_data */
-	strncpy(param.name, "section_data", array_len(param.name));
-	param.size = (unsigned long) (&_data_end - &_data_start);
-	param.start_addr = (unsigned long) (&_data_start);
-	param.mode = FILE_MODE_RWX;
-	create_file(&param);
-#endif
-	return register_filesystem(&ramfs_fs_type);
-}
-
-int __init init_rootfs(void) {
-	return register_filesystem(&rootfs_fs_type);
-}
-
-static void *open_file(const char *file_name, const char *mode) {
-	FILE_HANDLER *fh;
-	FILE_DESC *fd;
-
-	if (NULL == (fd = find_file_desc(file_name))){
+	if (NULL == (nod = vfs_find_node(file_name, NULL))) {
 		TRACE("can't find file %s\n", file_name);
 		return NULL;
 	}
-
-	if (NULL == (fh = find_free_handler())){
-		TRACE("can't find free handler\n");
-		return NULL;
-	}
-	fh->cur_pointer = 0;
-	fh->fdesc = fd;
-	//TODO must check permitions
-	fh->mode = (unsigned int) *mode;
-	fh->fileop = &fop;
-	//printf ("fh = 0x%08X\tfop = 0x%08X\n", (unsigned)fh, (unsigned)&fop);
-	//printf ("fread = 0x%08X\n", (unsigned)fh->fileop->read);
-	//printf ("fwrite = 0x%08X\n", (unsigned)fh->fileop->write);
-	//printf ("start_addr = 0x%08X\t size = %d\n", fh->fdesc->start_addr, fh->fdesc->size);
-	fh->fileop->fopen(file_name, mode);
-	return fh;
+	fd = (ramfs_file_description_t*)nod->attr;
+	fd->cur_pointer = 0;
+	fd->lock = 1;
+	return nod;
 }
 
-static int create_file(void *params) {
-	RAMFS_CREATE_PARAM *par = (RAMFS_CREATE_PARAM *) params;
-	FILE_DESC *fd;
-
-	if (NULL == (fd = find_free_desc())) {
-		TRACE("can't find free descriptor\n");
-		return -1;
-	}
-
-	strncpy(fd->name, par->name, array_len(fd->name));
-	fd->start_addr = par->start_addr;
-	fd->size = par->size;
-	fd->mode = par->mode;
-	fd->is_busy = 1;
+static int ramfs_fclose(void *file) {
+	ramfs_file_description_t *fd;
+	node_t *nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->attr;
+	fd->lock = 0;
 	return 0;
 }
-
-static int resize_file(void *params) {
-	return -1;
-}
-
-static int delete_file(const char * file_name) {
-	FILE_DESC *fd;
-	if (NULL == (fd = find_file_desc(file_name))) {
-		TRACE("file %s not found\n", file_name);
-		return -1;
-	}
-	fd->is_busy = 0;
-	return 0;
-}
-
-static int get_capacity(const char * file_name) {
-	return 0;
-}
-static int get_freespace(const char * file_name) {
-	return 0;
-}
-static int get_descriptors_info(void *params) {
-	return 0;
-}
-
-static fsop_desc_t fsop = {
-	ramfs_init,
-	open_file,
-	create_file,
-	resize_file,
-	delete_file,
-	get_capacity,
-	get_freespace,
-	get_descriptors_info,
-	get_file_list_iterator
-};
-static file_system_driver_t drv = {"ramfs", &fop, &fsop};
-DECLARE_FILE_SYSTEM_DRIVER(drv);
-
-static void *ramfs_fopen(const char *file_name, const char *mode) {
-	//TRACE("ramfs file %s was opened\n", file_name);
-	return NULL;
-}
-
-static int ramfs_fclose(void * file) {
-	FILE_HANDLER *fh = (FILE_HANDLER *) file;
-	fh->fileop = NULL;
-
-	return 0;
-}
-
-#define TRACE_FREQ 0x10000
 
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
-	FILE_HANDLER *fh = (FILE_HANDLER *) file;
+	ramfs_file_description_t *fd;
+	node_t *nod;
+	size_t size_to_read = size*count;
+	nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->attr;
 
-	if (fh->cur_pointer >= fh->fdesc->size){
-		//TRACE("end read\n");
-		return 0;
+	if (fd == NULL) {
+		return -ENOENT;
 	}
 
-	memcpy((void*)buf, (const void *)(fh->fdesc->start_addr + fh->cur_pointer), size * count);
-	fh->cur_pointer += size * count;
-#if 0
-	if (0 == (fh->cur_pointer & (TRACE_FREQ - 1))){
-		TRACE("cur = 0x%08X\t size = %d\n",fh->cur_pointer,fh->fdesc->size);
+	if (size*count >= (fd->size - fd->cur_pointer)) {
+		size_to_read = fd->size - fd->cur_pointer;
 	}
-#endif
-	return size * count;
+
+	memcpy((void*)buf, (const void *)(fd->start_addr + fd->cur_pointer), size_to_read);
+	fd->cur_pointer += size_to_read;
+	return size_to_read;
 }
 
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count, void *file) {
-	FILE_HANDLER *fh = (FILE_HANDLER *) file;
-	FILE_DESC *fd = find_file_desc(fh->fdesc->name);
-#if 0
-	if (0 == fh->cur_pointer) {
-		TRACE("start write\n");
+	ramfs_file_description_t *fd;
+	node_t *nod;
+	size_t size_to_write = size*count;
+	nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->attr;
+
+	if (fd == NULL) {
+		return -ENOENT;
 	}
-#endif
-	memcpy((void *)(fh->fdesc->start_addr + fh->cur_pointer),buf, size * count);
-	fh->cur_pointer += size * count;
-	fd->size += size * count;
-	return size * count;
+
+	//FIXME: don't expand memory, need file ramfs_resize.
+	if (size*count >= (fd->size - fd->cur_pointer)) {
+		fd->size += size*count;
+		//size_to_write = fd->size - fd->cur_pointer;
+	}
+
+	memcpy((void *)(fd->start_addr + fd->cur_pointer), buf, size_to_write);
+	fd->cur_pointer += size_to_write;
+	return size_to_write;
 }
 
 static int ramfs_fseek(void *file, long offset, int whence) {
-	FILE_HANDLER *fh = (FILE_HANDLER *) file;
-	int new_offset = offset + whence;
+	ramfs_file_description_t *fd;
+	node_t *nod;
+	int new_offset;
+	nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->attr;
 
-	if (file == NULL) {
-		return -2; /*Null file descriptor*/
+	if (fd == NULL) {
+		return -ENOENT;
 	}
 
-	if (new_offset >= fh->fdesc->size) {
+	switch(whence) {
+	case SEEK_SET:
+		new_offset = offset;
+		break;
+	case SEEK_CUR:
+		new_offset = offset + fd->cur_pointer;
+		break;
+	case SEEK_END:
+		new_offset = fd->size - offset;
+		break;
+	default:
+		new_offset = offset + whence;
+	}
+
+	if (new_offset >= fd->size) {
 		return -1; /*Non-valid offset*/
 	}
 
-	fh->cur_pointer = new_offset;
+	fd->cur_pointer = new_offset;
+        return 0;
+}
 
+static int ramfs_ioctl(void *file, int request, va_list ar) {
+	ramfs_file_description_t *fd;
+	node_t *nod;
+	uint32_t *addr;
+	va_list args;
+	//TODO: switch through "request" ID.
+	va_copy(args, ar);
+	addr = (uint32_t *) va_arg(args, unsigned long);
+	va_end(args);
+	nod = (node_t *)file;
+	fd = (ramfs_file_description_t*)nod->attr;
+	*addr = fd->start_addr;
+	return 0;
+}
+
+/* File system operations */
+
+static int ramfs_create(void *params);
+static int ramfs_delete(const char *fname);
+static int ramfs_init(void * par);
+static int ramfs_mount(void * par);
+
+static fsop_desc_t ramfs_fsop = {
+	ramfs_init,
+	ramfs_create,
+	ramfs_delete,
+	ramfs_mount
+};
+
+static file_system_driver_t ramfs_drv = {
+	"ramfs",
+	&ramfs_fop,
+	&ramfs_fsop
+};
+
+DECLARE_FILE_SYSTEM_DRIVER(ramfs_drv);
+
+static int ramfs_create(void *params) {
+	ramfs_create_param_t *par;
+	node_t *nod;
+	ramfs_file_description_t *fd;
+
+	par = (ramfs_create_param_t *)params;
+	if (NULL == (nod = vfs_add_path(par->name, NULL))) {
+		return 0;/*file already exist*/
+	}
+
+	fd  = ramfs_info_alloc();
+	nod->fs_type   = &ramfs_drv;
+	nod->file_info = (void *)&ramfs_fop;
+	nod->attr      = (void *)fd;
+
+	fd->start_addr = par->start_addr;
+	fd->size       = par->size;
+	fd->mode       = par->mode;
+	fd->mtime      = par->mtime;
+
+	return 0;
+}
+
+static int ramfs_delete(const char *fname) {
+	ramfs_file_description_t *fd;
+	node_t *nod = vfs_find_node(fname, NULL);
+	fd = nod->attr;
+
+	ramfs_info_free(fd);
+	vfs_del_leaf(nod);
+	return 0;
+}
+
+static int __init ramfs_init(void * par) {
+	init_ramfs_info_pool();
+
+	return 0;
+}
+
+static int __init ramfs_mount(void * par) {
+#ifdef CONFIG_RAMFS_CPIO
+	unpack_to_rootfs();
+	TRACE("RAMFS: inited\n");
+#endif
 	return 0;
 }

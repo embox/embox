@@ -1,5 +1,5 @@
 /**
- * @file char.h
+ * @file
  * @description char devices
  */
 
@@ -8,9 +8,9 @@
 
 typedef struct chardev {
 	int (*putc) (void);
-    int (*getc) (int);
+	int (*getc) (int);
 } chardev_t;
-
+#if 0
 #define MAX_COUNT_CHAR_DEVICES 10
 static chardev_t pool_chardev[MAX_COUNT_CHAR_DEVICES];
 static int chardev_c = 0;
@@ -22,5 +22,5 @@ static int chardev_c = 0;
 		.getc = __IN; \
 		.putc = __OUT;\
 	};
-
+#endif
 #endif /* __CHAR_DEVICE_H */

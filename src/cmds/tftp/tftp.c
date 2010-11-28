@@ -13,7 +13,6 @@
 #define COMMAND_NAME     "tftp"
 #define COMMAND_DESC_MSG "TFTP client"
 #define HELP_MSG         "Usage: tftp <server> <file> [load_addr]"
-#define DEFAULT_ADDDRESS (0x40004000)
 
 static const char *man_page =
 	#include "tftp_help.inc"
@@ -85,7 +84,7 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 				//printf("data: %s\n", dp->th_data);
 				fwrite(dp->th_data, size - 4, 1, file);
 				dsize += size - 4;
-				if(dsize % 0x200 == 0) printf("Download: %d bytes\r", dsize);
+				if(dsize % 0x1000 == 0) printf("Download: %d bytes\r", dsize);
 				ap->th_opcode = htons((short)ACK);
 				ap->th_block = dp->th_block;
 				if(sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen) < 0) {
@@ -105,9 +104,6 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 				break;
 			}
 		}
-#if 0
-		sleep(1); /* for microblaze only (bug with ipl save/restore) */
-#endif
 	}
 	printf("Downloaded: %d bytes\n", dsize);
 	close(desc);
@@ -115,7 +111,6 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 }
 
 static int exec(int argsc, char **argsv) {
-	extern unsigned int file_base_addr;
 	struct sockaddr_in server;
 	FILE *f;
 	char fname[MAX_FILENAME_LEN];
@@ -128,13 +123,8 @@ static int exec(int argsc, char **argsv) {
 	server.sin_port = htons(TFTP_TRANSFER_PORT);
 	server.sin_addr.s_addr = inet_addr(argsv[1]);
 
-	sprintf(fname, "%s%s", "/ramfs/", argsv[2]);
+	sprintf(fname, "%s", argsv[2]);
 
-
-	if (1 != (sscanf(argsv[3], "0x%x", &file_base_addr))) {
-		TRACE("default address = 0x%X\n", DEFAULT_ADDDRESS);
-		file_base_addr = DEFAULT_ADDDRESS;
-	}
 	f = fopen(fname, "wb");
 	tftp_receive(&server, "octet", argsv[2], f);
 	fclose(f);

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implements structure and macroses for MODS interface
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov

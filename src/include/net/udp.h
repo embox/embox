@@ -25,16 +25,16 @@ static inline udphdr_t *udp_hdr(const sk_buff_t *skb) {
 	return (udphdr_t *)skb->h.raw;
 }
 
-struct udp_sock{
+typedef struct udp_sock {
 	/* inet_sock has to be the first member */
 	struct inet_sock inet;
 	int              pending;
 	unsigned int     corkflag;
 	__be16           len;
-};
+} udp_sock_t;
 
-static inline struct udp_sock *udp_sk(const struct sock *sk) {
-	return (struct udp_sock *)sk;
+static inline udp_sock_t *udp_sk(const struct sock *sk) {
+	return (udp_sock_t *)sk;
 }
 
 /* net/ipv4/udp.c */

@@ -13,6 +13,7 @@
 #include <types.h>
 #include <kernel/printk.h>
 #include <kernel/driver.h>
+#include <fs/file.h>
 
 #define EOF (-1)
 
@@ -105,19 +106,29 @@ extern int remove(const char *pathname);
  *  or SEEK_END, the offset is relative to the start of the file, the current
  *  position indicator, or end-of-file, respectively
  */
-extern int fseek ( FILE * stream, long int offset, int origin );
+extern int fseek(FILE *stream, long int offset, int origin);
+
+/**
+ * Manipulate the underlying device parameters of special files.
+ */
+extern int fioctl(FILE *fp, int request, ...);
+
+/**
+ * Get file status (size, mode, mtime and so on)
+ */
+extern int stat(const char *path, struct stat *buf);
 
 #if defined(CONFIG_TRACE)
-# ifdef __EMBOX__
-#  define TRACE(...)  printk(__VA_ARGS__) /* may be I don't understand anything,
-		but I change `printf' to `printk' -- Fedor Burdun */
-# else
-#  define TRACE(...)  printk(__VA_ARGS__)
-# endif
+# define TRACE(...)  printk(__VA_ARGS__)
 #else
 # define TRACE(...)  do ; while(0)
 #endif
 
-#define PRINTREG32_BIN(reg) {int i=0; for(;i<32;i++) TRACE("%d", (reg>>i)&1); TRACE(" (0x%x)\n", reg);}
+#define PRINTREG32_BIN(reg) { \
+	int i=0;                         \
+	for(;i<32;i++)                   \
+		TRACE("%d", (reg>>i)&1); \
+		TRACE(" (0x%x)\n", reg); \
+	}
 
 #endif /* STDIO_H_ */

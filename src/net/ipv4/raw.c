@@ -14,7 +14,7 @@
 #include <net/inet_common.h>
 #include <string.h>
 
-static struct raw_sock *raw_hash[CONFIG_MAX_KERNEL_SOCKETS];
+static raw_sock_t *raw_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
 static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb);
 
@@ -67,7 +67,7 @@ static void raw_v4_hash(struct sock *sk) {
 	size_t i;
 	for(i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		if(raw_hash[i] == NULL) {
-			raw_hash[i] = (struct raw_sock*)sk;
+			raw_hash[i] = (raw_sock_t *)sk;
 			break;
 		}
 	}
@@ -76,7 +76,7 @@ static void raw_v4_hash(struct sock *sk) {
 static void raw_v4_unhash(struct sock *sk) {
 	size_t i;
 	for(i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
-		if(raw_hash[i] == (struct raw_sock*)sk) {
+		if(raw_hash[i] == (raw_sock_t *)sk) {
 			raw_hash[i] = NULL;
 			break;
 		}

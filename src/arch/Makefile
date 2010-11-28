@@ -1,5 +1,5 @@
 
-$_SUBDIRS := $(ARCH)
+SUBDIRS := $(ARCH)
 
 $_PACKAGE := embox.hal
 

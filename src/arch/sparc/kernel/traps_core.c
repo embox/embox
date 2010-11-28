@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Sparc implementation traps framework
  *
  * @date 15.03.2010

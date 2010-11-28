@@ -35,7 +35,10 @@ typedef struct priority_head {
  * Pools for thread and priority.
  */
 static priority_head_t priority_pool[MAX_PRIORITY+1];
-/* Head of priority list - null priority , next - max priority. Contains idle_thread.*/
+/**
+ * Head of priority list - null priority , next - max priority.
+ * Contains idle_thread.
+ */
 static priority_head_t *priority_head = priority_pool;
 /* Priority_head, containing currently working thread. */
 static priority_head_t *cur_prior;
@@ -43,7 +46,7 @@ static priority_head_t *cur_prior;
 /**
  * Allocates priority_head for chosen priority.
  */
-static priority_head_t * alloc_priority(thread_priority_t priority) {
+static priority_head_t *alloc_priority(thread_priority_t priority) {
 	return (priority_pool + priority);
 }
 
@@ -73,7 +76,7 @@ static void add_new_priority(struct thread *thread, thread_priority_t priority) 
 /**
  * Get head on list of threads with chosen priority.
  */
-static struct list_head * get_priority_list(thread_priority_t priority) {
+static struct list_head *get_priority_list(thread_priority_t priority) {
 	struct list_head *p;
 
 	if (idle_thread->priority == priority) {
@@ -114,7 +117,6 @@ void _scheduler_init(void) {
 	INIT_LIST_HEAD((priority_head->thread_list));
 
 	cur_prior = priority_head;
-
 }
 
 /**
@@ -147,19 +149,22 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
  * If thread was the only with its priority, delete corresponding priorlist_head.
  */
 void _scheduler_remove(struct thread *removed_thread) {
+	size_t pri;
 	if (removed_thread->sched_list.next == 0) {
 		return;
 	}
+	pri = removed_thread->priority;
 	/* Check if removed one was the only thread with its priority. */
 	if (list_empty(&removed_thread->sched_list)) {
-		list_del((struct list_head *) &priority_pool[removed_thread->priority]);
+		list_del((struct list_head *)&priority_pool[pri]);
 		removed_thread->sched_list.next = 0;
 	} else {
-		/* Check if current thread_list of priority equals to removed thread. */
-		if (priority_pool[removed_thread->priority].thread_list
+		/* Check if current thread_list of
+		   priority equals to removed thread. */
+		if (priority_pool[pri].thread_list
 				== &removed_thread->sched_list) {
-			priority_pool[removed_thread->priority].thread_list
-					= priority_pool[removed_thread->priority].thread_list->next;
+			priority_pool[pri].thread_list
+				= priority_pool[pri].thread_list->next;
 		}
 		/* Now we can delete thread from list. */
 		list_del(&removed_thread->sched_list);

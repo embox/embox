@@ -6,12 +6,10 @@
  */
 
 #include <types.h>
-
 #include <embox/test.h>
 #include <hal/env/traps_core.h>
 #include <hal/test/traps_core.h>
 
-/* declare test in system */
 EMBOX_TEST(run);
 
 static volatile uint32_t a = 17;
@@ -25,7 +23,7 @@ static int dfault_handler(uint32_t trap_nr, void *data) {
 	return 0;
 }
 
-static int run() {
+static int run(void) {
 	volatile uint32_t zero = 0;
 
 	traps_env_t old_env;

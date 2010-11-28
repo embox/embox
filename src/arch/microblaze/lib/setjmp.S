@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @date 02.11.09
+ * @author Anton Bondarev
+ */
+
 #include <asm/linkage.h>
 #include <asm/setjmp.h>
 

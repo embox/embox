@@ -1,5 +1,5 @@
 /**
- * @file test.c
+ * @file
  * @brief timer test -- blinking led
  *
  * @date 01.10.2010
@@ -8,7 +8,6 @@
 
 #include <embox/test.h>
 #include <hal/clock.h>
-
 #include <drivers/at91_olimex_debug_led.h>
 
 EMBOX_TEST(run);
@@ -22,7 +21,6 @@ int changed = false;
  * @retval 0 on success
  * @retval nonzero on failure
  */
-
 
 void clock_tick_handler(int irq_num, void *dev_id) {
 	changed = true;

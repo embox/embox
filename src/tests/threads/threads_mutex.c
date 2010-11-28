@@ -1,6 +1,9 @@
 /**
  * @file
  * @brief Testing mutexes.
+ * @details Test which writes "+","-","*" and "/"
+ * minus_thread and mult_thread uses same mutex
+ * to test how it works.
  *
  * @date 30.06.2010
  * @author Skorodumov Kirill
@@ -21,24 +24,20 @@ static char minus_stack[THREAD_STACK_SIZE];
 static char mult_stack[THREAD_STACK_SIZE];
 static char div_stack[THREAD_STACK_SIZE];
 
-
 static struct thread *plus_thread;
 static struct thread *minus_thread;
 static struct thread *mult_thread;
 static struct thread *div_thread;
 
-
 static struct mutex mutex;
 
-EMBOX_TEST(run_test)
-;
-
+EMBOX_TEST(run);
 
 /**
  * endlessly writes '+'
  */
 static void plus_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 1000; i++) {
 		TRACE("+");
 	}
@@ -48,7 +47,7 @@ static void plus_run(void) {
  * Locks mutex end writes "-"
  */
 static void minus_run(void) {
-	int i;
+	size_t i;
 	mutex_lock(&mutex);
 	for (i = 0; i < 500; i++) {
 		TRACE("-");
@@ -62,12 +61,11 @@ static void minus_run(void) {
 	}
 }
 
-
 /**
  * Locks and writes '*'
  */
 static void mult_run(void) {
-	int i;
+	size_t i;
 	mutex_lock(&mutex);
 	for (i = 0; i < 500; i++) {
 			TRACE("*");
@@ -83,19 +81,13 @@ static void mult_run(void) {
  * Endlessly writes "/"
  */
 static void div_run(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("/");
 	}
 }
 
-/**
- * Test which writes "+","-","*" and "/"
- * minus_thread and mult_thread uses same mutex
- * to test how it works.
- * @return 0 if test finishes successfully.
- */
-static int run_test(void) {
+static int run(void) {
 	TRACE("\n");
 
 	mutex_init(&mutex);

@@ -2,8 +2,8 @@
  * @file
  * @brief TODO
  *
- * @date
- * @author
+ * @date 13.04.10
+ * @author Eldar Abusalimov
  */
 #include <types.h>
 #include <hal/context.h>
@@ -25,6 +25,8 @@ void context_switch(struct context *prev, struct context *next) {
 		longjmp(next->buf, 1);
 		break;
 	case 1:
+		return;
+	default:
 		return;
 	}
 }

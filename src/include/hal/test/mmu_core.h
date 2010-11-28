@@ -5,8 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef TESTMMU_CORE_H_
-#define TESTMMU_CORE_H_
+#ifndef TEST_MMU_CORE_H_
+#define TEST_MMU_CORE_H_
 
 #include <types.h>
 #include <hal/mm/mmu_core.h>
@@ -26,4 +26,4 @@ extern mmu_env_t *testmmu_env(void);
  */
 #define VADDR(phyaddr) (0xf0000000 + ((uint32_t)(phyaddr) - (uint32_t)(&_data_start)))
 
-#endif /* TESTMMU_CORE_H_ */
+#endif /* TEST_MMU_CORE_H_ */

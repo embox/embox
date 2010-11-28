@@ -45,7 +45,8 @@ struct gptimer_regs {
 	 */
 	/* 0x00 */uint32_t scaler_counter;
 	/**
-	 * When the prescaler underflows, it is reloaded from the prescaler reload
+	 * When the prescaler underflows,
+	 * it is reloaded from the prescaler reload
 	 * register and a timer tick is generated.
 	 */
 	/* 0x04 */uint32_t scaler_reload;
@@ -61,13 +62,16 @@ struct gptimer_regs {
 	 */
 	struct timer_entry {
 		/**
-		 * Timer Counter value. Decremented by 1 for each prescaler tick.
+		 * Timer Counter value.
+		 * Decremented by 1 for each prescaler tick.
 		 */
 		/* 0xn0 */uint32_t counter;
 		/**
-		 * Timer Reload value. This value is loaded into the timer counter
-		 * value register when the LD bit is written to load bit in the timers control
-		 * register or when the RS bit is set in the control register and the
+		 * Timer Reload value.
+		 * This value is loaded into the timer counter
+		 * value register when the LD bit is written to
+		 * load bit in the timers control register or when
+		 * the RS bit is set in the control register and the
 		 * timer underflows.
 		 */
 		/* 0xn4 */uint32_t reload;
@@ -88,11 +92,11 @@ static int dev_regs_init(irq_nr_t *irq_nr);
 void clock_setup(useconds_t useconds) {
 	if (useconds > 0) {
 		REG_STORE(&dev_regs->timer[0].reload, useconds);
+		REG_STORE(&dev_regs->timer[0].counter, 0);
 		REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
 	} else {
 		REG_STORE(&dev_regs->timer[0].ctrl, 0x0);
 	}
-
 }
 
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
@@ -128,7 +132,7 @@ void clock_init(void) {
 
 #ifdef CONFIG_AMBAPP
 static int dev_regs_init(irq_nr_t *irq_nr) {
-	AMBA_DEV amba_dev;
+	amba_dev_t amba_dev;
 
 	assert(NULL != irq_nr);
 	if (-1 == capture_amba_dev(&amba_dev, CONFIG_VENDOR_ID_GAISLER,

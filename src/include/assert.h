@@ -17,10 +17,10 @@
 
 /* we need to stringify condition before any expansion. */
 # define __ASSERT(cond, cond_str) \
-		do if (!(cond)) \
-			panic("\nASSERTION FAILED: %s, at %s : %d\n", cond_str, __FILE__, \
-					__LINE__); \
-		while(0)
+	do if (!(cond)) \
+		panic("\nASSERTION FAILED: %s, at %s : %d\n", \
+			cond_str, __FILE__, __LINE__); \
+	while(0)
 #else
 # define __ASSERT(cond)   do ; while(0)
 #endif /* NDEBUG */

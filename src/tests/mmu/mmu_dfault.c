@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Testing page fault in virtual mode
  *
  * @date 07.04.2010
@@ -8,7 +7,6 @@
  */
 
 #include <types.h>
-
 #include <embox/test.h>
 #include <hal/mm/mmu_core.h>
 #include <hal/mm/mmu_page.h>
@@ -16,7 +14,6 @@
 #include <hal/test/mmu_core.h>
 #include <hal/test/traps_core.h>
 
-/* declare test in system */
 EMBOX_TEST(run);
 
 static uint32_t addr;
@@ -36,7 +33,7 @@ static int ifault_handler(uint32_t trap_nr, void *data) {
 	return 0;
 }
 
-static int run() {
+static int run(void) {
 	extern char _text_start, __stack, _data_start;
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
@@ -64,7 +61,6 @@ static int run() {
 			(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE );
 
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
-
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_IFAULT, ifault_handler);
 
 	mmu_map_region((mmu_ctx_t)0, (paddr_t)(&addr), 0xf0000000, 0x1000,
@@ -73,7 +69,6 @@ static int run() {
 	mmu_on();
 
 	*((volatile uint32_t *)vaddr) = 0x11111111;
-
 
 	//mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
 

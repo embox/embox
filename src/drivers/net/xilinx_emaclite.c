@@ -86,8 +86,7 @@ static void switch_rx_buff(void) {
 #ifdef PINPONG_BUFFER
 	if (current_rx_regs == emaclite->rx_ping) {
 		current_rx_regs = emaclite->rx_ping;
-	}
-	else {
+	} else {
 		current_rx_regs = emaclite->rx_pong;
 	}
 #else
@@ -99,8 +98,7 @@ static void switch_tx_buff(void) {
 #ifdef PINPONG_BUFFER
 	if (current_tx_regs == emaclite->tx_ping) {
 		current_tx_regs = emaclite->tx_ping;
-	}
-	else {
+	} else {
 		current_tx_regs = emaclite->tx_pong;
 	}
 #else
@@ -169,6 +167,9 @@ static void pack_receiving(void *dev_id) {
 	uint16_t len, proto_type;
 	uint32_t tmp;
 	sk_buff_t *skb;
+	const struct net_device_ops *ops;
+	struct net_device_stats *stats;
+	int rx_rc;
 
 	/* Get the protocol type of the ethernet frame that arrived */
 	tmp = *(volatile uint32_t *) (RX_PACK + 0xC);
@@ -177,21 +178,18 @@ static void pack_receiving(void *dev_id) {
 	/* Check if received ethernet frame is a raw ethernet frame
 	 * or an IP packet or an ARP packet */
 	switch (proto_type) {
-	case ETH_P_IP: {
+	case ETH_P_IP:
 		len = (((*(volatile uint32_t *) (RX_PACK + 0x10))) >> 16) & 0xFFFF;
 		len += ETH_HLEN + ETH_FCS_LEN;
 		break;
-	}
-	case ETH_P_ARP: {
+	case ETH_P_ARP:
 		len = 28 + ETH_HLEN + ETH_FCS_LEN;
 		break;
-	}
-	default: {
+	default:
 		/* Field contains type other than IP or ARP, use max
 		 * frame size and let user parse it */
 		len = ETH_FRAME_LEN;
 		break;
-	}
 	}
 
 	/* Read from the EmacLite device */
@@ -212,8 +210,17 @@ static void pack_receiving(void *dev_id) {
 	skb->mac.ethh = (ethhdr_t *) skb->data;
 	skb->protocol = skb->mac.ethh->h_proto;
 
+	/* update device statistic */
 	skb->dev = dev_id;
-	netif_rx(skb);
+	ops = skb->dev->netdev_ops;
+	stats = ops->ndo_get_stats(skb->dev);
+	stats->rx_packets++;
+	stats->rx_bytes += skb->len;
+
+	rx_rc = netif_rx(skb);
+	if (NET_RX_DROP == rx_rc) {
+		stats->rx_dropped++;
+	}
 }
 
 /**
@@ -294,7 +301,7 @@ static int set_mac_address(struct net_device *dev, void *addr) {
  * Get RX/TX stats
  */
 static net_device_stats_t *get_eth_stat(net_device_t *dev) {
-	return NULL;
+	return &(dev->stats);
 }
 
 static const struct net_device_ops _netdev_ops = {
@@ -308,7 +315,8 @@ static const struct net_device_ops _netdev_ops = {
 static int __init unit_init(void) {
 	/*if some module lock irq number we break initializing*/
 	net_device_t *net_device;
-	/*initialize net_device structures and save information about them to local massive*/
+	/*initialize net_device structures and save
+	 * information about them to local massive */
 	if (NULL != (net_device = alloc_etherdev(0))) {
 		net_device->netdev_ops = &_netdev_ops;
 		net_device->irq = XILINX_EMACLITE_IRQ_NUM;

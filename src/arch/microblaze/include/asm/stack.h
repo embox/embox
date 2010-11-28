@@ -2,15 +2,15 @@
  * @file
  *
  * @date 03.07.2010
- * @author Anton Anton
+ * @author Anton Bondarev
  */
 
-#ifndef STACK_H_
-#define STACK_H_
+#ifndef MICROBLAZE_STACK_H_
+#define MICROBLAZE_STACK_H_
 
 #ifndef __ASSEMBLER__
 
-#include "types.h"
+#include <types.h>
 
 typedef struct stack_frame {
 	uint32_t regs[32];
@@ -19,4 +19,4 @@ typedef struct stack_frame {
 
 #endif /*__ASSEMBLER__*/
 
-#endif /* STACK_H_ */
+#endif /* MICROBLAZE_STACK_H_ */

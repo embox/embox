@@ -1,5 +1,5 @@
 /**
- * @file test.c
+ * @file
  * @brief timer test -- blinking led
  *
  * @date 01.10.2010
@@ -7,7 +7,6 @@
  */
 
 #include <embox/test.h>
-
 //#include <drivers/at91_olimex_debug_led.h>
 #include <drivers/at91sam7s256.h>
 #include <unistd.h>
@@ -24,27 +23,27 @@ EMBOX_TEST(blinking_led);
 #define DELAY 0x0;
 #define INC 0x1;
 
-
 void delay(int d) {
-    int i = 0;
-    while (i < d) {
+	int i = 0;
+	while (i < d) {
 		i += 1;
-    }
+	}
 }
 
-static int blinking_led(void) {
+extern void led1_on(void);
+extern void led1_off(void);
 
+static int blinking_led(void) {
 	volatile int del = DELAY;
 
-
 	while (1) {
-	    led1_on();
-	    delay(del);
+		led1_on();
+		delay(del);
 		//sleep(1);
-	    led1_off();
-	    delay(del);
+		led1_off();
+		delay(del);
 		//sleep(1);
-	    del += INC;
+		del += INC;
 	}
 
 	return 0;

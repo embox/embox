@@ -11,7 +11,6 @@
 #define HAL_CONTEXT_H_
 
 #include <stdbool.h>
-
 #include <asm/hal/context.h>
 
 struct context;

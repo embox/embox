@@ -1,9 +1,13 @@
-/* @file AT91SAM7_PIO.h
+/**
+ * @file
  * @brief Parallel Input/Output Controller interface
  *
  * @date 26.09.2010
  * @author Anton Kozlov
  */
+
+#ifndef AT91SAM7_PIO_H_
+#define AT91SAM7_PIO_H_
 
 #include <types.h>
 
@@ -171,3 +175,6 @@ typedef struct _AT91S_PIO {
 #define AT91C_PIOA_IFSR ((AT91_REG *) 	0xFFFFF428) // (PIOA) Input Filter Status Register
 #define AT91C_PIOA_OER  ((AT91_REG *) 	0xFFFFF410) // (PIOA) Output Enable Register
 #define AT91C_PIOA_PSR  ((AT91_REG *) 	0xFFFFF408) // (PIOA) PIO Status Register
+
+#endif /* AT91SAM7_PIO_H_ */
+

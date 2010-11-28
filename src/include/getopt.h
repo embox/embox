@@ -5,8 +5,8 @@
  * @author Nikolay Korotky
  * NOTE: long options not supported.
  */
-#ifndef _GETOPT_H
-#define _GETOPT_H
+#ifndef GETOPT_H_
+#define GETOPT_H_
 
 extern char *optarg; /**< argument to optopt */
 extern int optind;   /**< last touched cmdline argument */
@@ -24,4 +24,4 @@ extern int getopt(int argc, char **argv, const char *opts);
 /** setup optind and opterr */
 extern void getopt_init(void);
 
-#endif /* _GETOPT_H */
+#endif /* GETOPT_H_ */

@@ -1,5 +1,5 @@
 /**
- * @file Page fault mmu test
+ * @file
  * @brief Testing automatic mapping on unmapped virtual address space
  *
  * @author Anton Kozlov
@@ -13,11 +13,13 @@
 #include <hal/test/mmu_core.h>
 #include <hal/test/traps_core.h>
 #include <asm/tbr.h>
+
+EMBOX_TEST(run);
+
 uint8_t page[PAGE_SIZE * 2];
 mmu_ctx_t t1;
-
 static int flag = 0;
-EMBOX_TEST(run);
+
 int handler(uint32_t nr, void *data) {
 	//mmu_off();
 	//printf("IT'S A TRAP!\n");
@@ -43,7 +45,8 @@ static int run(void) {
 	test_env = testtraps_env();
 	traps_set_env(test_env);
 
-	printf("handler on %x; tbr %x; in env %x, trap_table %x\n", &handler, tbr_tba_get(), test_env->base_addr, &__test_trap_table);
+	printf("handler on %x; tbr %x; in env %x, trap_table %x\n",
+		&handler, tbr_tba_get(), test_env->base_addr, &__test_trap_table);
 	t1 = mmu_create_context();
 	switch_mm(0,t1);
 	//testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x2a , &handler); // div by zero

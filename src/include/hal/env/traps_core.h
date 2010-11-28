@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Describes interface for working with trap handlers
  *
  * @date 17.03.2010

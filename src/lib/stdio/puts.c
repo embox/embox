@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implementes puts function
  *
  * @date 14.02.2010
  * @author Eldar Abusalimov

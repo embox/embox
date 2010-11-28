@@ -7,7 +7,10 @@
  */
 #include <shell_command.h>
 #include <string.h>
-#include <fs/rootfs.h>
+#include <time.h>
+#include <fs/file.h>
+#include <fs/vfs.h>
+#include <fs/ramfs.h>
 
 #define COMMAND_NAME     "ls"
 #define COMMAND_DESC_MSG "list directory contents"
@@ -15,53 +18,71 @@
 
 static const char *man_page =
 	#include "ls_help.inc"
-	;
+;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-static void print_list(FS_FILE_ITERATOR iter_func) {
-	FILE_INFO file_info;
-	while (NULL != iter_func(&file_info)){
-		printf("%s\n", file_info.file_name);
+static void print_long_list(char *path, node_t *nod, int recursive) {
+	struct list_head *p;
+	node_t *item;
+	stat_t sb;
+	char time_buff[17];
+	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
+
+	list_for_each(p, &(nod->leaves)) {
+		item = (node_t*)list_entry(p, node_t, neighbors);
+		stat((char *)item->name, &sb);
+		ctime((time_t *)&(sb.st_mtime), time_buff);
+		printf("%d\t%d\t%s\t%s\n",
+			sb.st_mode,
+			sb.st_size,
+			time_buff,
+			(char *)item->name);
 	}
 }
 
-static void print_long_list(FS_FILE_ITERATOR iter_func) {
-	FILE_INFO file_info;
-	char mode[] = "---";
-	printf("%16s | %4s | %10s | %10s\n", "name", "mode", "size", "size on disk");
-	while (NULL != iter_func(&file_info)){
-		if(file_info.mode & FILE_MODE_RO) {
-			mode[0] = 'r';
+static void print_folder(char *path, node_t *nod, int recursive) {
+	struct list_head *p;
+	list_for_each(p, &(nod->leaves)) {
+		if (recursive) {
+			if(0 == strcmp(path, "/")) {
+				printf("%s\n",  (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
+			} else {
+				printf("%s/%s\n", path, (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
+				strcat(path, (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
+				print_folder(path, (node_t*)list_entry(p, node_t, neighbors), recursive);
+			}
+		} else {
+			printf("%s\n", (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
 		}
-		if(file_info.mode & FILE_MODE_WO) {
-			mode[1] = 'w';
-		}
-		if(file_info.mode & FILE_MODE_XO) {
-			mode[2] = 'x';
-		}
-		printf("%16s |  %3s | %10d | %10d\n", file_info.file_name, mode,
-				file_info.size_in_bytes, file_info.size_on_disk);
 	}
 }
+
+typedef void (*print_func_t)(char *path, node_t *nod, int recursive);
 
 static int exec(int argsc, char **argsv) {
-	char *path = "/";
 	int long_list = 0;
-	fsop_desc_t *fsop;
-	FS_FILE_ITERATOR iter_func;
+	node_t *nod;
+	char path[CONFIG_MAX_LENGTH_FILE_NAME];
+
+	int recursive = 0;
+	volatile print_func_t print_func = print_folder;
 
 	int nextOption;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc - 1, argsv, "lh");
+		nextOption = getopt(argsc - 1, argsv, "Rlh");
 		switch(nextOption) {
 		case 'h':
 			show_help();
 			return 0;
 		case 'l':
 			long_list = 1;
+			print_func = print_long_list;
 			break;
+		case 'R':
+			recursive = 1;
+			print_func = print_folder;
 		case -1:
 			break;
 		default:
@@ -70,27 +91,14 @@ static int exec(int argsc, char **argsv) {
 	} while(-1 != nextOption);
 
 	if(argsc > 1) {
-		path = argsv[argsc - 1];
+		sprintf(path, "%s", argsv[argsc - 1]);
 	}
-#if 0
-	if (NULL == (fsop = rootfs_get_fsopdesc(path))){
-		LOG_ERROR("can't find fs %s\n", path);
-		return 0;
-	}
-	if (NULL == fsop->get_file_list_iterator){
-		LOG_ERROR("wrong fs desc %s\n", path);
-	}
-	if (NULL == (iter_func = fsop->get_file_list_iterator())){
-		LOG_ERROR("can't find iterator func for fs %s\n", path);
-		return 0;
+	else {
+		sprintf(path, "/");
 	}
 
-	if(long_list) {
-		print_long_list(iter_func);
-	} else {
-		print_list(iter_func);
-	}
-#endif
+	nod = vfs_find_node(path, NULL);
+	print_func(path, nod, recursive);
 
 	return 0;
 }

@@ -18,9 +18,10 @@
 
 #define __test_foreach(t) MACRO_INVOKE(__test_foreach_iterator, \
 		t, MACRO_CONCAT(__test_iterator_, __LINE__))
+
 #define __test_foreach_iterator(t, i) \
-		for(struct test_iterator i##_alloc, *i = test_get_all(&i##_alloc); \
-			(t = test_iterator_has_next(i) ? test_iterator_next(i) : NULL);)
+	for(struct test_iterator i##_alloc, *i = test_get_all(&i##_alloc); \
+		(t = test_iterator_has_next(i) ? test_iterator_next(i) : NULL);)
 
 struct test_iterator {
 	const struct test *test;

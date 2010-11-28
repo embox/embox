@@ -14,12 +14,10 @@
 /*FIXME rename this file it contains only net_utils function*/
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res) {
 	char symbol_str[4];
-	int i,j;
-	int cur = 0;
-	int tmp;
+	int i,j, tmp, cur = 0;
 	for(i = 0; i < (sizeof(res) - 1); i ++){
 		symbol_str[0]='\0';
-		for (j = 0; j < array_len(symbol_str); j ++ ){
+		for (j = 0; j < ARRAY_SIZE(symbol_str); j ++ ){
 			if ('.' == addr[cur + j]){
 				memcpy(symbol_str, &addr[cur], j );
 				symbol_str[j] = '\0';
@@ -37,7 +35,7 @@ unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res) {
 		res[i] = tmp;
 		cur += j + 1;
 	}
-	strncpy(symbol_str, (char *)&addr[cur], array_len(symbol_str));
+	strncpy(symbol_str, (char *)&addr[cur], ARRAY_SIZE(symbol_str));
 	if (1 != sscanf (symbol_str, "%d", &tmp)) {
 		return NULL;
 	}
@@ -49,12 +47,11 @@ unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res) {
 
 unsigned char *macaddr_scan(unsigned char *addr, unsigned char *res) {
 	char symbol_str[4];
-	int i,j;
-	int cur = 0;
+	int i,j, cur = 0;
 	unsigned int tmp;
 	for(i = 0; i < 5; i ++){
 		symbol_str[0]='\0';
-		for (j = 0; j < array_len(symbol_str); j ++ ){
+		for (j = 0; j < ARRAY_SIZE(symbol_str); j ++ ){
 			if (':' == addr[cur + j]){
 				memcpy(symbol_str, &addr[cur], j );
 				symbol_str[j] = '\0';
@@ -72,7 +69,7 @@ unsigned char *macaddr_scan(unsigned char *addr, unsigned char *res) {
 		res[i] = tmp;
 		cur += j + 1;
 	}
-	strncpy(symbol_str, (char *)&addr[cur], array_len(symbol_str));
+	strncpy(symbol_str, (char *)&addr[cur], ARRAY_SIZE(symbol_str));
 	if (1 != sscanf (symbol_str, "%x", &tmp)) {
 		return NULL;
 	}

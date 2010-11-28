@@ -6,52 +6,56 @@
  */
 
 #include <embox/unit.h>
+#include <linux/init.h>
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
+#include <drivers/lcd.h>
+#include <string.h>
 
-EMBOX_UNIT_INIT(lcd_init);
-
-#define SPI_BITRATE 2000000
-#define CLOCK_FREQUENCY 48054850
+EMBOX_UNIT_INIT(unit_lcd_init);
 
 #define CS_PIN  (1<<10)
 #define CD_PIN  (1<<12)
 
 __u8 mode = 0xff;
 
+__u8 display_buffer[NXT_LCD_DEPTH + 1][NXT_LCD_WIDTH];
+
 static void spi_set_mode(__u8 m) {
 	__u32 status;
 
 	/* nothing to do if we are already in the correct mode */
-	if (m == mode) return;
+	if (m == mode) {
+		return;
+	}
 
 	/* Wait until all bytes have been sent */
 	do {
 		status = *AT91C_SPI_SR;
 	} while (!(status & 0x200));
 	/* Set command or data mode */
-	if (m)
-		*AT91C_PIOA_SODR = CD_PIN;
-	else
-		*AT91C_PIOA_CODR = CD_PIN;
+	if (m) {
+		REG_STORE(AT91C_PIOA_SODR, CD_PIN);
+	} else {
+		REG_STORE(AT91C_PIOA_CODR, CD_PIN);
+	}
 	/* remember the current mode */
 	mode = m;
 }
 
-void nxt_spi_write(__u32 CD, const __u8 *data, __u32 nBytes) {
+static void nxt_spi_write(__u32 CD, const __u8 *data, __u32 nBytes) {
 	__u32 status;
 	__u32 cd_mask = (CD ? 0x100 : 0);
 
 	spi_set_mode(CD);
 	while (nBytes) {
-		*AT91C_SPI_TDR = (*data | cd_mask);
+		REG_STORE(AT91C_SPI_TDR, (*data | cd_mask));
 		data++;
 		nBytes--;
 		/* Wait until byte sent */
 		do {
 			status = *AT91C_SPI_SR;
 		} while (!(status & 0x200));
-
 	}
 }
 
@@ -60,7 +64,6 @@ static void nxt_lcd_command(__u8 cmd) {
 	nxt_spi_write(0, &tmp, 1);
 }
 
-#if 0
 static void nxt_lcd_set_col(__u32 coladdr) {
 	nxt_lcd_command(0x00 | (coladdr & 0xF));
 	nxt_lcd_command(0x10 | ((coladdr >> 4) & 0xF));
@@ -94,10 +97,9 @@ static void nxt_lcd_inverse_display(__u32 on) {
 	nxt_lcd_command(0xA6 | ((on) ? 1 : 0));
 }
 
-static void nxt_lcd_set_cursor_update(U32 on) {
+static void nxt_lcd_set_cursor_update(__u32 on) {
 	nxt_lcd_command(0xEE | ((on) ? 1 : 0));
 }
-#endif
 
 static void nxt_lcd_reset(void) {
 	nxt_lcd_command(0xE2);
@@ -128,14 +130,19 @@ static void nxt_lcd_enable(__u32 on) {
 	nxt_lcd_command(0xAE | ((on) ? 1 : 0));
 }
 
-static void nxt_lcd_set_all_pixels_on(__u32 on) {
+/* just it's great for debuggin */
+void nxt_lcd_set_all_pixels_on(__u32 on) {
 	nxt_lcd_command(0xA4 | ((on) ? 1 : 0));
 }
 
 static void nxt_lcd_power_up(void) {
-	sleep(20);
+	//sleep(20);
+	int i = 0;
+	while(i<10000) {i++;}
 	nxt_lcd_reset();
-	sleep(20);
+	//sleep(20);
+	i = 0;
+	while(i<10000) {i++;}
 	nxt_lcd_set_multiplex_rate(3);
 	nxt_lcd_set_bias_ratio(3);
 	nxt_lcd_set_pot(0x60);
@@ -143,11 +150,27 @@ static void nxt_lcd_power_up(void) {
 	nxt_lcd_set_ram_address_control(1);
 	nxt_lcd_set_map_control(0x02);
 
+	spi_set_mode(1);
+	REG_STORE(AT91C_SPI_TNPR, (__u32)display_buffer);
+	REG_STORE(AT91C_SPI_TNCR, 132);
 	nxt_lcd_enable(1);
-	nxt_lcd_set_all_pixels_on(1);
+	//nxt_lcd_set_all_pixels_on(1);
 }
 
-static int lcd_init(void) {
+void nxt_lcd_force_update(void) {
+	int i;
+	__u8 *disp = (__u8*)display_buffer;
+	REG_STORE(AT91C_SPI_IER, AT91C_SPI_ENDTX);
+
+	for (i = 0; i < NXT_LCD_DEPTH; i++) {
+		nxt_lcd_set_col(0);
+		nxt_lcd_set_page_address(i);
+		nxt_spi_write(1, disp, NXT_LCD_WIDTH);
+		disp += NXT_LCD_WIDTH;
+	}
+}
+
+int __init lcd_init(void) {
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SPI)); /* Enable MCK clock     */
 	REG_STORE(AT91C_PIOA_PER, AT91C_PIO_PA12); /*EnableA0onPA12*/
 	REG_STORE(AT91C_PIOA_OER, AT91C_PIO_PA12);
@@ -186,9 +209,14 @@ static int lcd_init(void) {
 	REG_STORE(AT91C_SPI_CR, AT91C_SPI_SWRST);/*Softreset*/
 	REG_STORE(AT91C_SPI_CR, AT91C_SPI_SPIEN);/*Enablespi*/
 	REG_STORE(AT91C_SPI_MR, AT91C_SPI_MSTR|AT91C_SPI_MODFDIS | (0xB<<16));
-	REG_STORE(AT91C_SPI_CSR[2], ((CLOCK_FREQUENCY/SPI_BITRATE)<<8) | AT91C_SPI_CPOL);
+	AT91C_SPI_CSR[2] = ((CLOCK_FREQUENCY/SPI_BITRATE)<<8) | AT91C_SPI_CPOL;
 
 	nxt_lcd_power_up();
+	memset(display_buffer, 0, NXT_LCD_WIDTH*NXT_LCD_DEPTH);
 	return 0;
+}
+
+static int unit_lcd_init(void) {
+	return lcd_init();
 }
 

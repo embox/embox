@@ -44,7 +44,8 @@ extern char *_heap_end;
 # define TRACE printf
 #endif
 
-#define PAGE_QUANTITY ( (((size_t) HEAP_END_PTR - (size_t) HEAP_START_PTR) ) / CONFIG_PAGE_SIZE )
+#define PAGE_QUANTITY \
+	( (((size_t) HEAP_END_PTR - (size_t) HEAP_START_PTR) ) / CONFIG_PAGE_SIZE )
 
 #define SET_BIT1(ind,bit) set_bits( ind , get_bits(ind) | (bit) )
 #define SET_BIT0(ind,bit) set_bits( ind , get_bits(ind) & (255^(bit)) )
@@ -230,6 +231,7 @@ void mpfree(void * ptr) {
 	if ( ptr == NULL ) return;
 #endif
 	taddr parent, before, addr;
+	// TODO addr and addr, wtf? -- sikmir, Eldar
 	addr = ((size_t) ptr - (size_t) heap_start) / CONFIG_PAGE_SIZE;
 	addr = rootblocksize + ((size_t) ptr - (size_t) heap_start)
 			/ CONFIG_PAGE_SIZE;

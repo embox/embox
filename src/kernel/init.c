@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief The kernel initialization sequence.
  *
  * @date 21.03.09
@@ -10,7 +9,6 @@
  */
 
 #include <embox/kernel.h>
-
 #include <hal/arch.h>
 #include <hal/ipl.h>
 #include <kernel/irq.h>
@@ -32,10 +30,7 @@ void kernel_start(void) {
 
 	kernel_init();
 
-	timer_init();
-	//blinking_led();
 	init();
-
 
 	main();
 
@@ -58,7 +53,6 @@ static void kernel_init(void) {
 	uart_init(); // XXX
 
 	ipl_init();
-
 }
 
 /**
@@ -72,8 +66,8 @@ static int init(void) {
 	TRACE("EMBOX kernel start\n");
 
 	if (0 != (ret = runlevel_set(target_level))) {
-		TRACE("Failed to get into level %d, current level %d\n", target_level,
-				runlevel_get_entered());
+		TRACE("Failed to get into level %d, current level %d\n",
+				target_level, runlevel_get_entered());
 	}
 	return ret;
 }
