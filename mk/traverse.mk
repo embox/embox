@@ -125,7 +125,7 @@ define __traverse_process_mk
       )$(if $(filter makefile,$2),,makefile \
       )does not exist. Skipping)
     # TODO defer error processing. -- Eldar
-    $(error Error traversing source tree)
+#    $(error Error traversing source tree)
     SUBDIRS :=
   endif
 
@@ -137,7 +137,7 @@ endef
 
 __traverse_parent_node_file = $(strip \
   $(patsubst $(abspath $(__traverse_root))/%,$(__traverse_root)/%, \
-    $(abspath $(call __traverse_node_file_wildcard,$1/..,$2)) \
+    $(abspath $(call f-wildcard_first,$(addprefix $1/../,$2 Makefile makefile))) \
   ) \
 )
 

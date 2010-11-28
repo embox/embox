@@ -12,8 +12,16 @@
 
 #include <types.h>
 
-extern void*	mpalloc( size_t page_quantity );
-extern void	mpfree( void* pointer );
+typedef struct block_info {
+	struct list_head *next, *prev;
+	size_t size;
+	bool free;
+} block_info_t;
+
+extern void *mpalloc(size_t page_quantity);
+extern void mpfree(void *pointer);
+
+extern void mpget_blocks_info(struct list_head* list);
 
 #endif /* MPALLOCATOR_H_ */
 

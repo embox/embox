@@ -9,7 +9,6 @@
 #ifndef DRIVER_H_
 #define DRIVER_H_
 
-#include <kernel/mm/kmalloc.h>
 #include <kernel/irq.h>
 #include <sys/types.h>
 #include <stddef.h>

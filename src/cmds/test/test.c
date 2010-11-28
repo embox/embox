@@ -86,6 +86,7 @@ static struct test *get_test_by_name(char *name) {
 		}
 	}
 
+	TRACE("Can't find test named \"%s\"\n", name);
 	return NULL;
 }
 
