@@ -6,6 +6,7 @@
  *@date 27.11.2010
  *@author Alexandr Kalmuk
  *@author Kirill Tyushev
+ *@author Dmitry Zubarevich
  */
 
 #include <lib/list.h>
@@ -44,6 +45,30 @@ kmem_cache_t* get_cache(char* cache_name) {
 
 	return NULL;
 }
+
+/**
+ * simple slab initialization
+ * @param slab which will be initialize
+ * @param cache corresponding to this slab
+ */
+static void kmem_slab_init(slab_t* slab, kmem_cache_t* cache) {
+	void* slab_begin = cache->cache_begin + sizeof(slab_t);
+	int count_elements = 0;
+
+	slab->obj_ptr.next = &(slab->obj_ptr);
+	slab->obj_ptr.prev = &(slab->obj_ptr);
+	struct list_head* elem = (struct list_head*)slab_begin;
+	do {
+		//add this free block in slab_list
+		list_add(elem, &(slab->obj_ptr));
+
+		//initialize (count_elements + 1)-<th> block
+		count_elements++;
+		elem = slab_begin + (sizeof(struct list_head) + cache->size) * count_elements;
+
+	} while (count_elements < cache->num);
+}
+
 
 /**
  * allocate single object from the cache and return it to the caller
