@@ -340,24 +340,25 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q){
 	else {
 		col = 0x00;
 	}
-	uint8_t up_offset, up_higth, up_hole_offset, hole_fild_y, under_higth, hole_fild_x, r_offset_x;
-	up_hole_offset = y >> 3; //ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð¿Ð¾Ð»ÐµÐ¹ Ð¿Ð¾ 8 Ð±Ð¸Ñ‚, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð½Ð°Ð´Ð¾ Ð¾Ñ‚ÑÑ‚ÑƒÐ¿Ð¸Ñ‚ÑŒ Ð¾Ñ‚ Ð²ÐµÑ€Ñ…Ð° ÑÐºÑ€Ð°Ð½Ð°
+	int i,j;
+	uint8_t up_offset, up_higth, up_whole_offset, whole_field_y, under_higth, whole_field_x, r_offset_x;
+	up_whole_offset = y >> 3; //ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð¿Ð¾Ð»ÐµÐ¹ Ð¿Ð¾ 8 Ð±Ð¸Ñ‚, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð½Ð°Ð´Ð¾ Ð¾Ñ‚ÑÑ‚ÑƒÐ¿Ð¸Ñ‚ÑŒ Ð¾Ñ‚ Ð²ÐµÑ€Ñ…Ð° ÑÐºÑ€Ð°Ð½Ð°
 	up_offset = y % 8; //ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð¿Ð¸ÐºÑÐµÐ»ÐµÐ¹, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð½Ð°Ð´Ð¾ Ð¾Ñ‚ÑÑ‚ÑƒÐ¿Ð¸Ñ‚ÑŒ Ð¾Ñ‚ ÐºÐ¾Ð½Ñ†Ð° Ð±Ð°Ð¹Ñ‚Ð°
 	up_higth = 8 - up_offset;// ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð¿Ð¸ÐºÑÐµÐ»ÐµÐ¹, ÐºÑ‚Ð¾Ð¾Ñ€Ñ‹Ðµ Ð´Ð¾Ð»Ð¶Ð½Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ ÑÐ½Ð¸Ð·Ñƒ Ð·Ð°ÐºÑ€Ð°ÑˆÐµÐ½Ñ‹
-	hole_fild_y = (height - up_higth) >> 3;//ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð±Ð°Ð¹Ñ‚, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð´Ð¾Ð»Ð¶Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ Ð·Ð°ÐºÑ€Ð°ÑˆÐµÐ½Ñ‹
-	under_higth = height - up_higth - 8 * hole_fild_y; //ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð¿Ð¸ÐºÑÐµÐ»ÐµÐ¹, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð´Ð¾Ð»Ð¶Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ Ð·Ð°ÐºÑ€Ð°ÑˆÐµÐ½Ñ‹ Ð² Ð²ÐµÑ€Ñ…Ð½ÐµÐ¹ Ñ‡Ð°ÑÑ‚Ð¸
-	hole_fild_x = width >> 3;//ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð²Ð¾ÑÑŒÐ¼Ñ‘Ñ€Ð¾Ðº Ð² ÑÑ‚Ñ€Ð¾ÐºÐµ
+	whole_field_y = (height - up_higth) >> 3;//ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð±Ð°Ð¹Ñ‚, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð´Ð¾Ð»Ð¶Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ Ð·Ð°ÐºÑ€Ð°ÑˆÐµÐ½Ñ‹
+	under_higth = height - up_higth - 8 * whole_field_y; //ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð¿Ð¸ÐºÑÐµÐ»ÐµÐ¹, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð´Ð¾Ð»Ð¶Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ Ð·Ð°ÐºÑ€Ð°ÑˆÐµÐ½Ñ‹ Ð² Ð²ÐµÑ€Ñ…Ð½ÐµÐ¹ Ñ‡Ð°ÑÑ‚Ð¸
+	whole_field_x = width >> 3;//ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð²Ð¾ÑÑŒÐ¼Ñ‘Ñ€Ð¾Ðº Ð² ÑÑ‚Ñ€Ð¾ÐºÐµ
 	r_offset_x = width % 8;//Ð¾ÑÑ‚Ð°Ñ‚Ð¾Ðº
-	for(int i=0; i < hole_fild_x; i++) {
-		for(int j=0; j < hole_fild_y; j++) {
-			display_draw(x+i*8, up_hole_offset + 1 + j, 1, 8, &graph_buff_2[0]);
-			display_draw(x+width-8, up_hole_offset + 1 + j, 1, 8, &graph_buff_2[0]);
+	for(i=0; i < whole_field_x; i++) {
+		for(j=0; j < whole_field_y; j++) {
+			display_draw(x+i*8, up_whole_offset + 1 + j, 1, 8, &graph_buff_2[0]);
+			display_draw(x+width-8, up_whole_offset + 1 + j, 1, 8, &graph_buff_2[0]);
 		}
-		display_draw(x+i*8, up_hole_offset, 1, 8, &graph_buff_1[0]);
-		display_draw(x+i*8, up_hole_offset + hole_fild_y + 1, 1, 8, &graph_buff_0[0]);
+		display_draw(x+i*8, up_whole_offset, 1, 8, &graph_buff_1[0]);
+		display_draw(x+i*8, up_whole_offset + whole_field_y + 1, 1, 8, &graph_buff_0[0]);
 	}
-	display_draw(x+width-8, up_hole_offset, 1, 8, &graph_buff_1[0]);
-	display_draw(x+width-8, up_hole_offset + hole_fild_y + 1, 1, 8, &graph_buff_0[0]);
+	display_draw(x+width-8, up_whole_offset, 1, 8, &graph_buff_1[0]);
+	display_draw(x+width-8, up_whole_offset + whole_field_y + 1, 1, 8, &graph_buff_0[0]);
 	/*for(x_offset = 0; x_offset < width; x_offset ++) {
 		display_part(x+x_offset, up_hole_offset, 1, 1, );
 		display_part(x+x_offset, up_hole_offset + hole_fild + 1, 1, 1, ???????????);
