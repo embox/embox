@@ -12,6 +12,7 @@
 #include <kernel/mm/mpallocator.h>
 #include <kernel/mm/kmalloc.h>
 #include <lib/list.h>
+#include <stdlib.h>
 
 #define COMMAND_NAME     "meminfo"
 #define COMMAND_DESC_MSG "write memory statistic for kmalloc or mpallocator"
@@ -32,6 +33,7 @@ static LIST_HEAD(kmblocks_info_list);
  * @param list of free and busy blocks
  */
 static void print_statistic(struct list_head* list) {
+	int i = 1;
 	struct list_head* cur_elem;
 	block_info_t* cur_block;
 	int free_blocks_count = 0;
@@ -40,7 +42,6 @@ static void print_statistic(struct list_head* list) {
 	printf("N  free/busy size\n");
 	printf("-----------------\n");
 
-	int i = 1;
 	list_for_each(cur_elem, list) {
 		cur_block = (block_info_t*) cur_elem;
 		free_blocks_count += (cur_block->free ? 1 : 0);

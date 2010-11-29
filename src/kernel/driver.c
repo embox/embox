@@ -27,7 +27,7 @@ static device_t device_pool[CONFIG_DEV_MAX_COUNT];
 const char *empty_dev = "empty device";
 
 /* Initialize pool */
-void pool_init(void) {
+static void pool_init(void) {
 #if 1
 	size_t i = 0;
 	for (i = 0; i < CONFIG_DEV_MAX_COUNT; ++i) {
@@ -46,7 +46,7 @@ void pool_init(void) {
 	for (i = 1; i < CONFIG_DEV_MAX_COUNT; ++i) {
 		/* WARINIG! In empty dev private ptr use as index of next
 		   empty device in pool */
-		device_pool[i-1].private = i;
+		device_pool[i-1].private = (void *)i;
 	}
 #endif
 }
@@ -100,6 +100,7 @@ int device_destroy(device_t *dev) {
 	device_pool[0].private = (void*) (((unsigned long) device_pool -
 		(unsigned long) dev)/(unsigned long)sizeof(device_t));
 #endif
+	return 0;
 }
 
 /* select device by description string (devFS?) */

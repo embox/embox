@@ -257,6 +257,13 @@ void mpfree(void *ptr) {
 }
 
 /**
+ * return list of free and busy blocks in heap
+ */
+void mpget_blocks_info(struct list_head* list) {
+	//TODO:
+}
+
+/**
  * some functions for debug
  */
 #ifdef EXTENDED_TEST

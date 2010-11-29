@@ -43,8 +43,9 @@ struct n_pipe *pipe_create(void){
 }
 
 int pipe_section_read(int pipe, int section){
+	int data;
 	pipe_pool[pipe].ready_to_write = false;
-	int data = pipe_pool[pipe].sync_data[section];
+	data = pipe_pool[pipe].sync_data[section];
 	pipe_pool[pipe].ready_to_write = true;
 	return data;
 }
