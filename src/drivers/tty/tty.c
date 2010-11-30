@@ -13,19 +13,24 @@
 
 tty_device_t *cur_tty;
 #ifdef CONFIG_TTY_WITH_VTPARSE
-struct vtparse tty_vtparse;
+struct vtparse tty_vtparse[1];
 
 void tty_vtparse_callback( struct vtparse *tty_vtparse, struct vt_token *token ) {
-#if 0
+#if 1
 	printf("action: %d; char: %c\n", token->action , token->ch);
-#endif
+#else
 	printf("new token\n");
+#endif
 }
+
+static int tty_init_flag = 0;
 #endif
 
 int tty_init(void) {
 #ifdef CONFIG_TTY_WITH_VTPARSE
-	vtparse_init( &tty_vtparse , &tty_vtparse_callback );
+	if (NULL == vtparse_init( tty_vtparse , tty_vtparse_callback )) {
+		LOG_ERROR("error while initialization vtparse\n");
+	}
 #endif
 	return 0;
 }
@@ -50,7 +55,13 @@ int tty_get_uniq_number(void) {
  */
 int tty_add_char(tty_device_t *tty, int ch) {
 #ifdef CONFIG_TTY_WITH_VTPARSE
-	vtparse( &tty_vtparse , ch );
+	if (!tty_init_flag) {
+		tty_init_flag = 1;
+		tty_init();
+	}
+	printf("pressed char: %d %c\n", ch, ch);
+
+	vtparse( tty_vtparse , ch );
 #else /* CONFIG_TTY_WITH_VTPARSE */
 	if ('\n' == ch && !tty->out_busy) {
 		/*add string to output buffer*/
