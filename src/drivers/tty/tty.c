@@ -12,8 +12,21 @@
 #include <kernel/uart.h>
 
 tty_device_t *cur_tty;
+#ifdef CONFIG_TTY_WITH_VTPARSE
+struct vtparse tty_vtparse;
+
+void tty_vtparse_callback( struct vtparse *tty_vtparse, struct vt_token *token ) {
+#if 0
+	printf("action: %d; char: %c\n", token->action , token->ch);
+#endif
+	printf("new token\n");
+}
+#endif
 
 int tty_init(void) {
+#ifdef CONFIG_TTY_WITH_VTPARSE
+	vtparse_init( &tty_vtparse , &tty_vtparse_callback );
+#endif
 	return 0;
 }
 
@@ -36,6 +49,9 @@ int tty_get_uniq_number(void) {
  * add parsed char to receive buffer
  */
 int tty_add_char(tty_device_t *tty, int ch) {
+#ifdef CONFIG_TTY_WITH_VTPARSE
+	vtparse( &tty_vtparse , ch );
+#else /* CONFIG_TTY_WITH_VTPARSE */
 	if ('\n' == ch && !tty->out_busy) {
 		/*add string to output buffer*/
 		memcpy((void*)tty->out_buff,(const void*) tty->rx_buff, tty->rx_cnt);
@@ -52,6 +68,7 @@ int tty_add_char(tty_device_t *tty, int ch) {
 	tty->rx_buff[tty->rx_cnt++] = ch;
 	uart_putc(ch);
 	return 0;
+#endif /* CONFIG_TTY_WITH_VTPARSE */
 }
 
 uint8_t* tty_readline(tty_device_t *tty) {
