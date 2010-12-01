@@ -1,23 +1,21 @@
 /**
  * @file
- * @brief avr init test
+ * @brief Init Atmel AVR ATmega8 PDIP.
  *
  * @date 16.10.10
  * @author Anton Kozlov
  */
 
 #include <embox/unit.h>
-#include <drivers/at91sam7s256.h>
 #include <string.h>
 #include <hal/reg.h>
-#include <drivers/twi.h>
 #include <unistd.h>
 #include <kernel/timer.h>
+#include <drivers/at91sam7s256.h>
+#include <drivers/twi.h>
 #include <drivers/nxt_buttons.h>
 
 EMBOX_UNIT_INIT(init);
-
-void nxt_lcd_set_all_pixels_on(__u32 on);
 
 const char avr_brainwash_string[] =
   "\xCC" "Let's samba nxt arm in arm, (c)LEGO System A/S";
@@ -125,3 +123,4 @@ static int init(void) {
 
 	return result;
 }
+

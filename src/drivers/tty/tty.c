@@ -15,7 +15,7 @@ tty_device_t *cur_tty;
 #ifdef CONFIG_TTY_WITH_VTPARSE
 struct vtparse tty_vtparse[1];
 
-void tty_vtparse_callback( struct vtparse *tty_vtparse, struct vt_token *token ) {
+void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 #if 1
 	printf("action: %d; char: %c\n", token->action , token->ch);
 #else
@@ -28,7 +28,7 @@ static int tty_init_flag = 0;
 
 int tty_init(void) {
 #ifdef CONFIG_TTY_WITH_VTPARSE
-	if (NULL == vtparse_init( tty_vtparse , tty_vtparse_callback )) {
+	if (NULL == vtparse_init(tty_vtparse, tty_vtparse_callback)) {
 		LOG_ERROR("error while initialization vtparse\n");
 	}
 #endif
@@ -61,18 +61,18 @@ int tty_add_char(tty_device_t *tty, int ch) {
 	}
 	printf("pressed char: %d %c\n", ch, ch);
 
-	vtparse( tty_vtparse , ch );
+	vtparse(tty_vtparse, ch);
 #else /* CONFIG_TTY_WITH_VTPARSE */
 	if ('\n' == ch && !tty->out_busy) {
 		/*add string to output buffer*/
-		memcpy((void*)tty->out_buff,(const void*) tty->rx_buff, tty->rx_cnt);
+		memcpy((void*) tty->out_buff,(const void*) tty->rx_buff, tty->rx_cnt);
 		tty->out_buff[tty->rx_cnt] = '\0';
 		tty->rx_cnt = 0;
 		tty->out_busy = true;
 		uart_putc(ch);
 		return 1;
 	}
-	if(tty->rx_cnt >= TTY_RXBUFF_SIZE) {
+	if (tty->rx_cnt >= TTY_RXBUFF_SIZE) {
 		/*buffer is full. drop this symbol*/
 		return -1;
 	}
@@ -83,14 +83,14 @@ int tty_add_char(tty_device_t *tty, int ch) {
 }
 
 uint8_t* tty_readline(tty_device_t *tty) {
-	while(!tty->out_busy);
+	while (!tty->out_busy);
 	tty->out_busy = false;
-	return (uint8_t*)tty->out_buff;
+	return (uint8_t*) tty->out_buff;
 }
 
 static uint32_t tty_scanline(uint8_t line[TTY_RXBUFF_SIZE + 1], uint32_t size) {
 	int i = 0;
-	while('\n' == line[i ++]) {
+	while ('\n' == line[i++]) {
 		if (0 == (size --))
 			return 0;
 	}
@@ -99,10 +99,9 @@ static uint32_t tty_scanline(uint8_t line[TTY_RXBUFF_SIZE + 1], uint32_t size) {
 
 void tty_freeline(tty_device_t *tty, uint8_t *line) {
 	uint32_t line_size;
-	if(0 != tty->rx_cnt) {
-		line_size = tty_scanline((uint8_t*)tty->rx_buff, tty->rx_cnt);
+	if (0 != tty->rx_cnt) {
+		line_size = tty_scanline((uint8_t*) tty->rx_buff, tty->rx_cnt);
 	}
 }
-
 
 

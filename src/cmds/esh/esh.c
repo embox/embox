@@ -23,39 +23,39 @@
 #if 1 /* while linked with old embox shell. Where must be located its functions ???? */
 /* *str becomes pointer to first non-space character*/
 static void skip_spaces(char **str) {
-    while (**str == ' ') {
-        (*str)++;
-    }
+	while (**str == ' ') {
+		(*str)++;
+	}
 }
 
 /* *str becomes pointer to first space or '\0' character*/
 static void skip_word(char **str) {
-    while (**str != '\0' && **str != ' ') {
-        (*str)++;
-    }
+	while (**str != '\0' && **str != ' ') {
+		(*str)++;
+	}
 }
 
 static int parse_str(char *cmdline, char **words) {
-    size_t cnt = 0;
-    while (*cmdline != '\0') {
-        if (' ' == *cmdline) {
-            *cmdline++ = '\0';
-            skip_spaces(&cmdline);
-        } else {
-            words[cnt++] = cmdline;
-            skip_word(&cmdline);
-        }
-    }
-    return cnt;
+	size_t cnt = 0;
+	while (*cmdline != '\0') {
+		if (' ' == *cmdline) {
+			*cmdline++ = '\0';
+			skip_spaces(&cmdline);
+		} else {
+			words[cnt++] = cmdline;
+			skip_word(&cmdline);
+		}
+	}
+	return cnt;
 }
 #endif
 
 static int esh_start(void) {
 
-    int words_counter = 0;
+	int words_counter = 0;
 	int ret_code;
 	SHELL_COMMAND_DESCRIPTOR *c_desc;
-    char *words[CMDLINE_MAX_LENGTH + 1];
+	char *words[CMDLINE_MAX_LENGTH + 1];
 	char *cmdline;
 
 //	FILE *ff = fopen("/dev/uart","r");
@@ -67,18 +67,16 @@ static int esh_start(void) {
 			continue; /* Only spaces were entered */
 		}
 
-		if (NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))){
+		if (NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))) {
 			printf("%s: Command not found\n", words[0]);
 			continue;
 		}
 
-		if (NULL == c_desc->exec){
+		if (NULL == c_desc->exec) {
 			LOG_ERROR("shell command: wrong command descriptor\n");
 			continue;
 		}
 		shell_command_exec(c_desc, words_counter, words);
-
-
 		freeline(cmdline);
 	}
 

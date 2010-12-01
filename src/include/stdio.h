@@ -116,17 +116,17 @@ extern int fioctl(FILE *fp, int request, ...);
 /**
  * Get file status (size, mode, mtime and so on)
  */
-extern int stat(const char *path, struct stat *buf);
+extern int stat(const char *path, stat_t *buf);
 
 #if defined(CONFIG_TRACE)
 # define TRACE(...)  printk(__VA_ARGS__)
 #else
-# define TRACE(...)  do ; while(0)
+# define TRACE(...)  do ; while (0)
 #endif
 
 #define PRINTREG32_BIN(reg) { \
 	int i=0;                         \
-	for(;i<32;i++)                   \
+	for (;i<32;i++)                   \
 		TRACE("%d", (reg>>i)&1); \
 		TRACE(" (0x%x)\n", reg); \
 	}

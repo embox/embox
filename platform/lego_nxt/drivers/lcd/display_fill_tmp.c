@@ -182,7 +182,7 @@ void display_char(int c) {
 
 		do {
 			*b++ = *f++;
-		} while( f < fend);
+		} while ( f < fend);
 	}
 	display_x++;
 	nxt_lcd_force_update();
@@ -201,7 +201,7 @@ void display_string(const char *str) {
 }
 
 void display_clear_screen(void) {
-	memset((void *)display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
+	memset((void *) display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
 	nxt_lcd_force_update();
 }
 
@@ -210,15 +210,15 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width,
    	uint32_t x_offset, y_offset, i, j, k;
    	y *= 8;
    	width *= 8;
-   	if((x > NXT_LCD_WIDTH) || (y > 64)) {
+   	if ((x > NXT_LCD_WIDTH) || (y > 64)) {
    		return 0;
    	}
 
    	width = min((NXT_LCD_WIDTH - x), width);
    	height = min((64 - y), height);
 
-   	for(y_offset = 0; y_offset < height; y_offset += 8) {
-		for(x_offset = 0; x_offset < width; x_offset ++) {
+   	for (y_offset = 0; y_offset < height; y_offset += 8) {
+		for (x_offset = 0; x_offset < width; x_offset ++) {
 			i = (y + y_offset) >> 3;
 			j = x + x_offset;
 			k = (y_offset >> 3) + x_offset;
@@ -254,9 +254,9 @@ static const uint8_t graph_buff[256] = {
 static const uint8_t graph_buff_0[8] = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
 static const uint8_t graph_buff_1[8] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80};
 static const uint8_t graph_buff_2[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-/*int const_init(void){
+/*int const_init(void) {
       // uint8_t buff[256];
-       for (int i = 0; i<; i++){
+       for (int i = 0; i<; i++) {
                graph_buff[i] = i;
        }
        return 0;
@@ -265,7 +265,7 @@ static const uint8_t graph_buff_2[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 /* q == 0 - color is black */
 
 int nxt_color(int i, int q) {
-       if (q==0){
+       if (q == 0) {
                i = 255-i;
        }
        return i;
@@ -303,21 +303,20 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q)
                nxt_color(i, q);
                nxt_color(j, q);
                nxt_color(k, q);
-               for(x_offset = 0; x_offset < width; x_offset ++) {
+               for (x_offset = 0; x_offset < width; x_offset ++) {
                                display_draw(x+x_offset, indent_all, 1, 1, graph_buff_0[1]);
                                display_draw(x+x_offset, indent_all + 1 + width_all, 1, 1, graph_buff_0[2]);
-                               for(y_offset = 0; y_offset < width_all; y_offset += 1){
+                               for (y_offset = 0; y_offset < width_all; y_offset += 1) {
                                        display_draw(x+x_offset, indent_all + 1 + y_offset, 1, 1, graph_buff_0[3]);
                                }
                }
-       }
-       else {
+       } else {
                indent_part = height;
                /*number of full fill field*/
                width_all = 0;
                i = 255-(pow(2,indent_part)+pow(2,width));
                nxt_color(i, q);
-               for(x_offset = 0; x_offset < width; x_offset ++) {
+               for (x_offset = 0; x_offset < width; x_offset ++) {
                        display_draw(x+x_offset, indent_all, 1, 1, graph_buff[i]);
                }
        }
@@ -326,31 +325,30 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q)
 }
 #else
 
-/*int display_part(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int quint8_t x, uint8_t y, uint8_t width, uint8_t height, int q){
+/*int display_part(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int quint8_t x, uint8_t y, uint8_t width, uint8_t height, int q) {
 
 	return 0;
 }*/
-/*РєРѕРіРґР° РІСЃС‘ Р·Р°СЂР°Р±РѕС‚Р°РµС‚, СЏ СѓР±РµСЂСѓ СЂСѓСЃСЃРєРёРµ РєРѕРјРµРЅС‚Р°СЂРёРё*/
-int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q){
+
+int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q) {
 	uint32_t x_offset, y_offset;
 	uint8_t col;
-	if(q==0){
+	if (q==0) {
 		col = 0xFF;
-	}
-	else {
+	} else {
 		col = 0x00;
 	}
 	int i,j;
 	uint8_t up_offset, up_higth, up_whole_offset, whole_field_y, under_higth, whole_field_x, r_offset_x;
-	up_whole_offset = y >> 3; //ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð¿Ð¾Ð»ÐµÐ¹ Ð¿Ð¾ 8 Ð±Ð¸Ñ‚, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð½Ð°Ð´Ð¾ Ð¾Ñ‚ÑÑ‚ÑƒÐ¿Ð¸Ñ‚ÑŒ Ð¾Ñ‚ Ð²ÐµÑ€Ñ…Ð° ÑÐºÑ€Ð°Ð½Ð°
-	up_offset = y % 8; //ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð¿Ð¸ÐºÑÐµÐ»ÐµÐ¹, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð½Ð°Ð´Ð¾ Ð¾Ñ‚ÑÑ‚ÑƒÐ¿Ð¸Ñ‚ÑŒ Ð¾Ñ‚ ÐºÐ¾Ð½Ñ†Ð° Ð±Ð°Ð¹Ñ‚Ð°
-	up_higth = 8 - up_offset;// ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð¿Ð¸ÐºÑÐµÐ»ÐµÐ¹, ÐºÑ‚Ð¾Ð¾Ñ€Ñ‹Ðµ Ð´Ð¾Ð»Ð¶Ð½Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ ÑÐ½Ð¸Ð·Ñƒ Ð·Ð°ÐºÑ€Ð°ÑˆÐµÐ½Ñ‹
-	whole_field_y = (height - up_higth) >> 3;//ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð±Ð°Ð¹Ñ‚, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð´Ð¾Ð»Ð¶Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ Ð·Ð°ÐºÑ€Ð°ÑˆÐµÐ½Ñ‹
-	under_higth = height - up_higth - 8 * whole_field_y; //ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð¿Ð¸ÐºÑÐµÐ»ÐµÐ¹, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð´Ð¾Ð»Ð¶Ð½Ñ‹ Ð±Ñ‹Ñ‚ÑŒ Ð·Ð°ÐºÑ€Ð°ÑˆÐµÐ½Ñ‹ Ð² Ð²ÐµÑ€Ñ…Ð½ÐµÐ¹ Ñ‡Ð°ÑÑ‚Ð¸
-	whole_field_x = width >> 3;//ÐºÐ¾Ð»Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†ÐµÐ»Ñ‹Ñ… Ð²Ð¾ÑÑŒÐ¼Ñ‘Ñ€Ð¾Ðº Ð² ÑÑ‚Ñ€Ð¾ÐºÐµ
-	r_offset_x = width % 8;//Ð¾ÑÑ‚Ð°Ñ‚Ð¾Ðº
-	for(i=0; i < whole_field_x; i++) {
-		for(j=0; j < whole_field_y; j++) {
+	up_whole_offset = y >> 3;
+	up_offset = y % 8;
+	up_higth = 8 - up_offset;
+	whole_field_y = (height - up_higth) >> 3;
+	under_higth = height - up_higth - 8 * whole_field_y;
+	whole_field_x = width >> 3;
+	r_offset_x = width % 8;
+	for (i=0; i < whole_field_x; i++) {
+		for (j=0; j < whole_field_y; j++) {
 			display_draw(x+i*8, up_whole_offset + 1 + j, 1, 8, &graph_buff_2[0]);
 			display_draw(x+width-8, up_whole_offset + 1 + j, 1, 8, &graph_buff_2[0]);
 		}
@@ -359,7 +357,7 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q){
 	}
 	display_draw(x+width-8, up_whole_offset, 1, 8, &graph_buff_1[0]);
 	display_draw(x+width-8, up_whole_offset + whole_field_y + 1, 1, 8, &graph_buff_0[0]);
-	/*for(x_offset = 0; x_offset < width; x_offset ++) {
+	/*for (x_offset = 0; x_offset < width; x_offset ++) {
 		display_part(x+x_offset, up_hole_offset, 1, 1, );
 		display_part(x+x_offset, up_hole_offset + hole_fild + 1, 1, 1, ???????????);
 	}*/

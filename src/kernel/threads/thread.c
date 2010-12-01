@@ -191,7 +191,7 @@ struct message *msg_receive(void) {
 		current_thread->need_message = true;
 		scheduler_sleep(&current_thread->msg_event);
 	}
-	return (struct message *)list_entry(
+	return (struct message *) list_entry(
 		queue_extr(&current_thread->messages), struct message, list);
 }
 

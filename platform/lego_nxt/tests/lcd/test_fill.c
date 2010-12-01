@@ -30,7 +30,7 @@ static int run_fill(void) {
 	usleep(2000000);
 
 
-	/*for(i=0; i<10 ;i++) {
+	/*for (i=0; i<10 ;i++) {
 		j=i%2;
 		display_fill(5*i, 5*i, 5*i, 5*i, j);
 		usleep(1000);

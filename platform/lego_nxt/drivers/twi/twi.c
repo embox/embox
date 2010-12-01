@@ -17,7 +17,7 @@
 //#define AT91C_PA4_TWCK AT91C_PA4_AT91C_PA4_TWCK //(1 << 4)
 //#define AT91C_PA3_TWD	 AT91C_PA3_AT91C_PA3_TWD //(1 << 3)
 
-//#define sysc ((volatile struct _AT91S_SYS *)0xFFFFF000)
+//#define sysc ((volatile struct _AT91S_SYS *) 0xFFFFF000)
 
 static uint32_t twi_pending;
 static uint8_t *twi_ptr;
@@ -33,7 +33,7 @@ static void systick_wait_ns(uint32_t ns) {
 	}
 }
 
-void twi_reset(void) {
+static void twi_reset(void) {
 	uint32_t clocks = 9;
 
 	REG_STORE(AT91C_TWI_IDR, ~0);
@@ -59,10 +59,10 @@ void twi_reset(void) {
 	REG_STORE(AT91C_PIOA_ASR, AT91C_PA3_TWD | AT91C_PA4_TWCK);
 
 	/* Disable & reset */
-	REG_STORE(AT91C_TWI_CR, AT91C_TWI_SWRST|AT91C_TWI_MSDIS);
+	REG_STORE(AT91C_TWI_CR, AT91C_TWI_SWRST | AT91C_TWI_MSDIS);
 
 	/* Set for 400kHz */
-	REG_STORE(AT91C_TWI_CWGR, ((CLDIV << 8)|CLDIV));
+	REG_STORE(AT91C_TWI_CWGR, ((CLDIV << 8) | CLDIV));
 	/* Enable as master */
 	REG_STORE(AT91C_TWI_CR, AT91C_TWI_MSEN);
 	//*AT91C_TWI_IER = AT91C_TWI_NACK;
@@ -74,10 +74,10 @@ void  twi_init(void) {
 }
 
 void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes) {
-	twi_ptr = (uint8_t *)data;
+	twi_ptr = (uint8_t *) data;
 	twi_pending = nBytes;
 
-	*AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO|((dev_addr & 0x7f) << 16);
+	*AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO | ((dev_addr & 0x7f) << 16);
 	*AT91C_TWI_THR = *twi_ptr++;
 	twi_pending--;
 	while (twi_pending > 0) {
@@ -86,7 +86,7 @@ void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes) {
 		twi_pending--;
 	}
 
-	while(!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP));
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP));
 }
 
 void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
@@ -125,3 +125,4 @@ int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
 	return ((checkbyte == 0xff) ? 1 : 0);
 
 }
+

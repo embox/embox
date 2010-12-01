@@ -10,11 +10,11 @@
 #include <kernel/diag.h>
 
 #ifdef CONFIG_HARD_UART_OUT
-int putchar_putc(int c) {
+void putchar_putc(int c) {
 	#ifndef CONFIG_HARD_DIAGUART
-	return uart_putc((char) c);
+	uart_putc((char) c);
 	#else
-	return diag_putc((char) c);
+	diag_putc((char) c);
 	#endif
 }
 #endif

@@ -8,6 +8,3 @@ $_SRCS-slab += $(CONFIG_SLAB)
 
 endif
 
-
-
-

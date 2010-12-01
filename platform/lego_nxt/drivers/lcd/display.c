@@ -151,7 +151,7 @@ __u8 font[N_CHARS][FONT_WIDTH] = {
 void display_char(int c) {
 	__u8 *b;
 	const __u8 *f, *fend;
-	int i, j;
+	size_t i, j;
 
 	if (c == '\n') {
 		display_x = 0;
@@ -182,7 +182,7 @@ void display_char(int c) {
 
 		do {
 			*b++ = *f++;
-		} while( f < fend);
+		} while (f < fend);
 	}
 	display_x++;
 	nxt_lcd_force_update();
@@ -201,7 +201,7 @@ void display_string(const char *str) {
 }
 
 void display_clear_screen(void) {
-	memset((void *)display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
+	memset((void *) display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
 	nxt_lcd_force_update();
 }
 
@@ -210,15 +210,15 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width,
    	uint32_t x_offset, y_offset, i, j, k;
    	y *= 8;
    	width *= 8;
-   	if((x > NXT_LCD_WIDTH) || (y > 64)) {
+   	if ((x > NXT_LCD_WIDTH) || (y > 64)) {
    		return 0;
    	}
 
    	width = min((NXT_LCD_WIDTH - x), width);
    	height = min((64 - y), height);
 
-   	for(y_offset = 0; y_offset < height; y_offset += 8) {
-		for(x_offset = 0; x_offset < width; x_offset ++) {
+   	for (y_offset = 0; y_offset < height; y_offset += 8) {
+		for (x_offset = 0; x_offset < width; x_offset ++) {
 			i = (y + y_offset) >> 3;
 			j = x + x_offset;
 			k = (y_offset >> 3) + x_offset;
@@ -232,8 +232,8 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width,
 int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q) {
 	uint32_t x_offset, y_offset, i, j;
 
-	for(y_offset = 0; y_offset < height; y_offset++) {
-		for(x_offset = 0; x_offset < width; x_offset++) {
+	for (y_offset = 0; y_offset < height; y_offset++) {
+		for (x_offset = 0; x_offset < width; x_offset++) {
 			i = (y + y_offset) >> 3;
 			j = x + x_offset;
 			display_buffer[i][j] = (q == 0 ? 0 : 0xFF);

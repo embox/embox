@@ -28,7 +28,7 @@ static int vconsole_init(void) {
 }
 
 vconsole_t *vconsole_open(tty_device_t *tty) {
-	return (vconsole_t *)sys_console;
+	return (vconsole_t *) sys_console;
 }
 
 int vconsole_activate(vconsole_t *con) {

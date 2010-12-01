@@ -57,7 +57,7 @@ static void kmem_slab_init(slab_t* slab, kmem_cache_t* cache) {
 
 	slab->obj_ptr.next = &(slab->obj_ptr);
 	slab->obj_ptr.prev = &(slab->obj_ptr);
-	struct list_head* elem = (struct list_head*)slab_begin;
+	struct list_head* elem = (struct list_head*) slab_begin;
 	do {
 		//add this free block in slab_list
 		list_add(elem, &(slab->obj_ptr));
@@ -82,7 +82,7 @@ void* kmem_cache_alloc(kmem_cache_t* cachep) {
 	if (cachep == NULL)
 		return NULL;
 
-	slab = (slab_t*)cachep->cache_begin;
+	slab = (slab_t*) cachep->cache_begin;
 
 	if (!(cachep->hasinit)) {
 		kmem_slab_init(slab, cachep);
@@ -110,7 +110,7 @@ void  kmem_cache_free(kmem_cache_t* cachep, void* objp) {
 	if (objp == NULL || cachep == NULL)
 		return;
 
-	slab = (slab_t*)cachep->cache_begin;
+	slab = (slab_t*) cachep->cache_begin;
 
 	ptr_begin = (struct list_head*)(objp - sizeof(struct list_head));
 	list_add(ptr_begin, &(slab->obj_ptr));
