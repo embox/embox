@@ -43,7 +43,10 @@ int pin_get_input(void) {
 
 void pin_set_output(int mask) {
 	REG_STORE(AT91C_PIOA_SODR, mask);
-	REG_STORE(AT91C_PIOA_CODR, (~mask));
+}
+
+void pin_clear_output(int mask) {
+	REG_STORE(AT91C_PIOA_CODR, mask);
 }
 
 void pin_set_input_interrupt(int mask) {

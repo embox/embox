@@ -46,9 +46,9 @@ extern void measure_irq_tail_process(measure_time_t *time);
  */
 extern void measure_irq_measure_overhead(measure_time_t *time);
 
-measure_time_t *measure_get_time(void);
+extern measure_time_t *measure_get_time(void);
 
-void measure_start(void);
+extern void measure_start(void);
 
-measure_time_t *measure_stop(void);
+extern measure_time_t *measure_stop(void);
 #endif /* MEASURE_H_ */
