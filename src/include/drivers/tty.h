@@ -10,20 +10,14 @@
 #ifndef TTY_H_
 #define TTY_H_
 
-#if 0
-#define CONFIG_TTY_WITH_VTPARSE
-#endif
-
 #include <types.h>
 
 #define TTY_RXBUFF_SIZE 0x80
 #define TTY_TXBUFF_SIZE 0x80
 
 #include <fs/file.h>
-#ifdef CONFIG_TTY_WITH_VTPARSE
-# include <drivers/vtbuild.h>
-# include <drivers/vtparse.h>
-#endif
+#include <drivers/vtbuild.h>
+#include <drivers/vtparse.h>
 
 typedef volatile struct tty_device {
 	uint8_t  out_buff[TTY_RXBUFF_SIZE + 1];
@@ -32,6 +26,7 @@ typedef volatile struct tty_device {
 	uint8_t  tx_buff[TTY_TXBUFF_SIZE + 1];
 	uint32_t rx_cnt;
 	bool     out_busy; /*whether out_buff is busy*/
+	bool     ins_mod;
 	file_operations_t *file_op;
 } tty_device_t;
 

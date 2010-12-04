@@ -13,29 +13,70 @@
 #include <kernel/uart.h>
 
 tty_device_t *cur_tty;
-#ifdef CONFIG_TTY_WITH_VTPARSE
 struct vtparse tty_vtparse[1];
 struct vtbuild tty_vtbuild[1];
+
+#if 0
+#define TTY_USE_CONTROL_H_CHAR
+#endif
 
 const struct vt_token TOKEN_LEFT[1] = {{
 	.action = VT_ACTION_CSI_DISPATCH,
 	.ch = 'D'
 }};
 
+const struct vt_token TOKEN_RIGHT[1] = {{
+	.action = VT_ACTION_CSI_DISPATCH,
+	.ch = 'C'
+}};
+
 void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 #if 0
+	#warning USING DEBUG OUTPUT IN TTY DRIVER!!!
+
 	printf("action: %d; char: %d %c; attrs_len: %d; params_len: %d\n", token->action , token->ch, token->ch,
 		token->attrs_len, token->params_len);
+	uint32_t i;
+	for ( i=0; i<token->attrs_len; ++i ) {
+		printf("(char) attrs[%d] = %d : %c\n",i,token->attrs[i]);
+	}
+	for ( i=0; i<token->params_len; ++i ) {
+		printf("(char) params[%d] = %d\n",i,token->params[i]);
+	}
 #endif
 
 	switch (token->action) {
 		case VT_ACTION_PRINT:
-			if (cur_tty->rx_cur < TTY_RXBUFF_SIZE) {
-				cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
-				if ( cur_tty->rx_cur > cur_tty->rx_cnt ) {
-					cur_tty->rx_cnt = cur_tty->rx_cur;
+			if (cur_tty->ins_mod) { /* INSERT MODE */
+				if (cur_tty->rx_cnt < TTY_RXBUFF_SIZE) {
+					uint32_t i;
+					++cur_tty->rx_cnt;
+					for (i=cur_tty->rx_cnt; i>cur_tty->rx_cur; --i) {
+						cur_tty->rx_buff[i] = cur_tty->rx_buff[i-1];
+					}
+					cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
+					vtbuild(tty_vtbuild, token);
+					for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
+						uart_putc(cur_tty->rx_buff[i]);
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+					}
+					for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
+						#ifdef TTY_USE_CONTROL_H_CHAR
+						uart_putc(8);
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						#else
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						#endif
+					}
 				}
-				vtbuild(tty_vtbuild, token);
+			} else { /* REPLACE MOD */
+				if (cur_tty->rx_cur < TTY_RXBUFF_SIZE) {
+					cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
+					if ( cur_tty->rx_cur > cur_tty->rx_cnt ) {
+						cur_tty->rx_cnt = cur_tty->rx_cur;
+					}
+					vtbuild(tty_vtbuild, token);
+				}
 			}
 		break;
 
@@ -51,6 +92,53 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					if (cur_tty->rx_cur < cur_tty->rx_cnt) {
 						++cur_tty->rx_cur;
 						vtbuild(tty_vtbuild, token);
+					}
+				break;
+				case '~': /* HOME, END and others */
+					if (token->params_len == 1) {
+						switch (token->params[0]) {
+							case 7: /* HOME */
+								while (cur_tty->rx_cur>0) {
+									--cur_tty->rx_cur;
+									#ifdef TTY_USE_CONTROL_H_CHAR
+									uart_putc(8);
+									#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+									#else
+									vtbuild(tty_vtbuild, TOKEN_LEFT);
+									#endif
+								}
+							break;
+							case 8: /* END */
+								while (cur_tty->rx_cur<cur_tty->rx_cnt) {
+									++cur_tty->rx_cur;
+									vtbuild(tty_vtbuild, TOKEN_RIGHT);
+								}
+							break;
+							case 3: /* DEL */
+								if (cur_tty->rx_cur<cur_tty->rx_cnt) {
+									uint32_t i;
+									for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt-1; ++i) {
+										cur_tty->rx_buff[i] = cur_tty->rx_buff[i+1];
+										uart_putc(cur_tty->rx_buff[i]);
+										#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+									}
+									uart_putc(' ');
+									#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+									for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
+										#ifdef TTY_USE_CONTROL_H_CHAR
+										uart_putc(8);
+										#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+										#else
+										vtbuild(tty_vtbuild, TOKEN_LEFT);
+										#endif
+									}
+									--cur_tty->rx_cnt;
+								}
+							break;
+							case 2: /* INS */
+								cur_tty->ins_mod = !cur_tty->ins_mod;
+							break;
+						}
 					}
 				break;
 			}
@@ -70,20 +158,31 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					vtbuild(tty_vtbuild, token);
 				break;
 
+				case 8: /* ^H equalent to backspace */
 				case 127: /* backspace */
 					if (cur_tty->rx_cur>0) {
 						--cur_tty->rx_cur;
-						vtbuild(tty_vtbuild, TOKEN_LEFT); /* cursor move left */
-						/* or use: uart_putc(8); */
+						#ifdef TTY_USE_CONTROL_H_CHAR
+						uart_putc(8);
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						#else
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						#endif
 						uint32_t i;
 						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt-1; ++i) {
 							cur_tty->rx_buff[i] = cur_tty->rx_buff[i+1];
 							uart_putc(cur_tty->rx_buff[i]);
+							#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
 						}
 						uart_putc(' ');
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
 						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-							vtbuild(tty_vtbuild, TOKEN_LEFT); /* cursor move left */
-							/* or use: uart_putc(8); */
+							#ifdef TTY_USE_CONTROL_H_CHAR
+							#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+							uart_putc(8);
+							#else
+							vtbuild(tty_vtbuild, TOKEN_LEFT);
+							#endif
 						}
 						--cur_tty->rx_cnt;
 					}
@@ -106,10 +205,8 @@ void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
 }
 
 static int tty_init_flag = 0;
-#endif
 
 int tty_init(void) {
-#ifdef CONFIG_TTY_WITH_VTPARSE
 	if (NULL == vtparse_init(tty_vtparse, tty_vtparse_callback)) {
 		LOG_ERROR("Error while initialization vtparse.\n");
 	}
@@ -118,7 +215,8 @@ int tty_init(void) {
 	}
 	cur_tty->rx_cur = 0;
 	cur_tty->rx_cnt = 0;
-#endif
+	cur_tty->ins_mod = true;	/* what must be default, don't know */
+
 	return 0;
 }
 
@@ -141,30 +239,12 @@ int tty_get_uniq_number(void) {
  * add parsed char to receive buffer
  */
 int tty_add_char(tty_device_t *tty, int ch) {
-#ifdef CONFIG_TTY_WITH_VTPARSE
 	if (!tty_init_flag) {
 		tty_init_flag = 1;
 		tty_init();
 	}
 	vtparse(tty_vtparse, ch);
-#else /* CONFIG_TTY_WITH_VTPARSE */
-	if ('\n' == ch && !tty->out_busy) {
-		/*add string to output buffer*/
-		memcpy((void*) tty->out_buff,(const void*) tty->rx_buff, tty->rx_cnt);
-		tty->out_buff[tty->rx_cnt] = '\0';
-		tty->rx_cnt = 0;
-		tty->out_busy = true;
-		uart_putc(ch);
-		return 1;
-	}
-	if (tty->rx_cnt >= TTY_RXBUFF_SIZE) {
-		/*buffer is full. drop this symbol*/
-		return -1;
-	}
-	tty->rx_buff[tty->rx_cnt++] = ch;
-	uart_putc(ch);
 	return 0;
-#endif /* CONFIG_TTY_WITH_VTPARSE */
 }
 
 uint8_t* tty_readline(tty_device_t *tty) {
