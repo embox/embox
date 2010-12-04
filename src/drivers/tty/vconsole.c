@@ -32,10 +32,48 @@ vconsole_t *vconsole_open(tty_device_t *tty) {
 }
 
 int vconsole_activate(vconsole_t *con) {
+	uint32_t *s = &con->tty->rx_cnt;
+	uint32_t *t = &con->tty->rx_cur;
+	*t = con->cl_cur;
+	for (*s=0; *s<con->cl_cnt; ++*s) {
+		uart_putc( con->tty->rx_buff[*s] = con->cl_buff[*s] );
+	}
+	for (;*s>*t;--*s) {
+		#if 1 /* def TTY_USE_CONTROL_H_CHAR */
+		uart_putc(8);
+		#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+		#else
+		/* vtbuild(tty_vtbuild, TOKEN_LEFT); */
+		#endif
+	}
+	*s = con->cl_cnt;
 	return 0;
 }
 
 int vconsole_deactivate(vconsole_t *con) {
+	uint32_t *s; s = &con->tty->rx_cnt;
+	uint32_t *t; t = &con->tty->rx_cur;
+	con->cl_cnt = *s;
+	con->cl_cur = *t;
+	for (;*t>0;--*t) {
+		uart_putc(8);
+		#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+	}
+	for (;*t<*s;++*t) {
+		uart_putc(' ');
+		#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+	}
+	con->cl_buff[0] = con->tty->rx_buff[0];
+	for (;*s>0;--*s) {
+		con->cl_buff[*s] = con->tty->rx_buff[*s];
+		#if 1 /* def TTY_USE_CONTROL_H_CHAR */
+		uart_putc(8);
+		#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+		#else
+		/* vtbuild(tty_vtbuild, TOKEN_LEFT); */
+		#endif
+	}
+	*s = *t = 0;
 	return 0;
 }
 

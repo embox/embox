@@ -10,10 +10,16 @@
 
 #include <string.h>
 #include <drivers/tty.h>
+#include <drivers/vconsole.h>
 #include <kernel/uart.h>
 #include <ctype.h>
 
 tty_device_t *cur_tty;
+#ifdef CONFIG_TTY_SYSTEM_COUNT
+vconsole_t tty_console[CONFIG_TTY_SYSTEM_COUNT];
+uint32_t tty_console_cur;
+#endif
+
 struct vtparse tty_vtparse[1];
 struct vtbuild tty_vtbuild[1];
 
@@ -155,6 +161,27 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						}
 					}
 				break;
+				case '^': /* ^F1-^F12 switch console */
+				#ifdef CONFIG_TTY_SYSTEM_COUNT
+					if ((token->params_len==1) &&
+						(token->params[0]-10<=CONFIG_TTY_SYSTEM_COUNT)) {
+						#if 0
+						printf("^F%d",token->params[0]-10);
+						#endif
+						vconsole_deactivate(&tty_console[tty_console_cur]);
+						tty_console_cur = token->params[0]-11;
+						uart_putc(8);
+						uart_putc(8);
+						uart_putc(8);
+						uart_putc(8);
+						uart_putc(8);
+						uart_putc(8);
+						uart_putc(8);
+						printf("TTY-%d$ ",tty_console_cur+1);
+						vconsole_activate(&tty_console[tty_console_cur]);
+					}
+				#endif
+				break;
 			}
 		break;
 
@@ -162,7 +189,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 			switch (token->ch) {
 				case '\n':
 					if (cur_tty->out_busy) break;
-					/*add string to output buffer*/
+					/* add string to output buffer */
 					memcpy((void*) cur_tty->out_buff,(const void*)
 						cur_tty->rx_buff, cur_tty->rx_cnt);
 					cur_tty->out_buff[cur_tty->rx_cnt] = '\0';
@@ -303,6 +330,14 @@ int tty_init(void) {
 	cur_tty->rx_cnt = 0;
 	cur_tty->ins_mod = true;	/* what must be default, don't know */
 
+#ifdef CONFIG_TTY_SYSTEM_COUNT
+	tty_console_cur = 0;
+	uint32_t i;
+	for (i=0; i<CONFIG_TTY_SYSTEM_COUNT; ++i) {
+		tty_console[i].tty = cur_tty;
+	}
+#endif
+
 	return 0;
 }
 
@@ -334,6 +369,9 @@ int tty_add_char(tty_device_t *tty, int ch) {
 }
 
 uint8_t* tty_readline(tty_device_t *tty) {
+	#ifdef CONFIG_TTY_SYSTEM_COUNT
+	printf("TTY-%d$ ",1);
+	#endif
 	while (!tty->out_busy);
 	tty->out_busy = false;
 	return (uint8_t*) tty->out_buff;
