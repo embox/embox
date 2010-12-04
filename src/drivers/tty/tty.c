@@ -11,6 +11,7 @@
 #include <string.h>
 #include <drivers/tty.h>
 #include <kernel/uart.h>
+#include <ctype.h>
 
 tty_device_t *cur_tty;
 struct vtparse tty_vtparse[1];
@@ -29,6 +30,14 @@ const struct vt_token TOKEN_RIGHT[1] = {{
 	.action = VT_ACTION_CSI_DISPATCH,
 	.ch = 'C'
 }};
+
+inline bool tty_isalpha(char ch) {
+	return ch!=' ';
+}
+
+inline bool tty_isspace(char ch) {
+	return ch==' ';
+}
 
 void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 #if 0
@@ -156,6 +165,78 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					cur_tty->rx_cur = 0;
 					cur_tty->out_busy = true;
 					vtbuild(tty_vtbuild, token);
+				break;
+
+				case 21: /* ^U clean line */ {
+					uint32_t i;
+					for (i=0; i<cur_tty->rx_cur; ++i) {
+						cur_tty->rx_buff[i] = cur_tty->rx_buff[i+cur_tty->rx_cur];
+					}
+					for (i=cur_tty->rx_cur; i>0; --i) {
+						#ifdef TTY_USE_CONTROL_H_CHAR
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						uart_putc(8);
+						#else
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						#endif
+					}
+					cur_tty->rx_cnt -= cur_tty->rx_cur;
+					for (i=0; i<cur_tty->rx_cnt; ++i) {
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						uart_putc(cur_tty->rx_buff[i]);
+					}
+					for (i=0; i<cur_tty->rx_cur; ++i) {
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						uart_putc(' ');
+					}
+					for (i=cur_tty->rx_cur+cur_tty->rx_cnt; i>0; --i) {
+						#ifdef TTY_USE_CONTROL_H_CHAR
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						uart_putc(8);
+						#else
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						#endif
+					}
+					cur_tty->rx_cur = 0;
+				} break;
+
+				case 23: /* ^W remove last word */ {
+					uint32_t i,tps; /* tps - to position space */
+					for (tps=cur_tty->rx_cur; tps>0 && tty_isalpha(cur_tty->rx_buff[tps]); --tps);
+					for (; tps>0 && tty_isspace(cur_tty->rx_buff[tps]); --tps);
+					if (tps>0) {++tps;}
+					//printf("\ntps: %d\n",tps);return;
+
+					for (i=tps; i<cur_tty->rx_cur; ++i) {
+						cur_tty->rx_buff[i] = cur_tty->rx_buff[i+cur_tty->rx_cur-tps];
+					}
+					for (i=cur_tty->rx_cur; i>tps; --i) {
+						#ifdef TTY_USE_CONTROL_H_CHAR
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						uart_putc(8);
+						#else
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						#endif
+					}
+					cur_tty->rx_cnt -= cur_tty->rx_cur-tps;
+					for (i=tps; i<cur_tty->rx_cnt; ++i) {
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						uart_putc(cur_tty->rx_buff[i]);
+					}
+					for (i=tps; i<cur_tty->rx_cur; ++i) {
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						uart_putc(' ');
+					}
+					for (i=cur_tty->rx_cnt+cur_tty->rx_cur-tps; i>tps; --i) {
+						#ifdef TTY_USE_CONTROL_H_CHAR
+						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						uart_putc(8);
+						#else
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						#endif
+					}
+					cur_tty->rx_cur = tps;
+				}
 				break;
 
 				case 8: /* ^H equalent to backspace */
