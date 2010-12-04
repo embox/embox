@@ -31,6 +31,7 @@ const struct vt_token TOKEN_RIGHT[1] = {{
 	.ch = 'C'
 }};
 
+#if 1
 inline bool tty_isalpha(char ch) {
 	return ch!=' ';
 }
@@ -38,6 +39,10 @@ inline bool tty_isalpha(char ch) {
 inline bool tty_isspace(char ch) {
 	return ch==' ';
 }
+#else
+#define tty_isalpha isalpha
+#define tty_isspace isspace
+#endif
 
 void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 #if 0
