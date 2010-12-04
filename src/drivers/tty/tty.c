@@ -5,6 +5,7 @@
  *
  * @date 12.11.2010
  * @author Anton Bondarev
+ * @author Fedor Burdun
  */
 
 #include <string.h>
@@ -14,13 +15,94 @@
 tty_device_t *cur_tty;
 #ifdef CONFIG_TTY_WITH_VTPARSE
 struct vtparse tty_vtparse[1];
+struct vtbuild tty_vtbuild[1];
+
+const struct vt_token TOKEN_LEFT[1] = {{
+	.action = VT_ACTION_CSI_DISPATCH,
+	.ch = 'D'
+}};
 
 void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
-#if 1
-	printf("action: %d; char: %c\n", token->action , token->ch);
-#else
-	printf("new token\n");
+#if 0
+	printf("action: %d; char: %d %c; attrs_len: %d; params_len: %d\n", token->action , token->ch, token->ch,
+		token->attrs_len, token->params_len);
 #endif
+
+	switch (token->action) {
+		case VT_ACTION_PRINT:
+			if (cur_tty->rx_cur < TTY_RXBUFF_SIZE) {
+				cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
+				if ( cur_tty->rx_cur > cur_tty->rx_cnt ) {
+					cur_tty->rx_cnt = cur_tty->rx_cur;
+				}
+				vtbuild(tty_vtbuild, token);
+			}
+		break;
+
+		case VT_ACTION_CSI_DISPATCH:
+			switch (token->ch) {
+				case 'D': /* LEFT */
+					if (cur_tty->rx_cur>0) {
+						--cur_tty->rx_cur;
+						vtbuild(tty_vtbuild, token);
+					}
+				break;
+				case 'C': /* RIGHT */
+					if (cur_tty->rx_cur < cur_tty->rx_cnt) {
+						++cur_tty->rx_cur;
+						vtbuild(tty_vtbuild, token);
+					}
+				break;
+			}
+		break;
+
+		case VT_ACTION_EXECUTE:
+			switch (token->ch) {
+				case '\n':
+					if (cur_tty->out_busy) break;
+					/*add string to output buffer*/
+					memcpy((void*) cur_tty->out_buff,(const void*)
+						cur_tty->rx_buff, cur_tty->rx_cnt);
+					cur_tty->out_buff[cur_tty->rx_cnt] = '\0';
+					cur_tty->rx_cnt = 0;
+					cur_tty->rx_cur = 0;
+					cur_tty->out_busy = true;
+					vtbuild(tty_vtbuild, token);
+				break;
+
+				case 127: /* backspace */
+					if (cur_tty->rx_cur>0) {
+						--cur_tty->rx_cur;
+						vtbuild(tty_vtbuild, TOKEN_LEFT); /* cursor move left */
+						/* or use: uart_putc(8); */
+						uint32_t i;
+						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt-1; ++i) {
+							cur_tty->rx_buff[i] = cur_tty->rx_buff[i+1];
+							uart_putc(cur_tty->rx_buff[i]);
+						}
+						uart_putc(' ');
+						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
+							vtbuild(tty_vtbuild, TOKEN_LEFT); /* cursor move left */
+							/* or use: uart_putc(8); */
+						}
+						--cur_tty->rx_cnt;
+					}
+				break;
+
+				case 4: /* ^D */
+				break;
+
+				default:
+				break;
+			}
+		default:
+		break;
+	}
+}
+
+void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
+	#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+	uart_putc(ch);
 }
 
 static int tty_init_flag = 0;
@@ -29,8 +111,13 @@ static int tty_init_flag = 0;
 int tty_init(void) {
 #ifdef CONFIG_TTY_WITH_VTPARSE
 	if (NULL == vtparse_init(tty_vtparse, tty_vtparse_callback)) {
-		LOG_ERROR("error while initialization vtparse\n");
+		LOG_ERROR("Error while initialization vtparse.\n");
 	}
+	if (NULL == vtbuild_init(tty_vtbuild, tty_vtbuild_callback)) {
+		LOG_ERROR("Error while initialization vtbuild.\n");
+	}
+	cur_tty->rx_cur = 0;
+	cur_tty->rx_cnt = 0;
 #endif
 	return 0;
 }
@@ -59,8 +146,6 @@ int tty_add_char(tty_device_t *tty, int ch) {
 		tty_init_flag = 1;
 		tty_init();
 	}
-	printf("pressed char: %d %c\n", ch, ch);
-
 	vtparse(tty_vtparse, ch);
 #else /* CONFIG_TTY_WITH_VTPARSE */
 	if ('\n' == ch && !tty->out_busy) {

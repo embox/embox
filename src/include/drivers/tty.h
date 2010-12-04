@@ -27,11 +27,8 @@
 
 typedef volatile struct tty_device {
 	uint8_t  out_buff[TTY_RXBUFF_SIZE + 1];
-#ifdef CONFIG_TTY_WITH_VTPARSE
-	struct vt_token rx_buff[TTY_RXBUFF_SIZE + 1];
-#else
+	uint32_t rx_cur;
 	uint8_t  rx_buff[TTY_RXBUFF_SIZE + 1];
-#endif
 	uint8_t  tx_buff[TTY_TXBUFF_SIZE + 1];
 	uint32_t rx_cnt;
 	bool     out_busy; /*whether out_buff is busy*/
