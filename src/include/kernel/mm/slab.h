@@ -6,19 +6,6 @@
 #ifndef SLAB_H
 #define SLAB_H
 
-/* slabs sizes*/
-#define SLAB_SIZE1 0x100
-#define SLAB_SIZE2 0x100
-#define SLAB_SIZE3 0x100
-
-/* objects sizes allocating in corresponding slabs */
-#define OBJECT_SIZE1 0x8
-#define OBJECT_SIZE2 0x8
-#define OBJECT_SIZE3 0x8
-
-/* max length of cache name */
-#define CACHE_NAMELEN 0x10
-
 /**
  * cache descriptor
  */
@@ -28,17 +15,21 @@ typedef struct kmem_cache {
 	size_t size;
 	// the number of objects stored on each slab
 	unsigned int num;
-	char name[CACHE_NAMELEN];
+	struct list_head obj_ptr;
 	int hasinit;
 } kmem_cache_t;
 
-/**
- * slab descriptor
- */
-typedef struct slab_s {
-	// pointer to where the objects start
-	struct list_head obj_ptr;
-} slab_t;
+#define ALIGN_UP(size, align) \
+     (((size) + (align) - 1) & (~((align) - 1)))
+
+#define ADD_CACHE(name,type,count) \
+  static char __name_pool[count * ALIGN_UP(sizeof(type), sizeof(struct list_head))]; \
+  static kmem_cache_t name = { \
+        .num = count, \
+        .size = ALIGN_UP(sizeof(type), sizeof(struct list_head)), \
+        .cache_begin = __name_pool, \
+        .obj_ptr = {NULL, NULL}, \
+        .hasinit = 0 };
 
 /**
  * allocate single object from the cache and return it to the caller
@@ -52,7 +43,7 @@ void* kmem_cache_alloc(kmem_cache_t* cachep);
  * @param cachep corresponding to freeing object
  * @param objp which will be free
  */
-void  kmem_cache_free(kmem_cache_t* cachep, void* objp);
+void kmem_cache_free(kmem_cache_t* cachep, void* objp);
 
 /**
  * return the cache descriptor
@@ -61,3 +52,4 @@ void  kmem_cache_free(kmem_cache_t* cachep, void* objp);
 kmem_cache_t* get_cache(char* cache_name);
 
 #endif /* SLAB_H_ */
+
