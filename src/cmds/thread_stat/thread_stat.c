@@ -48,7 +48,7 @@ static void print_statistic(struct stats_context *ctx, struct thread *thread) {
 static int exec(int argc, char **argv) {
 	int next_opt;
 	getopt_init();
-	while () {
+	do {
 		next_opt = getopt(argc, argv, "h");
 		switch (next_opt) {
 		case 'h':
@@ -76,7 +76,7 @@ static int exec(int argc, char **argv) {
 		default:
 			return 0;
 		};
-	} while (nextOption != -1);
+	} while (next_opt != -1);
 
 	return 0;
 }
