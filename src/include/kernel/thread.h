@@ -16,6 +16,8 @@
 #include <queue.h>
 #include <string.h>
 
+#define THREADS_POOL_SIZE 0x100
+
 typedef int thread_id_t;
 typedef int thread_priority_t;
 typedef enum {
@@ -169,5 +171,7 @@ extern struct message *msg_new(void);
  * @return 0 otherwise.
  */
 extern int msg_erase(struct message *message);
+
+extern struct thread *thread_get_pool();
 
 #endif /* THREAD_H_ */
