@@ -1,5 +1,5 @@
 /**
- * @file  thread_test.c
+ * @file  thread_background_run.c
  * @brief thread test for show memory statistic
  *
  * @date  06.12.2010
