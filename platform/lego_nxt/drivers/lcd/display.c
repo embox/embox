@@ -151,7 +151,7 @@ __u8 font[N_CHARS][FONT_WIDTH] = {
 void display_char(int c) {
 	__u8 *b;
 	const __u8 *f, *fend;
-	int i, j;
+	size_t i, j;
 
 	if (c == '\n') {
 		display_x = 0;
@@ -182,7 +182,7 @@ void display_char(int c) {
 
 		do {
 			*b++ = *f++;
-		} while( f < fend);
+		} while (f < fend);
 	}
 	display_x++;
 	nxt_lcd_force_update();
@@ -201,7 +201,7 @@ void display_string(const char *str) {
 }
 
 void display_clear_screen(void) {
-	memset((void *)display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
+	memset((void *) display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
 	nxt_lcd_force_update();
 }
 
@@ -209,15 +209,15 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *b
    	uint32_t x_offset, y_offset, i, j, k;
    	y *= 8;
    	width *= 8;
-   	if((x > NXT_LCD_WIDTH) || (y > 64)) {
+   	if ((x > NXT_LCD_WIDTH) || (y > 64)) {
    		return 0;
    	}
 
    	width = min((NXT_LCD_WIDTH - x), width);
    	height = min((64 - y), height);
 
-   	for(y_offset = 0; y_offset < height; y_offset += 8) {
-		for(x_offset = 0; x_offset < width; x_offset ++) {
+   	for (y_offset = 0; y_offset < height; y_offset += 8) {
+		for (x_offset = 0; x_offset < width; x_offset ++) {
 			i = (y + y_offset) >> 3;
 			j = x + x_offset;
 			k = (y_offset >> 3) + x_offset;
@@ -230,28 +230,17 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *b
 
 /* q == 1 - color is black */
 
-int pow(int t, int k) {
-  int res = 1;
-  while (k) {
-	if (k & 1) res *= t;
-	t *= t;
-	k >>= 1;
-  }
-  return res;
-}
-
-
 int display_part(uint8_t x, uint8_t y, uint8_t part_of_byte, int q) {
-	int i;
-	i = pow( 2 , part_of_byte) - 1;
-	display_buffer[y][x] = (q == 1 ? (255-i) : i);
+	uint8_t i;
+	i = (1 << part_of_byte) - 1;
+	display_buffer[y][x] = (q == 1 ? ~i : i);
 	return 0;
 }
 
 int display_little_field(uint8_t x, uint8_t y, uint8_t height, uint8_t offset,  int q) {
-	int i;
-	i = height << offset;
-	display_buffer[y][x] = (q == 1 ? i : (255-i) );
+	uint8_t i;
+	i = ((1 << height) - 1) << offset;
+	display_buffer[y][x] = (q == 1 ? i : ~i );
 	return 0;
 }
 
@@ -260,19 +249,21 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q){
 	uint32_t x_offset, y_offset;
     uint8_t up_offset, up_higth, up_whole_offset, whole_field_y, under_higth, x_fill, y_fill;
 	int t;
-	uint8_t buff[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // need for debug
 	up_whole_offset = y >> 3;
 	up_offset = y % 8;
 	up_higth = 8 - up_offset;
-	whole_field_y = (height - up_higth) >> 3;
-	under_higth = height - up_higth - 8 * whole_field_y;
-
+	if (height > up_higth){
+		whole_field_y = (height - up_higth) >> 3;
+		under_higth = (height - up_higth) % 8;
+	} else {
+		whole_field_y = 0;
+		under_higth = 0;
+	}
 	if ((height < 8) && (under_higth == 0)) {
 		for (x_offset = 0; x_offset < width; x_offset++) {
 			x_fill = x + x_offset;
 			display_little_field(x_fill, up_whole_offset, height, up_offset, q);
 		}
-		display_draw(40, 4, 1, 8, &buff[0]); // need for debug
 	} else {
 		for (x_offset = 0; x_offset < width; x_offset++) {
 			x_fill = x + x_offset;
