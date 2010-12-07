@@ -1,11 +1,11 @@
 /**
- * @file thread_stat.c
- * @brief print threads statistic for EMBOX   // I wrote a brief correctly?! :-)
+ * @file
+ * @brief Prints threads statistic for EMBOX
  *
  * @date 2 Dec 2010
- *     @author Gleb Efimov
- *     @author Alina Kramar
- *     @author Roman Oderov
+ * @author Gleb Efimov
+ * @author Alina Kramar
+ * @author Roman Oderov
  */
 
 #include <shell_command.h>
@@ -48,35 +48,31 @@ static void print_statistic(struct stats_context *ctx, struct thread *thread) {
 static int exec(int argc, char **argv) {
 	int next_opt;
 	getopt_init();
-	do {
-		next_opt = getopt(argc, argv, "h");
+	while ((next_opt = getopt(argc, argv, "h")) != -1) {
 		switch (next_opt) {
+		case '?':
+		case -1:
 		case 'h':
 			show_help();
-			return 0;
-		case -1: {
-			struct stats_context ctx = { 0 };
-			struct thread *threads = thread_get_pool();
-
-			for (int i = 0; i < THREADS_POOL_SIZE; ++i) {
-				struct thread *thread = threads + i;
-				if (thread->exist) {
-					print_statistic(&ctx, thread);
-				} else {
-					ctx.stop++;
-				}
-			}
-
-			TRACE("THREAD_STATE_RUN  %d\n", ctx.run);
-			TRACE("THREAD_STATE_WAIT  %d\n", ctx.wait);
-			TRACE("THREAD_STATE_STOP  %d\n", ctx.stop);
-			TRACE("THREAD_STATE_ZOMBIE  %d\n", ctx.zombie);
-			return 0;
-		}
 		default:
 			return 0;
 		};
-	} while (next_opt != -1);
+	}
+	struct stats_context ctx = { 0 };
+	struct thread *threads = thread_get_pool();
 
+	for (int i = 0; i < THREADS_POOL_SIZE; ++i) {
+		struct thread *thread = threads + i;
+		if (thread->exist) {
+			print_statistic(&ctx, thread);
+		} else {
+			ctx.stop++;
+		}
+	}
+
+	TRACE("THREAD_STATE_RUN  %d\n", ctx.run);
+	TRACE("THREAD_STATE_WAIT  %d\n", ctx.wait);
+	TRACE("THREAD_STATE_STOP  %d\n", ctx.stop);
+	TRACE("THREAD_STATE_ZOMBIE  %d\n", ctx.zombie);
 	return 0;
 }
