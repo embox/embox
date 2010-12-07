@@ -27,6 +27,10 @@ typedef volatile struct tty_device {
 	uint32_t rx_cnt;
 	bool     out_busy; /*whether out_buff is busy*/
 	bool     ins_mod;
+	#if 1 /* to-do: USE IT! */
+	struct vtbuild vtb[1];
+	struct vtparse vtt[1];
+	#endif
 	file_operations_t *file_op;
 } tty_device_t;
 

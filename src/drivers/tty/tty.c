@@ -11,6 +11,7 @@
 #include <string.h>
 #include <drivers/tty.h>
 #include <drivers/vconsole.h>
+#include <drivers/tty_action.h>
 #include <kernel/uart.h>
 #include <ctype.h>
 
@@ -20,22 +21,13 @@ vconsole_t tty_console[CONFIG_TTY_SYSTEM_COUNT];
 uint32_t tty_console_cur;
 #endif
 
+/* to-do: move in tty */
 struct vtparse tty_vtparse[1];
 struct vtbuild tty_vtbuild[1];
 
 #if 0
 #define TTY_USE_CONTROL_H_CHAR
 #endif
-
-const struct vt_token TOKEN_LEFT[1] = {{
-	.action = VT_ACTION_CSI_DISPATCH,
-	.ch = 'D'
-}};
-
-const struct vt_token TOKEN_RIGHT[1] = {{
-	.action = VT_ACTION_CSI_DISPATCH,
-	.ch = 'C'
-}};
 
 #if 1
 inline bool tty_isalpha(char ch) {
