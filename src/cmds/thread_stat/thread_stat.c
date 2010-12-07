@@ -20,8 +20,7 @@ static const char *man_page =
 #include "thread_stat_help.inc"
 ;
 
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
-;
+DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 struct stats_context {
 	int run, wait, stop, zombie;
@@ -48,16 +47,19 @@ static void print_statistic(struct stats_context *ctx, struct thread *thread) {
 static int exec(int argc, char **argv) {
 	int next_opt;
 	getopt_init();
+
 	while ((next_opt = getopt(argc, argv, "h")) != -1) {
 		switch (next_opt) {
 		case '?':
 		case -1:
 		case 'h':
 			show_help();
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		};
 	}
+
 	struct stats_context ctx = { 0 };
 	struct thread *threads = thread_get_pool();
 
@@ -74,5 +76,6 @@ static int exec(int argc, char **argv) {
 	TRACE("THREAD_STATE_WAIT  %d\n", ctx.wait);
 	TRACE("THREAD_STATE_STOP  %d\n", ctx.stop);
 	TRACE("THREAD_STATE_ZOMBIE  %d\n", ctx.zombie);
+
 	return 0;
 }
