@@ -21,14 +21,6 @@ vconsole_t tty_console[CONFIG_TTY_SYSTEM_COUNT];
 uint32_t tty_console_cur;
 #endif
 
-/* to-do: move in tty */
-struct vtparse tty_vtparse[1];
-struct vtbuild tty_vtbuild[1];
-
-#if 0
-#define TTY_USE_CONTROL_H_CHAR
-#endif
-
 #if 1
 inline bool tty_isalpha(char ch) {
 	return ch!=' ';
@@ -67,16 +59,12 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						cur_tty->rx_buff[i] = cur_tty->rx_buff[i-1];
 					}
 					cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
-					vtbuild(tty_vtbuild, token);
+					vtbuild(cur_tty->vtb, token);
 					for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
 						cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
 					}
 					for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-						#ifdef TTY_USE_CONTROL_H_CHAR
-						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-						#else
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						#endif
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
 					}
 				}
 			} else { /* REPLACE MOD */
@@ -85,7 +73,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					if ( cur_tty->rx_cur > cur_tty->rx_cnt ) {
 						cur_tty->rx_cnt = cur_tty->rx_cur;
 					}
-					vtbuild(tty_vtbuild, token);
+					vtbuild(cur_tty->vtb, token);
 				}
 			}
 		break;
@@ -95,13 +83,13 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 				case 'D': /* LEFT */
 					if (cur_tty->rx_cur>0) {
 						--cur_tty->rx_cur;
-						vtbuild(tty_vtbuild, token);
+						vtbuild(cur_tty->vtb, token);
 					}
 				break;
 				case 'C': /* RIGHT */
 					if (cur_tty->rx_cur < cur_tty->rx_cnt) {
 						++cur_tty->rx_cur;
-						vtbuild(tty_vtbuild, token);
+						vtbuild(cur_tty->vtb, token);
 					}
 				break;
 				case '~': /* HOME, END and others */
@@ -110,17 +98,13 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 							case 7: /* HOME */
 								while (cur_tty->rx_cur>0) {
 									--cur_tty->rx_cur;
-									#ifdef TTY_USE_CONTROL_H_CHAR
-									cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-									#else
-									vtbuild(tty_vtbuild, TOKEN_LEFT);
-									#endif
+									vtbuild(cur_tty->vtb, TOKEN_LEFT);
 								}
 							break;
 							case 8: /* END */
 								while (cur_tty->rx_cur<cur_tty->rx_cnt) {
 									++cur_tty->rx_cur;
-									vtbuild(tty_vtbuild, TOKEN_RIGHT);
+									vtbuild(cur_tty->vtb, TOKEN_RIGHT);
 								}
 							break;
 							case 3: /* DEL */
@@ -132,11 +116,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 									}
 									cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 									for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-										#ifdef TTY_USE_CONTROL_H_CHAR
-										cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-										#else
-										vtbuild(tty_vtbuild, TOKEN_LEFT);
-										#endif
+										vtbuild(cur_tty->vtb, TOKEN_LEFT);
 									}
 									--cur_tty->rx_cnt;
 								}
@@ -156,13 +136,13 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						#endif
 						vconsole_deactivate(&tty_console[tty_console_cur]);
 						tty_console_cur = token->params[0]-11;
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
 						printf("TTY-%d$ ",tty_console_cur+1);
 						vconsole_activate(&tty_console[tty_console_cur]);
 					}
@@ -182,7 +162,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					cur_tty->rx_cnt = 0;
 					cur_tty->rx_cur = 0;
 					cur_tty->out_busy = true;
-					vtbuild(tty_vtbuild, token);
+					vtbuild(cur_tty->vtb, token);
 				break;
 
 				case 21: /* ^U clean line */ {
@@ -191,11 +171,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						cur_tty->rx_buff[i] = cur_tty->rx_buff[i+cur_tty->rx_cur];
 					}
 					for (i=cur_tty->rx_cur; i>0; --i) {
-						#ifdef TTY_USE_CONTROL_H_CHAR
-						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-						#else
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						#endif
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
 					}
 					cur_tty->rx_cnt -= cur_tty->rx_cur;
 					for (i=0; i<cur_tty->rx_cnt; ++i) {
@@ -205,11 +181,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 					}
 					for (i=cur_tty->rx_cur+cur_tty->rx_cnt; i>0; --i) {
-						#ifdef TTY_USE_CONTROL_H_CHAR
-						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-						#else
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						#endif
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
 					}
 					cur_tty->rx_cur = 0;
 				} break;
@@ -224,11 +196,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						cur_tty->rx_buff[i] = cur_tty->rx_buff[i+cur_tty->rx_cur-tps];
 					}
 					for (i=cur_tty->rx_cur; i>tps; --i) {
-						#ifdef TTY_USE_CONTROL_H_CHAR
-						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-						#else
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						#endif
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
 					}
 					cur_tty->rx_cnt -= cur_tty->rx_cur-tps;
 					for (i=tps; i<cur_tty->rx_cnt; ++i) {
@@ -238,11 +206,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 					}
 					for (i=cur_tty->rx_cnt+cur_tty->rx_cur-tps; i>tps; --i) {
-						#ifdef TTY_USE_CONTROL_H_CHAR
-						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-						#else
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						#endif
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
 					}
 					cur_tty->rx_cur = tps;
 				}
@@ -252,11 +216,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 				case 127: /* backspace */
 					if (cur_tty->rx_cur>0) {
 						--cur_tty->rx_cur;
-						#ifdef TTY_USE_CONTROL_H_CHAR
-						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-						#else
-						vtbuild(tty_vtbuild, TOKEN_LEFT);
-						#endif
+						vtbuild(cur_tty->vtb, TOKEN_LEFT);
 						uint32_t i;
 						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt-1; ++i) {
 							cur_tty->rx_buff[i] = cur_tty->rx_buff[i+1];
@@ -264,11 +224,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						}
 						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-							#ifdef TTY_USE_CONTROL_H_CHAR
-							cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
-							#else
-							vtbuild(tty_vtbuild, TOKEN_LEFT);
-							#endif
+							vtbuild(cur_tty->vtb, TOKEN_LEFT);
 						}
 						--cur_tty->rx_cnt;
 					}
@@ -293,10 +249,10 @@ void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
 static int tty_init_flag = 0;
 
 int tty_init(void) {
-	if (NULL == vtparse_init(tty_vtparse, tty_vtparse_callback)) {
+	if (NULL == vtparse_init(cur_tty->vtp, tty_vtparse_callback)) {
 		LOG_ERROR("Error while initialization vtparse.\n");
 	}
-	if (NULL == vtbuild_init(tty_vtbuild, tty_vtbuild_callback)) {
+	if (NULL == vtbuild_init(cur_tty->vtb, tty_vtbuild_callback)) {
 		LOG_ERROR("Error while initialization vtbuild.\n");
 	}
 	cur_tty->rx_cur = 0;
@@ -337,7 +293,7 @@ int tty_add_char(tty_device_t *tty, int ch) {
 		tty_init_flag = 1;
 		tty_init();
 	}
-	vtparse(tty_vtparse, ch);
+	vtparse(cur_tty->vtp, ch);
 	return 0;
 }
 
