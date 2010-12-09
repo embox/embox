@@ -7,21 +7,27 @@
  * @author Anton Bondarev
  */
 
-#include <stdio.h>
-#include <stdarg.h>
 #include <types.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <kernel/prom_printf.h>
+#include <kernel/diag.h>
 
-int __print(void (*printchar_handler)(char **str, int c), char **out, const char *format, va_list args);
+int __print(void(*printchar_handler)(char **str, int c), char **out,
+		const char *format, va_list args);
 
 static void printchar(char **str, int c) {
 	if (str) {
 		**str = c;
 		++(*str);
 	} else {
-		putchar(c);
+		static char prev;
+		if (c == '\n' && prev != '\r') {
+			diag_putc('\r');
+		}
+		diag_putc((char) c);
 	}
 }
-
 
 int prom_printf(const char *format, ...) {
 	int ret;
