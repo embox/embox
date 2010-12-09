@@ -25,6 +25,7 @@ static const struct vt_token TOKEN_RIGHT[1] = {{
 extern void tty_write_space( tty_device_t *tty, uint32_t cnt );
 extern void tty_go_left( tty_device_t *tty, uint32_t cnt );
 extern void tty_go_right( tty_device_t *tty, uint32_t cnt );
+extern void tty_go_cursor_position( tty_device_t *tty, uint32_t cmdl_s, uint32_t pos );
 extern void tty_clean_line( tty_device_t *tty, uint32_t cur_before, uint32_t length, uint32_t cur_after );
 extern void tty_write_line( tty_device_t *tty, uint8_t *line, uint32_t size, uint32_t cur_after );
 

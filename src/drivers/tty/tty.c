@@ -58,7 +58,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 #endif
 
 	switch (token->action) {
-		case VT_ACTION_PRINT:
+		case VT_ACTION_PRINT: /* Print any char */
 			if (cur_tty->ins_mod) { /* INSERT MODE */
 				if (cur_tty->rx_cnt < TTY_RXBUFF_SIZE) {
 					uint32_t i;
@@ -69,13 +69,11 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
 					vtbuild(tty_vtbuild, token);
 					for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-						uart_putc(cur_tty->rx_buff[i]);
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
 					}
 					for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
 						#ifdef TTY_USE_CONTROL_H_CHAR
-						uart_putc(8);
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 						#else
 						vtbuild(tty_vtbuild, TOKEN_LEFT);
 						#endif
@@ -113,8 +111,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 								while (cur_tty->rx_cur>0) {
 									--cur_tty->rx_cur;
 									#ifdef TTY_USE_CONTROL_H_CHAR
-									uart_putc(8);
-									#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+									cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 									#else
 									vtbuild(tty_vtbuild, TOKEN_LEFT);
 									#endif
@@ -131,15 +128,12 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 									uint32_t i;
 									for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt-1; ++i) {
 										cur_tty->rx_buff[i] = cur_tty->rx_buff[i+1];
-										uart_putc(cur_tty->rx_buff[i]);
-										#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+										cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
 									}
-									uart_putc(' ');
-									#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+									cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 									for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
 										#ifdef TTY_USE_CONTROL_H_CHAR
-										uart_putc(8);
-										#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+										cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 										#else
 										vtbuild(tty_vtbuild, TOKEN_LEFT);
 										#endif
@@ -162,13 +156,13 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 						#endif
 						vconsole_deactivate(&tty_console[tty_console_cur]);
 						tty_console_cur = token->params[0]-11;
-						uart_putc(8);
-						uart_putc(8);
-						uart_putc(8);
-						uart_putc(8);
-						uart_putc(8);
-						uart_putc(8);
-						uart_putc(8);
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
+						vtbuild(tty_vtbuild, TOKEN_LEFT);
 						printf("TTY-%d$ ",tty_console_cur+1);
 						vconsole_activate(&tty_console[tty_console_cur]);
 					}
@@ -179,7 +173,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 
 		case VT_ACTION_EXECUTE:
 			switch (token->ch) {
-				case '\n':
+				case '\n': /* ENTER key. Return string */
 					if (cur_tty->out_busy) break;
 					/* add string to output buffer */
 					memcpy((void*) cur_tty->out_buff,(const void*)
@@ -198,25 +192,21 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					}
 					for (i=cur_tty->rx_cur; i>0; --i) {
 						#ifdef TTY_USE_CONTROL_H_CHAR
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-						uart_putc(8);
+						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 						#else
 						vtbuild(tty_vtbuild, TOKEN_LEFT);
 						#endif
 					}
 					cur_tty->rx_cnt -= cur_tty->rx_cur;
 					for (i=0; i<cur_tty->rx_cnt; ++i) {
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-						uart_putc(cur_tty->rx_buff[i]);
+						cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
 					}
 					for (i=0; i<cur_tty->rx_cur; ++i) {
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-						uart_putc(' ');
+						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 					}
 					for (i=cur_tty->rx_cur+cur_tty->rx_cnt; i>0; --i) {
 						#ifdef TTY_USE_CONTROL_H_CHAR
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-						uart_putc(8);
+						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 						#else
 						vtbuild(tty_vtbuild, TOKEN_LEFT);
 						#endif
@@ -229,32 +219,27 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					for (tps=cur_tty->rx_cur; tps>0 && tty_isalpha(cur_tty->rx_buff[tps]); --tps);
 					for (; tps>0 && tty_isspace(cur_tty->rx_buff[tps]); --tps);
 					if (tps>0) {++tps;}
-					//printf("\ntps: %d\n",tps);return;
 
 					for (i=tps; i<cur_tty->rx_cur; ++i) {
 						cur_tty->rx_buff[i] = cur_tty->rx_buff[i+cur_tty->rx_cur-tps];
 					}
 					for (i=cur_tty->rx_cur; i>tps; --i) {
 						#ifdef TTY_USE_CONTROL_H_CHAR
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-						uart_putc(8);
+						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 						#else
 						vtbuild(tty_vtbuild, TOKEN_LEFT);
 						#endif
 					}
 					cur_tty->rx_cnt -= cur_tty->rx_cur-tps;
 					for (i=tps; i<cur_tty->rx_cnt; ++i) {
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-						uart_putc(cur_tty->rx_buff[i]);
+						cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
 					}
 					for (i=tps; i<cur_tty->rx_cur; ++i) {
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-						uart_putc(' ');
+						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 					}
 					for (i=cur_tty->rx_cnt+cur_tty->rx_cur-tps; i>tps; --i) {
 						#ifdef TTY_USE_CONTROL_H_CHAR
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-						uart_putc(8);
+						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 						#else
 						vtbuild(tty_vtbuild, TOKEN_LEFT);
 						#endif
@@ -268,23 +253,19 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					if (cur_tty->rx_cur>0) {
 						--cur_tty->rx_cur;
 						#ifdef TTY_USE_CONTROL_H_CHAR
-						uart_putc(8);
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 						#else
 						vtbuild(tty_vtbuild, TOKEN_LEFT);
 						#endif
 						uint32_t i;
 						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt-1; ++i) {
 							cur_tty->rx_buff[i] = cur_tty->rx_buff[i+1];
-							uart_putc(cur_tty->rx_buff[i]);
-							#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+							cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
 						}
-						uart_putc(' ');
-						#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
+						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
 							#ifdef TTY_USE_CONTROL_H_CHAR
-							#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-							uart_putc(8);
+							cur_tty->file_op->fwrite(8,sizeof(char),1,NULL);
 							#else
 							vtbuild(tty_vtbuild, TOKEN_LEFT);
 							#endif
@@ -305,8 +286,8 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 }
 
 void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
-	#warning NOT SURE, THAT IT WORKS FOR ALL PLATFORMS. # uart_putc(ch)
-	uart_putc(ch);
+	cur_tty->file_op->fwrite(&ch,sizeof(char),1,NULL);
+	// uart_putc(ch); // to remove
 }
 
 static int tty_init_flag = 0;
