@@ -175,7 +175,7 @@ bool cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 
 	this->length += len;
 	this->cursor += len;
-	if(!this->is_insert_mode) {
+	if (!this->is_insert_mode) {
 		for (i = this->length; i >= this->cursor; --i) {
 			this->string[i] = this->string[i - len];
 		}

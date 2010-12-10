@@ -10,15 +10,21 @@
 #define MAX_PIPE_SIZE 0x10
 
 struct n_pipe{
-	int sync_data[MAX_PIPE_SIZE];
-	_Bool ready_to_read, ready_to_write, on;
+	char sync_data[MAX_PIPE_SIZE];
+	unsigned int ready_to_read,
+				 ready_to_write,
+				 on,
+				 is_full;
+	int read_index, write_index;
 };
 
+int pipe_create(void);
 
-struct n_pipe *pipe_create(void);
+int pipe_flush(int pipe);
 
-void pipe_section_write(int pipe,
-		int section, int data);
+int free_pipe_status(void);
 
-int pipe_section_read(int pipe, int section);
+int pipe_write(int pipe, char data);
+
+char pipe_read(int pipe);
 

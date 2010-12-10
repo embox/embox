@@ -172,7 +172,7 @@ extern void *memrchr(const void *s, int c, size_t n);
  * correct behavior for overlapping strings.
  * @return dst
  */
-extern void *memmove( void *dst, const void *src, size_t n);
+extern void *memmove(void *dst, const void *src, size_t n);
 
 /**
  * Copy n bytes from src to dest. The result is correct,

@@ -297,7 +297,7 @@ static inline mmu_pte_t *mmu_pmd_get(mmu_pmd_t * pmdp) {
 }
 
 static inline mmu_pte_t mmu_pte_format(paddr_t addr, mmu_page_flags_t flags) {
-	return (((addr >> 4) ) & MMU_PTE_PMASK) | flags | MMU_PTE_ET;
+	return ((addr >> 4) & MMU_PTE_PMASK) | flags | MMU_PTE_ET;
 }
 
 static inline paddr_t mmu_pte_extract(mmu_pte_t pte) {

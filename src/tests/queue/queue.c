@@ -33,8 +33,8 @@ static int run(void) {
 	TRACE("\n");
 
 	while (!queue_empty(&a_queue)) {
-		TRACE("%d ", ((struct my_int*)list_entry(queue_extr(&a_queue),
-							struct my_int, list))->a);
+		TRACE("%d ", ((struct my_int*) list_entry(queue_extr(&a_queue),
+						struct my_int, list))->a);
 	}
 	TRACE("\n");
 

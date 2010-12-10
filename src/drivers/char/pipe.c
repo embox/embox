@@ -9,6 +9,7 @@
 #include <embox/unit.h>
 #include <kernel/driver.h>
 #include <kernel/printk.h>
+#include <kernel/mm/kmalloc.h>
 
 #define START_AS_MOD
 
@@ -19,7 +20,7 @@
 
 #define PRIVATE(dev)          ((pipe_private_t*)(dev->private))
 #define BEG(dev)              ( PRIVATE(dev)->buf_begin )
-#define END(dev)              ( PRIVATE(dev)->buf_end   )
+#define END(dev)              ( PRIVATE(dev)->buf_end )
 
 #define BUFFER(dev)           ( PRIVATE(dev)->buf )
 #define BUFFER_IS_EMPTY(dev)  ( BEG(dev) == END(dev) )
@@ -38,8 +39,8 @@
 #define BUFFER_PUSH(dev,_char_)	( BUFFER(dev) [ END(dev)++ ] = _char_ )
 #define BUFFER_POP(dev)	        ( BUFFER(dev) [ BEG(dev)++ ] )
 #define BUFFER_CUR_CH(dev) \
-	do { if ( BEG(dev) == MAX_BUFFER_SIZE ) { BEG(dev) = 0; }    \
-		if ( END(dev) == MAX_BUFFER_SIZE ) { END(dev) = 0; } \
+	do { if (BEG(dev) == MAX_BUFFER_SIZE) { BEG(dev) = 0; }    \
+		if (END(dev) == MAX_BUFFER_SIZE) { END(dev) = 0; } \
 	} while (0);
 
 typedef struct pipe_private {
@@ -134,7 +135,7 @@ int pipe_write(device_t *dev, char *buf, size_t n) {
 int pipe_ioctl(device_t *dev, io_cmd c, void *arg) {
 	switch (c) {
 	case IOCTL_SET_BASE_OPTIONS:
-		PRIVATE(dev)->ioctl_base_flags = *((int*)arg);
+		PRIVATE(dev)->ioctl_base_flags = *((int*) arg);
 		break;
 	case IOCTL_GET_BASE_OPTIONS:
 		arg = &(PRIVATE(dev)->ioctl_base_flags);
@@ -197,7 +198,7 @@ int pipe_unload(driver_t *drv) {
 static driver_t *drv;
 
 static int pipe_start(void) {
-	printk("\e[1;34mPipe driver was started!\e[0;0m\n");
+	printk("\033[1;34mPipe driver was started!\033[0;0m\n");
 	if (NULL == (drv = kmalloc(sizeof(driver_t)))) {
 		printk("No memory enough for start Pipe driver\n");
 		return 1;

@@ -153,7 +153,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 //#ifdef CONFIG_SOFTIRQ
 //	softirq_install(UART_SOFTIRQ_NR, uart_softirq_handler, NULL);
 	//uart_set_irq_handler(uart_irq_handler);
-//	while(1) {uart_getc();};
+//	while (1) {uart_getc();};
 //#else
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			&params, &params_len)) {

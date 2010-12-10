@@ -5,10 +5,10 @@
  * @author Nikolay Korotky
  */
 
-#include <types.h>
+#ifndef NXT_LCD_H_
+#define NXT_LCD_H_
 
-#ifndef LCD_H_
-#define LCD_H_
+#include <types.h>
 
 #define SPI_BITRATE     2000000
 #define CLOCK_FREQUENCY 48054850
@@ -32,4 +32,5 @@ extern int lcd_init(void);
 extern int display_draw(uint8_t x, uint8_t y,
 	   	uint8_t width, uint8_t height, uint8_t *buff);
 
-#endif /* LCD_H_ */
+#endif /* NXT_LCD_H_ */
+

@@ -18,35 +18,35 @@ int getopt(int argc, char **argv, const char *opts) {
 	static int sp = 1;
 	int c;
 	char *cp;
-	if(sp == 1) {
+	if (sp == 1) {
 		/* check for end of options */
-		if(optind >= argc ||
+		if (optind >= argc ||
 				(argv[optind][0] != '/' &&
 				argv[optind][0] != '-') ||
 				argv[optind][1] == '\0') {
 			return -1;
-		} else if(!strcmp(argv[optind], "--")) {
+		} else if (!strcmp(argv[optind], "--")) {
 			optind++;
 			return -1;
 		}
 	}
 	optopt = c = argv[optind][sp];
-	if(c == ':' || (cp=strchr(opts, c)) == NULL) {
+	if (c == ':' || (cp=strchr(opts, c)) == NULL) {
 		/* if arg sentinel as option or other invalid option,
 		handle the error and return '?' */
 		LOG_ERROR("illegal option -- %c", (char)c);
-		if(argv[optind][++sp] == '\0') {
+		if (argv[optind][++sp] == '\0') {
 			optind++;
 			sp = 1;
 		}
 		return '?';
 	}
-	if(*++cp == ':') {
+	if (*++cp == ':') {
 		/* if option is given an argument...  */
-		if(argv[optind][sp+1] != '\0')
+		if (argv[optind][sp+1] != '\0')
 			/* and the OptArg is in that CmdLineArg, return it... */
 			optarg = &argv[optind++][sp+1];
-		else if(++optind >= argc) {
+		else if (++optind >= argc) {
 			/* but if the OptArg isn't there and the next CmdLineArg
 			 isn't either, handle the error... */
 			LOG_ERROR("%c: option requires an argument -- ", (char)c);
@@ -59,7 +59,7 @@ int getopt(int argc, char **argv, const char *opts) {
 		sp = 1;
 	} else {
 		/* no arg for this opt, so null arg and set up for next option */
-		if(argv[optind][++sp] == '\0') {
+		if (argv[optind][++sp] == '\0') {
 			sp = 1;
 			optind++;
 		}

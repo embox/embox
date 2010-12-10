@@ -16,6 +16,3 @@ DEFAULT_SYS_MOD_DIAG = embox.driver.serial.xuartlite
 include $(MK_DIR)/system.mk
 
 
-
-
-

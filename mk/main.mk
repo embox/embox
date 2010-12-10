@@ -76,8 +76,8 @@ endif
 
 # XXX Fix this shit. -- Eldar
 
-# 'clean', 'docs' and 'config' are handled in-place.
-ifneq ($(filter-out %clean %config %docs,$(makegoals)),)
+# 'clean', 'docsgen' and 'config' are handled in-place.
+ifneq ($(filter-out %clean %config %docsgen,$(makegoals)),)
 # Root 'make all' does not need other makefiles too.
 ifneq ($(or $(filter-out $(makegoals),all),$(BUILD_TARGET)),)
 # Need to include it prior to walking the source tree
@@ -88,7 +88,7 @@ include $(MK_DIR)/image.mk
 include $(MK_DIR)/codegen-dot.mk
 endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
 endif # $(or $(filter-out $(makegoals),all),$(BUILD_TARGET))
-endif # $(filter-out %clean %config %docs,$(makegoals))
+endif # $(filter-out %clean %config %docsgen,$(makegoals))
 
 __get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
 build_patch_targets := \
@@ -96,7 +96,7 @@ build_patch_targets := \
     $(filter-out $(notdir $(BACKUP_DIR)),$(call __get_subdirs, $(CONF_DIR))) \
   )
 
-.PHONY: all build prepare docs dot clean config xconfig menuconfig
+.PHONY: all build prepare docsgen dot clean config xconfig menuconfig
 .PHONY: $(build_patch_targets) build_base_target romfs create_romfs
 
 all: $(build_patch_targets) build_base_target
@@ -118,9 +118,11 @@ prepare:
 	@mkdir -p $(AUTOCONF_DIR)
 	@mkdir -p $(DOCS_OUT_DIR)
 
-docs:
+docsgen:
+	@[ -d $(DOCS_OUT_DIR) ] || mkdir -p $(DOCS_OUT_DIR)
 	doxygen
-	@$(MAKE) -C $(DOCS_DIR)
+	#@$(MAKE) -C $(DOCS_DIR)
+	@echo 'Docs generation complete'
 
 dot: $(GRAPH_PS)
 	@echo 'Dot complete'

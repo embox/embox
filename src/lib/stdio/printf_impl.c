@@ -179,33 +179,33 @@ int __print(void (*printchar_handler)(char **str, int c), char **out, const char
 			}
 			switch (*format) {
 			case 's': {
-				char *s = (char *) va_arg( args, int );
+				char *s = (char *) va_arg(args, int);
 				pc += prints(printchar_handler, out, s ? s : "(null)", width, pad);
 			}
 				continue;
 			case 'd':
-				pc += printi(printchar_handler, out, va_arg( args, int ), 10, 1, width, pad, 'a');
+				pc += printi(printchar_handler, out, va_arg(args, int), 10, 1, width, pad, 'a');
 				continue;
 			case 'p':
 				/*TODO: printf haven't realized pointer variable operations*/
 			case 'x':
-				pc += printi(printchar_handler, out, va_arg( args, int ), 16, 0, width, pad, 'a');
+				pc += printi(printchar_handler, out, va_arg(args, int), 16, 0, width, pad, 'a');
 				continue;
 			case 'X':
-				pc += printi(printchar_handler, out, va_arg( args, int ), 16, 0, width, pad, 'A');
+				pc += printi(printchar_handler, out, va_arg(args, int), 16, 0, width, pad, 'A');
 				continue;
 			case 'u':
-				pc += printi(printchar_handler, out, va_arg( args, int ), 10, 0, width, pad, 'a');
+				pc += printi(printchar_handler, out, va_arg(args, int), 10, 0, width, pad, 'a');
 				continue;
 			case 'b':
-				pc += printb(printchar_handler, out, va_arg( args, int ), width, 0);
+				pc += printb(printchar_handler, out, va_arg(args, int), width, 0);
 				continue;
 			case 'B':
-				pc += printb(printchar_handler, out, va_arg( args, int ), width, 1);
+				pc += printb(printchar_handler, out, va_arg(args, int), width, 1);
 				continue;
 			case 'c':
 				/* char are converted to int then pushed on the stack */
-				scr[0] = (char) va_arg( args, int );
+				scr[0] = (char) va_arg(args, int);
 				scr[1] = '\0';
 				pc += prints(printchar_handler, out, scr, width, pad);
 				continue;

@@ -53,13 +53,13 @@ static int run(void) {
 	printf("%lu\n", mmu_get_fault_reg());
 	mmu_on();
 
-	if ((*((volatile uint32_t *)vaddr)) != (*((unsigned long *)&addr))) {
+	if ((*((volatile uint32_t *) vaddr)) != (*((unsigned long *) &addr))) {
 		status = -1;
 	}
 
 	/* test read/write */
-	*((volatile uint32_t *)vaddr) = 0x87654321;
-	if ( (*((volatile uint32_t *)vaddr) ) != 0x87654321 ) {
+	*((volatile uint32_t *) vaddr) = 0x87654321;
+	if (*((volatile uint32_t *) vaddr) != 0x87654321) {
 		status = -2;
 	}
 

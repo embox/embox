@@ -40,8 +40,8 @@ static int run(void) {
 	int count = 0;
 	printf("\n\n");
 	for (cur_addr = (unsigned int)start_addr;
-			cur_addr < (unsigned int)end_addr; cur_addr++) {
-    		count = (count + *(volatile unsigned char *)cur_addr) % (1 << 30);
+			cur_addr < (unsigned int) end_addr; cur_addr++) {
+    		count = (count + *(volatile unsigned char *) cur_addr) % (1 << 30);
     		if (cur_addr % 20000 == 0)
     			printf("count = %d\n", count);
 	}
@@ -52,9 +52,9 @@ static int run(void) {
 /*
        printf("\n\n");
        count = 0;
-        for (cur_addr = (unsigned int)start_addr; cur_addr < (unsigned int)end_addr; cur_addr++) {
-            //printf("%02x", *(unsigned char *)i);
-            count = (count + *(volatile unsigned char *)cur_addr) % (1 << 30);
+        for (cur_addr = (unsigned int) start_addr; cur_addr < (unsigned int)end_addr; cur_addr++) {
+            //printf("%02x", *(unsigned char *) i);
+            count = (count + *(volatile unsigned char *) cur_addr) % (1 << 30);
             if (cur_addr % 20000 == 0) printf("count = %d\n", count);
         }
         printf("count = %d", count);
@@ -63,7 +63,7 @@ static int run(void) {
 */
 	count_md5(start_addr, end_addr, md5_sum);
 
-	for (cur_addr = 0; cur_addr < 16; cur_addr++){
+	for (cur_addr = 0; cur_addr < 16; cur_addr++) {
 		printf("%02x", md5_sum[cur_addr]);
 	}
 	printf("\n\n");

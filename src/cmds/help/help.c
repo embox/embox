@@ -10,9 +10,10 @@
 #define COMMAND_NAME     "help"
 #define COMMAND_DESC_MSG "show all available command"
 #define HELP_MSG         "Usage: help [-h]"
+
 static const char *man_page =
 	#include "help_help.inc"
-	;
+;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
@@ -31,12 +32,12 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	printf("Available commands: \n");
-	for(shell_desc = shell_command_descriptor_find_first((char *)NULL, 0);
-			NULL != shell_desc;
-			shell_desc = shell_command_descriptor_find_next(shell_desc, (char *)NULL, 0)){
+	for (shell_desc = shell_command_descriptor_find_first((char *) NULL, 0);
+	    NULL != shell_desc;
+	    shell_desc = shell_command_descriptor_find_next(shell_desc, (char *) NULL, 0)) {
 		printf("%11s\t - %s\n", shell_desc->name, shell_desc->description);
 	}
 	return 0;

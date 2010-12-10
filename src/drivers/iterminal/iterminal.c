@@ -94,7 +94,7 @@ int iterminal_probe(driver_t *drv, void *arg) {
 }
 
 int iterminal_unload(driver_t *drv) {
-	device_destroy( drv->private );
+	device_destroy(drv->private);
 	drv->private = NULL;
 	drv->private_s = 0;
 	return 0;
@@ -107,7 +107,7 @@ int iterminal_unload(driver_t *drv) {
  */
 #ifdef START_AS_MOD
 /*
- * for work need add to mods-? mods( ?.iterminal , 1 ) or ?
+ * for work need add to mods-? mods(?.iterminal, 1) or ?
  */
 static int iterminal_start(void) {
 	printk("\e[1;34miTerminal driver was started!\e[0;0m\n");

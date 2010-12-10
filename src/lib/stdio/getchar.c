@@ -43,10 +43,11 @@ int getchar(void) {
 
 int ungetchar(int ch) {
 #ifdef CONFIG_HARD_UART_OUT
-	getchar_getc((char) ch);
+	getchar_getc();
 	return ch;
 #else
 # ifdef CONFIG_DRIVER_SUBSYSTEM
+	extern int fungetc(FILE, int);
 	return fungetc(stdin,ch);
 # else
 	/* default */

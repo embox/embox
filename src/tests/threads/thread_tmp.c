@@ -29,14 +29,14 @@ int pipe[2] = {50, 0};  //our small pipe :-)
 						//second - some addition data
 EMBOX_TEST(run);
 
-static void synchronize(){
+static void synchronize(void) {
 	thread_stop(inc_thread);
 }
 
 static void inc_run(void) {
 	int i;
 	for (i = 0; i < 256; i++) {
-		if (i == pipe[0]){
+		if (i == pipe[0]) {
 			pipe[1] = i;
 			synchronize();
 		};
@@ -45,9 +45,9 @@ static void inc_run(void) {
 	}
 }
 
-static void dec_run(void){
+static void dec_run(void) {
 	int j, k = pipe[1];
-	for (j = k; j > 0; j--){
+	for (j = k; j > 0; j--) {
 		TRACE("%d", j);
 		TRACE(" ");
 	}

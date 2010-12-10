@@ -77,7 +77,7 @@ static void show_dev(amba_dev_t *dev, bool show_user) {
 	char *ven_name, *dev_name;
 	if (NULL == dev) return;
 
-	if ((!show_user)||(NULL == dev->show_info )) {
+	if ((!show_user) || (NULL == dev->show_info)) {
 		ven_name = amba_registry_get_ven_name(dev->dev_info.venID);
 		dev_name = amba_registry_get_dev_name(dev->dev_info.venID, dev->dev_info.devID);
 		print_table_row(dev->slot, dev->dev_info.venID, dev->dev_info.devID, ven_name,
@@ -94,8 +94,8 @@ static int print_apb_entries(int amount) {
 	int i, count = 0;
 	amba_dev_t dev;
 
-	for (i = 0; i < amount/4; i++) {
-		if(-1 != fill_amba_dev(&dev, i, false, false)){
+	for (i = 0; i < amount / 4; i++) {
+		if (-1 != fill_amba_dev(&dev, i, false, false)) {
 			show_dev(&dev, false);
 			count++;
 		}
@@ -109,7 +109,7 @@ static int print_ahb_entries(int amount, bool is_master) {
 
 	for (i = 0; i < amount; i++) {
 
-		if(-1 != fill_amba_dev(&dev,  i, true, is_master)){
+		if (-1 != fill_amba_dev(&dev,  i, true, is_master)) {
 			show_dev(&dev, false);
 			count++;
 		}
@@ -175,7 +175,7 @@ static void print_ahbm_pnp_dev(uint32_t slot) {
 		show_dev(ahbm_devices[slot], true);
 		return;
 	}
-	if(-1 != fill_amba_dev(&dev, slot, true, true)){
+	if (-1 != fill_amba_dev(&dev, slot, true, true)) {
 		show_dev(&dev, false);
 	} else {
 		LOG_ERROR("No such device.\n");
@@ -193,7 +193,7 @@ static void print_ahbsl_pnp_dev(uint32_t slot) {
 		return;
 	}
 
-	if (-1 != fill_amba_dev(&dev, slot, true, false)){
+	if (-1 != fill_amba_dev(&dev, slot, true, false)) {
 		show_dev(&dev, false);
 	} else {
 		LOG_ERROR("No such device.\n");
@@ -211,7 +211,7 @@ static void print_apb_pnp_dev(uint32_t slot) {
 		return;
 	}
 
-	if (-1 != fill_amba_dev(&dev, slot, false, false)){
+	if (-1 != fill_amba_dev(&dev, slot, false, false)) {
 		show_dev(&dev, false);
 	} else {
 		TRACE("No such device.\n");
@@ -221,23 +221,23 @@ static void print_apb_pnp_dev(uint32_t slot) {
 
 typedef void (*func_show_bus_t)(int dev_num);
 
-static void show_ahbm(int dev_num){
-	if(dev_num < 0) {
+static void show_ahbm(int dev_num) {
+	if (dev_num < 0) {
 		print_ahbm_pnp_devs();
 	}
-	return;
+	return; /* WTF? */
 	print_ahbm_pnp_dev(dev_num);
 }
 
-static void show_ahbsl(int dev_num){
-	if(dev_num < 0) {
+static void show_ahbsl(int dev_num) {
+	if (dev_num < 0) {
 		print_ahbsl_pnp_devs();
 		return;
 	}
 	print_ahbsl_pnp_dev(dev_num);
 }
 
-static void show_apb(int dev_num){
+static void show_apb(int dev_num) {
 	if (dev_num < 0) {
 		print_apb_pnp_devs();
 		return;
@@ -245,7 +245,7 @@ static void show_apb(int dev_num){
 	print_apb_pnp_dev(dev_num);
 }
 
-static void show_all(int dev_num){
+static void show_all(int dev_num) {
 	show_ahbm(-1);
 	show_ahbsl(-1);
 	show_apb(-1);
@@ -263,7 +263,6 @@ static func_show_bus_t set_bus_type(const char *key_value) {
 	}
 	return NULL;
 }
-
 
 static int exec(int argsc, char **argsv) {
 	int dev_number = -1;
@@ -300,7 +299,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	show_func(dev_number);
 	return 0;

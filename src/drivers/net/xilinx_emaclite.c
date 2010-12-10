@@ -76,8 +76,8 @@ static pingpong_regs_t *current_rx_regs = NULL;
 static pingpong_regs_t *current_tx_regs = NULL;
 
 #define GIE_REG      (&emaclite->tx_ping)->gie
-#define RX_PACK      ((uint8_t *)current_rx_regs->pack)
-#define TX_PACK      ((uint8_t *)current_tx_regs->pack)
+#define RX_PACK      ((uint8_t *) current_rx_regs->pack)
+#define TX_PACK      ((uint8_t *) current_tx_regs->pack)
 #define TX_LEN_REG   current_tx_regs->len
 #define TX_CTRL_REG  current_tx_regs->ctrl
 #define RX_CTRL_REG  current_rx_regs->ctrl

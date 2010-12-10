@@ -36,25 +36,25 @@ void lsof_map_init(void) {
 
 static void cache_fd(const char *path, FILE *file) {
 	lsof_map_t *head;
-	if(list_empty(&free_list)) {
+	if (list_empty(&free_list)) {
 		return;
 	}
-	head = (lsof_map_t *)free_list.next;
+	head = (lsof_map_t *) free_list.next;
 	head->fd = file;
 	strcpy((void*)head->path, path);
-	list_move((struct list_head*)head, &fd_cache);
+	list_move((struct list_head*) head, &fd_cache);
 }
 
 static void uncache_fd(FILE *file) {
-	list_move((struct list_head*)fd_to_head(file), &free_list);
+	list_move((struct list_head*) fd_to_head(file), &free_list);
 }
 
 #if 0
 static lsof_map_t *find_fd(FILE *file) {
 	struct list_head *p;
 	list_for_each(p, &fd_cache) {
-		if(((lsof_map_t *)p)->fd == file) {
-			return (lsof_map_t *)p;
+		if (((lsof_map_t *)p)->fd == file) {
+			return (lsof_map_t *) p;
 		}
 	}
 	TRACE("File maybe not opened\n");
@@ -84,11 +84,11 @@ FILE *fopen(const char *path, const char *mode) {
 
 	if (NULL != nod->file_info) {
 		/*if fop set*/
-		fop = (file_operations_t *)nod->file_info;
+		fop = (file_operations_t *) nod->file_info;
 		if (NULL == fop->fopen(path, mode)) {
 			return NULL;
 		}
-		return (FILE *)nod;
+		return (FILE *) nod;
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fopen) {
@@ -103,7 +103,7 @@ FILE *fopen(const char *path, const char *mode) {
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 	node_t *nod;
 	file_system_driver_t *drv;
-	nod = (node_t *)file;
+	nod = (node_t *) file;
 	if (NULL == nod) {
 		return -EBADF;
 	}
@@ -118,7 +118,7 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	node_t *nod;
 	file_system_driver_t *drv;
-	nod = (node_t *)file;
+	nod = (node_t *) file;
 	if (NULL == nod) {
 		return -EBADF;
 	}
@@ -135,13 +135,13 @@ int fclose(FILE *fp) {
 	file_system_driver_t *drv;
 	file_operations_t *fop;
 
-	nod = (node_t *)fp;
+	nod = (node_t *) fp;
 	if (NULL == nod) {
 		return -EBADF;
 	}
 	if (NULL != nod->file_info) {
 		/*if fop set*/
-		fop = (file_operations_t *)nod->file_info;
+		fop = (file_operations_t *) nod->file_info;
 		return fop->fclose(fp);
 	}
 	drv = nod->fs_type;
@@ -155,13 +155,13 @@ int fclose(FILE *fp) {
 int fseek(FILE *stream, long int offset, int origin) {
 	node_t *nod;
 	file_system_driver_t *drv;
-	nod = (node_t *)stream;
+	nod = (node_t *) stream;
 
 	if (NULL == nod) {
 		return -EBADF;
 	}
 	drv = nod->fs_type;
-	if (NULL == drv->file_op->fseek){
+	if (NULL == drv->file_op->fseek) {
 		LOG_ERROR("fop->fseek is NULL handler\n");
 		return -1;
 	}
@@ -175,7 +175,7 @@ int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);
 
-	nod = (node_t *)fp;
+	nod = (node_t *) fp;
 	if (NULL == nod) {
 		return -EBADF;
 	}
@@ -199,10 +199,9 @@ int remove(const char *pathname) {
 int stat(const char *path, stat_t *buf) {
 	//FIXME: workaround, ramfs depend.
 	node_t *nod;
-	file_system_driver_t *drv;
 	ramfs_file_description_t *desc;
 	nod = vfs_find_node(path, NULL);
-	desc = (ramfs_file_description_t *)nod->attr;
+	desc = (ramfs_file_description_t *) nod->attr;
 	buf->st_size = desc->size;
 	buf->st_mode = desc->mode;
 	buf->st_mtime = desc->mtime;

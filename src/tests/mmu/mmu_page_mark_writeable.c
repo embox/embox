@@ -21,7 +21,7 @@ static uint32_t addr;
 /* MMU data access exception handler */
 static int dfault_handler(uint32_t trap_nr, void *data) {
 	//TODO mmu 0xf0000000 directly is bad style
-	mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_WRITEABLE );
+	mmu_page_set_flags((mmu_ctx_t) 0x0, 0xf0000000, MMU_PAGE_WRITEABLE);
 	/* repeat instruction */
 	return 1;
 }
@@ -48,8 +48,8 @@ static int run(void) {
 				0x1000000, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
 //TODO mmu fix direct io map
-/*	mmu_map_region((mmu_ctx_t)0, (uint32_t) 0x80000000,
-			(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE );
+/*	mmu_map_region((mmu_ctx_t) 0x0, (uint32_t) 0x80000000,
+			(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE);
 */
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
 
@@ -58,7 +58,7 @@ static int run(void) {
 
 	mmu_on();
 
-	*((volatile uint32_t *)vaddr) = 0x11111111;
+	*((volatile uint32_t *) vaddr) = 0x11111111;
 
 
 	traps_restore_env(&old_env);

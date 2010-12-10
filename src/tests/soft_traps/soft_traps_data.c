@@ -19,7 +19,7 @@ EMBOX_TEST(run);
  *  Test handler
  *  */
 static int test_handler(uint32_t trap_nr, void *data) {
-	(*(uint32_t *)data) ++;
+	(*(uint32_t *) data)++;
 	return 0;
 }
 
@@ -34,7 +34,7 @@ static int run(void) {
 	testtraps_set_handler(TRAP_TYPE_SOFTTRAP, TEST_SOFT_TRAP_NUMBER,
 			test_handler);
 
-	testtraps_fire_softtrap(TEST_SOFT_TRAP_NUMBER, (void *)&test_variable);
+	testtraps_fire_softtrap(TEST_SOFT_TRAP_NUMBER, (void *) &test_variable);
 
 	traps_restore_env(&old_env);
 

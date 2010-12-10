@@ -16,24 +16,24 @@
 #include <drivers/at91sam7_us.h>
 
 int uart_init(void) {
-    diag_init();
-    return 0;
+	diag_init();
+	return 0;
 }
 
 void uart_putc(char ch) {
-    diag_putc(ch);
+	diag_putc(ch);
 }
 
 char uart_getc(void) {
-    return diag_getc();
+	return diag_getc();
 }
 
 int uart_set_irq_handler(irq_handler_t pfunc) {
-    return 0;
+	return 0;
 }
 
 int uart_remove_irq_handler(void) {
-    return 0;
+	return 0;
 }
 
 /*implement diag interface*/

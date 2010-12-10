@@ -55,7 +55,7 @@
  * @val bit's mask want to be set
  */
 static inline void msr_set(uint32_t val) {
-	__asm__ __volatile__ ("msrset r0, %0" ::"i"(val) );
+	__asm__ __volatile__ ("msrset r0, %0" ::"i"(val));
 }
 /**
  * Clears some bits in msr register

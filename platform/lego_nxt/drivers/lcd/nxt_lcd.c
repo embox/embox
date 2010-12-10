@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Text and graphics output to the LCD display.
  *
  * @date 09.10.10
  * @author Nikolay Korotky
@@ -8,9 +9,9 @@
 #include <embox/unit.h>
 #include <linux/init.h>
 #include <hal/reg.h>
+#include <string.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/lcd.h>
-#include <string.h>
 
 EMBOX_UNIT_INIT(unit_lcd_init);
 
@@ -31,7 +32,7 @@ static void spi_set_mode(__u8 m) {
 
 	/* Wait until all bytes have been sent */
 	do {
-		status = *AT91C_SPI_SR;
+		status = REG_LOAD(AT91C_SPI_SR);
 	} while (!(status & 0x200));
 	/* Set command or data mode */
 	if (m) {
@@ -54,7 +55,7 @@ static void nxt_spi_write(__u32 CD, const __u8 *data, __u32 nBytes) {
 		nBytes--;
 		/* Wait until byte sent */
 		do {
-			status = *AT91C_SPI_SR;
+			status = REG_LOAD(AT91C_SPI_SR);
 		} while (!(status & 0x200));
 	}
 }
@@ -138,11 +139,11 @@ void nxt_lcd_set_all_pixels_on(__u32 on) {
 static void nxt_lcd_power_up(void) {
 	//sleep(20);
 	int i = 0;
-	while(i<10000) {i++;}
+	while (i<10000) {i++;}
 	nxt_lcd_reset();
 	//sleep(20);
 	i = 0;
-	while(i<10000) {i++;}
+	while (i<10000) {i++;}
 	nxt_lcd_set_multiplex_rate(3);
 	nxt_lcd_set_bias_ratio(3);
 	nxt_lcd_set_pot(0x60);
@@ -159,7 +160,7 @@ static void nxt_lcd_power_up(void) {
 
 void nxt_lcd_force_update(void) {
 	int i;
-	__u8 *disp = (__u8*)display_buffer;
+	__u8 *disp = (__u8*) display_buffer;
 	REG_STORE(AT91C_SPI_IER, AT91C_SPI_ENDTX);
 
 	for (i = 0; i < NXT_LCD_DEPTH; i++) {
@@ -171,7 +172,7 @@ void nxt_lcd_force_update(void) {
 }
 
 int __init lcd_init(void) {
-	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SPI)); /* Enable MCK clock     */
+	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SPI)); /* Enable MCK clock */
 	REG_STORE(AT91C_PIOA_PER, AT91C_PIO_PA12); /*EnableA0onPA12*/
 	REG_STORE(AT91C_PIOA_OER, AT91C_PIO_PA12);
 	REG_STORE(AT91C_PIOA_CODR, AT91C_PIO_PA12);

@@ -216,7 +216,7 @@ void * mpalloc(size_t size) {
 #ifdef ANY_OPTIMIZATION
 		/* if children was released then parent released */
 		if (HAS_BIT(block, 4) && HAS_BIT(block^1, 4)) {
-			SET_BIT1( parent , 4 );
+			SET_BIT1(parent , 4);
 		}
 #endif
 	}
@@ -358,8 +358,8 @@ extern void multipage_info() {
 	TRACE("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
 	TRACE("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
 	TRACE("\n\tTree:\n\t\t");
-	for ( ptr=HEAP_START_PTR; ptr<(HEAP_START_PTR+2*rootblocksize-1); ++ptr ) {
-		TRACE("%ld ",*ptr);
+	for (ptr = HEAP_START_PTR; ptr < (HEAP_START_PTR + 2 * rootblocksize - 1); ++ptr) {
+		TRACE("%ld ", *ptr);
 	}
 	TRACE("\n");
 	TRACE("info end\n");

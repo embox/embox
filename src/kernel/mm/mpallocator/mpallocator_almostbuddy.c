@@ -216,9 +216,11 @@ void *mpalloc(size_t size) {
 		multipage_init();
 		hasinit = 1;
 	}
-	for ( size_fr=1 ; ( size_fr < size ) ; size_fr<<=1 );
-	for ( ; (size_fr <= maxblocksize) && !(ptr=find_block_avail(maxblocksize/size_fr)) ; size_fr<<=1 ); // WHY maxblocksize/size_fr ??
-	//may be enought only ptr=find_block_avail(size_fr) because if size_fr isn't available, than size_fr*2 also isn't available
+	for (size_fr = 1; (size_fr < size); size_fr <<= 1);
+	for (; (size_fr <= maxblocksize) &&
+	    !(ptr=find_block_avail(maxblocksize/size_fr)); size_fr <<= 1); /* WHY maxblocksize/size_fr ?? */
+	/* may be enought only ptr=find_block_avail(size_fr)
+	   because if size_fr isn't available, than size_fr*2 also isn't available */
 	return ptr;
 }
 
@@ -254,6 +256,13 @@ void mpfree(void *ptr) {
 		return;
 	}
 	robin_taddr(ptr);
+}
+
+/**
+ * return list of free and busy blocks in heap
+ */
+void mpget_blocks_info(struct list_head* list) {
+	//TODO:
 }
 
 /**

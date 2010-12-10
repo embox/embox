@@ -14,7 +14,7 @@
 
 #ifndef __REG_STORE
 #define __REG_STORE(addr, value) \
-	do { *((volatile unsigned long *)(addr)) = (value); } while(0)
+	do { *((volatile unsigned long *)(addr)) = (value); } while (0)
 #endif /* __REG_STORE */
 
 #ifndef __REG_LOAD

@@ -25,33 +25,33 @@ void early_printk(const char *format, ...) {
 	while ((c = *format++) != 0) {
 		if (c != '%') {
 			vga_putc(c);
-		} else {
-			char *p;
+			continue;
+		}
+		char *p;
 
-			c = *format++;
-			switch (c) {
-			case 'd':
-			case 'u':
-			case 'x':
-				itoa (buf, c, *((int *)arg++));
-				p = buf;
-				goto string;
-				break;
+		c = *format++;
+		switch (c) {
+		case 'd':
+		case 'u':
+		case 'x':
+			itoa (buf, c, *((int *) arg++));
+			p = buf;
+			goto string;
+			break;
 
-			case 's':
-				p = *arg++;
-				if (! p) {                                                                                                                                                p = "(null)";
-					p = "(null)";
-				}
-string:
-				while (*p) {
-					vga_putc(*p++);
-				}
-				break;
-			default:
-				vga_putc(*((int *)arg++));
-				break;
+		case 's':
+			p = *arg++;
+			if (! p) {                                                                                                                                                p = "(null)";
+				p = "(null)";
 			}
+string:
+			while (*p) {
+				vga_putc(*p++);
+			}
+			break;
+		default:
+			vga_putc(*((int *) arg++));
+			break;
 		}
 	}
 }
@@ -91,7 +91,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 
 	/* Is the command line passed?  */
 	if (CHECK_FLAG (mbi->flags, 2)) {
-		early_printk("cmdline = %s\n", (char *)mbi->cmdline);
+		early_printk("cmdline = %s\n", (char *) mbi->cmdline);
 	}
 
 	/* Are mods_* valid?  */
@@ -100,12 +100,12 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 		int i;
 
 		early_printk("mods_count = %d, mods_addr = 0x%x\n",
-			(int)mbi->mods_count, (int)mbi->mods_addr);
+			(int) mbi->mods_count, (int) mbi->mods_addr);
 		for (i = 0, mod = (module_t *)mbi->mods_addr;
 			i < mbi->mods_count; i++, mod += sizeof(module_t)) {
 			early_printk(" mod_start = 0x%x, mod_end = 0x%x, string = %s\n",
-				(unsigned)mod->mod_start,
-				(unsigned)mod->mod_end, (char *)mod->string);
+				(unsigned) mod->mod_start,
+				(unsigned) mod->mod_end, (char *) mod->string);
 		}
 	}
 
@@ -121,9 +121,9 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 
 		early_printk("aout_symbol_table: tabsize = 0x%0x, "
 			"strsize = 0x%x, addr = 0x%x\n",
-			(unsigned)aout_sym->tabsize,
-			(unsigned)aout_sym->strsize,
-			(unsigned)aout_sym->addr);
+			(unsigned) aout_sym->tabsize,
+			(unsigned) aout_sym->strsize,
+			(unsigned) aout_sym->addr);
 	}
 
 	/* Is the section header table of ELF valid?  */
@@ -132,8 +132,8 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 
 		early_printk("elf_sec: num = %u, size = 0x%x,"
 			" addr = 0x%x, shndx = 0x%x\n",
-			(unsigned)elf_sec->num, (unsigned)elf_sec->size,
-			(unsigned)elf_sec->addr, (unsigned)elf_sec->shndx);
+			(unsigned) elf_sec->num, (unsigned) elf_sec->size,
+			(unsigned) elf_sec->addr, (unsigned) elf_sec->shndx);
         }
 
 	/* Are mmap_* valid?  */
@@ -141,19 +141,19 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 		memory_map_t *mmap;
 
 		early_printk("mmap_addr = 0x%x, mmap_length = 0x%x\n",
-			(unsigned)mbi->mmap_addr, (unsigned)mbi->mmap_length);
+			(unsigned) mbi->mmap_addr, (unsigned) mbi->mmap_length);
 		for (mmap = (memory_map_t *)mbi->mmap_addr;
-		    (unsigned long)mmap < mbi->mmap_addr + mbi->mmap_length;
-			mmap = (memory_map_t *)((unsigned long)mmap
+		    (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
+			mmap = (memory_map_t *)((unsigned long) mmap
 			     + mmap->size + sizeof(mmap->size)))
 			early_printk(" size = 0x%x, base_addr = 0x%x%x,"
 				" length = 0x%x%x, type = 0x%x\n",
-				(unsigned)mmap->size,
-				(unsigned)mmap->base_addr_high,
-				(unsigned)mmap->base_addr_low,
-				(unsigned)mmap->length_high,
-				(unsigned)mmap->length_low,
-				(unsigned)mmap->type);
+				(unsigned) mmap->size,
+				(unsigned) mmap->base_addr_high,
+				(unsigned) mmap->base_addr_low,
+				(unsigned) mmap->length_high,
+				(unsigned) mmap->length_low,
+				(unsigned) mmap->type);
 	}
 }
 

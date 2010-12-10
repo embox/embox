@@ -143,23 +143,23 @@ static bool mmu_probe() {
 #if 0
 	/* do tests*/
 //page translation tast page0 in 0xf0041000 addr 0x40000000 0xf0080000
-	if ( (*((unsigned long *)0xf0041000)) != 0 ||
-		(*((unsigned long *)0xf0041004)) != 0x12345678 ) { MMU_RETURN(1); }
+	if ((*((unsigned long *) 0xf0041000)) != 0 ||
+		(*((unsigned long *) 0xf0041004)) != 0x12345678) { MMU_RETURN(1); }
 
-	if ( (*((unsigned long *)0xf0080000)) != (*((unsigned long *)0x40000000))) { MMU_RETURN(2); }
+	if ((*((unsigned long *) 0xf0080000)) != (*((unsigned long *) 0x40000000))) { MMU_RETURN(2); }
 
 	/* page faults tests*/
 //	pthaddr[0] = (unsigned long) (g0+241);
 //	pthaddr[1] = ((0x40000000 >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
 //	pthaddr[2] = 0xf1000000;
-	val = * ((volatile unsigned long *)0xf1000000);
+	val = * ((volatile unsigned long *) 0xf1000000);
 	/* write protection fault */
 	/* repair info for write protection fault (0xf0041000) */
 //	pthaddr[3] = (unsigned long) (p0+1);
 //	pthaddr[4] = ((((unsigned long)&page0) >> 4) | SRMMU_ET_PTE | SRMMU_PRIV);
 //	pthaddr[5] = 0xf0041000;
-	*((volatile unsigned long *)0xf0041004) = 0x87654321;
-	if ( (*((volatile unsigned long *)0xf0041004)) != 0x87654321 ) { MMU_RETURN(3); }
+	*((volatile unsigned long *) 0xf0041004) = 0x87654321;
+	if ((*((volatile unsigned long *) 0xf0041004)) != 0x87654321) { MMU_RETURN(3); }
 
 	/* test several page for modify flags */
 	for (j = 0xf0043000, i = 3; i < TLBNUM+3; i++, j += 0x1000) {
@@ -256,7 +256,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	return mmu_probe();
 }

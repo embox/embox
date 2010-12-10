@@ -18,7 +18,7 @@ void tc_init(uint8_t channel) {
 	REG_STORE(AT91C_PMC_PCER, (1L << (AT91C_ID_TC0 + channel)));
 }
 
-void tc_config_input(uint8_t channel, uint8_t clock_mode ) {
+void tc_config_input(uint8_t channel, uint8_t clock_mode) {
 	assert(channel < 3);
 	REG_STORE((uint8_t *) AT91C_TC0_CMR + channel * sizeof(AT91S_TCB),
 			0xfff & clock_mode);

@@ -92,8 +92,8 @@ inline static int find_apbdev_slotnum(uint8_t ven_id, uint16_t dev_id) {
 	apb_slot_t *pslotbase = ((apb_slot_t *) APB_BASE);
 	size_t cur_slotnum;
 	for (cur_slotnum = 0; cur_slotnum < APB_QUANTITY; cur_slotnum++) {
-		if ( (ven_id == get_ven(pslotbase[cur_slotnum].id_reg))
-		    && (dev_id == get_dev(pslotbase[cur_slotnum].id_reg)) ) {
+		if ((ven_id == get_ven(pslotbase[cur_slotnum].id_reg))
+		    && (dev_id == get_dev(pslotbase[cur_slotnum].id_reg))) {
 			return cur_slotnum;
 		}
 	}
@@ -112,8 +112,8 @@ inline static int find_ahbdev_slotnum(uint8_t ven_id, uint16_t dev_id, bool is_m
 	size_t maxdevs = is_master ? AHB_MASTERS_QUANTITY : AHB_SLAVES_QUANTITY;
 	size_t cur_slotnum;
 	for (cur_slotnum = 0; cur_slotnum < maxdevs; cur_slotnum++) {
-		if ( (ven_id == get_ven(pslotbase[cur_slotnum].id_reg))
-		    && (dev_id == get_dev(pslotbase[cur_slotnum].id_reg)) ) {
+		if ((ven_id == get_ven(pslotbase[cur_slotnum].id_reg))
+		    && (dev_id == get_dev(pslotbase[cur_slotnum].id_reg))) {
 			return cur_slotnum;
 		}
 	}

@@ -43,7 +43,7 @@ TERMINAL * terminal_init(TERMINAL *this, TERMINAL_IO *io) {
 	}
 
 	this->parser->user_data = this;
-	if(vtparse_init(this->parser, vtparse_callback) == NULL) {
+	if (vtparse_init(this->parser, vtparse_callback) == NULL) {
 		return NULL;
 	}
 

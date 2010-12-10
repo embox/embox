@@ -45,7 +45,7 @@ node_t *alloc_node(const char *name) {
 	head = (node_head_t *) (&head_node)->next;
 	list_del((&head_node)->next);
 	nod = &(head->nod);
-	strcpy((char*)nod->name, name);
+	strcpy((char*) nod->name, name);
 	INIT_LIST_HEAD(&nod->leaves);
 	INIT_LIST_HEAD(&nod->neighbors);
 	return nod;
@@ -58,3 +58,4 @@ void free_node(node_t *node) {
 	list_add((struct list_head *) nod_to_head(node),
 		    (struct list_head *)&head_node);
 }
+

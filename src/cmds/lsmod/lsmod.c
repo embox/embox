@@ -33,7 +33,7 @@ static void mod_print(const struct mod *mod, int depth) {
 	printf("%s.%s\n", mod->package->name, mod->name);
 
 	mod_requires(mod, &iterator);
-	while(mod_iterator_has_next(&iterator)) {
+	while (mod_iterator_has_next(&iterator)) {
 		mod_print(mod_iterator_next(&iterator), depth + 1);
 	}
 }

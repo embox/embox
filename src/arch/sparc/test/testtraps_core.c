@@ -16,7 +16,7 @@ static traps_env_t test_env[1];
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 	switch(type) {
 	case TRAP_TYPE_HARDTRAP:
-		if(number < CONFIG_MAX_RESERVED_TRAP) {
+		if (number < CONFIG_MAX_RESERVED_TRAP) {
 			test_handlers[number] = handler;
 		}
 		if (number >= CONFIG_MIN_HWTRAP_NUMBER && number <= CONFIG_MAX_HWTRAP_NUMBER) {

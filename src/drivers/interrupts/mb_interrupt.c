@@ -32,7 +32,7 @@ typedef volatile struct irqc_regs {
 #define MER_HIE         REVERSE_MASK(MER_HIE_BIT)
 #define MER_ME          REVERSE_MASK(MER_ME_BIT)
 
-static irqc_regs_t *irqc = (irqc_regs_t *)XILINX_INTC_BASEADDR;
+static irqc_regs_t *irqc = (irqc_regs_t *) XILINX_INTC_BASEADDR;
 
 void interrupt_init(void) {
 	irqc->mer = 0;

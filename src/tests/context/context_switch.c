@@ -17,7 +17,7 @@ static char infinite_stack[STACK_SZ];
 
 static void entry(int arg) {
 	TRACE("entry begin\n");
-	while (true){
+	while (true) {
 		TRACE("E");
 		context_switch(&entry_context, &infinite_context);
 	}

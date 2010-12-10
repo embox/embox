@@ -26,7 +26,7 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
  * Print U-Boot image header.
  */
 static int uimage_info(unsigned int addr) {
-	image_header_t *hdr = (image_header_t *)addr;
+	image_header_t *hdr = (image_header_t *) addr;
 	printf("## Checking uImage at 0x%08X ...\n", addr);
 	printf("Image Header Magic Number: 0x%08X\n", hdr->ih_magic);
 	printf("Image Header CRC Checksum: 0x%08X\n", hdr->ih_hcrc);
@@ -112,11 +112,11 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	switch (format) {
 	case 'u':
-		hdr = (image_header_t *)load_addr;
+		hdr = (image_header_t *) load_addr;
 		uimage_info(load_addr);
 		entry_point = hdr->ih_ep;
 		break;

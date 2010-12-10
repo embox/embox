@@ -14,6 +14,6 @@ EMBOX_TEST(run);
 #define END_ADDR  0x44000000
 
 static int run(void) {
-	memset((void *)BASE_ADDR, 0, (END_ADDR - BASE_ADDR) / sizeof(char));
+	memset((void *) BASE_ADDR, 0, (END_ADDR - BASE_ADDR) / sizeof(char));
 	return 0;
 }

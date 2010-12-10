@@ -35,7 +35,7 @@ struct sk_buff_head *alloc_skb_queue(int len) {
 	 */
 	queue = (struct sk_buff_head *) (&head_free_queue)->next;
 	list_del((&head_free_queue)->next);
-	INIT_LIST_HEAD((struct list_head *)queue);
+	INIT_LIST_HEAD((struct list_head *) queue);
 	queue->qlen = 0;
 	queue->qlen = 0;
 	ipl_restore(sp);
@@ -68,7 +68,7 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
 	}
 	skb = (struct sk_buff *) (&head_free_skb)->next;
 	list_del((&head_free_skb)->next);
-	INIT_LIST_HEAD((struct list_head *)skb);
+	INIT_LIST_HEAD((struct list_head *) skb);
 	ipl_restore(sp);
 
 	if (NULL == (skb->data = net_buff_alloc())) {

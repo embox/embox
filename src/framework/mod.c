@@ -21,9 +21,9 @@
 #define MOD_FLAG_OPINPROGRESS  (0 << 2)
 
 #define mod_flag_tst(mod, mask)   ((mod)->private->flags &   (mask))
-#define mod_flag_tgl(mod, mask) do (mod)->private->flags ^=  (mask); while(0)
-#define mod_flag_set(mod, mask) do (mod)->private->flags |=  (mask); while(0)
-#define mod_flag_clr(mod, mask) do (mod)->private->flags &= ~(mask); while(0)
+#define mod_flag_tgl(mod, mask) do (mod)->private->flags ^=  (mask); while (0)
+#define mod_flag_set(mod, mask) do (mod)->private->flags |=  (mask); while (0)
+#define mod_flag_clr(mod, mask) do (mod)->private->flags &= ~(mask); while (0)
 
 static int mod_perform(const struct mod *mod, bool op);
 static int mod_perform_nodep(const struct mod *mod, bool op);

@@ -18,7 +18,7 @@ EMBOX_UNIT_INIT(sound_init);
 
 static sound_handler_t current_handler = NULL;
 
-irq_return_t sound_interrupt (int irq_num, void *dev_id) {
+static irq_return_t sound_interrupt(int irq_num, void *dev_id) {
 	SAMPLEWORD *next_buff;
 	if (current_handler == NULL) { /*inefficient */
 		return IRQ_HANDLED;
@@ -59,7 +59,7 @@ static int __init sound_init(void) {
 }
 
 void sound_start_play(uint32_t freq, useconds_t ms,
-	SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd ) {
+	SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd) {
 
 	current_handler = sound_hnd;
 

@@ -20,9 +20,9 @@ struct context {
 #else /* __ASSEMBLER__ */
 
 /* Offsets for struct context_kregs. */
-#define CTX_LR    0x00
+#define CTX_LR      0x00
 #define CTX_CPSR    0x04
-#define CTX_SP    0x08
+#define CTX_SP      0x08
 
 #endif /* __ASSEMBLER__ */
 

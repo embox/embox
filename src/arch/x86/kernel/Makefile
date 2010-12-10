@@ -1,8 +1,8 @@
 
-$_MODS_CORE += locore
+$_MODS_CORE += locore context
 
-$_SRCS-locore += boot.S
+$_SRCS-locore  += boot.S
+$_SRCS-context += context.c
+$_SRCS-arch    += arch.c
 
-$_SRCS-arch += arch.c
-
-#include $(MK_DIR)/system.mk
+include $(MK_DIR)/system.mk

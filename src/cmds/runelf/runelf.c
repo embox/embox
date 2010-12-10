@@ -28,8 +28,8 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static void run(void) {
-	TRACE("run addr = 0x%X\n", file_addr );
-	elf_execve((unsigned long *)file_addr, NULL);
+	TRACE("run addr = 0x%X\n", file_addr);
+	elf_execve((unsigned long *) file_addr, NULL);
 }
 
 static int exec(int argsc, char **argsv) {

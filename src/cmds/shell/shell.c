@@ -55,11 +55,11 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	if (0 == (words_counter = parse_str(cmdline, words))) {
 		return; /* Only spaces were entered */
 	}
-	if (NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))){
+	if (NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))) {
 		printf("%s: Command not found\n", words[0]);
 		return;
 	}
-	if (NULL == c_desc->exec){
+	if (NULL == c_desc->exec) {
 		LOG_ERROR("shell command: wrong command descriptor\n");
 		return;
 	}
@@ -87,10 +87,10 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	*offset = cursor - start;
 	*proposals_len = 0;
 
-	for(shell_desc = shell_command_descriptor_find_first((char*)line, *offset);
-			NULL != shell_desc;
-			shell_desc = shell_command_descriptor_find_next(shell_desc, (char *)line, *offset)){
-		proposals[(*proposals_len)++] = (char *)shell_desc->name;
+	for (shell_desc = shell_command_descriptor_find_first((char*) line, *offset);
+	    NULL != shell_desc;
+	    shell_desc = shell_command_descriptor_find_next(shell_desc, (char *) line, *offset)) {
+		proposals[(*proposals_len)++] = (char *) shell_desc->name;
 	}
 	*common = 0;
 	if (*proposals_len == 0) {

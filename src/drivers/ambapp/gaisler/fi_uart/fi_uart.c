@@ -168,7 +168,7 @@ char fi_uart_getc(void) {
 }
 
 #ifdef CONFIG_AMBAPP
-static int dev_regs_init() {
+static int dev_regs_init(void) {
 	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, CONFIG_VENDOR_ID_GAISLER,
 					CONFIG_DEV_ID_GAISLER_UART, false, false)) {
@@ -181,7 +181,7 @@ static int dev_regs_init() {
 	return 0;
 }
 #elif defined(CONFIG_APBUART_BASE)
-static int dev_regs_init() {
+static int dev_regs_init(void) {
 	dev_regs = (volatile struct apbfi_uart_regs *) CONFIG_APBUART_BASE;
 	irq_num = CONFIG_APBUART_IRQ;
 	return 0;
@@ -226,87 +226,87 @@ int fi_uart_remove_irq_handler(void) {
 /*
  * interface for IO
  */
-int fi_uart_open   ( device_t *dev , int mode ) {
+int fi_uart_open(device_t *dev, int mode) {
 	return 0;
 }
 
-int fi_uart_close  ( device_t *dev ) {
+int fi_uart_close(device_t *dev) {
 	return 0;
 }
 
-int fi_uart_read   ( device_t *dev , char *buf    , size_t n  ) {
+int fi_uart_read(device_t *dev, char *buf, size_t n) {
 	int i;
-	if ( ((uart_private_t*)(dev->private))->ioctl_base_flags & IOCTLP_NONBLOCKINGIO ) {
-		for ( i=0 ; (i<n)&&(fi_uart_has_symbol()) ; ++i ) {
+	if (((uart_private_t*)(dev->private))->ioctl_base_flags & IOCTLP_NONBLOCKINGIO) {
+		for (i=0 ; (i<n)&&(fi_uart_has_symbol()) ; ++i) {
 			buf[i] = (char) fi_uart_getc();
 		}
 		return i;
 	} else {
-		for ( i=0 ; i<n ; ++i ) {
+		for (i=0 ; i<n ; ++i) {
 			buf[i] = (char) fi_uart_getc();
 		}
 		return 0;
 	}
 }
 
-int fi_uart_write  ( device_t *dev , char *buf    , size_t n  ) {
+int fi_uart_write(device_t *dev, char *buf, size_t n) {
 	int i;
-	if ( ((uart_private_t*)(dev->private))->ioctl_base_flags & IOCTLP_NONBLOCKINGIO ) {
-		for ( i=0 ; (i<n) ; ++i ) {
-			fi_uart_putc( buf[i] );
+	if (((uart_private_t*)(dev->private))->ioctl_base_flags & IOCTLP_NONBLOCKINGIO) {
+		for (i=0 ; (i<n) ; ++i) {
+			fi_uart_putc(buf[i]);
 		}
 		return i;
 	} else {
-		for ( i=0 ; i<n ; ++i ) {
-			fi_uart_putc( buf[i] );
+		for (i = 0 ; i < n ; ++i) {
+			fi_uart_putc(buf[i]);
 		}
 		return 0;
 	}
 }
 
-int fi_uart_ioctl  ( device_t *dev , io_cmd c     , void *arg ) {
+int fi_uart_ioctl(device_t *dev, io_cmd c, void *arg) {
 	/* printk("device: %ld, cmd: %d, arg: %ld\n",  dev, c , *(int*)arg); */
 	switch (c) {
-		case IOCTL_SET_BASE_OPTIONS: {
-			((uart_private_t*)(dev->private))->ioctl_base_flags = *((int*)arg);
-		} break;
-		case IOCTL_GET_BASE_OPTIONS: {
-			arg = &(((uart_private_t*)(dev->private))->ioctl_base_flags);
-		} break;
-		default: return IOCTLR_UNKNOW_OPERATION;
+	case IOCTL_SET_BASE_OPTIONS:
+		((uart_private_t*)(dev->private))->ioctl_base_flags = *((int*)arg);
+		break;
+	case IOCTL_GET_BASE_OPTIONS:
+		arg = &(((uart_private_t*)(dev->private))->ioctl_base_flags);
+		break;
+	default:
+		return IOCTLR_UNKNOW_OPERATION;
 	}
 	return IOCTLR_OK;
 }
 
-int fi_uart_devctl ( device_t *dev , device_cmd c , void *arg ) {
+int fi_uart_devctl(device_t *dev, device_cmd c, void *arg) {
 	return 0;
 }
-
 
 /*
  * interface for registry in embox as driver
  */
-int fi_uart_load( driver_t *drv ) {
-	drv->name 		= "Gaisler Uart";
-	drv->ops.open 	= fi_uart_open;
-	drv->ops.close 	= fi_uart_close;
-	drv->ops.read 	= fi_uart_read;
-	drv->ops.write 	= fi_uart_write;
-	drv->ops.ioctl	= fi_uart_ioctl;
+int fi_uart_load(driver_t *drv) {
+	drv->name       = "Gaisler Uart";
+	drv->ops.open   = fi_uart_open;
+	drv->ops.close  = fi_uart_close;
+	drv->ops.read   = fi_uart_read;
+	drv->ops.write  = fi_uart_write;
+	drv->ops.ioctl  = fi_uart_ioctl;
 	drv->ops.devctl = fi_uart_devctl;
-	drv->flags		= 0;
-	drv->private	= NULL;
-	drv->private_s	= sizeof(device_t*);
+	drv->flags      = 0;
+	drv->private    = NULL;
+	drv->private_s  = sizeof(device_t*);
 	return 0;
 }
 
-int fi_uart_probe( driver_t *drv , void *arg ) {
-	drv->private = device_create( drv , "dev_fi_uart01" , 0 , sizeof(uart_private_t) );
+int fi_uart_probe(driver_t *drv , void *arg) {
+	drv->private = device_create(drv, "dev_fi_uart01", 0, sizeof(uart_private_t));
 	return 0;
 }
 
-int fi_uart_unload( driver_t *drv ) {
-	device_destroy( drv->private );
+int fi_uart_unload(driver_t *drv) {
+	device_destroy(drv->private);
 	drv->private = NULL;
 	drv->private_s = 0;
 	return 0;
@@ -317,33 +317,33 @@ int fi_uart_unload( driver_t *drv ) {
  */
 #ifdef START_AS_MOD
 /*
- * for work need add to mods-? mods( ?.fi_uart , 1 ) or ?
+ * for work need add to mods-? mods(?.fi_uart, 1) or ?
  */
 driver_t *drv;
 /* driver_t drv_wm; // without malloc */
 
 static int fi_uart_start(void) {
 	TRACE("\e[1;34mGaisler fi_uart driver was started!\e[0;0m\n");
-	if (NULL == (drv = kmalloc( sizeof( driver_t ) )) ) {
+	if (NULL == (drv = kmalloc(sizeof(driver_t)))) {
 		TRACE("No memory enough for start gaisler fi_uart driver\n");
 		return 1;
 	}
-	fi_uart_load( drv );
-	fi_uart_probe( drv , NULL );
+	fi_uart_load(drv);
+	fi_uart_probe(drv, NULL);
 	return 0;
 }
 
 static int fi_uart_stop(void) {
-	fi_uart_unload( drv );
-	kfree( drv );
+	fi_uart_unload(drv);
+	kfree(drv);
 	return 0;
 }
 
-EMBOX_UNIT( fi_uart_start , fi_uart_stop );
+EMBOX_UNIT(fi_uart_start, fi_uart_stop);
 
 #else
 
-EMBOX_DEVICE( fi_uart_load , fi_uart_probe , fi_uart_unload );
+EMBOX_DEVICE(fi_uart_load, fi_uart_probe, fi_uart_unload);
 
 #endif
 

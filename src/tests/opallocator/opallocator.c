@@ -94,9 +94,9 @@ static int count_of_error = 0;
 static void memory_check() {
 	size_t allocp = allow_page_count();
 	size_t freep  = free_page_count();
-	TRACE("Allocated: %d ; Free %d \n", allocp , freep );
+	TRACE("Allocated: %d ; Free %d \n", allocp, freep);
 	if (allocp+freep != PAGE_QUANTITY) {
-		TRACE("WARNING: Sum of allocated and free page don't equal page quality!!! \n");
+		TRACE("WARNING: Sum of allocated and free page don't equal page quality!!!\n");
 		++count_of_error;
 	}
 }
@@ -113,7 +113,7 @@ static int run(void) {
 	extern char _heap_end;
 #endif
 
-#define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
+#define PAGE_QUANTITY (((size_t) (&_heap_end - &_heap_start)) / CONFIG_PAGE_SIZE)
 
 	void * pointers[TEST_STACK_SIZE];
 	void **first,**last;
@@ -132,18 +132,18 @@ static int run(void) {
 			for (i=0;i<8;++i) {
 
 				if (NULL == (*last = opalloc())) {
-					TRACE("Alloc page: %p\n", (void*)NULL);
+					TRACE("Alloc page: %p\n", (void*) NULL);
 				} else {
-					TRACE("Alloc page: %p\n", (void*)last);
+					TRACE("Alloc page: %p\n", (void*) last);
 					last = ++last < pointers+TEST_STACK_SIZE ? last : pointers;
 					++callowed;
 				}
 			}
 
 		}
-		TRACE("Free page: %p\n", (void*)first);
+		TRACE("Free page: %p\n", (void*) first);
 		opfree(*first);
-		first = ++first < pointers+TEST_STACK_SIZE ? first : pointers;
+		first = ++first < pointers + TEST_STACK_SIZE ? first : pointers;
 		cfree += 1;
 
 	} while (first!=last); /* queue is not empty */
@@ -153,7 +153,7 @@ static int run(void) {
 	return callowed == cfree ? 0 : 1;
 #else
 	void * pointers[TEST_STACK_SIZE];
-	void **first,**last;
+	void **first, **last;
 	int test_id=0;
 	int callowed=0,cfree=0;
 	first = pointers;

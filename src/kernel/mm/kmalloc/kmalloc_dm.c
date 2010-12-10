@@ -9,6 +9,7 @@
 #include <kernel/mm/mpallocator.h>
 #include <kernel/mm/kmalloc.h>
 #include <lib/list.h>
+#include <stdlib.h>
 
 /**
  * to be writen
@@ -132,7 +133,7 @@ void kfree(void *ptr) {
 	ptr_begin->tag.free = HOLE;
 	tmp_end = END_TAG(ptr_begin);
 	tmp_end->free = HOLE;
-	list_add(ptr_begin, &mem_pool);
+	list_add((struct list_head*) ptr_begin, &mem_pool);
 }
 
 /* auxiliary function. allocate block of memory TODO add the ending memory work */
@@ -202,6 +203,10 @@ inline static void eat_mem(size_t size, tag_free_t* ext) {
  * return list of free and busy blocks in heap
  */
 void kmget_blocks_info(struct list_head* list) {
+	block_info_t* tmp_info;
+	tag_free_t* tmp_ptr;
+	int pool_size = CONFIG_MALLOC_SIZE * CONFIG_PAGE_SIZE;
+
 	if (!inited) {
 		int expr = allocate_mem_block(CONFIG_MALLOC_SIZE);
 		if (expr == 0) {
@@ -210,10 +215,8 @@ void kmget_blocks_info(struct list_head* list) {
 		inited = !inited;
 	}
 
-	int pool_size = CONFIG_MALLOC_SIZE * CONFIG_PAGE_SIZE;
-	tag_free_t* tmp_ptr = begin_pool_ptr;
+	tmp_ptr = begin_pool_ptr;
 
-	block_info_t* tmp_info;
 	do {
 		tmp_info = (block_info_t*) malloc(sizeof(block_info_t));
 		tmp_info->size = tmp_ptr->tag.size;

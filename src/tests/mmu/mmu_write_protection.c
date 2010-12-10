@@ -55,7 +55,7 @@ static int run(void) {
 
 	mmu_on();
 
-	*((volatile uint32_t *)vaddr) = 0x11111111;
+	*((volatile uint32_t *) vaddr) = 0x11111111;
 
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);

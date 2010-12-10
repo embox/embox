@@ -386,6 +386,7 @@ static void print_symb(Elf32_Sym *symb, int8_t *string_table, int counter) {
 	}
 }
 
+/* WARNING: overly complex function. */
 static int exec(int argsc, char **argsv) {
 	int show_head     = 0;
 	int show_sections = 0;

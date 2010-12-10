@@ -63,7 +63,7 @@ void mmu_table_free(unsigned long *table, int level) {
 		(unsigned long) table, level,
 		(unsigned long) page, size,
 		((page_header_t *) page)->free + size);
-	for (i = 0; i < mmu_page_table_sizes[level-1]; i++ ) {
+	for (i = 0; i < mmu_page_table_sizes[level-1]; i++) {
 		unsigned long t = *(table + i);
 		if (!mmu_is_pte(t)) {
 			LOG_DEBUG("on %x to %x\n",
@@ -75,7 +75,7 @@ void mmu_table_free(unsigned long *table, int level) {
 	((page_header_t *) page)->free += size;
 	if (((page_header_t *) page)->free == MMU_PAGE_SIZE - PAGE_HEADER_SIZE
 			&& page != cur_page) {
-		opfree((void *)page);
+		opfree((void *) page);
 	}
 }
 

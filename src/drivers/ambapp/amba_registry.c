@@ -35,7 +35,7 @@ static inline amba_registry_vendor_entry_t *find_vendor_entry(uint8_t ven_id) {
 	struct list_head * p;
 	uint8_t id;
 	list_for_each(p, &head_vendor_list) {
-		id = ((amba_registry_vendor_entry_t *)p)->ven_info->ven_id;
+		id = ((amba_registry_vendor_entry_t *) p)->ven_info->ven_id;
 		if (id == ven_id) {
 			return (amba_registry_vendor_entry_t *) p;
 		}
@@ -59,12 +59,12 @@ static inline amba_registry_device_entry_t *find_device_entry(
 inline void add_dev_to_ven(const amba_registry_device_info_t * dev,
 		amba_registry_device_entry_t *entry) {
 	amba_registry_vendor_entry_t *ven_entry;
-	if( NULL == (ven_entry = find_vendor_entry(dev->ven_id))) {
+	if (NULL == (ven_entry = find_vendor_entry(dev->ven_id))) {
 		list_add((struct list_head *) &entry, &unknown_vendor_entry->dev_list);
 		return;
 	}
 
-	entry->dev_info = (amba_registry_device_info_t *)dev;
+	entry->dev_info = (amba_registry_device_info_t *) dev;
 	list_add((struct list_head *) entry, &ven_entry->dev_list);
 }
 
@@ -109,5 +109,5 @@ char* amba_registry_get_dev_name(uint8_t ven_id, uint16_t dev_id) {
 	if (NULL == (dev_entry = find_device_entry(&ven_entry->dev_list, dev_id))) {
 		return "Unknown";
 	}
-	return (char*)dev_entry->dev_info->dev_name;
+	return (char*) dev_entry->dev_info->dev_name;
 }

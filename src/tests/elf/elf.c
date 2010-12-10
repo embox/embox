@@ -17,5 +17,5 @@ EMBOX_TEST(run);
 #define FILE_ADDRESS 0x46000000
 
 static int run(void) {
-	return elf_execve((unsigned long *)FILE_ADDRESS, NULL);
+	return elf_execve((unsigned long *) FILE_ADDRESS, NULL);
 }

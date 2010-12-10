@@ -53,7 +53,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	if (argsc == 1) {
 		show_help();
@@ -70,12 +70,12 @@ static int exec(int argsc, char **argsv) {
 	from.s_addr = in_dev->ifa_address;
 	from_b = inet_ntoa(from);
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
-	for(i = 1; i <= cnt; i++) {
+	for (i = 1; i <= cnt; i++) {
 		arp_delete_entity(NULL, dst.s_addr, NULL);
 		arp_send(ARPOP_REQUEST, ETH_P_ARP, dst.s_addr, in_dev->dev,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
 		usleep(ARP_RES_TIME);
-		if(-1 != (j = arp_lookup(in_dev, dst.s_addr))) {
+		if (-1 != (j = arp_lookup(in_dev, dst.s_addr))) {
 			macaddr_print(mac, arp_tables[j].hw_addr);
 			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
 			cnt_resp++;

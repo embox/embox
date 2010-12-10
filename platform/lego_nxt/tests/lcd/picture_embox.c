@@ -14,6 +14,7 @@
 
 EMBOX_TEST(run_picture);
 
+/* WARNING: function too long */
 static int run_picture(void) {
 /*Part of "E" "M" "B" "O" */
 	uint8_t pict_buff1[8] = {0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -74,7 +75,7 @@ static int run_picture(void) {
 	/*34*/	display_draw(90, 4, 1, 8, &pict_buff7[0]);
 #else
 	int i;
-	for(i=0;i<6;i++){
+	for (i = 0; i < 6; i++) {
 		/*e*/
 		/*2*/	display_draw(2, i-2, 1, 8, &pict_buff1[0]);
 		/*3*/	display_draw(10, i-2, 1, 8, &pict_buff3[0]);
@@ -119,11 +120,11 @@ static int run_picture(void) {
 		/*33*/	display_draw(82, i, 1, 8, &pict_buff10[0]);
 		/*34*/	display_draw(90, i, 1, 8, &pict_buff7[0]);
 		usleep(250);
-		if (i<5){
+		if (i < 5) {
 			display_clear_screen();
 		}
 	}
-	for(i=0; i<5; i++){
+	for (i = 0; i < 5; i++) {
 	/*stay*/
 	/*e*/
 	/*2*/	display_draw(2, 3, 1, 8, &pict_buff1[0]);
@@ -645,5 +646,4 @@ static int run_picture(void) {
 #endif
 	return 0;
 }
-
 

@@ -36,24 +36,24 @@ static int run(void) {
 
 	putchar('\n');
 	TRACE("\t\t = Allocate list =\n");
-	for(i = 0; i <= 10; i++) {
-		tmp = (struct list *)kmalloc(sizeof(struct list));
-		if ( tmp == 0 ) {
+	for (i = 0; i <= 10; i++) {
+		tmp = (struct list *) kmalloc(sizeof(struct list));
+		if (tmp == 0) {
 			return -1;
 		}
 		tmp->p = i;
-		list_add( (struct list_head*) tmp, &int_list);
+		list_add((struct list_head*) tmp, &int_list);
 		TRACE("tmp[%d] = %d \n ", i, tmp->p);
 	}
 
 	TRACE("\n\n\t\t = Test our list =\n");
-	list_for_each( tmp_h, &int_list) {
-		tmp = (struct list *)tmp_h;
-		TRACE("tmp[%d] = %d \n ",tmp->p,tmp->p);
+	list_for_each(tmp_h, &int_list) {
+		tmp = (struct list *) tmp_h;
+		TRACE("tmp[%d] = %d \n ", tmp->p, tmp->p);
 	}
 
 	TRACE("\n\n\t\t = Test free =\n");
-	list_for_each( tmp_h, &int_list) {
+	list_for_each(tmp_h, &int_list) {
 		tmp = (struct list *)tmp_h;
 		TRACE("now tmp[%d] is free \n ", tmp->p);
 	}

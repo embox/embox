@@ -43,21 +43,21 @@ uint32_t cnt_system_time(void) {
 
 int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle) {
 	sys_tmr_t *new_timer;
-	if(list_empty(&free_sys_timers_list)) {
+	if (list_empty(&free_sys_timers_list)) {
 		return 0;
 	}
-	new_timer = (sys_tmr_t *)free_sys_timers_list.next;
+	new_timer = (sys_tmr_t *) free_sys_timers_list.next;
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->id     = id;
 	new_timer->handle = handle;
-	list_move_tail((struct list_head *)new_timer, &sys_timers_list);
+	list_move_tail((struct list_head *) new_timer, &sys_timers_list);
 	return id;
 }
 
 void close_timer(uint32_t id) {
 	struct list_head *p;
 	list_for_each(p, &free_sys_timers_list) {
-		if (id == ((sys_tmr_t *)p)->id) {
+		if (id == ((sys_tmr_t *) p)->id) {
 			list_move_tail(p, &sys_timers_list);
 		}
 	}
@@ -73,7 +73,7 @@ static void inc_sys_timers(void) {
 	sys_tmr_t *tmr;
 	list_for_each(tmp, &sys_timers_list) {
 		tmr = (sys_tmr_t *) tmp;
-		if(0 == tmr->cnt--){
+		if (0 == tmr->cnt--) {
 			tmr->handle(tmr->id);
 			tmr->cnt = tmr->load;
 		}
@@ -118,3 +118,4 @@ int usleep(useconds_t usec) {
 uint32_t sleep(uint32_t seconds) {
 	return usleep(seconds * TIMER_FREQUENCY);
 }
+

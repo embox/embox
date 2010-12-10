@@ -1,4 +1,3 @@
-$_CPPFLAGS += -I$($_PLATFORM)/include
 
 $_MODS += nxt_snake
 

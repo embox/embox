@@ -6,12 +6,11 @@
  * @author Nikolay Korotky
  */
 
+#include <stdio.h>
 #include <fs/fs.h>
 #include <fs/vfs.h>
-
 #include <mod/core.h>
 #include <util/array.h>
-
 #include <embox/device.h>
 
 ARRAY_DIFFUSE_DEF(const device_module_t, __device_registry);
@@ -30,9 +29,9 @@ static int devfs_mount(void *par) {
 		return 0;/*folder already exist*/
 	}
 
-	for(i = 0; i < ARRAY_DIFFUSE_SIZE(__device_registry); i ++) {
-		if(NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
-			devnod->file_info = (void*)__device_registry[i].fops;
+	for (i = 0; i < ARRAY_DIFFUSE_SIZE(__device_registry); i++) {
+		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
+			devnod->file_info = (void*) __device_registry[i].fops;
 			devnod->fs_type = &devfs_drv;
 		}
 	}

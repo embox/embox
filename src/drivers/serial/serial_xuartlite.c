@@ -47,13 +47,13 @@ typedef volatile struct uart_regs {
 #define CTRL_RST_TX_FIFO             REVERSE_MASK(CTRL_RST_TX_FIFO_BIT)
 
 /*set registers base*/
-uart_regs_t *uart =  (uart_regs_t *)XILINX_UARTLITE_BASEADDR;
+uart_regs_t *uart = (uart_regs_t *) XILINX_UARTLITE_BASEADDR;
 
-inline static int is_rx_empty(void){
+inline static int is_rx_empty(void) {
 	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
 }
 
-inline static int can_tx_trans(void){
+inline static int can_tx_trans(void) {
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 
@@ -66,7 +66,7 @@ char uart_getc(void) {
 	return (char) (uart->rx_data & 0xFF);
 }
 
-void uart_putc(char ch){
+void uart_putc(char ch) {
 	while (!can_tx_trans());
 	uart->tx_data = (unsigned int)ch;
 }
@@ -82,7 +82,7 @@ char diag_getc(void) {
 	return uart_getc();
 }
 
-void diag_putc(char ch){
+void diag_putc(char ch) {
 	uart_putc(ch);
 }
 

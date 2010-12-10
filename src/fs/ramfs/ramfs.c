@@ -29,7 +29,7 @@ static LIST_HEAD(fdesc_free);
 
 static void init_ramfs_info_pool(void) {
         size_t i;
-        for(i = 0; i < ARRAY_SIZE(fdesc_pool); i ++) {
+        for (i = 0; i < ARRAY_SIZE(fdesc_pool); i++) {
                 list_add((struct list_head *)&fdesc_pool[i], &fdesc_free);
         }
 }
@@ -38,7 +38,7 @@ static ramfs_file_description_t *ramfs_info_alloc(void) {
         ramfs_file_description_head_t *head;
         ramfs_file_description_t *desc;
 
-        if(list_empty(&fdesc_free)) {
+        if (list_empty(&fdesc_free)) {
                 return NULL;
         }
         head = (ramfs_file_description_head_t *)(&fdesc_free)->next;

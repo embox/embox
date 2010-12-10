@@ -20,7 +20,7 @@ int elf_execve(unsigned long *file_addr, char *argv[]) {
 	Elf32_Phdr *EPH;
 	ipl_t ipl;
 
-	EH = (Elf32_Ehdr *)file_addr;
+	EH = (Elf32_Ehdr *) file_addr;
 
 	if (EH->e_ident[EI_MAG0] != ELFMAG0 ||
 	    EH->e_ident[EI_MAG1] != ELFMAG1 ||
@@ -30,22 +30,22 @@ int elf_execve(unsigned long *file_addr, char *argv[]) {
 		return -1;
 	}
 
-	EPH = (Elf32_Phdr *)((char *)EH + EH->e_phoff);
+	EPH = (Elf32_Phdr *) ((char *) EH + EH->e_phoff);
 
 	ipl = ipl_save();
 	counter = EH->e_phnum;
-	while(counter--) {
+	while (counter--) {
 		if (EPH->p_type == PT_LOAD) {
 			/* Physical address equals to virtual. */
-			memcpy((void *)EPH->p_paddr, (char *)EH + EPH->p_offset, EPH->p_memsz);
+			memcpy((void *) EPH->p_paddr, (char *) EH + EPH->p_offset, EPH->p_memsz);
 		}
-		EPH = (Elf32_Phdr *)((unsigned char *)EPH + EH->e_phentsize);
+		EPH = (Elf32_Phdr *) ((unsigned char *) EPH + EH->e_phentsize);
 	}
 
 	TRACE("Data allocated.\n");
-	TRACE("Trying to start at %ld(0x%x)\n\n\n", (long)EH->e_entry, (uint32_t)EH->e_entry);
+	TRACE("Trying to start at %ld(0x%x)\n\n\n", (long) EH->e_entry, (uint32_t)EH->e_entry);
 
-	function_main = (int (*)(int argc, char *argv[]))EH->e_entry;
+	function_main = (int (*)(int argc, char *argv[])) EH->e_entry;
 	result = function_main (0, argv);
 	ipl_restore(ipl);
 

@@ -11,13 +11,13 @@
 
 #include <asm/system.h>
 
-#define spin_lock(lock)  do { } while(0)
-#define read_lock(lock)  do { } while(0)
-#define write_lock(lock) do { } while(0)
+#define spin_lock(lock)  do { } while (0)
+#define read_lock(lock)  do { } while (0)
+#define write_lock(lock) do { } while (0)
 
-#define spin_unlock(lock)  do { } while(0)
-#define read_unlock(lock)  do { } while(0)
-#define write_unlock(lock) do { } while(0)
+#define spin_unlock(lock)  do { } while (0)
+#define read_unlock(lock)  do { } while (0)
+#define write_unlock(lock) do { } while (0)
 
 #define spin_lock_irq(lock)  local_irq_disable();
 #define read_lock_irq(lock)  local_irq_disable();

@@ -79,7 +79,7 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 	skb->h.icmph->code = icmp_param->data.icmph.code;
 	skb->h.icmph->checksum = 0;
 	skb->h.icmph->checksum = ptclbsum(skb->h.raw,
-				skb->nh.iph->tot_len - IP_HEADER_SIZE(skb->nh.iph) );
+				skb->nh.iph->tot_len - IP_HEADER_SIZE(skb->nh.iph));
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
 				icmp_param->skb->nh.iph->saddr, skb, 0);
@@ -205,12 +205,12 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	 *   MUST NOT reply to a multicast/broadcast MAC address.
 	 *   MUST reply to only the first fragment.
 	 */
-	if( (skb_in->pkt_type != PACKET_HOST) ||
-		(iph_in->frag_off & htons(IP_OFFSET)) ) {
+	if ((skb_in->pkt_type != PACKET_HOST) ||
+		(iph_in->frag_off & htons(IP_OFFSET))) {
 		return;
 	}
-	iph = (iphdr_t *)packet;
-	icmph = (icmphdr_t *)(packet + IP_HEADER_SIZE(iph_in));
+	iph = (iphdr_t *) packet;
+	icmph = (icmphdr_t *) (packet + IP_HEADER_SIZE(iph_in));
 	/* build IP header */
 	memcpy(iph, iph_in, IP_HEADER_SIZE(iph_in));
 	iph->proto = IPPROTO_ICMP;
@@ -227,7 +227,7 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	icmph->checksum = 0;
 	icmph->checksum = ptclbsum(icmph, iph->tot_len - IP_HEADER_SIZE(iph));
 
-	iov.iov_base = (void*)packet;
+	iov.iov_base = (void *) packet;
 	iov.iov_len = IP_HEADER_SIZE(iph) + ICMP_HEADER_SIZE + DATA_SIZE(iph);
 	m.msg_iov = &iov;
 	kernel_sendmsg(NULL, __icmp_socket, &m, iov.iov_len);
@@ -312,7 +312,7 @@ static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
 void __init icmp_init(void) {
 	int err;
 	err = sock_create_kern(PF_INET, SOCK_RAW, IPPROTO_ICMP, &__icmp_socket);
-	if(err < 0) {
+	if (err < 0) {
 		printf("Failed to create ICMP control socket.\n");
 	}
 }
@@ -337,7 +337,7 @@ int icmp_rcv(sk_buff_t *pack) {
 	 * RFC 1122: 3.2.2.8 An ICMP_TIMESTAMP MAY be silently
 	 *        discarded if to broadcast/multicast.
 	 */
-	if ( 0 /* (IFF_BROADCAST | IFF_MULTICAST) */) {
+	if (0 /* (IFF_BROADCAST | IFF_MULTICAST) */) {
 		if (icmph->type == ICMP_ECHO ||
 			icmph->type == ICMP_TIMESTAMP) {
 			return -1;
@@ -353,7 +353,7 @@ int icmp_rcv(sk_buff_t *pack) {
 	//TODO: check summ icmp? not need, if ip checksum is ok.
 	tmp = icmph->checksum;
 	icmph->checksum = 0;
-	if( tmp != ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE(pack->nh.iph))) {
+	if (tmp != ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE(pack->nh.iph))) {
 		LOG_ERROR("bad icmp checksum\n");
 		return -1;
 	}

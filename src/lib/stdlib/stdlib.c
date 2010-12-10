@@ -46,22 +46,22 @@ double atof(const char *s) {
 
 skipws:
 	c = *s;
-	if(!isdigit(c) && c != '-' && c != '+') {
+	if (!isdigit(c) && c != '-' && c != '+') {
 		s++;
 		goto skipws;
 	}
-	if(c == '-') {
+	if (c == '-') {
 		sign++;
 		s++;
-	} else if(c == '+') {
+	} else if (c == '+') {
 		s++;
 	}
-	if(!isdigit(*s)) {
+	if (!isdigit(*s)) {
 		goto skipws;
 	}
 val:
 	c = *s;
-	if(isdigit(c)) {
+	if (isdigit(c)) {
 		val = val * 10 + (c - '0');
 		s++;
 		goto val;
@@ -72,7 +72,7 @@ val:
 	}
 power:
 	c = *s;
-	if(isdigit(c)) {
+	if (isdigit(c)) {
 		val = val * 10 + (c - '0');
 		power *= 10;
 		s++;
@@ -88,22 +88,22 @@ int atoi(const char *s) {
 
 skipws:
 	c = *s;
-	if(!isdigit(c) && c != '-' && c != '+') {
+	if (!isdigit(c) && c != '-' && c != '+') {
 		s++;
 	goto skipws;
 	}
-	if(c == '-') {
+	if (c == '-') {
 		sign++;
 		s++;
-	} else if(c == '+') {
+	} else if (c == '+') {
 		s++;
 	}
-	if(!isdigit(*s)) {
+	if (!isdigit(*s)) {
 		goto skipws;
 	}
 conv:
 	c = *s;
-	if(isdigit(c)) {
+	if (isdigit(c)) {
 		a = a*10 + (c - '0');
 		s++;
 		goto conv;

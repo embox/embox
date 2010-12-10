@@ -44,7 +44,6 @@ C_ENTRY(_interrupt_handler):
 	addik	r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */
 
 
-
 C_ENTRY(_user_exception):
 C_ENTRY(_debug_exception):
 #if 0

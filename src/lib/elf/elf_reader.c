@@ -167,7 +167,7 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 	long offset;
 	uint8_t rev = hdr->e_ident[EI_DATA];
 
-	if(sections_names == 0) {
+	if (sections_names == 0) {
 		return -3;
 	}
 
@@ -179,14 +179,14 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 	*ret_length = 0;
 
 	for (i = 0; i < S_REV(hdr->e_shnum, rev) ; i++) {
-		if (L_REV(section_hdr_table[i].sh_type, rev) != SHT_STRTAB ) {
+		if (L_REV(section_hdr_table[i].sh_type, rev) != SHT_STRTAB) {
 			continue;
 		}
 		length = read_name(sections_names ,L_REV(
 		                           section_hdr_table[i].sh_name,
 		                           rev), section_name);
 
-		if(length && strstr((const char*)section_name, ".strtab")) {
+		if (length && strstr((const char*) section_name, ".strtab")) {
 			/*We found section with name .strtab and type SHT_STRTAB*/
 			/*such strings ,must contain symbol names*/
 			offset = L_REV(section_hdr_table[i].sh_offset, rev);

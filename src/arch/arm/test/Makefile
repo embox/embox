@@ -1,4 +1,4 @@
 
 $_PACKAGE := embox.hal.test
 
-$_MODS += mmu irq traps
+#$_MODS += mmu irq traps

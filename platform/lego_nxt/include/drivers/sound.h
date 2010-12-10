@@ -5,8 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef SOUND_H_
-#define SOUND_H_
+#ifndef NXT_SOUND_H_
+#define NXT_SOUND_H_
 
 #include <types.h>
 
@@ -24,10 +24,11 @@ typedef SAMPLEWORD *(*sound_handler_t)(void);
 /* start playing sound with initial buffers
  * @param ms = 0: continuous playing, stops only at explicit stop
  * @param ms != 0: playing specified time */
-void sound_start_play(uint32_t freq, useconds_t ms,
+extern void sound_start_play(uint32_t freq, useconds_t ms,
 	SAMPLEWORD *buff, SAMPLEWORD *next_buff, sound_handler_t sound_hnd);
 
 /* stop playing anything */
-void sound_stop_play(void);
+extern void sound_stop_play(void);
 
-#endif /* SOUND_H_ */
+#endif /* NXT_SOUND_H_ */
+

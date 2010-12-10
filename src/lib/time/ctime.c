@@ -28,7 +28,7 @@ char *ctime(const time_t *t, char *buff) {
 	while (time - day_of_month >= 0) {
 		time -= day_of_month;
 		month++;
-		if( month == 2) {
+		if (month == 2) {
 			day_of_month = (year % 4) ? MONTH_29 : MONTH_28;
 		} else if (month < 8) {
 			day_of_month = (month % 2) ? MONTH_31 : MONTH_30;

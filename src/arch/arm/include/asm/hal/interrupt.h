@@ -9,5 +9,4 @@
 typedef unsigned char __interrupt_nr_t;
 typedef unsigned long __interrupt_mask_t;
 
-
 #endif /*__ASSEMBLER__*/

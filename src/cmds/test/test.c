@@ -100,7 +100,7 @@ static struct test *get_test(int nr) {
 	}
 
 	test_foreach(test) {
-		if(++i == nr) {
+		if (++i == nr) {
 			break;
 		}
 	}

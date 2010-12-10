@@ -29,63 +29,65 @@ static uint8_t pict_buff11[8] = {0x03, 0x0F, 0x3F, 0xFF, 0xFF, 0xFC, 0xF0, 0xC0}
 static uint8_t pict_buff12[8] = {0xC0, 0xF0, 0xFC, 0xFF, 0xFF, 0x3F, 0x0F, 0x03};
 static uint8_t pict_buff13[8] = {0xC3, 0xE7, 0xFF, 0xFF, 0xFF, 0xFF, 0xE7, 0xC3};
 
-static void display_e(uint8_t x, uint8_t y){
+static void display_e(uint8_t x, uint8_t y) {
 	display_draw(x, y, 1, 8, &pict_buff1[0]);
-	display_draw(x+8, y, 1, 8, &pict_buff2[0]);
-	display_draw(x, y+1, 1, 8, &pict_buff3[0]);
-	display_draw(x+8, y+1, 1, 8, &pict_buff4[0]);
-	display_draw(x, y+2, 1, 8, &pict_buff3[0]);
-	display_draw(x+8, y+2, 1, 8, &pict_buff5[0]);
+	display_draw(x + 8, y, 1, 8, &pict_buff2[0]);
+	display_draw(x, y + 1, 1, 8, &pict_buff3[0]);
+	display_draw(x + 8, y + 1, 1, 8, &pict_buff4[0]);
+	display_draw(x, y + 2, 1, 8, &pict_buff3[0]);
+	display_draw(x + 8, y + 2, 1, 8, &pict_buff5[0]);
 	nxt_lcd_force_update();
 }
 
-static void display_b(uint8_t x, uint8_t y){
+static void display_b(uint8_t x, uint8_t y) {
 	display_draw(x, y, 1, 8, &pict_buff1[0]);
-	display_draw(x+8, y, 1, 8, &pict_buff8[0]);
-	display_draw(x, y+1, 1, 8, &pict_buff9[0]);
-	display_draw(x+8, y+1, 1, 8, &pict_buff3[0]);
-	display_draw(x, y+2, 1, 8, &pict_buff3[0]);
-	display_draw(x+8, y+2, 1, 8, &pict_buff4[0]);
+	display_draw(x + 8, y, 1, 8, &pict_buff8[0]);
+	display_draw(x, y + 1, 1, 8, &pict_buff9[0]);
+	display_draw(x + 8, y + 1, 1, 8, &pict_buff3[0]);
+	display_draw(x, y + 2, 1, 8, &pict_buff3[0]);
+	display_draw(x + 8, y + 2, 1, 8, &pict_buff4[0]);
 	nxt_lcd_force_update();
 }
 
-static void display_m(uint8_t x, uint8_t y){
+static void display_m(uint8_t x, uint8_t y) {
 	display_draw(x, y, 1, 8, &pict_buff3[0]);
-	display_draw(x+8, y, 1, 8, &pict_buff5[0]);
-	display_draw(x, y+1, 1, 8, &pict_buff6[0]);
-	display_draw(x+8, y+1, 1, 8, &pict_buff7[0]);
-	display_draw(x, y+2, 1, 8, &pict_buff6[0]);
-	display_draw(x+8, y+2, 1, 8, &pict_buff7[0]);
+	display_draw(x + 8, y, 1, 8, &pict_buff5[0]);
+	display_draw(x, y + 1, 1, 8, &pict_buff6[0]);
+	display_draw(x + 8, y + 1, 1, 8, &pict_buff7[0]);
+	display_draw(x, y + 2, 1, 8, &pict_buff6[0]);
+	display_draw(x + 8, y + 2, 1, 8, &pict_buff7[0]);
 	nxt_lcd_force_update();
 }
 
-static void display_o(uint8_t x, uint8_t y){
+static void display_o(uint8_t x, uint8_t y) {
 	display_draw(x, y, 1, 8, &pict_buff1[0]);
-	display_draw(x+8, y, 1, 8, &pict_buff2[0]);
-	display_draw(x, y+1, 1, 8, &pict_buff8[0]);
-	display_draw(x+8, y+1, 1, 8, &pict_buff10[0]);
-	display_draw(x, y+2, 1, 8, &pict_buff3[0]);
-	display_draw(x+8, y+2, 1, 8, &pict_buff4[0]);
+	display_draw(x + 8, y, 1, 8, &pict_buff2[0]);
+	display_draw(x, y + 1, 1, 8, &pict_buff8[0]);
+	display_draw(x + 8, y + 1, 1, 8, &pict_buff10[0]);
+	display_draw(x, y + 2, 1, 8, &pict_buff3[0]);
+	display_draw(x + 8, y + 2, 1, 8, &pict_buff4[0]);
 	nxt_lcd_force_update();
 }
 
-static void display_x(uint8_t x, uint8_t y){
+static void display_x(uint8_t x, uint8_t y) {
 	display_draw(x, y, 1, 8, &pict_buff11[0]);
-	display_draw(x+8, y, 1, 8, &pict_buff12[0]);
-	display_draw(x+4, y+1, 1, 8, &pict_buff13[0]);
-	display_draw(x, y+2, 1, 8, &pict_buff12[0]);
-	display_draw(x+8, y+2, 1, 8, &pict_buff11[0]);
+	display_draw(x + 8, y, 1, 8, &pict_buff12[0]);
+	display_draw(x + 4, y + 1, 1, 8, &pict_buff13[0]);
+	display_draw(x, y + 2, 1, 8, &pict_buff12[0]);
+	display_draw(x + 8, y + 2, 1, 8, &pict_buff11[0]);
 	nxt_lcd_force_update();
 }
 
-static void display_clean_sp(uint8_t x, uint8_t y){
-	for(int t=0; t<10; t++){
-			for (int k=0; k<3; k++){
-				display_draw(x+t, y+k, 1, 8, &pict_buff0[0]);
-			}
+static void display_clean_sp(uint8_t x, uint8_t y) {
+	size_t t, k;
+	for (t = 0; t < 10; t++) {
+		for (k = 0; k < 3; k++) {
+			display_draw(x + t, y + k, 1, 8, &pict_buff0[0]);
+		}
 	}
 	nxt_lcd_force_update();
 }
+
 static int run_abc_embox(void) {
 	display_clear_screen();
 	display_e(2, 3);

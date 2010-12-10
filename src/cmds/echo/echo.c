@@ -40,7 +40,7 @@ static int raw_echo_server(void) {
 		LOG_ERROR("socket error\n");
 		return -1;
 	}
-	while(1) {
+	while (1) {
 		if (recvfrom(fd, datagram, 1024, 0, (struct sockaddr *)&from, &fromlen) > 0) {
 			//printf ("Caught udp packet: %s\n", datagram + IP_HEADER_SIZE + UDP_HEADER_SIZE);
 			tmp_addr = iph->saddr;
@@ -52,8 +52,8 @@ static int raw_echo_server(void) {
 			udph->dest = tmp_port;
 			udph->check = 0;
 			iph->check = 0;
-			iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE(iph));
-			sendto(fd, datagram, iph->tot_len, 0, (struct sockaddr *)&from, fromlen);
+			iph->check = ptclbsum((void*) iph, IP_HEADER_SIZE(iph));
+			sendto(fd, datagram, iph->tot_len, 0, (struct sockaddr *) &from, fromlen);
 		}
 		usleep(10);
 	}
@@ -74,15 +74,15 @@ static int udp_echo_server(void) {
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
 	server.sin_port = htons(33);
-	if(bind(fd, (struct sockaddr *)&server, sizeof(struct sockaddr_in)) == -1) {
+	if (bind(fd, (struct sockaddr *) &server, sizeof(struct sockaddr_in)) == -1) {
 		close(fd);
 		return -1;
 	}
 	while (1) {
-		len = recvfrom(fd, buf, 1024, 0, (struct sockaddr *)&from, &fromlen);
-		if ( len > 0) {
+		len = recvfrom(fd, buf, 1024, 0, (struct sockaddr *) &from, &fromlen);
+		if (len > 0) {
 			//printf ("Caught udp packet: %s\n", buf);
-			sendto(fd, buf, len, 0, (struct sockaddr *)&from, fromlen);
+			sendto(fd, buf, len, 0, (struct sockaddr *) &from, fromlen);
 		}
 		usleep(10);
 	}
@@ -98,10 +98,10 @@ static int udp_client(void) {
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = inet_addr("192.168.0.59");
 	server.sin_port = htons(33);
-	sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&server, 0);
-	while(1) {
-		len = recvfrom(fd, buf, 256, 0, (struct sockaddr *)&from, NULL);
-		if(len > 0) {
+	sendto(fd, buf, strlen(buf), 0, (struct sockaddr *) &server, 0);
+	while (1) {
+		len = recvfrom(fd, buf, 256, 0, (struct sockaddr *) &from, NULL);
+		if (len > 0) {
 			printf ("Caught udp packet: %s\n", buf);
 			break;
 		}
@@ -131,7 +131,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	switch(type) {
 	case 0:

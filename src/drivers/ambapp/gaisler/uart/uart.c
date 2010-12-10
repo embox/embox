@@ -199,8 +199,8 @@ static size_t write(const void *buff, size_t size, size_t count, void *file) {
 	size_t cnt = 0;
 	char *b = (char*)buff;
 
-	while(cnt != count * size) {
-		uart_putc(b[cnt]);
+	while (cnt != count * size) {
+		uart_putc(b[cnt++]);
 	}
 	return 0;
 }

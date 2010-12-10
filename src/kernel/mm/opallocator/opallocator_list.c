@@ -100,7 +100,7 @@ void *opalloc(void) {
 	/* check finded block */
 
 	/* change list and return value */
-	if (pcur->psize > 1 ) { /* 1 := psize */
+	if (pcur->psize > 1) { /* 1 := psize */
 		tt = (pmark_t *) ((unsigned long) pcur +
 			(unsigned long) CONFIG_PAGE_SIZE * (unsigned long) 1);
 		/* 1:= psize */
@@ -108,7 +108,7 @@ void *opalloc(void) {
 		tmp = cmark_p->pnext;
 		cmark_p->pprev->pnext = tt;
 		tmp->pprev = tt;
-		cmark_p = copy_mark( pcur , tt );
+		cmark_p = copy_mark(pcur, tt);
 		return pcur;
 	} else {/* psize =: 1 == pcur->psize */
 		if (pcur->pnext == pcur) { /* it's last block */

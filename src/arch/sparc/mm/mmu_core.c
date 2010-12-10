@@ -142,7 +142,7 @@ mmu_ctx_t mmu_create_context(void) {
 void mmu_delete_context(mmu_ctx_t ctx) {
 	used_context[ctx] = 0;
 	LOG_DEBUG("delete %d\n",ctx);
-	mmu_table_free((unsigned long *) (((unsigned long) (*( cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4), 1);
+	mmu_table_free((unsigned long *) (((unsigned long) (*(cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4), 1);
 }
 
 void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {

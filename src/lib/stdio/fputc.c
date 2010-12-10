@@ -18,7 +18,7 @@ int fputc(FILE f, int c) {
 	printk("try fputc. device_desc: %d, code of char: %d, char: %c\n",f,c,c);
 #endif
 	char tmp = c;
-	return device_write( f , &tmp , sizeof(char));
+	return device_write(f, &tmp, sizeof(char));
 }
 #endif
 

@@ -23,7 +23,7 @@ volatile static int flag1 = 0;
  * Output string and set global flag
  */
 static void handler1(softirq_nr_t nt, void* data) {
-	TRACE("softirq #%d, data: %s\n", nt, (char*)data);
+	TRACE("softirq #%d, data: %s\n", nt, (char*) data);
 	flag1 = 1;
 }
 
@@ -32,7 +32,7 @@ static void handler1(softirq_nr_t nt, void* data) {
  * Raise itself several times
  */
 static void handler2(softirq_nr_t nt, void* data) {
-	int* count = (int*)data;
+	int* count = (int*) data;
 
 	TRACE("softirq #%d, data: %d\n", nt, *count);
 

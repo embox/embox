@@ -143,7 +143,7 @@ int sock_create_kern(int family, int type, int protocol, struct socket **res) {
 
 int kernel_bind(struct socket *sock, const struct sockaddr *addr,
 			socklen_t addrlen) {
-	return sock->ops->bind(sock, (struct sockaddr *)addr, addrlen);
+	return sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 }
 
 int kernel_listen(struct socket *sock, int backlog) {
@@ -162,7 +162,7 @@ int kernel_accept(struct socket *sock, struct socket **newsock, int flags) {
 
 int kernel_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
-	return sock->ops->connect(sock, (struct sockaddr *)addr, addrlen, flags);
+	return sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
 }
 
 int kernel_getsockname(struct socket *sock,
@@ -226,7 +226,7 @@ struct socket *sockfd_lookup(int fd) {
 int sock_get_fd(struct socket *sock) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(sockets_pull); i++) {
-		if(&(&sockets_pull[i])->sock == sock) {
+		if (&(&sockets_pull[i])->sock == sock) {
 			return (&sockets_pull[i])->sockfd;
 		}
 	}
@@ -253,7 +253,7 @@ int sock_register(const struct net_proto_family *ops) {
 }
 
 void sock_unregister(int family) {
-	if(family < 0 || family >= NPROTO) {
+	if (family < 0 || family >= NPROTO) {
 		return;
 	}
 

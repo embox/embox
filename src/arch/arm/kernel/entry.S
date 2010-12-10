@@ -32,7 +32,7 @@ IRQ_handler:
 	mrs		LR, SPSR
 	stmfd	sp!, {r0-r12, lr}
 
-#ifdef CONFIG_MEASURE_IRQ
+#ifdef CONFIG_MEASURE
 	bl measure_start
 	bl measure_stop
 	bl measure_irq_measure_overhead
@@ -53,7 +53,7 @@ IRQ_handler:
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT /* going to SVC mode, still disabling interrupts */
 	stmfd sp!, {lr} /* stoirqring address of returning in interrupted program flow */
 
-#ifdef CONFIG_MEASURE_IRQ
+#ifdef CONFIG_MEASURE
 	stmfd sp!, {r0}
 	bl measure_stop
 	bl measure_irq_head_process
@@ -72,7 +72,7 @@ IRQ_handler:
 #endif
 
 /*measure irq dispatch*/
-#ifdef CONFIG_MEASURE_IRQ
+#ifdef CONFIG_MEASURE
 	bl	measure_stop
 	mov r1, r0
 	ldmfd sp!, {r0}
@@ -88,7 +88,7 @@ IRQ_handler:
 	ldr	r1, =AT91C_AIC_EOICR
 	str	r0, [r1]
 
-#ifdef CONFIG_MEASURE_IRQ
+#ifdef CONFIG_MEASURE
 	bl measure_stop
 	bl measure_irq_tail_process
 #endif

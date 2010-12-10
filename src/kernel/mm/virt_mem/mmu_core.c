@@ -69,10 +69,10 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	phy_addr &= ~MMU_PAGE_MASK;
 	virt_addr &= ~MMU_PAGE_MASK;
 	reg_size &= ~MMU_PAGE_MASK;
-	treg_size = reg_size & (~(MMU_PAGE_MASK ));
+	treg_size = reg_size & (~(MMU_PAGE_MASK));
 	/* will map the best fitting area on each step
 	 * will choose smaller area, while not found the best fitting */
-	while ( treg_size > 0) {
+	while (treg_size > 0) {
 		for (cur_level = 1; cur_level < 4; cur_level++) {
 			cur_offset = ((virt_addr & mmu_table_masks[cur_level])
 				>> blog2(mmu_table_masks[cur_level]));

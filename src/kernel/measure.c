@@ -17,9 +17,9 @@ EMBOX_UNIT_INIT(measure_init);
 
 static uint32_t unit_clocks_per_tick = 0;
 
-static measure_time_t irq_process[INTERRUPT_NRS_TOTAL];
-static measure_time_t irq_head, irq_tail;
-static measure_time_t measure_overhead;
+measure_time_t irq_process[INTERRUPT_NRS_TOTAL];
+measure_time_t irq_head, irq_tail;
+measure_time_t measure_overhead;
 
 static int measure_init() {
 	int i = 0;
@@ -68,10 +68,6 @@ measure_time_t *measure_stop(void) {
 
 void measure_irq_process(interrupt_nr_t interrupt, measure_time_t *time) {
 	irq_process[interrupt] = *time;
-}
-
-void measure_irq_print(void) {
-	/*output for analyzes*/
 }
 
 void measure_irq_measure_overhead(measure_time_t *time) {

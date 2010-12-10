@@ -23,8 +23,8 @@ static int print_arp_cache(void *ifdev) {
 	unsigned char mac[18];
 	net_device_t *net_dev;
 	struct in_addr addr;
-	for(i = 0; i < ARP_CACHE_SIZE; i++) {
-		if((arp_tables[i].state == 1) &&
+	for (i = 0; i < ARP_CACHE_SIZE; i++) {
+		if ((arp_tables[i].state == 1) &&
 		   (ifdev == NULL || ifdev == arp_tables[i].if_handler)) {
 			net_dev = arp_tables[i].if_handler->dev;
 			macaddr_print(mac, arp_tables[i].hw_addr);
@@ -63,7 +63,7 @@ static int exec(int argsc, char **argsv) {
 				}
 				break;
 			case 'm':
-				if (NULL == macaddr_scan((unsigned char *)optarg, hwaddr)) {
+				if (NULL == macaddr_scan((unsigned char *) optarg, hwaddr)) {
 					LOG_ERROR("wrong mac addr format %s\n", optarg);
 					return -1;
 				}
@@ -79,7 +79,7 @@ static int exec(int argsc, char **argsv) {
 			default:
 				return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	switch(op) {
 	case 0:

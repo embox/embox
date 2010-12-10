@@ -82,7 +82,7 @@ static struct list_head *get_priority_list(thread_priority_t priority) {
 	if (idle_thread->priority == priority) {
 		return priority_head->thread_list;
 	}
-	list_for_each(p, (struct list_head *)priority_head) {
+	list_for_each(p, (struct list_head *) priority_head) {
 		if (((priority_head_t *) p)->priority_id == priority) {
 			return ((priority_head_t *) p)->thread_list;
 		}
@@ -137,7 +137,7 @@ void _scheduler_stop(void) {
 struct thread *_scheduler_next(struct thread *prev_thread) {
 	struct thread *current_thread;
 
-	cur_prior = (priority_head_t *)priority_head->priority_list.next;
+	cur_prior = (priority_head_t *) priority_head->priority_list.next;
 	cur_prior->thread_list = cur_prior->thread_list->next;
 	current_thread = list_entry(cur_prior->thread_list, struct thread, sched_list);
 	current_thread->reschedule = false;

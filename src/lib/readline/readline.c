@@ -14,12 +14,12 @@ char *readline(const char *promt) {
 		return NULL;
 	}
 	printf("%s", promt);
-	return (char *)tty_readline(cur_tty);
+	return (char *) tty_readline(cur_tty);
 }
 
 void freeline(char* line) {
 	if (NULL == cur_tty) {
 		return;
 	}
-	tty_freeline(cur_tty, (uint8_t *)line);
+	tty_freeline(cur_tty, (uint8_t *) line);
 }

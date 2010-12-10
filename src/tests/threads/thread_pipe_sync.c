@@ -27,7 +27,7 @@ static struct thread *third_thread;
 
 static struct n_pipe *new_pipe;
 
-static void first_run(void){
+static void first_run(void) {
 	TRACE("\n First thread: \n");
 	int i;
 	i = pipe_section_read(0, 0);
@@ -39,7 +39,7 @@ static void first_run(void){
 	thread_yield();
 }
 
-static void second_run(void){
+static void second_run(void) {
 	TRACE("\n Second thread: \n");
 	int j;
 	j = pipe_section_read(0, 0);
@@ -51,7 +51,7 @@ static void second_run(void){
 	thread_yield();
 }
 
-static void third_run(void){
+static void third_run(void) {
 	TRACE("\n Third thread: \n");
 	int k;
 	k = pipe_section_read(0, 0);
@@ -64,8 +64,7 @@ static void third_run(void){
 
 }
 
-
-static int run(){
+static int run() {
 	third_thread =
 			thread_create(third_run, third_stack
 					+ THREAD_STACK_SIZE);

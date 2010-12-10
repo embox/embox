@@ -58,7 +58,16 @@ void diag_putc(int c) {
 	vga_putc(c);
 }
 
-int diag_getc() {
+int diag_getc(void) {
+	return vga_getc();
+}
+
+/*TODO: temporary */
+void uart_putc(int c) {
+	vga_putc(c);
+}
+
+int uart_getc(void) {
 	return vga_getc();
 }
 

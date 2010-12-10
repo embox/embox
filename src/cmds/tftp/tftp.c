@@ -34,7 +34,7 @@ static int create_socket(struct sockaddr_in *addr) {
 	addr->sin_addr.s_addr = htonl(INADDR_ANY);
 	addr->sin_port = htons(38666); /* TODO: catch some availible port */
 
-	if (bind(sock, (struct sockaddr *)addr, sizeof(struct sockaddr_in)) == -1) {
+	if (bind(sock, (struct sockaddr *) addr, sizeof(struct sockaddr_in)) == -1) {
 		printf("Attachement socket impossible.\n");
 		close(sock);
 		return -1;
@@ -48,12 +48,12 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 	struct sockaddr_in from;
 	char buf[PKTSIZE], ackbuf[PKTSIZE], *dat, *cp;
 	tftphdr_t *dp,*ap;
-	dp = (tftphdr_t *)buf;
-	ap = (tftphdr_t *)ackbuf;
-	dat = (char*)&dp->th_data[0];
-	cp = (char*)&ap->th_stuff[0];
+	dp = (tftphdr_t *) buf;
+	ap = (tftphdr_t *) ackbuf;
+	dat = (char *) &dp->th_data[0];
+	cp = (char *) &ap->th_stuff[0];
 
-	if((desc = create_socket(&from)) < 0) {
+	if ((desc = create_socket(&from)) < 0) {
 		return -1;
 	}
 
@@ -70,35 +70,35 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 	strcpy(cp, "0");
 	cp += strlen("0");
 	*cp++ = '\0';
-	size = (unsigned long)cp - (unsigned long)ackbuf;
+	size = (unsigned long) cp - (unsigned long) ackbuf;
 	fromlen = sizeof(struct sockaddr_in);
-	sendto(desc, ap, size, 0, (struct sockaddr *)to, fromlen);
-	while(1) {
-		size = recvfrom(desc, dp, PKTSIZE, 0, (struct sockaddr *)&from, &fromlen);
-		if(size > 0) {
-			if(dp->th_opcode == ERROR) {
+	sendto(desc, ap, size, 0, (struct sockaddr *) to, fromlen);
+	while (1) {
+		size = recvfrom(desc, dp, PKTSIZE, 0, (struct sockaddr *) &from, &fromlen);
+		if (size > 0) {
+			if (dp->th_opcode == ERROR) {
 				printf("Error %d\n",dp->th_u.tu_code);
 				break;
 			}
-			if(dp->th_opcode == DATA) {
+			if (dp->th_opcode == DATA) {
 				//printf("data: %s\n", dp->th_data);
 				fwrite(dp->th_data, size - 4, 1, file);
 				dsize += size - 4;
-				if(dsize % 0x1000 == 0) printf("Download: %d bytes\r", dsize);
+				if (dsize % 0x1000 == 0) printf("Download: %d bytes\r", dsize);
 				ap->th_opcode = htons((short)ACK);
 				ap->th_block = dp->th_block;
-				if(sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen) < 0) {
+				if (sendto(desc, ap, 4, 0, (struct sockaddr *) &from, fromlen) < 0) {
 					printf("Error occured\n");
 				}
-				if(size < PKTSIZE) {
+				if (size < PKTSIZE) {
 					break;
 				}
 			}
-			if(dp->th_opcode == OACK) {
+			if (dp->th_opcode == OACK) {
 				/* TODO: check availible memory capacity */
 				ap->th_opcode = htons((short)ACK);
 				ap->th_block = dp->th_block;
-				if(sendto(desc, ap, 4, 0, (struct sockaddr *)&from, fromlen) < 0) {
+				if (sendto(desc, ap, 4, 0, (struct sockaddr *) &from, fromlen) < 0) {
 					printf("Error occured\n");
 				}
 				break;

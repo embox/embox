@@ -101,6 +101,7 @@ static void inet_dev_show_all_info(void) {
 	}
 }
 
+/* WARNING: overly complex function. */
 static int exec(int argsc, char **argsv) {
 	in_device_t *in_dev = NULL;
 	struct in_addr ipaddr;

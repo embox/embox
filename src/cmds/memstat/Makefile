@@ -1,6 +1,6 @@
 
 $_MODS += memstat
 
-$_SRCS-memstat += *.c
+$_SRCS-memstat += memstat.c
 
 #$_DEPS-memstat += <REQ_MODS>

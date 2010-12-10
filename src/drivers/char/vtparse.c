@@ -47,7 +47,7 @@ static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 		break;
 
 	case VT_ACTION_COLLECT:
-		if(token->attrs_len == -1) {
+		if (token->attrs_len == -1) {
 			/* attrs buffer overflow. */
 			break;
 		}
@@ -61,7 +61,7 @@ static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 		break;
 
 	case VT_ACTION_PARAM:
-		if(token->params_len == -1) {
+		if (token->params_len == -1) {
 			/* params buffer overflow. */
 			break;
 		}

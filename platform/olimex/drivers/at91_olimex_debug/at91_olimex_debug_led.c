@@ -57,7 +57,7 @@ void led2_off(void) {
 #if 0
 void delay(int n) {
 	int i = n;
-	while(i) {
+	while (i) {
 		i -= 1;
 	}
 }

@@ -31,7 +31,7 @@ extern void tc_init(uint8_t channel);
 /**
  * Configure timer for counting external events
  */
-extern void tc_config_input(uint8_t channel, uint8_t clock_mode );
+extern void tc_config_input(uint8_t channel, uint8_t clock_mode);
 
 /**
  * Run & zero counter

@@ -32,9 +32,9 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
-	if(argsc > 1) {
+	if (argsc > 1) {
 		vfs_add_path(argsv[argsc - 1], NULL);
 	}
 

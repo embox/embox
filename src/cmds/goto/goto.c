@@ -30,7 +30,7 @@ static void go_to(uint32_t addr) {
 	((IMAGE_ENTRY)addr)();
 }
 
-static int exec(int argsc, char **argsv){
+static int exec(int argsc, char **argsv) {
 	int nextOption;
 	uint32_t addr = 0;
 	getopt_init();
@@ -56,7 +56,7 @@ static int exec(int argsc, char **argsv){
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	return 0;
 }

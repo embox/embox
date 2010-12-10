@@ -17,9 +17,9 @@
 #include <drivers/terminal.h>
 
 #define EDIT_MODEL(console, update, action) \
-		do if(action) { \
+		do if (action) { \
 			(update)((console)->view, (console)->model); \
-		} while(0)
+		} while (0)
 
 #define CB_MODEL(cb) (((CONSOLE *) cb->outer)->model)
 #define CB_EDIT_MODEL(action) \
