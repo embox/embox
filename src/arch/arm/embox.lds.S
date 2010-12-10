@@ -27,6 +27,8 @@ SECTIONS {
 		ALIGNMENT();
 		*(.eh_frame)
 		ALIGNMENT();
+		*(.glue_7t) *(.glue_7)
+		ALIGNMENT();
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
