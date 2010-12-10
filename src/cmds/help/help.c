@@ -38,7 +38,7 @@ static int exec(int argsc, char **argsv) {
 	for (shell_desc = shell_command_descriptor_find_first((char *) NULL, 0);
 	    NULL != shell_desc;
 	    shell_desc = shell_command_descriptor_find_next(shell_desc, (char *) NULL, 0)) {
-		printf("%10s\t - %s\n", shell_desc->name, shell_desc->description);
+		printf("%11s\t - %s\n", shell_desc->name, shell_desc->description);
 	}
 	return 0;
 }

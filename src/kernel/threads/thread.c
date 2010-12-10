@@ -16,7 +16,6 @@
 #include <hal/ipl.h>
 #include <embox/unit.h>
 
-#define MAX_THREADS_COUNT 0x100
 #define THREAD_STACK_SIZE 0x10000
 #define MAX_MSG_COUNT 100
 
@@ -29,10 +28,10 @@ struct thread *current_thread;
 static char idle_thread_stack[THREAD_STACK_SIZE];
 
 /** A mask, which shows, what places for new threads are free. */
-static int mask[MAX_THREADS_COUNT];
+static int mask[THREADS_POOL_SIZE];
 
 /** Pool, containing threads. */
-static struct thread threads_pool[MAX_THREADS_COUNT];
+static struct thread threads_pool[THREADS_POOL_SIZE];
 
 /** Shows what messages are free. */
 static bool msg_mask[MAX_MSG_COUNT];
@@ -84,7 +83,7 @@ static void thread_run(int par) {
 static struct thread *thread_new(void) {
 	size_t i;
 	struct thread *created_thread;
-	for (i = 0; i < MAX_THREADS_COUNT; i++) {
+	for (i = 0; i < THREADS_POOL_SIZE; i++) {
 		if (mask[i] == 0) {
 			created_thread = threads_pool + i;
 			created_thread->id = i;
@@ -212,4 +211,8 @@ int msg_erase(struct message *message) {
 	}
 	msg_mask[message - messages_pool] = 0;
 	return 0;
+}
+
+struct thread *thread_get_pool() {
+	return threads_pool;
 }
