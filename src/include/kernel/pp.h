@@ -18,9 +18,6 @@
 #define PP_INIT_LIST \
 	PP_VAR( cur_console ) /* from: stdio.h */
 
-#define PP_SIZEOF_LIST \
-	sizeof(cur_console)
-
 #define PP_INIT_LIST_S 		1
 #define PP_THREADS_S 		10
 
