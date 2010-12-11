@@ -48,6 +48,10 @@ IRQ_handler:
 	ldr	r1, =0x1f
 	and	r0, r1
 
+	/*telling AIC "we've done"*/
+	ldr	r1, =AT91C_AIC_EOICR
+	str	r0, [r1]
+
 	/*going to higher level handler, passing first arg number of source interrupt */
 	mov	r1, #0
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT /* going to SVC mode, still disabling interrupts */
@@ -83,10 +87,6 @@ IRQ_handler:
 	ldmfd sp!, {lr}
 	/* now interrupted program is unaffected, interrupt serviced, correctly exiting handler */
 	msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT /*disable interrupts, restoring state better uninterrupted */
-
-	/*telling AIC "we've done"*/
-	ldr	r1, =AT91C_AIC_EOICR
-	str	r0, [r1]
 
 #ifdef CONFIG_MEASURE
 	bl measure_stop
