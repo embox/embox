@@ -16,6 +16,10 @@
 #include <queue.h>
 #include <string.h>
 
+#ifdef CONFIG_PP_ENABLE
+#include <kernel/pp.h>
+#endif
+
 #define THREADS_POOL_SIZE 0x100
 
 typedef int thread_id_t;
@@ -105,6 +109,10 @@ struct thread {
 	 * Is needed for heap_scheduler.
 	 */
 	bool run_count;
+	/* Pseudo process */
+	#ifdef CONFIG_PP_ENABLE
+	pprocess_t *pp;
+	#endif
 };
 
 /**

@@ -16,6 +16,10 @@
 #include <hal/ipl.h>
 #include <embox/unit.h>
 
+#ifdef CONFIG_PP_ENABLE
+#include <kernel/pp.h>
+#endif
+
 #define THREAD_STACK_SIZE 0x10000
 #define MAX_MSG_COUNT 100
 
@@ -108,6 +112,9 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	created_thread->state = THREAD_STATE_STOP;
 	created_thread->priority = 1;
 	created_thread->need_message = false;
+	#ifdef CONFIG_PP_ENABLE
+	pp_add_thread( cur_process, created_thread );
+	#endif
 	queue_init(&created_thread->messages);
 	event_init(&created_thread->msg_event);
 	LOG_DEBUG("Alloted thread id = %d\n", created_thread->id);
@@ -135,6 +142,9 @@ static int thread_delete(struct thread *deleted_thread) {
 		return -EINVAL;
 	}
 	LOG_DEBUG("\nDeleting %d\n", deleted_thread->id);
+	#ifdef CONFIG_PP_ENABLE
+	pp_del_thread( deleted_thread->pp , deleted_thread );
+	#endif
 	deleted_thread->state = THREAD_STATE_STOP;
 	deleted_thread->exist = false;
 	mask[deleted_thread - threads_pool] = 0;

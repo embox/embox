@@ -27,6 +27,7 @@ typedef struct vconsole {
 } vconsole_t;
 
 extern vconsole_t const *sys_console;
+extern vconsole_t *cur_console;
 
 extern int vconsole_activate( vconsole_t *con );
 extern int vconsole_deactivate( vconsole_t *con );

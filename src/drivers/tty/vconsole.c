@@ -12,6 +12,7 @@
 #include <fs/file.h>
 
 static vconsole_t def_console;
+static vconsole_t *cur_console;
 vconsole_t const *sys_console = &def_console;
 
 EMBOX_UNIT_INIT(vconsole_init);

@@ -85,6 +85,13 @@ void scheduler_dispatch(void) {
 		current_thread = _scheduler_next(current_thread);
 		current_thread->reschedule = false;
 
+		#ifdef CONFIG_PP_ENABLE
+		if (current_thread->pp != prev_thread->pp) {
+			pp_store( prev_thread->pp->data );
+			pp_restore( current_thread->pp->data );
+		}
+		#endif
+
 		LOG_DEBUG("\nSwitching from %d to %d\n",
 			prev_thread->id, current_thread->id);
 		ipl = ipl_save();
