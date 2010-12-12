@@ -34,7 +34,7 @@ int main(void) {
 	printf("%f\n", delta_time);
 	ptr_arr = (int**) malloc(sizeof(int*) * COUNT);
 	QueryPerformanceCounter((LARGE_INTEGER *) &gstart_time);
-	for (i = 0; i < SIZE; i++) {
+	for (i = 0; i < COUNT; i++) {
 		ptr_arr[i] = (int*) malloc(sizeof(int));
 	}
 	QueryPerformanceCounter((LARGE_INTEGER *) &glast_time);
@@ -42,7 +42,7 @@ int main(void) {
 	pseudu_delta_time = (double) ((double) ((glast_time - gstart_time) * 1000)
 			/ (double) freq);
 	QueryPerformanceCounter((LARGE_INTEGER *) &gstart_time);
-	for (i = 0; i < SIZE; i++) {
+	for (i = 0; i < COUNT; i++) {
 	}
 	QueryPerformanceCounter((LARGE_INTEGER *) &gstart_time);
 	cycle_time = (double) ((double) ((glast_time - gstart_time) * 1000)
