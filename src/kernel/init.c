@@ -17,7 +17,6 @@
 #include <kernel/diag.h>
 #include <embox/runlevel.h>
 
-void main(void);
 static void kernel_init(void);
 static int init(void);
 // XXX remove from here. -- Eldar
@@ -31,8 +30,6 @@ void kernel_start(void) {
 	kernel_init();
 
 	init();
-
-	main();
 
 	while (1) {
 		arch_idle();
@@ -63,10 +60,10 @@ static int init(void) {
 	int ret = 0;
 	const runlevel_nr_t target_level = RUNLEVEL_NRS_TOTAL - 1;
 
-	TRACE("EMBOX kernel start\n");
+	prom_printf("EMBOX kernel start\n");
 
 	if (0 != (ret = runlevel_set(target_level))) {
-		TRACE("Failed to get into level %d, current level %d\n",
+		prom_printf("Failed to get into level %d, current level %d\n",
 				target_level, runlevel_get_entered());
 	}
 	return ret;

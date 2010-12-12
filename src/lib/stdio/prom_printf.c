@@ -28,7 +28,7 @@ static void printchar(char **str, int c) {
 		diag_putc((char) c);
 	}
 }
-#ifdef CONFIG_PROM_PRINTF
+
 int prom_printf(const char *format, ...) {
 	int ret;
 	va_list args;
@@ -39,4 +39,4 @@ int prom_printf(const char *format, ...) {
 
 	return ret;
 }
-#endif
+
