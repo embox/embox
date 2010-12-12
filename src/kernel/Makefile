@@ -15,7 +15,7 @@ $_MODS_CORE += main
 $_MODS += irq timer softirq job drv_subsys #printk
 $_MODS += printk
 
-$_SRCS-main += main.c
+#$_SRCS-main += main.c
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
 $_SRCS-job += job.c
