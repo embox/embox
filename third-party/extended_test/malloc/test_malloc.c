@@ -10,7 +10,7 @@
 #include <windows.h>
 #include <time.h>
 
-#define SIZE 1000
+#define COUNT 1000
 
 int main(void) {
 	int i;
@@ -26,14 +26,13 @@ int main(void) {
 	QueryPerformanceCounter((LARGE_INTEGER *) &gstart_time);
 	/*Get processor freq (count of ticks(in second))*/
 	QueryPerformanceFrequency((LARGE_INTEGER *) &freq);
-	arr = (int*) malloc(sizeof(int) * SIZE);
+	arr = (int*) malloc(sizeof(int) * COUNT);
 	QueryPerformanceCounter((LARGE_INTEGER *) &glast_time);
 	/*Time in milliseconds*/
 	delta_time = (double) ((double) ((glast_time - gstart_time) * 1000)
 			/ (double) freq);
 	printf("%f\n", delta_time);
-
-	ptr_arr = (int**) malloc(sizeof(int*) * SIZE);
+	ptr_arr = (int**) malloc(sizeof(int*) * COUNT);
 	QueryPerformanceCounter((LARGE_INTEGER *) &gstart_time);
 	for (i = 0; i < SIZE; i++) {
 		ptr_arr[i] = (int*) malloc(sizeof(int));
@@ -50,7 +49,7 @@ int main(void) {
 			/ (double) freq);
 	delta_time = pseudu_delta_time - cycle_time;
 	printf("%f\n", delta_time);
-	for (i = 0; i < SIZE; i++) {
+	for (i = 0; i < COUNT; i++) {
 		free(ptr_arr[i]);
 	}
 	free(ptr_arr);
