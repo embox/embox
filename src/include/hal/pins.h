@@ -9,30 +9,32 @@
 #ifndef HAL_PINS_H_
 #define HAL_PINS_H_
 
+#include <drivers/pins.h>
+
 /**
  * Configure pin mask for input
  */
-extern void pin_config_input(int mask);
+extern void pin_config_input(pin_mask_t mask);
 
 /**
  * Configure pin mask for ouput
  */
-extern void pin_config_output(int mask);
+extern void pin_config_output(pin_mask_t mask);
 
 /**
  * Get data of input pins
  */
-extern int pin_get_input(void);
+extern pin_mask_t pin_get_input(pin_mask_t mask);
 
 /**
  * Set data for output pins
  */
-extern void pin_set_output(int mask);
+extern void pin_set_output(pin_mask_t mask);
 
 /**
  * Enable interrupt on change of pins
  */
-extern void pin_set_input_interrupt(int mask);
+extern void pin_set_input_interrupt(pin_mask_t mask);
 
 /**
  * Get pins changed since last call

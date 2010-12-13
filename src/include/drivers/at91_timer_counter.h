@@ -31,7 +31,7 @@ extern void tc_init(uint8_t channel);
 /**
  * Configure timer for counting external events
  */
-extern void tc_config_input(uint8_t channel, uint8_t clock_mode);
+extern void tc_config_input(uint8_t channel, uint32_t clock_mode);
 
 /**
  * Run & zero counter
@@ -49,5 +49,19 @@ uint32_t tc_counter_value(uint8_t channel);
  */
 extern void tc_stop(uint8_t channel);
 
+/**
+ * Set limit for counter
+ */
+void tc_set_limit(uint8_t channel, uint32_t limit);
+
+/**
+ * Enable interrupt on counter limit reaching
+ */
+void tc_limit_int_enable(uint8_t channel, irq_handler_t handler);
+
+/**
+ * Disable interrupt on counter limit reaching
+ */
+void tc_limit_int_disable(uint8_t channel);
 #endif /*TIMER_COUNTER_H_*/
 

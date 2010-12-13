@@ -18,8 +18,14 @@
 
 static touch_hnd_t touch_sens_hnds[NXT_AVR_N_INPUTS];
 
+typedef enum { UP, DOWN } touch_state_t;
+
+static touch_state_t state = UP;
+
 static void touch_handler(sensor_t *sensor, sensor_val_t val) {
-	if (val <= TOUCH_ADC_EDGE) {
+	touch_state_t new_state = (val <= TOUCH_ADC_EDGE ? DOWN : UP);
+	if (new_state != state) {
+		state = new_state;
 		touch_sens_hnds[sensor->id](sensor);
 	}
 }

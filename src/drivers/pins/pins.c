@@ -28,7 +28,7 @@ static int n_handler = 0;
 
 irq_return_t irq_pin_handler(irq_nr_t irq_nr, void *data) {
 	int i;
-	int current = pin_get_input();
+	int current = pin_get_input(~0);
 	int changed = pin_get_input_changed();
 	for (i = 0; i < n_handler; i++) {
 		if (changed & handlers[i].mask) {

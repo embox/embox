@@ -23,37 +23,37 @@ static int at91_pin_init(void) {
 	return 0;
 }
 
-static void pin_disable_perf(int mask) {
+static inline void pin_disable_perf(int mask) {
 	REG_STORE(AT91C_PIOA_PER, (uint32_t) mask);
 }
 
-void pin_config_input(int mask) {
+void pin_config_input(pin_mask_t mask) {
 	pin_disable_perf(mask);
 	REG_STORE(AT91C_PIOA_ODR, (uint32_t) mask);
 }
 
-void pin_config_output(int mask) {
+void pin_config_output(pin_mask_t mask) {
 	pin_disable_perf(mask);
-	REG_STORE(AT91C_PIOA_OWER, (uint32_t) mask);
+	//REG_STORE(AT91C_PIOA_OWER, (uint32_t) mask);
 	REG_STORE(AT91C_PIOA_OER, (uint32_t) mask);
 }
 
-int pin_get_input(void) {
-	return (int) REG_LOAD(AT91C_PIOA_PDSR);
+pin_mask_t pin_get_input(pin_mask_t mask) {
+	return mask & ((int) REG_LOAD(AT91C_PIOA_PDSR));
 }
 
-void pin_set_output(int mask) {
+void pin_set_output(pin_mask_t mask) {
 	REG_STORE(AT91C_PIOA_SODR, mask);
 }
 
-void pin_clear_output(int mask) {
+void pin_clear_output(pin_mask_t mask) {
 	REG_STORE(AT91C_PIOA_CODR, mask);
 }
 
-void pin_set_input_interrupt(int mask) {
+void pin_set_input_interrupt(pin_mask_t mask) {
 	REG_STORE(AT91C_PIOA_IER, mask);
 }
 
-int pin_get_input_changed(void) {
+pin_mask_t pin_get_input_changed(void) {
 	return (int) REG_LOAD(AT91C_PIOA_ISR);
 }

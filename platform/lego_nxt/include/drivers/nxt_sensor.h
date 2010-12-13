@@ -11,14 +11,17 @@
 #define NXT_SENSOR_H_
 
 #include <drivers/nxt_avr.h>
+#include <drivers/soft_i2c.h>
 
-enum port_type_t { PASSIVE, ACTIVE};
+typedef enum {
+	PASSIVE,
+	ACTIVE,
+} port_type_t;
 
 typedef struct {
 	uint8_t id;
-	uint8_t n0p;
-	uint8_t n1p;
-	enum port_type_t type;
+	port_type_t type;
+	i2c_port_t i2c_port;
 } sensor_t;
 
 extern sensor_t sensors[NXT_AVR_N_INPUTS];

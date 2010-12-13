@@ -39,7 +39,7 @@ sensor_val_t nxt_sensor_get_value(sensor_t *sensor) {
 void sensors_updated(sensor_val_t sensor_vals[]) {
 	int i;
 	for (i = 0; i < NXT_AVR_N_INPUTS; i++) {
-		if (handlers[i]) {
+		if (sensors[i].type == PASSIVE && handlers[i]) {
 			handlers[i](&sensors[i], sensor_vals[i]);
 		}
 	}
@@ -49,8 +49,8 @@ void sensors_init(void) {
 	int i;
 	for (i = 0; i < NXT_AVR_N_INPUTS; i++) {
 		sensors[i].id = i;
-		sensors[i].n0p = digiS0[i];
-		sensors[i].n1p = digiS1[i];
+		sensors[i].i2c_port.scl = 1 << digiS0[i];
+		sensors[i].i2c_port.sda = 1 << digiS1[i];
 	}
 }
 

@@ -10,6 +10,7 @@
 #define NXT_MOTOR_H_
 
 #include <types.h>
+#include <drivers/pins.h>
 
 #define NXT_N_MOTORS 3
 
