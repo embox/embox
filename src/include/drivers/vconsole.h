@@ -11,8 +11,6 @@
 #ifndef VCONSOLE_H_
 #define VCONSOLE_H_
 
-#include <drivers/tty.h>
-
 struct tty_device;
 
 typedef struct vconsole {
@@ -33,5 +31,7 @@ extern vconsole_t *cur_console;
 
 extern int vconsole_activate( vconsole_t *con );
 extern int vconsole_deactivate( vconsole_t *con );
+
+#include <drivers/tty.h>
 
 #endif /* VCONSOLE_H_ */

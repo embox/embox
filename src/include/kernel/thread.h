@@ -16,10 +16,6 @@
 #include <queue.h>
 #include <string.h>
 
-#ifdef CONFIG_PP_ENABLE
-#include <kernel/pp.h>
-#endif
-
 #define THREADS_POOL_SIZE 0x100
 
 typedef int thread_id_t;
@@ -65,6 +61,7 @@ extern struct thread *idle_thread;
  */
 extern struct thread *current_thread;
 
+struct pprocess;
 /**
  * Structure, describing threads.
  */
@@ -111,7 +108,7 @@ struct thread {
 	bool run_count;
 	/* Pseudo process */
 	#ifdef CONFIG_PP_ENABLE
-	pprocess_t *pp;
+	struct pprocess *pp;
 	#endif
 };
 
@@ -181,5 +178,9 @@ extern struct message *msg_new(void);
 extern int msg_erase(struct message *message);
 
 extern struct thread *thread_get_pool();
+
+#ifdef CONFIG_PP_ENABLE
+#include <kernel/pp.h>
+#endif
 
 #endif /* THREAD_H_ */

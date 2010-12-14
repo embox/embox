@@ -14,7 +14,7 @@
 #endif
 
 #include <kernel/thread.h>
-#include <drivers/vconsole.h>
+#include <drivers/tty.h>
 #include <stdio.h>
 
 #define PP_INIT_LIST \
@@ -37,12 +37,12 @@ extern uint32_t pp_pool_s;
 extern void     pp_store(void* data);
 extern void     pp_restore(void* data);
 
-extern void        pp_add_thread(pprocess_t *p, struct thread *th);
-extern void        pp_del_thread(pprocess_t *p, struct thread *th);
-extern pprocess_t* pp_add_process(struct thread *th);
-extern void        pp_del_process(pprocess_t *p);
-extern void        pp_switch_process(process_t *p);
-extern process_t  *pp_cur_process;
+extern void        pp_add_thread(struct pprocess *p, struct thread *th);
+extern void        pp_del_thread(struct pprocess *p, struct thread *th);
+extern struct pprocess* pp_add_process(struct thread *th);
+extern void        pp_del_process(struct pprocess *p);
+extern void        pp_switch_process(struct process *p);
+extern struct process  *pp_cur_process;
 
 #endif /* PSEUDO_PROCESS_H_ */
 
