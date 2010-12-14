@@ -6,10 +6,12 @@
  * @date 23.11.2010
  * @author Anton Bondarev
  */
-#include <embox/unit.h>
+
+#include <drivers/tty.h>
 #include <drivers/tty_action.h>
 #include <drivers/vconsole.h>
 #include <fs/file.h>
+#include <embox/unit.h>
 
 static vconsole_t def_console;
 static vconsole_t *cur_console;

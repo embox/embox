@@ -13,8 +13,10 @@
 
 #include <drivers/tty.h>
 
+struct tty_device;
+
 typedef struct vconsole {
-	tty_device_t *tty;
+	struct tty_device *tty;
 	size_t heigth;
 	size_t width;
 	uint32_t mode;

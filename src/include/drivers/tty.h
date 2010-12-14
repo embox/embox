@@ -18,6 +18,10 @@
 #include <fs/file.h>
 #include <drivers/vtbuild.h>
 #include <drivers/vtparse.h>
+#include <drivers/vconsole.h>
+
+
+struct vconsole;
 
 typedef volatile struct tty_device {
 	uint8_t  out_buff[TTY_RXBUFF_SIZE + 1];
@@ -31,6 +35,12 @@ typedef volatile struct tty_device {
 	struct 	 vtbuild vtb[1];
 	struct 	 vtparse vtp[1];
 	bool	 has_init;
+	#endif
+	#ifdef CONFIG_TTY_CONSOLE_COUNT
+	struct vconsole console[CONFIG_TTY_CONSOLE_COUNT];
+	//struct vconsole_t console[CONFIG_TTY_CONSOLE_COUNT];
+	//struct vconsole *console;//[CONFIG_TTY_CONSOLE_COUNT];
+	uint32_t console_cur;
 	#endif
 	file_operations_t *file_op;
 } tty_device_t;

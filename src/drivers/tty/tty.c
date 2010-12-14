@@ -16,8 +16,8 @@
 #include <ctype.h>
 
 tty_device_t *cur_tty;
-#ifdef CONFIG_TTY_SYSTEM_COUNT
-vconsole_t tty_console[CONFIG_TTY_SYSTEM_COUNT];
+#ifdef CONFIG_TTY_CONSOLE_COUNT
+vconsole_t tty_console[CONFIG_TTY_CONSOLE_COUNT];
 uint32_t tty_console_cur;
 #endif
 
@@ -51,126 +51,40 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 
 	switch (token->action) {
 		case VT_ACTION_PRINT: /* Print any char */
-			if (cur_tty->ins_mod) { /* INSERT MODE */
-				if (cur_tty->rx_cnt < TTY_RXBUFF_SIZE) {
-					#if 0
-					uint32_t i;
-					++cur_tty->rx_cnt;
-					for (i=cur_tty->rx_cnt; i>cur_tty->rx_cur; --i) {
-						cur_tty->rx_buff[i] = cur_tty->rx_buff[i-1];
-					}
-					cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
-					vtbuild(cur_tty->vtb, token);
-					for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-						cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
-					}
-					for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-						vtbuild(cur_tty->vtb, TOKEN_LEFT);
-					}
-					#else
-					++cur_tty->rx_cnt;
-					copy_backward(
-						&cur_tty->rx_buff[cur_tty->rx_cur],
-						&cur_tty->rx_buff[cur_tty->rx_cur+1],
-						cur_tty->rx_cnt - cur_tty->rx_cur);
-					cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
-					vtbuild( cur_tty->vtb, token );
-					tty_write_line( cur_tty, &cur_tty->rx_buff[cur_tty->rx_cur],
-						cur_tty->rx_cnt - cur_tty->rx_cur, 0);
-					#endif
-				}
-			} else { /* REPLACE MOD */
-				if (cur_tty->rx_cur < TTY_RXBUFF_SIZE) {
-					cur_tty->rx_buff[cur_tty->rx_cur++] = token->ch;
-					if ( cur_tty->rx_cur > cur_tty->rx_cnt ) {
-						cur_tty->rx_cnt = cur_tty->rx_cur;
-					}
-					vtbuild(cur_tty->vtb, token);
-				}
-			}
+			tac_key_alpha( cur_tty, token );
 		break;
 
 		case VT_ACTION_CSI_DISPATCH:
 			switch (token->ch) {
 				case 'D': /* LEFT */
-					if (cur_tty->rx_cur>0) {
-						--cur_tty->rx_cur;
-						//vtbuild(cur_tty->vtb, token);
-						tty_go_left( cur_tty, 1 );
-					}
+					tac_key_left( cur_tty );
 				break;
 				case 'C': /* RIGHT */
-					if (cur_tty->rx_cur < cur_tty->rx_cnt) {
-						++cur_tty->rx_cur;
-						//vtbuild(cur_tty->vtb, token);
-						tty_go_right( cur_tty, 1 );
-					}
+					tac_key_right( cur_tty );
 				break;
 				case '~': /* HOME, END and others */
 					if (token->params_len == 1) {
 						switch (token->params[0]) {
 							case 7: /* HOME */
-								#if 0
-								while (cur_tty->rx_cur>0) {
-									--cur_tty->rx_cur;
-									vtbuild(cur_tty->vtb, TOKEN_LEFT);
-								}
-								#else
-								tty_go_cursor_position( cur_tty, cur_tty->rx_cur, 0 );
-								cur_tty->rx_cur = 0;
-								#endif
+								tac_key_home( cur_tty );
 							break;
 							case 8: /* END */
-								#if 0
-								while (cur_tty->rx_cur<cur_tty->rx_cnt) {
-									++cur_tty->rx_cur;
-									vtbuild(cur_tty->vtb, TOKEN_RIGHT);
-								}
-								#else
-								tty_go_cursor_position( cur_tty, cur_tty->rx_cur, cur_tty->rx_cnt );
-								cur_tty->rx_cur = cur_tty->rx_cnt;
-								#endif
+								tac_key_end( cur_tty );
 							break;
 							case 3: /* DEL */
-								if (cur_tty->rx_cur<cur_tty->rx_cnt) {
-								#if 0
-									uint32_t i;
-									for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt-1; ++i) {
-										cur_tty->rx_buff[i] = cur_tty->rx_buff[i+1];
-										cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
-									}
-									cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
-									for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-										vtbuild(cur_tty->vtb, TOKEN_LEFT);
-									}
-									--cur_tty->rx_cnt;
-								#else
-									copy_forward(
-										&cur_tty->rx_buff[cur_tty->rx_cur+1],
-										&cur_tty->rx_buff[cur_tty->rx_cur],
-										--cur_tty->rx_cnt - cur_tty->rx_cur );
-									tty_rewrite_line( cur_tty,
-										&cur_tty->rx_buff[cur_tty->rx_cur],
-										cur_tty->rx_cnt - cur_tty->rx_cur,
-										cur_tty->rx_cnt - cur_tty->rx_cur + 1, 0, 0);
-								#endif
-								}
+								tac_key_del( cur_tty );
 							break;
 							case 2: /* INS */
-								cur_tty->ins_mod = !cur_tty->ins_mod;
+								tac_key_ins( cur_tty );
 							break;
 						}
 					}
 				break;
 				case '^': /* ^F1-^F12 switch console */
-				#ifdef CONFIG_TTY_SYSTEM_COUNT
+				#ifdef CONFIG_TTY_CONSOLE_COUNT
 					if ((token->params_len==1) &&
-						(token->params[0]-10<=CONFIG_TTY_SYSTEM_COUNT)) {
-						vconsole_deactivate(&tty_console[tty_console_cur]);
-						tty_console_cur = token->params[0]-11;
-						tty_go_left( cur_tty, 7 ); /* erase `TTY-X$' */
-						printf("TTY-%d$ ",tty_console_cur+1);
-						vconsole_activate(&tty_console[tty_console_cur]);
+						(token->params[0]-10<=CONFIG_TTY_CONSOLE_COUNT)) {
+						tac_switch_console( cur_tty, token->params[0]-11 );
 					}
 				#endif
 				break;
@@ -180,127 +94,26 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 		case VT_ACTION_EXECUTE:
 			switch (token->ch) {
 				case '\n': /* ENTER key. Return string */
-					if (cur_tty->out_busy) break;
-					/* add string to output buffer */
-					memcpy((void*) cur_tty->out_buff,(const void*)
-						cur_tty->rx_buff, cur_tty->rx_cnt);
-					cur_tty->out_buff[cur_tty->rx_cnt] = '\0';
-					cur_tty->rx_cnt = 0;
-					cur_tty->rx_cur = 0;
-					cur_tty->out_busy = true;
-					vtbuild(cur_tty->vtb, token);
+					tac_key_enter( cur_tty, token );
 				break;
 
-				case 21: /* ^U clean line */ {
-				#if 0
-					uint32_t i;
-					for (i=0; i<cur_tty->rx_cur; ++i) {
-						cur_tty->rx_buff[i] = cur_tty->rx_buff[i+cur_tty->rx_cur];
-					}
-					for (i=cur_tty->rx_cur; i>0; --i) {
-						vtbuild(cur_tty->vtb, TOKEN_LEFT);
-					}
-					cur_tty->rx_cnt -= cur_tty->rx_cur;
-					for (i=0; i<cur_tty->rx_cnt; ++i) {
-						cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
-					}
-					for (i=0; i<cur_tty->rx_cur; ++i) {
-						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
-					}
-					for (i=cur_tty->rx_cur+cur_tty->rx_cnt; i>0; --i) {
-						vtbuild(cur_tty->vtb, TOKEN_LEFT);
-					}
-					cur_tty->rx_cur = 0;
-				#else
-					copy_forward(
-						&cur_tty->rx_buff[cur_tty->rx_cur],
-						&cur_tty->rx_buff[0],
-						cur_tty->rx_cnt - cur_tty->rx_cur );
-					tty_rewrite_line( cur_tty,
-						&cur_tty->rx_buff[0],
-						cur_tty->rx_cnt - cur_tty->rx_cur,
-						cur_tty->rx_cnt, cur_tty->rx_cur, 0);
-					cur_tty->rx_cnt -= cur_tty->rx_cur;
-					cur_tty->rx_cur = 0;
-				#endif
-				} break;
+				case 21: /* ^U clean line */
+					tac_remove_line( cur_tty );
+				break;
 
-				case 23: /* ^W remove last word */ {
-				#if 0
-					uint32_t i,tps; /* tps - to position space */
-					for (tps=cur_tty->rx_cur; tps>0 && tty_isalpha(cur_tty->rx_buff[tps]); --tps);
-					for (; tps>0 && tty_isspace(cur_tty->rx_buff[tps]); --tps);
-					if (tps>0) {++tps;}
-
-					for (i=tps; i<cur_tty->rx_cur; ++i) {
-						cur_tty->rx_buff[i] = cur_tty->rx_buff[i+cur_tty->rx_cur-tps];
-					}
-					for (i=cur_tty->rx_cur; i>tps; --i) {
-						vtbuild(cur_tty->vtb, TOKEN_LEFT);
-					}
-					cur_tty->rx_cnt -= cur_tty->rx_cur-tps;
-					for (i=tps; i<cur_tty->rx_cnt; ++i) {
-						cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
-					}
-					for (i=tps; i<cur_tty->rx_cur; ++i) {
-						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
-					}
-					for (i=cur_tty->rx_cnt+cur_tty->rx_cur-tps; i>tps; --i) {
-						vtbuild(cur_tty->vtb, TOKEN_LEFT);
-					}
-					cur_tty->rx_cur = tps;
-				#else
-					/* find end of prev word */
-					uint32_t tps; /* tps - to position space */
-					tps = cur_tty->rx_cur>0 ? cur_tty->rx_cur-1 : 0;
-					for (; tps>0 && tty_isalpha(cur_tty->rx_buff[tps]); --tps);
-					for (; tps>0 && tty_isspace(cur_tty->rx_buff[tps]); --tps);
-					if (tps>0) {++tps;}
-
-					copy_forward(
-						&cur_tty->rx_buff[cur_tty->rx_cur],
-						&cur_tty->rx_buff[tps],
-						cur_tty->rx_cnt - cur_tty->rx_cur + tps );
-
-					tty_rewrite_line( cur_tty,
-						&cur_tty->rx_buff[tps],
-						cur_tty->rx_cnt - cur_tty->rx_cur ,
-						cur_tty->rx_cnt - tps,
-						cur_tty->rx_cur - tps, 0 );
-
-					cur_tty->rx_cnt -= cur_tty->rx_cur - tps;
-					cur_tty->rx_cur = tps;
-
-				#endif
-				}
+				case 23: /* ^W remove last word */
+					tac_remove_word( cur_tty );
 				break;
 
 				case 8: /* ^H equalent to backspace */
 				case 127: /* backspace */
-					if (cur_tty->rx_cur>0) {
-						--cur_tty->rx_cur;
-						vtbuild(cur_tty->vtb, TOKEN_LEFT);
-						uint32_t i;
-						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt-1; ++i) {
-							cur_tty->rx_buff[i] = cur_tty->rx_buff[i+1];
-							cur_tty->file_op->fwrite(&cur_tty->rx_buff[i],sizeof(char),1,NULL);
-						}
-						cur_tty->file_op->fwrite(" ",sizeof(char),1,NULL);
-						for (i=cur_tty->rx_cur; i<cur_tty->rx_cnt; ++i) {
-							vtbuild(cur_tty->vtb, TOKEN_LEFT);
-						}
-						--cur_tty->rx_cnt;
-					}
+					tac_key_backspace( cur_tty );
 				break;
 
 				case 4: /* ^D */
 				break;
 
-				default:
-				break;
 			}
-		default:
-		break;
 	}
 }
 
@@ -321,10 +134,10 @@ int tty_init(void) {
 	cur_tty->rx_cnt = 0;
 	cur_tty->ins_mod = true;	/* what must be default, don't know */
 
-#ifdef CONFIG_TTY_SYSTEM_COUNT
+#ifdef CONFIG_TTY_CONSOLE_COUNT
 	tty_console_cur = 0;
 	uint32_t i;
-	for (i=0; i<CONFIG_TTY_SYSTEM_COUNT; ++i) {
+	for (i=0; i<CONFIG_TTY_CONSOLE_COUNT; ++i) {
 		tty_console[i].tty = cur_tty;
 	}
 #endif
@@ -360,7 +173,7 @@ int tty_add_char(tty_device_t *tty, int ch) {
 }
 
 uint8_t* tty_readline(tty_device_t *tty) {
-	#ifdef CONFIG_TTY_SYSTEM_COUNT
+	#ifdef CONFIG_TTY_CONSOLE_COUNT
 	printf("TTY-%d$ ",1);
 	#endif
 	while (!tty->out_busy);
