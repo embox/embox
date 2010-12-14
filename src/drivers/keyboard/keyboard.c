@@ -1,7 +1,6 @@
 /**
  * @file
- *
- * @brief
+ * @brief Keyboard driver
  *
  * @date 12.12.2010
  * @author Anton Bondarev

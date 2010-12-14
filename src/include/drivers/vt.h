@@ -1,5 +1,5 @@
 /**
- * vt.h
+ * @file
  *
  * @date 04.02.2009
  * @author Eldar Abusalimov
