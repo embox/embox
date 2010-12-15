@@ -16,10 +16,6 @@
 #include <ctype.h>
 
 tty_device_t *cur_tty;
-#ifdef CONFIG_TTY_CONSOLE_COUNT
-vconsole_t tty_console[CONFIG_TTY_CONSOLE_COUNT];
-uint32_t tty_console_cur;
-#endif
 
 #if 1
 inline bool tty_isalpha(char ch) {
@@ -135,10 +131,10 @@ int tty_init(void) {
 	cur_tty->ins_mod = true;	/* what must be default, don't know */
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
-	tty_console_cur = 0;
+	cur_tty->console_cur = 0;
 	uint32_t i;
 	for (i=0; i<CONFIG_TTY_CONSOLE_COUNT; ++i) {
-		tty_console[i].tty = cur_tty;
+		cur_tty->console[i].tty = cur_tty;
 	}
 #endif
 
