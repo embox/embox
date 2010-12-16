@@ -11,6 +11,7 @@ SECTIONS {
 	. = 0x100000;
 	.text : {
 		ALIGNMENT();
+		*(.multiboot)
 		*(.text)
 		*(.init.text)
 		ALIGNMENT();
@@ -39,5 +40,12 @@ SECTIONS {
 		_bend = .;
 	}
 	SECTION_SYMBOLS(bss)
+
+	/DISCARD/ : {
+		*(.note)
+		*(.note.ABI-tag)
+		*(.eh_frame)
+		*(.comment)
+	}
 }
 
