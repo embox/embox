@@ -6,7 +6,7 @@
  * @author Nikolay Korotky
  */
 #include <drivers/vga.h>
-#include <asm/regs.h>
+#include <asm/io.h>
 
 typedef struct vga_console {
 	unsigned width, height;
@@ -73,22 +73,46 @@ static void vga_printchar(unsigned x, unsigned y, unsigned char c, unsigned char
 	video[x + (y * con.width)] = (vchar_t) { c: c, a: a };
 }
 
-void vga_putc(int c) {
-	if (c == '\n' || c == '\r') {
-newline:
+void vga_putc(char c) {
+	switch(c) {
+	case '\n':
+	case '\f':
 		con.x = 0;
 		con.y++;
 		if (con.y >= con.height) {
-			con.y = 0;
+			vga_scroll(con.y - con.height + 1);
+			con.y = con.height - 1;
 		}
-		return;
-	}
-
-	vga_printchar(con.x, con.y, c & 0xFF, 0x7);
-
-	con.x++;
-	if (con.x >= con.width) {
-		goto newline;
+		break;
+	case '\r':
+		con.x = 0;
+		break;
+	case '\t':
+		con.x = (con.x & ~7) + 8;
+	case 27: /* ESC */
+		break;
+	case 5: /* clear to end of line */
+		break;
+	case 8: /* back space */
+		if (con.x)
+			--con.x;
+		break;
+	default:
+		if ((unsigned) c >= 32) {
+			if (con.x >= con.width) {
+				++con.y;
+				con.x = 0;
+			}
+			if (con.y >= con.height) {
+				vga_scroll(con.y - con.height + 1);
+				con.y = con.height - 1;
+			}
+			if (con.x < con.width) {
+				vga_printchar(con.x, con.y, (c == '\265' ? '\346' : c), con.attr);
+			}
+			++con.x;
+		}
+		break;
 	}
 }
 
@@ -100,6 +124,7 @@ static void blink_cursor(unsigned x, unsigned y) {
 }
 
 int vga_getc(void) {
+	blink_cursor(con.x, con.y);
         return 0;
 }
 
@@ -108,7 +133,7 @@ void diag_init(void) {
 }
 
 void diag_putc(int c) {
-	vga_putc(c);
+	vga_putc((char) c);
 }
 
 int diag_getc(void) {

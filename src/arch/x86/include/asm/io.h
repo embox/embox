@@ -10,6 +10,8 @@
 #ifndef ASM_X86_IO_H_
 #define ASM_X86_IO_H_
 
+#include <types.h>
+
 static inline uint8_t in8(unsigned long port) {
 	uint8_t tmp;
 	__asm__ __volatile__(
