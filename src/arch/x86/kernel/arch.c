@@ -24,8 +24,7 @@
 void multiboot_check(unsigned long magic, unsigned long addr) {
 	multiboot_info_t *mbi;
 
-	/* Clear the screen.  */
-	vga_clear_screen();
+	vga_console_init(80, 25);
 
 	/* Am I booted by a Multiboot-compliant boot loader? */
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
@@ -242,4 +241,3 @@ void bad_trap_handler(pt_regs_t *st) {
 static void handle_dbf() {
 	panic("Unexpected DOUBLE FAULT!");
 }
-

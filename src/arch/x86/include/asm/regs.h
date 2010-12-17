@@ -52,5 +52,11 @@ typedef struct bios_regs {
 	};
 } bios_regs_t;
 
+#define out16(val, port)                 \
+        __asm__ __volatile__(            \
+                "outw %w0, %w1"          \
+                : : "a"(val), "Nd"(port) \
+        );
+
 #endif /* X86_REGS_H_ */
 

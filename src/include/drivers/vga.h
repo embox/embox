@@ -8,19 +8,10 @@
 #ifndef VIDEO_VGA_H_
 #define VIDEO_VGA_H_
 
-/* The number of columns. */
-#define COLUMNS        80
-/* The number of lines. */
-#define LINES          24
-/* The attribute of an character. */
-#define ATTRIBUTE      7
 /* The video memory address. */
 #define VIDEO          0xB8000
 
-/**
- * Clear the screen and initialize VIDEO, XPOS and YPOS.
- */
-extern void vga_clear_screen(void);
+extern void vga_console_init(unsigned width, unsigned height);
 
 /**
  * Put the character C on the screen.
