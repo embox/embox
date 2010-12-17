@@ -41,6 +41,16 @@ SECTIONS {
 	}
 	SECTION_SYMBOLS(bss)
 
+	.stack (NOLOAD): {
+		ALIGNMENT();
+		_stack_bottom = .;
+		. += CONFIG_STACK_SIZE;
+		ALIGNMENT();
+		_stack_top = .;
+		_stack = _stack_top;
+		__stack = _stack;
+	}
+
 	/DISCARD/ : {
 		*(.note)
 		*(.note.ABI-tag)

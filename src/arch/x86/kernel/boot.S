@@ -41,7 +41,7 @@ multiboot_header:
 
 multiboot_entry:
 	/* Initialize the stack pointer.  */
-	movl	$(stack + CONFIG_STACK_SIZE), %esp
+	movl	$_stack, %esp
 
 	/* Reset EFLAGS.  */
 	pushl	$0
@@ -58,7 +58,4 @@ multiboot_entry:
 
 loop:	hlt
 	jmp	loop
-
-	/* Our stack area.  */
-	.comm   stack, CONFIG_STACK_SIZE
 
