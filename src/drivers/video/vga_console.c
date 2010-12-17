@@ -79,9 +79,6 @@ static int esc_state = 0;
 
 void ansi_attrib(int a) {
 	char const colors[] = {0, 4, 2, 6, 1, 5, 3, 7};
-	if(a >= 30 && a <= 47) {
-		return;
-	}
 	switch(a) {
 	case 0:
 		con.attr = 0x07;
