@@ -17,10 +17,17 @@
 #include <drivers/tty.h>
 #include <stdio.h>
 
-#define PP_INIT_LIST \
-	PP_VAR( cur_console ) /* from: stdio.h */
+#ifdef CONFIG_PP_TEST
+extern char share_variable;
+#endif
 
-#define PP_SIZEOF_LIST sizeof(cur_console)
+#define PP_INIT_LIST \
+	PP_VAR( cur_console ) /* from: stdio.c */ \
+	PP_VAR( share_variable ) /* from: test_pp.c */ \
+
+#define PP_SIZEOF_LIST \
+	sizeof(cur_console) + \
+	sizeof(char) // share_variable
 
 #define PP_INIT_LIST_S     1
 #define PP_THREADS_S       10
@@ -41,8 +48,8 @@ extern void        pp_add_thread(struct pprocess *p, struct thread *th);
 extern void        pp_del_thread(struct pprocess *p, struct thread *th);
 extern struct pprocess* pp_add_process(struct thread *th);
 extern void        pp_del_process(struct pprocess *p);
-extern void        pp_switch_process(struct process *p);
-extern struct process  *pp_cur_process;
+extern void        pp_switch_process(struct pprocess *p);
+extern struct pprocess  *pp_cur_process;
 
 #endif /* PSEUDO_PROCESS_H_ */
 
