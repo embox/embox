@@ -12,6 +12,8 @@ typedef struct vga_console {
 	unsigned width, height;
 	unsigned x, y;
 	char     attr;
+	int      esc_args[5];
+	unsigned num_esc_args;
 } vga_console_t;
 
 typedef struct vchar {
@@ -73,7 +75,65 @@ static void vga_printchar(unsigned x, unsigned y, unsigned char c, unsigned char
 	video[x + (y * con.width)] = (vchar_t) { c: c, a: a };
 }
 
+static int esc_state = 0;
+
+void ansi_attrib(int a) {
+	char const colors[] = {0, 4, 2, 6, 1, 5, 3, 7};
+	if(a >= 30 && a <= 47) {
+		return;
+	}
+	switch(a) {
+	case 0:
+		con.attr = 0x07;
+		break;
+	case 1:
+		con.attr |= 0x0808;
+		break;
+	case 22:
+		con.attr &= ~0x0808;
+		break;
+	case 5:
+		con.attr |= 0x8080;
+	default:
+		if (30 <= a && a <= 37) {
+			con.attr = (con.attr & 0x0f0) | colors[a - 30] | ((con.attr >> 8) & 0x08);
+		} else if (40 <= a && a <= 47) {
+			con.attr = (con.attr & 0x0f) | (colors[a - 40] << 4) | ((con.attr >> 8) & 0x80);
+		}
+		break;
+	};
+}
+
+static void vga_esc_putc(char c) {
+	int p;
+	if (c == '[') {
+		con.esc_args[0] = 0;
+		con.esc_args[1] = 0;
+		con.num_esc_args = 0;
+		return;
+	}
+	if (c == ';') {
+		con.esc_args[++con.num_esc_args] = 0;
+	} else if (isdigit(c) && con.num_esc_args < 5) {
+		con.esc_args[con.num_esc_args] = con.esc_args[con.num_esc_args] * 10 +(c - '0');
+	}
+	switch (c) {
+	case 'm': /* color */
+		p = 0;
+		do {
+			ansi_attrib(con.esc_args[p++]);
+		} while (con.num_esc_args--);
+		esc_state = 0;
+		break;
+	}
+}
+
 void vga_putc(char c) {
+	size_t i;
+	if (esc_state == 1) {
+		vga_esc_putc(c);
+		return;
+	}
 	switch(c) {
 	case '\n':
 	case '\f':
@@ -90,8 +150,26 @@ void vga_putc(char c) {
 	case '\t':
 		con.x = (con.x & ~7) + 8;
 	case 27: /* ESC */
+		esc_state = 1;
+		return;
+	case 6: /* cursor */
+		con.y = con.y + 1;
+		con.x = con.x + 2;
+		if (con.y >= con.height) {
+			con.y = con.height - 1;
+		}
+		if (con.x >= con.width) {
+			con.x = con.width - 1;
+		}
+		break;
+	case 1: /* home */
+		con.x = 0;
+		con.y = 0;
 		break;
 	case 5: /* clear to end of line */
+		for (i = 0; i < con.width - con.x; ++i) {
+			vga_printchar(con.x, con.y * con.width + i, 0x20, con.attr);
+		}
 		break;
 	case 8: /* back space */
 		if (con.x)
