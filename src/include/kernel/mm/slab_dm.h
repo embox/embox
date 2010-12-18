@@ -4,6 +4,7 @@
  *
  * @date 14.12.2010
  * @author Dmitry Zubarvich
+ * @author Kirill Tyushev
  */
 
 #ifndef SLAB_DM_H
@@ -21,6 +22,8 @@
  * cache descriptor
  */
 typedef struct kmem_cache {
+	/* pointer to other caches */
+	struct list_head next;
 	char name[CHACHE_NEMELEN];
 	struct list_head slabs_full;
 	struct list_head slabs_partial;
@@ -28,35 +31,37 @@ typedef struct kmem_cache {
 	size_t obj_size;
 	/* the number of objects stored on each slab */
 	unsigned int num;
-	/* pointer to other caches */
-	struct list_head next;
+	/* size of each slab in pages */
+	size_t slab_size;
+	/* lock the cache from being reaped or shrunk */
+	bool growing;
 } kmem_cache_t;
-
-/**
- * Main cache which will contain another descriptors of caches
- */
-static kmem_cache_t kmalloc_cache = {
-		.name = "main_cache",
-		.num = NUM_OF_OBJECTS_IN_SLAB,
-		.obj_size = ALIGN_UP(sizeof(kmem_cache_t), sizeof(struct list_head)),
-		.slabs_full = {NULL, NULL},
-		.slabs_free = {NULL, NULL},
-		.slabs_partial = {NULL, NULL},
-		.next = {&(kmalloc_cache.next), &(kmalloc_cache.next)}
-};
 
 /**
  * Create of cache
  * @param name of cache
  * @param obj_size is size of contained objects
  */
-kmem_cache_t *kmem_cache_create(char *name, size_t obj_size);
+kmem_cache_t *kmem_dmcache_create(char *name, size_t obj_size);
 
 /**
  * Destroy of cache
  * @param cache_ptr is pointer to cache which must be deleted
  */
-void kmem_cache_destroy(kmem_cache_t *cache_ptr);
+void kmem_dmcache_destroy(kmem_cache_t *cache_ptr);
+
+/**
+ * Return pointer to object for which allocate memory
+ * @param cachep is pointer to cache which must contain object of this type
+ */
+void *kmem_dmcache_alloc(kmem_cache_t *cachep);
+
+/**
+ * Free memory from something object
+ * @param cachep is pointer to cache which must contain object of this type
+ * @param objp is object which must be deleted
+ */
+void kmem_dmcache_free(kmem_cache_t *cachep, void* objp);
 
 /**
  * Return pointer to object for which allocate memory
