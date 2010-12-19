@@ -1,6 +1,7 @@
 ifdef CONFIG_PP_ENABLE
 $_PACKAGE := core.kernel
 $_MODS += pp
+#$_DEPS-pp += libc.a
 
 # for variable cur_console
 $_DEPS-pp += embox.driver.vconsole

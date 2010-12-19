@@ -22,7 +22,7 @@
 
 # $_test_name :=
 # $_test_srcs :=
-$_test_deps := core.kernel.pp core.kernel.threads.thread core.kernel.threads.schedular
+$_test_deps := core.kernel.pp core.kernel.threads.thread core.kernel.threads.scheduler
 
 ##
 # Default values. Do not edit.

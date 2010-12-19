@@ -29,7 +29,7 @@ extern char share_variable;
 	sizeof(cur_console) + \
 	sizeof(char) // share_variable
 
-#define PP_INIT_LIST_S     1
+#define PP_INIT_LIST_S     2
 #define PP_THREADS_S       10
 
 typedef struct pprocess {
@@ -41,8 +41,8 @@ extern void     pp_init();
 extern void    *pp_pool[];
 extern size_t   pp_pool_sz[];
 extern uint32_t pp_pool_s;
-extern void     pp_store(void* data);
-extern void     pp_restore(void* data);
+extern void     pp_store(struct pprocess* pr);
+extern void     pp_restore(struct pprocess* pr);
 
 extern void        pp_add_thread(struct pprocess *p, struct thread *th);
 extern void        pp_del_thread(struct pprocess *p, struct thread *th);

@@ -113,7 +113,7 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	created_thread->priority = 1;
 	created_thread->need_message = false;
 	#ifdef CONFIG_PP_ENABLE
-	pp_add_thread( cur_process, created_thread );
+	pp_add_thread( pp_cur_process, created_thread );
 	#endif
 	queue_init(&created_thread->messages);
 	event_init(&created_thread->msg_event);

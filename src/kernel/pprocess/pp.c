@@ -8,8 +8,13 @@
  */
 
 #define PP_VAR( var ) \
+	pp_pool[ pp_pool_s ] = &var; \
 	pp_pool_sz[ pp_pool_s ] = sizeof(var); \
-	pp_pool[ pp_pool_s ++ ] = &var;
+	++pp_pool_s; \
+	//printf("pp_pool_s: %d\n",pp_pool_s);\
+	//printf("sizeof(%s)=%d\n",#var,sizeof(var));\
+	//printf("ptr(%s)=%d\n",#var,&var);\
+	//printf("pp_pool_sz[%d]=%d\n",pp_pool_s,pp_pool_sz[pp_pool_s]);\
 
 #include <kernel/pp.h>
 #include <kernel/mm/slab.h>
@@ -17,14 +22,14 @@
 #define CONFIG_PP_COUNT 10
 
 #ifdef CONFIG_PP_TEST
-static char share_variable;
+char share_variable;
 #endif
 
 static void* pp_pool[PP_INIT_LIST_S];
-static size_t pp_pool_sz[PP_INIT_LIST_S];
+size_t pp_pool_sz[PP_INIT_LIST_S];
 static uint32_t pp_pool_s = 0;
 static bool pp_has_init = false;
-static pprocess_t *pp_cur_process;
+pprocess_t *pp_cur_process;
 
 #define NO_KMEM_USE
 #ifdef KMEM_USE
@@ -43,7 +48,30 @@ struct pprocess* get_more_pp() {
 }
 #endif
 
+#if 0 /* don't work from library */
+void *memcpy(void *dst, const void *src, size_t n) {
+	printf("in memcpy!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+	void *ret = dst;
+
+	while (n--) {
+		printf("memcpy: dst:%d src:%d n:%d\n",dst,src,n);
+		*(char *) dst = *(char *) src;
+		dst = (char *) dst + 1;
+		src = (char *) src + 1;
+	}
+
+	return ret;
+}
+#endif
+
 void pp_init() {
+/*
+	void *tmp = &cur_console;
+	int si = sizeof(cur_console);
+	*/
+	int i;
+
+	pp_pool_s = 0;
 	PP_INIT_LIST
 	#ifdef KMEM_USE
 	pp_cur_process = kmem_cache_alloc(pp_p);
@@ -52,24 +80,28 @@ void pp_init() {
 	#endif
 }
 
-void pp_store( void* data ) {
+void pp_store( struct pprocess * pr ) {
 	uint32_t i;
-	size_t c;
+	size_t c = 0;
 
 	if (!pp_has_init) {
 		pp_init();
 		pp_has_init = true;
 	}
 
+	if ( pr == NULL ) {
+		return;
+	}
+
 	for (i=0; i<pp_pool_s; ++i) {
-		memcpy(&data[c], pp_pool[i], pp_pool_sz[i]);
+		memcpy(&pr->data[c], pp_pool[i], pp_pool_sz[i]);
 		c+=pp_pool_sz[i];
 	}
 }
 
-void pp_restore( void* data ) {
+void pp_restore( struct pprocess* pr ) {
 	uint32_t i;
-	size_t c;
+	size_t c = 0;
 
 	if (!pp_has_init) {
 		LOG_ERROR("Try pp_restore, but pool has not initialized.");
@@ -77,8 +109,12 @@ void pp_restore( void* data ) {
 		pp_has_init = true;
 	}
 
+	if ( pr == NULL ) {
+		return;
+	}
+
 	for (i=0; i<pp_pool_s; ++i) {
-		memcpy(pp_pool[i],&data[c],pp_pool_sz[i]);
+		memcpy(pp_pool[i],&pr->data[c],pp_pool_sz[i]);
 		c+=pp_pool_sz[i];
 	}
 }

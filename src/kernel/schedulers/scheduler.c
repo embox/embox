@@ -87,8 +87,8 @@ void scheduler_dispatch(void) {
 
 		#ifdef CONFIG_PP_ENABLE
 		if (current_thread->pp != prev_thread->pp) {
-			pp_store( prev_thread->pp->data );
-			pp_restore( current_thread->pp->data );
+			pp_store( prev_thread->pp );
+			pp_restore( current_thread->pp );
 		}
 		#endif
 

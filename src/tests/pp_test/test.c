@@ -8,6 +8,8 @@
 
 #include <embox/test.h>
 #include <kernel/pp.h>
+#include <kernel/thread.h>
+#include <kernel/scheduler.h>
 
 EMBOX_TEST(run);
 
@@ -22,20 +24,23 @@ char stack2[THREAD_STACK2_SIZE];
 void run1() {
 	share_variable = 'a';
 	while (true) {
-		printf("%c\n",share_variable);
+		printf("first thread %c\n",share_variable);
+		sleep(1);
 	}
 }
 
 void run2() {
 	share_variable = 'b';
 	while (true) {
-		printf("%c\n",share_variable);
+		printf("secont thread %c\n",share_variable);
+		sleep(1);
 	}
 }
 
 static int run(void) {
 	int result = 0;
 	struct thread *t1, *t2;
+	printf("PP TEST: ");
 
 	t1 = thread_create( run1, stack1 + THREAD_STACK1_SIZE );
 	t2 = thread_create( run2, stack2 + THREAD_STACK2_SIZE );
