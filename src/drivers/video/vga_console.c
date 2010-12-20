@@ -175,6 +175,7 @@ void vga_putc(char c) {
 		break;
 	case '\t':
 		con.x = (con.x & ~7) + 8;
+		break;
 	case 27: /* ESC */
 		esc_state = 1;
 		return;
