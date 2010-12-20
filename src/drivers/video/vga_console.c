@@ -50,6 +50,7 @@ void vga_console_init(unsigned width, unsigned height) {
 	con.attr = 0x7;
 	crtc_init();
 	vga_clear();
+	keyboard_init();
 }
 
 static void vga_scroll(unsigned n) {
@@ -58,7 +59,8 @@ static void vga_scroll(unsigned n) {
 		for (i = n * con.width; i < con.width * con.height; ++i) {
 			video[i - n * con.width] = video[i];
 		}
-		for(i= (con.height - n) * con.width; i < con.width * con.height; ++i) {
+		for (i = (con.height - n) * con.width;
+				i < con.width * con.height; ++i) {
 			video[i] = (vchar_t) { c: 0x20, a: con.attr };
 		}
 	}
@@ -71,7 +73,8 @@ static void vga_clear(void) {
 	}
 }
 
-static void vga_printchar(unsigned x, unsigned y, unsigned char c, unsigned char a) {
+static void vga_printchar(unsigned x, unsigned y,
+		unsigned char c, unsigned char a) {
 	video[x + (y * con.width)] = (vchar_t) { c: c, a: a };
 }
 
@@ -93,12 +96,21 @@ void ansi_attrib(int a) {
 		con.attr |= 0x8080;
 	default:
 		if (30 <= a && a <= 37) {
-			con.attr = (con.attr & 0x0f0) | colors[a - 30] | ((con.attr >> 8) & 0x08);
+			con.attr = (con.attr & 0x0f0) | colors[a - 30] |
+					((con.attr >> 8) & 0x08);
 		} else if (40 <= a && a <= 47) {
-			con.attr = (con.attr & 0x0f) | (colors[a - 40] << 4) | ((con.attr >> 8) & 0x80);
+			con.attr = (con.attr & 0x0f) | (colors[a - 40] << 4) |
+					((con.attr >> 8) & 0x80);
 		}
 		break;
 	};
+}
+
+static void blink_cursor(unsigned x, unsigned y) {
+	unsigned pos = 80 * y + x;
+
+	out16((pos & 0xff00) | 0x0e, dev_reg);
+	out16((pos <<     8) | 0x0f, dev_reg);
 }
 
 static void vga_esc_putc(char c) {
@@ -112,9 +124,26 @@ static void vga_esc_putc(char c) {
 	if (c == ';') {
 		con.esc_args[++con.num_esc_args] = 0;
 	} else if (isdigit(c) && con.num_esc_args < 5) {
-		con.esc_args[con.num_esc_args] = con.esc_args[con.num_esc_args] * 10 +(c - '0');
+		con.esc_args[con.num_esc_args] = con.esc_args[con.num_esc_args] * 10  + (c - '0');
 	}
 	switch (c) {
+	case 'f':
+		con.x = con.esc_args[1];
+		if (con.x)
+			--con.y;
+		con.y = con.esc_args[0];
+		if (con.y)
+			--con.x;
+		blink_cursor(con.x, con.y);
+		break;
+	case 'H':
+		con.x = con.esc_args[1];
+		if(con.x) --con.x;
+		con.y = con.esc_args[0];
+		if(con.y) --con.y;
+		if (con.x >= con.width) con.x = con.width  - 1;
+		if (con.y >= con.height) con.y = con.height - 1;
+		break;
 	case 'm': /* color */
 		p = 0;
 		do {
@@ -191,16 +220,12 @@ void vga_putc(char c) {
 	}
 }
 
-static void blink_cursor(unsigned x, unsigned y) {
-	unsigned pos = 80 * y + x;
-
-	out16((pos & 0xff00) | 0x0e, dev_reg);
-	out16((pos <<     8) | 0x0f, dev_reg);
-}
-
 int vga_getc(void) {
-	blink_cursor(con.x, con.y);
-        return 0;
+	//TODO: workaround
+	//blink_cursor(con.x, con.y);
+	extern int keyboard_getchar(void);
+	return keyboard_getchar();
+	//return 0;
 }
 
 void diag_init(void) {
