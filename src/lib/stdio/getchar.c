@@ -9,7 +9,30 @@
 #include <stdio.h>
 #include <kernel/uart.h>
 #include <kernel/diag.h>
+#include <drivers/vconsole.h>
 
+#ifdef CONFIG_TTY_CONSOLE_COUNT
+int getchar(void) {
+	return vconsole_getchar( cur_console );
+}
+
+int ungetchar(int ch) {
+	getchar();
+	return ch;
+}
+
+#else
+int getchar(void) {
+	return diag_getc();
+}
+
+int ungetchar(int ch) {
+	getchar();
+	return ch;
+}
+#endif
+
+#if 0
 int getchar_getc(void) {
 	#ifndef CONFIG_HARD_DIAGUART
 	return uart_getc();
@@ -56,4 +79,5 @@ int ungetchar(int ch) {
 # endif
 #endif
 }
+#endif
 

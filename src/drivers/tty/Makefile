@@ -5,6 +5,8 @@ $_SRCS-tty += tty.c
 $_DEPS-tty += embox.fs.devfs tty_action
 ifdef
 $_DEPS-tty += embox.driver.terminal #vtparse + vtbuilder
+$_DEPS-tty += core.kernel.pp
+$_DEPS-tty += embox.cmd.esh
 endif
 
 $_MODS += vconsole

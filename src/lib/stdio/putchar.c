@@ -8,7 +8,20 @@
 
 #include <stdio.h>
 #include <kernel/diag.h>
+#include <drivers/vconsole.h>
 
+#ifdef CONFIG_TTY_CONSOLE_COUNT
+int putchar(int c) {
+	static char prev = 0;
+
+	if (c == '\n' && prev != '\r') {
+		vconsole_putchar( cur_console, '\r');
+	}
+	vconsole_putchar( cur_console, (char) c);
+
+	return (prev = c);
+}
+#else
 int putchar(int c) {
 	static char prev = 0;
 
@@ -19,4 +32,5 @@ int putchar(int c) {
 
 	return (prev = c);
 }
+#endif
 

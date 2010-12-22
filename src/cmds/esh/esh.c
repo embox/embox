@@ -45,7 +45,7 @@ static int parse_str(char *cmdline, char **words) {
 }
 #endif
 
-static int esh_start(void) {
+void esh_run(void) {
 
 	int words_counter = 0;
 	int ret_code;
@@ -79,6 +79,16 @@ static int esh_start(void) {
 
 /*	fclose(ff); */
 
+}
+
+static int esh_start(void) {
+#ifndef CONFIG_TTY_CONSOLE_COUNT
+	esh_run();
+#else
+	printf("printf: start esh\n");
+	printk("printk: start esh\n");
+	scheduler_start();
+#endif
 	return 0;
 }
 

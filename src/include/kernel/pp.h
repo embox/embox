@@ -46,6 +46,8 @@ extern void     pp_restore(struct pprocess* pr);
 
 extern void        pp_add_thread(struct pprocess *p, struct thread *th);
 extern void        pp_del_thread(struct pprocess *p, struct thread *th);
+extern struct pprocess* pp_create( void (*run)(void) ); /* with dynamic allocation */
+extern struct pprocess* pp_create_ws( void (*run)(void), void *stack_addr);
 extern struct pprocess* pp_add_process(struct thread *th);
 extern void        pp_del_process(struct pprocess *p);
 extern void        pp_switch_process(struct pprocess *p);

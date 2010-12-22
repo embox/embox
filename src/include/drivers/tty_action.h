@@ -11,14 +11,24 @@
 
 #include <drivers/tty.h>
 
-static const struct vt_token TOKEN_LEFT[1] = {{
+static const struct vt_token TOKEN_UP[1] = {{
     .action = VT_ACTION_CSI_DISPATCH,
-    .ch = 'D'
+    .ch = 'A'
+}};
+
+static const struct vt_token TOKEN_DOWN[1] = {{
+    .action = VT_ACTION_CSI_DISPATCH,
+    .ch = 'B'
 }};
 
 static const struct vt_token TOKEN_RIGHT[1] = {{
     .action = VT_ACTION_CSI_DISPATCH,
     .ch = 'C'
+}};
+
+static const struct vt_token TOKEN_LEFT[1] = {{
+    .action = VT_ACTION_CSI_DISPATCH,
+    .ch = 'D'
 }};
 
 /* auxilary functions */

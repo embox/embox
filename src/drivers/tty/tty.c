@@ -14,8 +14,15 @@
 #include <drivers/tty_action.h>
 #include <kernel/uart.h>
 #include <ctype.h>
+#include <kernel/pp.h>
 
 tty_device_t *cur_tty;
+
+#ifndef CONFIG_ESH
+#define CONFIG_ESH esh_run
+#endif
+
+extern void CONFIG_ESH (void) ;
 
 #if 1
 inline bool tty_isalpha(char ch) {
@@ -119,7 +126,19 @@ void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
 
 static int tty_init_flag = 0;
 
+static struct vconsole *cons;
+static int cons_num;
+
+void run_shell() {
+	printf("printf: running_shell\n");
+	printk("printk: running_shell\n");
+	//CONFIG_ESH ();
+}
+
 int tty_init(void) {
+	printk("tty_init\n");
+	prom_printf("tty_init\n");
+
 	if (NULL == vtparse_init(cur_tty->vtp, tty_vtparse_callback)) {
 		LOG_ERROR("Error while initialization vtparse.\n");
 	}
@@ -134,8 +153,16 @@ int tty_init(void) {
 	cur_tty->console_cur = 0;
 	uint32_t i;
 	for (i=0; i<CONFIG_TTY_CONSOLE_COUNT; ++i) {
-		cur_tty->console[i].tty = cur_tty;
+		cons_num = i;
+		cons = &cur_tty->console[i];
+		cur_console = cons;
+		cons->tty = cur_tty;
+		cons->width = 80;
+		cons->height = 25;
+		vconsole_clear( cons );
+		pp_create_ws( run_shell, cons->esh_stack + CONFIG_ESH_STACK_S );
 	}
+	cur_console = &cur_tty->console[0];
 #endif
 
 	return 0;
