@@ -125,3 +125,12 @@ _idt:
 	.fill   256, 8, 0
 _idt_end:
 
+	.globl gdt_ptr
+gdt_ptr:
+	.word   _gdt_end - _gdt -1
+	.long   _gdt
+	.word   0
+_gdt:
+	.fill   8, 8, 0
+_gdt_end:
+
