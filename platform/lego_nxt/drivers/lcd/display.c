@@ -230,14 +230,14 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *b
 
 /* q == 1 - color is black */
 
-int display_part(uint8_t x, uint8_t y, uint8_t part_of_byte, int q) {
+int display_part(uint8_t x, uint8_t y, uint8_t part_of_byte, uint8_t q) {
 	uint8_t i;
 	i = (1 << part_of_byte) - 1;
 	display_buffer[y][x] = (q == 1 ? ~i : i);
 	return 0;
 }
 
-int display_little_field(uint8_t x, uint8_t y, uint8_t height, uint8_t offset,  int q) {
+int display_little_field(uint8_t x, uint8_t y, uint8_t height, uint8_t offset,  uint8_t q) {
 	uint8_t i;
 	i = ((1 << height) - 1) << offset;
 	display_buffer[y][x] = (q == 1 ? i : ~i );
@@ -245,20 +245,21 @@ int display_little_field(uint8_t x, uint8_t y, uint8_t height, uint8_t offset,  
 }
 
 
-int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q){
+int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q){
 	uint32_t x_offset, y_offset;
-    uint8_t up_offset, up_higth, up_whole_offset, whole_field_y, under_higth, x_fill, y_fill;
-	int t;
+	uint8_t up_offset, up_height, up_whole_offset, whole_field_y, under_height, x_fill, y_fill;
+	uint8_t t;
 	up_whole_offset = y >> 3;
 	up_offset = y % 8;
-	up_higth = 8 - up_offset;
-	if (height <= up_higth){
+	up_height = 8 - up_offset;
+	if (height <= up_height){
 		for (x_offset = 0; x_offset < width; x_offset++) {
 			x_fill = x + x_offset;
 			display_little_field(x_fill, up_whole_offset, height, up_offset, q);
 		}
 	} else {
-		t = (q + 1) % 2;
+		whole_field_y = (height - up_height) >> 3;
+		under_height = (height - up_height) % 8;
 		for (x_offset = 0; x_offset < width; x_offset++) {
 			x_fill = x + x_offset;
 			display_part(x_fill, up_whole_offset, up_offset, q);
@@ -266,8 +267,9 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q){
 				y_fill = up_whole_offset+1 + y_offset;
 				display_buffer[y_fill][x_fill] = (q == 0 ? 0 : 0xFF);
 			}
-			if (under_higth != 0){
-				display_part(x_fill, up_whole_offset+whole_field_y+1, under_higth, t);
+			if (under_height != 0){
+				t = (q + 1) % 2;
+				display_part(x_fill, up_whole_offset+whole_field_y+1, under_height, t);
 			}
 		}
 	}

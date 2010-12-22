@@ -16,13 +16,12 @@ EMBOX_TEST(run_picture);
 
 /* WARNING: function too long */
 static int run_picture(void) {
+	display_clear_screen();
 /*Part of "E" "M" "B" "O" */
 	uint8_t pict_buff1[8] = {0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF};
 	uint8_t pict_buff2[8] = {0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0};
 	uint8_t pict_buff4[8] = {0xF0, 0xF0, 0xF0, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF};
 	uint8_t pict_buff3[8] = {0x0F, 0x0F, 0x0F, 0x0F, 0xFF, 0xFF, 0xFF, 0xFF};
-
-	//HERE MAY BE SOME STRANGE
 /*part of "X"*/
 	uint8_t pict_buff5[8] = {0xC3, 0xE7, 0xFF, 0xFF, 0xFF, 0xFF, 0xE7, 0xC3};
 	uint8_t pict_buff8[8] = {0x00, 0x00, 0x00, 0x00, 0xC0, 0xF0, 0xFC, 0xFF};
@@ -32,6 +31,11 @@ static int run_picture(void) {
 	uint8_t pict_buff10[8] = {0xFF, 0x3F, 0x0F, 0x03, 0x03, 0x0F, 0x3F, 0xFF};
 	uint8_t pict_buff11[8] = {0xFF, 0xFC, 0xF0, 0xC0, 0xC0, 0xF0, 0xFC, 0xFF};
 
+	uint32_t b;
+		b = nxt_buttons_was_pressed();
+		if (b!=0) {
+			return 0;
+		}
 
 #if 0
 /*e*/
@@ -84,6 +88,7 @@ static int run_picture(void) {
 		/*23*/	display_draw(2, i, 1, 8, &pict_buff1[0]);
 		/*24*/	display_draw(10, i, 1, 8, &pict_buff2[0]);
 
+
 		/*m*/
 		/*4*/	display_draw(18, i-2, 1, 8, &pict_buff1[0]);
 		/*5*/	display_draw(26, i-2, 1, 8, &pict_buff2[0]);
@@ -120,12 +125,17 @@ static int run_picture(void) {
 		/*33*/	display_draw(82, i, 1, 8, &pict_buff10[0]);
 		/*34*/	display_draw(90, i, 1, 8, &pict_buff7[0]);
 		usleep(250);
-		if (i < 5) {
-			display_clear_screen();
-		}
+		display_clear_screen();
+
 	}
 	for (i = 0; i < 5; i++) {
 	/*stay*/
+		b = nxt_buttons_was_pressed();
+		if (b!=0) {
+			return 0;
+		}
+
+
 	/*e*/
 	/*2*/	display_draw(2, 3, 1, 8, &pict_buff1[0]);
 	/*3*/	display_draw(10, 3, 1, 8, &pict_buff3[0]);
@@ -169,11 +179,10 @@ static int run_picture(void) {
 	/*32*/	display_draw(74, 5, 1, 8, &pict_buff8[0]);
 	/*33*/	display_draw(82, 5, 1, 8, &pict_buff10[0]);
 	/*34*/	display_draw(90, 5, 1, 8, &pict_buff7[0]);
-	usleep(500);
+	usleep(250);
 
 	/*try to jamp*/
 	display_clear_screen();
-
 /*e*/
 	/*e*/
 	/*2*/	display_draw(2, 2, 1, 8, &pict_buff1[0]);
@@ -222,6 +231,7 @@ static int run_picture(void) {
 	display_clear_screen();
 
 /*stay*/
+
 	/*e*/
 	/*2*/	display_draw(2, 3, 1, 8, &pict_buff1[0]);
 	/*3*/	display_draw(10, 3, 1, 8, &pict_buff3[0]);
@@ -314,6 +324,7 @@ static int run_picture(void) {
 	/*34*/	display_draw(90, 5, 1, 8, &pict_buff7[0]);
 	usleep(250);
 	display_clear_screen();
+
 
 /*stay*/
 	/*e*/
@@ -503,6 +514,7 @@ static int run_picture(void) {
 	usleep(250);
 	display_clear_screen();
 
+
 /*stay*/
 	/*e*/
 	/*2*/	display_draw(2, 3, 1, 8, &pict_buff1[0]);
@@ -550,6 +562,7 @@ static int run_picture(void) {
 	usleep(250);
 	display_clear_screen();
 
+
 /*x*/
 	/*e*/
 	/*2*/	display_draw(2, 3, 1, 8, &pict_buff1[0]);
@@ -596,6 +609,7 @@ static int run_picture(void) {
 	/*34*/	display_draw(90, 4, 1, 8, &pict_buff7[0]);
 	usleep(250);
 	display_clear_screen();
+
 
 /*stay*/
 	/*e*/
