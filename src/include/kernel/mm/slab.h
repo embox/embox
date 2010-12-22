@@ -6,6 +6,8 @@
 #ifndef SLAB_H
 #define SLAB_H
 
+#include <lib/list.h>
+
 /**
  * cache descriptor
  */

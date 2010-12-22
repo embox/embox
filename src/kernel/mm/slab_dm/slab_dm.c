@@ -60,10 +60,10 @@ static kmem_cache_t kmalloc_cache = {
 				.name = "__main_cache",
 				.num = NUM_OF_OBJECTS_IN_SLAB,
 				.obj_size = ALIGN_UP(sizeof(kmem_cache_t), sizeof(struct list_head)),
-				.slabs_full = { NULL, NULL },
-				.slabs_free = { NULL, NULL },
-				.slabs_partial = { NULL, NULL },
-				.next = { &(kmalloc_cache.next), &(kmalloc_cache.next) },
+				.slabs_full = { &kmalloc_cache.slabs_full, &kmalloc_cache.slabs_full },
+				.slabs_free = { &kmalloc_cache.slabs_free, &kmalloc_cache.slabs_free },
+				.slabs_partial = { &kmalloc_cache.slabs_partial, &kmalloc_cache.slabs_partial },
+				.next = { &kmalloc_cache.next, &kmalloc_cache.next },
 				.growing = false,
 				.slab_size = ALIGN_UP((ALIGN_UP(sizeof(slab_t), sizeof(struct list_head)) +
 								ALIGN_UP(sizeof(kmem_cache_t), sizeof(struct list_head)) *
@@ -73,21 +73,17 @@ static kmem_cache_t kmalloc_cache = {
  * Free memory which occupied by slab
  * @param slab_ptr the pointer to slab which must be deleted
  */
-static void slab_destroy(slab_t *slab_ptr) {
-	page_info_t* page;
-	kmem_cache_t* cachep;
+static void slab_destroy(kmem_cache_t *cachep, slab_t *slabp) {
+	page_info_t* page = page = virt_to_page(slabp);
+	size_t pages_count = cachep->slab_size;
 
-	void *ptr = (void*) slab_ptr;
-	page = virt_to_page(ptr);
-	cachep = GET_PAGE_CACHE(page);
-	if (!cachep->growing) {
-		/*this may do easy if we know quantity of pages per slab*/
-		while (GET_PAGE_SLAB(page) == slab_ptr) {
-			SET_PAGE_SLAB(page,NULL);
-			page += (CONFIG_PAGE_SIZE / 8);
-		}
-	}
-	mpfree(ptr);
+	do {
+		SET_PAGE_CACHE(page, NULL);
+		SET_PAGE_SLAB(page, NULL);
+		page++;
+	} while (--pages_count);
+
+	mpfree(slabp);
 }
 
 /* init slab descriptor and slab objects */
@@ -163,21 +159,44 @@ kmem_cache_t *kmem_dmcache_create(char *name, size_t obj_size) {
 	return cache_ptr;
 }
 
-void kmem_dmcache_destroy(kmem_cache_t *cache_ptr) {
+void kmem_dmcache_destroy(kmem_cache_t *cachep) {
 	struct list_head *ptr;
-	if (!cache_ptr->growing) {
-		list_for_each(ptr, &cache_ptr->slabs_free) {
-			slab_destroy(list_entry(ptr, slab_t, list));
-		}
-		list_for_each(ptr, &cache_ptr->slabs_full) {
+	slab_t *slabp;
 
-			slab_destroy(list_entry(ptr, slab_t, list));
-		}
-		list_for_each(ptr, &cache_ptr->slabs_partial) {
-			slab_destroy(list_entry(ptr, slab_t, list));
-		}
-		kmem_dmcache_free(&kmalloc_cache, cache_ptr);
+	while(1) {
+		ptr = cachep->slabs_free.prev;
+		/*if list is empty*/
+		if (ptr == &cachep->slabs_free)
+			break;
+		/* remove this slab from the list */
+		slabp = list_entry(ptr, slab_t, list);
+		list_del(&slabp->list);
+		slab_destroy(cachep, slabp);
 	}
+
+	while(1) {
+		ptr = cachep->slabs_full.prev;
+		/*if list is empty*/
+		if (ptr == &cachep->slabs_full)
+			break;
+		/* remove this slab from the list */
+		slabp = list_entry(ptr, slab_t, list);
+		list_del(&slabp->list);
+		slab_destroy(cachep, slabp);
+	}
+
+	while(1) {
+		ptr = cachep->slabs_partial.prev;
+		/*if list is empty*/
+		if (ptr == &cachep->slabs_partial)
+			break;
+		/* remove this slab from the list */
+		slabp = list_entry(ptr, slab_t, list);
+		list_del(&slabp->list);
+		slab_destroy(cachep, slabp);
+	}
+
+	kmem_dmcache_free(&kmalloc_cache, cachep);
 
 }
 
@@ -186,8 +205,8 @@ void *kmem_dmcache_alloc(kmem_cache_t *cachep) {
 	void *objp;
 
 	/* getting slab */
-	if (list_empty(&(cachep->slabs_partial))) {
-		if (list_empty(&(cachep->slabs_free)))
+	if (list_empty(&cachep->slabs_partial)) {
+		if (list_empty(&cachep->slabs_free))
 			if (!kmem_dmcache_grow(cachep))
 				return NULL;
 		slabp = (slab_t*) cachep->slabs_free.next;
@@ -233,13 +252,7 @@ void kmem_dmcache_free(kmem_cache_t *cachep, void* objp) {
 	}
 }
 
-/**
- * Remove all free slabs from cache
- * will be used in feature
- * @param cachep is pointer to cache which need to shrink
- * @return number of removed slabs
- */
-static int kmem_cache_shrink(kmem_cache_t *cachep) {
+int kmem_dmcache_shrink(kmem_cache_t *cachep) {
 	slab_t *slabp;
 	struct list_head *p;
 	int ret = 0;
@@ -252,6 +265,7 @@ static int kmem_cache_shrink(kmem_cache_t *cachep) {
 		/* remove this slab from the list */
 		slabp = list_entry(cachep->slabs_free.prev, slab_t, list);
 		list_del(&slabp->list);
+		slab_destroy(cachep, slabp);
 		ret++;
 	}
 

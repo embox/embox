@@ -9,7 +9,6 @@
  *@author Dmitry Zubarevich
  */
 
-#include <lib/list.h>
 #include <string.h>
 #include <kernel/mm/slab.h>
 

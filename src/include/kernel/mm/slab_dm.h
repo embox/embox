@@ -10,6 +10,8 @@
 #ifndef SLAB_DM_H
 #define SLAB_DM_H
 
+#include <lib/list.h>
+
 /* Length of name of any cache */
 #define CHACHE_NEMELEN 16
 /* Count of objects which can be contained into the slab */
@@ -62,6 +64,14 @@ void *kmem_dmcache_alloc(kmem_cache_t *cachep);
  * @param objp is object which must be deleted
  */
 void kmem_dmcache_free(kmem_cache_t *cachep, void* objp);
+
+/**
+ * Remove all free slabs from cache
+ * will be used in feature
+ * @param cachep is pointer to cache which need to shrink
+ * @return number of removed slabs
+ */
+int kmem_dmcache_shrink(kmem_cache_t *cachep);
 
 /**
  * Return pointer to object for which allocate memory
