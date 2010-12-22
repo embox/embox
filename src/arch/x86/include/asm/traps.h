@@ -17,6 +17,7 @@ typedef struct pt_regs {
 	uint32_t eip, cs, eflags, esp, ss;
 } pt_regs_t;
 
+extern void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr);
 extern void idt_init(void);
 extern void gdt_init(void);
 

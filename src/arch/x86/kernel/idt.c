@@ -64,7 +64,8 @@ typedef struct idt_pointer {
 
 #define SET_IDT(idt_ptr)                  \
 	__asm__ __volatile__(             \
-		"lidt %0" :               \
+		"lidt %0\n\t"             \
+		"sti" :                   \
 		: "m"((idt_ptr)->limit),  \
 		  "m"(*idt_ptr)           \
 	)
@@ -76,7 +77,7 @@ typedef struct idt_pointer {
 static idt_gate_t idt_table[IDT_SIZE];
 extern idt_pointer_t idt_ptr;
 
-static void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr) {
+void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr) {
 	idt_table[nr].offset_low  = base & 0xFFFF;
 	idt_table[nr].offset_high = (base >> 16) & 0xFFFF;
 	idt_table[nr]._zero       = 0;
