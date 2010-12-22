@@ -41,7 +41,7 @@ static const unsigned char keymap[][2] = {
 	{'-',	'_'},
 	{'=',	'+'},
 	{8,	8  },  /* 14 - Backspace */
-	{'\t','\t'},   /* 15 */
+	{'\t', '\t'},  /* 15 */
 	{'q',	'Q'},
 	{'w',	'W'},
 	{'e',	'E'},
@@ -138,7 +138,7 @@ int keyboard_getchar(void) {
 			continue;
 		}
 		ch = keymap[scan_code][shift_state];
-		if (ch == (unsigned)0xff) {
+		if (ch == (unsigned) 0xff) {
 			shift_state = 1;
 			continue;
 		}
