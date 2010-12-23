@@ -116,20 +116,18 @@ irq_stub:
 	add     $8, %esp
 	iret
 
-	.globl idt_ptr
+	.globl idt_ptr, _idt
 idt_ptr:
-	.word   _idt_end - _idt -1
+	.word   _idt_end - _idt - 1
 	.long   _idt
-	.word   0
 _idt:
 	.fill   256, 8, 0
 _idt_end:
 
-	.globl gdt_ptr
+	.globl gdt_ptr, _gdt
 gdt_ptr:
-	.word   _gdt_end - _gdt -1
+	.word   _gdt_end - _gdt - 1
 	.long   _gdt
-	.word   0
 _gdt:
 	.fill   8, 8, 0
 _gdt_end:

@@ -37,7 +37,7 @@ typedef struct gdt_pointer {
                 "m"(*gdt_ptr)            \
         )
 
-static gdt_gate_t gdt_table[GDT_SIZE];
+extern gdt_gate_t _gdt[];
 extern gdt_pointer_t gdt_ptr;
 
 void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit, uint8_t ac, uint8_t gran) {
@@ -45,17 +45,17 @@ void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit, uint8_t ac, uint8_t
 		limit >>= 12;
 		gran |= 0x8;
 	}
-	gdt_table[nr].limit_low   = limit & 0xffff;
-	gdt_table[nr].base_low    = base & 0xffff;
-	gdt_table[nr].base_med    = (base >> 16) & 0xff;
-	gdt_table[nr].access      = ac | 0x80;
-	gdt_table[nr].limit_high  = limit >> 16;
-	gdt_table[nr].granularity = gran;
-	gdt_table[nr].base_high   = base >> 24;
+	_gdt[nr].limit_low   = limit & 0xffff;
+	_gdt[nr].base_low    = base & 0xffff;
+	_gdt[nr].base_med    = (base >> 16) & 0xff;
+	_gdt[nr].access      = ac | 0x80;
+	_gdt[nr].limit_high  = limit >> 16;
+	_gdt[nr].granularity = gran;
+	_gdt[nr].base_high   = base >> 24;
 }
 
 void gdt_init(void) {
-//	gdt_set_gate(0, 0, 0, 0, 0); /* NULL Descriptor */
+	gdt_set_gate(0, 0, 0, 0, 0); /* NULL Descriptor */
 //	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment */
 	gdt_set_gate(2, 0, 0xFFFFFFFF, 0x1A, 0x4); /* Data segment */
 //	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* Code segment */

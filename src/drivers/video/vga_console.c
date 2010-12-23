@@ -36,7 +36,7 @@ static vga_console_t con;
 static volatile vchar_t *video;
 
 static int crtc_init(void) {
-	dev_reg = 0x3b4;
+	dev_reg = 0x3d4;
 	video = (unsigned char *) VIDEO;
 }
 
@@ -115,6 +115,7 @@ static void blink_cursor(unsigned x, unsigned y) {
 
 static void vga_esc_putc(char c) {
 	int p;
+	unsigned i;
 	if (c == '[') {
 		con.esc_args[0] = 0;
 		con.esc_args[1] = 0;
@@ -127,7 +128,7 @@ static void vga_esc_putc(char c) {
 		con.esc_args[con.num_esc_args] = con.esc_args[con.num_esc_args] * 10  + (c - '0');
 	}
 	switch (c) {
-	case 'f':
+	case 'f': /* Move cursor + blink cursor to location v,h */
 		con.x = con.esc_args[1];
 		if (con.x)
 			--con.y;
@@ -136,7 +137,7 @@ static void vga_esc_putc(char c) {
 			--con.x;
 		blink_cursor(con.x, con.y);
 		break;
-	case 'H':
+	case 'H': /* Move cursor to screen location v,h */
 		con.x = con.esc_args[1];
 		if(con.x) --con.x;
 		con.y = con.esc_args[0];
@@ -150,6 +151,54 @@ static void vga_esc_putc(char c) {
 			ansi_attrib(con.esc_args[p++]);
 		} while (con.num_esc_args--);
 		esc_state = 0;
+		break;
+	case 'X': /* clear n characters */
+		for (i = con.x + (con.y * con.width);
+		    i < con.x + (con.y * con.width) + con.esc_args[0]; ++i) {
+			video[i] = (vchar_t){ c: 0x20, a: con.attr };
+		}
+		break;
+	case 'K': /* Clear line from cursor right */
+		switch(con.esc_args[0]) {
+		default:
+		case 0:
+			for (i = con.x + (con.y * con.width);
+			    i < (con.y * con.width) + con.width; ++i) {
+				video[i] = (vchar_t){ c: 0x20, a: con.attr };
+			}
+			break;
+		case 1:
+			for (i = (con.y * con.width); i < (con.y * con.width) + con.x; ++i) {
+				video[i] = (vchar_t){ c: 0x20, a: con.attr };
+			}
+			break;
+		case 2:
+			for (i = (con.y * con.width); i < (con.y * con.width) + con.width; ++i) {
+				video[i] = (vchar_t){ c: 0x20, a: con.attr };
+			}
+			break;
+		}
+		break;
+	case 'J': /* Clear screen from cursor */
+		switch(con.esc_args[0]) {
+		default:
+		case 0:
+			for (i = (con.y * con.width);
+			    i < (con.y * con.width) + con.width * (con.height - con.y); ++i) {
+				video[i] = (vchar_t){ c: 0x20, a: con.attr };
+			}
+			break;
+		case 1:
+			for (i = 0; i < con.width * con.y; ++i) {
+				video[i] = (vchar_t){ c: 0x20, a: con.attr };
+			}
+			break;
+		case 2:
+			for (i = 0; i < con.width * con.height; ++i) {
+				video[i] = (vchar_t){ c: 0x20, a: con.attr };
+			}
+			break;
+		}
 		break;
 	}
 }
@@ -221,12 +270,12 @@ void vga_putc(char c) {
 	}
 }
 
+//TODO: workaround
+extern int keyboard_getchar(void);
+
 int vga_getc(void) {
-	//TODO: workaround
-	//blink_cursor(con.x, con.y);
-	extern int keyboard_getchar(void);
+	blink_cursor(con.x, con.y);
 	return keyboard_getchar();
-	//return 0;
 }
 
 void diag_init(void) {

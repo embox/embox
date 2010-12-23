@@ -28,7 +28,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 
 	/* Am I booted by a Multiboot-compliant boot loader? */
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-		panic("Invalid magic number: 0x%x\n", (unsigned)magic);
+		panic("Invalid magic number: 0x%x\n", (unsigned) magic);
 		return;
 	}
 
