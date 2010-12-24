@@ -82,13 +82,13 @@ void esh_run(void) {
 }
 
 static int esh_start(void) {
+	printk("ESH: ");
 #ifndef CONFIG_TTY_CONSOLE_COUNT
 	esh_run();
 #else
-	printf("printf: start esh\n");
-	printk("printk: start esh\n");
 	scheduler_start();
 #endif
+	printk(" [ done ]\n");
 	return 0;
 }
 

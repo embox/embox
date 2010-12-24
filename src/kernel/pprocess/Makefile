@@ -4,7 +4,7 @@ $_MODS += pp
 #$_DEPS-pp += libc.a
 
 # for variable cur_console
-$_DEPS-pp += embox.driver.vconsole
+#$_DEPS-pp += embox.driver.vconsole
 
 ifdef CONFIG_PP_TEST
 $_DEPS-pp += #embox.test.pp_test

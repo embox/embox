@@ -17,7 +17,7 @@ static vconsole_t def_console;
 vconsole_t *cur_console = NULL;
 vconsole_t const *sys_console = &def_console;
 
-EMBOX_UNIT_INIT(vconsole_init);
+//EMBOX_UNIT_INIT(vconsole_init);
 
 static FILE *def_file;
 #define CONFIG_DEFAULT_CONSOLE "/dev/uart"
@@ -26,8 +26,8 @@ static FILE *def_file;
 static int vconsole_init(void) {
 	/*initialize pool of virtual consoles*/
 	/*initialize default console*/
-	def_file = fopen(CONFIG_DEFAULT_CONSOLE,"r");
-	def_console.tty = cur_tty;
+	//def_file = fopen(CONFIG_DEFAULT_CONSOLE,"r"); /* was moved to tty.c */
+	//def_console.tty = cur_tty;
 	return 0;
 }
 
@@ -86,20 +86,31 @@ int vconsole_close(vconsole_t *con) {
 	return 0;
 }
 
+#ifdef CONFIG_TTY_CONSOLE_COUNT
 inline bool its_cur() {
 	if (cur_console==NULL) {
 		return false;
 	}
 	return &cur_console->tty->console[cur_console->tty->console_cur] == cur_console;
 }
-
+#define ITS_CUR	its_cur()
 #define ICC(a) do { if (its_cur()) a; } while (0)
+#else
+#define ITS_CUR	true
+#define ICC(a) a
+#endif
 
 void vconsole_putchar( struct vconsole *vc, char ch ) {
+	diag_putc( ch );
+	return;
+
 	if (vc==NULL) { /* if hasn't initialized now cur_console use hardvare output */
 		diag_putc( ch );
 		return;
 	}
+
+	printk("test %c\n",ch);
+	return;
 
 	if (vc->scr_column >= vc->width) {
 		ICC( vc->tty->file_op->fwrite("\n",sizeof(char),1,NULL) );
@@ -123,7 +134,7 @@ char vconsole_getchar( struct vconsole *vc ) {
 }
 
 void vconsole_gotoxye( struct vconsole *vc, uint8_t lx, uint8_t ly, uint8_t nx, uint8_t ny ) {
-	if (its_cur()) {
+	if (ITS_CUR) {
 		uint8_t i;
 		if (lx<nx) {
 			for (i=0;i<(nx-lx);++i) {
@@ -153,6 +164,7 @@ void vconsole_gotoxy( struct vconsole *vc, uint8_t x, uint8_t y ) {
 }
 
 void vconsole_clear( struct vconsole *vc ) {
+	return;
 	uint32_t i = vc->width*vc->height - 1;
 	vc->tty->file_op->fwrite("\n",sizeof(char),1,NULL);
 	for (;i>=0;--i) {
@@ -163,6 +175,7 @@ void vconsole_clear( struct vconsole *vc ) {
 }
 
 void vconsole_reprint( struct vconsole *vc ) {
+	return;
 	uint32_t i;
 	for (i=0;i<(vc->width*vc->height);++i) {
 		vconsole_putchar( vc , vc->scr_buff[i] );

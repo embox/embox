@@ -15,8 +15,9 @@
 #include <kernel/uart.h>
 #include <ctype.h>
 #include <kernel/pp.h>
+#include <embox/unit.h>
 
-tty_device_t *cur_tty;
+tty_device_t *cur_tty = NULL;
 
 #ifndef CONFIG_ESH
 #define CONFIG_ESH esh_run
@@ -124,20 +125,35 @@ void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
 	cur_tty->file_op->fwrite(&ch,sizeof(char),1,NULL);
 }
 
+#ifndef CONFIG_DEFAULT_CONSOLE
+#define CONFIG_DEFAULT_CONSOLE "/dev/uart"
+#endif
+static FILE *def_file;
 static int tty_init_flag = 0;
 
 static struct vconsole *cons;
 static int cons_num;
 
 void run_shell() {
+#if 0
 	printf("printf: running_shell\n");
 	printk("printk: running_shell\n");
-	//CONFIG_ESH ();
+#endif
+	CONFIG_ESH ();
 }
 
 int tty_init(void) {
-	printk("tty_init\n");
-	prom_printf("tty_init\n");
+	printk("TTY_INIT: ");
+
+	tty_init_flag = 1;
+
+	def_file = fopen(CONFIG_DEFAULT_CONSOLE,"r");
+
+	if (NULL == cur_tty) {
+		printk(" [ error ]\n ");
+		LOG_ERROR(" Any TTY has not registred!\n");
+		return -1;
+	}
 
 	if (NULL == vtparse_init(cur_tty->vtp, tty_vtparse_callback)) {
 		LOG_ERROR("Error while initialization vtparse.\n");
@@ -145,14 +161,23 @@ int tty_init(void) {
 	if (NULL == vtbuild_init(cur_tty->vtb, tty_vtbuild_callback)) {
 		LOG_ERROR("Error while initialization vtbuild.\n");
 	}
+
+	printk(".");
+
 	cur_tty->rx_cur = 0;
 	cur_tty->rx_cnt = 0;
 	cur_tty->ins_mod = true;	/* what must be default, don't know */
 
+	printk(".");
+
 #ifdef CONFIG_TTY_CONSOLE_COUNT
-	cur_tty->console_cur = 0;
+	scheduler_start();
+	printk(".");
+
+	cur_tty->console_cur = -1;
 	uint32_t i;
 	for (i=0; i<CONFIG_TTY_CONSOLE_COUNT; ++i) {
+		printk(".");
 		cons_num = i;
 		cons = &cur_tty->console[i];
 		cur_console = cons;
@@ -160,16 +185,26 @@ int tty_init(void) {
 		cons->width = 80;
 		cons->height = 25;
 		vconsole_clear( cons );
+		#if 0
+		printf("Hello from TTY%d!\n",i+1);
+		#endif
 		pp_create_ws( run_shell, cons->esh_stack + CONFIG_ESH_STACK_S );
+		printk(".");
 	}
 	cur_console = &cur_tty->console[0];
+	cur_tty->console_cur = 0;
+	printk(".");
 #endif
 
+	printk(" [ done ]\n");
 	return 0;
 }
 
 int tty_register(tty_device_t *tty) {
+	//printk("TTY was registred\n");
 	cur_tty = tty;
+	//threads_init(); // need before next
+	//tty_init();
 	return 0;
 }
 
@@ -187,7 +222,9 @@ int tty_get_uniq_number(void) {
  * add parsed char to receive buffer
  */
 int tty_add_char(tty_device_t *tty, int ch) {
+	//printk("tty_add_char: %c\n",ch);
 	if (!tty_init_flag) {
+		return 0;
 		tty_init_flag = 1;
 		tty_init();
 	}
@@ -219,5 +256,12 @@ void tty_freeline(tty_device_t *tty, uint8_t *line) {
 		line_size = tty_scanline((uint8_t*) tty->rx_buff, tty->rx_cnt);
 	}
 }
+
+int tty_e() {
+	return 0;
+}
+
+//EMBOX_UNIT(tty_init,tty_e);
+EMBOX_UNIT_INIT(tty_init);
 
 

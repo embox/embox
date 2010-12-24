@@ -16,6 +16,7 @@
 	//printf("ptr(%s)=%d\n",#var,&var);\
 	//printf("pp_pool_sz[%d]=%d\n",pp_pool_s,pp_pool_sz[pp_pool_s]);\
 
+#include <embox/unit.h>
 #include <kernel/pp.h>
 #include <kernel/mm/slab.h>
 
@@ -35,13 +36,13 @@ pprocess_t *pp_cur_process;
 #ifdef KMEM_USE
 ADD_CACHE(pp_p,pprocess_t,CONFIG_PP_COUNT)
 #else
-#define PP_PR_S 4
-static struct pprocess pp_process_pool[PP_PR_S];
+#define CONFIG_PP_COUNT 10
+static struct pprocess pp_process_pool[CONFIG_PP_COUNT];
 static uint32_t pp_process_pool_c = 0;
 
 struct pprocess* get_more_pp() {
-	if (pp_process_pool_c>=PP_PR_S) {
-		LOG_ERROR("ERROR: Not enough pool size for pprocess.");
+	if (pp_process_pool_c>=CONFIG_PP_COUNT) {
+		LOG_ERROR("ERROR: Not enough pool size for pprocess. C:%d, S:%d",pp_process_pool_c,CONFIG_PP_COUNT);
 		while(true);
 	}
 	return &pp_process_pool[pp_process_pool_c++];
@@ -64,12 +65,13 @@ void *memcpy(void *dst, const void *src, size_t n) {
 }
 #endif
 
-void pp_init() {
+int pp_init() {
 /*
 	void *tmp = &cur_console;
 	int si = sizeof(cur_console);
 	*/
 	int i;
+	printk("PP_INIT: ");
 
 	pp_pool_s = 0;
 	PP_INIT_LIST
@@ -78,6 +80,9 @@ void pp_init() {
 	#else
 	pp_cur_process = get_more_pp();
 	#endif
+	pp_has_init = true;
+	printk(" [ done ]\n");
+	return 0;
 }
 
 void pp_store( struct pprocess * pr ) {
@@ -152,5 +157,7 @@ struct pprocess* pp_create_ws( void (*run)(void), void *stack_addr) {
 	pp_add_process( thr );
 	thread_start( thr );
 }
+
+EMBOX_UNIT_INIT(pp_init);
 
 
