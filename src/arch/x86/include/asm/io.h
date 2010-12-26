@@ -22,7 +22,7 @@ static inline uint8_t in8(unsigned long port) {
 	return tmp;
 }
 
-static inline uint8_t in16(unsigned long port) {
+static inline uint16_t in16(unsigned long port) {
 	uint16_t tmp;
 	__asm__ __volatile__(
 		"inw %w1, %w0"
@@ -32,7 +32,7 @@ static inline uint8_t in16(unsigned long port) {
 	return tmp;
 }
 
-static inline uint8_t in32(unsigned long port) {
+static inline uint32_t in32(unsigned long port) {
 	uint32_t tmp;
 	__asm__ __volatile__(
 		"in %w1, %0"
