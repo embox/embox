@@ -19,10 +19,12 @@ name:                           ;\
 	.globl irq##n    ;\
 irq##n:                  ;\
 	cli              ;\
+	jmp irq##n ;
+	#if 0
 	pushl   $(0)     ;\
 	pushl   $(32 + n);\
 	jmp     irq_stub
-
+#endif
 EXCEPTION(0x00, t_excep0)    /* Divide By Zero Exception */
 EXCEPTION(0x01, t_excep1)    /* Debug Exception */
 EXCEPTION(0x02, t_excep2)    /* Non Maskable Interrupt Exception */
@@ -116,14 +118,22 @@ irq_stub:
 	add     $8, %esp
 	iret
 
-	.globl idt_ptr, _idt
+    #if 1
+	.globl idt_ptr
 idt_ptr:
 	.word   _idt_end - _idt - 1
 	.long   _idt
+#endif
+
+	.align 0x1000
+#if 1
+    .global _idt
 _idt:
 	.fill   256, 8, 0
 _idt_end:
+#endif
 
+#if 0
 	.globl gdt_ptr, _gdt
 gdt_ptr:
 	.word   _gdt_end - _gdt - 1
@@ -131,4 +141,19 @@ gdt_ptr:
 _gdt:
 	.fill   8, 8, 0
 _gdt_end:
+#endif
 
+	.global gdt_flush
+gdt_flush:
+	movl 4(%esp), %eax
+	lgdt (%eax)
+
+	movw $0x10, %ax
+	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %fs
+	movw %ax, %gs
+	movw %ax, %ss
+	ljmp  $(0x8),$flush
+flush:
+	ret
