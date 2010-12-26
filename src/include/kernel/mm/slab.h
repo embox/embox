@@ -12,10 +12,10 @@
  * cache descriptor
  */
 typedef struct kmem_cache {
-	void* cache_begin;
-	// object size
+	char* cache_begin;
+	/* object size */
 	size_t size;
-	// the number of objects stored on each slab
+	/* the number of objects stored on each slab */
 	unsigned int num;
 	struct list_head obj_ptr;
 	int hasinit;
@@ -24,7 +24,10 @@ typedef struct kmem_cache {
 #define ALIGN_UP(size, align) \
      (((size) + (align) - 1) & (~((align) - 1)))
 
-#define ADD_CACHE(name,type,count) \
+#define CACHE_ALIGN(size) \
+			ALIGN_UP(size, 4)
+
+#define ADD_CACHE(name, type, count) \
   static char __name_pool[count * ALIGN_UP(sizeof(type), sizeof(struct list_head))]; \
   static kmem_cache_t name = { \
         .num = count, \

@@ -10,8 +10,7 @@
 #include <lib/list.h>
 #include <kernel/mm/slab.h>
 
-EMBOX_TEST(run)
-;
+EMBOX_TEST(run);
 
 /**
  * The test itself.

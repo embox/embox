@@ -13,12 +13,23 @@
 #include <lib/list.h>
 
 /* Length of name of any cache */
-#define CHACHE_NEMELEN 16
-/* Count of objects which can be contained into the slab */
-#define NUM_OF_OBJECTS_IN_SLAB 10
+#define CACHE_NAMELEN 16
+/* max slab size in 2^n form */
+#define MAX_GFP_ORDER 3
+/* max object size in 2^n form */
+#define MAX_OBJ_ORDER 3
+/* number for defining acceptable internal fragmentation */
+#define MAX_INTFRAGM_ORDER 8
+/* size of kmalloc_cache in pages */
+#define KMALLOC_CACHE_SIZE 1
+
 /* Standard align of something */
 #define ALIGN_UP(size, align) \
      (((size) + (align) - 1) & (~((align) - 1)))
+
+/* Align of something by cache size */
+#define CACHE_ALIGN(size) \
+			ALIGN_UP(size, 4)
 
 /**
  * cache descriptor
@@ -26,15 +37,15 @@
 typedef struct kmem_cache {
 	/* pointer to other caches */
 	struct list_head next;
-	char name[CHACHE_NEMELEN];
+	char name[CACHE_NAMELEN];
 	struct list_head slabs_full;
 	struct list_head slabs_partial;
 	struct list_head slabs_free;
 	size_t obj_size;
 	/* the number of objects stored on each slab */
 	unsigned int num;
-	/* size of each slab in pages */
-	size_t slab_size;
+	/* The base 2 logarithm (2^n) number of pages to allocate for each slab */
+	unsigned int gfporder;
 	/* lock the cache from being reaped or shrunk */
 	bool growing;
 } kmem_cache_t;
