@@ -19,12 +19,11 @@ name:                           ;\
 	.globl irq##n    ;\
 irq##n:                  ;\
 	cli              ;\
-	jmp irq##n ;
-	#if 0
 	pushl   $(0)     ;\
 	pushl   $(32 + n);\
 	jmp     irq_stub
-#endif
+
+
 EXCEPTION(0x00, t_excep0)    /* Divide By Zero Exception */
 EXCEPTION(0x01, t_excep1)    /* Debug Exception */
 EXCEPTION(0x02, t_excep2)    /* Non Maskable Interrupt Exception */
@@ -117,31 +116,6 @@ irq_stub:
 	popa
 	add     $8, %esp
 	iret
-
-    #if 1
-	.globl idt_ptr
-idt_ptr:
-	.word   _idt_end - _idt - 1
-	.long   _idt
-#endif
-
-	.align 0x1000
-#if 1
-    .global _idt
-_idt:
-	.fill   256, 8, 0
-_idt_end:
-#endif
-
-#if 0
-	.globl gdt_ptr, _gdt
-gdt_ptr:
-	.word   _gdt_end - _gdt - 1
-	.long   _gdt
-_gdt:
-	.fill   8, 8, 0
-_gdt_end:
-#endif
 
 	.global gdt_flush
 gdt_flush:

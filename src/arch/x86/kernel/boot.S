@@ -40,6 +40,7 @@ multiboot_header:
 #endif /* ! __ELF__ */
 
 multiboot_entry:
+   cli /*interrrupts disable*/
 	/* Initialize the stack pointer.  */
 	movl	$_stack, %esp
 
