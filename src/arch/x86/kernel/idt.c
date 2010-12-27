@@ -12,6 +12,7 @@
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <kernel/panic.h>
+#include <asm/io.h>
 
 #define IDT_SIZE 256
 
@@ -70,12 +71,8 @@ typedef struct idt_pointer {
 	)
 
 #define IDT_ENTRY(nr) \
-	extern void t_excep##nr(void);  \
 	idt_set_gate(nr, (unsigned) t_excep##nr, 0x08, 0x8E)
-#if 0
-extern idt_gate_t _idt[];
-extern idt_pointer_t idt_ptr;
-#endif
+
 
 idt_gate_t _idt[256];
 idt_pointer_t idt_ptr;
@@ -88,7 +85,38 @@ void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr) {
 	_idt[nr].attr        = attr;
 }
 
-extern void t_excep(void);
+extern void t_excep0(void);
+extern void t_excep1(void);
+extern void t_excep2(void);
+extern void t_excep3(void);
+extern void t_excep4(void);
+extern void t_excep5(void);
+extern void t_excep6(void);
+extern void t_excep7(void);
+extern void t_excep8(void);
+extern void t_excep9(void);
+extern void t_excep10(void);
+extern void t_excep11(void);
+extern void t_excep12(void);
+extern void t_excep13(void);
+extern void t_excep14(void);
+extern void t_excep15(void);
+extern void t_excep16(void);
+extern void t_excep17(void);
+extern void t_excep18(void);
+extern void t_excep19(void);
+extern void t_excep20(void);
+extern void t_excep21(void);
+extern void t_excep22(void);
+extern void t_excep23(void);
+extern void t_excep24(void);
+extern void t_excep25(void);
+extern void t_excep26(void);
+extern void t_excep27(void);
+extern void t_excep28(void);
+extern void t_excep29(void);
+extern void t_excep30(void);
+extern void t_excep31(void);
 
 
 extern void irq0(void);
@@ -108,20 +136,17 @@ extern void irq13(void);
 extern void irq14(void);
 extern void irq15(void);
 
-#include <asm/io.h>
 
+//TODO move to special header
 static inline void tmp_irqen(void) {
-
 	__asm__ __volatile__(
-		"sti "
-		:
-		:
+		"sti ":	:
 	);
-
 }
+
 void idt_init(void) {
 	idt_ptr.limit = sizeof(_idt) - 1;
-	idt_ptr.base = _idt;
+	idt_ptr.base = (uint32_t)_idt;
 
 	IDT_ENTRY(0);  IDT_ENTRY(1);  IDT_ENTRY(2);  IDT_ENTRY(3);
 	IDT_ENTRY(4);  IDT_ENTRY(5);  IDT_ENTRY(6);  IDT_ENTRY(7);
