@@ -13,6 +13,7 @@
 #include <asm/traps.h>
 #include <kernel/panic.h>
 #include <asm/io.h>
+#include <string.h>
 
 #define IDT_SIZE 256
 
@@ -73,7 +74,6 @@ typedef struct idt_pointer {
 #define IDT_ENTRY(nr) \
 	idt_set_gate(nr, (unsigned) t_excep##nr, 0x08, 0x8E)
 
-
 idt_gate_t _idt[256];
 idt_pointer_t idt_ptr;
 
@@ -118,7 +118,6 @@ extern void t_excep29(void);
 extern void t_excep30(void);
 extern void t_excep31(void);
 
-
 extern void irq0(void);
 extern void irq1(void);
 extern void irq2(void);
@@ -136,7 +135,6 @@ extern void irq13(void);
 extern void irq14(void);
 extern void irq15(void);
 
-
 //TODO move to special header
 static inline void tmp_irqen(void) {
 	__asm__ __volatile__(
@@ -148,6 +146,9 @@ void idt_init(void) {
 	idt_ptr.limit = sizeof(_idt) - 1;
 	idt_ptr.base = (uint32_t)_idt;
 
+	/* zero IDT */
+	memset((unsigned char*)&_idt, 0, sizeof(idt_gate_t) * 256);
+
 	IDT_ENTRY(0);  IDT_ENTRY(1);  IDT_ENTRY(2);  IDT_ENTRY(3);
 	IDT_ENTRY(4);  IDT_ENTRY(5);  IDT_ENTRY(6);  IDT_ENTRY(7);
 	IDT_ENTRY(8);  IDT_ENTRY(9);  IDT_ENTRY(10); IDT_ENTRY(11);
@@ -156,7 +157,6 @@ void idt_init(void) {
 	IDT_ENTRY(20); IDT_ENTRY(21); IDT_ENTRY(22); IDT_ENTRY(23);
 	IDT_ENTRY(24); IDT_ENTRY(25); IDT_ENTRY(26); IDT_ENTRY(27);
 	IDT_ENTRY(28); IDT_ENTRY(29); IDT_ENTRY(30); IDT_ENTRY(31);
-
 
 	/* Master PIC */
 	idt_set_gate(32, (unsigned) irq0,  0x08, 0x8E);
@@ -167,6 +167,7 @@ void idt_init(void) {
 	idt_set_gate(37, (unsigned) irq5,  0x08, 0x8E);
 	idt_set_gate(38, (unsigned) irq6,  0x08, 0x8E);
 	idt_set_gate(39, (unsigned) irq7,  0x08, 0x8E);
+
 	/* Slave PIC */
 	idt_set_gate(40, (unsigned) irq8,  0x08, 0x8E);
 	idt_set_gate(41, (unsigned) irq9,  0x08, 0x8E);
@@ -177,12 +178,21 @@ void idt_init(void) {
 	idt_set_gate(46, (unsigned) irq14, 0x08, 0x8E);
 	idt_set_gate(47, (unsigned) irq15, 0x08, 0x8E);
 
+	/* Load IDT */
 	SET_IDT(&idt_ptr);
 	tmp_irqen();
 }
 
-void exception_handler(pt_regs_t *st) {
-        panic("EXCEPTION:\nEAX=%08x ECX=%08x ECX=%08x EDX=%08x\n",
-                st->eax, st->ebx, st->ecx, st->edx);
+void exception_handler(pt_regs_t st) {
+	panic("EXCEPTION [0x%x]:\n"
+		"EAX=%08x ECX=%08x ECX=%08x EDX=%08x\n"
+		"GS=%08x FS=%08x ES=%08x DS=%08x\n"
+		"EDI=%08x ESI=%08x EBP=%08x CR2=%08x\n"
+		"EIP=%08x CS=%08x EFLAGS=%08x ESP=%08x SS=%08x\n",
+		st.trapno, st.eax, st.ebx, st.ecx, st.edx,
+		st.gs, st.fs, st.es, st.ds,
+		st.edi, st.esi, st.ebp, st.cr2,
+		st.eip, st.cs, st.eflags, st.esp, st.ss
+	);
 }
 

@@ -94,6 +94,7 @@ excep_stub:
 	pop     %ds
 	popa
 	add     $8, %esp
+	sti
 	iret
 
 irq_stub:
@@ -115,6 +116,7 @@ irq_stub:
 	pop     %ds
 	popa
 	add     $8, %esp
+	sti
 	iret
 
 	.global gdt_flush

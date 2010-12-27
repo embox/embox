@@ -63,18 +63,18 @@ void interrupt_enable(interrupt_nr_t interrupt_nr) {
 	}
 }
 
-void irq_handler(pt_regs_t *regs) {
+void irq_handler(pt_regs_t regs) {
 	/* Send an EOI (end of interrupt) signal to the PICs.
 	   If this interrupt involved the slave. */
 	//FIXME: regs->trapno?
-	if (regs->trapno >= 40) {
+	if (regs.trapno >= 40) {
 		/* Send reset signal to slave. */
 		out8(PIC2_COMMAND, PIC_EOI);
 	}
 	/* Send reset signal to master. (As well as slave, if necessary). */
 	out8(PIC1_COMMAND, PIC_EOI);
 #ifdef CONFIG_IRQ
-	irq_dispatch(regs->trapno);
+	irq_dispatch(regs.trapno - 32);
 #endif
 }
 
