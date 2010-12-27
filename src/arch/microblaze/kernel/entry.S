@@ -40,8 +40,9 @@ C_ENTRY(_interrupt_handler):
 
 	RESTORE_REGS
 
-	rtid	 r14, 0 /*return and enable interrupts*/
 	addik	r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */
+	rtid	 r14, 0 /*return and enable interrupts*/
+	nop
 
 
 C_ENTRY(_user_exception):

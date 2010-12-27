@@ -119,7 +119,7 @@ clear_bss:
 /*call software_init_hook if it set */
 	addik reg_tmp1, reg_zero, software_init_hook
 	beqi reg_tmp1, 2f
-	brai software_init_hook
+	brlid r15, software_init_hook
 	nop
 2:
 	brlid r15, kernel_start
