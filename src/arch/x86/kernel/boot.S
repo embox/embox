@@ -40,17 +40,18 @@ multiboot_header:
 #endif /* ! __ELF__ */
 
 multiboot_entry:
-   cli /*interrrupts disable*/
-	/* Initialize the stack pointer.  */
+	/* interrrupts disable */
+	cli
+	/* Initialize the stack pointer. */
 	movl	$_stack, %esp
 
-	/* Reset EFLAGS.  */
+	/* Reset EFLAGS. */
 	pushl	$0
 	popf
 
-	/* Push the pointer to the Multiboot information structure.  */
+	/* Push the pointer to the Multiboot information structure. */
 	pushl	%ebx
-	/* Push the magic value.  */
+	/* Push the magic value. */
 	pushl	%eax
 
 	call	EXT_C(multiboot_check)

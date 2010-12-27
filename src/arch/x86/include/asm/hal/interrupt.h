@@ -2,7 +2,7 @@
 # error "Do not include this file directly!"
 #endif /* HAL_INTERRUPT_H_ */
 
-#define __INTERRUPT_NRS_TOTAL 32
+#define __INTERRUPT_NRS_TOTAL 15
 
 #ifndef __ASSEMBLER__
 

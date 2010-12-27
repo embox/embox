@@ -182,7 +182,7 @@ void idt_init(void) {
 }
 
 void exception_handler(pt_regs_t *st) {
-        panic("EXECPTION:\nEAX=%08x ECX=%08x ECX=%08x EDX=%08x\n",
+        panic("EXCEPTION:\nEAX=%08x ECX=%08x ECX=%08x EDX=%08x\n",
                 st->eax, st->ebx, st->ecx, st->edx);
 }
 
