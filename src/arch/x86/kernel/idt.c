@@ -74,7 +74,7 @@ typedef struct idt_pointer {
 #define IDT_ENTRY(nr) \
 	idt_set_gate(nr, (unsigned) t_excep##nr, 0x08, 0x8E)
 
-idt_gate_t _idt[256];
+idt_gate_t _idt[IDT_SIZE];
 idt_pointer_t idt_ptr;
 
 void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr) {
@@ -147,7 +147,7 @@ void idt_init(void) {
 	idt_ptr.base = (uint32_t)_idt;
 
 	/* zero IDT */
-	memset((unsigned char*)&_idt, 0, sizeof(idt_gate_t) * 256);
+	memset((unsigned char*)&_idt, 0, sizeof(idt_gate_t) * IDT_SIZE);
 
 	IDT_ENTRY(0);  IDT_ENTRY(1);  IDT_ENTRY(2);  IDT_ENTRY(3);
 	IDT_ENTRY(4);  IDT_ENTRY(5);  IDT_ENTRY(6);  IDT_ENTRY(7);

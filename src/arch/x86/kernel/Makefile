@@ -7,6 +7,7 @@ $_SRCS-locore  += gdt.c
 $_SRCS-context += context.c
 $_SRCS-arch    += arch.c
 
+DEFAULT_SYS_TIMER = embox.driver.timers.pit_timer
 DEFAULT_SYS_IRQCTRL = embox.driver.interrupts.apic_interrupt
 
 include $(MK_DIR)/system.mk
