@@ -24,6 +24,7 @@ static int digiS0[] = { DIGIA0, DIGIB0, DIGIC0, DIGID0};
 static int digiS1[] = { DIGIA1, DIGIB1, DIGIC1, DIGID1};
 
 sensor_t sensors[NXT_AVR_N_INPUTS];
+static sensor_val_t active_sensor_vals[NXT_AVR_N_INPUTS];
 
 static sensor_hnd_t handlers[NXT_AVR_N_INPUTS];
 
@@ -33,7 +34,9 @@ void nxt_sensor_conf_pass(sensor_t *sensor, sensor_hnd_t handler) {
 }
 
 sensor_val_t nxt_sensor_get_value(sensor_t *sensor) {
-	return data_from_avr.adc_value[sensor->id];
+	if (sensor->type == PASSIVE) {
+		return data_from_avr.adc_value[sensor->id];
+	}
 }
 
 void sensors_updated(sensor_val_t sensor_vals[]) {
@@ -51,6 +54,7 @@ void sensors_init(void) {
 		sensors[i].id = i;
 		sensors[i].i2c_port.scl = 1 << digiS0[i];
 		sensors[i].i2c_port.sda = 1 << digiS1[i];
+		sensors[i].i2c_port.state = OFF;
 	}
 }
 

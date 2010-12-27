@@ -19,7 +19,7 @@
 #define MOTOR_POWER -100
 #define BREAK_TIME 150
 
-#define TOUCH_PORT (&sensors[0])
+#define TOUCH_PORT (&sensors[3])
 #define MOTOR0 (&motors[0])
 #define MOTOR1 (&motors[1])
 

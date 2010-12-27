@@ -21,124 +21,218 @@
 EMBOX_UNIT_INIT(i2c_unit_init);
 
 #define MAX_PORTS (sizeof(int))
-static i2c_port_t *ports[MAX_PORTS];
+i2c_port_t *ports[MAX_PORTS];
 static int port_count = 0;
 
-static inline void pin_set_high(pin_mask_t mask) {
+ void pin_set_high(pin_mask_t mask) {
 	pin_config_input(mask);
 }
 
-static inline void pin_set_low(pin_mask_t mask) {
+ void pin_set_low(pin_mask_t mask) {
+	pin_clear_output(mask);
 	pin_config_output(mask);
+}
+
+ void scl_set_low(pin_mask_t mask) {
 	pin_clear_output(mask);
 }
 
+ void scl_set_high(pin_mask_t mask) {
+	pin_set_output(mask);
+}
+
+i2c_state_t wait_state;
+
+#define TRACE(...)
+#if 1
+void wait(i2c_port_t *port) {
+	wait_state = port->state;\
+	port->state = WAIT;\
+}
+#endif
 static void i2c_port_process(i2c_port_t *port) {
+	REG_LOAD(AT91C_TC0_SR); //XXX
 	switch (port->state) {
 		case START:
-			pin_set_low(port->sda);
-			port->state = WRITE_FALL;
+			if (pin_get_input(port->sda) && pin_get_input(port->scl)) {
+				TRACE("START");
+				pin_set_low(port->sda);
+				port->state = WRITE_FALL;
+			}
 			break;
 		case READ_FALL:
 			if (pin_get_input(port->scl)) {
-				pin_set_low(port->scl);
-				pin_set_high(port->sda);
+				TRACE("READ_FALL");
+				scl_set_low(port->scl);
 				port->state = READ_RISE;
 				if (port->bit_cnt == 8) {
 					port->data++;
 					port->bit_cnt = 0;
 					port->state = READ_ACK_RISE;
 					if (port->data_cnt-- == 0) {
-						port->state = STOP_DATA_FALL;
+						port->state = READ_NOT_ACK_RISE;
 					}
 				}
 			}
 			break;
-		case READ_RISE:
-			pin_set_high(port->scl);
-			*(port->data) <<= 1;
-			if (pin_get_input(port->sda)) {
-				*(port->data) |= 1;
+		case READ_NOT_ACK_RISE:
+			TRACE("READ_NOT_ACK_RISE");
+			pin_set_high(port->sda);
+			scl_set_high(port->scl);
+			port->state = READ_NOT_ACK_FALL;
+			break;
+		case READ_NOT_ACK_FALL:
+			if (pin_get_input(port->scl)) {
+				TRACE("READ_NOT_ACK_FALL");
+				scl_set_low(port->scl);
+				port->state = STOP_DATA_FALL;
 			}
-			port->bit_cnt ++;
-			port->state = READ_FALL;
+			break;
+		case READ_RISE:
+			scl_set_high(port->scl);
+			if (pin_get_input(port->scl)) {
+				uint8_t *ptr;
+			    ptr	= port->data;
+				TRACE("READ_RISE,%x",*ptr);
+				*ptr = *ptr << 1;
+				if (pin_get_input(port->sda)) {
+					*ptr = *ptr | 1;
+				}
+				TRACE("READ_RISE,%x",*ptr);
+				port->bit_cnt ++;
+				port->state = READ_FALL;
+			}
 			break;
 		case READ_ACK_FALL:
 			if (pin_get_input(port->scl)) {
-				pin_set_low(port->scl);
+				TRACE("READ_ACK_FALL");
+				scl_set_low(port->scl);
 				pin_set_high(port->sda);
 				port->state = READ_RISE;
 			}
 			break;
 		case READ_ACK_RISE:
+			TRACE("READ_ACK_RISE");
 			pin_set_low(port->sda);
-			pin_set_high(port->scl);
+			scl_set_high(port->scl);
 			port->state = READ_ACK_FALL;
 			break;
 		case STOP_DATA_FALL:
+			TRACE("STOP_DATA_FALL");
 			pin_set_low(port->sda);
-			pin_set_high(port->scl);
+			scl_set_high(port->scl);
 			port->state = STOP;
 			break;
-		case STOP:
+		case I2C_STOP:
 			if (pin_get_input(port->scl)) {
+				TRACE("STOP");
 				pin_set_high(port->sda);
-				port->state = IDLE;
+				port->state = STOP_FALL;
 			}
+			break;
+		case STOP_FALL:
+			if (pin_get_input(port->sda) && pin_get_input(port->scl)) {
+				scl_set_low(port->scl);
+				port->state = STOP_RISE;
+			}
+			break;
+		case STOP_RISE:
+			scl_set_high(port->scl);
+			port->state = IDLE;
 			break;
 		case WRITE_FALL:
 			if (pin_get_input(port->scl)) {
-				pin_set_low(port->scl);
-				if (port->bit_cnt == 0) {
+				TRACE("WRITE_FALL, %x", port->bit_cnt);
+				scl_set_low(port->scl);
+				if (port->write_byte & 0x80) {
+					pin_set_high(port->sda);
+				} else {
+					pin_set_low(port->sda);
+				}
+				port->write_byte <<= 1;
+				if (port->bit_cnt-- == 0) { //0_o
+					pin_set_high(port->sda);
 					port->state = WRITE_ACK_RISE;
-					if (port->data_cnt == 0) {
-						port->state = STOP_DATA_FALL;
-					}
 				} else {
 					port->state = WRITE_RISE;
 				}
 			}
 			break;
 		case WRITE_RISE:
-			if (port->bit_cnt == 0) {
-				port->bit_cnt = 8;
-				port->data_cnt--;
-				port->write_byte = *(port->data++);
-			}
-			if (port->write_byte & 0x80) {
-				pin_set_high(port->sda);
-			} else {
-				pin_set_low(port->sda);
-			}
-			port->write_byte <<= 1;
-			port->bit_cnt--;
-			pin_set_high(port->scl);
+			TRACE("WRITE_RISE");
+			scl_set_high(port->scl);
 			port->state = WRITE_FALL;
 			break;
 		case WRITE_ACK_RISE:
-			pin_set_high(port->sda | port->scl);
+			TRACE("WRITE_ACK_RISE");
+			scl_set_high(port->scl);
 			port->state = WRITE_ACK_FALL;
+			if (port->operation == WRITE) {
+				port->write_byte = *(port->data++);
+				port->bit_cnt = 8;
+			}
 			break;
 		case WRITE_ACK_FALL:
 			if (pin_get_input(port->scl)) {
-				pin_set_low(port->scl);
-				if (pin_get_input(port->sda)) {
+				uint32_t was_state = pin_get_input(port->sda);
+				TRACE("WRITE_ACK_FALL");
+				scl_set_low(port->scl);
+				if (was_state) {
 					port->state = STOP_DATA_FALL;
 				} else {
 					if (port->operation == WRITE) {
+						if (port->write_byte & 0x80) {
+							pin_set_high(port->sda);
+						} else {
+							pin_set_low(port->sda);
+						}
+						port->write_byte <<= 1;
+						port->bit_cnt--;
 						port->state = WRITE_RISE;
 					} else {
+						port->bit_cnt = 0;
 						port->state = READ_RISE;
 					}
 				}
+				if (port->data_cnt-- == 0) {
+					port->state = STOP_DATA_FALL;
+				}
+			}
+			//wait(port);
+			break;
+		case WAIT:
+			if (nxt_buttons_was_pressed()) {
+				port->state = wait_state;
 			}
 			break;
+
 		case IDLE:
 		default:
 			break;
 	}
 }
 
+void i2c_read(i2c_port_t *port, uint8_t addr, uint8_t *data, uint32_t count) {
+	port->data = data;
+	port->data_cnt = count;
+	port->operation = READ;
+	port->write_byte = (addr << 1) | 1;
+	port->bit_cnt = 8;
+	pin_set_high(port->sda);
+	scl_set_high(port->scl);
+	port->state = START;
+}
+
+void i2c_write(i2c_port_t *port, uint8_t addr, uint8_t *data, uint32_t count) {
+	port->data = data;
+	port->data_cnt = count;
+	port->operation = WRITE;
+	port->write_byte = (addr << 1) | 0;
+	port->bit_cnt = 8;
+	pin_set_high(port->sda);
+	scl_set_high(port->scl);
+	port->state = START;
+}
 
 static irq_return_t timer_handler(irq_nr_t irq_nr, void *data) {
 	int i;
@@ -150,8 +244,18 @@ static irq_return_t timer_handler(irq_nr_t irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static void i2c_init(i2c_port_t *port) {
+void i2c_init(i2c_port_t *port) {
 	ports[port_count++] = port;
+	REG_STORE(AT91C_PIOA_PER, port->scl | port->sda);
+	REG_STORE(AT91C_PIOA_PPUER, port->sda);
+	REG_STORE(AT91C_PIOA_ODR, port->sda);
+
+	REG_STORE(AT91C_PIOA_MDER, port->scl);
+	REG_STORE(AT91C_PIOA_PPUER, port->scl);
+	REG_STORE(AT91C_PIOA_SODR, port->scl);
+	REG_STORE(AT91C_PIOA_OER, port->scl);
+
+	port->state = IDLE;
 }
 
 static int i2c_unit_init(void) {

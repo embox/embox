@@ -10,6 +10,7 @@
 #define HAL_PINS_H_
 
 #include <drivers/pins.h>
+#include <kernel/irq.h>
 
 /**
  * Configure pin mask for input
