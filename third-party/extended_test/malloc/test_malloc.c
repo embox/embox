@@ -10,7 +10,7 @@
 #include <windows.h>
 #include <time.h>
 
-#define COUNT 1000
+#define COUNT 100000
 
 int main(void) {
 	int i;
@@ -31,7 +31,9 @@ int main(void) {
 	/*Time in milliseconds*/
 	delta_time = (double) ((double) ((glast_time - gstart_time) * 1000)
 			/ (double) freq);
-	printf("%f\n", delta_time);
+	printf("%f - time for allocating one object(size - 400000 bytes)\n",
+			delta_time);
+
 	ptr_arr = (int**) malloc(sizeof(int*) * COUNT);
 	QueryPerformanceCounter((LARGE_INTEGER *) &gstart_time);
 	for (i = 0; i < COUNT; i++) {
@@ -41,14 +43,17 @@ int main(void) {
 	/*Time taking into account time that cycle "for{}" worked*/
 	pseudu_delta_time = (double) ((double) ((glast_time - gstart_time) * 1000)
 			/ (double) freq);
+	/*time that cycle works*/
 	QueryPerformanceCounter((LARGE_INTEGER *) &gstart_time);
 	for (i = 0; i < COUNT; i++) {
 	}
-	QueryPerformanceCounter((LARGE_INTEGER *) &gstart_time);
+	QueryPerformanceCounter((LARGE_INTEGER *) &glast_time);
 	cycle_time = (double) ((double) ((glast_time - gstart_time) * 1000)
 			/ (double) freq);
 	delta_time = pseudu_delta_time - cycle_time;
-	printf("%f\n", delta_time);
+	printf("%f - time for allocating %d objects(size of one - 4 bytes)\n",
+			delta_time, COUNT);
+
 	for (i = 0; i < COUNT; i++) {
 		free(ptr_arr[i]);
 	}
