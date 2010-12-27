@@ -7,11 +7,12 @@
  */
 #include <types.h>
 #include <asm/io.h>
+#include <kernel/irq.h>
 
-#define I8042_CMD_READ_MODE  0x20
-#define I8042_CMD_WRITE_MODE 0x60
+#define  I8042_CMD_READ_MODE   0x20
+#define  I8042_CMD_WRITE_MODE  0x60
 
-#define I8042_MODE_XLATE     0x40
+#define  I8042_MODE_XLATE      0x40
 
 #define  KEY_CURSOR_UP         0xb8
 #define  KEY_CURSOR_DOWN       0xb2
@@ -24,6 +25,8 @@
 #define  KEY_INSERT            0xb0
 #define  KEY_DELETE            0xae
 #define  KEY_F1                0xc0
+
+#define  IRQ1 1
 
 static const unsigned char keymap[][2] = {
 	{0       },    /* 0 */
@@ -175,6 +178,13 @@ static void keyboard_set_mode(unsigned char mode) {
 	outb(mode, 0x60);
 }
 
+irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
+	uint8_t scancode;
+	scancode = in8(0x60);
+	//TODO:
+	return IRQ_HANDLED;
+}
+
 void keyboard_init(void) {
 	uint8_t mode;
 
@@ -194,4 +204,6 @@ void keyboard_init(void) {
 
 	/* Write the new mode */
 	keyboard_set_mode(mode);
+
+	irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
 }

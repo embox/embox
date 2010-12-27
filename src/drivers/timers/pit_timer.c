@@ -11,11 +11,12 @@
 #include <kernel/irq.h>
 #include <types.h>
 #include <hal/interrupt.h>
+#include <asm/io.h>
 
 #define INPUT_CLOCK 1193180
 #define IRQ0 0x0
 
-irq_return_t clock_handler(int irq_num, void *dev_id) {
+irq_return_t clock_handler(int irq_nr, void *dev_id) {
 	clock_tick_handler(irq_nr, dev_id);
 	return IRQ_HANDLED;
 }
