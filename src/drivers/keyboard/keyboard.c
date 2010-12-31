@@ -7,7 +7,9 @@
  */
 #include <types.h>
 #include <asm/io.h>
+#include <drivers/keyboard.h>
 #include <kernel/irq.h>
+
 
 #define  I8042_CMD_READ_MODE   0x20
 #define  I8042_CMD_WRITE_MODE  0x60
@@ -178,10 +180,12 @@ static void keyboard_set_mode(unsigned char mode) {
 	outb(mode, 0x60);
 }
 
-irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
+
+static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 	uint8_t scancode;
 	scancode = in8(0x60);
 	//TODO:
+	TRACE("keycode 0x%X", scancode);
 	return IRQ_HANDLED;
 }
 
