@@ -7,6 +7,9 @@
  */
 #include <drivers/vga.h>
 #include <asm/io.h>
+#include <drivers/keyboard.h>
+#include <ctype.h>
+
 
 typedef struct vga_console {
 	unsigned width, height;
@@ -19,7 +22,7 @@ typedef struct vga_console {
 typedef struct vchar {
 	char c;
 	char a;
-} vchar_t __attribute__((packed));
+} __attribute__((packed)) vchar_t ;
 
 /**
  * The CRT Controller (CRTC) Registers are accessed via a pair of registers,
@@ -36,8 +39,9 @@ static vga_console_t con;
 static volatile vchar_t *video;
 
 static int crtc_init(void) {
-	dev_reg = 0x3d4;
-	video = (unsigned char *) VIDEO;
+	dev_reg = (volatile struct crtc_regs *)0x3d4;
+	video = (volatile vchar_t *) VIDEO;
+	return 0;
 }
 
 static void vga_clear(void);
