@@ -209,5 +209,5 @@ void keyboard_init(void) {
 	/* Write the new mode */
 	keyboard_set_mode(mode);
 
-	irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
+	//irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
 }

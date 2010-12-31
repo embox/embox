@@ -50,17 +50,14 @@ void interrupt_init(void) {
 	out8(0x02, PIC2_DATA);
 	out8(0x01, PIC2_DATA);
 	out8(0x00, PIC2_DATA);
-
-	out8(0xFF, PIC1_DATA);
-	out8(0xFF, PIC2_DATA);
 }
 
 void interrupt_enable(interrupt_nr_t interrupt_nr) {
-	if (interrupt_nr > 8) {
-		out8(in8(PIC2_DATA) | 1 << interrupt_nr, PIC2_DATA);
-	} else {
-		out8(in8(PIC2_DATA) | 1 << interrupt_nr, PIC2_DATA);
-	}
+//	if (interrupt_nr > 8) {
+//		out8(in8(PIC2_DATA) & ~(1 << interrupt_nr), PIC2_DATA);
+//	} else {
+//		out8(in8(PIC2_DATA) & ~(1 << interrupt_nr), PIC1_DATA);
+//	}
 }
 
 void irq_handler(pt_regs_t regs) {
