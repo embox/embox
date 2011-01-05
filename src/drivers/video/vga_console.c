@@ -84,7 +84,7 @@ static void vga_printchar(unsigned x, unsigned y,
 
 static int esc_state = 0;
 
-void ansi_attrib(int a) {
+static void ansi_attrib(int a) {
 	char const colors[] = {0, 4, 2, 6, 1, 5, 3, 7};
 	switch(a) {
 	case 0:
@@ -207,7 +207,7 @@ static void vga_esc_putc(char c) {
 	}
 }
 
-void vga_putc(char c) {
+static void vga_putc(char c) {
 	size_t i;
 	if (esc_state == 1) {
 		vga_esc_putc(c);
