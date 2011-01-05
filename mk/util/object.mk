@@ -16,6 +16,21 @@ object_instanceof =
 # 1. obj
 object_delete =
 
+# Params:
+#  1. Class name
+object_class_define =
+# Params:
+#  1. Class name
+#  2. Field name
+#  3. Optional getter
+#  4. Optional setter
+object_class_define_field =
+# Params:
+#  1. Class name
+#  2. Method name
+#  3.
+object_class_define_method =
+
 __object_instance_counter :=
 __object_instance_counter_get = $(words $(__object_instance_counter))
 __object_instance_counter_get_preincrement = \
