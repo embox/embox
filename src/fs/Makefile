@@ -19,7 +19,7 @@ $_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
 ifdef CONFIG_FS
 $_LDFLAGS += $($_lds)
 
-$_lds := $(OBJ_DIR)/fs/ramfs/fs.lds
+$_lds := $(OBJ_DIR)/fs/fs.lds
 $(IMAGE): $($_lds)
 
 $($_lds): $($_SELFDIR)/fs.lds.S $(AUTOCONF_DIR)/config.lds.h

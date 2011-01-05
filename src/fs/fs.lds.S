@@ -1,6 +1,6 @@
 #include <asm-generic/embox.lds.h>
 SECTIONS {
-	.rodata (NOLOAD) : {
+	.rodata : {
 		ALIGNMENT();
 		_drivers_fs_start = .;
 		*(.drivers.fs)
