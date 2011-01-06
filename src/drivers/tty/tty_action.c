@@ -1,5 +1,6 @@
-
+#include <types.h>
 #include <drivers/tty_action.h>
+#include <ctype.h>
 
 /* auxilary functions */
 
@@ -184,8 +185,8 @@ void tac_remove_word( tty_device_t *tty ) {
 	/* find end of prev word */
 	uint32_t tps; /* tps - to position space */
 	tps = tty->rx_cur>0 ? tty->rx_cur-1 : 0;
-	for (; tps>0 && tty_isalpha(tty->rx_buff[tps]); --tps);
-	for (; tps>0 && tty_isspace(tty->rx_buff[tps]); --tps);
+	for (; tps>0 && isalpha(tty->rx_buff[tps]); --tps);
+	for (; tps>0 && isspace(tty->rx_buff[tps]); --tps);
 	if (tps>0) {++tps;}
 
 	copy_forward(

@@ -125,9 +125,7 @@ void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
 	cur_tty->file_op->fwrite(&ch,sizeof(char),1,NULL);
 }
 
-#ifndef CONFIG_DEFAULT_CONSOLE
-#define CONFIG_DEFAULT_CONSOLE "/dev/uart"
-#endif
+
 static FILE *def_file;
 static int tty_init_flag = 0;
 
@@ -142,7 +140,7 @@ void run_shell() {
 	CONFIG_ESH ();
 }
 
-int tty_init(void) {
+static int tty_init(void) {
 	printk("TTY_INIT: ");
 
 	tty_init_flag = 1;
@@ -218,16 +216,12 @@ int tty_unregister(tty_device_t *tty) {
 int tty_get_uniq_number(void) {
 	return 0;
 }
+
 /*
  * add parsed char to receive buffer
  */
 int tty_add_char(tty_device_t *tty, int ch) {
-	//printk("tty_add_char: %c\n",ch);
-	if (!tty_init_flag) {
-		return 0;
-		tty_init_flag = 1;
-		tty_init();
-	}
+
 	vtparse(cur_tty->vtp, ch);
 	return 0;
 }
@@ -257,7 +251,7 @@ void tty_freeline(tty_device_t *tty, uint8_t *line) {
 	}
 }
 
-int tty_e() {
+int tty_e(void) {
 	return 0;
 }
 

@@ -20,7 +20,6 @@ vconsole_t const *sys_console = &def_console;
 //EMBOX_UNIT_INIT(vconsole_init);
 
 static FILE *def_file;
-#define CONFIG_DEFAULT_CONSOLE "/dev/uart"
 
 
 static int vconsole_init(void) {
@@ -42,6 +41,7 @@ void vconsole_loadline(vconsole_t *con) {
 	*t = con->cl_cur;
 	for (*s=0; *s<con->cl_cnt; ++*s) {
 		uart_putc( con->tty->rx_buff[*s] = con->cl_buff[*s] );
+		//con->tty->file_op->fwrite()
 	}
 	/* go to saved cursor position */
 	for (;*s>*t;--*s) {
@@ -104,7 +104,7 @@ void vconsole_putchar( struct vconsole *vc, char ch ) {
 	diag_putc( ch );
 	return;
 
-	if (vc==NULL) { /* if hasn't initialized now cur_console use hardvare output */
+	if (vc==NULL) { /* if hasn't initialized now cur_console use hardware output */
 		diag_putc( ch );
 		return;
 	}
