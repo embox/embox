@@ -16,7 +16,7 @@ extern void vga_console_init(unsigned width, unsigned height);
 /**
  * Put the character C on the screen.
  */
-extern void vga_putc(char c);
+//extern void vga_putc(char c);
 
 /**
  * Get the character from the screen.
