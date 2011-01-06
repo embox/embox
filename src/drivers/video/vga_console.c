@@ -33,14 +33,14 @@ typedef struct crtc_regs {
 	uint32_t data;
 } crtc_regs_t;
 
-static volatile struct crtc_regs *dev_reg;
-static vga_console_t con;
+static  volatile struct crtc_regs *const dev_reg = ( volatile struct crtc_regs *const)0x3d4;
+static vga_console_t con = {80,25,0,0,7,{0,0,0,0,0},0};
 /** Point to the video memory. */
-static volatile vchar_t *video;
+static  volatile vchar_t *const video = ( volatile vchar_t *const) VIDEO;
 
 static int crtc_init(void) {
-	dev_reg = (volatile struct crtc_regs *)0x3d4;
-	video = (volatile vchar_t *) VIDEO;
+//	dev_reg = (volatile struct crtc_regs *)0x3d4;
+//	video = (volatile vchar_t *) VIDEO;
 	return 0;
 }
 
@@ -52,8 +52,10 @@ void vga_console_init(unsigned width, unsigned height) {
 	con.x = 0;
 	con.y = 0;
 	con.attr = 0x7;
-	crtc_init();
+
+//	crtc_init();
 	vga_clear();
+
 	keyboard_init();
 }
 
@@ -72,6 +74,7 @@ static void vga_scroll(unsigned n) {
 
 static void vga_clear(void) {
 	size_t i;
+	//const vchar_t ch = { 0x20 , 0x7};
 	for(i = 0; i < con.width * con.height; ++i) {
 		video[i] = (vchar_t) { c: 0x20, a: con.attr };
 	}
@@ -283,6 +286,7 @@ int vga_getc(void) {
 }
 
 void diag_init(void) {
+	vga_console_init(80, 25);
 
 }
 

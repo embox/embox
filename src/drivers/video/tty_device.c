@@ -20,7 +20,11 @@ static file_operations_t file_op = {
 };
 
 static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
-	tty_add_char(&tty, vga_getc());
+	int scancode = keyboard_get_scancode();
+	TRACE("scancode = 0x%X\n", scancode);
+
+	tty_add_char(&tty, scancode);
+	while(1);
 	return IRQ_HANDLED;
 }
 
