@@ -119,6 +119,35 @@ static const unsigned char keymap[][2] = {
 	{0xae,0xae},   /* 83 - Numeric keypad '.' */
 };
 
+int keyboard_get_scancode(void) {
+	static unsigned shift_state;
+	unsigned status, scan_code, ch;
+	status = inb(0x64);
+	scan_code = inb(0x60);
+	if ((status & 0x20) != 0) {
+		return -1;
+	}
+	if ((scan_code & 0x7f) >= sizeof(keymap) / sizeof(keymap[0])) {
+		return -1;
+	}
+	if (scan_code & 0x80) {
+		scan_code &= 0x7f;
+		if (keymap[scan_code][0] == 0xff) {
+			shift_state = 0;
+		}
+		return -1;
+	}
+	ch = keymap[scan_code][shift_state];
+	if (ch == (unsigned) 0xff) {
+		shift_state = 1;
+		return -1;
+	}
+	if (ch == 0) {
+		return -1;
+	}
+	return ch;
+}
+
 int keyboard_getchar(void) {
 	static unsigned shift_state;
 	unsigned status, scan_code, ch;
@@ -152,6 +181,11 @@ int keyboard_getchar(void) {
 		}
 		return ch;
 	}
+}
+
+static int keyboard_havechar(void) {
+	unsigned char c = inb(0x64);
+	return (c == 0xFF) ? 0 : c & 1;
 }
 
 static int keyboard_wait_read(void) {
@@ -192,18 +226,21 @@ static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 void keyboard_init(void) {
 	uint8_t mode;
 
+
 	/* If 0x64 returns 0xff, then we have no keyboard
 	 * controller */
 
 	if (inb(0x64) == 0xFF)
 		return;
 
+	/* Empty keyboard buffer */
+	while (keyboard_havechar()) keyboard_getchar();
+
 	/* Read the current mode */
 	mode = keyboard_get_mode();
 
 	/* Turn on scancode translate mode so that we can
 	 use the scancode set 1 tables */
-
 	mode |= I8042_MODE_XLATE;
 
 	/* Write the new mode */
