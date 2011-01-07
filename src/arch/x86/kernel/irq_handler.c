@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 06.01.2011
@@ -21,7 +20,6 @@
 void irq_handler(pt_regs_t regs) {
 	/* Send an EOI (end of interrupt) signal to the PICs.
 	   If this interrupt involved the slave. */
-	//FIXME: regs->trapno?
 	if (regs.trapno >= 40) {
 		/* Send reset signal to slave. */
 		out8(PIC2_COMMAND, PIC_EOI);
