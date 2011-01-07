@@ -16,6 +16,8 @@
 #include <ctype.h>
 #include <kernel/pp.h>
 #include <embox/unit.h>
+#include <drivers/vtbuild.h>
+#include <drivers/vtparse.h>
 
 tty_device_t *cur_tty = NULL;
 
@@ -39,6 +41,7 @@ inline bool tty_isspace(char ch) {
 #endif
 
 void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
+
 #if 0
 	#warning USING DEBUG OUTPUT IN TTY DRIVER!!!
 
@@ -118,10 +121,15 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 				break;
 
 			}
+			default:
+			{
+				//LOGERROR?
+				break;
+			}
 	}
 }
 
-void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
+void tty_vtbuild_callback(struct vtbuild *tty_vtbuild, char ch) {
 	cur_tty->file_op->fwrite(&ch,sizeof(char),1,NULL);
 }
 
@@ -129,10 +137,12 @@ void tty_vtbuild_callback(struct vtparse *tty_vtbuild, char ch) {
 static FILE *def_file;
 static int tty_init_flag = 0;
 
+#ifdef CONFIG_TTY_CONSOLE_COUNT
 static struct vconsole *cons;
 static int cons_num;
+#endif
 
-void run_shell() {
+void run_shell(void) {
 #if 0
 	printf("printf: running_shell\n");
 	printk("printk: running_shell\n");
@@ -152,7 +162,7 @@ static int tty_init(void) {
 		LOG_ERROR(" Any TTY has not registred!\n");
 		return -1;
 	}
-
+#if 0
 	if (NULL == vtparse_init(cur_tty->vtp, tty_vtparse_callback)) {
 		LOG_ERROR("Error while initialization vtparse.\n");
 	}
@@ -165,7 +175,7 @@ static int tty_init(void) {
 	cur_tty->rx_cur = 0;
 	cur_tty->rx_cnt = 0;
 	cur_tty->ins_mod = true;	/* what must be default, don't know */
-
+#endif
 	printk(".");
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
@@ -199,17 +209,26 @@ static int tty_init(void) {
 }
 
 int tty_register(tty_device_t *tty) {
-	//printk("TTY was registred\n");
+	if (NULL == vtparse_init((struct vtparse *)tty->vtp, tty_vtparse_callback)) {
+		LOG_ERROR("Error while initialization vtparse.\n");
+	}
+	if (NULL == vtbuild_init((struct vtbuild *)tty->vtb, tty_vtbuild_callback)) {
+		LOG_ERROR("Error while initialization vtbuild.\n");
+	}
+
+	tty->rx_cur = 0;
+	tty->rx_cnt = 0;
+	tty->ins_mod = true;	/* what must be default, don't know */
+
 	cur_tty = tty;
-	//threads_init(); // need before next
-	//tty_init();
+
 	return 0;
 }
 
 int tty_unregister(tty_device_t *tty) {
 	tty->out_busy = false;
 	tty->rx_cnt = 0;
-	cur_tty = tty;
+	cur_tty = tty; //why?
 	return 0;
 }
 
@@ -222,7 +241,7 @@ int tty_get_uniq_number(void) {
  */
 int tty_add_char(tty_device_t *tty, int ch) {
 
-	vtparse(cur_tty->vtp, ch);
+	vtparse((struct vtparse *)cur_tty->vtp, ch);
 	return 0;
 }
 
