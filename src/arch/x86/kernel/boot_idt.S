@@ -98,38 +98,50 @@ excep_stub:
 	iret
 
 irq_stub:
-	pusha
+	/* At this point on the stack there is:
+	 *  0(%esp) vector
+	 *  4(%esp) error code
+	 *  8(%esp) eip
+	 * 12(%esp) cs
+	 * 16(%esp) eflags
+	 */
+	pusha /*pushes edi,esi,ebp,esp,ebx,edx,ecx,eax*/
+
+#if 1
 	pushl   %ds
 	pushl   %es
 	pushl   %fs
 	pushl   %gs
+
 	movl    %ss, %eax
 	movl    %eax, %ds
 	movl    %eax, %es
 	movl    %esp, %eax
+#else
+    movw %ds,%ax               // Lower 16-bits of eax = ds.
+    pushl %eax                 // Save the data segment descriptor
 
+    movw  $0x10,%ax             // Load the kernel data segment descriptor
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+
+    pushl %esp    	     // Push a pointer to the current top of stack - this becomes the registers_t* parameter.
+#endif
 	call    EXT_C(irq_handler)
+#if 0
+    add $4,%esp		     // Remove the registers_t* parameter.
 
+    popl %ebx                  // Reload the original data segment descriptor
+#endif
 	pop     %gs
 	pop     %fs
 	pop     %es
 	pop     %ds
+
 	popa
 	add     $8, %esp
 	sti
 	iret
 
-	.global gdt_flush
-gdt_flush:
-	movl 4(%esp), %eax
-	lgdt (%eax)
-
-	movw $0x10, %ax
-	movw %ax, %ds
-	movw %ax, %es
-	movw %ax, %fs
-	movw %ax, %gs
-	movw %ax, %ss
-	ljmp  $(0x8),$flush
-flush:
-	ret

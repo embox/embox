@@ -135,12 +135,7 @@ extern void irq13(void);
 extern void irq14(void);
 extern void irq15(void);
 
-//TODO move to special header
-static inline void tmp_irqen(void) {
-	__asm__ __volatile__(
-		"sti ":	:
-	);
-}
+
 
 void idt_init(void) {
 	idt_ptr.limit = sizeof(_idt) - 1;
@@ -180,7 +175,6 @@ void idt_init(void) {
 
 	/* Load IDT */
 	SET_IDT(&idt_ptr);
-	tmp_irqen();
 }
 
 void exception_handler(pt_regs_t st) {
