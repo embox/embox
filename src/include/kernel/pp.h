@@ -37,10 +37,10 @@ typedef struct pprocess {
 	uint8_t        data[PP_SIZEOF_LIST];
 } pprocess_t;
 
-extern int		pp_init();
-extern void    *pp_pool[];
-extern size_t   pp_pool_sz[];
-extern uint32_t pp_pool_s;
+//extern int		pp_init();
+//extern void    *pp_pool[];
+//extern size_t   pp_pool_sz[];
+//extern uint32_t pp_pool_s;
 extern void     pp_store(struct pprocess* pr);
 extern void     pp_restore(struct pprocess* pr);
 

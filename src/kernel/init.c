@@ -36,15 +36,17 @@ void kernel_start(void) {
 	}
 }
 
+
 /**
  * The initialization functions are called to set up interrupts, perform
  * further memory configuration, initialization of drivers, devices.
  */
 static void kernel_init(void) {
 	arch_init();
+	irq_init();
 
 	diag_init();
-	irq_init();
+
 	softirq_init();
 
 	uart_init(); // XXX
