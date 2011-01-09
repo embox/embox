@@ -11,8 +11,8 @@
 #include <mod/core.h>
 #include <util/array.h>
 #include <embox/device.h>
-ARRAY_DIFFUSE_DEF(const device_module_t, __device_registry)
-;
+
+ARRAY_DIFFUSE_DEF(const device_module_t, __device_registry);
 
 static const file_system_driver_t devfs_drv;
 
