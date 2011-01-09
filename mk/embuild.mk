@@ -367,7 +367,7 @@ define define_unit_obj_rules
 endef
 define define_lib_rules
   $(call LIB_FILE,$(unit)) : $(OBJS-$(unit))
-	$(AR) $(ARFLAGS) $@ $(^:%= \$N	%)
+	$(AR) $(ARFLAGS) $@ $(^:%= \$(\n)	%)
 endef
 define define_mod_obj_rules
   $(OBJS-$(unit)) : override CPPFLAGS += $(CPPFLAGS-$(mod_package))
