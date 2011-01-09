@@ -10,6 +10,7 @@
 #include <fs/fs.h>
 #include <linux/init.h>
 #include <fs/node.h>
+#include <util/array.h>
 
 static void   *rootfs_open(const char *path, const char *mode);
 static int     rootfs_close(void *file);
@@ -65,7 +66,7 @@ static fsop_desc_t rootfs_fsop = {
 	rootfs_mount
 };
 
-static file_system_driver_t rootfs_drv = {
+static const file_system_driver_t rootfs_drv = {
 	"rootfs",
 	&rootfs_fop,
 	&rootfs_fsop

@@ -16,8 +16,8 @@
 EMBOX_UNIT_INIT(unit_init);
 
 typedef struct fs_driver_head {
-	struct list_head     *next;
-	struct list_head     *prev;
+	struct list_head *next;
+	struct list_head *prev;
 	file_system_driver_t *drv;
 } fs_driver_head_t;
 
@@ -32,7 +32,7 @@ extern void lsof_map_init(void);
 static void init_pool(void) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(pool); i++) {
-		list_add((struct list_head *)&pool[i], &free_list);
+		list_add((struct list_head *) &pool[i], &free_list);
 	}
 }
 
@@ -55,24 +55,23 @@ static void free(file_system_driver_t *drv) {
 }
 
 static int __init unit_init(void) {
-	extern file_system_driver_t *_drivers_fs_start, *_drivers_fs_end;
-	file_system_driver_t **drv = &_drivers_fs_start;
 	fs_driver_head_t *head;
 	file_system_driver_t *root_fs;
 
-	init_pool();
+	int i;
 
-	for (; ((uint32_t)drv) < (uint32_t)&_drivers_fs_end; drv ++) {
-		if (NULL == (head = alloc(*drv))) {
+	init_pool();
+	for (i = 0; i < ARRAY_DIFFUSE_SIZE(__fs_drivers_registry); i++) {
+		if (NULL == (head = alloc(
+				(file_system_driver_t *) __fs_drivers_registry[i]))) {
 			return 0;
 		}
-		(*drv)->fsop->init(NULL);
+		__fs_drivers_registry[i]->fsop->init(NULL);
 	}
 
 	if (NULL == (root_fs = find_filesystem("rootfs"))) {
 		TRACE("File systems not found rootfs driver\n");
-	}
-	else {
+	} else {
 		root_fs->fsop->mount(NULL);
 	}
 

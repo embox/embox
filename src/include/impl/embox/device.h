@@ -12,9 +12,11 @@
 
 #include <util/array.h>
 
+extern const device_module_t __device_registry[];
+
 #define __EMBOX_DEVICE(name, file_op) \
 	ARRAY_DIFFUSE_ADD(__device_registry, {name, file_op})
 
-extern const device_module_t __device_registry[];
+
 
 #endif /* IMPL_DEVICE_H_ */

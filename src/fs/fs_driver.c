@@ -11,6 +11,11 @@
 #include <lib/list.h>
 #include <fs/fs.h>
 
+ARRAY_DIFFUSE_DEF(const file_system_driver_t *, __fs_drivers_registry);
+
+
+/*fs drivers pool*/
+
 typedef struct fs_driver_head {
 	struct list_head     *next;
 	struct list_head     *prev;
