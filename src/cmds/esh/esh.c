@@ -12,49 +12,17 @@
 #include <shell_command.h>
 #include <lib/readline.h>
 #include <stdio.h>
+#include <shell_utils.h>
 
 #define CMDLINE_MAX_LENGTH 127
 
-#if 1 /* while linked with old embox shell. Where must be located its functions ???? */
-/* *str becomes pointer to first non-space character*/
-static void skip_spaces(char **str) {
-	while (**str == ' ') {
-		(*str)++;
-	}
-}
-
-/* *str becomes pointer to first space or '\0' character*/
-static void skip_word(char **str) {
-	while (**str != '\0' && **str != ' ') {
-		(*str)++;
-	}
-}
-
-static int parse_str(char *cmdline, char **words) {
-	size_t cnt = 0;
-	while (*cmdline != '\0') {
-		if (' ' == *cmdline) {
-			*cmdline++ = '\0';
-			skip_spaces(&cmdline);
-		} else {
-			words[cnt++] = cmdline;
-			skip_word(&cmdline);
-		}
-	}
-	return cnt;
-}
-#endif
-
 void esh_run(void) {
-
 	int words_counter = 0;
-	int ret_code;
 	SHELL_COMMAND_DESCRIPTOR *c_desc;
 	char *words[CMDLINE_MAX_LENGTH + 1];
 	char *cmdline;
 
 	printf("\n%s\n",CONFIG_SHELL_WELCOME_MSG);
-/*	FILE *ff = fopen("/dev/uart","r"); */
 
 	for (;;) {
 		cmdline = readline(CONFIG_SHELL_PROMPT);
@@ -76,9 +44,6 @@ void esh_run(void) {
 		printf("\n"); /* any command don't print \n in end */
 		freeline(cmdline);
 	}
-
-/*	fclose(ff); */
-
 }
 
 static int esh_start(void) {
@@ -97,6 +62,4 @@ static int esh_stop(void) {
 }
 
 EMBOX_UNIT(esh_start, esh_stop);
-
-/* tmp */
 

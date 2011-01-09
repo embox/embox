@@ -65,7 +65,7 @@ void *memcpy(void *dst, const void *src, size_t n) {
 }
 #endif
 
-int pp_init() {
+static int pp_init() {
 /*
 	void *tmp = &cur_console;
 	int si = sizeof(cur_console);

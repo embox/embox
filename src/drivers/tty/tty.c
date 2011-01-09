@@ -21,12 +21,6 @@
 
 tty_device_t *cur_tty = NULL;
 
-#ifndef CONFIG_ESH
-#define CONFIG_ESH esh_run
-#endif
-
-extern void CONFIG_ESH (void) ;
-
 #if 1
 inline bool tty_isalpha(char ch) {
 	return ch!=' ';
@@ -135,25 +129,13 @@ void tty_vtbuild_callback(struct vtbuild *tty_vtbuild, char ch) {
 
 
 static FILE *def_file;
-static int tty_init_flag = 0;
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 static struct vconsole *cons;
 static int cons_num;
 #endif
 
-void run_shell(void) {
-#if 0
-	printf("printf: running_shell\n");
-	printk("printk: running_shell\n");
-#endif
-	CONFIG_ESH ();
-}
-
 static int tty_init(void) {
-	printk("TTY_INIT: ");
-
-	tty_init_flag = 1;
 
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE,"r");
 
@@ -162,21 +144,7 @@ static int tty_init(void) {
 		LOG_ERROR(" Any TTY has not registred!\n");
 		return -1;
 	}
-#if 0
-	if (NULL == vtparse_init(cur_tty->vtp, tty_vtparse_callback)) {
-		LOG_ERROR("Error while initialization vtparse.\n");
-	}
-	if (NULL == vtbuild_init(cur_tty->vtb, tty_vtbuild_callback)) {
-		LOG_ERROR("Error while initialization vtbuild.\n");
-	}
 
-	printk(".");
-
-	cur_tty->rx_cur = 0;
-	cur_tty->rx_cnt = 0;
-	cur_tty->ins_mod = true;	/* what must be default, don't know */
-#endif
-	printk(".");
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 	scheduler_start();
@@ -204,7 +172,7 @@ static int tty_init(void) {
 	printk(".");
 #endif
 
-	printk(" [ done ]\n");
+
 	return 0;
 }
 
@@ -228,7 +196,7 @@ int tty_register(tty_device_t *tty) {
 int tty_unregister(tty_device_t *tty) {
 	tty->out_busy = false;
 	tty->rx_cnt = 0;
-	cur_tty = tty; //why?
+	cur_tty = tty; //TODO only if single console
 	return 0;
 }
 
@@ -240,7 +208,6 @@ int tty_get_uniq_number(void) {
  * add parsed char to receive buffer
  */
 int tty_add_char(tty_device_t *tty, int ch) {
-
 	vtparse((struct vtparse *)cur_tty->vtp, ch);
 	return 0;
 }
@@ -270,11 +237,6 @@ void tty_freeline(tty_device_t *tty, uint8_t *line) {
 	}
 }
 
-int tty_e(void) {
-	return 0;
-}
-
-//EMBOX_UNIT(tty_init,tty_e);
 EMBOX_UNIT_INIT(tty_init);
 
 

@@ -14,37 +14,10 @@
 #include <hal/context.h>
 #include <shell_command.h>
 #include <embox/unit.h>
+#include <shell_utils.h>
 
 // XXX just for now -- Eldar
 EMBOX_UNIT(shell_start, shell_stop);
-
-/* *str becomes pointer to first non-space character*/
-void skip_spaces(char **str) {
-	while (**str == ' ') {
-		(*str)++;
-	}
-}
-
-/* *str becomes pointer to first space or '\0' character*/
-void skip_word(char **str) {
-	while (**str != '\0' && **str != ' ') {
-		(*str)++;
-	}
-}
-
-static int parse_str(char *cmdline, char **words) {
-	size_t cnt = 0;
-	while (*cmdline != '\0') {
-		if (' ' == *cmdline) {
-			*cmdline++ = '\0';
-			skip_spaces(&cmdline);
-		} else {
-			words[cnt++] = cmdline;
-			skip_word(&cmdline);
-		}
-	}
-	return cnt;
-}
 
 static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
 	int words_counter = 0;
