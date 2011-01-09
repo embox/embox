@@ -76,6 +76,8 @@
 ifndef __util_gmsl_internals_mk
 __util_gmsl_internals_mk := 1
 
+include util/common.mk
+
 # This is the GNU Make Standard Library version number as a list with
 # three items: major, minor, revision
 
@@ -109,32 +111,23 @@ __gmsl_tr2 :=
 __gmsl_tr3 :=
 endif
 
-# Standard definitions for true and false.  true is any non-empty
-# string, false is an empty string. These are intended for use with
-# $(if).
+# Standard definitions for true and false.  true is any non-empty string,
+# false is an empty string. These are intended for use with $(if).
 
-true  := T
-false :=
+# 'true', 'false' and 'not' have already been defined in common.mk
 
-#
-# Function:  not
-# Arguments: 1: A boolean value
-# Returns:   Returns the opposite of the arg. (true -> false, false -> true)
-#
-not = $(if $1,$(false),$(true))
-
-# Figure out whether we have $(eval) or not (GNU Make 3.80 and above)
-# if we do not then output a warning message, if we do then some
-# functions will be enabled.
+# Figure out whether we have $(eval) or not (GNU Make 3.80 and above).
+# If we do not then output a warning message,
+# if we do then some functions will be enabled.
 
 __gmsl_have_eval := $(false)
 __gmsl_ignore := $(eval __gmsl_have_eval := $(true))
 
 # If this is being run with Electric Cloud's emake then warn that
 # their $(eval) support is incomplete.
-
 ifdef ECLOUD_BUILD_ID
-$(warning You are using Electric Cloud's emake which has incomplete $$(eval) support)
+$(warning \
+  You are using Electric Cloud's emake which has incomplete $$(eval) support)
 __gmsl_have_eval := $(false)
 endif
 
@@ -150,7 +143,8 @@ __gmsl_have_and := $(if $(filter-out undefined, \
     $(origin and)),$(call and,$(true),$(true)))
 
 ifneq ($(__gmsl_have_eval),$(true))
-$(call __gmsl_warning,GNU Make $(MAKE_VERSION) does not support $$$$(eval): some functions disabled)
+$(call __gmsl_warning,$ \
+  GNU Make $(MAKE_VERSION) does not support $$(eval): some functions disabled)
 endif
 
 __gmsl_dollar := $$
@@ -174,23 +168,15 @@ gmsl_compatible = $(strip                                                 \
 
 # Helper function that translates any GNU Make 'true' value (i.e. a
 # non-empty string) to our $(true)
-
-__gmsl_make_bool = $(if $(strip $1),$(true),$(false))
+__gmsl_make_bool = $(make_bool)
 
 # This results in __gmsl_space containing just a space
-
-__gmsl_space :=
-__gmsl_space +=
+__gmsl_space := $(\space)
 
 # This results in __gmsl_newline containing just a newline
-
-define __gmsl_newline
-
-
-endef
+__gmsl_newline := $(\n)
 
 # This results in __gmsl_tab containing a tab
-
-__gmsl_tab :=	#
+__gmsl_tab := $(\t)
 
 endif # __util_gmsl_internals_mk

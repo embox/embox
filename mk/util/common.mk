@@ -28,7 +28,19 @@ $(\space)\n$(\space) := $(\n)
 
 \comma := ,
 
-# Alias for \n (backward compatibility)
-N := $(\n)
+true  := T
+false :=
+
+#
+# Function:  not
+# Arguments: 1: A boolean value
+# Returns:   Returns the opposite of the arg. (true -> false, false -> true)
+#
+not = $(if $1,$(false),$(true))
+
+make_bool = \
+  $(if $(strip $1),$(true),$(false))
+make_bool_unstripped = \
+  $(if $1,$(true),$(false))
 
 endif # __util_common_mk
