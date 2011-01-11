@@ -76,9 +76,9 @@ __emfile_chain_invoke = \
 emfile_handle_all = $(strip \
   $(call emfile_handle_chain_results, \
       $(call emfile_chain, \
-             emfile_filter \
-             emfile_check_entities_have_no_name_conflicts \
-             emfile_check_entities_are_named_in_place \
+             emfile_chain_handle_filter_sandbox_variables \
+             emfile_chain_handle_check_entities_have_unique_names \
+             emfile_chain_handle_check_entities_are_named_in_place \
        ) \
    ) \
 )
@@ -90,7 +90,7 @@ emfile_handle_chain_results = \
 
 ######### Filtering
 
-emfile_filter = \
+emfile_chain_handle_filter_sandbox_variables = \
   $(call var_filter_out, \
           $(__emfile_sandbox_variables_before), \
           $(__emfile_sandbox_variables_after), \
@@ -169,7 +169,7 @@ emfile_filter_entity_variable_name_pattern := \
 #  1. all entities
 # Return: Entity entries for properly named ones,
 #          error entries for the rest (if there are name conflicts).
-emfile_check_entities_have_no_name_conflicts = \
+emfile_chain_handle_check_entities_have_unique_names = \
   $(call emfile_check_names,$(sort $(call entity_names,$1)),$1)
 
 # Params:
@@ -222,7 +222,7 @@ __emfile_error_str_x_times = \
 # Params:
 #  1. entities list
 # Returns: entity entries for good ones, and error entries for the rest.
-emfile_check_entities_are_named_in_place = \
+emfile_chain_handle_check_entities_are_named_in_place = \
   $(foreach e,$1, \
     $(if $(call emfile_check_entity_named_in_place_$(emfile_type),$e), \
       $(call emfile_entity,$e), \

@@ -12,10 +12,14 @@ include gmsl.mk # TODO for 'tr' function. -- Eldar
 
 entity = __entity-$1-$2
 
-entity_print = $(subst -, ,$1)
-
 entity_type = $(call __entity_type,$(__entity_split))
 entity_name = $(call __entity_name,$(__entity_split))
+
+__entity_type = $(word 3,$1)
+__entity_name = $(word 5,$1)
+
+entity_print = $(call __entity_print,$(__entity_split))
+__entity_print = $(__entity_type) $(__entity_name)
 
 entity_types = $(foreach e,$1,$(call entity_type,$e))
 entity_names = $(foreach e,$1,$(call entity_name,$e))
@@ -29,9 +33,6 @@ entity_types_for_name = $(strip \
     $(if $(filter $1,$(call entity_name,$e)),$(call entity_type,$e)) \
    ) \
 )
-
-__entity_type = $(word 3,$1)
-__entity_name = $(word 5,$1)
 
 __entity_split = $(subst -, - ,$1)
 
