@@ -59,6 +59,8 @@ RM     := rm -f
 CP     := cp
 PRINTF := printf
 SHELL  := bash
+MKDIR  := mkdir -p
+LN     := ln -s
 
 TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 
@@ -111,15 +113,15 @@ build: check_config prepare image
 	@echo '$(or $(PATCH_NAME),Base) build complete'
 
 prepare:
-	@mkdir -p $(BUILD_DIR)
-	@mkdir -p $(BIN_DIR)
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(LIB_DIR)
-	@mkdir -p $(AUTOCONF_DIR)
-	@mkdir -p $(DOCS_OUT_DIR)
+	@$(MKDIR) $(BUILD_DIR)
+	@$(MKDIR) $(BIN_DIR)
+	@$(MKDIR) $(OBJ_DIR)
+	@$(MKDIR) $(LIB_DIR)
+	@$(MKDIR) $(AUTOCONF_DIR)
+	@$(MKDIR) $(DOCS_OUT_DIR)
 
 docsgen:
-	@[ -d $(DOCS_OUT_DIR) ] || mkdir -p $(DOCS_OUT_DIR)
+	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
 	doxygen
 	#@$(MAKE) -C $(DOCS_DIR)
 	@echo 'Docs generation complete'
@@ -129,7 +131,7 @@ dot: $(GRAPH_PS)
 
 create_romfs: build
 	@$(RM) -rv $(ROMFS_DIR)
-	@mkdir -p $(ROMFS_DIR)
+	@$(MKDIR) $(ROMFS_DIR)
 	$(CP) $(BUILD_DIR)/bin/embox $(ROMFS_DIR)
 	pushd $(ROMFS_DIR); find ./ -depth -print | cpio -H newc -ov > ../ramfs.cpio; popd;
 
@@ -172,7 +174,7 @@ endif
 		then                          \
 			$(RM) -r $(BACKUP_DIR)/*; \
 		else                          \
-			mkdir -p $(BACKUP_DIR);   \
+			$(MKDIR) $(BACKUP_DIR);   \
 		fi;                           \
 		$(if $(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*)), \
 			mv -fv -t $(BACKUP_DIR) \
@@ -180,26 +182,32 @@ endif
 			rm -r $(BACKUP_DIR); \
 		)                             \
 	else                              \
-		mkdir -p $(CONF_DIR);         \
+		$(MKDIR) $(CONF_DIR);         \
 	fi;
 ifeq (0,1)
 # That's an old variant of config creating system.
 # It will be removed soon.
 # Just not to search long if smth goes wrong %)
 	@$(foreach dir,$(call __get_subdirs,$(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)), \
-	  mkdir -p $(CONF_DIR)/$(dir); \
-	  cp -fv -t $(CONF_DIR)/$(dir) \
+	  $(MKDIR) $(CONF_DIR)/$(dir); \
+	  $(CP) -fv -t $(CONF_DIR)/$(dir) \
 	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*); \
 	  $(if $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*), \
-	    cp -fv -t $(CONF_DIR)/$(dir) \
+	    $(CP) -fv -t $(CONF_DIR)/$(dir) \
 	       $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*); \
 	  ) \
 	)
 else
 # That's a new variant.
+ifdef SYMLINK_CONF_DIR
+# We just symlink template dir to conf dir
+	@$(RM) -r $(CONF_DIR)
+	@$(LN) $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE) $(CONF_DIR)
+else
 # We just copy from templates dir to conf dir
-	@cp -fv -R -t $(CONF_DIR) \
+	@$(CP) -fv -R -t $(CONF_DIR) \
 	  $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*);
+endif
 endif
 	@echo 'Config complete'
 
@@ -236,8 +244,8 @@ ifneq ($(FORCED),true)
 else
 	rm -r $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);
 endif
-	mkdir -p $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);        \
-	cp -fvr -t $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/ \
+	$(MKDIR) $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);        \
+	$(CP) -fvr -t $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/ \
 			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
 	@echo Config was saved.
 
