@@ -7,10 +7,16 @@
 ifndef __util_common_mk
 __util_common_mk := 1
 
+## Empty string.
 \empty :=
 
+## Single space.
 \space := $(subst ,, )
 
+##
+# This variable named by a single space expands to empty string.
+# Perhaps, it is not useful "as is", but
+#
 $(\space) :=
 
 define \n
