@@ -87,76 +87,29 @@ __util_list_mk := 1
 list_length = \
   $(words $1)
 
-##
-# Function: list_empty
-# Checks whether the specified list is empty.
-#
-# Params:
-#  1. The target list
-# Returns: True if the specified list is empty, false otherwise
-#
+## See: nowords
 list_empty = \
-  $(call not,$(strip $1))
+  $(call nowords,$1)
 
-##
-# Function: list_single
-# Checks whether the specified list contains exactly one element.
-#
-# Params:
-#  1. The target list
-# Returns: True if the specified list has only one element, false otherwise
-#
+## See: singleword
 list_single = \
-  $(call make_bool,$(filter 1,$(words $1)))
+  $(call singleword,$1)
 
-##
-# Function: list_first
-# Gets the first element of the specified list.
-#
-# Params:
-#  1. The target list
-# Returns: the first element of the list
-#
+## See: firstword
 list_first = \
-  $(firstword $1)
+  $(call firstword,$1)
 
-##
-# Function: list_last
-# Gets the last element of the specified list.
-#
-# Params:
-#  1. The target list
-# Returns: the last element of the list
-#
-ifeq ($(lastword $(false) $(true)),$(true))
+## See: lastword
 list_last = \
-  $(lastword $1)
-else
-list_last = \
-  $(if $(strip $1),$(word $(words $1),$1))
-endif
+  $(call lastword,$1)
 
-##
-# Function: list_nofirst
-# Gets a list without the first element.
-#
-# Params:
-#  1. The target list
-# Returns: Returns the list with the first element removed
-#
+## See: nofirstword
 list_nofirst = \
-  $(wordlist 2,$(words $1),$1)
+  $(call nofirstword,$1)
 
-##
-# Function: list_nolast
-# Gets a list without the last element.
-#
-# Params:
-#  1. The target list
-# Returns: Returns the list with the last element removed
-#
+## See: nolastword
 list_nolast = \
-  $(wordlist 2,$(words $1),x $1)
+  $(call nolastword,$1)
 
 ##
 # Function: list_map
