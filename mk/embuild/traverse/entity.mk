@@ -37,7 +37,7 @@ entity_types_for_name = $(strip \
 __entity_split = $(subst -, - ,$1)
 
 entity_check = \
-  $(if $(filter 1,$(words $1)),$(call __entity_check,$(__entity_split)))
+  $(if $(call list_single,$1),$(call __entity_check,$(__entity_split)))
 __entity_check = \
   $(if $(and $(filter 5,$(words $1)), \
              $(filter __entity,$(word 1,$1)), \
@@ -47,7 +47,7 @@ __entity_check = \
 entity_valid_types := api module library package
 
 entity_check_type = \
-  $(and $(filter 1,$(words $1)), \
+  $(and $(call list_single,$1), \
         $(filter $(entity_valid_types),$1))
 
 define spec(entity_check_type)
@@ -60,7 +60,7 @@ define spec(entity_check_type)
 endef
 
 entity_check_name = \
-  $(and $(filter 1,$(words $1)), \
+  $(and $(call list_single,$1), \
         $(if $(call tr,$([A-Z]) $([a-z]) $([0-9]) _,,$1),,$1))
 
 endif # __embuild_traverse_entity_mk

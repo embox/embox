@@ -45,7 +45,7 @@ emfile_entities_filter = \
 #   'multiple' for Embuild
 emfile_type = $(call __emfile_type,$(notdir $(__emfile)))
 __emfile_type = \
-  $(if $(filter 1,$(words $1)),$ \
+  $(if $(call list_single,$1),$ \
     $(if $(filter Embuild,$1),single,$ \
        $(if $(filter %.em,$1),multiple,$ \
          $(error invalid emfile: __emfile is [$(__emfile)]))))
@@ -65,7 +65,7 @@ emfile_name = $(basename $(filter %.em,$(notdir $(__emfile))))
 emfile_chain = $(call __emfile_chain,$(strip $1),)
 __emfile_chain = \
   $(if $1, \
-    $(call $0,$(call rest,$1), \
+    $(call $0,$(call list_nofirst,$1), \
                $(call __emfile_chain_invoke,$(call first,$1),$2)), \
     $2 \
 )
@@ -197,9 +197,9 @@ emfile_check_names_conflicting = \
 #  2. all entity types for the name (probably with duplicates)
 # Return: Valid entity entry if all is ok, error entry if conflict is detected.
 emfile_check_name_is_unique = \
-  $(if $(filter-out 1,$(words $2)), \
-    $(call emfile_check_name_unique_error,$1,$2,$(sort $2)), \
+  $(if $(call list_single,$2), \
     $(call emfile_entity,$(call entity,$1,$2)), \
+    $(call emfile_check_name_unique_error,$1,$2,$(sort $2)) \
    ) \
 
 # Params:

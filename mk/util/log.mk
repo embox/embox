@@ -28,7 +28,7 @@ __log_id_by_tag_pattern = __log-%-$(__log_tag)
 
 __log_id = $(word $1,)$1
 __log_tag = \
-  $(call assert,$(filter 1,$(words $1)),Invalid log tag: [$1])$(strip $1)
+  $(call assert,$(call list_single,$1),Invalid log tag: [$1])$(strip $1)
 
 log_ids_by_tag = \
   $(sort $(call __log_filter_patsubst,$(__log_id_by_tag_pattern)))

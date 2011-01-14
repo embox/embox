@@ -24,7 +24,7 @@ include util/common.mk
 # Note: does not handle properly more than one ** tokens in single pattern.
 #
 r-wildcard = \
-  $(if $(filter 1,$(words $1)),$ \
+  $(if $(call list_single,$1),$ \
     $(call __r-wildcard,$(subst **,* *,$1)),$ \
     $(foreach token,$(call $0,$(token)))$ \
   )# Split argument and recall self for each single pattern.
@@ -32,7 +32,7 @@ r-wildcard = \
 # Accepts single pattern with "**" replaced by "* *",
 # performs some checks and prepares the arguments for __r-wildcard-expand.
 __r-wildcard = \
-  $(if $(filter 1,$(words $1)),$(wildcard $1),$(if $(filter 2,$(words $1)),$ \
+  $(if $(call list_single,$1),$(wildcard $1),$(if $(filter 2,$(words $1)),$ \
     $(call __r-wildcard-expand,$ \
         $(patsubst %*,%,$(word 1,$1)),*,$(patsubst *%,%,$(word 2,$1)),),$ \
     $(error Handling more than one ** tokens is not implemented)$ \

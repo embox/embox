@@ -76,107 +76,146 @@
 ifndef __util_list_mk
 __util_list_mk := 1
 
-include util/__gmsl.mk
+##
+# Function: list_length
+# Gets the length of the specified list.
+#
+# Params:
+#  1. The target list
+# Returns: The number of elements in the list
+#
+list_length = \
+  $(words $1)
 
+##
+# Function: list_empty
+# Checks whether the specified list is empty.
 #
-# Function:  first (same as LISP's car, or head)
-# Arguments: 1: A list
-# Returns:   Returns the first element of a list
+# Params:
+#  1. The target list
+# Returns: True if the specified list is empty, false otherwise
 #
-first = $(firstword $1)
+list_empty = \
+  $(call not,$(strip $1))
 
+##
+# Function: list_single
+# Checks whether the specified list contains exactly one element.
 #
-# Function:  last
-# Arguments: 1: A list
-# Returns:   Returns the last element of a list
+# Params:
+#  1. The target list
+# Returns: True if the specified list has only one element, false otherwise
 #
-ifeq ($(__gmsl_have_lastword),$(true))
-last = $(lastword $1)
+list_single = \
+  $(call make_bool,$(filter 1,$(words $1)))
+
+##
+# Function: list_first
+# Gets the first element of the specified list.
+#
+# Params:
+#  1. The target list
+# Returns: the first element of the list
+#
+list_first = \
+  $(firstword $1)
+
+##
+# Function: list_last
+# Gets the last element of the specified list.
+#
+# Params:
+#  1. The target list
+# Returns: the last element of the list
+#
+ifeq ($(lastword $(false) $(true)),$(true))
+list_last = \
+  $(lastword $1)
 else
-last = $(if $1,$(word $(words $1),$1))
+list_last = \
+  $(if $(strip $1),$(word $(words $1),$1))
 endif
 
+##
+# Function: list_nofirst
+# Gets a list without the first element.
 #
-# Function:  rest (same as LISP's cdr, or tail)
-# Arguments: 1: A list
-# Returns:   Returns the list with the first element removed
+# Params:
+#  1. The target list
+# Returns: Returns the list with the first element removed
 #
-rest = $(wordlist 2,$(words $1),$1)
+list_nofirst = \
+  $(wordlist 2,$(words $1),$1)
+
+##
+# Function: list_nolast
+# Gets a list without the last element.
+#
+# Params:
+#  1. The target list
+# Returns: Returns the list with the last element removed
+#
+list_nolast = \
+  $(wordlist 2,$(words $1),x $1)
+
+##
+# Function: list_map
+# Calls the specified function on each element of a list.
+#
+# Params:
+#  1. Name of function to call for each element
+#  2. List to iterate over calling the function
+#  3. Optional argument to pass when calling the function
+# Returns: The list after calling the function on each element
+#
+list_map = \
+  $(strip $(foreach 2,$2,$(call $1,$2,$(value 3))))
+# TODO $(foreach 2,$2,...) can be a bitch, check it. -- Eldar
 
 #
-# Function:  chop
-# Arguments: 1: A list
-# Returns:   Returns the list with the last element removed
+# Function: list_pairmap
+# Calls the specified function on each pair of elements of two lists.
 #
-chop = $(wordlist 2,$(words $1),x $1)
+# Arguments:
+#  1. Name of function to call for each pair of elements
+#  2. The first list to iterate over calling the function
+#  3. The second list to iterate over calling the function
+#  4. Optional argument to pass when calling the function
+# Returns: The list after calling the function on each pair of elements
+#
+list_pairmap = \
+  $(strip $(call __list_pairmap,$1,$(strip $2),$(strip $3),$(value 4)))
 
-#
-# Function:  map
-# Arguments: 1: Name of function to $(call) for each element of list
-#            2: List to iterate over calling the function in 1
-#            3: Optional argument to pass when calling the function
-# Returns:   The list after calling the function on each element
-#
-map = $(strip $(foreach a,$2,$(call $1,$a,$(value 3))))
+__list_pairmap = \
+  $(if $2$3,$(call $1,$(call   list_first,$2),$(call   list_first,$3),$4) \
+         $(call $0,$1,$(call list_nofirst,$2),$(call list_nofirst,$3),$4) \
+   )
 
+##
+# Function: list_equal
+# Compares two lists agains each other.
 #
-# Function:  pairmap
-# Arguments: 1: Name of function to $(call) for each pair of elements
-#            2: List to iterate over calling the function in 1
-#            3: Second list to iterate over calling the function in 1
-#            4: Optional argument to pass when calling the function
-# Returns:   The list after calling the function on each pair of elements
+# Params:
+#  1. The first list
+#  2. The second list
+# Returns: True if the two lists are identical
 #
-pairmap = $(strip $(if $2$3,\
-            $(call $1,$(call first,$2),$(call first,$3),$(value 4)) \
-         $(call $0,$1,$(call  rest,$2),$(call  rest,$3),$(value 4))))
+list_equal = \
+  $(and $(filter $(words $1),$(words $2)), \
+        $(findstring x $(strip $1) x,x $(strip $2) x))
 
+##
+# Function: list_reverse
+# Reverses the specified list.
 #
-# Function:  leq
-# Arguments: 1: A list to compare against...
-#            2: ...this list
-# Returns:   Returns $(true) if the two lists are identical
+# Params:
+#  1. The target list
+# Returns: The list with its elements in reverse order
 #
-leq = $(strip $(if $(call seq,$(words $1),$(words $2)),     \
-          $(call __gmsl_list_equal,$1,$2),$(false)))
+list_reverse = \
+  $(strip $(call __list_reverse,$(strip $1))
 
-__gmsl_list_equal = $(if $(strip $1),                                       \
-                        $(if $(call seq,$(call first,$1),$(call first,$2)), \
-                            $(call __gmsl_list_equal,                       \
-                                $(call rest,$1),                            \
-                                $(call rest,$2)),                           \
-                            $(false)),                                      \
-                     $(true))
-
-#
-# Function:  lne
-# Arguments: 1: A list to compare against...
-#            2: ...this list
-# Returns:   Returns $(true) if the two lists are different
-#
-lne = $(call not,$(call leq,$1,$2))
-
-#
-# Function:  reverse
-# Arguments: 1: A list to reverse
-# Returns:   The list with its elements in reverse order
-#
-reverse =$(strip $(if $1,$(call reverse,$(call rest,$1)) \
-                        $(call first,$1)))
-
-#
-# Function:  uniq
-# Arguments: 1: A list from which to remove repeated elements
-# Returns:   The list with duplicate elements removed without reordering
-#
-uniq = $(strip $(if $1,$(call uniq,$(call chop,$1)) \
-            $(if $(filter $(call last,$1),$(call chop,$1)),,$(call last,$1))))
-
-#
-# Function:  length
-# Arguments: 1: A list
-# Returns:   The number of elements in the list
-#
-length = $(words $1)
+__list_reverse = \
+  $(if $1,$(call $0,$(call list_nofirst,$1)) $(call list_first,$1))
 
 endif # __util_list_mk
