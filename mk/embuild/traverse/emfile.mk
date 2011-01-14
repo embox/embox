@@ -45,7 +45,7 @@ emfile_entities_filter = \
 #   'multiple' for Embuild
 emfile_type = $(call __emfile_type,$(notdir $(__emfile)))
 __emfile_type = \
-  $(if $(call list_single,$1),$ \
+  $(if $(call singleword,$1),$ \
     $(if $(filter Embuild,$1),single,$ \
        $(if $(filter %.em,$1),multiple,$ \
          $(error invalid emfile: __emfile is [$(__emfile)]))))

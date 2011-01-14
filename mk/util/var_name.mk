@@ -157,8 +157,9 @@ __var_name_escape_do_combo_pairmap = \
 #  1. Unescaped variables list
 # Returns: list of singleword-named variables (still not escaped)
 __var_name_singles = \
-  $(foreach single,$1,$(if $(and $(call var_defined,$(single)), \
-            $(call list_single,$(filter $(single),$1))),$(single)))
+  $(foreach single,$1,$(if $(and \
+        $(call var_defined,$(single)), \
+        $(call list_single,$(filter $(single),$1))),$(single)))
 
 # Params:
 #  1. Unescaped variables list

@@ -86,7 +86,7 @@ $(__expand_once_def_all)
 # Do not call. Pass number of args through total_args variable.
 __expand_once = $(strip \
   $(call assert_called,expand_once_$(total_args),$0) \
-  $(call assert,$(call list_single,$1),Invalid name of variable being expanded) \
+  $(call assert,$(call singleword,$1),Invalid name of variable being expanded) \
   $(if $(filter undefined,$(origin $(__expansion_name))),$(eval \
        $(value __expansion_name) := $$(call $(__expansion_args)) \
   )) \

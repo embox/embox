@@ -32,7 +32,7 @@ r-wildcard = \
 # Accepts single pattern with "**" replaced by "* *",
 # performs some checks and prepares the arguments for __r-wildcard-expand.
 __r-wildcard = \
-  $(if $(call list_single,$1),$(wildcard $1),$(if $(filter 2,$(words $1)),$ \
+  $(if $(call singleword,$1),$(wildcard $1),$(if $(filter 2,$(words $1)),$ \
     $(call __r-wildcard-expand,$ \
         $(patsubst %*,%,$(word 1,$1)),*,$(patsubst *%,%,$(word 2,$1)),),$ \
     $(error Handling more than one ** tokens is not implemented)$ \
