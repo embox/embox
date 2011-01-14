@@ -74,7 +74,8 @@ __r-wildcard-expand = $4 \
 #
 # Usage: $(call d-wildcard,pattern...)
 #
-d-wildcard = $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
+d-wildcard = \
+  $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
 
 ##
 # Function: f-wildcard
@@ -89,7 +90,8 @@ d-wildcard = $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
 #
 # Usage: $(call f-wildcard,pattern...)
 #
-f-wildcard = $(filter-out $(call d-wildcard,$1),$(wildcard $1))
+f-wildcard = \
+  $(filter-out $(call d-wildcard,$1),$(wildcard $1))
 
 ##
 # Function: wildcard_first
@@ -103,7 +105,8 @@ f-wildcard = $(filter-out $(call d-wildcard,$1),$(wildcard $1))
 #
 # Usage: $(call wildcard_first,pattern...)
 #
-wildcard_first = $(call __wildcard_first,  wildcard,$1)
+wildcard_first = \
+  $(call __wildcard_first,  wildcard,$1)
 
 ##
 # Function: d-wildcard_first
@@ -112,7 +115,8 @@ wildcard_first = $(call __wildcard_first,  wildcard,$1)
 #
 # See: wildcard_first, d-wildcard
 #
-d-wildcard_first = $(call __wildcard_first,d-wildcard,$1)
+d-wildcard_first = \
+  $(call __wildcard_first,d-wildcard,$1)
 
 ##
 # Function: f-wildcard_first
@@ -121,12 +125,14 @@ d-wildcard_first = $(call __wildcard_first,d-wildcard,$1)
 #
 # See: wildcard_first, f-wildcard
 #
-f-wildcard_first = $(call __wildcard_first,f-wildcard,$1)
+f-wildcard_first = \
+  $(call __wildcard_first,f-wildcard,$1)
 
 # Expand each pattern (arg 2) one by one sequentially using proper wildcard
 # version (arg 1) until getting non-empty expansion.
-__wildcard_first = $(if $2,$ \
-  $(or $(call $1,$(firstword $2)),$(call $0,$1,$(wordlist 2,$(words $2),$2))))
+__wildcard_first = \
+  $(if $2,$(or $(call $1,$(call firstword,$2)), \
+               $(call $0,$1,$(wordlist 2,$(words $2),$2))))
 
 #
 # TODO: all functions below are not used, may be drop them? -- Eldar

@@ -76,6 +76,8 @@
 ifndef __util_list_mk
 __util_list_mk := 1
 
+include util/string.mk
+
 ##
 # Function: list_length
 # Gets the length of the specified list.

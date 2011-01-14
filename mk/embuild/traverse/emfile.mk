@@ -66,7 +66,7 @@ emfile_chain = $(call __emfile_chain,$(strip $1),)
 __emfile_chain = \
   $(if $1, \
     $(call $0,$(call list_nofirst,$1), \
-               $(call __emfile_chain_invoke,$(call first,$1),$2)), \
+               $(call __emfile_chain_invoke,$(call firstword,$1),$2)), \
     $2 \
 )
 
@@ -209,9 +209,9 @@ emfile_check_name_is_unique = \
 # Return: Error entry about naming conflict.
 emfile_check_name_unique_error = \
   $(call emfile_error,Entity named '$1' defined more than once: \
-        $(foreach e_type,$(call chop,$3),$ \
+        $(foreach e_type,$(call nolastword,$3),$ \
             $(call __emfile_error_str_x_times_as_type,$(e_type),$2)$(\comma)) \
-        $(call __emfile_error_str_x_times_as_type,$(call last,$3),$2))
+        $(call __emfile_error_str_x_times_as_type,$(call lastword,$3),$2))
 __emfile_error_str_x_times_as_type = \
   $(call __emfile_error_str_x_times,$(words $(filter $1,$2))) as '$1'
 __emfile_error_str_x_times = \

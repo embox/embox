@@ -285,7 +285,7 @@ invoke_define_lib_deps_postprocess = \
 deps_detect_cycles = \
   $(if $(filter $(unit),$1), \
     $(foreach pair, \
-        $(call unit_dep_pairs,$2 $(lastword $3),$3 $(firstword $2)), \
+        $(call unit_dep_pairs,$2 $(lastword $3),$3 $(call firstword,$2)), \
       $(info $(call error_str_dir,$(UNIT-$(subst /,-DEP-,$(pair))-DEFINED)) \
         Cyclic dependency definition here:: $(subst /, -> ,$(pair))) \
     ) \
@@ -320,8 +320,8 @@ t-sort = \
     $(strip $2) \
   )
 
-reverse = \
-  $(strip $(if $1,$(call $0,$(wordlist 2,$(words $1),$1)) $(firstword $1)))
+reverse = $(strip \
+  $(if $1,$(call $0,$(wordlist 2,$(words $1),$1)) $(call firstword,$1)))
 
 define mod_deps_resort
   DEPS-$(mod) := $(foreach m,$(MODS),$(if $(filter $m,$(DEPS-$(mod))),$m))

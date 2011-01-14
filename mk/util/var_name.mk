@@ -78,7 +78,8 @@ __util_var_name_mk := 1
 include util/common.mk
 include util/var_info.mk # var_defined
 include util/math.mk # sequences generator
-include util/list.mk # first/rest
+include util/string.mk # firstword/nofirstword
+include util/list.mk # list_single
 
 #
 # Function: var_name_mangle
@@ -135,7 +136,7 @@ __var_name_escape3 = $(subst $$,$$$$,$2) \
 #  2. Sequence
 #  3. Length
 __var_name_escape_combos = \
-  $(foreach start,$(call rest,$2),$(call __var_name_escape_do_combo, \
+  $(foreach start,$(call nofirstword,$2),$(call __var_name_escape_do_combo, \
     $1,$2,$(wordlist $(start),$3,$2)))
 
 # Params:
@@ -166,7 +167,8 @@ __var_name_singles = \
 #  2. Remaining singles
 # Returns: the variable list with all singles removed (not escaped)
 __var_name_multies = \
-  $(if $2,$(call $0,$(subst $( ) $(call first,$2) , , $1 ),$(call rest,$2)),$1)
+    $(if $2,$(call $0,$(subst $( ) $(call firstword,$2) , , $1 ),$ \
+                      $(call nofirstword,$2)),$1)
 
 # Escape/unescape space, tab and new line.
 
