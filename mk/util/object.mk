@@ -9,13 +9,13 @@ __util_object_mk := 1
 # 1. clazz
 # ... args
 # ret: id
-object_new =
+new =
 # 1. obj
 # 2. clazz
 # ret: true/false
-object_instanceof =
+instanceof =
 # 1. obj
-object_delete =
+delete =
 
 # Params:
 #  1. Class name
