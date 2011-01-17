@@ -118,7 +118,7 @@ static int memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
  * @retval 0 otherwise
  */
 static int memory_test_quick(uint32_t *base_addr, long int amount) {
-	if (0 == memory_test_data_bus(base_addr)) {
+	if (0 == memory_test_data_bus(base_addr, 0)) {
 		TRACE("Data bus test ok\n");
 	} else {
 		TRACE("Data bus failed\n");

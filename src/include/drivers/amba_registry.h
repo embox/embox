@@ -1,8 +1,6 @@
 /**
  * @file
- *
  * @brief Interface for working with amba registry. It's used in lspnp command.
- *
  * @details AMBA registry is simply database contains information about devices
  *      identificators visible on AMBA bus, and links ID to character name
  *      device and vendor.
@@ -64,14 +62,14 @@ extern amba_registry_vendor_info_t *amba_registry_get_head(void);
  * Get vendor name of amba pnp device.
  * @param ven_id vendor ID
  */
-extern char* amba_registry_get_ven_name(uint8_t ven_id);
+extern char *amba_registry_get_ven_name(uint8_t ven_id);
 
 /**
  * Get device name of amba pnp device.
  * @param ven_id vendor ID
  * @param dev_id device ID
  */
-extern char* amba_registry_get_dev_name(uint8_t ven_id, uint16_t dev_id);
+extern char *amba_registry_get_dev_name(uint8_t ven_id, uint16_t dev_id);
 
 /**
  * Add device to vendor list.

@@ -60,7 +60,8 @@ inline void add_dev_to_ven(const amba_registry_device_info_t * dev,
 		amba_registry_device_entry_t *entry) {
 	amba_registry_vendor_entry_t *ven_entry;
 	if (NULL == (ven_entry = find_vendor_entry(dev->ven_id))) {
-		list_add((struct list_head *) &entry, &unknown_vendor_entry->dev_list);
+		list_add((struct list_head *) &entry,
+				&unknown_vendor_entry->dev_list);
 		return;
 	}
 
@@ -74,7 +75,8 @@ static int __init init(void) {
 		(&vendors_pool[i])->ven_info
 			= (amba_registry_vendor_info_t *) &vendors_table[i];
 		INIT_LIST_HEAD(&((&vendors_pool[i])->dev_list));
-		list_add((struct list_head *) &vendors_pool[i], &head_vendor_list);
+		list_add((struct list_head *) &vendors_pool[i],
+				&head_vendor_list);
 	}
 	unknown_vendor_entry->ven_info = unknown_vendor;
 
@@ -105,8 +107,9 @@ char* amba_registry_get_dev_name(uint8_t ven_id, uint16_t dev_id) {
 	if (NULL == (ven_entry = find_vendor_entry(ven_id))) {
 		return "Unknown";
 	}
-	LOG_DEBUG("amba_get_dev_name: ven_id=0x%X, dev_id=0x%X\n", ven_id, dev_id);
-	if (NULL == (dev_entry = find_device_entry(&ven_entry->dev_list, dev_id))) {
+	LOG_DEBUG("get_dev_name: ven_id=0x%X, dev_id=0x%X\n", ven_id, dev_id);
+	dev_entry = find_device_entry(&ven_entry->dev_list, dev_id);
+	if (NULL == dev_entry) {
 		return "Unknown";
 	}
 	return (char*) dev_entry->dev_info->dev_name;
