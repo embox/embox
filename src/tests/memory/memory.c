@@ -16,12 +16,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <embox/test.h>
+#include <asm/cache.h>
 
 EMBOX_TEST(run);
 
-#define RAM_BASE_ADDR 	0x40000000
+//#define CONFIG_MEMTEST_BASE 	0x40000000
 /* We can't test memory with 0x0 offset because of ourselfs at 0x0 offset possible */
-#define RAM_TEST_OFFSET 0x04000000
+//#define CONFIG_MEMTEST_OFFSET 0x04000000
 
 inline static void print_error(volatile uint32_t *addr,
 		volatile uint32_t expected_value) {
@@ -76,7 +77,7 @@ static int memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 	unsigned long testOffset;
 
 	uint32_t pattern = 0xAAAAAAAA;
-	uint32_t antipattern = 0x55555555;
+	uint32_t antipattern = ~0xAAAAAAAA;
 	/*
 	 * Write the default pattern at each of the power-of-two offsets.
 	 */
@@ -473,75 +474,62 @@ static int memory_test_write_recovery(uint32_t *base_addr, long int amount) {
 } /* memory_test_write_recovery */
 
 static int run(void) {
-	 TRACE("\nrun0\n");
-	 if (0 != memory_test_run0((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x1000)) {
-	 TRACE("memory test run 0 error FAILED\n");
-	 return -1;
-	 }
-
-
-	 TRACE("run1\n");
-	 if (0 != memory_test_run1((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x1000)) {
-	 TRACE("memory test run 1 error FAILED\n");
-	 return -1;
-	 }
-
-
-	 TRACE("chess\n");
-	 if (0 != memory_test_chess((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x1000)) {
-	 TRACE("memory test chess FAILED\n");
-	 return -1;
-	 }
-
-
-	 TRACE("address\n");
-	 if (0 != memory_test_address((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x1000)) {
-	 TRACE("memory test address FAILED\n");
-	 return -1;
-	 }
-
-
-/*	 TRACE("data bus\n");
-	 if (0 != memory_test_data_bus((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET))) {
-	 TRACE("memory test daat bus FAILED\n");
-	 return -1;
-	 }
-
-
-	TRACE("addr bus\n");
-	if (0 != memory_test_addr_bus((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x1000)) {
-		TRACE("memory test addr bus FAILED\n");
+	cache_data_disable();
+	TRACE("\nrun0\n");
+	if (0 != memory_test_run0((uint32_t *) (CONFIG_MEMTEST_BASE
+			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
+		TRACE("memory test run 0 error FAILED\n");
 		return -1;
 	}
-*/
 
+	TRACE("run1\n");
+	if (0 != memory_test_run1((uint32_t *) (CONFIG_MEMTEST_BASE
+			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
+		TRACE("memory test run 1 error FAILED\n");
+		return -1;
+	}
 
-	 TRACE("quick\n");
-	 if (0 != memory_test_quick((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x1000)) {
-	 TRACE("memory test quick FAILED\n");
-	 return -1;
-	 }
+	TRACE("chess\n");
+	if (0 != memory_test_chess((uint32_t *) (CONFIG_MEMTEST_BASE
+			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
+		TRACE("memory test chess FAILED\n");
+		return -1;
+	}
 
+	TRACE("address\n");
+	if (0 != memory_test_address((uint32_t *) (CONFIG_MEMTEST_BASE
+			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
+		TRACE("memory test address FAILED\n");
+		return -1;
+	}
 
-	 TRACE("loop\n");
-	 if (0 != memory_test_loop((uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x1000)) {
-	 TRACE("memory test loop FAILED\n");
-	 return -1;
-	 }
+	TRACE("quick\n");
+	if (0 != memory_test_quick((uint32_t *) (CONFIG_MEMTEST_BASE
+			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
+		TRACE("memory test quick FAILED\n");
+		return -1;
+	}
+
+	TRACE("loop\n");
+	if (0 != memory_test_loop((uint32_t *) (CONFIG_MEMTEST_BASE
+			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
+		TRACE("memory test loop FAILED\n");
+		return -1;
+	}
 
 	TRACE("galloping_diagonal\n");
-	if (0 != memory_test_galloping_diagonal(
-			(uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x1000)) {
+	if (0 != memory_test_galloping_diagonal((uint32_t *) (CONFIG_MEMTEST_BASE
+			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
 		TRACE("memory test write recovery FAILED\n");
 		return -1;
 	}
 
 	TRACE("write_recovery\n");
-	if (0 != memory_test_write_recovery(
-			(uint32_t *) (RAM_BASE_ADDR + RAM_TEST_OFFSET), 0x100)) {
+	if (0 != memory_test_write_recovery((uint32_t *) (CONFIG_MEMTEST_BASE
+			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
 		TRACE("memory test write recovery FAILED\n");
 		return -1;
 	}
-
+	cache_data_enable();
 	return 0;
 }
