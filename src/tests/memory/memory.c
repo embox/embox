@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief advanced memory testing
  *
  * @date 29.07.2009
  * @author Alexey Fomin
@@ -20,9 +21,7 @@
 
 EMBOX_TEST(run);
 
-//#define CONFIG_MEMTEST_BASE 	0x40000000
-/* We can't test memory with 0x0 offset because of ourselfs at 0x0 offset possible */
-//#define CONFIG_MEMTEST_OFFSET 0x04000000
+#define MEMTEST_ADDR (CONFIG_MEMTEST_BASE + CONFIG_MEMTEST_OFFSET)
 
 inline static void print_error(volatile uint32_t *addr,
 		volatile uint32_t expected_value) {
@@ -38,29 +37,22 @@ inline static void print_error(volatile uint32_t *addr,
  * @retval -1 if some problems appears
  * @retval 0 otherwise
  */
-static int memory_test_data_bus(volatile uint32_t *address) {
+static int memory_test_data_bus(volatile uint32_t *address, long int _stub) {
 	uint32_t pattern;
 
-	/*
-	 * Perform a walking 1's test at the given address.
-	 */
+	/* Perform a walking 1's test at the given address. */
 	for (pattern = 1; pattern != 0; pattern <<= 1) {
-		/*
-		 * Write the test pattern.
-		 */
+		/* Write the test pattern. */
 		*address = pattern;
 
-		/*
-		 * Read it back (immediately is okay for this test).
-		 */
+		/* Read it back (immediately is okay for this test). */
 		if (*address != pattern) {
 			print_error(address, pattern);
 			return -1;
 		}
 	}
-
-	return (0);
-} /* memory_test_data_bus */
+	return 0;
+}
 
 /**
  * Writes pattern values in each address multiple power of two.
@@ -78,16 +70,12 @@ static int memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 
 	uint32_t pattern = 0xAAAAAAAA;
 	uint32_t antipattern = ~0xAAAAAAAA;
-	/*
-	 * Write the default pattern at each of the power-of-two offsets.
-	 */
+	/* Write the default pattern at each of the power-of-two offsets. */
 	for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
 		baseAddress[offset] = pattern;
 	}
 
-	/*
-	 * Check for address bits stuck high.
-	 */
+	/* Check for address bits stuck high. */
 	testOffset = 0;
 	baseAddress[testOffset] = antipattern;
 
@@ -97,12 +85,9 @@ static int memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 			return -1;
 		}
 	}
-
 	baseAddress[testOffset] = pattern;
 
-	/*
-	 * Check for address bits stuck low or shorted.
-	 */
+	/* Check for address bits stuck low or shorted. */
 	for (testOffset = 1; (testOffset & addressMask) != 0; testOffset <<= 1) {
 		baseAddress[testOffset] = antipattern;
 
@@ -112,18 +97,16 @@ static int memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
 		}
 
 		for (offset = 1; (offset & addressMask) != 0; offset <<= 1) {
-			if ((baseAddress[offset] != pattern) && (offset != testOffset)) {
+			if ((baseAddress[offset] != pattern) &&
+			    (offset != testOffset)) {
 				print_error(&baseAddress[offset], pattern);
 				return -1;
 			}
 		}
-
 		baseAddress[testOffset] = pattern;
 	}
-
 	return 0;
-
-} /* memory_test_addr_bus */
+}
 
 /**
  * Combines @link memory_test_data_bus() @endlink and
@@ -136,7 +119,7 @@ static int memory_test_addr_bus(uint32_t * baseAddress, unsigned long nBytes) {
  */
 static int memory_test_quick(uint32_t *base_addr, long int amount) {
 	if (0 == memory_test_data_bus(base_addr)) {
-		TRACE ("Data bus test ok\n");
+		TRACE("Data bus test ok\n");
 	} else {
 		TRACE("Data bus failed\n");
 		return -1;
@@ -149,7 +132,7 @@ static int memory_test_quick(uint32_t *base_addr, long int amount) {
 		return -1;
 	}
 	return 0;
-} /* memory_test_quick */
+}
 
 /**
  * Works like @link memory_test_data_bus() @endlink but
@@ -168,15 +151,11 @@ static int memory_test_run1(uint32_t *base_addr, long int amount) {
 
 	value = 0x1;
 	while (value != 0) {
-		/*
-		 * Writing
-		 */
+		/* Writing */
 		for (addr = base_addr; addr < end_addr; addr++) {
 			*addr = value;
 		}
-		/*
-		 * Checking
-		 */
+		/* Checking */
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != value) {
 				print_error(addr, value);
@@ -186,7 +165,7 @@ static int memory_test_run1(uint32_t *base_addr, long int amount) {
 		value <<= 1;
 	}
 	return 0;
-} /* memory_test_run1 */
+}
 
 /**
  * ------------------
@@ -214,7 +193,6 @@ static int memory_test_galloping_diagonal(uint32_t *base_addr, long int amount) 
 	end_addr = base_addr + amount;
 
 	for (addr = base_addr; addr < end_addr; addr++) {
-
 		value = 0x1;
 		curr_addr = addr;
 
@@ -239,7 +217,7 @@ static int memory_test_galloping_diagonal(uint32_t *base_addr, long int amount) 
 		}
 	}
 	return 0;
-} /* memory_test_galloping_diagonal */
+}
 
 /**
  * Works like @link memory_test_run1 @endlink but
@@ -258,15 +236,11 @@ static int memory_test_run0(uint32_t *base_addr, long int amount) {
 
 	value = 0x1;
 	while (value != 0) {
-		/*
-		 * Writing
-		 */
+		/* Writing */
 		for (addr = base_addr; addr < end_addr; addr++) {
 			*addr = ~value;
 		}
-		/*
-		 * Checking
-		 */
+		/* Checking */
 		for (addr = base_addr; addr < end_addr; addr++) {
 			if (*addr != ~value) {
 				print_error(addr, ~value);
@@ -276,7 +250,7 @@ static int memory_test_run0(uint32_t *base_addr, long int amount) {
 		value <<= 1;
 	}
 	return 0;
-} /* memory_test_run0 */
+}
 
 /**
  * Writes a unique value into each memory location.
@@ -295,9 +269,7 @@ static int memory_test_address(uint32_t *base_addr, long int amount) {
 	uint32_t *end_addr;
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
 
-	/*
-	 * Writing
-	 */
+	/* Writing */
 	addr = base_addr;
 	end_addr = base_addr + amount;
 
@@ -305,9 +277,7 @@ static int memory_test_address(uint32_t *base_addr, long int amount) {
 		*addr = (uint32_t) addr;
 		addr++;
 	}
-	/*
-	 * Checking
-	 */
+	/* Checking */
 	addr = base_addr;
 	end_addr = base_addr + amount;
 	addr = base_addr;
@@ -319,7 +289,7 @@ static int memory_test_address(uint32_t *base_addr, long int amount) {
 		addr++;
 	}
 	return 0;
-} /* memory_test_address */
+}
 
 /**
  * Writes pattern 0x55555555 into each memory location.
@@ -339,16 +309,12 @@ static int memory_test_chess(uint32_t *base_addr, long int amount) {
 	base_addr = (uint32_t *) ((uint32_t) base_addr & 0xFFFFFFFC);
 	end_addr = base_addr + amount;
 
-	/*
-	 * Writing
-	 */
+	/* Writing */
 	value = 0x55555555; /* setting first value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		*addr = value;
 	}
-	/*
-	 * Testing
-	 */
+	/* Testing */
 	value = 0x55555555; /* setting first value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
@@ -356,16 +322,12 @@ static int memory_test_chess(uint32_t *base_addr, long int amount) {
 			return -1;
 		}
 	}
-	/*
-	 * Writing
-	 */
+	/* Writing */
 	value = ~0x55555555; /* setting first value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		*addr = value;
 	}
-	/*
-	 * Testing
-	 */
+	/* Testing */
 	value = ~0x55555555; /* setting first value */
 	for (addr = base_addr; addr < end_addr; addr++, value = ~value) {
 		if (*addr != value) {
@@ -374,7 +336,7 @@ static int memory_test_chess(uint32_t *base_addr, long int amount) {
 		}
 	}
 	return 0;
-} /* memory_test_chess */
+}
 
 /**
  * Writes value 0x55555555 to the specified address and checks it
@@ -411,7 +373,7 @@ static int memory_test_loop(uint32_t *addr, long int counter) {
 		value = ~value;
 	}
 	return 0;
-} /* memory_test_loop */
+}
 
 /**
  * First of all, writes a background of 0s. Then the first cell is established
@@ -471,65 +433,33 @@ static int memory_test_write_recovery(uint32_t *base_addr, long int amount) {
 		*addr = 0;
 	}
 	return 0;
-} /* memory_test_write_recovery */
+}
+
+#define MEMTEST(name)                                          \
+	TRACE("%s\n", #name);                                  \
+	if (0 != memory_test_##name((uint32_t *) MEMTEST_ADDR, \
+			CONFIG_MEMTEST_SIZE)) {                \
+		TRACE("memory test %s FAILED\n", #name);       \
+		return -1;                                     \
+	}
 
 static int run(void) {
 	cache_data_disable();
-	TRACE("\nrun0\n");
-	if (0 != memory_test_run0((uint32_t *) (CONFIG_MEMTEST_BASE
-			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
-		TRACE("memory test run 0 error FAILED\n");
-		return -1;
-	}
+	TRACE("\n");
+	MEMTEST(run0);
+	MEMTEST(run1);
+	MEMTEST(chess);
+	MEMTEST(address);
+#if 0
+	MEMTEST(data_bus);
+	MEMTEST(addr_bus);
+#endif
+	MEMTEST(quick);
+	MEMTEST(loop);
+	MEMTEST(galloping_diagonal);
+	MEMTEST(write_recovery);
 
-	TRACE("run1\n");
-	if (0 != memory_test_run1((uint32_t *) (CONFIG_MEMTEST_BASE
-			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
-		TRACE("memory test run 1 error FAILED\n");
-		return -1;
-	}
-
-	TRACE("chess\n");
-	if (0 != memory_test_chess((uint32_t *) (CONFIG_MEMTEST_BASE
-			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
-		TRACE("memory test chess FAILED\n");
-		return -1;
-	}
-
-	TRACE("address\n");
-	if (0 != memory_test_address((uint32_t *) (CONFIG_MEMTEST_BASE
-			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
-		TRACE("memory test address FAILED\n");
-		return -1;
-	}
-
-	TRACE("quick\n");
-	if (0 != memory_test_quick((uint32_t *) (CONFIG_MEMTEST_BASE
-			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
-		TRACE("memory test quick FAILED\n");
-		return -1;
-	}
-
-	TRACE("loop\n");
-	if (0 != memory_test_loop((uint32_t *) (CONFIG_MEMTEST_BASE
-			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
-		TRACE("memory test loop FAILED\n");
-		return -1;
-	}
-
-	TRACE("galloping_diagonal\n");
-	if (0 != memory_test_galloping_diagonal((uint32_t *) (CONFIG_MEMTEST_BASE
-			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
-		TRACE("memory test write recovery FAILED\n");
-		return -1;
-	}
-
-	TRACE("write_recovery\n");
-	if (0 != memory_test_write_recovery((uint32_t *) (CONFIG_MEMTEST_BASE
-			+ CONFIG_MEMTEST_OFFSET), CONFIG_MEMTEST_SIZE)) {
-		TRACE("memory test write recovery FAILED\n");
-		return -1;
-	}
 	cache_data_enable();
 	return 0;
 }
+
