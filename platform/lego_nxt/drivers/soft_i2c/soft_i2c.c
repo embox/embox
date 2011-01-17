@@ -44,12 +44,6 @@ static int port_count = 0;
 i2c_state_t wait_state;
 
 #define TRACE(...)
-#if 1
-void wait(i2c_port_t *port) {
-	wait_state = port->state;\
-	port->state = WAIT;\
-}
-#endif
 static void i2c_port_process(i2c_port_t *port) {
 	REG_LOAD(AT91C_TC0_SR); //XXX
 	switch (port->state) {
@@ -121,7 +115,7 @@ static void i2c_port_process(i2c_port_t *port) {
 			TRACE("STOP_DATA_FALL");
 			pin_set_low(port->sda);
 			scl_set_high(port->scl);
-			port->state = STOP;
+			port->state = I2C_STOP;
 			break;
 		case I2C_STOP:
 			if (pin_get_input(port->scl)) {
@@ -198,14 +192,7 @@ static void i2c_port_process(i2c_port_t *port) {
 					port->state = STOP_DATA_FALL;
 				}
 			}
-			//wait(port);
 			break;
-		case WAIT:
-			if (nxt_buttons_was_pressed()) {
-				port->state = wait_state;
-			}
-			break;
-
 		case IDLE:
 		default:
 			break;

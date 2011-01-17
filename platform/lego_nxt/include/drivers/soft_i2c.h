@@ -48,9 +48,32 @@ typedef struct {
 	enum operation_enum_t operation;
 } i2c_port_t;
 
-typedef void (*i2c_done_callback)(i2c_port_t *i2c_port);
+/**
+ * Set @link port @endlink state to start. For proper use @link port->state @endlink
+ * must be in @link IDLE @endlink state
+ * @param port Port
+ * @param addr 7-bit addres of device on bus
+ * @param data Data will be read to
+ * @param @count Size of data read
+ */
+void i2c_read(i2c_port_t *port, uint8_t addr, uint8_t *data, uint32_t count);
+/**
+ * Set @link port @endlink state to start. For proper use @link port->state @endlink
+ * must be in @link IDLE @endlink state
+ * @param port Port
+ * @param addr 7-bit addres of device on bus
+ * @param data Data to read
+ * @param @count Size of data write
+ */
+void i2c_write(i2c_port_t *port, uint8_t addr, uint8_t *data, uint32_t count);
+/**
+ * Init i2c_port
+ * @param port Port
+ */
+void i2c_init(i2c_port_t *port);
+//typedef void (*i2c_done_callback)(i2c_port_t *i2c_port);
 
 #define MAX_PORTS (sizeof(int))
-extern i2c_port_t *ports[MAX_PORTS];
+//extern i2c_port_t *ports[MAX_PORTS];
 
 #endif /*SOFT_I2C_H*/
