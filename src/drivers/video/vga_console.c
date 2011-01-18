@@ -10,6 +10,9 @@
 #include <drivers/keyboard.h>
 #include <ctype.h>
 
+#define VGA_MISC_WRITE  0x3C2
+#define VGA_CRTC_INDEX  0x3D4
+#define VGA_CRTC_DATA   0x3D5
 
 typedef struct vga_console {
 	unsigned width, height;
@@ -33,14 +36,26 @@ typedef struct crtc_regs {
 	uint32_t data;
 } crtc_regs_t;
 
-static  volatile struct crtc_regs *const dev_reg = ( volatile struct crtc_regs *const)0x3d4;
+static volatile crtc_regs_t *const dev_reg = (volatile crtc_regs_t *const) VGA_CRTC_INDEX;
+
 static vga_console_t con = {80,25,0,0,7,{0,0,0,0,0},0};
 /** Point to the video memory. */
-static  volatile vchar_t *const video = ( volatile vchar_t *const) VIDEO;
+static volatile vchar_t *const video = (volatile vchar_t *const) VIDEO;
 
 static int crtc_init(void) {
-//	dev_reg = (volatile struct crtc_regs *)0x3d4;
-//	video = (volatile vchar_t *) VIDEO;
+	/**
+	 * mode 3h (80x25 text mode)
+	 * 0x67 => 01100111
+	 * +---+---+---+--+--+----+---+
+	 * |7  |6  |5 4|3 |2 |1   |0  |
+	 * |1  |1  |1 0|0 |1 |1   |0  |
+	 * |VSP|HSP|   |CS|CS|ERAM|IOS|
+	 * 7,6 - 480 lines
+	 * 3,2 - 28,322 MHZ Clock
+	 * 1 - Enable Ram
+	 * 0 - Map 0x3d4 to 0x3b4
+	 */
+	out16(0x67, VGA_MISC_WRITE);
 	return 0;
 }
 
@@ -53,7 +68,7 @@ void vga_console_init(unsigned width, unsigned height) {
 	con.y = 0;
 	con.attr = 0x7;
 
-//	crtc_init();
+	crtc_init();
 	vga_clear();
 
 	keyboard_init();
@@ -287,7 +302,6 @@ int vga_getc(void) {
 
 void diag_init(void) {
 	vga_console_init(80, 25);
-
 }
 
 void diag_putc(int c) {

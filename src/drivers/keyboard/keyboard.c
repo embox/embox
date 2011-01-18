@@ -58,8 +58,7 @@ static const unsigned char keymap[][2] = {
 	{'o',	'O'},
 	{'p',	'P'},
 	{'[',	'{'},
-//	{']','}'},     /* 27 */
-	{'+',	'*'},  /* 27 */
+	{']','}'},     /* 27 */
 	{'\r','\r'},   /* 28 - Enter */
 	{0,	0  },  /* 29 - Ctrl */
 	{'a',	'A'},  /* 30 */
@@ -85,8 +84,7 @@ static const unsigned char keymap[][2] = {
 	{'m',	'M'},
 	{',',	'<'},
 	{'.',	'>'},
-// 	{'/',   '?'},  /* 53 */
-	{'-',	'_'},  /* 53 */
+	{'/',   '?'},  /* 53 */
 	{0xff, 0xff},  /* 54 - Right Shift */
 	{0,	 0},   /* 55 - Print Screen */
 	{0,	 0},   /* 56 - Alt */
@@ -107,11 +105,11 @@ static const unsigned char keymap[][2] = {
 	{0xb7,0xb7},   /* 71 - Numeric keypad 7 */
 	{0xb8,0xb8},   /* 72 - Numeric keypad 8 */
 	{0xb9,0xb9},   /* 73 - Numeric keypad 9 */
-	{'-',	'-'},  /* 74 - Numeric keypad '-' */
+	{'-',  '-'},   /* 74 - Numeric keypad '-' */
 	{0xb4,0xb4},   /* 75 - Numeric keypad 4 */
 	{0xb5,0xb5},   /* 76 - Numeric keypad 5 */
 	{0xb6,0xb6},   /* 77 - Numeric keypad 6 */
-	{'+',	'+'},  /* 78 - Numeric keypad '+' */
+	{'+',  '+'},   /* 78 - Numeric keypad '+' */
 	{0xb1,0xb1},   /* 79 - Numeric keypad 1 */
 	{0xb2,0xb2},   /* 80 - Numeric keypad 2 */
 	{0xb3,0xb3},   /* 81 - Numeric keypad 3 */
@@ -214,7 +212,6 @@ static void keyboard_set_mode(unsigned char mode) {
 	outb(mode, 0x60);
 }
 
-
 static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 	uint8_t scancode;
 	scancode = in8(0x60);
@@ -226,12 +223,11 @@ static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 void keyboard_init(void) {
 	uint8_t mode;
 
-
 	/* If 0x64 returns 0xff, then we have no keyboard
 	 * controller */
-
-	if (inb(0x64) == 0xFF)
+	if (inb(0x64) == 0xFF) {
 		return;
+	}
 
 	/* Empty keyboard buffer */
 	while (keyboard_havechar()) keyboard_getchar();
@@ -248,3 +244,4 @@ void keyboard_init(void) {
 
 	//irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
 }
+

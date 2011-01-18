@@ -9,13 +9,6 @@
 #ifndef EMBOX_RUNLEVEL_H_
 #define EMBOX_RUNLEVEL_H_
 
-#if 0
-#define RUNLEVEL_SYSTEM     0
-#define RUNLEVEL_MODULE     1
-#define RUNLEVEL_NET        3
-#define RUNLEVEL_FS         3
-#endif
-
 /** Total amount of run levels. */
 #define RUNLEVEL_NRS_TOTAL 4
 

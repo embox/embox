@@ -4,7 +4,7 @@
  *        (for microblaze)
  *
  * @date 19.11.2009
- * @author: Anton Bondarev
+ * @author Anton Bondarev
  */
 
 #include <types.h>
@@ -12,12 +12,12 @@
 #include <asm/cpu_conf.h>
 #include <kernel/irq.h>
 
-typedef volatile struct uart_regs {
+typedef struct uart_regs {
 	uint32_t rx_data;
 	uint32_t tx_data;
 	uint32_t status;
 	uint32_t ctrl;
-}uart_regs_t;
+} uart_regs_t;
 
 /*status registers bit definitions*/
 #define STATUS_PAR_ERROR_BIT          24
@@ -47,7 +47,7 @@ typedef volatile struct uart_regs {
 #define CTRL_RST_TX_FIFO             REVERSE_MASK(CTRL_RST_TX_FIFO_BIT)
 
 /*set registers base*/
-uart_regs_t *uart = (uart_regs_t *) XILINX_UARTLITE_BASEADDR;
+static volatile uart_regs_t *uart = (uart_regs_t *) XILINX_UARTLITE_BASEADDR;
 
 inline static int is_rx_empty(void) {
 	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
