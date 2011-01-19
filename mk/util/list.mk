@@ -144,9 +144,41 @@ list_foldl = \
   $(strip $(call __list_foldl,$1,$2,$(strip $3),$(value 4)))
 
 __list_foldl = \
-  $(if $3,$(call $0,$1,$ \
-              $(call $1,$2,$(call firstword,$3),$4),$ \
-                         $(call nofirstword,$3),$4),$2)
+  $(if $3,$ \
+    $(call $0,$1,$ \
+            $(call $1,$2,$(call firstword,$3),$4),$ \
+        $(call nofirstword,$3),$4),$ \
+    $2)
+
+##
+# Function: list_foldr
+# Takes the second argument and the last item of the list and applies the
+# function, then it takes the penultimate item from the end and the result,
+# and so on.
+#
+# Params:
+#  1. Name of the folding function,
+#     with the following signature:
+#       1. An element from the list
+#       2. Intermediate value obtained as the result of previous function calls
+#       3. Optional argument (if any)
+#      Return: the value to pass to the next function call
+#  2. Initial value to pass as an intermediate value when calling function
+#     for the first time
+#  3. List to iterate over applying the folding function
+#  4. Optional argument to pass when calling the function
+# Return: The result of the last function call (if any occurred),
+#          or the initial value in case of empty list
+#
+list_foldr = \
+  $(strip $(call __list_foldr,$1,$2,$(strip $3),$(value 4)))
+
+__list_foldr = \
+  $(if $3,$ \
+    $(call $1,$(call firstword,$3),$ \
+            $(call $0,$1,$2,$(call nofirstword,$3),$4),$ \
+        $4),$ \
+    $2)
 
 ##
 # Function: list_equal
