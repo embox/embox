@@ -107,7 +107,7 @@ f-wildcard = \
 # Usage: $(call wildcard_first,pattern...)
 #
 wildcard_first = \
-  $(call __wildcard_first,  wildcard,$1)
+  $(call list_foldl,__wildcard_first_fold,,$1,wildcard)
 
 ##
 # Function: d-wildcard_first
@@ -117,7 +117,7 @@ wildcard_first = \
 # See: wildcard_first, d-wildcard
 #
 d-wildcard_first = \
-  $(call __wildcard_first,d-wildcard,$1)
+  $(call list_foldl,__wildcard_first_fold,,$1,d-wildcard)
 
 ##
 # Function: f-wildcard_first
@@ -127,13 +127,13 @@ d-wildcard_first = \
 # See: wildcard_first, f-wildcard
 #
 f-wildcard_first = \
-  $(call __wildcard_first,f-wildcard,$1)
+  $(call list_foldl,__wildcard_first_fold,,$1,f-wildcard)
 
-# Expand each pattern (arg 2) one by one sequentially using proper wildcard
-# version (arg 1) until getting non-empty expansion.
-__wildcard_first = \
-  $(if $2,$(or $(call $1,$(call firstword,$2)), \
-               $(call $0,$1,$(wordlist 2,$(words $2),$2))))
+# Params:
+#  1. The result of wildcard expansion of previous patterns
+#  2. The next pattern to expand (if needed)
+#  3. Wildcard function
+__wildcard_first_fold = $(or $1,$(call $3,$2))
 
 #
 # TODO: all functions below are not used, may be drop them? -- Eldar

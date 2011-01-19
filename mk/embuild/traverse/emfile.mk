@@ -12,6 +12,7 @@ include core/common.mk
 include util/var/filter.mk
 include util/var/assign.mk
 include util/log.mk
+include util/list.mk
 
 include embuild/traverse/entity.mk
 
@@ -62,16 +63,10 @@ emfile_name = $(basename $(filter %.em,$(notdir $(__emfile))))
 #  define
 #
 
-emfile_chain = $(call __emfile_chain,$(strip $1),)
-__emfile_chain = \
-  $(if $1, \
-    $(call $0,$(call nofirstword,$1), \
-               $(call __emfile_chain_invoke,$(call firstword,$1),$2)), \
-    $2 \
-)
+emfile_chain = $(call list_foldl,__emfile_chain_invoke,,$1)
 
 __emfile_chain_invoke = \
-  $(call emfile_errors_filter,$2) $(call $1,$(call emfile_entities_extract,$2))
+  $(call emfile_errors_filter,$1) $(call $2,$(call emfile_entities_extract,$1))
 
 emfile_handle_all = $(strip \
   $(call emfile_handle_chain_results, \
