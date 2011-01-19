@@ -141,7 +141,7 @@ __list_pairmap = \
 #          or the initial value in case of empty list
 #
 list_foldl = \
-  $(strip $(call __list_foldl,$1,$2,$(strip $3),$(value 4)))
+  $(call __list_foldl,$1,$2,$(strip $3),$(value 4))
 
 __list_foldl = \
   $(if $3,$ \
@@ -171,7 +171,7 @@ __list_foldl = \
 #          or the initial value in case of empty list
 #
 list_foldr = \
-  $(strip $(call __list_foldr,$1,$2,$(strip $3),$(value 4)))
+  $(call __list_foldr,$1,$2,$(strip $3),$(value 4))
 
 __list_foldr = \
   $(if $3,$ \
