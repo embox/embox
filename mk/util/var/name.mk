@@ -79,6 +79,7 @@ include core/common.mk
 include core/string.mk # firstword/nofirstword
 include util/var/info.mk # var_defined
 include util/math.mk # sequences generator
+include util/list.mk # pairmap
 
 #
 # Function: var_name_mangle
@@ -143,7 +144,7 @@ __var_name_escape_combos = \
 #  2. Sequence
 #  3. Tail of the sequence
 __var_name_escape_do_combo = \
-  $(call pairmap,__var_name_escape_do_combo_pairmap, \
+  $(call list_pairmap,__var_name_escape_do_combo_pairmap, \
      $(wordlist 1,$(words $3),$2),$3,$1)
 
 # Params:

@@ -79,41 +79,6 @@ __util_list_mk := 1
 include core/string.mk
 
 ##
-# Function: list_length
-# Gets the length of the specified list.
-#
-# Params:
-#  1. The target list
-# Returns: The number of elements in the list
-#
-list_length = \
-  $(words $1)
-
-## See: nowords
-list_empty = \
-  $(call nowords,$1)
-
-## See: singleword
-list_single = \
-  $(call singleword,$1)
-
-## See: firstword
-list_first = \
-  $(call firstword,$1)
-
-## See: lastword
-list_last = \
-  $(call lastword,$1)
-
-## See: nofirstword
-list_nofirst = \
-  $(call nofirstword,$1)
-
-## See: nolastword
-list_nolast = \
-  $(call nolastword,$1)
-
-##
 # Function: list_map
 # Calls the specified function on each element of a list.
 #
@@ -142,8 +107,8 @@ list_pairmap = \
   $(strip $(call __list_pairmap,$1,$(strip $2),$(strip $3),$(value 4)))
 
 __list_pairmap = \
-  $(if $2$3,$(call $1,$(call   list_first,$2),$(call   list_first,$3),$4) \
-         $(call $0,$1,$(call list_nofirst,$2),$(call list_nofirst,$3),$4) \
+  $(if $2$3,$(call $1,$(call   firstword,$2),$(call   firstword,$3),$4) \
+         $(call $0,$1,$(call nofirstword,$2),$(call nofirstword,$3),$4) \
    )
 
 ##

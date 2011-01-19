@@ -8,6 +8,7 @@ ifndef __util_wildcard_mk
 __util_wildcard_mk := 1
 
 include core/common.mk
+include core/string.mk
 
 ##
 # Function: r-wildcard
@@ -24,7 +25,7 @@ include core/common.mk
 # Note: does not handle properly more than one ** tokens in single pattern.
 #
 r-wildcard = \
-  $(if $(call list_single,$1),$ \
+  $(if $(call singleword,$1),$ \
     $(call __r-wildcard,$(subst **,* *,$1)),$ \
     $(foreach token,$(call $0,$(token)))$ \
   )# Split argument and recall self for each single pattern.

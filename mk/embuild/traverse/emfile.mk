@@ -65,7 +65,7 @@ emfile_name = $(basename $(filter %.em,$(notdir $(__emfile))))
 emfile_chain = $(call __emfile_chain,$(strip $1),)
 __emfile_chain = \
   $(if $1, \
-    $(call $0,$(call list_nofirst,$1), \
+    $(call $0,$(call nofirstword,$1), \
                $(call __emfile_chain_invoke,$(call firstword,$1),$2)), \
     $2 \
 )
@@ -197,7 +197,7 @@ emfile_check_names_conflicting = \
 #  2. all entity types for the name (probably with duplicates)
 # Return: Valid entity entry if all is ok, error entry if conflict is detected.
 emfile_check_name_is_unique = \
-  $(if $(call list_single,$2), \
+  $(if $(call singleword,$2), \
     $(call emfile_entity,$(call entity,$1,$2)), \
     $(call emfile_check_name_unique_error,$1,$2,$(sort $2)) \
    ) \
