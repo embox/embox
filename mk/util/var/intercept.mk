@@ -6,7 +6,7 @@
 ifndef __util_check_mk
 __util_check_mk := 1
 
-include util/var_assign.mk
+include util/var/assign.mk
 
 # 1. Target variable
 # 2. Pre-expansion hook

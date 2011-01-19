@@ -9,7 +9,7 @@
 ifndef __util_var_filter_mk
 __util_var_filter_mk := 1
 
-include util/var_name.mk
+include util/var/name.mk
 
 #
 # Function: var_filter

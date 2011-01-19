@@ -39,7 +39,7 @@ __util_var_name_mk := 1
 # Usage example:
 #
 ##
-#  include util/var_name.mk
+#  include util/var/name.mk
 #
 #  # First, define two variables (one of them has whitespaces in its name):
 #     a_regular_single_word_named_variable = foo
@@ -77,7 +77,7 @@ __util_var_name_mk := 1
 
 include core/common.mk
 include core/string.mk # firstword/nofirstword
-include util/var_info.mk # var_defined
+include util/var/info.mk # var_defined
 include util/math.mk # sequences generator
 include util/list.mk # list_single
 
