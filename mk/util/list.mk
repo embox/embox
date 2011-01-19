@@ -126,7 +126,7 @@ __list_pairmap = \
 # function to them, then feeds the function with this result and the second
 # argument and so on.
 #
-# Arguments:
+# Params:
 #  1. Name of the folding function,
 #     with the following signature:
 #       1. Intermediate value obtained as the result of previous function calls
@@ -137,14 +137,16 @@ __list_pairmap = \
 #     for the first time
 #  3. List to iterate over applying the folding function
 #  4. Optional argument to pass when calling the function
-# Returns: The result of the last function call (if any occurred),
+# Return: The result of the last function call (if any occurred),
 #          or the initial value in case of empty list
 #
 list_foldl = \
-  $(strip $(call __list_foldl,$1,$2,$3,$(value 4)))
+  $(strip $(call __list_foldl,$1,$2,$(strip $3),$(value 4)))
 
-#__list_foldl = \
-  $(if $1,$(call $0,$(call $1,),$(call list_nofirst,$3)),$2)
+__list_foldl = \
+  $(if $3,$(call $0,$1,$ \
+              $(call $1,$2,$(call firstword,$3),$4),$ \
+                         $(call nofirstword,$3),$4),$2)
 
 ##
 # Function: list_equal
@@ -153,7 +155,7 @@ list_foldl = \
 # Params:
 #  1. The first list
 #  2. The second list
-# Returns: True if the two lists are identical, false otherwise
+# Return: True if the two lists are identical, false otherwise
 #
 list_equal = \
   $(call make_bool,$(and \
@@ -167,12 +169,12 @@ list_equal = \
 #
 # Params:
 #  1. The target list
-# Returns: The list with its elements in reverse order
+# Return: The list with its elements in reverse order
 #
 list_reverse = \
   $(strip $(call __list_reverse,$(strip $1))
 
 __list_reverse = \
-  $(if $1,$(call $0,$(call list_nofirst,$1)) $(call list_first,$1))
+  $(if $1,$(call $0,$(call nofirstword,$1)) $(call firstword,$1))
 
 endif # __util_list_mk
