@@ -35,7 +35,7 @@
 ifndef __util_var_name_mk
 __util_var_name_mk := 1
 
-#
+##
 # Usage example:
 #
 ##
@@ -79,11 +79,10 @@ include core/common.mk
 include core/string.mk # firstword/nofirstword
 include util/var/info.mk # var_defined
 include util/math.mk # sequences generator
-include util/list.mk # pairmap
+include util/list.mk # pairmap, foldl
 
-#
+##
 # Function: var_name_mangle
-#
 # Escapes variables list in a special way so that it becomes possible to
 # iterate over it using 'foreach', even if some variables contain whitespaces
 # in their names.
@@ -93,20 +92,19 @@ include util/list.mk # pairmap
 # Params:
 #  1. (optional) Variables list.
 #     If not specified, the value of .VARIABLES built-in variable is used
-# Returns: whitespace separated list, each element of which is mangled name of
+# Return: whitespace separated list, each element of which is mangled name of
 #          a defined variable from the specified list (or from $(.VARIABLES))
 #
 var_name_mangle = $(call __var_name_escape1,$(or $(value 1),$(.VARIABLES)))
 
-#
+##
 # Function: var_name_demangle
-#
 # Unescapes the result of 'var_name_mangle' call.
 #
 # Params:
 #  1. Mangled variable name (or list of mangled names, although then
 #                             mangling/demangling makes no sense)
-# Returns: Variable name as it has to be before the mangling
+# Return: Variable name as it has to be before the mangling
 #
 var_name_demangle = $(subst $$$$,$$,$(call __var_name_unescape_whitespace,$1))
 
@@ -156,19 +154,24 @@ __var_name_escape_do_combo_pairmap = \
 
 # Params:
 #  1. Unescaped variables list
-# Returns: list of singleword-named variables (still not escaped)
+# Return: list of singleword-named variables (still not escaped)
 __var_name_singles = \
   $(foreach single,$1,$(if $(and \
         $(call var_defined,$(single)), \
         $(call singleword,$(filter $(single),$1))),$(single)))
 
+# We can't use simple 'filter-out' here as far as it does not exactly preserve
+# whitespaces between words in the filtered list.
 # Params:
 #  1. Unescaped variables list
-#  2. Remaining singles
-# Returns: the variable list with all singles removed (not escaped)
-__var_name_multies = \
-    $(if $2,$(call $0,$(subst $(\empty) $(call firstword,$2) , , $1 ),$ \
-                      $(call nofirstword,$2)),$1)
+#  2. List of singleword variables
+# Return: the variable list with all singles removed (not escaped)
+__var_name_multies = $(call list_foldl,__var_name_multies_fold,$1,$2)
+# Params:
+#  1. Unescaped variables list being filtered
+#  2. The next single to remove from the list
+# Return: the list with the incoming single removed
+__var_name_multies_fold = $(call subst, $2 , , $1 )# notice the spaces.
 
 # Escape/unescape space, tab and new line.
 
