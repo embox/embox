@@ -25,7 +25,7 @@
 # SUCH DAMAGE.
 #
 
-# Most parts of this file are derived from GMSL.
+# Some parts of this file are derived from GMSL.
 
 #
 # GNU Make Standard Library (GMSL)
@@ -83,25 +83,34 @@ include core/string.mk
 # Calls the specified function on each element of a list.
 #
 # Params:
-#  1. Name of function to call for each element
-#  2. List to iterate over calling the function
+#  1. Name of function to call for each element,
+#     with the following signature:
+#       1. An element from the list
+#       2. Optional argument (if any)
+#      Return: the value to append to the resulting list
+#  2. List to iterate over
 #  3. Optional argument to pass when calling the function
-# Returns: The list after calling the function on each element
+# Return: The list after calling the function on each element
 #
 list_map = \
   $(strip $(foreach 2,$2,$(call $1,$2,$(value 3))))
 # TODO $(foreach 2,$2,...) can be a bitch, check it. -- Eldar
 
-#
+##
 # Function: list_pairmap
 # Calls the specified function on each pair of elements of two lists.
 #
-# Arguments:
-#  1. Name of function to call for each pair of elements
-#  2. The first list to iterate over calling the function
-#  3. The second list to iterate over calling the function
+# Params:
+#  1. Name of function to call for each pair of elements,
+#     with the following signature:
+#       1. An element from the first list
+#       2. An element from the second list
+#       3. Optional argument (if any)
+#      Return: the value to append to the resulting list
+#  2. The first list to iterate over
+#  3. The second list to iterate over
 #  4. Optional argument to pass when calling the function
-# Returns: The list after calling the function on each pair of elements
+# Return: The list after calling the function on each pair of elements
 #
 list_pairmap = \
   $(strip $(call __list_pairmap,$1,$(strip $2),$(strip $3),$(value 4)))
@@ -112,17 +121,45 @@ __list_pairmap = \
    )
 
 ##
+# Function: list_foldl
+# Takes the second argument and the first item of the list and applies the
+# function to them, then feeds the function with this result and the second
+# argument and so on.
+#
+# Arguments:
+#  1. Name of the folding function,
+#     with the following signature:
+#       1. Intermediate value obtained as the result of previous function calls
+#       2. An element from the list
+#       3. Optional argument (if any)
+#      Return: the value to pass to the next function call
+#  2. Initial value to pass as an intermediate value when calling function
+#     for the first time
+#  3. List to iterate over applying the folding function
+#  4. Optional argument to pass when calling the function
+# Returns: The result of the last function call (if any occurred),
+#          or the initial value in case of empty list
+#
+list_foldl = \
+  $(strip $(call __list_foldl,$1,$2,$3,$(value 4)))
+
+#__list_foldl = \
+  $(if $1,$(call $0,$(call $1,),$(call list_nofirst,$3)),$2)
+
+##
 # Function: list_equal
 # Compares two lists agains each other.
 #
 # Params:
 #  1. The first list
 #  2. The second list
-# Returns: True if the two lists are identical
+# Returns: True if the two lists are identical, false otherwise
 #
 list_equal = \
-  $(and $(filter $(words $1),$(words $2)), \
-        $(findstring x $(strip $1) x,x $(strip $2) x))
+  $(call make_bool,$(and \
+        $(filter $(words $1),$(words $2)), \
+        $(findstring x $(strip $1) x,x $(strip $2) x) \
+   ))
 
 ##
 # Function: list_reverse
