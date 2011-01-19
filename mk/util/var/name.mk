@@ -79,14 +79,13 @@ include core/common.mk
 include core/string.mk # firstword/nofirstword
 include util/var/info.mk # var_defined
 include util/math.mk # sequences generator
-include util/list.mk # list_single
 
 #
 # Function: var_name_mangle
 #
 # Escapes variables list in a special way so that it becomes possible to
-# iterate over it using foreach, even if some variables contain whitespaces in
-# their names.
+# iterate over it using 'foreach', even if some variables contain whitespaces
+# in their names.
 # The name of each variable as is can be restored back using
 # 'var_name_demangle' function.
 #
@@ -160,14 +159,14 @@ __var_name_escape_do_combo_pairmap = \
 __var_name_singles = \
   $(foreach single,$1,$(if $(and \
         $(call var_defined,$(single)), \
-        $(call list_single,$(filter $(single),$1))),$(single)))
+        $(call singleword,$(filter $(single),$1))),$(single)))
 
 # Params:
 #  1. Unescaped variables list
 #  2. Remaining singles
 # Returns: the variable list with all singles removed (not escaped)
 __var_name_multies = \
-    $(if $2,$(call $0,$(subst $( ) $(call firstword,$2) , , $1 ),$ \
+    $(if $2,$(call $0,$(subst $(\empty) $(call firstword,$2) , , $1 ),$ \
                       $(call nofirstword,$2)),$1)
 
 # Escape/unescape space, tab and new line.
@@ -177,6 +176,8 @@ __var_name_escape_whitespace = \
 __var_name_unescape_whitespace = \
   $(subst _$$s,$(\space),$(subst _$$t,$(\t),$(subst _$$n,$(\n),$1)))
 
-# TODO
+# TODO a possible optimization: on each iteration filter out
+#      single-, double-, triple-, etc. -worded variables. -- Eldar
+# TODO try to avoid using filter because of possible % occurrence. -- Eldar
 
 endif # __util_var_name_mk
