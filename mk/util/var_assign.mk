@@ -40,7 +40,7 @@ __util_var_assign_mk := 1
 #  At this point I think it was unnecessary. If some day I'll change my
 #  opinion, the previous solution can be found in embuild_experimental @ r895.
 
-include util/common.mk
+include core/common.mk
 
 ##
 # Function: var_assign_simple, =:

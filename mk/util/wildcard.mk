@@ -7,7 +7,7 @@
 ifndef __util_wildcard_mk
 __util_wildcard_mk := 1
 
-include util/common.mk
+include core/common.mk
 
 ##
 # Function: r-wildcard

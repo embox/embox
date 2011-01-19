@@ -7,7 +7,7 @@
 ifndef __util_make_version_mk
 __util_make_version_mk := 1
 
-include util/common.mk
+include core/common.mk
 
 # $(value 0),$(value 1) suppress possible undefined variables warning.
 make_version_major = \

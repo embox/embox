@@ -8,7 +8,7 @@
 ifndef __embuild_traverse_emfile_mk
 __embuild_traverse_emfile_mk := 1
 
-include util/common.mk
+include core/common.mk
 include util/var_filter.mk
 include util/var_assign.mk
 include util/log.mk

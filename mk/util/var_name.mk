@@ -75,10 +75,10 @@ __util_var_name_mk := 1
 #  # var name found: [and   with whitespaces   in its name]
 #
 
-include util/common.mk
+include core/common.mk
+include core/string.mk # firstword/nofirstword
 include util/var_info.mk # var_defined
 include util/math.mk # sequences generator
-include util/string.mk # firstword/nofirstword
 include util/list.mk # list_single
 
 #

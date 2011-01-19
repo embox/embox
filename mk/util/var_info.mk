@@ -6,7 +6,7 @@
 ifndef __util_var_info_mk
 __util_var_info_mk := 1
 
-include util/common.mk
+include core/common.mk
 
 ##
 # Function: var_info_string

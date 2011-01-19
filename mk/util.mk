@@ -7,7 +7,7 @@
 ifndef _util_mk_
 _util_mk_ := 1
 
-include util/common.mk
+include core/common.mk
 include gmsl.mk
 
 escape = $(call assert_called,escape,$0)$(call dollar_encode,$1)

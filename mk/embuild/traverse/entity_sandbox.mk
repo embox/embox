@@ -26,7 +26,7 @@ __entity_sandbox_variables_after  := $(.VARIABLES)
 # Process cathed variables.
 include embuild/traverse/entity.mk
 
-include util/common.mk
+include core/common.mk
 
 prereq = $(__EMBUILD_TRAVERSE_ENTITY_FILE)
 target = $(OBJ_DIR)/$(__EMBUILD_TRAVERSE_ENTITY_NAME).mk
