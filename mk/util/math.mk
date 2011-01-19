@@ -76,8 +76,6 @@
 ifndef __util_math_mk
 __util_math_mk := 1
 
-include util/__gmsl.mk
-
 # Integers a represented by lists with the equivalent number of x's.
 # For example the number 4 is x x x x.  The maximum integer that the
 # library can handle as _input_ is __gmsl_input_int which is defined
@@ -122,9 +120,11 @@ int_encode = $(wordlist 1,$1,$(__gmsl_input_int))
 # takes a pair of integers, perhaps a function and returns an integer
 # result
 __gmsl_int_wrap = \
-  $(call int_decode,$(call $1,$(call int_encode,$2),$(call int_encode,$3)))
-__gmsl_int_wrap1 = $(call int_decode,$(call $1,$(call int_encode,$2)))
-__gmsl_int_wrap2 = $(call $1,$(call int_encode,$2),$(call int_encode,$3))
+  $(__gmsl_tr3)$(call int_decode,$(call $1,$(call int_encode,$2),$(call int_encode,$3)))
+__gmsl_int_wrap1 = \
+  $(__gmsl_tr2)$(call int_decode,$(call $1,$(call int_encode,$2)))
+__gmsl_int_wrap2 = \
+  $(__gmsl_tr3)$(call $1,$(call int_encode,$2),$(call int_encode,$3))
 
 #
 # Function:  int_plus
@@ -301,6 +301,7 @@ dec = $(call __gmsl_int_wrap1,int_dec,$1)
 # Returns: generated sequence from the first boundary to (or downto) the second
 #
 seq = $(call int_seq,$(call int_encode,$1),$(call int_encode,$2))
+# TODO conflicts with GMSL seq. -- Eldar
 
 #
 # Function: int_seq

@@ -8,7 +8,7 @@ ifndef _util_mk_
 _util_mk_ := 1
 
 include core/common.mk
-include gmsl.mk
+include gmsl/gmsl.mk # agrhhh!.. avoid using it. -- Eldar
 
 escape = $(call assert_called,escape,$0)$(call dollar_encode,$1)
 

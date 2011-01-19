@@ -66,7 +66,7 @@ include gmd.mk
 include rules.mk
 include util.mk
 
-include gmsl.mk
+include gmsl/gmsl.mk
 
 makegoals := $(MAKECMDGOALS)
 ifeq ($(makegoals),)

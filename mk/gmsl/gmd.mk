@@ -41,7 +41,7 @@
 # The GMD uses functions from the GNU Make Standard Library which must
 # be included first
 
-include gmsl.mk
+include gmsl/gmsl.mk
 
 # Verify that we have at least GNU Make Standard Library version 1.0.0
 

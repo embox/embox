@@ -8,7 +8,7 @@
 ifndef __embuild_traverse_entity_mk
 __embuild_traverse_entity_mk := 1
 
-include gmsl.mk # TODO for 'tr' function. -- Eldar
+include gmsl/string.mk # TODO for 'tr' function. -- Eldar
 
 entity = __entity-$1-$2
 
