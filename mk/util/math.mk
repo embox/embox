@@ -120,11 +120,11 @@ int_encode = $(wordlist 1,$1,$(__gmsl_input_int))
 # takes a pair of integers, perhaps a function and returns an integer
 # result
 __gmsl_int_wrap = \
-  $(__gmsl_tr3)$(call int_decode,$(call $1,$(call int_encode,$2),$(call int_encode,$3)))
+  $(call int_decode,$(call $1,$(call int_encode,$2),$(call int_encode,$3)))
 __gmsl_int_wrap1 = \
-  $(__gmsl_tr2)$(call int_decode,$(call $1,$(call int_encode,$2)))
+  $(call int_decode,$(call $1,$(call int_encode,$2)))
 __gmsl_int_wrap2 = \
-  $(__gmsl_tr3)$(call $1,$(call int_encode,$2),$(call int_encode,$3))
+  $(call $1,$(call int_encode,$2),$(call int_encode,$3))
 
 #
 # Function:  int_plus
@@ -151,7 +151,7 @@ plus = $(call __gmsl_int_wrap,int_plus,$1,$2)
 #
 int_subtract = $(strip $(if $(call int_gte,$1,$2), \
                 $(filter-out xx,$(join $1,$2)),                 \
-                $(call __gmsl_warning,Subtraction underflow)))
+                $(warning Subtraction underflow)))
 
 #
 # Function:  subtract (wrapped version of int_subtract)
@@ -188,7 +188,7 @@ multiply = $(call __gmsl_int_wrap,int_multiply,$1,$2)
 int_divide = $(strip $(if $2,                                 \
                  $(if $(call int_gte,$1,$2),                               \
                      x $(call int_divide,$(call int_subtract,$1,$2),$2),), \
-                 $(call __gmsl_error,Division by zero)))
+                 $(error Division by zero)))
 
 #
 # Function:  divide (wrapped version of int_divide)
@@ -229,12 +229,12 @@ min = $(call __gmsl_int_wrap,int_min,$1,$2)
 # int_eq    First argument is numerically equal to the second argument
 # int_ne    First argument is not numerically equal to the second argument
 #
-int_gt  = $(call __gmsl_make_bool \
+int_gt  = $(call make_bool \
   ,$(filter-out $(words $1),$(words $(filter xx,$(join $1,$2)))))
 int_gte = $(call not,$(call int_gt,$2,$1))
 int_lt  = $(call int_gt,$2,$1)
 int_lte = $(call not,$(call int_gt,$1,$2))
-int_eq  = $(call __gmsl_make_bool,$(filter $(words $1),$(words $2)))
+int_eq  = $(call make_bool,$(filter $(words $1),$(words $2)))
 int_ne  = $(call not,$(call int_eq,$1,$2))
 
 #
@@ -281,7 +281,7 @@ inc = $(call __gmsl_int_wrap1,int_inc,$1)
 #
 int_dec = $(strip $(if $(call sne,0,$(words $1)), \
               $(wordlist 2,$(words $1),$1),                    \
-              $(call __gmsl_warning,Decrement underflow)))
+              $(warning Decrement underflow)))
 
 #
 # Function:  dec
