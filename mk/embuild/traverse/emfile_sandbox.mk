@@ -69,7 +69,7 @@ $(emfile_sandbox_entity_target_pattern): \
   export __EMBUILD_TRAVERSE_ENTITY_VALUE = $($(call emfile_entity,$*))
 
 $(emfile_sandbox_error_targets): $(emfile_sandbox_error_target_pattern):
-	@echo $($*)
+	@echo '$($*)'
 
 # TODO exit with an error
 all: ;
