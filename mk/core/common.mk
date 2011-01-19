@@ -4,8 +4,8 @@
 # Author: Eldar Abusalimov
 #
 
-ifndef __util_common_mk
-__util_common_mk := 1
+ifndef __core_common_mk
+__core_common_mk := 1
 
 ## Empty string.
 \empty :=
@@ -49,4 +49,4 @@ make_bool = \
 make_bool_unstripped = \
   $(if $1,$(true),$(false))
 
-endif # __util_common_mk
+endif # __core_common_mk

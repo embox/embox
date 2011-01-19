@@ -3,8 +3,8 @@
 # Author: Eldar Abusalimov
 #
 
-ifndef __util_object_mk
-__util_object_mk := 1
+ifndef __core_object_mk
+__core_object_mk := 1
 
 # 1. clazz
 # ... args
@@ -55,5 +55,5 @@ __object_instance_counter_get = $(words $(__object_instance_counter))
 __object_instance_counter_get_preincrement = \
   ${eval __object_instance_counter += x}$(__object_instance_counter_get)
 
-endif # __util_object_mk
+endif # __core_object_mk
 
