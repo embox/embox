@@ -23,7 +23,7 @@ MAKEFLAGS += --include-dir=$(MK_DIR)
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 MAKEFLAGS += --no-print-directory
-#MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --warn-undefined-variables
 
 .DEFAULT_GOAL := all
 

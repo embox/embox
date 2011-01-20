@@ -1,4 +1,5 @@
 /.dep.inc
 /build
 /conf
+mk/GNUmakefile
 /nbproject
