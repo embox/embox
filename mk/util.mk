@@ -76,7 +76,7 @@ __args_nr = \
 
 expand_once   = $(call expand_once_0,$1)
 __expand_once_def_all = \
-  $(foreach x,$(call seq,0,9),$(eval $(value __expand_once_def_x)))
+  $(foreach x,$(call sequence,0,9),$(eval $(value __expand_once_def_x)))
 define __expand_once_def_x
   expand_once_$x = $(foreach total_args,$x,$(__expand_once))
 endef

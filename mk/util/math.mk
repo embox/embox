@@ -291,7 +291,7 @@ int_dec = $(strip $(if $(call sne,0,$(words $1)), \
 dec = $(call __gmsl_int_wrap1,int_dec,$1)
 
 #
-# Function: seq
+# Function: sequence
 #
 # Generates a sequence with the specified boundaries.
 #
@@ -300,25 +300,24 @@ dec = $(call __gmsl_int_wrap1,int_dec,$1)
 #  2. Another boundary (integer)
 # Returns: generated sequence from the first boundary to (or downto) the second
 #
-seq = $(call int_seq,$(call int_encode,$1),$(call int_encode,$2))
-# TODO conflicts with GMSL seq. -- Eldar
+sequence = $(call int_sequence,$(call int_encode,$1),$(call int_encode,$2))
 
 #
-# Function: int_seq
-# See: seq
+# Function: int_sequence
+# See: sequence
 #
 # Arguments:
 #  1. A boundary (in x's representation)
 #  2. Another boundary (in x's representation)
 # Returns: generated sequence from the first boundary to (or downto) the second
 #
-int_seq = $(strip $(if $(call int_lt,$1,$2), \
-  $(call __int_seq_inc,$1,$2), \
-  $(call __int_seq_dec,$2,$1) \
+int_sequence = $(strip $(if $(call int_lt,$1,$2), \
+  $(call __int_sequence_inc,$1,$2), \
+  $(call __int_sequence_dec,$2,$1) \
 ))
-__int_seq = $(if $(call int_lt,$1,$2),$(call $0,$(call int_inc,$1),$2))
-# inline __int_seq
-${eval __int_seq_inc = $$(call int_decode,$$1) $(value __int_seq)}
-${eval __int_seq_dec = $(value __int_seq) $$(call int_decode,$$1)}
+__int_sequence = $(if $(call int_lt,$1,$2),$(call $0,$(call int_inc,$1),$2))
+# inline __int_sequence
+${eval __int_sequence_inc = $$(call int_decode,$$1) $(value __int_sequence)}
+${eval __int_sequence_dec = $(value __int_sequence) $$(call int_decode,$$1)}
 
 endif # __util_math_mk
