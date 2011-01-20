@@ -138,7 +138,7 @@ __list_pairmap = \
 #  3. List to iterate over applying the folding function
 #  4. Optional argument to pass when calling the function
 # Return: The result of the last function call (if any occurred),
-#          or the initial value in case of empty list
+#         or the initial value in case of empty list
 #
 list_foldl = \
   $(call __list_foldl,$1,$2,$(strip $3),$(value 4))
@@ -152,7 +152,7 @@ __list_foldl = \
 
 ##
 # Function: list_foldr
-# Takes the second argument and the last item of the list and applies the
+# Takes the last item of the list and the second argument and applies the
 # function, then it takes the penultimate item from the end and the result,
 # and so on.
 #
@@ -168,7 +168,7 @@ __list_foldl = \
 #  3. List to iterate over applying the folding function
 #  4. Optional argument to pass when calling the function
 # Return: The result of the last function call (if any occurred),
-#          or the initial value in case of empty list
+#         or the initial value in case of empty list
 #
 list_foldr = \
   $(call __list_foldr,$1,$2,$(strip $3),$(value 4))
@@ -181,8 +181,54 @@ __list_foldr = \
     $2)
 
 ##
+# Function: list_foldl1
+# Takes the first two items of the list and applies the function to them, then
+# feeds the function with this result and the third argument and so on.
+#
+# Params:
+#  1. Name of the folding function,
+#     with the following signature:
+#       1. Intermediate value obtained as the result of previous function calls
+#       2. An element from the list
+#       3. Optional argument (if any)
+#      Return: the value to pass to the next function call
+#  2. List to iterate over applying the folding function
+#  3. Optional argument to pass when calling the function
+# Return: The result of the last function call (if any occurred),
+#         the list element if it is the only element in the list,
+#         or empty if the list is empty
+#
+list_foldl1 = \
+  $(if $(strip $2),$ \
+      $(call __list_foldl,$1,$(call firstword,$2),$ \
+                           $(call nofirstword,$2),$(value 3)))
+
+##
+# Function: list_foldr1
+# Takes the last two items of the list and applies the function, then it takes
+# the third item from the end and the result, and so on.
+#
+# Params:
+#  1. Name of the folding function,
+#     with the following signature:
+#       1. An element from the list
+#       2. Intermediate value obtained as the result of previous function calls
+#       3. Optional argument (if any)
+#      Return: the value to pass to the next function call
+#  2. List to iterate over applying the folding function
+#  3. Optional argument to pass when calling the function
+# Return: The result of the last function call (if any occurred),
+#         the list element if it is the only element in the list,
+#         or empty if the list is empty
+#
+list_foldr1 = \
+  $(if $(strip $2),$ \
+      $(call __list_foldr,$1,$(call lastword,$2),$ \
+                           $(call nolastword,$2),$(value 3)))
+
+##
 # Function: list_equal
-# Compares two lists agains each other.
+# Compares two lists against each other.
 #
 # Params:
 #  1. The first list
