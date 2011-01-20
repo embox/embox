@@ -95,7 +95,8 @@ include util/list.mk # pairmap, foldl
 # Return: whitespace separated list, each element of which is mangled name of
 #          a defined variable from the specified list (or from $(.VARIABLES))
 #
-var_name_mangle = $(call __var_name_escape1,$(or $(value 1),$(.VARIABLES)))
+var_name_mangle = \
+  $(call __var_name_escape1,$(or $(value 1),$(.VARIABLES)))
 
 ##
 # Function: var_name_demangle
@@ -106,31 +107,36 @@ var_name_mangle = $(call __var_name_escape1,$(or $(value 1),$(.VARIABLES)))
 #                             mangling/demangling makes no sense)
 # Return: Variable name as it has to be before the mangling
 #
-var_name_demangle = $(subst $$$$,$$,$(call __var_name_unescape_whitespace,$1))
+var_name_demangle = \
+  $(call __var_name_unescape_word,$(call __var_name_unescape_whitespace,$1))
 
 # Params:
-#  1. Variables list
+#  1. Unscaped variables list
 __var_name_escape1 = \
-  $(call __var_name_escape2,$1,$(call __var_name_singles,$1))
+  $(call __var_name_escape2,$1,$(call __var_name_escape_word,$1))
 
 # Params:
-#  1. Variables list
-#  2. Singleword-named variables
+#  1. Unscaped variables list
+#  2. Word-escaped variables list
 __var_name_escape2 = \
-  $(call __var_name_escape3,$1,$2,$(call __var_name_multies,$1,$2))
+  $(call __var_name_escape3,$2,$(call __var_name_singles,$1,$2))
 
 # Params:
-#  1. Variables list
-#  2. Singleword-named variables
-#  3. Multiword-named ones
-__var_name_escape3 = $(subst $$,$$$$,$2) \
-  $(foreach combo,$(call __var_name_escape_combos,$ \
-                $(subst $$,$$$$,$3),$(call int_seq,x,$(3:%=x)),$(words $3)),$ \
-    $(if $(call var_undefined,$(call var_name_demangle,$(combo))),,$(combo))$ \
-   )
+#  1. Word-escaped variables list
+#  2. Singleword-named variables (word-escaped)
+__var_name_escape3 = \
+  $2 $(call __var_name_escape4,$(call __var_name_multies,$1,$2))
 
 # Params:
-#  1. Dollar-escaped list
+#  1. Multiword-named variables (word-escaped)
+__var_name_escape4 = \
+  $(if $(strip $1),$(foreach combo,$(call __var_name_escape_combos,$ \
+                $1,$(call int_seq,x,$(1:%=x)),$(words $1)),$ \
+    $(if $(call var_defined,$(call var_name_demangle,$(combo))),$(combo))$ \
+   ))
+
+# Params:
+#  1. Word-escaped list
 #  2. Sequence
 #  3. Length
 __var_name_escape_combos = \
@@ -138,7 +144,7 @@ __var_name_escape_combos = \
     $1,$2,$(wordlist $(start),$3,$2)))
 
 # Params:
-#  1. Dollar-escaped list
+#  1. Word-escaped list
 #  2. Sequence
 #  3. Tail of the sequence
 __var_name_escape_do_combo = \
@@ -154,24 +160,40 @@ __var_name_escape_do_combo_pairmap = \
 
 # Params:
 #  1. Unescaped variables list
-# Return: list of singleword-named variables (still not escaped)
+#  2. Word-escaped variables list
+# Return: list of singleword-named variables (word-escaped)
 __var_name_singles = \
-  $(foreach single,$1,$(if $(and \
-        $(call var_defined,$(single)), \
-        $(call singleword,$(filter $(single),$1))),$(single)))
+  $(call list_pairmap,__var_name_singles_pairmap,$1,$2,$2)
+
+# Params:
+#  1. Unescaped variable name
+#  2. Word-escaped variable name
+#  3. The list of word-escaped variables
+# Return: word-escaped name if such variable is really defined and its name
+#         is unique across all varialble names, otherwise expands to nothing
+__var_name_singles_pairmap = \
+  $(if $(and $(call var_defined,$1), \
+             $(call singleword,$(filter $2,$3))),$2)
 
 # We can't use simple 'filter-out' here as far as it does not exactly preserve
 # whitespaces between words in the filtered list.
 # Params:
-#  1. Unescaped variables list
-#  2. List of singleword variables
-# Return: the variable list with all singles removed (not escaped)
-__var_name_multies = $(call list_foldl,__var_name_multies_fold,$1,$2)
+#  1. Word-escaped variables list
+#  2. List of singleword variables (word-escaped)
+# Return: the variable list with all singles removed (word-escaped)
+__var_name_multies = $(call list_foldl,__var_name_multies_fold, $1 ,$2)
 # Params:
-#  1. Unescaped variables list being filtered
+#  1. Word-escaped variables list being filtered
 #  2. The next single to remove from the list
 # Return: the list with the incoming single removed
-__var_name_multies_fold = $(call subst, $2 , , $1 )# notice the spaces.
+__var_name_multies_fold = $(call subst, $2 , ,$1)# notice the spaces.
+
+# Escape/unescape dollars and percents.
+
+__var_name_escape_word = \
+  $(subst %,_$$p,$(subst $$,$$$$,$1))
+__var_name_unescape_word = \
+  $(subst $$$$,$$,$(subst _$$p,%,$1))
 
 # Escape/unescape space, tab and new line.
 
@@ -182,6 +204,27 @@ __var_name_unescape_whitespace = \
 
 # TODO a possible optimization: on each iteration filter out
 #      single-, double-, triple-, etc. -worded variables. -- Eldar
-# TODO try to avoid using filter because of possible % occurrence. -- Eldar
+
+# make FGRED=`echo -e '\e[31m'` FGRED1=`echo -e '\e[1;31m'` FGNORMAL=`echo -e '\e[0m'`
+ifeq (0,1)
+include util/var/assign.mk
+__var_call_trace = \
+  $(warning )$(and $(shell echo "$${FGRED1}$5$${FGNORMAL}" 1>&2),)$ \
+  $(if $1,$(info 1.	$1))$ \
+  $(if $2,$(info 2.	$2))$ \
+  $(if $3,$(info 3.	$3))$ \
+  $(info )
+__var_call_trace_result = \
+  $(and $(shell echo "$${FGRED}$2" 1>&2),)$ \
+  $(info $( )	$1)$ \
+  $(and $(shell echo "$${FGNORMAL}" 1>&2),)$1$ \
+  $(info )
+__var_name_functions := $(filter var_name_% __var_name_%,$(.VARIABLES))
+$(foreach var,$(__var_name_functions), \
+  $(call var_assign_$(flavor $(var)),$(var),$ \
+    $$(call __var_call_trace,$$1,$$2,$$3,,$(var))$ \
+    $$(call __var_call_trace_result,$(value $(var)),$(var))) \
+)
+endif
 
 endif # __util_var_name_mk
