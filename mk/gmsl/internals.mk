@@ -18,6 +18,8 @@
 ifndef __gmsl_internals_mk
 __gmsl_internals_mk := 1
 
+include core/common.mk
+
 # This is the GNU Make Standard Library version number as a list with
 # three items: major, minor, revision
 
