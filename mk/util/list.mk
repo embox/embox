@@ -79,6 +79,37 @@ __util_list_mk := 1
 include core/string.mk
 
 ##
+# Function: list_equal
+# Compares two lists against each other.
+#
+# Params:
+#  1. The first list
+#  2. The second list
+# Return: True if the two lists are identical, false otherwise
+#
+list_equal = \
+  $(call make_bool,$(and \
+        $(filter $(words $1),$(words $2)), \
+        $(findstring x $(strip $1) x,x $(strip $2) x) \
+   ))
+
+##
+# Function: list_reverse
+# Reverses the specified list.
+#
+# Params:
+#  1. The target list
+# Return: The list with its elements in reverse order
+#
+list_reverse = \
+  $(strip $(call __list_reverse,$(strip $1)))
+
+__list_reverse = \
+  $(if $1,$(call $0,$(call nofirstword,$1)) $(call firstword,$1))
+
+# Higher order functions.
+
+##
 # Function: list_map
 # Calls the specified function on each element of a list.
 #
@@ -120,6 +151,23 @@ __list_pairmap = \
          $(call $0,$1,$(call nofirstword,$2),$(call nofirstword,$3),$4) \
    )
 
+# Left folding functions.
+
+##
+# Function: list_foldl_fn
+# Combining function interface for left folding functions.
+# Functions which are passed to foldl/scanl and their derivatives should follow
+# semantics defined by interface.
+#
+# Params:
+#  1. Intermediate value obtained as the result of previous function calls
+#  2. An element from the list being folded
+#  3. Optional argument (if any)
+# Return: the value to pass to the next function call as new intermediate value
+#         if there are more elements in the list,
+#         otherwise this value is used as the return value of foldl/scanl
+list_foldl_fn = $1
+
 ##
 # Function: list_foldl
 # Takes the second argument and the first item of the list and applies the
@@ -127,12 +175,7 @@ __list_pairmap = \
 # argument and so on.
 #
 # Params:
-#  1. Name of the folding function,
-#     with the following signature:
-#       1. Intermediate value obtained as the result of previous function calls
-#       2. An element from the list
-#       3. Optional argument (if any)
-#      Return: the value to pass to the next function call
+#  1. Name of the combining function, see 'list_foldl_fn'
 #  2. Initial value to pass as an intermediate value when calling function
 #     for the first time
 #  3. List to iterate over applying the folding function
@@ -157,12 +200,7 @@ __list_foldl = \
 # feeds the function with this result and the third argument and so on.
 #
 # Params:
-#  1. Name of the folding function,
-#     with the following signature:
-#       1. Intermediate value obtained as the result of previous function calls
-#       2. An element from the list
-#       3. Optional argument (if any)
-#      Return: the value to pass to the next function call
+#  1. Name of the folding function, see 'list_foldl_fn'
 #  2. List to iterate over applying the folding function
 #  3. Optional argument to pass when calling the function
 # Return: The result of the last function call (if any occurred),
@@ -180,17 +218,7 @@ list_foldl1 = \
 # function to them, then feeds the function with this result and the second
 # argument and so on.
 #
-# Params:
-#  1. Name of the folding function,
-#     with the following signature:
-#       1. Intermediate value obtained as the result of previous function calls
-#       2. An element from the list
-#       3. Optional argument (if any)
-#      Return: the value to pass to the next function call
-#  2. Initial value to pass as an intermediate value when calling function
-#     for the first time
-#  3. List to iterate over applying the folding function
-#  4. Optional argument to pass when calling the function
+# Params: see 'list_foldl'
 # Return: the list of intermediate and final results of the function calls
 #         (if any occurred), or the initial value in case of empty list
 #
@@ -204,6 +232,23 @@ __list_scanl = \
           $(call nofirstword,$3),$4)$ \
       )
 
+# Right folding functions.
+
+##
+# Function: list_foldr_fn
+# Combining function interface for right folding functions.
+# Functions which are passed to foldr/scanr and their derivatives should follow
+# semantics defined by interface.
+#
+# Params:
+#  1. An element from the list being folded
+#  2. Intermediate value obtained as the result of previous function calls
+#  3. Optional argument (if any)
+# Return: the value to pass to the next function call as new intermediate value
+#         if there are more elements in the list,
+#         otherwise this value is used as the return value of foldr/scanr
+list_foldr_fn = $2
+
 ##
 # Function: list_foldr
 # Takes the last item of the list and the second argument and applies the
@@ -211,12 +256,7 @@ __list_scanl = \
 # and so on.
 #
 # Params:
-#  1. Name of the folding function,
-#     with the following signature:
-#       1. An element from the list
-#       2. Intermediate value obtained as the result of previous function calls
-#       3. Optional argument (if any)
-#      Return: the value to pass to the next function call
+#  1. Name of the folding function, see 'list_foldr_fn'
 #  2. Initial value to pass as an intermediate value when calling function
 #     for the first time
 #  3. List to iterate over applying the folding function
@@ -241,12 +281,7 @@ __list_foldr = \
 # the third item from the end and the result, and so on.
 #
 # Params:
-#  1. Name of the folding function,
-#     with the following signature:
-#       1. An element from the list
-#       2. Intermediate value obtained as the result of previous function calls
-#       3. Optional argument (if any)
-#      Return: the value to pass to the next function call
+#  1. Name of the folding function, see 'list_foldr_fn'
 #  2. List to iterate over applying the folding function
 #  3. Optional argument to pass when calling the function
 # Return: The result of the last function call (if any occurred),
@@ -264,17 +299,7 @@ list_foldr1 = \
 # function, then it takes the penultimate item from the end and the result,
 # and so on.
 #
-# Params:
-#  1. Name of the folding function,
-#     with the following signature:
-#       1. An element from the list
-#       2. Intermediate value obtained as the result of previous function calls
-#       3. Optional argument (if any)
-#      Return: the value to pass to the next function call
-#  2. Initial value to pass as an intermediate value when calling function
-#     for the first time
-#  3. List to iterate over applying the folding function
-#  4. Optional argument to pass when calling the function
+# Params: see 'list_foldr'
 # Return: the list of intermediate and final results of the function calls
 #         (if any occurred), or the initial value in case of empty list
 #
@@ -287,34 +312,5 @@ __list_scanr = \
               $(call $1,$(call lastword,$3),$2,$4),$ \
           $(call nolastword,$3),$4) \
       )$2
-
-##
-# Function: list_equal
-# Compares two lists against each other.
-#
-# Params:
-#  1. The first list
-#  2. The second list
-# Return: True if the two lists are identical, false otherwise
-#
-list_equal = \
-  $(call make_bool,$(and \
-        $(filter $(words $1),$(words $2)), \
-        $(findstring x $(strip $1) x,x $(strip $2) x) \
-   ))
-
-##
-# Function: list_reverse
-# Reverses the specified list.
-#
-# Params:
-#  1. The target list
-# Return: The list with its elements in reverse order
-#
-list_reverse = \
-  $(strip $(call __list_reverse,$(strip $1)))
-
-__list_reverse = \
-  $(if $1,$(call $0,$(call nofirstword,$1)) $(call firstword,$1))
 
 endif # __util_list_mk
