@@ -150,6 +150,16 @@ __list_foldl = \
         $(call nofirstword,$3),$4),$ \
     $2)
 
+list_scanl = \
+  $(call __list_scanl,$1,$2,$(strip $3),$(value 4))
+
+__list_scanl = \
+  $2$(if $3, \
+      $(call $0,$1,$ \
+              $(call $1,$2,$(call firstword,$3),$4),$ \
+          $(call nofirstword,$3),$4)$ \
+      )
+
 ##
 # Function: list_foldr
 # Takes the last item of the list and the second argument and applies the
@@ -179,6 +189,16 @@ __list_foldr = \
             $(call $0,$1,$2,$(call nofirstword,$3),$4),$ \
         $4),$ \
     $2)
+
+list_scanr = \
+  $(call __list_scanr,$1,$2,$(strip $3),$(value 4))
+
+__list_scanr = \
+  $(if $3,$ \
+      $(call $0,$1,$ \
+              $(call $1,$(call lastword,$3),$2,$4),$ \
+          $(call nolastword,$3),$4) \
+      )$2
 
 ##
 # Function: list_foldl1
