@@ -204,7 +204,7 @@ list_equal = \
 # Return: The list with its elements in reverse order
 #
 list_reverse = \
-  $(strip $(call __list_reverse,$(strip $1))
+  $(strip $(call __list_reverse,$(strip $1)))
 
 __list_reverse = \
   $(if $1,$(call $0,$(call nofirstword,$1)) $(call firstword,$1))
