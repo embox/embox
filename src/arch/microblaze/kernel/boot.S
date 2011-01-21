@@ -67,7 +67,11 @@ how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide 
 	mts	rmsr, r12
 
 
-/*TODO MICROBLAZE boot code text section and data section was copied by internal loader*/
+	/*call hardware_init_hook if it set */
+	addik reg_tmp1, reg_zero, hardware_init_hook
+	beqi reg_tmp1, 1f
+	brlid r15, hardware_init_hook
+	nop
 
 	/* clear BSS segments */
 clear_bss:
@@ -89,6 +93,7 @@ clear_bss:
 	/*set stack pointer*/
 	addi  reg_sp, reg_zero, _stack
 
+	/*load data section*/
 	addik r5, r0, _data_vma
 	addik r6, r0, _data_lma
 	cmp   r7, r6, r5
@@ -109,17 +114,11 @@ clear_bss:
 	/*set stack pointer*/
 	addi  reg_sp, reg_zero, _stack
 
-/*call hardware_init_hook if it set */
-	addik reg_tmp1, reg_zero, hardware_init_hook
-	beqi reg_tmp1, 1f
-	brlid r15, hardware_init_hook
-	nop
-
 1:
-/*call software_init_hook if it set */
+	/*call software_init_hook if it set */
 	addik reg_tmp1, reg_zero, software_init_hook
 	beqi reg_tmp1, 2f
-	brlid r15, software_init_hook
+	brai software_init_hook
 	nop
 2:
 	brlid r15, kernel_start
