@@ -19,7 +19,7 @@ __core_string_mk := 1
 #          false otherwise
 #
 nowords = \
-  $(call not,$(strip $1))
+  $(call not,$(firstword $1))
 
 ##
 # Function: singleword
@@ -30,7 +30,7 @@ nowords = \
 # Returns: True if the specified string is a single-word list, false otherwise
 #
 singleword = \
-  $(call make_bool,$(filter 1,$(words $1)))
+  $(call make_bool,$(if $(word 2,$1),,$(firstword $1)))
 
 ##
 # Function: firstword
