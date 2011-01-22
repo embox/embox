@@ -166,9 +166,7 @@ __list_pairmap = \
 # functions please define LIST_PURE_FUNC macro.
 #
 ifndef LIST_PURE_FUNC
-__list_scan = \
-  ${eval __list_scan_result := $$2}$(foreach 3,$3,$(__list_scan_result)${eval \
-         __list_scan_result := $$(call $$1,$$(__list_scan_result),$$3,$$4)})
+__list_fold__ :=
 endif
 
 # Left folding.
@@ -209,11 +207,9 @@ list_foldl = \
 
 ifndef LIST_PURE_FUNC
 __list_foldl = \
-  $(and \
-      ${eval __list_fold__ := \
+  $(and ${eval __list_fold__ := \
             $$2}$(foreach 3,$3,${eval __list_fold__ := \
-                  $$(call $$1,$$(__list_fold__),$$3,$$4)}), \
-   )$(__list_fold__)
+                  $$(call $$1,$$(__list_fold__),$$3,$$4)}),)$(__list_fold__)
 
 else
 __list_foldl = \
@@ -238,8 +234,8 @@ endif
 #         or empty if the list is empty
 #
 list_foldl1 = \
-  $(if $(strip $2),$ \
-      $(call list_foldl,$1,$(call firstword,$2),$ \
+  $(if $(firstword $2),$ \
+      $(call list_foldl,$1,$(firstword $2),$ \
                          $(call nofirstword,$2),$(value 3)))
 
 ##
@@ -253,14 +249,23 @@ list_foldl1 = \
 #         (if any occurred), or the initial value in case of empty list
 #
 list_scanl = \
-  $(call __list_scanl,$1,$2,$(strip $3),$(value 4))
+  $(call __list_scanl,$1,$2,$3,$(value 4))
 
+ifndef LIST_PURE_FUNC
 __list_scanl = \
-  $2$(if $3, \
-      $(call $0,$1,$ \
-              $(call $1,$2,$(call firstword,$3),$4),$ \
-          $(call nofirstword,$3),$4)$ \
-      )
+  ${eval __list_fold__ := \
+        $$2}$(foreach 3,$3,$(__list_fold__)${eval __list_fold__ := \
+              $$(call $$1,$$(__list_fold__),$$3,$$4)})$(if $(firstword $3), \
+   )$(__list_fold__)
+
+else
+__list_scanl = \
+  $(call __list_scanl_stripped,$1,$2,$(strip $3),$4)
+__list_scanl_stripped = \
+  $2$(if $3, $(call $0 \
+        ,$1,$(call $1,$2,$(call firstword,$3),$4),$(call nofirstword,$3),$4))
+
+endif
 
 # Right folding.
 
