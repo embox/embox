@@ -151,7 +151,27 @@ __list_pairmap = \
          $(call $0,$1,$(call nofirstword,$2),$(call nofirstword,$3),$4) \
    )
 
-# Left folding functions.
+# Folding functions.
+
+#
+# Implementation note:
+#
+# Using imperative version (which clobbers context during iterations using
+# 'eval') intead of pure functional style implementation (using recursion) is
+# much faster (and gives O(n) complexity as seen from GNU Make sources).
+# It is about 1500 times faster on folding list of 10000 elements using
+# identity function as combining.
+#
+# The fast implementation is enabled by default. To get back and use pure
+# functions please define LIST_PURE_FUNC macro.
+#
+ifndef LIST_PURE_FUNC
+__list_scan = \
+  ${eval __list_scan_result := $$2}$(foreach 3,$3,$(__list_scan_result)${eval \
+         __list_scan_result := $$(call $$1,$$(__list_scan_result),$$3,$$4)})
+endif
+
+# Left folding.
 
 ##
 # Function: list_foldl_fn
@@ -185,14 +205,24 @@ list_foldl_fn = $1
 # See: list_scanl which preserves intermediate results
 #
 list_foldl = \
-  $(call __list_foldl,$1,$2,$(strip $3),$(value 4))
+  $(call __list_foldl,$1,$2,$3,$(value 4))
 
+ifndef LIST_PURE_FUNC
 __list_foldl = \
-  $(if $3,$ \
-    $(call $0,$1,$ \
-            $(call $1,$2,$(call firstword,$3),$4),$ \
-        $(call nofirstword,$3),$4),$ \
-    $2)
+  $(and \
+      ${eval __list_fold__ := \
+            $$2}$(foreach 3,$3,${eval __list_fold__ := \
+                  $$(call $$1,$$(__list_fold__),$$3,$$4)}), \
+   )$(__list_fold__)
+
+else
+__list_foldl = \
+  $(call __list_foldl_stripped,$1,$2,$(strip $3),$4)
+__list_foldl_stripped = \
+  $(if $3,$(call $0 \
+      ,$1,$(call $1,$2,$(call firstword,$3),$4),$(call nofirstword,$3),$4),$2)
+
+endif
 
 ##
 # Function: list_foldl1
@@ -209,8 +239,8 @@ __list_foldl = \
 #
 list_foldl1 = \
   $(if $(strip $2),$ \
-      $(call __list_foldl,$1,$(call firstword,$2),$ \
-                           $(call nofirstword,$2),$(value 3)))
+      $(call list_foldl,$1,$(call firstword,$2),$ \
+                         $(call nofirstword,$2),$(value 3)))
 
 ##
 # Function: list_scanl
@@ -232,7 +262,7 @@ __list_scanl = \
           $(call nofirstword,$3),$4)$ \
       )
 
-# Right folding functions.
+# Right folding.
 
 ##
 # Function: list_foldr_fn
