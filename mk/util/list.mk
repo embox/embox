@@ -151,7 +151,7 @@ __list_pairmap = \
          $(call $0,$1,$(call nofirstword,$2),$(call nofirstword,$3),$4) \
    )
 
-# Folding functions.
+# Left folding functions.
 
 #
 # Implementation note:
@@ -169,12 +169,10 @@ ifndef LIST_PURE_FUNC
 __list_fold__ :=
 endif
 
-# Left folding.
-
 ##
-# Function: list_foldl_fn
+# Function: list_fold_fn
 # Combining function interface for left folding functions.
-# Functions which are passed to foldl/scanl and their derivatives should follow
+# Functions which are passed to fold/scan and their derivatives should follow
 # semantics defined by interface.
 #
 # Params:
@@ -183,169 +181,88 @@ endif
 #  3. Optional argument (if any)
 # Return: the value to pass to the next function call as new intermediate value
 #         if there are more elements in the list,
-#         otherwise this value is used as the return value of foldl/scanl
-list_foldl_fn = $1
+#         otherwise this value is used as the return value of fold/scan
+list_fold_fn = $1
 
 ##
-# Function: list_foldl
+# Function: list_fold
 # Takes the second argument and the first item of the list and applies the
 # function to them, then feeds the function with this result and the second
 # argument and so on.
 #
 # Params:
-#  1. Name of the combining function, see 'list_foldl_fn'
+#  1. Name of the combining function, see 'list_fold_fn'
 #  2. Initial value to pass as an intermediate value when calling function
 #     for the first time
 #  3. List to iterate over applying the folding function
 #  4. Optional argument to pass when calling the function
 # Return: The result of the last function call (if any occurred),
 #         or the initial value in case of empty list
-# See: list_scanl which preserves intermediate results
+# See: list_scan which preserves intermediate results
 #
-list_foldl = \
-  $(call __list_foldl,$1,$2,$3,$(value 4))
+list_fold = \
+  $(call __list_fold,$1,$2,$3,$(value 4))
 
 ifndef LIST_PURE_FUNC
-__list_foldl = \
+__list_fold = \
   $(and ${eval __list_fold__ := \
             $$2}$(foreach 3,$3,${eval __list_fold__ := \
                   $$(call $$1,$$(__list_fold__),$$3,$$4)}),)$(__list_fold__)
 
 else
-__list_foldl = \
-  $(call __list_foldl_stripped,$1,$2,$(strip $3),$4)
-__list_foldl_stripped = \
+__list_fold = \
+  $(call __list_fold_stripped,$1,$2,$(strip $3),$4)
+__list_fold_stripped = \
   $(if $3,$(call $0 \
       ,$1,$(call $1,$2,$(call firstword,$3),$4),$(call nofirstword,$3),$4),$2)
 
 endif
 
 ##
-# Function: list_foldl1
+# Function: list_fold1
 # Takes the first two items of the list and applies the function to them, then
 # feeds the function with this result and the third argument and so on.
 #
 # Params:
-#  1. Name of the folding function, see 'list_foldl_fn'
+#  1. Name of the folding function, see 'list_fold_fn'
 #  2. List to iterate over applying the folding function
 #  3. Optional argument to pass when calling the function
 # Return: The result of the last function call (if any occurred),
 #         the list element if it is the only element in the list,
 #         or empty if the list is empty
 #
-list_foldl1 = \
+list_fold1 = \
   $(if $(firstword $2),$ \
-      $(call list_foldl,$1,$(firstword $2),$ \
-                         $(call nofirstword,$2),$(value 3)))
+      $(call list_fold,$1,$(firstword $2),$ \
+                   $(call nofirstword,$2),$(value 3)))
 
 ##
-# Function: list_scanl
+# Function: list_scan
 # Takes the second argument and the first item of the list and applies the
 # function to them, then feeds the function with this result and the second
 # argument and so on.
 #
-# Params: see 'list_foldl'
+# Params: see 'list_fold'
 # Return: the list of intermediate and final results of the function calls
 #         (if any occurred), or the initial value in case of empty list
 #
-list_scanl = \
-  $(call __list_scanl,$1,$2,$3,$(value 4))
+list_scan = \
+  $(call __list_scan,$1,$2,$3,$(value 4))
 
 ifndef LIST_PURE_FUNC
-__list_scanl = \
+__list_scan = \
   ${eval __list_fold__ := \
         $$2}$(foreach 3,$3,$(__list_fold__)${eval __list_fold__ := \
               $$(call $$1,$$(__list_fold__),$$3,$$4)})$(if $(firstword $3), \
    )$(__list_fold__)
 
 else
-__list_scanl = \
-  $(call __list_scanl_stripped,$1,$2,$(strip $3),$4)
-__list_scanl_stripped = \
+__list_scan = \
+  $(call __list_scan_stripped,$1,$2,$(strip $3),$4)
+__list_scan_stripped = \
   $2$(if $3, $(call $0 \
         ,$1,$(call $1,$2,$(call firstword,$3),$4),$(call nofirstword,$3),$4))
 
 endif
-
-# Right folding.
-
-##
-# Function: list_foldr_fn
-# Combining function interface for right folding functions.
-# Functions which are passed to foldr/scanr and their derivatives should follow
-# semantics defined by interface.
-#
-# Params:
-#  1. An element from the list being folded
-#  2. Intermediate value obtained as the result of previous function calls
-#  3. Optional argument (if any)
-# Return: the value to pass to the next function call as new intermediate value
-#         if there are more elements in the list,
-#         otherwise this value is used as the return value of foldr/scanr
-list_foldr_fn = $2
-
-##
-# Function: list_foldr
-# Takes the last item of the list and the second argument and applies the
-# function, then it takes the penultimate item from the end and the result,
-# and so on.
-#
-# Params:
-#  1. Name of the folding function, see 'list_foldr_fn'
-#  2. Initial value to pass as an intermediate value when calling function
-#     for the first time
-#  3. List to iterate over applying the folding function
-#  4. Optional argument to pass when calling the function
-# Return: The result of the last function call (if any occurred),
-#         or the initial value in case of empty list
-# See: list_scanr which preserves intermediate results
-#
-list_foldr = \
-  $(call __list_foldr,$1,$2,$(strip $3),$(value 4))
-
-__list_foldr = \
-  $(if $3,$ \
-    $(call $1,$(call firstword,$3),$ \
-            $(call $0,$1,$2,$(call nofirstword,$3),$4),$ \
-        $4),$ \
-    $2)
-
-##
-# Function: list_foldr1
-# Takes the last two items of the list and applies the function, then it takes
-# the third item from the end and the result, and so on.
-#
-# Params:
-#  1. Name of the folding function, see 'list_foldr_fn'
-#  2. List to iterate over applying the folding function
-#  3. Optional argument to pass when calling the function
-# Return: The result of the last function call (if any occurred),
-#         the list element if it is the only element in the list,
-#         or empty if the list is empty
-#
-list_foldr1 = \
-  $(if $(strip $2),$ \
-      $(call __list_foldr,$1,$(call lastword,$2),$ \
-                           $(call nolastword,$2),$(value 3)))
-
-##
-# Function: list_scanr
-# Takes the last item of the list and the second argument and applies the
-# function, then it takes the penultimate item from the end and the result,
-# and so on.
-#
-# Params: see 'list_foldr'
-# Return: the list of intermediate and final results of the function calls
-#         (if any occurred), or the initial value in case of empty list
-#
-list_scanr = \
-  $(call __list_scanr,$1,$2,$(strip $3),$(value 4))
-
-__list_scanr = \
-  $(if $3,$ \
-      $(call $0,$1,$ \
-              $(call $1,$(call lastword,$3),$2,$4),$ \
-          $(call nolastword,$3),$4) \
-      )$2
 
 endif # __util_list_mk
