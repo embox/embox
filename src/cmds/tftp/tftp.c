@@ -12,7 +12,7 @@
 
 #define COMMAND_NAME     "tftp"
 #define COMMAND_DESC_MSG "TFTP client"
-#define HELP_MSG         "Usage: tftp <server> <file> [load_addr]"
+#define HELP_MSG         "Usage: tftp <server> <file>"
 
 static const char *man_page =
 	#include "tftp_help.inc"
@@ -34,7 +34,8 @@ static int create_socket(struct sockaddr_in *addr) {
 	addr->sin_addr.s_addr = htonl(INADDR_ANY);
 	addr->sin_port = htons(38666); /* TODO: catch some availible port */
 
-	if (bind(sock, (struct sockaddr *) addr, sizeof(struct sockaddr_in)) == -1) {
+	if (bind(sock, (struct sockaddr *) addr,
+			sizeof(struct sockaddr_in)) == -1) {
 		printf("Attachement socket impossible.\n");
 		close(sock);
 		return -1;
@@ -42,12 +43,13 @@ static int create_socket(struct sockaddr_in *addr) {
 	return sock;
 }
 
-static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *file) {
+static int tftp_receive(struct sockaddr_in *to, char *mode,
+					char *name, FILE *file) {
 	int desc;
 	size_t size, fromlen, dsize = 0;
 	struct sockaddr_in from;
 	char buf[PKTSIZE], ackbuf[PKTSIZE], *dat, *cp;
-	tftphdr_t *dp,*ap;
+	tftphdr_t *dp, *ap;
 	dp = (tftphdr_t *) buf;
 	ap = (tftphdr_t *) ackbuf;
 	dat = (char *) &dp->th_data[0];
@@ -57,7 +59,7 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 		return -1;
 	}
 
-	ap->th_opcode = htons((short)RRQ);
+	ap->th_opcode = htons((short) RRQ);
 	strcpy(cp, name);
 	cp += strlen(name);
 	*cp++ = '\0';
@@ -74,20 +76,24 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 	fromlen = sizeof(struct sockaddr_in);
 	sendto(desc, ap, size, 0, (struct sockaddr *) to, fromlen);
 	while (1) {
-		size = recvfrom(desc, dp, PKTSIZE, 0, (struct sockaddr *) &from, &fromlen);
+		size = recvfrom(desc, dp, PKTSIZE, 0,
+			(struct sockaddr *) &from, &fromlen);
 		if (size > 0) {
 			if (dp->th_opcode == ERROR) {
-				printf("Error %d\n",dp->th_u.tu_code);
+				printf("Error %d\n", dp->th_u.tu_code);
 				break;
 			}
 			if (dp->th_opcode == DATA) {
 				//printf("data: %s\n", dp->th_data);
 				fwrite(dp->th_data, size - 4, 1, file);
 				dsize += size - 4;
-				if (dsize % 0x1000 == 0) printf("Download: %d bytes\r", dsize);
+				if (dsize % 0x1000 == 0) {
+					printf("Download: %d bytes\r", dsize);
+				}
 				ap->th_opcode = htons((short)ACK);
 				ap->th_block = dp->th_block;
-				if (sendto(desc, ap, 4, 0, (struct sockaddr *) &from, fromlen) < 0) {
+				if (sendto(desc, ap, 4, 0,
+				    (struct sockaddr *) &from, fromlen) < 0) {
 					printf("Error occured\n");
 				}
 				if (size < PKTSIZE) {
@@ -96,9 +102,10 @@ static int tftp_receive(struct sockaddr_in *to, char *mode, char *name, FILE *fi
 			}
 			if (dp->th_opcode == OACK) {
 				/* TODO: check availible memory capacity */
-				ap->th_opcode = htons((short)ACK);
+				ap->th_opcode = htons((short) ACK);
 				ap->th_block = dp->th_block;
-				if (sendto(desc, ap, 4, 0, (struct sockaddr *) &from, fromlen) < 0) {
+				if (sendto(desc, ap, 4, 0,
+				    (struct sockaddr *) &from, fromlen) < 0) {
 					printf("Error occured\n");
 				}
 				break;
