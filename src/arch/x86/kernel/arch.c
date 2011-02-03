@@ -34,7 +34,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 	}
 
 	/* Set MBI to the address of the Multiboot information structure. */
-	mbi = (multiboot_info_t *)addr;
+	mbi = (multiboot_info_t *) addr;
 #if 0
 	/* Print out the flags.  */
 	prom_printf("flags = 0x%x\n", (unsigned)mbi->flags);
@@ -62,7 +62,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 
 		prom_printf("mods_count = %d, mods_addr = 0x%x\n",
 			(int) mbi->mods_count, (int) mbi->mods_addr);
-		for (i = 0, mod = (module_t *)mbi->mods_addr;
+		for (i = 0, mod = (module_t *) mbi->mods_addr;
 			i < mbi->mods_count; i++, mod += sizeof(module_t)) {
 			prom_printf(" mod_start = 0x%x, mod_end = 0x%x, string = %s\n",
 				(unsigned) mod->mod_start,
@@ -103,7 +103,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 
 		prom_printf("mmap_addr = 0x%x, mmap_length = 0x%x\n",
 			(unsigned) mbi->mmap_addr, (unsigned) mbi->mmap_length);
-		for (mmap = (memory_map_t *)mbi->mmap_addr;
+		for (mmap = (memory_map_t *) mbi->mmap_addr;
 		    (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
 			mmap = (memory_map_t *)((unsigned long) mmap
 			     + mmap->size + sizeof(mmap->size)))

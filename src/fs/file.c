@@ -41,7 +41,7 @@ static void cache_fd(const char *path, FILE *file) {
 	}
 	head = (lsof_map_t *) free_list.next;
 	head->fd = file;
-	strcpy((void*)head->path, path);
+	strcpy((void*) head->path, path);
 	list_move((struct list_head*) head, &fd_cache);
 }
 
@@ -53,7 +53,7 @@ static void uncache_fd(FILE *file) {
 static lsof_map_t *find_fd(FILE *file) {
 	struct list_head *p;
 	list_for_each(p, &fd_cache) {
-		if (((lsof_map_t *)p)->fd == file) {
+		if (((lsof_map_t *) p)->fd == file) {
 			return (lsof_map_t *) p;
 		}
 	}

@@ -328,7 +328,7 @@ int icmp_rcv(sk_buff_t *pack) {
 	 */
 	if (icmph->type > NR_ICMP_TYPES) {
 		LOG_ERROR("unknown type of ICMP packet\n");
-		stats->rx_err ++;
+		stats->rx_err++;
 		return -1;
 	}
 	/*

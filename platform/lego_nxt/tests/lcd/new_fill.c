@@ -19,7 +19,7 @@ static int run_new_fill(void) {
 	uint8_t q, w;
 	for (i = 0; i < 13; i++) {
 		t = i % 2;
-		for( j = 0; j<16; j++){
+		for ( j = 0; j<16; j++) {
 			display_fill( i * 4, j * 4, 100 - i*8, 32 - j*8, t);
 		}
 

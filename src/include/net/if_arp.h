@@ -41,7 +41,7 @@ typedef struct arphdr {
 #define ARP_HEADER_SIZE (sizeof(struct arphdr))
 
 static inline arphdr_t *arp_hdr(const sk_buff_t *skb) {
-	return (arphdr_t *)skb->nh.raw;
+	return (arphdr_t *) skb->nh.raw;
 }
 
 #endif	/* _IF_ARP_H */

@@ -116,7 +116,7 @@ static void copy_data_to_card(uint32_t dest, uint8_t* src, uint32_t length) {
 	uint32_t i;
 	set_rem_address(dest);
 	set_rem_byte_count(length);
-	for(i = 0; i < length; i++) {
+	for (i = 0; i < length; i++) {
 		out8(*src, NE_BASE + 0x10);
 		src++;
 	}
@@ -126,7 +126,7 @@ static void copy_data_from_card(uint32_t src, uint8_t *dest, uint32_t length) {
 	uint32_t i;
 	set_rem_address(src);
 	set_rem_byte_count(length);
-	for(i = 0; i < length; i++) {
+	for (i = 0; i < length; i++) {
 		*dest = in8(NE_BASE + 0x10);
 		dest++;
 	}

@@ -40,7 +40,7 @@ static void move_stop(void) {
 }
 
 static int box_around_test(void) {
-	while (!nxt_buttons_was_pressed()){
+	while (!nxt_buttons_was_pressed()) {
 		while (sonar_sensor_get_val(SONAR_PORT) < SONAR_TRESHOLD) {
 			move_start();
 		}

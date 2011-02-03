@@ -19,7 +19,7 @@ typedef struct raw_sock {
 } raw_sock_t;
 
 static inline raw_sock_t *raw_sk(const struct sock *sk) {
-	return (raw_sock_t *)sk;
+	return (raw_sock_t *) sk;
 }
 
 extern int raw_rcv(struct sk_buff *);

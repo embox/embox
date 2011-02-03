@@ -23,7 +23,7 @@ void test_trap_handler(uint8_t tt, uint32_t *data, struct pt_regs *regs) {
 		printf("asdf");
 		return;
 	}
-	if (0 == test_handlers[tt](tt, (void *)data)) {
+	if (0 == test_handlers[tt](tt, (void *) data)) {
 		regs->pc = regs->npc;
 		regs->npc = regs->npc + 4;
 	}

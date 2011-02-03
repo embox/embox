@@ -173,7 +173,7 @@ int pipe_probe(driver_t *drv, void *arg) {
 		drv->private = device_create(drv, "/dev/pipeXX", 0, 0);
 	} else {
 		/* need interface to get device_desc */
-		/* drv->private[drv->last ++] = device_create(drv, arg, 0, 0); */
+		/* drv->private[drv->last++] = device_create(drv, arg, 0, 0); */
 		device_create(drv, arg, 0, 0);
 		/* or */
 		/* arg = drv->private[drv->last-1]; */

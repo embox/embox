@@ -46,7 +46,6 @@ static int run_picture_embox_fill(void) {
 		display_fill(90, 24, 4, 8, 0);
 
 
-
 	for (int i = 0; i<5; i++) {
 		b = nxt_buttons_was_pressed();
 		if (b!=0) {

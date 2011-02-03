@@ -36,3 +36,4 @@ void sonar_sensor_init (sensor_t *sensor) {
 	i2c_init(port);
 	return;
 }
+

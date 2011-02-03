@@ -54,7 +54,7 @@ static int run(void) {
 
 	TRACE("\n\n\t\t = Test free =\n");
 	list_for_each(tmp_h, &int_list) {
-		tmp = (struct list *)tmp_h;
+		tmp = (struct list *) tmp_h;
 		TRACE("now tmp[%d] is free \n ", tmp->p);
 	}
 	TRACE("\ntest ");

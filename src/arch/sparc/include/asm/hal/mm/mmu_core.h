@@ -269,22 +269,22 @@ static  unsigned long mmu_swap(unsigned long *addr, unsigned long value) {
 
 /** Set page table entry with value */
 static void mmu_set_pte(mmu_pte_t *ptep, mmu_pte_t pteval) {
-	mmu_swap((unsigned long *)ptep, pte_val(pteval));
+	mmu_swap((unsigned long *) ptep, pte_val(pteval));
 }
 
 /* XXX should we hyper_flush_whole_icache here - Anton */
 static inline void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp) {
-	mmu_set_pte((mmu_pte_t *)ctxp,
+	mmu_set_pte((mmu_pte_t *) ctxp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pgdp) >> 4)));
 }
 
 static inline void mmu_pgd_set(mmu_pgd_t * pgdp, mmu_pmd_t * pmdp) {
-	mmu_set_pte((mmu_pte_t *)pgdp,
+	mmu_set_pte((mmu_pte_t *) pgdp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pmdp) >> 4)));
 }
 
 static inline void mmu_pmd_set(mmu_pmd_t * pmdp, mmu_pte_t * ptep) {
-	mmu_set_pte((mmu_pte_t *)pmdp,
+	mmu_set_pte((mmu_pte_t *) pmdp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) ptep) >> 4)));
 }
 

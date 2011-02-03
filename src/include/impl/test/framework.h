@@ -46,7 +46,7 @@ inline static struct test *test_iterator_next(struct test_iterator *iterator) {
 	if (!test_iterator_has_next(iterator)) {
 		return NULL;
 	}
-	return (struct test *)iterator->test++;
+	return (struct test *) iterator->test++;
 }
 
 

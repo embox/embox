@@ -177,10 +177,10 @@ static int tty_init(void) {
 }
 
 int tty_register(tty_device_t *tty) {
-	if (NULL == vtparse_init((struct vtparse *)tty->vtp, tty_vtparse_callback)) {
+	if (NULL == vtparse_init((struct vtparse *) tty->vtp, tty_vtparse_callback)) {
 		LOG_ERROR("Error while initialization vtparse.\n");
 	}
-	if (NULL == vtbuild_init((struct vtbuild *)tty->vtb, tty_vtbuild_callback)) {
+	if (NULL == vtbuild_init((struct vtbuild *) tty->vtb, tty_vtbuild_callback)) {
 		LOG_ERROR("Error while initialization vtbuild.\n");
 	}
 
@@ -208,7 +208,7 @@ int tty_get_uniq_number(void) {
  * add parsed char to receive buffer
  */
 int tty_add_char(tty_device_t *tty, int ch) {
-	vtparse((struct vtparse *)cur_tty->vtp, ch);
+	vtparse((struct vtparse *) cur_tty->vtp, ch);
 	return 0;
 }
 

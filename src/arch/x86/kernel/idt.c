@@ -136,7 +136,6 @@ extern void irq14(void);
 extern void irq15(void);
 
 
-
 void idt_init(void) {
 	idt_ptr.limit = sizeof(_idt) - 1;
 	idt_ptr.base = (uint32_t)_idt;

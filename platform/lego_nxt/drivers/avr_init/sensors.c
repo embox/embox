@@ -59,5 +59,3 @@ void sensors_init(void) {
 	}
 }
 
-
-

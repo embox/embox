@@ -155,7 +155,7 @@ void display_char(int c) {
 
 	if (c == '\n') {
 		display_x = 0;
-		display_y ++;
+		display_y++;
 	}
 
 	if ((unsigned int) display_x == DISPLAY_CHAR_WIDTH) {
@@ -217,7 +217,7 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *b
    	height = min((64 - y), height);
 
    	for (y_offset = 0; y_offset < height; y_offset += 8) {
-		for (x_offset = 0; x_offset < width; x_offset ++) {
+		for (x_offset = 0; x_offset < width; x_offset++) {
 			i = (y + y_offset) >> 3;
 			j = x + x_offset;
 			k = (y_offset >> 3) + x_offset;
@@ -245,14 +245,14 @@ int display_little_field(uint8_t x, uint8_t y, uint8_t height, uint8_t offset,  
 }
 
 
-int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q){
+int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q) {
 	uint32_t x_offset, y_offset;
 	uint8_t up_offset, up_height, up_whole_offset, whole_field_y, under_height, x_fill, y_fill;
 	uint8_t t;
 	up_whole_offset = y >> 3;
 	up_offset = y % 8;
 	up_height = 8 - up_offset;
-	if (height <= up_height){
+	if (height <= up_height) {
 		for (x_offset = 0; x_offset < width; x_offset++) {
 			x_fill = x + x_offset;
 			display_little_field(x_fill, up_whole_offset, height, up_offset, q);
@@ -267,7 +267,7 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q)
 				y_fill = up_whole_offset+1 + y_offset;
 				display_buffer[y_fill][x_fill] = (q == 0 ? 0 : 0xFF);
 			}
-			if (under_height != 0){
+			if (under_height != 0) {
 				t = (q + 1) % 2;
 				display_part(x_fill, up_whole_offset+whole_field_y+1, under_height, t);
 			}

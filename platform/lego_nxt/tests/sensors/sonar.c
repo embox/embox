@@ -34,7 +34,7 @@ static int sonar_test(void) {
 	int buts;
 	i2c_init(PORT);
 
-	while (!(( buts = nxt_buttons_was_pressed()) & BT_DOWN)){
+	while (!(( buts = nxt_buttons_was_pressed()) & BT_DOWN)) {
 		read_val((i2c_port_t *) PORT);
 		usleep(1000);
 	}

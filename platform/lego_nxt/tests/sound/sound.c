@@ -99,11 +99,11 @@ SAMPLEWORD *sound_handler(void) {
 static int run_sound(void) {
 	int count = 5;
 	while (count--) {
-		sound_start_play(TONE_C, DURATION, (SAMPLEWORD *)patterns[0],
+		sound_start_play(TONE_C, DURATION, (SAMPLEWORD *) patterns[0],
 				(SAMPLEWORD *) patterns[1], sound_handler);
-		sound_start_play(TONE_E, DURATION, (SAMPLEWORD *)patterns[0],
+		sound_start_play(TONE_E, DURATION, (SAMPLEWORD *) patterns[0],
 			    (SAMPLEWORD *) patterns[1], sound_handler);
-		sound_start_play(TONE_G, DURATION, (SAMPLEWORD *)patterns[0],
+		sound_start_play(TONE_G, DURATION, (SAMPLEWORD *) patterns[0],
 			    (SAMPLEWORD *) patterns[1], sound_handler);
 	}
 

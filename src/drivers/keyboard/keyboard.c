@@ -150,7 +150,7 @@ int keyboard_getchar(void) {
 	static unsigned shift_state;
 	unsigned status, scan_code, ch;
 
-	while(1) {
+	while (1) {
 		status = inb(0x64);
 		if ((status & 0x01) == 0) {
 			continue;

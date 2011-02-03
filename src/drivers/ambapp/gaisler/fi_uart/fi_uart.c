@@ -265,10 +265,10 @@ int fi_uart_write(device_t *dev, char *buf, size_t n) {
 }
 
 int fi_uart_ioctl(device_t *dev, io_cmd c, void *arg) {
-	/* printk("device: %ld, cmd: %d, arg: %ld\n",  dev, c , *(int*)arg); */
+	/* printk("device: %ld, cmd: %d, arg: %ld\n",  dev, c , *(int*) arg); */
 	switch (c) {
 	case IOCTL_SET_BASE_OPTIONS:
-		((uart_private_t*)(dev->private))->ioctl_base_flags = *((int*)arg);
+		((uart_private_t*)(dev->private))->ioctl_base_flags = *((int*) arg);
 		break;
 	case IOCTL_GET_BASE_OPTIONS:
 		arg = &(((uart_private_t*)(dev->private))->ioctl_base_flags);

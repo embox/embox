@@ -96,7 +96,6 @@ static int init(void) {
 	set_timer(0, 1, (TIMER_FUNC) avr_handler);
 
 
-
 	return result;
 }
 

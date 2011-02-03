@@ -112,6 +112,6 @@ conv:
 }
 #if 1
 long int atol(const char *nptr) {
-	return strtol(nptr,(char **)NULL, 10);
+	return strtol(nptr,(char **) NULL, 10);
 }
 #endif

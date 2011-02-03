@@ -70,35 +70,35 @@ static struct leon_prom_info spi = {
 		BAUDRATE, BAUDRATE
 	},
 	{ /* root_properties */
-		{__va(spi.s_device_type), (char*)__va(spi.s_idprom), 7},
-		{__va(spi.s_idprom), (char *)__va(&spi.idprom), sizeof(struct idprom)},
+		{__va(spi.s_device_type), (char*) __va(spi.s_idprom), 7},
+		{__va(spi.s_idprom), (char *) __va(&spi.idprom), sizeof(struct idprom)},
 		{__va(spi.s_compatability), __va(spi.s_leon2), 5},
 		{NULL, NULL, -1}
 	},
 	{ /* cpu_properties */
 		{__va(spi.s_device_type), __va(spi.s_cpu), 4},
-		{__va(spi.s_mid), (char*)__va(&spi.mids[0]), 4},
-		{__va(spi.s_mmu_nctx), (char *)__va(&spi.leon_nctx), 4},
-		{__va(spi.s_frequency), (char *)__va(&spi.freq_khz), 4},
-		{__va(spi.s_uart1_baud), (char *)__va(&spi.baudrates[0]), 4},
-		{__va(spi.s_uart2_baud), (char *)__va(&spi.baudrates[1]), 4},
+		{__va(spi.s_mid), (char*) __va(&spi.mids[0]), 4},
+		{__va(spi.s_mmu_nctx), (char *) __va(&spi.leon_nctx), 4},
+		{__va(spi.s_frequency), (char *) __va(&spi.freq_khz), 4},
+		{__va(spi.s_uart1_baud), (char *) __va(&spi.baudrates[0]), 4},
+		{__va(spi.s_uart2_baud), (char *) __va(&spi.baudrates[1]), 4},
 		{NULL, NULL, -1}
 	},
         { /* uart_properties */
                  {__va(spi.s_device_name), __va(spi.s_uart_name), 16},
                  {__va(spi.s_device_type), __va(spi.s_serial), 7},
-                 {__va(spi.s_uart_vendor), (char *)__va(&spi.uart_vendor), 4},
-                 {__va(spi.s_uart_device), (char *)__va(&spi.uart_device), 4},
-                 {__va(spi.s_uart_interrupts), (char *)__va(&spi.uart_interrupts), 4},
-                 {__va(spi.s_uart_reg), (char *)__va(&spi.uart_reg), 4},
+                 {__va(spi.s_uart_vendor), (char *) __va(&spi.uart_vendor), 4},
+                 {__va(spi.s_uart_device), (char *) __va(&spi.uart_device), 4},
+                 {__va(spi.s_uart_interrupts), (char *) __va(&spi.uart_interrupts), 4},
+                 {__va(spi.s_uart_reg), (char *) __va(&spi.uart_reg), 4},
                  {NULL, NULL, -1}
         },
 #undef  CPUENTRY
 #define CPUENTRY(idx) \
 	{ /* cpu_properties */ \
-		{__va(spi.s_device_type), (char*)__va(spi.s_cpu), 4}, \
-		{__va(spi.s_mid), (char*)__va(&spi.mids[idx]), 4}, \
-		{__va(spi.s_frequency), (char *)__va(&spi.freq_khz), 4}, \
+		{__va(spi.s_device_type), (char*) __va(spi.s_cpu), 4}, \
+		{__va(spi.s_mid), (char*) __va(&spi.mids[idx]), 4}, \
+		{__va(spi.s_frequency), (char *) __va(&spi.freq_khz), 4}, \
 		{NULL, NULL, -1} \
 	},
 	CPUENTRY(1)
@@ -152,13 +152,13 @@ static struct leon_prom_info spi = {
 	__va(&spi.totphys), /* totphys_p */
 	{ /* totphys */
 		NULL,
-		(char *)LEONSETUP_MEM_BASEADDR,
+		(char *) LEONSETUP_MEM_BASEADDR,
 		0,
 	},
 	__va(&spi.avail), /* avail_p */
 	{ /* avail */
 		NULL,
-		(char *)LEONSETUP_MEM_BASEADDR,
+		(char *) LEONSETUP_MEM_BASEADDR,
 		0,
 	},
 	NULL, /* prommap_p */
@@ -299,7 +299,7 @@ static int leon_nbputchar(int c) {
 
 /* node ops */
 
-#define bnodes ((struct node *)__va(&spi.nodes))
+#define bnodes ((struct node *) __va(&spi.nodes))
 
 static int no_nextnode(int node) {
 	if (bnodes[node].level == bnodes[node+1].level)

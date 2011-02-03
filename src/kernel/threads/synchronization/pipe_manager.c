@@ -39,19 +39,19 @@ static int pool_init(void) {
 
 int free_pipe_status(void) { /* returns free pipes number */
 	int i;
-	for (i = 0; i < MAX_PIPES_COUNT; i++){
+	for (i = 0; i < MAX_PIPES_COUNT; i++) {
 		if (!pipe_pool[i].on) return MAX_PIPES_COUNT - (i++);
 	}
 	return FULL_POOL_ERROR;
 }
 
-int pipe_flush(int pipe){
+int pipe_flush(int pipe) {
 	struct n_pipe *tmp_pipe = &pipe_pool[pipe];
 	tmp_pipe->is_full = false;
 	tmp_pipe->read_index = 0;
 	tmp_pipe->write_index = 0;
 	int i;
-	for (int i = 0; i < MAX_PIPE_SIZE; i++){
+	for (int i = 0; i < MAX_PIPE_SIZE; i++) {
 		tmp_pipe->sync_data[i] = SYNC_DATA_INIT_SYMB;
 	}
 	return 0;

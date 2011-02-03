@@ -77,7 +77,7 @@ typedef struct icmphdr {
 #define ICMP_HEADER_SIZE	(sizeof(struct icmphdr))
 
 static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
-	return (icmphdr_t *)skb->h.raw;
+	return (icmphdr_t *) skb->h.raw;
 }
 
 /**

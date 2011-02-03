@@ -155,7 +155,7 @@ void display_char(int c) {
 
 	if (c == '\n') {
 		display_x = 0;
-		display_y ++;
+		display_y++;
 	}
 
 	if ((unsigned int) display_x == DISPLAY_CHAR_WIDTH) {
@@ -218,7 +218,7 @@ int display_draw(uint8_t x, uint8_t y, uint8_t width,
    	height = min((64 - y), height);
 
    	for (y_offset = 0; y_offset < height; y_offset += 8) {
-		for (x_offset = 0; x_offset < width; x_offset ++) {
+		for (x_offset = 0; x_offset < width; x_offset++) {
 			i = (y + y_offset) >> 3;
 			j = x + x_offset;
 			k = (y_offset >> 3) + x_offset;
@@ -303,7 +303,7 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q)
                nxt_color(i, q);
                nxt_color(j, q);
                nxt_color(k, q);
-               for (x_offset = 0; x_offset < width; x_offset ++) {
+               for (x_offset = 0; x_offset < width; x_offset++) {
                                display_draw(x+x_offset, indent_all, 1, 1, graph_buff_0[1]);
                                display_draw(x+x_offset, indent_all + 1 + width_all, 1, 1, graph_buff_0[2]);
                                for (y_offset = 0; y_offset < width_all; y_offset += 1) {
@@ -316,7 +316,7 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q)
                width_all = 0;
                i = 255-(pow(2,indent_part)+pow(2,width));
                nxt_color(i, q);
-               for (x_offset = 0; x_offset < width; x_offset ++) {
+               for (x_offset = 0; x_offset < width; x_offset++) {
                        display_draw(x+x_offset, indent_all, 1, 1, graph_buff[i]);
                }
        }
@@ -357,7 +357,7 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, int q) {
 	}
 	display_draw(x+width-8, up_whole_offset, 1, 8, &graph_buff_1[0]);
 	display_draw(x+width-8, up_whole_offset + whole_field_y + 1, 1, 8, &graph_buff_0[0]);
-	/*for (x_offset = 0; x_offset < width; x_offset ++) {
+	/*for (x_offset = 0; x_offset < width; x_offset++) {
 		display_part(x+x_offset, up_hole_offset, 1, 1, );
 		display_part(x+x_offset, up_hole_offset + hole_fild + 1, 1, 1, ???????????);
 	}*/

@@ -22,7 +22,7 @@ typedef struct udphdr {
 #define UDP_HEADER_SIZE	(sizeof(udphdr_t))
 
 static inline udphdr_t *udp_hdr(const sk_buff_t *skb) {
-	return (udphdr_t *)skb->h.raw;
+	return (udphdr_t *) skb->h.raw;
 }
 
 typedef struct udp_sock {
@@ -34,7 +34,7 @@ typedef struct udp_sock {
 } udp_sock_t;
 
 static inline udp_sock_t *udp_sk(const struct sock *sk) {
-	return (udp_sock_t *)sk;
+	return (udp_sock_t *) sk;
 }
 
 /* net/ipv4/udp.c */

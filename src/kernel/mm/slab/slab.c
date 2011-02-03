@@ -29,7 +29,7 @@ static void kmem_cache_init(kmem_cache_t* cache) {
 
 		/*initialize (count_elements + 1)-<th> block*/
 		count_elements++;
-		elem = (struct list_head*)cache->cache_begin + cache->size * count_elements;
+		elem = (struct list_head*) cache->cache_begin + cache->size * count_elements;
 
 	} while (count_elements < cache->num);
 }

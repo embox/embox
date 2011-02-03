@@ -89,4 +89,3 @@ static int nxt_motor_init(void) {
 	return 0;
 }
 
-

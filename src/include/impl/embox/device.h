@@ -18,5 +18,4 @@ extern const device_module_t __device_registry[];
 	ARRAY_DIFFUSE_ADD(__device_registry, {name, file_op})
 
 
-
 #endif /* IMPL_DEVICE_H_ */
