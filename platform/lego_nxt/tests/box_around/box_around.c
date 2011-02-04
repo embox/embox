@@ -25,7 +25,7 @@ EMBOX_TEST(box_around_test);
 
 /* TODO: mb move this stuff to library */
 static void rotate_to_left(void) {
-	motor_start(MOTOR0, 0, 1, NULL);
+	motor_start(MOTOR0, -MOTOR_POWER, 2, NULL);
 	motor_start(MOTOR1, MOTOR_POWER, 2, NULL);
 }
 
@@ -40,6 +40,7 @@ static void move_stop(void) {
 }
 
 static int box_around_test(void) {
+	sonar_sensor_init (SONAR_PORT);
 	while (!nxt_buttons_was_pressed()) {
 		while (sonar_sensor_get_val(SONAR_PORT) < SONAR_TRESHOLD) {
 			move_start();
