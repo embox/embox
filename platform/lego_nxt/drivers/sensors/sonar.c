@@ -16,24 +16,24 @@
 int sonar_sensor_get_val(sensor_t *sensor) {
 	i2c_port_t port;
 	uint8_t sonar_val;
-	uint8_t reg;
+	uint8_t reg = 0x42;
 
 	port = sensor->i2c_port;
-
 	i2c_write(&port, 1, &reg, 1);
 	while (port.state != IDLE) {
 	}
 	i2c_read(&port, 1, &sonar_val, 1);
 	while (port.state != IDLE) {
 	}
+	printf("res = %d\n", sonar_val);
 	return sonar_val;
 }
 
 void sonar_sensor_init (sensor_t *sensor) {
-	i2c_port_t *port;
-	port = ((i2c_port_t *) (&(sensor->i2c_port)));
+	i2c_port_t port;
 
-	i2c_init(port);
+	port = sensor->i2c_port;
+	i2c_init(&port);
 	return;
 }
 

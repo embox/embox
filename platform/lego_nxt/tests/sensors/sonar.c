@@ -27,7 +27,7 @@ static void read_val(i2c_port_t *port) {
 	i2c_read(PORT, 1, &sonar_val, 1);
 	while (port->state != IDLE) {
 	}
-	TRACE("\n0x%x",  sonar_val);
+	printf("\n0x%x",  sonar_val);
 }
 
 static int sonar_test(void) {

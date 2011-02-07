@@ -43,7 +43,6 @@ static int port_count = 0;
 
 i2c_state_t wait_state;
 
-#define TRACE(...)
 static void i2c_port_process(i2c_port_t *port) {
 	REG_LOAD(AT91C_TC0_SR); //XXX
 	switch (port->state) {
