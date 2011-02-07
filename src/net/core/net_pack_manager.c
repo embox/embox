@@ -7,7 +7,7 @@
 
 #include <net/netdevice.h>
 #include <net/net_pack_manager.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>
 

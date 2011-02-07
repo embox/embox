@@ -14,7 +14,7 @@
 #include <net/inetdevice.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <embox/unit.h>

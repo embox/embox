@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 
-#include <lib/list.h>
+#include <linux/list.h>
 #include <embox/kernel.h>
 #include <drivers/amba_registry.h>
 #include <embox/unit.h>
@@ -15,11 +15,11 @@
 EMBOX_UNIT_INIT(init);
 
 static amba_registry_device_info_t const devices_table[] = {
-#include <pnp_devices_table.inc>
+    #include <pnp_devices_table.inc>
 };
 
 static amba_registry_vendor_info_t const vendors_table[] = {
-#include <pnp_vendors_table.inc>
+    #include <pnp_vendors_table.inc>
 };
 
 static amba_registry_vendor_info_t unknown_vendor[1];

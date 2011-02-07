@@ -8,7 +8,7 @@
  */
 
 #include <string.h> /*for memcpy*/
-#include <lib/list.h>
+#include <linux/list.h>
 #include <net/skbuff.h>
 #include <net/sock.h>
 #include <net/net_pack_manager.h>
