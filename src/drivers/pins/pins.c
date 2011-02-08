@@ -46,4 +46,3 @@ void pin_set_input_monitor(int mask, pin_handler_t pin_handler) {
 	pin_set_input_interrupt(mask);
 }
 
-

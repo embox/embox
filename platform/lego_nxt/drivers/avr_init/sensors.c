@@ -8,7 +8,6 @@
 
 #include <types.h>
 #include <drivers/nxt_avr.h>
-
 #include <drivers/nxt_sensor.h>
 
 #define DIGIA0 23
@@ -41,7 +40,7 @@ sensor_val_t nxt_sensor_get_value(sensor_t *sensor) {
 }
 
 void sensors_updated(sensor_val_t sensor_vals[]) {
-	int i;
+	size_t i;
 	for (i = 0; i < NXT_AVR_N_INPUTS; i++) {
 		if (sensors[i].type == PASSIVE && handlers[i]) {
 			handlers[i](&sensors[i], sensor_vals[i]);
@@ -50,7 +49,7 @@ void sensors_updated(sensor_val_t sensor_vals[]) {
 }
 
 void sensors_init(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < NXT_AVR_N_INPUTS; i++) {
 		sensors[i].id = i;
 		sensors[i].i2c_port.scl = 1 << digiS0[i];

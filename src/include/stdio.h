@@ -132,11 +132,11 @@ extern int stat(const char *path, stat_t *buf);
 # define TRACE(...)  do ; while (0)
 #endif
 
-#define PRINTREG32_BIN(reg) { \
-	int i=0;                         \
-	for (;i<32;i++)                   \
-		TRACE("%d", (reg>>i)&1); \
-		TRACE(" (0x%x)\n", reg); \
+#define PRINTREG32_BIN(reg) {                \
+	int i = 0;                           \
+	for (; i < 32; i++)                  \
+		TRACE("%d", (reg >> i) & 1); \
+		TRACE(" (0x%x)\n", reg);     \
 	}
 
 #endif /* STDIO_H_ */

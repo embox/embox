@@ -38,4 +38,6 @@ extern void pin_set_output(pin_mask_t mask);
  * Set output pins to LOW
  */
 extern void pin_clear_output(pin_mask_t mask);
+
 #endif /* PINS_H_ */
+

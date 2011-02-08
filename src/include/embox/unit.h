@@ -44,7 +44,7 @@ extern const struct mod_ops __unit_mod_ops;
  * @retval 0 on success
  * @retval nonzero on operation failure
  */
-typedef int(*unit_op_t)(void);
+typedef int (*unit_op_t)(void);
 
 struct unit {
 	unit_op_t init;

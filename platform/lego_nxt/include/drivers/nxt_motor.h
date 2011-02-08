@@ -22,13 +22,13 @@ typedef enum {
 } motor_state_t;
 
 typedef struct {
-	uint8_t id;
-	uint32_t m_0, m_1;
-	uint32_t tacho_limit;
+	uint8_t          id;
+	uint32_t         m_0, m_1;
+	uint32_t         tacho_limit;
 	tacholimit_hnd_t limit_hnd;
-	uint32_t tacho_count;
-	pin_handler_t pin_handler;
-	motor_state_t state;
+	uint32_t         tacho_count;
+	pin_handler_t    pin_handler;
+	motor_state_t    state;
 } motor_t;
 
 extern motor_t motors[];
@@ -52,4 +52,5 @@ extern void motor_start(motor_t *motor, int8_t power, uint32_t limit,
  */
 extern void motor_set_power(motor_t *motor, int8_t power);
 
-#endif /*NXT_MOTOR_H_*/
+#endif /* NXT_MOTOR_H_ */
+

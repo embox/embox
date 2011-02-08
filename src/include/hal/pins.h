@@ -43,4 +43,5 @@ extern void pin_set_input_interrupt(pin_mask_t mask);
 extern int pin_get_input_changed(void);
 
 extern irq_return_t irq_pin_handler(irq_nr_t irq_nr, void *data);
+
 #endif /* HAL_PINS_H_ */

@@ -45,16 +45,19 @@
 #define __mmu_mask_offset_calc(mask) ((unsigned long) (blog2(mask & (~mask + 1))))
 
 #define MMU_PAGE_MASK		(MMU_PAGE_SIZE - 1)
-#define MMU_PTABLE_MASK		__mmu_mask_calc(MMU_PAGE_SIZE, MMU_PTABLE_SIZE )
+#define MMU_PTABLE_MASK		__mmu_mask_calc(MMU_PAGE_SIZE, MMU_PTABLE_SIZE)
 //#define MMU_PTABLE_MASK_OFFSET	__mmu_mask_offset_calc(MMU_PTABLE_MASK)
-#define MMU_MTABLE_MASK		__mmu_mask_calc(MMU_PTABLE_SIZE * MMU_PAGE_SIZE, MMU_MTABLE_SIZE )
+#define MMU_MTABLE_MASK		__mmu_mask_calc( \
+			MMU_PTABLE_SIZE * MMU_PAGE_SIZE, MMU_MTABLE_SIZE)
 //#define MMU_MTABLE_MASK_OFFSET  __mmu_mask_offset_calc(MMU_MTABLE_MASK)
-#define MMU_GTABLE_MASK		__mmu_mask_calc(MMU_MTABLE_SIZE * MMU_PTABLE_SIZE * MMU_PAGE_SIZE, MMU_GTABLE_SIZE)
+#define MMU_GTABLE_MASK		__mmu_mask_calc( \
+			MMU_MTABLE_SIZE * MMU_PTABLE_SIZE * MMU_PAGE_SIZE, \
+			MMU_GTABLE_SIZE)
 //#define MMU_GTABLE_MASK_OFFSET  __mmu_mask_offset_calc(MMU_GTABLE_MASK)
 
 
 /** Error code for MMU module operation*/
-#define MMU_RRTURN_ERROR     (mmu_ctx)(-1)
+#define MMU_RRTURN_ERROR     (mmu_ctx) (-1)
 
 /**
  * Setup pointed MMU environment to system.
@@ -223,4 +226,5 @@ extern int mmu_valid_entry(mmu_pte_t pte);
  * @retval pointer to first pgd of memory
  */
 extern mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx);
+
 #endif /* MMU_CORE_H_ */

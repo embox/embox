@@ -11,7 +11,7 @@
 
 #include <drivers/nxt_sensor.h>
 
-extern int sonar_sensor_get_val (sensor_t *sensor);
-extern void sonar_sensor_init (sensor_t *sensor);
+extern int sonar_sensor_get_val(sensor_t *sensor);
+extern void sonar_sensor_init(sensor_t *sensor);
 
 #endif /* NXT_SONAR_SENSOR_H_ */

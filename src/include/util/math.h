@@ -56,7 +56,6 @@
  */
 #define clamp(val, lo, hi) __clamp(val, lo, hi)
 
-
 /**
  * First 1 in val
  * @param val Value

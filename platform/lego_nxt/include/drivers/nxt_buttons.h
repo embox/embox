@@ -27,5 +27,5 @@ extern uint32_t nxt_buttons_was_pressed(void);
 /* Notify driver of possible buttons change */
 extern void buttons_updated(buttons_t state);
 
-#endif /* NXT_BUTTONS_H_*/
+#endif /* NXT_BUTTONS_H_ */
 

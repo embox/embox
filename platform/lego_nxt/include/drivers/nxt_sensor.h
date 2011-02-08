@@ -6,7 +6,6 @@
  * @author Anton Kozlov
  */
 
-
 #ifndef NXT_SENSOR_H_
 #define NXT_SENSOR_H_
 
@@ -19,9 +18,9 @@ typedef enum {
 } port_type_t;
 
 typedef struct {
-	uint8_t id;
+	uint8_t     id;
 	port_type_t type;
-	i2c_port_t i2c_port;
+	i2c_port_t  i2c_port;
 } sensor_t;
 
 extern sensor_t sensors[NXT_AVR_N_INPUTS];
@@ -40,4 +39,5 @@ extern void sensors_updated(sensor_val_t sensor_vals[]);
 
 extern void sensors_init(void);
 
-#endif /*NXT_SENSOR_H_*/
+#endif /* NXT_SENSOR_H_ */
+

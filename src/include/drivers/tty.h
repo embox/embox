@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Describes tty devices interface and structures
  *
  * @date 13.11.2010
@@ -19,7 +18,6 @@
 #include <drivers/vtbuild.h>
 #include <drivers/vtparse.h>
 #include <drivers/vconsole.h>
-
 
 struct vconsole;
 
@@ -53,7 +51,7 @@ extern int tty_unregister(tty_device_t *tty);
 
 extern int tty_get_uniq_number(void);
 
-/*
+/**
  * add parsed char to receive buffer
  */
 extern int tty_add_char(tty_device_t *tty, int ch);

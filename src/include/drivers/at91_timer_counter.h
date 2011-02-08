@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief AT91 Timer Counter interface
  *
  * @date 16.11.2011
@@ -21,7 +20,6 @@
 #define TC_INPUT_MODE_DIV3 AT91C_TC_CLKS_TIMER_DIV3_CLOCK
 #define TC_INPUT_MODE_DIV4 AT91C_TC_CLKS_TIMER_DIV4_CLOCK
 #define TC_INPUT_MODE_DIV5 AT91C_TC_CLKS_TIMER_DIV5_CLOCK
-
 
 /**
  * Timer init
@@ -63,5 +61,5 @@ void tc_limit_int_enable(uint8_t channel, irq_handler_t handler);
  * Disable interrupt on counter limit reaching
  */
 void tc_limit_int_disable(uint8_t channel);
-#endif /*TIMER_COUNTER_H_*/
+#endif /* TIMER_COUNTER_H_ */
 

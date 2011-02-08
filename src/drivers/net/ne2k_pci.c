@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief An implementation of an ne2000 ISA ethernet adapter.
+ * @brief An implementation of an ne2000 PCI ethernet adapter.
  * @details Driver to fool Qemu into sending and receiving
  *          packets for us via it's ne2k_isa emulation
  *          This driver is unlikely to work with real hardware
@@ -27,6 +27,7 @@
 #include <net/etherdevice.h>
 #include <embox/unit.h>
 #include <linux/init.h>
+#include <drivers/pci.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -249,14 +250,27 @@ static const struct net_device_ops _netdev_ops = {
         .ndo_set_mac_address = set_mac_address
 };
 
+int ne2k_probe(net_device_t *dev) {
+	//TODO:
+	//uint8_t bus, devfn, irq;
+	//uint32_t pci_ioaddr;
+	//pci_find_dev(PCI_CLASS_NETWORK_ETHERNET, &bus, &dev);
+	//pci_read_config32(bus, devfn, PCI_BASE_ADDR_REG_0, &pci_ioaddr);
+	//pci_read_config8(bus, devfn, PCI_INTERRUPT_LINE, &irq);
+	//pci_ioaddr &= PCI_BASE_ADDR_IO_MASK;
+	//dev->irq = irq;
+	//dev->base_addr = pci_ioaddr;
+}
+
 static int __init unit_init(void) {
 	net_device_t *nic;
 	uint8_t* mac;
 
 	if (NULL != (nic = alloc_etherdev(0))) {
 		nic->netdev_ops = &_netdev_ops;
-		nic->base_addr  = NE_BASE;
 	}
+
+	ne2k_probe(nic);
 
 	/* Back to page 0 */
 	out8(NE_PAGE0_STOP, NE_CMD);

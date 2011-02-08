@@ -18,7 +18,7 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 		p++;
 	}
 	while (('/' != *p) && ('\0' != *p) && (buff_len != 0)) {
-		*b++ = *p ++;
+		*b++ = *p++;
 	}
 	*b = '\0';
 	if (b != buff) {

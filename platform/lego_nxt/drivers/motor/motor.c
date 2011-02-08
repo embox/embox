@@ -14,7 +14,7 @@
 
 #include <drivers/nxt_motor.h>
 
-#define PWM_FREQ 8/*KHz*/
+#define PWM_FREQ 8 /* KHz */
 
 /* pins for tacho impulse */
 #define NXT_PIN_MOTOR_A0 15
@@ -24,15 +24,17 @@
 #define NXT_PIN_MOTOR_C0 0
 #define NXT_PIN_MOTOR_C1 8
 
-int pin_motor_S0[] =
-	    { NXT_PIN_MOTOR_A0,
-		  NXT_PIN_MOTOR_B0,
-		  NXT_PIN_MOTOR_C0 };
+int pin_motor_S0[] = {
+	NXT_PIN_MOTOR_A0,
+	NXT_PIN_MOTOR_B0,
+	NXT_PIN_MOTOR_C0
+};
 
-int pin_motor_S1[] =
-	    { NXT_PIN_MOTOR_A1,
-		  NXT_PIN_MOTOR_B1,
-		  NXT_PIN_MOTOR_C1 };
+int pin_motor_S1[] = {
+	NXT_PIN_MOTOR_A1,
+	NXT_PIN_MOTOR_B1,
+	NXT_PIN_MOTOR_C1
+};
 
 EMBOX_UNIT_INIT(nxt_motor_init);
 
@@ -61,9 +63,9 @@ void motor_set_power(motor_t *motor, int8_t power) {
 }
 
 static void motor_pin_handler(int ch_mask, int mon_mask) {
-	int i;
+	size_t i;
 	for (i = 0; i < NXT_AVR_N_OUTPUTS; i++) {
-	   if (pin_motor_S0[i] & mon_mask) {
+		if (pin_motor_S0[i] & mon_mask) {
 			motors[i].tacho_count--;
 			if (motors[i].tacho_count == 0) {
 				motors[i].tacho_count = motors[i].tacho_limit;
@@ -72,12 +74,12 @@ static void motor_pin_handler(int ch_mask, int mon_mask) {
 				}
 			}
 			break;
-	   }
+		}
 	}
 }
 
 static int nxt_motor_init(void) {
-	int i;
+	size_t i;
 	for (i = 0; i < NXT_N_MOTORS; i++) {
 		motors[i].m_0 = pin_motor_S0[i];
 		motors[i].m_1 = pin_motor_S1[i];

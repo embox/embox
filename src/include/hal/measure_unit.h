@@ -31,4 +31,5 @@ extern uint8_t unhandled_ticks(void);
  * @return Number of clocks per tick
  */
 extern uint32_t measure_unit_clocks_per_tick(void);
+
 #endif /* MEASURE_UNIT_H_ */

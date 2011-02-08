@@ -45,9 +45,9 @@ typedef uint8_t __vtparse_state_transition_entry_t;
 typedef uint8_t __vtparse_state_actions_entry_t;
 
 static inline __vtparse_state_transition_entry_t
-		__vtparse_state_transition_entry(vtparse_state_t state, char ch) {
+	    __vtparse_state_transition_entry(vtparse_state_t state, char ch) {
 	extern const __vtparse_state_transition_entry_t
-			__vtparse_state_transition_table[VTPARSE_STATES_TOTAL][0x100];
+		__vtparse_state_transition_table[VTPARSE_STATES_TOTAL][0x100];
 	return __vtparse_state_transition_table
 			[__VTPARSE_STATE_TABLE_INDEX(state)][ch];
 }
@@ -56,7 +56,8 @@ static inline __vtparse_state_actions_entry_t __vtparse_state_actions_entry(
 		vtparse_state_t state) {
 	extern const __vtparse_state_actions_entry_t
 			__vtparse_state_actions_table[VTPARSE_STATES_TOTAL];
-	return __vtparse_state_actions_table[__VTPARSE_STATE_TABLE_INDEX(state)];
+	return __vtparse_state_actions_table[
+			__VTPARSE_STATE_TABLE_INDEX(state)];
 }
 
 static inline vtparse_state_t vtparse_state_transition(

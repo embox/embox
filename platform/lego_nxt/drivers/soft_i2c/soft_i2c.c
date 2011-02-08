@@ -24,20 +24,20 @@ EMBOX_UNIT_INIT(i2c_unit_init);
 i2c_port_t *ports[MAX_PORTS];
 static int port_count = 0;
 
- void pin_set_high(pin_mask_t mask) {
+void pin_set_high(pin_mask_t mask) {
 	pin_config_input(mask);
 }
 
- void pin_set_low(pin_mask_t mask) {
+void pin_set_low(pin_mask_t mask) {
 	pin_clear_output(mask);
 	pin_config_output(mask);
 }
 
- void scl_set_low(pin_mask_t mask) {
+void scl_set_low(pin_mask_t mask) {
 	pin_clear_output(mask);
 }
 
- void scl_set_high(pin_mask_t mask) {
+void scl_set_high(pin_mask_t mask) {
 	pin_set_output(mask);
 }
 
@@ -221,8 +221,8 @@ void i2c_write(i2c_port_t *port, uint8_t addr, uint8_t *data, uint32_t count) {
 }
 
 static irq_return_t timer_handler(irq_nr_t irq_nr, void *data) {
-	int i;
-	 REG_LOAD(((uint8_t *) AT91C_TC0_SR) + TIMER * sizeof(AT91S_TCB));
+	size_t i;
+	REG_LOAD(((uint8_t *) AT91C_TC0_SR) + TIMER * sizeof(AT91S_TCB));
 	for (i = 0; i < port_count; i++) {
 		i2c_port_process(ports[i]);
 	}
@@ -246,8 +246,10 @@ void i2c_init(i2c_port_t *port) {
 
 static int i2c_unit_init(void) {
 	tc_init(TIMER);
-	tc_config_input(TIMER, (uint32_t) AT91C_TC_CLKS_TIMER_DIV1_CLOCK); /* MCLK/2, RC compare trigger */
-	tc_set_limit(TIMER, (CONFIG_SYS_CLOCK/2)/(2 * I2C_CLOCK)); /* running on twice speed i2c_clock*/
+	/* MCLK/2, RC compare trigger */
+	tc_config_input(TIMER, (uint32_t) AT91C_TC_CLKS_TIMER_DIV1_CLOCK);
+	/* running on twice speed i2c_clock*/
+	tc_set_limit(TIMER, (CONFIG_SYS_CLOCK/2)/(2 * I2C_CLOCK));
 	tc_limit_int_enable(TIMER, timer_handler);
 	tc_reset(TIMER);
 	return 0;

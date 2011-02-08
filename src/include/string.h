@@ -13,8 +13,8 @@
  *         - Documenting and library code cleanup (TODO in progress. -- Eldar)
  */
 
-#ifndef _STRING_H_
-#define _STRING_H_
+#ifndef STRING_H_
+#define STRING_H_
 
 #include <stddef.h>
 
@@ -189,4 +189,4 @@ extern void bcopy(const void *src, void *dest, size_t n);
  */
 extern char *strstr(const char *haystack, const char *needle);
 
-#endif /* _STRING_H_ */
+#endif /* STRING_H_ */

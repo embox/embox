@@ -16,7 +16,6 @@
 #include <drivers/nxt_buttons.h>
 #include <drivers/nxt_avr.h>
 #include <drivers/nxt_sensor.h>
-
 #include <kernel/measure.h>
 
 EMBOX_UNIT_INIT(init);
@@ -35,7 +34,6 @@ static int avr_send_data(to_avr_t *data_to_avr) {
 #ifdef CONFIG_MEASURE
 	measure_start();
 #endif
-
 	avr_line_locked = true;
 	twi_send(NXT_AVR_ADDRESS, (uint8_t *) data_to_avr, sizeof(to_avr_t));
 	avr_line_locked = false;
@@ -43,7 +41,6 @@ static int avr_send_data(to_avr_t *data_to_avr) {
 #ifdef CONFIG_MEASURE
 	avr_send_process(measure_stop());
 #endif
-
 	return res;
 }
 
@@ -94,7 +91,6 @@ static int init(void) {
 	sensors_init();
 
 	set_timer(0, 1, (TIMER_FUNC) avr_handler);
-
 
 	return result;
 }

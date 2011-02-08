@@ -8,7 +8,6 @@
 
 #include <types.h>
 #include <drivers/nxt_avr.h>
-
 #include <drivers/nxt_buttons.h>
 
 static int buttons_state = 0;

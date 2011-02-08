@@ -124,6 +124,5 @@ int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
 	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP));
 
 	return ((checkbyte == 0xff) ? 1 : 0);
-
 }
 
