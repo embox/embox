@@ -42,6 +42,7 @@ typedef struct pci_subclass {
  * each supporting 8 functions
  */
 #define PCI_BUS_QUANTITY        256
+#define PCI_DEV_QUANTITY        32
 #define MIN_DEVFN               0x00
 #define MAX_DEVFN               0xff
 
@@ -73,6 +74,7 @@ enum {
 #define PCI_VENDOR_ID           0x00   /* 16 bits */
 #define PCI_DEVICE_ID           0x02   /* 16 bits */
 #define PCI_COMMAND             0x04   /* 16 bits */
+#define   PCI_COMMAND_IO         0x1   /* Enable response in I/O space */
 #define PCI_STATUS              0x06   /* 16 bits */
 #define PCI_REVISION_ID         0x08   /* 8 bits  */
 #define PCI_PROG_IFACE          0x09   /* 8 bits  */
@@ -108,6 +110,7 @@ enum {
 #define PCI_BASE_ADDR_REG_3     0x1C   /* 32 bits */
 #define PCI_BASE_ADDR_REG_4     0x20   /* 32 bits */
 #define PCI_BASE_ADDR_REG_5     0x24   /* 32 bits */
+#define   PCI_BASE_ADDR_IO_MASK (~0x03)
 #define PCI_CARDBUS_CIS_POINTER 0x28   /* 32 bits */
 #define PCI_SUBSYSTEM_VENDOR_ID 0x2C   /* 16 bits */
 #define PCI_SUBSYSTEM_ID        0x2E   /* 16 bits */
@@ -175,6 +178,23 @@ enum {
 #define PCI_BASE_CLASS_SIGNAL_PROC      0x11
 #define PCI_CLASS_OTHERS                0xff
 
+typedef struct pci_bus {
+	struct list_head pci_dev_list;
+	struct list_head pci_bus_list;
+} pci_bus_t;
+
+typedef struct pci_dev {
+	pci_bus_t *bus;
+	struct list_head list;
+	uint32_t busn;
+	uint32_t devfn; /* encoded device & function index */
+	uint16_t vendor;
+	uint16_t device;
+	uint32_t class;
+	uint32_t irq;
+	uint32_t bar[6];
+} pci_dev_t;
+
 extern uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint8_t *value);
 extern uint32_t pci_read_config16(uint32_t bus, uint32_t dev_fn,
@@ -187,8 +207,6 @@ extern uint32_t pci_write_config16(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint16_t value);
 extern uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint32_t value);
-
-extern int pci_find_dev(uint32_t class_code, uint8_t *bus, unint8_t *dev_fn);
 
 #endif /* PCI_H_ */
 
