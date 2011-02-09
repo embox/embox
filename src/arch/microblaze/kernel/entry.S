@@ -24,6 +24,26 @@ C_ENTRY(_start):
 	brai _hw_exception_handler
 
 
+	nop
+	nop
+	nop
+	nop
+
+
+	nop
+	nop
+	nop
+	nop
+
+
+	nop
+	nop
+#if 1
+	.balign 0x8
+	brai _interrupt_handler
+	.balign 0x8
+	brai _interrupt_handler
+#endif
 	.section ".text"
 
 C_ENTRY(_hardreset):
@@ -43,7 +63,6 @@ C_ENTRY(_interrupt_handler):
 	addik	r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */
 	rtid	 r14, 0 /*return and enable interrupts*/
 	nop
-
 
 C_ENTRY(_user_exception):
 C_ENTRY(_debug_exception):

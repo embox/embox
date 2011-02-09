@@ -10,38 +10,6 @@
 
 #ifndef __ASSEMBLER__
 
-#if 0
-/*
- * Stack frame structure
- */
-typedef struct _STACKFRAME {
-	/* register window */
-	WORD xargs[6];
-	/* TODO I don't know. -- Eldar */
-	WORD xxargs[1];
-} STACKFRAME;
-
-/*
- * Basic set of registers to save when trap occurs
- */
-typedef struct _TRAP_CONTEXT {
-	/* processor state register */
-	WORD psr;
-	/* program counter */
-	WORD pc;
-	/* next program counter */
-	WORD npc;
-	/* mul/div */
-	WORD y;
-	/* global registers */
-	WORD globals[8];
-	/* input registers */
-	WORD ins[8];
-} TRAP_CONTEXT;
-
-#define STACKFRAME_SZ     sizeof(STACKFRAME)
-#define TRAP_CONTEXT_SZ   sizeof(TRAP_CONTEXT)
-#endif
 #else /* __ASSEMBLER__ */
 
 /*
@@ -84,13 +52,6 @@ typedef struct _TRAP_CONTEXT {
 #define SOFT_TRAP BAD_TRAP
 
 /*for mmu*/
-#if 0
-#define SRMMU_TFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 1, %l7;
-#define SRMMU_DFAULT rd %psr, %l0; rd %wim, %l3; b srmmu_fault; mov 0, %l7;
-#else
-#define SRMMU_TFAULT BAD_TRAP
-#define SRMMU_DFAULT BAD_TRAP
-#endif
 
 #define SAVE_ALL \
 	sethi %hi(trap_entry_begin), %t_retpc;            \
