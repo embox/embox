@@ -1,2 +1,2 @@
-"mount cpio /ramfs"
+"mount -t ramfs cpio /ramfs"
 
