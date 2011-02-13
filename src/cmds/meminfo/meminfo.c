@@ -94,7 +94,6 @@ static void print_stat_for_slab(struct list_head* list) {
 	cur_elem = list->next;
 	do {
 		cur_block = (block_info_t*) cur_elem;
-		//free_blocks_count += (cur_block->free ? 1 : 0);
 
 		if (cur_block->free) {
 			while (((block_info_t*) cur_elem)->free && cur_elem != list) {
@@ -138,7 +137,7 @@ static void print_sstatistic(struct list_head* pseudo_list) {
 	make_caches_list(pseudo_list);
 
 	cur_elem_cache = pseudo_list;
-	/* analize caches descriptors */
+	/* analyze caches descriptors */
 	do {
 		cur_elem_cache = cur_elem_cache->next;
 		cur_cachep = (kmem_cache_t*) cur_elem_cache;
@@ -181,7 +180,7 @@ static void print_sstatistic(struct list_head* pseudo_list) {
 		printf("---------------------\n");
 
 		printf("++++++++++++++++++++++++++++++++\n\n");
-		/* if current cache is the last caches in the all_caches_list */
+		/* if current cache is the last cache in the all_caches_list */
 	} while (cur_elem_cache != pseudo_list->prev);
 }
 
