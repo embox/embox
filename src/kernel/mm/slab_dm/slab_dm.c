@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Dynamic slab allocator
+ * @brief Dynamic SLAB allocator
  *
  * @date 14.12.2010
  * @author Dmitry Zubarvich
@@ -61,7 +61,7 @@ void print_slab_info(kmem_cache_t *cachep, slab_t *slabp) {
 	list_for_each(elem, &slabp->obj_ptr) {
 		free_elems_count++;
 	}
-	printf("slabp->innuse: %d\n", slabp->inuse);
+	printf("slabp->inuse: %d\n", slabp->inuse);
 	printf("Number of objects allocated in the slab: %d\n\n",
 			cachep->num - free_elems_count);
 }
@@ -117,7 +117,7 @@ static void kmem_dmcache_slab_init(kmem_cache_t *cachep, slab_t *slabp) {
 static int kmem_dmcache_grow(kmem_cache_t *cachep) {
 	int pages_count;
 	page_info_t *page;
-	slab_t* slabp;
+	slab_t * slabp;
 	size_t slab_size = 1 << cachep->gfporder;
 
 	if (!(slabp = (slab_t*) mpalloc(slab_size)))
@@ -213,7 +213,7 @@ kmem_cache_t *kmem_dmcache_create(char *name, size_t obj_size) {
 	cachep->slabs_partial.prev = &(cachep->slabs_partial);
 	cachep->slabs_free.next = &(cachep->slabs_free);
 	cachep->slabs_free.prev = &(cachep->slabs_free);
-	list_add((struct list_head*) cachep, &(kmalloc_cache.next));
+	list_add(&cachep->next, &(kmalloc_cache.next)); //////!!!!!!!!!!!!!
 
 #ifdef SLAB_ALLOCATOR_DEBUG
 	printf("\n\nCreating cache with name \"%s\"\n", cachep->name);
@@ -228,7 +228,7 @@ kmem_cache_t *kmem_dmcache_create(char *name, size_t obj_size) {
 
 void kmem_dmcache_destroy(kmem_cache_t *cachep) {
 	struct list_head *ptr;
-	slab_t *slabp;
+	slab_t * slabp;
 
 	while (1) {
 		ptr = cachep->slabs_free.prev;
@@ -262,13 +262,13 @@ void kmem_dmcache_destroy(kmem_cache_t *cachep) {
 		list_del(&slabp->list);
 		kmem_dmcache_slab_destroy(cachep, slabp);
 	}
-	list_del((struct list_head*) cachep);
+	list_del(&cachep->next);
 	kmem_dmcache_free(&kmalloc_cache, cachep);
 
 }
 
 void *kmem_dmcache_alloc(kmem_cache_t *cachep) {
-	slab_t *slabp;
+	slab_t * slabp;
 	void *objp;
 
 	/* getting slab */
@@ -304,7 +304,7 @@ void *kmem_dmcache_alloc(kmem_cache_t *cachep) {
 }
 
 void kmem_dmcache_free(kmem_cache_t *cachep, void* objp) {
-	slab_t *slabp;
+	slab_t * slabp;
 	page_info_t* page;
 
 	if (objp == NULL)
@@ -330,7 +330,7 @@ void kmem_dmcache_free(kmem_cache_t *cachep, void* objp) {
 }
 
 int kmem_dmcache_shrink(kmem_cache_t *cachep) {
-	slab_t *slabp;
+	slab_t * slabp;
 	struct list_head *p;
 	int ret = 0;
 
@@ -363,7 +363,7 @@ static kmem_cache_t *find_fit_cache(size_t obj_size) {
 	kmalloc_cachep = &kmalloc_cache;
 	tmp = &kmalloc_cachep->next;
 	do {
-		cachep = (kmem_cache_t*) tmp;
+		cachep = list_entry(tmp, kmem_cache_t, next);
 		if (obj_size <= cachep->obj_size + MAX_OBJECT_ALIGN && cachep->obj_size
 				<= obj_size) {
 			return cachep;
@@ -398,4 +398,39 @@ void sfree(void *obj) {
 	page_info_t *page = virt_to_page(obj);
 	kmem_cache_t *cachep = GET_PAGE_CACHE(page);
 	kmem_dmcache_free(cachep, obj);
+}
+
+void sget_blocks_info(struct list_head* list, struct list_head *slabp) {
+	char *slab_begin;
+	char *cur_objp;
+	unsigned int num;
+	struct list_head* cur_elem;
+	slab_t * slab;
+	block_info_t* tmp_info;
+	page_info_t *page;
+	kmem_cache_t *cachep;
+
+	page = virt_to_page((void*) slabp);
+	slab_begin = (char*) slabp + CACHE_ALIGN(sizeof(slab_t));
+	slab = list_entry(slabp, slab_t, list);
+	cachep = GET_PAGE_CACHE(page);
+
+	for (num = 0; num < cachep->num; num++) {
+		cur_objp = slab_begin + num * cachep->obj_size;
+		tmp_info = (block_info_t*) malloc(sizeof(block_info_t));
+		tmp_info->size = cachep->obj_size;
+		tmp_info->free = false;
+		list_for_each(cur_elem, &slab->obj_ptr) {
+			if ((char*) cur_elem == cur_objp) {
+				tmp_info->free = true;
+				break;
+			}
+		}
+		list_add((struct list_head*) tmp_info, list);
+	}
+}
+
+void make_caches_list(struct list_head* list) {
+	list->next = &(kmalloc_cache.next);
+	list->prev = (&(kmalloc_cache.next))->prev;
 }
