@@ -7,12 +7,9 @@
  */
 
 #include <types.h>
-
 #include <kernel/diag.h>
 #include <kernel/irq.h>
-
 #include <hal/reg.h>
-
 #include <drivers/at91sam7_us.h>
 
 int uart_init(void) {

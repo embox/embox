@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Implements utilities functions for virtual console working.
  *
  * @date 23.11.2010
@@ -20,7 +19,6 @@ vconsole_t const *sys_console = &def_console;
 //EMBOX_UNIT_INIT(vconsole_init);
 
 static FILE *def_file;
-
 
 static int vconsole_init(void) {
 	/*initialize pool of virtual consoles*/
