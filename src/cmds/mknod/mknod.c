@@ -14,8 +14,8 @@
 #define HELP_MSG         "Usage: mknod NAME"
 
 static const char *man_page =
-#include "help.inc"
-		;
+#include "mknod_help.inc"
+	;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
