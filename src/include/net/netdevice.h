@@ -64,13 +64,13 @@ enum netdev_state_t {
 	__LINK_STATE_LINKWATCH_PENDING,
 	__LINK_STATE_DORMANT,
 #endif
-}	;
+};
 
-	/**
-	 * This structure defines the management hooks for network devices.
-	 * The following hooks can be defined; unless noted otherwise, they are
-	 * optional and can be filled with a null pointer.
-	 */
+/**
+ * This structure defines the management hooks for network devices.
+ * The following hooks can be defined; unless noted otherwise, they are
+ * optional and can be filled with a null pointer.
+ */
 typedef struct net_device_ops {
 	int (*ndo_open)(struct net_device *dev);
 	int (*ndo_stop)(struct net_device *dev);

@@ -143,7 +143,7 @@ static void scan_bus(void) {
 				bus, slot, func,
 				find_class_name(baseclass, subclass),
 				find_vendor_name(vendor),
-				find_device_name(device), rev, subclass);
+				find_device_name(device), rev);
 			//TODO:
 		}
 	}

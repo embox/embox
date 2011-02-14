@@ -33,27 +33,47 @@ EMBOX_UNIT_INIT(unit_init);
 
 /* Port addresses */
 #define NE_BASE	        0x300
-#define NE_CMD          (NE_BASE + 0x00)
-#define EN0_STARTPG     (NE_BASE + 0x01)
-#define EN0_STOPPG      (NE_BASE + 0x02)
-#define EN0_BOUNDARY    (NE_BASE + 0x03)
-#define EN0_TPSR        (NE_BASE + 0x04)
-#define EN0_TBCR_LO     (NE_BASE + 0x05)
-#define EN0_TBCR_HI     (NE_BASE + 0x06)
-#define EN0_ISR         (NE_BASE + 0x07)
-#define NE_DATAPORT     (NE_BASE + 0x10) /* NatSemi-defined port window offset*/
-#define EN1_CURR        (NE_BASE + 0x07) /* current page */
-#define EN1_PHYS        (NE_BASE + 0x11) /* physical address */
-
+#define NE_CMD          (NE_BASE + 0x00) /* The command register (for all pages) */
+/* Page 0 register offsets */
+#define EN0_STARTPG     (NE_BASE + 0x01) /* Starting page of ring buffer */
+#define EN0_STOPPG      (NE_BASE + 0x02) /* Ending page +1 of ring buffer */
+#define EN0_BOUNDARY    (NE_BASE + 0x03) /* Boundary page of ring buffer */
+#define EN0_TPSR        (NE_BASE + 0x04) /* Transmit status reg */
+#define EN0_TBCR_LO     (NE_BASE + 0x05) /* Low  byte of tx byte count */
+#define EN0_TBCR_HI     (NE_BASE + 0x06) /* High byte of tx byte count */
+#define EN0_ISR         (NE_BASE + 0x07) /* Interrupt status reg */
 /* Where to DMA data to/from */
-#define EN0_REM_START_LO   (NE_BASE + 0x08)
-#define EN0_REM_START_HI   (NE_BASE + 0x09)
-
+#define EN0_RSARLO      (NE_BASE + 0x08) /* Remote start address reg 0 */
+#define EN0_RSARHI      (NE_BASE + 0x09) /* Remote start address reg 1 */
 /* How much data to DMA */
-#define EN0_REM_CNT_LO     (NE_BASE + 0x0a)
-#define EN0_REM_CNT_HI     (NE_BASE + 0x0b)
+#define EN0_RCNTLO      (NE_BASE + 0x0a) /* Remote byte count reg */
+#define EN0_RCNTHI      (NE_BASE + 0x0b) /* Remote byte count reg */
 
-#define EN0_RSR		   (NE_BASE + 0x0c)
+#define EN0_RXCR        (NE_BASE + 0x0c) /* RX configuration reg */
+#define EN0_TXCR        (NE_BASE + 0x0d) /* TX configuration reg */
+#define EN0_DCFG        (NE_BASE + 0x0e) /* Data configuration reg */
+#define EN0_IMR         (NE_BASE + 0x0f) /* Interrupt mask reg */
+
+/* Bits in EN0_ISR - Interrupt status register */
+#define ENISR_RX        0x01    /* Receiver, no error */
+#define ENISR_TX        0x02    /* Transmitter, no error */
+#define ENISR_RX_ERR    0x04    /* Receiver, with error */
+#define ENISR_TX_ERR    0x08    /* Transmitter, with error */
+#define ENISR_OVER      0x10    /* Receiver overwrote the ring */
+#define ENISR_COUNTERS  0x20    /* Counters need emptying */
+#define ENISR_RDC       0x40    /* remote dma complete */
+#define ENISR_RESET     0x80    /* Reset completed */
+#define ENISR_ALL       0x3f    /* Interrupts we will enable */
+
+/* Page 1 register offsets */
+#define EN1_PHYS          (NE_BASE + 0x01)  /* This board's physical eth addr */
+#define EN1_PHYS_SHIFT(i) (NE_BASE + i + 1) /* Get and set mac address */
+#define EN1_CURPAG        (NE_BASE + 0x07)  /* Current memory page RD WR */
+#define EN1_MULT          (NE_BASE + 0x08)  /* Multicast filter mask array (8 bytes) */
+#define EN1_MULT_SHIFT(i) (NE_BASE + 8 + i) /* Get and set multicast filter */
+
+#define NE_DATAPORT       0x10 /* NatSemi-defined port window offset*/
+#define NE_RESET          0x1f
 
 /* Commands to select the different pages. */
 #define NE_PAGE0_STOP      0x21
@@ -72,11 +92,12 @@ EMBOX_UNIT_INIT(unit_init);
 #define NE_PAR4            (NE_BASE + 0x05)
 #define NE_PAR5            (NE_BASE + 0x06)
 
-#define ENISR_RESET        0x80
-
-#define TX_BUFFER_START    ((16 * 1024) / 256)
-#define RX_BUFFER_START    ((16 * 1024) / 256 + 6)
-#define RX_BUFFER_END      ((32 * 1024) / 256) /* could made this a lot higher*/
+#define MEMBASE            (16 * 1024)
+#define NE_PAGE_SIZE       256
+#define TX_BUFFER_START    (MEMBASE / NE_PAGE_SIZE)
+#define NE_TXBUF_SIZE      6
+#define RX_BUFFER_START    (TX_BUFFER_START + NE_TXBUF_SIZE)
+#define RX_BUFFER_END      ((32 * 1024) / NE_PAGE_SIZE)
 
 /* Applies to ne2000 version of the card. */
 #define NESM_START_PG      0x40    /* First page of TX buffer */
@@ -86,7 +107,7 @@ inline static void rx_enable(void) {
 	out8(NE_PAGE0_STOP,   NE_CMD);
 	out8(RX_BUFFER_START, EN0_BOUNDARY);
 	out8(NE_PAGE1_STOP,   NE_CMD);
-	out8(RX_BUFFER_START, EN1_CURR);
+	out8(RX_BUFFER_START, EN1_CURPAG);
 	out8(NE_START,        NE_CMD);
 }
 
@@ -103,14 +124,14 @@ inline static void set_tx_count(uint32_t val) {
 
 inline static void set_rem_address(uint32_t val) {
 	/* Set how many bytes we're going to send. */
-	out8(val & 0xff, EN0_REM_START_LO);
-	out8((val & 0xff00) >> 8, EN0_REM_START_HI);
+	out8(val & 0xff, EN0_RSARLO);
+	out8((val & 0xff00) >> 8, EN0_RSARHI);
 }
 
 inline static void set_rem_byte_count(uint32_t val) {
 	/* Set how many bytes we're going to send. */
-	out8(val & 0xff, EN0_REM_CNT_LO);
-	out8((val & 0xff00) >> 8, EN0_REM_CNT_HI);
+	out8(val & 0xff, EN0_RCNTLO);
+	out8((val & 0xff00) >> 8, EN0_RCNTHI);
 }
 
 static void copy_data_to_card(uint32_t dest, uint8_t* src, uint32_t length) {
@@ -169,7 +190,7 @@ static size_t pkt_receive(struct sk_buff *skb) {
 	size_t ret = 0;
 
 	out8(NE_PAGE1, NE_CMD);
-	current = in8(EN1_CURR);
+	current = in8(EN1_CURPAG);
 
 	/* Check if rsr fired. */
 	out8(NE_PAGE0, NE_CMD);
@@ -242,6 +263,11 @@ static net_device_stats_t *get_eth_stat(net_device_t *dev) {
 	return &(dev->stats);
 }
 
+static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
+	TRACE("irq fired\n");
+	return IRQ_HANDLED;
+}
+
 static const struct net_device_ops _netdev_ops = {
         .ndo_start_xmit      = start_xmit,
         .ndo_open            = open,
@@ -250,27 +276,24 @@ static const struct net_device_ops _netdev_ops = {
         .ndo_set_mac_address = set_mac_address
 };
 
-int ne2k_probe(net_device_t *dev) {
-	//TODO:
-	//uint8_t bus, devfn, irq;
-	//uint32_t pci_ioaddr;
-	//pci_find_dev(PCI_CLASS_NETWORK_ETHERNET, &bus, &dev);
-	//pci_read_config32(bus, devfn, PCI_BASE_ADDR_REG_0, &pci_ioaddr);
-	//pci_read_config8(bus, devfn, PCI_INTERRUPT_LINE, &irq);
-	//pci_ioaddr &= PCI_BASE_ADDR_IO_MASK;
-	//dev->irq = irq;
-	//dev->base_addr = pci_ioaddr;
-}
-
 static int __init unit_init(void) {
 	net_device_t *nic;
-	uint8_t* mac;
+	uint8_t *mac;
 
 	if (NULL != (nic = alloc_etherdev(0))) {
 		nic->netdev_ops = &_netdev_ops;
+		//TODO: get devfn=0x18 from pci_find_dev
+		pci_read_config32(0, 0x18, PCI_BASE_ADDR_REG_0, &nic->base_addr);
+		pci_read_config8(0, 0x18, PCI_INTERRUPT_LINE, &nic->irq);
+		nic->base_addr &= PCI_BASE_ADDR_IO_MASK;
 	}
+	/* Reset */
+	outb(inb(nic->base_addr + NE_RESET), nic->base_addr + NE_RESET);
+	out8(ENISR_RESET, nic->base_addr + EN0_ISR);
 
-	ne2k_probe(nic);
+	if (-1 == irq_attach(nic->irq, ne2k_handler, 0, nic, "ne2k")) {
+		return -1;
+	}
 
 	/* Back to page 0 */
 	out8(NE_PAGE0_STOP, NE_CMD);
@@ -286,7 +309,7 @@ static int __init unit_init(void) {
 //		mac++;
 //	}
 
-	rx_disable();
+//	rx_disable();
 	return 0;
 }
 
