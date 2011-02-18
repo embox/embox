@@ -127,6 +127,7 @@ void arch_init(void) {
 }
 
 void arch_idle(void) {
+	__asm__ __volatile__("hlt");
 }
 
 void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {

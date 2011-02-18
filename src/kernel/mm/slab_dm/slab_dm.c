@@ -77,16 +77,30 @@ static page_info_t* virt_to_page(void *objp) {
 /**
  * Main cache which will contain another descriptors of caches
  */
-static kmem_cache_t kmalloc_cache = { .name = "__kmalloc_cache",
-		.num = (CONFIG_PAGE_SIZE * KMALLOC_CACHE_SIZE - CACHE_ALIGN(sizeof(slab_t)))
+static kmem_cache_t kmalloc_cache = {
+	.name = "__kmalloc_cache",
+	.num = (CONFIG_PAGE_SIZE * KMALLOC_CACHE_SIZE - CACHE_ALIGN(sizeof(slab_t)))
 				/ CACHE_ALIGN(sizeof(kmem_cache_t)),
-		.obj_size = ALIGN_UP(sizeof(kmem_cache_t), sizeof(struct list_head)),
-		.slabs_full = { &kmalloc_cache.slabs_full, &kmalloc_cache.slabs_full },
-        .slabs_free = { &kmalloc_cache.slabs_free, &kmalloc_cache.slabs_free },
-		.slabs_partial = { &kmalloc_cache.slabs_partial, &kmalloc_cache.slabs_partial },
-		.next = { &kmalloc_cache.next, &kmalloc_cache.next },
-		.growing = false,
-		.gfporder = KMALLOC_CACHE_SIZE };
+	.obj_size = ALIGN_UP(sizeof(kmem_cache_t), sizeof(struct list_head)),
+	.slabs_full = {
+		&kmalloc_cache.slabs_full,
+		&kmalloc_cache.slabs_full
+	},
+        .slabs_free = {
+    		&kmalloc_cache.slabs_free,
+    		&kmalloc_cache.slabs_free
+    	},
+	.slabs_partial = {
+		&kmalloc_cache.slabs_partial,
+		&kmalloc_cache.slabs_partial
+	},
+	.next = {
+		&kmalloc_cache.next,
+		&kmalloc_cache.next
+	},
+	.growing = false,
+	.gfporder = KMALLOC_CACHE_SIZE
+};
 
 /**
  * Free memory which occupied by slab

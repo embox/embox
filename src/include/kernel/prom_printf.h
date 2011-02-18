@@ -15,6 +15,6 @@
 extern int prom_printf(const char *format, ...) __attribute__ ((format
 				(printf, 1, 2)));
 #else
-#define prom_printf(...)  do ; while(0)
+#define prom_printf(...)  do ; while (0)
 #endif
 #endif /* PROM_PRINTF_H_ */
