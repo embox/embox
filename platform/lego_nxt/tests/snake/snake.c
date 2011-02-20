@@ -86,10 +86,10 @@ static void draw_nxt_fruit(point p) {
 }
 #endif
 static int f2d(int x, int y) {
-	return x + y * SIZE_X;
+	return y + x * SIZE_Y;
 }
 
-static point d2f(int offset) {
+static point d2f(unsigned int offset) {
 	point p = {offset % SIZE_Y, offset / SIZE_Y};
 	return p;
 }
@@ -120,12 +120,15 @@ static int random(void) {
 }
 
 static void fruit_draw(void) {
-	int t = random() % ((SIZE_X - 1) * (SIZE_Y - 1));
-	while (!space(field[t])) {
-		t = random() % ((SIZE_X - 1) * (SIZE_Y - 1));
+	point p = nil;
+	while (!space(field[f2d(p.x, p.y)])) {
+		unsigned int t = random() % ((SIZE_X - 3) * (SIZE_Y - 3));
+		p = d2f(t);
+		p.x ++;
+		p.y ++;
 	}
-	draw(d2f(t), FRU);
-	draw_nxt_fruit(d2f(t));
+	draw(p, FRU);
+	draw_nxt_fruit(p);
 }
 
 static void refresh(void) {
@@ -171,26 +174,24 @@ static char dir_char(point p) {
 	return dir[f2d(p.x,p.y)];
 }
 
-
 static char button_dispatch(uint32_t btns) {
 	int i;
-	for (i = 1; i < 16; i = i << 1) {
-		if ((btns & i) == btns) {
-			switch (i) {
-			case BT_DOWN:
-				return 'j';
-			case BT_LEFT:
-				return 'h';
-			case BT_RIGHT:
-				return 'l';
-			case BT_ENTER:
-				return 'k';
-			default:
-				return ' ';
-			}
-		}
+	if ((btns & BT_DOWN) && (btns & BT_ENTER)) {
+		return 'q';
 	}
-	return 0;
+	if (btns & BT_DOWN) {
+		return 'j';
+	}
+	if (btns & BT_LEFT) {
+		return 'h';
+	}
+	if (btns & BT_RIGHT) {
+		return 'l';
+	}
+	if (btns & BT_ENTER) {
+		return 'k';
+	}
+	return ' ';
 }
 
 static point dispatch(char c) {
@@ -207,12 +208,6 @@ static point dispatch(char c) {
 	return nil;
 
 }
-
-#if 0
-static int pcmp(point p1, point p2) {
-	return p1.x - p2.x + p1.y - p2.y;
-}
-#endif
 
 static int snake_update(void) {
 	point p = point_plus(head, diff);
@@ -240,7 +235,7 @@ static int snake_update(void) {
 		break;
 	case ' ':
 	case '.':
-		draw(tail,'.');
+		draw(tail,' ');
 		draw_nxt_white(tail);
 
 		draw(p, SNK);
@@ -267,13 +262,32 @@ static int snake_update(void) {
 	return 1;
 }
 
-static int last_valid;
-
 static int valid(point p) {
-	return (last_valid = !(p.x == 0 && p.y == 0));
+	return !(p.x == 0 && p.y == 0);
+}
+
+static int begin_splash(void) {
+	display_clear_screen();
+	display_string("\nnxtSnake\n\nUp + Down = exit\nEat't up!");
+	while (!nxt_buttons_was_pressed()) {
+		usleep(100);
+	}
+	return 1;
+}
+
+static void end_splash(void) {
+	display_clear_screen();
+	display_string("Game over =(");
+	while (!nxt_buttons_was_pressed()) {
+		usleep(100);
+	}
 }
 
 static int exec() {
+	if (!begin_splash()) {
+		return 0;
+	}
+
 	display_clear_screen();
 	field_init();
 	diff = dxp;
@@ -282,19 +296,21 @@ static int exec() {
 		point d = nil;
 		point d2 = nil;
 
-		//usleep(sleep_time);
-		//refresh();
 		usleep(sleep_time);
-		last_valid = 0;
-		ch = button_dispatch(nxt_buttons_are_pressed());
+		ch = button_dispatch(nxt_buttons_was_pressed());
+		if (ch == 'q') {
+			break;
+		}
 		d = dispatch(ch);
 		d2 = point_plus(d,diff);
 
-		if (valid(d2)) {
+		if (valid(d2) && valid(d)) {
 			diff = d;
 			diff_char = ch;
 		}
 	}
+	end_splash();
+	display_clear_screen();
 	return 0;
 }
 

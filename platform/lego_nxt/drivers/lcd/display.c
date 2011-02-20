@@ -202,6 +202,8 @@ void display_string(const char *str) {
 
 void display_clear_screen(void) {
 	memset((void *) display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
+	display_x = 0;
+	display_y = 0;
 	nxt_lcd_force_update();
 }
 
