@@ -28,14 +28,14 @@ EMBOX_UNIT_INIT(threads_init);
 struct thread *idle_thread;
 struct thread *current_thread;
 
+/** Pool, containing threads. */
+struct thread __thread_pool[THREAD_POOL_SIZE];
+
 /** Stack for idle_thread. */
 static char idle_thread_stack[THREAD_STACK_SIZE];
 
 /** A mask, which shows, what places for new threads are free. */
-static int mask[THREADS_POOL_SIZE];
-
-/** Pool, containing threads. */
-static struct thread threads_pool[THREADS_POOL_SIZE];
+static int mask[THREAD_POOL_SIZE];
 
 /** Shows what messages are free. */
 static bool msg_mask[MAX_MSG_COUNT];
@@ -55,7 +55,7 @@ static int threads_init(void) {
 	size_t i;
 	for (i = 0; i < MAX_MSG_COUNT; i++) {
 		msg_mask[i] = 0;
-		threads_pool[i].exist = false;
+		__thread_pool[i].exist = false;
 	}
 	idle_thread = thread_create(idle_run,
 		idle_thread_stack + THREAD_STACK_SIZE);
@@ -87,9 +87,9 @@ static void thread_run(int par) {
 static struct thread *thread_new(void) {
 	size_t i;
 	struct thread *created_thread;
-	for (i = 0; i < THREADS_POOL_SIZE; i++) {
+	for (i = 0; i < THREAD_POOL_SIZE; i++) {
 		if (mask[i] == 0) {
-			created_thread = threads_pool + i;
+			created_thread = __thread_pool + i;
 			created_thread->id = i;
 			mask[i] = 1;
 			created_thread->exist = true;
@@ -147,7 +147,7 @@ static int thread_delete(struct thread *deleted_thread) {
 	#endif
 	deleted_thread->state = THREAD_STATE_STOP;
 	deleted_thread->exist = false;
-	mask[deleted_thread - threads_pool] = 0;
+	mask[deleted_thread - __thread_pool] = 0;
 	return 0;
 }
 
@@ -223,6 +223,3 @@ int msg_erase(struct message *message) {
 	return 0;
 }
 
-struct thread *thread_get_pool() {
-	return threads_pool;
-}

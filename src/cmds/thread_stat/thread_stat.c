@@ -45,7 +45,9 @@ static void print_statistic(struct stats_context *ctx, struct thread *thread) {
 }
 
 static int exec(int argc, char **argv) {
+	struct thread *thread;
 	int next_opt;
+
 	getopt_init();
 
 	while ((next_opt = getopt(argc, argv, "h")) != -1) {
@@ -61,10 +63,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	struct stats_context ctx = { 0 };
-	struct thread *threads = thread_get_pool();
 
-	for (int i = 0; i < THREADS_POOL_SIZE; ++i) {
-		struct thread *thread = threads + i;
+	thread_foreach(thread) {
 		if (thread->exist) {
 			print_statistic(&ctx, thread);
 		} else {

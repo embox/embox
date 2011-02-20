@@ -15,8 +15,10 @@
 #include <lib/list.h>
 #include <queue.h>
 #include <string.h>
+#include <util/macro.h>
+#include <util/guard.h>
 
-#define THREADS_POOL_SIZE 0x100
+#define THREAD_POOL_SIZE 0x100
 
 typedef int thread_id_t;
 typedef int thread_priority_t;
@@ -177,7 +179,38 @@ extern struct message *msg_new(void);
  */
 extern int msg_erase(struct message *message);
 
-extern struct thread *thread_get_pool();
+#define thread_foreach(t) MACRO_INVOKE(__thread_foreach_iterator, \
+		t, GUARD_SUFFIX(__thread_iterator))
+
+#define __thread_foreach_iterator(t, i) \
+	for (struct thread_iterator i##_alloc, *i = thread_get_all(&i##_alloc); \
+		(t = thread_iterator_has_next(i) ? thread_iterator_next(i) : NULL);)
+
+struct thread_iterator {
+	struct thread *current;
+};
+
+inline static struct thread_iterator *thread_get_all(struct thread_iterator *iterator) {
+	extern struct thread __thread_pool[];
+	if (NULL == iterator) {
+		return NULL;
+	}
+	iterator->current = __thread_pool;
+	return iterator;
+}
+
+inline static bool thread_iterator_has_next(struct thread_iterator *iterator) {
+	extern struct thread __thread_pool[];
+	return NULL != iterator && iterator->current <
+			__thread_pool + THREAD_POOL_SIZE;
+}
+
+inline static struct thread *thread_iterator_next(struct thread_iterator *iterator) {
+	if (!thread_iterator_has_next(iterator)) {
+		return NULL;
+	}
+	return iterator->current++;
+}
 
 #ifdef CONFIG_PP_ENABLE
 #include <kernel/pp.h>
