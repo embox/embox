@@ -12,6 +12,7 @@
 #include <kernel/thread.h>
 #include <lib/list.h>
 #include <stdio.h>
+#include <assert.h>
 
 #define COMMAND_NAME     "thread_stat"
 #define COMMAND_DESC_MSG "print threads statistic for EMBOX"
@@ -23,7 +24,7 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 struct stats_context {
-	int run, wait, stop, zombie;
+	int run, wait, zombie;
 };
 
 static void print_statistic(struct stats_context *ctx, struct thread *thread) {
@@ -45,6 +46,7 @@ static void print_statistic(struct stats_context *ctx, struct thread *thread) {
 }
 
 static int exec(int argc, char **argv) {
+	struct stats_context ctx = { 0 };
 	struct thread *thread;
 	int next_opt;
 
@@ -62,19 +64,13 @@ static int exec(int argc, char **argv) {
 		};
 	}
 
-	struct stats_context ctx = { 0 };
-
 	thread_foreach(thread) {
-		if (thread->exist) {
-			print_statistic(&ctx, thread);
-		} else {
-			ctx.stop++;
-		}
+		assert(thread->exist);
+		print_statistic(&ctx, thread);
 	}
 
 	TRACE("THREAD_STATE_RUN  %d\n", ctx.run);
 	TRACE("THREAD_STATE_WAIT  %d\n", ctx.wait);
-	TRACE("THREAD_STATE_STOP  %d\n", ctx.stop);
 	TRACE("THREAD_STATE_ZOMBIE  %d\n", ctx.zombie);
 
 	return 0;

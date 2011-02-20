@@ -108,10 +108,10 @@ struct thread {
 	 * Is needed for heap_scheduler.
 	 */
 	bool run_count;
-	/* Pseudo process */
-	#ifdef CONFIG_PP_ENABLE
+/* Pseudo process */
+#ifdef CONFIG_PP_ENABLE
 	struct pprocess *pp;
-	#endif
+#endif
 };
 
 /**
@@ -122,7 +122,7 @@ struct thread {
  * @return pointer to new thread if all parameters are correct.
  * @return NULL if one of parameters is NULL or all places for threads are occupied.
  */
-extern struct thread *thread_create(void (*run)(void), void *stack_address);
+extern struct thread *thread_create(void(*run)(void), void *stack_address);
 
 /**
  * Starts a thread.
@@ -187,29 +187,42 @@ extern int msg_erase(struct message *message);
 		(t = thread_iterator_has_next(i) ? thread_iterator_next(i) : NULL);)
 
 struct thread_iterator {
-	struct thread *current;
+	struct thread *next;
 };
 
-inline static struct thread_iterator *thread_get_all(struct thread_iterator *iterator) {
+inline static bool thread_iterator_has_next(struct thread_iterator *iterator) {
+	extern struct thread __thread_pool[];
+	return NULL != iterator && iterator->next < __thread_pool
+			+ THREAD_POOL_SIZE;
+}
+
+inline static void __thread_iterator_skip_holes(
+		struct thread_iterator *iterator) {
+	while (thread_iterator_has_next(iterator) && !iterator->next->exist) {
+		iterator->next++;
+	}
+}
+
+inline static struct thread_iterator *thread_get_all(
+		struct thread_iterator *iterator) {
 	extern struct thread __thread_pool[];
 	if (NULL == iterator) {
 		return NULL;
 	}
-	iterator->current = __thread_pool;
+	iterator->next = __thread_pool;
+	__thread_iterator_skip_holes(iterator);
 	return iterator;
 }
 
-inline static bool thread_iterator_has_next(struct thread_iterator *iterator) {
-	extern struct thread __thread_pool[];
-	return NULL != iterator && iterator->current <
-			__thread_pool + THREAD_POOL_SIZE;
-}
-
-inline static struct thread *thread_iterator_next(struct thread_iterator *iterator) {
+inline static struct thread *thread_iterator_next(
+		struct thread_iterator *iterator) {
+	struct thread *result;
 	if (!thread_iterator_has_next(iterator)) {
 		return NULL;
 	}
-	return iterator->current++;
+	result = iterator->next++;
+	__thread_iterator_skip_holes(iterator);
+	return result;
 }
 
 #ifdef CONFIG_PP_ENABLE
