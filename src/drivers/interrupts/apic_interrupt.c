@@ -15,7 +15,6 @@
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/io.h>
-
 #include <drivers/apic.h>
 
 void interrupt_init(void) {
@@ -31,16 +30,21 @@ void interrupt_init(void) {
 	out8(0x02, PIC2_DATA);
 	out8(0x01, PIC2_DATA);
 	out8(0x00, PIC2_DATA);
-
-	//out8(0xFF, PIC2_DATA);
 }
 
-void interrupt_enable(interrupt_nr_t interrupt_nr) {
-//	if (interrupt_nr > 8) {
-//		out8(in8(PIC2_DATA) & ~(1 << interrupt_nr), PIC2_DATA);
-//	} else {
-//		out8(in8(PIC2_DATA) & ~(1 << interrupt_nr), PIC1_DATA);
-//	}
+void interrupt_enable(interrupt_nr_t int_nr) {
+	if (int_nr > 8) {
+		out8(in8(PIC2_DATA) & ~(1 << int_nr), PIC2_DATA);
+	} else {
+		out8(in8(PIC1_DATA) & ~(1 << int_nr), PIC1_DATA);
+	}
 }
 
+void interrupt_disable(interrupt_nr_t int_nr) {
+	if (int_nr > 8) {
+		out8(in8(PIC2_DATA) | (1 << int_nr), PIC2_DATA);
+	} else {
+		out8(in8(PIC1_DATA) | (1 << int_nr), PIC1_DATA);
+	}
+}
 
