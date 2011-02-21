@@ -48,7 +48,7 @@ inline static void cache_data_disable(void) {
 }
 
 inline static void icache_flush(void) {
-	int volatile temp;
+	int volatile temp = 0;
 	unsigned int volatile start = 0;
 	unsigned int volatile end = 0x800; /*2k*/
 	unsigned int volatile line_length = 0x32;
@@ -64,7 +64,7 @@ inline static void icache_flush(void) {
 }
 
 inline static void dcache_flush(void) {
-	int volatile temp;
+	int volatile temp = 0;
 	unsigned int volatile start = 0;
 	unsigned int volatile end = 0x800; /*2k*/
 	unsigned int volatile line_length = 0x32;
