@@ -15,7 +15,7 @@ __core_string_mk := 1
 #
 # Params:
 #  1. The string to check
-# Returns: True if the specified text has no non-whitespace characters,
+# Return: True if the specified text has no non-whitespace characters,
 #          false otherwise
 #
 nowords = \
@@ -27,10 +27,11 @@ nowords = \
 #
 # Params:
 #  1. The string to check
-# Returns: True if the specified string is a single-word list, false otherwise
+# Return: The word itself if the specified string is a single-word list,
+#          nothing (false) otherwise
 #
 singleword = \
-  $(call make_bool,$(if $(word 2,$1),,$(firstword $1)))
+  $(if $(word 2,$1),,$(firstword $1))
 
 ##
 # Function: firstword
@@ -38,7 +39,7 @@ singleword = \
 #
 # Params:
 #  1. The target list of words
-# Returns: the first word of the list
+# Return: the first word of the list
 #
 firstword = \
   $(firstword $1)# built-in
@@ -49,7 +50,7 @@ firstword = \
 #
 # Params:
 #  1. The target list of words
-# Returns: the last word of the list
+# Return: the last word of the list
 #
 ifeq ($(lastword $(false) $(true)),$(true))
 lastword = \
@@ -65,7 +66,7 @@ endif
 #
 # Params:
 #  1. The target list of words
-# Returns: Returns the list of words with the first one removed
+# Return: the list of words with the first one removed
 #
 nofirstword = \
   $(wordlist 2,$(words $1),$1)
@@ -76,10 +77,35 @@ nofirstword = \
 #
 # Params:
 #  1. The target list of words
-# Returns: Returns the list of words with the last one removed
+# Return: the list of words with the last one removed
 #
 nolastword = \
   $(wordlist 2,$(words $1),x $1)
 
+##
+# Function: append
+# Appends the second argument after the first using whitespace as a separator
+# (if both of the argument are non-empty strings).
+#
+# Params:
+#  1. The first string
+#  1. The second string
+# Return: Returns the result of string concatenation
+#
+append = \
+  $1$(if $(and $2,$1), )$2
+
+##
+# Function: prepend
+# Prepends the second argument before the first using whitespace as a separator
+# (if both of the argument are non-empty strings).
+#
+# Params:
+#  1. The first string
+#  1. The second string
+# Return: Returns the result of string concatenation
+#
+prepend = \
+  $2$(if $(and $1,$2), )$1
 
 endif # __core_string_mk

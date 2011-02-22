@@ -107,7 +107,7 @@ f-wildcard = \
 # Usage: $(call wildcard_first,pattern...)
 #
 wildcard_first = \
-  $(call list_foldl,__wildcard_first_fold,,$1,wildcard)
+  $(call list_fold,__wildcard_first_fold,,$1,wildcard)
 
 ##
 # Function: d-wildcard_first
@@ -117,7 +117,7 @@ wildcard_first = \
 # See: wildcard_first, d-wildcard
 #
 d-wildcard_first = \
-  $(call list_foldl,__wildcard_first_fold,,$1,d-wildcard)
+  $(call list_fold,__wildcard_first_fold,,$1,d-wildcard)
 
 ##
 # Function: f-wildcard_first
@@ -127,7 +127,7 @@ d-wildcard_first = \
 # See: wildcard_first, f-wildcard
 #
 f-wildcard_first = \
-  $(call list_foldl,__wildcard_first_fold,,$1,f-wildcard)
+  $(call list_fold,__wildcard_first_fold,,$1,f-wildcard)
 
 # Params:
 #  1. The result of wildcard expansion of previous patterns

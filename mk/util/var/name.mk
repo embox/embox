@@ -79,7 +79,7 @@ include core/common.mk
 include core/string.mk # firstword/nofirstword
 include util/var/info.mk # var_defined
 include util/math.mk # sequences generator
-include util/list.mk # pairmap, foldl
+include util/list.mk # pairmap, fold
 
 ##
 # Function: var_name_mangle
@@ -181,7 +181,7 @@ __var_name_singles_pairmap = \
 #  1. Word-escaped variables list
 #  2. List of singleword variables (word-escaped)
 # Return: the variable list with all singles removed (word-escaped)
-__var_name_multies = $(call list_foldl,__var_name_multies_fold, $1 ,$2)
+__var_name_multies = $(call list_fold,__var_name_multies_fold, $1 ,$2)
 # Params:
 #  1. Word-escaped variables list being filtered
 #  2. The next single to remove from the list

@@ -54,7 +54,7 @@ chop = $(__gmsl_tr1)$(call nolastword,$1)
 #            2: List to iterate over calling the function in 1
 # Returns:   The list after calling the function on each element
 # ----------------------------------------------------------------------------
-map = $(__gmsl_tr2)$(call list_map,$1,$2)
+map = $(__gmsl_tr2)$(strip $(call list_map,$1,$2))
 
 # ----------------------------------------------------------------------------
 # Function:  pairmap
@@ -63,7 +63,7 @@ map = $(__gmsl_tr2)$(call list_map,$1,$2)
 #            3: Second list to iterate over calling the function in 1
 # Returns:   The list after calling the function on each pair of elements
 # ----------------------------------------------------------------------------
-pairmap = $(__gmsl_tr3)$(call list_pairmap,$1,$2,$3)
+pairmap = $(__gmsl_tr3)$(strip $(call list_pairmap,$1,$2,$3))
 
 # ----------------------------------------------------------------------------
 # Function:  leq

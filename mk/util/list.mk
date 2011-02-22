@@ -25,51 +25,9 @@
 # SUCH DAMAGE.
 #
 
-# Some parts of this file are derived from GMSL.
-
-#
-# GNU Make Standard Library (GMSL)
-#
-# A library of functions to be used with GNU Make's $(call) that
-# provides functionality not available in standard GNU Make.
-#
-# Copyright (c) 2005-2010 John Graham-Cumming
-#
-# This file is part of GMSL
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-# Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#
-# Redistributions in binary form must reproduce the above copyright
-# notice, this list of conditions and the following disclaimer in the
-# documentation and/or other materials provided with the distribution.
-#
-# Neither the name of the John Graham-Cumming nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-
 #
 # List manipulation functions.
 #
-# Author: John Graham-Cumming
 # Author: Eldar Abusalimov
 #
 
@@ -102,10 +60,7 @@ list_equal = \
 # Return: The list with its elements in reverse order
 #
 list_reverse = \
-  $(strip $(call __list_reverse,$(strip $1)))
-
-__list_reverse = \
-  $(if $1,$(call $0,$(call nofirstword,$1)) $(call firstword,$1))
+  $(call list_fold,prepend,,$1)
 
 # Higher order functions.
 
@@ -121,10 +76,10 @@ __list_reverse = \
 #      Return: the value to append to the resulting list
 #  2. List to iterate over
 #  3. Optional argument to pass when calling the function
-# Return: The list after calling the function on each element
+# Return: The unstripped result of calling the function on each element
 #
 list_map = \
-  $(strip $(foreach 2,$2,$(call $1,$2,$(value 3))))
+  $(foreach 2,$2,$(call $1,$2,$(value 3)))
 # TODO $(foreach 2,$2,...) can be a bitch, check it. -- Eldar
 
 ##
@@ -141,15 +96,17 @@ list_map = \
 #  2. The first list to iterate over
 #  3. The second list to iterate over
 #  4. Optional argument to pass when calling the function
-# Return: The list after calling the function on each pair of elements
+# Return: The unstripped result of calling the function on each pair
 #
 list_pairmap = \
-  $(strip $(call __list_pairmap,$1,$(strip $2),$(strip $3),$(value 4)))
+  $(call __list_pairmap,$1,$(join $(subst $$,$$$$,$2), \
+                 $(addprefix _$$_,$(subst $$,$$$$,$3))),$(value 4))
 
 __list_pairmap = \
-  $(if $2$3,$(call $1,$(call   firstword,$2),$(call   firstword,$3),$4) \
-         $(call $0,$1,$(call nofirstword,$2),$(call nofirstword,$3),$4) \
-   )
+  $(foreach 2,$2,$(call __list_pairmap_each,$1, \
+             $(subst $$$$,$$,$(subst _$$_, ,$2)),$3))
+__list_pairmap_each = \
+  $(call $1,$(word 1,$2),$(word 2,$2),$(value 3))
 
 # Left folding functions.
 
@@ -217,24 +174,6 @@ __list_fold_stripped = \
       ,$1,$(call $1,$2,$(call firstword,$3),$4),$(call nofirstword,$3),$4),$2)
 
 endif
-
-##
-# Function: list_fold1
-# Takes the first two items of the list and applies the function to them, then
-# feeds the function with this result and the third argument and so on.
-#
-# Params:
-#  1. Name of the folding function, see 'list_fold_fn'
-#  2. List to iterate over applying the folding function
-#  3. Optional argument to pass when calling the function
-# Return: The result of the last function call (if any occurred),
-#         the list element if it is the only element in the list,
-#         or empty if the list is empty
-#
-list_fold1 = \
-  $(if $(firstword $2),$ \
-      $(call list_fold,$1,$(firstword $2),$ \
-                   $(call nofirstword,$2),$(value 3)))
 
 ##
 # Function: list_scan

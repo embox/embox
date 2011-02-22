@@ -63,7 +63,7 @@ emfile_name = $(basename $(filter %.em,$(notdir $(__emfile))))
 #  define
 #
 
-emfile_chain = $(call list_foldl,__emfile_chain_invoke,,$1)
+emfile_chain = $(call list_fold,__emfile_chain_invoke,,$1)
 
 __emfile_chain_invoke = \
   $(call emfile_errors_filter,$1) $(call $2,$(call emfile_entities_extract,$1))
