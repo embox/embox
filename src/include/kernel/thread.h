@@ -147,6 +147,8 @@ extern int thread_stop(struct thread *stopped_thread);
  */
 extern void thread_yield(void);
 
+extern struct thread *thread_get_by_id(int id);
+
 /**
  * Send message to thread.
  *

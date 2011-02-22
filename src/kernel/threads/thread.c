@@ -195,6 +195,11 @@ void msg_send(struct message *message, struct thread *thread) {
 	scheduler_unlock();
 }
 
+//TODO Check input values --Alina
+struct thread *thread_get_by_id(int id){
+	return __thread_pool + id;
+}
+
 struct message *msg_receive(void) {
 	if (queue_empty(&current_thread->messages)) {
 		current_thread->need_message = true;
@@ -222,4 +227,5 @@ int msg_erase(struct message *message) {
 	msg_mask[message - messages_pool] = 0;
 	return 0;
 }
+
 

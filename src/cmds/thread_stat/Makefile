@@ -1,4 +1,4 @@
 
-$_MODS += thread_stat
+$_MODS += thread
 
-$_SRCS-thread_stat += *.c
+$_SRCS-thread += *.c
