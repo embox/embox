@@ -17,19 +17,26 @@
 #include <asm/io.h>
 #include <drivers/apic.h>
 
+/**
+ * Initialize the PIC
+ */
 void interrupt_init(void) {
-	/* remap PICs */
-	out8(ICW1_INIT + ICW1_ICW4, PIC1_COMMAND);
-	out8(0x20, PIC1_DATA);
-	out8(0x04, PIC1_DATA);
-	out8(0x01, PIC1_DATA);
-	out8(0x00, PIC1_DATA);
+	/* Initialize the master */
+	out8(PIC1_ICW1, PIC1_COMMAND);
+	out8(PIC1_BASE, PIC1_DATA);
+	out8(PIC1_ICW3, PIC1_DATA);
+	out8(PIC1_ICW4, PIC1_DATA);
 
-	out8(ICW1_INIT + ICW1_ICW4, PIC2_COMMAND);
-	out8(0x28, PIC2_DATA);
-	out8(0x02, PIC2_DATA);
-	out8(0x01, PIC2_DATA);
-	out8(0x00, PIC2_DATA);
+	/* Initialize the slave */
+	out8(PIC2_ICW1, PIC2_COMMAND);
+	out8(PIC2_BASE, PIC2_DATA);
+	out8(PIC2_ICW3, PIC2_DATA);
+	out8(PIC2_ICW4, PIC2_DATA);
+
+	out8(NON_SPEC_EOI, PIC1_COMMAND);
+	out8(NON_SPEC_EOI, PIC2_COMMAND);
+
+	apic_disable_all();
 }
 
 void interrupt_enable(interrupt_nr_t int_nr) {
@@ -46,5 +53,14 @@ void interrupt_disable(interrupt_nr_t int_nr) {
 	} else {
 		out8(in8(PIC1_DATA) | (1 << int_nr), PIC1_DATA);
 	}
+}
+
+void irqc_set_mask(__interrupt_mask_t mask) {
+	out8(mask & 0xff, PIC1_DATA);
+	out8((mask >> 8) & 0xff, PIC2_DATA);
+}
+
+__interrupt_mask_t irqc_get_mask(void) {
+	return (in8(PIC2_DATA) << 8) | in8(PIC1_DATA);
 }
 

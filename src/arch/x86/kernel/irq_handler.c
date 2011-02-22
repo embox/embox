@@ -22,10 +22,10 @@ void irq_handler(pt_regs_t regs) {
 	   If this interrupt involved the slave. */
 	if (regs.trapno >= 40) {
 		/* Send reset signal to slave. */
-		out8(PIC2_COMMAND, PIC_EOI);
+		out8(PIC2_COMMAND, NON_SPEC_EOI);
 	}
 	/* Send reset signal to master. (As well as slave, if necessary). */
-	out8(PIC1_COMMAND, PIC_EOI);
+	out8(PIC1_COMMAND, NON_SPEC_EOI);
 #ifdef CONFIG_IRQ
 	irq_dispatch(regs.trapno - 32);
 #endif
