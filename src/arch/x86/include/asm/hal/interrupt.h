@@ -35,5 +35,8 @@ typedef unsigned long __interrupt_mask_t;
 #define T_GENERAL_PROTECTION    0x0D /* General Protection */
 #define T_PAGE_FAULT            0x0E /* Page Fault */
 
+extern void irqc_set_mask(__interrupt_mask_t mask);
+extern __interrupt_mask_t irqc_get_mask(void);
+
 #endif /*__ASSEMBLER__*/
 
