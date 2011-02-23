@@ -99,14 +99,14 @@ list_map = \
 # Return: The unstripped result of calling the function on each pair
 #
 list_pairmap = \
-  $(call __list_pairmap,$1,$(join $(subst $$,$$$$,$2), \
-                 $(addprefix _$$_,$(subst $$,$$$$,$3))),$(value 4))
+  $(call __list_pairmap,$1,$(join \
+                 $(addsuffix _$$_,$(subst $$,$$$$,$2)), \
+                                  $(subst $$,$$$$,$3)),$(value 4))
 
-__list_pairmap = \
-  $(foreach 2,$2,$(call __list_pairmap_each,$1, \
-             $(subst $$$$,$$,$(subst _$$_, ,$2)),$3))
-__list_pairmap_each = \
-  $(call $1,$(word 1,$2),$(word 2,$2),$(value 3))
+__list_pairmap = $(foreach 2,$2 \
+  ,$(call __list_pairmap_each,$1,$(subst $$$$,$$,$(subst _$$_, _ ,$2)),$3))
+__list_pairmap_each = $(if $(call singleword,$2) \
+    ,$(call $1,,$2,$3),$(call $1,$(word 1,$2),$(word 3,$2),$3))
 
 # Left folding functions.
 
