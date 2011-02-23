@@ -34,6 +34,14 @@ $(\space)\n$(\space) := $(\n)
 
 \comma := ,
 
+\colon := :
+
+\brace_open = (
+\brace_close = )
+
+# Identity function.
+id = $1
+
 true  := T
 false :=
 

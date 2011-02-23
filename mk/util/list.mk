@@ -34,6 +34,7 @@
 ifndef __util_list_mk
 __util_list_mk := 1
 
+include core/common.mk
 include core/string.mk
 
 ##
@@ -79,8 +80,31 @@ list_reverse = \
 # Return: The unstripped result of calling the function on each element
 #
 list_map = \
-  $(foreach 2,$2,$(call $1,$2,$(value 3)))
-# TODO $(foreach 2,$2,...) can be a bitch, check it. -- Eldar
+  $(call list_map_transcoded,$1,$2,,,$(value 3))
+#  $(foreach 2,$2,$(call $1,$2,$(value 3)))
+
+##
+# Function: list_map_transcoded
+# Calls the specified function on each element of a list.
+# The whole list is preliminarily encoded and then each element is decoded
+# separately before applying the function to it.
+#
+# Params:
+#  1. Name of function to call for each element,
+#     with the following signature:
+#       1. A decoded element
+#       2. Optional argument (if any)
+#      Return: the value to append to the resulting list
+#  2. List to encode and iterate over
+#  3. (optional) Name of encoding function. Identity function by default
+#  4. (optional) Name of decoding function. Identity function by default
+#  5. Optional argument to pass when calling the function
+# Return: The unstripped result of calling the function on each transcoded
+#         element
+#
+list_map_transcoded = \
+  $(foreach 2,$(if $3,$(call $3,$2),$2) \
+   ,$(call $1,$(if $4,$(call $4,$2),$2),$(value 5)))
 
 ##
 # Function: list_pairmap

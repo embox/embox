@@ -6,31 +6,38 @@
 ifndef __core_object_mk
 __core_object_mk := 1
 
+include util/var/filter.mk
+
+# Ex:
+error.message := unknown message
+error.report() = $(info $(call .get,message))
+
 # 1. clazz
-# ... args
 # ret: id
-new =
+new = \
+  $(foreach this,$(__object_instance_cnt_get_and_inc),$(call __object_init,$1))
+
+# 1. Class name
+__object_init = \
+  $(foreach field,$(call __object_class_fields,$1) \
+    ,$(call .set,$(field),$(call $(field))))$(call .set,__class,$1)
+
+# 1. Class name
+__object_class_fields = \
+  $(filter-out %$(\brace_close),$(call __object_class_members,$1))
+
+# 1. Class name
+__object_class_members = \
+  $(patsubst $1.%,%,$(call var_list_map,__object_class_member_filter,,$1))
+
+# 1. Variable name
+# 2. Class name
+__object_class_member_filter = $(filter $2.%,$(call singleword,$1))
+
 # 1. obj
 # 2. clazz
 # ret: true/false
 instanceof =
-# 1. obj
-delete =
-
-# Params:
-#  1. Class name
-object_class_define =
-# Params:
-#  1. Class name
-#  2. Field name
-#  3. Optional getter
-#  4. Optional setter
-object_class_define_field =
-# Params:
-#  1. Class name
-#  2. Method name
-#  3. Function to bind
-object_class_define_method =
 
 # Params:
 #  1. Instance on which to invoke the method
@@ -39,10 +46,23 @@ object_class_define_method =
 invoke =
 
 # Params:
+#  1. Method to invoke
+# ... Args
+# Return: Method invocation result
+.invoke = \
+  $(call invoke,$(this),$1,$2)
+
+# Params:
 #  1. Instance which's field to get
 #  2. The field
-# Returns: The field value
+# Return: The field value
 get =
+
+# Params:
+#  1. The field
+# Return: The field value
+.get = \
+  $(call get,$(this),$1)
 
 # Params:
 #  1. Instance which's field to set
@@ -50,10 +70,23 @@ get =
 #  3. The value to set
 set =
 
-__object_instance_counter :=
-__object_instance_counter_get = $(words $(__object_instance_counter))
-__object_instance_counter_get_preincrement = \
-  ${eval __object_instance_counter += x}$(__object_instance_counter_get)
+# Params:
+#  1. The field
+#  2. The value to set
+.set = \
+  $(call set,$(this),$1,$2)
+
+# Returns the argument if it denotes a valid object reference, fails otherwise
+__object_this_check = \
+  $(word $(1:obj%=%),)$(strip $1)
+
+__object_instance_cnt :=
+__object_instance_cnt_get = \
+  obj$(firstword $(__object_instance_cnt))
+__object_instance_cnt_inc = ${eval __object_instance_cnt := \
+      $(words x $(__object_instance_cnt)) $(__object_instance_cnt)}
+__object_instance_cnt_get_and_inc = \
+  $(__object_instance_cnt_get)$(__object_instance_cnt_inc)
 
 endif # __core_object_mk
 
