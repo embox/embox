@@ -21,34 +21,43 @@ static const char *man_page =
 #include "thread_help.inc"
 ;
 
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
-;
+DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static void print_stat(void) {
 	struct thread *thread;
 	int run = 0, wait = 0, zombie = 0;
+	int total = 0;
+
+	printf(" %3s %4s %6s\n", "Id", "Prio", "State");
 
 	thread_foreach(thread) {
+		const char *state;
 		assert(thread->exist);
+
 		switch (thread->state) {
 		case THREAD_STATE_RUN:
+			state = "run";
 			run++;
 			break;
 		case THREAD_STATE_WAIT:
+			state = "wait";
 			wait++;
 			break;
 		case THREAD_STATE_ZOMBIE:
+			state = "zombie";
 			zombie++;
 			break;
 		default:
+			state = "unknown";
 			break;
 		}
-		TRACE("\tTHREAD id : %d; priority : %d; \n", thread->id, thread->priority);
+		printf(" %3d %4d %6s\n", thread->id, thread->priority, state);
 	}
 
-	TRACE("THREAD_STATE_RUN  %d\n", run);
-	TRACE("THREAD_STATE_WAIT  %d\n", wait);
-	TRACE("THREAD_STATE_ZOMBIE  %d\n", zombie);
+	total = run + wait + zombie;
+
+	printf("Total: %d threads (%d run,  %d wait, %d zombie)\n", total, run,
+			wait, zombie);
 }
 
 static void thread_kill(int thread_id) {
@@ -84,8 +93,11 @@ static int exec(int argc, char **argv) {
 	getopt_init();
 
 	while ((next_opt = getopt(argc, argv, "hsk:")) != -1) {
+		printf("\n");
 		switch (next_opt) {
 		case '?':
+			printf("Invalid command line option\n");
+			/* FALLTHROUGH */
 		case 'h':
 			show_help();
 			break;

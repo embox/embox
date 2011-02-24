@@ -4,10 +4,10 @@
  * @date 23.09.09
  * @author Nikolay Korotky
  */
+
 #include <getopt.h>
-#include <embox/kernel.h>
-#include <stdio.h>
 #include <string.h>
+#include <embox/kernel.h>
 
 int   opterr = 1;
 int   optind = 1;
@@ -34,7 +34,6 @@ int getopt(int argc, char **argv, const char *opts) {
 	if (c == ':' || (cp=strchr(opts, c)) == NULL) {
 		/* if arg sentinel as option or other invalid option,
 		handle the error and return '?' */
-		LOG_ERROR("illegal option -- %c", (char)c);
 		if (argv[optind][++sp] == '\0') {
 			optind++;
 			sp = 1;
@@ -49,7 +48,6 @@ int getopt(int argc, char **argv, const char *opts) {
 		else if (++optind >= argc) {
 			/* but if the OptArg isn't there and the next CmdLineArg
 			 isn't either, handle the error... */
-			LOG_ERROR("%c: option requires an argument -- ", (char)c);
 			sp = 1;
 			return '?';
 		} else

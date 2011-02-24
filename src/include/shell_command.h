@@ -27,7 +27,7 @@ typedef struct _SHELL_COMMAND_DESCRIPTOR {
 		__attribute__ ((used, section(".shell_commands"))) \
 		= { name, exec, desc_msg, help_msg, &man_page }
 
-#define show_help() printf(HELP_MSG)
+#define show_help() printf(HELP_MSG "\n")
 
 #define show_man_page() printf(man_page)
 
