@@ -66,7 +66,7 @@ static int exec(int argc, char **argv) {
 			print_stat();
 			break;
 		case 'k':
-			if ((optarg == NULL) || (!sscanf(optarg, "%d", &thread_id))){
+			if ((optarg == NULL) || (!sscanf(optarg, "%d", &thread_id))) {
 				show_help();
 				return -1;
 			}
@@ -76,10 +76,23 @@ static int exec(int argc, char **argv) {
 		};
 	}
 
-
-	//TODO Check input values --Alina
 	if (thread_id != -1) {
-		thread_stop(thread_get_by_id(thread_id));
+		struct thread *thread;
+
+		if (thread_id < 0) {
+			printf("Invalid (negative) thread id: %d\n", thread_id);
+
+		} else {
+			thread = thread_get_by_id(thread_id);
+
+			if (thread == NULL) {
+				printf("No thread with id: %d\n", thread_id);
+			} else if (thread == idle_thread) {
+				printf("Can't stop idle thread\n");
+			} else {
+				thread_stop(thread);
+			}
+		}
 	}
 
 	return 0;

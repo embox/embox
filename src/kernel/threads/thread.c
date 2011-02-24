@@ -195,9 +195,14 @@ void msg_send(struct message *message, struct thread *thread) {
 	scheduler_unlock();
 }
 
-//TODO Check input values --Alina
 struct thread *thread_get_by_id(int id){
-	return __thread_pool + id;
+	struct thread *thread = __thread_pool + id;
+
+	if (!(0 <= id && id < THREAD_POOL_SIZE)) {
+		return NULL;
+	}
+
+	return thread->exist ? thread : NULL;
 }
 
 struct message *msg_receive(void) {
