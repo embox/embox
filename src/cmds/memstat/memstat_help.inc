@@ -1,8 +1,0 @@
-"NAME\n"
-"\tmemstat - <brief>\n"
-"SYNOPSIS\n"
-"\t<synopsis>\n"
-"DESCRIPTION\n"
-"\t<description>\n"
-"AUTHORS\n"
-"\tGleb Efimov"

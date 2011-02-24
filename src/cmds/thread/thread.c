@@ -18,7 +18,7 @@
 #define COMMAND_DESC_MSG "print threads statistic for EMBOX"
 #define HELP_MSG         "Usage: thread [-h] [-k <thread id>] [-s]"
 static const char *man_page =
-#include "thread_stat_help.inc"
+#include "thread_help.inc"
 ;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
