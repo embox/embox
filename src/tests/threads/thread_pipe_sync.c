@@ -7,6 +7,7 @@
  */
 
 #include <embox/test.h>
+#include <embox/unit.h>
 #include <kernel/thread.h>
 #include <kernel/pipe_manager.h>
 #include <kernel/scheduler.h>
@@ -25,43 +26,43 @@ static struct thread *first_thread;
 static struct thread *second_thread;
 static struct thread *third_thread;
 
-static struct n_pipe *new_pipe;
-
 static void first_run(void) {
 	TRACE("\n First thread: \n");
-	int i;
-	i = pipe_section_read(0, 0);
-	TRACE("\n i in pipe = %d", i);
-	i++;
-	TRACE("\n i++ = %d", i);
-	pipe_section_write(0, 0, i);
-	TRACE("\n i in pipe = %d\n", pipe_section_read(0, 0));
+	pipe_write(0, 'k');
+	pipe_write(0, 'z');
 	thread_yield();
 }
 
 static void second_run(void) {
 	TRACE("\n Second thread: \n");
-	int j;
-	j = pipe_section_read(0, 0);
-	TRACE("\n j in pipe = %d", j);
-	j++;
-	TRACE("\n j++ = %d", j);
-	pipe_section_write(0, 0, j);
-	TRACE("\n j in pipe = %d\n", pipe_section_read(0,0));
+	pipe_write(0, 'm');
+	char tmp = pipe_read(0);
+	TRACE("\n tmp %c \n", tmp);
+	tmp = pipe_read(0);
+	TRACE("\n tmp %c \n", tmp);
+	tmp = pipe_read(0);
+	TRACE("\n tmp %c \n", tmp);
+
+	pipe_write(0, 's');
+	pipe_write(0, 't');
+	pipe_write(0, 'a');
+	pipe_write(0, 'r');
+	pipe_write(0, 't');
 	thread_yield();
 }
 
 static void third_run(void) {
 	TRACE("\n Third thread: \n");
-	int k;
-	k = pipe_section_read(0, 0);
-	TRACE("\n k in pipe = %d", k);
-	k++;
-	TRACE("\n k++ = %d", k);
-	pipe_section_write(0, 0, k);
-	TRACE("\n k in pipe = %d\n", pipe_section_read(0,0));
-	thread_yield();
-
+	char tmp = pipe_read(0);
+	TRACE("\n tmp %c \n", tmp);
+	tmp = pipe_read(0);
+	TRACE("\n tmp %c \n", tmp);
+	tmp = pipe_read(0);
+	TRACE("\n tmp %c \n", tmp);
+	tmp = pipe_read(0);
+	TRACE("\n tmp %c \n", tmp);
+	tmp = pipe_read(0);
+	TRACE("\n tmp %c \n", tmp);
 }
 
 static int run() {
@@ -78,14 +79,14 @@ static int run() {
 	assert(third_thread != NULL);
 	assert(second_thread != NULL);
 	assert(first_thread != NULL);
-
+	thread_start(first_thread);
 	thread_start(third_thread);
 	thread_start(second_thread);
-	thread_start(first_thread);
 
 
-	pool_init();
-	new_pipe = pipe_create(); // pipe #1
+	pipe_create(); // pipe #0
+	pipe_create(); // pipe #1
+
 	scheduler_start();
 	scheduler_stop();
 

@@ -12,16 +12,15 @@
 #define MAX_PIPES_COUNT 0x10
 #define true 1
 #define false 0
-#define FULL_POOL_ERROR -1
-#define EMPTY_PIPE -11
-#define SYNC_DATA_INIT_SYMB '_'
+
+#define UNREADABLE_PIPE 'E'
 
 EMBOX_UNIT_INIT(pool_init);
 
 static struct n_pipe pipe_pool[MAX_PIPES_COUNT];
 
-static int pool_init(void) {
-	int i, j;
+static int pool_init(void) { /* initializing all pipes in pool */
+	int i;
 	for (i = 0; i < MAX_PIPES_COUNT; i++) {
 		pipe_pool[i].on = false;
 		pipe_pool[i].ready_to_read = false;
@@ -29,86 +28,89 @@ static int pool_init(void) {
 		pipe_pool[i].is_full = false;
 		pipe_pool[i].read_index = 0;
 		pipe_pool[i].write_index = 0;
-
-		for (j = 0; j < MAX_PIPE_SIZE; j++) {
-			pipe_pool[i].sync_data[j] = SYNC_DATA_INIT_SYMB;
-		}
 	}
 	return 0;
 }
 
-int free_pipe_status(void) { /* returns free pipes number */
+int free_pipe_status(void) { /* returns free pipes number. ENOMEM if pool is full */
 	int i;
 	for (i = 0; i < MAX_PIPES_COUNT; i++) {
 		if (!pipe_pool[i].on) return MAX_PIPES_COUNT - (i++);
 	}
-	return FULL_POOL_ERROR;
+	return ENOMEM;
 }
 
-int pipe_flush(int pipe) {
+int pipe_flush(int pipe) { /* reinitialize pipe */
 	struct n_pipe *tmp_pipe = &pipe_pool[pipe];
 	tmp_pipe->is_full = false;
 	tmp_pipe->read_index = 0;
 	tmp_pipe->write_index = 0;
-	int i;
-	for (int i = 0; i < MAX_PIPE_SIZE; i++) {
-		tmp_pipe->sync_data[i] = SYNC_DATA_INIT_SYMB;
-	}
+	tmp_pipe->ready_to_read = false;
+	tmp_pipe->ready_to_write = true;
+	tmp_pipe->on = true;
+	tmp_pipe->is_full = false;
 	return 0;
 }
 
-int pipe_create(void) {
+int pipe_create(void) { /* if pipe pool is full - returns ENOMEM */
 	int i;
 	for (i = 0; i < MAX_PIPES_COUNT; i++) {
 		if (!pipe_pool[i].on) {
 			pipe_pool[i].on = true;
-			pipe_pool[i].ready_to_read = true;
+			pipe_pool[i].ready_to_read = false;
+				/* pipe not ready to be read after initialize */
 			pipe_pool[i].ready_to_write = true;
 			pipe_pool[i].read_index = 0;
 			pipe_pool[i].write_index = 0;
 			return 0;
 		}
 	}
-	return FULL_POOL_ERROR;
+	return ENOMEM;
 }
 
 char pipe_read(int pipe) {
-	struct n_pipe *tmp_pipe = &pipe_pool[pipe];
 
-	if ((tmp_pipe->read_index = tmp_pipe->write_index) &&
-			tmp_pipe->is_full) return EMPTY_PIPE;
+	if (pipe_pool[pipe].read_index == pipe_pool[pipe].write_index){
+		pipe_pool[pipe].ready_to_read = false;
+		return UNREADABLE_PIPE;
+	}
 
-	int i = tmp_pipe->read_index;
-	if (tmp_pipe->read_index < MAX_PIPE_SIZE - 1) tmp_pipe->read_index++;
-		else tmp_pipe->read_index = 0;
+	int i = pipe_pool[pipe].read_index;
 
-	if (tmp_pipe->read_index = tmp_pipe->write_index)
-		tmp_pipe->is_full = true;
-	else tmp_pipe->is_full = false;
+	if (pipe_pool[pipe].read_index < MAX_PIPE_SIZE - 1){
+		pipe_pool[pipe].read_index++;
+	}
+	else{
+		pipe_pool[pipe].read_index = 0;
+	}
+	pipe_pool[pipe].ready_to_write = true;  //Therefore 1 element of pipe was reading
+											//pipe opening for writing
 
-	return tmp_pipe->sync_data[i];
+	return pipe_pool[pipe].sync_data[i];
 }
 
 int pipe_write(int pipe, char data) {
-	struct n_pipe *tmp_pipe = &pipe_pool[pipe];
-	int i = tmp_pipe->read_index,
-		j = tmp_pipe->write_index;
 
-	if ((i = j) && (tmp_pipe->sync_data[j++] = SYNC_DATA_INIT_SYMB)) {
-		tmp_pipe->sync_data[j] = &data;
-		tmp_pipe->write_index++;
-		return 0;
+	int i, j;
+
+	if (pipe_pool[pipe].ready_to_write){
+		i = pipe_pool[pipe].read_index;
+		j = pipe_pool[pipe].write_index;
+		pipe_pool[pipe].sync_data[j] = data;
+
+		if (j < MAX_PIPE_SIZE - 1){
+			pipe_pool[pipe].write_index++;
+		}
+		else{
+			pipe_pool[pipe].write_index = 0;
+		}
+
+		if (i == pipe_pool[pipe].write_index){
+			pipe_pool[pipe].ready_to_write = false;
+			return 0;
+		}
 	}
-
-	if (i != j) {
-    	tmp_pipe->sync_data[j] = &data;
-    	if (tmp_pipe->write_index < MAX_PIPE_SIZE - 1) tmp_pipe->write_index++;
-			else tmp_pipe->write_index = 0;
-    	return 0;
-    }
-
-	if ((i = j) && (tmp_pipe->sync_data[j++] != SYNC_DATA_INIT_SYMB)) {
-		tmp_pipe->is_full = true;
+	else {
 		return ENOMEM;
 	}
 }
