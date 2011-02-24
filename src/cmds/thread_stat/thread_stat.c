@@ -52,37 +52,34 @@ static void print_stat(void) {
 }
 
 static void thread_kill(int thread_id) {
-	if (thread_id != -1) {
+	struct thread *thread;
+	int error;
 
-		struct thread *thread;
-
-		if (thread_id < 0) {
-			printf("Invalid (negative) thread id: %d\n", thread_id);
-
-		} else {
-			thread = thread_get_by_id(thread_id);
-
-			if (thread == NULL) {
-				printf("No thread with id: %d\n", thread_id);
-			} else if (thread == idle_thread) {
-				printf("Can't kill idle thread\n");
-			} else {
-				int error = thread_stop(thread);
-
-				if (!error) {
-					printf("Thread %d killed\n", thread_id);
-				} else {
-					printf("Unable to kill thread %d: %s\n", thread_id,
-							strerror(error));
-				}
-			}
-		}
+	if (thread_id < 0) {
+		printf("Invalid (negative) thread id: %d\n", thread_id);
+		return;
 	}
+
+	if ((thread = thread_get_by_id(thread_id)) == NULL) {
+		printf("No thread with id: %d\n", thread_id);
+		return;
+	}
+
+	if (thread == idle_thread) {
+		printf("Can't kill idle thread\n");
+		return;
+	}
+
+	if ((error = thread_stop(thread))) {
+		printf("Unable to kill thread %d: %s\n", thread_id, strerror(error));
+		return;
+	}
+
+	printf("Thread %d killed\n", thread_id);
 }
 
 static int exec(int argc, char **argv) {
 	int next_opt;
-	int thread_id = -1;
 
 	getopt_init();
 
@@ -95,18 +92,20 @@ static int exec(int argc, char **argv) {
 		case 's':
 			print_stat();
 			break;
-		case 'k':
+		case 'k': {
+			int thread_id;
+
 			if ((optarg == NULL) || (!sscanf(optarg, "%d", &thread_id))) {
 				show_help();
-				return -1;
-			} else {
-				thread_kill(thread_id);
-				return 0;
+				break;
 			}
+
+			thread_kill(thread_id);
 			break;
+		}
 		default:
-			return 0;
-		};
+			break;
+		}
 	}
 
 	return 0;
