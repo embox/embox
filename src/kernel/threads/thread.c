@@ -195,16 +195,6 @@ void msg_send(struct message *message, struct thread *thread) {
 	scheduler_unlock();
 }
 
-struct thread *thread_get_by_id(int id){
-	struct thread *thread = __thread_pool + id;
-
-	if (!(0 <= id && id < THREAD_POOL_SIZE)) {
-		return NULL;
-	}
-
-	return thread->exist ? thread : NULL;
-}
-
 struct message *msg_receive(void) {
 	if (queue_empty(&current_thread->messages)) {
 		current_thread->need_message = true;
