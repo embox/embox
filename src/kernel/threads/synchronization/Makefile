@@ -6,5 +6,6 @@ $_MODS += synchronization
 $_SRCS-synchronization += pipe_manager.c
 $_SRCS-synchronization += mutex.c
 $_SRCS-synchronization += convar.c
+$_SRCS-synchronization += message.c
 
 endif

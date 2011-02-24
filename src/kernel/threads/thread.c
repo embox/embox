@@ -3,13 +3,14 @@
  * @brief Implementation of methods in thread.h
  *
  * @date 22.04.2010
- * @author Avdyukhin Dmitry
+ * @author Dmitry Avdyukhin
  */
 
 #include <assert.h>
 #include <errno.h>
 #include <queue.h>
 
+#include <kernel/thread.h>
 #include <kernel/scheduler.h>
 #include <hal/context.h>
 #include <hal/arch.h>
@@ -21,26 +22,19 @@
 #endif
 
 #define THREAD_STACK_SIZE 0x10000
-#define MAX_MSG_COUNT 100
 
 EMBOX_UNIT_INIT(threads_init);
 
 struct thread *idle_thread;
 struct thread *current_thread;
 
-/** Pool, containing threads. */
-struct thread __thread_pool[THREAD_POOL_SIZE];
-
 /** Stack for idle_thread. */
 static char idle_thread_stack[THREAD_STACK_SIZE];
 
+/** Pool, containing threads. */
+struct thread __thread_pool[THREAD_POOL_SZ];
 /** A mask, which shows, what places for new threads are free. */
-static int mask[THREAD_POOL_SIZE];
-
-/** Shows what messages are free. */
-static bool msg_mask[MAX_MSG_COUNT];
-/** Pool, containing messages to be occupied. */
-static struct message messages_pool[MAX_MSG_COUNT];
+static int thread_pool_mask[THREAD_POOL_SZ];
 
 /**
  * Function, which makes nothing. For idle_thread.
@@ -52,11 +46,6 @@ static void idle_run(void) {
 }
 
 static int threads_init(void) {
-	size_t i;
-	for (i = 0; i < MAX_MSG_COUNT; i++) {
-		msg_mask[i] = 0;
-		__thread_pool[i].exist = false;
-	}
 	idle_thread = thread_create(idle_run,
 		idle_thread_stack + THREAD_STACK_SIZE);
 	idle_thread->priority = 0;
@@ -87,11 +76,11 @@ static void thread_run(int par) {
 static struct thread *thread_new(void) {
 	size_t i;
 	struct thread *created_thread;
-	for (i = 0; i < THREAD_POOL_SIZE; i++) {
-		if (mask[i] == 0) {
+	for (i = 0; i < THREAD_POOL_SZ; i++) {
+		if (thread_pool_mask[i] == 0) {
 			created_thread = __thread_pool + i;
 			created_thread->id = i;
-			mask[i] = 1;
+			thread_pool_mask[i] = 1;
 			created_thread->exist = true;
 			return created_thread;
 		}
@@ -147,7 +136,7 @@ static int thread_delete(struct thread *deleted_thread) {
 	#endif
 	deleted_thread->state = THREAD_STATE_STOP;
 	deleted_thread->exist = false;
-	mask[deleted_thread - __thread_pool] = 0;
+	thread_pool_mask[deleted_thread - __thread_pool] = 0;
 	return 0;
 }
 
@@ -184,43 +173,4 @@ void thread_yield(void) {
 	current_thread->reschedule = true;
 	scheduler_unlock();
 }
-
-void msg_send(struct message *message, struct thread *thread) {
-	scheduler_lock();
-	queue_add(&message->list, &thread->messages);
-	if (thread->need_message) {
-		thread->need_message = false;
-		scheduler_wakeup(&thread->msg_event);
-	}
-	scheduler_unlock();
-}
-
-struct message *msg_receive(void) {
-	if (queue_empty(&current_thread->messages)) {
-		current_thread->need_message = true;
-		scheduler_sleep(&current_thread->msg_event);
-	}
-	return (struct message *) list_entry(
-		queue_extr(&current_thread->messages), struct message, list);
-}
-
-struct message *msg_new(void) {
-	size_t i;
-	for (i = 0; i < MAX_MSG_COUNT; i++) {
-		if (!msg_mask[i]) {
-			msg_mask[i] = true;
-			return messages_pool + i;
-		}
-	}
-	return NULL;
-}
-
-int msg_erase(struct message *message) {
-	if (message == NULL) {
-		return -1;
-	}
-	msg_mask[message - messages_pool] = 0;
-	return 0;
-}
-
 

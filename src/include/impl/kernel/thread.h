@@ -73,7 +73,7 @@ struct pprocess *pp;
 };
 
 
-#define THREAD_POOL_SIZE 0x100
+#define THREAD_POOL_SZ 0x100
 
 #define __thread_foreach(t) MACRO_INVOKE(__thread_foreach_iterator, \
 		t, GUARD_SUFFIX(__thread_iterator))
@@ -89,7 +89,7 @@ struct __thread_iterator {
 inline static bool __thread_iterator_has_next(struct __thread_iterator *iterator) {
 	extern struct thread __thread_pool[];
 	return NULL != iterator && iterator->next < __thread_pool
-			+ THREAD_POOL_SIZE;
+			+ THREAD_POOL_SZ;
 }
 
 inline static void __thread_iterator_skip_holes(
@@ -125,7 +125,7 @@ inline static struct thread *thread_get_by_id(__thread_id_t id) {
 	extern struct thread __thread_pool[];
 	struct thread *thread = __thread_pool + id;
 
-	if (!(0 <= id && id < THREAD_POOL_SIZE)) {
+	if (!(0 <= id && id < THREAD_POOL_SZ)) {
 		return NULL;
 	}
 
