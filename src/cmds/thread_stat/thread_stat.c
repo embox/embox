@@ -21,7 +21,8 @@ static const char *man_page =
 #include "thread_stat_help.inc"
 ;
 
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
+;
 
 static void print_stat(void) {
 	struct thread *thread;
@@ -50,6 +51,35 @@ static void print_stat(void) {
 	TRACE("THREAD_STATE_ZOMBIE  %d\n", zombie);
 }
 
+static void thread_kill(int thread_id) {
+	if (thread_id != -1) {
+
+		struct thread *thread;
+
+		if (thread_id < 0) {
+			printf("Invalid (negative) thread id: %d\n", thread_id);
+
+		} else {
+			thread = thread_get_by_id(thread_id);
+
+			if (thread == NULL) {
+				printf("No thread with id: %d\n", thread_id);
+			} else if (thread == idle_thread) {
+				printf("Can't kill idle thread\n");
+			} else {
+				int error = thread_stop(thread);
+
+				if (!error) {
+					printf("Thread %d killed\n", thread_id);
+				} else {
+					printf("Unable to kill thread %d: %s\n", thread_id,
+							strerror(error));
+				}
+			}
+		}
+	}
+}
+
 static int exec(int argc, char **argv) {
 	int next_opt;
 	int thread_id = -1;
@@ -69,30 +99,14 @@ static int exec(int argc, char **argv) {
 			if ((optarg == NULL) || (!sscanf(optarg, "%d", &thread_id))) {
 				show_help();
 				return -1;
+			} else {
+				thread_kill(thread_id);
+				return 0;
 			}
 			break;
 		default:
 			return 0;
 		};
-	}
-
-	if (thread_id != -1) {
-		struct thread *thread;
-
-		if (thread_id < 0) {
-			printf("Invalid (negative) thread id: %d\n", thread_id);
-
-		} else {
-			thread = thread_get_by_id(thread_id);
-
-			if (thread == NULL) {
-				printf("No thread with id: %d\n", thread_id);
-			} else if (thread == idle_thread) {
-				printf("Can't stop idle thread\n");
-			} else {
-				thread_stop(thread);
-			}
-		}
 	}
 
 	return 0;
