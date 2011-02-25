@@ -21,12 +21,16 @@ static void test_timer_handler(uint32_t id) {
 
 static int run(void) {
 	long i;
+	int ret;
 
 	/* Timer value changing means ok */
 	tick_happened = false;
 
-	set_timer(TEST_TIMER_ID, TEST_TIMER_TICKS, test_timer_handler);
-	for (i = 0; i < (1 << 20); i++) {
+	ret = set_timer(TEST_TIMER_ID, TEST_TIMER_TICKS, test_timer_handler);
+	if (ret == 0) {
+		return -1;
+	}
+	for (i = 0; i < (1 << 30); i++) {
 		if (tick_happened)
 			break;
 	}

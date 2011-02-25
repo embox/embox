@@ -41,9 +41,20 @@ uint32_t cnt_system_time(void) {
 	return cnt_sys_time;
 }
 
+static int timer_id_is_busy(uint32_t id) {
+	struct list_head *p;
+	list_for_each(p, &sys_timers_list) {
+		if (id == ((sys_tmr_t *) p)->id) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle) {
 	sys_tmr_t *new_timer;
-	if (list_empty(&free_sys_timers_list)) {
+	if (list_empty(&free_sys_timers_list) ||
+	    timer_id_is_busy(id) || !handle) {
 		return 0;
 	}
 	new_timer = (sys_tmr_t *) free_sys_timers_list.next;
@@ -56,9 +67,10 @@ int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle) {
 
 void close_timer(uint32_t id) {
 	struct list_head *p;
-	list_for_each(p, &free_sys_timers_list) {
+	list_for_each(p, &sys_timers_list) {
 		if (id == ((sys_tmr_t *) p)->id) {
-			list_move_tail(p, &sys_timers_list);
+			list_move_tail(p, &free_sys_timers_list);
+			break;
 		}
 	}
 }
@@ -95,7 +107,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  * @return 0 if success
  */
 int timer_init(void) {
-	int i;
+	size_t i;
 	cnt_sys_time = 0;
 	for (i = 0; i < ARRAY_SIZE(sys_timers); i++) {
 		list_add((struct list_head *)&sys_timers[i], &free_sys_timers_list);
