@@ -1,0 +1,77 @@
+/**
+ * @file
+ *
+ * @brief Implements Lego NXT Bluetooth driver.
+ *
+ * @date 24.02.2011
+ * @author Anton Bondarev
+ */
+#include <types.h>
+
+#include <drivers/at91sam7s256.h>
+#include <drivers/pins.h>
+
+#define NXT_BT_CS_PIN     31
+#define NXT_BT_RST_PIN    11
+#define NXT_BT_CMD_PIN    AT91C_PA27_DTR1
+
+#define NXT_BT_ADC_RATE 50000
+#define NXT_BT_BAUD_RATE 460800
+
+EMBOX_UNIT_INIT(nxt_bluetooth_init);
+
+static int nxt_bluetooth_init(void) {
+	/* Configure the usart */
+	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_US1));
+
+	REG_STORE(AT91C_PIOA_PDR, BT_RX_PIN | BT_TX_PIN | BT_SCK_PIN | BT_RTS_PIN
+			| BT_CTS_PIN);
+	REG_STORE(AT91C_PIOA_ASR, BT_RX_PIN | BT_TX_PIN | BT_SCK_PIN | BT_RTS_PIN
+			| BT_CTS_PIN);
+
+	REG_STORE(AT91C_US1_CR, AT91C_US_RSTSTA | AT91C_US_RXDIS | AT91C_US_TXDIS);
+	REG_STORE(AT91C_US1_CR, AT91C_US_STTTO);
+	REG_STORE(AT91C_US1_RTOR = 10000);
+	REG_STORE(AT91C_US1_IDR, AT91C_US_TIMEOUT);
+	REG_STORE(AT91C_US1_MR, (AT91C_US_USMODE_HWHSH & ~AT91C_US_SYNC)
+			| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
+			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
+	REG_STORE(AT91C_US1_BRGR, ((CONFIG_SYS_CLOCK / 8 / NXT_BT_BAUD_RATE)
+			| (((CLOCK_FREQUENCY / 8) - ((CONFIG_SYS_CLOCK / 8 / NXT_BT_BAUD_RATE)
+					* NXT_BT_BAUD_RATE)) / ((NXT_BT_BAUD_RATE + 4) / 8)) << 16));
+	REG_STORE(AT91C_US1_PTCR, (AT91C_PDC_RXTDIS | AT91C_PDC_TXTDIS));
+	REG_STORE(AT91C_US1_RCR, 0);
+	REG_STORE(AT91C_US1_TCR, 0);
+	REG_STORE(AT91C_US1_RNPR, 0);
+	REG_STORE(AT91C_US1_TNPR, 0);
+
+	/*configure control pins*/
+	REG_STORE(AT91C_PIOA_PPUDR, NXT_BT_CMD_PIN);
+	pin_config_output(NXT_BT_CS_PIN | NXT_BT_RST_PIN | NXT_BT_CMD_PIN);
+	pin_set_output(NXT_BT_CS_PIN);
+	pin_clear_output(NXT_BT_CMD_PIN | NXT_BT_RST_PIN);
+
+
+	/*configure timer*/
+	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_TC1));
+	REG_STORE(AT91C_TC1_CCR, AT91C_TC_CLKDIS);
+	REG_STORE(AT91C_TC1_IDR, ~0);
+	/* MCLK/2, wave mode 10 */
+	REG_STORE(AT91C_TC1_CMR, AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO
+			| AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR | AT91C_TC_ASWTRG_SET);
+
+	REG_STORE(AT91C_TC1_RC, (CONFIG_SYS_CLOCK / 2) / (NXT_BT_ADC_RATE));
+	REG_STORE(AT91C_TC1_RA, ((CONFIG_SYS_CLOCK / 2) / (NXT_BT_ADC_RATE)) / 2);
+	REG_STORE(AT91C_TC1_CCR, AT91C_TC_CLKEN);
+	REG_STORE(AT91C_TC1_CCR, AT91C_TC_SWTRG);
+
+	/* Configure the ADC */
+}
+
+size_t nxt_bluetooth_read(uint8_t *buff, size_t len) {
+	return 0;
+}
+
+size_t nxt_bluetooth_write(uint8_t *buff, size_t len) {
+	return 0;
+}
