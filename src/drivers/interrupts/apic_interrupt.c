@@ -55,6 +55,10 @@ void interrupt_disable(interrupt_nr_t int_nr) {
 	}
 }
 
+void interrupt_force(interrupt_nr_t irq_num) {
+
+}
+
 void irqc_set_mask(__interrupt_mask_t mask) {
 	out8(mask & 0xff, PIC1_DATA);
 	out8((mask >> 8) & 0xff, PIC2_DATA);
