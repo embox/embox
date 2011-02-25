@@ -90,6 +90,7 @@ static inline char *find_vendor_name(uint16_t ven_id) {
 			return pci_vendors[i].ven_name;
 		}
 	}
+	return NULL;
 }
 
 static inline char *find_device_name(uint16_t dev_id) {
@@ -99,6 +100,7 @@ static inline char *find_device_name(uint16_t dev_id) {
 			return pci_devices[i].dev_name;
 		}
 	}
+	return NULL;
 }
 
 static inline char *find_class_name(uint8_t base, uint8_t sub) {

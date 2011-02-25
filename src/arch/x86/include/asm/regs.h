@@ -11,6 +11,7 @@
 #include <types.h>
 #include <asm/flags.h>
 
+#if 0
 typedef struct bios_regs {
 	union {
 		struct {
@@ -51,6 +52,7 @@ typedef struct bios_regs {
                 };
 	};
 } bios_regs_t;
+#endif
 
 #endif /* X86_REGS_H_ */
 

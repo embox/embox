@@ -82,7 +82,7 @@ static void vga_scroll(unsigned n) {
 		}
 		for (i = (con.height - n) * con.width;
 				i < con.width * con.height; ++i) {
-			video[i] = (vchar_t) { c: 0x20, a: con.attr };
+			video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 		}
 	}
 }
@@ -91,13 +91,13 @@ static void vga_clear(void) {
 	size_t i;
 	//const vchar_t ch = { 0x20 , 0x7};
 	for (i = 0; i < con.width * con.height; ++i) {
-		video[i] = (vchar_t) { c: 0x20, a: con.attr };
+		video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 	}
 }
 
 static void vga_printchar(unsigned x, unsigned y,
 		unsigned char c, unsigned char a) {
-	video[x + (y * con.width)] = (vchar_t) { c: c, a: a };
+	video[x + (y * con.width)] = (vchar_t) { .c = c, .a = a };
 }
 
 static int esc_state = 0;
@@ -177,7 +177,7 @@ static void vga_esc_putc(char c) {
 	case 'X': /* clear n characters */
 		for (i = con.x + (con.y * con.width);
 		    i < con.x + (con.y * con.width) + con.esc_args[0]; ++i) {
-			video[i] = (vchar_t) { c: 0x20, a: con.attr };
+			video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 		}
 		break;
 	case 'K': /* Clear line from cursor right */
@@ -186,17 +186,17 @@ static void vga_esc_putc(char c) {
 		case 0:
 			for (i = con.x + (con.y * con.width);
 			    i < (con.y * con.width) + con.width; ++i) {
-				video[i] = (vchar_t) { c: 0x20, a: con.attr };
+				video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 			}
 			break;
 		case 1:
 			for (i = (con.y * con.width); i < (con.y * con.width) + con.x; ++i) {
-				video[i] = (vchar_t) { c: 0x20, a: con.attr };
+				video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 			}
 			break;
 		case 2:
 			for (i = (con.y * con.width); i < (con.y * con.width) + con.width; ++i) {
-				video[i] = (vchar_t) { c: 0x20, a: con.attr };
+				video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 			}
 			break;
 		}
@@ -207,17 +207,17 @@ static void vga_esc_putc(char c) {
 		case 0:
 			for (i = (con.y * con.width);
 			    i < (con.y * con.width) + con.width * (con.height - con.y); ++i) {
-				video[i] = (vchar_t) { c: 0x20, a: con.attr };
+				video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 			}
 			break;
 		case 1:
 			for (i = 0; i < con.width * con.y; ++i) {
-				video[i] = (vchar_t) { c: 0x20, a: con.attr };
+				video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 			}
 			break;
 		case 2:
 			for (i = 0; i < con.width * con.height; ++i) {
-				video[i] = (vchar_t) { c: 0x20, a: con.attr };
+				video[i] = (vchar_t) { .c = 0x20, .a = con.attr };
 			}
 			break;
 		}

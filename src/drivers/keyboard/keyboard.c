@@ -10,7 +10,6 @@
 #include <drivers/keyboard.h>
 #include <kernel/irq.h>
 
-
 #define  I8042_CMD_READ_MODE   0x20
 #define  I8042_CMD_WRITE_MODE  0x60
 
@@ -27,6 +26,9 @@
 #define  KEY_INSERT            0xb0
 #define  KEY_DELETE            0xae
 #define  KEY_F1                0xc0
+
+#define  CMD_PORT              0x64
+#define  DATA_PORT             0x60
 
 #define  IRQ1 1
 
@@ -120,8 +122,8 @@ static const unsigned char keymap[][2] = {
 int keyboard_get_scancode(void) {
 	static unsigned shift_state;
 	unsigned status, scan_code, ch;
-	status = inb(0x64);
-	scan_code = inb(0x60);
+	status = inb(CMD_PORT);
+	scan_code = inb(DATA_PORT);
 	if ((status & 0x20) != 0) {
 		return -1;
 	}
@@ -151,11 +153,11 @@ int keyboard_getchar(void) {
 	unsigned status, scan_code, ch;
 
 	while (1) {
-		status = inb(0x64);
+		status = inb(CMD_PORT);
 		if ((status & 0x01) == 0) {
 			continue;
 		}
-		scan_code = inb(0x60);
+		scan_code = inb(DATA_PORT);
 		if ((status & 0x20) != 0) {
 			continue;
 		}
@@ -201,20 +203,20 @@ static int keyboard_wait_write(void) {
 }
 
 static unsigned char keyboard_get_mode(void) {
-	outb(I8042_CMD_READ_MODE, 0x64);
+	outb(I8042_CMD_READ_MODE, CMD_PORT);
 	keyboard_wait_read();
-	return inb(0x60);
+	return inb(DATA_PORT);
 }
 
 static void keyboard_set_mode(unsigned char mode) {
-	outb(I8042_CMD_WRITE_MODE, 0x64);
+	outb(I8042_CMD_WRITE_MODE, CMD_PORT);
 	keyboard_wait_write();
-	outb(mode, 0x60);
+	outb(mode, DATA_PORT);
 }
 
 static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 	uint8_t scancode;
-	scancode = in8(0x60);
+	scancode = in8(DATA_PORT);
 	//TODO:
 	TRACE("keycode 0x%X", scancode);
 	return IRQ_HANDLED;

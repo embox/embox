@@ -288,7 +288,7 @@ static int __init unit_init(void) {
 		nic->base_addr &= PCI_BASE_ADDR_IO_MASK;
 	}
 	/* Reset */
-	outb(inb(nic->base_addr + NE_RESET), nic->base_addr + NE_RESET);
+	out8(in8(nic->base_addr + NE_RESET), nic->base_addr + NE_RESET);
 	out8(ENISR_RESET, nic->base_addr + EN0_ISR);
 
 	if (-1 == irq_attach(nic->irq, ne2k_handler, 0, nic, "ne2k")) {

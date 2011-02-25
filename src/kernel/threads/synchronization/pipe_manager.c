@@ -20,7 +20,7 @@ EMBOX_UNIT_INIT(pool_init);
 static struct n_pipe pipe_pool[MAX_PIPES_COUNT];
 
 static int pool_init(void) { /* initializing all pipes in pool */
-	int i;
+	size_t i;
 	for (i = 0; i < MAX_PIPES_COUNT; i++) {
 		pipe_pool[i].on = false;
 		pipe_pool[i].ready_to_read = false;
@@ -33,9 +33,10 @@ static int pool_init(void) { /* initializing all pipes in pool */
 }
 
 int free_pipe_status(void) { /* returns free pipes number. ENOMEM if pool is full */
-	int i;
+	size_t i;
 	for (i = 0; i < MAX_PIPES_COUNT; i++) {
-		if (!pipe_pool[i].on) return MAX_PIPES_COUNT - (i++);
+		if (!pipe_pool[i].on)
+			return MAX_PIPES_COUNT - (i++);
 	}
 	return ENOMEM;
 }
@@ -53,7 +54,7 @@ int pipe_flush(int pipe) { /* reinitialize pipe */
 }
 
 int pipe_create(void) { /* if pipe pool is full - returns ENOMEM */
-	int i;
+	size_t i;
 	for (i = 0; i < MAX_PIPES_COUNT; i++) {
 		if (!pipe_pool[i].on) {
 			pipe_pool[i].on = true;
@@ -69,48 +70,43 @@ int pipe_create(void) { /* if pipe pool is full - returns ENOMEM */
 }
 
 char pipe_read(int pipe) {
-
-	if (pipe_pool[pipe].read_index == pipe_pool[pipe].write_index){
+	size_t i;
+	if (pipe_pool[pipe].read_index == pipe_pool[pipe].write_index) {
 		pipe_pool[pipe].ready_to_read = false;
 		return UNREADABLE_PIPE;
 	}
 
-	int i = pipe_pool[pipe].read_index;
+	i = pipe_pool[pipe].read_index;
 
-	if (pipe_pool[pipe].read_index < MAX_PIPE_SIZE - 1){
+	if (pipe_pool[pipe].read_index < MAX_PIPE_SIZE - 1) {
 		pipe_pool[pipe].read_index++;
-	}
-	else{
+	} else{
 		pipe_pool[pipe].read_index = 0;
 	}
 	pipe_pool[pipe].ready_to_write = true;  //Therefore 1 element of pipe was reading
-											//pipe opening for writing
+						//pipe opening for writing
 
 	return pipe_pool[pipe].sync_data[i];
 }
 
 int pipe_write(int pipe, char data) {
+	size_t i, j;
 
-	int i, j;
-
-	if (pipe_pool[pipe].ready_to_write){
+	if (pipe_pool[pipe].ready_to_write) {
 		i = pipe_pool[pipe].read_index;
 		j = pipe_pool[pipe].write_index;
 		pipe_pool[pipe].sync_data[j] = data;
 
-		if (j < MAX_PIPE_SIZE - 1){
+		if (j < MAX_PIPE_SIZE - 1) {
 			pipe_pool[pipe].write_index++;
-		}
-		else{
+		} else{
 			pipe_pool[pipe].write_index = 0;
 		}
-
-		if (i == pipe_pool[pipe].write_index){
+		if (i == pipe_pool[pipe].write_index) {
 			pipe_pool[pipe].ready_to_write = false;
 			return 0;
 		}
-	}
-	else {
+	} else {
 		return ENOMEM;
 	}
 }

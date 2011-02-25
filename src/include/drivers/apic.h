@@ -108,14 +108,14 @@
 #define PIC2_ICW4       (SNF_MODE_DIS | NONBUFD_MODE | NRML_EOI_MOD \
 			 | I8086_EMM_MOD)
 
-#define apic_enable_all() ({ \
-	out8(0, PIC1_DATA);  \
-	out8(0, PIC2_DATA);  \
-})
+#define apic_enable_all() { \
+	out8(0, PIC1_DATA); \
+	out8(0, PIC2_DATA); \
+}
 
-#define apic_disable_all() ({       \
+#define apic_disable_all() {        \
 	out8(PICM_MASK, PIC1_DATA); \
 	out8(PICS_MASK, PIC2_DATA); \
-})
+}
 
 #endif /* APIC_H_ */

@@ -86,6 +86,8 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 			}
 			#endif
 			break;
+		default:
+			break;
 		}
 		break;
 	case VT_ACTION_EXECUTE:
