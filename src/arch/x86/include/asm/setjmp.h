@@ -13,9 +13,9 @@
 
 #ifndef __ASSEMBLER__
 
-typedef struct {
-	uint32_t pc;
-} __jmp_buf[1];
+#define __JMPBUF_LEN  9
+
+typedef int __jmp_buf[__JMPBUF_LEN];
 
 #endif /* __ASSEMBLER__ */
 

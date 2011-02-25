@@ -1,15 +1,13 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 07.01.2011
  * @author Anton Bondarev
  */
 
-#ifndef CPU_H_
-#define CPU_H_
-
+#ifndef X86_CPU_H_
+#define X86_CPU_H_
 
 static inline void irq_enable(void) {
 	__asm__ __volatile__(
@@ -23,5 +21,4 @@ static inline void irq_disable(void) {
 	);
 }
 
-
-#endif /* CPU_H_ */
+#endif /* X86_CPU_H_ */

@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef ASM_X86_IO_H_
-#define ASM_X86_IO_H_
+#ifndef X86_IO_H_
+#define X86_IO_H_
 
 #include <types.h>
 
@@ -67,4 +67,4 @@ static inline uint32_t in32(unsigned long port) {
 #define outw(value, port)  out16(value, port)
 #define outl(value, port)  out32(value, port)
 
-#endif /* ASM_X86_IO_H_ */
+#endif /* X86_IO_H_ */
