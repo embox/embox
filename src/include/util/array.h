@@ -120,5 +120,22 @@
  */
 #define ARRAY_SIZE(array_name) \
 		__ARRAY_SIZE(array_name)
+/**
+ * TODO --Alina
+ */
+#define array_static_foreach_ptr(element_ptr, array) \
+		__array_static_foreach_ptr(element_ptr, array)
+
+/**
+ * TODO --Alina
+ */
+#define array_nullterm_foreach_ptr(element_ptr, array) \
+		__array_nullterm_foreach_ptr(element_ptr, array)
+
+/**
+ * TODO --Alina
+ */
+#define array_foreach_ptr(element_ptr, array, size) \
+		__array_foreach_ptr(element_ptr, array, size)
 
 #endif /* UTIL_ARRAY_H_ */

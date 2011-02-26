@@ -93,3 +93,14 @@
 #define __ARRAY_SIZE(array_name) \
 	(sizeof(array_name) / sizeof((array_name)[0]))
 
+#define __array_static_foreach_ptr(element_ptr, array) \
+		__array_foreach_ptr(element_ptr, array, ARRAY_SIZE(array))
+
+#define __array_nullterm_foreach_ptr(element_ptr, array) \
+		__array_cond_foreach_ptr(element_ptr, array, (element_ptr) != NULL)
+
+#define __array_foreach_ptr(element_ptr, array, size) \
+		__array_cond_foreach_ptr(element_ptr, array, (element_ptr) < (array) + (size))
+
+#define __array_cond_foreach_ptr(element_ptr, array, condition) \
+	for ((element_ptr) = (array); (condition); ++(element_ptr))

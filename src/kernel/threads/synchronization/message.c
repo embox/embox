@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief TODO
+ * @brief IPC messages implementation.
  *
- * @date Feb 25, 2011
+ * @date 25.02.2011
  * @author Dmitry Avdyukhin
  */
 

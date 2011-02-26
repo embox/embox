@@ -32,9 +32,9 @@ struct thread *current_thread;
 static char idle_thread_stack[THREAD_STACK_SIZE];
 
 /** Pool, containing threads. */
-struct thread __thread_pool[THREAD_POOL_SZ];
+struct thread __thread_pool[__THREAD_POOL_SZ];
 /** A mask, which shows, what places for new threads are free. */
-static int thread_pool_mask[THREAD_POOL_SZ];
+static int thread_pool_mask[__THREAD_POOL_SZ];
 
 /**
  * Function, which makes nothing. For idle_thread.
@@ -76,7 +76,7 @@ static void thread_run(int par) {
 static struct thread *thread_new(void) {
 	size_t i;
 	struct thread *created_thread;
-	for (i = 0; i < THREAD_POOL_SZ; i++) {
+	for (i = 0; i < __THREAD_POOL_SZ; i++) {
 		if (thread_pool_mask[i] == 0) {
 			created_thread = __thread_pool + i;
 			created_thread->id = i;
