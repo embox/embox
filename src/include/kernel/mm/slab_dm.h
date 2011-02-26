@@ -13,14 +13,6 @@
 #include <lib/list.h>
 #include <impl/kernel/slab_config.h>
 
-/* Standard align of something */
-#define ALIGN_UP(size, align) \
-     (((size) + (align) - 1) & (~((align) - 1)))
-
-/* Align of something by cache size */
-#define CACHE_ALIGN(size) \
-			ALIGN_UP(size, 4)
-
 /**
  * cache descriptor
  */

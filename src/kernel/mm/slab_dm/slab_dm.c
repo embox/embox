@@ -16,6 +16,7 @@
 #include <kernel/mm/slab_dm.h>
 #include <kernel/mm/slab_statistic.h>
 #include <kernel/mm/mpallocator.h>
+#include <util/binalign.h>
 
 /**
  * slab descriptor
@@ -80,9 +81,9 @@ static page_info_t* virt_to_page(void *objp) {
  */
 static kmem_cache_t kmalloc_cache = {
 	.name = "__kmalloc_cache",
-	.num = (CONFIG_PAGE_SIZE * KMALLOC_CACHE_SIZE - CACHE_ALIGN(sizeof(slab_t)))
-				/ CACHE_ALIGN(sizeof(kmem_cache_t)),
-	.obj_size = ALIGN_UP(sizeof(kmem_cache_t), sizeof(struct list_head)),
+	.num = (CONFIG_PAGE_SIZE * KMALLOC_CACHE_SIZE - binalign_bound(sizeof(slab_t), 4))
+				/ binalign_bound(sizeof(kmem_cache_t), 4),
+	.obj_size = binalign_bound(sizeof(kmem_cache_t), sizeof(struct list_head)),
 	.slabs_full = {
 		&kmalloc_cache.slabs_full,
 		&kmalloc_cache.slabs_full
@@ -113,7 +114,7 @@ static void kmem_dmcache_slab_destroy(kmem_cache_t *cachep, slab_t *slabp) {
 
 /* init slab descriptor and slab objects */
 static void kmem_dmcache_slab_init(kmem_cache_t *cachep, slab_t *slabp) {
-	char* ptr_begin = (char*) slabp + CACHE_ALIGN(sizeof(slab_t));
+	char* ptr_begin = (char*) slabp + binalign_bound(sizeof(slab_t), 4);
 	struct list_head* elem;
 
 	slabp->inuse = 0;
@@ -173,7 +174,7 @@ static void kmem_dmcache_estimate(unsigned int gfporder, size_t size,
 	/* calculate the number of objects that will fit inside the slab, including the
 	 * base slab_t */
 	count = 0;
-	while (count * size + CACHE_ALIGN(base) <= wastage)
+	while (count * size + binalign_bound(base, 4) <= wastage)
 		count++;
 	if (count > 0)
 		count--;
@@ -181,7 +182,7 @@ static void kmem_dmcache_estimate(unsigned int gfporder, size_t size,
 	/* return number objects that fit, and total space wasted */
 	*num = count;
 	wastage -= count * size;
-	wastage -= CACHE_ALIGN(base);
+	wastage -= binalign_bound(base, 4);
 	*left_over = wastage;
 }
 
@@ -196,7 +197,7 @@ kmem_cache_t *kmem_dmcache_create(char *name, size_t obj_size) {
 	cachep = (kmem_cache_t*) kmem_dmcache_alloc(&kmalloc_cache);
 
 	strcpy(cachep->name, name);
-	cachep->obj_size = ALIGN_UP(obj_size, sizeof(struct list_head));
+	cachep->obj_size = binalign_bound(obj_size, sizeof(struct list_head));
 	cachep->gfporder = 0;
 
 	do {
@@ -426,7 +427,7 @@ void sget_blocks_info(struct list_head* list, struct list_head *slabp) {
 	kmem_cache_t *cachep;
 
 	page = virt_to_page((void*) slabp);
-	slab_begin = (char*) slabp + CACHE_ALIGN(sizeof(slab_t));
+	slab_begin = (char*) slabp + binalign_bound(sizeof(slab_t), 4);
 	slab = list_entry(slabp, slab_t, list);
 	cachep = GET_PAGE_CACHE(page);
 
