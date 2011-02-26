@@ -75,6 +75,7 @@ enum {
 #define PCI_DEVICE_ID           0x02   /* 16 bits */
 #define PCI_COMMAND             0x04   /* 16 bits */
 #define   PCI_COMMAND_IO         0x1   /* Enable response in I/O space */
+#define   PCI_COMMAND_MASTER     0x4   /* Enable bus mastering */
 #define PCI_STATUS              0x06   /* 16 bits */
 #define PCI_REVISION_ID         0x08   /* 8 bits  */
 #define PCI_PROG_IFACE          0x09   /* 8 bits  */

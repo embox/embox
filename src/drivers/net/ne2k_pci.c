@@ -221,7 +221,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	/* Wait for transmission to complete. */
 	while (in8(NE_CMD) & 0x04);
 
-	//TRACE("Done transmit\n");
+	TRACE("Done transmit\n");
 
 	return skb->len;
 }
@@ -279,6 +279,8 @@ static const struct net_device_ops _netdev_ops = {
 static int __init unit_init(void) {
 	net_device_t *nic;
 	uint8_t *mac;
+	uint16_t new_command, pci_command;
+	uint8_t  pci_latency;
 
 	if (NULL != (nic = alloc_etherdev(0))) {
 		nic->netdev_ops = &_netdev_ops;
@@ -287,6 +289,18 @@ static int __init unit_init(void) {
 		pci_read_config8(0, 0x18, PCI_INTERRUPT_LINE, &nic->irq);
 		nic->base_addr &= PCI_BASE_ADDR_IO_MASK;
 	}
+
+	/* Set device to be bus master */
+	pci_read_config16(0, 0x18, PCI_COMMAND, &pci_command);
+	new_command = pci_command | PCI_COMMAND_MASTER | PCI_COMMAND_IO;
+	pci_write_config16(0, 0x18, PCI_COMMAND, new_command);
+
+	/* Set latency */
+	pci_read_config8(0, 0x18, PCI_LATENCY_TIMER, &pci_latency);
+	if (pci_latency < 32) {
+		pci_write_config8(0, 0x18, PCI_LATENCY_TIMER, 32);
+	}
+
 	/* Reset */
 	out8(in8(nic->base_addr + NE_RESET), nic->base_addr + NE_RESET);
 	out8(ENISR_RESET, nic->base_addr + EN0_ISR);
