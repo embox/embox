@@ -14,6 +14,7 @@
 #include <lib/list.h>
 #include <string.h>
 #include <kernel/mm/slab_dm.h>
+#include <kernel/mm/slab_statistic.h>
 #include <kernel/mm/mpallocator.h>
 
 /**

@@ -12,6 +12,7 @@
 #include <kernel/mm/mpallocator.h>
 #include <kernel/mm/kmalloc.h>
 #include <kernel/mm/slab_dm.h>
+#include <kernel/mm/slab_statistic.h>
 #include <lib/list.h>
 #include <stdlib.h>
 
