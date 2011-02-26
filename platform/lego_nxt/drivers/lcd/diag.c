@@ -12,6 +12,7 @@
 
 void diag_init(void) {
 	lcd_init();
+	display_clear_screen();
 }
 
 char diag_getc(void) {
