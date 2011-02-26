@@ -47,9 +47,29 @@ void us1_putc(char ch) {
 	REG_STORE(AT91C_US1_THR, (unsigned long) ch);
 }
 ///////////////////////////////////////////////////////////////////
+void bt_clear_arm7_cmd(void)
+{
+	REG_STORE(AT91C_PIOA_CODR, NXT_BT_CMD_PIN);
+}
 
+void bt_set_arm7_cmd(void)
+{
+	REG_STORE(AT91C_PIOA_SODR, NXT_BT_CMD_PIN);
+}
+
+void bt_set_reset_high(void)
+{
+	REG_STORE(AT91C_PIOA_SODR, NXT_BT_RST_PIN);
+}
+
+void bt_set_reset_low(void)
+{
+  REG_STORE(AT91C_PIOA_CODR, NXT_BT_RST_PIN);
+}
+///////////////////////////////////////////////////////////////////////
 
 static int nxt_bluetooth_init(void) {
+	volatile uint8_t tmp;
 	/* Configure the usart */
 	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_US1));
 
@@ -59,6 +79,7 @@ static int nxt_bluetooth_init(void) {
 			| NXT_BT_CTS_PIN);
 
 	REG_STORE(AT91C_US1_CR, AT91C_US_RSTSTA | AT91C_US_RXDIS | AT91C_US_TXDIS);
+	//REG_STORE(AT91C_US1_CR, AT91C_US_RSTSTA);
 	REG_STORE(AT91C_US1_CR, AT91C_US_STTTO);
 	REG_STORE(AT91C_US1_RTOR, 10000);
 	REG_STORE(AT91C_US1_IDR, AT91C_US_TIMEOUT);
@@ -73,6 +94,11 @@ static int nxt_bluetooth_init(void) {
 	REG_STORE(AT91C_US1_TCR, 0);
 	REG_STORE(AT91C_US1_RNPR, 0);
 	REG_STORE(AT91C_US1_TNPR, 0);
+	tmp = REG_LOAD(AT91C_US1_RHR);
+	tmp = REG_LOAD(AT91C_US1_CSR);
+
+	REG_STORE(AT91C_US1_CR, AT91C_US_RXEN | AT91C_US_TXEN);
+	REG_STORE(AT91C_US1_PTCR, AT91C_PDC_RXTEN | AT91C_PDC_TXTEN);
 
 	/*configure control pins*/
 	REG_STORE(AT91C_PIOA_PPUDR, NXT_BT_CMD_PIN);
@@ -95,7 +121,7 @@ static int nxt_bluetooth_init(void) {
 	REG_STORE(AT91C_TC1_CCR, AT91C_TC_SWTRG);
 #endif
 	/* Configure the ADC */
-
+#if 1
 	bt_clear_arm7_cmd();
 	bt_set_reset_low();
 	usleep(100);
@@ -108,83 +134,76 @@ static int nxt_bluetooth_init(void) {
 	while (us1_has_symbol()) {
 		us1_getc();
 	}
-	bt_set_arm7_cmd();
+	bt_clear_arm7_cmd();
+#endif
 	return 0;
 }
 
 
 //////////////////////////////////////////////////////////////////////
-void bt_clear_arm7_cmd(void)
-{
-	REG_STORE(AT91C_PIOA_CODR, NXT_BT_CMD_PIN);
-}
 
-void bt_set_arm7_cmd(void)
-{
-	REG_STORE(AT91C_PIOA_SODR, NXT_BT_CMD_PIN);
-}
-
-void bt_set_reset_high(void)
-{
-	REG_STORE(AT91C_PIOA_SODR, NXT_BT_RST_PIN);
-}
-
-void bt_set_reset_low(void)
-{
-  REG_STORE(AT91C_PIOA_CODR, NXT_BT_RST_PIN);
-}
-///////////////////////////////////////////////////////////////////////
-typedef struct {
-	uint8_t length;
-	uint8_t type;
-	uint8_t content[256];
-	uint16_t sum;
-}bt_message_t;
-
-void bt_wrap(bt_message_t *header, uint8_t *buffer) {
+int bt_wrap(bt_message_t *header, uint8_t *buffer) {
 	int i;
 	uint16_t sum = 0;
-	*(buffer ++) = header->length + 2;
-	*(buffer ++) = header->type;
+	*buffer++ = header->length + 3;
+	*buffer++ = header->type;
 	sum += header->type;
 	for (i = 0; i < header->length; i++) {
-		*(buffer ++) = header->content[i];
+		*buffer++ = header->content[i];
 		sum += header->content[i];
 	}
 	sum = ~sum + 1;
-	*(buffer ++) = sum >> 8;
-	*(buffer ++) = sum & 0xff;
+	*buffer++ = sum >> 8;
+	*buffer++ = sum & 0xff;
+	return 1 + header->length + 3;
 }
 
 void bt_unwrap(bt_message_t *header, uint8_t *buffer) {
 	int i;
-	header->length = *(buffer ++) - 2;
-	header->type = *(buffer ++);
+	header->length = *buffer++;
+	header->length -= 3;
+
+	header->type = *buffer++;
 	for (i = 0; i < header->length; i++) {
-		header->content[i] = *(buffer ++);
+		header->content[i] = *buffer++;
 	}
 	header->sum = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////
+#define BT_DMA_COMM
+
 size_t nxt_bluetooth_write(uint8_t *buff, size_t len) {
+#ifndef BT_DMA_COMM
 	int i = len;
 	uint8_t *cur_buff = buff;
 	while (i --) {
-		us1_putc(cur_buff ++);
+		us1_putc(*cur_buff++);
 	}
+#else
+	REG_STORE(AT91C_US1_TPR, buff);
+	REG_STORE(AT91C_US1_TCR, len);
+	usleep(1000);
+#endif
 	return len;
 }
 
 size_t nxt_bluetooth_read(uint8_t *buff, size_t len) {
+#ifndef BT_DMA_COMM
 	int i = len;
 	uint8_t *cur_buff = buff;
 	uint8_t length = us1_getc();
-	*(cur_buff ++) = length;
+	*cur_buff++ = length;
 	while (length-- && i--) {
-		*(cur_buff ++) = us1_getc();
+		*cur_buff++ = us1_getc();
+		TRACE("0x%x\n", *(cur_buff - 1));
 	}
 	//swap last 2 bytes
+#else
+	REG_STORE(AT91C_US1_RPR, buff);
+	REG_STORE(AT91C_US1_RCR, len);
+	usleep(1000);
+#endif
 
 	return 0;
 }

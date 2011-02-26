@@ -66,6 +66,13 @@
 #define MSG_GET_BRICK_STATUSBYTE 51
 #define MSG_SET_BRICK_STATUSBYTE 52
 
+typedef struct {
+	uint8_t length;
+	uint8_t type;
+	uint8_t content[256];
+	uint16_t sum;
+}bt_message_t;
+
 extern size_t nxt_bluetooth_read(uint8_t *buff, size_t len);
 
 extern size_t nxt_bluetooth_write(uint8_t *buff, size_t len);
