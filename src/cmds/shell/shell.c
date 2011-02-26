@@ -86,11 +86,11 @@ static void job_abort_callback(CONSOLE_CALLBACK *cb, CONSOLE *console) {
 	context_set_entry(NULL, &job_abort, 0);
 }
 
-static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
-	__extension__ static const char *script_commands[] = {
-#include <start_script.inc>
-	};
+__extension__ static const char *script_commands[] = {
+	#include <start_script.inc>
+};
 
+static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(script_commands); i++) {
@@ -113,10 +113,12 @@ static int shell_start(void) {
 		LOG_ERROR("Failed to create a console");
 		return -1;
 	}
-	printf("\nStarting script...\n\n");
-	shell_start_script(console, callback);
+	if (ARRAY_SIZE(script_commands)) {
+		printf("\nStarting script...\n");
+		shell_start_script(console, callback);
+	}
 
-	printf("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
+	printf("\n%s", CONFIG_SHELL_WELCOME_MSG);
 	console_start(console, prompt);
 	return 0;
 }
