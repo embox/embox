@@ -72,60 +72,25 @@ struct pprocess *pp;
 #endif
 };
 
+#define __THREAD_POOL_SZ 0x100
 
-#define THREAD_POOL_SZ 0x100
+#ifdef __CDT_PARSER__
+#define __thread_foreach(thread_ptr) \
+		array_foreach_ptr(thread_ptr, __extension__ ({     \
+					extern struct thread __thread_pool[];  \
+					__thread_pool;                         \
+				}), __THREAD_POOL_SZ)                      \
+			if (!thread_ptr->exist) ; else
 
-#define __thread_foreach(t) MACRO_INVOKE(__thread_foreach_iterator, \
-		t, GUARD_SUFFIX(__thread_iterator))
-
-#define __thread_foreach_iterator(t, i) \
-	for (struct __thread_iterator i##_alloc, *i = __thread_get_all(&i##_alloc); \
-		(t = __thread_iterator_has_next(i) ? __thread_iterator_next(i) : NULL);)
-
-struct __thread_iterator {
-	struct thread *next;
-};
-
-inline static bool __thread_iterator_has_next(struct __thread_iterator *iterator) {
-	extern struct thread __thread_pool[];
-	return NULL != iterator && iterator->next < __thread_pool
-			+ THREAD_POOL_SZ;
-}
-
-inline static void __thread_iterator_skip_holes(
-		struct __thread_iterator *iterator) {
-	while (__thread_iterator_has_next(iterator) && !iterator->next->exist) {
-		iterator->next++;
-	}
-}
-
-inline static struct __thread_iterator *__thread_get_all(
-		struct __thread_iterator *iterator) {
-	extern struct thread __thread_pool[];
-	if (NULL == iterator) {
-		return NULL;
-	}
-	iterator->next = __thread_pool;
-	__thread_iterator_skip_holes(iterator);
-	return iterator;
-}
-
-inline static struct thread *__thread_iterator_next(
-		struct __thread_iterator *iterator) {
-	struct thread *result;
-	if (!__thread_iterator_has_next(iterator)) {
-		return NULL;
-	}
-	result = iterator->next++;
-	__thread_iterator_skip_holes(iterator);
-	return result;
-}
+#else
+#define __thread_foreach(thread_ptr) for(;;)
+#endif
 
 inline static struct thread *thread_get_by_id(__thread_id_t id) {
 	extern struct thread __thread_pool[];
 	struct thread *thread = __thread_pool + id;
 
-	if (!(0 <= id && id < THREAD_POOL_SZ)) {
+	if (!(0 <= id && id < __THREAD_POOL_SZ)) {
 		return NULL;
 	}
 

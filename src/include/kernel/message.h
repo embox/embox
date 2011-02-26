@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief IPC messages.
  *
  * @date 25.02.2011
  * @author Dmitry Avdyukhin
