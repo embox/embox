@@ -75,11 +75,11 @@ struct pprocess *pp;
 #define __THREAD_POOL_SZ 0x100
 
 #define __thread_foreach(thread_ptr) \
-		array_foreach_ptr(thread_ptr, __extension__ ({     \
-					extern struct thread __thread_pool[];  \
-					__thread_pool;                         \
-				}), __THREAD_POOL_SZ)                      \
-			if (!thread_ptr->exist) ; else
+	array_foreach_ptr(thread_ptr, __extension__ ({     \
+				extern struct thread __thread_pool[];  \
+				__thread_pool;                         \
+			}), __THREAD_POOL_SZ)                      \
+		if (!thread_ptr->exist) ; else
 
 inline static struct thread *thread_get_by_id(__thread_id_t id) {
 	extern struct thread __thread_pool[];
