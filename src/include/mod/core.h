@@ -146,6 +146,10 @@ extern void *mod_data(const struct mod *mod);
 extern struct mod_iterator *mod_requires(const struct mod *mod,
 		struct mod_iterator *iterator);
 
+#define mod_foreach_requires(dep, mod) \
+		__mod_foreach_requires(dep, mod)
+
+
 /**
  * Gets the list of mods which depend on the specified one.
  *
@@ -157,6 +161,9 @@ extern struct mod_iterator *mod_requires(const struct mod *mod,
  */
 extern struct mod_iterator *mod_provides(const struct mod *mod,
 		struct mod_iterator *iterator);
+
+#define mod_foreach_provides(dep, mod) \
+		__mod_foreach_provides(dep, mod)
 
 /**
  * Retrieves the next mod in the iteration (if any).

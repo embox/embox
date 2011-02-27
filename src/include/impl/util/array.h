@@ -100,7 +100,18 @@
 		__array_cond_foreach_ptr(element_ptr, array, (element_ptr) != NULL)
 
 #define __array_foreach_ptr(element_ptr, array, size) \
-		__array_cond_foreach_ptr(element_ptr, array, (element_ptr) < (array) + (size))
+		__array_cond_foreach_ptr(element_ptr, array,  \
+				(element_ptr) < (array) + (size))
 
 #define __array_cond_foreach_ptr(element_ptr, array, condition) \
 	for ((element_ptr) = (array); (condition); ++(element_ptr))
+
+#define __array_foreach(element, array) \
+		__array_foreach_element(element, array, \
+				GUARD_SUFFIX(__array_foreach_element_ptr))
+
+#define __array_foreach_element(element, array, element_ptr) \
+	for(typeof(element) *element_ptr = __extension__ ({ \
+				(element) = *(array); (array); \
+			}); \
+		(element) != NULL; (element) = *(++element_ptr))

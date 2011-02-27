@@ -138,4 +138,7 @@
 #define array_foreach_ptr(element_ptr, array, size) \
 		__array_foreach_ptr(element_ptr, array, size)
 
+#define array_foreach(element, array) \
+		__array_foreach(element, array)
+
 #endif /* UTIL_ARRAY_H_ */
