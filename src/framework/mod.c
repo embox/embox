@@ -40,36 +40,6 @@ inline static void *mod_data_deref(const struct mod *mod) {
 	return (NULL != mod->info) ? mod->info->data : NULL;
 }
 
-struct mod_iterator *mod_requires(const struct mod *mod,
-		struct mod_iterator *iterator) {
-	if (NULL == mod || NULL == iterator) {
-		return NULL;
-	}
-	iterator->p_mod = mod->requires;
-	return iterator;
-}
-
-struct mod_iterator *mod_provides(const struct mod *mod,
-		struct mod_iterator *iterator) {
-	if (NULL == mod || NULL == iterator) {
-		return NULL;
-	}
-	iterator->p_mod = mod->provides;
-	return iterator;
-}
-
-inline bool mod_iterator_has_next(struct mod_iterator *iterator) {
-	return NULL != iterator && NULL != iterator->p_mod && NULL
-			!= *iterator->p_mod;
-}
-
-struct mod *mod_iterator_next(struct mod_iterator *iterator) {
-	if (!mod_iterator_has_next(iterator)) {
-		return NULL;
-	}
-	return *(iterator->p_mod++);
-}
-
 bool mod_is_running(const struct mod *mod) {
 	return mod != NULL && mod_flag_tst(mod, MOD_FLAG_ENABLED);
 }

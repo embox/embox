@@ -14,12 +14,6 @@
 
 #include "types.h"
 
-struct mod;
-
-struct mod_iterator {
-	struct mod **p_mod;
-};
-
 #define __mod_foreach_requires(dep, mod) \
 		array_foreach(dep, (mod)->requires)
 
