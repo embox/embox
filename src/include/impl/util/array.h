@@ -13,7 +13,6 @@
 #include <stddef.h>
 
 #include <util/macro.h>
-#include <util/guard.h>
 
 /*
  * For each diffuse array three sections are created. These sections are then
@@ -78,7 +77,7 @@
 
 #define __ARRAY_DIFFUSE_ADD(array_name, ...) \
 	__ARRAY_DIFFUSE_ADD_NAMED(array_name, \
-		GUARD_SUFFIX(__ARRAY_DIFFUSE_PRIVATE(array_name, entry)), \
+		MACRO_GUARD(__ARRAY_DIFFUSE_PRIVATE(array_name, entry)), \
 		__VA_ARGS__)
 
 #define __ARRAY_DIFFUSE_ADD_NAMED(array_name, ptr_name, ...) \
@@ -108,7 +107,7 @@
 
 #define __array_foreach(element, array) \
 		__array_foreach_element(element, array, \
-				GUARD_SUFFIX(__array_foreach_element_ptr))
+				MACRO_GUARD(__array_foreach_element_ptr))
 
 #define __array_foreach_element(element, array, element_ptr) \
 	for(typeof(element) *element_ptr = __extension__ ({ \

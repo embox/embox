@@ -19,7 +19,6 @@
 #include <queue.h>
 #include <string.h>
 #include <util/macro.h>
-#include <util/guard.h>
 #ifdef CONFIG_PP_ENABLE
 # include <kernel/pp.h>
 #endif
