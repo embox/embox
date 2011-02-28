@@ -15,7 +15,7 @@
 #include "types.h"
 
 #define __mod_foreach_requires(dep, mod) \
-		array_foreach(dep, (mod)->requires)
+		array_terminated_foreach(dep, (mod)->requires, NULL)
 
 #define __mod_foreach_provides(dep, mod) \
-		array_foreach(dep, (mod)->provides)
+		array_terminated_foreach(dep, (mod)->provides, NULL)

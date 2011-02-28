@@ -137,36 +137,46 @@
 		__ARRAY_DIFFUSE_SIZE_IGNORE_TERMINATING(array_name)
 
 /**
- * Gets the length of the specified array. The array must be statically
- * defined/declared.
+ * Gets the length of the specified array.
+ * The macro can be used only if the array length is known at the compile-time.
  *
  * @param array
- *   The array to check size for
+ *   The array to check size for.
  * @return
- *   Number of array elements
+ *   Number of array elements.
+ *
+ * @note
+ *   The array must be statically defined/declared, otherwise an incorrect
+ *   result is returned without any error or warning.
  */
 #define ARRAY_SIZE(array) \
 		__ARRAY_SIZE(array)
 
-/**
- * TODO --Alina
- */
-#define array_static_foreach_ptr(element_ptr, array) \
-		__array_static_foreach_ptr(element_ptr, array)
+#define array_foreach(element, array, size) \
+		__array_foreach(element, array, size)
 
-/**
- * TODO --Alina
- */
-#define array_nullterm_foreach_ptr(element_ptr, array) \
-		__array_nullterm_foreach_ptr(element_ptr, array)
+#define array_terminated_foreach(element, array, terminator) \
+		__array_terminated_foreach(element, array, terminator)
 
-/**
- * TODO --Alina
- */
-#define array_foreach_ptr(element_ptr, array, size) \
-		__array_foreach_ptr(element_ptr, array, size)
+#define array_static_foreach(element, array) \
+		__array_static_foreach(element, array)
 
-#define array_foreach(element, array) \
-		__array_foreach(element, array)
+#define array_diffuse_foreach(element, array) \
+		__array_diffuse_foreach(element, array)
+
+#define array_cond_foreach(element, array, condition) \
+		__array_cond_foreach(element, array, condition)
+
+#define array_foreach_ptr(element, array, size) \
+		__array_foreach_ptr(element, array, size)
+
+#define array_static_foreach_ptr(element, array) \
+		__array_static_foreach_ptr(element, array)
+
+#define array_diffuse_foreach_ptr(element, array) \
+		__array_diffuse_foreach_ptr(element, array)
+
+#define array_cond_foreach_ptr(element, array, condition) \
+		__array_cond_foreach_ptr(element, array, condition)
 
 #endif /* UTIL_ARRAY_H_ */

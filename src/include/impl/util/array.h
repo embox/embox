@@ -106,11 +106,47 @@
 #define __ARRAY_SIZE(array) \
 	(sizeof(array) / sizeof(*(array)))
 
+/* Scalar foreach iterations. */
+
+#define __array_foreach(element, array, size) \
+		__array_generic_foreach(element, array, \
+				__array_foreach_cond, size)
+#define __array_foreach_cond(element, array, ptr, size) \
+	ptr < (array) + (size)
+
+#define __array_terminated_foreach(element, array, terminator) \
+		__array_generic_foreach(element, array, \
+				__array_terminated_foreach_cond, terminator)
+#define __array_terminated_foreach_cond(element, array, ptr, terminator) \
+	(element) != (terminator)
+
+#define __array_static_foreach(element, array) \
+		__array_foreach(element, array, ARRAY_SIZE(array))
+
+#define __array_diffuse_foreach(element, array) \
+		__array_foreach(element, array, ARRAY_DIFFUSE_SIZE(array))
+
+#define __array_cond_foreach(element, array, condition) \
+		__array_generic_foreach(element, array, \
+				__array_cond_foreach_cond, condition)
+#define __array_cond_foreach_cond(element, array, ptr, condition) \
+	(condition)
+
+#define __array_generic_foreach(element, array, cond, cond_arg) \
+		__array_generic_foreach__(element, array, cond, cond_arg, \
+				MACRO_GUARD(__array_foreach_element_ptr))
+
+#define __array_generic_foreach__(element, array, cond, cond_arg, ptr) \
+	for(typeof(element) *ptr = __extension__ ({    \
+					(element) = *(array); (array); \
+				});                                \
+			(cond(element, array, ptr, cond_arg)); \
+			(element) = *(++ptr))
+
+/* Pointer foreach iterations. */
+
 #define __array_static_foreach_ptr(element_ptr, array) \
 		__array_foreach_ptr(element_ptr, array, ARRAY_SIZE(array))
-
-#define __array_nullterm_foreach_ptr(element_ptr, array) \
-		__array_cond_foreach_ptr(element_ptr, array, (element_ptr) != NULL)
 
 #define __array_foreach_ptr(element_ptr, array, size) \
 		__array_cond_foreach_ptr(element_ptr, array,  \
@@ -119,12 +155,3 @@
 #define __array_cond_foreach_ptr(element_ptr, array, condition) \
 	for ((element_ptr) = (array); (condition); ++(element_ptr))
 
-#define __array_foreach(element, array) \
-		__array_foreach_element(element, array, \
-				MACRO_GUARD(__array_foreach_element_ptr))
-
-#define __array_foreach_element(element, array, element_ptr) \
-	for(typeof(element) *element_ptr = __extension__ ({ \
-				(element) = *(array); (array); \
-			}); \
-		(element) != NULL; (element) = *(++element_ptr))
