@@ -22,7 +22,7 @@ MAKEFLAGS += --no-print-directory
 .DEFAULT_GOAL := all
 
 % :
-	@$(MAKE) __mk_ready=1 $@
+	@$(MAKE) __mk_ready=1 $@ 2>&1
 
 endif
 

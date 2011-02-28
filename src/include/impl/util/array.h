@@ -15,8 +15,8 @@
 #include <util/macro.h>
 
 /*
- * For each diffuse array three sections are created. These sections are then
- * placed together successively each after each.
+ * For each diffuse array four sections are created. These sections are then
+ * placed together strictly successively each after each.
  */
 
 /* The symbol for the array name is placed in head section. */
@@ -27,7 +27,11 @@
 #define __ARRAY_DIFFUSE_SECTION_BODY(s_array) \
 		__ARRAY_DIFFUSE_SECTION(s_array, 1, body)
 
-/* Contains the array end marker and terminator element (if any). */
+/* Contains terminator element (if any). */
+#define __ARRAY_DIFFUSE_SECTION_TERM(s_array) \
+		__ARRAY_DIFFUSE_SECTION(s_array, 8, term)
+
+/* Contains the array end marker. */
 #define __ARRAY_DIFFUSE_SECTION_TAIL(s_array) \
 		__ARRAY_DIFFUSE_SECTION(s_array, 9, tail)
 
@@ -43,16 +47,16 @@
 #define __ARRAY_DIFFUSE_SECTION(s_array, order, tag) \
 	".array_diffuse." MACRO_STRING(s_array##_##order##_##tag) ".rodata"
 
-/* Every array entry, group of entries or marker symbol is backed by an
- * individual array (empty for markers) defined as follows
- *  __extension__ bypasses compiler warnings about empty arrays*/
-#define __ARRAY_DIFFUSE_ENTRY_DEF(type, s_entry, _section) \
-	__extension__ type s_entry[] __attribute__ ((used, section(_section)))
+/* Every array entry, group of entries or marker symbols are backed by an
+ * individual array (empty for markers) defined as follows. */
+#define __ARRAY_DIFFUSE_ENTRY_DEF(type, s_entry, sect) \
+	/* __extension__ bypasses compiler warnings about empty arrays. */ \
+	__extension__ const type s_entry[] __attribute__ ((used, section(sect)))
 
 /* Diffuse arrays implementation-private entries are named as follows
  * to prevent namespace pollution. */
 #define __ARRAY_DIFFUSE_PRIVATE(s_array, s_tag) \
-	__array_diffuse_private__##s_array##__##s_tag
+	__array_diffuse__##s_array##__##s_tag
 
 #define __ARRAY_DIFFUSE_PRIVATE_DEF(type, s_array, s_tag, section) \
 	__ARRAY_DIFFUSE_ENTRY_DEF(type, \
@@ -60,20 +64,20 @@
 
 /* Here goes API implementation. */
 
+/* Diffuse definition. */
+
 #define __ARRAY_DIFFUSE_DEF(element_type, array_name) \
 	__ARRAY_DIFFUSE_DEF_TERMINATED(element_type, array_name, /* empty */)
 
 #define __ARRAY_DIFFUSE_DEF_TERMINATED(element_type, array_name, terminator) \
 	__ARRAY_DIFFUSE_ENTRY_DEF(element_type, array_name, \
 		__ARRAY_DIFFUSE_SECTION_HEAD(array_name)) = { /* empty */ }; \
+	__ARRAY_DIFFUSE_PRIVATE_DEF(element_type, array_name, term, \
+		__ARRAY_DIFFUSE_SECTION_TERM(array_name)) = { terminator }; \
 	__ARRAY_DIFFUSE_PRIVATE_DEF(element_type, array_name, tail, \
-		__ARRAY_DIFFUSE_SECTION_TAIL(array_name)) = { terminator }
+		__ARRAY_DIFFUSE_SECTION_TAIL(array_name)) = { /* empty */ }
 
-#define __ARRAY_DIFFUSE_DEF_STATIC(element_type, array_name) \
-	__ARRAY_DIFFUSE_DEF(static element_type, array_name)
-
-#define __ARRAY_DIFFUSE_DEF_TERMINATED_STATIC(element_type, name, terminator) \
-	__ARRAY_DIFFUSE_DEF_TERMINATED(static element_type, name, terminator)
+/* Diffuse element addition. */
 
 #define __ARRAY_DIFFUSE_ADD(array_name, ...) \
 	__ARRAY_DIFFUSE_ADD_NAMED(array_name, \
@@ -81,16 +85,26 @@
 		__VA_ARGS__)
 
 #define __ARRAY_DIFFUSE_ADD_NAMED(array_name, ptr_name, ...) \
-	__ARRAY_DIFFUSE_ENTRY_DEF(static typeof(array_name[0]), ptr_name, \
+	__ARRAY_DIFFUSE_ENTRY_DEF(static typeof(*(array_name)), ptr_name, \
 		__ARRAY_DIFFUSE_SECTION_BODY(array_name)) = { __VA_ARGS__ }
 
-#define __ARRAY_DIFFUSE_SIZE(array_name) __extension__ ({ \
-		extern typeof(array_name) __ARRAY_DIFFUSE_PRIVATE(array_name, tail); \
-		(size_t) (__ARRAY_DIFFUSE_PRIVATE(array_name, tail) - array_name); \
+/* Diffuse size calculations. */
+
+#define __ARRAY_DIFFUSE_SIZE(array_name) \
+		__ARRAY_DIFFUSE_SIZE_MARKER(array_name, tail)
+
+#define __ARRAY_DIFFUSE_SIZE_IGNORE_TERMINATING(array_name) \
+		__ARRAY_DIFFUSE_SIZE_MARKER(array_name, term)
+
+#define __ARRAY_DIFFUSE_SIZE_MARKER(array_name, marker) __extension__ ({ \
+		extern typeof(array_name) __ARRAY_DIFFUSE_PRIVATE(array_name,marker); \
+		(size_t) (__ARRAY_DIFFUSE_PRIVATE(array_name, marker) - array_name);  \
 	})
 
-#define __ARRAY_SIZE(array_name) \
-	(sizeof(array_name) / sizeof((array_name)[0]))
+/* Static array size. */
+
+#define __ARRAY_SIZE(array) \
+	(sizeof(array) / sizeof(*(array)))
 
 #define __array_static_foreach_ptr(element_ptr, array) \
 		__array_foreach_ptr(element_ptr, array, ARRAY_SIZE(array))

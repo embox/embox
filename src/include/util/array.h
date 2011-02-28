@@ -13,7 +13,7 @@
  *  - At compile time using the array name. See #ARRAY_DIFFUSE_SIZE().
  *  - At run time for those array which has a special element at the end of
  * array so-called terminator element (e.g. @c NULL). See
- * #ARRAY_DIFFUSE_DEF_TERMINATED() and its static derivative.
+ * #ARRAY_DIFFUSE_DEF_TERMINATED().
  *
  *     Considering current use cases and some implementation issues, diffuse
  * arrays are always allocated in read-only data section as if you have defined
@@ -35,58 +35,62 @@
 /**
  * Defines a new diffuse array.
  *
- * @param element_type the type of array elements
- * @param name the array name which is used to refer the array itself
- *        and to populate it using #ARRAY_DIFFUSE_ADD()
- * @note The @a element_type must include @c const modifier (see general docs).
+ * @param element_type
+ *   The type of array elements with optional modifiers.
+ *   To control the scope of array definition the standard visibility modifiers
+ *   may be used. Thus, without any modifier the array is defined in the global
+ *   scope and could be referenced inside other compilation units.
+ *   @c static modifier forces the array to be defined in the file scope
+ *   and prevents any global symbol to be emitted to the resulting object.
+ *   Static diffuse array cannot be referenced outside the definition file, but
+ *   it remains accessible from other compilation units for elements addition
+ *   using #ARRAY_DIFFUSE_ADD() macro and its @link #ARRAY_DIFFUSE_ADD_NAMED
+ *   named derivative @endlink.
+ *   Do not forget to specify @c const modifier explicitly (see general docs).
+ * @param name
+ *   The array name which is used to refer the array itself and to populate it
+ *   using #ARRAY_DIFFUSE_ADD().
+ *
+ * @note
+ *   This command should be used in the file scope, outside of any block.
+ * @note
+ *   The @a element_type must include @c const modifier (see general docs).
  */
 #define ARRAY_DIFFUSE_DEF(element_type, name) \
 		__ARRAY_DIFFUSE_DEF(element_type, name)
 
 /**
- * Does the same as #ARRAY_DIFFUSE_DEF(), except that the array is defined in
- * the file scope and no global symbol is emitted to the resulting object.
- *
- * @param element_type the type of array elements
- * @param name the array name which is used to refer the array itself
- *        and to populate it using #ARRAY_DIFFUSE_ADD()
- * @note The @a element_type must include @c const modifier (see general docs).
- */
-#define ARRAY_DIFFUSE_DEF_STATIC(element_type, name) \
-		__ARRAY_DIFFUSE_DEF_STATIC(element_type, name)
-
-/**
  * Defines a new diffuse array ended up by the specified @a terminator element.
  *
- * @param element_type the type of array elements
- * @param name the array name which is used to refer the array itself
- *        and to populate it using #ARRAY_DIFFUSE_ADD()
- * @param terminator an element indicating the array end (e.g. @c NULL pointer)
- * @note The @a element_type must include @c const modifier (see general docs).
+ * @param element_type
+ *   The type of array elements with optional modifiers.
+ * @param name
+ *   The array name which is used to refer the array itself and to populate it
+ *   using #ARRAY_DIFFUSE_ADD().
+ * @param terminator
+ *   An element indicating the array end (e.g. @c NULL pointer).
+ *
+ * @note
+ *   This command should be used in the file scope, outside of any block.
+ * @note
+ *   The @a element_type must include @c const modifier (see general docs).
+ *
+ * @see ARRAY_DIFFUSE_DEF()
+ *   More detailed explanation of macro arguments.
  */
 #define ARRAY_DIFFUSE_DEF_TERMINATED(element_type, name, terminator) \
 		__ARRAY_DIFFUSE_DEF_TERMINATED(element_type, name, terminator)
 
 /**
- * Does the same as #ARRAY_DIFFUSE_DEF_TERMINATED(), except that the array is
- * defined in the file scope and no global symbol is emitted to the resulting
- * object.
+ * Adds elements to the specified diffuse array.
  *
- * @param element_type the type of array elements
- * @param name the array name which is used to refer the array itself
- *        and to populate it using #ARRAY_DIFFUSE_ADD()
- * @param terminator an element indicating the array end (e.g. @c NULL pointer)
- * @note The @a element_type must include @c const modifier (see general docs).
- */
-#define ARRAY_DIFFUSE_DEF_TERMINATED_STATIC(element_type, name, terminator) \
-		__ARRAY_DIFFUSE_DEF_TERMINATED_STATIC(element_type, name, terminator)
-
-/**
- * Adds elements to the specified diffuse array previously defined by
- * #ARRAY_DIFFUSE_DEF() or one of its derivatives.
+ * @param array_name
+ *   The name of the diffuse array to which to add elements.
+ * @param ...
+ *   The elements to add.
  *
- * @param array_name the name of the diffuse array to which to add elements
- * @param ... the elements to add
+ * @note
+ *   This command should be used in the file scope, outside of any block.
  */
 #define ARRAY_DIFFUSE_ADD(array_name, ...) \
 		__ARRAY_DIFFUSE_ADD(array_name, __VA_ARGS__)
@@ -95,9 +99,15 @@
  * Does the same as #ARRAY_DIFFUSE_ADD() but also puts a pointer to head of the
  * added sub-array into a variable with the specified name.
  *
- * @param array_name the name of the diffuse array to which to add elements
- * @param ptr_name the variable name used to refer to the added sub-array
- * @param ... the elements to add
+ * @param array_name
+ *   The name of the diffuse array to which to add elements.
+ * @param ptr_name
+ *   The variable name used to refer to the added sub-array.
+ * @param ...
+ *   The elements to add.
+ *
+ * @note
+ *   This command should be used in the file scope, outside of any block.
  */
 #define ARRAY_DIFFUSE_ADD_NAMED(array_name, ptr_name, ...) \
 		__ARRAY_DIFFUSE_ADD_NAMED(array_name, ptr_name, __VA_ARGS__)
@@ -105,21 +115,39 @@
 /**
  * Gets the length of the specified diffuse array.
  *
- * @param array_name the array to check size for (must be a symbol literal)
- * @return actual number of array elements
+ * @param array_name
+ *   The array to check size for (must be a literal symbol).
+ * @return
+ *   Actual number of array elements including terminator element (if any).
  */
 #define ARRAY_DIFFUSE_SIZE(array_name) \
 		__ARRAY_DIFFUSE_SIZE(array_name)
 
 /**
+ * Gets the length of the specified diffuse array without taking into an
+ * account a terminator element (if any).
+ *
+ * @param array_name
+ *   The array to check size for (must be a literal symbol).
+ * @return
+ *   Number of array elements except terminating (if any). If the target array
+ *   is not terminated then the result is the same as of #ARRAY_DIFFUSE_SIZE().
+ */
+#define ARRAY_DIFFUSE_SIZE_IGNORE_TERMINATING(array_name) \
+		__ARRAY_DIFFUSE_SIZE_IGNORE_TERMINATING(array_name)
+
+/**
  * Gets the length of the specified array. The array must be statically
  * defined/declared.
  *
- * @param array_name the array to check size for
- * @return number of array elements
+ * @param array
+ *   The array to check size for
+ * @return
+ *   Number of array elements
  */
-#define ARRAY_SIZE(array_name) \
-		__ARRAY_SIZE(array_name)
+#define ARRAY_SIZE(array) \
+		__ARRAY_SIZE(array)
+
 /**
  * TODO --Alina
  */
