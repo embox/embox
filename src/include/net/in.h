@@ -11,6 +11,7 @@
 
 #include <types.h>
 #include <embox/kernel.h>
+#include <lib/bits/byteswap.h>
 
 /**< Standard well-defined IP protocols.  */
 enum {
@@ -60,9 +61,9 @@ in_addr_t inet_addr(const char *cp);
 int inet_aton(const char *cp, struct in_addr *addr);
 
 /*TODO: htons not realize now*/
-#define htons(n)            n
+#define htons(n)            __bswap_16(n)
 #define ntohs(n)            n
-#define htonl(n)            n
+#define htonl(n)            __bswap_32(n)
 #define ntohl(n)            n
 
 /* Address to accept any incoming messages. */

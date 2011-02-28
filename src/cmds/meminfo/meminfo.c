@@ -21,12 +21,11 @@
 #define HELP_MSG         "Usage: meminfo [-h] [-k] [-s] -m\n"
 
 static const char *man_page =
-#include "meminfo_help.inc"
+	#include "meminfo_help.inc"
 ;
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec,
-	COMMAND_DESC_MSG, HELP_MSG, man_page)
-;
+	COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static LIST_HEAD(mpblocks_info_list);
 static LIST_HEAD(kmblocks_info_list);
@@ -128,9 +127,10 @@ static void print_sstatistic(struct list_head* pseudo_list) {
 	struct list_head* cur_elem_cache;
 	struct list_head* cur_elem_slab;
 	kmem_cache_t *cur_cachep;
+	void *obj_ptr;
 
 	smalloc(256);
-	void *obj_ptr = smalloc(256);
+	obj_ptr = smalloc(256);
 	smalloc(256);
 	sfree(obj_ptr);
 	smalloc(128);
