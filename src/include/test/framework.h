@@ -20,8 +20,8 @@
  */
 struct test;
 
-extern int test_invoke(struct test *test);
+extern int test_invoke(const struct test *test);
 
-extern const char *test_name(struct test *test);
+extern const char *test_name(const struct test *test);
 
 #endif /* TEST_FRAMEWORK_H_ */

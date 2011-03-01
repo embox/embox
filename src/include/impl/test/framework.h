@@ -18,17 +18,12 @@
 
 #include <impl/test/types.h>
 
+extern const struct test __test_registry[];
 #define __test_foreach(test_ptr) \
-	array_foreach_ptr(test_ptr, __extension__ ({       \
-				extern struct test __test_registry[];  \
-				__test_registry;                       \
-			}),  __extension__ ({                      \
-				extern struct test __test_registry[];  \
-				ARRAY_DIFFUSE_SIZE(__test_registry);   \
-			}))
+	array_diffuse_foreach_ptr(test_ptr, __test_registry)
 
 // XXX for struct mod. -- Eldar
 #include <mod/core.h>
-inline static const char *test_name(struct test *test) {
+inline static const char *test_name(const struct test *test) {
 	return NULL != test ? test->mod->name : NULL;
 }

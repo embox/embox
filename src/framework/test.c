@@ -32,7 +32,7 @@ static int test_mod_enable(struct mod *mod) {
 	return test_invoke((struct test *) mod_data(mod));
 }
 
-int test_invoke(struct test *test) {
+int test_invoke(const struct test *test) {
 	int result;
 
 	if (NULL == test) {
