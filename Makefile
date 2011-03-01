@@ -11,7 +11,7 @@ MK_DIR := $(abspath mk)
 
 ifdef __mk_ready
 
-ifeq (0,1)
+ifeq (1,1)
 include main.mk
 else
 include embuild/core.mk
@@ -23,7 +23,7 @@ MAKEFLAGS += --include-dir=$(MK_DIR)
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 MAKEFLAGS += --no-print-directory
-MAKEFLAGS += --warn-undefined-variables
+#MAKEFLAGS += --warn-undefined-variables
 
 .DEFAULT_GOAL := all
 

@@ -22,7 +22,7 @@
 	$(warning Options defined outside "options.conf" are ignored)
 
 #define mod(mod, ...) \
-	MODS_ENABLE += mod $(\n)\
+	MODS_ENABLE += mod $N\
 	RUNLEVEL-##mod := __FIRST_ARG(__VA_ARGS__)
 
 #define test(mod_name, ...) \
@@ -47,11 +47,11 @@
 #elif defined(__CONFIG_LDS_H__)
 
 #define lds_region(name, base, size) \
-	$define LDS_REGION_BASE_##name base $(\n)\
+	$define LDS_REGION_BASE_##name base $N\
 	$define LDS_REGION_SIZE_##name size
 
 #define lds_section_load(name, vma_region, lma_region) \
-	$define LDS_SECTION_VMA_##name vma_region $(\n)\
+	$define LDS_SECTION_VMA_##name vma_region $N\
 	$define LDS_SECTION_LMA_##name lma_region
 
 #define lds_section(name, region) \

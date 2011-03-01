@@ -64,7 +64,7 @@ LN     := ln -s
 
 TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 
-include gmd.mk
+#include gmd.mk
 
 include rules.mk
 include util.mk
