@@ -12,13 +12,11 @@
 #include <net/in.h>
 #include <net/skbuff.h>
 #include <net/inet_sock.h>
-
-#define __BIG_ENDIAN 1
+#include <hal/arch.h>
 
 #define IP_ADDR_LEN      4
 #define ICMP_PROTO_TYPE  (unsigned short)0x01
 #define UDP_PROTO_TYPE   (unsigned short)0x11
-
 
 /* IP options */
 #define IPOPT_COPY		0x80
@@ -49,7 +47,6 @@
 #define	IPOPT_TS_TSANDADDR	1		/* timestamps and addresses */
 #define	IPOPT_TS_PRESPEC	3		/* specified modules only */
 
-
 /* IP flags. */
 #define IP_CE           0x8000	/* Flag: "Congestion"       */
 #define IP_DF           0x4000	/* Flag: "Don't Fragment"   */
@@ -59,10 +56,10 @@
 typedef struct iphdr {
 #if defined(__LITTLE_ENDIAN)
 	__extension__ __u8 ihl:4,  /* ihl = 5 */
-					version:4; /* version = 4 */
+			version:4; /* version = 4 */
 #elif defined (__BIG_ENDIAN)
 	__extension__ __u8 version:4, /* version = 4 */
-						ihl:4;    /* ihl = 5 */
+			    ihl:4;    /* ihl = 5 */
 #endif
 	__u8        tos;          /**< Type of Services, always 0 */
 	__be16      tot_len;      /**< packet length */
