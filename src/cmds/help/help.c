@@ -19,7 +19,7 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
-EMBOX_CMD(exec, HELP_MSG, "TODO details");
+EMBOX_CMD(exec);
 
 static int exec(int argsc, char **argsv) {
 	const struct cmd *cmd;

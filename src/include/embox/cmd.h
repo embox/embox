@@ -14,10 +14,10 @@
 #include <util/array.h>
 #include <mod/self.h>
 
-#define EMBOX_CMD(exec, brief, detatils) \
-		__EMBOX_CMD(exec, brief, detatils)
+#define EMBOX_CMD(exec) \
+		__EMBOX_CMD(exec)
 
-#define __EMBOX_CMD(_exec, brief, detatils) \
+#define __EMBOX_CMD(_exec) \
 	static int _exec(int argc, char **argv);           \
 	ARRAY_SPREAD_ADD_NAMED(__cmd_registry, __cmd,   {  \
 			.exec = _exec,                             \
