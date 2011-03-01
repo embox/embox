@@ -167,7 +167,7 @@
 				MACRO_GUARD(__array_end))
 
 #define __array_range_foreach_ptr__(element_ptr, array_begin, array_end, _end)\
-	for (typeof(element_ptr) *_end = __extension__ ({ \
+	for (typeof(element_ptr) _end = __extension__ ({  \
 					(element_ptr) = (array_begin);    \
 					(array_end);                      \
 				});                                   \
