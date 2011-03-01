@@ -22,7 +22,7 @@
 #include <mod/embuild.h>
 
 #define __RUNLEVEL_MOD_DEF(op, nr) \
-	MOD_DEF(runlevel##nr##_##op, generic, "runlevel"#nr"_"#op); \
+	MOD_DEF(runlevel##nr##_##op, generic, "runlevel"#nr"_"#op,"",""); \
 	__MOD_INFO_DEF(runlevel##nr##_##op, nr, &__runlevel_##op##_mod_ops)
 
 #define RUNLEVEL_DEF(nr) \

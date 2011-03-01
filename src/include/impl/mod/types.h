@@ -23,6 +23,8 @@ struct mod {
 	struct mod_package *package;
 	/** Module name assigned by EMBuild. */
 	const char *name;
+	/** TODO docs. -- Eldar */
+	const char *brief, *details;
 	/** Null-terminated array containing dependency info. */
 	struct mod **requires, **provides;
 };

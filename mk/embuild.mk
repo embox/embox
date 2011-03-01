@@ -155,9 +155,9 @@ wildcard_srcs = $(wildcard $(1:%=$(dir)/%))
 mod_package = $(basename $(unit))
 mod_name = $(patsubst .%,%,$(suffix $(unit)))
 
-unit_symbol = $(foreach symbol,$1, \
-  $($_$(symbol)-$(unit)) \
-  $(if $(filter $($_PACKAGE),$(mod_package)),$($_$(symbol)-$(mod_name))) \
+unit_symbol = $(foreach symbol,$1,$ \
+  $($_$(symbol)-$(unit))$ \
+  $(if $(filter $($_PACKAGE),$(mod_package)),$($_$(symbol)-$(mod_name)))$ \
 )
 
 unit_srcs_check_warn = \
@@ -189,16 +189,20 @@ unit_srcs_check = \
   )
 
 define define_unit_symbols_prepare
-  SRCS-$(unit) :=
+  SRCS-$(unit)     :=
   CPPFLAGS-$(unit) :=
   CFLAGS-$(unit)   :=
+  BRIEF-$(unit)    :=
+  DETAILS-$(unit)  :=
 endef
 
 define define_unit_symbols_per_directory
-  SRCS-$(unit) += \
+  SRCS-$(unit)     += \
     $(call unit_srcs_check,$(call wildcard_srcs,$(call unit_symbol,SRCS)))
   CPPFLAGS-$(unit) += $(call unit_symbol,CPPFLAGS)
   CFLAGS-$(unit)   += $(call unit_symbol,CFLAGS)
+  BRIEF-$(unit)    := $(or $(BRIEF-$(unit)),$(call unit_symbol,BRIEF))
+  DETAILS-$(unit)  := $(or $(DETAILS-$(unit)),$(call unit_symbol,DETAILS))
 endef
 
 define define_unit_symbols
@@ -451,6 +455,12 @@ dump_var_symbol = $(subst \\\n,\\\n  ,$(subst \n ,\n,$(strip \
   $(foreach var,$2,$(if $($1-$(var)),$(call dump_var,$1-$(var)))) \
 )))
 
+dump_var_verbatim = \
+  define $1\n$(subst $(\t),\t,$(subst $(\n),\n,$($1)))\nendef\n
+dump_var_symbol_verbatim = $(subst \\\n,\\\n  ,$(subst \n ,\n,$(strip \
+  $(foreach var,$2,$(if $($1-$(var)),$(call dump_var_verbatim,$1-$(var)))) \
+)))
+
 $(EMBUILD_DUMP_MK) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/embuild.mk
 ifndef EMBUILD_DUMP_CREATE
 	@$(RM) $@ && $(MAKE) EMBUILD_DUMP_CREATE=1 --no-print-directory $@
@@ -465,6 +475,8 @@ else
 	@$(PRINTF) '$(call dump_var_symbol,SRCS,$(MODS) $(LIBS))' >> $@
 	@$(PRINTF) '$(call dump_var_symbol,CPPFLAGS,$(MODS) $(LIBS))' >> $@
 	@$(PRINTF) '$(call dump_var_symbol,CFLAGS,$(MODS) $(LIBS))' >> $@
+	@$(PRINTF) '$(call dump_var_symbol_verbatim,BRIEF,$(MODS) $(LIBS))' >> $@
+	@$(PRINTF) '$(call dump_var_symbol_verbatim,DETAILS,$(MODS) $(LIBS))' >> $@
 	@$(PRINTF) '$(call dump_var_symbol,DEPS,$(MODS) $(LIBS))' >> $@
 	@$(PRINTF) '$(call dump_var,SUBDIRS_LDFLAGS)' >> $@
 	@$(PRINTF) '$(call dump_var_symbol,UNIT_DEFINED,$(MODS) $(LIBS))' >> $@

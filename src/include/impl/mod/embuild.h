@@ -7,7 +7,7 @@
  */
 
 #ifndef __EMBUILD__
-# error "Do not include <embuild/mod.h> outside of EMBuild-generated code!"
+# error "Do not include <mod/embuild.h> outside of EMBuild-generated code!"
 #endif /* __EMBUILD__ */
 
 #include <stddef.h>
@@ -43,7 +43,7 @@
 
 /* Macro API impl. */
 
-#define __MOD_DEF(s_mod, s_mod_pkg, mod_name) \
+#define __MOD_DEF(s_mod, s_mod_pkg, mod_name, mod_brief, mod_details) \
 	__MOD_INFO_DECL(s_mod);                                               \
 	__MOD_PACKAGE_DECL(s_mod_pkg);                                        \
 	__MOD_ARRAY_DEF(s_mod, requires);                                     \
@@ -54,6 +54,8 @@
 		.info     = (struct __mod_info *) &__MOD_INFO(s_mod),         \
 		.package  = (struct mod_package *) &__MOD_PACKAGE(s_mod_pkg), \
 		.name     = mod_name,                                         \
+		.brief    = mod_brief,                                        \
+		.details  = mod_details,                                      \
 		.requires = (struct mod **) &__MOD_ARRAY(s_mod, requires),    \
 		.provides = (struct mod **) &__MOD_ARRAY(s_mod, provides),    \
 	}

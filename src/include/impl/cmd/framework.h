@@ -26,9 +26,9 @@ inline static const char *cmd_name(const struct cmd *cmd) {
 	return NULL != cmd ? cmd->mod->name : NULL;
 }
 inline static const char *cmd_brief(const struct cmd *cmd) {
-	return NULL != cmd ? "(cmd_brief) Not yet implemented" : NULL;
+	return NULL != cmd ? cmd->mod->brief : NULL;
 }
 inline static const char *cmd_details(const struct cmd *cmd) {
-	return NULL != cmd ? "(cmd_details) Not yet implemented" : NULL;
+	return NULL != cmd ? cmd->mod->details : NULL;
 }
 

@@ -28,6 +28,9 @@ c_package = $(call c_escape,$(package))
 
 c_escape = $(subst .,__,$(1))
 
+c_str_escape = \
+  \n\t\t\"$(subst $(\n),\\n\"\n\t\t\",$(subst $(\t),\\t,$(subst ",\\\",$1)))\"
+
 eol-trim = $(if $(findstring $() \n,$1),$(call $0,$(subst $() \n,\n,$1)),$1)
 
 cond_flags =   $(if $(strip $(CFLAGS-$2) $(CPPFLAGS-$2)), \
@@ -57,7 +60,9 @@ mod_def = \
     $(call cond_flags,\n *       FLAGS:,$(abspath $(src))) \
   ) \
   \n */ \
-  \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)");
+  \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)", \
+    $(call c_str_escape,$(BRIEF-$(mod))), \
+    $(call c_str_escape,$(DETAILS-$(mod))));
 
 generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
   $(foreach mod,$(MODS_BUILD), \

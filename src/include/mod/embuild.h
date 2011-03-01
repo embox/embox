@@ -26,9 +26,11 @@
  * @param mod_name a string containing the mod name. The name of the current
  *        mod (referenced by __EMBUILD_MOD__) can accessed at compilation time
  *        using #MOD_SELF_NAME macro
+ * @param brief TODO -- Eldar
+ * @param details TODO -- Eldar
  */
-#define MOD_DEF(s_mod, s_mod_package, mod_name) \
-		__MOD_DEF(s_mod, s_mod_package, mod_name)
+#define MOD_DEF(s_mod, s_mod_package, mod_name, brief, details) \
+		__MOD_DEF(s_mod, s_mod_package, mod_name, brief, details)
 
 /**
  * Defines a new dependency between two specified modules.
