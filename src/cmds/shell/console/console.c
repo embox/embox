@@ -126,9 +126,7 @@ static int on_dc4(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 static int on_ack(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CONSOLE *this = (CONSOLE *) cb->outer;
-	if (this->callback != NULL && this->callback->job_abort != NULL)
-		this->callback->job_abort(this->callback, this);
+	/* Not implemented. */
 	return 0;
 }
 
@@ -136,7 +134,7 @@ static int on_ack(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 
 static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
-	static char* proposals[MAX_PROPOSALS];
+	static const char *proposals[MAX_PROPOSALS];
 	int proposals_len, offset, common;
 	if (this->callback != NULL && this->callback->guess != NULL) {
 		char buf[CMDLINE_MAX_LENGTH + 1];

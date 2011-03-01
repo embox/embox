@@ -46,7 +46,7 @@ bool cmdline_cursor_home(CMDLINE *cmdline);
 bool cmdline_cursor_end(CMDLINE *cmdline);
 bool cmdline_chars_delete(CMDLINE *cmdline, int len);
 bool cmdline_chars_backspace(CMDLINE *cmdline, int len);
-bool cmdline_chars_insert(CMDLINE *cmdline, char *ch, int len);
+bool cmdline_chars_insert(CMDLINE *cmdline, const char *ch, int len);
 bool cmdline_dc2_reverse(CMDLINE *cmdline);
 bool cmdline_dc4_reverse(CMDLINE *cmdline);
 

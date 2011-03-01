@@ -157,7 +157,7 @@ bool cmdline_chars_backspace(CMDLINE *this, int len) {
 	return cmdline_chars_delete(this, old_cursor - this->cursor);
 }
 
-bool cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
+bool cmdline_chars_insert(CMDLINE *this, const char *ch, int len) {
 	int i;
 	if (this == NULL) {
 		return false;

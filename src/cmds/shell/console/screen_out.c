@@ -75,7 +75,7 @@ void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 	move_cursor_to(this, cmdline->cursor);
 }
 
-void screen_out_puts(SCREEN *this, char *str) {
+void screen_out_puts(SCREEN *this, const char *str) {
 	if (this == NULL) {
 		return;
 	}

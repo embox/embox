@@ -4,40 +4,70 @@
  * @date 02.02.2009
  * @author Alexey Fomin
  */
+
+#include <embox/unit.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "console/console.h"
-//#include <shell.h>
-#include <kernel/job.h>
-#include <hal/context.h>
-#include <shell_command.h>
-#include <embox/unit.h>
+#include <util/array.h>
+#include <cmd/framework.h>
+
 #include <shell_utils.h>
+#include "console/console.h"
 
 // XXX just for now -- Eldar
 EMBOX_UNIT(shell_start, shell_stop);
 
-static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
+#include <shell_command.h>
+
+static void deprecated_exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
 	int words_counter = 0;
 
 	SHELL_COMMAND_DESCRIPTOR *c_desc;
 	char *words[CMDLINE_MAX_LENGTH + 1];
 
 	if (0 == (words_counter = parse_str(cmdline, words))) {
-		return; /* Only spaces were entered */
+		/* Only spaces were entered */
+		return;
 	}
 	if (NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))) {
-		printf("%s: Command not found\n", words[0]);
 		return;
 	}
 	if (NULL == c_desc->exec) {
-		LOG_ERROR("shell command: wrong command descriptor\n");
 		return;
 	}
+
+	printf("%s: Executing command using deprecated API.\n\n", words[0]);
 	shell_command_exec(c_desc, words_counter, words);
-	return;
+}
+
+static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
+	const struct cmd *cmd;
+	int code;
+	/* In the worst case cmdline looks like "x x x x x x". */
+	char *argv[(CMDLINE_MAX_LENGTH + 1) / 2];
+	int argc = 0;
+
+	if (0 == (argc = parse_str(cmdline, argv))) {
+		/* Only spaces were entered */
+		return;
+	}
+
+	if (NULL == (cmd = cmd_lookup(argv[0]))) {
+#if 0
+		printf("%s: Command not found\n", argv[0]);
+#else
+		deprecated_exec_callback(cb, console, cmdline);
+#endif
+		return;
+	}
+
+	if (0 != (code = cmd_exec(cmd, argc, argv))) {
+		printf("%s: Command returned with code %d: %s\n", cmd_name(cmd), code,
+				strerror(-code));
+	}
 }
 
 /**
@@ -47,11 +77,14 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
  */
 static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 		const char* line, const int max_proposals, int *proposals_len,
-		char *proposals[], int *offset, int *common) {
+		const char *proposals[], int *offset, int *common) {
+	const struct cmd *cmd;
 	int cursor = strlen(line);
 	int start = cursor, i;
 	char ch;
+	// XXX
 	SHELL_COMMAND_DESCRIPTOR * shell_desc;
+
 	while (start > 0 && isalpha(line[start - 1])) {
 		start--;
 	}
@@ -60,11 +93,19 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	*offset = cursor - start;
 	*proposals_len = 0;
 
-	for (shell_desc = shell_command_descriptor_find_first((char*) line, *offset);
-	    NULL != shell_desc;
-	    shell_desc = shell_command_descriptor_find_next(shell_desc, (char *) line, *offset)) {
+	cmd_foreach(cmd) {
+		if (0 == strncmp(cmd_name(cmd), line, *offset)) {
+			proposals[(*proposals_len)++] = cmd_name(cmd);
+		}
+	}
+	// XXX deprecated. -- Eldar
+	for (shell_desc
+			= shell_command_descriptor_find_first((char*) line, *offset); NULL
+			!= shell_desc; shell_desc = shell_command_descriptor_find_next(
+			shell_desc, (char *) line, *offset)) {
 		proposals[(*proposals_len)++] = (char *) shell_desc->name;
 	}
+
 	*common = 0;
 	if (*proposals_len == 0) {
 		return;
@@ -82,19 +123,16 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	}
 }
 
-static void job_abort_callback(CONSOLE_CALLBACK *cb, CONSOLE *console) {
-	context_set_entry(NULL, &job_abort, 0);
-}
-
 __extension__ static const char *script_commands[] = {
-	#include <start_script.inc>
-};
+#include <start_script.inc>
+		};
 
 static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 	char buf[CMDLINE_MAX_LENGTH + 1];
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(script_commands); i++) {
-		strncpy(buf, script_commands[i], sizeof(buf));
+	const char *command;
+
+	array_static_foreach(command, script_commands) {
+		strncpy(buf, command, sizeof(buf));
 		printf("> %s \n", buf);
 		exec_callback(callback, console, buf);
 	}
@@ -108,7 +146,6 @@ static int shell_start(void) {
 
 	callback->exec = exec_callback;
 	callback->guess = guess_callback;
-	callback->job_abort = job_abort_callback;
 	if (console_init(console, callback) == NULL) {
 		LOG_ERROR("Failed to create a console");
 		return -1;

@@ -56,7 +56,7 @@ typedef struct _SCREEN {
 SCREEN * screen_init(SCREEN *, SCREEN_IO *io);
 
 void screen_out_show_prompt(SCREEN *, const char *prompt);
-void screen_out_puts(SCREEN *, char *str);
+void screen_out_puts(SCREEN *, const char *str);
 void screen_out_update(SCREEN *, CMDLINE *cmdline);
 void screen_in_start(SCREEN *, SCREEN_CALLBACK *cb);
 void screen_in_stop(SCREEN *);
