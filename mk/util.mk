@@ -7,24 +7,8 @@
 ifndef _util_mk_
 _util_mk_ := 1
 
-include gmsl.mk
-
-empty :=
-
-\space :=
-\space +=
-
-$(\space) :=
-
-define \n
-
-
-endef
-
-         \n          := $(\n)
-$(\space)\n          := $(\n)
-$(\space)\n$(\space) := $(\n)
-         \n$(\space) := $(\n)
+include core/common.mk
+include gmsl/gmsl.mk # agrhhh!.. avoid using it. -- Eldar
 
 escape = $(call assert_called,escape,$0)$(call dollar_encode,$1)
 
@@ -80,17 +64,15 @@ assert_called :=
 assert:=
 endif
 
+# XXX
+include util/math.mk
+
 args_nr = $(foreach __args_nr_i,1,$(__args_nr))
 __args_nr = \
   $(if $(filter-out undefined,$(origin $(__args_nr_i))), \
     $(foreach __args_nr_i,$(call inc,$(__args_nr_i)),$(__args_nr)), \
     $(__args_nr_i) \
   )
-
-sequence = $(if $(call lt,$1,$2) \
-  ,$(call __sequence_inc,$1,$2),$(call __sequence_dec,$2,$1))
-__sequence_inc = $1$(if $(call lt,$1,$2),$(call $0, $(call inc,$1),$2))
-__sequence_dec = $(if $(call lt,$1,$2),$(call $0,$(call inc,$1) ,$2))$1
 
 expand_once   = $(call expand_once_0,$1)
 __expand_once_def_all = \
@@ -104,7 +86,7 @@ $(__expand_once_def_all)
 # Do not call. Pass number of args through total_args variable.
 __expand_once = $(strip \
   $(call assert_called,expand_once_$(total_args),$0) \
-  $(call assert,$(call eq,$(words $1),1),Invalid name of variable being expanded) \
+  $(call assert,$(call singleword,$1),Invalid name of variable being expanded) \
   $(if $(filter undefined,$(origin $(__expansion_name))),$(eval \
        $(value __expansion_name) := $$(call $(__expansion_args)) \
   )) \
@@ -142,26 +124,6 @@ __expansion_name = __expansion_of_$1_$$__$(strip $(call merge \
 #
 r-patsubst = $(if $(filter $1,$3),$(call $0,$1,$2,$(3:$1=$2)),$3)
 
-# Make-style error and warning strings.
-
-# The most general way to get error/warning string.
-# First argument should contain the location to print (directory and file).
-error_str_file   = $1:1: error:
-warning_str_file = $1:1: warning:
-
-# Print location using the first argument as directory
-# and 'Makefile' as file within the directory.
-error_str_dir    = $(call error_str_file,$1/Makefile)
-warning_str_dir  = $(call warning_str_file,$1/Makefile)
-
-# Generates error/warning string in $(dir)/Makefile.
-error_str        = $(call error_str_dir,$(dir))
-warning_str      = $(call warning_str_dir,$(dir))
-
-# Just for better output readability.
-define N
-
-
-endef
+include util/log.mk
 
 endif # _util_mk_

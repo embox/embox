@@ -29,8 +29,8 @@ dir = $(SELFDIR)
 
 DIRS := $(call traverse,$(SRC_DIR),Makefile.em) \
   $(if $(PLATFORM),$(call traverse,$(PLATFORM_DIR),Makefile.em))
-# XXX -- Eldar
 
+# XXX -- Eldar
 DIRS := $(patsubst %/,%,$(dir \
   $(foreach dir,$(DIRS), \
     $(call f-wildcard_first,$(addprefix $(dir)/,Makefile.em Makefile makefile)) \
@@ -292,7 +292,7 @@ invoke_define_lib_deps_postprocess = \
 deps_detect_cycles = \
   $(if $(filter $(unit),$1), \
     $(foreach pair, \
-        $(call unit_dep_pairs,$2 $(lastword $3),$3 $(firstword $2)), \
+        $(call unit_dep_pairs,$2 $(lastword $3),$3 $(call firstword,$2)), \
       $(info $(call error_str_dir,$(UNIT-$(subst /,-DEP-,$(pair))-DEFINED)) \
         Cyclic dependency definition here:: $(subst /, -> ,$(pair))) \
     ) \
@@ -327,8 +327,8 @@ t-sort = \
     $(strip $2) \
   )
 
-reverse = \
-  $(strip $(if $1,$(call $0,$(wordlist 2,$(words $1),$1)) $(firstword $1)))
+reverse = $(strip \
+  $(if $1,$(call $0,$(wordlist 2,$(words $1),$1)) $(call firstword,$1)))
 
 define mod_deps_resort
   DEPS-$(mod) := $(foreach m,$(MODS),$(if $(filter $m,$(DEPS-$(mod))),$m))
@@ -374,7 +374,7 @@ define define_unit_obj_rules
 endef
 define define_lib_rules
   $(call LIB_FILE,$(unit)) : $(OBJS-$(unit))
-	$(AR) $(ARFLAGS) $@ $(^:%= \$N	%)
+	$(AR) $(ARFLAGS) $@ $(^:%= \$(\n)	%)
 endef
 define define_mod_obj_rules
   $(OBJS-$(unit)) : override CPPFLAGS += $(CPPFLAGS-$(mod_package))

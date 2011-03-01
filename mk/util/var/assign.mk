@@ -25,49 +25,24 @@
 # SUCH DAMAGE.
 #
 
-#
+##
 # Variable manipulation utils.
 #
+# Author: Eldar Abusalimov
+#
+
+ifndef __util_var_assign_mk
+__util_var_assign_mk := 1
+
 # Implementation note:
 #  There was an attempt to support all assignment ops and to abstract from
 #  make version.
 #  At this point I think it was unnecessary. If some day I'll change my
 #  opinion, the previous solution can be found in embuild_experimental @ r895.
-#
-# Author: Eldar Abusalimov
-#
 
-#
-# Expands to the variable information string.
-# Information includes flavor, origin and value of the specified variable.
-#
-# Params:
-#  1. The target variable name
-#
-# Returns: Human-readable multiline string containing variable information.
-#
-define var_dump
-$(call assert_called,var_dump,$0) \
-  $(call assert,$1,Variable name is empty) Variable [$1] info:
-   flavor: [$(flavor $1)]
-   origin: [$(origin $1)]
-    value: [$(value $1)]
+include core/common.mk
 
-endef
-
-#
-# Prints the information about the specified variable using $(info) function.
-#
-# Params:
-#  1. The target variable name
-#
-# Returns: nothing
-#
-# See also: var_dump
-#
-var_info = $(call assert_called,var_info,$0)$(info $(call var_dump,$1))
-
-#
+##
 # Function: var_assign_simple, =:
 #
 # Assigns value to the specified variable using immediate expansion (variable
@@ -86,7 +61,7 @@ var_info = $(call assert_called,var_info,$0)$(info $(call var_dump,$1))
 #
 var_assign_simple = ${eval $$1 := $$2}
 
-#
+##
 # Function: var_assign_recursive, =
 #
 # Assigns value to the specified variable, the variable becomes recursively
@@ -115,7 +90,7 @@ var_assign_simple = ${eval $$1 := $$2}
 var_assign_recursive = $(if $(findstring $(\n),$2 \
   ),$(var_assign_multiline_recursive),$(var_assign_singleline_recursive))
 
-#
+##
 # Function: var_assign_singleline_recursive
 #
 # Assigns value to the specified variable, the variable becomes recursively
@@ -133,7 +108,7 @@ var_assign_recursive = $(if $(findstring $(\n),$2 \
 #
 var_assign_singleline_recursive = ${eval $$1 = $2}
 
-#
+##
 # Function: var_assign_multiline_recursive
 #
 # Assigns value to the specified variable, the variable becomes recursively
@@ -157,7 +132,7 @@ ${eval $ \
   endef$                                      \
 } # eval above is 3.81 bug (Savannah #27394) workaround.
 
-#
+##
 # Function: var_assign_undefined, var_undefine
 #
 # Undefines variable with the specified name.
@@ -206,3 +181,4 @@ var_restore = $(strip \
   $(call var_assign_$(call get,__var_flavor,$1),$1,$(call get,__var_value,$1))\
 )
 
+endif # __util_var_assign_mk

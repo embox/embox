@@ -105,9 +105,9 @@ $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
 	$(CC) -o $@ $(CFLAGS) $(CPPFLAGS) -c $<
 
 $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
-	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$N		%) \
+	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$(\n)		%) \
 		$(DEPSINJECT_OBJ) \
-	-L$(LIB_DIR) $(LIBS:lib%.a=\$N		-l%) \
+	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
 	-o $@ -Map $@.map
 
 $(IMAGE_DIS): $(IMAGE)
