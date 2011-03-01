@@ -5,7 +5,9 @@
  * @date 02.03.2009
  * @author Alexandr Batyukov
  */
+
 #include <shell_command.h>
+#include <embox/cmd.h>
 
 #define COMMAND_NAME     "help"
 #define COMMAND_DESC_MSG "show all available command"
@@ -17,7 +19,10 @@ static const char *man_page =
 
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
+EMBOX_CMD(exec, HELP_MSG, "TODO details");
+
 static int exec(int argsc, char **argsv) {
+	const struct cmd *cmd;
 	int nextOption;
 	SHELL_COMMAND_DESCRIPTOR * shell_desc;
 	getopt_init();
@@ -35,10 +40,16 @@ static int exec(int argsc, char **argsv) {
 	} while (-1 != nextOption);
 
 	printf("Available commands: \n");
+	cmd_foreach(cmd) {
+		printf("%11s - %s\n", cmd_name(cmd), cmd_brief(cmd));
+	}
+
+	printf("DEPRECATED Available commands: \n");
 	for (shell_desc = shell_command_descriptor_find_first((char *) NULL, 0);
 	    NULL != shell_desc;
 	    shell_desc = shell_command_descriptor_find_next(shell_desc, (char *) NULL, 0)) {
-		printf("%11s\t - %s\n", shell_desc->name, shell_desc->description);
+		printf("%11s - %s\n", shell_desc->name, shell_desc->description);
 	}
+
 	return 0;
 }

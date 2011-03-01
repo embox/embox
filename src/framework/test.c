@@ -12,11 +12,12 @@
  *         - Adding level implementation code
  */
 
-#include <types.h>
-#include <errno.h>
-#include <string.h>
-
 #include <test/framework.h>
+
+#include <stddef.h>
+#include <errno.h>
+#include <stdio.h>
+
 #include <mod/core.h>
 #include <util/array.h>
 
