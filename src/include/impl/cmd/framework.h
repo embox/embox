@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implementation of cmd framework getters and iterators.
  *
  * @date Mar 1, 2011
  * @author Eldar Abusalimov

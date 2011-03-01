@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implementation of macros used by EMBuild DI model code generator.
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov

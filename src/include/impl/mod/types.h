@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implementation private types used by mods infrastructure.
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov
@@ -23,7 +23,7 @@ struct mod {
 	struct mod_package *package;
 	/** Module name assigned by EMBuild. */
 	const char *name;
-	/** TODO docs. -- Eldar */
+	/** Human-readable module description. */
 	const char *brief, *details;
 	/** Null-terminated array containing dependency info. */
 	struct mod **requires, **provides;
