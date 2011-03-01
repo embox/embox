@@ -1,5 +1,5 @@
 /**
- * vt.h
+ * @file
  *
  * @date 04.02.2009
  * @author Eldar Abusalimov
@@ -7,13 +7,13 @@
 #ifndef VT_H_
 #define VT_H_
 
-#define VT_TOKEN_MAX_CHARS     2
-#define VT_TOKEN_MAX_PARAMS    8
+#define VT_TOKEN_ATTRS_MAX     2
 
-typedef enum {
+enum vt_action {
+	VT_ACTION_NONE         = 0,
 	VT_ACTION_CLEAR        = 1,
 	VT_ACTION_COLLECT      = 2,
-	VT_ACTION_CS_DISPATCH  = 3,
+	VT_ACTION_CSI_DISPATCH = 3,
 	VT_ACTION_ESC_DISPATCH = 4,
 	VT_ACTION_EXECUTE      = 5,
 	VT_ACTION_HOOK         = 6,
@@ -25,21 +25,17 @@ typedef enum {
 	VT_ACTION_PRINT        = 12,
 	VT_ACTION_PUT          = 13,
 	VT_ACTION_UNHOOK       = 14
-} VT_ACTION;
+};
 
-typedef struct {
-	VT_ACTION action;
-	char      attrs[VT_TOKEN_MAX_CHARS];
-	int       attrs_len;
-	const int *params;
-	int       params_len;
-	char      ch;
-} VT_TOKEN;
+typedef enum vt_action vt_action_t;
 
-/** ANSI Escape */
-#define ESC		'\033' /*'\e' warning: non-ISO-standard escape sequence, '\e'
-					 Use \033 instead. \e is a GNU shortcut. */
-/** ANSI Control Sequence Introducer */
-#define CSI		'['
+struct vt_token {
+	vt_action_t action;
+	char        ch;
+	char        attrs[VT_TOKEN_ATTRS_MAX];
+	char        attrs_len;
+	short      *params;
+	int         params_len;
+};
 
 #endif /* VT_H_ */

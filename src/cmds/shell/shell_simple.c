@@ -1,7 +1,7 @@
 /**
  */
 #include <stdio.h>
-#include <shell.h>
+//#include <shell.h>
 #include <embox/unit.h>
 #include <kernel/driver.h>
 #include <kernel/thread.h>
@@ -13,7 +13,7 @@ EMBOX_UNIT(shell_start, shell_stop);
 
 static int shell_start(void) {
 	FILE dev;
-	dev = device_select( CONFIG_DEV_STDIO );
+	dev = device_select(CONFIG_DEV_STDIO);
 	stdin = stdout = dev;
 	printf("\n\n%s", CONFIG_SHELL_WELCOME_MSG);
 	printf("\n\n\e[1;34m Just for fun MESSAGE :D\e[0;0m\n\n");
@@ -25,16 +25,16 @@ static int shell_start(void) {
 
 #if 1 /* iTerminal init */
 /* bind iTerminal with fi_uart */
-	iterminal = device_select( "dev_itty01" );
+	iterminal = device_select("dev_itty01");
 	printk("id of itty01: %d\n",iterminal);
-	stdio = device_select( CONFIG_DEV_STDIO );
-	device_devctl( iterminal , ITERM_DC_SET_IO , &stdio );
+	stdio = device_select( CONFIG_DEV_STDIO);
+	device_devctl(iterminal, ITERM_DC_SET_IO, &stdio);
 #endif
 
 #if 0 /* pipe test */
 	int i;
 	char buf[256];
-	device_desc pipe = device_select( "/dev/pipeXX" );
+	device_desc pipe = device_select("/dev/pipeXX");
 	printk("pipe: %d\n",pipe);
 	for (;1;) {
 		for (i=50;i<67;++i) {
@@ -46,11 +46,11 @@ static int shell_start(void) {
 		}
 		printk("\n");
 		printk("from pipe:\n");
-		device_write( pipe , &buf[50] , 17 );
-		for (int i=0;i<234;++i)
+		device_write(pipe, &buf[50], 17);
+		for (int i = 0; i < 234; ++i)
 			buf[i] = 0;
-		device_read( pipe , &buf[50] , 17 );
-		for (i=50;i<67;++i) {
+		device_read(pipe, &buf[50], 17);
+		for (i = 50; i < 67; ++i) {
 			printk("%c",buf[i]);
 		}
 		printk("\n");

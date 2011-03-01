@@ -1,6 +1,3 @@
-
-$_MODS += opallocator
-
-$_SRCS-opallocator += *.c
-
+$_MODS             += opallocator
+$_SRCS-opallocator += opallocator.c
 $_DEPS-opallocator += embox.hal.mm.opallocator

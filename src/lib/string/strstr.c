@@ -39,18 +39,18 @@ char *strstr (const char *phaystack, const char *pneedle) {
 				jin:{
 					if ((a = *++haystack) == c)
 						goto crest;
-					} else
-						a = *++haystack;
-					do {
-						for (; a != b; a = *++haystack) {
-							if (!a)
-								goto ret0;
-							if ((a = *++haystack) == b)
-								break;
-							if (!a)
-								goto ret0;
-						}
-					} while ((a = *++haystack) != c);
+				} else
+					a = *++haystack;
+				do {
+					for (; a != b; a = *++haystack) {
+						if (!a)
+							goto ret0;
+						if ((a = *++haystack) == b)
+							break;
+						if (!a)
+							goto ret0;
+					}
+				} while ((a = *++haystack) != c);
 			}
 			crest:
 			{

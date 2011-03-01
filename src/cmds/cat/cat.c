@@ -34,14 +34,14 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
-	if(argsc < 2) {
+	if (argsc < 2) {
 		show_help();
 		return 0;
 	}
 	fd = fopen(argsv[argsc - 1], "r");
-	while(fread(buff, sizeof(buff), 1, fd) > 0) {
+	while (fread(buff, sizeof(buff), 1, fd) > 0) {
 		printf("%s", buff);
 	}
 	fclose(fd);

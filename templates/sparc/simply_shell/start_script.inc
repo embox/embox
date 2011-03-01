@@ -1,0 +1,2 @@
+//"mount cpio /ramfs"
+

@@ -11,11 +11,13 @@
  * @date 30.06.2010
  * @author Dmitry Avdyukhin
  */
+
 #include <embox/test.h>
-#include <kernel/thread.h>
-#include <kernel/scheduler.h>
 #include <errno.h>
 #include <assert.h>
+#include <kernel/thread.h>
+#include <kernel/scheduler.h>
+#include <kernel/message.h>
 
 #define THREAD_STACK_SIZE 0x1000
 
@@ -23,10 +25,9 @@ static char first_stack[THREAD_STACK_SIZE];
 static char second_stack[THREAD_STACK_SIZE];
 static struct thread *first_thread;
 static struct thread *second_thread;
-
 static struct message *sent_msg;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * In the beginning send a message to second, which don't unblock it.
@@ -34,22 +35,22 @@ EMBOX_TEST(run_test);
  */
 static void first_run(void) {
 	size_t i;
-	struct message *msg = msg_new();
-	struct message *sec_msg = msg_new();
+	struct message *msg = message_new();
+	struct message *sec_msg = message_new();
 	sent_msg = msg;
 	assert(msg != NULL);
 	sec_msg->type = 3;
 	/* Makes nothing, because have wrong type. */
 	TRACE("Sending bad message.\n");
-	msg_send(sec_msg, second_thread);
+	message_send(sec_msg, second_thread);
 	for (i = 0; i < 1000; i++) {
 		TRACE("1");
 	}
 	msg->type = 2;
 	/* Must unblock second thread. */
 	TRACE("Sending good message.\n");
-	msg_send(msg, second_thread);
-	msg_receive();
+	message_send(msg, second_thread);
+	message_receive();
 	TRACE("\nFirst thread received an answer from second one.\n");
 }
 
@@ -62,21 +63,21 @@ static void second_run(void) {
 	/* Waits for message with type 2. */
 	do {
 		if (msg != NULL) {
-			msg_erase(msg);
+			message_erase(msg);
 		}
-		msg = msg_receive();
+		msg = message_receive();
 		TRACE("\nMessage type = %d\n", msg->type);
 	} while (msg->type != 2);
 
-	msg_erase(msg);
+	message_erase(msg);
 	for (i = 0; i < 1000; i++) {
 		TRACE("2");
 	}
-	msg = msg_new();
-	msg_send(msg, first_thread);
+	msg = message_new();
+	message_send(msg, first_thread);
 }
 
-static int run_test() {
+static int run(void) {
 	TRACE("\n");
 
 	first_thread = thread_create(first_run, first_stack + THREAD_STACK_SIZE);

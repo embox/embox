@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Defines panic macros
  *
  * @date 30.01.2010
  * @author Eldar Abusalimov
@@ -16,6 +16,6 @@
 	do { \
 		printk(__VA_ARGS__); \
 		arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT); \
-	} while(0)
+	} while (0)
 
 #endif /* PANIC_H_ */

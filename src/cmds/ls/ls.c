@@ -25,20 +25,19 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 static void print_long_list(char *path, node_t *nod, int recursive) {
 	struct list_head *p;
 	node_t *item;
-	//TODO: workaround.
-	ramfs_file_description_t *desc;
+	stat_t sb;
 	char time_buff[17];
 	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
 
 	list_for_each(p, &(nod->leaves)) {
-		item = (node_t*)list_entry(p, node_t, neighbors);
-		desc = (ramfs_file_description_t *)item->file_info;
-		ctime(&desc->mtime, time_buff);
+		item = (node_t*) list_entry(p, node_t, neighbors);
+		stat((char *) item->name, &sb);
+		ctime((time_t *) &(sb.st_mtime), time_buff);
 		printf("%d\t%d\t%s\t%s\n",
-			desc->mode,
-			desc->size,
+			sb.st_mode,
+			sb.st_size,
 			time_buff,
-			(char *)item->name);
+			(char *) item->name);
 	}
 }
 
@@ -46,15 +45,15 @@ static void print_folder(char *path, node_t *nod, int recursive) {
 	struct list_head *p;
 	list_for_each(p, &(nod->leaves)) {
 		if (recursive) {
-			if(0 == strcmp(path, "/")) {
-				printf("%s\n",  (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
+			if (0 == strcmp(path, "/")) {
+				printf("%s\n",  (char *) ((node_t*) list_entry(p, node_t, neighbors))->name);
 			} else {
-				printf("%s/%s\n", path, (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
-				strcat(path, (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
-				print_folder(path, (node_t*)list_entry(p, node_t, neighbors), recursive);
+				printf("%s/%s\n", path, (char *)((node_t*) list_entry(p, node_t, neighbors))->name);
+				strcat(path, (char *)((node_t*) list_entry(p, node_t, neighbors))->name);
+				print_folder(path, (node_t*) list_entry(p, node_t, neighbors), recursive);
 			}
 		} else {
-			printf("%s\n", (char *)((node_t*)list_entry(p, node_t, neighbors))->name);
+			printf("%s\n", (char *) ((node_t*) list_entry(p, node_t, neighbors))->name);
 		}
 	}
 }
@@ -89,12 +88,11 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
-	if(argsc > 1) {
+	if (argsc > 1) {
 		sprintf(path, "%s", argsv[argsc - 1]);
-	}
-	else {
+	} else {
 		sprintf(path, "/");
 	}
 

@@ -1,4 +1,2 @@
-
-$_MODS += checksum
-
-$_SRCS-checksum += *.c
+$_MODS          += checksum
+$_SRCS-checksum += checksum.c

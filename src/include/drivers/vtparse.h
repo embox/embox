@@ -11,27 +11,32 @@
  *     As we use only Plain, ESC and CSI-based tokens all the others are ignored
  *     (in spite of the fact that the Parser is capable to handle them correctly).
  */
+
 #ifndef VTPARSE_H_
 #define VTPARSE_H_
 
 #include <drivers/vt.h>
-#include <drivers/vtparse_table.h>
+#include <drivers/vtparse_state.h>
 #include <types.h>
 
-struct _VTPARSER;
+#define VTPARSE_TOKEN_PARAMS_MAX    8
 
-typedef void (*VTPARSE_CALLBACK)(struct _VTPARSER*, VT_TOKEN*);
+struct vtparse;
 
-typedef struct _VTPARSER {
-	VTPARSE_STATE state;
-	VTPARSE_CALLBACK cb;
-	VT_TOKEN token[1];
-	int params[VT_TOKEN_MAX_PARAMS];
+typedef void (*vtparse_callback_t)(struct vtparse *, struct vt_token *);
+
+struct vtparse {
+	vtparse_state_t state;
+	vtparse_callback_t cb;
+	struct vt_token token;
+	short token_params[VTPARSE_TOKEN_PARAMS_MAX];
 	void* user_data;
-} VTPARSER;
+};
 
-VTPARSER * vtparse_init(VTPARSER *, VTPARSE_CALLBACK cb);
+typedef struct vtparse *vtparse_t;
 
-void vtparse(VTPARSER *parser, unsigned char ch);
+struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb);
+
+void vtparse(struct vtparse *parser, unsigned char ch);
 
 #endif /* VTPARSE_H_ */

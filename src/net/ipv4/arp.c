@@ -27,7 +27,7 @@
 
 arp_table_t arp_tables[ARP_CACHE_SIZE];
 
-#define ARP_TABLE_SIZE array_len(arp_tables)
+#define ARP_TABLE_SIZE ARRAY_SIZE(arp_tables)
 
 #define ARP_TIMER_ID 12
 
@@ -268,7 +268,7 @@ static int received_req(sk_buff_t *skb) {
  * Process an arp request.
  */
 static int arp_process(sk_buff_t *skb) {
-	int ret;
+	int ret = 0;
 	struct net_device *dev = skb->dev;
 	struct in_device *in_dev = in_dev_get(dev);
 	arphdr_t *arp = skb->nh.arph;
@@ -279,15 +279,10 @@ static int arp_process(sk_buff_t *skb) {
 		return 0;
 	}
 
-	switch (arp->ar_op) {
-	case htons(ARPOP_REPLY):
+	if (arp->ar_op == htons(ARPOP_REPLY)) {
 		ret = received_resp(skb);
-		break;
-	case htons(ARPOP_REQUEST):
+	} else if (arp->ar_op == htons(ARPOP_REQUEST)) {
 		ret = received_req(skb);
-		break;
-	default:
-		ret = 0;
 	}
 	/* add record into arp_tables */
 	arp_add_entity(in_dev, arp->ar_sip, arp->ar_sha, ATF_COM);

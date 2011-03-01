@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <hal/test/testirq_core.h>
+#include <hal/test/irq_core.h>
 
 void testirq_save_status(uint32_t *status) {
 

@@ -168,10 +168,10 @@
 						<useDefaultCommand>false</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>
 					</target>
-					<target name="docs" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+					<target name="docsgen" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
 						<buildArguments>-d</buildArguments>
-						<buildTarget>docs</buildTarget>
+						<buildTarget>docsgen</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>

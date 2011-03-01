@@ -18,7 +18,7 @@
 		typeof(cond) __cond = (cond); \
 		if (!__cond) \
 			return test_fail_data("Condition check failed: " #cond, __cond); \
-	} while(0)
+	} while (0)
 
 #define test_fail_data(_reason, _data) __extension__ ({ \
 		__TEST_FAILURE_INFO_DEF(__test_failure_info); \

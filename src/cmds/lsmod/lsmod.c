@@ -21,7 +21,7 @@ DECLARE_SHELL_COMMAND("lsmod", exec,
 		man_page);
 
 static void mod_print(const struct mod *mod, int depth) {
-	struct mod_iterator iterator;
+	struct mod *dep;
 	int i;
 
 	for (i = 0; i < depth - 1; ++i) {
@@ -32,9 +32,8 @@ static void mod_print(const struct mod *mod, int depth) {
 	}
 	printf("%s.%s\n", mod->package->name, mod->name);
 
-	mod_requires(mod, &iterator);
-	while(mod_iterator_has_next(&iterator)) {
-		mod_print(mod_iterator_next(&iterator), depth + 1);
+	mod_foreach_requires(dep, mod){
+		mod_print(dep, depth + 1);
 	}
 }
 

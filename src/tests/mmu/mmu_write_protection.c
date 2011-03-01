@@ -5,9 +5,7 @@
  * @Author Anton Bondarev
  */
 
-
 #include <types.h>
-
 #include <embox/test.h>
 #include <hal/mm/mmu_core.h>
 #include <hal/mm/mmu_page.h>
@@ -15,7 +13,6 @@
 #include <hal/test/mmu_core.h>
 #include <hal/test/traps_core.h>
 
-/* declare test in system */
 EMBOX_TEST(run);
 
 static uint32_t addr;
@@ -27,7 +24,7 @@ static int dfault_handler(uint32_t trap_nr, void *data) {
 	return 0;
 }
 
-static int run() {
+static int run(void) {
 	extern char _text_start, __stack, _data_start;
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
@@ -58,7 +55,7 @@ static int run() {
 
 	mmu_on();
 
-	*((volatile uint32_t *)vaddr) = 0x11111111;
+	*((volatile uint32_t *) vaddr) = 0x11111111;
 
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);

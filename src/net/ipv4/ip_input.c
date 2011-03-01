@@ -40,21 +40,21 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	 */
 	if (iph->ihl < 5 || iph->version != 4) {
 		LOG_ERROR("invalid IPv4 header\n");
-		stats->rx_err ++;
+		stats->rx_err++;
 		return NET_RX_DROP;
 	}
 	tmp = iph->check;
 	iph->check = 0;
 	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
 		LOG_ERROR("bad ip checksum\n");
-		stats->rx_crc_errors ++;
+		stats->rx_crc_errors++;
 		return NET_RX_DROP;
 	}
 
 	len = ntohs(iph->tot_len);
 	if (skb->len < len || len < IP_HEADER_SIZE(iph)) {
 		LOG_ERROR("invalid IPv4 header length\n");
-		stats->rx_length_errors ++;
+		stats->rx_length_errors++;
 		return NET_RX_DROP;
 	}
 
@@ -70,11 +70,11 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		memset(skb->cb, 0, sizeof(skb->cb));
 		opts->optlen = optlen;
 		if (ip_options_compile(skb, opts)) {
-			stats->rx_err ++;
+			stats->rx_err++;
 			return NET_RX_DROP;
 		}
 		if (ip_options_handle_srr(skb)) {
-			stats->tx_err ++;
+			stats->tx_err++;
 			return NET_RX_DROP;
 		}
 	}
@@ -83,8 +83,8 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	 * Check the destination address, and if it doesn't match
 	 * any of own addresses, retransmit packet according to routing table.
 	 */
-	if(ip_dev_find(iph->daddr) == NULL) {
-		if(!ip_route(skb)) {
+	if (ip_dev_find(iph->daddr) == NULL) {
+		if (!ip_route(skb)) {
 			dev_queue_xmit(skb);
 		}
 		return 0;
@@ -93,8 +93,8 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	 * which have been bound to its protocol before it is passed
 	 * to other protocol handlers */
 	raw_rcv(skb);
-	for(; p_netproto < &__ipstack_protos_end; p_netproto++) {
-		if((*p_netproto)->type == iph->proto) {
+	for (; p_netproto < &__ipstack_protos_end; p_netproto++) {
+		if ((*p_netproto)->type == iph->proto) {
 			(*p_netproto)->handler(skb);
 		}
 	}

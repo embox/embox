@@ -62,7 +62,7 @@ typedef struct amba_dev_info {
 } amba_dev_info_t;
 
 struct amba_dev;
-// each device must have handler
+/* each device must have handler */
 typedef void (*HANDLER_DATA_FUNC)(struct amba_dev *dev);
 
 /**
@@ -79,8 +79,11 @@ typedef struct amba_dev {
 	uint32_t           user_def[3];  /**< info from user registers */
 } amba_dev_t;
 
+/** AHB master devices */
 extern amba_dev_t *ahbm_devices[AHB_MASTERS_QUANTITY];
+/** AHB slave devices */
 extern amba_dev_t *ahbsl_devices[AHB_SLAVES_QUANTITY];
+/** APB devices */
 extern amba_dev_t *apb_devices[APB_QUANTITY];
 
 /*
@@ -95,6 +98,18 @@ extern amba_dev_t *apb_devices[APB_QUANTITY];
 //int capture_ahbsl_dev(AHB_DEV *ahb_dev, uint8_t vendor_id, uint16_t device_id);
 
 /**
+ * Fill amba device.
+ * @param dev amba device
+ * @param slot_number slot number
+ * @param is_ahb ahb/not ahb
+ * @param is_master master/slave
+ * @return true (1) if successed
+ * @return false (0) slot is empty
+ */
+extern int fill_amba_dev(amba_dev_t *dev, uint8_t slot_number,
+				bool is_ahb, bool is_master);
+
+/**
  * Capture amba pnp device.
  * @param apb_dev amba_dev_t
  * @param vendor_id vendor ID
@@ -105,18 +120,6 @@ extern amba_dev_t *apb_devices[APB_QUANTITY];
  */
 extern int capture_amba_dev(amba_dev_t *apb_dev, uint8_t vendor_id,
 			uint16_t device_id, bool is_ahb, bool is_master);
-
-/**
- * Fill amba device.
- * @param dev amba device
- * @param slot_number slot number
- * @param is_ahb ahb/not ahb
- * @param is_master master/slave
- * @return true (1) if successed
- * @return false (0) slot is empty
- */
-extern int fill_amba_dev(amba_dev_t *dev, uint8_t slot_number,
-				    bool is_ahb, bool is_master);
 
 /**
  * Free amba device.

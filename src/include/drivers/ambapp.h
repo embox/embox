@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief AMBA Plag & Play device and vendor ID
  *
  * @date 20.05.2010

@@ -22,6 +22,6 @@
 	extern const struct mod __MOD(s_mod)
 
 #define __MOD_INFO_DECL(s_mod) \
-	extern const struct mod_info __MOD_INFO(s_mod) __attribute__ ((weak))
+	extern const struct __mod_info __MOD_INFO(s_mod) __attribute__ ((weak))
 
 #endif /* IMPL_MOD_DECLS_H_ */

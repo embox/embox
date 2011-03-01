@@ -1,4 +1,6 @@
 /.dep.inc
+/.dropbox
+/.tmp
 /build
 /conf
 mk/GNUmakefile

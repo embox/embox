@@ -23,7 +23,7 @@ typedef int    (*FILEOP_CLOSE)(void * file);
 typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
 typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
 typedef int    (*FILEOP_FSEEK)(void *file, long offset, int whence);
-typedef int    (*FILEOP_IOCTRL)(void *file, int request, ...);
+typedef int    (*FILEOP_IOCTL)(void *file, int request, va_list args);
 
 typedef struct file_operations {
 	FILEOP_OPEN  fopen;
@@ -31,7 +31,23 @@ typedef struct file_operations {
 	FILEOP_READ  fread;
 	FILEOP_WRITE fwrite;
 	FILEOP_FSEEK fseek;
-	FILEOP_IOCTRL ioctrl;
+	FILEOP_IOCTL ioctl;
 } file_operations_t;
+
+typedef struct stat {
+	int       st_dev;     /* ID of device containing file */
+	int       st_ino;     /* inode number */
+	int       st_mode;    /* protection */
+	int       st_nlink;   /* number of hard links */
+	int       st_uid;     /* user ID of owner */
+	int       st_gid;     /* group ID of owner */
+	int       st_rdev;    /* device ID (if special file) */
+	size_t    st_size;    /* total size, in bytes */
+	size_t    st_blksize; /* blocksize for file system I/O */
+	int       st_blocks;  /* number of 512B blocks allocated */
+	unsigned  st_atime;   /* time of last access */
+	unsigned  st_mtime;   /* time of last modification */
+	unsigned  st_ctime;   /* time of last status change */
+} stat_t;
 
 #endif /* FILE_H_ */

@@ -31,5 +31,4 @@ typedef __mmu_env_t mmu_env_t;
 
 typedef __mmu_ctx_t mmu_ctx_t;
 
-
 #endif /* MMU_TYPES_H_ */

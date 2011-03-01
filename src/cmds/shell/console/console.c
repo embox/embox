@@ -16,13 +16,14 @@
 #include <string.h>
 #include <drivers/terminal.h>
 
-#define EDIT_MODEL(console, update, action, ...) \
-		do if((action)((console)->model, ##__VA_ARGS__)) { \
+#define EDIT_MODEL(console, update, action) \
+		do if (action) { \
 			(update)((console)->view, (console)->model); \
-		} while(0)
+		} while (0)
 
-#define CB_EDIT_MODEL(...) \
-		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, ##__VA_ARGS__)
+#define CB_MODEL(cb) (((CONSOLE *) cb->outer)->model)
+#define CB_EDIT_MODEL(action) \
+		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action)
 
 CONSOLE *cur_console = NULL;
 
@@ -45,7 +46,7 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 		strcpy(buf, cmd);
 		this->callback->exec(this->callback, this, buf);
 	}
-	CB_EDIT_MODEL(cmdline_history_new_entry);
+	CB_EDIT_MODEL(cmdline_history_new_entry(CB_MODEL(cb)));
 	screen_out_show_prompt(this->view, this->prompt);
 
 	return 0;
@@ -53,47 +54,47 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 
 static int on_char(SCREEN_CALLBACK *cb, SCREEN *view, int ch) {
 	char tmp_ch = (char)ch;
-	CB_EDIT_MODEL(cmdline_chars_insert, &tmp_ch,1);
+	CB_EDIT_MODEL(cmdline_chars_insert((CB_MODEL(cb)), &tmp_ch, 1));
 	return 0;
 }
 
 static int on_cursor_up(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_history_backward);
+	CB_EDIT_MODEL(cmdline_history_backward(CB_MODEL(cb)));
 	return 0;
 }
 
 static int on_cursor_down(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_history_forward);
+	CB_EDIT_MODEL(cmdline_history_forward(CB_MODEL(cb)));
 	return 0;
 }
 
 static int on_cursor_left(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_left);
+	CB_EDIT_MODEL(cmdline_cursor_left(CB_MODEL(cb)));
 	return 0;
 }
 
 static int on_cursor_right(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_right);
+	CB_EDIT_MODEL(cmdline_cursor_right(CB_MODEL(cb)));
 	return 0;
 }
 
 static int on_backspace(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_chars_backspace,1);
+	CB_EDIT_MODEL(cmdline_chars_backspace(CB_MODEL(cb), 1));
 	return 0;
 }
 
 static int on_delete(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_chars_delete,1);
+	CB_EDIT_MODEL(cmdline_chars_delete(CB_MODEL(cb), 1));
 	return 0;
 }
 
 static int on_home(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_home);
+	CB_EDIT_MODEL(cmdline_cursor_home(CB_MODEL(cb)));
 	return 0;
 }
 
 static int on_end(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_end);
+	CB_EDIT_MODEL(cmdline_cursor_end(CB_MODEL(cb)));
 	return 0;
 }
 
@@ -115,12 +116,12 @@ static int on_eot(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 static int on_dc2(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_dc2_reverse);
+	CB_EDIT_MODEL(cmdline_dc2_reverse(CB_MODEL(cb)));
 	return 0;
 }
 
 static int on_dc4(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_dc4_reverse);
+	CB_EDIT_MODEL(cmdline_dc4_reverse(CB_MODEL(cb)));
 	return 0;
 }
 
@@ -147,10 +148,10 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 		if (proposals_len == 1) {
 			cmdline_chars_insert(this->model, proposals[0] + offset, strlen(
 					proposals[0] + offset));
-			CB_EDIT_MODEL(cmdline_chars_insert, " ", 1);
+			CB_EDIT_MODEL(cmdline_chars_insert(CB_MODEL(cb), " ", 1));
 		} else if (proposals_len > 0) {
 			if (common > 0) {
-				CB_EDIT_MODEL(cmdline_chars_insert, proposals[0] + offset, common);
+				CB_EDIT_MODEL(cmdline_chars_insert(CB_MODEL(cb), proposals[0] + offset, common));
 			} else {
 				int i;
 				screen_out_puts(this->view, NULL);

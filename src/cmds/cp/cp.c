@@ -6,7 +6,7 @@
  * @author Roman Evstifeev
  */
 #include <shell_command.h>
-#include <fs/file_new.h>
+#include <fs/file.h>
 
 #define COMMAND_NAME     "cp"
 #define COMMAND_DESC_MSG "cp file"
@@ -32,7 +32,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	if (argsc < 3) {
 		show_help();

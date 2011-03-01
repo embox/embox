@@ -1,22 +1,24 @@
 /**
  * @file
- * @brief Run elf file from chosen address.
+ * @brief Run ELF file.
  *
  * @date 21.07.2010
  * @author Avdyukhin Dmitry
  */
 #include <shell_command.h>
 #include <kernel/scheduler.h>
-#include <kernel/elf_executer.h>
+#include <lib/libelf.h>
+#include <stdio.h>
+#include <fs/file.h>
 
 #define COMMAND_NAME     "runelf"
 #define COMMAND_DESC_MSG "execute elf file"
-#define HELP_MSG "Usage: runelf [-h] [-a addr]"
+#define HELP_MSG "Usage: runelf [-h] [-f file]"
 
 #define THREAD_STACK_SIZE 0x10000
 
-static struct thread *thread;
-static char thread_stack[THREAD_STACK_SIZE];
+//static struct thread *thread;
+//static char thread_stack[THREAD_STACK_SIZE];
 static unsigned int file_addr;
 
 static const char *man_page =
@@ -26,39 +28,47 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static void run(void) {
-	elf_execute((FILE *)file_addr);
+	TRACE("run addr = 0x%X\n", file_addr);
+	elf_execve((unsigned long *) file_addr, NULL);
 }
 
 static int exec(int argsc, char **argsv) {
-	int op;
+	int nextOption;
+	char *file_name = NULL;
+	FILE *file;
 	getopt_init();
 	do {
-		op = getopt(argsc, argsv, "ha:");
-		switch(op) {
-		case 'a':
-			if ((optarg == NULL) || (*optarg == '\0')) {
-				TRACE("runelf: missed address value\n");
-				return -1;
-			}
-			if (sscanf(optarg, "0x%x", &file_addr) > 0) {
-				run();
-				thread = thread_create(run, thread_stack + THREAD_STACK_SIZE);
-				thread_start(thread);
-				scheduler_start();
-				scheduler_stop();
-				return 0;
-			}
-			TRACE("runelf: invalid value \"%s\".\nthe number expected.\n", optarg);
-			return -1;
+		nextOption = getopt(argsc, argsv, "f:h");
+		switch(nextOption) {
+		case 'f':
+			file_name = optarg;
+			break;
 		case 'h':
 			show_help();
 			return 0;
 		case -1:
-			return 0;
+			break;
 		default:
-			TRACE("runelf: invalid arguments. \"%s\"\n", optarg);
 			return -1;
 		}
-	} while (op != -1);
+	} while (nextOption != -1);
+
+	if (NULL == file_name) {
+		TRACE("\n please setup file name\n");
+		return 0;
+	}
+	file = fopen(file_name, "r");
+	if (NULL == file) {
+		TRACE("\nCan't open file %s\n", file_name);
+		return 0;
+	}
+	fioctl(file, 0, &file_addr);
+
+	run();
+//	thread = thread_create(run, thread_stack + THREAD_STACK_SIZE);
+//	thread_start(thread);
+//	scheduler_start();
+//	scheduler_stop();
+
 	return 0;
 }

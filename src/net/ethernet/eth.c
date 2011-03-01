@@ -39,11 +39,11 @@ int eth_header(sk_buff_t *pack, net_device_t *dev, unsigned short type,
 }
 
 int eth_rebuild_header(sk_buff_t *pack) {
-	ethhdr_t     *eth = (ethhdr_t*)pack->data;
+	ethhdr_t     *eth = (ethhdr_t*) pack->data;
 	net_device_t *dev = pack->dev;
 	eth->h_proto = pack->protocol;
 
-	if(eth->h_proto == htons(ETH_P_IP)) {
+	if (eth->h_proto == htons(ETH_P_IP)) {
 		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
 		return arp_find(eth->h_dest, pack);
 	} else {
@@ -61,7 +61,7 @@ int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr) {
 
 int eth_mac_addr(net_device_t *dev, void *p) {
 	struct sockaddr *addr = p;
-	if (!is_valid_ether_addr((const uint8_t *)addr->sa_data)) {
+	if (!is_valid_ether_addr((const uint8_t *) addr->sa_data)) {
 		return -EADDRNOTAVAIL;
 	}
 	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
@@ -100,8 +100,9 @@ int eth_set_txqueuelen(net_device_t *dev, unsigned long new_len) {
 	return 0;
 }
 
-int eth_set_broadcast_addr(net_device_t *dev, unsigned char broadcast_addr[]){
-	strncpy((char *)dev->broadcast, (const char *)broadcast_addr, sizeof(dev->broadcast));
+int eth_set_broadcast_addr(net_device_t *dev, unsigned char broadcast_addr[]) {
+	strncpy((char *) dev->broadcast,
+		(const char *) broadcast_addr, sizeof(dev->broadcast));
 	LOG_ERROR("not realized\n");
 	return 0;
 }

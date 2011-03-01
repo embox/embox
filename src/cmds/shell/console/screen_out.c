@@ -11,7 +11,7 @@
 
 static void transmit_string(SCREEN *this, const char *str) {
 	while (*str) {
-		terminal_transmit(this->terminal, *str++, 0);
+		terminal_transmit_va(this->terminal, *str++, 0);
 	}
 }
 
@@ -24,7 +24,7 @@ static void transmit_move_cursor_by(SCREEN *this, int by) {
 		return;
 	}
 
-	terminal_transmit(this->terminal, by > 0 ? TERMINAL_TOKEN_CURSOR_RIGHT
+	terminal_transmit_va(this->terminal, by > 0 ? TERMINAL_TOKEN_CURSOR_RIGHT
 			: TERMINAL_TOKEN_CURSOR_LEFT, 1, by > 0 ? by : -by);
 }
 
@@ -38,7 +38,7 @@ static void move_cursor_to(SCREEN *this, int col) {
 	} else if (this->cursor < col) {
 		/* rewrite a few chars*/
 		for (; this->cursor < col; ++this->cursor) {
-			terminal_transmit(this->terminal, this->string[this->cursor], 0);
+			terminal_transmit_va(this->terminal, this->string[this->cursor], 0);
 		}
 	}
 
@@ -59,7 +59,7 @@ void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 		if (!dirty || this->string[i] != cmdline->string[i]) {
 			move_cursor_to(this, i);
 			assert(i == this->cursor);
-			terminal_transmit(this->terminal, cmdline->string[i], 0);
+			terminal_transmit_va(this->terminal, cmdline->string[i], 0);
 			this->cursor++;
 			this->string[i] = cmdline->string[i];
 		}
@@ -67,7 +67,7 @@ void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 
 	if (dirty && this->string[i] != '\0') {
 		move_cursor_to(this, i);
-		terminal_transmit(this->terminal, TERMINAL_TOKEN_ERASE_SCREEN, 1,
+		terminal_transmit_va(this->terminal, TERMINAL_TOKEN_ERASE_SCREEN, 1,
 				TERMINAL_TOKEN_PARAM_ERASE_DOWN_RIGHT);
 	}
 	this->string[i] = '\0';
@@ -82,8 +82,8 @@ void screen_out_puts(SCREEN *this, char *str) {
 	if (str != NULL) {
 		transmit_string(this, str);
 	}
-	terminal_transmit(this->terminal, TERMINAL_TOKEN_CR, 0);
-	terminal_transmit(this->terminal, TERMINAL_TOKEN_LF, 0);
+	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_CR, 0);
+	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_LF, 0);
 }
 
 void screen_out_show_prompt(SCREEN *this, const char *prompt) {
@@ -100,18 +100,18 @@ void screen_out_show_prompt(SCREEN *this, const char *prompt) {
 
 #if 0
 		screen_set_foreground_color(SGR_COLOR_RED);
-		terminal_transmit(this->terminal, TERMINAL_TOKEN_CURSOR_SAVE_ATTRS, NULL);
+		terminal_transmit_va(this->terminal, TERMINAL_TOKEN_CURSOR_SAVE_ATTRS, NULL);
 #endif
 
-	terminal_transmit(this->terminal, TERMINAL_TOKEN_SGR, 1,
+	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_SGR, 1,
 			TERMINAL_TOKEN_PARAM_SGR_FG_RED);
-	terminal_transmit(this->terminal, TERMINAL_TOKEN_SGR, 1,
+	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_SGR, 1,
 			TERMINAL_TOKEN_PARAM_SGR_INTENSITY_BOLD);
 
 	transmit_string(this, prompt);
 
 
-	terminal_transmit(this->terminal, TERMINAL_TOKEN_SGR, 1,
+	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_SGR, 1,
 			TERMINAL_TOKEN_PARAM_SGR_RESET);
 #if 0
 	screen_set_foreground_color(SGR_COLOR_BLACK);

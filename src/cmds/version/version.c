@@ -31,7 +31,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	printf("                ____\n");
 	printf("               |  _ \\\n");

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief EMBOX testing framework.
+ * @brief Embox testing framework.
  * @details Test is a simple function which examines some parts of hardware or
  * software. Test can be either passed or failed (framework uses return value
  * of test function to determine the test result).
@@ -23,6 +23,7 @@
 
 #include <impl/embox/test.h>
 
-#define EMBOX_TEST(run) __EMBOX_TEST(run)
+#define EMBOX_TEST(run) \
+		__EMBOX_TEST(run)
 
 #endif /* EMBOX_TEST_H_ */

@@ -26,7 +26,7 @@ struct irq_entry {
 
 typedef struct irq_env {
 	struct irq_entry irq_table[IRQ_NRS_TOTAL];
-}irq_env_t;
+} irq_env_t;
 
 extern void irq_save_env(irq_env_t *env);
 

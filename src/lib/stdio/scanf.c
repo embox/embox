@@ -113,7 +113,7 @@ static double scan_double(char **in, int base) {
 			continue;
 		}
 
-		if (!isdigit( ch , base )) {
+		if (!isdigit(ch, base)) {
 			ungetchar(ch);
 			break;
 		}
@@ -152,7 +152,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 
 			switch (*fmt) {
 			case 's': {
-				char *dst = va_arg ( args, char* );
+				char *dst = va_arg(args, char*);
 				int ch;
 #if 0
 				trim_leading(in);
@@ -171,7 +171,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 				trim_leading(in);
 #endif
 				dst = scanchar(in);
-				*va_arg ( args, char*) = dst;
+				*va_arg(args, char*) = dst;
 				++converted;
 
 			}
@@ -181,7 +181,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 				int dst;
 				dst = scan_int(in, 10, widht);
 
-				*va_arg ( args, int* ) = dst;
+				*va_arg(args, int*) = dst;
 
 				++converted;
 			}
@@ -190,7 +190,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'D': {
 					double dst;
 					dst = scan_double(in,10,widht);
-					va_arg ( args, int ) = dst;
+					va_arg(args, int) = dst;
 					++converted;
 				}
 				continue;
@@ -199,7 +199,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 				int dst;
 				dst = scan_int(in, 8, widht);
 
-				*va_arg ( args, int* ) = dst;
+				*va_arg(args, int*) = dst;
 
 				++converted;
 			}
@@ -208,7 +208,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 				case 'O': {
 					double dst;
 					dst = scan_double(in,8,widht);
-					va_arg ( args, int ) = dst;
+					va_arg(args, int) = dst;
 					++converted;
 				}
 				continue;
@@ -216,7 +216,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'x': {
 				int dst;
 				dst = scan_int(in, 16, widht);
-				*va_arg ( args, int* ) = dst;
+				*va_arg(args, int*) = dst;
 
 				++converted;
 			}
@@ -224,8 +224,8 @@ static int scan(char **in, const char *fmt, va_list args) {
 #if 0
 				case 'X': {
 					double dst;
-					dst = scan_double(in,16,widht);
-					va_arg ( args, int ) = dst;
+					dst = scan_double(in, 16, widht);
+					va_arg(args, int) = dst;
 					++converted;
 				}
 				continue;
@@ -246,13 +246,12 @@ static int scan(char **in, const char *fmt, va_list args) {
 }
 
 int scanf(const char *format, ...) {
-
 	va_list args;
 	int rv;
 
-	va_start ( args, format );
+	va_start(args, format);
 	rv = scan(0, format, args);
-	va_end ( args );
+	va_end(args);
 
 	return rv;
 }
@@ -261,9 +260,9 @@ int sscanf(char *out, const char *format, ...) {
 	va_list args;
 	int rv;
 
-	va_start ( args, format );
+	va_start(args, format);
 	rv = scan(&out, format, args);
-	va_end ( args );
+	va_end (args);
 
 	return rv;
 }

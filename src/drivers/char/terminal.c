@@ -18,9 +18,9 @@
 #include <drivers/terminal.h>
 #include <kernel/diag.h>
 
-static void vtparse_callback(VTPARSER*, VT_TOKEN*);
+static void vtparse_callback(struct vtparse *parser, struct vt_token *);
 
-static void vtbuild_putc(VTBUILDER *builder, char ch) {
+static void vtbuild_putc(struct vtbuild *builder, char ch) {
 	TERMINAL* terminal = (TERMINAL*) builder->user_data;
 	terminal->io->putc(ch);
 }
@@ -43,7 +43,7 @@ TERMINAL * terminal_init(TERMINAL *this, TERMINAL_IO *io) {
 	}
 
 	this->parser->user_data = this;
-	if(vtparse_init(this->parser, vtparse_callback) == NULL) {
+	if (vtparse_init(this->parser, vtparse_callback) == NULL) {
 		return NULL;
 	}
 
@@ -53,11 +53,11 @@ TERMINAL * terminal_init(TERMINAL *this, TERMINAL_IO *io) {
 	return this;
 }
 
-static bool is_valid_action(VT_ACTION action) {
+static bool is_valid_action(vt_action_t action) {
 	switch (action) {
 	case VT_ACTION_PRINT:
 	case VT_ACTION_EXECUTE:
-	case VT_ACTION_CS_DISPATCH:
+	case VT_ACTION_CSI_DISPATCH:
 	case VT_ACTION_ESC_DISPATCH:
 		/* ok */
 		return true;
@@ -84,14 +84,14 @@ static bool is_valid_action(VT_ACTION action) {
 	}
 }
 
-static VT_TOKEN *vt_from_term_token(TERMINAL_TOKEN terminal_token,
-		TERMINAL_TOKEN_PARAMS *params) {
-	static VT_TOKEN vt_token[1];
-
-	VT_ACTION action = DECODE_ACTION(terminal_token);
+static struct vt_token *vt_from_term_token(struct vt_token *vt_token,
+		TERMINAL_TOKEN terminal_token, short *params, int params_len) {
+	vt_action_t action = DECODE_ACTION(terminal_token);
 	char char1 = DECODE_CHAR1(terminal_token);
 	char char2 = DECODE_CHAR2(terminal_token);
 	char code = DECODE_CODE(terminal_token);
+
+	int attrs_len;
 
 	if (!is_valid_action(action)) {
 		return NULL;
@@ -99,23 +99,24 @@ static VT_TOKEN *vt_from_term_token(TERMINAL_TOKEN terminal_token,
 
 	vt_token->action = action;
 
-	vt_token->attrs_len = 0;
+	attrs_len = 0;
 	if (char1) {
-		vt_token->attrs[vt_token->attrs_len++] = char1;
+		vt_token->attrs[attrs_len++] = char1;
 	}
 	if (char2) {
-		vt_token->attrs[vt_token->attrs_len++] = char2;
+		vt_token->attrs[attrs_len++] = char2;
 	}
+	vt_token->attrs_len = attrs_len;
 
 	vt_token->ch = code;
-	vt_token->params = params->data;
-	vt_token->params_len = params->length;
+	vt_token->params = params;
+	vt_token->params_len = params_len;
 
 	return vt_token;
 }
 
-static TERMINAL_TOKEN term_from_vt_token(VT_TOKEN *vt_token) {
-	VT_ACTION action;
+static TERMINAL_TOKEN term_from_vt_token(struct vt_token *vt_token) {
+	vt_action_t action;
 	char *a;
 	int a_len;
 	char char1, char2, code;
@@ -137,21 +138,7 @@ static TERMINAL_TOKEN term_from_vt_token(VT_TOKEN *vt_token) {
 	return ENCODE(action,char1,char2, code);
 }
 
-static TERMINAL_TOKEN_PARAMS *terminal_prepare_params(TERMINAL *this,
-		int length, va_list args) {
-	TERMINAL_TOKEN_PARAMS *params = this->default_params;
-	int i;
-	if (length < 0) {
-		length = 0;
-	}
-	params->length = length;
-	for (i = 0; i < length; ++i) {
-		params->data[i] = va_arg(args, int);
-	}
-	return params;
-}
-
-static void vtparse_callback(VTPARSER *parser, VT_TOKEN *token) {
+static void vtparse_callback(struct vtparse *parser, struct vt_token *token) {
 	TERMINAL *terminal = (TERMINAL *) parser->user_data;
 	int *queue_len = &terminal->vt_token_queue_len;
 	if (*queue_len < VTPARSER_TOKEN_QUEUE_AMOUNT) {
@@ -176,9 +163,9 @@ static char *ACTION_NAMES[] = { "<no action>", "CLEAR", "COLLECT", "CSI_DISPATCH
  * TODO describe this shit
  */
 bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
-		TERMINAL_TOKEN_PARAMS *params) {
+		short **params, int *params_len) {
 	int *p_len, *p_head;
-	VT_TOKEN *vt_token;
+	struct vt_token *vt_token;
 	if (this == NULL) {
 		return false;
 	}
@@ -199,9 +186,9 @@ bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 		for (; *p_head < *p_len; (*p_head)++) {
 			vt_token = &this->vt_token_queue[*p_head];
 			if ((*token = term_from_vt_token(vt_token)) != TERMINAL_TOKEN_EMPTY) {
-				if (params != NULL) {
-					*params->data = *vt_token->params;
-					params->length = vt_token->params_len;
+				if (params != NULL && params_len) {
+					*params     = vt_token->params;
+					*params_len = vt_token->params_len;
 				}
 				(*p_len)--;
 
@@ -224,26 +211,37 @@ bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 	return false;
 }
 
-bool terminal_transmit(TERMINAL *this, TERMINAL_TOKEN token, int params_len,
+bool terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token,
+						short *params, int params_len) {
+	struct vt_token vt_token;
+
+	if (NULL == vt_from_term_token(&vt_token, token, params, params_len)) {
+		return false;
+	}
+	vtbuild(terminal->builder, &vt_token);
+
+	return true;
+}
+
+bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token, int params_len,
 		...) {
 	va_list args;
-	TERMINAL_TOKEN_PARAMS *params;
-	VT_TOKEN *vt_token;
-	va_start(args, params_len);
+	short params[params_len];
 
-	if (this == NULL) {
+	if (terminal == NULL) {
 		return false;
 	}
 
-	params = terminal_prepare_params(this, params_len, args);
+	va_start(args, params_len);
+
+	if (params_len < 0) {
+		params_len = 0;
+	}
+	for (int i = 0; i < params_len; ++i) {
+		params[i] = va_arg(args, int);
+	}
 
 	va_end(args);
 
-	vt_token = vt_from_term_token(token, params);
-	if (vt_token == NULL) {
-		return false;
-	}
-	vtbuild(this->builder, vt_token);
-
-	return true;
+	return terminal_transmit(terminal, token, params, params_len);
 }

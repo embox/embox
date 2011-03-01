@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief EMBOX test framework implementation.
+ * @brief Embox test framework implementation.
  *
  * @date Dec 4, 2008
  * @author Anton Bondarev
@@ -12,13 +12,14 @@
  *         - Adding level implementation code
  */
 
-#include <types.h>
-#include <errno.h>
-#include <string.h>
-
 #include <test/framework.h>
-#include <mod/core.h>
+
+#include <stddef.h>
+#include <errno.h>
+#include <stdio.h>
+
 #include <util/array.h>
+#include <mod/core.h>
 
 static int test_mod_enable(struct mod *mod);
 
@@ -26,13 +27,13 @@ const struct mod_ops __test_mod_ops = {
 	.enable = &test_mod_enable,
 };
 
-ARRAY_DIFFUSE_DEF(const struct test, __test_registry);
+ARRAY_SPREAD_DEF(const struct test, __test_registry);
 
 static int test_mod_enable(struct mod *mod) {
 	return test_invoke((struct test *) mod_data(mod));
 }
 
-int test_invoke(struct test *test) {
+int test_invoke(const struct test *test) {
 	int result;
 
 	if (NULL == test) {

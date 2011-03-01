@@ -1,5 +1,5 @@
 #
-# EMBOX main Makefile
+# Embox main Makefile
 #
 
 # Check Make version (we need at least GNU Make 3.81)
@@ -33,6 +33,7 @@ PROJECTS_DIR   := $(ROOT_DIR)/templates
 THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 PLATFORM_DIR   := $(ROOT_DIR)/platform
 SRC_DIR        := $(ROOT_DIR)/src
+DOCS_DIR       := $(ROOT_DIR)/docs
 
 CONF_DIR       := $(ROOT_DIR)/conf
 
@@ -49,7 +50,7 @@ BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj
 LIB_DIR        := $(BUILD_DIR)/lib
 DOT_DIR        := $(BUILD_DIR)/dot
-DOCS_DIR       := $(BUILD_DIR)/docs
+DOCS_OUT_DIR   := $(BUILD_DIR)/docs
 CODEGEN_DIR    := $(BUILD_DIR)/codegen
 AUTOCONF_DIR   := $(CODEGEN_DIR)
 ROMFS_DIR      := $(ROOT_DIR)/romfs
@@ -58,6 +59,8 @@ RM     := rm -f
 CP     := cp
 PRINTF := printf
 SHELL  := bash
+MKDIR  := mkdir -p
+LN     := ln -s
 
 TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 
@@ -75,8 +78,8 @@ endif
 
 # XXX Fix this shit. -- Eldar
 
-# 'clean' and 'config' are handled in-place.
-ifneq ($(filter-out %clean %config,$(makegoals)),)
+# 'clean', 'docsgen' and 'config' are handled in-place.
+ifneq ($(filter-out %clean %config %docsgen,$(makegoals)),)
 # Root 'make all' does not need other makefiles too.
 ifneq ($(or $(filter-out $(makegoals),all),$(BUILD_TARGET)),)
 # Need to include it prior to walking the source tree
@@ -87,7 +90,7 @@ include $(MK_DIR)/image.mk
 include $(MK_DIR)/codegen-dot.mk
 endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
 endif # $(or $(filter-out $(makegoals),all),$(BUILD_TARGET))
-endif # $(filter-out %clean %config,$(makegoals))
+endif # $(filter-out %clean %config %docsgen,$(makegoals))
 
 __get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
 build_patch_targets := \
@@ -95,7 +98,7 @@ build_patch_targets := \
     $(filter-out $(notdir $(BACKUP_DIR)),$(call __get_subdirs, $(CONF_DIR))) \
   )
 
-.PHONY: all build prepare docs dot clean config xconfig menuconfig
+.PHONY: all build prepare docsgen dot clean config xconfig menuconfig
 .PHONY: $(build_patch_targets) build_base_target romfs create_romfs
 
 all: $(build_patch_targets) build_base_target
@@ -110,21 +113,25 @@ build: check_config prepare image
 	@echo '$(or $(PATCH_NAME),Base) build complete'
 
 prepare:
-	@mkdir -p $(BUILD_DIR)
-	@mkdir -p $(BIN_DIR)
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(LIB_DIR)
-	@mkdir -p $(AUTOCONF_DIR)
+	@$(MKDIR) $(BUILD_DIR)
+	@$(MKDIR) $(BIN_DIR)
+	@$(MKDIR) $(OBJ_DIR)
+	@$(MKDIR) $(LIB_DIR)
+	@$(MKDIR) $(AUTOCONF_DIR)
+	@$(MKDIR) $(DOCS_OUT_DIR)
 
-docs:
-	@mkdir -p $(DOCS_DIR) && doxygen
+docsgen:
+	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
+	doxygen
+	#@$(MAKE) -C $(DOCS_DIR)
+	@echo 'Docs generation complete'
 
 dot: $(GRAPH_PS)
 	@echo 'Dot complete'
 
 create_romfs: build
 	@$(RM) -rv $(ROMFS_DIR)
-	@mkdir -p $(ROMFS_DIR)
+	@$(MKDIR) $(ROMFS_DIR)
 	$(CP) $(BUILD_DIR)/bin/embox $(ROMFS_DIR)
 	pushd $(ROMFS_DIR); find ./ -depth -print | cpio -H newc -ov > ../ramfs.cpio; popd;
 
@@ -167,7 +174,7 @@ endif
 		then                          \
 			$(RM) -r $(BACKUP_DIR)/*; \
 		else                          \
-			mkdir -p $(BACKUP_DIR);   \
+			$(MKDIR) $(BACKUP_DIR);   \
 		fi;                           \
 		$(if $(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*)), \
 			mv -fv -t $(BACKUP_DIR) \
@@ -175,26 +182,32 @@ endif
 			rm -r $(BACKUP_DIR); \
 		)                             \
 	else                              \
-		mkdir -p $(CONF_DIR);         \
+		$(MKDIR) $(CONF_DIR);         \
 	fi;
 ifeq (0,1)
 # That's an old variant of config creating system.
 # It will be removed soon.
 # Just not to search long if smth goes wrong %)
 	@$(foreach dir,$(call __get_subdirs,$(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)), \
-	  mkdir -p $(CONF_DIR)/$(dir); \
-	  cp -fv -t $(CONF_DIR)/$(dir) \
+	  $(MKDIR) $(CONF_DIR)/$(dir); \
+	  $(CP) -fv -t $(CONF_DIR)/$(dir) \
 	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*); \
 	  $(if $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*), \
-	    cp -fv -t $(CONF_DIR)/$(dir) \
+	    $(CP) -fv -t $(CONF_DIR)/$(dir) \
 	       $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*); \
 	  ) \
 	)
 else
 # That's a new variant.
+ifdef SYMLINK_CONF_DIR
+# We just symlink template dir to conf dir
+	@$(RM) -r $(CONF_DIR)
+	@$(LN) $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE) $(CONF_DIR)
+else
 # We just copy from templates dir to conf dir
-	@cp -fv -R -t $(CONF_DIR) \
+	@$(CP) -fv -R -t $(CONF_DIR) \
 	  $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*);
+endif
 endif
 	@echo 'Config complete'
 
@@ -231,8 +244,8 @@ ifneq ($(FORCED),true)
 else
 	rm -r $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);
 endif
-	mkdir -p $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);        \
-	cp -fvr -t $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/ \
+	$(MKDIR) $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);        \
+	$(CP) -fvr -t $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/ \
 			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
 	@echo Config was saved.
 

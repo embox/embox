@@ -16,7 +16,7 @@
 #include <net/protocol.h>
 #include <net/inet_common.h>
 
-static struct udp_sock *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
+static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 					__be16 dest, size_t len) {
@@ -26,7 +26,7 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 	udph->dest = dest;
 	udph->len = len + UDP_HEADER_SIZE;
 	udph->check = 0;
-//	udph->check = ptclbsum((void*)udph, udph->len);
+//	udph->check = ptclbsum((void *) udph, udph->len);
 	return 0;
 }
 
@@ -39,7 +39,7 @@ int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 	skb->h.raw = (unsigned char *) skb->nh.raw + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
 	memcpy((void*)((unsigned int)(skb->h.raw + UDP_HEADER_SIZE)),
-				(void*)msg->msg_iov->iov_base, msg->msg_iov->iov_len);
+				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill UDP header */
 	rebuild_udp_header(skb, inet->sport, inet->dport, len);
 	return ip_send_packet(inet, skb);
@@ -49,12 +49,12 @@ int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len, int noblock, int flags, int *addr_len) {
 	struct sk_buff *skb;
 	skb = skb_recv_datagram(sk, flags, 0, 0);
-	if(skb && skb->len > 0) {
-		if(len > (skb->h.uh->len - UDP_HEADER_SIZE)) {
+	if (skb && skb->len > 0) {
+		if (len > (skb->h.uh->len - UDP_HEADER_SIZE)) {
 			len = skb->h.uh->len - UDP_HEADER_SIZE;
 		}
-		memcpy((void*)msg->msg_iov->iov_base,
-				(void*)(skb->h.raw + UDP_HEADER_SIZE), len);
+		memcpy((void *) msg->msg_iov->iov_base,
+				(void *) (skb->h.raw + UDP_HEADER_SIZE), len);
 		kfree_skb(skb);
 	} else {
 		len = 0;
@@ -65,9 +65,9 @@ int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 
 static void udp_lib_hash(struct sock *sk) {
 	size_t i;
-	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
-		if(udp_hash[i] == NULL) {
-			udp_hash[i] = (struct udp_sock*)sk;
+	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		if (udp_hash[i] == NULL) {
+			udp_hash[i] = (udp_sock_t *) sk;
 			break;
 		}
 	}
@@ -75,8 +75,8 @@ static void udp_lib_hash(struct sock *sk) {
 
 static void udp_lib_unhash(struct sock *sk) {
 	size_t i;
-	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
-		if(udp_hash[i] == (struct udp_sock*)sk) {
+	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		if (udp_hash[i] == (udp_sock_t *) sk) {
 			udp_hash[i] = NULL;
 			break;
 		}
@@ -86,12 +86,12 @@ static void udp_lib_unhash(struct sock *sk) {
 static struct sock *udp_lookup(in_addr_t daddr, __be16 dport) {
 	struct inet_sock *inet;
 	size_t i;
-	for(i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
-		inet = inet_sk((struct sock*)udp_hash[i]);
+	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		inet = inet_sk((struct sock*) udp_hash[i]);
 		if (inet) {
 			if ((inet->rcv_saddr == INADDR_ANY || inet->rcv_saddr == daddr) &&
 					inet->sport == dport) {
-				return (struct sock*)inet;
+				return (struct sock*) inet;
 			}
 		}
 	}
@@ -114,7 +114,7 @@ int udp_rcv(sk_buff_t *skb) {
 		udp_queue_rcv_skb(sk, skb);
 		inet->dport = uh->source;
 		inet->daddr = iph->saddr;
-		if(inet->rcv_saddr == INADDR_ANY) {
+		if (inet->rcv_saddr == INADDR_ANY) {
 			//TODO: temporary
 			inet->saddr = skb->nh.iph->daddr;
 		}

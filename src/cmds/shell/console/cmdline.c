@@ -44,7 +44,7 @@ static bool cmdline_history_move_to(CMDLINE *cmdline, int to) {
 
 	if (cmdline->history_cursor == history->index) {
 		strncpy(history->array[history->index], cmdline->string,
-				array_len(history->array[history->index]));
+				ARRAY_SIZE(history->array[history->index]));
 	}
 
 	cmdline->history_cursor = new_pos;
@@ -175,7 +175,7 @@ bool cmdline_chars_insert(CMDLINE *this, char *ch, int len) {
 
 	this->length += len;
 	this->cursor += len;
-	if(!this->is_insert_mode) {
+	if (!this->is_insert_mode) {
 		for (i = this->length; i >= this->cursor; --i) {
 			this->string[i] = this->string[i - len];
 		}

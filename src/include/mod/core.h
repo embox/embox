@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief EMBOX Dependency Injection core API
+ * @brief Embox Dependency Injection core API
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov
@@ -135,47 +135,23 @@ extern bool mod_is_running(const struct mod *mod);
 extern void *mod_data(const struct mod *mod);
 
 /**
- * Gets the list of mods on which the specified one depends.
+ * Iterates over a list of mods on which the specified one depends.
  *
+ * @param dep iteration variable which takes a value of each element of the
+ *            mod dependencies list
  * @param mod the target mod
- * @param iterator pointer to the #mod_iterator structure instance
- * @return iterator over the list of mod dependencies
- * @retval the value passed as the @c iterator argument
- * @retval NULL if one or more arguments is @c NULL
  */
-extern struct mod_iterator *mod_requires(const struct mod *mod,
-		struct mod_iterator *iterator);
+#define mod_foreach_requires(dep, mod) \
+		__mod_foreach_requires(dep, mod)
 
 /**
- * Gets the list of mods which depend on the specified one.
+ * Iterates over a list of mods which depend on the specified one.
  *
+ * @param dep iteration variable which takes a value of each element of
+ *            requested mods list
  * @param mod the target mod
- * @param iterator pointer to the #mod_iterator structure instance
- * @return iterator over the list of requested mods
- * @retval the value passed as the @c iterator argument
- * @retval NULL if one or more arguments is @c NULL
  */
-extern struct mod_iterator *mod_provides(const struct mod *mod,
-		struct mod_iterator *iterator);
-
-/**
- * Retrieves the next mod in the iteration (if any).
- *
- * @param iterator the iterator over the list of mods
- * @return the next element in the iteration
- * @retval the next #mod instance if such exists
- * @retval NULL if argument is @c NULL or iteration has no more elements
- */
-extern struct mod *mod_iterator_next(struct mod_iterator *iterator);
-
-/**
- * Tells whether the iteration has more elements.
- *
- * @param iterator the iterator over the list of mods
- * @return the check result
- * @retval true if the iterator has more elements
- * @retval false if argument is @c NULL or iteration has no more elements
- */
-extern bool mod_iterator_has_next(struct mod_iterator *iterator);
+#define mod_foreach_provides(dep, mod) \
+		__mod_foreach_provides(dep, mod)
 
 #endif /* MOD_CORE_H_ */

@@ -1,4 +1,2 @@
-
-$_MODS += setjmp
-
-$_SRCS-setjmp += *.c
+$_MODS        += setjmp
+$_SRCS-setjmp += setjmp.c

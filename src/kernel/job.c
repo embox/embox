@@ -14,7 +14,7 @@ static jmp_buf current_job;
 
 #define LONGJMP_ABORT 1
 
-int job_exec(int (*exec)(int argsc, char **argsv), int argsc,char **argsv) {
+int job_exec(exec_handler_t exec, int argsc, char **argsv) {
 	if (exec == NULL) {
 		return -EINVAL;
 	}
@@ -25,7 +25,7 @@ int job_exec(int (*exec)(int argsc, char **argsv), int argsc,char **argsv) {
 	}
 }
 
-void job_abort(int i){
+void job_abort(int i) {
 	// TODO not always calling longjmp. -- Alexey
 	longjmp(current_job, LONGJMP_ABORT);
 }

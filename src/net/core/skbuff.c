@@ -8,7 +8,7 @@
  */
 
 #include <string.h> /*for memcpy*/
-#include <lib/list.h>
+#include <linux/list.h>
 #include <net/skbuff.h>
 #include <net/sock.h>
 #include <net/net_pack_manager.h>
@@ -35,7 +35,7 @@ struct sk_buff_head *alloc_skb_queue(int len) {
 	 */
 	queue = (struct sk_buff_head *) (&head_free_queue)->next;
 	list_del((&head_free_queue)->next);
-	INIT_LIST_HEAD((struct list_head *)queue);
+	INIT_LIST_HEAD((struct list_head *) queue);
 	queue->qlen = 0;
 	queue->qlen = 0;
 	ipl_restore(sp);
@@ -48,10 +48,10 @@ void __init skb_init(void) {
 	/* Init net pack manager */
 	net_buff_init();
 
-	for (i = 1; i < array_len(sk_buff_pool); i++) {
+	for (i = 1; i < ARRAY_SIZE(sk_buff_pool); i++) {
 		list_add((struct list_head *) &sk_buff_pool[i], &head_free_skb);
 	}
-	for (i = 1; i < array_len(sk_queue_pool); i++) {
+	for (i = 1; i < ARRAY_SIZE(sk_queue_pool); i++) {
 		list_add((struct list_head *) &sk_queue_pool[i], &head_free_queue);
 	}
 }
@@ -68,7 +68,7 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
 	}
 	skb = (struct sk_buff *) (&head_free_skb)->next;
 	list_del((&head_free_skb)->next);
-	INIT_LIST_HEAD((struct list_head *)skb);
+	INIT_LIST_HEAD((struct list_head *) skb);
 	ipl_restore(sp);
 
 	if (NULL == (skb->data = net_buff_alloc())) {

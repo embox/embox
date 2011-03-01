@@ -18,8 +18,8 @@
 #define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
 extern CONSOLE *cur_console;
 
-extern int uart_set_irq_handler(irq_handler_t);
-extern int uart_remove_irq_handler(void);
+//extern int uart_set_irq_handler(irq_handler_t);
+//extern int uart_remove_irq_handler(void);
 
 static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 	SCREEN_CALLBACK *cb = this->callback;
@@ -31,7 +31,7 @@ static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 }
 
 static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
-		TERMINAL_TOKEN_PARAMS *params) {
+		short *params, int params_len) {
 	SCREEN_CALLBACK *cb = this->callback;
 	static TERMINAL_TOKEN prev_token = TERMINAL_TOKEN_EMPTY;
 	if (cb == NULL) {
@@ -84,10 +84,10 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		FIRE_CALLBACK(cb, on_new_line, this, 0);
 		break;
 	case TERMINAL_TOKEN_PRIVATE:
-		if (params->length == 0) {
+		if (params_len == 0) {
 			break;
 		}
-		switch (params->data[0]) {
+		switch (params[0]) {
 		case TERMINAL_TOKEN_PARAM_PRIVATE_DELETE:
 			FIRE_CALLBACK(cb, on_delete, this, 0);
 			break;
@@ -118,31 +118,30 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 
 void uart_softirq_handler(softirq_nr_t softirq_nr, void *data) {
 	char ch;
-	static TERMINAL_TOKEN token;
-	static TERMINAL_TOKEN_PARAMS params[1];
+	TERMINAL_TOKEN token;
+	short *params;
+	int params_len;
 	SCREEN *this;
 //	if (!sys_exec_is_started()) {
 //		return;
 //	}
 	this = cur_console->view;
-	terminal_receive(this->terminal, &token, params);
+	terminal_receive(this->terminal, &token, &params, &params_len);
 	ch = token & 0xFF;
 	/*TODO:*/
 	if (ch == token) {
 		handle_char_token(this, token);
 	} else {
-		handle_ctrl_token(this, token, params);
+		handle_ctrl_token(this, token, params, params_len);
 	}
 }
-static irq_return_t uart_irq_handler(softirq_nr_t irq, void *data) {
-	softirq_raise(UART_SOFTIRQ_NR);
-	return IRQ_HANDLED;
-}
+
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 //#ifndef CONFIG_SOFTIRQ
 	static TERMINAL_TOKEN token;
-	static TERMINAL_TOKEN_PARAMS params[1];
+	short *params;
+	int params_len;
 	char ch;
 //#endif
 	if ((this == NULL) || this->running) {
@@ -154,15 +153,15 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 //#ifdef CONFIG_SOFTIRQ
 //	softirq_install(UART_SOFTIRQ_NR, uart_softirq_handler, NULL);
 	//uart_set_irq_handler(uart_irq_handler);
-//	while(1) {uart_getc();};
+//	while (1) {uart_getc();};
 //#else
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
-			params)) {
+			&params, &params_len)) {
 		ch = token & 0xFF;
 		if (ch == token) {
 			handle_char_token(this, token);
 		} else {
-			handle_ctrl_token(this, token, params);
+			handle_ctrl_token(this, token, params, params_len);
 		}
 	}
 //#endif
@@ -174,6 +173,6 @@ void screen_in_stop(SCREEN *this) {
 	if (this == NULL) {
 		return;
 	}
-	uart_remove_irq_handler();
+//	uart_remove_irq_handler();
 	this->callback = NULL;
 }

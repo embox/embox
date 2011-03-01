@@ -7,8 +7,8 @@
  * @author Skorodumov Kirill
  */
 
-#ifndef _SCHEDULER_H_
-#define _SCHEDULER_H_
+#ifndef SCHEDULER_H_
+#define SCHEDULER_H_
 
 #include <kernel/thread.h>
 

@@ -28,7 +28,7 @@ static INETDEV_INFO ifs_info[CONFIG_NET_INTERFACES_QUANTITY];
 
 INETDEV_INFO *find_ifdev_info_entry(in_device_t *in_dev) {
 	size_t i;
-	for (i = 0; i < array_len(ifs_info); i ++) {
+	for (i = 0; i < ARRAY_SIZE(ifs_info); i++) {
 		if (&ifs_info[i].dev == in_dev) {
 			return &ifs_info[i];
 		}
@@ -38,7 +38,7 @@ INETDEV_INFO *find_ifdev_info_entry(in_device_t *in_dev) {
 
 static in_device_t *find_free_handler(void) {
 	size_t i;
-	for(i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i ++) {
+	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (0 == ifs_info[i].is_busy) {
 			ifs_info[i].is_busy = 1;
 			return &ifs_info[i].dev;
@@ -49,7 +49,7 @@ static in_device_t *find_free_handler(void) {
 #if 0
 static int free_handler(in_device_t * handler) {
 	size_t i;
-	for(i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i ++) {
+	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if ((1 == ifs_info[i].is_busy) &&
 			(&ifs_info[i].dev == handler)) {
 			ifs_info[i].is_busy = 0;
@@ -63,7 +63,7 @@ static int alloc_callback(in_device_t *in_dev, unsigned int type,
 				ETH_LISTEN_CALLBACK callback) {
 	size_t i;
 	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
-	for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
+	for (i = 0; i < ARRAY_SIZE(ifdev_info->cb_info); i++) {
 		if (0 == ifdev_info->cb_info[i].func) {
 			ifdev_info->cb_info[i].type = type;
 			ifdev_info->cb_info[i].func = callback;
@@ -76,7 +76,7 @@ static int alloc_callback(in_device_t *in_dev, unsigned int type,
 static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
 	size_t i;
 	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
-	for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
+	for (i = 0; i < ARRAY_SIZE(ifdev_info->cb_info); i++) {
 		if (callback == ifdev_info->cb_info[i].func) {
 			ifdev_info->cb_info[i].func    = NULL;
 			return i;
@@ -124,15 +124,16 @@ int inet_dev_set_interface(const char *name, in_addr_t ipaddr, in_addr_t mask,
 				const unsigned char *macaddr) {
 	size_t i;
 	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
-		if (0 == strncmp(name, ifs_info[i].dev.dev->name,
-				array_len(ifs_info[i].dev.dev->name))) {
-			if((-1 == inet_dev_set_ipaddr(&ifs_info[i].dev, ipaddr))||
-				(-1 == inet_dev_set_mask(&ifs_info[i].dev, mask)) ||
-				(-1 == inet_dev_set_macaddr(&ifs_info[i].dev, macaddr))) {
-				return -1;
-			}
-			return i;
+		if (0 != strncmp(name, ifs_info[i].dev.dev->name,
+				ARRAY_SIZE(ifs_info[i].dev.dev->name))) {
+			continue;
 		}
+		if ((-1 == inet_dev_set_ipaddr(&ifs_info[i].dev, ipaddr)) ||
+		    (-1 == inet_dev_set_mask(&ifs_info[i].dev, mask)) ||
+		    (-1 == inet_dev_set_macaddr(&ifs_info[i].dev, macaddr))) {
+			return -1;
+		}
+		return i;
 	}
 	return -1;
 }
@@ -167,7 +168,7 @@ int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macaddr) {
 	if (NULL == dev) {
 		return -1;
 	}
-	return dev->netdev_ops->ndo_set_mac_address(dev, (void*)macaddr);
+	return dev->netdev_ops->ndo_set_mac_address(dev, (void *) macaddr);
 }
 
 in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev) {
@@ -189,7 +190,7 @@ void ifdev_rx_callback(sk_buff_t *pack) {
 
 	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
 
-	for (i = 0; i < array_len(ifdev_info->cb_info); i++) {
+	for (i = 0; i < ARRAY_SIZE(ifdev_info->cb_info); i++) {
 		if (NULL != ifdev_info->cb_info[i].func) {
 			if ((NET_TYPE_ALL_PROTOCOL == ifdev_info->cb_info[i].type)
 					|| (ifdev_info->cb_info[i].type == pack->protocol)) {
@@ -211,7 +212,7 @@ void ifdev_tx_callback(sk_buff_t *pack) {
 static int iterator_cnt;
 
 in_device_t *inet_dev_get_fist_used(void) {
-	for(iterator_cnt = 0;
+	for (iterator_cnt = 0;
 			iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY;
 			iterator_cnt++) {
 		if (1 == ifs_info[iterator_cnt].is_busy) {
@@ -223,7 +224,7 @@ in_device_t *inet_dev_get_fist_used(void) {
 }
 
 in_device_t *inet_dev_get_next_used(void) {
-	for(; iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY; iterator_cnt++) {
+	for (; iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY; iterator_cnt++) {
 		if (1 == ifs_info[iterator_cnt].is_busy) {
 			iterator_cnt++;
 			return &ifs_info[iterator_cnt - 1].dev;

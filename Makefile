@@ -1,5 +1,5 @@
 #
-# EMBOX root Makefile.
+# Embox root Makefile.
 #
 # This file have just to setup proper make flags and to invoke mk/main.mk
 # which will perform the real work.
@@ -28,7 +28,7 @@ MAKEFLAGS += --warn-undefined-variables
 .DEFAULT_GOAL := all
 
 % :
-	@$(MAKE) __mk_ready=1 $@
+	@$(MAKE) __mk_ready=1 $@ 2>&1
 
 endif
 

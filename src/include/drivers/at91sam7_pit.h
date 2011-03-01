@@ -1,9 +1,13 @@
-/* @file
+/**
+ * @file
  * @brief Periodical Interval Timer interface
  *
  * @date 26.09.2010
  * @author Anton Kozlov
  */
+
+#ifndef AT91SAM7_PIT_H_
+#define AT91SAM7_PIT_H_
 
 typedef struct _AT91S_PITC {
 	AT91_REG	 PITC_PIMR; 	// Period Interval Mode Register
@@ -30,3 +34,8 @@ typedef struct _AT91S_PITC {
 #define AT91C_PITC_PIMR ((AT91_REG *) 	0xFFFFFD30) // (PITC) Period Interval Mode Register
 
 #define AT91C_PIT_IRQ 1
+
+#define AT91C_PIT_USECOND (CONFIG_SYS_CLOCK / (16 * 1000000))
+
+#endif /* AT91SAM7_PIT_H_ */
+

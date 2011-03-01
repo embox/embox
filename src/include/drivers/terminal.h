@@ -19,11 +19,6 @@
 
 typedef int TERMINAL_TOKEN;
 
-typedef struct {
-	int data[VT_TOKEN_MAX_PARAMS];
-	int length;
-} TERMINAL_TOKEN_PARAMS;
-
 #define ENCODE(action, char1, char2, code) 	\
 	(((action & 0xFF) ^ VT_ACTION_PRINT) << 24 \
 		| ((char1 & 0xFF) << 16) \
@@ -35,7 +30,7 @@ typedef struct {
 #define DECODE_CHAR2(token)                  ((token >> 8) & 0xFF)
 #define DECODE_CODE(token)                   ((token) & 0xFF)
 
-#define ENCODE_CS_(char1, char2, code)	     ENCODE(VT_ACTION_CS_DISPATCH, char1, char2, code)
+#define ENCODE_CS_(char1, char2, code)	     ENCODE(VT_ACTION_CSI_DISPATCH, char1, char2, code)
 #define ENCODE_ESC_(char1, char2, code)	     ENCODE(VT_ACTION_ESC_DISPATCH, char1, char2, code)
 
 #define ENCODE_CS(code)                      ENCODE_CS_(0, 0, code)
@@ -209,8 +204,8 @@ typedef struct {
  */
 typedef struct {
 	TERMINAL_IO io[1];
-	VTBUILDER   builder[1];
-	VTPARSER    parser[1];
+	struct vtbuild builder[1];
+	struct vtparse parser[1];
 
 	/* NOTE: This value is tightly relies on vtparse algorithms. */
 #define VTPARSER_TOKEN_QUEUE_AMOUNT 3
@@ -219,21 +214,21 @@ typedef struct {
 	 * about parser state collected at callback invocation time.
 	 * NOTE: This structure is tightly relies on vtparse algorithms.
 	 */
-	VT_TOKEN vt_token_queue[VTPARSER_TOKEN_QUEUE_AMOUNT];
+	struct vt_token vt_token_queue[VTPARSER_TOKEN_QUEUE_AMOUNT];
 
 	int vt_token_queue_len;
 	int vt_token_queue_head;
 
-	TERMINAL_TOKEN_PARAMS default_params[1];
-
 } TERMINAL;
 
-TERMINAL * terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
+TERMINAL *terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
 
 bool terminal_receive(TERMINAL *terminal, TERMINAL_TOKEN *token,
-		TERMINAL_TOKEN_PARAMS *params);
+		short **params, int *params_len);
 
 bool terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token,
+						short *params, int params_len);
+bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token,
 						int params_len, ...);
 
 #endif /* TERMINAL_H_ */

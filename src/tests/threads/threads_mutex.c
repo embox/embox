@@ -31,7 +31,7 @@ static struct thread *div_thread;
 
 static struct mutex mutex;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * endlessly writes '+'
@@ -87,7 +87,7 @@ static void div_run(void) {
 	}
 }
 
-static int run_test(void) {
+static int run(void) {
 	TRACE("\n");
 
 	mutex_init(&mutex);

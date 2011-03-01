@@ -37,20 +37,20 @@ static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 		TRACE("Newc ASCII CPIO format not recognized.\n");
 		return NULL;
 	}
-	s = (char*)cpio_h;
+	s = (char*) cpio_h;
 	for (i = 0, s += 6; i < 12; i++, s += 8) {
 		memcpy(buf, s, 8);
 		parsed[i] = strtol(buf, NULL, 16);
 	}
 
-	strncpy(name, (char*)cpio_h + sizeof(cpio_newc_header_t), parsed[11]);
+	strncpy(name, (char*) cpio_h + sizeof(cpio_newc_header_t), parsed[11]);
 	name[parsed[11]] = '\0';
 	file_size  = parsed[6];
 	start_addr = (unsigned long)cpio_h + sizeof(cpio_newc_header_t) + N_ALIGN(parsed[11]);
 	mode       = parsed[1];
 	mtime      = parsed[5];
 
-	if(0 == strcmp(name, "TRAILER!!!")) {
+	if (0 == strcmp(name, "TRAILER!!!")) {
 		return NULL;
 	} else {
 		//TODO: set start_addr, file_size, mode.
@@ -61,7 +61,7 @@ static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 		param.start_addr = start_addr;
 		init_fs->fsop->create_file(&param);
 	}
-	return (cpio_newc_header_t*)F_ALIGN(start_addr + file_size);
+	return (cpio_newc_header_t*) F_ALIGN(start_addr + file_size);
 }
 
 int unpack_to_rootfs(void) {
@@ -69,7 +69,7 @@ int unpack_to_rootfs(void) {
 	cpio_newc_header_t *cpio_h, *cpio_next;
 	char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];
 
-	if(&_ramfs_end == &_ramfs_start) {
+	if (&_ramfs_end == &_ramfs_start) {
 		TRACE("No availible initramfs\n");
 		return -1;
 	}
@@ -78,7 +78,7 @@ int unpack_to_rootfs(void) {
 	init_fs = find_filesystem("ramfs");
 
 	cpio_h = (cpio_newc_header_t *)&_ramfs_start;
-	while(NULL != (cpio_next = parse_item(cpio_h, buff_name))) {
+	while (NULL != (cpio_next = parse_item(cpio_h, buff_name))) {
 		cpio_h = cpio_next;
 	}
 

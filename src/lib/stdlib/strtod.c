@@ -10,10 +10,10 @@
 double strtod (const char *str, char **ptr) {
 	char *p;
 
-	if (ptr == (char **)0)
-		return atof (str);
+	if (ptr == (char **) 0x0)
+		return atof(str);
 
-	p = (char*)str;
+	p = (char*) str;
 
 	while (isspace(*p))
 		++p;
@@ -76,6 +76,6 @@ double strtod (const char *str, char **ptr) {
 		return atof (str);
 	}
 	/* Didn't find any digits.  Doesn't look like a number.  */
-	*ptr = (char*)str;
+	*ptr = (char*) str;
 	return 0.0;
 }

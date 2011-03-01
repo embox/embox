@@ -64,6 +64,15 @@ interrupt_entry:
 
 	RESTORE_ALL
 
+	.global winflush_entry
+winflush_entry:
+	SAVE_ALL
+
+	call winflush
+	 nop
+
+	RESTORE_ALL
+
 	.global weak_trap_entry
 weak_trap_entry:
 	orcc %local, %g0, %g0

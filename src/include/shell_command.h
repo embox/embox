@@ -4,10 +4,9 @@
  * @date 13.09.09
  * @author Anton Bondarev
  */
-#ifndef USER_HANDLER_H_
-#define USER_HANDLER_H_
+#ifndef COMMAND_FRAMEWORK_H_
+#define COMMAND_FRAMEWORK_H_
 
-#include <shell.h>
 #include <getopt.h>
 #include <types.h>
 #include <embox/kernel.h>
@@ -28,25 +27,33 @@ typedef struct _SHELL_COMMAND_DESCRIPTOR {
 		__attribute__ ((used, section(".shell_commands"))) \
 		= { name, exec, desc_msg, help_msg, &man_page }
 
-#define show_help() printf(HELP_MSG)
+#define show_help() printf(HELP_MSG "\n")
 
 #define show_man_page() printf(man_page)
 
 /**
  * start exec shell command with pointed descriptor
  */
-int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
+extern int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
 		char **argsv);
-#if 0
-SHELL_COMMAND_DESCRIPTOR *shell_command_find_descriptor(char *name);
-#endif
+
 /**
  * iterate functions
  */
-SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_first(char *start_str,
+extern SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_first(char *start_str,
 		int length);
 
-SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_next(
+/**
+ * find descriptor for shell command with pointed name each command have to
+ * register own descriptor in system, by needs macros DECLARE_SHELL_COMMAND
+ * that macros put pinter on registering descriptor to section ".shell_command".
+ * And we can find this descriptor when we need to use it.
+ *
+ * @param command name
+ * @return command descriptor if command was found in image
+ * @return NULL another way
+ */
+extern SHELL_COMMAND_DESCRIPTOR *shell_command_descriptor_find_next(
 		SHELL_COMMAND_DESCRIPTOR * cur_desc, char *start_str, int length);
 
-#endif /*USER_HANDLER_H_*/
+#endif /*COMMAND_FRAMEWORK_H_*/

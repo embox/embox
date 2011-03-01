@@ -25,10 +25,10 @@ static int inet_create(struct socket *sock, int protocol) {
 	inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
 
 	for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
-		if((* p_netsock)->type != sock->type) {
+		if ((* p_netsock)->type != sock->type) {
 			continue;
 		}
-		if((* p_netsock)->protocol == protocol) {
+		if ((* p_netsock)->protocol == protocol) {
 			if (protocol != IPPROTO_IP) {
 				break;
 			}
@@ -54,7 +54,7 @@ static int inet_create(struct socket *sock, int protocol) {
 	inet->mc_ttl = 64;
 	sk->sk_type = sock->type;
 	sk->sk_protocol = protocol;
-	if(sk->sk_prot->init) {
+	if (sk->sk_prot->init) {
 		err = sk->sk_prot->init(sk);
 	}
 	return err;
@@ -68,7 +68,7 @@ int inet_release(struct socket *sock) {
 }
 
 int inet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len) {
-	struct sockaddr_in *addr = (struct sockaddr_in *)uaddr;
+	struct sockaddr_in *addr = (struct sockaddr_in *) uaddr;
 	struct sock *sk = sock->sk;
 	struct inet_sock *inet = inet_sk(sk);
 	if (sk->sk_prot->bind) {
@@ -84,7 +84,7 @@ int inet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len) {
 int inet_dgram_connect(struct socket *sock, struct sockaddr * uaddr,
 			int addr_len, int flags) {
 	struct sock *sk = sock->sk;
-	sk->sk_prot->connect(sk, (struct sockaddr *)uaddr, addr_len);
+	sk->sk_prot->connect(sk, (struct sockaddr *) uaddr, addr_len);
 	return 0;
 }
 

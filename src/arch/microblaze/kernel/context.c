@@ -26,5 +26,7 @@ void context_switch(struct context *prev, struct context *next) {
 		break;
 	case 1:
 		return;
+	default:
+		return;
 	}
 }

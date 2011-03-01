@@ -42,7 +42,7 @@ static int exec(int argsc, char **argsv) {
 			return 0;
 		case 't':
 			if (0 == sscanf(optarg, "%s", fs_type)) {
-				LOG_ERROR("wrong -i argument %s\n", optarg);
+				LOG_ERROR("wrong -t argument %s\n", optarg);
 				return -1;
 			}
 			TRACE("type is %s\n", fs_type);

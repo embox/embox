@@ -1,4 +1,4 @@
-# This file is derived from EMBOX test template.
+# This file is derived from Embox test template.
 
 ##
 # In general you have not to edit this Makefile.

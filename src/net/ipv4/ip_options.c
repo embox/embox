@@ -19,18 +19,18 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 	/* curropt points to current option in question
 	 * optsfault points to first problem occurred in options
 	 */
-	unsigned char *curropt = (unsigned char*)iph + IP_MIN_HEADER_SIZE;
+ 	unsigned char *curropt = (unsigned char*) iph + IP_MIN_HEADER_SIZE;
 	int curroptlen;
 	unsigned char *optsfault = NULL;
 	_Bool secappeared = false;
 	_Bool sidappeared = false;
 	unsigned int* timestamp = NULL;
 
-	for(curropt = opt->__data; curropt < endopts; ) {
+	for (curropt = opt->__data; curropt < endopts; ) {
 
 		switch (*curropt) {
 			case IPOPT_END:
-				for(++curropt ; curropt < endopts; ++curropt) {
+				for (++curropt ; curropt < endopts; ++curropt) {
 					if (IPOPT_END != *curropt) {
 						*curropt = IPOPT_END;
 						opt->is_changed = 1;
@@ -73,7 +73,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 					optsfault = curropt + 2;
 					goto error;
 				}
-				opt->srr = (unsigned char)(curropt - (unsigned char*)iph);
+				opt->srr = (unsigned char) (curropt - (unsigned char*) iph);
 				opt->is_strictroute = (*curropt == IPOPT_SSRR);
 				break;
 			case IPOPT_RR:
@@ -103,7 +103,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 					opt->is_changed = 1;
 					opt->rr_needaddr = 1;
 				}
-				opt->rr = (unsigned char)(curropt - (unsigned char*)iph);
+				opt->rr = (unsigned char) (curropt - (unsigned char*) iph);
 				break;
 			case IPOPT_SID:
 				if (sidappeared) {
@@ -136,7 +136,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 					switch(curropt[3]&0x0F)
 					{
 						case IPOPT_TS_TSONLY:
-							opt->ts = (unsigned char)(curropt - (unsigned char*)iph);
+							opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
 							opt->ts_needtime = 1;
 							timestamp = (unsigned int*)(&curropt[curropt[2]-1]);
 							curropt[2] += 4;
@@ -152,7 +152,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 								(void*)((in_dev_get(skb->dev))->ifa_address),
 								4);
 							timestamp = (unsigned int*)(&curropt[curropt[2]+3]);
-							opt->ts = (unsigned char)(curropt - (unsigned char*)iph);
+							opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
 							opt->ts_needaddr = 1;
 							opt->ts_needtime = 1;
 							curropt[2] += 8;
@@ -163,7 +163,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 								optsfault = curropt + 2;
 								goto error;
 							}
-							opt->ts = (unsigned char)(curropt - (unsigned char*)iph);
+							opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
 							//TODO i still don't understand meaning of this option
 							break;
 						default:
@@ -185,7 +185,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 					curropt[3] &= 0x0F;
 					curropt[3] |= (++tsoverflow) << 4;
 					opt->is_changed = 1;
-					opt->ts = (unsigned char)(curropt - (unsigned char*)iph);
+					opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
 				}
 				break;
 			// TODO case IPOPT_CIPSO - don't still know what to do here
@@ -206,8 +206,8 @@ end:
 	}
 
 error:
-	curroptlen = (int)(optsfault - (unsigned char*)iph);
-	icmp_send(skb, ICMP_PARAMETERPROB, 0, htonl(curroptlen<<24));
+	curroptlen = (int) (optsfault - (unsigned char*) iph);
+	icmp_send(skb, ICMP_PARAMETERPROB, 0, htonl(curroptlen << 24));
 	//TODO : is it an adequate return value? maybe -EINVAL will suit better?
 	return -1;
 

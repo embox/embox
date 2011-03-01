@@ -11,6 +11,7 @@
 
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <shell_command.h>
 #include <test/framework.h>
@@ -30,7 +31,7 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static void print_tests(void) {
-	struct test *test;
+	const struct test *test;
 	int i = 0;
 
 	test_foreach(test) {
@@ -77,8 +78,8 @@ static bool is_test_name(const char *input_name, const char *test_name) {
 	return (*input_name == 0);
 }
 
-static struct test *get_test_by_name(char *name) {
-	struct test *test;
+static const struct test *get_test_by_name(char *name) {
+	const struct test *test;
 
 	test_foreach(test) {
 		if (is_test_name(name, test->mod->name)) {
@@ -86,11 +87,12 @@ static struct test *get_test_by_name(char *name) {
 		}
 	}
 
+	TRACE("Can't find test named \"%s\"\n", name);
 	return NULL;
 }
 
-static struct test *get_test(int nr) {
-	struct test *test = NULL;
+static const struct test *get_test(int nr) {
+	const struct test *test = NULL;
 	int i = 0;
 
 	if (nr <= 0) {
@@ -99,7 +101,7 @@ static struct test *get_test(int nr) {
 	}
 
 	test_foreach(test) {
-		if(++i == nr) {
+		if (++i == nr) {
 			break;
 		}
 	}
@@ -112,7 +114,7 @@ static struct test *get_test(int nr) {
 
 static int exec(int argc, char **argv) {
 	bool run_info_func = false;
-	struct test *test = NULL;
+	const struct test *test = NULL;
 	int test_nr = -1;
 	int next_option;
 	/* TODO it must be agreed with shell maximum command length */

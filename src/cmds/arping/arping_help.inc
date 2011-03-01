@@ -15,6 +15,6 @@
 "EXAMPLES\n"
 "\tarping -c 3 10.0.3.97\n"
 "SEE ALSO\n"
-"\tifconfig, ping\n"
+"\tarp, ping\n"
 "AUTHORS\n"
 "\tNikolay Korotky"

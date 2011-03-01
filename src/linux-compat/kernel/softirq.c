@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Wrapper around embox softirq with linux interface.
+ * @brief Wrapper around Embox softirq with linux interface.
  *
  * @date 07.04.2010
  * @author Eldar Abusalimov

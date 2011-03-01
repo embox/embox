@@ -72,11 +72,11 @@ static int ping(ping_info_t *pinfo) {
 	from_addr_str = inet_ntoa(pinfo->from);
 	printf("PING %s %d bytes of data.\n", dst_addr_str, pinfo->padding_size);
 
-	if((sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
+	if ((sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
 		LOG_ERROR("socket error\n");
 		return -1;
 	}
-	iph = (iphdr_t *)packet;
+	iph = (iphdr_t *) packet;
 	icmph = (icmphdr_t *) (packet + IP_MIN_HEADER_SIZE);
 	memset(packet, 0, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
 	memset(icmph, pinfo->pattern, pinfo->padding_size);
@@ -93,7 +93,7 @@ static int ping(ping_info_t *pinfo) {
 	icmph->code = 0;
 	icmph->un.echo.id = /*TID*/0;
 
-	for(i = 0; i < pinfo->count; i++) {
+	for (i = 0; i < pinfo->count; i++) {
 		icmph->un.echo.sequence++;
 		icmph->checksum = 0;
 		icmph->checksum = ptclbsum(packet + IP_MIN_HEADER_SIZE,
@@ -103,7 +103,7 @@ static int ping(ping_info_t *pinfo) {
 		sleep(pinfo->timeout);
 
 		/* we don't need to get pad data, only header */
-		if(recvfrom(sk, rcv_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
+		if (recvfrom(sk, rcv_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
 				(struct sockaddr *)&pinfo->from, NULL) > 0) {
 			printf("%d bytes from %s to %s: icmp_seq=%d ttl=%d time=%d ms\n",
 					pinfo->padding_size, from_addr_str, dst_addr_str, i + 1, pinfo->ttl, 0);
@@ -163,7 +163,7 @@ static int exec(int argc, char **argv) {
 			if (1 != sscanf(optarg, "%d", &pinfo.timeout)) {
 				pinfo.timeout = 1;
 			}
-			if(pinfo.timeout > MAX_TIMEOUT || pinfo.timeout < 0) {
+			if (pinfo.timeout > MAX_TIMEOUT || pinfo.timeout < 0) {
 				printf("ping: bad linger time.\n");
 				return -1;
 			}
@@ -172,9 +172,9 @@ static int exec(int argc, char **argv) {
 			if (1 != sscanf(optarg, "%d", &pinfo.padding_size)) {
 				pinfo.padding_size = 0;
 			}
-			if(pinfo.padding_size > MAX_PADLEN) {
+			if (pinfo.padding_size > MAX_PADLEN) {
 				printf("packet size is too large. Maximum is 65507\n");
-			} else if(pinfo.padding_size < 0) {
+			} else if (pinfo.padding_size < 0) {
 				printf("illegal negative packet size\n");
 			}
 			break;
@@ -196,7 +196,7 @@ static int exec(int argc, char **argv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	if (argc == 1) {
 		show_help();

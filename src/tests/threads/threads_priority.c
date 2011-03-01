@@ -18,7 +18,7 @@
 static char stacks[THREADS_COUNT][THREAD_STACK_SIZE];
 static struct thread *threads[THREADS_COUNT];
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * Writes id of current thread.
@@ -30,7 +30,7 @@ static void threads_run(void) {
 	}
 }
 
-static int run_test() {
+static int run(void) {
 	size_t i;
 	TRACE("\n");
 

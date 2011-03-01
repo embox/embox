@@ -10,13 +10,14 @@
 #include <fs/fs.h>
 #include <linux/init.h>
 #include <fs/node.h>
+#include <util/array.h>
 
 static void   *rootfs_open(const char *path, const char *mode);
 static int     rootfs_close(void *file);
 static size_t  rootfs_read(void *buf, size_t size, size_t count, void *file);
 static size_t  rootfs_write(const void *buf, size_t size, size_t count, void *file);
 static int     rootfs_seek(void *file, long offset, int whence);
-static int rootfs_ioctl(void *file, int request, ...);
+static int rootfs_ioctl(void *file, int request, va_list args);
 
 static file_operations_t rootfs_fop = {
 	rootfs_open,
@@ -31,9 +32,7 @@ static node_t *root_node;
 
 static int rootfs_init(void * par) {
 	root_node = alloc_node("/");
-#ifdef CONFIG_RAMFS_CPIO
-	unpack_to_rootfs();
-#endif
+
 	return 0;
 }
 
@@ -49,13 +48,25 @@ static int rootfs_delete(const char *file_name) {
 	return 0;
 }
 
+static int rootfs_mount(void *par) {
+	file_system_driver_t *fsdrv;
+	if (NULL != (fsdrv = find_filesystem("ramfs"))) {
+		fsdrv->fsop->mount(NULL);
+	}
+	if (NULL != (fsdrv = find_filesystem("devfs"))) {
+		fsdrv->fsop->mount(NULL);
+	}
+	return 0;
+}
+
 static fsop_desc_t rootfs_fsop = {
 	rootfs_init,
 	rootfs_create,
-	rootfs_delete
+	rootfs_delete,
+	rootfs_mount
 };
 
-static file_system_driver_t rootfs_drv = {
+static const file_system_driver_t rootfs_drv = {
 	"rootfs",
 	&rootfs_fop,
 	&rootfs_fsop
@@ -83,7 +94,7 @@ static int rootfs_seek(void *file, long offset, int whence) {
 	return 0;
 }
 
-static int rootfs_ioctl(void *file, int request, ...) {
+static int rootfs_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 

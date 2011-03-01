@@ -1,13 +1,15 @@
 /**
  * @file
- * @author Fedor Burdun
+ * @brief /dev/zero char device and example for write driver
+ *
  * @date 08.07.2010
- * @brief /dev/zero char device and example for write driver in OS "EMBOX"
+ * @author Fedor Burdun
  */
 
 #include <embox/unit.h>
 #include <kernel/driver.h>
 #include <kernel/printk.h>
+#include <kernel/mm/kmalloc.h>
 
 #define START_AS_MOD
 
@@ -54,7 +56,7 @@ int zero_devctl(device_t *dev, device_cmd c, void *arg) {
 }
 
 /*
- * interface for registry in embox as driver
+ * interface for registry in Embox as driver
  */
 int zero_load(driver_t *drv) {
 	drv->name       = "Zero Device Driver";
@@ -83,17 +85,17 @@ int zero_unload(driver_t *drv) {
 }
 
 /*
- * interface for registry in embox as module (while don't exist driver's framework)
+ * interface for registry in Embox as module (while don't exist driver's framework)
  */
 #ifdef START_AS_MOD
 /*
- * for work need add to mods-? mods( ?.zero , 1 ) or ?
+ * for work need add to mods-? mods(?.zero, 1) or ?
  */
 static driver_t *drv;
 //static driver_t drv_wm; /* without malloc */
 
 static int zero_start(void) {
-	printk("\e[1;34mZero driver was started!\e[0;0m\n");
+	printk("\033[1;34mZero driver was started!\033[0;0m\n");
 
 	if (NULL == (drv = kmalloc(sizeof(driver_t)))) {
 		printk("No memory enough for start Zero driver\n");

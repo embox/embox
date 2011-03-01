@@ -125,16 +125,13 @@ void mmu_set_env(mmu_env_t *env) {
 
 static uint8_t used_context[LEON_CNR_CTX_NCTX];
 
-#define DEBUG
 mmu_ctx_t mmu_create_context(void) {
 	int i;
 	for (i = 0; i < LEON_CNR_CTX_NCTX; i++) {
 		if (!used_context[i])
 			break;
 	}
-#ifdef DEBUG
-	printf("create %d\n", i);
-#endif
+	LOG_DEBUG("create %d\n", i);
 	if (i >= LEON_CNR_CTX_NCTX)
 		return -1;
 	mmu_ctxd_set(cur_env->ctx + i, mmu_table_alloc(MMU_GTABLE_SIZE));
@@ -144,10 +141,8 @@ mmu_ctx_t mmu_create_context(void) {
 
 void mmu_delete_context(mmu_ctx_t ctx) {
 	used_context[ctx] = 0;
-#ifdef DEBUG
-	printf("delete %d\n",ctx);
-#endif
-	mmu_table_free((unsigned long *) (((unsigned long) (*( cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4), 1);
+	LOG_DEBUG("delete %d\n",ctx);
+	mmu_table_free((unsigned long *) (((unsigned long) (*(cur_env->ctx + ctx)) & MMU_CTX_PMASK) << 4), 1);
 }
 
 void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {

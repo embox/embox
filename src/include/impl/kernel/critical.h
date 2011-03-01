@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implements critical sections API
  *
  * @date 16.05.2010
  * @author Eldar Abusalimov

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief The external API for EMBOX testing framework.
+ * @brief The external API for Embox testing framework.
  * TODO Test framework API docs: structs. -- Eldar
  *
  * @date 11.06.2010
@@ -10,28 +10,18 @@
 #ifndef TEST_FRAMEWORK_H_
 #define TEST_FRAMEWORK_H_
 
-#include <stddef.h>
-#include <stdbool.h>
-
 #include <impl/test/framework.h>
 
-#define test_foreach(t) __test_foreach(t)
+#define test_foreach(test_ptr) \
+		__test_foreach(test_ptr)
 
 /**
  * TODO docs. -- Eldar
  */
 struct test;
 
-struct test_iterator;
+extern int test_invoke(const struct test *test);
 
-extern int test_invoke(struct test *test);
-
-extern const char *test_name(struct test *test);
-
-extern struct test_iterator *test_get_all(struct test_iterator *iterator);
-
-extern struct test *test_iterator_next(struct test_iterator *iterator);
-
-extern bool test_iterator_has_next(struct test_iterator *iterator);
+extern const char *test_name(const struct test *test);
 
 #endif /* TEST_FRAMEWORK_H_ */

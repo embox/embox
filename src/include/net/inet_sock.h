@@ -77,7 +77,7 @@ typedef struct inet_sock {
 } inet_sock_t;
 
 static inline inet_sock_t *inet_sk(const sock_t *sk) {
-	return (inet_sock_t *)sk;
+	return (inet_sock_t *) sk;
 }
 
 #endif /* INET_SOCK_H_ */

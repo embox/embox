@@ -1,9 +1,13 @@
-/* @file
+/**
+ * @file
  * @brief USART Controller interface
  *
  * @date 26.09.2010
  * @author Anton Kozlov
  */
+
+#ifndef AT91SAM7_US_H_
+#define AT91SAM7_US_H_
 
 #include <types.h>
 
@@ -220,3 +224,6 @@ typedef struct _AT91S_DBGU {
 // -------- DBGU_CSR : (DBGU Offset: 0x14) Debug Unit Channel Status Register --------
 // -------- DBGU_FNTR : (DBGU Offset: 0x48) Debug Unit FORCE_NTRST Register --------
 #define AT91C_US_FORCE_NTRST  ((unsigned int) 0x1 <<  0) // (DBGU) Force NTRST in JTAG
+
+#endif /* AT91SAM7_US_H_ */
+

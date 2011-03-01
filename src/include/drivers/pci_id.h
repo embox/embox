@@ -1,0 +1,56 @@
+/**
+ * @file
+ * @brief PCI Vendor and Device IDs
+ *
+ * @date 20.01.11
+ * @author NIkolay Korotky
+ */
+
+#ifndef PCI_ID_H_
+#define PCI_ID_H_
+
+/* Vendor codes */
+#define CONFIG_PCI_VENDOR_ID_CIRRUS              0x1013
+#define CONFIG_PCI_VENDOR_ID_REALTEK             0x10ec
+#define CONFIG_PCI_VENDOR_ID_RICOH               0x1180
+#define CONFIG_PCI_VENDOR_ID_ATHEROS             0x168c
+#define CONFIG_PCI_VENDOR_ID_INTEL               0x8086
+
+/* Cirrus device id's */
+#define CONFIG_PCI_DEV_ID_CIRRUS_5446            0x00b8
+
+/* Realtek device id's */
+#define CONFIG_PCI_DEV_ID_REALTEK_8029           0x8029
+#define CONFIG_PCI_DEV_ID_REALTEK_8139           0x8139
+
+/* Ricoh device id's */
+#define CONFIG_PCI_DEV_ID_RICOH_RL5C476          0x0476
+#define CONFIG_PCI_DEV_ID_RICOH_R5C592           0x0592
+#define CONFIG_PCI_DEV_ID_RICOH_R5C822           0x0822
+
+/* Atheros device id's */
+#define CONFIG_PCI_DEV_ID_ATHEROS_AR9283         0x002a
+
+/* Intel device id's */
+#define CONFIG_PCI_DEV_ID_INTEL_82441            0x1237
+#define CONFIG_PCI_DEV_ID_INTEL_82801BAM_PCI     0x2448
+#define CONFIG_PCI_DEV_ID_INTEL_82801HBM_LPC     0x2815
+#define CONFIG_PCI_DEV_ID_INTEL_82801HBM_SATA    0x2828
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_USB1     0x2830
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_USB2     0x2831
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_USB3     0x2832
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_USB4     0x2834
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_USB5     0x2835
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_PCIE1    0x283f
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_PCIE2    0x2841
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_PCIE3    0x2843
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_PCIE4    0x2845
+#define CONFIG_PCI_DEV_ID_INTEL_82801HB_HD_AUDIO 0x284b
+#define CONFIG_PCI_DEV_ID_INTEL_82801HBM_IDE     0x2850
+#define CONFIG_PCI_DEV_ID_INTEL_MCH_GM965        0x2a00
+#define CONFIG_PCI_DEV_ID_INTEL_IGC_GM965        0x2a02
+#define CONFIG_PCI_DEV_ID_INTEL_82371SB_ISA      0x7000
+#define CONFIG_PCI_DEV_ID_INTEL_82371SB_IDE      0x7010
+
+#endif /* PCI_ID_H_ */
+

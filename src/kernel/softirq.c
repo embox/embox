@@ -78,7 +78,6 @@ void softirq_dispatch(void) {
 				handler(nr, data);
 				ipl_disable();
 			}
-
 		}
 	}
 }

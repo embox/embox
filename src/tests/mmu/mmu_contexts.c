@@ -38,7 +38,7 @@ static void worker_b(void) {
 	is_b_done = 1;
 }
 
-static int run() {
+static int run(void) {
 	extern char _text_start, __stack, _data_start;
 	extern char worker_a_aligned, worker_b_aligned;
 	worker_ptr temp;
@@ -65,11 +65,11 @@ static int run() {
 				MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 		if (&__stack > (&_text_start + 0x1000000)) {
 			/* if have to map data sections */
-			mmu_map_region( t[i], _data_start, _data_start, 0x1000000,
+			mmu_map_region(t[i], _data_start, _data_start, 0x1000000,
 					MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 		}
 		mmu_map_region((mmu_ctx_t) t[i], (uint32_t) 0x80000000,
-				(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE );
+				(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE);
 	}
 	mmu_map_region(t[1], (paddr_t) &worker_a_aligned, BIGADDR, 0x1000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);

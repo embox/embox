@@ -5,9 +5,9 @@
 |  __/ | | | | | |_) | (_) >  <
  \___|_| |_| |_|____/ \___/_/\_\
 
-EMBOX - Essential toolbox for embedded development.
+Embox - Essential toolbox for embedded development.
 
-EMBOX is a configurable operating system. Instead of providing a monolithic kernel,
+Embox is a configurable operating system. Instead of providing a monolithic kernel,
 all code are placed in libraries which realize different interfaces for example memory
 manager interface. Only required parts of the system are included into final image.
 The required parts are defined during configuration of system or in run time.
@@ -30,5 +30,5 @@ Platforms
     SAM7-P256 development board for AT91SAM7S256 ARM7TDMI-S
     Lego Mindstorms NXT Atmel AT91SAM7S256 ARM7TDMI
 
-Please visit the official web page of EMBOX, for more information.
+Please visit the official web page of Embox, for more information.
 The URL is <http://code.google.com/p/embox>.

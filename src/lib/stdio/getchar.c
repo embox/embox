@@ -7,8 +7,33 @@
  */
 
 #include <stdio.h>
+#include <kernel/uart.h>
+#include <kernel/diag.h>
+#include <drivers/vconsole.h>
 
-int getchar_getc() {
+#ifdef CONFIG_TTY_CONSOLE_COUNT
+int getchar(void) {
+	return vconsole_getchar( cur_console );
+}
+
+int ungetchar(int ch) {
+	getchar();
+	return ch;
+}
+
+#else
+int getchar(void) {
+	return diag_getc();
+}
+
+int ungetchar(int ch) {
+	getchar();
+	return ch;
+}
+#endif
+
+#if 0
+int getchar_getc(void) {
 	#ifndef CONFIG_HARD_DIAGUART
 	return uart_getc();
 	#else
@@ -18,9 +43,11 @@ int getchar_getc() {
 
 int getchar_putc(int c) {
 	#ifndef CONFIG_HARD_DIAGUART
-	return uart_putc((char) c);
+	uart_putc((char) c);
+	return 0;
 	#else
-	return diag_putc((char) c);
+	diag_putc((char) c);
+	return 0;
 	#endif
 }
 
@@ -39,16 +66,18 @@ int getchar(void) {
 
 int ungetchar(int ch) {
 #ifdef CONFIG_HARD_UART_OUT
-	getchar_getc((char) ch);
+	getchar_getc();
 	return ch;
 #else
 # ifdef CONFIG_DRIVER_SUBSYSTEM
+	extern int fungetc(FILE, int);
 	return fungetc(stdin,ch);
 # else
 	/* default */
-	getchar_getc((char) ch);
+	getchar_getc();
 	return ch;
 # endif
 #endif
 }
+#endif
 

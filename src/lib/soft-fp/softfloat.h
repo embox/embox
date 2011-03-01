@@ -109,88 +109,93 @@ enum {
  * Routine to raise any or all of the software IEC/IEEE floating-point
  * exception flags.
  */
-void float_raise( int );
+void float_raise(int);
 
 /**
  * Software IEC/IEEE integer-to-floating-point conversion routines.
  */
-float32 int32_to_float32( int );
-float64 int32_to_float64( int );
+float32 int32_to_float32(int);
+float64 int32_to_float64(int);
 
 /**
  * Software IEC/IEEE single-precision conversion routines.
  */
-extern int float32_to_int32( float32 );
-extern int float32_to_int32_round_to_zero( float32 );
-extern float64 float32_to_float64( float32 );
+extern int float32_to_int32(float32);
+extern int float32_to_int32_round_to_zero(float32);
+extern float64 float32_to_float64(float32);
 
 /**
  * Software IEC/IEEE single-precision operations.
  */
-extern float32 float32_round_to_int( float32 );
-extern float32 float32_add( float32, float32 );
-extern float32 float32_sub( float32, float32 );
-extern float32 float32_mul( float32, float32 );
-extern float32 float32_div( float32, float32 );
-extern float32 float32_rem( float32, float32 );
-extern float32 float32_sqrt( float32 );
-extern flag float32_eq( float32, float32 );
-extern flag float32_le( float32, float32 );
-extern flag float32_lt( float32, float32 );
-extern flag float32_eq_signaling( float32, float32 );
-extern flag float32_le_quiet( float32, float32 );
-extern flag float32_lt_quiet( float32, float32 );
-extern flag float32_is_signaling_nan( float32 );
+extern float32 float32_round_to_int(float32);
+extern float32 float32_add(float32, float32);
+extern float32 float32_sub(float32, float32);
+extern float32 float32_mul(float32, float32);
+extern float32 float32_div(float32, float32);
+extern float32 float32_rem(float32, float32);
+extern float32 float32_sqrt(float32);
+extern flag float32_eq(float32, float32);
+extern flag float32_le(float32, float32);
+extern flag float32_lt(float32, float32);
+extern flag float32_eq_signaling(float32, float32);
+extern flag float32_le_quiet(float32, float32);
+extern flag float32_lt_quiet(float32, float32);
+extern flag float32_is_signaling_nan(float32);
 
 /**
  * Software IEC/IEEE double-precision conversion routines.
  */
-extern int float64_to_int32( float64 );
-extern int float64_to_int32_round_to_zero( float64 );
-extern float32 float64_to_float32( float64 );
+extern int float64_to_int32(float64);
+extern int float64_to_int32_round_to_zero(float64);
+extern float32 float64_to_float32(float64);
 
 /**
  * Software IEC/IEEE double-precision operations.
  */
-extern float64 float64_round_to_int( float64 );
-extern float64 float64_add( float64, float64 );
-extern float64 float64_sub( float64, float64 );
-extern float64 float64_mul( float64, float64 );
-extern float64 float64_div( float64, float64 );
-extern float64 float64_rem( float64, float64 );
-extern float64 float64_sqrt( float64 );
-extern flag float64_eq( float64, float64 );
-extern flag float64_le( float64, float64 );
-extern flag float64_lt( float64, float64 );
-extern flag float64_eq_signaling( float64, float64 );
-extern flag float64_le_quiet( float64, float64 );
-extern flag float64_lt_quiet( float64, float64 );
-extern flag float64_is_signaling_nan( float64 );
+extern float64 float64_round_to_int(float64);
+extern float64 float64_add(float64, float64);
+extern float64 float64_sub(float64, float64);
+extern float64 float64_mul(float64, float64);
+extern float64 float64_div(float64, float64);
+extern float64 float64_rem(float64, float64);
+extern float64 float64_sqrt(float64);
+extern flag float64_eq(float64, float64);
+extern flag float64_le(float64, float64);
+extern flag float64_lt(float64, float64);
+extern flag float64_eq_signaling(float64, float64);
+extern flag float64_le_quiet(float64, float64);
+extern flag float64_lt_quiet(float64, float64);
+extern flag float64_is_signaling_nan(float64);
 
 /**
  * Primitive arithmetic functions, including multi-word arithmetic, and
  * division and square root approximations.  (Can be specialized to target if
  * desired.)
  */
-extern void shift32RightJamming( bits32 a, int16 count, bits32 *zPtr);
-extern void shift64Right(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
-extern void shift64RightJamming(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
-extern void shift64ExtraRightJamming( bits32 a0, bits32 a1, bits32 a2, int16 count,
-			    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
-extern void shortShift64Left(bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr);
+extern void shift32RightJamming(bits32 a, int16 count, bits32 *zPtr);
+extern void shift64Right(bits32 a0, bits32 a1, int16 count,
+				bits32 *z0Ptr, bits32 *z1Ptr);
+extern void shift64RightJamming(bits32 a0, bits32 a1, int16 count,
+				bits32 *z0Ptr, bits32 *z1Ptr);
+extern void shift64ExtraRightJamming(bits32 a0, bits32 a1, bits32 a2,
+		int16 count, bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
+extern void shortShift64Left(bits32 a0, bits32 a1, int16 count,
+				    bits32 *z0Ptr, bits32 *z1Ptr);
 extern void shortShift96Left(bits32 a0, bits32 a1, bits32 a2, int16 count,
 		    	    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
-extern void add64(bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
-extern void add96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1, bits32 b2,
-	    		    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
-extern void sub64(bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
-extern void sub96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1, bits32 b2,
-				    bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
+extern void add64(bits32 a0, bits32 a1, bits32 b0, bits32 b1,
+				    bits32 *z0Ptr, bits32 *z1Ptr);
+extern void add96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1,
+		bits32 b2, bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
+extern void sub64(bits32 a0, bits32 a1, bits32 b0,
+				    bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr);
+extern void sub96(bits32 a0, bits32 a1, bits32 a2, bits32 b0, bits32 b1,
+			bits32 b2, bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr);
 extern void mul32To64(bits32 a, bits32 b, bits32 *z0Ptr, bits32 *z1Ptr);
 extern void mul64By32To96(bits32 a0, bits32 a1, bits32 b, bits32 *z0Ptr,
 				bits32 *z1Ptr, bits32 *z2Ptr);
 extern void mul64To128(bits32 a0, bits32 a1, bits32 b0, bits32 b1,
-					bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr, bits32 *z3Ptr);
+		bits32 *z0Ptr, bits32 *z1Ptr, bits32 *z2Ptr, bits32 *z3Ptr);
 extern bits32 estimateDiv64To32(bits32 a0, bits32 a1, bits32 b);
 extern bits32 estimateSqrt32(int16 aExp, bits32 a);
 extern int8 countLeadingZeros32(bits32 a);

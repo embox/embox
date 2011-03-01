@@ -25,7 +25,7 @@ static struct thread *minus_thread;
 static struct thread *mult_thread;
 static struct thread *natural_thread;
 
-EMBOX_TEST(run_test);
+EMBOX_TEST(run);
 
 /**
  * Writes "+".
@@ -68,7 +68,7 @@ static void natural_run(void) {
 	}
 }
 
-static int run_test() {
+static int run(void) {
 	TRACE("\n");
 
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);

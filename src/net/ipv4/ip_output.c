@@ -22,7 +22,7 @@ void __init ip_init(void) {
 /* Generate a checksum for an outgoing IP datagram. */
 inline static void ip_send_check(iphdr_t *iph) {
 	iph->check = 0;
-	iph->check = ptclbsum((void*)iph, IP_HEADER_SIZE(iph));
+	iph->check = ptclbsum((void *) iph, IP_HEADER_SIZE(iph));
 }
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
@@ -63,7 +63,7 @@ int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
-	if(sk->sk.sk_type != SOCK_RAW) {
+	if (sk->sk.sk_type != SOCK_RAW) {
 		build_ip_packet(sk, skb);
 		//skb->len += IP_HEADER_SIZE;
 	}
@@ -76,7 +76,7 @@ void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
 			sk_buff_t *skb, unsigned int len) {
 	skb->nh.iph->saddr = saddr;
 	skb->nh.iph->daddr = daddr;
-	skb->nh.iph->id ++;
+	skb->nh.iph->id++;
 	skb->nh.iph->frag_off = IP_DF;
 	ip_send_check(skb->nh.iph);
 	ip_queue_xmit(skb, 0);

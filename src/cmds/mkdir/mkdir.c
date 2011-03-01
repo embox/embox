@@ -19,8 +19,6 @@ static const char *man_page =
 DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 static int exec(int argsc, char **argsv) {
-	char *path;
-
 	int nextOption;
 	getopt_init();
 	do {
@@ -34,12 +32,11 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
-	if(argsc > 1) {
-		path = argsv[argsc - 1];
+	if (argsc > 1) {
+		vfs_add_path(argsv[argsc - 1], NULL);
 	}
 
-	vfs_add_path(path, NULL);
 	return 0;
 }

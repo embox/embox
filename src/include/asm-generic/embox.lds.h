@@ -1,5 +1,5 @@
 /*
- * This file is part of EMBOX.
+ * This file is part of Embox.
  */
 
 /**
@@ -34,7 +34,7 @@
 	*(.rodata*)                    \
 	*(.const)                      \
 	                               \
-	*(SORT(.array_diffuse.*.rodata)) \
+	*(SORT(.array_spread.*.rodata)) \
 	                               \
 	ALIGNMENT();                   \
 	__mods_start = . ;             \

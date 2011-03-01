@@ -9,7 +9,6 @@
 #ifndef DRIVER_H_
 #define DRIVER_H_
 
-#include <kernel/mm/kmalloc.h>
 #include <kernel/irq.h>
 #include <sys/types.h>
 #include <stddef.h>
@@ -30,7 +29,8 @@ typedef struct io_context 	io_context_t;
 #endif
 
 /**
- * this interface for char device will not support fseek (call ioctl with some argument)
+ * this interface for char device will not support fseek
+ * (call ioctl with some argument)
  * but it may be common interface for all devices
  */
 typedef struct device_ops {
@@ -66,26 +66,37 @@ struct io_context {
  * device information, that accesiable for kernel
  */
 struct device {
-	const char       *desc;		/* char description of device */
-	device_flags     flags;		/* some flag, allows read/write or some operations? */
+	/* char description of device */
+	const char       *desc;
+	/* some flag, allows read/write or some operations? */
+	device_flags     flags;
 #ifdef CONFIG_DEV_IO_CONTEXT
-	io_context_t     ioc;		/* in/out context */
+	/* in/out context */
+	io_context_t     ioc;
 #endif
-	driver_t         *driver;	/* driver, that controlled its device */
-	size_t           private_s; 	/* description of private data */
+	/* driver, that controlled its device */
+	driver_t         *driver;
+	/* description of private data */
+	size_t           private_s;
 	void             *private;
 };
 
 /**
  * description of device's drivers
- * generate by kernel on stage of registry driver in system. Macross EMBOX_DRIVER?
+ * generate by kernel on stage of registry driver in system.
+ * Macross EMBOX_DRIVER?
  */
 struct driver {
-	const char      *name;		/* name of driver */
-	device_ops_t    ops;		/* interface of device, that controlled by this driver */
-	driver_flags    flags;		/* some flag of driver */
-	size_t 	        private_s;	/* size of private data */
-	void            *private;	/* private data */
+	/* name of driver */
+	const char      *name;
+	/* interface of device, that controlled by this driver */
+	device_ops_t    ops;
+	/* some flag of driver */
+	driver_flags    flags;
+	/* size of private data */
+	size_t 	        private_s;
+	/* private data */
+	void            *private;
 
 	/**
 	 * init of driver, allocate memory and other
@@ -113,27 +124,29 @@ struct driver {
 /* control of devices from driver */
 
 /**
- * allocate memory for device, generate integer descriptor, set some default settings
- * io_context was set by kernel probably with /dev/null
+ * allocate memory for device, generate integer descriptor,
+ * set some default settings io_context was set by kernel
+ * probably with /dev/null
  */
-device_t *device_create(driver_t *this, const char *name, device_flags flags, size_t private_s);
+extern device_t *device_create(driver_t *this, const char *name,
+			device_flags flags, size_t private_s);
 
 /** free memory */
-int device_destroy(device_t *dev);
+extern int device_destroy(device_t *dev);
 
 /**
  * select device by description string (devFS?)
  * if can't find device, return /dev/null
  */
-device_desc device_select(const char *desc);
+extern device_desc device_select(const char *desc);
 
 /* shared device's interface */
-int device_open  (device_desc dev, int mode);
-int device_close (device_desc dev);
-int device_read  (device_desc dev, char *buf, size_t n);
-int device_write (device_desc dev, char *buf, size_t n);
-int device_ioctl (device_desc dev, io_cmd c, void *arg);
-int device_devctl(device_desc dev, device_cmd c, void *arg);
+extern int device_open  (device_desc dev, int mode);
+extern int device_close (device_desc dev);
+extern int device_read  (device_desc dev, char *buf, size_t n);
+extern int device_write (device_desc dev, char *buf, size_t n);
+extern int device_ioctl (device_desc dev, io_cmd c, void *arg);
+extern int device_devctl(device_desc dev, device_cmd c, void *arg);
 
 /* IOCTL options */
 #define IOCTLR_UNKNOW_OPERATION	0x0001

@@ -14,7 +14,7 @@
 #include <net/inetdevice.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <embox/unit.h>
@@ -132,8 +132,8 @@ net_device_t *dev_getbyhwaddr(unsigned short type, char *ha) {
 static void print_packet (sk_buff_t *skb) {
 	size_t i, j;
 	printf("pack:\n");
-	for(i = 0; i < skb->len; i += 16) {
-		for(j = 0; j < 16; j += 2) {
+	for (i = 0; i < skb->len; i += 16) {
+		for (j = 0; j < 16; j += 2) {
 			printf("%02x%02x ",
 				(uint8_t)skb->data[i + j],
 				(uint8_t)skb->data[i + j + 1]);

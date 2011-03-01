@@ -14,8 +14,8 @@
 
 extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
 
-int display_x;
-int display_y;
+static int display_x;
+static int display_y;
 
 __u8 font[N_CHARS][FONT_WIDTH] = {
 /* 0x00 */ {0x3E, 0x36, 0x2A, 0x36, 0x3E},
@@ -151,71 +151,130 @@ __u8 font[N_CHARS][FONT_WIDTH] = {
 void display_char(int c) {
 	__u8 *b;
 	const __u8 *f, *fend;
+	size_t i, j;
 
-	if ((unsigned int) c < N_CHARS &&
-	    (unsigned int) display_x < DISPLAY_CHAR_WIDTH &&
-	    (unsigned int) display_y < DISPLAY_CHAR_DEPTH) {
+	if (c == '\n') {
+		display_x = 0;
+		display_y++;
+	}
+
+	if ((unsigned int) display_x == DISPLAY_CHAR_WIDTH) {
+		display_x = 0;
+		display_y++;
+	};
+
+	if ((unsigned int) display_y == DISPLAY_CHAR_DEPTH) {
+		for (i = 0; i < NXT_LCD_DEPTH - 1; i++) {
+			for (j = 0; j < NXT_LCD_WIDTH; j++) {
+				display_buffer[i][j] = display_buffer[i + 1][j];
+			}
+		}
+		display_y = DISPLAY_CHAR_DEPTH - 1;
+		for (j = 0; j < NXT_LCD_WIDTH; j++) {
+			display_buffer[display_y][j] = 0;
+		}
+	};
+
+	if ((unsigned int) c < N_CHARS) {
 		b = &display_buffer[display_y][display_x * CELL_WIDTH];
 		f = font[c];
 		fend = f + FONT_WIDTH;
 
 		do {
 			*b++ = *f++;
-		} while( f < fend);
+		} while (f < fend);
 	}
+	display_x++;
+	nxt_lcd_force_update();
 }
 
 void display_string(const char *str) {
 	while (*str) {
 		if (*str != '\n') {
 			display_char(*str);
-			display_x++;
 		} else {
 			display_x = 0;
 			display_y++;
 		}
 		str++;
 	}
+}
 
+void display_clear_screen(void) {
+	memset((void *) display_buffer, 0x0, NXT_LCD_WIDTH * NXT_LCD_DEPTH);
+	display_x = 0;
+	display_y = 0;
 	nxt_lcd_force_update();
 }
 
-void display_clear_screan(void) {
-	memset((void *)display_buffer, 0x0, NXT_LCD_WIDTH*NXT_LCD_DEPTH);
-	nxt_lcd_force_update();
-
-}
-
-#if 0
-int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t heigth, uint8_t *buff){
-	uint8_t i,j;
-   	uint16_t buf_pos = 0;
-	for (i = x; i < min(NXT_LCD_WIDTH, x + width); i++) {
-		for (j = y; j < min(NXT_LCD_DEPTH, y + heigth); j++) {
-			display_buffer[i][j] = buff[buf_pos++];
-		}
-	}
-	nxt_lcd_force_update();
-	return 0;
-}
-#else
-int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *buff){
-   	uint32_t x_offset, y_offset;
+int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *buff) {
+   	uint32_t x_offset, y_offset, i, j, k;
    	y *= 8;
    	width *= 8;
-   	if((x > NXT_LCD_WIDTH) || (y > 64)) {
+   	if ((x > NXT_LCD_WIDTH) || (y > 64)) {
    		return 0;
    	}
 
    	width = min((NXT_LCD_WIDTH - x), width);
    	height = min((64 - y), height);
 
-   	for(y_offset = 0; y_offset < 8; y_offset += 8) {
-		for(x_offset = 0; x_offset < width; x_offset ++) {
-   			display_buffer[(y + y_offset) >> 3][x + x_offset] = buff[(y_offset >> 3) + x_offset];
+   	for (y_offset = 0; y_offset < height; y_offset += 8) {
+		for (x_offset = 0; x_offset < width; x_offset++) {
+			i = (y + y_offset) >> 3;
+			j = x + x_offset;
+			k = (y_offset >> 3) + x_offset;
+   			display_buffer[i][j] = buff[k];
 		}
    	}
 	nxt_lcd_force_update();
 	return 0;
 }
-#endif
+
+/* q == 1 - color is black */
+
+int display_part(uint8_t x, uint8_t y, uint8_t part_of_byte, uint8_t q) {
+	uint8_t i;
+	i = (1 << part_of_byte) - 1;
+	display_buffer[y][x] = (q == 1 ? ~i : i);
+	return 0;
+}
+
+int display_little_field(uint8_t x, uint8_t y, uint8_t height, uint8_t offset,  uint8_t q) {
+	uint8_t i;
+	i = ((1 << height) - 1) << offset;
+	display_buffer[y][x] = (q == 1 ? i : ~i );
+	return 0;
+}
+
+
+int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q) {
+	uint32_t x_offset, y_offset;
+	uint8_t up_offset, up_height, up_whole_offset, whole_field_y, under_height, x_fill, y_fill;
+	uint8_t t;
+	up_whole_offset = y >> 3;
+	up_offset = y % 8;
+	up_height = 8 - up_offset;
+	if (height <= up_height) {
+		for (x_offset = 0; x_offset < width; x_offset++) {
+			x_fill = x + x_offset;
+			display_little_field(x_fill, up_whole_offset, height, up_offset, q);
+		}
+	} else {
+		whole_field_y = (height - up_height) >> 3;
+		under_height = (height - up_height) % 8;
+		for (x_offset = 0; x_offset < width; x_offset++) {
+			x_fill = x + x_offset;
+			display_part(x_fill, up_whole_offset, up_offset, q);
+			for (y_offset = 0; y_offset < whole_field_y; y_offset++) {
+				y_fill = up_whole_offset+1 + y_offset;
+				display_buffer[y_fill][x_fill] = (q == 0 ? 0 : 0xFF);
+			}
+			if (under_height != 0) {
+				t = (q + 1) % 2;
+				display_part(x_fill, up_whole_offset+whole_field_y+1, under_height, t);
+			}
+		}
+	}
+	nxt_lcd_force_update();
+	return 0;
+}

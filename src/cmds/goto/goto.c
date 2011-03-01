@@ -20,19 +20,19 @@ DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
 
 typedef void (*IMAGE_ENTRY)(void);
 
-static void go_to(unsigned int addr) {
-	interrupt_nr_t interrupt_nr;
+static void go_to(uint32_t addr) {
+	interrupt_nr_t intr_nr;
 	printf("Try goto 0x%08X\n", addr);
 	ipl_disable();
-	for (interrupt_nr = 0; interrupt_nr < INTERRUPT_NRS_TOTAL; ++interrupt_nr) {
-		interrupt_disable(interrupt_nr);
+	for (intr_nr = 0; intr_nr < INTERRUPT_NRS_TOTAL; ++intr_nr) {
+		interrupt_disable(intr_nr);
 	}
 	((IMAGE_ENTRY)addr)();
 }
 
-static int exec(int argsc, char **argsv){
+static int exec(int argsc, char **argsv) {
 	int nextOption;
-	unsigned int addr = 0;
+	uint32_t addr = 0;
 	getopt_init();
 	do {
 		nextOption = getopt(argsc, argsv, "a:h");
@@ -49,14 +49,14 @@ static int exec(int argsc, char **argsv){
 				go_to(addr);
 				return 0;
 			}
-			LOG_ERROR("goto: invalid value \"%s\".\nthe number expected.\n", optarg);
+			LOG_ERROR("goto: invalid value \"%s\".", optarg);
 			return -1;
 		case -1:
 			break;
 		default:
 			return 0;
 		}
-	} while(-1 != nextOption);
+	} while (-1 != nextOption);
 
 	return 0;
 }

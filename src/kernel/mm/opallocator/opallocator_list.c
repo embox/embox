@@ -30,7 +30,7 @@ extern char _heap_end;
 // CONFIG_PAGE_SIZE
 
 #ifndef PAGE_QUANTITY
-# define PAGE_QUANTITY ( ((size_t) (&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE )
+#define PAGE_QUANTITY (((size_t)(&_heap_end - &_heap_start) ) / CONFIG_PAGE_SIZE)
 #endif
 
 int page_alloc_hasinit = 0;
@@ -45,19 +45,19 @@ static pmark_t *cmark_p = (pmark_t *) &_heap_start;
 #endif
 
 #ifdef EXTENDED_TEST
-pmark_t* get_cmark_p() {
+pmark_t* get_cmark_p(void) {
 	return cmark_p;
 }
 #endif
 
 #if 0
 /* defragmentation pages */
-static void page_defrag(void ) {
+static void page_defrag(void) {
 }
 #endif
 
 /* copy mark structure */
-static pmark_t *copy_mark( pmark_t *from , pmark_t *to ) {
+static pmark_t *copy_mark(pmark_t *from, pmark_t *to) {
 	to->psize = from->psize;
 	to->pnext = from->pnext;
 	to->pprev = from->pprev;
@@ -76,7 +76,7 @@ int page_alloc_init(void) {
 /* allocate page */
 void *opalloc(void) {
 	/* size_t psize = 1; */
-	pmark_t *pcur,*tmp,*tt;
+	pmark_t *pcur, *tmp, *tt;
 
 	if (!page_alloc_hasinit) {
 		page_alloc_init();
@@ -100,14 +100,15 @@ void *opalloc(void) {
 	/* check finded block */
 
 	/* change list and return value */
-	if (pcur->psize > 1 ) { /* 1 := psize */
-		tt = (pmark_t *) ((unsigned long) pcur + (unsigned long) CONFIG_PAGE_SIZE *
-			(unsigned long) 1);  /* 1:= psize */
+	if (pcur->psize > 1) { /* 1 := psize */
+		tt = (pmark_t *) ((unsigned long) pcur +
+			(unsigned long) CONFIG_PAGE_SIZE * (unsigned long) 1);
+		/* 1:= psize */
 		pcur->psize -= 1; /* 1 := psize */
 		tmp = cmark_p->pnext;
 		cmark_p->pprev->pnext = tt;
 		tmp->pprev = tt;
-		cmark_p = copy_mark( pcur , tt );
+		cmark_p = copy_mark(pcur, tt);
 		return pcur;
 	} else {/* psize =: 1 == pcur->psize */
 		if (pcur->pnext == pcur) { /* it's last block */

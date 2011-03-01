@@ -15,7 +15,7 @@
 int fgetc(FILE f) {
 	char ch;
 	int ret;
-	if (!(ret=device_read( f , &ch , sizeof(char) ))) {
+	if (!(ret = device_read(f, &ch, sizeof(char)))) {
 		return ch;
 	} else {
 		return -1;
@@ -23,6 +23,6 @@ int fgetc(FILE f) {
 }
 
 int fungetc(FILE f, int ch) {
-	return device_write( f , &ch , sizeof(char) );
+	return device_write(f, &ch, sizeof(char));
 }
 #endif

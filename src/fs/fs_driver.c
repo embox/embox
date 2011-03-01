@@ -5,11 +5,16 @@
  * @author Anton Bondarev
  */
 
-#include <fs/fs.h>
 #include <linux/init.h>
 #include <embox/kernel.h>
 #include <embox/unit.h>
 #include <lib/list.h>
+#include <fs/fs.h>
+
+ARRAY_SPREAD_DEF(const file_system_driver_t *, __fs_drivers_registry);
+
+
+/*fs drivers pool*/
 
 typedef struct fs_driver_head {
 	struct list_head     *next;
@@ -26,7 +31,7 @@ EMBOX_UNIT_INIT(unit_init);
 
 static int __init unit_init(void) {
 	size_t i;
-	for(i = 0; i < ARRAY_SIZE(pool); i ++) {
+	for (i = 0; i < ARRAY_SIZE(pool); i++) {
 		list_add((struct list_head *)&pool[i], &free_list);
 	}
 	return 0;
@@ -34,7 +39,7 @@ static int __init unit_init(void) {
 
 file_system_driver_t *alloc_fs_drivers(void) {
 	file_system_driver_t *drv;
-	if(list_empty(&free_list)) {
+	if (list_empty(&free_list)) {
 		return NULL;
 	}
 	drv = &(((fs_driver_head_t *)(free_list.next))->drv);
@@ -45,9 +50,9 @@ file_system_driver_t *alloc_fs_drivers(void) {
 }
 
 void free_fs_drivers(file_system_driver_t *fs_drv) {
-	if(NULL == fs_drv) {
+	if (NULL == fs_drv) {
 		return;
 	}
-	list_add((struct list_head *)drv_to_head(fs_drv), &free_list);
+	list_add((struct list_head *) drv_to_head(fs_drv), &free_list);
 }
 
