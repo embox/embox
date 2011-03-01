@@ -101,7 +101,7 @@ int iterminal_unload(driver_t *drv) {
 }
 
 /*
- * interface for registry in embox as module (FIXME while don't exist driver's framework)
+ * interface for registry in Embox as module (FIXME while don't exist driver's framework)
  *
  * FIXME rewrite all thease functions for their real need's
  */

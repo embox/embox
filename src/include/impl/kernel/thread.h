@@ -60,7 +60,7 @@ struct thread {
 	int heap_index;
 	/**
 	 * For each priority there is a state.
-	 * We can start a thread iff his run_count equals to
+	 * We can start a thread if his run_count equals to
 	 * priority_state of his priority or there is no threads
 	 * with the same priority and "right" run_count.
 	 * Is needed for heap_scheduler.

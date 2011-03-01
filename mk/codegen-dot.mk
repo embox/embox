@@ -18,7 +18,7 @@ mod_package = $(basename $(mod))
 mod_name = $(patsubst .%,%,$(suffix $(mod)))
 
 options = ratio=compress; size="50,50"; concentrate=true; ranksep="1.0 equal";
-generate_dot = $(strip \ndigraph EMBOX { \
+generate_dot = $(strip \ndigraph Embox { \
   $(options)\
   $(foreach package,$(sort $(basename $(GRAPH))), \
     \nsubgraph "cluster.$(package)" { \

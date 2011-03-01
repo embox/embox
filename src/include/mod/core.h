@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief EMBOX Dependency Injection core API
+ * @brief Embox Dependency Injection core API
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov

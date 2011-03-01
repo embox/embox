@@ -1,8 +1,9 @@
 /**
  * @file
- * @author Fedor Burdun
+ * @brief /dev/zero char device and example for write driver
+ *
  * @date 08.07.2010
- * @brief /dev/zero char device and example for write driver in OS "EMBOX"
+ * @author Fedor Burdun
  */
 
 #include <embox/unit.h>
@@ -55,7 +56,7 @@ int zero_devctl(device_t *dev, device_cmd c, void *arg) {
 }
 
 /*
- * interface for registry in embox as driver
+ * interface for registry in Embox as driver
  */
 int zero_load(driver_t *drv) {
 	drv->name       = "Zero Device Driver";
@@ -84,7 +85,7 @@ int zero_unload(driver_t *drv) {
 }
 
 /*
- * interface for registry in embox as module (while don't exist driver's framework)
+ * interface for registry in Embox as module (while don't exist driver's framework)
  */
 #ifdef START_AS_MOD
 /*

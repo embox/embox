@@ -152,7 +152,7 @@ int pipe_devctl(device_t *dev, device_cmd c, void *arg) {
 
 
 /*
- * interface for registry in embox as driver
+ * interface for registry in Embox as driver
  */
 int pipe_load(driver_t *drv) {
 	drv->name       = "Pipe Device Driver";
@@ -189,7 +189,7 @@ int pipe_unload(driver_t *drv) {
 }
 
 /*
- * interface for registry in embox as module (while don't exist driver's framework)
+ * interface for registry in Embox as module (while don't exist driver's framework)
  */
 #ifdef START_AS_MOD
 /*

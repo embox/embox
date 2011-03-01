@@ -1,5 +1,5 @@
 /*
- * EMBOX C PreProcessor-based Configuration file
+ * Embox C PreProcessor-based Configuration file
  *
  * Author: Eldar Abusalimov
  */

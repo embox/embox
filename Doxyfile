@@ -3,7 +3,7 @@
 #---------------------------------------------------------------------------
 
 DOXYFILE_ENCODING = UTF-8
-PROJECT_NAME = EMBOX
+PROJECT_NAME = Embox
 PROJECT_NUMBER = 0.1.9
 OUTPUT_DIRECTORY = build/docs
 CREATE_SUBDIRS = NO

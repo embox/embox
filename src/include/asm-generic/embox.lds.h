@@ -1,5 +1,5 @@
 /*
- * This file is part of EMBOX.
+ * This file is part of Embox.
  */
 
 /**

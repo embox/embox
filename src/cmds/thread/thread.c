@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Prints threads statistic for EMBOX
+ * @brief Prints threads statistic for Embox
  *
  * @date 2 Dec 2010
  * @author Gleb Efimov
@@ -15,7 +15,7 @@
 #include <assert.h>
 
 #define COMMAND_NAME     "thread"
-#define COMMAND_DESC_MSG "print threads statistic for EMBOX"
+#define COMMAND_DESC_MSG "print threads statistic for Embox"
 #define HELP_MSG         "Usage: thread [-h] [-k <thread id>] [-s]"
 static const char *man_page =
 #include "thread_help.inc"

@@ -33,6 +33,7 @@ static char idle_thread_stack[THREAD_STACK_SIZE];
 
 /** Pool, containing threads. */
 struct thread __thread_pool[__THREAD_POOL_SZ];
+
 /** A mask, which shows, what places for new threads are free. */
 static int thread_pool_mask[__THREAD_POOL_SZ];
 

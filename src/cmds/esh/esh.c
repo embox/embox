@@ -1,7 +1,7 @@
 /**
  * @file esh.c
  *
- * @brief simple embox shell
+ * @brief simple Embox shell
  *
  * @date 13.11.2010
  * @author Fedor Burdun

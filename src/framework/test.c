@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief EMBOX test framework implementation.
+ * @brief Embox test framework implementation.
  *
  * @date Dec 4, 2008
  * @author Anton Bondarev

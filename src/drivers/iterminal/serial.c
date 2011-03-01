@@ -39,7 +39,7 @@ int serial_devctl(device_t *dev, device_cmd c, void *arg) {
 	return 0;
 }
 /*
- * register in embox as a driver
+ * register in Embox as a driver
  */
 int serial_load(driver_t *drv) {
 	drv->name       = "Serial Char driver";
@@ -64,7 +64,7 @@ int serial_unload(driver_t *drv) {
 	return -1;
 }
 /*
- * register in embox as a module (FIXME while don't exist driver's framework)
+ * register in Embox as a module (FIXME while don't exist driver's framework)
  */
 static int serial_start(void) {
 	return -1;

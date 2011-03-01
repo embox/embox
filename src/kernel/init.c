@@ -62,7 +62,7 @@ static int init(void) {
 	int ret = 0;
 	const runlevel_nr_t target_level = RUNLEVEL_NRS_TOTAL - 1;
 
-	prom_printf("EMBOX kernel start\n");
+	prom_printf("Embox kernel start\n");
 
 	if (0 != (ret = runlevel_set(target_level))) {
 		prom_printf("Failed to get into level %d, current level %d\n",

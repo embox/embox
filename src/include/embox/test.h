@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief EMBOX testing framework.
+ * @brief Embox testing framework.
  * @details Test is a simple function which examines some parts of hardware or
  * software. Test can be either passed or failed (framework uses return value
  * of test function to determine the test result).

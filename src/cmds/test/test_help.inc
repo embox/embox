@@ -1,5 +1,5 @@
 "NAME\n"
-"\ttest - works with EMBOX testing framework\n"
+"\ttest - works with Embox testing framework\n"
 "SYNOPSIS\n"
 "\ttest [-h] [-n <test_num>] [-t <test_name, string>] [-i]\n"
 "DESCRIPTION\n"
