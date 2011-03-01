@@ -9,8 +9,20 @@ __core_object_mk := 1
 include util/var/filter.mk
 
 # Ex:
-error.message := unknown message
-error.report() = $(info $(call .get,message))
+define class error
+  $.message := unknown message
+  $.init(1)  = $(if $1,$(call $.set,message,$1))
+  $.report() = $(info $($.message))
+endef
+
+define class entity
+  $.error := $(null)
+  $.init() = $(call $.set,error,$(call new,error,Bad entity))
+  $.do()   = $(call $($.error),report)
+endef
+
+
+__class_method_$$_error_$$_report
 
 # 1. clazz
 # ret: id
