@@ -1,13 +1,8 @@
 
 $_MODS += esh
-$_SRCS-esh += esh.c #../shell/shell_command.c
-#$_DEPS-esh += core.kernel.printk #core.kernel.job embox.hal.context
-$_DEPS-esh += core.kernel.job embox.hal.context
+$_SRCS-esh += esh.c
 $_DEPS-esh += core.kernel.threads.scheduler
 $_DEPS-esh += core.kernel.threads.core
-$_DEPS-esh += shell_command
-
-#$_CPPFLAGS-shell += -I$(AUTOCONF_DIR)
-#$($_SELFDIR)/esh.c : $(AUTOCONF_DIR)/start_script.inc
+$_USES-esh += libframework.a
 
 

@@ -2,7 +2,7 @@
 $_MODS += help
 
 $_SRCS-help += *.c
-$_DEPS-help += shell_command
+$_USES-help += libframework.a
 
 $_BRIEF-help = Shows all available commands
 

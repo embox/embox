@@ -9,12 +9,11 @@
 
 #include <shell_command.h>
 #include <string.h>
-#include <kernel/job.h> //FIXME
 
 int shell_command_exec(SHELL_COMMAND_DESCRIPTOR *descriptor, int argsc,
 		char **argsv) {
 	if ((NULL != descriptor) && (NULL != descriptor->exec)) {
-		return job_exec(descriptor->exec, argsc, argsv);
+		return descriptor->exec(argsc, argsv);
 	}
 	LOG_ERROR("Error shell command: wrong command descriptor\n");
 	return -1;
