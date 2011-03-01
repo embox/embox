@@ -109,16 +109,7 @@
 /* Scalar foreach iterations. */
 
 #define __array_foreach(element, array, size) \
-		__array_generic_foreach(element, array, \
-				__array_foreach_cond, size)
-#define __array_foreach_cond(element, array, ptr, size) \
-	ptr < (array) + (size)
-
-#define __array_terminated_foreach(element, array, terminator) \
-		__array_generic_foreach(element, array, \
-				__array_terminated_foreach_cond, terminator)
-#define __array_terminated_foreach_cond(element, array, ptr, terminator) \
-	(element) != (terminator)
+		__array_range_foreach(element, array, (array) + (size))
 
 #define __array_static_foreach(element, array) \
 		__array_foreach(element, array, ARRAY_SIZE(array))
@@ -126,22 +117,39 @@
 #define __array_diffuse_foreach(element, array) \
 		__array_foreach(element, array, ARRAY_DIFFUSE_SIZE(array))
 
-#define __array_cond_foreach(element, array, condition) \
-		__array_generic_foreach(element, array, \
-				__array_cond_foreach_cond, condition)
-#define __array_cond_foreach_cond(element, array, ptr, condition) \
-	(condition)
+#define __array_range_foreach(element, array_begin, array_end) \
+		__array_range_foreach__(element, array_begin, array_end, \
+				MACRO_GUARD(__array_elem_ptr), MACRO_GUARD(__array_end))
 
-#define __array_generic_foreach(element, array, cond, cond_arg) \
-		__array_generic_foreach__(element, array, cond, cond_arg, \
-				MACRO_GUARD(__array_foreach_element_ptr))
+#define __array_range_foreach__(element, array_begin, array_end, _ptr, _end) \
+	for (typeof(element) *_ptr = (array_begin),      \
+				*_end = __extension__ ({             \
+					(element) = *_ptr; (array_end);  \
+				});                                  \
+			_ptr < _end;                             \
+			(element) = *(++_ptr))
 
-#define __array_generic_foreach__(element, array, cond, cond_arg, ptr) \
-	for(typeof(element) *ptr = __extension__ ({    \
-					(element) = *(array); (array); \
-				});                                \
-			(cond(element, array, ptr, cond_arg)); \
-			(element) = *(++ptr))
+#define __array_terminated_foreach(element, array, terminator) \
+		__array_terminated_foreach__(element, array, terminator, \
+				MACRO_GUARD(__array_elem_ptr), MACRO_GUARD(__array_term))
+
+#define __array_terminated_foreach__(element, array, terminator, _ptr, _term) \
+	for (typeof(element) *_ptr = (array),            \
+				_term = (terminator);                \
+			((element) = *_ptr) != _term;            \
+			++_ptr)
+
+#define __array_cond_foreach(element, array, cond) \
+		__array_cond_foreach__(element, array, cond, \
+				MACRO_GUARD(__array_elem_ptr))
+
+#define __array_cond_foreach__(element, array, cond, _ptr) \
+	for (typeof(element) *_ptr = __extension__ ({          \
+					typeof(element) *_ptr##_tmp = (array); \
+					(element) = *_ptr##_tmp; _ptr##_tmp;   \
+				});                                        \
+			(cond);                                        \
+			(element) = *(++_ptr))
 
 /* Pointer foreach iterations. */
 

@@ -137,7 +137,7 @@
 		__ARRAY_DIFFUSE_SIZE_IGNORE_TERMINATING(array_name)
 
 /**
- * Gets the length of the specified array.
+ * Gets the length of the specified @a array.
  * The macro can be used only if the array length is known at the compile-time.
  *
  * @param array
@@ -152,31 +152,118 @@
 #define ARRAY_SIZE(array) \
 		__ARRAY_SIZE(array)
 
+/**
+ * Iterates over the specified @a array of scalar values with given @a size.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one, up to the [@a size - 1]'th element.
+ * @param array
+ *   The array to iterate over.
+ *   Evaluated only once that allows the argument to have side effects.
+ * @param size
+ *   The array size.
+ *   Alike @a array the argument is evaluated only once too.
+ */
 #define array_foreach(element, array, size) \
 		__array_foreach(element, array, size)
 
+/**
+ * Iterates over an array starting at @a array_begin and advancing until
+ * @a array_end is reached.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one.
+ * @param array_begin
+ *   The pointer to start the iteration from.
+ *   Evaluated only once allowing the argument to have side effects.
+ * @param array_end
+ *   The pointer denoting the array bound.
+ *   Alike @a array_begin it is evaluated only once too.
+ */
+#define array_range_foreach(element, array_begin, array_end) \
+		__array_range_foreach(element, array_begin, array_end)
+
+/**
+ * Iterates over the specified @a array of scalar values until the given
+ * @a terminator element is reached.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one.
+ * @param array
+ *   The array to iterate over.
+ *   Evaluated only once that allows the argument to have side effects.
+ * @param terminator
+ *   The terminating element which denotes the end of the array.
+ *   Alike @a array it is evaluated only once too.
+ */
 #define array_terminated_foreach(element, array, terminator) \
 		__array_terminated_foreach(element, array, terminator)
 
+/**
+ * Shorthand version for static arrays with size known at the compile-time.
+ * The same as using #array_foreach() with the size obtained from
+ * #ARRAY_SIZE().
+ *
+ * @param element
+ *   Iteration variable.
+ * @param array
+ *   The array to iterate over.
+ *
+ * @note
+ *   As far as the size of the array is determined using #ARRAY_SIZE(), the
+ *   array must be statically defined/declared.
+ * @see ARRAY_SIZE()
+ */
 #define array_static_foreach(element, array) \
 		__array_static_foreach(element, array)
 
+/**
+ * Shorthand version for diffuse arrays.
+ * The same as using #array_foreach() with a size obtained from
+ * #ARRAY_DIFFUSE_SIZE().
+ *
+ * @param element
+ *   Iteration variable.
+ * @param array
+ *   The array to iterate over. Must be a literal symbol.
+ *
+ * @see ARRAY_DIFFUSE_SIZE()
+ */
 #define array_diffuse_foreach(element, array) \
 		__array_diffuse_foreach(element, array)
 
+/**
+ * The most general approach for iterating over a given array.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one starting from the element pointed by @a array and
+ *   advancing forward until the @a condition becomes @c false.
+ * @param array
+ *   The array to iterate over.
+ *   Evaluated only once allowing the argument to have side effects.
+ * @param condition
+ *   Iteration precondition.
+ */
 #define array_cond_foreach(element, array, condition) \
 		__array_cond_foreach(element, array, condition)
 
-#define array_foreach_ptr(element, array, size) \
-		__array_foreach_ptr(element, array, size)
+#define array_foreach_ptr(element_ptr, array, size) \
+		__array_foreach_ptr(element_ptr, array, size)
 
-#define array_static_foreach_ptr(element, array) \
-		__array_static_foreach_ptr(element, array)
+#define array_range_foreach_ptr(element_ptr, array_begin, array_end) \
+		__array_range_foreach(element_ptr, array_begin, array_end)
 
-#define array_diffuse_foreach_ptr(element, array) \
-		__array_diffuse_foreach_ptr(element, array)
+#define array_static_foreach_ptr(element_ptr, array) \
+		__array_static_foreach_ptr(element_ptr, array)
 
-#define array_cond_foreach_ptr(element, array, condition) \
-		__array_cond_foreach_ptr(element, array, condition)
+#define array_diffuse_foreach_ptr(element_ptr, array) \
+		__array_diffuse_foreach_ptr(element_ptr, array)
+
+#define array_cond_foreach_ptr(element_ptr, array, condition) \
+		__array_cond_foreach_ptr(element_ptr, array, condition)
 
 #endif /* UTIL_ARRAY_H_ */

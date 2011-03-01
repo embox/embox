@@ -72,6 +72,6 @@
 #define MACRO_GUARD(symbol) \
 		__MACRO_GUARD(symbol)
 #define __MACRO_GUARD(symbol) \
-	MACRO_CONCAT(symbol ## __line__, __LINE__)
+	MACRO_CONCAT(symbol ## _l, __LINE__)
 
 #endif /* UTIL_MACRO_H_ */
