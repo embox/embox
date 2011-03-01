@@ -20,7 +20,7 @@
 
 extern const struct test __test_registry[];
 #define __test_foreach(test_ptr) \
-	array_diffuse_foreach_ptr(test_ptr, __test_registry)
+	array_spread_foreach_ptr(test_ptr, __test_registry)
 
 // XXX for struct mod. -- Eldar
 #include <mod/core.h>

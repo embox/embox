@@ -12,7 +12,7 @@
 #include <util/array.h>
 #include <embox/device.h>
 
-ARRAY_DIFFUSE_DEF(const device_module_t, __device_registry);
+ARRAY_SPREAD_DEF(const device_module_t, __device_registry);
 
 static const file_system_driver_t devfs_drv;
 
@@ -28,7 +28,7 @@ static int devfs_mount(void *par) {
 		return 0;/*folder already exist*/
 	}
 
-	for (i = 0; i < ARRAY_DIFFUSE_SIZE(__device_registry); i++) {
+	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); i++) {
 		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
 			devnod->file_info = (void*) __device_registry[i].fops;
 			devnod->fs_type = (file_system_driver_t *) &devfs_drv;

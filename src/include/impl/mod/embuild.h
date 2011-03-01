@@ -34,12 +34,12 @@
 	static const struct mod_package __MOD_PACKAGE(s_package)
 
 #define __MOD_ARRAY_DEF(s_mod, s_array) \
-	ARRAY_DIFFUSE_DEF_TERMINATED( \
+	ARRAY_SPREAD_DEF_TERMINATED( \
 			static const struct mod *, __MOD_ARRAY(s_mod, s_array), NULL)
 
 #define __MOD_ARRAY_ADD(s_mod, s_array, s_mod_entry) \
 	extern const struct mod *__MOD_ARRAY(s_mod, s_array)[]; \
-	ARRAY_DIFFUSE_ADD(__MOD_ARRAY(s_mod, s_array), &__MOD(s_mod_entry))
+	ARRAY_SPREAD_ADD(__MOD_ARRAY(s_mod, s_array), &__MOD(s_mod_entry))
 
 /* Macro API impl. */
 

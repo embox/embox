@@ -51,7 +51,7 @@ typedef struct file_system_driver {
 extern const file_system_driver_t * __fs_drivers_registry[];
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver) \
-		ARRAY_DIFFUSE_ADD(__fs_drivers_registry, &fs_driver)
+		ARRAY_SPREAD_ADD(__fs_drivers_registry, &fs_driver)
 
 /**
  * allocate structure for fs_driver structure

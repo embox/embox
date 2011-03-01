@@ -18,7 +18,7 @@
 #define __EMBOX_TEST(_run) \
 	static int _run(void);                             \
 	static struct test_private __test_private;         \
-	ARRAY_DIFFUSE_ADD_NAMED(__test_registry, __test, { \
+	ARRAY_SPREAD_ADD_NAMED(__test_registry, __test, { \
 		.private = &__test_private,                \
 		.run = _run,                               \
 		.mod = &mod_self                           \

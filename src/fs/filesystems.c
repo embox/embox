@@ -61,7 +61,7 @@ static int __init unit_init(void) {
 	int i;
 
 	init_pool();
-	for (i = 0; i < ARRAY_DIFFUSE_SIZE(__fs_drivers_registry); i++) {
+	for (i = 0; i < ARRAY_SPREAD_SIZE(__fs_drivers_registry); i++) {
 		if (NULL == (head = alloc(
 				(file_system_driver_t *) __fs_drivers_registry[i]))) {
 			return 0;

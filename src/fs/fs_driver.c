@@ -11,7 +11,7 @@
 #include <lib/list.h>
 #include <fs/fs.h>
 
-ARRAY_DIFFUSE_DEF(const file_system_driver_t *, __fs_drivers_registry);
+ARRAY_SPREAD_DEF(const file_system_driver_t *, __fs_drivers_registry);
 
 
 /*fs drivers pool*/
