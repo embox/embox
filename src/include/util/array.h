@@ -204,6 +204,21 @@
 		__array_terminated_foreach(element, array, terminator)
 
 /**
+ * Iterates over the specified @a array of scalar values until @c NULL is
+ * reached.
+ * Shorthand for #array_terminated_foreach() with @c NULL terminating element.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one.
+ * @param array
+ *   The array to iterate over.
+ *   Evaluated only once that allows the argument to have side effects.
+ */
+#define array_nullterm_foreach(element, array) \
+		__array_nullterm_foreach(element, array)
+
+/**
  * Shorthand version for static arrays with size known at the compile-time.
  * The same as using #array_foreach() with the size obtained from
  * #ARRAY_SIZE().

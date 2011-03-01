@@ -129,6 +129,9 @@
 			_ptr < _end;                            \
 			(element) = *(++_ptr))
 
+#define __array_nullterm_foreach(element, array) \
+		__array_terminated_foreach(element, array, (typeof(element)) NULL)
+
 #define __array_terminated_foreach(element, array, terminator) \
 		__array_terminated_foreach__(element, array, terminator, \
 				MACRO_GUARD(__array_elem_ptr), MACRO_GUARD(__array_term))

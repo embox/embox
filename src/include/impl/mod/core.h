@@ -28,8 +28,8 @@ inline static void *mod_data(const struct mod *mod) {
 }
 
 #define __mod_foreach_requires(dep, mod) \
-		array_terminated_foreach(dep, (mod)->requires, NULL)
+		array_nullterm_foreach(dep, (mod)->requires)
 
 #define __mod_foreach_provides(dep, mod) \
-		array_terminated_foreach(dep, (mod)->provides, NULL)
+		array_nullterm_foreach(dep, (mod)->provides)
 

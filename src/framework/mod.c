@@ -79,7 +79,7 @@ static bool mod_deps_satisfied(const struct mod *mod, bool op) {
 		return true;
 	}
 
-	array_terminated_foreach(dep, op ? mod->requires : mod->provides, NULL) {
+	array_nullterm_foreach(dep, op ? mod->requires : mod->provides) {
 		if (!op != !mod_flag_tst(dep, MOD_FLAG_ENABLED)) {
 			return false;
 		}
@@ -95,7 +95,7 @@ static int mod_perform(const struct mod *mod, bool op) {
 		return 0;
 	}
 
-	array_terminated_foreach(dep, op ? mod->requires : mod->provides, NULL) {
+	array_nullterm_foreach(dep, op ? mod->requires : mod->provides) {
 		if (0 != mod_perform(dep, op)) {
 			return -EINTR;
 		}
