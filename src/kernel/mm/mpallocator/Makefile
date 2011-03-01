@@ -1,7 +1,7 @@
-ifdef CONFIG_MPALLOCATOR
 
 $_MODS += mpallocator
-#PACKAGE = embox.hal.mm.mpallocator
+
+ifdef CONFIG_MPALLOCATOR
 
 $_SRCS-mpallocator += $(CONFIG_MPALLOCATOR)
 

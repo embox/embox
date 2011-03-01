@@ -130,7 +130,7 @@ dot: $(GRAPH_PS)
 	@echo 'Dot complete'
 
 create_romfs: build
-	@$(RM) -rv $(ROMFS_DIR)
+	@$(RM) -r $(ROMFS_DIR)
 	@$(MKDIR) $(ROMFS_DIR)
 	$(CP) $(BUILD_DIR)/bin/embox $(ROMFS_DIR)
 	pushd $(ROMFS_DIR); find ./ -depth -print | cpio -H newc -ov > ../ramfs.cpio; popd;
@@ -142,11 +142,11 @@ distclean dc: _distclean
 	@echo 'Distclean complete'
 
 _clean:
-	@$(RM) -rv $(ROOT_DIR)/build
+	@$(RM) -r $(ROOT_DIR)/build
 
 _distclean: _clean
-	@$(RM) -rv $(BACKUP_DIR)
-	@$(RM) -rv $(CONF_DIR)
+	@$(RM) -r $(BACKUP_DIR)
+	@$(RM) -r $(CONF_DIR)
 
 
 config: _clean
