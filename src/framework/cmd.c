@@ -6,9 +6,7 @@
  * @author Eldar Abusalimov
  */
 
-// XXX
-#define __EMBUILD_MOD__
-#include <embox/cmd.h>
+#include <cmd/framework.h>
 
 #include <stddef.h>
 #include <errno.h>

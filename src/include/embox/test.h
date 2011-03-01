@@ -23,6 +23,7 @@
 
 #include <impl/embox/test.h>
 
-#define EMBOX_TEST(run) __EMBOX_TEST(run)
+#define EMBOX_TEST(run) \
+		__EMBOX_TEST(run)
 
 #endif /* EMBOX_TEST_H_ */

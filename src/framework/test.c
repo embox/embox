@@ -18,8 +18,8 @@
 #include <errno.h>
 #include <stdio.h>
 
-#include <mod/core.h>
 #include <util/array.h>
+#include <mod/core.h>
 
 static int test_mod_enable(struct mod *mod);
 

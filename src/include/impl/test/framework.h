@@ -13,17 +13,16 @@
 
 #include <stddef.h>
 
-#include <util/macro.h>
 #include <util/array.h>
+#include <mod/core.h>
 
-#include <impl/test/types.h>
+#include "types.h"
 
-extern const struct test __test_registry[];
 #define __test_foreach(test_ptr) \
 	array_spread_foreach_ptr(test_ptr, __test_registry)
 
-// XXX for struct mod. -- Eldar
-#include <mod/core.h>
+extern const struct test __test_registry[];
+
 inline static const char *test_name(const struct test *test) {
 	return NULL != test ? test->mod->name : NULL;
 }

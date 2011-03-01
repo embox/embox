@@ -9,6 +9,8 @@
 #include <shell_command.h>
 #include <embox/cmd.h>
 
+#include <cmd/framework.h>
+
 #define COMMAND_NAME     "help"
 #define COMMAND_DESC_MSG "show all available command"
 #define HELP_MSG         "Usage: help [-h]"
