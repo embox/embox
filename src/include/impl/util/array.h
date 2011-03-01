@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implements distributed arrays backed by linker section SORT facility.
+ * @brief Implements array iterators and linker-powered distributed arrays.
  *
  * @date 13.06.2010
  * @author Eldar Abusalimov

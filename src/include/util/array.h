@@ -2,6 +2,7 @@
  * @file
  * @brief Common array utilities and spread arrays.
  * @details
+ * TODO array_foreach general overview. -- Eldar
  *     <b>Spread array</b> is statically allocated array, which is initialized
  * (populated) in multiple compilation units. In other words you can define the
  * array itself in one unit and add elements to it in another unit. Except for
@@ -31,6 +32,197 @@
 #define UTIL_ARRAY_H_
 
 #include <impl/util/array.h>
+
+/* Foreach iterators for generic arrays: with given size or null-terminated. */
+
+/**
+ * Iterates over the specified @a array of scalar values with given number of
+ * elements.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one, up to the [@a size - 1]'th element.
+ * @param array
+ *   The array to iterate over.
+ *   Evaluated only once that allows the argument to have side effects.
+ * @param size
+ *   The array size.
+ *   Alike @a array the argument is evaluated only once too.
+ */
+#define array_foreach(element, array, size) \
+		__array_foreach(element, array, size)
+
+/**
+ * Iterates over the specified array of (possibly) non-scalar values with given
+ * number of elements using a pointer to access the elements.
+ *
+ * @param element_ptr
+ *   Iteration variable which takes a value pointing to each element of the
+ *   target array, starting from the value of the @a array head end advancing
+ *   up to the pointer to [@a size - 1]'th element.
+ * @param array
+ *   The array to iterate over.
+ * @param size
+ *   The array size. Evaluated once.
+ *
+ * @see array_foreach()
+ */
+#define array_foreach_ptr(element_ptr, array, size) \
+		__array_foreach_ptr(element_ptr, array, size)
+
+/**
+ * Iterates over the specified @a array of scalar values until @c NULL is
+ * reached.
+ * Shorthand for #array_terminated_foreach() with @c NULL terminating element.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one.
+ * @param array
+ *   The array to iterate over.
+ *   Evaluated only once that allows the argument to have side effects.
+ */
+#define array_nullterm_foreach(element, array) \
+		__array_nullterm_foreach(element, array)
+
+/**
+ * Iterates over the specified @a array of scalar values until the given
+ * @a terminator element is reached.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one.
+ * @param array
+ *   The array to iterate over.
+ *   Evaluated only once that allows the argument to have side effects.
+ * @param terminator
+ *   The terminating element which denotes the end of the array.
+ *   Alike @a array it is evaluated only once too.
+ */
+#define array_terminated_foreach(element, array, terminator) \
+		__array_terminated_foreach(element, array, terminator)
+
+/**
+ * Iterates over an array starting at @a array_begin and advancing until
+ * @a array_end is reached.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one.
+ * @param array_begin
+ *   The pointer to start the iteration from.
+ *   Evaluated only once allowing the argument to have side effects.
+ * @param array_end
+ *   The pointer denoting the array bound.
+ *   Alike @a array_begin it is evaluated only once too.
+ */
+#define array_range_foreach(element, array_begin, array_end) \
+		__array_range_foreach(element, array_begin, array_end)
+
+/**
+ * Iterates over an array using a pointer to access its elements, starting at
+ * @a array_begin and advancing until @a array_end is reached.
+ *
+ * @param element_ptr
+ *   Iteration variable which takes a value pointing to each element of the
+ *   target array one by one.
+ * @param array_begin
+ *   The pointer to start the iteration from. Evaluated once.
+ * @param array_end
+ *   The pointer denoting the array bound.  Evaluated once.
+ *
+ * @see array_range_foreach()
+ */
+#define array_range_foreach_ptr(element_ptr, array_begin, array_end) \
+		__array_range_foreach(element_ptr, array_begin, array_end)
+
+/**
+ * The most general approach for iterating over a given array.
+ *
+ * @param element
+ *   Iteration variable which takes a value of each element of the target
+ *   array one by one starting from the element pointed by @a array and
+ *   advancing forward until the @a condition becomes @c false.
+ * @param array
+ *   The array to iterate over.
+ *   Evaluated only once allowing the argument to have side effects.
+ * @param condition
+ *   Iteration precondition.
+ */
+#define array_cond_foreach(element, array, condition) \
+		__array_cond_foreach(element, array, condition)
+
+/**
+ * Generic foreach loop for array of (possibly) non-scalar values.
+ *
+ * @param element_ptr
+ *   Iteration variable which takes a value pointing to each element of the
+ *   target array, starting from the value of @a array head and advancing until
+ *   until the @a condition becomes @c false.
+ * @param array
+ *   The array to iterate over. Evaluated once.
+ * @param condition
+ *   Iteration precondition.
+ */
+#define array_cond_foreach_ptr(element_ptr, array, condition) \
+		__array_cond_foreach_ptr(element_ptr, array, condition)
+
+/* Static arrays with their size known at the compile-time. */
+
+/**
+ * Gets the length of the specified @a array.
+ * The macro can be used only if the array length is known at the compile-time.
+ *
+ * @param array
+ *   The array to check size for.
+ * @return
+ *   Number of array elements.
+ *
+ * @note
+ *   The array must be statically defined/declared, otherwise an incorrect
+ *   result is returned without any error or warning.
+ */
+#define ARRAY_SIZE(array) \
+		__ARRAY_SIZE(array)
+
+/**
+ * Shorthand version for static arrays with size known at the compile-time.
+ * The same as using #array_foreach() with the size obtained from
+ * #ARRAY_SIZE().
+ *
+ * @param element
+ *   Iteration variable.
+ * @param array
+ *   The array to iterate over.
+ *
+ * @note
+ *   As far as the size of the array is determined using #ARRAY_SIZE(), the
+ *   array must be statically defined/declared.
+ * @see ARRAY_SIZE()
+ */
+#define array_static_foreach(element, array) \
+		__array_static_foreach(element, array)
+
+/**
+ * Shorthand version for static arrays with size known at the compile-time.
+ * The same as using #array_foreach_ptr() with the size obtained from
+ * #ARRAY_SIZE().
+ *
+ * @param element_ptr
+ *   Iteration pointer.
+ * @param array
+ *   The array to iterate over.
+ *
+ * @note
+ *   As far as the size of the array is determined using #ARRAY_SIZE(), the
+ *   array must be statically defined/declared.
+ * @see ARRAY_SIZE()
+ * @see array_static_foreach()
+ */
+#define array_static_foreach_ptr(element_ptr, array) \
+		__array_static_foreach_ptr(element_ptr, array)
+
+/* Spread arrays and spread-specific iterators. */
 
 /**
  * Defines a new spread array.
@@ -137,106 +329,6 @@
 		__ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_name)
 
 /**
- * Gets the length of the specified @a array.
- * The macro can be used only if the array length is known at the compile-time.
- *
- * @param array
- *   The array to check size for.
- * @return
- *   Number of array elements.
- *
- * @note
- *   The array must be statically defined/declared, otherwise an incorrect
- *   result is returned without any error or warning.
- */
-#define ARRAY_SIZE(array) \
-		__ARRAY_SIZE(array)
-
-/**
- * Iterates over the specified @a array of scalar values with given number of
- * elements.
- *
- * @param element
- *   Iteration variable which takes a value of each element of the target
- *   array one by one, up to the [@a size - 1]'th element.
- * @param array
- *   The array to iterate over.
- *   Evaluated only once that allows the argument to have side effects.
- * @param size
- *   The array size.
- *   Alike @a array the argument is evaluated only once too.
- */
-#define array_foreach(element, array, size) \
-		__array_foreach(element, array, size)
-
-/**
- * Iterates over an array starting at @a array_begin and advancing until
- * @a array_end is reached.
- *
- * @param element
- *   Iteration variable which takes a value of each element of the target
- *   array one by one.
- * @param array_begin
- *   The pointer to start the iteration from.
- *   Evaluated only once allowing the argument to have side effects.
- * @param array_end
- *   The pointer denoting the array bound.
- *   Alike @a array_begin it is evaluated only once too.
- */
-#define array_range_foreach(element, array_begin, array_end) \
-		__array_range_foreach(element, array_begin, array_end)
-
-/**
- * Iterates over the specified @a array of scalar values until the given
- * @a terminator element is reached.
- *
- * @param element
- *   Iteration variable which takes a value of each element of the target
- *   array one by one.
- * @param array
- *   The array to iterate over.
- *   Evaluated only once that allows the argument to have side effects.
- * @param terminator
- *   The terminating element which denotes the end of the array.
- *   Alike @a array it is evaluated only once too.
- */
-#define array_terminated_foreach(element, array, terminator) \
-		__array_terminated_foreach(element, array, terminator)
-
-/**
- * Iterates over the specified @a array of scalar values until @c NULL is
- * reached.
- * Shorthand for #array_terminated_foreach() with @c NULL terminating element.
- *
- * @param element
- *   Iteration variable which takes a value of each element of the target
- *   array one by one.
- * @param array
- *   The array to iterate over.
- *   Evaluated only once that allows the argument to have side effects.
- */
-#define array_nullterm_foreach(element, array) \
-		__array_nullterm_foreach(element, array)
-
-/**
- * Shorthand version for static arrays with size known at the compile-time.
- * The same as using #array_foreach() with the size obtained from
- * #ARRAY_SIZE().
- *
- * @param element
- *   Iteration variable.
- * @param array
- *   The array to iterate over.
- *
- * @note
- *   As far as the size of the array is determined using #ARRAY_SIZE(), the
- *   array must be statically defined/declared.
- * @see ARRAY_SIZE()
- */
-#define array_static_foreach(element, array) \
-		__array_static_foreach(element, array)
-
-/**
  * Shorthand version for spread arrays.
  * The same as using #array_foreach() with a size obtained from
  * #ARRAY_SPREAD_SIZE().
@@ -252,76 +344,6 @@
 		__array_spread_foreach(element, array)
 
 /**
- * The most general approach for iterating over a given array.
- *
- * @param element
- *   Iteration variable which takes a value of each element of the target
- *   array one by one starting from the element pointed by @a array and
- *   advancing forward until the @a condition becomes @c false.
- * @param array
- *   The array to iterate over.
- *   Evaluated only once allowing the argument to have side effects.
- * @param condition
- *   Iteration precondition.
- */
-#define array_cond_foreach(element, array, condition) \
-		__array_cond_foreach(element, array, condition)
-
-/**
- * Iterates over the specified array of (possibly) non-scalar values with given
- * number of elements using a pointer to access the elements.
- *
- * @param element_ptr
- *   Iteration variable which takes a value pointing to each element of the
- *   target array, starting from the value of the @a array head end advancing
- *   up to the pointer to [@a size - 1]'th element.
- * @param array
- *   The array to iterate over.
- * @param size
- *   The array size. Evaluated once.
- *
- * @see array_foreach()
- */
-#define array_foreach_ptr(element_ptr, array, size) \
-		__array_foreach_ptr(element_ptr, array, size)
-
-/**
- * Iterates over an array using a pointer to access its elements, starting at
- * @a array_begin and advancing until @a array_end is reached.
- *
- * @param element_ptr
- *   Iteration variable which takes a value pointing to each element of the
- *   target array one by one.
- * @param array_begin
- *   The pointer to start the iteration from. Evaluated once.
- * @param array_end
- *   The pointer denoting the array bound.  Evaluated once.
- *
- * @see array_range_foreach()
- */
-#define array_range_foreach_ptr(element_ptr, array_begin, array_end) \
-		__array_range_foreach(element_ptr, array_begin, array_end)
-
-/**
- * Shorthand version for static arrays with size known at the compile-time.
- * The same as using #array_foreach_ptr() with the size obtained from
- * #ARRAY_SIZE().
- *
- * @param element_ptr
- *   Iteration pointer.
- * @param array
- *   The array to iterate over.
- *
- * @note
- *   As far as the size of the array is determined using #ARRAY_SIZE(), the
- *   array must be statically defined/declared.
- * @see ARRAY_SIZE()
- * @see array_static_foreach()
- */
-#define array_static_foreach_ptr(element_ptr, array) \
-		__array_static_foreach_ptr(element_ptr, array)
-
-/**
  * Shorthand version for spread arrays.
  * The same as using #array_foreach_ptr() with a size obtained from
  * #ARRAY_SPREAD_SIZE().
@@ -335,20 +357,5 @@
  */
 #define array_spread_foreach_ptr(element_ptr, array) \
 		__array_spread_foreach_ptr(element_ptr, array)
-
-/**
- * Generic foreach loop for array of (possibly) non-scalar values.
- *
- * @param element_ptr
- *   Iteration variable which takes a value pointing to each element of the
- *   target array, starting from the value of @a array head and advancing until
- *   until the @a condition becomes @c false.
- * @param array
- *   The array to iterate over. Evaluated once.
- * @param condition
- *   Iteration precondition.
- */
-#define array_cond_foreach_ptr(element_ptr, array, condition) \
-		__array_cond_foreach_ptr(element_ptr, array, condition)
 
 #endif /* UTIL_ARRAY_H_ */
