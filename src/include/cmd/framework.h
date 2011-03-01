@@ -21,6 +21,8 @@ struct cmd;
 
 extern int cmd_exec(const struct cmd *cmd, int argc, char **argv);
 
+extern const struct cmd *cmd_lookup(const char *name);
+
 extern const char *cmd_name(const struct cmd *cmd);
 
 extern const char *cmd_brief(const struct cmd *cmd);
