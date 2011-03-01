@@ -10,17 +10,19 @@
 #include <stdbool.h>
 #include <errno.h>
 
+#include <util/array.h>
+
 #include <mod/core.h>
 #include <impl/mod/info.h>
 #include <impl/mod/types.h>
 
-#define MOD_FLAG_ENABLED       (1 << 0)
+#define MOD_FLAG_ENABLED       __MOD_FLAG_ENABLED
 
 // TODO unused for now... -- Eldar
 #define MOD_FLAG_OPFAILED      (0 << 1)
 #define MOD_FLAG_OPINPROGRESS  (0 << 2)
 
-#define mod_flag_tst(mod, mask)   ((mod)->private->flags &   (mask))
+#define mod_flag_tst(mod, mask) __mod_flag_tst(mod, mask)
 #define mod_flag_tgl(mod, mask) do (mod)->private->flags ^=  (mask); while (0)
 #define mod_flag_set(mod, mask) do (mod)->private->flags |=  (mask); while (0)
 #define mod_flag_clr(mod, mask) do (mod)->private->flags &= ~(mask); while (0)
@@ -34,21 +36,6 @@ inline static mod_op_t mod_op_deref(const struct mod *mod, bool op) {
 		return op ? mod->info->ops->enable : mod->info->ops->disable;
 	}
 	return NULL;
-}
-
-inline static void *mod_data_deref(const struct mod *mod) {
-	return (NULL != mod->info) ? mod->info->data : NULL;
-}
-
-bool mod_is_running(const struct mod *mod) {
-	return mod != NULL && mod_flag_tst(mod, MOD_FLAG_ENABLED);
-}
-
-void *mod_data(const struct mod *mod) {
-	if (NULL == mod) {
-		return NULL;
-	}
-	return mod_data_deref(mod);
 }
 
 int mod_enable(const struct mod *mod) {
@@ -86,14 +73,14 @@ int mod_disable_nodep(const struct mod *mod) {
 }
 
 static bool mod_deps_satisfied(const struct mod *mod, bool op) {
-	struct mod **p_dep;
+	struct mod *dep;
 
 	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return true;
 	}
 
-	for (p_dep = op ? mod->requires : mod->provides; *p_dep != NULL; ++p_dep) {
-		if (!op != !mod_flag_tst(*p_dep, MOD_FLAG_ENABLED)) {
+	array_terminated_foreach(dep, op ? mod->requires : mod->provides, NULL) {
+		if (!op != !mod_flag_tst(dep, MOD_FLAG_ENABLED)) {
 			return false;
 		}
 	}
@@ -102,14 +89,14 @@ static bool mod_deps_satisfied(const struct mod *mod, bool op) {
 }
 
 static int mod_perform(const struct mod *mod, bool op) {
-	struct mod **p_dep;
+	struct mod *dep;
 
 	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
 	}
 
-	for (p_dep = op ? mod->requires : mod->provides; *p_dep != NULL; ++p_dep) {
-		if (0 != mod_perform(*p_dep, op)) {
+	array_terminated_foreach(dep, op ? mod->requires : mod->provides, NULL) {
+		if (0 != mod_perform(dep, op)) {
 			return -EINTR;
 		}
 	}

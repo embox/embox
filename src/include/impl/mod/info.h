@@ -25,7 +25,7 @@ struct mod_ops;
  * Mods framework manages each mod through a special interface so-called
  * @c mod_info.
  */
-struct mod_info {
+struct __mod_info {
 	/** (optional) Module specific data. */
 	void *data;
 	/** (optional) Available operations. */

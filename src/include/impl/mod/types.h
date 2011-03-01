@@ -11,14 +11,14 @@
 
 struct mod;
 struct mod_package;
-struct mod_info;
-struct mod_private;
+struct __mod_info;
+struct __mod_private;
 
 struct mod {
 	/** Internal data needed by dependency resolver. */
-	struct mod_private *private;
+	struct __mod_private *private;
 	/** (optional) Interface with mods framework and others. */
-	struct mod_info *info;
+	struct __mod_info *info;
 	/** Module package assigned by EMBuild. */
 	struct mod_package *package;
 	/** Module name assigned by EMBuild. */
@@ -31,7 +31,7 @@ struct mod_package {
 	const char *name;
 };
 
-struct mod_private {
+struct __mod_private {
 	unsigned int flags;
 };
 

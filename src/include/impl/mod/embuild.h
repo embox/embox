@@ -28,7 +28,7 @@
 #define __MOD_ARRAY(s_mod, s_array) __mod_##s_array##__##s_mod
 
 #define __MOD_PRIVATE_DEF(s_mod) \
-	static struct mod_private __MOD_PRIVATE(s_mod)
+	static struct __mod_private __MOD_PRIVATE(s_mod)
 
 #define __MOD_PACKAGE_DECL(s_package) \
 	static const struct mod_package __MOD_PACKAGE(s_package)
@@ -51,7 +51,7 @@
 	__MOD_PRIVATE_DEF(s_mod);                                             \
 	const struct mod __MOD(s_mod) = {                                     \
 		.private  = &__MOD_PRIVATE(s_mod),                            \
-		.info     = (struct mod_info *) &__MOD_INFO(s_mod),           \
+		.info     = (struct __mod_info *) &__MOD_INFO(s_mod),         \
 		.package  = (struct mod_package *) &__MOD_PACKAGE(s_mod_pkg), \
 		.name     = mod_name,                                         \
 		.requires = (struct mod **) &__MOD_ARRAY(s_mod, requires),    \

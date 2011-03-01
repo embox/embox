@@ -19,7 +19,7 @@
 
 // XXX to be dropped soon. -- Eldar
 #define __MOD_INFO_DEF(s_mod, _mod_data, _mod_ops) \
-		const struct mod_info __MOD_INFO(s_mod) = { \
+		const struct __mod_info __MOD_INFO(s_mod) = { \
 				.data = (void *) _mod_data, \
 				.ops = (struct mod_ops *) _mod_ops, \
 			}

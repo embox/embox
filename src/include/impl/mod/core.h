@@ -13,9 +13,23 @@
 #include <util/array.h>
 
 #include "types.h"
+#include "info.h"
+
+#define __MOD_FLAG_ENABLED       (1 << 0)
+
+#define __mod_flag_tst(mod, mask)   ((mod)->private->flags &   (mask))
+
+inline static bool mod_is_running(const struct mod *mod) {
+	return mod != NULL && __mod_flag_tst(mod, __MOD_FLAG_ENABLED);
+}
+
+inline static void *mod_data(const struct mod *mod) {
+	return (NULL != mod && NULL != mod->info) ? mod->info->data : NULL;
+}
 
 #define __mod_foreach_requires(dep, mod) \
 		array_terminated_foreach(dep, (mod)->requires, NULL)
 
 #define __mod_foreach_provides(dep, mod) \
 		array_terminated_foreach(dep, (mod)->provides, NULL)
+
