@@ -8,6 +8,7 @@
 
 #include <embox/cmd.h>
 
+#include <stdio.h>
 #include <cmd/framework.h>
 
 EMBOX_CMD(exec);

@@ -1,7 +1,7 @@
 
 $_MODS += __cmd_name
 
-$_SRCS-__cmd_name += *.c
+$_SRCS-__cmd_name += __cmd_name.c
 
 $_DEPS-__cmd_name +=
 
