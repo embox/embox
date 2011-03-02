@@ -86,7 +86,9 @@ static void inc_sys_timers(void) {
 	list_for_each(tmp, &sys_timers_list) {
 		tmr = (sys_tmr_t *) tmp;
 		if (0 == tmr->cnt--) {
-			tmr->handle(tmr->id);
+			if (tmr->handle) {
+				tmr->handle(tmr->id);
+			}
 			tmr->cnt = tmr->load;
 		}
 	}
