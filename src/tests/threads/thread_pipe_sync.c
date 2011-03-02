@@ -65,15 +65,12 @@ static void third_run(void) {
 	TRACE("\n tmp %c \n", tmp);
 }
 
-static int run() {
-	third_thread =
-			thread_create(third_run, third_stack
+static int run(void) {
+	third_thread = thread_create(third_run, third_stack
 					+ THREAD_STACK_SIZE);
-	second_thread =
-			thread_create(second_run, second_stack
+	second_thread = thread_create(second_run, second_stack
 					+ THREAD_STACK_SIZE);
-	first_thread =
-			thread_create(first_run, first_stack
+	first_thread = thread_create(first_run, first_stack
 					+ THREAD_STACK_SIZE);
 
 	assert(third_thread != NULL);
@@ -82,7 +79,6 @@ static int run() {
 	thread_start(first_thread);
 	thread_start(third_thread);
 	thread_start(second_thread);
-
 
 	pipe_create(); // pipe #0
 	pipe_create(); // pipe #1

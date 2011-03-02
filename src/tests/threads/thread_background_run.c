@@ -23,15 +23,6 @@ static void highest_run(void) {
 	}
 }
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
-
-
 static int run(void) {
 	struct thread *t = thread_create(highest_run, highest_stack + THREAD_STACK_SIZE );
 	thread_start(t);

@@ -9,9 +9,6 @@
 #include <drivers/at91sam7s256.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
-#include <embox/test.h>
-
-EMBOX_TEST(run);
 
 #define MAX_BUF   64
 #define EP_OUT    1
@@ -697,9 +694,3 @@ void usb_init(void) {
                 panic("usb irq_attach failed");
         }
 }
-
-static int run_test(void) {
-        usb_init();
-        return 0;
-}
-
