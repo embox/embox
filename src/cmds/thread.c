@@ -8,20 +8,18 @@
  * @author Roman Oderov
  */
 
-#include <shell_command.h>
-#include <kernel/thread.h>
-#include <lib/list.h>
+#include <embox/cmd.h>
+
+#include <getopt.h>
 #include <stdio.h>
 #include <assert.h>
+#include <kernel/thread.h>
 
-#define COMMAND_NAME     "thread"
-#define COMMAND_DESC_MSG "print threads statistic for Embox"
-#define HELP_MSG         "Usage: thread [-h] [-k <thread id>] [-s]"
-static const char *man_page =
-#include "thread_help.inc"
-;
+EMBOX_CMD(exec);
 
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+static void print_usage(void) {
+	printf("Usage: thread [-h] [-s] [-k <thread_id>]\n");
+}
 
 static void print_stat(void) {
 	struct thread *thread;
@@ -60,7 +58,7 @@ static void print_stat(void) {
 			wait, zombie);
 }
 
-static void thread_kill(int thread_id) {
+static void kill_thread(int thread_id) {
 	struct thread *thread;
 	int error;
 
@@ -88,31 +86,34 @@ static void thread_kill(int thread_id) {
 }
 
 static int exec(int argc, char **argv) {
-	int next_opt;
+	int opt;
+
+	if (argc < 2) {
+		print_usage();
+		return -1;
+	}
 
 	getopt_init();
 
-	while ((next_opt = getopt(argc, argv, "hsk:")) != -1) {
+	while ((opt = getopt(argc, argv, "hsk:")) != -1) {
 		printf("\n");
-		switch (next_opt) {
+		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
 			/* FALLTHROUGH */
 		case 'h':
-			show_help();
+			print_usage();
 			break;
 		case 's':
 			print_stat();
 			break;
 		case 'k': {
 			int thread_id;
-
 			if ((optarg == NULL) || (!sscanf(optarg, "%d", &thread_id))) {
-				show_help();
+				print_usage();
 				break;
 			}
-
-			thread_kill(thread_id);
+			kill_thread(thread_id);
 			break;
 		}
 		default:

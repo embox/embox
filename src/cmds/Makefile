@@ -16,7 +16,9 @@ __CMD_FILTER = sed 's/__cmd_name/$*/;s/@date/@date '`date +%d.%m.%Y`'/'
 add_cmd-% ac-%:
 	cat $(__CMD_TEMPLATE)/cmd.em | $(__CMD_FILTER) > $*.em
 	cat $(__CMD_TEMPLATE)/cmd.c | $(__CMD_FILTER) > $*.c
-	echo 'include \$$(SELFDIR)/$*.em' >> Makefile
+	echo 'include $$(SELFDIR)/$*.em' >> Makefile
 	svn add $*.c $*.em
 
+SELFDIR ?= .
 include $(SELFDIR)/help.em
+include $(SELFDIR)/thread.em
