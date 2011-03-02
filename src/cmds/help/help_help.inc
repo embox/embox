@@ -1,6 +1,0 @@
-"NAME\n"
-"\thelp - displays all possible commands\n"
-"SYNOPSIS\n"
-"\thelp\n"
-"AUTHORS\n"
-"\tAlexandr Batyukov"
