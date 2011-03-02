@@ -8,24 +8,25 @@
 
 #include <embox/cmd.h>
 
+#include <getopt.h>
 #include <stdio.h>
 #include <cmd/framework.h>
 
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: help [-h]");
+	printf("Usage: help [-h]\n");
 }
 
 // XXX remove. -- Eldar
 #include <shell_command.h>
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	const struct cmd *cmd;
 	int opt;
 	SHELL_COMMAND_DESCRIPTOR * shell_desc;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argsc, argsv, "h"))) {
+	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch (opt) {
 		case '?':
 		case 'h':
