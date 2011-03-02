@@ -22,6 +22,8 @@ struct test;
 
 extern int test_invoke(const struct test *test);
 
+extern const struct test *test_lookup(const char *name);
+
 extern const char *test_name(const struct test *test);
 
 #endif /* TEST_FRAMEWORK_H_ */

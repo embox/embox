@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <util/array.h>
 #include <mod/core.h>
@@ -60,3 +61,14 @@ int test_invoke(const struct test *test) {
 	return (test->private->result = result);
 }
 
+const struct test *test_lookup(const char *name) {
+	const struct test *test;
+
+	test_foreach(test) {
+		if (strcmp(test_name(test), name) == 0){
+			return test;
+		}
+	}
+
+	return NULL;
+}

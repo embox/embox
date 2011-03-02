@@ -10,6 +10,7 @@
 
 #include <stddef.h>
 #include <errno.h>
+#include <string.h>
 
 #include <util/array.h>
 #include <mod/core.h>
