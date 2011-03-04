@@ -9,5 +9,13 @@
 #ifndef X86_CACHE_H_
 #define X86_CACHE_H_
 
+inline static void cache_data_enable(void) {
+	//TODO:
+}
+
+inline static void cache_data_disable(void) {
+	//TODO:
+}
+
 #endif /* X86_CACHE_H_ */
 
