@@ -123,7 +123,6 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 void arch_init(void) {
 	idt_init();
 	gdt_init();
-	irq_enable();
 }
 
 void arch_idle(void) {

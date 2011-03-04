@@ -15,6 +15,7 @@
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/io.h>
+#include <asm/cpu.h>
 #include <drivers/apic.h>
 
 /**
@@ -37,6 +38,7 @@ void interrupt_init(void) {
 	out8(NON_SPEC_EOI, PIC2_COMMAND);
 
 	apic_disable_all();
+	irq_enable();
 }
 
 void interrupt_enable(interrupt_nr_t int_nr) {
