@@ -19,4 +19,6 @@ add_cmd-% ac-%:
 	svn add $*.c $*.em
 
 SELFDIR ?= .
-include $(wildcard $(SELFDIR)/*.em)
+__CMD_EM_FILES := $(wildcard $(SELFDIR)/*.em)
+
+include $(__CMD_EM_FILES)

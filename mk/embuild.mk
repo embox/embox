@@ -209,7 +209,41 @@ define define_unit_symbols
   SRCS-$(unit) := $(strip $(SRCS-$(unit)))
   CPPFLAGS-$(unit) := $(strip $(CPPFLAGS-$(unit)))
   CFLAGS-$(unit)   := $(strip   $(CFLAGS-$(unit)))
+  DETAILS-$(unit)  := $(call fix_indent,$(DETAILS-$(unit)))
 endef
+
+fix_indent = \
+  $(subst $$$$,$$,$(call fix_indent_dollar_escaped,$(subst $$,$$$$,$1)))
+
+fix_indent_dollar_escaped = \
+  $(subst _$$^$(\n),,$(subst \
+    $(\n)$(call fix_indent_common_dollar_escaped,$1),$(\n),_$$^$(\n)$1))
+
+fix_indent_common_dollar_escaped = \
+  $(call fix_indent_unescape,$(call fix_indent_common_escaped \
+     ,$(subst _$$n, ,$(call fix_indent_escape,$1))))
+
+fix_indent_common_escaped = \
+  $(if $(call singleword,$1) \
+        ,,$(subst $(\space),,$(call list_fold,fix_indent_fold, \
+           $(call fix_indent_tokenize_line,$(call firstword,$1)), \
+                                         $(call nofirstword,$1))))
+
+fix_indent_fold = \
+  $(call list_scan,fix_indent_scan, \
+      ,$(join $1,$(call fix_indent_tokenize_line,$2)))
+
+fix_indent_scan = \
+  $(if $1,$(subst _$$t_$$t,_$$t,$(subst _$$s_$$s,_$$s, \
+    $(filter _$$t_$$t _$$s_$$s,$2))))
+
+fix_indent_tokenize_line = \
+  $(subst _$$s, _$$s ,$(subst _$$t, _$$t ,$1))
+
+fix_indent_escape = \
+  $(subst $(\n),_$$n,$(subst $(\space),_$$s,$(subst $(\t),_$$t,$1)))
+fix_indent_unescape = \
+  $(subst _$$n,$(\n),$(subst _$$s,$(\space),$(subst _$$t,$(\t),$1)))
 
 __UNITS_PROCESS = $(info Processing units) \
   $(foreach unit,$(MODS) $(LIBS), \
@@ -457,9 +491,8 @@ dump_var_symbol = $(subst \\\n,\\\n  ,$(subst \n ,\n,$(strip \
 
 dump_var_verbatim = \
   define $1\n$(subst $(\t),\t,$(subst $(\n),\n,$($1)))\nendef\n
-dump_var_symbol_verbatim = $(subst \\\n,\\\n  ,$(subst \n ,\n,$(strip \
-  $(foreach var,$2,$(if $($1-$(var)),$(call dump_var_verbatim,$1-$(var)))) \
-)))
+dump_var_symbol_verbatim = \
+  $(foreach var,$2,$(call dump_var_verbatim,$1-$(var)))
 
 $(EMBUILD_DUMP_MK) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/embuild.mk
 ifndef EMBUILD_DUMP_CREATE
