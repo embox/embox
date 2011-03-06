@@ -1,4 +1,4 @@
-#Tue Jun 29 03:49:29 MSD 2010
+#Sun Mar 06 16:16:24 MSK 2011
 eclipse.preferences.version=1
 org.eclipse.cdt.codan.checkers.errnoreturn=Warning
 org.eclipse.cdt.codan.checkers.errnoreturn.params={fileScope\=>inclusion\=>(),exclusion\=>(),implicit\=>false}
@@ -15,7 +15,6 @@ org.eclipse.cdt.codan.internal.checkers.NamingConventionFunctionChecker.params={
 org.eclipse.cdt.codan.internal.checkers.NonVirtualDestructorProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.NonVirtualDestructorProblem.params={fileScope\=>inclusion\=>(),exclusion\=>()}
 org.eclipse.cdt.codan.internal.checkers.StatementHasNoEffectProblem=Warning
-org.eclipse.cdt.codan.internal.checkers.StatementHasNoEffectProblem.params={fileScope\=>inclusion\=>(),exclusion\=>(),macro\=>true,exceptions\=>()}
+org.eclipse.cdt.codan.internal.checkers.StatementHasNoEffectProblem.params={fileScope\=>inclusion\=>(),exclusion\=>(),macro\=>false,exceptions\=>()}
 org.eclipse.cdt.codan.internal.checkers.SuggestedParenthesisProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.SuggestedParenthesisProblem.params={fileScope\=>inclusion\=>(),exclusion\=>(),paramNot\=>false}
-useParentScope=true
