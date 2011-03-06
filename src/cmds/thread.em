@@ -9,16 +9,15 @@ $_BRIEF-thread = Works with threading subsystem
 
 define $_DETAILS-thread
 	NAME
-		thread - Works with threading subsystem
+		thread - interacts with threading subsystem
 	SYNOPSIS
-		thread [-h] [-s] [-k <id>]
-	DESCRIPTION
-		thread
-		thread -h
+		thread [-h] [-s] [-k id]
+	OPTIONS
+		-h
 			Prints usage
-		thread -s
+		-s
 			Prints threads statistics
-		thread -k <is>
+		-k id
 			Stops the thread with the specified id
 	AUTHORS
 		Gleb Efimov, Alina Kramar, Roman Oderov

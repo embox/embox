@@ -1,8 +1,0 @@
-"NAME\n"
-"\tman - format and display the on-line manual pages\n"
-"SYNOPSIS\n"
-"\tman [name]\n"
-"DESCRIPTION\n"
-"\tman formats and displays the on-line manual pages\n"
-"AUTHORS\n"
-"\tNikolay Korotky"

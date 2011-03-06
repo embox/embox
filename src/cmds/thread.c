@@ -88,7 +88,7 @@ static void kill_thread(int thread_id) {
 static int exec(int argc, char **argv) {
 	int opt;
 
-	if (argc < 2) {
+	if (argc <= 1) {
 		print_usage();
 		return -1;
 	}
