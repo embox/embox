@@ -22,25 +22,18 @@ EMBOX_UNIT(shell_start, shell_stop);
 
 #include <shell_command.h>
 
-static void deprecated_exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
-	int words_counter = 0;
-
+static void deprecated_exec_callback(int argc, char **argv) {
 	SHELL_COMMAND_DESCRIPTOR *c_desc;
-	char *words[CMDLINE_MAX_LENGTH + 1];
 
-	if (0 == (words_counter = parse_str(cmdline, words))) {
-		/* Only spaces were entered */
-		return;
-	}
-	if (NULL == (c_desc = shell_command_descriptor_find_first(words[0], -1))) {
+	if (NULL == (c_desc = shell_command_descriptor_find_first(argv[0], -1))) {
 		return;
 	}
 	if (NULL == c_desc->exec) {
 		return;
 	}
 
-	printf("%s: Executing command using deprecated API.\n\n", words[0]);
-	shell_command_exec(c_desc, words_counter, words);
+	printf("%s: Executing command using deprecated API.\n\n", argv[0]);
+	shell_command_exec(c_desc, argc, argv);
 }
 
 static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
@@ -59,7 +52,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 #if 0
 		printf("%s: Command not found\n", argv[0]);
 #else
-		deprecated_exec_callback(cb, console, cmdline);
+		deprecated_exec_callback(argc, argv);
 #endif
 		return;
 	}
