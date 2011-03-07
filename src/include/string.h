@@ -63,6 +63,12 @@ extern char *strcpy(char *dst, const char *src);
 extern char *strncpy(char *dst, const char *src, size_t n);
 
 /**
+ * Append src on the end of dest.
+ */
+extern char *strcat(char *dest, const char *src);
+extern char *strncat(char *dest, const char *src, size_t n);
+
+/**
  * Compares two strings lexicographically.
  *
  * @param str1
@@ -106,20 +112,45 @@ extern int strcmp(const char *str1, const char *str2);
 extern int strncmp(const char *str1, const char *str2, size_t n);
 
 /**
- * Find the first occurrence of C in S.
+ * Finds the first occurrence of the character @a ch (converted to a char) in
+ * the given null-terminated string.
+ *
+ * @param str
+ *   The null-terminated string to search for @a ch occurrence.
+ * @param ch
+ *   The character to search.
+ * @return
+ *   Pointer to the located character in the specified string (if any).
+ * @retval NULL
+ *   If no match was found.
  */
-extern char *strchr(const char *s, int c);
+extern char *strchr(const char *str, int ch);
 
 /**
- * Find the last occurrence of C in S.
+ * Finds the last occurrence of the character @a ch in the given string.
+ * This function is a reversed version of #strchr().
+ *
+ * @param str
+ *   The null-terminated string to search for @a ch occurrence.
+ * @param ch
+ *   The character to search.
+ * @return
+ *   Pointer to the located character in the specified string (if any).
+ * @retval NULL
+ *   If no match was found.
+ *
+ * @see strchr()
  */
-extern char *strrchr(const char *s, int c);
+extern char *strrchr(const char *str, int ch);
 
 /**
- * Append src on the end of dest.
+ * function finds the first occurrence of the substring
+ * needle in the string haystack. The terminating '\0'
+ * characters are not compared.
+ * @return pointer to the beginning of the substring,
+ *         or NULL if the substring is not found.
  */
-extern char *strcat(char *dest, const char *src);
-extern char *strncat(char *dest, const char *src, size_t n);
+extern char *strstr(const char *haystack, const char *needle);
 
 /**
  * Returns the string representation of an error number e.g. errno.
@@ -148,6 +179,13 @@ extern int memcmp(const void *dst, const void *src, size_t n);
 extern void *memcpy(void *dst, const void *src, size_t n);
 
 /**
+ * Copy n bytes of src to dest, guaranteeing
+ * correct behavior for overlapping strings.
+ * @return dst
+ */
+extern void *memmove(void *dst, const void *src, size_t n);
+
+/**
  * Copy no more than N bytes of SRC to DEST, stopping when C is found.
  * @return the position in DEST one byte past where C was copied,
  *      or NULL if C was not found in the first N bytes of SRC.
@@ -171,21 +209,5 @@ extern void *memset(void *p, int c, size_t n);
  */
 extern void *memchr(const void *s, int c, size_t n);
 extern void *memrchr(const void *s, int c, size_t n);
-
-/**
- * Copy n bytes of src to dest, guaranteeing
- * correct behavior for overlapping strings.
- * @return dst
- */
-extern void *memmove(void *dst, const void *src, size_t n);
-
-/**
- * function finds the first occurrence of the substring
- * needle in the string haystack. The terminating '\0'
- * characters are not compared.
- * @return pointer to the beginning of the substring,
- *         or NULL if the substring is not found.
- */
-extern char *strstr(const char *haystack, const char *needle);
 
 #endif /* STRING_H_ */
