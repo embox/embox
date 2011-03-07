@@ -15,8 +15,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <hal/interrupt.h>
-#include <hal/ipl.h>
 
 EMBOX_CMD(exec);
 
