@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementes puts function
+ * @brief Implements puts function.
  *
  * @date 14.02.2010
  * @author Eldar Abusalimov

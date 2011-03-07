@@ -1,10 +1,10 @@
 /**
  * @file
- *
- * @brief Realization of function scanf
+ * @brief Simple scanf implementation.
  *
  * @date 10.02.2009
  * @author Alexandr Batyukov
+ *          - Initial implementation
  */
 
 #include <stdio.h>
