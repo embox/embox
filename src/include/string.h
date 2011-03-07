@@ -122,25 +122,6 @@ extern char *strcat(char *dest, const char *src);
 extern char *strncat(char *dest, const char *src, size_t n);
 
 /**
- * Find the first occurrence in S of any character in ACCEPT.
- */
-extern char *strpbrk(const char *s, const char *accept);
-
-/**
- * Parse S into tokens separated by characters in DELIM.
- */
-extern char *strtok(char *str, const char *delim);
-
-/**
- * Calculates the length of the initial segment of s
- * which consists entirely of characters in accept.
- * @return the number of characters in the initial segment
- *         of s which consist only of characters from accept.
- */
-extern size_t strspn(const char *s, const char *accept);
-extern size_t strcspn(const char *s, const char *reject);
-
-/**
  * Returns the string representation of an error number e.g. errno.
  *
  * @param errnum error code
