@@ -10,8 +10,6 @@
 #ifndef ERRNO_H_
 #define ERRNO_H_
 
-extern int errno;
-
 #define ENOERR           0     /* No error */
 #define EPERM            1     /* Not permitted */
 #define ENOENT           2     /* No such entity */

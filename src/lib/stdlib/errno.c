@@ -1,2 +1,0 @@
-
-int errno = 0;

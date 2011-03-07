@@ -447,8 +447,7 @@ static int exec(int argsc, char **argsv) {
 
 	elf_file = fopen(argsv[argsc - 1], "r");
 	if (elf_file == NULL) {
-		printf("Cannot open file %s: %s\n",
-			argsv[argsc - 1], strerror(errno));
+		printf("Cannot open file %s\n", argsv[argsc - 1]);
 		return -1;
 	}
 	if ((err = elf_read_header(elf_file, &elf_header)) < 0) {
