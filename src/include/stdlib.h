@@ -1,42 +1,19 @@
 /**
  * @file
+ * @brief C standard library header.
  *
  * @date 20.11.09
  * @author Nikolay Korotky
+ *          - Initial implementation
+ * @author Eldar Abusalimov
+ *          - Extracting minimal used subset
+ *          - Docs
  */
+
 #ifndef STDLIB_H_
 #define STDLIB_H_
 
-#include <types.h>
-
-/**
- * convert digit character to integer
- * @param digit character for converting
- * @param base for converting
- * @return converted symbol
- * @return -1 if error
- */
-extern int ch_to_digit(char ch, int base);
-
-/**
- * Convert a string to a floating-point number.
- */
-extern double atof(const char *nptr);
-
-/**
- * Convert a string to an integer.
- */
-extern int atoi(const char *nptr);
-
-/**
- * Convert an integer to a string.
- */
-extern void itoa(char *buf, int base, int d);
-
-/**
- * Convert a string to a long integer.
- */
-extern long int atol(const char *nptr);
+#include <stddef.h>
 
 /**
  * Converts the initial part of the string in @a nptr to a long integer value

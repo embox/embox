@@ -54,12 +54,6 @@
 #define LONG_MAX  ((long)(ULONG_MAX >> 1)) /* 0x7FFFFFFF */
 #define LONG_MIN  ((long)(~LONG_MAX))      /* 0x80000000 */
 
-/*
- * Convert a string to a long integer.
- *
- * Ignores `locale' stuff.  Assumes that the upper and lower case
- * alphabets and digits are each contiguous.
- */
 long strtol(const char *nptr, char **endptr, int base) {
 	const char *s = nptr;
 	unsigned long acc;

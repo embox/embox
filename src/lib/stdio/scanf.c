@@ -13,6 +13,43 @@
 #include <ctype.h>
 #include <types.h>
 
+/*TODO: throw out.*/
+/**
+ * convert digit character to integer
+ * @param digit character for converting
+ * @param base for converting
+ * @return converted symbol
+ * @return -1 if error
+ */
+int ch_to_digit(char ch, int base) {
+	ch = toupper(ch);
+	switch (base) {
+		case 16: {
+			if (ch >= '0' && ch <= '9') {
+				return (ch - '0');
+			} else if (ch >= 'A' && ch <= 'F') {
+				return (ch - 'A' + 0x0A);
+			}
+			return -1;
+		}
+		case 10: {
+			if (ch >= '0' && ch <= '9') {
+				return (ch - '0');
+			}
+			return -1;
+		}
+		case 8: {
+			if (ch >= '0' && ch <= '7') {
+				return (ch - '0');
+			}
+			return -1;
+		}
+		default:
+			return -1;
+	}
+	return -1;
+}
+
 extern int ungetchar(int ch);
 
 static void unscanchar(char **str, int ch) {
