@@ -175,12 +175,6 @@ extern void *memrchr(const void *s, int c, size_t n);
 extern void *memmove(void *dst, const void *src, size_t n);
 
 /**
- * Copy n bytes from src to dest. The result is correct,
- * even when both areas overlap.
- */
-extern void bcopy(const void *src, void *dest, size_t n);
-
-/**
  * function finds the first occurrence of the substring
  * needle in the string haystack. The terminating '\0'
  * characters are not compared.
