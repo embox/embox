@@ -131,6 +131,7 @@ extern int stat(const char *path, stat_t *buf);
 //# define TRACE(...)  printk(__VA_ARGS__)
 #else
 # define TRACE(...)  do ; while (0)
+#define prom_printf(...)  do ; while (0)
 #endif
 
 #define PRINTREG32_BIN(reg) { \
