@@ -1,8 +1,9 @@
 /**
  * @file
  * @brief C standard library header.
- * @details Contains declarations of functions used for C-style strings
- * handling and operating with memory blocks.
+ * @details
+ *   Contains declarations of functions used for C-style strings handling
+ *   and operating with memory blocks.
  *
  * @date 02.12.08
  * @author Anton Bondarev
@@ -35,7 +36,7 @@ extern size_t strlen(const char *str);
  * @param dst
  *   Destination buffer.
  * @param src
- *   Source null-terminated string.
+ *   The string being copied.
  * @return
  *   Pointer to the destination buffer.
  *
@@ -50,7 +51,7 @@ extern char *strcpy(char *dst, const char *src);
  * @param dst
  *   Destination buffer of length @a n.
  * @param src
- *   Source null-terminated string.
+ *   The string being copied.
  * @param n
  *   The number of bytes to fill in the destination buffer.
  * @return
@@ -63,10 +64,32 @@ extern char *strcpy(char *dst, const char *src);
 extern char *strncpy(char *dst, const char *src, size_t n);
 
 /**
- * Append src on the end of dest.
+ * Appends a null-terminated string to the end of another.
+ *
+ * @param dst
+ *   Destination null-terminated string to append the @a src to.
+ * @param src
+ *   The string being appended.
+ * @return
+ *   Pointer to the destination string.
  */
-extern char *strcat(char *dest, const char *src);
-extern char *strncat(char *dest, const char *src, size_t n);
+extern char *strcat(char *dst, const char *src);
+
+/**
+ * Appends no more than @a n  bytes of a null-terminated string to the end of
+ * another.
+ * This function is a bounded version of #strcat().
+ *
+ * @param dst
+ *   Destination null-terminated string to append the @a src to.
+ * @param src
+ *   The string being appended.
+ * @param n
+ *   Maximum number of symbols to copy.
+ * @return
+ *   Pointer to the destination string.
+ */
+extern char *strncat(char *dst, const char *src, size_t n);
 
 /**
  * Compares two strings lexicographically.
