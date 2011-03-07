@@ -1,9 +1,11 @@
 /**
  * @file
+ * @brief Implementation of #strcmp() function.
  *
  * @date 13.10.09
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 
 int strcmp(const char *str1, const char *str2) {

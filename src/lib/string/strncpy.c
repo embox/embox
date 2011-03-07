@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Implementation of #strncpy() function.
  *
  * @date 20.11.09
  * @author Nikolay Korotky

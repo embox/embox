@@ -3,7 +3,7 @@
 
 /**
  * @file
- * @brief Implementation of memmove and memcpy functions.
+ * @brief Implementation of #memmove() and #memcpy() functions.
  *
  * @date 23.11.09
  * @author Eldar Abusalimov

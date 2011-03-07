@@ -19,58 +19,89 @@
 #include <stddef.h>
 
 /**
- * Calculates the length of the specified string.
+ * Calculates the length of the specified null-terminated string.
  *
- * @param str target C-style string
- * @return string length
+ * @param str
+ *   C-style null-terminated string.
+ * @return
+ *   String length (the offset of the terminating null character within the
+ *   array).
  */
-extern int strlen(const char *str);
+extern size_t strlen(const char *str);
 
 /**
- * Copies a string from one location to another.
+ * Copies a null-terminated string from one location to another.
  *
- * @param dst destination string
- * @param src source string
- * @return pointer to destination string
+ * @param dst
+ *   Destination buffer.
+ * @param src
+ *   Source null-terminated string.
+ * @return
+ *   Pointer to the destination buffer.
+ *
+ * @see memcpy()
  */
 extern char *strcpy(char *dst, const char *src);
 
 /**
- * Copies up to @c n bytes of a string from one location to another adding
- * zeros to the end of the copy is the source string length is less than @c n.
- * Despite its name it is not a bounded version of #strcpy(), it does not
- * guarantee that the result is a null-terminated string.
+ * Copies up to @a n bytes of a string from one location to another adding
+ * zeros to the end of the copy if the source string length is less than @a n.
  *
- * @param dst destination string
- * @param src source string
- * @param n the size of block to fill in the destination buffer
- * @return pointer to destination string
+ * @param dst
+ *   Destination buffer of length @a n.
+ * @param src
+ *   Source null-terminated string.
+ * @param n
+ *   The number of bytes to fill in the destination buffer.
+ * @return
+ *   Pointer to the destination buffer.
+ *
+ * @note
+ *   Despite the name this function is not a bounded version of #strcpy(),
+ *   it does not guarantee that the result is a null-terminated string.
  */
 extern char *strncpy(char *dst, const char *src, size_t n);
 
 /**
  * Compares two strings lexicographically.
  *
- * @param str1 first string
- * @param str2 second string
- * @return comparison result according to the lexicographical order
- * @retval 0 if the strings are equal
- * @return positive if @c str1 is greater than @c str2
- * @return negative if @c str1 is less than @c str2
+ * @param str1
+ *   The first string.
+ * @param str2
+ *   The second string.
+ * @return
+ *   Comparison result according to the lexicographical order.
+ * @retval 0
+ *   If the strings are equal.
+ * @retval positive
+ *   If @a str1 is greater than @a str2
+ * @retval negative
+ *   If @a str1 is less than @a str2
+ *
+ * @see strncmp()
  */
 extern int strcmp(const char *str1, const char *str2);
 
 /**
- * Compares up to @c n bytes of two strings lexicographically. This function is
- * a bounded version of #strcmp().
+ * Compares up to @c n bytes of two strings lexicographically.
+ * This function is a bounded version of #strcmp().
  *
- * @param str1 first string
- * @param str2 second string
- * @param n max number of symbols to compare
- * @return comparison result according to the lexicographical order
- * @retval 0 if the strings are equal
- * @return positive if @c str1 is greater than @c str2
- * @return negative if @c str1 is less than @c str2
+ * @param str1
+ *   The first string.
+ * @param str2
+ *   The second string.
+ * @param n
+ *   Maximum number of symbols to compare.
+ * @return
+ *   Comparison result according to the lexicographical order.
+ * @retval 0
+ *   If the strings are equal.
+ * @retval positive
+ *   If @a str1 is greater than @a str2
+ * @retval negative
+ *   If @a str1 is less than @a str2
+ *
+ * @see strcmp()
  */
 extern int strncmp(const char *str1, const char *str2, size_t n);
 

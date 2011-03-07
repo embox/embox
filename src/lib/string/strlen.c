@@ -1,9 +1,11 @@
 /**
  * @file
+ * @brief Implementation of #strlen() function.
  *
  * @date 23.11.09
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 
 int strlen(const char * str) {
