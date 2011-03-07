@@ -122,13 +122,6 @@ extern char *strcat(char *dest, const char *src);
 extern char *strncat(char *dest, const char *src, size_t n);
 
 /**
- * Compares the two strings s1 and s2.
- * @return an integer less than, equal to, or greater than zero
- *         if s1 is found, respectively.
- */
-extern int strcoll(const char *s1, const char *s2);
-
-/**
  * Find the first occurrence in S of any character in ACCEPT.
  */
 extern char *strpbrk(const char *s, const char *accept);
