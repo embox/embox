@@ -9,10 +9,13 @@
 #include <string.h>
 
 int strcmp(const char *str1, const char *str2) {
-	for (; *str1 == *str2; ++str1, ++str2) {
-		if (*str1 == 0) {
-			return 0;
-		}
+	unsigned const char *s1 = (unsigned const char *) str1;
+	unsigned const char *s2 = (unsigned const char *) str2;
+
+	while (*s1 && *s1 == *s2) {
+		++s1;
+		++s2;
 	}
-	return *(const unsigned char *) str1 - *(const unsigned char *) str2;
+
+	return *s1 - *s2;
 }

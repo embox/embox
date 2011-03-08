@@ -8,14 +8,18 @@
 
 #include <string.h>
 
-int strncmp(const char *s1, const char *s2, size_t count) {
-	if (!count)
-		return 0;
+int strncmp(const char *str1, const char *str2, size_t n) {
+	unsigned const char *s1 = (unsigned const char *) str1;
+	unsigned const char *s2 = (unsigned const char *) str2;
 
-	while (--count && *s1 && *s1 == *s2) {
-		s1++;
-		s2++;
+	if (!n) {
+		return 0;
 	}
 
-	return *(unsigned char *) s1 - *(unsigned char *) s2;
+	while (--n && *s1 && *s1 == *s2) {
+		++s1;
+		++s2;
+	}
+
+	return *s1 - *s2;
 }
