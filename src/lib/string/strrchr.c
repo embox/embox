@@ -13,7 +13,7 @@ char *strrchr(const char *str, int ch) {
 	const char *found = NULL;
 
 	if (!c) {
-		return str + strlen(str);
+		return (char *) str + strlen(str);
 	}
 
 	while ((str = strchr(str, ch))) {

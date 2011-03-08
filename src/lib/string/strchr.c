@@ -15,7 +15,7 @@ char *strchr(const char *str, int ch) {
 	char c = (char) ch;
 
 	if (!c) {
-		return str + strlen(str);
+		return (char *) str + strlen(str);
 	}
 
 	while (*str && *str != c) {
