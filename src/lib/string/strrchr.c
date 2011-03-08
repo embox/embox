@@ -1,22 +1,23 @@
 /**
  * @file
+ * @brief Implementation of #strrchr() function.
  *
  * @date 01.10.09
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 
-char *strrchr (const char *s, int c) {
-	const char *found, *p;
-	c = (unsigned char) c;
+char *strrchr(const char *str, int ch) {
+	char c = (char) ch;
+	const char *found = NULL;
 
-	if (c == '\0')
-		return strchr (s, '\0');
+	if (!c) {
+		return str + strlen(str);
+	}
 
-	found = NULL;
-	while ((p = strchr (s, c)) != NULL) {
-		found = p;
-		s = p + 1;
+	while ((str = strchr(str, ch))) {
+		found = str++;
 	}
 
 	return (char *) found;
