@@ -65,5 +65,6 @@ static int exec(int argsc, char **argsv) {
 
 	TRACE("loading...addr=0x%08x, size=%d\n", file_addr, sb.st_size);
 	memcpy((void *) load_addr, (void *) file_addr, sb.st_size);
+	fclose(file);
 	return 0;
 }

@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Implementation of #memcmp() function.
  *
  * @date 23.11.09
  * @author Nikolay Korotky

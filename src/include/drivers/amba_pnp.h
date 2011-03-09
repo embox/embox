@@ -14,19 +14,23 @@
 
 #define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) \
 	if (-1 == capture_amba_dev(dev, venID, devID, true, true)) { \
-	LOG_ERROR("can't capture ahbm dev venID=0x%X, devID=0x%X\n", venID, devID);\
-	return -1;\
+	LOG_ERROR("can't capture ahbm dev venID=0x%X, devID=0x%X\n", \
+			venID, devID); \
+	return -1; \
 }
+
 #define TRY_CAPTURE_AHBSL_DEV(dev,venID,devID) \
 	if (-1 == capture_amba_dev(dev, venID, devID, true, false)) { \
-	LOG_ERROR("can't capture ahbsl dev venID=0x%X, devID=0x%X\n", venID, devID);\
-	return -1;\
+	LOG_ERROR("can't capture ahbsl dev venID=0x%X, devID=0x%X\n", \
+			venID, devID); \
+	return -1; \
 }
 
 #define TRY_CAPTURE_APB_DEV(dev,venID,devID) \
 	if (-1 == capture_amba_dev(dev, venID, devID, false, false)) { \
-	LOG_ERROR("can't capture apb dev venID=0x%X, devID=0x%X\n", venID, devID);\
-	return -1;\
+	LOG_ERROR("can't capture apb dev venID=0x%X, devID=0x%X\n",    \
+			venID, devID); \
+	return -1; \
 }
 
 #define AHB_MASTER_BASE          0xFFFFF000 // max: 64 devices

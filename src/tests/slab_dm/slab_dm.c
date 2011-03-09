@@ -1,6 +1,8 @@
 /**
  * @file
  * @brief Test slab_dm allocator
+ *
+ * @date 22.12.10
  * @author Kirill Tyushev
  * @author Alexandr Kalmuk
  */
@@ -10,8 +12,7 @@
 #include <lib/list.h>
 #include <kernel/mm/slab_dm.h>
 
-EMBOX_TEST(run)
-;
+EMBOX_TEST(run);
 
 #define ADDR_OF_MAIN_CACHE 0x40000574
 
@@ -32,15 +33,16 @@ static int destroy_all_caches() {
 
 	return 0;
 }
+
 /**
  * testing smalloc() and sfree()
  * @return 0 on success
  */
-static int test_s_functions() {
+static int test_s_functions(void) {
 	kmem_cache_t *kmalloc_cache = ADDR_OF_MAIN_CACHE;
 	void* objp[30];
 	struct list_head *tmp;
-	int i;
+	size_t i;
 
 	for (i = 0; i < 10; i++) {
 		objp[i] = smalloc(8);
@@ -71,15 +73,16 @@ static int test_s_functions() {
 	return 0;
 }
 
-static void test1() {
+static void test1(void) {
 	void* objp[10];
+	size_t i;
 	kmem_cache_t *cachep = kmem_dmcache_create("cache1", 50);
 
-	for (int i = 0; i < 10; i++) {
+	for (i = 0; i < 10; i++) {
 		objp[i] = kmem_dmcache_alloc(cachep);
 	}
 
-	for (int i = 0; i < 10; i++) {
+	for (i = 0; i < 10; i++) {
 		kmem_dmcache_free(cachep, objp[i]);
 	}
 
@@ -88,7 +91,7 @@ static void test1() {
 	kmem_dmcache_shrink(cachep);
 }
 
-static void test2() {
+static void test2(void) {
 	kmem_cache_t *cachep;
 
 	for (int i = 0; i < 14; i++) {
@@ -98,7 +101,6 @@ static void test2() {
 }
 
 static int run(void) {
-	int result = 0;
 	if (0 != test_s_functions()) {
 		TRACE("smalloc test FAILED\n");
 		return -1;
@@ -106,5 +108,5 @@ static int run(void) {
 	test1();
 	test2();
 
-	return result;
+	return 0;
 }

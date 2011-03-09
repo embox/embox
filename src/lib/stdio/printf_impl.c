@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 19.11.2010
@@ -31,8 +30,10 @@
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
 
-static int prints(void (*printchar_handler)(char **str, int c), char **out, const char *string, int width, int pad) {
-	/*TODO: optimizations needed to be enabled in gcc (-O2) to make register qualifier work*/
+static int prints(void (*printchar_handler)(char **str, int c),
+		char **out, const char *string, int width, int pad) {
+	/*TODO: optimizations needed to be enabled in gcc (-O2)
+	 * to make register qualifier work*/
 	/*register*/int pc = 0, padchar = ' ';
 
 	if (width > 0) {
@@ -69,8 +70,8 @@ static int prints(void (*printchar_handler)(char **str, int c), char **out, cons
 /* the following should be enough for 32 bit int */
 #define PRINT_BUF_LEN 12
 
-static int printi(void (*printchar_handler)(char **str, int c), char **out, int i, int b, int sg, int width, int pad,
-		int letbase) {
+static int printi(void (*printchar_handler)(char **str, int c), char **out,
+		int i, int b, int sg, int width, int pad, int letbase) {
 	char print_buf[PRINT_BUF_LEN];
 	/*register*/
 	char *s;
@@ -116,7 +117,8 @@ static int printi(void (*printchar_handler)(char **str, int c), char **out, int 
 
 #define PRINTB_BUF_LEN 64
 
-static int printb(void (*printchar_handler)(char **str, int c), char **out, int i, int width, int dot) {
+static int printb(void (*printchar_handler)(char **str, int c),
+		char **out, int i, int width, int dot) {
 	char print_buf[PRINTB_BUF_LEN];
 	/*register*/
 	char *s;
@@ -147,7 +149,8 @@ static int printb(void (*printchar_handler)(char **str, int c), char **out, int 
 	return prints(printchar_handler, out, s, width + dc, 0);
 }
 
-int __print(void (*printchar_handler)(char **str, int c), char **out, const char *format, va_list args) {
+int __print(void (*printchar_handler)(char **str, int c),
+		char **out, const char *format, va_list args) {
 	/*register*/int width, pad;
 	/*register*/
 	int pc = 0;

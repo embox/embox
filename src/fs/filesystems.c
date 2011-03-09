@@ -57,8 +57,7 @@ static void free(file_system_driver_t *drv) {
 static int __init unit_init(void) {
 	fs_driver_head_t *head;
 	file_system_driver_t *root_fs;
-
-	int i;
+	size_t i;
 
 	init_pool();
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__fs_drivers_registry); i++) {

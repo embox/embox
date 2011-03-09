@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Transform date and time to broken-down time or ASCII
  *
  * @date 21.10.10
  * @author Nikolay Korotky

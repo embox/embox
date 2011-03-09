@@ -1,6 +1,9 @@
 /**
  * @file
- * @brief This file is derived from Embox test template.
+ * @brief Context switch test
+ *
+ * @date 20.04.10
+ * @author Eldar Abusalimov
  */
 
 #include <hal/context.h>
@@ -24,22 +27,14 @@ static void entry(int arg) {
 	TRACE("entry end (should not be reached)\n");
 }
 
-static void infinite (int arg) {
+static void infinite(int arg) {
 	while (true) {
 		TRACE("?");
 		context_switch(&infinite_context, &entry_context);
 	}
 }
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
-static int run(void) {
-	int result = 0;
 
+static int run(void) {
 	context_init(&entry_context, true);
 	context_set_entry(&entry_context, entry, 0);
 	context_set_stack(&entry_context, entry_stack + STACK_SZ);
@@ -52,5 +47,6 @@ static int run(void) {
 	context_switch(&redundant_context, &entry_context);
 	TRACE("test end\n");
 
-	return result;
+	return 0;
 }
+

@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Implementation of #strcat() function.
  *
  * @date 13.10.09
  * @author Nikolay Korotky
@@ -11,9 +12,9 @@ char *strcat(char *dest, const char *src) {
 	const char *s2 = src;
 	char c;
 
-	do
+	do {
 		c = *s1++;
-	while (c != '\0');
+	} while (c != '\0');
 
 	s1 -= 2;
 	do {

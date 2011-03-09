@@ -1,10 +1,10 @@
 /**
  * @file
  * @brief We have 2 threads. When inc_thread start it makes increment
- * 			and checking pipe at every iteration. When i becomes equal pipe data
- * 			dec_thread starting.
+ *        and checking pipe at every iteration. When i becomes equal
+ *        pipe data dec_thread starting.
  *
- * @date 11/2010
+ * @date 14.11.10
  * @author Muhin Vladimir
  */
 
@@ -25,8 +25,8 @@ static struct thread *dec_thread;
 const int flag = 50;
 
 int pipe[2] = {50, 0};  //our small pipe :-)
-						//first element is number of iterations before synchronize,
-						//second - some addition data
+			//first element is number of iterations before synchronize,
+			//second - some addition data
 EMBOX_TEST(run);
 
 static void synchronize(void) {
@@ -53,7 +53,7 @@ static void dec_run(void) {
 	}
 }
 
-static int run() {
+static int run(void) {
 	TRACE("\nHi! It's 256-thread!\n");
 	inc_thread = thread_create(inc_run, inc_stack + THREAD_STACK_SIZE);
 	dec_thread = thread_create(dec_run, dec_stack + THREAD_STACK_SIZE);

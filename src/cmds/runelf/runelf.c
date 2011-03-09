@@ -69,6 +69,6 @@ static int exec(int argsc, char **argsv) {
 //	thread_start(thread);
 //	scheduler_start();
 //	scheduler_stop();
-
+	fclose(file);
 	return 0;
 }

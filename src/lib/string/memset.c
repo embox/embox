@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Implementation of #memset() function.
  *
  * @date 23.11.09
  * @author Nikolay Korotky

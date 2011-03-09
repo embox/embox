@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 10.11.2010
@@ -11,7 +10,8 @@
 #include <stdarg.h>
 #include <types.h>
 
-int __print(void (*printchar_handler)(char **str, int c), char **out, const char *format, va_list args);
+int __print(void (*printchar_handler)(char **str, int c),
+		char **out, const char *format, va_list args);
 
 static void printchar(char **str, int c) {
 	if (str) {

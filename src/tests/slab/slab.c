@@ -1,24 +1,17 @@
 /**
  * @file
  * @brief Test slab allocator
+ *
+ * @date 29.11.10
  * @author Dmitry Zubarevich
  */
 
 #include <stdio.h>
-
 #include <embox/test.h>
 #include <lib/list.h>
 #include <kernel/mm/slab.h>
 
 EMBOX_TEST(run);
-
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
 
 struct list {
 	struct list_head *next, *prev;
@@ -28,12 +21,11 @@ struct list {
 static LIST_HEAD(int_list);
 
 static int run(void) {
-	int result = 0;
 	struct list_head *tmp_h;
-	int i;
+	size_t i;
 	int *ptr_array;
 	ptr_array = (int*) malloc(sizeof(int) * 10);
-	ADD_CACHE(cache,int,0x100);
+	ADD_CACHE(cache, int, 0x100);
 
 	TRACE("\t\t = Allocate list =\n");
 	for (i = 0; i <= 10; i++) {
@@ -43,7 +35,6 @@ static int run(void) {
 		}
 		TRACE("%d object is allocated\n",i);
 	}
-	i = 0;
 	TRACE("\n\n\t\t = Test free =\n");
 	for (i = 0; i <= 10; i++) {
 		kmem_cache_free(&cache, (void*) ptr_array[i]);
@@ -61,7 +52,6 @@ static int run(void) {
 
 	free(ptr_array);
 	TRACE("\ntest ");
-
-	return result;
+	return 0;
 }
 
