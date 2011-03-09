@@ -8,11 +8,11 @@
 
 #include <string.h>
 
-size_t strlen(const char * str) {
-	const char *eos = str;
+size_t strlen(const char *str) {
+	const char *s = str;
 
-	while (*eos++)
+	while (*s++)
 		;
 
-	return (int) (eos - str - 1);
+	return (size_t) (s - str - 1);
 }

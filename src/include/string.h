@@ -11,7 +11,7 @@
  * @author Nikolay Korotky
  *         - Major rework
  * @author Eldar Abusalimov
- *         - Documenting and library code cleanup (TODO in progress. -- Eldar)
+ *         - Documenting and library code cleanup
  */
 
 #ifndef STRING_H_
@@ -103,9 +103,9 @@ extern char *strncat(char *dst, const char *src, size_t n);
  * @retval 0
  *   If the strings are equal.
  * @retval positive
- *   If @a str1 is greater than @a str2
+ *   If @a str1 is greater than @a str2.
  * @retval negative
- *   If @a str1 is less than @a str2
+ *   If @a str1 is less than @a str2.
  *
  * @see strncmp()
  */
@@ -126,17 +126,17 @@ extern int strcmp(const char *str1, const char *str2);
  * @retval 0
  *   If the strings are equal.
  * @retval positive
- *   If @a str1 is greater than @a str2
+ *   If @a str1 is greater than @a str2.
  * @retval negative
- *   If @a str1 is less than @a str2
+ *   If @a str1 is less than @a str2.
  *
  * @see strcmp()
  */
 extern int strncmp(const char *str1, const char *str2, size_t n);
 
 /**
- * Finds the first occurrence of the character @a ch (converted to a char) in
- * the given null-terminated string.
+ * Finds the first occurrence of the character @a ch (converted to a @c char)
+ * in the given null-terminated string.
  *
  * @param str
  *   The null-terminated string to search for @a ch occurrence.
@@ -183,43 +183,84 @@ extern char *strrchr(const char *str, int ch);
 extern char *strstr(const char *haystack, const char *needle);
 
 /**
- * Returns the string representation of an error number e.g. errno.
+ * Maps given error code to its string representation.
  *
- * @param errnum error code
- * @return C-style string, containing an error message
+ * @param errno
+ *   The error code.
+ * @return
+ *   C-style string, containing a descriptive error message
  */
-extern char *strerror(int errnum);
+extern char *strerror(int errno);
 
 /**
- * copy one massive of bytes to another
- * @param dst pointer to first byte in dst mass
- * @param src pointer to first byte in src mass
- * @return pointer to first byte in dst mass
+ * Copies @a n bytes from @a src to @a dst which must be two non-overlapping
+ * buffers.
+ *
+ * @param dst
+ *   Destination buffer.
+ * @param src
+ *   The object in memory being copied.
+ * @param n
+ *   The number of bytes to copy.
+ * @return
+ *   Pointer to the destination buffer.
+ *
+ * @note
+ *   The behavior is undefined if the two arrays overlap.
+ * @see memmove()
+ *   Use it instead if overlapping of @a src and @a dst is possible.
  */
 extern void *memcpy(void *dst, const void *src, size_t n);
 
 /**
- * Copy n bytes of src to dest, guaranteeing
- * correct behavior for overlapping strings.
- * @return dst
+ * Copies @a n bytes from @a src to @a dst handling possible memory
+ * overlapping.
+ *
+ * @param dst
+ *   Destination buffer.
+ * @param src
+ *   The object in memory being copied.
+ * @param n
+ *   The number of bytes to copy.
+ * @return
+ *   Pointer to the destination buffer.
  */
 extern void *memmove(void *dst, const void *src, size_t n);
 
 /**
- * set massive of bytes pointed value
- * @param p pointer to first byte in massive
- * @return pointer to first byte in massive
+ * Fills @a n bytes of memory starting at given @a ptr with the value of @a c
+ * converted to @code unsigned char @endcode.
+ *
+ * @param ptr
+ *   Pointer to the memory being filled.
+ * @param c
+ *   The pattern
+ * @param n
+ *   The number of bytes to fill.
+ * @return
+ *   Pointer to the buffer.
  */
-extern void *memset(void *p, int c, size_t n);
+extern void *memset(void *ptr, int c, size_t n);
 
 /**
- * comparing 2 massive of bytes
- * @param dst first mass
- * @param src second mass
- * @return 0 if equal
- * @return positive if dst > src
- * @return negotive if  dst < src
+ * Compares the @c n bytes of memory beginning at @a ptr1 against the @c n
+ * bytes of memory beginning at @a ptr2.
+ *
+ * @param ptr1
+ *   Pointer to the first memory block.
+ * @param ptr2
+ *   Pointer to the second memory block.
+ * @param n
+ *   Number of bytes to compare.
+ * @return
+ *   The difference between the first differing pair of bytes (if any).
+ * @retval 0
+ *   If the memory blocks are equal.
+ * @retval positive
+ *   If the first memory block is greater than the second.
+ * @retval negative
+ *   If the first memory block is less than the second.
  */
-extern int memcmp(const void *dst, const void *src, size_t n);
+extern int memcmp(const void *ptr1, const void *ptr2, size_t n);
 
 #endif /* STRING_H_ */
