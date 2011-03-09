@@ -12,6 +12,7 @@
 #include <lib/readline.h>
 #include <stdio.h>
 #include <shell_utils.h>
+#include <cmd/framework.h>
 
 EMBOX_UNIT(esh_start, esh_stop);
 
