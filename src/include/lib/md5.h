@@ -75,9 +75,6 @@ extern "C"
 {
 #endif
 
-/*Count the md5 checksum */
-unsigned char *count_md5(unsigned char *addr, unsigned char *end_addr, unsigned char *pmd5_sum);
-
 /* Initialize the algorithm. */
 void md5_init(md5_state_t *pms);
 
@@ -85,7 +82,7 @@ void md5_init(md5_state_t *pms);
 void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes);
 
 /* Finish the message and return the digest. */
-void md5_finish(md5_state_t *pms, md5_byte_t *digest);
+void md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
 
 #ifdef __cplusplus
 }  /* end extern "C" */
