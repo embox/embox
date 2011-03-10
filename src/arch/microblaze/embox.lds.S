@@ -20,10 +20,17 @@ _text_end = _text_vma + _text_len;
 
 SECTIONS {
 
+/*	.trap_table : {
+		ALIGNMENT();
+		*(.trap_table)
+		ALIGNMENT();
+	} SECTION_REGION(trap_table)
+	SECTION_SYMBOLS(trap_table)
+*/
 	.text : {
 		ALIGNMENT();
 		*(.trap_table)
-		. = ALIGN(0x100);
+		//. = ALIGN(0x100);
 		*(.text)
 		*(.init.text)
 		ALIGNMENT();
