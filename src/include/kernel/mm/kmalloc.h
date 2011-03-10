@@ -33,12 +33,5 @@ extern void *kmalloc(size_t size);
  */
 extern void kfree(void *ptr);
 
-/**
- * Return list of free and busy blocks in heap.
- *
- * @param list of free and busy blocks
- */
-extern void kmget_blocks_info(struct list_head* list);
-
-#endif /* KMALLOC_H_ */
+#endif /* KMALLOC_H */
 

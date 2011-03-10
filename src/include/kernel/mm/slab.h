@@ -1,53 +1,75 @@
 /**
  * @file
- * @brief slab allocator header
+ * @brief Slab allocator
+ * @details
+ *		Divide up memory into pools of objects, where each pool
+ *		contains objects of the same size, and
+ *		different pools contain objects of other sizes.
+ *
+ *		Pools are named by slabs.
+ *
+ *		Cache cantains list of pools.
+ *
+ *		Slabs that contains objects of the same size adds to one cache.
+ *
+ *		Slabs that contains objects of the different size adds to different caches.
+ *
+ *		Cache descriptors alloc in kmalloc_cache and add to list of caches.
+ *
+ * @date 14.12.2010
+ * @author Dmitry Zubarvich
+ * @author Kirill Tyushev
  */
 
-#ifndef SLAB_H
-#define SLAB_H
+/**
+ * 	kmalloc and kfree
+ *
+ * 	When someone requests a block of memory of a given size,
+ * 	find the first pool large enough to hold a
+ * 	block that size and hand it over.
+ */
+
+#ifndef SLAB_H_
+#define SLAB_H_
 
 #include <lib/list.h>
+#include <impl/kernel/slab.h>
+
+/** cache descriptor */
+typedef struct cache cache_t;
 
 /**
- * cache descriptor
+ * Create of cache
+ * @param name of cache
+ * @param obj_size is size of contained objects
  */
-typedef struct kmem_cache {
-	char* cache_begin;
-	/* object size */
-	size_t size;
-	/* the number of objects stored on each slab */
-	unsigned int num;
-	struct list_head obj_ptr;
-	int hasinit;
-} kmem_cache_t;
-
-#define ALIGN_UP(size, align) \
-     (((size) + (align) - 1) & (~((align) - 1)))
-
-#define CACHE_ALIGN(size) \
-			ALIGN_UP(size, 4)
-
-#define ADD_CACHE(name, type, count) \
-  static char __name_pool[count * ALIGN_UP(sizeof(type), sizeof(struct list_head))]; \
-  static kmem_cache_t name = { \
-        .num = count, \
-        .size = ALIGN_UP(sizeof(type), sizeof(struct list_head)), \
-        .cache_begin = __name_pool, \
-        .obj_ptr = {NULL, NULL}, \
-        .hasinit = 0 };
+extern cache_t *cache_create(char *name, size_t obj_size);
 
 /**
- * allocate single object from the cache and return it to the caller
- * @param cache corresponding to allocating object
- * @return the address of allocated object
+ * Destroy of cache
+ * @param cache_ptr is pointer to cache which must be deleted
  */
-void* kmem_cache_alloc(kmem_cache_t* cachep);
+extern void cache_destroy(cache_t *cache_ptr);
 
 /**
- * free an object and return it to the cache
- * @param cachep corresponding to freeing object
- * @param objp which will be free
+ * Return pointer to object for which allocate memory
+ * @param cachep is pointer to cache which must contain object of this type
  */
-void kmem_cache_free(kmem_cache_t* cachep, void* objp);
+extern void *cache_alloc(cache_t *cachep);
+
+/**
+ * Free memory from something object
+ * @param cachep is pointer to cache which must contain object of this type
+ * @param objp is object which must be deleted
+ */
+extern void cache_free(cache_t *cachep, void* objp);
+
+/**
+ * Remove all free slabs from cache
+ * will be used in feature
+ * @param cachep is pointer to cache which need to shrink
+ * @return number of removed slabs
+ */
+extern int cache_shrink(cache_t *cachep);
 
 #endif /* SLAB_H_ */
