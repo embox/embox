@@ -10,38 +10,13 @@
 #include <asm/ptrace.h>
 #include <asm/regs.h>
 
-	.section ".trap_table"
-	.balign 0x8
-C_ENTRY(_start):
-	brai boot_start
-	.balign 0x8
-	brai _user_exception
-	.balign 0x8
-	brai _interrupt_handler
-	.balign 0x8
-	brai _debug_exception
-	.balign 0x8
-	brai _hw_exception_handler
-
-	nop
-	nop
-	nop
-	nop
-
-	nop
-	nop
-	nop
-	nop
-
-	nop
-	nop
-
 	.section ".text"
-
+#if 0
 C_ENTRY(_hardreset):
 	brai boot_start
 	nop
 	nop
+#endif
 //XXX Microblaze not suport nested irq
 C_ENTRY(_interrupt_handler):
 	addik	r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */

@@ -29,7 +29,8 @@ C_ENTRY(boot_start):
 	addik r6, r0, _start
 	beqi  r6, 1f
 	nop
-
+	/*set stack pointer*/
+	addi  reg_sp, reg_zero, _stack
 set_trap_table:
 /*now we will be set interrrupts and other vectors.
 at the first we set 0xb000 0000 (code IMM instruction) and 0xb808 0000 (code BRAI instruction)
@@ -50,7 +51,7 @@ how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide 
 
 	/* now we set real handler*/
 	/*Reset/start*/
-	SET_HANDLER(0x00, _hardreset);
+	SET_HANDLER(0x00, _start);
 	/*User exception*/
 	SET_HANDLER(0x08, _user_exception);
 	/*Inerrupt*/
