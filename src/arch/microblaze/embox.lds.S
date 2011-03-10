@@ -29,8 +29,10 @@ SECTIONS {
 */
 	.text : {
 		ALIGNMENT();
+		_ivt_start = .;
 		*(.trap_table)
-		//. = ALIGN(0x100);
+		_ivt_end = .;
+		. = ALIGN(0x100);
 		*(.text)
 		*(.init.text)
 		ALIGNMENT();
@@ -44,10 +46,10 @@ SECTIONS {
 
 	.data : {
 		ALIGNMENT();
-		_data_start = .;
+		//_data_start = .;
 		*(.data)
 		ALIGNMENT();
-		_data_end = .;
+		//_data_end = .;
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 

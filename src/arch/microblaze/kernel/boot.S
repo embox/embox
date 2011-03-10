@@ -26,12 +26,22 @@
 C_ENTRY(boot_start):
 	mts	rmsr, reg_zero	/* disable cache, interrupts, exceptions */
 
-	addik r6, r0, _start
+	addik r6, r0, _start /* whether copy interrupt vector table ? */
 	beqi  r6, 1f
 	nop
 	/*set stack pointer*/
 	addi  reg_sp, reg_zero, _stack
+
 set_trap_table:
+	addik r5, r0, 0
+	addik r6, r0, _ivt_start
+	addik r7, r0, 0x100
+
+
+	brlid r15, memcpy
+	nop
+
+	#if 0
 /*now we will be set interrrupts and other vectors.
 at the first we set 0xb000 0000 (code IMM instruction) and 0xb808 0000 (code BRAI instruction)
 how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide */
@@ -60,6 +70,7 @@ how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide 
 	SET_HANDLER(0x18, _debug_exception);
 	/*Hardware exception*/
 	SET_HANDLER(0x20, _hw_exception_handler);
+#endif
 
 1:
 	/* enable instruction and data cache */
