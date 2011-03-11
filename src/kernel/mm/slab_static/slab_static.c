@@ -1,7 +1,6 @@
 /**
  *@file
- *@brief slab allocator
- * some beginning in this way
+ *@brief Static slab allocator
  *
  *@date 27.11.2010
  *@author Alexandr Kalmuk
