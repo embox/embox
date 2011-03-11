@@ -28,7 +28,7 @@ static void nxt_flash(void) {
 }
 
 static int power_mng_test(void) {
-	TRACE("L:HALT R:FLASH\n");
+//	TRACE("L:HALT R:FLASH\n");
 	while (true) {
 		int buts = nxt_buttons_was_pressed();
 		if (buts & BT_LEFT) {
