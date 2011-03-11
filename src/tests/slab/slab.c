@@ -1,9 +1,10 @@
 /**
  * @file
- * @brief Test slab allocator
+ * @brief Test slab_dm allocator
  *
- * @date 29.11.10
- * @author Dmitry Zubarevich
+ * @date 22.12.10
+ * @author Kirill Tyushev
+ * @author Alexandr Kalmuk
  */
 
 #include <stdio.h>
@@ -13,45 +14,99 @@
 
 EMBOX_TEST(run);
 
-struct list {
-	struct list_head *next, *prev;
-	int p;
-};
+#define ADDR_OF_MAIN_CACHE 0x40000574
 
-static LIST_HEAD(int_list);
+/**
+ * function to free cache list
+ * @return 0 on success
+ */
+static int destroy_all_caches() {
+	cache_t *kmalloc_cache = ADDR_OF_MAIN_CACHE;
+	cache_t *cachep;
 
-static int run(void) {
-	struct list_head *tmp_h;
-	size_t i;
-	int *ptr_array;
-	ptr_array = (int*) malloc(sizeof(int) * 10);
-	ADD_CACHE(cache, int, 0x100);
-
-	TRACE("\t\t = Allocate list =\n");
-	for (i = 0; i <= 10; i++) {
-		ptr_array[i] = (int*) kmem_cache_alloc(&cache);
-		if (ptr_array[i] == 0) {
-			return -1;
-		}
-		TRACE("%d object is allocated\n",i);
-	}
-	TRACE("\n\n\t\t = Test free =\n");
-	for (i = 0; i <= 10; i++) {
-		kmem_cache_free(&cache, (void*) ptr_array[i]);
-		TRACE("%d object is freed\n",i);
-	}
-	i = 0;
-	list_for_each(tmp_h, &((&cache)->obj_ptr)) {
-		i++;
+	while (1) {
+		cachep = (cache_t*) kmalloc_cache->next.next;
+		if (&cachep->next == &kmalloc_cache->next)
+			break;
+		cache_destroy(cachep);
 	}
 
-	if (i != (&cache)->num) {
-		TRACE("Error: no all are freed!");
-		return -1;
-	}
-
-	free(ptr_array);
-	TRACE("\ntest ");
 	return 0;
 }
 
+/**
+ * testing smalloc() and sfree()
+ * @return 0 on success
+ */
+static int test_s_functions(void) {
+	cache_t *kmalloc_cache = ADDR_OF_MAIN_CACHE;
+	void* objp[30];
+	struct list_head *tmp;
+	size_t i;
+
+	for (i = 0; i < 10; i++) {
+		objp[i] = kmalloc(8);
+	}
+	for (i = 10; i < 20; i++) {
+		objp[i] = kmalloc(16);
+	}
+	for (i = 20; i < 30; i++) {
+		objp[i] = kmalloc(32);
+	}
+	/*how many caches are in cache list*/
+	i = 0;
+	list_for_each(tmp,&(kmalloc_cache->next)) {
+		i++;
+	}
+	TRACE("\n%d caches were created for 3 types\n", i);
+
+	for (i = 0; i < 30; i++) {
+		kfree(objp[i]);
+	}
+	destroy_all_caches();
+	i = 0;
+	list_for_each(tmp,&(kmalloc_cache->next)) {
+		i++;
+	}
+	TRACE("%d caches now\n", i);
+
+	return 0;
+}
+
+static void test1(void) {
+	void* objp[10];
+	size_t i;
+	cache_t *cachep = cache_create("cache1", 50);
+
+	for (i = 0; i < 10; i++) {
+		objp[i] = cache_alloc(cachep);
+	}
+
+	for (i = 0; i < 10; i++) {
+		cache_free(cachep, objp[i]);
+	}
+
+	cache_destroy(cachep);
+
+	cache_shrink(cachep);
+}
+
+static void test2(void) {
+	cache_t *cachep;
+
+	for (int i = 0; i < 14; i++) {
+		cachep = cache_create("cache1", 1 << i);
+		cache_destroy(cachep);
+	}
+}
+
+static int run(void) {
+	if (0 != test_s_functions()) {
+		TRACE("smalloc test FAILED\n");
+		return -1;
+	}
+	test1();
+	test2();
+
+	return 0;
+}

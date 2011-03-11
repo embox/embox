@@ -1,24 +1,17 @@
 /**
  * @file
  * @brief Test slab allocator
+ *
+ * @date 29.11.10
  * @author Dmitry Zubarevich
  */
 
 #include <stdio.h>
-
 #include <embox/test.h>
 #include <lib/list.h>
-#include <kernel/mm/slab.h>
+#include <kernel/mm/slab_static.h>
 
 EMBOX_TEST(run);
-
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
 
 struct list {
 	struct list_head *next, *prev;
@@ -26,27 +19,24 @@ struct list {
 };
 
 static LIST_HEAD(int_list);
+STATIC_CACHE_CREATE(cache, int, 0x100);
 
 static int run(void) {
-	int result = 0;
 	struct list_head *tmp_h;
-	int i;
-	int *ptr_array;
-	ptr_array = (int*) malloc(sizeof(int) * 10);
-	ADD_CACHE(cache,int,0x100);
+	size_t i;
+	int *ptr_array[11];
 
 	TRACE("\t\t = Allocate list =\n");
 	for (i = 0; i <= 10; i++) {
-		ptr_array[i] = (int*) kmem_cache_alloc(&cache);
+		ptr_array[i] = (int*) static_cache_alloc(&cache);
 		if (ptr_array[i] == 0) {
 			return -1;
 		}
 		TRACE("%d object is allocated\n",i);
 	}
-	i = 0;
 	TRACE("\n\n\t\t = Test free =\n");
 	for (i = 0; i <= 10; i++) {
-		kmem_cache_free(&cache, (void*) ptr_array[i]);
+		static_cache_free(&cache, (void*) ptr_array[i]);
 		TRACE("%d object is freed\n",i);
 	}
 	i = 0;
@@ -59,9 +49,7 @@ static int run(void) {
 		return -1;
 	}
 
-	free(ptr_array);
 	TRACE("\ntest ");
-
-	return result;
+	return 0;
 }
 
