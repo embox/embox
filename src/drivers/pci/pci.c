@@ -17,8 +17,8 @@ EMBOX_UNIT_INIT(pci_init);
 
 static LIST_HEAD(root_bus);
 
-static pci_bus_t bus_pool[PCI_BUS_QUANTITY];
-static pci_dev_t dev_pool[PCI_BUS_QUANTITY * PCI_DEV_QUANTITY];
+//static pci_bus_t bus_pool[PCI_BUS_QUANTITY];
+//static pci_dev_t dev_pool[PCI_BUS_QUANTITY * PCI_DEV_QUANTITY];
 
 //TODO: move to lspci cmd
 
@@ -83,9 +83,9 @@ uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
 	return 0;
 }
 
-static inline char *find_vendor_name(uint16_t ven_id) {
+static inline const char *find_vendor_name(uint16_t ven_id) {
 	size_t i;
-	for (i = 0; i < sizeof(pci_vendors); i++) {
+	for (i = 0; i < ARRAY_SIZE(pci_vendors); i++) {
 		if (pci_vendors[i].ven_id == ven_id) {
 			return pci_vendors[i].ven_name;
 		}
@@ -93,9 +93,9 @@ static inline char *find_vendor_name(uint16_t ven_id) {
 	return NULL;
 }
 
-static inline char *find_device_name(uint16_t dev_id) {
+static inline const char *find_device_name(uint16_t dev_id) {
 	size_t i;
-	for (i = 0; i < sizeof(pci_devices); i++) {
+	for (i = 0; i < ARRAY_SIZE(pci_devices); i++) {
 		if (pci_devices[i].dev_id == dev_id) {
 			return pci_devices[i].dev_name;
 		}
@@ -103,15 +103,20 @@ static inline char *find_device_name(uint16_t dev_id) {
 	return NULL;
 }
 
-static inline char *find_class_name(uint8_t base, uint8_t sub) {
+static inline const char *find_class_name(uint8_t base, uint8_t sub) {
 	size_t i;
-	for (i = 0; i < sizeof(pci_subclasses); i++) {
+	for (i = 0; i < ARRAY_SIZE(pci_subclasses); i++) {
 		if (pci_subclasses[i].baseclass == base &&
 		    pci_subclasses[i].subclass == sub) {
 			return pci_subclasses[i].name;
 		}
 	}
-	return pci_baseclasses[i].name;
+	for (i = 0; i < ARRAY_SIZE(pci_baseclasses); i++) {
+		if (pci_baseclasses[i].baseclass == base) {
+			return pci_baseclasses[i].name;
+		}
+	}
+	return NULL;
 }
 
 static void scan_bus(void) {
@@ -161,4 +166,3 @@ static int __init pci_init(void) {
 	scan_bus();
 	return 0;
 }
-

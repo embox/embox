@@ -7,7 +7,7 @@
  */
 
 #include <embox/cmd.h>
-
+#include <string.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <util/array.h>
@@ -37,8 +37,7 @@ static int exec(int argc, char **argv) {
 			printf("Manual entry for %s:\n%s\n\n", name, cmd_details(cmd));
 		} else {
 			// XXX remove. -- Eldar
-			shell_desc
-					= shell_command_descriptor_find_first(name, strlen(name));
+			shell_desc = shell_command_descriptor_find_first(name, strlen(name));
 			if (shell_desc != NULL) {
 				printf("%s: Man for command using deprecated API.\n", name);
 				printf("%s\n\n", *shell_desc->man_page);

@@ -278,7 +278,7 @@ static const struct net_device_ops _netdev_ops = {
 
 static int __init unit_init(void) {
 	net_device_t *nic;
-	uint8_t *mac;
+//	uint8_t *mac;
 	uint16_t new_command, pci_command;
 	uint8_t  pci_latency;
 

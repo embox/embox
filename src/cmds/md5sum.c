@@ -18,6 +18,7 @@ static void print_usage(void) {
 }
 
 static int exec(int argc, char **argv) {
+	int opt;
 	FILE *fd;
 	stat_t st;
 	uint32_t addr;
@@ -25,6 +26,18 @@ static int exec(int argc, char **argv) {
 	md5_byte_t digest[16];
 	char hex_output[16*2 + 1];
 	int di;
+
+	getopt_init();
+	while (-1 != (opt = getopt(argc, argv, "h"))) {
+		switch (opt) {
+		case '?':
+		case 'h':
+			print_usage();
+		default:
+			return 0;
+		}
+	}
+
 	/* Get size and file's base addr */
 	fd = fopen(argv[argc - 1], "r");
 	fioctl(fd, 0, &addr);
