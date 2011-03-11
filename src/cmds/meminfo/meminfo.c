@@ -10,8 +10,7 @@
 
 #include <shell_command.h>
 #include <kernel/mm/mpallocator.h>
-#include <kernel/mm/kmalloc.h>
-#include <kernel/mm/slab_dm.h>
+#include <kernel/mm/slab.h>
 #include <kernel/mm/slab_statistic.h>
 #include <lib/list.h>
 #include <stdlib.h>
@@ -33,8 +32,7 @@ static LIST_HEAD(sblocks_info_list);
 static LIST_HEAD(all_caches_list);
 
 /**
- * write memory statistic for mpallocator or kmalloc
- *
+ * Write memory statistic for mpallocator or kmalloc
  * @param list of free and busy blocks
  */
 static void print_kmstatistic(struct list_head* list) {
@@ -126,14 +124,7 @@ static void print_stat_for_slab(struct list_head* list) {
 static void print_sstatistic(struct list_head* pseudo_list) {
 	struct list_head* cur_elem_cache;
 	struct list_head* cur_elem_slab;
-	kmem_cache_t *cur_cachep;
-	void *obj_ptr;
-
-	smalloc(256);
-	obj_ptr = smalloc(256);
-	smalloc(256);
-	sfree(obj_ptr);
-	smalloc(128);
+	cache_t *cur_cachep;
 
 	make_caches_list(pseudo_list);
 
@@ -141,7 +132,7 @@ static void print_sstatistic(struct list_head* pseudo_list) {
 	/* analyze caches descriptors */
 	do {
 		cur_elem_cache = cur_elem_cache->next;
-		cur_cachep = (kmem_cache_t*) cur_elem_cache;
+		cur_cachep = (cache_t*) cur_elem_cache;
 		printf("name of cache: %s\n", cur_cachep->name);
 		/* print statistic for each slab in appropriate slab list of cur_cache */
 		printf("free slabs:\n");
@@ -200,9 +191,9 @@ static int exec(int argsc, char **argsv) {
 			delete_list(&mpblocks_info_list);
 			return 0;
 		case 'k':
-			kmget_blocks_info(&kmblocks_info_list);
-			print_kmstatistic(&kmblocks_info_list);
-			delete_list(&kmblocks_info_list);
+			//kmget_blocks_info(&kmblocks_info_list);
+			//print_kmstatistic(&kmblocks_info_list);
+			//delete_list(&kmblocks_info_list);
 			return 0;
 		case 's':
 			print_sstatistic(&all_caches_list);
