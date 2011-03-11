@@ -3,7 +3,7 @@
  * @brief Low level functions for interrupt controller
  *
  * @date 23.11.2009
- * @author: Anton Bondarev
+ * @author Anton Bondarev
  */
 
 #include <types.h>

@@ -112,7 +112,7 @@ int timer_init(void) {
 	size_t i;
 	cnt_sys_time = 0;
 	for (i = 0; i < ARRAY_SIZE(sys_timers); i++) {
-		list_add((struct list_head *)&sys_timers[i], &free_sys_timers_list);
+		list_add((struct list_head *) &sys_timers[i], &free_sys_timers_list);
 	}
 	clock_init();
 	clock_setup(TIMER_FREQUENCY);

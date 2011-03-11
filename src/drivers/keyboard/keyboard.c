@@ -218,7 +218,7 @@ static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 	uint8_t scancode;
 	scancode = in8(DATA_PORT);
 	//TODO:
-	TRACE("keycode 0x%X", scancode);
+	TRACE("keycode 0x%X\n", scancode);
 	return IRQ_HANDLED;
 }
 

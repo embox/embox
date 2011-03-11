@@ -65,7 +65,7 @@ const struct test *test_lookup(const char *name) {
 	const struct test *test;
 
 	test_foreach(test) {
-		if (strcmp(test_name(test), name) == 0){
+		if (strcmp(test_name(test), name) == 0) {
 			return test;
 		}
 	}

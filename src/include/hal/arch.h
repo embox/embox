@@ -10,7 +10,6 @@
 #define HAL_ARCH_H_
 
 #include <asm/hal/arch.h>
-
 #include <types.h>
 
 typedef enum {

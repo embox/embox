@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <md5.h>
+#include <lib/md5.h>
 #include <embox/test.h>
 
 EMBOX_TEST(run);

@@ -19,7 +19,7 @@ char *strstr(const char *haystack, const char *needle) {
 	for (; *haystack; ++haystack) {
 		const char *h = haystack, *n = needle;
 
-		while(*h && *h == *n) {
+		while (*h && *h == *n) {
 			++h;
 			++n;
 		}

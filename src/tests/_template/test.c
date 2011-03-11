@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief This file is derived from Embox test template.
+ * @brief TODO This file is derived from Embox test template.
  *
  * @date
- * @author
+ * @author TODO Your name here
  */
 
 #include <embox/test.h>

@@ -124,8 +124,8 @@ static void fruit_draw(void) {
 	while (!space(field[f2d(p.x, p.y)])) {
 		unsigned int t = random() % ((SIZE_X - 3) * (SIZE_Y - 3));
 		p = d2f(t);
-		p.x ++;
-		p.y ++;
+		p.x++;
+		p.y++;
 	}
 	draw(p, FRU);
 	draw_nxt_fruit(p);

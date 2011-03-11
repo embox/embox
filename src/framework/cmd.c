@@ -32,7 +32,7 @@ const struct cmd *cmd_lookup(const char *name) {
 	const struct cmd *cmd;
 
 	cmd_foreach(cmd) {
-		if (strcmp(cmd_name(cmd), name) == 0){
+		if (strcmp(cmd_name(cmd), name) == 0) {
 			return cmd;
 		}
 	}

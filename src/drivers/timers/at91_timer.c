@@ -33,4 +33,3 @@ void clock_setup(useconds_t useconds) {
 	    (useconds * AT91C_PIT_USECOND));
 }
 
-

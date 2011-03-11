@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Timer Counter interface realization
  *
  * @date

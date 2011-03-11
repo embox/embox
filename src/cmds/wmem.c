@@ -51,14 +51,14 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "a:v:h"))) {
 		switch (opt) {
 		case 'a':
-			if(0 != parse_option(optarg, opt, (long int *) &address)) {
+			if (0 != parse_option(optarg, opt, (long int *) &address)) {
 				return -1;
 			}
 			a_flag = true;
 			break;
 
 		case 'v':
-			if(0 != parse_option(optarg, opt, (long int *) &value)) {
+			if (0 != parse_option(optarg, opt, (long int *) &value)) {
 				return -1;
 			}
 			v_flag = true;

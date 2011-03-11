@@ -50,14 +50,14 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "a:n:h"))) {
 		switch (opt) {
 		case 'a':
-			if(0 != parse_option(optarg, opt, (long int *) &address)) {
+			if (0 != parse_option(optarg, opt, (long int *) &address)) {
 				return -1;
 			}
 			a_flag = true;
 			break;
 
 		case 'n':
-			if(0 != parse_option(optarg, opt, (long int *) &length)) {
+			if (0 != parse_option(optarg, opt, (long int *) &length)) {
 				return -1;
 			}
 			break;
@@ -80,7 +80,7 @@ static int exec(int argc, char **argv) {
 	address = (unsigned int *) ((int) address & ~(sizeof(address) - 1));
 	length = (length + sizeof(address) - 1) / sizeof(address);
 	i = 0;
-	while(length--) {
+	while (length--) {
 		if (i-- == 0) {
 			i = 3;
 			printf("\n0x%08x:\t", (unsigned int) address);

@@ -2,7 +2,7 @@
  * @file
  * @brief The external API for accessing available cmds.
  *
- * @date Mar 1, 2011
+ * @date 01.03.11
  * @author Eldar Abusalimov
  */
 
