@@ -21,7 +21,7 @@ static void static_cache_init(static_cache_t* cache) {
 	cache->obj_ptr.next = &(cache->obj_ptr);
 	cache->obj_ptr.prev = &(cache->obj_ptr);
 	for (int i = 0; i < cache->num; i++) {
-		elem = (struct list_head*) cache->cache_begin + cache->size * i;
+		elem = (struct list_head*) (cache->cache_begin + cache->size * i);
 
 		/*add this free block in slab_list*/
 		list_add(elem, &(cache->obj_ptr));
