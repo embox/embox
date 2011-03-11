@@ -41,7 +41,7 @@ SECTIONS {
 	} SECTION_REGION(reloc)
 	SECTION_SYMBOLS(reloc)
 
-	.rodata (NOLOAD) : {
+	.rodata : {
 		LDS_INPUT_RODATA
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)

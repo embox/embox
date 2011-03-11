@@ -39,7 +39,7 @@ SECTIONS {
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
-	.rodata (NOLOAD) : {
+	.rodata : {
 		LDS_INPUT_RODATA
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
