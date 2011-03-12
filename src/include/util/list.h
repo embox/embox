@@ -24,6 +24,8 @@ struct list_link;
 extern struct list *list_init(struct list *list);
 extern struct list_link *list_link_init(struct list_link *link);
 
+extern int list_empty(struct list *list);
+
 #define list_foreach(element, list, link_member) \
 	  __list_foreach(element, list, link_member)
 
@@ -47,8 +49,6 @@ extern struct list_link *list_link_init(struct list_link *link);
 
 #define list_foreach_link(link, list) \
 	  __list_foreach_link(link, list)
-
-extern int list_empty(struct list *list);
 
 extern void list_add_first_link(struct list_link *link, struct list *list);
 extern void list_add_last_link(struct list_link *link, struct list *list);
