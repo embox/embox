@@ -5,21 +5,19 @@
  * @date 16.11.09
  * @author Nikolay Korotky
  */
-#include <shell_command.h>
+#include <embox/cmd.h>
+#include <getopt.h>
 #include <net/route.h>
 #include <net/inetdevice.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define COMMAND_NAME     "route"
-#define COMMAND_DESC_MSG "manipilate routing table"
-#define HELP_MSG         "Usage: route [-nmgdh] [add|del]"
-static const char *man_page =
-	#include "route_help.inc"
-	;
+EMBOX_CMD(exec);
 
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+static void print_usage(void) {
+	printf("Usage: route [-nmgdh] [add|del]\n");
+}
 
 static int exec(int argsc, char **argsv) {
 	int nextOption;
@@ -33,7 +31,7 @@ static int exec(int argsc, char **argsv) {
 		nextOption = getopt(argsc, argsv, "n:m:d:g:h");
 		switch(nextOption) {
 		case 'h':
-			show_help();
+			print_usage();
 			return 0;
 		case 'n':
 			if ((net = inet_addr(optarg)) == INADDR_NONE) {

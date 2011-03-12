@@ -5,18 +5,16 @@
  * @date 24.04.09
  * @author Nikolay Korotky
  */
-#include <shell_command.h>
+#include <embox/cmd.h>
+#include <getopt.h>
 #include <net/arp.h>
 #include <netutils.h>
 
-#define COMMAND_NAME     "arp"
-#define COMMAND_DESC_MSG "manipulate the system ARP cache"
-#define HELP_MSG         "Usage: arp [-i if] [-s|d] [-a host] [-m hwaddr] [-h]"
-static const char *man_page =
-	#include "arp_help.inc"
-	;
+EMBOX_CMD(exec);
 
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+static void print_usage(void) {
+	printf("Usage: arp [-i if] [-s|d] [-a host] [-m hwaddr] [-h]\n");
+}
 
 static int print_arp_cache(void *ifdev) {
 	size_t i;
@@ -30,8 +28,8 @@ static int print_arp_cache(void *ifdev) {
 			macaddr_print(mac, arp_tables[i].hw_addr);
 			addr.s_addr = arp_tables[i].pw_addr;
 			TRACE("%s\t\t%s\t%s\t%c\t%s\n", inet_ntoa(addr),
-					arp_tables[i].if_handler->dev->type==1?"ether":"",
-					mac, arp_tables[i].flags==ATF_COM?'C':'P', net_dev->name);
+				arp_tables[i].if_handler->dev->type==1?"ether":"",
+				mac, arp_tables[i].flags==ATF_COM?'C':'P', net_dev->name);
 		}
 	}
 	return 0;
@@ -48,36 +46,36 @@ static int exec(int argsc, char **argsv) {
 		nextOption = getopt(argsc, argsv, "hdsa:m:i:");
 		switch(nextOption) {
 		case 'h':
-				show_help();
-				return 0;
-			case 'd':
-				op = 0;
-				break;
-			case 's':
-				op = 1;
-				break;
-			case 'a':
-				if (0 == inet_aton(optarg, &addr)) {
-					LOG_ERROR("wrong ip addr format (%s)\n", optarg);
-					return -1;
-				}
-				break;
-			case 'm':
-				if (NULL == macaddr_scan((unsigned char *) optarg, hwaddr)) {
-					LOG_ERROR("wrong mac addr format %s\n", optarg);
-					return -1;
-				}
-				break;
-			case 'i':
-				if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
-					LOG_ERROR("can't find interface %s\n", optarg);
-					return -1;
-				}
-				break;
-			case -1:
-				break;
-			default:
-				return 0;
+			print_usage();
+			return 0;
+		case 'd':
+			op = 0;
+			break;
+		case 's':
+			op = 1;
+			break;
+		case 'a':
+			if (0 == inet_aton(optarg, &addr)) {
+				LOG_ERROR("wrong ip addr format (%s)\n", optarg);
+				return -1;
+			}
+			break;
+		case 'm':
+			if (NULL == macaddr_scan((unsigned char *) optarg, hwaddr)) {
+				LOG_ERROR("wrong mac addr format %s\n", optarg);
+				return -1;
+			}
+			break;
+		case 'i':
+			if (NULL == (ifdev = inet_dev_find_by_name(optarg))) {
+				LOG_ERROR("can't find interface %s\n", optarg);
+				return -1;
+			}
+			break;
+		case -1:
+			break;
+		default:
+			return 0;
 		}
 	} while (-1 != nextOption);
 

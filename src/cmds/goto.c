@@ -23,7 +23,7 @@ typedef void (*goto_t)(void) __attribute__ ((noreturn));
 static void go_to(void *addr) {
 	interrupt_nr_t interrupt_nr;
 
-	printf("Going to 0x%08X\n", addr);
+	printf("Going to 0x%08X\n", (unsigned int) addr);
 
 	ipl_disable();
 	for (interrupt_nr = 0; interrupt_nr < INTERRUPT_NRS_TOTAL; ++interrupt_nr) {

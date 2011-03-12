@@ -4,17 +4,14 @@
  * @date 15.10.10
  * @author Nikolay Korotky
  */
-#include <shell_command.h>
+#include <embox/cmd.h>
+#include <getopt.h>
 
-#define COMMAND_NAME     "version"
-#define COMMAND_DESC_MSG "displays info associated with compilation"
-#define HELP_MSG         "Usage: version [-h]"
+EMBOX_CMD(exec);
 
-static const char *man_page =
-	#include "version_help.inc"
-;
-
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+static void print_usage(void) {
+	printf("Usage: version [-h]\n");
+}
 
 static int exec(int argsc, char **argsv) {
 	unsigned int rev = CONFIG_SVN_REV;
@@ -24,7 +21,7 @@ static int exec(int argsc, char **argsv) {
 		nextOption = getopt(argsc, argsv, "h");
 		switch(nextOption) {
 		case 'h':
-			show_help();
+			print_usage();
 			return 0;
 		case -1:
 			break;

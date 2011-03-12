@@ -8,7 +8,8 @@
  * 			- implement ping through raw socket.
  * 			- major refactoring
  */
-#include <shell_command.h>
+#include <embox/cmd.h>
+#include <getopt.h>
 #include <net/icmp.h>
 #include <net/ip.h>
 #include <net/inetdevice.h>
@@ -18,16 +19,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define COMMAND_NAME     "ping"
-#define COMMAND_DESC_MSG "send ICMP ECHO_REQUEST to network hosts"
-#define HELP_MSG         "Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl]\n\
-		[-i interval] [-p pattern] [-s packetsize] destination"
+EMBOX_CMD(exec);
 
-static const char *man_page =
-	#include "ping_help.inc"
-;
-
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+static void print_usage(void) {
+	printf("Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl]\n"
+		"[-i interval] [-p pattern] [-s packetsize] destination\n");
+}
 
 typedef struct ping_info {
 	/* Stop after sending count ECHO_REQUEST packets. */
@@ -139,7 +136,7 @@ static int exec(int argc, char **argv) {
 		nextOption = getopt(argc, argv, "I:c:t:W:s:i:p:h");
 		switch(nextOption) {
 		case 'h':
-			show_help();
+			print_usage();
 			return 0;
 		case 'I':
 			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
@@ -199,14 +196,14 @@ static int exec(int argc, char **argv) {
 	} while (-1 != nextOption);
 
 	if (argc == 1) {
-		show_help();
+		print_usage();
 		return 0;
 	}
 
 	/* get destination addr */
 	if (0 == inet_aton(argv[argc - 1], &pinfo.dst)) {
 		printf("wrong ip addr format (%s)\n", argv[argc - 1]);
-		show_help();
+		print_usage();
 		return -1;
 	}
 	pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);

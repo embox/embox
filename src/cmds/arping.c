@@ -5,21 +5,18 @@
  * @date 23.12.09
  * @author Nikolay Korotky
  */
-#include <shell_command.h>
+#include <embox/cmd.h>
+#include <getopt.h>
 #include <net/arp.h>
 #include <netutils.h>
 #include <unistd.h>
 #include <stdlib.h>
 
-#define COMMAND_NAME     "arping"
-#define COMMAND_DESC_MSG "send ARP REQUEST to a neighbour host"
-#define HELP_MSG         "Usage: arping [-I if] [-c cnt] host"
+EMBOX_CMD(exec);
 
-static const char *man_page =
-	#include "arping_help.inc"
-	;
-
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page);
+static void print_usage(void) {
+	printf("Usage: arping [-I if] [-c cnt] host\n");
+}
 
 static int exec(int argsc, char **argsv) {
 	int cnt = 4, cnt_resp = 0, i, j;
@@ -34,7 +31,7 @@ static int exec(int argsc, char **argsv) {
 		nextOption = getopt(argsc, argsv, "I:c:h");
 		switch(nextOption) {
 		case 'h':
-			show_help();
+			print_usage();
 			return 0;
 		case 'I': /* get interface */
 			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
@@ -56,14 +53,14 @@ static int exec(int argsc, char **argsv) {
 	} while (-1 != nextOption);
 
 	if (argsc == 1) {
-		show_help();
+		print_usage();
 		return 0;
 	}
 
 	/* get destanation addr */
 	if (0 == inet_aton(argsv[argsc - 1], &dst)) {
 		LOG_ERROR("wrong ip addr format (%s)\n", argsv[argsc - 1]);
-		show_help();
+		print_usage();
 		return -1;
 	}
 	dst_b = inet_ntoa(dst);

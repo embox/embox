@@ -6,24 +6,20 @@
  * @author Anton Bondarev
  * @author Alexander Batyukov
  */
-#include <shell_command.h>
+#include <embox/cmd.h>
+#include <getopt.h>
 #include <string.h>
 #include <stdlib.h>
 #include <net/inetdevice.h>
 #include <netutils.h>
 
-#define COMMAND_NAME     "ifconfig"
-#define COMMAND_DESC_MSG "configure a network interface"
-#define HELP_MSG         "Usage:[-a ipaddr] [-m macaddr] [-p mask] [-u|d] \
-[-r 0|1] [-f 0|1] [-c 0|1] [-g 0|1] [-l mtu] [-b address] [-i irq_num] \
-[-t maxtxqueue] [-w brdcstaddr] [-z [destaddr]][-x name|interface]"
+EMBOX_CMD(exec);
 
-static const char *man_page =
-	#include "ifconfig_help.inc"
-;
-
-DECLARE_SHELL_COMMAND(COMMAND_NAME, exec, COMMAND_DESC_MSG, HELP_MSG, man_page)
-;
+static void print_usage(void) {
+	printf("Usage:[-a ipaddr] [-m macaddr] [-p mask] [-u|d] [-r 0|1] [-f 0|1] "
+		"[-c 0|1] [-g 0|1] [-l mtu] [-b address] [-i irq_num] "
+		"[-t maxtxqueue] [-w brdcstaddr] [-z [destaddr]] [-x name|interface]\n");
+}
 
 /**
  * Show interace (IP/MAC address)
@@ -125,7 +121,7 @@ static int exec(int argsc, char **argsv) {
 		nextOption = getopt(argsc, argsv, "a:p:m:udx:r:f:c:g:l:b:i:t:w:z:h");
 		switch (nextOption) {
 		case 'h': /* help message */
-			show_help();
+			print_usage();
 			return 0;
 		case 'u': /* device up */
 			up = true;
@@ -293,7 +289,7 @@ static int exec(int argsc, char **argsv) {
 	if (broadcastaddr[0] != 0) {
 		if (NULL == in_dev) {
 			LOG_ERROR("Enter interface name\n");
-			show_help();
+			print_usage();
 			return -1;
 		}
 		if (!down) {	/* set broadcast addr */
@@ -315,7 +311,7 @@ static int exec(int argsc, char **argsv) {
 	if (ipaddr.s_addr != 0) {	/* set new IP address to iface */
 		if (NULL == in_dev) {
 			LOG_ERROR("Enter interface name\n");
-			show_help();
+			print_usage();
 			return -1;
 		}
 		if (!down) {
@@ -325,7 +321,7 @@ static int exec(int argsc, char **argsv) {
 	if (mask.s_addr != 0) {	/* set new mask to iface */
 		if (NULL == in_dev) {
 			LOG_ERROR("Enter interface name\n");
-			show_help();
+			print_usage();
 			return -1;
 		}
 		if (!down) {
@@ -335,7 +331,7 @@ static int exec(int argsc, char **argsv) {
 	if (macaddr[0] != 0) {	/* set new MAC address to iface */
 		if (NULL == in_dev) {
 			LOG_ERROR("Enter interface name\n");
-			show_help();
+			print_usage();
 			return -1;
 		}
 		if (!down) {
