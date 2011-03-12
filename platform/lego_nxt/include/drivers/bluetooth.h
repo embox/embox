@@ -77,4 +77,10 @@ extern size_t nxt_bluetooth_read(uint8_t *buff, size_t len);
 
 extern size_t nxt_bluetooth_write(uint8_t *buff, size_t len);
 
+extern void bt_handle(uint8_t *buff);
+
+extern int bt_wrap(bt_message_t *header, uint8_t *buffer);
+
+extern void bt_unwrap(bt_message_t *header, uint8_t *buffer);
+
 #endif /* BLUETOOTH_H_ */

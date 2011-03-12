@@ -52,11 +52,16 @@ void bt_set_reset_low(void)
 }
 ///////////////////////////////////////////////////////////////////////
 
-enum {SIZE_READ, COMM_READ, UART_MODE} bt_us_state;
+volatile enum {SIZE_READ, COMM_READ, UART_MODE} bt_us_state;
+
+volatile void bt_set_uart_state(void) {
+	bt_us_state = UART_MODE;
+}
 
 #define BUFF_SIZE 256
-#define DEBUG
+//#define DEBUG
 uint8_t bt_buff[BUFF_SIZE];
+
 static int bt_buff_pos = 0;
 
 static void bt_us_read_handle(void) {
@@ -68,16 +73,16 @@ static void bt_us_read_handle(void) {
 			TRACE("R%x", msg_len);
 #endif
 			if (msg_len != 0) {
+				bt_us_state = COMM_READ;
 				if (bt_buff_pos + 1 + msg_len >= BUFF_SIZE) {
 					bt_buff[0] = msg_len;
 					bt_buff_pos = 0;
 				}
 				nxt_bluetooth_read(bt_buff + bt_buff_pos + 1, msg_len);
-				bt_us_state = COMM_READ;
 			}
 			break;
 		case COMM_READ:
-			/*TODO handle*/
+			bt_us_state = SIZE_READ;
 
 #ifdef DEBUG
 			TRACE("$");
@@ -86,25 +91,62 @@ static void bt_us_read_handle(void) {
 			}
 			TRACE("$");
 #endif
+			bt_handle(bt_buff + bt_buff_pos);
 
 			bt_buff_pos += 1 + msg_len;
 			if (bt_buff_pos >= BUFF_SIZE) {
 				bt_buff_pos = 0;
 			}
 			nxt_bluetooth_read(bt_buff + bt_buff_pos, 1);
-			bt_us_state = SIZE_READ;
 			break;
 		case UART_MODE:
+//#ifdef DEBUG
+			TRACE("%c", bt_buff[0]);
+//#endif
+			nxt_bluetooth_read(bt_buff, 1);
+			break;
 		default:
 			break;
 	}
 }
 
+void bt_uart_putc(char c) {
+	if (bt_us_state != UART_MODE) {
+		return;
+	}
+	/* here might be beaty buffered write policy*/
+	/* instead */
+	while (!(REG_LOAD(AT91C_US1_CSR) & AT91C_US_ENDTX)) {
+
+	}
+	nxt_bluetooth_write(&c, 1);
+}
+
+volatile int bt_uart_inited = 0;
+
+volatile void bt_us_receive_init(void) {
+	REG_STORE(AT91C_US1_IDR, AT91C_US_ENDTX);
+	bt_uart_inited = 1;
+	int delay = 3000;
+	while (delay--);
+	bt_set_arm7_cmd();
+	delay = 3000;
+	while (delay--);
+
+	/*doing last steps for init*/
+	bt_buff_pos = 0;
+
+	nxt_bluetooth_read(bt_buff, 1);
+
+}
 
 irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
 	uint32_t us_state = REG_LOAD(AT91C_US1_CSR);
 	if (us_state & AT91C_US_ENDRX) {
 		bt_us_read_handle();
+	}
+	if (!bt_uart_inited && (us_state & AT91C_US_ENDTX) && (bt_us_state == UART_MODE)) {
+		bt_us_receive_init();
 	}
 	return IRQ_HANDLED;
 }
@@ -130,6 +172,7 @@ static int nxt_bluetooth_init(void) {
 			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
 	REG_STORE(AT91C_US1_IDR, ~0);
     REG_STORE(AT91C_US1_IER, AT91C_US_ENDRX);
+//  REG_STORE(AT91C_US1_IER, AT91C_US_ENDRX | AT91C_US_ENDTX);
 	/*
 	REG_STORE(AT91C_US1_MR, (AT91C_US_USMODE_HWHSH & ~AT91C_US_SYNC) |
 			AT91C_US_NBSTOP_1_BIT |
