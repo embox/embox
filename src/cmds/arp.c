@@ -40,7 +40,7 @@ static void print_arp_cache(void *ifdev) {
 	}
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	int opt;
 	struct in_addr addr;
 	unsigned char hwaddr[ETH_ALEN];
