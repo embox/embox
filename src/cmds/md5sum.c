@@ -33,6 +33,7 @@ static int exec(int argc, char **argv) {
 		case '?':
 		case 'h':
 			print_usage();
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}

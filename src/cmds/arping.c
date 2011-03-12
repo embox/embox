@@ -5,12 +5,14 @@
  * @date 23.12.09
  * @author Nikolay Korotky
  */
+
 #include <embox/cmd.h>
-#include <getopt.h>
-#include <net/arp.h>
-#include <netutils.h>
-#include <unistd.h>
+
 #include <stdlib.h>
+#include <unistd.h>
+#include <getopt.h>
+#include <netutils.h>
+#include <net/arp.h>
 
 EMBOX_CMD(exec);
 
@@ -18,21 +20,18 @@ static void print_usage(void) {
 	printf("Usage: arping [-I if] [-c cnt] host\n");
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
+	int opt;
 	int cnt = 4, cnt_resp = 0, i, j;
 	in_device_t *in_dev = inet_dev_find_by_name("eth0");
 	struct in_addr dst;
 	char *dst_b, *from_b;
 	struct in_addr from;
 	unsigned char mac[18];
-	int nextOption;
+
 	getopt_init();
-	do {
-		nextOption = getopt(argsc, argsv, "I:c:h");
-		switch(nextOption) {
-		case 'h':
-			print_usage();
-			return 0;
+	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
+		switch (opt) {
 		case 'I': /* get interface */
 			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
 				TRACE("arping: unknown iface %s\n", optarg);
@@ -45,24 +44,26 @@ static int exec(int argsc, char **argsv) {
 				return -1;
 			}
 			break;
-		case -1:
-			break;
+		case '?':
+		case 'h':
+			print_usage();
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	};
 
-	if (argsc == 1) {
+	if (argc == 1) {
 		print_usage();
 		return 0;
 	}
 
-	/* get destanation addr */
-	if (0 == inet_aton(argsv[argsc - 1], &dst)) {
-		LOG_ERROR("wrong ip addr format (%s)\n", argsv[argsc - 1]);
-		print_usage();
+	/* Get destination address. */
+	if (0 == inet_aton(argv[argc - 1], &dst)) {
+		printf("arping: invalid IP address: %s\n", argv[argc - 1]);
 		return -1;
 	}
+
 	dst_b = inet_ntoa(dst);
 	from.s_addr = in_dev->ifa_address;
 	from_b = inet_ntoa(from);
