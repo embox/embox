@@ -1,8 +1,0 @@
-"mknod\n"
-"\tmknode - create special file\n"
-"SYNOPSIS\n"
-"\tmknod NAME\n"
-"DESCRIPTION\n"
-"\tcreate virtual node in file system\n"
-"AUTHORS\n"
-"\tAnton Bondarev"

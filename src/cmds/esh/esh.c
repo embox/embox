@@ -1,6 +1,5 @@
 /**
- * @file esh.c
- *
+ * @file
  * @brief simple Embox shell
  *
  * @date 13.11.2010

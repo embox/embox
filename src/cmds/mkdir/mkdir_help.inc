@@ -1,8 +1,0 @@
-"NAME\n"
-"\tmkdir - make directories\n"
-"SYNOPSIS\n"
-"\tmkdir DIRECTORY ...\n"
-"DESCRIPTION\n"
-"\tCreate the DIRECTORY(ies), if they do not already exist.\n"
-"AUTHORS\n"
-"\tNikolay Korotky"

@@ -1,6 +1,0 @@
-"NAME\n"
-"\tsnake - simple game\n"
-"SYNOPSIS\n"
-"\tsnake [-h]\n"
-"AUTHORS\n"
-"\tAnton Kozlov"

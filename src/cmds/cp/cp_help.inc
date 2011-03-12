@@ -1,8 +1,0 @@
-"NAME\n"
-"\tcp - copy files and directories\n"
-"SYNOPSIS\n"
-"\tcp [OPTIONS] SOURCE DEST\n"
-"DESCRIPTION\n"
-"\tCopy SOURCE to DEST\n"
-"AUTHOR\n"
-"\tRoman Evstifeev"
