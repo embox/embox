@@ -61,7 +61,7 @@ static int run(void) {
         printf("\n\n");
         printf("0x%x, 0x%x\n\n", start_addr, end_addr);
 */
-	md5_count(start_addr, end_addr, md5_sum);
+	md5_count(start_addr, end_addr - start_addr, md5_sum);
 
 	for (cur_addr = 0; cur_addr < 16; cur_addr++) {
 		printf("%02x", md5_sum[cur_addr]);
