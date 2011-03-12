@@ -57,11 +57,33 @@ static int test_list_empty_should_return_true_for_just_created_list(void) {
 	return list_empty(&l);
 }
 
+static int test_list_first_should_return_null_for_empty_list(void) {
+	struct list l = LIST_INIT(&l);
+	return list_first(&l, struct element, m_link) == NULL;
+}
+
+static int test_list_last_should_return_null_for_empty_list(void) {
+	struct list l = LIST_INIT(&l);
+	return list_last(&l, struct element, m_link) == NULL;
+}
+
+static int test_list_first_link_should_return_null_for_empty_list(void) {
+	struct list l = LIST_INIT(&l);
+	return list_first_link(&l) == NULL;
+}
+
+static int test_list_last_link_should_return_null_for_empty_list(void) {
+	struct list l = LIST_INIT(&l);
+	return list_last_link(&l) == NULL;
+}
+
+#if 0
 static int test_list_empty_should_return_false_for_non_empty_list(void) {
 	struct list l = LIST_INIT(&l);
 //	list_add_first(t->element, t_list, m_link);
 	return !list_empty(&l);
 }
+#endif
 
 /**
  * The test itself.
@@ -80,6 +102,10 @@ static int run(void) {
 	TEST_ASSERT(test_list_init_should_do_the_same_as_static_initializer());
 	TEST_ASSERT(test_list_link_init_should_do_the_same_as_static_initializer());
 	TEST_ASSERT(test_list_empty_should_return_true_for_just_created_list());
+	TEST_ASSERT(test_list_first_should_return_null_for_empty_list());
+	TEST_ASSERT(test_list_last_should_return_null_for_empty_list());
+	TEST_ASSERT(test_list_first_link_should_return_null_for_empty_list());
+	TEST_ASSERT(test_list_last_link_should_return_null_for_empty_list());
 //	TEST_ASSERT(test_list_empty_should_return_false_for_non_empty_list());
 
 	return result;

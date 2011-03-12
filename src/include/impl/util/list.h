@@ -44,14 +44,30 @@ inline static struct list *list_init(struct list *list) {
 }
 
 inline static int list_empty(struct list *list) {
-	return &list->link == list->link.next;
+	struct list_link *link = &list->link;
+	return link == link->next;
 }
 
-#if 0
-#define __list_first(list, element_type, link_member) \
+inline static struct list_link *list_first_link(struct list *list) {
+	struct list_link *link = &list->link;
+	return link->next != link /* list is not empty */ ? link->next : NULL;
+}
 
-#define __list_last(list, element_type, link_member) \
+inline static struct list_link *list_last_link(struct list *list) {
+	struct list_link *link = &list->link;
+	return link->prev != link /* list is not empty */ ? link->prev : NULL;
+}
 
-extern void list_add_first_link(struct list_link *link, struct list *list);
-extern void list_add_last_link(struct list_link *link, struct list *list);
-#endif
+#define __list_first(list, element_type, link_member) __extension__ ({ \
+	struct list_link *__list_link__ = list_first_link(list); \
+	__list_link__ \
+			? list_link_element(__list_link__, element_type, link_member) \
+			: NULL; \
+})
+
+#define __list_last(list, element_type, link_member) __extension__ ({ \
+	struct list_link *__list_link__ = list_last_link(list); \
+	__list_link__ \
+			? list_link_element(__list_link__, element_type, link_member) \
+			: NULL; \
+})

@@ -50,11 +50,11 @@ extern int list_empty(struct list *list);
 #define list_foreach_link(link, list) \
 	  __list_foreach_link(link, list)
 
-extern void list_add_first_link(struct list_link *link, struct list *list);
-extern void list_add_last_link(struct list_link *link, struct list *list);
-
 extern struct list_link *list_first_link(struct list *list);
 extern struct list_link *list_last_link(struct list *list);
+
+extern void list_add_first_link(struct list_link *link, struct list *list);
+extern void list_add_last_link(struct list_link *link, struct list *list);
 
 extern void list_remove_link(struct list_link *link);
 
