@@ -20,8 +20,8 @@ struct list {
 	struct list_link link;
 };
 
-#define __list_link_element(link, element_type, link_member) \
-		structof(link, element_type, link_member)
+#define __list_link_element(link, type, link_member) \
+		structof(link, type, link_member)
 
 #define __LIST_INIT(list) { \
 		.link = LIST_LINK_INIT(&(list)->link) \
@@ -58,16 +58,16 @@ inline static struct list_link *list_last_link(struct list *list) {
 	return link->prev != link /* list is not empty */ ? link->prev : NULL;
 }
 
-#define __list_first(list, element_type, link_member) __extension__ ({ \
-	struct list_link *__list_link__ = list_first_link(list); \
-	__list_link__ \
-			? list_link_element(__list_link__, element_type, link_member) \
-			: NULL; \
-})
+#define __list_link_checked_element(link, type, link_member) \
+	__extension__ ({ \
+		struct list_link *__list_link__ = (link); \
+		__list_link__ \
+				? list_link_element(__list_link__, type, link_member) \
+				: NULL; \
+	})
 
-#define __list_last(list, element_type, link_member) __extension__ ({ \
-	struct list_link *__list_link__ = list_last_link(list); \
-	__list_link__ \
-			? list_link_element(__list_link__, element_type, link_member) \
-			: NULL; \
-})
+#define __list_first(list, type, link_member) \
+		__list_link_checked_element(list_first_link(list), type, link_member)
+
+#define __list_last(list, type, link_member) \
+		__list_link_checked_element(list_last_link(list), type, link_member)
