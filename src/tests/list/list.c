@@ -15,8 +15,16 @@
 EMBOX_TEST(run);
 
 struct element {
+	int some_stuff;
 	struct list_link m_link;
 };
+
+static int test_list_link_element_should_cast_link_member_out_to_its_container(
+		void) {
+	struct element e;
+	struct list_link *link = &e.m_link;
+	return &e == list_link_element(link, struct element, m_link);
+}
 
 static int test_list_init_should_return_its_argument(void) {
 	struct list l;
@@ -65,6 +73,8 @@ static int test_list_empty_should_return_false_for_non_empty_list(void) {
 static int run(void) {
 	int result = 0;
 
+	TEST_ASSERT(
+			test_list_link_element_should_cast_link_member_out_to_its_container());
 	TEST_ASSERT(test_list_init_should_return_its_argument());
 	TEST_ASSERT(test_list_link_init_should_return_its_argument());
 	TEST_ASSERT(test_list_init_should_do_the_same_as_static_initializer());
