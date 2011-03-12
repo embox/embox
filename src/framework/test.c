@@ -13,6 +13,7 @@
  */
 
 #include <test/framework.h>
+#include <test/tools.h>
 
 #include <stddef.h>
 #include <errno.h>
@@ -29,6 +30,7 @@ const struct mod_ops __test_mod_ops = {
 };
 
 ARRAY_SPREAD_DEF(const struct test, __test_registry);
+ARRAY_SPREAD_DEF(const struct test_failure, __test_failures);
 
 static int test_mod_enable(struct mod *mod) {
 	return test_invoke((struct test *) mod_data(mod));
@@ -48,14 +50,18 @@ int test_invoke(const struct test *test) {
 	if (0 == (result = test->run())) {
 		TRACE("passed\n");
 	} else {
-#if 0
-		struct test_failure *failure = (struct test_failure *) result;
-		TRACE("failed: %s (0x%08x), at %s : %d, in function %s\n",
-				failure->info->reason, (unsigned int) failure->info->data,
-				failure->file, failure->line, failure->func);
-#else
-		TRACE("failed\n");
-#endif
+		const struct test_failure *failure =
+				(const struct test_failure *) result;
+		if (__test_failures <= failure && failure < __test_failures
+				+ ARRAY_SPREAD_SIZE(__test_failures)) {
+			/* Valid test_failure object (well, we hope so). */
+			TRACE("failed:\n%s (0x%08x), at %s : %d, in function %s\n",
+					failure->info->reason, (unsigned int) failure->info->data,
+					failure->file, failure->line, failure->func);
+		} else {
+			/* Plain error code. */
+			TRACE("failed\n");
+		}
 	}
 
 	return (test->private->result = result);
