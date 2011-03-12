@@ -9,6 +9,7 @@
 #include <embox/device.h>
 #include <fs/file.h>
 #include <drivers/tty.h>
+#include <kernel/diag.h>
 #include <kernel/irq.h>
 
 static tty_device_t tty;
