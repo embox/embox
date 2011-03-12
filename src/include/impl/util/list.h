@@ -32,15 +32,26 @@ struct list {
 		.prev = (link)  \
 	}
 
-inline static struct list *list_init(struct list *list) {
-	return list;
+inline static struct list_link *list_link_init(struct list_link *link) {
+	link->next = link;
+	link->prev = link;
+	return link;
 }
 
-inline static struct list_link *list_link_init(struct list_link *link) {
-	return link;
+inline static struct list *list_init(struct list *list) {
+	list_link_init(&list->link);
+	return list;
 }
 
 inline static int list_empty(struct list *list) {
 	return &list->link == list->link.next;
 }
 
+#if 0
+#define __list_first(list, element_type, link_member) \
+
+#define __list_last(list, element_type, link_member) \
+
+extern void list_add_first_link(struct list_link *link, struct list *list);
+extern void list_add_last_link(struct list_link *link, struct list *list);
+#endif
