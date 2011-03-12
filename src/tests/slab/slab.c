@@ -11,6 +11,7 @@
 #include <embox/test.h>
 #include <lib/list.h>
 #include <kernel/mm/slab.h>
+#include <kernel/mm/kmalloc.h>
 
 EMBOX_TEST(run);
 
@@ -20,8 +21,8 @@ EMBOX_TEST(run);
  * function to free cache list
  * @return 0 on success
  */
-static int destroy_all_caches() {
-	cache_t *kmalloc_cache = ADDR_OF_MAIN_CACHE;
+static int destroy_all_caches(void) {
+	cache_t *kmalloc_cache = (cache_t*) ADDR_OF_MAIN_CACHE;
 	cache_t *cachep;
 
 	while (1) {
@@ -35,11 +36,11 @@ static int destroy_all_caches() {
 }
 
 /**
- * testing smalloc() and sfree()
+ * testing kmalloc() and kfree()
  * @return 0 on success
  */
 static int test_s_functions(void) {
-	cache_t *kmalloc_cache = ADDR_OF_MAIN_CACHE;
+	cache_t *kmalloc_cache = (cache_t*) ADDR_OF_MAIN_CACHE;
 	void* objp[30];
 	struct list_head *tmp;
 	size_t i;
@@ -102,7 +103,7 @@ static void test2(void) {
 
 static int run(void) {
 	if (0 != test_s_functions()) {
-		TRACE("smalloc test FAILED\n");
+		TRACE("kmalloc test FAILED\n");
 		return -1;
 	}
 	test1();

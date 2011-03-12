@@ -34,4 +34,4 @@ struct static_cache {
         .size = binalign_bound(sizeof(type), sizeof(struct list_head)), \
         .cache_begin = __name_pool, \
         .obj_ptr = {NULL, NULL}, \
-        .hasinit = 0 };
+        .hasinit = 0 }
