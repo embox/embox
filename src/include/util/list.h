@@ -15,8 +15,14 @@ struct list;
 
 struct list_link;
 
-extern void list_init(struct list *list);
-extern void list_link_init(struct list_link *link);
+#define LIST_INIT(list) \
+	  __LIST_INIT(list)
+
+#define LIST_LINK_INIT(link) \
+	  __LIST_LINK_INIT(link)
+
+extern struct list *list_init(struct list *list);
+extern struct list_link *list_link_init(struct list_link *link);
 
 #define list_foreach(element, list, link_member) \
 	  __list_foreach(element, list, link_member)
