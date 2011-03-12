@@ -130,6 +130,13 @@
 #define T63    0x2ad7d2bb
 #define T64 /* 0xeb86d391 */ (T_MASK ^ 0x14792c6e)
 
+md5_byte_t *md5_count(const md5_byte_t *ptr, size_t n, md5_byte_t digest[16]) {
+	md5_state_t state;
+	md5_init(&state);
+	md5_append(&state, ptr, n);
+	md5_finish(&state, digest);
+	return digest;
+}
 
 static void
 md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/)

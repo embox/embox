@@ -50,6 +50,8 @@
 #ifndef md5_INCLUDED
 #  define md5_INCLUDED
 
+#include <stddef.h>
+
 /*
  * This package supports both compile-time and run-time determination of CPU
  * byte order.  If ARCH_IS_BIG_ENDIAN is defined as 0, the code will be
@@ -74,6 +76,8 @@ typedef struct md5_state_s {
 extern "C"
 {
 #endif
+
+md5_byte_t *md5_count(const md5_byte_t *ptr, size_t n, md5_byte_t digest[16]);
 
 /* Initialize the algorithm. */
 void md5_init(md5_state_t *pms);
