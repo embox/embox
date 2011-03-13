@@ -13,8 +13,8 @@
 
 #include <util/array.h>
 #include <cmd/framework.h>
+#include <cmd/cmdline.h>
 
-#include <shell_utils.h>
 #include "console/console.h"
 
 // XXX just for now -- Eldar
@@ -27,7 +27,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	char *argv[(CMDLINE_MAX_LENGTH + 1) / 2];
 	int argc = 0;
 
-	if (0 == (argc = parse_str(cmdline, argv))) {
+	if (0 == (argc = cmdline_tokenize(cmdline, argv))) {
 		/* Only spaces were entered */
 		return;
 	}

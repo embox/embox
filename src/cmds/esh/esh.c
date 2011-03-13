@@ -10,8 +10,8 @@
 #include <kernel/printk.h>
 #include <lib/readline.h>
 #include <stdio.h>
-#include <shell_utils.h>
 #include <cmd/framework.h>
+#include <cmd/cmdline.h>
 
 EMBOX_UNIT(esh_start, esh_stop);
 
@@ -24,7 +24,7 @@ static void parse_cmdline(char *cmdline) {
 	char *argv[(CMDLINE_MAX_LENGTH + 1) / 2];
 	int argc = 0;
 
-	if (0 == (argc = parse_str(cmdline, argv))) {
+	if (0 == (argc = cmdline_tokenize(cmdline, argv))) {
 		/* Only spaces were entered */
 		return;
 	}
