@@ -29,7 +29,7 @@ c_package = $(call c_escape,$(package))
 c_escape = $(subst .,__,$(1))
 
 c_str_escape = \
-  \n\t\t\"$(subst $(\n),\\n\"\n\t\t\",$(subst $(\t),\\t,$(subst ",\\\",$1)))\"
+  \n\t\t"$(subst $(\n),"\n\t\t",$(subst $(\t),\\t,$(subst ",\",$1)))"
 
 eol-trim = $(if $(findstring $() \n,$1),$(call $0,$(subst $() \n,\n,$1)),$1)
 
@@ -98,14 +98,15 @@ generate_header = \
 
 generate_includes = \n\#include <stddef.h>\n\#include <mod/embuild.h>\n
 
+__printf_escape = "$(subst ",\",$1)"
 $(DEPSINJECT_SRC) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
   $(AUTOCONF_DIR)/mods.mk
-	@$(PRINTF) '$(generate_header)' > $@
-	@$(PRINTF) '$(generate_includes)' >> $@
-	@$(PRINTF) '$(generate_package_defs)' >> $@
-	@$(PRINTF) '$(generate_mod_defs)' >> $@
-	@$(PRINTF) '$(generate_mod_deps)' >> $@
-	@$(PRINTF) '$(generate_root_mods)' >> $@
+	@$(PRINTF) $(call __printf_escape,$(generate_header)) > $@
+	@$(PRINTF) $(call __printf_escape,$(generate_includes)) >> $@
+	@$(PRINTF) $(call __printf_escape,$(generate_package_defs)) >> $@
+	@$(PRINTF) $(call __printf_escape,$(generate_mod_defs)) >> $@
+	@$(PRINTF) $(call __printf_escape,$(generate_mod_deps)) >> $@
+	@$(PRINTF) $(call __printf_escape,$(generate_root_mods)) >> $@
 
 $(DEPSINJECT_OBJ) : $(AUTOCONF_DIR)/config.h
 $(DEPSINJECT_OBJ) : $(DEPSINJECT_SRC)

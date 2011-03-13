@@ -484,8 +484,8 @@ image_init:
 EMBUILD_DUMP_PREREQUISITES += $(DIRS:%=%/Makefile)
 EMBUILD_DUMP_PREREQUISITES += $(AUTOCONF_DIR)/build.mk
 
-dump_var = $1 := $($1:%=\\\n  %)\n
-dump_var_symbol = $(subst \\\n,\\\n  ,$(subst \n ,\n,$(strip \
+dump_var = $1 := $($1:%=\\\\\n  %)\n
+dump_var_symbol = $(subst \\\\\n,\\\\\n  ,$(subst \n ,\n,$(strip \
   $(foreach var,$2,$(if $($1-$(var)),$(call dump_var,$1-$(var)))) \
 )))
 
@@ -494,25 +494,26 @@ dump_var_verbatim = \
 dump_var_symbol_verbatim = \
   $(foreach var,$2,$(call dump_var_verbatim,$1-$(var)))
 
+printf_escape = "$(subst ",\",$1)"
 $(EMBUILD_DUMP_MK) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/embuild.mk
 ifndef EMBUILD_DUMP_CREATE
 	@$(RM) $@ && $(MAKE) EMBUILD_DUMP_CREATE=1 --no-print-directory $@
 else
 	@$(PRINTF) '# Auto-generated EMBuild symbols dump file. Do not edit.\n' > $@
-	@$(PRINTF) '$(call dump_var,PACKAGES)' >> $@
-	@$(PRINTF) '$(call dump_var,MODS_CORE)' >> $@
-	@$(PRINTF) '$(call dump_var,MODS)' >> $@
-	@$(PRINTF) '$(call dump_var,LIBS)' >> $@
-	@$(PRINTF) '$(call dump_var_symbol,CPPFLAGS,$(PACKAGES))' >> $@
-	@$(PRINTF) '$(call dump_var_symbol,CFLAGS,$(PACKAGES))' >> $@
-	@$(PRINTF) '$(call dump_var_symbol,SRCS,$(MODS) $(LIBS))' >> $@
-	@$(PRINTF) '$(call dump_var_symbol,CPPFLAGS,$(MODS) $(LIBS))' >> $@
-	@$(PRINTF) '$(call dump_var_symbol,CFLAGS,$(MODS) $(LIBS))' >> $@
-	@$(PRINTF) '$(call dump_var_symbol_verbatim,BRIEF,$(MODS) $(LIBS))' >> $@
-	@$(PRINTF) '$(call dump_var_symbol_verbatim,DETAILS,$(MODS) $(LIBS))' >> $@
-	@$(PRINTF) '$(call dump_var_symbol,DEPS,$(MODS) $(LIBS))' >> $@
-	@$(PRINTF) '$(call dump_var,SUBDIRS_LDFLAGS)' >> $@
-	@$(PRINTF) '$(call dump_var_symbol,UNIT_DEFINED,$(MODS) $(LIBS))' >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var,PACKAGES)) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var,MODS_CORE)) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var,MODS)) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var,LIBS)) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,CPPFLAGS,$(PACKAGES))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,CFLAGS,$(PACKAGES))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,SRCS,$(MODS) $(LIBS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,CPPFLAGS,$(MODS) $(LIBS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,CFLAGS,$(MODS) $(LIBS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol_verbatim,BRIEF,$(MODS) $(LIBS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol_verbatim,DETAILS,$(MODS) $(LIBS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,DEPS,$(MODS) $(LIBS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var,SUBDIRS_LDFLAGS)) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,UNIT_DEFINED,$(MODS) $(LIBS))) >> $@
 endif
 
 endif
