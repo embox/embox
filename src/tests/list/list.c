@@ -9,8 +9,9 @@
 #include <embox/test.h>
 
 #include <string.h>
-#include <test/tools.h>
 #include <util/list.h>
+#include <util/array.h>
+#include <test/tools.h>
 
 EMBOX_TEST(run);
 
@@ -18,6 +19,8 @@ struct element {
 	int some_stuff;
 	struct list_link m_link;
 };
+
+typedef int (*test_list_fn)(void);
 
 static int test_list_link_element_should_cast_link_member_out_to_its_container(
 		void) {
@@ -77,13 +80,72 @@ static int test_list_last_link_should_return_null_for_empty_list(void) {
 	return list_last_link(&l) == NULL;
 }
 
-#if 0
-static int test_list_empty_should_return_false_for_non_empty_list(void) {
+static int test_list_add_first_should_make_the_list_non_empty(void) {
+	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
 	struct list l = LIST_INIT(&l);
-//	list_add_first(t->element, t_list, m_link);
+	list_add_first(&e, &l, m_link);
 	return !list_empty(&l);
 }
-#endif
+
+static int test_list_add_last_should_make_the_list_non_empty(void) {
+	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
+	struct list l = LIST_INIT(&l);
+	list_add_last(&e, &l, m_link);
+	return !list_empty(&l);
+}
+
+static int test_list_add_first_link_should_make_the_list_non_empty(void) {
+	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
+	struct list l = LIST_INIT(&l);
+	list_add_first_link(&e.m_link, &l);
+	return !list_empty(&l);
+}
+
+static int test_list_add_last_link_should_make_the_list_non_empty(void) {
+	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
+	struct list l = LIST_INIT(&l);
+	list_add_last_link(&e.m_link, &l);
+	return !list_empty(&l);
+}
+
+static int test_list_first_on_a_single_element_list_should_return_the_element(
+		void) {
+	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
+	struct list l = LIST_INIT(&l);
+	list_add_first(&e, &l, m_link);
+	return list_first(&l, struct element, m_link);
+}
+
+struct test_entry {
+	const char *name;
+	test_list_fn fn;
+};
+
+#define TEST_ENTRY(test) { \
+		.name = #test, \
+		.fn = (test), \
+	}
+
+/* TODO generalize such approach. -- Eldar */
+static const struct test_entry tests[] = {
+	TEST_ENTRY(
+		test_list_link_element_should_cast_link_member_out_to_its_container),
+	TEST_ENTRY(test_list_init_should_return_its_argument),
+	TEST_ENTRY(test_list_link_init_should_return_its_argument),
+	TEST_ENTRY(test_list_init_should_do_the_same_as_static_initializer),
+	TEST_ENTRY(test_list_link_init_should_do_the_same_as_static_initializer),
+	TEST_ENTRY(test_list_empty_should_return_true_for_just_created_list),
+	TEST_ENTRY(test_list_first_should_return_null_for_empty_list),
+	TEST_ENTRY(test_list_last_should_return_null_for_empty_list),
+	TEST_ENTRY(test_list_first_link_should_return_null_for_empty_list),
+	TEST_ENTRY(test_list_last_link_should_return_null_for_empty_list),
+//	TEST_ENTRY(test_list_add_first_should_make_the_list_non_empty),
+//	TEST_ENTRY(test_list_add_last_should_make_the_list_non_empty),
+//	TEST_ENTRY(test_list_add_first_link_should_make_the_list_non_empty),
+//	TEST_ENTRY(test_list_add_last_link_should_make_the_list_non_empty),
+//	TEST_ENTRY(
+//		test_list_first_on_a_single_element_list_should_return_the_element),
+};
 
 /**
  * The test itself.
@@ -93,20 +155,13 @@ static int test_list_empty_should_return_false_for_non_empty_list(void) {
  * @retval nonzero on failure
  */
 static int run(void) {
-	int result = 0;
+	const struct test_entry *test;
 
-	TEST_ASSERT(
-			test_list_link_element_should_cast_link_member_out_to_its_container());
-	TEST_ASSERT(test_list_init_should_return_its_argument());
-	TEST_ASSERT(test_list_link_init_should_return_its_argument());
-	TEST_ASSERT(test_list_init_should_do_the_same_as_static_initializer());
-	TEST_ASSERT(test_list_link_init_should_do_the_same_as_static_initializer());
-	TEST_ASSERT(test_list_empty_should_return_true_for_just_created_list());
-	TEST_ASSERT(test_list_first_should_return_null_for_empty_list());
-	TEST_ASSERT(test_list_last_should_return_null_for_empty_list());
-	TEST_ASSERT(test_list_first_link_should_return_null_for_empty_list());
-	TEST_ASSERT(test_list_last_link_should_return_null_for_empty_list());
-//	TEST_ASSERT(test_list_empty_should_return_false_for_non_empty_list());
+	array_static_foreach_ptr(test, tests) {
+		if (!test->fn()) {
+			return test_fail(test->name);
+		}
+	}
 
-	return result;
+	return test_pass();
 }

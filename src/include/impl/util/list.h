@@ -58,6 +58,14 @@ inline static struct list_link *list_last_link(struct list *list) {
 	return link->prev != link /* list is not empty */ ? link->prev : NULL;
 }
 
+inline static void list_add_first_link(struct list_link *link,
+		struct list *list) {
+	;
+}
+inline static void list_add_last_link(struct list_link *link, struct list *list) {
+	;
+}
+
 #define __list_link_checked_element(link, type, link_member) \
 	__extension__ ({ \
 		struct list_link *__list_link__ = (link); \
@@ -71,3 +79,10 @@ inline static struct list_link *list_last_link(struct list *list) {
 
 #define __list_last(list, type, link_member) \
 		__list_link_checked_element(list_last_link(list), type, link_member)
+
+#define __list_add_first(element, list, link_member) \
+		list_add_first_link(&(element)->link_member, list)
+
+#define __list_add_last(element, list, link_member) \
+		list_add_last_link(&(element)->link_member, list)
+
