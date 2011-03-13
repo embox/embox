@@ -20,22 +20,6 @@
 // XXX just for now -- Eldar
 EMBOX_UNIT(shell_start, shell_stop);
 
-#include <shell_command.h>
-
-static void deprecated_exec_callback(int argc, char **argv) {
-	SHELL_COMMAND_DESCRIPTOR *c_desc;
-
-	if (NULL == (c_desc = shell_command_descriptor_find_first(argv[0], -1))) {
-		return;
-	}
-	if (NULL == c_desc->exec) {
-		return;
-	}
-
-	printf("%s: Executing command using deprecated API.\n\n", argv[0]);
-	shell_command_exec(c_desc, argc, argv);
-}
-
 static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
 	const struct cmd *cmd;
 	int code;
@@ -49,11 +33,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	}
 
 	if (NULL == (cmd = cmd_lookup(argv[0]))) {
-#if 0
 		printf("%s: Command not found\n", argv[0]);
-#else
-		deprecated_exec_callback(argc, argv);
-#endif
 		return;
 	}
 
@@ -75,8 +55,6 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	int cursor = strlen(line);
 	int start = cursor, i;
 	char ch;
-	// XXX
-	SHELL_COMMAND_DESCRIPTOR * shell_desc;
 
 	while (start > 0 && isalpha(line[start - 1])) {
 		start--;
@@ -90,13 +68,6 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 		if (0 == strncmp(cmd_name(cmd), line, *offset)) {
 			proposals[(*proposals_len)++] = cmd_name(cmd);
 		}
-	}
-	// XXX deprecated. -- Eldar
-	for (shell_desc
-			= shell_command_descriptor_find_first((char*) line, *offset); NULL
-			!= shell_desc; shell_desc = shell_command_descriptor_find_next(
-			shell_desc, (char *) line, *offset)) {
-		proposals[(*proposals_len)++] = (char *) shell_desc->name;
 	}
 
 	*common = 0;

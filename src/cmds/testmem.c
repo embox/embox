@@ -37,7 +37,7 @@ static int exec(int argsc, char **argsv) {
 		nextOption = getopt(argsc, argsv, "a:n:t:h");
 		switch (nextOption) {
 		case 'h':
-			show_man_page();
+			print_usage();
 			return 0;
 		case 'a':
 			/* Key -a for address
