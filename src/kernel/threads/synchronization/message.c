@@ -20,7 +20,7 @@ static bool message_pool_mask[MESSAGE_POOL_SZ];
 
 void message_send(struct message *message, struct thread *thread) {
 	scheduler_lock();
-	queue_add(&message->list, &thread->messages);
+	list_add_tail(&message->list, &thread->messages);
 	if (thread->need_message) {
 		thread->need_message = false;
 		scheduler_wakeup(&thread->msg_event);
@@ -29,12 +29,16 @@ void message_send(struct message *message, struct thread *thread) {
 }
 
 struct message *message_receive(void) {
-	if (queue_empty(&current_thread->messages)) {
+	struct list_head *ret;
+
+	if (list_empty(&current_thread->messages)) {
 		current_thread->need_message = true;
 		scheduler_sleep(&current_thread->msg_event);
 	}
-	return (struct message *) list_entry(
-		queue_extr(&current_thread->messages), struct message, list);
+
+	ret = current_thread->messages.next;
+	list_del_init(ret);
+	return list_entry(ret, struct message, list);
 }
 
 struct message *message_new(void) {

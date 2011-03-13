@@ -43,7 +43,7 @@ struct thread {
 	/** Shows if thread is waiting for message. */
 	bool need_message;
 	/** Queue of messages, sent to this thread. */
-	queue_t messages;
+	struct list_head messages;
 	/** Event, appearing when thread receives message. */
 	struct event msg_event;
 	/** List item, corresponding to thread in list of some event. */

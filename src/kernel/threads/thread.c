@@ -8,7 +8,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <queue.h>
 
 #include <kernel/thread.h>
 #include <kernel/scheduler.h>
@@ -105,7 +104,7 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	#ifdef CONFIG_PP_ENABLE
 	pp_add_thread( pp_cur_process, created_thread );
 	#endif
-	queue_init(&created_thread->messages);
+	INIT_LIST_HEAD(&created_thread->messages);
 	event_init(&created_thread->msg_event);
 	LOG_DEBUG("Alloted thread id = %d\n", created_thread->id);
 	return created_thread;

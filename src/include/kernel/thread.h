@@ -16,7 +16,6 @@
 
 #include <hal/context.h>
 #include <lib/list.h>
-#include <queue.h>
 #include <string.h>
 #include <util/macro.h>
 #ifdef CONFIG_PP_ENABLE
