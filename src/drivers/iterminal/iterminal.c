@@ -17,7 +17,6 @@
 #include <embox/unit.h>
 #include <kernel/driver.h>
 #include <kernel/printk.h>
-#include <shell_command.h>
 #include <kernel/thread.h>
 #include <drivers/iterminal.h>
 #include <drivers/vtbuild.h>

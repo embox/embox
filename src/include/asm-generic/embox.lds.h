@@ -57,11 +57,6 @@
 	__init_handlers_end = .;       \
 	                               \
 	ALIGNMENT();                   \
-	__shell_commands_start = .;    \
-		*(.shell_commands)         \
-	__shell_commands_end = .;      \
-	                               \
-	ALIGNMENT();                   \
 	__ipstack_packets_start = .;   \
 		*(.ipstack.packets)        \
 	__ipstack_packets_end = .;     \
