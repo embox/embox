@@ -5,8 +5,11 @@
  * @author Alexey Fomin
  *         Daria Teplykh
  */
-#include <shell_command.h>
+
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
+#include <util/array.h>
 #include "memory_tests.h"
 
 inline static void print_error(volatile uint32_t *addr,
@@ -344,7 +347,7 @@ static memory_test_t memtest_array[] = {
 TEST_MEM_FUNC *get_memtest_func(const char *test_name) {
 	int i;
 	for (i = 0; i < ARRAY_SIZE(memtest_array); i++) {
-		if (strcmp(optarg, memtest_array[i].test_name) == 0) {
+		if (strcmp(test_name, memtest_array[i].test_name) == 0) {
 			return &memtest_array[i].func;
 		}
 	}
