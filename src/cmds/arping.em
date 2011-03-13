@@ -1,4 +1,3 @@
-
 $_MODS += arping
 $_SRCS-arping += arping.c
 $_DEPS-arping += embox.net.arp

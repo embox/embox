@@ -1,9 +1,6 @@
-
 $_MODS += goto
-
 $_SRCS-goto += goto.c
 $_USES-goto += libframework.a
-
 $_DEPS-goto += embox.hal.interrupt
 
 $_BRIEF-goto = Transfer of control flow

@@ -1,7 +1,7 @@
-
 $_MODS += ifconfig
 $_SRCS-ifconfig += ifconfig.c
 $_DEPS-ifconfig += embox.net.core
+
 $_BRIEF-ifconfig = Configure a network interface
 
 define $_DETAILS-ifconfig

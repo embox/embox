@@ -1,7 +1,7 @@
-
 $_MODS += route
 $_SRCS-route += route.c
 $_DEPS-route += embox.net.ipv4
+
 $_BRIEF-route = Manipilate routing table
 
 define $_DETAILS-route

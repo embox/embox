@@ -58,7 +58,7 @@ static int exec(int argsc, char **argsv) {
 	fioctl(file, 0, &file_addr);
 
 	node = vfs_find_node(file_name, NULL);
-	stat(file_name, &sb);
+	fstat(file_name, &sb);
 
 	printf("loading...addr=0x%08x, size=%d\n", file_addr, sb.st_size);
 	memcpy((void *) load_addr, (void *) file_addr, sb.st_size);

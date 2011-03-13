@@ -1,4 +1,3 @@
-
 $_MODS += snake
 $_SRCS-snake += snake.c
 

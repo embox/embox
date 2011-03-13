@@ -118,7 +118,7 @@ extern int fioctl(FILE *fp, int request, ...);
 /**
  * Get file status (size, mode, mtime and so on)
  */
-extern int stat(const char *path, stat_t *buf);
+extern int fstat(const char *path, struct stat *buf);
 
 #if defined(CONFIG_TRACE)
   #if defined(CONFIG_PROM_PRINTF)

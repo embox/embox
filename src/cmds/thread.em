@@ -1,9 +1,5 @@
-
 $_MODS += thread
-
 $_SRCS-thread += thread.c
-
-$_DEPS-thread +=
 
 $_BRIEF-thread = Works with threading subsystem
 

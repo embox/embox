@@ -1,5 +1,4 @@
 $_MODS += test
-
 $_SRCS-test += test.c
 $_USES-test += libframework.a
 

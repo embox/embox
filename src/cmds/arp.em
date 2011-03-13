@@ -1,4 +1,3 @@
-
 $_MODS += arp
 $_SRCS-arp += arp.c
 $_DEPS-arp += embox.net.arp

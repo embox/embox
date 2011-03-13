@@ -43,7 +43,7 @@ static int exec(int argc, char **argv) {
 	fd = fopen(argv[argc - 1], "r");
 	fioctl(fd, 0, &addr);
 	fclose(fd);
-	stat((char *) argv[argc - 1], &st);
+	fstat((char *) argv[argc - 1], &st);
 	/* Compute MD5 sum */
 	md5_init(&state);
 	md5_append(&state, (const md5_byte_t *) addr, st.st_size);

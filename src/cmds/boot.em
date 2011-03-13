@@ -1,4 +1,3 @@
-
 $_MODS += boot
 $_SRCS-boot += boot.c
 $_DEPS-boot += embox.fs.core

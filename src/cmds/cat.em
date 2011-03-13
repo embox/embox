@@ -1,4 +1,3 @@
-
 $_MODS += cat
 $_SRCS-cat += cat.c
 $_DEPS-cat += embox.fs.core

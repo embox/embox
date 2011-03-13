@@ -196,7 +196,7 @@ int remove(const char *pathname) {
 	return drv->fsop->delete_file(pathname);
 }
 
-int stat(const char *path, stat_t *buf) {
+int fstat(const char *path, stat_t *buf) {
 	//FIXME: workaround, ramfs depend.
 	node_t *nod;
 	ramfs_file_description_t *desc;

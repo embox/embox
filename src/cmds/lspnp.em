@@ -4,6 +4,7 @@ $_SRCS-lspnp += lspnp.c
 $_CPPFLAGS-lspnp += -I$(BASE_CONF_DIR)
 $_DEPS-lspnp += embox.driver.amba_registry
 endif
+
 $_BRIEF-lspnp = Show list of plug and play devices
 
 define $_DETAILS-lspnp

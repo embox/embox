@@ -1,6 +1,4 @@
-
 $_MODS += mem
-
 $_SRCS-mem += mem.c
 $_USES-mem += libframework.a
 

@@ -1,7 +1,7 @@
-
 $_MODS += ping
 $_SRCS-ping += ping.c
 $_DEPS-ping += embox.net.icmp embox.net.socket
+
 $_BRIEF-ping = Send ICMP ECHO_REQUEST to network hosts
 
 define $_DETAILS-ping

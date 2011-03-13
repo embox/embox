@@ -28,7 +28,7 @@ static void print_long_list(char *path, node_t *nod, int recursive) {
 
 	list_for_each(p, &(nod->leaves)) {
 		item = (node_t*) list_entry(p, node_t, neighbors);
-		stat((char *) item->name, &sb);
+		fstat((char *) item->name, &sb);
 		ctime((time_t *) &(sb.st_mtime), time_buff);
 		printf("%d\t%d\t%s\t%s\n",
 			sb.st_mode,
