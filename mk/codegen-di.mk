@@ -29,7 +29,7 @@ c_package = $(call c_escape,$(package))
 c_escape = $(subst .,__,$(1))
 
 c_str_escape = \
-  \n\t\t"$(subst $(\n),"\n\t\t",$(subst $(\t),\\t,$(subst ",\",$1)))"
+  \n\t\t"$(subst $(\n),\\\\n"\n\t\t",$(subst $(\t),\\t,$(subst ",\",$1)))"
 
 eol-trim = $(if $(findstring $() \n,$1),$(call $0,$(subst $() \n,\n,$1)),$1)
 
