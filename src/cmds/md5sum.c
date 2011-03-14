@@ -9,6 +9,7 @@
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <stdio.h>
+#include <fs/file.h>
 #include <lib/md5.h>
 
 EMBOX_CMD(exec);

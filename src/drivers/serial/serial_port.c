@@ -98,7 +98,7 @@ void diag_init(void) {
 }
 
 int diag_has_symbol(void) {
-	return in8(COM_PORT + UART_LSR) & 0x01;
+	return in8(COM_PORT + UART_LSR) & UART_DATA_READY;
 }
 
 char diag_getc(void) {

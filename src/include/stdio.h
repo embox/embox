@@ -14,9 +14,10 @@
 #include <kernel/printk.h>
 //#include <drivers/vconsole.h>
 #include <kernel/driver.h>
-#include <fs/file.h>
 
 #define EOF (-1)
+
+struct stat;
 
 extern FILE stdin, stdout;
 //extern vconsole_t *cur_console;
