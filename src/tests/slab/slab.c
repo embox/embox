@@ -15,34 +15,12 @@
 
 EMBOX_TEST(run);
 
-#define ADDR_OF_MAIN_CACHE 0x40000574
-
-/**
- * function to free cache list
- * @return 0 on success
- */
-static int destroy_all_caches(void) {
-	cache_t *kmalloc_cache = (cache_t*) ADDR_OF_MAIN_CACHE;
-	cache_t *cachep;
-
-	while (1) {
-		cachep = (cache_t*) kmalloc_cache->next.next;
-		if (&cachep->next == &kmalloc_cache->next)
-			break;
-		cache_destroy(cachep);
-	}
-
-	return 0;
-}
-
 /**
  * testing kmalloc() and kfree()
  * @return 0 on success
  */
 static int test_s_functions(void) {
-	cache_t *kmalloc_cache = (cache_t*) ADDR_OF_MAIN_CACHE;
 	void* objp[30];
-	struct list_head *tmp;
 	size_t i;
 
 	for (i = 0; i < 10; i++) {
@@ -54,22 +32,10 @@ static int test_s_functions(void) {
 	for (i = 20; i < 30; i++) {
 		objp[i] = kmalloc(32);
 	}
-	/*how many caches are in cache list*/
-	i = 0;
-	list_for_each(tmp,&(kmalloc_cache->next)) {
-		i++;
-	}
-	TRACE("\n%d caches were created for 3 types\n", i);
 
 	for (i = 0; i < 30; i++) {
 		kfree(objp[i]);
 	}
-	destroy_all_caches();
-	i = 0;
-	list_for_each(tmp,&(kmalloc_cache->next)) {
-		i++;
-	}
-	TRACE("%d caches now\n", i);
 
 	return 0;
 }
