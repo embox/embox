@@ -55,10 +55,6 @@ void motor_start(motor_t *motor, int8_t power, uint32_t limit,
 }
 
 void motor_set_power(motor_t *motor, int8_t power) {
-	//assert(motor->state == RUN);
-	if (power == 0) {
-		motor->state = STOP;
-	}
 	data_to_avr.output_percent[motor->id] = power;
 }
 

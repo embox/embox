@@ -1,4 +1,4 @@
-/**
+/*
  * @file
  *
  * @brief Lego NXT Bluetooth helpers, layers for user level

@@ -33,6 +33,10 @@ typedef struct {
 
 extern motor_t motors[];
 
+#define MOTOR_A (&motors[0])
+#define MOTOR_B (&motors[1])
+#define MOTOR_C (&motors[2])
+
 /**
  * Start motor
  * @param motor Motor

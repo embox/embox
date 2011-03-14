@@ -13,6 +13,7 @@
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
+#include <drivers/nxt_direct_comm.h>
 #include <unistd.h>
 
 #define   NXT_BT_RX_PIN  AT91C_PIO_PA21
@@ -68,6 +69,7 @@ static void bt_us_read_handle(void) {
 	int msg_len = bt_buff[bt_buff_pos];
 
 	switch (bt_us_state) {
+		int next_len;
 		case SIZE_READ:
 #ifdef DEBUG
 			TRACE("R%x", msg_len);
@@ -100,10 +102,13 @@ static void bt_us_read_handle(void) {
 			nxt_bluetooth_read(bt_buff + bt_buff_pos, 1);
 			break;
 		case UART_MODE:
-//#ifdef DEBUG
-			TRACE("%c", bt_buff[0]);
-//#endif
-			nxt_bluetooth_read(bt_buff, 1);
+			next_len = 0;
+#ifdef DEBUG
+			TRACE("%x:", bt_buff[0]);
+			next_len = 1;
+#endif
+			next_len = direct_comm_handle(bt_buff);
+			nxt_bluetooth_read(bt_buff, next_len);
 			break;
 		default:
 			break;
@@ -125,9 +130,9 @@ void bt_uart_putc(char c) {
 volatile int bt_uart_inited = 0;
 
 volatile void bt_us_receive_init(void) {
+	int delay = 3000;
 	REG_STORE(AT91C_US1_IDR, AT91C_US_ENDTX);
 	bt_uart_inited = 1;
-	int delay = 3000;
 	while (delay--);
 	bt_set_arm7_cmd();
 	delay = 3000;
@@ -136,7 +141,7 @@ volatile void bt_us_receive_init(void) {
 	/*doing last steps for init*/
 	bt_buff_pos = 0;
 
-	nxt_bluetooth_read(bt_buff, 1);
+	nxt_bluetooth_read(bt_buff, direct_comm_init_read());
 
 }
 
@@ -166,7 +171,7 @@ static int nxt_bluetooth_init(void) {
 	REG_STORE(AT91C_US1_CR, AT91C_US_RSTRX | AT91C_US_RSTTX);
 	REG_STORE(AT91C_US1_CR, AT91C_US_STTTO);
 	REG_STORE(AT91C_US1_RTOR, 10000);
-//	REG_STORE(AT91C_US1_IDR, AT91C_US_TIMEOUT);
+	REG_STORE(AT91C_US1_IDR, AT91C_US_TIMEOUT);
 	REG_STORE(AT91C_US1_MR, (AT91C_US_USMODE_HWHSH & ~AT91C_US_SYNC)
 			| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
 			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
@@ -225,11 +230,11 @@ static int nxt_bluetooth_init(void) {
 	usleep(5000);
 
 	bt_us_state = SIZE_READ;
-	nxt_bluetooth_read(bt_buff, 1);
 
 	irq_attach((irq_nr_t) AT91C_ID_US1,
 		(irq_handler_t) &nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
+	nxt_bluetooth_read(bt_buff, 1);
 #endif
 	return 0;
 }
