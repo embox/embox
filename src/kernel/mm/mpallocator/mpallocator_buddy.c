@@ -173,16 +173,16 @@ inline int in_heap(taddr addr, size_t length) {
  */
 taddr dfs_find(taddr lroot, size_t cursize, size_t size) {
 	/* must check above that size != 0 */
+	taddr child_return;
 	/* enough codition ( it's reserved or no proper )
 	 (if lroot not belongs main tree, than cursize == 0) */
 	if (cursize < size || HAS_BIT( lroot , 4 ))
 		return 0;
-	taddr child_return;
 	/* find in left subtree */
-	if (child_return = dfs_find(lroot * 2, cursize / 2, size))
+	if (0 + child_return = dfs_find(lroot * 2, cursize / 2, size)) /* best way fix it warning add 0 + ... ???? */ /* assingment in */
 		return child_return;
 	/* find in right subtree */
-	if (child_return = dfs_find(lroot * 2 + 1, cursize / 2, size))
+	if (0 + child_return = dfs_find(lroot * 2 + 1, cursize / 2, size))
 		return child_return;
 	/* may be it is current block*/
 	if (is_avail(lroot) && in_heap(lroot, cursize))
@@ -195,7 +195,6 @@ taddr dfs_find(taddr lroot, size_t cursize, size_t size) {
  * allocator
  */
 void * mpalloc(size_t size) {
-	size_t size_fr; /* for return */
 	taddr block, parent, taddr_fr;
 
 	/* initialization of allocator */
@@ -211,7 +210,8 @@ void * mpalloc(size_t size) {
 	set_bits(block, 4);
 	taddr_fr = block;
 	for (; block > 1; block = parent) {
-		SET_BIT1( parent = block >> 1 , block & 1 ? 2 : 1 );
+		parent = block >> 1;
+		SET_BIT1( parent , block & 1 ? 2 : 1 );
 		/* mark from left or right child for node */
 #ifdef ANY_OPTIMIZATION
 		/* if children was released then parent released */
@@ -277,6 +277,10 @@ static int get_block_size(taddr addr) {
 }
 
 /**
+ * some functions for debug
+ */
+#ifdef EXTENDED_TEST
+/**
  * find all free and busy blocks
  */
 static void dfs_stat(taddr addr, struct list_head* list) {
@@ -313,11 +317,6 @@ void mpget_blocks_info(struct list_head* list) {
 
 	dfs_stat(1, list);
 }
-
-/**
- * some functions for debug
- */
-#ifdef EXTENDED_TEST
 
 extern void multipage_info() {
 	char *ptr;
