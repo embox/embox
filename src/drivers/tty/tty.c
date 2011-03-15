@@ -129,7 +129,6 @@ static int tty_init(void) {
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE, "r");
 
 	if (NULL == cur_tty) {
-		printk(" [ error ]\n ");
 		LOG_ERROR(" Any TTY has not registred!\n");
 		return -1;
 	}

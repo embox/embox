@@ -267,6 +267,7 @@ void mpfree(void * ptr) {
 	}
 }
 
+#if 0
 /**
  * convert place in tree to block size
  */
@@ -362,4 +363,5 @@ void multipage_info(void) {
 	TRACE("info end\n");
 }
 
+#endif
 #endif
