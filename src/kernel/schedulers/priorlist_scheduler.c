@@ -6,121 +6,90 @@
  * @author Darya Dzendzik
  */
 
+#include <stdbool.h>
 #include <lib/list.h>
+#include <util/array.h>
 #include <kernel/thread.h>
 #include <kernel/scheduler_base.h>
-
-/** Timer, which calls scheduler_tick. */
-#define THREADS_TIMER_ID 17
-
-/** Interval, what scheduler_tick is called in. */
-#define THREADS_TIMER_INTERVAL 100
 
 /**
  * Structure priority in list.
  */
-typedef struct priority_head {
-	struct list_head priority_list;
+struct run_thread_list {
+	/** Link within sorted priorities list. */
+	struct list_head priority_link;
 
-	thread_id_t priority_id;
-	/** List of threads with priority = priority_id. */
-	struct list_head *thread_list;
-} priority_head_t;
-
-/**
- * Maximum priority equals to 256.
- */
-#define MAX_PRIORITY 0x100
-/**
- * Pools for thread and priority.
- */
-static priority_head_t priority_pool[MAX_PRIORITY+1];
-/**
- * Head of priority list - null priority , next - max priority.
- * Contains idle_thread.
- */
-static priority_head_t *priority_head = priority_pool;
-/* Priority_head, containing currently working thread. */
-static priority_head_t *cur_prior;
+	/** List of threads with given priority. */
+	struct list_head thread_list;
+};
 
 /**
- * Allocates priority_head for chosen priority.
+ * Array of thread list ordered by priority
+ * (index is priority of each thread contained in list).
  */
-static priority_head_t *alloc_priority(thread_priority_t priority) {
-	return (priority_pool + priority);
-}
+static struct run_thread_list priorities[THREAD_PRIORITY_TOTAL];
 
 /**
- * Add new priority_head to priority list.
- * 1. Allocate memory;
- * 2. Add priority_head in right place in list;
- * 3. Add thread in priority_head.
+ * Head of run_queue is executable thread with maximal of existing priorities.
+ * Contains idle_thread (last).
  */
-static void add_new_priority(struct thread *thread, thread_priority_t priority) {
-	/* Allocate new  priority_head. */
-	priority_head_t *new_priority = alloc_priority(priority);
-	priority_head_t *current_pr;
+static struct list_head run_queue;
 
-	list_for_each_entry(current_pr, &priority_head->priority_list, priority_list) {
-		if (current_pr->priority_id > priority) {
+/**
+ * Insert priority_link to run_queue if threads with given priority don't exist.
+ */
+static void insert_priority(struct run_thread_list *priority) {
+	struct run_thread_list *next_priority;
+
+	if (!list_empty(&priority->thread_list)) {
+		return;
+	}
+
+	if (list_empty(&run_queue)) {
+		list_add(&priority->priority_link, &run_queue);
+		return;
+	}
+
+	list_for_each_entry(next_priority, &run_queue, priority_link) {
+		if (next_priority > priority) {
 			break;
 		}
 	}
-	list_add(&new_priority->priority_list, &current_pr->priority_list);
-	new_priority->priority_id = priority;
-	new_priority->thread_list = &thread->sched_list;
-	INIT_LIST_HEAD(&thread->sched_list);
-	return;
+
+	list_add_tail(&priority->priority_link, &next_priority->priority_link);
 }
 
 /**
- * Get head on list of threads with chosen priority.
- */
-static struct list_head *get_priority_list(thread_priority_t priority) {
-	struct list_head *p;
-
-	if (idle_thread->priority == priority) {
-		return priority_head->thread_list;
-	}
-	list_for_each(p, (struct list_head *) priority_head) {
-		if (((priority_head_t *) p)->priority_id == priority) {
-			return ((priority_head_t *) p)->thread_list;
-		}
-	}
-	return NULL;
-}
-
-/**
- * Adds thread with priority to thread list
- * or adds priority to priority list and thread to thread list.
+ * Adds thread to existing thread list
+ * or creates a new priority list and adds thread to this list.
  */
 void _scheduler_add(struct thread *added_thread) {
-	struct list_head *list_head;
+	struct run_thread_list *priority = priorities + added_thread->priority;
 
-	/* Find priority_head with corresponding priority_id. */
-	list_head = get_priority_list(added_thread->priority);
-	if (NULL == list_head) {
-		add_new_priority(added_thread, added_thread->priority);
-		return;
+	if (list_empty(&priority->thread_list)) {
+		insert_priority(priority);
 	}
-	list_add(&added_thread->sched_list, list_head);
+
+	list_add(&added_thread->sched_list, &priority->thread_list);
 }
 
 /**
  * Initialises list of priority.
  */
 void _scheduler_init(void) {
-	/* Initializes zero element (we always have idle_thread). */
-	INIT_LIST_HEAD(&priority_head->priority_list);
-	priority_head->priority_id = 0;
-	priority_head->thread_list = &idle_thread->sched_list;
-	INIT_LIST_HEAD((priority_head->thread_list));
+	struct run_thread_list *ptr;
 
-	cur_prior = priority_head;
+	INIT_LIST_HEAD(&run_queue);
+	array_static_foreach_ptr(ptr, priorities) {
+		INIT_LIST_HEAD(&(ptr->thread_list));
+		INIT_LIST_HEAD(&(ptr->priority_link));
+	}
+
+	_scheduler_add(idle_thread);
 }
 
 /**
- * scheduler start to work
+ * Scheduler start to work
  */
 void _scheduler_start(void) {
 	/* Nothing to do. */
@@ -132,15 +101,31 @@ void _scheduler_stop(void) {
 
 /**
  * Move current_thread pointer to the next thread.
- * @param prev_thread thread, which have worked just now.
+ * @param prev_thread thread which have worked just now.
  */
 struct thread *_scheduler_next(struct thread *prev_thread) {
 	struct thread *current_thread;
+	struct run_thread_list *priority = priorities + prev_thread->priority;
 
-	cur_prior = (priority_head_t *) priority_head->priority_list.next;
-	cur_prior->thread_list = cur_prior->thread_list->next;
-	current_thread = list_entry(cur_prior->thread_list, struct thread, sched_list);
-	current_thread->reschedule = false;
+	if (prev_thread == idle_thread) {
+		/**
+		 * Idle_thread cannot be removed from run_queue
+		 * and should be the last executable thread.
+		 */
+		return prev_thread;
+	}
+
+	list_del(&prev_thread->sched_list);
+
+	if (list_empty(&priority->thread_list)) {
+		list_del(&priority->priority_link);
+		current_thread = list_entry(run_queue.next, struct thread, sched_list);
+	} else {
+		current_thread
+				= list_entry((priority->thread_list).next, struct thread, sched_list);
+		list_add_tail(&prev_thread->sched_list, &priority->thread_list);
+	}
+
 	return current_thread;
 }
 
@@ -148,25 +133,23 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
  * Delete thread from list in priorlist_head.
  * If thread was the only with its priority, delete corresponding priorlist_head.
  */
-void _scheduler_remove(struct thread *removed_thread) {
-	size_t pri;
-	if (removed_thread->sched_list.next == 0) {
-		return;
-	}
-	pri = removed_thread->priority;
-	/* Check if removed one was the only thread with its priority. */
-	if (list_empty(&removed_thread->sched_list)) {
-		list_del((struct list_head *)&priority_pool[pri]);
-		removed_thread->sched_list.next = 0;
-	} else {
-		/* Check if current thread_list of
-		   priority equals to removed thread. */
-		if (priority_pool[pri].thread_list
-				== &removed_thread->sched_list) {
-			priority_pool[pri].thread_list
-				= priority_pool[pri].thread_list->next;
+void _scheduler_remove(struct thread *thread) {
+	struct run_thread_list *priority;
+	struct list_head *same_priority_list = &priority->thread_list;
+	enum thread_state state = thread->state;
+
+	if (state == THREAD_STATE_ZOMBIE ||
+			state == THREAD_STATE_STOP ||
+			state == THREAD_STATE_WAIT) {
+		list_del(&thread->sched_list);
+
+		if (list_empty(&thread->sched_list)) {
+			/** Remove link on list of threads with given priority */
+			list_del(&priority->priority_link);
 		}
-		/* Now we can delete thread from list. */
-		list_del(&removed_thread->sched_list);
+
+	} else if (list_empty(same_priority_list)) {
+		list_del(same_priority_list);
+
 	}
 }

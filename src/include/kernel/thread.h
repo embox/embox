@@ -27,6 +27,16 @@
 typedef __thread_id_t thread_id_t;
 typedef __thread_priority_t thread_priority_t;
 
+/** The highest priority is zero. */
+#define THREAD_PRIORITY_MAX 0x0
+
+/** The lowest priority is set to 255. */
+#define THREAD_PRIORITY_MIN 0xFF
+
+/** Total amount of valid priorities. */
+#define THREAD_PRIORITY_TOTAL \
+	(THREAD_PRIORITY_MIN - THREAD_PRIORITY_MAX + 1)
+
 /**
  * Thread, which makes nothing.
  * Is used to be working when there is no another process.

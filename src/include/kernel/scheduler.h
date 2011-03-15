@@ -3,7 +3,7 @@
  * @brief Defines methods to manipulate with threads (scheduler).
  *
  * @date 22.04.2010
- * @author Avdyukhin Dmitry
+ * @author Dmitry Avdyukhin
  * @author Skorodumov Kirill
  */
 
