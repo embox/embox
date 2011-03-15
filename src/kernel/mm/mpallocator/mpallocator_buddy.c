@@ -306,7 +306,7 @@ static void dfs_stat(taddr addr, struct list_head* list) {
 /**
  * return list of free and busy blocks in heap
  */
-void _mpget_blocks_info(struct list_head* list) {
+void mpget_blocks_info(struct list_head* list) {
 	if (!hasinit) {
 		multipage_init();
 		hasinit = 1;
