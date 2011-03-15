@@ -26,7 +26,7 @@ $_DEPS-main += timer
 $_DEPS-main += softirq
 
 ifdef CONFIG_THREAD
-$_DEPS-main += core.kernel.threads.core
+$_DEPS-main += core.kernel.thread.core
 endif
 
 ifdef CONFIG_MMU_SUPPORT
