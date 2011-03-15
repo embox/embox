@@ -128,6 +128,8 @@ unit_def = \
 __MODS_CORE = $(info Listing core mods) $(call mod_collect,MODS_CORE)
 # Regular mods.
 __MODS      = $(info Listing mods) $(call mod_collect,MODS)
+# Interfaces.
+__APIS      = $(info Listing apis) $(call mod_collect,APIS)
 
 mod_collect = $(sort \
   $(foreach dir,$(DIRS),$(call unit_def,$(call canonize_mod_name,$($_$1)))) \
@@ -261,10 +263,11 @@ symbol_dag_walk = $(foreach u,$1,$u $(call $0,$($2-$u),$2))
 # Params:
 #  1. Unit dependencies
 #  2. Set of allowed dependency values
+#  3. tag
 unit_deps_filter = \
   $(foreach dep, \
     $(or $(and $(filter-out $2,$1), \
-               $(info $(warning_str) Undefined dependencies for unit $(unit):: \
+               $(info $(warning_str) Undefined dependencies [$3] for unit $(unit):: \
                  $(filter-out $2,$1)) $(filter $2,$1) \
          ),$1), \
     $(eval UNIT-$(unit)-DEP-$(dep)-DEFINED := $(dir)) \
@@ -273,14 +276,22 @@ unit_deps_filter = \
 
 # Mod deps are curiously enough simple.
 
-mod_deps_per_directory = $(call unit_deps_filter, \
-  $(call canonize_mod_name,$(call unit_symbol,DEPS)),$(MODS) \
-)
+# 1. Symbol
+# 2. Permitted value
+mod_deps_per_directory = \
+  $(call unit_deps_filter,$(call canonize_mod_name,$(call unit_symbol,$1)),$2,$1)
+
 define define_mod_deps_per_directory
-  DEPS-$(unit) := $(DEPS-$(unit)) $(mod_deps_per_directory)
+  PROVIDES-$(unit) := $(PROVIDES-$(unit)) \
+                              $(call mod_deps_per_directory,PROVIDES,$(APIS))
+  REQUIRES-$(unit) := $(REQUIRES-$(unit)) \
+                              $(call mod_deps_per_directory,REQUIRES,$(APIS))
+  DEPS-$(unit) := $(DEPS-$(unit)) $(call mod_deps_per_directory,DEPS,$(MODS))
 endef
 define define_mod_deps
   DEPS-$(unit) := $(sort $(DEPS-$(unit)))
+  PROVIDES-$(unit) := $(sort $(PROVIDES-$(unit)))
+  REQUIRES-$(unit) := $(sort $(REQUIRES-$(unit)))
 endef
 
 invoke_define_mod_deps = \
@@ -343,12 +354,12 @@ deps_detect_cycles = \
 unit_dep_pairs = $(join $(1:%=%/),$(2))
 
 # Define dependency info for each unit and then perform graph check.
-__DEPS_PROCESS = $(info Processing dependencies) \
+__DEPS_PROCESS = $(warning Processing dependencies (cycle detection is OFF)) \
   $(invoke_define_mod_deps) \
   $(invoke_define_lib_deps) \
-  $(foreach unit,$(MODS) $(LIBS),$(call deps_detect_cycles,$(DEPS-$(unit)))) \
-  $(invoke_define_lib_deps_postprocess) \
-  $(foreach unit,$(LIBS),$(call deps_detect_cycles,$(DEPS-$(unit))))
+  $(invoke_define_lib_deps_postprocess)
+#  $(foreach unit,$(MODS) $(LIBS),$(call deps_detect_cycles,$(DEPS-$(unit)))) \
+#  $(foreach unit,$(LIBS),$(call deps_detect_cycles,$(DEPS-$(unit))))
 
 # The sub-graph of all module dependencies (either direct or indirect).
 MOD_DEPS_DAG = $(sort $(call symbol_dag_walk,$1,DEPS))
@@ -369,7 +380,7 @@ reverse = $(strip \
   $(if $1,$(call $0,$(wordlist 2,$(words $1),$1)) $(call firstword,$1)))
 
 define mod_deps_resort
-  DEPS-$(mod) := $(foreach m,$(MODS),$(if $(filter $m,$(DEPS-$(mod))),$m))
+  DEPS-$(mod) := $(filter $(MODS),$(DEPS-$(mod)))
 endef
 
 __MOD_DEPS_RESORT = $(foreach mod,$(MODS),$(eval $(value mod_deps_resort)))
@@ -382,6 +393,7 @@ PACKAGES := $(__PACKAGES)
 $(__PACKAGES_PROCESS)
 MODS_CORE := $(__MODS_CORE)
 MODS := $(sort $(__MODS) $(MODS_CORE))# Essential mods are so essential...
+APIS := $(__APIS)
 LIBS := $(__LIBS)
 $(__UNITS_PROCESS)
 $(__DEPS_PROCESS)
@@ -460,6 +472,7 @@ __print_units = \
 print_units = \
   $(info All unints: ) \
   $(call __print_units,MOD,$(MODS),defined) \
+  $(call __print_units,API,$(APIS),defined) \
   $(call __print_units,LIB,$(LIBS),defined)
 
 # This is expanded in rule commands context
@@ -503,6 +516,7 @@ else
 	@$(PRINTF) $(call printf_escape,$(call dump_var,PACKAGES)) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var,MODS_CORE)) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var,MODS)) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var,APIS)) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var,LIBS)) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,CPPFLAGS,$(PACKAGES))) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,CFLAGS,$(PACKAGES))) >> $@
