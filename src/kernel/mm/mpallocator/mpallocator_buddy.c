@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <lib/list.h>
 #include <kernel/mm/mpallocator.h>
+#include <stdlib.h>
 
 #ifndef EXTENDED_TEST
 extern char _heap_start;
@@ -179,10 +180,10 @@ taddr dfs_find(taddr lroot, size_t cursize, size_t size) {
 	if (cursize < size || HAS_BIT( lroot , 4 ))
 		return 0;
 	/* find in left subtree */
-	if (0 + child_return = dfs_find(lroot * 2, cursize / 2, size)) /* best way fix it warning add 0 + ... ???? */ /* assingment in */
+	if ((child_return = dfs_find(lroot * 2, cursize / 2, size)))
 		return child_return;
 	/* find in right subtree */
-	if (0 + child_return = dfs_find(lroot * 2 + 1, cursize / 2, size))
+	if ((child_return = dfs_find(lroot * 2 + 1, cursize / 2, size)))
 		return child_return;
 	/* may be it is current block*/
 	if (is_avail(lroot) && in_heap(lroot, cursize))
@@ -277,10 +278,6 @@ static int get_block_size(taddr addr) {
 }
 
 /**
- * some functions for debug
- */
-#ifdef EXTENDED_TEST
-/**
  * find all free and busy blocks
  */
 static void dfs_stat(taddr addr, struct list_head* list) {
@@ -318,7 +315,8 @@ void mpget_blocks_info(struct list_head* list) {
 	dfs_stat(1, list);
 }
 
-extern void multipage_info() {
+#if 0
+void multipage_info(void) {
 	char *ptr;
 	/* initialization of allocator */
 	if (!hasinit) {
