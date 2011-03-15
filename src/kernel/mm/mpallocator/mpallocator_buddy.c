@@ -267,7 +267,6 @@ void mpfree(void * ptr) {
 	}
 }
 
-#if 0
 /**
  * convert place in tree to block size
  */
@@ -307,7 +306,7 @@ static void dfs_stat(taddr addr, struct list_head* list) {
 /**
  * return list of free and busy blocks in heap
  */
-void mpget_blocks_info(struct list_head* list) {
+void _mpget_blocks_info(struct list_head* list) {
 	if (!hasinit) {
 		multipage_init();
 		hasinit = 1;
@@ -363,5 +362,4 @@ void multipage_info(void) {
 	TRACE("info end\n");
 }
 
-#endif
 #endif
