@@ -470,17 +470,21 @@ MODS_BUILD := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_CORE)))
 mod_apis = $(foreach u,$2,$($1-$u))
 APIS_BUILD := $(strip $(call mod_apis,PROVIDES,$(MODS_BUILD)))
 
-check_api_providers = \
-  $(foreach a,$(sort $(APIS_BUILD)), \
-    $(if $(call singleword,$(filter $(MODS_BUILD),$(PROVIDED-$a))),, \
-       $(if $(call nowords,$(filter $(MODS_BUILD),$(PROVIDED-$a))), \
-         $(check_api_no_providers), \
-         $(check_api_multiple_providers) \
-        ) \
+check_api_requires = \
+  $(foreach a,$(sort $(call mod_apis,REQUIRES,$(MODS_BUILD))), \
+    $(if $(call nowords,$(filter $(MODS_BUILD),$(PROVIDED-$a))), \
+         $(check_api_unimpl) \
      ) \
    )
 
-check_api_no_providers = x \
+check_api_provides = \
+  $(foreach a,$(sort $(APIS_BUILD)), \
+    $(if $(call singleword,$(filter $(MODS_BUILD),$(PROVIDED-$a))),, \
+       $(check_api_multiple_providers) \
+     ) \
+   )
+
+check_api_unimpl = x \
   $(info $(call error_str_file,$(CONF_DIR)/mods.conf) \
     Unimplemented API $a:) \
   $(info $(call error_str_file,$(CONF_DIR)/mods.conf) \
@@ -533,7 +537,7 @@ endif
 image_init:
 	$(debug_print_units)$(if $(strip \
 		$(check_undefined_mods) \
-		$(check_api_providers) \
+		$(check_api_provides) $(check_api_requires) \
 	),$(error EMBuild error))
 
 # Here goes dump generating stuff needed to speed-up a build.
