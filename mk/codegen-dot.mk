@@ -17,7 +17,14 @@ GRAPH_PS  = $(DOT_DIR)/$(TARGET).ps
 mod_package = $(basename $(mod))
 mod_name = $(patsubst .%,%,$(suffix $(mod)))
 
-options = ratio=compress; size="50,50"; concentrate=true; ranksep="1.0 equal";
+options = \
+  ratio=compress; \
+  size="50,50"; \
+  concentrate=true; \
+  ranksep="1.0 equal"; \
+  K=1.0; \
+  overlap=false;
+
 generate_dot = $(strip \ndigraph Embox { \
   $(options)\
   $(foreach package,$(sort $(basename $(GRAPH))), \
@@ -40,6 +47,6 @@ $(GRAPH_DOT) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-dot.mk
 	@$(PRINTF) '$(generate_dot)' > $@
 
 $(GRAPH_PS) : $(GRAPH_DOT)
-	@mkdir -p $(DOT_DIR) && dot -Tps $< -o $@
+	mkdir -p $(DOT_DIR) && fdp -Tps $< -o $@
 
 endif

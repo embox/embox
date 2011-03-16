@@ -366,7 +366,7 @@ invoke_define_lib_deps_postprocess = \
 #unit_dep_pairs = $(join $(1:%=%/),$(2))
 
 # Define dependency info for each unit and then perform graph check.
-__DEPS_PROCESS = $(warning Processing dependencies (cycle detection is OFF)) \
+__DEPS_PROCESS = $(info Processing dependencies (cycle detection is OFF)) \
   $(invoke_define_mod_deps) \
   $(invoke_define_mod_deps_postprocess) \
   $(invoke_define_lib_deps) \
