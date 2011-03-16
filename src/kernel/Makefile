@@ -35,7 +35,7 @@ endif
 
 ifdef CONFIG_IRQ
   $_SRCS-irq     += irq.c
-  $_REQUIRES-irq     += embox.hal.interrupt
+  $_REQUIRES-irq += embox.hal.interrupt
   $_DEPS-irq     += softirq
 endif
 #ifdef CONFIG_PRINTK
@@ -48,8 +48,8 @@ ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
 endif
 ifdef CONFIG_TIMER
-  $_SRCS-timer   += timer.c
-  $_DEPS-timer   += embox.hal.clock
+  $_SRCS-timer     += timer.c
+  $_REQUIRES-timer += embox.hal.clock
 endif
 ifdef CONFIG_DRIVER_SUBSYSTEM
 # It's core.kernel.drv_subsys

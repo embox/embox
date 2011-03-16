@@ -7,8 +7,6 @@ $_SRCS-arch += arch.c
 
 $_SRCS-interrupt += entry.S
 
-DEFAULT_SYS_TIMER = embox.driver.timers.at91_timer
-
 DEFAULT_SYS_MOD_DIAG = embox.driver.serial.at91_uart
 
 include $(MK_DIR)/system.mk

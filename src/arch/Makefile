@@ -5,9 +5,9 @@ $_PACKAGE := embox.hal
 
 $_CPPFLAGS += -D__HAL__
 
-$_APIS += interrupt
+$_APIS += interrupt clock
 
-$_MODS += arch clock context
+$_MODS += arch context
 $_MODS += traps prom
 
 # Overrides some libc routines with optimized ones.
