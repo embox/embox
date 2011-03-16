@@ -300,6 +300,18 @@ invoke_define_mod_deps = \
     $(eval $(value define_mod_deps)) \
   )
 
+define define_mod_deps_postprocess
+  PROVIDED-$(unit) := \
+    $(foreach m,$(MODS),$(if $(filter $(unit),$(PROVIDES-$m)),$m))
+  REQUIRED-$(unit) := \
+    $(foreach m,$(MODS),$(if $(filter $(unit),$(REQUIRES-$m)),$m))
+endef
+
+invoke_define_mod_deps_postprocess = \
+  $(foreach unit,$(APIS), \
+    $(eval $(value define_mod_deps_postprocess)) \
+  )
+
 # Libs are more complicated because of the need to deal with USES/SUBS stuff.
 
 lib_uses_per_directory = \
@@ -338,7 +350,7 @@ invoke_define_lib_deps_postprocess = \
 
 # After dependency info has been collected for all units we should check that
 # the dependency graphs are true DAGs.
-deps_detect_cycles = \
+#deps_detect_cycles = \
   $(if $(filter $(unit),$1), \
     $(foreach pair, \
         $(call unit_dep_pairs,$2 $(lastword $3),$3 $(call firstword,$2)), \
@@ -351,11 +363,12 @@ deps_detect_cycles = \
         $2 $(parent),$3 $(u)) \
     )) \
   ) # I don't understand anymore how does this shit work but it does, trust me.
-unit_dep_pairs = $(join $(1:%=%/),$(2))
+#unit_dep_pairs = $(join $(1:%=%/),$(2))
 
 # Define dependency info for each unit and then perform graph check.
 __DEPS_PROCESS = $(warning Processing dependencies (cycle detection is OFF)) \
   $(invoke_define_mod_deps) \
+  $(invoke_define_mod_deps_postprocess) \
   $(invoke_define_lib_deps) \
   $(invoke_define_lib_deps_postprocess)
 #  $(foreach unit,$(MODS) $(LIBS),$(call deps_detect_cycles,$(DEPS-$(unit)))) \
@@ -445,7 +458,7 @@ $(foreach unit,$(MODS), \
 undefined_mods := $(filter-out $(MODS),$(MODS_ENABLE))
 print_undefined_mods = \
   $(foreach mod,$(undefined_mods), \
-    $(info $(call warning_str_file,$(AUTOCONF_DIR)/mods.mk) \
+    $(info $(call warning_str_file,$(CONF_DIR)/mods.conf) \
       Undefined mod $(mod)) \
   )
 
@@ -453,6 +466,18 @@ MODS_ENABLE := $(sort $(filter $(MODS),$(MODS_ENABLE)))
 
 # Prepare the list of mods for the build.
 MODS_BUILD := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_CORE)))
+
+mod_apis = $(foreach u,$2,$($1-$u))
+mod_unimplemented_apis = \
+  $(filter-out $(call mod_apis,PROVIDES,$1),$(call mod_apis,REQUIRES,$1))
+
+print_unimplemented_apis = $(if $(strip \
+  $(foreach a,$(call mod_unimplemented_apis,$(MODS_BUILD)),x \
+    $(info $(call warning_str_file,$(CONF_DIR)/mods.conf) Unimplemented API $a:) \
+    $(info $(call warning_str_file,$(CONF_DIR)/mods.conf) $(\t)Required by: $(filter $(MODS),$(REQUIRED-$a))) \
+    $(info $(call warning_str_file,$(CONF_DIR)/mods.conf) $(\t)Provided by: $(PROVIDED-$a)))), \
+  $(error Implementation MODs for these APIs must be specified explicitly))
+
 
 $(foreach mod,$(MODS_CORE), \
   $(eval RUNLEVEL-$(mod) := 0)\
@@ -489,6 +514,7 @@ endif
 image_init:
 	$(strip \
 		$(print_undefined_mods) \
+		$(print_unimplemented_apis) \
 		$(print_units) \
 	)
 
@@ -526,6 +552,10 @@ else
 	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol_verbatim,BRIEF,$(MODS) $(LIBS))) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol_verbatim,DETAILS,$(MODS) $(LIBS))) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,DEPS,$(MODS) $(LIBS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,PROVIDES,$(MODS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,REQUIRES,$(MODS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,PROVIDED,$(APIS))) >> $@
+	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,REQUIRED,$(APIS))) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var,SUBDIRS_LDFLAGS)) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var_symbol,UNIT_DEFINED,$(MODS) $(LIBS))) >> $@
 endif
