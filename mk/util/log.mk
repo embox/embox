@@ -54,8 +54,8 @@ __log_counter_inc_and_get = \
 
 # The most general way to get error/warning string.
 # First argument should contain the location to print (directory and file).
-error_str_file   = $1:0: error:
-warning_str_file = $1:0: warning:
+error_str_file   = $1:1: error:
+warning_str_file = $1:1: warning:
 
 # Print location using the first argument as directory
 # and 'Makefile' as file within the directory.

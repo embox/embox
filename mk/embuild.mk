@@ -473,9 +473,9 @@ mod_unimplemented_apis = \
 
 print_unimplemented_apis = $(if $(strip \
   $(foreach a,$(call mod_unimplemented_apis,$(MODS_BUILD)),x \
-    $(info $(call warning_str_file,$(CONF_DIR)/mods.conf) Unimplemented API $a:) \
-    $(info $(call warning_str_file,$(CONF_DIR)/mods.conf) $(\t)Required by: $(filter $(MODS),$(REQUIRED-$a))) \
-    $(info $(call warning_str_file,$(CONF_DIR)/mods.conf) $(\t)Provided by: $(PROVIDED-$a)))), \
+    $(info $(call error_str_file,$(CONF_DIR)/mods.conf) Unimplemented API $a:) \
+    $(info $(call error_str_file,$(CONF_DIR)/mods.conf) $(\t)Required by: $(filter $(MODS),$(REQUIRED-$a))) \
+    $(info $(call error_str_file,$(CONF_DIR)/mods.conf) $(\t)Provided by: $(PROVIDED-$a)))), \
   $(error Implementation MODs for these APIs must be specified explicitly))
 
 
