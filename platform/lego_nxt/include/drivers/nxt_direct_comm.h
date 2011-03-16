@@ -10,6 +10,7 @@
 
 #define DC_SET_OUTPUT_STATE 0x04
 #define DC_EX_SET_M_OUTPUT_STATE 0x20
+#define DC_QREAL_HELLO 0x01
 
 #define MSG_SIZE_BYTE_CNT 2
 

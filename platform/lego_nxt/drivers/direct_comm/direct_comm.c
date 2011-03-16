@@ -58,9 +58,10 @@ static int handle_type(uint8_t *buff) {
 	return 0;
 }
 
-static void reply_handle(void) {
+static void reply_handle(uint8_t status) {
 	uint8_t reply[] = {0x02, 0x00, 0x00};
 	reply[1] = command;
+	reply[2] = status;
 	reply_need = 0;
 	nxt_bluetooth_write(reply, 3);
 }
@@ -72,7 +73,6 @@ static int handle_comm(uint8_t *buff) {
 }
 
 static int handle_body(uint8_t *buff) {
-	int i;
 	reader_state = COMM_TYPE;
 	switch (command) {
 		int power;
@@ -93,16 +93,16 @@ static int handle_body(uint8_t *buff) {
 				motor_set_power(&motors[1], power);
 				motor_set_power(&motors[2], power);
 			}
+			return 0;
 			break;
 		case DC_EX_SET_M_OUTPUT_STATE:
-#if 0
-			for (i = 0; i < NXT_N_MOTORS; i++) {
-				motor_set_power(&motors[i], buff[i]);
-			}
-#endif
 			motor_set_power(&motors[0], buff[0]);
 			motor_set_power(&motors[1], buff[1]);
 			motor_set_power(&motors[2], buff[2]);
+			return 0;
+			break;
+		case DC_QREAL_HELLO:
+			return 0x42;
 			break;
 		default:
 			break;
@@ -120,6 +120,7 @@ int direct_comm_handle(uint8_t *buff) {
 	int ret_val = 0;
 	switch (reader_state) {
 		uint8_t *cbuf;
+		uint8_t status;
 		case COMM_SIZE:
 			reader_state = COMM_TELEGRAM;
 			ret_val = handle_size(buff);
@@ -130,9 +131,9 @@ int direct_comm_handle(uint8_t *buff) {
 			cbuf += 1;
 			handle_comm(cbuf);
 			cbuf += 1;
-			handle_body(cbuf);
+			status = handle_body(cbuf);
 			if (reply_need) {
-				reply_handle();
+				reply_handle(status);
 			}
 			command = 0;
 			reader_state = COMM_SIZE;
