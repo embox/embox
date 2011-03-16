@@ -1,10 +1,13 @@
 $_PACKAGE := embox.driver.interrupts
 
-$_MODS += mb_interrupt at91_interrupt apic_interrupt
+$_MODS += mb at91 apic
 
-$_SRCS-mb_interrupt += mb_interrupt.c
+$_PROVIDES-mb   += embox.hal.interrupt
+$_SRCS-mb       += mb.c
 
-$_SRCS-at91_interrupt += at91_interrupt.c
+$_PROVIDES-at91 += embox.hal.interrupt
+$_SRCS-at91     += at91.c
 
-$_SRCS-apic_interrupt += apic_interrupt.c
+$_PROVIDES-apic += embox.hal.interrupt
+$_SRCS-apic     += apic.c
 

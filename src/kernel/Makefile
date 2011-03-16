@@ -35,7 +35,7 @@ endif
 
 ifdef CONFIG_IRQ
   $_SRCS-irq     += irq.c
-  $_DEPS-irq     += embox.hal.interrupt
+  $_REQUIRES-irq     += embox.hal.interrupt
   $_DEPS-irq     += softirq
 endif
 #ifdef CONFIG_PRINTK
