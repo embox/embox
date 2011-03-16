@@ -3,16 +3,18 @@
  *
  * @date 16.02.2011
  * @author Alexandr Kalmuk
+ * @author Kirill Tyushev
  */
 
 #include <kernel/message.h>
 #include <kernel/thread.h>
 #include <kernel/event_handler.h>
+#include <kernel/messages_defs.h>
 
 /**
  * Handlers(threads), that can handle message with specified type
  */
-static struct handlers {
+struct handlers {
 	message_type_t type;
 	struct thread *thread;
 };
@@ -22,6 +24,9 @@ static struct handlers {
  * that can handle them.
  */
 static struct handlers msg_array[MESSAGE_COUNT];
+
+/** max id of message */
+static int max_id = -1;
 
 /**
  * Create the message to send it to corresponding thread
@@ -40,4 +45,13 @@ static struct message *create_message(int id, void *data) {
 void send_message(int id, void *data) {
 	struct message *msg = create_message(id, data);
 	message_send(msg, msg_array[id].thread);
+}
+
+struct message* get_message(void) {
+	return message_receive();
+}
+
+void register_message(int id, struct thread *thread) {
+	max_id++;
+	msg_array[max_id].thread = thread;
 }
