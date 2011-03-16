@@ -456,7 +456,7 @@ $(foreach unit,$(MODS), \
 
 # Now process mods that come from config files.
 undefined_mods := $(filter-out $(MODS),$(MODS_ENABLE))
-print_undefined_mods = \
+check_undefined_mods = \
   $(foreach mod,$(undefined_mods), \
     $(info $(call warning_str_file,$(CONF_DIR)/mods.conf) \
       Undefined mod $(mod)) \
@@ -468,16 +468,35 @@ MODS_ENABLE := $(sort $(filter $(MODS),$(MODS_ENABLE)))
 MODS_BUILD := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_CORE)))
 
 mod_apis = $(foreach u,$2,$($1-$u))
-mod_unimplemented_apis = \
-  $(filter-out $(call mod_apis,PROVIDES,$1),$(call mod_apis,REQUIRES,$1))
+APIS_BUILD := $(strip $(call mod_apis,PROVIDES,$(MODS_BUILD)))
 
-print_unimplemented_apis = $(if $(strip \
-  $(foreach a,$(call mod_unimplemented_apis,$(MODS_BUILD)),x \
-    $(info $(call error_str_file,$(CONF_DIR)/mods.conf) Unimplemented API $a:) \
-    $(info $(call error_str_file,$(CONF_DIR)/mods.conf) $(\t)Required by: $(filter $(MODS),$(REQUIRED-$a))) \
-    $(info $(call error_str_file,$(CONF_DIR)/mods.conf) $(\t)Provided by: $(PROVIDED-$a)))), \
-  $(error Implementation MODs for these APIs must be specified explicitly))
+check_api_providers = \
+  $(foreach a,$(sort $(APIS_BUILD)), \
+    $(if $(call singleword,$(filter $(MODS_BUILD),$(PROVIDED-$a))),, \
+       $(if $(call nowords,$(filter $(MODS_BUILD),$(PROVIDED-$a))), \
+         $(check_api_no_providers), \
+         $(check_api_multiple_providers) \
+        ) \
+     ) \
+   )
 
+check_api_no_providers = x \
+  $(info $(call error_str_file,$(CONF_DIR)/mods.conf) \
+    Unimplemented API $a:) \
+  $(info $(call error_str_file,$(CONF_DIR)/mods.conf) \
+    $(\t)Required by: $(filter $(MODS),$(REQUIRED-$a))) \
+  $(info $(call error_str_file,$(CONF_DIR)/mods.conf) \
+    $(\t)Provided by: $(PROVIDED-$a))
+check_api_multiple_providers = x \
+  $(info $(call error_str_file,$(CONF_DIR)/mods.conf) \
+    Multiple implementations for API $a:) \
+  $(info $(call error_str_file,$(CONF_DIR)/mods.conf) \
+    $(\t)Provided by: $(filter $(MODS_BUILD),$(PROVIDED-$a)))
+
+# XXX Convert requires-provides relations into plain old deps.
+$(foreach a,$(APIS_BUILD),$(foreach r,$(filter $(MODS_BUILD),$(REQUIRED-$a)), \
+  ${eval DEPS-$r := $(sort $(DEPS-$r) $(filter $(MODS_BUILD),$(PROVIDED-$a)))} \
+))
 
 $(foreach mod,$(MODS_CORE), \
   $(eval RUNLEVEL-$(mod) := 0)\
@@ -494,14 +513,14 @@ __print_units = \
     $(info ($1) $e $(if $3,	(defined in $(UNIT_DEFINED-$e))))x \
   ),,$(info (none)))
 
-print_units = \
+debug_print_units = \
   $(info All unints: ) \
   $(call __print_units,MOD,$(MODS),defined) \
   $(call __print_units,API,$(APIS),defined) \
   $(call __print_units,LIB,$(LIBS),defined)
 
 # This is expanded in rule commands context
-print_units += \
+debug_print_units += \
   $(info Mods enabled in config: ) \
   $(call __print_units,CONF,$(MODS_ENABLE)) \
   $(info Essential Mods: ) \
@@ -512,16 +531,15 @@ print_units += \
 endif
 
 image_init:
-	$(strip \
-		$(print_undefined_mods) \
-		$(print_unimplemented_apis) \
-		$(print_units) \
-	)
+	$(debug_print_units)$(if $(strip \
+		$(check_undefined_mods) \
+		$(check_api_providers) \
+	),$(error EMBuild error))
 
 # Here goes dump generating stuff needed to speed-up a build.
 
 EMBUILD_DUMP_PREREQUISITES += $(DIRS:%=%/Makefile)
-EMBUILD_DUMP_PREREQUISITES += $(AUTOCONF_DIR)/build.mk
+EMBUILD_DUMP_PREREQUISITES += $(AUTOCONF_DIR)/build.mk $(MK_DIR)/embuild.mk
 
 dump_var = $1 := $($1:%=\\\\\n  %)\n
 dump_var_symbol = $(subst \\\\\n,\\\\\n  ,$(subst \n ,\n,$(strip \
@@ -534,7 +552,7 @@ dump_var_symbol_verbatim = \
   $(foreach var,$2,$(call dump_var_verbatim,$1-$(var)))
 
 printf_escape = "$(subst ",\",$1)"
-$(EMBUILD_DUMP_MK) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/embuild.mk
+$(EMBUILD_DUMP_MK) : $(EMBUILD_DUMP_PREREQUISITES)
 ifndef EMBUILD_DUMP_CREATE
 	@$(RM) $@ && $(MAKE) EMBUILD_DUMP_CREATE=1 --no-print-directory $@
 else
