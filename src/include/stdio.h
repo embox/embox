@@ -12,15 +12,11 @@
 #include <stdarg.h>
 #include <types.h>
 #include <kernel/printk.h>
-//#include <drivers/vconsole.h>
 #include <kernel/driver.h>
 
 #define EOF (-1)
 
 struct stat;
-
-extern FILE stdin, stdout;
-//extern vconsole_t *cur_console;
 
 extern int fputc(FILE f, int c);
 extern int fgetc(FILE f);
