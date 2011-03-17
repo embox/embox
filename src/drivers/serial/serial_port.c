@@ -44,7 +44,14 @@
  * +---------+---------+-----------+---------------------+
  */
 
-#define COM_PORT            0x3f8
+/** Default I/O addresses
+ * NOTE: The actual I/O addresses used are stored
+ *       in a table in the BIOS data area 0000:0400.
+ */
+#define COM0_PORT           0x3f8
+#define COM1_PORT           0x2f8
+#define COM2_PORT           0x3e8
+#define COM3_PORT           0x2e8
 
 /* The offsets of UART registers */
 #define UART_TX             0x0
@@ -64,6 +71,7 @@
 #define UART_EMPTY_TX       0x20
 #define UART_ENABLE_FIFO    0xC7
 #define UART_ENABLE_MODEM   0x0B
+/* Divisor latch access bit */
 #define UART_DLAB           0x80
 
 /* The type of word length */
@@ -103,19 +111,18 @@ void diag_init(void) {
 		return;
 	}
 	/* Turn off the interrupt */
-	out8(COM_PORT + UART_IER, 0x0);
+	out8(0x0, COM0_PORT + UART_IER);
 	/* Set DLAB */
-	out8(COM_PORT + UART_LCR, UART_DLAB);
+	out8(UART_DLAB, COM0_PORT + UART_LCR);
 	/* Set the baud rate */
-	out8(COM_PORT + UART_DLL, DIVISOR(CONFIG_UART_BAUD_RATE) & 0xFF);
-	out8(COM_PORT + UART_DLH, (DIVISOR(CONFIG_UART_BAUD_RATE) >> 8) & 0xFF);
+	out8(DIVISOR(CONFIG_UART_BAUD_RATE) & 0xFF, COM0_PORT + UART_DLL);
+	out8((DIVISOR(CONFIG_UART_BAUD_RATE) >> 8) & 0xFF, COM0_PORT + UART_DLH);
 	/* Set the line status */
-	out8(COM_PORT + UART_LCR,
-		UART_NO_PARITY | UART_8BITS_WORD | UART_1_STOP_BIT);
+	out8(UART_NO_PARITY | UART_8BITS_WORD | UART_1_STOP_BIT, COM0_PORT + UART_LCR);
 	/* Uart enable FIFO */
-	out8(COM_PORT + UART_FCR, UART_ENABLE_FIFO);
+	out8(UART_ENABLE_FIFO, COM0_PORT + UART_FCR);
 	/* Uart enable modem (turn on DTR, RTS, and OUT2) */
-	out8(COM_PORT + UART_MCR, UART_ENABLE_MODEM);
+	out8(UART_ENABLE_MODEM, COM0_PORT + UART_MCR);
 	serial_inited = 1;
 }
 
@@ -123,16 +130,16 @@ int diag_has_symbol(void) {
 	if (!serial_inited) {
 		return EOF;
 	}
-	return in8(COM_PORT + UART_LSR) & UART_DATA_READY;
+	return in8(COM0_PORT + UART_LSR) & UART_DATA_READY;
 }
 
 char diag_getc(void) {
 	while (!diag_has_symbol());
-	return in8(COM_PORT + UART_RX);
+	return in8(COM0_PORT + UART_RX);
 }
 
 void diag_putc(char ch) {
-	while (!(in8(COM_PORT + UART_LSR) & UART_EMPTY_TX));
-	out8(COM_PORT + UART_TX, (uint8_t) ch);
+	while (!(in8(COM0_PORT + UART_LSR) & UART_EMPTY_TX));
+	out8((uint8_t) ch, COM0_PORT + UART_TX);
 }
 
