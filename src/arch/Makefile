@@ -5,7 +5,7 @@ $_PACKAGE := embox.hal
 
 $_CPPFLAGS += -D__HAL__
 
-$_APIS += interrupt clock
+$_APIS += interrupt clock diag
 
 $_MODS += arch context
 $_MODS += traps prom

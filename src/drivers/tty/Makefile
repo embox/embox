@@ -6,7 +6,7 @@ $_DEPS-tty += embox.fs.devfs tty_action
 
 #it isn't good idea
 #$_DEPS-tty += embox.driver.serial.apbuart
-$_DEPS-tty += $(MOD_DIAG)
+$_REQUIRES-tty += embox.hal.diag
 #$_DEPS-tty += embox.driver.ambapp
 #ifdef
 #$_DEPS-tty += embox.driver.terminal #vtparse + vtbuilder

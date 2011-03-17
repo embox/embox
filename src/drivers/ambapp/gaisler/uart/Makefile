@@ -1,10 +1,11 @@
 $_PACKAGE := embox.driver.serial
 
-$_MODS += apbuart diag_apbuart
+$_MODS                  += diag_apbuart
+$_SRCS-diag_apbuart     += diag_apbuart.c
+$_PROVIDES-diag_apbuart += embox.hal.diag
 
-$_SRCS-apbuart += uart.c
-$_SRCS-diag_apbuart += diag_apbuart.c
-
+$_MODS           += apbuart
+$_SRCS-apbuart   += uart.c
 ifdef CONFIG_AMBAPP
   $_DEPS-apbuart += embox.driver.ambapp
 endif

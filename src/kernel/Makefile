@@ -1,6 +1,4 @@
 
-# core.kernel package is always available.
-# There is no need to add it's mods to dependency list of your mods.
 $_PACKAGE := core.kernel
 
 $_CPPFLAGS += -D__KERNEL__
@@ -12,18 +10,18 @@ $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 # TODO too more mods fro core.kernel
-$_MODS += irq timer softirq job drv_subsys #printk
+$_MODS += irq timer softirq drv_subsys #printk
 $_MODS += printk
 
 #$_SRCS-main += main.c
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
-$_SRCS-job += job.c
 $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq
 $_DEPS-main += timer
 #$_DEPS-main += printk
 $_DEPS-main += softirq
+$_REQUIRES-main += embox.hal.diag
 
 ifdef CONFIG_THREAD
 $_DEPS-main += core.kernel.thread.core
@@ -67,8 +65,4 @@ ifdef CONFIG_MEASURE
   $_SRCS-measure += measure.c
   $_DEPS-measure += $(CONFIG_MEASURE) timer
   $_DEPS-main += measure
-endif
-
-ifdef CONFIG_MOD_DIAG
-  $_DEPS-main += $(CONFIG_MOD_DIAG)
 endif

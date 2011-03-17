@@ -9,8 +9,6 @@ $_SRCS-arch += arch.c
 $_SRCS-context += context.c
 $_SRCS-traps += traps_core.c
 
-DEFAULT_SYS_MOD_DIAG = embox.driver.serial.xuartlite
-
 include $(MK_DIR)/system.mk
 
 
