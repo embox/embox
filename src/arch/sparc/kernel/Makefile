@@ -10,7 +10,5 @@ $_SRCS-locore += entry.S trap_*.S winflush.S
 $_SRCS-arch      += arch.c
 $_SRCS-context   += context.c context_switch.S
 
-include $(MK_DIR)/system.mk
-
 $_SRCS-prom += prom.c
 

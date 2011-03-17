@@ -7,8 +7,6 @@ $_SRCS-arch += arch.c
 
 $_SRCS-interrupt += entry.S
 
-include $(MK_DIR)/system.mk
-
 DEFAULT_SYS_WATCHDOG = embox.driver.watchdogs.at91_watchdog
 
 ifdef CONFIG_SYS_WATCHDOG

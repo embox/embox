@@ -9,6 +9,3 @@ $_SRCS-arch += arch.c
 $_SRCS-context += context.c
 $_SRCS-traps += traps_core.c
 
-include $(MK_DIR)/system.mk
-
-
