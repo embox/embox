@@ -11,7 +11,6 @@
 #include <drivers/tty.h>
 #include <drivers/vconsole.h>
 #include <drivers/tty_action.h>
-#include <kernel/uart.h>
 #include <ctype.h>
 #include <kernel/pp.h>
 #include <embox/unit.h>

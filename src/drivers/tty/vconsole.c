@@ -11,7 +11,7 @@
 #include <drivers/vconsole.h>
 #include <fs/file.h>
 #include <string.h>
-#include <kernel/uart.h>
+#include <kernel/diag.h>
 #include <embox/unit.h>
 
 static vconsole_t def_console;
@@ -40,7 +40,7 @@ void vconsole_loadline(vconsole_t *con) {
 	/* write saved command line */
 	*t = con->cl_cur;
 	for (*s=0; *s<con->cl_cnt; ++*s) {
-		uart_putc(con->tty->rx_buff[*s] = con->cl_buff[*s]);
+		diag_putc(con->tty->rx_buff[*s] = con->cl_buff[*s]);
 		//con->tty->file_op->fwrite()
 	}
 	/* go to saved cursor position */

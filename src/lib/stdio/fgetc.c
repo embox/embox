@@ -7,7 +7,6 @@
  */
 
 #include <stdio.h>
-#include <kernel/uart.h>
 #include <kernel/driver.h>
 
 #ifdef CONFIG_DRIVER_SUBSYSTEM

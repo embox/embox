@@ -5,7 +5,6 @@
 #include <types.h>
 #include <errno.h>
 
-#include <kernel/uart.h> /* header added by Fijiol */
 #include <kernel/irq.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
