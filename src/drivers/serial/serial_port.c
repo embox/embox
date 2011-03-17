@@ -64,8 +64,26 @@
 #define UART_EMPTY_TX       0x20
 #define UART_ENABLE_FIFO    0xC7
 #define UART_ENABLE_MODEM   0x0B
+#define UART_DLAB           0x80
 
-#define DIVISOR(x) (115200 / x)
+/* The type of word length */
+#define UART_5BITS_WORD     0x00
+#define UART_6BITS_WORD     0x01
+#define UART_7BITS_WORD     0x02
+#define UART_8BITS_WORD     0x03
+
+/* The type of parity */
+#define UART_NO_PARITY      0x00
+#define UART_ODD_PARITY     0x08
+#define UART_EVEN_PARITY    0x18
+
+/* The type of the length of stop bit */
+#define UART_1_STOP_BIT     0x00
+#define UART_2_STOP_BITS    0x04
+
+#define DIVISOR(baud) (115200 / baud)
+
+static bool serial_inited = 0;
 
 int uart_init(void) {
 	diag_init();
@@ -81,23 +99,30 @@ char uart_getc(void) {
 }
 
 void diag_init(void) {
+	if (serial_inited) {
+		return;
+	}
 	/* Turn off the interrupt */
 	out8(COM_PORT + UART_IER, 0x0);
 	/* Set DLAB */
-	out8(COM_PORT + UART_LCR, 1 << 7);
+	out8(COM_PORT + UART_LCR, UART_DLAB);
 	/* Set the baud rate */
-	out8(COM_PORT + UART_DLL, DIVISOR(CONFIG_UART_BAUD_RATE) && 0xFF);
-	out8(COM_PORT + UART_DLH, DIVISOR(CONFIG_UART_BAUD_RATE) >> 8 & 0xFF);
+	out8(COM_PORT + UART_DLL, DIVISOR(CONFIG_UART_BAUD_RATE) & 0xFF);
+	out8(COM_PORT + UART_DLH, (DIVISOR(CONFIG_UART_BAUD_RATE) >> 8) & 0xFF);
 	/* Set the line status */
-	out8(COM_PORT + UART_LCR, 0 << 7);
-	out8(COM_PORT + UART_LCR, 0x3);
+	out8(COM_PORT + UART_LCR,
+		UART_NO_PARITY | UART_8BITS_WORD | UART_1_STOP_BIT);
 	/* Uart enable FIFO */
 	out8(COM_PORT + UART_FCR, UART_ENABLE_FIFO);
 	/* Uart enable modem (turn on DTR, RTS, and OUT2) */
 	out8(COM_PORT + UART_MCR, UART_ENABLE_MODEM);
+	serial_inited = 1;
 }
 
 int diag_has_symbol(void) {
+	if (!serial_inited) {
+		return EOF;
+	}
 	return in8(COM_PORT + UART_LSR) & UART_DATA_READY;
 }
 
@@ -107,8 +132,7 @@ char diag_getc(void) {
 }
 
 void diag_putc(char ch) {
-	if (in8(COM_PORT + UART_LSR) & UART_EMPTY_TX) {
-		out8(COM_PORT + UART_TX, (uint8_t) ch);
-	}
+	while (!(in8(COM_PORT + UART_LSR) & UART_EMPTY_TX));
+	out8(COM_PORT + UART_TX, (uint8_t) ch);
 }
 
