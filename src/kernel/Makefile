@@ -37,10 +37,9 @@ ifdef CONFIG_IRQ
   $_DEPS-irq     += softirq
 endif
 #ifdef CONFIG_PRINTK
- # $_SRCS-printk  += printk.c
-  #$_SRCS-printk  += printk/putchar.c ../lib/stdio/printf.c
-  #$_SRCS-printk  += printk/putchar.c printk/printf.c
- # $_DEPS-printk  += embox.driver.abstract.mod_diag
+#  $_SRCS-printk  += printk.c
+#  $_SRCS-printk  += printk/putchar.c ../lib/stdio/printf.c
+#  $_SRCS-printk  += printk/putchar.c printk/printf.c
 #endif
 ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
