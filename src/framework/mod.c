@@ -73,7 +73,7 @@ int mod_disable_nodep(const struct mod *mod) {
 }
 
 static bool mod_deps_satisfied(const struct mod *mod, bool op) {
-	struct mod *dep;
+	const struct mod *dep;
 
 	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return true;
@@ -89,7 +89,7 @@ static bool mod_deps_satisfied(const struct mod *mod, bool op) {
 }
 
 static int mod_perform(const struct mod *mod, bool op) {
-	struct mod *dep;
+	const struct mod *dep;
 
 	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;

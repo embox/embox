@@ -13,12 +13,14 @@
 
 EMBOX_CMD(exec);
 
+#if 0
 static void print_usage(void) {
 	printf("Usage: lsmod\n");
 }
+#endif
 
 static void mod_print(const struct mod *mod, int depth) {
-	struct mod *dep;
+	const struct mod *dep;
 	int i;
 
 	for (i = 0; i < depth - 1; ++i) {
