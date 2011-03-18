@@ -3,7 +3,7 @@
  * @brief tests proper stack usage (particularly, right handling
  * of window overflow/underflow on SPARC).
  *
- * @date 14.08.2009
+ * @date 14.08.09
  * @author Eldar Abusalimov
  */
 

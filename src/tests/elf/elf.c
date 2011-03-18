@@ -2,7 +2,7 @@
  * @file
  * @brief Test function elf_execve.
  *
- * @date 20.07.2010.
+ * @date 20.07.10.
  * @author Avdyukhin Dmitry.
  */
 

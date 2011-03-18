@@ -2,7 +2,7 @@
  * @file
  * @brief HAL IPL test.
  *
- * @date 06.03.2010
+ * @date 06.03.10
  * @author Eldar Abusalimov
  */
 

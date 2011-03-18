@@ -7,7 +7,7 @@
  * This problem has not relevant to string,
  * possible it connected with memory allocation.
  *
- * @date 10.03.2010
+ * @date 10.03.10
  * @author Alexander Batyukov
  */
 

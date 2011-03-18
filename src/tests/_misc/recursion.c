@@ -2,7 +2,7 @@
  * @file
  * @brief Simple recursion
  *
- * @date 12.06.2010
+ * @date 12.06.10
  * @author Eldar Abusalimov
  */
 

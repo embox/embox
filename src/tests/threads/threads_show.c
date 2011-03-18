@@ -9,7 +9,7 @@
  * For each symbol there is a thread, which shows it.
  * These threads show one symbol and switch context.
  *
- * @date 09.05.2010
+ * @date 09.05.10
  * @author Dmitry Avdyukhin
  */
 #include <embox/test.h>

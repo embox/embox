@@ -3,7 +3,7 @@
  * @brief Tests function heap_scheduler.
  * @details Run threads in order with decreasing priorities.
  *
- * @date 11.05.2010
+ * @date 11.05.10
  * @author Dmitry Avdyukhin
  */
 #include <embox/test.h>

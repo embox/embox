@@ -2,7 +2,7 @@
  * @file
  * @brief Testing mapping with different contexts
  *
- * @date 17.04.2010
+ * @date 17.04.10
  * @author Anton Kozlov
  */
 

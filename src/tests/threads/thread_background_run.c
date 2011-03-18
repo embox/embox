@@ -2,7 +2,7 @@
  * @file  thread_background_run.c
  * @brief thread test for show memory statistic
  *
- * @date  06.12.2010
+ * @date  06.12.10
  * @author Gleb Efimov
  * @author Alina Kramar
  * @author Roman Oderov

@@ -4,7 +4,7 @@
  * @details Test, which writes some numbers using recursion.
  * If MAX_DEPTH = 100, then error occurs (maybe stack overflow).
  *
- * @date 09.05.2010
+ * @date 09.05.10
  * @author Dmitry Avdyukhin
  */
 

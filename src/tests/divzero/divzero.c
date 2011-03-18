@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 26.05.2010
+ * @date 26.05.10
  * @author Alexander Batyukov, Anton Kozlov
  */
 

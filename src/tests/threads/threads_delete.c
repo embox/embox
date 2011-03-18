@@ -8,7 +8,7 @@
  *   1)Plus_run id must be equal to 2.
  *   2)Must work only threads with id: 0, 1, 2.
  *
- * @date 09.05.2010
+ * @date 09.05.10
  * @author Dmitry Avdyukhin
  */
 

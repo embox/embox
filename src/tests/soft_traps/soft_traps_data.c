@@ -3,7 +3,7 @@
  * @brief Test checks correctness of transmission parameters during soft trap's
  *        processing
  *
- * @date 26.06.2009
+ * @date 26.06.09
  * @author Alexander Batyukov
  */
 

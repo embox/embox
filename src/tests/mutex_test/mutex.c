@@ -2,7 +2,7 @@
  * @file
  * @brief Mutex testing.
  *
- * @date 05.05.2010
+ * @date 05.05.10
  * @author Nikolay Malkovsky
  */
 

@@ -2,7 +2,7 @@
  * @file
  * @brief Test checks possibility soft trap's calling
  *
- * @date 26.06.2009
+ * @date 26.06.09
  * @author Alexander Batyukov
  */
 

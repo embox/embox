@@ -2,7 +2,7 @@
  * @file
  * @brief Testing read/write in virtual mode.
  *
- * @date 05.04.2010
+ * @date 05.04.10
  * @author Nikolay Korotky
  */
 

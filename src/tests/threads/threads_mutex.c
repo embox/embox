@@ -5,7 +5,7 @@
  * minus_thread and mult_thread uses same mutex
  * to test how it works.
  *
- * @date 30.06.2010
+ * @date 30.06.10
  * @author Skorodumov Kirill
  */
 

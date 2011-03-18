@@ -2,7 +2,7 @@
  * @file
  * @brief Test softirq subsistem
  *
- * @date 19.11.2010
+ * @date 19.11.10
  * @author Sergey Knolodilov
  */
 

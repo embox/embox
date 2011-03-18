@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 17.03.2010
+ * @date 17.03.10
  * @author Eldar Abusalimov
  */
 

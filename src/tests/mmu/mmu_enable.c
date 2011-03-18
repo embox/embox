@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Testing page translating in virtual mode
  *
  * @details This is the simplest test for MMU module. It just maps one to one
@@ -8,7 +7,7 @@
  *         And than switch on virtual mode, and immediately restore mode
  *         (virtual or real).
  *
- * @date 09.03.2010
+ * @date 09.03.10
  * @author Anton Bondarev
  */
 

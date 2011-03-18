@@ -2,8 +2,8 @@
  * @file
  * @brief This file is derived from Embox test template.
  *
- * @date
- * @author
+ * @date 12.03.11
+ * @author Eldar Abusalimov
  */
 
 #include <embox/test.h>
@@ -147,13 +147,6 @@ static const struct test_entry tests[] = {
 //		test_list_first_on_a_single_element_list_should_return_the_element),
 };
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
 static int run(void) {
 	const struct test_entry *test;
 

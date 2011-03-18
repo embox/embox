@@ -4,7 +4,7 @@
  * @description simple test for Zero device
  *
  * @author Fedor Burdun
- * @date 12.07.2010
+ * @date 12.07.10
  */
 
 #include <embox/test.h>

@@ -2,7 +2,7 @@
  * @file
  * @brief advanced memory testing
  *
- * @date 29.07.2009
+ * @date 29.07.09
  * @author Alexey Fomin
  * @author Alexander Batyukov
  *         - some changes in interface and designed as express test

@@ -5,7 +5,7 @@
  * natural numbers on the screen.
  * Thread, which writes "-", will be deleted in plus_thread.
  *
- * @date 18.04.2010
+ * @date 18.04.10
  * @author Dmitry Avdyukhin
  */
 #include <embox/test.h>

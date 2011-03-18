@@ -6,7 +6,7 @@
  * by highest_thread. Highest_thread is started by div_thread
  * and has highest priority.
  *
- * @date 30.06.2010
+ * @date 30.06.10
  * @author Skorodumov Kirill
  */
 

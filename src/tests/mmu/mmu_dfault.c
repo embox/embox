@@ -2,7 +2,7 @@
  * @file
  * @brief Testing page fault in virtual mode
  *
- * @date 07.04.2010
+ * @date 07.04.10
  * @author Nikolay Korotky
  */
 

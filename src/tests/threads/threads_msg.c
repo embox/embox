@@ -8,7 +8,7 @@
  * Second thread some times writes "2".
  * First thread can't die until the end of second (waits for a message).
  *
- * @date 30.06.2010
+ * @date 30.06.10
  * @author Dmitry Avdyukhin
  */
 

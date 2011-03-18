@@ -2,7 +2,7 @@
  * @file
  * @brief
  *
- * @date 27.11.2010
+ * @date 27.11.10
  * @author Muhin Vladimir
  */
 

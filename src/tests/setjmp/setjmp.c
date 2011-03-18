@@ -2,7 +2,7 @@
  * @file
  * @brief Test for setjmp facility.
  *
- * @date 06.03.2010
+ * @date 06.03.10
  * @author Eldar Abusalimov
  */
 

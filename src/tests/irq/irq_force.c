@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 02.11.2009
+ * @date 02.11.09
  * @author Alexey Fomin
  * @author Eldar Abusalimov
  */
