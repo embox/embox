@@ -36,35 +36,58 @@ static int test_mod_enable(struct mod *mod) {
 	return test_invoke((struct test *) mod_data(mod));
 }
 
-int test_invoke(const struct test *test) {
-	int result;
+int test_case_run(const struct test_case *test_case) {
+	int error;
 
-	if (NULL == test) {
-		return -EINVAL;
-	}
-	if (NULL == test->run) {
-		return -EBADF;
-	}
+	if (!(error = test_case->run())) {
+		TRACE(".");
 
-	TRACE("test: running %s: ", test->mod->name);
-	if (0 == (result = test->run())) {
-		TRACE("passed\n");
 	} else {
 		const struct test_failure *failure =
-				(const struct test_failure *) result;
+				(const struct test_failure *) error;
+		const struct test_case_location *location = &test_case->location;
+
+		TRACE("\ntest case failed: %s,\n\t(defined at %s : %d)\n",
+				test_case->description, location->file, location->line);
 		if (__test_failures <= failure && failure < __test_failures
 				+ ARRAY_SPREAD_SIZE(__test_failures)) {
 			/* Valid test_failure object (well, we hope so). */
-			TRACE("failed:\n%s (0x%08x), at %s : %d, in function %s\n",
+			TRACE("reason:\n%s (0x%08x),\n\t(at %s : %d, in function %s)\n",
 					failure->info->reason, (unsigned int) failure->info->data,
 					failure->file, failure->line, failure->func);
 		} else {
 			/* Plain error code. */
-			TRACE("failed\n");
+			TRACE("error code: %d\n", error);
 		}
+
 	}
 
-	return (test->private->result = result);
+	return error;
+}
+
+int test_invoke(const struct test *test) {
+	int error = 0;
+	const struct test_case *test_case;
+	const char *name;
+
+	if (NULL == test) {
+		return -EINVAL;
+	}
+
+	name = test->mod->name;
+
+	TRACE("test: running %s: ", name);
+	array_nullterm_foreach(test_case, test->test_cases) {
+		error |= test_case_run(test_case);
+	}
+
+	if (!error) {
+		TRACE(" done\n");
+	} else {
+		TRACE("\ntest: %s failed\n", name);
+	}
+
+	return (test->private->result = error);
 }
 
 const struct test *test_lookup(const char *name) {

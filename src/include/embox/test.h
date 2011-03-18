@@ -15,7 +15,7 @@
  * @author Eldar Abusalimov
  *         - Rewriting from scratch, adapting for usage with mods framework
  *         - Split external and internal APIs
- *         - Hiding of complicated macro implementations
+ *         - Hiding complicated macros implementation
  */
 
 #ifndef EMBOX_TEST_H_
@@ -24,6 +24,12 @@
 #include <impl/embox/test.h>
 
 #define EMBOX_TEST(run) \
-		__EMBOX_TEST(run)
+	  __EMBOX_TEST(run)
+
+#define EMBOX_TEST_SUITE(description) \
+	  __EMBOX_TEST_SUITE(description)
+
+#define TEST_CASE(description) \
+	  __TEST_CASE(description)
 
 #endif /* EMBOX_TEST_H_ */
