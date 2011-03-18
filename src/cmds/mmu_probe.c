@@ -2,7 +2,7 @@
  * @file
  * @brief testing mmu module
  *
- * @date 09.06.2009
+ * @date 09.06.09
  * @author Anton Bondarev
  */
 #include <embox/cmd.h>

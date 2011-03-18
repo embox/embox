@@ -2,7 +2,7 @@
  * @file
  * @brief simple Embox shell
  *
- * @date 13.11.2010
+ * @date 13.11.10
  * @author Fedor Burdun
  */
 

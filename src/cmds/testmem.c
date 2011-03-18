@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date Jul 24, 2009
+ * @date 24.07.09
  * @author Alexey Fomin
  *         Daria Teplykh
  */

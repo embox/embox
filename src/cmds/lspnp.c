@@ -2,7 +2,7 @@
  * @file
  * @brief show list of plug and play devices
  *
- * @date 20.02.2009
+ * @date 20.02.09
  * @author Alexandr Batyukov
  */
 #include <embox/cmd.h>

@@ -1,7 +1,7 @@
 /*
  * @file
  *
- * @date 01.04.2010
+ * @date 01.04.10
  * @author Anton Kozlov
  */
 #include <embox/cmd.h>

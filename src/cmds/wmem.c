@@ -2,7 +2,7 @@
  * @file
  * @brief Writes memory word at the specified address.
  *
- * @date 20.02.2009
+ * @date 20.02.09
  * @author Alexey Fomin
  *          - Initial implementation
  * @author Eldar Abusalimov

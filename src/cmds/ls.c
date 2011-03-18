@@ -2,7 +2,7 @@
  * @file
  * @brief List directory contents.
  *
- * @date 02.07.2009
+ * @date 02.07.09
  * @author Anton Bondarev
  */
 #include <embox/cmd.h>

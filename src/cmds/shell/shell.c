@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 02.02.2009
+ * @date 02.02.09
  * @author Alexey Fomin
  */
 
@@ -88,8 +88,8 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 }
 
 __extension__ static const char *script_commands[] = {
-#include <start_script.inc>
-		};
+	#include <start_script.inc>
+};
 
 static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 	char buf[CMDLINE_MAX_LENGTH + 1];

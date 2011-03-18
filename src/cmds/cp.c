@@ -2,7 +2,7 @@
  * @file
  * @brief Mini cp implementation for Embox.
  *
- * @date 22.08.2009
+ * @date 22.08.09
  * @author Roman Evstifeev
  */
 #include <embox/cmd.h>

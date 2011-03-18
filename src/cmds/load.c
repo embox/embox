@@ -2,7 +2,7 @@
  * @file
  * @brief Load image file into memory.
  *
- * @date 03.07.2009
+ * @date 03.07.09
  * @author Sergey Kuzmin
  */
 
@@ -54,7 +54,10 @@ static int exec(int argsc, char **argsv) {
 		}
 	} while (-1 != nextOption);
 
-	file = fopen(file_name, "r");
+	if (NULL == (file = fopen(file_name, "r"))) {
+		printf("Can't open file %s\n", file_name);
+		return -1;
+	}
 	fioctl(file, 0, &file_addr);
 
 	node = vfs_find_node(file_name, NULL);

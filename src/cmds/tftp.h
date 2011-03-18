@@ -3,7 +3,7 @@
  * @brief Definitions for the TFTP protocol.
  * @details RFC 1350
  *
- * @date 16.03.2009
+ * @date 16.03.09
  * @author Aleksandr Batyukov
  */
 #ifndef TFTP_H_

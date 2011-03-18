@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 28.02.2009
+ * @date 28.02.09
  * @author Eldar Abusalimov
  */
 #ifndef SCREEN_H_

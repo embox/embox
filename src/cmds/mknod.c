@@ -2,7 +2,7 @@
  * @file
  * @brief Creates special file in virtual file systems
  *
- * @date 15.10.2010
+ * @date 15.10.10
  * @author Anton BOndarev
  */
 #include <embox/cmd.h>

@@ -2,7 +2,7 @@
  * @file
  * @brief send ICMP ECHO_REQUEST to network hosts.
  *
- * @date 20.03.2009
+ * @date 20.03.09
  * @author Anton Bondarev
  * @author Nikolay Korotky
  * 			- implement ping through raw socket.

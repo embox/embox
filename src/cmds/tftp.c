@@ -43,7 +43,8 @@ static int create_socket(struct sockaddr_in *addr) {
 static int tftp_receive(struct sockaddr_in *to, char *mode,
 					char *name, FILE *file) {
 	int desc;
-	size_t size, fromlen, dsize = 0;
+	size_t size, dsize = 0;
+	socklen_t fromlen;
 	struct sockaddr_in from;
 	char buf[PKTSIZE], ackbuf[PKTSIZE], *dat, *cp;
 	tftphdr_t *dp, *ap;
@@ -129,7 +130,10 @@ static int exec(int argsc, char **argsv) {
 
 	sprintf(fname, "%s", argsv[2]);
 
-	f = fopen(fname, "wb");
+	if (NULL == (f = fopen(fname, "wb"))) {
+		printf("Can't open file %s\n", fname);
+		return -1;
+	}
 	tftp_receive(&server, "octet", argsv[2], f);
 	fclose(f);
 	return 0;

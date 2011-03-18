@@ -2,7 +2,7 @@
  * @file
  * @brief Show all available commands.
  *
- * @date 02.03.2009
+ * @date 02.03.09
  * @author Alexandr Batyukov
  */
 

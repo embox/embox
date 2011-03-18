@@ -2,7 +2,7 @@
  * @file
  * @brief Works with Embox test subsystem.
  *
- * @date 17.11.2009
+ * @date 17.11.09
  * @author Alexey Fomin
  *         - Initial implementation
  * @author Eldar Abusalimov

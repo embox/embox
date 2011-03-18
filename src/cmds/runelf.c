@@ -2,7 +2,7 @@
  * @file
  * @brief Run ELF file.
  *
- * @date 21.07.2010
+ * @date 21.07.10
  * @author Avdyukhin Dmitry
  */
 #include <embox/cmd.h>

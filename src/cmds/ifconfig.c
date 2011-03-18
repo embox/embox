@@ -2,7 +2,7 @@
  * @file
  * @brief Similar to the standard Unix ifconfig.
  *
- * @date 22.03.2009
+ * @date 22.03.09
  * @author Anton Bondarev
  * @author Alexander Batyukov
  */

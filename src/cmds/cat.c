@@ -16,13 +16,13 @@ static void print_usage(void) {
 	printf("Usage: cat [FILES]\n");
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	int nextOption;
 	FILE *fd;
 	char buff[1] = " ";
 	getopt_init();
 	do {
-		nextOption = getopt(argsc - 1, argsv, "h");
+		nextOption = getopt(argc - 1, argv, "h");
 		switch(nextOption) {
 		case 'h':
 			print_usage();
@@ -34,11 +34,14 @@ static int exec(int argsc, char **argsv) {
 		}
 	} while (-1 != nextOption);
 
-	if (argsc < 2) {
+	if (argc < 2) {
 		print_usage();
 		return 0;
 	}
-	fd = fopen(argsv[argsc - 1], "r");
+	if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
+                printf("Can't open file %s\n", argv[argc - 1]);
+                return -1;
+        }
 	while (fread(buff, sizeof(buff), 1, fd) > 0) {
 		printf("%s", buff);
 	}

@@ -41,7 +41,10 @@ static int exec(int argc, char **argv) {
 	}
 
 	/* Get size and file's base addr */
-	fd = fopen(argv[argc - 1], "r");
+	if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
+		printf("Can't open file %s\n", argv[argc - 1]);
+		return -1;
+	}
 	fioctl(fd, 0, &addr);
 	fclose(fd);
 	fstat((char *) argv[argc - 1], &st);

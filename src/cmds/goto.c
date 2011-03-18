@@ -2,7 +2,7 @@
  * @file
  * @brief Execute image file.
  *
- * @date 02.07.2009
+ * @date 02.07.09
  * @author Sergey Kuzmin
  */
 

@@ -3,7 +3,7 @@
  *
  * @brief Temporary cmd for terminal debugging
  *
- * @date 13.11.2010
+ * @date 13.11.10
  * @author Anton Bondarev
  */
 
