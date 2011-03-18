@@ -5,7 +5,8 @@ $_SRCS-locore += head.S
 
 $_SRCS-arch += arch.c
 
-$_SRCS-interrupt += entry.S
+#$_SRCS-interrupt += entry.S
+$_SRCS-locore += entry.S
 
 DEFAULT_SYS_WATCHDOG = embox.driver.watchdogs.at91_watchdog
 
