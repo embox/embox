@@ -75,16 +75,11 @@ static int handle_comm(uint8_t *buff) {
 static int handle_body(uint8_t *buff) {
 	reader_state = COMM_TYPE;
 	switch (command) {
-		int power;
+		uint8_t power;
 		case DC_SET_OUTPUT_STATE:
 
 			power = buff[1];
-			if (power > 100) {
-				power = 100;
-			}
-			if (power < -100) {
-				power = -100;
-			}
+			TRACE("G%x:%x;", buff[0], buff[1]);
 
 			if (buff[0] != 0xff) {
 				motor_set_power(&motors[buff[0]], power);
@@ -111,8 +106,7 @@ static int handle_body(uint8_t *buff) {
 }
 
 static int handle_size(uint8_t *buff) {
-	size = buff[1] + (buff[0] << 8);
-	//TRACE("$S=%x;", size);
+	size = buff[0] + (buff[1] << 8);
 	return size;
 }
 
