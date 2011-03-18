@@ -1,5 +1,5 @@
 /**
- * @brief Event Handler implementation
+ * @brief Event dispatcher implementation
  *
  * @date 16.03.2011
  * @author Alexandr Kalmuk
@@ -20,7 +20,6 @@ static char dispatcher_stack[THREAD_STACK_SIZE];
 /**
  * Handlers, that can handle message with specified type
  */
-
 struct handler_thread {
 	int msg_type;
 	struct thread *handler;
@@ -32,6 +31,7 @@ struct handler_function {
 
 STATIC_CACHE_CREATE(queue_msg_cache, struct msg, MAX_MSG_COUNT_IN_QUEUE);
 
+/** Queue of messages, sent to handlers */
 static struct list_head *queue;
 /**
  * Two tables of messages(message can be determine by it's id) and threads

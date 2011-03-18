@@ -55,7 +55,7 @@ extern void dispatcher_start(void);
 extern void register_msg_for_func(int id, void(*handler)(struct msg *msg));
 
 /**
- * Register handler(function) for message.
+ * Register handler(thread) for message.
  */
 extern void register_msg_for_thread(int id, struct thread *thread);
 
