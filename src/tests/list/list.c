@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file is derived from Embox test template.
+ * @brief Tests methods of util/list.
  *
  * @date 12.03.11
  * @author Eldar Abusalimov
@@ -11,150 +11,134 @@
 #include <string.h>
 #include <util/list.h>
 #include <util/array.h>
-#include <test/tools.h>
 
-EMBOX_TEST(run);
+EMBOX_TEST_SUITE("util/list test");
 
 struct element {
 	int some_stuff;
 	struct list_link m_link;
 };
 
-typedef int (*test_list_fn)(void);
-
-static int test_list_link_element_should_cast_link_member_out_to_its_container(
-		void) {
+TEST_CASE("list_link_element should cast link member out to its container")
+{
 	struct element e;
 	struct list_link *link = &e.m_link;
-	return &e == list_link_element(link, struct element, m_link);
+	return &e != list_link_element(link, struct element, m_link);
 }
 
-static int test_list_init_should_return_its_argument(void) {
+TEST_CASE("list_init should return its argument")
+{
 	struct list l;
-	return &l == list_init(&l);
+	return &l != list_init(&l);
 }
 
-static int test_list_link_init_should_return_its_argument(void) {
+TEST_CASE("list_link_element should cast link member out to its container")
+{
 	struct element e;
-	return &e.m_link == list_link_init(&e.m_link);
+	struct list_link *link = &e.m_link;
+	return &e != list_link_element(link, struct element, m_link);
 }
 
-static int test_list_init_should_do_the_same_as_static_initializer(void) {
+TEST_CASE("list_init should return its argument")
+{
+	struct list l;
+	return &l != list_init(&l);
+}
+
+TEST_CASE("list_link init should return its argument")
+{
+	struct element e;
+	return &e.m_link != list_link_init(&e.m_link);
+}
+
+TEST_CASE("list_init should have the same effect as static initializer")
+{
 	struct list l = LIST_INIT(&l);
 	char buff[sizeof(l)];
 	memcpy(buff, &l, sizeof(l));
 	memset(&l, 0xA5, sizeof(l)); /* poison. */
-	return !memcmp(buff, list_init(&l), sizeof(l));
+	return memcmp(buff, list_init(&l), sizeof(l));
 }
 
-static int test_list_link_init_should_do_the_same_as_static_initializer(void) {
+TEST_CASE("list_link_init should have the same effect as static initializer")
+{
 	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
 	char buff[sizeof(e.m_link)];
 	memcpy(buff, &e.m_link, sizeof(e.m_link));
 	memset(&e.m_link, 0xA5, sizeof(e.m_link)); /* poison. */
-	return !memcmp(buff, list_link_init(&e.m_link), sizeof(e.m_link));
+	return memcmp(buff, list_link_init(&e.m_link), sizeof(e.m_link));
 }
 
-static int test_list_empty_should_return_true_for_just_created_list(void) {
+TEST_CASE("list_empty should return true for just created list")
+{
 	struct list l = LIST_INIT(&l);
-	return list_empty(&l);
-}
-
-static int test_list_first_should_return_null_for_empty_list(void) {
-	struct list l = LIST_INIT(&l);
-	return list_first(&l, struct element, m_link) == NULL;
-}
-
-static int test_list_last_should_return_null_for_empty_list(void) {
-	struct list l = LIST_INIT(&l);
-	return list_last(&l, struct element, m_link) == NULL;
-}
-
-static int test_list_first_link_should_return_null_for_empty_list(void) {
-	struct list l = LIST_INIT(&l);
-	return list_first_link(&l) == NULL;
-}
-
-static int test_list_last_link_should_return_null_for_empty_list(void) {
-	struct list l = LIST_INIT(&l);
-	return list_last_link(&l) == NULL;
-}
-
-static int test_list_add_first_should_make_the_list_non_empty(void) {
-	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
-	struct list l = LIST_INIT(&l);
-	list_add_first(&e, &l, m_link);
 	return !list_empty(&l);
 }
 
-static int test_list_add_last_should_make_the_list_non_empty(void) {
+TEST_CASE("list_first should return null for empty list")
+{
+	struct list l = LIST_INIT(&l);
+	return list_first(&l, struct element, m_link) != NULL;
+}
+
+TEST_CASE("test_list_last_should_return_null_for_empty_list")
+{
+	struct list l = LIST_INIT(&l);
+	return list_last(&l, struct element, m_link) != NULL;
+}
+
+TEST_CASE("test_list_first_link_should_return_null_for_empty_list")
+{
+	struct list l = LIST_INIT(&l);
+	return list_first_link(&l) != NULL;
+}
+
+TEST_CASE("test_list_last_link_should_return_null_for_empty_list")
+{
+	struct list l = LIST_INIT(&l);
+	return list_last_link(&l) != NULL;
+}
+
+#if 0
+TEST_CASE("test_list_add_first_should_make_the_list_non_empty")
+{
+	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
+	struct list l = LIST_INIT(&l);
+	list_add_first(&e, &l, m_link);
+	return list_empty(&l);
+}
+
+TEST_CASE("test_list_add_last_should_make_the_list_non_empty")
+{
 	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
 	struct list l = LIST_INIT(&l);
 	list_add_last(&e, &l, m_link);
 	return !list_empty(&l);
 }
 
-static int test_list_add_first_link_should_make_the_list_non_empty(void) {
+TEST_CASE("test_list_add_first_link_should_make_the_list_non_empty")
+{
 	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
 	struct list l = LIST_INIT(&l);
 	list_add_first_link(&e.m_link, &l);
 	return !list_empty(&l);
 }
 
-static int test_list_add_last_link_should_make_the_list_non_empty(void) {
+TEST_CASE("test_list_add_last_link_should_make_the_list_non_empty")
+{
 	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
 	struct list l = LIST_INIT(&l);
 	list_add_last_link(&e.m_link, &l);
 	return !list_empty(&l);
 }
 
-static int test_list_first_on_a_single_element_list_should_return_the_element(
-		void) {
+TEST_CASE("test_list_first_on_a_single_element_list_should_return_the_element")
+{
 	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
 	struct list l = LIST_INIT(&l);
 	list_add_first(&e, &l, m_link);
 	return list_first(&l, struct element, m_link);
 }
+#endif
 
-struct test_entry {
-	const char *name;
-	test_list_fn fn;
-};
 
-#define TEST_ENTRY(test) { \
-		.name = #test, \
-		.fn = (test), \
-	}
-
-/* TODO generalize such approach. -- Eldar */
-static const struct test_entry tests[] = {
-	TEST_ENTRY(
-		test_list_link_element_should_cast_link_member_out_to_its_container),
-	TEST_ENTRY(test_list_init_should_return_its_argument),
-	TEST_ENTRY(test_list_link_init_should_return_its_argument),
-	TEST_ENTRY(test_list_init_should_do_the_same_as_static_initializer),
-	TEST_ENTRY(test_list_link_init_should_do_the_same_as_static_initializer),
-	TEST_ENTRY(test_list_empty_should_return_true_for_just_created_list),
-	TEST_ENTRY(test_list_first_should_return_null_for_empty_list),
-	TEST_ENTRY(test_list_last_should_return_null_for_empty_list),
-	TEST_ENTRY(test_list_first_link_should_return_null_for_empty_list),
-	TEST_ENTRY(test_list_last_link_should_return_null_for_empty_list),
-//	TEST_ENTRY(test_list_add_first_should_make_the_list_non_empty),
-//	TEST_ENTRY(test_list_add_last_should_make_the_list_non_empty),
-//	TEST_ENTRY(test_list_add_first_link_should_make_the_list_non_empty),
-//	TEST_ENTRY(test_list_add_last_link_should_make_the_list_non_empty),
-//	TEST_ENTRY(
-//		test_list_first_on_a_single_element_list_should_return_the_element),
-};
-
-static int run(void) {
-	const struct test_entry *test;
-
-	array_static_foreach_ptr(test, tests) {
-		if (!test->fn()) {
-			return test_fail(test->name);
-		}
-	}
-
-	return test_pass();
-}
