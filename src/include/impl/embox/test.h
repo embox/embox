@@ -16,21 +16,9 @@
 
 #include <impl/test/types.h>
 
-#if 0
-#define __EMBOX_TEST(_run) \
-	static int _run(void);                             \
-	static struct __test_private __test_private;       \
-	ARRAY_SPREAD_ADD_NAMED(__test_registry, __test, {  \
-			.private = &__test_private,                \
-			.run = _run,                               \
-			.mod = &mod_self                           \
-		});                                            \
-	MOD_SELF_BIND(__test, &__test_mod_ops)
-#else
 #define __EMBOX_TEST(_run) \
 	__EMBOX_TEST_SUITE("generic test suite"); \
 	__TEST_CASE_NM("generic test case", MACRO_GUARD(__test_case), _run)
-#endif
 
 #define __EMBOX_TEST_SUITE(description) \
 	__EMBOX_TEST_SUITE_NM("" description, MACRO_GUARD(__test_suite))
