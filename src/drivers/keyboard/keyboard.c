@@ -213,7 +213,7 @@ static void keyboard_set_mode(unsigned char mode) {
 	keyboard_wait_write();
 	outb(mode, DATA_PORT);
 }
-
+#if 0
 static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 	uint8_t scancode;
 	scancode = in8(DATA_PORT);
@@ -221,7 +221,7 @@ static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 	TRACE("keycode 0x%X\n", scancode);
 	return IRQ_HANDLED;
 }
-
+#endif
 void keyboard_init(void) {
 	uint8_t mode;
 

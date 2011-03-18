@@ -6,26 +6,26 @@ OUTPUT_ARCH(i386)
 ENTRY(start)
 
 MEMORY {
-	MEMORY_REGION(ram)
+	MEMORY_REGION(sdram)
+	MEMORY_REGION(flash)
 }
 
 
 _text_start = _text_vma;
 _text_end = _text_vma + _text_len;
 SECTIONS {
-	//. = 0x100000;
 	.text : {
 		ALIGNMENT();
 		*(.multiboot)
 		*(.text)
 		*(.init.text)
 		ALIGNMENT();
-	}  > ram
+	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
 	.rodata : {
 		LDS_INPUT_RODATA
-	} > ram
+	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
 
 	.data : {
@@ -34,7 +34,7 @@ SECTIONS {
 		*(.data)
 		ALIGNMENT();
 		_data_end = .;
-	} > ram
+	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
@@ -43,7 +43,7 @@ SECTIONS {
 		*(.bss)
 		ALIGNMENT();
 		_bend = .;
-	} > ram
+	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 
 	.stack (NOLOAD): {
@@ -54,7 +54,7 @@ SECTIONS {
 		_stack_top = .;
 		_stack = _stack_top;
 		__stack = _stack;
-	} > ram
+	} SECTION_REGION(stack)
 	/*
 	/DISCARD/ : {
 		*(.note)

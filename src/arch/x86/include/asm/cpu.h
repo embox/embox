@@ -2,7 +2,7 @@
  * @file
  * @brief
  *
- * @date 07.01.2011
+ * @date 07.01.11
  * @author Anton Bondarev
  */
 

@@ -2,7 +2,7 @@
  * @file
  * @brief setjmp/longjmp for the x86 architecture
  *
- * @date 01.12.2010
+ * @date 01.12.10
  * @author Nikolay Korotky
  */
 
