@@ -9,6 +9,8 @@
 #ifndef IMPL_TEST_TYPES_H_
 #define IMPL_TEST_TYPES_H_
 
+#include <util/location.h>
+
 /**
  * Each test case implements this interface.
  *
@@ -32,23 +34,13 @@ struct test {
 	struct __test_private *private;
 };
 
-struct test_case_location {
-	const char *file;
-	int         line;
-};
-
-#define __TEST_CASE_LOCATION_INIT { \
-		.file = __FILE__, \
-		.line = __LINE__, \
-	}
-
 struct test_case {
 	/** The test itself. */
 	test_run_t run;
 	/** One-line human readable description of the test case. */
 	const char *description;
-	/** Location within the file of the test case function definition. */
-	struct test_case_location location;
+	/** Location of the test case function definition within the file. */
+	struct location location;
 };
 
 struct __test_private {

@@ -43,7 +43,7 @@
 	static int run_nm(void);                             \
 	static const struct test_case test_case_nm = {       \
 		.run = run_nm,                                   \
-		.location = __TEST_CASE_LOCATION_INIT,           \
+		.location = LOCATION_INIT,                       \
 		.description = _description,                     \
 	};                                                   \
 	extern const struct test_case *__TEST_CASES_ARRAY[]; \

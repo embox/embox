@@ -10,6 +10,7 @@
 #define TEST_TOOLS_H_
 
 #include <util/array.h>
+#include <util/location.h>
 
 #define test_pass() (0)
 
@@ -36,18 +37,14 @@
 #define __TEST_FAILURE_DEF(s_ptr_var, _info) \
 	extern const struct test_failure __test_failures[]; \
 	ARRAY_SPREAD_ADD_NAMED(__test_failures, s_ptr_var, { \
-		.func = __func__, \
-		.file = __FILE__, \
-		.line = __LINE__, \
+		.location = LOCATION_FUNC_INIT, \
 		.info = _info,    \
 	})
 
 struct test_failure_info;
 
 struct test_failure {
-	const char *func;
-	const char *file;
-	const int line;
+	struct location_func location;
 	struct test_failure_info *info;
 };
 
@@ -55,6 +52,5 @@ struct test_failure_info {
 	const char *reason;
 	void *data;
 };
-
 
 #endif /* TEST_TOOLS_H_ */

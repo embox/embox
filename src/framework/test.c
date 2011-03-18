@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include <util/array.h>
+#include <util/location.h>
 #include <mod/core.h>
 
 static int test_mod_enable(struct mod *mod);
@@ -45,16 +46,17 @@ int test_case_run(const struct test_case *test_case) {
 	} else {
 		const struct test_failure *failure =
 				(const struct test_failure *) error;
-		const struct test_case_location *location = &test_case->location;
+		const struct location *location = &test_case->location;
 
 		TRACE("\ntest case failed: %s,\n\t(defined at %s : %d)\n",
 				test_case->description, location->file, location->line);
 		if (__test_failures <= failure && failure < __test_failures
 				+ ARRAY_SPREAD_SIZE(__test_failures)) {
+			const struct location_func *fail_loc = &failure->location;
 			/* Valid test_failure object (well, we hope so). */
 			TRACE("reason:\n%s (0x%08x),\n\t(at %s : %d, in function %s)\n",
 					failure->info->reason, (unsigned int) failure->info->data,
-					failure->file, failure->line, failure->func);
+					fail_loc->input.file, fail_loc->input.line, fail_loc->func);
 		} else {
 			/* Plain error code. */
 			TRACE("error code: %d\n", error);
