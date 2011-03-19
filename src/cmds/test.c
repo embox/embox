@@ -14,7 +14,7 @@
 #include <getopt.h>
 #include <stdio.h>
 
-#include <test/framework.h>
+#include <framework/test/api.h>
 
 EMBOX_CMD(exec);
 

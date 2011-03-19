@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Embox test framework implementation.
  *
  * @date Dec 4, 2008
@@ -13,7 +12,7 @@
  *         - Distinguishing test suites and test cases
  */
 
-#include <test/framework.h>
+#include <framework/test/api.h>
 #include <test/tools.h>
 
 #include <assert.h>
