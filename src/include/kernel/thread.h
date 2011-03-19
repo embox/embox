@@ -19,7 +19,7 @@
 #include <string.h>
 #include <util/macro.h>
 #ifdef CONFIG_PP_ENABLE
-# include <kernel/pp.h>
+struct pprocess;
 #endif
 
 #include <impl/kernel/thread.h>

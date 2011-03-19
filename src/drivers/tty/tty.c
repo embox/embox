@@ -124,6 +124,10 @@ static struct vconsole *cons;
 static int cons_num;
 #endif
 
+//FIXME esh_run (non static)
+extern void esh_run(void);
+#define run_shell esh_run
+
 static int tty_init(void) {
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE, "r");
 
@@ -159,6 +163,7 @@ static int tty_init(void) {
 #endif
 	return 0;
 }
+
 
 int tty_register(tty_device_t *tty) {
 	if (NULL == vtparse_init((struct vtparse *) tty->vtp, tty_vtparse_callback)) {
