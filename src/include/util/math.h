@@ -9,7 +9,7 @@
 #ifndef UTIL_MATH_H_
 #define UTIL_MATH_H_
 
-#include <impl/util/math.h>
+#include __impl(util/math.h)
 
 /**
  * Returns the absolute value of an argument. If the argument is not negative,

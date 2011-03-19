@@ -16,7 +16,7 @@ typedef struct device_module {
 	const struct file_operations *fops;
 } device_module_t;
 
-#include <impl/embox/device.h>
+#include __impl(embox/device.h)
 
 #define EMBOX_DEVICE(name, file_op) __EMBOX_DEVICE(name, file_op)
 

@@ -10,7 +10,7 @@
 #ifndef TEST_FRAMEWORK_H_
 #define TEST_FRAMEWORK_H_
 
-#include <impl/test/framework.h>
+#include __impl(test/framework.h)
 
 #define test_foreach(test_ptr) \
 		__test_foreach(test_ptr)

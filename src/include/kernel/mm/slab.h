@@ -33,7 +33,7 @@
 #define SLAB_H_
 
 #include <lib/list.h>
-#include <impl/kernel/slab.h>
+#include __impl(kernel/slab.h)
 
 /** cache descriptor */
 typedef struct cache cache_t;

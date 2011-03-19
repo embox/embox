@@ -9,7 +9,7 @@
 #ifndef CMD_FRAMEWORK_H_
 #define CMD_FRAMEWORK_H_
 
-#include <impl/cmd/framework.h>
+#include __impl(cmd/framework.h)
 
 #define cmd_foreach(cmd) \
 		__cmd_foreach(cmd)

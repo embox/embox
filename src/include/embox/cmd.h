@@ -9,7 +9,7 @@
 #ifndef EMBOX_CMD_H_
 #define EMBOX_CMD_H_
 
-#include <impl/embox/cmd.h>
+#include __impl(embox/cmd.h)
 
 #define EMBOX_CMD(exec) \
 		__EMBOX_CMD(exec)

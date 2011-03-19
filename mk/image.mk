@@ -53,6 +53,7 @@ endif
 # Preprocessor flags
 cppflags:=$(CPPFLAGS)
 override CPPFLAGS  = -D__EMBOX__
+override CPPFLAGS += -D"__impl(path)=<impl/path>"
 override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
 override CPPFLAGS += -nostdinc

@@ -9,7 +9,7 @@
 #ifndef MOD_EMBUILD_H_
 #define MOD_EMBUILD_H_
 
-#include <impl/mod/embuild.h>
+#include __impl(mod/embuild.h)
 
 /**
  * Defines a new mod. For the new mod the @link #mod corresponding @endlink

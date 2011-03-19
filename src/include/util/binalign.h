@@ -9,7 +9,7 @@
 #ifndef UTIL_BINALIGN_H_
 #define UTIL_BINALIGN_H_
 
-#include <impl/util/binalign.h>
+#include __impl(util/binalign.h)
 
 /**
  * Aligns the @c x value up to the @c 2^power boundary.

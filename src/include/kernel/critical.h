@@ -9,7 +9,7 @@
 #ifndef KERNEL_CRITICAL_H_
 #define KERNEL_CRITICAL_H_
 
-#include <impl/kernel/critical.h>
+#include __impl(kernel/critical.h)
 
 extern unsigned int critical_inside_hardirq(void);
 

@@ -17,7 +17,7 @@
 #include <util/location.h>
 #include <mod/self.h>
 
-#include <impl/test/types.h>
+#include __impl(test/types.h)
 
 /* This is implemented on top of test suite and test case. */
 #define __EMBOX_TEST(_run) \

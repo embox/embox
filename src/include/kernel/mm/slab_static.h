@@ -12,7 +12,7 @@
 #define SLAB_STATIC_H_
 
 #include <lib/list.h>
-#include <impl/kernel/slab_static.h>
+#include __impl(kernel/slab_static.h)
 
 /** cache descriptor */
 typedef struct static_cache static_cache_t;

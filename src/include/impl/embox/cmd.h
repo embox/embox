@@ -15,7 +15,7 @@
 #include <util/array.h>
 #include <mod/self.h>
 
-#include <impl/cmd/types.h>
+#include __impl(cmd/types.h)
 
 #define __EMBOX_CMD(_exec) \
 	static int _exec(int argc, char **argv);           \

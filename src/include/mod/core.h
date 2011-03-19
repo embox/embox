@@ -11,7 +11,7 @@
 
 #include <stdbool.h>
 
-#include <impl/mod/core.h>
+#include __impl(mod/core.h)
 
 /**
  * TODO Module info emitted by EMBuild dependency injection model generator.

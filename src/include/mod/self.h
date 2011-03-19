@@ -12,7 +12,7 @@
 #ifndef MOD_SELF_H_
 #define MOD_SELF_H_
 
-#include <impl/mod/self.h>
+#include __impl(mod/self.h)
 
 /** The #mod structure corresponding to the self mod. */
 extern const struct mod mod_self;

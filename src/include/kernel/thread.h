@@ -22,7 +22,7 @@
 struct pprocess;
 #endif
 
-#include <impl/kernel/thread.h>
+#include __impl(kernel/thread.h)
 
 typedef __thread_id_t thread_id_t;
 typedef __thread_priority_t thread_priority_t;

@@ -22,7 +22,9 @@
 #ifndef EMBOX_TEST_H_
 #define EMBOX_TEST_H_
 
-#include <impl/embox/test.h>
+#include <util/macro.h>
+
+#include __impl(embox/test.h)
 
 #define EMBOX_TEST_SUITE(description) \
 	  __EMBOX_TEST_SUITE(description)

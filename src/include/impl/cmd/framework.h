@@ -15,7 +15,7 @@
 #include <util/array.h>
 #include <mod/core.h>
 
-#include <impl/cmd/types.h>
+#include __impl(cmd/types.h)
 
 #define __cmd_foreach(cmd) \
 		array_spread_foreach_ptr(cmd, __cmd_registry)
