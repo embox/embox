@@ -10,11 +10,15 @@
 #define PP_VAR( var ) \
 	pp_pool[ pp_pool_s ] = &var; \
 	pp_pool_sz[ pp_pool_s ] = sizeof(var); \
-	++pp_pool_s; \
-	//printf("pp_pool_s: %d\n",pp_pool_s);\
-	//printf("sizeof(%s)=%d\n",#var,sizeof(var));\
-	//printf("ptr(%s)=%d\n",#var,&var);\
-	//printf("pp_pool_sz[%d]=%d\n",pp_pool_s,pp_pool_sz[pp_pool_s]);\
+	++pp_pool_s;
+#if 0
+
+	printf("pp_pool_s: %d\n",pp_pool_s);\
+	printf("sizeof(%s)=%d\n",#var,sizeof(var));\
+	printf("ptr(%s)=%d\n",#var,&var);\
+	printf("pp_pool_sz[%d]=%d\n",pp_pool_s,pp_pool_sz[pp_pool_s]);
+#endif
+
 
 #include <embox/unit.h>
 #include <kernel/pp.h>
@@ -40,7 +44,7 @@ ADD_CACHE(pp_p,pprocess_t,CONFIG_PP_COUNT)
 static struct pprocess pp_process_pool[CONFIG_PP_COUNT];
 static uint32_t pp_process_pool_c = 0;
 
-struct pprocess* get_more_pp() {
+struct pprocess* get_more_pp(void) {
 	if (pp_process_pool_c>=CONFIG_PP_COUNT) {
 		LOG_ERROR("ERROR: Not enough pool size for pprocess. C:%d, S:%d",pp_process_pool_c,CONFIG_PP_COUNT);
 		while (true);
@@ -49,32 +53,21 @@ struct pprocess* get_more_pp() {
 }
 #endif
 
-#if 0 /* don't work from library */
-void *memcpy(void *dst, const void *src, size_t n) {
-	printf("in memcpy!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-	void *ret = dst;
 
-	while (n--) {
-		printf("memcpy: dst:%d src:%d n:%d\n",dst,src,n);
-		*(char *) dst = *(char *) src;
-		dst = (char *) dst + 1;
-		src = (char *) src + 1;
-	}
 
-	return ret;
-}
-#endif
-
-static int pp_init() {
-/*
+static int pp_init(void) {
+#if 0
 	void *tmp = &cur_console;
 	int si = sizeof(cur_console);
-	*/
+
 	int i;
+#endif
+
 	printk("PP_INIT: ");
 
 	pp_pool_s = 0;
 	PP_INIT_LIST
+	//FIXME PProcess must use kmem interface
 	#ifdef KMEM_USE
 	pp_cur_process = kmem_cache_alloc(pp_p);
 	#else
@@ -138,11 +131,12 @@ pprocess_t* pp_add_process( struct thread *th ) {
 	pprocess_t *p = get_more_pp();
 	#endif
 
-	if (p==NULL) {
+	if (NULL == p) {
 		LOG_ERROR("Pseudo process ERROR: no space in pool for process");
 		return NULL;
 	}
 	pp_add_thread( p , th );
+	return p;
 }
 
 void pp_del_process( struct pprocess *p ) {
@@ -156,6 +150,8 @@ struct pprocess* pp_create_ws( void (*run)(void), void *stack_addr) {
 	struct thread *thr = thread_create( run , stack_addr );
 	pp_add_process( thr );
 	thread_start( thr );
+	//FIXME PPprocess
+	return NULL;
 }
 
 EMBOX_UNIT_INIT(pp_init);

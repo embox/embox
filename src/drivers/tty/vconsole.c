@@ -88,7 +88,7 @@ int vconsole_close(vconsole_t *con) {
 }
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
-inline bool its_cur() {
+inline bool its_cur(void) {
 	if (cur_console==NULL) {
 		return false;
 	}

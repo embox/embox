@@ -5,15 +5,19 @@
  * @date 13.11.10
  * @author Fedor Burdun
  */
+#include <embox/cmd.h>
 
-#include <embox/unit.h>
+#include <getopt.h>
+#include <errno.h>
+#include <string.h>
+
 #include <kernel/printk.h>
 #include <lib/readline.h>
 #include <stdio.h>
 #include <cmd/framework.h>
 #include <cmd/cmdline.h>
 
-EMBOX_UNIT(esh_start, esh_stop);
+EMBOX_CMD(exec);
 
 #define CMDLINE_MAX_LENGTH 127
 
@@ -40,8 +44,7 @@ static void parse_cmdline(char *cmdline) {
 	}
 }
 
-
-void esh_run(void) {
+static void esh_run(void) {
 	char *cmdline;
 
 	printf("\n%s\n", CONFIG_SHELL_WELCOME_MSG);
@@ -54,18 +57,11 @@ void esh_run(void) {
 	}
 }
 
-static int esh_start(void) {
-	printk("ESH: ");
-#ifndef CONFIG_TTY_CONSOLE_COUNT
+
+static int exec(int argc, char **argv) {
+	//printk("ESH: ");
+	prom_printf("ESH");
 	esh_run();
-#else
-	scheduler_start();
-#endif
 	printk(" [ done ]\n");
 	return 0;
 }
-
-static int esh_stop(void) {
-	return 0;
-}
-

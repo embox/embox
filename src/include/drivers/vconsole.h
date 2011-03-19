@@ -25,7 +25,7 @@
 struct tty_device;
 
 typedef struct vconsole {
-	struct tty_device *tty;
+	volatile struct tty_device *tty;
 	size_t   height;
 	size_t   width;
 	uint32_t mode;

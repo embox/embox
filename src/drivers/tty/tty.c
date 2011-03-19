@@ -16,9 +16,11 @@
 #include <embox/unit.h>
 #include <drivers/vtbuild.h>
 #include <drivers/vtparse.h>
+#include <cmd/framework.h>
 
 tty_device_t *cur_tty = NULL;
 
+//FIXME TTY is space there is in library
 #if 1
 inline bool tty_isalpha(char ch) {
 	return ch != ' ';
@@ -124,11 +126,22 @@ static struct vconsole *cons;
 static int cons_num;
 #endif
 
-//FIXME esh_run (non static)
-extern void esh_run(void);
-#define run_shell esh_run
+
+void run_shell(void) {
+	const struct cmd *def_shell;
+	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
+		printk(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
+
+		return;
+	}
+	/* printf("embox>"); */
+	def_shell->exec(0,NULL);
+}
 
 static int tty_init(void) {
+	size_t i;
+	const struct cmd *def_shell;
+
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE, "r");
 
 	if (NULL == cur_tty) {
@@ -137,32 +150,41 @@ static int tty_init(void) {
 	}
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
-	scheduler_start();
 	printk(".");
 
 	cur_tty->console_cur = -1;
-	size_t i;
+
+	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
+		printk(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
+
+		return 0;
+	}
+
+	printk("found shell named (%s)\n", CONFIG_DEFAULT_SHELL);
 	for (i = 0; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
 		printk(".");
 		cons_num = i;
-		cons = &cur_tty->console[i];
+		cons = (struct vconsole *)&cur_tty->console[i];
 		cur_console = cons;
 		cons->tty = cur_tty;
 		cons->width = 80;
 		cons->height = 25;
 		vconsole_clear( cons );
-		#if 0
+
+
 		printf("Hello from TTY%d!\n",i+1);
-		#endif
+
+
 		pp_create_ws(run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
 		printk(".");
 	}
-	cur_console = &cur_tty->console[0];
+	cur_console = (struct vconsole *)&cur_tty->console[0];
 	cur_tty->console_cur = 0;
 	printk(".");
 #endif
 	return 0;
 }
+
 
 
 int tty_register(tty_device_t *tty) {
