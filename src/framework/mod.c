@@ -27,15 +27,18 @@
 #define mod_flag_set(mod, mask) do (mod)->private->flags |=  (mask); while (0)
 #define mod_flag_clr(mod, mask) do (mod)->private->flags &= ~(mask); while (0)
 
+ARRAY_SPREAD_DEF_TERMINATED(const struct mod *, __mod_registry, NULL);
+
 static int mod_perform(const struct mod *mod, bool op);
 static int mod_perform_nodep(const struct mod *mod, bool op);
 static bool mod_deps_satisfied(const struct mod *mod, bool op);
 
 inline static mod_op_t mod_op_deref(const struct mod *mod, bool op) {
-	if (NULL != mod->info && NULL != mod->info->ops) {
-		return op ? mod->info->ops->enable : mod->info->ops->disable;
+	struct mod_ops *ops;
+	if (NULL == mod->info || NULL == (ops = mod->info->ops)) {
+		return NULL;
 	}
-	return NULL;
+	return op ? ops->enable : ops->disable;
 }
 
 int mod_enable(const struct mod *mod) {
