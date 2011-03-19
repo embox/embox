@@ -8,8 +8,10 @@
 #ifndef MESSAGE_DEFS_H_
 #define MESSAGE_DEFS_H_
 
-/** the max count of messages */
-#define MESSAGE_COUNT 10
+/**
+ * The count of messages.
+ */
+#define MSG_ID_COUNT 10
 
 /** message for test */
 #define NEW_MESSAGE 0
