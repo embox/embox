@@ -37,21 +37,6 @@
 	*(SORT(.array_spread.*.rodata)) \
 	                               \
 	ALIGNMENT();                   \
-	__mods_start = . ;             \
-		*(.mod.rodata)             \
-	__mods_end = .;                \
-	                               \
-	ALIGNMENT();                   \
-	__express_tests_start = . ;    \
-		*(.test.rodata)            \
-	__express_tests_end = .;       \
-	                               \
-	ALIGNMENT();                   \
-	__modules_handlers_start = .;  \
-		*(.modules_handlers)       \
-	__modules_handlers_end = .;    \
-	                               \
-	ALIGNMENT();                   \
 	__init_handlers_start = .;     \
 		*(.init_handlers)          \
 	__init_handlers_end = .;       \
