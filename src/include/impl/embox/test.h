@@ -10,8 +10,11 @@
 # error "Do not include this file directly, use <embox/test.h> instead!"
 #endif /* EMBOX_TEST_H_ */
 
+#include <stddef.h>
+
 #include <util/array.h>
 #include <util/macro.h>
+#include <util/location.h>
 #include <mod/self.h>
 
 #include <impl/test/types.h>
@@ -26,7 +29,7 @@
 			MACRO_GUARD(__test_private))
 
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm) \
-	extern const struct test __test_registry[];                   \
+	extern const struct test_suite __test_registry[];                   \
 	extern const struct mod_ops __test_mod_ops;                   \
 	ARRAY_SPREAD_DEF_TERMINATED(static const  struct test_case *, \
 			__TEST_CASES_ARRAY, NULL);                            \
@@ -57,10 +60,29 @@
 #define __TEST_CASES_ARRAY \
 	MACRO_CONCAT(__test_cases__,__EMBUILD_MOD__)
 
+extern void __test_assertion_handle0(int pass,
+		const struct __test_assertion_point *point);
 
-#define test_pass() \
-	  __test_pass()
+extern void __test_assertion_handle1(int pass,
+		const struct __test_assertion_point *point, void *arg1);
 
-#define test_fail(reason) \
-	  __test_fail(reason)
+extern void __test_assertion_handle2(int pass,
+		const struct __test_assertion_point *point, void *arg1, void *arg2);
 
+#define __test_failure_ref(_reason) __extension__ ({ \
+		/* Statically allocate and define. Location and reason message are    \
+		 * known at compile time and nobody cares about .rodata section. */   \
+		static const struct __test_assertion_point __test_assertion_point = { \
+			.location = LOCATION_FUNC_INIT,    \
+			.reason = _reason,                 \
+		};                                     \
+		&__test_assertion_point;               \
+	})
+
+#define __test_fail(reason) \
+		__test_assertion_handle0(0, \
+				__test_failure_ref("test_fail(\"" reason "\")"))
+
+#define __test_assert(condition, condition_str) \
+		__test_assertion_handle0((condition), \
+				__test_failure_ref("test_assert(" condition_str ")"))

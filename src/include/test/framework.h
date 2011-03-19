@@ -18,12 +18,12 @@
 /**
  * TODO docs. -- Eldar
  */
-struct test;
+struct test_suite;
 
-extern int test_invoke(const struct test *test);
+extern int test_suite_run(const struct test_suite *test);
 
-extern const struct test *test_lookup(const char *name);
+extern const struct test_suite *test_lookup(const char *name);
 
-extern const char *test_name(const struct test *test);
+extern const char *test_name(const struct test_suite *test);
 
 #endif /* TEST_FRAMEWORK_H_ */

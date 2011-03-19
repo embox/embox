@@ -23,7 +23,8 @@ TEST_CASE("list_link_element should cast link member out to its container")
 {
 	struct element e;
 	struct list_link *link = &e.m_link;
-	return &e != list_link_element(link, struct element, m_link);
+	test_assert(&e == list_link_element(link, struct element, m_link));
+	return 0;
 }
 
 TEST_CASE("list_init should return its argument")

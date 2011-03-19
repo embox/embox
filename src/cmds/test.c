@@ -23,7 +23,7 @@ static void print_usage(void) {
 }
 
 static void print_tests(void) {
-	const struct test *test;
+	const struct test_suite *test;
 	int i = 0;
 
 	test_foreach(test) {
@@ -32,8 +32,8 @@ static void print_tests(void) {
 	printf("\nTotal tests: %d\n", i);
 }
 
-static const struct test *get_test_by_nr(int nr) {
-	const struct test *test;
+static const struct test_suite *get_test_by_nr(int nr) {
+	const struct test_suite *test;
 	int i = 0;
 
 	if (nr <= 0) {
@@ -52,7 +52,7 @@ static const struct test *get_test_by_nr(int nr) {
 }
 
 static int exec(int argc, char **argv) {
-	const struct test *test = NULL;
+	const struct test_suite *test = NULL;
 	int test_nr = -1;
 	int opt;
 	/* TODO it must be agreed with shell maximum command length */
@@ -101,5 +101,5 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
-	return test_invoke(test);
+	return test_suite_run(test);
 }

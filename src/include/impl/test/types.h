@@ -20,10 +20,11 @@
  */
 typedef int(*test_run_t)(void);
 
-struct __test_private;
+struct test_suite;
 struct test_case;
+struct __test_private;
 
-struct test {
+struct test_suite {
 	/** @c NULL terminated array of pointers to test cases. */
 	const struct test_case **test_cases;
 	/** The corresponding mod. */
@@ -41,6 +42,11 @@ struct test_case {
 	const char *description;
 	/** Location of the test case function definition within the file. */
 	struct location location;
+};
+
+struct __test_assertion_point {
+	struct location_func location;
+	const char *reason;
 };
 
 struct __test_private {

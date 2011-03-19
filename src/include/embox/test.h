@@ -24,14 +24,15 @@
 
 #include <impl/embox/test.h>
 
-#define EMBOX_TEST(run) \
-	  __EMBOX_TEST(run)
-
 #define EMBOX_TEST_SUITE(description) \
 	  __EMBOX_TEST_SUITE(description)
 
 #define TEST_CASE(description) \
 	  __TEST_CASE(description)
+
+/** @deprecated Use #EMBOX_TEST_SUITE() and #TEST_CASE() instead. */
+#define EMBOX_TEST(run) \
+	  __EMBOX_TEST(run)
 
 /**
  * Fails a test with the given @a reason.
@@ -52,16 +53,16 @@ failed: test_fail(<reason>)
 
 /**
 @verbatim
-failed: test_assert(<##condition>)
+failed: test_assert(<#condition>)
 	at <file>:<line>
 @endverbatim
  */
 #define test_assert(condition) \
-	  __test_assert(##condition) /* ## prevents condition from expansion. */
+	  __test_assert(condition, #condition)
 
 /**
 @verbatim
-failed: test_assert_true(<##value>)
+failed: test_assert_true(<#value>)
 	at <file>:<line>
 @endverbatim
  */
@@ -70,7 +71,7 @@ failed: test_assert_true(<##value>)
 
 /**
 @verbatim
-failed: test_assert_false(<##value>)
+failed: test_assert_false(<#value>)
 	at <file>:<line>
 @endverbatim
  */
@@ -79,7 +80,7 @@ failed: test_assert_false(<##value>)
 
 /**
 @verbatim
-failed: test_assert_zero(<##value>): <value>
+failed: test_assert_zero(<#value>): <value>
 	at <file>:<line>
 @endverbatim
  */
@@ -88,7 +89,7 @@ failed: test_assert_zero(<##value>): <value>
 
 /**
 @verbatim
-failed: test_assert_not_zero(<##value>)
+failed: test_assert_not_zero(<#value>)
 	at <file>:<line>
 @endverbatim
  */
@@ -97,7 +98,7 @@ failed: test_assert_not_zero(<##value>)
 
 /**
 @verbatim
-failed: test_assert_null(<##value>): <value>
+failed: test_assert_null(<#value>): <value>
 	at <file>:<line>
 @endverbatim
  */
@@ -106,7 +107,7 @@ failed: test_assert_null(<##value>): <value>
 
 /**
 @verbatim
-failed: test_assert_not_null(<##value>)
+failed: test_assert_not_null(<#value>)
 	at <file>:<line>
 @endverbatim
  */
@@ -115,7 +116,7 @@ failed: test_assert_not_null(<##value>)
 
 /**
 @verbatim
-failed: test_assert_equal(<##actual>, <##expected>): <actual>, expected <expected>
+failed: test_assert_equal(<#actual>, <#expected>): <actual>, expected <expected>
 	at <file>:<line>
 @endverbatim
  */
@@ -124,7 +125,7 @@ failed: test_assert_equal(<##actual>, <##expected>): <actual>, expected <expecte
 
 /**
 @verbatim
-failed: test_assert_not_equal(<##actual>, <##expected>): <actual>
+failed: test_assert_not_equal(<#actual>, <#expected>): <actual>
 	at <file>:<line>
 @endverbatim
  */

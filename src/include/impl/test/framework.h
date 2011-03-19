@@ -21,8 +21,8 @@
 #define __test_foreach(test_ptr) \
 	array_spread_foreach_ptr(test_ptr, __test_registry)
 
-extern const struct test __test_registry[];
+extern const struct test_suite __test_registry[];
 
-inline static const char *test_name(const struct test *test) {
+inline static const char *test_name(const struct test_suite *test) {
 	return NULL != test ? test->mod->name : NULL;
 }
