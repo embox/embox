@@ -32,7 +32,7 @@ struct handler_function {
 STATIC_CACHE_CREATE(queue_msg_cache, struct msg, MAX_MSG_COUNT_IN_QUEUE);
 
 /** Queue of messages, sent to handlers */
-static struct list_head *queue;
+static struct list_head queue;
 /**
  * Two tables of messages(message can be determine by it's id) and threads
  * and functions, that can handle them.
@@ -42,9 +42,9 @@ static struct handler_function handler_func_arr[MSG_ID_COUNT];
 
 static void event_dispatch(void) {
 	while (1) {
-		if (!list_empty(queue)) {
-			struct list_head *result = queue->next;
-			struct msg *msg = list_entry(queue, struct msg, next);
+		if (!list_empty(&queue)) {
+			struct list_head *result = &queue->next;
+			struct msg *msg = list_entry(&queue, struct msg, next);
 			list_del(result);
 			/* if it is not thread, then it is function */
 			if (msg->id < MIN_THREAD_ID) {
@@ -83,7 +83,7 @@ static struct msg *create_message(int id, void *data) {
 void send_message(int id, void *data) {
 	struct msg *msg;
 	msg = create_message(id, data);
-	list_add(&msg->next, queue);
+	list_add(&msg->next, &queue);
 }
 
 void register_msg_for_func(int id, void (*handler)(struct msg *msg)) {
@@ -91,5 +91,6 @@ void register_msg_for_func(int id, void (*handler)(struct msg *msg)) {
 }
 
 void register_msg_for_thread(int id, struct thread *thread) {
-	handler_thread_arr[id].handler = thread;
+	/** (id - MIN_THREAD_ID) is index of message in handler_thread_arr */
+	handler_thread_arr[id - MIN_THREAD_ID].handler = thread;
 }
