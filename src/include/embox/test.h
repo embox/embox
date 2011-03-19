@@ -67,7 +67,7 @@ failed: test_assert_true(<#value>)
 @endverbatim
  */
 #define test_assert_true(value) \
-	  __test_assert_true(##value)
+	  __test_assert_true(value, #value)
 
 /**
 @verbatim
@@ -76,7 +76,7 @@ failed: test_assert_false(<#value>)
 @endverbatim
  */
 #define test_assert_false(value) \
-	  __test_assert_false(##value)
+	  __test_assert_false(value, #value)
 
 /**
 @verbatim
@@ -85,7 +85,7 @@ failed: test_assert_zero(<#value>): <value>
 @endverbatim
  */
 #define test_assert_zero(value) \
-	  __test_assert_zero(##value)
+	  __test_assert_zero(value, #value)
 
 /**
 @verbatim
@@ -94,7 +94,7 @@ failed: test_assert_not_zero(<#value>)
 @endverbatim
  */
 #define test_assert_not_zero(value) \
-	  __test_assert_not_zero(##value)
+	  __test_assert_not_zero(value, #value)
 
 /**
 @verbatim
@@ -103,7 +103,7 @@ failed: test_assert_null(<#value>): <value>
 @endverbatim
  */
 #define test_assert_null(value) \
-	  __test_assert_null(##value)
+	  __test_assert_null(value, #value)
 
 /**
 @verbatim
@@ -112,7 +112,7 @@ failed: test_assert_not_null(<#value>)
 @endverbatim
  */
 #define test_assert_not_null(value) \
-	  __test_assert_not_null(##value)
+	  __test_assert_not_null(value, #value)
 
 /**
 @verbatim
@@ -121,7 +121,7 @@ failed: test_assert_equal(<#actual>, <#expected>): <actual>, expected <expected>
 @endverbatim
  */
 #define test_assert_equal(actual, expected) \
-	  __test_assert_equal(##actual, ##expected)
+	  __test_assert_equal(actual, expected, #actual, #expected)
 
 /**
 @verbatim
@@ -130,6 +130,6 @@ failed: test_assert_not_equal(<#actual>, <#expected>): <actual>
 @endverbatim
  */
 #define test_assert_not_equal(actual, expected) \
-	  __test_assert_not_equal(##actual, ##expected)
+	  __test_assert_not_equal(actual, expected, #actual, #expected)
 
 #endif /* EMBOX_TEST_H_ */
