@@ -73,6 +73,7 @@ override CFLAGS += $(cflags)
 ldflags:=$(LDFLAGS)
 override LDFLAGS  = -static
 override LDFLAGS += -nostdlib
+override LDFLAGS += --cref
 override LDFLAGS += -T $(LDSCRIPT)
 override LDFLAGS += $(SUBDIRS_LDFLAGS)
 override LDFLAGS += $(ldflags)
@@ -104,11 +105,13 @@ $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.c
 $(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
 	$(CC) -o $@ $(CFLAGS) $(CPPFLAGS) -c $<
 
+$(IMAGE): $(MK_DIR)/image.mk
 $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
 	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$(\n)		%) \
 		$(DEPSINJECT_OBJ) \
 	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
-	-o $@ -Map $@.map
+	-Map $@.map \
+	-o   $@
 
 $(IMAGE_DIS): $(IMAGE)
 	@$(OBJDUMP) -S $< > $@
