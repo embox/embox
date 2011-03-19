@@ -14,6 +14,7 @@
 #include <drivers/nxt_motor.h>
 
 #include <drivers/bluetooth.h>
+#include <drivers/nxt_sensor.h>
 #include <unistd.h>
 #include <string.h>
 #include <kernel/panic.h>
@@ -72,15 +73,27 @@ static int handle_comm(uint8_t *buff) {
 	return 0;
 }
 
+static int sensor_send(uint8_t sensor_id) {
+	sensor_t *sens = &sensors[sensor_id];
+	int tmp = 0;
+	uint8_t out[16];
+	memset(out, 0, 16);
+	out[0] = 0x02;
+	out[1] = command;
+	out[4] = 1;
+	tmp =  nxt_sensor_get_value(sens) >> 8;
+	out[8] = (tmp >> 8) & 0xff;
+	out[9] = tmp & 0xff;
+	nxt_bluetooth_write(out, 16);
+	return 0;
+}
+
 static int handle_body(uint8_t *buff) {
 	reader_state = COMM_TYPE;
 	switch (command) {
 		uint8_t power;
 		case DC_SET_OUTPUT_STATE:
-
 			power = buff[1];
-			TRACE("G%x:%x;", buff[0], buff[1]);
-
 			if (buff[0] != 0xff) {
 				motor_set_power(&motors[buff[0]], power);
 			} else {
@@ -88,6 +101,10 @@ static int handle_body(uint8_t *buff) {
 				motor_set_power(&motors[1], power);
 				motor_set_power(&motors[2], power);
 			}
+			return 0;
+			break;
+		case DC_GET_INPUT_VALUES:
+			sensor_send(buff[0]);
 			return 0;
 			break;
 		case DC_EX_SET_M_OUTPUT_STATE:
