@@ -87,12 +87,6 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
   ) \
 )\n
 
-generate_root_mods = $(strip \n/* Root modules. */\
-  $(foreach mod,$(filter-out $(foreach m,$(MODS_BUILD),$(DEPS-$m)),$(MODS_BUILD)), \
-    \nMOD_ROOT_DEF($(subst .,__,$(mod))); \
-  ) \
-)\n
-
 generate_header = \
   /* Auto-generated EMBuild Dependency Injection model file. Do not edit. */\n
 
@@ -106,7 +100,6 @@ $(DEPSINJECT_SRC) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
 	@$(PRINTF) $(call __printf_escape,$(generate_package_defs)) >> $@
 	@$(PRINTF) $(call __printf_escape,$(generate_mod_defs)) >> $@
 	@$(PRINTF) $(call __printf_escape,$(generate_mod_deps)) >> $@
-	@$(PRINTF) $(call __printf_escape,$(generate_root_mods)) >> $@
 
 $(DEPSINJECT_OBJ) : $(AUTOCONF_DIR)/config.h
 $(DEPSINJECT_OBJ) : $(DEPSINJECT_SRC)

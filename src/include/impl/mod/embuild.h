@@ -74,8 +74,3 @@
 		.name = package_name,                                \
 	}
 
-// TODO this should be removed at all. -- Eldar
-#define MOD_ROOT_DEF(mod_nm) \
-	static const struct mod *__mod_root__##mod_nm \
-		__attribute__ ((used, section(".mod.rodata"))) = &__MOD(mod_nm)
-
