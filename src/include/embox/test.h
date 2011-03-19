@@ -40,7 +40,7 @@
 	  __test_fail(reason)
 
 #define test_assert(condition) \
-	  __test_assert(#condition) /* # prevents condition from the expansion. */
+	  __test_assert(#condition) /* # prevents condition from expansion. */
 
 #define test_assert_true(value) \
 	  __test_assert_true(#value)

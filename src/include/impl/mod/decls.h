@@ -13,15 +13,15 @@
 
 /* Internal variable names inside mods-private namespace. */
 
-#define __MOD(s_mod)      MACRO_CONCAT(__mod__,s_mod)
-#define __MOD_INFO(s_mod) MACRO_CONCAT(__mod_info__,s_mod)
+#define __MOD(mod_nm)      MACRO_CONCAT(__mod__, mod_nm)
+#define __MOD_INFO(mod_nm) MACRO_CONCAT(__mod_info__, mod_nm)
 
 /* Internal declarations. */
 
-#define __MOD_DECL(s_mod) \
-	extern const struct mod __MOD(s_mod)
+#define __MOD_DECL(mod_nm) \
+	extern const struct mod __MOD(mod_nm)
 
-#define __MOD_INFO_DECL(s_mod) \
-	extern const struct __mod_info __MOD_INFO(s_mod) __attribute__ ((weak))
+#define __MOD_INFO_DECL(mod_nm) \
+	extern const struct __mod_info __MOD_INFO(mod_nm) __attribute__ ((weak))
 
 #endif /* IMPL_MOD_DECLS_H_ */
