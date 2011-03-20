@@ -7,12 +7,12 @@
  */
 
 #ifndef KERNEL_CRITICAL_H_
-# error "Do not include this file directly, use <kernel/critical/*.h> instead!"
+# error "Do not include this file directly, use <kernel/critical.h> instead!"
 #endif /* KERNEL_CRITICAL_H_ */
 
-/* Critical levels width. */
+/* Critical levels mask. */
 
-#define __CRITICAL_HARDIRQ_BITS  8
-#define __CRITICAL_SOFTIRQ_BITS  6
-#define __CRITICAL_PREEMPT_BITS  10
+#define __CRITICAL_HARDIRQ 0x000000ffUL
+#define __CRITICAL_SOFTIRQ 0x00000f00UL
+#define __CRITICAL_PREEMPT 0x0000f000UL
 
