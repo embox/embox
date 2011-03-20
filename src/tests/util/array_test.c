@@ -16,8 +16,7 @@ EMBOX_TEST_SUITE("util/array test");
 static const char *test_array[] = { "foo", "bar" };
 
 TEST_CASE("array_static_foreach should properly iterate over an array"
-		  " with size known at the compile-time.")
-{
+		" with size known at the compile-time.") {
 	char buf[5];
 	int count = 0;
 	const char *tmp;
@@ -27,6 +26,6 @@ TEST_CASE("array_static_foreach should properly iterate over an array"
 		count++;
 	}
 
-	test_assert(count == 2);
+	test_assert_equal(count, 2);
 }
 

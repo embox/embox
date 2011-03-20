@@ -17,6 +17,7 @@
 #include "types.h"
 
 #define __EMBOX_CMD(_exec) \
+	extern const struct cmd __cmd_registry[];          \
 	static int _exec(int argc, char **argv);           \
 	ARRAY_SPREAD_ADD_NAMED(__cmd_registry, __cmd,   {  \
 			.exec = _exec,                             \
@@ -24,6 +25,12 @@
 		});                                            \
 	MOD_SELF_BIND(__cmd, NULL) /* TODO not used. -- Eldar */
 
-extern const struct cmd __cmd_registry[];
+#ifdef __CDT_PARSER__
+
+# undef __EMBOX_CMD
+# define __EMBOX_CMD(_exec) \
+	static int _exec(int, char **)
+
+#endif /* __CDT_PARSER__ */
 
 #endif /* FRAMEWORK_CMD_SELF_IMPL_H_ */

@@ -23,17 +23,17 @@
 			MACRO_GUARD(__test_private))
 
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm) \
-	extern const struct test_suite __test_registry[];                   \
-	extern const struct mod_ops __test_mod_ops;                   \
-	ARRAY_SPREAD_DEF_TERMINATED(static const  struct test_case *, \
-			__TEST_CASES_ARRAY, NULL);                            \
-	static struct __test_private test_private_nm;                 \
-	ARRAY_SPREAD_ADD_NAMED(__test_registry, test_suite_nm, {      \
-			.private = &test_private_nm,                          \
-			.test_cases = __TEST_CASES_ARRAY,                     \
-			.mod = &mod_self,                                     \
-			.description = _description,                          \
-		});                                                       \
+	extern const struct test_suite __test_registry[];            \
+	extern const struct mod_ops __test_mod_ops;                  \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct test_case *, \
+			__TEST_CASES_ARRAY, NULL);                           \
+	static struct __test_private test_private_nm;                \
+	ARRAY_SPREAD_ADD_NAMED(__test_registry, test_suite_nm, {     \
+			.private = &test_private_nm,                         \
+			.test_cases = __TEST_CASES_ARRAY,                    \
+			.mod = &mod_self,                                    \
+			.description = _description,                         \
+		});                                                      \
 	MOD_SELF_BIND(test_suite_nm, &__test_mod_ops)
 
 #define __TEST_CASE(description) \
@@ -64,5 +64,18 @@
 		}                                      \
 	} /* suppress "extra `;' outside of a function" warning. */ \
 	static int _run(void)
+
+/* Simplify the life of Eclipse CDT. */
+#ifdef __CDT_PARSER__
+
+# undef __EMBOX_TEST_SUITE
+# define __EMBOX_TEST_SUITE(ignored) \
+	typedef int MACRO_GUARD(__test_suite)
+
+# undef __TEST_CASE
+# define __TEST_CASE(ignored) \
+	static void MACRO_GUARD(__test_case_run)(void)
+
+#endif /* __CDT_PARSER__ */
 
 #endif /* FRAMEWORK_TEST_SELF_IMPL_H_ */
