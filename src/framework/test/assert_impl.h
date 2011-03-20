@@ -40,4 +40,36 @@ extern void __test_assertion_handle2(int pass,
 		__test_assertion_handle0((condition), \
 				__test_failure_ref("test_assert(" condition_str ")"))
 
+#define __test_assert_true(value, value_str) \
+		__test_assertion_handle0((value), \
+				__test_failure_ref("test_assert_true(" value_str ")"))
+
+#define __test_assert_false(value, value_str) \
+		__test_assertion_handle0(!(value), \
+				__test_failure_ref("test_assert_false(" value_str ")"))
+
+#define __test_assert_zero(value, value_str) \
+		__test_assertion_handle0(!(value), \
+				__test_failure_ref("test_assert_zero(" value_str ")"))
+
+#define __test_assert_not_zero(value, value_str) \
+		__test_assertion_handle0((value), \
+				__test_failure_ref("test_assert_not_zero(" value_str ")"))
+
+#define __test_assert_null(value, value_str) \
+		__test_assertion_handle0(!(value), \
+				__test_failure_ref("test_assert_null(" value_str ")"))
+
+#define __test_assert_not_null(value, value_str) \
+		__test_assertion_handle0((value), \
+				__test_failure_ref("test_assert_not_null(" value_str ")"))
+
+#define __test_assert_equal(actual, expected, actual_str, expected_str) \
+		__test_assertion_handle0((actual) == (expected), __test_failure_ref( \
+				"test_assert_equal(" actual_str ", " expected_str ")"))
+
+#define __test_assert_not_equal(actual, expected, actual_str, expected_str) \
+		__test_assertion_handle0((actual) != (expected), __test_failure_ref( \
+				"test_assert_not_equal(" actual_str ", " expected_str ")"))
+
 #endif /* FRAMEWORK_TEST_ASSERT_IMPL_H_ */
