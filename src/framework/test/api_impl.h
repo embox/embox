@@ -1,7 +1,7 @@
 /**
  * @file
- * @brief Implementation of test iterator operations (macros and inline
- *        methods).
+ * @brief Test foreach iteration macro and inline versions of some methods from
+ *        test registry.
  *
  * @date 11.06.2010
  * @author Eldar Abusalimov

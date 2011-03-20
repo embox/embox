@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Registry of available tests framework implementation.
+ * @brief Registry of available tests.
  *
  * @date Dec 4, 2008
  * @author Anton Bondarev
