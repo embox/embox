@@ -3,21 +3,19 @@
  * @brief This file is derived from Embox test template.
  */
 
-#include <errno.h>
-
 #include <embox/test.h>
-#include <test/tools.h>
+
 #include <kernel/critical.h>
 
 EMBOX_TEST(run);
 
 static int test_outside_critical(void) {
-	TEST_ASSERT(!critical_inside_preempt());
-	TEST_ASSERT(!critical_inside_softirq());
-	TEST_ASSERT(!critical_inside_hardirq());
+	test_assert(!critical_inside_preempt());
+	test_assert(!critical_inside_softirq());
+	test_assert(!critical_inside_hardirq());
 
-	TEST_ASSERT(critical_allows_preempt());
-	TEST_ASSERT(critical_allows_softirq());
+	test_assert(critical_allows_preempt());
+	test_assert(critical_allows_softirq());
 
 	return 0;
 }
@@ -43,30 +41,30 @@ static int run(void) {
 
 	critical_enter_preempt();
 
-	TEST_ASSERT(critical_inside_preempt());
-	TEST_ASSERT(!critical_inside_softirq());
-	TEST_ASSERT(!critical_inside_hardirq());
+	test_assert(critical_inside_preempt());
+	test_assert(!critical_inside_softirq());
+	test_assert(!critical_inside_hardirq());
 
-	TEST_ASSERT(!critical_allows_preempt());
-	TEST_ASSERT(critical_allows_softirq());
+	test_assert(!critical_allows_preempt());
+	test_assert(critical_allows_softirq());
 
 	critical_enter_softirq();
 
-	TEST_ASSERT(critical_inside_preempt());
-	TEST_ASSERT(critical_inside_softirq());
-	TEST_ASSERT(!critical_inside_hardirq());
+	test_assert(critical_inside_preempt());
+	test_assert(critical_inside_softirq());
+	test_assert(!critical_inside_hardirq());
 
-	TEST_ASSERT(!critical_allows_preempt());
-	TEST_ASSERT(!critical_allows_softirq());
+	test_assert(!critical_allows_preempt());
+	test_assert(!critical_allows_softirq());
 
 	critical_enter_hardirq();
 
-	TEST_ASSERT(critical_inside_preempt());
-	TEST_ASSERT(critical_inside_softirq());
-	TEST_ASSERT(critical_inside_hardirq());
+	test_assert(critical_inside_preempt());
+	test_assert(critical_inside_softirq());
+	test_assert(critical_inside_hardirq());
 
-	TEST_ASSERT(!critical_allows_preempt());
-	TEST_ASSERT(!critical_allows_softirq());
+	test_assert(!critical_allows_preempt());
+	test_assert(!critical_allows_softirq());
 
 	critical_leave_hardirq();
 	critical_leave_softirq();
