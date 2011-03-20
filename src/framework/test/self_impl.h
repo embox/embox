@@ -19,7 +19,7 @@
 #include "types.h"
 
 #define __EMBOX_TEST_SUITE(description) \
-	__EMBOX_TEST_SUITE_NM("" description, MACRO_GUARD(__test_suite), \
+	__EMBOX_TEST_SUITE_NM("" description, MACRO_GUARD(__test_suite_struct), \
 			MACRO_GUARD(__test_private))
 
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm) \
@@ -37,11 +37,11 @@
 	MOD_SELF_BIND(test_suite_nm, &__test_mod_ops)
 
 #define __TEST_CASE(description) \
-	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case), \
-			MACRO_GUARD(__test_case_run))
+	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case_struct), \
+			MACRO_GUARD(__test_case))
 
 #define __TEST_CASE_NM(_description, test_case_nm, run_nm) \
-	static int run_nm(void);                             \
+	static void run_nm(void);                            \
 	static const struct test_case test_case_nm = {       \
 		.run = run_nm,                                   \
 		.location = LOCATION_INIT,                       \
@@ -49,14 +49,20 @@
 	};                                                   \
 	extern const struct test_case *__TEST_CASES_ARRAY[]; \
 	ARRAY_SPREAD_ADD(__TEST_CASES_ARRAY, &test_case_nm); \
-	static int run_nm(void)
+	static void run_nm(void)
 
 #define __TEST_CASES_ARRAY \
 	MACRO_CONCAT(__test_cases__,__EMBUILD_MOD__)
 
 /* This is implemented on top of test suite and test case. */
 #define __EMBOX_TEST(_run) \
-	__EMBOX_TEST_SUITE("generic test suite"); \
-	__TEST_CASE_NM("generic test case", MACRO_GUARD(__test_case), _run)
+	static int _run(void);                     \
+	__EMBOX_TEST_SUITE("generic test suite");  \
+	__TEST_CASE("generic test case") {         \
+		if (_run()) {                          \
+			test_fail("non-zero return code"); \
+		}                                      \
+	} /* suppress "extra `;' outside of a function" warning. */ \
+	static int _run(void)
 
 #endif /* FRAMEWORK_TEST_SELF_IMPL_H_ */

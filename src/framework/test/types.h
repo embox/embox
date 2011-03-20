@@ -18,7 +18,7 @@
  * @retval 0 on success
  * @retval nonzero on failure
  */
-typedef int(*test_run_t)(void);
+typedef void(*test_run_t)(void);
 
 struct test_suite;
 struct test_case;
