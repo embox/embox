@@ -53,7 +53,8 @@ int test_suite_run(const struct test_suite *test) {
 	}
 
 	if (failures) {
-		TRACE("\ntest: %d/%d in %s failed\n", failures, total, name);
+		TRACE("\ntest: %d/%d in %s (%s) failed\n", failures, total, name,
+				test->description);
 	} else {
 		TRACE(" done\n");
 	}
@@ -73,9 +74,11 @@ static int test_case_run(const struct test_case *test_case) {
 	test_loc = &test_case->location;
 	fail_loc = &failure->location.input;
 
-	TRACE("\ntest case failed: %s,\n\t(defined at %s : %d)\n",
+	TRACE("\ntest case: %s,\n"
+			"\t(at %s : %d)\n",
 			test_case->description, test_loc->file, test_loc->line);
-	TRACE("reason:\n%s,\n\t(at %s : %d, in function %s)\n",
+	TRACE("failed on: %s,\n"
+			"\t(at %s : %d, in function %s)\n",
 			failure->reason, fail_loc->file, fail_loc->line,
 			failure->location.func);
 
@@ -88,9 +91,7 @@ static const struct __test_assertion_point *test_run(test_run_t run) {
 
 	current = &ctx;
 	if (!(caught = setjmp(ctx.before_run))) {
-		if (run()) {
-			TRACE("XXX deprecated Embox test failure");
-		}
+		run();
 	}
 	current = NULL;
 
