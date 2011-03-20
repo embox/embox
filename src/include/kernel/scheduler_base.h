@@ -10,6 +10,7 @@
 #ifndef SCHEDULER_BASE_H_
 #define SCHEDULER_BASE_H_
 
+#include <stdbool.h>
 #include <kernel/scheduler.h>
 
 /**
@@ -29,7 +30,8 @@ extern void _scheduler_start(void);
 extern void _scheduler_stop(void);
 
 /**
- * Add new thread in scheduler.
+ * Adds new thread in thread list.
+ * @param added_thread
  */
 extern void _scheduler_add(struct thread *added_thread);
 
@@ -41,9 +43,15 @@ extern struct thread *_scheduler_next(struct thread *prev_thread);
 
 /**
  * Removes thread from the scheduler.
- * If thread doesn't exist in scheduler, there must be NO ERROR!!!
+ * If thread doesn't exist in scheduler, there must be NO ERROR.
  * @param removed_thread thread to remove.
  */
 extern void _scheduler_remove(struct thread *removed_thread);
+
+/**
+ * Gets current thread.
+ * @return executable thread.
+ */
+extern struct thread *_scheduler_current(void);
 
 #endif /* SCHEDULER_BASE_H_ */
