@@ -26,7 +26,7 @@ EMBOX_TEST(run);
 static void threads_run(void) {
 	size_t i;
 	for (i = 0; i < 10; i++) {
-		TRACE("%d ", current_thread->id);
+		TRACE("%d ", thread_current()->id);
 	}
 }
 

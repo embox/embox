@@ -24,6 +24,9 @@ struct pprocess;
 
 #include __impl(kernel/thread.h)
 
+// XXX
+#include <kernel/scheduler.h>
+
 typedef __thread_id_t thread_id_t;
 typedef __thread_priority_t thread_priority_t;
 
@@ -46,7 +49,9 @@ extern struct thread *idle_thread;
 /**
  * Thread, which is working now.
  */
-extern struct thread *current_thread;
+inline static struct thread *thread_current(void) {
+	return scheduler_current();
+}
 
 struct pprocess;
 /**

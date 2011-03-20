@@ -25,7 +25,7 @@
 EMBOX_UNIT_INIT(threads_init);
 
 struct thread *idle_thread;
-struct thread *current_thread;
+//struct thread *thread_current();
 
 /** Stack for idle_thread. */
 static char idle_thread_stack[THREAD_STACK_SIZE];
@@ -50,6 +50,7 @@ static int threads_init(void) {
 		idle_thread_stack + THREAD_STACK_SIZE);
 	idle_thread->priority = 0;
 	idle_thread->state = THREAD_STATE_RUN;
+	scheduler_add(idle_thread);
 	return 0;
 }
 
@@ -59,10 +60,10 @@ static int threads_init(void) {
  * @param thread_pointer pointer at thread.
  */
 static void thread_run(int par) {
-	LOG_DEBUG("\nStarting Thread %d\n", current_thread->id);
+	LOG_DEBUG("\nStarting Thread %d\n", thread_current()->id);
 	ipl_enable();
-	current_thread->run();
-	thread_stop(current_thread);
+	thread_current()->run();
+	thread_stop(thread_current());
 	/* NOTREACHED */
 	assert(false);
 }
@@ -157,7 +158,7 @@ int thread_stop(struct thread *thread) {
 		zombie = NULL;
 	}
 	scheduler_remove(thread);
-	if (current_thread != thread) {
+	if (thread_current() != thread) {
 		thread_delete(thread);
 	} else {
 		zombie = thread;
@@ -171,7 +172,7 @@ int thread_stop(struct thread *thread) {
 
 void thread_yield(void) {
 	scheduler_lock();
-	current_thread->reschedule = true;
+	thread_current()->reschedule = true;
 	scheduler_unlock();
 }
 
