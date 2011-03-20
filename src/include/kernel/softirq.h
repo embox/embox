@@ -79,15 +79,15 @@ extern int softirq_raise(softirq_nr_t nr);
 extern void softirq_dispatch(void);
 
 inline static void softirq_disable(void) {
-	critical_enter_softirq();
+	critical_enter(CRITICAL_SOFTIRQ);
 }
 
 inline static void softirq_enable_silent(void) {
-	critical_leave_softirq();
+	critical_leave(CRITICAL_SOFTIRQ);
 }
 
 inline static void softirq_check_invoke(void) {
-	if (critical_allows_softirq()) {
+	if (critical_allows(CRITICAL_SOFTIRQ)) {
 		softirq_dispatch();
 	}
 }

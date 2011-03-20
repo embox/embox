@@ -12,15 +12,15 @@
 #include <kernel/critical.h>
 
 inline static void preempt_disable(void) {
-	critical_enter_preempt();
+	critical_enter(CRITICAL_PREEMPT);
 }
 
 inline static void preempt_enable_noresched(void) {
-	critical_leave_preempt();
+	critical_leave(CRITICAL_PREEMPT);
 }
 
 inline static void preempt_check_resched(void) {
-	if (critical_allows_preempt()) {
+	if (critical_allows(CRITICAL_PREEMPT)) {
 		sched_invoke();
 	}
 }

@@ -10,12 +10,12 @@
 EMBOX_TEST(run);
 
 static int test_outside_critical(void) {
-	test_assert(!critical_inside_preempt());
-	test_assert(!critical_inside_softirq());
-	test_assert(!critical_inside_hardirq());
+	test_assert_false(critical_inside(CRITICAL_PREEMPT));
+	test_assert_false(critical_inside(CRITICAL_SOFTIRQ));
+	test_assert_false(critical_inside(CRITICAL_HARDIRQ));
 
-	test_assert(critical_allows_preempt());
-	test_assert(critical_allows_softirq());
+	test_assert_true(critical_allows(CRITICAL_PREEMPT));
+	test_assert_true(critical_allows(CRITICAL_SOFTIRQ));
 
 	return 0;
 }
@@ -31,7 +31,7 @@ static int run(void) {
 	int result = 0;
 
 	/* Test must not be invoked within critical section. */
-//	if (!critical_allows_preempt()) {
+//	if (!critical_allows(CRITICAL_PREEMPT)) {
 //		return -EBUSY;
 //	}
 
@@ -39,42 +39,42 @@ static int run(void) {
 		return result;
 	}
 
-	critical_enter_preempt();
+	critical_enter(CRITICAL_PREEMPT);
 
-	test_assert(critical_inside_preempt());
-	test_assert(!critical_inside_softirq());
-	test_assert(!critical_inside_hardirq());
+	test_assert_true(critical_inside(CRITICAL_PREEMPT));
+	test_assert_false(critical_inside(CRITICAL_SOFTIRQ));
+	test_assert_false(critical_inside(CRITICAL_HARDIRQ));
 
-	test_assert(!critical_allows_preempt());
-	test_assert(critical_allows_softirq());
+	test_assert_false(critical_allows(CRITICAL_PREEMPT));
+	test_assert_true(critical_allows(CRITICAL_SOFTIRQ));
 
-	critical_enter_softirq();
+	critical_enter(CRITICAL_SOFTIRQ);
 
-	test_assert(critical_inside_preempt());
-	test_assert(critical_inside_softirq());
-	test_assert(!critical_inside_hardirq());
+	test_assert_true(critical_inside(CRITICAL_PREEMPT));
+	test_assert_true(critical_inside(CRITICAL_SOFTIRQ));
+	test_assert_false(critical_inside(CRITICAL_HARDIRQ));
 
-	test_assert(!critical_allows_preempt());
-	test_assert(!critical_allows_softirq());
+	test_assert_false(critical_allows(CRITICAL_PREEMPT));
+	test_assert_false(critical_allows(CRITICAL_SOFTIRQ));
 
-	critical_enter_hardirq();
+	critical_enter(CRITICAL_HARDIRQ);
 
-	test_assert(critical_inside_preempt());
-	test_assert(critical_inside_softirq());
-	test_assert(critical_inside_hardirq());
+	test_assert_true(critical_inside(CRITICAL_PREEMPT));
+	test_assert_true(critical_inside(CRITICAL_SOFTIRQ));
+	test_assert_true(critical_inside(CRITICAL_HARDIRQ));
 
-	test_assert(!critical_allows_preempt());
-	test_assert(!critical_allows_softirq());
+	test_assert_false(critical_allows(CRITICAL_PREEMPT));
+	test_assert_false(critical_allows(CRITICAL_SOFTIRQ));
 
-	critical_leave_hardirq();
-	critical_leave_softirq();
-	critical_leave_preempt();
+	critical_leave(CRITICAL_HARDIRQ);
+	critical_leave(CRITICAL_SOFTIRQ);
+	critical_leave(CRITICAL_PREEMPT);
 
 	if (0 != (result = test_outside_critical())) {
 		return result;
 	}
 
-//	critical_enter_softirq();
+//	critical_enter(CRITICAL_SOFTIRQ);
 
 	return test_outside_critical();
 }
