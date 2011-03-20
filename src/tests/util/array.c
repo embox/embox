@@ -28,6 +28,5 @@ TEST_CASE("array_static_foreach should properly iterate over an array"
 	}
 
 	test_assert(count == 2);
-	return 0;
 }
 
