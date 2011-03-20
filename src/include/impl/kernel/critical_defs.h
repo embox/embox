@@ -2,6 +2,48 @@
  * @file
  * @brief This file is intended for internal usage by critical.h .
  *
+ * @details
+ *
+@verbatim
+        +-----+---+---+-----+---+---+-----+---+---+
+  bit#: | ... |13 |12 | ... | 9 | 8 | ... | 1 | 0 |
+ level: |    preempt  |    softirq  |    hardirq  |
+        +-----+---+---+-----+---+---+-----+---+---+
+@endverbatim
+ *
+ * @c hardirq:
+@verbatim
+        +-----+---+---+-----+---+---+-----+---+---+
+ level: |    preempt  |    softirq  |    hardirq  |
+        +-----+---+---+-----+---+---+-----+---+---+
+  mask: |     |   |   |     |   |   | *** | * | * |
+ count: |     |   |   |     |   |   |     |   | * |
+  high: |     |   |   |     |   |   |     |   |   |
+        +-----+---+---+-----+---+---+-----+---+---+
+@endverbatim
+ *
+ * @c softirq:
+@verbatim
+        +-----+---+---+-----+---+---+-----+---+---+
+ level: |    preempt  |    softirq  |    hardirq  |
+        +-----+---+---+-----+---+---+-----+---+---+
+  mask: |     |   |   | *** | * | * |     |   |   |
+ count: |     |   |   |     |   | * |     |   |   |
+  high: |     |   |   |     |   |   | *** | * | * |
+        +-----+---+---+-----+---+---+-----+---+---+
+@endverbatim
+ *
+ * @c preempt:
+@verbatim
+        +-----+---+---+-----+---+---+-----+---+---+
+ level: |    preempt  |    softirq  |    hardirq  |
+        +-----+---+---+-----+---+---+-----+---+---+
+  mask: | *** | * | * |     |   |   |     |   |   |
+ count: |     |   | * |     |   |   |     |   |   |
+  high: |     |   |   | *** | * | * | *** | * | * |
+        +-----+---+---+-----+---+---+-----+---+---+
+@endverbatim
+ *
  * @date 23.05.2010
  * @author Eldar Abusalimov
  */
