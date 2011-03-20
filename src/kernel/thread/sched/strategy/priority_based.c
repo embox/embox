@@ -170,6 +170,8 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
  */
 void _scheduler_remove(struct thread *thread) {
 	struct run_thread_list *priority;
+	/* FIXME */
+	#warning priority was not initialized!!!! FIXME !!!!!!
 	struct list_head *same_priority_list = &priority->thread_list;
 
 	if (thread == current_thread) {
