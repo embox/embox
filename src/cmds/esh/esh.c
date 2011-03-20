@@ -5,17 +5,18 @@
  * @date 13.11.10
  * @author Fedor Burdun
  */
+
 #include <embox/cmd.h>
 
 #include <getopt.h>
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <kernel/printk.h>
 #include <lib/readline.h>
-#include <stdio.h>
-#include <cmd/framework.h>
 #include <cmd/cmdline.h>
+#include <framework/cmd/api.h>
 
 EMBOX_CMD(exec);
 

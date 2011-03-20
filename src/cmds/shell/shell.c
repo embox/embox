@@ -12,8 +12,8 @@
 #include <ctype.h>
 
 #include <util/array.h>
-#include <cmd/framework.h>
 #include <cmd/cmdline.h>
+#include <framework/cmd/api.h>
 
 #include "console/console.h"
 

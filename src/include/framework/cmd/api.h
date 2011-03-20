@@ -6,10 +6,10 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef CMD_FRAMEWORK_H_
-#define CMD_FRAMEWORK_H_
+#ifndef FRAMEWORK_CMD_API_H_
+#define FRAMEWORK_CMD_API_H_
 
-#include __impl(cmd/framework.h)
+#include __impl_x(framework/cmd/api_impl.h)
 
 #define cmd_foreach(cmd) \
 		__cmd_foreach(cmd)
@@ -29,4 +29,4 @@ extern const char *cmd_brief(const struct cmd *cmd);
 
 extern const char *cmd_details(const struct cmd *cmd);
 
-#endif /* CMD_FRAMEWORK_H_ */
+#endif /* FRAMEWORK_CMD_API_H_ */

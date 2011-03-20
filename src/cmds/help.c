@@ -10,7 +10,8 @@
 
 #include <getopt.h>
 #include <stdio.h>
-#include <cmd/framework.h>
+
+#include <framework/cmd/api.h>
 
 EMBOX_CMD(exec);
 

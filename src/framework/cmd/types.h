@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Type declarations common for each command and external API.
  *
  * @date Mar 1, 2011
  * @author Eldar Abusalimov

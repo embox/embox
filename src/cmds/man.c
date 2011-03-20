@@ -7,11 +7,13 @@
  */
 
 #include <embox/cmd.h>
+
 #include <string.h>
 #include <getopt.h>
 #include <stdio.h>
+
 #include <util/array.h>
-#include <cmd/framework.h>
+#include <framework/cmd/api.h>
 
 EMBOX_CMD(exec);
 

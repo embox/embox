@@ -7,16 +7,20 @@
  * @author Fedor Burdun
  */
 
+#include <embox/unit.h>
+
+#include <ctype.h>
 #include <string.h>
+
+#include <kernel/pp.h>
 #include <drivers/tty.h>
 #include <drivers/vconsole.h>
 #include <drivers/tty_action.h>
-#include <ctype.h>
-#include <kernel/pp.h>
-#include <embox/unit.h>
 #include <drivers/vtbuild.h>
 #include <drivers/vtparse.h>
-#include <cmd/framework.h>
+#include <framework/cmd/api.h>
+
+EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
 
@@ -246,6 +250,4 @@ void tty_freeline(tty_device_t *tty, uint8_t *line) {
 		line_size = tty_scanline((uint8_t*) tty->rx_buff, tty->rx_cnt);
 	}
 }
-
-EMBOX_UNIT_INIT(tty_init);
 
