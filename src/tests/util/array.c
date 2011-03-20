@@ -1,22 +1,23 @@
 /**
  * @file
- * @brief Testing array utilities
+ * @brief Tests array utilities.
  *
  * @date 14.03.11
  * @author Nikolay Korotky
  */
 
 #include <embox/test.h>
-#include <string.h>
-#include <util/list.h>
-#include <util/array.h>
-#include <test/tools.h>
 
-EMBOX_TEST(run);
+#include <string.h>
+#include <util/array.h>
+
+EMBOX_TEST_SUITE("util/array test");
 
 static const char *test_array[] = { "foo", "bar" };
 
-static int run(void) {
+TEST_CASE("array_static_foreach should properly iterate over an array"
+		  " with size known at the compile-time.")
+{
 	char buf[5];
 	int count = 0;
 	const char *tmp;
@@ -25,6 +26,8 @@ static int run(void) {
 		strncpy(buf, tmp, sizeof(buf));
 		count++;
 	}
-	return count != 2;
+
+	test_assert(count == 2);
+	return 0;
 }
 
