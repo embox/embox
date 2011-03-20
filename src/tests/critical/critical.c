@@ -5,6 +5,7 @@
 
 #include <embox/test.h>
 
+#include <stdio.h>
 #include <kernel/critical.h>
 
 EMBOX_TEST(run);
@@ -34,6 +35,11 @@ static int run(void) {
 //	if (!critical_allows_preempt()) {
 //		return -EBUSY;
 //	}
+
+	printf("\n");
+	printf("0x%04x\n", CRITICAL_HARDIRQ);
+	printf("0x%04x\n", CRITICAL_SOFTIRQ);
+	printf("0x%04x\n", CRITICAL_PREEMPT);
 
 	if (0 != (result = test_outside_critical())) {
 		return result;

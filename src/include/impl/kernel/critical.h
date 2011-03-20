@@ -14,9 +14,7 @@
 #include "critical_defs.h"
 
 inline static int critical_allows(__critical_t critical) {
-	// TODO hmm, check it. -- Eldar
-	return !(__critical_count_get()
-			& (__CRITICAL_HIGH(critical) | __CRITICAL_MASK(critical)));
+	return !(__critical_count_get() & __CRITICAL_BELOW(critical));
 }
 
 inline static int critical_inside(__critical_t critical) {

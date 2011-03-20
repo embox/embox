@@ -17,8 +17,8 @@
  level: |    preempt  |    softirq  |    hardirq  |
         +-----+---+---+-----+---+---+-----+---+---+
   mask: |     |   |   |     |   |   | *** | * | * |
+ below: |     |   |   |     |   |   | *** | * | * |
  count: |     |   |   |     |   |   |     |   | * |
-  high: |     |   |   |     |   |   |     |   |   |
         +-----+---+---+-----+---+---+-----+---+---+
 @endverbatim
  *
@@ -28,8 +28,8 @@
  level: |    preempt  |    softirq  |    hardirq  |
         +-----+---+---+-----+---+---+-----+---+---+
   mask: |     |   |   | *** | * | * |     |   |   |
+ below: |     |   |   | *** | * | * | *** | * | * |
  count: |     |   |   |     |   | * |     |   |   |
-  high: |     |   |   |     |   |   | *** | * | * |
         +-----+---+---+-----+---+---+-----+---+---+
 @endverbatim
  *
@@ -39,8 +39,8 @@
  level: |    preempt  |    softirq  |    hardirq  |
         +-----+---+---+-----+---+---+-----+---+---+
   mask: | *** | * | * |     |   |   |     |   |   |
+ below: | *** | * | * | *** | * | * | *** | * | * |
  count: |     |   | * |     |   |   |     |   |   |
-  high: |     |   |   | *** | * | * | *** | * | * |
         +-----+---+---+-----+---+---+-----+---+---+
 @endverbatim
  *
@@ -54,14 +54,23 @@
 
 #include "critical_config.h"
 
-/* internal helper macros. */
+#define __CRITICAL_VALUE(bits, lower_mask) \
+	((__CRITICAL_BELOW(lower_mask) << (bits) | CRITICAL_VALUE_LOWEST(bits)) \
+			^ __CRITICAL_BELOW(lower_mask))
+
+#define __CRITICAL_VALUE_LOWEST(bits) \
+	((0x1UL << (bits)) - 1)
+
+/* Internal helper macros. */
+
+#define __CRITICAL_LOWER(critical) \
+	(((critical) ^ ((critical) - 1)) >> 1)
 
 #define __CRITICAL_MASK(critical) \
 	(critical)
 
-#define __CRITICAL_HIGH(critical) \
-	((~(critical) ^ (~(critical) + 1)) >> 1)
+#define __CRITICAL_BELOW(critical) \
+	((critical) | __CRITICAL_LOWER(critical))
 
 #define __CRITICAL_COUNT(critical) \
-	(__CRITICAL_HIGH(critical) + 1)
-
+	(__CRITICAL_LOWER(critical) + 1)
