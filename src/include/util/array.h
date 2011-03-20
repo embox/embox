@@ -31,7 +31,7 @@
 #ifndef UTIL_ARRAY_H_
 #define UTIL_ARRAY_H_
 
-#include __impl(util/array.h)
+#include __impl_x(util/array_impl.h)
 
 /* Foreach iterators for generic arrays: with given size or null-terminated. */
 

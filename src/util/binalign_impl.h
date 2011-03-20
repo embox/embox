@@ -6,9 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef UTIL_BINALIGN_H_
-# error "Do not include this file directly, use <util/binalign.h> instead!"
-#endif /* UTIL_BINALIGN_H_ */
+#ifndef UTIL_BINALIGN_IMPL_H_
+#define UTIL_BINALIGN_IMPL_H_
 
 #define __binalign_mask(x, mask)       (((x) + (mask)) & ~(mask))
 
@@ -39,3 +38,4 @@
 
 #endif /* __ASSEMBLER__ */
 
+#endif /* UTIL_BINALIGN_IMPL_H_ */

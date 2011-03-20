@@ -9,7 +9,7 @@
 #ifndef UTIL_LIST_H_
 #define UTIL_LIST_H_
 
-#include __impl(util/list.h)
+#include __impl_x(util/list_impl.h)
 
 struct list;
 

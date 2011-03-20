@@ -6,9 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef UTIL_LIST_H_
-# error "Do not include this file directly, use <util/list.h> instead!"
-#endif /* UTIL_LIST_H_ */
+#ifndef UTIL_LIST_IMPL_H_
+#define UTIL_LIST_IMPL_H_
 
 #include <util/structof.h>
 
@@ -86,3 +85,4 @@ inline static void list_add_last_link(struct list_link *link, struct list *list)
 #define __list_add_last(element, list, link_member) \
 		list_add_last_link(&(element)->link_member, list)
 
+#endif /* UTIL_LIST_IMPL_H_ */

@@ -6,9 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef UTIL_ARRAY_H_
-# error "Do not include this file directly, use <util/array.h> instead!"
-#endif /* UTIL_ARRAY_H_ */
+#ifndef UTIL_ARRAY_IMPL_H_
+#define UTIL_ARRAY_IMPL_H_
 
 #include <stddef.h>
 
@@ -182,3 +181,4 @@
 			(cond);               \
 			++(element_ptr))
 
+#endif /* UTIL_ARRAY_IMPL_H_ */

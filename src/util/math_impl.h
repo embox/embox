@@ -6,9 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef UTIL_MATH_H_
-# error "Do not include this file directly, use <util/math.h> instead!"
-#endif /* UTIL_MATH_H_ */
+#ifndef UTIL_MATH_IMPL_H_
+#define UTIL_MATH_IMPL_H_
 
 #define __abs(x) __extension__ ({ \
 	typeof(x) __abs_x = (x);    \
@@ -44,3 +43,5 @@ static inline int blog2(int val) {
     }
     return j;
 }
+
+#endif /* UTIL_MATH_IMPL_H_ */
