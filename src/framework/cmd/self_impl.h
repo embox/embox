@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 #include <util/array.h>
-#include <mod/self.h>
+#include <framework/mod/self.h>
 
 #include "types.h"
 

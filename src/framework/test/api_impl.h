@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 #include <util/array.h>
-#include <mod/core.h>
+#include <framework/mod/api.h>
 
 #include "types.h"
 

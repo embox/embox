@@ -3,16 +3,17 @@
  * @brief The self mod is one that is associated with the current compilation
  *        unit.
  *
- * @note Do not include from any source which is not part of some mod.
+ * @note
+ *   Do not include from any source which is not a part of some mod.
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov
  */
 
-#ifndef MOD_SELF_H_
-#define MOD_SELF_H_
+#ifndef FRAMEWORK_MOD_SELF_H_
+#define FRAMEWORK_MOD_SELF_H_
 
-#include __impl(mod/self.h)
+#include __impl_x(framework/mod/self_impl.h)
 
 /** The #mod structure corresponding to the self mod. */
 extern const struct mod mod_self;
@@ -26,4 +27,4 @@ extern const struct mod mod_self;
 #define MOD_SELF_BIND(mod_data, mod_ops) \
 		__MOD_SELF_BIND(mod_data, mod_ops)
 
-#endif /* MOD_SELF_H_ */
+#endif /* FRAMEWORK_MOD_SELF_H_ */

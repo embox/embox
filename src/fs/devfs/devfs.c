@@ -5,10 +5,11 @@
  * @date 14.10.10
  * @author Nikolay Korotky
  */
+
 #include <stdio.h>
+
 #include <fs/fs.h>
 #include <fs/vfs.h>
-#include <mod/core.h>
 #include <util/array.h>
 #include <embox/device.h>
 

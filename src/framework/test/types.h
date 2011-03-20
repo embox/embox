@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef IMPL_TEST_TYPES_H_
-#define IMPL_TEST_TYPES_H_
+#ifndef FRAMEWORK_TEST_TYPES_H_
+#define FRAMEWORK_TEST_TYPES_H_
 
 #include <util/location.h>
 
@@ -53,4 +53,4 @@ struct __test_private {
 	int result;
 };
 
-#endif /* IMPL_TEST_TYPES_H_ */
+#endif /* FRAMEWORK_TEST_TYPES_H_ */

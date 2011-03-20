@@ -1,19 +1,17 @@
 /**
  * @file
- * @brief Implements structure and macroses for MODS interface
+ * @brief Foreach iterations over mod collections and some inlined API methods.
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov
  */
 
-#ifndef MOD_CORE_H_
-# error "Do not include this file directly, use <mod/core.h> instead!"
-#endif /* MOD_CORE_H_ */
+#ifndef FRAMEWORK_MOD_API_IMPL_H_
+#define FRAMEWORK_MOD_API_IMPL_H_
 
 #include <util/array.h>
 
 #include "types.h"
-#include "info.h"
 
 extern const struct mod *__mod_registry[];
 
@@ -38,3 +36,4 @@ inline static void *mod_data(const struct mod *mod) {
 	return (NULL != mod && NULL != mod->info) ? mod->info->data : NULL;
 }
 
+#endif /* FRAMEWORK_MOD_API_IMPL_H_ */

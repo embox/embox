@@ -1,13 +1,13 @@
 /**
  * @file
- * @brief TODO
+ * @brief Mod-private namespace declarations.
  *
  * @date 12.06.2010
  * @author Eldar Abusalimov
  */
 
-#ifndef IMPL_MOD_DECLS_H_
-#define IMPL_MOD_DECLS_H_
+#ifndef FRAMEWORK_MOD_DECLS_H_
+#define FRAMEWORK_MOD_DECLS_H_
 
 #include <util/macro.h>
 
@@ -24,4 +24,4 @@
 #define __MOD_INFO_DECL(mod_nm) \
 	extern const struct __mod_info __MOD_INFO(mod_nm) __attribute__ ((weak))
 
-#endif /* IMPL_MOD_DECLS_H_ */
+#endif /* FRAMEWORK_MOD_DECLS_H_ */

@@ -18,7 +18,7 @@
 #include <string.h>
 
 #include <util/array.h>
-#include <mod/core.h>
+#include <framework/mod/api.h>
 
 static int test_mod_enable(struct mod *mod);
 

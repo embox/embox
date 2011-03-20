@@ -1,8 +1,9 @@
 /**
  * @file
  * @brief Unit entity.
- * @details Unit is the simplest and most generic superstructure over the mod
- * entity independent from any frameworks.
+ * @details
+ *   Unit is the simplest and most generic superstructure over the mod entity
+ *   independent from any frameworks.
  *
  * @date 10.03.2010
  * @author Eldar Abusalimov
@@ -13,7 +14,7 @@
 
 #include <stddef.h>
 #include <embox/kernel.h>
-#include <mod/self.h>
+#include <framework/mod/self.h>
 
 #define __EMBOX_UNIT(_init, _fini) \
 	static const struct unit __unit = { \

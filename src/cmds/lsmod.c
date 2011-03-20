@@ -6,10 +6,11 @@
  * @author Eldar Abusalimov
  */
 
-#include <types.h>
 #include <embox/cmd.h>
-#include <getopt.h>
-#include <mod/core.h>
+
+#include <stdio.h>
+
+#include <framework/mod/api.h>
 
 EMBOX_CMD(exec);
 

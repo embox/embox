@@ -11,15 +11,15 @@
 
 #include <embox/runlevel.h>
 
-#include <mod/core.h>
+#include <framework/mod/api.h>
 
 // XXX rewrite this shit. -- Eldar
 #define __EMBUILD_MOD__
-#include <mod/self.h>
+#include <framework/mod/self.h>
 
 // XXX rewrite this shit. -- Eldar
 #define __EMBUILD__
-#include <mod/embuild.h>
+#include <framework/mod/embuild.h>
 
 #define __RUNLEVEL_MOD_DEF(op, nr) \
 	MOD_DEF(runlevel##nr##_##op, generic, "runlevel"#nr"_"#op,"",""); \

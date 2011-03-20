@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO
+ * @brief Core dependency resolution.
  *
  * @date 09.03.2010
  * @author Eldar Abusalimov
@@ -12,9 +12,8 @@
 
 #include <util/array.h>
 
-#include <mod/core.h>
-#include <impl/mod/info.h>
-#include <impl/mod/types.h>
+#include <framework/mod/api.h>
+#include "types.h"
 
 #define MOD_FLAG_ENABLED       __MOD_FLAG_ENABLED
 

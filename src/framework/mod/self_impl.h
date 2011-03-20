@@ -1,21 +1,20 @@
 /**
  * @file
- * @brief TODO
+ * @brief Implements macro for binding #_mod_info to the self #mod.
  *
  * @date 10.06.2010
  * @author Eldar Abusalimov
  */
 
-#ifndef MOD_SELF_H_
-# error "Do not include this file directly, use <mod/self.h> instead!"
-#endif /* MOD_SELF_H_ */
+#ifndef FRAMEWORK_MOD_SELF_IMPL_H_
+#define FRAMEWORK_MOD_SELF_IMPL_H_
 
 #ifndef __EMBUILD_MOD__
 # error "Do not include without __EMBUILD_MOD__ defined (e.g. from lib code)!"
 #endif /* __EMBUILD_MOD__ */
 
 #include "decls.h"
-#include "info.h"
+#include "types.h"
 
 // XXX to be dropped soon. -- Eldar
 #define __MOD_INFO_DEF(mod_nm, _mod_data, _mod_ops) \
@@ -32,3 +31,5 @@
 // well, this is rather bad idea
 // TODO it would be better to use something like weakref or alias. -- Eldar
 #define mod_self __MOD(__EMBUILD_MOD__)
+
+#endif /* FRAMEWORK_MOD_SELF_IMPL_H_ */

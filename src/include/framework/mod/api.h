@@ -6,12 +6,12 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef MOD_CORE_H_
-#define MOD_CORE_H_
+#ifndef FRAMEWORK_MOD_API_H_
+#define FRAMEWORK_MOD_API_H_
 
 #include <stdbool.h>
 
-#include __impl(mod/core.h)
+#include __impl_x(framework/mod/api_impl.h)
 
 /**
  * TODO Module info emitted by EMBuild dependency injection model generator.
@@ -197,4 +197,4 @@ extern void *mod_data(const struct mod *mod);
 #define mod_foreach_provides(dep, mod) \
 	  __mod_foreach_provides(dep, mod)
 
-#endif /* MOD_CORE_H_ */
+#endif /* FRAMEWORK_MOD_API_H_ */

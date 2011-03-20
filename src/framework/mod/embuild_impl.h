@@ -6,11 +6,13 @@
  * @author Eldar Abusalimov
  */
 
+#ifndef FRAMEWORK_MOD_EMBUILD_IMPL_H_
+#define FRAMEWORK_MOD_EMBUILD_IMPL_H_
+
 #ifndef __EMBUILD__
 # error "Do not include <mod/embuild.h> outside of EMBuild-generated code!"
 #endif /* __EMBUILD__ */
 
-#include <stddef.h>
 #include <util/array.h>
 
 #include "decls.h"
@@ -74,3 +76,4 @@
 		.name = package_name,                                \
 	}
 
+#endif /* FRAMEWORK_MOD_EMBUILD_IMPL_H_ */

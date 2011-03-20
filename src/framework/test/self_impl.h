@@ -14,7 +14,7 @@
 #include <util/array.h>
 #include <util/macro.h>
 #include <util/location.h>
-#include <mod/self.h>
+#include <framework/mod/self.h>
 
 #include "types.h"
 

@@ -90,7 +90,7 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
 generate_header = \
   /* Auto-generated EMBuild Dependency Injection model file. Do not edit. */\n
 
-generate_includes = \n\#include <stddef.h>\n\#include <mod/embuild.h>\n
+generate_includes = \n\#include <framework/mod/embuild.h>\n
 
 __printf_escape = "$(subst ",\",$1)"
 $(DEPSINJECT_SRC) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \

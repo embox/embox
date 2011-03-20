@@ -6,10 +6,10 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef MOD_EMBUILD_H_
-#define MOD_EMBUILD_H_
+#ifndef FRAMEWORK_MOD_EMBUILD_H_
+#define FRAMEWORK_MOD_EMBUILD_H_
 
-#include __impl(mod/embuild.h)
+#include __impl_x(framework/mod/embuild_impl.h)
 
 /**
  * Defines a new mod. For the new mod the @link #mod corresponding @endlink
@@ -55,5 +55,4 @@
 #define MOD_PACKAGE_DEF(s_package, package_name) \
 		__MOD_PACKAGE_DEF(s_package, package_name)
 
-
-#endif /* MOD_EMBUILD_H_ */
+#endif /* FRAMEWORK_MOD_EMBUILD_H_ */

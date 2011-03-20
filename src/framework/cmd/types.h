@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef IMPL_CMD_TYPES_H_
-#define IMPL_CMD_TYPES_H_
+#ifndef FRAMEWORK_CMD_TYPES_H_
+#define FRAMEWORK_CMD_TYPES_H_
 
 /**
  * Each command implements this interface.
@@ -25,4 +25,4 @@ struct cmd {
 };
 
 
-#endif /* IMPL_CMD_TYPES_H_ */
+#endif /* FRAMEWORK_CMD_TYPES_H_ */
