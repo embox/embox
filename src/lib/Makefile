@@ -12,9 +12,9 @@ $_SRCS-libc.a += */*.c
 # all that written below don't work
 $_DEPS-libc.a += core.kernel.drv_subsys
 # Need for stdio
-ifdef CONFIG_TTY_CONSOLE_COUNT
+#ifdef CONFIG_TTY_CONSOLE_COUNT
 $_DEPS-libc.a += embox.driver.vconsole
-endif
+#endif
 
 ifdef CONFIG_HARD_UART_OUT
   ifdef CONFIG_HARD_DIAGUART

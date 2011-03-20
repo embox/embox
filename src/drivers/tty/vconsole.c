@@ -102,6 +102,7 @@ inline bool its_cur(void) {
 #endif
 
 void vconsole_putchar( struct vconsole *vc, char ch ) {
+	/* FIXME */
 	diag_putc( ch );
 	return;
 

@@ -135,9 +135,9 @@ void run_shell(void) {
 	const struct cmd *def_shell;
 	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
 		printk(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
-
 		return;
 	}
+	printk("found shell named (%s)\n", CONFIG_DEFAULT_SHELL);
 	/* printf("embox>"); */
 	def_shell->exec(0,NULL);
 }
@@ -158,13 +158,6 @@ static int tty_init(void) {
 
 	cur_tty->console_cur = -1;
 
-	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
-		printk(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
-
-		return 0;
-	}
-
-	printk("found shell named (%s)\n", CONFIG_DEFAULT_SHELL);
 	for (i = 0; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
 		printk(".");
 		cons_num = i;
@@ -175,9 +168,7 @@ static int tty_init(void) {
 		cons->height = 25;
 		vconsole_clear( cons );
 
-
 		printf("Hello from TTY%d!\n",i+1);
-
 
 		pp_create_ws(run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
 		printk(".");
@@ -185,6 +176,8 @@ static int tty_init(void) {
 	cur_console = (struct vconsole *)&cur_tty->console[0];
 	cur_tty->console_cur = 0;
 	printk(".");
+#else
+	run_shell();
 #endif
 	return 0;
 }
