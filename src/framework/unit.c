@@ -30,7 +30,7 @@ static int unit_mod_enable(struct mod *mod) {
 		return 0;
 	}
 
-	TRACE("unit: initializing %s: ", mod->name);
+	TRACE("unit: initializing %s.%s: ", mod->package->name, mod->name);
 	if (0 == (ret = unit->init())) {
 		TRACE("done\n");
 	} else {
