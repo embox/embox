@@ -19,7 +19,7 @@
 #include "types.h"
 
 #define __EMBOX_TEST_SUITE(description) \
-	__EMBOX_TEST_SUITE_NM("" description, MACRO_GUARD(__test_suite_struct), \
+	__EMBOX_TEST_SUITE_NM("" description, MACRO_GUARD(__test_suite), \
 			MACRO_GUARD(__test_private))
 
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm) \
@@ -37,8 +37,8 @@
 	MOD_SELF_BIND(test_suite_nm, &__test_mod_ops)
 
 #define __TEST_CASE(description) \
-	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case_struct), \
-			MACRO_GUARD(__test_case))
+	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case), \
+			MACRO_GUARD(__test_case_run))
 
 #define __TEST_CASE_NM(_description, test_case_nm, run_nm) \
 	static void run_nm(void);                            \

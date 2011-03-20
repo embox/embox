@@ -31,7 +31,7 @@ struct test_run_context {
 struct test_run_context *current;
 
 static int test_case_run(const struct test_case *test_case);
-static const struct __test_assertion_point *test_run(test_run_t run);
+static const struct __test_assertion_point *test_run(test_case_run_t run);
 
 int test_suite_run(const struct test_suite *test) {
 	int total = 0, failures = 0;
@@ -85,7 +85,7 @@ static int test_case_run(const struct test_case *test_case) {
 	return -1;
 }
 
-static const struct __test_assertion_point *test_run(test_run_t run) {
+static const struct __test_assertion_point *test_run(test_case_run_t run) {
 	struct test_run_context ctx;
 	int caught;
 

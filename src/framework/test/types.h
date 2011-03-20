@@ -13,12 +13,8 @@
 
 /**
  * Each test case implements this interface.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
  */
-typedef void(*test_run_t)(void);
+typedef void(*test_case_run_t)(void);
 
 struct test_suite;
 struct test_case;
@@ -37,7 +33,7 @@ struct test_suite {
 
 struct test_case {
 	/** The test itself. */
-	test_run_t run;
+	test_case_run_t run;
 	/** One-line human readable description of the test case. */
 	const char *description;
 	/** Location of the test case function definition within the file. */
