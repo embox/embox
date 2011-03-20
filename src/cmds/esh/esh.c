@@ -6,6 +6,10 @@
  * @author Fedor Burdun
  */
 
+/*
+ * Now shell works in canonical mode.
+ */
+
 #include <embox/cmd.h>
 
 #include <getopt.h>
@@ -45,10 +49,11 @@ static void parse_cmdline(char *cmdline) {
 	}
 }
 
+/* FIXME: GIVE ME MORE FUNCTIONS!!! */
 static void esh_run(void) {
 	char *cmdline;
 
-	printf("\n\e[1:31m%s\n", CONFIG_SHELL_WELCOME_MSG);
+	printf("\n%s\n", CONFIG_SHELL_WELCOME_MSG);
 
 	for (;;) {
 		cmdline = readline(CONFIG_SHELL_PROMPT);

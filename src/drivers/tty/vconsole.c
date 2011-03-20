@@ -20,23 +20,25 @@ vconsole_t const *sys_console = &def_console;
 
 //EMBOX_UNIT_INIT(vconsole_init);
 
-static FILE *def_file;
+#if 0
+//static FILE *def_file; 								// FIXME was moved to tty.c
 
 static int vconsole_init(void) {
 	/*initialize pool of virtual consoles*/
 	/*initialize default console*/
-	//def_file = fopen(CONFIG_DEFAULT_CONSOLE,"r"); /* was moved to tty.c */
+	//FIXME //def_file = fopen(CONFIG_DEFAULT_CONSOLE,"r"); /* was moved to tty.c */
 	//def_console.tty = cur_tty;
 	return 0;
 }
+#endif
 
 vconsole_t *vconsole_open(tty_device_t *tty) {
 	return (vconsole_t *) sys_console;
 }
 
-void vconsole_loadline(vconsole_t *con) {
-	uint32_t *s = &con->tty->rx_cnt;
-	uint32_t *t = &con->tty->rx_cur;
+void vconsole_loadline(vconsole_t *con) { // uint32_t ?!
+	uint32_t *s = (uint32_t*) &con->tty->rx_cnt;
+	uint32_t *t = (uint32_t*) &con->tty->rx_cur;
 	/* write saved command line */
 	*t = con->cl_cur;
 	for (*s=0; *s<con->cl_cnt; ++*s) {
@@ -45,20 +47,20 @@ void vconsole_loadline(vconsole_t *con) {
 	}
 	/* go to saved cursor position */
 	for (;*s>*t;--*s) {
-		vtbuild(con->tty->vtb, TOKEN_LEFT);
+		vtbuild((struct vtbuild *)con->tty->vtb, TOKEN_LEFT);
 	}
 	*s = con->cl_cnt;
 }
 
 void vconsole_saveline(vconsole_t *con) {
 	uint32_t *s, *t;
-	s = &con->tty->rx_cnt;
-	t = &con->tty->rx_cur;
+	s = (uint32_t*) &con->tty->rx_cnt;
+	t = (uint32_t*) &con->tty->rx_cur;
 	con->cl_cnt = *s;
 	con->cl_cur = *t;
 	/* clear current command line */
 	for (;*t>0;--*t) {
-		vtbuild(con->tty->vtb, TOKEN_LEFT);
+		vtbuild((struct vtbuild*)con->tty->vtb, TOKEN_LEFT);
 	}
 	for (;*t<*s;++*t) {
 		con->tty->file_op->fwrite(" ",sizeof(char),1,NULL);
@@ -67,7 +69,7 @@ void vconsole_saveline(vconsole_t *con) {
 	con->cl_buff[0] = con->tty->rx_buff[0];
 	for (;*s>0;--*s) {
 		con->cl_buff[*s] = con->tty->rx_buff[*s];
-		vtbuild(con->tty->vtb, TOKEN_LEFT);
+		vtbuild((struct vtbuild*)con->tty->vtb, TOKEN_LEFT);
 	}
 	*s = *t = 0;
 }
@@ -141,20 +143,20 @@ void vconsole_gotoxye(struct vconsole *vc, uint8_t lx, uint8_t ly, uint8_t nx, u
 		uint8_t i;
 		if (lx<nx) {
 			for (i=0;i<(nx-lx);++i) {
-				vtbuild(vc->tty->vtb, TOKEN_RIGHT);
+				vtbuild((struct vtbuild*)vc->tty->vtb, TOKEN_RIGHT);
 			}
 		} else {
 			for (i=0;i<(lx-nx);++i) {
-				vtbuild(vc->tty->vtb, TOKEN_LEFT);
+				vtbuild((struct vtbuild*)vc->tty->vtb, TOKEN_LEFT);
 			}
 		}
 		if (ly<ny) {
 			for (i=0;i<(ny-ly);++i) {
-				vtbuild(vc->tty->vtb, TOKEN_DOWN);
+				vtbuild((struct vtbuild*)vc->tty->vtb, TOKEN_DOWN);
 			}
 		} else {
 			for (i=0;i<(ly-ny);++i) {
-				vtbuild(vc->tty->vtb, TOKEN_UP);
+				vtbuild((struct vtbuild*)vc->tty->vtb, TOKEN_UP);
 			}
 		}
 	}
@@ -167,8 +169,8 @@ void vconsole_gotoxy( struct vconsole *vc, uint8_t x, uint8_t y ) {
 }
 
 void vconsole_clear(struct vconsole *vc) {
-	return;
 	uint32_t i = vc->width * vc->height - 1;
+	return;
 	vc->tty->file_op->fwrite("\n", sizeof(char), 1, NULL);
 	for (; i >= 0; --i) {
 		ICC(vconsole_putchar( vc , ' ' ));
@@ -178,8 +180,8 @@ void vconsole_clear(struct vconsole *vc) {
 }
 
 void vconsole_reprint(struct vconsole *vc) {
-	return;
 	size_t i;
+	return;
 	for (i = 0; i < (vc->width * vc->height); ++i) {
 		vconsole_putchar(vc, vc->scr_buff[i]);
 	}

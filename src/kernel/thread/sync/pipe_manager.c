@@ -109,5 +109,6 @@ int pipe_write(int pipe, char data) {
 	} else {
 		return ENOMEM;
 	}
+	return ENOERR; /* FIXME if need or delete remark. */
 }
 

@@ -24,8 +24,8 @@ EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
 
-//FIXME TTY is space there is in library
-#if 1
+/* FIXME TTY is space there is in library */
+#if 0
 inline bool tty_isalpha(char ch) {
 	return ch != ' ';
 }
@@ -143,8 +143,10 @@ void run_shell(void) {
 }
 
 static int tty_init(void) {
+#ifdef CONFIG_TTY_CONSOLE_COUNT
 	size_t i;
 	const struct cmd *def_shell;
+#endif
 
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE, "r");
 
@@ -154,12 +156,9 @@ static int tty_init(void) {
 	}
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
-	printk(".");
-
 	cur_tty->console_cur = -1;
 
 	for (i = 0; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
-		printk(".");
 		cons_num = i;
 		cons = (struct vconsole *)&cur_tty->console[i];
 		cur_console = cons;
@@ -168,14 +167,13 @@ static int tty_init(void) {
 		cons->height = 25;
 		vconsole_clear( cons );
 
-		printf("Hello from TTY%d!\n",i+1);
+		printf("Hello from TTY%d!\n",i+1); /* this is output to the i-th console */
 
 		pp_create_ws(run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
-		printk(".");
 	}
 	cur_console = (struct vconsole *)&cur_tty->console[0];
 	cur_tty->console_cur = 0;
-	printk(".");
+	/* TODO add redraw current console in the end */
 #else
 	run_shell();
 #endif
