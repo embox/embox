@@ -6,9 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef EMBOX_TEST_H_
-# error "Do not include this file directly, use <embox/test.h> instead!"
-#endif /* EMBOX_TEST_H_ */
+#ifndef FRAMEWORK_TEST_SELF_IMPL_H_
+#define FRAMEWORK_TEST_SELF_IMPL_H_
 
 #include <stddef.h>
 
@@ -17,12 +16,7 @@
 #include <util/location.h>
 #include <mod/self.h>
 
-#include __impl(test/types.h)
-
-/* This is implemented on top of test suite and test case. */
-#define __EMBOX_TEST(_run) \
-	__EMBOX_TEST_SUITE("generic test suite"); \
-	__TEST_CASE_NM("generic test case", MACRO_GUARD(__test_case), _run)
+#include "types.h"
 
 #define __EMBOX_TEST_SUITE(description) \
 	__EMBOX_TEST_SUITE_NM("" description, MACRO_GUARD(__test_suite), \
@@ -60,29 +54,9 @@
 #define __TEST_CASES_ARRAY \
 	MACRO_CONCAT(__test_cases__,__EMBUILD_MOD__)
 
-extern void __test_assertion_handle0(int pass,
-		const struct __test_assertion_point *point);
+/* This is implemented on top of test suite and test case. */
+#define __EMBOX_TEST(_run) \
+	__EMBOX_TEST_SUITE("generic test suite"); \
+	__TEST_CASE_NM("generic test case", MACRO_GUARD(__test_case), _run)
 
-extern void __test_assertion_handle1(int pass,
-		const struct __test_assertion_point *point, void *arg1);
-
-extern void __test_assertion_handle2(int pass,
-		const struct __test_assertion_point *point, void *arg1, void *arg2);
-
-#define __test_failure_ref(_reason) __extension__ ({ \
-		/* Statically allocate and define. Location and reason message are    \
-		 * known at compile time and nobody cares about .rodata section. */   \
-		static const struct __test_assertion_point __test_assertion_point = { \
-			.location = LOCATION_FUNC_INIT,    \
-			.reason = _reason,                 \
-		};                                     \
-		&__test_assertion_point;               \
-	})
-
-#define __test_fail(reason) \
-		__test_assertion_handle0(0, \
-				__test_failure_ref("test_fail(\"" reason "\")"))
-
-#define __test_assert(condition, condition_str) \
-		__test_assertion_handle0((condition), \
-				__test_failure_ref("test_assert(" condition_str ")"))
+#endif /* FRAMEWORK_TEST_SELF_IMPL_H_ */

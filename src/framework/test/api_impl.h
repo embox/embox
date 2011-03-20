@@ -7,9 +7,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef TEST_FRAMEWORK_H_
-# error "Do not include this file directly, use <test/framework.h> instead!"
-#endif /* TEST_FRAMEWORK_H_ */
+#ifndef FRAMEWORK_TEST_API_IMPL_H_
+#define FRAMEWORK_TEST_API_IMPL_H_
 
 #include <stddef.h>
 
@@ -26,3 +25,5 @@ extern const struct test_suite __test_registry[];
 inline static const char *test_name(const struct test_suite *test) {
 	return NULL != test ? test->mod->name : NULL;
 }
+
+#endif /* FRAMEWORK_TEST_API_IMPL_H_ */

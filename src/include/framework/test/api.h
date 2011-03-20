@@ -7,10 +7,10 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef TEST_FRAMEWORK_H_
-#define TEST_FRAMEWORK_H_
+#ifndef FRAMEWORK_TEST_API_H_
+#define FRAMEWORK_TEST_API_H_
 
-#include __impl(test/framework.h)
+#include __impl_x(framework/test/api_impl.h)
 
 #define test_foreach(test_ptr) \
 		__test_foreach(test_ptr)
@@ -26,4 +26,4 @@ extern const struct test_suite *test_lookup(const char *name);
 
 extern const char *test_name(const struct test_suite *test);
 
-#endif /* TEST_FRAMEWORK_H_ */
+#endif /* FRAMEWORK_TEST_API_H_ */

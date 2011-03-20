@@ -11,7 +11,7 @@
 
 #include <util/macro.h>
 
-#include __impl(embox/test.h)
+#include __impl_x(framework/test/assert_impl.h)
 
 /**
  * Fails a test with the given @a reason.
