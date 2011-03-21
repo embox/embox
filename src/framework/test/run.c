@@ -99,13 +99,13 @@ static int test_case_run(const struct test_case *test_case) {
 	test_loc = &test_case->location;
 	fail_loc = &failure->location.input;
 
-	TRACE("\n\ttest case: %s,\n"
-			"\t\t(at %s : %d)\n",
-			test_case->description, test_loc->file, test_loc->line);
-	TRACE("\tfailed on: %s,\n"
-			"\t\t(at %s : %d, in function %s)\n\t",
-			failure->reason, fail_loc->file, fail_loc->line,
-			failure->location.func);
+	TRACE("\n\tfailure at %s : %d, in function %s\n"
+			"\t\t%s\n",
+			fail_loc->file, fail_loc->line, failure->location.func,
+			failure->reason);
+	TRACE("\t   case at %s : %d\n"
+			"\t\t\"%s\"\n\t",
+			test_loc->file, test_loc->line, test_case->description);
 
 	return -1;
 }
