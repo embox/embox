@@ -7,7 +7,7 @@
  *         - Initial implementation
  * @author Eldar Abusalimov
  *         - Separating from tests registry code
- *         - Assertions support
+ *         - Test fixtures and assertions support
  */
 
 #include <assert.h>
