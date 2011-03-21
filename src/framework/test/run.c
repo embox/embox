@@ -31,7 +31,8 @@ struct test_run_context {
 
 struct test_run_context *current;
 
-static int test_case_run(const struct test_case *test_case);
+static int test_case_run(const struct test_case *test_case,
+		const struct __test_fixtures *fixtures);
 static const struct __test_assertion_point *test_run(test_case_run_t run);
 
 int test_suite_run(const struct test_suite *test) {
@@ -52,46 +53,62 @@ int test_suite_run(const struct test_suite *test) {
 	TRACE("test: running %s ", name);
 
 	if ((fx = *fixtures->setup) != NULL && (ret = fx()) != 0) {
-		TRACE("failed\n"
-				"\tsuite fixture setup failed with code %d: %s\n",
+		TRACE("\n\tsuite fixture setup failed with code %d: %s\n",
 				ret, strerror(-ret));
 		return -EINTR;
 	}
 
 	array_nullterm_foreach(test_case, test->test_cases) {
-		if(test_case_run(test_case) != 0) {
+		if((ret = test_case_run(test_case, fixtures)) != 0) {
 			++failures;
 		}
 		++total;
+		// TODO this looks ugly.
+		if (ret == -EINTR) {
+			failures = ret;
+			break;
+		}
 	}
 
 	if ((fx = *fixtures->teardown) != NULL && (ret = fx()) != 0) {
-		if (failures) {
-			TRACE("\n\tfailed\n");
-		} else {
-			TRACE(" failed\n");
-		}
-		TRACE("\tsuite fixture tear down failed with code %d: %s\n",
+		TRACE("\n\tsuite fixture tear down failed with code %d: %s\n",
 				ret, strerror(-ret));
 		return -EINTR;
 	}
 
-	if (failures) {
+	if (failures > 0) {
 		TRACE("\n\ttesting %s (%s) failed\n"
 				"\t\t%d/%d failures\n",
 				 name, test->description, failures, total);
-	} else {
+	} else if(!failures) {
 		TRACE(" done\n");
 	}
 
 	return failures;
 }
 
-static int test_case_run(const struct test_case *test_case) {
+static int test_case_run(const struct test_case *test_case,
+		const struct __test_fixtures *fixtures) {
 	const struct __test_assertion_point *failure;
 	const struct location *test_loc, *fail_loc;
+	__test_fixture_t fx;
+	int ret;
 
-	if (!(failure = test_run(test_case->run))) {
+	if ((fx = *fixtures->setup_each) != NULL && (ret = fx()) != 0) {
+		TRACE("\n\tcase fixture setup failed with code %d: %s\n",
+				ret, strerror(-ret));
+		return -EINTR;
+	}
+
+	failure = test_run(test_case->run);
+
+	if ((fx = *fixtures->teardown_each) != NULL && (ret = fx()) != 0) {
+		TRACE("\n\tcase fixture tear down failed with code %d: %s\n",
+				ret, strerror(-ret));
+		return -EINTR;
+	}
+
+	if (!failure) {
 		TRACE(".");
 		return 0;
 	}
