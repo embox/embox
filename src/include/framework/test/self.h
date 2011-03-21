@@ -31,6 +31,18 @@
 #define TEST_CASE(description) \
 	  __TEST_CASE(description)
 
+#define TEST_SETUP(setup) \
+	  __TEST_SETUP(setup)
+
+#define TEST_TEARDOWN(teardown) \
+	  __TEST_TEARDOWN(teardown)
+
+#define TEST_SETUP_EACH(setup_each) \
+	  __TEST_SETUP_EACH(setup_each)
+
+#define TEST_TEARDOWN_EACH(teardown_each) \
+	  __TEST_TEARDOWN_EACH(teardown_each)
+
 /** @deprecated Use #EMBOX_TEST_SUITE() and #TEST_CASE() instead. */
 #define EMBOX_TEST(run) \
 	  __EMBOX_TEST(run)
