@@ -35,13 +35,13 @@ static int test_case_run(const struct test_case *test_case,
 		const struct __test_fixtures *fixtures);
 static const struct __test_assertion_point *test_run(test_case_run_t run);
 
-static void handle_suite_setup_failure(const struct test_suite *, int code);
-static void handle_suite_teardown_failure(const struct test_suite *, int code);
+static void handle_suite_fixture_failure(const struct test_suite *, int code,
+		int setup);
 static void handle_suite_result(const struct test_suite *, int failures,
 		int total);
 
-static void handle_case_setup_failure(const struct test_case *, int code);
-static void handle_case_teardown_failure(const struct test_case *, int code);
+static void handle_case_fixture_failure(const struct test_case *, int code,
+		int setup);
 static void handle_case_result(const struct test_case *,
 		const struct __test_assertion_point *failure);
 
@@ -49,7 +49,6 @@ int test_suite_run(const struct test_suite *test) {
 	const struct test_case *test_case;
 	const struct __test_fixtures *fixtures;
 	__test_fixture_t fx;
-	const char *name;
 	int failures = 0, total = 0;
 	int ret;
 
@@ -58,17 +57,16 @@ int test_suite_run(const struct test_suite *test) {
 	}
 
 	fixtures = &test->fixtures;
-	name = test->mod->name;
 
-	TRACE("test: running %s ", name);
+	TRACE("test: running %s ", test_name(test));
 
 	if ((fx = *fixtures->setup) != NULL && (ret = fx()) != 0) {
-		handle_suite_setup_failure(test, ret);
+		handle_suite_fixture_failure(test, ret, 1);
 		return -EINTR;
 	}
 
 	array_nullterm_foreach(test_case, test->test_cases) {
-		if((ret = test_case_run(test_case, fixtures)) != 0) {
+		if ((ret = test_case_run(test_case, fixtures)) != 0) {
 			++failures;
 		}
 		++total;
@@ -80,7 +78,7 @@ int test_suite_run(const struct test_suite *test) {
 	}
 
 	if ((fx = *fixtures->teardown) != NULL && (ret = fx()) != 0) {
-		handle_suite_teardown_failure(test, ret);
+		handle_suite_fixture_failure(test, ret, 0);
 		return -EINTR;
 	}
 
@@ -96,14 +94,14 @@ static int test_case_run(const struct test_case *test_case,
 	int ret;
 
 	if ((fx = *fixtures->setup_each) != NULL && (ret = fx()) != 0) {
-		handle_case_setup_failure(test_case, ret);
+		handle_case_fixture_failure(test_case, ret, 1);
 		return -EINTR;
 	}
 
 	failure = test_run(test_case->run);
 
 	if ((fx = *fixtures->teardown_each) != NULL && (ret = fx()) != 0) {
-		handle_case_teardown_failure(test_case, ret);
+		handle_case_fixture_failure(test_case, ret, 0);
 		return -EINTR;
 	}
 
@@ -136,16 +134,10 @@ void __test_assertion_handle0(int pass,
 	longjmp(current->before_run, (int) point);
 }
 
-static void handle_suite_setup_failure(const struct test_suite *test_suite,
-		int code) {
-	TRACE("\n\tsuite fixture setup failed with code %d: %s\n",
-			code, strerror(-code));
-}
-
-static void handle_suite_teardown_failure(const struct test_suite *test_suite,
-		int code) {
-	TRACE("\n\tsuite fixture tear down failed with code %d: %s\n",
-			code, strerror(-code));
+static void handle_suite_fixture_failure(const struct test_suite *test_suite,
+		int code, int setup) {
+	TRACE("\n\tsuite fixture %s failed with code %d: %s\n",
+			setup ? "setup" : "tear down", code, strerror(-code));
 }
 
 static void handle_suite_result(const struct test_suite *test_suite,
@@ -161,16 +153,10 @@ static void handle_suite_result(const struct test_suite *test_suite,
 
 }
 
-static void handle_case_setup_failure(const struct test_case *test_case,
-		int code) {
-	TRACE("\n\tcase fixture setup failed with code %d: %s\n",
-			code, strerror(-code));
-}
-
-static void handle_case_teardown_failure(const struct test_case *test_case,
-		int code) {
-	TRACE("\n\tcase fixture tear down failed with code %d: %s\n",
-			code, strerror(-code));
+static void handle_case_fixture_failure(const struct test_case *test_case,
+		int code, int setup) {
+	TRACE("\n\tcase fixture %s failed with code %d: %s\n",
+			setup ? "setup" : "tear down", code, strerror(-code));
 }
 
 static void handle_case_result(const struct test_case *test_case,
