@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <setjmp.h>
 
 #include <util/location.h>
@@ -34,17 +35,29 @@ static int test_case_run(const struct test_case *test_case);
 static const struct __test_assertion_point *test_run(test_case_run_t run);
 
 int test_suite_run(const struct test_suite *test) {
-	int total = 0, failures = 0;
 	const struct test_case *test_case;
+	const struct __test_fixtures *fixtures;
+	__test_fixture_t fx;
 	const char *name;
+	int total = 0, failures = 0;
+	int ret;
 
 	if (NULL == test) {
 		return -EINVAL;
 	}
 
+	fixtures = &test->fixtures;
 	name = test->mod->name;
 
-	TRACE("test: running %s: ", name);
+	TRACE("test: running %s ", name);
+
+	if ((fx = *fixtures->setup) != NULL && (ret = fx()) != 0) {
+		TRACE("failed\n"
+				"\tsuite fixture setup failed with code %d: %s\n",
+				ret, strerror(-ret));
+		return -EINTR;
+	}
+
 	array_nullterm_foreach(test_case, test->test_cases) {
 		if(test_case_run(test_case) != 0) {
 			++failures;
@@ -52,14 +65,26 @@ int test_suite_run(const struct test_suite *test) {
 		++total;
 	}
 
+	if ((fx = *fixtures->teardown) != NULL && (ret = fx()) != 0) {
+		if (failures) {
+			TRACE("\n\tfailed\n");
+		} else {
+			TRACE(" failed\n");
+		}
+		TRACE("\tsuite fixture tear down failed with code %d: %s\n",
+				ret, strerror(-ret));
+		return -EINTR;
+	}
+
 	if (failures) {
-		TRACE("\ntest: %d/%d in %s (%s) failed\n", failures, total, name,
-				test->description);
+		TRACE("\n\ttesting %s (%s) failed\n"
+				"\t\t%d/%d failures\n",
+				 name, test->description, failures, total);
 	} else {
 		TRACE(" done\n");
 	}
 
-	return (test->private->result = failures);
+	return failures;
 }
 
 static int test_case_run(const struct test_case *test_case) {
@@ -74,11 +99,11 @@ static int test_case_run(const struct test_case *test_case) {
 	test_loc = &test_case->location;
 	fail_loc = &failure->location.input;
 
-	TRACE("\ntest case: %s,\n"
-			"\t(at %s : %d)\n",
+	TRACE("\n\ttest case: %s,\n"
+			"\t\t(at %s : %d)\n",
 			test_case->description, test_loc->file, test_loc->line);
-	TRACE("failed on: %s,\n"
-			"\t(at %s : %d, in function %s)\n",
+	TRACE("\tfailed on: %s,\n"
+			"\t\t(at %s : %d, in function %s)\n\t",
 			failure->reason, fail_loc->file, fail_loc->line,
 			failure->location.func);
 
