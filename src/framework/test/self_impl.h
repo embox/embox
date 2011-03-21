@@ -103,14 +103,14 @@
 	typedef int __test_suite_placeholder
 
 # undef __TEST_SETUP __TEST_TEARDOWN __TEST_SETUP_EACH __TEST_TEARDOWN_EACH
-#define __TEST_SETUP(ignored) \
-	typedef int __test_fixture_setup_placeholder
-#define __TEST_TEARDOWN(ignored) \
-	typedef int __test_fixture_teardown_placeholder
-#define __TEST_SETUP_EACH(ignored) \
-	typedef int __test_fixture_setup_each_placeholder
-#define __TEST_TEARDOWN_EACH(ignored) \
-	typedef int __test_fixture_teardown_each_placeholder
+#define __TEST_SETUP(function_nm) \
+	static int function_nm(void)
+#define __TEST_TEARDOWN(function_nm) \
+	static int function_nm(void)
+#define __TEST_SETUP_EACH(function_nm) \
+	static int function_nm(void)
+#define __TEST_TEARDOWN_EACH(function_nm) \
+	static int function_nm(void)
 
 # undef __TEST_CASE
 # define __TEST_CASE(ignored) \
