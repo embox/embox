@@ -1,21 +1,31 @@
-/**
- * @file
- * @brief setjmp/longjmp for the arm architecture
+/* This file is derived from newlib-1.19.0 arm port. */
+
+/*
+ * Red Hat Incorporated
  *
- * @date 25.11.2010
- * @author Anton Kozlov
+ * Copyright (c) 1994-2009  Red Hat, Inc. All rights reserved.
+ *
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the BSD License.   This program is distributed in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY expressed or implied,
+ * including the implied warranties of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  A copy of this license is available at
+ * http://www.opensource.org/licenses. Any Red Hat trademarks that are
+ * incorporated in the source code or documentation are not subject to
+ * the BSD License and may only be used or replicated with the express
+ * permission of Red Hat, Inc.
  */
 
 #ifndef ARM_SETJMP_H_
 #define ARM_SETJMP_H_
 
-#include <types.h>
+/*
+ * All callee preserved registers:
+ * v1 - v7, fp, ip, sp, lr, f4, f5, f6, f7
+ */
+#define _JBLEN 23
 
-typedef struct {
-	/* 0x0 */uint32_t cpsr;
-	/* 0x4 */uint32_t r12;
-	/* 0x8 */uint32_t lr;
-	/* 0xc */uint32_t pc;
-} __jmp_buf[1];
+typedef	int __jmp_buf[_JBLEN];
 
 #endif /*ARM_SETJMP_H_*/
