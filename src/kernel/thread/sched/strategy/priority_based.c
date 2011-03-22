@@ -189,8 +189,8 @@ void _scheduler_remove(struct thread *thread) {
 	struct list_head *same_priority_list = &priority->thread_list;
 
 	if (thread == current_thread) {
-		current_thread->reschedule = true;
 		current_thread->state = THREAD_STATE_ZOMBIE;
+		current_thread->reschedule = true;
 		return;
 	}
 

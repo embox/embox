@@ -29,7 +29,8 @@ static struct thread *minus_thread;
 static struct thread *mult_thread;
 static struct thread *highest_thread;
 
-EMBOX_TEST(run);
+EMBOX_TEST(run)
+;
 
 /**
  * Endlessly Writes "!". Thread with the highest priority.
@@ -79,15 +80,20 @@ static int run(void) {
 	TRACE("\n");
 
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
-	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
-	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
-	highest_thread = thread_create(highest_run, highest_stack + THREAD_STACK_SIZE);
-	highest_thread->priority = 2;
-	plus_thread->priority = 3;
-	minus_thread->priority = 3;
 	assert(plus_thread != NULL);
+	plus_thread->priority = 3;
+
+	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
 	assert(minus_thread != NULL);
+	minus_thread->priority = 3;
+
+	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
+	assert(mult_thread != NULL);
+
+	highest_thread = thread_create(highest_run,
+			highest_stack + THREAD_STACK_SIZE);
 	assert(highest_thread != NULL);
+	highest_thread->priority = 2;
 
 	thread_start(plus_thread);
 	thread_start(minus_thread);

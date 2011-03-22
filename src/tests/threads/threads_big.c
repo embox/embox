@@ -15,6 +15,7 @@
 #include <assert.h>
 
 #define THREAD_STACK_SIZE 0x1000
+#define TOTAL_ITERATIONS 200
 
 static char plus_stack[THREAD_STACK_SIZE];
 static char minus_stack[THREAD_STACK_SIZE];
@@ -43,7 +44,7 @@ static void plus_run(void) {
  */
 static void minus_run(void) {
 	size_t i;
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < TOTAL_ITERATIONS; i++) {
 		TRACE("-");
 	}
 }
@@ -53,8 +54,8 @@ static void minus_run(void) {
  */
 static void mult_run(void) {
 	size_t i;
-	for (i = 0; i < 100; i++) {
-		TRACE("*");
+	for (i = 0; i < TOTAL_ITERATIONS; i++) {
+		TRACE("  *");
 	}
 }
 
@@ -63,7 +64,7 @@ static void mult_run(void) {
  */
 static void natural_run(void) {
 	size_t i;
-	for (i = 1; i < 100; i++) {
+	for (i = 1; i < TOTAL_ITERATIONS; i++) {
 		TRACE("%d ", i);
 	}
 }
