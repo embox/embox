@@ -32,7 +32,7 @@ struct test_run_context {
 struct test_run_context *current;
 
 static int test_case_run(const struct test_case *test_case,
-		const struct __test_fixtures *fixtures);
+		const struct __test_fixture_ops *fixtures);
 static const struct __test_assertion_point *test_run(test_case_run_t run);
 
 static void handle_suite_fixture_failure(const struct test_suite *, int code,
@@ -47,8 +47,8 @@ static void handle_case_result(const struct test_case *,
 
 int test_suite_run(const struct test_suite *test) {
 	const struct test_case *test_case;
-	const struct __test_fixtures *fixtures;
-	__test_fixture_t fx;
+	const struct __test_fixture_ops *fixture_ops;
+	__test_fixture_op_t fx_op;
 	int failures = 0, total = 0;
 	int ret;
 
@@ -56,17 +56,17 @@ int test_suite_run(const struct test_suite *test) {
 		return -EINVAL;
 	}
 
-	fixtures = &test->fixtures;
+	fixture_ops = &test->suite_fixture_ops;
 
 	TRACE("test: running %s ", test_name(test));
 
-	if ((fx = *fixtures->setup) != NULL && (ret = fx()) != 0) {
+	if ((fx_op = *fixture_ops->p_setup) != NULL && (ret = fx_op()) != 0) {
 		handle_suite_fixture_failure(test, ret, 1);
 		return -EINTR;
 	}
 
 	array_nullterm_foreach(test_case, test->test_cases) {
-		if ((ret = test_case_run(test_case, fixtures)) != 0) {
+		if ((ret = test_case_run(test_case, &test->case_fixture_ops)) != 0) {
 			++failures;
 		}
 		++total;
@@ -77,7 +77,7 @@ int test_suite_run(const struct test_suite *test) {
 		}
 	}
 
-	if ((fx = *fixtures->teardown) != NULL && (ret = fx()) != 0) {
+	if ((fx_op = *fixture_ops->p_teardown) != NULL && (ret = fx_op()) != 0) {
 		handle_suite_fixture_failure(test, ret, 0);
 		return -EINTR;
 	}
@@ -88,19 +88,19 @@ int test_suite_run(const struct test_suite *test) {
 }
 
 static int test_case_run(const struct test_case *test_case,
-		const struct __test_fixtures *fixtures) {
+		const struct __test_fixture_ops *fixtures) {
 	const struct __test_assertion_point *failure;
-	__test_fixture_t fx;
+	__test_fixture_op_t fx_op;
 	int ret;
 
-	if ((fx = *fixtures->setup_each) != NULL && (ret = fx()) != 0) {
+	if ((fx_op = *fixtures->p_setup) != NULL && (ret = fx_op()) != 0) {
 		handle_case_fixture_failure(test_case, ret, 1);
 		return -EINTR;
 	}
 
 	failure = test_run(test_case->run);
 
-	if ((fx = *fixtures->teardown_each) != NULL && (ret = fx()) != 0) {
+	if ((fx_op = *fixtures->p_teardown) != NULL && (ret = fx_op()) != 0) {
 		handle_case_fixture_failure(test_case, ret, 0);
 		return -EINTR;
 	}

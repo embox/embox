@@ -28,43 +28,49 @@
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct test_case *,     \
 			__TEST_CASES_ARRAY, NULL);                               \
 	static struct __test_private test_private_nm;                    \
-	__TEST_FIXTURE_DECL(setup);                                      \
-	__TEST_FIXTURE_DECL(teardown);                                   \
-	__TEST_FIXTURE_DECL(setup_each);                                 \
-	__TEST_FIXTURE_DECL(teardown_each);                              \
+	static const __test_fixture_op_t                                 \
+			__TEST_FIXTURE_OP(suite_setup),                          \
+			__TEST_FIXTURE_OP(suite_teardown);                       \
+	static const __test_fixture_op_t                                 \
+			__TEST_FIXTURE_OP(case_setup),                           \
+			__TEST_FIXTURE_OP(case_teardown);                        \
 	ARRAY_SPREAD_ADD_NAMED(__test_registry, test_suite_nm, {         \
 			.private = &test_private_nm,                             \
 			.test_cases = __TEST_CASES_ARRAY,                        \
 			.mod = &mod_self,                                        \
 			.description = _description,                             \
-			.fixtures = {                                            \
-					.setup         = &__TEST_FIXTURE(setup),         \
-					.teardown      = &__TEST_FIXTURE(teardown),      \
-					.setup_each    = &__TEST_FIXTURE(setup_each),    \
-					.teardown_each = &__TEST_FIXTURE(teardown_each), \
+			.suite_fixture_ops = {                                   \
+					.p_setup    = &__TEST_FIXTURE_OP(suite_setup),   \
+					.p_teardown = &__TEST_FIXTURE_OP(suite_teardown),\
+				},                                                   \
+			.case_fixture_ops = {                                    \
+					.p_setup    = &__TEST_FIXTURE_OP(case_setup),    \
+					.p_teardown = &__TEST_FIXTURE_OP(case_teardown), \
 				},                                                   \
 		});                                                          \
 	MOD_SELF_BIND(test_suite_nm, &__test_mod_ops)
 
-#define __TEST_FIXTURE(fixture_nm) \
+#define __TEST_FIXTURE_OP(fixture_nm) \
 	MACRO_CONCAT(__test_fixture_, fixture_nm)
 
-#define __TEST_FIXTURE_DECL(fixture_nm) \
-	static const __test_fixture_t __TEST_FIXTURE(fixture_nm)
+#define __TEST_FIXTURE_OP_DECL(fixture_nm) \
+	static const __test_fixture_op_t __TEST_FIXTURE_OP(fixture_nm)
 
-#define __TEST_FIXTURE_DEF(fixture_nm, function_nm) \
-	static int function_nm(void);                   \
-	__TEST_FIXTURE_DECL(fixture_nm) = (function_nm)
+#define __TEST_FIXTURE_OP_DEF(fixture_nm, function_nm) \
+	static int function_nm(void);                        \
+	static const __test_fixture_op_t                     \
+			__TEST_FIXTURE_OP(fixture_nm) = function_nm; \
+	static int function_nm(void)
 
 #define __TEST_SETUP(function_nm) \
-	__TEST_FIXTURE_DEF(setup, function_nm)
+	__TEST_FIXTURE_OP_DEF(setup, function_nm)
 #define __TEST_TEARDOWN(function_nm) \
-	__TEST_FIXTURE_DEF(teardown, function_nm)
+	__TEST_FIXTURE_OP_DEF(teardown, function_nm)
 
 #define __TEST_SETUP_EACH(function_nm) \
-	__TEST_FIXTURE_DEF(setup_each, function_nm)
+	__TEST_FIXTURE_OP_DEF(setup_each, function_nm)
 #define __TEST_TEARDOWN_EACH(function_nm) \
-	__TEST_FIXTURE_DEF(teardown_each, function_nm)
+	__TEST_FIXTURE_OP_DEF(teardown_each, function_nm)
 
 #define __TEST_CASE(description) \
 	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case), \
@@ -98,21 +104,15 @@
 /* Simplify the life of Eclipse CDT. */
 #ifdef __CDT_PARSER__
 
-# undef __EMBOX_TEST_SUITE
+# undef  __EMBOX_TEST_SUITE
 # define __EMBOX_TEST_SUITE(ignored) \
 	typedef int __test_suite_placeholder
 
-# undef __TEST_SETUP __TEST_TEARDOWN __TEST_SETUP_EACH __TEST_TEARDOWN_EACH
-#define __TEST_SETUP(function_nm) \
-	static int function_nm(void)
-#define __TEST_TEARDOWN(function_nm) \
-	static int function_nm(void)
-#define __TEST_SETUP_EACH(function_nm) \
-	static int function_nm(void)
-#define __TEST_TEARDOWN_EACH(function_nm) \
+# undef  __TEST_FIXTURE_OP_DEF
+# define __TEST_FIXTURE_OP_DEF(ignored, function_nm) \
 	static int function_nm(void)
 
-# undef __TEST_CASE
+# undef  __TEST_CASE
 # define __TEST_CASE(ignored) \
 	static void MACRO_GUARD(__test_case_run)(void)
 

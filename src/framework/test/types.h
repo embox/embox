@@ -16,19 +16,17 @@
  */
 typedef void(*test_case_run_t)(void);
 
-typedef int(*__test_fixture_t)(void);
+typedef int(*__test_fixture_op_t)(void);
 
 struct test_suite;
 struct test_case;
-struct __test_fixtures;
+struct __test_fixture_ops;
 struct __test_private;
 struct __test_assertion_point;
 
-struct __test_fixtures {
-	const __test_fixture_t *setup;         /**< (optional) Suite initialize. */
-	const __test_fixture_t *teardown;      /**< (optional) Suite cleanup. */
-	const __test_fixture_t *setup_each;    /**< (optional) Case initialize. */
-	const __test_fixture_t *teardown_each; /**< (optional) Case cleanup. */
+struct __test_fixture_ops {
+	const __test_fixture_op_t *p_setup;    /**< Initialize fixture. */
+	const __test_fixture_op_t *p_teardown; /**< Cleanup fixture. */
 };
 
 struct test_suite {
@@ -40,7 +38,8 @@ struct test_suite {
 	const char *description;
 	/** Internal data managed by framework. */
 	struct __test_private *private;
-	struct __test_fixtures fixtures;
+	struct __test_fixture_ops suite_fixture_ops;
+	struct __test_fixture_ops case_fixture_ops;
 };
 
 struct test_case {
