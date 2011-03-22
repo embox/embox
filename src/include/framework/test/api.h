@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief The external API for Embox testing framework.
+ * @brief Embox testing framework.
  * TODO Test framework API docs: structs. -- Eldar
  *
  * @date 11.06.2010

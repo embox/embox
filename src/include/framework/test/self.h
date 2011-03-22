@@ -1,12 +1,6 @@
 /**
  * @file
- * @brief Embox testing framework.
- * XXX obsolete docs. -- Eldar
- * @details Test is a simple function which examines some parts of hardware or
- * software. Test can be either passed or failed (framework uses return value
- * of test function to determine the test result).
- * Each test resides in a single mod which is usually defined in
- * @code embox.test @endcode or @code <platform>.test @endcode packages.
+ * @brief API for registering tests in Embox testing framework.
  *
  * @sa EMBOX_TEST() simple macro used to declare a new test
  *
