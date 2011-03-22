@@ -1,44 +1,37 @@
 /**
  * @file
- * @brief This file is derived from Embox test template.
+ * @brief Kernel critical API test.
  */
 
 #include <embox/test.h>
 
+#include <errno.h>
+#include <hal/ipl.h>
+#include <util/array.h>
 #include <kernel/critical.h>
 
-EMBOX_TEST(run);
+EMBOX_TEST_SUITE("critical API test");
 
-static int test_outside_critical(void) {
-	test_assert_false(critical_inside(CRITICAL_PREEMPT));
-	test_assert_false(critical_inside(CRITICAL_SOFTIRQ));
+TEST_SETUP(suite_setup);
+TEST_SETUP_EACH(case_setup);
+TEST_TEARDOWN_EACH(case_teardown);
+
+TEST_CASE("critical_inside should return false "
+		"when called outside any critical section") {
 	test_assert_false(critical_inside(CRITICAL_HARDIRQ));
-
-	test_assert_true(critical_allows(CRITICAL_PREEMPT));
-	test_assert_true(critical_allows(CRITICAL_SOFTIRQ));
-
-	return 0;
+	test_assert_false(critical_inside(CRITICAL_SOFTIRQ));
+	test_assert_false(critical_inside(CRITICAL_PREEMPT));
 }
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
+TEST_CASE("critical_allows should return true "
+		"when called outside any critical section") {
+	test_assert_true(critical_allows(CRITICAL_HARDIRQ));
+	test_assert_true(critical_allows(CRITICAL_SOFTIRQ));
+	test_assert_true(critical_allows(CRITICAL_PREEMPT));
+}
+
+#if 0
 static int run(void) {
-	int result = 0;
-
-	/* Test must not be invoked within critical section. */
-//	if (!critical_allows(CRITICAL_PREEMPT)) {
-//		return -EBUSY;
-//	}
-
-	if (0 != (result = test_outside_critical())) {
-		return result;
-	}
-
 	critical_enter(CRITICAL_PREEMPT);
 
 	test_assert_true(critical_inside(CRITICAL_PREEMPT));
@@ -70,11 +63,37 @@ static int run(void) {
 	critical_leave(CRITICAL_SOFTIRQ);
 	critical_leave(CRITICAL_PREEMPT);
 
-	if (0 != (result = test_outside_critical())) {
-		return result;
+	return 0;
+}
+#endif
+
+static ipl_t ipl;
+
+static int suite_setup(void) {
+	/* Test must not be invoked within any critical section. */
+	int inside_any = 0;
+	inside_any |= critical_inside(CRITICAL_HARDIRQ);
+	inside_any |= critical_inside(CRITICAL_SOFTIRQ);
+	inside_any |= critical_inside(CRITICAL_PREEMPT);
+	return inside_any ? -EPERM : 0;
+}
+
+static int case_setup(void) {
+	ipl = ipl_save();
+	return 0;
+}
+
+static int case_teardown(void) {
+	critical_t critical, levels[] = { CRITICAL_HARDIRQ, CRITICAL_SOFTIRQ,
+			CRITICAL_PREEMPT };
+
+	array_static_foreach(critical, levels) {
+		while (critical_inside(critical)) {
+			critical_leave(critical);
+		}
 	}
 
-//	critical_enter(CRITICAL_SOFTIRQ);
-
-	return test_outside_critical();
+	ipl_restore(ipl);
+	return 0;
 }
+
