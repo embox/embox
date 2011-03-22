@@ -1,5 +1,5 @@
 /**
- * @brief Event dispatcher without threads implementation
+ * @brief Event dispatcher implementation
  *
  * @date 16.03.2011
  * @author Kirill Tyushev
@@ -7,7 +7,7 @@
 
 #include <lib/list.h>
 #include <kernel/mm/slab_static.h>
-#include <kernel/event_dispatcher2.h>
+#include <kernel/evdispatch.h>
 #include <kernel/messages_defs.h>
 
 /** Handlers, that can handle message with specified id */
@@ -28,9 +28,9 @@ LIST_HEAD(queue);
 static struct handler handler_arr[MSG_ID_COUNT];
 
 void event_dispatch(void) {
-	while (!list_empty(queue)) {
-		struct list_head *result = queue->next;
-		struct msg *msg = list_entry(queue, struct msg, list);
+	while (!list_empty(&queue)) {
+		struct list_head *result = queue.next;
+		struct msg *msg = list_entry(&queue, struct msg, list);
 		list_del(result);
 
 		handler_arr[msg->id].handler(msg);

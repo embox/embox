@@ -1,12 +1,28 @@
 /**
- * @brief  Event Handler header
+ * @brief  Event dispatcher header
+ * @details
+ *		Events dispatch without threads
+ *
+ *		client    client    client
+ *		  |         |         |
+ *		  - - - - - - - - - - -
+ *		 |     event queue     |
+ *        - - - - - - - - - - -
+ *                  |
+ *                events
+ *                  |
+ *        - - - - - - - - - - -
+ *       |     dispatcher      |
+ *        - - - - - - - - - - -
+ *        |         |          |
+ *     handler1  handler2   handler3
  *
  * @date 16.03.2011
  * @author Kirill Tyushev
  */
 
-#ifndef EVENT_HANDLER2_H_
-#define EVENT_HANDLER2_H_
+#ifndef EVDISPATCH_H_
+#define EVDISPATCH_H_
 
 #include <kernel/message.h>
 
@@ -40,7 +56,7 @@ extern void send_message(int id, void *data);
  * @param id, that corresponds to message
  * @param handler, that handle message
  */
-extern void register_handler(int id, void(*handler)(struct msg *msg));
+extern void register_handler(int id, void (*handler)(struct msg *msg));
 
-#endif /* EVENT_HANDLER2_H_ */
+#endif /* EVDISPATCH_H_ */
 
