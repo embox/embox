@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <embox/unit.h>
-#include <kernel/thread.h>
+#include <kernel/thread/api.h>
 #include <kernel/pipe_manager.h>
 #include <kernel/scheduler.h>
 #include <errno.h>

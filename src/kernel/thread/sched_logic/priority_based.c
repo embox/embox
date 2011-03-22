@@ -11,8 +11,8 @@
 
 #include <lib/list.h>
 #include <util/array.h>
-#include <kernel/thread/thread.h>
-#include <kernel/thread/sched/logic/sched_logic.h>
+#include <kernel/thread/api.h>
+#include <kernel/thread/sched_logic.h>
 
 /**
  * Structure priority in list.

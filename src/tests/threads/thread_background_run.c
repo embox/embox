@@ -9,7 +9,7 @@
  */
 
 #include <embox/test.h>
-#include <kernel/thread.h>
+#include <kernel/thread/api.h>
 
 #define THREAD_STACK_SIZE 0x1000
 

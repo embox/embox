@@ -1,14 +1,17 @@
 $_PACKAGE := core.kernel.thread
 
-$_MODS += core thread
-
-$_DEPS-core += core.kernel.thread.sched.core
-$_DEPS-core += thread
+$_MODS      += core
+$_SRCS-core += core.c
+$_DEPS-core += core.kernel.thread.sched
 $_DEPS-core += sync
 $_DEPS-core += embox.hal.context
 ifdef CONFIG_PP_ENABLE
 $_DEPS-core += core.kernel.pp
 endif
 
-$_DEPS-thread += core.kernel.thread.sched.core
-$_SRCS-thread += thread.c
+$_MODS       += sched
+$_SRCS-sched += sched.c
+$_DEPS-sched += core.kernel.thread.sched_logic.$(CONFIG_SCHED_STRATEGY)
+$_DEPS-sched += core.kernel.timer
+$_DEPS-sched += embox.hal.context
+

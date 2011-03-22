@@ -10,7 +10,7 @@
 #ifndef SCHEDULER_BASE_H_
 #define SCHEDULER_BASE_H_
 
-#include <kernel/thread/sched/sched.h>
+#include <kernel/thread/sched.h>
 
 /**
  * Function, executed when thread initializes.

@@ -1,4 +1,4 @@
-$_PACKAGE := core.kernel.thread.sched
+$_PACKAGE := core.kernel.thread.sched_logic
 
 $_MODS += trivial priority_based
 

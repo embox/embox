@@ -13,7 +13,7 @@
 #define PP_VAR( name )
 #endif
 
-#include <kernel/thread.h>
+#include <kernel/thread/api.h>
 #include <drivers/tty.h>
 #include <stdio.h>
 

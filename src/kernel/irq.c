@@ -16,7 +16,7 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <kernel/thread/sched/sched.h>
+#include <kernel/thread/sched.h>
 #include <kernel/irq.h>
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>

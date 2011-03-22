@@ -10,8 +10,8 @@
  */
 
 #include <embox/test.h>
-#include <kernel/thread/thread.h>
-#include <kernel/thread/sched/sched.h>
+#include <kernel/thread/api.h>
+#include <kernel/thread/sched.h>
 #include <kernel/thread/sync/mutex.h>
 #include <errno.h>
 #include <assert.h>

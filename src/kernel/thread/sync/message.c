@@ -9,7 +9,7 @@
 #include <kernel/thread/sync/message.h>
 
 #include <stdbool.h>
-#include <kernel/thread/sched/sched.h>
+#include <kernel/thread/sched.h>
 
 #define MESSAGE_POOL_SZ 100
 

@@ -9,7 +9,7 @@
  */
 
 #include <embox/test.h>
-#include <kernel/thread.h>
+#include <kernel/thread/api.h>
 #include <kernel/scheduler.h>
 #include <errno.h>
 #include <assert.h>

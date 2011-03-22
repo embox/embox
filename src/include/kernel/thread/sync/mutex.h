@@ -11,7 +11,7 @@
 #define MUTEX_H_
 
 #include <lib/list.h>
-#include <kernel/thread/thread.h>
+#include <kernel/thread/api.h>
 
 /**
  * Defines Mutex structure.

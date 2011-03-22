@@ -9,8 +9,8 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <kernel/thread/thread.h>
-#include <kernel/thread/sched/sched.h>
+#include <kernel/thread/api.h>
+#include <kernel/thread/sched.h>
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
