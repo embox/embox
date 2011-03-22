@@ -62,14 +62,14 @@
 			__TEST_FIXTURE_OP(fixture_nm) = function_nm; \
 	static int function_nm(void)
 
-#define __TEST_SETUP(function_nm) \
+#define __TEST_SETUP_SUITE(function_nm) \
 	__TEST_FIXTURE_OP_DEF(suite_setup, function_nm)
-#define __TEST_TEARDOWN(function_nm) \
+#define __TEST_TEARDOWN_SUITE(function_nm) \
 	__TEST_FIXTURE_OP_DEF(suite_teardown, function_nm)
 
-#define __TEST_SETUP_EACH(function_nm) \
+#define __TEST_SETUP(function_nm) \
 	__TEST_FIXTURE_OP_DEF(case_setup, function_nm)
-#define __TEST_TEARDOWN_EACH(function_nm) \
+#define __TEST_TEARDOWN(function_nm) \
 	__TEST_FIXTURE_OP_DEF(case_teardown, function_nm)
 
 #define __TEST_CASE(description) \

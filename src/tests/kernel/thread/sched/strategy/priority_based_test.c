@@ -15,7 +15,7 @@ static struct thread idle = { .priority = THREAD_PRIORITY_MIN, .sched_list =
 
 EMBOX_TEST_SUITE("priority_based scheduling algorithm tests");
 
-TEST_SETUP_EACH(setup);
+TEST_SETUP(setup);
 
 TEST_CASE("_scheduler_init should make the current idle") {
 	test_assert_equal(_scheduler_current(), &idle);

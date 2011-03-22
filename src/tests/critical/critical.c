@@ -12,9 +12,9 @@
 
 EMBOX_TEST_SUITE("critical API test");
 
-TEST_SETUP(suite_setup);
-TEST_SETUP_EACH(case_setup);
-TEST_TEARDOWN_EACH(case_teardown);
+TEST_SETUP_SUITE(suite_setup);
+TEST_SETUP(case_setup);
+TEST_TEARDOWN(case_teardown);
 
 TEST_CASE("critical_inside should return false "
 		"when called outside any critical section") {
