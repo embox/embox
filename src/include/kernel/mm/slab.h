@@ -32,7 +32,6 @@
 #ifndef SLAB_H_
 #define SLAB_H_
 
-#include <lib/list.h>
 #include __impl(kernel/slab.h)
 
 /** cache descriptor */

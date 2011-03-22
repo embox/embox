@@ -10,6 +10,8 @@
 # error "Do not include this file directly, use <kernel/mm/slab.h> instead!"
 #endif /* SLAB_H_ */
 
+#include <lib/list.h>
+
 /** Length of name of any cache */
 #define CACHE_NAMELEN 16
 /** max slab size in 2^n form */

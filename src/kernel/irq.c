@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <kernel/scheduler.h>
+#include <kernel/evdispatch.h>
 #include <kernel/irq.h>
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>
@@ -110,6 +111,7 @@ static void irq_leave(void) {
 		softirq_dispatch();
 	}
 	ipl_restore(ipl);
+	event_dispatch();
 	scheduler_unlock();
 }
 

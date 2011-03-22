@@ -11,6 +11,7 @@
 #endif /* SLAB_STATIC_H_ */
 
 #include <util/binalign.h>
+#include <lib/list.h>
 
 /** cache descriptor */
 struct static_cache {

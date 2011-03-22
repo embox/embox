@@ -11,7 +11,6 @@
 #ifndef SLAB_STATIC_H_
 #define SLAB_STATIC_H_
 
-#include <lib/list.h>
 #include __impl(kernel/slab_static.h)
 
 /** cache descriptor */

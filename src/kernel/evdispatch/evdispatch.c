@@ -30,7 +30,7 @@ static struct handler handler_arr[MSG_ID_COUNT];
 void event_dispatch(void) {
 	while (!list_empty(&queue)) {
 		struct list_head *result = queue.next;
-		struct msg *msg = list_entry(&queue, struct msg, list);
+		struct msg *msg = list_entry(result, struct msg, list);
 		list_del(result);
 
 		handler_arr[msg->id].handler(msg);

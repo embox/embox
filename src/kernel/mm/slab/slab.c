@@ -16,6 +16,7 @@
 #include <kernel/mm/slab.h>
 #include <kernel/mm/kmalloc.h>
 #include <kernel/mm/slab_statistic.h>
+#include <kernel/mm/slab_static.h>
 #include <kernel/mm/mpallocator.h>
 #include <util/binalign.h>
 
@@ -77,9 +78,7 @@ static page_info_t* virt_to_page(void *objp) {
 	return &(pages[index]);
 }
 
-/**
- * Main cache which will contain another descriptors of caches
- */
+/* main cache which will contain another descriptors of caches */
 static cache_t cache_chain = {
 	.name = "__cache_chain",
 	.num = (CONFIG_PAGE_SIZE * CACHE_CHAIN_SIZE - binalign_bound(sizeof(slab_t), 4))
@@ -230,7 +229,7 @@ cache_t *cache_create(char *name, size_t obj_size) {
 	cachep->slabs_partial.prev = &(cachep->slabs_partial);
 	cachep->slabs_free.next = &(cachep->slabs_free);
 	cachep->slabs_free.prev = &(cachep->slabs_free);
-	list_add(&cachep->next, &(cache_chain.next)); //////!!!!!!!!!!!!!
+	list_add(&cachep->next, &(cache_chain.next));
 
 #ifdef SLAB_ALLOCATOR_DEBUG
 	printf("\n\nCreating cache with name \"%s\"\n", cachep->name);
@@ -448,7 +447,7 @@ void sget_blocks_info(struct list_head* list, struct list_head *slabp) {
 }
 
 void make_caches_list(struct list_head* list) {
-	list->next = &(cache_chain.next);
-	list->prev = (&(cache_chain.next))->prev;
+	list->next = &cache_chain.next;
+	list->prev = cache_chain.next.prev;
 }
 
