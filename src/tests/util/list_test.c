@@ -126,6 +126,17 @@ TEST_CASE("list_first_link and list_last_link should return a new and an old "
 	test_assert_equal(list_last_link(&l), &y.lnk);
 }
 
+TEST_CASE("list_remove on a single element list should make the list empty "
+		"and element initialized again") {
+	char buff[sizeof(x.lnk)];
+	memcpy(buff, &x.lnk, sizeof(x.lnk));
+	list_add_first(&x, &l, lnk);
+	list_remove(&x, lnk);
+	test_assert_true(list_empty(&l));
+	test_assert_zero(memcmp(buff, &x.lnk, sizeof(x.lnk)));
+}
+
+
 static int setup(void) {
 	list_init(&l);
 	list_link_init(&x.lnk);

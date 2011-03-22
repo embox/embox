@@ -57,6 +57,20 @@ inline static struct list_link *list_last_link(struct list *list) {
 	return l->prev != l /* list is not empty */ ? l->prev : NULL;
 }
 
+#define __list_link_checked_element(link, type, link_member) \
+	__extension__ ({ \
+		struct list_link *__list_link__ = (link); \
+		__list_link__ \
+				? list_link_element(__list_link__, type, link_member) \
+				: NULL; \
+	})
+
+#define __list_first(list, type, link_member) \
+	__list_link_checked_element(list_first_link(list), type, link_member)
+
+#define __list_last(list, type, link_member) \
+	__list_link_checked_element(list_last_link(list), type, link_member)
+
 inline static void __list_insert_between(struct list_link *new,
 		struct list_link *prev, struct list_link *next) {
 	next->prev = new;
@@ -76,24 +90,20 @@ inline static void list_add_last_link(struct list_link *link, struct list *list)
 	__list_insert_between(link, l->prev, l);
 }
 
-#define __list_link_checked_element(link, type, link_member) \
-	__extension__ ({ \
-		struct list_link *__list_link__ = (link); \
-		__list_link__ \
-				? list_link_element(__list_link__, type, link_member) \
-				: NULL; \
-	})
-
-#define __list_first(list, type, link_member) \
-		__list_link_checked_element(list_first_link(list), type, link_member)
-
-#define __list_last(list, type, link_member) \
-		__list_link_checked_element(list_last_link(list), type, link_member)
-
 #define __list_add_first(element, list, link_member) \
-		list_add_first_link(&(element)->link_member, list)
+	list_add_first_link(&(element)->link_member, list)
 
 #define __list_add_last(element, list, link_member) \
-		list_add_last_link(&(element)->link_member, list)
+	list_add_last_link(&(element)->link_member, list)
+
+inline static void list_remove_link(struct list_link *link) {
+	struct list_link *prev = link->prev, *next = link->next;
+	next->prev = prev;
+	prev->next = next;
+	list_link_init(link);
+}
+
+#define __list_remove(element, link_member) \
+	list_remove_link(&(element)->link_member)
 
 #endif /* UTIL_LIST_IMPL_H_ */
