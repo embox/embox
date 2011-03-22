@@ -73,8 +73,8 @@
 	__TEST_FIXTURE_OP_DEF(case_teardown, function_nm)
 
 #define __TEST_CASE(description) \
-	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case), \
-			MACRO_GUARD(__test_case_run))
+	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case_struct), \
+			MACRO_GUARD(__test_case))
 
 #define __TEST_CASE_NM(_description, test_case_nm, run_nm) \
 	static void run_nm(void);                            \
@@ -98,7 +98,7 @@
 		if (_run()) {                          \
 			test_fail("non-zero return code"); \
 		}                                      \
-	} /* suppress "extra `;' outside of a function" warning. */ \
+	}                                          \
 	static int _run(void)
 
 /* Simplify the life of Eclipse CDT. */
@@ -114,7 +114,11 @@
 
 # undef  __TEST_CASE
 # define __TEST_CASE(ignored) \
-	static void MACRO_GUARD(__test_case_run)(void)
+	static void MACRO_GUARD(__test_case)(void)
+
+# undef  __EMBOX_TEST
+# define __EMBOX_TEST(_run) \
+	static int _run(void)
 
 #endif /* __CDT_PARSER__ */
 
