@@ -20,11 +20,13 @@ EMBOX_TEST(wake_up_test);
 #define MOTOR1 (&motors[1])
 
 #define MOTOR_POWER -100
+#define STOP_TIME 100
 
-int is_read = 0;
-int treashold = 800;
-int delta = 200;
-bool moving = false;
+static int is_read = 0;
+static int treashold = 800;
+static int delta = 100;
+static bool moving = false;
+static int counter = 0;
 
 static void move_start(void) {
 	if (moving) {
@@ -35,12 +37,15 @@ static void move_start(void) {
 
 	motor_set_power(MOTOR0, MOTOR_POWER);
 	motor_set_power(MOTOR1, MOTOR_POWER);
-
+	counter = STOP_TIME;
 	moving = true;
 }
 
 static void move_stop(void) {
 	if (!moving) {
+		return;
+	}
+	if (counter--) {
 		return;
 	}
 	TRACE("stop -_-\n");
