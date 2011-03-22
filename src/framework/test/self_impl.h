@@ -63,14 +63,14 @@
 	static int function_nm(void)
 
 #define __TEST_SETUP(function_nm) \
-	__TEST_FIXTURE_OP_DEF(setup, function_nm)
+	__TEST_FIXTURE_OP_DEF(suite_setup, function_nm)
 #define __TEST_TEARDOWN(function_nm) \
-	__TEST_FIXTURE_OP_DEF(teardown, function_nm)
+	__TEST_FIXTURE_OP_DEF(suite_teardown, function_nm)
 
 #define __TEST_SETUP_EACH(function_nm) \
-	__TEST_FIXTURE_OP_DEF(setup_each, function_nm)
+	__TEST_FIXTURE_OP_DEF(case_setup, function_nm)
 #define __TEST_TEARDOWN_EACH(function_nm) \
-	__TEST_FIXTURE_OP_DEF(teardown_each, function_nm)
+	__TEST_FIXTURE_OP_DEF(case_teardown, function_nm)
 
 #define __TEST_CASE(description) \
 	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case), \
