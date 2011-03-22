@@ -17,6 +17,7 @@
 
 #include <kernel/softirq.h>
 #include <hal/ipl.h>
+#include <kernel/evdispatch.h>
 
 struct softirq_action {
 	softirq_handler_t handler;
@@ -80,4 +81,6 @@ void softirq_dispatch(void) {
 			}
 		}
 	}
+
+	event_dispatch();
 }

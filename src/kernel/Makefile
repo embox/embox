@@ -35,7 +35,6 @@ ifdef CONFIG_IRQ
   $_SRCS-irq     += irq.c
   $_REQUIRES-irq += embox.hal.interrupt
   $_DEPS-irq     += softirq
-  $_DEPS-irq     += core.kernel.evdispatch
 endif
 #ifdef CONFIG_PRINTK
 #  $_SRCS-printk  += printk.c
@@ -44,6 +43,7 @@ endif
 #endif
 ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
+  $_DEPS-softirq += core.kernel.evdispatch
 endif
 ifdef CONFIG_TIMER
   $_SRCS-timer     += timer.c
