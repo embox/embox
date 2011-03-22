@@ -111,7 +111,10 @@ static void irq_leave(void) {
 		softirq_dispatch();
 	}
 	ipl_restore(ipl);
+#warning either remove it from here or fix irq dependencies
+#if 0
 	event_dispatch();
+#endif
 	scheduler_unlock();
 }
 
