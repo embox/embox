@@ -4,14 +4,13 @@
  * They are used is a part of other functions.
  *
  * @date 22.04.2010
- * @author Avdyukhin Dmitry
+ * @author Dmitry Avdyukhin
  */
 
 #ifndef SCHEDULER_BASE_H_
 #define SCHEDULER_BASE_H_
 
-#include <stdbool.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/sched/sched.h>
 
 /**
  * Function, executed when thread initializes.
@@ -50,7 +49,7 @@ extern void _scheduler_remove(struct thread *removed_thread);
 
 /**
  * Gets current thread.
- * @return executable thread.
+ * @return thread that runs now
  */
 extern struct thread *_scheduler_current(void);
 

@@ -9,13 +9,13 @@
  */
 
 #include <embox/test.h>
-#include <kernel/thread.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/thread.h>
+#include <kernel/thread/sched/sched.h>
 #include <errno.h>
 #include <assert.h>
 
 #define THREAD_STACK_SIZE 0x1000
-#define MAX_DEPTH 100
+#define MAX_DEPTH 10
 static char recursion_stack[THREAD_STACK_SIZE];
 static struct thread *recursion_thread;
 

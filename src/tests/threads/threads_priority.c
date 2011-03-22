@@ -7,13 +7,13 @@
  * @author Dmitry Avdyukhin
  */
 #include <embox/test.h>
-#include <kernel/thread.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/thread.h>
+#include <kernel/thread/sched/sched.h>
 #include <errno.h>
 #include <assert.h>
 
-#define THREAD_STACK_SIZE 0x1000
-#define THREADS_COUNT 10
+#define THREAD_STACK_SIZE 0x100
+#define THREADS_COUNT 3
 
 static char stacks[THREADS_COUNT][THREAD_STACK_SIZE];
 static struct thread *threads[THREADS_COUNT];

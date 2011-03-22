@@ -10,9 +10,9 @@
 #include <errno.h>
 #include <lib/list.h>
 #include <hal/ipl.h>
-#include <kernel/thread.h>
-#include <kernel/mutex.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/thread.h>
+#include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/sched/sched.h>
 
 struct mutex *idle_mutex;
 

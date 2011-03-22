@@ -9,8 +9,8 @@
 
 #include <errno.h>
 #include <lib/list.h>
-#include <kernel/scheduler.h>
-#include <kernel/scheduler_base.h>
+#include <kernel/thread/sched/sched.h>
+#include <kernel/thread/sched/logic/sched_logic.h>
 #include <kernel/timer.h>
 #include <hal/context.h>
 #include <hal/ipl.h>

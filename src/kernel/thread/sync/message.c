@@ -6,10 +6,10 @@
  * @author Dmitry Avdyukhin
  */
 
-#include <kernel/message.h>
+#include <kernel/thread/sync/message.h>
 
 #include <stdbool.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/sched/sched.h>
 
 #define MESSAGE_POOL_SZ 100
 

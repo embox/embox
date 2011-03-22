@@ -9,8 +9,8 @@
  * @author Dmitry Avdyukhin
  */
 #include <embox/test.h>
-#include <kernel/thread.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/thread.h>
+#include <kernel/thread/sched/sched.h>
 #include <errno.h>
 #include <assert.h>
 

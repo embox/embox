@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 
-#include <kernel/scheduler_base.h>
+#include <kernel/thread/sched/logic/sched_logic.h>
 
 static struct thread idle = { .priority = THREAD_PRIORITY_MIN, .sched_list =
 		LIST_HEAD_INIT(idle.sched_list), };

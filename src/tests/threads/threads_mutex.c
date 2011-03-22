@@ -10,9 +10,9 @@
  */
 
 #include <embox/test.h>
-#include <kernel/thread.h>
-#include <kernel/scheduler.h>
-#include <kernel/mutex.h>
+#include <kernel/thread/thread.h>
+#include <kernel/thread/sched/sched.h>
+#include <kernel/thread/sync/mutex.h>
 #include <errno.h>
 #include <assert.h>
 #include <lib/list.h>

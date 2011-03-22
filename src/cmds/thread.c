@@ -13,7 +13,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <assert.h>
-#include <kernel/thread.h>
+#include <kernel/thread/thread.h>
 
 EMBOX_CMD(exec);
 

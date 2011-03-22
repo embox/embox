@@ -11,8 +11,8 @@
 
 #include <lib/list.h>
 #include <util/array.h>
-#include <kernel/thread.h>
-#include <kernel/scheduler_base.h>
+#include <kernel/thread/thread.h>
+#include <kernel/thread/sched/logic/sched_logic.h>
 
 /**
  * Structure priority in list.
@@ -77,7 +77,9 @@ static struct thread *run_dequeue(void) {
 }
 
 /**
- * Insert priority_link to run_queue if threads with given priority don't exist.
+ * Insert @a priority to run_queue if threads with given priority don't exist.
+ *
+ * @param priority
  */
 static void run_insert_priority(struct run_thread_list *priority) {
 	struct run_thread_list *next_priority;
@@ -119,18 +121,11 @@ static void run_push(struct thread *thread) {
 	}
 	list_add(&thread->sched_list, &priority->thread_list);
 }
-/**
- * TODO --Alina
- * @return
- */
+
 struct thread *_scheduler_current(void) {
 	return current_thread;
 }
 
-/**
- * Adds thread to existing thread list
- * or creates a new priority list and adds thread to this list.
- */
 void _scheduler_add(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
 
@@ -146,10 +141,6 @@ void _scheduler_add(struct thread *thread) {
 	}
 }
 
-/**
- * Move next_thread pointer to the next thread.
- * @param prev_thread thread which have worked just now.
- */
 struct thread *_scheduler_next(struct thread *prev_thread) {
 	struct run_thread_list *priority = priorities + prev_thread->priority;
 	struct thread *next;
@@ -179,11 +170,7 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
 
 	return (current_thread = next);
 }
-/**
- * Delete thread from run_queue.
- * @param thread
- *  removed thread
- */
+
 void _scheduler_remove(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
 	struct list_head *same_priority_list = &priority->thread_list;

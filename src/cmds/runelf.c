@@ -7,7 +7,7 @@
  */
 #include <embox/cmd.h>
 #include <getopt.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/sched/sched.h>
 #include <lib/libelf.h>
 #include <stdio.h>
 #include <fs/file.h>

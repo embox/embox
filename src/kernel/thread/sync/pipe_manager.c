@@ -5,7 +5,7 @@
  * @date 27.11.2010
  * @author Vladimir Muhin
  */
-#include <kernel/pipe_manager.h>
+#include <kernel/thread/sync/pipe_manager.h>
 #include <errno.h>
 #include <embox/unit.h>
 

@@ -24,7 +24,7 @@
 #ifndef EVDISPATCH_H_
 #define EVDISPATCH_H_
 
-#include <kernel/message.h>
+#include <kernel/thread/sync/message.h>
 
 /** Structure, describing messages, sent to handlers. */
 struct msg {

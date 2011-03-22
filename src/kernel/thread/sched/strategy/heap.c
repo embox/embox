@@ -6,8 +6,8 @@
  * @author Avdyukhin Dmitry
  */
 
-#include <kernel/scheduler_base.h>
-#include <kernel/thread_heap.h>
+#include <kernel/thread/sched/logic/sched_logic.h>
+#include <kernel/thread/thread_heap.h>
 
 void _scheduler_init(void) {
 	/* Nothing to do. */

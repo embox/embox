@@ -7,7 +7,7 @@
  */
 
 #include <lib/list.h>
-#include <kernel/scheduler_base.h>
+#include <kernel/thread/sched/logic/sched_logic.h>
 
 /**
  * List item, pointing at the beginning of the

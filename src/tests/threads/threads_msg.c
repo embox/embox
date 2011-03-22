@@ -15,9 +15,9 @@
 #include <embox/test.h>
 #include <errno.h>
 #include <assert.h>
-#include <kernel/thread.h>
-#include <kernel/scheduler.h>
-#include <kernel/message.h>
+#include <kernel/thread/thread.h>
+#include <kernel/thread/sched/sched.h>
+#include <kernel/thread/sync/message.h>
 
 #define THREAD_STACK_SIZE 0x1000
 

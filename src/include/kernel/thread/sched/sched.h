@@ -9,7 +9,7 @@
 
 // XXX
 #include <stdbool.h>
-#include <kernel/thread.h>
+#include <kernel/thread/thread.h>
 
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_

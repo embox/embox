@@ -9,7 +9,7 @@
 #ifndef THREAD_HEAP_H_
 #define THREAD_HEAP_H_
 
-#include <kernel/thread.h>
+#include <kernel/thread/thread.h>
 
 /**
  * Save thread in heap of threads.

@@ -6,7 +6,8 @@
  * @author Avdyukhin Dmitry
  */
 
-#include <kernel/thread_heap.h>
+#include <kernel/thread/thread_heap.h>
+#include <stdbool.h>
 
 /** Maximal count of threads. */
 #define MAX_THREAD_COUNT 0x400
