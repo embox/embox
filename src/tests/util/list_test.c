@@ -74,47 +74,30 @@ TEST_CASE("list_last_link should return null for empty list") {
 	test_assert_null(list_last_link(&l));
 }
 
-#if 0
-TEST_CASE("test_list_add_first_should_make_the_list_non_empty")
-{
-	struct element e = {.m_link = LIST_LINK_INIT(&e.m_link)};
-	struct list l = LIST_INIT(&l);
+TEST_CASE("list_add_first should make the list non empty") {
 	list_add_first(&e, &l, m_link);
-	return list_empty(&l);
+	test_assert_false(list_empty(&l));
 }
 
-TEST_CASE("test_list_add_last_should_make_the_list_non_empty")
-{
-	struct element e = {.m_link = LIST_LINK_INIT(&e.m_link)};
-	struct list l = LIST_INIT(&l);
+TEST_CASE("list_add_last should make the list non empty") {
 	list_add_last(&e, &l, m_link);
-	return !list_empty(&l);
+	test_assert_false(list_empty(&l));
 }
 
-TEST_CASE("test_list_add_first_link_should_make_the_list_non_empty")
-{
-	struct element e = {.m_link = LIST_LINK_INIT(&e.m_link)};
-	struct list l = LIST_INIT(&l);
+TEST_CASE("list_add_first link should make the list non empty") {
 	list_add_first_link(&e.m_link, &l);
-	return !list_empty(&l);
+	test_assert_false(list_empty(&l));
 }
 
-TEST_CASE("test_list_add_last_link_should_make_the_list_non_empty")
-{
-	struct element e = {.m_link = LIST_LINK_INIT(&e.m_link)};
-	struct list l = LIST_INIT(&l);
+TEST_CASE("list_add_last_link should make the list non empty") {
 	list_add_last_link(&e.m_link, &l);
-	return !list_empty(&l);
+	test_assert_false(list_empty(&l));
 }
 
-TEST_CASE("test_list_first_on_a_single_element_list_should_return_the_element")
-{
-	struct element e = {.m_link = LIST_LINK_INIT(&e.m_link)};
-	struct list l = LIST_INIT(&l);
+TEST_CASE("list_first on a single element list should return the element") {
 	list_add_first(&e, &l, m_link);
-	return list_first(&l, struct element, m_link);
+	test_assert_equal(list_first(&l, struct element, m_link), &e);
 }
-#endif
 
 static int setup(void) {
 	list_init(&l);

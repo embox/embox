@@ -43,26 +43,37 @@ inline static struct list *list_init(struct list *list) {
 }
 
 inline static int list_empty(struct list *list) {
-	struct list_link *link = &list->link;
-	return link == link->next;
+	struct list_link *l = &list->link;
+	return l == l->next;
 }
 
 inline static struct list_link *list_first_link(struct list *list) {
-	struct list_link *link = &list->link;
-	return link->next != link /* list is not empty */ ? link->next : NULL;
+	struct list_link *l = &list->link;
+	return l->next != l /* list is not empty */ ? l->next : NULL;
 }
 
 inline static struct list_link *list_last_link(struct list *list) {
-	struct list_link *link = &list->link;
-	return link->prev != link /* list is not empty */ ? link->prev : NULL;
+	struct list_link *l = &list->link;
+	return l->prev != l /* list is not empty */ ? l->prev : NULL;
+}
+
+inline static void __list_insert_between(struct list_link *new,
+		struct list_link *prev, struct list_link *next) {
+	next->prev = new;
+	new->next = next;
+	new->prev = prev;
+	prev->next = new;
 }
 
 inline static void list_add_first_link(struct list_link *link,
 		struct list *list) {
-	;
+	struct list_link *l = &list->link;
+	__list_insert_between(link, l, l->next);
 }
+
 inline static void list_add_last_link(struct list_link *link, struct list *list) {
-	;
+	struct list_link *l = &list->link;
+	__list_insert_between(link, l->prev, l);
 }
 
 #define __list_link_checked_element(link, type, link_member) \
