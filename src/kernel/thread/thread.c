@@ -48,7 +48,7 @@ static void idle_run(void) {
 static int threads_init(void) {
 	idle_thread = thread_create(idle_run,
 		idle_thread_stack + THREAD_STACK_SIZE);
-	idle_thread->priority = 0;
+	idle_thread->priority = THREAD_PRIORITY_MIN;
 	idle_thread->state = THREAD_STATE_RUN;
 	scheduler_add(idle_thread);
 	return 0;
