@@ -55,17 +55,6 @@ struct thread {
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
 
-	/* Heap. */
-	/** Index of thread in heap. */
-	int heap_index;
-	/**
-	 * For each priority there is a state.
-	 * We can start a thread if his run_count equals to
-	 * priority_state of his priority or there is no threads
-	 * with the same priority and "right" run_count.
-	 * Is needed for heap_scheduler.
-	 */
-	bool run_count;
 /* Pseudo process */
 #ifdef CONFIG_PP_ENABLE
 struct pprocess *pp;

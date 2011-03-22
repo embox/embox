@@ -12,4 +12,3 @@ endif
 
 $_DEPS-thread += core.kernel.thread.sched.core
 $_SRCS-thread += thread.c
-$_SRCS-thread += thread_heap.c
