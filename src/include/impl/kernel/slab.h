@@ -13,22 +13,14 @@
 #include <lib/list.h>
 
 /** Length of name of any cache */
-#define CACHE_NAMELEN 16
-/** max slab size in 2^n form */
-#define MAX_SLAB_ORDER 3
-/** max object size in 2^n form */
-#define MAX_OBJ_ORDER 3
-/** number for defining acceptable internal fragmentation */
-#define MAX_INT_FRAGM_ORDER 8
-/** size of kmalloc_cache in pages */
-#define CACHE_CHAIN_SIZE 1
+#define __CACHE_NAMELEN 16
 
 /** cache descriptor */
 struct cache {
 	/** pointer to other caches */
 	struct list_head next;
 	/** name of cache*/
-	char name[CACHE_NAMELEN];
+	char name[__CACHE_NAMELEN];
 	/** list of busy slabs */
 	struct list_head slabs_full;
 	/** list of partial busy slabs */

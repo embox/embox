@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Dynamic SLAB allocator
+ * @brief Dynamic slab allocator
  *
  * @date 14.12.2010
  * @author Dmitry Zubarvich
@@ -54,7 +54,15 @@ static page_info_t pages[CONFIG_HEAP_SIZE / CONFIG_PAGE_SIZE];
 #define SET_PAGE_SLAB(pg, x)   ((pg)->list.prev = (struct list_head *)(x))
 #define GET_PAGE_SLAB(pg)     ((slab_t *)(pg)->list.prev)
 
-/*use to search a fit cache for object*/
+/** max slab size in 2^n form */
+#define MAX_SLAB_ORDER 3
+/** max object size in 2^n form */
+#define MAX_OBJ_ORDER 3
+/** number for defining acceptable internal fragmentation */
+#define MAX_INT_FRAGM_ORDER 8
+/** size of kmalloc_cache in pages */
+#define CACHE_CHAIN_SIZE 1
+/** use to search a fit cache for object */
 #define MAX_OBJECT_ALIGN 0
 
 #ifdef SLAB_ALLOCATOR_DEBUG
@@ -190,7 +198,7 @@ cache_t *cache_create(char *name, size_t obj_size) {
 	size_t left_over;
 	cache_t *cachep;
 
-	if (!name || strlen(name) >= CACHE_NAMELEN - 1 || obj_size <= 0 || obj_size
+	if (!name || strlen(name) >= __CACHE_NAMELEN - 1 || obj_size <= 0 || obj_size
 			>= CONFIG_PAGE_SIZE << MAX_OBJ_ORDER)
 		return NULL;
 
@@ -373,15 +381,14 @@ int cache_shrink(cache_t *cachep) {
 static cache_t *find_fit_cache(size_t obj_size) {
 	struct list_head *tmp;
 	cache_t *cachep;
-	/*pointer to main cache*/
+	/* pointer to main cache */
 	cache_t *cache_chainp;
 
 	cache_chainp = &cache_chain;
 	tmp = &cache_chainp->next;
 	do {
 		cachep = list_entry(tmp, cache_t, next);
-		if (obj_size <= cachep->obj_size + MAX_OBJECT_ALIGN && cachep->obj_size
-				<= obj_size) {
+		if (obj_size <= cachep->obj_size + MAX_OBJECT_ALIGN) {
 			return cachep;
 		}
 		tmp = cachep->next.next;
@@ -393,9 +400,9 @@ static cache_t *find_fit_cache(size_t obj_size) {
 void *kmalloc(size_t size) {
 	cache_t *cachep;
 	void *obj_ptr;
-	char name[CACHE_NAMELEN];
+	char name[__CACHE_NAMELEN];
 
-	/*different caches must be initialized with different names "__size"*/
+	/* different caches must be initialized with different names "__size" */
 	sprintf(name, "%s\n", "__");
 	sprintf(name + 2, "%d\n", size);
 	cachep = find_fit_cache(size);
@@ -403,7 +410,7 @@ void *kmalloc(size_t size) {
 		obj_ptr = cache_alloc(cachep);
 		return obj_ptr;
 	}
-	/*if needed cache is not exist*/
+	/* if needed cache is not exist */
 	cachep = cache_create(name, size);
 	obj_ptr = cache_alloc(cachep);
 
@@ -414,6 +421,7 @@ void kfree(void *obj) {
 	page_info_t *page = virt_to_page(obj);
 	cache_t *cachep = GET_PAGE_CACHE(page);
 	cache_free(cachep, obj);
+	cache_shrink(cachep);
 }
 
 void sget_blocks_info(struct list_head* list, struct list_head *slabp) {
