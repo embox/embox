@@ -48,10 +48,17 @@ static struct list_head run_queue;
  */
 static struct thread *run_peek(void) {
 	struct run_thread_list *priority;
-	struct thread *thread;
+
+	if (list_empty(&run_queue)){
+		return NULL;
+	}
+
 	priority = list_entry(run_queue.next, struct run_thread_list, priority_link);
-	thread = list_entry(priority->thread_list.next, struct thread, sched_list);
-	return thread;
+	if (list_empty(&priority->thread_list)){
+		return NULL;
+	}
+
+	return list_entry(priority->thread_list.next, struct thread, sched_list);
 }
 
 /**
@@ -60,9 +67,12 @@ static struct thread *run_peek(void) {
  */
 static struct thread *run_dequeue(void) {
 	struct thread *thread = run_peek();
-	list_del_init(&thread->sched_list);
-	if (list_empty(&(priorities + thread->priority)->thread_list)) {
+
+	if(!thread) {
+		return NULL;
 	}
+
+	list_del_init(&thread->sched_list);
 	return thread;
 }
 
@@ -142,10 +152,15 @@ void _scheduler_add(struct thread *thread) {
  */
 struct thread *_scheduler_next(struct thread *prev_thread) {
 	struct run_thread_list *priority = priorities + prev_thread->priority;
-	struct thread *next = current_thread;
+	struct thread *next;
+
+	assert(current_thread != NULL);
 
 	if (current_thread->state == THREAD_STATE_RUN) {
-		if (current_thread->priority > run_peek()->priority) {
+		if (!(next = run_peek())) {
+			return current_thread;
+		}
+		if (current_thread->priority > next->priority) {
 			/* Preemption */
 			run_push(current_thread);
 		} else {
@@ -158,10 +173,11 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
 		}
 	}
 
-	next = run_dequeue();
-	current_thread = next;
+	if (!(next = run_dequeue())) {
+		return current_thread;
+	}
 
-	return current_thread;
+	return (current_thread = next);
 }
 /**
  * Delete thread from run_queue.
@@ -174,22 +190,20 @@ void _scheduler_remove(struct thread *thread) {
 
 	if (thread == current_thread) {
 		current_thread->reschedule = true;
+		current_thread->state = THREAD_STATE_ZOMBIE;
 		return;
 	}
 
-	if (thread->state != THREAD_STATE_RUN) {
-		list_del_init(&thread->sched_list);
+	list_del_init(&thread->sched_list);
 
-		if (list_empty(&thread->sched_list)) {
-			/* Remove link on list of threads with given priority */
-			list_del_init(&priority->priority_link);
-		}
-
-	} else if (list_empty(same_priority_list)) {
-		list_del_init(same_priority_list);
+	if (list_empty(&thread->sched_list)) {
+		/* Remove link on list of threads with given priority */
+		list_del_init(&priority->priority_link);
 	}
 
-	current_thread->reschedule = false;
+	if (list_empty(same_priority_list)) {
+		list_del_init(same_priority_list);
+	}
 }
 
 /**
