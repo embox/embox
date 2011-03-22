@@ -17,15 +17,15 @@ TEST_SETUP(setup);
 
 struct element {
 	int some_stuff;
-	struct list_link m_link;
+	struct list_link lnk;
 };
 
-struct element e;
+struct element x, y;
 struct list l;
 
 TEST_CASE("list_link_element should cast link member out to its container") {
-	struct list_link *link = &e.m_link;
-	test_assert_equal(list_link_element(link, struct element, m_link), &e);
+	struct list_link *link = &x.lnk;
+	test_assert_equal(list_link_element(link, struct element, lnk), &x);
 }
 
 TEST_CASE("list_init should return its argument") {
@@ -35,7 +35,7 @@ TEST_CASE("list_init should return its argument") {
 
 TEST_CASE("list_link_init should return its argument") {
 	struct element e;
-	test_assert_equal(list_link_init(&e.m_link), &e.m_link);
+	test_assert_equal(list_link_init(&e.lnk), &e.lnk);
 }
 
 TEST_CASE("list_init should have the same effect as static initializer") {
@@ -47,11 +47,11 @@ TEST_CASE("list_init should have the same effect as static initializer") {
 }
 
 TEST_CASE("list_link_init should have the same effect as static initializer") {
-	struct element e = { .m_link = LIST_LINK_INIT(&e.m_link) };
-	char buff[sizeof(e.m_link)];
-	memcpy(buff, &e.m_link, sizeof(e.m_link));
-	memset(&e.m_link, 0xA5, sizeof(e.m_link)); /* poison. */
-	test_assert_zero(memcmp(buff, list_link_init(&e.m_link), sizeof(e.m_link)));
+	struct element e = { .lnk = LIST_LINK_INIT(&e.lnk) };
+	char buff[sizeof(e.lnk)];
+	memcpy(buff, &e.lnk, sizeof(e.lnk));
+	memset(&e.lnk, 0xA5, sizeof(e.lnk)); /* poison. */
+	test_assert_zero(memcmp(buff, list_link_init(&e.lnk), sizeof(e.lnk)));
 }
 
 TEST_CASE("list_empty should return true for just created list") {
@@ -59,11 +59,11 @@ TEST_CASE("list_empty should return true for just created list") {
 }
 
 TEST_CASE("list_first should return null for empty list") {
-	test_assert_null(list_first(&l, struct element, m_link));
+	test_assert_null(list_first(&l, struct element, lnk));
 }
 
 TEST_CASE("list_last should return null for empty list") {
-	test_assert_null(list_last(&l, struct element, m_link));
+	test_assert_null(list_last(&l, struct element, lnk));
 }
 
 TEST_CASE("list_first_link should return null for empty list") {
@@ -75,32 +75,60 @@ TEST_CASE("list_last_link should return null for empty list") {
 }
 
 TEST_CASE("list_add_first should make the list non empty") {
-	list_add_first(&e, &l, m_link);
+	list_add_first(&x, &l, lnk);
 	test_assert_false(list_empty(&l));
 }
 
 TEST_CASE("list_add_last should make the list non empty") {
-	list_add_last(&e, &l, m_link);
+	list_add_last(&x, &l, lnk);
 	test_assert_false(list_empty(&l));
 }
 
 TEST_CASE("list_add_first link should make the list non empty") {
-	list_add_first_link(&e.m_link, &l);
+	list_add_first_link(&x.lnk, &l);
 	test_assert_false(list_empty(&l));
 }
 
 TEST_CASE("list_add_last_link should make the list non empty") {
-	list_add_last_link(&e.m_link, &l);
+	list_add_last_link(&x.lnk, &l);
 	test_assert_false(list_empty(&l));
 }
 
-TEST_CASE("list_first on a single element list should return the element") {
-	list_add_first(&e, &l, m_link);
-	test_assert_equal(list_first(&l, struct element, m_link), &e);
+TEST_CASE("list_first_link and list_last_link on a single element list "
+		"constructed using list_add_first should return the element's link") {
+	list_add_first(&x, &l, lnk);
+	test_assert_equal(list_first_link(&l), &x.lnk);
+	test_assert_equal(list_last_link(&l), &x.lnk);
+}
+
+TEST_CASE("list_first_link and list_last_link on a single element list "
+		"constructed using list_add_last should return the element's link") {
+	list_add_last(&x, &l, lnk);
+	test_assert_equal(list_first_link(&l), &x.lnk);
+	test_assert_equal(list_last_link(&l), &x.lnk);
+}
+
+TEST_CASE("list_first_link and list_last_link should return a new and an old "
+		"element accordingly after adding a new one with list_add_first") {
+	test_assert_not_equal(&x, &y);
+	list_add_first(&x, &l, lnk);
+	list_add_first(&y, &l, lnk);
+	test_assert_equal(list_first_link(&l), &y.lnk);
+	test_assert_equal(list_last_link(&l), &x.lnk);
+}
+
+TEST_CASE("list_first_link and list_last_link should return a new and an old "
+		"element accordingly after adding a new one with list_add_first") {
+	test_assert_not_equal(&x, &y);
+	list_add_last(&x, &l, lnk);
+	list_add_last(&y, &l, lnk);
+	test_assert_equal(list_first_link(&l), &x.lnk);
+	test_assert_equal(list_last_link(&l), &y.lnk);
 }
 
 static int setup(void) {
 	list_init(&l);
-	list_link_init(&e.m_link);
+	list_link_init(&x.lnk);
+	list_link_init(&y.lnk);
 	return 0;
 }
