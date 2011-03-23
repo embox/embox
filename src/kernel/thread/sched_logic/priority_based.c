@@ -173,7 +173,6 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
 
 void _scheduler_remove(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
-	struct list_head *same_priority_list = &priority->thread_list;
 
 	if (thread == current_thread) {
 		current_thread->state = THREAD_STATE_ZOMBIE;
@@ -183,13 +182,9 @@ void _scheduler_remove(struct thread *thread) {
 
 	list_del_init(&thread->sched_list);
 
-	if (list_empty(&thread->sched_list)) {
+	if (list_empty(&priority->thread_list)) {
 		/* Remove link on list of threads with given priority */
 		list_del_init(&priority->priority_link);
-	}
-
-	if (list_empty(same_priority_list)) {
-		list_del_init(same_priority_list);
 	}
 }
 
