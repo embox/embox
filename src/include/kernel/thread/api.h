@@ -11,21 +11,15 @@
  *         - Thread iteration code
  */
 
-#ifndef THREAD_H_
-#define THREAD_H_
+#ifndef KERNEL_THREAD_API_H_
+#define KERNEL_THREAD_API_H_
 
-#include <hal/context.h>
-#include <lib/list.h>
-#include <string.h>
-#include <util/macro.h>
-#ifdef CONFIG_PP_ENABLE
-struct pprocess;
-#endif
+#include __impl_x(kernel/thread/api_impl.h)
 
-#include __impl(kernel/thread.h)
-
-// XXX
-#include <kernel/thread/sched.h>
+/**
+ * Structure, describing threads.
+ */
+struct thread;
 
 typedef __thread_id_t thread_id_t;
 typedef __thread_priority_t thread_priority_t;
@@ -49,17 +43,10 @@ extern struct thread *idle_thread;
 /**
  * Thread, which is working now.
  */
-inline static struct thread *thread_current(void) {
-	return scheduler_current();
-}
+extern struct thread *thread_current(void);
 
-struct pprocess;
-/**
- * Structure, describing threads.
- */
-struct thread;
-
-#define thread_foreach(t) __thread_foreach(t)
+#define thread_foreach(t) \
+	  __thread_foreach(t)
 
 extern struct thread *thread_get_by_id(thread_id_t id);
 
@@ -96,4 +83,4 @@ extern int thread_stop(struct thread *stopped_thread);
  */
 extern void thread_yield(void);
 
-#endif /* THREAD_H_ */
+#endif /* KERNEL_THREAD_API_H_ */

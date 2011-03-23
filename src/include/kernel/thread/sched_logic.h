@@ -7,10 +7,10 @@
  * @author Dmitry Avdyukhin
  */
 
-#ifndef SCHEDULER_BASE_H_
-#define SCHEDULER_BASE_H_
+#ifndef KERNEL_THREAD_SCHED_LOGIC_H_
+#define KERNEL_THREAD_SCHED_LOGIC_H_
 
-#include <kernel/thread/sched.h>
+#include __impl_x(kernel/thread/types.h)
 
 /**
  * Function, executed when thread initializes.
@@ -53,4 +53,4 @@ extern void _scheduler_remove(struct thread *removed_thread);
  */
 extern struct thread *_scheduler_current(void);
 
-#endif /* SCHEDULER_BASE_H_ */
+#endif /* KERNEL_THREAD_SCHED_LOGIC_H_ */

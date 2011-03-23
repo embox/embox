@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <lib/list.h>
+#include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_logic.h>
 #include <kernel/timer.h>
@@ -160,10 +161,6 @@ int scheduler_wakeup_first(struct event *event) {
 	LOG_DEBUG("\nUnlocking %d\n", thread->id);
 	scheduler_unlock();
 	return 0;
-}
-
-struct thread *scheduler_current(void){
-	return _scheduler_current();
 }
 
 void event_init(struct event *event) {

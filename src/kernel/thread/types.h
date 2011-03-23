@@ -1,14 +1,16 @@
 /**
  * @file
- * @brief Threads internal implementation.
+ * @brief TODO documentation for types.h -- Alina
  *
- * @date 24.02.2011
+ * @date 23.03.2011
  * @author Alina Kramar
  */
 
-#ifndef THREAD_H_
-# error "Do not include this file directly, use <kernel/thread.h> instead!"
-#endif /* THREAD_H_ */
+#ifndef KERNEL_THREAD_TYPES_H_
+#define KERNEL_THREAD_TYPES_H_
+
+#include <lib/list.h>
+#include <hal/context.h>
 
 typedef int __thread_id_t;
 typedef int __thread_priority_t;
@@ -24,6 +26,10 @@ struct event {
 enum thread_state {
 	THREAD_STATE_RUN, THREAD_STATE_WAIT, THREAD_STATE_STOP, THREAD_STATE_ZOMBIE
 };
+
+#ifdef CONFIG_PP_ENABLE
+struct pprocess;
+#endif
 
 struct thread {
 	/** Context of thread. */
@@ -61,22 +67,4 @@ struct pprocess *pp;
 #endif
 };
 
-#define __THREAD_POOL_SZ 0x100
-
-#define __thread_foreach(thread_ptr) \
-	array_foreach_ptr(thread_ptr, __extension__ ({     \
-				extern struct thread __thread_pool[];  \
-				__thread_pool;                         \
-			}), __THREAD_POOL_SZ)                      \
-		if (!thread_ptr->exist) ; else
-
-inline static struct thread *thread_get_by_id(__thread_id_t id) {
-	extern struct thread __thread_pool[];
-	struct thread *thread = __thread_pool + id;
-
-	if (!(0 <= id && id < __THREAD_POOL_SZ)) {
-		return NULL;
-	}
-
-	return thread->exist ? thread : NULL;
-}
+#endif /* KERNEL_THREAD_TYPES_H_ */

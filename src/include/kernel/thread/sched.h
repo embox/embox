@@ -7,12 +7,10 @@
  * @author Skorodumov Kirill
  */
 
-// XXX
-#include <stdbool.h>
-#include <kernel/thread/api.h>
+#ifndef KERNEL_THREAD_SCHED_H_
+#define KERNEL_THREAD_SCHED_H_
 
-#ifndef SCHEDULER_H_
-#define SCHEDULER_H_
+#include __impl_x(kernel/thread/sched_impl.h)
 
 /**
  * Start working with threads.
@@ -92,6 +90,4 @@ extern int scheduler_wakeup_first(struct event *event);
  */
 extern void event_init(struct event *event);
 
-extern struct thread *scheduler_current(void);
-
-#endif /* SCHEDULER_H_ */
+#endif /* KERNEL_THREAD_SCHED_H_ */
