@@ -200,6 +200,14 @@
 						<useDefaultCommand>false</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>
 					</target>
+					<target name="config arm nxt" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>PROJECT=arm PROFILE=nxt</buildArguments>
+						<buildTarget>config</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+						<runAllBuilders>true</runAllBuilders>
+					</target>
 				</buildTargets>
 			</storageModule>
 		</cconfiguration>
