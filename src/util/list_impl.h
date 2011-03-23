@@ -9,6 +9,7 @@
 #ifndef UTIL_LIST_IMPL_H_
 #define UTIL_LIST_IMPL_H_
 
+#include <assert.h>
 #include <util/structof.h>
 
 struct list_link {
@@ -42,9 +43,15 @@ inline static struct list *list_init(struct list *list) {
 	return list;
 }
 
+inline static int list_alone_link(struct list_link *link) {
+	return link == link->next;
+}
+
+#define __list_alone(element, link_member) \
+	list_alone_link(&(element)->link_member)
+
 inline static int list_empty(struct list *list) {
-	struct list_link *l = &list->link;
-	return l == l->next;
+	return list_alone_link(&list->link);
 }
 
 inline static struct list_link *list_first_link(struct list *list) {
@@ -57,6 +64,12 @@ inline static struct list_link *list_last_link(struct list *list) {
 	return l->prev != l /* list is not empty */ ? l->prev : NULL;
 }
 
+#define __list_first(list, type, link_member) \
+	__list_link_checked_element(list_first_link(list), type, link_member)
+
+#define __list_last(list, type, link_member) \
+	__list_link_checked_element(list_last_link(list), type, link_member)
+
 #define __list_link_checked_element(link, type, link_member) \
 	__extension__ ({ \
 		struct list_link *__list_link__ = (link); \
@@ -64,12 +77,6 @@ inline static struct list_link *list_last_link(struct list *list) {
 				? list_link_element(__list_link__, type, link_member) \
 				: NULL; \
 	})
-
-#define __list_first(list, type, link_member) \
-	__list_link_checked_element(list_first_link(list), type, link_member)
-
-#define __list_last(list, type, link_member) \
-	__list_link_checked_element(list_last_link(list), type, link_member)
 
 inline static void __list_insert_between(struct list_link *new,
 		struct list_link *prev, struct list_link *next) {
@@ -82,11 +89,13 @@ inline static void __list_insert_between(struct list_link *new,
 inline static void list_add_first_link(struct list_link *link,
 		struct list *list) {
 	struct list_link *l = &list->link;
+	assert(list_alone_link(link));
 	__list_insert_between(link, l, l->next);
 }
 
 inline static void list_add_last_link(struct list_link *link, struct list *list) {
 	struct list_link *l = &list->link;
+	assert(list_alone_link(link));
 	__list_insert_between(link, l->prev, l);
 }
 
