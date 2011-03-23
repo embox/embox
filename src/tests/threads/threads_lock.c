@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Testing functions thread_lock and thread_unlock
+ * @brief Testing functions sched_thread_lock and thread_unlock
  * @details Test which writes "+","-","*" and "/"
  * Minus_thread goes to sleep then will be awaken
  * by highest_thread. Highest_thread is started by div_thread
@@ -50,7 +50,7 @@ static void plus_run(void) {
  */
 static void minus_run(void) {
 	size_t i;
-	scheduler_sleep(&event);
+	scher_sleep(&event);
 	for (i = 0; i < 1000; i++) {
 		TRACE("-");
 	}
@@ -80,7 +80,7 @@ static void div_run(void) {
 static void highest_run(void) {
 	size_t i;
 	TRACE("Highest");
-	scheduler_wakeup(&event);
+	sched_wakeup(&event);
 	TRACE("Highest cont");
 	for (i = 0; i < 100; i++) {
 		TRACE("!");
@@ -99,7 +99,7 @@ static int run(void) {
 	div_thread = thread_create(div_run, div_stack + THREAD_STACK_SIZE);
 	highest_thread = thread_create(highest_run, highest_stack + THREAD_STACK_SIZE);
 
-	scheduler_remove(highest_thread);
+	sched_remove(highest_thread);
 
 	assert(plus_thread != NULL);
 	assert(minus_thread != NULL);
@@ -115,7 +115,7 @@ static int run(void) {
 	thread_start(div_thread);
 
 	TRACE("\nBefore start\n");
-	scheduler_start();
-	scheduler_stop();
+	sched_start();
+	sched_stop();
 	return 0;
 }

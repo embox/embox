@@ -93,7 +93,7 @@ static volatile unsigned int irq_nesting_count;
 
 static void irq_enter(void) {
 	ipl_t ipl;
-	scheduler_lock();
+	sched_lock();
 
 	ipl = ipl_save();
 	irq_nesting_count++;
@@ -110,7 +110,7 @@ static void irq_leave(void) {
 		softirq_dispatch();
 	}
 	ipl_restore(ipl);
-	scheduler_unlock();
+	sched_unlock();
 }
 
 void irq_dispatch(interrupt_nr_t interrupt_nr) {

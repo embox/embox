@@ -61,7 +61,7 @@ static int run(void) {
 	assert(dec_thread != NULL);
 	thread_start(dec_thread);
 	thread_start(inc_thread);
-	scheduler_start();
-	scheduler_stop();
+	sched_start();
+	sched_stop();
 	return 0;
 }

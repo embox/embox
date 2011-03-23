@@ -22,30 +22,30 @@ void mutex_init(struct mutex *mutex) {
 }
 
 void mutex_lock(struct mutex *mutex) {
-	scheduler_lock();
+	sched_lock();
 	if (mutex->lockscount == 0) {
 		mutex->lockscount++;
 	} else {
-		scheduler_sleep(&mutex->event);
+		scher_sleep(&mutex->event);
 	}
-	scheduler_unlock();
+	sched_unlock();
 }
 
 void mutex_unlock(struct mutex *mutex) {
 	if (list_empty(&mutex->event.threads_list)) {
 		mutex->lockscount--;
 	} else {
-		scheduler_wakeup_first(&mutex->event);
+		sched_wakeup_first(&mutex->event);
 	}
 }
 
 int mutex_trylock(struct mutex *mutex) {
-	scheduler_lock();
+	sched_lock();
 	if (mutex->lockscount == 0) {
 		mutex->lockscount++;
 		return 0;
 	} else {
 		return -EAGAIN;
 	}
-	scheduler_unlock();
+	sched_unlock();
 }

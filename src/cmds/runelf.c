@@ -63,8 +63,8 @@ static int exec(int argsc, char **argsv) {
 	run();
 //	thread = thread_create(run, thread_stack + THREAD_STACK_SIZE);
 //	thread_start(thread);
-//	scheduler_start();
-//	scheduler_stop();
+//	sched_start();
+//	sched_stop();
 	fclose(file);
 	return 0;
 }

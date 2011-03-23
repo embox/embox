@@ -50,7 +50,7 @@ static int threads_init(void) {
 		idle_thread_stack + THREAD_STACK_SIZE);
 	idle_thread->priority = THREAD_PRIORITY_MIN;
 	idle_thread->state = THREAD_STATE_RUN;
-	scheduler_add(idle_thread);
+	sched_add(idle_thread);
 	return 0;
 }
 
@@ -118,15 +118,15 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 
 void thread_start(struct thread *thread) {
 	thread->state = THREAD_STATE_RUN;
-	scheduler_add(thread);
+	sched_add(thread);
 }
 
 void thread_change_priority(struct thread *thread, int new_priority) {
-	scheduler_lock();
-	scheduler_remove(thread);
+	sched_lock();
+	sched_remove(thread);
 	thread->priority = new_priority;
-	scheduler_add(thread);
-	scheduler_unlock();
+	sched_add(thread);
+	sched_unlock();
 }
 
 /**
@@ -155,13 +155,13 @@ int thread_stop(struct thread *thread) {
 		    thread == zombie || !thread->exist) {
 		return -EINVAL;
 	}
-	scheduler_lock();
+	sched_lock();
 	LOG_DEBUG("\nStopping %d\n", thread->id);
 	if (zombie != NULL) {
 		thread_delete(zombie);
 		zombie = NULL;
 	}
-	scheduler_remove(thread);
+	sched_remove(thread);
 	if (thread_current() != thread) {
 		thread_delete(thread);
 	} else {
@@ -170,13 +170,13 @@ int thread_stop(struct thread *thread) {
 	}
 
 	LOG_DEBUG("\nZombying 0x%x\n", (unsigned int)thread);
-	scheduler_unlock();
+	sched_unlock();
 	return 0;
 }
 
 void thread_yield(void) {
-	scheduler_lock();
+	sched_lock();
 	thread_current()->reschedule = true;
-	scheduler_unlock();
+	sched_unlock();
 }
 

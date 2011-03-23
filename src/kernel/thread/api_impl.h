@@ -35,7 +35,7 @@ inline static struct thread *thread_get_by_id(__thread_id_t id) {
 }
 
 inline static struct thread *thread_current(void) {
-	return scheduler_current();
+	return sched_current();
 }
 
 #endif /* KERNEL_THREAD_API_IMPL_H_ */

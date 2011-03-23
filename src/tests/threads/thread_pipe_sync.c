@@ -83,8 +83,8 @@ static int run(void) {
 	pipe_create(); // pipe #0
 	pipe_create(); // pipe #1
 
-	scheduler_start();
-	scheduler_stop();
+	sched_start();
+	sched_stop();
 
 	return 0;
 }

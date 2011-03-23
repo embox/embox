@@ -12,7 +12,7 @@
 #include <lib/list.h>
 #include <util/array.h>
 #include <kernel/thread/api.h>
-#include <kernel/thread/sched_logic.h>
+#include <kernel/thread/sched_policy.h>
 
 /**
  * Structure priority in list.
@@ -122,11 +122,11 @@ static void run_push(struct thread *thread) {
 	list_add(&thread->sched_list, &priority->thread_list);
 }
 
-struct thread *_scheduler_current(void) {
+struct thread *sched_policy_current(void) {
 	return current_thread;
 }
 
-void _scheduler_add(struct thread *thread) {
+void sched_policy_add(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
 
 	if (list_empty(&priority->thread_list)) {
@@ -141,7 +141,7 @@ void _scheduler_add(struct thread *thread) {
 	}
 }
 
-struct thread *_scheduler_next(struct thread *prev_thread) {
+struct thread *sched_policy_next(struct thread *prev_thread) {
 	struct run_thread_list *priority = priorities + prev_thread->priority;
 	struct thread *next;
 
@@ -171,7 +171,7 @@ struct thread *_scheduler_next(struct thread *prev_thread) {
 	return (current_thread = next);
 }
 
-void _scheduler_remove(struct thread *thread) {
+void sched_policy_remove(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
 
 	if (thread == current_thread) {
@@ -191,21 +191,21 @@ void _scheduler_remove(struct thread *thread) {
 /**
  * Scheduler start to work.
  */
-void _scheduler_start(void) {
+void sched_policy_start(void) {
 	/* Nothing to do. */
 }
 
 /**
  * Scheduler has finished its work.
  */
-void _scheduler_stop(void) {
+void sched_policy_stop(void) {
 	/* Nothing to do. */
 }
 
 /**
  * Initializes list of priority.
  */
-void _scheduler_init(void) {
+void sched_policy_init(void) {
 	struct run_thread_list *ptr;
 
 	INIT_LIST_HEAD(&run_queue);

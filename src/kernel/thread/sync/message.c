@@ -20,13 +20,13 @@ static struct message message_pool[MESSAGE_POOL_SZ];
 static bool message_pool_mask[MESSAGE_POOL_SZ];
 
 void message_send(struct message *message, struct thread *thread) {
-	scheduler_lock();
+	sched_lock();
 	list_add_tail(&message->list, &thread->messages);
 	if (thread->need_message) {
 		thread->need_message = false;
-		scheduler_wakeup(&thread->msg_event);
+		sched_wakeup(&thread->msg_event);
 	}
-	scheduler_unlock();
+	sched_unlock();
 }
 
 struct message *message_receive(void) {
@@ -34,7 +34,7 @@ struct message *message_receive(void) {
 
 	if (list_empty(&thread_current()->messages)) {
 		thread_current()->need_message = true;
-		scheduler_sleep(&thread_current()->msg_event);
+		scher_sleep(&thread_current()->msg_event);
 	}
 
 	ret = thread_current()->messages.next;

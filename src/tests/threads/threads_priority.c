@@ -42,7 +42,7 @@ static int run(void) {
 	}
 
 	TRACE("\nBefore start\n");
-	scheduler_start();
-	scheduler_stop();
+	sched_start();
+	sched_stop();
 	return 0;
 }

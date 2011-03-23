@@ -101,7 +101,7 @@ static int run(void) {
 	thread_start(highest_thread);
 
 	TRACE("\nBefore start\n");
-	scheduler_start();
-	scheduler_stop();
+	sched_start();
+	sched_stop();
 	return 0;
 }

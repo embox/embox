@@ -9,11 +9,12 @@
 #ifndef KERNEL_THREAD_SCHED_IMPL_H_
 #define KERNEL_THREAD_SCHED_IMPL_H_
 
-#include "types.h"
-#include <kernel/thread/sched_logic.h>
+#include <kernel/thread/sched_policy.h>
 
-inline static struct thread *scheduler_current(void) {
-	return _scheduler_current();
+struct thread;
+
+inline static struct thread *sched_current(void) {
+	return sched_policy_current();
 }
 
 #endif /* KERNEL_THREAD_SCHED_IMPL_H_ */
