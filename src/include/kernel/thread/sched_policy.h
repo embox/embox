@@ -10,6 +10,7 @@
 #ifndef KERNEL_THREAD_SCHED_LOGIC_H_
 #define KERNEL_THREAD_SCHED_LOGIC_H_
 
+#include <stdbool.h>
 #include __impl_x(kernel/thread/types.h)
 
 /**
@@ -31,21 +32,23 @@ extern void sched_policy_stop(void);
 /**
  * Adds new thread in thread list.
  * @param added_thread
+ * @return true when rescheduling is necessary
  */
-extern void sched_policy_add(struct thread *added_thread);
+extern bool sched_policy_add(struct thread *added_thread);
 
 /**
  * Move current_thread pointer to the next thread.
  * @param prev_thread thread, which have worked just now.
  */
-extern struct thread *sched_policy_next(struct thread *prev_thread);
+extern struct thread *sched_policy_switch(struct thread *prev_thread);
 
 /**
  * Removes thread from the scheduler.
  * If thread doesn't exist in scheduler, there must be NO ERROR.
  * @param removed_thread thread to remove.
+ * @return true when rescheduling is necessary
  */
-extern void sched_policy_remove(struct thread *removed_thread);
+extern bool sched_policy_remove(struct thread *removed_thread);
 
 /**
  * Gets current thread.

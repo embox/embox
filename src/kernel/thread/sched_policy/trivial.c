@@ -33,11 +33,12 @@ void sched_policy_stop(void) {
 	/* Nothing to do. */
 }
 
-void sched_policy_add(struct thread *added_thread) {
+bool sched_policy_add(struct thread *added_thread) {
 	list_add_tail(&added_thread->sched_list, list_head_run);
+	return false;
 }
 
-struct thread *sched_policy_next(struct thread *prev_thread) {
+struct thread *sched_policy_switch(struct thread *prev_thread) {
 	if (prev_thread->sched_list.next == NULL) {
 		return list_entry(idle_thread->sched_list.next,
 			struct thread, sched_list);
@@ -46,9 +47,10 @@ struct thread *sched_policy_next(struct thread *prev_thread) {
 		struct thread, sched_list);
 }
 
-void sched_policy_remove(struct thread *removed_thread) {
+bool sched_policy_remove(struct thread *removed_thread) {
 	if (removed_thread->sched_list.next != NULL) {
 		list_del(&removed_thread->sched_list);
 	}
+	return false;
 }
 

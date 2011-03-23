@@ -126,7 +126,7 @@ struct thread *sched_policy_current(void) {
 	return current_thread;
 }
 
-void sched_policy_add(struct thread *thread) {
+bool sched_policy_add(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
 
 	if (list_empty(&priority->thread_list)) {
@@ -139,9 +139,11 @@ void sched_policy_add(struct thread *thread) {
 	if (!current_thread) {
 		current_thread = thread;
 	}
+
+	return (thread->priority < current_thread->priority);
 }
 
-struct thread *sched_policy_next(struct thread *prev_thread) {
+struct thread *sched_policy_switch(struct thread *prev_thread) {
 	struct run_thread_list *priority = priorities + prev_thread->priority;
 	struct thread *next;
 
@@ -171,13 +173,12 @@ struct thread *sched_policy_next(struct thread *prev_thread) {
 	return (current_thread = next);
 }
 
-void sched_policy_remove(struct thread *thread) {
+bool sched_policy_remove(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
 
 	if (thread == current_thread) {
 		current_thread->state = THREAD_STATE_ZOMBIE;
-		current_thread->reschedule = true;
-		return;
+		return true;
 	}
 
 	list_del_init(&thread->sched_list);
@@ -186,6 +187,8 @@ void sched_policy_remove(struct thread *thread) {
 		/* Remove link on list of threads with given priority */
 		list_del_init(&priority->priority_link);
 	}
+
+	return false;
 }
 
 /**

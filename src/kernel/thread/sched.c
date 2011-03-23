@@ -7,6 +7,7 @@
  * @author Skorodumov Kirill
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <lib/list.h>
 #include <kernel/thread/api.h>
@@ -17,7 +18,8 @@
 #include <hal/ipl.h>
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(scheduler_init);
+EMBOX_UNIT_INIT(sched_init)
+;
 
 /** Timer, which calls scheduler_tick. */
 #define THREADS_TIMER_ID 17
@@ -35,9 +37,9 @@ static int preemption_count = 1;
 /**
  * Initializes scheduler.
  */
-static int scheduler_init(void) {
+static int sched_init(void) {
 	sched_policy_init();
-//	scheduler_current()->reschedule = false;
+	//	scheduler_current()->reschedule = false;
 	return 0;
 }
 
@@ -45,14 +47,14 @@ static int scheduler_init(void) {
  * Is regularly called to show that current thread to be changed.
  * @param id nothing significant
  */
-static void scheduler_tick(uint32_t id) {
+static void sched_tick(uint32_t id) {
 	LOG_DEBUG("\nTick\n");
 	sched_current()->reschedule = true;
 }
 
 void sched_start(void) {
 	LOG_DEBUG("\nStart scheduler\n");
-	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, scheduler_tick);
+	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, sched_tick);
 	idle_thread->reschedule = true;
 	sched_policy_start();
 	sched_unlock();
@@ -80,22 +82,21 @@ void sched_dispatch(void) {
 	struct thread *prev_thread;
 	struct thread *next_thread;
 
-
 	if (preemption_count == 0 && sched_current()->reschedule) {
 		preemption_inc();
 		prev_thread = sched_current();
-		next_thread = sched_policy_next(prev_thread);
+		next_thread = sched_policy_switch(prev_thread);
 		prev_thread->reschedule = false;
 
-		#ifdef CONFIG_PP_ENABLE
+#ifdef CONFIG_PP_ENABLE
 		if (thread_current()->pp != prev_thread->pp) {
 			pp_store( prev_thread->pp );
 			pp_restore( thread_current()->pp );
 		}
-		#endif
+#endif
 
 		LOG_DEBUG("\nSwitching from %d to %d\n",
-			prev_thread->id, thread_current()->id);
+				prev_thread->id, thread_current()->id);
 		ipl = ipl_save();
 		preemption_count--;
 		context_switch(&prev_thread->context, &next_thread->context);
@@ -104,15 +105,25 @@ void sched_dispatch(void) {
 }
 
 void sched_add(struct thread *added_thread) {
+	struct thread *current;
+	bool resched;
+
 	sched_lock();
-	sched_policy_add(added_thread);
+
+	resched = sched_policy_add(added_thread);
+	current = sched_current();
+
+	assert(current);
+
+	current->reschedule |= resched;
+
 	sched_unlock();
 }
 
 void sched_stop(void) {
 	sched_lock();
 	LOG_DEBUG("\nStop scheduler\n");
-	close_timer (THREADS_TIMER_ID);
+	close_timer(THREADS_TIMER_ID);
 	sched_policy_stop();
 }
 
@@ -121,7 +132,7 @@ int sched_remove(struct thread *removed_thread) {
 		return -EINVAL;
 	}
 	sched_lock();
-	sched_policy_remove(removed_thread);
+	sched_current()->reschedule |= sched_policy_remove(removed_thread);
 	sched_unlock();
 	return 0;
 }
@@ -130,7 +141,7 @@ int scher_sleep(struct event *event) {
 	sched_lock();
 	sched_current()->state = THREAD_STATE_WAIT;
 	list_add(&sched_current()->wait_list, &event->threads_list);
-	sched_remove(sched_current());
+	sched_current()->reschedule |= sched_policy_remove(sched_current());
 	LOG_DEBUG("\nLocking %d\n", thread_current()->id);
 	sched_unlock();
 	return 0;
@@ -144,7 +155,7 @@ int sched_wakeup(struct event *event) {
 			&event->threads_list, wait_list) {
 		list_del_init(&thread->wait_list);
 		thread->state = THREAD_STATE_RUN;
-		sched_add(thread);
+		sched_current()->reschedule |= sched_policy_add(thread);
 		LOG_DEBUG("\nUnlocking %d\n", thread->id);
 	}
 	sched_unlock();
@@ -157,7 +168,7 @@ int sched_wakeup_first(struct event *event) {
 	thread = list_entry(event->threads_list.next, struct thread, wait_list);
 	list_del_init(&thread->wait_list);
 	thread->state = THREAD_STATE_RUN;
-	sched_add(thread);
+	sched_current()->reschedule |= sched_policy_add(thread);
 	LOG_DEBUG("\nUnlocking %d\n", thread->id);
 	sched_unlock();
 	return 0;
