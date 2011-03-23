@@ -14,6 +14,7 @@
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/cpu.h>
+#include <string.h>
 
 /* Check if the bit BIT in FLAGS is set. */
 #define CHECK_FLAG(flags, bit) ((flags) & (1 << (bit)))
@@ -24,8 +25,14 @@
  */
 void multiboot_check(unsigned long magic, unsigned long addr) {
 	multiboot_info_t *mbi;
+//FIXME x86 section copy must be moved to boot code
+	extern uint8_t _bss_vma, _bss_len;
+	extern uint8_t _data_vma, _data_lma, _data_len;
+	memset(&_bss_vma, 0, (size_t)&_bss_len);
+	if (&_data_vma != &_data_lma) {
+		memcpy(&_data_vma, &_data_lma, (size_t)&_data_len);
+	}
 
-	//vga_console_init(80, 25);
 
 	/* Am I booted by a Multiboot-compliant boot loader? */
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
