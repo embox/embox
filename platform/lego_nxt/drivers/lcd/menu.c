@@ -50,7 +50,7 @@ int n_of_t(void){
 	test_foreach(test) {
 		++i;
 	}
-	printf("\nTotal tests: %d\n", i);
+	//printf("\nTotal tests: %d\n", i);
 
 	/*const struct test *test;
 	uint8_t n;
@@ -61,20 +61,23 @@ int n_of_t(void){
 	return i;
 }
 
+void print_list_test(uint8_t first){
+	for (int i = 0; i<8; i++){
+		display_fill(0, i*8, 8, 8, 0);
+		TRACE(__test_registry[first + i].mod->name); //hm... maybe something else
+		//printf("/n");
+	}
+}
+
 /*This function move list of test */
 uint8_t move_list(uint8_t current_test, int buts){
 	int number, i;
 
-	/*for (i = 0; i<8; i++){
-		TRACE("  /n");
-		TRACE( __test_registry[i].mod->name ); //hm... maybe something else
-	}*/
-
 	if (buts & BT_LEFT) {
-		number = n_of_t() + 1;
+		number = n_of_t();
 		for (i = 0; i<8; i++){
-			while(current_test < number){
-				TRACE("  /n");
+			if(current_test < number){
+				TRACE("  ");
 				TRACE( __test_registry[i].mod->name);//->mod.name); //hm... maybe something else
 			}
 		}

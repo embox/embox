@@ -11,8 +11,6 @@
 
 EMBOX_TEST(run_fill);
 
-extern int display_fill(uint8_t, uint8_t, uint8_t, uint8_t, int);
-
 static int run_fill(void) {
 
 	uint8_t buff[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
