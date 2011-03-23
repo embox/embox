@@ -145,7 +145,6 @@ void run_shell(void) {
 static int tty_init(void) {
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 	size_t i;
-	const struct cmd *def_shell;
 #endif
 
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE, "r");
@@ -155,6 +154,7 @@ static int tty_init(void) {
 		return -1;
 	}
 
+//	scheduler_start();
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 	cur_tty->console_cur = -1;
 
@@ -174,8 +174,11 @@ static int tty_init(void) {
 	cur_console = (struct vconsole *)&cur_tty->console[0];
 	cur_tty->console_cur = 0;
 	/* TODO add redraw current console in the end */
+	//FIXME scheduler must starting in more convenient place/
+	scheduler_start();
 #else
 	run_shell();
+
 #endif
 	return 0;
 }

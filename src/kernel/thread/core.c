@@ -88,9 +88,13 @@ static struct thread *thread_new(void) {
 	}
 	return NULL;
 }
-
+//FIXME stack addr must be a type
 struct thread *thread_create(void (*run)(void), void *stack_address) {
+	uint32_t stack_addr = (uint32_t)stack_address;
 	struct thread *created_thread = thread_new();
+	stack_addr &= ~7;
+
+
 	if (created_thread == NULL || run == NULL || stack_address == NULL) {
 		return NULL;
 	}
@@ -98,7 +102,7 @@ struct thread *thread_create(void (*run)(void), void *stack_address) {
 	context_init(&created_thread->context, true);
 	context_set_entry(&created_thread->context,
 			thread_run, (int)created_thread);
-	context_set_stack(&created_thread->context, stack_address);
+	context_set_stack(&created_thread->context, (void *)stack_addr);
 	created_thread->state = THREAD_STATE_STOP;
 	created_thread->priority = 1;
 	created_thread->need_message = false;

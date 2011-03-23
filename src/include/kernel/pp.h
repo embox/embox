@@ -21,13 +21,11 @@
 extern char share_variable;
 #endif
 
-#define PP_INIT_LIST \
+#define PP_INIT_LIST() \
 	PP_VAR( cur_console ) /* from: stdio.c */ \
 	PP_VAR( share_variable ) /* from: test_pp.c */ \
 
-#define PP_SIZEOF_LIST \
-	sizeof(cur_console) + \
-	sizeof(char) // share_variable
+#define PP_SIZEOF_LIST	sizeof(cur_console) +	sizeof(char)
 
 #define PP_INIT_LIST_S     2
 #define PP_THREADS_S       10

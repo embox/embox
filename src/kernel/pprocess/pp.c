@@ -6,6 +6,8 @@
  * @author Fedor Burdun
  * @date 11.12.10
  */
+#include <types.h>
+#include <string.h>
 
 #define PP_VAR( var ) \
 	pp_pool[ pp_pool_s ] = &var; \
@@ -66,7 +68,7 @@ static int pp_init(void) {
 	printk("PP_INIT: ");
 
 	pp_pool_s = 0;
-	PP_INIT_LIST
+	PP_INIT_LIST();
 	//FIXME PProcess must use kmem interface
 	#ifdef KMEM_USE
 	pp_cur_process = kmem_cache_alloc(pp_p);
