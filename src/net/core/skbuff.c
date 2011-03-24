@@ -23,8 +23,8 @@ static struct sk_buff_head sk_queue_pool[CONFIG_QUANTITY_SKB_QUEUE];
 static LIST_HEAD(head_free_queue);
 
 STATIC_CACHE_CREATE(net_buff_cache,
-					unsigned char[CONFIG_ETHERNET_V2_FRAME_SIZE],
-					CONFIG_PACK_POOL_SIZE);
+		unsigned char[CONFIG_ETHERNET_V2_FRAME_SIZE],
+		CONFIG_PACK_POOL_SIZE);
 
 /**
  * Allocate net_packet_buff for one ethernet packet on the cache.
