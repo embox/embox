@@ -29,9 +29,9 @@ struct static_cache {
 
 /** create cache */
 #define __STATIC_CACHE_CREATE(name, type, count) \
-  static char __##name##_pool[count * binalign_bound(sizeof(type), sizeof(struct list_head))]; \
+  static char __##name##_pool[(count) * binalign_bound(sizeof(type), sizeof(struct list_head))]; \
   static static_cache_t name = { \
-        .num = count, \
+        .num = (count), \
         .size = binalign_bound(sizeof(type), sizeof(struct list_head)), \
         .cache_begin = __##name##_pool, \
         .obj_ptr = {NULL, NULL}, \
