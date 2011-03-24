@@ -207,6 +207,15 @@ TEST_CASE("list_insert_before on a single element list should make "
 	test_assert_equal(list_first_link(&m), &y.lnk);
 }
 
+TEST_CASE("list_insert_after on a single element list should make "
+		"a new element the last one in the list") {
+	list_add_first(&x, &m, lnk);
+	list_insert_after(&y, &x, lnk);
+
+	test_assert_equal(list_first_link(&m), &x.lnk);
+	test_assert_equal(list_last_link(&m), &y.lnk);
+}
+
 static int setup(void) {
 	list_init(&m);
 	list_init(&n);
