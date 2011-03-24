@@ -169,6 +169,7 @@ TEST_CASE("single list_remove and subsequent list_add_first to another list "
 	test_assert_not_equal(&m, &n);
 
 	list_add_first(&x, &m, lnk);
+
 	list_remove(&x, lnk);
 	list_add_first(&x, &n, lnk);
 
@@ -201,6 +202,34 @@ TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
 	test_assert_equal(list_first_link(&n), &z.lnk);
 }
 
+TEST_CASE("list_remove_first should return null for empty list") {
+	test_assert_null(list_remove_first(&m, struct element, lnk));
+}
+
+TEST_CASE("list_remove_last should return null for empty list") {
+	test_assert_null(list_remove_last(&m, struct element, lnk));
+}
+
+TEST_CASE("list_remove_first on a single element list should return the "
+		"element and make the list empty and element alone again") {
+	list_add_first(&x, &m, lnk);
+
+	test_assert_equal(list_remove_first(&m, struct element, lnk), &x);
+
+	test_assert_true(list_empty(&m));
+	test_assert_true(list_alone(&x, lnk));
+}
+
+TEST_CASE("list_remove_last on a single element list should return the "
+		"element and make the list empty and element alone again") {
+	list_add_first(&x, &m, lnk);
+
+	test_assert_equal(list_remove_last(&m, struct element, lnk), &x);
+
+	test_assert_true(list_empty(&m));
+	test_assert_true(list_alone(&x, lnk));
+}
+
 TEST_CASE("list_insert_before on a single element list should make "
 		"a new element the first one in the list") {
 	list_add_first(&x, &m, lnk);
@@ -228,11 +257,8 @@ TEST_CASE("list_insert_before: inserting a new element before the last one "
 
 	list_insert_before(&y, &z, lnk);
 
-	test_assert_equal(list_first_link(&m), &x.lnk);
-	test_assert_equal(list_last_link(&m), &z.lnk);
-
-	list_remove(&x, lnk);
-	list_remove(&z, lnk);
+	test_assert_equal(list_remove_first_link(&m), &x.lnk);
+	test_assert_equal(list_remove_last_link(&m), &z.lnk);
 
 	test_assert_equal(list_first_link(&m), &y.lnk);
 	test_assert_equal(list_last_link(&m), &y.lnk);
@@ -245,11 +271,8 @@ TEST_CASE("list_insert_after: inserting a new element after the first one "
 
 	list_insert_after(&y, &x, lnk);
 
-	test_assert_equal(list_first_link(&m), &x.lnk);
-	test_assert_equal(list_last_link(&m), &z.lnk);
-
-	list_remove(&x, lnk);
-	list_remove(&z, lnk);
+	test_assert_equal(list_remove_first_link(&m), &x.lnk);
+	test_assert_equal(list_remove_last_link(&m), &z.lnk);
 
 	test_assert_equal(list_first_link(&m), &y.lnk);
 	test_assert_equal(list_last_link(&m), &y.lnk);

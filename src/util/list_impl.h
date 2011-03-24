@@ -32,18 +32,21 @@ struct list {
 /* Most of macros are defined through a corresponding _link method. */
 
 #define __list_link_element(link, type, m_link) \
-		structof(link, type, m_link)
+	__extension__ ({ \
+		assert((link) != NULL);       \
+		structof(link, type, m_link); \
+	})
 
 #define __list_alone(element, m_link) \
 	list_alone_link(&(element)->m_link)
 
 #define __list_first(list, type, m_link) \
-	__list_link_checked_element(list_first_link(list), type, m_link)
+	__list_link_element_check(list_first_link(list), type, m_link)
 
 #define __list_last(list, type, m_link) \
-	__list_link_checked_element(list_last_link(list), type, m_link)
+	__list_link_element_check(list_last_link(list), type, m_link)
 
-#define __list_link_checked_element(link, type, m_link) \
+#define __list_link_element_check(link, type, m_link) \
 	__extension__ ({ \
 		struct list_link *__list_link__ = (link); \
 		__list_link__ ? list_link_element(__list_link__, type, m_link) : NULL;\
@@ -60,6 +63,12 @@ struct list {
 
 #define __list_insert_after(element, list_element, m_link) \
 	list_insert_after_link(&(element)->m_link, &(list_element)->m_link)
+
+#define __list_remove_first(list, type, m_link) \
+	__list_link_element_check(list_remove_first_link(list), type, m_link)
+
+#define __list_remove_last(list, type, m_link) \
+	__list_link_element_check(list_remove_last_link(list), type, m_link)
 
 #define __list_remove(element, m_link) \
 	list_remove_link(&(element)->m_link)
@@ -155,6 +164,26 @@ inline static void list_remove_link(struct list_link *link) {
 	prev->next = next;
 
 	list_link_init(link);
+}
+
+inline static struct list_link *list_remove_first_link(struct list *list) {
+	struct list_link *ret;
+
+	if ((ret = list_first_link(list))) {
+		list_remove_link(ret);
+	}
+
+	return ret;
+}
+
+inline static struct list_link *list_remove_last_link(struct list *list) {
+	struct list_link *ret;
+
+	if ((ret = list_last_link(list))) {
+		list_remove_link(ret);
+	}
+
+	return ret;
 }
 
 #endif /* UTIL_LIST_IMPL_H_ */
