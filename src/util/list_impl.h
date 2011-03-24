@@ -116,25 +116,33 @@ inline static void __list_insert_between_link(struct list_link *new_link,
 inline static void list_insert_before_link(struct list_link *new_link,
 		struct list_link *link) {
 	assert(link != NULL);
+	assert(!list_alone_link(link));
 	__list_insert_between_link(new_link, link->prev, link);
 }
 
 inline static void list_insert_after_link(struct list_link *new_link,
 		struct list_link *link) {
 	assert(link != NULL);
+	assert(!list_alone_link(link));
 	__list_insert_between_link(new_link, link, link->next);
 }
 
 inline static void list_add_first_link(struct list_link *new_link,
 		struct list *list) {
+	struct list_link *l;
+
 	assert(list != NULL);
-	list_insert_after_link(new_link, &list->link);
+	l = &list->link;
+	__list_insert_between_link(new_link, l, l->next);
 }
 
 inline static void list_add_last_link(struct list_link *new_link,
 		struct list *list) {
+	struct list_link *l;
+
 	assert(list != NULL);
-	list_insert_before_link(new_link, &list->link);
+	l = &list->link;
+	__list_insert_between_link(new_link, l->prev, l);
 }
 
 inline static void list_remove_link(struct list_link *link) {

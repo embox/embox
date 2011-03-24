@@ -48,7 +48,7 @@ TEST_CASE("list_init should have the same effect as static initializer") {
 }
 
 TEST_CASE("list_link_init should have the same effect as static initializer") {
-	struct element e = { .lnk = LIST_LINK_INIT(&e.lnk) };
+	struct element e = { .lnk = LIST_LINK_INIT(&e.lnk), .some_stuff = 42, };
 	char buff[sizeof(e.lnk)];
 	memcpy(buff, &e.lnk, sizeof(e.lnk));
 	memset(&e.lnk, 0xA5, sizeof(e.lnk)); /* poison. */
@@ -157,6 +157,7 @@ TEST_CASE("list_first_link and list_last_link should return a new and an old "
 TEST_CASE("list_remove on a single element list should make the list empty "
 		"and element alone again") {
 	list_add_first(&x, &m, lnk);
+
 	list_remove(&x, lnk);
 
 	test_assert_true(list_empty(&m));
@@ -181,9 +182,11 @@ TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
 	list_add_last(&x, &m, lnk);
 	list_add_last(&y, &m, lnk);
 	list_add_last(&z, &m, lnk);
+
 	list_remove(&x, lnk);
 	list_remove(&z, lnk);
 	list_remove(&y, lnk);
+
 	list_add_first(&x, &n, lnk);
 	list_add_first(&y, &n, lnk);
 	list_add_first(&z, &n, lnk);
@@ -201,6 +204,7 @@ TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
 TEST_CASE("list_insert_before on a single element list should make "
 		"a new element the first one in the list") {
 	list_add_first(&x, &m, lnk);
+
 	list_insert_before(&y, &x, lnk);
 
 	test_assert_equal(list_last_link(&m), &x.lnk);
@@ -210,10 +214,56 @@ TEST_CASE("list_insert_before on a single element list should make "
 TEST_CASE("list_insert_after on a single element list should make "
 		"a new element the last one in the list") {
 	list_add_first(&x, &m, lnk);
+
 	list_insert_after(&y, &x, lnk);
 
 	test_assert_equal(list_first_link(&m), &x.lnk);
 	test_assert_equal(list_last_link(&m), &y.lnk);
+}
+
+TEST_CASE("list_insert_before: inserting a new element before the last one "
+		"in a list of two elements should insert a new one between them") {
+	list_add_first(&x, &m, lnk);
+	list_add_last(&z, &m, lnk);
+
+	list_insert_before(&y, &z, lnk);
+
+	test_assert_equal(list_first_link(&m), &x.lnk);
+	test_assert_equal(list_last_link(&m), &z.lnk);
+
+	list_remove(&x, lnk);
+	list_remove(&z, lnk);
+
+	test_assert_equal(list_first_link(&m), &y.lnk);
+	test_assert_equal(list_last_link(&m), &y.lnk);
+}
+
+TEST_CASE("list_insert_after: inserting a new element after the first one "
+		"in a list of two elements should insert a new one between them") {
+	list_add_first(&x, &m, lnk);
+	list_add_last(&z, &m, lnk);
+
+	list_insert_after(&y, &x, lnk);
+
+	test_assert_equal(list_first_link(&m), &x.lnk);
+	test_assert_equal(list_last_link(&m), &z.lnk);
+
+	list_remove(&x, lnk);
+	list_remove(&z, lnk);
+
+	test_assert_equal(list_first_link(&m), &y.lnk);
+	test_assert_equal(list_last_link(&m), &y.lnk);
+}
+
+TEST_CASE("list_insert_before and list_insert_after on a single element list"
+		"should make new elements the first and the last accordingly") {
+	list_add_first(&y, &m, lnk);
+
+	list_insert_before(&x, &y, lnk);
+	list_insert_after(&z, &y, lnk);
+
+	test_assert_equal(list_first_link(&m), &x.lnk);
+	test_assert_equal(list_last_link(&m), &z.lnk);
 }
 
 static int setup(void) {
