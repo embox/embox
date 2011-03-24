@@ -9,6 +9,7 @@
 #include <embox/test.h>
 #include <kernel/evdispatch.h>
 #include <kernel/softirq.h>
+#include <unistd.h>
 #include <stdio.h>
 
 EMBOX_TEST(run);
@@ -16,8 +17,6 @@ EMBOX_TEST(run);
 #define EVENT_SOFTIRQ 12
 
 static int flag;
-
-int usleep(useconds_t usec);
 
 static void handler1(struct event_msg* msg) {
 	*((int*) msg->data) += 1;
