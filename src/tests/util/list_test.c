@@ -182,8 +182,8 @@ TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
 	list_add_last(&y, &m, lnk);
 	list_add_last(&z, &m, lnk);
 	list_remove(&x, lnk);
-	list_remove(&y, lnk);
 	list_remove(&z, lnk);
+	list_remove(&y, lnk);
 	list_add_first(&x, &n, lnk);
 	list_add_first(&y, &n, lnk);
 	list_add_first(&z, &n, lnk);
@@ -193,6 +193,18 @@ TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
 	test_assert_false(list_alone(&x, lnk));
 	test_assert_false(list_alone(&y, lnk));
 	test_assert_false(list_alone(&z, lnk));
+
+	test_assert_equal(list_last_link(&n), &x.lnk);
+	test_assert_equal(list_first_link(&n), &z.lnk);
+}
+
+TEST_CASE("list_insert_before on a single element list should make "
+		"a new element the first one in the list") {
+	list_add_first(&x, &m, lnk);
+	list_insert_before(&y, &x, lnk);
+
+	test_assert_equal(list_last_link(&m), &x.lnk);
+	test_assert_equal(list_first_link(&m), &y.lnk);
 }
 
 static int setup(void) {
