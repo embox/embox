@@ -72,5 +72,3 @@ void event_register(int id, void (*handler)(struct event_msg *msg)) {
 
 	handler_arr[id].handler = handler;
 }
-
-

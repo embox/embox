@@ -1,10 +1,10 @@
 /**
  * @brief  Event dispatcher header
  * @details
- *		client    client    client
- *		  |         |         |
- *		  - - - - - - - - - - -
- *		 |     event queue     |
+ *     client    client    client
+ *        |         |         |
+ *        - - - - - - - - - - -
+ *       |     event queue     |
  *        - - - - - - - - - - -
  *                  |
  *                events
@@ -66,4 +66,3 @@ extern void event_send(int id, void *data);
 extern void event_register(int id, void (*handler)(struct event_msg *msg));
 
 #endif /* EVDISPATCH_H_ */
-
