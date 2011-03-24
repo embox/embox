@@ -289,6 +289,36 @@ TEST_CASE("list_insert_before and list_insert_after on a single element list"
 	test_assert_equal(list_last_link(&m), &z.lnk);
 }
 
+TEST_CASE("list_bulk_add_first should make a source list empty") {
+	list_add_last(&x, &m, lnk);
+	list_add_last(&y, &m, lnk);
+
+	list_add_last(&z, &n, lnk);
+
+	list_bulk_add_first(&m, &n);
+
+	test_assert_true(list_empty(&m));
+
+	test_assert_equal(list_remove_first_link(&n), &x.lnk);
+	test_assert_equal(list_remove_first_link(&n), &y.lnk);
+	test_assert_equal(list_remove_first_link(&n), &z.lnk);
+}
+
+TEST_CASE("list_bulk_add_last should make a source list empty") {
+	list_add_last(&x, &n, lnk);
+
+	list_add_last(&y, &m, lnk);
+	list_add_last(&z, &m, lnk);
+
+	list_bulk_add_last(&m, &n);
+
+	test_assert_true(list_empty(&m));
+
+	test_assert_equal(list_remove_first_link(&n), &x.lnk);
+	test_assert_equal(list_remove_first_link(&n), &y.lnk);
+	test_assert_equal(list_remove_first_link(&n), &z.lnk);
+}
+
 static int setup(void) {
 	list_init(&m);
 	list_init(&n);

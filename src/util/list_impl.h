@@ -112,28 +112,39 @@ inline static struct list_link *list_last_link(struct list *list) {
 	return /* list is not empty? */l->prev != l ? l->prev : NULL;
 }
 
-inline static void __list_insert_between_link(struct list_link *new_link,
-		struct list_link *prev, struct list_link *next) {
-	assert(list_alone_link(new_link));
+inline static void __list_bind(struct list_link *prev, struct list_link *next) {
+	next->prev = prev;
+	prev->next = next;
+}
 
-	next->prev = new_link;
-	new_link->next = next;
-	new_link->prev = prev;
-	prev->next = new_link;
+inline static void __list_insert_chain(struct list_link *chain_first,
+		struct list_link *chain_last, struct list_link *prev,
+		struct list_link *next) {
+	__list_bind(prev, chain_first);
+	__list_bind(chain_last, next);
+}
+
+inline static void __list_insert_link(struct list_link *link,
+		struct list_link *prev, struct list_link *next) {
+	__list_insert_chain(link, link, prev, next);
 }
 
 inline static void list_insert_before_link(struct list_link *new_link,
 		struct list_link *link) {
 	assert(link != NULL);
 	assert(!list_alone_link(link));
-	__list_insert_between_link(new_link, link->prev, link);
+	assert(list_alone_link(new_link));
+
+	__list_insert_link(new_link, link->prev, link);
 }
 
 inline static void list_insert_after_link(struct list_link *new_link,
 		struct list_link *link) {
 	assert(link != NULL);
 	assert(!list_alone_link(link));
-	__list_insert_between_link(new_link, link, link->next);
+	assert(list_alone_link(new_link));
+
+	__list_insert_link(new_link, link, link->next);
 }
 
 inline static void list_add_first_link(struct list_link *new_link,
@@ -141,8 +152,10 @@ inline static void list_add_first_link(struct list_link *new_link,
 	struct list_link *l;
 
 	assert(list != NULL);
+	assert(list_alone_link(new_link));
+
 	l = &list->link;
-	__list_insert_between_link(new_link, l, l->next);
+	__list_insert_link(new_link, l, l->next);
 }
 
 inline static void list_add_last_link(struct list_link *new_link,
@@ -150,19 +163,46 @@ inline static void list_add_last_link(struct list_link *new_link,
 	struct list_link *l;
 
 	assert(list != NULL);
+	assert(list_alone_link(new_link));
+
 	l = &list->link;
-	__list_insert_between_link(new_link, l->prev, l);
+	__list_insert_link(new_link, l->prev, l);
+}
+
+inline static void list_bulk_add_first(struct list *from_list,
+		struct list *to_list) {
+	struct list_link *from, *to;
+
+	assert(to_list != NULL);
+
+	if (!list_empty(from_list)) {
+		from = &from_list->link;
+		to = &to_list->link;
+
+		__list_insert_chain(from->next, from->prev, to, to->next);
+		list_link_init(from);
+	}
+}
+
+inline static void list_bulk_add_last(struct list *from_list,
+		struct list *to_list) {
+	struct list_link *from, *to;
+
+	assert(to_list != NULL);
+
+	if (!list_empty(from_list)) {
+		from = &from_list->link;
+		to = &to_list->link;
+
+		__list_insert_chain(from->next, from->prev, to->prev, to);
+		list_link_init(from);
+	}
 }
 
 inline static void list_remove_link(struct list_link *link) {
-	struct list_link *prev, *next;
 	assert(link != NULL);
 
-	prev = link->prev;
-	next = link->next;
-	next->prev = prev;
-	prev->next = next;
-
+	__list_bind(link->prev, link->next);
 	list_link_init(link);
 }
 
