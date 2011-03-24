@@ -32,8 +32,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 	if (&_data_vma != &_data_lma) {
 		memcpy(&_data_vma, &_data_lma, (size_t)&_data_len);
 	}
-
-
+#if 0
 	/* Am I booted by a Multiboot-compliant boot loader? */
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
 		panic("Invalid magic number: 0x%x\n", (unsigned) magic);
@@ -42,7 +41,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 
 	/* Set MBI to the address of the Multiboot information structure. */
 	mbi = (multiboot_info_t *) addr;
-#if 0
+
 	/* Print out the flags.  */
 	prom_printf("flags = 0x%x\n", (unsigned)mbi->flags);
 
@@ -76,13 +75,13 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 				(unsigned) mod->mod_end, (char *) mod->string);
 		}
 	}
-#endif
+
 	/* Bits 4 and 5 are mutually exclusive!  */
 	if (CHECK_FLAG(mbi->flags, 4) && CHECK_FLAG(mbi->flags, 5)) {
 		panic("Both bits 4 and 5 are set.\n");
 		return;
 	}
-#if 0
+
 	/* Is the symbol table of a.out valid?  */
 	if (CHECK_FLAG(mbi->flags, 4)) {
 		aout_symbol_table_t *aout_sym = &(mbi->u.aout_sym);
