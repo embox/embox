@@ -121,11 +121,11 @@
 				MACRO_GUARD(__array_elem_ptr), MACRO_GUARD(__array_end))
 
 #define __array_range_foreach__(element, array_begin, array_end, _ptr, _end) \
-	for (typeof(element) *_ptr = (array_begin),     \
-				*_end = __extension__ ({            \
-					(element) = *_ptr; (array_end); \
-				});                                 \
-			_ptr < _end;                            \
+	for (const typeof(element) *_ptr = (array_begin), \
+				*_end = __extension__ ({              \
+					(element) = *_ptr; (array_end);   \
+				});                                   \
+			_ptr < _end;                              \
 			(element) = *(++_ptr))
 
 #define __array_nullterm_foreach(element, array) \
@@ -136,9 +136,9 @@
 		MACRO_GUARD(__array_elem_ptr), MACRO_GUARD(__array_term))
 
 #define __array_terminated_foreach__(element, array, terminator, _ptr, _term) \
-	for (typeof(element) *_ptr = (array), \
-				_term = (terminator);     \
-			((element) = *_ptr) != _term; \
+	for (const typeof(element) *_ptr = (array), \
+				_term = (terminator);           \
+			((element) = *_ptr) != _term;       \
 			++_ptr)
 
 #define __array_cond_foreach(element, array, cond) \
@@ -146,11 +146,11 @@
 				MACRO_GUARD(__array_elem_ptr))
 
 #define __array_cond_foreach__(element, array, cond, _ptr) \
-	for (typeof(element) *_ptr = __extension__ ({          \
-					typeof(element) *_ptr##_tmp = (array); \
-					(element) = *_ptr##_tmp; _ptr##_tmp;   \
-				});                                        \
-			(cond);                                        \
+	for (const typeof(element) *_ptr = __extension__ ({           \
+					const typeof(element) *__ptr_tmp__ = (array); \
+					(element) = *__ptr_tmp__; __ptr_tmp__;        \
+				});                                               \
+			(cond);                                               \
 			(element) = *(++_ptr))
 
 /* Pointer foreach iterations. */
