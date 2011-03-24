@@ -52,6 +52,8 @@ static struct run_thread_list priorities[THREAD_PRIORITY_TOTAL];
  */
 static struct list_head run_queue;
 
+static void run_insert_priority(struct run_thread_list *priority);
+
 /* Method for more comfortable work with the queue. */
 
 /**
