@@ -1,9 +1,16 @@
 /**
  * @file
- * @brief Implementation of methods in scheduler.h
+ * @brief Preemptive priority scheduler based on multilevel queue.
  *
  * @date 22.04.2010
  * @author Darya Dzendzik
+ *          - Initial implementation
+ * @author Alina Kramar
+ *          - Fixing switch logic
+ *          - Interface change
+ *          - Introducing auxiliary functions for operating with queue
+ *
+ * @see tests/kernel/thread/sched_policy/priority_based_test.c
  */
 
 #include <assert.h>

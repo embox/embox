@@ -7,8 +7,8 @@
  * @author Dmitry Avdyukhin
  */
 
-#ifndef KERNEL_THREAD_SCHED_LOGIC_H_
-#define KERNEL_THREAD_SCHED_LOGIC_H_
+#ifndef KERNEL_THREAD_SCHED_POLICY_H_
+#define KERNEL_THREAD_SCHED_POLICY_H_
 
 #include <stdbool.h>
 #include __impl_x(kernel/thread/types.h)
@@ -56,4 +56,4 @@ extern bool sched_policy_remove(struct thread *removed_thread);
  */
 extern struct thread *sched_policy_current(void);
 
-#endif /* KERNEL_THREAD_SCHED_LOGIC_H_ */
+#endif /* KERNEL_THREAD_SCHED_POLICY_H_ */
