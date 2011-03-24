@@ -44,14 +44,19 @@ static struct thread *current_thread;
 static struct run_thread_list priorities[THREAD_PRIORITY_TOTAL];
 
 /**
- * Head of run_queue is executable thread with maximal of existing priorities.
+ * Priority queue that contains queue of thread. Main queue is ordered by thread
+ * priority. Internal queue is sorted by time of thread adding. Doesn't contain
+ * the current thread. Head of run_queue is a thread which most appropriate for
+ * execution of all of existing thread.
  * Contains idle_thread (last).
  */
 static struct list_head run_queue;
 
 /**
- * TODO --Alina
+ * Method for more comfortable work with the queue.
+ * Returns a thread from the queue top without removing it from there.
  * @return
+ *  top of queue
  */
 static struct thread *run_peek(void) {
 	struct run_thread_list *priority;
@@ -69,8 +74,10 @@ static struct thread *run_peek(void) {
 }
 
 /**
- * TODO --Alina
+ * Method for more comfortable work with the queue.
+ * Returns a thread from the queue top and then removes it from there.
  * @return
+ *  queue top
  */
 static struct thread *run_dequeue(void) {
 	struct thread *thread = run_peek();
@@ -85,8 +92,9 @@ static struct thread *run_dequeue(void) {
 
 /**
  * Insert @a priority to run_queue if threads with given priority don't exist.
- *
+ * Doesn't change the right order.
  * @param priority
+ *  links to thread and priority queues
  */
 static void run_insert_priority(struct run_thread_list *priority) {
 	struct run_thread_list *next_priority;
@@ -107,8 +115,10 @@ static void run_insert_priority(struct run_thread_list *priority) {
 	list_add_tail(&priority->priority_link, &next_priority->priority_link);
 }
 /**
- * TODO --Alina
+ * Method for more comfortable work with the queue.
+ * Adds thread to the end of the run_queue without changing the ordering.
  * @param thread
+ *  thread to add
  */
 static void run_enqueue(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
@@ -118,8 +128,10 @@ static void run_enqueue(struct thread *thread) {
 	list_add_tail(&thread->sched_list, &priority->thread_list);
 }
 /**
- * TODO --Alina
+ * Method for more comfortable work with the queue.
+ * Adds thread to the head of the run_queue without changing the ordering.
  * @param thread
+ *  thread to add
  */
 static void run_push(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
@@ -198,22 +210,16 @@ bool sched_policy_remove(struct thread *thread) {
 	return false;
 }
 
-/**
- * Scheduler start to work.
- */
 void sched_policy_start(void) {
 	/* Nothing to do. */
 }
 
-/**
- * Scheduler has finished its work.
- */
 void sched_policy_stop(void) {
 	/* Nothing to do. */
 }
 
 /**
- * Initializes list of priority.
+ * Initializes priority based policy.
  */
 void sched_policy_init(void) {
 	struct run_thread_list *ptr;
