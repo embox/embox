@@ -52,11 +52,12 @@ static struct run_thread_list priorities[THREAD_PRIORITY_TOTAL];
  */
 static struct list_head run_queue;
 
+/* Method for more comfortable work with the queue. */
+
 /**
- * Method for more comfortable work with the queue.
  * Returns a thread from the queue top without removing it from there.
  * @return
- *  top of queue
+ *   Top of queue.
  */
 static struct thread *run_peek(void) {
 	struct run_thread_list *priority;
@@ -74,10 +75,9 @@ static struct thread *run_peek(void) {
 }
 
 /**
- * Method for more comfortable work with the queue.
  * Returns a thread from the queue top and then removes it from there.
  * @return
- *  queue top
+ *   Queue top.
  */
 static struct thread *run_dequeue(void) {
 	struct thread *thread = run_peek();
@@ -91,10 +91,36 @@ static struct thread *run_dequeue(void) {
 }
 
 /**
+ * Adds thread to the end of the run_queue without changing the ordering.
+ * @param thread
+ *   Thread to add.
+ */
+static void run_enqueue(struct thread *thread) {
+	struct run_thread_list *priority = priorities + thread->priority;
+	if (list_empty(&priority->priority_link)){
+		run_insert_priority(priority);
+	}
+	list_add_tail(&thread->sched_list, &priority->thread_list);
+}
+
+/**
+ * Adds thread to the head of the run_queue without changing the ordering.
+ * @param thread
+ *   Thread to add.
+ */
+static void run_push(struct thread *thread) {
+	struct run_thread_list *priority = priorities + thread->priority;
+	if (list_empty(&priority->priority_link)){
+		run_insert_priority(priority);
+	}
+	list_add(&thread->sched_list, &priority->thread_list);
+}
+
+/**
  * Insert @a priority to run_queue if threads with given priority don't exist.
  * Doesn't change the right order.
  * @param priority
- *  links to thread and priority queues
+ *   Links to thread and priority queues.
  */
 static void run_insert_priority(struct run_thread_list *priority) {
 	struct run_thread_list *next_priority;
@@ -113,32 +139,6 @@ static void run_insert_priority(struct run_thread_list *priority) {
 	}
 
 	list_add_tail(&priority->priority_link, &next_priority->priority_link);
-}
-/**
- * Method for more comfortable work with the queue.
- * Adds thread to the end of the run_queue without changing the ordering.
- * @param thread
- *  thread to add
- */
-static void run_enqueue(struct thread *thread) {
-	struct run_thread_list *priority = priorities + thread->priority;
-	if (list_empty(&priority->priority_link)){
-		run_insert_priority(priority);
-	}
-	list_add_tail(&thread->sched_list, &priority->thread_list);
-}
-/**
- * Method for more comfortable work with the queue.
- * Adds thread to the head of the run_queue without changing the ordering.
- * @param thread
- *  thread to add
- */
-static void run_push(struct thread *thread) {
-	struct run_thread_list *priority = priorities + thread->priority;
-	if (list_empty(&priority->priority_link)){
-		run_insert_priority(priority);
-	}
-	list_add(&thread->sched_list, &priority->thread_list);
 }
 
 struct thread *sched_policy_current(void) {

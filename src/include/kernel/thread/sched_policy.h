@@ -34,9 +34,9 @@ extern void sched_policy_stop(void);
  * Adds a new thread at scheduler. Should add thread into list of thread
  * which are executed without changing the current thread.
  * @param added_thread
- *  thread to adding
+ *   Thread to adding.
  * @return
- *  true when rescheduling is necessary. Otherwise @return false
+ *   True when rescheduling is necessary. Otherwise @return false.
  */
 extern bool sched_policy_add(struct thread *added_thread);
 
@@ -44,9 +44,9 @@ extern bool sched_policy_add(struct thread *added_thread);
  * Switches the current thread pointer to the most appropriate thread. Should
  * change current thread. Threads execution order is implementation dependent.
  * @param prev_thread
- *  thread which runs now.
+ *   Thread which runs now.
  * @return
- *  most appropriate for the execution thread
+ *   Most appropriate for the execution thread.
  */
 extern struct thread *sched_policy_switch(struct thread *prev_thread);
 
@@ -54,15 +54,16 @@ extern struct thread *sched_policy_switch(struct thread *prev_thread);
  * Removes thread from the scheduler. Shouldn't change current thread.
  * If thread doesn't exist in scheduler, there must be NO ERROR.
  * @param removed_thread
- *  thread to remove
- * @return true when rescheduling is necessary. Otherwise @return false
+ *   Thread to remove.
+ * @return
+ *  True when rescheduling is necessary. Otherwise @return false.
  */
 extern bool sched_policy_remove(struct thread *removed_thread);
 
 /**
  * Gets current thread. Shouldn't change current thread between calls of switch
  * @return
- *  thread that runs now
+ *  Thread that runs now.
  */
 extern struct thread *sched_policy_current(void);
 
