@@ -9,6 +9,8 @@
 #include <embox/test.h>
 
 #include <string.h>
+#include <util/array.h>
+
 #include <util/list.h>
 
 EMBOX_TEST_SUITE("util/list test");
@@ -20,8 +22,40 @@ struct element {
 	struct list_link lnk;
 };
 
-struct element x, y, z;
-struct list m, n;
+static struct element x, y, z;
+static struct list m, n;
+
+static struct element * const xyz[] = { &x, &y, &z, NULL };
+static struct element * const xy[] = { &x, &y, NULL };
+static struct element * const yz[] = { &y, &z, NULL };
+static struct element * const xz[] = { &x, &z, NULL };
+
+/**
+ * Fills a @a list with the contents of an @a array.
+ *
+ * @param array
+ *   @a NULL terminated array.
+ * @param list
+ *   The list to fill in.
+ * @return
+ *   The given @a list.
+ */
+static struct list *fill_in_from(struct element * const array[],
+		struct list *list);
+
+/**
+ * Compares a @a list with the pattern @a array. The list becomes empty after
+ * the comparison.
+ *
+ * @param array
+ *   @a NULL terminated array with the expected pattern.
+ * @param list
+ *   The list to check.
+ * @return
+ *   The given @a list.
+ */
+static struct list *compare_with(struct element * const array[],
+		struct list *list);
 
 TEST_CASE("list_link_element should cast link member out to its container") {
 	struct list_link *link = &x.lnk;
@@ -180,17 +214,13 @@ TEST_CASE("single list_remove and subsequent list_add_first to another list "
 
 TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
 		"should make the first list empty but elements not alone") {
-	list_add_last(&x, &m, lnk);
-	list_add_last(&y, &m, lnk);
-	list_add_last(&z, &m, lnk);
+	fill_in_from(xyz, &m);
 
 	list_remove(&x, lnk);
 	list_remove(&z, lnk);
 	list_remove(&y, lnk);
 
-	list_add_first(&x, &n, lnk);
-	list_add_first(&y, &n, lnk);
-	list_add_first(&z, &n, lnk);
+	fill_in_from(xyz, &n);
 
 	test_assert_true(list_empty(&m));
 	test_assert_false(list_empty(&n));
@@ -198,8 +228,8 @@ TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
 	test_assert_false(list_alone(&y, lnk));
 	test_assert_false(list_alone(&z, lnk));
 
-	test_assert_equal(list_last_link(&n), &x.lnk);
-	test_assert_equal(list_first_link(&n), &z.lnk);
+	test_assert_equal(list_first_link(&n), &x.lnk);
+	test_assert_equal(list_last_link(&n), &z.lnk);
 }
 
 TEST_CASE("list_remove_first should return null for empty list") {
@@ -289,34 +319,72 @@ TEST_CASE("list_insert_before and list_insert_after on a single element list"
 	test_assert_equal(list_last_link(&m), &z.lnk);
 }
 
-TEST_CASE("list_bulk_add_first should make a source list empty") {
-	list_add_last(&x, &m, lnk);
-	list_add_last(&y, &m, lnk);
+TEST_CASE("list_bulk_add_first shouldn't modify a destination list "
+		"if a source list is empty") {
+	fill_in_from(xyz, &n);
 
+	list_bulk_add_first(&m, &n);
+
+	test_assert_true(list_empty(&m));
+	compare_with(xyz, &n);
+}
+
+TEST_CASE("list_bulk_add_last shouldn't modify a destination list "
+		"if a source list is empty") {
+	fill_in_from(xyz, &n);
+
+	list_bulk_add_first(&m, &n);
+
+	test_assert_true(list_empty(&m));
+	compare_with(xyz, &n);
+}
+
+TEST_CASE("list_bulk_add_first should move all the elements from a source "
+		"list to the beginning of a destination and make the source empty") {
+	fill_in_from(xy, &m);
 	list_add_last(&z, &n, lnk);
 
 	list_bulk_add_first(&m, &n);
 
 	test_assert_true(list_empty(&m));
-
-	test_assert_equal(list_remove_first_link(&n), &x.lnk);
-	test_assert_equal(list_remove_first_link(&n), &y.lnk);
-	test_assert_equal(list_remove_first_link(&n), &z.lnk);
+	compare_with(xyz, &n);
 }
 
-TEST_CASE("list_bulk_add_last should make a source list empty") {
-	list_add_last(&x, &n, lnk);
-
-	list_add_last(&y, &m, lnk);
-	list_add_last(&z, &m, lnk);
+TEST_CASE("list_bulk_add_last should move all the elements from a source "
+		"list to the end of a destination and make the source empty") {
+	list_add_first(&x, &n, lnk);
+	fill_in_from(yz, &m);
 
 	list_bulk_add_last(&m, &n);
 
 	test_assert_true(list_empty(&m));
+	compare_with(xyz, &n);
+}
 
-	test_assert_equal(list_remove_first_link(&n), &x.lnk);
-	test_assert_equal(list_remove_first_link(&n), &y.lnk);
-	test_assert_equal(list_remove_first_link(&n), &z.lnk);
+static struct list *fill_in_from(struct element * const array[],
+		struct list *list) {
+	struct element *e;
+
+	test_assert_true(list_empty(list));
+	array_nullterm_foreach(e, array) {
+		test_assert_true(list_alone(e, lnk));
+		list_add_last(e, list, lnk);
+	}
+	test_assert_false(list_empty(list));
+
+	return list;
+}
+
+static struct list *compare_with(struct element * const array[],
+		struct list *list) {
+	struct element *e;
+
+	array_nullterm_foreach(e, array) {
+		test_assert_equal(list_remove_first(list, typeof(*e), lnk), e);
+	}
+	test_assert_true(list_empty(list));
+
+	return list;
 }
 
 static int setup(void) {
