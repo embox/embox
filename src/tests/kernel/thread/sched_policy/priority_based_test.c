@@ -97,7 +97,7 @@ TEST_CASE("sched_policy_add should return true after adding thread with highest 
 
 TEST_CASE("sched_policy_add should return false then current thread has "
 		"a higher priority than added thread priority") {
-	struct thread first = { .priority = 127 }, second = { .priority = 0};
+	struct thread first = { .priority = 127 }, second = { .priority = 0 };
 	test_assert_true(sched_policy_add(&second));
 	sched_policy_switch(sched_policy_current());
 	test_assert_false(sched_policy_add(&first));
@@ -105,7 +105,7 @@ TEST_CASE("sched_policy_add should return false then current thread has "
 
 TEST_CASE("sched_policy_add should return true after adding thread with highest "
 		"priority before switch") {
-	struct thread first = { .priority = 127 }, second = { .priority = 0};
+	struct thread first = { .priority = 127 }, second = { .priority = 0 };
 	test_assert_true(sched_policy_add(&first));
 	test_assert_true(sched_policy_add(&second));
 }
@@ -118,7 +118,7 @@ TEST_CASE("sched_policy_add should return false after adding thread with "
 
 TEST_CASE("sched_policy_remove should return false after removing not current "
 		"thread") {
-	struct thread first = { .priority = 127 }, second = { .priority = 255};
+	struct thread first = { .priority = 127 }, second = { .priority = 255 };
 	sched_policy_add(&first);
 	sched_policy_add(&second);
 	sched_policy_switch(sched_policy_current());
