@@ -65,70 +65,87 @@ struct list {
 	list_remove_link(&(element)->m_link)
 
 inline static struct list_link *list_link_init(struct list_link *link) {
+	assert(link != NULL);
 	link->next = link;
 	link->prev = link;
 	return link;
 }
 
 inline static struct list *list_init(struct list *list) {
+	assert(list != NULL);
 	list_link_init(&list->link);
 	return list;
 }
 
 inline static int list_alone_link(struct list_link *link) {
+	assert(link != NULL);
 	return link == link->next;
 }
 
 inline static int list_empty(struct list *list) {
+	assert(list != NULL);
 	return list_alone_link(&list->link);
 }
 
 inline static struct list_link *list_first_link(struct list *list) {
-	struct list_link *l = &list->link;
+	struct list_link *l;
+
+	assert(list != NULL);
+	l = &list->link;
 	return /* list is not empty? */l->next != l ? l->next : NULL;
 }
 
 inline static struct list_link *list_last_link(struct list *list) {
-	struct list_link *l = &list->link;
+	struct list_link *l;
+
+	assert(list != NULL);
+	l = &list->link;
 	return /* list is not empty? */l->prev != l ? l->prev : NULL;
 }
 
-inline static void __list_insert_between_link(struct list_link *new,
+inline static void __list_insert_between_link(struct list_link *new_link,
 		struct list_link *prev, struct list_link *next) {
-	next->prev = new;
-	new->next = next;
-	new->prev = prev;
-	prev->next = new;
+	assert(list_alone_link(new_link));
+
+	next->prev = new_link;
+	new_link->next = next;
+	new_link->prev = prev;
+	prev->next = new_link;
 }
 
 inline static void list_insert_before_link(struct list_link *new_link,
 		struct list_link *link) {
-	assert(list_alone_link(new_link));
+	assert(link != NULL);
 	__list_insert_between_link(new_link, link->prev, link);
 }
 
 inline static void list_insert_after_link(struct list_link *new_link,
 		struct list_link *link) {
-	assert(list_alone_link(new_link));
+	assert(link != NULL);
 	__list_insert_between_link(new_link, link, link->next);
 }
 
 inline static void list_add_first_link(struct list_link *new_link,
 		struct list *list) {
+	assert(list != NULL);
 	list_insert_after_link(new_link, &list->link);
 }
 
 inline static void list_add_last_link(struct list_link *new_link,
 		struct list *list) {
+	assert(list != NULL);
 	list_insert_before_link(new_link, &list->link);
 }
 
 inline static void list_remove_link(struct list_link *link) {
 	struct list_link *prev, *next;
+	assert(link != NULL);
+
 	prev = link->prev;
 	next = link->next;
 	next->prev = prev;
 	prev->next = next;
+
 	list_link_init(link);
 }
 
