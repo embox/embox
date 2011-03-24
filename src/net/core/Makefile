@@ -1,7 +1,6 @@
 
 $_MODS += core dev
 
-$_SRCS-core  += net_pack_manager.c
 $_SRCS-core  += devinet.c
 $_SRCS-core  += sock.c
 $_SRCS-core  += skbuff.c
