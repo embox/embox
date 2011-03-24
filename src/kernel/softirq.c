@@ -81,6 +81,4 @@ void softirq_dispatch(void) {
 			}
 		}
 	}
-
-	event_dispatch();
 }

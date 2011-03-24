@@ -8,34 +8,32 @@
 
 #include <embox/test.h>
 #include <kernel/evdispatch.h>
-#include <kernel/messages_defs.h>
-#include <stdio.h>
+#include <kernel/softirq.h>
 
 EMBOX_TEST(run);
 
-void handler1(struct msg* msg) {
-	TRACE("handler1 start\n");
-	send_message(MESSAGE2, NULL);
-	TRACE("handler1 finish\n");
+#define EVENT_SOFTIRQ 12
+
+static void handler1(struct event_msg* msg) {
+	event_send(EVENT_MESSAGE2, NULL);
 }
 
-void handler2(struct msg* msg) {
-	TRACE("handler2 start\n");
-	send_message(MESSAGE3, NULL);
-	TRACE("handler2 finish\n");
+static void handler2(struct event_msg* msg) {
+	event_send(EVENT_MESSAGE3, NULL);
 }
 
-void handler3(struct msg* msg) {
-	TRACE("handler3 start\n");
-	TRACE("handler3 finish\n");
+static void handler3(struct event_msg* msg) {
 }
 
 static int run(void) {
-	register_handler(MESSAGE1, handler1);
-	register_handler(MESSAGE2, handler2);
-	register_handler(MESSAGE3, handler3);
+	softirq_install(EVENT_SOFTIRQ, event_dispatch, NULL);
+	softirq_raise(EVENT_SOFTIRQ);
 
-	send_message(MESSAGE1, NULL);
+	event_register(EVENT_MESSAGE1, handler1);
+	event_register(EVENT_MESSAGE2, handler2);
+	event_register(EVENT_MESSAGE3, handler3);
+
+	event_send(EVENT_MESSAGE1, NULL);
 
 	return 0;
 }

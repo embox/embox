@@ -7,35 +7,38 @@
 
 #include <lib/list.h>
 #include <kernel/mm/slab_static.h>
+#include <kernel/softirq.h>
 #include <kernel/evdispatch.h>
-#include <kernel/messages_defs.h>
+
+/** maximum count of messages in queue */
+#define MAX_MSG_COUNT_IN_QUEUE 10
 
 /** Handlers, that can handle message with specified id */
 struct handler {
-	void (*handler)(struct msg *msg);
+	void (*handler)(struct event_msg *msg);
 };
 
 /** pool for message in queue */
-STATIC_CACHE_CREATE(queue_msg_cache, struct msg, MAX_MSG_COUNT_IN_QUEUE);
+STATIC_CACHE_CREATE(msg_queue_cache, struct event_msg, MAX_MSG_COUNT_IN_QUEUE);
 
 /** Queue of messages, sent to handlers */
-LIST_HEAD(queue);
+static LIST_HEAD(msg_queue);
 
 /**
  * Tables of messages(message can be determine by it's id)
  * and functions, that can handle them.
  */
-static struct handler handler_arr[MSG_ID_COUNT];
+static struct handler handler_arr[EVENT_MSG_COUNT];
 
-void event_dispatch(void) {
-	while (!list_empty(&queue)) {
-		struct list_head *result = queue.next;
-		struct msg *msg = list_entry(result, struct msg, list);
+void event_dispatch(softirq_nr_t softirq_nr, void *data) {
+	while (!list_empty(&msg_queue)) {
+		struct list_head *result = msg_queue.next;
+		struct event_msg *msg = list_entry(result, struct event_msg, list);
 		list_del(result);
 
 		handler_arr[msg->id].handler(msg);
 
-		static_cache_free(&queue_msg_cache, msg);
+		static_cache_free(&msg_queue_cache, msg);
 	}
 }
 
@@ -46,20 +49,27 @@ void event_dispatch(void) {
  * @param data data, that will be send in message
  * @return pointer to created message
  */
-static struct msg *create_message(int id, void *data) {
-	struct msg *msg = static_cache_alloc(&queue_msg_cache);
+static struct event_msg *create_message(int id, void *data) {
+	struct event_msg *msg = static_cache_alloc(&msg_queue_cache);
 	msg->id = id;
 	msg->data = data;
 	return msg;
 }
 
-void send_message(int id, void *data) {
-	struct msg *msg;
+void event_send(int id, void *data) {
+	struct event_msg *msg;
+
+	if (id > EVENT_MSG_COUNT - 1)
+			return;
+
 	msg = create_message(id, data);
-	list_add_tail(&msg->list, &queue);
+	list_add_tail(&msg->list, &msg_queue);
 }
 
-void register_handler(int id, void (*handler)(struct msg *msg)) {
+void event_register(int id, void (*handler)(struct event_msg *msg)) {
+	if (id > EVENT_MSG_COUNT - 1)
+		return;
+
 	handler_arr[id].handler = handler;
 }
 

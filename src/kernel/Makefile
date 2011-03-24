@@ -43,7 +43,6 @@ endif
 #endif
 ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
-  $_DEPS-softirq += core.kernel.evdispatch
 endif
 ifdef CONFIG_TIMER
   $_SRCS-timer     += timer.c
