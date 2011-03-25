@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <hal/ipl.h>
 #include <util/array.h>
-#include <kernel/critical.h>
+#include <kernel/critical/api.h>
 
 EMBOX_TEST_SUITE("critical API test");
 

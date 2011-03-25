@@ -9,7 +9,7 @@
 #ifndef PREEMPT_H_
 #define PREEMPT_H_
 
-#include <kernel/critical.h>
+#include <kernel/critical/api.h>
 
 inline static void preempt_disable(void) {
 	critical_enter(CRITICAL_PREEMPT);

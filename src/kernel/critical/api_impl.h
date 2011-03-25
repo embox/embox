@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file is intended for internal usage by critical.h .
+ * @brief Implements critical sections API.
  *
  * @details
  *
@@ -44,15 +44,14 @@
         +-----+---+---+-----+---+---+-----+---+---+
 @endverbatim
  *
- * @date 23.05.2010
+ * @date 16.05.2010
  * @author Eldar Abusalimov
  */
 
-#ifndef KERNEL_CRITICAL_H_
-# error "Do not include this file directly, use <kernel/critical.h> instead!"
-#endif /* KERNEL_CRITICAL_H_ */
+#ifndef KERNEL_CRITICAL_API_IMPL_H_
+#define KERNEL_CRITICAL_API_IMPL_H_
 
-#include "critical_config.h"
+#include "count.h"
 
 #define __CRITICAL_VALUE(bits, lower_mask) \
 	((__CRITICAL_BELOW(lower_mask) << (bits) | CRITICAL_VALUE_LOWEST(bits)) \
@@ -74,3 +73,27 @@
 
 #define __CRITICAL_COUNT(critical) \
 	(__CRITICAL_LOWER(critical) + 1)
+
+/* Critical levels mask. */
+
+#define __CRITICAL_HARDIRQ CRITICAL_VALUE_LOWEST(8)
+#define __CRITICAL_SOFTIRQ CRITICAL_VALUE(4, __CRITICAL_HARDIRQ)
+#define __CRITICAL_PREEMPT CRITICAL_VALUE(4, __CRITICAL_SOFTIRQ)
+
+inline static int critical_allows(__critical_t critical) {
+	return !(__critical_count_get() & __CRITICAL_BELOW(critical));
+}
+
+inline static int critical_inside(__critical_t critical) {
+	return __critical_count_get() & __CRITICAL_MASK(critical);
+}
+
+inline static void critical_enter(__critical_t critical) {
+	__critical_count_add(__CRITICAL_COUNT(critical));
+}
+
+inline static void critical_leave(__critical_t critical) {
+	__critical_count_sub(__CRITICAL_COUNT(critical));
+}
+
+#endif /* KERNEL_CRITICAL_API_IMPL_H_ */

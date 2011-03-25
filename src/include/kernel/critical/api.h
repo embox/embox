@@ -6,10 +6,10 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef KERNEL_CRITICAL_H_
-#define KERNEL_CRITICAL_H_
+#ifndef KERNEL_CRITICAL_API_H_
+#define KERNEL_CRITICAL_API_H_
 
-#include __impl(kernel/critical.h)
+#include __impl_x(kernel/critical/api_impl.h)
 
 #define CRITICAL_HARDIRQ __CRITICAL_HARDIRQ
 #define CRITICAL_SOFTIRQ __CRITICAL_SOFTIRQ
@@ -31,4 +31,4 @@ extern void critical_enter(critical_t critical);
 
 extern void critical_leave(critical_t critical);
 
-#endif /* KERNEL_CRITICAL_H_ */
+#endif /* KERNEL_CRITICAL_API_H_ */
