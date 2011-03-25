@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <kernel/pp.h>
 #include <kernel/thread/api.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/sched.h>
 
 EMBOX_TEST(run);
 

@@ -9,8 +9,8 @@
 #include <embox/test.h>
 #include <embox/unit.h>
 #include <kernel/thread/api.h>
-#include <kernel/pipe_manager.h>
-#include <kernel/scheduler.h>
+#include <kernel/thread/sync/pipe_manager.h>
+#include <kernel/thread/sched.h>
 #include <errno.h>
 #include <assert.h>
 
