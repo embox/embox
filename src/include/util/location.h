@@ -16,7 +16,7 @@ struct location {
 };
 
 struct location_func {
-	struct location input;
+	struct location at;
 	const char *func;
 };
 
@@ -26,7 +26,7 @@ struct location_func {
 	}
 
 #define LOCATION_FUNC_INIT { \
-		.input = LOCATION_INIT, \
+		.at = LOCATION_INIT, \
 		.func = __func__,       \
 	}
 

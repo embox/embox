@@ -5,9 +5,13 @@
  * @date 20.02.09
  * @author Alexandr Batyukov
  */
+
 #include <embox/cmd.h>
+
 #include <getopt.h>
 #include <string.h>
+#include <stdio.h>
+
 #include <drivers/amba_pnp.h>
 #include <drivers/amba_registry.h>
 

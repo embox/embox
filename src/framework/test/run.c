@@ -161,7 +161,8 @@ static void handle_case_fixture_failure(const struct test_case *test_case,
 
 static void handle_case_result(const struct test_case *test_case,
 		const struct __test_assertion_point *failure) {
-	const struct location *test_loc, *fail_loc;
+	const struct location *test_loc;
+	const struct location_func *fail_loc;
 
 	if (!failure) {
 		TRACE(".");
@@ -169,11 +170,11 @@ static void handle_case_result(const struct test_case *test_case,
 	}
 
 	test_loc = &test_case->location;
-	fail_loc = &failure->location.input;
+	fail_loc = &failure->location;
 
 	TRACE("\n\tfailure at %s : %d, in function %s\n"
 			"\t\t%s\n",
-			fail_loc->file, fail_loc->line, failure->location.func,
+			fail_loc->at.file, fail_loc->at.line, fail_loc->func,
 			failure->reason);
 	TRACE("\t   case at %s : %d\n"
 			"\t\t\"%s\"\n\t",

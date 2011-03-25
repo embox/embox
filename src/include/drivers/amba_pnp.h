@@ -6,10 +6,14 @@
  * @date 28.01.2009
  * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
+
 #ifndef AMBA_PNP_H_
 #define AMBA_PNP_H_
 
 #include <assert.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #include <drivers/ambapp.h>
 
 #define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) \

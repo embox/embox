@@ -5,7 +5,7 @@ SUBDIRS :=
 
 $_LIBS += libc.a
 
-$_SRCS-libc.a += */*.c
+$_SRCS-libc.a += *.c */*.c
 
 # XXX libraries don't support DEPS property. -- Eldar
 

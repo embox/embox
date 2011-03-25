@@ -12,8 +12,11 @@
 #ifndef AMBA_REGISTRY_H_
 #define AMBA_REGISTRY_H_
 
-#include <drivers/amba_pnp.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #include <lib/list.h>
+#include <drivers/amba_pnp.h>
 
 /**
  * Information describing vendor.
