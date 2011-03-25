@@ -22,7 +22,7 @@
 			cond_str, __FILE__, __LINE__); \
 	while (0)
 #else
-# define __ASSERT(cond)   do ; while (0)
+# define __ASSERT(cond, cond_str)   do ; while (0)
 #endif /* NDEBUG */
 
 /**
