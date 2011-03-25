@@ -86,14 +86,23 @@ inline static struct list *list_init(struct list *list) {
 	return list;
 }
 
+/*
+ * An attempt to avoid gcc warning occurring on -O3 optimization level:
+ *   inlining failed in call to 'list_alone_link':
+ *    --param inline-unit-growth limit reached
+ */
+inline static int __list_alone_link(struct list_link *link) {
+	return link == link->next;
+}
+
 inline static int list_alone_link(struct list_link *link) {
 	assert(link != NULL);
-	return link == link->next;
+	return __list_alone_link(link);
 }
 
 inline static int list_empty(struct list *list) {
 	assert(list != NULL);
-	return list_alone_link(&list->link);
+	return __list_alone_link(&list->link);
 }
 
 inline static struct list_link *list_first_link(struct list *list) {
