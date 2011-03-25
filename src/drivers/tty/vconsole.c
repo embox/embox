@@ -4,6 +4,7 @@
  *
  * @date 23.11.2010
  * @author Anton Bondarev
+ * @author Fedor Burdun
  */
 
 #include <drivers/tty.h>
@@ -14,11 +15,15 @@
 #include <kernel/diag.h>
 #include <embox/unit.h>
 
+#if 1
+#define WITHOUT_CONSOLES
+#endif
+
 static vconsole_t def_console;
 vconsole_t *cur_console = NULL;
 vconsole_t const *sys_console = &def_console;
 
-//EMBOX_UNIT_INIT(vconsole_init);
+/* EMBOX_UNIT_INIT(vconsole_init); TODO remove this */
 
 #if 0
 //static FILE *def_file; 								// FIXME was moved to tty.c
@@ -105,8 +110,10 @@ inline bool its_cur(void) {
 
 void vconsole_putchar( struct vconsole *vc, char ch ) {
 	/* FIXME */
+	#ifdef WITHOUT_CONSOLES
 	diag_putc( ch );
 	return;
+	#endif
 
 	if (vc==NULL) { /* if hasn't initialized now cur_console use hardware output */
 		diag_putc( ch );
@@ -170,7 +177,9 @@ void vconsole_gotoxy( struct vconsole *vc, uint8_t x, uint8_t y ) {
 
 void vconsole_clear(struct vconsole *vc) {
 	uint32_t i = vc->width * vc->height - 1;
+	#ifdef WITHOUT_CONSOLES
 	return;
+	#endif
 	vc->tty->file_op->fwrite("\n", sizeof(char), 1, NULL);
 	for (; i >= 0; --i) {
 		ICC(vconsole_putchar( vc , ' ' ));
@@ -181,7 +190,9 @@ void vconsole_clear(struct vconsole *vc) {
 
 void vconsole_reprint(struct vconsole *vc) {
 	size_t i;
+	#ifdef WITHOUT_CONSOLES
 	return;
+	#endif
 	for (i = 0; i < (vc->width * vc->height); ++i) {
 		vconsole_putchar(vc, vc->scr_buff[i]);
 	}

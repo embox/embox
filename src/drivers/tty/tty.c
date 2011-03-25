@@ -57,6 +57,9 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 	case VT_ACTION_PRINT: /* Print any char */
 		tac_key_alpha(cur_tty, token);
 		break;
+	case VT_ACTION_ESC_DISPATCH:
+		/* printk("test\n"); */
+	break;
 	case VT_ACTION_CSI_DISPATCH:
 		switch (token->ch) {
 		case 'D': /* LEFT */
@@ -175,7 +178,7 @@ static int tty_init(void) {
 	cur_tty->console_cur = 0;
 	/* TODO add redraw current console in the end */
 	//FIXME scheduler must starting in more convenient place/
-	scheduler_start();
+	sched_start();
 #else
 	run_shell();
 
