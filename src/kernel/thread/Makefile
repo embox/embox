@@ -9,8 +9,6 @@ ifdef CONFIG_PP_ENABLE
 $_DEPS-core += core.kernel.pp
 endif
 
-$_REQUIRES-core += embox.hal.mm.api_slab
-
 $_MODS       += sched
 $_SRCS-sched += sched.c
 ifdef CONFIG_SCHED_STRATEGY

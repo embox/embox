@@ -1,14 +1,13 @@
 /**
  * @file
- * @brief Internal implementation of static slab allocator
+ * @brief Internal implementation of object pool allocator.
  *
  * @date 07.03.2011
  * @author Kirill Tyushev
  */
 
-#ifndef SLAB_STATIC_H_
-# error "Do not include this file directly, use <kernel/mm/slab_static.h> instead!"
-#endif /* SLAB_STATIC_H_ */
+#ifndef UTIL_POOL_IMPL_H_
+#define UTIL_POOL_IMPL_H_
 
 #include <util/binalign.h>
 #include <lib/list.h>
@@ -27,12 +26,13 @@ struct static_cache {
 	int hasinit;
 };
 
-/** create cache */
-#define __STATIC_CACHE_CREATE(name, type, count) \
-  static char __##name##_pool[(count) * binalign_bound(sizeof(type), sizeof(struct list_head))]; \
+#define __POOL_DEF(type, name, sz) \
+  static char __##name##_pool[(sz) * binalign_bound(sizeof(type), sizeof(struct list_head))]; \
   static static_cache_t name = { \
-        .num = (count), \
+        .num = (sz), \
         .size = binalign_bound(sizeof(type), sizeof(struct list_head)), \
         .cache_begin = __##name##_pool, \
         .obj_ptr = {NULL, NULL}, \
         .hasinit = 0 }
+
+#endif /* UTIL_POOL_IMPL_H_ */

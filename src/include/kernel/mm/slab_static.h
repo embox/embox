@@ -11,7 +11,7 @@
 #ifndef SLAB_STATIC_H_
 #define SLAB_STATIC_H_
 
-#include __impl(kernel/slab_static.h)
+#include __impl_x(util/pool_impl.h)
 
 /** cache descriptor */
 typedef struct static_cache static_cache_t;
@@ -23,7 +23,7 @@ typedef struct static_cache static_cache_t;
  * @param count of objects in cache
  */
 #define STATIC_CACHE_CREATE(name, type, count) \
-	__STATIC_CACHE_CREATE(name, type, count)
+	__POOL_DEF(type, name, count)
 
 /**
  * allocate single object from the cache and return it to the caller
