@@ -45,7 +45,7 @@ inline static void __list_insert_link(struct __list_link *link,
 	__list_insert_chain(link, link, prev, next);
 }
 
-#ifdef LIST_NDEBUG
+#ifdef CONFIG_LIST_NDEBUG
 # include "list_ndebug.h"
 #else
 # include "list_debug.h"

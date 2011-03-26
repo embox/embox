@@ -11,23 +11,26 @@
 
 #include <util/structof.h>
 
-struct list_link {
-	struct list_link *next, *prev;
-};
+struct list;
+struct list_link;
+struct __list_link;
 
 struct list {
-	struct list_link link;
+	struct __list_link l;
+};
+
+struct list_link {
+	struct __list_link l;
 };
 
 #define __LIST_INIT(list) \
-	{                                          \
-		.link = LIST_LINK_INIT(&(list)->link), \
+	{                                        \
+		.l = __LIST_LINK_INIT__(&(list)->l), \
 	}
 
 #define __LIST_LINK_INIT(link) \
-	{                   \
-		.next = (link), \
-		.prev = (link), \
+	{                                        \
+		.l = __LIST_LINK_INIT__(&(link)->l), \
 	}
 
 /* Most of macros are defined through a corresponding _link method. */
@@ -72,102 +75,81 @@ struct list {
 	list_remove_link(&(element)->m_link)
 
 inline static struct list_link *list_link_init(struct list_link *link) {
-	link->next = link;
-	link->prev = link;
+	__list_link_init(&link->l);
 	return link;
 }
 
 inline static struct list *list_init(struct list *list) {
-	list_link_init(&list->link);
+	__list_link_init(&list->l);
 	return list;
 }
 
 inline static int list_alone_link(struct list_link *link) {
-	return link == link->next;
+	return __list_link_alone(&link->l);
 }
 
 inline static int list_empty(struct list *list) {
-	return list_alone_link(&list->link);
+	return __list_link_alone(&list->l);
 }
 
 inline static struct list_link *list_first_link(struct list *list) {
-	struct list_link *l = &list->link;
-	return /* list is not empty? */l->next != l ? l->next : NULL;
+	struct __list_link *l = &list->l, *first = l->next;
+	return first != l ? structof(first, struct list_link, l) : NULL;
 }
 
 inline static struct list_link *list_last_link(struct list *list) {
-	struct list_link *l = &list->link;
-	return /* list is not empty? */l->prev != l ? l->prev : NULL;
-}
-
-inline static void __list_bind(struct list_link *prev, struct list_link *next) {
-	next->prev = prev;
-	prev->next = next;
-}
-
-inline static void __list_insert_chain(struct list_link *chain_first,
-		struct list_link *chain_last, struct list_link *prev,
-		struct list_link *next) {
-	__list_bind(prev, chain_first);
-	__list_bind(chain_last, next);
-}
-
-inline static void __list_insert_link(struct list_link *link,
-		struct list_link *prev, struct list_link *next) {
-	__list_insert_chain(link, link, prev, next);
+	struct __list_link *l = &list->l, *last = l->prev;
+	return last != l ? structof(last, struct list_link, l) : NULL;
 }
 
 inline static void list_insert_before_link(struct list_link *new_link,
 		struct list_link *link) {
-	__list_insert_link(new_link, link->prev, link);
+	struct __list_link *l = &link->l;
+	__list_insert_link(&new_link->l, l->prev, l);
 }
 
 inline static void list_insert_after_link(struct list_link *new_link,
 		struct list_link *link) {
-	__list_insert_link(new_link, link, link->next);
+	struct __list_link *l = &link->l;
+	__list_insert_link(&new_link->l, l, l->next);
 }
 
 inline static void list_add_first_link(struct list_link *new_link,
 		struct list *list) {
-	struct list_link *l = &list->link;
-	__list_insert_link(new_link, l, l->next);
+	struct __list_link *l = &list->l;
+	__list_insert_link(&new_link->l, l, l->next);
 }
 
 inline static void list_add_last_link(struct list_link *new_link,
 		struct list *list) {
-	struct list_link *l = &list->link;
-	__list_insert_link(new_link, l->prev, l);
+	struct __list_link *l = &list->l;
+	__list_insert_link(&new_link->l, l->prev, l);
 }
 
 inline static void list_bulk_add_first(struct list *from_list,
 		struct list *to_list) {
-	struct list_link *from, *to;
+	struct __list_link *from = &from_list->l, *to = &to_list->l;
 
 	if (!list_empty(from_list)) {
-		from = &from_list->link;
-		to = &to_list->link;
-
 		__list_insert_chain(from->next, from->prev, to, to->next);
-		list_link_init(from);
+		__list_link_init(from);
 	}
 }
 
 inline static void list_bulk_add_last(struct list *from_list,
 		struct list *to_list) {
-	struct list_link *from, *to;
+	struct __list_link *from = &from_list->l, *to = &to_list->l;
 
 	if (!list_empty(from_list)) {
-		from = &from_list->link;
-		to = &to_list->link;
-
 		__list_insert_chain(from->next, from->prev, to->prev, to);
-		list_link_init(from);
+		__list_link_init(from);
 	}
 }
 
 inline static void list_remove_link(struct list_link *link) {
-	__list_bind(link->prev, link->next);
-	list_link_init(link);
+	struct __list_link *l = &link->l;
+	__list_bind(l->prev, l->next);
+	__list_link_init(l);
 }
 
 inline static struct list_link *list_remove_first_link(struct list *list) {

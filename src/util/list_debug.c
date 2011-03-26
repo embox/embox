@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifdef LIST_NDEBUG
-# error "Must compile this file with LIST_NDEBUG undefined"
+#ifdef CONFIG_LIST_NDEBUG
+# error "Must compile this file with LIST_NDEBUG disabled"
 #endif
 
 #include <assert.h>

@@ -34,16 +34,16 @@ struct list_link {
 #define __LIST_LINK_POISON  0x0b0b
 
 #define __LIST_INIT(list) \
-	{                            \
-		.poison = __LIST_POISON, \
-		.offset = -1,            \
+	{                                        \
+		.poison = __LIST_POISON,             \
+		.offset = -1,                        \
 		.l = __LIST_LINK_INIT__(&(list)->l), \
 	}
 
 #define __LIST_LINK_INIT(link) \
-	{                                 \
-		.poison = __LIST_LINK_POISON, \
-		.list = NULL,                 \
+	{                                        \
+		.poison = __LIST_LINK_POISON,        \
+		.list = NULL,                        \
 		.l = __LIST_LINK_INIT__(&(link)->l), \
 	}
 

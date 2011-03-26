@@ -2,5 +2,8 @@
 
 $_LIBS += libutil.a
 
-$_SRCS-libutil.a += *.c
+ifndef CONFIG_LIST_NDEBUG
+$_SRCS-libutil.a += list_debug.c
+endif
+
 $_USES-libutil.a += libc.a
