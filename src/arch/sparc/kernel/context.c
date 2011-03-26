@@ -26,6 +26,7 @@ void context_init(struct context *ctx, bool privileged) {
 }
 
 void context_set_stack(struct context *ctx, void *sp) {
+	sp &= ~0x7;
 	ctx->kregs.ksp = (uint32_t) sp - STACK_FRAME_SZ;
 }
 

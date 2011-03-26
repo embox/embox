@@ -35,7 +35,7 @@ typedef __thread_priority_t thread_priority_t;
 	(THREAD_PRIORITY_MIN - THREAD_PRIORITY_MAX + 1)
 
 /**
- * Thread, which makes nothing.
+ * Thread, which does nothing.
  * Is used to be working when there is no another process.
  */
 extern struct thread *idle_thread;
