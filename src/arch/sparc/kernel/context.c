@@ -25,9 +25,10 @@ void context_init(struct context *ctx, bool privileged) {
 	ctx->kregs.wim = WIM_INIT;
 }
 
-void context_set_stack(struct context *ctx, void *sp) {
+void context_set_stack(struct context *ctx, void *stack_addr) {
+	uint32_t sp = (uint32_t) sp;
 	sp &= ~0x7;
-	ctx->kregs.ksp = (uint32_t) sp - STACK_FRAME_SZ;
+	ctx->kregs.ksp = sp - STACK_FRAME_SZ;
 }
 
 struct context *current_ctx; // XXX I'll fix it soon. -- Eldar
