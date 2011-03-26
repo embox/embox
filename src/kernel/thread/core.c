@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <kernel/mm/slab_static.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
 #include <hal/context.h>
@@ -26,11 +27,10 @@ EMBOX_UNIT_INIT(unit_init);
 
 struct thread *idle_thread;
 
-/** Pool, containing threads. */
-struct thread __thread_pool[__THREAD_POOL_SZ ];
+struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 
-/** A mask, which shows, what places for new threads are free. */
-static int thread_pool_mask[__THREAD_POOL_SZ ];
+static struct thread *thread_alloc(void);
+static void thread_free(struct thread *t);
 
 /**
  * Function, which does nothing. For idle_thread.
@@ -68,26 +68,6 @@ static void thread_run(int arg) {
 	/* NOTREACHED */assert(false);
 }
 
-/**
- * Allocates memory for new thread.
- *
- * @return pointer to alloted thread
- * @retval NULL if there are not free threads
- */
-static struct thread *thread_new(void) {
-	size_t i;
-	struct thread *created_thread;
-	for (i = 0; i < __THREAD_POOL_SZ; i++) {
-		if (thread_pool_mask[i] == 0) {
-			created_thread = __thread_pool + i;
-			created_thread->id = i;
-			thread_pool_mask[i] = 1;
-			created_thread->exist = true;
-			return created_thread;
-		}
-	}
-	return NULL;
-}
 struct thread *thread_create(void(*run)(void), void *stack_address) {
 	struct thread *t;
 
@@ -95,7 +75,7 @@ struct thread *thread_create(void(*run)(void), void *stack_address) {
 		return NULL;
 	}
 
-	if (!(t = thread_new())) {
+	if (!(t = thread_alloc())) {
 		return NULL;
 	}
 
@@ -135,27 +115,10 @@ void thread_change_priority(struct thread *thread, int new_priority) {
 	sched_unlock();
 }
 
-/**
- * Deletes chosen thread.
- */
-static int thread_delete(struct thread *deleted_thread) {
-	if (deleted_thread == NULL) {
-		return -EINVAL;
-	}
-	LOG_DEBUG("\nDeleting %d\n", deleted_thread->id);
-#ifdef CONFIG_PP_ENABLE
-	pp_del_thread( deleted_thread->pp , deleted_thread );
-#endif
-	deleted_thread->state = THREAD_STATE_STOP;
-	deleted_thread->exist = false;
-	thread_pool_mask[deleted_thread - __thread_pool] = 0;
-	return 0;
-}
-
 int thread_stop(struct thread *t) {
 	static struct thread *zombie; /* Last zombie thread (if any). */
 
-	if (!t || !t->exist) {
+	if (!t) {
 		return -EINVAL;
 	}
 
@@ -167,14 +130,14 @@ int thread_stop(struct thread *t) {
 
 	if (zombie) {
 		assert(zombie != thread_current());
-		thread_delete(zombie);
+		thread_free(zombie);
 		zombie = NULL;
 	}
 
 	sched_remove(t);
 
 	if (thread_current() != t) {
-		thread_delete(t);
+		thread_free(t);
 	} else {
 		zombie = t;
 		t->state = THREAD_STATE_ZOMBIE;
@@ -192,4 +155,25 @@ void thread_yield(void) {
 
 	sched_unlock();
 }
+
+STATIC_CACHE_CREATE(thread_pool, struct thread, __THREAD_POOL_SZ);
+
+static struct thread *thread_alloc(void) {
+	struct thread *t;
+
+	if(!(t = (struct thread *) static_cache_alloc(&thread_pool))) {
+		return NULL;
+	}
+
+	list_add(&t->thread_link, &__thread_list);
+
+	return t;
+}
+
+static void thread_free(struct thread *t) {
+	assert(t != NULL);
+	list_del_init(&t->thread_link);
+	static_cache_free(&thread_pool, t);
+}
+
 

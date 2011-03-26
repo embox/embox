@@ -17,21 +17,21 @@
 #define __THREAD_POOL_SZ 0x100
 
 #define __thread_foreach(thread_ptr) \
-	array_foreach_ptr(thread_ptr, __extension__ ({     \
-				extern struct thread __thread_pool[];  \
-				__thread_pool;                         \
-			}), __THREAD_POOL_SZ)                      \
-		if (!thread_ptr->exist) ; else
+	list_for_each_entry(thread_ptr, __extension__ ({   \
+				extern struct list_head __thread_list; \
+				&__thread_list;                        \
+			}), thread_link)                           \
 
 inline static struct thread *thread_get_by_id(__thread_id_t id) {
-	extern struct thread __thread_pool[];
-	struct thread *thread = __thread_pool + id;
+	struct thread *thread;
 
-	if (!(0 <= id && id < __THREAD_POOL_SZ)) {
-		return NULL;
+	__thread_foreach(thread) {
+		if (thread->id == id) {
+			return thread;
+		}
 	}
 
-	return thread->exist ? thread : NULL;
+	return NULL;
 }
 
 inline static struct thread *thread_current(void) {

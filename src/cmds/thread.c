@@ -31,7 +31,6 @@ static void print_stat(void) {
 
 	thread_foreach(thread) {
 		const char *state;
-		assert(thread->exist);
 
 		switch (thread->state) {
 		case THREAD_STATE_RUN:
