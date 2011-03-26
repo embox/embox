@@ -9,6 +9,8 @@
 #ifndef UTIL_STRUCTOF_H_
 #define UTIL_STRUCTOF_H_
 
+#include <stddef.h>
+
 /**
  * Casts a member out to the containing structure.
  *
