@@ -26,7 +26,7 @@ void context_init(struct context *ctx, bool privileged) {
 }
 
 void context_set_stack(struct context *ctx, void *stack_addr) {
-	uint32_t sp = (uint32_t) sp;
+	uint32_t sp = (uint32_t) stack_addr;
 	sp &= ~0x7;
 	ctx->kregs.ksp = sp - STACK_FRAME_SZ;
 }
