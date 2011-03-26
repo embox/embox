@@ -1,6 +1,8 @@
 $_PACKAGE := embox.hal.mm
 
-$_MODS += mmu mpallocator opallocator kmalloc slab_static slab
+$_APIS += api_slab
+
+$_MODS += mmu mpallocator opallocator kmalloc slab
 
 ifdef CONFIG_HEAP_SIZE
 # describe special section
