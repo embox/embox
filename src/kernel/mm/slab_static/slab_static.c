@@ -18,8 +18,7 @@
 static void static_cache_init(static_cache_t* cache) {
 	struct list_head* elem;
 
-	cache->obj_ptr.next = &(cache->obj_ptr);
-	cache->obj_ptr.prev = &(cache->obj_ptr);
+	INIT_LIST_HEAD(&(cache->obj_ptr));
 	for (int i = 0; i < cache->num; i++) {
 		elem = (struct list_head*) (cache->cache_begin + cache->size * i);
 
