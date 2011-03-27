@@ -25,7 +25,6 @@ int sonar_sensor_get_val(sensor_t *sensor) {
 	i2c_read(&port, 1, &sonar_val, 1);
 	while (port.state != IDLE) {
 	}
-	printf("res = %d\n", sonar_val);
 	return sonar_val;
 }
 
