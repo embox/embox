@@ -27,9 +27,6 @@ int __init sock_init(void) {
 		TRACE("Added sock type 0x%X for proto 0x%02X\n",
 				(* p_netsock)->type, (* p_netsock)->protocol);
 	}
-
-	/* Initialize skbuff. */
-	skb_init();
 	return 0;
 }
 

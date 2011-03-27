@@ -15,16 +15,19 @@
 #include <linux/init.h>
 #include <linux/spinlock.h>
 #include <hal/ipl.h>
+#include <stdio.h>
 
-static struct sk_buff sk_buff_pool[CONFIG_QUANTITY_SKB];
-static LIST_HEAD(head_free_skb);
-
-static struct sk_buff_head sk_queue_pool[CONFIG_QUANTITY_SKB_QUEUE];
-static LIST_HEAD(head_free_queue);
-
+/* static cache for sk_buff allocate */
+STATIC_CACHE_CREATE(skb_cache, struct sk_buff, CONFIG_QUANTITY_SKB);
+/* static cache for sk_buff_head allocate */
+STATIC_CACHE_CREATE(skb_queue_cache,
+		struct sk_buff_head,
+		CONFIG_QUANTITY_SKB_QUEUE);
+/* static cache for net_packet allocate */
 STATIC_CACHE_CREATE(net_buff_cache,
 		unsigned char[CONFIG_ETHERNET_V2_FRAME_SIZE],
 		CONFIG_PACK_POOL_SIZE);
+
 
 /**
  * Allocate net_packet_buff for one ethernet packet on the cache.
@@ -39,6 +42,7 @@ static unsigned char *net_buff_alloc(void) {
 	return buff;
 }
 
+
 /**
  * Free buff of net packet.
  * @param buff
@@ -51,63 +55,47 @@ static void net_buff_free(unsigned char *buff) {
 	ipl_restore(sp);
 }
 
+
 struct sk_buff_head *alloc_skb_queue(int len) {
-        struct sk_buff_head *queue;
-        ipl_t sp;
-        sp = ipl_save();
-        if (list_empty(&head_free_queue)) {
-                ipl_restore(sp);
-                return NULL;
-        }
-        /* in free queue we held structure sk_buff_head but this pointer has sk_buff * type
-         * we must assignment it
-         */
-        queue = (struct sk_buff_head *) (&head_free_queue)->next;
-        list_del((&head_free_queue)->next);
-        INIT_LIST_HEAD((struct list_head *) queue);
-        queue->qlen = 0;
-        ipl_restore(sp);
-        queue->qlen = len;
-        return queue;
-}
-
-
-void __init skb_init(void) {
-        size_t i;
-
-        for (i = 1; i < ARRAY_SIZE(sk_buff_pool); i++) {
-                list_add((struct list_head *) &sk_buff_pool[i], &head_free_skb);
-        }
-        for (i = 1; i < ARRAY_SIZE(sk_queue_pool); i++) {
-                list_add((struct list_head *) &sk_queue_pool[i], &head_free_queue);
-        }
+	struct sk_buff_head *queue;
+	ipl_t sp;
+	sp = ipl_save();
+	if(NULL == (queue = static_cache_alloc(&skb_queue_cache))) {
+		ipl_restore(sp);
+		return NULL;
+	}
+	/* in free queue we held structure sk_buff_head but this pointer has sk_buff * type
+	 * we must assignment it
+	 */
+	INIT_LIST_HEAD((struct list_head *) queue);
+	queue->qlen = 0;
+	ipl_restore(sp);
+	queue->qlen = len;
+	return queue;
 }
 
 
 struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
-        struct sk_buff *skb;
-        /*TODO only one packet now*/
+	struct sk_buff *skb;
+	/*TODO only one packet now*/
 
+	ipl_t sp;
+	sp = ipl_save();
+	if(NULL == (skb = static_cache_alloc(&skb_cache)))	{
+		ipl_restore(sp);
+		return NULL;
+	}
 
-        ipl_t sp;
-        sp = ipl_save();
-        if (list_empty(&head_free_skb)) {
-                ipl_restore(sp);
-                return NULL;
-        }
-        skb = (struct sk_buff *) (&head_free_skb)->next;
-        list_del((&head_free_skb)->next);
-        INIT_LIST_HEAD((struct list_head *) skb);
-        ipl_restore(sp);
+	INIT_LIST_HEAD((struct list_head *) skb);
+	ipl_restore(sp);
 
-
-        if (NULL == (skb->data = net_buff_alloc())) {
-                kfree_skb(skb);
-                return NULL;
-        }
-        skb ->len = size;
-        skb->mac.raw = (unsigned char *) skb->data;
-        return skb;
+	if (NULL == (skb->data = net_buff_alloc())) {
+		kfree_skb(skb);
+		return NULL;
+	}
+	skb ->len = size;
+	skb->mac.raw = skb->data;
+	return skb;
 }
 
 
@@ -118,12 +106,10 @@ void kfree_skb(struct sk_buff *skb) {
         }
         net_buff_free(skb->data);
         sp = ipl_save();
-        if ((NULL == skb->prev) || (NULL == skb->next)) {
-                list_add((struct list_head *) skb, (struct list_head *)&head_free_skb);
-        } else {
-                list_move_tail((struct list_head *) skb,
-                                (struct list_head *) &head_free_skb);
+        if ((NULL != skb->prev) && (NULL != skb->next)) {
+                list_del((struct list_head *) skb);
         }
+        static_cache_free(&skb_cache, skb);
         skb = NULL;
         ipl_restore(sp);
 }
@@ -179,6 +165,8 @@ void skb_queue_purge(struct sk_buff_head *queue) {
         while ((skb = skb_dequeue(queue)) != NULL) {
                 kfree_skb(skb);
         }
+        static_cache_free(&skb_queue_cache, queue);
+        queue = NULL;
 }
 
 
