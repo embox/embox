@@ -3,9 +3,9 @@
  * @brief Tests function thread_yield.
  * @details Test, which a lot of times writes "+", "-", "*" and "!".
  * Because of priorities they are printed in such order:
- * 1) "+" and "+".
+ * 1) "*";
  * 2) "!";
- * 3) "*";
+ * 3) "+" and "-".
  * For each symbol there is a thread, which shows it.
  * These threads show one symbol and switch context.
  *

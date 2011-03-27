@@ -148,19 +148,7 @@ struct thread *sched_policy_current(void) {
 }
 
 bool sched_policy_add(struct thread *thread) {
-	struct run_thread_list *priority = priorities + thread->priority;
-
-	if (list_empty(&priority->thread_list)) {
-		run_insert_priority(priority);
-	}
-
 	run_enqueue(thread);
-
-	// XXX
-	if (!current_thread) {
-		current_thread = thread;
-	}
-
 	return (thread->priority < current_thread->priority);
 }
 
@@ -223,8 +211,10 @@ void sched_policy_stop(void) {
 /**
  * Initializes priority based policy.
  */
-void sched_policy_init(void) {
+void sched_policy_init(struct thread *current, struct thread *idle) {
 	struct run_thread_list *ptr;
+
+	assert(current != NULL);
 
 	INIT_LIST_HEAD(&run_queue);
 	array_static_foreach_ptr(ptr, priorities) {
@@ -232,5 +222,8 @@ void sched_policy_init(void) {
 		INIT_LIST_HEAD(&(ptr->priority_link));
 	}
 
-	current_thread = NULL;
+	current_thread = current;
+	run_insert_priority(priorities + current->priority);
+
+	sched_policy_add(idle);
 }

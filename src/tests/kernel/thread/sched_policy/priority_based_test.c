@@ -11,34 +11,37 @@
 #include <kernel/thread/sched_policy.h>
 #include <kernel/thread/api.h>
 
-static struct thread idle = { .priority = THREAD_PRIORITY_MIN, .sched_list =
-		LIST_HEAD_INIT(idle.sched_list), };
+static struct thread idle = { .priority = THREAD_PRIORITY_MIN };
+
+static struct thread current = { .priority = THREAD_PRIORITY_MAX };
 
 EMBOX_TEST_SUITE("priority_based scheduling algorithm tests");
 
 TEST_SETUP(setup);
 
-TEST_CASE("initially _scheduler_current should return an idle thread") {
-	test_assert_equal(sched_policy_current(), &idle);
+TEST_CASE("initially sched_policy_current should return a current thread") {
+	test_assert_equal(sched_policy_current(), &current);
 }
 
-TEST_CASE("_scheduler_next should return an idle when there is no more thread") {
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &idle);
+TEST_CASE("sched_policy_switch should return a current when there is no more "
+		"thread") {
+	test_assert_equal(sched_policy_switch(sched_policy_current()), &current);
 }
 
-TEST_CASE("current thread shouldn't be changed until _scheduler_next is called") {
+TEST_CASE("current thread shouldn't be changed until sched_policy_switch "
+		"is called") {
 	struct thread thread = { .priority = 1 };
 	sched_policy_add(&thread);
-	test_assert_equal(sched_policy_current(), &idle);
+	test_assert_equal(sched_policy_current(), &current);
 }
 
-TEST_CASE("_scheduler_next should return added thread after preemption") {
+TEST_CASE("sched_policy_switch should return added thread after preemption") {
 	struct thread thread = { .priority = 1 };
 	sched_policy_add(&thread);
 	test_assert_equal(sched_policy_switch(sched_policy_current()), &thread);
 }
 
-TEST_CASE("_scheduler_next should switch to the most priority thread") {
+TEST_CASE("sched_policy_switch should switch to the most priority thread") {
 	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
 
 	sched_policy_add(&bg);
@@ -50,7 +53,7 @@ TEST_CASE("_scheduler_next should switch to the most priority thread") {
 }
 
 TEST_CASE("Adding and subsequent removing a background thread shouldn't"
-		"change the behavior of _scheduler_next") {
+		"change the behavior of sched_policy_switch") {
 	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
 	sched_policy_add(&bg);
 	sched_policy_add(&fg);
@@ -59,7 +62,7 @@ TEST_CASE("Adding and subsequent removing a background thread shouldn't"
 	test_assert_equal(sched_policy_switch(sched_policy_current()), &fg);
 }
 
-TEST_CASE("_scheduler_next should switch back to a background after removing "
+TEST_CASE("sched_policy_switch should switch back to a background after removing "
 		"a foreground thread") {
 	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
 	sched_policy_add(&bg);
@@ -69,7 +72,7 @@ TEST_CASE("_scheduler_next should switch back to a background after removing "
 	test_assert_equal(sched_policy_switch(sched_policy_current()), &bg);
 }
 
-TEST_CASE("_scheduler_next should return background thread after serial adding "
+TEST_CASE("sched_policy_switch should return background thread after serial adding "
 		"and removing a foreground thread") {
 	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
 	sched_policy_add(&bg);
@@ -143,8 +146,10 @@ TEST_CASE("sched_policy_remove should return true after removing current "
 }
 
 static int setup(void) {
-	sched_policy_init();
 	INIT_LIST_HEAD(&idle.sched_list);
-	sched_policy_add(&idle);
+	INIT_LIST_HEAD(&current.sched_list);
+
+	sched_policy_init(&current, &idle);
+
 	return 0;
 }

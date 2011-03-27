@@ -23,7 +23,8 @@
 
 #define IDLE_THREAD_STACK_SZ 0x100
 
-EMBOX_UNIT_INIT(unit_init);
+EMBOX_UNIT_INIT(unit_init)
+;
 
 struct thread *idle_thread;
 
@@ -43,13 +44,24 @@ static void idle_run(void) {
 
 static int unit_init(void) {
 	static char idle_thread_stack[IDLE_THREAD_STACK_SZ];
+	struct thread *current;
 
-	idle_thread
-			= thread_create(idle_run, idle_thread_stack + IDLE_THREAD_STACK_SZ);
+	if (!(current = thread_create((void(*)(void)) -1, (void *) -1))) {
+		return -ENOMEM;
+	}
+	// FIXME priority
+	current->priority = THREAD_PRIORITY_MIN;
+	current->state = THREAD_STATE_RUN;
+
+	if (!(idle_thread = thread_create(idle_run,
+			idle_thread_stack + IDLE_THREAD_STACK_SZ))) {
+		thread_free(current);
+		return -ENOMEM;
+	}
 	idle_thread->priority = THREAD_PRIORITY_MIN;
 	idle_thread->state = THREAD_STATE_RUN;
 
-	sched_add(idle_thread);
+	sched_init(current, idle_thread);
 
 	return 0;
 }
@@ -156,12 +168,13 @@ void thread_yield(void) {
 	sched_unlock();
 }
 
-STATIC_CACHE_CREATE(thread_pool, struct thread, __THREAD_POOL_SZ);
+STATIC_CACHE_CREATE(thread_pool, struct thread, __THREAD_POOL_SZ)
+;
 
 static struct thread *thread_alloc(void) {
 	struct thread *t;
 
-	if(!(t = (struct thread *) static_cache_alloc(&thread_pool))) {
+	if (!(t = (struct thread *) static_cache_alloc(&thread_pool))) {
 		return NULL;
 	}
 
@@ -175,5 +188,4 @@ static void thread_free(struct thread *t) {
 	list_del_init(&t->thread_link);
 	static_cache_free(&thread_pool, t);
 }
-
 

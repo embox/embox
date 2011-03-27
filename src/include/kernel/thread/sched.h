@@ -18,6 +18,11 @@
 extern void sched_start(void);
 
 /**
+ * Initializes scheduler.
+ */
+extern int sched_init(struct thread *current, struct thread *idle);
+
+/**
  * !!!!Can be called only in idle_thread!!!!
  * Stops working with threads. After it contexts can't be switched.
  * Then sched_start can be recalled.

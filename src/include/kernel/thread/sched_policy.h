@@ -17,7 +17,7 @@
 /**
  * Initializes all that is necessary for scheduling algorithm.
  *  */
-extern void sched_policy_init(void);
+extern void sched_policy_init(struct thread *current, struct thread *idle);
 
 /**
  * Is called then scheduler start.

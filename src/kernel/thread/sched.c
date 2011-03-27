@@ -18,9 +18,6 @@
 #include <hal/ipl.h>
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(sched_init)
-;
-
 /** Timer, which calls scheduler_tick. */
 #define THREADS_TIMER_ID 17
 
@@ -37,9 +34,8 @@ static int preemption_count = 1;
 /**
  * Initializes scheduler.
  */
-static int sched_init(void) {
-	sched_policy_init();
-	//	scheduler_current()->reschedule = false;
+int sched_init(struct thread* current, struct thread *idle) {
+	sched_policy_init(current, idle);
 	return 0;
 }
 
