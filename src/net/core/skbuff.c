@@ -15,7 +15,6 @@
 #include <linux/init.h>
 #include <linux/spinlock.h>
 #include <hal/ipl.h>
-#include <stdio.h>
 
 /* static cache for sk_buff allocate */
 STATIC_CACHE_CREATE(skb_cache, struct sk_buff, CONFIG_QUANTITY_SKB);
