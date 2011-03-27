@@ -12,11 +12,11 @@
 
 EMBOX_TEST(run_new_fill);
 
-extern int display_fill(uint8_t, uint8_t, uint8_t, uint8_t, int);
+/*extern int display_fill(uint8_t, uint8_t, uint8_t, uint8_t, int);*/
 
 static int run_new_fill(void) {
 	int i, j, t;
-	uint8_t q, w;
+	uint8_t w;
 	for (i = 0; i < 13; i++) {
 		t = i % 2;
 		for ( j = 0; j<16; j++) {

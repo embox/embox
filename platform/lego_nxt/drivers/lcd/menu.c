@@ -21,7 +21,6 @@
 /*#include <src/include/test/framework.h>*/
 
 extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
-/*extern int display_fill(uint8_t, uint8_t, uint8_t, uint8_t, int);*/
 
 /*pointer*/
 static uint8_t pointer_buff[8] = {0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00};
@@ -31,41 +30,32 @@ static uint8_t pointer_buff[8] = {0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00
  */
 uint8_t change_pointer(uint8_t y, uint8_t current_test, int buts){
 	if (buts & BT_LEFT) {
-		display_buffer[0][y+8] = pointer_buff[0];
-		current_test++;
-	}
-	if (buts & BT_RIGHT) {
-		display_buffer[0][y-8] = pointer_buff[0];
+		display_draw(0, y-1, 1, 1, &pointer_buff[0]);
+		display_fill(0, y, 8, 8, 0);
 		current_test--;
 	}
-	display_fill(0, y, 8, 8, 0);
-	nxt_lcd_force_update();
+	if (buts & BT_RIGHT) {
+		display_draw(0, y+1, 1, 1, &pointer_buff[0]);
+		display_fill(0, y, 8, 8, 0);
+		current_test++;
+	}
 	return current_test;
 }
 
-/*number of test*/
+/* Get number of test*/
 int n_of_t(void){
 	const struct test_suite *test;
 	int i = 0;
 	test_foreach(test) {
 		++i;
 	}
-	//printf("\nTotal tests: %d\n", i);
-
-	/*const struct test *test;
-	uint8_t n;
-	n = 0;
-	test_foreach(test){
-		n = n + 1;
-	}*/
 	return i;
 }
 
+/*This function print list of test on lcd  */
 void print_list_test(uint8_t first){
 	for (int i = 0; i<8; i++){
-		display_fill(0, i*8, 8, 8, 0);
-		TRACE(__test_registry[first + i].mod->name); //hm... maybe something else
-		//printf("/n");
+		tab_displey( __test_registry[first + i].mod->name); //hm... maybe something else
 	}
 }
 
@@ -77,22 +67,19 @@ uint8_t move_list(uint8_t current_test, int buts){
 		number = n_of_t();
 		for (i = 0; i<8; i++){
 			if(current_test < number){
-				TRACE("  ");
-				TRACE( __test_registry[i].mod->name);//->mod.name); //hm... maybe something else
+				tab_displey( __test_registry[current_test+8-i].mod->name);
 			}
 		}
 		current_test++;
 	}
 	if (buts & BT_RIGHT) {
+		current_test--;
 		for (int i = 0; i<8; i++){
-			while(current_test > 1){
-				TRACE("  /n");
-				TRACE(__test_registry[current_test-1+i].mod->name); //hm... maybe something else
+			if(current_test > 0){
+				tab_displey(__test_registry[current_test+i].mod->name);
 			}
 		}
-		current_test--;
 	}
-	nxt_lcd_force_update();
 	return current_test;
 }
 

@@ -11,39 +11,38 @@
 
 EMBOX_TEST(run_picture_embox_fill);
 
-extern int display_fill(uint8_t, uint8_t, uint8_t, uint8_t, int);
+
+/*/extern int display_fill(uint8_t, uint8_t, uint8_t, uint8_t, int);*/
 
 static int run_picture_embox_fill(void) {
-	display_clear_screen();
 	uint32_t b;
-		b = nxt_buttons_was_pressed();
-		if (b!=0) {
-			return 0;
-		}
+	display_clear_screen();
+	b = nxt_buttons_was_pressed();
 
-		display_fill(6, 16, 12, 24, 1);
-		display_fill(10, 20, 4, 8, 0);
-		display_fill(10, 32, 8, 4, 0);
+	if (b!=0) {
+		return 0;
+	}
 
-		display_fill(22, 16, 20, 24, 1);
-		display_fill(26, 24, 4, 16, 0);
-		display_fill(34, 24, 4, 16, 0);
-		display_fill(26, 16, 16, 4, 0);
+	display_fill(6, 16, 12, 24, 1);
+	display_fill(10, 20, 4, 8, 0);
+	display_fill(10, 32, 8, 4, 0);
+	display_fill(22, 16, 20, 24, 1);
+	display_fill(26, 24, 4, 16, 0);
+	display_fill(34, 24, 4, 16, 0);
+	display_fill(26, 16, 16, 4, 0);
 
+	display_fill(46, 8, 12, 32, 1);
+	display_fill(50, 8, 8, 16, 0);
+	display_fill(50, 28, 4, 8, 0);
 
-		display_fill(46, 8, 12, 32, 1);
-		display_fill(50, 8, 8, 16, 0);
-		display_fill(50, 28, 4, 8, 0);
+	display_fill(62, 16, 12, 24, 1);
+	display_fill(66, 20, 4, 16, 0);
 
-		display_fill(62, 16, 12, 24, 1);
-		display_fill(66, 20, 4, 16, 0);
-
-
-		display_fill(78, 16, 16, 24, 1);
-		display_fill(82, 16, 8, 8, 0);
-		display_fill(82, 32, 8, 8, 0);
-		display_fill(78, 24, 4, 8, 0);
-		display_fill(90, 24, 4, 8, 0);
+	display_fill(78, 16, 16, 24, 1);
+	display_fill(82, 16, 8, 8, 0);
+	display_fill(82, 32, 8, 8, 0);
+	display_fill(78, 24, 4, 8, 0);
+	display_fill(90, 24, 4, 8, 0);
 
 
 	for (int i = 0; i<5; i++) {

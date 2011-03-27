@@ -33,5 +33,6 @@ extern int display_draw(uint8_t x, uint8_t y,
 	   	uint8_t width, uint8_t height, uint8_t *buff);
 extern int display_fill(uint8_t x, uint8_t y,
 		uint8_t width, uint8_t height, uint8_t q);
+extern void tab_displey(const char *str);
 #endif /* NXT_LCD_H_ */
 

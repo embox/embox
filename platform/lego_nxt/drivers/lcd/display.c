@@ -189,11 +189,12 @@ void display_char(int c) {
 }
 
 void display_string(const char *str) {
+	display_x = 8;
 	while (*str) {
 		if (*str != '\n') {
 			display_char(*str);
 		} else {
-			display_x = 0;
+			display_x = 8;
 			display_y++;
 		}
 		str++;
@@ -278,3 +279,21 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q)
 	nxt_lcd_force_update();
 	return 0;
 }
+
+
+void tab_displey(const char *str) {
+	int i = 0;
+	display_x = 2;
+	while (*str && ( i < 13)) {
+		if (*str != '\n') {
+			display_char(*str);
+		} /*else {
+			//display_x = 5;
+			display_y++;
+		}*/
+		str++;
+		i++;
+	}
+	display_y++;
+}
+

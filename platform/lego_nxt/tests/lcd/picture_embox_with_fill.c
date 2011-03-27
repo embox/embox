@@ -29,13 +29,13 @@ static int run_picture_with_fill(void) {
 	uint8_t pict_buff11[8] = {0xFF, 0xFC, 0xF0, 0xC0, 0xC0, 0xF0, 0xFC, 0xFF};
 
 	uint32_t b;
+	int i;
+
 	b = nxt_buttons_was_pressed();
 	if (b!=0) {
 		return 0;
 	}
 
-
-	int i;
 	display_fill(96, 60, 4, 4, 1);
 	for (i = 0; i < 6; i++) {
 	display_fill(2, 0, 92, 40, 0);
