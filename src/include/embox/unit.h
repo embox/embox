@@ -51,5 +51,19 @@ struct unit {
 	unit_op_t init;
 	unit_op_t fini;
 };
+#ifdef __CDT_PARSER__
+
+# undef EMBOX_UNIT EMBOX_UNIT_INIT EMBOX_UNIT_FINI
+
+# define EMBOX_UNIT(init, exit) \
+	static int init(void) // XXX
+
+# define EMBOX_UNIT_INIT(init) \
+	static int init(void)
+
+# define EMBOX_UNIT_FINI(exit) \
+	static int exit(void)
+
+#endif /* __CDT_PARSER__ */
 
 #endif /* EMBOX_UNIT_H_ */
