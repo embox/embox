@@ -24,13 +24,14 @@ extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
 
 /*pointer*/
 static uint8_t pointer_buff[8] = {0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00};
+static uint8_t space_buff[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* This function change pointer place
  * then list of test don't move
  */
-uint8_t change_pointer(uint8_t y, uint8_t current_test, int buts){
+/*uint8_t change_pointer(uint8_t y, uint8_t current_test, int buts){
 	if (buts & BT_LEFT) {
-		display_draw(0, y-1, 1, 1, &pointer_buff[0]);
+		display_draw(0, (y-1), 1, 1, &pointer_buff[0]);
 		display_fill(0, y, 8, 8, 0);
 		current_test--;
 	}
@@ -40,7 +41,7 @@ uint8_t change_pointer(uint8_t y, uint8_t current_test, int buts){
 		current_test++;
 	}
 	return current_test;
-}
+}*/
 
 /* Get number of test*/
 int n_of_t(void){
@@ -53,42 +54,90 @@ int n_of_t(void){
 }
 
 /*This function print list of test on lcd  */
-void print_list_test(uint8_t first){
+void print_list_test(int first){
 	for (int i = 0; i<8; i++){
-		tab_displey( __test_registry[first + i].mod->name); //hm... maybe something else
+		tab_displey( __test_registry[first + i].mod->name );
 	}
 }
 
 /*This function move list of test */
-uint8_t move_list(uint8_t current_test, int buts){
-	int number, i;
-
-	if (buts & BT_LEFT) {
-		number = n_of_t();
-		for (i = 0; i<8; i++){
-			if(current_test < number){
-				tab_displey( __test_registry[current_test+8-i].mod->name);
-			}
-		}
-		current_test++;
-	}
-	if (buts & BT_RIGHT) {
-		current_test--;
-		for (int i = 0; i<8; i++){
-			if(current_test > 0){
-				tab_displey(__test_registry[current_test+i].mod->name);
-			}
-		}
+uint8_t move_list_up(int current_test){
+	if (current_test >= 0) {
+		print_list_test(current_test);
+	} else {
+		current_test = 0;
 	}
 	return current_test;
 }
 
-/*void execution(current_test){
-//	int buts = nxt_buttons_was_pressed();
+int move_list_down(int current_test, int number ){
+		if(current_test <= number){
+			print_list_test(current_test - 8);
+		} else {
+			current_test = number;
+		}
+	return current_test;
+}
+/*void execution(current_test) {
 	const struct test *test;
-	if (buts & BT_ENTER){
-		 __test_registry[current_test] -> run;
-	}
-	nxt_lcd_force_update();
-	return 0;
+	__test_registry[current_test].mod.;
 }*/
+
+
+int menu_start(void){
+	int current_test, max_cur_test, min_cur_test;
+	int i, buts, number;
+	number = n_of_t();
+	current_test = 0;
+	min_cur_test = 0;
+	max_cur_test = 7;
+	i = 1;
+	print_list_test(current_test);
+	display_draw(0, 0, 1, 1, &pointer_buff[0]);
+
+	while (i>0){
+		buts = nxt_buttons_was_pressed();
+		if (buts & BT_RIGHT){
+			current_test++;
+			if (current_test > max_cur_test) {
+				current_test = move_list_down( current_test, number );
+				display_draw(0, 7, 1, 8, &pointer_buff[0]);
+				if ( max_cur_test < number ){
+					min_cur_test++;
+					max_cur_test++;
+				}
+			} else {
+				display_draw(0, current_test, 1, 8, &pointer_buff[0]);
+				display_draw(0, current_test-1, 1, 8, &space_buff[0]);
+				//display_fill(0, (current_test-1)* 8, 8, 8, 0);
+			}
+		usleep(200);
+		}
+		if (buts & BT_LEFT){
+			current_test--;
+			if( current_test < min_cur_test ) {
+				current_test = move_list_up( current_test );
+				display_draw(0, 0, 1, 8, &pointer_buff[0]);
+				if ( min_cur_test > 0 ){
+					min_cur_test--;
+					max_cur_test--;
+				}
+			} else {
+				display_draw(0, current_test, 1, 8, &pointer_buff[0]);
+				display_draw(0, current_test+1, 1, 8, &space_buff[0]);
+				//display_fill(0, (current_test+1)* 8, 8, 8, 0);
+			}
+		}
+		usleep(200);
+		if( buts & BT_ENTER ){
+			//__test_registry[current_test].run;
+			//__test_registry[current_test].
+			TRACE ("SORRY\n");
+		}
+		if (buts & BT_DOWN ){
+			i = 0;
+		}
+		buts = 0;
+	}
+	return 0;
+}
