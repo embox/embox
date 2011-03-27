@@ -39,7 +39,7 @@ void* static_cache_alloc(static_cache_t* cachep) {
 		return NULL;
 
 	objp = cachep->obj_ptr.next;
-	list_del(cachep->obj_ptr.next);
+	list_del_init(cachep->obj_ptr.next);
 
 	return objp;
 }
