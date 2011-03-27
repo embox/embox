@@ -11,6 +11,7 @@ endif
 
 $_MODS       += sched
 $_SRCS-sched += sched.c
+$_SRCS-sched += state.c
 ifdef CONFIG_SCHED_STRATEGY
 $_DEPS-sched += core.kernel.thread.sched_policy.$(CONFIG_SCHED_STRATEGY)
 endif
