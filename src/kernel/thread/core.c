@@ -106,7 +106,7 @@ struct thread *thread_create(void(*run)(void), void *stack_address) {
 	t->need_message = false;
 
 #ifdef CONFIG_PP_ENABLE
-	pp_add_thread(pp_cur_process, created_thread);
+	pp_add_thread(pp_cur_process, t);
 #endif
 
 	return t;
