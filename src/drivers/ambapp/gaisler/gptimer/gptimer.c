@@ -135,10 +135,10 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 	amba_dev_t amba_dev;
 
 	assert(NULL != irq_nr);
-	if (-1 == capture_amba_dev(&amba_dev, CONFIG_VENDOR_ID_GAISLER,
-			CONFIG_DEV_ID_GAISLER_TIMER, false, false)) {
+	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
+			AMBAPP_DEVICE_GAISLER_GPTIMER, false, false)) {
 		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",
-				CONFIG_VENDOR_ID_GAISLER, CONFIG_DEV_ID_GAISLER_TIMER);
+				AMBAPP_VENDOR_GAISLER, AMBAPP_DEVICE_GAISLER_GPTIMER);
 		return -ENODEV;
 	}
 	dev_regs = (struct gptimer_regs *) amba_dev.bar[0].start;

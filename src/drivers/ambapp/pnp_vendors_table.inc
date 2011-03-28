@@ -1,2 +1,2 @@
-{CONFIG_VENDOR_ID_GAISLER,   "Gaisler Research"},
-{CONFIG_VENDOR_ID_ESA,       "ESA"}
+{AMBAPP_VENDOR_GAISLER,   "Gaisler Research"},
+{AMBAPP_VENDOR_ESA,       "ESA"}
