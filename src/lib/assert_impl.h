@@ -23,11 +23,15 @@ struct __assertion_point {
 	const char *expression;
 };
 
-#ifndef __ASSERT_HANDLE_NO_EXTERN_INLINE
+// TODO don't like it anymore. -- Eldar
+# ifndef __ASSERT_HANDLE_NO_EXTERN_INLINE
 extern inline
-#else
+#  ifdef __GNUC_STDC_INLINE__
+__attribute__((__gnu_inline__))
+#  endif /* __GNUC_STDC_INLINE__ */
+# else
 /* Included from assert.c, emit global symbol for __assertion_handle. */
-#endif
+# endif /* __ASSERT_HANDLE_NO_EXTERN_INLINE */
 void __assertion_handle(int pass, const struct __assertion_point *point) {
 	extern void __assertion_handle_failure(
 			const struct __assertion_point *point);

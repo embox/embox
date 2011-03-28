@@ -13,8 +13,8 @@ PROVIDE(softirq_install  = nosys);
 PROVIDE(softirq_raise    = nosys);
 PROVIDE(softirq_dispatch = nosys);
 
-PROVIDE(sched_lock = nosys);
-PROVIDE(sched_unlock = nosys);
+PROVIDE(sched_policy_current = nosys);
+PROVIDE(sched_dispatch = nosys);
 
 PROVIDE(printk = nosys);
 

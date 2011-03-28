@@ -35,6 +35,7 @@ ifdef CONFIG_IRQ
   $_SRCS-irq     += irq.c
   $_REQUIRES-irq += embox.hal.interrupt
   $_DEPS-irq     += softirq
+  $_DEPS-irq     += core.kernel.critical.core
 endif
 #ifdef CONFIG_PRINTK
 #  $_SRCS-printk  += printk.c
