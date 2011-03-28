@@ -9,7 +9,9 @@
 
 #include <assert.h>
 #include <errno.h>
+
 #include <lib/list.h>
+#include <kernel/critical/api.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_policy.h>
@@ -24,16 +26,6 @@
 /** Interval, what scheduler_tick is called in. */
 #define THREADS_TIMER_INTERVAL 100
 
-/**
- * If it doesn't equal to zero,
- * we are located in critical section
- * and can't switch between threads.
- */
-static int preemption_count = 1;
-
-/**
- * Initializes scheduler.
- */
 int sched_init(struct thread* current, struct thread *idle) {
 	sched_policy_init(current, idle);
 	return 0;
@@ -49,55 +41,52 @@ static void sched_tick(uint32_t id) {
 }
 
 void sched_start(void) {
-	LOG_DEBUG("\nStart scheduler\n");
 	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, sched_tick);
 	idle_thread->reschedule = true;
 	sched_policy_start();
+
 	sched_unlock();
-	LOG_DEBUG("\nPreemtion count = %d", preemption_count);
-	LOG_DEBUG("\nCurrent thread reschedule = %d\n", thread_current()->reschedule);
 }
 
-void sched_lock(void) {
-	preemption_count++;
-}
+static void sched_switch(void) {
+	ipl_t ipl;
+	struct thread *current, *next;
 
-void sched_unlock(void) {
-	preemption_count--;
-	if (preemption_count == 0 && sched_current()->reschedule) {
-		sched_dispatch();
+	current = sched_current();
+	next = sched_policy_switch(current);
+
+	if (next == current) {
+		return;
 	}
-}
 
-static void preemption_inc(void) {
-	preemption_count++;
+#ifdef CONFIG_PP_ENABLE
+	if (next->pp != current->pp) {
+		pp_store(current->pp);
+		pp_restore(next->pp);
+	}
+#endif
+
+	ipl = ipl_save();
+	context_switch(&current->context, &next->context);
+	ipl_restore(ipl);
+
 }
 
 void sched_dispatch(void) {
-	ipl_t ipl;
-	struct thread *prev_thread;
-	struct thread *next_thread;
+	struct thread *current;
 
-	if (preemption_count == 0 && sched_current()->reschedule) {
-		preemption_inc();
-		prev_thread = sched_current();
-		next_thread = sched_policy_switch(prev_thread);
-		prev_thread->reschedule = false;
+	assert(critical_allows(CRITICAL_PREEMPT));
 
-#ifdef CONFIG_PP_ENABLE
-		if (thread_current()->pp != prev_thread->pp) {
-			pp_store( prev_thread->pp );
-			pp_restore( thread_current()->pp );
-		}
-#endif
+	sched_lock();
 
-		LOG_DEBUG("\nSwitching from %d to %d\n",
-				prev_thread->id, thread_current()->id);
-		ipl = ipl_save();
-		preemption_count--;
-		context_switch(&prev_thread->context, &next_thread->context);
-		ipl_restore(ipl);
+	current = sched_current();
+
+	while (current->reschedule) {
+		current->reschedule = false;
+		sched_switch();
 	}
+
+	sched_unlock();
 }
 
 void sched_add(struct thread *added_thread) {

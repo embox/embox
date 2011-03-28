@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <kernel/critical/api.h>
 #include <kernel/mm/slab_static.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
@@ -72,10 +73,17 @@ static int unit_init(void) {
  * @param thread_pointer pointer at thread.
  */
 static void thread_run(int arg) {
+	struct thread *current = (struct thread *) arg;
+
+	assert(current == thread_current());
+
+	sched_unlock_noswitch();
 	ipl_enable();
 
-	thread_current()->run();
-	thread_stop(thread_current());
+	assert(!critical_inside(CRITICAL_PREEMPT));
+
+	current->run();
+	thread_stop(current);
 
 	/* NOTREACHED */assert(false);
 }

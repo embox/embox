@@ -17,4 +17,5 @@ $_DEPS-sched += core.kernel.thread.sched_policy.$(CONFIG_SCHED_STRATEGY)
 endif
 $_DEPS-sched += core.kernel.timer
 $_DEPS-sched += embox.hal.context
+$_DEPS-sched += core.kernel.critical.core
 

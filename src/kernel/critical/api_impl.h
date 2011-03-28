@@ -54,7 +54,7 @@
 #include "count.h"
 
 #define __CRITICAL_VALUE(bits, lower_mask) \
-	((__CRITICAL_BELOW(lower_mask) << (bits) | CRITICAL_VALUE_LOWEST(bits)) \
+	((__CRITICAL_BELOW(lower_mask) << (bits) | __CRITICAL_VALUE_LOWEST(bits)) \
 			^ __CRITICAL_BELOW(lower_mask))
 
 #define __CRITICAL_VALUE_LOWEST(bits) \
@@ -76,9 +76,9 @@
 
 /* Critical levels mask. */
 
-#define __CRITICAL_HARDIRQ CRITICAL_VALUE_LOWEST(8)
-#define __CRITICAL_SOFTIRQ CRITICAL_VALUE(4, __CRITICAL_HARDIRQ)
-#define __CRITICAL_PREEMPT CRITICAL_VALUE(4, __CRITICAL_SOFTIRQ)
+#define __CRITICAL_HARDIRQ __CRITICAL_VALUE_LOWEST(8)
+#define __CRITICAL_SOFTIRQ __CRITICAL_VALUE(4, __CRITICAL_HARDIRQ)
+#define __CRITICAL_PREEMPT __CRITICAL_VALUE(4, __CRITICAL_SOFTIRQ)
 
 inline static int critical_allows(__critical_t critical) {
 	return !(__critical_count_get() & __CRITICAL_BELOW(critical));

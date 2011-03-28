@@ -6,6 +6,7 @@
  * @author Eldar Abusalimov
  */
 
-#include "count.h"
+#include "api_impl.h"
 
-__critical_t __critical_count;
+// XXX initial value to prevent early scheduling from irq_leave.
+__critical_t __critical_count = __CRITICAL_COUNT(__CRITICAL_PREEMPT);

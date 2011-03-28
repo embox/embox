@@ -43,6 +43,16 @@ extern void sched_lock(void);
 extern void sched_unlock(void);
 
 /**
+ * TODO
+ */
+extern void sched_unlock_noswitch(void);
+
+/**
+ * TODO
+ */
+extern void sched_check_switch(void);
+
+/**
  * Changes currently executed thread.
  */
 extern void sched_dispatch(void);
