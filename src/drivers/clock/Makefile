@@ -12,3 +12,9 @@ $_MODS               += pit
 $_SRCS-pit           += pit.c
 $_PROVIDES-pit       += embox.hal.clock
 
+$_MODS               += gptimer
+$_SRCS-gptimer       += gptimer.c
+$_PROVIDES-gptimer   += embox.hal.clock
+ifdef CONFIG_AMBAPP
+  $_DEPS-gptimer     += embox.driver.ambapp
+endif
