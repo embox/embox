@@ -38,8 +38,8 @@ void* static_cache_alloc(static_cache_t* cachep) {
 	if (list_empty(&(cachep->obj_ptr)))
 		return NULL;
 
-	objp = cachep->obj_ptr.next;
-	list_del_init(cachep->obj_ptr.next);
+	objp = cachep->obj_ptr.prev;
+	list_del_init(cachep->obj_ptr.prev);
 
 	return objp;
 }
