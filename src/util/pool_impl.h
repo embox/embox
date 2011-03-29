@@ -27,13 +27,16 @@ struct static_cache {
 };
 
 #define __POOL_DEF(type, name, sz) \
-	static char __##name##_pool[(sz) * binalign_bound( \
-			(sizeof(type) > sizeof(struct list_head) ? \
-			 sizeof(type) : sizeof(struct list_head)), sizeof(void *))]; \
+	static char __##name##_pool[(sz) * __POOL_ELEMENT_SIZE(type)]; \
 	static static_cache_t name = { \
 		.num = (sz), \
-		.size = binalign_bound(sizeof(type), sizeof(struct list_head)), \
+		.size = __POOL_ELEMENT_SIZE(type), \
 		.cache_begin = __##name##_pool, \
 	}
+
+#define __POOL_ELEMENT_SIZE(type) \
+	binalign_bound( \
+			(sizeof(type) > sizeof(struct list_head) ? \
+			 sizeof(type) : sizeof(struct list_head)), sizeof(void *))
 
 #endif /* UTIL_POOL_IMPL_H_ */

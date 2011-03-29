@@ -13,7 +13,6 @@
 #include <string.h>
 
 #include <lib/list.h>
-#include <util/pool.h>
 #include <util/binalign.h>
 #include <kernel/printk.h>
 #include <kernel/mm/slab.h>

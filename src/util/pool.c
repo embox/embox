@@ -24,7 +24,7 @@ static void static_cache_init(static_cache_t* cache) {
 		elem = (struct list_head*) (cache->cache_begin + cache->size * i);
 
 		/*add this free block in slab_list*/
-		list_add(elem, &(cache->obj_ptr));
+		list_add_tail(elem, &(cache->obj_ptr));
 	}
 }
 
@@ -39,8 +39,8 @@ void* static_cache_alloc(static_cache_t* cachep) {
 	if (list_empty(&(cachep->obj_ptr)))
 		return NULL;
 
-	objp = cachep->obj_ptr.prev;
-	list_del_init(cachep->obj_ptr.prev);
+	objp = cachep->obj_ptr.next;
+	list_del_init(cachep->obj_ptr.next);
 
 	return objp;
 }
