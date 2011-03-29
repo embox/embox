@@ -19,7 +19,7 @@ struct handler {
 };
 
 /** pool for message in queue */
-STATIC_CACHE_CREATE(msg_queue_cache, struct event_msg, MAX_MSG_COUNT_IN_QUEUE);
+POOL_DEF(struct event_msg, msg_queue_cache, MAX_MSG_COUNT_IN_QUEUE);
 
 /** Queue of messages, sent to handlers */
 static LIST_HEAD(msg_queue);

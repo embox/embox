@@ -18,14 +18,13 @@
 #include <hal/ipl.h>
 
 /* static cache for sk_buff allocate */
-STATIC_CACHE_CREATE(skb_cache, struct sk_buff, CONFIG_QUANTITY_SKB);
+POOL_DEF(struct sk_buff, skb_cache,
+		CONFIG_QUANTITY_SKB);
 /* static cache for sk_buff_head allocate */
-STATIC_CACHE_CREATE(skb_queue_cache,
-		struct sk_buff_head,
+POOL_DEF(struct sk_buff_head, skb_queue_cache,
 		CONFIG_QUANTITY_SKB_QUEUE);
 /* static cache for net_packet allocate */
-STATIC_CACHE_CREATE(net_buff_cache,
-		unsigned char[CONFIG_ETHERNET_V2_FRAME_SIZE],
+POOL_DEF(unsigned char[CONFIG_ETHERNET_V2_FRAME_SIZE], net_buff_cache,
 		CONFIG_PACK_POOL_SIZE);
 
 

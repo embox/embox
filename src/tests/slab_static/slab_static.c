@@ -14,7 +14,7 @@
 
 EMBOX_TEST(run);
 
-STATIC_CACHE_CREATE(cache, int, 0x100);
+POOL_DEF(int, cache, 0x100);
 
 static int run(void) {
 	struct list_head *tmp_h;

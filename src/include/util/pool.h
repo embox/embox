@@ -18,11 +18,11 @@ typedef struct static_cache static_cache_t;
 
 /**
  * create cache
- * @param name of cache
  * @param type of objects in cache
+ * @param name of cache
  * @param count of objects in cache
  */
-#define STATIC_CACHE_CREATE(name, type, count) \
+#define POOL_DEF(type, name, count) \
 	__POOL_DEF(type, name, count)
 
 /**

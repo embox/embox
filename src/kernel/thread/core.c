@@ -176,7 +176,7 @@ void thread_yield(void) {
 	sched_unlock();
 }
 
-STATIC_CACHE_CREATE(thread_pool, struct thread, __THREAD_POOL_SZ);
+POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ);
 
 static struct thread *thread_alloc(void) {
 	struct thread *t;
