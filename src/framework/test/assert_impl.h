@@ -62,7 +62,7 @@ extern void __test_assertion_handle2(int pass,
 			__test_assertion_point_ref("test_assert_null(" value_str ")"))
 
 #define __test_assert_not_null(value, value_str) \
-	__test_assertion_handle0((value), \
+	__test_assertion_handle0((int) (value), \
 			__test_assertion_point_ref("test_assert_not_null(" value_str ")"))
 
 #define __test_assert_equal(actual, expected, actual_str, expected_str) \

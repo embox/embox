@@ -26,8 +26,9 @@ TEST_CASE("Allocated objects must not exceed the pool boundaries") {
 	for (int i = 0; i < POOL_SZ; ++i) {
 		struct object *obj = (struct object *) static_cache_alloc(&pool);
 		test_assert_not_null(obj);
-		test_assert(obj >= pool.cache_begin);
-		test_assert(obj < pool.cache_begin + ARRAY_SIZE(__pool_pool));
+		test_assert(obj >= (struct object *) pool.cache_begin);
+		test_assert(obj < (struct object *) (pool.cache_begin
+				+ ARRAY_SIZE(__pool_pool)));
 	}
 	test_assert_null(static_cache_alloc(&pool));
 }
