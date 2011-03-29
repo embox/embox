@@ -12,3 +12,9 @@ $_MODS               += apic
 $_SRCS-apic          += apic.c
 $_PROVIDES-apic      += embox.hal.interrupt
 
+$_MODS               += irqmp
+$_SRCS-irqmp         += irqmp.c
+$_PROVIDES-irqmp     += embox.hal.interrupt
+ifdef CONFIG_AMBAPP
+  $_DEPS-irqmp       += embox.driver.ambapp
+endif
