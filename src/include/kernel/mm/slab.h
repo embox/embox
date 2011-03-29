@@ -41,8 +41,9 @@ typedef struct cache cache_t;
  * Create of cache
  * @param name of cache
  * @param obj_size is size of contained objects
+ * @param obj_num is number of object reserved at first
  */
-extern cache_t *cache_create(char *name, size_t obj_size);
+extern cache_t *cache_create(char *name, size_t obj_size, size_t obj_num);
 
 /**
  * Destroy of cache

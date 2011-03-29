@@ -43,7 +43,7 @@ static int test_s_functions(void) {
 static void test1(void) {
 	void* objp[10];
 	size_t i;
-	cache_t *cachep = cache_create("cache1", 50);
+	cache_t *cachep = cache_create("cache1", 50, 0);
 
 	for (i = 0; i < 10; i++) {
 		objp[i] = cache_alloc(cachep);
@@ -60,9 +60,11 @@ static void test1(void) {
 
 static void test2(void) {
 	cache_t *cachep;
+	char cache_name[0x10];
 
 	for (int i = 0; i < 14; i++) {
-		cachep = cache_create("cache1", 1 << i);
+		sprintf(cache_name, "cache_%d", 1 << i);
+		cachep = cache_create("cache_name", 1 << i, 0);
 		cache_destroy(cachep);
 	}
 }

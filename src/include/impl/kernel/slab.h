@@ -9,7 +9,7 @@
 #ifndef SLAB_H_
 # error "Do not include this file directly, use <kernel/mm/slab.h> instead!"
 #endif /* SLAB_H_ */
-
+#include <types.h>
 #include <lib/list.h>
 
 /** Length of name of any cache */
