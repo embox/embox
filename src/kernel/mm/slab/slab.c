@@ -8,17 +8,18 @@
  * @author Alexandr Kalmuk
  */
 
-#include <stdio.h>
-#include <kernel/printk.h>
 #include <stdlib.h>
-#include <lib/list.h>
+#include <stdio.h>
 #include <string.h>
+
+#include <lib/list.h>
+#include <util/pool.h>
+#include <util/binalign.h>
+#include <kernel/printk.h>
 #include <kernel/mm/slab.h>
 #include <kernel/mm/kmalloc.h>
 #include <kernel/mm/slab_statistic.h>
-#include <kernel/mm/slab_static.h>
 #include <kernel/mm/mpallocator.h>
-#include <util/binalign.h>
 
 /**
  * slab descriptor
