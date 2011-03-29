@@ -26,23 +26,6 @@ extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
 static uint8_t pointer_buff[8] = {0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00};
 static uint8_t space_buff[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-/* This function change pointer place
- * then list of test don't move
- */
-/*uint8_t change_pointer(uint8_t y, uint8_t current_test, int buts){
-	if (buts & BT_LEFT) {
-		display_draw(0, (y-1), 1, 1, &pointer_buff[0]);
-		display_fill(0, y, 8, 8, 0);
-		current_test--;
-	}
-	if (buts & BT_RIGHT) {
-		display_draw(0, y+1, 1, 1, &pointer_buff[0]);
-		display_fill(0, y, 8, 8, 0);
-		current_test++;
-	}
-	return current_test;
-}*/
-
 /* Get number of test*/
 int n_of_t(void){
 	const struct test_suite *test;
@@ -78,15 +61,14 @@ int move_list_down(int current_test, int number ){
 		}
 	return current_test;
 }
-/*void execution(current_test) {
-	const struct test *test;
-	__test_registry[current_test].mod.;
+/*void execution(int current_test) {
+	__test_registry[current_test].test_cases[current_test]->run;
+	//__test_registry[current_test].test_cases[0]->run;
 }*/
-
 
 int menu_start(void){
 	int current_test, max_cur_test, min_cur_test;
-	int i, buts, number;
+	int j, i, buts, number;
 	number = n_of_t();
 	current_test = 0;
 	min_cur_test = 0;
@@ -97,6 +79,7 @@ int menu_start(void){
 
 	while (i>0){
 		buts = nxt_buttons_was_pressed();
+		usleep(400);
 		if (buts & BT_RIGHT){
 			current_test++;
 			if (current_test > max_cur_test) {
@@ -109,9 +92,7 @@ int menu_start(void){
 			} else {
 				display_draw(0, current_test, 1, 8, &pointer_buff[0]);
 				display_draw(0, current_test-1, 1, 8, &space_buff[0]);
-				//display_fill(0, (current_test-1)* 8, 8, 8, 0);
 			}
-		usleep(200);
 		}
 		if (buts & BT_LEFT){
 			current_test--;
@@ -125,14 +106,10 @@ int menu_start(void){
 			} else {
 				display_draw(0, current_test, 1, 8, &pointer_buff[0]);
 				display_draw(0, current_test+1, 1, 8, &space_buff[0]);
-				//display_fill(0, (current_test+1)* 8, 8, 8, 0);
 			}
 		}
-		usleep(200);
 		if( buts & BT_ENTER ){
-			//__test_registry[current_test].run;
-			//__test_registry[current_test].
-			TRACE ("SORRY\n");
+			j = test_suite_run( &__test_registry[current_test]);
 		}
 		if (buts & BT_DOWN ){
 			i = 0;
