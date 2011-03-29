@@ -48,6 +48,9 @@ void sched_start(void) {
 	sched_unlock();
 }
 
+/**
+ * Switches thread to another thread and their contexts.
+ */
 static void sched_switch(void) {
 	ipl_t ipl;
 	struct thread *current, *next;

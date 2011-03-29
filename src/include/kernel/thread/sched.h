@@ -36,19 +36,19 @@ extern void sched_stop(void);
 extern void sched_lock(void);
 
 /**
- * Is called after escaping last critical section.
- * Decreases preemption_count. If the latter one becomes zero,
+ * Is called after escaping last critical section. If rescheduling is needed,
  * calls sched_dispatch.
  */
 extern void sched_unlock(void);
 
 /**
- * TODO
+ * Is called after escaping last critical section. Unlocks
+ * scheduler and not calls sched_dispatch.
  */
 extern void sched_unlock_noswitch(void);
 
 /**
- * TODO
+ * Checks need of rescheduling.
  */
 extern void sched_check_switch(void);
 
