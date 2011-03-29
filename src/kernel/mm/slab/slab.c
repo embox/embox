@@ -194,7 +194,7 @@ static void cache_estimate(unsigned int gfporder, size_t size,
 	*left_over = wastage;
 }
 
-cache_t *cache_create(char *name, size_t obj_size) {
+cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	size_t left_over;
 	cache_t *cachep;
 
@@ -411,7 +411,7 @@ void *kmalloc(size_t size) {
 		return obj_ptr;
 	}
 	/* if needed cache is not exist */
-	cachep = cache_create(name, size);
+	cachep = cache_create(name, size, 0);
 	obj_ptr = cache_alloc(cachep);
 
 	return obj_ptr;

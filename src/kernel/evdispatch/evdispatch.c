@@ -30,6 +30,21 @@ static LIST_HEAD(msg_queue);
  */
 static struct handler handler_arr[EVENT_MSG_COUNT];
 
+
+#include <embox/unit.h>
+#define make_cache_name(name) \
+		""#name""
+#include <kernel/mm/slab.h>
+EMBOX_UNIT_INIT(event_dispatcher_init);
+
+static int event_dispatcher_init(void) {
+	cache_t *cache;
+
+	cache = cache_create(make_cache_name(msg_queue_cache), sizeof(struct event_msg), MAX_MSG_COUNT_IN_QUEUE);
+
+	return 0;
+}
+
 void event_dispatch(softirq_nr_t softirq_nr, void *data) {
 	while (!list_empty(&msg_queue)) {
 		struct list_head *result = msg_queue.next;
