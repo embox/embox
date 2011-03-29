@@ -9,7 +9,6 @@
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 #include <kernel/printk.h>
-#include <dev/char_device.h>
 
 #define UART_SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
