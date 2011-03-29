@@ -8,8 +8,8 @@
  *		different pools contain objects of other sizes.
  */
 
-#ifndef SLAB_STATIC_H_
-#define SLAB_STATIC_H_
+#ifndef UTIL_POOL_H_
+#define UTIL_POOL_H_
 
 #include __impl_x(util/pool_impl.h)
 
@@ -39,4 +39,4 @@ extern void* static_cache_alloc(static_cache_t* cachep);
  */
 extern void static_cache_free(static_cache_t* cachep, void* objp);
 
-#endif /* SLAB_STATIC_H_ */
+#endif /* UTIL_POOL_H_ */

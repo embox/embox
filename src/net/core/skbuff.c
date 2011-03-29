@@ -8,12 +8,13 @@
  */
 
 #include <string.h> /*for memcpy*/
+
+#include <util/pool.h>
 #include <linux/list.h>
-#include <net/skbuff.h>
-#include <net/sock.h>
-#include <kernel/mm/slab_static.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>
+#include <net/skbuff.h>
+#include <net/sock.h>
 #include <hal/ipl.h>
 
 /* static cache for sk_buff allocate */

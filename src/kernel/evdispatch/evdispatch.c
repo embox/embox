@@ -6,7 +6,7 @@
  */
 
 #include <lib/list.h>
-#include <kernel/mm/slab_static.h>
+#include <util/pool.h>
 #include <kernel/softirq.h>
 #include <kernel/evdispatch.h>
 

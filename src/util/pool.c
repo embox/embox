@@ -9,7 +9,8 @@
  */
 
 #include <string.h>
-#include <kernel/mm/slab_static.h>
+
+#include <util/pool.h>
 
 /**
  * simple cache initialization

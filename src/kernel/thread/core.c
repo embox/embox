@@ -9,14 +9,15 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <embox/unit.h>
+
+#include <util/pool.h>
 #include <kernel/critical/api.h>
-#include <kernel/mm/slab_static.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
-#include <embox/unit.h>
 
 #ifdef CONFIG_PP_ENABLE
 #include <kernel/pp.h>
@@ -24,8 +25,7 @@
 
 #define IDLE_THREAD_STACK_SZ 0x100
 
-EMBOX_UNIT_INIT(unit_init)
-;
+EMBOX_UNIT_INIT(unit_init);
 
 struct thread *idle_thread;
 
@@ -176,8 +176,7 @@ void thread_yield(void) {
 	sched_unlock();
 }
 
-STATIC_CACHE_CREATE(thread_pool, struct thread, __THREAD_POOL_SZ)
-;
+STATIC_CACHE_CREATE(thread_pool, struct thread, __THREAD_POOL_SZ);
 
 static struct thread *thread_alloc(void) {
 	struct thread *t;

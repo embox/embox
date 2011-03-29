@@ -6,10 +6,11 @@
  * @author Dmitry Zubarevich
  */
 
-#include <stdio.h>
 #include <embox/test.h>
+
+#include <stdio.h>
 #include <lib/list.h>
-#include <kernel/mm/slab_static.h>
+#include <util/pool.h>
 
 EMBOX_TEST(run);
 
