@@ -16,3 +16,12 @@ $_MODS                 += serial_port
 $_SRCS-serial_port     += serial_port.c
 $_PROVIDES-serial_port += embox.hal.diag
 
+$_MODS                  += diag_apbuart
+$_SRCS-diag_apbuart     += diag_apbuart.c
+$_PROVIDES-diag_apbuart += embox.hal.diag
+
+$_MODS           += apbuart
+$_SRCS-apbuart   += apbuart.c
+ifdef CONFIG_AMBAPP
+  $_DEPS-apbuart += embox.driver.ambapp
+endif
