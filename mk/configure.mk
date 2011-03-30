@@ -7,7 +7,7 @@ SVN_REV = `svn info $(ROOT_DIR) | grep Rev: | awk '{print $$4}'`
 HOSTCPP = $(HOSTCC) -E
 
 HOSTCC_MAJOR := \
-  $(shell $(HOSTCC) -v 2>&1 | grep version | cut -d' ' -f3  | cut -d'.' -f1)
+  $(shell $(HOSTCC) -v 2>&1 | grep "gcc version" | cut -d' ' -f3  | cut -d'.' -f1)
 
 build_conf   := $(CONF_DIR)/build.conf
 options_conf := $(CONF_DIR)/options.conf

@@ -42,16 +42,30 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE    = $(CROSS_COMPILE)size
 
+CC_VERSION := \
+  $(shell $(CC) -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
+CC_VERSION_MAJOR := $(word 1,$(subst ., ,$(CC_VERSION)))
+CC_VERSION_MINOR := $(word 2,$(subst ., ,$(CC_VERSION)))
+CC_VERSION_PATCH := $(word 3,$(subst ., ,$(CC_VERSION)))
+
+ifneq ($(or $(call gt,$(CC_VERSION_MAJOR),4), \
+       $(and $(call  eq,$(CC_VERSION_MAJOR),4), \
+             $(call gte,$(CC_VERSION_MINOR),2))),)
+CC_SUPPORTS_@file := 1
+endif
+
 ifeq ($(C),1)
 CHECK   = sparse
 REAL_CC = $(CC)
 CC     := cgcc
 endif
 
+
+
 # Expand user defined flags and append them after default ones.
 
 # Preprocessor flags
-cppflags:=$(CPPFLAGS)
+cppflags := $(CPPFLAGS)
 override CPPFLAGS  = -D__EMBOX__
 override CPPFLAGS += -D"__impl(path)=<impl/path>"
 override CPPFLAGS += -D"__impl_x(path)=<../path>"
@@ -61,9 +75,14 @@ override CPPFLAGS += -nostdinc
 override CPPFLAGS += -MMD -MP# -MT $@ -MF $(@:.o=.d)
 override CPPFLAGS += $(cppflags)
 
+# Assembler flags
+asflags := $(CFLAGS)
+override ASFLAGS  = -pipe
+override ASFLAGS += $(asflags)
+
 # Compiler flags
-cflags:=$(CFLAGS)
-override CFLAGS  = -pedantic
+cflags := $(CFLAGS)
+override CFLAGS  = -pedantic -std=gnu99
 override CFLAGS += -fno-strict-aliasing -fno-common
 override CFLAGS += -Wall
 override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement -Winline
@@ -72,7 +91,7 @@ override CFLAGS += -pipe
 override CFLAGS += $(cflags)
 
 # Linker flags
-ldflags:=$(LDFLAGS)
+ldflags := $(LDFLAGS)
 override LDFLAGS  = -static
 override LDFLAGS += -nostdlib
 override LDFLAGS += --cref
@@ -101,11 +120,23 @@ OBJ_SUBDIRS := \
 
 $(OBJS_ALL): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
 
-$(OBJ_DIR)/%.o::$(ROOT_DIR)/%.c
-	$(CC) -o $@ $(CFLAGS) $(CPPFLAGS) -std=gnu99 -c $<
+$(OBJS_ALL:%.o=%.c.cmd) :
+	@echo '$(subst ",,$(CFLAGS) $(CPPFLAGS)) -o $(@:%.c.cmd=%.o) -c' > $@
 
-$(OBJ_DIR)/%.o::$(ROOT_DIR)/%.S
-	$(CC) -o $@ $(CFLAGS) $(CPPFLAGS) -c $<
+$(OBJS_ALL:%.o=%.S.cmd) :
+	@echo '$(subst ",,$(ASFLAGS) $(CPPFLAGS)) -o $(@:%.S.cmd=%.o) -c' > $@
+
+ifdef CC_SUPPORTS_@file
+CC_RULES = $(CC) @$< $(word 2,$^)
+else
+CC_RULES = $(CC) `cat $<` $(word 2,$^)
+endif
+
+$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.c.cmd $(ROOT_DIR)/%.c
+	$(CC_RULES)
+
+$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.S.cmd $(ROOT_DIR)/%.S
+	$(CC_RULES)
 
 $(IMAGE): $(MK_DIR)/image.mk
 $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
