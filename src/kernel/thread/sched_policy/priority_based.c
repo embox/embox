@@ -147,18 +147,18 @@ struct thread *sched_policy_current(void) {
 	return current_thread;
 }
 
-bool sched_policy_add(struct thread *thread) {
-	run_enqueue(thread);
-	return (thread->priority < current_thread->priority);
+bool sched_policy_add(struct thread *t) {
+	run_enqueue(t);
+	return (t->priority < current_thread->priority);
 }
 
-struct thread *sched_policy_switch(struct thread *prev_thread) {
-	struct run_thread_list *priority = priorities + prev_thread->priority;
+struct thread *sched_policy_switch(struct thread *t) {
+	struct run_thread_list *priority = priorities + t->priority;
 	struct thread *next;
 
 	assert(current_thread != NULL);
 
-	if (current_thread->state == THREAD_STATE_RUN) {
+	if (current_thread->state == THREAD_STATE_RUNNING) {
 		if (!(next = run_peek())) {
 			return current_thread;
 		}
@@ -186,7 +186,7 @@ bool sched_policy_remove(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
 
 	if (thread == current_thread) {
-		current_thread->state = THREAD_STATE_ZOMBIE;
+//		current_thread->state = THREAD_STATE_ZOMBIE;
 		return true;
 	}
 

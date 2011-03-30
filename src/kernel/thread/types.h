@@ -11,6 +11,7 @@
 
 #include <lib/list.h>
 #include <hal/context.h>
+#include "state.h"
 
 typedef int __thread_id_t;
 typedef int __thread_priority_t;
@@ -21,10 +22,6 @@ typedef int __thread_priority_t;
  */
 struct event {
 	struct list_head threads_list;
-};
-
-enum thread_state {
-	THREAD_STATE_RUN, THREAD_STATE_WAIT, THREAD_STATE_STOP, THREAD_STATE_ZOMBIE
 };
 
 #ifdef CONFIG_PP_ENABLE

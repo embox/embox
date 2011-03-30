@@ -52,7 +52,6 @@ static int unit_init(void) {
 	}
 	// FIXME priority
 	current->priority = THREAD_PRIORITY_MIN;
-	current->state = THREAD_STATE_RUN;
 
 	if (!(idle_thread = thread_create(idle_run,
 			idle_thread_stack + IDLE_THREAD_STACK_SZ))) {
@@ -60,7 +59,6 @@ static int unit_init(void) {
 		return -ENOMEM;
 	}
 	idle_thread->priority = THREAD_PRIORITY_MIN;
-	idle_thread->state = THREAD_STATE_RUN;
 
 	sched_init(current, idle_thread);
 
@@ -105,7 +103,7 @@ struct thread *thread_create(void(*run)(void), void *stack_address) {
 
 	t->run = run;
 
-	t->state = THREAD_STATE_STOP;
+	t->state = THREAD_STATE_TERMINATE;
 	t->priority = 1;
 
 	INIT_LIST_HEAD(&t->sched_list);
@@ -121,7 +119,6 @@ struct thread *thread_create(void(*run)(void), void *stack_address) {
 }
 
 void thread_start(struct thread *thread) {
-	thread->state = THREAD_STATE_RUN;
 	sched_add(thread);
 }
 
@@ -160,7 +157,6 @@ int thread_stop(struct thread *t) {
 		thread_free(t);
 	} else {
 		zombie = t;
-		t->state = THREAD_STATE_ZOMBIE;
 	}
 
 	sched_unlock();

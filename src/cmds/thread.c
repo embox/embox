@@ -33,7 +33,7 @@ static void print_stat(void) {
 		const char *state;
 
 		switch (thread->state) {
-		case THREAD_STATE_RUN:
+		case THREAD_STATE_RUNNING:
 			state = "run";
 			run++;
 			break;
@@ -41,8 +41,8 @@ static void print_stat(void) {
 			state = "wait";
 			wait++;
 			break;
-		case THREAD_STATE_ZOMBIE:
-			state = "zombie";
+		case THREAD_STATE_TERMINATE:
+			state = "term";
 			zombie++;
 			break;
 		default:
