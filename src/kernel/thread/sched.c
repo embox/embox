@@ -33,12 +33,10 @@ int sched_init(struct thread* current, struct thread *idle) {
 
 	current->state = thread_state_transition(current->state,
 			THREAD_STATE_ACTION_RUN);
-
 	assert(current->state == THREAD_STATE_RUNNING);
 
 	idle->state = thread_state_transition(idle->state,
 			THREAD_STATE_ACTION_START);
-
 	assert(idle->state == THREAD_STATE_READY);
 
 	sched_policy_init(current, idle);

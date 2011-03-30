@@ -24,38 +24,50 @@ static void print_usage(void) {
 
 static void print_stat(void) {
 	struct thread *thread;
-	int run = 0, wait = 0, zombie = 0;
+	int running = 0, wait = 0, terminate = 0, susp = 0, ready = 0, wait_susp = 0;
 	int total = 0;
 
-	printf(" %3s %4s %6s\n", "Id", "Prio", "State");
+	printf(" %10s %4s %10s\n", "Id", "Prio", "State");
 
 	thread_foreach(thread) {
 		const char *state;
 
 		switch (thread->state) {
 		case THREAD_STATE_RUNNING:
-			state = "run";
-			run++;
+			state = "running";
+			running++;
 			break;
 		case THREAD_STATE_WAIT:
 			state = "wait";
 			wait++;
 			break;
+		case THREAD_STATE_WAIT_SUSP:
+			state = "wait_susp";
+			wait_susp++;
+			break;
+		case THREAD_STATE_SUSP:
+			state = "susp";
+			susp++;
+			break;
+		case THREAD_STATE_READY:
+			state = "ready";
+			ready++;
+			break;
 		case THREAD_STATE_TERMINATE:
-			state = "term";
-			zombie++;
+			state = "terminate";
+			terminate++;
 			break;
 		default:
 			state = "unknown";
 			break;
 		}
-		printf(" %3d %4d %6s\n", thread->id, thread->priority, state);
+		printf(" %10d %4d %10s\n", thread->id, thread->priority, state);
 	}
 
-	total = run + wait + zombie;
+	total = running + wait + terminate + susp + wait_susp + ready;
 
-	printf("Total: %d threads (%d run,  %d wait, %d zombie)\n", total, run,
-			wait, zombie);
+//	printf("Total: %d threads (%d run,  %d wait, %d zombie)\n", total, run,
+//			wait, zombie);
 }
 
 static void kill_thread(int thread_id) {
