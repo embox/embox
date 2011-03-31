@@ -70,9 +70,6 @@ static void sched_switch(void) {
 		return;
 	}
 
-	next->state = thread_state_transition(next->state, THREAD_STATE_ACTION_RUN);
-	assert(next->state);
-
 #ifdef CONFIG_PP_ENABLE
 	if (next->pp != current->pp) {
 		pp_store(current->pp);
