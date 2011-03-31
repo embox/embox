@@ -180,8 +180,8 @@ int sched_wakeup_first(struct event *event) {
 
 	t = list_entry(event->threads_list.next, struct thread, wait_list);
 	list_del_init(&t->wait_list);
-	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 	sched_current()->reschedule |= sched_policy_add(t);
+	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 
 	sched_unlock();
 

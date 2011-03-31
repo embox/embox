@@ -11,23 +11,30 @@
 
 #include <assert.h>
 
-/** Thread states */
 enum thread_state {
-	/** Thread execution is blocked due thread waits for event. */
+
+	/** Thread execution is blocked because the thread waits for an event. */
 	THREAD_STATE_WAIT = (0x1 << 0),
-	/** Thread has been halt for execution by another thread. */
+
+	/** Thread has been halted by another thread. */
 	THREAD_STATE_SUSP = (0x1 << 1),
-	/** Thread has been halt and waits event at the same time. */
+
+	/** Thread has been both halted and blocked for an event. */
 	THREAD_STATE_WAIT_SUSP = (0x1 << 0) | (0x1 << 1),
-	/** Thread is currently executing. */
+
+	/** Thread is currently executing or is ready for that. */
 	THREAD_STATE_RUNNING,
-	/**  Thread is either not yet executing or has already finished. */
+
+	/**  Thread either has not been started yet or has already finished. */
 	THREAD_STATE_TERMINATE,
 };
 
 #define __THREAD_STATE_TOTAL 5
 
-/** Action that can be execute to the thread. They lead to change thread state. */
+/**
+ * Actions that can be performed on the thread.
+ * Doing an action results in the state change.
+ */
 enum thread_state_action {
 	THREAD_STATE_ACTION_START = 0,
 	THREAD_STATE_ACTION_STOP,
@@ -35,20 +42,22 @@ enum thread_state_action {
 	THREAD_STATE_ACTION_RESUME,
 	THREAD_STATE_ACTION_SLEEP,
 	THREAD_STATE_ACTION_WAKE,
-	THREAD_STATE_ACTION_RUN,
-	THREAD_STATE_ACTION_LEAVE_CPU,
 };
 
-#define __THREAD_STATE_ACTION_TOTAL 8
+#define __THREAD_STATE_ACTION_TOTAL 6
 
 /**
- * Allows to determine validity of take the action of thread with given state.
+ * Performs a state change accordingly to the specified @a action,
+ * if it is valid for the given @a state.
+ *
  * @param state
  *   Current state of thread.
  * @param action
- *   Anticipated or perpetrated action.
+ *   An action being performed on the thread.
  * @return
- *   The thread state value after action.
+ *   The new state after doing the transition.
+ * @retval 0
+ *   Is the given @a action isn't applicable for the current state.
  */
 inline static enum thread_state thread_state_transition(
 		enum thread_state state, enum thread_state_action action) {
@@ -56,6 +65,11 @@ inline static enum thread_state thread_state_transition(
 			__thread_state_transition_table[__THREAD_STATE_TOTAL ][__THREAD_STATE_ACTION_TOTAL ];
 	assert(state);
 	return __thread_state_transition_table[state - 1][action];
+}
+
+inline static int thread_state_blocked(enum thread_state state) {
+	// TODO
+	return 0;
 }
 
 #endif /* KERNEL_THREAD_STATE_H_ */
