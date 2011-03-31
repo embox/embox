@@ -24,7 +24,7 @@ static void print_usage(void) {
 
 static void print_stat(void) {
 	struct thread *thread;
-	int running = 0, wait = 0, terminate = 0, susp = 0, ready = 0, wait_susp = 0;
+	int running = 0, wait = 0, terminate = 0, susp = 0, wait_susp = 0;
 	int total = 0;
 
 	printf(" %10s %4s %10s\n", "Id", "Prio", "State");
@@ -49,10 +49,6 @@ static void print_stat(void) {
 			state = "susp";
 			susp++;
 			break;
-		case THREAD_STATE_READY:
-			state = "ready";
-			ready++;
-			break;
 		case THREAD_STATE_TERMINATE:
 			state = "terminate";
 			terminate++;
@@ -64,7 +60,7 @@ static void print_stat(void) {
 		printf(" %10d %4d %10s\n", thread->id, thread->priority, state);
 	}
 
-	total = running + wait + terminate + susp + wait_susp + ready;
+	total = running + wait + terminate + susp + wait_susp;
 
 //	printf("Total: %d threads (%d run,  %d wait, %d zombie)\n", total, run,
 //			wait, zombie);

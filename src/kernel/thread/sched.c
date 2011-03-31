@@ -28,18 +28,15 @@
 #define THREADS_TIMER_INTERVAL 100
 
 int sched_init(struct thread* current, struct thread *idle) {
-	current->state = thread_state_transition(current->state,
-			THREAD_STATE_ACTION_START);
+	sched_policy_init(current, idle);
 
 	current->state = thread_state_transition(current->state,
-			THREAD_STATE_ACTION_RUN);
+			THREAD_STATE_ACTION_START);
 	assert(current->state == THREAD_STATE_RUNNING);
 
 	idle->state = thread_state_transition(idle->state,
 			THREAD_STATE_ACTION_START);
-	assert(idle->state == THREAD_STATE_READY);
-
-	sched_policy_init(current, idle);
+	assert(idle->state == THREAD_STATE_RUNNING);
 	return 0;
 }
 
@@ -72,13 +69,6 @@ static void sched_switch(void) {
 	if (next == current) {
 		return;
 	}
-
-	if (current->state == THREAD_STATE_RUNNING) {
-		current->state = thread_state_transition(current->state,
-				THREAD_STATE_ACTION_PREEMPT);
-	}
-
-	assert(current->state);
 
 	next->state = thread_state_transition(next->state, THREAD_STATE_ACTION_RUN);
 	assert(next->state);
@@ -118,13 +108,13 @@ void sched_add(struct thread *t) {
 
 	sched_lock();
 
-	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_START);
-	assert(t->state);
-
 	current = sched_current();
 	assert(current);
 
 	current->reschedule |= sched_policy_add(t);
+
+	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_START);
+	assert(t->state);
 
 	sched_unlock();
 }
