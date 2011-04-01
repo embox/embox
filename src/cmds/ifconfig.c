@@ -105,7 +105,6 @@ static int exec(int argsc, char **argsv) {
 	unsigned char macaddr[ETH_ALEN];
 	unsigned char broadcastaddr[ETH_ALEN];
 	bool up = false, down = false;
-	int i = 0;
 	int no_arp = 0, promisc = 0, allmulti = 0, multicast = 0, mtu = 0, p2p = 0;
 	int irq_num = 0;
 	unsigned long base_addr = 0;
@@ -131,7 +130,6 @@ static int exec(int argsc, char **argsv) {
 			break;
 
 		case 'x': /* find interface by name */
-			sscanf(optarg, "eth%d", &i);
 			strncpy(iname, optarg, ARRAY_SIZE(iname));
 			TRACE("iface = %s\n", optarg);
 			if (!(in_dev = inet_dev_find_by_name(optarg))) {
@@ -230,7 +228,6 @@ static int exec(int argsc, char **argsv) {
 		return 0;
 	}
 	if (argsc > 1) {
-		sscanf(argsv[argsc - 1], "eth%d", &i);
 		strncpy(iname, argsv[argsc - 1], ARRAY_SIZE(iname));
 		if (up) {
 			ifdev_up(iname);	/* up net iface */
