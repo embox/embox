@@ -14,6 +14,7 @@
 #define CONFIG_PCI_VENDOR_ID_REALTEK             0x10ec
 #define CONFIG_PCI_VENDOR_ID_RICOH               0x1180
 #define CONFIG_PCI_VENDOR_ID_ATHEROS             0x168c
+#define CONFIG_PCI_VENDOR_ID_RDC                 0x17f3
 #define CONFIG_PCI_VENDOR_ID_INTEL               0x8086
 
 /* Cirrus device id's */
@@ -22,6 +23,9 @@
 /* Realtek device id's */
 #define CONFIG_PCI_DEV_ID_REALTEK_8029           0x8029
 #define CONFIG_PCI_DEV_ID_REALTEK_8139           0x8139
+
+/* RDC device id's */
+#define CONFIG_PCI_DEVICE_ID_RDC_R6040           0x6040
 
 /* Ricoh device id's */
 #define CONFIG_PCI_DEV_ID_RICOH_RL5C476          0x0476
