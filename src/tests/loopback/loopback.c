@@ -2,7 +2,7 @@
  * @file
  * @brief Test for work of pseudo driver loopback
  *
- * @date 19.11.2011
+ * @date 29.03.2011
  * @author Dmitry Zubarevich
  */
 
