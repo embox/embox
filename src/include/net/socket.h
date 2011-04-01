@@ -181,6 +181,10 @@ extern int sock_init(void);
 extern int socket(int domain, int type, int protocol);
 
 /**
+ * setup of connection
+ */
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+/**
  * bind a name to a socket.
  * @return 0 on success.  On error, -1.
  */
@@ -198,7 +202,7 @@ extern ssize_t sendto(int sockfd, const void *buf, int len, int flags,
  * @return the number of bytes received, or -1 if an error occurred.
  */
 extern ssize_t recvfrom(int sockfd, void *buf, int len, int flags,
-		struct sockaddr *src_addr, socklen_t *addrlen);
+		struct sockaddr *src_addr, socklen_t addrlen);
 
 /**
  * check message in a socket
