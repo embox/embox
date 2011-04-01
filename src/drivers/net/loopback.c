@@ -4,6 +4,7 @@
  *
  * @date 29.12.09
  * @author Nikolay Korotky
+ * @author Dmitry Zubarevich
  */
 
 #include <string.h>
@@ -14,27 +15,41 @@
 #include <net/if_ether.h>
 #include <net/if_arp.h>
 #include <net/etherdevice.h>
-#include <net/net_pack_manager.h>
 #include <kernel/irq.h>
 #include <embox/unit.h>
 #include <linux/init.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
-#if 0
 static int loopback_xmit(sk_buff_t *skb, net_device_t *dev) {
-	//TODO:
+	net_device_stats_t *lb_stats;
+	int len;
+
+	if (NULL == skb || NULL == dev) {
+		return -1;
+	}
+	lb_stats = &(dev->stats);
+	len = skb->len;
+	skb->protocol = eth_type_trans(skb, dev);
+	if (netif_rx(skb) == NET_RX_SUCCESS) {
+		lb_stats->tx_packets++;
+		lb_stats->tx_bytes += len;
+	} else {
+		lb_stats->tx_err++;
+	}
 	return 0;
 }
 
 static net_device_stats_t *loopback_get_stats(net_device_t *dev) {
-	//TODO:
-	return NULL;
+	if (NULL == dev) {
+		return NULL;
+	}
+	return &(dev->stats);
 }
 
 static const struct net_device_ops loopback_ops = {
-	.ndo_start_xmit= loopback_xmit,
-	.ndo_get_stats = loopback_get_stats,
+		.ndo_start_xmit      = loopback_xmit,
+		.ndo_get_stats       = loopback_get_stats,
 };
 
 /**
@@ -49,8 +64,15 @@ static void loopback_setup(net_device_t *dev) {
 	dev->flags              = IFF_LOOPBACK;
 	dev->netdev_ops         = &loopback_ops;
 }
-#endif
-static int __init unit_init() {
-	//TODO:
+
+/**
+ * The initialization of loopback device
+ */
+static int __init unit_init(void) {
+	//net_device_t *net_device;
+	if(NULL == alloc_netdev(0, "lo", loopback_setup)) {
+		LOG_ERROR("Can't allocate net device\n");
+		return -1;
+	}
 	return 0;
 }
