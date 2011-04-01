@@ -183,7 +183,7 @@ extern int socket(int domain, int type, int protocol);
 /**
  * setup of connection
  */
-int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+extern int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 /**
  * bind a name to a socket.
  * @return 0 on success.  On error, -1.
