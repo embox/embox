@@ -249,8 +249,6 @@ int dev_open(struct net_device *dev) {
 
 	if (ops->ndo_open) {
 		ret = ops->ndo_open(dev);
-	} else {
-		printk("can't find open function in net_device\n");
 	}
 	if (ret) {
 		dev->state &= ~__LINK_STATE_START;
@@ -272,8 +270,6 @@ int dev_close(struct net_device *dev) {
 
 	if (ops->ndo_stop) {
 		ops->ndo_stop(dev);
-	} else {
-		printk("ifdev down: can't find stop function in net_device with name\n");
 	}
 	/* Device is now down. */
 	/*TODO: IFF_RUNNING sets not here*/

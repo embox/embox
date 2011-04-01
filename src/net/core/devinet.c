@@ -168,7 +168,12 @@ int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macaddr) {
 	if (NULL == dev) {
 		return -1;
 	}
-	return dev->netdev_ops->ndo_set_mac_address(dev, (void *) macaddr);
+	if (dev->netdev_ops->ndo_set_mac_address) {
+		return dev->netdev_ops->ndo_set_mac_address(dev, (void *) macaddr);
+	} else {
+		/* driver doesn't support setting mac address */
+		return 0;
+	}
 }
 
 in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev) {
