@@ -23,7 +23,6 @@
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/net.h>
-#include <net/net_pack_manager.h>
 #include <net/etherdevice.h>
 #include <embox/unit.h>
 #include <linux/init.h>
