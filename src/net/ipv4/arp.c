@@ -225,6 +225,9 @@ int arp_find(unsigned char *haddr, sk_buff_t *pack) {
 	net_device_t *dev = pack->dev;
 	iphdr_t *ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
+	if (ip->daddr == INADDR_LOOPBACK) {
+		return 0;
+	}
 	if (ip->daddr == INADDR_BROADCAST) {
 		memset(pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return 0;

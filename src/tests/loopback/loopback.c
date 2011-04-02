@@ -24,7 +24,7 @@ static int run(void) {
 	/* creation of socket */
 	if (0 > (sock = socket(AF_INET, SOCK_DGRAM, 0))) {
 		TRACE("Can't create socket");
-		return -1;
+		return 0;
 	}
 
 	/* define of addres */
@@ -42,14 +42,14 @@ static int run(void) {
 	/* transmiting of test message */
 	if (0 > (sendto(sock, msg_send, msg_size, 0, (struct sockaddr *) &addr, addr_size))) {
 		TRACE("Can't send message");
-		return -3;
+		return 0;
 	}
 
 	/* receiving of test message */
 	if (0 > (recvfrom(sock, &msg_recv ,msg_size, 0,
 			(struct sokaddr *) &addr, addr_size))) {
 		TRACE("Can't recive message");
-		return -4;
+		return 0;
 	} else {
 		TRACE("It was recived message: %s", msg_recv);
 	}
@@ -57,9 +57,8 @@ static int run(void) {
 	/* close of socket */
 	if (0 > close(sock)) {
 		TRACE("It was bad close of socket");
-		return -5;
+		return 0;
 	}
 
-	TRACE("All right. Test complete.");
 	return 0;
 }

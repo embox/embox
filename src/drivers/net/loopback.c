@@ -63,6 +63,7 @@ static void loopback_setup(net_device_t *dev) {
 	dev->type               = ARPHRD_LOOPBACK;
 	dev->flags              = IFF_LOOPBACK;
 	dev->netdev_ops         = &loopback_ops;
+	dev->header_ops         = get_eth_header_ops();
 }
 
 /**

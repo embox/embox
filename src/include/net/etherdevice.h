@@ -108,6 +108,8 @@ extern int eth_change_mtu(net_device_t *dev, int new_mtu);
  */
 extern void ether_setup(net_device_t *dev);
 
+extern header_ops_t *get_eth_header_ops();
+
 /**
  * Allocates and sets up an Ethernet device
  */

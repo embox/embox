@@ -113,6 +113,10 @@ const struct header_ops eth_header_ops = {
 	.rebuild       = eth_rebuild_header,
 };
 
+header_ops_t *get_eth_header_ops() {
+	return &eth_header_ops;
+}
+
 void ether_setup(net_device_t *dev) {
 	dev->header_ops    = &eth_header_ops;
 	dev->type          = ARPHRD_ETHER;
