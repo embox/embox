@@ -5,6 +5,7 @@
 include $(MK_DIR)/util.mk
 
 IMAGE      = $(BIN_DIR)/$(TARGET)
+IMAGE_O    = $(IMAGE).o
 IMAGE_DIS  = $(IMAGE).dis
 IMAGE_BIN  = $(IMAGE).bin
 IMAGE_SREC = $(IMAGE).srec
@@ -92,7 +93,7 @@ override CFLAGS += $(cflags)
 ldflags := $(LDFLAGS)
 override LDFLAGS  = -static
 override LDFLAGS += -nostdlib
-override LDFLAGS += --cref
+override LDFLAGS += --cref --relax
 override LDFLAGS += -T $(LDSCRIPT)
 override LDFLAGS += $(SUBDIRS_LDFLAGS)
 override LDFLAGS += $(ldflags)
@@ -149,10 +150,12 @@ $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 	$(CC_RULES)
 
-$(IMAGE): $(MK_DIR)/image.mk
-$(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
-	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$(\n)		%) \
-		$(DEPSINJECT_OBJ) \
+$(IMAGE_O): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
+	$(LD) -r -o  $@ $(OBJS_BUILD:%=\$(\n)	%) \
+	$(DEPSINJECT_OBJ)
+
+$(IMAGE): $(IMAGE_O)
+	$(LD) $(LDFLAGS) $< \
 	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
 	-Map $@.map \
 	-o   $@
