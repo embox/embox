@@ -68,8 +68,8 @@ inline static enum thread_state thread_state_transition(
 }
 
 inline static int thread_state_blocked(enum thread_state state) {
-	// TODO
-	return 0;
+	int blocked = (0x1 << 0) | (0x1 << 1);
+	return state & blocked;
 }
 
 #endif /* KERNEL_THREAD_STATE_H_ */
