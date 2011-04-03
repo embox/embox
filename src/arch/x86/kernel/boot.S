@@ -39,6 +39,8 @@ multiboot_header:
 	.long	multiboot_entry
 #endif /* ! __ELF__ */
 
+	.section .text
+	.align	4
 multiboot_entry:
 	/* interrrupts disable */
 	cli
@@ -49,13 +51,29 @@ multiboot_entry:
 	pushl	$0
 	popf
 
+
 	/* Push the pointer to the Multiboot information structure. */
-	pushl	%ebx
+//	pushl	%ebx
 	/* Push the magic value. */
-	pushl	%eax
+//	pushl	%eax
+//	call	EXT_C(multiboot_check)
+//	addl    $8, %esp ;
 
-	call	EXT_C(multiboot_check)
+	movl   $_bss_len, 0x8(%esp)
+	movl   $0x0, 0x4(%esp)
+	movl   $_bss_vma, 0x0(%esp)
+	call   memset
 
+	mov   $_data_vma, %eax
+	cmp   $_data_lma, %eax
+	je    1f
+	/*data section*/
+	movl   $_data_len, 0x4(%esp)
+	movl   $_data_lma, 0x4(%esp)
+	movl   $_data_vma, 0x0(%esp)
+	call   memcpy
+
+1:
 	call	EXT_C(kernel_start)
 
 loop:	hlt
