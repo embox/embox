@@ -11,8 +11,11 @@
 
 EMBOX_UNIT_INIT(gpio_init);
 
-#define RDC_CONTROL  0x80003848
-#define RDC_DATA     0x8000384c
+#define RDC_CONTROL   0x80003848
+#define RDC_DATA      0x8000384c
+
+#define PCI_ADDR_SEL  0xcf8
+#define PCI_DATA_REG  0xcfc
 
 #define GPIO_RTCRD    (1 << 16) /* Red LED */
 #define GPIO_RTCAS    (1 << 15) /* Reset button */
@@ -22,29 +25,29 @@ static unsigned long g_last_value = 0xffffffff;
 static inline void set_control(unsigned long mask) {
 	unsigned long tmp;
 	/* Select control register */
-	out32(RDC_CONTROL, 0xcf8);
-	tmp = inl(0xcfc);
+	out32(RDC_CONTROL, PCI_ADDR_SEL);
+	tmp = inl(PCI_DATA_REG);
 	/* raise to set GPIO function */
 	tmp |= mask;
-	out32(tmp, 0xcfc);
+	out32(tmp, PCI_DATA_REG);
 }
 
 static inline void set_data(unsigned long mask) {
-	out32(RDC_DATA, 0xcf8);
+	out32(RDC_DATA, PCI_ADDR_SEL);
 	g_last_value |= mask;
-	out32(g_last_value, 0xcfc);
+	out32(g_last_value, PCI_DATA_REG);
 }
 
 static inline void clear_data(unsigned long mask) {
-	out32(RDC_DATA, 0xcf8);
+	out32(RDC_DATA, PCI_ADDR_SEL);
 	g_last_value &= ~mask;
-	out32(g_last_value, 0xcfc);
+	out32(g_last_value, PCI_DATA_REG);
 }
 
 int gpio_get_value(unsigned long mask) {
 	unsigned long tmp;
-	out32(RDC_DATA, 0xcf8);
-	tmp = in32(0xcfc);
+	out32(RDC_DATA, PCI_ADDR_SEL);
+	tmp = in32(PCI_DATA_REG);
 	return (tmp & mask) ? 1 : 0;
 }
 
@@ -75,14 +78,14 @@ void gpio_set_value(unsigned long mask, int value) {
 static int __init gpio_init(void) {
 	/* Example: blink led
 	set_control(GPIO_RTCRD);
-	out32(RDC_DATA, 0xcf8);
+	out32(RDC_DATA, PCI_ADDR_SEL);
 	int state = 1;
 	while(1) {
 		if (state) {
-			out32(0, 0xcfc);
+			out32(0, PCI_DATA_REG);
 			state = 0;
 		} else {
-			out32(GPIO_RTCRD, 0xcfc);
+			out32(GPIO_RTCRD, PCI_DATA_REG);
 			state = 1;
 		}
 	}*/
