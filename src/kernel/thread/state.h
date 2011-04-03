@@ -14,13 +14,13 @@
 enum thread_state {
 
 	/** Thread execution is blocked because the thread waits for an event. */
-	THREAD_STATE_WAIT = (0x1 << 0),
+	THREAD_STATE_SLEEPING = (0x1 << 0),
 
 	/** Thread has been halted by another thread. */
-	THREAD_STATE_SUSP = (0x1 << 1),
+	THREAD_STATE_SUSPENDED = (0x1 << 1),
 
 	/** Thread has been both halted and blocked for an event. */
-	THREAD_STATE_WAIT_SUSP = (0x1 << 0) | (0x1 << 1),
+	THREAD_STATE_SLEEPING_SUSPENDED = (0x1 << 0) | (0x1 << 1),
 
 	/** Thread is currently executing or is ready for that. */
 	THREAD_STATE_RUNNING,

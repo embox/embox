@@ -37,15 +37,15 @@ static void print_stat(void) {
 			state = "running";
 			running++;
 			break;
-		case THREAD_STATE_WAIT:
+		case THREAD_STATE_SLEEPING:
 			state = "wait";
 			wait++;
 			break;
-		case THREAD_STATE_WAIT_SUSP:
+		case THREAD_STATE_SLEEPING_SUSPENDED:
 			state = "wait_susp";
 			wait_susp++;
 			break;
-		case THREAD_STATE_SUSP:
+		case THREAD_STATE_SUSPENDED:
 			state = "susp";
 			susp++;
 			break;

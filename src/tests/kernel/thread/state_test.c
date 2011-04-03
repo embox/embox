@@ -25,9 +25,9 @@ EMBOX_TEST_SUITE("thread state machine tests");
 	test_assert_zero(thread_state_transition(from, action));
 
 TEST_CASE("Valid states are not zeroes") {
-	test_assert_not_zero(STATE(WAIT));
-	test_assert_not_zero(STATE(SUSP));
-	test_assert_not_zero(STATE(WAIT_SUSP));
+	test_assert_not_zero(STATE(SLEEPING));
+	test_assert_not_zero(STATE(SUSPENDED));
+	test_assert_not_zero(STATE(SLEEPING_SUSPENDED));
 	test_assert_not_zero(STATE(RUNNING));
 	test_assert_not_zero(STATE(TERMINATE));
 }
@@ -46,8 +46,8 @@ TEST_CASE("Invalid actions for TERMINATE state") {
 
 TEST_CASE("Valid actions for RUNNING state") {
 	assert_transition(STATE(RUNNING), ACTION(STOP), STATE(TERMINATE));
-	assert_transition(STATE(RUNNING), ACTION(SUSPEND), STATE(SUSP));
-	assert_transition(STATE(RUNNING), ACTION(SLEEP), STATE(WAIT));
+	assert_transition(STATE(RUNNING), ACTION(SUSPEND), STATE(SUSPENDED));
+	assert_transition(STATE(RUNNING), ACTION(SLEEP), STATE(SLEEPING));
 }
 
 TEST_CASE("Invalid actions for RUNNING state") {
@@ -57,37 +57,37 @@ TEST_CASE("Invalid actions for RUNNING state") {
 }
 
 TEST_CASE("Valid actions for SLEEPING state") {
-	assert_transition(STATE(WAIT), ACTION(WAKE), STATE(RUNNING));
-	assert_transition(STATE(WAIT), ACTION(SUSPEND), STATE(WAIT_SUSP));
-	assert_transition(STATE(WAIT), ACTION(STOP), STATE(TERMINATE));
+	assert_transition(STATE(SLEEPING), ACTION(WAKE), STATE(RUNNING));
+	assert_transition(STATE(SLEEPING), ACTION(SUSPEND), STATE(SLEEPING_SUSPENDED));
+	assert_transition(STATE(SLEEPING), ACTION(STOP), STATE(TERMINATE));
 }
 
 TEST_CASE("Invalid actions for SLEEPING state") {
-	assert_transition_invalid(STATE(WAIT), ACTION(SLEEP));
-	assert_transition_invalid(STATE(WAIT), ACTION(RESUME));
-	assert_transition_invalid(STATE(WAIT), ACTION(START));
+	assert_transition_invalid(STATE(SLEEPING), ACTION(SLEEP));
+	assert_transition_invalid(STATE(SLEEPING), ACTION(RESUME));
+	assert_transition_invalid(STATE(SLEEPING), ACTION(START));
 }
 
 TEST_CASE("Valid actions for SLEEPING_SUSPENDED state") {
-	assert_transition(STATE(WAIT_SUSP), ACTION(STOP), STATE(TERMINATE));
-	assert_transition(STATE(WAIT_SUSP), ACTION(WAKE), STATE(SUSP));
-	assert_transition(STATE(WAIT_SUSP), ACTION(RESUME), STATE(WAIT));
-	assert_transition(STATE(WAIT_SUSP), ACTION(SUSPEND), STATE(WAIT_SUSP));
+	assert_transition(STATE(SLEEPING_SUSPENDED), ACTION(STOP), STATE(TERMINATE));
+	assert_transition(STATE(SLEEPING_SUSPENDED), ACTION(WAKE), STATE(SUSPENDED));
+	assert_transition(STATE(SLEEPING_SUSPENDED), ACTION(RESUME), STATE(SLEEPING));
+	assert_transition(STATE(SLEEPING_SUSPENDED), ACTION(SUSPEND), STATE(SLEEPING_SUSPENDED));
 }
 
 TEST_CASE("Invalid actions for SLEEPING_SUSPENDED state") {
-	assert_transition_invalid(STATE(WAIT_SUSP), ACTION(START));
-	assert_transition_invalid(STATE(WAIT_SUSP), ACTION(SLEEP));
+	assert_transition_invalid(STATE(SLEEPING_SUSPENDED), ACTION(START));
+	assert_transition_invalid(STATE(SLEEPING_SUSPENDED), ACTION(SLEEP));
 }
 
 TEST_CASE("Valid actions for SUSPENDED state") {
-	assert_transition(STATE(SUSP), ACTION(STOP), STATE(TERMINATE));
-	assert_transition(STATE(SUSP), ACTION(SUSPEND), STATE(SUSP));
-	assert_transition(STATE(SUSP), ACTION(RESUME), STATE(RUNNING));
+	assert_transition(STATE(SUSPENDED), ACTION(STOP), STATE(TERMINATE));
+	assert_transition(STATE(SUSPENDED), ACTION(SUSPEND), STATE(SUSPENDED));
+	assert_transition(STATE(SUSPENDED), ACTION(RESUME), STATE(RUNNING));
 }
 
 TEST_CASE("Invalid actions for SUSPENDED state") {
-	assert_transition_invalid(STATE(SUSP), ACTION(WAKE));
-	assert_transition_invalid(STATE(SUSP), ACTION(SLEEP));
-	assert_transition_invalid(STATE(SUSP), ACTION(START));
+	assert_transition_invalid(STATE(SUSPENDED), ACTION(WAKE));
+	assert_transition_invalid(STATE(SUSPENDED), ACTION(SLEEP));
+	assert_transition_invalid(STATE(SUSPENDED), ACTION(START));
 }
