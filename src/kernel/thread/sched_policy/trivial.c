@@ -7,17 +7,29 @@
  */
 
 #include <lib/list.h>
+#include <stdbool.h>
+
 #include <kernel/thread/sched_policy.h>
 
 /**
  * List item, pointing at the beginning of the
  * 	list of running threads.
  */
-static struct list_head *list_head_run;
+static struct list_head run_q;
 
-void sched_policy_init(void) {
-	INIT_LIST_HEAD(&idle_thread->sched_list);
-	list_head_run = &idle_thread->sched_list;
+static struct thread *current_thread;
+
+struct thread *sched_policy_current(void) {
+	return current_thread;
+}
+
+void sched_policy_init(struct thread *current, struct thread *idle) {
+
+	current_thread = current;
+
+	INIT_LIST_HEAD(&run_q);
+	INIT_LIST_HEAD(&idle->sched_list);
+	sched_policy_add(idle);
 }
 
 void sched_policy_start(void) {
@@ -33,24 +45,30 @@ void sched_policy_stop(void) {
 	/* Nothing to do. */
 }
 
-bool sched_policy_add(struct thread *added_thread) {
-	list_add_tail(&added_thread->sched_list, list_head_run);
+bool sched_policy_add(struct thread *t) {
+	list_add_tail(&run_q, &t->sched_list);
 	return false;
 }
 
-struct thread *sched_policy_switch(struct thread *prev_thread) {
-	if (prev_thread->sched_list.next == NULL) {
-		return list_entry(idle_thread->sched_list.next,
-			struct thread, sched_list);
+struct thread *sched_policy_switch(struct thread *t) {
+	if (t == current_thread) {
+		list_add_tail(&run_q, &current_thread->sched_list);
+		current_thread = list_entry(run_q.next, struct thread, sched_list);
+		return current_thread;
 	}
-	return list_entry(prev_thread->sched_list.next,
-		struct thread, sched_list);
+
+	return list_entry(t->sched_list.next, struct thread, sched_list);
 }
 
-bool sched_policy_remove(struct thread *removed_thread) {
-	if (removed_thread->sched_list.next != NULL) {
-		list_del(&removed_thread->sched_list);
+bool sched_policy_remove(struct thread *t) {
+	if (t == current_thread) {
+		return true;
 	}
+	if (list_empty(&run_q)) {
+		return false;
+	}
+
+	list_del(&t->sched_list);
 	return false;
 }
 
