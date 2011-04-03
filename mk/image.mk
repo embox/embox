@@ -5,7 +5,6 @@
 include $(MK_DIR)/util.mk
 
 IMAGE      = $(BIN_DIR)/$(TARGET)
-IMAGE_O    = $(IMAGE).o
 IMAGE_DIS  = $(IMAGE).dis
 IMAGE_BIN  = $(IMAGE).bin
 IMAGE_SREC = $(IMAGE).srec
@@ -150,15 +149,28 @@ $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 	$(CC_RULES)
 
+ifndef PARTIAL_LINKING
+
+$(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
+	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$(\n)		%) \
+		$(DEPSINJECT_OBJ) \
+	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
+	-Map $@.map \
+	-o   $@
+
+else
+
+IMAGE_O    = $(IMAGE).o
 $(IMAGE_O): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
 	$(LD) -r -o  $@ $(OBJS_BUILD:%=\$(\n)	%) \
 	$(DEPSINJECT_OBJ)
-
 $(IMAGE): $(IMAGE_O)
 	$(LD) $(LDFLAGS) $< \
 	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
 	-Map $@.map \
 	-o   $@
+
+endif
 
 $(IMAGE_DIS): $(IMAGE)
 	@$(OBJDUMP) -S $< > $@
