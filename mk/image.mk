@@ -133,10 +133,14 @@ $(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
 $(CMDS) :
 	@echo '$(FLAGS) -o $(@:%.cmd=%.o) -c' > $@
 
+ifndef __CDT__
 ifdef CC_SUPPORTS_@file
 CC_RULES = $(CC) @$< $(word 2,$^)
 else
 CC_RULES = $(CC) `cat $<` $(word 2,$^)
+endif
+else
+CC_RULES = $(CC) $(patsubst -D%,-D"%",$(shell cat $<)) $(word 2,$^)
 endif
 
 $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
@@ -144,24 +148,6 @@ $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 
 $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 	$(CC_RULES)
-
-OUTPUT_LOG := $(CODEGEN_DIR)/output.log
-
-$(OUTPUT_LOG) : export ROOT_DIR := $(ROOT_DIR)
-$(OUTPUT_LOG) : export OBJ_DIR := $(OBJ_DIR)
-$(OUTPUT_LOG) : export CMDS := $(CMDS:%.cmd=%)
-$(OUTPUT_LOG) : $(IMAGE)
-	@echo '# Auto-generated command dump file. Do not edit.\n' > $@
-	@for cmd in $$CMDS; \
-	do \
-		if [ -f "$$cmd.cmd" ] ; \
-		then \
-			src=$${cmd/$$OBJ_DIR/$$ROOT_DIR}; \
-			echo "$(CC) `cat $$cmd.cmd` `ls $$src.[c\|S]`" >> $@; \
-		fi \
-	done
-
-image: $(OUTPUT_LOG)
 
 $(IMAGE): $(MK_DIR)/image.mk
 $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
