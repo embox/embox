@@ -60,8 +60,6 @@ REAL_CC = $(CC)
 CC     := cgcc
 endif
 
-
-
 # Expand user defined flags and append them after default ones.
 
 # Preprocessor flags
@@ -112,6 +110,7 @@ include $(MK_DIR)/embuild.mk
 include $(MK_DIR)/codegen-di.mk
 
 OBJS_ALL := $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit)))
+SRCS_ALL := $(foreach unit,$(MODS) $(LIBS),$(SRCS-$(unit)))
 -include $(OBJS_ALL:.o=.d)
 
 OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
@@ -120,11 +119,19 @@ OBJ_SUBDIRS := \
 
 $(OBJS_ALL): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
 
-$(OBJS_ALL:%.o=%.c.cmd) :
-	@echo '$(subst ",,$(CFLAGS) $(CPPFLAGS)) -o $(@:%.c.cmd=%.o) -c' > $@
+__CMDS = \
+  $(patsubst $(ROOT_DIR)%.$1,$(OBJ_DIR)%.cmd,$(filter %.$1,$(SRCS_ALL)))
 
-$(OBJS_ALL:%.o=%.S.cmd) :
-	@echo '$(subst ",,$(ASFLAGS) $(CPPFLAGS)) -o $(@:%.S.cmd=%.o) -c' > $@
+CMDS_C := $(call __CMDS,c)
+CMDS_S := $(call __CMDS,S)
+
+CMDS := $(CMDS_C) $(CMDS_S)
+
+$(CMDS_C) : __FLAGS = $(CFLAGS) $(CPPFLAGS)
+$(CMDS_S) : __FLAGS = $(ASFLAGS) $(CPPFLAGS)
+$(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
+$(CMDS) :
+	@echo '$(FLAGS) -o $(@:%.cmd=%.o) -c' > $@
 
 ifdef CC_SUPPORTS_@file
 CC_RULES = $(CC) @$< $(word 2,$^)
@@ -132,11 +139,29 @@ else
 CC_RULES = $(CC) `cat $<` $(word 2,$^)
 endif
 
-$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.c.cmd $(ROOT_DIR)/%.c
+$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 	$(CC_RULES)
 
-$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.S.cmd $(ROOT_DIR)/%.S
+$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 	$(CC_RULES)
+
+OUTPUT_LOG := $(CODEGEN_DIR)/output.log
+
+$(OUTPUT_LOG) : export ROOT_DIR := $(ROOT_DIR)
+$(OUTPUT_LOG) : export OBJ_DIR := $(OBJ_DIR)
+$(OUTPUT_LOG) : export CMDS := $(CMDS:%.cmd=%)
+$(OUTPUT_LOG) : $(IMAGE)
+	@echo '# Auto-generated command dump file. Do not edit.\n' > $@
+	@for cmd in $$CMDS; \
+	do \
+		if [ -f "$$cmd.cmd" ] ; \
+		then \
+			src=$${cmd/$$OBJ_DIR/$$ROOT_DIR}; \
+			echo "$(CC) `cat $$cmd.cmd` `ls $$src.[c\|S]`" >> $@; \
+		fi \
+	done
+
+image: $(OUTPUT_LOG)
 
 $(IMAGE): $(MK_DIR)/image.mk
 $(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
