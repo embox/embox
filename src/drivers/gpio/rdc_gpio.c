@@ -14,8 +14,8 @@ EMBOX_UNIT_INIT(gpio_init);
 #define RDC_CONTROL  0x80003848
 #define RDC_DATA     0x8000384c
 
-#define GPIO_RTCRD    16 /* Red LED */
-#define GPIO_RTCAS    15 /* Reset button */
+#define GPIO_RTCRD    (1 << 16) /* Red LED */
+#define GPIO_RTCAS    (1 << 15) /* Reset button */
 
 static unsigned long g_last_value = 0xffffffff;
 
@@ -73,7 +73,19 @@ void gpio_set_value(unsigned long mask, int value) {
 }
 
 static int __init gpio_init(void) {
-	//TODO:
+	/* Example: blink led
+	set_control(GPIO_RTCRD);
+	out32(RDC_DATA, 0xcf8);
+	int state = 1;
+	while(1) {
+		if (state) {
+			out32(0, 0xcfc);
+			state = 0;
+		} else {
+			out32(GPIO_RTCRD, 0xcfc);
+			state = 1;
+		}
+	}*/
 	return 0;
 }
 
