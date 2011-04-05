@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <kernel/evdispatch.h>
 #include <kernel/softirq.h>
-#include <hal/interrupt.h>
+#include <test/misc.h>
 #include <unistd.h>
 #include <stdio.h>
 
@@ -45,7 +45,7 @@ static int run(void) {
 
 	event_send(EVENT_MESSAGE1, &flag);
 
-	interrupt_force(EVENT_SOFTIRQ);
+	test_misc_irq_force(EVENT_SOFTIRQ);
 
 	if (flag != 3) {
 		TRACE("Bad results: flag = %d\n", flag);
