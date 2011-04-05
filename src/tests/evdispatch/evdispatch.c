@@ -9,12 +9,13 @@
 #include <embox/test.h>
 #include <kernel/evdispatch.h>
 #include <kernel/softirq.h>
+#include <hal/interrupt.h>
 #include <unistd.h>
 #include <stdio.h>
 
 EMBOX_TEST(run);
 
-#define EVENT_SOFTIRQ 12
+#define EVENT_SOFTIRQ 10
 
 static int flag;
 
@@ -44,7 +45,7 @@ static int run(void) {
 
 	event_send(EVENT_MESSAGE1, &flag);
 
-	usleep(10);
+	interrupt_force(EVENT_SOFTIRQ);
 
 	if (flag != 3) {
 		TRACE("Bad results: flag = %d\n", flag);
