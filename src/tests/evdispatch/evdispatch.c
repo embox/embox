@@ -44,7 +44,7 @@ static int run(void) {
 
 	event_send(EVENT_MESSAGE1, &flag);
 
-	usleep(1);
+	usleep(10);
 
 	if (flag != 3) {
 		TRACE("Bad results: flag = %d\n", flag);
