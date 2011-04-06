@@ -47,7 +47,6 @@ static int run(void) {
 	softirq_dispatch();
 
 	if (flag != 3) {
-		TRACE("Bad results: flag = %d\n", flag);
 		return 1;
 	}
 
