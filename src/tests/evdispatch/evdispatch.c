@@ -9,8 +9,6 @@
 #include <embox/test.h>
 #include <kernel/evdispatch.h>
 #include <kernel/softirq.h>
-#include <unistd.h>
-#include <stdio.h>
 
 EMBOX_TEST(run);
 
