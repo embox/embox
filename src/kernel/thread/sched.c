@@ -1,31 +1,35 @@
 /**
  * @file
- * @brief Implementation of methods in sched.h
+ * @brief TODO --Alina
  *
  * @date 22.04.2010
- * @author Avdyukhin Dmitry
- * @author Skorodumov Kirill
+ * @author Dmitry Avdyukhin
+ * @author Kirill Skorodumov
+ * @author Alina Kramar
  */
 
 #include <assert.h>
 #include <errno.h>
 
+#include <embox/unit.h>
 #include <lib/list.h>
 #include <kernel/critical/api.h>
 #include <kernel/thread/api.h>
+#include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_policy.h>
 #include <kernel/timer.h>
 #include <hal/context.h>
 #include <hal/ipl.h>
-#include <embox/unit.h>
+
+#include "types.h"
 #include "state.h"
 
 /** Timer, which calls scheduler_tick. */
-#define THREADS_TIMER_ID 17
+#define SCHED_TICK_TIMER_ID 17
 
 /** Interval, what scheduler_tick is called in. */
-#define THREADS_TIMER_INTERVAL 100
+#define SCHED_TICK_INTERVAL 100
 
 int sched_init(struct thread* current, struct thread *idle) {
 	sched_policy_init(current, idle);
@@ -37,6 +41,7 @@ int sched_init(struct thread* current, struct thread *idle) {
 	idle->state = thread_state_transition(idle->state,
 			THREAD_STATE_ACTION_START);
 	assert(idle->state == THREAD_STATE_RUNNING);
+
 	return 0;
 }
 
@@ -48,20 +53,12 @@ static void sched_tick(uint32_t id) {
 	sched_current()->reschedule = true;
 }
 
-void sched_start(void) {
-	set_timer(THREADS_TIMER_ID, THREADS_TIMER_INTERVAL, sched_tick);
-	idle_thread->reschedule = true;
-	sched_policy_start();
-
-	sched_unlock();
-}
-
 /**
  * Switches thread to another thread and their contexts.
  */
 static void sched_switch(void) {
-	ipl_t ipl;
 	struct thread *current, *next;
+	ipl_t ipl;
 
 	current = sched_current();
 	next = sched_policy_switch(current);
@@ -83,7 +80,7 @@ static void sched_switch(void) {
 
 }
 
-void sched_dispatch(void) {
+void __sched_dispatch(void) {
 	struct thread *current;
 
 	assert(critical_allows(CRITICAL_PREEMPT));
@@ -116,17 +113,8 @@ void sched_add(struct thread *t) {
 	sched_unlock();
 }
 
-void sched_stop(void) {
-	sched_lock();
-
-	close_timer(THREADS_TIMER_ID);
-	sched_policy_stop();
-}
-
-int sched_remove(struct thread *t) {
-	if (t == NULL || t == idle_thread) {
-		return -EINVAL;
-	}
+void sched_remove(struct thread *t) {
+	assert(t != NULL);
 
 	sched_lock();
 
@@ -134,11 +122,9 @@ int sched_remove(struct thread *t) {
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_STOP);
 
 	sched_unlock();
-
-	return 0;
 }
 
-int scher_sleep(struct event *event) {
+int sched_sleep(struct event *e) {
 	struct thread *current;
 
 	sched_lock();
@@ -146,7 +132,7 @@ int scher_sleep(struct event *event) {
 	current = sched_current();
 	current->state = thread_state_transition(current->state,
 			THREAD_STATE_ACTION_SLEEP);
-	list_add(&current->wait_list, &event->threads_list);
+	list_add(&current->wait_list, &e->sleep_queue);
 	current->reschedule |= sched_policy_remove(current);
 
 	sched_unlock();
@@ -154,7 +140,7 @@ int scher_sleep(struct event *event) {
 	return 0;
 }
 
-int sched_wakeup(struct event *event) {
+int sched_wake(struct event *e) {
 	struct thread *t, *tmp;
 	struct thread *current;
 
@@ -162,7 +148,7 @@ int sched_wakeup(struct event *event) {
 
 	current = sched_current();
 
-	list_for_each_entry_safe(t, tmp, &event->threads_list, wait_list) {
+	list_for_each_entry_safe(t, tmp, &e->sleep_queue, wait_list) {
 		list_del_init(&t->wait_list);
 		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 		current->reschedule |= sched_policy_add(t);
@@ -173,12 +159,12 @@ int sched_wakeup(struct event *event) {
 	return 0;
 }
 
-int sched_wakeup_first(struct event *event) {
+int sched_wake_one(struct event *e) {
 	struct thread *t;
 
 	sched_lock();
 
-	t = list_entry(event->threads_list.next, struct thread, wait_list);
+	t = list_entry(e->sleep_queue.next, struct thread, wait_list);
 	list_del_init(&t->wait_list);
 	sched_current()->reschedule |= sched_policy_add(t);
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
@@ -188,6 +174,16 @@ int sched_wakeup_first(struct event *event) {
 	return 0;
 }
 
-void event_init(struct event *event) {
-	INIT_LIST_HEAD(&event->threads_list);
+void sched_start(void) {
+	set_timer(SCHED_TICK_TIMER_ID, SCHED_TICK_INTERVAL, sched_tick);
+	sched_policy_start();
+
+	sched_unlock();
+}
+
+void sched_stop(void) {
+	sched_lock();
+
+	close_timer(SCHED_TICK_TIMER_ID);
+	sched_policy_stop();
 }

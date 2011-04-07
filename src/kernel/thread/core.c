@@ -108,7 +108,7 @@ struct thread *thread_create(void(*run)(void), void *stack_address) {
 
 	INIT_LIST_HEAD(&t->sched_list);
 	INIT_LIST_HEAD(&t->messages);
-	event_init(&t->msg_event);
+	event_init(&t->msg_event, "msg");
 	t->need_message = false;
 
 #ifdef CONFIG_PP_ENABLE

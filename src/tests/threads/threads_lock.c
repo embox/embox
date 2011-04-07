@@ -50,7 +50,7 @@ static void plus_run(void) {
  */
 static void minus_run(void) {
 	size_t i;
-	scher_sleep(&event);
+	sched_sleep(&event);
 	for (i = 0; i < 1000; i++) {
 		TRACE("-");
 	}
@@ -80,7 +80,7 @@ static void div_run(void) {
 static void highest_run(void) {
 	size_t i;
 	TRACE("Highest");
-	sched_wakeup(&event);
+	sched_wake(&event);
 	TRACE("Highest cont");
 	for (i = 0; i < 100; i++) {
 		TRACE("!");
@@ -91,7 +91,7 @@ static void highest_run(void) {
 static int run(void) {
 	TRACE("\n");
 
-	event_init(&event);
+	event_init(&event, "test");
 
 	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
 	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);

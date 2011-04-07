@@ -17,7 +17,7 @@
 struct mutex *idle_mutex;
 
 void mutex_init(struct mutex *mutex) {
-	event_init(&mutex->event);
+	event_init(&mutex->event, "mutex");
 	mutex->lockscount = 0;
 }
 
@@ -26,16 +26,16 @@ void mutex_lock(struct mutex *mutex) {
 	if (mutex->lockscount == 0) {
 		mutex->lockscount++;
 	} else {
-		scher_sleep(&mutex->event);
+		sched_sleep(&mutex->event);
 	}
 	sched_unlock();
 }
 
 void mutex_unlock(struct mutex *mutex) {
-	if (list_empty(&mutex->event.threads_list)) {
+	if (list_empty(&mutex->event.sleep_queue)) {
 		mutex->lockscount--;
 	} else {
-		sched_wakeup_first(&mutex->event);
+		sched_wake_one(&mutex->event);
 	}
 }
 

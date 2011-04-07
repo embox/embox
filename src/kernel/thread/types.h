@@ -11,18 +11,11 @@
 
 #include <lib/list.h>
 #include <hal/context.h>
+#include <kernel/thread/event.h>
 #include "state.h"
 
 typedef int __thread_id_t;
 typedef int __thread_priority_t;
-
-/**
- * Structure which describes events.
- * Now contains just a list of associated threads.
- */
-struct event {
-	struct list_head threads_list;
-};
 
 #ifdef CONFIG_PP_ENABLE
 struct pprocess;

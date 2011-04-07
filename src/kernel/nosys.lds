@@ -14,7 +14,7 @@ PROVIDE(softirq_raise    = nosys);
 PROVIDE(softirq_dispatch = nosys);
 
 PROVIDE(sched_policy_current = nosys);
-PROVIDE(sched_dispatch = nosys);
+PROVIDE(__sched_dispatch = nosys);
 
 PROVIDE(printk = nosys);
 
