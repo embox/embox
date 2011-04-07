@@ -44,6 +44,7 @@ multiboot_header:
 multiboot_entry:
 	/* interrrupts disable */
 	cli
+	cld
 	/* Initialize the stack pointer. */
 	movl	$_stack, %esp
 
@@ -58,6 +59,8 @@ multiboot_entry:
 //	pushl	%eax
 //	call	EXT_C(multiboot_check)
 //	addl    $8, %esp ;
+
+
 
 	movl   $_bss_len, 0x8(%esp)
 	movl   $0x0, 0x4(%esp)
@@ -74,8 +77,10 @@ multiboot_entry:
 	call   memcpy
 
 1:
+
 	call	EXT_C(kernel_start)
 
 loop:	hlt
 	jmp	loop
 
+	.section .text
