@@ -22,7 +22,7 @@ TEST_CASE("array_static_foreach should properly iterate over an array"
 	const char *tmp;
 
 	array_static_foreach(tmp, test_array) {
-		strncpy(buf, tmp, sizeof(buf));
+		strncpy(buf, tmp, strlen(tmp));
 		count++;
 	}
 
