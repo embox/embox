@@ -52,13 +52,7 @@
 #define KERNEL_CRITICAL_API_IMPL_H_
 
 #include "count.h"
-
-#define __CRITICAL_VALUE(bits, lower_mask) \
-	((__CRITICAL_BELOW(lower_mask) << (bits) | __CRITICAL_VALUE_LOWEST(bits)) \
-			^ __CRITICAL_BELOW(lower_mask))
-
-#define __CRITICAL_VALUE_LOWEST(bits) \
-	((0x1UL << (bits)) - 1)
+#include "levels.h"
 
 /* Internal helper macros. */
 
@@ -73,17 +67,6 @@
 
 #define __CRITICAL_COUNT(critical) \
 	(__CRITICAL_LOWER(critical) + 1)
-
-/* Critical levels mask. */
-
-#define __CRITICAL_HARDIRQ \
-	__CRITICAL_VALUE_LOWEST(8)              /* 0x00ff */
-
-#define __CRITICAL_SOFTIRQ \
-	__CRITICAL_VALUE(4, __CRITICAL_HARDIRQ) /* 0x0f00 */
-
-#define __CRITICAL_PREEMPT \
-	__CRITICAL_VALUE(4, __CRITICAL_SOFTIRQ) /* 0xf000 */
 
 inline static int critical_allows(__critical_t critical) {
 	return !(__critical_count_get() & __CRITICAL_BELOW(critical));

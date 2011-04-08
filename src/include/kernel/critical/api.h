@@ -15,12 +15,6 @@
 #define CRITICAL_SOFTIRQ __CRITICAL_SOFTIRQ
 #define CRITICAL_PREEMPT __CRITICAL_PREEMPT
 
-#define CRITICAL_VALUE(bits, lower_mask) \
-	  __CRITICAL_VALUE(bits, lower_mask)
-
-#define CRITICAL_VALUE_LOWEST(bits) \
-	  __CRITICAL_VALUE_LOWEST(bits)
-
 typedef __critical_t critical_t;
 
 extern int critical_allows(critical_t critical);
