@@ -119,7 +119,9 @@ void sched_remove(struct thread *t) {
 	sched_lock();
 
 	sched_current()->reschedule |= sched_policy_remove(t);
+
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_STOP);
+	assert(t->state);
 
 	sched_unlock();
 }
@@ -127,13 +129,20 @@ void sched_remove(struct thread *t) {
 int sched_sleep(struct event *e) {
 	struct thread *current;
 
+	assert(e);
+	assert(critical_allows(CRITICAL_PREEMPT));
+
 	sched_lock();
 
 	current = sched_current();
+
+	current->reschedule |= sched_policy_remove(current);
+
 	current->state = thread_state_transition(current->state,
 			THREAD_STATE_ACTION_SLEEP);
-	list_add(&current->wait_list, &e->sleep_queue);
-	current->reschedule |= sched_policy_remove(current);
+	assert(current->state);
+
+	list_add(&current->sleep_link, &e->sleep_queue);
 
 	sched_unlock();
 
@@ -148,10 +157,13 @@ int sched_wake(struct event *e) {
 
 	current = sched_current();
 
-	list_for_each_entry_safe(t, tmp, &e->sleep_queue, wait_list) {
-		list_del_init(&t->wait_list);
-		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
+	list_for_each_entry_safe(t, tmp, &e->sleep_queue, sleep_link) {
 		current->reschedule |= sched_policy_add(t);
+
+		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
+		assert(t->state);
+
+		list_del_init(&t->sleep_link);
 	}
 
 	sched_unlock();
@@ -164,8 +176,8 @@ int sched_wake_one(struct event *e) {
 
 	sched_lock();
 
-	t = list_entry(e->sleep_queue.next, struct thread, wait_list);
-	list_del_init(&t->wait_list);
+	t = list_entry(e->sleep_queue.next, struct thread, sleep_link);
+	list_del_init(&t->sleep_link);
 	sched_current()->reschedule |= sched_policy_add(t);
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 

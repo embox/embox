@@ -23,7 +23,7 @@
 #include <kernel/pp.h>
 #endif
 
-#define IDLE_THREAD_STACK_SZ 0x100
+#define IDLE_THREAD_STACK_SZ 0x1000
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -81,6 +81,7 @@ static void thread_run(int arg) {
 	assert(!critical_inside(CRITICAL_PREEMPT));
 
 	current->run();
+
 	thread_stop(current);
 
 	/* NOTREACHED */assert(false);
@@ -106,9 +107,11 @@ struct thread *thread_create(void(*run)(void), void *stack_address) {
 	t->state = THREAD_STATE_TERMINATE;
 	t->priority = 1;
 
+	INIT_LIST_HEAD(&t->sleep_link);
 	INIT_LIST_HEAD(&t->sched_list);
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");
+	event_init(&t->event, "finish");
 	t->need_message = false;
 
 #ifdef CONFIG_PP_ENABLE
@@ -153,6 +156,8 @@ int thread_stop(struct thread *t) {
 
 	sched_remove(t);
 
+	sched_wake(&t->event);
+
 	if (thread_current() != t) {
 		thread_free(t);
 	} else {
@@ -162,6 +167,17 @@ int thread_stop(struct thread *t) {
 	sched_unlock();
 
 	return 0;
+}
+
+void thread_join(struct thread *t) {
+	assert(t);
+
+	// XXX
+	if (t->state && t->state == THREAD_STATE_TERMINATE) {
+		return;
+	}
+
+	sched_sleep(&t->event);
 }
 
 void thread_yield(void) {

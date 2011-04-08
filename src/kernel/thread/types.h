@@ -41,8 +41,10 @@ struct thread {
 	struct list_head messages;
 	/** Event, appearing when thread receives message. */
 	struct event msg_event;
+	/** Event which thread make after finish */
+	struct event event;
 	/** List item, corresponding to thread in list of some event. */
-	struct list_head wait_list;
+	struct list_head sleep_link;
 
 	/*----- Scheduler-dependent fields -------*/
 
