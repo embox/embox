@@ -22,11 +22,14 @@ struct pprocess;
 #endif
 
 struct thread {
-	/** Thread's identifier. Unique for each thread. */
-	__thread_id_t id;
-	struct list_head thread_link;
-	/** Context of thread. */
+
+	/** Architecture-dependent CPU context. */
 	struct context context;
+
+	/** Unique identifier. */
+	__thread_id_t id;
+
+	struct list_head thread_link;
 	/** Function, running in thread. */
 	void (*run)(void);
 	/** Flag, which shows, whether tread can be changed. */

@@ -24,10 +24,12 @@ static void print_usage(void) {
 
 static void print_stat(void) {
 	struct thread *thread;
-	int running = 0, wait = 0, terminate = 0, susp = 0, wait_susp = 0;
-	int total = 0;
+	int terminate, running, sleeping, suspended, sleeping_suspended;
+	int total;
 
-	printf(" %10s %4s %10s\n", "Id", "Prio", "State");
+	printf(" %4s %8s %18s\n", "Id", "Priority", "State");
+
+	terminate = running = sleeping = suspended = sleeping_suspended = 0;
 
 	thread_foreach(thread) {
 		const char *state;
@@ -38,16 +40,16 @@ static void print_stat(void) {
 			running++;
 			break;
 		case THREAD_STATE_SLEEPING:
-			state = "wait";
-			wait++;
+			state = "sleeping";
+			sleeping++;
 			break;
 		case THREAD_STATE_SLEEPING_SUSPENDED:
-			state = "wait_susp";
-			wait_susp++;
+			state = "sleeping_suspended";
+			sleeping_suspended++;
 			break;
 		case THREAD_STATE_SUSPENDED:
-			state = "susp";
-			susp++;
+			state = "suspended";
+			suspended++;
 			break;
 		case THREAD_STATE_TERMINATE:
 			state = "terminate";
@@ -57,13 +59,18 @@ static void print_stat(void) {
 			state = "unknown";
 			break;
 		}
-		printf(" %10d %4d %10s\n", thread->id, thread->priority, state);
+		printf(" %4d %8d %18s\n", thread->id, thread->priority, state);
 	}
 
-	total = running + wait + terminate + susp + wait_susp;
+	total = terminate + running + sleeping + suspended + sleeping_suspended;
 
-//	printf("Total: %d threads (%d run,  %d wait, %d zombie)\n", total, run,
-//			wait, zombie);
+	printf("Total %d threads: \n"
+		"\t%d terminate\n"
+		"\t%d running\n"
+		"\t%d sleeping\n"
+		"\t%d suspended\n"
+		"\t%d sleeping_suspended\n", total, terminate, running, sleeping,
+			suspended, sleeping_suspended);
 }
 
 static void kill_thread(int thread_id) {
