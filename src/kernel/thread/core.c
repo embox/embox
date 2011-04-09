@@ -110,7 +110,6 @@ struct thread *thread_init(struct thread *t, void(*run)(void),
 	t->state = THREAD_STATE_TERMINATE;
 	t->priority = 1;
 
-	INIT_LIST_HEAD(&t->sleep_link);
 	INIT_LIST_HEAD(&t->sched_list);
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");

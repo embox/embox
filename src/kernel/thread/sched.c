@@ -144,7 +144,7 @@ int sched_sleep_locked(struct event *e) {
 			THREAD_STATE_ACTION_SLEEP);
 	assert(current->state);
 
-	list_add(&current->sleep_link, &e->sleep_queue);
+	list_add(&current->sched_list, &e->sleep_queue);
 
 	sched_unlock();
 	assert(critical_allows(CRITICAL_PREEMPT));
@@ -176,13 +176,13 @@ int sched_wake(struct event *e) {
 
 	current = sched_current();
 
-	list_for_each_entry_safe(t, tmp, &e->sleep_queue, sleep_link) {
+	list_for_each_entry_safe(t, tmp, &e->sleep_queue, sched_list) {
+		list_del_init(&t->sched_list);
+
 		current->reschedule |= sched_policy_add(t);
 
 		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 		assert(t->state);
-
-		list_del_init(&t->sleep_link);
 	}
 
 	sched_unlock();
@@ -195,8 +195,8 @@ int sched_wake_one(struct event *e) {
 
 	sched_lock();
 
-	t = list_entry(e->sleep_queue.next, struct thread, sleep_link);
-	list_del_init(&t->sleep_link);
+	t = list_entry(e->sleep_queue.next, struct thread, sched_list);
+	list_del_init(&t->sched_list);
 	sched_current()->reschedule |= sched_policy_add(t);
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 
