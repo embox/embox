@@ -35,7 +35,7 @@ static int run(void) {
 
 	for (i = 0; i < THREADS_COUNT; i++) {
 		threads[i] = thread_alloc();
-		thread_init(threads[i], threads_run, stacks[i] + THREAD_STACK_SIZE);
+		thread_init(threads[i], threads_run, stacks[i], THREAD_STACK_SIZE);
 		assert(threads[i]);
 		threads[i]->priority = i + 1;
 		thread_start(threads[i]);

@@ -26,7 +26,7 @@ static void highest_run(void) {
 static int run(void) {
 	struct thread t;
 
-	thread_init(&t, highest_run, highest_stack + THREAD_STACK_SIZE );
+	thread_init(&t, highest_run, highest_stack, THREAD_STACK_SIZE );
 
 	thread_start(&t);
 

@@ -50,14 +50,14 @@ static int unit_init(void) {
 	if (!(current = thread_alloc())) {
 		return -ENOMEM;
 	}
-	thread_init(current, (void(*)(void)) -1, (void *) -1);
+	thread_init(current, (void(*)(void)) -1, (void *) -1, 0);
 	current->priority = THREAD_PRIORITY_MAX;
 
 	if (!(idle_thread = thread_alloc())) {
 		thread_free(current);
 		return -ENOMEM;
 	}
-	thread_init(idle_thread, idle_run, idle_thread_stack + IDLE_THREAD_STACK_SZ);
+	thread_init(idle_thread, idle_run, idle_thread_stack, IDLE_THREAD_STACK_SZ);
 	idle_thread->priority = THREAD_PRIORITY_MIN;
 
 	return sched_init(current, idle_thread);
@@ -92,7 +92,7 @@ static void thread_run(int arg) {
 }
 
 struct thread *thread_init(struct thread *t, void(*run)(void),
-		void *stack_address) {
+		void *stack_address, size_t stack_size) {
 	if (!t) {
 		return NULL;
 	}
@@ -103,7 +103,7 @@ struct thread *thread_init(struct thread *t, void(*run)(void),
 
 	context_init(&t->context, true);
 	context_set_entry(&t->context, thread_run, (int) t);
-	context_set_stack(&t->context, stack_address);
+	context_set_stack(&t->context, stack_address + stack_size);
 
 	t->run = run;
 
@@ -190,7 +190,8 @@ struct thread *thread_lookup(__thread_id_t id) {
 	return NULL;
 }
 
-POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ);
+POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ)
+;
 
 struct thread *thread_alloc(void) {
 	struct thread *t;

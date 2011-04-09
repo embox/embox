@@ -95,10 +95,10 @@ static int run(void) {
 	mult = thread_alloc();
 	div = thread_alloc();
 
-	thread_init(plus, plus_run, plus_stack + THREAD_STACK_SIZE);
-	thread_init(minus, minus_run, minus_stack + THREAD_STACK_SIZE);
-	thread_init(mult, mult_run, mult_stack + THREAD_STACK_SIZE);
-	thread_init(div, div_run, div_stack + THREAD_STACK_SIZE);
+	thread_init(plus, plus_run, plus_stack, THREAD_STACK_SIZE);
+	thread_init(minus, minus_run, minus_stack, THREAD_STACK_SIZE);
+	thread_init(mult, mult_run, mult_stack, THREAD_STACK_SIZE);
+	thread_init(div, div_run, div_stack, THREAD_STACK_SIZE);
 
 	assert(plus);
 	assert(minus);

@@ -46,7 +46,7 @@ static int run(void) {
 
 	t_rec = thread_alloc();
 
-	thread_init(t_rec, recursion_run, recursion_stack + THREAD_STACK_SIZE);
+	thread_init(t_rec, recursion_run, recursion_stack, THREAD_STACK_SIZE);
 
 	assert(t_rec);
 

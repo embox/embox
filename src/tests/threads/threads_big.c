@@ -76,10 +76,10 @@ static int run(void) {
 	mult_t = thread_alloc();
 	natural_t = thread_alloc();
 
-	thread_init(plus_t, plus_run, plus_stack + THREAD_STACK_SIZE);
-	thread_init(natural_t, natural_run, natural_stack + THREAD_STACK_SIZE);
-	thread_init(minus_t, minus_run, minus_stack + THREAD_STACK_SIZE);
-	thread_init(mult_t, mult_run, mult_stack + THREAD_STACK_SIZE);
+	thread_init(plus_t, plus_run, plus_stack, THREAD_STACK_SIZE);
+	thread_init(natural_t, natural_run, natural_stack, THREAD_STACK_SIZE);
+	thread_init(minus_t, minus_run, minus_stack, THREAD_STACK_SIZE);
+	thread_init(mult_t, mult_run, mult_stack, THREAD_STACK_SIZE);
 
 	assert(plus_t != NULL);
 	assert(minus_t != NULL);

@@ -39,8 +39,8 @@ void run2() {
 static int run(void) {
 	struct thread t1, t2;
 
-	thread_init(&t1, run1, stack1 + THREAD_STACK1_SIZE);
-	thread_init(&t2, run2, stack2 + THREAD_STACK2_SIZE);
+	thread_init(&t1, run1, stack1, THREAD_STACK1_SIZE);
+	thread_init(&t2, run2, stack2, THREAD_STACK2_SIZE);
 
 	pp_add_process(&t1);
 	pp_add_process(&t2);

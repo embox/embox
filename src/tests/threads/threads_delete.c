@@ -78,7 +78,7 @@ static void main_run(void) {
 	thread_stop(minus);
 	thread_stop(mult);
 	plus_thread = thread_alloc();
-	thread_init(plus_thread, plus_run, plus_stack + THREAD_STACK_SIZE);
+	thread_init(plus_thread, plus_run, plus_stack, THREAD_STACK_SIZE);
 	assert(plus_thread);
 	thread_start(plus_thread);
 
@@ -92,9 +92,9 @@ static int run(void) {
 	mult = thread_alloc();
 	minus = thread_alloc();
 
-	thread_init(main, main_run, main_stack + THREAD_STACK_SIZE);
-	thread_init(mult, mult_run, mult_stack + THREAD_STACK_SIZE);
-	thread_init(minus, minus_run, minus_stack + THREAD_STACK_SIZE);
+	thread_init(main, main_run, main_stack, THREAD_STACK_SIZE);
+	thread_init(mult, mult_run, mult_stack, THREAD_STACK_SIZE);
+	thread_init(minus, minus_run, minus_stack, THREAD_STACK_SIZE);
 
 	assert(main);
 	assert(minus);

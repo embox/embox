@@ -83,8 +83,8 @@ static int run(void) {
 	t_first = thread_alloc();
 	t_second = thread_alloc();
 
-	thread_init(t_first, first_run, first_stack + THREAD_STACK_SIZE);
-	thread_init(t_second, second_run, second_stack + THREAD_STACK_SIZE);
+	thread_init(t_first, first_run, first_stack, THREAD_STACK_SIZE);
+	thread_init(t_second, second_run, second_stack, THREAD_STACK_SIZE);
 
 	assert(t_first);
 	assert(t_second);

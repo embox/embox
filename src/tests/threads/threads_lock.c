@@ -99,11 +99,11 @@ static int run(void) {
 	div = thread_alloc();
 	highest = thread_alloc();
 
-	thread_init(plus, plus_run, plus_stack + THREAD_STACK_SIZE);
-	thread_init(minus, minus_run, minus_stack + THREAD_STACK_SIZE);
-	thread_init(mult, mult_run, mult_stack + THREAD_STACK_SIZE);
-	thread_init(div, div_run, div_stack + THREAD_STACK_SIZE);
-	thread_init(highest, highest_run, highest_stack + THREAD_STACK_SIZE);
+	thread_init(plus, plus_run, plus_stack, THREAD_STACK_SIZE);
+	thread_init(minus, minus_run, minus_stack, THREAD_STACK_SIZE);
+	thread_init(mult, mult_run, mult_stack, THREAD_STACK_SIZE);
+	thread_init(div, div_run, div_stack, THREAD_STACK_SIZE);
+	thread_init(highest, highest_run, highest_stack, THREAD_STACK_SIZE);
 
 	sched_remove(highest);
 

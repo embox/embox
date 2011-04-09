@@ -179,7 +179,7 @@ static int tty_init(void) {
 		cur_console = cons;
 		cur_tty->console_cur = i;
 
-		pp_create_ws(run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
+		pp_create_ws(run_shell, cons->esh_stack, CONFIG_ESH_STACK_S);
 	}
 	cur_console = (struct vconsole *)&cur_tty->console[0]; /* this is default console */
 	cur_tty->console_cur = 0;

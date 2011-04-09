@@ -80,21 +80,21 @@ static int run(void) {
 	TRACE("\n");
 
 	t_plus = thread_alloc();
-	thread_init(t_plus, plus_run, plus_stack + THREAD_STACK_SIZE);
+	thread_init(t_plus, plus_run, plus_stack, THREAD_STACK_SIZE);
 	assert(t_plus);
 	t_plus->priority = 3;
 
 	t_minus = thread_alloc();
-	thread_init(t_minus, minus_run, minus_stack + THREAD_STACK_SIZE);
+	thread_init(t_minus, minus_run, minus_stack, THREAD_STACK_SIZE);
 	assert(t_minus);
 	t_minus->priority = 3;
 
 	t_mult = thread_alloc();
-	thread_init(t_mult, mult_run, mult_stack + THREAD_STACK_SIZE);
+	thread_init(t_mult, mult_run, mult_stack, THREAD_STACK_SIZE);
 	assert(t_mult);
 
 	t_highest = thread_alloc();
-	thread_init(t_highest, highest_run, highest_stack + THREAD_STACK_SIZE);
+	thread_init(t_highest, highest_run, highest_stack, THREAD_STACK_SIZE);
 	assert(t_highest);
 	t_highest->priority = 2;
 
