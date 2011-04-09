@@ -91,21 +91,15 @@ static int run(void) {
 	thread_start(minus_t);
 	thread_start(mult_t);
 
-
-	TRACE("\nBefore start\n");
-
-	sched_start();
-
 	thread_join(plus_t);
 	thread_join(minus_t);
 	thread_join(mult_t);
 	thread_join(natural_t);
 
-	sched_stop();
-
 	thread_free(plus_t);
 	thread_free(minus_t);
 	thread_free(mult_t);
 	thread_free(natural_t);
+
 	return 0;
 }

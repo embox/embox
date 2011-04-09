@@ -113,22 +113,22 @@ static int run(void) {
 	assert(div);
 	assert(highest);
 
-	highest->priority = 2;
+	plus->priority = 2;
+	minus->priority = 2;
+	mult->priority = 2;
+	div->priority = 2;
+	highest->priority = 1;
 
 	thread_start(plus);
 	thread_start(minus);
 	thread_start(mult);
 	thread_start(div);
 
-	sched_start();
-
 	thread_join(plus);
 	thread_join(minus);
 	thread_join(mult);
 	thread_join(div);
 	thread_join(highest);
-
-	sched_stop();
 
 	thread_free(plus);
 	thread_free(minus);

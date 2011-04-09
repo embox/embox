@@ -48,8 +48,6 @@ static int run(void) {
 	thread_start(&t1);
 	thread_start(&t2);
 
-	sched_start();
-
 	thread_join(&t1);
 	thread_join(&t2);
 

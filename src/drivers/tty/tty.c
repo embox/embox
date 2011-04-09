@@ -185,7 +185,6 @@ static int tty_init(void) {
 	cur_tty->console_cur = 0;
 	console_reprint();
 	//FIXME scheduler must starting in more convenient place/
-	sched_start();
 #else
 	run_shell();
 #endif

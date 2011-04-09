@@ -104,14 +104,9 @@ static int run(void) {
 	thread_start(minus);
 	thread_start(mult);
 
-	TRACE("\nBefore start\n");
-	sched_start();
-
 	thread_join(main);
 	thread_join(mult);
 	thread_join(minus);
-
-	sched_stop();
 
 	thread_free(main);
 	thread_free(mult);

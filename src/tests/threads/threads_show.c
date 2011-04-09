@@ -103,14 +103,10 @@ static int run(void) {
 	thread_start(t_mult);
 	thread_start(t_highest);
 
-	sched_start();
-
 	thread_join(t_plus);
 	thread_join(t_minus);
 	thread_join(t_mult);
 	thread_join(t_highest);
-
-	sched_stop();
 
 	thread_free(t_plus);
 	thread_free(t_minus);

@@ -25,7 +25,7 @@
 
 #define IDLE_THREAD_STACK_SZ 0x1000
 
-EMBOX_UNIT_INIT(unit_init);
+EMBOX_UNIT(unit_init, unit_fini);
 
 struct thread *idle_thread;
 
@@ -61,6 +61,12 @@ static int unit_init(void) {
 	idle_thread->priority = THREAD_PRIORITY_MIN;
 
 	return sched_init(current, idle_thread);
+}
+
+static int unit_fini(void) {
+	sched_lock();
+
+	return 0;
 }
 
 /**

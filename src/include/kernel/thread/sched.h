@@ -99,15 +99,5 @@ extern int sched_wake(struct event *event);
  */
 extern int sched_wake_one(struct event *event);
 
-/**
- * @deprecated To be replaced by sched_init and internal unit ops.
- */
-extern void sched_start(void);
-
-/**
- * @deprecated To be replaced by sched_init and internal unit ops.
- */
-extern void sched_stop(void);
-
 #endif /* KERNEL_THREAD_SCHED_H_ */
 

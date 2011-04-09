@@ -41,13 +41,9 @@ static int run(void) {
 		thread_start(threads[i]);
 	}
 
-	sched_start();
-
 	for (i = 0; i < THREADS_COUNT; i++) {
 		thread_join(threads[i]);
 	}
-
-	sched_stop();
 
 	for (i = 0; i < THREADS_COUNT; i++) {
 		thread_free(threads[i]);

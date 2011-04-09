@@ -52,11 +52,7 @@ static int run(void) {
 
 	thread_start(t_rec);
 
-	sched_start();
-
 	thread_join(t_rec);
-
-	sched_stop();
 
 	thread_free(t_rec);
 

@@ -110,14 +110,10 @@ static int run(void) {
 	thread_start(mult);
 	thread_start(div);
 
-	sched_start();
-
 	thread_join(plus);
 	thread_join(minus);
 	thread_join(mult);
 	thread_join(div);
-
-	sched_stop();
 
 	thread_free(plus);
 	thread_free(minus);

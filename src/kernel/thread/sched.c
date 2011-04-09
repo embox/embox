@@ -31,6 +31,8 @@
 /** Interval, what scheduler_tick is called in. */
 #define SCHED_TICK_INTERVAL 100
 
+EMBOX_UNIT(unit_init, unit_fini);
+
 int sched_init(struct thread* current, struct thread *idle) {
 	sched_policy_init(current, idle);
 
@@ -41,6 +43,8 @@ int sched_init(struct thread* current, struct thread *idle) {
 	idle->state = thread_state_transition(idle->state,
 			THREAD_STATE_ACTION_START);
 	assert(idle->state == THREAD_STATE_RUNNING);
+
+	sched_unlock();
 
 	return 0;
 }
@@ -201,16 +205,16 @@ int sched_wake_one(struct event *e) {
 	return 0;
 }
 
-void sched_start(void) {
+static int unit_init(void) {
 	set_timer(SCHED_TICK_TIMER_ID, SCHED_TICK_INTERVAL, sched_tick);
 	sched_policy_start();
 
-	sched_unlock();
+	return 0;
 }
 
-void sched_stop(void) {
-	sched_lock();
-
+static int unit_fini(void) {
 	close_timer(SCHED_TICK_TIMER_ID);
 	sched_policy_stop();
+
+	return 0;
 }

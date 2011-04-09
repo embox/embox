@@ -75,13 +75,9 @@ static int run(void) {
 	pipe_create(); // pipe #0
 	pipe_create(); // pipe #1
 
-	sched_start();
-
 	thread_join(&t_first);
 	thread_join(&t_second);
 	thread_join(&t_third);
-
-	sched_stop();
 
 	return 0;
 }

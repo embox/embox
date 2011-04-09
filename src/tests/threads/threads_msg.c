@@ -95,12 +95,8 @@ static int run(void) {
 	thread_start(t_first);
 	thread_start(t_second);
 
-	sched_start();
-
 	thread_join(t_first);
 	thread_join(t_second);
-
-	sched_stop();
 
 	thread_free(t_first);
 	thread_free(t_second);
