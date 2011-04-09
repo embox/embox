@@ -13,7 +13,7 @@
 
 EMBOX_TEST(run);
 
-extern char share_variable;
+extern char *share_variable;
 
 #define THREAD_STACK1_SIZE 0x10000
 char stack1[THREAD_STACK1_SIZE];
@@ -22,18 +22,18 @@ char stack1[THREAD_STACK1_SIZE];
 char stack2[THREAD_STACK2_SIZE];
 
 void run1() {
-	share_variable = 'a';
+	share_variable = "string1";
 	while (true) {
-		printf("first thread %c\n",share_variable);
-		sleep(1);
+		printf("first thread %s\n",share_variable);
+		//sleep(1);
 	}
 }
 
 void run2() {
-	share_variable = 'b';
+	share_variable = "string2";
 	while (true) {
-		printf("secont thread %c\n",share_variable);
-		sleep(1);
+		printf("second thread %s\n",share_variable);
+		//sleep(1);
 	}
 }
 

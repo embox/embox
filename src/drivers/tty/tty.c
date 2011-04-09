@@ -23,6 +23,7 @@
 EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
+extern vconsole_t *cur_console;
 
 /* FIXME TTY is space there is in library */
 #if 0
@@ -52,6 +53,9 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 	for (i = 0; i < token->params_len; ++i) {
 		printf("(char) params[%d] = %d\n", i, token->params[i]);
 	}
+	#if 0
+	return;
+	#endif
 #endif
 	switch (token->action) {
 	case VT_ACTION_PRINT: /* Print any char */
@@ -101,6 +105,7 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 	case VT_ACTION_EXECUTE:
 		switch (token->ch) {
 		case '\n': /* ENTER key. Return string */
+			//prom_printf("\nenter was pressed\n"); //remove me in the end of world
 			tac_key_enter(cur_tty, token);
 			break;
 		case 21: /* ^U clean line */
@@ -126,29 +131,29 @@ void tty_vtbuild_callback(struct vtbuild *tty_vtbuild, char ch) {
 	cur_tty->file_op->fwrite(&ch, sizeof(char), 1, NULL);
 }
 
-static FILE *def_file;
-
-#ifdef CONFIG_TTY_CONSOLE_COUNT
-static struct vconsole *cons;
-static int cons_num;
-#endif
-
-
 void run_shell(void) {
 	const struct cmd *def_shell;
+	#if 0
+	sleep(1);
+	#endif
+	if (cur_console) {
+		console_clear();
+		printf("Hello from TTY%d!\n\n",cur_console->id + 1); /* this is output to the i-th console */
+	}
 	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
-		printk(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
+		prom_printf(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
 		return;
 	}
-	printk("found shell named (%s)\n", CONFIG_DEFAULT_SHELL);
-	/* printf("embox>"); */
 	def_shell->exec(0,NULL);
 }
 
 static int tty_init(void) {
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 	size_t i;
+	static struct vconsole *cons;
+	static int cons_num;
 #endif
+	static FILE *def_file;
 
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE, "r");
 
@@ -157,31 +162,32 @@ static int tty_init(void) {
 		return -1;
 	}
 
-//	scheduler_start();
 #ifdef CONFIG_TTY_CONSOLE_COUNT
+	/* add clear screen */
+	tac_clear( cur_tty );
+
 	cur_tty->console_cur = -1;
 
 	for (i = 0; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
 		cons_num = i;
 		cons = (struct vconsole *)&cur_tty->console[i];
-		cur_console = cons;
+		cons->id = i;
 		cons->tty = cur_tty;
 		cons->width = 80;
 		cons->height = 25;
-		vconsole_clear( cons );
-
-		printf("Hello from TTY%d!\n",i+1); /* this is output to the i-th console */
+		cons->out_busy = false;
+		cur_console = cons;
+		cur_tty->console_cur = i;
 
 		pp_create_ws(run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
 	}
-	cur_console = (struct vconsole *)&cur_tty->console[0];
+	cur_console = (struct vconsole *)&cur_tty->console[0]; /* this is default console */
 	cur_tty->console_cur = 0;
-	/* TODO add redraw current console in the end */
+	console_reprint();
 	//FIXME scheduler must starting in more convenient place/
 	sched_start();
 #else
 	run_shell();
-
 #endif
 	return 0;
 }
@@ -224,10 +230,16 @@ int tty_add_char(tty_device_t *tty, int ch) {
 }
 
 uint8_t* tty_readline(tty_device_t *tty) {
+	printf("%d %%",tty->console[tty->console_cur].scr_line);
 	#ifdef CONFIG_TTY_CONSOLE_COUNT
-	printf("TTY-%d$ ", 1);
+	#if 0
+	printf("TTY-%d$ ", cur_console->id + 1 ); /* for remove. it's not for production */
 	#endif
+	while (!tty->out_busy || ( cur_console != &tty->console[tty->console_cur]) );
+	#else
 	while (!tty->out_busy);
+	#endif
+	++cur_console->scr_line;
 	tty->out_busy = false;
 	return (uint8_t*) tty->out_buff;
 }

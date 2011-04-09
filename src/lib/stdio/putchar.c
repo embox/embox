@@ -6,6 +6,8 @@
  * @author Eldar Abusalimov
  */
 
+/* FIXME may be refactoring this using interfaces */
+
 #include <stdio.h>
 #include <kernel/diag.h>
 #include <drivers/vconsole.h>
@@ -15,9 +17,9 @@ int putchar(int c) {
 	static char prev = 0;
 
 	if (c == '\n' && prev != '\r') {
-		vconsole_putchar( cur_console, '\r');
+		console_putchar( '\r'); /* FIXME must be 'cur_tty->console[ cur_tty->console_cur ]' */
 	}
-	vconsole_putchar( cur_console, (char) c);
+	console_putchar( (char) c);
 
 	return (prev = c);
 }

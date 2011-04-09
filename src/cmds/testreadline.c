@@ -9,13 +9,16 @@
 
 #include <embox/cmd.h>
 #include <getopt.h>
+#include <stdio.h>
 #include <lib/readline.h>
 
 EMBOX_CMD(exec);
 
+#if 0
 static void print_usage(void) {
 	printf("Usage: version [-h]\n");
 }
+#endif
 
 static int exec(int argsc, char **argsv) {
 	char *line;

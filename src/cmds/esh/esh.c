@@ -65,9 +65,6 @@ static void esh_run(void) {
 
 
 static int exec(int argc, char **argv) {
-	//printk("ESH: ");
-	prom_printf("ESH");
 	esh_run();
-	printk(" [ done ]\n");
 	return 0;
 }

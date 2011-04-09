@@ -29,7 +29,7 @@
 #define CONFIG_PP_COUNT 10
 
 #ifdef CONFIG_PP_TEST
-char share_variable;
+char *share_variable;
 #endif
 
 static void* pp_pool[PP_INIT_LIST_S];
@@ -150,10 +150,10 @@ void pp_switch_process( struct pprocess *p ) {
 
 struct pprocess* pp_create_ws( void (*run)(void), void *stack_addr) {
 	struct thread *thr = thread_create( run , stack_addr );
-	pp_add_process( thr );
+	struct pprocess *p = pp_add_process( thr );
+	pp_store( p );
 	thread_start( thr );
-	//FIXME PPprocess
-	return NULL;
+	return p;
 }
 
 EMBOX_UNIT_INIT(pp_init);
