@@ -23,11 +23,13 @@ EMBOX_TEST(run);
 /**
  * Writes id of current thread.
  */
-static void threads_run(void) {
+static void *threads_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 10; i++) {
 		TRACE("%d ", thread_self()->id);
 	}
+
+	return NULL;
 }
 
 static int run(void) {

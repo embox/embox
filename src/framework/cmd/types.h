@@ -16,7 +16,7 @@
  * @retval 0 on success
  * @retval nonzero on failure
  */
-typedef int(*cmd_exec_t)(int argc, char **argv);
+typedef int (*cmd_exec_t)(int argc, char **argv);
 
 struct cmd {
 	cmd_exec_t exec;

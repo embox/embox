@@ -35,45 +35,53 @@ EMBOX_TEST(run)
 /**
  * Endlessly Writes "!". Thread with the highest priority.
  */
-static void highest_run(void) {
+static void *highest_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("!");
 		thread_yield();
 	}
+
+	return NULL;
 }
 
 /**
  * Endlessly Writes "+".
  */
-static void plus_run(void) {
+static void *plus_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("+");
 		thread_yield();
 	}
+
+	return NULL;
 }
 
 /**
  * Endlessly writes "-".
  */
-static void minus_run(void) {
+static void *minus_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 110; i++) {
 		TRACE("-");
 		thread_yield();
 	}
+
+	return NULL;
 }
 
 /**
  * Endlessly writes "*".
  */
-static void mult_run(void) {
+static void *mult_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 120; i++) {
 		TRACE("*");
 		thread_yield();
 	}
+
+	return NULL;
 }
 
 static int run(void) {

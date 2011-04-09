@@ -17,10 +17,11 @@ static char highest_stack[THREAD_STACK_SIZE];
 
 EMBOX_TEST(run);
 
-static void highest_run(void) {
+static void *highest_run(void *arg) {
 	for (int i = 0; i < 100000; i++) {
 		thread_yield();
 	}
+	return NULL;
 }
 
 static int run(void) {

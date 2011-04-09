@@ -39,17 +39,19 @@ typedef struct pprocess {
 //extern void    *pp_pool[];
 //extern size_t   pp_pool_sz[];
 //extern uint32_t pp_pool_s;
-extern void     pp_store(struct pprocess* pr);
-extern void     pp_restore(struct pprocess* pr);
+extern void     pp_store(struct pprocess *pr);
+extern void     pp_restore(struct pprocess *pr);
 
-extern void        pp_add_thread(struct pprocess *p, struct thread *th);
-extern void        pp_del_thread(struct pprocess *p, struct thread *th);
-extern struct pprocess* pp_create( void (*run)(void) ); /* with dynamic allocation */
-extern struct pprocess* pp_create_ws( void (*run)(void), void *stack_addr, size_t stack_size);
-extern struct pprocess* pp_add_process(struct thread *th);
-extern void        pp_del_process(struct pprocess *p);
-extern void        pp_switch_process(struct pprocess *p);
-extern struct pprocess  *pp_cur_process;
+extern void pp_add_thread(struct pprocess *p, struct thread *th);
+extern void pp_del_thread(struct pprocess *p, struct thread *th);
+extern struct pprocess *pp_create(void *(*run)(void *)); /* with dynamic allocation */
+extern struct pprocess *pp_create_ws(void *(*run)(void *), void *stack_addr,
+		size_t stack_size);
+extern struct pprocess *pp_add_process(struct thread *th);
+extern void pp_del_process(struct pprocess *p);
+extern void pp_switch_process(struct pprocess *p);
+
+extern struct pprocess *pp_cur_process;
 
 #endif /* PSEUDO_PROCESS_H_ */
 

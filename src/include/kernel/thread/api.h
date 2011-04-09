@@ -76,7 +76,7 @@ extern struct thread *thread_lookup(thread_id_t id);
  * @return NULL
  *   If something went wrong (e.g. invalid arguments).
  */
-extern struct thread *thread_init(struct thread *thread, void(*run)(void),
+extern struct thread *thread_init(struct thread *thread, void *(*run)(void *),
 		void *stack_address, size_t stack_size);
 
 /**

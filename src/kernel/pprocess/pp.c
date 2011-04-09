@@ -148,7 +148,8 @@ void pp_switch_process( struct pprocess *p ) {
 	pp_cur_process = p;
 }
 
-struct pprocess* pp_create_ws( void (*run)(void), void *stack_addr, size_t stack_size) {
+struct pprocess *pp_create_ws(void *(*run)(void *), void *stack_addr,
+		size_t stack_size) {
 	struct thread *t;
 	struct pprocess *p;
 

@@ -20,7 +20,7 @@ extern char *share_variable;
 static char stack1[THREAD_STACK_SIZE];
 static char stack2[THREAD_STACK_SIZE];
 
-void run1() {
+void *run1(void *arg) {
 	share_variable = "string1";
 	while (true) {
 		printf("first thread %s\n",share_variable);
@@ -28,7 +28,7 @@ void run1() {
 	}
 }
 
-void run2() {
+void *run2(void *arg) {
 	share_variable = "string2";
 	while (true) {
 		printf("secont thread %c\n", share_variable);

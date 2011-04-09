@@ -17,19 +17,19 @@ EMBOX_TEST_SUITE("test for thread API");
 
 static char minus_stack[THREAD_STACK_SIZE];
 
-static void minus_run(void) {
+static void *minus_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("-");
 	}
-}
 
+	return NULL;
+}
 
 TEST_CASE("") {
 	struct thread minus_thread;
 
-	minus_thread = thread_init(minus_run, minus_stack + THREAD_STACK_SIZE);
+	minus_thread = thread_init(minus_run, minus_stack, THREAD_STACK_SIZE);
 
 	thread_join(&minus_thread);
-	TRACE("_=_");
 }

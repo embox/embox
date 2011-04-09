@@ -38,46 +38,54 @@ EMBOX_TEST(run);
 /**
  * endlessly writes '+'
  */
-static void plus_run(void) {
+static void *plus_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 1000; i++) {
 		TRACE("+");
 	}
+
+	return NULL;
 }
 
 /**
  * goes to sleep
  */
-static void minus_run(void) {
+static void *minus_run(void *arg) {
 	size_t i;
 	sched_sleep(&event);
 	for (i = 0; i < 1000; i++) {
 		TRACE("-");
 	}
+
+	return NULL;
 }
 
 /**
  * endlessly writes '-'
  */
-static void mult_run(void) {
+static void *mult_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 1000; i++) {
 		TRACE("*");
 	}
+
+	return NULL;
 }
 
-static void div_run(void) {
+static void *div_run(void *arg) {
 	size_t i;
 	thread_start(highest);
 	for (i = 0; i < 1000; i++) {
 		TRACE("/");
 	}
+
+	return NULL;
 }
 
 /**
  * Unlocks minus thread then writes "!" then yields 100 times. Thread with the highest priority.
  */
-static void highest_run(void) {
+static void *highest_run(void *arg) {
 	size_t i;
 	TRACE("Highest");
 	sched_wake(&event);
@@ -86,6 +94,8 @@ static void highest_run(void) {
 		TRACE("!");
 		thread_yield();
 	}
+
+	return NULL;
 }
 
 static int run(void) {

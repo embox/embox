@@ -37,8 +37,10 @@ static void f(int i) {
  * Starts recursion.
  * Shows natural numbers.
  */
-static void recursion_run(void) {
+static void *recursion_run(void *arg) {
 	f(1);
+
+	return NULL;
 }
 
 static int run(void) {

@@ -22,28 +22,20 @@ struct pprocess;
 #endif
 
 struct thread {
-
-	/** Architecture-dependent CPU context. */
-	struct context context;
-
-	/** Unique identifier. */
-	__thread_id_t id;
-
-	struct list_head thread_link;
-	/** Function, running in thread. */
-	void (*run)(void);
-	/** Flag, which shows, whether tread can be changed. */
-	bool reschedule;
-	/** Thread's priority among another threads. */
-	__thread_priority_t priority;
-	/** State, in which thread is now. */
-	enum thread_state state;
-	/** Shows if thread is waiting for message. */
-	bool need_message;
-	/** Queue of messages, sent to this thread. */
-	struct list_head messages;
-	/** Event, appearing when thread receives message. */
-	struct event msg_event;
+	struct context    context;      /**< Architecture-dependent CPU state. */
+	__thread_id_t     id;           /**< Unique identifier. */
+	struct list_head  thread_link;  /**< Linkage on all threads. */
+	void           *(*run)(void *); /**< Start routine. */
+	__extension__ union {
+		void         *run_arg;      /**< Argument to pass to start routine. */
+		void         *run_ret;      /**< Return value of start routine. */
+	};
+	bool              reschedule;   /**< Whether rescheduling is needed. */
+	__thread_priority_t priority;   /**< Scheduling priority. */
+	enum thread_state state;        /**< Current state. */
+	bool              need_message; /**< Waiting for message. */
+	struct list_head messages;      /**< Messages sent to the thread. */
+	struct event msg_event;         /**< Event, appearing when thread receives message. */
 	/** Event which thread make after finish */
 	struct event event;
 

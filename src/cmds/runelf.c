@@ -23,9 +23,11 @@ static void print_usage(void) {
 //static char thread_stack[THREAD_STACK_SIZE];
 static unsigned int file_addr;
 
-static void run(void) {
+static void *run(void *arg) {
 	printf("run addr = 0x%X\n", file_addr);
 	elf_execve((unsigned long *) file_addr, NULL);
+
+	return NULL;
 }
 
 static int exec(int argsc, char **argsv) {
@@ -60,8 +62,8 @@ static int exec(int argsc, char **argsv) {
 	}
 	fioctl(file, 0, &file_addr);
 
-	run();
-//	thread = thread_init(run, thread_stack + THREAD_STACK_SIZE);
+	run(NULL);
+//	thread = thread_init(run, thread_stack, THREAD_STACK_SIZE);
 //	thread_start(thread);
 	fclose(file);
 	return 0;

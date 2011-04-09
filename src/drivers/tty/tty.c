@@ -131,7 +131,7 @@ void tty_vtbuild_callback(struct vtbuild *tty_vtbuild, char ch) {
 	cur_tty->file_op->fwrite(&ch, sizeof(char), 1, NULL);
 }
 
-void run_shell(void) {
+void *run_shell(void *arg) {
 	const struct cmd *def_shell;
 	#if 0
 	sleep(1);
@@ -145,6 +145,8 @@ void run_shell(void) {
 		return;
 	}
 	def_shell->exec(0,NULL);
+
+	return NULL;
 }
 
 static int tty_init(void) {

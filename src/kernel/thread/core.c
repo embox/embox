@@ -37,7 +37,7 @@ void thread_free(struct thread *t);
 /**
  * Function, which does nothing. For idle_thread.
  */
-static void idle_run(void) {
+static void *idle_run(void *arg) {
 	while (true) {
 		thread_yield();
 	}
@@ -50,7 +50,7 @@ static int unit_init(void) {
 	if (!(current = thread_alloc())) {
 		return -ENOMEM;
 	}
-	thread_init(current, (void(*)(void)) -1, (void *) -1, 0);
+	thread_init(current, (void *(*)(void *)) -1, (void *) -1, 0);
 	current->priority = THREAD_PRIORITY_MAX;
 
 	if (!(idle_thread = thread_alloc())) {
@@ -70,28 +70,33 @@ static int unit_fini(void) {
 }
 
 /**
- * Transforms function "run" in thread into function which can
- * execute "run" and delete thread from scheduler.
+ * Wrapper for thread start routine.
+ *
  * @param thread_pointer pointer at thread.
  */
-static void thread_run(int arg) {
-	struct thread *current = (struct thread *) arg;
+static void __attribute__((noreturn)) thread_run(int ignored) {
+	struct thread *current;
+	void *arg, *ret;
 
-	assert(current == thread_self());
+	assert(!critical_allows(CRITICAL_PREEMPT));
+
+	current = thread_self();
 
 	sched_unlock_noswitch();
 	ipl_enable();
 
 	assert(!critical_inside(CRITICAL_PREEMPT));
 
-	current->run();
+	arg = current->run_arg;
+	ret = current->run(arg);
+	current->run_ret = ret;
 
 	thread_stop(current);
 
 	/* NOTREACHED */assert(false);
 }
 
-struct thread *thread_init(struct thread *t, void(*run)(void),
+struct thread *thread_init(struct thread *t, void *(*run)(void *),
 		void *stack_address, size_t stack_size) {
 	if (!t) {
 		return NULL;
@@ -179,19 +184,18 @@ void thread_yield(void) {
 }
 
 struct thread *thread_lookup(__thread_id_t id) {
-	struct thread *thread;
+	struct thread *t;
 
-	__thread_foreach(thread) {
-		if (thread->id == id) {
-			return thread;
+	thread_foreach(t) {
+		if (t->id == id) {
+			return t;
 		}
 	}
 
 	return NULL;
 }
 
-POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ)
-;
+POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ);
 
 struct thread *thread_alloc(void) {
 	struct thread *t;

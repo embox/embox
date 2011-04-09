@@ -33,7 +33,7 @@ EMBOX_TEST(run);
  * In the beginning send a message to second, which don't unblock it.
  * Writes "1111...". In the end unblock second thread with proper message.
  */
-static void first_run(void) {
+static void *first_run(void *arg) {
 	size_t i;
 	struct message *msg = message_new();
 	struct message *sec_msg = message_new();
@@ -52,12 +52,14 @@ static void first_run(void) {
 	message_send(msg, t_second);
 	message_receive();
 	TRACE("\nFirst thread received an answer from second one.\n");
+
+	return NULL;
 }
 
 /**
  * Waits for a proper message. Then writes "22222...".
  */
-static void second_run(void) {
+static void *second_run(void *arg) {
 	size_t i;
 	struct message *msg = NULL;
 	/* Waits for message with type 2. */
@@ -75,6 +77,8 @@ static void second_run(void) {
 	}
 	msg = message_new();
 	message_send(msg, t_first);
+
+	return NULL;
 }
 
 static int run(void) {

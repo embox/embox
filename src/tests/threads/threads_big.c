@@ -29,41 +29,49 @@ EMBOX_TEST(run);
  * Writes "+".
  * Deletes minus_thread.
  */
-static void plus_run(void) {
+static void *plus_run(void *arg) {
 	thread_stop(minus_t);
 	thread_yield();
 	TRACE("+");
+
+	return NULL;
 }
 
 /**
  * Endlessly writes "-".
  * Will be deleted.
  */
-static void minus_run(void) {
+static void *minus_run(void *arg) {
 	size_t i;
 	for (i = 0; i < TOTAL_ITERATIONS; i++) {
 		TRACE("-");
 	}
+
+	return NULL;
 }
 
 /**
  * Endlessly writes "*".
  */
-static void mult_run(void) {
+static void *mult_run(void *arg) {
 	size_t i;
 	for (i = 0; i < TOTAL_ITERATIONS; i++) {
 		TRACE("  *");
 	}
+
+	return NULL;
 }
 
 /**
  * Endlessly writes natural numbers.
  */
-static void natural_run(void) {
+static void *natural_run(void *arg) {
 	size_t i;
 	for (i = 1; i < TOTAL_ITERATIONS; i++) {
 		TRACE("%d ", i);
 	}
+
+	return NULL;
 }
 
 static int run(void) {

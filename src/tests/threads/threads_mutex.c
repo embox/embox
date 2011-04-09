@@ -36,17 +36,19 @@ EMBOX_TEST(run);
 /**
  * endlessly writes '+'
  */
-static void plus_run(void) {
+static void *plus_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 1000; i++) {
 		TRACE("+");
 	}
+
+	return NULL;
 }
 
 /**
  * Locks mutex end writes "-"
  */
-static void minus_run(void) {
+static void *minus_run(void *arg) {
 	size_t i;
 	mutex_lock(&mutex);
 	for (i = 0; i < 500; i++) {
@@ -59,12 +61,14 @@ static void minus_run(void) {
 	for (i = 0; i < 1000; i++) {
 		TRACE("-");
 	}
+
+	return NULL;
 }
 
 /**
  * Locks and writes '*'
  */
-static void mult_run(void) {
+static void *mult_run(void *arg) {
 	size_t i;
 	mutex_lock(&mutex);
 	for (i = 0; i < 500; i++) {
@@ -75,16 +79,20 @@ static void mult_run(void) {
 	for (i = 0; i < 500; i++) {
 		TRACE("*");
 	}
+
+	return NULL;
 }
 
 /**
  * Endlessly writes "/"
  */
-static void div_run(void) {
+static void *div_run(void *arg) {
 	size_t i;
 	for (i = 0; i < 100; i++) {
 		TRACE("/");
 	}
+
+	return NULL;
 }
 
 static int run(void) {
