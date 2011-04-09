@@ -36,7 +36,7 @@ sensor_val_t nxt_sensor_get_value(sensor_t *sensor) {
 	if (sensor->type == PASSIVE) {
 		return data_from_avr.adc_value[sensor->id];
 	}
-	return 0;
+	return SENSOR_NOT_CONF;
 	/*FIXME to handle active sensors */
 }
 
@@ -53,6 +53,7 @@ void sensors_init(void) {
 	size_t i;
 	for (i = 0; i < NXT_AVR_N_INPUTS; i++) {
 		sensors[i].id = i;
+		sensors[i].type = NONE;
 		sensors[i].i2c_port.scl = 1 << digiS0[i];
 		sensors[i].i2c_port.sda = 1 << digiS1[i];
 		sensors[i].i2c_port.state = OFF;

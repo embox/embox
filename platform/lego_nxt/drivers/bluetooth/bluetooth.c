@@ -14,6 +14,7 @@
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
 #include <drivers/nxt_direct_comm.h>
+#include <kernel/timer.h>
 #include <unistd.h>
 
 #define   NXT_BT_RX_PIN  AT91C_PIO_PA21
@@ -65,6 +66,16 @@ uint8_t bt_buff[BUFF_SIZE];
 
 static int bt_buff_pos = 0;
 
+volatile int bt_uart_inited = 0;
+
+static void bt_receive_init(void) {
+	bt_clear_arm7_cmd();
+	bt_us_state = SIZE_READ;
+	bt_uart_inited = 0;
+	bt_buff_pos = 0;
+	nxt_bluetooth_read(bt_buff, 1);
+}
+
 static void bt_us_read_handle(void) {
 	int msg_len = bt_buff[bt_buff_pos];
 
@@ -115,21 +126,7 @@ static void bt_us_read_handle(void) {
 	}
 }
 
-void bt_uart_putc(char c) {
-	if (bt_us_state != UART_MODE) {
-		return;
-	}
-	/* here might be beaty buffered write policy*/
-	/* instead */
-	while (!(REG_LOAD(AT91C_US1_CSR) & AT91C_US_ENDTX)) {
-
-	}
-	nxt_bluetooth_write(&c, 1);
-}
-
-volatile int bt_uart_inited = 0;
-
-volatile void bt_us_receive_init(void) {
+static volatile void bt_us_receive_init(void) {
 	int delay = 3000;
 	REG_STORE(AT91C_US1_IDR, AT91C_US_ENDTX);
 	bt_uart_inited = 1;
@@ -145,7 +142,20 @@ volatile void bt_us_receive_init(void) {
 
 }
 
-irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
+int bt_last_state;
+int bt_raw_value;
+static void  nxt_bt_timer_handler(int id) {
+	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
+	if (bt_last_state != bt_state) {
+		if (!bt_state) {
+			bt_receive_init();
+		}
+	}
+	bt_last_state = bt_state;
+	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
+}
+
+static irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
 	uint32_t us_state = REG_LOAD(AT91C_US1_CSR);
 	if (us_state & AT91C_US_ENDRX) {
 		bt_us_read_handle();
@@ -176,18 +186,7 @@ static int nxt_bluetooth_init(void) {
 			| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
 			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
 	REG_STORE(AT91C_US1_IDR, ~0);
-    REG_STORE(AT91C_US1_IER, AT91C_US_ENDRX);
-//  REG_STORE(AT91C_US1_IER, AT91C_US_ENDRX | AT91C_US_ENDTX);
-	/*
-	REG_STORE(AT91C_US1_MR, (AT91C_US_USMODE_HWHSH & ~AT91C_US_SYNC) |
-			AT91C_US_NBSTOP_1_BIT |
-			(AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE));
-	*/
-	/*
-	REG_STORE(AT91C_US1_BRGR, ((CONFIG_SYS_CLOCK / 8 / NXT_BT_BAUD_RATE)
-			| (((CONFIG_SYS_CLOCK / 8) - ((CONFIG_SYS_CLOCK / 8 / NXT_BT_BAUD_RATE)
-					* NXT_BT_BAUD_RATE)) / ((NXT_BT_BAUD_RATE + 4) / 8)) << 16));
-	*/
+	REG_STORE(AT91C_US1_IER, AT91C_US_ENDRX);
 	REG_STORE(AT91C_US1_BRGR, CONFIG_SYS_CLOCK / (8 * NXT_BT_BAUD_RATE));
 	REG_STORE(AT91C_US1_RCR, 0);
 	REG_STORE(AT91C_US1_TCR, 0);
@@ -205,22 +204,16 @@ static int nxt_bluetooth_init(void) {
 	pin_set_output(NXT_BT_CS_PIN | NXT_BT_RST_PIN);
 	pin_clear_output(NXT_BT_CMD_PIN);
 
-#if 0
-	/*configure timer*/
-	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_TC1));
-	REG_STORE(AT91C_TC1_CCR, AT91C_TC_CLKDIS);
-	REG_STORE(AT91C_TC1_IDR, ~0);
-	/* MCLK/2, wave mode 10 */
-	REG_STORE(AT91C_TC1_CMR, AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO
-			| AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR | AT91C_TC_ASWTRG_SET);
-
-	REG_STORE(AT91C_TC1_RC, (CONFIG_SYS_CLOCK / 2) / (NXT_BT_ADC_RATE));
-	REG_STORE(AT91C_TC1_RA, ((CONFIG_SYS_CLOCK / 2) / (NXT_BT_ADC_RATE)) / 2);
-	REG_STORE(AT91C_TC1_CCR, AT91C_TC_CLKEN);
-	REG_STORE(AT91C_TC1_CCR, AT91C_TC_SWTRG);
-#endif
 	/* Configure the ADC */
-#if 1
+	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_ADC));
+	REG_STORE(AT91C_ADC_MR, 0);
+	REG_ORIN(AT91C_ADC_MR, AT91C_ADC_TRGEN_DIS);
+	REG_ORIN(AT91C_ADC_MR, 0x00000500); // 4MHz
+	REG_ORIN(AT91C_ADC_MR, 0x001f0000); // 64uS
+	REG_ORIN(AT91C_ADC_MR, 0x03000000); // 750nS
+	REG_STORE(AT91C_ADC_CHER, AT91C_ADC_CH6 | AT91C_ADC_CH4);
+	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
+
 	bt_clear_arm7_cmd();
 
 	usleep(2000);
@@ -229,49 +222,17 @@ static int nxt_bluetooth_init(void) {
 
 	usleep(5000);
 
-	bt_us_state = SIZE_READ;
-
 	irq_attach((irq_nr_t) AT91C_ID_US1,
 		(irq_handler_t) &nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
-	nxt_bluetooth_read(bt_buff, 1);
-#endif
+	set_timer(3, 200, (TIMER_FUNC) &nxt_bt_timer_handler);
+	bt_receive_init();
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////
-
-int bt_wrap(bt_message_t *header, uint8_t *buffer) {
-	int i;
-	uint16_t sum = 0;
-	*buffer++ = header->length + 3;
-	*buffer++ = header->type;
-	sum += header->type;
-	sum += header->length + 3; //is it need?
-	for (i = 0; i < header->length; i++) {
-		*buffer++ = header->content[i];
-		sum += header->content[i];
-	}
-	sum = ~sum + 1;
-	*buffer++ = sum >> 8;
-	*buffer++ = sum & 0xff;
-	return 1 + header->length + 3;
-}
-
-void bt_unwrap(bt_message_t *header, uint8_t *buffer) {
-	int i;
-	header->length = *buffer++;
-	header->length -= 3;
-
-	header->type = *buffer++;
-	for (i = 0; i < header->length; i++) {
-		header->content[i] = *buffer++;
-	}
-	header->sum = 0;
-}
-
-///////////////////////////////////////////////////////////////////////
 size_t nxt_bluetooth_write(uint8_t *buff, size_t len) {
+	while (!(REG_LOAD(AT91C_US1_CSR) & AT91C_US_ENDTX)) {
+	}
 	REG_STORE(AT91C_US1_TPR, buff);
 	REG_STORE(AT91C_US1_TCR, len);
 	return len;

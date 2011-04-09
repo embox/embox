@@ -17,7 +17,8 @@ EMBOX_TEST(power_mng_test);
 
 static void nxt_halt(void) {
 	data_to_avr.input_power = 0;
-	data_to_avr.pwm_frequency = 0x0;
+	data_to_avr.power = 0x5A;
+	data_to_avr.pwm_frequency = 0x00;
 	data_to_avr.input_power = 0;
 }
 
@@ -28,7 +29,7 @@ static void nxt_flash(void) {
 }
 
 static int power_mng_test(void) {
-//	TRACE("L:HALT R:FLASH\n");
+	TRACE("L:HALT R:FLASH D:SKIP\n");
 	while (true) {
 		int buts = nxt_buttons_was_pressed();
 		if (buts & BT_LEFT) {
@@ -36,6 +37,9 @@ static int power_mng_test(void) {
 		}
 		if (buts & BT_RIGHT) {
 			nxt_flash();
+		}
+		if (buts & BT_DOWN) {
+		    break;
 		}
 		usleep(200);
 	}

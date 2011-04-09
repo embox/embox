@@ -42,7 +42,35 @@ bt_message_t *add(void) {
 
 static int bt_bc_handle = 0;
 
-void process_msg(bt_message_t *msg) {
+int bt_wrap(bt_message_t *header, uint8_t *buffer) {
+	int i;
+	uint16_t sum = 0;
+	*buffer++ = header->length + 3;
+	*buffer++ = header->type;
+	sum += header->type;
+	sum += header->length + 3; //is it need?
+	for (i = 0; i < header->length; i++) {
+		*buffer++ = header->content[i];
+		sum += header->content[i];
+	}
+	sum = ~sum + 1;
+	*buffer++ = sum >> 8;
+	*buffer++ = sum & 0xff;
+	return 1 + header->length + 3;
+}
+
+static void bt_unwrap(bt_message_t *header, uint8_t *buffer) {
+	int i;
+	header->length = *buffer++;
+	header->length -= 3;
+
+	header->type = *buffer++;
+	for (i = 0; i < header->length; i++) {
+		header->content[i] = *buffer++;
+	}
+	header->sum = 0;
+}
+static void process_msg(bt_message_t *msg) {
 	int len;
 	TRACE("P%x:", msg->type);
 	for (int i = 0; i < msg->length; i++) {

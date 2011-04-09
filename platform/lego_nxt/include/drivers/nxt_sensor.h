@@ -13,7 +13,10 @@
 #include <drivers/nxt_avr.h>
 #include <drivers/soft_i2c.h>
 
+#define SENSOR_NOT_CONF 42
+
 typedef enum {
+	NONE,
 	PASSIVE,
 	ACTIVE,
 } port_type_t;

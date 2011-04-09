@@ -23,6 +23,8 @@ static int hello_len = 12;
 
 EMBOX_TEST(bluetooth_test);
 
+extern int bt_wrap(bt_message_t *header, uint8_t *buffer);
+
 static int bluetooth_test(void) {
 	int len;
 	msg.length = 0;
@@ -37,7 +39,6 @@ static int bluetooth_test(void) {
 		}
 		if (buttons & BT_ENTER) {
 			nxt_bluetooth_write(tx_buff,len);
-			TRACE("write done%d\n", len);
 		}
 		if (buttons & BT_DOWN) {
 			nxt_bluetooth_write(hello, hello_len);

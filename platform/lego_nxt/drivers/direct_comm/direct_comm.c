@@ -42,6 +42,7 @@ static int nxt_direct_comm_init(void) {
 	motor_start(&motors[0], 0, 360, NULL);
 	motor_start(&motors[1], 0, 360, NULL);
 	motor_start(&motors[2], 0, 360, NULL);
+	nxt_sensor_conf_pass(&sensors[0], NULL);
 	return 0;
 }
 
@@ -73,17 +74,21 @@ static int handle_comm(uint8_t *buff) {
 	return 0;
 }
 
+#define EDGE 200
+
 static int sensor_send(uint8_t sensor_id) {
 	sensor_t *sens = &sensors[sensor_id];
-	int tmp = 0;
+	sensor_val_t tmp = 0;
 	uint8_t out[16];
 	memset(out, 0, 16);
 	out[0] = 0x02;
 	out[1] = command;
-	out[4] = 1;
-	tmp =  nxt_sensor_get_value(sens) >> 8;
+	out[4] = 0;
+	tmp =  nxt_sensor_get_value(sens);
 	out[8] = (tmp >> 8) & 0xff;
 	out[9] = tmp & 0xff;
+	out[14] = (tmp > EDGE ? 0 : 1);
+	reply_need = 0;
 	nxt_bluetooth_write(out, 16);
 	return 0;
 }
