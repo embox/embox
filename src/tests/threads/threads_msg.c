@@ -23,8 +23,8 @@
 
 static char first_stack[THREAD_STACK_SIZE];
 static char second_stack[THREAD_STACK_SIZE];
-static struct thread *first_thread;
-static struct thread *second_thread;
+static struct thread *t_first;
+static struct thread *t_second;
 static struct message *sent_msg;
 
 EMBOX_TEST(run);
@@ -38,18 +38,18 @@ static void first_run(void) {
 	struct message *msg = message_new();
 	struct message *sec_msg = message_new();
 	sent_msg = msg;
-	assert(msg != NULL);
+	assert(msg);
 	sec_msg->type = 3;
 	/* Makes nothing, because have wrong type. */
 	TRACE("Sending bad message.\n");
-	message_send(sec_msg, second_thread);
+	message_send(sec_msg, t_second);
 	for (i = 0; i < 1000; i++) {
 		TRACE("1");
 	}
 	msg->type = 2;
 	/* Must unblock second thread. */
 	TRACE("Sending good message.\n");
-	message_send(msg, second_thread);
+	message_send(msg, t_second);
 	message_receive();
 	TRACE("\nFirst thread received an answer from second one.\n");
 }
@@ -74,26 +74,36 @@ static void second_run(void) {
 		TRACE("2");
 	}
 	msg = message_new();
-	message_send(msg, first_thread);
+	message_send(msg, t_first);
 }
 
 static int run(void) {
 	TRACE("\n");
 
-	first_thread = thread_init(first_run, first_stack + THREAD_STACK_SIZE);
-	second_thread = thread_init(second_run, second_stack + THREAD_STACK_SIZE);
+	t_first = thread_alloc();
+	t_second = thread_alloc();
 
-	assert(first_thread != NULL);
-	assert(second_thread != NULL);
+	thread_init(t_first, first_run, first_stack + THREAD_STACK_SIZE);
+	thread_init(t_second, second_run, second_stack + THREAD_STACK_SIZE);
 
-	first_thread->priority = 1;
-	second_thread->priority = 2;
+	assert(t_first);
+	assert(t_second);
 
-	thread_start(first_thread);
-	thread_start(second_thread);
+	t_first->priority = 1;
+	t_second->priority = 2;
 
-	TRACE("\nBefore start\n");
+	thread_start(t_first);
+	thread_start(t_second);
+
 	sched_start();
+
+	thread_join(t_first);
+	thread_join(t_second);
+
 	sched_stop();
+
+	thread_free(t_first);
+	thread_free(t_second);
+
 	return 0;
 }

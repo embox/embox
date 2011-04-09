@@ -25,11 +25,11 @@ static char mult_stack[THREAD_STACK_SIZE];
 static char div_stack[THREAD_STACK_SIZE];
 static char highest_stack[THREAD_STACK_SIZE];
 
-struct thread *plus_thread;
-struct thread *minus_thread;
-struct thread *mult_thread;
-struct thread *div_thread;
-struct thread *highest_thread;
+struct thread *plus;
+struct thread *minus;
+struct thread *mult;
+struct thread *div;
+struct thread *highest;
 
 struct event event;
 
@@ -68,7 +68,7 @@ static void mult_run(void) {
 
 static void div_run(void) {
 	size_t i;
-	thread_start(highest_thread);
+	thread_start(highest);
 	for (i = 0; i < 1000; i++) {
 		TRACE("/");
 	}
@@ -93,29 +93,48 @@ static int run(void) {
 
 	event_init(&event, "test");
 
-	plus_thread = thread_init(plus_run, plus_stack + THREAD_STACK_SIZE);
-	minus_thread = thread_init(minus_run, minus_stack + THREAD_STACK_SIZE);
-	mult_thread = thread_init(mult_run, mult_stack + THREAD_STACK_SIZE);
-	div_thread = thread_init(div_run, div_stack + THREAD_STACK_SIZE);
-	highest_thread = thread_init(highest_run, highest_stack + THREAD_STACK_SIZE);
+	plus = thread_alloc();
+	minus = thread_alloc();
+	mult = thread_alloc();
+	div = thread_alloc();
+	highest = thread_alloc();
 
-	sched_remove(highest_thread);
+	thread_init(plus, plus_run, plus_stack + THREAD_STACK_SIZE);
+	thread_init(minus, minus_run, minus_stack + THREAD_STACK_SIZE);
+	thread_init(mult, mult_run, mult_stack + THREAD_STACK_SIZE);
+	thread_init(div, div_run, div_stack + THREAD_STACK_SIZE);
+	thread_init(highest, highest_run, highest_stack + THREAD_STACK_SIZE);
 
-	assert(plus_thread != NULL);
-	assert(minus_thread != NULL);
-	assert(mult_thread != NULL);
-	assert(div_thread != NULL);
-	assert(highest_thread != NULL);
+	sched_remove(highest);
 
-	highest_thread->priority = 2;
+	assert(plus);
+	assert(minus);
+	assert(mult);
+	assert(div);
+	assert(highest);
 
-	thread_start(plus_thread);
-	thread_start(minus_thread);
-	thread_start(mult_thread);
-	thread_start(div_thread);
+	highest->priority = 2;
 
-	TRACE("\nBefore start\n");
+	thread_start(plus);
+	thread_start(minus);
+	thread_start(mult);
+	thread_start(div);
+
 	sched_start();
+
+	thread_join(plus);
+	thread_join(minus);
+	thread_join(mult);
+	thread_join(div);
+	thread_join(highest);
+
 	sched_stop();
+
+	thread_free(plus);
+	thread_free(minus);
+	thread_free(mult);
+	thread_free(div);
+	thread_free(highest);
+
 	return 0;
 }

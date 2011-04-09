@@ -17,7 +17,7 @@
 #define THREAD_STACK_SIZE 0x1000
 #define MAX_DEPTH 10
 static char recursion_stack[THREAD_STACK_SIZE];
-static struct thread *recursion_thread;
+static struct thread *t_rec;
 
 EMBOX_TEST(run);
 
@@ -44,14 +44,21 @@ static void recursion_run(void) {
 static int run(void) {
 	TRACE("\n");
 
-	recursion_thread =
-		thread_init(recursion_run, recursion_stack + THREAD_STACK_SIZE);
+	t_rec = thread_alloc();
 
-	assert(recursion_thread != NULL);
-	thread_start(recursion_thread);
+	thread_init(t_rec, recursion_run, recursion_stack + THREAD_STACK_SIZE);
 
-	TRACE("\nBefore start\n");
+	assert(t_rec);
+
+	thread_start(t_rec);
+
 	sched_start();
+
+	thread_join(t_rec);
+
 	sched_stop();
+
+	thread_free(t_rec);
+
 	return 0;
 }

@@ -32,17 +32,26 @@ static void threads_run(void) {
 
 static int run(void) {
 	size_t i;
-	TRACE("\n");
 
 	for (i = 0; i < THREADS_COUNT; i++) {
-		threads[i] = thread_init(threads_run, stacks[i] + THREAD_STACK_SIZE);
-		assert(threads[i] != NULL);
-		threads[i]->priority = i+1;
+		threads[i] = thread_alloc();
+		thread_init(threads[i], threads_run, stacks[i] + THREAD_STACK_SIZE);
+		assert(threads[i]);
+		threads[i]->priority = i + 1;
 		thread_start(threads[i]);
 	}
 
-	TRACE("\nBefore start\n");
 	sched_start();
+
+	for (i = 0; i < THREADS_COUNT; i++) {
+		thread_join(threads[i]);
+	}
+
 	sched_stop();
+
+	for (i = 0; i < THREADS_COUNT; i++) {
+		thread_free(threads[i]);
+	}
+
 	return 0;
 }

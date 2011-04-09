@@ -126,13 +126,11 @@ void sched_remove(struct thread *t) {
 	sched_unlock();
 }
 
-int sched_sleep(struct event *e) {
+int sched_sleep_locked(struct event *e) {
 	struct thread *current;
 
 	assert(e);
-	assert(critical_allows(CRITICAL_PREEMPT));
-
-	sched_lock();
+	assert(critical_inside(CRITICAL_PREEMPT));
 
 	current = sched_current();
 
@@ -145,8 +143,25 @@ int sched_sleep(struct event *e) {
 	list_add(&current->sleep_link, &e->sleep_queue);
 
 	sched_unlock();
+	assert(critical_allows(CRITICAL_PREEMPT));
+	sched_lock();
 
 	return 0;
+}
+
+int sched_sleep(struct event *e) {
+	int ret;
+
+	assert(e);
+	assert(critical_allows(CRITICAL_PREEMPT));
+
+	sched_lock();
+
+	ret = sched_sleep_locked(e);
+
+	sched_unlock_noswitch();
+
+	return ret;
 }
 
 int sched_wake(struct event *e) {

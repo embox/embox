@@ -22,10 +22,6 @@ static char first_stack[THREAD_STACK_SIZE];
 static char second_stack[THREAD_STACK_SIZE];
 static char third_stack[THREAD_STACK_SIZE];
 
-static struct thread *first_thread;
-static struct thread *second_thread;
-static struct thread *third_thread;
-
 static void first_run(void) {
 	TRACE("\n First thread: \n");
 	pipe_write(0, 'k');
@@ -66,24 +62,25 @@ static void third_run(void) {
 }
 
 static int run(void) {
-	third_thread = thread_init(third_run, third_stack
-					+ THREAD_STACK_SIZE);
-	second_thread = thread_init(second_run, second_stack
-					+ THREAD_STACK_SIZE);
-	first_thread = thread_init(first_run, first_stack
-					+ THREAD_STACK_SIZE);
+	struct thread t_first, t_second, t_third;
 
-	assert(third_thread != NULL);
-	assert(second_thread != NULL);
-	assert(first_thread != NULL);
-	thread_start(first_thread);
-	thread_start(third_thread);
-	thread_start(second_thread);
+	thread_init(&t_third, third_run, third_stack + THREAD_STACK_SIZE);
+	thread_init(&t_second, second_run, second_stack + THREAD_STACK_SIZE);
+	thread_init(&t_first, first_run, first_stack + THREAD_STACK_SIZE);
+
+	thread_start(&t_first);
+	thread_start(&t_third);
+	thread_start(&t_second);
 
 	pipe_create(); // pipe #0
 	pipe_create(); // pipe #1
 
 	sched_start();
+
+	thread_join(&t_first);
+	thread_join(&t_second);
+	thread_join(&t_third);
+
 	sched_stop();
 
 	return 0;

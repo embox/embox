@@ -24,10 +24,10 @@ static char plus_stack[THREAD_STACK_SIZE];
 static char minus_stack[THREAD_STACK_SIZE];
 static char mult_stack[THREAD_STACK_SIZE];
 static char highest_stack[THREAD_STACK_SIZE];
-static struct thread *plus_thread;
-static struct thread *minus_thread;
-static struct thread *mult_thread;
-static struct thread *highest_thread;
+static struct thread *t_plus;
+static struct thread *t_minus;
+static struct thread *t_mult;
+static struct thread *t_highest;
 
 EMBOX_TEST(run)
 ;
@@ -79,29 +79,43 @@ static void mult_run(void) {
 static int run(void) {
 	TRACE("\n");
 
-	plus_thread = thread_init(plus_run, plus_stack + THREAD_STACK_SIZE);
-	assert(plus_thread != NULL);
-	plus_thread->priority = 3;
+	t_plus = thread_alloc();
+	thread_init(t_plus, plus_run, plus_stack + THREAD_STACK_SIZE);
+	assert(t_plus);
+	t_plus->priority = 3;
 
-	minus_thread = thread_init(minus_run, minus_stack + THREAD_STACK_SIZE);
-	assert(minus_thread != NULL);
-	minus_thread->priority = 3;
+	t_minus = thread_alloc();
+	thread_init(t_minus, minus_run, minus_stack + THREAD_STACK_SIZE);
+	assert(t_minus);
+	t_minus->priority = 3;
 
-	mult_thread = thread_init(mult_run, mult_stack + THREAD_STACK_SIZE);
-	assert(mult_thread != NULL);
+	t_mult = thread_alloc();
+	thread_init(t_mult, mult_run, mult_stack + THREAD_STACK_SIZE);
+	assert(t_mult);
 
-	highest_thread = thread_init(highest_run,
-			highest_stack + THREAD_STACK_SIZE);
-	assert(highest_thread != NULL);
-	highest_thread->priority = 2;
+	t_highest = thread_alloc();
+	thread_init(t_highest, highest_run, highest_stack + THREAD_STACK_SIZE);
+	assert(t_highest);
+	t_highest->priority = 2;
 
-	thread_start(plus_thread);
-	thread_start(minus_thread);
-	thread_start(mult_thread);
-	thread_start(highest_thread);
+	thread_start(t_plus);
+	thread_start(t_minus);
+	thread_start(t_mult);
+	thread_start(t_highest);
 
-	TRACE("\nBefore start\n");
 	sched_start();
+
+	thread_join(t_plus);
+	thread_join(t_minus);
+	thread_join(t_mult);
+	thread_join(t_highest);
+
 	sched_stop();
+
+	thread_free(t_plus);
+	thread_free(t_minus);
+	thread_free(t_mult);
+	thread_free(t_highest);
+
 	return 0;
 }

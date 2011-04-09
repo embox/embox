@@ -81,6 +81,8 @@ extern void sched_remove(struct thread *thread);
  */
 extern int sched_sleep(struct event *event);
 
+extern int sched_sleep_locked(struct event *event);
+
 /**
  * Wakes up all threads that sleep on the given @a event.
  *

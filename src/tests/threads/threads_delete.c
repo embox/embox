@@ -24,9 +24,9 @@ static char main_stack[THREAD_STACK_SIZE];
 static char minus_stack[THREAD_STACK_SIZE];
 static char mult_stack[THREAD_STACK_SIZE];
 static char plus_stack[THREAD_STACK_SIZE];
-static struct thread *main_thread;
-static struct thread *minus_thread;
-static struct thread *mult_thread;
+static struct thread *main;
+static struct thread *minus;
+static struct thread *mult;
 static struct thread *plus_thread;
 
 EMBOX_TEST(run);
@@ -75,10 +75,11 @@ static void plus_run(void) {
 static void main_run(void) {
 	size_t i;
 
-	thread_stop(minus_thread);
-	thread_stop(mult_thread);
-	plus_thread = thread_init(plus_run, plus_stack + THREAD_STACK_SIZE);
-	assert(plus_thread != NULL);
+	thread_stop(minus);
+	thread_stop(mult);
+	plus_thread = thread_alloc();
+	thread_init(plus_thread, plus_run, plus_stack + THREAD_STACK_SIZE);
+	assert(plus_thread);
 	thread_start(plus_thread);
 
 	for (i = 1; i < 300; i++) {
@@ -87,22 +88,34 @@ static void main_run(void) {
 }
 
 static int run(void) {
-	TRACE("\n");
+	main = thread_alloc();
+	mult = thread_alloc();
+	minus = thread_alloc();
 
-	main_thread = thread_init(main_run, main_stack + THREAD_STACK_SIZE);
-	mult_thread = thread_init(mult_run, mult_stack + THREAD_STACK_SIZE);
-	minus_thread = thread_init(minus_run, minus_stack + THREAD_STACK_SIZE);
+	thread_init(main, main_run, main_stack + THREAD_STACK_SIZE);
+	thread_init(mult, mult_run, mult_stack + THREAD_STACK_SIZE);
+	thread_init(minus, minus_run, minus_stack + THREAD_STACK_SIZE);
 
-	assert(main_thread != NULL);
-	assert(minus_thread != NULL);
-	assert(mult_thread != NULL);
+	assert(main);
+	assert(minus);
+	assert(mult);
 
-	thread_start(main_thread);
-	thread_start(minus_thread);
-	thread_start(mult_thread);
+	thread_start(main);
+	thread_start(minus);
+	thread_start(mult);
 
 	TRACE("\nBefore start\n");
 	sched_start();
+
+	thread_join(main);
+	thread_join(mult);
+	thread_join(minus);
+
 	sched_stop();
+
+	thread_free(main);
+	thread_free(mult);
+	thread_free(minus);
+
 	return 0;
 }

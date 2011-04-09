@@ -22,12 +22,16 @@ void mutex_init(struct mutex *mutex) {
 }
 
 void mutex_lock(struct mutex *mutex) {
+	assert(critical_allows(CRITICAL_PREEMPT));
+
 	sched_lock();
+
 	if (mutex->lockscount == 0) {
 		mutex->lockscount++;
 	} else {
-		sched_sleep(&mutex->event);
+		sched_sleep_locked(&mutex->event);
 	}
+
 	sched_unlock();
 }
 

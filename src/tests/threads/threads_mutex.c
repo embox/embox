@@ -24,10 +24,10 @@ static char minus_stack[THREAD_STACK_SIZE];
 static char mult_stack[THREAD_STACK_SIZE];
 static char div_stack[THREAD_STACK_SIZE];
 
-static struct thread *plus_thread;
-static struct thread *minus_thread;
-static struct thread *mult_thread;
-static struct thread *div_thread;
+static struct thread *plus;
+static struct thread *minus;
+static struct thread *mult;
+static struct thread *div;
 
 static struct mutex mutex;
 
@@ -88,27 +88,41 @@ static void div_run(void) {
 }
 
 static int run(void) {
-	TRACE("\n");
-
 	mutex_init(&mutex);
 
-	plus_thread = thread_init(plus_run, plus_stack + THREAD_STACK_SIZE);
-	minus_thread = thread_init(minus_run, minus_stack + THREAD_STACK_SIZE);
-	mult_thread = thread_init(mult_run, mult_stack + THREAD_STACK_SIZE);
-	div_thread = thread_init(div_run, div_stack + THREAD_STACK_SIZE);
+	plus = thread_alloc();
+	minus = thread_alloc();
+	mult = thread_alloc();
+	div = thread_alloc();
 
-	assert(plus_thread != NULL);
-	assert(minus_thread != NULL);
-	assert(mult_thread != NULL);
-	assert(div_thread != NULL);
+	thread_init(plus, plus_run, plus_stack + THREAD_STACK_SIZE);
+	thread_init(minus, minus_run, minus_stack + THREAD_STACK_SIZE);
+	thread_init(mult, mult_run, mult_stack + THREAD_STACK_SIZE);
+	thread_init(div, div_run, div_stack + THREAD_STACK_SIZE);
 
-	thread_start(plus_thread);
-	thread_start(minus_thread);
-	thread_start(mult_thread);
-	thread_start(div_thread);
+	assert(plus);
+	assert(minus);
+	assert(mult);
+	assert(div);
 
-	TRACE("\nBefore start\n");
+	thread_start(plus);
+	thread_start(minus);
+	thread_start(mult);
+	thread_start(div);
+
 	sched_start();
+
+	thread_join(plus);
+	thread_join(minus);
+	thread_join(mult);
+	thread_join(div);
+
 	sched_stop();
+
+	thread_free(plus);
+	thread_free(minus);
+	thread_free(mult);
+	thread_free(div);
+
 	return 0;
 }
