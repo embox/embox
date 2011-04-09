@@ -30,14 +30,14 @@ typedef __thread_id_t thread_id_t;
 typedef __thread_priority_t thread_priority_t;
 
 /** The lowest priority is set to 255. */
-#define THREAD_PRIORITY_MIN 0
+#define THREAD_PRIORITY_MIN 255
 
 /** The highest priority is zero. */
-#define THREAD_PRIORITY_MAX 255
+#define THREAD_PRIORITY_MAX 0
 
 /** Total amount of valid priorities. */
 #define THREAD_PRIORITY_TOTAL \
-	(THREAD_PRIORITY_MAX - THREAD_PRIORITY_MIN + 1)
+	(THREAD_PRIORITY_MIN - THREAD_PRIORITY_MAX + 1)
 
 /**
  * Obtains a pointer to the calling thread.
