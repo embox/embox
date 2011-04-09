@@ -17,48 +17,67 @@
 #include __impl_x(kernel/thread/api_impl.h)
 
 /**
- * Structure, describing threads.
+ * Thread control block.
  */
 struct thread;
 
+/**
+ * Every thread can be identified using a number which is unique across the
+ * system.
+ */
 typedef __thread_id_t thread_id_t;
+
 typedef __thread_priority_t thread_priority_t;
 
-/** The highest priority is zero. */
-#define THREAD_PRIORITY_MAX 0x0
-
 /** The lowest priority is set to 255. */
-#define THREAD_PRIORITY_MIN 0xFF
+#define THREAD_PRIORITY_MIN 0
+
+/** The highest priority is zero. */
+#define THREAD_PRIORITY_MAX 255
 
 /** Total amount of valid priorities. */
 #define THREAD_PRIORITY_TOTAL \
-	(THREAD_PRIORITY_MIN - THREAD_PRIORITY_MAX + 1)
+	(THREAD_PRIORITY_MAX - THREAD_PRIORITY_MIN + 1)
 
 /**
- * Thread, which does nothing.
- * Is used to be working when there is no another process.
+ * Obtains a pointer to the calling thread.
+ *
+ * @return
+ *   The currently executing thread.
  */
-extern struct thread *idle_thread;
-
-/**
- * Thread, which is working now.
- */
-extern struct thread *thread_current(void);
+extern struct thread *thread_self(void);
 
 #define thread_foreach(t) \
 	  __thread_foreach(t)
 
-extern struct thread *thread_get_by_id(thread_id_t id);
+/**
+ * Searches for a thread by the given ID.
+ *
+ * @param id
+ *   The thread ID to look up by.
+ * @return
+ *   Found thread if such exists.
+ * @retval NULL
+ *   If there is no thread with such ID.
+ */
+extern struct thread *thread_lookup(thread_id_t id);
 
 /**
- * Creates new thread
+ * Performs basic thread initialization.
  *
- * @param run function executed in created thread.
- * @param stack_address address of thread's stack.
- * @return pointer to new thread if all parameters are correct.
- * @return NULL if one of parameters is NULL or all places for threads are occupied.
+ * @param thread
+ *   The thread being initialized.
+ * @param run
+ *   The thread start routine.
+ * @param stack_address
+ *   address of thread's stack.
+ * @return
+ *   The first argument if the initialization has succeeded.
+ * @return NULL
+ *   If something went wrong (e.g. invalid arguments).
  */
-extern struct thread *thread_init(struct thread *thread, void(*run)(void), void *stack_address);
+extern struct thread *thread_init(struct thread *thread, void(*run)(void),
+		void *stack_address);
 
 /**
  * Starts a thread.
@@ -66,16 +85,16 @@ extern struct thread *thread_init(struct thread *thread, void(*run)(void), void 
 extern void thread_start(struct thread *thread);
 
 /**
- * Changes thread's priority.
- */
-extern void thread_change_priority(struct thread *thread, int new_priority);
-
-/**
  * Stops chosen thread.
  * Deletes previous zombie.
  * Makes it a zombie.
  */
 extern int thread_stop(struct thread *stopped_thread);
+
+/**
+ * Changes thread's priority.
+ */
+extern void thread_change_priority(struct thread *thread, int new_priority);
 
 /**
  * Switches context to another thread.

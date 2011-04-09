@@ -32,12 +32,12 @@ void message_send(struct message *message, struct thread *thread) {
 struct message *message_receive(void) {
 	struct list_head *ret;
 
-	if (list_empty(&thread_current()->messages)) {
-		thread_current()->need_message = true;
-		sched_sleep(&thread_current()->msg_event);
+	if (list_empty(&thread_self()->messages)) {
+		thread_self()->need_message = true;
+		sched_sleep(&thread_self()->msg_event);
 	}
 
-	ret = thread_current()->messages.next;
+	ret = thread_self()->messages.next;
 	list_del_init(ret);
 	return list_entry(ret, struct message, list);
 }

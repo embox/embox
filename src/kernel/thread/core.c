@@ -71,7 +71,7 @@ static int unit_init(void) {
 static void thread_run(int arg) {
 	struct thread *current = (struct thread *) arg;
 
-	assert(current == thread_current());
+	assert(current == thread_self());
 
 	sched_unlock_noswitch();
 	ipl_enable();
@@ -168,13 +168,24 @@ void thread_join(struct thread *t) {
 void thread_yield(void) {
 	sched_lock();
 
-	thread_current()->reschedule = true;
+	thread_self()->reschedule = true;
 
 	sched_unlock();
 }
 
-POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ)
-;
+struct thread *thread_lookup(__thread_id_t id) {
+	struct thread *thread;
+
+	__thread_foreach(thread) {
+		if (thread->id == id) {
+			return thread;
+		}
+	}
+
+	return NULL;
+}
+
+POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ);
 
 struct thread *thread_alloc(void) {
 	struct thread *t;

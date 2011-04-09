@@ -82,15 +82,17 @@ static void kill_thread(int thread_id) {
 		return;
 	}
 
-	if ((thread = thread_get_by_id(thread_id)) == NULL) {
+	if (!(thread = thread_lookup(thread_id))) {
 		printf("No thread with id: %d\n", thread_id);
 		return;
 	}
 
+#if 0
 	if (thread == idle_thread) {
 		printf("Can't kill idle thread\n");
 		return;
 	}
+#endif
 
 	if ((error = thread_stop(thread))) {
 		printf("Unable to kill thread %d: %s\n", thread_id, strerror(error));

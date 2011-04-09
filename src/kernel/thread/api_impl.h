@@ -22,19 +22,7 @@
 				&__thread_list;                        \
 			}), thread_link)                           \
 
-inline static struct thread *thread_get_by_id(__thread_id_t id) {
-	struct thread *thread;
-
-	__thread_foreach(thread) {
-		if (thread->id == id) {
-			return thread;
-		}
-	}
-
-	return NULL;
-}
-
-inline static struct thread *thread_current(void) {
+inline static struct thread *thread_self(void) {
 	return sched_current();
 }
 
