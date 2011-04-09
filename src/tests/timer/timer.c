@@ -8,7 +8,7 @@
 #include <embox/test.h>
 #include <kernel/timer.h>
 
-#define TEST_TIMER_ID    17
+#define TEST_TIMER_ID    14
 #define TEST_TIMER_TICKS 2
 
 EMBOX_TEST(run);
@@ -28,7 +28,7 @@ static int run(void) {
 
 	ret = set_timer(TEST_TIMER_ID, TEST_TIMER_TICKS, test_timer_handler);
 	if (ret == 0) {
-		return -1;
+		test_fail("failed to install timer");
 	}
 	for (i = 0; i < (1 << 30); i++) {
 		if (tick_happened)
