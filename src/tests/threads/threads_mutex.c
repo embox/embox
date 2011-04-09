@@ -118,10 +118,10 @@ static int run(void) {
 	thread_start(mult);
 	thread_start(div);
 
-	thread_join(plus);
-	thread_join(minus);
-	thread_join(mult);
-	thread_join(div);
+	thread_join(plus, NULL);
+	thread_join(minus, NULL);
+	thread_join(mult, NULL);
+	thread_join(div, NULL);
 
 	thread_free(plus);
 	thread_free(minus);

@@ -44,7 +44,7 @@ static int run(void) {
 	}
 
 	for (i = 0; i < THREADS_COUNT; i++) {
-		thread_join(threads[i]);
+		thread_join(threads[i], NULL);
 	}
 
 	for (i = 0; i < THREADS_COUNT; i++) {

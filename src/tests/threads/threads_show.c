@@ -111,10 +111,10 @@ static int run(void) {
 	thread_start(t_mult);
 	thread_start(t_highest);
 
-	thread_join(t_plus);
-	thread_join(t_minus);
-	thread_join(t_mult);
-	thread_join(t_highest);
+	thread_join(t_plus, NULL);
+	thread_join(t_minus, NULL);
+	thread_join(t_mult, NULL);
+	thread_join(t_highest, NULL);
 
 	thread_free(t_plus);
 	thread_free(t_minus);

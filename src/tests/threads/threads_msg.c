@@ -99,8 +99,8 @@ static int run(void) {
 	thread_start(t_first);
 	thread_start(t_second);
 
-	thread_join(t_first);
-	thread_join(t_second);
+	thread_join(t_first, NULL);
+	thread_join(t_second, NULL);
 
 	thread_free(t_first);
 	thread_free(t_second);

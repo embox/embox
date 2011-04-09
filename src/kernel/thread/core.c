@@ -164,15 +164,19 @@ int thread_stop(struct thread *t) {
 	return 0;
 }
 
-void thread_join(struct thread *t) {
+int thread_join(struct thread *t, void **p_ret) {
 	assert(t);
 
 	// XXX
-	if (t->state && t->state == THREAD_STATE_TERMINATE) {
-		return;
+	if (t->state && t->state != THREAD_STATE_TERMINATE) {
+		sched_sleep(&t->event);
 	}
 
-	sched_sleep(&t->event);
+	if (p_ret) {
+		*p_ret = t->run_ret;
+	}
+
+	return 0; // TODO thread_join ret value
 }
 
 void thread_yield(void) {

@@ -102,7 +102,7 @@ extern void thread_change_priority(struct thread *thread, int new_priority);
  */
 extern void thread_yield(void);
 
-extern void thread_join(struct thread *thread);
+extern void thread_join(struct thread *thread, void **p_ret);
 
 extern struct thread *thread_alloc(void);
 

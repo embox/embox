@@ -31,5 +31,5 @@ TEST_CASE("") {
 
 	minus_thread = thread_init(minus_run, minus_stack, THREAD_STACK_SIZE);
 
-	thread_join(&minus_thread);
+	thread_join(&minus_thread, NULL);
 }

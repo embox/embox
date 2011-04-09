@@ -99,10 +99,10 @@ static int run(void) {
 	thread_start(minus_t);
 	thread_start(mult_t);
 
-	thread_join(plus_t);
-	thread_join(minus_t);
-	thread_join(mult_t);
-	thread_join(natural_t);
+	thread_join(plus_t, NULL);
+	thread_join(minus_t, NULL);
+	thread_join(mult_t, NULL);
+	thread_join(natural_t, NULL);
 
 	thread_free(plus_t);
 	thread_free(minus_t);

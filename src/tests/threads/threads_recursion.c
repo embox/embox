@@ -54,7 +54,7 @@ static int run(void) {
 
 	thread_start(t_rec);
 
-	thread_join(t_rec);
+	thread_join(t_rec, NULL);
 
 	thread_free(t_rec);
 
