@@ -80,8 +80,8 @@ static void second_run(void) {
 static int run(void) {
 	TRACE("\n");
 
-	first_thread = thread_create(first_run, first_stack + THREAD_STACK_SIZE);
-	second_thread = thread_create(second_run, second_stack + THREAD_STACK_SIZE);
+	first_thread = thread_init(first_run, first_stack + THREAD_STACK_SIZE);
+	second_thread = thread_init(second_run, second_stack + THREAD_STACK_SIZE);
 
 	assert(first_thread != NULL);
 	assert(second_thread != NULL);

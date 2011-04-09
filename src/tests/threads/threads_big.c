@@ -21,10 +21,7 @@ static char plus_stack[THREAD_STACK_SIZE];
 static char minus_stack[THREAD_STACK_SIZE];
 static char mult_stack[THREAD_STACK_SIZE];
 static char natural_stack[THREAD_STACK_SIZE];
-static struct thread *plus_thread;
-static struct thread *minus_thread;
-static struct thread *mult_thread;
-static struct thread *natural_thread;
+static struct thread *minus_t;
 
 EMBOX_TEST(run);
 
@@ -33,7 +30,7 @@ EMBOX_TEST(run);
  * Deletes minus_thread.
  */
 static void plus_run(void) {
-	thread_stop(minus_thread);
+	thread_stop(minus_t);
 	thread_yield();
 	TRACE("+");
 }
@@ -70,25 +67,45 @@ static void natural_run(void) {
 }
 
 static int run(void) {
-	TRACE("\n");
+	struct thread *plus_t;
+	struct thread *mult_t;
+	struct thread *natural_t;
 
-	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
-	natural_thread = thread_create(natural_run, natural_stack + THREAD_STACK_SIZE);
-	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
-	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
+	plus_t = thread_alloc();
+	minus_t = thread_alloc();
+	mult_t = thread_alloc();
+	natural_t = thread_alloc();
 
-	assert(plus_thread != NULL);
-	assert(minus_thread != NULL);
-	assert(mult_thread != NULL);
-	assert(natural_thread != NULL);
+	thread_init(plus_t, plus_run, plus_stack + THREAD_STACK_SIZE);
+	thread_init(natural_t, natural_run, natural_stack + THREAD_STACK_SIZE);
+	thread_init(minus_t, minus_run, minus_stack + THREAD_STACK_SIZE);
+	thread_init(mult_t, mult_run, mult_stack + THREAD_STACK_SIZE);
 
-	thread_start(plus_thread);
-	thread_start(natural_thread);
-	thread_start(minus_thread);
-	thread_start(mult_thread);
+	assert(plus_t != NULL);
+	assert(minus_t != NULL);
+	assert(mult_t != NULL);
+	assert(natural_t != NULL);
+
+	thread_start(plus_t);
+	thread_start(natural_t);
+	thread_start(minus_t);
+	thread_start(mult_t);
+
 
 	TRACE("\nBefore start\n");
+
 	sched_start();
+
+	thread_join(plus_t);
+	thread_join(minus_t);
+	thread_join(mult_t);
+	thread_join(natural_t);
+
 	sched_stop();
+
+	thread_free(plus_t);
+	thread_free(minus_t);
+	thread_free(mult_t);
+	thread_free(natural_t);
 	return 0;
 }

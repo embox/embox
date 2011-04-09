@@ -61,7 +61,7 @@ static int exec(int argsc, char **argsv) {
 	fioctl(file, 0, &file_addr);
 
 	run();
-//	thread = thread_create(run, thread_stack + THREAD_STACK_SIZE);
+//	thread = thread_init(run, thread_stack + THREAD_STACK_SIZE);
 //	thread_start(thread);
 //	sched_start();
 //	sched_stop();

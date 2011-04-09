@@ -92,10 +92,10 @@ static int run(void) {
 
 	mutex_init(&mutex);
 
-	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
-	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
-	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
-	div_thread = thread_create(div_run, div_stack + THREAD_STACK_SIZE);
+	plus_thread = thread_init(plus_run, plus_stack + THREAD_STACK_SIZE);
+	minus_thread = thread_init(minus_run, minus_stack + THREAD_STACK_SIZE);
+	mult_thread = thread_init(mult_run, mult_stack + THREAD_STACK_SIZE);
+	div_thread = thread_init(div_run, div_stack + THREAD_STACK_SIZE);
 
 	assert(plus_thread != NULL);
 	assert(minus_thread != NULL);

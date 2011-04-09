@@ -31,8 +31,8 @@ struct thread *idle_thread;
 
 struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 
-static struct thread *thread_alloc(void);
-static void thread_free(struct thread *t);
+struct thread *thread_alloc(void);
+void thread_free(struct thread *t);
 
 /**
  * Function, which does nothing. For idle_thread.
@@ -47,22 +47,20 @@ static int unit_init(void) {
 	static char idle_thread_stack[IDLE_THREAD_STACK_SZ];
 	struct thread *current;
 
-	if (!(current = thread_create((void(*)(void)) -1, (void *) -1))) {
+	if (!(current = thread_alloc())) {
 		return -ENOMEM;
 	}
-	// FIXME priority
-	current->priority = THREAD_PRIORITY_MIN;
+	thread_init(current, (void(*)(void)) -1, (void *) -1);
+	current->priority = THREAD_PRIORITY_MAX;
 
-	if (!(idle_thread = thread_create(idle_run,
-			idle_thread_stack + IDLE_THREAD_STACK_SZ))) {
+	if (!(idle_thread = thread_alloc())) {
 		thread_free(current);
 		return -ENOMEM;
 	}
+	thread_init(idle_thread, idle_run, idle_thread_stack + IDLE_THREAD_STACK_SZ);
 	idle_thread->priority = THREAD_PRIORITY_MIN;
 
-	sched_init(current, idle_thread);
-
-	return 0;
+	return sched_init(current, idle_thread);
 }
 
 /**
@@ -87,14 +85,13 @@ static void thread_run(int arg) {
 	/* NOTREACHED */assert(false);
 }
 
-struct thread *thread_create(void(*run)(void), void *stack_address) {
-	struct thread *t;
-
-	if (!run || !stack_address) {
+struct thread *thread_init(struct thread *t, void(*run)(void),
+		void *stack_address) {
+	if (!t) {
 		return NULL;
 	}
 
-	if (!(t = thread_alloc())) {
+	if (!run || !stack_address) {
 		return NULL;
 	}
 
@@ -121,16 +118,16 @@ struct thread *thread_create(void(*run)(void), void *stack_address) {
 	return t;
 }
 
-void thread_start(struct thread *thread) {
-	sched_add(thread);
+void thread_start(struct thread *t) {
+	sched_add(t);
 }
 
-void thread_change_priority(struct thread *thread, int new_priority) {
+void thread_change_priority(struct thread *t, int priority) {
 	sched_lock();
 
-	sched_remove(thread);
-	thread->priority = new_priority;
-	sched_add(thread);
+	sched_remove(t);
+	t->priority = priority;
+	sched_add(t);
 
 	sched_unlock();
 }
@@ -148,21 +145,9 @@ int thread_stop(struct thread *t) {
 
 	sched_lock();
 
-	if (zombie) {
-		assert(zombie != thread_current());
-		thread_free(zombie);
-		zombie = NULL;
-	}
-
 	sched_remove(t);
 
 	sched_wake(&t->event);
-
-	if (thread_current() != t) {
-		thread_free(t);
-	} else {
-		zombie = t;
-	}
 
 	sched_unlock();
 
@@ -188,9 +173,10 @@ void thread_yield(void) {
 	sched_unlock();
 }
 
-POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ);
+POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ)
+;
 
-static struct thread *thread_alloc(void) {
+struct thread *thread_alloc(void) {
 	struct thread *t;
 
 	if (!(t = (struct thread *) static_cache_alloc(&thread_pool))) {
@@ -202,7 +188,7 @@ static struct thread *thread_alloc(void) {
 	return t;
 }
 
-static void thread_free(struct thread *t) {
+void thread_free(struct thread *t) {
 	assert(t != NULL);
 	list_del_init(&t->thread_link);
 	static_cache_free(&thread_pool, t);

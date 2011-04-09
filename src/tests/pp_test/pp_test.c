@@ -15,11 +15,10 @@ EMBOX_TEST(run);
 
 extern char *share_variable;
 
-#define THREAD_STACK1_SIZE 0x10000
-char stack1[THREAD_STACK1_SIZE];
+#define THREAD_STACK_SIZE 0x10000
 
-#define THREAD_STACK2_SIZE 0x10000
-char stack2[THREAD_STACK2_SIZE];
+static char stack1[THREAD_STACK_SIZE];
+static char stack2[THREAD_STACK_SIZE];
 
 void run1() {
 	share_variable = "string1";
@@ -32,27 +31,28 @@ void run1() {
 void run2() {
 	share_variable = "string2";
 	while (true) {
-		printf("second thread %s\n",share_variable);
-		//sleep(1);
+		printf("secont thread %c\n", share_variable);
+		sleep(1);
 	}
 }
 
 static int run(void) {
-	int result = 0;
-	struct thread *t1, *t2;
-	printf("PP TEST: ");
+	struct thread t1, t2;
 
-	t1 = thread_create( run1, stack1 + THREAD_STACK1_SIZE );
-	t2 = thread_create( run2, stack2 + THREAD_STACK2_SIZE );
+	thread_init(&t1, run1, stack1 + THREAD_STACK1_SIZE);
+	thread_init(&t2, run2, stack2 + THREAD_STACK2_SIZE);
 
-	pp_add_process( t1 );
-	pp_add_process( t2 );
+	pp_add_process(&t1);
+	pp_add_process(&t2);
 
-	thread_start( t1 );
-	thread_start( t2 );
+	thread_start(&t1);
+	thread_start(&t2);
 
 	sched_start();
 
-	return result;
+	thread_join(&t1);
+	thread_join(&t2);
+
+	return 0;
 }
 

@@ -149,10 +149,20 @@ void pp_switch_process( struct pprocess *p ) {
 }
 
 struct pprocess* pp_create_ws( void (*run)(void), void *stack_addr) {
-	struct thread *thr = thread_create( run , stack_addr );
-	struct pprocess *p = pp_add_process( thr );
-	pp_store( p );
-	thread_start( thr );
+	struct thread *t;
+	struct pprocess *p;
+
+	if (!(t = thread_alloc())) {
+		return NULL;
+	}
+	thread_init(t, run, stack_addr);
+	t->priority = THREAD_PRIORITY_MAX;
+
+	p = pp_add_process(t);
+	pp_store(p);
+
+	thread_start(t);
+
 	return p;
 }
 

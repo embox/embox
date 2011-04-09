@@ -77,7 +77,7 @@ static void main_run(void) {
 
 	thread_stop(minus_thread);
 	thread_stop(mult_thread);
-	plus_thread = thread_create(plus_run, plus_stack + THREAD_STACK_SIZE);
+	plus_thread = thread_init(plus_run, plus_stack + THREAD_STACK_SIZE);
 	assert(plus_thread != NULL);
 	thread_start(plus_thread);
 
@@ -89,9 +89,9 @@ static void main_run(void) {
 static int run(void) {
 	TRACE("\n");
 
-	main_thread = thread_create(main_run, main_stack + THREAD_STACK_SIZE);
-	mult_thread = thread_create(mult_run, mult_stack + THREAD_STACK_SIZE);
-	minus_thread = thread_create(minus_run, minus_stack + THREAD_STACK_SIZE);
+	main_thread = thread_init(main_run, main_stack + THREAD_STACK_SIZE);
+	mult_thread = thread_init(mult_run, mult_stack + THREAD_STACK_SIZE);
+	minus_thread = thread_init(minus_run, minus_stack + THREAD_STACK_SIZE);
 
 	assert(main_thread != NULL);
 	assert(minus_thread != NULL);

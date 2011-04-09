@@ -66,11 +66,11 @@ static void third_run(void) {
 }
 
 static int run(void) {
-	third_thread = thread_create(third_run, third_stack
+	third_thread = thread_init(third_run, third_stack
 					+ THREAD_STACK_SIZE);
-	second_thread = thread_create(second_run, second_stack
+	second_thread = thread_init(second_run, second_stack
 					+ THREAD_STACK_SIZE);
-	first_thread = thread_create(first_run, first_stack
+	first_thread = thread_init(first_run, first_stack
 					+ THREAD_STACK_SIZE);
 
 	assert(third_thread != NULL);

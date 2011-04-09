@@ -58,7 +58,7 @@ extern struct thread *thread_get_by_id(thread_id_t id);
  * @return pointer to new thread if all parameters are correct.
  * @return NULL if one of parameters is NULL or all places for threads are occupied.
  */
-extern struct thread *thread_create(void(*run)(void), void *stack_address);
+extern struct thread *thread_init(struct thread *thread, void(*run)(void), void *stack_address);
 
 /**
  * Starts a thread.
@@ -82,5 +82,11 @@ extern int thread_stop(struct thread *stopped_thread);
  * Currently working thread leaves CPU for some time.
  */
 extern void thread_yield(void);
+
+extern void thread_join(struct thread *thread);
+
+extern struct thread *thread_alloc(void);
+
+extern void thread_free(struct thread *thread);
 
 #endif /* KERNEL_THREAD_API_H_ */

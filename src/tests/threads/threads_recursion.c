@@ -45,7 +45,7 @@ static int run(void) {
 	TRACE("\n");
 
 	recursion_thread =
-		thread_create(recursion_run, recursion_stack + THREAD_STACK_SIZE);
+		thread_init(recursion_run, recursion_stack + THREAD_STACK_SIZE);
 
 	assert(recursion_thread != NULL);
 	thread_start(recursion_thread);
