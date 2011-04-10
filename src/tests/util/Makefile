@@ -1,10 +1,11 @@
+$_PACKAGE = embox.test.util
 
-$_MODS      += array
-$_SRCS-array = array_test.c
+$_MODS           += array_test
+$_SRCS-array_test = array_test.c
 
-$_MODS      += list
-$_SRCS-list  = list_test.c
+$_MODS           += list_test
+$_SRCS-list_test  = list_test.c
 
-$_MODS      += pool
-$_SRCS-pool  = pool_test.c
+$_MODS           += pool_test
+$_SRCS-pool_test  = pool_test.c
 

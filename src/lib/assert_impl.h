@@ -51,9 +51,9 @@ void __assertion_handle(int pass, const struct __assertion_point *point) {
 	})
 
 # define __assert(condition, expr_str) \
-	(__builtin_constant_p(condition) \
-		? ((condition) \
-			? (void) 0 \
+	(__builtin_constant_p(condition)                                     \
+		? ((condition)                                                   \
+			? (void) 0                                                   \
 			: __assertion_handle_failure(__assertion_point__(expr_str))) \
 		: __assertion_handle((int) (condition), __assertion_point__(expr_str)))
 
