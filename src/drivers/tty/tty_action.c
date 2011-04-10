@@ -16,8 +16,6 @@
  * 	buffers is used elements of different sizes. Check it and fix if need.
  */
 
-extern struct thread* current_thread;
-
 struct vt_token char_token( char ch ) {
 	struct vt_token tmp;
 	tmp.action = VT_ACTION_PRINT;
@@ -364,11 +362,17 @@ int vconsole_close(vconsole_t *con) {
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 /* move to tty. here don't need to know about this */
-inline bool console_is_current(void) {
-	if (current_thread->own_console==NULL) {
+inline static bool console_is_current(void) {
+	struct thread *thread;
+	if (NULL == (thread = thread_self())) {
 		return false;
 	}
-	return &current_thread->own_console->tty->console[current_thread->own_console->tty->console_cur] == current_thread->own_console;
+	if (NULL == thread->own_console) {
+		return false;
+	}
+	return (&(thread->own_console->tty->
+			console[thread->own_console->tty->console_cur])
+	          == thread->own_console);
 }
 #define CONSOLE_IS_CURRENT	console_is_current()
 #define EXECUTE_IF_CONSOLE_IS_CURRENT(a) do { if (console_is_current()) a; } while (0)
@@ -462,6 +466,9 @@ void tty_gotoXYvector(struct vconsole *vc, int32_t x, int32_t y) {
 	tty_vconsole_loadline( vc );
 }
 
+void console_gotoXY( uint8_t x, uint8_t y ) {
+}
+
 void tty_vconsole_gotoXY(struct vconsole *vc, uint8_t x, uint8_t y) {
 	if (CONSOLE_IS_CURRENT) {
 		while (vc->tty->in_busy);
@@ -475,16 +482,17 @@ void tty_vconsole_gotoXY(struct vconsole *vc, uint8_t x, uint8_t y) {
 	}
 }
 
-void console_gotoXY( uint8_t x, uint8_t y ) {
-}
+
 
 /* decouple this from tty_clear */
-void console_clear() {
-	vconsole_clear(current_thread->own_console);
+void console_clear(void) {
+	struct thread *thread = thread_self();
+
+	vconsole_clear(thread->own_console);
 	if (CONSOLE_IS_CURRENT) {
-		tty_vconsole_saveline(current_thread->own_console);
+		tty_vconsole_saveline(thread->own_console);
 		console_reprint();
-		tty_vconsole_loadline(current_thread->own_console);
+		tty_vconsole_loadline(thread->own_console);
 	}
 }
 
@@ -511,19 +519,22 @@ void tty_vconsole_reprint(struct vconsole *vc) {
 	vc->tty->in_busy = false;
 }
 
-void console_reprint() {
-	EXECUTE_IF_CONSOLE_IS_CURRENT(
-		tty_vconsole_reprint( current_thread->own_console );
-	);
+void console_reprint(void) {
+	struct thread *thread = thread_self();
+	if (CONSOLE_IS_CURRENT) {
+		tty_vconsole_reprint(thread->own_console);
+	};
 }
 
 //------------------------------------------------------------------------------------------------------------------------
 void console_putchar(char ch) {
-	tty_vconsole_putchar(current_thread->own_console, ch);
+	struct thread *thread = thread_self();
+	tty_vconsole_putchar(thread->own_console, ch);
 }
 
-char console_getchar() {
+char console_getchar(void) {
+	struct thread *thread = thread_self();
 	return '\0';
-	return tty_vconsole_getchar(current_thread->own_console);
+	return tty_vconsole_getchar(thread->own_console);
 }
 

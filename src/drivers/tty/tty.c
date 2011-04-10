@@ -12,7 +12,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#include <kernel/thread/api.h>
+#include <kernel/pp.h>
 #include <drivers/tty.h>
 #include <drivers/vconsole.h>
 #include <drivers/tty_action.h>
@@ -23,6 +23,7 @@
 EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
+extern vconsole_t *cur_console;
 extern struct thread* current_thread;
 
 /* FIXME TTY is space there is in library */
@@ -43,15 +44,15 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 #if 0
 	#warning USING DEBUG OUTPUT IN TTY DRIVER!!!
 
-	printf("action: %d; char: %d %c; attrs_len: %d; params_len: %d\n",
+	prom_printf("action: %d; char: %d %c; attrs_len: %d; params_len: %d\n",
 		token->action, token->ch, token->ch,
 		token->attrs_len, token->params_len);
 	size_t i;
 	for (i = 0; i < token->attrs_len; ++i) {
-		printf("(char) attrs[%d] = %d : %c\n", i, token->attrs[i]);
+		prom_printf("(char) attrs[%d] = %d : %c\n", i, token->attrs[i]);
 	}
 	for (i = 0; i < token->params_len; ++i) {
-		printf("(char) params[%d] = %d\n", i, token->params[i]);
+		prom_printf("(char) params[%d] = %d\n", i, token->params[i]);
 	}
 	#if 0
 	return;
@@ -131,22 +132,16 @@ void tty_vtbuild_callback(struct vtbuild *tty_vtbuild, char ch) {
 	cur_tty->file_op->fwrite(&ch, sizeof(char), 1, NULL);
 }
 
-void *run_shell(void *arg) {
+static void run_shell(struct thread *thread) {
 	const struct cmd *def_shell;
-	#if 0
-	sleep(1);
-	#endif
-	if (current_thread->own_console) {
-		console_clear();
-		printf("Hello from TTY%d!\n\n",current_thread->own_console->id + 1); /* this is output to the i-th console */
-	}
+
+	console_clear();
+	printf("Hello from TTY%d!\n\n",thread->id + 1); /* this is output to the i-th console */
 	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
 		prom_printf(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
-		return NULL;
+		return;
 	}
 	def_shell->exec(0,NULL);
-
-	return NULL;
 }
 
 static int tty_init(void) {
@@ -154,6 +149,7 @@ static int tty_init(void) {
 	size_t i;
 	static struct vconsole *cons;
 	static int cons_num;
+	struct thread *current_thread;
 #endif
 	static FILE *def_file;
 
@@ -171,6 +167,7 @@ static int tty_init(void) {
 	cur_tty->console_cur = -1;
 
 	for (i = 0; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
+		struct thread *t;
 		cons_num = i;
 		cons = (struct vconsole *)&cur_tty->console[i];
 		cons->id = i;
@@ -178,25 +175,25 @@ static int tty_init(void) {
 		cons->width = 80;
 		cons->height = 25;
 		cons->out_busy = false;
-		current_thread->own_console = cons;
+		//cur_console = cons;
+		((struct thread*)current_thread)->own_console = cons;
 		cur_tty->console_cur = i;
 
-		{
-			struct thread* t;
-			if (!(t = thread_alloc())) {
-				LOG_ERROR("error while create new console");
-				return 1;
-			}
-			thread_init(t, run_shell, cons->esh_stack, CONFIG_ESH_STACK_S);
-			t->priority = THREAD_PRIORITY_MAX;
+		//pp_create_ws(run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
 
-			thread_start(t);
+		if (!(t = thread_alloc())) {
+			return 0;
 		}
+		//thread_init(t, run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
+		t->priority = THREAD_PRIORITY_MAX;
 	}
-	current_thread->own_console = (struct vconsole *)&cur_tty->console[0]; /* this is default console */
+	//cur_console = (struct vconsole *)&cur_tty->console[0]; /* this is default console */
+	((struct thread *)current_thread)->own_console =
+			(struct vconsole *)&cur_tty->console[0]; /* this is default console */
 	cur_tty->console_cur = 0;
 	console_reprint();
 	//FIXME scheduler must starting in more convenient place/
+	//sched_start();
 #else
 	run_shell();
 #endif
@@ -241,16 +238,19 @@ int tty_add_char(tty_device_t *tty, int ch) {
 }
 
 uint8_t* tty_readline(tty_device_t *tty) {
+	struct thread *thread = thread_self();
 	printf("%d %%",tty->console[tty->console_cur].scr_line);
 	#ifdef CONFIG_TTY_CONSOLE_COUNT
 	#if 0
-	printf("TTY-%d$ ", current_thread->own_console->id + 1 ); /* for remove. it's not for production */
+	printf("TTY-%d$ ", cur_console->id + 1 ); /* for remove. it's not for production */
 	#endif
-	while (!tty->out_busy || ( current_thread->own_console != &tty->console[tty->console_cur]) );
+	while ((!tty->out_busy)	||
+			(thread->own_console != &tty->console[tty->console_cur])) {
+	}
 	#else
 	while (!tty->out_busy);
 	#endif
-	++current_thread->own_console->scr_line;
+	++thread->own_console->scr_line; /* after read_line in console will be next line*/
 	tty->out_busy = false;
 	return (uint8_t*) tty->out_buff;
 }
