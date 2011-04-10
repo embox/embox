@@ -143,3 +143,92 @@ void diag_putc(char ch) {
 	out8((uint8_t) ch, COM0_PORT + UART_TX);
 }
 
+
+
+
+
+
+static bool handler_was_set = false;
+#define COM0_IRQ_NUM 0x4
+#define UART_IER_RX_ENABLE 0x1
+int uart_set_irq_handler(irq_handler_t pfunc) {
+	/*FIXME x86 uart 4 is number only for first port*/
+	irq_attach(COM0_IRQ_NUM, pfunc,0,NULL,"uart");
+	handler_was_set = true;
+	/*enable rx interrupt*/
+	out8(UART_IER_RX_ENABLE, COM0_PORT + UART_IER);
+	return 0;
+}
+
+int uart_remove_irq_handler(void) {
+	out8(UART_DLAB, COM0_PORT + UART_LCR);
+	/*disable all uart interrupts*/
+	out8(0x0, COM0_PORT + UART_IER);
+	if (handler_was_set) {
+		irq_detach(COM0_IRQ_NUM, NULL);
+		handler_was_set = false;
+	}
+
+	return 0;
+}
+
+/* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
+
+#ifdef CONFIG_TTY_DEVICE
+#include <embox/device.h>
+#include <fs/file.h>
+#include <drivers/tty.h>
+
+static tty_device_t tty;
+
+static void *open(const char *fname, const char *mode);
+static int close(void *file);
+static size_t read(void *buf, size_t size, size_t count, void *file);
+static size_t write(const void *buff, size_t size, size_t count, void *file);
+
+static file_operations_t file_op = {
+		.fread = read,
+		.fopen = open,
+		.fclose = close,
+		.fwrite = write
+};
+
+static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
+	tty_add_char(&tty, uart_getc());
+	return 0;
+}
+
+/*
+ * file_operation
+ */
+static void *open(const char *fname, const char *mode) {
+	tty.file_op = &file_op;
+	tty_register(&tty);
+	uart_set_irq_handler(irq_handler);
+	return (void *)&file_op;
+}
+
+static int close(void *file) {
+	tty_unregister(&tty);
+	uart_remove_irq_handler();
+	return 0;
+}
+
+static size_t read(void *buf, size_t size, size_t count, void *file) {
+	//TODO if we havn't irq
+	return 0;
+}
+
+static size_t write(const void *buff, size_t size, size_t count, void *file) {
+	size_t cnt = 0;
+	char *b = (char*) buff;
+
+	while (cnt != count * size) {
+		uart_putc(b[cnt++]);
+	}
+	return 0;
+}
+
+
+EMBOX_DEVICE("uart", &file_op);
+#endif
