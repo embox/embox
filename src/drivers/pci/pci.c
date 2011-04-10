@@ -51,7 +51,7 @@ uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
 uint32_t pci_read_config16(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint16_t *value) {
 	out32(CONFIG_CMD(bus, dev_fn, where), PCI_CONFIG_ADDRESS);
-	*value = in16(PCI_CONFIG_DATA + (where & 2));
+	*value = in16(PCI_CONFIG_DATA + (where & 1));  /* Change the selection bits in a double word from 2nd to 1st */
 	return 0;
 }
 
@@ -72,7 +72,7 @@ uint32_t pci_write_config8(uint32_t bus, uint32_t dev_fn,
 uint32_t pci_write_config16(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint16_t value) {
 	out32(CONFIG_CMD(bus, dev_fn, where), PCI_CONFIG_ADDRESS);
-	out16(value, PCI_CONFIG_DATA + (where & 2));
+	out16(value, PCI_CONFIG_DATA + (where & 1)); /* Change the selection bits in a double word from 2nd to 1st */
 	return 0;
 }
 
