@@ -23,6 +23,9 @@ struct __assertion_point {
 	const char *expression;
 };
 
+extern void __attribute__ ((noreturn)) __assertion_handle_failure(
+		const struct __assertion_point *point);
+
 // TODO don't like it anymore. -- Eldar
 # ifndef __ASSERT_HANDLE_NO_EXTERN_INLINE
 extern inline
@@ -33,14 +36,12 @@ __attribute__((__gnu_inline__))
 /* Included from assert.c, emit global symbol for __assertion_handle. */
 # endif /* __ASSERT_HANDLE_NO_EXTERN_INLINE */
 void __assertion_handle(int pass, const struct __assertion_point *point) {
-	extern void __assertion_handle_failure(
-			const struct __assertion_point *point);
 	if (!pass) {
 		__assertion_handle_failure(point);
 	}
 }
 
-# define __assertion_point_ref(expression_str) \
+# define __assertion_point__(expression_str) \
 	__extension__ ({                                                \
 		static const struct __assertion_point __assertion_point = { \
 			.location = LOCATION_FUNC_INIT,                         \
@@ -50,9 +51,11 @@ void __assertion_handle(int pass, const struct __assertion_point *point) {
 	})
 
 # define __assert(condition, expr_str) \
-	__builtin_constant_p(condition) && (condition) \
-		? (void) 0 : __assertion_handle((int) (condition), \
-				__assertion_point_ref(expr_str))
+	(__builtin_constant_p(condition) \
+		? ((condition) \
+			? (void) 0 \
+			: __assertion_handle_failure(__assertion_point__(expr_str))) \
+		: __assertion_handle((int) (condition), __assertion_point__(expr_str)))
 
 #endif /* NDEBUG */
 
