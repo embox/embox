@@ -72,10 +72,10 @@ extern void tac_reprint(tty_device_t *tty);
 
 /* functions for users */
 extern void console_putchar(char ch);
-extern char console_getchar();
-extern void console_clear();
+extern char console_getchar(void);
+extern void console_clear(void);
 extern void console_gotoXY(uint8_t x, uint8_t y);
-extern void console_reprint();
+extern void console_reprint(void);
 
 #endif /* TTY_ACTION_H_ */
 
