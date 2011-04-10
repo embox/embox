@@ -148,7 +148,7 @@ static int tty_init(void) {
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 	size_t i;
 	static struct vconsole *cons;
-	static int cons_num;
+	int cons_num;
 	struct thread *thread = thread_self();
 #endif
 	static FILE *def_file;
