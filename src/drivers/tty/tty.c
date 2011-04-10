@@ -24,7 +24,7 @@ EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
 extern vconsole_t *cur_console;
-extern struct thread* current_thread;
+
 
 /* FIXME TTY is space there is in library */
 #if 0
@@ -149,7 +149,7 @@ static int tty_init(void) {
 	size_t i;
 	static struct vconsole *cons;
 	static int cons_num;
-	struct thread *current_thread;
+	struct thread *thread = thread_self();
 #endif
 	static FILE *def_file;
 
@@ -167,7 +167,6 @@ static int tty_init(void) {
 	cur_tty->console_cur = -1;
 
 	for (i = 0; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
-		struct thread *t;
 		cons_num = i;
 		cons = (struct vconsole *)&cur_tty->console[i];
 		cons->id = i;
@@ -176,19 +175,23 @@ static int tty_init(void) {
 		cons->height = 25;
 		cons->out_busy = false;
 		//cur_console = cons;
-		((struct thread*)current_thread)->own_console = cons;
+		((struct thread*)thread)->own_console = cons;
 		cur_tty->console_cur = i;
 
-		//pp_create_ws(run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
+		{
+			struct thread* t;
+			if (!(t = thread_alloc())) {
+				LOG_ERROR("error while create new console");
+				return 1;
+			}
+			thread_init(t, run_shell, cons->esh_stack, CONFIG_ESH_STACK_S);
+			t->priority = THREAD_PRIORITY_MAX;
 
-		if (!(t = thread_alloc())) {
-			return 0;
+			thread_start(t);
 		}
-		//thread_init(t, run_shell, cons->esh_stack + CONFIG_ESH_STACK_S);
-		t->priority = THREAD_PRIORITY_MAX;
 	}
 	//cur_console = (struct vconsole *)&cur_tty->console[0]; /* this is default console */
-	((struct thread *)current_thread)->own_console =
+	thread->own_console =
 			(struct vconsole *)&cur_tty->console[0]; /* this is default console */
 	cur_tty->console_cur = 0;
 	console_reprint();

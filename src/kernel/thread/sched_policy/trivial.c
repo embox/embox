@@ -17,7 +17,7 @@
  */
 static struct list_head run_q;
 
-/*static*/ struct thread *current_thread;
+static struct thread *current_thread;
 
 struct thread *sched_policy_current(void) {
 	return current_thread;

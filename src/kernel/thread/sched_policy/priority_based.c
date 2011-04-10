@@ -35,7 +35,7 @@ struct run_thread_list {
 /**
  * Thread that runs now.
  */
-/*static*/ struct thread *current_thread;
+static struct thread *current_thread;
 
 /**
  * Array of thread list ordered by priority
