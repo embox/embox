@@ -5,6 +5,7 @@
  * @author Fedor Burdun
  */
 
+#include <kernel/thread/api.h>
 #include <types.h>
 #include <ctype.h>
 #include <string.h>
@@ -14,6 +15,8 @@
  * FIXME
  * 	buffers is used elements of different sizes. Check it and fix if need.
  */
+
+extern struct thread* current_thread;
 
 struct vt_token char_token( char ch ) {
 	struct vt_token tmp;
@@ -292,8 +295,6 @@ void tac_clear(tty_device_t *tty ) {
 	tac_goto00( tty );
 }
 //----------------------------------------------FROM VCONSOLE--------------------------------
-vconsole_t *cur_console = NULL; /* IT'S not current console for tty! it's current console for print for any process */
-
 /* move this to tty_action */
 void tty_vconsole_write_char( vconsole_t *vc, uint8_t *ch ) {
 	if (*ch>32 && *ch<128) {
@@ -364,10 +365,10 @@ int vconsole_close(vconsole_t *con) {
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 /* move to tty. here don't need to know about this */
 inline bool console_is_current(void) {
-	if (cur_console==NULL) {
+	if (current_thread->own_console==NULL) {
 		return false;
 	}
-	return &cur_console->tty->console[cur_console->tty->console_cur] == cur_console;
+	return &current_thread->own_console->tty->console[current_thread->own_console->tty->console_cur] == current_thread->own_console;
 }
 #define CONSOLE_IS_CURRENT	console_is_current()
 #define EXECUTE_IF_CONSOLE_IS_CURRENT(a) do { if (console_is_current()) a; } while (0)
@@ -378,7 +379,7 @@ inline bool console_is_current(void) {
 
 void tty_vconsole_putchar( struct vconsole *vc, char ch ) {
 	bool reprint_all_console = false;
-	if (vc==NULL) { /* if hasn't initialized now cur_console use hardware output */
+	if (vc==NULL) { /* if hasn't initialized now current_thread->own_console use hardware output */
 		diag_putc( ch );
 		return;
 	}
@@ -479,11 +480,11 @@ void console_gotoXY( uint8_t x, uint8_t y ) {
 
 /* decouple this from tty_clear */
 void console_clear() {
-	vconsole_clear(cur_console);
+	vconsole_clear(current_thread->own_console);
 	if (CONSOLE_IS_CURRENT) {
-		tty_vconsole_saveline(cur_console);
+		tty_vconsole_saveline(current_thread->own_console);
 		console_reprint();
-		tty_vconsole_loadline(cur_console);
+		tty_vconsole_loadline(current_thread->own_console);
 	}
 }
 
@@ -512,17 +513,17 @@ void tty_vconsole_reprint(struct vconsole *vc) {
 
 void console_reprint() {
 	EXECUTE_IF_CONSOLE_IS_CURRENT(
-		tty_vconsole_reprint( cur_console );
+		tty_vconsole_reprint( current_thread->own_console );
 	);
 }
 
 //------------------------------------------------------------------------------------------------------------------------
 void console_putchar(char ch) {
-	tty_vconsole_putchar(cur_console, ch);
+	tty_vconsole_putchar(current_thread->own_console, ch);
 }
 
 char console_getchar() {
 	return '\0';
-	return tty_vconsole_getchar(cur_console);
+	return tty_vconsole_getchar(current_thread->own_console);
 }
 

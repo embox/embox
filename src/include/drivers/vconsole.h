@@ -10,6 +10,9 @@
 #ifndef VCONSOLE_H_
 #define VCONSOLE_H_
 
+#include <stdint.h>
+#include <stddef.h>
+
 #ifndef CONFIG_SCR_BUF_S
 #define CONFIG_SCR_BUFF_S (80 * 25)
 #endif

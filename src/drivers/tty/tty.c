@@ -12,7 +12,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#include <kernel/pp.h>
+#include <kernel/thread/api.h>
 #include <drivers/tty.h>
 #include <drivers/vconsole.h>
 #include <drivers/tty_action.h>
@@ -23,7 +23,7 @@
 EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
-extern vconsole_t *cur_console;
+extern struct thread* current_thread;
 
 /* FIXME TTY is space there is in library */
 #if 0
@@ -136,13 +136,13 @@ void *run_shell(void *arg) {
 	#if 0
 	sleep(1);
 	#endif
-	if (cur_console) {
+	if (current_thread->own_console) {
 		console_clear();
-		printf("Hello from TTY%d!\n\n",cur_console->id + 1); /* this is output to the i-th console */
+		printf("Hello from TTY%d!\n\n",current_thread->own_console->id + 1); /* this is output to the i-th console */
 	}
 	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
 		prom_printf(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
-		return;
+		return NULL;
 	}
 	def_shell->exec(0,NULL);
 
@@ -178,12 +178,22 @@ static int tty_init(void) {
 		cons->width = 80;
 		cons->height = 25;
 		cons->out_busy = false;
-		cur_console = cons;
+		current_thread->own_console = cons;
 		cur_tty->console_cur = i;
 
-		pp_create_ws(run_shell, cons->esh_stack, CONFIG_ESH_STACK_S);
+		{
+			struct thread* t;
+			if (!(t = thread_alloc())) {
+				LOG_ERROR("error while create new console");
+				return 1;
+			}
+			thread_init(t, run_shell, cons->esh_stack, CONFIG_ESH_STACK_S);
+			t->priority = THREAD_PRIORITY_MAX;
+
+			thread_start(t);
+		}
 	}
-	cur_console = (struct vconsole *)&cur_tty->console[0]; /* this is default console */
+	current_thread->own_console = (struct vconsole *)&cur_tty->console[0]; /* this is default console */
 	cur_tty->console_cur = 0;
 	console_reprint();
 	//FIXME scheduler must starting in more convenient place/
@@ -234,13 +244,13 @@ uint8_t* tty_readline(tty_device_t *tty) {
 	printf("%d %%",tty->console[tty->console_cur].scr_line);
 	#ifdef CONFIG_TTY_CONSOLE_COUNT
 	#if 0
-	printf("TTY-%d$ ", cur_console->id + 1 ); /* for remove. it's not for production */
+	printf("TTY-%d$ ", current_thread->own_console->id + 1 ); /* for remove. it's not for production */
 	#endif
-	while (!tty->out_busy || ( cur_console != &tty->console[tty->console_cur]) );
+	while (!tty->out_busy || ( current_thread->own_console != &tty->console[tty->console_cur]) );
 	#else
 	while (!tty->out_busy);
 	#endif
-	++cur_console->scr_line;
+	++current_thread->own_console->scr_line;
 	tty->out_busy = false;
 	return (uint8_t*) tty->out_buff;
 }

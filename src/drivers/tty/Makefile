@@ -14,7 +14,6 @@ $_REQUIRES-tty += embox.hal.diag
 #endif
 
 ifdef CONFIG_TTY_CONSOLE_COUNT
-$_DEPS-tty += core.kernel.pp
 $_DEPS-tty += embox.cmd.esh
 $_DEPS-tty += core.kernel.thread.sched
 endif

@@ -12,7 +12,7 @@
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 int getchar(void) {
-	return console_getchar( cur_console );
+	return console_getchar();
 }
 
 int ungetchar(int ch) {

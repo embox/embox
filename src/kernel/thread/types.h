@@ -9,6 +9,7 @@
 #ifndef KERNEL_THREAD_TYPES_H_
 #define KERNEL_THREAD_TYPES_H_
 
+#include <drivers/vconsole.h>
 #include <lib/list.h>
 #include <hal/context.h>
 #include <kernel/thread/event.h>
@@ -16,10 +17,6 @@
 
 typedef int __thread_id_t;
 typedef int __thread_priority_t;
-
-#ifdef CONFIG_PP_ENABLE
-struct pprocess;
-#endif
 
 struct thread {
 	struct context    context;      /**< Architecture-dependent CPU state. */
@@ -45,10 +42,7 @@ struct thread {
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
 
-/* Pseudo process */
-#ifdef CONFIG_PP_ENABLE
-struct pprocess *pp;
-#endif
+	struct vconsole* own_console;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */
