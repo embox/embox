@@ -71,13 +71,6 @@ static void sched_switch(void) {
 		return;
 	}
 
-#ifdef CONFIG_PP_ENABLE
-	if (next->pp != current->pp) {
-		pp_store(current->pp);
-		pp_restore(next->pp);
-	}
-#endif
-
 	ipl = ipl_save();
 	context_switch(&current->context, &next->context);
 	ipl_restore(ipl);

@@ -18,6 +18,10 @@
 typedef int __thread_id_t;
 typedef int __thread_priority_t;
 
+#ifdef CONFIG_PP_ENABLE
+struct pprocess;
+#endif
+
 struct thread {
 	struct context    context;      /**< Architecture-dependent CPU state. */
 	__thread_id_t     id;           /**< Unique identifier. */
@@ -42,7 +46,13 @@ struct thread {
 	/** List item, corresponding to thread in list of executed threads. */
 	struct list_head sched_list;
 
-	struct vconsole* own_console;
+	struct vconsole *own_console;
+
+	/* Pseudo process */
+#ifdef CONFIG_PP_ENABLE
+struct pprocess *pp;
+#endif
+
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

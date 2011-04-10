@@ -19,10 +19,7 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 
-#ifdef CONFIG_PP_ENABLE
-#include <kernel/pp.h>
-#endif
-
+/*FIXME this is platform specific*/
 #define IDLE_THREAD_STACK_SZ 0x1000
 
 EMBOX_UNIT(unit_init, unit_fini);
@@ -41,6 +38,7 @@ static void *idle_run(void *arg) {
 	while (true) {
 		thread_yield();
 	}
+	return NULL;
 }
 
 static int unit_init(void) {
@@ -98,6 +96,8 @@ static void __attribute__((noreturn)) thread_run(int ignored) {
 
 struct thread *thread_init(struct thread *t, void *(*run)(void *),
 		void *stack_address, size_t stack_size) {
+	struct thread *current;
+	char *stack_pointer;
 	if (!t) {
 		return NULL;
 	}
@@ -108,7 +108,8 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 
 	context_init(&t->context, true);
 	context_set_entry(&t->context, thread_run, (int) t);
-	context_set_stack(&t->context, stack_address + stack_size);
+	stack_pointer = (char*)stack_address + stack_size;
+	context_set_stack(&t->context, stack_pointer);
 
 	t->run = run;
 
@@ -121,9 +122,9 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 	event_init(&t->event, "finish");
 	t->need_message = false;
 
-#ifdef CONFIG_PP_ENABLE
-	pp_add_thread(pp_cur_process, t);
-#endif
+	if (NULL != (current = thread_self())) {
+		t->own_console = current->own_console;
+	}
 
 	return t;
 }
@@ -167,7 +168,7 @@ int thread_stop(struct thread *t) {
 int thread_join(struct thread *t, void **p_ret) {
 	assert(t);
 
-	// XXX
+	// XXX Eldar what's wrong?
 	if (t->state && t->state != THREAD_STATE_TERMINATE) {
 		sched_sleep(&t->event);
 	}
@@ -175,7 +176,6 @@ int thread_join(struct thread *t, void **p_ret) {
 	if (p_ret) {
 		*p_ret = t->run_ret;
 	}
-
 	return 0; // TODO thread_join ret value
 }
 
@@ -199,6 +199,7 @@ struct thread *thread_lookup(__thread_id_t id) {
 	return NULL;
 }
 
+/*FIXME allocation memory*/
 POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ);
 
 struct thread *thread_alloc(void) {
