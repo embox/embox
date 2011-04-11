@@ -93,24 +93,35 @@ extern struct thread *thread_self(void);
  *
  * Kernel tracks an internal state of a thread called detach state which is
  * either @c joinable or @c detached. Resources of a terminated thread are
- * released when one of the following conditions becomes satisfied:
+ * released when it becomes detached which in turn is achieved as follows:
  *
- *   - The thread is in the joinable state and another thread has called
- *     #thread_join() on it.
+ *   - The thread was initially created in the detached state using
+ *     #THREAD_FLAG_DETACHED flag.
  *
- *   - The thread has been detached using #thread_detach() method or it was
- *     initially created in the detached state using #THREAD_FLAG_DETACHED
- *     flag.
+ *   - The thread has been detached using #thread_detach() method.
  *
- * To avoid possible race conditions and memory leaks TODO
+ *   - Some thread calls #thread_join() on it.
+ *
+ * In other words to avoid memory leaks either #thread_join() or
+ * #thread_detach() must be called for each joinable thread, so that
+ * system resources for the thread can be released after it terminates.
+ *
+ * Once the thread becomes detached it be made joinable again. Furthermore
+ * it <b>must not be used</b> at all and each reference to it should be
+ * assumed invalid.
  *
  * @param p_thread
+ *   Upon successful completion a pointer to the newly created thread is stored
+ *   in the location referenced by this argument with the only exception of
+ *   creating initially detached and running thread. In the latter case
+ *   @a p_thread may be just @c NULL.
+ *
  * @param flags
  *   Depending on the given @a flags the behavior may differ as follows:
  *     @n
  *   - If no flags are specified (@a 0 is passed as the value of @a flags
- *     argument), then the new thread is created in a joinable state (see
- *     below) and starts immediately.
+ *     argument), then the new thread is created in a joinable state and
+ *     starts immediately.
  *     @n
  *   - The #THREAD_FLAG_SUSPENDED flag suspends the execution of the thread
  *     being created instead of starting it immediately.
@@ -122,11 +133,28 @@ extern struct thread *thread_self(void);
  *     it. Adjusting its priority is an obvious example.
  *     @n
  *   - Presence of the #THREAD_FLAG_DETACHED flag causes the thread to be
- *     created in a detached state.
+ *     created in a detached state. If used apart #THREAD_FLAG_SUSPENDED flag
+ *     then a pointer to the created thread is not stored into @a p_thread
+ *     to avoid possible race conditions of using that pointer.
+ * TODO memory allocation flags -- Eldar
  *
  * @param run
+ *   The thread start routine. If it returns, the effect is as if there was an
+ *   implicit call to #thread_exit() using the return value of @a run as the
+ *   exit status.
+ *
  * @param arg
+ *   A value to pass to the start routine as the argument.
+ *
  * @return
+ *   Thread creation result.
+ * @retval 0
+ *   If successful.
+ * @retval -EINVAL
+ *   If @a p_thread pointer is @c NULL except the case discussed above.
+ *   If @a run is @c NULL.
+ * @retval -ENOMEM
+ *   If the system lacked the necessary resources to create a new thread.
  */
 extern int thread_create(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg);
