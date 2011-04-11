@@ -1,9 +1,11 @@
 /**
  * @file
- * @brief TODO
+ * @brief Thread state transition matrix.
  *
  * @date 28.03.2011
  * @author Alina Kramar
+ *
+ * @see tests/kernel/thread/state_test.c
  */
 
 #include "state.h"

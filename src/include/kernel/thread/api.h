@@ -1,14 +1,15 @@
 /**
  * @file
- * @brief Defines structure of threads and methods,
- * which allows working with them.
+ * @brief Embox threading API.
  *
  * @date 22.04.2010
  * @author Dmitry Avdyukhin
- *         - Initial implementation
+ *          - Initial implementation
  * @author Alina Kramar
- *         - Extracting internal implementation to separate header
- *         - Thread iteration code
+ *          - Extracting internal implementation to a separate header
+ *          - Threads foreach iteration
+ * @author Eldar Abusalimov
+ *          - Reviewing and documenting the API
  */
 
 #ifndef KERNEL_THREAD_API_H_
@@ -159,6 +160,22 @@ extern struct thread *thread_self(void);
 extern int thread_create(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg);
 
+extern int thread_detach(struct thread *thread);
+
+extern int thread_join(struct thread *thread, void **p_ret);
+
+extern void __attribute__((noreturn)) thread_exit(void *ret);
+
+extern void thread_yield(void);
+
+extern int thread_suspend(struct thread *thread);
+extern int thread_resume(struct thread *thread);
+
+extern void thread_set_priority(struct thread *thread,
+		thread_priority_t priority);
+
+// XXX the following functions are considered obsolete. -- Eldar
+
 /**
  * Performs basic thread initialization.
  *
@@ -176,8 +193,6 @@ extern int thread_create(struct thread **p_thread, unsigned int flags,
 extern struct thread *thread_init(struct thread *thread, void *(*run)(void *),
 		void *stack_address, size_t stack_size);
 
-extern int thread_detach(struct thread *thread);
-
 /**
  * Starts a thread.
  */
@@ -189,25 +204,11 @@ extern void thread_start(struct thread *thread);
  * Makes it a zombie.
  */
 extern int thread_stop(struct thread *stopped_thread);
-#if 0
-extern void __attribute__((noreturn)) thread_exit(void *ret);
-#endif
 
 /**
  * Changes thread's priority.
  */
 extern void thread_change_priority(struct thread *thread, int new_priority);
-
-/**
- * Switches context to another thread.
- * Currently working thread leaves CPU for some time.
- */
-extern void thread_yield(void);
-
-extern int thread_join(struct thread *thread, void **p_ret);
-
-extern int thread_suspend(struct thread *thread);
-extern int thread_resume(struct thread *thread);
 
 extern struct thread *thread_alloc(void);
 
