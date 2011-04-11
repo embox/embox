@@ -9,5 +9,5 @@ $_SRCS-sched_test = sched_test.c
 $_DEPS-sched_test = core.kernel.thread.sched
 
 $_MODS           += core_test
-$_SRCS-sched_test = core_test.c
-$_DEPS-sched_test = core.kernel.thread.core
+$_SRCS-core_test  = core_test.c
+$_DEPS-core_test  = core.kernel.thread.core
