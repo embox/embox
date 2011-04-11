@@ -36,17 +36,13 @@ EMBOX_UNIT(unit_init, unit_fini);
 int sched_init(struct thread* current, struct thread *idle) {
 	int error;
 
+	current->state = THREAD_STATE_RUNNING;
+
+	idle->state = THREAD_STATE_RUNNING;
+
 	if ((error = sched_policy_init(current, idle))) {
 		return error;
 	}
-
-	current->state = thread_state_transition(current->state,
-			THREAD_STATE_ACTION_START);
-	assert(current->state == THREAD_STATE_RUNNING);
-
-	idle->state = thread_state_transition(idle->state,
-			THREAD_STATE_ACTION_START);
-	assert(idle->state == THREAD_STATE_RUNNING);
 
 	sched_unlock();
 
@@ -106,9 +102,10 @@ void sched_start(struct thread *t) {
 	current = sched_current();
 	assert(current);
 
+	t->state = THREAD_STATE_RUNNING;
+
 	current->resched |= sched_policy_start(t);
 
-	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_START);
 	assert(t->state);
 
 	sched_unlock();
@@ -121,8 +118,7 @@ void sched_stop(struct thread *t) {
 
 	sched_current()->resched |= sched_policy_stop(t);
 
-	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_STOP);
-	assert(t->state);
+	t->state = 0;
 
 	sched_unlock();
 }
@@ -177,9 +173,10 @@ int sched_wake(struct event *e) {
 		list_del_init(&t->sched_list);
 
 		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
-		assert(t->state == THREAD_STATE_RUNNING);
 
-		current->resched |= sched_policy_start(t);
+		if (t->state == THREAD_STATE_RUNNING) {
+			current->resched |= sched_policy_start(t);
+		}
 
 		assert(t->state);
 	}
@@ -198,9 +195,10 @@ int sched_wake_one(struct event *e) {
 	list_del_init(&t->sched_list);
 
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
-	assert(t->state == THREAD_STATE_RUNNING);
 
-	sched_current()->resched |= sched_policy_start(t);
+	if (t->state == THREAD_STATE_RUNNING) {
+		sched_current()->resched |= sched_policy_start(t);
+	}
 
 	sched_unlock();
 
@@ -216,19 +214,27 @@ void sched_yield(void) {
 }
 
 void sched_suspend(struct thread *t){
+	sched_lock();
+
+	if (t->state == THREAD_STATE_RUNNING) {
+		thread_self()->resched |= sched_policy_stop(t);
+	}
+
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_SUSPEND);
 
-	if(t->state == THREAD_STATE_SUSPENDED) {
-		thread_self()->resched = sched_policy_stop(t);
-	}
+	sched_unlock();
 }
 
 void sched_resume(struct thread *t) {
+	sched_lock();
+
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_RESUME);
 
 	if (t->state == THREAD_STATE_RUNNING) {
-		thread_self()->resched = sched_policy_start(t);
+		thread_self()->resched |= sched_policy_start(t);
 	}
+
+	sched_unlock();
 }
 
 

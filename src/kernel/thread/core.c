@@ -90,7 +90,6 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 
 	t->run = run;
 
-	t->state = THREAD_STATE_TERMINATE;
 	t->susp_cnt = 0;
 	t->priority = 1;
 
@@ -148,7 +147,7 @@ int thread_join(struct thread *t, void **p_ret) {
 	assert(t);
 
 	// XXX Eldar what's wrong?
-	if (t->state && t->state != THREAD_STATE_TERMINATE) {
+	if (t->state && t->state != 0) {
 		sched_sleep(&t->exit_event);
 	}
 

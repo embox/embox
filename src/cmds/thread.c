@@ -24,12 +24,12 @@ static void print_usage(void) {
 
 static void print_stat(void) {
 	struct thread *thread;
-	int terminate, running, sleeping, suspended, sleeping_suspended;
+	int running, sleeping, suspended, sleeping_suspended;
 	int total;
 
 	printf(" %4s %8s %18s\n", "Id", "Priority", "State");
 
-	terminate = running = sleeping = suspended = sleeping_suspended = 0;
+	running = sleeping = suspended = sleeping_suspended = 0;
 
 	thread_foreach(thread) {
 		const char *state;
@@ -51,10 +51,6 @@ static void print_stat(void) {
 			state = "suspended";
 			suspended++;
 			break;
-		case THREAD_STATE_TERMINATE:
-			state = "terminate";
-			terminate++;
-			break;
 		default:
 			state = "unknown";
 			break;
@@ -62,14 +58,13 @@ static void print_stat(void) {
 		printf(" %4d %8d %18s\n", thread->id, thread->priority, state);
 	}
 
-	total = terminate + running + sleeping + suspended + sleeping_suspended;
+	total = running + sleeping + suspended + sleeping_suspended;
 
 	printf("Total %d threads: \n"
-		"\t%d terminate\n"
 		"\t%d running\n"
 		"\t%d sleeping\n"
 		"\t%d suspended\n"
-		"\t%d sleeping_suspended\n", total, terminate, running, sleeping,
+		"\t%d sleeping_suspended\n", total, running, sleeping,
 			suspended, sleeping_suspended);
 }
 

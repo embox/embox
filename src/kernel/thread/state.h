@@ -25,26 +25,22 @@ enum thread_state {
 	/** Thread is currently executing or is ready for that. */
 	THREAD_STATE_RUNNING,
 
-	/**  Thread either has not been started yet or has already finished. */
-	THREAD_STATE_TERMINATE,
 };
 
-#define __THREAD_STATE_TOTAL 5
+#define __THREAD_STATE_TOTAL 4
 
 /**
  * Actions that can be performed on the thread.
  * Doing an action results in the state change.
  */
 enum thread_state_action {
-	THREAD_STATE_ACTION_START = 0,
-	THREAD_STATE_ACTION_STOP,
 	THREAD_STATE_ACTION_SUSPEND,
 	THREAD_STATE_ACTION_RESUME,
 	THREAD_STATE_ACTION_SLEEP,
 	THREAD_STATE_ACTION_WAKE,
 };
 
-#define __THREAD_STATE_ACTION_TOTAL 6
+#define __THREAD_STATE_ACTION_TOTAL 4
 
 /**
  * Performs a state change accordingly to the specified @a action,

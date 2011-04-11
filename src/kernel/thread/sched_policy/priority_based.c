@@ -143,6 +143,8 @@ static void run_insert_priority(struct run_thread_list *priority) {
 }
 
 bool sched_policy_start(struct thread *t) {
+	assert(t->state == THREAD_STATE_RUNNING);
+
 	run_enqueue(t);
 
 	return (t->priority < current->priority);
