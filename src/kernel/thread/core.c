@@ -55,7 +55,8 @@ static void __attribute__((noreturn)) thread_run(int ignored) {
 	/* NOTREACHED */assert(false);
 }
 
-int thread_create(struct thread **p_thread, void *(*run)(void *), void *arg) {
+int thread_create(struct thread **p_thread, unsigned int flags,
+		void *(*run)(void *), void *arg) {
 	struct thread *t;
 
 	if (!p_thread) {
@@ -187,12 +188,13 @@ static int unit_init(void) {
 	int error;
 
 	// TODO unused stack allocation for current thread -- Eldar
-	if ((error = thread_create(&current, (void *(*)(void *)) -1, NULL))) {
+	if ((error = thread_create(&current, THREAD_FLAG_DETACHED,
+			(void *(*)(void *)) -1, NULL))) {
 		return error;
 	}
 	current->priority = THREAD_PRIORITY_MAX;
 
-	if ((error = thread_create(&idle, idle_run, NULL))) {
+	if ((error = thread_create(&idle, THREAD_FLAG_DETACHED, idle_run, NULL))) {
 		thread_free(current);
 		return error;
 	}

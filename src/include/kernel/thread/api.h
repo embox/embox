@@ -39,16 +39,18 @@ typedef __thread_priority_t thread_priority_t;
 #define THREAD_PRIORITY_TOTAL \
 	(THREAD_PRIORITY_MIN - THREAD_PRIORITY_MAX + 1)
 
-/**
- * Obtains a pointer to the calling thread.
- *
- * @return
- *   The currently executing thread.
- */
-extern struct thread *thread_self(void);
+#define THREAD_FLAG_USER      (0x1 << 0)
+#define THREAD_FLAG_DETACHED  (0x1 << 1)
+#define THREAD_FLAG_SUSPENDED (0x1 << 2)
 
-#define thread_foreach(t) \
-	  __thread_foreach(t)
+/**
+ * Iterates over the list of all threads existing in the system.
+ *
+ * @param thread
+ *   @code struct thread * @endcode iteration variable.
+ */
+#define thread_foreach(thread) \
+	  __thread_foreach(thread)
 
 /**
  * Searches for a thread by the given ID.
@@ -61,6 +63,47 @@ extern struct thread *thread_self(void);
  *   If there is no thread with such ID.
  */
 extern struct thread *thread_lookup(thread_id_t id);
+
+/**
+ * Obtains a pointer to the calling thread.
+ *
+ * @return
+ *   The currently executing thread.
+ */
+extern struct thread *thread_self(void);
+
+/**
+ * Creates a new thread.
+ *
+ * The new thread starts execution by invoking @a run with @a arg as its sole
+ * argument.
+ *
+ * Depending on the given @a flags the behavior may differ as follows:
+ *
+ *   - If no flags are specified (@a 0 is passed as the value of @a flags
+ *     argument), then the new thread is created in a @c joinable state (see
+ *     below) and starts immediately.
+ *
+ *   - The #THREAD_FLAG_SUSPENDED flag suspends the execution of the thread
+ *     being created instead of starting it immediately.
+ *     The effect is alike as if #thread_suspend() has been called on the
+ *     thread before actually transferring the control to it. In order to start
+ *     the thread, #thread_resume() should be called on it.
+ *     Using this flag allows the caller to perform some additional actions
+ *     on the newly created thread safely without a risk of being preempted by
+ *     it. Adjusting its priority is an obvious example.
+ *
+ *   - Presence of the #THREAD_FLAG_DETACHED flag causes the thread to be
+ *     created in a so-called @c detached state.
+ *
+ * @param p_thread
+ * @param flags
+ * @param run
+ * @param arg
+ * @return
+ */
+extern int thread_create(struct thread **p_thread, unsigned int flags,
+		void *(*run)(void *), void *arg);
 
 /**
  * Performs basic thread initialization.
@@ -79,11 +122,7 @@ extern struct thread *thread_lookup(thread_id_t id);
 extern struct thread *thread_init(struct thread *thread, void *(*run)(void *),
 		void *stack_address, size_t stack_size);
 
-#if 0
-extern int thread_create(struct thread **p_thread, void *(*run)(void *),
-		void *arg);
 extern int thread_detach(struct thread *thread);
-#endif
 
 /**
  * Starts a thread.
@@ -112,6 +151,9 @@ extern void thread_change_priority(struct thread *thread, int new_priority);
 extern void thread_yield(void);
 
 extern int thread_join(struct thread *thread, void **p_ret);
+
+extern int thread_suspend(struct thread *thread);
+extern int thread_resume(struct thread *thread);
 
 extern struct thread *thread_alloc(void);
 

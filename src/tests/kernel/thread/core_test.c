@@ -20,7 +20,7 @@ TEST_CASE("thread_join should retrieve the result of thread execution") {
 	struct thread *foo;
 	int ret;
 
-	test_assert_zero(thread_create(&foo, foo_run, 42));
+	test_assert_zero(thread_create(&foo, 0, foo_run, 42));
 	test_assert_zero(thread_join(foo, &ret));
 	test_assert_equal(ret, 42);
 
