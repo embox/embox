@@ -79,6 +79,12 @@ extern struct thread *thread_lookup(thread_id_t id);
 extern struct thread *thread_init(struct thread *thread, void *(*run)(void *),
 		void *stack_address, size_t stack_size);
 
+#if 0
+extern int thread_create(struct thread **p_thread, void *(*run)(void *),
+		void *arg);
+extern int thread_detach(struct thread *thread);
+#endif
+
 /**
  * Starts a thread.
  */
@@ -90,6 +96,9 @@ extern void thread_start(struct thread *thread);
  * Makes it a zombie.
  */
 extern int thread_stop(struct thread *stopped_thread);
+#if 0
+extern void __attribute__((noreturn)) thread_exit(void *ret);
+#endif
 
 /**
  * Changes thread's priority.
