@@ -39,6 +39,7 @@ struct thread {
 	bool              resched;      /**< Whether rescheduling is needed. */
 	__thread_priority_t priority;   /**< Scheduling priority. */
 	enum thread_state state;        /**< Current state. */
+	int               susp_cnt;     /**< Count of calls #thread_suspend. */
 	struct event      exit_event;   /**< Thread exit event. */
 
 	bool              need_message; /**< Waiting for message. */

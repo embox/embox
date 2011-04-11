@@ -129,5 +129,9 @@ extern int sched_wake_one(struct event *event);
  */
 extern void sched_yield(void);
 
+extern void sched_suspend(struct thread *thread);
+
+extern void sched_resume(struct thread *thread);
+
 #endif /* KERNEL_THREAD_SCHED_H_ */
 

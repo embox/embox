@@ -91,6 +91,7 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 	t->run = run;
 
 	t->state = THREAD_STATE_TERMINATE;
+	t->susp_cnt = 0;
 	t->priority = 1;
 
 	INIT_LIST_HEAD(&t->sched_list);
@@ -231,6 +232,47 @@ struct thread *thread_alloc(void) {
 	t->stack_sz = STACK_SZ;
 
 	return t;
+}
+
+int thread_suspend(struct thread *t) {
+
+	sched_lock();
+
+	if (!t) {
+		sched_unlock();
+		return -EINVAL;
+	}
+
+	if (++t->susp_cnt == 1) {
+		sched_suspend(t);
+	}
+
+	sched_unlock();
+
+	return 0;
+}
+
+int thread_resume(struct thread *t) {
+
+	sched_lock();
+
+	if (!t) {
+		sched_unlock();
+		return -EINVAL;
+	}
+
+	if (!(t->susp_cnt)) {
+		sched_unlock();
+		return -EINVAL;
+	}
+
+	if (!(--t->susp_cnt)) {
+		sched_resume(t);
+	}
+
+	sched_unlock();
+
+	return 0;
 }
 
 void thread_free(struct thread *t) {

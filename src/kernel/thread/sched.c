@@ -210,6 +210,26 @@ void sched_yield(void) {
 	sched_unlock();
 }
 
+void sched_suspend(struct thread *t){
+
+	sched_policy_stop(t);
+
+	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_SUSPEND);
+
+	thread_self()->resched = (t == thread_self());
+}
+
+void sched_resume(struct thread *t) {
+
+	sched_policy_start(t);
+
+	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_RESUME);
+
+	thread_self()->resched = true;
+
+}
+
+
 static int unit_init(void) {
 	if (set_timer(SCHED_TICK_TIMER_ID, SCHED_TICK_INTERVAL, sched_tick)
 			!= SCHED_TICK_TIMER_ID) {
