@@ -14,7 +14,6 @@
 #include <embox/unit.h>
 #include <lib/list.h>
 #include <kernel/critical/api.h>
-#include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_policy.h>
@@ -95,18 +94,13 @@ void __sched_dispatch(void) {
 }
 
 void sched_start(struct thread *t) {
-	struct thread *current;
+	assert(t != NULL);
 
 	sched_lock();
 
-	current = sched_current();
-	assert(current);
-
 	t->state = THREAD_STATE_RUNNING;
 
-	current->resched |= sched_policy_start(t);
-
-	assert(t->state);
+	sched_current()->resched |= sched_policy_start(t);
 
 	sched_unlock();
 }
@@ -217,7 +211,7 @@ void sched_suspend(struct thread *t){
 	sched_lock();
 
 	if (t->state == THREAD_STATE_RUNNING) {
-		thread_self()->resched |= sched_policy_stop(t);
+		sched_current()->resched |= sched_policy_stop(t);
 	}
 
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_SUSPEND);
@@ -231,7 +225,7 @@ void sched_resume(struct thread *t) {
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_RESUME);
 
 	if (t->state == THREAD_STATE_RUNNING) {
-		thread_self()->resched |= sched_policy_start(t);
+		sched_current()->resched |= sched_policy_start(t);
 	}
 
 	sched_unlock();

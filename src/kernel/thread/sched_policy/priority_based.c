@@ -150,14 +150,15 @@ bool sched_policy_start(struct thread *t) {
 	return (t->priority < current->priority);
 }
 
-bool sched_policy_stop(struct thread *thread) {
-	struct run_thread_list *priority = priorities + thread->priority;
+bool sched_policy_stop(struct thread *t) {
+	assert(t->state == THREAD_STATE_RUNNING);
+	struct run_thread_list *priority = priorities + t->priority;
 
-	if (thread == current) {
+	if (t == current) {
 		return true;
 	}
 
-	list_del_init(&thread->sched_list);
+	list_del_init(&t->sched_list);
 
 	if (list_empty(&priority->thread_list)) {
 		/* Remove link on list of threads with given priority */
