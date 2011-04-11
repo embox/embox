@@ -95,7 +95,7 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 	INIT_LIST_HEAD(&t->sched_list);
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");
-	event_init(&t->event, "finish");
+	event_init(&t->exit_event, "thread_exit");
 	t->need_message = false;
 
 	list_add(&t->thread_link, &__thread_list);
@@ -109,15 +109,15 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 }
 
 void thread_start(struct thread *t) {
-	sched_add(t);
+	sched_start(t);
 }
 
 void thread_change_priority(struct thread *t, int priority) {
 	sched_lock();
 
-	sched_remove(t);
+	sched_stop(t);
 	t->priority = priority;
-	sched_add(t);
+	sched_start(t);
 
 	sched_unlock();
 }
@@ -132,8 +132,8 @@ int thread_stop(struct thread *t) {
 
 	sched_lock();
 
-	sched_remove(t);
-	sched_wake(&t->event);
+	sched_stop(t);
+	sched_wake(&t->exit_event);
 	//	XXX move somewhere -- Eldar
 	list_del_init(&t->thread_link);
 
@@ -147,7 +147,7 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	// XXX Eldar what's wrong?
 	if (t->state && t->state != THREAD_STATE_TERMINATE) {
-		sched_sleep(&t->event);
+		sched_sleep(&t->exit_event);
 	}
 
 	if (p_ret) {
@@ -157,11 +157,7 @@ int thread_join(struct thread *t, void **p_ret) {
 }
 
 void thread_yield(void) {
-	sched_lock();
-
-	thread_self()->reschedule = true;
-
-	sched_unlock();
+	sched_yield();
 }
 
 struct thread *thread_lookup(__thread_id_t id) {

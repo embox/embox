@@ -36,10 +36,10 @@ struct thread {
 	void             *stack;        /**< Allocated thread stack buffer. */
 	size_t            stack_sz;     /**< Stack size. TODO unused. -- Eldar */
 
-	bool              reschedule;   /**< Whether rescheduling is needed. */
+	bool              resched;      /**< Whether rescheduling is needed. */
 	__thread_priority_t priority;   /**< Scheduling priority. */
 	enum thread_state state;        /**< Current state. */
-	struct event      event;        /**< Thread exit event. */
+	struct event      exit_event;   /**< Thread exit event. */
 
 	bool              need_message; /**< Waiting for message. */
 	struct list_head  messages;     /**< Messages sent to the thread. */

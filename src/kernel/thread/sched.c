@@ -34,7 +34,11 @@
 EMBOX_UNIT(unit_init, unit_fini);
 
 int sched_init(struct thread* current, struct thread *idle) {
-	sched_policy_init(current, idle);
+	int error;
+
+	if ((error = sched_policy_init(current, idle))) {
+		return error;
+	}
 
 	current->state = thread_state_transition(current->state,
 			THREAD_STATE_ACTION_START);
@@ -54,7 +58,7 @@ int sched_init(struct thread* current, struct thread *idle) {
  * @param id nothing significant
  */
 static void sched_tick(uint32_t id) {
-	sched_current()->reschedule = true;
+	sched_current()->resched = true;
 }
 
 /**
@@ -86,15 +90,15 @@ void __sched_dispatch(void) {
 
 	current = sched_current();
 
-	while (current->reschedule) {
-		current->reschedule = false;
+	while (current->resched) {
+		current->resched = false;
 		sched_switch();
 	}
 
 	sched_unlock();
 }
 
-void sched_add(struct thread *t) {
+void sched_start(struct thread *t) {
 	struct thread *current;
 
 	sched_lock();
@@ -102,7 +106,7 @@ void sched_add(struct thread *t) {
 	current = sched_current();
 	assert(current);
 
-	current->reschedule |= sched_policy_add(t);
+	current->resched |= sched_policy_start(t);
 
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_START);
 	assert(t->state);
@@ -110,12 +114,12 @@ void sched_add(struct thread *t) {
 	sched_unlock();
 }
 
-void sched_remove(struct thread *t) {
+void sched_stop(struct thread *t) {
 	assert(t != NULL);
 
 	sched_lock();
 
-	sched_current()->reschedule |= sched_policy_remove(t);
+	sched_current()->resched |= sched_policy_stop(t);
 
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_STOP);
 	assert(t->state);
@@ -131,7 +135,7 @@ int sched_sleep_locked(struct event *e) {
 
 	current = sched_current();
 
-	current->reschedule |= sched_policy_remove(current);
+	current->resched |= sched_policy_stop(current);
 
 	current->state = thread_state_transition(current->state,
 			THREAD_STATE_ACTION_SLEEP);
@@ -172,7 +176,7 @@ int sched_wake(struct event *e) {
 	list_for_each_entry_safe(t, tmp, &e->sleep_queue, sched_list) {
 		list_del_init(&t->sched_list);
 
-		current->reschedule |= sched_policy_add(t);
+		current->resched |= sched_policy_start(t);
 
 		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 		assert(t->state);
@@ -190,7 +194,7 @@ int sched_wake_one(struct event *e) {
 
 	t = list_entry(e->sleep_queue.next, struct thread, sched_list);
 	list_del_init(&t->sched_list);
-	sched_current()->reschedule |= sched_policy_add(t);
+	sched_current()->resched |= sched_policy_start(t);
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 
 	sched_unlock();
@@ -198,16 +202,25 @@ int sched_wake_one(struct event *e) {
 	return 0;
 }
 
+void sched_yield(void) {
+	sched_lock();
+
+	sched_current()->resched = true;
+
+	sched_unlock();
+}
+
 static int unit_init(void) {
-	set_timer(SCHED_TICK_TIMER_ID, SCHED_TICK_INTERVAL, sched_tick);
-	sched_policy_start();
+	if (set_timer(SCHED_TICK_TIMER_ID, SCHED_TICK_INTERVAL, sched_tick)
+			!= SCHED_TICK_TIMER_ID) {
+		return -EBUSY;
+	}
 
 	return 0;
 }
 
 static int unit_fini(void) {
 	close_timer(SCHED_TICK_TIMER_ID);
-	sched_policy_stop();
 
 	return 0;
 }

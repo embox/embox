@@ -115,7 +115,7 @@ static int run(void) {
 	thread_init(div, div_run, div_stack, THREAD_STACK_SIZE);
 	thread_init(highest, highest_run, highest_stack, THREAD_STACK_SIZE);
 
-	sched_remove(highest);
+	sched_stop(highest);
 
 	assert(plus);
 	assert(minus);

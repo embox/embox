@@ -12,8 +12,7 @@
 #include <kernel/thread/sched_policy.h>
 
 /**
- * List item, pointing at the beginning of the
- * 	list of running threads.
+ * List item, pointing at the beginning of the list of running threads.
  */
 static struct list_head run_q;
 
@@ -23,31 +22,14 @@ struct thread *sched_policy_current(void) {
 	return current_thread;
 }
 
-void sched_policy_init(struct thread *current, struct thread *idle) {
+int sched_policy_init(struct thread *current, struct thread *idle) {
+	INIT_LIST_HEAD(&run_q);
 
 	current_thread = current;
 
-	INIT_LIST_HEAD(&run_q);
-	INIT_LIST_HEAD(&idle->sched_list);
-	sched_policy_add(idle);
-}
+	sched_policy_start(idle);
 
-void sched_policy_start(void) {
-#ifdef CONFIG_DEBUG_SCHEDULER
-	TRACE("Added threads: ");
-	list_for_each_entry(current_thread, list_head_run, sched_list) {
-		TRACE("%d ", current_thread->id);
-	}
-#endif
-}
-
-void sched_policy_stop(void) {
-	/* Nothing to do. */
-}
-
-bool sched_policy_add(struct thread *t) {
-	list_add_tail(&run_q, &t->sched_list);
-	return false;
+	return 0;
 }
 
 struct thread *sched_policy_switch(struct thread *t) {
@@ -60,7 +42,12 @@ struct thread *sched_policy_switch(struct thread *t) {
 	return list_entry(t->sched_list.next, struct thread, sched_list);
 }
 
-bool sched_policy_remove(struct thread *t) {
+bool sched_policy_start(struct thread *t) {
+	list_add_tail(&run_q, &t->sched_list);
+	return false;
+}
+
+bool sched_policy_stop(struct thread *t) {
 	if (t == current_thread) {
 		return true;
 	}
