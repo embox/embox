@@ -151,8 +151,10 @@ bool sched_policy_start(struct thread *t) {
 }
 
 bool sched_policy_stop(struct thread *t) {
-	assert(t->state == THREAD_STATE_RUNNING);
 	struct run_thread_list *priority = priorities + t->priority;
+
+	// TODO only running thread must be managed by sched_policy -- Eldar
+	//assert(t->state == THREAD_STATE_RUNNING);
 
 	if (t == current) {
 		return true;
