@@ -1,9 +1,19 @@
 /**
  * @file
- * @brief Implementation of methods in api.h
+ * @brief Thread management API implementation.
  *
  * @date 22.04.2010
  * @author Dmitry Avdyukhin
+ *          - Initial implementation
+ * @author Alina Kramar
+ *          - Thread control block memory allocation
+ *          - Move state management code into the scheduler
+ *          - Suspend/resume logic
+ * @author Eldar Abusalimov
+ *          - Reviewing and simplifying threads API
+ *          - Stack allocation
+ *
+ * @see tests/kernel/thread/core_test.c
  */
 
 #include <assert.h>
@@ -27,6 +37,9 @@ struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 
 struct thread *thread_alloc(void);
 void thread_free(struct thread *t);
+static void __thread_init(struct thread *t, unsigned int flags,
+		void *(*run)(void *), void *arg);
+static void __thread_ugly_init(struct thread *t);
 
 /**
  * Wrapper for thread start routine.
@@ -58,39 +71,51 @@ static void __attribute__((noreturn)) thread_run(int ignored) {
 int thread_create(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	struct thread *t;
+	int save_ptr = (flags & THREAD_FLAG_SUSPENDED) || !(flags
+			& THREAD_FLAG_DETACHED);
 
-	if (!p_thread) {
+	if (save_ptr && !p_thread) {
 		return -EINVAL;
 	}
 
+	if (!run) {
+		return -EINVAL;
+	}
+
+	sched_lock();
+
 	if (!(t = thread_alloc())) {
+		sched_unlock();
 		return -ENOMEM;
 	}
 
-	// TODO arg. -- Eldar
-	*p_thread = thread_init(t, run, t->stack, t->stack_sz);
+	__thread_init(t, flags, run, arg);
+
+	if (save_ptr) {
+		*p_thread = t;
+	}
+
+	sched_unlock();
+
 	return 0;
 }
 
-struct thread *thread_init(struct thread *t, void *(*run)(void *),
-		void *stack_address, size_t stack_size) {
-	struct thread *current;
-
-	if (!t) {
-		return NULL;
-	}
-
-	if (!run || !stack_address) {
-		return NULL;
-	}
+static void __thread_init(struct thread *t, unsigned int flags,
+		void *(*run)(void *), void *arg) {
+	assert(t);
+	assert(t->stack);
+	assert(t->stack_sz);
+	assert(run);
 
 	context_init(&t->context, true);
 	context_set_entry(&t->context, thread_run, 0 /* TODO unused arg */);
-	context_set_stack(&t->context, (char *) stack_address + stack_size);
+	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
 
 	t->run = run;
+	t->run_arg = arg;
 
 	t->susp_cnt = 0;
+	// TODO default priority for newly created thread. -- Eldar
 	t->priority = 1;
 
 	INIT_LIST_HEAD(&t->sched_list);
@@ -101,10 +126,31 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 
 	list_add(&t->thread_link, &__thread_list);
 
+	__thread_ugly_init(t);
+}
+
+static void __thread_ugly_init(struct thread *t) {
+	struct thread *current;
+
 	// XXX WTF?
 	if (NULL != (current = thread_self())) {
 		t->own_console = current->own_console;
 	}
+}
+
+struct thread *thread_init(struct thread *t, void *(*run)(void *),
+		void *stack_address, size_t stack_size) {
+
+	if (!t) {
+		return NULL;
+	}
+
+	if (!run || !stack_address) {
+		return NULL;
+	}
+
+	// TODO arg. -- Eldar
+	__thread_init(t, 0, run, NULL);
 
 	return t;
 }
@@ -146,8 +192,8 @@ int thread_stop(struct thread *t) {
 int thread_join(struct thread *t, void **p_ret) {
 	assert(t);
 
-	// XXX Eldar what's wrong?
-	if (t->state && t->state != 0) {
+	// XXX check for detached state. -- Eldar
+	if (t->state) {
 		sched_sleep(&t->exit_event);
 	}
 
@@ -155,6 +201,39 @@ int thread_join(struct thread *t, void **p_ret) {
 		*p_ret = t->run_ret;
 	}
 	return 0; // TODO thread_join ret value
+}
+
+int thread_suspend(struct thread *t) {
+	assert(t);
+
+	sched_lock();
+
+	if (++t->susp_cnt == 1) {
+		sched_suspend(t);
+	}
+
+	sched_unlock();
+
+	return 0;
+}
+
+int thread_resume(struct thread *t) {
+	assert(t);
+
+	sched_lock();
+
+	if (!(t->susp_cnt)) {
+		sched_unlock();
+		return -EINVAL;
+	}
+
+	if (!(--t->susp_cnt)) {
+		sched_resume(t);
+	}
+
+	sched_unlock();
+
+	return 0;
 }
 
 void thread_yield(void) {
@@ -184,23 +263,23 @@ static void *idle_run(void *arg) {
 }
 
 static int unit_init(void) {
-	struct thread *current, *idle;
+	struct thread *bootstrap, *idle;
 	int error;
 
 	// TODO unused stack allocation for current thread -- Eldar
-	if ((error = thread_create(&current, THREAD_FLAG_DETACHED,
-			(void *(*)(void *)) -1, NULL))) {
+	if ((error = thread_create(&bootstrap, 0, (void *(*)(void *)) -1, NULL))) {
 		return error;
 	}
-	current->priority = THREAD_PRIORITY_MAX;
+	// TODO priority for bootstrap thread -- Eldar
+	bootstrap->priority = THREAD_PRIORITY_TOTAL / 2;
 
-	if ((error = thread_create(&idle, THREAD_FLAG_DETACHED, idle_run, NULL))) {
-		thread_free(current);
+	if ((error = thread_create(&idle, 0, idle_run, NULL))) {
+		thread_free(bootstrap);
 		return error;
 	}
 	idle->priority = THREAD_PRIORITY_MIN;
 
-	return sched_init(current, idle);
+	return sched_init(bootstrap, idle);
 }
 
 static int unit_fini(void) {
@@ -231,47 +310,6 @@ struct thread *thread_alloc(void) {
 	t->stack_sz = STACK_SZ;
 
 	return t;
-}
-
-int thread_suspend(struct thread *t) {
-
-	sched_lock();
-
-	if (!t) {
-		sched_unlock();
-		return -EINVAL;
-	}
-
-	if (++t->susp_cnt == 1) {
-		sched_suspend(t);
-	}
-
-	sched_unlock();
-
-	return 0;
-}
-
-int thread_resume(struct thread *t) {
-
-	sched_lock();
-
-	if (!t) {
-		sched_unlock();
-		return -EINVAL;
-	}
-
-	if (!(t->susp_cnt)) {
-		sched_unlock();
-		return -EINVAL;
-	}
-
-	if (!(--t->susp_cnt)) {
-		sched_resume(t);
-	}
-
-	sched_unlock();
-
-	return 0;
 }
 
 void thread_free(struct thread *t) {
