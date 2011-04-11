@@ -176,9 +176,11 @@ int sched_wake(struct event *e) {
 	list_for_each_entry_safe(t, tmp, &e->sleep_queue, sched_list) {
 		list_del_init(&t->sched_list);
 
+		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
+		assert(t->state == THREAD_STATE_RUNNING);
+
 		current->resched |= sched_policy_start(t);
 
-		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 		assert(t->state);
 	}
 
@@ -194,8 +196,11 @@ int sched_wake_one(struct event *e) {
 
 	t = list_entry(e->sleep_queue.next, struct thread, sched_list);
 	list_del_init(&t->sched_list);
-	sched_current()->resched |= sched_policy_start(t);
+
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
+	assert(t->state == THREAD_STATE_RUNNING);
+
+	sched_current()->resched |= sched_policy_start(t);
 
 	sched_unlock();
 
@@ -211,22 +216,19 @@ void sched_yield(void) {
 }
 
 void sched_suspend(struct thread *t){
-
-	sched_policy_stop(t);
-
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_SUSPEND);
 
-	thread_self()->resched = (t == thread_self());
+	if(t->state == THREAD_STATE_SUSPENDED) {
+		thread_self()->resched = sched_policy_stop(t);
+	}
 }
 
 void sched_resume(struct thread *t) {
-
-	sched_policy_start(t);
-
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_RESUME);
 
-	thread_self()->resched = true;
-
+	if (t->state == THREAD_STATE_RUNNING) {
+		thread_self()->resched = sched_policy_start(t);
+	}
 }
 
 
