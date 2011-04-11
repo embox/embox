@@ -19,53 +19,14 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 
-/*FIXME this is platform specific*/
-#define IDLE_THREAD_STACK_SZ 0x1000
+#define STACK_SZ 0x1000
 
 EMBOX_UNIT(unit_init, unit_fini);
-
-struct thread *idle_thread;
 
 struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 
 struct thread *thread_alloc(void);
 void thread_free(struct thread *t);
-
-/**
- * Function, which does nothing. For idle_thread.
- */
-static void *idle_run(void *arg) {
-	while (true) {
-		thread_yield();
-	}
-	return NULL;
-}
-
-static int unit_init(void) {
-	static char idle_thread_stack[IDLE_THREAD_STACK_SZ];
-	struct thread *current;
-
-	if (!(current = thread_alloc())) {
-		return -ENOMEM;
-	}
-	thread_init(current, (void *(*)(void *)) -1, (void *) -1, 0);
-	current->priority = THREAD_PRIORITY_MAX;
-
-	if (!(idle_thread = thread_alloc())) {
-		thread_free(current);
-		return -ENOMEM;
-	}
-	thread_init(idle_thread, idle_run, idle_thread_stack, IDLE_THREAD_STACK_SZ);
-	idle_thread->priority = THREAD_PRIORITY_MIN;
-
-	return sched_init(current, idle_thread);
-}
-
-static int unit_fini(void) {
-	sched_lock();
-
-	return 0;
-}
 
 /**
  * Wrapper for thread start routine.
@@ -94,10 +55,26 @@ static void __attribute__((noreturn)) thread_run(int ignored) {
 	/* NOTREACHED */assert(false);
 }
 
+int thread_create(struct thread **p_thread, void *(*run)(void *), void *arg) {
+	struct thread *t;
+
+	if (!p_thread) {
+		return -EINVAL;
+	}
+
+	if (!(t = thread_alloc())) {
+		return -ENOMEM;
+	}
+
+	// TODO arg. -- Eldar
+	*p_thread = thread_init(t, run, t->stack, t->stack_sz);
+	return 0;
+}
+
 struct thread *thread_init(struct thread *t, void *(*run)(void *),
 		void *stack_address, size_t stack_size) {
 	struct thread *current;
-	char *stack_pointer;
+
 	if (!t) {
 		return NULL;
 	}
@@ -107,9 +84,8 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 	}
 
 	context_init(&t->context, true);
-	context_set_entry(&t->context, thread_run, (int) t);
-	stack_pointer = (char*)stack_address + stack_size;
-	context_set_stack(&t->context, stack_pointer);
+	context_set_entry(&t->context, thread_run, 0 /* TODO unused arg */);
+	context_set_stack(&t->context, (char *) stack_address + stack_size);
 
 	t->run = run;
 
@@ -122,6 +98,9 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 	event_init(&t->event, "finish");
 	t->need_message = false;
 
+	list_add(&t->thread_link, &__thread_list);
+
+	// XXX WTF?
 	if (NULL != (current = thread_self())) {
 		t->own_console = current->own_console;
 	}
@@ -144,21 +123,19 @@ void thread_change_priority(struct thread *t, int priority) {
 }
 
 int thread_stop(struct thread *t) {
-	static struct thread *zombie; /* Last zombie thread (if any). */
+	// XXX zombie check -- Eldar
+//	static struct thread *zombie; /* Last zombie thread (if any). */
 
 	if (!t) {
 		return -EINVAL;
 	}
 
-	if (t == idle_thread || t == zombie) {
-		return -EBUSY;
-	}
-
 	sched_lock();
 
 	sched_remove(t);
-
 	sched_wake(&t->event);
+	//	XXX move somewhere -- Eldar
+	list_del_init(&t->thread_link);
 
 	sched_unlock();
 
@@ -199,24 +176,70 @@ struct thread *thread_lookup(__thread_id_t id) {
 	return NULL;
 }
 
-/*FIXME allocation memory*/
-POOL_DEF(struct thread, thread_pool, __THREAD_POOL_SZ);
+/**
+ * Function, which does nothing. For idle_thread.
+ */
+static void *idle_run(void *arg) {
+	while (true) {
+		thread_yield();
+	}
+	return NULL;
+}
+
+static int unit_init(void) {
+	struct thread *current, *idle;
+	int error;
+
+	// TODO unused stack allocation for current thread -- Eldar
+	if ((error = thread_create(&current, (void *(*)(void *)) -1, NULL))) {
+		return error;
+	}
+	current->priority = THREAD_PRIORITY_MAX;
+
+	if ((error = thread_create(&idle, idle_run, NULL))) {
+		thread_free(current);
+		return error;
+	}
+	idle->priority = THREAD_PRIORITY_MIN;
+
+	return sched_init(current, idle);
+}
+
+static int unit_fini(void) {
+	sched_lock();
+
+	return 0;
+}
+
+#define THREAD_POOL_SZ 0x10
+
+POOL_DEF(struct thread, thread_pool, THREAD_POOL_SZ);
+POOL_DEF(char[STACK_SZ], stack_pool, THREAD_POOL_SZ);
 
 struct thread *thread_alloc(void) {
 	struct thread *t;
+	void *stack;
 
 	if (!(t = (struct thread *) static_cache_alloc(&thread_pool))) {
 		return NULL;
 	}
 
-	list_add(&t->thread_link, &__thread_list);
+	if (!(stack = static_cache_alloc(&stack_pool))) {
+		static_cache_free(&thread_pool, t);
+		return NULL;
+	}
+
+	t->stack = stack;
+	t->stack_sz = STACK_SZ;
 
 	return t;
 }
 
 void thread_free(struct thread *t) {
 	assert(t != NULL);
-	list_del_init(&t->thread_link);
+	if (t->stack) {
+		static_cache_free(&stack_pool, t->stack);
+	}
 	static_cache_free(&thread_pool, t);
 }
 

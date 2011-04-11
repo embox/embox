@@ -23,28 +23,29 @@ struct pprocess;
 #endif
 
 struct thread {
+
 	struct context    context;      /**< Architecture-dependent CPU state. */
 	__thread_id_t     id;           /**< Unique identifier. */
 	struct list_head  thread_link;  /**< Linkage on all threads. */
+
 	void           *(*run)(void *); /**< Start routine. */
 	__extension__ union {
 		void         *run_arg;      /**< Argument to pass to start routine. */
 		void         *run_ret;      /**< Return value of start routine. */
 	};
+	void             *stack;        /**< Allocated thread stack buffer. */
+	size_t            stack_sz;     /**< Stack size. TODO unused. -- Eldar */
+
 	bool              reschedule;   /**< Whether rescheduling is needed. */
 	__thread_priority_t priority;   /**< Scheduling priority. */
 	enum thread_state state;        /**< Current state. */
+	struct event      event;        /**< Thread exit event. */
+
 	bool              need_message; /**< Waiting for message. */
-	struct list_head messages;      /**< Messages sent to the thread. */
-	struct event msg_event;         /**< Event, appearing when thread receives message. */
-	/** Event which thread make after finish */
-	struct event event;
+	struct list_head  messages;     /**< Messages sent to the thread. */
+	struct event      msg_event;    /**< Thread receives a message. */
 
-	/*----- Scheduler-dependent fields -------*/
-
-	/* List and priorlist. */
-	/** List item, corresponding to thread in list of executed threads. */
-	struct list_head sched_list;
+	struct list_head  sched_list;   /**< Scheduler-private link. */
 
 	struct vconsole *own_console;
 

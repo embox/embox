@@ -9,27 +9,19 @@
 #include <embox/test.h>
 
 #include <kernel/thread/api.h>
-#include <kernel/thread/sched.h>
 
 EMBOX_TEST_SUITE("test for thread API");
 
-#define THREAD_STACK_SIZE 0x1000
-
-static char minus_stack[THREAD_STACK_SIZE];
-
-static void *minus_run(void *arg) {
-	size_t i;
-	for (i = 0; i < 100; i++) {
-		TRACE("-");
-	}
-
-	return NULL;
+static void *foo_run(void *arg) {
+	return arg;
 }
 
-TEST_CASE("") {
-	struct thread minus_thread;
+TEST_CASE("thread_join should retrieve the result of thread execution") {
+	struct thread *foo;
+	int ret;
 
-	minus_thread = thread_init(minus_run, minus_stack, THREAD_STACK_SIZE);
+	test_assert_zero(thread_create(&foo, foo_run, 42));
+	test_assert_zero(thread_join(foo, &ret));
+	test_assert_equal(ret, 42);
 
-	thread_join(&minus_thread, NULL);
 }

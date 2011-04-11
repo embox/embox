@@ -14,8 +14,6 @@
 
 #include "types.h"
 
-#define __THREAD_POOL_SZ 0x100
-
 #define __thread_foreach(thread_ptr) \
 	list_for_each_entry(thread_ptr, __extension__ ({   \
 				extern struct list_head __thread_list; \
