@@ -287,10 +287,7 @@ void tab_displey(const char *str) {
 	while (*str && ( i < 13)) {
 		if (*str != '\n') {
 			display_char(*str);
-		} /*else {
-			//display_x = 5;
-			display_y++;
-		}*/
+		}
 		str++;
 		i++;
 	}
