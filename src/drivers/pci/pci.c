@@ -83,7 +83,7 @@ uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
 	return 0;
 }
 
-static inline const char *find_vendor_name(uint16_t ven_id) {
+const char *find_vendor_name(uint16_t ven_id) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(pci_vendors); i++) {
 		if (pci_vendors[i].ven_id == ven_id) {
@@ -93,7 +93,7 @@ static inline const char *find_vendor_name(uint16_t ven_id) {
 	return NULL;
 }
 
-static inline const char *find_device_name(uint16_t dev_id) {
+const char *find_device_name(uint16_t dev_id) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(pci_devices); i++) {
 		if (pci_devices[i].dev_id == dev_id) {
@@ -103,7 +103,7 @@ static inline const char *find_device_name(uint16_t dev_id) {
 	return NULL;
 }
 
-static inline const char *find_class_name(uint8_t base, uint8_t sub) {
+const char *find_class_name(uint8_t base, uint8_t sub) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(pci_subclasses); i++) {
 		if (pci_subclasses[i].baseclass == base &&
@@ -119,43 +119,6 @@ static inline const char *find_class_name(uint8_t base, uint8_t sub) {
 	return NULL;
 }
 
-static void scan_bus(void) {
-	uint32_t devfn, l, bus, slot, func;
-	uint16_t vendor, device;
-	uint8_t hdr_type = 0, baseclass, subclass, rev;
-
-	TRACE("\n");
-	for (bus = 0; bus < PCI_BUS_QUANTITY; ++bus) {
-		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
-			func = devfn & 0x07;
-			slot = (devfn >> 3) & 0x1f;
-			if (func == 0) {
-				pci_read_config8(bus, devfn, PCI_HEADER_TYPE, &hdr_type);
-			} else if (!(hdr_type & 0x80)) {
-				continue;
-			}
-			pci_read_config32(bus, devfn, PCI_VENDOR_ID, &l);
-			if (l == 0xffffffff || l == 0x00000000) {
-				hdr_type = 0;
-				continue;
-			}
-			vendor = l & 0xffff;
-			device = (l >> 16) & 0xffff;
-
-			pci_read_config8(bus, devfn, PCI_BASECLASS_CODE, &baseclass);
-			pci_read_config8(bus, devfn, PCI_SUBCLASS_CODE, &subclass);
-			pci_read_config8(bus, devfn, PCI_REVISION_ID, &rev);
-
-			TRACE("%02d:%02x.%d %s: %s %s (rev %02d)\n",
-				bus, slot, func,
-				find_class_name(baseclass, subclass),
-				find_vendor_name(vendor),
-				find_device_name(device), rev);
-			//TODO:
-		}
-	}
-}
-
 static int __init pci_init(void) {
 	out32(PCI_CONFIG_ADDRESS, 0);
 	out32(PCI_CONFIG_ADDRESS + 0x2, 0);
@@ -163,6 +126,5 @@ static int __init pci_init(void) {
 		LOG_ERROR("PCI is not supported\n");
 		return -1;
 	}
-	scan_bus();
 	return 0;
 }

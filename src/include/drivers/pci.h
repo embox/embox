@@ -209,5 +209,9 @@ extern uint32_t pci_write_config16(uint32_t bus, uint32_t dev_fn,
 extern uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint32_t value);
 
+extern const char *find_vendor_name(uint16_t ven_id);
+extern const char *find_device_name(uint16_t dev_id);
+extern const char *find_class_name(uint8_t base, uint8_t sub);
+
 #endif /* PCI_H_ */
 
