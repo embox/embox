@@ -6,7 +6,7 @@
 
 typedef unsigned int __ipl_t;
 
-inline static void ipl_init(void) {
+static inline void ipl_init(void) {
 	unsigned int tmp;
 
 	__asm__ __volatile__(
@@ -20,7 +20,7 @@ inline static void ipl_init(void) {
 	);
 }
 
-inline static unsigned int ipl_save(void) {
+static inline unsigned int ipl_save(void) {
 	unsigned int ret;
 	unsigned int tmp;
 
@@ -37,7 +37,7 @@ inline static unsigned int ipl_save(void) {
 	return ret;
 }
 
-inline static void ipl_restore(unsigned int ipl) {
+static inline void ipl_restore(unsigned int ipl) {
 	unsigned int tmp;
 
 	__asm__ __volatile__(

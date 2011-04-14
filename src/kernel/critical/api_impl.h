@@ -68,19 +68,19 @@
 #define __CRITICAL_COUNT(critical) \
 	(__CRITICAL_LOWER(critical) + 1)
 
-inline static int critical_allows(__critical_t critical) {
+static inline int critical_allows(__critical_t critical) {
 	return !(__critical_count_get() & __CRITICAL_BELOW(critical));
 }
 
-inline static int critical_inside(__critical_t critical) {
+static inline int critical_inside(__critical_t critical) {
 	return __critical_count_get() & __CRITICAL_MASK(critical);
 }
 
-inline static void critical_enter(__critical_t critical) {
+static inline void critical_enter(__critical_t critical) {
 	__critical_count_add(__CRITICAL_COUNT(critical));
 }
 
-inline static void critical_leave(__critical_t critical) {
+static inline void critical_leave(__critical_t critical) {
 	__critical_count_sub(__CRITICAL_COUNT(critical));
 }
 

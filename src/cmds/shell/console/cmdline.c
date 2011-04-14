@@ -54,7 +54,7 @@ static bool cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	return true;
 }
 
-inline static bool cmdline_history_move_by(CMDLINE *cmdline, int by) {
+static inline bool cmdline_history_move_by(CMDLINE *cmdline, int by) {
 	return cmdline_history_move_to(cmdline, cmdline->history_cursor + by);
 }
 

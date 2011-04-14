@@ -9,6 +9,16 @@
 #ifndef EMBOX_KERNEL_H_
 #define EMBOX_KERNEL_H_
 
+/**
+ * @mainpage
+ *
+ * This manual documents the Embox C API.
+ *
+ * There are several other places to look for Embox information, such
+ * as the wiki; those can be found at <a href="http://code.google.com/p/embox">
+ * the Embox website</a>.
+ */
+
 #ifdef __EMBOX__
 #include <err.h>
 #else

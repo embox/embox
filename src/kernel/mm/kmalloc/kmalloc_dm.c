@@ -50,8 +50,8 @@ typedef struct tag_free {
 #define BEGIN_TAG(end) (tag_free_t*) (end - end->size - sizeof(tag_free_t))
 
 /* some stuff for easey programming */
-inline static int allocate_mem_block(int pages);
-inline static void eat_mem(size_t size, tag_free_t *ext);
+static inline int allocate_mem_block(int pages);
+static inline void eat_mem(size_t size, tag_free_t *ext);
 /* memory list */
 static LIST_HEAD(mem_pool);
 /* inited? */
@@ -137,7 +137,7 @@ void kfree(void *ptr) {
 }
 
 /* auxiliary function. allocate block of memory TODO add the ending memory work */
-inline static int allocate_mem_block(int pages) {
+static inline int allocate_mem_block(int pages) {
 	tag_free_t *tmp_begin;
 	tag_t* tmp_end;
 
@@ -160,7 +160,7 @@ inline static int allocate_mem_block(int pages) {
 	return 1;
 }
 /* auxiliary function. Eat mem. add the ending memory work */
-inline static void eat_mem(size_t size, tag_free_t* ext) {
+static inline void eat_mem(size_t size, tag_free_t* ext) {
 	tag_free_t *tmp_begin;
 	tag_t *tmp_end;
 	size_t size_tmp;

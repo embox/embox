@@ -32,7 +32,7 @@ static int mod_perform(const struct mod *mod, bool op);
 static int mod_perform_nodep(const struct mod *mod, bool op);
 static bool mod_deps_satisfied(const struct mod *mod, bool op);
 
-inline static mod_op_t mod_op_deref(const struct mod *mod, bool op) {
+static inline mod_op_t mod_op_deref(const struct mod *mod, bool op) {
 	struct mod_ops *ops;
 	if (NULL == mod->info || NULL == (ops = mod->info->ops)) {
 		return NULL;

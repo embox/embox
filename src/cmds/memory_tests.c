@@ -12,13 +12,13 @@
 #include <util/array.h>
 #include "memory_tests.h"
 
-inline static void print_error(volatile uint32_t *addr,
+static inline void print_error(volatile uint32_t *addr,
 		volatile uint32_t expected_value) {
 	TRACE("FAILED! at address 0x%08x value 0x%08x (0x%8x expected)\n",
 			(unsigned)addr, *addr, expected_value);
 }
 
-inline static int return_error(memtest_err_t *s_err, const char *test_name,
+static inline int return_error(memtest_err_t *s_err, const char *test_name,
 		volatile uint32_t *address, uint32_t received_value,
 		volatile uint32_t expected_value) {
 	print_error(address, expected_value);

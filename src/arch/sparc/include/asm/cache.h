@@ -9,14 +9,14 @@
 #ifndef SPARC_CACHE_H_
 #define SPARC_CACHE_H_
 
-inline static void cache_flush(void) {
+static inline void cache_flush(void) {
 	__asm__ __volatile__ (
 		"flush\n\t"
 		"nop;nop;nop\n\t"
 	);
 }
 
-inline static void cache_enable(void) {
+static inline void cache_enable(void) {
 	register unsigned int tmp = 0;
 	__asm__ __volatile__ (
 		"flush\n\t"
@@ -27,7 +27,7 @@ inline static void cache_enable(void) {
 	);
 }
 
-inline static void cache_disable(void) {
+static inline void cache_disable(void) {
 	register unsigned int tmp = 0;
 	__asm__ __volatile__ (
 		"flush\n\t"
@@ -38,7 +38,7 @@ inline static void cache_disable(void) {
 	);
 }
 
-inline static void cache_insn_enable(void) {
+static inline void cache_insn_enable(void) {
 	register unsigned int tmp = 0;
 	__asm__ __volatile__ (
 		"flush\n\t"
@@ -49,7 +49,7 @@ inline static void cache_insn_enable(void) {
 	);
 }
 
-inline static void cache_insn_disable(void) {
+static inline void cache_insn_disable(void) {
 	register unsigned int tmp = 0;
 	__asm__ __volatile__ (
 		"flush\n\t"
@@ -60,7 +60,7 @@ inline static void cache_insn_disable(void) {
 	);
 }
 
-inline static void cache_data_enable(void) {
+static inline void cache_data_enable(void) {
 	register unsigned int tmp = 0;
 	__asm__ __volatile__ (
 		"flush\n\t"
@@ -71,7 +71,7 @@ inline static void cache_data_enable(void) {
 	);
 }
 
-inline static void cache_data_disable(void) {
+static inline void cache_data_disable(void) {
 	register unsigned int tmp = 0;
 	__asm__ __volatile__ (
 		"flush\n\t"

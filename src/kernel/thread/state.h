@@ -55,7 +55,7 @@ enum thread_state_action {
  * @retval 0
  *   Is the given @a action isn't applicable for the current state.
  */
-inline static enum thread_state thread_state_transition(
+static inline enum thread_state thread_state_transition(
 		enum thread_state state, enum thread_state_action action) {
 	extern const enum thread_state
 			__thread_state_transition_table[__THREAD_STATE_TOTAL ][__THREAD_STATE_ACTION_TOTAL ];
@@ -63,7 +63,7 @@ inline static enum thread_state thread_state_transition(
 	return __thread_state_transition_table[state - 1][action];
 }
 
-inline static int thread_state_blocked(enum thread_state state) {
+static inline int thread_state_blocked(enum thread_state state) {
 	int blocked = (0x1 << 0) | (0x1 << 1);
 	return state & blocked;
 }

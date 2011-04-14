@@ -74,59 +74,59 @@ struct list_link {
 #define __list_remove(element, m_link) \
 	list_remove_link(&(element)->m_link)
 
-inline static struct list_link *list_link_init(struct list_link *link) {
+static inline struct list_link *list_link_init(struct list_link *link) {
 	__list_link_init(&link->l);
 	return link;
 }
 
-inline static struct list *list_init(struct list *list) {
+static inline struct list *list_init(struct list *list) {
 	__list_link_init(&list->l);
 	return list;
 }
 
-inline static int list_alone_link(struct list_link *link) {
+static inline int list_alone_link(struct list_link *link) {
 	return __list_link_alone(&link->l);
 }
 
-inline static int list_empty(struct list *list) {
+static inline int list_empty(struct list *list) {
 	return __list_link_alone(&list->l);
 }
 
-inline static struct list_link *list_first_link(struct list *list) {
+static inline struct list_link *list_first_link(struct list *list) {
 	struct __list_link *l = &list->l, *first = l->next;
 	return first != l ? structof(first, struct list_link, l) : NULL;
 }
 
-inline static struct list_link *list_last_link(struct list *list) {
+static inline struct list_link *list_last_link(struct list *list) {
 	struct __list_link *l = &list->l, *last = l->prev;
 	return last != l ? structof(last, struct list_link, l) : NULL;
 }
 
-inline static void list_insert_before_link(struct list_link *new_link,
+static inline void list_insert_before_link(struct list_link *new_link,
 		struct list_link *link) {
 	struct __list_link *l = &link->l;
 	__list_insert_link(&new_link->l, l->prev, l);
 }
 
-inline static void list_insert_after_link(struct list_link *new_link,
+static inline void list_insert_after_link(struct list_link *new_link,
 		struct list_link *link) {
 	struct __list_link *l = &link->l;
 	__list_insert_link(&new_link->l, l, l->next);
 }
 
-inline static void list_add_first_link(struct list_link *new_link,
+static inline void list_add_first_link(struct list_link *new_link,
 		struct list *list) {
 	struct __list_link *l = &list->l;
 	__list_insert_link(&new_link->l, l, l->next);
 }
 
-inline static void list_add_last_link(struct list_link *new_link,
+static inline void list_add_last_link(struct list_link *new_link,
 		struct list *list) {
 	struct __list_link *l = &list->l;
 	__list_insert_link(&new_link->l, l->prev, l);
 }
 
-inline static void list_bulk_add_first(struct list *from_list,
+static inline void list_bulk_add_first(struct list *from_list,
 		struct list *to_list) {
 	struct __list_link *from = &from_list->l, *to = &to_list->l;
 
@@ -136,7 +136,7 @@ inline static void list_bulk_add_first(struct list *from_list,
 	}
 }
 
-inline static void list_bulk_add_last(struct list *from_list,
+static inline void list_bulk_add_last(struct list *from_list,
 		struct list *to_list) {
 	struct __list_link *from = &from_list->l, *to = &to_list->l;
 
@@ -146,13 +146,13 @@ inline static void list_bulk_add_last(struct list *from_list,
 	}
 }
 
-inline static void list_remove_link(struct list_link *link) {
+static inline void list_remove_link(struct list_link *link) {
 	struct __list_link *l = &link->l;
 	__list_bind(l->prev, l->next);
 	__list_link_init(l);
 }
 
-inline static struct list_link *list_remove_first_link(struct list *list) {
+static inline struct list_link *list_remove_first_link(struct list *list) {
 	struct list_link *ret;
 
 	if ((ret = list_first_link(list))) {
@@ -162,7 +162,7 @@ inline static struct list_link *list_remove_first_link(struct list *list) {
 	return ret;
 }
 
-inline static struct list_link *list_remove_last_link(struct list *list) {
+static inline struct list_link *list_remove_last_link(struct list *list) {
 	struct list_link *ret;
 
 	if ((ret = list_last_link(list))) {

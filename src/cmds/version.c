@@ -15,7 +15,9 @@ static void print_usage(void) {
 }
 
 static int exec(int argsc, char **argsv) {
+#ifdef CONFIG_SVN_REV
 	unsigned int rev = CONFIG_SVN_REV;
+#endif
 	int nextOption;
 	getopt_init();
 	do {
@@ -40,6 +42,8 @@ static int exec(int argsc, char **argsv) {
 	printf("Date: %12s\n", __DATE__);
 	printf("Time: %9s\n", __TIME__);
 	printf("Compiler: %s\n", __VERSION__);
+#ifdef CONFIG_SVN_REV
 	printf("Revision: r%d\n", rev);
+#endif
 	return 0;
 }

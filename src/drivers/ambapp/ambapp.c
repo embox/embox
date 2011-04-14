@@ -29,7 +29,7 @@ amba_dev_t *apb_devices[APB_QUANTITY];
 
 typedef int (*LOCK_SLOT)(uint16_t slot, amba_dev_t *dev);
 
-inline static int lock_ahbm_slot(uint16_t slot, amba_dev_t *dev) {
+static inline int lock_ahbm_slot(uint16_t slot, amba_dev_t *dev) {
 	if (ahbm_devices[slot]) {
 		return -1;
 	}
@@ -37,7 +37,7 @@ inline static int lock_ahbm_slot(uint16_t slot, amba_dev_t *dev) {
 	return 0;
 }
 
-inline static int lock_ahbsl_slot(uint16_t slot, amba_dev_t *dev) {
+static inline int lock_ahbsl_slot(uint16_t slot, amba_dev_t *dev) {
 	if (ahbsl_devices[slot]) {
 		return -1;
 	}
@@ -45,7 +45,7 @@ inline static int lock_ahbsl_slot(uint16_t slot, amba_dev_t *dev) {
 	return 0;
 }
 
-inline static int lock_apb_slot(uint16_t slot, amba_dev_t *dev) {
+static inline int lock_apb_slot(uint16_t slot, amba_dev_t *dev) {
 	if (apb_devices[slot]) {
 		return -1;
 	}
@@ -53,7 +53,7 @@ inline static int lock_apb_slot(uint16_t slot, amba_dev_t *dev) {
 	return 0;
 }
 
-inline static int lock_amba_slot(uint16_t slot, amba_dev_t *dev,
+static inline int lock_amba_slot(uint16_t slot, amba_dev_t *dev,
 					bool is_ahb, bool is_master) {
 	LOCK_SLOT lock_handler;
 	if (!is_ahb) {
@@ -73,19 +73,19 @@ inline static int lock_amba_slot(uint16_t slot, amba_dev_t *dev,
  * |vendor  |device  |00   |version |irq     |
  * |________|________|_____|________|________|
  */
-inline static uint8_t get_ven(uint32_t id_reg) {
+static inline uint8_t get_ven(uint32_t id_reg) {
 	return (0xFF & ((id_reg) >> 24));
 }
 
-inline static uint16_t get_dev(uint32_t id_reg) {
+static inline uint16_t get_dev(uint32_t id_reg) {
 	return (0xFFF & ((id_reg) >> 12));
 }
 
-inline static uint8_t get_irq(uint32_t id_reg) {
+static inline uint8_t get_irq(uint32_t id_reg) {
 	return (0x1F & (id_reg));
 }
 
-inline static uint8_t get_version(uint32_t id_reg) {
+static inline uint8_t get_version(uint32_t id_reg) {
 	return (0x1F & ((id_reg)) >> 5);
 }
 
@@ -95,7 +95,7 @@ inline static uint8_t get_version(uint32_t id_reg) {
  * @param dev_id device ID
  * @return slotnumber or -1
  */
-inline static int find_apbdev_slotnum(uint8_t ven_id, uint16_t dev_id) {
+static inline int find_apbdev_slotnum(uint8_t ven_id, uint16_t dev_id) {
 	apb_slot_t *pslotbase = (apb_slot_t *) APB_BASE;
 	size_t cur_slotnum;
 	for (cur_slotnum = 0; cur_slotnum < APB_QUANTITY; cur_slotnum++) {
@@ -114,7 +114,7 @@ inline static int find_apbdev_slotnum(uint8_t ven_id, uint16_t dev_id) {
  * @param is_master master/slave
  * @return slotnumber or -1
  */
-inline static int find_ahbdev_slotnum(uint8_t ven_id, uint16_t dev_id, bool is_master) {
+static inline int find_ahbdev_slotnum(uint8_t ven_id, uint16_t dev_id, bool is_master) {
 	ahb_slot_t *pslotbase = (ahb_slot_t *)
 				(is_master ? AHB_MASTER_BASE : AHB_SLAVE_BASE);
 	size_t maxdevs = is_master ? AHB_MASTERS_QUANTITY : AHB_SLAVES_QUANTITY;
@@ -140,7 +140,7 @@ inline static int find_ahbdev_slotnum(uint8_t ven_id, uint16_t dev_id, bool is_m
  *       0010 - AHB Memory space
  *       0011 - AHB I/O space
  */
-inline static void fill_ahb_bar_info(amba_bar_info_t *bar, uint32_t ba_reg) {
+static inline void fill_ahb_bar_info(amba_bar_info_t *bar, uint32_t ba_reg) {
 	if (ba_reg) {
 		bar->start = ba_reg & 0xFFF00000;
 		bar->prefetchable = (0x1 & ((ba_reg) >> 17));
@@ -153,7 +153,7 @@ inline static void fill_ahb_bar_info(amba_bar_info_t *bar, uint32_t ba_reg) {
 	}
 }
 
-inline static void fill_ahb_bar_infos(amba_dev_t *dev, ahb_slot_t *ahb_slot) {
+static inline void fill_ahb_bar_infos(amba_dev_t *dev, ahb_slot_t *ahb_slot) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(dev->bar); i++) {
 		fill_ahb_bar_info(&dev->bar[i], ahb_slot->ba_reg[i]);
@@ -165,7 +165,7 @@ inline static void fill_ahb_bar_infos(amba_dev_t *dev, ahb_slot_t *ahb_slot) {
  * @param bar amba bar info
  * @param ba_reg Bank Address Register
  */
-inline static void fill_apb_bar_info(amba_bar_info_t *bar, uint32_t ba_reg) {
+static inline void fill_apb_bar_info(amba_bar_info_t *bar, uint32_t ba_reg) {
 	bar->start = 0x80000000;
 	bar->prefetchable = 0;
 	bar->cacheable = 0;
@@ -179,7 +179,7 @@ inline static void fill_apb_bar_info(amba_bar_info_t *bar, uint32_t ba_reg) {
  * @param dev_info device info struct
  * @param id_reg Id Register
  */
-inline static void fill_amba_dev_info(amba_dev_info_t *dev_info, uint32_t id_reg) {
+static inline void fill_amba_dev_info(amba_dev_info_t *dev_info, uint32_t id_reg) {
 	dev_info->venID = get_ven(id_reg);
 	dev_info->devID = get_dev(id_reg);
 	dev_info->irq = get_irq(id_reg);

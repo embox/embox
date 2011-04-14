@@ -16,12 +16,12 @@ struct event {
 	const char *name;
 };
 
-inline static void event_init(struct event *e, const char *name) {
+static inline void event_init(struct event *e, const char *name) {
 	INIT_LIST_HEAD(&e->sleep_queue);
 	e->name = name;
 }
 
-inline static const char *event_name(struct event *e) {
+static inline const char *event_name(struct event *e) {
 	return e->name;
 }
 

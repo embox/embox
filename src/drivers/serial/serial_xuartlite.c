@@ -49,11 +49,11 @@ typedef struct uart_regs {
 /*set registers base*/
 static volatile uart_regs_t *uart = (uart_regs_t *) XILINX_UARTLITE_BASEADDR;
 
-inline static int is_rx_empty(void) {
+static inline int is_rx_empty(void) {
 	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
 }
 
-inline static int can_tx_trans(void) {
+static inline int can_tx_trans(void) {
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 

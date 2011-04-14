@@ -32,12 +32,12 @@
  *  dev_id can be set to NULL, but it a good idea anyway to use this item to point
  *  to the device structure.
  */
-inline static int request_irq(unsigned int irq, irq_handler_t handler,
+static inline int request_irq(unsigned int irq, irq_handler_t handler,
 		unsigned long flags, const char *dev_name, void *dev_id) {
 	return irq_attach(irq, handler, flags, dev_id, dev_name);
 }
 
-inline static void free_irq(unsigned int irq, void *dev_id) {
+static inline void free_irq(unsigned int irq, void *dev_id) {
 	irq_detach(irq, dev_id);
 }
 

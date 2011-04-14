@@ -232,8 +232,8 @@ static int exec(int argsc, char **argsv) {
 		if (up) {
 			ifdev_up(iname);	/* up net iface */
 		}
-		if (NULL == (in_dev = inet_dev_find_by_name(argsv[argsc - 1])) && (up
-				|| down)) {
+		if (NULL == (in_dev = inet_dev_find_by_name(argsv[argsc - 1])) &&
+			    (up	|| down)) {
 			LOG_ERROR("can't find interface %s\n", argsv[argsc - 1]);
 			return -1;
 		}

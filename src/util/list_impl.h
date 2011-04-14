@@ -19,28 +19,28 @@ struct __list_link {
 		.prev = (__link), \
 	}
 
-inline static void __list_bind(struct __list_link *prev,
+static inline void __list_bind(struct __list_link *prev,
 		struct __list_link *next) {
 	next->prev = prev;
 	prev->next = next;
 }
 
-inline static int __list_link_alone(struct __list_link *link) {
+static inline int __list_link_alone(struct __list_link *link) {
 	return link == link->next;
 }
 
-inline static void __list_link_init(struct __list_link *link) {
+static inline void __list_link_init(struct __list_link *link) {
 	__list_bind(link, link);
 }
 
-inline static void __list_insert_chain(struct __list_link *first,
+static inline void __list_insert_chain(struct __list_link *first,
 		struct __list_link *last, struct __list_link *prev,
 		struct __list_link *next) {
 	__list_bind(prev, first);
 	__list_bind(last, next);
 }
 
-inline static void __list_insert_link(struct __list_link *link,
+static inline void __list_insert_link(struct __list_link *link,
 		struct __list_link *prev, struct __list_link *next) {
 	__list_insert_chain(link, link, prev, next);
 }

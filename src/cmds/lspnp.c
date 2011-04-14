@@ -31,18 +31,18 @@ static void print_usage(void) {
 //-------------Utils---------------------------------------------------
 
 
-inline static void print_table_row(int n, int ven_id, int dev_id,
+static inline void print_table_row(int n, int ven_id, int dev_id,
 		const char *ven_name, const char *dev_name, int ver, int irq) {
 	printf("%02x.%02x:%03x %20s %28s \t0x%02x %3d\n",
 			n, ven_id, dev_id, ven_name, dev_name, ver, irq);
 }
 
-inline static void print_table_head(void) {
+static inline void print_table_head(void) {
 	printf("\n  %7s %20s %28s \t%4s %3s\n", "ven:dev",
 			"Vendor Name", "Device Name","ver", "irq");
 }
 
-inline static void show_bars_type(amba_bar_info_t *bar) {
+static inline void show_bars_type(amba_bar_info_t *bar) {
 	switch (bar->type) {
 	case 1:
 		printf("\tapb:");
@@ -55,7 +55,7 @@ inline static void show_bars_type(amba_bar_info_t *bar) {
 	}
 }
 
-inline static void show_bar_info(amba_bar_info_t *bar) {
+static inline void show_bar_info(amba_bar_info_t *bar) {
 	if (bar->used) {
 		show_bars_type(bar);
 		printf("%X\n", bar->start);

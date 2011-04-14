@@ -21,11 +21,11 @@
 
 typedef uint32_t __ipl_t;
 
-inline static void ipl_init(void) {
+static inline void ipl_init(void) {
 	msr_set_bit(MSR_IE_BIT);
 }
 #include "stdio.h"
-inline static __ipl_t ipl_save(void) {
+static inline __ipl_t ipl_save(void) {
 #if 0
 	/* it will be better to use irq_ctrl mask but we can't expect every
 	 * irq_ctrl driver has implemented own get_mask and set mask functions
@@ -44,7 +44,7 @@ inline static __ipl_t ipl_save(void) {
 	return ipl;
 }
 
-inline static void ipl_restore(__ipl_t ipl) {
+static inline void ipl_restore(__ipl_t ipl) {
 #if 0
 	/* it will be better to use irq_ctrl mask but we can't expect every
 	 * irq_ctrl driver has implemented own get_mask and set mask functions

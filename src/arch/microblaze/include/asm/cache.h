@@ -14,40 +14,40 @@
 /*TODO may be put it in config file*/
 #define CACHE_LINE_LENGTH    32
 
-inline static void cache_set_ctrl_reg(unsigned int ctrl_reg) {
+static inline void cache_set_ctrl_reg(unsigned int ctrl_reg) {
 	/* stub*/
 }
 
-inline static void cache_refresh(void) {
+static inline void cache_refresh(void) {
 	/* seems that nothing to do here:
 	 * Microblaze always writes through cache */
 }
 
-inline static void cache_enable(void) {
+static inline void cache_enable(void) {
 	msr_set(MSR_ICE_MASK | MSR_DCE_MASK);
 }
 
-inline static void cache_disable(void) {
+static inline void cache_disable(void) {
 	msr_clr(MSR_ICE_MASK | MSR_DCE_MASK);
 }
 
-inline static void cache_instr_enable(void) {
+static inline void cache_instr_enable(void) {
 	msr_set(MSR_ICE_MASK);
 }
 
-inline static void cache_instr_disable(void) {
+static inline void cache_instr_disable(void) {
 	msr_clr(MSR_ICE_MASK);
 }
 
-inline static void cache_data_enable(void) {
+static inline void cache_data_enable(void) {
 	msr_set(MSR_DCE_MASK);
 }
 
-inline static void cache_data_disable(void) {
+static inline void cache_data_disable(void) {
 	msr_clr(MSR_DCE_MASK);
 }
 
-inline static void icache_flush(void) {
+static inline void icache_flush(void) {
 	int volatile temp = 0;
 	unsigned int volatile start = 0;
 	unsigned int volatile end = 0x800; /*2k*/
@@ -63,7 +63,7 @@ inline static void icache_flush(void) {
 	);
 }
 
-inline static void dcache_flush(void) {
+static inline void dcache_flush(void) {
 	int volatile temp = 0;
 	unsigned int volatile start = 0;
 	unsigned int volatile end = 0x800; /*2k*/
@@ -79,7 +79,7 @@ inline static void dcache_flush(void) {
 	);
 }
 
-inline static void cache_flush(void) {
+static inline void cache_flush(void) {
 	icache_flush();
 	dcache_flush();
 }

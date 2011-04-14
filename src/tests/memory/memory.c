@@ -23,7 +23,7 @@ EMBOX_TEST(run);
 
 #define MEMTEST_ADDR (CONFIG_MEMTEST_BASE + CONFIG_MEMTEST_OFFSET)
 
-inline static void print_error(volatile uint32_t *addr,
+static inline void print_error(volatile uint32_t *addr,
 		volatile uint32_t expected_value) {
 	TRACE("FAILED! at addr 0x%08x value 0x%08x (0x%8x expected)\n",
 			(unsigned)addr, *addr, expected_value);

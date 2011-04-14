@@ -362,7 +362,7 @@ int vconsole_close(vconsole_t *con) {
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 /* move to tty. here don't need to know about this */
-inline static bool console_is_current(void) {
+static inline bool console_is_current(void) {
 	struct thread *thread;
 	if (NULL == (thread = thread_self())) {
 		return false;

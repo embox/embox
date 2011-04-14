@@ -102,7 +102,7 @@ EMBOX_UNIT_INIT(unit_init);
 #define NESM_START_PG      0x40    /* First page of TX buffer */
 #define NESM_STOP_PG       0x80    /* Last page +1 of RX ring */
 
-inline static void rx_enable(void) {
+static inline void rx_enable(void) {
 	out8(NE_PAGE0_STOP,   NE_CMD);
 	out8(RX_BUFFER_START, EN0_BOUNDARY);
 	out8(NE_PAGE1_STOP,   NE_CMD);
@@ -110,24 +110,24 @@ inline static void rx_enable(void) {
 	out8(NE_START,        NE_CMD);
 }
 
-inline static void rx_disable(void) {
+static inline void rx_disable(void) {
 	/* do nothing */
 	out8(NE_STOP, NE_CMD);
 }
 
-inline static void set_tx_count(uint32_t val) {
+static inline void set_tx_count(uint32_t val) {
 	/* Set how many bytes we're going to send. */
 	out8(val & 0xff, EN0_TBCR_LO);
 	out8((val & 0xff00) >> 8, EN0_TBCR_HI);
 }
 
-inline static void set_rem_address(uint32_t val) {
+static inline void set_rem_address(uint32_t val) {
 	/* Set how many bytes we're going to send. */
 	out8(val & 0xff, EN0_RSARLO);
 	out8((val & 0xff00) >> 8, EN0_RSARHI);
 }
 
-inline static void set_rem_byte_count(uint32_t val) {
+static inline void set_rem_byte_count(uint32_t val) {
 	/* Set how many bytes we're going to send. */
 	out8(val & 0xff, EN0_RCNTLO);
 	out8((val & 0xff00) >> 8, EN0_RCNTHI);

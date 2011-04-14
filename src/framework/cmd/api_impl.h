@@ -21,15 +21,15 @@
 
 extern const struct cmd __cmd_registry[];
 
-inline static const char *cmd_name(const struct cmd *cmd) {
+static inline const char *cmd_name(const struct cmd *cmd) {
 	return NULL != cmd ? cmd->mod->name : NULL;
 }
 
-inline static const char *cmd_brief(const struct cmd *cmd) {
+static inline const char *cmd_brief(const struct cmd *cmd) {
 	return NULL != cmd ? cmd->mod->brief : NULL;
 }
 
-inline static const char *cmd_details(const struct cmd *cmd) {
+static inline const char *cmd_details(const struct cmd *cmd) {
 	return NULL != cmd ? cmd->mod->details : NULL;
 }
 

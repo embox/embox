@@ -20,7 +20,7 @@ void __init ip_init(void) {
 }
 
 /* Generate a checksum for an outgoing IP datagram. */
-inline static void ip_send_check(iphdr_t *iph) {
+static inline void ip_send_check(iphdr_t *iph) {
 	iph->check = 0;
 	iph->check = ptclbsum((void *) iph, IP_HEADER_SIZE(iph));
 }

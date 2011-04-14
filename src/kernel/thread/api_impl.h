@@ -20,7 +20,7 @@
 				&__thread_list;                        \
 			}), thread_link)                           \
 
-inline static struct thread *thread_self(void) {
+static inline struct thread *thread_self(void) {
 	return sched_current();
 }
 

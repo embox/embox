@@ -48,8 +48,8 @@ static net_device_stats_t *loopback_get_stats(net_device_t *dev) {
 }
 
 static const struct net_device_ops loopback_ops = {
-		.ndo_start_xmit      = loopback_xmit,
-		.ndo_get_stats       = loopback_get_stats,
+	.ndo_start_xmit      = loopback_xmit,
+	.ndo_get_stats       = loopback_get_stats,
 };
 
 /**

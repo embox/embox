@@ -16,27 +16,27 @@
 
 typedef long __critical_t;
 
-inline static __critical_t __critical_count_get(void) {
+static inline __critical_t __critical_count_get(void) {
 	extern __critical_t __critical_count;
 	return __critical_count;
 }
 
-inline static void __critical_count_add_nobarrier(__critical_t count) {
+static inline void __critical_count_add_nobarrier(__critical_t count) {
 	extern __critical_t __critical_count;
 	__critical_count += count;
 }
 
-inline static void __critical_count_sub_nobarrier(__critical_t count) {
+static inline void __critical_count_sub_nobarrier(__critical_t count) {
 	extern __critical_t __critical_count;
 	__critical_count -= count;
 }
 
-inline static void __critical_count_add(__critical_t count) {
+static inline void __critical_count_add(__critical_t count) {
 	__critical_count_add_nobarrier(count);
 	__barrier();
 }
 
-inline static void __critical_count_sub(__critical_t count) {
+static inline void __critical_count_sub(__critical_t count) {
 	__barrier();
 	__critical_count_sub_nobarrier(count);
 }
