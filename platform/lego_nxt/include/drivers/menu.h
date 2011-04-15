@@ -5,5 +5,4 @@
  * @author Darya Dzendzik
  */
 
-
-//static uint8_t pointer_buff[8] = {0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00};
+extern int menu_start(void);

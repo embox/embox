@@ -49,12 +49,12 @@ int menu_start(void){
 		usleep(600);
 		if (buts & BT_RIGHT){
 			if (current_test == max_cur_test) {
-				if ( max_cur_test < (number-1) ){// -1
+				if ( max_cur_test < (number-1) ){
 					min_cur_test++;
 					max_cur_test++;
 					current_test++;
 					display_clear_screen();
-					print_list_test(current_test - 7); //8
+					print_list_test(current_test - 7);
 					display_draw(0, 7, 1, 8, &pointer_buff[0]);
 				}
 			} else {
