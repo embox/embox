@@ -32,6 +32,8 @@
 
 EMBOX_UNIT(unit_init, unit_fini);
 
+static int resched;
+
 int sched_init(struct thread* current, struct thread *idle) {
 	int error;
 
@@ -53,7 +55,7 @@ int sched_init(struct thread* current, struct thread *idle) {
  * @param id nothing significant
  */
 static void sched_tick(uint32_t id) {
-	sched_current()->resched = true;
+	resched = true;
 }
 
 /**
@@ -77,16 +79,12 @@ static void sched_switch(void) {
 }
 
 void __sched_dispatch(void) {
-	struct thread *current;
-
 	assert(critical_allows(CRITICAL_PREEMPT));
 
 	sched_lock();
 
-	current = sched_current();
-
-	while (current->resched) {
-		current->resched = false;
+	while (resched) {
+		resched = false;
 		sched_switch();
 	}
 
@@ -100,7 +98,7 @@ void sched_start(struct thread *t) {
 
 	t->state = THREAD_STATE_RUNNING;
 
-	sched_current()->resched |= sched_policy_start(t);
+	resched |= sched_policy_start(t);
 
 	sched_unlock();
 }
@@ -110,7 +108,7 @@ void sched_stop(struct thread *t) {
 
 	sched_lock();
 
-	sched_current()->resched |= sched_policy_stop(t);
+	resched |= sched_policy_stop(t);
 
 	t->state = 0;
 
@@ -125,7 +123,7 @@ int sched_sleep_locked(struct event *e) {
 
 	current = sched_current();
 
-	current->resched |= sched_policy_stop(current);
+	resched |= sched_policy_stop(current);
 
 	current->state = thread_state_transition(current->state,
 			THREAD_STATE_ACTION_SLEEP);
@@ -169,7 +167,7 @@ int sched_wake(struct event *e) {
 		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 
 		if (t->state == THREAD_STATE_RUNNING) {
-			current->resched |= sched_policy_start(t);
+			resched |= sched_policy_start(t);
 		}
 
 		assert(t->state);
@@ -191,7 +189,7 @@ int sched_wake_one(struct event *e) {
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
 
 	if (t->state == THREAD_STATE_RUNNING) {
-		sched_current()->resched |= sched_policy_start(t);
+		resched |= sched_policy_start(t);
 	}
 
 	sched_unlock();
@@ -202,7 +200,7 @@ int sched_wake_one(struct event *e) {
 void sched_yield(void) {
 	sched_lock();
 
-	sched_current()->resched = true;
+	resched = true;
 
 	sched_unlock();
 }
@@ -211,7 +209,7 @@ void sched_suspend(struct thread *t){
 	sched_lock();
 
 	if (t->state == THREAD_STATE_RUNNING) {
-		sched_current()->resched |= sched_policy_stop(t);
+		resched |= sched_policy_stop(t);
 	}
 
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_SUSPEND);
@@ -225,12 +223,19 @@ void sched_resume(struct thread *t) {
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_RESUME);
 
 	if (t->state == THREAD_STATE_RUNNING) {
-		sched_current()->resched |= sched_policy_start(t);
+		resched |= sched_policy_start(t);
 	}
 
 	sched_unlock();
 }
 
+// TODO make it inline. -- Eldar
+void sched_check_switch(void) {
+	extern void __sched_dispatch(void);
+	if (critical_allows(CRITICAL_PREEMPT) && resched) {
+		__sched_dispatch();
+	}
+}
 
 static int unit_init(void) {
 	if (set_timer(SCHED_TICK_TIMER_ID, SCHED_TICK_INTERVAL, sched_tick)

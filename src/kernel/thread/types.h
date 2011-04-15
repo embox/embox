@@ -9,7 +9,6 @@
 #ifndef KERNEL_THREAD_TYPES_H_
 #define KERNEL_THREAD_TYPES_H_
 
-#include <drivers/vconsole.h>
 #include <lib/list.h>
 #include <hal/context.h>
 #include <kernel/thread/event.h>
@@ -21,6 +20,7 @@ typedef int __thread_priority_t;
 #ifdef CONFIG_PP_ENABLE
 struct pprocess;
 #endif
+struct vconsole;
 
 struct thread {
 
@@ -36,7 +36,6 @@ struct thread {
 	void             *stack;        /**< Allocated thread stack buffer. */
 	size_t            stack_sz;     /**< Stack size. TODO unused. -- Eldar */
 
-	bool              resched;      /**< Whether rescheduling is needed. */
 	__thread_priority_t priority;   /**< Scheduling priority. */
 	enum thread_state state;        /**< Current state. */
 	int               susp_cnt;     /**< Count of calls #thread_suspend. */
@@ -52,7 +51,7 @@ struct thread {
 
 	/* Pseudo process */
 #ifdef CONFIG_PP_ENABLE
-struct pprocess *pp;
+	struct pprocess *pp;
 #endif
 
 };

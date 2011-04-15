@@ -26,14 +26,8 @@ static inline void sched_unlock_noswitch(void) {
 	critical_leave(CRITICAL_PREEMPT);
 }
 
-static inline void sched_check_switch(void) {
-	extern void __sched_dispatch(void);
-	if (critical_allows(CRITICAL_PREEMPT) && sched_current()->resched) {
-		__sched_dispatch();
-	}
-}
-
 static inline void sched_unlock(void) {
+	extern void sched_check_switch(void);
 	sched_unlock_noswitch();
 	sched_check_switch();
 }
