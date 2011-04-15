@@ -116,7 +116,7 @@ static void __thread_init(struct thread *t, unsigned int flags,
 
 	t->susp_cnt = 0;
 	// TODO default priority for newly created thread. -- Eldar
-	t->priority = 1;
+	t->priority = THREAD_PRIORITY_TOTAL / 2;
 
 	INIT_LIST_HEAD(&t->sched_list);
 	INIT_LIST_HEAD(&t->messages);
