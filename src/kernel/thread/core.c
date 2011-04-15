@@ -22,6 +22,7 @@
 #include <embox/unit.h>
 
 #include <util/pool.h>
+#include <util/structof.h>
 #include <kernel/critical/api.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
@@ -290,33 +291,37 @@ static int unit_fini(void) {
 
 #define THREAD_POOL_SZ 0x10
 
-POOL_DEF(struct thread, thread_pool, THREAD_POOL_SZ);
-POOL_DEF(char[STACK_SZ], stack_pool, THREAD_POOL_SZ);
+union thread_pool_entry {
+	struct thread thread;
+	char stack[STACK_SZ];
+};
+
+POOL_DEF(union thread_pool_entry, thread_pool, THREAD_POOL_SZ);
 
 struct thread *thread_alloc(void) {
+	union thread_pool_entry *block;
 	struct thread *t;
 	void *stack;
 
-	if (!(t = (struct thread *) static_cache_alloc(&thread_pool))) {
+	if (!(block = (union thread_pool_entry *) static_cache_alloc(&thread_pool))) {
 		return NULL;
 	}
 
-	if (!(stack = static_cache_alloc(&stack_pool))) {
-		static_cache_free(&thread_pool, t);
-		return NULL;
-	}
+	t = &block->thread;
 
-	t->stack = stack;
+	t->stack = &block->stack;
 	t->stack_sz = STACK_SZ;
 
 	return t;
 }
 
 void thread_free(struct thread *t) {
+	union thread_pool_entry *block;
+
 	assert(t != NULL);
-	if (t->stack) {
-		static_cache_free(&stack_pool, t->stack);
-	}
-	static_cache_free(&thread_pool, t);
+
+	// TODO may be this is not the best way... -- Eldar
+	block = structof(t, union thread_pool_entry, thread);
+	static_cache_free(&thread_pool, block);
 }
 
