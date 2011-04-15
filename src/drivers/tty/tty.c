@@ -132,23 +132,47 @@ void tty_vtbuild_callback(struct vtbuild *tty_vtbuild, char ch) {
 	cur_tty->file_op->fwrite(&ch, sizeof(char), 1, NULL);
 }
 
-static void run_shell(struct thread *thread) {
-	const struct cmd *def_shell;
 
+static int console_init(struct vconsole *cons, int id) {
+	cons->id = id;
+	cons->tty = cur_tty;
+	cons->width = 80;
+	cons->height = 25;
+	cons->out_busy = false;
+	return 0;
+}
+
+static void *run_shell(void *data) {
+	const struct cmd *def_shell;
+	struct vconsole *cons;
+	int con_num;
+	struct thread *thread;
+
+	con_num = (int)data;
+	printf("tty_id %d\n", con_num);
+	thread = thread_self();
+	//FIXME tty here must be console alloc
+	cons = (struct vconsole *)&cur_tty->console[con_num];
+	console_init(cons, con_num);
+
+	thread->own_console = cons;
+
+#if 0
 	console_clear();
-	printf("Hello from TTY%d!\n\n",thread->id + 1); /* this is output to the i-th console */
+#endif
+	printf("Hello from TTY%d!\n\n",con_num); /* this is output to the i-th console */
 	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
 		prom_printf(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
-		return;
+		return NULL;
 	}
 	def_shell->exec(0,NULL);
+	return NULL;
 }
+
 
 static int tty_init(void) {
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 	size_t i;
-	static struct vconsole *cons;
-	int cons_num;
 	struct thread *thread = thread_self();
 #endif
 	static FILE *def_file;
@@ -161,45 +185,37 @@ static int tty_init(void) {
 	}
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
+#if 0
 	/* add clear screen */
 	tac_clear( cur_tty );
-
-	cur_tty->console_cur = -1;
-
-	for (i = 0; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
-		cons_num = i;
-		cons = (struct vconsole *)&cur_tty->console[i];
-		cons->id = i;
-		cons->tty = cur_tty;
-		cons->width = 80;
-		cons->height = 25;
-		cons->out_busy = false;
-		//cur_console = cons;
-		((struct thread*)thread)->own_console = cons;
-		cur_tty->console_cur = i;
-
-		{
-			struct thread* t;
-			if (!(t = thread_alloc())) {
-				LOG_ERROR("error while create new console");
-				return 1;
-			}
-			thread_init(t, run_shell, cons->esh_stack, CONFIG_ESH_STACK_S);
-			t->priority = THREAD_PRIORITY_MAX;
-
-			thread_start(t);
-		}
-	}
-	//cur_console = (struct vconsole *)&cur_tty->console[0]; /* this is default console */
-	thread->own_console =
-			(struct vconsole *)&cur_tty->console[0]; /* this is default console */
-	cur_tty->console_cur = 0;
-	console_reprint();
-	//FIXME scheduler must starting in more convenient place/
-	//sched_start();
-#else
-	run_shell();
 #endif
+	/* now we want to initialize first console
+	 * it use current thread. we just add pointer to thread resources
+	 */
+	cur_tty->console_cur = 0;
+	for (i = 1; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
+#if 1
+		static int console_numbers[CONFIG_TTY_CONSOLE_COUNT];
+		struct thread* new_thread;
+		console_numbers[i] = i;
+		thread_create(&new_thread, 0, run_shell, (void*)console_numbers[i]);
+		thread_change_priority(new_thread, thread->priority);
+#else
+		static uint8_t stacks[CONFIG_TTY_CONSOLE_COUNT][0x1000];
+		struct thread* new_thread = thread_alloc();
+		thread_init(new_thread, run_shell, &stacks[i], 0x1000);
+		new_thread->priority = thread->priority;
+		thread_start(new_thread);
+#endif
+	}
+
+#if 0
+	console_reprint();
+#endif
+#endif
+	run_shell(0);
+	cur_tty->console_cur = 0;
+
 	return 0;
 }
 

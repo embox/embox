@@ -5,13 +5,7 @@ $_SRCS-tty += tty.c
 $_DEPS-tty += embox.fs.devfs tty_action
 $_USES-tty += libc.a
 
-#it isn't good idea
-#$_DEPS-tty += embox.driver.serial.apbuart
 $_REQUIRES-tty += embox.hal.diag
-#$_DEPS-tty += embox.driver.ambapp
-#ifdef
-#$_DEPS-tty += embox.driver.terminal #vtparse + vtbuilder
-#endif
 
 ifdef CONFIG_TTY_CONSOLE_COUNT
 $_DEPS-tty += embox.cmd.esh
@@ -24,4 +18,3 @@ $_DEPS-vconsole += tty tty_action
 
 $_MODS += tty_action
 $_SRCS-tty_action += tty_action.c
-#$_DEPS-vtaction
