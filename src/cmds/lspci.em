@@ -1,6 +1,6 @@
 $_MODS += lspci
 $_SRCS-lspci += lspci.c
-$_DEPS-lspnp += embox.driver.pci
+$_DEPS-lspci += embox.driver.pci
 
 $_BRIEF-lspci = Show list pci's devices
 
