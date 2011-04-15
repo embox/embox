@@ -15,13 +15,7 @@ void context_set_stack(struct context *ctx, void *sp) {
 	ctx->esp = (uint32_t) sp - 0x40 - sizeof(uint32_t);
 }
 
-void context_set_entry(struct context *ctx, void(*pc)(int), int arg) {
-	uint32_t *argp;
-
+void context_set_entry(struct context *ctx, void(*pc)(void)) {
 	ctx->eip = (uint32_t) pc;
-
-	/* Kernel mode argument */
-	argp = (uint32_t *) (ctx->esp + 2 * sizeof(uint32_t));
-	*argp = (uint32_t) arg;
 }
 

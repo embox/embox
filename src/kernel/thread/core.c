@@ -46,7 +46,7 @@ static void __thread_ugly_init(struct thread *t);
  *
  * @param thread_pointer pointer at thread.
  */
-static void __attribute__((noreturn)) thread_run(int ignored) {
+static void __attribute__((noreturn)) thread_run(void) {
 	struct thread *current;
 	void *arg, *ret;
 
@@ -108,7 +108,7 @@ static void __thread_init(struct thread *t, unsigned int flags,
 	assert(run);
 
 	context_init(&t->context, true);
-	context_set_entry(&t->context, thread_run, 0 /* TODO unused arg */);
+	context_set_entry(&t->context, thread_run);
 	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
 
 	t->run = run;
