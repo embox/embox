@@ -31,11 +31,7 @@ void context_set_stack(struct context *ctx, void *stack_addr) {
 	ctx->kregs.ksp = sp - STACK_FRAME_SZ;
 }
 
-struct context *current_ctx; // XXX I'll fix it soon. -- Eldar
 void context_set_entry(struct context *ctx, void (*pc)(void)) {
-	if (!ctx) {
-		ctx = current_ctx;
-	}
 	assert(ctx != NULL);
 //	struct stack_frame *frame = (struct stack_frame *) ctx->kregs.sp;
 	ctx->kregs.ret = (uint32_t) pc - 8;
