@@ -162,13 +162,58 @@ extern int thread_create(struct thread **p_thread, unsigned int flags,
 
 extern int thread_detach(struct thread *thread);
 
+/**
+ * Delays execution caused thread to the end of the @a thread. Allows to save
+ * the result of execution @a thread.
+ *
+ * @param thread
+ *   Thread, execution of which will have to wait.
+ *
+ * @param p_ret
+ *   A pointer to memory storing the result of @a thread execution.
+ *
+ * @return
+ *   Result of joining.
+ *
+ * @retval 0
+ *   If successful.
+ */
 extern int thread_join(struct thread *thread, void **p_ret);
 
 extern void __attribute__((noreturn)) thread_exit(void *ret);
 
 extern void thread_yield(void);
 
+/**
+ * Either suspends the @a thread. If the @a thread is already suspended,
+ * increments the count of calls #thread_suspend() for this @a thread.
+ *
+ * @param thread
+ *   Suspends the thread.
+ *
+ * @return
+ *   Result of suspending.
+ *
+ * @retval 0
+ *   If successful.
+ */
 extern int thread_suspend(struct thread *thread);
+
+/**
+ * Decrement the count of suspending. If it is zero, resumes a @a thread.
+ *
+ * @param thread
+ *   Resumed thread.
+ *
+ *@return
+ *   Result of resuming.
+ *
+ * @retval 0
+ *   If successful.
+ *
+ * @retval -EINVAL
+ *   If @thread isn't suspended.
+ */
 extern int thread_resume(struct thread *thread);
 
 extern void thread_set_priority(struct thread *thread,
