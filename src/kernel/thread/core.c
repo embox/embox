@@ -92,6 +92,12 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 
 	__thread_init(t, flags, run, arg);
 
+	thread_start(t);
+
+	if (flags & THREAD_FLAG_SUSPENDED) {
+		thread_suspend(t);
+	}
+
 	if (save_ptr) {
 		*p_thread = t;
 	}
@@ -104,9 +110,11 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 static void __thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	assert(t);
+#if 0
 	assert(t->stack);
 	assert(t->stack_sz);
 	assert(run);
+#endif
 
 	context_init(&t->context, true);
 	context_set_entry(&t->context, thread_run);
@@ -116,6 +124,7 @@ static void __thread_init(struct thread *t, unsigned int flags,
 	t->run_arg = arg;
 
 	t->susp_cnt = 0;
+
 	// TODO default priority for newly created thread. -- Eldar
 	t->priority = THREAD_PRIORITY_TOTAL / 2;
 
@@ -172,7 +181,7 @@ void thread_change_priority(struct thread *t, int priority) {
 
 int thread_stop(struct thread *t) {
 	// XXX zombie check -- Eldar
-//	static struct thread *zombie; /* Last zombie thread (if any). */
+	//	static struct thread *zombie; /* Last zombie thread (if any). */
 
 	if (!t) {
 		return -EINVAL;
@@ -264,23 +273,21 @@ static void *idle_run(void *arg) {
 }
 
 static int unit_init(void) {
-	struct thread *bootstrap, *idle;
-	int error;
+	static struct thread bootstrap;
+	struct thread *idle;
 
-	// TODO unused stack allocation for current thread -- Eldar
-	if ((error = thread_create(&bootstrap, 0, (void *(*)(void *)) -1, NULL))) {
-		return error;
-	}
+	// TODO unused context initialization inside __thread_init. -- Eldar
+	__thread_init(&bootstrap, 0, NULL, NULL);
 	// TODO priority for bootstrap thread -- Eldar
-	bootstrap->priority = THREAD_PRIORITY_TOTAL / 2;
+	bootstrap.priority = THREAD_PRIORITY_TOTAL / 2;
 
-	if ((error = thread_create(&idle, 0, idle_run, NULL))) {
-		thread_free(bootstrap);
-		return error;
+	if (!(idle = thread_alloc())) {
+		return -ENOMEM;
 	}
+	__thread_init(idle, 0, idle_run, NULL);
 	idle->priority = THREAD_PRIORITY_MIN;
 
-	return sched_init(bootstrap, idle);
+	return sched_init(&bootstrap, idle);
 }
 
 static int unit_fini(void) {
