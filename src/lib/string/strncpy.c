@@ -14,7 +14,7 @@ char *strncpy(char *dst, const char *src, size_t n) {
 	while (n && (*dst++ = *src++)) {
 		n--;
 	}
-	while (n--) {
+	while (--n) {
 		*dst++ = '\0';
 	}
 #else /* Duff's device optimization */
