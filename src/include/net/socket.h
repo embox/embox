@@ -78,6 +78,21 @@
 //#define PF_IUCV		AF_IUCV
 #define PF_MAX		AF_MAX
 
+/**
+ * Define info about protocol families
+ * @param id - identifer of protocol family
+ * @return string info
+ */
+static inline char* trace_pf_info(int id) {
+	switch(id) {
+		case PF_INET:
+			return "Internet IP Protocol";
+		case PF_PACKET:
+			return "Packet family";
+	}
+	return "";
+}
+
 /* Maximum queue length specifiable by listen.  */
 #define SOMAXCONN	128
 

@@ -71,6 +71,25 @@ enum sock_type {
 	SOCK_PACKET	= 10
 };
 
+/**
+ * Define of info about id of socket type
+ * @param id - identifer of socket
+ * @return string info
+ */
+static inline char* trace_sock_type_info(int id) {
+	switch(id) {
+		case SOCK_STREAM:
+			return "stream (connection) socket";
+		case SOCK_DGRAM:
+			return "datagram (conn.less) socket";
+		case SOCK_RAW:
+			return "raw socket";
+		case SOCK_PACKET:
+			return "linux magic socket";
+	}
+	return "";
+}
+
 #define SOCK_MAX (SOCK_PACKET + 1)
 
 /**

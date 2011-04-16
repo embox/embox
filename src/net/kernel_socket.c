@@ -248,7 +248,8 @@ int sock_register(const struct net_proto_family *ops) {
 		err = 0;
 	}
 
-	TRACE("NET: Registered protocol family %d\n", ops->family);
+	TRACE("NET: Registered protocol family %d (%s)\n\n", ops->family,
+			trace_pf_info(ops->family));
 	return err;
 }
 
@@ -258,5 +259,6 @@ void sock_unregister(int family) {
 	}
 
 	net_families[family] = NULL;
-	TRACE("NET: Unregistered protocol family %d\n", family);
+	TRACE("NET: Unregistered protocol family %d (%s)\n", family,
+			trace_pf_info(family));
 }

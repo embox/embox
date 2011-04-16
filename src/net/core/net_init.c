@@ -16,12 +16,14 @@ static int __init unit_init(void) {
 	extern packet_type_t *__ipstack_packets_start, *__ipstack_packets_end;
 	packet_type_t ** p_netpack = &__ipstack_packets_start;
 
+	TRACE("\n");
 	for (; p_netpack < &__ipstack_packets_end; p_netpack++) {
 		if ((NULL == (*p_netpack)) || (NULL == (*p_netpack)->init)) {
-			TRACE ("Wrong packet descriptor\n");
+			TRACE ("\nWrong packet descriptor\n");
 			continue;
 		}
-		TRACE ("Adding packet type 0x%03X..", (*p_netpack)->type);
+		TRACE ("\nAdding packet type 0x%03X - %s:\n", (*p_netpack)->type,
+				trace_proto_pack_info((*p_netpack)->type));
 
 		if (-1 == (*p_netpack)->init()) {
 			TRACE ("NO\n");
@@ -30,5 +32,6 @@ static int __init unit_init(void) {
 			TRACE ("YES\n");
 		}
 	}
+	TRACE("\n");
 	return 0;
 }

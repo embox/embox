@@ -26,6 +26,27 @@ enum {
 	IPPROTO_MAX
 };
 
+/**
+ * Define info about id of IP protocols
+ * @param id - identifer of protocol
+ * @return string info
+ */
+static inline char* trace_proto_info(int id) {
+	switch(id) {
+		case IPPROTO_IP:
+			return "Dummy protocol for TCP";
+		case IPPROTO_ICMP:
+			return "Internet Control Message Protocol";
+		case IPPROTO_TCP:
+			return "Transmission Control Protocol";
+		case IPPROTO_UDP:
+			return "User Datagram Protocol";
+		case IPPROTO_RAW:
+			return "RAW";
+	}
+	return "";
+}
+
 /* IPv4 AF_INET sockets:*/
 
 typedef uint32_t in_addr_t;

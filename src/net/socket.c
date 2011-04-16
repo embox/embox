@@ -22,10 +22,14 @@ int __init sock_init(void) {
 	inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
 	kernel_sock_init();
 	sk_init();
+	TRACE("\n");
 	for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
 		/*register socket type*/
-		TRACE("Added sock type 0x%X for proto 0x%02X\n",
-				(* p_netsock)->type, (* p_netsock)->protocol);
+		TRACE("  Added sock type 0x%X - %s \n for proto 0x%02X - %s\n\n",
+				(* p_netsock)->type,
+				trace_sock_type_info((* p_netsock)->type),
+				(* p_netsock)->protocol,
+				trace_proto_info((* p_netsock)->protocol));
 	}
 	return 0;
 }
