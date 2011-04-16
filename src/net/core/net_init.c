@@ -32,6 +32,8 @@ static int __init unit_init(void) {
 			TRACE ("YES\n");
 		}
 	}
+	/* Initializaton of icmp socket */
+	icmp_init();
 	TRACE("\n");
 	return 0;
 }
