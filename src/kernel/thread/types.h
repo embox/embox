@@ -25,27 +25,30 @@ struct vconsole;
 struct thread {
 
 	struct context    context;      /**< Architecture-dependent CPU state. */
-	__thread_id_t     id;           /**< Unique identifier. */
-	struct list_head  thread_link;  /**< Linkage on all threads. */
 
 	void           *(*run)(void *); /**< Start routine. */
 	__extension__ union {
 		void         *run_arg;      /**< Argument to pass to start routine. */
 		void         *run_ret;      /**< Return value of start routine. */
+		void         *join_ret;     /**< Exit value of a join target. */
 	};
 	void             *stack;        /**< Allocated thread stack buffer. */
 	size_t            stack_sz;     /**< Stack size. TODO unused. -- Eldar */
 
-	__thread_priority_t priority;   /**< Scheduling priority. */
-	enum thread_state state;        /**< Current state. */
-	int               susp_cnt;     /**< Count of calls #thread_suspend. */
+	__thread_id_t     id;           /**< Unique identifier. */
+	struct list_head  thread_link;  /**< Linkage on all threads. */
+	int               flags;        /**< Private flags. TODO merge with state. */
+	int               susp_cnt;     /**< Depth of #thread_suspend() calls. */
 	struct event      exit_event;   /**< Thread exit event. */
+
+	__thread_priority_t priority;   /**< Scheduling priority. */
+	enum thread_state state;        /**< Current scheduling state. */
+	struct list_head  sched_list;   /**< Scheduler-private link. */
+
 
 	bool              need_message; /**< Waiting for message. */
 	struct list_head  messages;     /**< Messages sent to the thread. */
 	struct event      msg_event;    /**< Thread receives a message. */
-
-	struct list_head  sched_list;   /**< Scheduler-private link. */
 
 	struct vconsole *own_console;
 
