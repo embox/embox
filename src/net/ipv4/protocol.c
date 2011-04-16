@@ -24,10 +24,11 @@ int inet_protocols_init(void) {
 
 	for (; p_netproto < &__ipstack_protos_end; p_netproto++) {
 		if (inet_add_protocol((*p_netproto), (*p_netproto)->type) < 0) {
-			LOG_ERROR("inet_protocols_init: Cannot add 0x%X protocol\n",
-					(*p_netproto)->type);
+			LOG_ERROR("inet_protocols_init: Cannot add 0x%X protocol - %s\n",
+					(*p_netproto)->type, trace_proto_info((*p_netproto)->type));
 		}
-		TRACE("added 0x%X\n", (*p_netproto)->type);
+		TRACE("  Added 0x%X protocol - %s\n\n", (*p_netproto)->type,
+				trace_proto_info((*p_netproto)->type));
 	}
 #else
 	if (inet_add_protocol(&icmp_protocol, IPPROTO_ICMP) < 0) {
