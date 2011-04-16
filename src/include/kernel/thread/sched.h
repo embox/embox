@@ -13,6 +13,8 @@
 
 #include __impl_x(kernel/thread/sched_impl.h)
 
+struct thread;
+
 /**
  * Initializes scheduler.
  *
@@ -76,6 +78,9 @@ extern void sched_start(struct thread *thread);
  */
 extern void sched_stop(struct thread *thread);
 
+extern void sched_set_priority(struct thread *thread,
+		__thread_priority_t new_priority);
+
 /**
  * Makes the current thread sleep until the specified @a event occurs.
  * Execution is suspended until #sched_wake() or #sched_wake_one() is called on
@@ -128,6 +133,7 @@ extern int sched_wake_one(struct event *event);
  * Moves the current thread to the end of the queue for its priority.
  */
 extern void sched_yield(void);
+
 
 extern void sched_suspend(struct thread *thread);
 

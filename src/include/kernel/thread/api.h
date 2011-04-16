@@ -216,7 +216,7 @@ extern int thread_suspend(struct thread *thread);
  */
 extern int thread_resume(struct thread *thread);
 
-extern void thread_set_priority(struct thread *thread,
+extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
 
 // XXX the following functions are considered obsolete. -- Eldar

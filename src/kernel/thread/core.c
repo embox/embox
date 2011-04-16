@@ -250,6 +250,25 @@ void thread_yield(void) {
 	sched_yield();
 }
 
+int thread_set_priority(struct thread *t, thread_priority_t new) {
+	if (THREAD_PRIORITY_MAX > new || new > THREAD_PRIORITY_MIN) {
+		return -EINVAL;
+	}
+
+	sched_lock();
+
+	if (t->priority == new) {
+		sched_unlock();
+		return 0;
+	}
+
+	sched_set_priority(t, new);
+
+	sched_unlock();
+
+	return 0;
+}
+
 struct thread *thread_lookup(__thread_id_t id) {
 	struct thread *t;
 

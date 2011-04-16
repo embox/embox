@@ -12,6 +12,7 @@
 #define KERNEL_THREAD_SCHED_POLICY_H_
 
 #include <stdbool.h>
+
 #include __impl_x(kernel/thread/types.h)
 
 /**

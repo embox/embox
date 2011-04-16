@@ -205,7 +205,7 @@ void sched_yield(void) {
 	sched_unlock();
 }
 
-void sched_suspend(struct thread *t){
+void sched_suspend(struct thread *t) {
 	sched_lock();
 
 	if (t->state == THREAD_STATE_RUNNING) {
@@ -223,6 +223,25 @@ void sched_resume(struct thread *t) {
 	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_RESUME);
 
 	if (t->state == THREAD_STATE_RUNNING) {
+		resched |= sched_policy_start(t);
+	}
+
+	sched_unlock();
+}
+
+void sched_set_priority(struct thread *t, __thread_priority_t new) {
+	bool need_restart;
+
+	sched_lock();
+
+	need_restart = (t->state == THREAD_STATE_RUNNING);
+	if (need_restart) {
+		resched |= sched_policy_stop(t);
+	}
+
+	t->priority = new;
+
+	if (need_restart) {
 		resched |= sched_policy_start(t);
 	}
 
