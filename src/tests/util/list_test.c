@@ -333,7 +333,7 @@ TEST_CASE("list_bulk_add_last shouldn't modify a destination list "
 		"if a source list is empty") {
 	fill_in_from(xyz, &n);
 
-	list_bulk_add_first(&m, &n);
+	list_bulk_add_last(&m, &n);
 
 	test_assert_true(list_empty(&m));
 	compare_with(xyz, &n);
@@ -356,6 +356,50 @@ TEST_CASE("list_bulk_add_last should move all the elements from a source "
 	fill_in_from(yz, &m);
 
 	list_bulk_add_last(&m, &n);
+
+	test_assert_true(list_empty(&m));
+	compare_with(xyz, &n);
+}
+
+TEST_CASE("list_bulk_insert_before shouldn't modify a destination list "
+		"if a source list is empty") {
+	fill_in_from(xyz, &n);
+
+	list_bulk_insert_before(&m, &y, lnk);
+
+	test_assert_true(list_empty(&m));
+	compare_with(xyz, &n);
+}
+
+TEST_CASE("list_bulk_insert_after shouldn't modify a destination list "
+		"if a source list is empty") {
+	fill_in_from(xyz, &n);
+
+	list_bulk_insert_after(&m, &y, lnk);
+
+	test_assert_true(list_empty(&m));
+	compare_with(xyz, &n);
+}
+
+TEST_CASE("list_bulk_insert_before: inserting new elements before the last "
+		"one in a list of two elements should insert them in the middle of the"
+		"target list") {
+	list_add_last(&y, &m, lnk);
+	fill_in_from(xz, &n);
+
+	list_bulk_insert_before(&m, &z, lnk);
+
+	test_assert_true(list_empty(&m));
+	compare_with(xyz, &n);
+}
+
+TEST_CASE("list_bulk_insert_after: inserting new elements after the first "
+		"one in a list of two elements should insert them in the middle of the"
+		"target list") {
+	list_add_last(&y, &m, lnk);
+	fill_in_from(xz, &n);
+
+	list_bulk_insert_after(&m, &x, lnk);
 
 	test_assert_true(list_empty(&m));
 	compare_with(xyz, &n);

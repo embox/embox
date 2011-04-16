@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO documentation for list.h -- Eldar Abusalimov
+ * @brief Release implementation of doubly-linked lists.
  *
  * @date Feb 27, 2011
  * @author Eldar Abusalimov
@@ -33,47 +33,6 @@ struct list_link {
 		.l = __LIST_LINK_INIT__(&(link)->l), \
 	}
 
-/* Most of macros are defined through a corresponding _link method. */
-
-#define __list_link_element(link, type, m_link) \
-	structof(link, type, m_link)
-
-#define __list_alone(element, m_link) \
-	list_alone_link(&(element)->m_link)
-
-#define __list_first(list, type, m_link) \
-	__list_link_element_check(list_first_link(list), type, m_link)
-
-#define __list_last(list, type, m_link) \
-	__list_link_element_check(list_last_link(list), type, m_link)
-
-#define __list_link_element_check(link, type, m_link) \
-	__extension__ ({ \
-		struct list_link *__list_link__ = (link); \
-		__list_link__ ? list_link_element(__list_link__, type, m_link) : NULL;\
-	})
-
-#define __list_add_first(element, list, m_link) \
-	list_add_first_link(&(element)->m_link, list)
-
-#define __list_add_last(element, list, m_link) \
-	list_add_last_link(&(element)->m_link, list)
-
-#define __list_insert_before(element, list_element, m_link) \
-	list_insert_before_link(&(element)->m_link, &(list_element)->m_link)
-
-#define __list_insert_after(element, list_element, m_link) \
-	list_insert_after_link(&(element)->m_link, &(list_element)->m_link)
-
-#define __list_remove_first(list, type, m_link) \
-	__list_link_element_check(list_remove_first_link(list), type, m_link)
-
-#define __list_remove_last(list, type, m_link) \
-	__list_link_element_check(list_remove_last_link(list), type, m_link)
-
-#define __list_remove(element, m_link) \
-	list_remove_link(&(element)->m_link)
-
 static inline struct list_link *list_link_init(struct list_link *link) {
 	__list_link_init(&link->l);
 	return link;
@@ -102,18 +61,6 @@ static inline struct list_link *list_last_link(struct list *list) {
 	return last != l ? structof(last, struct list_link, l) : NULL;
 }
 
-static inline void list_insert_before_link(struct list_link *new_link,
-		struct list_link *link) {
-	struct __list_link *l = &link->l;
-	__list_insert_link(&new_link->l, l->prev, l);
-}
-
-static inline void list_insert_after_link(struct list_link *new_link,
-		struct list_link *link) {
-	struct __list_link *l = &link->l;
-	__list_insert_link(&new_link->l, l, l->next);
-}
-
 static inline void list_add_first_link(struct list_link *new_link,
 		struct list *list) {
 	struct __list_link *l = &list->l;
@@ -124,6 +71,18 @@ static inline void list_add_last_link(struct list_link *new_link,
 		struct list *list) {
 	struct __list_link *l = &list->l;
 	__list_insert_link(&new_link->l, l->prev, l);
+}
+
+static inline void list_insert_before_link(struct list_link *new_link,
+		struct list_link *link) {
+	struct __list_link *l = &link->l;
+	__list_insert_link(&new_link->l, l->prev, l);
+}
+
+static inline void list_insert_after_link(struct list_link *new_link,
+		struct list_link *link) {
+	struct __list_link *l = &link->l;
+	__list_insert_link(&new_link->l, l, l->next);
 }
 
 static inline void list_bulk_add_first(struct list *from_list,
@@ -142,6 +101,26 @@ static inline void list_bulk_add_last(struct list *from_list,
 
 	if (!list_empty(from_list)) {
 		__list_insert_chain(from->next, from->prev, to->prev, to);
+		__list_link_init(from);
+	}
+}
+
+static inline void list_bulk_insert_before_link(struct list *from_list,
+		struct list_link *link) {
+	struct __list_link *from = &from_list->l, *l = &link->l;
+
+	if (!list_empty(from_list)) {
+		__list_insert_chain(from->next, from->prev, l->prev, l);
+		__list_link_init(from);
+	}
+}
+
+static inline void list_bulk_insert_after_link(struct list *from_list,
+		struct list_link *link) {
+	struct __list_link *from = &from_list->l, *l = &link->l;
+
+	if (!list_empty(from_list)) {
+		__list_insert_chain(from->next, from->prev, l, l->next);
 		__list_link_init(from);
 	}
 }

@@ -51,4 +51,77 @@ static inline void __list_insert_link(struct __list_link *link,
 # include "list_debug.h"
 #endif
 
+/* Most of macros are defined through a corresponding _link method.
+ * Implementation may also provide __list_check() macro which have to return
+ * its argument possibly performing an extra assertions about the value of the
+ * argument. */
+
+#ifndef __list_check
+#define __list_check(expr) (expr)
+#endif
+
+/* This is simply defined through structof macro. */
+#define __list_link_element(link, type, m_link) \
+	structof(__list_check(link), type, m_link)
+
+#define __list_alone(element, m_link) \
+	list_alone_link(&__list_check(element)->m_link)
+
+/**
+ * Casts the given @a link out to its container in case that it is not @c NULL.
+ *
+ * @param link
+ *   An expression of type <em>struct list_link *</em> being casted.
+ * @param type
+ *   The type of the container.
+ * @param m_link
+ *   The name of the member within the struct
+ * @return
+ *   The cast result if the @a link is not @c NULL.
+ * @retval NULL
+ *   If the @a link is @c NULL.
+ */
+#define __list_link_safe_cast(link, type, m_link) \
+	__extension__ ({ \
+		struct list_link *__list_link__ = (link); \
+		__list_link__ ? list_link_element(__list_link__, type, m_link) : NULL;\
+	})
+
+#define __list_first(list, type, m_link) \
+	__list_link_safe_cast(list_first_link(list), type, m_link)
+
+#define __list_last(list, type, m_link) \
+	__list_link_safe_cast(list_last_link(list), type, m_link)
+
+#define __list_add_first(element, list, m_link) \
+	list_add_first_link(&__list_check(element)->m_link, list)
+
+#define __list_add_last(element, list, m_link) \
+	list_add_last_link(&__list_check(element)->m_link, list)
+
+#define __list_insert_before(element, list_element, m_link) \
+	list_insert_before_link(&__list_check(element)->m_link, \
+			&__list_check(list_element)->m_link)
+
+#define __list_insert_after(element, list_element, m_link) \
+	list_insert_after_link(&__list_check(element)->m_link, \
+			&__list_check(list_element)->m_link)
+
+#define __list_bulk_insert_before(from_list, before_element, m_link) \
+	list_bulk_insert_before_link(from_list, \
+			&__list_check(before_element)->m_link)
+
+#define __list_bulk_insert_after(from_list, after_element, m_link) \
+	list_bulk_insert_after_link(from_list, \
+			&__list_check(after_element)->m_link)
+
+#define __list_remove_first(list, type, m_link) \
+	__list_link_safe_cast(list_remove_first_link(list), type, m_link)
+
+#define __list_remove_last(list, type, m_link) \
+	__list_link_safe_cast(list_remove_last_link(list), type, m_link)
+
+#define __list_remove(element, m_link) \
+	list_remove_link(&__list_check(element)->m_link)
+
 #endif /* UTIL_LIST_IMPL_H_ */
