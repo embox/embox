@@ -29,7 +29,7 @@ struct test_run_context {
 	jmp_buf before_run;
 };
 
-struct test_run_context *current;
+static struct test_run_context *current;
 
 static int test_case_run(const struct test_case *test_case,
 		const struct __test_fixture_ops *fixtures);
