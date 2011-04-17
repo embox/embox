@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Tests thread suspend/resume methods.
  *
  * @date Apr 17, 2011
  * @author Eldar Abusalimov
@@ -13,6 +13,7 @@
 #include <kernel/thread/api.h>
 #include <hal/ipl.h>
 
+// TODO define them in API. -- Eldar
 #define THREAD_PRIORITY_LOW  191
 #define THREAD_PRIORITY_HIGH 63
 
@@ -46,38 +47,8 @@ static enum state trans[3][3] = {
 
 static enum state current_state;
 
-static bool do_trans(enum state s, enum action a) {
-	int ret = true;
-	ipl_t ipl = ipl_save();
-
-	if (current_state != s) {
-		ret = false;
-		goto out_restore;
-	}
-
-	s = trans[index(s)][a];
-	if (!s) {
-		ret = false;
-		goto out_restore;
-	}
-
-	current_state = s;
-
-out_restore:
-	ipl_restore(ipl);
-	return ret;
-}
-
-static void do_trans_or_fail(enum state s, enum action a) {
-	test_assert(do_trans(s, a));
-}
-
-/* We can't fail() inside another thread. */
-static void do_trans_or_exit(enum state s, enum action a) {
-	if (!do_trans(s, a)) {
-		thread_exit((void *) -1);
-	}
-}
+static void do_trans_or_fail(enum state s, enum action a);
+static void do_trans_or_exit(enum state s, enum action a);
 
 static void *low_run(void *);
 static void *high_run(void *);
@@ -132,5 +103,38 @@ static void *high_run(void *arg) {
 	do_trans_or_exit(s_high, a_end);
 
 	return NULL;
+}
+
+static bool do_trans(enum state s, enum action a) {
+	int ret = true;
+	ipl_t ipl = ipl_save();
+
+	if (current_state != s) {
+		ret = false;
+		goto out_restore;
+	}
+
+	s = trans[index(s)][a];
+	if (!s) {
+		ret = false;
+		goto out_restore;
+	}
+
+	current_state = s;
+
+out_restore:
+	ipl_restore(ipl);
+	return ret;
+}
+
+static void do_trans_or_fail(enum state s, enum action a) {
+	test_assert(do_trans(s, a));
+}
+
+/* We can't fail() inside another thread. */
+static void do_trans_or_exit(enum state s, enum action a) {
+	if (!do_trans(s, a)) {
+		thread_exit((void *) -1);
+	}
 }
 
