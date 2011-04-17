@@ -54,4 +54,8 @@
 	ALIGNMENT();                   \
 	*(.checksum)                   \
 
+#define LDS_INPUT_RESERVE \
+	ALIGNMENT();                   \
+	*(.reserve*)                   \
+
 #endif /* EMBOX_LDS_H_ */

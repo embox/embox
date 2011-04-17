@@ -47,6 +47,12 @@ SECTIONS {
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 
+	.reserve (NOLOAD): {
+		LDS_INPUT_RESERVE
+	/* TODO memory region for reserve output section. */
+	} SECTION_REGION(bss)
+	SECTION_SYMBOLS(reserve)
+
 	.stack (NOLOAD): {
 		ALIGNMENT();
 		_stack_bottom = .;
