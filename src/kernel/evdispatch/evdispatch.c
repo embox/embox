@@ -19,7 +19,7 @@ struct handler {
 };
 
 /** pool for message in queue */
-POOL_DEF(struct event_msg, msg_queue_cache, MAX_MSG_COUNT_IN_QUEUE);
+POOL_DEF(msg_queue_pool, struct event_msg, MAX_MSG_COUNT_IN_QUEUE);
 
 /** Queue of messages, sent to handlers */
 static LIST_HEAD(msg_queue);
@@ -53,7 +53,7 @@ void event_dispatch(softirq_nr_t softirq_nr, void *data) {
 
 		handler_arr[msg->id].handler(msg);
 
-		static_cache_free(&msg_queue_cache, msg);
+		pool_free(&msg_queue_pool, msg);
 	}
 }
 
@@ -65,7 +65,7 @@ void event_dispatch(softirq_nr_t softirq_nr, void *data) {
  * @return pointer to created message
  */
 static struct event_msg *create_message(int id, void *data) {
-	struct event_msg *msg = static_cache_alloc(&msg_queue_cache);
+	struct event_msg *msg = pool_alloc(&msg_queue_pool);
 	msg->id = id;
 	msg->data = data;
 	return msg;

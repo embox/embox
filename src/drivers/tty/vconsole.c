@@ -63,8 +63,8 @@ void vconsole_clear(struct vconsole *vc) {
 }
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
-POOL_DEF(vconsole_t, vconsole_cache, CONFIG_TTY_CONSOLE_COUNT);
 
+POOL_DEF(vconsole_pool, vconsole_t, CONFIG_TTY_CONSOLE_COUNT);
 
 static int console_setup(struct vconsole *cons, int id, tty_device_t * tty) {
 	cons->id = id;
@@ -77,10 +77,10 @@ static int console_setup(struct vconsole *cons, int id, tty_device_t * tty) {
 
 vconsole_t *vconsole_create(int id, tty_device_t *tty) {
 	vconsole_t *console;
-	console = static_cache_alloc(&vconsole_cache);
+	console = pool_alloc(&vconsole_pool);
 	console_setup(console, id, tty);
 	tty->consoles[id] = console;
-	//console = (struct vconsole *)__vconsole_cache_pool[sizeof(vconsole_t) * id];
+	//console = (struct vconsole *)__vconsole_pool_pool[sizeof(vconsole_t) * id];
 	//console = (struct vconsole *)&cur_tty->console[id];
 	//console_setup(console, id, tty);
 //	memcpy(&tty->console[id], console, sizeof(vconsole_t));

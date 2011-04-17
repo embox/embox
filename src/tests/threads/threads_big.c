@@ -43,6 +43,7 @@ static void *plus_run(void *arg) {
  */
 static void *minus_run(void *arg) {
 	size_t i;
+	assert(critical_allows(CRITICAL_PREEMPT));
 	for (i = 0; i < TOTAL_ITERATIONS; i++) {
 		TRACE("-");
 	}
@@ -84,15 +85,15 @@ static int run(void) {
 	mult_t = thread_alloc();
 	natural_t = thread_alloc();
 
-	thread_init(plus_t, plus_run, plus_stack, THREAD_STACK_SIZE);
-	thread_init(natural_t, natural_run, natural_stack, THREAD_STACK_SIZE);
-	thread_init(minus_t, minus_run, minus_stack, THREAD_STACK_SIZE);
-	thread_init(mult_t, mult_run, mult_stack, THREAD_STACK_SIZE);
-
 	assert(plus_t != NULL);
 	assert(minus_t != NULL);
 	assert(mult_t != NULL);
 	assert(natural_t != NULL);
+
+	thread_init(plus_t, plus_run, plus_stack, THREAD_STACK_SIZE);
+	thread_init(natural_t, natural_run, natural_stack, THREAD_STACK_SIZE);
+	thread_init(minus_t, minus_run, minus_stack, THREAD_STACK_SIZE);
+	thread_init(mult_t, mult_run, mult_stack, THREAD_STACK_SIZE);
 
 	thread_start(plus_t);
 	thread_start(natural_t);

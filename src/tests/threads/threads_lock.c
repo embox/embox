@@ -74,10 +74,10 @@ static void *mult_run(void *arg) {
 
 static void *div_run(void *arg) {
 	size_t i;
-	thread_start(highest);
 	for (i = 0; i < 1000; i++) {
 		TRACE("/");
 	}
+	thread_start(highest);
 
 	return NULL;
 }
@@ -114,8 +114,6 @@ static int run(void) {
 	thread_init(mult, mult_run, mult_stack, THREAD_STACK_SIZE);
 	thread_init(div, div_run, div_stack, THREAD_STACK_SIZE);
 	thread_init(highest, highest_run, highest_stack, THREAD_STACK_SIZE);
-
-	sched_stop(highest);
 
 	assert(plus);
 	assert(minus);

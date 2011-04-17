@@ -443,14 +443,13 @@ union thread_pool_entry {
 	char stack[STACK_SZ];
 };
 
-POOL_DEF(union thread_pool_entry, thread_pool, THREAD_POOL_SZ);
+POOL_DEF(thread_pool, union thread_pool_entry, THREAD_POOL_SZ);
 
 struct thread *thread_alloc(void) {
 	union thread_pool_entry *block;
 	struct thread *t;
-	void *stack;
 
-	if (!(block = (union thread_pool_entry *) static_cache_alloc(&thread_pool))) {
+	if (!(block = (union thread_pool_entry *) pool_alloc(&thread_pool))) {
 		return NULL;
 	}
 
@@ -469,7 +468,7 @@ void __thread_free(struct thread *t) {
 
 	// TODO may be this is not the best way... -- Eldar
 	block = structof(t, union thread_pool_entry, thread);
-	static_cache_free(&thread_pool, block);
+	pool_free(&thread_pool, block);
 }
 
 void thread_free(struct thread *t) {
