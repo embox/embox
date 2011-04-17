@@ -45,8 +45,11 @@ typedef struct vconsole {
 	uint32_t cl_cur;
 	uint8_t  cl_buff[CONFIG_CMDLINE_S];
 
-	uint8_t  esh_stack[CONFIG_ESH_STACK_S];
 } vconsole_t;
+
+struct tty_device;
+extern vconsole_t *vconsole_create(int id, struct tty_device *tty) ;
+
 
 extern vconsole_t const *sys_console;
 extern vconsole_t *cur_console;

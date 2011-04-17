@@ -24,8 +24,6 @@
 EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
-extern vconsole_t *cur_console;
-
 
 /* FIXME TTY is space there is in library */
 #if 0
@@ -133,35 +131,22 @@ void tty_vtbuild_callback(struct vtbuild *tty_vtbuild, char ch) {
 	cur_tty->file_op->fwrite(&ch, sizeof(char), 1, NULL);
 }
 
-
-static int console_init(struct vconsole *cons, int id) {
-	cons->id = id;
-	cons->tty = cur_tty;
-	cons->width = 80;
-	cons->height = 25;
-	cons->out_busy = false;
-	return 0;
-}
-
 static void *run_shell(void *data) {
 	const struct cmd *def_shell;
-	struct vconsole *cons;
-	int con_num;
+	struct vconsole *console;
+	int console_number;
 	struct thread *thread;
+	console_number = (int)data;
+	console = vconsole_create(console_number, cur_tty);
 
-	con_num = (int)data;
-	printf("tty_id %d\n", con_num);
 	thread = thread_self();
-	//FIXME tty here must be console alloc
-	cons = (struct vconsole *)&cur_tty->console[con_num];
-	console_init(cons, con_num);
-
-	thread->task.own_console = cons;
+	thread->task.own_console = console;
 
 #if 0
 	console_clear();
 #endif
-	printf("Hello from TTY%d!\n\n",con_num); /* this is output to the i-th console */
+	printf("Hello from TTY%d!\n\n",console_number); /* this is output to the i-th console */
+
 	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
 		prom_printf(" ERROR: unfound shell named (%s)\n", CONFIG_DEFAULT_SHELL);
 		return NULL;
@@ -246,8 +231,13 @@ int tty_unregister(tty_device_t *tty) {
 }
 
 int tty_get_uniq_number(void) {
-	return 0;
+	static int unic_id = 0;
+
+	return unic_id ++;
 }
+
+
+
 
 /**
  * add parsed char to receive buffer
@@ -261,9 +251,6 @@ uint8_t* tty_readline(tty_device_t *tty) {
 	struct thread *thread = thread_self();
 	printf("%d %%",tty->console[tty->console_cur].scr_line);
 	#ifdef CONFIG_TTY_CONSOLE_COUNT
-	#if 0
-	printf("TTY-%d$ ", cur_console->id + 1 ); /* for remove. it's not for production */
-	#endif
 	while ((!tty->out_busy)	||
 			(thread->task.own_console != &tty->console[tty->console_cur])) {
 	}

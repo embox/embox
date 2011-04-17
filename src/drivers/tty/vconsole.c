@@ -59,3 +59,20 @@ void vconsole_clear(struct vconsole *vc) {
 	vc->scr_line = 0;
 }
 
+
+static int console_init(struct vconsole *cons, int id, tty_device_t * tty) {
+	cons->id = id;
+	cons->tty = tty;
+	cons->width = 80;
+	cons->height = 25;
+	cons->out_busy = false;
+	return 0;
+}
+
+vconsole_t *vconsole_create(int id, tty_device_t *tty) {
+	vconsole_t *console;
+	//FIXME tty here must be console alloc
+	console = (struct vconsole *)&cur_tty->console[id];
+	console_init(console, id, tty);
+	return console;
+}
