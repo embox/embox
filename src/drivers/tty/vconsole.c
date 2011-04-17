@@ -7,13 +7,16 @@
  * @author Fedor Burdun
  */
 
+#include <embox/unit.h>
+#include <util/pool.h>
+#include <string.h>
 #include <drivers/tty.h>
 #include <drivers/tty_action.h>
 #include <drivers/vconsole.h>
-#include <fs/file.h>
-#include <string.h>
+//#include <fs/file.h>
+
 #include <kernel/diag.h>
-#include <embox/unit.h>
+
 
 #if 0
 #define _WITHOUT_CONSOLES
@@ -59,8 +62,11 @@ void vconsole_clear(struct vconsole *vc) {
 	vc->scr_line = 0;
 }
 
+#ifdef CONFIG_TTY_CONSOLE_COUNT
+POOL_DEF(vconsole_t, vconsole_cache, CONFIG_TTY_CONSOLE_COUNT);
 
-static int console_init(struct vconsole *cons, int id, tty_device_t * tty) {
+
+static int console_setup(struct vconsole *cons, int id, tty_device_t * tty) {
 	cons->id = id;
 	cons->tty = tty;
 	cons->width = 80;
@@ -71,8 +77,14 @@ static int console_init(struct vconsole *cons, int id, tty_device_t * tty) {
 
 vconsole_t *vconsole_create(int id, tty_device_t *tty) {
 	vconsole_t *console;
-	//FIXME tty here must be console alloc
-	console = (struct vconsole *)&cur_tty->console[id];
-	console_init(console, id, tty);
+	console = static_cache_alloc(&vconsole_cache);
+	console_setup(console, id, tty);
+	tty->consoles[id] = console;
+	//console = (struct vconsole *)__vconsole_cache_pool[sizeof(vconsole_t) * id];
+	//console = (struct vconsole *)&cur_tty->console[id];
+	//console_setup(console, id, tty);
+//	memcpy(&tty->console[id], console, sizeof(vconsole_t));
+//	console = &tty->console[id];
 	return console;
 }
+#endif

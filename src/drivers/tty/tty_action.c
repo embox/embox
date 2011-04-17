@@ -258,13 +258,13 @@ void tac_remove_line(tty_device_t *tty) {
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 /* switch console */
 void tac_switch_console(tty_device_t *tty, uint32_t c_after) {
-	vconsole_deactivate(&tty->console[tty->console_cur]);
+	vconsole_deactivate(tty->consoles[tty->console_cur]);
 	tty->console_cur = c_after;
 	#if 0
 	tty_go_left(tty, 7); /* erase `TTY-X$' */
 	printf("TTY-%d$ ", tty->console_cur + 1);
 	#endif
-	vconsole_activate(&tty->console[tty->console_cur]);
+	vconsole_activate(tty->consoles[tty->console_cur]);
 }
 #endif
 
@@ -371,8 +371,8 @@ static inline bool console_is_current(void) {
 	if (NULL == thread->task.own_console) {
 		return false;
 	}
-	return (&(thread->task.own_console->tty->
-			console[thread->task.own_console->tty->console_cur])
+	return ((thread->task.own_console->tty->
+			consoles[thread->task.own_console->tty->console_cur])
 	          == thread->task.own_console);
 }
 #define CONSOLE_IS_CURRENT	console_is_current()

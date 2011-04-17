@@ -180,7 +180,7 @@ static int tty_init(void) {
 	 */
 	cur_tty->console_cur = 0;
 	for (i = 1; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
-#if 0
+#if 1
 		static int console_numbers[CONFIG_TTY_CONSOLE_COUNT];
 		struct thread* new_thread;
 		console_numbers[i] = i;
@@ -249,10 +249,10 @@ int tty_add_char(tty_device_t *tty, int ch) {
 
 uint8_t* tty_readline(tty_device_t *tty) {
 	struct thread *thread = thread_self();
-	printf("%d %%",tty->console[tty->console_cur].scr_line);
+	printf("%d %%",tty->consoles[tty->console_cur]->scr_line);
 	#ifdef CONFIG_TTY_CONSOLE_COUNT
 	while ((!tty->out_busy)	||
-			(thread->task.own_console != &tty->console[tty->console_cur])) {
+			(thread->task.own_console != tty->consoles[tty->console_cur])) {
 	}
 	#else
 	while (!tty->out_busy);

@@ -33,7 +33,7 @@ typedef struct tty_device {
 	struct 	 vtbuild vtb[1];
 	struct 	 vtparse vtp[1];
 	#ifdef CONFIG_TTY_CONSOLE_COUNT
-	struct vconsole console[CONFIG_TTY_CONSOLE_COUNT];
+	struct vconsole *consoles[CONFIG_TTY_CONSOLE_COUNT];
 	uint32_t console_cur;
 	#endif
 	file_operations_t *file_op;
