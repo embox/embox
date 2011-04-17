@@ -13,35 +13,6 @@
 #include <util/macro.h>
 #include <lib/list.h>
 
-#if 0
-/** cache descriptor */
-struct pool {
-	/** pointer to pool */
-	char* cache_begin;
-	/** object size */
-	size_t size;
-	/** the number of objects stored on each slab */
-	unsigned int num;
-	/** the list of free objects in pool */
-	struct list_head obj_ptr;
-	/** for initialization */
-	int hasinit;
-};
-#define __POOL_DEF(type, name, sz) \
-	static char __##name##_pool[(sz) * __POOL_ELEMENT_SIZE(type)]; \
-	static static_cache_t name = { \
-		.num = (sz), \
-		.size = __POOL_ELEMENT_SIZE(type), \
-		.cache_begin = __##name##_pool, \
-	}
-
-#define __POOL_ELEMENT_SIZE(type) \
-	binalign_bound( \
-			(sizeof(type) > sizeof(struct list_head) ? \
-			 sizeof(type) : sizeof(struct list_head)), sizeof(void *))
-
-#else
-
 struct pool {
 	void * const storage;
 	const size_t object_sz;
@@ -68,8 +39,6 @@ struct __pool_free_block {
 		.objects_free = objects_nr, \
 		/* .free_blocks field is initially zeroed. */ \
 	}
-
-#endif
 
 #ifdef __CDT_PARSER__
 

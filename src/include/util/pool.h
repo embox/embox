@@ -22,23 +22,18 @@ struct pool;
 #define POOL_DEF(pool_nm, object_t, objects_nr) \
 	__POOL_DEF(pool_nm, object_t, objects_nr)
 
-#if 0
 /**
  * allocate single object from the cache and return it to the caller
  * @param cache corresponding to allocating object
  * @return the address of allocated object or NULL if pool is full
  */
-extern void* static_cache_alloc(static_cache_t* cachep);
+extern void *pool_alloc(struct pool *pool);
 
 /**
  * free an object and return it to the cache
  * @param cachep corresponding to freeing object
  * @param objp which will be free
  */
-extern void static_cache_free(static_cache_t* cachep, void* objp);
-#endif
-
-extern void *pool_alloc(struct pool *pool);
 extern void pool_free(struct pool *pool, void *object);
 
 #endif /* UTIL_POOL_H_ */
