@@ -10,5 +10,5 @@ $_MODS += pp
 #$_DEPS-pp += #embox.test.pp_test
 #endif
 
-$_SRCS-pp += pp.c
+#$_SRCS-pp += pp.c
 endif

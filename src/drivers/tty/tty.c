@@ -7,18 +7,19 @@
  * @author Fedor Burdun
  */
 
-#include <embox/unit.h>
-
+#include <types.h>
 #include <ctype.h>
 #include <string.h>
+#include <embox/unit.h>
 
-#include <kernel/pp.h>
-#include <drivers/tty.h>
-#include <drivers/vconsole.h>
+#include <kernel/thread/api.h> /*we create some threads here*/
+
 #include <drivers/tty_action.h>
 #include <drivers/vtbuild.h>
 #include <drivers/vtparse.h>
-#include <framework/cmd/api.h>
+#include <drivers/tty.h>
+
+#include <framework/cmd/api.h> /*we start default shell*/
 
 EMBOX_UNIT_INIT(tty_init);
 
@@ -155,7 +156,7 @@ static void *run_shell(void *data) {
 	cons = (struct vconsole *)&cur_tty->console[con_num];
 	console_init(cons, con_num);
 
-	thread->own_console = cons;
+	thread->task.own_console = cons;
 
 #if 0
 	console_clear();
@@ -194,7 +195,7 @@ static int tty_init(void) {
 	 */
 	cur_tty->console_cur = 0;
 	for (i = 1; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
-#if 1
+#if 0
 		static int console_numbers[CONFIG_TTY_CONSOLE_COUNT];
 		struct thread* new_thread;
 		console_numbers[i] = i;
@@ -264,12 +265,12 @@ uint8_t* tty_readline(tty_device_t *tty) {
 	printf("TTY-%d$ ", cur_console->id + 1 ); /* for remove. it's not for production */
 	#endif
 	while ((!tty->out_busy)	||
-			(thread->own_console != &tty->console[tty->console_cur])) {
+			(thread->task.own_console != &tty->console[tty->console_cur])) {
 	}
 	#else
 	while (!tty->out_busy);
 	#endif
-	++thread->own_console->scr_line; /* after read_line in console will be next line*/
+	++thread->task.own_console->scr_line; /* after read_line in console will be next line*/
 	tty->out_busy = false;
 	return (uint8_t*) tty->out_buff;
 }

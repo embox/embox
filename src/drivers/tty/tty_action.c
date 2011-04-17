@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <drivers/tty_action.h>
+#include <kernel/diag.h>
 
 /*
  * FIXME
@@ -367,12 +368,12 @@ static inline bool console_is_current(void) {
 	if (NULL == (thread = thread_self())) {
 		return false;
 	}
-	if (NULL == thread->own_console) {
+	if (NULL == thread->task.own_console) {
 		return false;
 	}
-	return (&(thread->own_console->tty->
-			console[thread->own_console->tty->console_cur])
-	          == thread->own_console);
+	return (&(thread->task.own_console->tty->
+			console[thread->task.own_console->tty->console_cur])
+	          == thread->task.own_console);
 }
 #define CONSOLE_IS_CURRENT	console_is_current()
 #define EXECUTE_IF_CONSOLE_IS_CURRENT(a) do { if (console_is_current()) a; } while (0)
@@ -488,11 +489,11 @@ void tty_vconsole_gotoXY(struct vconsole *vc, uint8_t x, uint8_t y) {
 void console_clear(void) {
 	struct thread *thread = thread_self();
 
-	vconsole_clear(thread->own_console);
+	vconsole_clear(thread->task.own_console);
 	if (CONSOLE_IS_CURRENT) {
-		tty_vconsole_saveline(thread->own_console);
+		tty_vconsole_saveline(thread->task.own_console);
 		console_reprint();
-		tty_vconsole_loadline(thread->own_console);
+		tty_vconsole_loadline(thread->task.own_console);
 	}
 }
 
@@ -522,19 +523,19 @@ void tty_vconsole_reprint(struct vconsole *vc) {
 void console_reprint(void) {
 	struct thread *thread = thread_self();
 	if (CONSOLE_IS_CURRENT) {
-		tty_vconsole_reprint(thread->own_console);
+		tty_vconsole_reprint(thread->task.own_console);
 	};
 }
 
 //------------------------------------------------------------------------------------------------------------------------
 void console_putchar(char ch) {
 	struct thread *thread = thread_self();
-	tty_vconsole_putchar(thread->own_console, ch);
+	tty_vconsole_putchar(thread->task.own_console, ch);
 }
 
 char console_getchar(void) {
 	struct thread *thread = thread_self();
 	return '\0';
-	return tty_vconsole_getchar(thread->own_console);
+	return tty_vconsole_getchar(thread->task.own_console);
 }
 

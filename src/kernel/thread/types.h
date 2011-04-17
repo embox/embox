@@ -12,15 +12,12 @@
 #include <lib/list.h>
 #include <hal/context.h>
 #include <kernel/thread/event.h>
+
+#include "task.h"
 #include "state.h"
 
 typedef int __thread_id_t;
 typedef int __thread_priority_t;
-
-#ifdef CONFIG_PP_ENABLE
-struct pprocess;
-#endif
-struct vconsole;
 
 struct thread {
 
@@ -50,13 +47,7 @@ struct thread {
 	struct list_head  messages;     /**< Messages sent to the thread. */
 	struct event      msg_event;    /**< Thread receives a message. */
 
-	struct vconsole *own_console;
-
-	/* Pseudo process */
-#ifdef CONFIG_PP_ENABLE
-	struct pprocess *pp;
-#endif
-
+	struct task task;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

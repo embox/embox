@@ -21,6 +21,8 @@
 
 #include <embox/unit.h>
 
+#include <string.h>
+
 #include <util/pool.h>
 #include <util/structof.h>
 #include <kernel/critical/api.h>
@@ -148,7 +150,7 @@ static void __thread_ugly_init(struct thread *t) {
 
 	// XXX WTF?
 	if (NULL != (current = thread_self())) {
-		t->own_console = current->own_console;
+		memcpy(&(t->task), &(current->task), sizeof(struct task));
 	}
 }
 
