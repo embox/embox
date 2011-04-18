@@ -34,8 +34,8 @@ static inline struct test_emit_buffer *test_emit_buffer_reset(
 		struct test_emit_buffer *b) {
 	assert(b);
 
-	b->buff[b->buff_sz] = '\0';
 	b->ptr = b->buff;
+	*b->ptr = '\0';
 
 	return b;
 }
@@ -49,6 +49,11 @@ static inline struct test_emit_buffer *test_emit_buffer_init(
 	b->buff_sz = buff_sz;
 
 	return test_emit_buffer_reset(b);
+}
+
+static inline bool test_emit_buffer_str(struct test_emit_buffer *b) {
+	assert(b);
+	return b->buff;
 }
 
 static inline bool test_emit_buffer_overflown(struct test_emit_buffer *b) {
@@ -70,6 +75,7 @@ static inline void test_emit(struct test_emit_buffer *b, char ch) {
 
 	if (!test_emit_buffer_full(b)) {
 		*b->ptr++ = ch;
+		*b->ptr = '\0';
 	} else {
 		/* do overflow */
 		b->ptr++;
@@ -123,7 +129,7 @@ TEST_CASE() {
 	test_assert_zero(thread_join(high, &ret));
 	test_assert_null(ret);
 
-	test_assert_zero(strcmp(buff1.buff, "abcdef"));
+	test_assert_str_equal(test_emit_buffer_str(&buff1), "abcdef");
 }
 
 static void *low_run(void *arg) {
