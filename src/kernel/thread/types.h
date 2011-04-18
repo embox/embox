@@ -42,7 +42,6 @@ struct thread {
 	enum thread_state state;        /**< Current scheduling state. */
 	struct list_head  sched_list;   /**< Scheduler-private link. */
 
-
 	bool              need_message; /**< Waiting for message. */
 	struct list_head  messages;     /**< Messages sent to the thread. */
 	struct event      msg_event;    /**< Thread receives a message. */

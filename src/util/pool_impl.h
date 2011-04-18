@@ -29,14 +29,14 @@ struct __pool_free_block {
 	__POOL_DEF__(pool_nm, object_t, objects_nr, MACRO_GUARD(__pool_##pool_nm))
 
 #define __POOL_DEF__(pool_nm, object_t, objects_nr, storage_nm) \
-	static union { \
-		typeof(object_t) object; \
-		struct __pool_free_block block; \
+	static union {                                    \
+		typeof(object_t) object;                      \
+		struct __pool_free_block block;               \
 	} storage_nm[objects_nr] __attribute__((section(".reserve.pool"))); \
-	static struct pool pool_nm = { \
-		.storage = storage_nm, \
-		.object_sz = sizeof(*storage_nm), \
-		.objects_free = objects_nr, \
+	static struct pool pool_nm = {                    \
+		.storage = storage_nm,                        \
+		.object_sz = sizeof(*storage_nm),             \
+		.objects_free = objects_nr,                   \
 		/* .free_blocks field is initially zeroed. */ \
 	}
 

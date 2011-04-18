@@ -9,8 +9,6 @@
 #ifndef FRAMEWORK_TEST_ASSERT_H_
 #define FRAMEWORK_TEST_ASSERT_H_
 
-#include <util/macro.h>
-
 #include __impl_x(framework/test/assert_impl.h)
 
 /**
