@@ -9,9 +9,81 @@
 #include <embox/test.h>
 
 #include <stdbool.h>
+#include <string.h>
 
 #include <kernel/thread/api.h>
-#include <hal/ipl.h>
+
+#define TEST_EMIT_BUFFER_DEF(buffer_nm, size) \
+	TEST_EMIT_BUFFER_DEF__(buffer_nm, size, MACRO_GUARD(__test_emit_##buffer_nm))
+
+#define TEST_EMIT_BUFFER_DEF__(buffer_nm, size, storage_nm) \
+	static char storage_nm[(size) + 1]; \
+	static struct test_emit_buffer buffer_nm = { \
+		.ptr = storage_nm, \
+		.buff = storage_nm, \
+		.buff_sz = (size), \
+	}
+
+struct test_emit_buffer {
+	char *ptr;
+	char *buff;
+	size_t buff_sz;
+};
+
+static inline struct test_emit_buffer *test_emit_buffer_reset(
+		struct test_emit_buffer *b) {
+	assert(b);
+
+	b->buff[b->buff_sz] = '\0';
+	b->ptr = b->buff;
+
+	return b;
+}
+
+static inline struct test_emit_buffer *test_emit_buffer_init(
+		struct test_emit_buffer *b, char *buff, size_t buff_sz) {
+	assert(b);
+	assert(buff);
+
+	b->buff = buff;
+	b->buff_sz = buff_sz;
+
+	return test_emit_buffer_reset(b);
+}
+
+static inline bool test_emit_buffer_overflown(struct test_emit_buffer *b) {
+	assert(b);
+	assert(b->ptr);
+	return b->ptr > b->buff + b->buff_sz;
+}
+
+static inline bool test_emit_buffer_full(struct test_emit_buffer *b) {
+	assert(b);
+	assert(b->ptr);
+	return b->ptr == b->buff + b->buff_sz;
+}
+
+static inline void test_emit(struct test_emit_buffer *b, char ch) {
+	if (test_emit_buffer_overflown(b)) {
+		return;
+	}
+
+	if (!test_emit_buffer_full(b)) {
+		*b->ptr++ = ch;
+	} else {
+		/* do overflow */
+		b->ptr++;
+	}
+}
+
+static inline void test_emit_unique(struct test_emit_buffer *b, char ch) {
+	assert(b);
+	assert(b->ptr);
+
+	if (b->ptr == b->buff || *(b->ptr - 1) != ch) {
+		test_emit(b, ch);
+	}
+}
 
 // TODO define them in API. -- Eldar
 #define THREAD_PRIORITY_LOW  191
@@ -19,36 +91,7 @@
 
 EMBOX_TEST_SUITE("Thread suspend/resume");
 
-enum state {
-	s_init = 1, s_low, s_high,
-};
-
-enum action {
-	a_begin, a_middle, a_end,
-};
-
-#define index(state) ((state) - 1)
-
-static enum state trans[3][3] = {
-	[index(s_init)] = {
-		[a_begin] = s_low,
-		[a_middle] = s_high,
-		[a_end] = s_init,
-	},
-	[index(s_low)] = {
-		[a_begin] = s_high,
-		[a_end] = s_init,
-	},
-	[index(s_high)] = {
-		[a_begin] = s_low,
-		[a_end] = s_init,
-	},
-};
-
-static enum state current_state;
-
-static void do_trans_or_fail(enum state s, enum action a);
-static void do_trans_or_exit(enum state s, enum action a);
+TEST_EMIT_BUFFER_DEF(buff1, 'f' - 'a' + 1);
 
 static void *low_run(void *);
 static void *high_run(void *);
@@ -57,7 +100,7 @@ TEST_CASE() {
 	struct thread *low = NULL, *high = NULL;
 	void *ret;
 
-	current_state = s_init;
+	test_emit_buffer_reset(&buff1);
 
 	test_assert_zero(
 			thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, NULL));
@@ -68,73 +111,36 @@ TEST_CASE() {
 	test_assert_not_null(low);
 	test_assert_zero(thread_set_priority(low, THREAD_PRIORITY_LOW));
 
-	do_trans_or_fail(s_init, a_begin);
+	test_emit(&buff1, 'a');
 
 	test_assert_zero(thread_resume(low));
 	test_assert_zero(thread_join(low, &ret));
 	test_assert_null(ret);
 
-	do_trans_or_fail(s_init, a_middle);
+	test_emit(&buff1, 'e');
 
 	test_assert_zero(thread_resume(high));
 	test_assert_zero(thread_join(high, &ret));
 	test_assert_null(ret);
 
-	do_trans_or_fail(s_init, a_end);
+	test_assert_zero(strcmp(buff1.buff, "abcdef"));
 }
 
 static void *low_run(void *arg) {
 	struct thread *high = (struct thread *) arg;
 
-	do_trans_or_exit(s_low, a_begin);
-
+	test_emit(&buff1, 'b');
 	thread_resume(high);
-
-	do_trans_or_exit(s_low, a_end);
+	test_emit(&buff1, 'd');
 
 	return NULL;
 }
 
 static void *high_run(void *arg) {
-	do_trans_or_exit(s_high, a_begin);
-
+	test_emit(&buff1, 'c');
 	thread_suspend(thread_self());
-
-	do_trans_or_exit(s_high, a_end);
+	test_emit(&buff1, 'f');
 
 	return NULL;
-}
-
-static bool do_trans(enum state s, enum action a) {
-	int ret = true;
-	ipl_t ipl = ipl_save();
-
-	if (current_state != s) {
-		ret = false;
-		goto out_restore;
-	}
-
-	s = trans[index(s)][a];
-	if (!s) {
-		ret = false;
-		goto out_restore;
-	}
-
-	current_state = s;
-
-out_restore:
-	ipl_restore(ipl);
-	return ret;
-}
-
-static void do_trans_or_fail(enum state s, enum action a) {
-	test_assert(do_trans(s, a));
-}
-
-/* We can't fail() inside another thread. */
-static void do_trans_or_exit(enum state s, enum action a) {
-	if (!do_trans(s, a)) {
-		thread_exit((void *) -1);
-	}
 }
 
