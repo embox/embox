@@ -12,11 +12,13 @@
  *
  * @see EMBOX_TEST_SUITE()
  * @see TEST_CASE()
+ *
  * @see test_assert()
+ * @see test_emit()
  *
  * @note
- *   This file is just a shortcut for
- *   <framework/test/self.h> and <framework/test/assert.h> headers
+ *   This file is just a shortcut for <framework/test/self.h>,
+ *   <framework/test/assert.h> and <framework/test/emit.h> headers
  *   introduced to easy a new test creation.
  *
  * @date 20.03.2011
@@ -28,5 +30,6 @@
 
 #include <framework/test/self.h>
 #include <framework/test/assert.h>
+#include <framework/test/emit.h>
 
 #endif /* EMBOX_TEST_H_ */

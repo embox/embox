@@ -19,13 +19,13 @@ EMBOX_TEST(run);
 
 volatile static bool outer_irq, inner_irq, irq_nested;
 
-static counter = 100;
-
 static irq_return_t test_isr(irq_nr_t irq_nr, void *dev_id) {
 	if (!outer_irq) {
 		outer_irq = true;
 		interrupt_force(TEST_INNER_IRQ_NR);
-		while (counter--); /* some processors needs few cycle to reassert irq */
+		for (volatile int i = 0; i < 100; ++i) {
+			/* some processors needs few cycle to reassert irq */
+		}
 		if (inner_irq) {
 			irq_nested = true;
 		} else {
