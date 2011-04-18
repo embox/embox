@@ -51,7 +51,7 @@ static inline struct test_emit_buffer *test_emit_buffer_init(
 	return test_emit_buffer_reset(b);
 }
 
-static inline bool test_emit_buffer_str(struct test_emit_buffer *b) {
+static inline char *test_emit_buffer_str(struct test_emit_buffer *b) {
 	assert(b);
 	return b->buff;
 }
