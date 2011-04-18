@@ -61,11 +61,11 @@ TEST_CASE("thread_resume should return 0 if the thread was created with "
 	test_assert_zero(thread_resume(foo));
 }
 
-TEST_CASE("thread_resume should return -EINVAL if the thread hasn't been "
-		"suspended") {
+TEST_CASE("thread_resume should return an error if the thread hasn't been "
+		"initially suspended") {
 	struct thread *foo;
 
 	test_assert_zero(thread_create(&foo, 0, arg_invert_run, NULL));
-	test_assert_equal(thread_resume(foo), -EINVAL);
+	test_assert_not_zero(thread_resume(foo));
 }
 
