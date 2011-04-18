@@ -46,7 +46,7 @@ TEST_CASE("slist_init should have the same effect as static initializer") {
 	memcpy(buff, &l, sizeof(l));
 	memset(&l, 0xA5, sizeof(l)); /* poison. */
 
-	test_assert_zero(memcmp(buff, slist_init(&l), sizeof(l)));
+	test_assert_mem_equal(buff, slist_init(&l), sizeof(l));
 }
 
 TEST_CASE("slist_link_init should have the same effect as static initializer") {
@@ -55,7 +55,7 @@ TEST_CASE("slist_link_init should have the same effect as static initializer") {
 	memcpy(buff, &e.lnk, sizeof(e.lnk));
 	memset(&e.lnk, 0xA5, sizeof(e.lnk)); /* poison. */
 
-	test_assert_zero(memcmp(buff, slist_link_init(&e.lnk), sizeof(e.lnk)));
+	test_assert_mem_equal(buff, slist_link_init(&e.lnk), sizeof(e.lnk));
 }
 
 TEST_CASE("slist_empty should return true for just created list") {
