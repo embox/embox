@@ -5,16 +5,21 @@
  * @date 23.11.09
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 
-int memcmp(const void *dst, const void *src, size_t n) {
+int memcmp(const void *_dst, const void *_src, size_t n) {
+	const unsigned char *dst = (const unsigned char *) _dst;
+	const unsigned char *src = (const unsigned char *) _src;
+
 	if (!n) {
 		return 0;
 	}
-	while (--n && *(char *) dst == *(char *) src) {
-		dst = (char *) dst + 1;
-		src = (char *) src + 1;
+
+	while (--n && *dst == *src) {
+		++dst;
+		++src;
 	}
 
-	return *((unsigned char *) dst) - *((unsigned char *) src);
+	return *dst - *src;
 }

@@ -9,8 +9,8 @@
 #include <string.h>
 
 int strncmp(const char *str1, const char *str2, size_t n) {
-	unsigned const char *s1 = (unsigned const char *) str1;
-	unsigned const char *s2 = (unsigned const char *) str2;
+	const unsigned char *s1 = (const unsigned char *) str1;
+	const unsigned char *s2 = (const unsigned char *) str2;
 
 	if (!n) {
 		return 0;
