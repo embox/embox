@@ -87,12 +87,12 @@ static void kill_thread(int thread_id) {
 		printf("Can't kill idle thread\n");
 		return;
 	}
-#endif
 
 	if ((error = thread_stop(thread))) {
 		printf("Unable to kill thread %d: %s\n", thread_id, strerror(error));
 		return;
 	}
+#endif
 
 	printf("Thread %d killed\n", thread_id);
 }
