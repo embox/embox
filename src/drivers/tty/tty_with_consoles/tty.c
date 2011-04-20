@@ -181,19 +181,12 @@ static int tty_init(void) {
 	 */
 	cur_tty->console_cur = 0;
 	for (i = 1; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
-#if 1
 		static int console_numbers[CONFIG_TTY_CONSOLE_COUNT];
 		struct thread* new_thread;
 		console_numbers[i] = i;
 		thread_create(&new_thread, 0, run_shell, (void*)console_numbers[i]);
-		thread_change_priority(new_thread, thread->priority);
-#else
-		static uint8_t stacks[CONFIG_TTY_CONSOLE_COUNT][0x1000];
-		struct thread* new_thread = thread_alloc();
-		thread_init(new_thread, run_shell, &stacks[i], 0x1000);
-		new_thread->priority = thread->priority;
-		thread_start(new_thread);
-#endif
+		thread_set_priority(new_thread, thread->priority);
+		thread_detach(new_thread);
 	}
 
 #if 0
