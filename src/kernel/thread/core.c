@@ -127,8 +127,20 @@ static void __thread_init(struct thread *t, unsigned int flags,
 
 	t->susp_cnt = 0;
 
-	// TODO default priority for newly created thread. -- Eldar
-	t->priority = THREAD_PRIORITY_TOTAL / 2;
+	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
+		t->priority = thread_self()->priority;
+	} else {
+		// TODO default priority for newly created thread. -- Eldar
+		t->priority = THREAD_PRIORITY_TOTAL / 2;
+	}
+
+	// TODO check if both flags are enabled. -- Eldar
+	// TODO new priority range check. -- Eldar
+	if (flags & THREAD_FLAG_PRIORITY_LOWER) {
+		t->priority++;
+	} else if (flags & THREAD_FLAG_PRIORITY_HIGHER) {
+		t->priority--;
+	}
 
 	INIT_LIST_HEAD(&t->sched_list);
 	INIT_LIST_HEAD(&t->messages);

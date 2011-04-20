@@ -162,7 +162,6 @@ static void *run_shell(void *data) {
 
 static int tty_init(void) {
 	size_t i;
-	struct thread *thread = thread_self();
 	static FILE *def_file;
 
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE, "r");
@@ -184,9 +183,9 @@ static int tty_init(void) {
 		static int console_numbers[CONFIG_TTY_CONSOLE_COUNT];
 		struct thread* new_thread;
 		console_numbers[i] = i;
-		thread_create(&new_thread, 0, run_shell, (void*)console_numbers[i]);
-		thread_set_priority(new_thread, thread->priority);
-		thread_detach(new_thread);
+		thread_create(&new_thread,
+				THREAD_FLAG_PRIORITY_INHERIT | THREAD_FLAG_DETACHED,
+				run_shell, (void*) console_numbers[i]);
 	}
 
 #if 0

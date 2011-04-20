@@ -47,6 +47,11 @@ typedef __thread_priority_t thread_priority_t;
 /** Thread is created suspended. */
 #define THREAD_FLAG_SUSPENDED (0x1 << 2)
 
+#define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 3)
+
+#define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 4)
+#define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
+
 /**
  * Iterates over the list of all threads existing in the system.
  *
