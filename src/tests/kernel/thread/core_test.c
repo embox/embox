@@ -26,7 +26,7 @@ TEST_CASE("thread_create with default flags should return -EINVAL if the "
 TEST_CASE("thread_create should return -EINVAL if thread function is NULL") {
 	struct thread *foo;
 
-	test_assert_equal(-EINVAL, thread_create(&foo, 0, NULL, NULL));
+	test_assert_equal(thread_create(&foo, 0, NULL, NULL), -EINVAL);
 }
 
 TEST_CASE("thread_create with THREAD_FLAG_DETACHED should return zero and "
@@ -59,6 +59,7 @@ TEST_CASE("thread_resume should return 0 if the thread was created with "
 
 	test_assert_zero(thread_create(&foo, THREAD_FLAG_SUSPENDED, arg_invert_run, NULL));
 	test_assert_zero(thread_resume(foo));
+	test_assert_zero(thread_detach(foo));
 }
 
 TEST_CASE("thread_resume should return an error if the thread hasn't been "
@@ -67,5 +68,6 @@ TEST_CASE("thread_resume should return an error if the thread hasn't been "
 
 	test_assert_zero(thread_create(&foo, 0, arg_invert_run, NULL));
 	test_assert_not_zero(thread_resume(foo));
+	test_assert_zero(thread_detach(foo));
 }
 
