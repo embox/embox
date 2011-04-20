@@ -27,7 +27,7 @@ static void print_stat(void) {
 	int running, sleeping, suspended, sleeping_suspended;
 	int total;
 
-	printf(" %4s %8s %18s\n", "Id", "Priority", "State");
+	printf(" %4s  %8s %18s\n", "Id", "Priority", "State");
 
 	running = sleeping = suspended = sleeping_suspended = 0;
 
@@ -55,7 +55,8 @@ static void print_stat(void) {
 			state = "unknown";
 			break;
 		}
-		printf(" %4d %8d %18s\n", thread->id, thread->priority, state);
+		printf(" %4d%c %8d %18s\n", thread->id,
+				thread == thread_self() ? '*' : ' ', thread->priority, state);
 	}
 
 	total = running + sleeping + suspended + sleeping_suspended;
@@ -64,8 +65,8 @@ static void print_stat(void) {
 		"\t%d running\n"
 		"\t%d sleeping\n"
 		"\t%d suspended\n"
-		"\t%d sleeping_suspended\n", total, running, sleeping,
-			suspended, sleeping_suspended);
+		"\t%d sleeping_suspended\n", total, running, sleeping, suspended,
+			sleeping_suspended);
 }
 
 static void kill_thread(int thread_id) {
