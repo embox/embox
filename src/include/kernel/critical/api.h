@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Declares critical API
+ * @brief Declares critical API.
  *
  * @date 16.05.2010
  * @author Eldar Abusalimov
@@ -16,6 +16,9 @@
 #define CRITICAL_PREEMPT __CRITICAL_PREEMPT
 
 typedef __critical_t critical_t;
+
+#define critical_dispatch(critical) \
+	  __critical_dispatch(critical)
 
 extern int critical_allows(critical_t critical);
 
