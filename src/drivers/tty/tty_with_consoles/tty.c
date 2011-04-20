@@ -25,6 +25,10 @@ EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
 
+#ifndef CONFIG_TTY_CONSOLE_COUNT
+#error define TTY_CONSOLE_COUNT in options-kernel.conf before try to build.
+#endif
+
 /* FIXME TTY is space there is in library */
 #if 0
 inline bool tty_isalpha(char ch) {
@@ -91,12 +95,10 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 			}
 			break;
 		case '^': /* ^F1-^F12 switch console */
-			#ifdef CONFIG_TTY_CONSOLE_COUNT
 			if ((token->params_len == 1) &&
 			    (token->params[0] - 10 <= CONFIG_TTY_CONSOLE_COUNT)) {
 				tac_switch_console(cur_tty, token->params[0] - 11);
 			}
-			#endif
 			break;
 		default:
 			break;
@@ -142,6 +144,8 @@ static void *run_shell(void *data) {
 	thread = thread_self();
 	thread->task.own_console = console;
 
+	prom_printf("+1\n");
+
 #if 0
 	console_clear();
 #endif
@@ -157,10 +161,8 @@ static void *run_shell(void *data) {
 
 
 static int tty_init(void) {
-#ifdef CONFIG_TTY_CONSOLE_COUNT
 	size_t i;
 	struct thread *thread = thread_self();
-#endif
 	static FILE *def_file;
 
 	def_file = fopen(CONFIG_DEFAULT_CONSOLE, "r");
@@ -170,7 +172,6 @@ static int tty_init(void) {
 		return -1;
 	}
 
-#ifdef CONFIG_TTY_CONSOLE_COUNT
 #if 0
 	/* add clear screen */
 	tac_clear( cur_tty );
@@ -180,20 +181,24 @@ static int tty_init(void) {
 	 */
 	cur_tty->console_cur = 0;
 	for (i = 1; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
+#if 1
 		static int console_numbers[CONFIG_TTY_CONSOLE_COUNT];
 		struct thread* new_thread;
 		console_numbers[i] = i;
-		// FIXME memory leaks here, you must detach the created thread. -- Eldar
 		thread_create(&new_thread, 0, run_shell, (void*)console_numbers[i]);
-		// XXX it's better to set priority on the suspended thread. -- Eldar
-		thread_set_priority(new_thread, thread->priority);
+		thread_change_priority(new_thread, thread->priority);
+#else
+		static uint8_t stacks[CONFIG_TTY_CONSOLE_COUNT][0x1000];
+		struct thread* new_thread = thread_alloc();
+		thread_init(new_thread, run_shell, &stacks[i], 0x1000);
+		new_thread->priority = thread->priority;
+		thread_start(new_thread);
+#endif
 	}
 
 #if 0
 	console_reprint();
 #endif
-#endif
-	run_shell(0);
 	cur_tty->console_cur = 0;
 
 	return 0;
@@ -244,13 +249,9 @@ int tty_add_char(tty_device_t *tty, int ch) {
 uint8_t* tty_readline(tty_device_t *tty) {
 	struct thread *thread = thread_self();
 	printf("%d %%",tty->consoles[tty->console_cur]->scr_line);
-	#ifdef CONFIG_TTY_CONSOLE_COUNT
 	while ((!tty->out_busy)	||
 			(thread->task.own_console != tty->consoles[tty->console_cur])) {
 	}
-	#else
-	while (!tty->out_busy);
-	#endif
 	++thread->task.own_console->scr_line; /* after read_line in console will be next line*/
 	tty->out_busy = false;
 	return (uint8_t*) tty->out_buff;
