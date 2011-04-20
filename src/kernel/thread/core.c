@@ -41,6 +41,8 @@ EMBOX_UNIT(unit_init, unit_fini);
 
 struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 
+static int id_counter;
+
 struct thread *thread_alloc(void);
 void __thread_free(struct thread *t);
 
@@ -117,6 +119,11 @@ static void __thread_init(struct thread *t, unsigned int flags,
 	assert(t->stack_sz);
 	assert(run);
 #endif
+
+	t->id = id_counter++;
+
+	// XXX
+	list_add_tail(&t->thread_link, &__thread_list);
 
 	t->flags = 0;
 
@@ -407,9 +414,6 @@ static struct thread *thread_new(void) {
 		return NULL;
 	}
 
-#if 0
-	list_add(&t->thread_link, &__thread_list);
-#endif
 	return t;
 }
 
@@ -425,9 +429,7 @@ static void thread_delete(struct thread *t) {
 		zombie = NULL;
 	}
 
-#if 0
 	list_del_init(&t->thread_link);
-#endif
 
 	if (t == current) {
 		zombie = t;
