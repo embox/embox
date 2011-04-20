@@ -11,9 +11,8 @@
 #include <kernel/thread/sched_policy.h>
 #include <kernel/thread/api.h>
 
-static struct thread idle = { .priority = THREAD_PRIORITY_MIN };
 
-static struct thread current = { .priority = THREAD_PRIORITY_MAX };
+static struct thread current, idle;
 
 EMBOX_TEST_SUITE("priority_based scheduling algorithm tests");
 
@@ -149,7 +148,14 @@ static int setup(void) {
 	INIT_LIST_HEAD(&idle.sched_list);
 	INIT_LIST_HEAD(&current.sched_list);
 
+	current.priority = THREAD_PRIORITY_TOTAL / 2;
+	idle.priority = THREAD_PRIORITY_MIN;
+
+	current.state = THREAD_STATE_RUNNING;
+	idle.state = THREAD_STATE_RUNNING;
+
 	sched_policy_init(&current, &idle);
 
 	return 0;
 }
+

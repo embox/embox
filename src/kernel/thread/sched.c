@@ -38,7 +38,6 @@ int sched_init(struct thread* current, struct thread *idle) {
 	int error;
 
 	current->state = THREAD_STATE_RUNNING;
-
 	idle->state = THREAD_STATE_RUNNING;
 
 	if ((error = sched_policy_init(current, idle))) {

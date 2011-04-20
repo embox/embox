@@ -6,9 +6,6 @@ $_DEPS-core += sched
 $_DEPS-core += state
 $_DEPS-core += sync
 $_DEPS-core += embox.hal.context
-ifdef CONFIG_PP_ENABLE
-$_DEPS-core += core.kernel.pp
-endif
 
 $_MODS       += sched
 $_SRCS-sched += sched.c
