@@ -51,14 +51,15 @@ static void thread_delete(struct thread *t);
 
 static void __thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg);
-static void __thread_ugly_init(struct thread *t);
+static void thread_context_init(struct thread *t);
+static void thread_ugly_init(struct thread *t);
 
 /**
  * Wrapper for thread start routine.
  *
  * @param thread_pointer pointer at thread.
  */
-static void __attribute__((noreturn)) thread_run(void) {
+static void __attribute__((noreturn)) thread_trampoline(void) {
 	struct thread *current;
 
 	assert(!critical_allows(CRITICAL_PREEMPT));
@@ -95,6 +96,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	}
 
 	__thread_init(t, flags, run, arg);
+	thread_context_init(t);
 
 	thread_start(t);
 
@@ -115,21 +117,10 @@ static void __thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	assert(t);
 #if 0
-	assert(t->stack);
-	assert(t->stack_sz);
 	assert(run);
 #endif
 
-	t->id = id_counter++;
-
-	// XXX
-	list_add_tail(&t->thread_link, &__thread_list);
-
 	t->flags = 0;
-
-	context_init(&t->context, true);
-	context_set_entry(&t->context, thread_run);
-	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
 
 	t->run = run;
 	t->run_arg = arg;
@@ -145,14 +136,24 @@ static void __thread_init(struct thread *t, unsigned int flags,
 	event_init(&t->exit_event, "thread_exit");
 	t->need_message = false;
 
-	__thread_ugly_init(t);
+	thread_ugly_init(t);
 
 	if (flags & THREAD_FLAG_DETACHED) {
 		thread_detach(t);
 	}
 }
 
-static void __thread_ugly_init(struct thread *t) {
+static void thread_context_init(struct thread *t) {
+	assert(t);
+	assert(t->stack);
+	assert(t->stack_sz);
+
+	context_init(&t->context, true);
+	context_set_entry(&t->context, thread_trampoline);
+	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
+}
+
+static void thread_ugly_init(struct thread *t) {
 	struct thread *current;
 
 	// XXX WTF?
@@ -174,6 +175,7 @@ struct thread *thread_init(struct thread *t, void *(*run)(void *),
 
 	// TODO arg. -- Eldar
 	__thread_init(t, 0, run, NULL);
+	thread_context_init(t);
 
 	return t;
 }
@@ -387,15 +389,20 @@ static int unit_init(void) {
 	static struct thread bootstrap;
 	struct thread *idle;
 
-	// TODO unused context initialization inside __thread_init. -- Eldar
+	id_counter = 0;
+
+	bootstrap.id = id_counter++;
+	list_add_tail(&bootstrap.thread_link, &__thread_list);
+
 	__thread_init(&bootstrap, 0, NULL, NULL);
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_TOTAL / 2;
 
-	if (!(idle = thread_alloc())) {
+	if (!(idle = thread_new())) {
 		return -ENOMEM;
 	}
 	__thread_init(idle, 0, idle_run, NULL);
+	thread_context_init(idle);
 	idle->priority = THREAD_PRIORITY_MIN;
 
 	return sched_init(&bootstrap, idle);
@@ -413,6 +420,9 @@ static struct thread *thread_new(void) {
 	if (!(t = thread_alloc())) {
 		return NULL;
 	}
+
+	t->id = id_counter++;
+	list_add_tail(&t->thread_link, &__thread_list);
 
 	return t;
 }
