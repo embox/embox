@@ -7,10 +7,7 @@
 
 #include <embox/test.h>
 #include <drivers/lcd.h>
-#include <unistd.h>
-#include <types.h>
 #include <drivers/menu.h>
-#include <drivers/nxt_buttons.h>
 
 EMBOX_TEST(run_menu_test);
 
