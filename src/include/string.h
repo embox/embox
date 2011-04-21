@@ -1,9 +1,8 @@
 /**
  * @file
- * @brief C standard library header.
- * @details
- *   Contains declarations of functions used for C-style strings handling
- *   and operating with memory blocks.
+ * @brief ISO C99 Standard: 7.21 String handling.
+ * @details Contains declarations of functions used for C-style
+ *          strings handling and operating with memory blocks.
  *
  * @date 02.12.08
  * @author Anton Bondarev

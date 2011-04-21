@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief C standard library header.
+ * @brief ISO C99 Standard: 7.20 General utilities.
+ * @details Contains declarations for many standard functions.
  *
  * @date 20.11.09
  * @author Nikolay Korotky

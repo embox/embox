@@ -1,7 +1,6 @@
 /**
  * @file
- * @brief General Terminal Interface
- *
+ * @brief POSIX Standard: 7.1-2 General Terminal Interface.
  * @details Defines the structure of the termios file, which provides
  *          the terminal interface for POSIX compatibility.
  *

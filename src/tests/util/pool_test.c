@@ -42,7 +42,8 @@ TEST_CASE("After freeing all objects using pool_free one should be able to "
 }
 
 static void do_alloc(struct pool *pool, struct object *objects[], int nr) {
-	for (int i = 0; i < nr; ++i) {
+	size_t i;
+	for (i = 0; i < nr; ++i) {
 		test_assert_not_null(
 				(objects[i] = (struct object *) pool_alloc(pool)));
 	}
@@ -50,7 +51,8 @@ static void do_alloc(struct pool *pool, struct object *objects[], int nr) {
 
 static void do_free(struct pool *pool, struct object *objects[], int nr) {
 	struct object *object;
-	for (int i = 0; i < nr; ++i) {
+	size_t i;
+	for (i = 0; i < nr; ++i) {
 		if ((object = objects[i])) {
 			pool_free(pool, object);
 		}

@@ -1,5 +1,7 @@
 /**
  * @file
+ * @brief ISO C99 Standard: 7.19 Input/output
+ * @details Contains related to "standard" input/output functions.
  *
  * @date 23.11.09
  * @author Nikolay Korotky
@@ -95,9 +97,6 @@ extern int fclose(FILE *fp);
  */
 extern int remove(const char *pathname);
 
-#define SEEK_SET 0
-#define SEEK_CUR 1
-#define SEEK_END 2
 /**
  * Sets the file position indicator for the stream pointed to by stream.
  * The new position, measured in bytes, is obtained by adding offset bytes to

@@ -1,10 +1,10 @@
 /**
  * @file
  * @brief C standard library header.
- * @details Defines the macros #NULL and #offsetof as well as the types
- * #ptrdiff_t and #size_t.
+ * @details Defines the macros #NULL and #offsetof as well
+ *          as the types #ptrdiff_t and #size_t.
  *
- * @date 09.03.2010
+ * @date 09.03.10
  * @author Eldar Abusalimov
  */
 

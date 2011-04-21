@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Utility functions for error messages.
  *
  * @date 25.11.09
  * @author Nikolay Korotky

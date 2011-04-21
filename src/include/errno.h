@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief C standard library header.
+ * @brief ISO C99 Standard: 7.5 Errors.
  * @details Integer constants which represent error codes.
  *
- * @date 1.10.09
+ * @date 01.10.09
  * @author Andrey Baboshin
  */
 

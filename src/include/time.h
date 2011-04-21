@@ -1,7 +1,8 @@
 /**
  * @file
+ * @brief ISO C99 Standard: 7.23 Date and time.
  *
- * @date 24.11.2009
+ * @date 24.11.09
  * @author Anton Bondarev
  */
 #ifndef TIME_H_

@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief C standard library header.
- * @details
- *   Provides #assert() macro definition which is used in debugging purposes.
+ * @brief ISO C99 Standard: 7.2 Diagnostics.
+ * @details Provides #assert() macro definition
+ *          which is used in debugging purposes.
  *
  * @date 25.11.09
  * @author Eldar Abusalimov

@@ -3,7 +3,7 @@
  * @brief C standard library header.
  * @details Contains @link #bool boolean @endlink type and #true/#false macros.
  *
- * @date 09.03.2010
+ * @date 09.03.10
  * @author Eldar Abusalimov
  */
 

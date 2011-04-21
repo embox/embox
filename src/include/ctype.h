@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief C standard library header.
+ * @brief ISO C99 Standard 7.4: Character handling.
  * @details Contains declarations for character classification functions.
  *
  * @date 14.10.09

@@ -5,8 +5,8 @@
  * @date 27.09.10
  * @author Nikolay Korotky
  */
-#ifndef _CPIO_H
-#define _CPIO_H
+#ifndef CPIO_H_
+#define CPIO_H_
 
 /* A cpio archive consists of a sequence of files.
    Each file has a 76 byte header,
@@ -72,4 +72,4 @@ typedef struct cpio_newc_header {
 #define C_ISCTG	        0x9000
 #define C_ISREG	        0x8000
 
-#endif /* _CPIO_H */
+#endif /* CPIO_H_ */

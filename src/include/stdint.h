@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief C standard library header.
+ * @brief ISO C99: 7.18 Integer types.
  *
  * @date 09.03.2010
  * @author Eldar Abusalimov

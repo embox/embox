@@ -1,8 +1,9 @@
 /**
  * @file
- * @brief Provides "non-local jumps" facility.
+ * @brief ISO C99 Standard: 7.13 Nonlocal jumps.
+ * @details Provides "non-local jumps" facility.
  *
- * @date 01.02.2010
+ * @date 01.02.10
  * @author Eldar Abusalimov
  */
 
