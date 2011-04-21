@@ -80,7 +80,7 @@ vconsole_t *vconsole_create(int id, tty_device_t *tty) {
 	console = pool_alloc(&vconsole_pool);
 	console_setup(console, id, tty);
 	tty->consoles[id] = console;
-	//console = (struct vconsole *)__vconsole_pool_pool[sizeof(vconsole_t) * id];
+	//console = (struct vconsole *) __vconsole_pool_pool[sizeof(vconsole_t) * id];
 	//console = (struct vconsole *)&cur_tty->console[id];
 	//console_setup(console, id, tty);
 //	memcpy(&tty->console[id], console, sizeof(vconsole_t));

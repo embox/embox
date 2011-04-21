@@ -61,7 +61,6 @@ multiboot_entry:
 //	addl    $8, %esp ;
 
 
-
 	movl   $_bss_len, 0x8(%esp)
 	movl   $0x0, 0x4(%esp)
 	movl   $_bss_vma, 0x0(%esp)

@@ -144,10 +144,6 @@ void diag_putc(char ch) {
 }
 
 
-
-
-
-
 static bool handler_was_set = false;
 #define COM0_IRQ_NUM 0x4
 #define UART_IER_RX_ENABLE 0x1

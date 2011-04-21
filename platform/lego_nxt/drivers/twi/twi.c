@@ -157,5 +157,3 @@ int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
 }
 
 
-
-
