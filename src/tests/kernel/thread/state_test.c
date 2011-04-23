@@ -2,71 +2,70 @@
  * @file
  * @brief TODO documentation for state_test.c -- Alina Kramar
  *
- * @date 3.04.2011
+ * @date 03.04.2011
  * @author Alina Kramar
+ * @author Eldar Abusalimov
  */
 
 #include <embox/test.h>
 
-#include __impl_x(kernel/thread/state.h)
+#include <kernel/thread/state.h>
 
-EMBOX_TEST_SUITE("thread state machine tests");
+EMBOX_TEST_SUITE("thread state tests");
 
-#define STATE(state) \
-	THREAD_STATE_ ## state
+TEST_SETUP(setup);
 
-#define ACTION(action) \
-	THREAD_STATE_ACTION_ ## action
+static thread_state_t s;
 
-#define assert_transition(from, action, to) \
-	test_assert_equal(thread_state_transition(from, action), to);
+TEST_CASE("single thread_state_do_sleep") {
+	s = thread_state_do_sleep(s);
 
-#define assert_transition_invalid(from, action) \
-	test_assert_zero(thread_state_transition(from, action));
+	test_assert_true(thread_state_sleeping(s));
+	test_assert_true(thread_state_blocked(s));
 
-TEST_CASE("Valid states are not zeroes") {
-	test_assert_not_zero(STATE(SLEEPING));
-	test_assert_not_zero(STATE(SUSPENDED));
-	test_assert_not_zero(STATE(SLEEPING_SUSPENDED));
-	test_assert_not_zero(STATE(RUNNING));
+	test_assert_false(thread_state_running(s));
+	test_assert_false(thread_state_suspended(s));
 }
 
-TEST_CASE("Valid actions for RUNNING state") {
-	assert_transition(STATE(RUNNING), ACTION(SUSPEND), STATE(SUSPENDED));
-	assert_transition(STATE(RUNNING), ACTION(SLEEP), STATE(SLEEPING));
+TEST_CASE("thread_state_do_wake after thread_state_do_sleep") {
+	s = thread_state_do_sleep(s);
+
+	test_assert_true(thread_state_sleeping(s));
+
+	s = thread_state_do_wake(s);
+
+	test_assert_true(thread_state_running(s));
+
+	test_assert_false(thread_state_blocked(s));
+	test_assert_false(thread_state_suspended(s));
+	test_assert_false(thread_state_sleeping(s));
 }
 
-TEST_CASE("Invalid actions for RUNNING state") {
-	assert_transition_invalid(STATE(RUNNING), ACTION(WAKE));
-	assert_transition_invalid(STATE(RUNNING), ACTION(RESUME));
+TEST_CASE("single thread_state_do_suspend") {
+	s = thread_state_do_suspend(s);
+
+	test_assert_true(thread_state_suspended(s));
+	test_assert_true(thread_state_blocked(s));
+
+	test_assert_false(thread_state_running(s));
+	test_assert_false(thread_state_sleeping(s));
 }
 
-TEST_CASE("Valid actions for SLEEPING state") {
-	assert_transition(STATE(SLEEPING), ACTION(WAKE), STATE(RUNNING));
-	assert_transition(STATE(SLEEPING), ACTION(SUSPEND), STATE(SLEEPING_SUSPENDED));
+TEST_CASE("thread_state_do_resume after thread_state_do_suspend") {
+	s = thread_state_do_suspend(s);
+
+	test_assert_true(thread_state_suspended(s));
+
+	s = thread_state_do_resume(s);
+
+	test_assert_true(thread_state_running(s));
+
+	test_assert_false(thread_state_blocked(s));
+	test_assert_false(thread_state_suspended(s));
+	test_assert_false(thread_state_sleeping(s));
 }
 
-TEST_CASE("Invalid actions for SLEEPING state") {
-	assert_transition_invalid(STATE(SLEEPING), ACTION(SLEEP));
-	assert_transition_invalid(STATE(SLEEPING), ACTION(RESUME));
-}
-
-TEST_CASE("Valid actions for SLEEPING_SUSPENDED state") {
-	assert_transition(STATE(SLEEPING_SUSPENDED), ACTION(WAKE), STATE(SUSPENDED));
-	assert_transition(STATE(SLEEPING_SUSPENDED), ACTION(RESUME), STATE(SLEEPING));
-	assert_transition(STATE(SLEEPING_SUSPENDED), ACTION(SUSPEND), STATE(SLEEPING_SUSPENDED));
-}
-
-TEST_CASE("Invalid actions for SLEEPING_SUSPENDED state") {
-	assert_transition_invalid(STATE(SLEEPING_SUSPENDED), ACTION(SLEEP));
-}
-
-TEST_CASE("Valid actions for SUSPENDED state") {
-	assert_transition(STATE(SUSPENDED), ACTION(SUSPEND), STATE(SUSPENDED));
-	assert_transition(STATE(SUSPENDED), ACTION(RESUME), STATE(RUNNING));
-}
-
-TEST_CASE("Invalid actions for SUSPENDED state") {
-	assert_transition_invalid(STATE(SUSPENDED), ACTION(WAKE));
-	assert_transition_invalid(STATE(SUSPENDED), ACTION(SLEEP));
+static int setup(void) {
+	s = thread_state_init();
+	return 0;
 }
