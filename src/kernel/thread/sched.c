@@ -17,12 +17,12 @@
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_policy.h>
+#include <kernel/thread/state.h>
 #include <kernel/timer.h>
 #include <hal/context.h>
 #include <hal/ipl.h>
 
 #include "types.h"
-#include "state.h"
 
 /** Timer, which calls scheduler_tick. */
 #define SCHED_TICK_TIMER_ID 17
@@ -37,8 +37,10 @@ static int resched;
 int sched_init(struct thread* current, struct thread *idle) {
 	int error;
 
+#if 0
 	current->state = THREAD_STATE_RUNNING;
 	idle->state = THREAD_STATE_RUNNING;
+#endif
 
 	if ((error = sched_policy_init(current, idle))) {
 		return error;
@@ -95,7 +97,9 @@ void sched_start(struct thread *t) {
 
 	sched_lock();
 
+#if 0
 	t->state = THREAD_STATE_RUNNING;
+#endif
 
 	resched |= sched_policy_start(t);
 
@@ -109,7 +113,9 @@ void sched_stop(struct thread *t) {
 
 	resched |= sched_policy_stop(t);
 
+#if 0
 	t->state = 0;
+#endif
 
 	sched_unlock();
 }
@@ -124,13 +130,12 @@ int sched_sleep_locked(struct event *e) {
 
 	resched |= sched_policy_stop(current);
 
-	current->state = thread_state_transition(current->state,
-			THREAD_STATE_ACTION_SLEEP);
-	assert(current->state);
+	current->state = thread_state_do_sleep(current->state);
 
 	list_add(&current->sched_list, &e->sleep_queue);
 
 	sched_unlock();
+	/* Switch from the current thread. */
 	assert(critical_allows(CRITICAL_PREEMPT));
 	sched_lock();
 
@@ -152,6 +157,18 @@ int sched_sleep(struct event *e) {
 	return ret;
 }
 
+static void sched_wakeup_thread(struct thread *t) {
+	assert(critical_inside(CRITICAL_PREEMPT));
+
+	list_del_init(&t->sched_list);
+
+	t->state = thread_state_do_wake(t->state);
+
+	if (thread_state_running(t->state)) {
+		resched |= sched_policy_start(t);
+	}
+}
+
 int sched_wake(struct event *e) {
 	struct thread *t, *tmp;
 	struct thread *current;
@@ -161,15 +178,7 @@ int sched_wake(struct event *e) {
 	current = sched_current();
 
 	list_for_each_entry_safe(t, tmp, &e->sleep_queue, sched_list) {
-		list_del_init(&t->sched_list);
-
-		t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
-
-		if (t->state == THREAD_STATE_RUNNING) {
-			resched |= sched_policy_start(t);
-		}
-
-		assert(t->state);
+		sched_wakeup_thread(t);
 	}
 
 	sched_unlock();
@@ -183,13 +192,7 @@ int sched_wake_one(struct event *e) {
 	sched_lock();
 
 	t = list_entry(e->sleep_queue.next, struct thread, sched_list);
-	list_del_init(&t->sched_list);
-
-	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_WAKE);
-
-	if (t->state == THREAD_STATE_RUNNING) {
-		resched |= sched_policy_start(t);
-	}
+	sched_wakeup_thread(t);
 
 	sched_unlock();
 
@@ -207,11 +210,11 @@ void sched_yield(void) {
 void sched_suspend(struct thread *t) {
 	sched_lock();
 
-	if (t->state == THREAD_STATE_RUNNING) {
+	if (thread_state_running(t->state)) {
 		resched |= sched_policy_stop(t);
 	}
 
-	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_SUSPEND);
+	t->state = thread_state_do_suspend(t->state);
 
 	sched_unlock();
 }
@@ -219,9 +222,9 @@ void sched_suspend(struct thread *t) {
 void sched_resume(struct thread *t) {
 	sched_lock();
 
-	t->state = thread_state_transition(t->state, THREAD_STATE_ACTION_RESUME);
+	t->state = thread_state_do_resume(t->state);
 
-	if (t->state == THREAD_STATE_RUNNING) {
+	if (thread_state_running(t->state)) {
 		resched |= sched_policy_start(t);
 	}
 
@@ -233,7 +236,7 @@ void sched_set_priority(struct thread *t, __thread_priority_t new) {
 
 	sched_lock();
 
-	need_restart = (t->state == THREAD_STATE_RUNNING);
+	need_restart = thread_state_running(t->state);
 	if (need_restart) {
 		resched |= sched_policy_stop(t);
 	}

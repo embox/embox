@@ -7,7 +7,9 @@
  * @author Skorodumov Kirill
  */
 
+#include <assert.h>
 #include <errno.h>
+
 #include <lib/list.h>
 #include <hal/ipl.h>
 #include <kernel/thread/api.h>

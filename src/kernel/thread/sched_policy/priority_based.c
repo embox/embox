@@ -20,6 +20,7 @@
 #include <util/array.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched_policy.h>
+#include <kernel/thread/state.h>
 
 /**
  * Structure priority in list.
@@ -143,7 +144,7 @@ static void run_insert_priority(struct run_thread_list *priority) {
 }
 
 bool sched_policy_start(struct thread *t) {
-	assert(t->state == THREAD_STATE_RUNNING);
+//	assert(t->state == THREAD_STATE_RUNNING);
 
 	run_enqueue(t);
 
@@ -176,7 +177,7 @@ struct thread *sched_policy_switch(struct thread *t) {
 
 	assert(current != NULL);
 
-	if (current->state == THREAD_STATE_RUNNING) {
+	if (thread_state_running(current->state)) {
 		if (!(next = run_peek())) {
 			return current;
 		}

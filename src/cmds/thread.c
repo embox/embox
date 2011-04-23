@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <string.h>
 #include <kernel/thread/api.h>
+#include <kernel/thread/state.h>
 
 EMBOX_CMD(exec);
 
@@ -24,59 +25,48 @@ static void print_usage(void) {
 
 static void print_stat(void) {
 	struct thread *thread;
-	int running, sleeping, suspended, sleeping_suspended;
+	int running, sleeping, suspended;
 	int total;
 
 	printf(" %4s  %8s %18s\n", "Id", "Priority", "State");
 
-	running = sleeping = suspended = sleeping_suspended = 0;
+	running = sleeping = suspended = 0;
 
 	thread_foreach(thread) {
-		const char *state;
+		thread_state_t s = thread->state;
+		const char *state = NULL;
 
-		switch (thread->state) {
-		case THREAD_STATE_RUNNING:
+		if (thread_state_running(s)) {
 			state = "running";
 			running++;
-			break;
-		case THREAD_STATE_SLEEPING:
-			state = "sleeping";
-			sleeping++;
-			break;
-		case THREAD_STATE_SLEEPING_SUSPENDED:
-			state = "sleeping_suspended";
-			sleeping_suspended++;
-			break;
-		case THREAD_STATE_SUSPENDED:
-			state = "suspended";
-			suspended++;
-			break;
-		default:
-			state = "unknown";
-			break;
+		} else {
+			if (thread_state_sleeping(s)) {
+				state = "sleeping";
+				sleeping++;
+			}
+			if (thread_state_suspended(s)) {
+				state = state ? "sleeping_suspended" : "suspended";
+				suspended++;
+			}
 		}
+
 		printf(" %4d%c %8d %18s\n", thread->id,
 				thread == thread_self() ? '*' : ' ', thread->priority, state);
 	}
 
-	total = running + sleeping + suspended + sleeping_suspended;
+	total = running + sleeping + suspended;
 
 	printf("Total %d threads: \n"
 		"\t%d running\n"
 		"\t%d sleeping\n"
-		"\t%d suspended\n"
-		"\t%d sleeping_suspended\n", total, running, sleeping, suspended,
-			sleeping_suspended);
+		"\t%d suspended\n", total, running, sleeping, suspended);
 }
 
-static void kill_thread(int thread_id) {
+static void kill_thread(thread_id_t thread_id) {
 	struct thread *thread;
+#if 0
 	int error;
-
-	if (thread_id < 0) {
-		printf("Invalid (negative) thread id: %d\n", thread_id);
-		return;
-	}
+#endif
 
 	if (!(thread = thread_lookup(thread_id))) {
 		printf("No thread with id: %d\n", thread_id);
@@ -121,7 +111,7 @@ static int exec(int argc, char **argv) {
 			print_stat();
 			break;
 		case 'k': {
-			int thread_id;
+			thread_id_t thread_id;
 			if ((optarg == NULL) || (!sscanf(optarg, "%d", &thread_id))) {
 				print_usage();
 				break;

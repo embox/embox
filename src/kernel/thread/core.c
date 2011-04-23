@@ -28,14 +28,12 @@
 #include <kernel/critical/api.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
+#include <kernel/thread/state.h>
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
 
 #define STACK_SZ 0x2000
-
-#define FLAG_EXITED (0x1 << 0)
-#define FLAG_DETACHED (0x1 << 1)
 
 EMBOX_UNIT(unit_init, unit_fini);
 
@@ -120,12 +118,12 @@ static void __thread_init(struct thread *t, unsigned int flags,
 	assert(run);
 #endif
 
-	t->flags = 0;
+	t->state = thread_state_init();
 
 	t->run = run;
 	t->run_arg = arg;
 
-	t->susp_cnt = 0;
+	t->suspend_count = 0;
 
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		t->priority = thread_self()->priority;
@@ -225,8 +223,7 @@ int thread_stop(struct thread *t) {
 
 	sched_stop(t);
 
-	assert(!(t->flags & FLAG_EXITED));
-	t->flags |= FLAG_EXITED;
+	t->state = thread_state_do_exit(t->state);
 	/* Copy exit code to a joining thread (if any) so that the current thread
 	 * could be safely reclaimed in case that it has already been detached
 	 * without waiting for the joining thread to get the control. */
@@ -238,7 +235,7 @@ int thread_stop(struct thread *t) {
 	/* Wake up a joining thread (if any). */
 	sched_wake(&t->exit_event);
 
-	if (t->flags & FLAG_DETACHED) {
+	if (thread_state_dead(t->state)) {
 		thread_delete(t);
 	}
 
@@ -259,11 +256,15 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	sched_lock();
 
-	/* See notice about such assert in thread_detach(). */
-	assert(!(t->flags & FLAG_DETACHED));
-	t->flags |= FLAG_DETACHED;
+	t->state = thread_state_do_detach(t->state);
 
-	if (!(t->flags & FLAG_EXITED)) {
+	if (thread_state_dead(t->state)) {
+		/* The target thread has exited but it has not been detached before
+		 * thread_join() call. Get its return value and free it. */
+		join_ret = t->run_ret;
+		thread_delete(t);
+
+	} else {
 		// TODO using event internals. -- Eldar
 		assert(list_empty(&t->exit_event.sleep_queue));
 		sched_sleep_locked(&t->exit_event);
@@ -271,12 +272,6 @@ int thread_join(struct thread *t, void **p_ret) {
 		/* At this point the target thread has already deleted itself.
 		 * So we mustn't refer it anymore. */
 		join_ret = current->join_ret;
-
-	} else {
-		/* The target thread has exited but it has not been detached yet.
-		 * Get its return value and free it. */
-		join_ret = t->run_ret;
-		thread_delete(t);
 
 	}
 
@@ -294,12 +289,9 @@ int thread_detach(struct thread *t) {
 
 	sched_lock();
 
-	/* Well, in fact this will not catch all illegal invocations,
-	 * but in most cases this should be enough. */
-	assert(!(t->flags & FLAG_DETACHED));
-	t->flags |= FLAG_DETACHED;
+	t->state = thread_state_do_detach(t->state);
 
-	if (t->flags & FLAG_EXITED) {
+	if (thread_state_dead(t->state)) {
 		/* The target thread has finished, free it here. */
 		thread_delete(t);
 	}
@@ -314,12 +306,12 @@ int thread_suspend(struct thread *t) {
 
 	sched_lock();
 
-	if (t->flags & FLAG_EXITED) {
+	if (thread_state_exited(t->state)) {
 		sched_unlock();
 		return -ESRCH;
 	}
 
-	if (++t->susp_cnt == 1) {
+	if (++t->suspend_count == 1) {
 		sched_suspend(t);
 	}
 
@@ -333,17 +325,17 @@ int thread_resume(struct thread *t) {
 
 	sched_lock();
 
-	if (t->flags & FLAG_EXITED) {
+	if (thread_state_exited(t->state)) {
 		sched_unlock();
 		return -ESRCH;
 	}
 
-	if (!t->susp_cnt) {
+	if (!t->suspend_count) {
 		sched_unlock();
 		return -EINVAL;
 	}
 
-	if (!(--t->susp_cnt)) {
+	if (!(--t->suspend_count)) {
 		sched_resume(t);
 	}
 
@@ -375,7 +367,7 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 	return 0;
 }
 
-struct thread *thread_lookup(__thread_id_t id) {
+struct thread *thread_lookup(thread_id_t id) {
 	struct thread *t;
 
 	thread_foreach(t) {
@@ -444,6 +436,7 @@ static void thread_delete(struct thread *t) {
 	struct thread *current = thread_self();
 
 	assert(t);
+	assert(thread_state_dead(t->state));
 
 	if (zombie != NULL) {
 		assert(zombie != current);
