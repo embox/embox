@@ -44,6 +44,9 @@ SIZE    = $(CROSS_COMPILE)size
 
 CC_VERSION := \
   $(shell $(CC) -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
+ifeq ($(strip $(CC_VERSION)),)
+$(error Unable to get GCC version: $(shell $(CC) -v 2>&1 | cat))
+endif
 CC_VERSION_MAJOR := $(word 1,$(subst ., ,$(CC_VERSION)))
 CC_VERSION_MINOR := $(word 2,$(subst ., ,$(CC_VERSION)))
 CC_VERSION_PATCH := $(word 3,$(subst ., ,$(CC_VERSION)))
