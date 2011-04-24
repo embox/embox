@@ -15,14 +15,8 @@
 
 #include "types.h"
 
-extern void __test_assertion_handle0(int pass,
+extern void __test_assertion_handle(int pass,
 		const struct __test_assertion_point *point);
-
-extern void __test_assertion_handle1(int pass,
-		const struct __test_assertion_point *point, void *arg1);
-
-extern void __test_assertion_handle2(int pass,
-		const struct __test_assertion_point *point, void *arg1, void *arg2);
 
 #define __test_assertion_point_ref(_reason) \
 	__extension__ ({                        \
@@ -36,74 +30,74 @@ extern void __test_assertion_handle2(int pass,
 	})
 
 #define __test_fail(reason) \
-	__test_assertion_handle0(0, \
+	__test_assertion_handle(0, \
 			__test_assertion_point_ref("test_fail(\"" reason "\")"))
 
 #define __test_assert(condition, condition_str) \
-	__test_assertion_handle0((int) (condition), \
+	__test_assertion_handle((int) (condition), \
 			__test_assertion_point_ref("test_assert(" condition_str ")"))
 
 #define __test_assert_true(value, value_str) \
-	__test_assertion_handle0((value), \
+	__test_assertion_handle((value), \
 			__test_assertion_point_ref("test_assert_true(" value_str ")"))
 
 #define __test_assert_false(value, value_str) \
-	__test_assertion_handle0(!(value), \
+	__test_assertion_handle(!(value), \
 			__test_assertion_point_ref("test_assert_false(" value_str ")"))
 
 #define __test_assert_zero(value, value_str) \
-	__test_assertion_handle0(!(value), \
+	__test_assertion_handle(!(value), \
 			__test_assertion_point_ref("test_assert_zero(" value_str ")"))
 
 #define __test_assert_not_zero(value, value_str) \
-	__test_assertion_handle0((value), \
+	__test_assertion_handle((value), \
 			__test_assertion_point_ref("test_assert_not_zero(" value_str ")"))
 
 #define __test_assert_null(value, value_str) \
-	__test_assertion_handle0(!(value), \
+	__test_assertion_handle(!(value), \
 			__test_assertion_point_ref("test_assert_null(" value_str ")"))
 
 #define __test_assert_not_null(value, value_str) \
-	__test_assertion_handle0((int) (value), \
+	__test_assertion_handle((int) (value), \
 			__test_assertion_point_ref("test_assert_not_null(" value_str ")"))
 
 #define __test_assert_equal(actual, expected, act_str, exp_str) \
-	__test_assertion_handle0((actual) == (expected), \
+	__test_assertion_handle((actual) == (expected), \
 			__test_assertion_point_ref( "test_assert_equal(" act_str ", " \
 					exp_str ")"))
 
 #define __test_assert_not_equal(actual, expected, act_str, exp_str) \
-	__test_assertion_handle0((actual) != (expected), \
+	__test_assertion_handle((actual) != (expected), \
 			__test_assertion_point_ref( "test_assert_not_equal(" act_str ", " \
 					exp_str ")"))
 
 #define __test_assert_str_equal(actual, expected, act_str, exp_str) \
-	__test_assertion_handle0(0 == strcmp((actual), (expected)), \
+	__test_assertion_handle(0 == strcmp((actual), (expected)), \
 			__test_assertion_point_ref( "test_assert_str_equal(" \
 					act_str ", " exp_str ")"))
 
 #define __test_assert_str_not_equal(actual, expected, act_str, exp_str) \
-	__test_assertion_handle0(0 != strcmp((actual), (expected)), \
+	__test_assertion_handle(0 != strcmp((actual), (expected)), \
 			__test_assertion_point_ref( "test_assert_str_not_equal(" \
 					act_str ", " exp_str ")"))
 
 #define __test_assert_strn_equal(actual, expected, n, act_str, exp_str) \
-	__test_assertion_handle0(0 == strncmp((actual), (expected), (n)), \
+	__test_assertion_handle(0 == strncmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_strn_equal(" \
 					act_str ", " exp_str ")"))
 
 #define __test_assert_strn_not_equal(actual, expected, n, act_str, exp_str) \
-	__test_assertion_handle0(0 != strcmp((actual), (expected), (n)), \
+	__test_assertion_handle(0 != strcmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_strn_not_equal(" \
 					act_str ", " exp_str ")"))
 
 #define __test_assert_mem_equal(actual, expected, n, act_str, exp_str) \
-	__test_assertion_handle0(0 == memcmp((actual), (expected), (n)), \
+	__test_assertion_handle(0 == memcmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_mem_equal(" \
 					act_str ", " exp_str ")"))
 
 #define __test_assert_mem_not_equal(actual, expected, n, act_str, exp_str) \
-	__test_assertion_handle0(0 != memcmp((actual), (expected), (n)), \
+	__test_assertion_handle(0 != memcmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_mem_not_equal(" \
 					act_str ", " exp_str ")"))
 

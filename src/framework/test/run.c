@@ -123,7 +123,7 @@ static const struct __test_assertion_point *test_run(test_case_run_t run) {
 	return (const struct __test_assertion_point *) caught;
 }
 
-void __test_assertion_handle0(int pass,
+void __test_assertion_handle(int pass,
 		const struct __test_assertion_point *point) {
 	if (pass) {
 		return;
