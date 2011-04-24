@@ -52,7 +52,7 @@ unsigned long *mmu_table_alloc(size_t size) {
 	LOG_DEBUG("page %x; page->free %x; cur_rest %x; size %x, return %x\n",
 		page, ((page_header_t *) page)->free, cur_rest, size, t);
 	((page_header_t *) page)->free -= size;
-	return (mmu_pmd_t *) t;
+	return (unsigned long *) (mmu_pmd_t *) t; // XXX cast
 }
 
 void mmu_table_free(unsigned long *table, int level) {
@@ -68,7 +68,7 @@ void mmu_table_free(unsigned long *table, int level) {
 		if (!mmu_is_pte(t)) {
 			LOG_DEBUG("on %x to %x\n",
 				table + i, (t & MMU_PTD_PMASK) << 4);
-			mmu_table_free(
+			mmu_table_free((unsigned long *) // XXX cast
 				(*mmu_page_table_gets[level])(t), level + 1);
 		}
 	}

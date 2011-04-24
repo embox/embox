@@ -96,11 +96,11 @@
 /** MMU three-level mapping */
 
 /** Level-3 Table:64 entries, 4 bytes a piece */
-#define __MMU_PTABLE_SIZE   0x40
+#define __MMU_PTABLE_SIZE   0x40UL
 /** Level-2 Table:64 entries, 4 bytes a piece */
-#define __MMU_MTABLE_SIZE   0x40
+#define __MMU_MTABLE_SIZE   0x40UL
 /** Level-1 Table: 256 entries, 4 bytes a piece */
-#define __MMU_GTABLE_SIZE   0x100
+#define __MMU_GTABLE_SIZE   0x100UL
 
 /* size of table entry */
 #define __MMU_ENTRY_SIZE    4

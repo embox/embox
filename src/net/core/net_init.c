@@ -9,6 +9,7 @@
 #include <net/netdevice.h>
 #include <embox/unit.h>
 #include <linux/init.h>
+#include <net/icmp.h>
 
 EMBOX_UNIT_INIT(unit_init);
 

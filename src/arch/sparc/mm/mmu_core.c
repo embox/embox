@@ -134,7 +134,8 @@ mmu_ctx_t mmu_create_context(void) {
 	LOG_DEBUG("create %d\n", i);
 	if (i >= LEON_CNR_CTX_NCTX)
 		return -1;
-	mmu_ctxd_set(cur_env->ctx + i, mmu_table_alloc(MMU_GTABLE_SIZE));
+	mmu_ctxd_set(cur_env->ctx + i,
+			(mmu_pgd_t *) mmu_table_alloc(MMU_GTABLE_SIZE));
 	used_context[i] = 1;
 	return i;
 }

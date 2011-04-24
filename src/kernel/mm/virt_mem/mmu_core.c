@@ -23,7 +23,7 @@ unsigned long mmu_page_table_sizes[] = {
 
 unsigned long mmu_table_masks[] = {
 	-1,
-	MMU_GTABLE_MASK, /* warning: integer overflow in expression */
+	MMU_GTABLE_MASK,
 	MMU_MTABLE_MASK,
 	MMU_PTABLE_MASK,
 	MMU_PAGE_MASK,
@@ -40,17 +40,17 @@ unsigned long mmu_level_capacity[] = {
 
 mmu_page_table_set_t mmu_page_table_sets[] = {
 	NULL,
-	&mmu_pgd_set,
-	&mmu_pmd_set,
-	&mmu_set_pte, /* warning: initialization from incompatible pointer type */
+	(mmu_page_table_set_t) &mmu_pgd_set, /* XXX incompatible pointer type */
+	(mmu_page_table_set_t) &mmu_pmd_set, /* XXX incompatible pointer type */
+	(mmu_page_table_set_t) &mmu_set_pte, /* XXX incompatible pointer type */
 	NULL
 };
 
 mmu_page_table_get_t mmu_page_table_gets[] = {
 	NULL,
-	&mmu_pgd_get, /* warning: initialization from incompatible pointer type */
-	&mmu_pmd_get,
-	&mmu_pmd_get,
+	(mmu_page_table_get_t) &mmu_pgd_get, /* XXX incompatible pointer type */
+	(mmu_page_table_get_t) &mmu_pmd_get, /* XXX incompatible pointer type */
+	(mmu_page_table_get_t) &mmu_pmd_get, /* XXX incompatible pointer type */
 	NULL
 };
 
@@ -64,7 +64,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	paddr_t paddr;
 	void *table;
 	vaddr_t vaddr = 0;
-	context[1] = (unsigned long *) mmu_get_root(ctx);
+	context[1] = (mmu_pte_t *) mmu_get_root(ctx); // XXX cast
 	/* assuming addresses aligned to page size */
 	phy_addr &= ~MMU_PAGE_MASK;
 	virt_addr &= ~MMU_PAGE_MASK;

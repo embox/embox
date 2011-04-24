@@ -113,7 +113,7 @@ const struct header_ops eth_header_ops = {
 	.rebuild       = eth_rebuild_header,
 };
 
-header_ops_t *get_eth_header_ops() {
+const header_ops_t *get_eth_header_ops() {
 	return &eth_header_ops;
 }
 

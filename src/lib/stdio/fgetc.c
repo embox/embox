@@ -22,6 +22,6 @@ int fgetc(FILE f) {
 }
 
 int fungetc(FILE f, int ch) {
-	return device_write(f, &ch, sizeof(char));
+	return device_write(f, (char *) &ch, sizeof(char));
 }
 #endif
