@@ -46,6 +46,7 @@ static void move_stop(void) {
 }
 
 static int box_around_test(void) {
+	int mp0, mp1;
 
 	sonar_sensor_init (SONAR_PORT);
 
@@ -56,8 +57,8 @@ static int box_around_test(void) {
 
 	printf ("distance is %d\n", sonar_treshold);
 
-	int mp0 = MOTOR_POWER * sonar_treshold / (sonar_treshold + ROBOT_WIDTH);
-	int mp1 = MOTOR_POWER;
+	mp0 = MOTOR_POWER * sonar_treshold / (sonar_treshold + ROBOT_WIDTH);
+	mp1 = MOTOR_POWER;
 
 	while (!nxt_buttons_was_pressed()) {
 		while (abs(sonar_sensor_get_val(SONAR_PORT) - sonar_treshold) < 3) {
