@@ -236,12 +236,12 @@ static bool mmu_probe() {
  * return 0 if successed
  * return -1 another way
  */
-static int exec(int argsc, char **argsv) {
-	int nextOption;
+static int exec(int argc, char **argv) {
+	int opt;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "rh");
-		switch(nextOption) {
+		opt = getopt(argc, argv, "rh");
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -253,7 +253,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
 	return mmu_probe();
 }

@@ -15,14 +15,14 @@ static void print_usage(void) {
 	printf("Usage: rm [OPTIONS] FILE\n");
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	const char *file_path;
 	int recursive, ignore;
-	int nextOption;
+	int opt;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc - 1, argsv, "frh");
-		switch(nextOption) {
+		opt = getopt(argc - 1, argv, "frh");
+		switch(opt) {
 		case 'f':
                         ignore = 1;
 			break;
@@ -37,9 +37,9 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return -1;
 		}
-	} while (nextOption != -1);
+	} while (opt != -1);
 
-	file_path = argsv[argsc - 1];
+	file_path = argv[argc - 1];
 	//TODO:
 
 	return remove(file_path);

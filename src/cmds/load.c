@@ -21,17 +21,17 @@ static void print_usage(void) {
 	printf("Usage: load [-a addr] [-f filename] [-h]\n");
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	char *file_name = NULL;
 	uint32_t load_addr, file_addr;
 	FILE *file;
 	node_t *node;
 	stat_t sb;
-	int nextOption;
+	int opt;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "f:a:h");
-		switch (nextOption) {
+		opt = getopt(argc, argv, "f:a:h");
+		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -52,7 +52,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
 	if (NULL == (file = fopen(file_name, "r"))) {
 		printf("Can't open file %s\n", file_name);

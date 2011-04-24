@@ -16,23 +16,23 @@ static void print_usage(void) {
 	printf("Usage: mknod NAME\n");
 }
 
-static int exec(int argsc, char **argsv) {
-	int nextOption;
+static int exec(int argc, char **argv) {
+	int opt;
 
 	getopt_init();
 	do {
-		nextOption = getopt(argsc - 1, argsv, "h");
-		switch (nextOption) {
+		opt = getopt(argc - 1, argv, "h");
+		switch (opt) {
 			case 'h': /* help message */
 				print_usage();
 				return 0;
 			default:
 				break;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
-	if (argsc > 1) {
-		vfs_add_path(argsv[argsc - 1], NULL);
+	if (argc > 1) {
+		vfs_add_path(argv[argc - 1], NULL);
 	}
 	return 0;
 }

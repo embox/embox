@@ -21,8 +21,8 @@ static void print_usage(void) {
 	printf("Usage: mount [-h] src dir\n");
 }
 
-static int exec(int argsc, char **argsv) {
-	int nextOption;
+static int exec(int argc, char **argv) {
+	int opt;
 	char *src, *dir;
 	char fs_type[0x20];
 	node_t *node;
@@ -31,8 +31,8 @@ static int exec(int argsc, char **argsv) {
 	fs_type[0] = '\0';
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "ht:");
-		switch (nextOption) {
+		opt = getopt(argc, argv, "ht:");
+		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -47,15 +47,15 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
-	if (argsc > 2) {
-		src = argsv[argsc - 2];
-		dir = argsv[argsc - 1];
+	if (argc > 2) {
+		src = argv[argc - 2];
+		dir = argv[argc - 1];
 	}
 
-	vfs_add_path(argsv[argsc - 1], NULL);
-	node = vfs_find_node(argsv[argsc - 1], NULL);
+	vfs_add_path(argv[argc - 1], NULL);
+	node = vfs_find_node(argv[argc - 1], NULL);
 	drv = find_filesystem(fs_type);
 	drv->fsop->init(node);
 

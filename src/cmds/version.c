@@ -14,15 +14,15 @@ static void print_usage(void) {
 	printf("Usage: version [-h]\n");
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 #ifdef CONFIG_SVN_REV
 	unsigned int rev = CONFIG_SVN_REV;
 #endif
-	int nextOption;
+	int opt;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "h");
-		switch(nextOption) {
+		opt = getopt(argc, argv, "h");
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -31,7 +31,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
 	printf("                ____\n");
 	printf("               |  _ \\\n");

@@ -266,14 +266,14 @@ static func_show_bus_t set_bus_type(const char *key_value) {
 	return NULL;
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	int dev_number = -1;
 	func_show_bus_t show_func = show_all;
-	int nextOption;
+	int opt;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "n:b:h");
-		switch(nextOption) {
+		opt = getopt(argc, argv, "n:b:h");
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -301,7 +301,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
 	show_func(dev_number);
 	return 0;

@@ -17,13 +17,13 @@ static void print_usage(void) {
 }
 
 static int exec(int argc, char **argv) {
-	int nextOption;
+	int opt;
 	FILE *fd;
 	char buff[1] = " ";
 	getopt_init();
 	do {
-		nextOption = getopt(argc - 1, argv, "h");
-		switch(nextOption) {
+		opt = getopt(argc - 1, argv, "h");
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -32,7 +32,7 @@ static int exec(int argc, char **argv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
 	if (argc < 2) {
 		print_usage();

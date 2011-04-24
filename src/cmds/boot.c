@@ -14,6 +14,9 @@
 
 EMBOX_CMD(exec);
 
+#define KERNBASE    0xf0000000
+#define LOAD_ADDR   (KERNBASE + 0x4000)
+
 static void print_usage(void) {
 	printf("Usage: boot [-f format] -a addr\n");
 }
@@ -79,16 +82,16 @@ static int uimage_info(unsigned int addr) {
 	return 0;
 }
 
-static int exec(int argsc, char **argsv) {
-	int nextOption;
+static int exec(int argc, char **argv) {
+	int opt;
 	char format = 'r';
 	unsigned int load_addr;
 	void (*entry_point)(void);
 	image_header_t *hdr;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "f:a:h");
-		switch(nextOption) {
+		opt = getopt(argc, argv, "f:a:h");
+		switch(opt) {
 		case 'f':
 			if (1 != sscanf(optarg, "%c", &format)) {
 				LOG_ERROR("wrong format %s\n", optarg);
@@ -109,7 +112,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
 	switch (format) {
 	case 'u':

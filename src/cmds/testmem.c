@@ -26,16 +26,16 @@ static void print_usage(void) {
 
 static memtest_err_t last_err;
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	TEST_MEM_FUNC *test_mem_func = NULL;
 	uint32_t *address = (uint32_t *) 0x70000000L;
 	long unsigned int amount = 1000000L;
 	uint32_t template = (uint32_t) 0x55555555;
-	int nextOption;
+	int opt;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "a:n:t:h");
-		switch (nextOption) {
+		opt = getopt(argc, argv, "a:n:t:h");
+		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -89,7 +89,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
 	if (test_mem_func == NULL) {
 		LOG_ERROR("testmem: test name expected.\n");

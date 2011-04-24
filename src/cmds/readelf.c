@@ -382,7 +382,7 @@ static void print_symb(Elf32_Sym *symb, int8_t *string_table, int counter) {
 }
 
 /* WARNING: overly complex function. */
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	int show_head     = 0;
 	int show_sections = 0;
 	int show_segments = 0;
@@ -396,15 +396,15 @@ static int exec(int argsc, char **argsv) {
 	int8_t     string_table[MAX_NAME_LENGTH];
 	int8_t     symb_names[MAX_SYMB_NAMES];
 
-	int nextOption, err, cnt = 0;
+	int opt, err, cnt = 0;
 	FILE *elf_file;
 	int rel_count, symb_count, symb_names_l;
 
 	getopt_init();
 	do {
 		cnt++;
-		nextOption = getopt(argsc - 1, argsv, "hHSlrs");
-		switch (nextOption) {
+		opt = getopt(argc - 1, argv, "hHSlrs");
+		switch (opt) {
 		case 'h':
 			show_head = 1;
 			break;
@@ -430,7 +430,7 @@ static int exec(int argsc, char **argsv) {
 			print_usage();
 			return 1;
 		}
-	} while (nextOption != -1);
+	} while (opt != -1);
 
 	if (cnt == 0) {
 		show_head = 1;
@@ -440,9 +440,9 @@ static int exec(int argsc, char **argsv) {
 		show_symb = 1;
 	}
 
-	elf_file = fopen(argsv[argsc - 1], "r");
+	elf_file = fopen(argv[argc - 1], "r");
 	if (elf_file == NULL) {
-		printf("Cannot open file %s\n", argsv[argsc - 1]);
+		printf("Cannot open file %s\n", argv[argc - 1]);
 		return -1;
 	}
 	if ((err = elf_read_header(elf_file, &elf_header)) < 0) {

@@ -203,7 +203,7 @@ static int valid(point p) {
     return (last_valid = !(p.x == 0 && p.y == 0));
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
     field_init();
     diff = dxp;
     getchar();

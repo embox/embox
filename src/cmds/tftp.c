@@ -115,26 +115,26 @@ static int tftp_receive(struct sockaddr_in *to, char *mode,
 	return 0;
 }
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	struct sockaddr_in server;
 	FILE *f;
 	char fname[MAX_FILENAME_LEN];
 
-	if (argsc < 3) {
+	if (argc < 3) {
 		print_usage();
 		return -1;
 	}
 	server.sin_family = AF_INET;
 	server.sin_port = htons(TFTP_TRANSFER_PORT);
-	server.sin_addr.s_addr = inet_addr(argsv[1]);
+	server.sin_addr.s_addr = inet_addr(argv[1]);
 
-	sprintf(fname, "%s", argsv[2]);
+	sprintf(fname, "%s", argv[2]);
 
 	if (NULL == (f = fopen(fname, "wb"))) {
 		printf("Can't open file %s\n", fname);
 		return -1;
 	}
-	tftp_receive(&server, "octet", argsv[2], f);
+	tftp_receive(&server, "octet", argv[2], f);
 	fclose(f);
 	return 0;
 }

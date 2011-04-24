@@ -19,8 +19,8 @@ static void print_usage(void) {
 	printf("Usage: route [-nmgdh] [add|del]\n");
 }
 
-static int exec(int argsc, char **argsv) {
-	int nextOption;
+static int exec(int argc, char **argv) {
+	int opt;
 	in_device_t *ifdev = NULL;
 	in_addr_t net  = INADDR_ANY;
 	in_addr_t mask = INADDR_ANY;
@@ -28,8 +28,8 @@ static int exec(int argsc, char **argsv) {
 	struct rt_entry *rt;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "n:m:d:g:h");
-		switch(nextOption) {
+		opt = getopt(argc, argv, "n:m:d:g:h");
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -59,14 +59,14 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
-	if (!strcmp(argsv[argsc - 1], "add")) {
+	if (!strcmp(argv[argc - 1], "add")) {
 		in_device_t *idev = ifdev;
 		int flags = (gw == INADDR_ANY) ? RTF_UP : RTF_UP|RTF_GATEWAY;
 		rt_add_route(idev->dev, net, mask, gw, flags);
 		return 0;
-	} else if (!strcmp(argsv[argsc - 1], "del")) {
+	} else if (!strcmp(argv[argc - 1], "del")) {
 		in_device_t *idev = ifdev;
 		rt_del_route(idev->dev, net, mask, gw);
 	} else {

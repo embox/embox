@@ -20,7 +20,7 @@ static void print_usage(void) {
 }
 #endif
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	char *line;
 
 	line = readline(CONFIG_SHELL_PROMPT);

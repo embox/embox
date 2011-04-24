@@ -98,7 +98,7 @@ static void inet_dev_show_all_info(void) {
 }
 
 /* WARNING: overly complex function. */
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	in_device_t *in_dev = NULL;
 	struct in_addr ipaddr;
 	struct in_addr mask;
@@ -110,15 +110,15 @@ static int exec(int argsc, char **argsv) {
 	unsigned long base_addr = 0;
 	long tx_queue_len = 0;
 	char iname[IFNAMSIZ];
-	int nextOption;
+	int opt;
 	ipaddr.s_addr = 0;
 	mask.s_addr = 0;
 	macaddr[0] = broadcastaddr[0] = 0;
 	getopt_init();
 	/* and what about loopback, broadcast, pointopoint and debug?? */
 	do {
-		nextOption = getopt(argsc, argsv, "a:p:m:udx:r:f:c:g:l:b:i:t:w:z:h");
-		switch (nextOption) {
+		opt = getopt(argc, argv, "a:p:m:udx:r:f:c:g:l:b:i:t:w:z:h");
+		switch (opt) {
 		case 'h': /* help message */
 			print_usage();
 			return 0;
@@ -221,20 +221,20 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
-	if (argsc == 1) {
+	if (argc == 1) {
 		inet_dev_show_all_info();
 		return 0;
 	}
-	if (argsc > 1) {
-		strncpy(iname, argsv[argsc - 1], ARRAY_SIZE(iname));
+	if (argc > 1) {
+		strncpy(iname, argv[argc - 1], ARRAY_SIZE(iname));
 		if (up) {
 			ifdev_up(iname);	/* up net iface */
 		}
-		if (NULL == (in_dev = inet_dev_find_by_name(argsv[argsc - 1])) &&
+		if (NULL == (in_dev = inet_dev_find_by_name(argv[argc - 1])) &&
 			    (up	|| down)) {
-			LOG_ERROR("can't find interface %s\n", argsv[argsc - 1]);
+			LOG_ERROR("can't find interface %s\n", argv[argc - 1]);
 			return -1;
 		}
 	}

@@ -15,13 +15,13 @@ static void print_usage(void) {
 	printf("Usage: cp [-h] [source] [dest]\n");
 }
 
-static int exec(int argsc, char **argsv) {
-	int nextOption;
+static int exec(int argc, char **argv) {
+	int opt;
 	const char *src_path,*dst_path;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "h");
-		switch(nextOption) {
+		opt = getopt(argc, argv, "h");
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -30,15 +30,15 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
-	if (argsc < 3) {
+	if (argc < 3) {
 		print_usage();
 		return -1;
 	}
 
-	src_path = argsv[argsc - 2];
-	dst_path = argsv[argsc - 1];
+	src_path = argv[argc - 2];
+	dst_path = argv[argc - 1];
 
 	FDESC src = open(src_path, NULL);
 	if (src==FDESC_INVALID)  {

@@ -30,14 +30,14 @@ static void *run(void *arg) {
 	return NULL;
 }
 
-static int exec(int argsc, char **argsv) {
-	int nextOption;
+static int exec(int argc, char **argv) {
+	int opt;
 	char *file_name = NULL;
 	FILE *file;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc, argsv, "f:h");
-		switch(nextOption) {
+		opt = getopt(argc, argv, "f:h");
+		switch(opt) {
 		case 'f':
 			file_name = optarg;
 			break;
@@ -49,7 +49,7 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return -1;
 		}
-	} while (nextOption != -1);
+	} while (opt != -1);
 
 	if (NULL == file_name) {
 		TRACE("\n please setup file name\n");

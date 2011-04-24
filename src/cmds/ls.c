@@ -57,7 +57,7 @@ static void print_folder(char *path, node_t *nod, int recursive) {
 
 typedef void (*print_func_t)(char *path, node_t *nod, int recursive);
 
-static int exec(int argsc, char **argsv) {
+static int exec(int argc, char **argv) {
 	int long_list = 0;
 	node_t *nod;
 	char path[CONFIG_MAX_LENGTH_FILE_NAME];
@@ -65,11 +65,11 @@ static int exec(int argsc, char **argsv) {
 	int recursive = 0;
 	volatile print_func_t print_func = print_folder;
 
-	int nextOption;
+	int opt;
 	getopt_init();
 	do {
-		nextOption = getopt(argsc - 1, argsv, "Rlh");
-		switch(nextOption) {
+		opt = getopt(argc - 1, argv, "Rlh");
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -85,10 +85,10 @@ static int exec(int argsc, char **argsv) {
 		default:
 			return 0;
 		}
-	} while (-1 != nextOption);
+	} while (-1 != opt);
 
-	if (argsc > 1) {
-		sprintf(path, "%s", argsv[argsc - 1]);
+	if (argc > 1) {
+		sprintf(path, "%s", argv[argc - 1]);
 	} else {
 		sprintf(path, "/");
 	}
