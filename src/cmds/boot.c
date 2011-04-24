@@ -10,7 +10,6 @@
 #include <getopt.h>
 #include <hal/interrupt.h>
 #include <hal/mm/mmu_core.h>
-#include <asm/prom.h>
 #include "uimage.h"
 
 EMBOX_CMD(exec);
