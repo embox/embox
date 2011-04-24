@@ -9,6 +9,8 @@
 #include <embox/cmd.h>
 
 #include <getopt.h>
+#include <stdio.h>
+
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
 

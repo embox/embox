@@ -10,5 +10,5 @@ $_SRCS-locore += entry.S trap_*.S winflush.S
 $_SRCS-arch      += arch.c
 $_SRCS-context   += context.c context_switch.S
 
-$_SRCS-prom += prom.c
+#$_SRCS-prom += prom.c
 

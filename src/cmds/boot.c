@@ -83,7 +83,8 @@ static int uimage_info(unsigned int addr) {
 static int exec(int argsc, char **argsv) {
 	int nextOption;
 	char format = 'r';
-	unsigned int load_addr, entry_point;
+	unsigned int load_addr;
+	void (*entry_point)(void);
 	image_header_t *hdr;
 	getopt_init();
 	do {
@@ -115,16 +116,20 @@ static int exec(int argsc, char **argsv) {
 	case 'u':
 		hdr = (image_header_t *) load_addr;
 		uimage_info(load_addr);
-		entry_point = hdr->ih_ep;
+		entry_point = (void (*)(void)) hdr->ih_ep;
 		break;
 	case 'r':
-		entry_point = LOAD_ADDR;
+		entry_point = (void (*)(void)) LOAD_ADDR;
 		break;
 	default:
 		return -1;
 	}
 
+#if 0
 	bootm_linux(load_addr, entry_point);
+#else
+	entry_point();
+#endif
 
 	return 0;
 }
