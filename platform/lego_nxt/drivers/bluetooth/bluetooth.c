@@ -56,7 +56,7 @@ void bt_set_reset_low(void)
 
 volatile enum {SIZE_READ, COMM_READ, UART_MODE} bt_us_state;
 
-volatile void bt_set_uart_state(void) {
+void bt_set_uart_state(void) {
 	bt_us_state = UART_MODE;
 }
 
@@ -126,7 +126,7 @@ static void bt_us_read_handle(void) {
 	}
 }
 
-static volatile void bt_us_receive_init(void) {
+static void bt_us_receive_init(void) {
 	int delay = 3000;
 	REG_STORE(AT91C_US1_IDR, AT91C_US_ENDTX);
 	bt_uart_inited = 1;
@@ -233,13 +233,13 @@ static int nxt_bluetooth_init(void) {
 size_t nxt_bluetooth_write(uint8_t *buff, size_t len) {
 	while (!(REG_LOAD(AT91C_US1_CSR) & AT91C_US_ENDTX)) {
 	}
-	REG_STORE(AT91C_US1_TPR, buff);
+	REG_STORE(AT91C_US1_TPR, (uint32_t) buff);
 	REG_STORE(AT91C_US1_TCR, len);
 	return len;
 }
 
 size_t nxt_bluetooth_read(uint8_t *buff, size_t len) {
-	REG_STORE(AT91C_US1_RPR, buff);
+	REG_STORE(AT91C_US1_RPR, (uint32_t) buff);
 	REG_STORE(AT91C_US1_RCR, len);
 
 	return 0;

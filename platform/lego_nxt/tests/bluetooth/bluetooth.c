@@ -17,7 +17,10 @@
 static bt_message_t msg;
 
 static uint8_t tx_buff[256];
+// XXX defined but not used
+#if 0
 static uint8_t rx_buff[256];
+#endif
 static char hello[] = "Hello world\n\r";
 static int hello_len = 12;
 
@@ -41,7 +44,7 @@ static int bluetooth_test(void) {
 			nxt_bluetooth_write(tx_buff,len);
 		}
 		if (buttons & BT_DOWN) {
-			nxt_bluetooth_write(hello, hello_len);
+			nxt_bluetooth_write((uint8_t *) hello, hello_len);
 		}
 	}
 
