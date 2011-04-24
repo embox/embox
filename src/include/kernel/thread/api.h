@@ -237,7 +237,7 @@ extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
 
 // XXX the following functions are considered obsolete. -- Eldar
-
+#if 0
 /**
  * Performs basic thread initialization.
  *
@@ -275,5 +275,6 @@ extern void thread_change_priority(struct thread *thread, int new_priority);
 extern struct thread *thread_alloc(void);
 
 extern void thread_free(struct thread *thread);
+#endif
 
 #endif /* KERNEL_THREAD_API_H_ */

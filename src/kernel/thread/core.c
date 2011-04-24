@@ -42,16 +42,16 @@ struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 
 static int id_counter;
 
-struct thread *thread_alloc(void);
-void __thread_free(struct thread *t);
+static void thread_init(struct thread *t, unsigned int flags,
+		void *(*run)(void *), void *arg);
+static void thread_context_init(struct thread *t);
+static void thread_ugly_init(struct thread *t);
 
 static struct thread *thread_new(void);
 static void thread_delete(struct thread *t);
 
-static void __thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg);
-static void thread_context_init(struct thread *t);
-static void thread_ugly_init(struct thread *t);
+static struct thread *thread_alloc(void);
+static void thread_free(struct thread *t);
 
 /**
  * Wrapper for thread start routine.
@@ -99,10 +99,10 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 		return -ENOMEM;
 	}
 
-	__thread_init(t, flags, run, arg);
+	thread_init(t, flags, run, arg);
 	thread_context_init(t);
 
-	thread_start(t);
+	sched_start(t);
 
 	if (flags & THREAD_FLAG_SUSPENDED) {
 		thread_suspend(t);
@@ -121,7 +121,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	return 0;
 }
 
-static void __thread_init(struct thread *t, unsigned int flags,
+static void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	assert(t);
 #if 0
@@ -178,76 +178,37 @@ static void thread_ugly_init(struct thread *t) {
 	}
 }
 
-struct thread *thread_init(struct thread *t, void *(*run)(void *),
-		void *stack_address, size_t stack_size) {
-
-	if (!t) {
-		return NULL;
-	}
-
-	if (!run || !stack_address) {
-		return NULL;
-	}
-
-	// TODO arg. -- Eldar
-	__thread_init(t, 0, run, NULL);
-	thread_context_init(t);
-
-	return t;
-}
-
-void thread_start(struct thread *t) {
-	sched_start(t);
-}
-
-void thread_change_priority(struct thread *t, int priority) {
-	sched_lock();
-
-	sched_stop(t);
-	t->priority = priority;
-	sched_start(t);
-
-	sched_unlock();
-}
-
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
-
-	current->run_ret = ret;
-
-	thread_stop(current);
-
-	/* NOTREACHED */assert(false);
-}
-
-int thread_stop(struct thread *t) {
 	struct thread *joining;
 
-	assert(t);
+	assert(critical_allows(CRITICAL_PREEMPT));
 
 	sched_lock();
 
-	sched_stop(t);
+	sched_stop(current);
 
-	t->state = thread_state_do_exit(t->state);
+	current->state = thread_state_do_exit(current->state);
 	/* Copy exit code to a joining thread (if any) so that the current thread
 	 * could be safely reclaimed in case that it has already been detached
 	 * without waiting for the joining thread to get the control. */
-	list_for_each_entry(joining, &t->exit_event.sleep_queue, sched_list) {
+	list_for_each_entry(joining, &current->exit_event.sleep_queue, sched_list) {
 		// TODO iterating over a single element or empty list. -- Eldar
-		joining->join_ret = t->run_ret;
+		joining->join_ret = ret;
 	}
 
 	/* Wake up a joining thread (if any). */
-	sched_wake(&t->exit_event);
+	sched_wake(&current->exit_event);
 
-	if (thread_state_dead(t->state)) {
-		thread_delete(t);
+	if (thread_state_dead(current->state)) {
+		thread_delete(current);
+	} else {
+		current->run_ret = ret;
 	}
 
 	sched_unlock();
 
-	return 0;
+	/* NOTREACHED */assert(false);
 }
 
 int thread_join(struct thread *t, void **p_ret) {
@@ -404,14 +365,14 @@ static int unit_init(void) {
 	bootstrap.id = id_counter++;
 	list_add_tail(&bootstrap.thread_link, &__thread_list);
 
-	__thread_init(&bootstrap, 0, NULL, NULL);
+	thread_init(&bootstrap, 0, NULL, NULL);
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_NORMAL;
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
 	}
-	__thread_init(idle, 0, idle_run, NULL);
+	thread_init(idle, 0, idle_run, NULL);
 	thread_context_init(idle);
 	idle->priority = THREAD_PRIORITY_MIN;
 
@@ -446,7 +407,7 @@ static void thread_delete(struct thread *t) {
 
 	if (zombie != NULL) {
 		assert(zombie != current);
-		__thread_free(zombie);
+		thread_free(zombie);
 		zombie = NULL;
 	}
 
@@ -455,7 +416,7 @@ static void thread_delete(struct thread *t) {
 	if (t == current) {
 		zombie = t;
 	} else {
-		__thread_free(t);
+		thread_free(t);
 	}
 }
 
@@ -468,7 +429,7 @@ union thread_pool_entry {
 
 POOL_DEF(thread_pool, union thread_pool_entry, THREAD_POOL_SZ);
 
-struct thread *thread_alloc(void) {
+static struct thread *thread_alloc(void) {
 	union thread_pool_entry *block;
 	struct thread *t;
 
@@ -484,7 +445,7 @@ struct thread *thread_alloc(void) {
 	return t;
 }
 
-void __thread_free(struct thread *t) {
+static void thread_free(struct thread *t) {
 	union thread_pool_entry *block;
 
 	assert(t != NULL);
@@ -492,9 +453,5 @@ void __thread_free(struct thread *t) {
 	// TODO may be this is not the best way... -- Eldar
 	block = structof(t, union thread_pool_entry, thread);
 	pool_free(&thread_pool, block);
-}
-
-void thread_free(struct thread *t) {
-	thread_delete(t);
 }
 
