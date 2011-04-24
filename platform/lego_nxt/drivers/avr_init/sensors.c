@@ -23,7 +23,10 @@ static int digiS0[] = { DIGIA0, DIGIB0, DIGIC0, DIGID0};
 static int digiS1[] = { DIGIA1, DIGIB1, DIGIC1, DIGID1};
 
 sensor_t sensors[NXT_AVR_N_INPUTS];
+// XXX defined but not used
+#if 0
 static sensor_val_t active_sensor_vals[NXT_AVR_N_INPUTS];
+#endif
 
 static sensor_hnd_t handlers[NXT_AVR_N_INPUTS];
 

@@ -70,6 +70,8 @@ static void nxt_lcd_set_col(__u32 coladdr) {
 	nxt_lcd_command(0x10 | ((coladdr >> 4) & 0xF));
 }
 
+// XXX defined but not used
+#if 0
 static void nxt_lcd_set_temp_comp(__u32 tc) {
 	nxt_lcd_command(0x24 | (tc & 3));
 }
@@ -85,11 +87,14 @@ static void nxt_lcd_set_pump_control(__u32 pc) {
 static void nxt_lcd_set_scroll_line(__u32 sl) {
 	nxt_lcd_command(0x40 | (sl & 0x3f));
 }
+#endif
 
 static void nxt_lcd_set_page_address(__u32 pa) {
 	nxt_lcd_command(0xB0 | (pa & 0xf));
 }
 
+// XXX defined but not used
+#if 0
 static void nxt_lcd_set_frame_rate(__u32 fr) {
 	nxt_lcd_command(0xA0 | (fr & 1));
 }
@@ -101,6 +106,7 @@ static void nxt_lcd_inverse_display(__u32 on) {
 static void nxt_lcd_set_cursor_update(__u32 on) {
 	nxt_lcd_command(0xEE | ((on) ? 1 : 0));
 }
+#endif
 
 static void nxt_lcd_reset(void) {
 	nxt_lcd_command(0xE2);

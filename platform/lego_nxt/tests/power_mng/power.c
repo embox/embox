@@ -7,11 +7,12 @@
  */
 
 #include <types.h>
+#include <unistd.h>
+
 #include <embox/test.h>
 #include <drivers/nxt_buttons.h>
 
 #include <drivers/nxt_avr.h>
-
 
 EMBOX_TEST(power_mng_test);
 

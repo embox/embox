@@ -20,9 +20,15 @@
 
 //#define sysc ((volatile struct _AT91S_SYS *) 0xFFFFF000)
 
+// XXX move it to header.
+void avr_read_done(void);
+
 static uint32_t twi_pending;
 static uint8_t *twi_ptr;
+// XXX defined but not used
+#if 0
 static uint8_t checkbyte = 0;
+#endif
 static uint32_t twi_mask;
 
 enum twi_state_t twi_state;

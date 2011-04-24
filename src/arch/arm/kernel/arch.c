@@ -33,9 +33,12 @@ static void initialize_memory_controller(void) {
 	REG_STORE(AT91C_MC_FMR, AT91C_MC_FWS_1FWS | (AT91C_MC_FMCN & (72 < 16)));
 }
 
+// XXX defined but not used
+#if 0
 static void perepherial_disable(void) {
 	REG_STORE(AT91C_PMC_PCDR, 0xffffffff);
 }
+#endif
 
 void arch_init(void) {
 	watchdog_disable();

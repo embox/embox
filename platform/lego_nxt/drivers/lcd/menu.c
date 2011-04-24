@@ -6,6 +6,8 @@
  * @author Darya Dzendzik
  */
 
+#include <unistd.h>
+
 #include <drivers/menu.h>
 
 #include <drivers/lcd.h>
@@ -17,7 +19,7 @@ static uint8_t pointer_buff[8] = {0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00
 static uint8_t space_buff[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* Get number of test*/
-int n_of_t(void){
+static int n_of_t(void){
 	const struct test_suite *test;
 	int i = 0;
 	test_foreach(test) {
@@ -27,7 +29,7 @@ int n_of_t(void){
 }
 
 /*This function print list of test on lcd  */
-void print_list_test(int first){
+static void print_list_test(int first){
 	for (int i = 0; i<8; i++){
 		tab_displey( __test_registry[first + i].mod->name );
 	}
