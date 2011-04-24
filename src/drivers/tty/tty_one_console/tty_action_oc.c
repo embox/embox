@@ -14,30 +14,31 @@
 
 //----------------------------------------------FROM VCONSOLE--------------------------------
 /* move this to tty_action */
-void tty_vconsole_write_char( vconsole_t *vc, uint8_t *ch ) {
-	if (*ch>32 && *ch<128) {
-		vc->tty->file_op->fwrite(ch,sizeof(uint8_t),1,NULL); /* */
+void tty_vconsole_write_char(vconsole_t *vc, uint8_t *ch) {
+	if (' ' < *ch && *ch < 128) {
+		vc->tty->file_op->fwrite(ch, sizeof(char), 1, NULL); /* */
 	} else {
-		vc->tty->file_op->fwrite(" ",sizeof(uint8_t),1,NULL); /* */
+		vc->tty->file_op->fwrite(" ", sizeof(char), 1, NULL); /* */
 	}
 }
 
 void tty_vconsole_loadline(vconsole_t *con) { // uint32_t ?!
-	uint32_t *s = (uint32_t*) &con->tty->rx_cnt;
-	uint32_t *t = (uint32_t*) &con->tty->rx_cur;
+	uint32_t *p_cnt = (uint32_t*) &con->tty->rx_cnt;
+	uint32_t *p_cur = (uint32_t*) &con->tty->rx_cur;
 	/* write saved command line */
-	*t = con->cl_cur;
-	for (*s=0; *s<con->cl_cnt; ++*s) {
+	*p_cur = con->cl_cur;
+	for (*p_cnt = 0; *p_cnt < con->cl_cnt; ++*p_cnt) {
 		//diag_putc(con->tty->rx_buff[*s] = con->cl_buff[*s]);
-		con->tty->rx_buff[*s] = con->cl_buff[*s];
-		con->tty->file_op->fwrite(&(con->tty->rx_buff[*s]),sizeof(char),1,NULL);
+		con->tty->rx_buff[*p_cnt] = con->cl_buff[*p_cnt];
+		con->tty->file_op->fwrite(con->tty->rx_buff + *p_cnt, sizeof(char), 1,
+				NULL);
 		//con->tty->file_op->fwrite()
 	}
 	/* go to saved cursor position */
-	for (;*s>*t;--*s) {
-		vtbuild((struct vtbuild *)con->tty->vtb, TOKEN_LEFT);
+	for (; *p_cnt > *p_cur; --*p_cnt) {
+		vtbuild((struct vtbuild *) con->tty->vtb, TOKEN_LEFT);
 	}
-	*s = con->cl_cnt;
+	*p_cnt = con->cl_cnt;
 }
 
 void tty_vconsole_saveline(vconsole_t *con) {
@@ -123,7 +124,7 @@ void tty_vconsole_putchar( struct vconsole *vc, char ch ) {
 				while (vc->tty->in_busy);
 				//vc->tty->in_busy = true;
 
-				tty_vconsole_write_char(vc,&ch);
+				tty_vconsole_write_char(vc, (uint8_t *) &ch);
 
 				vc->tty->in_busy = false;
 			} else {
@@ -232,17 +233,17 @@ void console_reprint(void) {
 
 //------------------------------------------------------------------------------------------------------------------------
 void console_putchar(char ch) {
-	struct thread *thread = thread_self();
+//	struct thread *thread = thread_self();
 	if (CONSOLE_IS_CURRENT) {
 		diag_putc(ch);
 	}
 	return;
-	tty_vconsole_putchar(thread->task.own_console, ch);
+//	tty_vconsole_putchar(thread->task.own_console, ch);
 }
 
 char console_getchar(void) {
-	struct thread *thread = thread_self();
+//	struct thread *thread = thread_self();
 	return '\0';
-	return tty_vconsole_getchar(thread->task.own_console);
+//	return tty_vconsole_getchar(thread->task.own_console);
 }
 

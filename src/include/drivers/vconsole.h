@@ -59,7 +59,7 @@ extern int vconsole_deactivate(vconsole_t *con);
 
 extern void vconsole_putcharXY(struct vconsole *vc, uint8_t x, uint8_t y, char ch);
 extern char vconsole_getchar(struct vconsole *vc);
-extern void vconsole_gotoXY(struct vconsole *vc, uint8_t x, uint8_t y);
+extern void vconsole_gotoxy(struct vconsole *vc, uint8_t x, uint8_t y);
 extern void vconsole_clear(struct vconsole *vc);
 /*
 extern void vconsole_reprint(struct vconsole *vc);

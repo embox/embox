@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <kernel/diag.h>
 #include <drivers/vconsole.h>
+#include <drivers/tty_action.h>
 
 #ifdef CONFIG_TTY_CONSOLE_COUNT
 int putchar(int c) {

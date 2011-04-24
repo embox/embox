@@ -23,10 +23,10 @@ struct vconsole;
 
 typedef struct tty_device {
 	volatile bool	 in_busy;
-	volatile uint8_t  out_buff[TTY_RXBUFF_SIZE + 1];
+	volatile char  out_buff[TTY_RXBUFF_SIZE + 1];
 	volatile uint32_t rx_cur;
-	volatile uint8_t  rx_buff[TTY_RXBUFF_SIZE + 1];
-	volatile uint8_t  tx_buff[TTY_TXBUFF_SIZE + 1];
+	char  rx_buff[TTY_RXBUFF_SIZE + 1];
+	char  tx_buff[TTY_TXBUFF_SIZE + 1];
 	volatile uint32_t rx_cnt;
 	volatile bool     out_busy; /*whether out_buff is busy*/
 	volatile bool     ins_mod;

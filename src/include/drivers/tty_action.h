@@ -47,10 +47,10 @@ extern void tty_write_line(tty_device_t *tty, uint8_t *line,
 		uint32_t size, uint32_t cur_after);
 extern void tty_rewrite_line(tty_device_t *tty, uint8_t *line, uint32_t size,
 		uint32_t old_size, uint32_t cur_before, uint32_t cur_after);
+#endif
 
 extern void copy_forward(uint8_t *s, uint8_t *d, uint32_t size);
 extern void copy_backward(uint8_t *s, uint8_t *d, uint32_t size);
-#endif
 
 /* tac -- tty action */ /* outer interface */
 extern void tac_key_alpha(tty_device_t *tty, struct vt_token *token);
