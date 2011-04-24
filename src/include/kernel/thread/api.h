@@ -30,15 +30,27 @@ typedef __thread_id_t thread_id_t;
 
 typedef __thread_priority_t thread_priority_t;
 
-/** The lowest priority is set to 255. */
-#define THREAD_PRIORITY_MIN 255
+/** The lowest priority is 0. */
+#define THREAD_PRIORITY_MIN 0
 
-/** The highest priority is zero. */
-#define THREAD_PRIORITY_MAX 0
+/** The highest priority is 256. */
+#define THREAD_PRIORITY_MAX \
+	(THREAD_PRIORITY_MIN + THREAD_PRIORITY_TOTAL - 1)
+
+#define THREAD_PRIORITY_NORMAL \
+	(THREAD_PRIORITY_MIN + THREAD_PRIORITY_MAX) / 2
+
+// TODO may be move all this math to impl? -- Eldar
+#define THREAD_PRIORITY_LOW  \
+	(THREAD_PRIORITY_MIN + THREAD_PRIORITY_NORMAL) / 2
+#define THREAD_PRIORITY_HIGH \
+	(THREAD_PRIORITY_MAX + THREAD_PRIORITY_NORMAL) / 2
 
 /** Total amount of valid priorities. */
-#define THREAD_PRIORITY_TOTAL \
-	(THREAD_PRIORITY_MIN - THREAD_PRIORITY_MAX + 1)
+#define THREAD_PRIORITY_TOTAL 256
+
+#define THREAD_PRIORITY_DEFAULT \
+	THREAD_PRIORITY_NORMAL
 
 /** User-space thread. */
 #define THREAD_FLAG_USER      (0x1 << 0)

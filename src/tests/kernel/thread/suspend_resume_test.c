@@ -10,10 +10,6 @@
 
 #include <kernel/thread/api.h>
 
-// TODO define them in API. -- Eldar
-#define THREAD_PRIORITY_LOW  191
-#define THREAD_PRIORITY_HIGH 63
-
 EMBOX_TEST_SUITE("Thread suspend/resume");
 
 TEST_EMIT_BUFFER_DEF(buff1, 'f' - 'a' + 1);

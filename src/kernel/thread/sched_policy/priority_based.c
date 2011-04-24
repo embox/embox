@@ -135,7 +135,7 @@ static void run_insert_priority(struct run_thread_list *priority) {
 	assert(!list_empty(&run_queue));
 
 	list_for_each_entry(next_priority, &run_queue, priority_link) {
-		if (next_priority > priority) {
+		if (next_priority < priority) {
 			break;
 		}
 	}
@@ -148,7 +148,7 @@ bool sched_policy_start(struct thread *t) {
 
 	run_enqueue(t);
 
-	return (t->priority < current->priority);
+	return (t->priority > current->priority);
 }
 
 bool sched_policy_stop(struct thread *t) {
@@ -181,7 +181,7 @@ struct thread *sched_policy_switch(struct thread *t) {
 		if (!(next = run_peek())) {
 			return current;
 		}
-		if (current->priority > next->priority) {
+		if (current->priority < next->priority) {
 			/* Preemption */
 			run_push(current);
 		} else {

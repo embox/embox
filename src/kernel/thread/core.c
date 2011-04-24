@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include <util/pool.h>
+#include <util/math.h>
 #include <util/structof.h>
 #include <kernel/critical/api.h>
 #include <kernel/thread/api.h>
@@ -78,6 +79,11 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	int save_ptr = (flags & THREAD_FLAG_SUSPENDED) || !(flags
 			& THREAD_FLAG_DETACHED);
 
+	if ((flags & THREAD_FLAG_PRIORITY_LOWER) && (flags
+			& THREAD_FLAG_PRIORITY_HIGHER)) {
+		return -EINVAL;
+	}
+
 	if (save_ptr && !p_thread) {
 		return -EINVAL;
 	}
@@ -100,6 +106,10 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 
 	if (flags & THREAD_FLAG_SUSPENDED) {
 		thread_suspend(t);
+	}
+
+	if (flags & THREAD_FLAG_DETACHED) {
+		thread_detach(t);
 	}
 
 	if (save_ptr) {
@@ -128,17 +138,17 @@ static void __thread_init(struct thread *t, unsigned int flags,
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		t->priority = thread_self()->priority;
 	} else {
-		// TODO default priority for newly created thread. -- Eldar
-		t->priority = THREAD_PRIORITY_TOTAL / 2;
+		t->priority = THREAD_PRIORITY_DEFAULT;
 	}
 
-	// TODO check if both flags are enabled. -- Eldar
-	// TODO new priority range check. -- Eldar
 	if (flags & THREAD_FLAG_PRIORITY_LOWER) {
-		t->priority++;
-	} else if (flags & THREAD_FLAG_PRIORITY_HIGHER) {
 		t->priority--;
+	} else if (flags & THREAD_FLAG_PRIORITY_HIGHER) {
+		t->priority++;
 	}
+
+	// TODO new priority range check, should fail on error. -- Eldar
+	t->priority = clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
 
 	INIT_LIST_HEAD(&t->sched_list);
 	INIT_LIST_HEAD(&t->messages);
@@ -147,10 +157,6 @@ static void __thread_init(struct thread *t, unsigned int flags,
 	t->need_message = false;
 
 	thread_ugly_init(t);
-
-	if (flags & THREAD_FLAG_DETACHED) {
-		thread_detach(t);
-	}
 }
 
 static void thread_context_init(struct thread *t) {
@@ -311,7 +317,7 @@ int thread_suspend(struct thread *t) {
 		return -ESRCH;
 	}
 
-	if (++t->suspend_count == 1) {
+	if (!(t->suspend_count++)) {
 		sched_suspend(t);
 	}
 
@@ -349,7 +355,7 @@ void thread_yield(void) {
 }
 
 int thread_set_priority(struct thread *t, thread_priority_t new) {
-	if (THREAD_PRIORITY_MAX > new || new > THREAD_PRIORITY_MIN) {
+	if (new < THREAD_PRIORITY_MIN || THREAD_PRIORITY_MAX < new) {
 		return -EINVAL;
 	}
 
@@ -400,7 +406,7 @@ static int unit_init(void) {
 
 	__thread_init(&bootstrap, 0, NULL, NULL);
 	// TODO priority for bootstrap thread -- Eldar
-	bootstrap.priority = THREAD_PRIORITY_TOTAL / 2;
+	bootstrap.priority = THREAD_PRIORITY_NORMAL;
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
