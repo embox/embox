@@ -20,7 +20,7 @@ static void print_usage(void) {
 
 typedef void (*goto_t)(void) __attribute__ ((noreturn));
 
-static void go_to(void *addr) {
+static void go_to(goto_t addr) {
 	interrupt_nr_t interrupt_nr;
 
 	printf("Going to 0x%08X\n", (unsigned int) addr);
@@ -30,12 +30,12 @@ static void go_to(void *addr) {
 		interrupt_disable(interrupt_nr);
 	}
 
-	((goto_t) addr)();
+	addr();
 }
 
 static int exec(int argc, char **argv) {
 	int opt;
-	void *addr;
+	goto_t addr;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "a:h"))) {
@@ -45,7 +45,7 @@ static int exec(int argc, char **argv) {
 				printf("goto: address expected\n");
 				return -1;
 			}
-			if (sscanf(optarg, "0x%x", &addr) > 0) {
+			if (sscanf(optarg, "0x%x", (unsigned int *) &addr) > 0) {
 				go_to(addr);
 				return 0;
 			}

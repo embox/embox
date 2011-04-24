@@ -101,7 +101,7 @@ static int ping(ping_info_t *pinfo) {
 
 		/* we don't need to get pad data, only header */
 		if (recvfrom(sk, rcv_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
-				(struct sockaddr *)&pinfo->from, NULL) > 0) {
+				(struct sockaddr *) &pinfo->from, NULL) > 0) {
 			printf("%d bytes from %s to %s: icmp_seq=%d ttl=%d time=%d ms\n",
 					pinfo->padding_size, from_addr_str, dst_addr_str, i + 1, pinfo->ttl, 0);
 			cnt_resp++;

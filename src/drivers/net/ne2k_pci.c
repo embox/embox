@@ -143,6 +143,8 @@ static void copy_data_to_card(uint32_t dest, uint8_t* src, uint32_t length) {
 	}
 }
 
+// XXX defined but not used
+#if 0
 static void copy_data_from_card(uint32_t src, uint8_t *dest, uint32_t length) {
 	uint32_t i;
 	set_rem_address(src);
@@ -200,6 +202,7 @@ static size_t pkt_receive(struct sk_buff *skb) {
 	}
 	return ret;
 }
+#endif
 
 /**
  * queue packet for transmission
@@ -284,8 +287,8 @@ static int __init unit_init(void) {
 	if (NULL != (nic = alloc_etherdev(0))) {
 		nic->netdev_ops = &_netdev_ops;
 		//TODO: get devfn=0x18 from pci_find_dev
-		pci_read_config32(0, 0x18, PCI_BASE_ADDR_REG_0, &nic->base_addr);
-		pci_read_config8(0, 0x18, PCI_INTERRUPT_LINE, &nic->irq);
+		pci_read_config32(0, 0x18, PCI_BASE_ADDR_REG_0, (uint32_t *) &nic->base_addr);
+		pci_read_config8(0, 0x18, PCI_INTERRUPT_LINE, (uint8_t *) &nic->irq);
 		nic->base_addr &= PCI_BASE_ADDR_IO_MASK;
 	}
 
