@@ -1,4 +1,3 @@
-
 /**
  * @file
  *
@@ -6,9 +5,11 @@
  * @author Darya Dzendzik
  */
 
+#include <types.h>
+#include <unistd.h>
+
 #include <embox/test.h>
 #include <drivers/lcd.h>
-#include <types.h>
 
 EMBOX_TEST(run_new_fill);
 
@@ -16,11 +17,11 @@ EMBOX_TEST(run_new_fill);
 
 static int run_new_fill(void) {
 	int i, j, t;
-	uint8_t w;
+
 	for (i = 0; i < 13; i++) {
 		t = i % 2;
-		for ( j = 0; j<16; j++) {
-			display_fill( i * 4, j * 4, 100 - i*8, 32 - j*8, t);
+		for (j = 0; j < 16; j++) {
+			display_fill(i * 4, j * 4, 100 - i * 8, 32 - j * 8, t);
 		}
 
 	}

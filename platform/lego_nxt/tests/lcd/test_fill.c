@@ -5,15 +5,17 @@
  * @author Darya Dzendzik
  */
 
+#include <types.h>
+#include <unistd.h>
+
 #include <embox/test.h>
 #include <drivers/lcd.h>
-#include <types.h>
 
 EMBOX_TEST(run_fill);
 
 static int run_fill(void) {
-
 	uint8_t buff[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
 	display_clear_screen();
 	display_draw(70, 1, 1,	8, &buff[0]);
 	display_draw(70, 3, 1,	8, &buff[0]);
@@ -57,7 +59,6 @@ static int run_fill(void) {
 	usleep(1000);
 	display_fill(5, 5, 90, 54, 1);
 	usleep(8000);
-
 
 	return 0;
 }

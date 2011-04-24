@@ -77,14 +77,18 @@ enum FREQ_TONE  {
 	TONE_A = 440,
 	TONE_H = 494
 };
+
+#define DURATION 500
+
+// XXX defined but not used
+#if 0
 static uint32_t freq_tone[2][3] = {
 	{TONE_C, TONE_E, TONE_G},
 	{TONE_C, TONE_E, TONE_F}
 };
 
-#define DURATION 500
-
 static uint32_t bank_num = 0;
+#endif
 
 static int i = 0;
 

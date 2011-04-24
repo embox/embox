@@ -5,21 +5,22 @@
  * @author Darya Dzendzik
  */
 
+#include <types.h>
+#include <unistd.h>
+
 #include <embox/test.h>
 #include <drivers/lcd.h>
-#include <types.h>
+#include <drivers/nxt_buttons.h>
 
 EMBOX_TEST(run_picture_embox_fill);
 
-
-/*/extern int display_fill(uint8_t, uint8_t, uint8_t, uint8_t, int);*/
-
 static int run_picture_embox_fill(void) {
 	uint32_t b;
-	display_clear_screen();
-	b = nxt_buttons_was_pressed();
 
-	if (b!=0) {
+	display_clear_screen();
+
+	b = nxt_buttons_was_pressed();
+	if (b != 0) {
 		return 0;
 	}
 

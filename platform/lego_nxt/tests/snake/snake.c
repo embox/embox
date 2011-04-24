@@ -175,7 +175,6 @@ static char dir_char(point p) {
 }
 
 static char button_dispatch(uint32_t btns) {
-	int i;
 	if ((btns & BT_DOWN) && (btns & BT_ENTER)) {
 		return 'q';
 	}

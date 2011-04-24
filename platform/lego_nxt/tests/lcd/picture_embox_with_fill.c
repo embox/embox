@@ -5,15 +5,16 @@
  * @author Darya Dzendzik
  */
 
+#include <types.h>
+#include <unistd.h>
+
 #include <embox/test.h>
 #include <drivers/lcd.h>
-#include <unistd.h>
-#include <types.h>
+#include <drivers/nxt_buttons.h>
 
 EMBOX_TEST(run_picture_with_fill);
 
 static int run_picture_with_fill(void) {
-	display_clear_screen();
 /*Part of "E" "M" "B" "O" */
 	uint8_t pict_buff1[8] = {0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF};
 	uint8_t pict_buff2[8] = {0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0};
@@ -29,15 +30,16 @@ static int run_picture_with_fill(void) {
 	uint8_t pict_buff11[8] = {0xFF, 0xFC, 0xF0, 0xC0, 0xC0, 0xF0, 0xFC, 0xFF};
 
 	uint32_t b;
-	int i;
+
+	display_clear_screen();
 
 	b = nxt_buttons_was_pressed();
-	if (b!=0) {
+	if (b != 0) {
 		return 0;
 	}
 
 	display_fill(96, 60, 4, 4, 1);
-	for (i = 0; i < 6; i++) {
+	for (int i = 0; i < 6; i++) {
 	display_fill(2, 0, 92, 40, 0);
 	//usleep(500);
 	/*e*/
@@ -85,10 +87,10 @@ static int run_picture_with_fill(void) {
 	}
 
 /*jamp*/
-	for (i = 0; i < 5; i++) {
+	for (int i = 0; i < 5; i++) {
 
 		b = nxt_buttons_was_pressed();
-		if (b!=0) {
+		if (b != 0) {
 			return 0;
 		}
 

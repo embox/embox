@@ -5,10 +5,12 @@
  * @author Darya Dzendzik
  */
 
+#include <types.h>
+#include <unistd.h>
+
 #include <embox/test.h>
 #include <drivers/lcd.h>
-#include <unistd.h>
-#include <types.h>
+#include <drivers/nxt_buttons.h>
 
 /* picture "embox"*/
 
@@ -16,7 +18,6 @@ EMBOX_TEST(run_picture);
 
 /* WARNING: function too long */
 static int run_picture(void) {
-	display_clear_screen();
 /*Part of "E" "M" "B" "O" */
 	uint8_t pict_buff1[8] = {0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF};
 	uint8_t pict_buff2[8] = {0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0};
@@ -32,10 +33,13 @@ static int run_picture(void) {
 	uint8_t pict_buff11[8] = {0xFF, 0xFC, 0xF0, 0xC0, 0xC0, 0xF0, 0xFC, 0xFF};
 
 	uint32_t b;
-		b = nxt_buttons_was_pressed();
-		if (b!=0) {
-			return 0;
-		}
+
+	display_clear_screen();
+
+	b = nxt_buttons_was_pressed();
+	if (b != 0) {
+		return 0;
+	}
 
 #if 0
 /*e*/
@@ -78,8 +82,7 @@ static int run_picture(void) {
 	/*33*/	display_draw(82, 4, 1, 8, &pict_buff10[0]);
 	/*34*/	display_draw(90, 4, 1, 8, &pict_buff7[0]);
 #else
-	int i;
-	for (i = 0; i < 6; i++) {
+	for (int i = 0; i < 6; i++) {
 		/*e*/
 		/*2*/	display_draw(2, i-2, 1, 8, &pict_buff1[0]);
 		/*3*/	display_draw(10, i-2, 1, 8, &pict_buff3[0]);
@@ -128,7 +131,7 @@ static int run_picture(void) {
 		display_clear_screen();
 
 	}
-	for (i = 0; i < 5; i++) {
+	for (int i = 0; i < 5; i++) {
 	/*stay*/
 		b = nxt_buttons_was_pressed();
 		if (b!=0) {
