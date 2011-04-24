@@ -24,7 +24,9 @@
  * pointed by ADDR.
  */
 void multiboot_check(unsigned long magic, unsigned long addr) {
+#if 0
 	multiboot_info_t *mbi;
+#endif
 //FIXME x86 section copy must be moved to boot code
 	extern uint8_t _bss_vma, _bss_len;
 	extern uint8_t _data_vma, _data_lma, _data_len;
