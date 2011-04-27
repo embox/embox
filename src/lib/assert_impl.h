@@ -13,7 +13,7 @@
 
 #ifdef NDEBUG
 
-# define __assert(condition, expression_str) \
+# define __assert(condition, expr_str) \
 	do { } while (0)
 
 #else
@@ -58,5 +58,15 @@ void __assertion_handle(int pass, const struct __assertion_point *point) {
 		: __assertion_handle((int) (condition), __assertion_point__(expr_str)))
 
 #endif /* NDEBUG */
+
+/* Hide assert internals from CDT macro expansion. */
+#ifdef __CDT_PARSER__
+
+# undef  __assert
+# define __assert(condition, expr_str) \
+	assert(condition \
+		/* The expansion of assert macro is not shown, see assert.h */) \
+
+#endif /* __CDT_PARSER__ */
 
 #endif /* LIBC_ASSERT_IMPL_H_ */
