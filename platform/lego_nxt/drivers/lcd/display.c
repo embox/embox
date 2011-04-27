@@ -281,7 +281,7 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q)
 }
 
 
-void tab_displey(const char *str) {
+void tab_display(const char *str) {
 	int i = 0;
 	display_x = 2;
 	while (*str && ( i < 13)) {

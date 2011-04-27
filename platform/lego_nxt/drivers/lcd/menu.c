@@ -31,7 +31,7 @@ static int n_of_t(void){
 /*This function print list of test on lcd  */
 static void print_list_test(int first){
 	for (int i = 0; i<8; i++){
-		tab_displey( __test_registry[first + i].mod->name );
+		tab_display( __test_registry[first + i].mod->name );
 	}
 }
 
