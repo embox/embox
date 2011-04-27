@@ -1,4 +1,3 @@
-
 $_MODS += nxt_lcd_picture
 $_MODS += nxt_splash
 $_MODS += nxt_fill

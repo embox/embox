@@ -1,5 +1,6 @@
-
-$_CPPFLAGS += -I$($PLATFORM)/include
 $_MODS += box_around_test
 $_SRCS-box_around_test += box_around.c
-$_DEPS-box_around_test += $(PLATFORM).driver.sonar_sensor $(PLATFORM).driver.nxt_motor $(PLATFORM).driver.nxt_avr_init $(PLATFORM).driver.soft_i2c
+$_DEPS-box_around_test += $(PLATFORM).driver.sonar_sensor
+$_DEPS-box_around_test += $(PLATFORM).driver.nxt_motor
+$_DEPS-box_around_test += $(PLATFORM).driver.nxt_avr_init
+$_DEPS-box_around_test += $(PLATFORM).driver.soft_i2c

@@ -6,4 +6,3 @@ SUBDIRS := $(filter-out include,$(SUBDIRS))
 #$_MODS += init
 
 $_CPPFLAGS += -I$($_SELFDIR)/include
-
