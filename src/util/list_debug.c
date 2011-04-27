@@ -167,6 +167,7 @@ void list_remove_link(struct list_link *link) {
 	struct __list_link *l;
 
 	assert(link != NULL);
+	assert(!list_alone_link(link));
 
 	l = &link->l;
 	__list_bind(l->prev, l->next);

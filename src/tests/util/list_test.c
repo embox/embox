@@ -405,6 +405,76 @@ TEST_CASE("list_bulk_insert_after: inserting new elements after the first "
 	compare_with(xyz, &n);
 }
 
+TEST_CASE("list_foreach_link on empty list must not execute the body and "
+		"should not touch the iteration variable") {
+	struct list_link *lnk = (struct list_link *) 0xc0ffee00;
+
+	list_foreach_link(lnk, &m) {
+		test_fail("the list must be empty");
+	}
+
+	test_assert_equal(lnk, (struct list_link *) 0xc0ffee00);
+}
+
+TEST_CASE("list_foreach_link on a single element list should execute the body "
+		"only once") {
+	struct list_link *lnk = NULL;
+	int executed = 0;
+
+	list_add_first(&x, &m, lnk);
+
+	list_foreach_link(lnk, &m) {
+		test_assert_zero(executed++);
+		test_assert_equal(lnk, &x.lnk);
+	}
+
+	test_assert_not_zero(executed);
+	test_assert_equal(lnk, &x.lnk);
+}
+
+TEST_CASE("list_foreach_link should continue iterating even if the value of "
+		"the iteration variable is modified in the body") {
+	struct list_link *lnk;
+	struct element * const *p_element = xyz;
+
+	fill_in_from(p_element, &m);
+
+	list_foreach_link(lnk, &m) {
+		test_assert_equal(lnk, &(*p_element++)->lnk);
+		lnk = NULL;
+	}
+
+	test_assert_null(lnk);
+}
+
+TEST_CASE("list_foreach_link should evaluate the list argument only once") {
+	struct list_link *lnk = NULL;
+	int i = 0, eval_cnt = 0;
+
+	fill_in_from(xyz, &m);
+
+	list_foreach_link(lnk, eval_cnt++ ? &n : &m) {
+		++i;
+	}
+
+	test_assert_equal(eval_cnt, 1);
+	test_assert_equal(i, 3);
+	test_assert_equal(lnk, &z.lnk);
+}
+
+TEST_CASE("list_foreach_link should support safe removal of the element "
+		"pointed by the iteration variable") {
+	struct list_link *lnk;
+
+	fill_in_from(xyz, &m);
+
+	list_foreach_link(lnk, &m) {
+		list_remove_link(lnk);
+	}
+
+	test_assert_true(list_empty(&m));
+}
+
 static struct list *fill_in_from(struct element * const array[],
 		struct list *list) {
 	struct element *e;

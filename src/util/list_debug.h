@@ -12,8 +12,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <util/structof.h>
-
 struct list;
 struct list_link;
 struct __list_link;
@@ -53,5 +51,19 @@ struct list_link {
 		assert(__list_expr != NULL);       \
 		__list_expr;                       \
 	})
+
+#define __list_foreach(element, list, link_member) \
+
+#define __list_foreach_link(link, list) \
+	__list_foreach_link__(link, list, \
+			MACRO_GUARD(__list_link_iter), \
+			MACRO_GUARD(__list_link_head), \
+			MACRO_GUARD(__list_link_next))
+
+#define __list_foreach_link__(link, list, _iter, _head, _next) \
+	for(struct __list_link *_head = &__list_check(list)->l, \
+				*_iter = (_head)->next, *_next = _iter->next; \
+			_iter != _head && ((link) = structof(_iter, struct list_link, l));\
+			_iter = _next, _next = _iter->next)
 
 #endif /* UTIL_LIST_DEBUG_H_ */
