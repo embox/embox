@@ -101,4 +101,73 @@ extern void __test_assertion_handle(int pass,
 			__test_assertion_point_ref( "test_assert_mem_not_equal(" \
 					act_str ", " exp_str ")"))
 
+/* Hide internals from CDT macro expansion. */
+#ifdef __CDT_PARSER__
+
+#undef __test_fail
+#define __test_fail(reason) \
+	test_fail(reason)
+
+#undef __test_assert
+#define __test_assert(condition, condition_str) \
+	test_assert(condition)
+
+#undef __test_assert_true
+#define __test_assert_true(value, value_str) \
+	test_assert_true(value)
+
+#undef __test_assert_false
+#define __test_assert_false(value, value_str) \
+	test_assert_false(value)
+
+#undef __test_assert_zero
+#define __test_assert_zero(value, value_str) \
+	test_assert_zero(value)
+
+#undef __test_assert_not_zero
+#define __test_assert_not_zero(value, value_str) \
+	test_assert_not_zero(value)
+
+#undef __test_assert_null
+#define __test_assert_null(value, value_str) \
+	test_assert_null(value)
+
+#undef __test_assert_not_null
+#define __test_assert_not_null(value, value_str) \
+	test_assert_not_null(value)
+
+#undef __test_assert_equal
+#define __test_assert_equal(actual, expected, act_str, exp_str) \
+	test_assert_equal(actual, expected)
+
+#undef __test_assert_not_equal
+#define __test_assert_not_equal(actual, expected, act_str, exp_str) \
+	test_assert_not_equal(actual, expected)
+
+#undef __test_assert_str_equal
+#define __test_assert_str_equal(actual, expected, act_str, exp_str) \
+	test_assert_str_equal(actual, expected)
+
+#undef __test_assert_str_not_equal
+#define __test_assert_str_not_equal(actual, expected, act_str, exp_str) \
+	test_assert_str_not_equal(actual, expected)
+
+#undef __test_assert_strn_equal
+#define __test_assert_strn_equal(actual, expected, n, act_str, exp_str) \
+	test_assert_strn_equal(actual, expected, n)
+
+#undef __test_assert_strn_not_equal
+#define __test_assert_strn_not_equal(actual, expected, n, act_str, exp_str) \
+	test_assert_strn_not_equal(actual, expected, n)
+
+#undef __test_assert_mem_equal
+#define __test_assert_mem_equal(actual, expected, n, act_str, exp_str) \
+	test_assert_mem_equal(actual, expected, n)
+
+#undef __test_assert_mem_not_equal
+#define __test_assert_mem_not_equal(actual, expected, n, act_str, exp_str) \
+	test_assert_mem_not_equal(actual, expected, n)
+
+#endif /* __CDT_PARSER__ */
+
 #endif /* FRAMEWORK_TEST_ASSERT_IMPL_H_ */
