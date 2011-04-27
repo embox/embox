@@ -78,6 +78,30 @@ static inline void __list_insert_link(struct __list_link *link,
 #define __list_alone(element, m_link) \
 	list_alone_link(&__list_check(element)->m_link)
 
+#define __list_foreach_link(link, list) \
+	__list_foreach__(link, list, __list_foreach_link_cast_assign, /* unused */)
+#define __list_foreach_link_cast_assign(_iter, link, ignored) \
+	link = structof(_iter, struct list_link, l)
+
+#define __list_foreach(element, list, m_link) \
+	__list_foreach__(element, list, __list_foreach_cast_assign, m_link)
+#define __list_foreach_cast_assign(_iter, element, member) \
+	element = structof(structof(_iter, struct list_link, l), \
+			typeof(*element), member)
+
+#define __list_foreach__(node, list, iter_cast, cast_arg) \
+	__list_foreach_guarded(node, list, iter_cast, cast_arg, \
+			MACRO_GUARD(__list_foreach_iter), \
+			MACRO_GUARD(__list_foreach_head), \
+			MACRO_GUARD(__list_foreach_next))
+
+#define __list_foreach_guarded(node, list, iter_cast_assign, cast_arg, \
+		_iter, _head, _next) \
+	for(struct __list_link *_head = &__list_check(list)->l, \
+				*_iter = (_head)->next, *_next = _iter->next; \
+			_iter != _head && (iter_cast_assign(_iter, node, cast_arg)); \
+			_iter = _next, _next = _iter->next)
+
 /**
  * Casts the given @a link out to its container in case that it is not @c NULL.
  *

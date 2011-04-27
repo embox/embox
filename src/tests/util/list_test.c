@@ -475,6 +475,19 @@ TEST_CASE("list_foreach_link should support safe removal of the element "
 	test_assert_true(list_empty(&m));
 }
 
+TEST_CASE("list_foreach simple test case") {
+	struct element *e = NULL;
+	struct element * const *p_element = xyz;
+
+	fill_in_from(p_element, &m);
+
+	list_foreach(e, &m, lnk) {
+		test_assert_equal(e, *p_element++);
+	}
+
+	test_assert_equal(e, &z);
+}
+
 static struct list *fill_in_from(struct element * const array[],
 		struct list *list) {
 	struct element *e;
