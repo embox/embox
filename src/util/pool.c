@@ -15,6 +15,7 @@
 #include <util/pool.h>
 #include <lib/list.h>
 
+
 static struct pool *pool_init(struct pool *pool) {
 	struct __pool_free_block *block;
 
