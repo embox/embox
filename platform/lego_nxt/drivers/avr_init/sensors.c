@@ -38,7 +38,7 @@ void nxt_sensor_conf_active(sensor_t *sensor) {
 	sensor->type = ACTIVE;
 }
 
-static sensor_val_t active_get_val(sensor_t *sensor, uint8_t command) {
+sensor_val_t nxt_sensor_active_get_val(sensor_t *sensor, uint8_t command) {
 	i2c_port_t *port = &(sensor->i2c_port);
 	uint8_t active_val;
 
@@ -57,7 +57,7 @@ sensor_val_t nxt_sensor_get_val(sensor_t *sensor) {
 		return data_from_avr.adc_value[sensor->id];
 	}
 	if (sensor->type == ACTIVE) {
-		return active_get_val(sensor, sensor->def_comm);
+		return nxt_sensor_active_get_val(sensor, sensor->def_comm);
 	}
 	return SENSOR_NOT_CONF;
 }

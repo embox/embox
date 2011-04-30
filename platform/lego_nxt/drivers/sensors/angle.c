@@ -15,4 +15,9 @@ void nxt_angle_init (sensor_t *sensor) {
 	nxt_sensor_conf_active(sensor);
 }
 
+uint16_t nxt_angle_get_rpm(sensor_t *sensor) {
+	uint8_t high = nxt_sensor_active_get_val(sensor, NXT_ANGLE_RPM_HIGH_COMM);
+	uint8_t low = nxt_sensor_active_get_val(sensor, NXT_ANGLE_RPM_LOW_COMM);
+	return (high << 8) + low;
+}
 

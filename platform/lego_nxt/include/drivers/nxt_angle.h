@@ -19,6 +19,7 @@
 
 extern void nxt_angle_init(sensor_t *sensor);
 
+extern uint16_t nxt_angle_get_rpm(sensor_t *sensor);
 #endif /*NXT_SONAR_H_*/
 
 
