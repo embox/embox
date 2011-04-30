@@ -25,13 +25,7 @@ void avr_read_done(void);
 
 static uint32_t twi_pending;
 static uint8_t *twi_ptr;
-// XXX defined but not used
-#if 0
-static uint8_t checkbyte = 0;
-#endif
 static uint32_t twi_mask;
-
-enum twi_state_t twi_state;
 
 static uint8_t out_buff[sizeof(to_avr_t) + 1];
 
@@ -41,42 +35,6 @@ static void systick_wait_ns(uint32_t ns) {
 	while (x) {
 		x--;
 	}
-}
-
-static irq_return_t twi_handler(int irq_num, void *dev_id) {
-	switch (twi_state) {
-		case TWI_READ_BUT_LAST:
-			*twi_ptr = REG_LOAD(AT91C_TWI_RHR);
-			avr_read_done();
-			twi_state = TWI_COMP;
-			REG_STORE(AT91C_TWI_IDR, AT91C_TWI_RXRDY);
-			REG_STORE(AT91C_TWI_IER, AT91C_TWI_TXCOMP);
-			break;
-		case TWI_READ:
-			*twi_ptr = REG_LOAD(AT91C_TWI_RHR);
-			twi_ptr++;
-			if (--twi_pending == 1) {
-				*AT91C_TWI_CR = AT91C_TWI_STOP;
-				twi_state = TWI_READ_BUT_LAST;
-			}
-			break;
-		case TWI_WRITE:
-			REG_STORE(AT91C_TWI_THR, *twi_ptr++);
-			if (--twi_pending == 0) {
-				twi_state = TWI_COMP;
-				REG_STORE(AT91C_TWI_IDR, AT91C_TWI_TXRDY);
-				REG_STORE(AT91C_TWI_IER, AT91C_TWI_TXCOMP);
-			};
-			break;
-		case TWI_COMP:
-			twi_state = TWI_IDLE;
-			REG_STORE(AT91C_TWI_IDR, AT91C_TWI_TXCOMP);
-			break;
-		case TWI_IDLE:
-		default:
-			break;
-	}
-	return IRQ_HANDLED;
 }
 
 static void twi_reset(void) {
@@ -113,29 +71,29 @@ static void twi_reset(void) {
 	REG_STORE(AT91C_TWI_CR, AT91C_TWI_MSEN);
 	//*AT91C_TWI_IER = AT91C_TWI_NACK;
 	twi_mask = 0;
-	twi_state = TWI_IDLE;
-	irq_attach((irq_nr_t) AT91C_ID_TWI,
-		(irq_handler_t) &twi_handler, 5, NULL, "twi reader");
 }
 
-void twi_init(void) {
+void  twi_init(void) {
 	twi_reset();
 }
 
-int twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes) {
-	if (twi_state != TWI_IDLE) {
-		return 1;
-	}
+void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes) {
 	twi_ptr = (uint8_t *) data;
 	twi_pending = nBytes;
 
 	*AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO | ((dev_addr & 0x7f) << 16);
-	twi_state = TWI_WRITE;
-	REG_STORE(AT91C_TWI_IER, AT91C_TWI_TXRDY);
-	return 0;
+	*AT91C_TWI_THR = *twi_ptr++;
+	twi_pending--;
+	while (twi_pending > 0) {
+		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXRDY));
+		REG_STORE(AT91C_TWI_THR, *twi_ptr++);
+		twi_pending--;
+	}
+
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP));
 }
 
-int twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
+void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
 	const uint8_t *sptr = data;
 	uint8_t *dptr = out_buff;
 	uint8_t checkbyte = 0;
@@ -145,21 +103,29 @@ int twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
 		*dptr++ = *sptr++;
 	}
 	*dptr = ~checkbyte;
-	return twi_write(dev_addr, out_buff, count + 1);
+	twi_write(dev_addr, out_buff, count + 1);
 }
 
 int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
-	if (twi_state != TWI_IDLE) {
-		return 1;
-	}
-	twi_ptr = data;
-	twi_pending = count;
+	uint8_t *ptr = data;
+	uint8_t checkbyte = 0;
 	*AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO |
 			AT91C_TWI_MREAD | ((dev_addr & 0x7f) << 16);
-	twi_state = TWI_READ;
 	*AT91C_TWI_CR = AT91C_TWI_START;
-	REG_STORE(AT91C_TWI_IER, AT91C_TWI_RXRDY);
-	return 0;
-}
+	while (count-- > 1) {
+		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
+		*ptr = REG_LOAD(AT91C_TWI_RHR);
+		checkbyte += *ptr;
+		ptr++;
+	}
 
+	*AT91C_TWI_CR = AT91C_TWI_STOP;
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
+	*ptr = REG_LOAD(AT91C_TWI_RHR);
+	checkbyte += *ptr;
+
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP));
+
+	return ((checkbyte == 0xff) ? 1 : 0);
+}
 

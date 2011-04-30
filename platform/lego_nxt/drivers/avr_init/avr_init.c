@@ -26,14 +26,17 @@ const char avr_brainwash_string[] =
 to_avr_t data_to_avr;
 from_avr_t data_from_avr;
 static int read_write = 0;
+static bool avr_line_locked = false;
 
 static int avr_send_data(to_avr_t *data_to_avr) {
 	int res = 0;
+
 #ifdef CONFIG_MEASURE
 	measure_start();
 #endif
-
-	res = twi_send(NXT_AVR_ADDRESS, (uint8_t *) data_to_avr, sizeof(to_avr_t));
+	avr_line_locked = true;
+	twi_send(NXT_AVR_ADDRESS, (uint8_t *) data_to_avr, sizeof(to_avr_t));
+	avr_line_locked = false;
 
 #ifdef CONFIG_MEASURE
 	avr_send_process(measure_stop());
@@ -48,30 +51,26 @@ static int avr_get_data(from_avr_t *data_from_avr) {
 	measure_start();
 #endif
 
+	avr_line_locked = true;
 	res = twi_receive(NXT_AVR_ADDRESS, (uint8_t *) data_from_avr,
 		sizeof(from_avr_t));
-
+	avr_line_locked = false;
 #ifdef CONFIG_MEASURE
 	avr_get_process(measure_stop());
 #endif
 	return res;
 }
 
-void avr_read_done(void) {
-	buttons_updated((buttons_t) data_from_avr.buttons_val);
-	sensors_updated(data_from_avr.adc_value);
-}
-
-
 static uint32_t avr_handler(void) {
-	int res;
-	if (read_write & 1) {
-		res = avr_send_data(&data_to_avr);
-	} else {
-		res = avr_get_data(&data_from_avr);
+	if (avr_line_locked) {
 	}
-	if (res == 0) {
-		read_write++;
+
+	if (read_write++ & 1) {
+		avr_send_data(&data_to_avr);
+	} else {
+		avr_get_data(&data_from_avr);
+		buttons_updated((buttons_t) data_from_avr.buttons_val);
+		sensors_updated(data_from_avr.adc_value);
 	}
 
 	return 0;

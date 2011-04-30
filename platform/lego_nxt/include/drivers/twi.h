@@ -12,26 +12,16 @@
 
 extern void twi_init(void);
 
-enum twi_state_t {
-	TWI_IDLE,
-	TWI_READ,
-	TWI_READ_BUT_LAST,
-	TWI_WRITE,
-	TWI_COMP
-};
-
-extern enum twi_state_t twi_state;
-
 /**
  * Send through TWI, should be used to normal communication
  */
-extern int twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count);
+extern void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count);
 
 /**
  * Raw send through TWI, should be used in special cases,
  * e.g. first initializing, etc.
  */
-extern int twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes);
+extern void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes);
 
 /**
  * Receive from TWI
