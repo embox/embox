@@ -434,7 +434,7 @@ TEST_CASE("list_foreach_link on a single element list should execute the body "
 
 TEST_CASE("list_foreach_link should continue iterating even if the value of "
 		"the iteration variable is modified in the body") {
-	struct list_link *lnk;
+	struct list_link *lnk = NULL;
 	struct element * const *p_element = xyz;
 
 	fill_in_from(p_element, &m);
