@@ -9,6 +9,7 @@
 #include <types.h>
 #include <drivers/nxt_avr.h>
 #include <drivers/nxt_sensor.h>
+#include <drivers/soft_i2c.h>
 
 #define DIGIA0 23
 #define DIGIA1 18
@@ -23,10 +24,6 @@ static int digiS0[] = { DIGIA0, DIGIB0, DIGIC0, DIGID0};
 static int digiS1[] = { DIGIA1, DIGIB1, DIGIC1, DIGID1};
 
 sensor_t sensors[NXT_AVR_N_INPUTS];
-// XXX defined but not used
-#if 0
-static sensor_val_t active_sensor_vals[NXT_AVR_N_INPUTS];
-#endif
 
 static sensor_hnd_t handlers[NXT_AVR_N_INPUTS];
 
@@ -35,12 +32,34 @@ void nxt_sensor_conf_pass(sensor_t *sensor, sensor_hnd_t handler) {
 	sensor->type = PASSIVE;
 }
 
-sensor_val_t nxt_sensor_get_value(sensor_t *sensor) {
+void nxt_sensor_conf_active(sensor_t *sensor) {
+	i2c_port_t *port = &(sensor->i2c_port);
+	i2c_init(port);
+	sensor->type = ACTIVE;
+}
+
+static sensor_val_t active_get_val(sensor_t *sensor, uint8_t command) {
+	i2c_port_t *port = &(sensor->i2c_port);
+	uint8_t active_val;
+
+	i2c_write(port, 1, &command, 1);
+	while (port->state != IDLE) {
+	}
+	i2c_read(port, 1, &active_val, 1);
+	while (port->state != IDLE) {
+	}
+	return active_val;
+}
+
+
+sensor_val_t nxt_sensor_get_val(sensor_t *sensor) {
 	if (sensor->type == PASSIVE) {
 		return data_from_avr.adc_value[sensor->id];
 	}
+	if (sensor->type == ACTIVE) {
+		return active_get_val(sensor, sensor->def_comm);
+	}
 	return SENSOR_NOT_CONF;
-	/*FIXME to handle active sensors */
 }
 
 void sensors_updated(sensor_val_t sensor_vals[]) {

@@ -14,8 +14,8 @@ typedef int pin_mask_t;
 #include <hal/pins.h>
 
 /**
- * @param ch_mask Bits changed caused handler call
- * @param mon_mask Bits monitored by handler
+ * @param ch_mask Monitored pins state
+ * @param mon_mask Monitored pins
  */
 typedef void (*pin_handler_t)(pin_mask_t ch_mask, pin_mask_t mon_mask);
 

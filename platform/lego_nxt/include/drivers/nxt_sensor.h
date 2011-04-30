@@ -24,6 +24,7 @@ typedef enum {
 typedef struct {
 	uint8_t id;
 	port_type_t type;
+	uint8_t def_comm;
 	i2c_port_t i2c_port;
 } sensor_t;
 
@@ -35,9 +36,13 @@ typedef void (*sensor_hnd_t)(sensor_t *sensor, sensor_val_t sensor_val);
 
 extern void nxt_sensor_conf_pass(sensor_t *sensor, sensor_hnd_t handler);
 
-extern void nxt_sensor_conf_actv(sensor_t *sensor, sensor_hnd_t handler);
+//extern void nxt_sensor_conf_actv(sensor_t *sensor, sensor_hnd_t handler);
 
-extern sensor_val_t nxt_sensor_get_value(sensor_t *sensor);
+extern void nxt_sensor_conf_active(sensor_t *sensor);
+
+extern sensor_val_t nxt_sensor_get_val(sensor_t *sensor);
+
+extern sensor_val_t nxt_sensor_active_get_val(sensor_t *sensor, uint8_t command);
 
 extern void sensors_updated(sensor_val_t sensor_vals[]);
 

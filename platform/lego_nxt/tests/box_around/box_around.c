@@ -10,7 +10,7 @@
 #include <embox/test.h>
 #include <unistd.h>
 #include <drivers/nxt_buttons.h>
-#include <drivers/nxt_sonar_sensor.h>
+#include <drivers/nxt_sonar.h>
 #include <util/math.h>
 
 #include <drivers/nxt_motor.h>
@@ -48,12 +48,12 @@ static void move_stop(void) {
 static int box_around_test(void) {
 	int mp0, mp1;
 
-	sonar_sensor_init (SONAR_PORT);
+	nxt_sonar_init(SONAR_PORT);
 
 	motor_start(MOTOR0, 0, 360, NULL);
 	motor_start(MOTOR1, 0, 360, NULL);
 
-	sonar_treshold = sonar_sensor_get_val(SONAR_PORT);
+	sonar_treshold = nxt_sensor_get_val(SONAR_PORT);
 
 	printf ("distance is %d\n", sonar_treshold);
 
@@ -61,12 +61,12 @@ static int box_around_test(void) {
 	mp1 = MOTOR_POWER;
 
 	while (!nxt_buttons_was_pressed()) {
-		while (abs(sonar_sensor_get_val(SONAR_PORT) - sonar_treshold) < 3) {
+		while (abs(nxt_sensor_get_val(SONAR_PORT) - sonar_treshold) < 3) {
 			move_start();
 		}
 		move_stop();
 
-		while (abs(sonar_sensor_get_val(SONAR_PORT) - sonar_treshold) >= 3) {
+		while (abs(nxt_sensor_get_val(SONAR_PORT) - sonar_treshold) >= 3) {
 			rotate_start(mp0, mp1);
 		}
 
