@@ -17,12 +17,12 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sched.h>
 
-static void mutex_priority_inherit(struct mutex *m);
+static int mutex_priority_inherit(struct mutex *m);
 static void mutex_priority_uninherit(struct mutex *m);
 
 void mutex_init(struct mutex *m) {
 	event_init(&m->event, "mutex");
-	m->lockscount = 0;
+	m->lock_scount = 0;
 	m->priority_max = 0;
 	m->holder = NULL;
 }
@@ -39,7 +39,7 @@ void mutex_lock(struct mutex *m) {
 
 	if (m->holder == NULL || m->holder == current) {
 		m->holder = current;
-		m->lockscount++;
+		m->lock_scount++;
 		sched_unlock();
 		return;
 	}
@@ -53,9 +53,9 @@ void mutex_lock(struct mutex *m) {
 void mutex_unlock(struct mutex *m) {
 	sched_lock();
 
-	m->lockscount--;
+	m->lock_scount--;
 
-	if (m->lockscount != 0) {
+	if (m->lock_scount != 0) {
 		sched_unlock();
 		return;
 	}
@@ -70,8 +70,8 @@ void mutex_unlock(struct mutex *m) {
 int mutex_trylock(struct mutex *m) {
 	sched_lock();
 
-	if (m->lockscount == 0) {
-		m->lockscount++;
+	if (m->lock_scount == 0) {
+		m->lock_scount++;
 		return 0;
 	} else {
 		return -EAGAIN;
@@ -80,27 +80,31 @@ int mutex_trylock(struct mutex *m) {
 	sched_unlock();
 }
 
-static void mutex_priority_inherit(struct mutex *m) {
-	struct thread *current = sched_current();
+static int mutex_priority_inherit(struct mutex *m) {
+	struct thread *waiter;
 
 	if (list_empty(&m->event.sleep_queue)) {
-		return;
+		return 0;
 	}
 
-	if (m->priority_max <= current->priority) {
-		return;
+	list_for_each_entry(waiter, &m->event.sleep_queue, sched_list) {
+
+		if (m->holder == waiter) {
+			return -EDEADLOCK;
+		}
+
+		if (m->priority_max >= waiter->priority) {
+			sched_change_scheduling_priority(waiter, m->priority_max);
+		}
+
+		if (m->holder->initial_priority > waiter->priority) {
+			sched_change_scheduling_priority(m->holder, m->priority_max);
+		}
 	}
 
-	if (current->initial_priority > current->priority) {
-		return;
-	}
-
-	//o_0
-	sched_change_scheduling_priority(current, m->priority_max);
+	return 0;
 }
 
 static void mutex_priority_uninherit(struct mutex *m) {
-	struct thread *current = sched_current();
-
-	sched_set_priority(current, current->initial_priority);
+	sched_set_priority(m->holder, (m->holder)->initial_priority);
 }

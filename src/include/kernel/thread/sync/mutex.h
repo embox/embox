@@ -18,8 +18,7 @@
  */
 struct mutex {
 	struct event event;
-	/** Begin of the list for condition variable. */
-	int lockscount;
+	int lock_scount;
 	thread_priority_t priority_max;
 	struct thread *holder;
 };
