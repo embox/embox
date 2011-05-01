@@ -1,9 +1,8 @@
 /**
  * @file
- *
  * @brief Implements Lego NXT Bluetooth driver.
  *
- * @date 24.02.2011
+ * @date 24.02.11
  * @author Anton Bondarev
  */
 #include <types.h>
@@ -17,12 +16,11 @@
 #include <kernel/timer.h>
 #include <unistd.h>
 
-#define   NXT_BT_RX_PIN  AT91C_PIO_PA21
-#define   NXT_BT_TX_PIN  AT91C_PIO_PA22
-#define   NXT_BT_SCK_PIN AT91C_PIO_PA23
-#define   NXT_BT_RTS_PIN AT91C_PIO_PA24
-#define   NXT_BT_CTS_PIN AT91C_PIO_PA25
-
+#define NXT_BT_RX_PIN  AT91C_PIO_PA21
+#define NXT_BT_TX_PIN  AT91C_PIO_PA22
+#define NXT_BT_SCK_PIN AT91C_PIO_PA23
+#define NXT_BT_RTS_PIN AT91C_PIO_PA24
+#define NXT_BT_CTS_PIN AT91C_PIO_PA25
 
 #define NXT_BT_CS_PIN     AT91C_PIO_PA31
 #define NXT_BT_RST_PIN    AT91C_PIO_PA11
@@ -33,23 +31,19 @@
 
 EMBOX_UNIT_INIT(nxt_bluetooth_init);
 
-void bt_clear_arm7_cmd(void)
-{
+void bt_clear_arm7_cmd(void) {
 	REG_STORE(AT91C_PIOA_CODR, NXT_BT_CMD_PIN);
 }
 
-void bt_set_arm7_cmd(void)
-{
+void bt_set_arm7_cmd(void) {
 	REG_STORE(AT91C_PIOA_SODR, NXT_BT_CMD_PIN);
 }
 
-void bt_set_reset_high(void)
-{
+void bt_set_reset_high(void) {
 	REG_STORE(AT91C_PIOA_SODR, NXT_BT_RST_PIN);
 }
 
-void bt_set_reset_low(void)
-{
+void bt_set_reset_low(void) {
   REG_STORE(AT91C_PIOA_CODR, NXT_BT_RST_PIN);
 }
 ///////////////////////////////////////////////////////////////////////
@@ -78,51 +72,50 @@ static void bt_receive_init(void) {
 
 static void bt_us_read_handle(void) {
 	int msg_len = bt_buff[bt_buff_pos];
+	int next_len;
 
 	switch (bt_us_state) {
-		int next_len;
-		case SIZE_READ:
+	case SIZE_READ:
 #ifdef DEBUG
-			TRACE("R%x", msg_len);
+		TRACE("R%x", msg_len);
 #endif
-			if (msg_len != 0) {
-				bt_us_state = COMM_READ;
-				if (bt_buff_pos + 1 + msg_len >= BUFF_SIZE) {
-					bt_buff[0] = msg_len;
-					bt_buff_pos = 0;
-				}
-				nxt_bluetooth_read(bt_buff + bt_buff_pos + 1, msg_len);
-			}
-			break;
-		case COMM_READ:
-			bt_us_state = SIZE_READ;
-
-#ifdef DEBUG
-			TRACE("$");
-			for (int i = 0; i <= msg_len; i++) {
-				TRACE("%x:", *(bt_buff + bt_buff_pos + i));
-			}
-			TRACE("$");
-#endif
-			bt_handle(bt_buff + bt_buff_pos);
-
-			bt_buff_pos += 1 + msg_len;
-			if (bt_buff_pos >= BUFF_SIZE) {
+		if (msg_len != 0) {
+			bt_us_state = COMM_READ;
+			if (bt_buff_pos + 1 + msg_len >= BUFF_SIZE) {
+				bt_buff[0] = msg_len;
 				bt_buff_pos = 0;
 			}
-			nxt_bluetooth_read(bt_buff + bt_buff_pos, 1);
-			break;
-		case UART_MODE:
-			next_len = 0;
+			nxt_bluetooth_read(bt_buff + bt_buff_pos + 1, msg_len);
+		}
+		break;
+	case COMM_READ:
+		bt_us_state = SIZE_READ;
 #ifdef DEBUG
-			TRACE("%x:", bt_buff[0]);
-			next_len = 1;
+		TRACE("$");
+		for (int i = 0; i <= msg_len; i++) {
+			TRACE("%x:", *(bt_buff + bt_buff_pos + i));
+		}
+		TRACE("$");
 #endif
-			next_len = direct_comm_handle(bt_buff);
-			nxt_bluetooth_read(bt_buff, next_len);
-			break;
-		default:
-			break;
+		bt_handle(bt_buff + bt_buff_pos);
+
+		bt_buff_pos += 1 + msg_len;
+		if (bt_buff_pos >= BUFF_SIZE) {
+			bt_buff_pos = 0;
+		}
+		nxt_bluetooth_read(bt_buff + bt_buff_pos, 1);
+		break;
+	case UART_MODE:
+		next_len = 0;
+#ifdef DEBUG
+		TRACE("%x:", bt_buff[0]);
+		next_len = 1;
+#endif
+		next_len = direct_comm_handle(bt_buff);
+		nxt_bluetooth_read(bt_buff, next_len);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -139,11 +132,11 @@ static void bt_us_receive_init(void) {
 	bt_buff_pos = 0;
 
 	nxt_bluetooth_read(bt_buff, direct_comm_init_read());
-
 }
 
 int bt_last_state;
 int bt_raw_value;
+
 static void  nxt_bt_timer_handler(int id) {
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
 	if (bt_last_state != bt_state) {
@@ -171,10 +164,10 @@ static int nxt_bluetooth_init(void) {
 	/* Configure the usart */
 	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_US1));
 
-	REG_STORE(AT91C_PIOA_PDR, NXT_BT_RX_PIN | NXT_BT_TX_PIN | NXT_BT_SCK_PIN | NXT_BT_RTS_PIN
-			| NXT_BT_CTS_PIN);
-	REG_STORE(AT91C_PIOA_ASR, NXT_BT_RX_PIN | NXT_BT_TX_PIN | NXT_BT_SCK_PIN | NXT_BT_RTS_PIN
-			| NXT_BT_CTS_PIN);
+	REG_STORE(AT91C_PIOA_PDR, NXT_BT_RX_PIN | NXT_BT_TX_PIN |
+			NXT_BT_SCK_PIN | NXT_BT_RTS_PIN | NXT_BT_CTS_PIN);
+	REG_STORE(AT91C_PIOA_ASR, NXT_BT_RX_PIN | NXT_BT_TX_PIN |
+			NXT_BT_SCK_PIN | NXT_BT_RTS_PIN | NXT_BT_CTS_PIN);
 
 	REG_STORE(AT91C_US1_PTCR, (AT91C_PDC_RXTDIS | AT91C_PDC_TXTDIS));
 //	REG_STORE(AT91C_US1_CR, AT91C_US_RSTSTA | AT91C_US_RXDIS | AT91C_US_TXDIS);

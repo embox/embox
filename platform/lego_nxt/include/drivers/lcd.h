@@ -1,11 +1,11 @@
 /**
  * @file
+ * @brief Header file for AT91 LCD Controller.
  *
- * @date 11.10.2010
+ * @date 11.10.10
  * @author Nikolay Korotky
  * @author Darya Dzendzik
  */
-
 #ifndef NXT_LCD_H_
 #define NXT_LCD_H_
 
@@ -35,5 +35,5 @@ extern int display_draw(uint8_t x, uint8_t y,
 extern int display_fill(uint8_t x, uint8_t y,
 		uint8_t width, uint8_t height, uint8_t q);
 extern void tab_display(const char *str);
-#endif /* NXT_LCD_H_ */
 
+#endif /* NXT_LCD_H_ */

@@ -23,7 +23,6 @@ irq##n:                  ;\
 	pushl   $(32 + n);\
 	jmp     irq_stub
 
-
 EXCEPTION(0x00, t_excep0)    /* Divide By Zero Exception */
 EXCEPTION(0x01, t_excep1)    /* Debug Exception */
 EXCEPTION(0x02, t_excep2)    /* Non Maskable Interrupt Exception */
@@ -118,22 +117,23 @@ irq_stub:
 	movl    %eax, %es
 	movl    %esp, %eax
 #else
-    movw %ds,%ax               // Lower 16-bits of eax = ds.
-    pushl %eax                 // Save the data segment descriptor
+	movw %ds, %ax /* Lower 16-bits of eax = ds. */
+	pushl %eax    /* Save the data segment descriptor. */
 
-    movw  $0x10,%ax             // Load the kernel data segment descriptor
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
+	movw  $0x10, %ax /* Load the kernel data segment descriptor */
+	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %fs
+	movw %ax, %gs
 
-    pushl %esp    	     // Push a pointer to the current top of stack - this becomes the registers_t* parameter.
+	pushl %esp /* Push a pointer to the current top of stack -
+	              this becomes the registers_t* parameter. */
 #endif
 	call    EXT_C(irq_handler)
 #if 0
-    add $4,%esp		     // Remove the registers_t* parameter.
+	add $4,%esp /* Remove the registers_t* parameter. */
 
-    popl %ebx                  // Reload the original data segment descriptor
+	popl %ebx   /* Reload the original data segment descriptor */
 #endif
 	pop     %gs
 	pop     %fs
@@ -144,4 +144,3 @@ irq_stub:
 	add     $8, %esp
 	sti
 	iret
-

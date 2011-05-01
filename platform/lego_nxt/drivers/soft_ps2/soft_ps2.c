@@ -2,10 +2,9 @@
  * @file
  * @brief Soft PS/2 keyboard/mouse electrical protocol implementation
  *
- * @date 12.12.2010
+ * @date 12.12.10
  * @author Anton Kozlov
  */
-
 #include <types.h>
 #include <drivers/pins.h>
 #include <embox/unit.h>
@@ -32,13 +31,12 @@ volatile enum {
 	WRITE,
 	NOT_INITED,
 	BYPASS
-}
-ps2_state;
+} ps2_state;
 
 uint16_t read_val = 0x00;
 static uint16_t read_mask = 1;
 static uint16_t write_val;
- int cnt;
+int cnt;
 
 EMBOX_UNIT_INIT(soft_ps2_init);
 
@@ -95,6 +93,7 @@ static int clk_snap = 0;
 #define PS2_BUFF_SIZE 128
 uint16_t ps2_buff[PS2_BUFF_SIZE];
 int ps2_buff_pos = 0;
+
 static inline void process(uint16_t data) {
 	ps2_buff[ps2_buff_pos++] = 0x7ff & data;
 }
@@ -115,57 +114,56 @@ static void ps2_handler(pin_mask_t state, pin_mask_t mask) {
 	int data_state = fast_get_input();
 	int clk_state = data_state & CLK;
 	data_state &= DATA;
-	handler_counter ++;
+	handler_counter++;
 	switch (ps2_state) {
-		case IDLE:
-		case READ:
-			clk_snap <<= 1;
-			if (clk_state) {
-				clk_snap |= 1;
+	case IDLE:
+	case READ:
+		clk_snap <<= 1;
+		if (clk_state) {
+			clk_snap |= 1;
+		}
+		if (!clk_state) {
+			if (data_state) {
+				read_val |= read_mask;
 			}
-			if (!clk_state) {
-				if (data_state) {
-						read_val |= read_mask;
-				}
-				read_mask <<= 1;
-				if (--cnt == 0) {
-					cnt = READ_CNT;
-					read_mask = 1;
-					process(read_val);
-					read_val = 0;
-				}
+			read_mask <<= 1;
+			if (--cnt == 0) {
+				cnt = READ_CNT;
+				read_mask = 1;
+				process(read_val);
+				read_val = 0;
 			}
-			break;
-		case WRITE:
-			if (state & CLK) {
-				if (write_val & 1) {
-					pin_set_high(DATA);
-				} else {
-					pin_set_low(DATA);
-				}
-				write_val >>= 1;
-				cnt --;
+		}
+		break;
+	case WRITE:
+		if (state & CLK) {
+			if (write_val & 1) {
+				pin_set_high(DATA);
 			} else {
-				if (cnt == 0) {
-					pin_set_high(DATA);
-					cnt = READ_CNT;
-					ps2_state = IDLE;
-				}
+				pin_set_low(DATA);
 			}
-			break;
-		case NOT_INITED:
-			if (clk_state && data_state) {
+			write_val >>= 1;
+			cnt --;
+		} else {
+			if (cnt == 0) {
+				pin_set_high(DATA);
+				cnt = READ_CNT;
 				ps2_state = IDLE;
 			}
-			break;
-		case BYPASS:
-		default:
-				break;
+		}
+		break;
+	case NOT_INITED:
+		if (clk_state && data_state) {
+			ps2_state = IDLE;
+		}
+		break;
+	case BYPASS:
+	default:
+		break;
 	}
 }
 
 static int soft_ps2_init(void) {
-
 	REG_STORE(AT91C_PIOA_PER, CLK | DATA);
 	REG_STORE(AT91C_PIOA_PPUDR, CLK);
 	REG_STORE(AT91C_PIOA_PPUDR, DATA);
@@ -184,5 +182,3 @@ static int soft_ps2_init(void) {
 	pin_set_input_monitor(CLK, &ps2_handler);
 	return 0;
 }
-
-

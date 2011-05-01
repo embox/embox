@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 15.03.2011
+ * @date 15.03.11
  * @author Darya Dzendzik
  */
 
@@ -13,7 +13,7 @@ EMBOX_TEST(run_menu_test);
 
 extern int menu_start(void);
 
-static int run_menu_test(void){
+static int run_menu_test(void) {
 	display_clear_screen();
 	menu_start();
 	return 0;

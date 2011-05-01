@@ -2,7 +2,7 @@
  * @file
  * @brief Sonar test
  *
- * @date 22.12.2010
+ * @date 22.12.10
  * @author Anton Kozlov
  */
 
@@ -29,4 +29,3 @@ static int sonar_test(void) {
 	}
 	return 0;
 }
-
