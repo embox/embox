@@ -79,7 +79,10 @@ static void arp_send_q(void) {
  */
 static void arp_check_expire(uint32_t id) {
 	size_t i;
+// XXX seems that altering timers from tick handler crashes the system. -- Eldar
+#if 0
 	close_timer(ARP_TIMER_ID);
+#endif
 	for (i = 0; i < ARP_CACHE_SIZE; ++i) {
 		//FIXME:
 		//arp_tables[i].ctime += ARP_CHECK_INTERVAL;
@@ -88,7 +91,9 @@ static void arp_check_expire(uint32_t id) {
 			arp_tables[i].state = 0;
 		}
 	}
+#if 0
 	set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
+#endif
 	arp_send_q();
 }
 
