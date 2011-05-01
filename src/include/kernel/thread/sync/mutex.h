@@ -19,7 +19,6 @@
 struct mutex {
 	struct event event;
 	/** Begin of the list for condition variable. */
-	struct list_head *sleeped_thread_list;
 	int lockscount;
 };
 

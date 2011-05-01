@@ -35,7 +35,8 @@ struct thread {
 	size_t            stack_sz;      /**< Stack size. TODO unused. -- Eldar */
 
 	struct list_head  sched_list;    /**< Scheduler-private link. */
-	__thread_priority_t priority;    /**< Scheduling priority. */
+	__thread_priority_t initial_priority; /**< Scheduling priority. */
+	__thread_priority_t priority;    /**< Current scheduling priority. */
 
 	__thread_state_t  state;         /**< Current state. */
 	__thread_id_t     id;            /**< Unique identifier. */

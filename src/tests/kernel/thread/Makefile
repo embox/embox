@@ -14,3 +14,7 @@ $_DEPS-core_test  = core.kernel.thread.core
 $_MODS                    += suspend_resume_test
 $_SRCS-suspend_resume_test = suspend_resume_test.c
 $_DEPS-suspend_resume_test = core.kernel.thread.core
+
+$_MODS                          += priority_inheritance_test
+$_SRCS-priority_inheritance_test = priority_inheritance_test.c
+$_DEPS-priority_inheritance_test = core.kernel.thread.core

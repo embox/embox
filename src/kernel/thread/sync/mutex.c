@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <util/math.h>
 #include <lib/list.h>
 #include <hal/ipl.h>
 #include <kernel/thread/api.h>
@@ -18,40 +19,77 @@
 
 struct mutex *idle_mutex;
 
-void mutex_init(struct mutex *mutex) {
-	event_init(&mutex->event, "mutex");
-	mutex->lockscount = 0;
+static void mutex_priority_inherit(struct mutex *m);
+static void mutex_priority_uninherit(struct mutex *m);
+
+void mutex_init(struct mutex *m) {
+	event_init(&m->event, "mutex");
+	m->lockscount = 0;
 }
 
-void mutex_lock(struct mutex *mutex) {
+void mutex_lock(struct mutex *m) {
 	assert(critical_allows(CRITICAL_PREEMPT));
 
 	sched_lock();
 
-	if (mutex->lockscount == 0) {
-		mutex->lockscount++;
+	if (m->lockscount == 0) {
+		m->lockscount++;
 	} else {
-		sched_sleep_locked(&mutex->event);
+		sched_sleep_locked(&m->event);
+		mutex_priority_inherit(m);
 	}
 
 	sched_unlock();
 }
 
-void mutex_unlock(struct mutex *mutex) {
-	if (list_empty(&mutex->event.sleep_queue)) {
-		mutex->lockscount--;
+void mutex_unlock(struct mutex *m) {
+	sched_lock();
+
+	if (list_empty(&m->event.sleep_queue)) {
+		m->lockscount--;
 	} else {
-		sched_wake_one(&mutex->event);
+		mutex_priority_uninherit(m);
+		sched_wake_one(&m->event);
 	}
+
+	sched_unlock();
 }
 
-int mutex_trylock(struct mutex *mutex) {
+int mutex_trylock(struct mutex *m) {
 	sched_lock();
-	if (mutex->lockscount == 0) {
-		mutex->lockscount++;
+
+	if (m->lockscount == 0) {
+		m->lockscount++;
 		return 0;
 	} else {
 		return -EAGAIN;
 	}
+
 	sched_unlock();
 }
+
+static void mutex_priority_inherit(struct mutex *m) {
+	struct thread *ptr;
+	thread_priority_t new = 0;
+
+	if (list_empty(&m->event.sleep_queue)) {
+		return;
+	}
+
+	list_for_each_entry(ptr, &m->event.sleep_queue, sched_list) {
+		new = max(new, ptr->priority);
+	}
+
+	if (new < sched_current()->priority) {
+		return;
+	}
+
+	sched_set_priority(sched_current(), new);
+}
+
+static void mutex_priority_uninherit(struct mutex *m) {
+	sched_set_priority(sched_current(), sched_current()->initial_priority);
+}
+
+#if 0
+#endif

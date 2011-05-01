@@ -148,7 +148,8 @@ static void thread_init(struct thread *t, unsigned int flags,
 	}
 
 	// TODO new priority range check, should fail on error. -- Eldar
-	t->priority = clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
+	t->initial_priority = clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
+	t->priority = t->initial_priority;
 
 	INIT_LIST_HEAD(&t->sched_list);
 	INIT_LIST_HEAD(&t->messages);
