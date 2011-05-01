@@ -17,13 +17,14 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sched.h>
 
-//static void mutex_priority_inherit(struct mutex *m);
-//static void mutex_priority_uninherit(struct mutex *m);
+static void mutex_priority_inherit(struct mutex *m);
+static void mutex_priority_uninherit(struct mutex *m);
 
 void mutex_init(struct mutex *m) {
 	event_init(&m->event, "mutex");
 	m->lockscount = 0;
-	m->mutex_prioryty_max = 0;
+	m->priority_max = 0;
+	m->holder = NULL;
 }
 
 void mutex_lock(struct mutex *m) {
@@ -32,25 +33,19 @@ void mutex_lock(struct mutex *m) {
 
 	sched_lock();
 
-	current = thread_self();
+	current = sched_current();
 
-	m->mutex_prioryty_max = max(m->mutex_prioryty_max, current->priority);
+	m->priority_max = max(m->priority_max, current->priority);
 
-	if (m->lockscount == 0) {
-		m->hendler = current;
-		m->lockscount++;
-		sched_unlock();
-		return;
-	}
-
-	if (m->hendler == current) {
+	if (m->holder == NULL || m->holder == current) {
+		m->holder = current;
 		m->lockscount++;
 		sched_unlock();
 		return;
 	}
 
 	sched_sleep_locked(&m->event);
-//	mutex_priority_inherit(m);
+	mutex_priority_inherit(m);
 
 	sched_unlock();
 }
@@ -65,7 +60,8 @@ void mutex_unlock(struct mutex *m) {
 		return;
 	}
 
-//	mutex_priority_uninherit(m);
+	mutex_priority_uninherit(m);
+	m->holder = NULL;
 	sched_wake_one(&m->event);
 
 	sched_unlock();
@@ -84,18 +80,27 @@ int mutex_trylock(struct mutex *m) {
 	sched_unlock();
 }
 
-#if 0
 static void mutex_priority_inherit(struct mutex *m) {
+	struct thread *current = sched_current();
+
 	if (list_empty(&m->event.sleep_queue)) {
 		return;
 	}
 
-	sched_change_scheduling_priority(thread_self(), m->mutex_prioryty_max);
+	if (m->priority_max <= current->priority) {
+		return;
+	}
+
+	if (current->initial_priority > current->priority) {
+		return;
+	}
+
+	//o_0
+	sched_change_scheduling_priority(current, m->priority_max);
 }
 
 static void mutex_priority_uninherit(struct mutex *m) {
-	struct thread *current = thread_self();
+	struct thread *current = sched_current();
 
 	sched_set_priority(current, current->initial_priority);
 }
-#endif
