@@ -34,16 +34,16 @@ TEST_CASE("without inheritance") {
 	thread_resume(low);
 
 	test_assert_zero(
-			thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, (void *) &mutex));
-	test_assert_not_null(high);
-	test_assert_zero(thread_set_priority(high, h));
-	thread_resume(high);
-
-	test_assert_zero(
 			thread_create(&mid, THREAD_FLAG_SUSPENDED, mid_run, NULL));
 	test_assert_not_null(mid);
 	test_assert_zero(thread_set_priority(mid, m));
 	thread_resume(mid);
+
+	test_assert_zero(
+			thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, (void *) &mutex));
+	test_assert_not_null(high);
+	test_assert_zero(thread_set_priority(high, h));
+	thread_resume(high);
 
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(mid, NULL));

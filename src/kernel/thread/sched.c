@@ -231,12 +231,17 @@ void sched_resume(struct thread *t) {
 	sched_unlock();
 }
 
-void sched_set_priority(struct thread *t, __thread_priority_t new) {
+int sched_change_scheduling_priority(struct thread *t, __thread_priority_t new) {
 	bool need_restart;
 
 	sched_lock();
 
+	if (thread_state_exited(t->state)) {
+		return -ESRCH;
+	}
+
 	need_restart = thread_state_running(t->state);
+
 	if (need_restart) {
 		resched |= sched_policy_stop(t);
 	}
@@ -246,6 +251,17 @@ void sched_set_priority(struct thread *t, __thread_priority_t new) {
 	if (need_restart) {
 		resched |= sched_policy_start(t);
 	}
+
+	sched_unlock();
+
+	return 0;
+}
+
+void sched_set_priority(struct thread *t, __thread_priority_t new) {
+	sched_lock();
+
+	sched_change_scheduling_priority(t, new);
+	t->initial_priority = new;
 
 	sched_unlock();
 }

@@ -20,6 +20,8 @@ struct mutex {
 	struct event event;
 	/** Begin of the list for condition variable. */
 	int lockscount;
+	thread_priority_t mutex_prioryty_max;
+	struct thread *hendler;
 };
 
 /**
