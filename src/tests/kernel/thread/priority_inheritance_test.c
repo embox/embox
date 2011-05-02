@@ -18,19 +18,20 @@ static void *low_run(void *);
 static void *mid_run(void *);
 static void *high_run(void *);
 
-struct arguments {
-	struct thread *first;
-	struct thread *second;
-	struct mutex *mutex;
-};
+static struct thread *low;
+static struct thread *mid;
+static struct thread *high;
 
 TEST_CASE("without inheritance") {
-	struct thread *low = NULL, *mid = NULL, *high = NULL;
 	struct mutex mutex;
-	struct arguments a;
 	thread_priority_t l = 10, m = 20, h = 30;
 
 	mutex_init(&mutex);
+
+	test_assert_zero(
+			thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, (void *) &mutex));
+	test_assert_not_null(low);
+	test_assert_zero(thread_set_priority(low, l));
 
 	test_emit_buffer_reset(&buff);
 
@@ -44,49 +45,41 @@ TEST_CASE("without inheritance") {
 	test_assert_not_null(high);
 	test_assert_zero(thread_set_priority(high, h));
 
-	a.first = high;
-	a.second = mid;
-	a.mutex = &mutex;
-
-	test_assert_zero(
-			thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, (void *) &a));
-	test_assert_not_null(low);
-	test_assert_zero(thread_set_priority(low, l));
-
 	thread_resume(low);
 
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(mid, NULL));
 	test_assert_zero(thread_join(high, NULL));
 
-	test_assert_str_equal(test_emit_buffer_str(&buff), "abccddbeea");
+	test_assert_str_equal(test_emit_buffer_str(&buff), "abcdefghijk");
 //	TRACE("%s", test_emit_buffer_str(&buff));
 }
 
 static void *low_run(void *arg) {
-	struct arguments *args = (struct arguments *) arg;
+	struct mutex *m = (struct mutex *) arg;
 
 	test_emit(&buff, 'a');
 
-	mutex_lock(args->mutex);
+	mutex_lock(m);
 
-	test_emit(&buff, 'c');
+	test_emit(&buff, 'b');
 
-	thread_resume(args->first);
-	thread_resume(args->second);
+	thread_resume(high);
+	test_emit(&buff, 'd');
+	thread_resume(mid);
 
-	test_emit(&buff, 'c');
+	test_emit(&buff, 'e');
 
-	mutex_unlock(args->mutex);
+	mutex_unlock(m);
 
-	test_emit(&buff, 'a');
+	test_emit(&buff, 'k');
 
 	return NULL;
 }
 
 static void *mid_run(void *arg) {
-	test_emit(&buff, 'e');
-	test_emit(&buff, 'e');
+	test_emit(&buff, 'i');
+	test_emit(&buff, 'j');
 
 	return NULL;
 }
@@ -94,16 +87,16 @@ static void *mid_run(void *arg) {
 static void *high_run(void *arg) {
 	struct mutex *m = (struct mutex *) arg;
 
-	test_emit(&buff, 'b');
+	test_emit(&buff, 'c');
 
 	mutex_lock(m);
 
-	test_emit(&buff, 'd');
-	test_emit(&buff, 'd');
+	test_emit(&buff, 'f');
+	test_emit(&buff, 'g');
 
 	mutex_unlock(m);
 
-	test_emit(&buff, 'b');
+	test_emit(&buff, 'h');
 
 	return NULL;
 }

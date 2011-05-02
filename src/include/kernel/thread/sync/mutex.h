@@ -19,7 +19,6 @@
 struct mutex {
 	struct event event;
 	int lock_count;
-	thread_priority_t priority;
 	struct thread *holder;
 };
 
