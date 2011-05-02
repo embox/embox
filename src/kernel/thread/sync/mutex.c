@@ -104,13 +104,13 @@ static int mutex_priority_inherit(struct mutex *m) {
 
 	if (thread_state_sleeping(m->holder->state)) {
 		e = list_entry(&m->holder->sched_list, struct event, sleep_queue);
-	}
 
-	if (strcmp(e->name, "mutex")) {
-		return 0;
-	}
+		if (strcmp(e->name, "mutex")) {
+			return 0;
+		}
 
-	mutex_priority_inherit(list_entry(e, struct mutex, event));
+		mutex_priority_inherit(list_entry(e, struct mutex, event));
+	}
 
 	return 0;
 }
