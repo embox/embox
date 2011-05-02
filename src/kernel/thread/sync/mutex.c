@@ -11,8 +11,10 @@
 #include <errno.h>
 
 #include <util/math.h>
+#include <string.h>
 #include <lib/list.h>
 #include <hal/ipl.h>
+#include <kernel/thread/state.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sched.h>
@@ -94,16 +96,21 @@ static int mutex_priority_inherit(struct mutex *m) {
 		return -EDEADLOCK;
 	}
 
-	if (m->holder->priority > waiter->priority) {
+	if (m->holder->priority >= waiter->priority) {
 		return 0;
 	}
 
-	if (waiter->priority > m->holder->priority) {
-		sched_change_scheduling_priority(m->holder, waiter->priority);
-		if ((e = list_entry(&m->holder->sched_list, struct event, sleep_queue))) {
-			mutex_priority_inherit(list_entry(e, struct mutex, event));
-		}
+	sched_change_scheduling_priority(m->holder, waiter->priority);
+
+	if (thread_state_sleeping(m->holder->state)) {
+		e = list_entry(&m->holder->sched_list, struct event, sleep_queue);
 	}
+
+	if (strcmp(e->name, "mutex")) {
+		return 0;
+	}
+
+	mutex_priority_inherit(list_entry(e, struct mutex, event));
 
 	return 0;
 }

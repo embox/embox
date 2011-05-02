@@ -7,8 +7,8 @@
  * @author Nikolay Malkovsky
  */
 
-#ifndef MUTEX_H_
-#define MUTEX_H_
+#ifndef KERNEL_THREAD_SYNC_MUTEX_H_
+#define KERNEL_THREAD_SYNC_MUTEX_H_
 
 #include <lib/list.h>
 #include <kernel/thread/api.h>
@@ -55,4 +55,4 @@ extern void mutex_unlock(struct mutex *locked_mutex);
  */
 extern int mutex_trylock(struct mutex *free_mutex);
 
-#endif /* MUTEX_H_ */
+#endif /* KERNEL_THREAD_SYNC_MUTEX_H_ */
