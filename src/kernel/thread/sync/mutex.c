@@ -22,8 +22,8 @@ static void mutex_priority_uninherit(struct mutex *m);
 
 void mutex_init(struct mutex *m) {
 	event_init(&m->event, "mutex");
-	m->lock_scount = 0;
-	m->priority_max = 0;
+	m->lock_count = 0;
+	m->priority = 0;
 	m->holder = NULL;
 }
 
@@ -35,11 +35,11 @@ void mutex_lock(struct mutex *m) {
 
 	current = sched_current();
 
-	m->priority_max = max(m->priority_max, current->priority);
+	m->priority = max(m->priority, current->priority);
 
 	if (m->holder == NULL || m->holder == current) {
 		m->holder = current;
-		m->lock_scount++;
+		m->lock_count++;
 		sched_unlock();
 		return;
 	}
@@ -53,9 +53,9 @@ void mutex_lock(struct mutex *m) {
 void mutex_unlock(struct mutex *m) {
 	sched_lock();
 
-	m->lock_scount--;
+	m->lock_count--;
 
-	if (m->lock_scount != 0) {
+	if (m->lock_count != 0) {
 		sched_unlock();
 		return;
 	}
@@ -70,8 +70,8 @@ void mutex_unlock(struct mutex *m) {
 int mutex_trylock(struct mutex *m) {
 	sched_lock();
 
-	if (m->lock_scount == 0) {
-		m->lock_scount++;
+	if (m->lock_count == 0) {
+		m->lock_count++;
 		return 0;
 	} else {
 		return -EAGAIN;
@@ -82,23 +82,26 @@ int mutex_trylock(struct mutex *m) {
 
 static int mutex_priority_inherit(struct mutex *m) {
 	struct thread *waiter;
+	struct event *e;
 
 	if (list_empty(&m->event.sleep_queue)) {
 		return 0;
 	}
 
-	list_for_each_entry(waiter, &m->event.sleep_queue, sched_list) {
+	waiter = list_entry(&m->event.sleep_queue, struct thread, sched_list);
 
-		if (m->holder == waiter) {
-			return -EDEADLOCK;
-		}
+	if (waiter == m->holder) {
+		return -EDEADLOCK;
+	}
 
-		if (m->priority_max >= waiter->priority) {
-			sched_change_scheduling_priority(waiter, m->priority_max);
-		}
+	if (m->holder->priority > waiter->priority) {
+		return 0;
+	}
 
-		if (m->holder->initial_priority > waiter->priority) {
-			sched_change_scheduling_priority(m->holder, m->priority_max);
+	if (waiter->priority > m->holder->priority) {
+		sched_change_scheduling_priority(m->holder, waiter->priority);
+		if ((e = list_entry(&m->holder->sched_list, struct event, sleep_queue))) {
+			mutex_priority_inherit(list_entry(e, struct mutex, event));
 		}
 	}
 
