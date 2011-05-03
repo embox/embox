@@ -6,23 +6,22 @@
 ifndef __core_object_mk
 __core_object_mk := 1
 
+include util/var/assign.mk
 include util/var/filter.mk
 
-# Ex:
-define class error
-  $.message := unknown message
-  $.init(1)  = $(if $1,$(call $.set,message,$1))
-  $.report() = $(info $($.message))
+define struct struct
+  $.name   := # the name of the structure
+  $.fields := # list of fields
 endef
 
-define class entity
-  $.error := $(null)
-  $.init() = $(call $.set,error,$(call new,error,Bad entity))
-  $.do()   = $(call $($.error),report)
+define struct field
+  $.struct := # container struct
+  $.name   := # field name
+  $.value  := # default value
 endef
 
-
-__class_method_$$_error_$$_report
+# 1. Object representing the struct
+. = __struct_field_$$_$1_$$_
 
 # 1. clazz
 # ret: id
@@ -51,42 +50,62 @@ __object_class_member_filter = $(filter $2.%,$(call singleword,$1))
 # ret: true/false
 instanceof =
 
+#
+# Function: field:=
+#
 # Params:
-#  1. Instance on which to invoke the method
-#  2. Method to invoke
-# ... Args
-invoke =
-
-# Params:
-#  1. Method to invoke
-# ... Args
-# Return: Method invocation result
-.invoke = \
-  $(call invoke,$(this),$1,$2)
-
-# Params:
-#  1. Instance which's field to get
-#  2. The field
-# Return: The field value
-get =
-
-# Params:
-#  1. The field
-# Return: The field value
-.get = \
-  $(call get,$(this),$1)
-
-# Params:
-#  1. Instance which's field to set
-#  2. The field
-#  3. The value to set
-set =
-
-# Params:
-#  1. The field
+#  1. Variable name in form instance.field
 #  2. The value to set
-.set = \
-  $(call set,$(this),$1,$2)
+field$(\colon)$(\equal) = \
+  $(if $(findstring simple,$(flavor $1)),$(call var:=,$1,$2), \
+      $(call __field_assign_error,$0,$1,$2))
+
+#
+# Function: field+=
+#
+# Params:
+#  1. Variable name in form instance.field
+#  2. The value to set
+field$(\plus)$(\equal) = $(call var+=,$1,$2)
+
+struct_register_all = \
+  $(call var_list_map,__struct_register_filter)
+
+__struct_register_filter = \
+  $(if $(and $(filter 2,$(words $1)), \
+             $(filter class,$(call firstword,$1))), \
+       $(call __struct_register,$(word 2,$1),$(value $1)))
+
+__struct_register = \
+  $(call __struct_init,$(call new,struct),$1,$2)
+
+# 1. Struct
+# 2. Struct name
+# 3. Unexpanded value of struct content
+__struct_init = $(strip \
+  $(call field:=,$1.name,$2)               \
+  ${eval $3}                               \
+  $(foreach v,$(filter $.%,$(.VARIABLES)), \
+      $(call __struct_field_handle,$1,$v)) \
+)$1
+
+# 1. Struct
+# 1. Field variable
+__struct_field_handle = \
+  $(call var:=,$2,$                                                        \
+     $(call __field_init,$(call new,field),$1,$(patsubst $.%,%,$2),$($2))) \
+  $(call field+=,$1.fields,$2)
+
+
+# 1. Field
+# 2. Struct
+# 3. Field name
+# 4. Default value
+__field_init = $(strip \
+  $(call field:=,$1.struct,$2) \
+  $(call field:=,$1.name,$3)   \
+  $(call field:=,$1.value,$4)  \
+)$1
 
 # Returns the argument if it denotes a valid object reference, fails otherwise
 __object_this_check = \
@@ -94,7 +113,7 @@ __object_this_check = \
 
 __object_instance_cnt :=
 __object_instance_cnt_get = \
-  obj$(firstword $(__object_instance_cnt))
+  __obj_$(firstword $(__object_instance_cnt))
 __object_instance_cnt_inc = ${eval __object_instance_cnt := \
       $(words x $(__object_instance_cnt)) $(__object_instance_cnt)}
 __object_instance_cnt_get_and_inc = \

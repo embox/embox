@@ -39,6 +39,8 @@ $(\space)\n$(\space) := $(\n)
 \brace_open = (
 \brace_close = )
 
+\equal := =
+
 # Identity function.
 id = $1
 

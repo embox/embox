@@ -43,7 +43,7 @@ __util_var_assign_mk := 1
 include core/common.mk
 
 ##
-# Function: var_assign_simple, =:
+# Function: var_assign_simple, var:=
 #
 # Assigns value to the specified variable using immediate expansion (variable
 # flavor becomes simple).
@@ -59,10 +59,11 @@ include core/common.mk
 #  $(call var_info,foo) # value is $(bar), flavor is simple
 #  $(info $(foo)) # the expansion is $(bar) (dollar and 'bar' in braces)
 #
-var_assign_simple = ${eval $$1 := $$2}
+var_assign_simple = \
+  ${eval $$1 := $$2}
 
 ##
-# Function: var_assign_recursive, =
+# Function: var_assign_recursive
 #
 # Assigns value to the specified variable, the variable becomes recursively
 # expanded.
@@ -87,8 +88,8 @@ var_assign_simple = ${eval $$1 := $$2}
 #
 # See also: var_assign_singleline_recursive var_assign_multiline_recursive
 #
-var_assign_recursive = $(if $(findstring $(\n),$2 \
-  ),$(var_assign_multiline_recursive),$(var_assign_singleline_recursive))
+var_assign_recursive = \
+  $(var_assign_$(if $(findstring $(\n),$2),multiline,singleline)_recursive)
 
 ##
 # Function: var_assign_singleline_recursive
@@ -106,7 +107,8 @@ var_assign_recursive = $(if $(findstring $(\n),$2 \
 #       and all notes about its arguments are applied for this case too
 #       (see GNU Make manual).
 #
-var_assign_singleline_recursive = ${eval $$1 = $2}
+var_assign_singleline_recursive = \
+  ${eval $$1 = $2}
 
 ##
 # Function: var_assign_multiline_recursive
@@ -151,16 +153,39 @@ ${eval $ \
 #
 ifneq ($(filter 3.80 3.81,$(MAKE_VERSION)),)
 # This is not true undefine, but
-# at least "ifdef" conditionals and "+=" assignment will behave as expected.
-var_assign_undefined = $(if $(filter-out undefined,$(flavor $1)),${eval $$1 =})
+# at least "ifdef" conditionals will behave as expected.
+var_assign_undefined = \
+  $(if $(filter-out undefined,$(flavor $1)),${eval $$1 =})
 else
 # Since version 3.82 GNU Make provides native 'undefine' directive.
-var_assign_undefined = ${eval undefine $$1}
+var_assign_undefined = \
+  ${eval undefine $$1}
 endif
 
+var_assign_simple_append = \
+  $(if $(findstring simple,$(flavor $1)),${eval $$1 += $$2},${eval $$1 := \
+        $(if $(findstring recursive,$(flavor $1)),$$($$1) )$$2})
+
+var_assign_simple_remove = \
+  $(if $(findstring %,$2),$(__var_assign_simple_remove_escaped)$ \
+      ,${eval $$1 := $$(filter-out $$2,$$($$1))}
+__var_assign_simple_remove_escaped = \
+  $(error __var_assign_simple_remove_escaped not yet implemented)
+
+var_assign_simple_append_unique = \
+  $(if $(findstring %,$2),$(__var_assign_simple_append_unique_escaped)$ \
+      ,$(if $(findstring undefined,$(flavor $1)),${eval $$1 := $$2},$ \
+           $(if $(filter $2,$($1)),,$(if $(findstring simple,$(flavor $1)) \
+               ,${eval $$1 += $$2},${eval $$1 := $$($$1) $$2}))))
+__var_assign_simple_append_unique_escaped = \
+  $(error __var_assign_simple_append_unique_escaped not yet implemented)
+
 # Shorthand versions of var_assign_xxx functions.
-$(call var_assign_recursive,=,$(value var_assign_recursive))
-$(call var_assign_recursive,=:,$(value var_assign_simple))
+$(call var_assign_recursive,var:=,$(value var_assign_simple))
+$(call var_assign_recursive,var+=,$(value var_assign_simple_append))
+$(call var_assign_recursive,var-=,$(value var_assign_simple_remove))
+$(call var_assign_recursive,var*=,$(value var_assign_simple_append_unique))
+$(call var_assign_recursive,var?=,$(value var_assign_simple_conditional))
 $(call var_assign_recursive,var_undefine,$(value var_assign_undefined))
 
 # XXX rewrite everything below. -- Eldar
