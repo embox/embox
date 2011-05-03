@@ -11,8 +11,6 @@
 #ifndef ASSERT_H_
 #define ASSERT_H_
 
-XXX fail
-
 #include __impl_x(lib/assert_impl.h)
 
 /**
