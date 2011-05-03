@@ -13,6 +13,7 @@
 #include <kernel/diag.h>
 
 void tac_switch_console(tty_device_t *tty, uint32_t c_after) {
+	prom_printf("switch to: %d\n",c_after);
 	vconsole_deactivate(tty->consoles[tty->console_cur]);
 	tty->console_cur = c_after;
 	#if 0
@@ -75,12 +76,14 @@ void tty_vconsole_saveline(vconsole_t *con) {
 void tty_vconsole_reprint(struct vconsole *vc);
 
 int vconsole_activate(struct vconsole *con) {
+	if (NULL==con) return 0;
 	tty_vconsole_reprint(con); // tty_reprint()
 	tty_vconsole_loadline(con);
 	return 0;
 }
 
 int vconsole_deactivate(vconsole_t *con) {
+	if (NULL==con) return 0;
 	tty_vconsole_saveline( con );
 	return 0;
 }
@@ -110,19 +113,27 @@ static inline bool console_is_current(void) {
 #define EXECUTE_IF_CONSOLE_IS_CURRENT(a) a
 #endif
 
+char tty_vconsole_getchar( struct vconsole *vc ) {
+	while (true) ;
+	return '\0';
+}
+
 void tty_vconsole_putchar( struct vconsole *vc, char ch ) {
-	bool reprint_all_console = false;
+	//bool reprint_all_console = false;
 	if (vc==NULL) { /* if hasn't initialized now current_thread->own_console use hardware output */
 		diag_putc( ch );
 		return;
 	}
 	if (ch!='\n') {
 		vconsole_putcharXY(vc, vc->scr_column, vc->scr_line, ch);
+		if (CONSOLE_IS_CURRENT) {
+			diag_putc(ch);
+		}
 	} else {
 		vc->scr_column = 0;
 		++ vc->scr_line;
 	}
-
+#if 0
 	if (ch!='\n') {
 		++ vc->scr_column;
 		if (vc->scr_column>=vc->width) {
@@ -147,17 +158,16 @@ void tty_vconsole_putchar( struct vconsole *vc, char ch ) {
 			tty_vconsole_reprint(vc);
 		} else {
 			if (ch!='\n') {
-				while (vc->tty->in_busy);
+				//while (vc->tty->in_busy);
 				//vc->tty->in_busy = true;
-
 				tty_vconsole_write_char(vc,&ch);
-
-				vc->tty->in_busy = false;
+				//vc->tty->in_busy = false;
 			} else {
 				vc->tty->file_op->fwrite("\n",sizeof(char),1,NULL);
 			}
 		}
 	}
+#endif
 }
 
 /* move & refactoring this interface */
@@ -165,7 +175,7 @@ void tty_gotoXYvector(struct vconsole *vc, int32_t x, int32_t y) {
 	tty_vconsole_saveline( vc );
 	if (CONSOLE_IS_CURRENT) {
 		uint8_t i;
-		while (vc->tty->in_busy);
+		//while (vc->tty->in_busy);
 		//vc->tty->in_busy = true;
 
 		if (x>0) {
@@ -187,7 +197,7 @@ void tty_gotoXYvector(struct vconsole *vc, int32_t x, int32_t y) {
 			}
 		}
 
-		vc->tty->in_busy = false;
+		//vc->tty->in_busy = false;
 	}
 	/* it's vconsole_gotoxy */
 	vc->scr_column += x;
@@ -200,14 +210,14 @@ void console_gotoXY( uint8_t x, uint8_t y ) {
 
 void tty_vconsole_gotoXY(struct vconsole *vc, uint8_t x, uint8_t y) {
 	if (CONSOLE_IS_CURRENT) {
-		while (vc->tty->in_busy);
+		//while (vc->tty->in_busy);
 		//vc->tty->in_busy = true;
 
 		vconsole_gotoxy(vc,x,y);
 		tac_goto00(vc->tty);
 		tty_gotoXYvector(vc,x,y);
 
-		vc->tty->in_busy = false;
+		//vc->tty->in_busy = false;
 	}
 }
 
@@ -216,7 +226,7 @@ void tty_vconsole_gotoXY(struct vconsole *vc, uint8_t x, uint8_t y) {
 /* decouple this from tty_clear */
 void console_clear(void) {
 	struct thread *thread = thread_self();
-	return;
+	//return;
 
 	vconsole_clear(thread->task.own_console);
 	if (CONSOLE_IS_CURRENT) {
@@ -228,14 +238,12 @@ void console_clear(void) {
 
 void tty_vconsole_reprint(struct vconsole *vc) {
 	uint8_t i,j;
-	return;
+	//return;
 	if (vc==NULL) return;
 	if (!CONSOLE_IS_CURRENT) return;
-	while (vc->tty->in_busy);
-	vc->tty->in_busy = true;
-
+	//while (vc->tty->in_busy);
+	//vc->tty->in_busy = true;
 	tty_vconsole_saveline(vc);
-
 	tac_goto00( vc->tty );
 	//vconsole_reprint_nline( vc, vc->height - 1 );
 	for (i = 0; i < (vc->height) ; ++i) {
@@ -245,9 +253,8 @@ void tty_vconsole_reprint(struct vconsole *vc) {
 		vc->tty->file_op->fwrite("\n",sizeof(uint8_t),1,NULL); /* tty->next_line() */
 	}
 	tty_vconsole_gotoXY(vc,vc->scr_column,vc->scr_line);
-
 	tty_vconsole_loadline(vc);
-	vc->tty->in_busy = false;
+	//vc->tty->in_busy = false;
 }
 
 void console_reprint(void) {

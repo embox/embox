@@ -38,15 +38,23 @@ void tty_write_space(tty_device_t *tty, uint32_t cnt) {
 }
 
 void tty_go_left(tty_device_t *tty, uint32_t cnt) {
+#if 0
+	tty->file_op->fwrite("\e[%dD",sizeof(char),4+((cnt>9)?(1):(0))+((cnt>99)?(1):(0)),NULL);
+#else
 	for (; cnt > 0; --cnt) {
 		vtbuild((struct vtbuild *)tty->vtb, TOKEN_LEFT);
 	}
+#endif
 }
 
 void tty_go_right(tty_device_t *tty, uint32_t cnt) {
+#if 0
+	tty->file_op->fwrite("\e[%dC",sizeof(char),4+((cnt>9)?(1):(0))+((cnt>99)?(1):(0)),NULL);
+#else
 	for (; cnt > 0; --cnt) {
 		vtbuild((struct vtbuild *)tty->vtb, TOKEN_RIGHT);
 	}
+#endif
 }
 
 void tty_go_cursor_position(tty_device_t *tty,
@@ -256,27 +264,14 @@ void tac_remove_line(tty_device_t *tty) {
 }
 
 void tac_goto00(tty_device_t *tty ) {
-	uint8_t i;
-	for (i=0;i<100;++i) {
-		vtbuild((struct vtbuild*)tty->vtb, TOKEN_UP);
-	}
-	for (i=0;i<100;++i) {
-		vtbuild((struct vtbuild*)tty->vtb, TOKEN_LEFT);
-	}
+#if 1
+	tty->file_op->fwrite("\x1b[H",sizeof(char),3,NULL);
+#else
+#endif
 }
 
 void tac_clear(tty_device_t *tty ) {
-	uint8_t i;
-	struct vt_token vt;
 	tac_goto00( tty );
-	//return;
-
-	vt = char_token('\n');
-	for (i=0;i<25;++i) {
-		tty_write_space( tty, 80 );
-		//tty->file_op->fwrite("\n", sizeof(char), 1, NULL);
-		vtbuild((struct vtbuild*)tty->vtb, &vt);
-	}
-	tac_goto00( tty );
+	tty->file_op->fwrite("\x1b[2J",sizeof(char),4,NULL);
 }
 

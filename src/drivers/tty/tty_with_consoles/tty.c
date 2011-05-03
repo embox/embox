@@ -144,9 +144,7 @@ static void *run_shell(void *data) {
 	thread = thread_self();
 	thread->task.own_console = console;
 
-	prom_printf("+1\n");
-
-#if 0
+#if 1
 	console_clear();
 #endif
 	printf("Hello from TTY%d!\n\n",console_number); /* this is output to the i-th console */
@@ -171,7 +169,7 @@ static int tty_init(void) {
 		return -1;
 	}
 
-#if 0
+#if 1
 	/* add clear screen */
 	tac_clear( cur_tty );
 #endif
@@ -179,7 +177,7 @@ static int tty_init(void) {
 	 * it use current thread. we just add pointer to thread resources
 	 */
 	cur_tty->console_cur = 0;
-	for (i = 1; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
+	for (i = 0; i < CONFIG_TTY_CONSOLE_COUNT; ++i) {
 		static int console_numbers[CONFIG_TTY_CONSOLE_COUNT];
 		struct thread* new_thread;
 		console_numbers[i] = i;
@@ -188,7 +186,7 @@ static int tty_init(void) {
 				run_shell, (void*) console_numbers[i]);
 	}
 
-#if 0
+#if 1
 	console_reprint();
 #endif
 	cur_tty->console_cur = 0;
@@ -240,7 +238,7 @@ int tty_add_char(tty_device_t *tty, int ch) {
 
 uint8_t* tty_readline(tty_device_t *tty) {
 	struct thread *thread = thread_self();
-	printf("%d %%",tty->consoles[tty->console_cur]->scr_line);
+	//printf("%d %%",tty->consoles[tty->console_cur]->scr_line);
 	while ((!tty->out_busy)	||
 			(thread->task.own_console != tty->consoles[tty->console_cur])) {
 	}
