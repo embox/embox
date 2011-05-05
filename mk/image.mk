@@ -65,7 +65,27 @@ endif
 
 ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)
 override CPPFLAGS += -DNDEBUG
-NDEBUG := 1
+override NDEBUG := 1
+else
+override NDEBUG :=
+endif
+
+ifdef OPTIMIZE
+
+override OPTIMIZE := $(strip $(OPTIMIZE:-O%=%))
+__optimize_valid_values := s 0 1 2 3 4 5 99
+__optimize_invalid := $(filter-out $(__optimize_valid_values),$(OPTIMIZE))
+ifneq ($(__optimize_invalid),)
+$(error Invalid value for OPTIMIZE flag: $(__optimize_invalid). \
+  Valid values are: $(__optimize_valid_values))
+endif
+
+ifneq ($(words $(OPTIMIZE)),1)
+$(error Only single value for OPTIMIZE flag is permitted)
+endif
+
+override CFLAGS += -O$(OPTIMIZE)
+
 endif
 
 # Expand user defined flags and append them after default ones.
@@ -141,7 +161,7 @@ $(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
 $(CMDS) :
 	@echo '$(FLAGS) -o $(@:%.cmd=%.o) -c' > $@
 
-ifndef __CDT__
+ifndef VERBOSE
 ifdef CC_SUPPORTS_@file
 CC_RULES = $(CC) @$< $(word 2,$^)
 else
