@@ -30,6 +30,7 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/state.h>
+#include <kernel/panic.h>
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
@@ -209,7 +210,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	sched_unlock();
 
-	/* NOTREACHED */assert(false);
+	/* NOTREACHED */panic("Returning from thread_exit()");
 }
 
 int thread_join(struct thread *t, void **p_ret) {

@@ -6,6 +6,6 @@ SUBDIRS :=
 $_LIBS += libc.a
 
 $_SRCS-libc.a += */*.c
-ifndef CONFIG_NDEBUG
+ifndef NDEBUG
 $_SRCS-libc.a += assert.c
 endif

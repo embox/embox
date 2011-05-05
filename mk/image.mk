@@ -63,6 +63,11 @@ REAL_CC = $(CC)
 CC     := cgcc
 endif
 
+ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)
+override CPPFLAGS += -DNDEBUG
+NDEBUG := 1
+endif
+
 # Expand user defined flags and append them after default ones.
 
 # Preprocessor flags
