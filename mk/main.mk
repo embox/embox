@@ -68,6 +68,7 @@ TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 
 include rules.mk
 include util.mk
+include util/wildcard.mk
 
 include gmsl/gmsl.mk
 
@@ -79,7 +80,7 @@ endif
 # XXX Fix this shit. -- Eldar
 
 # 'clean', 'docsgen' and 'config' are handled in-place.
-ifneq ($(filter-out %clean %config %docsgen,$(makegoals)),)
+ifneq ($(filter-out %clean %config conf% %docsgen,$(makegoals)),)
 # Root 'make all' does not need other makefiles too.
 ifneq ($(or $(filter-out $(makegoals),all),$(BUILD_TARGET)),)
 # Need to include it prior to walking the source tree
@@ -98,7 +99,7 @@ build_patch_targets := \
     $(filter-out $(notdir $(BACKUP_DIR)),$(call __get_subdirs, $(CONF_DIR))) \
   )
 
-.PHONY: all build prepare docsgen dot clean config xconfig menuconfig
+.PHONY: all build prepare docsgen dot clean config xconfig menuconfig conf_update
 .PHONY: $(build_patch_targets) build_base_target romfs create_romfs
 
 all: $(build_patch_targets) build_base_target
@@ -206,6 +207,27 @@ else
 endif
 endif
 	@echo 'Config complete'
+
+ifdef PROJECT
+ifdef PROFILE
+
+TEMPLATE_DIR = $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)
+ifneq ($(call d-wildcard,$(TEMPLATE_DIR)),)
+
+__ls_files = $(sort $(patsubst $1/%,%,$(call f-wildcard,$1/*)))
+__conf_files     := $(call __ls_files,$(CONF_DIR))
+__template_files := $(call __ls_files,$(TEMPLATE_DIR))
+ifneq ($(call list_equal,$(__conf_files),$(__template_files)),)
+conf_update : $(__conf_files:%=$(CONF_DIR)/%)
+	@echo 'Config is up to date'
+$(__conf_files:%=$(CONF_DIR)/%) : $(CONF_DIR)/% : $(TEMPLATE_DIR)/%
+	@$(CP) -fv $< $@
+else
+conf_update : config
+endif
+endif
+endif
+endif
 
 CUR_CONFIG_FILES := $(filter-out $(notdir $(BACKUP_DIR)),\
 						$(notdir $(wildcard $(BASE_CONF_DIR)/*)))
