@@ -43,13 +43,13 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE    = $(CROSS_COMPILE)size
 
 CC_VERSION := \
-  $(shell $(CC) -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
+  $(shell echo __GNUC__ __GNUC_MINOR__ | $(CC) -E -P -)
+
 ifeq ($(strip $(CC_VERSION)),)
 $(error Unable to get GCC version: $(shell $(CC) -v 2>&1 | cat))
 endif
-CC_VERSION_MAJOR := $(word 1,$(subst ., ,$(CC_VERSION)))
-CC_VERSION_MINOR := $(word 2,$(subst ., ,$(CC_VERSION)))
-CC_VERSION_PATCH := $(word 3,$(subst ., ,$(CC_VERSION)))
+CC_VERSION_MAJOR := $(word 1,$(CC_VERSION))
+CC_VERSION_MINOR := $(word 2,$(CC_VERSION))
 
 ifneq ($(or $(call gt,$(CC_VERSION_MAJOR),4), \
        $(and $(call  eq,$(CC_VERSION_MAJOR),4), \
