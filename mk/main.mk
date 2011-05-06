@@ -64,6 +64,17 @@ LN     := ln -s
 
 TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 
+ifdef TEMPLATE
+
+ifneq ($(words $(subst /, ,$(TEMPLATE))),2)
+$(error TEMPLATE must be in form PROJECT/PROFILE)
+endif
+
+override PROJECT = $(word 1,$(subst /, ,$(TEMPLATE)))
+override PROFILE = $(word 2,$(subst /, ,$(TEMPLATE)))
+
+endif
+
 #include gmd.mk
 
 include rules.mk
