@@ -2,16 +2,13 @@
  * @file
  * @brief Power managment test of nxt
  *
- * @date 03.12.2010
+ * @date 03.12.10
  * @author Anton Kozlov
  */
-
 #include <types.h>
 #include <unistd.h>
-
 #include <embox/test.h>
 #include <drivers/nxt_buttons.h>
-
 #include <drivers/nxt_avr.h>
 
 EMBOX_TEST(power_mng_test);
@@ -46,5 +43,3 @@ static int power_mng_test(void) {
 	}
 	return 0;
 }
-
-

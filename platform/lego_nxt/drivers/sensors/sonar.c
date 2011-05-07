@@ -14,4 +14,3 @@ void nxt_sonar_init (sensor_t *sensor) {
 	sensor->def_comm = NXT_SONAR_DISTANCE_COMM;
 	nxt_sensor_conf_active(sensor);
 }
-

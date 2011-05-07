@@ -2,10 +2,9 @@
  * @file
  * @brief Soft I2C
  *
- * @date 12.12.2010
+ * @date 12.12.10
  * @author Anton Kozlov
  */
-
 #include <types.h>
 #include <drivers/pins.h>
 #include <embox/unit.h>
@@ -240,4 +239,3 @@ static int i2c_unit_init(void) {
 	tc_reset(TIMER);
 	return 0;
 }
-

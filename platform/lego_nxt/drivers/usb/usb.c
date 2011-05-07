@@ -4,7 +4,6 @@
  * @date 30.11.10
  * @author Kirill Skorodumov
  */
-
 #include <types.h>
 #include <drivers/at91sam7s256.h>
 #include <kernel/irq.h>

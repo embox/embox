@@ -20,4 +20,3 @@ uint16_t nxt_angle_get_rpm(sensor_t *sensor) {
 	uint8_t low = nxt_sensor_active_get_val(sensor, NXT_ANGLE_RPM_LOW_COMM);
 	return (high << 8) + low;
 }
-

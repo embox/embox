@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 05.11.2010
+ * @date 05.11.10
  * @author Darya Dzendzik
  */
 
@@ -133,4 +133,3 @@ static int run_abc_embox(void) {
 
 	return 0;
 }
-

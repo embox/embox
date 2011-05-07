@@ -1,10 +1,9 @@
 /**
  * @file
  *
- * @date 09.10.2010
+ * @date 09.10.10
  * @author Anton Bondarev
  */
-
 #ifndef NXT_SOUND_H_
 #define NXT_SOUND_H_
 
@@ -31,4 +30,3 @@ extern void sound_start_play(uint32_t freq, useconds_t ms,
 extern void sound_stop_play(void);
 
 #endif /* NXT_SOUND_H_ */
-

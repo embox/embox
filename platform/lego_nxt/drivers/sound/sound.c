@@ -1,10 +1,9 @@
 /**
  * @file
  *
- * @date 09.10.2010
+ * @date 09.10.10
  * @author Anton Bondarev
  * @author Darya Dzendzik
- *
  */
 #include <types.h>
 #include <embox/unit.h>
@@ -89,4 +88,3 @@ void sound_start_play(uint32_t freq, useconds_t ms,
 		sound_stop_play();
 	}
 }
-

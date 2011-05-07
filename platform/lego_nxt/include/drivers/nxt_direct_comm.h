@@ -1,10 +1,9 @@
 /**
  * @file
  *
- * @date 24.10.2010
+ * @date 24.10.10
  * @author Anton Kozlov
  */
-
 #ifndef NXT_DIRECT_COMM_H_
 #define NXT_DIRECT_COMM_H_
 
@@ -21,5 +20,3 @@ int direct_comm_handle(uint8_t *buff);
 int direct_comm_init_read(void);
 
 #endif /* NXT_DIRECT_COMM_H */
-
-

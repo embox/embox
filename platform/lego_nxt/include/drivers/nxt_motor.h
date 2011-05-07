@@ -5,7 +5,6 @@
  * @date 02.12.10
  * @author Anton Kozlov
  */
-
 #ifndef NXT_MOTOR_H_
 #define NXT_MOTOR_H_
 
@@ -57,4 +56,3 @@ extern void motor_start(motor_t *motor, int8_t power, uint32_t limit,
 extern void motor_set_power(motor_t *motor, int8_t power);
 
 #endif /* NXT_MOTOR_H_ */
-

@@ -2,7 +2,7 @@
  * @file
  * @brief TWI communication for Lego AVR
  *
- * @date 15.10.2010
+ * @date 15.10.10
  * @author Anton Kozlov
  */
 #ifndef NXT_TWI_H_
@@ -32,4 +32,3 @@ extern void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes);
 extern int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count);
 
 #endif /* NXT_TWI_H_ */
-

@@ -5,7 +5,6 @@
  * @date 02.12.10
  * @author Anton Kozlov
  */
-
 #include <types.h>
 #include <drivers/nxt_avr.h>
 #include <drivers/nxt_buttons.h>
@@ -64,4 +63,3 @@ void buttons_updated(buttons_t buttons_val) {
 		state_count = DEL;
 	}
 }
-

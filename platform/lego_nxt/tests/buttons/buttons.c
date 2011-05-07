@@ -5,11 +5,9 @@
  * @date 02.12.10
  * @author Anton Kozlov
  */
-
 #include <types.h>
 #include <embox/test.h>
 #include <unistd.h>
-
 #include <drivers/nxt_buttons.h>
 
 EMBOX_TEST(nxt_buttons_test);
@@ -23,4 +21,3 @@ static int nxt_buttons_test(void) {
 	}
 	return 0;
 }
-

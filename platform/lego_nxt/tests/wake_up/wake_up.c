@@ -2,7 +2,7 @@
  * @file
  * @brief Light sensor test
  *
- * @date 26.02.2010
+ * @date 26.02.10
  * @author Anton Kozlov
  */
 #include <types.h>

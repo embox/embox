@@ -5,7 +5,6 @@
  * @author Nikolay Korotky
  * @author Darya Dzendzik
  */
-
 #include <hal/reg.h>
 #include <util/math.h>
 #include <drivers/at91sam7s256.h>
@@ -293,4 +292,3 @@ void tab_display(const char *str) {
 	}
 	display_y++;
 }
-

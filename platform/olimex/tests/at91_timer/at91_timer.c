@@ -44,4 +44,3 @@ static int run(void) {
 	}
 	return (changed ? 0 : -1);
 }
-

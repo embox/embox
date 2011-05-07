@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 14.10.2010
+ * @date 14.10.10
  * @author Darya Dzendzik
  */
 
@@ -17,4 +17,3 @@ static int run_picture(void) {
 	display_draw(0, 0, 1, 8, &pict_buff[0]);
 	return 0;
 }
-

@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 06.12.2010
+ * @date 06.12.10
  * @author Darya Dzendzik
  */
 

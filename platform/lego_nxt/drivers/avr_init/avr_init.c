@@ -94,4 +94,3 @@ static int init(void) {
 
 	return result;
 }
-

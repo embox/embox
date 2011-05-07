@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 17.10.2010
+ * @date 17.10.10
  * @author Darya Dzendzik
  */
 
@@ -663,4 +663,3 @@ static int run_picture(void) {
 #endif
 	return 0;
 }
-

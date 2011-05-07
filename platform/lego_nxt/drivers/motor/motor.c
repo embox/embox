@@ -5,13 +5,11 @@
  * @date 02.12.10
  * @author Anton Kozlov
  */
-
 #include <types.h>
 #include <assert.h>
 #include <drivers/nxt_avr.h>
 #include <drivers/pins.h>
 #include <embox/unit.h>
-
 #include <drivers/nxt_motor.h>
 
 #define PWM_FREQ 8 /* KHz */
@@ -86,4 +84,3 @@ static int nxt_motor_init(void) {
 	data_to_avr.output_mode = PWM_FREQ;
 	return 0;
 }
-

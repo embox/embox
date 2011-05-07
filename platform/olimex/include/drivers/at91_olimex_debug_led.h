@@ -5,7 +5,6 @@
  * @date 26.09.2010
  * @author Anton Kozlov
  */
-
 #ifndef AT91_OLIMEX_DEBUG_H_
 #define AT91_OLIMEX_DEBUG_H_
 
@@ -28,4 +27,3 @@ extern void led2_on(void);
 extern void led2_off(void);
 
 #endif /* AT91_OLIMEX_DEBUG_H_ */
-

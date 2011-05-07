@@ -2,11 +2,9 @@
  * @file
  * @brief Angle sensor interface of nxt
  *
- * @date 30.04.2011
+ * @date 30.04.11
  * @author Anton Kozlov
  */
-
-
 #ifndef NXT_ANGLE_H_
 #define NXT_ANGLE_H_
 
@@ -20,6 +18,5 @@
 extern void nxt_angle_init(sensor_t *sensor);
 
 extern uint16_t nxt_angle_get_rpm(sensor_t *sensor);
-#endif /*NXT_SONAR_H_*/
 
-
+#endif /* NXT_SONAR_H_ */

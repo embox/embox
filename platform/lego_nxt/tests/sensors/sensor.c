@@ -2,7 +2,7 @@
  * @file
  * @brief Color sensor test
  *
- * @date 05.11.2010
+ * @date 05.11.10
  * @author Anton Kozlov
  */
 

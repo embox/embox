@@ -2,11 +2,9 @@
  * @file
  * @brief Input interface of nxt
  *
- * @date 02.12.2010
+ * @date 02.12.10
  * @author Anton Kozlov
  */
-
-
 #ifndef NXT_SENSOR_H_
 #define NXT_SENSOR_H_
 
@@ -48,4 +46,4 @@ extern void sensors_updated(sensor_val_t sensor_vals[]);
 
 extern void sensors_init(void);
 
-#endif /*NXT_SENSOR_H_*/
+#endif /* NXT_SENSOR_H_ */

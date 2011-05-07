@@ -50,4 +50,3 @@ static int nxt_test_sensor_touch(void) {
 
 	return 0;
 }
-

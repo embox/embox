@@ -2,11 +2,9 @@
  * @file
  * @brief Sonar sensor interface of nxt
  *
- * @date 27.12.2010
+ * @date 27.12.10
  * @author Anton Kozlov
  */
-
-
 #ifndef NXT_SONAR_H_
 #define NXT_SONAR_H_
 
@@ -16,6 +14,4 @@
 
 extern void nxt_sonar_init(sensor_t *sensor);
 
-#endif /*NXT_SONAR_H_*/
-
-
+#endif /* NXT_SONAR_H_ */

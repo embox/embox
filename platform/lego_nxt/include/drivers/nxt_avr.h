@@ -2,14 +2,13 @@
  * @file
  * @brief IO interface of nxt avr
  *
- * @date 05.11.2010
+ * @date 05.11.10
  * @author Anton Kozlov
  */
-
-#include <types.h>
-
 #ifndef NXT_AVR_H_
 #define NXT_AVR_H_
+
+#include <types.h>
 
 #define NXT_AVR_ADDRESS 1
 #define NXT_AVR_N_OUTPUTS 4

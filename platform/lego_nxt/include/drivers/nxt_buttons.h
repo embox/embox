@@ -1,10 +1,9 @@
 /**
  * @file
  *
- * @date 24.10.2010
+ * @date 24.10.10
  * @author Anton Kozlov
  */
-
 #ifndef NXT_BUTTONS_H_
 #define NXT_BUTTONS_H_
 
@@ -28,4 +27,3 @@ extern uint32_t nxt_buttons_was_pressed(void);
 extern void buttons_updated(buttons_t state);
 
 #endif /* NXT_BUTTONS_H_ */
-

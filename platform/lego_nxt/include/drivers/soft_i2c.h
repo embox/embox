@@ -2,10 +2,9 @@
  * @file
  * @brief Soft I2C interface
  *
- * @date 12.12.2010
+ * @date 12.12.10
  * @author Anton Kozlov
  */
-
 #ifndef SOFT_I2C_H_
 #define SOFT_I2C_H_
 
@@ -79,4 +78,3 @@ extern void i2c_init(i2c_port_t *port);
 //extern i2c_port_t *ports[MAX_PORTS];
 
 #endif /* SOFT_I2C_H */
-
