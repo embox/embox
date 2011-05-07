@@ -111,7 +111,7 @@ cflags := $(CFLAGS)
 override CFLAGS  = -pedantic -std=gnu99
 override CFLAGS += -fno-strict-aliasing -fno-common
 override CFLAGS += -Wall -Werror
-override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement -Winline
+override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
 override CFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CFLAGS += -pipe
 override CFLAGS += $(cflags)
@@ -160,6 +160,8 @@ $(CMDS_S) : __FLAGS = $(ASFLAGS) $(CPPFLAGS)
 $(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
 $(CMDS) :
 	@echo '$(FLAGS) -o $(@:%.cmd=%.o) -c' > $@
+
+$(CMDS): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk $(MK_DIR)/image.mk
 
 ifndef VERBOSE
 ifdef CC_SUPPORTS_@file

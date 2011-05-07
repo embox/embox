@@ -54,15 +54,15 @@ static bool cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	return true;
 }
 
-static inline bool cmdline_history_move_by(CMDLINE *cmdline, int by) {
+static bool cmdline_history_move_by(CMDLINE *cmdline, int by) {
 	return cmdline_history_move_to(cmdline, cmdline->history_cursor + by);
 }
 
-inline bool cmdline_history_backward(CMDLINE *cmdline) {
+bool cmdline_history_backward(CMDLINE *cmdline) {
 	return cmdline_history_move_by(cmdline, -1);
 }
 
-inline bool cmdline_history_forward(CMDLINE *cmdline) {
+bool cmdline_history_forward(CMDLINE *cmdline) {
 	return cmdline_history_move_by(cmdline, 1);
 }
 
@@ -102,23 +102,23 @@ bool cmdline_cursor_move_to(CMDLINE *cmdline, int to) {
 	return cmdline->cursor != old_cursor;
 }
 
-inline bool cmdline_cursor_move_by(CMDLINE *cmdline, int by) {
+bool cmdline_cursor_move_by(CMDLINE *cmdline, int by) {
 	return cmdline_cursor_move_to(cmdline, cmdline->cursor + by);
 }
 
-inline bool cmdline_cursor_right(CMDLINE *cmdline) {
+bool cmdline_cursor_right(CMDLINE *cmdline) {
 	return cmdline_cursor_move_by(cmdline, 1);
 }
 
-inline bool cmdline_cursor_left(CMDLINE *cmdline) {
+bool cmdline_cursor_left(CMDLINE *cmdline) {
 	return cmdline_cursor_move_by(cmdline, -1);
 }
 
-inline bool cmdline_cursor_home(CMDLINE *cmdline) {
+bool cmdline_cursor_home(CMDLINE *cmdline) {
 	return cmdline_cursor_move_to(cmdline, 0);
 }
 
-inline bool cmdline_cursor_end(CMDLINE *cmdline) {
+bool cmdline_cursor_end(CMDLINE *cmdline) {
 	return cmdline_cursor_move_to(cmdline, cmdline->length);
 }
 
