@@ -2,7 +2,7 @@
  * @file
  * @brief Preemptive priority scheduler based on multilevel queue.
  *
- * @date 22.04.2010
+ * @date 22.04.10
  * @author Darya Dzendzik
  *          - Initial implementation
  * @author Alina Kramar

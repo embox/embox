@@ -2,7 +2,7 @@
  * @file
  * @brief The Internet Protocol (IP) output module.
  *
- * @date 03.12.2009
+ * @date 03.12.09
  * @author Nikolay Korotky
  */
 

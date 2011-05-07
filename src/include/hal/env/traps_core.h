@@ -2,7 +2,7 @@
  * @file
  * @brief Describes interface for working with trap handlers
  *
- * @date 17.03.2010
+ * @date 17.03.10
  * @author Anton Bondarev
  */
 

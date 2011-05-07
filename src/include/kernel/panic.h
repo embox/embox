@@ -2,7 +2,7 @@
  * @file
  * @brief Defines panic macros
  *
- * @date 30.01.2010
+ * @date 30.01.10
  * @author Eldar Abusalimov
  */
 

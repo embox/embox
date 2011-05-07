@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 28.03.2010
+ * @date 28.03.10
  * @author Nikolay Korotky
  */
 

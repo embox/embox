@@ -3,7 +3,7 @@
  *
  * @brief Implements EMBOX_DEVICE macros for registering devices as files.
  *
- * @date 03.11.2010
+ * @date 03.11.10
  * @author Anton Bondarev
  */
 

@@ -2,7 +2,7 @@
  * @file
  * @brief Interrupt controller interface.
  *
- * @date 25.11.2009
+ * @date 25.11.09
  * @author Eldar Abusalimov
  */
 

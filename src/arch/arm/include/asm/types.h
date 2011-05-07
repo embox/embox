@@ -2,7 +2,7 @@
  * @file
  * @brief Necessary arch-dependent typedefs.
  *
- * @date 01.07.2010
+ * @date 01.07.10
  * @author Anton Kozlov
  */
 

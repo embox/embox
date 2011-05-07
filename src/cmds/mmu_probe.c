@@ -5,6 +5,7 @@
  * @date 09.06.09
  * @author Anton Bondarev
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <hal/mm/mmu_core.h>

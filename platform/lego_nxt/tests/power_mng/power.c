@@ -5,6 +5,7 @@
  * @date 03.12.10
  * @author Anton Kozlov
  */
+
 #include <types.h>
 #include <unistd.h>
 #include <embox/test.h>

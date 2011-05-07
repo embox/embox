@@ -2,7 +2,7 @@
  * @file
  * @brief Release implementation of single linked lists.
  *
- * @date 17.04.2011
+ * @date 17.04.11
  * @author Eldar Abusalimov
  */
 

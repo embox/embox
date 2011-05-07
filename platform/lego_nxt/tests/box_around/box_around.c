@@ -6,6 +6,7 @@
  * @date 17.01.11
  * @author Alexander Batyukov
  */
+
 #include <types.h>
 #include <embox/test.h>
 #include <unistd.h>

@@ -5,6 +5,7 @@
  * @date 15.10.10
  * @author Anton BOndarev
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <types.h>

@@ -2,7 +2,7 @@
  * @file
  * @brief TODO
  *
- * @date 14.02.2010
+ * @date 14.02.10
  * @author Eldar Abusalimov
  */
 

@@ -4,6 +4,7 @@
  * @date 28.02.09
  * @author Eldar Abusalimov
  */
+
 #ifndef SCREEN_H_
 #define SCREEN_H_
 

@@ -2,7 +2,7 @@
  * @file
  * @brief ISO C99: 7.18 Integer types.
  *
- * @date 09.03.2010
+ * @date 09.03.10
  * @author Eldar Abusalimov
  */
 

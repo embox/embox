@@ -2,7 +2,7 @@
  * @file
  * @brief Kernel interrupt requests handling.
  *
- * @date 26.08.2009
+ * @date 26.08.09
  * @author Anton Bondarev
  *         - Initial implementation
  * @author Alexandr Batyukov, Alexey Fomin

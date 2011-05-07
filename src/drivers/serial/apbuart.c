@@ -1,5 +1,8 @@
 /**
  * @file
+ *
+ * @date 13.03.10
+ * @author Eldar Abusalimov
  */
 
 #include <types.h>

@@ -2,7 +2,7 @@
  * @file
  * @brief Software interrupts subsystem.
  *
- * @date 24.12.2009
+ * @date 24.12.09
  * @author Anton Bondarev
  *         - Initial implementation
  * @author Eldar Abusalimov

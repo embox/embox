@@ -5,6 +5,7 @@
  * @date 10.11.10
  * @author Nikolay Korotky
  */
+
 #include <drivers/vga.h>
 #include <asm/io.h>
 #include <drivers/keyboard.h>

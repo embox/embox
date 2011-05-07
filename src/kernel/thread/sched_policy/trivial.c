@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of methods in scheduler_base.h
  *
- * @date 1.07.2010
+ * @date 01.07.10
  * @author Avdyukhin Dmitry
  */
 

@@ -4,6 +4,7 @@
  * @date 28.02.09
  * @author Eldar Abusalimov
  */
+
 #include "screen.h"
 #include <drivers/terminal.h>
 #include <assert.h>

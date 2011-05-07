@@ -2,7 +2,7 @@
  * @file
  * @brief Implements diag and serial driver for skyeye
  *
- * @date 24.11.2010
+ * @date 24.11.10
  * @author Anton Kozlov
  */
 

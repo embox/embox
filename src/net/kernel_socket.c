@@ -2,9 +2,10 @@
  * @file
  * @brief Implements socket interface function for kernel mode.
  *
- * @date 13.01.2010
+ * @date 13.01.10
  * @author Anton Bondarev
  */
+
 #include <errno.h>
 #include <kernel/irq.h>
 #include <lib/list.h>

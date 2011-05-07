@@ -3,7 +3,7 @@
  * @brief Dynamic memory allocator arbitrary size. Terehov style.
  * @details TODO
  *
- * @date May 02, 2010
+ * @date 02.05.10
  * @author Michail Skorginskii
  *
  * TODO

@@ -2,7 +2,7 @@
  * @file
  * @brief Gaisler Research IRQMP Interrupt controller driver.
  *
- * @date 14.04.2009
+ * @date 14.04.09
  * @author Anton Bondarev
  * @author Eldar Abusalimov
  */

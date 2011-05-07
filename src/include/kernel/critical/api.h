@@ -2,7 +2,7 @@
  * @file
  * @brief Declares critical API.
  *
- * @date 16.05.2010
+ * @date 16.05.10
  * @author Eldar Abusalimov
  */
 

@@ -2,9 +2,10 @@
  * @file
  * @brief Interface for controlling 2 leds on Olimex Debug board
  *
- * @date 26.09.2010
+ * @date 26.09.10
  * @author Anton Kozlov
  */
+
 #ifndef AT91_OLIMEX_DEBUG_H_
 #define AT91_OLIMEX_DEBUG_H_
 

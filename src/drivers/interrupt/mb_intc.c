@@ -2,7 +2,7 @@
  * @file
  * @brief Low level functions for interrupt controller
  *
- * @date 23.11.2009
+ * @date 23.11.09
  * @author Anton Bondarev
  */
 

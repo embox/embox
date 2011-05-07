@@ -5,9 +5,9 @@
  * @date 25.11.09
  * @author Anton Bondarev
  */
+
 #include <asm/linkage.h>
 #include <asm/regs.h>
-
 
 	.section    ".text"
 	.align  4

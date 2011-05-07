@@ -2,7 +2,7 @@
  * @file
  * @brief Debug implementation of single linked list utility.
  *
- * @date 17.04.2011
+ * @date 17.04.11
  * @author Eldar Abusalimov
  */
 

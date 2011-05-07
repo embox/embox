@@ -2,7 +2,7 @@
  * @file
  * @brief TODO
  *
- * @date 28.03.2011
+ * @date 28.03.11
  * @author Alina Kramar
  * @author Eldar Abusalimov
  */

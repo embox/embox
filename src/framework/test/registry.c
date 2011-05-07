@@ -2,7 +2,7 @@
  * @file
  * @brief Registry of available tests.
  *
- * @date Dec 4, 2008
+ * @date 04.12.08
  * @author Anton Bondarev
  *         - Initial implementation
  * @author Alexey Fomin

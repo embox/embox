@@ -2,7 +2,7 @@
  * @file
  * @brief System timer
  *
- * @date 14.07.2010
+ * @date 14.07.10
  * @author Anton Kozlov
  */
 

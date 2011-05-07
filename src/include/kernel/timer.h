@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 02.09.2009
+ * @date 02.09.09
  * @author Andrey Baboshin
  */
+
 #ifndef TIMER_H_
 #define TIMER_H_
 

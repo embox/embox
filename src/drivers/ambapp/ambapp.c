@@ -2,7 +2,7 @@
  * @file
  * @brief driver for Advanced Microcontroller Bus Architecture (AMBA)
  *
- * @date 28.01.2009
+ * @date 28.01.09
  * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 

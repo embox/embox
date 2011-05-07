@@ -2,7 +2,7 @@
  * @file
  * @brief ARM basic arch work
  *
- * @date 21.06.2010
+ * @date 21.06.10
  * @author Anton Kozlov
  */
 

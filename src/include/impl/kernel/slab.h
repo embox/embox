@@ -2,7 +2,7 @@
  * @file
  * @brief Defines constants for slab allocator
  *
- * @date 26.02.2011
+ * @date 26.02.11
  * @author Alexandr Kalmuk
  */
 

@@ -3,7 +3,7 @@
  * @brief Embox testing framework.
  * TODO Test framework API docs: structs. -- Eldar
  *
- * @date 11.06.2010
+ * @date 11.06.10
  * @author Eldar Abusalimov
  */
 

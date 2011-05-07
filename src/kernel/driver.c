@@ -2,7 +2,7 @@
  * @file
  * @brief realization of device manipulation
  *
- * @data 08.07.2010
+ * @data 08.07.10
  * @author Fedor Burdun
  */
 

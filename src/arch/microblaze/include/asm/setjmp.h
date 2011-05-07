@@ -2,7 +2,7 @@
  * @file
  * @brief Microblaze definition objects for setjmp
  *
- * @date 11.03.2010
+ * @date 11.03.10
  * @author Anton Bondarev
  */
 

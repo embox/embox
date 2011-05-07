@@ -2,7 +2,7 @@
  * @file
  * @brief IP options processing module
  *
- * @date 14.04.2010
+ * @date 14.04.10
  * @author Roman Kolobov
  */
 

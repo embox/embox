@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * @date 10.12.2009
+ * @date 10.12.09
  * @author Eldar Abusalimov
  */
 

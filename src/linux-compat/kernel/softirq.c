@@ -2,7 +2,7 @@
  * @file
  * @brief Wrapper around Embox softirq with linux interface.
  *
- * @date 07.04.2010
+ * @date 07.04.10
  * @author Eldar Abusalimov
  */
 

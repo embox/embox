@@ -6,7 +6,7 @@
  * @note
  *   Do not include from any source which is not a part of some mod.
  *
- * @date 12.06.2010
+ * @date 12.06.10
  * @author Eldar Abusalimov
  */
 

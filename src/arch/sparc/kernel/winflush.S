@@ -3,7 +3,7 @@
  * @brief Simple routine which provokes all windows to be flushed onto the
  *        stack.
  *
- * @date 13.04.2010
+ * @date 13.04.10
  * @author Eldar Abusalimov
  */
 

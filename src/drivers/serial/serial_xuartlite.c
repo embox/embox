@@ -3,7 +3,7 @@
  * @brief This file implemented functions for work with xilix uart
  *        (for microblaze)
  *
- * @date 19.11.2009
+ * @date 19.11.09
  * @author Anton Bondarev
  */
 

@@ -4,6 +4,7 @@
  * @date 23.03.11
  * @author Darya Dzendzik
  */
+
 #ifndef NXT_MENU_H_
 #define NXT_MENU_H_
 

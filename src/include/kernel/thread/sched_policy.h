@@ -4,7 +4,7 @@
  * on the scheduling algorithm. Part of method is used in other functions.
  * All of policy must implement its interface.
  *
- * @date 22.04.2010
+ * @date 22.04.10
  * @author Dmitry Avdyukhin
  */
 

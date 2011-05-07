@@ -2,10 +2,11 @@
  * @file
  * @brief The Internet Protocol (IP) module.
  *
- * @date 17.03.2009
+ * @date 17.03.09
  * @author Alexandr Batyukov
  * @author Nikolay Korotky
  */
+
 #include <err.h>
 #include <string.h>
 #include <net/ip.h>

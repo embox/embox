@@ -1,11 +1,11 @@
 /**
  * @file
- *
  * @brief Pseudo-dynamic memory allocator.
  *
  * @date 13.10.09
  * @author Nikolay Korotky
  */
+
 #include <embox/kernel.h>
 #include <string.h>
 

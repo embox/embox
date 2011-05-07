@@ -3,7 +3,7 @@
  * @brief pipe device driver
  *
  * @author Fedor Burdun
- * @date 22.07.2010
+ * @date 22.07.10
  */
 
 #include <embox/unit.h>

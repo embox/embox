@@ -5,6 +5,7 @@
  * @date 24.02.11
  * @author Anton Bondarev
  */
+
 #include <types.h>
 #include <embox/unit.h>
 #include <hal/reg.h>

@@ -4,6 +4,7 @@
  * @date 24.10.10
  * @author Anton Kozlov
  */
+
 #ifndef NXT_BUTTONS_H_
 #define NXT_BUTTONS_H_
 

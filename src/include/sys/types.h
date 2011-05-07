@@ -2,7 +2,7 @@
  * @file
  * @brief POSIX Standard: 2.6 Primitive System Data Types.
  *
- * @date 24.11.2009
+ * @date 24.11.09
  * @author Anton Bondarev
  */
 

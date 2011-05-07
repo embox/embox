@@ -2,7 +2,7 @@
  * @file
  * @brief This file defines microblaze interrupt controller specific settings
  *
- * @date Apr 14, 2009
+ * @date 14.04.09
  * @author Anton Bondarev
  */
 

@@ -2,7 +2,7 @@
  * @file
  * @brief Programmable Interval Timer (PIT) chip driver
  *
- * @date 27.12.2010
+ * @date 27.12.10
  * @author Nikolay Korotky
  */
 

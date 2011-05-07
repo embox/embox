@@ -2,7 +2,7 @@
  * @file
  * @brief Test suite invocation and runtime support.
  *
- * @date Dec 4, 2008
+ * @date 04.12.08
  * @author Anton Bondarev
  *         - Initial implementation
  * @author Eldar Abusalimov

@@ -5,6 +5,7 @@
  * @date 27.09.10
  * @author Nikolay Korotky
  */
+
 #ifndef CPIO_H_
 #define CPIO_H_
 

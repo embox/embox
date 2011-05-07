@@ -1,9 +1,8 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 26.03.2011
+ * @date 26.03.11
  * @author Anton Bondarev
  * @author Alexandr Kalmuk
  * @author Kirill Tyushev

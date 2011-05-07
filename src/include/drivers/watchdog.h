@@ -2,7 +2,7 @@
  * @file
  * @brief General interface for watchdog.
  *
- * @date 29.09.2010
+ * @date 29.09.10
  * @author Anton Kozlov
  */
 

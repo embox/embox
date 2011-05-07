@@ -2,7 +2,7 @@
  * @file
  * @brief Pins system interface
  *
- * @date 26.11.2010
+ * @date 26.11.10
  * @author Anton Kozlov
  */
 

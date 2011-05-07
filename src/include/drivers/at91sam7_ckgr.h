@@ -2,7 +2,7 @@
  * @file
  * @brief Clock Generator Controller interface
  *
- * @date 29.09.2010
+ * @date 29.09.10
  * @author Anton Kozlov
  */
 

@@ -5,6 +5,7 @@
  * @date 02.12.10
  * @author Anton Kozlov
  */
+
 #include <types.h>
 #include <drivers/nxt_avr.h>
 #include <drivers/nxt_sensor.h>

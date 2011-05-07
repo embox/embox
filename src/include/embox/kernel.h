@@ -2,7 +2,7 @@
  * @file
  * @brief contains some often-used function prototypes etc
  *
- * @date 13.03.2010
+ * @date 13.03.10
  * @author Eldar Abusalimov
  */
 

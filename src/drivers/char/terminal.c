@@ -6,7 +6,7 @@
  * It also provides some common ANSI/VT100 terminal control sequences.
  * This entity is backed by VTParse and VTBuild modules.
  *
- * @date 04.02.2009
+ * @date 04.02.09
  * @author Eldar Abusalimov
  */
 

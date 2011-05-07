@@ -5,6 +5,7 @@
  * @date 05.11.10
  * @author Anton Kozlov
  */
+
 #ifndef NXT_AVR_H_
 #define NXT_AVR_H_
 

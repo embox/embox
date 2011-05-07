@@ -2,7 +2,7 @@
  * @file
  * @brief Dynamic memory allocator
  *
- * @date 02.05.2010
+ * @date 02.05.10
  * @author Michail Skorginskii
  */
 

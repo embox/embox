@@ -5,7 +5,7 @@
  *      identificators visible on AMBA bus, and links ID to character name
  *      device and vendor.
  *
- * @date 26.04.2010
+ * @date 26.04.10
  * @author Anton Bondarev
  */
 

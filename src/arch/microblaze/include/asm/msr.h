@@ -2,7 +2,7 @@
  * @file
  * @brief Includes framework for working with msr register in microblaze cpu
  *
- * @date 11.01.2010
+ * @date 11.01.10
  * @author Alexey Fomin
  */
 

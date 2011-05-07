@@ -1,10 +1,11 @@
-/*
+/**
  * @file
  * @brief Lego NXT Bluetooth helpers, layers for user level
  *
  * @date 11.03.11
  * @author Anton Kozlov
  */
+
 #include <types.h>
 #include <embox/unit.h>
 #include <hal/reg.h>

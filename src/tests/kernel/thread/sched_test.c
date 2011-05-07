@@ -2,7 +2,7 @@
  * @file
  * @brief TODO documentation for sched_test.c -- Alina Kramar
  *
- * @date 08.04.2011
+ * @date 08.04.11
  * @author Alina Kramar
  */
 

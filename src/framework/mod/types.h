@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation private types used by mods infrastructure.
  *
- * @date 12.06.2010
+ * @date 12.06.10
  * @author Eldar Abusalimov
  */
 

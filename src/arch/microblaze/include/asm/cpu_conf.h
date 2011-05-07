@@ -5,7 +5,7 @@
  *          It's included into autoconf.h.
  *          This file may be change by configure script.
  *
- * @date 19.11.2009
+ * @date 19.11.09
  * @author Anton Bondarev
  */
 

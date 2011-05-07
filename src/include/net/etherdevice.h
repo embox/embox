@@ -3,9 +3,10 @@
  * @brief Definitions for the Ethernet handlers.
  * @details IEEE 802.3
  *
- * @date 5.03.2009
+ * @date 5.03.09
  * @author Anton Bondarev
  */
+
 #ifndef ETHERDEVICE_H_
 #define ETHERDEVICE_H_
 

@@ -5,6 +5,7 @@
  * @author Nikolay Korotky
  * NOTE: long options not supported.
  */
+
 #ifndef GETOPT_H_
 #define GETOPT_H_
 

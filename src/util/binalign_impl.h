@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of binary align, both for C and assembly.
  *
- * @date 12.06.2010
+ * @date 12.06.10
  * @author Eldar Abusalimov
  */
 

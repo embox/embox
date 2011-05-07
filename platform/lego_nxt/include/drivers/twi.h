@@ -5,6 +5,7 @@
  * @date 15.10.10
  * @author Anton Kozlov
  */
+
 #ifndef NXT_TWI_H_
 #define NXT_TWI_H_
 

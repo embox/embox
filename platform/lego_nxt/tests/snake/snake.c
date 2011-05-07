@@ -1,9 +1,10 @@
-/*
+/**
  * @file
  *
  * @date 01.04.10
  * @author Anton Kozlov
  */
+
 #include <embox/test.h>
 #include <unistd.h>
 #include <kernel/timer.h>

@@ -4,7 +4,7 @@
  * Paul Williams' DEC compatible state machine parser
  * This code is in the public domain.
  *
- * @date 04.02.2009
+ * @date 04.02.09
  * @author Joshua Haberman <joshua@reverberate.org>
  * @author Eldar Abusalimov
  *         - adaptation for using with terminal driver.

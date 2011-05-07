@@ -2,7 +2,7 @@
  * @file
  * @brief TODO documentation for types.h -- Alina
  *
- * @date 23.03.2011
+ * @date 23.03.11
  * @author Alina Kramar
  */
 

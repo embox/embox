@@ -2,9 +2,10 @@
  * @file
  * @brief Common inet definitions.
  *
- * @date 09.02.2010
+ * @date 09.02.10
  * @author Nikolay Korotky
  */
+
 #ifndef _INET_COMMON_H
 #define _INET_COMMON_H
 

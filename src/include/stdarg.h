@@ -33,7 +33,7 @@ Boston, MA 02110-1301, USA.  */
  * @brief C standard library header.
  * @details Allows functions to accept an indefinite number of arguments.
  *
- * @date 13.02.2010
+ * @date 13.02.10
  * @author Eldar Abusalimov
  */
 

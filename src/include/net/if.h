@@ -2,9 +2,10 @@
  * @file
  * @brief Global definitions for the INET interface module.
  *
- * @date 03.12.2009
+ * @date 03.12.09
  * @author Nikolay Korotky
  */
+
 #ifndef IF_H_
 #define IF_H_
 

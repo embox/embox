@@ -2,7 +2,7 @@
  * @file
  * @brief table of configured filesystems
  *
- * @date 05.10.2010
+ * @date 05.10.10
  * @author Nikolay Korotky
  */
 

@@ -2,7 +2,7 @@
  * @file
  * @brief Release implementation of doubly-linked lists.
  *
- * @date Feb 27, 2011
+ * @date 27.02.11
  * @author Eldar Abusalimov
  */
 

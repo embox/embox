@@ -3,9 +3,10 @@
  * @brief Implementation of the Transmission Control Protocol(TCP).
  * @details RFC 768
  *
- * @date 04.04.2010
+ * @date 04.04.10
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 #include <net/inetdevice.h>
 #include <net/ip.h>

@@ -2,7 +2,7 @@
  * @file
  * @brief Type declarations shared between test framework and each test suite.
  *
- * @date 11.06.2010
+ * @date 11.06.10
  * @author Eldar Abusalimov
  */
 

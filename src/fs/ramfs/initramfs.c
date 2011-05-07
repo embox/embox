@@ -5,6 +5,7 @@
  * @date 29.09.10
  * @author Nikolay Korotky
  */
+
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <lib/list.h>

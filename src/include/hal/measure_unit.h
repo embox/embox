@@ -2,7 +2,7 @@
  * @file
  * @brief Interface for hardware-enabled clock ticks measuring unit
  *
- * @date 16.11.2010
+ * @date 16.11.10
  * @author Anton Kozlov
  */
 

@@ -1,7 +1,8 @@
 /**
+ * @file
  * @brief Event dispatcher implementation
  *
- * @date 28.04.2011
+ * @date 28.04.11
  * @author Malkovsky Nikolay
  */
 

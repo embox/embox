@@ -2,7 +2,7 @@
  * @file
  * @brief Embox threading API.
  *
- * @date 22.04.2010
+ * @date 22.04.10
  * @author Dmitry Avdyukhin
  *          - Initial implementation
  * @author Alina Kramar

@@ -2,7 +2,7 @@
  * @file
  * @brief Prints threads statistic for Embox
  *
- * @date 2 Dec 2010
+ * @date 02.12.10
  * @author Gleb Efimov
  * @author Alina Kramar
  * @author Roman Oderov

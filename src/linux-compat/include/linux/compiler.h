@@ -2,7 +2,7 @@
  * @file
  * @brief Describes compiler specific features
  *
- * @date 13.01.2010
+ * @date 13.01.10
  * @author Anton Bondarev
  */
 

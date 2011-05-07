@@ -2,7 +2,7 @@
  * @file
  * @brief Implements mutex methods.
  *
- * @date 05.05.2010
+ * @date 05.05.10
  * @author Nikolay Malkovsky
  * @author Skorodumov Kirill
  */

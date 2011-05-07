@@ -5,6 +5,7 @@
  * @date 02.12.10
  * @author Anton Kozlov
  */
+
 #ifndef NXT_MOTOR_H_
 #define NXT_MOTOR_H_
 

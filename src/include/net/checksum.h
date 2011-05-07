@@ -2,9 +2,10 @@
  * @file
  * @brief Checksumming functions for IP, TCP, UDP and so on.
  *
- * @date 20.03.2009
+ * @date 20.03.09
  * @author Anton Bondarev
  */
+
 #if 0
 #define LITTLE 0 /* big endian only*/
 #endif

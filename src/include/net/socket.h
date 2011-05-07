@@ -1,10 +1,11 @@
 /**
  * @file
  *
- * @date 19.03.2009
+ * @date 19.03.09
  * @author Anton Bondarev
  * @author Nikolay Korotky
  */
+
 #ifndef SOCKET_H_
 #define SOCKET_H_
 

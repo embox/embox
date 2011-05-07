@@ -2,7 +2,7 @@
  * @file
  * @brief Simple scanf implementation.
  *
- * @date 10.02.2009
+ * @date 10.02.09
  * @author Alexandr Batyukov
  *          - Initial implementation
  */

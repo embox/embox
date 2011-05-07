@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 05.10.2010
+ * @date 05.10.10
  * @author Nikolay Korotky
  */
+
 #ifndef FS_H_
 #define FS_H_
 

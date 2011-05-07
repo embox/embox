@@ -3,7 +3,7 @@
  * @brief Defines macros used for direct access to registers mapped into
  * the address space.
  *
- * @date 25.11.2009
+ * @date 25.11.09
  * @author Eldar Abusalimov
  */
 

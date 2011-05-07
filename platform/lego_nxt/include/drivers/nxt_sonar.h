@@ -5,6 +5,7 @@
  * @date 27.12.10
  * @author Anton Kozlov
  */
+
 #ifndef NXT_SONAR_H_
 #define NXT_SONAR_H_
 

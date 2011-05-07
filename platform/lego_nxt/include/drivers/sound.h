@@ -4,6 +4,7 @@
  * @date 09.10.10
  * @author Anton Bondarev
  */
+
 #ifndef NXT_SOUND_H_
 #define NXT_SOUND_H_
 

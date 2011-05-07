@@ -2,7 +2,7 @@
  * @file
  * @brief IPC messages implementation.
  *
- * @date 25.02.2011
+ * @date 25.02.11
  * @author Dmitry Avdyukhin
  */
 

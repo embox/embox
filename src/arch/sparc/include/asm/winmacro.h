@@ -2,7 +2,7 @@
  * @file
  * @brief SPARC register windows related stuff.
  *
- * @date Jun 4, 2009
+ * @date 04.06.09
  * @author Eldar Abusalimov
  */
 

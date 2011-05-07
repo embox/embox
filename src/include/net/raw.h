@@ -2,9 +2,10 @@
  * @raw.h
  * @brief Definitions for the RAW-IP module.
  *
- * @date 16.02.2010
+ * @date 16.02.10
  * @author Nikolay Korotky
  */
+
 #ifndef RAW_H
 #define RAW_H
 

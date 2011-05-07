@@ -4,7 +4,7 @@
  *
  * @sa EMBOX_TEST() simple macro used to declare a new test
  *
- * @date Jul 4, 2009
+ * @date 04.06.09
  * @author Anton Bondarev, Alexey Fomin
  *         - Initial implementation
  * @author Eldar Abusalimov

@@ -6,6 +6,7 @@
  * @author Anton Bondarev
  * @author Alexander Batyukov
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <string.h>

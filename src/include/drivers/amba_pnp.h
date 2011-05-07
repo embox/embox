@@ -3,7 +3,7 @@
  * @details Driver for devices founded on the Amba Plug&Play bus
  * (Advanced Microcontroller Bus Architecture)
  *
- * @date 28.01.2009
+ * @date 28.01.09
  * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 

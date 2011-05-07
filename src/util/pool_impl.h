@@ -2,7 +2,7 @@
  * @file
  * @brief Object pool allocator types and definition macros.
  *
- * @date 07.03.2011
+ * @date 07.03.11
  * @author Kirill Tyushev
  * @author Eldar Abusalimov
  */

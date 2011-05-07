@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 15.03.2010
+ * @date 15.03.10
  * @author Nikolay Korotky
  */
+
 #include <embox/kernel.h>
 #include <types.h>
 #include <asm/winmacro.h>

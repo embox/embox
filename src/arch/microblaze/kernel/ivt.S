@@ -5,6 +5,7 @@
  * @date 25.11.09
  * @author Anton Bondarev
  */
+
 #include <asm/linkage.h>
 
 	.section ".trap_table"

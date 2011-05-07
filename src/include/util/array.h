@@ -24,7 +24,7 @@
  * #ARRAY_SPREAD_DEF() and its derivatives or when declaring it using
  * @c extern.
  *
- * @date 13.06.2010
+ * @date 13.06.10
  * @author Eldar Abusalimov
  */
 

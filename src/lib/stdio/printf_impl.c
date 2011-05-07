@@ -2,9 +2,10 @@
  * @file
  * @brief
  *
- * @date 19.11.2010
+ * @date 19.11.10
  * @author Anton Bondarev
  */
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <types.h>

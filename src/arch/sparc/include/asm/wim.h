@@ -25,7 +25,7 @@
  * masks together give the same result, and we can join such operations with
  * @em SAVE or @em WRWIM instructions.
  *
- * @date 29.04.2010
+ * @date 29.04.10
  * @author Eldar Abusalimov
  */
 

@@ -5,6 +5,7 @@
  * @date 13.10.09
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 
 char *strcat(char *dest, const char *src) {

@@ -2,7 +2,7 @@
  * @file
  * @brief Definitions for the TCP module.
  *
- * @date 03.04.2010
+ * @date 03.04.10
  * @author Nikolay Korotky
  */
 

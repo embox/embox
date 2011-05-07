@@ -2,7 +2,7 @@
  * @file
  * @brief TODO documentation for state_test.c -- Alina Kramar
  *
- * @date 03.04.2011
+ * @date 03.04.11
  * @author Alina Kramar
  * @author Eldar Abusalimov
  */

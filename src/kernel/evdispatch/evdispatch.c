@@ -1,7 +1,8 @@
 /**
+ * @file
  * @brief Event dispatcher implementation
  *
- * @date 16.03.2011
+ * @date 16.03.11
  * @author Kirill Tyushev
  */
 

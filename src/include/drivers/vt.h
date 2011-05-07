@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 04.02.2009
+ * @date 04.02.09
  * @author Eldar Abusalimov
  */
+
 #ifndef VT_H_
 #define VT_H_
 

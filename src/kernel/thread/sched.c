@@ -2,7 +2,7 @@
  * @file
  * @brief TODO --Alina
  *
- * @date 22.04.2010
+ * @date 22.04.10
  * @author Dmitry Avdyukhin
  * @author Kirill Skorodumov
  * @author Alina Kramar

@@ -2,9 +2,10 @@
  * @file
  * @brief Definitions for the 'struct sk_buff' memory handlers.
  *
- * @date 20.10.2009
+ * @date 20.10.09
  * @author Anton Bondarev
  */
+
 #ifndef SKBUFF_H_
 #define SKBUFF_H_
 

@@ -2,14 +2,12 @@
  * @file
  * @brief AT91 watchdog driver.
  *
- * @date 29.09.2010
+ * @date 29.09.10
  * @author Anton Kozlov
  */
 
 #include <embox/unit.h>
-
 #include <drivers/watchdog.h>
-
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
 

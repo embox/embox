@@ -2,7 +2,7 @@
  * @file
  * @brief Microblaze specific definitions of trap processing
  *
- * @date 30.04.2010
+ * @date 30.04.10
  * @author Anton Bondarev
  */
 

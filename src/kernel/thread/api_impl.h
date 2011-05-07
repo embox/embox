@@ -2,7 +2,7 @@
  * @file
  * @brief Threads internal implementation.
  *
- * @date 24.02.2011
+ * @date 24.02.11
  * @author Alina Kramar
  */
 

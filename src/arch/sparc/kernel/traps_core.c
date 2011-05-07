@@ -2,7 +2,7 @@
  * @file
  * @brief Sparc implementation traps framework
  *
- * @date 15.03.2010
+ * @date 15.03.10
  * @author Anton Bondarev
  * @author Alexander Batyukov
  */
@@ -11,7 +11,6 @@
 #include <hal/ipl.h>
 #include <asm/tbr.h>
 #include <hal/env/traps_core.h>
-
 
 void traps_enable(void) {
 

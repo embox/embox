@@ -6,8 +6,9 @@
  * @date 28.08.09
  * @author Andrey Baboshin
  */
-#ifndef BOOTP_H__
-#define BOOTP_H__
+
+#ifndef BOOTP_H_
+#define BOOTP_H_
 
 #include <net/ip.h>
 #include <net/net.h>
@@ -203,4 +204,4 @@ in_addr_t const get_ip_mask (void);
  */
 in_addr_t const get_ip_gate (void);
 
-#endif /* BOOTP_H__ */
+#endif /* BOOTP_H_ */

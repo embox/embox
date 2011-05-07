@@ -2,7 +2,7 @@
  * @file
  * @brief Necessary arch-dependent typedefs.
  *
- * @date 25.11.2009
+ * @date 25.11.09
  * @author Eldar Abusalimov
  */
 

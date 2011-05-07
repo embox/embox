@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 11.03.2009
+ * @date 11.03.09
  * @author Anton Bondarev
  */
+
 #ifndef NET_H_
 #define NET_H_
 

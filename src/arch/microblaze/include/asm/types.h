@@ -2,7 +2,7 @@
  * @file
  * @brief Types for microblaze architecture.
  *
- * @date 11.11.2009
+ * @date 11.11.09
  * @author Anton Bondarev
  */
 

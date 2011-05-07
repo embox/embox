@@ -9,6 +9,7 @@
  * @date 01.06.10
  * @author Nikolay Korotky
  */
+
 #ifndef BOOT_IMAGE_H_
 #define BOOT_IMAGE_H_
 

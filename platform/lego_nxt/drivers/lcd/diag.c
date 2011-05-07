@@ -5,6 +5,7 @@
  * @date 7.06.10
  * @author Anton Kozlov
  */
+
 #include <types.h>
 #include <drivers/lcd.h>
 #include <kernel/diag.h>

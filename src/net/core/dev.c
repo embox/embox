@@ -2,7 +2,7 @@
  * @file
  * @brief Protocol independent device support routines.
  *
- * @date 04.03.2009
+ * @date 04.03.09
  * @author Anton Bondarev
  */
 

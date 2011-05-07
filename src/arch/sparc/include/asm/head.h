@@ -2,7 +2,7 @@
  * @file
  * @brief Defines macros used to construct the trap table.
  *
- * @date 09.06.2009
+ * @date 09.06.09
  * @author Eldar Abusalimov
  */
 

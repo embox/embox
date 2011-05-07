@@ -2,7 +2,7 @@
  * @file
  * @brief Default no-op implementation of watchdog API.
  *
- * @date Mar 29, 2011
+ * @date 29.03.11
  * @author Eldar Abusalimov
  */
 

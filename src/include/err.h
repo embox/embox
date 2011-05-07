@@ -5,6 +5,7 @@
  * @date 25.11.09
  * @author Nikolay Korotky
  */
+
 #ifndef ERR_H_
 #define ERR_H_
 

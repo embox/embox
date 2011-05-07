@@ -7,7 +7,7 @@
  *         invalid it means if system call this page it impels page_fault trap.
  *         IMPORTENT: These functions work with already mapped pages only!
  *
- * @date 07.04.2010
+ * @date 07.04.10
  * @author Anton Bondarev
  */
 

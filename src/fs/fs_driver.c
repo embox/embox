@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 06.10.2010
+ * @date 06.10.10
  * @author Anton Bondarev
  */
 

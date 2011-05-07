@@ -2,7 +2,7 @@
  * @file
  * @brief Implements array iterators and linker-powered distributed arrays.
  *
- * @date 13.06.2010
+ * @date 13.06.10
  * @author Eldar Abusalimov
  */
 

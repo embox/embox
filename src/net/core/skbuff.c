@@ -2,9 +2,10 @@
  * @file
  * @details sk_buff management API implementation.
  *
- * @date 20.10.2009
+ * @date 20.10.09
  * @author Anton Bondarev
  */
+
 #include <string.h> /*for memcpy*/
 #include <util/pool.h>
 #include <linux/list.h>

@@ -3,7 +3,7 @@
  * @brief Implements MMU core interface @link #mmu_core.h @endllink
  *        for Microblaze architecture.
  *
- * @date 10.03.2010
+ * @date 10.03.10
  * @author Anton Bondarev
  */
 

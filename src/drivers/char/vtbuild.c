@@ -4,7 +4,7 @@
  * @details As we use only Plain, ESC and CSI-based tokens
  * all the others are ignored (the same remark concerns to VTParse too).
  *
- * @date 04.02.2009
+ * @date 04.02.09
  * @author Eldar Abusalimov
  */
 

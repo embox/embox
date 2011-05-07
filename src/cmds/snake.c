@@ -1,9 +1,10 @@
-/*
+/**
  * @file
  *
  * @date 01.04.10
  * @author Anton Kozlov
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <drivers/vt.h>

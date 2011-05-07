@@ -2,7 +2,7 @@
  * @file
  * @brief timer test -- blinking led
  *
- * @date 01.10.2010
+ * @date 01.10.10
  * @author Anton Kozlov
  */
 

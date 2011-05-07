@@ -2,7 +2,7 @@
  * @file
  * @brief ARM modes
  *
- * @date 5.11.2010
+ * @date 5.11.10
  * @author Anton Kozlov
  */
 

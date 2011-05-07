@@ -2,7 +2,7 @@
  * @file
  * @brief TWI communication for Lego AVR
  *
- * @date 26.09.2010
+ * @date 26.09.10
  * @author Anton Kozlov
  * @author Fedor Burdun
  */

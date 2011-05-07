@@ -3,10 +3,11 @@
  * @brief Definitions for the ICMP protocol.
  * @details RFC 792
  *
- * @date 14.03.2009
+ * @date 14.03.09
  * @author Alexander Batyukov
  * @author Nikolay Korotky
  */
+
 #ifndef ICMP_H_
 #define ICMP_H_
 

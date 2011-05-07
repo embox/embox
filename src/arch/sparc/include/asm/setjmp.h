@@ -2,7 +2,7 @@
  * @file
  * @brief setjmp/longjmp for the sparc architecture
  *
- * @date 31.01.2010
+ * @date 31.01.10
  * @author Eldar Abusalimov
  */
 

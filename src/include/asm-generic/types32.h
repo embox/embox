@@ -2,7 +2,7 @@
  * @file
  * @brief Common types for 32-bit architectures.
  *
- * @date 04.10.2010
+ * @date 04.10.10
  * @author Eldar Abusalimov
  */
 

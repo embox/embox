@@ -2,9 +2,10 @@
  * @file
  * @brief Definitions for inet_sock.
  *
- * @date 18.03.2009
+ * @date 18.03.09
  * @author Anton Bondarev
  */
+
 #ifndef INET_SOCK_H_
 #define INET_SOCK_H_
 

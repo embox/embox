@@ -2,7 +2,7 @@
  * @file
  * @brief Defines specific features for MMU in Microblaze architecture.
  *
- * @date 15.03.2010
+ * @date 15.03.10
  * @author Anton Bondarev
  */
 

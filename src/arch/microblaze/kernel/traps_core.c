@@ -2,7 +2,7 @@
  * @file
  * @brief Microblaze implementation traps framework
  *
- * @date 15.03.2010
+ * @date 15.03.10
  * @author Anton Bondarev
  */
 

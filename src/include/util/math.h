@@ -2,7 +2,7 @@
  * @file
  * @brief Basic numeric operations
  *
- * @date 04.06.2010
+ * @date 04.06.10
  * @author Eldar Abusalimov
  */
 

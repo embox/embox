@@ -2,9 +2,10 @@
  * @file
  * @brief Interrupt interface realization
  *
- * @date 11.07.2010
+ * @date 11.07.10
  * @author Anton Kozlov
  */
+
 #include <assert.h>
 #include <hal/arch.h>
 #include <hal/interrupt.h>

@@ -2,7 +2,7 @@
  * @file
  * @brief sparc specific parts of process tracing
  *
- * @date 23.07.2009
+ * @date 23.07.09
  * @author Eldar Abusalimov
  */
 

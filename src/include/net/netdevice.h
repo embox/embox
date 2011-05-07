@@ -2,9 +2,10 @@
  * @file
  * @brief Definitions for the Interfaces handler.
  *
- * @date 04.03.2009
+ * @date 04.03.09
  * @author Anton Bondarev
  */
+
 #ifndef NET_DEVICE_H_
 #define NET_DEVICE_H_
 

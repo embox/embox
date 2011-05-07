@@ -1,9 +1,8 @@
 /**
  * @file
- *
  * @brief Contains console readline support inteface
  *
- * @date 13.11.2010
+ * @date 13.11.10
  * @author Anton Bondarev
  */
 

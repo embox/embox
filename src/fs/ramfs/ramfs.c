@@ -2,12 +2,13 @@
  * @file
  * @details realize file operation function in line address space
  *
- * @date 29.06.2009
+ * @date 29.06.09
  * @author Anton Bondarev
  *	- initial implementation
  * @author Nikolay Korotky
  *	- rework using vfs
  */
+
 #include <string.h>
 #include <errno.h>
 #include <fs/ramfs.h>

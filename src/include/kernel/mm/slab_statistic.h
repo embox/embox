@@ -2,7 +2,7 @@
  * @file
  * @brief Define functions for statistic for slab allocator
  *
- * @date 14.12.2010
+ * @date 14.12.10
  * @author Alexandr Kalmuk
  */
 

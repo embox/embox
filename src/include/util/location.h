@@ -3,7 +3,7 @@
  * @brief A simple utility for tracking an input location (file:line) and
  *        accessing registered locations at run-time.
  *
- * @date Mar 18, 2011
+ * @date 18.03.11
  * @author Eldar Abusalimov
  */
 

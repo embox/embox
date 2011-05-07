@@ -2,7 +2,7 @@
  * @file
  * @brief Core dependency resolution.
  *
- * @date 09.03.2010
+ * @date 09.03.10
  * @author Eldar Abusalimov
  */
 

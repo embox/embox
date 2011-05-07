@@ -2,7 +2,7 @@
  * @file
  * @brief Defines stack frame structure.
  *
- * @date 29.11.2009
+ * @date 29.11.09
  * @author Eldar Abusalimov
  */
 

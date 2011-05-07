@@ -3,9 +3,10 @@
  * @brief Definitions for the IP protocol.
  * @details RFC 791
  *
- * @date 11.03.2009
+ * @date 11.03.09
  * @author Anton Bondarev
  */
+
 #ifndef IP_H_
 #define IP_H_
 

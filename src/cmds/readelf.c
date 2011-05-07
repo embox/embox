@@ -9,6 +9,7 @@
  * @author Nikolay Korotky
  *         - Refactoring, fix bugs.
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <ctype.h>

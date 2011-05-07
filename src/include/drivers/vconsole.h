@@ -3,7 +3,7 @@
  * @brief Defines virtual console interface.
  * A virtual console is an instance of the tty device.
  *
- * @date 23.11.2010
+ * @date 23.11.10
  * @author Anton Bondarev
  */
 

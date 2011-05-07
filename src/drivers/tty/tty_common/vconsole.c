@@ -2,7 +2,7 @@
  * @file
  * @brief Implements utilities functions for virtual console working.
  *
- * @date 23.11.2010
+ * @date 23.11.10
  * @author Anton Bondarev
  * @author Fedor Burdun
  */

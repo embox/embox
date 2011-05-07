@@ -2,9 +2,10 @@
  * @file
  * @brief Pipe manager implementation.
  *
- * @date 27.11.2010
+ * @date 27.11.10
  * @author Vladimir Muhin
  */
+
 #include <kernel/thread/sync/pipe_manager.h>
 #include <errno.h>
 #include <embox/unit.h>

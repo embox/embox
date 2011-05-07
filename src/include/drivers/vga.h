@@ -5,6 +5,7 @@
  * @date 10.11.10
  * @author Nikolay Korotky
  */
+
 #ifndef VIDEO_VGA_H_
 #define VIDEO_VGA_H_
 

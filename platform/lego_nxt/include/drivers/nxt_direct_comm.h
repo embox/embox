@@ -4,6 +4,7 @@
  * @date 24.10.10
  * @author Anton Kozlov
  */
+
 #ifndef NXT_DIRECT_COMM_H_
 #define NXT_DIRECT_COMM_H_
 

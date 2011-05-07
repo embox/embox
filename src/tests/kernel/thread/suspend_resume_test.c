@@ -2,7 +2,7 @@
  * @file
  * @brief Tests thread suspend/resume methods.
  *
- * @date Apr 17, 2011
+ * @date 17.04.11
  * @author Eldar Abusalimov
  */
 

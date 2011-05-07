@@ -2,7 +2,7 @@
  * @file
  * @brief Object pool allocator implementation.
  *
- * @date 27.11.2010
+ * @date 27.11.10
  * @author Alexandr Kalmuk
  * @author Kirill Tyushev
  * @author Dmitry Zubarevich

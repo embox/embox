@@ -4,7 +4,7 @@
  *        It's proxy between asm code and kernel interrupt handler
  *        @link irq_dispatch() @endlink function.
  *
- * @date 27.11.2009
+ * @date 27.11.09
  * @author Anton Bondarev
  */
 

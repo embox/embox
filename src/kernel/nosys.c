@@ -2,7 +2,7 @@
  * @file
  * @brief No-op function returning -ENOSYS.
  *
- * @date 18.02.2010
+ * @date 18.02.10
  * @author Eldar Abusalimov
  */
 

@@ -2,7 +2,7 @@
  * @file
  * @brief Internal implementation of cmd self definition macros.
  *
- * @date Mar 1, 2011
+ * @date 01.03.11
  * @author Eldar Abusalimov
  */
 
@@ -20,9 +20,9 @@
 	extern const struct cmd __cmd_registry[];          \
 	static int _exec(int argc, char **argv);           \
 	ARRAY_SPREAD_ADD_NAMED(__cmd_registry, __cmd,   {  \
-			.exec = _exec,                             \
-			.mod = &mod_self                           \
-		});                                            \
+			.exec = _exec,                     \
+			.mod = &mod_self                   \
+		});                                        \
 	MOD_SELF_BIND(__cmd, NULL) /* TODO not used. -- Eldar */
 
 #ifdef __CDT_PARSER__

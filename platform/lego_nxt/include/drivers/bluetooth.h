@@ -5,6 +5,7 @@
  * @date 24.02.11
  * @author Anton Bondarev
  */
+
 #ifndef BLUETOOTH_H_
 #define BLUETOOTH_H_
 

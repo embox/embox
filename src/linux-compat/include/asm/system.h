@@ -2,7 +2,7 @@
  * @file
  * @brief Linux-like wrapper macros for interrupts masking.
  *
- * @date 26.01.2010
+ * @date 26.01.10
  * @author Eldar Abusalimov
  */
 

@@ -1,12 +1,12 @@
 /**
  * @file
- *
  * @brief Software FPU emulation.
  *
  * @date 25.11.09
  * @author John R. Hauser - initial implementation.
  * @author Nikolay Korotky
  */
+
 #ifndef SOFTFLOAT_H_
 #define SOFTFLOAT_H_
 

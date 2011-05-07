@@ -7,9 +7,10 @@
  *
  * This entity is backed by VTParse and VTBuild modules.
  *
- * @date 04.02.2009
+ * @date 04.02.09
  * @author Eldar Abusalimov
  */
+
 #ifndef TERMINAL_H_
 #define TERMINAL_H_
 

@@ -5,6 +5,7 @@
  * @date 15.10.10
  * @author Nikolay Korotky
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <fs/vfs.h>

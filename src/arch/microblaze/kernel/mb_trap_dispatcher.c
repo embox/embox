@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 17.03.2010
+ * @date 17.03.10
  * @author Anton Bondarev
  */
+
 #include <types.h>
 #include <asm/ptrace.h>
 #include <hal/test/traps_core.h>

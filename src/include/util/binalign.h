@@ -2,7 +2,7 @@
  * @file
  * @brief Macros for aligning values up to the power of two boundaries.
  *
- * @date 04.06.2010
+ * @date 04.06.10
  * @author Eldar Abusalimov
  */
 

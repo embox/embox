@@ -2,7 +2,7 @@
  * @file
  * @brief Some widely used macro definitions.
  *
- * @date 30.05.2010
+ * @date 30.05.10
  * @author Eldar Abusalimov
  */
 

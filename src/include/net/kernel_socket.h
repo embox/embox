@@ -2,9 +2,10 @@
  * @file
  * @brief Socket interface function for kernel mode.
  *
- * @date 08.02.2010
+ * @date 08.02.10
  * @author Nikolay Korotky
  */
+
 #ifndef KERNEL_SOCKET_H_
 #define KERNEL_SOCKET_H_
 

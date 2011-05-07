@@ -2,7 +2,7 @@
  * @file
  * @brief Interface for measuring handlers
  *
- * @date 17.11.2010
+ * @date 17.11.10
  * @author Anton Kozlov
  */
 

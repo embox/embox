@@ -2,7 +2,7 @@
  * @file
  * @brief Implements macro for binding #_mod_info to the self #mod.
  *
- * @date 10.06.2010
+ * @date 10.06.10
  * @author Eldar Abusalimov
  */
 

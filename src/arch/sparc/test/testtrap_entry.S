@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 25.03.2010
+ * @date 25.03.10
  * @author Alexander Batyukov
  */
 

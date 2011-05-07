@@ -2,9 +2,10 @@
  * @file
  * @brief Keyboard driver
  *
- * @date 12.12.2010
+ * @date 12.12.10
  * @author Anton Bondarev
  */
+
 #include <types.h>
 #include <asm/io.h>
 #include <drivers/keyboard.h>

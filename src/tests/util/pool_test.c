@@ -2,7 +2,7 @@
  * @file
  * @brief Tests object pool utility.
  *
- * @date Mar 29, 2011
+ * @date 29.03.11
  * @author Eldar Abusalimov
  */
 

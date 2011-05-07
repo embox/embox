@@ -2,7 +2,7 @@
  * @file
  * @brief Math utilities macros implementation.
  *
- * @date 12.06.2010
+ * @date 12.06.10
  * @author Eldar Abusalimov
  */
 

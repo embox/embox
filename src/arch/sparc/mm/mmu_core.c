@@ -3,11 +3,12 @@
  * @brief Implements MMU core interface @link #mmu_core.h @endllink
  *        for SPARC architecture.
  *
- * @date 18.04.2010
+ * @date 18.04.10
  * @author Anton Bondarev
  * @author Nikolay Korotky
  * @author Anton Kozlov
  */
+
 #include <types.h>
 #include <string.h>
 

@@ -5,6 +5,7 @@
  * @date 30.04.11
  * @author Anton Kozlov
  */
+
 #ifndef NXT_ANGLE_H_
 #define NXT_ANGLE_H_
 

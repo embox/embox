@@ -3,7 +3,7 @@
  * @brief Test foreach iteration macro and inline versions of some methods from
  *        test registry.
  *
- * @date 11.06.2010
+ * @date 11.06.10
  * @author Eldar Abusalimov
  */
 

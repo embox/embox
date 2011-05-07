@@ -18,7 +18,7 @@
  *     Constans for messages are numbers from 0 to EVENT_MSG_COUNT - 1.
  *     It is necessary to inc EVENT_MSG_COUNT and define constant to add new message.
  *
- * @date 16.03.2011
+ * @date 16.03.11
  * @author Kirill Tyushev
  */
 

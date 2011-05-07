@@ -6,6 +6,7 @@
  * @author Gleb Efimov
  * @author Nikolay Korotkiy
  */
+
 #include <embox/cmd.h>
 #include <types.h>
 #include <lib/list.h>

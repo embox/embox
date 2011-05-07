@@ -5,6 +5,7 @@
  * @author Alexey Fomin
  *         Daria Teplykh
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <types.h>

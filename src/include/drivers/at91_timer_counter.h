@@ -2,7 +2,7 @@
  * @file
  * @brief AT91 Timer Counter interface
  *
- * @date 16.11.2011
+ * @date 16.11.11
  * @author Anton Kozlov
  */
 

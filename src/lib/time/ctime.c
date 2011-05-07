@@ -5,6 +5,7 @@
  * @date 21.10.10
  * @author Nikolay Korotky
  */
+
 #include <time.h>
 #include <stdio.h>
 

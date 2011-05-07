@@ -5,12 +5,13 @@
  * Copyright (C) 1995 David S. Miller (davem@caip.rutgers.edu)
  *
  * @author Paul Hatchman (paul@sfe.com.au)
- *					- Pioneer work for sun4m
+ *		- Pioneer work for sun4m
  * @author Pete A. Zaitcev <zaitcev@ipmce.su>
- * 					- Joint edition for sun4c+sun4m
+ * 		- Joint edition for sun4c+sun4m
  */
-#ifndef SPARC_ASI_H
-#define SPARC_ASI_H
+
+#ifndef SPARC_ASI_H_
+#define SPARC_ASI_H_
 
 /* The first batch are for the sun4c. */
 
@@ -182,4 +183,4 @@ constant ASI_MMU_DSU        : std_logic_vector(4 downto 0) := "11111";  -- 0x1f 
 */
 #endif
 
-#endif /* SPARC_ASI_H */
+#endif /* SPARC_ASI_H_ */

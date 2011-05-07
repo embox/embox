@@ -2,7 +2,7 @@
  * @file
  * @brief Command registry and invocation code.
  *
- * @date Mar 1, 2011
+ * @date 01.03.11
  * @author Eldar Abusalimov
  */
 

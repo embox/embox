@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 06.08.2009
+ * @date 06.08.09
  * @author Anton Bondarev
  */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

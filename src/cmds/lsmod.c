@@ -7,9 +7,7 @@
  */
 
 #include <embox/cmd.h>
-
 #include <stdio.h>
-
 #include <framework/mod/api.h>
 
 EMBOX_CMD(exec);

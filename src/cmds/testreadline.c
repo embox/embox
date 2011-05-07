@@ -1,6 +1,5 @@
 /**
  * @file TODO delete after terminal debugging
- *
  * @brief Temporary cmd for terminal debugging
  *
  * @date 13.11.10

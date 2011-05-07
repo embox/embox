@@ -2,8 +2,8 @@
  * @file
  * @description Interface for use in drivers.
  *
+ * @data 08.07.10
  * @author Fedor Burdun
- * @data 08.07.2010
  */
 
 #ifndef DRIVER_H_

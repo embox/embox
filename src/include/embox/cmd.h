@@ -7,7 +7,7 @@
  * @note
  *   This file is a shortcut for <framework/cmd/self.h> header.
  *
- * @date Mar 1, 2011
+ * @date 01.03.11
  * @author Eldar Abusalimov
  */
 

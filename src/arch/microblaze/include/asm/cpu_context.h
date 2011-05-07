@@ -3,7 +3,7 @@
  * @brief Defines CPU context structure and offsets
  *	TODO comments = shit
  *      Maybe remove it? (sikmir)
- * @date Jan 26, 2009
+ * @date 26.01.09
  * @author Eldar Abusalimov
  */
 

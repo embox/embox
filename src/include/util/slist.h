@@ -2,7 +2,7 @@
  * @file
  * @brief TODO documentation for slist.h -- Eldar Abusalimov
  *
- * @date 16.04.2011
+ * @date 16.04.11
  * @author Eldar Abusalimov
  */
 

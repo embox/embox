@@ -3,7 +3,7 @@
  * @brief Pipe manager structure.
  *
  *
- * @date 25.11.2010
+ * @date 25.11.10
  * @author Vladimir Muhin
  */
 

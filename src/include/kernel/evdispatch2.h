@@ -5,7 +5,7 @@
  	a specific number, and then by number returning the handler.
  	Here we will bind message to a handler directly.
  *
- * @date 28.04.2011
+ * @date 28.04.11
  * @author Malkovsky Nikolay
  */
 

@@ -5,6 +5,7 @@
  * @date 12.03.10
  * @author Nikolay Korotky
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <string.h>

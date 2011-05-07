@@ -2,7 +2,7 @@
  * @file
  * @brief Implements diag and serial driver for at91 controller
  *
- * @date 7.06.2010
+ * @date 07.06.10
  * @author Anton Kozlov
  */
 

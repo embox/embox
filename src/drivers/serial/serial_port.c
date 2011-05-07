@@ -5,6 +5,7 @@
  * @date 12.04.10
  * @author Nikolay Korotky
  */
+
 #include <types.h>
 #include <kernel/diag.h>
 #include <asm/io.h>

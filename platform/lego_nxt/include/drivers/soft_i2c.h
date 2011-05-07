@@ -5,6 +5,7 @@
  * @date 12.12.10
  * @author Anton Kozlov
  */
+
 #ifndef SOFT_I2C_H_
 #define SOFT_I2C_H_
 

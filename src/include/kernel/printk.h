@@ -2,7 +2,7 @@
  * @file
  * @brief Printk declaration
  *
- * @date 13.02.2010
+ * @date 13.02.10
  * @author Eldar Abusalimov
  */
 

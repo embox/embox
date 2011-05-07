@@ -4,6 +4,7 @@
  * @date 01.07.09
  * @author Alexey Fomin
  */
+
 #ifndef CRC32_H_
 #define CRC32_H_
 

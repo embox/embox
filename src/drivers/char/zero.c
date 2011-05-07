@@ -2,7 +2,7 @@
  * @file
  * @brief /dev/zero char device and example for write driver
  *
- * @date 08.07.2010
+ * @date 08.07.10
  * @author Fedor Burdun
  */
 

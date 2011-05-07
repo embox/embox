@@ -1,11 +1,12 @@
 /**
  * @file
  *
- * @date 30.10.2009
+ * @date 30.10.09
  * @author Anton Bondarev
  */
-#ifndef __LIST_H
-#define __LIST_H
+
+#ifndef LIST_H_
+#define LIST_H_
 
 #include <stddef.h>
 
@@ -242,4 +243,4 @@ static inline void list_splice_init(struct list_head *list,
 		&pos->member != (head); 					\
 		pos = n, n = list_entry(n->member.next, typeof(*n), member))
 
-#endif
+#endif /* LIST_H_ */

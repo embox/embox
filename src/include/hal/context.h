@@ -3,7 +3,7 @@
  * @brief Defines structure representing architecture-dependent execution
  * context and provides methods to deal with it.
  *
- * @date 12.04.2010
+ * @date 12.04.10
  * @author Eldar Abusalimov
  */
 

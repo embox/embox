@@ -16,7 +16,7 @@
  *
  *		Cache descriptors alloc in kmalloc_cache and add to list of caches.
  *
- * @date 14.12.2010
+ * @date 14.12.10
  * @author Dmitry Zubarvich
  * @author Kirill Tyushev
  */

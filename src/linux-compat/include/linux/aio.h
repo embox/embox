@@ -2,7 +2,7 @@
  * @file
  * @brief Describes asynchronous I/O operations
  *
- * @date 13.01.2010
+ * @date 13.01.10
  * @author Anton Bondarev
  */
 

@@ -9,7 +9,7 @@
  +-------+------+--------+
 @endverbatim
  *
- * @date 20.03.2010
+ * @date 20.03.10
  * @author Alexander Batyukov
  */
 

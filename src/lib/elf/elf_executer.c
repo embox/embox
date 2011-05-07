@@ -2,7 +2,7 @@
  * @file
  * @brief ELF object file execute
  *
- * @date 15.07.2010
+ * @date 15.07.10
  * @author Avdyukhin Dmitry
  */
 

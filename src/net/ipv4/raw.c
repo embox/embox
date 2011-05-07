@@ -2,9 +2,10 @@
  * @file
  * @brief Implementes raw socket function.
  *
- * @date 04.02.2010
+ * @date 04.02.10
  * @author Anton Bondarev
  */
+
 #include <net/protocol.h>
 #include <net/sock.h>
 #include <net/icmp.h>

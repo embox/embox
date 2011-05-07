@@ -2,7 +2,7 @@
  * @file
  * @brief tty action lib
  *
- * @date 07.12.2010
+ * @date 07.12.10
  * @author Fedor Burdun
  */
 

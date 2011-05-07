@@ -2,7 +2,7 @@
  * @file
  * @brief Implements measure unit interface by AT91 Timer Counter
  *
- * @date 17.11.2010
+ * @date 17.11.10
  * @author Anton Kozlov
  */
 

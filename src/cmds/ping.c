@@ -5,9 +5,10 @@
  * @date 20.03.09
  * @author Anton Bondarev
  * @author Nikolay Korotky
- * 			- implement ping through raw socket.
- * 			- major refactoring
+ * 	- implement ping through raw socket.
+ * 	- major refactoring
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <net/icmp.h>

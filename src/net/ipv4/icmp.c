@@ -3,11 +3,11 @@
  * @brief Implementation of the ICMP protocol layer.
  * @details RFC 792
  *
- * @date 14.03.2009
+ * @date 14.03.09
  * @author Alexander Batyukov
  * @author Nikolay Korotky
- * 			- remove callback interface
- * 			- major refactoring
+ * 		- remove callback interface
+ * 		- major refactoring
  */
 
 #include <string.h>

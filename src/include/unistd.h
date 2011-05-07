@@ -4,9 +4,10 @@
  * @details This file defines miscellaneous symbolic constants and types,
  *        and declares miscellaneous function. Now only sleep functions.
  *
- * @date 24.11.2009
+ * @date 24.11.09
  * @author Anton Bondarev
  */
+
 #ifndef UNISTD_H_
 #define UNISTD_H_
 

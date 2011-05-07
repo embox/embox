@@ -4,7 +4,7 @@
  * @details Defines the structure of the termios file, which provides
  *          the terminal interface for POSIX compatibility.
  *
- * @date 07.11.2010
+ * @date 07.11.10
  * @author Anton Bondarev
  */
 

@@ -3,9 +3,10 @@
  * @brief The User Datagram Protocol (UDP).
  * @details RFC 768
  *
- * @date 26.03.2009
+ * @date 26.03.09
  * @author Nikolay Korotky
  */
+
 #include <string.h>
 #include <net/inetdevice.h>
 #include <net/udp.h>

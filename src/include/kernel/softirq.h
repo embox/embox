@@ -2,7 +2,7 @@
  * @file
  * @brief Kernel software interrupts (a.k.a. deferred procedure call) handling.
  *
- * @date 14.02.2010
+ * @date 14.02.10
  * @author Eldar Abusalimov
  *         - Initial API design
  * @author Dasha Teplyh

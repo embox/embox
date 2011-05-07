@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 18.07.2009
+ * @date 18.07.09
  * @author Anton Bondarev
  */
+
 #ifndef INETDEVICE_H_
 #define INETDEVICE_H_
 

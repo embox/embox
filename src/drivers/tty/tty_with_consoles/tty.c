@@ -2,7 +2,7 @@
  * @file
  * @brief Serves all tty devices
  *
- * @date 12.11.2010
+ * @date 12.11.10
  * @author Anton Bondarev
  * @author Fedor Burdun
  */

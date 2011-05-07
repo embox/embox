@@ -2,7 +2,7 @@
  * @file
  * @brief Command line tokenizer.
  *
- * @date 13.03.2011
+ * @date 13.03.11
  * @author Eldar Abusalimo
  */
 

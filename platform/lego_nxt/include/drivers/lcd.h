@@ -6,6 +6,7 @@
  * @author Nikolay Korotky
  * @author Darya Dzendzik
  */
+
 #ifndef NXT_LCD_H_
 #define NXT_LCD_H_
 

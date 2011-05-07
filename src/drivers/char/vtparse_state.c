@@ -5,7 +5,7 @@
  * machine parser. For further information please refer
  * to http://vt100.net/emu/dec_ansi_parser.
  *
- * @date 04.02.2009
+ * @date 04.02.09
  * @author Joshua Haberman <joshua@reverberate.org>
  *          - Initial implementation using code generation from Ruby script
  * @author Eldar Abusalimov

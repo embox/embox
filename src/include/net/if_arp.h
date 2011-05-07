@@ -2,9 +2,10 @@
  * @file
  * @brief Global definitions for the ARP (RFC 826) protocol.
  *
- * @date 10.08.2009
+ * @date 10.08.09
  * @author Nikolay Korotky
  */
+
 #ifndef _IF_ARP_H
 #define _IF_ARP_H
 

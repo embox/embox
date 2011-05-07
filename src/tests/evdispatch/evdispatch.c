@@ -2,7 +2,7 @@
  * @brief
  * 		Simple test for event dispatch
  *
- * @date 20.03.2011
+ * @date 20.03.11
  * @author Kirill Tyushev
  */
 

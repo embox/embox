@@ -2,7 +2,7 @@
  * @file
  * @brief Defines AMBA Plug & Play vendor and device IDs.
  *
- * @date 20.05.2010
+ * @date 20.05.10
  * @author Nikolay Korotky
  * @author Eldar Abusalimov
  */

@@ -2,7 +2,7 @@
  * @file
  * @brief TODO documentation for core_test.c -- Alina Kramar
  *
- * @date 01.05.2011
+ * @date 01.05.11
  * @author Alina Kramar
  */
 

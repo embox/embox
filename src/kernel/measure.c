@@ -2,7 +2,7 @@
  * @file
  * @brief Measure framework
  *
- * @data 17.11.2010
+ * @data 17.11.10
  * @author Anton Kozlov
  */
 

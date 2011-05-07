@@ -1,9 +1,10 @@
 /**
  * @file
  *
- * @date 29.06.2009
+ * @date 29.06.09
  * @author Anton Bondarev
  */
+
 #ifndef FS_ROOTFS_H_
 #define FS_ROOTFS_H_
 

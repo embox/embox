@@ -5,6 +5,7 @@
  * @date 21.07.10
  * @author Avdyukhin Dmitry
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <kernel/thread/sched.h>

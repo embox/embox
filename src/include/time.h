@@ -5,6 +5,7 @@
  * @date 24.11.09
  * @author Anton Bondarev
  */
+
 #ifndef TIME_H_
 #define TIME_H_
 

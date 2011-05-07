@@ -2,9 +2,10 @@
  * @file
  * @details realize file operation function in line address space
  *
- * @date 29.06.2009
+ * @date 29.06.09
  * @author Anton Bondarev
  */
+
 #include <string.h>
 #include <fs/ramfs.h>
 #include <fs/fs.h>

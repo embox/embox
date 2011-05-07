@@ -2,7 +2,7 @@
  * @file
  * @brief Prepares data for lspnp user command
  *
- * @date 26.04.2010
+ * @date 26.04.10
  * @author Anton Bondarev
  */
 

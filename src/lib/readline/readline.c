@@ -1,11 +1,11 @@
 /**
  * @file
- *
  * @brief Implements readline library
  *
- * @date 13.11.2010
+ * @date 13.11.10
  * @author Anton Bondarev
  */
+
 #include <lib/readline.h>
 #include <drivers/tty.h>
 

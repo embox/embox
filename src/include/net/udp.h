@@ -2,9 +2,10 @@
  * @file
  * @brief Definitions for the UDP module.
  *
- * @date 26.03.2009
+ * @date 26.03.09
  * @author Nikolay Korotky
  */
+
 #ifndef UDP_H_
 #define UDP_H_
 
