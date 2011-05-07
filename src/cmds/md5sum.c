@@ -59,4 +59,3 @@ static int exec(int argc, char **argv) {
 	printf("%s %s\n", hex_output, argv[argc - 1]);
 	return 0;
 }
-

@@ -37,4 +37,3 @@ void *memmove(void *_dst, const void *_src, size_t length) {
 
 	return _dst;
 }
-

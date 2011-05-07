@@ -343,4 +343,3 @@ C_ENTRY(_hw_exception_handler):
 	rted r17, 0
 	nop
 #endif
-

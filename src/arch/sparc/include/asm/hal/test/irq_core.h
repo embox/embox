@@ -9,5 +9,4 @@
 #ifndef SPARC_TESTIRQ_CORE_H_
 #define SPARC_TESTIRQ_CORE_H_
 
-
 #endif /* SPARC_TESTIRQ_CORE_H_ */

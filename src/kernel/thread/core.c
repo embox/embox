@@ -456,4 +456,3 @@ static void thread_free(struct thread *t) {
 	block = structof(t, union thread_pool_entry, thread);
 	pool_free(&thread_pool, block);
 }
-

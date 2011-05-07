@@ -12,5 +12,4 @@
 #include <types.h>
 #include <hal/mm/mmu_core.h>
 
-
 #endif /* SPARC_TESTMMU_CORE_H_ */

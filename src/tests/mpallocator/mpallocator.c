@@ -24,4 +24,3 @@ static int run(void) {
 	TRACE("was free. ");
 	return 0;
 }
-

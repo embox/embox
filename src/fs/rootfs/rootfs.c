@@ -97,4 +97,3 @@ static int rootfs_seek(void *file, long offset, int whence) {
 static int rootfs_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
-

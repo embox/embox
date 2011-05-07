@@ -67,7 +67,7 @@ static void run_insert_priority(struct run_thread_list *priority);
  */
 static void run_enqueue(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
-	if (list_empty(&priority->priority_link)){
+	if (list_empty(&priority->priority_link)) {
 		run_insert_priority(priority);
 	}
 	list_add_tail(&thread->sched_list, &priority->thread_list);
@@ -81,7 +81,7 @@ static void run_enqueue(struct thread *thread) {
 static struct thread *run_dequeue(void) {
 	struct thread *thread = run_peek();
 
-	if(!thread) {
+	if (!thread) {
 		return NULL;
 	}
 
@@ -96,7 +96,7 @@ static struct thread *run_dequeue(void) {
  */
 static void run_push(struct thread *thread) {
 	struct run_thread_list *priority = priorities + thread->priority;
-	if (list_empty(&priority->priority_link)){
+	if (list_empty(&priority->priority_link)) {
 		run_insert_priority(priority);
 	}
 	list_add(&thread->sched_list, &priority->thread_list);
@@ -110,12 +110,12 @@ static void run_push(struct thread *thread) {
 static struct thread *run_peek(void) {
 	struct run_thread_list *priority;
 
-	if (list_empty(&run_queue)){
+	if (list_empty(&run_queue)) {
 		return NULL;
 	}
 
 	priority = list_entry(run_queue.next, struct run_thread_list, priority_link);
-	if (list_empty(&priority->thread_list)){
+	if (list_empty(&priority->thread_list)) {
 		return NULL;
 	}
 

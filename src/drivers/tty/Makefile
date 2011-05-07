@@ -25,4 +25,3 @@ $_REQUIRES-tty_one_console += embox.hal.diag
 
 $_MODS += tty_common
 $_SRCS-tty_common += tty_common/tty_action_common.c tty_common/vconsole.c
-

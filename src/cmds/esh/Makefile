@@ -6,5 +6,3 @@ $_SRCS-esh += esh.c
 $_DEPS-esh += core.kernel.thread.core
 $_USES-esh += libframework.a
 endif
-
-

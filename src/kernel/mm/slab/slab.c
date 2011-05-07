@@ -458,4 +458,3 @@ void make_caches_list(struct list_head* list) {
 	list->next = &cache_chain.next;
 	list->prev = cache_chain.next.prev;
 }
-

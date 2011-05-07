@@ -90,4 +90,3 @@ void clock_setup(useconds_t useconds) {
 	out8(CHANNEL0, divisor & 0xFF);
 	out8(CHANNEL0, (divisor >> 8) & 0xFF);
 }
-

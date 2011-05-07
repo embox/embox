@@ -18,4 +18,3 @@ void context_set_stack(struct context *ctx, void *sp) {
 void context_set_entry(struct context *ctx, void(*pc)(void)) {
 	ctx->eip = (uint32_t) pc;
 }
-

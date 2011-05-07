@@ -79,4 +79,3 @@ static file_operations_t devfs_fop = { devfs_open, devfs_close, devfs_read,
 static const file_system_driver_t devfs_drv = { "devfs", &devfs_fop,
 		&devfs_fsop };
 DECLARE_FILE_SYSTEM_DRIVER(devfs_drv);
-

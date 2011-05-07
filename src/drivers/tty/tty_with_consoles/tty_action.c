@@ -45,7 +45,7 @@ void tty_vconsole_loadline(vconsole_t *con) { // uint32_t ?!
 	}
 	/* go to saved cursor position */
 	for (;*s>*t;--*s) {
-		vtbuild((struct vtbuild *)con->tty->vtb, TOKEN_LEFT);
+		vtbuild((struct vtbuild *) con->tty->vtb, TOKEN_LEFT);
 	}
 	*s = con->cl_cnt;
 }
@@ -58,7 +58,7 @@ void tty_vconsole_saveline(vconsole_t *con) {
 	con->cl_cur = *t;
 	/* clear current command line */
 	for (;*t>0;--*t) {
-		vtbuild((struct vtbuild*)con->tty->vtb, TOKEN_LEFT);
+		vtbuild((struct vtbuild*) con->tty->vtb, TOKEN_LEFT);
 	}
 	for (;*t<*s;++*t) {
 		con->tty->file_op->fwrite(" ",sizeof(char),1,NULL);
@@ -67,7 +67,7 @@ void tty_vconsole_saveline(vconsole_t *con) {
 	con->cl_buff[0] = con->tty->rx_buff[0];
 	for (;*s>0;--*s) {
 		con->cl_buff[*s] = con->tty->rx_buff[*s];
-		vtbuild((struct vtbuild*)con->tty->vtb, TOKEN_LEFT);
+		vtbuild((struct vtbuild*) con->tty->vtb, TOKEN_LEFT);
 	}
 	*s = *t = 0;
 }
@@ -160,7 +160,7 @@ void tty_vconsole_putchar( struct vconsole *vc, char ch ) {
 			if (ch!='\n') {
 				//while (vc->tty->in_busy);
 				//vc->tty->in_busy = true;
-				tty_vconsole_write_char(vc,&ch);
+				tty_vconsole_write_char(vc, &ch);
 				//vc->tty->in_busy = false;
 			} else {
 				vc->tty->file_op->fwrite("\n",sizeof(char),1,NULL);
@@ -180,20 +180,20 @@ void tty_gotoXYvector(struct vconsole *vc, int32_t x, int32_t y) {
 
 		if (x>0) {
 			for (i=0;i<x;++i) {
-				vtbuild((struct vtbuild*)vc->tty->vtb, TOKEN_RIGHT);
+				vtbuild((struct vtbuild*) vc->tty->vtb, TOKEN_RIGHT);
 			}
 		} else {
 			for (i=0;i<(-x);++i) {
-				vtbuild((struct vtbuild*)vc->tty->vtb, TOKEN_LEFT);
+				vtbuild((struct vtbuild*) vc->tty->vtb, TOKEN_LEFT);
 			}
 		}
 		if (y>0) {
 			for (i=0;i<(y);++i) {
-				vtbuild((struct vtbuild*)vc->tty->vtb, TOKEN_DOWN);
+				vtbuild((struct vtbuild*) vc->tty->vtb, TOKEN_DOWN);
 			}
 		} else {
 			for (i=0;i<(-y);++i) {
-				vtbuild((struct vtbuild*)vc->tty->vtb, TOKEN_UP);
+				vtbuild((struct vtbuild*) vc->tty->vtb, TOKEN_UP);
 			}
 		}
 
@@ -220,7 +220,6 @@ void tty_vconsole_gotoXY(struct vconsole *vc, uint8_t x, uint8_t y) {
 		//vc->tty->in_busy = false;
 	}
 }
-
 
 
 /* decouple this from tty_clear */
@@ -279,4 +278,3 @@ char console_getchar(void) {
 	return '\0';
 	return tty_vconsole_getchar(thread->task.own_console);
 }
-

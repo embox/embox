@@ -9,4 +9,3 @@ $_PROVIDES-trivial        += api
 $_MODS                    += priority_based
 $_SRCS-priority_based     += priority_based.c
 $_PROVIDES-priority_based += api
-

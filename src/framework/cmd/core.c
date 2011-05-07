@@ -70,7 +70,7 @@ int cmdline_tokenize(char *cmdline, char **argv) {
 	int argc = 0;
 	char *token;
 
-	while((token = cmdline_next_token((const char **) &cmdline))) {
+	while ((token = cmdline_next_token((const char **) &cmdline))) {
 		argv[argc++] = token;
 		if (*cmdline) {
 			*cmdline++ = '\0';

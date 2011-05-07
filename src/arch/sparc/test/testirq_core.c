@@ -16,4 +16,3 @@ void testirq_save_status(uint32_t *status) {
 void testirq_restore_status(uint32_t *status) {
 
 }
-

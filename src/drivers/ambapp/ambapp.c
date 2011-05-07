@@ -243,4 +243,3 @@ int free_amba_dev(amba_dev_t *dev) {
 	//TODO: we can't free device
 	return 0;
 }
-

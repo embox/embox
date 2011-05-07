@@ -51,11 +51,12 @@ static void build_single_param(struct vtbuild *builder, short n) {
 
 static void build_params(struct vtbuild *builder, const short *params,
 		int params_len) {
+	size_t i;
 	if (params != NULL) {
 		if (params_len > 0) {
 			build_single_param(builder, params[0]);
 		}
-		for (int i = 1; i < params_len; i++) {
+		for (i = 1; i < params_len; i++) {
 			builder->cb(builder, ';');
 			build_single_param(builder, params[i]);
 		}
@@ -64,8 +65,9 @@ static void build_params(struct vtbuild *builder, const short *params,
 
 static void build_attrs(struct vtbuild *builder, const char *attrs,
 		int attrs_len) {
+	size_t i;
 	if (attrs != NULL) {
-		for (int i = 0; i < attrs_len; i++) {
+		for (i = 0; i < attrs_len; i++) {
 			builder->cb(builder, attrs[i]);
 		}
 	}

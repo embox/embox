@@ -11,7 +11,6 @@
 //#include <hal/interrupt.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
-//#include <hal/interrupt.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/io.h>

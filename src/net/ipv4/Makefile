@@ -1,4 +1,3 @@
-
 $_MODS += af_inet ipv4 arp icmp udp tcp raw
 
 $_SRCS-af_inet += af_inet.c

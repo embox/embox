@@ -78,4 +78,3 @@ extern void console_gotoXY(uint8_t x, uint8_t y);
 extern void console_reprint(void);
 
 #endif /* TTY_ACTION_H_ */
-

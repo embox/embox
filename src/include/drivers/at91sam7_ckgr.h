@@ -50,4 +50,3 @@ typedef struct _AT91S_CKGR {
 #define AT91C_CKGR_MCFR ((AT91_REG *) 	0xFFFFFC24) // (CKGR) Main Clock  Frequency Register
 
 #endif /* AT91SAM7_CKGR_H_ */
-

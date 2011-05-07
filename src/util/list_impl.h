@@ -97,7 +97,7 @@ static inline void __list_insert_link(struct __list_link *link,
 
 #define __list_foreach_guarded(node, list, iter_cast_assign, cast_arg, \
 		_iter, _head, _next) \
-	for(struct __list_link *_head = &__list_check(list)->l, \
+	for (struct __list_link *_head = &__list_check(list)->l, \
 				*_iter = (_head)->next, *_next = _iter->next; \
 			_iter != _head && (iter_cast_assign(_iter, node, cast_arg)); \
 			_iter = _next, _next = _iter->next)

@@ -2,7 +2,7 @@
  * @file
  * @brief Assertion points implementation.
  *
- * @date Mar 25, 2011
+ * @date 25.03.11
  * @author Eldar Abusalimov
  */
 
@@ -42,19 +42,19 @@ void __assertion_handle(int pass, const struct __assertion_point *point) {
 }
 
 # define __assertion_point__(expression_str) \
-	__extension__ ({                                                \
+	__extension__ ({                                                    \
 		static const struct __assertion_point __assertion_point = { \
-			.location = LOCATION_FUNC_INIT,                         \
-			.expression = expression_str,                           \
+			.location = LOCATION_FUNC_INIT,                     \
+			.expression = expression_str,                       \
 		};                                                          \
 		&__assertion_point;                                         \
 	})
 
 # define __assert(condition, expr_str) \
-	(__builtin_constant_p(condition)                                     \
-		? ((condition)                                                   \
-			? (void) 0                                                   \
-			: __assertion_handle_failure(__assertion_point__(expr_str))) \
+	(__builtin_constant_p(condition)                                               \
+		? ((condition)                                                         \
+			? (void) 0                                                     \
+			: __assertion_handle_failure(__assertion_point__(expr_str)))   \
 		: __assertion_handle((int) (condition), __assertion_point__(expr_str)))
 
 #endif /* NDEBUG */
@@ -65,7 +65,7 @@ void __assertion_handle(int pass, const struct __assertion_point *point) {
 # undef  __assert
 # define __assert(condition, expr_str) \
 	assert(condition \
-		/* The expansion of assert macro is not shown, see assert.h */) \
+		/* The expansion of assert macro is not shown, see assert.h */)
 
 #endif /* __CDT_PARSER__ */
 

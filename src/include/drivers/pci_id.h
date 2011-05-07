@@ -57,4 +57,3 @@
 #define CONFIG_PCI_DEV_ID_INTEL_82371SB_IDE      0x7010
 
 #endif /* PCI_ID_H_ */
-

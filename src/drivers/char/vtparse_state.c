@@ -217,4 +217,3 @@ const __vtparse_state_transition_entry_t  __vtparse_state_transition_table
 		ANYWHERE_TRANSITIONS
 	},
 };
-

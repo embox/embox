@@ -96,4 +96,3 @@ static int case_teardown(void) {
 	ipl_restore(ipl);
 	return 0;
 }
-

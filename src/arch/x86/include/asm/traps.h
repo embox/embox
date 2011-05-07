@@ -22,4 +22,3 @@ extern void idt_init(void);
 extern void gdt_init(void);
 
 #endif /* X86_TRAPS_H_ */
-

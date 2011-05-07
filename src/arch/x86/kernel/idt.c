@@ -188,4 +188,3 @@ void exception_handler(pt_regs_t st) {
 		st.eip, st.cs, st.eflags, st.esp, st.ss
 	);
 }
-

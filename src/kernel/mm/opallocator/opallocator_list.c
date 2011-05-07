@@ -147,5 +147,3 @@ void opfree(void *addr) {
 	cmark_p->pnext->pprev = paddr;
 	cmark_p->pnext = paddr;
 }
-
-

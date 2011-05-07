@@ -143,4 +143,3 @@ void vtparse(struct vtparse *parser, unsigned char ch) {
 		do_action(parser, action, ch);
 	}
 }
-

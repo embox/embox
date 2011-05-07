@@ -214,4 +214,3 @@ extern const char *find_device_name(uint16_t dev_id);
 extern const char *find_class_name(uint8_t base, uint8_t sub);
 
 #endif /* PCI_H_ */
-

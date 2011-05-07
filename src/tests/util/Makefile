@@ -11,4 +11,3 @@ $_SRCS-slist_test = slist_test.c
 
 $_MODS           += pool_test
 $_SRCS-pool_test  = pool_test.c
-

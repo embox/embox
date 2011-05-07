@@ -4,4 +4,3 @@
 {CONFIG_PCI_VENDOR_ID_ATHEROS, "Atheros Communications"},
 {CONFIG_PCI_VENDOR_ID_RDC,     "RDC Semiconductor, Inc."},
 {CONFIG_PCI_VENDOR_ID_INTEL,   "Intel Corporation"}
-

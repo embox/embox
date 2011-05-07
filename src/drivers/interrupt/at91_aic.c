@@ -58,4 +58,3 @@ void interrupt_force(interrupt_nr_t interrupt_nr) {
 interrupt_mask_t interrupt_get_status(void) {
 	return REG_LOAD(AT91C_AIC_IMR);
 }
-

@@ -58,4 +58,3 @@ bool sched_policy_stop(struct thread *t) {
 	list_del(&t->sched_list);
 	return false;
 }
-

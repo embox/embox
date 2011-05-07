@@ -24,4 +24,3 @@
 {PCI_BASE_CLASS_SERIAL,  PCI_CLASS_SERIAL_SSA,       "SSA"},
 {PCI_BASE_CLASS_SERIAL,  PCI_CLASS_SERIAL_USB,       "USB device"},
 {0x00,                   0x00,                       NULL}
-

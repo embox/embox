@@ -11,4 +11,3 @@ $_DEPS-light_test += $(PLATFORM).driver.nxt_avr_init embox.driver.pins
 
 $_SRCS-sonar_test += sonar.c
 $_DEPS-sonar_test += $(PLATFORM).driver.soft_i2c $(PLATFORM).driver.sonar_sensor
-

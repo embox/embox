@@ -1,4 +1,3 @@
-
 $_MODS += core dev
 
 $_SRCS-core  += devinet.c

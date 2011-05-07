@@ -22,4 +22,3 @@ extern irq_mask_t interrupt_get_status(void);
 #endif /*__ASSEMBLER__*/
 
 #endif /* MICROBLAZE_IRQ_CTRL_H_ */
-

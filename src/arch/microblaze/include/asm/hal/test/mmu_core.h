@@ -11,5 +11,4 @@
 #include <types.h>
 #include <hal/mm/mmu_core.h>
 
-
 #endif /* MICROBLAZE_TESTMMU_CORE_H_ */

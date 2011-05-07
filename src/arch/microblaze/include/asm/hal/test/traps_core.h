@@ -11,5 +11,4 @@
 #include <types.h>
 #include <hal/env/traps_core.h>
 
-
 #endif /* MICROBLAZE_TESTTRAPS_CORE_H_ */

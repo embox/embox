@@ -39,4 +39,3 @@ typedef struct _AT91S_WDTC {
 #define AT91C_WDTC_WDMR ((AT91_REG *) 	0xFFFFFD44) // (WDTC) Watchdog Mode Register
 
 #endif /* AT91SAM7_WD_H_ */
-

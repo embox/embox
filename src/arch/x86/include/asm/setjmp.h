@@ -20,4 +20,3 @@ typedef int __jmp_buf[__JMPBUF_LEN];
 #endif /* __ASSEMBLER__ */
 
 #endif /* X86_SETJMP_H_ */
-

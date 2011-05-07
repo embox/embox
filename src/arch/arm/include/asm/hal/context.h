@@ -25,4 +25,3 @@ struct context {
 #define CTX_SP      0x08
 
 #endif /* __ASSEMBLER__ */
-

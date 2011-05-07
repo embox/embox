@@ -43,4 +43,3 @@ static int measure_test_run(void) {
 	print_measure("PIO", &irq_process[2]);
 	return 0;
 }
-

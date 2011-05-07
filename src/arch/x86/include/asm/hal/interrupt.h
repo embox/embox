@@ -39,4 +39,3 @@ extern void irqc_set_mask(__interrupt_mask_t mask);
 extern __interrupt_mask_t irqc_get_mask(void);
 
 #endif /*__ASSEMBLER__*/
-

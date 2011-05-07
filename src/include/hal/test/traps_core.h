@@ -38,4 +38,3 @@ extern int testtraps_fire_softtrap(uint32_t number, void *data);
 extern traps_env_t *testtraps_env(void);
 
 #endif /* TEST_TRAPS_CORE_H_ */
-

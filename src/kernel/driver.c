@@ -208,4 +208,3 @@ int device_devctl(device_desc dev, device_cmd c, void *arg) {
 	/* may be must add some check ptr? */
 	return device_pool[dev].driver->ops.devctl(&device_pool[dev], c, arg);
 }
-

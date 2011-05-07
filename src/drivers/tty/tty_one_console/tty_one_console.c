@@ -152,7 +152,6 @@ static int tty_init(void) {
 }
 
 
-
 int tty_register(tty_device_t *tty) {
 	if (NULL == vtparse_init((struct vtparse *) tty->vtp, tty_vtparse_callback)) {
 		LOG_ERROR("Error while initialization vtparse.\n");
@@ -179,10 +178,8 @@ int tty_unregister(tty_device_t *tty) {
 int tty_get_uniq_number(void) {
 	static int unic_id = 0;
 
-	return unic_id ++;
+	return unic_id++;
 }
-
-
 
 
 /**
@@ -214,4 +211,3 @@ void tty_freeline(tty_device_t *tty, uint8_t *line) {
 		line_size = tty_scanline((uint8_t*) tty->rx_buff, tty->rx_cnt);
 	}
 }
-

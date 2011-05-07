@@ -73,4 +73,3 @@ typedef struct _AT91S_AIC {
 #define AT91C_AIC_SPU   ((AT91_REG *) 	0xFFFFF134) // (AIC) Spurious Vector Register
 
 #endif /* AT91SAM7_AIC_H_ */
-

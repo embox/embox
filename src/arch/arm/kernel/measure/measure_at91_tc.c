@@ -36,5 +36,3 @@ uint8_t unhandled_ticks(void) {
 uint32_t measure_unit_clocks_per_tick(void) {
 	return 0x10000;
 }
-
-

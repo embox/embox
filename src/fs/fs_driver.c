@@ -55,4 +55,3 @@ void free_fs_drivers(file_system_driver_t *fs_drv) {
 	}
 	list_add((struct list_head *) drv_to_head(fs_drv), &free_list);
 }
-

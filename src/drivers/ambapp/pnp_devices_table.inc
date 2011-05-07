@@ -9,4 +9,3 @@
 {AMBAPP_VENDOR_GAISLER, AMBAPP_DEVICE_GAISLER_APBUART,  "Generic UART"},
 /* European Space Agency */
 {AMBAPP_VENDOR_ESA, AMBAPP_DEVICE_ESA_MCTRL,            "LEON2 Memory Controller"}
-

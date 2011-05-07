@@ -20,4 +20,3 @@ int fputc(FILE f, int c) {
 	return device_write(f, &tmp, sizeof(char));
 }
 #endif
-

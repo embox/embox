@@ -132,4 +132,3 @@ int usleep(useconds_t usec) {
 uint32_t sleep(uint32_t seconds) {
 	return usleep(seconds * TIMER_FREQUENCY);
 }
-

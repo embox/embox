@@ -36,4 +36,3 @@ int putchar(int c) {
 	return (prev = c);
 }
 #endif
-

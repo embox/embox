@@ -257,4 +257,3 @@ static int mmu_init(void) {
 	cur_env = &system_env;
 	return 0;
 }
-

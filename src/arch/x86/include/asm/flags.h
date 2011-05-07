@@ -68,4 +68,3 @@
 #define X86_CR4_OSXSAVE 0x00040000 /* enable xsave and xrestore */
 
 #endif /* X86_FLAGS_H */
-

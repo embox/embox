@@ -123,4 +123,3 @@ typedef struct memory_map {
 
 #endif /* __ASSEMBLER__ */
 #endif /* X86_MULTIBOOT_H_ */
-

@@ -18,4 +18,3 @@ static inline void cache_data_disable(void) {
 }
 
 #endif /* X86_CACHE_H_ */
-

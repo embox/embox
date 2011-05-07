@@ -149,4 +149,3 @@ void arch_reset(void) {
 void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
 	while (1) {}
 }
-

@@ -33,4 +33,3 @@ test_trap_entry:
 	 add %sp, STACK_FRAME_SZ, %o2
 
 	RESTORE_ALL
-

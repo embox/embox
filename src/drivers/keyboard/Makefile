@@ -2,4 +2,3 @@
 
 $_MODS += keyboard
 $_SRCS-keyboard += keyboard.c
-

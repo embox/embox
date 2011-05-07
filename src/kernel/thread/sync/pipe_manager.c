@@ -111,4 +111,3 @@ int pipe_write(int pipe, char data) {
 	}
 	return ENOERR; /* FIXME if need or delete remark. */
 }
-

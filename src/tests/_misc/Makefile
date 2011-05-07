@@ -1,4 +1,3 @@
-
 SUBDIRS :=
 
 $_LIBS += libtest.a

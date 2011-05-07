@@ -55,4 +55,3 @@ typedef struct bios_regs {
 #endif
 
 #endif /* X86_REGS_H_ */
-

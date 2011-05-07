@@ -86,4 +86,3 @@ typedef struct _AT91S_PMC {
 #define AT91C_PMC_SR    ((AT91_REG *) 	0xFFFFFC68) // (PMC) Status Register
 
 #endif /* AT91SAM7_PMC_H_ */
-

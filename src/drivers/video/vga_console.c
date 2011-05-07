@@ -320,4 +320,3 @@ void uart_putc(int c) {
 int uart_getc(void) {
 	return vga_getc();
 }
-

@@ -1,4 +1,3 @@
-
 $_PACKAGE := core.kernel
 
 $_MODS += evdispatch

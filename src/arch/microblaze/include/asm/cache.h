@@ -85,4 +85,3 @@ static inline void cache_flush(void) {
 }
 
 #endif /* MICROBLAZE_CACHE_H_ */
-

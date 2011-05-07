@@ -40,4 +40,3 @@ extern void pin_set_output(pin_mask_t mask);
 extern void pin_clear_output(pin_mask_t mask);
 
 #endif /* PINS_H_ */
-

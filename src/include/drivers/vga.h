@@ -24,4 +24,3 @@ extern void vga_console_init(unsigned width, unsigned height);
 extern int vga_getc(void);
 
 #endif /* VIDEO_VGA_H_ */
-

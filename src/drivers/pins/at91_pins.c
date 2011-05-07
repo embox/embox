@@ -57,4 +57,3 @@ void pin_set_input_interrupt(pin_mask_t mask) {
 pin_mask_t pin_get_input_changed(void) {
 	return (int) REG_LOAD(AT91C_PIOA_ISR);
 }
-

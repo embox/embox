@@ -226,6 +226,7 @@ bool terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token,
 bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token, int params_len,
 		...) {
 	va_list args;
+	size_t i;
 	short params[params_len];
 
 	if (terminal == NULL) {
@@ -237,7 +238,7 @@ bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token, int params_l
 	if (params_len < 0) {
 		params_len = 0;
 	}
-	for (int i = 0; i < params_len; ++i) {
+	for (i = 0; i < params_len; ++i) {
 		params[i] = va_arg(args, int);
 	}
 

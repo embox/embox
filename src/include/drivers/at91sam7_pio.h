@@ -177,4 +177,3 @@ typedef struct _AT91S_PIO {
 #define AT91C_PIOA_PSR  ((AT91_REG *) 	0xFFFFF408) // (PIOA) PIO Status Register
 
 #endif /* AT91SAM7_PIO_H_ */
-

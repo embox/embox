@@ -66,4 +66,3 @@ static size_t write(const void *buff, size_t size, size_t count, void *file) {
 }
 
 EMBOX_DEVICE("tty", &file_op);
-

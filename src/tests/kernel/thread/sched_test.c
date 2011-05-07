@@ -15,4 +15,3 @@ EMBOX_TEST_SUITE("test for scheduler");
 TEST_CASE("") {
 
 }
-

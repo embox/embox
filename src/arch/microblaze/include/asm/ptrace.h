@@ -144,4 +144,3 @@ struct pt_regs {
 	lwi	r31, r1, PTO+PT_R31;    \
 
 #endif /* MICROBLAZE_PTRACE_H_ */
-

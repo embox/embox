@@ -226,4 +226,3 @@ typedef struct _AT91S_DBGU {
 #define AT91C_US_FORCE_NTRST  ((unsigned int) 0x1 <<  0) // (DBGU) Force NTRST in JTAG
 
 #endif /* AT91SAM7_US_H_ */
-

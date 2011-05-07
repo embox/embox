@@ -14,4 +14,3 @@ $_MODS += pipe
 $_SRCS-pipe += pipe.c
 $_DEPS-pipe += core.kernel.drv_subsys
 endif
-

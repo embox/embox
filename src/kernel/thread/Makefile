@@ -12,4 +12,3 @@ $_DEPS-sched += core.kernel.timer
 $_DEPS-sched += embox.hal.context
 $_DEPS-sched += core.kernel.critical.core
 $_REQUIRES-sched += core.kernel.thread.sched_policy.api
-

@@ -200,4 +200,3 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 	}
 	return -1;
 }
-

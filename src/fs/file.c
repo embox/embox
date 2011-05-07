@@ -207,4 +207,3 @@ int fstat(const char *path, stat_t *buf) {
 	buf->st_mtime = desc->mtime;
 	return 0;
 }
-

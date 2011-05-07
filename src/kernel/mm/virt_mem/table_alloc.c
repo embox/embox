@@ -78,4 +78,3 @@ void mmu_table_free(unsigned long *table, int level) {
 		opfree((void *) page);
 	}
 }
-

@@ -18,4 +18,3 @@ extern node_t *vfs_find_child(const char *name, node_t *parrent);
 extern node_t *vfs_find_node(const char *path, node_t *parrent);
 
 #endif /* VFS_H_ */
-

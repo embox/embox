@@ -32,4 +32,3 @@ void clock_setup(useconds_t useconds) {
 	REG_STORE(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN |
 	    (useconds * AT91C_PIT_USECOND));
 }
-

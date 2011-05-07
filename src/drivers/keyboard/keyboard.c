@@ -246,4 +246,3 @@ void keyboard_init(void) {
 
 	//irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
 }
-

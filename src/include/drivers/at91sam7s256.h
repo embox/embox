@@ -1028,4 +1028,3 @@ typedef struct _AT91S_UDP {
 #endif
 
 #endif /* AT91SAM7S256_H_ */
-

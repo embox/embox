@@ -22,4 +22,3 @@ mmu_env_t *testmmu_env(void) {
 
 	return &env;
 }
-

@@ -274,4 +274,3 @@ void tac_clear(tty_device_t *tty ) {
 	tac_goto00( tty );
 	tty->file_op->fwrite("\x1b[2J",sizeof(char),4,NULL);
 }
-

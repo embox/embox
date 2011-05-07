@@ -25,4 +25,3 @@ void watchdog_disable(void);
 void watchdog_restart(void);
 
 #endif /* WATCHDOG_H_ */
-

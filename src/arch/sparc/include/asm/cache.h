@@ -83,4 +83,3 @@ static inline void cache_data_disable(void) {
 }
 
 #endif /* SPARC_CACHE_H_ */
-

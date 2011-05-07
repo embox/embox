@@ -89,4 +89,3 @@ struct slist_link *slist_remove_first_link(struct slist *list) {
 
 	return ret;
 }
-

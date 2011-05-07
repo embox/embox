@@ -76,4 +76,3 @@ void pool_free(struct pool *pool, void *object) {
 
 	++pool->objects_free;
 }
-

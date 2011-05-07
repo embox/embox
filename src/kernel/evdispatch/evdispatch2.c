@@ -70,5 +70,3 @@ void event_send(void (*handler)(void *data), void *data) {
 	msg = create_message(handler, data);
 	list_add_tail(&msg->list, &msg_queue);
 }
-
-

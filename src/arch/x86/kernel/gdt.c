@@ -4,6 +4,7 @@
  * @details The IDT is used by the processor to determine
  *          used to define the characteristics of the various
  *          memory areas used during program execution.
+ *
  * @date 22.12.10
  * @author Nikolay Korotky
  */
@@ -76,4 +77,3 @@ void gdt_init(void) {
 
 	gdt_flush((uint32_t)&gdt_ptr);
 }
-

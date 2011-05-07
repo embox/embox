@@ -71,7 +71,7 @@ static void loopback_setup(net_device_t *dev) {
  */
 static int __init unit_init(void) {
 	//net_device_t *net_device;
-	if(NULL == alloc_netdev(0, "lo", loopback_setup)) {
+	if (NULL == alloc_netdev(0, "lo", loopback_setup)) {
 		LOG_ERROR("Can't allocate net device\n");
 		return -1;
 	}

@@ -124,4 +124,3 @@ typedef struct _AT91S_SSC {
 #define AT91C_SSC_RFMR  ((AT91_REG *) 	0xFFFD4014) // (SSC) Receive Frame Mode Register
 
 #endif /* AT91SAM7_SSC_H_ */
-

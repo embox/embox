@@ -12,7 +12,7 @@ char *strncpy(char *dst, const char *src, size_t n) {
 	char *ret = dst;
 
 	do {
-		if(!n--) {
+		if (!n--) {
 			return ret;
 		}
 	} while ((*dst++ = *src++));

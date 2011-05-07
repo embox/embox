@@ -63,4 +63,3 @@ void tc_limit_int_enable(uint8_t channel, irq_handler_t handler);
 void tc_limit_int_disable(uint8_t channel);
 
 #endif /* TIMER_COUNTER_H_ */
-

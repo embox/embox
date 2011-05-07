@@ -80,7 +80,7 @@ static int __init gpio_init(void) {
 	set_control(GPIO_RTCRD);
 	out32(RDC_DATA, PCI_ADDR_SEL);
 	int state = 1;
-	while(1) {
+	while (1) {
 		if (state) {
 			out32(0, PCI_DATA_REG);
 			state = 0;
@@ -91,4 +91,3 @@ static int __init gpio_init(void) {
 	}*/
 	return 0;
 }
-

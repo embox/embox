@@ -58,4 +58,3 @@ static void do_free(struct pool *pool, struct object *objects[], int nr) {
 		}
 	}
 }
-

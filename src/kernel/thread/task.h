@@ -14,6 +14,6 @@
 
 typedef struct task {
 	struct vconsole *own_console;
-}task_t;
+} task_t;
 
 #endif /* TASK_H_ */

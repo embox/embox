@@ -28,4 +28,3 @@ static inline void __set_cpsr(unsigned val) {
 }
 
 #endif /* ARM_PSR_H_ */
-

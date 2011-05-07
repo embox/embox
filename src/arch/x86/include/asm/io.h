@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief The definitions for the x86 IO instructions.
  *
  * @date 12.12.10
  * @author Anton Bondarev

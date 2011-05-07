@@ -58,4 +58,3 @@ void free_node(node_t *node) {
 	list_add((struct list_head *) nod_to_head(node),
 		    (struct list_head *)&head_node);
 }
-

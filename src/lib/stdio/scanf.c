@@ -242,12 +242,12 @@ static int scan(char **in, const char *fmt, va_list args) {
 			}
 				continue;
 #if 0
-				case 'O': {
-					double dst;
-					dst = scan_double(in,8,widht);
-					va_arg(args, int) = dst;
-					++converted;
-				}
+			case 'O': {
+				double dst;
+				dst = scan_double(in,8,widht);
+				va_arg(args, int) = dst;
+				++converted;
+			}
 				continue;
 #endif
 			case 'x': {
@@ -259,12 +259,12 @@ static int scan(char **in, const char *fmt, va_list args) {
 			}
 				continue;
 #if 0
-				case 'X': {
-					double dst;
-					dst = scan_double(in, 16, widht);
-					va_arg(args, int) = dst;
-					++converted;
-				}
+			case 'X': {
+				double dst;
+				dst = scan_double(in, 16, widht);
+				va_arg(args, int) = dst;
+				++converted;
+			}
 				continue;
 #endif
 			case 'f': {
@@ -303,4 +303,3 @@ int sscanf(char *out, const char *format, ...) {
 
 	return rv;
 }
-

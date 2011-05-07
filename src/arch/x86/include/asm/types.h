@@ -12,4 +12,3 @@
 #include <asm-generic/types32.h>
 
 #endif /* X86_TYPES_H_ */
-

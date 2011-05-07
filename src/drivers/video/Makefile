@@ -7,4 +7,3 @@ $_SRCS-vga_console += tty_device.c
 endif
 $_DEPS-vga_console += embox.driver.keyboard
 $_PROVIDES-vga_console += embox.hal.diag
-

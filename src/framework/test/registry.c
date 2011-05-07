@@ -43,4 +43,3 @@ const struct test_suite *test_lookup(const char *name) {
 
 	return NULL;
 }
-

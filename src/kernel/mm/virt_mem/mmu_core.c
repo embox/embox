@@ -141,4 +141,3 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	}
 	return 0;
 }
-

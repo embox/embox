@@ -70,4 +70,3 @@ TEST_CASE("thread_resume should return an error if the thread hasn't been "
 	test_assert_not_zero(thread_resume(foo));
 	test_assert_zero(thread_detach(foo));
 }
-

@@ -1,4 +1,3 @@
-
 $_MODS = ramfs
 
 $_SRCS-ramfs += ramfs.c
@@ -20,4 +19,3 @@ $($_lds): $($_SELFDIR)/ramfs.lds.S $(AUTOCONF_DIR)/config.lds.h
 
 -include $($_lds).d
 endif
-

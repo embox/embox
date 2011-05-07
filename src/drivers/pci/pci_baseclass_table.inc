@@ -18,4 +18,3 @@
 {PCI_BASE_CLASS_SIGNAL_PROC,   "Data acquisition controller"},
 {PCI_CLASS_OTHERS,             "Misc. device"},
 {0x00,                         NULL}
-

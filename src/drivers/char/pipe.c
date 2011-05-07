@@ -221,4 +221,3 @@ EMBOX_UNIT(pipe_start, pipe_stop);
 EMBOX_DEVICE(pipe_load, pipe_probe, pipe_unload);
 
 #endif
-

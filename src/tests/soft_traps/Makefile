@@ -1,4 +1,3 @@
-
 $_MODS += soft_traps
 $_MODS += soft_traps_data
 $_MODS += soft_traps_flags
@@ -15,4 +14,3 @@ $_DEPS-soft_traps_data += embox.hal.traps
 
 $_DEPS-soft_traps_flags += embox.hal.test.traps
 $_DEPS-soft_traps_flags += embox.hal.traps
-
