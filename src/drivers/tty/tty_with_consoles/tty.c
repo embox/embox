@@ -59,6 +59,11 @@ void debug_output( tty_device_t *tty ) {
 	}
 	prom_printf(" width: %d, height: %d;",CONS->width, CONS->height);
 	prom_printf(" column: %d, line: %d;\n",CONS->scr_column, CONS->scr_line);
+	prom_printf("CONS->cl_cnt: %d; CONS->cl_buff: ",CONS->cl_cnt);
+	for (i=0;i<CONS->cl_cnt;++i) {
+		prom_printf("%c",CONS->cl_buff[i]);
+	}
+	prom_printf("\nCONS->scr_buff: ");
 	for (i=0;i<CONS->width;++i)
 	for (j=0;j<CONS->height;++j) {
 		#define CONS_CHAR CONS->scr_buff[i*CONS->width+j]
@@ -280,12 +285,16 @@ int tty_add_char(tty_device_t *tty, int ch) {
 uint8_t* tty_readline(tty_device_t *tty) {
 	struct thread *thread = thread_self();
 	//printf("%d %%",tty->consoles[tty->console_cur]->scr_line);
-	while ((!tty->out_busy)	||
-			(thread->task.own_console != tty->consoles[tty->console_cur])) {
+	//while ((!tty->consoles[tty->console_cur]->out_busy)
+	while ((!thread->task.own_console->out_busy)
+		#if 0
+		||thread->task.own_console!=tty->consoles[tty->console_cur]) {
+		#else
+		){
+		#endif
 	}
-	++thread->task.own_console->scr_line; /* after read_line in console will be next line*/
-	tty->out_busy = false;
-	return (uint8_t*) tty->out_buff;
+	thread->task.own_console->out_busy = false;
+	return (uint8_t*) thread->task.own_console->out_buff;
 }
 
 static uint32_t tty_scanline(uint8_t line[TTY_RXBUFF_SIZE + 1], uint32_t size) {

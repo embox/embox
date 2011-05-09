@@ -29,13 +29,10 @@ struct tty_device;
 
 typedef struct vconsole {
 	uint8_t  id;
-	bool     out_busy; // TODO remove
 	struct	 tty_device *tty;
 	size_t   height;
 	size_t   width;
 	uint32_t mode;
-//	size_t   lines;
-//	size_t   columns;
 
 	uint8_t  scr_buff[CONFIG_SCR_BUFF_S];
 	uint8_t  scr_line;		/* current position of cursor */
@@ -45,6 +42,8 @@ typedef struct vconsole {
 	uint32_t cl_cur;
 	uint8_t  cl_buff[CONFIG_CMDLINE_S]; /* current terminal string (cannonical mode) */
 
+	volatile bool out_busy; /* tty_readline output */
+	uint8_t  out_buff[CONFIG_CMDLINE_S];
 } vconsole_t;
 
 struct tty_device;

@@ -12,6 +12,17 @@
 #include <drivers/tty_action.h>
 #include <kernel/diag.h>
 
+#ifdef CONFIG_TTY_CONSOLE_COUNT
+#define CC tty->consoles[tty->console_cur]
+#define BUFF tty->consoles[tty->console_cur]->cl_buff
+#define BUFF_c tty->consoles[tty->console_cur]->cl_cur
+#define BUFF_s tty->consoles[tty->console_cur]->cl_cnt
+#else
+#define CC tty->consoles[tty->console_cur]
+#define BUFF tty->rx_buff
+#define BUFF_c tty->rx_cur
+#define BUFF_s tty->rx_cnt
+#endif
 /*
  * FIXME
  * 	buffers is used elements of different sizes. Check it and fix if need.
@@ -117,22 +128,22 @@ void copy_backward(uint8_t *s, uint8_t *d, uint32_t size) {
 /* print char */
 void tac_key_alpha(tty_device_t *tty, struct vt_token *token) { //TODO change rx_buff to tty->console[ current ]->cl_buf //
 	if (tty->ins_mod) { /* INSERT MODE */
-		if (tty->rx_cnt < TTY_RXBUFF_SIZE) {
-			++tty->rx_cnt;
+		if (BUFF_s < TTY_RXBUFF_SIZE) {
+			++BUFF_s;
 			copy_backward(
-				(uint8_t *) &tty->rx_buff[tty->rx_cur],
-				(uint8_t *) &tty->rx_buff[tty->rx_cur + 1],
-				(tty->rx_cnt - tty->rx_cur));
-			tty->rx_buff[tty->rx_cur++] = token->ch;
+				(uint8_t *) &BUFF[BUFF_c],
+				(uint8_t *) &BUFF[BUFF_c + 1],
+				(BUFF_s - BUFF_c));
+			BUFF[BUFF_c++] = token->ch;
 			vtbuild((struct vtbuild *)tty->vtb, token);
-			tty_write_line(tty, (uint8_t *) &tty->rx_buff[tty->rx_cur],
-				tty->rx_cnt - tty->rx_cur, 0);
+			tty_write_line(tty, (uint8_t *) &BUFF[BUFF_c],
+				BUFF_s - BUFF_c, 0);
 		}
 	} else { /* REPLACE MOD */
-		if (tty->rx_cur < TTY_RXBUFF_SIZE) {
-			tty->rx_buff[tty->rx_cur++] = token->ch;
-			if (tty->rx_cur > tty->rx_cnt) {
-				tty->rx_cnt = tty->rx_cur;
+		if (BUFF_c < TTY_RXBUFF_SIZE) {
+			BUFF[BUFF_c++] = token->ch;
+			if (BUFF_c > BUFF_s) {
+				BUFF_s = BUFF_c;
 			}
 			vtbuild((struct vtbuild *)tty->vtb, token);
 		}
@@ -141,40 +152,40 @@ void tac_key_alpha(tty_device_t *tty, struct vt_token *token) { //TODO change rx
 
 /* remove one char */
 void tac_key_del(tty_device_t *tty) {
-	if (cur_tty->rx_cur < cur_tty->rx_cnt) {
+	if (BUFF_c < BUFF_s) {
 		copy_forward(
-			(uint8_t *) &cur_tty->rx_buff[cur_tty->rx_cur+1],
-			(uint8_t *) &cur_tty->rx_buff[cur_tty->rx_cur],
-			--cur_tty->rx_cnt - cur_tty->rx_cur);
-		tty_rewrite_line(cur_tty,
-			(uint8_t *) &cur_tty->rx_buff[cur_tty->rx_cur],
-			cur_tty->rx_cnt - cur_tty->rx_cur,
-			cur_tty->rx_cnt - cur_tty->rx_cur + 1, 0, 0);
+			(uint8_t *) &BUFF[BUFF_c+1],
+			(uint8_t *) &BUFF[BUFF_c],
+			--BUFF_s - BUFF_c);
+		tty_rewrite_line(tty,
+			(uint8_t *) &BUFF[BUFF_c],
+			BUFF_s - BUFF_c,
+			BUFF_s - BUFF_c + 1, 0, 0);
 	}
 }
 
 /* remove one char */
 void tac_key_backspace(tty_device_t *tty) {
 	uint32_t i;
-	if (tty->rx_cur > 0) {
-		--tty->rx_cur;
+	if (BUFF_c > 0) {
+		--BUFF_c;
 		vtbuild((struct vtbuild *)tty->vtb, TOKEN_LEFT);
-		for (i = tty->rx_cur; i < tty->rx_cnt - 1; ++i) {
-			tty->rx_buff[i] = tty->rx_buff[i + 1];
-			tty->file_op->fwrite((uint8_t *) &tty->rx_buff[i], sizeof(char), 1, NULL);
+		for (i = BUFF_c; i < BUFF_s - 1; ++i) {
+			BUFF[i] = BUFF[i + 1];
+			tty->file_op->fwrite((uint8_t *) &BUFF[i], sizeof(char), 1, NULL);
 		}
 		tty->file_op->fwrite(" ", sizeof(char), 1, NULL);
-		for (i = tty->rx_cur; i < tty->rx_cnt; ++i) {
+		for (i = BUFF_c; i < BUFF_s; ++i) {
 			vtbuild((struct vtbuild *)tty->vtb, TOKEN_LEFT);
 		}
-		--tty->rx_cnt;
+		--BUFF_s;
 	}
 }
 
 /* move cursor left one char */
 void tac_key_left(tty_device_t *tty) {
-	if (tty->rx_cur > 0) {
-		--tty->rx_cur;
+	if (BUFF_c > 0) {
+		--BUFF_c;
 		/* vtbuild((struct vtbuild *)tty->vtb, token); */
 		tty_go_left(tty, 1);
 	}
@@ -182,8 +193,8 @@ void tac_key_left(tty_device_t *tty) {
 
 /* move cursor right one char */
 void tac_key_right(tty_device_t *tty) {
-	if (tty->rx_cur < tty->rx_cnt) {
-		++tty->rx_cur;
+	if (BUFF_c < BUFF_s) {
+		++BUFF_c;
 		/* vtbuild((struct vtbuild *)tty->vtb, token); */
 		tty_go_right(tty, 1);
 	}
@@ -191,76 +202,77 @@ void tac_key_right(tty_device_t *tty) {
 
 /* move cursor to begin of the line */
 void tac_key_home(tty_device_t *tty) {
-	tty_go_cursor_position(cur_tty, cur_tty->rx_cur, 0);
-	cur_tty->rx_cur = 0;
+	tty_go_cursor_position(tty, BUFF_c, 0);
+	BUFF_c = 0;
 }
 
 /* move cursor to end of the line */
 void tac_key_end(tty_device_t *tty) {
-	tty_go_cursor_position(cur_tty, cur_tty->rx_cur, cur_tty->rx_cnt);
-	cur_tty->rx_cur = cur_tty->rx_cnt;
+	tty_go_cursor_position(tty, BUFF_c, BUFF_s);
+	BUFF_c = BUFF_s;
 }
 
 /* switch insert-replace mode */
 void tac_key_ins(tty_device_t *tty) {
-	cur_tty->ins_mod = !cur_tty->ins_mod;
+	tty->ins_mod = !tty->ins_mod;
 }
 
 /* execute command line */
 void tac_key_enter(tty_device_t *tty, struct vt_token *token) {
 	#if 1
-	if (tty->out_busy) return; /* don't wait */
+	if (CC->out_busy) return; /* don't wait */
 	#else
-	while (tty->out_busy);  /* wait resault if busy */
+	while (CC->out_busy);  /* wait resault if busy */
 	#endif
 	/* add string to output buffer */
-	memcpy((void*) tty->out_buff, (const void*)
-		tty->rx_buff, tty->rx_cnt);
-	tty->out_buff[tty->rx_cnt] = '\0';
-	tty->rx_cnt = 0;
-	tty->rx_cur = 0;
-	tty->out_busy = true;
+	memcpy((void*) CC->out_buff, (const void*)
+		BUFF, BUFF_s);
+	CC->out_buff[BUFF_s] = '\0';
+	BUFF_s = 0;
+	BUFF_c = 0;
+	CC->out_busy = true;
 	vtbuild((struct vtbuild *)tty->vtb, token);
+	++CC->scr_line;
 }
 
 /* remove last word in command line */
 void tac_remove_word(tty_device_t *tty) {
 	/* find end of prev word */
 	uint32_t tps; /* tps - to position space */
-	tps = tty->rx_cur>0 ? tty->rx_cur-1 : 0;
-	for (; tps>0 && isalpha(tty->rx_buff[tps]); --tps);
-	for (; tps>0 && isspace(tty->rx_buff[tps]); --tps);
+	tps = BUFF_c>0 ? BUFF_c-1 : 0;
+	for (; tps>0 && isalpha(BUFF[tps]); --tps);
+	for (; tps>0 && isspace(BUFF[tps]); --tps);
 	if (tps > 0) {
 		++tps;
 	}
 
 	copy_forward(
-		(uint8_t *) &tty->rx_buff[tty->rx_cur],
-		(uint8_t *) &tty->rx_buff[tps],
-		tty->rx_cnt - tty->rx_cur + tps);
+		(uint8_t *) &BUFF[BUFF_c],
+		(uint8_t *) &BUFF[tps],
+		BUFF_s - BUFF_c + tps);
 
 	tty_rewrite_line(tty,
-		(uint8_t *) &tty->rx_buff[tps],
-		tty->rx_cnt - tty->rx_cur,
-		tty->rx_cnt - tps,
-		tty->rx_cur - tps, 0);
+		(uint8_t *) &BUFF[tps],
+		BUFF_s - BUFF_c,
+		BUFF_s - tps,
+		BUFF_c - tps, 0);
 
-	tty->rx_cnt -= tty->rx_cur - tps;
-	tty->rx_cur = tps;
+	BUFF_s -= BUFF_c - tps;
+	BUFF_c = tps;
 }
 
 /* remove the line */
 void tac_remove_line(tty_device_t *tty) {
 	copy_forward(
-		(uint8_t *) &tty->rx_buff[tty->rx_cur],
-		(uint8_t *) &tty->rx_buff[0],
-		tty->rx_cnt - tty->rx_cur);
+		(uint8_t *) &BUFF[BUFF_c],
+		(uint8_t *) &BUFF[0],
+		BUFF_s - BUFF_c);
 	tty_rewrite_line(tty,
-		(uint8_t *) &tty->rx_buff[0],
-		tty->rx_cnt - tty->rx_cur,
-		tty->rx_cnt, tty->rx_cur, 0);
-	tty->rx_cnt -= tty->rx_cur;
-	tty->rx_cur = 0;
+		(uint8_t *) &BUFF[0],
+		BUFF_s - BUFF_c,
+		BUFF_s, BUFF_c, 0);
+	BUFF_s -= BUFF_c;
+	BUFF_c = 0;
 }
 
 void tac_goto00(tty_device_t *tty ) {
@@ -275,3 +287,8 @@ void tac_clear(tty_device_t *tty ) {
 	tac_goto00( tty );
 	tty->file_op->fwrite("\x1b[2J",sizeof(char),4,NULL);
 }
+
+#undef CC
+#undef BUFF
+#undef BUFF_c
+#undef BUFF_s

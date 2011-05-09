@@ -121,12 +121,7 @@ void tty_vconsole_putchar( struct vconsole *vc, char ch ) {
 			tty_vconsole_reprint(vc);
 		} else {
 			if (ch!='\n') {
-				while (vc->tty->in_busy);
-				//vc->tty->in_busy = true;
-
 				tty_vconsole_write_char(vc, (uint8_t *) &ch);
-
-				vc->tty->in_busy = false;
 			} else {
 				vc->tty->file_op->fwrite("\n",sizeof(char),1,NULL);
 			}
@@ -139,9 +134,6 @@ void tty_gotoXYvector(struct vconsole *vc, int32_t x, int32_t y) {
 	tty_vconsole_saveline( vc );
 	if (CONSOLE_IS_CURRENT) {
 		uint8_t i;
-		while (vc->tty->in_busy);
-		//vc->tty->in_busy = true;
-
 		if (x>0) {
 			for (i=0;i<x;++i) {
 				vtbuild((struct vtbuild*) vc->tty->vtb, TOKEN_RIGHT);
@@ -160,8 +152,6 @@ void tty_gotoXYvector(struct vconsole *vc, int32_t x, int32_t y) {
 				vtbuild((struct vtbuild*) vc->tty->vtb, TOKEN_UP);
 			}
 		}
-
-		vc->tty->in_busy = false;
 	}
 	/* it's vconsole_gotoxy */
 	vc->scr_column += x;
@@ -174,14 +164,9 @@ void console_gotoXY( uint8_t x, uint8_t y ) {
 
 void tty_vconsole_gotoXY(struct vconsole *vc, uint8_t x, uint8_t y) {
 	if (CONSOLE_IS_CURRENT) {
-		while (vc->tty->in_busy);
-		//vc->tty->in_busy = true;
-
 		vconsole_gotoxy(vc,x,y);
 		tac_goto00(vc->tty);
 		tty_gotoXYvector(vc,x,y);
-
-		vc->tty->in_busy = false;
 	}
 }
 
@@ -204,9 +189,6 @@ void tty_vconsole_reprint(struct vconsole *vc) {
 	return;
 	if (vc==NULL) return;
 	if (!CONSOLE_IS_CURRENT) return;
-	while (vc->tty->in_busy);
-	vc->tty->in_busy = true;
-
 	tty_vconsole_saveline(vc);
 
 	tac_goto00( vc->tty );
@@ -220,7 +202,6 @@ void tty_vconsole_reprint(struct vconsole *vc) {
 	tty_vconsole_gotoXY(vc,vc->scr_column,vc->scr_line);
 
 	tty_vconsole_loadline(vc);
-	vc->tty->in_busy = false;
 }
 
 void console_reprint(void) {
