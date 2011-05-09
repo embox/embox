@@ -7,12 +7,15 @@
  * @author Fedor Burdun
  */
 
+#include <unistd.h>
 #include <types.h>
 #include <ctype.h>
 #include <string.h>
 #include <embox/unit.h>
 
 #include <kernel/thread/api.h> /*we create some threads here*/
+#include <kernel/timer.h> /* use it */
+#include <kernel/evdispatch.h>
 
 #include <drivers/tty_action.h>
 #include <drivers/vtbuild.h>
@@ -24,6 +27,8 @@
 EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
+
+#define TTY_IRQ_ID 1
 
 #ifndef CONFIG_TTY_CONSOLE_COUNT
 #error define TTY_CONSOLE_COUNT in options-kernel.conf before try to build.
@@ -43,16 +48,42 @@ inline bool tty_isspace(char ch) {
     #define tty_isspace isspace
 #endif
 
+void debug_output( tty_device_t *tty ) {
+	int i,j;
+	prom_printf("\n-f12 pressed----debug info about tty---\n");
+	prom_printf("current console: %d;",cur_tty->console_cur);
+	#define CONS cur_tty->consoles[cur_tty->console_cur]
+	if (! CONS ) {
+		prom_printf("console isn't initialized.\n");
+		return;
+	}
+	prom_printf(" width: %d, height: %d;",CONS->width, CONS->height);
+	prom_printf(" column: %d, line: %d;\n",CONS->scr_column, CONS->scr_line);
+	for (i=0;i<CONS->width;++i)
+	for (j=0;j<CONS->height;++j) {
+		#define CONS_CHAR CONS->scr_buff[i*CONS->width+j]
+		//prom_printf("%d:",CONS_CHAR);
+		if (' '<CONS_CHAR && CONS_CHAR<128) {
+			prom_printf("%c",CONS_CHAR);
+		}
+		prom_printf(";");
+		#undef CONS_CHAR
+	}
+	prom_printf("\n");
+	#undef CONS
+}
+
 void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 #if 0
-	#warning USING DEBUG OUTPUT IN TTY DRIVER!!!
+	//#warning USING DEBUG OUTPUT IN TTY DRIVER!!!
+
+	size_t i;
 
 	prom_printf("action: %d; char: %d %c; attrs_len: %d; params_len: %d\n",
 		token->action, token->ch, token->ch,
 		token->attrs_len, token->params_len);
-	size_t i;
 	for (i = 0; i < token->attrs_len; ++i) {
-		prom_printf("(char) attrs[%d] = %d : %c\n", i, token->attrs[i]);
+		prom_printf("(char) attrs[%d] = %d : %c\n", i, token->attrs[i], token->attrs[i]);
 	}
 	for (i = 0; i < token->params_len; ++i) {
 		prom_printf("(char) params[%d] = %d\n", i, token->params[i]);
@@ -90,6 +121,9 @@ void tty_vtparse_callback(struct vtparse *tty_vtparse, struct vt_token *token) {
 					break;
 				case 2: /* INS */
 					tac_key_ins(cur_tty);
+					break;
+				case 24: /* F12 // Debug output */
+					debug_output(cur_tty);
 					break;
 				}
 			}
@@ -144,9 +178,7 @@ static void *run_shell(void *data) {
 	thread = thread_self();
 	thread->task.own_console = console;
 
-#if 1
 	console_clear();
-#endif
 	printf("Hello from TTY%d!\n\n",console_number); /* this is output to the i-th console */
 
 	if (NULL == (def_shell = cmd_lookup(CONFIG_DEFAULT_SHELL))) {
@@ -157,6 +189,14 @@ static void *run_shell(void *data) {
 	return NULL;
 }
 
+void timer_handler(uint32_t id) {
+	event_dispatch( TTY_IRQ_ID, NULL );
+}
+
+//TODO remove this
+void add_char_handler(struct event_msg *ev) {
+	vtparse((struct vtparse *) cur_tty->vtp, (char) ((long)ev->data-1000));
+}
 
 static int tty_init(void) {
 	size_t i;
@@ -169,10 +209,6 @@ static int tty_init(void) {
 		return -1;
 	}
 
-#if 1
-	/* add clear screen */
-	tac_clear( cur_tty );
-#endif
 	/* now we want to initialize first console
 	 * it use current thread. we just add pointer to thread resources
 	 */
@@ -186,10 +222,10 @@ static int tty_init(void) {
 				run_shell, (void*) console_numbers[i]);
 	}
 
-#if 1
-	console_reprint();
-#endif
-	cur_tty->console_cur = 0;
+	cur_tty->console_cur = 0; /* foreground console by default */
+
+	set_timer(TTY_IRQ_ID, 10, &timer_handler);
+	event_register( TTY_IRQ_ID, &add_char_handler );
 
 	return 0;
 }
@@ -229,7 +265,15 @@ int tty_get_uniq_number(void) {
  * add parsed char to receive buffer
  */
 int tty_add_char(tty_device_t *tty, int ch) {
+#if 1
+#if 0
+	softirq_install(TTY_IRQ_ID, &irq_handler, NULL);
+	softirq_raise(TTY_IRQ_ID);
+#endif
+	event_send( TTY_IRQ_ID, (void*)((long)ch + 1000) );
+#else
 	vtparse((struct vtparse *) cur_tty->vtp, ch);
+#endif
 	return 0;
 }
 

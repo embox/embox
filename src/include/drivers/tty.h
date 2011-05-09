@@ -21,21 +21,25 @@
 
 struct vconsole;
 
+#define CONFIG_TTY_QUEUE 32
+
+#ifndef CONFIG_TTY_CONSOLE_COUNT
+#define	CONFIG_TTY_CONSOLE_COUNT 1
+#endif
+
 typedef struct tty_device {
-	volatile bool	 in_busy;
-	volatile char  out_buff[TTY_RXBUFF_SIZE + 1];
+	volatile bool out_busy; /*TODO move to vconsole */
+	volatile char out_buff[TTY_RXBUFF_SIZE + 1];
+	volatile bool has_events;
 	volatile uint32_t rx_cur;
 	char  rx_buff[TTY_RXBUFF_SIZE + 1];
 	char  tx_buff[TTY_TXBUFF_SIZE + 1];
 	volatile uint32_t rx_cnt;
-	volatile bool     out_busy; /*whether out_buff is busy*/
 	volatile bool     ins_mod;
 	struct 	 vtbuild vtb[1];
 	struct 	 vtparse vtp[1];
-	#ifdef CONFIG_TTY_CONSOLE_COUNT
 	struct vconsole *consoles[CONFIG_TTY_CONSOLE_COUNT];
 	uint32_t console_cur;
-	#endif
 	file_operations_t *file_op;
 } tty_device_t;
 

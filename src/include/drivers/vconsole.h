@@ -29,7 +29,7 @@ struct tty_device;
 
 typedef struct vconsole {
 	uint8_t  id;
-	bool     out_busy;
+	bool     out_busy; // TODO remove
 	struct	 tty_device *tty;
 	size_t   height;
 	size_t   width;
@@ -43,7 +43,7 @@ typedef struct vconsole {
 
 	uint32_t cl_cnt;
 	uint32_t cl_cur;
-	uint8_t  cl_buff[CONFIG_CMDLINE_S];
+	uint8_t  cl_buff[CONFIG_CMDLINE_S]; /* current terminal string (cannonical mode) */
 
 } vconsole_t;
 

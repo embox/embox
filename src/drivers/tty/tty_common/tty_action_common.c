@@ -115,7 +115,7 @@ void copy_backward(uint8_t *s, uint8_t *d, uint32_t size) {
 /* actions in tty */
 
 /* print char */
-void tac_key_alpha(tty_device_t *tty, struct vt_token *token) {
+void tac_key_alpha(tty_device_t *tty, struct vt_token *token) { //TODO change rx_buff to tty->console[ current ]->cl_buf //
 	if (tty->ins_mod) { /* INSERT MODE */
 		if (tty->rx_cnt < TTY_RXBUFF_SIZE) {
 			++tty->rx_cnt;
@@ -209,9 +209,9 @@ void tac_key_ins(tty_device_t *tty) {
 /* execute command line */
 void tac_key_enter(tty_device_t *tty, struct vt_token *token) {
 	#if 1
-	if (tty->out_busy) return;
+	if (tty->out_busy) return; /* don't wait */
 	#else
-	while (tty->out_busy);
+	while (tty->out_busy);  /* wait resault if busy */
 	#endif
 	/* add string to output buffer */
 	memcpy((void*) tty->out_buff, (const void*)
@@ -267,6 +267,7 @@ void tac_goto00(tty_device_t *tty ) {
 #if 1
 	tty->file_op->fwrite("\x1b[H",sizeof(char),3,NULL);
 #else
+	/* other methods */
 #endif
 }
 

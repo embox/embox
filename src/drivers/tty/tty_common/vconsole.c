@@ -26,7 +26,8 @@
 #define HARD_DEBUG
 #endif
 
-static vconsole_t *def_console = NULL; /* &cur_tty->console[0]; */
+static vconsole_t *def_console = NULL;
+/* &cur_tty->console[0]; */
 //vconsole_t const *sys_console = &def_console;
 
 vconsole_t *vconsole_open(tty_device_t *tty) {
@@ -46,7 +47,6 @@ char vconsole_getchar(struct vconsole *vc) {
 void vconsole_gotoxy(struct vconsole *vc, uint8_t x, uint8_t y) {
 	vc->scr_column = x;
 	vc->scr_line = y;
-	/* say anythink for tty */
 }
 
 /* decouple this from tty_clear */
