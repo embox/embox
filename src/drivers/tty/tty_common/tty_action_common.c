@@ -5,10 +5,12 @@
  * @author Fedor Burdun
  */
 
+#include <unistd.h> /* for debug. for use sleep */
 #include <kernel/thread/api.h>
 #include <types.h>
 #include <ctype.h>
 #include <string.h>
+//#include <drivers/tty.h>
 #include <drivers/tty_action.h>
 #include <kernel/diag.h>
 
@@ -219,6 +221,7 @@ void tac_key_ins(tty_device_t *tty) {
 
 /* execute command line */
 void tac_key_enter(tty_device_t *tty, struct vt_token *token) {
+	uint32_t i;
 	#if 1
 	if (CC->out_busy) return; /* don't wait */
 	#else
@@ -228,11 +231,20 @@ void tac_key_enter(tty_device_t *tty, struct vt_token *token) {
 	memcpy((void*) CC->out_buff, (const void*)
 		BUFF, BUFF_s);
 	CC->out_buff[BUFF_s] = '\0';
+	///* TIMER context (that handle tty actions) != thread console that use tty!!!! *///printf(">>>%s",CC->out_buff); /* print echo to tty->console_cur */
+
+	/* silent print to console */
+	for (i=0;i<BUFF_s;++i) {
+		CC->scr_buff[CC->scr_line*CC->width+CC->scr_column+i] = CC->out_buff[i];//BUFF[i];
+	}
+
 	BUFF_s = 0;
 	BUFF_c = 0;
+
 	CC->out_busy = true;
 	vtbuild((struct vtbuild *)tty->vtb, token);
-	++CC->scr_line;
+	++CC->scr_line; /* TODO make function of normalize */
+	CC->scr_column = 0;
 }
 
 /* remove last word in command line */

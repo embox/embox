@@ -35,33 +35,31 @@ void tty_vconsole_write_char( vconsole_t *vc, uint8_t *ch ) {
 }
 
 void tty_vconsole_loadline(vconsole_t *con) { // uint32_t ?!
-	uint32_t *s = (uint32_t*) &con->cl_cnt;
-	uint32_t *t = (uint32_t*) &con->cl_cur;
+	uint32_t s = con->cl_cnt;
+	uint32_t t = con->cl_cur;
 	uint8_t *buff = (uint8_t*) &con->cl_buff[0];
 
 	//con->tty->file_op->fwrite("\x1b[H",sizeof(char),3,NULL); //goto 0,0
 
 	/* write saved command line */
-	*t = con->cl_cur;
-	for (*s=0; *s<con->cl_cnt; ++*s) {
-		con->tty->file_op->fwrite(&(buff[*s]),sizeof(char),1,NULL);
+	for (s=0; s<con->cl_cnt; ++s) {
+		//prom_printf("char: %c:%d;",buff[s],buff[s]);
+		con->tty->file_op->fwrite(&(buff[s]),sizeof(char),1,NULL);
 	}
 	/* go to saved cursor position */
-	for (;*s>*t;--*s) {
+	for (;s>t;--s) {
 		vtbuild((struct vtbuild *) con->tty->vtb, TOKEN_LEFT);
 	}
-	*s = con->cl_cnt;
 }
 
 /* TODO remove */
-void tty_vconsole_saveline(vconsole_t *con) {
+void tty_clearline(struct tty_device *tty) {
 	uint32_t *s, *t;
-	return;
-	s = (uint32_t*) &con->tty->rx_cnt;
-	t = (uint32_t*) &con->tty->rx_cur;
+	#define con tty->consoles[tty->console_cur]
+	s = (uint32_t*) &con->cl_cnt;
+	t = (uint32_t*) &con->cl_cur;
 	con->cl_cnt = *s;
 	con->cl_cur = *t;
-#if 1
 	/* clear current command line */
 	for (;*t>0;--*t) {
 		vtbuild((struct vtbuild*) con->tty->vtb, TOKEN_LEFT);
@@ -69,14 +67,7 @@ void tty_vconsole_saveline(vconsole_t *con) {
 	for (;*t<*s;++*t) {
 		con->tty->file_op->fwrite(" ",sizeof(char),1,NULL);
 	}
-#endif
-	/* copy command line in buffer */
-	con->cl_buff[0] = con->tty->rx_buff[0];
-	for (;*s>0;--*s) {
-		con->cl_buff[*s] = con->tty->rx_buff[*s];
-		vtbuild((struct vtbuild*) con->tty->vtb, TOKEN_LEFT);
-	}
-	*s = *t = 0;
+	#undef con
 }
 
 
@@ -92,7 +83,7 @@ int vconsole_activate(struct vconsole *con) {
 
 int vconsole_deactivate(vconsole_t *con) {
 	if (NULL==con) return 0;
-	tty_vconsole_saveline( con );
+	//tty_vconsole_saveline( con );
 	return 0;
 }
 
@@ -189,13 +180,13 @@ void tty_gotoXY(tty_device_t *tty, int32_t x, int32_t y) {
 	}
 	/* it's vconsole_gotoxy */
 	#define vc cur_tty->consoles[cur_tty->console_cur]
-	tty_vconsole_loadline( vc );
+	//tty_vconsole_loadline( vc );
 	#undef vc
 }
 
 /* move & refactoring this interface */
 void tty_gotoXYvector(struct vconsole *vc, int32_t x, int32_t y) {
-	tty_vconsole_saveline( vc );
+	//tty_vconsole_saveline( vc );
 	if (CONSOLE_IS_CURRENT) {
 		uint8_t i;
 
@@ -225,7 +216,7 @@ void tty_gotoXYvector(struct vconsole *vc, int32_t x, int32_t y) {
 	vc->scr_column += x;
 	vc->scr_line += y;
 	*/
-	tty_vconsole_loadline( vc );
+	//tty_vconsole_loadline( vc );
 }
 
 void console_gotoXY( uint8_t x, uint8_t y ) {
@@ -252,7 +243,7 @@ void console_clear(void) {
 
 	vconsole_clear(thread->task.own_console);
 	if (CONSOLE_IS_CURRENT) {
-		tty_vconsole_saveline(thread->task.own_console);
+		//tty_vconsole_saveline(thread->task.own_console);
 		console_reprint();
 		tty_vconsole_loadline(thread->task.own_console);
 	}
@@ -261,7 +252,7 @@ void console_clear(void) {
 void tty_reprint(struct tty_device *tty) {
 	uint8_t i,j;
 	#define vc cur_tty->consoles[cur_tty->console_cur]
-	tty_vconsole_saveline(vc);
+	//tty_vconsole_saveline(vc);
 	tac_goto00( vc->tty );
 	for (i = 0; i < (vc->height) ; ++i) {
 		for (j = 0; j< (vc->width) ; ++j ) {
@@ -281,7 +272,7 @@ void tty_vconsole_reprint(struct vconsole *vc) {
 	if (!CONSOLE_IS_CURRENT) return;
 	//while (vc->tty->in_busy);
 	//vc->tty->in_busy = true;
-	tty_vconsole_saveline(vc);
+	//tty_vconsole_saveline(vc);
 	tac_goto00( vc->tty );
 	//vconsole_reprint_nline( vc, vc->height - 1 );
 	for (i = 0; i < (vc->height) ; ++i) {

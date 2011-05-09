@@ -70,6 +70,7 @@ extern void tac_goto00(tty_device_t *tty);
 extern void tac_clear(tty_device_t *tty);
 extern void tac_reprint(tty_device_t *tty);
 
+extern void tty_clearline(tty_device_t *tty);
 /* functions for users */
 extern void console_putchar(char ch);
 extern char console_getchar(void);
