@@ -9,6 +9,7 @@
 #include <lib/list.h>
 #include <util/pool.h>
 #include <kernel/evdispatch2.h>
+#include <kernel/thread/sched.h>
 
 /** Maxumum messages count */
 #define MAX_MSG_COUNT_IN_QUEUE 10
@@ -18,6 +19,8 @@ POOL_DEF(msg_queue_pool, struct event_msg, MAX_MSG_COUNT_IN_QUEUE);
 
 /** Queue of messages, sent to handlers */
 static LIST_HEAD(msg_queue);
+
+static int CUR_MSG_COUNT_IN_QUEUE = 0;
 
 #include <embox/unit.h>
 #define make_cache_name(name) \
@@ -39,7 +42,7 @@ void event_dispatch() {
 		struct event_msg *msg = list_entry(result, struct event_msg, list);
 		list_del(result);
 
-		msg->handler(msg->data);
+        msg->handler(msg->data);
 
 		pool_free(&msg_queue_pool, msg);
 	}
@@ -69,5 +72,12 @@ void event_send(void (*handler)(void *data), void *data) {
 	struct event_msg *msg;
 
 	msg = create_message(handler, data);
+	sched_lock();
+	if(CUR_MSG_COUNT_IN_QUEUE == MAX_MSG_COUNT_IN_QUEUE) {
+		// TODO For more information here we may return error code.
+		return;
+	}
+	++CUR_MSG_COUNT_IN_QUEUE;
 	list_add_tail(&msg->list, &msg_queue);
+	sched_unlock();
 }
