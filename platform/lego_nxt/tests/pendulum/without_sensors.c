@@ -16,7 +16,6 @@
 
 EMBOX_TEST(without_sensors);
 
-
 static int without_sensors(void) {
 	int motor_pov = 100;
 
