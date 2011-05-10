@@ -6,24 +6,18 @@
  * @author Alexandr Kalmuk
  */
 
-
-#include <types.h>
 #include <embox/test.h>
 #include <drivers/nxt_avr.h>
 #include <drivers/pins.h>
 #include <kernel/diag.h>
 #include <unistd.h>
-
 #include <drivers/nxt_sensor.h>
-#include <drivers/nxt_avr.h>
-
-#include <drivers/nxt_buttons.h>
 #include <drivers/nxt_motor.h>
-
 
 #define MOTOR_POWER 100
 #define MOTOR0 (&motors[0])
 #define MOTOR1 (&motors[1])
+#define BLACK_ZONE 500
 
 EMBOX_TEST(pen_ligth);
 
@@ -36,24 +30,25 @@ void sensor_handler(sensor_t *sensor, sensor_val_t val) {
 }
 
 static int pen_ligth(void) {
-	nxt_sensor_conf_pass(TOUCH_PORT, (sensor_hnd_t) sensor_handler);
 	int power_val = 0x01;
-	//int power_val = 0x01;
+	int motor_pov = 100;
+	int cnt = 0;
+	int must_replace = 0;
+
+	nxt_sensor_conf_pass(TOUCH_PORT, (sensor_hnd_t) sensor_handler);
 	data_to_avr.input_power = 128;
 
-	int cnt = 0;
 	motor_start(MOTOR0, MOTOR_POWER, 360, NULL);
 	motor_start(MOTOR1, MOTOR_POWER, 360, NULL);
-	int motor_pov = 100;
 	motor_set_power(MOTOR0, motor_pov);
 	motor_set_power(MOTOR1, -motor_pov);
 
 	while (true) {
-		if (sval > 500) {
+		if (sval > BLACK_ZONE) {
 			motor_pov *= (-1);
 			motor_set_power(MOTOR0, motor_pov);
 			motor_set_power(MOTOR1, -motor_pov);
-			while (sval > 500) {
+			while (sval > BLACK_ZONE) {
 			}
 			cnt++;
 		}
@@ -61,14 +56,14 @@ static int pen_ligth(void) {
 			break;
 	}
 
-	while (sval < 540) {
+	while (sval < BLACK_ZONE + 40) {
 	}
 	while (true) {
-		if (sval < 500) {
+		if (sval < BLACK_ZONE) {
 			motor_pov *= (-1);
 			motor_set_power(MOTOR0, motor_pov);
 			motor_set_power(MOTOR1, -motor_pov);
-			while (sval < 500) {
+			while (sval < BLACK_ZONE) {
 			}
 		}
 	}
