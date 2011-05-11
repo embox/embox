@@ -1,4 +1,31 @@
 #
+# Copyright 2008-2011, Mathematics and Mechanics faculty
+#                   of Saint-Petersburg State University. All rights reserved.
+# Copyright 2008-2011, Lanit-Tercom Inc. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+
+#
 # Object-oriented make.
 #
 #   Date: Dec 20, 2010
@@ -7,6 +34,38 @@
 
 ifndef __core_object_mk
 __core_object_mk := 1
+
+##
+# Usage example:
+#
+##
+#  include core/object.mk
+#
+#  define class foo
+#
+#    ##
+#    # This is a field. Every instance of class has its own field value.
+#    #
+#    # There also can be a default value which is assigned to the field at the
+#    # time of object creation. The default value is expanded each time a new
+#    # object is constructed, and the expansion result is then assigned to the
+#    # object's field. Expansion context is much like the constructor call
+#    #
+#    # Fields are denoted with $. prefix.
+#    #
+#    $.bar = Default value
+#
+#    # Fields can be defined verbatim
+#    define $.baz
+#      Multi-line value, \
+#       where $0 expands to 'foo', and $1 - to this - a pointer to the object being constructed
+#
+#    # This is the constructor.
+#    # Fields are denoted with $. prefix.
+#    $,foo = Default value, where $0 expands to 'foo', and $1 - to this
+#
+#  endef
+#
 
 include core/common.mk
 include core/string.mk
