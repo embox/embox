@@ -82,7 +82,6 @@ include util/math.mk # sequences generator
 include util/list.mk # pairmap, fold
 
 ##
-# Function: var_name_mangle
 # Escapes variables list in a special way so that it becomes possible to
 # iterate over it using 'foreach', even if some variables contain whitespaces
 # in their names.
@@ -92,38 +91,41 @@ include util/list.mk # pairmap, fold
 # Params:
 #  1. (optional) Variables list.
 #     If not specified, the value of .VARIABLES built-in variable is used
-# Return: whitespace separated list, each element of which is mangled name of
-#          a defined variable from the specified list (or from $(.VARIABLES))
+# Return:
+#     Whitespace separated list, each element of which is mangled name of a
+#     defined variable from the specified list (or from $(.VARIABLES)).
 #
 var_name_mangle = \
   $(call __var_name_escape1,$(or $(value 1),$(.VARIABLES)))
 
 ##
-# Function: var_name_demangle
 # Unescapes the result of 'var_name_mangle' call.
 #
 # Params:
-#  1. Mangled variable name (or list of mangled names, although then
-#                             mangling/demangling makes no sense)
-# Return: Variable name as it has to be before the mangling
-#
+#  1. Mangled variable name (or list of mangled names, although in such case
+#     mangling/demangling makes no sense)
+# Return:
+#     Variable name as it has to be before the mangling.
 var_name_demangle = \
   $(call __var_name_unescape_word,$(call __var_name_unescape_whitespace,$1))
 
 # Params:
-#  1. Unscaped variables list
+#  1. Unescaped variables list
+# Return: result for var_name_mangle
 __var_name_escape1 = \
   $(call __var_name_escape2,$1,$(call __var_name_escape_word,$1))
 
 # Params:
-#  1. Unscaped variables list
+#  1. Unescaped variables list
 #  2. Word-escaped variables list
+# Return: result for var_name_mangle
 __var_name_escape2 = \
   $(call __var_name_escape3,$2,$(call __var_name_singles,$1,$2))
 
 # Params:
 #  1. Word-escaped variables list
 #  2. Singleword-named variables (word-escaped)
+# Return: result for var_name_mangle
 __var_name_escape3 = \
   $2 $(call __var_name_escape4,$(call __var_name_multies,$1,$2))
 
@@ -182,6 +184,7 @@ __var_name_singles_pairmap = \
 #  2. List of singleword variables (word-escaped)
 # Return: the variable list with all singles removed (word-escaped)
 __var_name_multies = $(call list_fold,__var_name_multies_fold, $1 ,$2)
+
 # Params:
 #  1. Word-escaped variables list being filtered
 #  2. The next single to remove from the list
@@ -204,27 +207,5 @@ __var_name_unescape_whitespace = \
 
 # TODO a possible optimization: on each iteration filter out
 #      single-, double-, triple-, etc. -worded variables. -- Eldar
-
-# make FGRED=`echo -e '\e[31m'` FGRED1=`echo -e '\e[1;31m'` FGNORMAL=`echo -e '\e[0m'`
-ifeq (0,1)
-include util/var/assign.mk
-__var_call_trace = \
-  $(warning )$(and $(shell echo "$${FGRED1}$5$${FGNORMAL}" 1>&2),)$ \
-  $(if $1,$(info 1.	$1))$ \
-  $(if $2,$(info 2.	$2))$ \
-  $(if $3,$(info 3.	$3))$ \
-  $(info )
-__var_call_trace_result = \
-  $(and $(shell echo "$${FGRED}$2" 1>&2),)$ \
-  $(info $( )	$1)$ \
-  $(and $(shell echo "$${FGNORMAL}" 1>&2),)$1$ \
-  $(info )
-__var_name_functions := $(filter var_name_% __var_name_%,$(.VARIABLES))
-$(foreach var,$(__var_name_functions), \
-  $(call var_assign_$(flavor $(var)),$(var),$ \
-    $$(call __var_call_trace,$$1,$$2,$$3,,$(var))$ \
-    $$(call __var_call_trace_result,$(value $(var)),$(var))) \
-)
-endif
 
 endif # __util_var_name_mk
