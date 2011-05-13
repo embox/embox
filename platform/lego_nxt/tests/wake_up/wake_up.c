@@ -10,7 +10,7 @@
 #include <embox/test.h>
 #include <unistd.h>
 #include <drivers/nxt_buttons.h>
-#include <drivers/nxt_sonar_sensor.h>
+#include <drivers/nxt_sonar.h>
 
 #include <drivers/nxt_motor.h>
 

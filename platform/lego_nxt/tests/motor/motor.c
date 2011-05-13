@@ -6,14 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
 #include <embox/test.h>
-#include <drivers/nxt_avr.h>
-#include <drivers/pins.h>
-#include <kernel/diag.h>
-#include <unistd.h>
-
-#include <drivers/nxt_buttons.h>
 #include <drivers/nxt_motor.h>
 
 EMBOX_TEST(motor_run);
@@ -31,7 +24,8 @@ static int motor_run(void) {
 
 	motor_start(&motors[0], 100, 360, motor1_stop);
 
-	while (flag);
+	while (flag)
+		;
 
 	return 0;
 }

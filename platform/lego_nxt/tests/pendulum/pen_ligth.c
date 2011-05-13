@@ -7,10 +7,6 @@
  */
 
 #include <embox/test.h>
-#include <drivers/nxt_avr.h>
-#include <drivers/pins.h>
-#include <kernel/diag.h>
-#include <unistd.h>
 #include <drivers/nxt_sensor.h>
 #include <drivers/nxt_motor.h>
 
@@ -30,10 +26,8 @@ void sensor_handler(sensor_t *sensor, sensor_val_t val) {
 }
 
 static int pen_ligth(void) {
-	int power_val = 0x01;
 	int motor_pov = 100;
 	int cnt = 0;
-	int must_replace = 0;
 
 	nxt_sensor_conf_pass(TOUCH_PORT, (sensor_hnd_t) sensor_handler);
 	data_to_avr.input_power = 128;
