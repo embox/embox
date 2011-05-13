@@ -1,8 +1,8 @@
 /**
- * @brief
- * 		Simple test for event dispatch
+ * @file
+ * @brief Simple test for event dispatch
  *
- * @date 28.04.2011
+ * @date 28.04.11
  * @author Malkovsky Nikolay
  */
 
@@ -28,7 +28,6 @@ static void handler1(void *data) {
 }
 
 static int run(void) {
-
 	flag = 0;
 
 	event_send(handler1, &flag);

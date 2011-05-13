@@ -5,7 +5,7 @@
  *  	Constant = 73743071.
  *      Binary representation 00000100011001010011101011011111
  *
- * @date 25.04.2011
+ * @date 25.04.11
  * @author Malkovsky Nikolay
  */
 
@@ -23,13 +23,6 @@ static int _bit_num[32];
 
 EMBOX_TEST(run);
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
 static int run(void) {
 	int result = 0;
 
@@ -44,5 +37,5 @@ static int run(void) {
 		}
 	}
 
-    return result;
+	return result;
 }
