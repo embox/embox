@@ -41,11 +41,11 @@ int eth_header(sk_buff_t *pack, net_device_t *dev, unsigned short type,
 int eth_rebuild_header(sk_buff_t *pack) {
 	ethhdr_t     *eth = (ethhdr_t*) pack->data;
 	net_device_t *dev = pack->dev;
-	eth->h_proto = pack->protocol;
 
+	eth->h_proto = pack->protocol;
 	if (eth->h_proto == htons(ETH_P_IP)) {
 		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
-		return arp_find(eth->h_dest, pack);
+		return arp_resolve(pack);
 	} else {
 		LOG_WARN("%s: unable to resolve type %X addresses.\n",
 					dev->name, (int)eth->h_proto);

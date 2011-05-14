@@ -158,10 +158,12 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	}
 	ops = dev->netdev_ops;
 	stats = ops->ndo_get_stats(dev);
+	printf("\ndev161.try send\n");
 	if (dev->flags & IFF_UP) {
 		if (ETH_P_ARP != skb->protocol) {
 			if (-1 == dev->header_ops->rebuild(skb)) {
-				arp_queue(skb);
+				kfree_skb(skb);
+				stats->tx_err++;
 				return -1;
 			}
 		}

@@ -3,9 +3,10 @@
  * @brief Definitions for the ARP protocol.
  * @details RFC 826
  *
- * @date 11.03.09
+ * @date 11.05.11
  * @author Anton Bondarev
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
 #ifndef ARP_H_
@@ -17,14 +18,14 @@
 /**
  * struct for arp_table_records
  */
-typedef struct arp_table {
+typedef struct {
 	unsigned char hw_addr[ETH_ALEN];  /**< hardware addr */
-	in_addr_t     pw_addr;            /**< protocol addr */
-	in_device_t   *if_handler;        /**< inet device */
+	in_addr_t pw_addr;                /**< protocol addr */
+	in_device_t *if_handler;          /**< inet device */
 	unsigned int ctime;               /**< time to alive */
 	unsigned int state;
 	unsigned int flags;
-} arp_table_t;
+} arp_entity_t;
 
 /* ARP Flag values. */
 #define ATF_COM         0x02          /* completed entry */
@@ -35,19 +36,19 @@ typedef struct arp_table {
  * RFC1122 recommends set it to 60*HZ, if your site uses proxy arp
  * and dynamic routing.
  */
-#define ARP_TIMEOUT          6000
+#define ARP_TIMEOUT          60000
 
 /*
  * How often is ARP cache checked for expire.
  * It is useless to set ARP_CHECK_INTERVAL > ARP_TIMEOUT
  */
-#define ARP_CHECK_INTERVAL   6000
+#define ARP_CHECK_INTERVAL   10000
 
 /*
  * The number of times an broadcast arp request is send, until
  * the host is considered temporarily unreachable.
  */
-#define ARP_MAX_TRIES        3
+#define ARP_MAX_TRIES        3 /* 2 */
 
 /*
  * If an arp request is send, ARP_RES_TIME is the timeout value until the
@@ -55,7 +56,7 @@ typedef struct arp_table {
  * RFC1122: Throttles ARPing, as per 2.3.2.1. (MUST)
  * The recommended minimum timeout is 1 second per destination.
  */
-#define ARP_RES_TIME         500
+#define ARP_RES_TIME         1000
 
 /*
  * Soft limit on ARP cache size.
@@ -65,7 +66,7 @@ typedef struct arp_table {
  */
 #define ARP_CACHE_SIZE     CONFIG_ARP_CACHE_SIZE
 
-extern arp_table_t arp_tables[ARP_CACHE_SIZE];  /** arp table */
+extern arp_entity_t arp_tables[ARP_CACHE_SIZE];  /** arp table */
 
 /**
  * This will find an entry in the ARP table.
@@ -97,7 +98,7 @@ extern int arp_rcv(sk_buff_t *pack, net_device_t *dev,
  * @param haddr MAC address
  * @return pointer to net_packet struct if success else NULL *
  */
-extern int arp_find(unsigned char *haddr, sk_buff_t *pack);
+extern int arp_resolve(sk_buff_t *pack);
 
 /**
  * Create an arp packet.
@@ -110,7 +111,7 @@ extern sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
 /**
  * Create and send an arp packet.
  */
-extern void arp_send(int type, int ptype, in_addr_t dest_ip,
+extern int arp_send(int type, int ptype, in_addr_t dest_ip,
 			struct net_device *dev, in_addr_t src_ip,
 			const unsigned char *dest_hw,
 			const unsigned char *src_hw, const unsigned char *th);
@@ -133,9 +134,11 @@ extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *
  */
 extern int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *hw);
 
+#if 0
 /**
  * Send an arp packet.
  */
-extern void arp_xmit(sk_buff_t *skb);
+extern int arp_xmit(sk_buff_t *skb);
+#endif
 
 #endif /* ARP_H_ */

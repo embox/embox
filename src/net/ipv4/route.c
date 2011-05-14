@@ -68,7 +68,7 @@ int ip_route(sk_buff_t *skb) {
 			skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
 			if (rt_table[i].rt_gateway != INADDR_ANY) {
 				skb->nh.iph->daddr = rt_table[i].rt_gateway;
-				arp_find(skb->mac.ethh->h_dest, skb);
+				return arp_resolve(skb);
 			}
 			return 0;
 		}
