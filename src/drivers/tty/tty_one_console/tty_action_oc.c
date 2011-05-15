@@ -213,12 +213,11 @@ void console_reprint(void) {
 
 //------------------------------------------------------------------------------------------------------------------------
 void console_putchar(char ch) {
-//	struct thread *thread = thread_self();
+	struct thread *thread = thread_self();
 	if (CONSOLE_IS_CURRENT) {
 		diag_putc(ch);
 	}
-	return;
-//	tty_vconsole_putchar(thread->task.own_console, ch);
+	tty_vconsole_putchar(thread->task.own_console, ch);
 }
 
 char console_getchar(void) {

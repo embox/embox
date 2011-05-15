@@ -17,10 +17,10 @@
 #include <kernel/timer.h> /* use it */
 #include <kernel/evdispatch.h>
 
-#include <drivers/tty_action.h>
 #include <drivers/vtbuild.h>
 #include <drivers/vtparse.h>
 #include <drivers/tty.h>
+#include <drivers/tty_action.h>
 
 #include <framework/cmd/api.h> /*we start default shell*/
 
@@ -28,6 +28,7 @@ EMBOX_UNIT_INIT(tty_init);
 
 tty_device_t *cur_tty = NULL;
 
+#define USE_DIRECTLY_EVDISPATCH 0
 #define TTY_IRQ_ID 1
 
 #ifndef CONFIG_TTY_CONSOLE_COUNT
@@ -177,8 +178,8 @@ static void *run_shell(void *data) {
 	struct vconsole *console;
 	int console_number;
 	struct thread *thread;
-	console_number = (int)data;
-	console = vconsole_create(console_number, cur_tty);
+	console = (struct vconsole*)data;
+	console_number = console->id;
 
 	thread = thread_self();
 	thread->task.own_console = console;
@@ -194,8 +195,53 @@ static void *run_shell(void *data) {
 	return NULL;
 }
 
+extern void tty_vconsole_putchar( struct vconsole *con, uint8_t ch);
+extern void tty_vconsole_putchar_cc( struct vconsole *con, uint8_t ch,bool cc_flag);
+
 void timer_handler(uint32_t id) {
+#if ENABLE_CONSOLE_QUEUE
+	uint32_t cc; /* console in cycle */
+#endif
+
+#if USE_DIRECTLY_EVDISPATCH
 	event_dispatch( TTY_IRQ_ID, NULL );
+#else
+
+	if (cur_tty->handle_events || !cur_tty->has_events) return;
+	cur_tty->handle_events = true;
+
+	/* some routine */
+	while (!TTY_RX_QUEUE_EMPTY(cur_tty)) {
+		uint8_t charvar;
+		TTY_RX_QUEUE_POP(cur_tty,charvar);
+		vtparse((struct vtparse *) cur_tty->vtp, charvar);
+	}
+	/* add some routine for PRINT like above */
+
+#if ENABLE_CONSOLE_QUEUE
+	for (cc=0;cc<CONFIG_TTY_CONSOLE_COUNT;++cc) {
+		#define CON cur_tty->consoles[cc]
+		#define CONSOLE_IS_CURRENT (cc == cur_tty->console_cur)
+
+		while (!CONS_TX_QUEUE_EMPTY(CON)) { /* PANIC!!! init console only in new thread, but try handle before that */
+			uint8_t charvar;
+			CONS_TX_QUEUE_POP(CON,charvar);
+			//tty_vconsole_putchar(CON,charvar);
+			tty_vconsole_putchar_cc(CON,charvar,CONSOLE_IS_CURRENT);
+			if (CONSOLE_IS_CURRENT) {
+				cur_tty->file_op->fwrite(&charvar,sizeof(char),1,NULL);
+			}
+		}
+
+		#undef CONSOLE_IS_CURRENT
+		#undef CON
+	}
+#endif
+
+
+	cur_tty->has_events = false;
+	cur_tty->handle_events = false;
+#endif
 }
 
 //TODO remove this
@@ -214,6 +260,11 @@ static int tty_init(void) {
 		return -1;
 	}
 
+	cur_tty->handle_events = true;
+	cur_tty->has_events = false;
+
+	TTY_RX_QUEUE_INIT(cur_tty);
+
 	/* now we want to initialize first console
 	 * it use current thread. we just add pointer to thread resources
 	 */
@@ -222,15 +273,21 @@ static int tty_init(void) {
 		static int console_numbers[CONFIG_TTY_CONSOLE_COUNT];
 		struct thread* new_thread;
 		console_numbers[i] = i;
+
+		vconsole_create(i, cur_tty);
+
 		thread_create(&new_thread,
 				THREAD_FLAG_PRIORITY_INHERIT | THREAD_FLAG_DETACHED,
-				run_shell, (void*) console_numbers[i]);
+				run_shell, (void*) cur_tty->consoles[i]);
 	}
 
 	cur_tty->console_cur = 0; /* foreground console by default */
 
 	set_timer(TTY_IRQ_ID, 10, &timer_handler);
 	event_register( TTY_IRQ_ID, &add_char_handler );
+
+	cur_tty->handle_events = false;
+	cur_tty->has_events = false;
 
 	return 0;
 }
@@ -271,11 +328,12 @@ int tty_get_uniq_number(void) {
  */
 int tty_add_char(tty_device_t *tty, int ch) {
 #if 1
-#if 0
-	softirq_install(TTY_IRQ_ID, &irq_handler, NULL);
-	softirq_raise(TTY_IRQ_ID);
-#endif
+#if USE_DIRECTLY_EVDISPATCH
 	event_send( TTY_IRQ_ID, (void*)((long)ch + 1000) );
+#else
+	TTY_RX_QUEUE_PUSH(tty,ch);
+	tty->has_events = true;
+#endif
 #else
 	vtparse((struct vtparse *) cur_tty->vtp, ch);
 #endif
@@ -286,12 +344,7 @@ uint8_t* tty_readline(tty_device_t *tty) {
 	struct thread *thread = thread_self();
 	//printf("%d %%",tty->consoles[tty->console_cur]->scr_line);
 	//while ((!tty->consoles[tty->console_cur]->out_busy)
-	while ((!thread->task.own_console->out_busy)
-		#if 0
-		||thread->task.own_console!=tty->consoles[tty->console_cur]) {
-		#else
-		){
-		#endif
+	while ((!thread->task.own_console->out_busy)){
 	}
 	thread->task.own_console->out_busy = false;
 	return (uint8_t*) thread->task.own_console->out_buff;

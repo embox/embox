@@ -27,6 +27,30 @@
 
 struct tty_device;
 
+#ifndef TTY_RXBUFF_SIZE
+#define TTY_RXBUFF_SIZE 32
+#endif
+#ifndef TTY_TXBUFF_SIZE
+#define TTY_TXBUFF_SIZE 0x1000
+#endif
+
+#define CONS_TX_QUEUE_INIT(CONS) do { CONS->tx_beg = 0; CONS->tx_end = 0; } while(0)
+#define CONS_TX_QUEUE_FULL(CONS) ( ( TTY_TXBUFF_SIZE + CONS->tx_end - CONS->tx_beg ) % (TTY_TXBUFF_SIZE) \
+	== (TTY_TXBUFF_SIZE-1))
+#define CONS_TX_QUEUE_PUSH(CONS,ELEMENT) \
+	do { \
+		if ( CONS_TX_QUEUE_FULL(CONS) ) break; \
+		CONS->tx_buff[CONS->tx_end++] = ELEMENT; \
+		CONS->tx_end %= TTY_TXBUFF_SIZE; \
+		CONS->tty->has_events = true; \
+	} while (0)
+#define CONS_TX_QUEUE_EMPTY(CONS) ( CONS->tx_beg == CONS->tx_end )
+#define CONS_TX_QUEUE_POP(CONS,ELEMENT_LVALUE) \
+	do { \
+		ELEMENT_LVALUE = CONS->tx_buff[CONS->tx_beg++]; \
+		CONS->tx_beg %= TTY_TXBUFF_SIZE; \
+	} while (0)
+
 typedef struct vconsole {
 	uint8_t  id;
 	struct	 tty_device *tty;
@@ -34,6 +58,9 @@ typedef struct vconsole {
 	size_t   width;
 	uint32_t mode;
 
+	uint8_t  tx_buff[TTY_TXBUFF_SIZE + 1];
+	uint32_t tx_beg;
+	uint32_t tx_end;
 	uint8_t  scr_buff[CONFIG_SCR_BUFF_S];
 	uint8_t  scr_line;		/* current position of cursor */
 	uint8_t  scr_column;

@@ -14,9 +14,18 @@
 
 EMBOX_CMD(exec);
 
+#if 0x0 /* fix warnings: function print_usage not used */
 static void print_usage(void) {
 	printf("Usage: snake\n");
 }
+#endif
+
+#ifndef ESC
+#define ESC 0x1b
+#endif
+#ifndef CSI
+#define CSI '['
+#endif
 
 #define SPEED_INC 5
 #define SIZE 18

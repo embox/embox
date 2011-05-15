@@ -18,6 +18,7 @@ void tac_switch_console(tty_device_t *tty, uint32_t c_after) {
 	//prom_printf("switch to: %d\n",c_after);
 	vconsole_deactivate(tty->consoles[tty->console_cur]);
 	tty->console_cur = c_after;
+	tty->file_op->fwrite("\x1b[2J",sizeof(char),4,NULL); /* tac_clear */
 	#if 0
 	tty_go_left(tty, 7); /* erase `TTY-X$' */
 	printf("TTY-%d$ ", tty->console_cur + 1);
@@ -105,7 +106,11 @@ static inline bool console_is_current(void) {
 			consoles[thread->task.own_console->tty->console_cur])
 	          == thread->task.own_console);
 }
+//#ifdef ENABLE_CONSOLE_QUEUE
+//#define CONSOLE_IS_CURRENT cc_flag
+//#else
 #define CONSOLE_IS_CURRENT	console_is_current()
+//#endif
 #define EXECUTE_IF_CONSOLE_IS_CURRENT(a) do { if (console_is_current()) a; } while (0)
 #else
 #define CONSOLE_IS_CURRENT	true
@@ -146,7 +151,43 @@ void tty_vconsole_putchar( struct vconsole *vc, char ch ) {
 			}
 		}
 	}
-	if (!CONSOLE_IS_CURRENT) return;
+	if (!CONSOLE_IS_CURRENT) return; /* don't work! */
+	if (reprint_all_console) {
+		tty_reprint(vc->tty);
+	}
+#endif
+}
+
+void tty_vconsole_putchar_cc( struct vconsole *vc, char ch, bool cc_flag ) {
+	bool reprint_all_console = false;
+	if (vc==NULL) { /* if hasn't initialized now current_thread->own_console use hardware output */
+		//diag_putc( ch );
+		return;
+	}
+
+	if (ch!='\n') {
+		vconsole_putcharXY(vc, vc->scr_column++, vc->scr_line, ch);
+	} else {
+		vc->scr_column = 0;
+		++ vc->scr_line;
+	}
+#if 1
+	if (vc->scr_column>=vc->width) {
+		vc->scr_column = 0;
+		++ vc->scr_line;
+	}
+
+	if (vc->scr_line>=vc->height) {
+		reprint_all_console = true;
+		vc->scr_line=vc->height-1;
+		copy_forward(&vc->scr_buff[vc->width],&vc->scr_buff[0],sizeof(char)*vc->width*(vc->height-1));
+		{	uint32_t i;
+			for (i=vc->width*(vc->height-1); i<vc->width*vc->height; ++i) {
+				vc->scr_buff[i] = ' ';
+			}
+		}
+	}
+	if (!cc_flag) return; /* don't work! */
 	if (reprint_all_console) {
 		tty_reprint(vc->tty);
 	}
@@ -253,6 +294,7 @@ void tty_reprint(struct tty_device *tty) {
 	uint8_t i,j;
 	#define vc cur_tty->consoles[cur_tty->console_cur]
 	//tty_vconsole_saveline(vc);
+	//vc->tty->file_op->fwrite("\x1b[2J",sizeof(char),4,NULL); /* tac_clear */
 	tac_goto00( vc->tty );
 	for (i = 0; i < (vc->height) ; ++i) {
 		for (j = 0; j< (vc->width) ; ++j ) {
@@ -273,6 +315,7 @@ void tty_vconsole_reprint(struct vconsole *vc) {
 	//while (vc->tty->in_busy);
 	//vc->tty->in_busy = true;
 	//tty_vconsole_saveline(vc);
+	vc->tty->file_op->fwrite("\x1b[2J",sizeof(char),4,NULL); /* tac_clear */ // it realy need?
 	tac_goto00( vc->tty );
 	//vconsole_reprint_nline( vc, vc->height - 1 );
 	for (i = 0; i < (vc->height) ; ++i) {
@@ -296,12 +339,15 @@ void console_reprint(void) {
 
 //------------------------------------------------------------------------------------------------------------------------
 void console_putchar(char ch) {
-	struct thread *thread = thread_self();
+#if ENABLE_CONSOLE_QUEUE
+	CONS_TX_QUEUE_PUSH(thread_self()->task.own_console,ch);
+#else
+	/* TODO only CONS_TX_QUEUE_PUSH */
 	if (CONSOLE_IS_CURRENT) {
-		diag_putc(ch);
+		thread_self()->task.own_console->tty->file_op->fwrite(&ch,sizeof(char),1,NULL);
 	}
-	//return;
-	tty_vconsole_putchar(thread->task.own_console, ch);
+	tty_vconsole_putchar(thread_self()->task.own_console, ch);
+#endif
 }
 
 char console_getchar(void) {
