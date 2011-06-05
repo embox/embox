@@ -80,7 +80,7 @@ static int sensor_send(uint8_t sensor_id) {
 	out[0] = 0x02;
 	out[1] = command;
 	out[4] = 0;
-	tmp =  nxt_sensor_get_value(sens);
+	tmp =  nxt_sensor_get_val(sens);
 	out[8] = (tmp >> 8) & 0xff;
 	out[9] = tmp & 0xff;
 	out[14] = (tmp > EDGE ? 0 : 1);
