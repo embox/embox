@@ -21,7 +21,7 @@ int changed = false;
  * @retval 0 on success
  * @retval nonzero on failure
  */
-
+#if 0
 void clock_tick_handler(int irq_num, void *dev_id) {
 	changed = true;
 	if (state) {
@@ -32,9 +32,10 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 		state = true;
 	}
 }
-
+#endif
 static int run(void) {
 	int i = 0;
+#if 0
 	clock_init();
 	led_init();
 
@@ -42,5 +43,6 @@ static int run(void) {
 
 	for (i = 0xffffff; i; i--) {
 	}
+#endif
 	return (changed ? 0 : -1);
 }
