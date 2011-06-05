@@ -14,7 +14,7 @@
 
 int __print(void(*printchar_handler)(char **str, int c), char **out,
 		const char *format, va_list args);
-
+#if defined(CONFIG_PROM_PRINTF)
 static void printchar(char **str, int c) {
 	if (str) {
 		**str = c;
@@ -27,7 +27,7 @@ static void printchar(char **str, int c) {
 		diag_putc((char) c);
 	}
 }
-#if defined(CONFIG_PROM_PRINTF)
+
 int prom_printf(const char *format, ...) {
 	int ret;
 	va_list args;
