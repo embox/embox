@@ -24,7 +24,7 @@ measure_time_t measure_overhead;
 
 static int measure_init() {
 	size_t i;
-	for (i = 0;; i < INTERRUPT_NRS_TOTAL; i++) {
+	for (i = 0; i < INTERRUPT_NRS_TOTAL; i++) {
 		irq_process[i].ticks = 0;
 		irq_process[i].clocks = 0;
 	}
