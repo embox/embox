@@ -34,8 +34,9 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 }
 #endif
 static int run(void) {
-	int i = 0;
 #if 0
+	int i = 0;
+
 	clock_init();
 	led_init();
 
