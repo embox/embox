@@ -78,4 +78,10 @@ extern size_t nxt_bluetooth_write(uint8_t *buff, size_t len);
 extern void bt_handle(uint8_t *buff);
 extern void bt_set_uart_state(void);
 
+typedef int(*bt_comm_handler_t)(uint8_t *buff);
+
+extern void bluetooth_set_handler(bt_comm_handler_t handler);
+
+extern void bluetooth_set_init_read(int bytes_num);
+
 #endif /* BLUETOOTH_H_ */

@@ -34,12 +34,16 @@ int type = 0;
 
 EMBOX_UNIT_INIT(nxt_direct_comm_init);
 
+static int direct_comm_handle(uint8_t *buff);
+
 static int nxt_direct_comm_init(void) {
 	reader_state = COMM_SIZE;
 	motor_start(&motors[0], 0, 360, NULL);
 	motor_start(&motors[1], 0, 360, NULL);
 	motor_start(&motors[2], 0, 360, NULL);
 	nxt_sensor_conf_pass(&sensors[0], NULL);
+	bluetooth_set_handler(direct_comm_handle);
+	bluetooth_set_init_read(MSG_SIZE_BYTE_CNT);
 	return 0;
 }
 
@@ -128,7 +132,7 @@ static int handle_size(uint8_t *buff) {
 	return size;
 }
 
-int direct_comm_handle(uint8_t *buff) {
+static int direct_comm_handle(uint8_t *buff) {
 	int ret_val = 0;
 	uint8_t *cbuf;
 	uint8_t status;
@@ -155,8 +159,4 @@ int direct_comm_handle(uint8_t *buff) {
 		break;
 	}
 	return ret_val;
-}
-
-int direct_comm_init_read(void) {
-	return MSG_SIZE_BYTE_CNT;
 }

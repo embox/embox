@@ -70,6 +70,17 @@ static void bt_receive_init(void) {
 	bt_buff_pos = 0;
 	nxt_bluetooth_read(bt_buff, 1);
 }
+static bt_comm_handler_t comm_handler = NULL;
+
+void bluetooth_set_handler(bt_comm_handler_t handler) {
+	comm_handler = handler;
+}
+static int init_read_len;
+
+void bluetooth_set_init_read(int bytes_num) {
+	init_read_len = bytes_num;
+
+}
 
 static void bt_us_read_handle(void) {
 	int msg_len = bt_buff[bt_buff_pos];
@@ -112,7 +123,8 @@ static void bt_us_read_handle(void) {
 		TRACE("%x:", bt_buff[0]);
 		next_len = 1;
 #endif
-		next_len = direct_comm_handle(bt_buff);
+		//next_len = direct_comm_handle(bt_buff);
+		next_len = comm_handler(bt_buff);
 		nxt_bluetooth_read(bt_buff, next_len);
 		break;
 	default:
@@ -132,7 +144,7 @@ static void bt_us_receive_init(void) {
 	/*doing last steps for init*/
 	bt_buff_pos = 0;
 
-	nxt_bluetooth_read(bt_buff, direct_comm_init_read());
+	nxt_bluetooth_read(bt_buff, init_read_len);
 }
 
 int bt_last_state;
