@@ -26,8 +26,35 @@ EMBOX_UNIT_INIT(unit_init);
  we should use alloc_skb_queue?*/
 //static SKB_LIST_HEAD(netdev_skb_head);
 
+
+/*paket's types*/
 static LIST_HEAD(ptype_base);
 static LIST_HEAD(ptype_all);
+
+void dev_add_pack(struct packet_type *pt) {
+	if (pt->type == htons(ETH_P_ALL)) {
+		list_add(&pt->list, &ptype_all);
+	} else {
+		list_add(&pt->list, &ptype_base);
+	}
+}
+
+void dev_remove_pack(struct packet_type *pt) {
+	struct list_head *head;
+	struct packet_type *pt1;
+
+	if (pt->type == htons(ETH_P_ALL)) {
+		head = &ptype_all;
+	} else {
+		head = &ptype_base;
+	}
+	list_for_each_entry(pt1, head, list) {
+		if (pt == pt1) {
+			list_del(&pt->list);
+			return;
+		}
+	}
+}
 
 
 /* we use this function in debug mode*/
@@ -61,7 +88,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	}
 	ops = dev->netdev_ops;
 	stats = ops->ndo_get_stats(dev);
-	printf("\ndev161.try send\n");
+
 	if (dev->flags & IFF_UP) {
 		if (ETH_P_ARP != skb->protocol) {
 			if (-1 == dev->header_ops->rebuild(skb)) {
@@ -100,8 +127,8 @@ int netif_rx(struct sk_buff *skb) {
 
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == skb->protocol) {
-				skb_queue_tail(&(dev->dev_queue), skb);
-				netif_rx_schedule(dev);
+			skb_queue_tail(&(dev->dev_queue), skb);
+			netif_rx_schedule(dev);
 			return rc_rx;
 		}
 	}
@@ -121,31 +148,6 @@ int netif_receive_skb(sk_buff_t *skb) {
 	return 0;
 }
 
-
-void dev_add_pack(struct packet_type *pt) {
-	if (pt->type == htons(ETH_P_ALL)) {
-		list_add(&pt->list, &ptype_all);
-	} else {
-		list_add(&pt->list, &ptype_base);
-	}
-}
-
-void dev_remove_pack(struct packet_type *pt) {
-	struct list_head *head;
-	struct packet_type *pt1;
-
-	if (pt->type == htons(ETH_P_ALL)) {
-		head = &ptype_all;
-	} else {
-		head = &ptype_base;
-	}
-	list_for_each_entry(pt1, head, list) {
-		if (pt == pt1) {
-			list_del(&pt->list);
-			return;
-		}
-	}
-}
 
 void netif_rx_schedule(net_device_t *dev) {
 	//TODO:

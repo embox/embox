@@ -63,7 +63,7 @@ int ip_route(sk_buff_t *skb) {
 		if (!(rt_table[i].rt_flags & RTF_UP)) {
 			continue;
 		}
-		if ((skb->nh.iph->daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
+		if ((skb->nh.iph->daddr & rt_table[i].rt_mask) == (rt_table[i].rt_dst & rt_table[i].rt_mask)) {
 			skb->dev = rt_table[i].dev;
 			skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
 			if (rt_table[i].rt_gateway != INADDR_ANY) {
