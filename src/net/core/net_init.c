@@ -23,18 +23,17 @@ static int __init unit_init(void) {
 			TRACE ("\nWrong packet descriptor\n");
 			continue;
 		}
-		TRACE ("\nAdding packet type 0x%03X - %s:\n", (*p_netpack)->type,
+		TRACE ("Adding packet type 0x%03X - %s: ", (*p_netpack)->type,
 				trace_proto_pack_info((*p_netpack)->type));
 
 		if (-1 == (*p_netpack)->init()) {
-			TRACE ("NO\n");
+			TRACE ("failed\n");
 		} else {
 			dev_add_pack((*p_netpack));
-			TRACE ("YES\n");
+			TRACE ("done\n");
 		}
 	}
 	/* Initializaton of icmp socket */
 	icmp_init();
-	TRACE("\n");
 	return 0;
 }

@@ -25,7 +25,7 @@ int __init sock_init(void) {
 	TRACE("\n");
 	for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
 		/*register socket type*/
-		TRACE("  Added sock type 0x%X - %s \n for proto 0x%02X - %s\n\n",
+		TRACE("Added sock type 0x%X - %s (proto 0x%02X - %s)\n",
 				(* p_netsock)->type,
 				trace_sock_type_info((* p_netsock)->type),
 				(* p_netsock)->protocol,

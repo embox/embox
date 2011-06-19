@@ -28,7 +28,7 @@ int inet_protocols_init(void) {
 			LOG_ERROR("inet_protocols_init: Cannot add 0x%X protocol - %s\n",
 					(*p_netproto)->type, trace_proto_info((*p_netproto)->type));
 		}
-		TRACE("  Added 0x%X protocol - %s\n\n", (*p_netproto)->type,
+		TRACE("Added 0x%X protocol - %s\n", (*p_netproto)->type,
 				trace_proto_info((*p_netproto)->type));
 	}
 #else

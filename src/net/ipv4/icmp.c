@@ -313,9 +313,9 @@ void __init icmp_init(void) {
 	int err;
 	err = sock_create_kern(PF_INET, SOCK_RAW, IPPROTO_ICMP, &__icmp_socket);
 	if (err < 0) {
-		printf("Failed to create ICMP control socket.\n");
+		printf("Failed to create ICMP control socket\n");
 	} else {
-		printf("\nAdded ICMP control socket to protocol family 2.\n");
+		printf("Added ICMP control socket to protocol family 2\n");
 	}
 }
 
