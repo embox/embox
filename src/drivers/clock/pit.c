@@ -13,7 +13,7 @@
 #include <hal/interrupt.h>
 #include <asm/io.h>
 
-#define INPUT_CLOCK        1193180 /* clock tick rate, Hz */
+#define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ0 0x0
 
 /**
@@ -80,13 +80,13 @@ void clock_init(void) {
 		(irq_handler_t) &clock_handler, 0, NULL, "PIT");
 }
 
-void clock_setup(useconds_t useconds) {
-	uint32_t divisor = INPUT_CLOCK / useconds;
+void clock_setup(useconds_t HZ) {
+	uint32_t divisor = (INPUT_CLOCK + HZ/2) / HZ;
 
 	/* Set control byte */
-	out8(MODE_REG, PIT_RATEGEN | PIT_16BIT | PIT_SEL0);
+	out8(PIT_RATEGEN | PIT_16BIT | PIT_SEL0, MODE_REG);
 
 	/* Send divisor */
-	out8(CHANNEL0, divisor & 0xFF);
-	out8(CHANNEL0, (divisor >> 8) & 0xFF);
+	out8(divisor & 0xFF, CHANNEL0);
+	out8((divisor >> 8) & 0xFF, CHANNEL0);
 }
