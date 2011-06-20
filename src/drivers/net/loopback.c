@@ -23,15 +23,19 @@ EMBOX_UNIT_INIT(unit_init);
 
 static int loopback_xmit(sk_buff_t *skb, net_device_t *dev) {
 	net_device_stats_t *lb_stats;
+	struct sk_buff *rx_skb;
 	int len;
 
 	if (NULL == skb || NULL == dev) {
 		return -1;
 	}
+	rx_skb = skb_copy(skb, 0);
 	lb_stats = &(dev->stats);
-	len = skb->len;
-	skb->protocol = eth_type_trans(skb, dev);
-	if (netif_rx(skb) == NET_RX_SUCCESS) {
+
+	len = rx_skb->len;
+	rx_skb->protocol = eth_type_trans(rx_skb, dev);
+	rx_skb->dev = skb->dev;
+	if (netif_rx(rx_skb) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
 		lb_stats->tx_bytes += len;
 	} else {
@@ -71,6 +75,7 @@ static void loopback_setup(net_device_t *dev) {
  */
 static int __init unit_init(void) {
 	//net_device_t *net_device;
+	printk("alloc lo interface\n");
 	if (NULL == alloc_netdev(0, "lo", loopback_setup)) {
 		LOG_ERROR("Can't allocate net device\n");
 		return -1;
