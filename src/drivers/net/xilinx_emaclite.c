@@ -156,6 +156,8 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
 
+	kfree_skb(skb);
+
 	return skb->len;
 }
 

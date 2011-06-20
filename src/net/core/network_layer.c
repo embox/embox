@@ -106,7 +106,10 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		stats->tx_packets++;
 		stats->tx_bytes += skb->len;
 	}
+#if 0
+	/* now kfree have to call from drivers*/
 	kfree_skb(skb);
+#endif
 	return 0;
 }
 
