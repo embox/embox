@@ -37,7 +37,7 @@ static int loopback_xmit(sk_buff_t *skb, net_device_t *dev) {
 	skb->protocol = eth_type_trans(rx_skb, dev);
 	skb->dev = skb->dev;
 #endif
-	if (netif_rx(rx_skb) == NET_RX_SUCCESS) {
+	if (netif_rx(skb) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
 		lb_stats->tx_bytes += len;
 	} else {
