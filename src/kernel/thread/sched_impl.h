@@ -26,10 +26,4 @@ static inline void sched_unlock_noswitch(void) {
 	critical_leave(CRITICAL_PREEMPT);
 }
 
-static inline void sched_unlock(void) {
-	extern void sched_check_switch(void);
-	sched_unlock_noswitch();
-	sched_check_switch();
-}
-
 #endif /* KERNEL_THREAD_SCHED_IMPL_H_ */

@@ -274,6 +274,11 @@ void sched_check_switch(void) {
 	}
 }
 
+void sched_unlock(void) {
+	sched_unlock_noswitch();
+	sched_check_switch();
+}
+
 static int unit_init(void) {
 	if (set_timer(SCHED_TICK_TIMER_ID, SCHED_TICK_INTERVAL, sched_tick)
 			!= SCHED_TICK_TIMER_ID) {

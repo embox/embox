@@ -49,15 +49,16 @@ static struct run_thread_list priorities[THREAD_PRIORITY_TOTAL];
  * priority. Internal queue is sorted by time of thread adding. Doesn't contain
  * the current thread. Head of run_queue is a thread which most appropriate for
  * execution of all of existing thread.
- * Contains idle_thread (last).
  */
 static struct list_head run_queue;
 
 /* Run queue manipulation methods. */
 static void run_enqueue(struct thread *thread);
-static struct thread *run_dequeue(void);
 static void run_push(struct thread *thread);
+
+static struct thread *run_dequeue(void);
 static struct thread *run_peek(void);
+
 static void run_insert_priority(struct run_thread_list *priority);
 
 /**
@@ -110,9 +111,7 @@ static void run_push(struct thread *thread) {
 static struct thread *run_peek(void) {
 	struct run_thread_list *priority;
 
-	if (list_empty(&run_queue)) {
-		return NULL;
-	}
+	assert(!list_empty(&run_queue));
 
 	priority = list_entry(run_queue.next, struct run_thread_list, priority_link);
 	if (list_empty(&priority->thread_list)) {
@@ -157,22 +156,19 @@ bool sched_policy_stop(struct thread *t) {
 	// TODO only running thread must be managed by sched_policy -- Eldar
 	//assert(t->state == THREAD_STATE_RUNNING);
 
-	if (t == current) {
-		return true;
+	if (t != current) {
+		list_del_init(&t->sched_list);
 	}
-
-	list_del_init(&t->sched_list);
 
 	if (list_empty(&priority->thread_list)) {
 		/* Remove link on list of threads with given priority */
 		list_del_init(&priority->priority_link);
 	}
 
-	return false;
+	return t == current;
 }
 
 struct thread *sched_policy_switch(struct thread *t) {
-	struct run_thread_list *priority = priorities + t->priority;
 	struct thread *next;
 
 	assert(current != NULL);
@@ -187,10 +183,6 @@ struct thread *sched_policy_switch(struct thread *t) {
 		} else {
 			/* Quantum expiration */
 			run_enqueue(current);
-		}
-	} else {
-		if (list_empty(&priority->thread_list)) {
-			list_del_init(&priority->priority_link);
 		}
 	}
 
