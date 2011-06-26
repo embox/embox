@@ -122,13 +122,13 @@ endef
 #   The value to assign to a variable named as the object.
 __object_handle_value = \
   $$(if $$(filter $0,$$(value 0)),$ \
-      $$(warning invoking $$0.$$1($$(value 2)$ \
-          $$(if $$(value 3),$$(\comma)$$(if $$(findstring $$(\n),$$3),<...>,$$3))))$ \
       $$(foreach 0,$$(value 1),$$(foreach 1,$0,$ \
           $${eval __object_tmp__ := $$(or \
                 $$(value $(subst $$,$$$$,$(,))$$0),$ \
                 $$(error $$1: No such member: '$$0'))}$ \
       $$(__object_tmp__))),$$(call $0,to_string))
+#      $$(warning invoking $$0.$$1($$(value 2)$ \
+#          $$(if $$(value 3),$$(\comma)$$(if $$(findstring $$(\n),$$3),<...>,$$3))))$ \
 
 # Return: new object identifier
 __object_alloc = \
@@ -289,9 +289,9 @@ define __class_class
   # Return: Member name if it is ok
   $,__init_member = \
     $(and $(or $(filter method field%,$2), \
-               $(info $($1): Unrecognized member type: $2)), \
+               $(warning $($1): Unrecognized member type: '$2')), \
           $(or $(filter-out $($1.members),$3), \
-               $(info $($1): Conflicting name for member: $3)), \
+               $(warning $($1): Redefinition of member '$3')), \
           $(or $(filter method,$2),$ \
                $(call $1,__init_field,$3,$(call __field_index,$2))), \
           ${eval $$1.members += $$3}$3)
@@ -305,7 +305,7 @@ define __class_class
           ${eval $(value __field_init_mk)}$2)
 
   # Return: string representation
-  $,to_string  = $($1.name)
+  $,to_string  = Class '$($1.name)'
 
 endef
 
@@ -313,9 +313,9 @@ endef
 # 2. Class name
 # 3. Unexpanded value of class content
 __class_init = \
+  ${eval $$1.name := $$2} \
   $(call var_list_filter_out_invoke,__init_member_filter,$1, \
-      $(.VARIABLES)${eval $3}) \
-  $(call $1,name,=,$2)
+      $(.VARIABLES)${eval $3})
 
 #
 # Bootstrap...
@@ -330,14 +330,10 @@ $(call __class,class) := $(__class_object)
 # Some parts of class instance for 'class' must be prepared by hand in order to
 # the first 'new' could perform its job properly. These include constructor and
 # fields (both default values and setters).
-$(__class_object).fields := fields members name
 $(foreach 1,$(__class_object), \
   ${eval $$,class = $$(__class_init)} \
-  $(foreach 2,$($1.fields), \
-    ${eval $$1.$$2 := } \
-  ) \
+  $(foreach 2,fields members name,${eval $$1.$$2 := }) \
 )
-#    ${eval $$(,)$2 = $(__field_handle_value)} \
 
 # Now we can use regular 'new'.
 __class_object := $(call new,class,class,$(value __class_class))
