@@ -89,8 +89,8 @@ nolastword = \
 #
 # Params:
 #  1. The first string
-#  1. The second string
-# Return: Returns the result of string concatenation
+#  2. The second string
+# Return: the result of string concatenation
 #
 append = \
   $1$(if $(and $2,$1), )$2
@@ -102,10 +102,23 @@ append = \
 #
 # Params:
 #  1. The first string
-#  1. The second string
-# Return: Returns the result of string concatenation
+#  2. The second string
+# Return: the result of string concatenation
 #
 prepend = \
   $2$(if $(and $1,$2), )$1
+
+##
+# Function: filter-patsubst
+# Strict version of patsubst. Leaves only those words that match the pattern.
+#
+# Params:
+#  1. Pattern
+#  2. Replacement
+#  3. String
+# Return: the result of patsubst applied to filtered string
+#
+filter-patsubst = \
+  $(patsubst $1,$2,$(filter $1,$3))
 
 endif # __core_string_mk

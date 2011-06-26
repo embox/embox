@@ -73,10 +73,16 @@ include core/string.mk
 include util/var/assign.mk
 include util/var/list.mk
 
+##
+# Function: new
+# Creates a new instance of the specified class.
+# Semantics of this function are assumed to be obvious...
+#
 # Params:
 #   1. Class name (implicitly used in __class)
 #  ... Constructor arguments
-# Return: the newly created object
+# Return:
+#      The newly created object.
 new = \
   $(foreach 0,$(or \
         $(foreach 1,$(value $(__class)),$(foreach 0,$(__object_alloc),$ \
@@ -84,31 +90,26 @@ new = \
         $(error $0: class '$1' not found)) \
      ,$(and $($0),)$0)
 
-
-# TODO: expansion context for fields
 # Params:
 #   0. Object
 #   1. Class
-__object_init = \
-  ${eval $0 = $(__object_handle_value)}$ \
-  $(foreach field,$($1.fields),${eval $0.$(field) := $$($$(.)$(field))})
+#  ... Constructor arguments
+__object_init = $(strip \
+  ${eval $0 = $(__object_handle_value)} \
+  $(foreach __field,$($1.fields), \
+    $(foreach __field_name,$(basename $(field)), \
+     $(foreach __field_index,$(suffix $(field)), \
+       ${eval $(value __object_init_field_mk)} \
+    ))) \
+)
 
-# Must be called after all classes have been defined.
-class_register_all = \
-  $(call var_list_map,__class_register_filter)
-
-# 1. Variable name
-__class_register_filter = \
-  $(if $(and $(filter 2,$(words $1)), \
-             $(filter class,$(call firstword,$1))), \
-       $(call __class_register,$(word 2,$1),$(value $1)))
-
-# 1. Class name
-# 2. Value of class variable
-__class_register = \
-  $(if $(value $(__class)), \
-      $(error class_register_all: Redefinition of class '$1'), \
-      ${eval $(__class) := $(call new,class,$1,$2)})
+# Params:
+#   0. Object
+#   1. Class
+#  ... Constructor arguments
+define __object_init_field_mk
+  $0.$(__field_name) := $($(call __member_prefix,$1,field$(__field_index)))
+endef
 
 # Params:
 #   0. Object
@@ -129,22 +130,97 @@ __object_handle_value = \
                 $$(error $$1: No such member: '$$0'))}$ \
       $$(__object_tmp__))),$$(call $0,to_string))
 
+# Return: new object identifier
+__object_alloc = \
+  __obj_$(words $(__object_instance_cnt))${eval __object_instance_cnt += x}
+# If you change initial value do not forget to modify bootstrap code.
+__object_instance_cnt :=# Initially empty.
+
+#
+# Generic member definitions and name checking.
+#
+
+# 1. Class
+. = $(foreach 0,$(call __member_prefix,$1,$(__field_alloc)),${eval \
+        $$1.fields += $$0}$0)
+
+# 1. Class
+, = $(call __member_prefix,$1,method)
+
+# 1. Class
+# 2. Member type ('field000' or 'method')
+__member_prefix = __member$1_$2_$$
+
+# 1. Class
+# 2. Member variable name
+# Return: Member type or empty on error
+__member_type = \
+  $(word 1,$(__member_split))
+
+# 1. Class
+# 2. Member variable name
+# Return: Member name or empty on error
+__member_name = \
+  $(word 2,$(__member_split))
+
+# 1. Class
+# 2. Member variable name
+# Return: value of 2 words ('type' 'name') or empty on error
+__member_split = \
+  $(and $(call singleword,$2), \
+        $(call __member_split_check,$1,$(subst $$,$$ $$,$2)))
+
+# 1. Class
+# 2. Member variable name splitted into 2 words
+# Return: value of 2 words ('type' 'name') or empty on error
+__member_split_check = \
+  $(and $(filter 2,$(words $2)), \
+        $(call __member_check,$(call filter-patsubst,$ \
+                   $(call __member_prefix,$1,%),%,$(word 1,$2)),$ \
+                     $(call filter-patsubst,$$%,%,$(word 2,$2))))
+
+# 1. Supposed member type
+# 2. Supposed member name
+# Return: value of 2 words ('type' 'name') or empty on error
+__member_check = \
+  $(and $1,$2,$1 $2)
+
+#
+# Field specific.
+#
+
+# 1. Field member type ('field000')
+# Return: extracted field index ('000') or empty on error
+__field_index = \
+  $(call filter-patsubst,field%,%,$1)
+
+__field_alloc = \
+  field$(words $(__field_index_cnt))${eval __field_index_cnt += x}
+__field_index_cnt :=
+
+# 1. Class
+# 2. Field name
+# 3. Field index
+define __field_init_mk
+  # Replace period function expansion ('$.') in value of 'fields'
+  # with field name and index separated by period (name.index).
+  $1.fields := $($1.fields:$(call __member_prefix,$1,$3)=$2.$3)
+  # Define the corresponding getter/setter.
+  $,$2 = $(__field_handle)
+endef
+
 # Params:
-#   1. Class
-#   2. Field name
-# Escaped:
 #   0. Field name (the handle itself)
 #   1. This
 #   2. Set operator, if any
 #   3. Value being set, if any
 # Return:
-#   The value to assign to the field setter method.
-__field_handle_value = \
-  $$(if $$(value 2),$ \
-      $$(and $$(or \
-          $$(call __field_set_$(subst :,,$$(strip $$2)),$$1.$2,$$(value 3)), \
-          $$(error $$1.$2: Invalid operator: '$$2')),),$ \
-      $$($$1.$2))
+#   The field value if set operator is omited, empty otherwise.
+__field_handle = \
+  $(if $(value 2),$ \
+      $(and $(or $(call __field_set_$(subst :,,$(strip $2)),$1.$0,$(value 3)),\
+                 $(error $1.$0: Invalid operator: '$2')),),$ \
+      $($1.$0))
 
 # __field_set_xxx
 $(foreach op,+= -= *= ?=, \
@@ -152,22 +228,30 @@ $(foreach op,+= -= *= ?=, \
 # __field_set_= is a special case
 $(call var_assign_recursive,__field_set_=,$(value var:=)x)
 
-# Return: new object identifier.
-__object_alloc = \
-  __obj_$(words $(__object_instance_cnt))${eval __object_instance_cnt += x}
-__object_instance_cnt :=
+#
+# Class registering.
+#
 
-# Params:
-#   1. Class object
-. = __class_$1_field_$$_
-# Params:
-#   1. Class object
-, = __class_$1_method_$$_
+# Must be called after all classes have been defined.
+class_register_all = \
+  $(call var_list_map,__class_register_filter)
 
-# Params:
-#   1. Class name
+# 1. Variable name
+__class_register_filter = \
+  $(if $(and $(filter 2,$(words $1)), \
+             $(filter class,$(call firstword,$1))), \
+       $(call __class_register,$(word 2,$1),$(value $1)))
+
+# 1. Class name
+# 2. Value of class variable
+__class_register = \
+  $(if $(value $(__class)), \
+      $(error class_register_all: Redefinition of class '$1'), \
+      ${eval $(__class) := $(call new,class,$1,$2)})
+
+# 1. Class name
 __class = \
-  __class_$$_$1
+  __class_$$$1
 
 #
 # Class 'class' handles all classes except itself.
@@ -177,8 +261,8 @@ define __class_class
   # The name of the class
   $.name    =
 
+  $.members =
   $.fields  =
-  $.methods =
 
   # 1. This
   # 2. Class name
@@ -190,32 +274,35 @@ define __class_class
   # 2. Class variable
   # Return: Member name if it is ok
   $,__init_member_filter = \
-    $(or $(and $(call singleword,$2),$(or \
-           $(and $(filter $(,)%,$2),$(call $1,__init_method,$(2:$(,)%=%))), \
-           $(and $(filter $(.)%,$2),$(call $1,__init_field ,$(2:$(.)%=%))))), \
-        $(error $($1): Invalid member: '$2'))
+    $(or $(call $1,__init_member_check,$(call __member_split,$1,$2)), \
+         $(error $($1): Invalid member: '$2'))
 
   # 1. This
-  # 2. Member name
-  # Return: Member name if it is ok, empty otherwise
-  $,__init_member_check_name = \
-    $(or $(filter-out $($1.methods) $($1.fields),$2), \
-         $(info $($1): Conflicting name for field and method: $2))
+  # 2. Composite member name: 'type' 'name'
+  # Return: Member name if it is ok
+  $,__init_member_check = \
+    $(and $2,$(call $1,__init_member,$(word 1,$2),$(word 2,$2)))
 
   # 1. This
-  # 2. Method name
-  # Return: Member name if it is ok, empty otherwise
-  $,__init_method = \
-    $(and $(call $1,__init_member_check_name,$2), \
-          $(call $1,methods,+=,$2)$2)
+  # 2. Member type ('method' or 'field000')
+  # 3. Member name
+  # Return: Member name if it is ok
+  $,__init_member = \
+    $(and $(or $(filter method field%,$2), \
+               $(info $($1): Unrecognized member type: $2)), \
+          $(or $(filter-out $($1.members),$3), \
+               $(info $($1): Conflicting name for member: $3)), \
+          $(or $(filter method,$2),$ \
+               $(call $1,__init_field,$3,$(call __field_index,$2))), \
+          ${eval $$1.members += $$3}$3)
 
   # 1. This
   # 2. Field name
-  # Return: Member name if it is ok, empty otherwise
+  # 3. Field index
+  # Return: Member name if it is ok
   $,__init_field = \
-    $(and $(call $1,__init_member_check_name,$2), \
-          $(call $1,fields,+=,$2)$2$ \
-          ${eval $$(,)$2 = $(__field_handle_value)})
+    $(and $3,$(filter $(call __member_prefix,$1,field$3),$($1.fields)), \
+          ${eval $(value __field_init_mk)}$2)
 
   # Return: string representation
   $,to_string  = $($1.name)
@@ -226,9 +313,9 @@ endef
 # 2. Class name
 # 3. Unexpanded value of class content
 __class_init = \
-  $(call $1,name,=,$2) \
   $(call var_list_filter_out_invoke,__init_member_filter,$1, \
-      $(.VARIABLES)${eval $3})
+      $(.VARIABLES)${eval $3}) \
+  $(call $1,name,=,$2)
 
 #
 # Bootstrap...
@@ -243,19 +330,18 @@ $(call __class,class) := $(__class_object)
 # Some parts of class instance for 'class' must be prepared by hand in order to
 # the first 'new' could perform its job properly. These include constructor and
 # fields (both default values and setters).
-$(__class_object).fields := fields methods name
+$(__class_object).fields := fields members name
 $(foreach 1,$(__class_object), \
   ${eval $$,class = $$(__class_init)} \
   $(foreach 2,$($1.fields), \
-    ${eval $$(.)$2 = } \
-    ${eval $$(,)$2 = $(__field_handle_value)} \
+    ${eval $$1.$$2 := } \
   ) \
 )
+#    ${eval $$(,)$2 = $(__field_handle_value)} \
 
 # Now we can use regular 'new'.
 __class_object := $(call new,class,class,$(value __class_class))
 $(if $(filter-out __obj_0,$(__class_object)), \
-  $(error Something went wrong during object subsystem bootstrap))
+  $(error Something went wrong during bootstrap of object subsystem))
 
 endif # __core_object_mk
-
