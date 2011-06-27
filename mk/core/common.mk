@@ -12,6 +12,7 @@ __core_common_mk := 1
 
 ## Single space.
 \space := $(subst ,, )
+\s     := $(\space)
 
 ##
 # This variable named by a single space expands to empty string.
@@ -31,6 +32,8 @@ endef
 $(\space)\n          := $(\n)
 $(\space)\n$(\space) := $(\n)
          \n$(\space) := $(\n)
+
+\h := \#
 
 \comma := ,
 

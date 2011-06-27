@@ -42,7 +42,10 @@ include util/list.mk
 include util/var/assign.mk
 
 $(or define) = \
-  $(call var_assign_singleline_recursive,$1,$(call __define_strip,$(value $1)))
+ $(call __define,$1,$(or $(value 2),$1))
+
+__define = \
+  $(call var_assign_singleline_recursive,$1,$(call __define_strip,$(value $2)))
 
 # 1. Text
 __define_strip = \
