@@ -91,6 +91,39 @@ new = \
         $(error $0: class '$1' not found) \
    ),$(and $($0),)$0)
 
+#
+# Implementation notes:
+#
+# $(foreach 0,$(or
+#
+#       # Load requested class if it has not been loaded yet.
+#       # Assign pointer of the corresponding object to '1'
+#       $(foreach 1,$(or $(__class_object),$(__class_load))
+#
+#            # Allocate a new object descriptor and assign its value to '0'.
+#           ,$(foreach 0,$(__object_alloc)
+#
+#               # Define a variable named as the descriptor.
+#               # Also initialize all object fields in a proper order.
+#               ,$(__object_init)$0
+#
+#         )), # Return pointer to the allocated object.
+#
+#       # Die if class loader fails to find a class with the specified name.
+#       $(error $0: class '$1' not found)
+#
+#    ), # Pointer is assigned to '0' again.
+#
+#    # Expanding the newly created object handle in the following context:
+#    #   0. Object
+#    #   1. Class name (argument of 'new')
+#    # It is exactly the same as invoking constructor explicitly!
+#    $(and $($0),)
+#
+# # Finally return the pointer stored in '0'.
+# $0)
+#
+
 # Params:
 #   0. Object
 #   1. Class
