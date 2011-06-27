@@ -69,6 +69,7 @@ __core_object_mk := 1
 
 include core/common.mk
 include core/string.mk
+include core/define.mk
 
 include util/var/assign.mk
 include util/var/list.mk
@@ -83,46 +84,40 @@ include util/var/list.mk
 #  ... Constructor arguments
 # Return:
 #      The newly created object.
-new = \
-  $(foreach 0,$(or \
-        $(foreach 1,$(or $(__class_object),$(__class_load)) \
-            ,$(foreach 0,$(__object_alloc) \
-                ,$(__object_init)$0)), \
-        $(error $0: class '$1' not found) \
-   ),$(and $($0),)$0)
+define new
 
-#
-# Implementation notes:
-#
-# $(foreach 0,$(or
-#
-#       # Load requested class if it has not been loaded yet.
-#       # Assign pointer of the corresponding object to '1'
-#       $(foreach 1,$(or $(__class_object),$(__class_load))
-#
-#            # Allocate a new object descriptor and assign its value to '0'.
-#           ,$(foreach 0,$(__object_alloc)
-#
-#               # Define a variable named as the descriptor.
-#               # Also initialize all object fields in a proper order.
-#               ,$(__object_init)$0
-#
-#         )), # Return pointer to the allocated object.
-#
-#       # Die if class loader fails to find a class with the specified name.
-#       $(error $0: class '$1' not found)
-#
-#    ), # Pointer is assigned to '0' again.
-#
-#    # Expanding the newly created object handle in the following context:
-#    #   0. Object
-#    #   1. Class name (argument of 'new')
-#    # It is exactly the same as invoking constructor explicitly!
-#    $(and $($0),)
-#
-# # Finally return the pointer stored in '0'.
-# $0)
-#
+  # Argument '0' is overridden here with a pointer to object being created.
+  $(foreach 0,$(or #
+
+        # Load requested class if it has not been loaded yet.
+        # Assign pointer of the corresponding object to '1'
+        $(foreach 1,$(or $(__class_object),$(__class_load)),
+
+             # Allocate a new object descriptor and assign its value to '0'.
+             $(foreach 0,$(__object_alloc),
+
+                # Define a variable named as the descriptor.
+                # Also initialize all object fields in a proper order.
+                $(__object_init)$0
+
+         )),# Return pointer to the allocated object.
+
+        # Die if class loader fails to find a class with the specified name.
+        $(error $0: class '$1' not found)
+
+     ),# Pointer is assigned to '0' again.
+
+     # Expanding the newly created object handle in the following context:
+     #   0. Object
+     #   1. Class name (argument of 'new')
+     # It is exactly the same as invoking constructor explicitly!
+     $(and $($0),)
+
+  # Finally return the pointer stored in '0'.
+  $0)
+
+endef
+$(call define,new)
 
 # Params:
 #   0. Object
@@ -358,8 +353,9 @@ $(foreach 1,$(call __class_object,class), \
 )
 
 # Now we can use regular 'new'.
-$(foreach __class_object_new,$(call new,class,class,$(value __class_class)), \
-  $(if $(filter-out $(call __class_object,class),$(__class_object_new)), \
-    $(error Something went wrong during bootstrap of object subsystem)))
+$(if $(filter-out \
+         $(call new,class,class,$(value __class_class)), \
+         $(call __class_object,class)), \
+     $(error Something went wrong during bootstrap of object subsystem))
 
 endif # __core_object_mk
