@@ -86,7 +86,7 @@ include util/var/list.mk
 #      The newly created object.
 define new
 	# Argument '0' is overridden here with a pointer to object being created.
-	$(foreach 0,$(or #
+	$(foreach 0,$(or \
 		# Load requested class if it has not been loaded yet.
 		# Assign pointer of the corresponding object to '1'
 		$(foreach 1,$(or $(__class_object),$(__class_load)),
@@ -116,14 +116,21 @@ $(call define,new)
 #   0. Object
 #   1. Class
 #  ... Constructor arguments
-__object_init = $(strip \
-  ${eval $0 = $(__object_handle_value)} \
-  $(foreach __field,$($1.fields), \
-    $(foreach __field_name,$(basename $(field)), \
-     $(foreach __field_index,$(suffix $(field)), \
-       ${eval $(value __object_init_field_mk)} \
-    ))) \
-)
+define __object_init
+	${eval \
+		$0 = $(__object_handle_value)
+	}
+	$(foreach __field,$($1.fields),
+		$(foreach __field_name,$(basename $(field)),
+			$(foreach __field_index,$(suffix $(field)),
+				${eval \
+					$(value __object_init_field_mk)
+				}
+			)
+		)
+	)
+endef
+$(call define,__object_init)
 
 # Params:
 #   0. Object
@@ -142,13 +149,23 @@ endef
 #  ... Arguments
 # Return:
 #   The value to assign to a variable named as the object.
-__object_handle_value = \
-  $$(if $$(filter $0,$$(value 0)),$ \
-      $$(foreach 0,$$(value 1),$$(foreach 1,$0,$ \
-          $${eval __object_tmp__ := $$(or \
-                $$(value $(subst $$,$$$$,$(,))$$0),$ \
-                $$(error $$1: No such member: '$$0'))}$ \
-      $$(__object_tmp__))),$$(call $0,to_string))
+define __object_handle_value
+	$$(if $$(filter $0,$$(value 0)),
+		$$(foreach 0,$$(value 1),
+			$$(foreach 1,$0,
+				$${eval \
+					__object_tmp__ := $$(or \
+						$$(value $(subst $$,$$$$,$(,))$$0),
+						$$(error $$1: No such member: '$$0')
+					)
+				}
+				$$(__object_tmp__)
+			)
+		),
+		$$(call $0,to_string)
+	)
+endef
+$(call define,__object_handle_value)
 
 #     $$(warning invoking $$0.$$1($$(value 2)$ \
 #         $$(if $$(value 3),$$(\comma)$$(if $$(findstring $$(\n),$$3),<...>,$$3))))$ \
