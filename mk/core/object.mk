@@ -79,16 +79,17 @@ include util/var/list.mk
 # Semantics of this function are assumed to be obvious...
 #
 # Params:
-#   1. Class name (implicitly used in __class)
+#   1. Class name
 #  ... Constructor arguments
 # Return:
 #      The newly created object.
 new = \
   $(foreach 0,$(or \
-        $(foreach 1,$(value $(__class)),$(foreach 0,$(__object_alloc),$ \
-             $(__object_init)$0)), \
-        $(error $0: class '$1' not found)) \
-     ,$(and $($0),)$0)
+        $(foreach 1,$(or $(__class_object),$(__class_load)) \
+            ,$(foreach 0,$(__object_alloc) \
+                ,$(__object_init)$0)), \
+        $(error $0: class '$1' not found) \
+   ),$(and $($0),)$0)
 
 # Params:
 #   0. Object
@@ -130,9 +131,10 @@ __object_handle_value = \
 
 #     $$(warning invoking $$0.$$1($$(value 2)$ \
 #         $$(if $$(value 3),$$(\comma)$$(if $$(findstring $$(\n),$$3),<...>,$$3))))$ \
+
 # Return: new object identifier
 __object_alloc = \
-  __obj_$(words $(__object_instance_cnt))${eval __object_instance_cnt += x}
+  __obj$(words $(__object_instance_cnt))${eval __object_instance_cnt += x}
 # If you change initial value do not forget to modify bootstrap code.
 __object_instance_cnt :=# Initially empty.
 
@@ -204,29 +206,35 @@ $(foreach op,+= -= *= ?=, \
 $(call var_assign_recursive,__field_set_=,$(value var:=)x)
 
 #
-# Class registering.
+# Class loading.
 #
 
-# Must be called after all classes have been defined.
-class_register_all = \
-  $(call var_list_map,__class_register_filter)
+# 1. Class name
+# Return: class object or empty if such class is not defined
+__class_load = $(strip $(and \
+  $(call singleword,$(subst $$,$$ $$,$(subst %,% %,$1))), \
+  $(call var_list_map,__class_load_filter,,$1) \
+))
 
 # 1. Variable name
-__class_register_filter = \
-  $(if $(and $(filter 2,$(words $1)), \
-             $(filter class,$(call firstword,$1))), \
-       $(call __class_register,$(word 2,$1),$(value $1)))
-
-# 1. Class name
-# 2. Value of class variable
-__class_register = \
-  $(if $(value $(__class)), \
-      $(error class_register_all: Redefinition of class '$1'), \
-      ${eval $(__class) := $(call new,class,$1,$2)})
+# 2. Class name
+__class_load_filter = $(and \
+  $(call doubleword,$1), \
+  $(filter class,$(word 1,$1)), \
+  $(filter    $2,$(word 2,$1)), \
+  $(or $(call __class_object,$2), \
+       $(error __class_load: Attempting to reload class '$2')), \
+  ${eval $(call __class,$2) := $(call new,class,$2,$(value $1))} \
+)
 
 # 1. Class name
 __class = \
   __class_$$$1
+
+# 1. Class name
+# Return: class object or empty if such class is not loaded
+__class_object = \
+  $(value $(__class))
 
 #
 # Class 'class' handles all classes except itself.
@@ -303,23 +311,22 @@ __class_init = \
 # Bootstrap...
 #
 
-# The first object will represent the instance of class 'class'.
-# It is not allocated as usual, and it equals to an object which will be
-# allocated when we'll call 'new' for the first time namely 'new,class,class'.
-__class_object := __obj_0
-$(call __class,class) := $(__class_object)
+# The first created object will be the instance of class 'class'.
+# It is not allocated as usual, but we make it so that its descriptor equals
+# to an object which will be allocated by the first call to 'new'.
+$(call __class,class) := __obj0# In respect to object allocation logic.
 
 # Some parts of class instance for 'class' must be prepared by hand in order to
 # the first 'new' could perform its job properly. These include constructor and
 # fields (both default values and setters).
-$(foreach 1,$(__class_object), \
+$(foreach 1,$(call __class_object,class), \
   ${eval $$,class = $$(__class_init)} \
   $(foreach 2,fields members name,${eval $$1.$$2 := }) \
 )
 
 # Now we can use regular 'new'.
-__class_object := $(call new,class,class,$(value __class_class))
-$(if $(filter-out __obj_0,$(__class_object)), \
-  $(error Something went wrong during bootstrap of object subsystem))
+$(foreach __class_object_new,$(call new,class,class,$(value __class_class)), \
+  $(if $(filter-out $(call __class_object,class),$(__class_object_new)), \
+    $(error Something went wrong during bootstrap of object subsystem)))
 
 endif # __core_object_mk
