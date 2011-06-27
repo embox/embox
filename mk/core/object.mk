@@ -127,9 +127,9 @@ __object_handle_value = \
                 $$(value $(subst $$,$$$$,$(,))$$0),$ \
                 $$(error $$1: No such member: '$$0'))}$ \
       $$(__object_tmp__))),$$(call $0,to_string))
-#      $$(warning invoking $$0.$$1($$(value 2)$ \
-#          $$(if $$(value 3),$$(\comma)$$(if $$(findstring $$(\n),$$3),<...>,$$3))))$ \
 
+#     $$(warning invoking $$0.$$1($$(value 2)$ \
+#         $$(if $$(value 3),$$(\comma)$$(if $$(findstring $$(\n),$$3),<...>,$$3))))$ \
 # Return: new object identifier
 __object_alloc = \
   __obj_$(words $(__object_instance_cnt))${eval __object_instance_cnt += x}
@@ -153,37 +153,12 @@ __member_prefix = __member$1_$2_$$
 
 # 1. Class
 # 2. Member variable name
-# Return: Member type or empty on error
-__member_type = \
-  $(word 1,$(__member_split))
-
-# 1. Class
-# 2. Member variable name
-# Return: Member name or empty on error
-__member_name = \
-  $(word 2,$(__member_split))
-
-# 1. Class
-# 2. Member variable name
-# Return: value of 2 words ('type' 'name') or empty on error
+# Return: 'type' as the first word and 'name' as the rest or empty on error
 __member_split = \
-  $(and $(call singleword,$2), \
-        $(call __member_split_check,$1,$(subst $$,$$ $$,$2)))
-
-# 1. Class
-# 2. Member variable name splitted into 2 words
-# Return: value of 2 words ('type' 'name') or empty on error
-__member_split_check = \
-  $(and $(filter 2,$(words $2)), \
-        $(call __member_check,$(call filter-patsubst,$ \
-                   $(call __member_prefix,$1,%),%,$(word 1,$2)),$ \
-                     $(call filter-patsubst,$$%,%,$(word 2,$2))))
-
-# 1. Supposed member type
-# 2. Supposed member name
-# Return: value of 2 words ('type' 'name') or empty on error
-__member_check = \
-  $(and $1,$2,$1 $2)
+  $(foreach type, \
+      $(call filter-patsubst,$(call __member_prefix,$1,%),%, \
+        $(firstword $(subst $$,$$ ,$2))),$(type) \
+    $(subst $(call __member_prefix,$1,$(type)),,$2))
 
 #
 # Field specific.
@@ -274,27 +249,34 @@ define __class_class
   # 2. Class variable
   # Return: Member name if it is ok
   $,__init_member_filter = \
-    $(or $(call $1,__init_member_check,$(call __member_split,$1,$2)), \
+    $(or $(call $1,__init_member_split,$(__member_split)), \
          $(error $($1): Invalid member: '$2'))
 
   # 1. This
-  # 2. Composite member name: 'type' 'name'
+  # 2. Member ('type' 'name') or empty if type is not recognized
   # Return: Member name if it is ok
-  $,__init_member_check = \
-    $(and $2,$(call $1,__init_member,$(word 1,$2),$(word 2,$2)))
+  $,__init_member_split = \
+     $(call $1,__init_member,$(call firstword,$2),$(call nofirstword,$2))
 
   # 1. This
   # 2. Member type ('method' or 'field000')
   # 3. Member name
   # Return: Member name if it is ok
-  $,__init_member = \
-    $(and $(or $(filter method field%,$2), \
-               $(warning $($1): Unrecognized member type: '$2')), \
-          $(or $(filter-out $($1.members),$3), \
-               $(warning $($1): Redefinition of member '$3')), \
-          $(or $(filter method,$2),$ \
-               $(call $1,__init_field,$3,$(call __field_index,$2))), \
-          ${eval $$1.members += $$3}$3)
+  $,__init_member = $(and \
+     $(or $2, \
+          $(warning $($1): Unknown member type)), \
+     $(or $(filter method field%,$2), \
+          $(warning $($1): Unrecognized member type: '$2')), \
+     $(or $3, \
+          $(warning $($1): Empty member name)), \
+     $(or $(call singleword,$(subst $$,$$ $$,$3)), \
+          $(warning $($1): Invalid member name: '$3')), \
+     $(or $(filter-out $($1.members),$3), \
+          $(warning $($1): Redefinition of member '$3')), \
+     $(or $(filter method,$2), \
+          $(call $1,__init_field,$3,$(call __field_index,$2))), \
+     ${eval $$1.members += $$3}$3 \
+   )
 
   # 1. This
   # 2. Field name

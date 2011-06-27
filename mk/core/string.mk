@@ -15,9 +15,9 @@ __core_string_mk := 1
 #
 # Params:
 #  1. The string to check
-# Return: True if the specified text has no non-whitespace characters,
-#          false otherwise
-#
+# Return:
+#     True if the specified text has no non-whitespace characters,
+#     false otherwise.
 nowords = \
   $(call not,$(firstword $1))
 
@@ -27,11 +27,23 @@ nowords = \
 #
 # Params:
 #  1. The string to check
-# Return: The word itself if the specified string is a single-word list,
-#          nothing (false) otherwise
-#
+# Return:
+#     The word itself if the specified string is a single-word list,
+#     nothing (false) otherwise.
 singleword = \
   $(if $(word 2,$1),,$(firstword $1))
+
+##
+# Function: doubleword
+# Checks whether the specified string contains exactly two words.
+#
+# Params:
+#  1. The string to check
+# Return:
+#     The unmodified string if it is a double-word list,
+#     nothing (empty string) otherwise.
+doubleword = \
+  $(if $(filter 2,$(words $1)),$1)
 
 ##
 # Function: firstword
@@ -39,8 +51,8 @@ singleword = \
 #
 # Params:
 #  1. The target list of words
-# Return: the first word of the list
-#
+# Return:
+#     The first word of the list.
 firstword = \
   $(firstword $1)# built-in
 
@@ -50,8 +62,8 @@ firstword = \
 #
 # Params:
 #  1. The target list of words
-# Return: the last word of the list
-#
+# Return:
+#     The last word of the list.
 ifeq ($(lastword $(false) $(true)),$(true))
 lastword = \
   $(lastword $1)# built-in
@@ -66,8 +78,8 @@ endif
 #
 # Params:
 #  1. The target list of words
-# Return: the list of words with the first one removed
-#
+# Return:
+#     The list of words with the first one removed.
 nofirstword = \
   $(wordlist 2,$(words $1),$1)
 
@@ -77,8 +89,8 @@ nofirstword = \
 #
 # Params:
 #  1. The target list of words
-# Return: the list of words with the last one removed
-#
+# Return:
+#     The list of words with the last one removed.
 nolastword = \
   $(wordlist 2,$(words $1),x $1)
 
@@ -90,10 +102,10 @@ nolastword = \
 # Params:
 #  1. The first string
 #  2. The second string
-# Return: the result of string concatenation
-#
+# Return:
+#     The result of string concatenation.
 append = \
-  $1$(if $(and $2,$1), )$2
+  $1$(if $2,$(if $1, )$2)
 
 ##
 # Function: prepend
@@ -103,10 +115,10 @@ append = \
 # Params:
 #  1. The first string
 #  2. The second string
-# Return: the result of string concatenation
-#
+# Return:
+#     The result of string concatenation.
 prepend = \
-  $2$(if $(and $1,$2), )$1
+  $2$(if $1,$(if $2, )$1)
 
 ##
 # Function: filter-patsubst
@@ -116,8 +128,8 @@ prepend = \
 #  1. Pattern
 #  2. Replacement
 #  3. String
-# Return: the result of patsubst applied to filtered string
-#
+# Return:
+#     The result of patsubst applied to filtered string.
 filter-patsubst = \
   $(patsubst $1,$2,$(filter $1,$3))
 
