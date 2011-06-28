@@ -48,33 +48,48 @@ include core/string.mk
 include util/list.mk
 include util/var/assign.mk
 
-$(or define) = \
-  $(call var_assign_recursive_sl,$1,$ \
-    $(call __define,$(value $(or $(value 2),$1))))
+$(or define) = $(strip \
+  $(foreach __define_var,$1, \
+    $(call var_assign_recursive_sl,$(__define_var),$ \
+      $(call __define,$(value $(__define_var))))) \
+)
 
 # 1. Text
 __define = \
-    $(call __define_lambda,$ \
+    $(call __define_builtin,$ \
       $(call __define_strip,$ \
         $(subst $$,$$$$,$1)))
 
 # 1. Text
-__define_lambda = \
-  $(call __define_lambda_expand, \
-    $(call list_fold,__define_lambda_fold,$1,$(\paren_open) $(\brace_open)))
+__define_builtin = \
+  $(call __define_builtin_expand, \
+    $(call list_fold,__define_builtin_fold_outer,$1,lambda with))
 
 # 1. Text
-# 2. Open bracket
-__define_lambda_fold = \
-  $(subst $$$$$2lambda ,$$$2call __define_lambda_hook$(\comma),$1)
+# 2. Built-in keyword ('lambda' or 'with')
+__define_builtin_fold_outer = \
+  $(call list_fold,__define_builtin_fold_inner,$1, \
+      $(\paren_open) $(\brace_open),$2)
 
-# Forces each 'lambda' and 'with' occurrence to reflect
-# in __define_lambda_hook invocation.
 # 1. Text
-__define_lambda_expand = \
-  ${eval __define_lambda_tmp__ := $1}$(__define_lambda_tmp__)
+# 2. Open bracket type ('(' or '{')
+# 3. Built-in keyword ('lambda' or 'with')
+__define_builtin_fold_inner = \
+  $(subst $$$$$2$3 ,$$$2call __define_builtin_hook_$3$(\comma),$1)
 
-__define_lambda_hook = $(info $0: [$1])info
+# This will force each 'lambda' and 'with' occurrence to reflect
+# in __define_builtin_hook_xxx invocation.
+# 1. Text
+__define_builtin_expand = \
+  ${eval __define_builtin_tmp__ := $1}$(__define_builtin_tmp__)
+
+__define_builtin_hook_lambda = \
+  $(foreach __define_var,$(__define_builtin_alloc),$ \
+    $(call var_assign_recursive_sl,$(__define_var),$1)$(__define_var))
+
+__define_builtin_alloc = \
+  $(__define_var)__builtin$(words $(__define_builtin_cnt))${eval __define_builtin_cnt += x}
+__define_builtin_cnt :=# Initially empty.
 
 # 1. Text
 __define_strip = \
