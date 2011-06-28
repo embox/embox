@@ -213,4 +213,6 @@ extern const char *find_vendor_name(uint16_t ven_id);
 extern const char *find_device_name(uint16_t dev_id);
 extern const char *find_class_name(uint8_t base, uint8_t sub);
 
+extern int pci_scan_start(void);
+
 #endif /* PCI_H_ */
