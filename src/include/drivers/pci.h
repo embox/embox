@@ -12,30 +12,9 @@
 #include <types.h>
 #include <drivers/pci_id.h>
 #include <lib/list.h>
+#include <drivers/pci_utils.h>
 
-//TODO: move to lspci cmd
 
-typedef struct pci_vendor {
-	uint16_t    ven_id;
-	const char *ven_name;
-} pci_vendor_t;
-
-typedef struct pci_device {
-	uint16_t    ven_id;
-	uint16_t    dev_id;
-	const char *dev_name;
-} pci_device_t;
-
-typedef struct pci_baseclass {
-	uint8_t     baseclass;
-	const char *name;
-} pci_baseclass_t;
-
-typedef struct pci_subclass {
-	uint8_t     baseclass;
-	uint8_t     subclass;
-	const char *name;
-} pci_subclass_t;
 
 /**
  * Allowed up to 256 buses, each with up to 32 devices,
@@ -196,22 +175,6 @@ typedef struct pci_dev {
 	uint32_t bar[6];
 } pci_dev_t;
 
-extern uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint8_t *value);
-extern uint32_t pci_read_config16(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint16_t *value);
-extern uint32_t pci_read_config32(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint32_t *value);
-extern uint32_t pci_write_config8(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint8_t value);
-extern uint32_t pci_write_config16(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint16_t value);
-extern uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint32_t value);
-
-extern const char *find_vendor_name(uint16_t ven_id);
-extern const char *find_device_name(uint16_t dev_id);
-extern const char *find_class_name(uint8_t base, uint8_t sub);
 
 extern int pci_scan_start(void);
 
