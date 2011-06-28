@@ -89,7 +89,7 @@ var_assign_simple = \
 # See also: var_assign_recursive_sl var_assign_recursive_sl
 #
 var_assign_recursive = \
-  $(var_assign)_recursive_$(if $(findstring $(\n),$2),ml,sl)
+  $(var_assign_recursive_$(if $(findstring $(\n),$2),ml,sl))
 
 ##
 # Function: var_assign_recursive_sl
