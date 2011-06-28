@@ -26,7 +26,14 @@
 #
 
 #
-# New way to define make functions.
+# Make functional language extensions:
+#  - Syntactic:
+#    - Function definition with inline comments
+#    - Defining multiline verbose functions
+#    - Using tabs for function indentation
+#    - Using tabs for function indentation
+#  - Semantic:
+#    - 'lambda' and 'with' for defining anonymous inner functions
 #
 #   Date: Jun 28, 2011
 # Author: Eldar Abusalimov
@@ -61,6 +68,9 @@ __define_lambda = \
 __define_lambda_fold = \
   $(subst $$$$$2lambda ,$$$2call __define_lambda_hook$(\comma),$1)
 
+# Forces each 'lambda' and 'with' occurrence to reflect
+# in __define_lambda_hook invocation.
+# 1. Text
 __define_lambda_expand = \
   ${eval __define_lambda_tmp__ := $1}$(__define_lambda_tmp__)
 
