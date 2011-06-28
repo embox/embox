@@ -13,11 +13,13 @@
 #include <stdio.h>
 
 #include <drivers/pci.h>
+#include <drivers/pci_repo.h>
+#include <drivers/pci_utils.h>
 
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: arp [-i if] [-s|d] [-a host] [-m hwaddr] [-h]\n");
+	printf("Usage: lspci [-f] [-h]\n\t[-f] - full info\n");
 }
 
 static void print_error(void) {
