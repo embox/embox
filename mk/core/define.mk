@@ -75,17 +75,26 @@ __define_builtin_fold_outer = \
 # 2. Open bracket type ('(' or '{')
 # 3. Built-in keyword ('lambda' or 'with')
 __define_builtin_fold_inner = \
-  $(subst $$$$$2$3 ,$$$2call __define_builtin_hook_$3$(\comma),$1)
+  $(subst $$$$$2$3 ,$$$2call __define_builtin_func_$3$(\comma),$1)
 
 # This will force each 'lambda' and 'with' occurrence to reflect
-# in __define_builtin_hook_xxx invocation.
+# in __define_builtin_func_xxx invocation.
 # 1. Text
 __define_builtin_expand = \
   ${eval __define_builtin_tmp__ := $1}$(__define_builtin_tmp__)
 
-__define_builtin_hook_lambda = \
+# '$(lambda $(foo)...)' -> '__builtin000'
+# where __builtin000 = $(foo)...
+# ... Arguments to 'lambda' ('$(foo)...')
+__define_builtin_func_lambda = \
   $(foreach __define_var,$(__define_builtin_alloc),$ \
     $(call var_assign_recursive_sl,$(__define_var),$1)$(__define_var))
+
+# '$(with 1,2,foo$1 bar$2)' -> '$(call __builtin000,1,2)'
+# where __builtin000 = foo$1 bar$2
+# ... Arguments to 'with' ('1,2,foo$1 bar$2')
+__define_builtin_func_with = \
+  $(error NYI)# TODO
 
 __define_builtin_alloc = \
   $(__define_var)__builtin$(words $(__define_builtin_cnt))${eval __define_builtin_cnt += x}
