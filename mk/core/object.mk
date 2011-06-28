@@ -121,8 +121,8 @@ define __object_init
 		$0 = $(__object_handle_value)
 	}
 	$(foreach __field,$($1.fields),
-		$(foreach __field_name,$(basename $(field)),
-			$(foreach __field_index,$(suffix $(field)),
+		$(foreach __field_name,$(basename $(__field)),
+			$(foreach __field_index,$(subst .,,$(suffix $(__field))),
 				${eval \
 					$(value __object_init_field_mk)
 				}
