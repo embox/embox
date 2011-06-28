@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <net/inetdevice.h>
 #include <netutils.h>
+#include <util/array.h>
 
 EMBOX_CMD(exec);
 

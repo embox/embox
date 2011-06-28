@@ -13,7 +13,7 @@
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
-#include <embox/kernel.h>
+#include <util/array.h>
 
 typedef struct lsof_map {
 	struct list_head *next;

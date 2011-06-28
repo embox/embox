@@ -10,6 +10,7 @@
 #include <netutils.h>
 #include <stdio.h>
 #include <string.h>
+#include <util/array.h>
 
 /*FIXME rename this file it contains only net_utils function*/
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res) {

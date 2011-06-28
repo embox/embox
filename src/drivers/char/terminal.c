@@ -12,7 +12,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <embox/kernel.h>
 #include <stdarg.h>
 
 #include <drivers/terminal.h>

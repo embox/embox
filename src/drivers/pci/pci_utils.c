@@ -13,8 +13,6 @@
 //TODO separate common and architecture pci's part
 #include <asm/io.h>
 
-
-
 #define CONFIG_CMD(bus, dev_fn, where) \
 		(0x80000000 | (bus << 16) | (dev_fn << 8) | (where & ~3))
 

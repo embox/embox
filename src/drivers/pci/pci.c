@@ -18,9 +18,16 @@
 
 EMBOX_UNIT_INIT(pci_init);
 
-#if 0
-static LIST_HEAD(root_bus);
-#endif
+typedef struct pci_slot {
+	uint8_t bus;
+	uint8_t func;
+	uint8_t slot;
+	uint16_t ven;
+	uint16_t dev;
+	uint8_t base_clase;
+	uint8_t subclass;
+	uint8_t rev;
+} pci_slot_t;
 
 POOL_DEF(devs_pool, struct pci_dev, 0x10);
 POOL_DEF(bus_pool, struct pci_bus, 0x10);
@@ -48,17 +55,6 @@ static inline uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) {
 	}
 	return vendor;
 }
-
-typedef struct pci_slot {
-	uint8_t bus;
-	uint8_t func;
-	uint8_t slot;
-	uint16_t ven;
-	uint16_t dev;
-	uint8_t base_clase;
-	uint8_t subclass;
-	uint8_t rev;
-} pci_slot_t;
 
 static inline int pci_get_slot_info(struct pci_slot *slot) {
 	uint32_t vendor_reg;

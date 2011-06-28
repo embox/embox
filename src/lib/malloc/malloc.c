@@ -6,7 +6,7 @@
  * @author Nikolay Korotky
  */
 
-#include <embox/kernel.h>
+#include <err.h>
 #include <string.h>
 
 #define MEM_POOL_SIZE 0x11CA

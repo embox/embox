@@ -12,8 +12,6 @@
  *           (in spite of the fact that the Parser is capable to handle them correctly).
  */
 
-#include <embox/kernel.h>
-
 #include <drivers/vtparse.h>
 #include <drivers/vtparse_state.h>
 

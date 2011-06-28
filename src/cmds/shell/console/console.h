@@ -15,7 +15,6 @@
 
 #include "cmdline.h"
 #include "screen.h"
-#include <embox/kernel.h>
 
 struct _CONSOLE;
 

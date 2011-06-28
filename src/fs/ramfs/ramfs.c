@@ -15,7 +15,6 @@
 #include <fs/fs.h>
 #include <fs/vfs.h>
 #include <linux/init.h>
-#include <embox/kernel.h>
 #include <util/array.h>
 
 typedef struct ramfs_file_description_head {

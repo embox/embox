@@ -8,7 +8,6 @@
 #include "screen.h"
 #include <drivers/terminal.h>
 #include <assert.h>
-#include <embox/kernel.h>
 
 static void transmit_string(SCREEN *this, const char *str) {
 	while (*str) {

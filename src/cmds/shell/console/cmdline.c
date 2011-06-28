@@ -9,7 +9,7 @@
 #include "cmdline.h"
 #include <util/math.h>
 #include <string.h>
-#include <embox/kernel.h>
+#include <util/array.h>
 
 CMDLINE * cmdline_init(CMDLINE *this) {
 	CMDLINE_HISTORY *history;

@@ -8,7 +8,6 @@
 #ifndef NETUTILS_H_
 #define NETUTILS_H_
 
-#include <embox/kernel.h>
 #include <net/if_ether.h>
 
 unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res);

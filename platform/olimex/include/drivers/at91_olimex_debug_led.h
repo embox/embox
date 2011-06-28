@@ -10,7 +10,6 @@
 #define AT91_OLIMEX_DEBUG_H_
 
 #include <types.h>
-#include <embox/kernel.h>
 
 /* Init leds */
 extern void led_init(void);

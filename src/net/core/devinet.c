@@ -10,6 +10,7 @@
 #include <string.h>
 #include <net/inetdevice.h>
 #include <linux/init.h>
+#include <util/array.h>
 
 #define IFDEV_CBINFO_QUANTITY 8
 

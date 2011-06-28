@@ -11,7 +11,7 @@
 #include <types.h>
 
 #include <drivers/vtbuild.h>
-#include <embox/kernel.h>
+
 #include <util/math.h>
 
 /* Enough to hold decimal numbers up to 99999. */

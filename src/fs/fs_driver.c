@@ -6,7 +6,6 @@
  */
 
 #include <linux/init.h>
-#include <embox/kernel.h>
 #include <embox/unit.h>
 #include <lib/list.h>
 #include <fs/fs.h>

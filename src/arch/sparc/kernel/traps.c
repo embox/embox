@@ -5,7 +5,7 @@
  * @author Nikolay Korotky
  */
 
-#include <embox/kernel.h>
+#include <stdio.h>
 #include <types.h>
 #include <asm/winmacro.h>
 #include <asm/ptrace.h>

@@ -13,6 +13,7 @@
 #include <net/net.h>
 #include <asm/system.h>
 #include <linux/init.h>
+#include <util/array.h>
 
 typedef struct socket_info {
 	/*it must be first member! We use casting in sock_realize function*/

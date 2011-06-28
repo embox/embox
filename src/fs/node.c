@@ -8,7 +8,6 @@
 
 #include <linux/init.h>
 #include <embox/unit.h>
-#include <embox/kernel.h>
 #include <lib/list.h>
 #include <string.h>
 #include <fs/node.h>

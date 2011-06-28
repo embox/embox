@@ -7,7 +7,6 @@
 
 #include "screen.h"
 #include <assert.h>
-#include <embox/kernel.h>
 #include "console.h"
 #include <kernel/diag.h>
 #include <kernel/softirq.h>

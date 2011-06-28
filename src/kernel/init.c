@@ -8,7 +8,6 @@
  * @author Eldar Abusalimov
  */
 
-#include <embox/kernel.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
 #include <kernel/irq.h>

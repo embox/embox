@@ -177,5 +177,12 @@ typedef struct pci_dev {
 
 
 extern int pci_scan_start(void);
+#if 0
+extern struct pci_bus *pci_get_buses_list(void);
+
+extern struct pci_dev *pci_get_next_bus(struct pci_bus *pci_bus);
+
+extern struct pci_dev *pci_get_next_dev(void);
+#endif
 
 #endif /* PCI_H_ */

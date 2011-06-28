@@ -7,7 +7,6 @@
 
 #include <getopt.h>
 #include <string.h>
-#include <embox/kernel.h>
 
 int   opterr = 1;
 int   optind = 1;

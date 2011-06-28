@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <embox/kernel.h>
+#include <util/array.h>
 #include <asm/msr.h>
 #include <hal/env/traps_core.h>
 #include <string.h>

@@ -15,7 +15,10 @@
 #include <net/sock.h>
 #include <net/udp.h>
 #include <linux/init.h>
-#include <asm/system.h>
+#include <util/array.h>
+
+#include <asm/system.h> /*linux-compatible*/
+
 
 typedef struct sock_info {
 	/*FIXME NETSOCK: now we use just udp_sock pull. It is the biggest of sock
