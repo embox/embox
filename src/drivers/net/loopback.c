@@ -25,7 +25,6 @@ static net_device_stats_t *lb_stats;
 
 static int loopback_xmit(sk_buff_t *skb, net_device_t *dev) {
 	int len;
-
 	if (NULL == skb || NULL == dev) {
 		return -1;
 	}
@@ -76,8 +75,6 @@ static void loopback_setup(net_device_t *dev) {
  * The initialization of loopback device
  */
 static int __init unit_init(void) {
-	//net_device_t *net_device;
-	printk("alloc lo interface\n");
 	if (NULL == alloc_netdev(0, "lo", loopback_setup)) {
 		LOG_ERROR("Can't allocate net device\n");
 		return -1;
