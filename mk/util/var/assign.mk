@@ -67,8 +67,8 @@ var_assign_simple = \
 #
 # Assigns value to the specified variable, the variable becomes recursively
 # expanded.
-# This function is backed either by var_assign_singleline_recursive or by
-# var_assign_multiline_recursive, the proper choice is made by checking for
+# This function is backed either by var_assign_recursive_sl or by
+# var_assign_recursive_ml, the proper choice is made by checking for
 # newline character $(\n) in the value being assigned.
 #
 # Params:
@@ -86,13 +86,13 @@ var_assign_simple = \
 #  $(call var_info,foo) # value is $(bar), flavor is recursive
 #  $(info $(foo)) # the expansion is expansion of variable 'bar'
 #
-# See also: var_assign_singleline_recursive var_assign_multiline_recursive
+# See also: var_assign_recursive_sl var_assign_recursive_sl
 #
 var_assign_recursive = \
-  $(var_assign_$(if $(findstring $(\n),$2),multiline,singleline)_recursive)
+  $(var_assign)_recursive_$(if $(findstring $(\n),$2),ml,sl)
 
 ##
-# Function: var_assign_singleline_recursive
+# Function: var_assign_recursive_sl
 #
 # Assigns value to the specified variable, the variable becomes recursively
 # expanded. The value must not contain any newline characters.
@@ -107,11 +107,11 @@ var_assign_recursive = \
 #       and all notes about its arguments are applied for this case too
 #       (see GNU Make manual).
 #
-var_assign_singleline_recursive = \
+var_assign_recursive_sl = \
   ${eval $$1 = $2}
 
 ##
-# Function: var_assign_multiline_recursive
+# Function: var_assign_recursive_ml
 #
 # Assigns value to the specified variable, the variable becomes recursively
 # expanded. The value should meet requirements specified for 'define'
@@ -129,7 +129,7 @@ var_assign_singleline_recursive = \
 #       (see GNU Make manual).
 #
 ${eval $ \
-  define var_assign_multiline_recursive$(\n)$ \
+  define var_assign_recursive_ml$(\n)$ \
   $${eval define $$$$1$(\n)$$2$(\n)endef}$(\n)$ \
   endef$                                      \
 } # eval above is 3.81 bug (Savannah #27394) workaround.
@@ -187,23 +187,5 @@ $(call var_assign_recursive,var-=,$(value var_assign_simple_remove))
 $(call var_assign_recursive,var*=,$(value var_assign_simple_append_unique))
 $(call var_assign_recursive,var?=,$(value var_assign_simple_conditional))
 $(call var_assign_recursive,var_undefine,$(value var_assign_undefined))
-
-# XXX rewrite everything below. -- Eldar
-
-var_swap = $(call __var_swap,$1,$2,__var_swap_tmp)
-__var_swap = $ \
-  $(call var_assign_$(flavor $1),$3,$(value $1))$ \
-  $(call var_assign_$(flavor $2),$1,$(value $2))$ \
-  $(call var_assign_$(flavor $3),$2,$(value $3))
-
-var_save = $(strip \
-  $(call assert_called,var_save,$0) \
-  $(call set,__var_value,$1,$(value $1)) \
-  $(call set,__var_flavor,$1,$(flavor $1)) \
-)
-var_restore = $(strip \
-  $(call assert_called,var_restore,$0) \
-  $(call var_assign_$(call get,__var_flavor,$1),$1,$(call get,__var_value,$1))\
-)
 
 endif # __util_var_assign_mk
