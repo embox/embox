@@ -42,10 +42,29 @@ include util/list.mk
 include util/var/assign.mk
 
 $(or define) = \
- $(call __define,$1,$(or $(value 2),$1))
+  $(call var_assign_recursive_sl,$1,$ \
+    $(call __define,$(value $(or $(value 2),$1))))
 
+# 1. Text
 __define = \
-  $(call var_assign_singleline_recursive,$1,$(call __define_strip,$(value $2)))
+    $(call __define_lambda,$ \
+      $(call __define_strip,$ \
+        $(subst $$,$$$$,$1)))
+
+# 1. Text
+__define_lambda = \
+  $(call __define_lambda_expand, \
+    $(call list_fold,__define_lambda_fold,$1,$(\paren_open) $(\brace_open)))
+
+# 1. Text
+# 2. Open bracket
+__define_lambda_fold = \
+  $(subst $$$$$2lambda ,$$$2call __define_lambda_hook$(\comma),$1)
+
+__define_lambda_expand = \
+  ${eval __define_lambda_tmp__ := $1}$(__define_lambda_tmp__)
+
+__define_lambda_hook = $(info $0: [$1])info
 
 # 1. Text
 __define_strip = \
@@ -56,12 +75,12 @@ __define_strip = \
 
 # 1. Text
 __define_strip_preprocess = \
-  $(subst \ _$$h ,$(\h)$ \
-  ,$(subst   $(\h), _$$h  \
-   ,$(subst   $(\n), _$$n  \
-    ,$(subst   $(\t), _$$t  \
-     ,$(subst   $(\s), _$$s  \
-      ,$(subst $$,$$$$,$1))))))
+  $(subst \ _$$h ,$(\h),$ \
+   $(subst  $(\h), _$$h ,$ \
+    $(subst  $(\n), _$$n ,$ \
+     $(subst  $(\t), _$$t ,$ \
+      $(subst  $(\s), _$$s ,$ \
+       $1)))))
 
 # 1. Previous token or empty inside a comment
 # 2. Current token
@@ -76,10 +95,11 @@ __define_strip_fold = \
 
 # 1. Text
 __define_strip_postprocess = \
-  $(subst  $$$$,$$$     \
-  ,$(subst  _$$s,        \
-   ,$(subst  _$$t,$(\t)$  \
-    ,$(subst  _$$n,$       \
-     ,$(subst  $(\s),,$1)))))
+  $(subst  _$$s,$(\s),$ \
+   $(subst  _$$t,$(\t),$ \
+    $(subst  _$$n,,$      \
+     $(subst $(\s),,$      \
+      $1))))
 
 endif # __core_define_mk
+
