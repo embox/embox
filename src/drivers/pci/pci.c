@@ -6,11 +6,11 @@
  * @author Nikolay Korotky
  */
 
-#include <lib/list.h>
+#include <util/slist.h>
 #include <util/array.h>
-#include <embox/unit.h>
-#include <linux/init.h>
 #include <util/pool.h>
+#include <embox/unit.h>
+
 #include <drivers/pci.h>
 
 //TODO separate common and architecture pci's part
@@ -30,11 +30,10 @@ typedef struct pci_slot {
 } pci_slot_t;
 
 POOL_DEF(devs_pool, struct pci_dev, 0x10);
-POOL_DEF(bus_pool, struct pci_bus, 0x10);
 
-static struct pci_bus *buses_list = NULL;
+struct slist __pci_devs_list = SLIST_INIT(&__pci_devs_list);
 
-static int __init pci_init(void) {
+static int pci_init(void) {
 	out32(PCI_CONFIG_ADDRESS, 0);
 	out32(PCI_CONFIG_ADDRESS + 0x2, 0);
 	if (in32(PCI_CONFIG_ADDRESS) == 0 && in32(PCI_CONFIG_ADDRESS + 0x2) == 0) {
@@ -74,13 +73,11 @@ static inline int pci_get_slot_info(struct pci_slot *slot) {
 	slot->func = devfn & 0x07;
 	slot->slot = (devfn >> 3) & 0x1f;
 
-	return -1;
+	return 0;
 }
 
 static inline int pci_add_dev(struct pci_dev *pci_dev) {
-	if (NULL == buses_list) {
-		buses_list = pool_alloc(&bus_pool);
-	}
+	slist_add_first(pci_dev, &__pci_devs_list, lst);
 	return 0;
 }
 
@@ -90,7 +87,7 @@ int pci_scan_start(void) {
 	uint32_t bus, devfn;
 	struct pci_dev *new_dev;
 
-	if (NULL != buses_list) {
+	if (!slist_empty(&__pci_devs_list)) {
 		return dev_cnt;
 	}
 
@@ -107,13 +104,13 @@ int pci_scan_start(void) {
 			/*add bus and device to list*/
 			new_dev = pool_alloc(&devs_pool);
 			new_dev->busn = slot.bus;
+			new_dev->device = slot.dev;
+			new_dev->vendor = slot.ven;
+			slist_link_init(&new_dev->lst);
 			pci_add_dev(new_dev);
 		}
 	}
 	return dev_cnt;
 }
 
-struct pci_bus *pci_get_buses_list(void) {
-	return buses_list;
-}
 

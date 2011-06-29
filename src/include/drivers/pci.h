@@ -11,7 +11,7 @@
 
 #include <types.h>
 #include <drivers/pci_id.h>
-#include <lib/list.h>
+#include <util/slist.h>
 #include <drivers/pci_utils.h>
 
 
@@ -158,14 +158,8 @@ enum {
 #define PCI_BASE_CLASS_SIGNAL_PROC      0x11
 #define PCI_CLASS_OTHERS                0xff
 
-typedef struct pci_bus {
-	struct list_head pci_dev_list;
-	struct list_head pci_bus_list;
-} pci_bus_t;
-
 typedef struct pci_dev {
-	pci_bus_t *bus;
-	struct list_head list;
+	struct slist_link lst;
 	uint32_t busn;
 	uint32_t devfn; /* encoded device & function index */
 	uint16_t vendor;
@@ -177,12 +171,14 @@ typedef struct pci_dev {
 
 
 extern int pci_scan_start(void);
-#if 0
-extern struct pci_bus *pci_get_buses_list(void);
 
-extern struct pci_dev *pci_get_next_bus(struct pci_bus *pci_bus);
+extern struct pci_dev *pci_get_dev_list(void);
 
-extern struct pci_dev *pci_get_next_dev(void);
-#endif
+extern struct pci_dev *pci_get_next_dev(struct pci_dev *dev);
+
+#define pci_foreach_dev(pci_dev) \
+	slist_foreach(pci_dev, __extension__ ({   \
+	extern struct slist __pci_devs_list; &__pci_devs_list; \
+	}), lst)
 
 #endif /* PCI_H_ */
