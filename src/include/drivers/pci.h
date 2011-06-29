@@ -168,16 +168,14 @@ typedef struct pci_dev {
 	uint16_t device;
 	uint8_t baseclass;
 	uint8_t subclass;
-	uint32_t irq;
+	uint8_t irq;
 	uint32_t bar[6];
 } pci_dev_t;
 
-
+//TODO now scanning enable only during start system
 extern int pci_scan_start(void);
 
-extern struct pci_dev *pci_get_dev_list(void);
-
-extern struct pci_dev *pci_get_next_dev(struct pci_dev *dev);
+extern struct pci_dev *pci_find_dev(uint16_t ven_id, uint16_t dev_id);
 
 #define pci_foreach_dev(pci_dev) \
 	slist_foreach(pci_dev, __extension__ ({   \

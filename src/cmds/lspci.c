@@ -40,48 +40,9 @@ static inline size_t pci_get_region_size(uint32_t region_reg) {
 		return 1 << 8;
 	}
 }
-static void show_full_info(uint32_t bus, uint32_t devfn, uint32_t vendor_reg) {
-	uint16_t vendor, device;
-	uint8_t baseclass, subclass, rev, irq;
-	uint32_t slot, func, base_addr;
-	uint8_t bar_num;
-
-	func = devfn & 0x07;
-	slot = (devfn >> 3) & 0x1f;
-
-	vendor = vendor_reg & 0xffff;
-	device = (vendor_reg >> 16) & 0xffff;
-
-	pci_read_config8(bus, devfn, PCI_BASECLASS_CODE, &baseclass);
-	pci_read_config8(bus, devfn, PCI_SUBCLASS_CODE, &subclass);
-	pci_read_config8(bus, devfn, PCI_REVISION_ID, &rev);
-	printf("%02d:%02x.%d (dev %04X:%04X) \n"
-			"\t%s: %s %s (rev %02d)\n",
-		bus, slot, func, vendor, device,
-		find_class_name(baseclass, subclass),
-		find_vendor_name(vendor),
-		find_device_name(device), rev);
-
-	pci_read_config8(bus, devfn, PCI_INTERRUPT_LINE, &irq);
-	printf("\t  IRQ number: 0x%d\n", irq);
-
-	for(bar_num = 0; bar_num < 6; bar_num ++) {
-		pci_read_config32(bus, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2),
-				&base_addr);
-		if (0 == base_addr) {
-			continue;
-		}
-		printf("\t  Region (%s): Base: 0x%X [0x%X]\n",
-				pci_get_region_type(base_addr), base_addr,
-				(base_addr & ~((1 << 4) - 1)) + (pci_get_region_size(base_addr) - 1));
-	}
-
-}
 
 static int exec(int argc, char **argv) {
 	int opt;
-	uint32_t devfn, bus, vendor, func, slot;
-	uint8_t hdr_type = 0;
 	struct pci_dev *pci_dev;
 
 	int full = 0;
@@ -107,9 +68,8 @@ static int exec(int argc, char **argv) {
 	}/*else have some parameters*/
 
 
-	if (full == 0) {
-		pci_foreach_dev(pci_dev) {
-			printf("%02d:%2x.%d (PCI dev %04X:%04X) \n"
+	pci_foreach_dev(pci_dev) {
+		printf("%02d:%2x.%d (PCI dev %04X:%04X) \n"
 					"\t %s: %s %s (rev %02d)\n",
 					pci_dev->busn,
 					pci_dev->slot,
@@ -120,26 +80,23 @@ static int exec(int argc, char **argv) {
 					find_vendor_name(pci_dev->vendor),
 					find_device_name(pci_dev->device),
 					pci_dev->rev);
-		}
-		return 0;
-	}
-	for (bus = 0; bus < PCI_BUS_QUANTITY; ++bus) {
-		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
-			func = devfn & 0x07;
-			slot = (devfn >> 3) & 0x1f;
-			if (func == 0) {
-				pci_read_config8(bus, devfn, PCI_HEADER_TYPE, &hdr_type);
-			} else if (!(hdr_type & 0x80)) {
-				continue;
-			}
-			pci_read_config32(bus, devfn, PCI_VENDOR_ID, &vendor);
-			if (vendor == 0xffffffff || vendor == 0x00000000) {
-				hdr_type = 0;
-				continue;
-			}
+		if (full == 0) {
+			int bar_num;
+			printf("\t  IRQ number: 0x%d\n", pci_dev->irq);
 
-			show_full_info(bus, devfn, vendor);
+			for(bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num ++) {
+				uint32_t base_addr = pci_dev->bar[bar_num];
+				if (0 == base_addr) {
+					continue;
+				}
+				printf("\t  Region (%s): Base: 0x%X [0x%X]\n",
+						pci_get_region_type(base_addr),
+						base_addr & ~((1 << 4) - 1),
+						(base_addr & ~((1 << 4) - 1)) +
+						(pci_get_region_size(base_addr) - 1));
+			}
 		}
+
 	}
 
 	return 0;

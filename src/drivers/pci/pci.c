@@ -20,13 +20,15 @@ EMBOX_UNIT_INIT(pci_init);
 
 typedef struct pci_slot {
 	uint8_t bus;
-	uint8_t func;
 	uint8_t slot;
+	uint8_t func;
 	uint16_t ven;
 	uint16_t dev;
 	uint8_t base_clase;
 	uint8_t subclass;
 	uint8_t rev;
+	uint8_t irq;
+	uint32_t bar[6];
 } pci_slot_t;
 
 POOL_DEF(devs_pool, struct pci_dev, 0x10);
@@ -55,35 +57,35 @@ static inline uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) {
 	return vendor;
 }
 
-static inline int pci_get_slot_info(struct pci_slot *slot) {
-	uint32_t vendor_reg;
-	uint32_t devfn = slot->func;
+static inline int pci_get_slot_info(struct pci_dev *dev) {
+	int bar_num;
+	uint32_t devfn = dev->func;
 
-	if (-1 == (vendor_reg = pci_get_vendor_id(slot->bus, slot->func))) {
-		return -1;
+	pci_read_config8(dev->busn, devfn, PCI_BASECLASS_CODE, &dev->baseclass);
+	pci_read_config8(dev->busn, devfn, PCI_SUBCLASS_CODE, &dev->subclass);
+	pci_read_config8(dev->busn, devfn, PCI_REVISION_ID, &dev->rev);
+	pci_read_config8(dev->busn, devfn, PCI_INTERRUPT_LINE, &dev->irq);
+
+	for(bar_num = 0; bar_num < ARRAY_SIZE(dev->bar); bar_num ++) {
+		pci_read_config32(dev->busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2),
+						&dev->bar[bar_num]);
 	}
-
-	slot->ven = (uint16_t)vendor_reg & 0xffff;
-	slot->dev = (uint16_t)(vendor_reg >> 16) & 0xffff;
-
-	pci_read_config8(slot->bus, devfn, PCI_BASECLASS_CODE, &slot->base_clase);
-	pci_read_config8(slot->bus, devfn, PCI_SUBCLASS_CODE, &slot->subclass);
-	pci_read_config8(slot->bus, devfn, PCI_REVISION_ID, &slot->rev);
-
-	slot->func = devfn & 0x07;
-	slot->slot = (devfn >> 3) & 0x1f;
+	dev->func = devfn & 0x07;
+	dev->slot = (devfn >> 3) & 0x1f;
 
 	return 0;
 }
 
-static inline int pci_add_dev(struct pci_dev *pci_dev) {
-	slist_add_first(pci_dev, &__pci_devs_list, lst);
+static int dev_cnt = 0;
+
+static inline int pci_add_dev(struct pci_dev *dev) {
+	slist_link_init(&dev->lst);
+	slist_add_first(dev, &__pci_devs_list, lst);
+	dev_cnt ++;
 	return 0;
 }
 
 int pci_scan_start(void) {
-	static int dev_cnt = 0;
-	struct pci_slot slot;
 	uint32_t bus, devfn;
 	struct pci_dev *new_dev;
 
@@ -93,29 +95,34 @@ int pci_scan_start(void) {
 
 	for (bus = 0; bus < PCI_BUS_QUANTITY; ++bus) {
 		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
-			slot.bus = (uint8_t)bus;
-			slot.func = (uint8_t)devfn;
-
-			if (-1 == pci_get_slot_info(&slot)) {
+			uint32_t vendor_reg;
+			if (-1 == (vendor_reg = pci_get_vendor_id(bus, devfn))) {
 				continue;
 			}
-			dev_cnt ++;
 
 			/*add bus and device to list*/
 			new_dev = pool_alloc(&devs_pool);
-			new_dev->busn = slot.bus;
-			new_dev->device = slot.dev;
-			new_dev->vendor = slot.ven;
-			new_dev->baseclass = slot.base_clase;
-			new_dev->subclass = slot.subclass;
-			new_dev->slot = slot.slot;
-			new_dev->func = slot.func;
-			new_dev->rev = slot.rev;
-			slist_link_init(&new_dev->lst);
+			new_dev->busn = (uint8_t)bus;
+			new_dev->func = (uint8_t)devfn;
+
+			new_dev->vendor = (uint16_t)vendor_reg & 0xffff;
+			new_dev->device = (uint16_t)(vendor_reg >> 16) & 0xffff;
+
+			pci_get_slot_info(new_dev);
+
 			pci_add_dev(new_dev);
 		}
 	}
 	return dev_cnt;
 }
 
+struct pci_dev *pci_find_dev(uint16_t ven_id, uint16_t dev_id) {
+	struct pci_dev *dev;
+	pci_foreach_dev(dev) {
+		if(ven_id == dev->vendor && dev_id == dev->device) {
+			return dev;
+		}
+	}
+	return NULL;
+}
 
