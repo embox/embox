@@ -96,12 +96,10 @@ extern int irq_attach(irq_nr_t irq_nr, irq_handler_t handler,
  */
 extern int irq_detach(irq_nr_t irq_nr, void *data);
 
-#ifdef __HAL__
 /**
- * Called by HAL code.
+ * Called by interrupt handler code.
  * @param interrupt_nr the number of interrupt to dispatch
  */
 extern void irq_dispatch(interrupt_nr_t interrupt_nr);
-#endif /* __HAL__ */
 
 #endif /* IRQ_H_ */

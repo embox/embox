@@ -32,14 +32,13 @@ IRQ_handler:
 	/*storing SPSR and valuable regs*/
 	mrs		LR, SPSR
 	stmfd	sp!, {r0-r12, lr}
-
+	b skip
 #ifdef CONFIG_MEASURE
 	bl measure_start
 	bl measure_stop
 	bl measure_irq_measure_overhead
 	bl measure_start
 #endif
-
 	/*reading IVR, making AIC knowledge of interrupt is taken in account */
 	ldr	r0, =AT91C_AIC_IVR
 	ldr	r2, [r0]
@@ -93,7 +92,8 @@ IRQ_handler:
 	bl measure_stop
 	bl measure_irq_tail_process
 #endif
-
+skip:
+	bl interrupt_handle
 	/*interrupts are disabled, so restoring goes OK */
 	ldmfd	sp!, {r0-r12, lr}
 	msr		SPSR, LR
