@@ -11,8 +11,8 @@
 #include <drivers/nxt_motor.h>
 
 #define MOTOR_POWER 100
-#define MOTOR0 (&motors[0])
-#define MOTOR1 (&motors[1])
+#define MOTOR0 MOTOR_A
+#define MOTOR1 MOTOR_B
 #define BLACK_ZONE 500
 
 EMBOX_TEST(pen_ligth);

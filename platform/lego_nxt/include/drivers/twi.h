@@ -9,8 +9,6 @@
 #ifndef NXT_TWI_H_
 #define NXT_TWI_H_
 
-#include <drivers/nxt_avr.h>
-
 extern void twi_init(void);
 
 /**

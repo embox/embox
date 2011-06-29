@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <drivers/nxt_sonar.h>
+#include <drivers/nxt_sonar_sensor.h>
 #include <drivers/nxt_sensor.h>
 
 void nxt_sonar_init (sensor_t *sensor) {

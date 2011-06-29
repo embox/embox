@@ -18,6 +18,11 @@
 #include <drivers/nxt_sensor.h>
 #include <kernel/measure.h>
 
+/* Notify driver of possible buttons change */
+extern void buttons_updated(buttons_t state);
+extern void sensors_updated(sensor_val_t sensor_vals[]);
+extern void sensors_init(void);
+
 EMBOX_UNIT_INIT(init);
 
 const char avr_brainwash_string[] =
@@ -94,3 +99,4 @@ static int init(void) {
 
 	return result;
 }
+

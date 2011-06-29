@@ -10,7 +10,8 @@
 #include <drivers/at91sam7s256.h>
 #include <drivers/twi.h>
 #include <hal/reg.h>
-#include <drivers/nxt_avr.h>
+//#include <drivers/nxt_avr.h>
+#include <assert.h>
 
 #define   I2CClk           400000L
 #define   CLDIV            (((CONFIG_SYS_CLOCK/I2CClk)/2)-3)
@@ -27,7 +28,8 @@ static uint32_t twi_pending;
 static uint8_t *twi_ptr;
 static uint32_t twi_mask;
 
-static uint8_t out_buff[sizeof(to_avr_t) + 1];
+#define BUF_SIZE 128
+static uint8_t out_buff[BUF_SIZE];
 
 static void systick_wait_ns(uint32_t ns) {
 	volatile uint32_t x = (ns >> 7) + 1;
@@ -95,6 +97,7 @@ void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes) {
 
 void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
 	const uint8_t *sptr = data;
+	assert(count < BUF_SIZE);
 	uint8_t *dptr = out_buff;
 	uint8_t checkbyte = 0;
 	uint32_t left_count = count;
