@@ -26,28 +26,6 @@ static void print_error(void) {
 	printf("Wrong parameters\n");
 }
 
-static void show_short_info(uint32_t bus, uint32_t devfn, uint32_t vendor_reg) {
-	uint16_t vendor, device;
-	uint8_t baseclass, subclass, rev;
-	uint32_t slot, func;
-
-	func = devfn & 0x07;
-	slot = (devfn >> 3) & 0x1f;
-
-	vendor = vendor_reg & 0xffff;
-	device = (vendor_reg >> 16) & 0xffff;
-
-	pci_read_config8(bus, devfn, PCI_BASECLASS_CODE, &baseclass);
-	pci_read_config8(bus, devfn, PCI_SUBCLASS_CODE, &subclass);
-	pci_read_config8(bus, devfn, PCI_REVISION_ID, &rev);
-	printf("%02d:%02x.%d (PCI dev %04X:%04X) \n"
-			"\t %s: %s  %s (rev %02d)\n",
-		bus, slot, func, vendor, device,
-		find_class_name(baseclass, subclass),
-		find_vendor_name(vendor),
-		find_device_name(device), rev);
-}
-
 static inline char *pci_get_region_type(uint32_t region_reg) {
 	if (region_reg & 0x1) {
 		return "I/O";
@@ -104,6 +82,7 @@ static int exec(int argc, char **argv) {
 	int opt;
 	uint32_t devfn, bus, vendor, func, slot;
 	uint8_t hdr_type = 0;
+	struct pci_dev *pci_dev;
 
 	int full = 0;
 
@@ -128,6 +107,22 @@ static int exec(int argc, char **argv) {
 	}/*else have some parameters*/
 
 
+	if (full == 0) {
+		pci_foreach_dev(pci_dev) {
+			printf("%02d:%2x.%d (PCI dev %04X:%04X) \n"
+					"\t %s: %s %s (rev %02d)\n",
+					pci_dev->busn,
+					pci_dev->slot,
+					pci_dev->func,
+					pci_dev->vendor,
+					pci_dev->device,
+					find_class_name(pci_dev->baseclass, pci_dev->subclass),
+					find_vendor_name(pci_dev->vendor),
+					find_device_name(pci_dev->device),
+					pci_dev->rev);
+		}
+		return 0;
+	}
 	for (bus = 0; bus < PCI_BUS_QUANTITY; ++bus) {
 		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
 			func = devfn & 0x07;
@@ -143,12 +138,9 @@ static int exec(int argc, char **argv) {
 				continue;
 			}
 
-			if (full == 0) {
-				show_short_info(bus, devfn, vendor);
-			} else {
-				show_full_info(bus, devfn, vendor);
-			}
+			show_full_info(bus, devfn, vendor);
 		}
 	}
+
 	return 0;
 }

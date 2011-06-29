@@ -106,6 +106,11 @@ int pci_scan_start(void) {
 			new_dev->busn = slot.bus;
 			new_dev->device = slot.dev;
 			new_dev->vendor = slot.ven;
+			new_dev->baseclass = slot.base_clase;
+			new_dev->subclass = slot.subclass;
+			new_dev->slot = slot.slot;
+			new_dev->func = slot.func;
+			new_dev->rev = slot.rev;
 			slist_link_init(&new_dev->lst);
 			pci_add_dev(new_dev);
 		}

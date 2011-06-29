@@ -161,10 +161,13 @@ enum {
 typedef struct pci_dev {
 	struct slist_link lst;
 	uint32_t busn;
-	uint32_t devfn; /* encoded device & function index */
+	uint8_t slot;
+	uint8_t func;
+	uint8_t rev;
 	uint16_t vendor;
 	uint16_t device;
-	uint32_t class;
+	uint8_t baseclass;
+	uint8_t subclass;
 	uint32_t irq;
 	uint32_t bar[6];
 } pci_dev_t;
