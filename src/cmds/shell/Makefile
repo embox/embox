@@ -29,3 +29,5 @@ else # new
        core.kernel.thread
 
 endif
+
+$_DEPS-shell += embox.driver.terminal
