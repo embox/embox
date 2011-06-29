@@ -17,6 +17,8 @@
 #include <kernel/timer.h>
 #include <unistd.h>
 
+extern void bt_handle(uint8_t *buff);
+
 #define NXT_BT_RX_PIN  AT91C_PIO_PA21
 #define NXT_BT_TX_PIN  AT91C_PIO_PA22
 #define NXT_BT_SCK_PIN AT91C_PIO_PA23
@@ -172,7 +174,7 @@ static irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static int nxt_bluetooth_init(void) {
+static void init_usart(void) {
 	volatile uint8_t tmp;
 	/* Configure the usart */
 	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_US1));
@@ -203,13 +205,18 @@ static int nxt_bluetooth_init(void) {
 
 	REG_STORE(AT91C_US1_CR, AT91C_US_RXEN | AT91C_US_TXEN);
 	REG_STORE(AT91C_US1_PTCR, AT91C_PDC_RXTEN | AT91C_PDC_TXTEN);
+}
 
+static void init_control_pins(void) {
 	/*configure control pins*/
 	REG_STORE(AT91C_PIOA_PPUDR, NXT_BT_CMD_PIN);
 	pin_config_output(NXT_BT_CS_PIN | NXT_BT_RST_PIN | NXT_BT_CMD_PIN);
 	pin_set_output(NXT_BT_CS_PIN | NXT_BT_RST_PIN);
 	pin_clear_output(NXT_BT_CMD_PIN);
 
+}
+
+static void init_adc(void) {
 	/* Configure the ADC */
 	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_ADC));
 	REG_STORE(AT91C_ADC_MR, 0);
@@ -219,6 +226,15 @@ static int nxt_bluetooth_init(void) {
 	REG_ORIN(AT91C_ADC_MR, 0x03000000); // 750nS
 	REG_STORE(AT91C_ADC_CHER, AT91C_ADC_CH6 | AT91C_ADC_CH4);
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
+}
+
+static int nxt_bluetooth_init(void) {
+	init_usart();
+
+	init_control_pins();
+
+	init_adc();
+
 
 	bt_clear_arm7_cmd();
 
