@@ -8,19 +8,19 @@
  */
 
 #include <types.h>
-#include <embox/test.h>
+#include <embox/cmd.h>
 #include <unistd.h>
 #include <drivers/nxt_buttons.h>
-#include <drivers/nxt_sonar.h>
+#include <drivers/nxt_sonar_sensor.h>
 #include <util/math.h>
 
 #include <drivers/nxt_motor.h>
 
-EMBOX_TEST(box_around_test);
+EMBOX_CMD(box_around_cmd);
 
-#define SONAR_PORT (&sensors[1])
-#define MOTOR0 (&motors[0])
-#define MOTOR1 (&motors[1])
+#define SONAR_PORT SENSOR_1
+#define MOTOR0 MOTOR_A
+#define MOTOR1 MOTOR_B
 
 #define ROBOT_WIDTH 15
 
@@ -46,7 +46,7 @@ static void move_stop(void) {
 	motor_set_power(MOTOR1, 0);
 }
 
-static int box_around_test(void) {
+static int box_around_cmd(int argc, char **argv) {
 	int mp0, mp1;
 
 	nxt_sonar_init(SONAR_PORT);
