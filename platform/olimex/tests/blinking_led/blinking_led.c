@@ -1,14 +1,14 @@
 /**
  * @file
- * @brief timer test -- blinking led
+ * @brief blinking led
  *
  * @date 01.10.10
  * @author Anton Kozlov
  */
 
 #include <embox/test.h>
-//#include <drivers/at91_olimex_debug_led.h>
-#include <drivers/at91sam7s256.h>
+#include <drivers/at91_olimex_debug_led.h>
+#include <drivers/pins.h>
 #include <unistd.h>
 
 EMBOX_TEST(blinking_led);
@@ -30,11 +30,16 @@ void delay(int d) {
 	}
 }
 
-extern void led1_on(void);
-extern void led1_off(void);
+void led1_on(void) {
+	pin_set_output(OLIMEX_SAM7_LED1);
+}
+void led1_off(void) {
+	pin_set_output(OLIMEX_SAM7_LED1);
+}
 
 static int blinking_led(void) {
 	volatile int del = DELAY;
+	pin_config_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
 
 	while (1) {
 		led1_on();
