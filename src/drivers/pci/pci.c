@@ -13,9 +13,6 @@
 
 #include <drivers/pci.h>
 
-//TODO separate common and architecture pci's part
-#include <asm/io.h>
-
 EMBOX_UNIT_INIT(pci_init);
 
 typedef struct pci_slot {
@@ -36,13 +33,9 @@ POOL_DEF(devs_pool, struct pci_dev, 0x10);
 struct slist __pci_devs_list = SLIST_INIT(&__pci_devs_list);
 
 static int pci_init(void) {
-	out32(PCI_CONFIG_ADDRESS, 0);
-	out32(PCI_CONFIG_ADDRESS + 0x2, 0);
-	if (in32(PCI_CONFIG_ADDRESS) == 0 && in32(PCI_CONFIG_ADDRESS + 0x2) == 0) {
-		LOG_ERROR("PCI is not supported\n");
-		return -1;
+	if(-1 == pci_is_supported()) {
+		return 0;
 	}
-
 	/*scan bus*/
 	pci_scan_start();
 	return 0;

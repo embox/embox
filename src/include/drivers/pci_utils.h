@@ -10,6 +10,10 @@
 #ifndef PCI_UTILS_H_
 #define PCI_UTILS_H_
 
+#include <types.h>
+
+extern int pci_is_supported(void);
+
 extern uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint8_t *value);
 

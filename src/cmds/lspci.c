@@ -80,7 +80,7 @@ static int exec(int argc, char **argv) {
 					find_vendor_name(pci_dev->vendor),
 					find_device_name(pci_dev->device),
 					pci_dev->rev);
-		if (full == 0) {
+		if (full != 0) {
 			int bar_num;
 			printf("\t  IRQ number: 0x%d\n", pci_dev->irq);
 
