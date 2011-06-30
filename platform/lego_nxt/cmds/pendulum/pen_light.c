@@ -1,12 +1,12 @@
 /**
  * @file
- * @brief Test for pendulum with light sensor
+ * @brief Cmd for pendulum with light sensor
  *
  * @date 05.11.10
  * @author Alexandr Kalmuk
  */
 
-#include <embox/test.h>
+#include <embox/cmd.h>
 #include <drivers/nxt_sensor.h>
 #include <drivers/nxt_motor.h>
 
@@ -15,21 +15,21 @@
 #define MOTOR1 MOTOR_B
 #define BLACK_ZONE 500
 
-EMBOX_TEST(pen_ligth);
+EMBOX_CMD(pen_light);
 
-#define TOUCH_PORT (&sensors[0])
+#define LIGHT_PORT SENSOR_1
 
-sensor_val_t sval = 10;
+static sensor_val_t sval = 10;
 
 void sensor_handler(sensor_t *sensor, sensor_val_t val) {
 	sval = val;
 }
 
-static int pen_ligth(void) {
+static int pen_light(int argc, char **argv) {
 	int motor_pov = 100;
 	int cnt = 0;
 
-	nxt_sensor_conf_pass(TOUCH_PORT, (sensor_hnd_t) sensor_handler);
+	nxt_sensor_conf_pass(LIGHT_PORT, (sensor_hnd_t) sensor_handler);
 	data_to_avr.input_power = 128;
 
 	motor_start(MOTOR0, MOTOR_POWER, 360, NULL);

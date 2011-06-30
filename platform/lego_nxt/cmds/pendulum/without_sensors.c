@@ -6,7 +6,7 @@
  * @author Alexandr Kalmuk
  */
 
-#include <embox/test.h>
+#include <embox/cmd.h>
 #include <unistd.h>
 #include <drivers/nxt_motor.h>
 
@@ -14,9 +14,9 @@
 #define MOTOR0 MOTOR_A
 #define MOTOR1 MOTOR_B
 
-EMBOX_TEST(without_sensors);
+EMBOX_CMD(without_sensors);
 
-static int without_sensors(void) {
+static int without_sensors(int argc, char **argv) {
 	int motor_pov = 100;
 
 	usleep(210);

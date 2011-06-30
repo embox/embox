@@ -8,11 +8,11 @@
 
 #include <drivers/soft_i2c.h>
 #include <drivers/nxt_angle_sensor.h>
-#include <embox/test.h>
+#include <embox/cmd.h>
 #include <unistd.h>
 #include <drivers/nxt_motor.h>
 
-EMBOX_TEST(pen_angle);
+EMBOX_CMD(pen_angle);
 
 #define MOTOR_POWER 100
 
@@ -21,12 +21,12 @@ EMBOX_TEST(pen_angle);
 #define MOTOR1 MOTOR_B
 
 
-sensor_val_t sval = 0;
+static sensor_val_t sval = 0;
 
-static int pen_angle(void) {
+static int pen_angle(int argc, char **argv) {
 	int motor_pov = 100;
 
-	nxt_angle_init(PORT);
+	nxt_angle_sensor_init(PORT);
 
 	motor_start(MOTOR0, MOTOR_POWER, 360, NULL);
 	motor_start(MOTOR1, MOTOR_POWER, 360, NULL);
