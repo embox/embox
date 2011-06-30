@@ -122,15 +122,16 @@ prepend = \
 
 ##
 # Function: filter-patsubst
-# Strict version of patsubst. Leaves only those words that match the pattern.
+# Strict version of patsubst. Leaves only those words that match at least
+# one of the specified patterns.
 #
 # Params:
-#  1. Pattern
+#  1. Pattern...
 #  2. Replacement
 #  3. String
 # Return:
 #     The result of patsubst applied to filtered string.
 filter-patsubst = \
-  $(patsubst $1,$2,$(filter $1,$3))
+  $(foreach 1,$1,$(patsubst $1,$2,$(filter $1,$3)))
 
 endif # __core_string_mk
