@@ -12,7 +12,7 @@
 void *objalloc(struct objalloc *adapter) {
 	return pool_alloc(&adapter->pool);
 }
-asas
+
 void objfree(struct objalloc *adapter, void* objp) {
 	pool_free(&adapter->pool, objp);
 }
