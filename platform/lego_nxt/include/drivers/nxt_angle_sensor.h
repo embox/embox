@@ -16,7 +16,7 @@
 #define NXT_ANGLE_RPM_HIGH_COMM 0x48
 #define NXT_ANGLE_RPM_LOW_COMM 0x49
 
-extern void nxt_angle_init(sensor_t *sensor);
+extern void nxt_angle_sensor_init(sensor_t *sensor);
 
 extern uint16_t nxt_angle_get_rpm(sensor_t *sensor);
 
