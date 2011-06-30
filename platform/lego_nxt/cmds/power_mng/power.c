@@ -8,14 +8,14 @@
 
 #include <types.h>
 #include <unistd.h>
-#include <embox/test.h>
+#include <embox/cmd.h>
 #include <drivers/nxt_buttons.h>
 #include <drivers/nxt_avr.h>
 #include <drivers/power_mng.h>
 
-EMBOX_TEST(power_mng_test);
+EMBOX_CMD(power_mng_cmd);
 
-static int power_mng_test(void) {
+static int power_mng_cmd(int argc, char **argv) {
 	TRACE("L:HALT R:FLASH D:SKIP\n");
 	while (true) {
 		int buts = nxt_buttons_was_pressed();
