@@ -7,7 +7,7 @@
  */
 
 #include <lib/list.h>
-#include <util/pool.h>
+#include <kernel/mm/misc/pool.h>
 #include <kernel/evdispatch2.h>
 #include <kernel/thread/sched.h>
 

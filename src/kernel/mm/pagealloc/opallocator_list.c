@@ -9,7 +9,7 @@
  */
 
 #include <errno.h>
-#include <kernel/mm/opallocator.h>
+#include <kernel/mm/pagealloc/opallocator.h>
 
 /** Structure of page marker. It occupies at the begin of each free memory
  * block

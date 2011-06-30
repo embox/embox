@@ -1,6 +1,6 @@
-$_MODS += kmalloc
+$_MODS += slob
 
 ifdef CONFIG_KMALLOC
-$_SRCS-kmalloc += $(CONFIG_KMALLOC)
+$_SRCS-slob += $(CONFIG_KMALLOC)
 endif
-$_DEPS-kmalloc += embox.hal.mm.mpallocator
+$_DEPS-slob += embox.hal.mm.mpallocator
