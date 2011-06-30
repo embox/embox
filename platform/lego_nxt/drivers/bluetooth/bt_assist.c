@@ -78,9 +78,11 @@ typedef struct {
 	uint16_t sum;
 } bt_message_t;
 
-bt_message_t msg_queue;
+bt_message_t in_msg;
 
 bt_message_t out_msg;
+
+uint16_t bt_mod_version = 0xffff; /*bt module version */
 
 uint8_t bt_tx_buff[256];
 
@@ -89,7 +91,7 @@ extern void bt_set_uart_state(void);
 static char pin_code[] = CONFIG_BLUETOOTH_PIN;
 
 bt_message_t *add(void) {
-	return &(msg_queue);
+	return &(in_msg);
 }
 
 static int bt_bc_handle = 0;
@@ -134,6 +136,9 @@ static void process_msg(bt_message_t *msg) {
 #endif
 
 	switch (msg->type) {
+	case MSG_GET_VERSION_RESULT:
+		bt_mod_version = (msg->content[0] << 8) + msg->content[1];
+		break;
 	case MSG_REQUEST_PIN_CODE:
 		out_msg.length = 7 + 16; //BT addr + pin_code
 		out_msg.type = MSG_PIN_CODE;
