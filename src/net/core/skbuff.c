@@ -7,7 +7,7 @@
  */
 
 #include <string.h> /*for memcpy*/
-#include <kernel/mm/misc/pool.h>
+#include <util/pool.h>
 #include <linux/list.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>

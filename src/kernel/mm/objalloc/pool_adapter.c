@@ -6,7 +6,7 @@
  * @author Alexandr Kalmuk
  */
 
-#include <kernel/mm/misc/pool.h>
+#include <util/pool.h>
 #include <kernel/mm/objalloc.h>
 
 void *objalloc(struct objalloc *adapter) {

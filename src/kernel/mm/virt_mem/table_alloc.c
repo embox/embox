@@ -7,7 +7,7 @@
 
 #include <kernel/mm/virt_mem/table_alloc.h>
 #include <kernel/mm/virt_mem/mmu_core.h>
-#include <kernel/mm/pagealloc/opallocator.h>
+#include <kernel/mm/opallocator.h>
 #include <hal/mm/mmu_core.h>
 
 /* must be aligned for sizes of all tables */

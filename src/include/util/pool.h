@@ -9,7 +9,7 @@
 #ifndef UTIL_POOL_H_
 #define UTIL_POOL_H_
 
-#include __impl_x(kernel/mm/misc/pool_impl.h)
+#include __impl_x(util/pool_impl.h)
 
 struct pool;
 

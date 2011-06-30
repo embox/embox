@@ -53,7 +53,7 @@ ifdef CONFIG_DRIVER_SUBSYSTEM
 # It's core.kernel.drv_subsys
   $_MODS += drv_subsys
   $_SRCS-drv_subsys += driver.c
-  $_DEPS-drv_subsys += embox.hal.mm.slob
+  $_DEPS-drv_subsys += embox.hal.mm.kmalloc
 endif
 
 ifdef CONFIG_WATCHDOG

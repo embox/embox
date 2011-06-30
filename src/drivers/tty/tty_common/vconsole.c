@@ -8,7 +8,7 @@
  */
 
 #include <embox/unit.h>
-#include <kernel/mm/misc/pool.h>
+#include <util/pool.h>
 #include <string.h>
 #include <drivers/tty.h>
 #include <drivers/tty_action.h>

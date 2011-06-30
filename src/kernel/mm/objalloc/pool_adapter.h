@@ -7,9 +7,8 @@
  * @author Alexandr Kalmuk
  */
 
-#include <kernel/mm/misc/pool.h>
+#include <util/pool.h>
 
 struct adapter {
 	struct pool pool;
 };
-

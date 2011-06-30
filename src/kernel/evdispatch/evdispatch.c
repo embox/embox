@@ -7,7 +7,7 @@
  */
 
 #include <lib/list.h>
-#include <kernel/mm/misc/pool.h>
+#include <util/pool.h>
 #include <kernel/softirq.h>
 #include <kernel/evdispatch.h>
 

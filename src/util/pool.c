@@ -11,8 +11,8 @@
  */
 
 #include <assert.h>
-#include <kernel/mm/misc/pool.h>
-#include <util/structof.h>
+
+#include <util/pool.h>
 #include <lib/list.h>
 
 static struct pool *pool_init(struct pool *pool) {
