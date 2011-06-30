@@ -5,7 +5,7 @@
  * @author Anton Kozlov
  */
 
-#include <embox/test.h>
+#include <embox/cmd.h>
 #include <unistd.h>
 #include <kernel/timer.h>
 #include <drivers/nxt_buttons.h>
@@ -18,7 +18,7 @@ extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
 #define SNAKE_LEN 4
 #define SNK '*'
 #define FRU 'o'
-EMBOX_TEST(exec);
+EMBOX_CMD(exec);
 
 static int rand_seed = 0;
 static int sleep_time = 1200;
@@ -283,7 +283,7 @@ static void end_splash(void) {
 	}
 }
 
-static int exec() {
+static int exec(int argc, char **argv) {
 	if (!begin_splash()) {
 		return 0;
 	}
