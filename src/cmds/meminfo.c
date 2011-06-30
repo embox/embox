@@ -12,7 +12,7 @@
 #include <getopt.h>
 #include <kernel/mm/pagealloc/mpallocator.h>
 #include <kernel/mm/misc/slab.h>
-#include <kernel/mm/slab_statistic.h>
+#include <kernel/mm/misc/slab_statistic.h>
 #include <lib/list.h>
 #include <stdlib.h>
 

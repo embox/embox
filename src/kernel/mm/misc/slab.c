@@ -11,13 +11,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <kernel/mm/objalloc.h> //!delete
 #include <lib/list.h>
 #include <util/binalign.h>
 #include <kernel/printk.h>
 #include <kernel/mm/misc/slab.h>
 #include <kernel/mm/kmalloc.h>
-#include <kernel/mm/slab_statistic.h>
+#include <kernel/mm/misc/slab_statistic.h>
 #include <kernel/mm/pagealloc/mpallocator.h>
 
 /**
