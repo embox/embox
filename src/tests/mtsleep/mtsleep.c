@@ -9,9 +9,11 @@
 #include <embox/test.h>
 #include <kernel/thread/api.h>
 #include <unistd.h>
+#include <kernel/timer.h>
 
+#define TEST_TIME_SLEEP	3000
 #define TEST_SIZE 10
-#define TEST_SLEEP 1
+#define TEST_SLEEP 0
 #define TEST_OF_TEST 1
 
 EMBOX_TEST(run);
@@ -35,12 +37,16 @@ uint32_t random(void) {
 
 void* handler(void* args) {
 	uint32_t id = (uint32_t) args;
+	uint32_t now = cnt_system_time();
+
+	printf("I'm %d thread... run\r\n", id);
 	#if TEST_SLEEP
-	sleep(id);
+	sleep(TEST_TIME_SLEEP);
 	#else
-	usleep(id);
+	usleep(TEST_TIME_SLEEP);
 	#endif
-	printf("%d\r\n",id);
+	printf("I'm %d thread... done at %u (was started at %u, was running %u)\r\n",
+			id, cnt_system_time(), now, TEST_TIME_SLEEP);
 	return NULL;
 }
 
@@ -55,7 +61,7 @@ static int run(void) {
 		handler((void*)(random()%TEST_SIZE));
 	#else
 		struct thread *p;
-		thread_create(&p,THREAD_FLAG_DETACHED,&handler,(void*)(random()%TEST_SIZE));
+		thread_create(&p,THREAD_FLAG_DETACHED,&handler,(void*)(i));
 	#endif
 	}
 
