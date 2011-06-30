@@ -155,7 +155,7 @@ int usleep(useconds_t usec) {
 	uint32_t id;
 
 	id = get_free_timer_id();
-	if ((id == (uint32_t) -1) || !set_timer(id, usec, restore_thread)) {
+	if ((id == (uint32_t) -1) || !set_timer(id, usec, &restore_thread)) {
 		return 1;
 	}
 	thread_suspend(thread_self());
