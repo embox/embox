@@ -59,7 +59,7 @@ IRQ_handler_addr:
 FIQ_handler_addr:
     .word FIQ_handler
 
-/** stubs */
+/* stubs */
 undef_handler:
     B undef_handler
 prefetch_abt_handler:
@@ -70,7 +70,7 @@ FIQ_handler:
     B FIQ_handler
 
 .text
-/** initialize stack */
+/* initialize stack */
 .RAM_TOP:
     .word _stack_top
 reset_handler:
@@ -108,7 +108,8 @@ loop_excpt:
     msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
     mov sp, r0
 
-/** initialize memory */
+/* initialize memory */
+/* clear bss */
     mov     r0, #0
     ldr     r1, =_bstart
     ldr     r2, =_bend
@@ -117,6 +118,7 @@ loopZI:
     strlo   r0, [r1], #4
     blo     loopZI
 
+/* copy data section */
     ldr     r1, =_data_lma
     ldr     r2, =_data_vma
     ldr     r3, =_data_end
@@ -135,15 +137,6 @@ loop_cp_text:
     strlo   r0, [r2], #4
     blo     loop_cp_text
 
-    ldr     r1, =_reloc_lma
-    ldr     r2, =_reloc_vma
-    ldr     r3, =_reloc_text_end
-loop_cp_reloc:
-    cmp     r2, r3
-    ldrlo   r0, [r1], #4
-    strlo   r0, [r2], #4
-    blo     loop_cp_reloc
-
 init_hook:
     nop
     ldr     r0, =hardware_init_hook
@@ -155,7 +148,7 @@ init_hook:
 /* enabling interrupts */
     msr	    CPSR_c, #ARM_MODE_SVC
 
-/** kernel start */
+/* kernel start */
 	bl		kernel_start
 die:
     b 	    die
