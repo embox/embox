@@ -20,8 +20,8 @@ EMBOX_TEST(blinking_led);
  * @retval 0 on success
  * @retval nonzero on failure
  */
-#define DELAY 0x0;
-#define INC 0x1;
+#define DELAY   0x0
+#define INC     0x1
 
 void delay(int d) {
 	int i = 0;
