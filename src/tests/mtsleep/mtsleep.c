@@ -25,7 +25,7 @@ EMBOX_TEST(run);
  * @retval nonzero on failure
  */
 
-int static_random_value = 137;
+int static_random_value = 177;
 
 uint32_t random(void) {
 	static_random_value *= 31;
@@ -40,7 +40,7 @@ void* handler(void* args) {
 	#else
 	usleep(id);
 	#endif
-	printf("%i\n",id);
+	printf("%d\r\n",id);
 	return NULL;
 }
 

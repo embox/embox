@@ -17,6 +17,7 @@
 #include <embox/unit.h>
 #include <lib/list.h>
 #include <hal/arch.h>
+#include <kernel/thread/api.h>
 
 EMBOX_UNIT_INIT(timer_init);
 
@@ -34,6 +35,7 @@ static volatile uint32_t cnt_ms_sleep; /**< for sleep function */
 static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
 static sys_tmr_t sys_timers[_SC_TIMER_MAX];
+static struct thread * sys_timer_by_thread[_SC_TIMER_MAX];
 
 static LIST_HEAD(free_sys_timers_list);
 static LIST_HEAD(sys_timers_list);
@@ -42,26 +44,49 @@ uint32_t cnt_system_time(void) {
 	return cnt_sys_time;
 }
 
-static int timer_id_is_busy(uint32_t id) {
+static sys_tmr_t * get_timer_by_id(uint32_t id) {
 	struct list_head *p;
+
 	list_for_each(p, &sys_timers_list) {
 		if (id == ((sys_tmr_t *) p)->id) {
-			return 1;
+			return (sys_tmr_t *) p;
 		}
 	}
+	return (sys_tmr_t *) 0;
+}
+
+static int timer_id_is_busy(uint32_t id) {
+	sys_tmr_t *timer;
+
+	timer = get_timer_by_id(id);
+	if (timer != (sys_tmr_t *) 0) {
+		return 1;
+	}
 	return 0;
+}
+
+static uint32_t get_free_timer_id(void) {
+	uint32_t id;
+	for (id = 1; id < _SC_TIMER_MAX; id++) {
+		if (!get_timer_by_id(id)) {
+			return id;
+		}
+	}
+	return (uint32_t)-1;
 }
 
 int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle) {
 	sys_tmr_t *new_timer;
 	if (list_empty(&free_sys_timers_list) ||
 	    timer_id_is_busy(id) || !handle) {
+		printf("%d %d %d", list_empty(&free_sys_timers_list),timer_id_is_busy(id),!handle);
 		return 0;
 	}
 	new_timer = (sys_tmr_t *) free_sys_timers_list.next;
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->id     = id;
 	new_timer->handle = handle;
+	sys_timer_by_thread[new_timer - sys_timers] = thread_self();
 	list_move_tail((struct list_head *) new_timer, &sys_timers_list);
 	return id;
 }
@@ -120,13 +145,34 @@ int timer_init(void) {
 	return 0;
 }
 
+static void restore_thread(uint32_t id)
+{
+	thread_resume(sys_timer_by_thread[get_timer_by_id(id) - sys_timers]);
+}
+
 /*system library function */
 int usleep(useconds_t usec) {
-	cnt_ms_sleep = 0;
+	uint32_t id;
 
-	while (cnt_ms_sleep < usec) {
-		arch_idle();
+#if 0
+	int res;
+	id = get_free_timer_id();
+	if (id == (uint32_t) -1)
+	{
+		res = 0;
+		return 1;
 	}
+	res = set_timer(id, usec, restore_thread);
+	if (!res) {
+		return 1;
+	}
+#else
+	id = get_free_timer_id();
+	if ((id == (uint32_t) -1) || !set_timer(id, usec, restore_thread)) {
+		return 1;
+	}
+#endif
+	thread_suspend(thread_self());
 	return 0;
 }
 
