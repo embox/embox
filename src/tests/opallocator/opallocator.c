@@ -9,7 +9,7 @@
 
 #include <embox/test.h>
 #include <stdio.h>
-#include <kernel/mm/opallocator.h>
+#include <kernel/mm/pagealloc/opallocator.h>
 
 #define VST
 

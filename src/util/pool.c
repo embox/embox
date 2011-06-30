@@ -11,7 +11,7 @@
  */
 
 #include <assert.h>
-#include <util/pool.h>
+#include <kernel/mm/misc/pool.h>
 #include <util/structof.h>
 #include <lib/list.h>
 

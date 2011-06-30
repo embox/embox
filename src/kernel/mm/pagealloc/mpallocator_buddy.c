@@ -29,7 +29,7 @@
 
 #include <errno.h>
 #include <lib/list.h>
-#include <kernel/mm/mpallocator.h>
+#include <kernel/mm/pagealloc/mpallocator.h>
 #include <stdlib.h>
 
 #ifndef EXTENDED_TEST

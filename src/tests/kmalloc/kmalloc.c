@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <kernel/mm/kmalloc.h>
 #include <lib/list.h>
-#include <kernel/mm/mpallocator.h>
+#include <kernel/mm/pagealloc/mpallocator.h>
 
 EMBOX_TEST(run);
 

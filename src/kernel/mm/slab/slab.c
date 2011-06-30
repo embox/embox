@@ -18,7 +18,7 @@
 #include <kernel/mm/misc/slab.h>
 #include <kernel/mm/kmalloc.h>
 #include <kernel/mm/slab_statistic.h>
-#include <kernel/mm/mpallocator.h>
+#include <kernel/mm/pagealloc/mpallocator.h>
 
 /**
  * slab descriptor
