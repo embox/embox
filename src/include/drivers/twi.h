@@ -9,8 +9,6 @@
 #ifndef NXT_TWI_H_
 #define NXT_TWI_H_
 
-extern void twi_init(void);
-
 /**
  * Send through TWI, should be used to normal communication
  */

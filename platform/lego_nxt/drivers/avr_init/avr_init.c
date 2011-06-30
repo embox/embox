@@ -84,7 +84,6 @@ static uint32_t avr_handler(void) {
 static int init(void) {
 	int result = 0;
 
-	twi_init();
 	twi_write(NXT_AVR_ADDRESS, (const uint8_t *) avr_brainwash_string,
 					strlen(avr_brainwash_string));
 

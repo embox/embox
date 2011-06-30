@@ -7,22 +7,18 @@
  * @author Fedor Burdun
  */
 
-#include <drivers/at91sam7s256.h>
-#include <drivers/twi.h>
+#include <types.h>
+#include <embox/unit.h>
+#include <kernel/panic.h>
 #include <hal/reg.h>
-//#include <drivers/nxt_avr.h>
-#include <assert.h>
+#include <drivers/at91sam7s256.h>
 
-#define   I2CClk           400000L
-#define   CLDIV            (((CONFIG_SYS_CLOCK/I2CClk)/2)-3)
+#include <drivers/twi.h>
 
-//#define AT91C_PA4_TWCK AT91C_PA4_AT91C_PA4_TWCK //(1 << 4)
-//#define AT91C_PA3_TWD	 AT91C_PA3_AT91C_PA3_TWD //(1 << 3)
+EMBOX_UNIT_INIT(twi_init);
 
-//#define sysc ((volatile struct _AT91S_SYS *) 0xFFFFF000)
-
-// XXX move it to header.
-void avr_read_done(void);
+#define   TWICLK           400000L //TODO move to global config -- special to system where runs
+#define   CLDIV            (((CONFIG_SYS_CLOCK/TWICLK)/2)-3)
 
 static uint32_t twi_pending;
 static uint8_t *twi_ptr;
@@ -32,8 +28,7 @@ static uint32_t twi_mask;
 static uint8_t out_buff[BUF_SIZE];
 
 static void systick_wait_ns(uint32_t ns) {
-	volatile uint32_t x = (ns >> 7) + 1;
-
+	uint32_t x = (ns >> 7) + 1;
 	while (x) {
 		x--;
 	}
@@ -44,16 +39,17 @@ static void twi_reset(void) {
 
 	REG_STORE(AT91C_TWI_IDR, ~0);
 
-	*AT91C_PMC_PCER = (1 << AT91C_ID_PIOA) |  /* Need PIO too */
-			(1 << AT91C_ID_TWI);    /* TWI clock domain */
+	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_PIOA) |  /* Need PIO too */
+			(1 << AT91C_ID_TWI));    /* TWI clock domain */
 
-	/* Set up pin as an IO pin for clocking till clean */
+	/* MAGIC Set up pin as an IO pin for clocking till clean */
+	/* Why we need to clock? */
 	REG_STORE(AT91C_PIOA_MDER, AT91C_PA3_TWD | AT91C_PA4_TWCK);
 	REG_STORE(AT91C_PIOA_PER, AT91C_PA3_TWD | AT91C_PA4_TWCK);
 	REG_STORE(AT91C_PIOA_ODR, AT91C_PA3_TWD);
 	REG_STORE(AT91C_PIOA_OER, AT91C_PA4_TWCK);
 
-	while (clocks > 0 && !(*AT91C_PIOA_PDSR & AT91C_PA3_TWD)) {
+	while (clocks > 0 && !(REG_LOAD(AT91C_PIOA_PDSR) & AT91C_PA3_TWD)) {
 		REG_STORE(AT91C_PIOA_CODR, AT91C_PA4_TWCK);
 		systick_wait_ns(1500);
 		REG_STORE(AT91C_PIOA_SODR, AT91C_PA4_TWCK);
@@ -63,6 +59,7 @@ static void twi_reset(void) {
 
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA3_TWD | AT91C_PA4_TWCK);
 	REG_STORE(AT91C_PIOA_ASR, AT91C_PA3_TWD | AT91C_PA4_TWCK);
+	/* MAGIC END */
 
 	/* Disable & reset */
 	REG_STORE(AT91C_TWI_CR, AT91C_TWI_SWRST | AT91C_TWI_MSDIS);
@@ -75,17 +72,20 @@ static void twi_reset(void) {
 	twi_mask = 0;
 }
 
-void  twi_init(void) {
+static int twi_init(void) {
 	twi_reset();
+	return 0;
 }
 
 void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes) {
 	twi_ptr = (uint8_t *) data;
 	twi_pending = nBytes;
 
-	*AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO | ((dev_addr & 0x7f) << 16);
-	*AT91C_TWI_THR = *twi_ptr++;
+	REG_STORE(AT91C_TWI_MMR, AT91C_TWI_IADRSZ_NO | ((dev_addr & 0x7f) << 16));
+
+	REG_STORE(AT91C_TWI_THR, *twi_ptr++);
 	twi_pending--;
+
 	while (twi_pending > 0) {
 		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXRDY));
 		REG_STORE(AT91C_TWI_THR, *twi_ptr++);
@@ -97,14 +97,19 @@ void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes) {
 
 void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
 	const uint8_t *sptr = data;
-	assert(count < BUF_SIZE);
 	uint8_t *dptr = out_buff;
 	uint8_t checkbyte = 0;
 	uint32_t left_count = count;
+
+	if (count < BUF_SIZE) {
+		panic("Sending to AVR abnormal long data\n");
+	}
+
 	while (left_count-- > 0) {
 		checkbyte += *sptr;
 		*dptr++ = *sptr++;
 	}
+
 	*dptr = ~checkbyte;
 	twi_write(dev_addr, out_buff, count + 1);
 }
@@ -112,22 +117,31 @@ void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
 int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
 	uint8_t *ptr = data;
 	uint8_t checkbyte = 0;
-	*AT91C_TWI_MMR = AT91C_TWI_IADRSZ_NO |
-			AT91C_TWI_MREAD | ((dev_addr & 0x7f) << 16);
-	*AT91C_TWI_CR = AT91C_TWI_START;
+
+	REG_STORE(AT91C_TWI_MMR, AT91C_TWI_IADRSZ_NO |
+			AT91C_TWI_MREAD | ((dev_addr & 0x7f) << 16));
+	REG_STORE(AT91C_TWI_CR, AT91C_TWI_START);
+
 	while (count-- > 1) {
 		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
+
 		*ptr = REG_LOAD(AT91C_TWI_RHR);
 		checkbyte += *ptr;
 		ptr++;
 	}
 
-	*AT91C_TWI_CR = AT91C_TWI_STOP;
-	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
+	REG_STORE(AT91C_TWI_CR, AT91C_TWI_STOP);
+
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY)) {
+
+	}
+
 	*ptr = REG_LOAD(AT91C_TWI_RHR);
 	checkbyte += *ptr;
 
-	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP));
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP)) {
+
+	}
 
 	return ((checkbyte == 0xff) ? 1 : 0);
 }
