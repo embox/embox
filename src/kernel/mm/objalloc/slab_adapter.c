@@ -9,14 +9,14 @@
 #include <kernel/mm/slab.h>
 #include <kernel/mm/objalloc.h>
 
-void *objalloc(struct objalloc *uni) {
-	return cache_alloc((cache_t*) uni);
+void *objalloc(struct objalloc *adapter) {
+	return cache_alloc(&adapter->cache);
 }
 
-void objfree(struct objalloc *uni, void* objp) {
-	cache_free((cache_t*) uni, objp);
+void objfree(struct objalloc *adapter, void* objp) {
+	cache_free(&adapter->cache, objp);
 }
 
-void objcache_destroy(struct objalloc *uni) {
-	cache_destroy((cache_t*) uni);
+void objcache_destroy(struct objalloc *adapter) {
+	cache_destroy(&adapter->cache);
 }

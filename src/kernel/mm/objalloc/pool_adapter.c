@@ -9,14 +9,14 @@
 #include <util/pool.h>
 #include <kernel/mm/objalloc.h>
 
-void *objalloc(struct objalloc *uni) {
-	return pool_alloc((struct pool*) uni);
+void *objalloc(struct objalloc *adapter) {
+	return pool_alloc(&adapter->pool);
+}
+asas
+void objfree(struct objalloc *adapter, void* objp) {
+	pool_free(&adapter->pool, objp);
 }
 
-void objfree(struct objalloc *uni, void* objp) {
-	pool_free((struct pool*) uni, objp);
-}
-
-void objcache_destroy(struct objalloc *uni) {
+void objcache_destroy(struct objalloc *adapter) {
 
 }
