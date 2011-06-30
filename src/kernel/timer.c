@@ -2,8 +2,9 @@
  * @file
  * @brief Timer handling.
  *
- * @date 09.02.09
+ * @date 30.06.11
  * @author Andrey Baboshin
+ * @author Ilia Vaprol
  */
 
 #include <types.h>
@@ -79,7 +80,6 @@ int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle) {
 	sys_tmr_t *new_timer;
 	if (list_empty(&free_sys_timers_list) ||
 	    timer_id_is_busy(id) || !handle) {
-		printf("%d %d %d", list_empty(&free_sys_timers_list),timer_id_is_busy(id),!handle);
 		return 0;
 	}
 	new_timer = (sys_tmr_t *) free_sys_timers_list.next;
@@ -154,24 +154,10 @@ static void restore_thread(uint32_t id)
 int usleep(useconds_t usec) {
 	uint32_t id;
 
-#if 0
-	int res;
-	id = get_free_timer_id();
-	if (id == (uint32_t) -1)
-	{
-		res = 0;
-		return 1;
-	}
-	res = set_timer(id, usec, restore_thread);
-	if (!res) {
-		return 1;
-	}
-#else
 	id = get_free_timer_id();
 	if ((id == (uint32_t) -1) || !set_timer(id, usec, restore_thread)) {
 		return 1;
 	}
-#endif
 	thread_suspend(thread_self());
 	return 0;
 }

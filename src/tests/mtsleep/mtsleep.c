@@ -12,7 +12,7 @@
 
 #define TEST_SIZE 10
 #define TEST_SLEEP 1
-#define TEST_OF_TEST 0
+#define TEST_OF_TEST 1
 
 EMBOX_TEST(run);
 
