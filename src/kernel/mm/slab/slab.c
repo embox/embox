@@ -11,11 +11,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <kernel/mm/objalloc.h> //!delete
 #include <lib/list.h>
 #include <util/binalign.h>
 #include <kernel/printk.h>
-#include <kernel/mm/slab.h>
+#include <kernel/mm/misc/slab.h>
 #include <kernel/mm/kmalloc.h>
 #include <kernel/mm/slab_statistic.h>
 #include <kernel/mm/mpallocator.h>
@@ -86,31 +86,22 @@ static page_info_t* virt_to_page(void *objp) {
 	return &(pages[index]);
 }
 
+/*static void makecache(cache_t *c) {
+	objalloc(c);
+}*/
+
 /* main cache which will contain another descriptors of caches */
-static cache_t cache_chain = {
-	.name = "__cache_chain",
-	.num = (CONFIG_PAGE_SIZE * CACHE_CHAIN_SIZE - binalign_bound(sizeof(slab_t), 4))
-				/ binalign_bound(sizeof(cache_t), 4),
-	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct list_head)),
-	.slabs_full = {
-		&cache_chain.slabs_full,
-		&cache_chain.slabs_full
-	},
-        .slabs_free = {
-    		&cache_chain.slabs_free,
-    		&cache_chain.slabs_free
-    	},
-	.slabs_partial = {
-		&cache_chain.slabs_partial,
-		&cache_chain.slabs_partial
-	},
-	.next = {
-		&cache_chain.next,
-		&cache_chain.next
-	},
-	.growing = false,
-	.slab_order = CACHE_CHAIN_SIZE
-};
+static cache_t cache_chain = { .name = "__cache_chain", .num =
+		(CONFIG_PAGE_SIZE * CACHE_CHAIN_SIZE
+				- binalign_bound(sizeof(slab_t), 4))
+				/ binalign_bound(sizeof(cache_t), 4), .obj_size =
+		binalign_bound(sizeof(cache_t), sizeof(struct list_head)),
+		.slabs_full = { &cache_chain.slabs_full, &cache_chain.slabs_full },
+		.slabs_free = { &cache_chain.slabs_free, &cache_chain.slabs_free },
+		.slabs_partial = { &cache_chain.slabs_partial,
+				&cache_chain.slabs_partial }, .next = { &cache_chain.next,
+				&cache_chain.next }, .growing = false, .slab_order =
+				CACHE_CHAIN_SIZE };
 
 /**
  * Free memory which occupied by slab
@@ -198,8 +189,8 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	size_t left_over;
 	cache_t *cachep;
 
-	if (!name || strlen(name) >= __CACHE_NAMELEN - 1 || obj_size <= 0 || obj_size
-			>= CONFIG_PAGE_SIZE << MAX_OBJ_ORDER)
+	if (!name || strlen(name) >= __CACHE_NAMELEN - 1 || obj_size <= 0
+			|| obj_size >= CONFIG_PAGE_SIZE << MAX_OBJ_ORDER)
 		return NULL;
 
 	cachep = (cache_t*) cache_alloc(&cache_chain);
@@ -400,7 +391,7 @@ static cache_t *find_fit_cache(size_t obj_size) {
 void *kmalloc(size_t size) {
 	cache_t *cachep;
 	void *obj_ptr;
-	char name[__CACHE_NAMELEN];
+	char name[__CACHE_NAMELEN ];
 
 	/* different caches must be initialized with different names "__size" */
 	sprintf(name, "%s\n", "__");
@@ -417,7 +408,7 @@ void *kmalloc(size_t size) {
 	return obj_ptr;
 }
 
-void kfree(void *obj) {
+void slab_kfree(void *obj) {
 	page_info_t *page = virt_to_page(obj);
 	cache_t *cachep = GET_PAGE_CACHE(page);
 	cache_free(cachep, obj);

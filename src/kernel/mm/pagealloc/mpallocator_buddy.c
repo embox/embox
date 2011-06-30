@@ -72,11 +72,11 @@ size_t rootblocksize; /* size of root block */
  * no real bit pack. only array mapping
  * addr - 1 because root is 1
  */
-inline void set_bits(taddr addr, char bit) {
+static inline void set_bits(taddr addr, char bit) {
 	(HEAP_START_PTR)[addr - 1] = bit;
 }
 
-inline char get_bits(taddr addr) {
+static inline char get_bits(taddr addr) {
 	return (HEAP_START_PTR)[addr - 1];
 }
 
@@ -156,14 +156,14 @@ void * taddr_to_ptr(taddr addr) {
 /**
  * check block for alloc
  */
-inline int is_avail(taddr addr) {
+static inline int is_avail(taddr addr) {
 	return !get_bits(addr);
 }
 
 /**
  * check block in heap or not
  */
-inline int in_heap(taddr addr, size_t length) {
+static inline int in_heap(taddr addr, size_t length) {
 	return (((unsigned long) taddr_to_ptr(addr) + (unsigned long) length
 			* CONFIG_PAGE_SIZE) <= (unsigned long) HEAP_END_PTR);
 }

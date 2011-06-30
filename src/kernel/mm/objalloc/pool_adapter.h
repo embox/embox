@@ -12,3 +12,4 @@
 struct adapter {
 	struct pool pool;
 };
+
