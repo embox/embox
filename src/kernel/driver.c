@@ -11,7 +11,7 @@
  * must work device_read
  */
 
-#include <kernel/mm/kmalloc.h>
+#include <mem/kmalloc.h>
 #include <kernel/driver.h>
 #include <string.h>
 #include <hal/ipl.h>

@@ -18,8 +18,8 @@
 
 #include <asm/asi.h>
 #include <embox/unit.h>
-#include <kernel/mm/virt_mem/table_alloc.h>
-#include <kernel/mm/pagealloc/opallocator.h>
+#include <mem/virt_mem/table_alloc.h>
+#include <mem/pagealloc/opallocator.h>
 
 /* main system MMU environment*/
 static mmu_env_t system_env;

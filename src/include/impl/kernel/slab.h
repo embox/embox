@@ -7,7 +7,7 @@
  */
 
 #ifndef SLAB_H_
-# error "Do not include this file directly, use <kernel/mm/slab.h> instead!"
+# error "Do not include this file directly, use <mem/slab.h> instead!"
 #endif /* SLAB_H_ */
 #include <types.h>
 #include <lib/list.h>

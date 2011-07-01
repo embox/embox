@@ -9,7 +9,7 @@
  */
 
 #include <errno.h>
-#include <kernel/mm/pagealloc/mpallocator.h>
+#include <mem/pagealloc/mpallocator.h>
 
 #ifndef EXTENDED_TEST
 extern char _heap_start;

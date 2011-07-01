@@ -14,10 +14,10 @@
 #include <stdlib.h>
 #include <lib/list.h>
 #include <string.h>
-#include <kernel/mm/misc/slab.h>
-#include <kernel/mm/kmalloc.h>
-#include <kernel/mm/misc/slab_statistic.h>
-#include <kernel/mm/pagealloc/mpallocator.h>
+#include <mem/misc/slab.h>
+#include <mem/kmalloc.h>
+#include <mem/misc/slab_statistic.h>
+#include <mem/pagealloc/mpallocator.h>
 #include <util/binalign.h>
 
 extern char _heap_start;

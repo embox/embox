@@ -8,7 +8,7 @@
 
 #include <util/slist.h>
 #include <util/array.h>
-#include <kernel/mm/misc/pool.h>
+#include <mem/misc/pool.h>
 #include <embox/unit.h>
 
 #include <drivers/pci.h>

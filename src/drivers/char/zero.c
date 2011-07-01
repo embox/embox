@@ -9,7 +9,7 @@
 #include <embox/unit.h>
 #include <kernel/driver.h>
 #include <kernel/printk.h>
-#include <kernel/mm/kmalloc.h>
+#include <mem/kmalloc.h>
 
 #define START_AS_MOD
 

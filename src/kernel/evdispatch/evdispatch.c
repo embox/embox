@@ -7,7 +7,7 @@
  */
 
 #include <lib/list.h>
-#include <kernel/mm/misc/pool.h>
+#include <mem/misc/pool.h>
 #include <kernel/softirq.h>
 #include <kernel/evdispatch.h>
 
@@ -35,7 +35,7 @@ static struct handler handler_arr[EVENT_MSG_COUNT];
 #include <embox/unit.h>
 #define make_cache_name(name) \
 		""#name""
-#include <kernel/mm/slab.h>
+#include <mem/slab.h>
 EMBOX_UNIT_INIT(event_dispatcher_init);
 
 static int event_dispatcher_init(void) {

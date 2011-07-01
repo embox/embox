@@ -6,9 +6,9 @@
  */
 
 #include <hal/mm/mmu_core.h>
-#include <kernel/mm/virt_mem/table_alloc.h>
-#include <kernel/mm/virt_mem/mmu_core.h>
-#include <kernel/mm/pagealloc/opallocator.h>
+#include <mem/virt_mem/table_alloc.h>
+#include <mem/virt_mem/mmu_core.h>
+#include <mem/pagealloc/opallocator.h>
 #include <util/math.h>
 
 static mmu_pte_t *context[] = {NULL, NULL, NULL, NULL, NULL };

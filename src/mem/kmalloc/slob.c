@@ -6,8 +6,8 @@
  * @author Michail Skorginskii
  */
 
-#include <kernel/mm/pagealloc/mpallocator.h>
-#include <kernel/mm/kmalloc.h>
+#include <mem/pagealloc/mpallocator.h>
+#include <mem/kmalloc.h>
 #include <lib/list.h>
 #include <stdlib.h>
 

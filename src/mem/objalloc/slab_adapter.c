@@ -6,8 +6,8 @@
  * @author Alexandr Kalmuk
  */
 
-#include <kernel/mm/slab.h>
-#include <kernel/mm/objalloc.h>
+#include <mem/slab.h>
+#include <mem/objalloc.h>
 
 void *objalloc(struct objalloc *adapter) {
 	return cache_alloc(&adapter->cache);

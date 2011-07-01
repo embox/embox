@@ -6,8 +6,8 @@
  * @author Alexandr Kalmuk
  */
 
-#include <kernel/mm/misc/pool.h>
-#include <kernel/mm/objalloc.h>
+#include <mem/misc/pool.h>
+#include <mem/objalloc.h>
 
 void *objalloc(struct objalloc *adapter) {
 	return pool_alloc(&adapter->pool);

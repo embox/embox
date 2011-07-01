@@ -4,7 +4,7 @@ $_MODS += mmu mpallocator opallocator slab
 
 ifdef CONFIG_HEAP_SIZE
 # describe special section
-$_heap_lds := $(OBJ_DIR)/kernel/mm/heap.lds
+$_heap_lds := $(OBJ_DIR)mem/heap.lds
 $_LDFLAGS += $($_heap_lds)
 
 $(IMAGE): $($_heap_lds)
