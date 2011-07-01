@@ -47,13 +47,19 @@
 	".array_spread." MACRO_STRING(s_array##_##order##_##tag) ".rodata"
 
 /* Every array entry, group of entries or marker symbols are backed by an
- * individual array (empty for markers) defined as follows. */
-#define __ARRAY_SPREAD_ENTRY_DEF(type, s_entry, sect) \
+ * individual array (empty for markers) defined as follows.
+ *
+ * Each element including auxiliary entries must be properly aligned.
+ * The alignment is taken from the array head marker which has the same type as
+ * array elements.
+ * This implies that the array itself must be declared twice:
+ *   first time is for define its type, and
+ *   second time - to align itself.
+ */
+#define __ARRAY_SPREAD_ENTRY_DEF(type, s_entry, sect, align_element) \
 	/* __extension__ bypasses compiler warnings about empty arrays. */ \
-	__extension__ const type MACRO_GUARD(s_entry)[] \
-			__attribute__((unused)) = { /*empty */ }; \
 	__extension__ const type s_entry[] __attribute__ ((used, section(sect), \
-			aligned(__alignof__(MACRO_GUARD(s_entry)[0]))))
+			aligned(__alignof__(align_element))))
 
 /* Spread arrays implementation-private entries are named as follows
  * to prevent namespace pollution. */
@@ -62,22 +68,25 @@
 
 #define __ARRAY_SPREAD_PRIVATE_DEF(type, s_array, s_tag, section) \
 	__ARRAY_SPREAD_ENTRY_DEF(type, \
-		__ARRAY_SPREAD_PRIVATE(s_array, s_tag), section)
+		__ARRAY_SPREAD_PRIVATE(s_array, s_tag), section, s_array[0])
 
 /* Here goes API implementation. */
 
 /* Spread definition. */
 
 #define __ARRAY_SPREAD_DEF_TERMINATED(element_type, array_name, terminator) \
-	/* Define an empty head which will act as an anchor to the array head. */ \
-	__ARRAY_SPREAD_ENTRY_DEF(element_type, array_name, \
-		__ARRAY_SPREAD_SECTION_HEAD(array_name)) = { /* empty */ }; \
-	/* Add terminator element (if any). */ \
-	__ARRAY_SPREAD_PRIVATE_DEF(element_type, array_name, term, \
-		__ARRAY_SPREAD_SECTION_TERM(array_name)) = { terminator }; \
-	/* Add an anchor at the very end of the array. */ \
-	__ARRAY_SPREAD_PRIVATE_DEF(element_type, array_name, tail, \
-		__ARRAY_SPREAD_SECTION_TAIL(array_name)) = { /* empty */ }
+	/* Definition of the head is done in two steps (see above). First, define \
+	 * an empty array which will act as an anchor to the array head. */       \
+	__extension__ const element_type array_name[] = { /* empty */ };          \
+	/* Then redeclare it as usual. */                                         \
+	__ARRAY_SPREAD_ENTRY_DEF(element_type, array_name,                        \
+			__ARRAY_SPREAD_SECTION_HEAD(array_name), array_name[0]);          \
+	/* Add a terminating element (if any). */                                 \
+	__ARRAY_SPREAD_PRIVATE_DEF(element_type, array_name, term,                \
+			__ARRAY_SPREAD_SECTION_TERM(array_name)) = { terminator };        \
+	/* Add an anchor at the very end of the array. */                         \
+	__ARRAY_SPREAD_PRIVATE_DEF(element_type, array_name, tail,                \
+			__ARRAY_SPREAD_SECTION_TAIL(array_name)) = { /* empty */ }
 
 #define __ARRAY_SPREAD_DEF(element_type, array_name) \
 	__ARRAY_SPREAD_DEF_TERMINATED(element_type, array_name, /* empty */)
@@ -91,7 +100,8 @@
 
 #define __ARRAY_SPREAD_ADD_NAMED(array_name, ptr_name, ...) \
 	__ARRAY_SPREAD_ENTRY_DEF(static typeof(*(array_name)), ptr_name, \
-		__ARRAY_SPREAD_SECTION_BODY(array_name)) = { __VA_ARGS__ }
+		__ARRAY_SPREAD_SECTION_BODY(array_name), array_name[0]) = \
+			{ __VA_ARGS__ }
 
 /* Spread size calculations. */
 
