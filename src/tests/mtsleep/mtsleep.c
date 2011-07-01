@@ -28,12 +28,14 @@ EMBOX_TEST(run);
 
 void* handler(void* args) {
 	uint32_t id = (uint32_t) args;
-	uint32_t now = cnt_system_time();
+	uint32_t time1, time2;
 
-	printf("I'm %d thread... run\n", id);
+	printf("Thread %d... run\n", id);
+	time1 = cnt_system_time();
 	usleep(TIME_SLEEP);
-	printf("I'm %d thread... done at %u (was started at %u, was running %u)\n",
-			id, cnt_system_time(), now, TIME_SLEEP);
+	time2 = cnt_system_time();
+	printf("Thread %d... done at %u (was started at %u, was running %u)\n",
+			id, time2, time1, TIME_SLEEP);
 	return NULL;
 }
 
