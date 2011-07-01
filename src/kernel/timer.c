@@ -18,7 +18,9 @@
 #include <embox/unit.h>
 #include <lib/list.h>
 #include <hal/arch.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread/event.h>
+#include <kernel/thread/sched.h>
+#include <assert.h>
 
 EMBOX_UNIT_INIT(timer_init);
 
@@ -30,13 +32,13 @@ typedef struct sys_tmr {
 	uint32_t   load;
 	uint32_t   cnt;
 	TIMER_FUNC handle;
+	struct event event_wait;
 } sys_tmr_t;
 
 static volatile uint32_t cnt_ms_sleep; /**< for sleep function */
 static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
 static sys_tmr_t sys_timers[_SC_TIMER_MAX];
-static struct thread * sys_timer_by_thread[_SC_TIMER_MAX];
 
 static LIST_HEAD(free_sys_timers_list);
 static LIST_HEAD(sys_timers_list);
@@ -86,7 +88,7 @@ int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle) {
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->id     = id;
 	new_timer->handle = handle;
-	sys_timer_by_thread[new_timer - sys_timers] = thread_self();
+	event_init(&new_timer->event_wait, NULL);
 	list_move_tail((struct list_head *) new_timer, &sys_timers_list);
 	return id;
 }
@@ -107,9 +109,10 @@ void close_timer(uint32_t id) {
  * to the counter and the function is executed.
  */
 static void inc_sys_timers(void) {
-	struct list_head *tmp;
+	struct list_head *tmp, *tmp2;
 	sys_tmr_t *tmr;
-	list_for_each(tmp, &sys_timers_list) {
+
+	list_for_each_safe(tmp, tmp2, &sys_timers_list) {
 		tmr = (sys_tmr_t *) tmp;
 		if (0 == tmr->cnt--) {
 			if (tmr->handle) {
@@ -147,18 +150,32 @@ int timer_init(void) {
 
 static void restore_thread(uint32_t id)
 {
-	thread_resume(sys_timer_by_thread[get_timer_by_id(id) - sys_timers]);
+	struct event *e;
+	sys_tmr_t *timer;
+
+	printf("Timer id: %d\n", id);
+	timer = get_timer_by_id(id);
+	assert(timer);
+	e = &timer->event_wait;
+	close_timer(id);
+	sched_wake(e);
+//	sched_wake(&get_timer_by_id(id)->event_wait);
 }
 
 /*system library function */
 int usleep(useconds_t usec) {
 	uint32_t id;
 
+	sched_lock();
+
 	id = get_free_timer_id();
 	if ((id == (uint32_t) -1) || !set_timer(id, usec, &restore_thread)) {
 		return 1;
 	}
-	thread_suspend(thread_self());
+	sched_sleep_locked(&get_timer_by_id(id)->event_wait);
+
+	sched_unlock();
+
 	return 0;
 }
 

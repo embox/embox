@@ -30,9 +30,9 @@ void* handler(void* args) {
 	uint32_t id = (uint32_t) args;
 	uint32_t now = cnt_system_time();
 
-	printf("I'm %d thread... run\r\n", id);
+	printf("I'm %d thread... run\n", id);
 	usleep(TIME_SLEEP);
-	printf("I'm %d thread... done at %u (was started at %u, was running %u)\r\n",
+	printf("I'm %d thread... done at %u (was started at %u, was running %u)\n",
 			id, cnt_system_time(), now, TIME_SLEEP);
 	return NULL;
 }
@@ -44,13 +44,11 @@ static int run(void) {
 	printf("Sleep sort :)\n");
 
 	for (i = 0; i < NUM_THREADS; i++) {
-		thread_create(&t[i], THREAD_FLAG_DETACHED, &handler, (void *) i);
+		thread_create(&t[i], 0, &handler, (void *) i);
 	}
-#if 0
 	for (i = 0; i < NUM_THREADS; i++) {
 		thread_join(t[i], NULL);
 	}
-#endif
 	return 0;
 }
 
