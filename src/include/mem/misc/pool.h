@@ -20,7 +20,9 @@ struct pool;
  * @param count of objects in cache
  */
 #define POOL_DEF(pool_nm, object_t, objects_nr) \
-	__POOL_DEF(pool_nm, object_t, objects_nr)
+	  __POOL_DEF(pool_nm, object_t, objects_nr)
+
+//extern int pool_init(struct pool *pool, size_t obj_size, size_t obj_num);
 
 /**
  * allocate single object from the cache and return it to the caller

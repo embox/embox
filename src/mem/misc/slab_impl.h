@@ -6,11 +6,15 @@
  * @author Alexandr Kalmuk
  */
 
-#ifndef SLAB_H_
-# error "Do not include this file directly, use <mem/slab.h> instead!"
-#endif /* SLAB_H_ */
+#ifndef MEM_MISC_SLAB_IMPL_H_
+#define MEM_MISC_SLAB_IMPL_H_
+
 #include <types.h>
 #include <lib/list.h>
+
+#define __CACHE_DEF(cache_nm, object_t, objects_nr) \
+	static struct cache cache_nm
+
 
 /** Length of name of any cache */
 #define __CACHE_NAMELEN 16
@@ -36,3 +40,5 @@ struct cache {
 	/** lock the cache from being reaped or shrunk */
 	bool growing;
 };
+
+#endif /* MEM_MISC_SLAB_IMPL_H_ */

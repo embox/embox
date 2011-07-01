@@ -6,17 +6,17 @@
  * @author Alexandr Kalmuk
  */
 
-#include <mem/slab.h>
+#include <mem/misc/slab.h>
 #include <mem/objalloc.h>
 
-void *objalloc(struct objalloc *adapter) {
-	return cache_alloc(&adapter->cache);
+void *objalloc(objalloc_t *allocator) {
+	return cache_alloc(allocator);
 }
 
-void objfree(struct objalloc *adapter, void* objp) {
-	cache_free(&adapter->cache, objp);
+void objfree(objalloc_t *allocator, void *object) {
+	cache_free(allocator, object);
 }
 
-void objcache_destroy(struct objalloc *adapter) {
-	cache_destroy(&adapter->cache);
+void objcache_destroy(objalloc_t *allocator) {
+	cache_destroy(allocator);
 }

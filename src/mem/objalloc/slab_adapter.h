@@ -1,5 +1,5 @@
 /**
- * @brief Adapt pool structure to objalloc interface.
+ * @brief Adapt cache structure to objalloc interface.
  *
  * @see mem/objalloc.h
  *
@@ -7,8 +7,18 @@
  * @author Alexandr Kalmuk
  */
 
-#include <mem/slab.h>
+#include <mem/misc/slab.h>
 
-struct objalloc {
-	struct cache cache;
-};
+#define __OBJALLOC_DEF(allocator_nm, object_t, objects_nr) \
+	CACHE_DEF(allocator_nm, object_t, objects_nr)
+
+typedef struct cache objalloc_t;
+
+static inline int objalloc_init(objalloc_t *allocator, size_t object_sz,
+		size_t objects_nr) {
+	return cache_init(allocator, objects_sz, objects_nr);
+}
+
+static inline int objalloc_destroy(objalloc_t *allocator) {
+	return cache_destroy(allocator);
+}

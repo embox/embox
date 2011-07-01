@@ -32,10 +32,16 @@
 #ifndef SLAB_H_
 #define SLAB_H_
 
-#include __impl(kernel/slab.h)
+#include __impl_x(mem/misc/slab_impl.h)
 
 /** cache descriptor */
 typedef struct cache cache_t;
+
+/**
+ * TODO
+ */
+#define CACHE_DEF(cache_nm, object_t, objects_nr) \
+	  __CACHE_DEF(cache_nm, object_t, objects_nr)
 
 /**
  * Create of cache
@@ -44,6 +50,8 @@ typedef struct cache cache_t;
  * @param obj_num is number of object reserved at first
  */
 extern cache_t *cache_create(char *name, size_t obj_size, size_t obj_num);
+
+extern int cache_init(cache_t *cache, size_t obj_size, size_t obj_num);
 
 /**
  * Destroy of cache

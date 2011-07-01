@@ -9,14 +9,13 @@
 #include <mem/misc/pool.h>
 #include <mem/objalloc.h>
 
-void *objalloc(struct objalloc *adapter) {
-	return pool_alloc(&adapter->pool);
+void *objalloc(objalloc_t *allocator) {
+	return pool_alloc(allocator);
 }
 
-void objfree(struct objalloc *adapter, void* objp) {
-	pool_free(&adapter->pool, objp);
+void objfree(objalloc_t *allocator, void *object) {
+	pool_free(allocator, object);
 }
 
-void objcache_destroy(struct objalloc *adapter) {
-
+void objcache_destroy(objalloc_t *allocator) {
 }

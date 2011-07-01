@@ -18,6 +18,8 @@
 #include <mem/kmalloc.h>
 #include <mem/misc/slab_statistic.h>
 #include <mem/pagealloc/mpallocator.h>
+#include <assert.h>
+#include <errno.h>
 
 /**
  * slab descriptor
@@ -185,16 +187,31 @@ static void cache_estimate(unsigned int gfporder, size_t size,
 }
 
 cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
-	size_t left_over;
 	cache_t *cachep;
 
 	if (!name || strlen(name) >= __CACHE_NAMELEN - 1 || obj_size <= 0
 			|| obj_size >= CONFIG_PAGE_SIZE << MAX_OBJ_ORDER)
 		return NULL;
 
-	cachep = (cache_t*) cache_alloc(&cache_chain);
-
 	strcpy(cachep->name, name);
+
+	if (!(cachep = (cache_t *) cache_alloc(&cache_chain))) {
+		return NULL;
+	}
+
+	if (0 != cache_init(cachep, obj_size, obj_num)) {
+		cache_free(&cache_chain, cachep);
+		return NULL;
+	}
+
+	return cachep;
+}
+
+int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
+	size_t left_over;
+
+	assert(cachep != NULL);
+
 	cachep->obj_size = binalign_bound(obj_size, sizeof(struct list_head));
 	cachep->slab_order = 0;
 
@@ -217,8 +234,9 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 		cachep->slab_order++;
 	} while (1);
 
-	if (!cachep->num)
-		return NULL;
+	if (!cachep->num) {
+		return -ENOMEM;
+	}
 
 	cachep->growing = false;
 	cachep->slabs_full.next = &(cachep->slabs_full);
@@ -237,7 +255,7 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	printf("Wastage: %d\n\n", left_over);
 #endif
 
-	return cachep;
+	return 0;
 }
 
 void cache_destroy(cache_t *cachep) {
