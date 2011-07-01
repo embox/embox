@@ -20,7 +20,6 @@
 #include <hal/arch.h>
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
-#include <assert.h>
 
 EMBOX_UNIT_INIT(timer_init);
 
@@ -150,16 +149,8 @@ int timer_init(void) {
 
 static void restore_thread(uint32_t id)
 {
-	struct event *e;
-	sys_tmr_t *timer;
-
-	printf("Timer id: %d\n", id);
-	timer = get_timer_by_id(id);
-	assert(timer);
-	e = &timer->event_wait;
+	sched_wake(&get_timer_by_id(id)->event_wait);
 	close_timer(id);
-	sched_wake(e);
-//	sched_wake(&get_timer_by_id(id)->event_wait);
 }
 
 /*system library function */
