@@ -10,7 +10,7 @@
 
 #include <hal/mm/mmu_types.h>
 #include <hal/mm/mmu_core.h>
-#include <mem/virt_mem/mmu_core.h>
+#include <vmem/mmu_core.h>
 
 extern mmu_env_t *cur_env;
 
