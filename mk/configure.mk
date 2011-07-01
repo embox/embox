@@ -2,7 +2,7 @@
 # Author: Eldar Abusalimov
 #
 
-HOSTCC  = arm-elf-gcc
+HOSTCC  = gcc
 SVN_REV = $(shell svn info $(ROOT_DIR) | grep Rev: | awk '{print $$4}')
 HOSTCPP = $(HOSTCC) -E
 
