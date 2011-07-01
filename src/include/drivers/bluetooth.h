@@ -12,8 +12,8 @@
 #include <types.h>
 
 
-extern size_t nxt_bluetooth_read(uint8_t *buff, size_t len);
-extern size_t nxt_bluetooth_write(uint8_t *buff, size_t len);
+extern size_t bluetooth_read(uint8_t *buff, size_t len);
+extern size_t bluetooth_write(uint8_t *buff, size_t len);
 
 typedef int(*bt_comm_handler_t)(uint8_t *buff);
 

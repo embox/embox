@@ -13,7 +13,6 @@
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
-#include <drivers/nxt_direct_comm.h>
 #include <kernel/timer.h>
 #include <unistd.h>
 
@@ -55,6 +54,7 @@ volatile enum {SIZE_READ, COMM_READ, UART_MODE} bt_us_state;
 
 void bt_set_uart_state(void) {
 	bt_us_state = UART_MODE;
+	REG_STORE(AT91C_US1_IER, AT91C_US_ENDTX);
 }
 
 #define BUFF_SIZE 256
@@ -70,7 +70,7 @@ static void bt_receive_init(void) {
 	bt_us_state = SIZE_READ;
 	bt_uart_inited = 0;
 	bt_buff_pos = 0;
-	nxt_bluetooth_read(bt_buff, 1);
+	bluetooth_read(bt_buff, 1);
 }
 static bt_comm_handler_t comm_handler = NULL;
 
@@ -99,7 +99,7 @@ static void bt_us_read_handle(void) {
 				bt_buff[0] = msg_len;
 				bt_buff_pos = 0;
 			}
-			nxt_bluetooth_read(bt_buff + bt_buff_pos + 1, msg_len);
+			bluetooth_read(bt_buff + bt_buff_pos + 1, msg_len);
 		}
 		break;
 	case COMM_READ:
@@ -117,7 +117,7 @@ static void bt_us_read_handle(void) {
 		if (bt_buff_pos >= BUFF_SIZE) {
 			bt_buff_pos = 0;
 		}
-		nxt_bluetooth_read(bt_buff + bt_buff_pos, 1);
+		bluetooth_read(bt_buff + bt_buff_pos, 1);
 		break;
 	case UART_MODE:
 		next_len = 0;
@@ -127,7 +127,7 @@ static void bt_us_read_handle(void) {
 #endif
 		//next_len = direct_comm_handle(bt_buff);
 		next_len = comm_handler(bt_buff);
-		nxt_bluetooth_read(bt_buff, next_len);
+		bluetooth_read(bt_buff, next_len);
 		break;
 	default:
 		break;
@@ -146,7 +146,7 @@ static void bt_us_receive_init(void) {
 	/*doing last steps for init*/
 	bt_buff_pos = 0;
 
-	nxt_bluetooth_read(bt_buff, init_read_len);
+	bluetooth_read(bt_buff, init_read_len);
 }
 
 int bt_last_state;
@@ -252,7 +252,7 @@ static int nxt_bluetooth_init(void) {
 	return 0;
 }
 
-size_t nxt_bluetooth_write(uint8_t *buff, size_t len) {
+size_t bluetooth_write(uint8_t *buff, size_t len) {
 	while (!(REG_LOAD(AT91C_US1_CSR) & AT91C_US_ENDTX)) {
 	}
 	REG_STORE(AT91C_US1_TPR, (uint32_t) buff);
@@ -260,7 +260,7 @@ size_t nxt_bluetooth_write(uint8_t *buff, size_t len) {
 	return len;
 }
 
-size_t nxt_bluetooth_read(uint8_t *buff, size_t len) {
+size_t bluetooth_read(uint8_t *buff, size_t len) {
 	REG_STORE(AT91C_US1_RPR, (uint32_t) buff);
 	REG_STORE(AT91C_US1_RCR, len);
 
