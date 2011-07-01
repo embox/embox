@@ -50,7 +50,10 @@
  * individual array (empty for markers) defined as follows. */
 #define __ARRAY_SPREAD_ENTRY_DEF(type, s_entry, sect) \
 	/* __extension__ bypasses compiler warnings about empty arrays. */ \
-	__extension__ const type s_entry[] __attribute__ ((used, section(sect)))
+	__extension__ const type MACRO_GUARD(s_entry)[] \
+			__attribute__((unused)) = { /*empty */ }; \
+	__extension__ const type s_entry[] __attribute__ ((used, section(sect), \
+			aligned(__alignof__(MACRO_GUARD(s_entry)[0]))))
 
 /* Spread arrays implementation-private entries are named as follows
  * to prevent namespace pollution. */
@@ -65,16 +68,19 @@
 
 /* Spread definition. */
 
-#define __ARRAY_SPREAD_DEF(element_type, array_name) \
-	__ARRAY_SPREAD_DEF_TERMINATED(element_type, array_name, /* empty */)
-
 #define __ARRAY_SPREAD_DEF_TERMINATED(element_type, array_name, terminator) \
+	/* Define an empty head which will act as an anchor to the array head. */ \
 	__ARRAY_SPREAD_ENTRY_DEF(element_type, array_name, \
 		__ARRAY_SPREAD_SECTION_HEAD(array_name)) = { /* empty */ }; \
+	/* Add terminator element (if any). */ \
 	__ARRAY_SPREAD_PRIVATE_DEF(element_type, array_name, term, \
 		__ARRAY_SPREAD_SECTION_TERM(array_name)) = { terminator }; \
+	/* Add an anchor at the very end of the array. */ \
 	__ARRAY_SPREAD_PRIVATE_DEF(element_type, array_name, tail, \
 		__ARRAY_SPREAD_SECTION_TAIL(array_name)) = { /* empty */ }
+
+#define __ARRAY_SPREAD_DEF(element_type, array_name) \
+	__ARRAY_SPREAD_DEF_TERMINATED(element_type, array_name, /* empty */)
 
 /* Spread element addition. */
 
