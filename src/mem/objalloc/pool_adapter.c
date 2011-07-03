@@ -6,8 +6,9 @@
  * @author Alexandr Kalmuk
  */
 
-#include <mem/misc/pool.h>
 #include <mem/objalloc.h>
+
+#include <mem/misc/pool.h>
 
 void *objalloc(objalloc_t *allocator) {
 	return pool_alloc(allocator);

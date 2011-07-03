@@ -2,6 +2,8 @@
  *   Memory allocation API.
  */
 
+#include <stddef.h>
+
 #include <util/macro.h>
 
 #include __impl_x(CONFIG_RTALLOC_IMPL_H)
@@ -9,10 +11,7 @@
 #define OBJALLOC_DEF(allocator_nm, object_t, objects_nr) \
 	  __OBJALLOC_DEF(allocator_nm, object_t, objects_nr)
 
-/**
- * wrapper for pool and cache.
- */
-struct objalloc;
+typedef __objalloc_t objalloc_t;
 
 /**
  *
@@ -21,7 +20,7 @@ struct objalloc;
  * @param objects_nr
  * @return
  */
-extern int objalloc_init(struct objalloc *allocator, size_t object_sz,
+extern int objalloc_init(objalloc_t *allocator, size_t object_sz,
 		size_t objects_nr);
 
 /**
@@ -29,7 +28,7 @@ extern int objalloc_init(struct objalloc *allocator, size_t object_sz,
  * @param allocator
  * @return
  */
-extern int objalloc_destroy(struct objalloc *allocator);
+extern int objalloc_destroy(objalloc_t *allocator);
 
 /**
  * Return pointer to object for which allocate memory
@@ -39,11 +38,11 @@ extern int objalloc_destroy(struct objalloc *allocator);
  * @return pointer to the memory of the requested size.
  * @retval 0 if there are no memory
  */
-extern void *objalloc(struct objalloc *uni);
+extern void *objalloc(objalloc_t *uni);
 
 /**
  * Free memory function.
  *
  * @param ptr pointer at the memory, that must be free
  */
-extern void objfree(struct objalloc *uni, void* objp);
+extern void objfree(objalloc_t *uni, void* objp);

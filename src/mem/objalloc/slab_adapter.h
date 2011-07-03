@@ -12,13 +12,13 @@
 #define __OBJALLOC_DEF(allocator_nm, object_t, objects_nr) \
 	CACHE_DEF(allocator_nm, object_t, objects_nr)
 
-typedef struct cache objalloc_t;
+typedef struct cache __objalloc_t;
 
-static inline int objalloc_init(objalloc_t *allocator, size_t object_sz,
+static inline int objalloc_init(__objalloc_t *allocator, size_t object_sz,
 		size_t objects_nr) {
 	return cache_init(allocator, objects_sz, objects_nr);
 }
 
-static inline int objalloc_destroy(objalloc_t *allocator) {
+static inline int objalloc_destroy(__objalloc_t *allocator) {
 	return cache_destroy(allocator);
 }
