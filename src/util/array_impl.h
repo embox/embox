@@ -63,7 +63,10 @@
  *  - first time is for define its type, and
  *  - second time - to add necessary attributes (alignment in particular). */
 #define __ARRAY_SPREAD_DEF_TERMINATED(element_t, array_nm, terminator) \
-	__extension__ const element_t array_nm[] =                         \
+	__extension__ const element_t array_nm[] __attribute__             \
+		/* Some versions of GCC do not take into an account section    \
+		 * attribute if it appears after the definition. */            \
+			((section(__ARRAY_SPREAD_SECTION(array_nm, "0_head")))) =  \
 		{ /* Empty anchor to the array head. */ };                     \
 	__ARRAY_SPREAD_ENTRY_DEF(element_t, array_nm, array_nm, "0_head"); \
 		/* Now the head has got all necessary attributes. */           \
