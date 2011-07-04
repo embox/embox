@@ -13,8 +13,8 @@
 #include <lib/list.h>
 
 #define __CACHE_DEF(cache_nm, object_t, objects_nr) \
-	static struct cache cache_nm
-
+	      static struct cache* cache_nm;\
+	         cache_init(cache_nm, object_t, objects_nr)
 
 /** Length of name of any cache */
 #define __CACHE_NAMELEN 16
@@ -24,7 +24,7 @@ struct cache {
 	/** pointer to other caches */
 	struct list_head next;
 	/** name of cache*/
-	char name[__CACHE_NAMELEN];
+	char name[__CACHE_NAMELEN ];
 	/** list of busy slabs */
 	struct list_head slabs_full;
 	/** list of partial busy slabs */

@@ -40,8 +40,6 @@ typedef struct cache cache_t;
 /**
  * TODO
  */
-#define CACHE_DEF(cache_nm, object_t, objects_nr) \
-	  __CACHE_DEF(cache_nm, object_t, objects_nr)
 
 /**
  * Create of cache
@@ -53,11 +51,13 @@ extern cache_t *cache_create(char *name, size_t obj_size, size_t obj_num);
 
 extern int cache_init(cache_t *cache, size_t obj_size, size_t obj_num);
 
+#define CACHE_DEF(cache_nm, object_t, objects_nr) \
+	      __CACHE_DEF(cache_nm, object_t, objects_nr)
 /**
  * Destroy of cache
  * @param cache_ptr is pointer to cache which must be deleted
  */
-extern void cache_destroy(cache_t *cache_ptr);
+extern int cache_destroy(cache_t *cache_ptr);
 
 /**
  * Return pointer to object for which allocate memory
