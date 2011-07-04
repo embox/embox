@@ -258,7 +258,7 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 	return 0;
 }
 
-void cache_destroy(cache_t *cachep) {
+int cache_destroy(cache_t *cachep) {
 	struct list_head *ptr;
 	slab_t * slabp;
 
@@ -297,6 +297,7 @@ void cache_destroy(cache_t *cachep) {
 	list_del(&cachep->next);
 	cache_free(&cache_chain, cachep);
 
+	return 0;
 }
 
 void *cache_alloc(cache_t *cachep) {
