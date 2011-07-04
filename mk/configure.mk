@@ -58,12 +58,12 @@ HOSTCC_CPPFLAGS := -I $(PATCH_CONF_DIR) -I $(BASE_CONF_DIR) -I-
 endif
 
 $(build_mk) $(mods_mk) :
-	$(HOSTCPP) -Wp, -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
+	$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed 's/$$N/\n/g' > $@
 
 $(config_h) $(config_lds_h) :
-	$(HOSTCPP) -Wp, -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
+	$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
 		| sed -e 's/$$N/\n/g' -e 's/$$define/#define/g' > $@
 ifeq ($(SVN_REV),)
