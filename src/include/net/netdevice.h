@@ -106,10 +106,6 @@ typedef struct packet_type {
 	 process */
 } packet_type_t;
 
-#define DECLARE_NET_PACKET(net_packet) \
-    static const packet_type_t *pdescriptor \
-		__attribute__ ((used, section(".ipstack.packets"))) \
-		= &net_packet
 /**
  * structure of net device
  */
