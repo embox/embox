@@ -69,20 +69,20 @@ typedef struct _AT91S_PMC {
 // -------- PMC_IMR : (PMC Offset: 0x6c) PMC Interrupt Mask Register --------
 
 // ========== Register definition for PMC peripheral ==========
-#define AT91C_PMC_IDR   ((AT91_REG *) 	0xFFFFFC64) // (PMC) Interrupt Disable Register
-#define AT91C_PMC_MOR   ((AT91_REG *) 	0xFFFFFC20) // (PMC) Main Oscillator Register
-#define AT91C_PMC_PLLR  ((AT91_REG *) 	0xFFFFFC2C) // (PMC) PLL Register
-#define AT91C_PMC_PCER  ((AT91_REG *) 	0xFFFFFC10) // (PMC) Peripheral Clock Enable Register
-#define AT91C_PMC_PCKR  ((AT91_REG *) 	0xFFFFFC40) // (PMC) Programmable Clock Register
-#define AT91C_PMC_MCKR  ((AT91_REG *) 	0xFFFFFC30) // (PMC) Master Clock Register
-#define AT91C_PMC_SCDR  ((AT91_REG *) 	0xFFFFFC04) // (PMC) System Clock Disable Register
-#define AT91C_PMC_PCDR  ((AT91_REG *) 	0xFFFFFC14) // (PMC) Peripheral Clock Disable Register
-#define AT91C_PMC_SCSR  ((AT91_REG *) 	0xFFFFFC08) // (PMC) System Clock Status Register
-#define AT91C_PMC_PCSR  ((AT91_REG *) 	0xFFFFFC18) // (PMC) Peripheral Clock Status Register
-#define AT91C_PMC_MCFR  ((AT91_REG *) 	0xFFFFFC24) // (PMC) Main Clock  Frequency Register
-#define AT91C_PMC_SCER  ((AT91_REG *) 	0xFFFFFC00) // (PMC) System Clock Enable Register
-#define AT91C_PMC_IMR   ((AT91_REG *) 	0xFFFFFC6C) // (PMC) Interrupt Mask Register
-#define AT91C_PMC_IER   ((AT91_REG *) 	0xFFFFFC60) // (PMC) Interrupt Enable Register
-#define AT91C_PMC_SR    ((AT91_REG *) 	0xFFFFFC68) // (PMC) Status Register
+#define AT91C_PMC_IDR   ((at91_reg_t *) 	0xFFFFFC64) // (PMC) Interrupt Disable Register
+#define AT91C_PMC_MOR   ((at91_reg_t *) 	0xFFFFFC20) // (PMC) Main Oscillator Register
+#define AT91C_PMC_PLLR  ((at91_reg_t *) 	0xFFFFFC2C) // (PMC) PLL Register
+#define AT91C_PMC_PCER  ((at91_reg_t *) 	0xFFFFFC10) // (PMC) Peripheral Clock Enable Register
+#define AT91C_PMC_PCKR  ((at91_reg_t *) 	0xFFFFFC40) // (PMC) Programmable Clock Register
+#define AT91C_PMC_MCKR  ((at91_reg_t *) 	0xFFFFFC30) // (PMC) Master Clock Register
+#define AT91C_PMC_SCDR  ((at91_reg_t *) 	0xFFFFFC04) // (PMC) System Clock Disable Register
+#define AT91C_PMC_PCDR  ((at91_reg_t *) 	0xFFFFFC14) // (PMC) Peripheral Clock Disable Register
+#define AT91C_PMC_SCSR  ((at91_reg_t *) 	0xFFFFFC08) // (PMC) System Clock Status Register
+#define AT91C_PMC_PCSR  ((at91_reg_t *) 	0xFFFFFC18) // (PMC) Peripheral Clock Status Register
+#define AT91C_PMC_MCFR  ((at91_reg_t *) 	0xFFFFFC24) // (PMC) Main Clock  Frequency Register
+#define AT91C_PMC_SCER  ((at91_reg_t *) 	0xFFFFFC00) // (PMC) System Clock Enable Register
+#define AT91C_PMC_IMR   ((at91_reg_t *) 	0xFFFFFC6C) // (PMC) Interrupt Mask Register
+#define AT91C_PMC_IER   ((at91_reg_t *) 	0xFFFFFC60) // (PMC) Interrupt Enable Register
+#define AT91C_PMC_SR    ((at91_reg_t *) 	0xFFFFFC68) // (PMC) Status Register
 
 #endif /* AT91SAM7_PMC_H_ */

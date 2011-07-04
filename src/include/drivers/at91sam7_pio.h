@@ -10,6 +10,7 @@
 #define AT91SAM7_PIO_H_
 
 #include <types.h>
+#include <hal/reg.h>
 
 typedef struct _AT91S_PIO {
 	at91_reg_t	 PIO_PER; 	// PIO Enable Register
@@ -146,34 +147,34 @@ typedef struct _AT91S_PIO {
 #define AT91C_PA9_DRXD     ((unsigned int) AT91C_PIO_PA9) //  DBGU Debug Receive Data
 #define AT91C_PA9_NPCS1    ((unsigned int) AT91C_PIO_PA9) //  SPI Peripheral Chip Select 1
 // ========== Register definition for PIOA peripheral ==========
-#define AT91C_PIOA_ODR  ((AT91_REG *) 	0xFFFFF414) // (PIOA) Output Disable Registerr
-#define AT91C_PIOA_SODR ((AT91_REG *) 	0xFFFFF430) // (PIOA) Set Output Data Register
-#define AT91C_PIOA_ISR  ((AT91_REG *) 	0xFFFFF44C) // (PIOA) Interrupt Status Register
-#define AT91C_PIOA_ABSR ((AT91_REG *) 	0xFFFFF478) // (PIOA) AB Select Status Register
-#define AT91C_PIOA_IER  ((AT91_REG *) 	0xFFFFF440) // (PIOA) Interrupt Enable Register
-#define AT91C_PIOA_PPUDR ((AT91_REG *) 	0xFFFFF460) // (PIOA) Pull-up Disable Register
-#define AT91C_PIOA_IMR  ((AT91_REG *) 	0xFFFFF448) // (PIOA) Interrupt Mask Register
-#define AT91C_PIOA_PER  ((AT91_REG *) 	0xFFFFF400) // (PIOA) PIO Enable Register
-#define AT91C_PIOA_IFDR ((AT91_REG *) 	0xFFFFF424) // (PIOA) Input Filter Disable Register
-#define AT91C_PIOA_OWDR ((AT91_REG *) 	0xFFFFF4A4) // (PIOA) Output Write Disable Register
-#define AT91C_PIOA_MDSR ((AT91_REG *) 	0xFFFFF458) // (PIOA) Multi-driver Status Register
-#define AT91C_PIOA_IDR  ((AT91_REG *) 	0xFFFFF444) // (PIOA) Interrupt Disable Register
-#define AT91C_PIOA_ODSR ((AT91_REG *) 	0xFFFFF438) // (PIOA) Output Data Status Register
-#define AT91C_PIOA_PPUSR ((AT91_REG *) 	0xFFFFF468) // (PIOA) Pull-up Status Register
-#define AT91C_PIOA_OWSR ((AT91_REG *) 	0xFFFFF4A8) // (PIOA) Output Write Status Register
-#define AT91C_PIOA_BSR  ((AT91_REG *) 	0xFFFFF474) // (PIOA) Select B Register
-#define AT91C_PIOA_OWER ((AT91_REG *) 	0xFFFFF4A0) // (PIOA) Output Write Enable Register
-#define AT91C_PIOA_IFER ((AT91_REG *) 	0xFFFFF420) // (PIOA) Input Filter Enable Register
-#define AT91C_PIOA_PDSR ((AT91_REG *) 	0xFFFFF43C) // (PIOA) Pin Data Status Register
-#define AT91C_PIOA_PPUER ((AT91_REG *) 	0xFFFFF464) // (PIOA) Pull-up Enable Register
-#define AT91C_PIOA_OSR  ((AT91_REG *) 	0xFFFFF418) // (PIOA) Output Status Register
-#define AT91C_PIOA_ASR  ((AT91_REG *) 	0xFFFFF470) // (PIOA) Select A Register
-#define AT91C_PIOA_MDDR ((AT91_REG *) 	0xFFFFF454) // (PIOA) Multi-driver Disable Register
-#define AT91C_PIOA_CODR ((AT91_REG *) 	0xFFFFF434) // (PIOA) Clear Output Data Register
-#define AT91C_PIOA_MDER ((AT91_REG *) 	0xFFFFF450) // (PIOA) Multi-driver Enable Register
-#define AT91C_PIOA_PDR  ((AT91_REG *) 	0xFFFFF404) // (PIOA) PIO Disable Register
-#define AT91C_PIOA_IFSR ((AT91_REG *) 	0xFFFFF428) // (PIOA) Input Filter Status Register
-#define AT91C_PIOA_OER  ((AT91_REG *) 	0xFFFFF410) // (PIOA) Output Enable Register
-#define AT91C_PIOA_PSR  ((AT91_REG *) 	0xFFFFF408) // (PIOA) PIO Status Register
+#define AT91C_PIOA_ODR  ((at91_reg_t *) 	0xFFFFF414) // (PIOA) Output Disable Registerr
+#define AT91C_PIOA_SODR ((at91_reg_t *) 	0xFFFFF430) // (PIOA) Set Output Data Register
+#define AT91C_PIOA_ISR  ((at91_reg_t *) 	0xFFFFF44C) // (PIOA) Interrupt Status Register
+#define AT91C_PIOA_ABSR ((at91_reg_t *) 	0xFFFFF478) // (PIOA) AB Select Status Register
+#define AT91C_PIOA_IER  ((at91_reg_t *) 	0xFFFFF440) // (PIOA) Interrupt Enable Register
+#define AT91C_PIOA_PPUDR ((at91_reg_t *) 	0xFFFFF460) // (PIOA) Pull-up Disable Register
+#define AT91C_PIOA_IMR  ((at91_reg_t *) 	0xFFFFF448) // (PIOA) Interrupt Mask Register
+#define AT91C_PIOA_PER  ((at91_reg_t *) 	0xFFFFF400) // (PIOA) PIO Enable Register
+#define AT91C_PIOA_IFDR ((at91_reg_t *) 	0xFFFFF424) // (PIOA) Input Filter Disable Register
+#define AT91C_PIOA_OWDR ((at91_reg_t *) 	0xFFFFF4A4) // (PIOA) Output Write Disable Register
+#define AT91C_PIOA_MDSR ((at91_reg_t *) 	0xFFFFF458) // (PIOA) Multi-driver Status Register
+#define AT91C_PIOA_IDR  ((at91_reg_t *) 	0xFFFFF444) // (PIOA) Interrupt Disable Register
+#define AT91C_PIOA_ODSR ((at91_reg_t *) 	0xFFFFF438) // (PIOA) Output Data Status Register
+#define AT91C_PIOA_PPUSR ((at91_reg_t *) 	0xFFFFF468) // (PIOA) Pull-up Status Register
+#define AT91C_PIOA_OWSR ((at91_reg_t *) 	0xFFFFF4A8) // (PIOA) Output Write Status Register
+#define AT91C_PIOA_BSR  ((at91_reg_t *) 	0xFFFFF474) // (PIOA) Select B Register
+#define AT91C_PIOA_OWER ((at91_reg_t *) 	0xFFFFF4A0) // (PIOA) Output Write Enable Register
+#define AT91C_PIOA_IFER ((at91_reg_t *) 	0xFFFFF420) // (PIOA) Input Filter Enable Register
+#define AT91C_PIOA_PDSR ((at91_reg_t *) 	0xFFFFF43C) // (PIOA) Pin Data Status Register
+#define AT91C_PIOA_PPUER ((at91_reg_t *) 	0xFFFFF464) // (PIOA) Pull-up Enable Register
+#define AT91C_PIOA_OSR  ((at91_reg_t *) 	0xFFFFF418) // (PIOA) Output Status Register
+#define AT91C_PIOA_ASR  ((at91_reg_t *) 	0xFFFFF470) // (PIOA) Select A Register
+#define AT91C_PIOA_MDDR ((at91_reg_t *) 	0xFFFFF454) // (PIOA) Multi-driver Disable Register
+#define AT91C_PIOA_CODR ((at91_reg_t *) 	0xFFFFF434) // (PIOA) Clear Output Data Register
+#define AT91C_PIOA_MDER ((at91_reg_t *) 	0xFFFFF450) // (PIOA) Multi-driver Enable Register
+#define AT91C_PIOA_PDR  ((at91_reg_t *) 	0xFFFFF404) // (PIOA) PIO Disable Register
+#define AT91C_PIOA_IFSR ((at91_reg_t *) 	0xFFFFF428) // (PIOA) Input Filter Status Register
+#define AT91C_PIOA_OER  ((at91_reg_t *) 	0xFFFFF410) // (PIOA) Output Enable Register
+#define AT91C_PIOA_PSR  ((at91_reg_t *) 	0xFFFFF408) // (PIOA) PIO Status Register
 
 #endif /* AT91SAM7_PIO_H_ */

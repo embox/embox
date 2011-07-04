@@ -45,8 +45,8 @@ typedef struct _AT91S_CKGR {
 #define 	AT91C_CKGR_USBDIV_2                    ((unsigned int) 0x2 << 28) // (CKGR) Divider output is PLL clock output divided by 4
 
 // ========== Register definition for CKGR peripheral ==========
-#define AT91C_CKGR_MOR  ((AT91_REG *) 	0xFFFFFC20) // (CKGR) Main Oscillator Register
-#define AT91C_CKGR_PLLR ((AT91_REG *) 	0xFFFFFC2C) // (CKGR) PLL Register
-#define AT91C_CKGR_MCFR ((AT91_REG *) 	0xFFFFFC24) // (CKGR) Main Clock  Frequency Register
+#define AT91C_CKGR_MOR  ((at91_reg_t *) 	0xFFFFFC20) // (CKGR) Main Oscillator Register
+#define AT91C_CKGR_PLLR ((at91_reg_t *) 	0xFFFFFC2C) // (CKGR) PLL Register
+#define AT91C_CKGR_MCFR ((at91_reg_t *) 	0xFFFFFC24) // (CKGR) Main Clock  Frequency Register
 
 #endif /* AT91SAM7_CKGR_H_ */
