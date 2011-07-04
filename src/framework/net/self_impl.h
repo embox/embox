@@ -19,8 +19,8 @@
 #define __EMBOX_NET(_packet) \
 	extern const struct net __net_registry[];          \
 	ARRAY_SPREAD_ADD_NAMED(__net_registry, __net,   {  \
-			.packet = _packet,                     \
-			.mod = &mod_self                   \
+			.netpack = _packet,                     \
+			.mod = &mod_self,                   \
 		});                                        \
 	MOD_SELF_BIND(__net, NULL)
 
