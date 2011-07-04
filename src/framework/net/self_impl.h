@@ -23,3 +23,5 @@
 			.mod = &mod_self                   \
 		});                                        \
 	MOD_SELF_BIND(__net, NULL)
+
+#endif
