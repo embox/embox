@@ -46,7 +46,7 @@ int menu_start(void) {
 	display_draw(0, 0, 1, 1, &pointer_buff[0]);
 
 	while (i > 0) {
-		buts = nxt_buttons_was_pressed();
+		//buts = nxt_buttons_was_pressed();
 		usleep(600);
 		if (buts & BT_RIGHT) {
 			if (current_test == max_cur_test) {
