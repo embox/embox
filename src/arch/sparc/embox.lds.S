@@ -35,15 +35,6 @@ SECTIONS {
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
 
-	.reloc : {
-		ALIGNMENT();
-		_reloc_text_start = .;
-		*(.reloc.text)
-		ALIGNMENT();
-		_reloc_text_end = .;
-	} SECTION_REGION(reloc)
-	SECTION_SYMBOLS(reloc)
-
 	.data : {
 		ALIGNMENT();
 		_data_start = .;

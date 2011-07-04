@@ -18,6 +18,11 @@
 #include <drivers/nxt_sensor.h>
 #include <kernel/measure.h>
 
+/* Notify driver of possible buttons change */
+extern void buttons_updated(buttons_t state);
+extern void sensors_updated(sensor_val_t sensor_vals[]);
+extern void sensors_init(void);
+
 EMBOX_UNIT_INIT(init);
 
 const char avr_brainwash_string[] =
@@ -79,7 +84,6 @@ static uint32_t avr_handler(void) {
 static int init(void) {
 	int result = 0;
 
-	twi_init();
 	twi_write(NXT_AVR_ADDRESS, (const uint8_t *) avr_brainwash_string,
 					strlen(avr_brainwash_string));
 
@@ -94,3 +98,4 @@ static int init(void) {
 
 	return result;
 }
+

@@ -15,6 +15,7 @@
 #include <net/inetdevice.h>
 #include <net/arp.h>
 #include <net/ip.h>
+#include <embox/net.h>
 
 /*
  * FIXME:
@@ -340,10 +341,4 @@ static int arp_xmit(sk_buff_t *skb) {
 	return dev_queue_xmit(skb);
 }
 
-static struct packet_type arp_packet_type = {
-	.type = ETH_P_ARP,
-	.func = arp_rcv,
-	.init = arp_init
-};
-
-DECLARE_NET_PACKET(arp_packet_type);
+EMBOX_NET(ETH_P_ARP, arp_rcv, arp_init);

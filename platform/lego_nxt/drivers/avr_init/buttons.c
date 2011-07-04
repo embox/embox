@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <drivers/nxt_avr.h>
+//#include <drivers/nxt_avr.h>
 #include <drivers/nxt_buttons.h>
 
 static int buttons_state = 0;
@@ -16,6 +16,7 @@ static int buttons_accum_state = 0;
 #define DEL 10
 static int old_state = 0;
 static int state_count = DEL;
+
 
 /* Buttons pressed at now */
 uint32_t nxt_buttons_are_pressed(void) {

@@ -12,9 +12,9 @@
 #include <types.h>
 
 typedef struct _AT91S_WDTC {
-	AT91_REG	 WDTC_WDCR; 	// Watchdog Control Register
-	AT91_REG	 WDTC_WDMR; 	// Watchdog Mode Register
-	AT91_REG	 WDTC_WDSR; 	// Watchdog Status Register
+	at91_reg_t	 WDTC_WDCR; 	// Watchdog Control Register
+	at91_reg_t	 WDTC_WDMR; 	// Watchdog Mode Register
+	at91_reg_t	 WDTC_WDSR; 	// Watchdog Status Register
 } AT91S_WDTC, *AT91PS_WDTC;
 
 // -------- WDTC_WDCR : (WDTC Offset: 0x0) Periodic Interval Image Register --------
@@ -34,8 +34,8 @@ typedef struct _AT91S_WDTC {
 #define AT91C_WDTC_WDERR      ((unsigned int) 0x1 <<  1) // (WDTC) Watchdog Error
 //
 // ========== Register definition for WDTC peripheral ==========
-#define AT91C_WDTC_WDCR ((AT91_REG *) 	0xFFFFFD40) // (WDTC) Watchdog Control Register
-#define AT91C_WDTC_WDSR ((AT91_REG *) 	0xFFFFFD48) // (WDTC) Watchdog Status Register
-#define AT91C_WDTC_WDMR ((AT91_REG *) 	0xFFFFFD44) // (WDTC) Watchdog Mode Register
+#define AT91C_WDTC_WDCR ((at91_reg_t *) 	0xFFFFFD40) // (WDTC) Watchdog Control Register
+#define AT91C_WDTC_WDSR ((at91_reg_t *) 	0xFFFFFD48) // (WDTC) Watchdog Status Register
+#define AT91C_WDTC_WDMR ((at91_reg_t *) 	0xFFFFFD44) // (WDTC) Watchdog Mode Register
 
 #endif /* AT91SAM7_WD_H_ */

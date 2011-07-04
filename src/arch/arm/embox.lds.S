@@ -32,15 +32,6 @@ SECTIONS {
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
-	.reloc : {
-		ALIGNMENT();
-		_reloc_text_start = .;
-		*(.reloc.text)
-		ALIGNMENT();
-		_reloc_text_end = .;
-	} SECTION_REGION(reloc)
-	SECTION_SYMBOLS(reloc)
-
 	.rodata : {
 		LDS_INPUT_RODATA
 	} SECTION_REGION(rodata)
