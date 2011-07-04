@@ -9,6 +9,6 @@
 #ifndef NET_H_
 #define NET_H_
 
-#include <framework/mod/self.h>
+#include <framework/net/self.h>
 
 #endif /* NET_H_ */
