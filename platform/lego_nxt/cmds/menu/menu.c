@@ -7,10 +7,12 @@
  */
 
 #include <unistd.h>
-#include <drivers/menu.h>
 #include <drivers/lcd.h>
 #include <drivers/nxt_buttons.h>
+#include <embox/cmd.h>
 #include <framework/test/api.h>
+
+EMBOX_CMD(menu_start);
 
 /*pointer*/
 static uint8_t pointer_buff[8] = {0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00};
@@ -34,9 +36,12 @@ static void print_list_test(int first) {
 	}
 }
 
-int menu_start(void) {
+static int menu_start(int argc, char **argv) {
 	int current_test, max_cur_test, min_cur_test;
 	int j, i, buts, number;
+
+	display_clear_screen();
+
 	number = n_of_t();
 	current_test = 0;
 	min_cur_test = 0;
@@ -46,7 +51,7 @@ int menu_start(void) {
 	display_draw(0, 0, 1, 1, &pointer_buff[0]);
 
 	while (i > 0) {
-		//buts = nxt_buttons_was_pressed();
+		buts = nxt_buttons_was_pressed();
 		usleep(600);
 		if (buts & BT_RIGHT) {
 			if (current_test == max_cur_test) {
