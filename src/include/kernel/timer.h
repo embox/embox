@@ -8,12 +8,10 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
-#include <types.h>
-#include <kernel/irq.h>
+#include __impl_x(kernel/timer/timer_impl.h)
 
-#ifndef __ASSEMBLER__
-
-typedef void (*TIMER_FUNC)(uint32_t id);
+//typedef TIMER_FUNC;
+//typedef timer_t
 
 /**
  * Initialization of the timers subsystem.
@@ -33,14 +31,14 @@ typedef void (*TIMER_FUNC)(uint32_t id);
  * @retval 1 if the timer is set
  * @retval 0 if the timer isn't set
  */
-extern int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
+extern int set_timer(timer_t id, uint32_t ticks, TIMER_FUNC handle);
 
 /**
  * Shut down timer with 'id' identity
  *
  * @param id timer identifier
  */
-extern void close_timer(uint32_t id);
+extern void close_timer(timer_t id);
 
 /**
  * Save timers context. Now saving only one context.
@@ -59,5 +57,5 @@ extern void timers_off(void);
 
 extern uint32_t cnt_system_time(void);
 
-#endif /*__ASSEMBLER__*/
 #endif /* TIMER_H_ */
+

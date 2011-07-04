@@ -28,13 +28,11 @@
 # Default values. Do not edit.
 $_test_name ?= $(notdir $($_SELFDIR))
 $_test_srcs ?= *.c
+#$_test_deps = core.kernel.timer
 $_test_deps =
-#$_test_deps += core.kernel.timer.api
-$_test_requires = core.kernel.timer.api
+$_test_deps += core.kernel.timer
 $_test_deps += core.kernel.thread.core
 
 $_MODS += $($_test_name)
 $_SRCS-$($_test_name) += $($_test_srcs)
 $_DEPS-$($_test_name) += $($_test_deps)
-$_REQUIRESs-$($_test_name) += $($_test_requires)
-

@@ -18,7 +18,8 @@ $_SRCS-main += init.c
 $_SRCS-main += nosys.c
 $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq
-$_DEPS-main += timer
+#$_DEPS-main += timer
+$_DEPS-REQUIRES += core.kernel.timer.api
 #$_DEPS-main += printk
 $_DEPS-main += softirq
 $_REQUIRES-main += embox.hal.diag
@@ -45,10 +46,10 @@ endif
 ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
 endif
-ifdef CONFIG_TIMER
-  $_SRCS-timer     += timer.c
-  $_REQUIRES-timer += embox.hal.clock
-endif
+#ifdef CONFIG_TIMER
+#  $_SRCS-timer     += timer.c
+#  $_REQUIRES-timer += embox.hal.clock
+#endif
 ifdef CONFIG_DRIVER_SUBSYSTEM
 # It's core.kernel.drv_subsys
   $_MODS += drv_subsys
