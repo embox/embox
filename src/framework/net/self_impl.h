@@ -17,11 +17,11 @@
 #include "types.h"
 
 #define __EMBOX_NET(_packet) \
-	extern const struct net __net_registry[];          \
-	ARRAY_SPREAD_ADD_NAMED(__net_registry, __net,   {  \
-			.netpack = _packet,                     \
-			.mod = &mod_self,                   \
-		});                                        \
-	MOD_SELF_BIND(__net, NULL)
+	extern const struct mod_ops __net_mod_ops;         \
+	const struct net __net##_packet =   {  \
+			.netpack = &_packet,                     \
+			.mod = &mod_self                   \
+		};                                        \
+	MOD_SELF_BIND(&__net##_packet, &__net_mod_ops)
 
-#endif
+#endif /* FRAMEWORK_NET_SELF_IMPL_H_ */

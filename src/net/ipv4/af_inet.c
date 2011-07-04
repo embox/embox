@@ -13,6 +13,7 @@
 #include <net/icmp.h>
 #include <net/ip.h>
 #include <net/netdevice.h>
+#include <embox/net.h>
 
 /*inet socket function*/
 
@@ -125,4 +126,4 @@ static packet_type_t ip_packet_type = {
 	.init = inet_init
 };
 
-DECLARE_NET_PACKET(ip_packet_type);
+EMBOX_NET(ip_packet_type);
