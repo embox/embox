@@ -31,25 +31,6 @@
 #define ETH_P_ALL       (unsigned short)0x0003   /* Every packet (be careful!!!) */
 
 /**
- * Define of info about id of Ethernet Protocol
- * @param id - identifer of protocol
- * @return string info
- */
-static inline char* trace_proto_pack_info(int id) {
-	switch(id) {
-		case ETH_P_LOOP:
-			return "Ethernet Loopback packet";
-		case ETH_P_IP:
-			return "Internet Protocol packet";
-		case ETH_P_ARP:
-			return "Address Resolution packet";
-		case ETH_P_ALL:
-			return "Every packet";
-	}
-	return "";
-}
-
-/**
  * This is an Ethernet frame header.
  */
 typedef struct ethhdr {
