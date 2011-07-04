@@ -10,10 +10,10 @@
 #define AT91SAM7_PIT_H_
 
 typedef struct _AT91S_PITC {
-	AT91_REG	 PITC_PIMR; 	// Period Interval Mode Register
-	AT91_REG	 PITC_PISR; 	// Period Interval Status Register
-	AT91_REG	 PITC_PIVR; 	// Period Interval Value Register
-	AT91_REG	 PITC_PIIR; 	// Period Interval Image Register
+	at91_reg_t	 PITC_PIMR; 	// Period Interval Mode Register
+	at91_reg_t	 PITC_PISR; 	// Period Interval Status Register
+	at91_reg_t	 PITC_PIVR; 	// Period Interval Value Register
+	at91_reg_t	 PITC_PIIR; 	// Period Interval Image Register
 } AT91S_PITC, *AT91PS_PITC;
 
 // -------- PITC_PIMR : (PITC Offset: 0x0) Periodic Interval Mode Register --------

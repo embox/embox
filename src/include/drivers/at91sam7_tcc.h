@@ -4,17 +4,17 @@
 #define AT91C_BASE_TCB       ((AT91PS_TCB) 	0xFFFA0000) // (TCB) Base Address
 
 typedef struct _AT91S_TC {
-	AT91_REG	 TC_CCR; 	// Channel Control Register
-	AT91_REG	 TC_CMR; 	// Channel Mode Register (Capture Mode / Waveform Mode)
-	AT91_REG	 Reserved0[2]; 	//
-	AT91_REG	 TC_CV; 	// Counter Value
-	AT91_REG	 TC_RA; 	// Register A
-	AT91_REG	 TC_RB; 	// Register B
-	AT91_REG	 TC_RC; 	// Register C
-	AT91_REG	 TC_SR; 	// Status Register
-	AT91_REG	 TC_IER; 	// Interrupt Enable Register
-	AT91_REG	 TC_IDR; 	// Interrupt Disable Register
-	AT91_REG	 TC_IMR; 	// Interrupt Mask Register
+	at91_reg_t	 TC_CCR; 	// Channel Control Register
+	at91_reg_t	 TC_CMR; 	// Channel Mode Register (Capture Mode / Waveform Mode)
+	at91_reg_t	 Reserved0[2]; 	//
+	at91_reg_t	 TC_CV; 	// Counter Value
+	at91_reg_t	 TC_RA; 	// Register A
+	at91_reg_t	 TC_RB; 	// Register B
+	at91_reg_t	 TC_RC; 	// Register C
+	at91_reg_t	 TC_SR; 	// Status Register
+	at91_reg_t	 TC_IER; 	// Interrupt Enable Register
+	at91_reg_t	 TC_IDR; 	// Interrupt Disable Register
+	at91_reg_t	 TC_IMR; 	// Interrupt Mask Register
 } AT91S_TC, *AT91PS_TC;
 
 // -------- TC_CCR : (TC Offset: 0x0) TC Channel Control Register --------
@@ -136,13 +136,13 @@ typedef struct _AT91S_TC {
 // *****************************************************************************
 typedef struct _AT91S_TCB {
 	AT91S_TC	 TCB_TC0; 	// TC Channel 0
-	AT91_REG	 Reserved0[4]; 	//
+	at91_reg_t	 Reserved0[4]; 	//
 	AT91S_TC	 TCB_TC1; 	// TC Channel 1
-	AT91_REG	 Reserved1[4]; 	//
+	at91_reg_t	 Reserved1[4]; 	//
 	AT91S_TC	 TCB_TC2; 	// TC Channel 2
-	AT91_REG	 Reserved2[4]; 	//
-	AT91_REG	 TCB_BCR; 	// TC Block Control Register
-	AT91_REG	 TCB_BMR; 	// TC Block Mode Register
+	at91_reg_t	 Reserved2[4]; 	//
+	at91_reg_t	 TCB_BCR; 	// TC Block Control Register
+	at91_reg_t	 TCB_BMR; 	// TC Block Mode Register
 } AT91S_TCB, *AT91PS_TCB;
 
 // -------- TCB_BCR : (TCB Offset: 0xc0) TC Block Control Register --------

@@ -12,26 +12,26 @@
 #include <types.h>
 #if 1
 typedef struct _AT91S_AIC {
-	AT91_REG	 AIC_SMR[32]; 	// Source Mode Register
-	AT91_REG	 AIC_SVR[32]; 	// Source Vector Register
-	AT91_REG	 AIC_IVR; 	// IRQ Vector Register
-	AT91_REG	 AIC_FVR; 	// FIQ Vector Register
-	AT91_REG	 AIC_ISR; 	// Interrupt Status Register
-	AT91_REG	 AIC_IPR; 	// Interrupt Pending Register
-	AT91_REG	 AIC_IMR; 	// Interrupt Mask Register
-	AT91_REG	 AIC_CISR; 	// Core Interrupt Status Register
-	AT91_REG	 Reserved0[2]; 	//
-	AT91_REG	 AIC_IECR; 	// Interrupt Enable Command Register
-	AT91_REG	 AIC_IDCR; 	// Interrupt Disable Command Register
-	AT91_REG	 AIC_ICCR; 	// Interrupt Clear Command Register
-	AT91_REG	 AIC_ISCR; 	// Interrupt Set Command Register
-	AT91_REG	 AIC_EOICR; 	// End of Interrupt Command Register
-	AT91_REG	 AIC_SPU; 	// Spurious Vector Register
-	AT91_REG	 AIC_DCR; 	// Debug Control Register (Protect)
-	AT91_REG	 Reserved1[1]; 	//
-	AT91_REG	 AIC_FFER; 	// Fast Forcing Enable Register
-	AT91_REG	 AIC_FFDR; 	// Fast Forcing Disable Register
-	AT91_REG	 AIC_FFSR; 	// Fast Forcing Status Register
+	at91_reg_t	 AIC_SMR[32]; 	// Source Mode Register
+	at91_reg_t	 AIC_SVR[32]; 	// Source Vector Register
+	at91_reg_t	 AIC_IVR; 	// IRQ Vector Register
+	at91_reg_t	 AIC_FVR; 	// FIQ Vector Register
+	at91_reg_t	 AIC_ISR; 	// Interrupt Status Register
+	at91_reg_t	 AIC_IPR; 	// Interrupt Pending Register
+	at91_reg_t	 AIC_IMR; 	// Interrupt Mask Register
+	at91_reg_t	 AIC_CISR; 	// Core Interrupt Status Register
+	at91_reg_t	 Reserved0[2]; 	//
+	at91_reg_t	 AIC_IECR; 	// Interrupt Enable Command Register
+	at91_reg_t	 AIC_IDCR; 	// Interrupt Disable Command Register
+	at91_reg_t	 AIC_ICCR; 	// Interrupt Clear Command Register
+	at91_reg_t	 AIC_ISCR; 	// Interrupt Set Command Register
+	at91_reg_t	 AIC_EOICR; 	// End of Interrupt Command Register
+	at91_reg_t	 AIC_SPU; 	// Spurious Vector Register
+	at91_reg_t	 AIC_DCR; 	// Debug Control Register (Protect)
+	at91_reg_t	 Reserved1[1]; 	//
+	at91_reg_t	 AIC_FFER; 	// Fast Forcing Enable Register
+	at91_reg_t	 AIC_FFDR; 	// Fast Forcing Disable Register
+	at91_reg_t	 AIC_FFSR; 	// Fast Forcing Status Register
 } AT91S_AIC, *AT91PS_AIC;
 
 #endif

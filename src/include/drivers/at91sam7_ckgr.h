@@ -12,10 +12,10 @@
 #include <types.h>
 
 typedef struct _AT91S_CKGR {
-	AT91_REG	 CKGR_MOR; 	// Main Oscillator Register
-	AT91_REG	 CKGR_MCFR; 	// Main Clock  Frequency Register
-	AT91_REG	 Reserved0[1]; 	//
-	AT91_REG	 CKGR_PLLR; 	// PLL Register
+	at91_reg_t	 CKGR_MOR; 	// Main Oscillator Register
+	at91_reg_t	 CKGR_MCFR; 	// Main Clock  Frequency Register
+	at91_reg_t	 Reserved0[1]; 	//
+	at91_reg_t	 CKGR_PLLR; 	// PLL Register
 } AT91S_CKGR, *AT91PS_CKGR;
 
 // -------- CKGR_MOR : (CKGR Offset: 0x0) Main Oscillator Register --------

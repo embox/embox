@@ -3,34 +3,34 @@
 #define AT91SAM7_SSC_H_
 
 typedef struct _AT91S_SSC {
-	AT91_REG	 SSC_CR; 	// Control Register
-	AT91_REG	 SSC_CMR; 	// Clock Mode Register
-	AT91_REG	 Reserved0[2]; 	//
-	AT91_REG	 SSC_RCMR; 	// Receive Clock ModeRegister
-	AT91_REG	 SSC_RFMR; 	// Receive Frame Mode Register
-	AT91_REG	 SSC_TCMR; 	// Transmit Clock Mode Register
-	AT91_REG	 SSC_TFMR; 	// Transmit Frame Mode Register
-	AT91_REG	 SSC_RHR; 	// Receive Holding Register
-	AT91_REG	 SSC_THR; 	// Transmit Holding Register
-	AT91_REG	 Reserved1[2]; 	//
-	AT91_REG	 SSC_RSHR; 	// Receive Sync Holding Register
-	AT91_REG	 SSC_TSHR; 	// Transmit Sync Holding Register
-	AT91_REG	 Reserved2[2]; 	//
-	AT91_REG	 SSC_SR; 	// Status Register
-	AT91_REG	 SSC_IER; 	// Interrupt Enable Register
-	AT91_REG	 SSC_IDR; 	// Interrupt Disable Register
-	AT91_REG	 SSC_IMR; 	// Interrupt Mask Register
-	AT91_REG	 Reserved3[44]; 	//
-	AT91_REG	 SSC_RPR; 	// Receive Pointer Register
-	AT91_REG	 SSC_RCR; 	// Receive Counter Register
-	AT91_REG	 SSC_TPR; 	// Transmit Pointer Register
-	AT91_REG	 SSC_TCR; 	// Transmit Counter Register
-	AT91_REG	 SSC_RNPR; 	// Receive Next Pointer Register
-	AT91_REG	 SSC_RNCR; 	// Receive Next Counter Register
-	AT91_REG	 SSC_TNPR; 	// Transmit Next Pointer Register
-	AT91_REG	 SSC_TNCR; 	// Transmit Next Counter Register
-	AT91_REG	 SSC_PTCR; 	// PDC Transfer Control Register
-	AT91_REG	 SSC_PTSR; 	// PDC Transfer Status Register
+	at91_reg_t	 SSC_CR; 	// Control Register
+	at91_reg_t	 SSC_CMR; 	// Clock Mode Register
+	at91_reg_t	 Reserved0[2]; 	//
+	at91_reg_t	 SSC_RCMR; 	// Receive Clock ModeRegister
+	at91_reg_t	 SSC_RFMR; 	// Receive Frame Mode Register
+	at91_reg_t	 SSC_TCMR; 	// Transmit Clock Mode Register
+	at91_reg_t	 SSC_TFMR; 	// Transmit Frame Mode Register
+	at91_reg_t	 SSC_RHR; 	// Receive Holding Register
+	at91_reg_t	 SSC_THR; 	// Transmit Holding Register
+	at91_reg_t	 Reserved1[2]; 	//
+	at91_reg_t	 SSC_RSHR; 	// Receive Sync Holding Register
+	at91_reg_t	 SSC_TSHR; 	// Transmit Sync Holding Register
+	at91_reg_t	 Reserved2[2]; 	//
+	at91_reg_t	 SSC_SR; 	// Status Register
+	at91_reg_t	 SSC_IER; 	// Interrupt Enable Register
+	at91_reg_t	 SSC_IDR; 	// Interrupt Disable Register
+	at91_reg_t	 SSC_IMR; 	// Interrupt Mask Register
+	at91_reg_t	 Reserved3[44]; 	//
+	at91_reg_t	 SSC_RPR; 	// Receive Pointer Register
+	at91_reg_t	 SSC_RCR; 	// Receive Counter Register
+	at91_reg_t	 SSC_TPR; 	// Transmit Pointer Register
+	at91_reg_t	 SSC_TCR; 	// Transmit Counter Register
+	at91_reg_t	 SSC_RNPR; 	// Receive Next Pointer Register
+	at91_reg_t	 SSC_RNCR; 	// Receive Next Counter Register
+	at91_reg_t	 SSC_TNPR; 	// Transmit Next Pointer Register
+	at91_reg_t	 SSC_TNCR; 	// Transmit Next Counter Register
+	at91_reg_t	 SSC_PTCR; 	// PDC Transfer Control Register
+	at91_reg_t	 SSC_PTSR; 	// PDC Transfer Status Register
 } AT91S_SSC, *AT91PS_SSC;
 
 // -------- SSC_CR : (SSC Offset: 0x0) SSC Control Register --------

@@ -10,26 +10,26 @@
 #define AT91SAM7_PMC_H_
 
 typedef struct _AT91S_PMC {
-	AT91_REG	 PMC_SCER; 	// System Clock Enable Register
-	AT91_REG	 PMC_SCDR; 	// System Clock Disable Register
-	AT91_REG	 PMC_SCSR; 	// System Clock Status Register
-	AT91_REG	 Reserved0[1]; 	//
-	AT91_REG	 PMC_PCER; 	// Peripheral Clock Enable Register
-	AT91_REG	 PMC_PCDR; 	// Peripheral Clock Disable Register
-	AT91_REG	 PMC_PCSR; 	// Peripheral Clock Status Register
-	AT91_REG	 Reserved1[1]; 	//
-	AT91_REG	 PMC_MOR; 	// Main Oscillator Register
-	AT91_REG	 PMC_MCFR; 	// Main Clock  Frequency Register
-	AT91_REG	 Reserved2[1]; 	//
-	AT91_REG	 PMC_PLLR; 	// PLL Register
-	AT91_REG	 PMC_MCKR; 	// Master Clock Register
-	AT91_REG	 Reserved3[3]; 	//
-	AT91_REG	 PMC_PCKR[3]; 	// Programmable Clock Register
-	AT91_REG	 Reserved4[5]; 	//
-	AT91_REG	 PMC_IER; 	// Interrupt Enable Register
-	AT91_REG	 PMC_IDR; 	// Interrupt Disable Register
-	AT91_REG	 PMC_SR; 	// Status Register
-	AT91_REG	 PMC_IMR; 	// Interrupt Mask Register
+	at91_reg_t	 PMC_SCER; 	// System Clock Enable Register
+	at91_reg_t	 PMC_SCDR; 	// System Clock Disable Register
+	at91_reg_t	 PMC_SCSR; 	// System Clock Status Register
+	at91_reg_t	 Reserved0[1]; 	//
+	at91_reg_t	 PMC_PCER; 	// Peripheral Clock Enable Register
+	at91_reg_t	 PMC_PCDR; 	// Peripheral Clock Disable Register
+	at91_reg_t	 PMC_PCSR; 	// Peripheral Clock Status Register
+	at91_reg_t	 Reserved1[1]; 	//
+	at91_reg_t	 PMC_MOR; 	// Main Oscillator Register
+	at91_reg_t	 PMC_MCFR; 	// Main Clock  Frequency Register
+	at91_reg_t	 Reserved2[1]; 	//
+	at91_reg_t	 PMC_PLLR; 	// PLL Register
+	at91_reg_t	 PMC_MCKR; 	// Master Clock Register
+	at91_reg_t	 Reserved3[3]; 	//
+	at91_reg_t	 PMC_PCKR[3]; 	// Programmable Clock Register
+	at91_reg_t	 Reserved4[5]; 	//
+	at91_reg_t	 PMC_IER; 	// Interrupt Enable Register
+	at91_reg_t	 PMC_IDR; 	// Interrupt Disable Register
+	at91_reg_t	 PMC_SR; 	// Status Register
+	at91_reg_t	 PMC_IMR; 	// Interrupt Mask Register
 } AT91S_PMC, *AT91PS_PMC;
 
 // -------- PMC_SCER : (PMC Offset: 0x0) System Clock Enable Register --------

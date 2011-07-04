@@ -9,8 +9,6 @@
 #ifndef ARM_MODES_H_
 #define ARM_MODES_H_
 
-//#ifdef __ASSEMBLER__
-
 #include <asm/psr.h>
 
 #define ARM_MODE_FIQ 0x11
@@ -24,9 +22,5 @@
 /** disable IRQ, FIQ */
 #define I_BIT 0x80
 #define F_BIT 0x40
-
-
-
-//#endif /* __ASSEMBLER__ */
 
 #endif /* ARM_MODES_H_ */

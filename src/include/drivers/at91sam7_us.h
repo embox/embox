@@ -12,33 +12,33 @@
 #include <types.h>
 
 typedef struct _AT91S_USART {
-	AT91_REG	 US_CR; 	// Control Register
-	AT91_REG	 US_MR; 	// Mode Register
-	AT91_REG	 US_IER; 	// Interrupt Enable Register
-	AT91_REG	 US_IDR; 	// Interrupt Disable Register
-	AT91_REG	 US_IMR; 	// Interrupt Mask Register
-	AT91_REG	 US_CSR; 	// Channel Status Register
-	AT91_REG	 US_RHR; 	// Receiver Holding Register
-	AT91_REG	 US_THR; 	// Transmitter Holding Register
-	AT91_REG	 US_BRGR; 	// Baud Rate Generator Register
-	AT91_REG	 US_RTOR; 	// Receiver Time-out Register
-	AT91_REG	 US_TTGR; 	// Transmitter Time-guard Register
-	AT91_REG	 Reserved0[5]; 	//
-	AT91_REG	 US_FIDI; 	// FI_DI_Ratio Register
-	AT91_REG	 US_NER; 	// Nb Errors Register
-	AT91_REG	 Reserved1[1]; 	//
-	AT91_REG	 US_IF; 	// IRDA_FILTER Register
-	AT91_REG	 Reserved2[44]; 	//
-	AT91_REG	 US_RPR; 	// Receive Pointer Register
-	AT91_REG	 US_RCR; 	// Receive Counter Register
-	AT91_REG	 US_TPR; 	// Transmit Pointer Register
-	AT91_REG	 US_TCR; 	// Transmit Counter Register
-	AT91_REG	 US_RNPR; 	// Receive Next Pointer Register
-	AT91_REG	 US_RNCR; 	// Receive Next Counter Register
-	AT91_REG	 US_TNPR; 	// Transmit Next Pointer Register
-	AT91_REG	 US_TNCR; 	// Transmit Next Counter Register
-	AT91_REG	 US_PTCR; 	// PDC Transfer Control Register
-	AT91_REG	 US_PTSR; 	// PDC Transfer Status Register
+	at91_reg_t	 US_CR; 	// Control Register
+	at91_reg_t	 US_MR; 	// Mode Register
+	at91_reg_t	 US_IER; 	// Interrupt Enable Register
+	at91_reg_t	 US_IDR; 	// Interrupt Disable Register
+	at91_reg_t	 US_IMR; 	// Interrupt Mask Register
+	at91_reg_t	 US_CSR; 	// Channel Status Register
+	at91_reg_t	 US_RHR; 	// Receiver Holding Register
+	at91_reg_t	 US_THR; 	// Transmitter Holding Register
+	at91_reg_t	 US_BRGR; 	// Baud Rate Generator Register
+	at91_reg_t	 US_RTOR; 	// Receiver Time-out Register
+	at91_reg_t	 US_TTGR; 	// Transmitter Time-guard Register
+	at91_reg_t	 Reserved0[5]; 	//
+	at91_reg_t	 US_FIDI; 	// FI_DI_Ratio Register
+	at91_reg_t	 US_NER; 	// Nb Errors Register
+	at91_reg_t	 Reserved1[1]; 	//
+	at91_reg_t	 US_IF; 	// IRDA_FILTER Register
+	at91_reg_t	 Reserved2[44]; 	//
+	at91_reg_t	 US_RPR; 	// Receive Pointer Register
+	at91_reg_t	 US_RCR; 	// Receive Counter Register
+	at91_reg_t	 US_TPR; 	// Transmit Pointer Register
+	at91_reg_t	 US_TCR; 	// Transmit Counter Register
+	at91_reg_t	 US_RNPR; 	// Receive Next Pointer Register
+	at91_reg_t	 US_RNCR; 	// Receive Next Counter Register
+	at91_reg_t	 US_TNPR; 	// Transmit Next Pointer Register
+	at91_reg_t	 US_TNCR; 	// Transmit Next Counter Register
+	at91_reg_t	 US_PTCR; 	// PDC Transfer Control Register
+	at91_reg_t	 US_PTSR; 	// PDC Transfer Status Register
 
 } AT91S_USART, *AT91PS_USART;
 
@@ -159,30 +159,30 @@ typedef struct _AT91S_USART {
 #define AT91C_US0_IER   ((AT91_REG *) 	0xFFFC0008) // (US0) Interrupt Enable Register
 
 typedef struct _AT91S_DBGU {
-	AT91_REG	 DBGU_CR; 	// Control Register
-	AT91_REG	 DBGU_MR; 	// Mode Register
-	AT91_REG	 DBGU_IER; 	// Interrupt Enable Register
-	AT91_REG	 DBGU_IDR; 	// Interrupt Disable Register
-	AT91_REG	 DBGU_IMR; 	// Interrupt Mask Register
-	AT91_REG	 DBGU_CSR; 	// Channel Status Register
-	AT91_REG	 DBGU_RHR; 	// Receiver Holding Register
-	AT91_REG	 DBGU_THR; 	// Transmitter Holding Register
-	AT91_REG	 DBGU_BRGR; 	// Baud Rate Generator Register
-	AT91_REG	 Reserved0[7]; 	//
-	AT91_REG	 DBGU_CIDR; 	// Chip ID Register
-	AT91_REG	 DBGU_EXID; 	// Chip ID Extension Register
-	AT91_REG	 DBGU_FNTR; 	// Force NTRST Register
-	AT91_REG	 Reserved1[45]; 	//
-	AT91_REG	 DBGU_RPR; 	// Receive Pointer Register
-	AT91_REG	 DBGU_RCR; 	// Receive Counter Register
-	AT91_REG	 DBGU_TPR; 	// Transmit Pointer Register
-	AT91_REG	 DBGU_TCR; 	// Transmit Counter Register
-	AT91_REG	 DBGU_RNPR; 	// Receive Next Pointer Register
-	AT91_REG	 DBGU_RNCR; 	// Receive Next Counter Register
-	AT91_REG	 DBGU_TNPR; 	// Transmit Next Pointer Register
-	AT91_REG	 DBGU_TNCR; 	// Transmit Next Counter Register
-	AT91_REG	 DBGU_PTCR; 	// PDC Transfer Control Register
-	AT91_REG	 DBGU_PTSR; 	// PDC Transfer Status Register
+	at91_reg_t	 DBGU_CR; 	// Control Register
+	at91_reg_t	 DBGU_MR; 	// Mode Register
+	at91_reg_t	 DBGU_IER; 	// Interrupt Enable Register
+	at91_reg_t	 DBGU_IDR; 	// Interrupt Disable Register
+	at91_reg_t	 DBGU_IMR; 	// Interrupt Mask Register
+	at91_reg_t	 DBGU_CSR; 	// Channel Status Register
+	at91_reg_t	 DBGU_RHR; 	// Receiver Holding Register
+	at91_reg_t	 DBGU_THR; 	// Transmitter Holding Register
+	at91_reg_t	 DBGU_BRGR; 	// Baud Rate Generator Register
+	at91_reg_t	 Reserved0[7]; 	//
+	at91_reg_t	 DBGU_CIDR; 	// Chip ID Register
+	at91_reg_t	 DBGU_EXID; 	// Chip ID Extension Register
+	at91_reg_t	 DBGU_FNTR; 	// Force NTRST Register
+	at91_reg_t	 Reserved1[45]; 	//
+	at91_reg_t	 DBGU_RPR; 	// Receive Pointer Register
+	at91_reg_t	 DBGU_RCR; 	// Receive Counter Register
+	at91_reg_t	 DBGU_TPR; 	// Transmit Pointer Register
+	at91_reg_t	 DBGU_TCR; 	// Transmit Counter Register
+	at91_reg_t	 DBGU_RNPR; 	// Receive Next Pointer Register
+	at91_reg_t	 DBGU_RNCR; 	// Receive Next Counter Register
+	at91_reg_t	 DBGU_TNPR; 	// Transmit Next Pointer Register
+	at91_reg_t	 DBGU_TNCR; 	// Transmit Next Counter Register
+	at91_reg_t	 DBGU_PTCR; 	// PDC Transfer Control Register
+	at91_reg_t	 DBGU_PTSR; 	// PDC Transfer Status Register
 } AT91S_DBGU, *AT91PS_DBGU;
 
 // -------- DBGU_CR : (DBGU Offset: 0x0) Debug Unit Control Register --------

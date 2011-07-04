@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief cpsr utilities
+ *
+ * @brief Utilities for work with ARM processor register (cpsr)
  *
  * @date 21.07.10
  * @author Anton Kozlov
