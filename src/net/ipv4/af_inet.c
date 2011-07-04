@@ -120,10 +120,4 @@ static int inet_init(void) {
 	return 0;
 }
 
-static packet_type_t ip_packet_type = {
-	.type = ETH_P_IP,
-	.func = ip_rcv,
-	.init = inet_init
-};
-
-EMBOX_NET(ip_packet_type);
+EMBOX_NET(ETH_P_IP, ip_rcv, inet_init);
