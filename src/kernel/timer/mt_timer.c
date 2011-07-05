@@ -147,8 +147,7 @@ int timer_init(void) {
 	return 0;
 }
 
-static void restore_thread(uint32_t id)
-{
+static void restore_thread(uint32_t id) {
 	sched_wake(&get_timer_by_id(id)->event_wait);
 	close_timer(id);
 }

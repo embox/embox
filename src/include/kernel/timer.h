@@ -36,14 +36,14 @@
  * @retval 1 if the timer is set
  * @retval 0 if the timer isn't set
  */
-extern int set_timer(timer_t id, uint32_t ticks, TIMER_FUNC handle);
+extern int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
 
 /**
  * Shut down timer with 'id' identity
  *
  * @param id timer identifier
  */
-extern void close_timer(timer_t id);
+extern void close_timer(uint32_t id);
 
 /**
  * Save timers context. Now saving only one context.
@@ -65,18 +65,25 @@ extern uint32_t cnt_system_time(void);
 /**
  *
  * flags for timer:
+
  *  TIMER_FLAG_PERIODICAL
  *   -- timer must be periodical or not
- *  TIMER_FLAG_DETACHED
- *   -- (use only with TIMER_FLAG_ALLOCATE) timer ptr will deallocated by timer routine. You can't use timer ptr after run set_timer with this flag.
- *  TIMER_FLAG_ALLOCATE
- *   -- timer ptr will be allocated inside set_timer routine. (timer ptr argument for set_timer can be any random ptr or NULL)
+ 	 when timer is non-periodical it will be deallocated after execution.
+
  *
- * @return value is NULL when set_timer failed and another when successed.
+ * @return value is -ERROR when set_timer failed and 0 when successed.
  *
  */
 
-//timer_t* set_timer( timer_t** ptr,
+/**
+ * todo:
+ */
+
+extern int timer_set( timer_t** ptr, uint32_t time, uint32_t flags, TIMER_F functor, void* args);
+
+extern int timer_close( timer_t** ptr );
+
+//int timer_deatach( timer_t** ptr );
 
 
 #endif /* TIMER_H_ */

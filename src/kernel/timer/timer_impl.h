@@ -13,11 +13,11 @@
 
 #ifndef __ASSEMBLER__
 
-#include __impl_x(kernel/timer/timer_impl.h)
+typedef uint32_t timer_t;
 
 typedef void (*TIMER_FUNC)(uint32_t id);
+typedef void (*TIMER_F)(timer_t* t, void* args);
 
-typedef uint32_t timer_t;
 
 /**
  * Initialization of the timers subsystem.
