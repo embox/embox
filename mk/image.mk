@@ -161,8 +161,7 @@ $(foreach impl,$(call symbol_dag_walk,$1,IMPL),$(\n)// impl: $(impl)$ \
 
 endef
 
-image : $(HEADERS_BUILD)
-$(HEADERS_BUILD): $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/image.mk
+$(HEADERS_BUILD): $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/image.mk $(AUTOCONF_DIR)/mods.mk
 	@$(MKDIR) $(@D) && printf "%b" '$(__header_gen)' > $@
 
 OBJS_ALL := $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit)))
@@ -209,7 +208,7 @@ $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 
 ifndef PARTIAL_LINKING
 
-$(IMAGE): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
+$(IMAGE): $(HEADERS_BUILD) $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
 	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$(\n)		%) \
 		$(DEPSINJECT_OBJ) \
 	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
