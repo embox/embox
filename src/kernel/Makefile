@@ -10,7 +10,7 @@ $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 # TODO too more mods fro core.kernel
-$_MODS += irq timer softirq drv_subsys #printk
+$_MODS += irq softirq drv_subsys #printk
 $_MODS += printk
 
 #$_SRCS-main += main.c

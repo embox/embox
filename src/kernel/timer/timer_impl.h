@@ -13,10 +13,11 @@
 
 #ifndef __ASSEMBLER__
 
-typedef uint32_t timer_t;
+typedef void *timer_ptr;
 
 typedef void (*TIMER_FUNC)(uint32_t id);
-typedef void (*TIMER_F)(timer_t* t, void* args);
+typedef TIMER_FUNC TIMER_F;
+//typedef void (*TIMER_F)(timer_t* t, void* args);
 
 
 /**

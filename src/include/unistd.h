@@ -30,7 +30,7 @@
  * @param seconds interval in seconds
  * @return 0 if time has elapsed if was error then return -1
  */
-extern unsigned int sleep(unsigned int seconds);
+extern int sleep(unsigned int seconds);
 
 /**
  * suspend execution for an interval of time

@@ -43,7 +43,7 @@ extern int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
  *
  * @param id timer identifier
  */
-extern void close_timer(uint32_t id);
+extern int close_timer(uint32_t id);
 
 /**
  * Save timers context. Now saving only one context.
@@ -79,11 +79,15 @@ extern uint32_t cnt_system_time(void);
  * todo:
  */
 
-extern int timer_set( timer_t** ptr, uint32_t time, uint32_t flags, TIMER_F functor, void* args);
+extern int timer_set(timer_ptr *timer, uint32_t time, uint32_t flags, TIMER_F functor, void *args);
 
-extern int timer_close( timer_t** ptr );
+extern int timer_close(timer_ptr *timer);
 
 //int timer_deatach( timer_t** ptr );
+
+/* TODO it's static func*/
+extern uint32_t get_free_timer_id(void);
+extern struct event * get_timer_event_by_id(uint32_t id);
 
 
 #endif /* TIMER_H_ */

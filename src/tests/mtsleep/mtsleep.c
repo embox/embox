@@ -17,6 +17,14 @@
 
 EMBOX_TEST(run);
 
+static uint32_t random_val = 54446;
+
+uint32_t get_rand(void) {
+	random_val *= 213355431;
+	random_val -= 222287321;
+	return random_val;
+}
+
 /**
  * The test of sleep function. Test is presented as `sleep sort' algorithm.
  * if sleep function realy work right in end of execution the test we must see sorted(!) sequence of random numbers.
@@ -29,13 +37,14 @@ EMBOX_TEST(run);
 void* handler(void* args) {
 	uint32_t id = (uint32_t) args;
 	uint32_t time1, time2;
+	uint32_t sleep = ((get_rand() / 100000) * 100) % 10000;
 
 	printf("Thread %d... run\n", id);
 	time1 = cnt_system_time();
-	usleep(TIME_SLEEP);
+	usleep(sleep);
 	time2 = cnt_system_time();
 	printf("Thread %d... done at %u (was started at %u, was running %u)\n",
-			id, time2, time1, TIME_SLEEP);
+			id, time2, time1, sleep);
 	return NULL;
 }
 
