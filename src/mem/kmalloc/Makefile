@@ -1,6 +1,11 @@
-$_MODS += slob
+$_APIS += kmalloc
 
-ifdef CONFIG_KMALLOC
-$_SRCS-slob += $(CONFIG_KMALLOC)
-endif
-$_DEPS-slob += embox.hal.mm.mpallocator
+$_MODS              += slob
+$_SRCS-slob         += slob.c
+$_PROVIDES-slob     += kmalloc
+
+$_MODS              += slab_fit
+$_SRCS-slab_fit     += slab_fit.c
+$_DEPS-slab_fit     += slab
+$_PROVIDES-slab_fit += kmalloc
+

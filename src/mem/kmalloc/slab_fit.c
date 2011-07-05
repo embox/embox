@@ -22,9 +22,9 @@
 
 extern char _heap_start;
 extern char _heap_end;
+
 # define HEAP_START_PTR 	(&_heap_start)
 # define HEAP_END_PTR		(&_heap_end)
-
 
 /* macros to finding the cache and slab which an obj belongs to */
 #define SET_PAGE_CACHE(pg, x)  ((pg)->list.next = (struct list_head *)(x))
