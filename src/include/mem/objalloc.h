@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include <util/macro.h>
 #include __impl_x(CONFIG_RTALLOC_IMPL_H)
+
 /**
  *  Macro, that create and initialize allocator.
  */
@@ -56,22 +57,18 @@ extern int objalloc_init(objalloc_t *allocator, size_t object_sz,
  */
 extern int objalloc_destroy(objalloc_t *allocator);
 
-
 /**
  * Allocate single object from the allocator and return it to the caller
  * @param allocator corresponding to allocating object
  * @return the address of allocated object or NULL if allocator is full
  */
-
 extern void *objalloc(objalloc_t *allocator);
-
 
 /**
  * ree memory function.
  * @param allocator corresponding to freeing object
  * @param object pointer at start address of the memory, that must be free
  */
-
 extern void objfree(objalloc_t *allocator, void* object);
 
 #endif /*_MEM_OBJ_ALLOC_H */
