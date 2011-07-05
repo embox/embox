@@ -8,12 +8,15 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
-/*
-	typedef TIMER_FUNC;
-	typedef timer_t;
-*/
-
 #include __impl_x(kernel/timer/timer_impl.h)
+
+/**
+ * timer type is timer_t
+ */
+
+/**
+ * Timer functor type is TIMER_FUNC
+ */
 
 /**
  * Initialization of the timers subsystem.
@@ -58,6 +61,23 @@ extern int timers_context_restore(int context_number);
 extern void timers_off(void);
 
 extern uint32_t cnt_system_time(void);
+
+/**
+ *
+ * flags for timer:
+ *  TIMER_FLAG_PERIODICAL
+ *   -- timer must be periodical or not
+ *  TIMER_FLAG_DETACHED
+ *   -- (use only with TIMER_FLAG_ALLOCATE) timer ptr will deallocated by timer routine. You can't use timer ptr after run set_timer with this flag.
+ *  TIMER_FLAG_ALLOCATE
+ *   -- timer ptr will be allocated inside set_timer routine. (timer ptr argument for set_timer can be any random ptr or NULL)
+ *
+ * @return value is NULL when set_timer failed and another when successed.
+ *
+ */
+
+//timer_t* set_timer( timer_t** ptr,
+
 
 #endif /* TIMER_H_ */
 
