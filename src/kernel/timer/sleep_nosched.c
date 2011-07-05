@@ -8,17 +8,8 @@
  */
 
 #include <types.h>
-#include <unistd.h>
-#include <kernel/irq.h>
-#include <hal/clock.h>
 #include <kernel/timer.h>
-#include <time.h>
-#include <util/array.h>
-#include <string.h>
-#include <embox/unit.h>
-#include <lib/list.h>
 #include <hal/arch.h>
-#include <kernel/timer.h>
 
 #define TIMER_FREQUENCY 1000
 
