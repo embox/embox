@@ -13,8 +13,6 @@
 
 #include <sys/types.h>
 
-#define _SC_TIMER_MAX 20 /**<system timers quantity */
-
 /* Standard file descriptors. */
 #define STDIN_FILENO    0   /* Standard input. */
 #define STDOUT_FILENO   1   /* Standard output. */

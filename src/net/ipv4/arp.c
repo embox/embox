@@ -38,8 +38,6 @@ arp_entity_t arp_tables[ARP_CACHE_SIZE];
 
 #define arp_tables_SIZE ARP_CACHE_SIZE
 
-#define ARP_TIMER_ID 12
-
 #if 0
 static LIST_HEAD(arp_q);
 #endif
@@ -93,7 +91,7 @@ static void arp_send_q(void) {
 /**
  * Check if there are entries that are too old and remove them.
  */
-static void arp_check_expire(uint32_t id) {
+static void arp_check_expire(sys_tmr_ptr timer, void *param) {
 	size_t i;
 
 /* id = ARP_TIMER_ID (MUST) so without checking */
@@ -116,8 +114,9 @@ static void arp_check_expire(uint32_t id) {
 }
 
 static int arp_init(void) {
-	if (set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire) == 0)
+	if (set_timer(NULL, ARP_CHECK_INTERVAL, arp_check_expire, NULL) == 0) {
 		return -1;
+	}
 	return 0;
 }
 

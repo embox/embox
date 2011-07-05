@@ -10,6 +10,16 @@
 
 #include __impl_x(kernel/timer/timer_impl.h)
 
+#define TIMER_POOL_SZ 20 /**<system timers quantity */
+
+#define TIMER_FREQUENCY 1000
+
+struct sys_tmr;
+typedef struct sys_tmr sys_tmr_t;
+typedef sys_tmr_t *sys_tmr_ptr;
+
+typedef void (*TIMER_FUNC)(sys_tmr_ptr timer, void *param);
+
 /**
  * timer type is timer_t
  */
@@ -26,24 +36,24 @@
  */
 
 /**
- * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.
+ * Set 'handle' timer for executing every 'ticks' ms.
  *
- * @param id timer identifier
+ * @param pointer to sys_tmr_ptr
  * @param ticks assignable time
  * @param handle the function to be executed
  *
  * @return whether the timer is set
- * @retval 1 if the timer is set
- * @retval 0 if the timer isn't set
+ * @retval 0 if the timer is set
+ * @retval non-0 if the timer isn't set
  */
-extern int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
+extern int set_timer(sys_tmr_ptr *ptimer, uint32_t ticks, TIMER_FUNC handle, void *param);
 
 /**
- * Shut down timer with 'id' identity
+ * Shut down timer with system_tmr_ptr identity
  *
  * @param id timer identifier
  */
-extern int close_timer(uint32_t id);
+extern int close_timer(sys_tmr_ptr *ptimer);
 
 /**
  * Save timers context. Now saving only one context.
@@ -75,20 +85,7 @@ extern uint32_t cnt_system_time(void);
  *
  */
 
-/**
- * todo:
- */
-
-extern int timer_set(timer_ptr *timer, uint32_t time, uint32_t flags, TIMER_F functor, void *args);
-
-extern int timer_close(timer_ptr *timer);
-
-//int timer_deatach( timer_t** ptr );
-
-/* TODO it's static func*/
-extern uint32_t get_free_timer_id(void);
-extern struct event * get_timer_event_by_id(uint32_t id);
-
+//extern int timer_set(timer_ptr *timer, uint32_t time, uint32_t flags, TIMER_F functor, void *args);
+//extern int timer_close(timer_ptr *timer);
 
 #endif /* TIMER_H_ */
-

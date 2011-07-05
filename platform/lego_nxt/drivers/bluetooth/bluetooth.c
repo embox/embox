@@ -150,7 +150,7 @@ static void bt_us_receive_init(void) {
 int bt_last_state;
 int bt_raw_value;
 
-static void  nxt_bt_timer_handler(int id) {
+static void  nxt_bt_timer_handler(sys_tmr_ptr timer, void *param) {
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
 	if (bt_last_state != bt_state) {
 		if (!bt_state) {
@@ -231,7 +231,7 @@ static int nxt_bluetooth_init(void) {
 	irq_attach((irq_nr_t) AT91C_ID_US1,
 		(irq_handler_t) &nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
-	set_timer(3, 200, (TIMER_FUNC) &nxt_bt_timer_handler);
+	set_timer(0, 200, (TIMER_FUNC) &nxt_bt_timer_handler, NULL);
 	bt_receive_init();
 	return 0;
 }

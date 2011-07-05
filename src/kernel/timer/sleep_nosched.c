@@ -11,21 +11,17 @@
 #include <kernel/timer.h>
 #include <hal/arch.h>
 
-#define TIMER_FREQUENCY 1000
-
-static int wait_flag; // for sleep func
-
-static void restore_thread(uint32_t id) {
-	wait_flag = 0;
-	close_timer(id);
+static void wake_up(sys_tmr_ptr timer, void *param) {
+	*(int *)param = 0;
+	close_timer(&timer);
 }
 
 /*system library function */
 int usleep(useconds_t usec) {
-	uint32_t id;
+	int wait_flag; // for sleep func
 
 	wait_flag = 1;
-	if (!(id = get_free_timer_id()) || !set_timer(id, usec, &restore_thread)) {
+	if (set_timer(NULL, usec, &wake_up, &wait_flag)) {
 		return 1;
 	}
 	while (wait_flag) {

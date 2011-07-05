@@ -9,27 +9,27 @@
 #include <types.h>
 #include <kernel/timer.h>
 #include <kernel/thread/sched.h>
+#include <kernel/thread/event.h>
 
-#define TIMER_FREQUENCY 1000
-
-static void restore_thread(uint32_t id) {
-	sched_wake(get_timer_event_by_id(id));
-	close_timer(id);
+static void restore_thread(sys_tmr_ptr timer, void *param) {
+	sched_wake((struct event *) param);
+	close_timer(&timer);
 }
 
 /*system library function */
 int usleep(useconds_t usec) {
-	uint32_t id;
+	struct event wait_event;
+
+	event_init(&wait_event, NULL);
 
 	sched_lock();
 
-	if (!(id = get_free_timer_id()) || !set_timer(id, usec, &restore_thread)) {
+	if (set_timer(NULL, usec, &restore_thread, &wait_event)) {
 		return 1;
 	}
-	sched_sleep_locked(get_timer_event_by_id(id));
+	sched_sleep_locked(&wait_event);
 
 	sched_unlock();
-
 	return 0;
 }
 

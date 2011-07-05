@@ -8,33 +8,31 @@
 #include <embox/test.h>
 #include <kernel/timer.h>
 
-#define TEST_TIMER_ID    14
-#define TEST_TIMER_TICKS 2
+#define TEST_TIMER_TICKS 10000
 
 EMBOX_TEST(run);
 
-volatile static bool tick_happened;
-
-static void test_timer_handler(uint32_t id) {
-	tick_happened = true;
+static void test_timer_handler(sys_tmr_ptr timer, void *param) {
+	*(bool *)param = true;
 }
 
 static int run(void) {
 	long i;
-	int ret;
+	sys_tmr_ptr timer;
+	bool tick_happened;
 
 	/* Timer value changing means ok */
 	tick_happened = false;
 
-	ret = set_timer(TEST_TIMER_ID, TEST_TIMER_TICKS, test_timer_handler);
-	if (ret == 0) {
+	if (set_timer(&timer, TEST_TIMER_TICKS, test_timer_handler, &tick_happened)) {
 		test_fail("failed to install timer");
 	}
 	for (i = 0; i < (1 << 30); i++) {
-		if (tick_happened)
+		if (tick_happened) {
 			break;
+		}
 	}
-	close_timer(TEST_TIMER_ID);
+	close_timer(&timer);
 
 	return tick_happened ? 0 : -1;
 }
