@@ -24,7 +24,8 @@
 
 #include <stddef.h>
 #include <util/macro.h>
-#include __impl_x(CONFIG_RTALLOC_IMPL_H)
+
+#include __module_headers(embox/hal/mm/objalloc)
 
 /**
  *  Macro, that create and initialize allocator.

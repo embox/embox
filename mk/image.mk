@@ -93,7 +93,8 @@ endif
 # Preprocessor flags
 cppflags := $(CPPFLAGS)
 override CPPFLAGS  = -D__EMBOX__
-override CPPFLAGS += -D"__impl(path)=<impl/path>"
+override CPPFLAGS += -D"__module_headers(path)=<$(patsubst \
+          $(abspath $(ROOT_DIR))/%,../../%,$(abspath $(OBJ_DIR))/mods/path.h)>"
 override CPPFLAGS += -D"__impl_x(path)=<../path>"
 override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
@@ -151,10 +152,13 @@ define __header_template
 
 #ifndef __MOD_HEADER_$$$(subst .,$$,$1)
 #define __MOD_HEADER_$$$(subst .,$$,$1)
-$(foreach impl,$(call symbol_dag_walk,$1,IMPL),$(\n)// impl: $(impl) \
-  $(foreach header,$(filter %.h,$(SRCS-$(impl))),$(\n)$(\h)include <$(header)>))
+$(foreach impl,$(call symbol_dag_walk,$1,IMPL),$(\n)// impl: $(impl)$ \
+  $(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
+                 $(filter %.h,$(abspath $(SRCS-$(impl)))))),$ \
+      $(\n)$(\h)include __impl_x($(header))))
 
 #endif /* __MOD_HEADER_$$$(subst .,$$,$1) */
+
 endef
 
 image : $(HEADERS_BUILD)
