@@ -8,10 +8,12 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
-#include __impl_x(kernel/timer/timer_impl.h)
+/*
+	typedef TIMER_FUNC;
+	typedef timer_t;
+*/
 
-//typedef TIMER_FUNC;
-//typedef timer_t
+#include __impl_x(kernel/timer/timer_impl.h)
 
 /**
  * Initialization of the timers subsystem.
