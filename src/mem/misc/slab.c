@@ -125,10 +125,6 @@ static void cache_slab_init(cache_t *cachep, slab_t *slabp) {
 	}
 }
 
-int min(int X, int Y) {
-	return (X < Y ? X : Y);
-}
-
 /* grow (by 1) the number of slabs within a cache */
 static int cache_grow(cache_t *cachep) {
 	int pages_count;
@@ -141,11 +137,6 @@ static int cache_grow(cache_t *cachep) {
 
 	page = virt_to_page(slabp);
 	pages_count = slab_size;
-
-	/*int b = 2;
-	 int c = 3;
-	 int a = 1;
-	 a = MIN(b, c);*/
 
 	do {
 		SET_PAGE_CACHE(page, cachep);
@@ -304,6 +295,7 @@ int cache_destroy(cache_t *cachep) {
 	}
 	list_del(&cachep->next);
 	cache_free(&cache_chain, cachep);
+
     return 0;
 }
 

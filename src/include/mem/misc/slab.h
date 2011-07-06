@@ -57,7 +57,7 @@ extern int cache_init(cache_t *cache, size_t obj_size, size_t obj_num);
  * Destroy of cache
  * @param cache_ptr is pointer to cache which must be deleted
  */
-extern void cache_destroy(cache_t *cache_ptr);
+extern int cache_destroy(cache_t *cache_ptr);
 
 /**
  * Return pointer to object for which allocate memory

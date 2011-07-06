@@ -21,7 +21,8 @@ typedef struct page_info {
 } page_info_t;
 
 # define HEAP_START_PTR 	(&_heap_start)
-# define HEAP_END_PTR		(&_heap_end)\
+# define HEAP_END_PTR		(&_heap_end)
+
 /* how much difference may be between size of you object and
  * size of object in cache(cachep->obj_size) */
 #define MAX_OBJECT_ALIGN 0
