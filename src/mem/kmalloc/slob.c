@@ -2,6 +2,9 @@
  * @file
  * @brief Dynamic memory allocator
  *
+ * @note now use type char to move pointer.
+ *      char *ptr; ptr += 1 means moving by one byte.
+ *
  * @date 02.05.10
  * @author Michail Skorginskii
  */
@@ -16,7 +19,7 @@
  */
 typedef struct tag {
 	size_t size;
-	bool   free;
+	bool free;
 } tag_t;
 
 typedef struct tag_free {
@@ -58,7 +61,6 @@ static LIST_HEAD(mem_pool);
 bool inited = false;
 
 tag_free_t* begin_pool_ptr;
-
 void* kmalloc(size_t size) {
 	tag_free_t *tmp_begin;
 	struct list_head *tmp_loop;
@@ -77,8 +79,7 @@ void* kmalloc(size_t size) {
 		inited = !inited;
 	}
 
-	/* find block */
-	list_for_each(tmp_loop, &mem_pool) {
+	/* find block */list_for_each(tmp_loop, &mem_pool) {
 		tmp_begin = (tag_free_t*) tmp_loop;
 		if (tmp_begin->tag.size >= size) {
 			eat_mem(size, tmp_begin);
@@ -98,13 +99,15 @@ void kfree(void *ptr) {
 	if (ptr == NULL)
 		return;
 
-	ptr_begin = (tag_free_t *) (ptr - sizeof(tag_free_t));
+	char *ptr_c = (char*) ptr; // it must be checked!
+
+	ptr_begin = (tag_free_t *) (ptr_c - sizeof(tag_free_t));
 
 	if (ptr_begin->tag.free == HOLE || ptr_begin->tag.size == 0)
 		return;
 	/* forward direction */
-	tmp_begin = (tag_free_t*) ((void*) END_TAG(ptr_begin) + sizeof(tag_t));
-	if ((void*) tmp_begin - (void*) begin_pool_ptr < CONFIG_PAGE_SIZE
+	tmp_begin = (tag_free_t*) ((char*) END_TAG(ptr_begin) + sizeof(tag_t));
+	if ((char*) tmp_begin - (char*) begin_pool_ptr < CONFIG_PAGE_SIZE
 			* CONFIG_MALLOC_SIZE && tmp_begin->tag.free == HOLE) {
 		/* del tag & moving adresses*/
 		list_del((struct list_head *) tmp_begin);
@@ -115,8 +118,8 @@ void kfree(void *ptr) {
 		ptr_begin->tag.size = tmp_end->size;
 	}
 	/* backward direction */
-	tmp_end = (tag_t*) ((void*) ptr_begin - sizeof(tag_t));
-	if ((void*) tmp_end - (void*) begin_pool_ptr > 0 && tmp_end->free == HOLE) {
+	tmp_end = (tag_t*) ((char*) ptr_begin - sizeof(tag_t));
+	if ((char*) tmp_end - (char*) begin_pool_ptr > 0 && tmp_end->free == HOLE) {
 		/* del tag & moving adreses */
 		tmp_begin = BEGIN_TAG(tmp_end);
 		list_del((struct list_head*) tmp_begin);
@@ -184,7 +187,7 @@ static inline void eat_mem(size_t size, tag_free_t* ext) {
 	tmp_end->size = ext->tag.size;
 	tmp_end->free = PROC;
 	/* write new block  adresses */
-	tmp_begin = (tag_free_t*) ((void*) tmp_end + sizeof(tag_t));
+	tmp_begin = (tag_free_t*) ((char*) tmp_end + sizeof(tag_t));
 
 	/* write begin tag */
 	tmp_begin->tag.size = size_tmp - ext->tag.size - sizeof(tag_free_t)
@@ -222,8 +225,8 @@ void kmget_blocks_info(struct list_head* list) {
 		tmp_info->size = tmp_ptr->tag.size;
 		tmp_info->free = !(tmp_ptr->tag.free);
 		list_add((struct list_head*) tmp_info, list);
-		tmp_ptr = (tag_free_t*) ((void*) END_TAG(tmp_ptr) + sizeof(tag_t));
-	} while ((void*) tmp_ptr - (void*) begin_pool_ptr < pool_size);
+		tmp_ptr = (tag_free_t*) ((char*) END_TAG(tmp_ptr) + sizeof(tag_t));
+	} while ((char*) tmp_ptr - (char*) begin_pool_ptr < pool_size);
 }
 
 #undef PROC
