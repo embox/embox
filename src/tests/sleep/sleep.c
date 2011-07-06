@@ -8,23 +8,18 @@
 
 #include <embox/test.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <util/math.h>
+#include <kernel/timer.h>
 
-EMBOX_TEST(run);
+EMBOX_TEST_SUITE("sleep suite");
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
-static int run(void) {
-	int result = 0;
-
-	printf("wait 2sec ... ");
-	sleep(2);
-	printf("ok ");
-
-	return result;
+TEST_CASE("simple one sleep") {
+#if 0
+	uint32_t cur_time = cnt_system_time();
+	uint32_t epsilon;
+	usleep(3000);
+	epsilon = abs( (int)(cnt_system_time() - cur_time) - (int)3000 );
+	test_assert_true(epsilon<10);
+#endif
 }
+
