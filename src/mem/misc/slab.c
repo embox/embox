@@ -87,12 +87,8 @@ static page_info_t* virt_to_page(void *objp) {
 	return &(pages[index]);
 }
 
-/*static void makecache(cache_t *c) {
- objalloc(c);
- }*/
-
 /* main cache which will contain another descriptors of caches */
-static cache_t cache_chain = { .name = "__cache_chain", .num =
+cache_t cache_chain = { .name = "__cache_chain", .num =
 		(CONFIG_PAGE_SIZE * CACHE_CHAIN_SIZE
 				- binalign_bound(sizeof(slab_t), 4))
 				/ binalign_bound(sizeof(cache_t), 4), .obj_size =
