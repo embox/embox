@@ -38,6 +38,7 @@ struct cache {
 	bool growing;
 };
 
+/** Data storage at mod_member_info*/
 struct data {
 	struct cache *cache;
 	size_t obj_nr;
@@ -52,6 +53,6 @@ struct data {
 		.obj_sz = object_t                      \
 	};                                          \
 	extern const struct mod_members_ops __cache_member_init;\
-	MOD_MEMBERS_BIND(&__cache_members_init, data)
+	MOD_MEMBERS_BIND(&__cache_members_init, &data)
 
 #endif /* MEM_MISC_SLAB_IMPL_H_ */

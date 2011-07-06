@@ -1,7 +1,7 @@
 /**
- * @file include/framework/mod/members.h
+ * @file  include/framework/mod/members.h
  * @brief The members of mod are structure that contain informations about
- * the all allocators in this mode.
+ *        the all allocators in this mode.
  *
  * @date 5.07.2011
  * @author Alexandr Kalmuk

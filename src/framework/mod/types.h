@@ -44,7 +44,7 @@ struct __mod_info {
 
 struct mod_members_info {
 	void                   *data; /**< Application specific data */
-    struct mod_members_ops *ops;  /**< Available operations corresponding */
+    struct mod_members_ops *ops;  /**< Available operations */
 };
 
 struct __mod_private {

@@ -59,7 +59,8 @@ struct mod_ops {
 };
 
 /**
- * Module operations.
+ * Module operations to inizialize and finilize essence
+ * TODO docs.
  */
 struct mod_members_ops {
 	mod_members_op_t init, fini;
