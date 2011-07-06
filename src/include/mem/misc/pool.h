@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef UTIL_POOL_H_
-#define UTIL_POOL_H_
+#ifndef INCLUDE_MEM_MISC_UTIL_POOL_H_
+#define INCLUDE_MEM_MISC_UTIL_POOL_H_
 
 #include __impl_x(mem/misc/pool_impl.h)
 
@@ -38,4 +38,4 @@ extern void *pool_alloc(struct pool *pool);
  */
 extern void pool_free(struct pool *pool, void *object);
 
-#endif /* UTIL_POOL_H_ */
+#endif /* INCLUDE_MEM_MISC_UTIL_POOL_H_ */

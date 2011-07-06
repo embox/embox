@@ -7,8 +7,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef UTIL_POOL_IMPL_H_
-#define UTIL_POOL_IMPL_H_
+#ifndef MEM_UTIL_POOL_IMPL_H_
+#define MEM_UTIL_POOL_IMPL_H_
 
 #include <util/macro.h>
 #include <lib/list.h>
@@ -48,4 +48,4 @@ struct __pool_free_block {
 
 #endif
 
-#endif /* UTIL_POOL_IMPL_H_ */
+#endif /* MEM_UTIL_POOL_IMPL_H_ */

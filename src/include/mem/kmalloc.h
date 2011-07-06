@@ -7,8 +7,8 @@
  * @author Michail Skorginskii
  */
 
-#ifndef KMALLOC_H
-#define KMALLOC_H
+#ifndef INCLUDE_MEM_KMALLOC_H
+#define INCLUDE_MEM_KMALLOC_H
 
 #include <stddef.h>
 
@@ -29,5 +29,5 @@ extern void *kmalloc(size_t size);
  */
 extern void kfree(void *ptr);
 
-#endif /* KMALLOC_H */
+#endif /* INCLUDE_MEM_KMALLOC_H */
 

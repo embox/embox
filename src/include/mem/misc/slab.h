@@ -29,8 +29,8 @@
  * 	block that size and hand it over.
  */
 
-#ifndef SLAB_H_
-#define SLAB_H_
+#ifndef INCLUDE_MEM_MISC_SLAB_H_
+#define INCLUDE_MEM_MISC_SLAB_H_
 
 #include __impl_x(mem/misc/slab_impl.h)
 
@@ -80,4 +80,4 @@ extern void cache_free(cache_t *cachep, void* objp);
  */
 extern int cache_shrink(cache_t *cachep);
 
-#endif /* SLAB_H_ */
+#endif /* INCLUDE_MEM_MISC_SLAB_H_ */
