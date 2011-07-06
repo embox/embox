@@ -27,12 +27,12 @@ struct sys_tmr {
 //	uint32_t   per; // is periodical timer
 };
 
-static volatile clock_t cnt_sys_time; /**< quantity ms after start system */
+static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
 POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ);
 static LIST_HEAD(sys_timers_list);
 
-clock_t cnt_system_time(void) {
+uint32_t cnt_system_time(void) {
 	return cnt_sys_time;
 }
 

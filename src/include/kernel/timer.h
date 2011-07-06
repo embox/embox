@@ -72,7 +72,7 @@ extern int timers_context_restore(int context_number);
  */
 extern void timers_off(void);
 
-extern clock_t cnt_system_time(void);
+extern uint32_t cnt_system_time(void);
 
 /**
  *
