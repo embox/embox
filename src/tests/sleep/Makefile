@@ -1,6 +1,6 @@
-$_PACKAGE = embox.test.sleep
+$_PACKAGE = embox.test.kernel.timer
 
-$_MODS += simple
-$_SRCS-simple += sleep.c
-$_REQUIRES-simple += core.kernel.timer.sleep_api
+$_MODS                += sleep_test
+$_SRCS-sleep_test     += sleep_test.c
+$_REQUIRES-sleep_test += core.kernel.timer.sleep_api
 

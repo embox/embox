@@ -30,6 +30,6 @@ int usleep(useconds_t usec) {
 	return 0;
 }
 
-int sleep(uint32_t seconds) {
+int sleep(unsigned int seconds) {
 	return usleep(seconds * TIMER_FREQUENCY);
 }

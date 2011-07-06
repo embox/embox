@@ -8,6 +8,8 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
+#include <sys/types.h>
+
 #include __impl_x(kernel/timer/timer_impl.h)
 
 #define TIMER_POOL_SZ 20 /**<system timers quantity */
@@ -70,7 +72,7 @@ extern int timers_context_restore(int context_number);
  */
 extern void timers_off(void);
 
-extern uint32_t cnt_system_time(void);
+extern clock_t cnt_system_time(void);
 
 /**
  *
