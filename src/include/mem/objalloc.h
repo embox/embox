@@ -19,8 +19,8 @@
  * @author Alexandr Kalmuk
  */
 
-#ifndef INCLUDE_MEM_OBJ_ALLOC_H
-#define INCLUDE_MEM_OBJ_ALLOC_H
+#ifndef MEM_OBJ_ALLOC_H_
+#define MEM_OBJ_ALLOC_H_
 
 #include <stddef.h>
 #include <util/macro.h>
@@ -72,4 +72,4 @@ extern void *objalloc(objalloc_t *allocator);
  */
 extern void objfree(objalloc_t *allocator, void* object);
 
-#endif /*INCLUDE_MEM_OBJ_ALLOC_H */
+#endif /*MEM_OBJ_ALLOC_H_ */

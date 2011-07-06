@@ -7,8 +7,8 @@
  * @author Fedor Burdun
  */
 
-#ifndef INCLUDE_MEM_PAGEALLOC_MPALLOCATOR_H_
-#define INCLUDE_MEM_PAGEALLOC_MPALLOCATOR_H_
+#ifndef MEM_PAGEALLOC_MPALLOCATOR_H_
+#define MEM_PAGEALLOC_MPALLOCATOR_H_
 
 #include <types.h>
 
@@ -23,5 +23,5 @@ extern void mpfree(void *pointer);
 
 extern void mpget_blocks_info(struct list_head* list);
 
-#endif /* INCLUDE_MEM_PAGEALLOC_MPALLOCATOR_H_ */
+#endif /* MEM_PAGEALLOC_MPALLOCATOR_H_ */
 

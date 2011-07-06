@@ -6,8 +6,8 @@
  * @author Alexandr Kalmuk
  */
 
-#ifndef INCLUDE_MEM_MISC_SLAB_STATISTIC_H
-#define INCLUDE_MEM_MISC_SLAB_STATISTIC_H
+#ifndef MEM_MISC_SLAB_STATISTIC_H_
+#define MEM_MISC_SLAB_STATISTIC_H_
 
 /**
  * Return list of free and busy blocks per current slab
@@ -30,4 +30,4 @@ extern void sget_blocks_info(struct list_head* list, struct list_head *slabp);
  */
 extern void make_caches_list(struct list_head* list);
 
-#endif /* INCLUDE_MEM_MISC_SLAB_STATISTIC_H */
+#endif /* MEM_MISC_SLAB_STATISTIC_H_ */
