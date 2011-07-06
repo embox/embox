@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Defines constants for slab allocator
+ * @brief CHANGE THIS BRIEF!
  *
  * @date 26.02.11
  * @author Alexandr Kalmuk
@@ -11,10 +11,7 @@
 
 #include <types.h>
 #include <lib/list.h>
-
-#define __CACHE_DEF(cache_nm, object_t, objects_nr) \
-	      static struct cache* cache_nm;\
-	         cache_init(cache_nm, object_t, objects_nr)
+#include <framework/mod/members.h>
 
 /** Length of name of any cache */
 #define __CACHE_NAMELEN 16
@@ -40,5 +37,21 @@ struct cache {
 	/** lock the cache from being reaped or shrunk */
 	bool growing;
 };
+
+struct data {
+	struct cache *cache;
+	size_t obj_nr;
+	size_t obj_sz;
+};
+
+#define __CACHE_DEF(cache_nm, object_t, objects_nr) \
+	static struct cache *cache_nm;            \
+	static struct data data = {               \
+		.cache = cache_nm,                      \
+		.obj_nr = objects_nr                    \
+		.obj_sz = object_t                      \
+	};                                          \
+	extern const struct mod_members_ops __cache_member_init;\
+	MOD_MEMBERS_BIND(&__cache_members_init, data)
 
 #endif /* MEM_MISC_SLAB_IMPL_H_ */

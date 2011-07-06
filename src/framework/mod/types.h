@@ -25,6 +25,8 @@ struct mod {
 
 	const char *name;                  /**< Name assigned by EMBuild. */
 	const char *brief, *details;       /**< Human-readable description. */
+	/** Array with memmory allocation information */
+	const struct mod_members_info **members;
 
 };
 
@@ -38,6 +40,11 @@ struct mod_package {
 struct __mod_info {
 	void           *data; /**< (optional) Module specific data. */
 	struct mod_ops *ops;  /**< (optional) Available operations. */
+};
+
+struct mod_members_info {
+	void                   *data; /**< Application specific data */
+    struct mod_members_ops *ops;  /**< Available operations corresponding */
 };
 
 struct __mod_private {
