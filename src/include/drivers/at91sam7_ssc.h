@@ -3,34 +3,34 @@
 #define AT91SAM7_SSC_H_
 
 typedef struct _AT91S_SSC {
-	AT91_REG	 SSC_CR; 	// Control Register
-	AT91_REG	 SSC_CMR; 	// Clock Mode Register
-	AT91_REG	 Reserved0[2]; 	//
-	AT91_REG	 SSC_RCMR; 	// Receive Clock ModeRegister
-	AT91_REG	 SSC_RFMR; 	// Receive Frame Mode Register
-	AT91_REG	 SSC_TCMR; 	// Transmit Clock Mode Register
-	AT91_REG	 SSC_TFMR; 	// Transmit Frame Mode Register
-	AT91_REG	 SSC_RHR; 	// Receive Holding Register
-	AT91_REG	 SSC_THR; 	// Transmit Holding Register
-	AT91_REG	 Reserved1[2]; 	//
-	AT91_REG	 SSC_RSHR; 	// Receive Sync Holding Register
-	AT91_REG	 SSC_TSHR; 	// Transmit Sync Holding Register
-	AT91_REG	 Reserved2[2]; 	//
-	AT91_REG	 SSC_SR; 	// Status Register
-	AT91_REG	 SSC_IER; 	// Interrupt Enable Register
-	AT91_REG	 SSC_IDR; 	// Interrupt Disable Register
-	AT91_REG	 SSC_IMR; 	// Interrupt Mask Register
-	AT91_REG	 Reserved3[44]; 	//
-	AT91_REG	 SSC_RPR; 	// Receive Pointer Register
-	AT91_REG	 SSC_RCR; 	// Receive Counter Register
-	AT91_REG	 SSC_TPR; 	// Transmit Pointer Register
-	AT91_REG	 SSC_TCR; 	// Transmit Counter Register
-	AT91_REG	 SSC_RNPR; 	// Receive Next Pointer Register
-	AT91_REG	 SSC_RNCR; 	// Receive Next Counter Register
-	AT91_REG	 SSC_TNPR; 	// Transmit Next Pointer Register
-	AT91_REG	 SSC_TNCR; 	// Transmit Next Counter Register
-	AT91_REG	 SSC_PTCR; 	// PDC Transfer Control Register
-	AT91_REG	 SSC_PTSR; 	// PDC Transfer Status Register
+	at91_reg_t	 SSC_CR; 	// Control Register
+	at91_reg_t	 SSC_CMR; 	// Clock Mode Register
+	at91_reg_t	 Reserved0[2]; 	//
+	at91_reg_t	 SSC_RCMR; 	// Receive Clock ModeRegister
+	at91_reg_t	 SSC_RFMR; 	// Receive Frame Mode Register
+	at91_reg_t	 SSC_TCMR; 	// Transmit Clock Mode Register
+	at91_reg_t	 SSC_TFMR; 	// Transmit Frame Mode Register
+	at91_reg_t	 SSC_RHR; 	// Receive Holding Register
+	at91_reg_t	 SSC_THR; 	// Transmit Holding Register
+	at91_reg_t	 Reserved1[2]; 	//
+	at91_reg_t	 SSC_RSHR; 	// Receive Sync Holding Register
+	at91_reg_t	 SSC_TSHR; 	// Transmit Sync Holding Register
+	at91_reg_t	 Reserved2[2]; 	//
+	at91_reg_t	 SSC_SR; 	// Status Register
+	at91_reg_t	 SSC_IER; 	// Interrupt Enable Register
+	at91_reg_t	 SSC_IDR; 	// Interrupt Disable Register
+	at91_reg_t	 SSC_IMR; 	// Interrupt Mask Register
+	at91_reg_t	 Reserved3[44]; 	//
+	at91_reg_t	 SSC_RPR; 	// Receive Pointer Register
+	at91_reg_t	 SSC_RCR; 	// Receive Counter Register
+	at91_reg_t	 SSC_TPR; 	// Transmit Pointer Register
+	at91_reg_t	 SSC_TCR; 	// Transmit Counter Register
+	at91_reg_t	 SSC_RNPR; 	// Receive Next Pointer Register
+	at91_reg_t	 SSC_RNCR; 	// Receive Next Counter Register
+	at91_reg_t	 SSC_TNPR; 	// Transmit Next Pointer Register
+	at91_reg_t	 SSC_TNCR; 	// Transmit Next Counter Register
+	at91_reg_t	 SSC_PTCR; 	// PDC Transfer Control Register
+	at91_reg_t	 SSC_PTSR; 	// PDC Transfer Status Register
 } AT91S_SSC, *AT91PS_SSC;
 
 // -------- SSC_CR : (SSC Offset: 0x0) SSC Control Register --------
@@ -97,30 +97,30 @@ typedef struct _AT91S_SSC {
 // -------- SSC_IMR : (SSC Offset: 0x4c) SSC Interrupt Mask Register --------
 
 // ========== Register definition for PDC_SSC peripheral ==========
-#define AT91C_SSC_TNCR  ((AT91_REG *) 	0xFFFD411C) // (PDC_SSC) Transmit Next Counter Register
-#define AT91C_SSC_RPR   ((AT91_REG *) 	0xFFFD4100) // (PDC_SSC) Receive Pointer Register
-#define AT91C_SSC_RNCR  ((AT91_REG *) 	0xFFFD4114) // (PDC_SSC) Receive Next Counter Register
-#define AT91C_SSC_TPR   ((AT91_REG *) 	0xFFFD4108) // (PDC_SSC) Transmit Pointer Register
-#define AT91C_SSC_PTCR  ((AT91_REG *) 	0xFFFD4120) // (PDC_SSC) PDC Transfer Control Register
-#define AT91C_SSC_TCR   ((AT91_REG *) 	0xFFFD410C) // (PDC_SSC) Transmit Counter Register
-#define AT91C_SSC_RCR   ((AT91_REG *) 	0xFFFD4104) // (PDC_SSC) Receive Counter Register
-#define AT91C_SSC_RNPR  ((AT91_REG *) 	0xFFFD4110) // (PDC_SSC) Receive Next Pointer Register
-#define AT91C_SSC_TNPR  ((AT91_REG *) 	0xFFFD4118) // (PDC_SSC) Transmit Next Pointer Register
-#define AT91C_SSC_PTSR  ((AT91_REG *) 	0xFFFD4124) // (PDC_SSC) PDC Transfer Status Register
+#define AT91C_SSC_TNCR  ((at91_reg_t *) 	0xFFFD411C) // (PDC_SSC) Transmit Next Counter Register
+#define AT91C_SSC_RPR   ((at91_reg_t *) 	0xFFFD4100) // (PDC_SSC) Receive Pointer Register
+#define AT91C_SSC_RNCR  ((at91_reg_t *) 	0xFFFD4114) // (PDC_SSC) Receive Next Counter Register
+#define AT91C_SSC_TPR   ((at91_reg_t *) 	0xFFFD4108) // (PDC_SSC) Transmit Pointer Register
+#define AT91C_SSC_PTCR  ((at91_reg_t *) 	0xFFFD4120) // (PDC_SSC) PDC Transfer Control Register
+#define AT91C_SSC_TCR   ((at91_reg_t *) 	0xFFFD410C) // (PDC_SSC) Transmit Counter Register
+#define AT91C_SSC_RCR   ((at91_reg_t *) 	0xFFFD4104) // (PDC_SSC) Receive Counter Register
+#define AT91C_SSC_RNPR  ((at91_reg_t *) 	0xFFFD4110) // (PDC_SSC) Receive Next Pointer Register
+#define AT91C_SSC_TNPR  ((at91_reg_t *) 	0xFFFD4118) // (PDC_SSC) Transmit Next Pointer Register
+#define AT91C_SSC_PTSR  ((at91_reg_t *) 	0xFFFD4124) // (PDC_SSC) PDC Transfer Status Register
 // ========== Register definition for SSC peripheral ==========
-#define AT91C_SSC_RHR   ((AT91_REG *) 	0xFFFD4020) // (SSC) Receive Holding Register
-#define AT91C_SSC_RSHR  ((AT91_REG *) 	0xFFFD4030) // (SSC) Receive Sync Holding Register
-#define AT91C_SSC_TFMR  ((AT91_REG *) 	0xFFFD401C) // (SSC) Transmit Frame Mode Register
-#define AT91C_SSC_IDR   ((AT91_REG *) 	0xFFFD4048) // (SSC) Interrupt Disable Register
-#define AT91C_SSC_THR   ((AT91_REG *) 	0xFFFD4024) // (SSC) Transmit Holding Register
-#define AT91C_SSC_RCMR  ((AT91_REG *) 	0xFFFD4010) // (SSC) Receive Clock ModeRegister
-#define AT91C_SSC_IER   ((AT91_REG *) 	0xFFFD4044) // (SSC) Interrupt Enable Register
-#define AT91C_SSC_TSHR  ((AT91_REG *) 	0xFFFD4034) // (SSC) Transmit Sync Holding Register
-#define AT91C_SSC_SR    ((AT91_REG *) 	0xFFFD4040) // (SSC) Status Register
-#define AT91C_SSC_CMR   ((AT91_REG *) 	0xFFFD4004) // (SSC) Clock Mode Register
-#define AT91C_SSC_TCMR  ((AT91_REG *) 	0xFFFD4018) // (SSC) Transmit Clock Mode Register
-#define AT91C_SSC_CR    ((AT91_REG *) 	0xFFFD4000) // (SSC) Control Register
-#define AT91C_SSC_IMR   ((AT91_REG *) 	0xFFFD404C) // (SSC) Interrupt Mask Register
-#define AT91C_SSC_RFMR  ((AT91_REG *) 	0xFFFD4014) // (SSC) Receive Frame Mode Register
+#define AT91C_SSC_RHR   ((at91_reg_t *) 	0xFFFD4020) // (SSC) Receive Holding Register
+#define AT91C_SSC_RSHR  ((at91_reg_t *) 	0xFFFD4030) // (SSC) Receive Sync Holding Register
+#define AT91C_SSC_TFMR  ((at91_reg_t *) 	0xFFFD401C) // (SSC) Transmit Frame Mode Register
+#define AT91C_SSC_IDR   ((at91_reg_t *) 	0xFFFD4048) // (SSC) Interrupt Disable Register
+#define AT91C_SSC_THR   ((at91_reg_t *) 	0xFFFD4024) // (SSC) Transmit Holding Register
+#define AT91C_SSC_RCMR  ((at91_reg_t *) 	0xFFFD4010) // (SSC) Receive Clock ModeRegister
+#define AT91C_SSC_IER   ((at91_reg_t *) 	0xFFFD4044) // (SSC) Interrupt Enable Register
+#define AT91C_SSC_TSHR  ((at91_reg_t *) 	0xFFFD4034) // (SSC) Transmit Sync Holding Register
+#define AT91C_SSC_SR    ((at91_reg_t *) 	0xFFFD4040) // (SSC) Status Register
+#define AT91C_SSC_CMR   ((at91_reg_t *) 	0xFFFD4004) // (SSC) Clock Mode Register
+#define AT91C_SSC_TCMR  ((at91_reg_t *) 	0xFFFD4018) // (SSC) Transmit Clock Mode Register
+#define AT91C_SSC_CR    ((at91_reg_t *) 	0xFFFD4000) // (SSC) Control Register
+#define AT91C_SSC_IMR   ((at91_reg_t *) 	0xFFFD404C) // (SSC) Interrupt Mask Register
+#define AT91C_SSC_RFMR  ((at91_reg_t *) 	0xFFFD4014) // (SSC) Receive Frame Mode Register
 
 #endif /* AT91SAM7_SSC_H_ */

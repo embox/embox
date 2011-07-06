@@ -17,7 +17,4 @@
 
 #define MSG_SIZE_BYTE_CNT 2
 
-//extern int direct_comm_handle(uint8_t *buff);
-//extern int direct_comm_init_read(void);
-
 #endif /* NXT_DIRECT_COMM_H */

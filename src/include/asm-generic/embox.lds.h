@@ -37,11 +37,6 @@
 	*(SORT(.array_spread.*.rodata)) \
 	                               \
 	ALIGNMENT();                   \
-	__ipstack_packets_start = .;   \
-		*(.ipstack.packets)        \
-	__ipstack_packets_end = .;     \
-	                               \
-	ALIGNMENT();                   \
 	__ipstack_sockets_start = .;   \
 		*(.ipstack.sockets)        \
 	__ipstack_sockets_end = .;     \

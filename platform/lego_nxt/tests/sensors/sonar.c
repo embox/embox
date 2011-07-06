@@ -8,7 +8,7 @@
 
 #include <drivers/soft_i2c.h>
 #include <drivers/nxt_buttons.h>
-#include <drivers/nxt_sonar.h>
+#include <drivers/nxt_sonar_sensor.h>
 #include <embox/test.h>
 #include <drivers/at91sam7s256.h>
 #include <unistd.h>

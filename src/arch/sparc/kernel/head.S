@@ -108,15 +108,6 @@ boot_start:
 	call memcpy
 1:	 nop
 
-	set _reloc_vma, %o0
-	set _reloc_lma, %o1
-	subcc %o0, %o1, %g0
-	be 1f
-	 nop
-	set _reloc_len, %o2
-	call memcpy
-1:	 nop
-
 	set _bss_vma, %o0
 	set _bss_len, %o2
 	call memset

@@ -4,7 +4,6 @@ $_MODS += nxt_fill
 $_MODS += nxt_new_fill
 $_MODS += nxt_lcd_picture_fill
 $_MODS += nxt_lcd_picture_embox_fill
-$_MODS += nxt_menu_test
 $_MODS += nxt_print_test
 
 $_SRCS-nxt_lcd_picture += picture_embox.c
@@ -24,9 +23,6 @@ $_DEPS-nxt_lcd_picture_fill += $(PLATFORM).driver.nxt_lcd
 
 $_SRCS-nxt_lcd_picture_embox_fill += picture_embox_with_fill.c
 $_DEPS-nxt_lcd_picture_embox_fill += $(PLATFORM).driver.nxt_lcd
-
-$_SRCS-nxt_menu_test += menu_test.c
-$_DEPS-nxt_menu_test += $(PLATFORM).driver.nxt_lcd
 
 $_SRCS-nxt_print_test += print_test.c
 $_DEPS-nxt_print_test += $(PLATFORM).driver.nxt_lcd

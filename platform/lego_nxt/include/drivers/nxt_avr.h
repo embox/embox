@@ -15,7 +15,7 @@
 #define NXT_AVR_N_OUTPUTS 4
 #define NXT_AVR_N_INPUTS  4
 
-typedef struct{
+typedef struct {
 	uint8_t power;
 	uint8_t pwm_frequency;
 	int8_t  output_percent[NXT_AVR_N_OUTPUTS];
