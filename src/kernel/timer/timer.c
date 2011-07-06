@@ -18,6 +18,8 @@
 
 EMBOX_UNIT_INIT(timer_init);
 
+const uint32_t clock_source = 1000;
+
 struct sys_tmr {
 	struct list_head *next, *prev;
 	uint32_t   load;
@@ -106,6 +108,6 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 int timer_init(void) {
 	cnt_sys_time = 0;
 	clock_init();
-	clock_setup(TIMER_FREQUENCY);
+	clock_setup(clock_source);
 	return 0;
 }

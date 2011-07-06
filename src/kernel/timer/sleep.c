@@ -7,6 +7,7 @@
  */
 
 #include <types.h>
+#include <time.h>
 #include <kernel/timer.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/event.h>
@@ -34,5 +35,5 @@ int usleep(useconds_t usec) {
 }
 
 int sleep(unsigned int seconds) {
-	return usleep(seconds * TIMER_FREQUENCY);
+	return usleep(seconds * CLOCKS_PER_SEC);
 }
