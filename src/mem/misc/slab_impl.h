@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief CHANGE THIS BRIEF!
+ * @brief Implementation of cache structure.
  *
  * @date 26.02.11
  * @author Alexandr Kalmuk
@@ -46,13 +46,13 @@ struct data {
 };
 
 #define __CACHE_DEF(cache_nm, object_t, objects_nr) \
-	static struct cache *cache_nm;            \
-	static struct data data = {               \
-		.cache = cache_nm,                      \
-		.obj_nr = objects_nr                    \
-		.obj_sz = object_t                      \
-	};                                          \
-	extern const struct mod_members_ops __cache_member_init;\
-	MOD_MEMBERS_BIND(&__cache_members_init, &data)
+	static struct cache cache_nm;                   \
+	static struct data data = {                     \
+		.cache = &cache_nm,                         \
+		.obj_nr = objects_nr,                       \
+		.obj_sz = sizeof(object_t),                         \
+	};                                              \
+	extern const struct mod_members_ops __cache_member_init; \
+	MOD_MEMBERS_BIND(&__cache_member_init, &data)
 
 #endif /* MEM_MISC_SLAB_IMPL_H_ */

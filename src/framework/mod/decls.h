@@ -16,6 +16,9 @@
 #define __MOD(mod_nm)      MACRO_CONCAT(__mod__, mod_nm)
 #define __MOD_INFO(mod_nm) MACRO_CONCAT(__mod_info__, mod_nm)
 
+#define __MOD_MEMBER_ARRAY(mod_nm, array_nm) \
+	MACRO_CONCAT(__mod_##array_nm##__,mod_nm)
+
 /* Internal declarations. */
 
 #define __MOD_DECL(mod_nm) \
