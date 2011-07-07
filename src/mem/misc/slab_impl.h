@@ -50,7 +50,7 @@ struct data {
 	static struct data data = {                     \
 		.cache = &cache_nm,                         \
 		.obj_nr = objects_nr,                       \
-		.obj_sz = sizeof(object_t),                         \
+		.obj_sz = sizeof(object_t),                 \
 	};                                              \
 	extern const struct mod_members_ops __cache_member_init; \
 	MOD_MEMBERS_BIND(&__cache_member_init, &data)
