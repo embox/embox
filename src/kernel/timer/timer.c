@@ -33,7 +33,7 @@ struct sys_tmr {
 static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
 POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ);
-static LIST_HEAD(sys_timers_list);
+static struct list_head *sys_timers_list;
 
 uint32_t cnt_system_time(void) {
 	return cnt_sys_time;
@@ -52,7 +52,7 @@ int set_timer(sys_tmr_ptr *ptimer, uint32_t ticks,
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->handle = handle;
 	new_timer->param  = param;
-	list_add_tail((struct list_head *) new_timer, &sys_timers_list);
+	list_add_tail((struct list_head *) new_timer, sys_timers_list);
 	if (ptimer) {
 		*ptimer = new_timer;
 	}
@@ -77,7 +77,7 @@ static void inc_sys_timers(void) {
 	struct list_head *tmp, *tmp2;
 	sys_tmr_ptr tmr;
 
-	list_for_each_safe(tmp, tmp2, &sys_timers_list) {
+	list_for_each_safe(tmp, tmp2, sys_timers_list) {
 		tmr = (sys_tmr_ptr) tmp;
 		if (0 == tmr->cnt--) {
 			tmr->handle(tmr, tmr->param);
@@ -108,5 +108,6 @@ int timer_init(void) {
 	cnt_sys_time = 0;
 	clock_init();
 	clock_setup(clock_source_get_HZ());
+	sys_timers_list = clock_source_get_timers_list();
 	return 0;
 }

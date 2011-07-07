@@ -70,7 +70,8 @@
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
 
-static struct clock_source *pit_clock_source;
+static LIST_HEAD(timers_list);
+static struct clock_source pit_clock_source;
 
 irq_return_t clock_handler(int irq_nr, void *dev_id) {
 	clock_tick_handler(irq_nr, dev_id);
@@ -80,7 +81,10 @@ irq_return_t clock_handler(int irq_nr, void *dev_id) {
 void clock_init(void) {
 	irq_attach((irq_nr_t) IRQ0,
 		(irq_handler_t) &clock_handler, 0, NULL, "PIT");
-	clock_source_register(&pit_clock_source, 1, 1000);
+	pit_clock_source.flags = 1;
+	pit_clock_source.precision = 1000;
+	pit_clock_source.timers_list = &timers_list;
+	clock_source_register(&pit_clock_source);
 }
 
 void clock_setup(useconds_t HZ) {

@@ -13,39 +13,41 @@
 #include <time.h>
 #include <assert.h>
 
-struct clock_source {
+struct clock_source_head {
 	struct list_head *next, *prev;
-	uint32_t flags; // periodical or not
-	uint32_t precision;
-//	struct list_head *timers_list;
+	struct clock_source *clock_source;
 };
 
 #define CLOCK_SOURCE_POOL_SZ 4
 
-POOL_DEF(clock_source_pool, struct clock_source, CLOCK_SOURCE_POOL_SZ);
+POOL_DEF(clock_source_pool, struct clock_source_head, CLOCK_SOURCE_POOL_SZ);
 static LIST_HEAD(clock_source_list);
 
-void clock_source_register(struct clock_source **pcs, uint32_t flags, uint32_t precision) {
-	struct clock_source *new_cs;
+int clock_source_register(struct clock_source *cs) {
+	struct clock_source_head *csh;
 
-	if (pcs) {
-		if ((new_cs = (struct clock_source *) pool_alloc(&clock_source_pool))) {
-			new_cs->flags      = flags;
-			new_cs->precision  = precision;
-			list_add_tail((struct list_head *) new_cs, &clock_source_list);
-			*pcs = new_cs;
-		}
-		else {
-			*pcs = NULL;
-		}
+	if (!cs) {
+		return 1;
 	}
+	if (!(csh = (struct clock_source_head *) pool_alloc(&clock_source_pool))) {
+		return 1;
+	}
+	csh->clock_source = cs;
+	list_add_tail((struct list_head *) csh, &clock_source_list);
+	return 0;
 }
 
 uint32_t clock_source_get_HZ(void) {
 	assert(!list_empty(&clock_source_list));
-	return ((struct clock_source *)clock_source_list.next)->precision;
+	return (uint32_t) (((struct clock_source_head *)clock_source_list.next)->clock_source->precision);
 }
 
 useconds_t clock_source_clock_to_usec(clock_t cl) {
-	return ((useconds_t) cl) * ((struct clock_source *)clock_source_list.next)->precision;
+	assert(!list_empty(&clock_source_list));
+	return (useconds_t) (((useconds_t) cl) * ((struct clock_source_head *)clock_source_list.next)->clock_source->precision);
+}
+
+struct list_head * clock_source_get_timers_list(void) {
+	assert(!list_empty(&clock_source_list));
+	return ((struct clock_source_head *)clock_source_list.next)->clock_source->timers_list;
 }
