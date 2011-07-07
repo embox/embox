@@ -14,8 +14,6 @@
 
 #define TIMER_POOL_SZ 20 /**<system timers quantity */
 
-extern const uint32_t clock_source;
-
 struct sys_tmr;
 typedef struct sys_tmr sys_tmr_t;
 typedef sys_tmr_t *sys_tmr_ptr;

@@ -67,3 +67,11 @@ ifdef CONFIG_MEASURE
   $_DEPS-measure += $(CONFIG_MEASURE) timer
   $_DEPS-main += measure
 endif
+
+$_MODS                  += clock_source
+$_SRCS-clock_source     += clock_source.c
+
+$_MODS      += time
+$_SRCS-time += time.c
+$_DEPS-time += core.kernel.timer.timer
+$_DEPS-time += core.kernel.clock_source

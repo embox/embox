@@ -8,27 +8,32 @@
 
 #include <time.h>
 #include <kernel/timer.h>
+#include <kernel/clock_source.h>
 
-
-useconds_t clock(void) {
-	return (useconds_t) clock_to_usec(cnt_system_time(), clock_source);
+static
+useconds_t time_usec(void) {
+	return clock_source_clock_to_usec(cnt_system_time());
 }
 
-struct timeval * get_timeval(struct timeval *now) {
-	useconds_t usec = clock_to_usec(cnt_system_time(), clock_source);
-	now->tv_sec = usec / CLOCKS_PER_SEC;
-	now->tv_usec = usec % CLOCKS_PER_SEC;
-	return now;
+clock_t clock(void) {
+	return cnt_system_time();
 }
 
-time_t time(time_t *now) {
-	if (now) {
-		*now = clock_to_usec(cnt_system_time(), clock_source) / CLOCKS_PER_SEC;
-		return *now;
+struct timeval * get_timeval(struct timeval *tv) {
+	useconds_t usec;
+
+	usec = time_usec();
+	tv->tv_sec = usec / MICROSEC_PER_SEC;
+	tv->tv_usec = usec % MICROSEC_PER_SEC;
+	return tv;
+}
+
+extern time_t time(time_t *t) {
+	time_t sec;
+
+	sec = time_usec() / MICROSEC_PER_SEC;
+	if (t) {
+		*t = sec;
 	}
-	return (time_t) (cnt_system_time() / CLOCKS_PER_SEC);
-}
-
-useconds_t clock_to_usec(clock_t now, uint32_t clock_src) {
-	return (now * CLOCKS_PER_SEC) / clock_src;
+	return sec;
 }

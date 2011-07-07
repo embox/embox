@@ -25,6 +25,7 @@ int usleep(useconds_t usec) {
 
 	sched_lock();
 
+	/* FIXME set_timer argument is tick (not usec) */
 	if (set_timer(NULL, usec, &restore_thread, &wait_event)) {
 		return 1;
 	}
@@ -35,5 +36,5 @@ int usleep(useconds_t usec) {
 }
 
 int sleep(unsigned int seconds) {
-	return usleep(seconds * CLOCKS_PER_SEC);
+	return usleep(seconds * 1000);
 }

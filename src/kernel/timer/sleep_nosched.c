@@ -22,6 +22,7 @@ int usleep(useconds_t usec) {
 	int wait_flag; // for sleep func
 
 	wait_flag = 1;
+	/* FIXME set_timer argument is tick (not usec) */
 	if (set_timer(NULL, usec, &wake_up, &wait_flag)) {
 		return 1;
 	}
@@ -32,5 +33,5 @@ int usleep(useconds_t usec) {
 }
 
 int sleep(unsigned int seconds) {
-	return usleep(seconds * CLOCKS_PER_SEC);
+	return usleep(seconds * 1000);
 }

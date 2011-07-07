@@ -10,7 +10,7 @@
 #include <embox/test.h>
 #include <unistd.h>
 #include <util/math.h>
-#include <kernel/timer.h>
+#include <time.h>
 #include <kernel/thread/api.h>
 
 EMBOX_TEST_SUITE("sleep suite");
@@ -21,18 +21,20 @@ EMBOX_TEST_SUITE("sleep suite");
 
 TEST_EMIT_BUFFER_DEF(buff1, 7);
 TEST_EMIT_BUFFER_DEF(buff2, NUM_THREADS + 1);
+TEST_EMIT_BUFFER_DEF(buff3, 3);
 
 /**
  *  sleep( any_time )
  *  assert that real time for sleep different with any_time is less than EPSILON_BORDER
  */
+
 TEST_CASE("one sleep") {
 	/* TODO: change uint32_t to system time_t type */
 	clock_t cur_time, epsilon;
 
-	cur_time = cnt_system_time();
+	cur_time = clock();
 	usleep(TIME_TO_SLEEP);
-	epsilon = abs((int) (cnt_system_time() - cur_time) - (int) TIME_TO_SLEEP);
+	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
 	test_assert_true(epsilon < EPSILON_BORDER);
 }
 
@@ -95,4 +97,12 @@ TEST_CASE("sleep sort") {
 		test_assert_zero(thread_join(t[i], NULL));
 	}
 	test_assert_str_equal(test_emit_buffer_str(&buff2), "87654321");
+}
+
+TEST_CASE("sleep 0 seconds") {
+	test_emit_buffer_reset(&buff3);
+	test_emit(&buff3, '1');
+	usleep(0);
+	test_emit(&buff3, '2');
+	test_assert_str_equal(test_emit_buffer_str(&buff3), "12");
 }

@@ -4,6 +4,7 @@ $_APIS += sleep_api
 
 $_MODS           += timer
 $_SRCS-timer     += timer.c
+$_DEPS-timer     += core.kernel.clock_source
 $_REQUIRES-timer += embox.hal.clock
 
 $_MODS           += sleep

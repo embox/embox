@@ -15,6 +15,7 @@
 #include <kernel/timer.h>
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
+#include <kernel/clock_source.h>
 
 EMBOX_UNIT_INIT(timer_init);
 
@@ -26,7 +27,7 @@ struct sys_tmr {
 	uint32_t   cnt;
 	TIMER_FUNC handle;
 	void       *param;
-//	uint32_t   per; // is periodical timer
+//	uint32_t   flags; // periodical or not
 };
 
 static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
@@ -79,11 +80,9 @@ static void inc_sys_timers(void) {
 	list_for_each_safe(tmp, tmp2, &sys_timers_list) {
 		tmr = (sys_tmr_ptr) tmp;
 		if (0 == tmr->cnt--) {
-			if (tmr->handle) {
-				tmr->handle(tmr, tmr->param);
-			}
+			tmr->handle(tmr, tmr->param);
 #if 0
-			if (!tmr->per) { // if non-periodical => delete it
+			if (!tmr->flags) { // if non-periodical => delete it
 				close_timer(tmr);
 			}
 #endif
@@ -108,6 +107,6 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 int timer_init(void) {
 	cnt_sys_time = 0;
 	clock_init();
-	clock_setup(clock_source);
+	clock_setup(clock_source_get_HZ());
 	return 0;
 }
