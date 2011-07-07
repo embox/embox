@@ -12,6 +12,8 @@
 struct mod;
 struct mod_package;
 struct mod_ops;
+struct mod_member_info;
+struct mod_member_ops;
 struct __mod_info;
 struct __mod_private;
 
@@ -26,7 +28,7 @@ struct mod {
 	const char *name;                  /**< Name assigned by EMBuild. */
 	const char *brief, *details;       /**< Human-readable description. */
 	/** Array with memmory allocation information */
-	const struct mod_members_info **members;
+	const struct mod_member_info **members;
 
 };
 
@@ -42,9 +44,9 @@ struct __mod_info {
 	struct mod_ops *ops;  /**< (optional) Available operations. */
 };
 
-struct mod_members_info {
+struct mod_member_info {
 	void                   *data; /**< Application specific data */
-    struct mod_members_ops *ops;  /**< Available operations */
+    struct mod_member_ops  *ops;  /**< Available operations */
 };
 
 struct __mod_private {

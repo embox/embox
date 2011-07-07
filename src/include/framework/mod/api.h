@@ -45,7 +45,7 @@ struct mod_package;
 typedef int (*mod_op_t)(struct mod *self);
 
 /** TODO docs */
-typedef int (*mod_members_op_t)(struct mod_members_info *info);
+typedef int (*mod_member_op_t)(struct mod_member_info *info);
 
 /**
  * Module operations.
@@ -62,8 +62,8 @@ struct mod_ops {
  * Module operations to inizialize and finilize essence
  * TODO docs.
  */
-struct mod_members_ops {
-	mod_members_op_t init, fini;
+struct mod_member_ops {
+	mod_member_op_t init, fini;
 };
 
 /**

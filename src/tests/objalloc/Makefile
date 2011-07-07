@@ -1,3 +1,3 @@
 $_MODS         += objalloc
 $_SRCS-objalloc+= objalloc.c
-$_DEPS-setjmp += objalloc
+$_REQUIRES-objalloc += embox.hal.mm.objalloc

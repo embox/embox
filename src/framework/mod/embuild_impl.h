@@ -37,7 +37,7 @@
 
 #define __MOD_ARRAY_MEMBER_DEF(mod_nm, array_nm) \
 	ARRAY_SPREAD_DEF_TERMINATED( \
-			static const struct mod_members_info *, \
+			static const struct mod_member_info *, \
 			__MOD_MEMBER_ARRAY(mod_nm, array_nm), NULL)
 
 #define __MOD_ARRAY_DEF(mod_nm, array_nm) \

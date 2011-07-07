@@ -110,14 +110,14 @@ static int mod_perform(const struct mod *mod, bool op) {
 // TODO introduce -ELOOP or something else.
 static int mod_perform_nodep(const struct mod *mod, bool op) {
 	mod_op_t mod_op;
-	const struct mod_members_info *info_member;
+	const struct mod_member_info *info_member;
 
 	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
 	}
 
 	array_nullterm_foreach(info_member, mod->members) {
-		info_member->ops->init((struct mod_members_info *) info_member);
+		info_member->ops->init((struct mod_member_info *) info_member);
 	}
 
 	mod_op = mod_op_deref(mod, op);

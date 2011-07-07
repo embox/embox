@@ -11,7 +11,7 @@
 
 #include <types.h>
 #include <lib/list.h>
-#include <framework/mod/members.h>
+#include <framework/mod/member.h>
 
 /** Length of name of any cache */
 #define __CACHE_NAMELEN 16
@@ -52,7 +52,7 @@ struct data {
 		.obj_nr = objects_nr,                       \
 		.obj_sz = sizeof(object_t),                 \
 	};                                              \
-	extern const struct mod_members_ops __cache_member_init; \
-	MOD_MEMBERS_BIND(&__cache_member_init, &data)
+	extern const struct mod_member_ops __cache_member_init; \
+	MOD_MEMBER_BIND(&__cache_member_init, &data)
 
 #endif /* MEM_MISC_SLAB_IMPL_H_ */

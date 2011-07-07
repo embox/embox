@@ -19,13 +19,13 @@ void objfree(objalloc_t *allocator, void *object) {
 }
 
 /** Inizialize cache according to storage data in info structure */
-static int __cache_members_init(struct mod_members_info * info);
+static int __cache_member_init(struct mod_member_info * info);
 
-const struct mod_members_ops __cache_member_init = {
-		.init = &__cache_members_init,
+const struct mod_member_ops __cache_member_init = {
+		.init = &__cache_member_init,
 };
 
-static int __cache_members_init(struct mod_members_info * info) {
+static int __cache_member_init(struct mod_member_info * info) {
 	struct data *member_data = (struct data*)info->data;
 	return cache_init(member_data->cache, member_data->obj_sz, member_data->obj_nr);
 }
