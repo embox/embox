@@ -18,5 +18,6 @@ OBJALLOC_DEF(allocator, int , TOTAL_OBJECTS);
 TEST_CASE("test for macro OBJALLOC_DEF") {
 	void *obj = objalloc(&allocator);
 	test_assert_not_null(obj);
-	test_assert_equal(objfree(&allocator,obj, 0);
+	objfree(&allocator,obj);
+	test_assert_equal(objalloc_destroy(&allocator), 0);
 }
