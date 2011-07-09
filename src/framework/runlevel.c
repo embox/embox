@@ -17,21 +17,20 @@
 #define __EMBUILD_MOD__
 #include <framework/mod/self.h>
 
-// XXX rewrite this shit. -- Eldar
-#define __EMBUILD__
-#include <framework/mod/embuild.h>
+#define __RUNLEVEL_MOD(op, nr) \
+	generic__runlevel##nr##_##op
 
 #define __RUNLEVEL_MOD_DEF(op, nr) \
-	MOD_DEF(runlevel##nr##_##op, generic, "runlevel"#nr"_"#op,"",""); \
-	__MOD_INFO_DEF(runlevel##nr##_##op, nr, &__runlevel_##op##_mod_ops)
+	__MOD_DECL(__RUNLEVEL_MOD(op, nr)); \
+	__MOD_INFO_DEF(__RUNLEVEL_MOD(op, nr), nr, &__runlevel_##op##_mod_ops)
 
 #define RUNLEVEL_DEF(nr) \
 	__RUNLEVEL_MOD_DEF(init, nr); \
 	__RUNLEVEL_MOD_DEF(fini, nr)
 
 #define RUNLEVEL(nr) { \
-		.init_mod = &__MOD(runlevel##nr##_##init), \
-		.fini_mod = &__MOD(runlevel##nr##_##fini), \
+		.init_mod = &__MOD(__RUNLEVEL_MOD(init, nr)), \
+		.fini_mod = &__MOD(__RUNLEVEL_MOD(fini, nr)), \
 	}
 
 static int init_mod_enable(struct mod *mod);
