@@ -68,7 +68,7 @@ struct mod_ops {
  * @retval nonzero
  *   On error.
  */
-typedef int (*mod_member_op_t)(struct mod_member_info *member);
+typedef int (*mod_member_op_t)(struct mod_member *member);
 
 /**
  * Operations for initializing and finalizing injected members of the module.

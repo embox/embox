@@ -15,7 +15,7 @@ EMBOX_TEST_SUITE("simple test for member injection");
 
 static int init_flag = 0;
 
-static int init(struct mod_member_info *info) {
+static int init(struct mod_member *info) {
 	*((int *) info->data) = 1;
 	return 0;
 }

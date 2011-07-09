@@ -11,10 +11,10 @@
 
 struct mod;
 struct mod_package;
-struct mod_ops;
-struct mod_member_info;
-struct mod_member_ops;
 struct mod_info;
+struct mod_ops;
+struct mod_member;
+struct mod_member_ops;
 struct __mod_private;
 
 struct mod {
@@ -29,9 +29,9 @@ struct mod {
 
 	/* Data used to properly enable/disable the module itself. */
 
-	const struct mod_info         *info;    /**< (optional) Mod-specific. */
-	const struct mod_member_info **members; /**< Members to setup/finalize. */
-	struct __mod_private          *private; /**< Used by dependency resolver. */
+	const struct mod_info    *info;    /**< (optional) Mod-specific. */
+	const struct mod_member **members; /**< Members to setup/finalize. */
+	struct __mod_private     *private; /**< Used by dependency resolver. */
 
 };
 
@@ -47,7 +47,7 @@ struct mod_info {
 	const struct mod_ops *ops;  /**< (optional) Available operations. */
 };
 
-struct mod_member_info {
+struct mod_member {
 	void                        *data; /**< (optional) Member specific data. */
 	const struct mod_member_ops *ops;  /**< (optional) Available operations. */
 };

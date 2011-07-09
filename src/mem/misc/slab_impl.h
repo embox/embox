@@ -39,21 +39,12 @@ struct cache {
 	bool growing;
 };
 
-/** Data storage at mod_member_info*/
-struct data {
-	struct cache *cache;
-	size_t obj_nr;
-	size_t obj_sz;
-};
-
 #define __CACHE_DEF(cache_nm, object_t, objects_nr) \
-	static struct cache cache_nm;                   \
-	static struct data data = {                     \
-		.cache = &cache_nm,                         \
-		.obj_nr = objects_nr,                       \
-		.obj_sz = sizeof(object_t),                 \
+	static struct cache cache_nm =  {               \
+		/* .obj_nr = (objects_nr), TODO */          \
+		.obj_size = sizeof(object_t),               \
 	};                                              \
-	extern const struct mod_member_ops __cache_member_init; \
-	MOD_MEMBER_BIND(&__cache_member_init, &data)
+	extern const struct mod_member_ops __cache_member_ops; \
+	MOD_MEMBER_BIND(&__cache_member_ops, &cache_nm)
 
 #endif /* MEM_MISC_SLAB_IMPL_H_ */

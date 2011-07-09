@@ -1,7 +1,8 @@
 /**
+ * @file
  * @brief Adapt cache structure to objalloc interface.
  *
- * @see mem/objalloc.h
+ * @see include/mem/objalloc.h
  *
  * @date   30.06.11
  * @author Alexandr Kalmuk

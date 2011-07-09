@@ -122,18 +122,18 @@ static int invoke_mod_disable(const struct mod *mod) {
 	return ops ? ops->disable((struct mod *) mod) : 0;
 }
 
-static int invoke_member_init(const struct mod_member_info *member) {
+static int invoke_member_init(const struct mod_member *member) {
 	const struct mod_member_ops *ops = member->ops;
-	return ops ? ops->init((struct mod_member_info *) member) : 0;
+	return ops ? ops->init((struct mod_member *) member) : 0;
 }
 
-static int invoke_member_fini(const struct mod_member_info *member) {
+static int invoke_member_fini(const struct mod_member *member) {
 	const struct mod_member_ops *ops = member->ops;
-	return ops ? ops->fini((struct mod_member_info *) member) : 0;
+	return ops ? ops->fini((struct mod_member *) member) : 0;
 }
 
 static int do_enable(const struct mod *mod) {
-	const struct mod_member_info *member;
+	const struct mod_member *member;
 
 	if (mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
@@ -160,7 +160,7 @@ opfailed:
 
 
 static int do_disable(const struct mod *mod) {
-	const struct mod_member_info *member;
+	const struct mod_member *member;
 
 	if (!mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;

@@ -1,11 +1,13 @@
 /**
+ * @file
  * @brief Adapt cache structure to objalloc interface.
  *
- * @see mem/objalloc.h
+ * @see include/mem/objalloc.h
  *
  * @date   30.06.11
  * @author Alexandr Kalmuk
  */
+
 #ifndef MEM_MISC_POOL_ADAPTER_H_
 #define MEM_MISC_POOL_ADAPTER_H_
 
@@ -24,4 +26,5 @@ static inline int objalloc_init(__objalloc_t *allocator, size_t object_sz,
 static inline int objalloc_destroy(__objalloc_t *allocator) {
 	return 0;
 }
+
 #endif /* MEM_MISC_POOL_ADAPTER_H_ */

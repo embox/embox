@@ -36,11 +36,11 @@
 	MACRO_GUARD(MACRO_CONCAT(__mod_member__, mod_nm))
 
 #define __MOD_MEMBER_DEF(mod_nm, _ops, _data) \
-	static const struct mod_member_info __MOD_MEMBER(mod_nm) = {  \
-		.data = (void *) _data,                                   \
-		.ops = _ops,                                              \
-	};                                                            \
-	extern const struct mod_member_info *__MOD_MEMBERS(mod_nm)[]; \
+	static const struct mod_member __MOD_MEMBER(mod_nm) = {  \
+		.data = (void *) _data,                              \
+		.ops = _ops,                                         \
+	};                                                       \
+	extern const struct mod_member *__MOD_MEMBERS(mod_nm)[]; \
 	ARRAY_SPREAD_ADD(__MOD_MEMBERS(mod_nm), &__MOD_MEMBER(mod_nm))
 
 #endif /* FRAMEWORK_MOD_SELF_IMPL_H_ */
