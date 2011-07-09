@@ -91,15 +91,15 @@
 
 /* Spread size calculations. */
 
-#define __ARRAY_SPREAD_SIZE(array_name) \
-		__ARRAY_SPREAD_SIZE_MARKER(array_name, tail)
+#define __ARRAY_SPREAD_SIZE(array_nm) \
+		__ARRAY_SPREAD_SIZE_MARKER(array_nm, tail)
 
-#define __ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_name) \
-		__ARRAY_SPREAD_SIZE_MARKER(array_name, term)
+#define __ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_nm) \
+		__ARRAY_SPREAD_SIZE_MARKER(array_nm, term)
 
-#define __ARRAY_SPREAD_SIZE_MARKER(array_name, marker) __extension__ ({ \
-		extern typeof(array_name) __ARRAY_SPREAD_PRIVATE(array_name,marker); \
-		(size_t) (__ARRAY_SPREAD_PRIVATE(array_name, marker) - array_name);  \
+#define __ARRAY_SPREAD_SIZE_MARKER(array_nm, marker) __extension__ ({ \
+		extern typeof(array_nm) __ARRAY_SPREAD_PRIVATE(array_nm, marker); \
+		(size_t) (__ARRAY_SPREAD_PRIVATE(array_nm, marker) - array_nm);   \
 	})
 
 /* Static array size. */
@@ -110,77 +110,47 @@
 /* Scalar foreach iterations. */
 
 #define __array_foreach(element, array, size) \
-		__array_range_foreach(element, array, (array) + (size))
-
-#define __array_static_foreach(element, array) \
-		__array_foreach(element, array, ARRAY_SIZE(array))
-
-#define __array_spread_foreach(element, array) \
-		__array_foreach(element, array, ARRAY_SPREAD_SIZE(array))
+	__array_range_foreach_nm(element, array, \
+			MACRO_GUARD(__ptr) + (size), \
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_range_foreach(element, array_begin, array_end) \
-		__array_range_foreach__(element, array_begin, array_end, \
-				MACRO_GUARD(__array_elem_ptr), MACRO_GUARD(__array_end))
+	__array_range_foreach_nm(element, array_begin, array_end, \
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
-#define __array_range_foreach__(element, array_begin, array_end, _ptr, _end) \
-	for (const typeof(element) *_ptr = (array_begin), \
-				*_end = __extension__ ({              \
-					(element) = *_ptr; (array_end);   \
-				});                                   \
-			_ptr < _end;                              \
-			(element) = *(++_ptr))
+#define __array_range_foreach_nm(element, array_begin, array_end, _ptr, _end) \
+	for (const typeof(element) *_ptr = (array_begin), *_end = (array_end); \
+			__extension__ ({           \
+				if (_ptr < _end)       \
+					(element) = *_ptr; \
+				_ptr < _end;           \
+			}); ++_ptr)
 
 #define __array_nullterm_foreach(element, array) \
-	__array_terminated_foreach(element, array, (typeof(element)) NULL)
+	__array_nullterm_foreach_nm(element, array, \
+			MACRO_GUARD(__ptr))
 
-#define __array_terminated_foreach(element, array, terminator) \
-	__array_terminated_foreach__(element, array, terminator, \
-		MACRO_GUARD(__array_elem_ptr), MACRO_GUARD(__array_term))
-
-#define __array_terminated_foreach__(element, array, terminator, _ptr, _term) \
-	for (const typeof(element) *_ptr = (array), \
-				_term = (terminator);           \
-			((element) = *_ptr) != _term;       \
-			++_ptr)
-
-#define __array_cond_foreach(element, array, cond) \
-		__array_cond_foreach__(element, array, cond, \
-				MACRO_GUARD(__array_elem_ptr))
-
-#define __array_cond_foreach__(element, array, cond, _ptr) \
-	for (const typeof(element) *_ptr = __extension__ ({           \
-					const typeof(element) *__ptr_tmp__ = (array); \
-					(element) = *__ptr_tmp__; __ptr_tmp__;        \
-				});                                               \
-			(cond);                                               \
-			(element) = *(++_ptr))
+#define __array_nullterm_foreach_nm(element, array, _ptr) \
+	for (const typeof(element) *_ptr = (array); ((element) = *_ptr); ++_ptr)
 
 /* Pointer foreach iterations. */
 
 #define __array_foreach_ptr(element_ptr, array, size) \
-		__array_range_foreach_ptr(element_ptr, array, (array) + (size))
-
-#define __array_static_foreach_ptr(element_ptr, array) \
-		__array_foreach_ptr(element_ptr, array, ARRAY_SIZE(array))
-
-#define __array_spread_foreach_ptr(element_ptr, array) \
-		__array_foreach_ptr(element_ptr, array, ARRAY_SPREAD_SIZE(array))
+	__array_range_foreach_ptr_nm(element_ptr, array, \
+			MACRO_GUARD(__ptr) + (size), \
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_range_foreach_ptr(element_ptr, array_begin, array_end) \
-		__array_range_foreach_ptr__(element_ptr, array_begin, array_end, \
-				MACRO_GUARD(__array_end))
+	__array_range_foreach_ptr_nm(element_ptr, array_begin, array_end, \
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
-#define __array_range_foreach_ptr__(element_ptr, array_begin, array_end, _end)\
-	for (typeof(element_ptr) _end = __extension__ ({  \
-					(element_ptr) = (array_begin);    \
-					(array_end);                      \
-				});                                   \
-			(element_ptr) < _end;                     \
-			++(element_ptr))
-
-#define __array_cond_foreach_ptr(element_ptr, array, cond) \
-	for ((element_ptr) = (array); \
-			(cond);               \
-			++(element_ptr))
+#define __array_range_foreach_ptr_nm(element_ptr, array_begin, array_end, \
+		_ptr, _end) \
+	for (typeof(element_ptr) _ptr = (array_begin), _end = (array_end); \
+			__extension__ ({           \
+				if (_ptr < _end)       \
+					(element_ptr) = _ptr; \
+				_ptr < _end;           \
+			}); ++_ptr)
 
 #endif /* UTIL_ARRAY_IMPL_H_ */

@@ -84,10 +84,13 @@ static int case_setup(void) {
 }
 
 static int case_teardown(void) {
-	critical_t critical, levels[] = { CRITICAL_HARDIRQ, CRITICAL_SOFTIRQ,
-			CRITICAL_PREEMPT };
+	critical_t critical, levels[] = {
+			CRITICAL_HARDIRQ,
+			CRITICAL_SOFTIRQ,
+			CRITICAL_PREEMPT,
+	};
 
-	array_static_foreach(critical, levels) {
+	array_foreach(critical, levels, ARRAY_SIZE(levels)) {
 		while (critical_inside(critical)) {
 			critical_leave(critical);
 		}

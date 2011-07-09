@@ -19,6 +19,7 @@
 extern const struct net __net_registry[];
 
 #define __net_foreach(net_ptr) \
-	array_spread_foreach_ptr(net_ptr, __net_registry)
+	array_foreach_ptr(net_ptr, __net_registry, \
+			ARRAY_SPREAD_SIZE(__net_registry))
 
 #endif /* FRAMEWORK_NET_API_IMPL_H_ */
