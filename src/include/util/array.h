@@ -50,7 +50,7 @@
  *   Alike @a array the argument is evaluated only once too.
  */
 #define array_foreach(element, array, size) \
-		__array_foreach(element, array, size)
+	  __array_foreach(element, array, size)
 
 /**
  * Iterates over the specified array of (possibly) non-scalar values with given
@@ -68,7 +68,7 @@
  * @see array_foreach()
  */
 #define array_foreach_ptr(element_ptr, array, size) \
-		__array_foreach_ptr(element_ptr, array, size)
+	  __array_foreach_ptr(element_ptr, array, size)
 
 /**
  * Iterates over the specified @a array of scalar values until @c NULL is
@@ -99,7 +99,7 @@
  *   Alike @a array_begin it is evaluated only once too.
  */
 #define array_range_foreach(element, array_begin, array_end) \
-		__array_range_foreach(element, array_begin, array_end)
+	  __array_range_foreach(element, array_begin, array_end)
 
 /**
  * Iterates over an array using a pointer to access its elements, starting at
@@ -116,7 +116,7 @@
  * @see array_range_foreach()
  */
 #define array_range_foreach_ptr(element_ptr, array_begin, array_end) \
-		__array_range_foreach(element_ptr, array_begin, array_end)
+	  __array_range_foreach(element_ptr, array_begin, array_end)
 
 /* Static arrays with their size known at the compile-time. */
 
@@ -134,7 +134,7 @@
  *   result is returned without any error or warning.
  */
 #define ARRAY_SIZE(array) \
-		__ARRAY_SIZE(array)
+	  __ARRAY_SIZE(array)
 
 /* Spread arrays and spread-specific iterators. */
 
@@ -163,7 +163,7 @@
  *   The @a element_type must include @c const modifier (see general docs).
  */
 #define ARRAY_SPREAD_DEF(element_type, name) \
-		__ARRAY_SPREAD_DEF(element_type, name)
+	  __ARRAY_SPREAD_DEF(element_type, name)
 
 /**
  * Defines a new spread array ended up by the specified @a terminator element.
@@ -185,7 +185,7 @@
  *   More detailed explanation of macro arguments.
  */
 #define ARRAY_SPREAD_DEF_TERMINATED(element_type, name, terminator) \
-		__ARRAY_SPREAD_DEF_TERMINATED(element_type, name, terminator)
+	  __ARRAY_SPREAD_DEF_TERMINATED(element_type, name, terminator)
 
 /**
  * Adds elements to the specified spread array.
@@ -199,7 +199,7 @@
  *   This command should be used in the file scope, outside of any block.
  */
 #define ARRAY_SPREAD_ADD(array_name, ...) \
-		__ARRAY_SPREAD_ADD(array_name, __VA_ARGS__)
+	  __ARRAY_SPREAD_ADD(array_name, __VA_ARGS__)
 
 /**
  * Does the same as #ARRAY_SPREAD_ADD() but also puts a pointer to head of the
@@ -216,7 +216,7 @@
  *   This command should be used in the file scope, outside of any block.
  */
 #define ARRAY_SPREAD_ADD_NAMED(array_name, ptr_name, ...) \
-		__ARRAY_SPREAD_ADD_NAMED(array_name, ptr_name, __VA_ARGS__)
+	  __ARRAY_SPREAD_ADD_NAMED(array_name, ptr_name, __VA_ARGS__)
 
 /**
  * Gets the length of the specified spread array.
@@ -227,7 +227,7 @@
  *   Actual number of array elements including terminator element (if any).
  */
 #define ARRAY_SPREAD_SIZE(array_name) \
-		__ARRAY_SPREAD_SIZE(array_name)
+	  __ARRAY_SPREAD_SIZE(array_name)
 
 /**
  * Gets the length of the specified spread array without taking into an
@@ -240,6 +240,6 @@
  *   is not terminated then the result is the same as of #ARRAY_SPREAD_SIZE().
  */
 #define ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_name) \
-		__ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_name)
+	  __ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_name)
 
 #endif /* UTIL_ARRAY_H_ */
