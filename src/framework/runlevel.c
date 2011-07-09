@@ -21,7 +21,7 @@
 	generic__runlevel##nr##_##op
 
 #define __RUNLEVEL_MOD_DEF(op, nr) \
-	__MOD_DECL(__RUNLEVEL_MOD(op, nr)); \
+	extern const struct mod __MOD(__RUNLEVEL_MOD(op, nr)); \
 	__MOD_INFO_DEF(__RUNLEVEL_MOD(op, nr), nr, &__runlevel_##op##_mod_ops)
 
 #define RUNLEVEL_DEF(nr) \
