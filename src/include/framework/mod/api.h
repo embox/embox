@@ -44,9 +44,6 @@ struct mod_package;
  */
 typedef int (*mod_op_t)(struct mod *self);
 
-/** TODO docs */
-typedef int (*mod_member_op_t)(struct mod_member_info *info);
-
 /**
  * Module operations.
  * TODO more docs. -- Eldar
@@ -59,10 +56,25 @@ struct mod_ops {
 };
 
 /**
- * Module operations to inizialize and finilize essence
- * TODO docs.
+ * Performs an injection of the specified member. The semantics of the
+ * operation is application-specific.
+ *
+ * @param member
+ *   Pointer to the member being injected.
+ * @return
+ *   Error code.
+ * @retval 0
+ *   If the operation succeeded.
+ * @retval nonzero
+ *   On error.
+ */
+typedef int (*mod_member_op_t)(struct mod_member_info *member);
+
+/**
+ * Operations for initializing and finalizing injected members of the module.
  */
 struct mod_member_ops {
+	/** (optional) Member operation. */
 	mod_member_op_t init, fini;
 };
 
