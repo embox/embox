@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implements macro for binding #_mod_info to the self #mod.
+ * @brief Implements macro for binding #mod_info to the self #mod.
  *
  * @date 10.06.10
  * @author Eldar Abusalimov
@@ -18,7 +18,7 @@
 
 // XXX to be dropped soon. -- Eldar
 #define __MOD_INFO_DEF(mod_nm, _data, _ops) \
-	const struct __mod_info __MOD_INFO(mod_nm) = { \
+	const struct mod_info __MOD_INFO(mod_nm) = { \
 		.data = (void *) _data, \
 		.ops = _ops, \
 	}

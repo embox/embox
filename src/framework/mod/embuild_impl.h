@@ -21,7 +21,7 @@
 /* Macro API impl. */
 
 #define __MOD_DEF(mod_nm, package_nm, mod_name, mod_brief, mod_details) \
-	extern const struct __mod_info __MOD_INFO(mod_nm)          \
+	extern const struct mod_info __MOD_INFO(mod_nm)            \
 			__attribute__ ((weak));                            \
 	static const struct mod_package __MOD_PACKAGE(package_nm); \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,     \
