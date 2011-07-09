@@ -33,8 +33,9 @@ static int mod_perform_nodep(const struct mod *mod, bool op);
 static bool mod_deps_satisfied(const struct mod *mod, bool op);
 
 static inline mod_op_t mod_op_deref(const struct mod *mod, bool op) {
-	struct mod_ops *ops;
-	if (NULL == mod->info || NULL == (ops = mod->info->ops)) {
+	const struct __mod_info *info;
+	const struct mod_ops *ops;
+	if (!(info = mod->info) || !(ops = info->ops)) {
 		return NULL;
 	}
 	return op ? ops->enable : ops->disable;

@@ -17,16 +17,16 @@
 #include "types.h"
 
 // XXX to be dropped soon. -- Eldar
-#define __MOD_INFO_DEF(mod_nm, _mod_data, _mod_ops) \
-		const struct __mod_info __MOD_INFO(mod_nm) = { \
-				.data = (void *) _mod_data, \
-				.ops = (struct mod_ops *) _mod_ops, \
-			}
+#define __MOD_INFO_DEF(mod_nm, _data, _ops) \
+	const struct __mod_info __MOD_INFO(mod_nm) = { \
+		.data = (void *) _data, \
+		.ops = _ops, \
+	}
 
 /* Here goes public macros API implementation. */
 
 #define __MOD_SELF_BIND(_mod_data, _mod_ops) \
-		__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops)
+	__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops)
 
 // well, this is rather bad idea
 // TODO it would be better to use something like weakref or alias. -- Eldar

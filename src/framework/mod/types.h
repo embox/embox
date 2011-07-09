@@ -21,14 +21,13 @@ struct mod {
 	/** Null-terminated array with dependency information. */
 	const struct mod **requires, **provides;
 
-	const struct mod_package *package; /**< Package assigned by EMBuild. */
-	const struct __mod_info  *info;    /**< (optional) Mod-specific data. */
-	struct __mod_private     *private; /**< Needed by dependency resolver. */
+	const struct mod_package      *package; /**< Definition package. */
+	const struct __mod_info       *info;    /**< (optional) Mod-specific. */
+	const struct mod_member_info **members; /**< Members to setup/finalize. */
+	struct __mod_private          *private; /**< Used by dependency resolver. */
 
 	const char *name;                  /**< Name assigned by EMBuild. */
 	const char *brief, *details;       /**< Human-readable description. */
-	/** Array with memmory allocation information */
-	const struct mod_member_info **members;
 
 };
 
@@ -40,13 +39,13 @@ struct mod_package {
  * Mods framework manages each mod through this special interface.
  */
 struct __mod_info {
-	void           *data; /**< (optional) Module specific data. */
-	struct mod_ops *ops;  /**< (optional) Available operations. */
+	void                 *data; /**< (optional) Module specific data. */
+	const struct mod_ops *ops;  /**< (optional) Available operations. */
 };
 
 struct mod_member_info {
-	void                   *data; /**< Application specific data */
-    struct mod_member_ops  *ops;  /**< Available operations */
+	void                        *data; /**< (optional) Member specific data. */
+	const struct mod_member_ops *ops;  /**< (optional) Available operations. */
 };
 
 struct __mod_private {
