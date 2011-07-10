@@ -17,7 +17,7 @@
 
 #include <util/array.h>
 
-#include "decls.h"
+#include "../decls.h"
 
 #define __MOD_MEMBER_BIND(ops, data) \
 	__MOD_MEMBER_DEF(__EMBUILD_MOD__, ops, data)
