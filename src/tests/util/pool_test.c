@@ -10,7 +10,7 @@
 
 #include <util/array.h>
 
-#include <util/pool.h>
+#include <mem/misc/pool.h>
 
 EMBOX_TEST_SUITE("util/pool test");
 

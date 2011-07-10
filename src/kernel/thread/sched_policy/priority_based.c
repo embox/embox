@@ -205,7 +205,7 @@ int sched_policy_init(struct thread *_current, struct thread *idle) {
 
 	/* Initialize necessary lists. */
 	INIT_LIST_HEAD(&run_queue);
-	array_static_foreach_ptr(priority, priorities) {
+	array_foreach_ptr(priority, priorities, ARRAY_SIZE(priorities)) {
 		INIT_LIST_HEAD(&(priority->thread_list));
 		INIT_LIST_HEAD(&(priority->priority_link));
 	}

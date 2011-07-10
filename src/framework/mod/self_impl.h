@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implements macro for binding #_mod_info to the self #mod.
+ * @brief Implements macros for binding #mod_info.
  *
  * @date 10.06.10
  * @author Eldar Abusalimov
@@ -13,23 +13,22 @@
 # error "Do not include without __EMBUILD_MOD__ defined (e.g. from lib code)!"
 #endif /* __EMBUILD_MOD__ */
 
+#include <framework/mod/ops.h>
+
 #include "decls.h"
-#include "types.h"
-
-// XXX to be dropped soon. -- Eldar
-#define __MOD_INFO_DEF(mod_nm, _mod_data, _mod_ops) \
-		const struct __mod_info __MOD_INFO(mod_nm) = { \
-				.data = (void *) _mod_data, \
-				.ops = (struct mod_ops *) _mod_ops, \
-			}
-
-/* Here goes public macros API implementation. */
-
-#define __MOD_SELF_BIND(_mod_data, _mod_ops) \
-		__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops)
 
 // well, this is rather bad idea
 // TODO it would be better to use something like weakref or alias. -- Eldar
 #define mod_self __MOD(__EMBUILD_MOD__)
+
+#define __MOD_INFO_BIND(_mod_ops, _mod_data) \
+	__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_ops, _mod_data)
+
+#define __MOD_INFO_DEF(mod_nm, _ops, _data) \
+	const struct mod_info __MOD_INFO(mod_nm) = { \
+		.mod = &__MOD(mod_nm),                   \
+		.ops = _ops,                             \
+		.data = (void *) _data,                  \
+	}
 
 #endif /* FRAMEWORK_MOD_SELF_IMPL_H_ */

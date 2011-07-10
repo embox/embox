@@ -19,9 +19,9 @@
  *     Considering current use cases and some implementation issues, spread
  * arrays are always allocated in read-only data section as if you have defined
  * a regular array with @c const modifier (although you might not have to). To
- * prevent confusion and to take advantage of compiler type checking always
- * include @c const modifier when defining spread array with
- * #ARRAY_SPREAD_DEF() and its derivatives or when declaring it using
+ * prevent confusion and to take advantage of compiler type checking <b>always
+ * include @c const modifier to element type</b> when defining spread array
+ * with #ARRAY_SPREAD_DEF() and its derivatives or when declaring it using
  * @c extern.
  *
  * @date 13.06.10
@@ -50,7 +50,7 @@
  *   Alike @a array the argument is evaluated only once too.
  */
 #define array_foreach(element, array, size) \
-		__array_foreach(element, array, size)
+	  __array_foreach(element, array, size)
 
 /**
  * Iterates over the specified array of (possibly) non-scalar values with given
@@ -68,12 +68,11 @@
  * @see array_foreach()
  */
 #define array_foreach_ptr(element_ptr, array, size) \
-		__array_foreach_ptr(element_ptr, array, size)
+	  __array_foreach_ptr(element_ptr, array, size)
 
 /**
  * Iterates over the specified @a array of scalar values until @c NULL is
  * reached.
- * Shorthand for #array_terminated_foreach() with @c NULL terminating element.
  *
  * @param element
  *   Iteration variable which takes a value of each element of the target
@@ -83,24 +82,7 @@
  *   Evaluated only once that allows the argument to have side effects.
  */
 #define array_nullterm_foreach(element, array) \
-		__array_nullterm_foreach(element, array)
-
-/**
- * Iterates over the specified @a array of scalar values until the given
- * @a terminator element is reached.
- *
- * @param element
- *   Iteration variable which takes a value of each element of the target
- *   array one by one.
- * @param array
- *   The array to iterate over.
- *   Evaluated only once that allows the argument to have side effects.
- * @param terminator
- *   The terminating element which denotes the end of the array.
- *   Alike @a array it is evaluated only once too.
- */
-#define array_terminated_foreach(element, array, terminator) \
-		__array_terminated_foreach(element, array, terminator)
+	  __array_nullterm_foreach(element, array)
 
 /**
  * Iterates over an array starting at @a array_begin and advancing until
@@ -117,7 +99,7 @@
  *   Alike @a array_begin it is evaluated only once too.
  */
 #define array_range_foreach(element, array_begin, array_end) \
-		__array_range_foreach(element, array_begin, array_end)
+	  __array_range_foreach(element, array_begin, array_end)
 
 /**
  * Iterates over an array using a pointer to access its elements, starting at
@@ -134,38 +116,7 @@
  * @see array_range_foreach()
  */
 #define array_range_foreach_ptr(element_ptr, array_begin, array_end) \
-		__array_range_foreach(element_ptr, array_begin, array_end)
-
-/**
- * The most general approach for iterating over a given array.
- *
- * @param element
- *   Iteration variable which takes a value of each element of the target
- *   array one by one starting from the element pointed by @a array and
- *   advancing forward until the @a condition becomes @c false.
- * @param array
- *   The array to iterate over.
- *   Evaluated only once allowing the argument to have side effects.
- * @param condition
- *   Iteration precondition.
- */
-#define array_cond_foreach(element, array, condition) \
-		__array_cond_foreach(element, array, condition)
-
-/**
- * Generic foreach loop for array of (possibly) non-scalar values.
- *
- * @param element_ptr
- *   Iteration variable which takes a value pointing to each element of the
- *   target array, starting from the value of @a array head and advancing until
- *   until the @a condition becomes @c false.
- * @param array
- *   The array to iterate over. Evaluated once.
- * @param condition
- *   Iteration precondition.
- */
-#define array_cond_foreach_ptr(element_ptr, array, condition) \
-		__array_cond_foreach_ptr(element_ptr, array, condition)
+	  __array_range_foreach(element_ptr, array_begin, array_end)
 
 /* Static arrays with their size known at the compile-time. */
 
@@ -183,44 +134,7 @@
  *   result is returned without any error or warning.
  */
 #define ARRAY_SIZE(array) \
-		__ARRAY_SIZE(array)
-
-/**
- * Shorthand version for static arrays with size known at the compile-time.
- * The same as using #array_foreach() with the size obtained from
- * #ARRAY_SIZE().
- *
- * @param element
- *   Iteration variable.
- * @param array
- *   The array to iterate over.
- *
- * @note
- *   As far as the size of the array is determined using #ARRAY_SIZE(), the
- *   array must be statically defined/declared.
- * @see ARRAY_SIZE()
- */
-#define array_static_foreach(element, array) \
-		__array_static_foreach(element, array)
-
-/**
- * Shorthand version for static arrays with size known at the compile-time.
- * The same as using #array_foreach_ptr() with the size obtained from
- * #ARRAY_SIZE().
- *
- * @param element_ptr
- *   Iteration pointer.
- * @param array
- *   The array to iterate over.
- *
- * @note
- *   As far as the size of the array is determined using #ARRAY_SIZE(), the
- *   array must be statically defined/declared.
- * @see ARRAY_SIZE()
- * @see array_static_foreach()
- */
-#define array_static_foreach_ptr(element_ptr, array) \
-		__array_static_foreach_ptr(element_ptr, array)
+	  __ARRAY_SIZE(array)
 
 /* Spread arrays and spread-specific iterators. */
 
@@ -249,7 +163,7 @@
  *   The @a element_type must include @c const modifier (see general docs).
  */
 #define ARRAY_SPREAD_DEF(element_type, name) \
-		__ARRAY_SPREAD_DEF(element_type, name)
+	  __ARRAY_SPREAD_DEF(element_type, name)
 
 /**
  * Defines a new spread array ended up by the specified @a terminator element.
@@ -271,7 +185,7 @@
  *   More detailed explanation of macro arguments.
  */
 #define ARRAY_SPREAD_DEF_TERMINATED(element_type, name, terminator) \
-		__ARRAY_SPREAD_DEF_TERMINATED(element_type, name, terminator)
+	  __ARRAY_SPREAD_DEF_TERMINATED(element_type, name, terminator)
 
 /**
  * Adds elements to the specified spread array.
@@ -285,7 +199,7 @@
  *   This command should be used in the file scope, outside of any block.
  */
 #define ARRAY_SPREAD_ADD(array_name, ...) \
-		__ARRAY_SPREAD_ADD(array_name, __VA_ARGS__)
+	  __ARRAY_SPREAD_ADD(array_name, __VA_ARGS__)
 
 /**
  * Does the same as #ARRAY_SPREAD_ADD() but also puts a pointer to head of the
@@ -302,7 +216,7 @@
  *   This command should be used in the file scope, outside of any block.
  */
 #define ARRAY_SPREAD_ADD_NAMED(array_name, ptr_name, ...) \
-		__ARRAY_SPREAD_ADD_NAMED(array_name, ptr_name, __VA_ARGS__)
+	  __ARRAY_SPREAD_ADD_NAMED(array_name, ptr_name, __VA_ARGS__)
 
 /**
  * Gets the length of the specified spread array.
@@ -313,7 +227,7 @@
  *   Actual number of array elements including terminator element (if any).
  */
 #define ARRAY_SPREAD_SIZE(array_name) \
-		__ARRAY_SPREAD_SIZE(array_name)
+	  __ARRAY_SPREAD_SIZE(array_name)
 
 /**
  * Gets the length of the specified spread array without taking into an
@@ -326,36 +240,6 @@
  *   is not terminated then the result is the same as of #ARRAY_SPREAD_SIZE().
  */
 #define ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_name) \
-		__ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_name)
-
-/**
- * Shorthand version for spread arrays.
- * The same as using #array_foreach() with a size obtained from
- * #ARRAY_SPREAD_SIZE().
- *
- * @param element
- *   Iteration variable.
- * @param array
- *   The array to iterate over. Must be a literal symbol.
- *
- * @see ARRAY_SPREAD_SIZE()
- */
-#define array_spread_foreach(element, array) \
-		__array_spread_foreach(element, array)
-
-/**
- * Shorthand version for spread arrays.
- * The same as using #array_foreach_ptr() with a size obtained from
- * #ARRAY_SPREAD_SIZE().
- *
- * @param element_ptr
- *   Iteration pointer.
- * @param array
- *   The array to iterate over. Must be a literal symbol.
- *
- * @see ARRAY_SPREAD_SIZE()
- */
-#define array_spread_foreach_ptr(element_ptr, array) \
-		__array_spread_foreach_ptr(element_ptr, array)
+	  __ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_name)
 
 #endif /* UTIL_ARRAY_H_ */

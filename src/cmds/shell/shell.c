@@ -95,7 +95,7 @@ static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	const char *command;
 
-	array_static_foreach(command, script_commands) {
+	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		strncpy(buf, command, sizeof(buf));
 		printf("> %s \n", buf);
 		exec_callback(callback, console, buf);

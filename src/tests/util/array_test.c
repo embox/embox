@@ -45,19 +45,3 @@ TEST_CASE("Pointers to a spread array and to the first array element should "
 
 	test_assert_equal(head, element);
 }
-
-static const char *test_array[] = { "foo", "bar" };
-
-TEST_CASE("array_static_foreach should properly iterate over an array "
-		"with size known at the compile-time") {
-	char buf[5];
-	int count = 0;
-	const char *tmp;
-
-	array_static_foreach(tmp, test_array) {
-		strncpy(buf, tmp, sizeof(buf));
-		count++;
-	}
-
-	test_assert_equal(count, 2);
-}

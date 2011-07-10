@@ -48,7 +48,7 @@
 					.p_teardown = &__TEST_FIXTURE_OP(case_teardown), \
 				},                                                   \
 		});                                                          \
-	MOD_SELF_BIND(test_suite_nm, &__test_mod_ops)
+	MOD_INFO_BIND(&__test_mod_ops, test_suite_nm)
 
 #define __TEST_FIXTURE_OP(fixture_nm) \
 	MACRO_CONCAT(__test_fixture_, fixture_nm)

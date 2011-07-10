@@ -30,8 +30,7 @@
 #  - Syntactic:
 #    - Function definition with inline comments
 #    - Defining multiline verbose functions
-#    - Using tabs for function indentation
-#    - Using tabs for function indentation
+#    - Using tabs for function code indentation
 #  - Semantic:
 #    - 'lambda' and 'with' for defining anonymous inner functions
 #
@@ -59,46 +58,6 @@ __define = \
     $(call __define_builtin,$ \
       $(call __define_strip,$ \
         $(subst $$,$$$$,$1)))
-
-# 1. Text
-__define_builtin = \
-  $(call __define_builtin_expand, \
-    $(call list_fold,__define_builtin_fold_outer,$1,lambda with))
-
-# 1. Text
-# 2. Built-in keyword ('lambda' or 'with')
-__define_builtin_fold_outer = \
-  $(call list_fold,__define_builtin_fold_inner,$1, \
-      $(\paren_open) $(\brace_open),$2)
-
-# 1. Text
-# 2. Open bracket type ('(' or '{')
-# 3. Built-in keyword ('lambda' or 'with')
-__define_builtin_fold_inner = \
-  $(subst $$$$$2$3 ,$$$2call __define_builtin_func_$3$(\comma),$1)
-
-# This will force each 'lambda' and 'with' occurrence to reflect
-# in __define_builtin_func_xxx invocation.
-# 1. Text
-__define_builtin_expand = \
-  ${eval __define_builtin_tmp__ := $1}$(__define_builtin_tmp__)
-
-# '$(lambda $(foo)...)' -> '__builtin000'
-# where __builtin000 = $(foo)...
-# ... Arguments to 'lambda' ('$(foo)...')
-__define_builtin_func_lambda = \
-  $(foreach __define_var,$(__define_builtin_alloc),$ \
-    $(call var_assign_recursive_sl,$(__define_var),$1)$(__define_var))
-
-# '$(with 1,2,foo$1 bar$2)' -> '$(call __builtin000,1,2)'
-# where __builtin000 = foo$1 bar$2
-# ... Arguments to 'with' ('1,2,foo$1 bar$2')
-__define_builtin_func_with = \
-  $(error NYI)# TODO
-
-__define_builtin_alloc = \
-  $(__define_var)__builtin$(words $(__define_builtin_cnt))${eval __define_builtin_cnt += x}
-__define_builtin_cnt :=# Initially empty.
 
 # 1. Text
 __define_strip = \
@@ -135,5 +94,254 @@ __define_strip_postprocess = \
      $(subst $(\s),,$      \
       $1))))
 
-endif # __core_define_mk
+# 1. Text
+# Note: this function will be redefined to point '__define_builtin_real'
+#       a bit later.
+__define_builtin = \
+  $(subst $$$$,$$,$1)
 
+# We will populate this list of extensions on by one.
+__define_builtin_extensions :=# Initially empty.
+
+# The real work is done here.
+# 1. Text
+define __define_builtin_real
+	$(subst $(\comma)$$ ,$(\comma),$(call __define_builtin_expand,
+		$(subst $(\comma),$(\comma)$$$$ ,
+			$(call list_fold,
+				__define_builtin_fold_outer,$1,
+				$(__define_builtin_extensions))
+		)
+	))
+endef
+$(call define,__define_builtin_real)
+
+# 1. Text
+# 2. Built-in extension function name ('lambda', 'with', ...)
+define __define_builtin_fold_outer
+	$(call list_fold,
+		__define_builtin_fold_inner,$1,
+		$(\paren_open) $(\brace_open),$2)
+endef
+$(call define,__define_builtin_fold_outer)
+
+# 1. Text
+# 2. Open bracket type ('(' or '{')
+# 3. Built-in extension function name ('lambda', 'with', ...)
+define __define_builtin_fold_inner
+	$(subst \
+		$$$$$2$3 ,
+		$$$2call __define_builtin_func_$3$(\comma),$1)
+endef
+$(call define,__define_builtin_fold_inner)
+
+# This will force each builtin keyword occurrence to reflect
+# in __define_builtin_func_xxx invocation.
+# As a side effect all escaped dollars become unescaped.
+# 1. Text
+define __define_builtin_expand
+	${eval \
+		__define_builtin_tmp__ := $1
+	}
+	$(__define_builtin_tmp__)
+endef
+$(call define,__define_builtin_expand)
+
+# Now builtins definition core framework is up. Enable it here.
+__define_builtin = \
+  $(__define_builtin_real)
+
+#
+# Auxiliary functions: arguments check and function allocation.
+#
+
+# Calling '__define_builtin_args_eval' results in setting this variable:
+__define_builtin_args :=# Sequence '1 .. N', e.g. '1 2 3'.
+
+# Calculate the list of arguments available in the context of expansion
+# and store the result into '__define_builtin_args' variable.
+define __define_builtin_args_eval
+	${eval \
+		__define_builtin_args :=# Reset the value.
+	}
+	# Can't use 'call' here because it would destroy
+	# all currently eligible arguments.
+	$(foreach 0,__define_builtin_args_loop,
+		$($0)
+	)
+endef
+$(call define,__define_builtin_args_eval)
+
+# Loops over names of non-empty arguments available it the current context and
+# populates '__define_builtin_args'.
+define __define_builtin_args_loop
+	# Increment 'arg_nr' to get name of the next argument being checked.
+	$(foreach arg_nr,$(words $(__define_builtin_args) x),
+		$(if $(value $(arg_nr)),
+			# Found non-empty argument.
+			${eval \
+
+				# Append the argument name to the result.
+				__define_builtin_args += $(arg_nr)$(\n)
+
+				# As mentioned above we can't use 'call' function to dive into
+				# recursive subcall of this function. Instead we just evaluate
+				# its value with updated '__define_builtin_args'. This hack
+				# prevents 'Recursive variable references itself' error.
+
+				# Assuming that the expansion has no non-whitespace.
+				$(value $0)
+			}
+		)
+	)
+endef
+$(call define,__define_builtin_args_loop)
+
+# Useful if your builtin needs to define auxiliary function/variable.
+define __define_builtin_alloc
+	__builtin$(words $(__define_builtin_cnt))$(__define_var)
+	${eval \
+		__define_builtin_cnt += x
+	}
+endef
+$(call define,__define_builtin_alloc)
+__define_builtin_cnt :=# Initially empty.
+
+#
+# Extension: 'lambda' builtin function.
+#
+# '$(lambda $(foo)...)' -> '__builtin000'
+# where __builtin000 = $(foo)...
+# ... Arguments to 'lambda' with '$ ' prepended: '$ $(foo)...'.
+define __define_builtin_func_lambda
+	$(foreach func_name,$(__define_builtin_alloc),
+		# Define external function
+		${eval \
+			$(func_name) = $(call nofirstword,$1)
+		}
+		# The value being returned.
+		# $(or ) is used to handle escaped lambdas properly. For example:
+		# $$(lambda ...) -> $$(or )__builtin000
+		$$(or )$(func_name)
+	)
+endef
+$(call define,__define_builtin_func_lambda)
+__define_builtin_extensions += lambda
+
+ifeq (0,1)
+#
+# Extension: 'with' builtin function.
+#
+# '$(with 1,2,foo$1 bar$2)' -> '$(call __builtin000,1,2)'
+# where __builtin000 = foo$1 bar$2
+# ... Arguments to 'with' each with leading '$ ': '$ 1,$ 2,$ foo$1 bar$2'.
+__define_builtin_func_with = \
+  $(foreach __define_var,$(__define_builtin_alloc),$ \
+    $(__define_builtin_args_eval)${eval $(__define_var) = \
+        $(call nofirstword,$($(words $(__define_builtin_args))))}$ \
+    $(__define_builtin_func_with_ret))
+
+__define_builtin_func_with_ret = \
+  $$(call $(__define_var)$(subst $(\s)$(\comma),$(\comma), $ \
+      $(foreach arg,$(call nolastword,$(__define_builtin_args)),$ \
+        $(\comma)$($(arg)))))
+
+__define_builtin_func_with_args = \
+  $$(call $(__define_var)$(subst $(\s)$(\comma),$(\comma), $ \
+      $(foreach arg,$(call nolastword,$(__define_builtin_args)),$ \
+        $(\comma)$($(arg))))))# <- The value being returned.
+
+
+#
+# Extension: 'match' builtin function.
+#
+#  $(match $(foo),
+#      $(call pattern1,$~),
+#          expr1 $~,
+#      pattern2,
+#          expr2
+#   )
+# ->
+__define_builtin_func_with = \
+  $(foreach __define_var,$(__define_builtin_alloc),$ \
+    ${eval $(__define_var) :=}$ \
+    $$(call $(__define_var)$(subst $(\s)$(\comma),$(\comma), $ \
+      $(foreach arg,$(call nolastword,$(__define_builtin_args)),$ \
+        $(\comma)$($(arg))))))# <- The value being returned.
+
+define __define_builtin_func_match_case_mk
+  __match_tmp := $1
+  ifdef __match_tmp
+    override ~ := $$(__match_tmp)
+    override ~ := $2
+    __match_tmp := x
+  endif
+endef
+  ${eval __builtin000 := $$(value ~)}
+  ${eval ~ := $$(foo)}
+  $(if $(or \
+       ${eval \
+           __match_tmp := $$(call pattern1,$$~)$ \
+           }$ \
+           $(if $(__match_tmp),x${eval \
+               override ~ := $$(__match_tmp)
+               override ~ := expr1 $$~$ \
+           }),
+       ${eval ~ := pattern2}$(if $~,x${eval ~ := expr2})
+  ),$~)
+  ${eval ~ := $$(__builtin000)}
+  $(if $(or \
+       ${eval \
+           __match_tmp := $$(call pattern1,$$~)
+           ifdef __match_tmp
+               override ~ := $$(__match_tmp)
+               override ~ := expr1 $$~
+               __match_tmp := x
+           endif
+        }$(__match_tmp)
+       ${eval ~ := pattern2}$(if $~,x${eval ~ := expr2})
+  ),$(__match_tmp))
+
+  ${eval __builtin000 := $$(value ~)}
+  ${eval __builtin001 := $$(foo)}
+  $(or
+       ${eval ~ := $$(__builtin001)}
+       ${eval __builtin001 := $$(call pattern1,$$~)}$ \
+           $(if $(__builtin001),x${eval \
+               override ~ := $$(__builtin001)
+               __builtin001 := expr1 $$~$ \
+           }),
+       ${eval ~ := pattern2}$(if $~,x${eval ~ := expr2})
+  )$~
+  ${eval ~ := $$(__builtin000)}
+
+  __builtin000 := $(value ~)
+
+  override ~ := $(foo)
+ifdef __builtin001${eval __builtin001 := $$(call pattern1,$$~)}
+  override ~ := $(__builtin001)
+  __builtin001 := expr1 $~
+else ifdef __builtin001${eval __builtin001 := pattern2}
+  override ~ := $(__builtin001)
+  __builtin001 := expr2
+else
+  __builtin001 :=
+endif
+
+  override ~ := $(__builtin000)
+
+#
+#
+# where __builtin000 = foo$1 bar$2
+# ... Arguments to 'with' each with leading '$ ': '$ 1,$ 2,$ foo$1 bar$2'.
+__define_builtin_func_with = \
+  $(foreach __define_var,$(__define_builtin_alloc),$ \
+    ${eval $(__define_var) = \
+        $(call nofirstword,$($(words $(__define_builtin_args))))}$ \
+    $$(call $(__define_var)$(subst $(\s)$(\comma),$(\comma), $ \
+      $(foreach arg,$(call nolastword,$(__define_builtin_args)),$ \
+        $(\comma)$($(arg))))))# <- The value being returned.
+
+endif
+
+endif # __core_define_mk
