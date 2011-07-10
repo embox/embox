@@ -8,8 +8,7 @@
 #include <stdio.h>
 
 #include <embox/test.h>
-#include <framework/mod/self.h>
-#include <framework/mod/api.h>
+#include <framework/mod/member/self.h>
 
 EMBOX_TEST_SUITE("simple test for member injection");
 

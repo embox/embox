@@ -24,8 +24,4 @@ extern const struct mod *__mod_registry[];
 #define __mod_foreach_provides(dep, mod) \
 	array_nullterm_foreach(dep, (mod)->provides)
 
-static inline void *mod_data(const struct mod *mod) {
-	return (NULL != mod && NULL != mod->info) ? mod->info->data : NULL;
-}
-
 #endif /* FRAMEWORK_MOD_API_IMPL_H_ */

@@ -19,7 +19,7 @@
 #include <kernel/printk.h>
 #include <mem/misc/slab.h>
 #include <mem/pagealloc/mpallocator.h>
-#include <framework/mod/api.h>
+#include <framework/mod/member/ops.h>
 
 /**
  * slab descriptor

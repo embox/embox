@@ -12,7 +12,6 @@
 #include <stddef.h>
 
 #include <util/array.h>
-#include <framework/mod/api.h>
 
 #include "types.h"
 

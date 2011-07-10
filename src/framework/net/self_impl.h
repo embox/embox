@@ -11,9 +11,8 @@
 
 #include <stddef.h>
 
-#include <util/array.h>
 #include <framework/mod/self.h>
-
+#include <util/array.h>
 #include "types.h"
 
 #define __EMBOX_NET(_packet) \

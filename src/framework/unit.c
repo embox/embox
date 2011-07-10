@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-#include <framework/mod/api.h>
+#include <framework/mod/ops.h>
 
 // XXX rewrite this shit. -- Eldar
 #define __EMBUILD_MOD__

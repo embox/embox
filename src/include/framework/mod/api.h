@@ -28,57 +28,6 @@ struct mod;
 struct mod_package;
 
 /**
- * Performs an operation with the module. The semantics of the operation is
- * module-specific. If the module has no operation assigned (#mod_ops structure
- * contains @c NULL pointer fields), the meaning is that module operation
- * always succeeds (as if the corresponding function returns 0).
- *
- * @param self
- *   Pointer to the #mod struct.
- * @return
- *   Error code.
- * @retval 0
- *   If the operation succeeded.
- * @retval nonzero
- *   On error.
- */
-typedef int (*mod_op_t)(struct mod *self);
-
-/**
- * Module operations.
- * TODO more docs. -- Eldar
- * @note
- *   Do not call these functions directly!
- */
-struct mod_ops {
-	/** (optional) Module state change operation. */
-	mod_op_t enable, disable;
-};
-
-/**
- * Performs an injection of the specified member. The semantics of the
- * operation is application-specific.
- *
- * @param member
- *   Pointer to the member being injected.
- * @return
- *   Error code.
- * @retval 0
- *   If the operation succeeded.
- * @retval nonzero
- *   On error.
- */
-typedef int (*mod_member_op_t)(struct mod_member *member);
-
-/**
- * Operations for initializing and finalizing injected members of the module.
- */
-struct mod_member_ops {
-	/** (optional) Member operation. */
-	mod_member_op_t init, fini;
-};
-
-/**
  * Enables the specified #mod resolving its dependencies. This implies that all
  * the mods on which the given one depends will also be enabled.
  * If the mod has already been enabled then nothing special is done and this
@@ -175,16 +124,6 @@ extern int mod_disable_nodep(const struct mod *mod);
  *   If argument is @c NULL or mod is disabled.
  */
 extern bool mod_is_running(const struct mod *mod);
-
-/**
- * Gets the data associated with the specified mod (if any).
- *
- * @param mod
- *   The mod which's data to get.
- * @return
- *   The mod data (or @c NULL of no data has been attached to the mod).
- */
-extern void *mod_data(const struct mod *mod);
 
 /**
  * Iterates over a list of all mods registered in the system

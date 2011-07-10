@@ -6,10 +6,13 @@
  * @author Dmitry Zubarevich
  */
 
+#include <framework/net/api.h>
+
 #include <string.h>
 
-#include <framework/net/api.h>
+#include <framework/mod/ops.h>
 #include <net/netdevice.h>
+#include <util/array.h>
 
 ARRAY_SPREAD_DEF(const struct net, __net_registry);
 
