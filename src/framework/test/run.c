@@ -52,7 +52,7 @@ int test_suite_run(const struct test_suite *test) {
 	int failures = 0, total = 0;
 	int ret;
 
-	if (NULL == test) {
+	if (!test) {
 		return -EINVAL;
 	}
 
@@ -60,7 +60,7 @@ int test_suite_run(const struct test_suite *test) {
 
 	TRACE("test: running %s ", test_name(test));
 
-	if ((fx_op = *fixture_ops->p_setup) != NULL && (ret = fx_op()) != 0) {
+	if ((fx_op = *fixture_ops->p_setup) && (ret = fx_op()) != 0) {
 		handle_suite_fixture_failure(test, ret, 1);
 		return -EINTR;
 	}
@@ -72,12 +72,11 @@ int test_suite_run(const struct test_suite *test) {
 		++total;
 		// TODO this looks ugly.
 		if (ret == -EINTR) {
-			failures = ret;
 			break;
 		}
 	}
 
-	if ((fx_op = *fixture_ops->p_teardown) != NULL && (ret = fx_op()) != 0) {
+	if ((fx_op = *fixture_ops->p_teardown) && (ret = fx_op()) != 0) {
 		handle_suite_fixture_failure(test, ret, 0);
 		return -EINTR;
 	}
@@ -93,14 +92,14 @@ static int test_case_run(const struct test_case *test_case,
 	__test_fixture_op_t fx_op;
 	int ret;
 
-	if ((fx_op = *fixtures->p_setup) != NULL && (ret = fx_op()) != 0) {
+	if ((fx_op = *fixtures->p_setup) && (ret = fx_op()) != 0) {
 		handle_case_fixture_failure(test_case, ret, 1);
 		return -EINTR;
 	}
 
 	failure = test_run(test_case->run);
 
-	if ((fx_op = *fixtures->p_teardown) != NULL && (ret = fx_op()) != 0) {
+	if ((fx_op = *fixtures->p_teardown) && (ret = fx_op()) != 0) {
 		handle_case_fixture_failure(test_case, ret, 0);
 		return -EINTR;
 	}
