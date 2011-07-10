@@ -115,12 +115,12 @@ static const struct mod_ops *mod_ops_deref(const struct mod *mod) {
 
 static int invoke_mod_enable(const struct mod *mod) {
 	const struct mod_ops *ops = mod_ops_deref(mod);
-	return ops ? ops->enable((struct mod *) mod) : 0;
+	return ops ? ops->enable((struct mod_info *) mod->info) : 0;
 }
 
 static int invoke_mod_disable(const struct mod *mod) {
 	const struct mod_ops *ops = mod_ops_deref(mod);
-	return ops ? ops->disable((struct mod *) mod) : 0;
+	return ops ? ops->disable((struct mod_info *) mod->info) : 0;
 }
 
 static int invoke_member_init(const struct mod_member *member) {

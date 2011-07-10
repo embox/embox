@@ -9,10 +9,6 @@
 #ifndef FRAMEWORK_MOD_OPS_H_
 #define FRAMEWORK_MOD_OPS_H_
 
-// XXX struct mod definition. -- Eldar
-#include __impl_x(framework/mod/types.h)
-
-struct mod;
 struct mod_info;
 
 /**
@@ -22,7 +18,7 @@ struct mod_info;
  * always succeeds (as if the corresponding function returns 0).
  *
  * @param self
- *   Pointer to the #mod struct.
+ *   Pointer to the #mod_info struct.
  * @return
  *   Error code.
  * @retval 0
@@ -30,7 +26,7 @@ struct mod_info;
  * @retval nonzero
  *   On error.
  */
-typedef int (*mod_op_t)(struct mod *self);
+typedef int (*mod_op_t)(struct mod_info *self);
 
 /**
  * Module operations.
@@ -51,17 +47,5 @@ struct mod_info {
 	const struct mod_ops *ops;  /**< (optional) Available operations. */
 	void                 *data; /**< (optional) Module specific data. */
 };
-
-/**
- * Gets the data associated with the specified mod (if any).
- *
- * @param mod
- *   The mod which's data to get.
- * @return
- *   The mod data (or @c NULL of no data has been attached to the mod).
- */
-static inline void *mod_data(const struct mod *mod) {
-	return (mod && mod->info) ? mod->info->data : NULL;
-}
 
 #endif /* FRAMEWORK_MOD_API_H_ */

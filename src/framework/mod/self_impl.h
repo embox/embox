@@ -26,8 +26,9 @@
 
 #define __MOD_INFO_DEF(mod_nm, _ops, _data) \
 	const struct mod_info __MOD_INFO(mod_nm) = { \
-		.data = (void *) _data,                  \
+		.mod = &__MOD(mod_nm),                   \
 		.ops = _ops,                             \
+		.data = (void *) _data,                  \
 	}
 
 #endif /* FRAMEWORK_MOD_SELF_IMPL_H_ */

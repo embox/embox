@@ -20,7 +20,7 @@
 #include <framework/mod/ops.h>
 #include <util/array.h>
 
-static int test_mod_enable(struct mod *mod);
+static int test_mod_enable(struct mod_info *mod);
 
 const struct mod_ops __test_mod_ops = {
 	.enable = &test_mod_enable,
@@ -28,8 +28,8 @@ const struct mod_ops __test_mod_ops = {
 
 ARRAY_SPREAD_DEF(const struct test_suite, __test_registry);
 
-static int test_mod_enable(struct mod *mod) {
-	return test_suite_run((struct test_suite *) mod_data(mod));
+static int test_mod_enable(struct mod_info *mod) {
+	return test_suite_run((struct test_suite *) mod->data);
 }
 
 const struct test_suite *test_lookup(const char *name) {
