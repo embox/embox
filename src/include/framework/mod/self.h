@@ -29,21 +29,21 @@ extern const struct mod mod_self;
 /**
  * Binds the specified mod data and operations to the self mod.
  *
- * @param mod_data
- *   Pointer to the module specific data (if any).
  * @param mod_ops
  *   Pointer to the #mod_ops structure (if any).
+ * @param mod_data
+ *   Pointer to the module specific data (if any).
  */
-#define MOD_SELF_BIND(mod_data, mod_ops) \
-	  __MOD_SELF_BIND(mod_data, mod_ops)
+#define MOD_INFO_BIND(mod_ops, mod_data) \
+	  __MOD_INFO_BIND(mod_ops, mod_data)
 
 /**
  * Binds the specified data and operations to the mod member.
  *
- * @param member_data
- *   Pointer to the member specific data (if any).
  * @param member_ops
  *   Pointer to the #mod_member_ops structure (if any).
+ * @param member_data
+ *   Pointer to the member specific data (if any).
  */
 #define MOD_MEMBER_BIND(member_ops, member_data) \
 	  __MOD_MEMBER_BIND(member_ops, member_data)

@@ -20,10 +20,10 @@
 // TODO it would be better to use something like weakref or alias. -- Eldar
 #define mod_self __MOD(__EMBUILD_MOD__)
 
-#define __MOD_SELF_BIND(_mod_data, _mod_ops) \
-	__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_data, _mod_ops)
+#define __MOD_INFO_BIND(_mod_ops, _mod_data) \
+	__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_ops, _mod_data)
 
-#define __MOD_INFO_DEF(mod_nm, _data, _ops) \
+#define __MOD_INFO_DEF(mod_nm, _ops, _data) \
 	const struct mod_info __MOD_INFO(mod_nm) = { \
 		.data = (void *) _data,                  \
 		.ops = _ops,                             \

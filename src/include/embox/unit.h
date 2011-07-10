@@ -21,7 +21,7 @@
 		.init = _init, \
 		.fini = _fini, \
 	}; \
-	MOD_SELF_BIND(&__unit, &__unit_mod_ops)
+	MOD_INFO_BIND(&__unit_mod_ops, &__unit)
 
 #define EMBOX_UNIT(_init, _fini) \
 	static int _init(void); \
