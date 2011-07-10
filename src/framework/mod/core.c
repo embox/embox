@@ -108,29 +108,53 @@ static int mod_traverse(const struct mod *mod, bool op) {
 	return op ? do_enable(mod) : do_disable(mod);
 }
 
-static const struct mod_ops *mod_ops_deref(const struct mod *mod) {
+static inline const struct mod_ops *mod_ops_deref(const struct mod *mod) {
 	const struct mod_info *info = mod->info;
 	return info ? info->ops : NULL;
 }
 
 static int invoke_mod_enable(const struct mod *mod) {
-	const struct mod_ops *ops = mod_ops_deref(mod);
-	return ops ? ops->enable((struct mod_info *) mod->info) : 0;
+	const struct mod_ops *ops;
+	mod_op_t *enable;
+
+	if (!(ops = mod_ops_deref(mod)) || !(enable = ops->enable)) {
+		return 0;
+	}
+
+	return enable((struct mod_info *) mod->info);
 }
 
 static int invoke_mod_disable(const struct mod *mod) {
-	const struct mod_ops *ops = mod_ops_deref(mod);
-	return ops ? ops->disable((struct mod_info *) mod->info) : 0;
+	const struct mod_ops *ops;
+	mod_op_t *disable;
+
+	if (!(ops = mod_ops_deref(mod)) || !(disable = ops->disable)) {
+		return 0;
+	}
+
+	return disable((struct mod_info *) mod->info);
 }
 
 static int invoke_member_init(const struct mod_member *member) {
-	const struct mod_member_ops *ops = member->ops;
-	return ops ? ops->init((struct mod_member *) member) : 0;
+	const struct mod_member_ops *ops;
+	mod_member_op_t *init;
+
+	if (!(ops = member->ops) || !(init = ops->init)) {
+		return 0;
+	}
+
+	return init((struct mod_member *) member);
 }
 
 static int invoke_member_fini(const struct mod_member *member) {
-	const struct mod_member_ops *ops = member->ops;
-	return ops ? ops->fini((struct mod_member *) member) : 0;
+	const struct mod_member_ops *ops;
+	mod_member_op_t *fini;
+
+	if (!(ops = member->ops) || !(fini = ops->fini)) {
+		return 0;
+	}
+
+	return fini((struct mod_member *) member);
 }
 
 static int do_enable(const struct mod *mod) {
