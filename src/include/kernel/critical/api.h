@@ -28,4 +28,10 @@ extern void critical_enter(critical_t critical);
 
 extern void critical_leave(critical_t critical);
 
+extern void critical_irq_check_pending(critical_t critical);
+
+extern void critical_softirq_check_pending(critical_t critical);
+
+extern void critical_sched_check_pending(critical_t critical);
+
 #endif /* KERNEL_CRITICAL_API_H_ */

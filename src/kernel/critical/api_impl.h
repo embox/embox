@@ -4,45 +4,45 @@
  *
  * @details
  *
-@verbatim
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
-  bit#: |15 | ... |13 |12 ||11 | ... | 9 | 8 || 7 | ... | 1 | 0 |
+ @verbatim
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ bit#: |15 | ... |13 |12 ||11 | ... | 9 | 8 || 7 | ... | 1 | 0 |
  level: | P |    preempt  || P |    softirq  || P |    hardirq  |
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
-@endverbatim
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ @endverbatim
  *
  * @c hardirq:
-@verbatim
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ @verbatim
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  level: | P |    preempt  || P |    softirq  || P |    hardirq  |
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
-  mask: |   |     |   |   ||   |     |   |   || * | *** | * | * |
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ mask: |   |     |   |   ||   |     |   |   || * | *** | * | * |
  below: |   |     |   |   ||   |     |   |   || * | *** | * | * |
  count: |   |     |   |   ||   |     |   |   ||   |     |   | * |
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
-@endverbatim
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ @endverbatim
  *
  * @c softirq:
-@verbatim
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ @verbatim
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  level: | P |    preempt  || P |    softirq  || P |    hardirq  |
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
-  mask: |   |     |   |   ||   | *** | * | * ||   |     |   |   |
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ mask: |   |     |   |   ||   | *** | * | * ||   |     |   |   |
  below: |   |     |   |   ||   | *** | * | * || * | *** | * | * |
  count: |   |     |   |   ||   |     |   | * ||   |     |   |   |
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
-@endverbatim
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ @endverbatim
  *
  * @c preempt:
-@verbatim
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ @verbatim
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  level: | P |    preempt  || P |    softirq  || P |    hardirq  |
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
-  mask: |   | *** | * | * ||   |     |   |   ||   |     |   |   |
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ mask: |   | *** | * | * ||   |     |   |   ||   |     |   |   |
  below: |   | *** | * | * || * | *** | * | * || * | *** | * | * |
  count: |   |     |   | * ||   |     |   |   ||   |     |   |   |
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
-@endverbatim
+ +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ @endverbatim
  *
  * @date 16.05.10
  * @author Eldar Abusalimov
@@ -85,4 +85,20 @@ static inline void critical_leave(__critical_t critical) {
 	__critical_count_sub(__CRITICAL_COUNT(critical));
 }
 
+#define __critical_dispatch(critical) \
+	((critical) == __CRITICAL_HARDIRQ ? __critical_dispatch_hardirq() : \
+	 (critical) == __CRITICAL_SOFTIRQ ? __critical_dispatch_softirq() : \
+	 (critical) == __CRITICAL_PREEMPT ? __critical_dispatch_preempt() : \
+			__critical_dispatch_error())
+
+static inline void critical_irq_check_pending(__critical_t critical) {
+}
+
+static inline void critical_softirq_check_pending(__critical_t critical) {
+
+}
+
+static inline void critical_sched_check_pending(__critical_t critical) {
+
+}
 #endif /* KERNEL_CRITICAL_API_IMPL_H_ */

@@ -8,7 +8,7 @@
  * @author Alexandr Batyukov, Alexey Fomin
  *         - Reviewing and rewriting some parts
  * @author Eldar Abusalimov
- *         - Rewriting from scratch:
+ *          - Rewriting from scratch:
  *          - Adapting for new HAL interface
  *          - Introducing locks and statistics accounting
  *          - Documentation
@@ -21,6 +21,8 @@
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
+#include <kernel/critical/lock.h>
+#include <kernel/critical/api.h>
 
 struct irq_action {
 	irq_handler_t handler;
@@ -144,4 +146,24 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	}
 
 	irq_leave();
+}
+
+static ipl_t ipl;
+
+void irq_lock(__critical_t critical) {
+	if (!critical_inside(critical)) {
+		ipl = ipl_save();
+	}
+
+	critical_enter(critical);
+}
+
+void irq_unlock(__critical_t critical) {
+	critical_leave(critical);
+
+	if (!critical_inside(critical)) {
+		ipl_restore(ipl);
+	}
+
+	critical_irq_check_pending(critical);
 }

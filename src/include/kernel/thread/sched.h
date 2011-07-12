@@ -12,6 +12,7 @@
 #define KERNEL_THREAD_SCHED_H_
 
 #include __impl_x(kernel/thread/sched_impl.h)
+#include <kernel/critical/lock.h>
 
 struct thread;
 
@@ -31,24 +32,6 @@ struct thread;
  *   failed.
  */
 extern int sched_init(struct thread *current, struct thread *idle);
-
-/**
- * Locks the scheduler which means disabling thread switch until
- * #sched_unlock() is called. Each lock must be balanced with the corresponding
- * unlock.
- *
- * @see sched_unlock()
- */
-extern void sched_lock(void);
-
-/**
- * Unlocks the scheduler after #sched_lock(). Must be called on the
- * previously locked scheduler only. Outermost unlock (which corresponds to
- * the first lock call) also dispatches pending thread switches (if any).
- *
- * @see sched_lock()
- */
-extern void sched_unlock(void);
 
 /**
  * Does the same as #sched_unlock() except that the outermost unlock doesn't
