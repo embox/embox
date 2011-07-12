@@ -91,26 +91,38 @@ static inline void critical_leave(__critical_t critical) {
 	 (critical) == __CRITICAL_PREEMPT ? __critical_dispatch_preempt() : \
 			__critical_dispatch_error())
 
-static long i = 1 << 31;
+static long i = 1 << 15;
 
-static inline void critical_irq_check_pending(__critical_t critical) {
-	if ((critical >> 7) & 1) {
-		critical = critical & ~(1 << 7);
-		//irq_dispatch();
-	}
-}
-
+/**
+ * verify: is 15 is 0 or 1.
+ * @see details
+ * @param critical 4 bytes with pending bits to verify
+ */
 static inline void critical_softirq_check_pending(__critical_t critical) {
-	if ((critical << 8) & i) {
-		critical = critical & ~(i >> 8);
+	if (critical & i) {
+		critical = critical & ~i;
 		//dispatch
 	}
 }
 
+/**
+ * verify: is 15 and 9 bits are 0 or 1.
+ * @see details
+ * @param critical 4 bytes with pending bits to verify
+ */
+static inline void critical_irq_check_pending(__critical_t critical) {
+	if ((critical >> 8) & 1) {
+		critical = critical & ~(1 << 8);
+		//dispatch
+	}
+	critical_softirq_check_pending(critical);
+}
+
+/**
+ *
+ * @param critical 4 bytes with pending bits to verify
+ */
 static inline void critical_sched_check_pending(__critical_t critical) {
-	if (critical & i) {
-        critical = critical & ~i;
-	    //dispatch
-    }
+      //dispatch
 }
 #endif /* KERNEL_CRITICAL_API_IMPL_H_ */
