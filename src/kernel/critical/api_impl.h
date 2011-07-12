@@ -91,14 +91,26 @@ static inline void critical_leave(__critical_t critical) {
 	 (critical) == __CRITICAL_PREEMPT ? __critical_dispatch_preempt() : \
 			__critical_dispatch_error())
 
+static long i = 1 << 31;
+
 static inline void critical_irq_check_pending(__critical_t critical) {
+	if ((critical >> 7) & 1) {
+		critical = critical & ~(1 << 7);
+		//irq_dispatch();
+	}
 }
 
 static inline void critical_softirq_check_pending(__critical_t critical) {
-
+	if ((critical << 8) & i) {
+		critical = critical & ~(i >> 8);
+		//dispatch
+	}
 }
 
 static inline void critical_sched_check_pending(__critical_t critical) {
-
+	if (critical & i) {
+        critical = critical & ~i;
+	    //dispatch
+    }
 }
 #endif /* KERNEL_CRITICAL_API_IMPL_H_ */
