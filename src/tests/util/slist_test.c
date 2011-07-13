@@ -25,6 +25,15 @@ struct element {
 static struct element x, y, z;
 static struct slist m;
 
+static int setup(void) {
+	slist_init(&m);
+	slist_link_init(&x.lnk);
+	slist_link_init(&y.lnk);
+	slist_link_init(&z.lnk);
+	return 0;
+}
+
+
 TEST_CASE("slist_link_element should cast link member out to its container") {
 	struct slist_link *link = &x.lnk;
 	test_assert_equal(slist_link_element(link, struct element, lnk), &x);
@@ -145,12 +154,4 @@ TEST_CASE("slist_insert_after: inserting a new element after the first one "
 	test_assert_equal(slist_remove_first_link(&m), &y.lnk);
 
 	test_assert_equal(slist_first_link(&m), &z.lnk);
-}
-
-static int setup(void) {
-	slist_init(&m);
-	slist_link_init(&x.lnk);
-	slist_link_init(&y.lnk);
-	slist_link_init(&z.lnk);
-	return 0;
 }
