@@ -3,6 +3,9 @@
 
 #define AT91C_BASE_TCB       ((AT91PS_TCB) 	0xFFFA0000) // (TCB) Base Address
 
+#include <types.h>
+#include <hal/reg.h>
+
 typedef struct _AT91S_TC {
 	at91_reg_t	 TC_CCR; 	// Channel Control Register
 	at91_reg_t	 TC_CMR; 	// Channel Mode Register (Capture Mode / Waveform Mode)

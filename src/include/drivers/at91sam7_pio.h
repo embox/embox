@@ -13,41 +13,41 @@
 #include <hal/reg.h>
 
 typedef struct _AT91S_PIO {
-	at91_reg_t	 PIO_PER; 	// PIO Enable Register
-	at91_reg_t	 PIO_PDR; 	// PIO Disable Register
-	at91_reg_t	 PIO_PSR; 	// PIO Status Register
-	at91_reg_t	 Reserved0[1]; 	//
-	at91_reg_t	 PIO_OER; 	// Output Enable Register
-	at91_reg_t	 PIO_ODR; 	// Output Disable Registerr
-	at91_reg_t	 PIO_OSR; 	// Output Status Register
-	at91_reg_t	 Reserved1[1]; 	//
-	at91_reg_t	 PIO_IFER; 	// Input Filter Enable Register
-	at91_reg_t	 PIO_IFDR; 	// Input Filter Disable Register
-	at91_reg_t	 PIO_IFSR; 	// Input Filter Status Register
-	at91_reg_t	 Reserved2[1]; 	//
-	at91_reg_t	 PIO_SODR; 	// Set Output Data Register
-	at91_reg_t	 PIO_CODR; 	// Clear Output Data Register
-	at91_reg_t	 PIO_ODSR; 	// Output Data Status Register
-	at91_reg_t	 PIO_PDSR; 	// Pin Data Status Register
-	at91_reg_t	 PIO_IER; 	// Interrupt Enable Register
-	at91_reg_t	 PIO_IDR; 	// Interrupt Disable Register
-	at91_reg_t	 PIO_IMR; 	// Interrupt Mask Register
-	at91_reg_t	 PIO_ISR; 	// Interrupt Status Register
-	at91_reg_t	 PIO_MDER; 	// Multi-driver Enable Register
-	at91_reg_t	 PIO_MDDR; 	// Multi-driver Disable Register
-	at91_reg_t	 PIO_MDSR; 	// Multi-driver Status Register
-	at91_reg_t	 Reserved3[1]; 	//
-	at91_reg_t	 PIO_PPUDR; 	// Pull-up Disable Register
-	at91_reg_t	 PIO_PPUER; 	// Pull-up Enable Register
-	at91_reg_t	 PIO_PPUSR; 	// Pull-up Status Register
-	at91_reg_t	 Reserved4[1]; 	//
-	at91_reg_t	 PIO_ASR; 	// Select A Register
-	at91_reg_t	 PIO_BSR; 	// Select B Register
-	at91_reg_t	 PIO_ABSR; 	// AB Select Status Register
-	at91_reg_t	 Reserved5[9]; 	//
-	at91_reg_t	 PIO_OWER; 	// Output Write Enable Register
-	at91_reg_t	 PIO_OWDR; 	// Output Write Disable Register
-	at91_reg_t	 PIO_OWSR; 	// Output Write Status Register
+	volatile at91_reg_t	 PIO_PER; 	// PIO Enable Register
+	volatile at91_reg_t	 PIO_PDR; 	// PIO Disable Register
+	volatile at91_reg_t	 PIO_PSR; 	// PIO Status Register
+	volatile at91_reg_t	 Reserved0[1]; 	//
+	volatile at91_reg_t	 PIO_OER; 	// Output Enable Register
+	volatile at91_reg_t	 PIO_ODR; 	// Output Disable Registerr
+	volatile at91_reg_t	 PIO_OSR; 	// Output Status Register
+	volatile at91_reg_t	 Reserved1[1]; 	//
+	volatile at91_reg_t	 PIO_IFER; 	// Input Filter Enable Register
+	volatile at91_reg_t	 PIO_IFDR; 	// Input Filter Disable Register
+	volatile at91_reg_t	 PIO_IFSR; 	// Input Filter Status Register
+	volatile at91_reg_t	 Reserved2[1]; 	//
+	volatile at91_reg_t	 PIO_SODR; 	// Set Output Data Register
+	volatile at91_reg_t	 PIO_CODR; 	// Clear Output Data Register
+	volatile at91_reg_t	 PIO_ODSR; 	// Output Data Status Register
+	volatile at91_reg_t	 PIO_PDSR; 	// Pin Data Status Register
+	volatile at91_reg_t	 PIO_IER; 	// Interrupt Enable Register
+	volatile at91_reg_t	 PIO_IDR; 	// Interrupt Disable Register
+	volatile at91_reg_t	 PIO_IMR; 	// Interrupt Mask Register
+	volatile at91_reg_t	 PIO_ISR; 	// Interrupt Status Register
+	volatile at91_reg_t	 PIO_MDER; 	// Multi-driver Enable Register
+	volatile at91_reg_t	 PIO_MDDR; 	// Multi-driver Disable Register
+	volatile at91_reg_t	 PIO_MDSR; 	// Multi-driver Status Register
+	volatile at91_reg_t	 Reserved3[1]; 	//
+	volatile at91_reg_t	 PIO_PPUDR; 	// Pull-up Disable Register
+	volatile at91_reg_t	 PIO_PPUER; 	// Pull-up Enable Register
+	volatile at91_reg_t	 PIO_PPUSR; 	// Pull-up Status Register
+	volatile at91_reg_t	 Reserved4[1]; 	//
+	volatile at91_reg_t	 PIO_ASR; 	// Select A Register
+	volatile at91_reg_t	 PIO_BSR; 	// Select B Register
+	volatile at91_reg_t	 PIO_ABSR; 	// AB Select Status Register
+	volatile at91_reg_t	 Reserved5[9]; 	//
+	volatile at91_reg_t	 PIO_OWER; 	// Output Write Enable Register
+	volatile at91_reg_t	 PIO_OWDR; 	// Output Write Disable Register
+	volatile at91_reg_t	 PIO_OWSR; 	// Output Write Status Register
 } AT91S_PIO, *AT91PS_PIO;
 
 #define AT91C_PIO_PA0        ((unsigned int) 1 <<  0) // Pin Controlled by PA0

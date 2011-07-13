@@ -7,11 +7,10 @@
  */
 
 #include <types.h>
-//#include <drivers/nxt_avr.h>
-#include <drivers/nxt_buttons.h>
+#include <drivers/nxt/buttons.h>
 
-static int buttons_state = 0;
-static int buttons_accum_state = 0;
+static nxt_buttons_mask_t buttons_state = 0;
+static nxt_buttons_mask_t buttons_accum_state = 0;
 
 #define DEL 10
 static int old_state = 0;
@@ -19,36 +18,36 @@ static int state_count = DEL;
 
 
 /* Buttons pressed at now */
-uint32_t nxt_buttons_are_pressed(void) {
+nxt_buttons_mask_t nxt_buttons_pushed(void) {
 	return buttons_state;
 }
 
 /* Buttons was pressed since last call */
-uint32_t nxt_buttons_was_pressed(void) {
-	uint32_t ret = buttons_accum_state;
+nxt_buttons_mask_t nxt_buttons_pressed(void) {
+	nxt_buttons_mask_t ret = buttons_accum_state;
 	buttons_accum_state = 0;
 	return ret;
 }
 
-static int translate_buttons(buttons_t buttons_val) {
+static int translate_buttons(nxt_buttons_mask_t buttons_val) {
 	int ret = 0;
 	if (buttons_val > 1500) {
-		ret |= BT_ENTER;
+		ret |= NXT_BOTTON_ENTER;
 		buttons_val -= 0x7ff;
 	}
 
 	if (buttons_val > 720) {
-		ret |= BT_DOWN;
+		ret |= NXT_BT_DOWN;
 	} else if (buttons_val > 270) {
-		ret |= BT_RIGHT;
+		ret |= NXT_BOTTON_RIGHT;
 	} else if (buttons_val > 60) {
-		ret |= BT_LEFT;
+		ret |= NXT_BUTTON_LEFT;
 	}
 
 	return ret;
 }
 
-void buttons_updated(buttons_t buttons_val) {
+void buttons_updated(nxt_buttons_mask_t buttons_val) {
 	int new_state = translate_buttons(buttons_val);
 	if (new_state == old_state) {
 		if (!state_count) {

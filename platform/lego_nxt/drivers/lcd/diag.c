@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <drivers/lcd.h>
+#include <drivers/nxt/lcd.h>
 #include <kernel/diag.h>
 
 void diag_init(void) {

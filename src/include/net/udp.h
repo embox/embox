@@ -13,6 +13,10 @@
 
 struct sock;
 
+extern struct proto udp_prot;
+
+extern const struct proto_ops inet_dgram_ops;
+
 typedef struct udphdr {
 	__be16 source;
 	__be16 dest;
@@ -41,8 +45,7 @@ static inline udp_sock_t *udp_sk(const struct sock *sk) {
 /* net/ipv4/udp.c */
 
 extern int udp_init(void);
-extern int udp_rcv(sk_buff_t *);
-extern void udp_err(sk_buff_t *, uint32_t);
+extern void udp_err(sk_buff_t *skb, uint32_t info);
 extern int udp_sendmsg(struct kiocb *iocb, struct sock *sk,
 			struct msghdr *msg, size_t len);
 extern int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,

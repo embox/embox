@@ -11,6 +11,10 @@
 
 #include <net/inet_sock.h>
 
+static const struct proto raw_prot;
+
+static const struct proto_ops inet_sockraw_ops;
+
 typedef struct raw_sock {
 	/* inet_sock has to be the first member */
 	struct inet_sock   inet;

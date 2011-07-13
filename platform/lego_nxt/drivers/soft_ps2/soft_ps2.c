@@ -27,11 +27,11 @@
 #endif
 
 volatile enum {
-	IDLE,
-	READ,
-	WRITE,
-	NOT_INITED,
-	BYPASS
+	SOFT_PS2_IDLE,
+	SOFT_PS2_READ,
+	SOFT_PS2_WRITE,
+	SOFT_PS2_NOT_INITED,
+	SOFT_PS2_BYPASS
 } ps2_state;
 
 uint16_t read_val = 0x00;
@@ -51,7 +51,7 @@ static void pin_set_low(pin_mask_t mask) {
 }
 
 void reset_ps2_state(void) {
-	ps2_state = IDLE;
+	ps2_state = SOFT_PS2_IDLE;
 }
 
 volatile static int inited = 0;
@@ -72,10 +72,10 @@ void hard_delay(int val) {
 }
 
 int ps2_write(uint8_t data) {
-	while (ps2_state != IDLE) {
+	while (ps2_state != SOFT_PS2_IDLE) {
 	}
 	TRACE("write goes\n");
-	ps2_state = BYPASS;
+	ps2_state = SOFT_PS2_BYPASS;
 	cnt = WRITE_CNT;
 	write_val = (data & 0x7f) | (parity(data) << 1);
 	pin_set_low(CLK);
@@ -83,7 +83,7 @@ int ps2_write(uint8_t data) {
 	pin_set_low(DATA);
 	hard_delay(DELAY);
 	pin_set_high(CLK);
-	ps2_state = WRITE;
+	ps2_state = SOFT_PS2_WRITE;
 	return 0;
 
 }
@@ -117,8 +117,8 @@ static void ps2_handler(pin_mask_t state, pin_mask_t mask) {
 	data_state &= DATA;
 	handler_counter++;
 	switch (ps2_state) {
-	case IDLE:
-	case READ:
+	case SOFT_PS2_IDLE:
+	case SOFT_PS2_READ:
 		clk_snap <<= 1;
 		if (clk_state) {
 			clk_snap |= 1;
@@ -136,7 +136,7 @@ static void ps2_handler(pin_mask_t state, pin_mask_t mask) {
 			}
 		}
 		break;
-	case WRITE:
+	case SOFT_PS2_WRITE:
 		if (state & CLK) {
 			if (write_val & 1) {
 				pin_set_high(DATA);
@@ -149,16 +149,16 @@ static void ps2_handler(pin_mask_t state, pin_mask_t mask) {
 			if (cnt == 0) {
 				pin_set_high(DATA);
 				cnt = READ_CNT;
-				ps2_state = IDLE;
+				ps2_state = SOFT_PS2_IDLE;
 			}
 		}
 		break;
-	case NOT_INITED:
+	case SOFT_PS2_NOT_INITED:
 		if (clk_state && data_state) {
-			ps2_state = IDLE;
+			ps2_state = SOFT_PS2_IDLE;
 		}
 		break;
-	case BYPASS:
+	case SOFT_PS2_BYPASS:
 	default:
 		break;
 	}
@@ -173,12 +173,12 @@ static int soft_ps2_init(void) {
 
 	REG_ORIN(AT91C_AIC_SMR + AT91C_ID_PIOA, 7);
 
-	ps2_state = NOT_INITED;
+	ps2_state = SOFT_PS2_NOT_INITED;
 	cnt = READ_CNT;
 	pin_set_high(CLK | DATA);
 	hard_delay(3000);
 	if (pin_get_input(CLK) && pin_get_input(DATA)) {
-		ps2_state = IDLE;
+		ps2_state = SOFT_PS2_IDLE;
 	}
 	pin_set_input_monitor(CLK, &ps2_handler);
 	return 0;

@@ -91,13 +91,6 @@ static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
 extern void icmp_init(void);
 
 /**
- * Receive packet.
- *
- * @param skb received packet
- */
-extern int icmp_rcv(sk_buff_t *skb);
-
-/**
  * Send an ICMP message in response to a situation.
  * Used by the kernel to transmit ICMP error messages when
  * specific conditions are detected.

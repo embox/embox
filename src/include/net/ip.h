@@ -90,11 +90,6 @@ static inline iphdr_t *ip_hdr(const sk_buff_t *skb) {
  */
 
 /**
- * Init.
- */
-extern void ip_init(void);
-
-/**
  * Main IP Receive routine.
  */
 extern int ip_rcv(sk_buff_t *pack, net_device_t *dev,
@@ -128,5 +123,11 @@ extern int ip_options_compile(sk_buff_t *skb, ip_options_t *opt);
  * Handles socket buffer route info due to SRR options
  */
 extern int ip_options_handle_srr(sk_buff_t *skb);
+
+extern struct proto tcp_prot;
+
+extern const struct proto_ops inet_stream_ops;
+
+extern struct net_proto_family inet_family_ops;
 
 #endif /* IP_H_ */

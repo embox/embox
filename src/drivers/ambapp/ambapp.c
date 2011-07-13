@@ -7,7 +7,6 @@
  */
 
 #include <types.h>
-//#include <embox/kernel.h>
 #include <util/array.h>
 #include <drivers/amba_pnp.h>
 
