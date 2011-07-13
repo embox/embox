@@ -25,7 +25,7 @@ static int exec(int argc, char **argv) {
 	char *file_name = NULL;
 	uint32_t load_addr, file_addr;
 	FILE *file;
-	node_t *node;
+	//node_t *node;
 	stat_t sb;
 	int opt;
 	getopt_init();
@@ -60,7 +60,7 @@ static int exec(int argc, char **argv) {
 	}
 	fioctl(file, 0, &file_addr);
 
-	node = vfs_find_node(file_name, NULL);
+//	node = vfs_find_node(file_name, NULL);
 	fstat(file_name, &sb);
 
 	printf("loading...addr=0x%08x, size=%d\n", file_addr, sb.st_size);
