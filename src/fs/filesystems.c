@@ -11,6 +11,7 @@
 #include <string.h>
 #include <linux/init.h>
 #include <embox/unit.h>
+#include <util/array.h>
 #include <fs/fs.h>
 
 EMBOX_UNIT_INIT(unit_init);

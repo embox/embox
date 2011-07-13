@@ -16,11 +16,11 @@ static traps_env_t *old_env;
 static traps_env_t cur_env;
 
 void traps_enable(void) {
-	msr_set_bit(MSR_EE_BIT);
+	msr_set_ee();
 }
 
 void traps_disable(void) {
-	msr_clr_bit(MSR_EE_BIT);
+	msr_clr_ee();
 }
 
 static inline void traps_status_save(uint32_t *status) {
@@ -28,8 +28,8 @@ static inline void traps_status_save(uint32_t *status) {
 }
 
 static inline void traps_status_restore(uint32_t *status) {
-	(*status & MSR_EE_MASK) ? msr_set_bit(MSR_EE_BIT) :
-				    msr_clr_bit(MSR_EE_BIT);
+	(*status & MSR_EE_MASK) ? msr_set_ee() :
+				    msr_clr_ee();
 }
 
 void traps_save_env(traps_env_t *env) {
