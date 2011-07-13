@@ -6,15 +6,15 @@
  */
 
 #include <types.h>
-#include <embox/test.h>
+#include <embox/example.h>
 #include <drivers/sound.h>
 #include <kernel/irq.h>
 #include <drivers/at91sam7s256.h>
 #define   SOUNDVOLUMESTEPS      4
 
-EMBOX_TEST(run_sound);
+EMBOX_EXAMPLE(run_sound);
 
-static const SAMPLEWORD patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
+static const sample_t patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
 {
     {
 	0xF0F0F0F0,0xF0F0F0F0, // Step 0 = silence
@@ -80,35 +80,25 @@ enum FREQ_TONE  {
 
 #define DURATION 500
 
-// XXX defined but not used
-#if 0
-static uint32_t freq_tone[2][3] = {
-	{TONE_C, TONE_E, TONE_G},
-	{TONE_C, TONE_E, TONE_F}
-};
-
-static uint32_t bank_num = 0;
-#endif
-
 static int i = 0;
 
-SAMPLEWORD *sound_handler(void) {
+sample_t sound_handler(void) {
 	if (++i == 5) {
 		i = 0;
 	}
 
-	return (SAMPLEWORD *) patterns[i];
+	return (sample_t) patterns[i];
 }
 
 static int run_sound(void) {
 	int count = 5;
 	while (count--) {
-		sound_start_play(TONE_C, DURATION, (SAMPLEWORD *) patterns[0],
-				(SAMPLEWORD *) patterns[1], sound_handler);
-		sound_start_play(TONE_E, DURATION, (SAMPLEWORD *) patterns[0],
-			    (SAMPLEWORD *) patterns[1], sound_handler);
-		sound_start_play(TONE_G, DURATION, (SAMPLEWORD *) patterns[0],
-			    (SAMPLEWORD *) patterns[1], sound_handler);
+		sound_start_play(TONE_C, DURATION, (sample_t) patterns[0],
+				(sample_t) patterns[1], sound_handler);
+		sound_start_play(TONE_E, DURATION, (sample_t) patterns[0],
+			    (sample_t) patterns[1], sound_handler);
+		sound_start_play(TONE_G, DURATION, (sample_t) patterns[0],
+			    (sample_t) patterns[1], sound_handler);
 	}
 
 	return 0;

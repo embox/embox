@@ -8,11 +8,11 @@
 #include <types.h>
 #include <unistd.h>
 
-#include <embox/test.h>
-#include <drivers/lcd.h>
-#include <drivers/nxt_buttons.h>
+#include <embox/example.h>
+#include <drivers/nxt/lcd.h>
+#include <drivers/nxt/buttons.h>
 
-EMBOX_TEST(run_picture_with_fill);
+EMBOX_EXAMPLE(run_picture_with_fill);
 
 static int run_picture_with_fill(void) {
 /*Part of "E" "M" "B" "O" */
@@ -33,7 +33,7 @@ static int run_picture_with_fill(void) {
 
 	display_clear_screen();
 
-	b = nxt_buttons_was_pressed();
+	b = nxt_buttons_pressed();
 	if (b != 0) {
 		return 0;
 	}
@@ -89,7 +89,7 @@ static int run_picture_with_fill(void) {
 /*jamp*/
 	for (int i = 0; i < 5; i++) {
 
-		b = nxt_buttons_was_pressed();
+		b = nxt_buttons_pressed();
 		if (b != 0) {
 			return 0;
 		}

@@ -8,10 +8,10 @@
 #include <types.h>
 #include <unistd.h>
 
-#include <embox/test.h>
-#include <drivers/lcd.h>
+#include <embox/example.h>
+#include <drivers/nxt/lcd.h>
 
-EMBOX_TEST(run_fill);
+EMBOX_EXAMPLE(run_fill);
 
 static int run_fill(void) {
 	uint8_t buff[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};

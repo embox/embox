@@ -5,12 +5,12 @@
  * @author Darya Dzendzik
  */
 
-#include <embox/test.h>
-#include <drivers/lcd.h>
+#include <embox/example.h>
+#include <drivers/nxt/lcd.h>
 #include <unistd.h>
 #include <types.h>
 
-EMBOX_TEST(run_abc_embox);
+EMBOX_EXAMPLE(run_abc_embox);
 
 static uint8_t pict_buff0[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 

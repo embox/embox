@@ -5,12 +5,12 @@
  * @author Darya Dzendzik
  */
 
-#include <embox/test.h>
-#include <drivers/lcd.h>
+#include <embox/example.h>
+#include <drivers/nxt/lcd.h>
 
 /* wont to see some picture, for example black sq*/
 
-EMBOX_TEST(run_picture);
+EMBOX_EXAMPLE(run_picture);
 
 static int run_picture(void) {
 	char pict_buff[8] = {0x00, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x00};

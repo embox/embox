@@ -7,18 +7,14 @@
  */
 
 #include <types.h>
-#include <embox/test.h>
+#include <embox/example.h>
 #include <unistd.h>
-#include <drivers/nxt_buttons.h>
-#include <drivers/nxt_sonar_sensor.h>
+#include <drivers/nxt/buttons.h>
+#include <drivers/nxt/sonar_sensor.h>
 
-#include <drivers/nxt_motor.h>
+#include <drivers/nxt/motor.h>
 
-EMBOX_TEST(wake_up_test);
-
-#define TOUCH_PORT SENSOR_1
-#define MOTOR0 MOTOR_A
-#define MOTOR1 MOTOR_B
+EMBOX_EXAMPLE(wake_up_example);
 
 #define MOTOR_POWER -100
 #define STOP_TIME 100
@@ -34,10 +30,10 @@ static void move_start(void) {
 		return;
 	}
 
-	TRACE("start O_O\n");
+	printf("start O_O\n");
 
-	motor_set_power(MOTOR0, MOTOR_POWER);
-	motor_set_power(MOTOR1, MOTOR_POWER);
+	nxt_motor_set_power(NXT_MOTOR_A, MOTOR_POWER);
+	nxt_motor_set_power(NXT_MOTOR_B, MOTOR_POWER);
 	counter = STOP_TIME;
 	moving = true;
 }
@@ -49,15 +45,15 @@ static void move_stop(void) {
 	if (counter--) {
 		return;
 	}
-	TRACE("stop -_-\n");
+	printf("stop -_-\n");
 
-	motor_set_power(MOTOR0, 0);
-	motor_set_power(MOTOR1, 0);
+	nxt_motor_set_power(NXT_MOTOR_A, 0);
+	nxt_motor_set_power(NXT_MOTOR_B, 0);
 
 	moving = false;
 }
 
-void sensor_handler(sensor_t *sensor, sensor_val_t val) {
+void sensor_handler(nxt_sensor_t *sensor, sensor_val_t val) {
 	if (!is_read) {
 		treashold = val;
 		is_read = true;
@@ -71,14 +67,9 @@ void sensor_handler(sensor_t *sensor, sensor_val_t val) {
 	}
 }
 
-static int wake_up_test(void) {
-	uint8_t power_val = 0x01;
+static int wake_up_example(void) {
 
-	data_to_avr.input_power = power_val;
-	nxt_sensor_conf_pass(TOUCH_PORT, (sensor_hnd_t) sensor_handler);
-
-	motor_start(MOTOR0, 0, 360, NULL);
-	motor_start(MOTOR1, 0, 360, NULL);
+	nxt_sensor_conf_pass(NXT_SENSOR_1, (sensor_handler_t) sensor_handler);
 
 	while (true);
 

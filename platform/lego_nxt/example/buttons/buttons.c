@@ -7,15 +7,15 @@
  */
 
 #include <types.h>
-#include <embox/test.h>
+#include <embox/example.h>
 #include <unistd.h>
-#include <drivers/nxt_buttons.h>
+#include <drivers/nxt/buttons.h>
 
-EMBOX_TEST(nxt_buttons_test);
+EMBOX_EXAMPLE(nxt_buttons_example);
 
-static int nxt_buttons_test(void) {
+static int nxt_buttons_example(void) {
 	while (true) {
-		if (nxt_buttons_was_pressed()) {
+		if (nxt_buttons_pressed()) {
 			break;
 		}
 		usleep(200);

@@ -8,10 +8,10 @@
 #include <types.h>
 #include <unistd.h>
 
-#include <embox/test.h>
-#include <drivers/lcd.h>
+#include <embox/example.h>
+#include <drivers/nxt/lcd.h>
 
-EMBOX_TEST(run_new_fill);
+EMBOX_EXAMPLE(run_new_fill);
 
 /*extern int display_fill(uint8_t, uint8_t, uint8_t, uint8_t, int);*/
 
