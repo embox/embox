@@ -16,6 +16,9 @@
 #include <net/checksum.h>
 #include <net/protocol.h>
 #include <net/inet_common.h>
+#include <embox/net/proto.h>
+
+EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err, NULL);
 
 static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
@@ -104,7 +107,7 @@ static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	return 0;
 }
 
-int udp_rcv(sk_buff_t *skb) {
+static int udp_rcv(sk_buff_t *skb) {
 	struct sock *sk;
 	struct inet_sock *inet;
 	iphdr_t *iph = ip_hdr(skb);
@@ -137,14 +140,6 @@ int udp_disconnect(struct sock *sk, int flags) {
 static void udp_lib_close(struct sock *sk, long timeout) {
 	sk_common_release(sk);
 }
-
-static const net_protocol_t udp_protocol = {
-	.handler = udp_rcv,
-	.err_handler = udp_err,
-	.type = IPPROTO_UDP
-};
-
-DECLARE_INET_PROTO(udp_protocol);
 
 struct proto udp_prot = {
 	.name              = "UDP",
@@ -201,13 +196,3 @@ const struct proto_ops inet_dgram_ops = {
 	.sendpage          = inet_sendpage,
 #endif
 };
-
-static struct inet_protosw udp_socket = {
-	.type = SOCK_DGRAM,
-	.protocol = IPPROTO_UDP,
-	.prot = &udp_prot,
-	.ops = &inet_dgram_ops,
-	.no_check = 0 /*UDP_CSUM_DEFAULT*/
-};
-
-DECLARE_INET_SOCK(udp_socket);
