@@ -12,9 +12,6 @@
 
 #include <types.h>
 
-#define SPI_BITRATE     2000000
-#define CLOCK_FREQUENCY 48054850
-
 #define NXT_LCD_DEPTH 8
 #define NXT_LCD_WIDTH 100
 

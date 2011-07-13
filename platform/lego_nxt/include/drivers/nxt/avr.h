@@ -1,6 +1,6 @@
 /**
- * @file
- * @brief IO interface of nxt avr
+ * @file avr.h
+ * @brief IO interface of NXT AVR co-processor.
  *
  * @date 05.11.10
  * @author Anton Kozlov
@@ -29,8 +29,5 @@ typedef struct {
 	uint16_t extra;
 	uint8_t  csum;
 } __attribute__((packed)) from_avr_t;
-
-extern to_avr_t data_to_avr;
-extern from_avr_t data_from_avr;
 
 #endif /* NXT_AVR_H_ */
