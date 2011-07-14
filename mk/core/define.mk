@@ -56,8 +56,9 @@ $(or define) = $(strip \
 # 1. Text
 __define = \
     $(call __define_builtin,$ \
-      $(call __define_strip,$ \
-        $(subst $$,$$$$,$1)))
+      $(call __define_brace,$ \
+        $(call __define_strip,$ \
+          $(subst $$,$$$$,$1)))
 
 # 1. Text
 __define_strip = \
@@ -94,11 +95,79 @@ __define_strip_postprocess = \
      $(subst $(\s),,$      \
       $1))))
 
-# 1. Text
-# Note: this function will be redefined to point '__define_builtin_real'
-#       a bit later.
-__define_builtin = \
+#
+# Starting at this point the rest functions will be written using new syntax
+# that we have just defined.
+# But since '__define_brace' and '__define_builtin' functions have not been
+# implemented yet, we need to define stubs conforming to their interfaces.
+#
+
+# See '__define_brace_real'.
+__define_brace = \
   $(subst $$$$,$$,$1)
+
+# See: '__define_builtin_real'.
+__define_builtin = $1
+
+# Now we can use $(call define,...)
+
+# Expands value of the argument treating it as a code.
+# Params:
+#   1. Make code to be expanded.
+# Return:
+#   Expansion result.
+# Note:
+#   As a side effect all escaped dollars become unescaped.
+define __define_expand
+	${eval \
+		__define_expand_tmp__ := $1
+	}
+	$(__define_expand_tmp__)
+endef
+$(call define,__define_expand)
+
+# Substitutes all unescaped occurrences of ${...} expansion to $(...).
+# This does not affect pure {...} groups or escaped $${...}.
+# Params:
+#   1. Dollar-escaped value.
+# Return:
+#   The unescaped result of brace substitution.
+define __define_brace_real
+	# Restore doubled dollars back.
+	$(subst $$$$ ,$$$$,
+		# Expand hooks.
+		$(call __define_expand,
+			# Replace true ${...} expansion occurrences to a hook call:
+			#   ${call __define_brace_hook,...}
+			# which will echo its argument surrounded by $(...)
+			$(subst $$$${,$${call __define_brace_hook$(\comma),
+				# Replace commas with references to \comma.
+				# This is needed to get properly handling of cases like
+				#   $(call foo,${xxx bar,baz})
+				# that would otherwise result in an error:
+				#   unterminated call to function `xxx': missing `}'
+				$(subst $(\comma),$$(\comma),
+					# First of all, isolate doubled dollars (in terms of the
+					# original value) from the succeeding text.
+					#   $${...}  -> $$ {...}
+					#   $$${...} -> $$ ${...}
+					$(subst $$$$$$$$,$$$$$$$$ ,
+						$1
+					)
+				)
+			)
+		)
+	)
+endef
+$(call define,__define_brace_real)
+
+# Surrounds the argument with '$(' and ')'.
+__define_brace_hook = \
+  $$($1)
+
+# Brace-to-paren substitution logic is now ready.
+__define_brace = \
+  $(__define_brace_real)
 
 # We will populate this list of extensions on by one.
 __define_builtin_extensions :=# Initially empty.
@@ -106,46 +175,41 @@ __define_builtin_extensions :=# Initially empty.
 # The real work is done here.
 # 1. Text
 define __define_builtin_real
-	$(subst $(\comma)$$ ,$(\comma),$(call __define_builtin_expand,
-		$(subst $(\comma),$(\comma)$$$$ ,
-			$(call list_fold,
-				__define_builtin_fold_outer,$1,
-				$(__define_builtin_extensions))
+	$(subst $(\comma)$$,$(\comma),
+		# This will force each builtin keyword occurrence to reflect
+		# in __define_builtin_func_xxx invocation.
+		$(call __define_expand,
+			$(subst \
+				$(\comma),
+				$(\comma)$$(call __define_expand_arg_hook),
+				$(call list_fold,__define_builtin_fold,
+					$(subst $$,$$$$,$1),
+					$(__define_builtin_extensions))
+			)
 		)
-	))
+	)
 endef
 $(call define,__define_builtin_real)
 
 # 1. Text
 # 2. Built-in extension function name ('lambda', 'with', ...)
-define __define_builtin_fold_outer
-	$(call list_fold,
-		__define_builtin_fold_inner,$1,
-		$(\paren_open) $(\brace_open),$2)
-endef
-$(call define,__define_builtin_fold_outer)
-
-# 1. Text
-# 2. Open bracket type ('(' or '{')
-# 3. Built-in extension function name ('lambda', 'with', ...)
-define __define_builtin_fold_inner
+define __define_builtin_fold
 	$(subst \
-		$$$$$2$3 ,
-		$$$2call __define_builtin_func_$3$(\comma),$1)
+		$$$$$(\paren_open)$2 ,
+		$$$(\paren_open)call __define_builtin_func_$2$(\comma),
+		$1)
 endef
-$(call define,__define_builtin_fold_inner)
+$(call define,__define_builtin_fold)
 
-# This will force each builtin keyword occurrence to reflect
-# in __define_builtin_func_xxx invocation.
-# As a side effect all escaped dollars become unescaped.
-# 1. Text
-define __define_builtin_expand
-	${eval \
-		__define_builtin_tmp__ := $1
-	}
-	$(__define_builtin_tmp__)
-endef
-$(call define,__define_builtin_expand)
+#define __define_builtin_fold
+#	$(subst \
+#		$$$$$(\paren_open)$2 ,
+#		$$$(\paren_open)call
+#			$$(call __define_expand_func_hook,$2)
+#			__define_builtin_hook$(\comma),
+#		$1)
+#endef
+#$(call define,__define_builtin_fold)
 
 # Now builtins definition core framework is up. Enable it here.
 __define_builtin = \
