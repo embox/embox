@@ -12,7 +12,6 @@
 #define KERNEL_THREAD_SCHED_H_
 
 #include __impl_x(kernel/thread/sched_impl.h)
-#include <kernel/critical/lock.h>
 
 struct thread;
 
@@ -123,6 +122,38 @@ extern void sched_yield(void);
 extern void sched_suspend(struct thread *thread);
 
 extern void sched_resume(struct thread *thread);
+
+/**
+ * Locks the scheduler which means disabling thread switch until
+ * #sched_unlock() is called. Each lock must be balanced with the corresponding
+ * unlock.
+ *
+ * @see sched_unlock()
+ */
+extern void sched_lock(void);
+
+/**
+ * Unlocks the scheduler after #sched_lock(). Must be called on the
+ * previously locked scheduler only. Outermost unlock (which corresponds to
+ * the first lock call) also dispatches pending thread switches (if any).
+ *
+ * @see sched_lock()
+ */
+extern void sched_unlock(void);
+
+/**
+ * Try to call sched_dispath().
+ *
+ * sched_dispath() will be called only outside softirq,irq,sched locks:
+ * sched_/softirq_/irq_lock();
+ *           ...
+ * sched_softirq_/irq_unlock();
+ *
+ * Else sched_dispatch() will delay and then will call immediately
+ * after outermost unlock().
+ */
+extern void softirq_try_dispatch(void);
+
 
 #endif /* KERNEL_THREAD_SCHED_H_ */
 

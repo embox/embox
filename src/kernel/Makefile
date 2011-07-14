@@ -12,19 +12,23 @@ $_MODS_CORE += main
 # TODO too more mods fro core.kernel
 $_MODS += irq timer softirq drv_subsys #printk
 $_MODS += printk
+$_MODS += noirq nosoftirq
+
+$_SRCS-noirq = noirq.c
+$_SRCS-nosoftirq = nosoftirq.c
 
 #$_SRCS-main += main.c
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
 $_DEPS-main += embox.hal.arch
-$_DEPS-main += irq
+#$_DEPS-main += irq
 $_DEPS-main += timer
 #$_DEPS-main += printk
-$_DEPS-main += softirq
+#$_DEPS-main += softirq
 $_REQUIRES-main += embox.hal.diag
 
 ifdef CONFIG_THREAD
-$_DEPS-main += core.kernel.thread.core
+#$_DEPS-main += core.kernel.thread.core
 endif
 
 ifdef CONFIG_MMU_SUPPORT
@@ -34,7 +38,7 @@ endif
 ifdef CONFIG_IRQ
   $_SRCS-irq     += irq.c
   $_REQUIRES-irq += embox.hal.interrupt
-  $_DEPS-irq     += softirq
+# $_DEPS-irq     += softirq
   $_DEPS-irq     += core.kernel.critical.core
 endif
 #ifdef CONFIG_PRINTK
@@ -44,6 +48,7 @@ endif
 #endif
 ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
+  $_DEPS-irq     += core.kernel.critical.core
 endif
 ifdef CONFIG_TIMER
   $_SRCS-timer     += timer.c
@@ -66,3 +71,6 @@ ifdef CONFIG_MEASURE
   $_DEPS-measure += $(CONFIG_MEASURE) timer
   $_DEPS-main += measure
 endif
+
+$_DEPS-noirq += core.kernel.critical.core
+$_DEPS-nosoftirq += core.kernel.critical.core

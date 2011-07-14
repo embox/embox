@@ -21,7 +21,6 @@
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
-#include <kernel/critical/lock.h>
 #include <kernel/critical/api.h>
 
 struct irq_action {
@@ -148,22 +147,26 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_leave();
 }
 
+void irq_try_dispatch(void) {
+
+}
+
 static ipl_t ipl;
 
-void irq_lock(__critical_t critical) {
-	if (!critical_inside(critical)) {
+void irq_lock() {
+	if (!critical_inside(__CRITICAL_HARDIRQ)) {
 		ipl = ipl_save();
 	}
 
-	critical_enter(critical);
+	critical_enter(__CRITICAL_HARDIRQ);
 }
 
-void irq_unlock(__critical_t critical) {
-	critical_leave(critical);
+void irq_unlock() {
+	critical_leave(__CRITICAL_HARDIRQ);
 
-	if (!critical_inside(critical)) {
+	if (!critical_inside(__CRITICAL_HARDIRQ)) {
 		ipl_restore(ipl);
 	}
 
-	critical_irq_check_pending(critical);
+	critical_check_pending(__CRITICAL_HARDIRQ);
 }

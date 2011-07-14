@@ -102,4 +102,28 @@ extern int irq_detach(irq_nr_t irq_nr, void *data);
  */
 extern void irq_dispatch(interrupt_nr_t interrupt_nr);
 
+/**
+ * Locks hardirq and to come in critical section.
+ *
+ * When hardirq locked do not call softirq_dispatch, sched_dispatch.
+ * This function will be called after hardirq_unlock().
+ *
+ * Each lock must be balanced with the corresponding unlock.
+ * @param critical
+ */
+extern void irq_lock(void);
+
+/**
+ * Unlock hardirq and to came out from critical section.
+ * Must be called on the previously locked irq only
+ *
+ * @see irq_lock()
+ */
+extern void irq_unlock(void);
+
+/**
+ * Try to call irq_dispath().
+ */
+extern void irq_try_dispatch(void);
+
 #endif /* IRQ_H_ */

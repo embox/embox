@@ -5,43 +5,43 @@
  * @details
  *
  @verbatim
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
- bit#: |15 | ... |13 |12 ||11 | ... | 9 | 8 || 7 | ... | 1 | 0 |
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ bit#:  |15 | ... |13 |12 ||11 | ... | 9 | 8 || 7 | ... | 1 | 0 |
  level: | P |    preempt  || P |    softirq  || P |    hardirq  |
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  @endverbatim
  *
  * @c hardirq:
  @verbatim
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  level: | P |    preempt  || P |    softirq  || P |    hardirq  |
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
- mask: |   |     |   |   ||   |     |   |   || * | *** | * | * |
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ mask:  |   |     |   |   ||   |     |   |   || * | *** | * | * |
  below: |   |     |   |   ||   |     |   |   || * | *** | * | * |
  count: |   |     |   |   ||   |     |   |   ||   |     |   | * |
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  @endverbatim
  *
  * @c softirq:
  @verbatim
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  level: | P |    preempt  || P |    softirq  || P |    hardirq  |
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
- mask: |   |     |   |   ||   | *** | * | * ||   |     |   |   |
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ mask:  |   |     |   |   ||   | *** | * | * ||   |     |   |   |
  below: |   |     |   |   ||   | *** | * | * || * | *** | * | * |
  count: |   |     |   |   ||   |     |   | * ||   |     |   |   |
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  @endverbatim
  *
  * @c preempt:
  @verbatim
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  level: | P |    preempt  || P |    softirq  || P |    hardirq  |
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
- mask: |   | *** | * | * ||   |     |   |   ||   |     |   |   |
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+ mask:  |   | *** | * | * ||   |     |   |   ||   |     |   |   |
  below: |   | *** | * | * || * | *** | * | * || * | *** | * | * |
  count: |   |     |   | * ||   |     |   |   ||   |     |   |   |
- +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
  @endverbatim
  *
  * @date 16.05.10
@@ -52,22 +52,48 @@
 #define KERNEL_CRITICAL_API_IMPL_H_
 
 #include "count.h"
-#include "levels.h"
-#include "dispatch.h"
+
+/* Critical levels mask. */
+
+#define __CRITICAL_HARDIRQ 0x00ff
+
+#define __CRITICAL_SOFTIRQ 0x0f00
+
+#define __CRITICAL_PREEMPT 0xf000
 
 /* Internal helper macros. */
-
-#define __CRITICAL_LOWER(critical) \
-	(((critical) ^ ((critical) - 1)) >> 1)
 
 #define __CRITICAL_MASK(critical) \
 	(critical)
 
+/* 01111000
+ * 01110111
+ * 00001111
+ * 00000111
+ */
+#define __CRITICAL_LOWER(critical) \
+	(((critical) ^ ((critical) - 1)) >> 1)
+
+/* 01111000
+ * 00000111
+ * 01111111
+ */
 #define __CRITICAL_BELOW(critical) \
 	((critical) | __CRITICAL_LOWER(critical))
 
+/* 01111000
+ * 00000111
+ * 00001000
+ */
 #define __CRITICAL_COUNT(critical) \
 	(__CRITICAL_LOWER(critical) + 1)
+
+/* 01111000
+ * 01111111
+ * 10000000
+ */
+#define __CRITICAL_PENDING(critical) \
+	(__CRITICAL_BELOW(critical) + 1)
 
 static inline int critical_allows(__critical_t critical) {
 	return !(__critical_count_get() & __CRITICAL_BELOW(critical));
@@ -75,6 +101,10 @@ static inline int critical_allows(__critical_t critical) {
 
 static inline int critical_inside(__critical_t critical) {
 	return __critical_count_get() & __CRITICAL_MASK(critical);
+}
+
+static inline int critical_pending(__critical_t critical) {
+	return __critical_count_get() & __CRITICAL_PENDING(critical);
 }
 
 static inline void critical_enter(__critical_t critical) {
@@ -85,44 +115,28 @@ static inline void critical_leave(__critical_t critical) {
 	__critical_count_sub(__CRITICAL_COUNT(critical));
 }
 
-#define __critical_dispatch(critical) \
-	((critical) == __CRITICAL_HARDIRQ ? __critical_dispatch_hardirq() : \
-	 (critical) == __CRITICAL_SOFTIRQ ? __critical_dispatch_softirq() : \
-	 (critical) == __CRITICAL_PREEMPT ? __critical_dispatch_preempt() : \
-			__critical_dispatch_error())
+extern void __sched_dispatch(void);
+extern void softirq_dispatch(void);
 
-static long i = 1 << 15;
-
-/**
- * verify: is 15 is 0 or 1.
- * @see details
- * @param critical 4 bytes with pending bits to verify
- */
-static inline void critical_softirq_check_pending(__critical_t critical) {
-	if (critical & i) {
-		critical = critical & ~i;
-		//dispatch
-	}
+static inline int critical_need_dispatch(__critical_t critical) {
+	return critical_allows(critical) && critical_pending(critical);
 }
 
-/**
- * verify: is 15 and 9 bits are 0 or 1.
- * @see details
- * @param critical 4 bytes with pending bits to verify
- */
-static inline void critical_irq_check_pending(__critical_t critical) {
-	if ((critical >> 8) & 1) {
-		critical = critical & ~(1 << 8);
-		//dispatch
-	}
-	critical_softirq_check_pending(critical);
-}
+static inline void critical_check_pending(__critical_t critical) {
+	switch (critical) {
+	case __CRITICAL_HARDIRQ:
 
-/**
- *
- * @param critical 4 bytes with pending bits to verify
- */
-static inline void critical_sched_check_pending(__critical_t critical) {
-      //dispatch
+	case __CRITICAL_SOFTIRQ:
+		if (critical_need_dispatch(critical)) {
+			__critical_count_clr_bit(__CRITICAL_PENDING (critical));
+			softirq_dispatch();
+		}
+
+	case __CRITICAL_PREEMPT:
+		if (critical_need_dispatch(critical)) {
+			__critical_count_clr_bit(__CRITICAL_PENDING (critical));
+			__sched_dispatch();
+		}
+	}
 }
 #endif /* KERNEL_CRITICAL_API_IMPL_H_ */
