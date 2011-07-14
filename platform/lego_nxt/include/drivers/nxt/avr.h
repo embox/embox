@@ -1,5 +1,5 @@
 /**
- * @file avr.h
+ * @file
  * @brief IO interface of NXT AVR co-processor.
  *
  * @date 05.11.10

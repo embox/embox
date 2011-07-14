@@ -37,7 +37,7 @@ static int translate_buttons(nxt_buttons_mask_t buttons_val) {
 	}
 
 	if (buttons_val > 720) {
-		ret |= NXT_BT_DOWN;
+		ret |= NXT_BOTTON_DOWN;
 	} else if (buttons_val > 270) {
 		ret |= NXT_BOTTON_RIGHT;
 	} else if (buttons_val > 60) {
