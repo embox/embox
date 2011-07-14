@@ -32,14 +32,14 @@ nxt_buttons_mask_t nxt_buttons_pressed(void) {
 static int translate_buttons(nxt_buttons_mask_t buttons_val) {
 	int ret = 0;
 	if (buttons_val > 1500) {
-		ret |= NXT_BOTTON_ENTER;
+		ret |= NXT_BUTTON_ENTER;
 		buttons_val -= 0x7ff;
 	}
 
 	if (buttons_val > 720) {
-		ret |= NXT_BOTTON_DOWN;
+		ret |= NXT_BUTTON_DOWN;
 	} else if (buttons_val > 270) {
-		ret |= NXT_BOTTON_RIGHT;
+		ret |= NXT_BUTTON_RIGHT;
 	} else if (buttons_val > 60) {
 		ret |= NXT_BUTTON_LEFT;
 	}

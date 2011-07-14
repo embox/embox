@@ -18,7 +18,7 @@
 
 /**
  * Buttons mask. Represents several buttons in time. E.g.
- * simultaneous pressing NXT_BOTTON_ENTER and NXT_BOTTON_DOWN gives '9' value
+ * simultaneous pressing NXT_BUTTON_ENTER and NXT_BUTTON_DOWN gives '9' value
  * (equals '1 | 8')
  */
 typedef uint16_t nxt_buttons_mask_t;
