@@ -37,7 +37,7 @@ static int sensor_example(void) {
 
 	/* read buttons that was pressed when we slept */
 	/* exit if DOWN buttons was pressed */
-	while (!(( buts = nxt_buttons_pressed()) & NXT_BOTTON_DOWN)) {
+	while (!(( buts = nxt_buttons_pressed()) & NXT_BUTTON_DOWN)) {
 		/* print sensor value */
 		/* sensor_get_val() == sval (that was set in sensor_handler) */
 		/* there is no difference with */

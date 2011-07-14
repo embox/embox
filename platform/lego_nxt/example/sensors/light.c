@@ -33,7 +33,7 @@ static int sensor_example(void) {
 	/* configuring sensor just as passive */
 	nxt_sensor_conf_pass(LIGHT_PORT, (sensor_handler_t) sensor_handler);
 
-	while (!(( buts = nxt_buttons_pressed()) & NXT_BOTTON_DOWN)) {
+	while (!(( buts = nxt_buttons_pressed()) & NXT_BUTTON_DOWN)) {
 		printf("Lightness is %d%%\n", percent);
 
 		usleep(1000);

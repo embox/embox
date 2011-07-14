@@ -21,7 +21,7 @@ static int sonar_test(void) {
 	/* init sensor as sonar sensor */
 	nxt_sonar_init(NXT_SENSOR_1);
 	/* please refer to sensor example */
-	while (!(( buts = nxt_buttons_pressed()) & NXT_BOTTON_DOWN)) {
+	while (!(( buts = nxt_buttons_pressed()) & NXT_BUTTON_DOWN)) {
 		/* note, after configuring there is no difference between active and passive sensors */
 		printf("%d\n", nxt_sensor_get_val(NXT_SENSOR_1));
 

@@ -11,10 +11,10 @@
 
 #include <types.h>
 
-#define NXT_BOTTON_ENTER  1
+#define NXT_BUTTON_ENTER  1
 #define NXT_BUTTON_LEFT   2
-#define NXT_BOTTON_RIGHT  4
-#define NXT_BOTTON_DOWN   8
+#define NXT_BUTTON_RIGHT  4
+#define NXT_BUTTON_DOWN   8
 
 /**
  * Buttons mask. Represents several buttons in time. E.g.

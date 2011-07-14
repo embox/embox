@@ -21,7 +21,7 @@ static int angle(void) {
 
 	nxt_angle_init(NXT_SENSOR_1);
 
-	while (!(( buts = nxt_buttons_pressed()) & NXT_BOTTON_DOWN)) {
+	while (!(( buts = nxt_buttons_pressed()) & NXT_BUTTON_DOWN)) {
 		/* get angle value divided by 2 -- this is default value of
 		   sensor_get_val. Full equivalent of
 		   nxt_sensor_active_get_val(NXT_SENSOR_1, NXT_ANGLE_COMMAND_2DIV_ANGLE) */
