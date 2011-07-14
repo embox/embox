@@ -6,24 +6,14 @@
  * @author Anton Kozlov
  */
 
-#ifndef AT91_OLIMEX_DEBUG_H_
-#define AT91_OLIMEX_DEBUG_H_
+#ifndef AT91_OLIMEX_DEBUG_LED_H_
+#define AT91_OLIMEX_DEBUG_LED_H_
 
 #include <types.h>
+#include <drivers/at91sam7s256.h>
 
-/* Init leds */
-extern void led_init(void);
+#define OLIMEX_SAM7_LED1 AT91C_PIO_PA17
 
-/* Set first led on */
-extern void led1_on(void);
+#define OLIMEX_SAM7_LED2 AT91C_PIO_PA18
 
-/* Set first led off */
-extern void led1_off(void);
-
-/* Set second led on */
-extern void led2_on(void);
-
-/* Set second led off */
-extern void led2_off(void);
-
-#endif /* AT91_OLIMEX_DEBUG_H_ */
+#endif /* AT91_OLIMEX_DEBUG_LED_H_ */

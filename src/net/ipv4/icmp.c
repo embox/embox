@@ -18,6 +18,9 @@
 #include <net/protocol.h>
 #include <net/kernel_socket.h>
 #include <linux/init.h>
+#include <embox/net/proto.h>
+
+EMBOX_NET_PROTO(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
 /**
  * Build xmit assembly blocks
@@ -310,16 +313,15 @@ static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
 };
 
 void __init icmp_init(void) {
-	int err;
-	err = sock_create_kern(PF_INET, SOCK_RAW, IPPROTO_ICMP, &__icmp_socket);
-	if (err < 0) {
-		printf("Failed to create ICMP control socket\n");
-	} else {
-		printf("Added ICMP control socket to protocol family 2\n");
-	}
+	sock_create_kern(PF_INET, SOCK_RAW, IPPROTO_ICMP, &__icmp_socket);
 }
 
-int icmp_rcv(sk_buff_t *pack) {
+/**
+ * Receive packet.
+ *
+ * @param skb received packet
+ */
+static int icmp_rcv(sk_buff_t *pack) {
 	icmphdr_t *icmph = pack->h.icmph;
 	net_device_stats_t *stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
 	uint16_t tmp;
@@ -366,10 +368,3 @@ int icmp_rcv(sk_buff_t *pack) {
 	}
 	return -1;
 }
-
-net_protocol_t icmp_protocol = {
-	.handler = icmp_rcv,
-	.type = IPPROTO_ICMP
-};
-
-DECLARE_INET_PROTO(icmp_protocol);

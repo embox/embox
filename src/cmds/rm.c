@@ -18,17 +18,17 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	const char *file_path;
-	int recursive, ignore;
+	//int recursive, ignore;
 	int opt;
 	getopt_init();
 	do {
 		opt = getopt(argc - 1, argv, "frh");
 		switch(opt) {
 		case 'f':
-                        ignore = 1;
+          //              ignore = 1;
 			break;
 		case 'r':
-			recursive = 1;
+	//		recursive = 1;
 			break;
 		case 'h':
 			print_usage();

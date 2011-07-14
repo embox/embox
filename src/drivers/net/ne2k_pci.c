@@ -283,6 +283,13 @@ static int __init unit_init(void) {
 //	uint8_t *mac;
 	uint16_t new_command, pci_command;
 	uint8_t  pci_latency;
+	struct pci_dev *pci_dev;
+
+	pci_dev = pci_find_dev(0x10EC, 0x8029);
+	if (NULL == pci_dev) {
+		LOG_WARN("Couldn't find NE2K_PCI device");
+		return 0;
+	}
 
 	if (NULL != (nic = alloc_etherdev(0))) {
 		nic->netdev_ops = &_netdev_ops;

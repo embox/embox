@@ -28,7 +28,7 @@ void interrupt_handler(void) {
 				interrupt_clear(irq_num);
 
 				/*now we allow nested irq*/
-				msr_set_bit(MSR_IE_BIT);
+				msr_set_ie();
 #ifdef CONFIG_IRQ
 				irq_dispatch(irq_num);
 #endif

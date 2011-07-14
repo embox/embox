@@ -9,7 +9,7 @@
 #include <hal/reg.h>
 #include <util/math.h>
 #include <drivers/at91sam7s256.h>
-#include <drivers/lcd.h>
+#include <drivers/nxt/lcd.h>
 #include <string.h>
 
 extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];

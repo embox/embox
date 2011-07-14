@@ -7,11 +7,11 @@
  */
 
 #include <linux/list.h>
-//#include <embox/kernel.h>
 #include <util/array.h>
 #include <drivers/amba_registry.h>
 #include <embox/unit.h>
 #include <linux/init.h>
+#include <err.h>
 
 EMBOX_UNIT_INIT(init);
 

@@ -7,7 +7,7 @@
  */
 
 #include <lib/list.h>
-#include <util/pool.h>
+#include <mem/misc/pool.h>
 #include <kernel/evdispatch2.h>
 #include <kernel/thread/sched.h>
 
@@ -25,7 +25,7 @@ static int CUR_MSG_COUNT_IN_QUEUE = 0;
 #include <embox/unit.h>
 #define make_cache_name(name) \
 		""#name""
-#include <kernel/mm/slab.h>
+#include <mem/slab.h>
 EMBOX_UNIT_INIT(event_dispatcher_init);
 
 static int event_dispatcher_init(void) {

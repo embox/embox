@@ -501,6 +501,9 @@ check_api_multiple_providers = x \
 $(foreach a,$(APIS_BUILD),$(foreach r,$(filter $(MODS_BUILD),$(REQUIRED-$a)), \
   ${eval DEPS-$r := $(sort $(DEPS-$r) $(filter $(MODS_BUILD),$(PROVIDED-$a)))} \
 ))
+$(foreach a,$(APIS_BUILD),$(foreach r,$(filter $(MODS_BUILD),$(PROVIDED-$a)), \
+  ${eval IMPL-$a := $r} \
+))
 
 $(foreach mod,$(MODS_CORE), \
   $(eval RUNLEVEL-$(mod) := 0)\

@@ -17,27 +17,26 @@
 #define __EMBUILD_MOD__
 #include <framework/mod/self.h>
 
-// XXX rewrite this shit. -- Eldar
-#define __EMBUILD__
-#include <framework/mod/embuild.h>
+#define __RUNLEVEL_MOD(op, nr) \
+	generic__runlevel##nr##_##op
 
 #define __RUNLEVEL_MOD_DEF(op, nr) \
-	MOD_DEF(runlevel##nr##_##op, generic, "runlevel"#nr"_"#op,"",""); \
-	__MOD_INFO_DEF(runlevel##nr##_##op, nr, &__runlevel_##op##_mod_ops)
+	extern const struct mod __MOD(__RUNLEVEL_MOD(op, nr)); \
+	__MOD_INFO_DEF(__RUNLEVEL_MOD(op, nr), &__runlevel_##op##_mod_ops, nr)
 
 #define RUNLEVEL_DEF(nr) \
 	__RUNLEVEL_MOD_DEF(init, nr); \
 	__RUNLEVEL_MOD_DEF(fini, nr)
 
 #define RUNLEVEL(nr) { \
-		.init_mod = &__MOD(runlevel##nr##_##init), \
-		.fini_mod = &__MOD(runlevel##nr##_##fini), \
+		.init_mod = &__MOD(__RUNLEVEL_MOD(init, nr)), \
+		.fini_mod = &__MOD(__RUNLEVEL_MOD(fini, nr)), \
 	}
 
-static int init_mod_enable(struct mod *mod);
-static int init_mod_disable(struct mod *mod);
-static int fini_mod_enable(struct mod *mod);
-static int fini_mod_disable(struct mod *mod);
+static int init_mod_enable(struct mod_info *mod_info);
+static int init_mod_disable(struct mod_info *mod_info);
+static int fini_mod_enable(struct mod_info *mod_info);
+static int fini_mod_disable(struct mod_info *mod_info);
 
 struct mod_ops __runlevel_init_mod_ops = {
 	.enable = init_mod_enable,
@@ -67,9 +66,9 @@ static const struct runlevel runlevels[RUNLEVEL_NRS_TOTAL] = {
 
 static runlevel_nr_t init_level = -1, fini_level = -1;
 
-static int init_mod_enable(struct mod *mod) {
+static int init_mod_enable(struct mod_info *mod_info) {
 	int ret;
-	int level = (runlevel_nr_t) mod_data(mod);
+	int level = (runlevel_nr_t) mod_info->data;
 
 	if (runlevel_nr_valid(level - 1) &&
 		0 != (ret = mod_enable(runlevels[level - 1].init_mod))) {
@@ -81,9 +80,9 @@ static int init_mod_enable(struct mod *mod) {
 	return 0;
 }
 
-static int init_mod_disable(struct mod *mod) {
+static int init_mod_disable(struct mod_info *mod_info) {
 	int ret;
-	int level = (runlevel_nr_t) mod_data(mod);
+	int level = (runlevel_nr_t) mod_info->data;
 
 	if (runlevel_nr_valid(level + 1) &&
 		0 != (ret = mod_disable(runlevels[level + 1].init_mod))) {
@@ -95,9 +94,9 @@ static int init_mod_disable(struct mod *mod) {
 	return 0;
 }
 
-static int fini_mod_enable(struct mod *mod) {
+static int fini_mod_enable(struct mod_info *mod_info) {
 	int ret;
-	int level = (runlevel_nr_t) mod_data(mod);
+	int level = (runlevel_nr_t) mod_info->data;
 
 	if (runlevel_nr_valid(level - 1) &&
 		0 != (ret = mod_enable(runlevels[level - 1].fini_mod))) {
@@ -108,9 +107,9 @@ static int fini_mod_enable(struct mod *mod) {
 	return 0;
 }
 
-static int fini_mod_disable(struct mod *mod) {
+static int fini_mod_disable(struct mod_info *mod_info) {
 	int ret;
-	int level = (runlevel_nr_t) mod_data(mod);
+	int level = (runlevel_nr_t) mod_info->data;
 
 	if (runlevel_nr_valid(level + 1) &&
 		0 != (ret = mod_disable(runlevels[level + 1].fini_mod))) {

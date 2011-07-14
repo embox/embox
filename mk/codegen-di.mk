@@ -31,7 +31,7 @@ c_escape = $(subst .,__,$(1))
 c_str_escape = \
   \n\t\t"$(subst $(\n),\\\\n"\n\t\t",$(subst $(\t),\\t,$(subst ",\",$1)))"
 
-eol-trim = $(if $(findstring $() \n,$1),$(call $0,$(subst $() \n,\n,$1)),$1)
+eol-trim = $(if $(findstring $(\s)\n,$1),$(call $0,$(subst $(\s)\n,\n,$1)),$1)
 
 cond_flags =   $(if $(strip $(CFLAGS-$2) $(CPPFLAGS-$2)), \
     $1 $(strip $(CFLAGS-$2) $(CPPFLAGS-$2)) \
@@ -68,12 +68,12 @@ generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
   $(foreach mod,$(MODS_BUILD), \
     $(mod_def) \
   ) \
+  $(foreach runlevel,0 1 2 3, \
+    $(foreach mod,$(addprefix generic.runlevel$(runlevel)_,init fini), \
+      $(mod_def) \
+    ) \
+  ) \
 )\n
-
-#__generate_mod_deps = \
-  \n$1($(c_mod),$(call c_escape,$(foreach dep,$2,\n\tMOD_PTR($(dep)),)) NULL);
-#    $(call __generate_mod_deps,MOD_REQUIRES_DEF,$(mod_requires)) \
-#    $(call __generate_mod_deps,MOD_PROVIDES_DEF,$(mod_provides)) \
 
 generate_mod_deps = $(strip \n/* Mod deps. */\
   $(foreach mod,$(MODS_BUILD), \
@@ -81,8 +81,8 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
       \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
     ) \
     $(if $(RUNLEVEL-$(mod)), \
-      \nMOD_DEP_DEF(runlevel$(RUNLEVEL-$(mod))_init, $(c_mod)); \
-      \nMOD_DEP_DEF($(c_mod), runlevel$(RUNLEVEL-$(mod))_fini); \
+      \nMOD_DEP_DEF(generic__runlevel$(RUNLEVEL-$(mod))_init, $(c_mod)); \
+      \nMOD_DEP_DEF($(c_mod), generic__runlevel$(RUNLEVEL-$(mod))_fini); \
     ) \
   ) \
 )\n

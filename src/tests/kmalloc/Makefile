@@ -1,3 +1,3 @@
-$_MODS         += kmalloc
-$_SRCS-kmalloc += kmalloc.c
-$_DEPS-kmalloc += embox.hal.mm.kmalloc
+$_MODS         += slob
+$_SRCS-slob += slob.c
+$_DEPS-slob += embox.hal.mm.slob

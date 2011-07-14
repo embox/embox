@@ -24,27 +24,27 @@ static inline void cache_refresh(void) {
 }
 
 static inline void cache_enable(void) {
-	msr_set(MSR_ICE_MASK | MSR_DCE_MASK);
+	msr_set_value(msr_get_value() | (MSR_ICE_MASK | MSR_DCE_MASK));
 }
 
 static inline void cache_disable(void) {
-	msr_clr(MSR_ICE_MASK | MSR_DCE_MASK);
+	msr_set_value(msr_get_value() & ~(MSR_ICE_MASK | MSR_DCE_MASK));
 }
 
 static inline void cache_instr_enable(void) {
-	msr_set(MSR_ICE_MASK);
+	msr_set_value(msr_get_value() | MSR_ICE_MASK);
 }
 
 static inline void cache_instr_disable(void) {
-	msr_clr(MSR_ICE_MASK);
+	msr_set_value(msr_get_value() & ~MSR_ICE_MASK);
 }
 
 static inline void cache_data_enable(void) {
-	msr_set(MSR_DCE_MASK);
+	msr_set_value(msr_get_value() | MSR_DCE_MASK);
 }
 
 static inline void cache_data_disable(void) {
-	msr_clr(MSR_DCE_MASK);
+	msr_set_value(msr_get_value() & ~MSR_DCE_MASK);
 }
 
 static inline void icache_flush(void) {

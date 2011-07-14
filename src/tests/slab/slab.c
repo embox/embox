@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <embox/test.h>
 #include <lib/list.h>
-#include <kernel/mm/slab.h>
-#include <kernel/mm/kmalloc.h>
+#include <mem/slab.h>
+#include <mem/kmalloc.h>
 
 EMBOX_TEST(run);
 

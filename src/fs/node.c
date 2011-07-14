@@ -6,10 +6,14 @@
  * @author Nikolay Korotky
  */
 
-#include <linux/init.h>
-#include <embox/unit.h>
-#include <lib/list.h>
+
 #include <string.h>
+#include <embox/unit.h>
+#include <util/array.h>
+
+#include <lib/list.h>
+#include <linux/init.h>
+
 #include <fs/node.h>
 
 typedef struct node_head {

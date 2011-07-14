@@ -16,15 +16,15 @@
 
 #define AT91C_PERIPHERAL_ID_UDP        11
 
-#define AT91C_UDP_CSR0  ((AT91_REG *)   0xFFFB0030)
-#define AT91C_UDP_CSR1  ((AT91_REG *)   0xFFFB0034)
-#define AT91C_UDP_CSR2  ((AT91_REG *)   0xFFFB0038)
-#define AT91C_UDP_CSR3  ((AT91_REG *)   0xFFFB003C)
+#define AT91C_UDP_CSR0  ((at91_reg_t *)   0xFFFB0030)
+#define AT91C_UDP_CSR1  ((at91_reg_t *)   0xFFFB0034)
+#define AT91C_UDP_CSR2  ((at91_reg_t *)   0xFFFB0038)
+#define AT91C_UDP_CSR3  ((at91_reg_t *)   0xFFFB003C)
 
-#define AT91C_UDP_FDR0  ((AT91_REG *)   0xFFFB0050)
-#define AT91C_UDP_FDR1  ((AT91_REG *)   0xFFFB0054)
-#define AT91C_UDP_FDR2  ((AT91_REG *)   0xFFFB0058)
-#define AT91C_UDP_FDR3  ((AT91_REG *)   0xFFFB005C)
+#define AT91C_UDP_FDR0  ((at91_reg_t *)   0xFFFB0050)
+#define AT91C_UDP_FDR1  ((at91_reg_t *)   0xFFFB0054)
+#define AT91C_UDP_FDR2  ((at91_reg_t *)   0xFFFB0058)
+#define AT91C_UDP_FDR3  ((at91_reg_t *)   0xFFFB005C)
 
 
 #define   USB_TIMEOUT   0x0BB8

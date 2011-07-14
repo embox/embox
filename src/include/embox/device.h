@@ -11,13 +11,16 @@
 
 #include <fs/file.h>
 
+#include <util/array.h>
+
 typedef struct device_module {
 	const char * name;
 	const struct file_operations *fops;
 } device_module_t;
 
-#include __impl(embox/device.h)
+extern const device_module_t __device_registry[];
 
-#define EMBOX_DEVICE(name, file_op) __EMBOX_DEVICE(name, file_op)
+#define EMBOX_DEVICE(name, file_op) \
+	ARRAY_SPREAD_ADD(__device_registry, {name, file_op})
 
 #endif /* DEVICE_H_ */

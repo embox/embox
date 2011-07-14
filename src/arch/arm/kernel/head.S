@@ -128,15 +128,6 @@ loop_cp_data:
     strlo   r0, [r2], #4
     blo     loop_cp_data
 
-    ldr     r1, =_text_lma
-    ldr     r2, =_text_vma
-    ldr     r3, =_text_end
-loop_cp_text:
-    cmp     r2, r3
-    ldrlo   r0, [r1], #4
-    strlo   r0, [r2], #4
-    blo     loop_cp_text
-
 init_hook:
     nop
     ldr     r0, =hardware_init_hook

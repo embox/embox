@@ -13,6 +13,11 @@
 #include <net/icmp.h>
 #include <net/ip.h>
 #include <net/netdevice.h>
+#include <embox/net/pack.h>
+#include <framework/net/sock/api.h>
+#include <net/sock.h>
+
+EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
 /*inet socket function*/
 
@@ -21,30 +26,32 @@ static int inet_create(struct socket *sock, int protocol) {
 	struct sock *sk;
 	struct inet_sock *inet;
 	int err = 0;
-	extern inet_protosw_t *__ipstack_sockets_start, *__ipstack_sockets_end;
-	inet_protosw_t ** p_netsock = &__ipstack_sockets_start;
+	const struct net_sock *net_sock_ptr;
+	inet_protosw_t *p_netsock;
 
-	for (; p_netsock < &__ipstack_sockets_end; p_netsock++) {
-		if ((* p_netsock)->type != sock->type) {
+	net_sock_foreach(net_sock_ptr) {
+		p_netsock = net_sock_ptr->netsock;
+		if (p_netsock->type != sock->type) {
 			continue;
 		}
-		if ((* p_netsock)->protocol == protocol) {
+		if (p_netsock->protocol == protocol) {
 			if (protocol != IPPROTO_IP) {
 				break;
 			}
 		} else {
 			if (IPPROTO_IP == protocol) {
-				protocol = (* p_netsock)->protocol;
+				protocol = p_netsock->protocol;
 				break;
 			}
-			if (IPPROTO_IP == (* p_netsock)->protocol) {
+			if (IPPROTO_IP == p_netsock->protocol) {
 				break;
 			}
 		}
 	}
-	sock->ops = (* p_netsock)->ops;
-	sock->sk = sk_alloc(PF_INET, 0, (struct proto*)(* p_netsock)->prot);
-	sk = sock->sk;
+	sock->ops = p_netsock->ops;
+
+	sk = sk_alloc(PF_INET, 0, (proto_t *) p_netsock->prot);
+	sock->sk = sk;
 	if (sk == NULL) {
 		return -1;
 	}
@@ -95,7 +102,7 @@ int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 }
 
 /* uses for create socket */
-static struct net_proto_family inet_family_ops = {
+struct net_proto_family inet_family_ops = {
 	.family = PF_INET,
 	.create = inet_create,
 #if 0
@@ -106,23 +113,5 @@ static struct net_proto_family inet_family_ops = {
 static int inet_init(void) {
 	/* Init skb pool */
 	sock_init();
-
-	/* Add all the base protocols. */
-
-	inet_protocols_init();
-
-	/* Set the IP module up */
-	ip_init();
-
-	sock_register(&inet_family_ops);
-
 	return 0;
 }
-
-static packet_type_t ip_packet_type = {
-	.type = ETH_P_IP,
-	.func = ip_rcv,
-	.init = inet_init
-};
-
-DECLARE_NET_PACKET(ip_packet_type);

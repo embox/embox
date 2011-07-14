@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-#include <util/pool.h>
+#include <mem/misc/pool.h>
 #include <util/math.h>
 #include <util/structof.h>
 #include <kernel/critical/api.h>

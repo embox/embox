@@ -17,17 +17,16 @@
 #include "types.h"
 
 #define __EMBOX_CMD(_exec) \
-	extern const struct cmd __cmd_registry[];          \
-	static int _exec(int argc, char **argv);           \
-	ARRAY_SPREAD_ADD_NAMED(__cmd_registry, __cmd,   {  \
-			.exec = _exec,                     \
-			.mod = &mod_self                   \
-		});                                        \
-	MOD_SELF_BIND(__cmd, NULL) /* TODO not used. -- Eldar */
+	extern const struct cmd __cmd_registry[]; \
+	static int _exec(int argc, char **argv);  \
+	ARRAY_SPREAD_ADD(__cmd_registry, {        \
+			.exec = _exec,                    \
+			.mod = &mod_self                  \
+		})
 
 #ifdef __CDT_PARSER__
 
-# undef __EMBOX_CMD
+# undef  __EMBOX_CMD
 # define __EMBOX_CMD(_exec) \
 	static int _exec(int, char **)
 

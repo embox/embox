@@ -59,7 +59,7 @@ static void print_folder(char *path, node_t *nod, int recursive) {
 typedef void (*print_func_t)(char *path, node_t *nod, int recursive);
 
 static int exec(int argc, char **argv) {
-	int long_list = 0;
+	//int long_list = 0;
 	node_t *nod;
 	char path[CONFIG_MAX_LENGTH_FILE_NAME];
 
@@ -75,7 +75,7 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			return 0;
 		case 'l':
-			long_list = 1;
+			/*long_list = 1;*/
 			print_func = print_long_list;
 			break;
 		case 'R':

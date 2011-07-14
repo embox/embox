@@ -47,11 +47,11 @@ static int tftp_receive(struct sockaddr_in *to, char *mode,
 	size_t size, dsize = 0;
 	socklen_t fromlen;
 	struct sockaddr_in from;
-	char buf[PKTSIZE], ackbuf[PKTSIZE], *dat, *cp;
+	char buf[PKTSIZE], ackbuf[PKTSIZE], *cp;
 	tftphdr_t *dp, *ap;
 	dp = (tftphdr_t *) buf;
 	ap = (tftphdr_t *) ackbuf;
-	dat = (char *) &dp->th_data[0];
+//	dat = (char *) &dp->th_data[0];
 	cp = (char *) &ap->th_stuff[0];
 
 	if ((desc = create_socket(&from)) < 0) {

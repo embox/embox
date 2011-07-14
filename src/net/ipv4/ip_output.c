@@ -15,10 +15,6 @@
 #include <net/checksum.h>
 #include <linux/init.h>
 
-void __init ip_init(void) {
-	ip_rt_init();
-}
-
 /* Generate a checksum for an outgoing IP datagram. */
 static inline void ip_send_check(iphdr_t *iph) {
 	iph->check = 0;

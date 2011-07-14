@@ -123,12 +123,20 @@ static inline void msr_set_value(uint32_t val) {
 	);
 }
 
-static inline void msr_set_bit(int bit) {
-	msr_set(REVERSE_MASK(bit));
+static inline void msr_set_ie(void) {
+	__asm__ __volatile__ ("msrset r0, %0" ::"i"(REVERSE_MASK(MSR_IE_BIT)));
 }
 
-static inline void msr_clr_bit(int bit) {
-	msr_clr(REVERSE_MASK(bit));
+static inline void msr_clr_ie(void) {
+	__asm__ __volatile__ ("msrclr r0, %0" ::"i"(REVERSE_MASK(MSR_IE_BIT)));
+}
+
+static inline void msr_set_ee(void) {
+	__asm__ __volatile__ ("msrset r0, %0" ::"i"(REVERSE_MASK(MSR_EE_BIT)));
+}
+
+static inline void msr_clr_ee(void) {
+	__asm__ __volatile__ ("msrcrl r0, %0" ::"i"(REVERSE_MASK(MSR_EE_BIT)));
 }
 
 static inline uint32_t msr_get_bit(int bit) {

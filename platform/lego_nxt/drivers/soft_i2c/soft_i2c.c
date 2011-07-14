@@ -44,40 +44,40 @@ void scl_set_high(pin_mask_t mask) {
 i2c_state_t wait_state;
 
 static void i2c_port_process(i2c_port_t *port) {
-	REG_LOAD(AT91C_TC0_SR); //XXX
+	REG_LOAD(AT91C_TC0_SR); //it's norm
 	switch (port->state) {
-	case START:
+	case SOFT_I2C_START:
 		if (pin_get_input(port->sda) && pin_get_input(port->scl)) {
 			pin_set_low(port->sda);
-			port->state = WRITE_FALL;
+			port->state = SOFT_I2C_WRITE_FALL;
 		}
 		break;
-	case READ_FALL:
+	case SOFT_I2C_READ_FALL:
 		if (pin_get_input(port->scl)) {
 			scl_set_low(port->scl);
-			port->state = READ_RISE;
+			port->state = SOFT_I2C_READ_RISE;
 			if (port->bit_cnt == 8) {
 				port->data++;
 				port->bit_cnt = 0;
-				port->state = READ_ACK_RISE;
+				port->state = SOFT_I2C_READ_ACK_RISE;
 				if (port->data_cnt-- == 0) {
-					port->state = READ_NOT_ACK_RISE;
+					port->state = SOFT_I2C_READ_NOT_ACK_RISE;
 				}
 			}
 		}
 		break;
-	case READ_NOT_ACK_RISE:
+	case SOFT_I2C_READ_NOT_ACK_RISE:
 		pin_set_high(port->sda);
 		scl_set_high(port->scl);
-		port->state = READ_NOT_ACK_FALL;
+		port->state = SOFT_I2C_READ_NOT_ACK_FALL;
 		break;
-	case READ_NOT_ACK_FALL:
+	case SOFT_I2C_READ_NOT_ACK_FALL:
 		if (pin_get_input(port->scl)) {
 			scl_set_low(port->scl);
-			port->state = STOP_DATA_FALL;
+			port->state = SOFT_I2C_STOP_DATA_FALL;
 		}
 		break;
-	case READ_RISE:
+	case SOFT_I2C_READ_RISE:
 		scl_set_high(port->scl);
 		if (pin_get_input(port->scl)) {
 			uint8_t *ptr;
@@ -87,43 +87,43 @@ static void i2c_port_process(i2c_port_t *port) {
 				*ptr = *ptr | 1;
 			}
 			port->bit_cnt++;
-			port->state = READ_FALL;
+			port->state = SOFT_I2C_READ_FALL;
 		}
 		break;
-	case READ_ACK_FALL:
+	case SOFT_I2C_READ_ACK_FALL:
 		if (pin_get_input(port->scl)) {
 			scl_set_low(port->scl);
 			pin_set_high(port->sda);
-			port->state = READ_RISE;
+			port->state = SOFT_I2C_READ_RISE;
 		}
 		break;
-	case READ_ACK_RISE:
+	case SOFT_I2C_READ_ACK_RISE:
 		pin_set_low(port->sda);
 		scl_set_high(port->scl);
-		port->state = READ_ACK_FALL;
+		port->state = SOFT_I2C_READ_ACK_FALL;
 		break;
-	case STOP_DATA_FALL:
+	case SOFT_I2C_STOP_DATA_FALL:
 		pin_set_low(port->sda);
 		scl_set_high(port->scl);
-		port->state = I2C_STOP;
+		port->state = SOFT_I2C_STOP;
 		break;
-	case I2C_STOP:
+	case SOFT_I2C_STOP:
 		if (pin_get_input(port->scl)) {
 			pin_set_high(port->sda);
-			port->state = STOP_FALL;
+			port->state = SOFT_I2C_STOP_FALL;
 		}
 		break;
-	case STOP_FALL:
+	case SOFT_I2C_STOP_FALL:
 		if (pin_get_input(port->sda) && pin_get_input(port->scl)) {
 			scl_set_low(port->scl);
-			port->state = STOP_RISE;
+			port->state = SOFT_I2C_STOP_RISE;
 		}
 		break;
-	case STOP_RISE:
+	case SOFT_I2C_STOP_RISE:
 		scl_set_high(port->scl);
-		port->state = IDLE;
+		port->state = SOFT_I2C_IDLE;
 		break;
-	case WRITE_FALL:
+	case SOFT_I2C_WRITE_FALL:
 		if (pin_get_input(port->scl)) {
 			scl_set_low(port->scl);
 			if (port->write_byte & 0x80) {
@@ -134,32 +134,32 @@ static void i2c_port_process(i2c_port_t *port) {
 			port->write_byte <<= 1;
 			if (port->bit_cnt-- == 0) { //0_o
 				pin_set_high(port->sda);
-				port->state = WRITE_ACK_RISE;
+				port->state = SOFT_I2C_WRITE_ACK_RISE;
 			} else {
-				port->state = WRITE_RISE;
+				port->state = SOFT_I2C_WRITE_RISE;
 			}
 		}
 		break;
-	case WRITE_RISE:
+	case SOFT_I2C_WRITE_RISE:
 		scl_set_high(port->scl);
-		port->state = WRITE_FALL;
+		port->state = SOFT_I2C_WRITE_FALL;
 		break;
-	case WRITE_ACK_RISE:
+	case SOFT_I2C_WRITE_ACK_RISE:
 		scl_set_high(port->scl);
-		port->state = WRITE_ACK_FALL;
-		if (port->operation == WRITE) {
+		port->state = SOFT_I2C_WRITE_ACK_FALL;
+		if (port->operation == SOFT_I2C_OPERATION_WRITE) {
 			port->write_byte = *(port->data++);
 			port->bit_cnt = 8;
 		}
 		break;
-	case WRITE_ACK_FALL:
+	case SOFT_I2C_WRITE_ACK_FALL:
 		if (pin_get_input(port->scl)) {
 			uint32_t was_state = pin_get_input(port->sda);
 			scl_set_low(port->scl);
 			if (was_state) {
-				port->state = STOP_DATA_FALL;
+				port->state = SOFT_I2C_STOP_DATA_FALL;
 			} else {
-				if (port->operation == WRITE) {
+				if (port->operation == SOFT_I2C_OPERATION_WRITE) {
 					if (port->write_byte & 0x80) {
 						pin_set_high(port->sda);
 					} else {
@@ -167,18 +167,18 @@ static void i2c_port_process(i2c_port_t *port) {
 					}
 					port->write_byte <<= 1;
 					port->bit_cnt--;
-					port->state = WRITE_RISE;
+					port->state = SOFT_I2C_WRITE_RISE;
 				} else {
 					port->bit_cnt = 0;
-					port->state = READ_RISE;
+					port->state = SOFT_I2C_READ_RISE;
 				}
 			}
 			if (port->data_cnt-- == 0) {
-				port->state = STOP_DATA_FALL;
+				port->state = SOFT_I2C_STOP_DATA_FALL;
 			}
 		}
 		break;
-	case IDLE:
+	case SOFT_I2C_IDLE:
 	default:
 		break;
 	}
@@ -187,23 +187,23 @@ static void i2c_port_process(i2c_port_t *port) {
 void i2c_read(i2c_port_t *port, uint8_t addr, uint8_t *data, uint32_t count) {
 	port->data = data;
 	port->data_cnt = count;
-	port->operation = READ;
+	port->operation = SOFT_I2C_OPERATION_READ;
 	port->write_byte = (addr << 1) | 1;
 	port->bit_cnt = 8;
 	pin_set_high(port->sda);
 	scl_set_high(port->scl);
-	port->state = START;
+	port->state = SOFT_I2C_START;
 }
 
 void i2c_write(i2c_port_t *port, uint8_t addr, uint8_t *data, uint32_t count) {
 	port->data = data;
 	port->data_cnt = count;
-	port->operation = WRITE;
+	port->operation = SOFT_I2C_OPERATION_WRITE;
 	port->write_byte = (addr << 1) | 0;
 	port->bit_cnt = 8;
 	pin_set_high(port->sda);
 	scl_set_high(port->scl);
-	port->state = START;
+	port->state = SOFT_I2C_START;
 }
 
 static irq_return_t timer_handler(irq_nr_t irq_nr, void *data) {
@@ -227,7 +227,7 @@ void i2c_init(i2c_port_t *port) {
 	REG_STORE(AT91C_PIOA_SODR, port->scl);
 	REG_STORE(AT91C_PIOA_OER, port->scl);
 
-	port->state = IDLE;
+	port->state = SOFT_I2C_IDLE;
 }
 
 static int i2c_unit_init(void) {

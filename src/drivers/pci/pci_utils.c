@@ -16,6 +16,15 @@
 #define CONFIG_CMD(bus, dev_fn, where) \
 		(0x80000000 | (bus << 16) | (dev_fn << 8) | (where & ~3))
 
+int pci_is_supported(void) {
+	out32(PCI_CONFIG_ADDRESS, 0);
+	out32(PCI_CONFIG_ADDRESS + 0x2, 0);
+	if (in32(PCI_CONFIG_ADDRESS) == 0 && in32(PCI_CONFIG_ADDRESS + 0x2) == 0) {
+		LOG_ERROR("PCI is not supported\n");
+		return -1;
+	}
+	return 0;
+}
 uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint8_t *value) {
 	out32(CONFIG_CMD(bus, dev_fn, where), PCI_CONFIG_ADDRESS);
