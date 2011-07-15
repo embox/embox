@@ -8,7 +8,7 @@
  */
 
 #include <assert.h>
-#include <util/pool.h>
+#include <mem/misc/pool.h>
 #include <hal/clock.h>
 #include <lib/list.h>
 #include <embox/unit.h>
