@@ -74,14 +74,16 @@ static inline void enable_interrupts(void) {
 
 void interrupt_handle(void) {
 	uint32_t source;
+
 	REG_LOAD(AT91C_AIC_IVR);
-	source = REG_LOAD(AT91C_AIC_ISR) & 0x1f;
-#ifdef CONFIG_NESTED_INTERRUPTS
-	disable_interrupts();
-#endif
-	irq_dispatch(source);
+	source = REG_LOAD(AT91C_AIC_ISR);
+
 #ifdef CONFIG_NESTED_INTERRUPTS
 	enable_interrupts();
 #endif
-	REG_STORE(AT91C_AIC_EOICR, 1); /* write anything */
+	irq_dispatch(source);
+#ifdef CONFIG_NESTED_INTERRUPTS
+	disable_interrupts();
+#endif
+	REG_STORE(AT91C_AIC_EOICR, source); /* write anything */
 }

@@ -9,9 +9,9 @@
 #include <types.h>
 #include <unistd.h>
 #include <embox/cmd.h>
-#include <drivers/nxt_buttons.h>
-#include <drivers/nxt_avr.h>
-#include <drivers/power_mng.h>
+#include <drivers/nxt/buttons.h>
+#include <drivers/nxt/avr.h>
+#include <drivers/nxt/power_mng.h>
 
 EMBOX_CMD(power_mng_cmd);
 

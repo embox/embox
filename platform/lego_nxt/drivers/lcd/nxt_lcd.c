@@ -11,9 +11,13 @@
 #include <hal/reg.h>
 #include <string.h>
 #include <drivers/at91sam7s256.h>
-#include <drivers/lcd.h>
+#include <drivers/nxt/lcd.h>
 
 EMBOX_UNIT_INIT(unit_lcd_init);
+
+//TODO move to bsp
+#define SPI_BITRATE     2000000
+#define CLOCK_FREQUENCY 48054850
 
 #define CS_PIN  (1<<10)
 #define CD_PIN  (1<<12)

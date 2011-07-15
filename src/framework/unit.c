@@ -7,6 +7,7 @@
  */
 
 #include <string.h>
+#include <stdio.h>
 
 #include <framework/mod/ops.h>
 #include <framework/mod/api.h>

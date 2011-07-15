@@ -20,11 +20,11 @@
  */
 
 #ifdef __EMBOX__
-#include <err.h>
+//#include <err.h>
 #else
 #include <linux/types.h>
 #endif
 
-#include <util/array.h>
+//#include <util/array.h>
 
 #endif /* EMBOX_KERNEL_H_ */

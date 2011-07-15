@@ -9,7 +9,6 @@
 #include <types.h>
 #include <bitops.h>
 #include <hal/interrupt.h>
-#include <embox/kernel.h>
 #include <asm/cpu_conf.h>
 
 /**

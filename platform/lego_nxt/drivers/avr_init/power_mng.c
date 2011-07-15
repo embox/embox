@@ -6,8 +6,10 @@
  * @author Anton Kozlov
  */
 
-#include <drivers/nxt_avr.h>
-#include <drivers/power_mng.h>
+#include <drivers/nxt/avr.h>
+#include <drivers/nxt/power_mng.h>
+
+extern to_avr_t data_to_avr;
 
 void nxt_halt(void) {
 	data_to_avr.input_power = 0;

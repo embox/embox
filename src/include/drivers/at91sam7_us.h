@@ -40,7 +40,7 @@ typedef struct _AT91S_USART {
 	at91_reg_t	 US_PTCR; 	// PDC Transfer Control Register
 	at91_reg_t	 US_PTSR; 	// PDC Transfer Status Register
 
-} AT91S_USART, *AT91PS_USART;
+} __attribute__((packed)) AT91S_USART, *AT91PS_USART;
 
 // -------- US_CR : (USART Offset: 0x0) Debug Unit Control Register --------
 #define AT91C_US_STTBRK       ((unsigned int) 0x1 <<  9) // (USART) Start Break

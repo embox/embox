@@ -86,8 +86,6 @@ static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
 	return -1;
 }
 #endif
-void __init devinet_init(void) {
-}
 
 in_device_t *in_dev_get(const net_device_t *dev) {
 	return inet_dev_find_by_name(dev->name);

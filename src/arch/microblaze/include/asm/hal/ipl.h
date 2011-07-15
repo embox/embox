@@ -22,7 +22,7 @@
 typedef uint32_t __ipl_t;
 
 static inline void ipl_init(void) {
-	msr_set_bit(MSR_IE_BIT);
+	msr_set_ie();
 }
 #include "stdio.h"
 static inline __ipl_t ipl_save(void) {
@@ -38,7 +38,7 @@ static inline __ipl_t ipl_save(void) {
 
 	__ipl_t ipl = msr_get_bit(MSR_IE_BIT);
 
-	msr_clr_bit(MSR_IE_BIT);
+	msr_clr_ie();
 
 	//prom_printf("get ipl = 0x%X\n", ipl);
 	return ipl;
@@ -51,9 +51,8 @@ static inline void ipl_restore(__ipl_t ipl) {
 	 */
 	irqc_set_mask(ipl);
 #endif
-	//printf ("ipl = 0x%X\n", ipl);
-	//prom_printf("set ipl = 0x%X\n", ipl);
-	ipl ? msr_set_bit(MSR_IE_BIT) : msr_clr_bit(MSR_IE_BIT);
+
+	ipl ? msr_set_ie() : msr_clr_ie();
 
 
 	//msr_set_value(msr_get_value() | ipl);

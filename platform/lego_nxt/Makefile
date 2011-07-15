@@ -3,3 +3,5 @@
 SUBDIRS := $(filter-out include,$(SUBDIRS))
 
 $_CPPFLAGS += -I$($_SELFDIR)/include
+
+$_MODS_CORE += lego_nxt.driver.nxt_avr_init

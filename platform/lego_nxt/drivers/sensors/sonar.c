@@ -7,10 +7,10 @@
  */
 
 #include <types.h>
-#include <drivers/nxt_sonar_sensor.h>
-#include <drivers/nxt_sensor.h>
+#include <drivers/nxt/sonar_sensor.h>
+#include <drivers/nxt/sensor.h>
 
-void nxt_sonar_init (sensor_t *sensor) {
+void nxt_sonar_init (nxt_sensor_t *sensor) {
 	sensor->def_comm = NXT_SONAR_DISTANCE_COMM;
 	nxt_sensor_conf_active(sensor);
 }
