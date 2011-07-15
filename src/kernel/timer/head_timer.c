@@ -50,18 +50,16 @@ static inline void timer_safe_section_init(void) {
 }
 
 static inline void timer_safe_section_start(void) {
-	return;
-	assert(!timer_in_section);
-	timer_in_section = true;
 	timer_ipl = ipl_save();
-
+	if(false != timer_in_section) {
+		return;
+	}
+	timer_in_section = true;
 }
 
 static inline void timer_safe_section_end(void) {
-	return;
-	ipl_restore(timer_ipl);
 	timer_in_section = false;
-
+	ipl_restore(timer_ipl);
 }
 
 
@@ -75,42 +73,41 @@ uint32_t cnt_system_time(void) {
 int set_timer(sys_tmr_ptr *ptimer, uint32_t ticks,
 		TIMER_FUNC handle, void *param) {
 	sys_tmr_ptr new_timer;
-
-	struct list_head *tmp, *tmp2;
 	sys_tmr_ptr tmr;
+	struct list_head *iter, *tmp;
+
 	timer_safe_section_start();
 
-	if (!handle || !(new_timer = (sys_tmr_ptr) pool_alloc(&timer_pool))) {
+	if (NULL == handle ||
+			(NULL == (new_timer = (sys_tmr_ptr)pool_alloc(&timer_pool)))) {
 		if (ptimer) { /* it's necessary? */
 			*ptimer = NULL;
 		}
-		return 1;
+		return -1;
 	}
+
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->handle = handle;
 	new_timer->param  = param;
 	new_timer->isLive = true;
 
-	/*
-	 * find timer before that need paste @new_timer
-	 */
-	tmr = NULL;
-	/* find first element that its time bigger than inserting @new_time */
-	list_for_each_safe(tmp, tmp2, sys_timers_list) {
-		tmr = (sys_tmr_ptr) tmp;
-		if (tmr->cnt >= new_timer->cnt) {
-			break;
+	if (list_empty(sys_timers_list)) {
+		/* we just add timer to list */
+		list_add((struct list_head *)new_timer, sys_timers_list);
+	} else {
+		/* find first element that its time bigger than inserting @new_time */
+		list_for_each_safe(iter, tmp, sys_timers_list) {
+			tmr = (sys_tmr_ptr)iter;
+			if (tmr->cnt >= new_timer->cnt) {
+				list_add_tail((struct list_head *)new_timer, iter);
+				break;
+			}
+			new_timer->cnt -= tmr->cnt;
+			if (iter->next == sys_timers_list) {
+				list_add((struct list_head *)new_timer, iter);
+				break;
+			}
 		}
-		new_timer->cnt -= tmr->cnt;
-	}
-	if (tmr) {
-		tmr->cnt -= new_timer->cnt;
-		/* will it realy paste after head and before tmr? -- check it */
-		list_add_tail( (struct list_head*) new_timer, (struct list_head*) tmr);
-		DOUT("added: %d %d\n", new_timer->cnt, tmr->cnt);
-	} else { /* list is empty */
-		DOUT("added: %d\n", new_timer->cnt);
-		list_add_tail( (struct list_head*) new_timer, sys_timers_list);
 	}
 
 	if (ptimer) {
