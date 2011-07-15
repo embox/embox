@@ -9,14 +9,14 @@
 #include <kernel/critical/api.h>
 #include <kernel/thread/sched.h>
 
-/*void sched_lock(void) {
+void sched_lock(void) {
 	critical_enter(CRITICAL_PREEMPT);
 }
 
 void sched_unlock(void) {
 	sched_unlock_noswitch();
 	sched_check_switch();
-}*/
+}
 
 void sched_try_dispatch(void) {
 	if (critical_allows(__CRITICAL_PREEMPT)) {

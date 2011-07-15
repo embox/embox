@@ -14,4 +14,5 @@ $_DEPS-sched += core.kernel.critical.core
 $_REQUIRES-sched += core.kernel.thread.sched_policy.api
 
 $_MODS       += nosched
-$_SRCS-sched += nosched.c
+$_SRCS-nosched += nosched.c
+$_DEPS-nosched += core.kernel.critical.core
