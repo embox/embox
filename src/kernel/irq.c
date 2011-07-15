@@ -118,7 +118,7 @@ static void irq_leave(void) {
 	ipl = ipl_save();
 	if (0 == (nesting_count = --irq_nesting_count)) {
 		/* Leaving the interrupt context. */
-		softirq_dispatch();
+		softirq_try_dispatch();
 	}
 	ipl_restore(ipl);
 	sched_unlock();

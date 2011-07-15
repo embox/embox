@@ -14,6 +14,14 @@ $_MODS += irq timer softirq drv_subsys #printk
 $_MODS += printk
 $_MODS += noirq nosoftirq
 
+$_APIS += softirq_api irq_api
+
+$_PROVIDES-softirq += softirq_api
+$_PROVIDES-nosoftirq += softirq_api
+
+$_PROVIDES-irq += irq_api
+$_PROVIDES-noirq += irq_api
+
 $_SRCS-noirq = noirq.c
 $_SRCS-nosoftirq = nosoftirq.c
 
@@ -71,6 +79,3 @@ ifdef CONFIG_MEASURE
   $_DEPS-measure += $(CONFIG_MEASURE) timer
   $_DEPS-main += measure
 endif
-
-$_DEPS-noirq += core.kernel.critical.core
-$_DEPS-nosoftirq += core.kernel.critical.core
