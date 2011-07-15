@@ -33,7 +33,7 @@ static int test_mod_enable(struct mod_info *mod) {
 }
 
 const struct test_suite *test_lookup(const char *name) {
-	const struct test_suite *test;
+	const struct test_suite *test = NULL;
 
 	test_foreach(test) {
 		if (strcmp(test_name(test), name) == 0) {

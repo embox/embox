@@ -26,7 +26,7 @@ int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 }
 
 const struct cmd *cmd_lookup(const char *name) {
-	const struct cmd *cmd;
+	const struct cmd *cmd = NULL;
 
 	cmd_foreach(cmd) {
 		if (strcmp(cmd_name(cmd), name) == 0) {
