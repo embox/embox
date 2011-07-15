@@ -3,7 +3,7 @@ $_PACKAGE += core.kernel.timer
 $_APIS += sleep_api
 
 $_MODS           += timer
-$_SRCS-timer     += timer.c
+$_SRCS-timer     += head_timer.c
 $_DEPS-timer     += core.kernel.clock_source
 $_REQUIRES-timer += embox.hal.clock
 

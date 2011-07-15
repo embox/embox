@@ -95,8 +95,8 @@ int set_timer(sys_tmr_ptr *ptimer, uint32_t ticks,
 	 * find timer before that need paste @new_timer
 	 */
 	tmr = NULL;
+	/* find first element that its time bigger than inserting @new_time */
 	list_for_each_safe(tmp, tmp2, sys_timers_list) {
-#error bad!!!
 		tmr = (sys_tmr_ptr) tmp;
 		if (tmr->cnt >= new_timer->cnt) {
 			break;
