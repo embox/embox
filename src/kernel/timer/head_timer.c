@@ -19,7 +19,7 @@
 
 EMBOX_UNIT_INIT(timer_init);
 
-#if 1
+#if 0
 #define DOUT prom_printf
 #else
 #define DOUT(a,...)
@@ -43,7 +43,7 @@ static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 #include <hal/ipl.h>
 #include <assert.h>
 
-static __ipl_t timer_ipl;
+static ipl_t timer_ipl;
 static bool timer_in_section = false;
 
 static inline void timer_safe_section_init(void) {
@@ -70,19 +70,46 @@ uint32_t cnt_system_time(void) {
 	return cnt_sys_time;
 }
 
-int set_timer(sys_tmr_ptr *ptimer, uint32_t ticks,
-		TIMER_FUNC handle, void *param) {
-	sys_tmr_ptr new_timer;
-	sys_tmr_ptr tmr;
+static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 	struct list_head *iter, *tmp;
 
-	timer_safe_section_start();
+	tmr->cnt = tmr->load;
 
-	if (NULL == handle ||
-			(NULL == (new_timer = (sys_tmr_ptr)pool_alloc(&timer_pool)))) {
-		if (ptimer) { /* it's necessary? */
-			*ptimer = NULL;
+	/* if we haven't any timers we just insert new timer into the list */
+	if (list_empty(sys_timers_list)) {
+		/* we just add timer to list */
+		list_add((struct list_head *)tmr, sys_timers_list);
+		return;
+	}
+
+	/* find first element that its time bigger than inserting @new_time */
+	list_for_each_safe(iter, tmp, sys_timers_list) {
+		if (((struct sys_tmr *)iter)->cnt >= tmr->cnt) {
+			list_add_tail((struct list_head *)tmr, iter);
+			return;
 		}
+		tmr->cnt -= ((struct sys_tmr *)iter)->cnt;
+
+	}
+
+	/* add the latest timer to end of list */
+	if (iter->next == sys_timers_list) {
+		list_add((struct list_head *)tmr, iter);
+		return;
+	}
+
+}
+
+int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handle,
+		void *param) {
+	struct sys_tmr *new_timer;
+
+	if (NULL == handle || NULL == ptimer) {
+		return -1; /* wrong parameters */
+	}
+
+	if (NULL == (new_timer = (sys_tmr_ptr)pool_alloc(&timer_pool))) {
+		*ptimer = NULL;
 		return -1;
 	}
 
@@ -91,30 +118,11 @@ int set_timer(sys_tmr_ptr *ptimer, uint32_t ticks,
 	new_timer->param  = param;
 	new_timer->isLive = true;
 
-	if (list_empty(sys_timers_list)) {
-		/* we just add timer to list */
-		list_add((struct list_head *)new_timer, sys_timers_list);
-	} else {
-		/* find first element that its time bigger than inserting @new_time */
-		list_for_each_safe(iter, tmp, sys_timers_list) {
-			tmr = (sys_tmr_ptr)iter;
-			if (tmr->cnt >= new_timer->cnt) {
-				list_add_tail((struct list_head *)new_timer, iter);
-				break;
-			}
-			new_timer->cnt -= tmr->cnt;
-			if (iter->next == sys_timers_list) {
-				list_add((struct list_head *)new_timer, iter);
-				break;
-			}
-		}
-	}
-
-	if (ptimer) {
-		*ptimer = new_timer;
-	}
-
+	timer_safe_section_start();
+	timer_insert_into_list(new_timer);
 	timer_safe_section_end();
+
+	*ptimer = new_timer;
 
 	return 0;
 }
@@ -137,47 +145,42 @@ int close_timer(sys_tmr_ptr *ptimer) {
 	return 0;
 }
 
+static inline bool timers_need_schedule(void) {
+	if(list_empty(sys_timers_list)) {
+		return false;
+	}
+	if(0 == ((sys_tmr_ptr)sys_timers_list->next)->cnt--) {
+		return true;
+	}
+
+	return false;
+}
+
+static inline void timers_schedule(void) {
+	struct list_head *iter, *tmp;
+
+	list_for_each_safe(iter, tmp, sys_timers_list) {
+		if (0 != ((struct sys_tmr *)iter)->cnt) {
+			return;
+		}
+
+		((struct sys_tmr *)iter)->handle((struct sys_tmr *)iter,
+				((struct sys_tmr *)iter)->param);
+
+		list_del(iter);
+		timer_insert_into_list((struct sys_tmr *)iter);
+	}
+}
+
 /**
  * For each timer in the timers array do the following: if the timer is enable
  * and the counter of this timer is the zero then its initial value is assigned
  * to the counter and the function is executed.
  */
 static void inc_sys_timers(void) {
-	struct list_head *tmp, *tmp2;
-	sys_tmr_ptr tmr;
-
 	timer_safe_section_start();
-	if (!list_empty(sys_timers_list)) {
-		/* first element in list */
-		tmr = ((sys_tmr_ptr) sys_timers_list->next);
-
-		if(tmr->cnt) { /* can be zero */
-			--(tmr->cnt);
-		}
-
-		DOUT("#1 %d\n",(((sys_tmr_ptr) sys_timers_list->next)->cnt));
-
-		list_for_each_safe(tmp, tmp2, sys_timers_list) {
-			tmr = (sys_tmr_ptr) tmp;
-			DOUT("foreach: %d\n",tmr->cnt);
-			if (0 == tmr->cnt) {
-				uint32_t load = tmr->load;
-				void* args = tmr->param;
-				TIMER_FUNC handle = tmr->handle;
-
-				if (tmr->isLive ) {
-					tmr->handle(tmr, tmr->param);
-				}
-
-				/* repaste in list */
-				list_del((struct list_head *) tmr);
-				pool_free(&timer_pool, tmr);
-
-				set_timer(NULL,load,handle,args);
-			} else {
-				break;
-			}
-		}
+	if(timers_need_schedule()) {
+		timers_schedule();
 	}
 	timer_safe_section_end();
 }
