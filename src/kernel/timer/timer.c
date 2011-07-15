@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-#include <util/pool.h>
+#include <mem/misc/pool.h>
 #include <hal/clock.h>
 #include <lib/list.h>
 //#include <util/list.h>

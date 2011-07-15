@@ -16,7 +16,7 @@
 EMBOX_TEST_SUITE("sleep suite");
 
 #define EPSILON_BORDER 10
-#define TIME_TO_SLEEP  10
+#define TIME_TO_SLEEP  100
 #define NUM_THREADS     8
 
 TEST_EMIT_BUFFER_DEF(buff1, 7);
@@ -35,6 +35,7 @@ TEST_CASE("one sleep") {
 	cur_time = clock();
 	usleep(TIME_TO_SLEEP);
 	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
+	prom_printf("sleep test: %d %d %d\n",(int)cur_time,(int)clock(),(int)epsilon);
 	test_assert_true(epsilon < EPSILON_BORDER);
 }
 
@@ -96,6 +97,7 @@ TEST_CASE("sleep sort") {
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(thread_join(t[i], NULL));
 	}
+	for (i=0;i<10;++i);
 	test_assert_str_equal(test_emit_buffer_str(&buff2), "87654321");
 }
 

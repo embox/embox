@@ -11,6 +11,7 @@
 #include <bitops.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
+#include <kernel/clock_source.h>
 #include <asm/cpu_conf.h>
 #include <hal/clock.h>
 
@@ -44,6 +45,9 @@
 #define TIMER_RELOAD        REVERSE_MASK(TIMER_ARHT_BIT)
 /** set down count mode*/
 #define TIMER_DOWN_COUNT    REVERSE_MASK(TIMER_UDT_BIT)
+
+static LIST_HEAD(timers_list);
+static struct clock_source mb_timer_clock_source;
 
 /**
  * Structure one of two timers. Both timers need only for pwm mode
@@ -88,6 +92,11 @@ void clock_init(void) {
 	if (0 != irq_attach(XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
 		panic("mbtimer irq_attach failed");
 	}
+
+	mb_timer_clock_source.flags = 1;
+	mb_timer_clock_source.precision = 1000;
+	mb_timer_clock_source.timers_list = &timers_list;
+	clock_source_register(&mb_timer_clock_source);
 }
 
 void clock_setup(useconds_t useconds) {

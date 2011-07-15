@@ -8,7 +8,7 @@
 
 #include <kernel/clock_source.h>
 #include <lib/list.h>
-#include <util/pool.h>
+#include <mem/misc/pool.h>
 #include <types.h>
 #include <time.h>
 #include <assert.h>

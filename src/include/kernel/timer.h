@@ -21,14 +21,6 @@ typedef sys_tmr_t *sys_tmr_ptr;
 typedef void (*TIMER_FUNC)(sys_tmr_ptr timer, void *param);
 
 /**
- * timer type is timer_t
- */
-
-/**
- * Timer functor type is TIMER_FUNC
- */
-
-/**
  * Initialization of the timers subsystem.
  * int timer_init(void);
  * We don't need it, since it calling by UNIT framework and must be
