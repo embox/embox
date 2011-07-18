@@ -38,6 +38,7 @@ void interrupt_init(void) {
 	out8(NON_SPEC_EOI, PIC2_COMMAND);
 
 	apic_disable_all();
+	interrupt_enable(7); /* enable slave irq controller irq 8-16 */
 	irq_enable();
 }
 

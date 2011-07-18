@@ -77,18 +77,10 @@ void gpio_set_value(unsigned long mask, int value) {
 }
 
 static int __init gpio_init(void) {
-	/* Example: blink led
+	/* Example: blink led */
 	set_control(GPIO_RTCRD);
 	out32(RDC_DATA, PCI_ADDR_SEL);
-	int state = 1;
-	while (1) {
-		if (state) {
-			out32(0, PCI_DATA_REG);
-			state = 0;
-		} else {
-			out32(GPIO_RTCRD, PCI_DATA_REG);
-			state = 1;
-		}
-	}*/
+//	out32(0, PCI_DATA_REG);          // red led on
+//	out32(GPIO_RTCRD, PCI_DATA_REG); // red led off
 	return 0;
 }
