@@ -63,7 +63,7 @@ static int exec(int argc, char **argv) {
 			}
 			break;
 		case 'm':
-			if (NULL == macaddr_scan((unsigned char *) optarg, hwaddr)) {
+			if (NULL == macaddr_scan((const unsigned char *) optarg, hwaddr)) {
 				printf("arp: invalid MAC address: %s\n", optarg);
 				return -1;
 			}

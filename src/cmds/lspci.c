@@ -82,7 +82,7 @@ static int exec(int argc, char **argv) {
 					pci_dev->rev);
 		if (full != 0) {
 			int bar_num;
-			printf("\t  IRQ number: 0x%d\n", pci_dev->irq);
+			printf("\t  IRQ number: %d\n", pci_dev->irq);
 
 			for(bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num ++) {
 				uint32_t base_addr = pci_dev->bar[bar_num];
