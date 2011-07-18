@@ -29,6 +29,7 @@ static int inet_create(struct socket *sock, int protocol) {
 	const struct net_sock *net_sock_ptr;
 	inet_protosw_t *p_netsock;
 
+	p_netsock = NULL;
 	net_sock_foreach(net_sock_ptr) {
 		p_netsock = net_sock_ptr->netsock;
 		if (p_netsock->type != sock->type) {
