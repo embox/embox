@@ -102,28 +102,6 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 
 static volatile unsigned int irq_nesting_count;
 
-static void irq_enter(void) {
-	ipl_t ipl;
-	sched_lock();
-
-	ipl = ipl_save();
-	irq_nesting_count++;
-	ipl_restore(ipl);
-}
-
-static void irq_leave(void) {
-	ipl_t ipl;
-	unsigned int nesting_count;
-
-	ipl = ipl_save();
-	if (0 == (nesting_count = --irq_nesting_count)) {
-		/* Leaving the interrupt context. */
-		softirq_try_dispatch();
-	}
-	ipl_restore(ipl);
-	sched_unlock();
-}
-
 void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_nr_t irq_nr = interrupt_nr;
 	struct irq_action *action;
@@ -131,7 +109,7 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-	irq_enter();
+	irq_lock();
 
 	irq_table[irq_nr].count++;
 	action = irq_table[irq_nr].action;
@@ -144,11 +122,7 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 		}
 	}
 
-	irq_leave();
-}
-
-void irq_try_dispatch(void) {
-
+	irq_unlock();
 }
 
 static ipl_t ipl;

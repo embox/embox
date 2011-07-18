@@ -31,7 +31,6 @@ static inline void __critical_count_clr_bit(__critical_t mask) {
 	__critical_count &= ~mask;
 }
 
-
 static inline void __critical_count_add_nobarrier(__critical_t count) {
 	extern __critical_t __critical_count;
 	__critical_count += count;

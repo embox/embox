@@ -9,4 +9,5 @@
 #include "api_impl.h"
 
 // XXX initial value to prevent early scheduling from irq_leave.
-__critical_t __critical_count = __CRITICAL_COUNT(__CRITICAL_PREEMPT);
+__critical_t __critical_count = 0;
+
