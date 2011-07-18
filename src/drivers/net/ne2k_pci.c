@@ -12,6 +12,7 @@
  * @author Biff
  *         - Initial implementation
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  *         - Adaptation for embox
  */
 
@@ -80,10 +81,10 @@ static inline void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
 	out8(val >> 8, EN0_RCNTHI + base_addr);
 }
 
-static void copy_data_to_card(uint16_t dest, uint8_t* src, uint16_t length, unsigned long base_addr) {
+static void copy_data_to_card(uint16_t dest, uint8_t *src, uint16_t length, unsigned long base_addr) {
     out8(E8390_PAGE0 + E8390_START + E8390_NODMA, base_addr + NE_CMD);
 	set_rem_address(dest, base_addr);
-	set_rem_byte_count(length, base_addr);
+	set_rem_byte_count(length>>1, base_addr);
     out8(E8390_RWRITE + E8390_START, base_addr + NE_CMD);
     if (word16) {
     	if (length & 1) {
@@ -160,35 +161,20 @@ static size_t pkt_receive(struct sk_buff *skb) {
  * queue packet for transmission
  */
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
-	unsigned long nic_base = dev->base_addr;
-    unsigned char start_page = tx_start_page;
-    unsigned int count = skb->len;
-#if 1
-    unsigned char test_data[] = {// ethernet hdr
-    		               0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                           0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x02,
-                           0x08, 0x06,
-                           // arp
-                           0x00, 0x01,
-                           0x08, 0x00,
-                           0x06,
-                           0x04,
-                           0x00, 0x01,
-                           0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x02,
-                           0x0A, 0x00, 0x02, 0x10,
-                           0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                           0x0A, 0x00, 0x02, 0x0F};
-#endif
+	unsigned long nic_base;
+	uint16_t start_page, count;
+
     // copy
-//    copy_data_to_card(start_page << 8, skb->data, count, nic_base);
-    copy_data_to_card(start_page << 8, test_data, sizeof test_data, nic_base);
+	nic_base = dev->base_addr;
+    start_page = tx_start_page;
+    count = skb->len;
+    copy_data_to_card(start_page << 8, skb->data, count, nic_base);
     // send
     out8(E8390_NODMA + E8390_PAGE0, nic_base + NE_CMD);
     if (in8(nic_base) & E8390_TRANS) {
     	printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
     }
-//    set_tx_count(count, nic_base);
-    set_tx_count(sizeof test_data, nic_base);
+    set_tx_count(count, nic_base);
     out8(start_page, nic_base + EN0_TPSR);
     out8(E8390_NODMA + E8390_TRANS + E8390_START, nic_base + NE_CMD);
     return count;
