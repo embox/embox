@@ -164,10 +164,10 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	unsigned long nic_base;
 	uint16_t start_page, count;
 
-    // copy
 	nic_base = dev->base_addr;
     start_page = tx_start_page;
     count = skb->len;
+    // copy
     copy_data_to_card(start_page << 8, skb->data, count, nic_base);
     // send
     out8(E8390_NODMA + E8390_PAGE0, nic_base + NE_CMD);
@@ -203,7 +203,7 @@ static int probe(net_device_t *dev) {
 			{0x48, EN0_DCFG}, /* Set byte-wide (0x48) access. */
 			{0x00, EN0_RCNTLO}, /* Clear the count regs. */
 			{0x00, EN0_RCNTHI},
-			{0x00, EN0_IMR}, /* Mask completion irq. */
+			{0xFF, EN0_IMR}, /* Mask completion irq. */
 			{0xFF, EN0_ISR},
 			{E8390_RXOFF, EN0_RXCR}, /* 0x20  Set to monitor */
 			{E8390_TXOFF, EN0_TXCR}, /* 0x02  and loopback mode. */
