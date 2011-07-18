@@ -13,7 +13,7 @@
 #include <util/array.h>
 
 /*FIXME rename this file it contains only net_utils function*/
-unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res) {
+unsigned char *ipaddr_scan(const unsigned char *addr, unsigned char *res) {
 	char symbol_str[4];
 	size_t i, j, tmp, cur = 0;
 	for (i = 0; i < (sizeof(res) - 1); i++) {
@@ -46,7 +46,7 @@ unsigned char *ipaddr_scan(unsigned char *addr, unsigned char *res) {
 	return res;
 }
 
-unsigned char *macaddr_scan(unsigned char *addr, unsigned char *res) {
+unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
 	char symbol_str[4];
 	size_t i, j, cur = 0;
 	unsigned int tmp;
