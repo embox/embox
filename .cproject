@@ -136,9 +136,9 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>
 					</target>
-					<target name="config sparc release" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+					<target name="config x86 debug" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments>PROJECT=sparc PROFILE=release</buildArguments>
+						<buildArguments>PROJECT=x86 PROFILE=debug</buildArguments>
 						<buildTarget>config</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
@@ -200,9 +200,9 @@
 						<useDefaultCommand>false</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>
 					</target>
-					<target name="config arm nxt" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+					<target name="config nxt debug" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments>PROJECT=arm PROFILE=nxt</buildArguments>
+						<buildArguments>PROJECT=arm PROFILE=nxt_debug</buildArguments>
 						<buildTarget>config</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
@@ -211,6 +211,14 @@
 					<target name="config olimex debug" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
 						<buildArguments>PROJECT=arm PROFILE=olimex_debug</buildArguments>
+						<buildTarget>config</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+						<runAllBuilders>true</runAllBuilders>
+					</target>
+					<target name="Config  biffboard" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>PROJECT=x86 PROFILE=biffboard</buildArguments>
 						<buildTarget>config</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
