@@ -141,19 +141,5 @@ extern void sched_lock(void);
  */
 extern void sched_unlock(void);
 
-/**
- * Try to call sched_dispath().
- *
- * sched_dispath() will be called only outside softirq,irq,sched locks:
- * sched_/softirq_/irq_lock();
- *           ...
- * sched_softirq_/irq_unlock();
- *
- * Else sched_dispatch() will delay and then will call immediately
- * after outermost unlock().
- */
-extern void softirq_try_dispatch(void);
-
-
 #endif /* KERNEL_THREAD_SCHED_H_ */
 

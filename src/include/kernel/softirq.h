@@ -98,19 +98,6 @@ extern void softirq_lock(void);
  */
 extern void softirq_unlock(void);
 
-/**
- * Try to call softirq_dispath().
- *
- * softirq_dispath() will be called only outside softirq and irq locks:
- * softirq_/irq_lock();
- *        ...
- * softirq_/irq_unlock();
- *
- * Else softirq_dispatch() will delay and then will call immediately
- * after outermost softirq_unlock() or irq_unlock();
- */
-extern void softirq_try_dispatch(void);
-
 static inline void softirq_disable(void) {
 	critical_enter(CRITICAL_SOFTIRQ);
 }

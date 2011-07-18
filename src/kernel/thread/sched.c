@@ -22,6 +22,8 @@
 #include <hal/context.h>
 #include <hal/ipl.h>
 
+#include __impl_x(kernel/thread/sched_critical.h)
+
 #include "types.h"
 
 /** Timer, which calls scheduler_tick. */
@@ -272,11 +274,6 @@ void sched_check_switch(void) {
 	if (critical_allows(CRITICAL_PREEMPT) && resched) {
 		__sched_dispatch();
 	}
-}
-
-void sched_unlock(void) {
-	sched_unlock_noswitch();
-	sched_check_switch();
 }
 
 static int unit_init(void) {

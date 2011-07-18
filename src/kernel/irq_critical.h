@@ -1,8 +1,8 @@
 /**
- *  @brief Implements irq interface.
- *  @details This header in use if and only if
- *           mod 'irq' is not enable.
+ *  @brief Implements irq locks interface.
+ *  @details This header in use also if mod 'irq' is not enable.
  *  @date 13.07.11
+ *  @author Alexandr Kalmuk
  */
 
 #ifndef KERNEL_IRQ_CRITICAL_H_

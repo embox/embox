@@ -57,6 +57,11 @@ int softirq_raise(softirq_nr_t nr) {
 	softirq_pending |= (1 << nr);
 	ipl_restore(ipl);
 
+	if (critical_allows(__CRITICAL_PREEMPT)) {
+		__sched_dispatch();
+	} else
+		__critical_count_set_bit(__CRITICAL_PREEMPT);
+
 	return 0;
 }
 
