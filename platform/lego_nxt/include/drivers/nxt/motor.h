@@ -23,7 +23,7 @@
 /**
  * Total number of motors available in system
  */
-#define NXT_N_MOTORS       NXT_AVR_N_OUTPUTS
+#define NXT_N_MOTORS       3
 
 /**
  * Gets a motor's port. You should use NXT_MOTOR_X macros to receive specific

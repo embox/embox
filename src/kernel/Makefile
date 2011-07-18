@@ -21,7 +21,7 @@ $_DEPS-main += irq
 $_DEPS-main += timer
 #$_DEPS-main += printk
 $_DEPS-main += softirq
-$_REQUIRES-main += embox.hal.diag
+#$_REQUIRES-main += embox.hal.diag
 
 ifdef CONFIG_THREAD
 $_DEPS-main += core.kernel.thread.core

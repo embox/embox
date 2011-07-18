@@ -77,7 +77,7 @@ static int handle_comm(uint8_t *buff) {
 #define EDGE 200
 
 static int sensor_send(uint8_t sensor_id) {
-	nxt_sensor_t *sens = &sensors[sensor_id];
+	nxt_sensor_t *sens = nxt_get_sensor(sensor_id);
 	sensor_val_t tmp = 0;
 	uint8_t out[16];
 	memset(out, 0, 16);
@@ -100,7 +100,7 @@ static int handle_body(uint8_t *buff) {
 	case DC_SET_OUTPUT_STATE:
 		power = buff[1];
 		if (buff[0] != 0xff) {
-			nxt_motor_set_power(&nxt_motors[buff[0]], power);
+			nxt_motor_set_power(nxt_get_motor(buff[0]), power);
 		} else {
 			nxt_motor_set_power(NXT_MOTOR_A, power);
 			nxt_motor_set_power(NXT_MOTOR_B, power);
