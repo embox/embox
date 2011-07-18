@@ -16,15 +16,6 @@ $_MODS += irq_critical softirq_critical
 
 $_APIS += softirq_api irq_api
 
-$_PROVIDES-softirq += softirq_api
-$_PROVIDES-softirq_critical += softirq_api
-
-$_PROVIDES-irq += irq_api
-$_PROVIDES-irq_critical += irq_api
-
-$_SRCS-irq_critical = irq_critical.h
-$_SRCS-softirq_critical = softirq_critical.h
-
 #$_SRCS-main += main.c
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
@@ -43,20 +34,27 @@ ifdef CONFIG_MMU_SUPPORT
 $_DEPS-main += embox.hal.mm.mmu
 endif
 
-  $_SRCS-irq     += irq.c
-  $_REQUIRES-irq += embox.hal.interrupt
+$_SRCS-softirq_critical += softirq_critical.h
+$_PROVIDES-softirq_critical += softirq_api
+
+$_SRCS-irq_critical += irq_critical.h
+$_PROVIDES-irq_critical += irq_api
+
+$_SRCS-irq     += irq.c
+$_REQUIRES-irq += embox.hal.interrupt
+$_PROVIDES-irq += irq_api
 # $_DEPS-irq     += softirq
 # $_DEPS-irq     += core.kernel.critical.core
+
+$_SRCS-softirq += softirq.c
+$_PROVIDES-softirq += softirq_api
+  #$_DEPS-irq     += core.kernel.critical.core
 
 #ifdef CONFIG_PRINTK
 #  $_SRCS-printk  += printk.c
 #  $_SRCS-printk  += printk/putchar.c ../lib/stdio/printf.c
 #  $_SRCS-printk  += printk/putchar.c printk/printf.c
 #endif
-
-  $_SRCS-softirq += softirq.c
-  #$_DEPS-irq     += core.kernel.critical.core
-
 
 ifdef CONFIG_TIMER
   $_SRCS-timer     += timer.c

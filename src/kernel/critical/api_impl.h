@@ -126,12 +126,14 @@ static inline void critical_check_pending(__critical_t critical) {
 	switch (critical) {
 	case __CRITICAL_HARDIRQ:
 
+	/* FALLTHROUGH */
 	case __CRITICAL_SOFTIRQ:
 		if (critical_need_dispatch(critical)) {
 			__critical_count_clr_bit(__CRITICAL_PENDING (critical));
 			softirq_dispatch();
 		}
 
+	/* FALLTHROUGH */
 	case __CRITICAL_PREEMPT:
 		if (critical_need_dispatch(critical)) {
 			__critical_count_clr_bit(__CRITICAL_PENDING (critical));
