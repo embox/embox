@@ -16,5 +16,5 @@ $_DEPS-sched += embox.hal.context
 $_REQUIRES-sched += core.kernel.thread.sched_policy.api
 $_PROVIDES-sched += sched_api
 
-$_SRCS-sched_critical += sched_critical.c
+$_SRCS-sched_critical += sched_critical.h
 $_PROVIDES-sched_critical += sched_api
