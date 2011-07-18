@@ -16,7 +16,7 @@
 EMBOX_TEST_SUITE("sleep suite");
 
 #define EPSILON_BORDER 10
-#define TIME_TO_SLEEP  100
+#define TIME_TO_SLEEP  20
 #define NUM_THREADS     8
 
 TEST_EMIT_BUFFER_DEF(buff1, 7);
@@ -35,7 +35,6 @@ TEST_CASE("one sleep") {
 	cur_time = clock();
 	usleep(TIME_TO_SLEEP);
 	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
-	prom_printf("sleep test: %d %d %d\n",(int)cur_time,(int)clock(),(int)epsilon);
 	test_assert_true(epsilon < EPSILON_BORDER);
 }
 
@@ -75,7 +74,7 @@ TEST_CASE("simple multi-threaded check") {
 
 /**
  * run NUM_THREADS threads and with progressive time to sleep
- * after exec buffer2 must be "87654321"
+ * after execute buffer2 must be "87654321"
  */
 
 void * handler2(void* args) {

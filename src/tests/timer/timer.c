@@ -8,7 +8,7 @@
 #include <embox/test.h>
 #include <kernel/timer.h>
 
-#define TEST_TIMER_TICKS 10000
+#define TEST_TIMER_TICKS 10
 
 EMBOX_TEST(run);
 

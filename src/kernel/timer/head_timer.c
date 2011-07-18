@@ -17,7 +17,7 @@
 #include <kernel/thread/sched.h>
 #include <kernel/clock_source.h>
 
-EMBOX_UNIT_INIT(timer_init);
+EMBOX_UNIT_INIT(unit_init);
 
 #if 0
 #define DOUT prom_printf
@@ -32,8 +32,8 @@ struct sys_tmr {
 	struct list_head *next, *prev;
 	uint32_t   load;
 	uint32_t   cnt;
-	TIMER_FUNC handle;
-	void       *param;
+	TIMER_FUNC handler;
+	void       *args;
 	bool isLive;
 /*	uint32_t   flags; // periodical or not */
 };
@@ -85,6 +85,8 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 	/* find first element that its time bigger than inserting @new_time */
 	list_for_each_safe(iter, tmp, sys_timers_list) {
 		if (((struct sys_tmr *)iter)->cnt >= tmr->cnt) {
+			/* decrease value of next timer after inserting */
+			((struct sys_tmr *)iter)->cnt -= tmr->cnt;
 			list_add_tail((struct list_head *)tmr, iter);
 			return;
 		}
@@ -100,35 +102,45 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 
 }
 
-int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handle,
-		void *param) {
+/**
+ * @param ptimer is double pointer to timer struct. It can be NULL if we don't need to know and use sys_tmr_ptr
+ * after set timer.
+ * @param handler will be called after @param ticks time with @param args
+ * @return is zero if setting succeed and nonzero otherwise.
+ */
+int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
+		void *args) {
 	struct sys_tmr *new_timer;
 
-	if (NULL == handle || NULL == ptimer) {
+	if (NULL == handler) {
 		return -1; /* wrong parameters */
 	}
 
 	if (NULL == (new_timer = (sys_tmr_ptr)pool_alloc(&timer_pool))) {
-		*ptimer = NULL;
+		if (ptimer) {
+			*ptimer = NULL;
+		}
 		return -1;
 	}
 
 	new_timer->cnt    = new_timer->load = ticks;
-	new_timer->handle = handle;
-	new_timer->param  = param;
-	new_timer->isLive = true;
+	new_timer->handler = handler;
+	new_timer->args  = args;
+	new_timer->isLive = true; //TODO: remove
 
 	timer_safe_section_start();
 	timer_insert_into_list(new_timer);
 	timer_safe_section_end();
 
-	*ptimer = new_timer;
+	if (ptimer) {
+		*ptimer = new_timer;
+	}
 
 	return 0;
 }
 
 int close_timer(sys_tmr_ptr *ptimer) {
-	(*ptimer)->isLive = false;
+	(*ptimer)->isLive = false; //TODO: remove
 	return 0;
 	if (ptimer) {
 		/* fix next timer */
@@ -149,8 +161,10 @@ static inline bool timers_need_schedule(void) {
 	if(list_empty(sys_timers_list)) {
 		return false;
 	}
-	if(0 == ((sys_tmr_ptr)sys_timers_list->next)->cnt--) {
+	if(0 == ((sys_tmr_ptr)sys_timers_list->next)->cnt) {
 		return true;
+	} else {
+		((sys_tmr_ptr)sys_timers_list->next)->cnt--;
 	}
 
 	return false;
@@ -164,8 +178,8 @@ static inline void timers_schedule(void) {
 			return;
 		}
 
-		((struct sys_tmr *)iter)->handle((struct sys_tmr *)iter,
-				((struct sys_tmr *)iter)->param);
+		((struct sys_tmr *)iter)->handler((struct sys_tmr *)iter,
+				((struct sys_tmr *)iter)->args);
 
 		list_del(iter);
 		timer_insert_into_list((struct sys_tmr *)iter);
@@ -198,7 +212,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  *
  * @return 0 if success
  */
-int timer_init(void) {
+static int unit_init(void) {
 	cnt_sys_time = 0;
 	clock_init();
 	clock_setup(clock_source_get_HZ());
