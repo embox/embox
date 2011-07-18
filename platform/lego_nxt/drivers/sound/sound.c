@@ -55,7 +55,7 @@ static int __init sound_init(void) {
 	REG_STORE(AT91C_SSC_CR, AT91C_SSC_TXEN);
 	REG_STORE(AT91C_SSC_IER, AT91C_SSC_ENDTX);
 	sound_stop_play();
-	return 0;
+	return res;
 }
 
 void sound_start_play(uint32_t freq, useconds_t ms,

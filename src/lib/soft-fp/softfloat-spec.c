@@ -68,8 +68,8 @@ float32 commonNaNToFloat32(commonNaNT a) {
  * signaling NaN, the invalid exception is raised.
  */
 float32 propagateFloat32NaN(float32 a, float32 b) {
-	flag aIsNaN, aIsSignalingNaN, bIsNaN, bIsSignalingNaN;
-	aIsNaN = float32_is_nan(a);
+	flag /*aIsNaN,*/ aIsSignalingNaN, bIsNaN, bIsSignalingNaN;
+	/*aIsNaN = float32_is_nan(a);*/
 	aIsSignalingNaN = float32_is_signaling_nan(a);
 	bIsNaN = float32_is_nan(b);
 	bIsSignalingNaN = float32_is_signaling_nan(b);
@@ -128,8 +128,8 @@ float64 commonNaNToFloat64(commonNaNT a) {
  * signaling NaN, the invalid exception is raised.
  */
 float64 propagateFloat64NaN(float64 a, float64 b) {
-	flag aIsNaN, aIsSignalingNaN, bIsNaN, bIsSignalingNaN;
-	aIsNaN = float64_is_nan(a);
+	flag /*aIsNaN,*/aIsSignalingNaN, bIsNaN, bIsSignalingNaN;
+	/*aIsNaN = float64_is_nan(a);*/
 	aIsSignalingNaN = float64_is_signaling_nan(a);
 	bIsNaN = float64_is_nan(b);
 	bIsSignalingNaN = float64_is_signaling_nan(b);
