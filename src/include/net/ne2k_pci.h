@@ -5,6 +5,7 @@
  *  @author Biff
  *         - Initial implementation
  *          Nikolay Korotky
+ *          Ilia Vaprol
  *         - Adaptation for embox
  */
 
@@ -12,8 +13,6 @@
 #define NE2K_PCI_H_
 
 /* Port addresses */
-// XXX
-//#define NE_BASE	        0x300
 #define NE_CMD          0x00 /* The command register (for all pages) */
 /* Page 0 register offsets */
 #define EN0_STARTPG     0x01 /* Starting page of ring buffer */
