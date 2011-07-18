@@ -1,8 +1,8 @@
 $_PACKAGE := core.kernel.critical
 
-$_MODS      += core
-$_SRCS-core += count.c
+$_LIBS     += libcritical.a
+$_SRCS-libcritical.a += count.c
 
-$_REQUIRES-core += core.kernel.softirq_api
-$_REQUIRES-core += core.kernel.irq_api
-$_REQUIRES-core += core.kernel.sched_api
+$_REQUIRES-libcritical.a += core.kernel.softirq_api
+$_REQUIRES-libcritical.a += core.kernel.irq_api
+$_REQUIRES-libcritical.a += core.kernel.sched_api
