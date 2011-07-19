@@ -110,7 +110,7 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-	irq_lock();
+	critical_enter(__CRITICAL_HARDIRQ);
 
 	irq_table[irq_nr].count++;
 	action = irq_table[irq_nr].action;
@@ -123,5 +123,5 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 		}
 	}
 
-	irq_unlock();
+	critical_leave(__CRITICAL_HARDIRQ);
 }

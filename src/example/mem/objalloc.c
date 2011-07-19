@@ -3,7 +3,7 @@
  * @brief Example demonstrates using of API for allocation fixed size object
  *
  * @details To use pool write in conf/mods-kernel.conf
- *          mod(embox.hal.mm.pool_adapter).
+ *          mod(embox.hal.mm.pool_adapter)
  *          To use slab write in conf/mods-kernel.conf
  *          mod(embox.hal.mm.slab_adapter)
  *

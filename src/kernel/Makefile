@@ -25,6 +25,9 @@ $_DEPS-main += timer
 #$_DEPS-main += printk
 #$_DEPS-main += softirq
 $_REQUIRES-main += embox.hal.diag
+$_REQUIRES-main += softirq_api
+$_REQUIRES-main += irq_api
+$_REQUIRES-main += core.kernel.sched_api
 
 ifdef CONFIG_THREAD
 #$_DEPS-main += core.kernel.thread.core
@@ -37,10 +40,10 @@ endif
 $_SRCS-softirq_critical += softirq_critical.h
 $_PROVIDES-softirq_critical += softirq_api
 
-$_SRCS-irq_critical += irq_critical.h
+$_SRCS-irq_critical += irq_critical.[c|h]
 $_PROVIDES-irq_critical += irq_api
 
-$_SRCS-irq     += irq.c
+$_SRCS-irq     += irq.c irq_critical.[c|h]
 $_REQUIRES-irq += embox.hal.interrupt
 $_PROVIDES-irq += irq_api
 # $_DEPS-irq     += softirq

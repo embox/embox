@@ -78,26 +78,6 @@ extern int softirq_raise(softirq_nr_t nr);
  */
 extern void softirq_dispatch(void);
 
-/**
- * Locks hardirq and to come in critical section.
- *
- * When hardirq locked do not call sched_dispatch().
- * sched_dispatch() will be called after hardirq_unlock().
- *
- * Each lock must be balanced with the corresponding unlock.
- *
- * @see softirq_lock()
- */
-extern void softirq_lock(void);
-
-/**
- * Unlocks hardirq and to came out from critical section
- * Must be called on the previously locked softirq only.
- *
- * @see softirq_lock()
- */
-extern void softirq_unlock(void);
-
 static inline void softirq_disable(void) {
 	critical_enter(CRITICAL_SOFTIRQ);
 }

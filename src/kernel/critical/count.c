@@ -9,5 +9,4 @@
 #include "api_impl.h"
 
 // XXX initial value.
-__critical_t __critical_count = 0;
-
+__critical_t __critical_count =  __CRITICAL_COUNT(__CRITICAL_PREEMPT);
