@@ -28,7 +28,10 @@
 #include __module_headers(embox/hal/mm/objalloc)
 
 /**
- *  Macro, that create and initialize allocator.
+ *  Creates and initializes allocator.
+ *  @param allocator_nm - name of allocator
+ *  @param object_t     - type of objects in allocator
+ *  @param objects_nr   - initial count of objects in allocator
  */
 #define OBJALLOC_DEF(allocator_nm, object_t, objects_nr) \
 	  __OBJALLOC_DEF(allocator_nm, object_t, objects_nr)
@@ -44,7 +47,7 @@ typedef __objalloc_t objalloc_t;
  * @param object_sz bytes per object
  * @param objects_nr is number of object reserved
  *        (for cache it means reserved at first)
- * @return 0 - if allocator was destroyed
+ * @return 0 - if allocator was init
  *         ERROR_CODE - if allocator was not destroyed
  */
 extern int objalloc_init(objalloc_t *allocator, size_t object_sz,

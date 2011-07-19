@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Example demonstrate the work of sockets and loopback interface
+ * @brief Example demonstrates the work of sockets and loopback interface
  *
  * @date 29.03.11
  * @author Dmitry Zubarevich
