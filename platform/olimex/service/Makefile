@@ -1,0 +1,3 @@
+
+$_PACKAGE = $(PLATFORM).service
+
