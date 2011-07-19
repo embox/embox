@@ -12,7 +12,7 @@ $_MODS_CORE += main
 # TODO too more mods fro core.kernel
 $_MODS += irq timer softirq drv_subsys #printk
 $_MODS += printk
-$_MODS += irq_critical softirq_critical
+$_MODS += irq_critical softirq_critical irq_nested
 
 $_APIS += softirq_api irq_api
 
@@ -37,6 +37,8 @@ ifdef CONFIG_MMU_SUPPORT
 $_DEPS-main += embox.hal.mm.mmu
 endif
 
+$_SRCS-irq_nested += irq_critical_nested.h
+
 $_SRCS-softirq_critical += softirq_critical.h
 $_PROVIDES-softirq_critical += softirq_api
 
@@ -44,6 +46,7 @@ $_SRCS-irq_critical += irq_critical.[c|h]
 $_PROVIDES-irq_critical += irq_api
 
 $_SRCS-irq     += irq.c irq_critical.[c|h]
+$_DEPS-irq     += irq_nested
 $_REQUIRES-irq += embox.hal.interrupt
 $_PROVIDES-irq += irq_api
 # $_DEPS-irq     += softirq

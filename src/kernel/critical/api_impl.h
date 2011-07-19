@@ -5,10 +5,10 @@
  * @details
  *
  @verbatim
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
- bit#:  |15 | ... |13 |12 ||11 | ... | 9 | 8 || 7 | ... | 1 | 0 |
- level: | P |    preempt  || P |    softirq  || P |    hardirq  |
-        +---+-----+---+---++---+-----+---+---++---+-----+---+---+
+        +---+-----+---+---++---+-----+---+-----++---+----+---+---++---+-----+---+---+
+ bit#:  |19 | ... |17 |16 ||15 | ... | 13 | 12 ||11 |... | 9 | 8 || 7 | ... | 1 | 0 |
+ level: | P |    preempt  || P |    softirq    || P | irq_nested || P |    hardirq  |
+        +---+-----+---+---++---+-----+---+-----++---+----+---+---++---+-----+---+---+
  @endverbatim
  *
  * @c hardirq:
@@ -55,11 +55,13 @@
 
 /* Critical levels mask. */
 
-#define __CRITICAL_HARDIRQ 0x00ff
+#define __CRITICAL_HARDIRQ     0x000ff
 
-#define __CRITICAL_SOFTIRQ 0x0f00
+#define __CRITICAL_IRQ_NESTED  0x00f00
 
-#define __CRITICAL_PREEMPT 0xf000
+#define __CRITICAL_SOFTIRQ     0x0f000
+
+#define __CRITICAL_PREEMPT     0xf0000
 
 /* Internal helper macros. */
 
@@ -125,6 +127,9 @@ static inline int critical_need_dispatch(__critical_t critical) {
 static inline void critical_check_pending(__critical_t critical) {
 	switch (critical) {
 	case __CRITICAL_HARDIRQ:
+
+	/* FALLTHROUGH */
+	case __CRITICAL_IRQ_NESTED:
 
 	/* FALLTHROUGH */
 	case __CRITICAL_SOFTIRQ:

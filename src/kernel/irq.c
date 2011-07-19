@@ -23,6 +23,7 @@
 #include <hal/ipl.h>
 #include <kernel/critical/api.h>
 #include __impl_x(kernel/irq_critical.h)
+#include __impl_x(kernel/irq_critical_nested.h)
 
 struct irq_action {
 	irq_handler_t handler;
@@ -101,8 +102,6 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 	return 0;
 }
 
-static volatile unsigned int irq_nesting_count;
-
 void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_nr_t irq_nr = interrupt_nr;
 	struct irq_action *action;
@@ -110,7 +109,7 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-	critical_enter(__CRITICAL_HARDIRQ);
+    irq_nested_lock();
 
 	irq_table[irq_nr].count++;
 	action = irq_table[irq_nr].action;
@@ -123,5 +122,5 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 		}
 	}
 
-	critical_leave(__CRITICAL_HARDIRQ);
+	irq_nested_unlock();
 }
