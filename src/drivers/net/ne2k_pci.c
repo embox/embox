@@ -46,11 +46,14 @@ EMBOX_UNIT_INIT(unit_init);
 #define E8390_PAGE2  0x80 /* Page 3 is invalid. */
 #define E8390_CMD    0x00 /* The command register (for all pages) */
 
-#define NE1SM_START_PG 0x20 /* First page of TX buffer */
-#define NE1SM_STOP_PG  0x40 /* Last page +1 of RX ring */
-
-static int word16;
-static unsigned char tx_start_page, rx_start_page, tx_stop_page;
+static inline void ne2kpci_config(unsigned long base_addr) {
+    out8(E8390_PAGE0, base_addr + E8390_CMD); /* Select page 0*/
+    out8(0x00, base_addr + EN0_TXCR);
+    out8(0x00, base_addr + EN0_IMR); /* Mask completion irq. */
+    out8(0xFF, base_addr + EN0_ISR);
+///    out8(E8390_RXOFF, nic_base + EN0_RXCR);*/ /* 0x20  Set to monitor */
+    out8(13, base_addr + EN0_DCFG); /* Word mode */
+}
 
 static inline void rx_enable(void) {
 	out8(NE_PAGE0_STOP,   NE_CMD);
@@ -82,19 +85,14 @@ static inline void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
 }
 
 static void copy_data_to_card(uint16_t dest, uint8_t *src, uint16_t length, unsigned long base_addr) {
-    out8(E8390_PAGE0 + E8390_START + E8390_NODMA, base_addr + NE_CMD);
+    out8(E8390_PAGE0 + E8390_NODMA, base_addr + NE_CMD);
 	set_rem_address(dest, base_addr);
-	set_rem_byte_count(length>>1, base_addr);
-    out8(E8390_RWRITE + E8390_START, base_addr + NE_CMD);
-    if (word16) {
-    	if (length & 1) {
-    		length++;
-    	}
-    	outsw(base_addr + NE_DATAPORT, src, length>>1);
-    }
-    else {
-    	outsb(base_addr + NE_DATAPORT, src, length);
-    }
+	set_rem_byte_count(length, base_addr);
+    out8(E8390_RWRITE, base_addr + NE_CMD);
+	if (length & 1) {
+		length++;
+	}
+	outsw(base_addr + NE_DATAPORT, src, length>>1);
 }
 
 #if 0
@@ -162,21 +160,22 @@ static size_t pkt_receive(struct sk_buff *skb) {
  */
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	unsigned long nic_base;
-	uint16_t start_page, count;
+	uint16_t count;
 
 	nic_base = dev->base_addr;
-    start_page = tx_start_page;
     count = skb->len;
     // copy
-    copy_data_to_card(start_page << 8, skb->data, count, nic_base);
+    copy_data_to_card(NESM_START_PG << 8, skb->data, count, nic_base);
     // send
     out8(E8390_NODMA + E8390_PAGE0, nic_base + NE_CMD);
     if (in8(nic_base) & E8390_TRANS) {
     	printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
     }
     set_tx_count(count, nic_base);
-    out8(start_page, nic_base + EN0_TPSR);
+    out8(NESM_START_PG, nic_base + EN0_TPSR);
     out8(E8390_NODMA + E8390_TRANS + E8390_START, nic_base + NE_CMD);
+    while (in8(nic_base + NE_CMD) & E8390_TRANS) ; /* Wait for transmission to complete. */
+    out8(E8390_STOP, nic_base + NE_CMD);
     return count;
 }
 
@@ -193,134 +192,6 @@ static int open(net_device_t *dev) {
 	/* setup receive buffer location */
 	out8(RX_BUFFER_START, EN0_STARTPG);
 	out8(RX_BUFFER_END, EN0_STOPPG);
-#endif
-	return 0;
-}
-
-static int probe(net_device_t *dev) {
-	const struct {unsigned char value, offset; } program_seq[] = {
-			{E8390_NODMA + E8390_PAGE0 + E8390_STOP, E8390_CMD}, /* Select page 0*/
-			{0x48, EN0_DCFG}, /* Set byte-wide (0x48) access. */
-			{0x00, EN0_RCNTLO}, /* Clear the count regs. */
-			{0x00, EN0_RCNTHI},
-			{0xFF, EN0_IMR}, /* Mask completion irq. */
-			{0xFF, EN0_ISR},
-			{E8390_RXOFF, EN0_RXCR}, /* 0x20  Set to monitor */
-			{E8390_TXOFF, EN0_TXCR}, /* 0x02  and loopback mode. */
-			{0x20, EN0_RCNTLO},
-			{0x00, EN0_RCNTHI},
-			{0x00, EN0_RSARLO}, /* DMA starting at 0x0000. */
-			{0x00, EN0_RSARHI},
-			{E8390_RREAD + E8390_START, E8390_CMD},
-	};
-    unsigned char SA_prom[32];
-    char *card_name;
-    int i, wordlength;
-    int start_page, stop_page;
-    int neX000, ctron, dlink, dfi;
-	unsigned long nic_base;
-	int reg0, regd;
-
-	if (NULL == dev) {
-		return -1;
-	}
-	nic_base = dev->base_addr;
-	reg0 = in8(nic_base);
-    if (reg0 == 0xFF) {
-    	return -1;
-    }
-
-    wordlength = 2;
-    /* Do a quick preliminary check that we have a 8390. */
-	out8(E8390_NODMA + E8390_PAGE1 + E8390_STOP, nic_base + E8390_CMD);
-	regd = in8(nic_base + 0x0d);
-	out8(0xff, nic_base + 0x0d);
-	out8(E8390_NODMA + E8390_PAGE0, nic_base + E8390_CMD);
-	in8(nic_base + EN0_COUNTER0); /* Clear the counter by reading. */
-	if (in8(nic_base + EN0_COUNTER0) != 0) {
-	    out8(reg0, nic_base);
-	    out8(regd, nic_base + 0x0d);	/* Restore the old values. */
-	    return 0;
-	}
-
-    printf("\nNE*000 ethercard probe at %3lx:", nic_base);
-    /* Read the 16 bytes of station address prom, returning 1 for
-       an eight-bit interface and 2 for a 16-bit interface.
-       We must first initialize registers, similar to NS8390_init(eifdev, 0).
-       We can't reliably read the SAPROM address without this.
-       (I learned the hard way!). */
-	for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++) {
-	    out8(program_seq[i].value, nic_base + program_seq[i].offset);
-    }
-    for(i = 0; i < 32 /*sizeof(SA_prom)*/; i+=2) {
-		SA_prom[i] = in8(nic_base + NE_DATAPORT);
-		SA_prom[i + 1] = in8(nic_base + NE_DATAPORT);
-		if (SA_prom[i] != SA_prom[i + 1]) {
-			wordlength = 1;
-		}
-    }
-
-	/* PAGE0[READ]:07 (ISR) */
-    if (wordlength == 2) {
-		/* We must set the 8390 for word mode. */
-		out8(0x49, nic_base + EN0_DCFG);
-		/* We used to reset the ethercard here, but it doesn't seem
-		   to be necessary. */
-		/* Un-double the SA_prom values. */
-		for (i = 0; i < 16; i++) {
-			SA_prom[i] = SA_prom[i + i];
-		}
-    }
-
-    for(i = 0; i < ETHER_ADDR_LEN; i++) {
-		dev->dev_addr[i] = SA_prom[i];
-    }
-    dev->addr_len = ETHER_ADDR_LEN;
-
-    neX000 = (SA_prom[14] == 0x57  &&  SA_prom[15] == 0x57);
-    ctron =  (SA_prom[0] == 0x00 && SA_prom[1] == 0x00 && SA_prom[2] == 0x1d);
-    dlink =  (SA_prom[0] == 0x00 && SA_prom[1] == 0xDE && SA_prom[2] == 0x01);
-    dfi   =  (SA_prom[0] == 'D' && SA_prom[1] == 'F' && SA_prom[2] == 'I');
-
-    /* Set up the rest of the parameters. */
-    if (neX000 || dlink || dfi) {
-		if (wordlength == 2) {
-			card_name = dlink ? "DE200" : "NE2000";
-			start_page = NESM_START_PG;
-			stop_page = NESM_STOP_PG;
-		}
-		else {
-			card_name = dlink ? "DE100" : "NE1000";
-			start_page = NE1SM_START_PG;
-			stop_page = NE1SM_STOP_PG;
-		}
-    }
-    else if (ctron) {
-    	card_name = "Cabletron";
-		start_page = 0x01;
-		stop_page = (wordlength == 2) ? 0x40 : 0x20;
-    }
-    else {
-		printf("not found\n");
-		return 0;
-    }
-
-    printf(" %s\n", card_name);
-    tx_start_page = start_page;
-    tx_stop_page = stop_page;
-    word16 = (wordlength == 2);
-
-    rx_start_page = start_page + 12;
-#if 0
-    /* Page Dump*/
-	for (int page = 0; page < 4; page++) {
-		printf("8390 page %d:", page);
-		out8(E8390_NODMA + (page << 6), nic_base + E8390_CMD);
-		for(int i = 0; i < 16; i++) {
-			printf(" %2x", in8(nic_base + i));
-		}
-		printf(".\n");
-	}
 #endif
 	return 0;
 }
@@ -353,7 +224,7 @@ static net_device_stats_t *get_eth_stat(net_device_t *dev) {
 }
 
 static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
-	TRACE("irq fired\n");
+//	printf("irq fired\n");
 	return IRQ_HANDLED;
 }
 
@@ -367,8 +238,7 @@ static const struct net_device_ops _netdev_ops = {
 
 static int __init unit_init(void) {
 	net_device_t *nic;
-	uint16_t new_command, pci_command;
-	uint8_t  pci_latency;
+	uint32_t i, nic_base;
 	struct pci_dev *pci_dev;
 
 	pci_dev = pci_find_dev(0x10EC, 0x8029);
@@ -376,46 +246,35 @@ static int __init unit_init(void) {
 		LOG_WARN("Couldn't find NE2K_PCI device");
 		return 0;
 	}
-
+	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 	if (NULL != (nic = alloc_etherdev(0))) {
 		nic->netdev_ops = &_netdev_ops;
-		//TODO: get devfn=0x18 from pci_find_dev
-		pci_read_config32(0, 0x18, PCI_BASE_ADDR_REG_0, (uint32_t *) &nic->base_addr);
-		pci_read_config8(0, 0x18, PCI_INTERRUPT_LINE, (uint8_t *) &nic->irq);
-		nic->base_addr &= PCI_BASE_ADDR_IO_MASK;
+		nic->irq = pci_dev->irq;
+		nic->base_addr = nic_base;
 	}
-
-	/* Set device to be bus master */
-	pci_read_config16(0, 0x18, PCI_COMMAND, &pci_command);
-	new_command = pci_command | PCI_COMMAND_MASTER | PCI_COMMAND_IO;
-	pci_write_config16(0, 0x18, PCI_COMMAND, new_command);
-
-	/* Set latency */
-	pci_read_config8(0, 0x18, PCI_LATENCY_TIMER, &pci_latency);
-	if (pci_latency < 32) {
-		pci_write_config8(0, 0x18, PCI_LATENCY_TIMER, 32);
-	}
-
-	/* Reset */
-	out8(in8(nic->base_addr + NE_RESET), nic->base_addr + NE_RESET);
-	out8(ENISR_RESET, nic->base_addr + EN0_ISR);
-
-	if (-1 == irq_attach(nic->irq, ne2k_handler, 0, nic, "ne2k")) {
+	else {
 		return -1;
 	}
-
-	probe(nic);
-
-	/* That's for the card area, however we must also set the mac
-	 * in the card ram as well, because that's what the
-	 * qemu emulation actually uses to determine if the packet's
-	 * bound for this NIC.
-	 */
-	set_mac_address(nic, nic->dev_addr);
-
-	/* Back to page 0 */
-	out8(NE_PAGE0_STOP, nic->base_addr + NE_CMD);
-
-	//	rx_disable();
+	if (-1 == irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k")) {
+		return -1;
+	}
+	ne2kpci_config(nic_base);
+    out8(E8390_PAGE0 + E8390_RREAD, nic_base + E8390_CMD);
+    for(i = 0; i < ETHER_ADDR_LEN; i++) {
+		nic->dev_addr[i] = in8(nic_base + NE_DATAPORT);
+    }
+    nic->addr_len = ETHER_ADDR_LEN;
+    set_mac_address(nic, nic->dev_addr);
+#if 0
+    /* Page Dump*/
+	for (int page = 0; page < 4; page++) {
+		printf("8390 page %d:", page);
+		out8(E8390_NODMA + (page << 6), nic_base + E8390_CMD);
+		for(int i = 0; i < 16; i++) {
+			printf(" %2x", in8(nic_base + i));
+		}
+		printf(".\n");
+	}
+#endif
 	return 0;
 }
