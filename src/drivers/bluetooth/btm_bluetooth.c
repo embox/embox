@@ -27,7 +27,7 @@ extern void bt_handle(uint8_t *buff);
 
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_BTM_BT_SERIAL_PORT_OFFSET);
 
-#define BTM_BT_ADC_RATE 50000
+//#define BTM_BT_ADC_RATE 50000
 #define BTM_BT_BAUD_RATE 19200
 
 EMBOX_UNIT_INIT(btm_bluetooth_init);
@@ -73,15 +73,19 @@ static void init_usart(void) {
 			BTM_BT_SCK_PIN | BTM_BT_RTS_PIN | BTM_BT_CTS_PIN);
 
 	REG_STORE(&(us_dev_regs->US_PTCR), (AT91C_PDC_RXTDIS | AT91C_PDC_TXTDIS));
+
+	REG_STORE(&(us_dev_regs->US_CR),  AT91C_US_RXDIS | AT91C_US_TXDIS);
 	REG_STORE(&(us_dev_regs->US_CR),  AT91C_US_RSTSTA | AT91C_US_RSTRX | AT91C_US_RSTTX);
 	REG_STORE(&(us_dev_regs->US_CR), AT91C_US_STTTO);
-	REG_STORE(&(us_dev_regs->US_RTOR), 10000);
+
 	REG_STORE(&(us_dev_regs->US_MR), (AT91C_US_USMODE_NORMAL & ~AT91C_US_SYNC)
 			| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
-			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
+			| AT91C_US_NBSTOP_1_BIT);
+	REG_STORE(&(us_dev_regs->US_BRGR), CONFIG_SYS_CLOCK / (16 * BTM_BT_BAUD_RATE));
+
 	REG_STORE(&(us_dev_regs->US_IDR), ~0);
 	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDTX | AT91C_US_ENDRX);
-	REG_STORE(&(us_dev_regs->US_BRGR), CONFIG_SYS_CLOCK / (8 * BTM_BT_BAUD_RATE));
+
 	REG_STORE(&(us_dev_regs->US_RCR), 0);
 	REG_STORE(&(us_dev_regs->US_TCR), 0);
 	REG_STORE(&(us_dev_regs->US_RNPR), 0);
@@ -95,17 +99,18 @@ static void init_usart(void) {
 
 static int btm_bluetooth_init(void) {
 	const static char ver[] = "ATI?";
-	init_usart();
 
 	irq_attach((irq_nr_t) CONFIG_BTM_BT_US_IRQ,
 		(irq_handler_t) &btm_bt_us_handler, 0, NULL, "bt reader");
+
+	init_usart();
 	bt_set_reset_high();
 	usleep(100);
 	bt_set_reset_low();
 	usleep(100);
 
 	bluetooth_write((uint8_t *) ver, strlen(ver));
-	bluetooth_read(bt_buff, 2);
+	bluetooth_read(bt_buff, 1);
 	return 0;
 }
 
