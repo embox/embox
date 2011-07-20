@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to mem.objalloc
+$_PACKAGE := embox.hal.mm
+
 $_APIS += embox.hal.mm.objalloc
 
 $_MODS                   += pool_adapter

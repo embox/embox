@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to ..platform.lego_nxt.cmds.pendulum.Makefile
+$_PACKAGE := lego_nxt.cmd
+
 $_CPPFLAGS += -I$($PLATFORM)/include
 $_MODS += without_sensors pen_light pen_angle
 

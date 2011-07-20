@@ -1,4 +1,9 @@
 
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to arch.arm
+$_PACKAGE := embox.hal
+
+
 SUBDIRS := $(filter-out include,$(SUBDIRS))
 
 $(IMAGE): $(LDSCRIPT)

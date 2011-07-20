@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to net.ipv4
+$_PACKAGE := embox.net
+
 $_MODS += af_inet ipv4 arp icmp udp tcp raw_sock tcp_sock udp_sock
 
 $_SRCS-af_inet  += af_inet.c

@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to tests.mmu
+$_PACKAGE := embox.test
+
 $_MODS += mmu_enable
 $_MODS += mmu_rw
 $_MODS += mmu_dfault

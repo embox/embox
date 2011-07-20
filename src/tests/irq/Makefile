@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to tests.irq
+$_PACKAGE := embox.test
+
 $_MODS += irq_nesting
 $_MODS += irq_force
 $_MODS += irq_deep_handler

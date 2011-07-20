@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to ..platform.lego_nxt.example.sensors.Makefile
+$_PACKAGE := lego_nxt.example
+
 $_MODS += touch_test sensor_test sonar_test light_test
 
 $_SRCS-touch_test += touch.c
