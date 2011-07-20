@@ -25,18 +25,7 @@ EMBOX_UNIT_INIT(unit_init);
 #define DOUT(a,...)
 #endif
 
-/* What will be, when in set_@timer (e.g inside safe section) in handle_function be run @set_timer?! */
 const uint32_t clock_source = 1000;
-
-struct sys_tmr {
-	struct list_head *next, *prev;
-	uint32_t   load;
-	uint32_t   cnt;
-	TIMER_FUNC handler;
-	void       *args;
-	bool isLive;
-/*	uint32_t   flags; // periodical or not */
-};
 
 static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
@@ -94,7 +83,7 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 
 	}
 
-	/* add the latest timer to end of list */
+	/* add the latest timer to end of list */ // once list_add was twice (here and above in foreach cycle)
 	if (iter->next == sys_timers_list) {
 		list_add((struct list_head *)tmr, iter);
 		return;
@@ -103,7 +92,7 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 }
 
 /**
- * @param ptimer is double pointer to timer struct. It can be NULL if we don't need to know and use sys_tmr_ptr
+ * @param ptimer is double pointer to timer struct. It can be NULL if we don't need to know and use sys_tmr_t
  * after set timer.
  * @param handler will be called after @param ticks time with @param args
  * @return is zero if setting succeed and nonzero otherwise.
@@ -116,7 +105,7 @@ int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		return -1; /* wrong parameters */
 	}
 
-	if (NULL == (new_timer = (sys_tmr_ptr)pool_alloc(&timer_pool))) {
+	if (NULL == (new_timer = (sys_tmr_t*)pool_alloc(&timer_pool))) {
 		if (ptimer) {
 			*ptimer = NULL;
 		}
@@ -126,7 +115,6 @@ int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->handler = handler;
 	new_timer->args  = args;
-	new_timer->isLive = true; //TODO: remove
 
 	timer_safe_section_start();
 	timer_insert_into_list(new_timer);
@@ -139,21 +127,34 @@ int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 	return 0;
 }
 
-int close_timer(sys_tmr_ptr *ptimer) {
-	(*ptimer)->isLive = false; //TODO: remove
-	return 0;
-	if (ptimer) {
-		/* fix next timer */
-		if (((struct list_head*)*ptimer)->next != sys_timers_list) {
-			((sys_tmr_ptr)
-				((struct list_head*)*ptimer)->next)
-					->cnt += (*ptimer)->cnt;
-		}
+int init_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
+		void *args) {
+	struct sys_tmr *new_timer = *ptimer;
 
-		list_del((struct list_head *) *ptimer);
-		pool_free(&timer_pool, *ptimer);
-		*ptimer = NULL;
+	if (NULL == handler || !new_timer) {
+		return -1; /* wrong parameters */
 	}
+
+	new_timer->cnt    = new_timer->load = ticks;
+	new_timer->handler = handler;
+	new_timer->args  = args;
+
+	timer_safe_section_start();
+	timer_insert_into_list(new_timer);
+	timer_safe_section_end();
+
+	if (ptimer) {
+		*ptimer = new_timer;
+	}
+
+	return 0;
+}
+
+int close_timer(sys_tmr_t **ptimer) {
+	timer_safe_section_start();
+	list_del((struct list_head *) *ptimer);
+	pool_free(&timer_pool, *ptimer);
+	timer_safe_section_end();
 	return 0;
 }
 
@@ -161,10 +162,10 @@ static inline bool timers_need_schedule(void) {
 	if(list_empty(sys_timers_list)) {
 		return false;
 	}
-	if(0 == ((sys_tmr_ptr)sys_timers_list->next)->cnt) {
+	if(0 == ((sys_tmr_t*)sys_timers_list->next)->cnt) {
 		return true;
 	} else {
-		((sys_tmr_ptr)sys_timers_list->next)->cnt--;
+		((sys_tmr_t*)sys_timers_list->next)->cnt--;
 	}
 
 	return false;

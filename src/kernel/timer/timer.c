@@ -20,15 +20,6 @@ EMBOX_UNIT_INIT(timer_init);
 
 const uint32_t clock_source = 1000;
 
-struct sys_tmr {
-	struct list_head *next, *prev;
-	uint32_t   load;
-	uint32_t   cnt;
-	TIMER_FUNC handle;
-	void       *param;
-//	uint32_t   flags; // periodical or not
-};
-
 static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 
 POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ);
@@ -38,16 +29,14 @@ uint32_t cnt_system_time(void) {
 	return cnt_sys_time;
 }
 
-int set_timer(sys_tmr_ptr *ptimer, uint32_t ticks,
+int init_timer(sys_tmr_t **ptimer, uint32_t ticks,
 		TIMER_FUNC handle, void *param) {
-	sys_tmr_ptr new_timer;
+	sys_tmr_t *new_timer = *ptimer;
 
-	if (!handle || !(new_timer = (sys_tmr_ptr) pool_alloc(&timer_pool))) {
-		if (ptimer) { // it's necessary?
-			*ptimer = NULL;
-		}
+	if (!handle || !new_timer) {
 		return 1;
 	}
+	new_timer->is_preallocated = false;
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->handle = handle;
 	new_timer->param  = param;
@@ -58,10 +47,33 @@ int set_timer(sys_tmr_ptr *ptimer, uint32_t ticks,
 	return 0;
 }
 
-int close_timer(sys_tmr_ptr *ptimer) {
+int set_timer(sys_tmr_t **ptimer, uint32_t ticks,
+		TIMER_FUNC handle, void *param) {
+	sys_tmr_t *new_timer;
+
+	if (!handle || !(new_timer = (sys_tmr_t*) pool_alloc(&timer_pool))) {
+		if (ptimer) {
+			*ptimer = NULL;
+		}
+		return 1;
+	}
+	new_timer->is_preallocated = true;
+	new_timer->cnt    = new_timer->load = ticks;
+	new_timer->handle = handle;
+	new_timer->param  = param;
+	list_add_tail((struct list_head *) new_timer, sys_timers_list);
+	if (ptimer) {
+		*ptimer = new_timer;
+	}
+	return 0;
+}
+
+int close_timer(sys_tmr_t **ptimer) {
 	if (ptimer) {
 		list_del((struct list_head *) *ptimer);
-		pool_free(&timer_pool, *ptimer);
+		if ((*ptimer)->is_preallocated) {
+			pool_free(&timer_pool, *ptimer);
+		}
 		*ptimer = NULL;
 	}
 	return 0;
@@ -74,17 +86,12 @@ int close_timer(sys_tmr_ptr *ptimer) {
  */
 static void inc_sys_timers(void) {
 	struct list_head *tmp, *tmp2;
-	sys_tmr_ptr tmr;
+	sys_tmr_t *tmr;
 
 	list_for_each_safe(tmp, tmp2, sys_timers_list) {
-		tmr = (sys_tmr_ptr) tmp;
+		tmr = (sys_tmr_t*) tmp;
 		if (0 == tmr->cnt--) {
 			tmr->handle(tmr, tmr->param);
-#if 0
-			if (!tmr->flags) { // if non-periodical => delete it
-				close_timer(tmr);
-			}
-#endif
 			tmr->cnt = tmr->load;
 		}
 	}

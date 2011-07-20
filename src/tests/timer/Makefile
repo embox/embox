@@ -1,3 +1,3 @@
 $_MODS       += timer
 $_SRCS-timer += timer.c
-$_DEPS-timer += core.kernel.timer.timer
+$_REQUIRES-timer += core.kernel.timer.timer_api

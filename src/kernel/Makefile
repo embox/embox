@@ -19,7 +19,7 @@ $_SRCS-main += nosys.c
 $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq
 #$_DEPS-main += timer
-$_DEPS-REQUIRES += core.kernel.timer.api
+$_DEPS-REQUIRES += core.kernel.timer.timer_api
 #$_DEPS-main += printk
 $_DEPS-main += softirq
 $_REQUIRES-main += embox.hal.diag
@@ -73,5 +73,5 @@ $_SRCS-clock_source     += clock_source.c
 
 $_MODS      += time
 $_SRCS-time += time.c
-$_DEPS-time += core.kernel.timer.timer
+$_REQUIRES-time += core.kernel.timer.timer_api
 $_DEPS-time += core.kernel.clock_source
