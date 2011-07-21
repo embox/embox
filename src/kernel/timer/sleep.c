@@ -14,7 +14,7 @@
 
 static void restore_thread(sys_tmr_t *timer, void *param) {
 	sched_wake((struct event *) param);
-	close_timer(&timer);
+	close_timer(timer);
 }
 
 /*system library function */
@@ -33,6 +33,8 @@ int usleep(useconds_t usec) {
 	}
 
 	sched_sleep_locked(&wait_event);
+
+	close_timer(&tmr);
 
 	sched_unlock();
 	return 0;

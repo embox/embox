@@ -288,7 +288,7 @@ static int unit_init(void) {
 }
 
 static int unit_fini(void) {
-	close_timer(&tick_timer);
+	close_timer(tick_timer);
 
 	return 0;
 }

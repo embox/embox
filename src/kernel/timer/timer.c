@@ -30,40 +30,42 @@ uint32_t cnt_system_time(void) {
 }
 
 int init_timer(sys_tmr_t *ptimer, uint32_t ticks,
-		TIMER_FUNC handle, void *param) {
-
-	if (!handle || !ptimer) {
-		return 1;
+		TIMER_FUNC handler, void *param) {
+	if (!handler || !ptimer) {
+		return -1;
 	}
+
 	ptimer->is_preallocated = false;
 	ptimer->cnt    = ptimer->load = ticks;
-	ptimer->handle = handle;
+	ptimer->handle = handler;
 	ptimer->param  = param;
 	list_add_tail((struct list_head *) ptimer, sys_timers_list);
+
 	return 0;
 }
 
 int set_timer(sys_tmr_t **ptimer, uint32_t ticks,
-		TIMER_FUNC handle, void *param) {
-	sys_tmr_t *new_timer;
+		TIMER_FUNC handler, void *param) {
 
-	if (!handle || !(new_timer = (sys_tmr_t*) pool_alloc(&timer_pool))) {
-		if (ptimer) {
-			*ptimer = NULL;
-		}
-		return 1;
+	if (NULL == handler || NULL == ptimer) {
+		return -1;
 	}
+	if (NULL == (*ptimer = (sys_tmr_t*) pool_alloc(&timer_pool))) {
+		return -1;
+	}
+	/* we know that init will be success (right ptimer and handler) */
+	init_timer(*ptimer, ticks, handler, param);
+	(*ptimer)->is_preallocated = true;
 
-	return init_timer(new_timer, ticks, handle, param);
+	return 0;
 }
 
-int close_timer(sys_tmr_t **ptimer) {
+int close_timer(sys_tmr_t *ptimer) {
 	if (ptimer) {
-		list_del((struct list_head *) *ptimer);
-		if ((*ptimer)->is_preallocated) {
-			pool_free(&timer_pool, *ptimer);
+		list_del((struct list_head *) ptimer);
+		if (ptimer->is_preallocated) {
+			pool_free(&timer_pool, ptimer);
 		}
-		*ptimer = NULL;
 	}
 	return 0;
 }

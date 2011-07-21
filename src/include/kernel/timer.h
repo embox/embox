@@ -67,7 +67,7 @@ extern int set_timer(sys_tmr_t **ptimer, uint32_t ticks, TIMER_FUNC handle, void
  *
  * @param id timer identifier
  */
-extern int close_timer(sys_tmr_t **ptimer);
+extern int close_timer(sys_tmr_t *ptimer);
 
 /**
  * Current system time after start system

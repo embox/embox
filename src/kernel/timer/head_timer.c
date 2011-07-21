@@ -32,23 +32,23 @@ static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 #include <hal/ipl.h>
 #include <assert.h>
 
-static ipl_t timer_ipl;
-static bool timer_in_section = false;
+//static ipl_t timer_ipl;
+//static bool timer_in_section = false;
 
 static inline void timer_safe_section_init(void) {
 }
 
 static inline void timer_safe_section_start(void) {
-	timer_ipl = ipl_save();
-	if(false != timer_in_section) {
-		return;
-	}
-	timer_in_section = true;
+//	timer_ipl = ipl_save();
+//	if(false != timer_in_section) {
+//		return;
+//	}
+//	timer_in_section = true;
 }
 
 static inline void timer_safe_section_end(void) {
-	timer_in_section = false;
-	ipl_restore(timer_ipl);
+//	timer_in_section = false;
+//	ipl_restore(timer_ipl);
 }
 
 
@@ -84,11 +84,7 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 	}
 
 	/* add the latest timer to end of list */
-	if (iter->next == sys_timers_list) {
-		list_add((struct list_head *)tmr, iter);
-		return;
-	}
-
+	list_add_tail((struct list_head *)tmr, sys_timers_list);
 }
 
 /**
@@ -98,36 +94,32 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
  * @return is zero if setting succeed and nonzero otherwise.
  */
 int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
-		void *args) {
-	struct sys_tmr *new_timer;
+		void *param) {
 
-	if (NULL == handler) {
-		return -1; /* wrong parameters */
-	}
-
-	if (NULL == (new_timer = (sys_tmr_t*)pool_alloc(&timer_pool))) {
-		if (ptimer) {
-			*ptimer = NULL;
-		}
+	if (NULL == handler || NULL == ptimer) {
 		return -1;
 	}
+	if (NULL == (*ptimer = (sys_tmr_t*) pool_alloc(&timer_pool))) {
+		return -1;
+	}
+	/* we know that init will be success (right ptimer and handler) */
+	init_timer(*ptimer, ticks, handler, param);
+	(*ptimer)->is_preallocated = true;
 
-	return init_timer( new_timer, ticks, handler, args );
-
+	return 0;
 }
 
 int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
-		void *args) {
+		void *param) {
 
 	if (NULL == handler || !ptimer) {
 		return -1; /* wrong parameters */
 	}
 
-	ptimer->is_live = true;
 	ptimer->is_preallocated = false;
 	ptimer->cnt    = ptimer->load = ticks;
 	ptimer->handler = handler;
-	ptimer->args  = args;
+	ptimer->args  = param;
 
 	timer_safe_section_start();
 	timer_insert_into_list(ptimer);
@@ -136,14 +128,15 @@ int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
 	return 0;
 }
 
-int close_timer(sys_tmr_t **ptimer) {
-	(*ptimer)->is_live = false;
-	return 0;
+int close_timer(sys_tmr_t *ptimer) {
+	if(NULL == ptimer) {
+		return -1;
+	}
 	timer_safe_section_start();
-	list_del((struct list_head *) *ptimer);
+	list_del((struct list_head *) ptimer);
 	timer_safe_section_end();
-	if ((*ptimer)->is_preallocated) {
-		pool_free(&timer_pool, *ptimer);
+	if (ptimer->is_preallocated) {
+		pool_free(&timer_pool, ptimer);
 	}
 	return 0;
 }
@@ -170,17 +163,12 @@ static inline void timers_schedule(void) {
 			return;
 		}
 
-		if ( (((struct sys_tmr*)iter)->is_live) )
 		((struct sys_tmr *)iter)->handler((struct sys_tmr *)iter,
 				((struct sys_tmr *)iter)->args);
 
 		list_del(iter);
 
-		if ( (((struct sys_tmr*)iter)->is_live)) {
-			timer_insert_into_list((struct sys_tmr *)iter);
-		} else {
-			pool_free(&timer_pool, iter);
-		}
+		timer_insert_into_list((struct sys_tmr *)iter);
 	}
 }
 
