@@ -43,7 +43,7 @@ TEST_CASE("one sleep") {
  *  assert right done sequence of threads
  */
 
-void * handler1(void* args) {
+static void * handler1(void* args) {
 	test_emit(&buff1, '0' + (uint32_t) args);
 	usleep(TIME_TO_SLEEP * (uint32_t) args);
 	test_emit(&buff1, '0' + (uint32_t) args);
