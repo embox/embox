@@ -95,7 +95,7 @@ static void arp_send_q(void) {
 /**
  * Check if there are entries that are too old and remove them.
  */
-static void arp_check_expire(sys_tmr_ptr timer, void *param) {
+static void arp_check_expire(struct sys_tmr * timer, void *param) {
 	size_t i;
 
 /* id = ARP_TIMER_ID (MUST) so without checking */
