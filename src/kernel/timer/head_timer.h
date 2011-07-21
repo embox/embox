@@ -19,6 +19,7 @@ struct sys_tmr {
 	uint32_t   cnt;
 	TIMER_FUNC handler;
 	void       *args;
+	bool       is_preallocated;
 };
 
 

@@ -83,7 +83,7 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 
 	}
 
-	/* add the latest timer to end of list */ // once list_add was twice (here and above in foreach cycle)
+	/* add the latest timer to end of list */
 	if (iter->next == sys_timers_list) {
 		list_add((struct list_head *)tmr, iter);
 		return;
@@ -112,6 +112,7 @@ int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		return -1;
 	}
 
+	new_timer->is_preallocated = true;
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->handler = handler;
 	new_timer->args  = args;
@@ -135,6 +136,7 @@ int init_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		return -1; /* wrong parameters */
 	}
 
+	new_timer->is_preallocated = false;
 	new_timer->cnt    = new_timer->load = ticks;
 	new_timer->handler = handler;
 	new_timer->args  = args;
@@ -153,8 +155,10 @@ int init_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 int close_timer(sys_tmr_t **ptimer) {
 	timer_safe_section_start();
 	list_del((struct list_head *) *ptimer);
-	pool_free(&timer_pool, *ptimer);
 	timer_safe_section_end();
+	if ((*ptimer)->is_preallocated) {
+		pool_free(&timer_pool, *ptimer);
+	}
 	return 0;
 }
 
@@ -175,6 +179,7 @@ static inline void timers_schedule(void) {
 	struct list_head *iter, *tmp;
 
 	list_for_each_safe(iter, tmp, sys_timers_list) {
+
 		if (0 != ((struct sys_tmr *)iter)->cnt) {
 			return;
 		}
@@ -221,3 +226,4 @@ static int unit_init(void) {
 	timer_safe_section_init();
 	return 0;
 }
+
