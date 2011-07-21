@@ -66,7 +66,7 @@ TEST_CASE("simple multi-threaded check") {
 	test_assert_zero(thread_join(t2, NULL));
 	test_assert_zero(thread_join(t3, NULL));
 
-//	test_assert_str_equal(test_emit_buffer_str(&buff1), "123123");
+	test_assert_str_equal(test_emit_buffer_str(&buff1), "123123");
 }
 
 /**
