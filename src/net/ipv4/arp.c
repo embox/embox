@@ -201,7 +201,7 @@ sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
 	arp = skb->nh.arph;
 
 	skb->dev = dev;
-	skb->protocol = htons(ptype);
+	skb->protocol = ptype;
 	if (src_hw == NULL) {
 		src_hw = dev->dev_addr;
 	}
@@ -319,6 +319,7 @@ static int arp_process(sk_buff_t *skb) {
 			break;
 		case ARPOP_REQUEST:
 			ret = received_req(skb);
+			received_resp(skb);
 			break;
 	}
 	kfree_skb(skb);

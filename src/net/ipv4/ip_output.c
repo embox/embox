@@ -72,8 +72,8 @@ void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
 			sk_buff_t *skb, unsigned int len) {
 	skb->nh.iph->saddr = saddr;
 	skb->nh.iph->daddr = daddr;
-	skb->nh.iph->id++;
-	skb->nh.iph->frag_off = IP_DF;
+	skb->nh.iph->id = htons(ntohs(skb->nh.iph->id) + 1);
+	skb->nh.iph->frag_off = htons(IP_DF);
 	ip_send_check(skb->nh.iph);
 	ip_queue_xmit(skb, 0);
 }

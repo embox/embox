@@ -67,9 +67,9 @@ int inet_aton(const char *cp, struct in_addr *addr);
 
 /*TODO: htons not realize now*/
 #define htons(n)            __bswap_16(n)
-#define ntohs(n)            n
+#define ntohs(n)            __bswap_16(n) // same as htons()
 #define htonl(n)            __bswap_32(n)
-#define ntohl(n)            n
+#define ntohl(n)            __bswap_16(n) // same as htonl()
 
 /* Address to accept any incoming messages. */
 #define INADDR_ANY          ((unsigned long int) 0x00000000)

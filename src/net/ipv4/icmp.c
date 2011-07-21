@@ -82,7 +82,7 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 	skb->h.icmph->code = icmp_param->data.icmph.code;
 	skb->h.icmph->checksum = 0;
 	skb->h.icmph->checksum = ptclbsum(skb->h.raw,
-				skb->nh.iph->tot_len - IP_HEADER_SIZE(skb->nh.iph));
+				ntohs(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
 				icmp_param->skb->nh.iph->saddr, skb, 0);
@@ -354,10 +354,9 @@ static int icmp_rcv(sk_buff_t *pack) {
 		}
 	}
 
-	//TODO: check summ icmp? not need, if ip checksum is ok.
 	tmp = icmph->checksum;
 	icmph->checksum = 0;
-	if (tmp != ptclbsum(pack->h.raw, pack->nh.iph->tot_len - IP_HEADER_SIZE(pack->nh.iph))) {
+	if (tmp != ptclbsum(icmph, ntohs(pack->nh.iph->tot_len) - IP_HEADER_SIZE(pack->nh.iph))) {
 		LOG_ERROR("bad icmp checksum\n");
 		return -1;
 	}
