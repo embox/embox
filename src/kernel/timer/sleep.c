@@ -22,13 +22,13 @@ int usleep(useconds_t usec) {
 	struct event wait_event;
 
 	sys_tmr_t tmr;
-	sys_tmr_t *ptmr = &tmr;
+
 
 	event_init(&wait_event, NULL);
 
 	sched_lock();
 
-	if (init_timer(&ptmr, usec, &restore_thread, &wait_event)) {
+	if (init_timer(&tmr, usec, &restore_thread, &wait_event)) {
 		return 1;
 	}
 

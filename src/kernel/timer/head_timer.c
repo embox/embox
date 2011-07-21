@@ -39,7 +39,6 @@ static inline void timer_safe_section_init(void) {
 }
 
 static inline void timer_safe_section_start(void) {
-	return;
 	timer_ipl = ipl_save();
 	if(false != timer_in_section) {
 		return;
@@ -48,7 +47,6 @@ static inline void timer_safe_section_start(void) {
 }
 
 static inline void timer_safe_section_end(void) {
-	return;
 	timer_in_section = false;
 	ipl_restore(timer_ipl);
 }
@@ -114,44 +112,26 @@ int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		return -1;
 	}
 
-	new_timer->is_live = true;
-	new_timer->is_preallocated = true;
-	new_timer->cnt    = new_timer->load = ticks;
-	new_timer->handler = handler;
-	new_timer->args  = args;
+	return init_timer( new_timer, ticks, handler, args );
 
-	timer_safe_section_start();
-	timer_insert_into_list(new_timer);
-	timer_safe_section_end();
-
-	if (ptimer) {
-		*ptimer = new_timer;
-	}
-
-	return 0;
 }
 
-int init_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
+int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		void *args) {
-	struct sys_tmr *new_timer = *ptimer;
 
-	if (NULL == handler || !new_timer) {
+	if (NULL == handler || !ptimer) {
 		return -1; /* wrong parameters */
 	}
 
-	new_timer->is_live = true;
-	new_timer->is_preallocated = false;
-	new_timer->cnt    = new_timer->load = ticks;
-	new_timer->handler = handler;
-	new_timer->args  = args;
+	ptimer->is_live = true;
+	ptimer->is_preallocated = false;
+	ptimer->cnt    = ptimer->load = ticks;
+	ptimer->handler = handler;
+	ptimer->args  = args;
 
 	timer_safe_section_start();
-	timer_insert_into_list(new_timer);
+	timer_insert_into_list(ptimer);
 	timer_safe_section_end();
-
-	if (ptimer) {
-		*ptimer = new_timer;
-	}
 
 	return 0;
 }

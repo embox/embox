@@ -44,7 +44,7 @@ typedef void (*TIMER_FUNC)(sys_tmr_t *timer, void *param);
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int init_timer(sys_tmr_t **ptimer, uint32_t ticks, TIMER_FUNC handle, void *param);
+extern int init_timer(sys_tmr_t *ptimer, uint32_t ticks, TIMER_FUNC handle, void *param);
 
 /**
  * Set 'handle' timer for executing every 'ticks' ms.

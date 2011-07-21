@@ -29,21 +29,17 @@ uint32_t cnt_system_time(void) {
 	return cnt_sys_time;
 }
 
-int init_timer(sys_tmr_t **ptimer, uint32_t ticks,
+int init_timer(sys_tmr_t *ptimer, uint32_t ticks,
 		TIMER_FUNC handle, void *param) {
-	sys_tmr_t *new_timer = *ptimer;
 
-	if (!handle || !new_timer) {
+	if (!handle || !ptimer) {
 		return 1;
 	}
-	new_timer->is_preallocated = false;
-	new_timer->cnt    = new_timer->load = ticks;
-	new_timer->handle = handle;
-	new_timer->param  = param;
-	list_add_tail((struct list_head *) new_timer, sys_timers_list);
-	if (ptimer) {
-		*ptimer = new_timer;
-	}
+	ptimer->is_preallocated = false;
+	ptimer->cnt    = ptimer->load = ticks;
+	ptimer->handle = handle;
+	ptimer->param  = param;
+	list_add_tail((struct list_head *) ptimer, sys_timers_list);
 	return 0;
 }
 
@@ -57,15 +53,8 @@ int set_timer(sys_tmr_t **ptimer, uint32_t ticks,
 		}
 		return 1;
 	}
-	new_timer->is_preallocated = true;
-	new_timer->cnt    = new_timer->load = ticks;
-	new_timer->handle = handle;
-	new_timer->param  = param;
-	list_add_tail((struct list_head *) new_timer, sys_timers_list);
-	if (ptimer) {
-		*ptimer = new_timer;
-	}
-	return 0;
+
+	return init_timer(new_timer, ticks, handle, param);
 }
 
 int close_timer(sys_tmr_t **ptimer) {
