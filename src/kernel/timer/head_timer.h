@@ -20,7 +20,6 @@ struct sys_tmr {
 	TIMER_FUNC handler;
 	void       *args;
 	bool       is_preallocated;
-	bool       is_live;
 };
 
 

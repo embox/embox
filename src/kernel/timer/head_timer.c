@@ -2,9 +2,8 @@
  * @file
  * @brief Multi-threads Timer handling.
  *
- * @date 09.02.09
- * @author Andrey Baboshin
- * @author Ilia Vaprol
+ * @date 22.07.10
+ * @author Fedor Burdun
  */
 
 #include <assert.h>

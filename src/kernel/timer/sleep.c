@@ -4,6 +4,7 @@
  *
  * @date 05.07.11
  * @author Ilia Vaprol
+ * @author Fedor Burdun
  */
 
 #include <types.h>
@@ -14,7 +15,6 @@
 
 static void restore_thread(sys_tmr_t *timer, void *param) {
 	sched_wake((struct event *) param);
-	close_timer(timer);
 }
 
 /*system library function */
