@@ -27,13 +27,13 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	iphdr_t *hdr = skb->nh.iph;
 	hdr->version = 4;
 	hdr->ihl = IP_MIN_HEADER_SIZE >> 2/* + opt->optlen*/;
-	hdr->saddr = saddr;
-	hdr->daddr = daddr;
-	hdr->tot_len = len - ETH_HEADER_SIZE;
-	hdr->ttl = ttl;
-	hdr->id = id;
+	hdr->saddr = htonl(saddr);
+	hdr->daddr = htonl(daddr);
+	hdr->tot_len = htons(len - ETH_HEADER_SIZE);
+	hdr->ttl = htons(ttl);
+	hdr->id = htons(id);
 	hdr->tos = 0;
-	hdr->frag_off = IP_DF;
+	hdr->frag_off = htons(IP_DF);
 	hdr->proto = proto;
 	ip_send_check(hdr);
 	return 0;
@@ -63,7 +63,9 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		build_ip_packet(sk, skb);
 		//skb->len += IP_HEADER_SIZE;
 	}
-	ip_route(skb);
+	if (ip_route(skb)) {
+		return -1;
+	}
 	ip_send_check(skb->nh.iph);
 	return ip_queue_xmit(skb, 0);
 }

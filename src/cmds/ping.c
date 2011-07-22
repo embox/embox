@@ -81,10 +81,10 @@ static int ping(ping_info_t *pinfo) {
 	iph->version = 4;
 	iph->ihl = IP_MIN_HEADER_SIZE >> 2;
 	iph->tos = 0;
-	iph->frag_off = IP_DF;
+	iph->frag_off = htons(IP_DF);
 	iph->saddr = pinfo->from.s_addr;
 	iph->daddr = pinfo->dst.s_addr;
-	iph->tot_len = IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size;
+	iph->tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
 	iph->ttl = pinfo->ttl;
 	iph->proto = IPPROTO_ICMP;
 	icmph->type = ICMP_ECHO;
@@ -92,12 +92,12 @@ static int ping(ping_info_t *pinfo) {
 	icmph->un.echo.id = /*TID*/0;
 
 	for (i = 0; i < pinfo->count; i++) {
-		icmph->un.echo.sequence++;
+		icmph->un.echo.sequence = htons(ntohs(icmph->un.echo.sequence) + 1);
 		icmph->checksum = 0;
 		icmph->checksum = ptclbsum(packet + IP_MIN_HEADER_SIZE,
 						ICMP_HEADER_SIZE + pinfo->padding_size);
 
-		sendto(sk, packet, iph->tot_len, 0, (struct sockaddr *)&pinfo->dst, 0);
+		sendto(sk, packet, ntohs(iph->tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 		sleep(pinfo->timeout);
 
 		/* we don't need to get pad data, only header */

@@ -97,7 +97,7 @@ static void arp_send_q(void) {
 /**
  * Check if there are entries that are too old and remove them.
  */
-static void arp_check_expire(uint32_t id) {
+static inline void arp_check_expire(uint32_t id) {
 	size_t i;
 
 /* id = ARP_TIMER_ID (MUST) so without checking */
@@ -120,8 +120,8 @@ static void arp_check_expire(uint32_t id) {
 }
 
 static int arp_init(void) {
-	if (set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire) == 0)
-		return -1;
+//	if (set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire) == 0)
+//		return -1;
 	return 0;
 }
 
@@ -227,8 +227,8 @@ sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
 	arp->ar_op = htons(type);
 	memcpy(arp->ar_sha, src_hw, ETH_ALEN);
 	memcpy(arp->ar_tha, dest_hw, ETH_ALEN);
-	arp->ar_sip = src_ip;
-	arp->ar_tip = dest_ip;
+	arp->ar_sip = htonl(src_ip);
+	arp->ar_tip = htonl(dest_ip);
 
 	return skb;
 }
@@ -269,12 +269,12 @@ int arp_resolve(sk_buff_t *pack) {
 		return 0;
 	}
 	dev = pack->dev;
-	if (-1 != (i = arp_lookup(in_dev_get(dev), ip->daddr))) {
+	if (-1 != (i = arp_lookup(in_dev_get(dev), ntohl(ip->daddr)))) {
 		memcpy(pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
 		return 0;
 	}
 	/* send arp request  */
-	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev, ip->saddr, NULL,
+	arp_send(ARPOP_REQUEST, ETH_P_ARP, ntohl(ip->daddr), dev, ntohl(ip->saddr), NULL,
 			dev->dev_addr, NULL);
 	return -1;
 }
@@ -287,7 +287,7 @@ static int received_resp(sk_buff_t *pack) {
 
 	/*TODO need add function for getting ip addr*/
 	/* add record into arp_tables */
-	arp_add_entity(in_dev_get(pack->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
+	arp_add_entity(in_dev_get(pack->dev), ntohl(arp->ar_sip), arp->ar_sha, ATF_COM);
 	return 0;
 }
 
@@ -296,7 +296,7 @@ static int received_resp(sk_buff_t *pack) {
  */
 static int received_req(sk_buff_t *skb) {
 	arphdr_t *arp = skb->nh.arph;
-	return arp_send(ARPOP_REPLY, ETH_P_ARP, arp->ar_sip, skb->dev, arp->ar_tip,
+	return arp_send(ARPOP_REPLY, ETH_P_ARP, ntohl(arp->ar_sip), skb->dev, ntohl(arp->ar_tip),
 			skb->mac.ethh->h_source, skb->dev->dev_addr, NULL);
 }
 
@@ -305,11 +305,13 @@ static int received_req(sk_buff_t *skb) {
  */
 static int arp_process(sk_buff_t *skb) {
 	int ret = 0;
+	in_addr_t tip;
 	struct net_device *dev = skb->dev;
 	arphdr_t *arp = skb->nh.arph;
 
-	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)
-			|| (arp->ar_tip != in_dev_get(dev)->ifa_address)) {
+	tip = ntohl(arp->ar_tip);
+	if (ipv4_is_loopback(tip) || ipv4_is_multicast(tip)
+			|| (tip == in_dev_get(dev)->ifa_address)) { ///??
 		kfree_skb(skb);
 		return 0;
 	}

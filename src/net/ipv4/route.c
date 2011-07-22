@@ -54,12 +54,16 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 
 int ip_route(sk_buff_t *skb) {
 	size_t i;
+	in_addr_t daddr;
+
+	daddr = skb->nh.iph->daddr;
 	for (i = 0; i < RT_TABLE_SIZE; i++) {
 		if (!(rt_table[i].rt_flags & RTF_UP)) {
 			continue;
 		}
-		if ((skb->nh.iph->daddr & rt_table[i].rt_mask) == (rt_table[i].rt_dst & rt_table[i].rt_mask)) {
+		if ((daddr & rt_table[i].rt_mask) == rt_table[i].rt_dst) {
 			skb->dev = rt_table[i].dev;
+			// TODO even if type is SOCK_RAW?
 			skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
 			if (rt_table[i].rt_gateway != INADDR_ANY) {
 				skb->nh.iph->daddr = rt_table[i].rt_gateway;
