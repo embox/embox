@@ -179,21 +179,6 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest, uint32_t len
 	}
 }
 
-static int open(struct net_device *dev) {
-	if (NULL == dev) {
-		return -1;
-	}
-	//TODO
-	return 0;
-}
-
-static int stop(struct net_device *dev) {
-	if (NULL == dev) {
-		return -1;
-	}
-	//TODO
-	return 0;
-}
 
 static int set_mac_address(struct net_device *dev, void *addr) {
 	uint32_t i;
@@ -216,20 +201,24 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
     count = skb->len;
 //	outb(0x00, nic_base + EN0_IMR); /// lock
 	// copy
+    printk(" tx start\n");
 	copy_data_to_card(NESM_START_PG_TX << 8, skb->data, count, base_addr);
+	printk("copied\n");
 	// send
 	if (in8(base_addr + NE_CMD) & E8390_TRANS) {
 		printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
 	}
+	printk("trans\n");
 	set_tx_count(count, base_addr);
 	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
 	out8(E8390_TRANS + E8390_START, base_addr + NE_CMD);
-	while (in8(base_addr + NE_CMD) & E8390_TRANS) ; /* Wait for transmission to complete. */
+//	while (in8(base_addr + NE_CMD) & E8390_TRANS) ; /* Wait for transmission to complete. */
 //	outb(ENISR_ALL, base_addr + EN0_IMR); /// unlock
 //	ne2k_show_packet(skb->data, skb->len, "send");
+	printk("send\n");
 	return count;
 }
-
+#if 0
 static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset, struct net_device *dev) {
 	struct sk_buff *skb;
 
@@ -307,8 +296,8 @@ static size_t ne2k_receive(struct net_device *dev) {
 /// }
 	return 0;
 }
-
-#define TIMER_INTER // ne2k interrupt doesn't work, so set timer :(
+#endif
+//#define TIMER_INTER // ne2k interrupt doesn't work, so set timer :(
 #ifdef TIMER_INTER
 #include <hal/ipl.h>
 #include <kernel/timer.h>
@@ -318,7 +307,7 @@ static void ne2k_timer(uint32_t id) {
 	ne2k_handler(0xFA, (void *)nd);
 }
 #endif
-
+#if 0
 static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 	uint8_t isr, status;
 	net_device_stats_t *stat;
@@ -328,7 +317,6 @@ static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 	base_addr = ((struct net_device *)dev_id)->base_addr;
 	out8(E8390_PAGE0, base_addr + E8390_CMD);
 	while ((isr = in8(base_addr + EN0_ISR))) {
-//		printf("ISR(0x%X)", isr);
 		if (isr & ENISR_RDC) {
 			/* Ack meaningless DMA complete. */
 			out8(ENISR_RDC, base_addr + EN0_ISR);
@@ -373,6 +361,27 @@ static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
+#endif
+
+static int open(struct net_device *dev) {
+	if (NULL == dev) {
+		return -1;
+	}
+
+	ne2k_config(dev);
+	ne2k_show_page(dev->base_addr);
+	return 0;
+}
+
+static int stop(struct net_device *dev) {
+	if (NULL == dev) {
+		return -1;
+	}
+	printk("close\n");
+	out8(E8390_PAGE0 + E8390_STOP, dev->base_addr);
+	return 0;
+}
+
 static const struct net_device_ops _netdev_ops = {
 		.ndo_start_xmit = start_xmit,
 		.ndo_open = open,
@@ -398,13 +407,13 @@ static int __init unit_init(void) {
 		nic->base_addr = nic_base;
 	}
 	else {
+		LOG_WARN("Couldn't alloc netdev\n");
 		return -1;
 	}
-	if (-1 == irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k")) {
-		return -1;
-	}
-	ne2k_config(nic);
-	ne2k_show_page(nic_base);
+//	if (-1 == irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k")) {
+//		return -1;
+//	}
+
 #ifdef TIMER_INTER
 		nd = nic; // DEBUG
 	if (set_timer(0xFA, 5, ne2k_timer) != 0xFA) {

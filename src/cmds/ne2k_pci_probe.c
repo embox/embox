@@ -1,5 +1,5 @@
 /**
- *  @file mac.c
+ *  @file
  *  @brief show physical address net device
  *  @date 01.07.11
  *  @author: Gleb Efimov
