@@ -1,6 +1,6 @@
 /**
- * @file
- * @brief TODO This file is derived from Embox test template.
+ * @file sleep_test.c
+ * @brief Tests for sleep function
  *
  * @date 06.07.11
  * @author TODO Your name here
@@ -19,9 +19,8 @@ EMBOX_TEST_SUITE("sleep suite");
 #define TIME_TO_SLEEP  20
 #define NUM_THREADS     8
 
-TEST_EMIT_BUFFER_DEF(buff1, 7);
-TEST_EMIT_BUFFER_DEF(buff2, NUM_THREADS + 1);
-TEST_EMIT_BUFFER_DEF(buff3, 3);
+#define BUFFER_SZ (NUM_THREADS + 1 < 7 ? 7 : NUM_THREADS + 1) /* as many bytes need for our tests */
+TEST_EMIT_BUFFER_DEF(buff, BUFFER_SZ); /* allocated buffer for tests */
 
 /**
  *  sleep( any_time )
@@ -44,16 +43,16 @@ TEST_CASE("one sleep") {
  */
 
 static void * handler1(void* args) {
-	test_emit(&buff1, '0' + (uint32_t) args);
+	test_emit(&buff, '0' + (uint32_t) args);
 	usleep(TIME_TO_SLEEP * (uint32_t) args);
-	test_emit(&buff1, '0' + (uint32_t) args);
+	test_emit(&buff, '0' + (uint32_t) args);
 	return NULL;
 }
 
 TEST_CASE("simple multi-threaded check") {
 	struct thread *t1, *t2, *t3;
 
-	test_emit_buffer_reset(&buff1);
+	test_emit_buffer_reset(&buff);
 	/* statr threads */
 	test_assert_zero(thread_create(&t1, 0, handler1, (void *) 1));
 	test_assert_not_null(t1);
@@ -66,7 +65,7 @@ TEST_CASE("simple multi-threaded check") {
 	test_assert_zero(thread_join(t2, NULL));
 	test_assert_zero(thread_join(t3, NULL));
 
-	test_assert_str_equal(test_emit_buffer_str(&buff1), "123123");
+	test_assert_str_equal(test_emit_buffer_str(&buff), "123123");
 }
 
 /**
@@ -76,7 +75,7 @@ TEST_CASE("simple multi-threaded check") {
 
 static void * handler2(void* args) {
 	usleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
-	test_emit(&buff2, '1' + (uint32_t) args);
+	test_emit(&buff, '1' + (uint32_t) args);
 	return NULL;
 }
 
@@ -84,7 +83,7 @@ TEST_CASE("sleep sort") {
 	uint32_t i;
 	struct thread *t[NUM_THREADS];
 
-	test_emit_buffer_reset(&buff2);
+	test_emit_buffer_reset(&buff);
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(
 				thread_create(&t[i], 0, handler2, (void *) i));
@@ -94,13 +93,13 @@ TEST_CASE("sleep sort") {
 		test_assert_zero(thread_join(t[i], NULL));
 	}
 	for (i=0;i<10;++i);
-	test_assert_str_equal(test_emit_buffer_str(&buff2), "87654321");
+	test_assert_str_equal(test_emit_buffer_str(&buff), "87654321");
 }
 
 TEST_CASE("sleep 0 seconds") {
-	test_emit_buffer_reset(&buff3);
-	test_emit(&buff3, '1');
+	test_emit_buffer_reset(&buff);
+	test_emit(&buff, '1');
 	usleep(0);
-	test_emit(&buff3, '2');
-	test_assert_str_equal(test_emit_buffer_str(&buff3), "12");
+	test_emit(&buff, '2');
+	test_assert_str_equal(test_emit_buffer_str(&buff), "12");
 }
