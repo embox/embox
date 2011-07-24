@@ -17,21 +17,16 @@
 #include <drivers/apic.h>
 
 void irq_handler(pt_regs_t regs) {
+	int irqn = regs.trapno - 0x20;
 	/* Send an EOI (end of interrupt) signal to the PICs.
 	   If this interrupt involved the slave. */
-	if (regs.trapno >= 40) {
+	if (irqn > 7) {
 		/* Send reset signal to slave. */
-		out8(PIC2_COMMAND, NON_SPEC_EOI);
-		printk("big irq\n");
-	}
-	if ((32 + 2) == regs.trapno) {
-		printk("irq = 2\n");
+		out8(NON_SPEC_EOI, PIC2_COMMAND);
 	}
 	/* Send reset signal to master. (As well as slave, if necessary). */
-	out8(PIC1_COMMAND, NON_SPEC_EOI);
+	out8(NON_SPEC_EOI, PIC1_COMMAND);
 #ifdef CONFIG_IRQ
-	if (regs.trapno != 32+2) {
-		irq_dispatch(regs.trapno - 32);
-	}
+	irq_dispatch(irqn);
 #endif
 }
