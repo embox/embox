@@ -311,7 +311,7 @@ static int arp_process(sk_buff_t *skb) {
 
 	tip = ntohl(arp->ar_tip);
 	if (ipv4_is_loopback(tip) || ipv4_is_multicast(tip)
-			|| (tip == in_dev_get(dev)->ifa_address)) { ///??
+			|| (tip != in_dev_get(dev)->ifa_address)) {
 		kfree_skb(skb);
 		return 0;
 	}

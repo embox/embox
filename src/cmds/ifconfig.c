@@ -45,7 +45,7 @@ static void inet_dev_show_info(void *handler) {
 		TRACE("Ethernet");
 	}
 	TRACE(" HWaddr %s\n", mac);
-	ip.s_addr = in_dev->ifa_address;
+	ip.s_addr = htonl(in_dev->ifa_address);
 	bcast.s_addr = in_dev->ifa_broadcast;
 	mask.s_addr = in_dev->ifa_mask;
 	s_ip = inet_ntoa(ip);
