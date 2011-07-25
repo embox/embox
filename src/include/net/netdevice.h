@@ -115,7 +115,7 @@ typedef struct net_device {
 	struct net_device *tx_netdev_list;
 
 	char name[IFNAMSIZ]; /**< Name of the interface.  */
-	unsigned char dev_addr[ETHER_ADDR_LEN]; /**< hw address              */
+	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
 	unsigned long state;
 	unsigned short type; /**< interface hardware type      */

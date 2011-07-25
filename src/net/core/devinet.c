@@ -102,7 +102,6 @@ int inet_dev_listen(in_device_t *dev, unsigned short type,
 net_device_t *ip_dev_find(in_addr_t addr) {
 	size_t i;
 
-	addr = ntohl(addr);
 	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (ifs_info[i].dev.ifa_address == addr) {
 			return ifs_info[i].dev.dev;
@@ -145,7 +144,7 @@ int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr) {
 		return -1;
 	}
 	dev = (in_device_t *) in_dev;
-	dev->ifa_address = ntohl(ipaddr);
+	dev->ifa_address = ipaddr;
 	return 0;
 }
 
@@ -156,7 +155,7 @@ int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask) {
 	}
 	dev = (in_device_t *) in_dev;
 	dev->ifa_mask = mask;
-	dev->ifa_broadcast = htonl(dev->ifa_address) | ~dev->ifa_mask;
+	dev->ifa_broadcast = dev->ifa_address | ~dev->ifa_mask;
 	return 0;
 }
 
@@ -178,7 +177,7 @@ int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macaddr) {
 }
 
 in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev) {
-	return (NULL == in_dev) ? 0 : htonl(in_dev->ifa_address);
+	return (NULL == in_dev) ? 0 : in_dev->ifa_address;
 }
 #if 0
 /**

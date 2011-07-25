@@ -65,7 +65,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	dst_b = inet_ntoa(dst);
-	from.s_addr = htonl(in_dev->ifa_address);
+	from.s_addr = in_dev->ifa_address;
 	from_b = inet_ntoa(from);
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {

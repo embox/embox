@@ -95,7 +95,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 						goto error;
 					}
 					//TODO ask whether ...->ifa_address is a correct transmitter (i.e. our) address
-					*(in_addr_t *)(curropt + curropt[2] - 1) = htonl(in_dev_get(skb->dev)->ifa_address);
+					*(in_addr_t *)(curropt + curropt[2] - 1) = in_dev_get(skb->dev)->ifa_address;
 					curropt[2] += 4;
 					opt->is_changed = 1;
 					opt->rr_needaddr = 1;
@@ -144,7 +144,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 								optsfault = curropt + 2;
 								goto error;
 							}
-							*(in_addr_t *)(curropt + curropt[2] - 1) = htonl(in_dev_get(skb->dev)->ifa_address);
+							*(in_addr_t *)(curropt + curropt[2] - 1) = in_dev_get(skb->dev)->ifa_address;
 							timestamp = (unsigned int*)(&curropt[curropt[2]+3]);
 							opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
 							opt->ts_needaddr = 1;
