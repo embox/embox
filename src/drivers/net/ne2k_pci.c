@@ -34,6 +34,9 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
+
+static net_device_stats_t * get_eth_stat(struct net_device *dev);
+
 #define E8390_STOP     0x01 /* Stop and reset the chip */
 #define E8390_START    0x02 /* Start the chip, clear reset */
 #define E8390_TXOFF    0x02 /* EN0_TXCR: Transmitter off */
@@ -56,45 +59,9 @@ struct e8390_pkt_hdr {
 	uint16_t count; /* header + packet lenght in bytes */
 };
 
-static inline void ne2k_config(struct net_device *dev) {
-	uint8_t i, *mac;
-	unsigned int base_addr;
 
-	mac = dev->dev_addr;
-	base_addr = dev->base_addr;
-	out8(E8390_PAGE0 + E8390_STOP, base_addr);
-	out8(0x49, base_addr + EN0_DCFG);
-	/* Set the transmit page and receive ring. */
-	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
-	out8(NESM_START_PG_RX, base_addr + EN0_STARTPG);
-	out8(NESM_STOP_PG - 1, base_addr + EN0_BOUNDARY);
-	out8(NESM_STOP_PG, base_addr + EN0_STOPPG);
 
-	out8(0xFF, base_addr + EN0_ISR);
-	out8(ENISR_ALL, base_addr + EN0_IMR);
-	out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on */
-	out8(E8390_RXCONFIG, base_addr + EN0_RXCR); /* rx on */
-	/* Copy the station address into the DS8390 registers,
-	   and set the multicast hash bitmap to receive all multicasts. */
-	out8(E8390_PAGE1, base_addr); /* 0x61 */
-	out8(NESM_START_PG_RX, base_addr + EN1_CURPAG);
-	/* Get mac-address */
-	out8(E8390_PAGE0 + E8390_RREAD, base_addr + E8390_CMD);
-	for(i = 0; i < ETHER_ADDR_LEN; i++) {
-		*(mac + i) = in8(base_addr + NE_DATAPORT);
-	}
-	dev->addr_len = ETHER_ADDR_LEN;
-	/* Copy the station address and set the multicast
-	 * hash bitmap to recive all multicast */
-	out8(E8390_PAGE1 + E8390_START, base_addr + E8390_CMD);
-	for (i = 0; i < ETHER_ADDR_LEN; i++) {
-		out8(*(mac + i), base_addr + EN1_PHYS_SHIFT(i));
-	}
-	for (i = 0; i < 8; i++) { /* multicast filter */
-		out8(0xFF, base_addr + EN1_MULT_SHIFT(i));
-	}
-}
-
+/* Debugging routines */
 static inline void ne2k_show_page(unsigned long base_addr) {
 	uint8_t i, page, val;
 	/* Page Dump*/
@@ -127,7 +94,9 @@ static inline void ne2k_show_packet(uint8_t *raw, uint16_t size, char *title) {
 	/* Page Dump*/
     printf("\nPACKET %s:", title);
 	for (i = 0; i < size; i++) {
-		if (!(i % 16)) { printf("\n"); }
+		if (!(i % 16)) {
+			printf("\n");
+		}
 		val = *(raw + i);
 		if (val < 0x10) {
 			printf(" 0%X", val);
@@ -138,6 +107,52 @@ static inline void ne2k_show_packet(uint8_t *raw, uint16_t size, char *title) {
 	}
     printf("\n.\n");
 }
+
+static inline void ne2k_get_addr_from_prom(struct net_device *dev) {
+	int i;
+	dev->addr_len = ETHER_ADDR_LEN;
+	/* Copy the station address into the DS8390 registers,
+	   and set the multicast hash bitmap to receive all multicasts. */
+	out8(NE_PAGE1_STOP, dev->base_addr); /* 0x61 */
+	out8(NESM_START_PG_RX, dev->base_addr + EN1_CURPAG);
+
+	/* Get mac-address from prom*/
+	out8(E8390_PAGE0 + E8390_RREAD, dev->base_addr + E8390_CMD);
+	for(i = 0; i < ETHER_ADDR_LEN; i++) {
+		dev->dev_addr[i] = in8(dev->base_addr + NE_DATAPORT);
+	}
+
+	/* Copy the station address and set the multicast
+	 * hash bitmap to recive all multicast */
+	out8(E8390_PAGE1 | E8390_START, dev->base_addr + E8390_CMD);
+	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+		out8(dev->dev_addr[i], dev->base_addr + EN1_PHYS_SHIFT(i));
+		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
+	}
+}
+
+/* configure board */
+static inline void ne2k_config(struct net_device *dev) {
+	unsigned int base_addr;
+
+	base_addr = dev->base_addr;
+
+	/*stop*/
+	out8(E8390_PAGE0 + E8390_STOP, base_addr);
+	out8(0x48, base_addr + EN0_DCFG); /*16 bit & normal & 4fifo */
+
+	/* Set the transmit page and receive ring. */
+	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
+	out8(NESM_START_PG_RX, base_addr + EN0_STARTPG);
+	out8(NESM_STOP_PG - 1, base_addr + EN0_BOUNDARY);
+	out8(NESM_STOP_PG, base_addr + EN0_STOPPG);
+
+	out8(0xFF, base_addr + EN0_ISR);
+	out8(ENISR_ALL, base_addr + EN0_IMR);
+	out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on */
+	out8(E8390_RXCONFIG, base_addr + EN0_RXCR); /* rx on */
+}
+
 
 static inline void set_tx_count(uint16_t val, unsigned long base_addr) {
 	/* Set how many bytes we're going to send. */
@@ -155,18 +170,22 @@ static inline void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
 	out8(val >> 8, EN0_RCNTHI + base_addr);
 }
 
-static inline net_device_stats_t * get_eth_stat(struct net_device *dev) {
-	return &(dev->stats);
-}
 
-static inline void copy_data_to_card(uint16_t dest, uint8_t *src, uint16_t length, unsigned long base_addr) {
-	out8(E8390_RWRITE + E8390_PAGE0, base_addr + NE_CMD);
+static inline void copy_data_to_card(uint16_t dest, uint8_t *src, uint16_t len, unsigned long base_addr) {
+//	out8(E8390_START | E8390_PAGE0, base_addr + NE_CMD);
 	set_rem_address(dest, base_addr);
-	set_rem_byte_count(length, base_addr);
-	if (length & 1) {
-		length++;
+	set_rem_byte_count(len, base_addr);
+	out8(E8390_RWRITE | E8390_START | E8390_PAGE0, base_addr + NE_CMD);
+
+//	if (len & 1) { /* rounding */
+//		len++;
+//	}
+
+	//outsw(base_addr + NE_DATAPORT, src, len >> 1);
+	while(len-- > 0) {
+		out8(*src++, base_addr + NE_DATAPORT);
 	}
-	outsw(base_addr + NE_DATAPORT, src, length>>1);
+	while(0 == (in8(base_addr + EN0_ISR) & ENISR_RDC));
 }
 
 static inline void copy_data_from_card(uint16_t src, uint8_t *dest, uint32_t length, unsigned long base_addr) {
@@ -180,45 +199,35 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest, uint32_t len
 }
 
 
-static int set_mac_address(struct net_device *dev, void *addr) {
-	uint32_t i;
-
-	if (NULL == dev || NULL == addr) {
-		return -1;
-	}
-	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETHER_ADDR_LEN; i++) {
-		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
-	}
-	return 0;
-}
-
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint16_t count;
 	unsigned long base_addr;
 
 	base_addr = dev->base_addr;
     count = skb->len;
-//	outb(0x00, nic_base + EN0_IMR); /// lock
-	// copy
-    printk(" tx start\n");
+
 	copy_data_to_card(NESM_START_PG_TX << 8, skb->data, count, base_addr);
-	printk("copied\n");
+
+	/* switch off dma */
+	out8(E8390_NODMA | E8390_START | E8390_PAGE0, base_addr + NE_CMD);
+
 	// send
-	if (in8(base_addr + NE_CMD) & E8390_TRANS) {
-		printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
-	}
-	printk("trans\n");
+//	if (in8(base_addr + NE_CMD) & E8390_TRANS) {
+//		printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
+//	}
+
+
 	set_tx_count(count, base_addr);
 	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
-	out8(E8390_TRANS + E8390_START, base_addr + NE_CMD);
+	out8(E8390_TRANS | E8390_NODMA | E8390_START, base_addr + NE_CMD);
 //	while (in8(base_addr + NE_CMD) & E8390_TRANS) ; /* Wait for transmission to complete. */
 //	outb(ENISR_ALL, base_addr + EN0_IMR); /// unlock
-//	ne2k_show_packet(skb->data, skb->len, "send");
-	printk("send\n");
+
 	return count;
 }
-#if 0
+#define NE2K_IRQ 1
+
+#if NE2K_IRQ
 static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset, struct net_device *dev) {
 	struct sk_buff *skb;
 
@@ -307,7 +316,7 @@ static void ne2k_timer(uint32_t id) {
 	ne2k_handler(0xFA, (void *)nd);
 }
 #endif
-#if 0
+#if NE2K_IRQ
 static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 	uint8_t isr, status;
 	net_device_stats_t *stat;
@@ -363,11 +372,33 @@ static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 
 #endif
 
+static net_device_stats_t * get_eth_stat(struct net_device *dev) {
+	return &(dev->stats);
+}
+
+static int set_mac_address(struct net_device *dev, void *addr) {
+	uint32_t i;
+
+	if (NULL == dev || NULL == addr) {
+		return -1;
+	}
+	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
+	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
+		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
+	}
+	memcpy(dev->dev_addr, addr, ETHER_ADDR_LEN);
+
+	return 0;
+}
+
+
 static int open(struct net_device *dev) {
 	if (NULL == dev) {
 		return -1;
 	}
 
+	ne2k_get_addr_from_prom(dev);
 	ne2k_config(dev);
 	ne2k_show_page(dev->base_addr);
 	return 0;
@@ -377,17 +408,19 @@ static int stop(struct net_device *dev) {
 	if (NULL == dev) {
 		return -1;
 	}
-	printk("close\n");
+	/* reset */
 	out8(E8390_PAGE0 + E8390_STOP, dev->base_addr);
+	out8(0xFF, dev->base_addr + EN0_ISR);
+	out8(0x00, dev->base_addr + EN0_IMR);
 	return 0;
 }
 
 static const struct net_device_ops _netdev_ops = {
-		.ndo_start_xmit = start_xmit,
-		.ndo_open = open,
-		.ndo_stop = stop,
-		.ndo_get_stats = get_eth_stat,
-		.ndo_set_mac_address = set_mac_address
+	.ndo_start_xmit = start_xmit,
+	.ndo_open = open,
+	.ndo_stop = stop,
+	.ndo_get_stats = get_eth_stat,
+	.ndo_set_mac_address = set_mac_address
 };
 
 static int __init unit_init(void) {
@@ -395,7 +428,7 @@ static int __init unit_init(void) {
 	struct net_device *nic;
 	struct pci_dev *pci_dev;
 
-	pci_dev = pci_find_dev(0x10EC, 0x8029);
+	pci_dev = pci_find_dev(0x10EC, 0x8029); //TODO pci ID
 	if (NULL == pci_dev) {
 		LOG_WARN("Couldn't find NE2K_PCI device");
 		return 0;
@@ -410,9 +443,9 @@ static int __init unit_init(void) {
 		LOG_WARN("Couldn't alloc netdev\n");
 		return -1;
 	}
-//	if (-1 == irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k")) {
-//		return -1;
-//	}
+	if (-1 == irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k")) {
+		return -1;
+	}
 
 #ifdef TIMER_INTER
 		nd = nic; // DEBUG
