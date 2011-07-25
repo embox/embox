@@ -28,11 +28,9 @@
  *    MUST provide mechanism to flush stale cache entries
  *    SHOULD be able to configure cache timeout
  *    MUST throttle ARP retransmits
-#if 0
  *  2.3.2.2 (ARP Packet Queue):
  *    SHOULD save at least one packet from each "conversation" with an
  *      unresolved IP address.
-#endif
  */
 
 
@@ -40,71 +38,14 @@ EMBOX_NET_PACK(ETH_P_ARP, arp_rcv, arp_init);
 
 arp_entity_t arp_tables[ARP_CACHE_SIZE];
 
-#define arp_tables_SIZE ARP_CACHE_SIZE
-
 #define ARP_TIMER_ID 12
-
-#if 0
-static LIST_HEAD(arp_q);
-#endif
-
-#if 0
-/* Queue an IP packet, while waiting for the ARP reply packet. */
-void arp_queue(sk_buff_t *skb) {
-	printf("\n\nTo queue %p \n\n", (void *)skb);
-	skb->tries = ARP_MAX_TRIES;
-	list_add((struct list_head *) skb, &arp_q);
-}
-#endif
-
-#if 0
-/* This will try to retransmit everything on the queue. */
-static void arp_send_q(void) {
-	struct list_head *skb_h;
-	struct sk_buff *skb;
-	net_device_t *dev;
-	const struct net_device_ops *ops;
-	net_device_stats_t *stats;
-
-	list_for_each(skb_h, (struct list_head *)&arp_q) {
-		skb = (struct sk_buff *) skb_h;
-		dev = skb->dev;
-		ops = dev->netdev_ops;
-		stats = ops->ndo_get_stats(dev);
-		skb->tries--;
-		if (skb->tries == 0) {
-			list_del(skb_h);
-			kfree_skb(skb);
-			stats->tx_err++;
-			break; /* continue; */
-		}
-		if (-1 != dev->header_ops->rebuild(skb)) {
-			if (-1 == ops->ndo_start_xmit(skb, dev)) {
-				stats->tx_err++;
-				continue;
-			}
-			/* update statistic */
-			stats->tx_packets++;
-			stats->tx_bytes += skb->len;
-			list_del(skb_h);
-			kfree_skb(skb);
-			break; /* remove */
-		}
-	}
-}
-#endif
 
 /**
  * Check if there are entries that are too old and remove them.
  */
-static inline void arp_check_expire(uint32_t id) {
+static void arp_check_expire(uint32_t id) {
 	size_t i;
 
-/* id = ARP_TIMER_ID (MUST) so without checking */
-#if 0
-	// XXX seems that altering timers from tick handler crashes the system. -- Eldar
-	close_timer(ARP_TIMER_ID);
-#endif
 	for (i = 0; i < ARP_CACHE_SIZE; i++) {
 		if ((arp_tables[i].flags == ATF_COM) && (arp_tables[i].state == 1)) {
 			arp_tables[i].ctime += ARP_CHECK_INTERVAL;
@@ -113,15 +54,12 @@ static inline void arp_check_expire(uint32_t id) {
 			}
 		}
 	}
-#if 0
-	set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire);
-	arp_send_q();
-#endif
 }
 
 static int arp_init(void) {
-//	if (set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire) == 0)
-//		return -1;
+	if (!set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire)) {
+		return -1;
+	}
 	return 0;
 }
 
@@ -132,7 +70,7 @@ static int arp_xmit(sk_buff_t *skb) {
 int arp_lookup(in_device_t *in_dev, in_addr_t dst_addr) {
 	size_t i;
 
-	for (i = 0; i < arp_tables_SIZE; i++) {
+	for (i = 0; i < ARP_CACHE_SIZE; i++) {
 		if ((arp_tables[i].state == 1) && (arp_tables[i].pw_addr == dst_addr)
 				&& (arp_tables[i].if_handler == in_dev)) {
 			return i;
@@ -152,7 +90,7 @@ int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr,
 		unsigned char *macaddr, unsigned int flags) {
 	size_t i;
 
-	for (i = 0; i < arp_tables_SIZE; i++) {
+	for (i = 0; i < ARP_CACHE_SIZE; i++) {
 		if ((arp_tables[i].state == 0) /* if empty */
 				|| ((arp_tables[i].pw_addr == ipaddr) /* or exist */
 						&& (arp_tables[i].if_handler == in_dev))) {
@@ -179,7 +117,7 @@ int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr,
 		unsigned char *macaddr) {
 	size_t i;
 
-	for (i = 0; i < arp_tables_SIZE; i++) {
+	for (i = 0; i < ARP_CACHE_SIZE; i++) {
 		if ((arp_tables[i].pw_addr == ipaddr)
 				&& (memcmp(arp_tables[i].hw_addr, macaddr, ETH_ALEN) == 0)
 				&& (in_dev == arp_tables[i].if_handler)) {
@@ -190,11 +128,12 @@ int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr,
 	return -1;
 }
 
-sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
+sk_buff_t * arp_create(int type, int ptype, in_addr_t dest_ip,
 		net_device_t *dev, in_addr_t src_ip, const unsigned char *dest_hw,
 		const unsigned char *src_hw, const unsigned char *target_hw) {
 	sk_buff_t *skb;
 	struct arphdr *arp;
+
 	if (NULL == dev || NULL == (skb = alloc_skb(ETH_HEADER_SIZE
 			+ ARP_HEADER_SIZE, 0))) {
 		return NULL;
@@ -284,20 +223,22 @@ int arp_resolve(sk_buff_t *pack) {
 /**
  * receive ARP response, update ARP table
  */
-static int received_resp(sk_buff_t *pack) {
-	arphdr_t *arp = pack->nh.arph;
+static inline int received_resp(sk_buff_t *pack) {
+	arphdr_t *arp;
 
+	arp = pack->nh.arph;
 	/*TODO need add function for getting ip addr*/
 	/* add record into arp_tables */
-	arp_add_entity(in_dev_get(pack->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
-	return 0;
+	return arp_add_entity(in_dev_get(pack->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
 }
 
 /**
  * receive ARP request, send ARP response
  */
-static int received_req(sk_buff_t *skb) {
-	arphdr_t *arp = skb->nh.arph;
+static inline int received_req(sk_buff_t *skb) {
+	arphdr_t *arp;
+
+	arp = skb->nh.arph;
 	return arp_send(ARPOP_REPLY, ETH_P_ARP, arp->ar_sip, skb->dev, arp->ar_tip,
 			skb->mac.ethh->h_source, skb->dev->dev_addr, NULL);
 }
@@ -306,22 +247,29 @@ static int received_req(sk_buff_t *skb) {
  * Process an arp request.
  */
 static int arp_process(sk_buff_t *skb) {
-	int ret = 0;
-	struct net_device *dev = skb->dev;
-	arphdr_t *arp = skb->nh.arph;
+	int ret;
+	arphdr_t *arp;
 
-	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)
-			|| (arp->ar_tip != in_dev_get(dev)->ifa_address)) {
+	ret = 0;
+	arp = skb->nh.arph;
+	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)) {
 		kfree_skb(skb);
 		return 0;
+	}
+	if (arp->ar_tip != in_dev_get(skb->dev)->ifa_address) {
+		if (arp->ar_tip == arp->ar_sip) { /* RFC 3927 - ARP Announcement */
+			arp_add_entity(in_dev_get(skb->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
+		}
+		kfree_skb(skb);
+		return 1;
 	}
 	switch (ntohs(arp->ar_op)) {
 		case ARPOP_REPLY:
 			ret = received_resp(skb);
 			break;
 		case ARPOP_REQUEST:
-			ret = received_req(skb);
 			received_resp(skb);
+			ret = received_req(skb);
 			break;
 	}
 	kfree_skb(skb);
@@ -330,15 +278,15 @@ static int arp_process(sk_buff_t *skb) {
 
 int arp_rcv(sk_buff_t *skb, net_device_t *dev, packet_type_t *pt,
 		net_device_t *orig_dev) {
-	arphdr_t *arp = skb->nh.arph;
+	arphdr_t *arp;
 
-	if ((arp->ar_hln != dev->addr_len)
-			|| (dev->flags & IFF_NOARP)
+	arp = skb->nh.arph;
+	if ((arp->ar_hln != dev->addr_len) || (dev->flags & IFF_NOARP)
 			|| (skb->pkt_type == PACKET_OTHERHOST)
 			|| (skb->pkt_type == PACKET_LOOPBACK) // why?
 			|| (arp->ar_pln != 4)) {
 		kfree_skb(skb);
 		return NET_RX_SUCCESS;
 	}
-	return arp_process(skb);
+	return (arp_process(skb) ? NET_RX_DROP : NET_RX_SUCCESS);
 }
