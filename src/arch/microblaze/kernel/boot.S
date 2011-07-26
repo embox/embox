@@ -81,7 +81,7 @@ how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide 
 
 	/*call hardware_init_hook if it set */
 	addik reg_tmp1, reg_zero, hardware_init_hook
-	beqi reg_tmp1, 1f
+	beqi reg_tmp1, clear_bss
 	brlid r15, hardware_init_hook
 	nop
 
