@@ -86,7 +86,6 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
 				icmp_param->skb->nh.iph->saddr, skb, 0);
-	kfree_skb(skb);
 }
 
 /**
@@ -362,7 +361,6 @@ static int icmp_rcv(sk_buff_t *pack) {
 	}
 	if (NULL != icmp_pointers[icmph->type].handler) {
 		icmp_pointers[icmph->type].handler(pack);
-		kfree_skb(pack);
 		return 0;
 	}
 	return -1;

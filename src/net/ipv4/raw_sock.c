@@ -42,17 +42,25 @@ static struct sock *raw_lookup(__u8 proto) {
 
 int raw_rcv(sk_buff_t *skb) {
 	size_t i;
+	int need_free;
 	struct sock *sk;
-	sk_buff_t *copy;
-	iphdr_t *iph = ip_hdr(skb);
+	iphdr_t *iph;
+
+	need_free = 1;
+	iph = ip_hdr(skb);
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock*) raw_hash[i];
 		if (sk && sk->sk_protocol == iph->proto) {
-			copy = skb_copy(skb, 0);
-			raw_rcv_skb(sk, copy);
+			if (raw_rcv_skb(sk, skb) == NET_RX_SUCCESS) {
+				need_free = 0;
+			}
 		}
 	}
-	return 0;
+	if (need_free) {
+		kfree_skb(skb);
+		return NET_RX_DROP;
+	}
+	return NET_RX_SUCCESS;
 }
 
 static void raw_close(struct sock *sk, long timeout) {
@@ -95,15 +103,15 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 					(void*) msg->msg_iov->iov_base, len);
 	skb->h.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE +
 			IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
-	ip_send_packet(inet, skb);
-	return 0;
+	return ip_send_packet(inet, skb);
 }
 
 static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len, int noblock, int flags, int *addr_len) {
 	struct sk_buff *skb;
+
 	skb = skb_recv_datagram(sk, flags, 0, 0);
-	if (skb && skb->len > 0) {
+	if (skb) {
 		if (len > (skb->len - ETH_HEADER_SIZE)) {
 			len = skb->len - ETH_HEADER_SIZE;
 		}

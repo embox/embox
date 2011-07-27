@@ -64,6 +64,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		//skb->len += IP_HEADER_SIZE;
 	}
 	if (ip_route(skb)) {
+		kfree_skb(skb);
 		return -1;
 	}
 	ip_send_check(skb->nh.iph);

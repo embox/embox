@@ -201,11 +201,13 @@ int arp_resolve(sk_buff_t *pack) {
 
 	ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
-	if (ip->daddr == INADDR_LOOPBACK) {
+	if (ipv4_is_loopback(ip->daddr)) {
+		// Loopback address is 127.*.*.*
+		// so previous check is incorrect: ip->daddr == htonl(INADDR_LOOPBACK)
 		memset(pack->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return 0;
 	}
-	if (ip->daddr == INADDR_BROADCAST) {
+	if (ip->daddr == htonl(INADDR_BROADCAST)) {
 		memset(pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return 0;
 	}
@@ -247,10 +249,9 @@ static inline int received_req(sk_buff_t *skb) {
  * Process an arp request.
  */
 static int arp_process(sk_buff_t *skb) {
-	int ret;
+	int res;
 	arphdr_t *arp;
 
-	ret = 0;
 	arp = skb->nh.arph;
 	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)) {
 		kfree_skb(skb);
@@ -261,19 +262,21 @@ static int arp_process(sk_buff_t *skb) {
 			arp_add_entity(in_dev_get(skb->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
 		}
 		kfree_skb(skb);
-		return 1;
+		return -1;
 	}
 	switch (ntohs(arp->ar_op)) {
 		case ARPOP_REPLY:
-			ret = received_resp(skb);
-			break;
+			res = received_resp(skb);
+			kfree_skb(skb);
+			return res;
 		case ARPOP_REQUEST:
 			received_resp(skb);
-			ret = received_req(skb);
-			break;
+			res = received_req(skb);
+			kfree_skb(skb);
+			return res;
 	}
 	kfree_skb(skb);
-	return ret;
+	return -1;
 }
 
 int arp_rcv(sk_buff_t *skb, net_device_t *dev, packet_type_t *pt,
