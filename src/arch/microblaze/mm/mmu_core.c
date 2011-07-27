@@ -31,35 +31,17 @@ EMBOX_UNIT_INIT(mmu_init);
 
 
 static inline void mmu_save_status(uint32_t *status) {
-#if 0
-	register uint32_t msr;
-	__asm__ __volatile__ (
-		"mfs     %0, rmsr;\n\t"
-		"andni   %0, %0, %2;\n\t"
-		"swi   %0, %1, 0;\n\t" :
-		"=r"(msr) :
-		"r"(status), "i"(MSR_VM_MASK) :
-		"memory"
-	);
-#endif
-	*status = msr_get_value();
-	*status &= ~(MSR_VM_MASK);
+	*status = msr_get_value() & MSR_VM_MASK;
+//	*status &= ~(MSR_VM_MASK);
 }
 
 static inline void mmu_restore_status(uint32_t *status) {
-#if 0
-	register uint32_t msr, tmp;
-	__asm__ __volatile__ (
-		"lwi  %0, %1, 0;\n\t"
-		"mfs     %0, rmsr;\n\t"
-		"or   %0, r0, %2;\n\t"
-		"mts   rmsr, %1, 0;\n\t" :
-		"=r"(msr), "=&r"(tmp):
-		"r"(status), "i"(MSR_VM_MASK) :
-		"memory"
-	);
-#endif
-	msr_set_value(msr_get_value() | ((*status) & ~(MSR_VM_MASK)));
+	//msr_set_value(msr_get_value() | ((*status) & ~(MSR_VM_MASK)));
+	if (*status & MSR_VM_MASK) {
+		mmu_on();
+	} else {
+		mmu_off();
+	}
 }
 
 void mmu_on(void) {
@@ -75,16 +57,17 @@ void mmu_on(void) {
 	);
 #else
 	__asm__ __volatile__ (
-		"msrset  %0, %1;\n\t" :
-		"=r"(msr) :
-		"i"(MSR_VM_MASK) :
-		"memory"
+		"msrset  %0, %1;\n\t"
+		 : "=r"(msr)
+		 : "i"(MSR_VM_MASK)
+		 : "memory"
+
 	);
 #endif
 }
 
 void mmu_off(void) {
-	register uint32_t msr;
+	//register uint32_t msr;
 #if 0
 	__asm__ __volatile__ (
 		"mfs     %0, rmsr;\n\t"
@@ -96,10 +79,10 @@ void mmu_off(void) {
 	);
 #else
 	__asm__ __volatile__ (
-		"msrclr  %0, %1;\n\t" :
-		"=r"(msr) :
-		"i"(MSR_VM_MASK) :
-		"memory"
+		"msrclr  r0, %0;\n\t"
+		:
+		: "i"(MSR_VM_MASK)
+
 	);
 #endif
 }
@@ -186,49 +169,17 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 			((flags & MMU_PAGE_EXECUTEABLE) ? 1 : 0),
 			((flags & MMU_PAGE_WRITEABLE) ? 1 : 0));
 
-//	TRACE("\n\nin mmu_map_region: ctx = 0x%x, phy_addr = 0x%x, virt_addr = 0x%x,"
-//			" reg_size = 0x%x, flags = 0x%x\n",
-//			ctx, phy_addr, virt_addr, reg_size, flags);
-//	TRACE("\ttlblo = 0x%X tlbhi=0x%X\n", tlblo, tlbhi);
+#if 0
+	TRACE("\n\nin mmu_map_region: ctx = 0x%x, phy_addr = 0x%x, virt_addr = 0x%x,"
+			" reg_size = 0x%x, flags = 0x%x\n",
+			ctx, phy_addr, virt_addr, reg_size, flags);
+	TRACE("\ttlblo = 0x%X tlbhi=0x%X\n", tlblo, tlbhi);
+#endif
 	set_utlb_record((cur_utlb_idx++) % UTLB_QUANTITY_RECORDS, tlblo, tlbhi);
 
 	return cur_utlb_idx;
 }
 
-void mmu_restore_env(mmu_env_t *env) {
-	unsigned int ipl = ipl_save();
-
-	/* disable virtual mode*/
-	mmu_off();
-
-	/* change cur_env pointer */
-	cur_env = env;
-
-	/* flush utlb records */
-	mmu_restore_table(env->utlb_table);
-
-	/* restore MMU mode */
-	env->status ? mmu_on() : mmu_off();
-
-	ipl_restore(ipl);
-}
-
-void mmu_save_env(mmu_env_t *env) {
-	unsigned int ipl = ipl_save();
-
-	mmu_save_status(&(cur_env->status));
-
-	cur_env->status = 0;
-	/* disable virtual mode*/
-	mmu_off();
-
-	memcpy(env, cur_env, sizeof(mmu_env_t));
-
-	/* flush utlb records */
-	mmu_save_table(env->utlb_table);
-
-	ipl_restore(ipl);
-}
 
 void mmu_set_env(mmu_env_t *env) {
 	mmu_off();
@@ -239,9 +190,43 @@ void mmu_set_env(mmu_env_t *env) {
 	/* flush utlb records */
 	mmu_restore_table(env->utlb_table);
 
-	/* restore MMU mode */
-	env->status ? mmu_on() : mmu_off();
+	/* set MMU mode */
+	if (env->status) {
+		mmu_off();
+	}
+
 }
+
+void mmu_restore_env(mmu_env_t *env) {
+	unsigned int ipl = ipl_save();
+
+	mmu_set_env(env);
+
+	ipl_restore(ipl);
+}
+
+void mmu_save_env(mmu_env_t *env) {
+	unsigned int ipl = ipl_save();
+
+	/* disable virtual mode*/
+	mmu_off();
+
+	mmu_save_status(&(cur_env->status));
+
+	memcpy(env, cur_env, sizeof(mmu_env_t));
+
+#if 0
+	/* flush utlb records */
+	mmu_save_table(env->utlb_table);
+#endif
+
+	if (cur_env->status) {
+		mmu_on();
+	}
+
+	ipl_restore(ipl);
+}
+
 
 /*
  * Module initializing function.
