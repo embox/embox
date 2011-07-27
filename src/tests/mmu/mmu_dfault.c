@@ -16,26 +16,40 @@
 
 EMBOX_TEST(run);
 
-
-#define VADDR(phyaddr) (0xf0000000 + ((uint32_t)(phyaddr) \
-		- (uint32_t)(&_data_image_start)))
-
+#define VADDR(region, phyaddr) (region + ((uint32_t)(phyaddr) & 0xfff))
 
 static uint32_t addr;
 
+static int dfault_happend = 0;
+
 /* MMU data access exception handler */
 static int dfault_handler(uint32_t trap_nr, void *data) {
-	//printf("mmu dfault");
-	//while (1);
-
+	dfault_happend = 1;
 	return 0;
 }
 
-/* MMU data access exception handler */
-static int ifault_handler(uint32_t trap_nr, void *data) {
-	//printf("mmu ifault");
-	//while (1);
-	return 0;
+static int test_for_dfault(void) {
+	uint32_t vaddr = VADDR(0xf0000000, &addr);
+
+	mmu_map_region((mmu_ctx_t)0, (paddr_t)(&addr) & ~0xfff, 0xf0000000, 0x1000,
+			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+
+	mmu_on();
+
+	*((volatile uint32_t *) vaddr) = 0x11111111;
+
+	mmu_off();
+
+	mmu_map_region((mmu_ctx_t)0, (paddr_t)(&addr) & ~0xfff, 0xf0001000, 0x1000,
+				MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
+	mmu_on();
+
+	/* Data access exception */
+	vaddr = VADDR(0xf0001000, &addr);
+	*((volatile uint32_t *) vaddr) = 0x77777777;
+
+
+	return (addr == 0x11111111 && dfault_happend) ? 0 : -1;
 }
 
 static int run(void) {
@@ -43,14 +57,10 @@ static int run(void) {
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
 	unsigned long var;
-#if 0
-	uint32_t vaddr = ((0xf0000000 - (uint32_t)(&_data_start))
-	  + ((uint32_t)(&addr) - (uint32_t)(&_data_start)));
-#endif
-	uint32_t vaddr = VADDR(&addr);
 
 	mmu_save_env(&prev_mmu_env);
 	mmu_set_env(testmmu_env());
+
 	traps_save_env(&old_env);
 	traps_set_env(testtraps_env());
 
@@ -65,28 +75,10 @@ static int run(void) {
 				0x1000000, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
 
-	mmu_map_region((mmu_ctx_t) 0x0, (uint32_t) 0x80000000,
-			(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE);
-
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_IFAULT, ifault_handler);
 
-	mmu_map_region((mmu_ctx_t)0, (paddr_t)(&addr), 0xf0000000, 0x1000,
-			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
-
-	mmu_on();
-
-	*((volatile uint32_t *) vaddr) = 0x11111111;
-
-	//mmu_page_set_flags((mmu_ctx_t)0, 0xf0000000, MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
-
-	/* Data access exception */
-	//*((volatile uint32_t *) vaddr) = 0x77777777;
-	//var = *((volatile uint32_t *) vaddr);
-
-	//printf("test\n");
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
 
-	return (var != 0x11111111) ? -1 : 0;
+	return test_for_dfault();
 }
