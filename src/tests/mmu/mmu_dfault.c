@@ -16,6 +16,11 @@
 
 EMBOX_TEST(run);
 
+
+#define VADDR(phyaddr) (0xf0000000 + ((uint32_t)(phyaddr) \
+		- (uint32_t)(&_data_image_start)))
+
+
 static uint32_t addr;
 
 /* MMU data access exception handler */
@@ -34,11 +39,14 @@ static int ifault_handler(uint32_t trap_nr, void *data) {
 }
 
 static int run(void) {
-	extern char _text_start, __stack, _data_start;
+	extern char _text_start, __stack, _data_image_start;
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
 	unsigned long var;
-	//uint32_t vaddr = ((0xf0000000 - (uint32_t)(&_data_start)) + ((uint32_t)(&addr) - (uint32_t)(&_data_start)));
+#if 0
+	uint32_t vaddr = ((0xf0000000 - (uint32_t)(&_data_start))
+	  + ((uint32_t)(&addr) - (uint32_t)(&_data_start)));
+#endif
 	uint32_t vaddr = VADDR(&addr);
 
 	mmu_save_env(&prev_mmu_env);
@@ -53,7 +61,7 @@ static int run(void) {
 
 	if (&__stack > (&_text_start + 0x1000000)) {
 		/* if have to map data sections */
-		mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_start, (vaddr_t)&_data_start,
+		mmu_map_region((mmu_ctx_t)0, (paddr_t)&_data_image_start, (vaddr_t)&_data_image_start,
 				0x1000000, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
 

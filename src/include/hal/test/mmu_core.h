@@ -21,9 +21,4 @@
  */
 extern mmu_env_t *testmmu_env(void);
 
-/**
- * Need for mmu data and instructions miss testing
- */
-#define VADDR(phyaddr) (0xf0000000 + ((uint32_t)(phyaddr) - (uint32_t)(&_data_start)))
-
 #endif /* TEST_MMU_CORE_H_ */
