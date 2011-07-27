@@ -11,9 +11,6 @@
 
 #include <asm/msr.h>
 
-/*TODO may be put it in config file*/
-#define CACHE_LINE_LENGTH    32
-
 static inline void cache_set_ctrl_reg(unsigned int ctrl_reg) {
 	/* stub*/
 }
@@ -50,8 +47,8 @@ static inline void cache_data_disable(void) {
 static inline void icache_flush(void) {
 	int volatile temp = 0;
 	unsigned int volatile start = 0;
-	unsigned int volatile end = 0x800; /*2k*/
-	unsigned int volatile line_length = 0x32;
+	unsigned int volatile end = CONFIG_ICACHE_BYTE_SIZE;
+	unsigned int volatile line_length = CONFIG_ICACHE_LINE_LENGTH;
 
 	__asm__ __volatile__ (
 		" 1:	wic	%1, r0;\n\t"
@@ -66,8 +63,8 @@ static inline void icache_flush(void) {
 static inline void dcache_flush(void) {
 	int volatile temp = 0;
 	unsigned int volatile start = 0;
-	unsigned int volatile end = 0x800; /*2k*/
-	unsigned int volatile line_length = 0x32;
+	unsigned int volatile end = CONFIG_DCHACE_BYTE_SIZE;
+	unsigned int volatile line_length = CONFIG_DCACHE_LINE_LENGTH;
 
 	__asm__ __volatile__ (
 		" 1:	wdc	%1, r0;\n\t"
