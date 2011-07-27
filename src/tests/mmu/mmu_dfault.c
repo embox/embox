@@ -48,7 +48,6 @@ static int test_for_dfault(void) {
 	vaddr = VADDR(0xf0001000, &addr);
 	*((volatile uint32_t *) vaddr) = 0x77777777;
 
-
 	return (addr == 0x11111111 && dfault_happend) ? 0 : -1;
 }
 
@@ -57,6 +56,7 @@ static int run(void) {
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env;
 	unsigned long var;
+
 
 	mmu_save_env(&prev_mmu_env);
 	mmu_set_env(testmmu_env());
@@ -77,8 +77,12 @@ static int run(void) {
 
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
 
+	var = test_for_dfault();
+
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
 
-	return test_for_dfault();
+	return var;
+
+
 }
