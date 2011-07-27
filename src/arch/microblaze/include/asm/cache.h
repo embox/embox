@@ -11,15 +11,6 @@
 
 #include <asm/msr.h>
 
-static inline void cache_set_ctrl_reg(unsigned int ctrl_reg) {
-	/* stub*/
-}
-
-static inline void cache_refresh(void) {
-	/* seems that nothing to do here:
-	 * Microblaze always writes through cache */
-}
-
 static inline void cache_enable(void) {
 	msr_set_value(msr_get_value() | (MSR_ICE_MASK | MSR_DCE_MASK));
 }

@@ -15,14 +15,6 @@
  	.weak software_init_hook
 
 
-#define SET_HANDLER(base_addr, handler)            \
-	addik reg_tmp1, reg_zero, handler;             \
-	sw    reg_tmp1, reg_sp, reg_zero ;             \
-	lhu   reg_tmp2, reg_sp, reg_zero;              \
-	shi   reg_tmp2, reg_zero, (base_addr + 0x2) ;  \
-	shi   reg_tmp1, reg_zero, (base_addr + 0x6) ;
-
-
 C_ENTRY(boot_start):
 	mts	rmsr, reg_zero	/* disable cache, interrupts, exceptions */
 
@@ -40,37 +32,6 @@ set_trap_table:
 
 	brlid r15, memcpy
 	nop
-
-	#if 0
-/*now we will be set interrrupts and other vectors.
-at the first we set 0xb000 0000 (code IMM instruction) and 0xb808 0000 (code BRAI instruction)
-how describe in section "Reset, Interrupts, Exceptions, and Break" mb_ref_guide */
-	/* add opcode instruction for 32bit jump - 2 instruction imm & brai*/
-
-	addik	r6, r0, 0xb0000000      /* hex b000 opcode imm */
-	swi	r6, r0, 0x0                 /* reset address */
-	swi	r6, r0, 0x8                 /* user vector exception */
-	swi	r6, r0, 0x10                /* interrupt */
-	swi	r6, r0, 0x20                /* hardware exception */
-
-	addik	r6, r0, 0xb8080000      /* hex b808 opcode brai*/
-	swi	r6, r0, 0x4                 /* reset address */
-	swi	r6, r0, 0xC                 /* user vector exception */
-	swi	r6, r0, 0x14                /* interrupt */
-	swi	r6, r0, 0x24                /* hardware exception */
-
-	/* now we set real handler*/
-	/*Reset/start*/
-	SET_HANDLER(0x00, _start);
-	/*User exception*/
-	SET_HANDLER(0x08, _user_exception);
-	/*Inerrupt*/
-	SET_HANDLER(0x10, _interrupt_handler);
-	/*Break (HW/SW) debug exception*/
-	SET_HANDLER(0x18, _debug_exception);
-	/*Hardware exception*/
-	SET_HANDLER(0x20, _hw_exception_handler);
-#endif
 
 1:
 	/* enable instruction and data cache */
