@@ -27,6 +27,7 @@ C_ENTRY(_start):
 
 	.section ".text"
 C_ENTRY(setup_trap_table):
+	addik r8, r15, 0    /*we don't use stack and must save r15 ourself */
 	addik r6, r0, _start /* whether copy interrupt vector table ? */
 	beqi  r6, 1f
 	nop
@@ -37,5 +38,5 @@ C_ENTRY(setup_trap_table):
 	brlid r15, memcpy
 	nop
 1:
-	rtsd	r15, 8
+	rtsd r8, 8
 	nop
