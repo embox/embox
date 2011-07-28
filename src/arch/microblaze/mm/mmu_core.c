@@ -11,6 +11,7 @@
 #include <string.h>
 #include <asm/msr.h>
 #include <hal/mm/mmu_core.h>
+#include <asm/cache.h>
 #include <embox/unit.h>
 #include <hal/ipl.h>
 
@@ -45,8 +46,8 @@ static inline void mmu_restore_status(uint32_t *status) {
 }
 
 void mmu_on(void) {
-	register uint32_t msr;
 #if 0
+	register uint32_t msr;
 	__asm__ __volatile__ (
 		"mfs     %0, rmsr;\n\t"
 		"ori   %0, r0, %1;\n\t"
@@ -57,18 +58,16 @@ void mmu_on(void) {
 	);
 #else
 	__asm__ __volatile__ (
-		"msrset  %0, %1;\n\t"
-		 : "=r"(msr)
+		"msrset  r0, %0;\n\t"
+		 :
 		 : "i"(MSR_VM_MASK)
-		 : "memory"
-
 	);
 #endif
 }
 
 void mmu_off(void) {
-	//register uint32_t msr;
 #if 0
+	register uint32_t msr;
 	__asm__ __volatile__ (
 		"mfs     %0, rmsr;\n\t"
 		"andni   %0, r0, %1;\n\t"
@@ -227,6 +226,14 @@ void mmu_save_env(mmu_env_t *env) {
 	ipl_restore(ipl);
 }
 
+vaddr_t mmu_get_fault_address(void) {
+	uint32_t ret;
+	__asm__ __volatile__ (
+		"mfs	%0, rear; \n\t"
+		: "=r" (ret)
+	);
+	return (vaddr_t) ret;
+}
 
 /*
  * Module initializing function.
@@ -240,5 +247,6 @@ static int mmu_init(void) {
 	(&system_env)->utlb_table = system_utlb;
 
 	cur_env = &system_env;
+	cache_disable();
 	return 0;
 }

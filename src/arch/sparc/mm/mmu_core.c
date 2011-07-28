@@ -153,6 +153,12 @@ void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {
 	mmu_flush_tlb_all();
 }
 
+vaddr_t mmu_get_fault_address(void) {
+	unsigned long fault_address = mmu_get_mmureg(LEON_CNR_FADDR);
+	return (vaddr_t) fault_address;
+}
+
+
 /**
  * Module initializing function.
  * Setups system environment, but neither switch on virtual mode.

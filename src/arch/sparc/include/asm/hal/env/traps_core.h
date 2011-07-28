@@ -17,8 +17,11 @@
 #define TRAP_TABLE_SIZE      (256)
 
 #define DIVZERO_FAULT        0x2A
-#define MMU_DFAULT           0x09
-#define MMU_IFAULT           0x01
+
+#define MMU_DATA_SECUR_FAULT 0x09
+#define MMU_INST_SECUR_FAULT 0x01
+#define MMU_DATA_MISS_FAULT  0x2c //XXX please fill in
+#define MMU_INST_MISS_FAULT  0x3c //XXX please fill in
 
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);

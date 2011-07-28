@@ -28,7 +28,7 @@ C_ENTRY(_interrupt_handler):
 
 C_ENTRY(_user_exception):
 C_ENTRY(_debug_exception):
-#if 1
+#if 0
 	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
 	SAVE_REGS
 
@@ -186,7 +186,7 @@ C_ENTRY(_debug_exception):
 
 
 C_ENTRY(_hw_exception_handler):
-#if 1
+#if 0
 	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
 	SAVE_REGS
 	swi     r17, r1, PT_PC  /* save pc for returning */

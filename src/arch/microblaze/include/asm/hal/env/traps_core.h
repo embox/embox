@@ -16,8 +16,11 @@
 #define MAX_INTERRUPT_NUMBER 0x10
 
 #define DIVZERO_FAULT        0x5
-#define MMU_DFAULT           0x12
-#define MMU_IFAULT           0x13
+
+#define MMU_DATA_SECUR_FAULT 0x10
+#define MMU_INST_SECUR_FAULT 0x11
+#define MMU_DATA_MISS_FAULT  0x12
+#define MMU_INST_MISS_FAULT  0x13
 
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);
