@@ -18,33 +18,17 @@
 C_ENTRY(boot_start):
 	mts	rmsr, reg_zero	/* disable cache, interrupts, exceptions */
 
-	addik r6, r0, _start /* whether copy interrupt vector table ? */
-	beqi  r6, 1f
-	nop
 	/*set stack pointer*/
 	addi  reg_sp, reg_zero, _stack
 
-set_trap_table:
-	addik r5, r0, 0
-	addik r6, r0, _ivt_start
-	addik r7, r0, 0x100
+	brlid r15, setup_trap_table
+	 nop
 
-
-	brlid r15, memcpy
-	nop
-
-1:
 	/* enable instruction and data cache */
 	mfs	r12, rmsr
 	ori	r12, r12, 0xa0
 	mts	rmsr, r12
 
-
-	/*call hardware_init_hook if it set */
-	addik reg_tmp1, reg_zero, hardware_init_hook
-	beqi reg_tmp1, clear_bss
-	brlid r15, hardware_init_hook
-	nop
 
 	/* clear BSS segments */
 clear_bss:
@@ -60,23 +44,18 @@ clear_bss:
 	swi   reg_zero, cur_addr, 0        /* write zero to loc */
 	addi  cur_addr, cur_addr, 4        /* increment to next loc */
 	brai    1b
-	nop
 2:
-
-	/*set stack pointer*/
-	addi  reg_sp, reg_zero, _stack
-
 	/*load data section*/
 	addik r5, r0, _data_vma
 	addik r6, r0, _data_lma
 	cmp   r7, r6, r5
 	beqi  r7, 1f
-	 nop
 	addik r7, r0, _data_len
 
  	brlid r15, memcpy
-	nop
+	 nop
 1:
+
 	/*interupts enabled*/
 	mfs	r12, rmsr
 	ori	r12, r12, 0x2
@@ -84,10 +63,16 @@ clear_bss:
 
 	/*clear register*/
 	REGS_INIT();
-	/*set stack pointer*/
+	/*set stack pointer again*/
 	addi  reg_sp, reg_zero, _stack
 
+	/*call hardware_init_hook if it set */
+	addik reg_tmp1, reg_zero, hardware_init_hook
+	beqi reg_tmp1, 1f
+	brlid r15, hardware_init_hook
+	nop
 1:
+
 	/*call software_init_hook if it set */
 	addik reg_tmp1, reg_zero, software_init_hook
 	beqi reg_tmp1, 2f
