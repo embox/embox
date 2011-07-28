@@ -1,8 +1,8 @@
 /**
  * @file
  *
- * @date 02.09.09
- * @author Andrey Baboshin
+ * @date 15.07.10
+ * @author Fedor Burdun
  */
 
 #ifndef TIMER_IMPL_H_

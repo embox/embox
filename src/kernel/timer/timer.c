@@ -16,6 +16,8 @@
 #include <kernel/thread/sched.h>
 #include <kernel/clock_source.h>
 
+#define TIMER_POOL_SZ 20 /**<system timers quantity */ //TODO: move/remove
+
 EMBOX_UNIT_INIT(timer_init);
 
 const uint32_t clock_source = 1000;
@@ -61,12 +63,15 @@ int set_timer(sys_tmr_t **ptimer, uint32_t ticks,
 }
 
 int close_timer(sys_tmr_t *ptimer) {
-	if (ptimer) {
-		list_del((struct list_head *) ptimer);
-		if (ptimer->is_preallocated) {
-			pool_free(&timer_pool, ptimer);
-		}
+	if (NULL == ptimer) {
+		return -1;
 	}
+
+	list_del((struct list_head *) ptimer);
+	if (ptimer->is_preallocated) {
+		pool_free(&timer_pool, ptimer);
+	}
+
 	return 0;
 }
 

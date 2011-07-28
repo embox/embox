@@ -3,6 +3,8 @@
  * @brief Multi-threads Timer handling.
  *
  * @date 22.07.10
+ * @author Andrey Baboshin
+ * @author Ilia Vaprol
  * @author Fedor Burdun
  */
 
@@ -18,11 +20,7 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-#if 0
-#define DOUT prom_printf
-#else
-#define DOUT(a,...)
-#endif
+#define TIMER_POOL_SZ 20 /**<system timers quantity */
 
 const uint32_t clock_source = 1000;
 
@@ -31,30 +29,37 @@ static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
 #include <hal/ipl.h>
 #include <assert.h>
 
+#if 0 //need or not
 //static ipl_t timer_ipl;
 //static bool timer_in_section = false;
+#endif
 
 static inline void timer_safe_section_init(void) {
 }
 
 static inline void timer_safe_section_start(void) {
-//	timer_ipl = ipl_save();
-//	if(false != timer_in_section) {
-//		return;
-//	}
-//	timer_in_section = true;
+#if 0
+	timer_ipl = ipl_save();
+	if(false != timer_in_section) {
+		return;
+	}
+	timer_in_section = true;
+#endif
 }
 
 static inline void timer_safe_section_end(void) {
-//	timer_in_section = false;
-//	ipl_restore(timer_ipl);
+#if 0
+	timer_in_section = false;
+	ipl_restore(timer_ipl);
+#endif
 }
 
 
-POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ);
-static struct list_head *sys_timers_list;
+POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ); //TODO: new allocator (objalloc)
 
-uint32_t cnt_system_time(void) {
+static struct list_head *sys_timers_list; /* list head was allocated by clock driver */
+
+uint32_t cnt_system_time(void) { //move and type //exist function `clock()'. Its function need only for it.
 	return cnt_sys_time;
 }
 
@@ -72,13 +77,15 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 
 	/* find first element that its time bigger than inserting @new_time */
 	list_for_each_safe(iter, tmp, sys_timers_list) {
-		if (((struct sys_tmr *)iter)->cnt >= tmr->cnt) {
+		struct sys_tmr *it_tmr = (struct sys_tmr*) iter;
+
+		if (it_tmr->cnt >= tmr->cnt) {
 			/* decrease value of next timer after inserting */
-			((struct sys_tmr *)iter)->cnt -= tmr->cnt;
+			it_tmr->cnt -= tmr->cnt;
 			list_add_tail((struct list_head *)tmr, iter);
 			return;
 		}
-		tmr->cnt -= ((struct sys_tmr *)iter)->cnt;
+		tmr->cnt -= it_tmr->cnt;
 
 	}
 
@@ -86,12 +93,6 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 	list_add_tail((struct list_head *)tmr, sys_timers_list);
 }
 
-/**
- * @param ptimer is double pointer to timer struct. It can be NULL if we don't need to know and use sys_tmr_t
- * after set timer.
- * @param handler will be called after @param ticks time with @param args
- * @return is zero if setting succeed and nonzero otherwise.
- */
 int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		void *param) {
 
@@ -111,7 +112,7 @@ int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		void *param) {
 
-	if (NULL == handler || !ptimer) {
+	if (NULL == handler || NULL == ptimer) {
 		return -1; /* wrong parameters */
 	}
 
@@ -131,12 +132,17 @@ int close_timer(sys_tmr_t *ptimer) {
 	if(NULL == ptimer) {
 		return -1;
 	}
+
 	timer_safe_section_start();
+
 	list_del((struct list_head *) ptimer);
+
 	timer_safe_section_end();
+
 	if (ptimer->is_preallocated) {
 		pool_free(&timer_pool, ptimer);
 	}
+
 	return 0;
 }
 
@@ -144,6 +150,7 @@ static inline bool timers_need_schedule(void) {
 	if(list_empty(sys_timers_list)) {
 		return false;
 	}
+
 	if(0 == ((sys_tmr_t*)sys_timers_list->next)->cnt) {
 		return true;
 	} else {
@@ -176,11 +183,13 @@ static inline void timers_schedule(void) {
  * and the counter of this timer is the zero then its initial value is assigned
  * to the counter and the function is executed.
  */
-static void inc_sys_timers(void) {
+static inline void inc_sys_timers(void) {
 	timer_safe_section_start();
+
 	if(timers_need_schedule()) {
 		timers_schedule();
 	}
+
 	timer_safe_section_end();
 }
 
