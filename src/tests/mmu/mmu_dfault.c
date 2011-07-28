@@ -75,7 +75,7 @@ static int run(void) {
 				0x1000000, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 	}
 
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DFAULT, dfault_handler);
+	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, dfault_handler);
 
 	var = test_for_dfault();
 

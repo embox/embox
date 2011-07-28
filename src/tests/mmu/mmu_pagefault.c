@@ -15,26 +15,34 @@
 
 EMBOX_TEST(run);
 
-//uint8_t page[PAGE_SIZE * 2];
-mmu_ctx_t t1;
+#define PAGE_SIZE 0x1000
+
+#define MAGIC_CONST 0x12345678
+
+#define FAULT_ADDR ((unsigned long *) 0xf0000000)
+
+uint8_t __attribute__ ((aligned (PAGE_SIZE))) page[PAGE_SIZE];
+
+mmu_ctx_t t0 = (mmu_ctx_t) 0;
+
 static int flag = 0;
 
-int handler(uint32_t nr, void *data) {
-	//mmu_off();
-	//printf("IT'S A TRAP!\n");
-	//mmu_map_region(t1, (unsigned long *) ((unsigned long) &page + PAGE_SIZE), 0xf0080000, PAGE_SIZE,
-					//MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
-	flag++;
-	//mmu_on();
-	return 0;
+static int pagefault_handler(uint32_t nr, void *data) {
+	int err_addr = mmu_get_fault_address() & ~(PAGE_SIZE - 1);
+	mmu_off();
+
+	mmu_map_region(t0, (unsigned long *) ((unsigned long) &page),
+			err_addr, PAGE_SIZE, MMU_PAGE_CACHEABLE |
+			MMU_PAGE_WRITEABLE);
+
+	flag = 1;
+	mmu_on();
+	return 1; // execute exception-cause instruction once more
 }
 static int run(void) {
-	int result = 0;
-#if 0
+	int magic_val = 0;
 	extern char _text_start, __stack, _data_start;
-	extern int test_trap_handler_worked;
-//	extern trap_table;
-#endif
+
 	mmu_env_t prev_mmu_env;
 	traps_env_t old_env, *test_env;
 
@@ -45,24 +53,21 @@ static int run(void) {
 	test_env = testtraps_env();
 	traps_set_env(test_env);
 
-	t1 = mmu_create_context();
-	switch_mm(0,t1);
-#if 0
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x2c - CONFIG_MIN_HWTRAP_NUMBER, &handler); //data mmu miss
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x29 - CONFIG_MIN_HWTRAP_NUMBER, &handler); //data mmu error
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x9, &handler);  //data except
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x3c - CONFIG_MIN_HWTRAP_NUMBER, &handler); //instr mmu miss
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x1, &handler);  //instr excpt
+	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_MISS_FAULT,
+			&pagefault_handler); //data mmu miss
 
+	mmu_map_region(t0, (uint32_t) &_text_start,
+				(uint32_t) &_text_start, 0x1000000,
+				MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
 	/* instr mmu miss */
 
 	/* map all that we seems to have to map (_everything_)*/
+#if 0
 	mmu_map_region(t1, 0, 0, 0x40000000,
 			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+
 	/* map one to one section text and may be whole image with stack */
-	mmu_map_region(t1, (uint32_t) &_text_start,
-			(uint32_t) &_text_start, 0x1000000,
-			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
+
 
 	if (&__stack > (&_text_start + 0x1000000)) {
 		/* if have to map data sections */
@@ -72,18 +77,15 @@ static int run(void) {
 #endif
 
 /* data mmu miss */
-#if 0
 	mmu_on();
-	*((unsigned long *) 0xf0080000) = 0;
+	*(FAULT_ADDR) = MAGIC_CONST;
+	magic_val = *((unsigned long *) FAULT_ADDR);
 	mmu_off();
-#endif
 
-	switch_mm(t1,0);
-	mmu_delete_context(t1);
 
 	traps_restore_env(&old_env);
 	mmu_restore_env(&prev_mmu_env);
 
-	return result;
+	return magic_val == MAGIC_CONST ? 0 : -1;
 }
 
