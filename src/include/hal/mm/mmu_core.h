@@ -227,4 +227,6 @@ extern int mmu_valid_entry(mmu_pte_t pte);
  */
 extern mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx);
 
+extern vaddr_t mmu_get_fault_address(void);
+
 #endif /* MMU_CORE_H_ */
