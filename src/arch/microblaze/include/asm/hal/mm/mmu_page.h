@@ -33,12 +33,10 @@ static inline size_t __invert_reg_size_convert(uint32_t size) {
 		return -1;
 	}
 }
-
-static inline void __set_mark(mmu_ctx_t ctx, vaddr_t vaddr, uint32_t clear_lomark,
-		uint32_t set_lomark, uint32_t clear_himark, uint32_t set_himark) {
-
-	int32_t index, tlbhi, tlblo, size, mask;
-
+int32_t __mmu_find_index(mmu_ctx_t ctx, vaddr_t vaddr) {
+	extern void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi);
+	int32_t index;
+	uint32_t tlbhi, tlblo, size, mask;
 	for (index = 0; index < UTLB_QUANTITY_RECORDS; index++) {
 		get_utlb_record(index, &tlblo, &tlbhi);
 		size = (tlbhi >> 7) & 0x07;
@@ -48,10 +46,24 @@ static inline void __set_mark(mmu_ctx_t ctx, vaddr_t vaddr, uint32_t clear_lomar
 			break;
 		}
 	}
+	return index;
+}
+
+static inline void __set_mark(mmu_ctx_t ctx, vaddr_t vaddr, uint32_t clear_lomark,
+		uint32_t set_lomark, uint32_t clear_himark, uint32_t set_himark) {
+	extern void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi);
+	extern void set_utlb_record(int tlbx, uint32_t tlblo, uint32_t tlbhi);
+
+	int32_t index;
+	uint32_t tlbhi, tlblo;
+
+	index = __mmu_find_index(ctx, vaddr);
 
 	if (index == UTLB_QUANTITY_RECORDS) {
 		return;
 	}
+
+	get_utlb_record(index, &tlblo, &tlbhi);
 
 	tlbhi &= ~clear_himark;
 	tlblo &= ~clear_lomark;
@@ -79,6 +91,7 @@ static inline void mmu_page_mark_cacheable(mmu_ctx_t ctx, vaddr_t vaddr) {
 
 static inline mmu_page_flags_t mmu_page_get_flags(mmu_ctx_t ctx, vaddr_t vaddr) {
 	extern mmu_env_t *cur_env;
+
 	__mmu_table_record_t *rec = &cur_env->utlb_table[__mmu_find_index(ctx, vaddr)];
 	return (mmu_page_flags_t) rec->tlblo;
 }
