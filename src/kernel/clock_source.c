@@ -14,7 +14,7 @@
 #include <assert.h>
 
 struct clock_source_head {
-	struct list_head *next, *prev;
+	struct list_head lnk;
 	struct clock_source *clock_source;
 };
 
@@ -33,7 +33,7 @@ int clock_source_register(struct clock_source *cs) {
 		return 1;
 	}
 	csh->clock_source = cs;
-	list_add_tail((struct list_head *) csh, &clock_source_list);
+	list_add_tail(&csh->lnk, &clock_source_list);
 	return 0;
 }
 
