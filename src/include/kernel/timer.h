@@ -9,15 +9,14 @@
  *
  * @date 20.07.10
  * @author Fedor Burdun
+ * @author Ilia Vaprol
  */
 
-#ifndef TIMER_H_
-#define TIMER_H_
+#ifndef KERNEL_TIMER_H_
+#define KERNEL_TIMER_H_
 
 #include <stdint.h>
 #include <util/macro.h>
-
-#define TIMER_POOL_SZ 20 /**<system timers quantity */ //TODO: move/remove
 
 /**
  * timer types
@@ -69,9 +68,4 @@ extern int set_timer(sys_tmr_t **ptimer, uint32_t ticks, TIMER_FUNC handle, void
  */
 extern int close_timer(sys_tmr_t *ptimer);
 
-/**
- * Current system time after start system
- */
-extern uint32_t cnt_system_time(void);
-
-#endif /* TIMER_H_ */
+#endif /* KERNEL_TIMER_H_ */

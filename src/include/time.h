@@ -4,6 +4,7 @@
  *
  * @date 24.11.09
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
 #ifndef TIME_H_
@@ -29,7 +30,7 @@ extern clock_t clock(void);
 /* time in struct timeval from start of system */
 extern struct timeval * get_timeval(struct timeval *);
 
-/* secondss from beginning of start system */
+/* seconds from beginning of start system */
 extern time_t time(time_t *);
 
 #endif /* TIME_H_ */

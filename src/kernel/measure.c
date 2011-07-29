@@ -11,7 +11,7 @@
 #include <hal/interrupt.h>
 #include <util/math.h>
 #include <kernel/measure.h>
-#include <kernel/timer.h>
+#include <kernel/time.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(measure_init);
@@ -40,7 +40,7 @@ static measure_time_t *cur_time, *last_time, *delta;
 
 measure_time_t *measure_get_time(void) {
 	cur_time = &measures[measures_pos++ % 3];
-	cur_time->ticks = cnt_system_time() + unhandled_ticks();
+	cur_time->ticks = clock() + unhandled_ticks();
 	cur_time->clocks = measure_unit_clocks();
 	return cur_time;
 }

@@ -37,7 +37,7 @@ int clock_source_register(struct clock_source *cs) {
 	return 0;
 }
 
-uint32_t clock_source_get_HZ(void) {
+uint32_t clock_source_get_precision(void) {
 	assert(!list_empty(&clock_source_list));
 	return (uint32_t) (((struct clock_source_head *)clock_source_list.next)->clock_source->precision);
 }
@@ -49,5 +49,5 @@ useconds_t clock_source_clock_to_usec(clock_t cl) {
 
 struct list_head * clock_source_get_timers_list(void) {
 	assert(!list_empty(&clock_source_list));
-	return ((struct clock_source_head *)clock_source_list.next)->clock_source->timers_list;
+	return &((struct clock_source_head *)clock_source_list.next)->clock_source->timers_list;
 }

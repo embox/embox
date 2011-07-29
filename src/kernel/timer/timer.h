@@ -10,11 +10,12 @@
 
 #include <types.h>
 #include <kernel/irq.h>
+#include <lib/list.h>
 
 #ifndef __ASSEMBLER__
 
 struct sys_tmr {
-	struct list_head *next, *prev;
+	struct list_head lnk;
 	uint32_t   load;
 	uint32_t   cnt;
 	TIMER_FUNC handle;

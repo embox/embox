@@ -7,16 +7,17 @@
  */
 
 #include <time.h>
-#include <kernel/timer.h>
 #include <kernel/clock_source.h>
+
+extern clock_t sys_ticks; /* Clocks after start system. Increments in kernel/timer.c */
 
 static
 useconds_t time_usec(void) {
-	return clock_source_clock_to_usec(cnt_system_time());
+	return clock_source_clock_to_usec(sys_ticks);
 }
 
 clock_t clock(void) {
-	return cnt_system_time();
+	return sys_ticks;
 }
 
 struct timeval * get_timeval(struct timeval *tv) {
@@ -28,7 +29,7 @@ struct timeval * get_timeval(struct timeval *tv) {
 	return tv;
 }
 
-extern time_t time(time_t *t) {
+time_t time(time_t *t) {
 	time_t sec;
 
 	sec = time_usec() / MICROSEC_PER_SEC;

@@ -14,7 +14,6 @@
 #include <hal/interrupt.h>
 #include <drivers/at91sam7s256.h>
 
-static LIST_HEAD(timers_list);
 static struct clock_source at91_pit_clock_source;
 
 irq_return_t clock_handler(int irq_num, void *dev_id) {
@@ -31,7 +30,8 @@ void clock_init(void) {
 		(irq_handler_t) &clock_handler, 0, NULL, "at91 PIT");
 	at91_pit_clock_source.flags = 1;
 	at91_pit_clock_source.precision = 1000;
-	at91_pit_clock_source.timers_list = &timers_list;
+	at91_pit_clock_source.timers_list.next = &at91_pit_clock_source.timers_list;
+	at91_pit_clock_source.timers_list.prev = &at91_pit_clock_source.timers_list;
 	clock_source_register(&at91_pit_clock_source);
 }
 

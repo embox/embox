@@ -36,7 +36,6 @@
 #define CFG_IRQ(cfg_reg)    ((cfg_reg >> 3) & 0x1f)
 #define CFG_SI(cfg_reg)     ((cfg_reg >> 8) & 0x1) /**< Separate interrupts. */
 
-static LIST_HEAD(timers_list);
 static struct clock_source gptimer_clock_source;
 /**
  * General Purpose Timer Unit registers.
@@ -134,7 +133,8 @@ void clock_init(void) {
 
 	gptimer_clock_source.flags = 1;
 	gptimer_clock_source.precision = 1000;
-	gptimer_clock_source.timers_list = &timers_list;
+	gptimer_clock_source.timers_list.next = &gptimer_clock_source.timers_list;
+	gptimer_clock_source.timers_list.prev = &gptimer_clock_source.timers_list;
 	clock_source_register(&gptimer_clock_source);
 }
 

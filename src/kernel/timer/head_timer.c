@@ -17,17 +17,16 @@
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
 #include <kernel/clock_source.h>
-
-EMBOX_UNIT_INIT(unit_init);
+#include <hal/ipl.h>
+#include <assert.h>
+#include <errno.h>
 
 #define TIMER_POOL_SZ 20 /**<system timers quantity */
 
-const uint32_t clock_source = 1000;
+EMBOX_UNIT_INIT(unit_init);
 
-static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
-
-#include <hal/ipl.h>
-#include <assert.h>
+/* ticks after start system */
+clock_t sys_ticks;  /* FIXME global variable - bad choice */
 
 #if 0 //need or not
 //static ipl_t timer_ipl;
@@ -59,10 +58,6 @@ POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ); //TODO: new allocator (objalloc)
 
 static struct list_head *sys_timers_list; /* list head was allocated by clock driver */
 
-uint32_t cnt_system_time(void) { //move and type //exist function `clock()'. Its function need only for it.
-	return cnt_sys_time;
-}
-
 static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 	struct list_head *iter, *tmp;
 
@@ -71,7 +66,7 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 	/* if we haven't any timers we just insert new timer into the list */
 	if (list_empty(sys_timers_list)) {
 		/* we just add timer to list */
-		list_add((struct list_head *)tmr, sys_timers_list);
+		list_add(&tmr->lnk, sys_timers_list);
 		return;
 	}
 
@@ -82,7 +77,7 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 		if (it_tmr->cnt >= tmr->cnt) {
 			/* decrease value of next timer after inserting */
 			it_tmr->cnt -= tmr->cnt;
-			list_add_tail((struct list_head *)tmr, iter);
+			list_add_tail(&tmr->lnk, iter);
 			return;
 		}
 		tmr->cnt -= it_tmr->cnt;
@@ -90,17 +85,17 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 	}
 
 	/* add the latest timer to end of list */
-	list_add_tail((struct list_head *)tmr, sys_timers_list);
+	list_add_tail(&tmr->lnk, sys_timers_list);
 }
 
 int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		void *param) {
 
 	if (NULL == handler || NULL == ptimer) {
-		return -1;
+		return -EINVAL;
 	}
 	if (NULL == (*ptimer = (sys_tmr_t*) pool_alloc(&timer_pool))) {
-		return -1;
+		return -ENOMEM;
 	}
 	/* we know that init will be success (right ptimer and handler) */
 	init_timer(*ptimer, ticks, handler, param);
@@ -113,7 +108,7 @@ int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
 		void *param) {
 
 	if (NULL == handler || NULL == ptimer) {
-		return -1; /* wrong parameters */
+		return -EINVAL; /* wrong parameters */
 	}
 
 	ptimer->is_preallocated = false;
@@ -130,12 +125,12 @@ int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
 
 int close_timer(sys_tmr_t *ptimer) {
 	if(NULL == ptimer) {
-		return -1;
+		return -EINVAL;
 	}
 
 	timer_safe_section_start();
 
-	list_del((struct list_head *) ptimer);
+	list_del(&ptimer->lnk);
 
 	timer_safe_section_end();
 
@@ -161,20 +156,21 @@ static inline bool timers_need_schedule(void) {
 }
 
 static inline void timers_schedule(void) {
+	struct sys_tmr *timer;
 	struct list_head *iter, *tmp;
 
 	list_for_each_safe(iter, tmp, sys_timers_list) {
+		timer = (struct sys_tmr *)iter;
 
-		if (0 != ((struct sys_tmr *)iter)->cnt) {
+		if (0 != timer->cnt) {
 			return;
 		}
 
-		((struct sys_tmr *)iter)->handler((struct sys_tmr *)iter,
-				((struct sys_tmr *)iter)->args);
+		timer->handler(timer, timer->args);
 
 		list_del(iter);
 
-		timer_insert_into_list((struct sys_tmr *)iter);
+		timer_insert_into_list(timer);
 	}
 }
 
@@ -197,7 +193,7 @@ static inline void inc_sys_timers(void) {
  * Handling of the clock tick.
  */
 void clock_tick_handler(int irq_num, void *dev_id) {
-	cnt_sys_time++;
+	sys_ticks++;
 	inc_sys_timers();
 }
 
@@ -207,9 +203,9 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  * @return 0 if success
  */
 static int unit_init(void) {
-	cnt_sys_time = 0;
+	sys_ticks = 0;
 	clock_init();
-	clock_setup(clock_source_get_HZ());
+	clock_setup(clock_source_get_precision());
 	sys_timers_list = clock_source_get_timers_list();
 	timer_safe_section_init();
 	return 0;

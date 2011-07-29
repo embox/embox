@@ -46,7 +46,6 @@
 /** set down count mode*/
 #define TIMER_DOWN_COUNT    REVERSE_MASK(TIMER_UDT_BIT)
 
-static LIST_HEAD(timers_list);
 static struct clock_source mb_timer_clock_source;
 
 /**
@@ -95,7 +94,8 @@ void clock_init(void) {
 
 	mb_timer_clock_source.flags = 1;
 	mb_timer_clock_source.precision = 1000;
-	mb_timer_clock_source.timers_list = &timers_list;
+	mb_timer_clock_source.timers_list.next = &mb_timer_clock_source.timers_list;
+	mb_timer_clock_source.timers_list.prev = &mb_timer_clock_source.timers_list;
 	clock_source_register(&mb_timer_clock_source);
 }
 

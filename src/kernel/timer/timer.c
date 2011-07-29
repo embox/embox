@@ -15,33 +15,28 @@
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
 #include <kernel/clock_source.h>
+#include <errno.h>
 
-#define TIMER_POOL_SZ 20 /**<system timers quantity */ //TODO: move/remove
+#define TIMER_POOL_SZ 20 /**<system timers quantity */
 
 EMBOX_UNIT_INIT(timer_init);
 
-const uint32_t clock_source = 1000;
-
-static volatile uint32_t cnt_sys_time; /**< quantity ms after start system */
+clock_t sys_ticks; /* ticks after start system. used from time.c */
 
 POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ);
 static struct list_head *sys_timers_list;
 
-uint32_t cnt_system_time(void) {
-	return cnt_sys_time;
-}
-
 int init_timer(sys_tmr_t *ptimer, uint32_t ticks,
 		TIMER_FUNC handler, void *param) {
 	if (!handler || !ptimer) {
-		return -1;
+		return -EINVAL;
 	}
 
 	ptimer->is_preallocated = false;
 	ptimer->cnt    = ptimer->load = ticks;
 	ptimer->handle = handler;
 	ptimer->param  = param;
-	list_add_tail((struct list_head *) ptimer, sys_timers_list);
+	list_add_tail(&ptimer->lnk, sys_timers_list);
 
 	return 0;
 }
@@ -50,10 +45,10 @@ int set_timer(sys_tmr_t **ptimer, uint32_t ticks,
 		TIMER_FUNC handler, void *param) {
 
 	if (NULL == handler || NULL == ptimer) {
-		return -1;
+		return -EINVAL;
 	}
 	if (NULL == (*ptimer = (sys_tmr_t*) pool_alloc(&timer_pool))) {
-		return -1;
+		return -ENOMEM;
 	}
 	/* we know that init will be success (right ptimer and handler) */
 	init_timer(*ptimer, ticks, handler, param);
@@ -64,7 +59,7 @@ int set_timer(sys_tmr_t **ptimer, uint32_t ticks,
 
 int close_timer(sys_tmr_t *ptimer) {
 	if (NULL == ptimer) {
-		return -1;
+		return -EINVAL;
 	}
 
 	list_del((struct list_head *) ptimer);
@@ -97,7 +92,7 @@ static void inc_sys_timers(void) {
  * Handling of the clock tick.
  */
 void clock_tick_handler(int irq_num, void *dev_id) {
-	cnt_sys_time++;
+	sys_ticks++;
 	inc_sys_timers();
 }
 
@@ -107,9 +102,9 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  * @return 0 if success
  */
 int timer_init(void) {
-	cnt_sys_time = 0;
+	sys_ticks = 0;
 	clock_init();
-	clock_setup(clock_source_get_HZ());
+	clock_setup(clock_source_get_precision());
 	sys_timers_list = clock_source_get_timers_list();
 	return 0;
 }
