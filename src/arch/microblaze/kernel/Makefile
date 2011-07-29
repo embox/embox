@@ -5,4 +5,4 @@ $_SRCS-locore += interrupt_handler.c sys.c ivt.S entry.S boot.S mb_trap_dispatch
 $_SRCS-arch      += arch.c
 $_SRCS-traps     += traps_core.c
 
-$_SRCS-context   += context.c cpu_context_switch.S
+$_SRCS-context   += context.c context_switch.S
