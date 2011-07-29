@@ -113,7 +113,7 @@ define new
 		$0
 	)
 endef
-$(call define,new)
+$(call def,new)
 
 # Params:
 #   0. Object
@@ -133,7 +133,7 @@ define __object_init
 		)
 	)
 endef
-$(call define,__object_init)
+$(call def,__object_init)
 
 # Params:
 #   0. Object
@@ -158,7 +158,7 @@ define __object_handle_value
 			$$(foreach 1,$0,
 				$${eval \
 					__object_tmp__ := $$(or \
-						$$(value $(subst $$,$$$$,$(,))$$0),
+						$$(value $(subst $$,$$$$,$($(\comma)))$$0),
 						$$(error $$1: No such member: '$$0')
 					)
 				}
@@ -168,7 +168,7 @@ define __object_handle_value
 		$$(call $0,to_string)
 	)
 endef
-$(call define,__object_handle_value)
+$(call def,__object_handle_value)
 
 #     $$(warning invoking $$0.$$1($$(value 2)$ \
 #         $$(if $$(value 3),$$(\comma)$$(if $$(findstring $$(\n),$$3),<...>,$$3))))$ \

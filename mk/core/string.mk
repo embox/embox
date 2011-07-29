@@ -81,7 +81,7 @@ endif
 # Return:
 #     The list of words with the first one removed.
 nofirstword = \
-  $(wordlist 2,$(words $1),$1)
+  $(wordlist 2,2147483647,$1)
 
 ##
 # Function: nolastword
