@@ -4,7 +4,7 @@ $_SRCS-locore += head.S
 $_SRCS-locore += sys.c
 $_SRCS-locore += traps.c
 
-$_SRCS-locore += entry.S trap_*.S winflush.S
+$_SRCS-locore += entry.S trap_*.S traps.c traps_core.c winflush.S
 
 $_SRCS-arch      += arch.c
 $_SRCS-context   += context.c context_switch.S
