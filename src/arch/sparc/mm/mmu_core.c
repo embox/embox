@@ -18,7 +18,7 @@
 
 #include <asm/asi.h>
 #include <embox/unit.h>
-#include <vmem/table_alloc.h>
+#include <asm/hal/mm/table_alloc.h>
 #include <mem/pagealloc/opallocator.h>
 
 /* main system MMU environment*/

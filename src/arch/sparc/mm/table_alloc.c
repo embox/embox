@@ -5,8 +5,8 @@
  * @author Anton Kozlov
  */
 
-#include <vmem/table_alloc.h>
-#include <vmem/mmu_core.h>
+#include <asm/hal/mm/table_alloc.h>
+#include <asm/hal/mm/mmu_core.h>
 #include <mem/pagealloc/opallocator.h>
 #include <hal/mm/mmu_core.h>
 
