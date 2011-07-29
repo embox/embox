@@ -14,7 +14,6 @@
 
 EMBOX_TEST(run);
 
-//static char addr[0x1000 * 3];
 typedef void (*worker_ptr)(void);
 
 static int is_a_done = 0;
@@ -39,7 +38,7 @@ static void worker_b(void) {
 }
 
 static int run(void) {
-	extern char _text_start, __stack, _data_start;
+	extern char _text_start, _stack_top, _data_image_start;
 	extern char worker_a_aligned, worker_b_aligned;
 	worker_ptr temp;
 
@@ -65,15 +64,14 @@ static int run(void) {
 		mmu_map_region(t[i], (uint32_t) &_text_start,
 				(uint32_t) &_text_start, 0x1000000,
 				MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
-
+#if 0
 		if (&__stack > (&_text_start + 0x1000000)) {
 			/* if have to map data sections */
 			mmu_map_region(t[i], _data_start, _data_start, 0x1000000,
 					MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
-		}
 
-		mmu_map_region((mmu_ctx_t) t[i], (uint32_t) 0x80000000,
-				(uint32_t) 0x80000000, 0x1000000, MMU_PAGE_WRITEABLE);
+		}
+#endif
 	}
 
 	mmu_map_region(t[1], (paddr_t) &worker_a_aligned, BIGADDR, 0x1000,
@@ -83,12 +81,13 @@ static int run(void) {
 
 	switch_mm(0, t[0]);
 	mmu_on();
-	(*((worker_ptr) BIGADDR))();
+	worker_ptr ptr = (worker_ptr) BIGADDR;
+	ptr();
 	mmu_off();
 
 	switch_mm(t[1], t[2]);
 	mmu_on();
-	(*((worker_ptr) BIGADDR))();
+	ptr();
 	mmu_off();
 
 	switch_mm(t[2], 0);
