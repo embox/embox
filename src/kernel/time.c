@@ -9,15 +9,8 @@
 #include <time.h>
 #include <kernel/clock_source.h>
 
-extern clock_t sys_ticks; /* Clocks after start system. Increments in kernel/timer.c */
-
-static
-useconds_t time_usec(void) {
-	return clock_source_clock_to_usec(sys_ticks);
-}
-
-clock_t clock(void) {
-	return sys_ticks;
+static useconds_t time_usec(void) {
+	return clock_source_clock_to_usec(clock());
 }
 
 struct timeval * get_timeval(struct timeval *tv) {

@@ -25,8 +25,11 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-/* ticks after start system */
-clock_t sys_ticks;  /* FIXME global variable - bad choice */
+static clock_t sys_ticks; /* ticks after start system. */
+
+clock_t clock(void) {
+	return sys_ticks;
+}
 
 #if 0 //need or not
 //static ipl_t timer_ipl;

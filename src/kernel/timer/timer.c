@@ -17,11 +17,15 @@
 #include <kernel/clock_source.h>
 #include <errno.h>
 
-#define TIMER_POOL_SZ 20 /**<system timers quantity */
+#define TIMER_POOL_SZ 20 /**< system timers quantity */
 
 EMBOX_UNIT_INIT(timer_init);
 
-clock_t sys_ticks; /* ticks after start system. used from time.c */
+static clock_t sys_ticks; /* ticks after start system. */
+
+clock_t clock(void) {
+	return sys_ticks;
+}
 
 POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ);
 static struct list_head *sys_timers_list;

@@ -17,12 +17,10 @@ static void restore_thread(sys_tmr_t *timer, void *param) {
 	sched_wake((struct event *) param);
 }
 
-/*system library function */
+/* system library function */
 int usleep(useconds_t usec) {
 	struct event wait_event;
-
-	sys_tmr_t tmr;
-
+	sys_tmr_t tmr; /* we allocate timer structure on the stack */
 
 	event_init(&wait_event, NULL);
 

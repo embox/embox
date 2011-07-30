@@ -12,9 +12,9 @@
 #include <kernel/timer.h>
 #include <hal/arch.h>
 
-static void wake_up(sys_tmr_ptr timer, void *param) {
+static void wake_up(sys_tmr_t *timer, void *param) {
 	*(int *)param = 0;
-	close_timer(&timer);
+	close_timer(timer);
 }
 
 /*system library function */
