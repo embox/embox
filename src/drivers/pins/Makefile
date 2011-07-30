@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to drivers.pins
+$_PACKAGE := embox.driver
+
 $_APIS += embox.hal.pins
 
 $_MODS += at91_pins

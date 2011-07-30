@@ -47,6 +47,8 @@ $(\space)\n$(\space) := $(\n)
 
 \equal := =
 
+$$ := $$
+
 # Identity function.
 id = $1
 

@@ -12,40 +12,57 @@ $_MODS_CORE += main
 # TODO too more mods fro core.kernel
 $_MODS += irq softirq drv_subsys #printk
 $_MODS += printk
+$_MODS += irq_critical softirq_critical irq_nested
+
+$_APIS += softirq_api irq_api
 
 #$_SRCS-main += main.c
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
 $_DEPS-main += embox.hal.arch
-$_DEPS-main += irq
+#$_DEPS-main += irq
 #$_DEPS-main += timer
 $_DEPS-REQUIRES += core.kernel.timer.timer_api
 #$_DEPS-main += printk
-$_DEPS-main += softirq
+#$_DEPS-main += softirq
 #$_REQUIRES-main += embox.hal.diag
+$_REQUIRES-main += softirq_api
+$_REQUIRES-main += irq_api
+$_REQUIRES-main += core.kernel.sched_api
 
 ifdef CONFIG_THREAD
-$_DEPS-main += core.kernel.thread.core
+#$_DEPS-main += core.kernel.thread.core
 endif
 
 ifdef CONFIG_MMU_SUPPORT
 $_DEPS-main += embox.hal.mm.mmu
 endif
 
-ifdef CONFIG_IRQ
-  $_SRCS-irq     += irq.c
-  $_REQUIRES-irq += embox.hal.interrupt
-  $_DEPS-irq     += softirq
-  $_DEPS-irq     += core.kernel.critical.core
-endif
+$_SRCS-irq_nested += irq_critical_nested.h
+
+$_SRCS-softirq_critical += softirq_critical.h
+$_PROVIDES-softirq_critical += softirq_api
+
+$_SRCS-irq_critical += irq_critical.[c|h]
+$_PROVIDES-irq_critical += irq_api
+
+$_SRCS-irq     += irq.c irq_critical.[c|h]
+$_DEPS-irq     += irq_nested
+$_REQUIRES-irq += embox.hal.interrupt
+$_PROVIDES-irq += irq_api
+# $_DEPS-irq     += softirq
+# $_DEPS-irq     += core.kernel.critical.core
+
+$_SRCS-softirq += softirq.c
+$_PROVIDES-softirq += softirq_api
+  #$_DEPS-irq     += core.kernel.critical.core
+
 #ifdef CONFIG_PRINTK
 #  $_SRCS-printk  += printk.c
 #  $_SRCS-printk  += printk/putchar.c ../lib/stdio/printf.c
 #  $_SRCS-printk  += printk/putchar.c printk/printf.c
 #endif
-ifdef CONFIG_SOFTIRQ
-  $_SRCS-softirq += softirq.c
-endif
+
 #ifdef CONFIG_TIMER
 #  $_SRCS-timer     += timer.c
 #  $_REQUIRES-timer += embox.hal.clock

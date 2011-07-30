@@ -199,6 +199,7 @@ static void cache_estimate(unsigned int gfporder, size_t size,
 int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 	size_t left_over;
 
+	//cachep = cache_alloc(&cache_chain);
 	assert(cachep != NULL);
 
 	cachep->obj_size = binalign_bound(obj_size, sizeof(struct list_head));

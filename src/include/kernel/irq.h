@@ -102,4 +102,10 @@ extern int irq_detach(irq_nr_t irq_nr, void *data);
  */
 extern void irq_dispatch(interrupt_nr_t interrupt_nr);
 
+
+/**
+ * Try to call irq_dispath().
+ */
+extern void irq_try_dispatch(void);
+
 #endif /* IRQ_H_ */

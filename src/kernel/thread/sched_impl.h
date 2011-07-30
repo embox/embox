@@ -18,10 +18,6 @@ static inline struct thread *sched_current(void) {
 	return sched_policy_current();
 }
 
-static inline void sched_lock(void) {
-	critical_enter(CRITICAL_PREEMPT);
-}
-
 static inline void sched_unlock_noswitch(void) {
 	critical_leave(CRITICAL_PREEMPT);
 }

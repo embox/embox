@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to mem.kmalloc
+$_PACKAGE := embox.hal.mm
+
 $_APIS += kmalloc
 
 $_MODS              += slob

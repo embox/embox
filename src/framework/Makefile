@@ -1,4 +1,9 @@
 
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to framework
+$_PACKAGE := embox
+
+
 SUBDIRS :=
 
 $_LIBS += libframework.a

@@ -1,4 +1,9 @@
 
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to drivers.ambapp
+$_PACKAGE := embox.driver
+
+
 ifdef CONFIG_AMBAPP
 $_MODS += ambapp amba_registry
 $_SRCS-ambapp += ambapp.c

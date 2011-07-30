@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to fs.ramfs
+$_PACKAGE := embox.fs
+
 $_MODS = ramfs
 
 $_SRCS-ramfs += ramfs.c
