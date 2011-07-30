@@ -1,63 +1,71 @@
 /**
  * @file
  *
- * @date 02.09.09
- * @author Andrey Baboshin
- */
-
-#ifndef TIMER_H_
-#define TIMER_H_
-
-#include <types.h>
-#include <kernel/irq.h>
-
-#ifndef __ASSEMBLER__
-
-typedef void (*TIMER_FUNC)(uint32_t id);
-
-/**
- * Initialization of the timers subsystem.
- * int timer_init(void);
- * We don't need it, since it calling by UNIT framework and must be
- * used only by the framework
- */
-
-/**
- * Set 'handle' timer with 'id' identity for executing every 'ticks' ms.
+ * @brief interface to set periodical timers with milliseconds precision.
  *
- * @param id timer identifier
- * @param ticks assignable time
- * @param handle the function to be executed
+ * @details
+ *   for set timer use `init_timer' or `set_timer' functions.
+ *   for emulate non-periodical behavior use close_timer function in the end of handler.
+ *
+ * @date 20.07.10
+ * @author Fedor Burdun
+ * @author Ilia Vaprol
+ */
+
+#ifndef KERNEL_TIMER_H_
+#define KERNEL_TIMER_H_
+
+#include <stdint.h>
+#include <util/macro.h>
+
+/**
+ * timer types
+ */
+struct sys_tmr;
+typedef struct sys_tmr sys_tmr_t;
+
+/**
+ * Type of timer's handler. Function that will be called by timers evrey n-th milliseconds.
+ */
+typedef void (*TIMER_FUNC)(sys_tmr_t *timer, void *param);
+
+#include __module_headers(core/kernel/timer/timer_api)
+
+/**
+ * Set 'handle' timer for executing every 'ticks' ms.
+ * Memory for set_tmr instance should be allocated before run init_timer.
+ *
+ * @param ptimer is poiter to preallocated sys_tmr_ptr.
+ * @param ticks assignable time (quantity of milliseconds)
+ * @param handler the function to be executed
  *
  * @return whether the timer is set
- * @retval 1 if the timer is set
- * @retval 0 if the timer isn't set
+ * @retval 0 if the timer is set
+ * @retval non-0 if the timer isn't set
  */
-extern int set_timer(uint32_t id, uint32_t ticks, TIMER_FUNC handle);
+extern int init_timer(sys_tmr_t *ptimer, uint32_t ticks, TIMER_FUNC handle, void *param);
 
 /**
- * Shut down timer with 'id' identity
+ * Set 'handle' timer for executing every 'ticks' ms.
+ * Memory for set_tmr instance will be allocated inside set_timer.
+ *
+ * @param ptimer is poiter to sys_tmr_ptr. If ptimer isn't null after call set_timer
+ * it will be set to allocated sys_tmr_ptr.
+ *
+ * @param ticks assignable time (quantity of milliseconds)
+ * @param handler the function to be executed
+ *
+ * @return whether the timer is set
+ * @retval 0 if the timer is set
+ * @retval non-0 if the timer isn't set
+ */
+extern int set_timer(sys_tmr_t **ptimer, uint32_t ticks, TIMER_FUNC handle, void *param);
+
+/**
+ * Shut down timer with system_tmr_t identity
  *
  * @param id timer identifier
  */
-extern void close_timer(uint32_t id);
+extern int close_timer(sys_tmr_t *ptimer);
 
-/**
- * Save timers context. Now saving only one context.
- */
-extern int timers_context_save(void);
-
-/**
- * Restore context by it number.
- */
-extern int timers_context_restore(int context_number);
-
-/**
- * Shutdown timers subsystem.
- */
-extern void timers_off(void);
-
-extern uint32_t cnt_system_time(void);
-
-#endif /*__ASSEMBLER__*/
-#endif /* TIMER_H_ */
+#endif /* KERNEL_TIMER_H_ */

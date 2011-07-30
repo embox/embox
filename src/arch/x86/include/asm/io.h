@@ -41,9 +41,10 @@ static inline uint32_t in32(unsigned long port) {
 	return tmp;
 }
 
-#define inb(port) in8(port)
-#define inw(port) in16(port)
-#define inl(port) in32(port)
+#define inb(port)   in8(port)
+#define inb_p(port) in8(port)
+#define inw(port)   in16(port)
+#define inl(port)   in32(port)
 
 #define out8(val, port)                  \
 	__asm__ __volatile__(            \
@@ -63,8 +64,9 @@ static inline uint32_t in32(unsigned long port) {
 		: : "a"(val), "Nd"(port) \
 	)
 
-#define outb(value, port)  out8(value, port)
-#define outw(value, port)  out16(value, port)
-#define outl(value, port)  out32(value, port)
+#define outb(value, port)   out8(value, port)
+#define outb_p(value, port) out8(value, port)
+#define outw(value, port)   out16(value, port)
+#define outl(value, port)   out32(value, port)
 
 #endif /* X86_IO_H_ */

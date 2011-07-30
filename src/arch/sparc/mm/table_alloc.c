@@ -5,9 +5,9 @@
  * @author Anton Kozlov
  */
 
-#include <vmem/table_alloc.h>
-#include <vmem/mmu_core.h>
-#include <mem/pagealloc/opallocator.h>
+#include <asm/hal/mm/table_alloc.h>
+#include <asm/hal/mm/mmu_core.h>
+#include <mem/pagealloc/mpallocator.h>
 #include <hal/mm/mmu_core.h>
 
 /* must be aligned for sizes of all tables */
@@ -22,7 +22,7 @@ size_t cur_rest = 0;
 
 static void *clear_page_alloc(void) {
 	uint32_t i;
-	void *t = opalloc();
+	void *t = mpalloc(1);
 	for (i = 0; i < MMU_PAGE_SIZE >> 2; i++) {
 		*(((uint32_t *) t) + i) = 0;
 	}
@@ -75,6 +75,6 @@ void mmu_table_free(unsigned long *table, int level) {
 	((page_header_t *) page)->free += size;
 	if (((page_header_t *) page)->free == MMU_PAGE_SIZE - PAGE_HEADER_SIZE
 			&& page != cur_page) {
-		opfree((void *) page);
+		mpfree((void *) page);
 	}
 }

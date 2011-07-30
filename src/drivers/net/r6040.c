@@ -16,10 +16,7 @@
 #include <net/etherdevice.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
-
-EMBOX_UNIT_INIT(r6040_init);
-
-#define R6040_RX_DESCRIPTORS 32
+#include <drivers/r6040.h>
 
 #define IOADDR         0xe800
 
@@ -81,13 +78,11 @@ static uint8_t etherrxbuff[0x800];
 
 /* Pass in the next pointer */
 static eth_desc_t *rxd_init(size_t pkt_size) {
-	/* allocate the descriptor memory */
 	eth_desc_t *rxd = (eth_desc_t *) descrxbuff;
 
 	/* Clear it */
 	memset(rxd, 0, sizeof(eth_desc_t));
 
-	/* allocate some space for a packet */
 	unsigned char *pkt = (unsigned char *) etherrxbuff;
 
 	/* clear pkt area */
@@ -113,7 +108,7 @@ static void r6040_tx_disable(void) {
 	out8(tmp & ~(1 << 12), MCR0);
 }
 
-static void r6040_rx_enable(void) {
+void r6040_rx_enable(void) {
 	unsigned short tmp = in16(MCR0);
 	out8(tmp | (1 << 1), MCR0);
 //	out8(2, MCR0);
@@ -136,7 +131,7 @@ static void r6040_set_rx_start(eth_desc_t* desc) {
 	tmp >>= 16;
 	out8((tmp & 0xffff), RX_START_HIGH);
 }
-
+#if 0
 /* The RDC interrupt handler */
 static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {
 	uint16_t misr, status;
@@ -158,7 +153,7 @@ static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {
 	out16(misr, MIER);
 	return IRQ_HANDLED;
 }
-
+#endif
 /* Interface */
 
 /* Keep track of what we've allocated, so we can easily walk it */
@@ -166,8 +161,27 @@ eth_desc_t *g_rx_descriptor_list[R6040_RX_DESCRIPTORS];
 eth_desc_t *g_rx_descriptor_next;
 eth_desc_t *g_tx_descriptor_next;
 
+void r6040_init(void) {
+	int i;
+	r6040_rx_disable();
+	r6040_tx_disable();
+	for (i = 0; i < R6040_RX_DESCRIPTORS; i++) {
+		/* most packets will be no larger than this */
+		g_rx_descriptor_list[i] = rxd_init(1536);
+		if (i)
+			g_rx_descriptor_list[i-1]->DNX = g_rx_descriptor_list[i];
+	}
+	// Make ring buffer.
+	g_rx_descriptor_list[R6040_RX_DESCRIPTORS-1]->DNX = g_rx_descriptor_list[0];
+	r6040_set_rx_start(g_rx_descriptor_list[0]);
+	g_rx_descriptor_next = g_rx_descriptor_list[0];
+
+	g_tx_descriptor_next = rxd_init(1536);
+	r6040_rx_enable();
+}
+
 /* Disable packet reception */
-static void r6040_done(void) {
+void r6040_done(void) {
 	out8(0, MCR0);
 }
 
@@ -179,8 +193,8 @@ static void discard_descriptor(void) {
 }
 
 /* Returns size of pkt, or zero if none received */
-static size_t r6040_rx(unsigned char* pkt, size_t max_len) {
-	size_t ret=0;
+size_t r6040_rx(unsigned char* pkt, size_t max_len) {
+	size_t ret = 0;
 	if (g_rx_descriptor_next->status & DSC_OWNER_MAC) {
 		/* Still owned by the MAC, nothing received */
 		return ret;
@@ -209,8 +223,7 @@ static size_t r6040_rx(unsigned char* pkt, size_t max_len) {
 }
 
 /* queue packet for transmission */
-//static int r6040_start_xmit(struct sk_buff *skb, struct net_device *dev) {
-static void r6040_start_xmit(unsigned char* pkt, size_t length) {
+void r6040_tx(unsigned char* pkt, size_t length) {
 	r6040_tx_disable();
 
 	/* copy this packet into the transmit descriptor */
@@ -231,15 +244,14 @@ static void r6040_start_xmit(unsigned char* pkt, size_t length) {
 	r6040_tx_enable();
 
 	/* poll for mac to no longer own it */
-	while (g_tx_descriptor_next->status & DSC_OWNER_MAC) {
-	}
+	while (g_tx_descriptor_next->status & DSC_OWNER_MAC) {};
 	/* Stop any other activity */
 	r6040_tx_disable();
 
 	//desc_dump(g_tx_descriptor_next);
 }
 
-static unsigned short r6040_mdio_read(int reg, int phy) {
+unsigned short r6040_mdio_read(int reg, int phy) {
 	out8(MDIO_READ + reg + (phy << 8), MMDIO);
 	/* Wait for the read bit to be cleared */
 	while (in16(MMDIO) & MDIO_READ);
@@ -247,7 +259,7 @@ static unsigned short r6040_mdio_read(int reg, int phy) {
 }
 
 /* Wait for linkup, or timeout. */
-static int r6040_wait_linkup(void) {
+int r6040_wait_linkup(void) {
 	unsigned short tmp, i;
 
 	for (i = 0; i < 300; i++) {
@@ -261,7 +273,7 @@ static int r6040_wait_linkup(void) {
 	}
 	return 0;
 }
-
+#if 0
 static int r6040_open(net_device_t *dev) {
 	if (-1 == irq_attach(0x0a, irq_handler, 0, dev, "RDC r6040")) {
 		return -1;
@@ -301,3 +313,4 @@ static int __init r6040_init(void) {
 	r6040_rx_enable();
 	return 0;
 }
+#endif

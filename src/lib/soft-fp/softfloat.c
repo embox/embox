@@ -832,7 +832,7 @@ float32 float32_div(float32 a, float32 b) {
  * according to the IEC/IEEE Standard for Binary Floating-Point Arithmetic.
  */
 float32 float32_rem(float32 a, float32 b) {
-	flag aSign, bSign, zSign;
+	flag aSign, /*bSign,*/ zSign;
 	int16 aExp, bExp, expDiff;
 	bits32 aSig, bSig, q, /*allZero,*/ alternateASig;
 	sbits32 sigMean;
@@ -841,7 +841,7 @@ float32 float32_rem(float32 a, float32 b) {
 	aSign = extractFloat32Sign(a);
 	bSig = extractFloat32Frac(b);
 	bExp = extractFloat32Exp(b);
-	bSign = extractFloat32Sign(b);
+	/*bSign = extractFloat32Sign(b);*/
 	if (aExp == 0xFF) {
 		if (aSig || ((bExp == 0xFF) && bSig)) {
 			return propagateFloat32NaN(a, b);
@@ -1627,7 +1627,7 @@ invalid:
  * according to the IEC/IEEE Standard for Binary Floating-Point Arithmetic.
  */
 float64 float64_rem(float64 a, float64 b) {
-	flag aSign, bSign, zSign;
+	flag aSign, /*bSign,*/ zSign;
 	int16 aExp, bExp, expDiff;
 	bits32 aSig0, aSig1, bSig0, bSig1, q, term0, term1, term2;
 	bits32 allZero, alternateASig0, alternateASig1, sigMean1;
@@ -1641,7 +1641,7 @@ float64 float64_rem(float64 a, float64 b) {
 	bSig1 = extractFloat64Frac1(b);
 	bSig0 = extractFloat64Frac0(b);
 	bExp = extractFloat64Exp(b);
-	bSign = extractFloat64Sign(b);
+	/*bSign = extractFloat64Sign(b);*/
 	if (aExp == 0x7FF) {
 		if ((aSig0 | aSig1) || ((bExp == 0x7FF) && (bSig0 | bSig1))) {
 			return propagateFloat64NaN(a, b);

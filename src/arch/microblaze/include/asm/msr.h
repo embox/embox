@@ -118,8 +118,8 @@ static inline uint32_t msr_get_value(void) {
 static inline void msr_set_value(uint32_t val) {
 	__asm__ __volatile__ (
 		"mts	rmsr, %0;\n\t"
-		"nop;\n\t"
-		: "=r" (val)
+		:
+		: "r" (val)
 	);
 }
 
@@ -136,7 +136,7 @@ static inline void msr_set_ee(void) {
 }
 
 static inline void msr_clr_ee(void) {
-	__asm__ __volatile__ ("msrcrl r0, %0" ::"i"(REVERSE_MASK(MSR_EE_BIT)));
+	__asm__ __volatile__ ("msrclr r0, %0" ::"i"(REVERSE_MASK(MSR_EE_BIT)));
 }
 
 static inline uint32_t msr_get_bit(int bit) {

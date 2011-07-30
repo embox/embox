@@ -101,7 +101,7 @@ void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
 	uint8_t checkbyte = 0;
 	uint32_t left_count = count;
 
-	if (count < BUF_SIZE) {
+	if (count >= BUF_SIZE) {
 		panic("Sending to AVR abnormal long data\n");
 	}
 

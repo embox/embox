@@ -10,7 +10,7 @@ $_DEPS-core += sync
 $_DEPS-core += embox.hal.context
 
 $_SRCS-sched += sched.c
-$_DEPS-sched += core.kernel.timer
+$_DEPS-REQUIRES += core.kernel.timer.timer_api
 $_DEPS-sched += embox.hal.context
 #$_DEPS-sched += core.kernel.critical.core
 $_REQUIRES-sched += core.kernel.thread.sched_policy.api

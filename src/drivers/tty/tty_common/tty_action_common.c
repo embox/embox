@@ -30,22 +30,21 @@
  * 	buffers is used elements of different sizes. Check it and fix if need.
  */
 
-struct vt_token char_token( char ch ) {
-	struct vt_token tmp;
-	tmp.action = VT_ACTION_PRINT;
-	tmp.ch = ch;
-	tmp.attrs_len = 0;
-	tmp.params_len = 0;
+static inline struct vt_token *char_token(struct vt_token *vt, char ch ) {
+	vt->action = VT_ACTION_PRINT;
+	vt->ch = ch;
+	vt->attrs_len = 0;
+	vt->params_len = 0;
 	/* null to array */
-	return tmp;
+	return vt;
 }
 
 /* auxilary functions */
 
 void tty_write_space(tty_device_t *tty, uint32_t cnt) {
-	struct vt_token vt = char_token(' ');
+	struct vt_token vt;
+	char_token(&vt, ' ');
 	for (; cnt > 0; --cnt) {
-		//tty->file_op->fwrite(" ", sizeof(char), 1, NULL);
 		vtbuild((struct vtbuild *)tty->vtb, &vt);
 	}
 }

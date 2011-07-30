@@ -24,6 +24,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	const struct cmd *cmd;
 	char *name;
+	name = NULL; /* warning fix */
 
 	if (argc <= 1) {
 		print_usage();

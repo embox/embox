@@ -153,7 +153,7 @@ static int exec(int argc, char **argv) {
 			}
 			break;
 		case 'm': /* the MAC address to be assigned to this iface */
-			if (NULL == macaddr_scan((unsigned char *) optarg, macaddr)) {
+			if (NULL == macaddr_scan((const unsigned char *) optarg, macaddr)) {
 				LOG_ERROR("wrong mac addr format %s\n", optarg);
 				return -1;
 			}
@@ -207,7 +207,7 @@ static int exec(int argc, char **argv) {
 			}
 			break;
 		case 'w': /* the broadcast address to be assigned */
-			if (NULL == macaddr_scan((unsigned char *) optarg, broadcastaddr)) {
+			if (NULL == macaddr_scan((const unsigned char *) optarg, broadcastaddr)) {
 				LOG_ERROR("wrong broadcast addr format %s\n", optarg);
 				return -1;
 			}

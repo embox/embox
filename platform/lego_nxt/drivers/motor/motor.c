@@ -41,8 +41,8 @@ extern to_avr_t data_to_avr;
 
 static nxt_motor_t nxt_motors[NXT_N_MOTORS];
 
-struct nxt_motor *nxt_get_motor(int num) {
-	if (3 > num) {
+nxt_motor_t *nxt_get_motor(int num) {
+	if (3 < num) {
 		return NULL;
 	}
 	return &nxt_motors[num];
@@ -50,16 +50,14 @@ struct nxt_motor *nxt_get_motor(int num) {
 }
 
 void nxt_motor_tacho_set_counter(nxt_motor_t *motor, uint32_t limit, tacho_handler_t lim_handler) {
-	motor->limit_hnd = lim_handler;
 	motor->tacho_limit = limit;
 	motor->tacho_count = limit;
+	motor->limit_hnd = lim_handler;
 
 }
 
-
 static void nxt_motor_init(nxt_motor_t *motor, int8_t power, uint32_t limit,
 			tacho_handler_t lim_handler) {
-
 	nxt_motor_tacho_set_counter(motor, limit, lim_handler);
 
 	pin_set_input_monitor((1 << motor->m_0) | (1 << motor->m_1),
@@ -67,7 +65,6 @@ static void nxt_motor_init(nxt_motor_t *motor, int8_t power, uint32_t limit,
 
 	data_to_avr.output_percent[motor->id] = power;
 }
-
 
 void nxt_motor_set_power(nxt_motor_t *motor, int8_t power) {
 	data_to_avr.output_percent[motor->id] = power;
@@ -105,8 +102,9 @@ static int nxt_motor_unit_init(void) {
 
 	data_to_avr.output_mode = PWM_FREQ;
 
-	nxt_motor_init(NXT_MOTOR_A, 0, 0xffffffff, NULL);
-	nxt_motor_init(NXT_MOTOR_B, 0, 0xffffffff, NULL);
-	nxt_motor_init(NXT_MOTOR_C, 0, 0xffffffff, NULL);
+	nxt_motor_init(NXT_MOTOR_A, 0, 360, NULL);
+	nxt_motor_init(NXT_MOTOR_B, 0, 360, NULL);
+	nxt_motor_init(NXT_MOTOR_C, 0, 360, NULL);
+
 	return 0;
 }

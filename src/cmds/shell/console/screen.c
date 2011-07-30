@@ -18,5 +18,6 @@ SCREEN * screen_init(SCREEN *this, SCREEN_IO *io) {
 		return NULL;
 	}
 
+	this->running = false;
 	return this;
 }

@@ -18,7 +18,7 @@ EMBOX_EXAMPLE(run);
 
 static int run(int argc, char **argv) {
 	/* msg_send - test message for send */
-	char msg_send[] = "Test_message\n";
+	char msg_send[] = "'Test_message'";
 	/* sock - identifier of socket */
 	int sock;
 	/* msg_size - size of test message */
@@ -41,19 +41,19 @@ static int run(int argc, char **argv) {
 	 * */
 	if (0 > (sock = socket(AF_INET, SOCK_DGRAM, 0))) {
 		/* if creation was failed report about it and exit from test */
-		TRACE("Can't create socket");
+		TRACE("\nCan't create socket");
 		return 0;
 	} else {
-		/* if sending was success print sent message */
-		TRACE("It was sent message: %s", msg_send);
+		/* if creation was success print message about it */
+		TRACE("\nSocket was created");
 	}
 
 	/* define of address to send and receive of message */
 	/** indication of protocol family
 	 * (AF_INET - identifier of Internet IP Protocol family)*/
 	addr.sin_family = AF_INET;
-	/* indication of port (3425 - identifier of port) */
-	addr.sin_port = htons(3425);
+	/* indication of port (666 - identifier of port) */
+	addr.sin_port = htons(666);
 	/** indication of ip address
 	 * (INADDR_LOOPBACK - constant appropriated to ip address 127.0.0.1 - local host)*/
 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
@@ -68,12 +68,15 @@ static int run(int argc, char **argv) {
 	 * addr - address of receiver
 	 * addr_size - size of address
 	 *
-	 * function returns 0 if creation is success
+	 * function returns 0 if sending is success
 	 * */
 	if (0 > (sendto(sock, msg_send, msg_size, 0, (struct sockaddr *) &addr, addr_size))) {
 		/* if transmission was failed report about it and exit from test */
-		TRACE("Can't send message");
+		TRACE("\nCan't send message");
 		return 0;
+	} else {
+		/* if sending was success print sent message */
+		TRACE("\nIt was sent message: %s", msg_send);
 	}
 
 	/** receiving of test message
@@ -83,7 +86,7 @@ static int run(int argc, char **argv) {
 	 * addr - address of sender
 	 * addr_size - size of address
 	 *
-	 * function returns 0 if creation is success
+	 * function returns 0 if receiving is success
 	 * */
 	if (0 > (recvfrom(sock,
 			&msg_recv,
@@ -91,22 +94,25 @@ static int run(int argc, char **argv) {
 			(struct sockaddr *) &addr,
 			&addr_size))) {
 		/* if receiving was failed report about it and exit from test */
-		TRACE("Can't receive message");
+		TRACE("\nCan't receive message");
 		return 0;
 	} else {
 		/* if receiving was success print received message */
-		TRACE("It was received message: %s", msg_recv);
+		TRACE("\nIt was received message: %s", msg_recv);
 	}
 
 	/** close of socket
 	 * sock - identifier of socket
 	 *
-	 * function returns 0 if creation is success
+	 * function returns 0 if closing is success
 	 * */
 	if (0 > close(sock)) {
 		/* if close was failed report about it and exit from test */
-		TRACE("It was bad close of socket");
+		TRACE("\nIt was bad close of socket");
 		return 0;
+	} else {
+		/* if creation was success print message about it */
+		TRACE("\nSocket was closed");
 	}
 
 	return 0;

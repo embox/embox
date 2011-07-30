@@ -36,9 +36,9 @@ mmu_env_t *testmmu_env(void) {
 
 	(&env)->ctx = (mmu_ctx_t *) &ctx;
 	(&env)->cur_ctx = (mmu_ctx_t) 0;
-	mmu_ctxd_set((&env)->ctx, &pg0);
-	mmu_pgd_set(&pg0, &pm0);
-	mmu_pmd_set(&pm0, &pt0);
+	mmu_ctxd_set((&env)->ctx, (mmu_pgd_t *) &pg0);
+	mmu_pgd_set((mmu_pgd_t *) &pg0, (mmu_pmd_t *) &pm0);
+	mmu_pmd_set((mmu_pmd_t *) &pm0, (mmu_pte_t *) &pt0);
 	(&env)->fault_addr = 0;
 	(&env)->status = 0;
 	(&env)->inst_fault_cnt = (&env)->data_fault_cnt = 0;

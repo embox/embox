@@ -18,7 +18,7 @@
 
 #include <asm/asi.h>
 #include <embox/unit.h>
-#include <vmem/table_alloc.h>
+#include <asm/hal/mm/table_alloc.h>
 #include <mem/pagealloc/opallocator.h>
 
 /* main system MMU environment*/
@@ -152,6 +152,12 @@ void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {
 	mmu_set_context(next);
 	mmu_flush_tlb_all();
 }
+
+vaddr_t mmu_get_fault_address(void) {
+	unsigned long fault_address = mmu_get_mmureg(LEON_CNR_FADDR);
+	return (vaddr_t) fault_address;
+}
+
 
 /**
  * Module initializing function.

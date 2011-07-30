@@ -10,6 +10,7 @@ $_PROVIDES-at91_pitc += embox.hal.clock
 
 $_MODS               += pit
 $_SRCS-pit           += pit.c
+$_DEPS-pit           += core.kernel.clock_source
 $_PROVIDES-pit       += embox.hal.clock
 
 $_MODS               += gptimer
