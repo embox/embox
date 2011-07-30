@@ -26,8 +26,8 @@ static int inet_create(struct socket *sock, int protocol) {
 	struct sock *sk;
 	struct inet_sock *inet;
 	int err = 0;
-	const struct net_sock *net_sock_ptr;
-	inet_protosw_t *p_netsock;
+	const struct net_sock *net_sock_ptr = NULL;
+	inet_protosw_t *p_netsock = NULL;
 
 	net_sock_foreach(net_sock_ptr) {
 		p_netsock = net_sock_ptr->netsock;

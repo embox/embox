@@ -10,7 +10,7 @@ $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 # TODO too more mods fro core.kernel
-$_MODS += irq timer softirq drv_subsys #printk
+$_MODS += irq softirq drv_subsys #printk
 $_MODS += printk
 
 #$_SRCS-main += main.c
@@ -18,7 +18,8 @@ $_SRCS-main += init.c
 $_SRCS-main += nosys.c
 $_DEPS-main += embox.hal.arch
 $_DEPS-main += irq
-$_DEPS-main += timer
+#$_DEPS-main += timer
+$_DEPS-REQUIRES += core.kernel.timer.timer_api
 #$_DEPS-main += printk
 $_DEPS-main += softirq
 #$_REQUIRES-main += embox.hal.diag
@@ -45,10 +46,10 @@ endif
 ifdef CONFIG_SOFTIRQ
   $_SRCS-softirq += softirq.c
 endif
-ifdef CONFIG_TIMER
-  $_SRCS-timer     += timer.c
-  $_REQUIRES-timer += embox.hal.clock
-endif
+#ifdef CONFIG_TIMER
+#  $_SRCS-timer     += timer.c
+#  $_REQUIRES-timer += embox.hal.clock
+#endif
 ifdef CONFIG_DRIVER_SUBSYSTEM
 # It's core.kernel.drv_subsys
   $_MODS += drv_subsys
@@ -66,3 +67,11 @@ ifdef CONFIG_MEASURE
   $_DEPS-measure += $(CONFIG_MEASURE) timer
   $_DEPS-main += measure
 endif
+
+$_MODS                  += clock_source
+$_SRCS-clock_source     += clock_source.c
+
+$_MODS      += time
+$_SRCS-time += time.c
+$_REQUIRES-time += core.kernel.timer.timer_api
+$_DEPS-time += core.kernel.clock_source

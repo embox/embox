@@ -15,6 +15,7 @@
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <hal/clock.h>
+#include <kernel/clock_source.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 
@@ -35,6 +36,7 @@
 #define CFG_IRQ(cfg_reg)    ((cfg_reg >> 3) & 0x1f)
 #define CFG_SI(cfg_reg)     ((cfg_reg >> 8) & 0x1) /**< Separate interrupts. */
 
+static struct clock_source gptimer_clock_source;
 /**
  * General Purpose Timer Unit registers.
  */
@@ -128,6 +130,12 @@ void clock_init(void) {
 	if (0 != irq_attach(irq_nr, clock_handler, 0, NULL, "gptimer")) {
 		panic("gptimer irq_attach failed");
 	}
+
+	gptimer_clock_source.flags = 1;
+	gptimer_clock_source.precision = 1000;
+	gptimer_clock_source.timers_list.next = &gptimer_clock_source.timers_list;
+	gptimer_clock_source.timers_list.prev = &gptimer_clock_source.timers_list;
+	clock_source_register(&gptimer_clock_source);
 }
 
 #ifdef CONFIG_AMBAPP

@@ -25,6 +25,7 @@ static void print_usage(void) {
 static void print_tests(void) {
 	const struct test_suite *test;
 	int i = 0;
+	test = NULL; /* warning fix */
 
 	test_foreach(test) {
 		printf("%3d. %s\n", ++i, test_name(test));
@@ -35,6 +36,7 @@ static void print_tests(void) {
 static const struct test_suite *get_test_by_nr(int nr) {
 	const struct test_suite *test;
 	int i = 0;
+	test = NULL; /* warning fix */
 
 	if (nr <= 0) {
 		printf("Invalid test number: %d\n", nr);

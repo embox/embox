@@ -13,8 +13,6 @@
 
 #include <sys/types.h>
 
-#define _SC_TIMER_MAX 4 /**<system timers quantity */
-
 /* Standard file descriptors. */
 #define STDIN_FILENO    0   /* Standard input. */
 #define STDOUT_FILENO   1   /* Standard output. */
@@ -30,7 +28,7 @@
  * @param seconds interval in seconds
  * @return 0 if time has elapsed if was error then return -1
  */
-extern unsigned int sleep(unsigned int seconds);
+extern int sleep(unsigned int seconds);
 
 /**
  * suspend execution for an interval of time

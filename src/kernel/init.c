@@ -18,6 +18,7 @@
 
 static void kernel_init(void);
 static int init(void);
+
 // XXX remove from here. -- Eldar
 int uart_init(void);
 

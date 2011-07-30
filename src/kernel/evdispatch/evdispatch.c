@@ -35,7 +35,7 @@ static struct handler handler_arr[EVENT_MSG_COUNT];
 #include <embox/unit.h>
 #define make_cache_name(name) \
 		""#name""
-#include <mem/slab.h>
+#include <mem/misc/slab.h>
 EMBOX_UNIT_INIT(event_dispatcher_init);
 
 static int event_dispatcher_init(void) {

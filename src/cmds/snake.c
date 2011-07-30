@@ -10,7 +10,7 @@
 #include <drivers/vt.h>
 #include <kernel/diag.h>
 #include <unistd.h>
-#include <kernel/timer.h>
+#include <kernel/time.h>
 
 EMBOX_CMD(exec);
 
@@ -99,7 +99,7 @@ static int space(char c) {
 }
 
 static int random(void) {
-	rand_seed += cnt_system_time();
+	rand_seed += clock();
 	return rand_seed;
 }
 

@@ -31,7 +31,6 @@ static const struct vt_token TOKEN_LEFT[1] = {{
 	.ch = 'D'
 }};
 
-extern struct vt_token char_token(char ch);
 
 #if 0
 /* auxilary functions */ /* inner for tty */
