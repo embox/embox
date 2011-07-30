@@ -111,7 +111,5 @@ struct net_proto_family inet_family_ops = {
 };
 
 static int inet_init(void) {
-	/* Init skb pool */
-	sock_init();
 	return 0;
 }

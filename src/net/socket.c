@@ -17,12 +17,6 @@
 #include <net/kernel_socket.h>
 #include <linux/init.h>
 
-int __init sock_init(void) {
-	kernel_sock_init();
-	sk_init();
-	return 0;
-}
-
 /* TODO: remove all below from here */
 
 int socket(int domain, int type, int protocol) {

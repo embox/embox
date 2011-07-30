@@ -16,6 +16,7 @@
 #include <net/udp.h>
 #include <linux/init.h>
 #include <util/array.h>
+#include <mem/misc/pool.h>
 
 #include <asm/system.h> /*linux-compatible*/
 
@@ -26,35 +27,25 @@ typedef struct sock_info {
 	 *  member in proto structure.
 	 */
 	struct udp_sock sk;
-	struct list_head list __attribute__ ((aligned (4)));
 } sock_info_t __attribute__ ((aligned (4)));
 
-static sock_info_t socks_pull[CONFIG_MAX_KERNEL_SOCKETS];
-static LIST_HEAD(head_free_sock);
+/* pool for allocate sock_info */
+POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
 
-void __init sk_init(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(socks_pull); i++) {
-		list_add(&(&socks_pull[i])->list, &head_free_sock);
-	}
-}
 
 /* allocates proto structure for specified protocol*/
 static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		int family) {
 	struct sock *sock;
-	struct list_head *entry;
 	unsigned long flags;
 
 	local_irq_save(flags);
 
-	if (list_empty(&head_free_sock)) {
+	if((sock = pool_alloc(&socks_pool)) == NULL) {
 		local_irq_restore(flags);
 		return NULL;
 	}
-	entry = (&head_free_sock)->next;
-	list_del_init(entry);
-	sock = (struct sock *) list_entry(entry, sock_info_t, list);
+
 	prot->hash(sock);
 
 	local_irq_restore(flags);
@@ -64,15 +55,9 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 
 /* returns specified structure sock into pull */
 static void sk_prot_free(struct proto *prot, struct sock *sk) {
-	sock_info_t *sock_info;
 	unsigned long irq_old;
-	if (NULL == sk) {
-		return;
-	}
-
 	local_irq_save(irq_old);
-	sock_info = (sock_info_t *) sk;
-	list_add(&sock_info->list, &head_free_sock);
+	pool_free(&socks_pool, sk);
 	prot->unhash(sk);
 	local_irq_restore(irq_old);
 }
