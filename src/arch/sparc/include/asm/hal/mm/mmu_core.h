@@ -195,6 +195,20 @@ typedef unsigned long ctxd_t;
 #define MMU_GTABLE_MASK_OFFSET __MMU_GTABLE_MASK_OFFSET
 #define MMU_MTABLE_MASK_OFFSET __MMU_MTABLE_MASK_OFFSET
 #define MMU_PTABLE_MASK_OFFSET __MMU_PTABLE_MASK_OFFSET
+
+typedef void (*mmu_page_table_set_t)(mmu_pte_t * ptd, mmu_pte_t * pte);
+typedef mmu_pmd_t* (*mmu_page_table_get_t)(mmu_pte_t ptd);
+
+extern unsigned long mmu_page_table_sizes[];
+
+extern unsigned long mmu_table_masks[];
+
+extern unsigned long mmu_level_capacity[];
+
+extern mmu_page_table_set_t mmu_page_table_sets[];
+
+extern mmu_page_table_get_t mmu_page_table_gets[];
+
 /** Set MMU reg */
 static inline void mmu_set_mmureg(unsigned long addr_reg,
 				unsigned long regval) {

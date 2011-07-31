@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to ..platform.lego_nxt.example.lcd.Makefile
+$_PACKAGE := lego_nxt.example
+
 $_MODS += nxt_lcd_picture
 $_MODS += nxt_splash
 $_MODS += nxt_fill

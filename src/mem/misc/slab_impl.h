@@ -12,7 +12,7 @@
 #include <types.h>
 
 #include <lib/list.h>
-#include <framework/mod/self.h>
+#include <framework/mod/member/self.h>
 
 /** Length of name of any cache */
 #define __CACHE_NAMELEN 16

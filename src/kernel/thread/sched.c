@@ -22,10 +22,9 @@
 #include <hal/context.h>
 #include <hal/ipl.h>
 
-#include "types.h"
+#include __impl_x(kernel/thread/sched_critical.h)
 
-/** Timer, which calls scheduler_tick. */
-#define SCHED_TICK_TIMER_ID 17
+#include "types.h"
 
 /** Interval, what scheduler_tick is called in. */
 #define SCHED_TICK_INTERVAL 100
@@ -33,6 +32,9 @@
 EMBOX_UNIT(unit_init, unit_fini);
 
 static int resched;
+
+/** Timer, which calls scheduler_tick. */
+sys_tmr_t *tick_timer;
 
 int sched_init(struct thread* current, struct thread *idle) {
 	int error;
@@ -55,7 +57,7 @@ int sched_init(struct thread* current, struct thread *idle) {
  * Is regularly called to show that current thread to be changed.
  * @param id nothing significant
  */
-static void sched_tick(uint32_t id) {
+static void sched_tick(sys_tmr_t *timer, void *param) {
 	resched = true;
 }
 
@@ -274,14 +276,8 @@ void sched_check_switch(void) {
 	}
 }
 
-void sched_unlock(void) {
-	sched_unlock_noswitch();
-	sched_check_switch();
-}
-
 static int unit_init(void) {
-	if (set_timer(SCHED_TICK_TIMER_ID, SCHED_TICK_INTERVAL, sched_tick)
-			!= SCHED_TICK_TIMER_ID) {
+	if (set_timer(&tick_timer, SCHED_TICK_INTERVAL, sched_tick, NULL)) {
 		return -EBUSY;
 	}
 
@@ -289,7 +285,7 @@ static int unit_init(void) {
 }
 
 static int unit_fini(void) {
-	close_timer(SCHED_TICK_TIMER_ID);
+	close_timer(tick_timer);
 
 	return 0;
 }

@@ -85,6 +85,7 @@ int vconsole_close(vconsole_t *con) {
 #define EXECUTE_IF_CONSOLE_IS_CURRENT(a) a
 
 void tty_vconsole_putchar( struct vconsole *vc, char ch ) {
+	return;
 	bool reprint_all_console = false;
 	if (vc==NULL) { /* if hasn't initialized now current_thread->own_console use hardware output */
 		diag_putc( ch );

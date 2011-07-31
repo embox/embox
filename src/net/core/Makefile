@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to net.core
+$_PACKAGE := embox.net
+
 $_MODS += core dev
 
 $_SRCS-core  += devinet.c

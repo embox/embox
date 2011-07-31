@@ -25,7 +25,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			packet_type_t *pt, net_device_t *orig_dev) {
 
 	net_device_stats_t *stats = dev->netdev_ops->ndo_get_stats(skb->dev);
-	const struct net_proto *net_proto_ptr;
+	const struct net_proto *net_proto_ptr = NULL;
 	net_protocol_t *p_netproto;
 	iphdr_t *iph = ip_hdr(skb);
 	unsigned short tmp;

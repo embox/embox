@@ -17,6 +17,8 @@ PROVIDE(sched_policy_current = nosys);
 PROVIDE(__sched_dispatch = nosys);
 PROVIDE(sched_check_switch = nosys);
 PROVIDE(sched_unlock = nosys);
+PROVIDE(sched_wake = nosys);
+PROVIDE(sched_sleep_locked = nosys);
 
 PROVIDE(printk = nosys);
 

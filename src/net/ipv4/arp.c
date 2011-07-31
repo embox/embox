@@ -33,17 +33,17 @@
  *      unresolved IP address.
  */
 
+#define ARP_TIMER_ID 12
+
 
 EMBOX_NET_PACK(ETH_P_ARP, arp_rcv, arp_init);
 
 arp_entity_t arp_tables[ARP_CACHE_SIZE];
 
-#define ARP_TIMER_ID 12
-
 /**
  * Check if there are entries that are too old and remove them.
  */
-static void arp_check_expire(uint32_t id) {
+static void arp_check_expire(struct sys_tmr * timer, void *param) {
 	size_t i;
 
 	for (i = 0; i < ARP_CACHE_SIZE; i++) {
@@ -55,9 +55,10 @@ static void arp_check_expire(uint32_t id) {
 		}
 	}
 }
+static sys_tmr_t *arp_refresh_timer;
 
 static int arp_init(void) {
-	if (!set_timer(ARP_TIMER_ID, ARP_CHECK_INTERVAL, arp_check_expire)) {
+	if (!set_timer(&arp_refresh_timer, ARP_CHECK_INTERVAL, arp_check_expire, NULL)) {
 		return -1;
 	}
 	return 0;

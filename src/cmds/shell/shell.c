@@ -51,7 +51,7 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 		const char* line, const int max_proposals, int *proposals_len,
 		const char *proposals[], int *offset, int *common) {
-	const struct cmd *cmd;
+	const struct cmd *cmd = NULL;
 	int cursor = strlen(line);
 	int start = cursor, i;
 	char ch;

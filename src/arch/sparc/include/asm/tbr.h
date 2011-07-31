@@ -26,13 +26,10 @@
 static inline uint32_t tbr_tba_get(void) {
 	register unsigned tba;
 	__asm__ __volatile__ (
-		"rd %%tbr, %1\n\t"
-		"and %1, %0, %1\n\t"
-		:
-		: "i" (TBR_TBA), "r" (tba)
-		: "memory"
+		"rd 	%%tbr, %0\n\t"
+		: "=r" (tba)
 	);
-	return tba;
+	return tba & TBR_TBA;
 }
 
 static inline void tbr_tba_set(uint32_t tba) {

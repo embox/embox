@@ -1,4 +1,9 @@
 
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to cmds.shell
+$_PACKAGE := embox.cmd
+
+
 # Fuck, this is a hell, not shell! =\ -- Eldar
 
 $_MODS += shell

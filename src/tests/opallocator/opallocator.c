@@ -108,9 +108,11 @@ EMBOX_TEST(run);
 static int run(void) {
 #ifdef VST
 
+#if 0
 #ifndef EXTENDED_TEST
 	extern char _heap_start;
 	extern char _heap_end;
+#endif
 #endif
 
 #define PAGE_QUANTITY (((size_t) (&_heap_end - &_heap_start)) / CONFIG_PAGE_SIZE)

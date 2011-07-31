@@ -8,7 +8,7 @@
  * @author Alexandr Batyukov, Alexey Fomin
  *         - Reviewing and rewriting some parts
  * @author Eldar Abusalimov
- *         - Rewriting from scratch:
+ *          - Rewriting from scratch:
  *          - Adapting for new HAL interface
  *          - Introducing locks and statistics accounting
  *          - Documentation
@@ -21,6 +21,9 @@
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
+#include <kernel/critical/api.h>
+#include __impl_x(kernel/irq_critical.h)
+#include __impl_x(kernel/irq_critical_nested.h)
 
 struct irq_action {
 	irq_handler_t handler;
@@ -99,30 +102,6 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 	return 0;
 }
 
-static volatile unsigned int irq_nesting_count;
-
-static void irq_enter(void) {
-	ipl_t ipl;
-	sched_lock();
-
-	ipl = ipl_save();
-	irq_nesting_count++;
-	ipl_restore(ipl);
-}
-
-static void irq_leave(void) {
-	ipl_t ipl;
-	unsigned int nesting_count;
-
-	ipl = ipl_save();
-	if (0 == (nesting_count = --irq_nesting_count)) {
-		/* Leaving the interrupt context. */
-		softirq_dispatch();
-	}
-	ipl_restore(ipl);
-	sched_unlock();
-}
-
 void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_nr_t irq_nr = interrupt_nr;
 	struct irq_action *action;
@@ -130,7 +109,7 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-	irq_enter();
+    irq_nested_lock();
 
 	irq_table[irq_nr].count++;
 	action = irq_table[irq_nr].action;
@@ -143,5 +122,5 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 		}
 	}
 
-	irq_leave();
+	irq_nested_unlock();
 }

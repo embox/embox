@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to ..platform.lego_nxt.drivers.sensors.Makefile
+$_PACKAGE := lego_nxt.driver
+
 $_MODS += touch_sensor
 $_SRCS-touch_sensor += touch.c
 $_DEPS-touch_sensor += nxt_avr_init

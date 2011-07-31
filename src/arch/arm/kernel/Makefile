@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to arch.arm.kernel
+$_PACKAGE := embox.hal
+
 $_MODS_CORE += locore
 $_SRCS-locore += head.S entry.S
 

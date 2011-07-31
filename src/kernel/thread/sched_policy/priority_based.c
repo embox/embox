@@ -199,6 +199,7 @@ struct thread *sched_policy_current(void) {
 
 int sched_policy_init(struct thread *_current, struct thread *idle) {
 	struct run_thread_list *priority, *current_priority;
+	priority = NULL; /* warning fix */
 
 	assert(_current != NULL);
 	assert(idle != NULL);

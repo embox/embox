@@ -1,3 +1,8 @@
+
+# Auto-generated package declaration inherited from parent directory.
+# TODO Suggested renaming package to ..platform.lego_nxt.drivers.lcd.Makefile
+$_PACKAGE := lego_nxt.driver
+
 $_MODS         += nxt_lcd
 $_SRCS-nxt_lcd += nxt_lcd.c
 $_SRCS-nxt_lcd += display.c

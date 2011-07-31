@@ -198,7 +198,7 @@ static void *run_shell(void *data) {
 extern void tty_vconsole_putchar( struct vconsole *con, uint8_t ch);
 extern void tty_vconsole_putchar_cc( struct vconsole *con, uint8_t ch,bool cc_flag);
 
-void timer_handler(uint32_t id) {
+void timer_handler(sys_tmr_ptr timer, void *param) {
 #if ENABLE_CONSOLE_QUEUE
 	uint32_t cc; /* console in cycle */
 #endif
@@ -283,7 +283,7 @@ static int tty_init(void) {
 
 	cur_tty->console_cur = 0; /* foreground console by default */
 
-	set_timer(TTY_IRQ_ID, 10, &timer_handler);
+	set_timer(0, 10, &timer_handler, 0);
 	event_register( TTY_IRQ_ID, &add_char_handler );
 
 	cur_tty->handle_events = false;

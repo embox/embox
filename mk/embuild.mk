@@ -168,7 +168,7 @@ unit_srcs_check_warn = \
   $(info $(call warning_str_dir,$(UNIT-$(abspath $(src))-DEFINED)) \
     first defined here)
 
-unit_srcs_check_error = \
+#unit_srcs_check_error = \
   $(info $(error_str) \
     Attempting to reassign source $(src) to unit $(unit) \
       (already assigned to $(UNIT-$(abspath $(src))))) \

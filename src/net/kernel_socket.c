@@ -8,22 +8,21 @@
 
 #include <errno.h>
 #include <kernel/irq.h>
-#include <lib/list.h>
 #include <net/in.h>
 #include <net/net.h>
 #include <asm/system.h>
 #include <linux/init.h>
 #include <util/array.h>
+#include <mem/misc/pool.h>
 
 typedef struct socket_info {
 	/*it must be first member! We use casting in sock_realize function*/
 	struct socket    sock;
 	int              sockfd;
-	struct list_head list __attribute__ ((aligned (4)));
 } socket_info_t __attribute__ ((aligned (4)));
 
-static socket_info_t sockets_pull[CONFIG_MAX_KERNEL_SOCKETS];
-static LIST_HEAD(head_free_sk);
+/* pool for allocate sockets */
+POOL_DEF(sockets_pool, socket_info_t, CONFIG_MAX_KERNEL_SOCKETS);
 
 /**
  * The protocol list. Each protocol is registered in here.
@@ -38,42 +37,36 @@ static const struct net_proto_family *net_families[NPROTO];
  */
 static struct socket *sock_alloc(void) {
 	struct socket *sock;
-	struct list_head *entry;
+	socket_info_t *sock_info;
 	unsigned long flags;
 
 	local_irq_save(flags);
 
-	if (list_empty(&head_free_sk)) {
-		local_irq_restore(flags);
+	if ((sock_info = pool_alloc(&sockets_pool)) == NULL) {
+		local_irq_save(flags);
 		return NULL;
 	}
-	entry = (&head_free_sk)->next;
-	list_del_init(entry);
-	sock = (struct socket *) list_entry(entry, socket_info_t, list);
 
+	sock_info->sockfd = sock_info - (socket_info_t *)sockets_pool.storage;
+	sock = (struct socket *)sock_info;
 	local_irq_restore(flags);
 
 	return sock;
 }
 
 int kernel_sock_release(struct socket *sock) {
-	socket_info_t *sock_info;
 	int ret;
 	unsigned long irq_old;
 	if ((NULL == sock) || (NULL == sock->ops)
 			|| (NULL == sock->ops->release)) {
 		return -1;
 	}
-	/*release struct sock*/
+	/* release struct sock */
 	ret = sock->ops->release(sock);
 
 	local_irq_save(irq_old);
-	/* return sock into pull
-	 * we can cast like this because struct socket is first element of
-	 * struct socket_info
-	 */
-	sock_info = (socket_info_t *) sock;
-	list_add(&sock_info->list, &head_free_sk);
+	/* return sock into pool */
+	pool_free(&sockets_pool, sock);
 	local_irq_restore(irq_old);
 	return ret;
 }
@@ -127,15 +120,6 @@ static int __sock_create(int family, int type, int protocol,
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
 	*res = sock;
-	return 0;
-}
-
-int __init kernel_sock_init(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(sockets_pull); i++) {
-		list_add(&(&sockets_pull[i])->list, &head_free_sk);
-		(&sockets_pull[i])->sockfd = i;
-	}
 	return 0;
 }
 
@@ -219,20 +203,15 @@ int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg) {
 #endif
 
 struct socket *sockfd_lookup(int fd) {
-	if (fd < 0 || fd >= ARRAY_SIZE(sockets_pull)) {
+	if (fd < 0 || fd >= CONFIG_MAX_KERNEL_SOCKETS) {
 		return NULL;
 	}
-	return &(&sockets_pull[fd])->sock;
+	socket_info_t *socket_info = (socket_info_t *)sockets_pool.storage + fd;
+	return (struct socket *) socket_info ;
 }
 
 int sock_get_fd(struct socket *sock) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(sockets_pull); i++) {
-		if (&(&sockets_pull[i])->sock == sock) {
-			return (&sockets_pull[i])->sockfd;
-		}
-	}
-	return -1;
+	return ((socket_info_t *) sock)->sockfd;
 }
 
 int sock_register(const struct net_proto_family *ops) {

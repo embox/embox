@@ -160,9 +160,9 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>
 					</target>
-					<target name="config microblaze release" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+					<target name="config microblaze debug" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments>PROJECT=microblaze PROFILE=release</buildArguments>
+						<buildArguments>PROJECT=microblaze PROFILE=debug</buildArguments>
 						<buildTarget>config</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>

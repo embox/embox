@@ -11,12 +11,7 @@
 #include <asm/regs.h>
 
 	.section ".text"
-#if 0
-C_ENTRY(_hardreset):
-	brai boot_start
-	nop
-	nop
-#endif
+
 //XXX Microblaze not suport nested irq
 C_ENTRY(_interrupt_handler):
 	addik	r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */

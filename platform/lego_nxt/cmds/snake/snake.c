@@ -7,7 +7,7 @@
 
 #include <embox/cmd.h>
 #include <unistd.h>
-#include <kernel/timer.h>
+#include <kernel/time.h>
 #include <drivers/nxt_buttons.h>
 #include <drivers/lcd.h>
 extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];
@@ -116,7 +116,7 @@ static int space(char c) {
 }
 
 static int random(void) {
-	rand_seed += cnt_system_time();
+	rand_seed += clock();
 	return rand_seed;
 }
 

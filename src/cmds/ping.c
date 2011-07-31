@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <kernel/timer.h> /* for cnt_system_time */
+#include <time.h>
 
 EMBOX_CMD(exec);
 
@@ -99,7 +99,7 @@ static int ping(ping_info_t *pinfo) {
 	iph_r = (iphdr_t *) rcv_buff;
 	icmph_r = (icmphdr_t *) (rcv_buff + IP_MIN_HEADER_SIZE);
 
-	total = cnt_system_time();
+	total = clock();
 	for (i = 1; i <= pinfo->count; i++) {
 		icmph_s->un.echo.sequence = htons(ntohs(icmph_s->un.echo.sequence) + 1);
 		icmph_s->checksum = 0;
@@ -108,8 +108,8 @@ static int ping(ping_info_t *pinfo) {
 
 		sendto(sk, packet, ntohs(iph_s->tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 
-		start = cnt_system_time();
-		while ((delta = cnt_system_time() - start) < timeout) {
+		start = clock();
+		while ((delta = clock() - start) < timeout) {
 			/* we don't need to get pad data, only header */
 			if (!recvfrom(sk, rcv_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE,
 					0, (struct sockaddr *)&pinfo->from, NULL)) {
@@ -132,7 +132,10 @@ static int ping(ping_info_t *pinfo) {
 	}
 	printf("--- %s ping statistics ---\n", dst_addr_str);
 	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
-		cnt_resp + cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp), cnt_system_time() - total);
+		cnt_resp + cnt_err,
+		cnt_resp,
+		(cnt_err * 100) / (cnt_err + cnt_resp),
+		(int)(clock() - total));
 
 	free(dst_addr_str);
 	close(sk);

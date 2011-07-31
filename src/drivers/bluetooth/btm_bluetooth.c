@@ -27,7 +27,6 @@ extern void bt_handle(uint8_t *buff);
 
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_BTM_BT_SERIAL_PORT_OFFSET);
 
-#define BTM_BT_ADC_RATE 50000
 #define BTM_BT_BAUD_RATE 19200
 
 EMBOX_UNIT_INIT(btm_bluetooth_init);
@@ -36,30 +35,74 @@ static uint8_t *btm_bt_read_buff;
 
 volatile enum {SIZE_READ, COMM_READ, UART_MODE} bt_us_state;
 
-void bt_set_uart_state(void) {
-	bt_us_state = UART_MODE;
-	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDTX);
-}
-
-#define BUFF_SIZE 256
+#define BUFF_SIZE 27
 static uint8_t bt_buff[BUFF_SIZE];
 
-//CALLBACK_INIT(bluetooth_uart)
+CALLBACK_INIT(bluetooth_uart)
+
+static enum {
+	CONN_DISCONNECT_WAIT,
+	CONN_WAIT_STAMP,
+	CONN_READ_TAIL,
+	CONN_CONNECTED
+} conn_state;
+
+static const char stamp[] = "CONNECT";
+#define STAMP_LEN 7
+#define STAMP_TAIL 20
+#define STAMP_WHOLE 27
+
+static int connect_string_handler(void) {
+	int i;
+	for (i = 0; i < STAMP_LEN; i++) {
+		if (0 == strncmp((char *) bt_buff + i, stamp, STAMP_LEN)) {
+			break;
+		}
+	}
+	if (i != STAMP_LEN) {
+		return STAMP_TAIL - (STAMP_LEN - i);
+	} else {
+		memcpy(bt_buff, bt_buff + STAMP_LEN, STAMP_LEN);
+		bluetooth_read(bt_buff + STAMP_LEN, STAMP_LEN);
+	}
+	return 0;
+}
+
+static void comm_manager(uint8_t *buff) {
+	int i;
+	switch (conn_state) {
+	case CONN_DISCONNECT_WAIT:
+		if ((i = connect_string_handler())) {
+			conn_state = CONN_WAIT_STAMP;
+			bluetooth_read(bt_buff, STAMP_LEN);
+		}
+		break;
+	case CONN_WAIT_STAMP:
+		if ((i = connect_string_handler())) {
+			conn_state = CONN_READ_TAIL;
+			bluetooth_read(bt_buff, i);
+		}
+		break;
+	case CONN_READ_TAIL:
+		conn_state = CONN_CONNECTED;
+		CALLBACK_DO(bluetooth_uart, BT_DRV_MSG_CONNECTED, NULL);
+		break;
+	case CONN_CONNECTED:
+		CALLBACK_DO(bluetooth_uart, BT_DRV_MSG_READ, btm_bt_read_buff);
+		break;
+	default:
+		break;
+	}
+
+
+}
 
 static irq_return_t btm_bt_us_handler(int irq_num, void *dev_id) {
 	uint32_t us_state = REG_LOAD(&(us_dev_regs->US_CSR));
-	if (us_state & AT91C_US_ENDRX) {
-
+    	if (us_state & AT91C_US_ENDRX) {
+		comm_manager(btm_bt_read_buff);
 	}
 	return IRQ_HANDLED;
-}
-
-void bt_set_reset_low(void) {
-	REG_STORE(AT91C_PIOA_CODR, CONFIG_BTM_BT_RST_PIN);
-}
-
-void bt_set_reset_high(void) {
-	REG_STORE(AT91C_PIOA_SODR, CONFIG_BTM_BT_RST_PIN);
 }
 
 static void init_usart(void) {
@@ -73,15 +116,18 @@ static void init_usart(void) {
 			BTM_BT_SCK_PIN | BTM_BT_RTS_PIN | BTM_BT_CTS_PIN);
 
 	REG_STORE(&(us_dev_regs->US_PTCR), (AT91C_PDC_RXTDIS | AT91C_PDC_TXTDIS));
+
+	REG_STORE(&(us_dev_regs->US_CR),  AT91C_US_RXDIS | AT91C_US_TXDIS);
 	REG_STORE(&(us_dev_regs->US_CR),  AT91C_US_RSTSTA | AT91C_US_RSTRX | AT91C_US_RSTTX);
 	REG_STORE(&(us_dev_regs->US_CR), AT91C_US_STTTO);
-	REG_STORE(&(us_dev_regs->US_RTOR), 10000);
-	REG_STORE(&(us_dev_regs->US_MR), (AT91C_US_USMODE_NORMAL & ~AT91C_US_SYNC)
+
+	REG_STORE(&(us_dev_regs->US_MR), AT91C_US_USMODE_HWHSH
 			| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
-			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
+			| AT91C_US_NBSTOP_1_BIT);
+	REG_STORE(&(us_dev_regs->US_BRGR), CONFIG_SYS_CLOCK / (16 * BTM_BT_BAUD_RATE));
+
 	REG_STORE(&(us_dev_regs->US_IDR), ~0);
-	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDTX | AT91C_US_ENDRX);
-	REG_STORE(&(us_dev_regs->US_BRGR), CONFIG_SYS_CLOCK / (8 * BTM_BT_BAUD_RATE));
+
 	REG_STORE(&(us_dev_regs->US_RCR), 0);
 	REG_STORE(&(us_dev_regs->US_TCR), 0);
 	REG_STORE(&(us_dev_regs->US_RNPR), 0);
@@ -91,21 +137,59 @@ static void init_usart(void) {
 
 	REG_STORE(&(us_dev_regs->US_CR), AT91C_US_RXEN | AT91C_US_TXEN);
 	REG_STORE(&(us_dev_regs->US_PTCR), AT91C_PDC_RXTEN | AT91C_PDC_TXTEN);
+	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDRX);
 }
 
-static int btm_bluetooth_init(void) {
-	const static char ver[] = "ATI?";
-	init_usart();
+static void link_pin_handler(pin_mask_t ch_mask, pin_mask_t mon_mask) {
+	if (!ch_mask &&  conn_state == CONN_CONNECTED) {
+		conn_state = CONN_DISCONNECT_WAIT;
+		CALLBACK_DO(bluetooth_uart, BT_DRV_MSG_DISCONNECTED, NULL);
+	}
+}
 
+#if 0
+int bt_last_state;
+int bt_raw_value;
+
+static void  nxt_bt_timer_handler(int id) {
+	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
+	if (bt_last_state != bt_state) {
+		if (!bt_state) {
+			CALLBACK_DO(bluetooth_uart, BT_DRV_MSG_DISCONNECTED, NULL);
+		}
+	}
+	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
+}
+
+static void init_adc(void) {
+	/* Configure the ADC */
+	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_ADC));
+	REG_STORE(AT91C_ADC_MR, 0);
+	REG_ORIN(AT91C_ADC_MR, AT91C_ADC_TRGEN_DIS);
+	REG_ORIN(AT91C_ADC_MR, 0x00000500); // 4MHz
+	REG_ORIN(AT91C_ADC_MR, 0x001f0000); // 64uS
+	REG_ORIN(AT91C_ADC_MR, 0x03000000); // 750nS
+	REG_STORE(AT91C_ADC_CHER, AT91C_ADC_CH6 | AT91C_ADC_CH4);
+	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
+}
+#endif
+
+static int btm_bluetooth_init(void) {
+	conn_state = CONN_WAIT_STAMP;
 	irq_attach((irq_nr_t) CONFIG_BTM_BT_US_IRQ,
 		(irq_handler_t) &btm_bt_us_handler, 0, NULL, "bt reader");
-	bt_set_reset_high();
-	usleep(100);
-	bt_set_reset_low();
-	usleep(100);
 
-	bluetooth_write((uint8_t *) ver, strlen(ver));
-	bluetooth_read(bt_buff, 2);
+
+	pin_config_output(CONFIG_BTM_BT_RST_PIN);
+	pin_clear_output(CONFIG_BTM_BT_RST_PIN);
+	usleep(5000);
+
+	pin_config_input(CONFIG_BTM_BT_LINK_PIN);
+	pin_set_input_monitor(CONFIG_BTM_BT_LINK_PIN, &link_pin_handler);
+
+	init_usart();
+
+//	set_timer(3, 200, (TIMER_FUNC) &nxt_bt_timer_handler);
 	return 0;
 }
 
