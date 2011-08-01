@@ -136,9 +136,9 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>
 					</target>
-					<target name="config sparc release" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+					<target name="config x86 debug" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments>PROJECT=sparc PROFILE=release</buildArguments>
+						<buildArguments>PROJECT=x86 PROFILE=debug</buildArguments>
 						<buildTarget>config</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>

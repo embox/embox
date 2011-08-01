@@ -116,8 +116,8 @@ int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
 
 	ptimer->is_preallocated = false;
 	ptimer->cnt    = ptimer->load = ticks;
-	ptimer->handler = handler;
-	ptimer->args  = param;
+	ptimer->handle = handler;
+	ptimer->param  = param;
 
 	timer_safe_section_start();
 	timer_insert_into_list(ptimer);
@@ -169,7 +169,7 @@ static inline void timers_schedule(void) {
 			return;
 		}
 
-		timer->handler(timer, timer->args);
+		timer->handle(timer, timer->param);
 
 		list_del(iter);
 

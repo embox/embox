@@ -14,14 +14,13 @@
 #ifndef __ASSEMBLER__
 
 struct sys_tmr {
-	struct list_head *next, *prev;
+	struct list_head lnk;
 	uint32_t   load;
 	uint32_t   cnt;
-	TIMER_FUNC handler;
-	void       *args;
+	TIMER_FUNC handle;
+	void       *param;
 	bool       is_preallocated;
 };
-
 
 #endif /*__ASSEMBLER__*/
 #endif /* TIMER_IMPL_H_ */
