@@ -28,30 +28,18 @@ void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 }
 
 int testtraps_fire_softtrap(uint32_t number, void *data) {
-	/*pass trap number through r12 and data through r5*/
-	/*FIXME microblaze fire soft trap*/
+	/*pass trap number through r5 and data through r6*/
 #if 0
 	__asm__ __volatile__ (
-		"bralid r15, 0x8;\n\t"
+		"bralid r16, 0x8;\n\t"
 		"nop;\n\t"
 		"nop;\n\t"
 	);
-#endif
-#if 0
+#else
 	__asm__ __volatile__ (
-		"add  r5, %0;\n\t"
-		"add  r12, %0;\n\t"
-		"brki  r16, 0x8;\n\t"
-		"nop;\n\t"
-		"nop;\n\t"
-		:
-		:"r" (number), "r"(data)
-	);
-#endif
-	__asm__ __volatile__ (
-		/* we have already loaded parametrs
-		 * "add  r5, %0;\n\t"
-		"add  r6, %0;\n\t"
+		/* we have already loaded parameters
+		 "addi  r5, %0, 0;\n\t"
+		"addi  r6, %1, 0;\n\t"
 		*/
 		"brki  r16, 0x8;\n\t"
 		"nop;\n\t"
@@ -60,6 +48,7 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 		:"r" (number), "r"(data)
 		*/
 	);
+#endif
 	return 0;
 }
 
