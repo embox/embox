@@ -65,7 +65,7 @@ static pmark_t *copy_mark(pmark_t *from, pmark_t *to) {
 }
 
 /* Initialize page allocator */
-int page_alloc_init(void) {
+static int page_alloc_init(void) {
 	cmark_p->psize = PAGE_QUANTITY;
 	cmark_p->pnext	= cmark_p;
 	cmark_p->pprev	= cmark_p;
@@ -74,7 +74,7 @@ int page_alloc_init(void) {
 }
 
 /* allocate page */
-void *opalloc(void) {
+void *page_alloc(void) {
 	/* size_t psize = 1; */
 	pmark_t *pcur, *tmp, *tt;
 
@@ -125,7 +125,7 @@ void *opalloc(void) {
 }
 
 /* free page that was allocated */
-void opfree(void *addr) {
+void page_free(void *addr) {
 	pmark_t *paddr = (pmark_t*) addr;
 	#if 0
 	if (paddr == NULL) {
