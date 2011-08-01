@@ -12,3 +12,7 @@ endif
 $_MODS += opallocator
 
 $_SRCS-opallocator += opallocator_list.c
+
+$_MODS += page_alloc_bittree
+
+$_SRCS-page_alloc_bittree += page_alloc_bittree.c

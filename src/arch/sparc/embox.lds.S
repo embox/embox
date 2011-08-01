@@ -68,3 +68,7 @@ SECTIONS {
 		__stack = _stack;
 	} SECTION_REGION(stack)
 }
+
+_free_mem = _stack_top;
+_mem_begin = LDS_REGION_BASE_sdram;
+_mem_length = LDS_REGION_SIZE_sdram;
