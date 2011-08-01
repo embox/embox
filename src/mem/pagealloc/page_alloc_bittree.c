@@ -30,7 +30,7 @@ static int level;
 static int find_free_page(int subroot, int lbegin, int level);
 static void mark_page(int pagenum, int mark);
 
-static word_t tree[NWORD * 2 + 1]; // +1 for simplicity
+static word_t *tree = 0;
 
 void *page_alloc(void) {
 	int res;
@@ -51,8 +51,9 @@ void find_page_pool(void) {
 	extern int _free_mem;
 	extern int _mem_begin;
 	extern int _mem_length;
-
+	int tree_size;
 	static const int page_mask = (CONFIG_PAGE_SIZE - 1);
+
 	page_pool = (uint8_t *) (((int) &_free_mem) & ((int) ~page_mask));
 
 	if ((int) &_free_mem & page_mask) {
@@ -60,6 +61,15 @@ void find_page_pool(void) {
 	}
 
 	page_num = (((int) &_mem_begin + (int) &_mem_length) - (int) page_pool) / CONFIG_PAGE_SIZE;
+
+	tree = (word_t *) page_pool;
+	tree_size = ((2 * (page_num / 8)) / CONFIG_PAGE_SIZE) + 1;
+
+	page_pool += tree_size;
+	page_pool = (uint8_t *) ((int) page_pool & ~(page_mask)) + CONFIG_PAGE_SIZE;
+	page_num -= tree_size;
+
+	memset(tree, 0, CONFIG_PAGE_SIZE * tree_size);
 }
 
 static int find_first_zero(int val) {
@@ -112,9 +122,11 @@ static void mark_page(int pagenum, int mark) {
 
 static int page_alloc_bittree(void) {
 	int tree_page_num = NBITS;
+
+	find_page_pool();
+
 	level = 0;
 	begin = 0;
-
 	while (tree_page_num < page_num) {
 		begin += tree_page_num / NBITS;
 		level ++;
@@ -133,8 +145,6 @@ static int page_alloc_bittree(void) {
 			tree_page_num--;
 		}
 	}
-
-	find_page_pool();
 
 	return 0;
 }
