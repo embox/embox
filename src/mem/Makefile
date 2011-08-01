@@ -10,7 +10,8 @@ $_LDFLAGS += $($_heap_lds)
 $(IMAGE): $($_heap_lds)
 
 $($_heap_lds): $($_SELFDIR)/heap.lds.S $(AUTOCONF_DIR)/config.lds.h
-	mkdir -p $(@D) && $(CPP) -Wp, -P -undef $(CPPFLAGS) \
+	mkdir -p $(@D)
+	$(CPP) -P -undef $(CPPFLAGS) \
 		-imacros $(AUTOCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
 
 -include $($_heap_lds).d
