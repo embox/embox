@@ -16,7 +16,7 @@ __CMD_FILTER = sed 's/__cmd_name/$*/;s/@date/@date '`date +%d.%m.%Y`'/'
 add_cmd-% ac-%:
 	cat $(__CMD_TEMPLATE)/cmd.em | $(__CMD_FILTER) > $*.em
 	cat $(__CMD_TEMPLATE)/cmd.c | $(__CMD_FILTER) > $*.c
-	svn add $*.c $*.em
+	#svn add $*.c $*.em
 
 SELFDIR ?= .
 __CMD_EM_FILES := $(wildcard $(SELFDIR)/*.em)
