@@ -70,9 +70,9 @@ include util/var/assign.mk
 #   1. Name of the function being defined.
 # Return:
 #   Nothing.
-def = $(info def $1)$(strip \
+def = $(warning def: $1)$(strip \
   $(foreach __def_var,$1, \
-    $(call var_assign_recursive_sl,$(__def_var),$ \
+    $(call var_assign_recursive_ml,$(__def_var),$ \
       $(call __def,$(value $(__def_var))))) \
 )
 
@@ -81,10 +81,10 @@ def = $(info def $1)$(strip \
 # Return:
 #   Processed code ready to replace the original value of the function.
 __def = \
-    $(call __def_builtin,$ \
-      $(call __def_brace,$ \
-        $(call __def_strip,$ \
-          $(subst $$,$$$$,$1))))
+  $(call __def_builtin,$ \
+    $(call __def_brace,$ \
+      $(call __def_strip,$ \
+        $(subst $$,$$$$,$1))))
 
 # Params:
 #   1. Code with dollars escaped.
@@ -163,8 +163,65 @@ __def_builtin = \
 # Note:
 #   As a side effect all escaped dollars become unescaped.
 define __def_expand
+	# It is essential to use simple variable definition here to allow
+	# redifinitions inside the expansion.
+	#
+	# The reason of this limitation is a bug in expansion engine of
+	# GNU Make which affects all recent versions that implement 'eval'
+	# function (any of 3.8x).
+	#
+	# The simplest case that reproduces this bug is expanding recursive
+	# variable 'foo' defined as follows:
+	#
+	#   foo = $(eval foo =)
+	#
+	# In that case steps that Make performs to expand string $(foo) are:
+	#   1. Start expanding a reference to a recursive variable 'foo':
+	#        $(foo)
+	#   2. Get its value and start parsing it:
+	#        $(eval foo =)
+	#   3. Find an invocation of builtin function 'eval' and run it:
+	#        foo =
+	#   4. Redefine the variable 'foo' which is being expanded right now.
+	#      Redefinition of an already defined variable also involves
+	#      freeing a memory occupied by an old value.
+	#   5. Return from builtin function handler back to string expansion
+	#      code (see step 2).
+	#   6. At this point the string being parsed refers to a memory block
+	#      that has been freed in step 4.
+	#
+	# Symptoms that one can observe may vary depending on the actual value
+	# of an expanding variable. These may include:
+	#   - 'missing separator' error,
+	#   - 'unterminated variable reference' and 'unterminated call to function'
+	#      errors,
+	#   - garbage in results in case if expansion succeeds.
+	# The latter is clearly seen when running Make under Valgrind with
+	# --free-fill flag.
+	#
+	# A possible workaround is to use simple variable assignments, like:
+	#
+	#   foo := $(eval foo =)
+	#
+	# Here expansion of the value being assigned occurs immediately before
+	# actually assigning it and no redefinitions of recursive variables is
+	# performed.
+	#
+	# The most significant drawback is that we can't use 'define' directive
+	# in version 3.81 and lower because such variable would be defined
+	# recursive. This forces us to escape newlines and comment hashes
+	# properly.
 	${eval \
-		__def_tmp__ := $1
+		# Use immediate expansion to allow recursive invocations of 'def' and
+		# reuse '__def_tmp__' variable (e.g. in '__def_fn_args').
+		__def_tmp__ := \
+			$$(\empty)# To preserve whitepaces at the line start.
+			$(subst $(\h),\$(\h),# To avoid interpreting hashes as comments.
+				# TODO actually there is no newlines in our use cases. -- Eldar
+				$(subst $(\n),$$(\n),# To place everything on a single line.
+					$1
+				)
+			)
 	}
 	$(__def_tmp__)
 endef
@@ -208,7 +265,7 @@ __def_brace_hook = \
 
 # Brace-to-paren substitution logic is now ready.
 __def_brace = \
-  $(__def_brace_real)
+  $(call __def_brace_real,$1)
 
 #
 # Here goes builtin functions transformation stuff.
@@ -423,7 +480,7 @@ define __def_inner_handle_function
 				$(subst $(\paren_open),
 					_$$[$$_$$[call __def_outer_hook_push$(\comma)__paren___$$],
 					$(subst $(\paren_close),
-						$$_$$[__def_outer_hook_pop_$$]_$$],
+						$$_$$[call __def_outer_hook_pop$(\comma)__paren___$$]_$$],
 						$(call nofirstword,$1)
 					)
 				)
@@ -431,7 +488,7 @@ define __def_inner_handle_function
 		)
 	)
 
-	$$(__def_outer_hook_pop)
+	$$(call __def_outer_hook_pop,$(first))
 
 endef
 $(call def,__def_inner_handle_function)
@@ -455,7 +512,7 @@ __def_outer_stack_top :=# Empty too.
 
 # In debugging purposes.
 __def_outer_stack_depth = \
-  $(if $(__def_outer_stack_top),$(\t))$(__def_outer_stack:%=|$(\t))
+  $(if $(__def_outer_stack_top),$(\t))$(__def_outer_stack:%=>$(\t))
 
 # Issues a warning with the specified message including the call stack.
 # Params:
@@ -502,7 +559,7 @@ endef
 #   Nothing.
 __def_outer_hook_pop   = \
   ${eval $(value __def_outer_hook_pop_mk)}$ \
-  $(warning $(__def_outer_stack_depth)pop)
+  $(warning $(__def_outer_stack_depth)pop  [$1])
 
 define __def_outer_hook_pop_mk
   # Restore the top from the stack.
@@ -570,6 +627,8 @@ __def_fn_args_list = \
 # Note:
 #   You must not 'call' this macro in order to preserve the current context.
 define __def_fn_args
+	# Can't use '__def_expand' because of the need to access local arguments.
+	# But everything we have told about there concerns to the code below too.
 	${eval \
 		__def_tmp__ := \
 			# For $(foo bar,baz) it would be '$(1),$(2)'
@@ -593,7 +652,7 @@ __def_builtin_cnt :=# Initially empty.
 
 # Now builtins definition core framework is up. Enable it here.
 __def_builtin = \
-  $(__def_builtin_real)
+  $(call __def_builtin_real,$1)
 
 #
 # Extension: 'lambda' builtin function.
@@ -604,9 +663,7 @@ __def_builtin = \
 define __def_func_'lambda'
 	$(foreach aux,$(__def_builtin_alloc),
 		# Define external function.
-		${eval \
-			$(aux) = $(__def_fn_args)
-		}
+		$(call var_assign_recursive_sl,$(aux),$(__def_fn_args))
 		# The value being returned.
 		$(aux)
 	)
@@ -615,6 +672,24 @@ $(call def,__def_func_'lambda')
 
 # Stub for case of $(lambda) or $(call lambda,...).
 lambda = $(warning lambda: illegal invocation)
+
+#
+# Extension: 'expand' builtin function.
+#
+# '$(expand expr)'
+#
+define __def_func_'expand'
+	$$(eval \
+		__def_tmp__ := \
+			$$(subst $$(\h),\$$(\h),
+				$$(subst $$(\n),$$$$(\n),
+					$(__def_fn_args)
+				)
+			)
+	)
+	$$(__def_tmp__)
+endef
+$(call def,__def_func_'expand')
 
 #
 # Extension: 'with' builtin function.
