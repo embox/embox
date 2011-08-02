@@ -20,7 +20,7 @@ include core/common.mk
 # Returns: Human-readable multiline string containing variable information.
 #
 define var_info_string
-$(call assert,$1,Variable name is empty)Variable [$1] info:
+Variable [$1] info:
    flavor: [$(flavor $1)]
    origin: [$(origin $1)]
     value: [$(value $1)]
