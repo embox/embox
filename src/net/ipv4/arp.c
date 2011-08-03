@@ -134,7 +134,7 @@ static void arp_check_expire(struct sys_tmr * timer, void *param) {
 static int arp_init(void) {
 	uint8_t i;
 
-	if (!set_timer(&arp_refresh_timer, ARP_CHECK_INTERVAL, arp_check_expire, NULL)) {
+	if (set_timer(&arp_refresh_timer, ARP_CHECK_INTERVAL, arp_check_expire, NULL)) {
 		return -1;
 	}
 	/* clear table */
