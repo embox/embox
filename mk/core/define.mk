@@ -56,11 +56,11 @@ __core_def_mk := 1
 #   $(call def,foo)
 #
 
-include core/common.mk
-include core/string.mk
+include mk/core/common.mk
+include mk/core/string.mk
 
-include util/list.mk
-include util/var/assign.mk
+include mk/util/list.mk
+include mk/util/var/assign.mk
 
 ##
 # Performs both syntactiacal and semantical transformations of a function
@@ -500,12 +500,13 @@ $(call def,__def_inner_handle_function)
 #
 
 # The stack element is represented by a single word in form:
-#   foo.1.2 bar.1 __def_expansion_root__
-# where 'foo' and 'bar' are names of the corresponding functions, and numbers
-# refer to function arguments that have already been processed.
+#   foo,1,2 bar,1 __def_root__,1
+# where 'foo' and 'bar' are names of the corresponding functions,
+# and comma separated numbers refer to function arguments that have already
+# been processed.
 __def_outer_stack     :=# Initially empty.
 
-# Top of the stack is separated of the rest elements. The only difference is
+# Top of the stack is separated from the rest elements. The only difference is
 # that the funсtion name and numbers are separated using spaces:
 #   boo 1 2 3
 __def_outer_stack_top :=# Empty too.
@@ -525,11 +526,11 @@ define __def_outer_hook_warning
 	$(warning $2: $1)
 	$(warning Expansion stack:)
 	$(strip $(foreach e,
-			$(subst $(\s),.,$(__def_outer_stack_top)) \
+			$(subst $(\s),$(\comma),$(__def_outer_stack_top)) \
 			$(__def_outer_stack),
 		$(warning \
-			$(\t)arg $(lastword $(subst ., ,$e)) \
-				of '$(firstword $(subst ., ,$e))'
+			$(\t)arg $(lastword $(subst $(\comma), ,$e)) \
+				of '$(firstword $(subst $(\comma), ,$e))'
 		)
 	))
 endef
@@ -548,7 +549,7 @@ __def_outer_hook_push  = \
 define __def_outer_hook_push_mk
   # Save the current value of the top into the stack.
   __def_outer_stack := \
-    $(subst $(\s),.,$(__def_outer_stack_top)) \
+    $(subst $(\s),$(\comma),$(__def_outer_stack_top)) \
     $(__def_outer_stack)
   # Put new function name onto the top.
   __def_outer_stack_top := $1
@@ -564,7 +565,7 @@ __def_outer_hook_pop   = \
 define __def_outer_hook_pop_mk
   # Restore the top from the stack.
   __def_outer_stack_top := \
-    $(subst .,$(\s),$(firstword $(__def_outer_stack)))
+    $(subst $(\comma),$(\s),$(firstword $(__def_outer_stack)))
   # And remove from the stack.
   __def_outer_stack := \
     $(call nofirstword,$(__def_outer_stack))
@@ -621,23 +622,66 @@ __def_fn_name = \
 __def_fn_args_list = \
   $(call nofirstword,$(__def_outer_stack_top))
 
-# Constructs an actual arguments passing code in a 'call'-like syntax.
+# '__def_fn_args' and its derivatives construct an actual arguments passing
+# code in a 'call'-like syntax.
+# Note:
+#   You must not 'call' theese macros in order to preserve argument values of
+#   the current function call.
+
+# $(f foo,bar,baz) -> 'foo,bar,baz'.
+__def_fn_args      = $(foreach args_filter,id         ,$(__def_fn_args_expand))
+
+# $(f foo,bar,baz) -> 'foo'.
+__def_fn_firstarg  = $(foreach args_filter,firstword  ,$(__def_fn_args_expand))
+
+# $(f foo,bar,baz) -> 'baz'.
+__def_fn_lastarg   = $(foreach args_filter,lastword   ,$(__def_fn_args_expand))
+
+# $(f foo,bar,baz) -> 'bar,baz'.
+__def_fn_nofirstarg= $(foreach args_filter,nofirstword,$(__def_fn_args_expand))
+
+# $(f foo,bar,baz) -> 'foo,bar'.
+__def_fn_nolastarg = $(foreach args_filter,nolastword ,$(__def_fn_args_expand))
+
+# Comma-separated list of expanded arguments. Intended for internal usage only.
+# Context:
+#   'args_filter': name of a filtering function to apply to the list of args.
 # Example:
-#   For $(foo bar,baz) it would return 'bar,baz'.
+#   For $(func foo,bar,baz) it would return 'foo,bar,baz'.
 # Note:
 #   You must not 'call' this macro in order to preserve the current context.
-define __def_fn_args
+define __def_fn_args_expand
 	# Can't use '__def_expand' because of the need to access local arguments.
 	# But everything we have told about there concerns to the code below too.
 	${eval \
 		__def_tmp__ := \
-			# For $(foo bar,baz) it would be '$(1),$(2)'
+			# For $(func foo,bar,baz) it would be '$(1),$(2),$(3)'
 			# which in turn expands to the sought-for.
-			$(subst $(\s),$(\comma),$(__def_fn_args_list:%=$$(%)))
+			$(subst $(\s),$(\comma),$(patsubst %,$$(%),
+				$(call $(args_filter),$(__def_fn_args_list))
+			))
 	}
 	$(__def_tmp__)
 endef
-$(call def,__def_fn_args)
+$(call def,__def_fn_args_expand)
+
+# Gets the name of a function which is upper in the expansion stack than the
+# current one by the specified depth (if any).
+# Params:
+#   1. (Optional) depth, '1' by default which mean direct caller.
+# Return:
+#   Function name or empty if the argument is bigger than actual stack depth.
+# Example:
+#   In case of handling the innermost function of $(foo $(bar $(baz ...))),
+#   namely 'baz', its direct caller is 'bar' and a caller at depth 2 is 'foo'.
+define __def_fn_caller
+	$(firstword $(subst $(\comma),$(\s),
+		$(word $(or $(if $(filter __def_fn_caller,$0),$(value 1)),1),
+			$(filter-out __paren__% __def_root__%,$(__def_outer_stack))
+		)
+	))
+endef
+$(call def,__def_fn_caller)
 
 # Auxiliary procedure for function allocation.
 # Useful if your builtin needs to define auxiliary function/variable.
@@ -657,8 +701,7 @@ __def_builtin = \
 #
 # Extension: 'lambda' builtin function.
 #
-# '$(lambda $(foo)...)' -> '__builtin000'
-# where __builtin000 = $(foo)...
+# '$(lambda body)'
 #
 define __def_func_'lambda'
 	$(foreach aux,$(__def_builtin_alloc),
@@ -674,43 +717,18 @@ $(call def,__def_func_'lambda')
 lambda = $(warning lambda: illegal invocation)
 
 #
-# Extension: 'expand' builtin function.
-#
-# '$(expand expr)'
-#
-define __def_func_'expand'
-	$$(eval \
-		__def_tmp__ := \
-			$$(subst $$(\h),\$$(\h),
-				$$(subst $$(\n),$$$$(\n),
-					$(__def_fn_args)
-				)
-			)
-	)
-	$$(__def_tmp__)
-endef
-$(call def,__def_func_'expand')
-
-#
 # Extension: 'with' builtin function.
 #
-# '$(with foo,bar,$1 $2 baz)' -> '$(call __builtin000,foo,bar)'
-# where __builtin000 = $1 $2 baz
+# '$(with args...,body)'
 #
 define __def_func_'with'
 	$(foreach aux,$(__def_builtin_alloc),
-		${eval \
-			$(aux) = $($(lastword $(__def_fn_args_list)))
-		}
-		${eval \
-			__def_tmp__ := \
-				$(subst $(\s),$(\comma),
-					$(patsubst %,$$(%),
-						$(call nolastword,$(__def_fn_args_list))
-					)
-				)
-		}
-		$$(call $(aux)$(if $(__def_tmp__),$(\comma)$(__def_tmp__)))
+		$(call var_assign_recursive_sl,$(aux),$(__def_fn_lastarg))
+		$$(call $(aux)
+			$(if $(call nolastword,$(__def_fn_args_list)),
+				$(\comma)$(__def_fn_nolastarg)
+			)
+		)
 	)
 endef
 $(call def,__def_func_'with')
