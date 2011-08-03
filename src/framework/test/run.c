@@ -58,7 +58,7 @@ int test_suite_run(const struct test_suite *test) {
 
 	fixture_ops = &test->suite_fixture_ops;
 
-	TRACE("test: running %s ", test_name(test));
+	TRACE("\ttest: running %s ", test_name(test));
 
 	if ((fx_op = *fixture_ops->p_setup) && (ret = fx_op()) != 0) {
 		handle_suite_fixture_failure(test, ret, 1);

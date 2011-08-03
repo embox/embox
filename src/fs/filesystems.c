@@ -45,7 +45,9 @@ static fs_driver_head_t *alloc(file_system_driver_t *drv) {
 	head = (fs_driver_head_t *) free_list.next;
 	head->drv = drv;
 	list_move((struct list_head*) head, &file_systems);
+#if 0
 	TRACE("register %s\n", drv->name);
+#endif
 	return head;
 }
 
