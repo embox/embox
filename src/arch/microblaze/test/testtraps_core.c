@@ -26,8 +26,8 @@ void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 		return;
 	}
 }
-
 int testtraps_fire_softtrap(uint32_t number, void *data) {
+	int res;
 	/*pass trap number through r5 and data through r6*/
 #if 0
 	__asm__ __volatile__ (
@@ -48,8 +48,14 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 		:"r" (number), "r"(data)
 		*/
 	);
+
 #endif
-	return 0;
+	__asm__ __volatile__ (""
+			"addi %0, r3, 0\n\t"
+			: "=r" (res) : : "memory"
+			);
+
+	return res;
 }
 
 traps_env_t *testtraps_env(void) {
