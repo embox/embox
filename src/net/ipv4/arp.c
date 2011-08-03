@@ -16,6 +16,7 @@
 #include <net/arp.h>
 #include <net/ip.h>
 #include <embox/net/pack.h>
+#include <errno.h>
 
 /*
  * FIXME:
@@ -33,78 +34,44 @@
  *      unresolved IP address.
  */
 
-#define ARP_TIMER_ID 12
-
-
 EMBOX_NET_PACK(ETH_P_ARP, arp_rcv, arp_init);
 
-arp_entity_t arp_tables[ARP_CACHE_SIZE];
+/* Declaration of ARP-Cache */
 
-/**
- * Check if there are entries that are too old and remove them.
- */
-static void arp_check_expire(struct sys_tmr * timer, void *param) {
-	size_t i;
+#define ARP_TIMER_ID 12
+/* ARP Table state. */
+#define ATS_FREE 0x00 /* entity is free (not used) */
+//#define ATS_WAIT 0x01 /* entity should be confirmed  */
+#define ATS_USED 0x02 /* entity used */
 
-	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_tables[i].flags == ATF_COM) && (arp_tables[i].state == 1)) {
-			arp_tables[i].ctime += ARP_CHECK_INTERVAL;
-			if (arp_tables[i].ctime >= ARP_TIMEOUT) {
-				arp_tables[i].state = 0;
-			}
-		}
-	}
-}
-static sys_tmr_t *arp_refresh_timer;
-
-static int arp_init(void) {
-	if (!set_timer(&arp_refresh_timer, ARP_CHECK_INTERVAL, arp_check_expire, NULL)) {
-		return -1;
-	}
-	return 0;
-}
-
-static int arp_xmit(sk_buff_t *skb) {
-	return dev_queue_xmit(skb);
-}
-
-int arp_lookup(in_device_t *in_dev, in_addr_t dst_addr) {
-	size_t i;
-
-	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_tables[i].state == 1) && (arp_tables[i].pw_addr == dst_addr)
-				&& (arp_tables[i].if_handler == in_dev)) {
-			return i;
-		}
-	}
-	return -1;
-}
+arp_entity_t arp_cache[ARP_CACHE_SIZE]; /* table for arp request */
+static sys_tmr_t *arp_refresh_timer; /* timer for update the table */
 
 /**
  * this function add entry in arp table (rewrite) if can
  * @param in_dev (handler of inet_dev struct) which identificate network interface where address can resolve
  * @param ip addr
  * @param hardware addr
- * @return number of entry in table if success else -1
+ * @param ATF_COM or ATF_PERM
+ * @return 0 if success else error code
  */
 int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr,
-		unsigned char *macaddr, unsigned int flags) {
+		uint8_t *macaddr, uint8_t flags) {
 	size_t i;
 
 	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_tables[i].state == 0) /* if empty */
-				|| ((arp_tables[i].pw_addr == ipaddr) /* or exist */
-						&& (arp_tables[i].if_handler == in_dev))) {
-			arp_tables[i].if_handler = in_dev;
-			arp_tables[i].pw_addr = ipaddr;
-			arp_tables[i].ctime = 0;
-			arp_tables[i].state = 1;
-			arp_tables[i].flags = flags;
-			memcpy(arp_tables[i].hw_addr, macaddr, ETH_ALEN);
-			return i;
+		if ((arp_cache[i].state == ATS_FREE) || ((arp_cache[i].pw_addr == ipaddr)
+				&& (arp_cache[i].if_handler == in_dev))) {
+			arp_cache[i].if_handler = in_dev;
+			arp_cache[i].pw_addr = ipaddr;
+			arp_cache[i].ctime = 0;
+			arp_cache[i].state = ATS_USED;
+			arp_cache[i].flags = flags;
+			memcpy(arp_cache[i].hw_addr, macaddr, ETH_ALEN);
+			return ENOERR;
 		}
 	}
-	return -1;
+	return -ENOMEM;
 }
 
 /**
@@ -119,28 +86,72 @@ int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr,
 	size_t i;
 
 	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_tables[i].pw_addr == ipaddr)
-				&& (memcmp(arp_tables[i].hw_addr, macaddr, ETH_ALEN) == 0)
-				&& (in_dev == arp_tables[i].if_handler)) {
-			arp_tables[i].state = 0;
-			return i;
+		if ((arp_cache[i].pw_addr == ipaddr)
+				&& (in_dev == arp_cache[i].if_handler)
+				&& !memcmp(arp_cache[i].hw_addr, macaddr, ETH_ALEN)) {
+			arp_cache[i].state = ATS_FREE;
+			return ENOERR;
 		}
 	}
-	return -1;
+	return -EINVAL;
 }
 
-sk_buff_t * arp_create(int type, int ptype, in_addr_t dest_ip,
-		net_device_t *dev, in_addr_t src_ip, const unsigned char *dest_hw,
-		const unsigned char *src_hw, const unsigned char *target_hw) {
-	sk_buff_t *skb;
-	struct arphdr *arp;
+/**
+ * this function search entry from arp table if can
+ * @param in_dev (handler of inet_dev struct)
+ * @param destination ip address
+ * @return hardware address if can else NULL
+ */
+uint8_t * arp_lookup(in_device_t *in_dev, in_addr_t dst_addr) {
+	size_t i;
 
-	if (NULL == dev || NULL == (skb = alloc_skb(ETH_HEADER_SIZE
-			+ ARP_HEADER_SIZE, 0))) {
-		return NULL;
+	for (i = 0; i < ARP_CACHE_SIZE; i++) {
+		if ((arp_cache[i].pw_addr == dst_addr)
+				&& (arp_cache[i].if_handler == in_dev)
+				&& (arp_cache[i].state == ATS_USED)) {
+			return arp_cache[i].hw_addr;
+		}
+	}
+	return NULL;
+}
+
+/**
+ * Check if there are entries that are too old and remove them.
+ */
+static void arp_check_expire(struct sys_tmr * timer, void *param) {
+	size_t i;
+
+	for (i = 0; i < ARP_CACHE_SIZE; i++) {
+		if ((arp_cache[i].flags == ATF_COM) && (arp_cache[i].state != ATS_FREE)) {
+			arp_cache[i].ctime += ARP_CHECK_INTERVAL;
+			if (arp_cache[i].ctime >= ARP_TIMEOUT) {
+				arp_cache[i].state = ATS_FREE;
+			}
+		}
+	}
+}
+
+static int arp_init(void) {
+	uint8_t i;
+
+	if (!set_timer(&arp_refresh_timer, ARP_CHECK_INTERVAL, arp_check_expire, NULL)) {
+		return -1;
+	}
+	/* clear table */
+	for (i = 0; i < ARP_CACHE_SIZE; i++) {
+		arp_cache[i].state = ATS_FREE;
 	}
 
-	skb->mac.raw = skb->data;
+	return 0;
+}
+
+/* ARP Protocol */
+
+static int arp_header(sk_buff_t *skb, int type, int ptype, in_addr_t dest_ip,
+		net_device_t *dev, in_addr_t src_ip, const unsigned char *dest_hw,
+		const unsigned char *src_hw, const unsigned char *target_hw) {
+	struct arphdr *arp;
+
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 	arp = skb->nh.arph;
 
@@ -152,13 +163,13 @@ sk_buff_t * arp_create(int type, int ptype, in_addr_t dest_ip,
 	if (dest_hw == NULL) {
 		dest_hw = dev->broadcast;
 	}
+
 	/*
 	 * Fill the device header for the ARP frame
 	 */
 	if (dev_hard_header(skb, dev, ptype, (void*) dest_hw, (void*) src_hw,
 			skb->len) < 0) {
-		kfree_skb(skb);
-		return NULL;
+		return -1;
 	}
 
 	/*
@@ -170,11 +181,15 @@ sk_buff_t * arp_create(int type, int ptype, in_addr_t dest_ip,
 	arp->ar_pln = IPV4_ADDR_LENGTH;
 	arp->ar_op = htons(type);
 	memcpy(arp->ar_sha, src_hw, ETH_ALEN);
-	memcpy(arp->ar_tha, dest_hw, ETH_ALEN);
 	arp->ar_sip = src_ip;
+	memcpy(arp->ar_tha, dest_hw, ETH_ALEN);
 	arp->ar_tip = dest_ip;
 
-	return skb;
+	return 0;
+}
+
+static int arp_xmit(sk_buff_t *skb) {
+	return dev_queue_xmit(skb);
 }
 
 int arp_send(int type, int ptype, in_addr_t dest_ip, struct net_device *dev,
@@ -182,21 +197,27 @@ int arp_send(int type, int ptype, in_addr_t dest_ip, struct net_device *dev,
 		const unsigned char *src_hw, const unsigned char *th) {
 	struct sk_buff *skb;
 
+	if (!dev) {
+		return -1;
+	}
 	/*
 	 * No arp on this interface.
 	 */
 	if (dev->flags & IFF_NOARP) {
 		return -1;
 	}
-	skb = arp_create(type, ptype, dest_ip, dev, src_ip, dest_hw, src_hw, th);
-	if (skb == NULL) {
+	if (!(skb = alloc_skb(ETH_HEADER_SIZE + ARP_HEADER_SIZE, 0))) {
+		return -1;
+	}
+	if (arp_header(skb, type, ptype, dest_ip, dev, src_ip, dest_hw, src_hw, th)) {
+		kfree_skb(skb);
 		return -1;
 	}
 	return arp_xmit(skb);
 }
 
 int arp_resolve(sk_buff_t *pack) {
-	size_t i;
+	uint8_t *hw_addr;
 	net_device_t *dev;
 	iphdr_t *ip;
 
@@ -213,8 +234,8 @@ int arp_resolve(sk_buff_t *pack) {
 		return 0;
 	}
 	dev = pack->dev;
-	if (-1 != (i = arp_lookup(in_dev_get(dev), ip->daddr))) {
-		memcpy(pack->mac.ethh->h_dest, arp_tables[i].hw_addr, ETH_ALEN);
+	if ((hw_addr = arp_lookup(in_dev_get(dev), ip->daddr))) {
+		memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
 		return 0;
 	}
 	/* send arp request  */
@@ -226,7 +247,7 @@ int arp_resolve(sk_buff_t *pack) {
 /**
  * receive ARP response, update ARP table
  */
-static inline int received_resp(sk_buff_t *pack) {
+static int received_resp(sk_buff_t *pack) {
 	arphdr_t *arp;
 
 	arp = pack->nh.arph;
@@ -238,12 +259,15 @@ static inline int received_resp(sk_buff_t *pack) {
 /**
  * receive ARP request, send ARP response
  */
-static inline int received_req(sk_buff_t *skb) {
+static int received_req(sk_buff_t *skb) {
 	arphdr_t *arp;
 
 	arp = skb->nh.arph;
-	return arp_send(ARPOP_REPLY, ETH_P_ARP, arp->ar_sip, skb->dev, arp->ar_tip,
-			skb->mac.ethh->h_source, skb->dev->dev_addr, NULL);
+	if (arp_header(skb, ARPOP_REPLY, ETH_P_ARP, arp->ar_sip, skb->dev, arp->ar_tip, arp->ar_sha, skb->dev->dev_addr, NULL)) {
+		kfree_skb(skb);
+		return -1;
+	}
+	return arp_xmit(skb);
 }
 
 /**
@@ -272,9 +296,7 @@ static int arp_process(sk_buff_t *skb) {
 			return res;
 		case ARPOP_REQUEST:
 			received_resp(skb);
-			res = received_req(skb);
-			kfree_skb(skb);
-			return res;
+			return received_req(skb);
 	}
 	kfree_skb(skb);
 	return -1;

@@ -145,7 +145,7 @@ int netif_receive_skb(sk_buff_t *skb) {
 		}
 	}
 	kfree_skb(skb);
-	return -1;
+	return NET_RX_DROP;
 }
 
 

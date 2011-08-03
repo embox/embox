@@ -10,5 +10,3 @@ $_SRCS-loopback  += loopback.c
 $_SRCS-ne2k_pci  += ne2k_pci.c
 $_DEPS-ne2k_pci  += embox.driver.pci
 $_SRCS-r6040     += r6040.c
-#DEBUG!!
-$_DEPS-ne2k_pci  += core.kernel.timer
