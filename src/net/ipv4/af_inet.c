@@ -111,5 +111,5 @@ struct net_proto_family inet_family_ops = {
 };
 
 static int inet_init(void) {
-	return 0;
+	return sock_register(&inet_family_ops);
 }
