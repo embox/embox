@@ -86,11 +86,6 @@ static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
  */
 
 /**
- * Initialize ICMP.
- */
-extern void icmp_init(void);
-
-/**
  * Send an ICMP message in response to a situation.
  * Used by the kernel to transmit ICMP error messages when
  * specific conditions are detected.

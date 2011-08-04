@@ -29,7 +29,7 @@ static int net_sock_mod_enable(struct mod_info *mod) {
 	TRACE("done\n");
 
 	if (net_proto_family != NULL) {
-		sock_register(net_proto_family);
+		ret = sock_register(net_proto_family);
 	}
 
 	return ret;
@@ -41,7 +41,7 @@ static int net_sock_mod_disable(struct mod_info *mod) {
 	net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
 
 	if (net_proto_family != NULL) {
-		sock_unregister(net_proto_family->family);
+		ret = sock_unregister(net_proto_family->family);
 	}
 
 	return ret;

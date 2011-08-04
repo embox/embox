@@ -20,7 +20,7 @@
 #include <linux/init.h>
 #include <embox/net/proto.h>
 
-EMBOX_NET_PROTO(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
+EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
 /**
  * Build xmit assembly blocks
@@ -312,8 +312,9 @@ static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
 	},
 };
 
-void __init icmp_init(void) {
-	sock_create_kern(PF_INET, SOCK_RAW, IPPROTO_ICMP, &__icmp_socket);
+static int __init icmp_init(void) {
+	//return sock_create_kern(PF_INET, SOCK_RAW, IPPROTO_ICMP, &__icmp_socket);
+	return 0;
 }
 
 /**

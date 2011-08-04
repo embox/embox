@@ -18,7 +18,7 @@
 #include <net/inet_common.h>
 #include <embox/net/proto.h>
 
-EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err, NULL);
+EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
 static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
