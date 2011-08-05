@@ -213,7 +213,7 @@ define __def_expand
 	# properly.
 	${eval \
 		# Use immediate expansion to allow recursive invocations of 'def' and
-		# reuse '__def_tmp__' variable (e.g. in '__def_fn_args').
+		# reuse '__def_tmp__' variable (e.g. in '__builtin_args_expand').
 		__def_tmp__ := \
 			$$(\empty)# To preserve whitepaces at the line start.
 			$(subst $(\h),\$(\h),# To avoid interpreting hashes as comments.
@@ -492,6 +492,7 @@ define __def_inner_handle_function
 
 endef
 $(call def,__def_inner_handle_function)
+
 #
 # The main structure used by the outer expansion phase is an expansion stack.
 # The stack holds an information about how native make expansion engine
@@ -514,27 +515,6 @@ __def_outer_stack_top :=# Empty too.
 # In debugging purposes.
 __def_outer_stack_depth = \
   $(if $(__def_outer_stack_top),$(\t))$(__def_outer_stack:%=>$(\t))
-
-# Issues a warning with the specified message including the call stack.
-# Params:
-#   1. Code fragment which caused the warning.
-#   2. The message.
-# Return:
-#   The first argument.
-define __def_outer_hook_warning
-	$1
-	$(warning $2: $1)
-	$(warning Expansion stack:)
-	$(strip $(foreach e,
-			$(subst $(\s),$(\comma),$(__def_outer_stack_top)) \
-			$(__def_outer_stack),
-		$(warning \
-			$(\t)arg $(lastword $(subst $(\comma), ,$e)) \
-				of '$(firstword $(subst $(\comma), ,$e))'
-		)
-	))
-endef
-$(call def,__def_outer_hook_warning)
 
 # Pushes the specified name onto the top of the expansion stack saving the
 # previous value of the top into the stack.
@@ -584,33 +564,124 @@ define __def_outer_hook_arg_mk
     $(words $(__def_outer_stack_top))
 endef
 
+# Handles a function expansion. Performs generic checks (arity, ...) and
+# a special translation in case of user-defined builtin.
+# Return:
+#   A code which will substitute the original expansion.
 define __def_outer_hook_func
 	$(warning \
-		$(__def_outer_stack_depth)func [$(__def_fn_name)]
+		$(__def_outer_stack_depth)func [$(builtin_name)]
 		(
-			$(foreach a,$(__def_fn_args_list),
+			$(foreach a,$(builtin_args_list),
 				[$($a)]
 			)
 		)
 	)
-	$(foreach 0,__def_func_'$(__def_fn_name)',
-		$(if $(value $0),
-			$($0),
-			$$($(__def_fn_name) $(__def_fn_args))
+
+	$(foreach 0,$(builtin_name),
+		$(if $(value builtin_func_$0),
+			# There is a special builtin function handler, invoke it.
+			$(builtin_func_$0),
+
+			# If it is a native function check its arity.
+			$(foreach minimum_args,
+				# For unknown function 'minimum_args' would be 0.
+				$(or $(notdir $(filter $0/%,$(__builtin_native_functions))),0),
+
+				# Check that the value of 'minimum_args' is presented in the
+				# list of argument numbers.
+				$(if $(filter-out $(builtin_args_list),$(minimum_args)),
+					# Something went wrong, figure out the reason.
+					$(if $(minimum_args:0=),
+						$(warning \
+							Too few arguments ($(words $(builtin_args_list))) \
+							to function '$0'
+						),
+						$(warning \
+							Undefined function '$0'
+						)
+					)
+					$(builtin_print_stack)
+				)
+			)
+			# Finally leave the function call as is.
+			$(builtin_construct)
 		)
 	)
 endef
 $(call def,__def_outer_hook_func)
 
-__def_func_'__def_root__' = \
-  $(__def_fn_args)
+# Issues a warning with the specified message including the expansion stack.
+# Params:
+#   1. Code fragment which caused the warning.
+#   2. The message.
+# Return:
+#   The first argument.
+define __def_outer_hook_warning
+	$1
+	$(warning $2$(if $1,: '$1'))
+	$(builtin_print_stack)
+endef
+$(call def,__def_outer_hook_warning)
+
+#
+# Here goes an API for defining own builtin functions.
+#
+
+# Special builtin which echoes its arguments.
+builtin_func___def_root__ = \
+  $(builtin_args)
+
+# List of GNU Make 3.81 native builtin functions of with their arities.
+__builtin_native_functions = \
+  abspath/1    \
+  addprefix/2  \
+  addsuffix/2  \
+  basename/1   \
+  dir/1        \
+  notdir/1     \
+  subst/3      \
+  suffix/1     \
+  filter/2     \
+  filter-out/2 \
+  findstring/2 \
+  firstword/1  \
+  flavor/1     \
+  join/2       \
+  lastword/1   \
+  patsubst/3   \
+  realpath/1   \
+  shell/1      \
+  sort/1       \
+  strip/1      \
+  wildcard/1   \
+  word/2       \
+  wordlist/3   \
+  words/1      \
+  origin/1     \
+  foreach/3    \
+  call/1       \
+  info/1       \
+  error/1      \
+  warning/1    \
+  if/2         \
+  or/1         \
+  and/1        \
+  value/1      \
+  eval/1
+
+# Reconstructs original builtin invocation code.
+# Note:
+#   This is a macro and you must not 'call' it.
+builtin_construct = \
+  $$($(builtin_name) $(builtin_args))
 
 # Gets the name of a function being handled.
 # Example:
 #   For $(foo bar,baz) it would return 'foo'.
 # Note:
 #   You may simply expand this macro without 'call'ing it.
-__def_fn_name = \
+builtin_name = \
   $(firstword $(__def_outer_stack_top))
 
 # Gets a list of variable names of all arguments of a function being handled.
@@ -619,29 +690,29 @@ __def_fn_name = \
 #   For $(foo bar,baz) it would return '1 2'.
 # Note:
 #   You may simply expand this macro without 'call'ing it.
-__def_fn_args_list = \
+builtin_args_list = \
   $(call nofirstword,$(__def_outer_stack_top))
 
-# '__def_fn_args' and its derivatives construct an actual arguments passing
+# 'builtin_args' and its derivatives construct an actual arguments passing
 # code in a 'call'-like syntax.
 # Note:
 #   You must not 'call' theese macros in order to preserve argument values of
 #   the current function call.
 
 # $(f foo,bar,baz) -> 'foo,bar,baz'.
-__def_fn_args      = $(foreach args_filter,id         ,$(__def_fn_args_expand))
+builtin_args      = $(foreach args_filter,id         ,$(__builtin_args_expand))
 
 # $(f foo,bar,baz) -> 'foo'.
-__def_fn_firstarg  = $(foreach args_filter,firstword  ,$(__def_fn_args_expand))
+builtin_firstarg  = $(foreach args_filter,firstword  ,$(__builtin_args_expand))
 
 # $(f foo,bar,baz) -> 'baz'.
-__def_fn_lastarg   = $(foreach args_filter,lastword   ,$(__def_fn_args_expand))
+builtin_lastarg   = $(foreach args_filter,lastword   ,$(__builtin_args_expand))
 
 # $(f foo,bar,baz) -> 'bar,baz'.
-__def_fn_nofirstarg= $(foreach args_filter,nofirstword,$(__def_fn_args_expand))
+builtin_nofirstarg= $(foreach args_filter,nofirstword,$(__builtin_args_expand))
 
 # $(f foo,bar,baz) -> 'foo,bar'.
-__def_fn_nolastarg = $(foreach args_filter,nolastword ,$(__def_fn_args_expand))
+builtin_nolastarg = $(foreach args_filter,nolastword ,$(__builtin_args_expand))
 
 # Comma-separated list of expanded arguments. Intended for internal usage only.
 # Context:
@@ -650,7 +721,7 @@ __def_fn_nolastarg = $(foreach args_filter,nolastword ,$(__def_fn_args_expand))
 #   For $(func foo,bar,baz) it would return 'foo,bar,baz'.
 # Note:
 #   You must not 'call' this macro in order to preserve the current context.
-define __def_fn_args_expand
+define __builtin_args_expand
 	# Can't use '__def_expand' because of the need to access local arguments.
 	# But everything we have told about there concerns to the code below too.
 	${eval \
@@ -658,12 +729,12 @@ define __def_fn_args_expand
 			# For $(func foo,bar,baz) it would be '$(1),$(2),$(3)'
 			# which in turn expands to the sought-for.
 			$(subst $(\s),$(\comma),$(patsubst %,$$(%),
-				$(call $(args_filter),$(__def_fn_args_list))
+				$(call $(args_filter),$(builtin_args_list))
 			))
 	}
 	$(__def_tmp__)
 endef
-$(call def,__def_fn_args_expand)
+$(call def,__builtin_args_expand)
 
 # Gets the name of a function which is upper in the expansion stack than the
 # current one by the specified depth (if any).
@@ -674,27 +745,45 @@ $(call def,__def_fn_args_expand)
 # Example:
 #   In case of handling the innermost function of $(foo $(bar $(baz ...))),
 #   namely 'baz', its direct caller is 'bar' and a caller at depth 2 is 'foo'.
-define __def_fn_caller
+define builtin_caller
 	$(firstword $(subst $(\comma),$(\s),
-		$(word $(or $(if $(filter __def_fn_caller,$0),$(value 1)),1),
+		$(word $(or $(if $(filter builtin_caller,$0),$(value 1)),1),
 			$(filter-out __paren__% __def_root__%,$(__def_outer_stack))
 		)
 	))
 endef
-$(call def,__def_fn_caller)
+$(call def,builtin_caller)
 
-# Auxiliary procedure for function allocation.
+# Outputs the expansion stack.
+# Return:
+#   Nothing
+define builtin_print_stack
+	$(warning Expansion stack:)
+	$(strip $(foreach e,
+			$(subst $(\s),$(\comma),$(__def_outer_stack_top)) \
+			$(__def_outer_stack),
+		$(warning \
+			$(\t)arg $(lastword $(subst $(\comma), ,$e)) \
+				of '$(firstword $(subst $(\comma), ,$e))'
+		)
+	))
+endef
+$(call def,builtin_print_stack)
+
+# Helper function for function allocation.
 # Useful if your builtin needs to define auxiliary function/variable.
-define __def_builtin_alloc
-	__builtin$(words $(__def_builtin_cnt))$(__def_var)
+# Return:
+#   A unique name in a private namespace.
+define builtin_aux_alloc
+	__builtin$(words $(__builtin_aux_cnt))$(__def_var)
 	${eval \
-		__def_builtin_cnt += x
+		__builtin_aux_cnt += x
 	}
 endef
-$(call def,__def_builtin_alloc)
-__def_builtin_cnt :=# Initially empty.
+$(call def,builtin_aux_alloc)
+__builtin_aux_cnt :=# Initially empty.
 
-# Now builtins definition core framework is up. Enable it here.
+# Now builtins definition framework is up. Enable it here.
 __def_builtin = \
   $(call __def_builtin_real,$1)
 
@@ -703,15 +792,15 @@ __def_builtin = \
 #
 # '$(lambda body)'
 #
-define __def_func_'lambda'
-	$(foreach aux,$(__def_builtin_alloc),
+define builtin_func_lambda
+	$(foreach aux,$(builtin_aux_alloc),
 		# Define external function.
-		$(call var_assign_recursive_sl,$(aux),$(__def_fn_args))
+		$(call var_assign_recursive_sl,$(aux),$(builtin_args))
 		# The value being returned.
 		$(aux)
 	)
 endef
-$(call def,__def_func_'lambda')
+$(call def,builtin_func_lambda)
 
 # Stub for case of $(lambda) or $(call lambda,...).
 lambda = $(warning lambda: illegal invocation)
@@ -721,17 +810,17 @@ lambda = $(warning lambda: illegal invocation)
 #
 # '$(with args...,body)'
 #
-define __def_func_'with'
-	$(foreach aux,$(__def_builtin_alloc),
-		$(call var_assign_recursive_sl,$(aux),$(__def_fn_lastarg))
+define builtin_func_with
+	$(foreach aux,$(builtin_aux_alloc),
+		$(call var_assign_recursive_sl,$(aux),$(builtin_lastarg))
 		$$(call $(aux)
-			$(if $(call nolastword,$(__def_fn_args_list)),
-				$(\comma)$(__def_fn_nolastarg)
+			$(if $(call nolastword,$(builtin_args_list)),
+				$(\comma)$(builtin_nolastarg)
 			)
 		)
 	)
 endef
-$(call def,__def_func_'with')
+$(call def,builtin_func_with)
 
 # Stub for case of $(lambda) or $(call lambda,...).
 with = $(warning with: illegal invocation)
