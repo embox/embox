@@ -4,13 +4,16 @@
  *
  * @date 08.02.10
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
-#ifndef KERNEL_SOCKET_H_
-#define KERNEL_SOCKET_H_
+#ifndef NET_KERNEL_SOCKET_H_
+#define NET_KERNEL_SOCKET_H_
 
+#include <linux/aio.h>
 #include <net/socket.h>
 #include <net/net.h>
+#include <types.h>
 
 /**
  * Close a kernel socket.
@@ -18,13 +21,9 @@
  * if it has a release callback.
  *
  * @param sock socket to close
+ * @return 0 on success, else error code.
  */
 extern int kernel_sock_release(struct socket *sock);
-
-/**
- * Initialize kernel sockets.
- */
-extern int kernel_sock_init(void);
 
 /**
  * Create kernel socket.
@@ -33,8 +32,9 @@ extern int kernel_sock_init(void);
  * @param a type communication semantics.
  * @param protocol a particular protocol to be used with the socket.
  * @param res pointer to the socket structure
+ * @return On success, descriptor for the new socket otherwise result < 0.
  */
-extern int sock_create_kern(int family, int type, int protocol,
+extern int kernel_sock_create(int family, int type, int protocol,
 					struct socket **res);
 
 /**
@@ -45,6 +45,7 @@ extern int sock_create_kern(int family, int type, int protocol,
  * @param sock pointer to the socket structure
  * @param addr address
  * @param addrlen size, in bytes, of the address structure pointed to by addr.
+ * @return error code
  */
 extern int kernel_bind(struct socket *sock, const struct sockaddr *addr,
 					socklen_t addrlen);
@@ -55,6 +56,7 @@ extern int kernel_bind(struct socket *sock, const struct sockaddr *addr,
  *
  * @param sock pointer to the socket structure
  * @param backlog maximum length to which the queue of pending connections for sock may grow
+ * @return error code
  */
 extern int kernel_listen(struct socket *sock, int backlog);
 
@@ -65,6 +67,7 @@ extern int kernel_listen(struct socket *sock, int backlog);
  * @param sock pointer to the socket structure
  * @param newsock
  * @param flags
+ * @return error code
  */
 extern int kernel_accept(struct socket *sock, struct socket **newsock,
 					int flags);
@@ -77,6 +80,7 @@ extern int kernel_accept(struct socket *sock, struct socket **newsock,
  * @param addr address to connect
  * @param addrlen the size of addr
  * @param flags
+ * @return error code
  */
 extern int kernel_connect(struct socket *sock, const struct sockaddr *addr,
 					int addrlen, int flags);
@@ -117,6 +121,7 @@ extern int kernel_setsockopt(struct socket *sock, int level, int optname,
  * @param sock pointer to the socket structure
  * @param msg
  * @param size
+ * @return error code
  */
 extern int kernel_sendmsg(struct kiocb *iocb, struct socket *sock,
 				struct msghdr *msg, size_t size);
@@ -129,6 +134,7 @@ extern int kernel_sendmsg(struct kiocb *iocb, struct socket *sock,
  * @param sock pointer to the socket structure
  * @param msg
  * @param size
+ * @return error code
  */
 extern int kernel_recvmsg(struct kiocb *iocb, struct socket *sock,
 				struct msghdr *msg, size_t size, int flags);
@@ -141,12 +147,16 @@ extern int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg);
 
 /**
  * Go from a socket descriptor to its socket slot
+ * @param sockfd socket description, was created by socket()
+ * @return pointer to socket struct, which have this fd
  */
-extern struct socket *sockfd_lookup(int fd);
+extern struct socket * sockfd_lookup(int fd);
 
 /**
  * Get socket descriptor from socket slot
+ * @param sock
+ * @return socket description
  */
 extern int sock_get_fd(struct socket *sock);
 
-#endif /* KERNEL_SOCKET_H_ */
+#endif /* NET_KERNEL_SOCKET_H_ */

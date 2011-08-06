@@ -3,39 +3,37 @@
  *
  * @date 11.03.09
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
-#ifndef NET_H_
-#define NET_H_
+#ifndef NET_NET_H_
+#define NET_NET_H_
 
-#include <types.h>
 #include <linux/compiler.h>
 #include <linux/aio.h>
 #include <net/socket.h>
 
-#define IPV4_ADDR_LENGTH            0x4
+#define IPV4_ADDR_LENGTH   0x04
 
-typedef unsigned char enet_addr_t[6];
+#define NPROTO          AF_MAX /* a number of net protocols id in system */
 
-#define NPROTO		33		/* should be enough for now..	*/
-
-#define SYS_SOCKET	1		/* sys_socket(2)		*/
-#define SYS_BIND	2		/* sys_bind(2)			*/
-#define SYS_CONNECT	3		/* sys_connect(2)		*/
-#define SYS_LISTEN	4		/* sys_listen(2)		*/
-#define SYS_ACCEPT	5		/* sys_accept(2)		*/
-#define SYS_GETSOCKNAME	6		/* sys_getsockname(2)		*/
-#define SYS_GETPEERNAME	7		/* sys_getpeername(2)		*/
-#define SYS_SOCKETPAIR	8		/* sys_socketpair(2)		*/
-#define SYS_SEND	9		/* sys_send(2)			*/
-#define SYS_RECV	10		/* sys_recv(2)			*/
-#define SYS_SENDTO	11		/* sys_sendto(2)		*/
-#define SYS_RECVFROM	12		/* sys_recvfrom(2)		*/
-#define SYS_SHUTDOWN	13		/* sys_shutdown(2)		*/
-#define SYS_SETSOCKOPT	14		/* sys_setsockopt(2)		*/
-#define SYS_GETSOCKOPT	15		/* sys_getsockopt(2)		*/
-#define SYS_SENDMSG	16		/* sys_sendmsg(2)		*/
-#define SYS_RECVMSG	17		/* sys_recvmsg(2)		*/
+#define SYS_SOCKET      1     /* sys_socket(2) */
+#define SYS_BIND        2     /* sys_bind(2) */
+#define SYS_CONNECT     3     /* sys_connect(2) */
+#define SYS_LISTEN      4     /* sys_listen(2) */
+#define SYS_ACCEPT      5     /* sys_accept(2) */
+#define SYS_GETSOCKNAME 6     /* sys_getsockname(2) */
+#define SYS_GETPEERNAME 7     /* sys_getpeername(2) */
+#define SYS_SOCKETPAIR  8     /* sys_socketpair(2) */
+#define SYS_SEND        9     /* sys_send(2) */
+#define SYS_RECV        10    /* sys_recv(2) */
+#define SYS_SENDTO      11    /* sys_sendto(2) */
+#define SYS_RECVFROM    12    /* sys_recvfrom(2) */
+#define SYS_SHUTDOWN    13    /* sys_shutdown(2) */
+#define SYS_SETSOCKOPT  14    /* sys_setsockopt(2) */
+#define SYS_GETSOCKOPT  15    /* sys_getsockopt(2) */
+#define SYS_SENDMSG     16    /* sys_sendmsg(2) */
+#define SYS_RECVMSG     17    /* sys_recvmsg(2) */
 
 
 typedef enum {
@@ -148,6 +146,7 @@ typedef struct net_proto_family {
 /**
  * Add a socket protocol handler
  * @param ops description of protocol
+ * @return error code
  */
 extern int sock_register(const struct net_proto_family *ops);
 
@@ -157,4 +156,4 @@ extern int sock_register(const struct net_proto_family *ops);
  */
 extern void sock_unregister(int family);
 
-#endif /* NET_H_ */
+#endif /* NET_NET_H_ */
