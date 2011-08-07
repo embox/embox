@@ -1,6 +1,10 @@
 /**
  * @file
- * @brief Advanced Programmable Interrupt Controller (APIC) for x86.
+ * @brief Interrupt controller driver for i8952 chip 9x86 platform).
+ *
+ * @details This driver believes that there are two i8952 chip in the system
+ *        and slave connect to master's second line. We also suppose that we
+ *        use only x86 platform.
  *
  * @date 22.12.10
  * @author Nikolay Korotky
@@ -16,7 +20,7 @@
 #include <asm/traps.h>
 #include <asm/io.h>
 #include <asm/cpu.h>
-#include <drivers/apic.h>
+#include <drivers/i8259.h>
 
 /**
  * Initialize the PIC
