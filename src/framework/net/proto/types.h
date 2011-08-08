@@ -17,7 +17,7 @@
  */
 
 typedef struct net_proto {
-	void (*init)(void);
+	int (*init)(void);
 	net_protocol_t *netproto;
 	/** The corresponding mod. */
 	const struct mod *mod;

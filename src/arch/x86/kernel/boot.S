@@ -52,15 +52,6 @@ multiboot_entry:
 	pushl	$0
 	popf
 
-
-	/* Push the pointer to the Multiboot information structure. */
-//	pushl	%ebx
-	/* Push the magic value. */
-//	pushl	%eax
-//	call	EXT_C(multiboot_check)
-//	addl    $8, %esp ;
-
-
 	movl   $_bss_len, 0x8(%esp)
 	movl   $0x0, 0x4(%esp)
 	movl   $_bss_vma, 0x0(%esp)
@@ -74,8 +65,17 @@ multiboot_entry:
 	movl   $_data_lma, 0x4(%esp)
 	movl   $_data_vma, 0x0(%esp)
 	call   memcpy
-
 1:
+
+
+#ifdef CONFIG_MULTIBOOT_CHECK
+	/* Push the pointer to the Multiboot information structure. */
+	pushl	%ebx
+	/* Push the magic value. */
+	pushl	%eax
+	call	EXT_C(multiboot_check)
+	addl    $8, %esp ;
+#endif
 
 	call	EXT_C(kernel_start)
 

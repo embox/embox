@@ -21,7 +21,7 @@
  * @retval Address of allocated page on success
  * @retval NULL on fail
  */
-extern void *opalloc(void);
+extern void *page_alloc(void);
 
 /**
  * Frees one page from the pool. This page must be allocated with
@@ -31,7 +31,7 @@ extern void *opalloc(void);
  * @return Function doesn't return value
  *
  */
-extern void opfree(void* paddr);
+extern void page_free(void* paddr);
 
 #endif /* MEM_PAGELLOC_OPALLOCATOR_H_ */
 

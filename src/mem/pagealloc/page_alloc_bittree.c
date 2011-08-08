@@ -7,42 +7,69 @@
  * @date 29.07.11
  * @author Anton Kozlov
  */
-
+#include <types.h>
 #include <string.h>
+#include <embox/unit.h>
 
-#define NPAGE 10
-static uint8_t *page_pool;
+#include <mem/pagealloc/opallocator.h>
 
 typedef uint32_t word_t;
 
 #define NBITS (sizeof(word_t) * 8)
-#define NWORD (NPAGE / NBITS + (NPAGE % NBITS ? 1 : 0))
-
-
+#define NPOWER 5 // XXX = log_2(NBITS)
+#define NWORD (CONFIG_MEM_MAX_N_PAGE / NBITS + (CONFIG_MEM_MAX_N_PAGE % NBITS != 0 ? 1 : 0)) // XXX
 
 EMBOX_UNIT_INIT(page_alloc_bittree);
 
-static int root;
-static int find_free_page(int subroot);
+static uint8_t *page_pool = 0;
+static int page_num;
+
+static int begin;
+static const int root = 0;
+static int level;
+static int find_free_page(int subroot, int lbegin, int level);
+static void mark_page(int pagenum, int mark);
+
+static word_t *tree = 0;
 
 void *page_alloc(void) {
 	int res;
 	if (tree[root] == -1) {
 		return NULL;
 	}
-	res = find_free_page(root);
-	return (void *) (page_pool  + res);
+	res = find_free_page(root, 0, 0);
+	mark_page(res, 1);
+	return (void *) (page_pool + res * CONFIG_PAGE_SIZE);
 }
 
-static word_t tree[NWORD * 2 + 1]; // +1 for simplicity
+void page_free(void *page) {
+	int addr = (int) page;
+	mark_page((addr - (int) page_pool) / CONFIG_PAGE_SIZE, 0);
+}
 
-static void fill_tree(word_t *tree) {
-	memcpy(tree, 0, NWORD * 2);
-	if (NPAGE % NBITS) {
-		for (int i = 31; i >= NPAGE % NBITS; i--) {
-			tree[NWORD * 2] |= 1 << i;
-		}
+void find_page_pool(void) {
+	extern int _free_mem;
+	extern int _mem_begin;
+	extern int _mem_length;
+	int tree_size;
+	static const int page_mask = (CONFIG_PAGE_SIZE - 1);
+
+	page_pool = (uint8_t *) (((int) &_free_mem) & ((int) ~page_mask));
+
+	if ((int) &_free_mem & page_mask) {
+		page_pool += CONFIG_PAGE_SIZE;
 	}
+
+	page_num = (((int) &_mem_begin + (int) &_mem_length) - (int) page_pool) / CONFIG_PAGE_SIZE;
+
+	tree = (word_t *) page_pool;
+	tree_size = ((2 * (page_num / 8)) / CONFIG_PAGE_SIZE) + 1;
+
+	page_pool += tree_size;
+	page_pool = (uint8_t *) ((int) page_pool & ~(page_mask)) + CONFIG_PAGE_SIZE;
+	page_num -= tree_size;
+
+	memset(tree, 0, CONFIG_PAGE_SIZE * tree_size);
 }
 
 static int find_first_zero(int val) {
@@ -59,35 +86,65 @@ static int get_ls_bit_num(int val) {
 	return j;
 }
 
-static int find_free_page(int subroot) {
-	int branch, newroot, res;
-	branch = get_ls_but_num(find_first_zero(tree[subroot]));
+static int find_free_page(int subroot, int lbegin, int level) {
+	int branch, newroot;
+
+	branch = get_ls_bit_num(find_first_zero(tree[lbegin + subroot]));
+
+	if (lbegin == begin) {
+		return subroot * NBITS + branch;
+	}
+
 	newroot = subroot * NBITS + branch;
-	if (newroot >= NWORD) {
-		res = newroot;
-		tree[subroot] |= branch;
-		if (tree[subroot] != -1) {
-			res *= -1;
-		}
-	} else {
-		res = find_free_page(newroot);
-	}
-	if (res < 0) {
-		tree[subroot] |= branch;
-		if (tree[subroot] != -1) {
-			res *= -1;
-		}
-	}
-	return res;
+
+	return find_free_page(newroot, lbegin + (1 << ((level) * NPOWER)), level + 1);
 }
 
+static void _mark_page(int index, int offset, int begin, int level, int mark) {
+	int new_mark;
+
+	if (mark) {
+		tree[begin + index] |= 1 << offset;
+	} else {
+		tree[begin + index] &= ~(1 << offset);
+	}
+
+	if (level > 0) {
+		new_mark = (tree[begin + index] == -1);
+		_mark_page(index / NBITS, index % NBITS, begin - (1 << ((level - 1) * NPOWER)),
+				level - 1, new_mark);
+	}
+}
+
+static void mark_page(int pagenum, int mark) {
+	_mark_page(pagenum / NBITS, pagenum % NBITS, begin,	level, mark);
+}
 
 static int page_alloc_bittree(void) {
-	fill_tree(&tree);
-	root = NWORD; // begin of bit mask for page
-	//now are going up for root
+	int tree_page_num = NBITS;
 
-	while (root / NBITS) {
-		root /= NBITS;
+	find_page_pool();
+
+	level = 0;
+	begin = 0;
+	while (tree_page_num < page_num) {
+		begin += tree_page_num / NBITS;
+		level ++;
+		tree_page_num *= NBITS;
 	}
+
+	tree_page_num -= 1;
+	while (tree_page_num >= page_num) {
+		if (tree_page_num >= NWORD * NBITS) {
+			int index = tree_page_num / NBITS;
+			_mark_page(index / NBITS, index % NBITS, begin - (1 << ((level - 1) * NPOWER)),
+							level - 1, 1);
+			tree_page_num -= NBITS;
+		} else {
+			mark_page(tree_page_num, 1);
+			tree_page_num--;
+		}
+	}
+
+	return 0;
 }

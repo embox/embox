@@ -21,7 +21,7 @@
  *
  * @see softirq_lock()
  */
-static inline void softirq_lock() {
+static inline void softirq_lock(void) {
 	critical_enter(__CRITICAL_SOFTIRQ);
 }
 
@@ -31,7 +31,7 @@ static inline void softirq_lock() {
  *
  * @see softirq_lock()
  */
-static inline void softirq_unlock() {
+static inline void softirq_unlock(void) {
 	critical_leave(__CRITICAL_SOFTIRQ);
 	critical_check_pending(__CRITICAL_SOFTIRQ);
 }

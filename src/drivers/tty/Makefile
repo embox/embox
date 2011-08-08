@@ -8,7 +8,7 @@ $_USES-tty += libc.a
 #need for vtbuilder, vtparser
 $_DEPS-tty += embox.driver.terminal
 $_DEPS-tty += embox.cmd.esh
-$_DEPS-tty += core.kernel.thread.sched
+#$_DEPS-tty += core.kernel.thread.sched
 $_DEPS-tty += tty_common
 $_DEPS-tty += core.kernel.evdispatch
 $_REQUIRES-tty += embox.hal.diag
@@ -20,7 +20,7 @@ $_USES-tty_one_console += libc.a
 #to-do: remove this?
 #need for vtbuilder, vtparser
 $_DEPS-tty_one_console += embox.driver.terminal
-$_DEPS-tty_one_console += embox.cmd.esh
+#$_DEPS-tty_one_console += embox.cmd.esh
 $_DEPS-tty_one_console += tty_common
 $_REQUIRES-tty_one_console += embox.hal.diag
 

@@ -28,15 +28,16 @@ static int net_proto_mod_enable(struct mod_info *mod) {
 
 	TRACE("NET: initializing protocol %s.%s: ", mod->mod->package->name, mod->mod->name);
 
-	if (inet_add_protocol(net_proto, net_proto->type) < 0) {
-		TRACE("error: %s\n", strerror(-ret));
-	} else {
+	if ((ret = inet_add_protocol(net_proto, net_proto->type)) >= 0) {
 		if (net_proto_ptr->init != NULL) {
-			net_proto_ptr->init();
+			ret = net_proto_ptr->init();
 		}
-		TRACE("done\n");
 	}
-
+	if (ret == 0) {
+		TRACE("done\n");
+	} else {
+		TRACE("error: %s\n", strerror(-ret));
+	}
 	return ret;
 }
 

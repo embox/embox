@@ -18,6 +18,11 @@
 #include <kernel/softirq.h>
 #include __impl_x(kernel/softirq_critical.h)
 #include <hal/ipl.h>
+#include <kernel/timer.h>
+
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(softirq_unit_init);
 
 struct softirq_action {
 	softirq_handler_t handler;
@@ -26,6 +31,16 @@ struct softirq_action {
 
 volatile static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
 volatile static uint32_t softirq_pending;
+
+static sys_tmr_t *softirq_disp_timer;
+
+static void softirq_disp_timer_handler(sys_tmr_t *timer, void *param ) {
+	softirq_dispatch();
+}
+
+static int softirq_unit_init(void) {
+	return set_timer(&softirq_disp_timer, 1, softirq_disp_timer_handler, NULL);
+}
 
 void softirq_init(void) {
 	// TODO install common softirqs. -- Eldar

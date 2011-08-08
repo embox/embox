@@ -77,7 +77,7 @@ TEST_CASE("Writing in read-only memory should generate exception."
 
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, simple_dfault_handler);
 
-	mmu_map_region((mmu_ctx_t)0, (paddr_t)(&addr) & ~0xfff, BIGADDR, PAGE_SIZE,
+	mmu_map_region((mmu_ctx_t)0, (paddr_t)(&addr) & ~(PAGE_SIZE - 1), BIGADDR, PAGE_SIZE,
 				MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
 	mmu_on();
 
@@ -110,7 +110,7 @@ TEST_CASE("Writing to read-only memory should cause exception."
 	test_assert_equal(addr, UNIQ_VAL_1);
 }
 
-uint8_t __attribute__ ((aligned (PAGE_SIZE))) page[PAGE_SIZE];
+static uint8_t __attribute__ ((aligned (PAGE_SIZE))) page[PAGE_SIZE];
 static int flag = 0;
 
 static int pagefault_handler(uint32_t nr, void *data) {
@@ -142,8 +142,6 @@ static traps_env_t old_env;
 
 static int mmu_case_setup(void) {
 	extern char _text_start;
-	mmu_env_t prev_mmu_env;
-	traps_env_t old_env;
 
 	mmu_save_env(&prev_mmu_env);
 	mmu_set_env(testmmu_env());

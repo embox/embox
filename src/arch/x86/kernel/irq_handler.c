@@ -7,14 +7,12 @@
  */
 
 #include <types.h>
-//#include <hal/arch.h>
-//#include <hal/interrupt.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/io.h>
-#include <drivers/apic.h>
+#include <drivers/i8259.h>
 
 void irq_handler(pt_regs_t regs) {
 	int irqn = regs.trapno - 0x20;
