@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <net/in.h>
 #include <err.h>
+#include <errno.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -57,7 +58,6 @@ struct e8390_pkt_hdr {
 	uint8_t next;   /* pointer to next packet. */
 	uint16_t count; /* header + packet lenght in bytes */
 };
-
 
 
 /* Debugging routines */
@@ -201,19 +201,24 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint16_t count;
 	unsigned long base_addr;
 
-	base_addr = dev->base_addr;
-    count = skb->len;
+	if ((NULL == skb) || (NULL == dev)) {
+		return -EINVAL;
+	}
 
+	base_addr = dev->base_addr;
+
+	if (in8(base_addr + NE_CMD) & E8390_TRANS) { /* no matter, which page is active */
+		printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
+		return -EBUSY;
+	}
+
+    count = skb->len;
 	copy_data_to_card(NESM_START_PG_TX << 8, skb->data, count, base_addr);
 
 	/* switch off dma */
 	out8(E8390_NODMA | E8390_START | E8390_PAGE0, base_addr + NE_CMD);
 
-	// send
-	if (in8(base_addr + NE_CMD) & E8390_TRANS) {
-		printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
-	}
-
+	/* send */
 	set_tx_count(count, base_addr);
 	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
 	out8(E8390_TRANS | E8390_NODMA | E8390_START, base_addr + NE_CMD);
@@ -228,12 +233,15 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset, struct net_device *dev) {
 	struct sk_buff *skb;
 
-	if ((skb = alloc_skb(total_length, 0))) {
-		skb->dev = dev;
-		copy_data_from_card(offset, skb->data, total_length, dev->base_addr);
-		skb->protocol = ntohs(skb->mac.ethh->h_proto);
-//		ne2k_show_packet(skb->data, skb->len, "recive"); /* debug */
+	skb = alloc_skb(total_length, 0);
+	if (skb == NULL) {
+		return NULL;
 	}
+
+	skb->dev = dev;
+	copy_data_from_card(offset, skb->data, total_length, dev->base_addr);
+	skb->protocol = ntohs(skb->mac.ethh->h_proto);
+
 	return skb;
 }
 
@@ -247,20 +255,17 @@ static size_t ne2k_receive(struct net_device *dev) {
 
 	base_addr = dev->base_addr;
 	stat = get_eth_stat(dev);
-///	while {
+
 	/* Get the rx page (incoming packet pointer). */
 	out8(E8390_PAGE1, base_addr + E8390_CMD);
-//	current = in8(base_addr + EN1_CURPAG);
+
 	/* Remove one frame from the ring.  Boundary is alway a page behind. */
 	out8(E8390_PAGE0 | E8390_START, base_addr + E8390_CMD);
 	this_frame = in8(base_addr + EN0_BOUNDARY) + 1;
 	if (this_frame >= NESM_STOP_PG) {
 		this_frame = NESM_START_PG_RX;
 	}
-//	if (this_frame == current) {
-//		;
-// ///		break;
-//	}
+
 	ring_offset =  this_frame << 8;
 	/* Find out where the next packet is in card memory */
 	copy_data_from_card(ring_offset, (uint8_t *)&rx_frame, sizeof(struct e8390_pkt_hdr), base_addr);
@@ -271,8 +276,6 @@ static size_t ne2k_receive(struct net_device *dev) {
 		&& (rx_frame.next != next_frame - (NESM_STOP_PG - NESM_START_PG_RX))
 		&& (rx_frame.next != next_frame + 1 - (NESM_STOP_PG - NESM_START_PG_RX))) {
 		stat->rx_err++;
-//		out8(current - 1, base_addr + EN0_BOUNDARY);
-///		continue;
 	}
 	if ((total_length < 60) || (total_length > 1518)) {
 		stat->rx_err++;
@@ -287,7 +290,6 @@ static size_t ne2k_receive(struct net_device *dev) {
 		else {
 			stat->rx_dropped++;
 			LOG_WARN("ne2k_receive: couldn't allocate memory for packet\n");
-///			break;
 		}
 	}
 	else {
@@ -297,8 +299,8 @@ static size_t ne2k_receive(struct net_device *dev) {
 		LOG_WARN("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
 	}
 	out8(rx_frame.next - 1, base_addr + EN0_BOUNDARY);
-/// }
-	return 0;
+
+	return ENOERR;
 }
 
 static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
@@ -340,6 +342,7 @@ static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 		stat->rx_crc_errors += in8(base_addr + EN0_COUNTER1);
 		stat->rx_missed_errors += in8(base_addr + EN0_COUNTER2);
 	}
+
 	return IRQ_HANDLED;
 }
 
@@ -351,41 +354,44 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	uint32_t i;
 
 	if (NULL == dev || NULL == addr) {
-		return -1;
+		return -EINVAL;
 	}
+
 	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
 	for (i = 0; i < ETHER_ADDR_LEN; i++) {
 		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
+#if 0
 		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
+#endif
 	}
 	memcpy(dev->dev_addr, addr, ETHER_ADDR_LEN);
 
-	return 0;
+	return ENOERR;
 }
 
 
 static int open(struct net_device *dev) {
 	if (NULL == dev) {
-		return -1;
+		return -EINVAL;
 	}
 
 	ne2k_get_addr_from_prom(dev);
 	ne2k_config(dev);
-	ne2k_show_page(dev->base_addr);
 
-	return 0;
+	return ENOERR;
 }
 
 static int stop(struct net_device *dev) {
 	if (NULL == dev) {
-		return -1;
+		return -EINVAL;
 	}
+
 	/* reset */
 	out8(E8390_PAGE0 | E8390_STOP, dev->base_addr);
 	out8(0xFF, dev->base_addr + EN0_ISR);
 	out8(0x00, dev->base_addr + EN0_IMR);
 
-	return 0;
+	return ENOERR;
 }
 
 static const struct net_device_ops _netdev_ops = {
@@ -397,6 +403,7 @@ static const struct net_device_ops _netdev_ops = {
 };
 
 static int __init unit_init(void) {
+	int res;
 	uint32_t nic_base;
 	struct net_device *nic;
 	struct pci_dev *pci_dev;
@@ -404,21 +411,24 @@ static int __init unit_init(void) {
 	pci_dev = pci_find_dev(0x10EC, 0x8029); //TODO pci ID
 	if (NULL == pci_dev) {
 		LOG_WARN("couldn't find NE2K_PCI device\n");
-		return 0;
-	}
-	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
-	if (NULL != (nic = alloc_etherdev(0))) {
-		nic->netdev_ops = &_netdev_ops;
-		nic->irq = pci_dev->irq;
-		nic->base_addr = nic_base;
-	}
-	else {
-		LOG_WARN("couldn't alloc netdev for NE2K_PCI\n");
-		return -1;
-	}
-	if (-1 == irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k")) {
-		return -1;
+		return ENOERR;
 	}
 
-	return 0;
+	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
+
+	nic = alloc_etherdev(0);
+	if (nic == NULL) {
+		LOG_WARN("couldn't alloc netdev for NE2K_PCI\n");
+		return -ENOMEM;
+	}
+	nic->netdev_ops = &_netdev_ops;
+	nic->irq = pci_dev->irq;
+	nic->base_addr = nic_base;
+
+	res = irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k");
+	if (res != 0) {
+		return res;
+	}
+
+	return ENOERR;
 }

@@ -18,8 +18,6 @@
 #include <kernel/irq.h>
 #include <linux/interrupt.h>
 
-extern int dev_is_busy(int num);
-
 EMBOX_UNIT_INIT(unit_init);
 
 /*FIXME we must have queue for each netdevice or if we want to use the only
@@ -153,13 +151,16 @@ void netif_rx_schedule(net_device_t *dev) {
 	//TODO:
 	raise_softirq(NET_RX_SOFTIRQ);
 }
+
+extern int dev_is_busy(int num);
 extern net_device_t *get_dev_by_idx(int num);
+
 static void net_rx_action(struct softirq_action *action) {
 	size_t i;
 	net_device_t *dev;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
-		if (dev_is_busy(i)) {
-			dev = get_dev_by_idx(i);
+		dev = get_dev_by_idx(i);
+		if (dev) {
 			dev->poll(dev);
 		}
 	}

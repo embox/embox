@@ -16,68 +16,38 @@
 #include <stddef.h>
 #include <types.h>
 
-struct socket_info {
-	/* it must be first member! We use casting in sock_realize function*/
-	struct socket    sock;
-	int              sockfd;
-};
-
 /* pool for allocate sockets */
-POOL_DEF(sockets_pool, struct socket_info, CONFIG_MAX_KERNEL_SOCKETS);
+POOL_DEF(socket_pool, struct socket, CONFIG_MAX_KERNEL_SOCKETS);
 
 /**
  * The protocol list. Each protocol is registered in here.
  */
 static const struct net_proto_family *net_families[NPROTO] = {0};
 
-/**
- * Allocate a socket.
- * Now we only allocate memory for structure of socket (struct socket).
- *
- * In Linux it must use socketfs and they use inodes for it.
- */
-static struct socket * sock_alloc(void) {
-	struct socket_info *sock_info;
+static struct socket * socket_alloc(void) {
+	struct socket *sock;
 	ipl_t flags;
 
 	flags = ipl_save();
 
-	sock_info = pool_alloc(&sockets_pool);
-	if (sock_info == NULL) {
-		ipl_restore(flags);
-		return NULL;
-	}
+	sock = pool_alloc(&socket_pool);
 
 	ipl_restore(flags);
 
-	sock_info->sockfd = sock_info - (struct socket_info *)sockets_pool.storage;
-
-	return (struct socket *)sock_info;
+	return sock;
 }
 
-int kernel_sock_release(struct socket *sock) {
-	int res;
+static void socket_free(struct socket *sock) {
 	ipl_t flags;
 
-	if ((sock != NULL) && (sock->ops != NULL)
-			&& (sock->ops->release != NULL)) {
-		/* release struct sock */
-		res = sock->ops->release(sock);
-		if (res < 0) {
-			return res;
-		}
-	}
-
 	flags = ipl_save();
-	/* return sock into pool */
-	pool_free(&sockets_pool, sock);
-	ipl_restore(flags);
 
-	return ENOERR;
+	pool_free(&socket_pool, sock); /* return sock into pool */
+
+	ipl_restore(flags);
 }
 
-static int __sock_create(int family, int type, int protocol,
-		struct socket **psock) {
+int kernel_socket_create(int family, int type, int protocol, struct socket **psock) {
 	int res;
 	struct socket *sock;
 	const struct net_proto_family *pf;
@@ -114,7 +84,7 @@ static int __sock_create(int family, int type, int protocol,
 	 * the protocol is 0, the family is instructed to select an appropriate
 	 * default.
 	 */
-	sock = sock_alloc();
+	sock = socket_alloc();
 	if (sock == NULL) {
 		return -ENOMEM;
 	}
@@ -123,7 +93,7 @@ static int __sock_create(int family, int type, int protocol,
 
 	res = pf->create(sock, protocol);
 	if (res < 0) {
-		kernel_sock_release(sock);
+		socket_free(sock);
 		return res;
 	}
 
@@ -131,30 +101,46 @@ static int __sock_create(int family, int type, int protocol,
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
 
-	*psock = sock;
+	res = sock - (struct socket *)socket_pool.storage; /* calculate sockfd */
+	*psock = sock; /* and save struct */
+
+	return res;
+}
+
+int kernel_socket_release(struct socket *sock) {
+	int res;
+
+	if ((sock != NULL) && (sock->ops != NULL)
+			&& (sock->ops->release != NULL)) {
+		res = sock->ops->release(sock); /* release struct sock */
+		if (res < 0) {
+			return res;
+		}
+	}
+
+	socket_free(sock);
 
 	return ENOERR;
 }
 
-int kernel_sock_create(int family, int type, int protocol, struct socket **res) {
-	return __sock_create(family, type, protocol, res);
-}
-
-int kernel_bind(struct socket *sock, const struct sockaddr *addr,
+int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 			socklen_t addrlen) {
 	return sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 }
 
-int kernel_listen(struct socket *sock, int backlog) {
+int kernel_socket_listen(struct socket *sock, int backlog) {
 	return sock->ops->listen(sock, backlog);
 }
 
-int kernel_accept(struct socket *sock, struct socket **newsock, int flags) {
+int kernel_socket_accept(struct socket *sock, struct socket **newsock, int flags) {
 	int res;
 
 	res = sock->ops->accept(sock, *newsock, flags);
 	if (res < 0) {
-		kernel_sock_release(*newsock);
+		return res;
+#if 0
+		kernel_socket_release(*newsock); /* FIXME must be free in accept() function */
+#endif
 	}
 
 	(*newsock)->ops = sock->ops;
@@ -162,37 +148,37 @@ int kernel_accept(struct socket *sock, struct socket **newsock, int flags) {
 	return res;
 }
 
-int kernel_connect(struct socket *sock, const struct sockaddr *addr,
+int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	return sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
 }
 
-int kernel_getsockname(struct socket *sock,
+int kernel_socket_getsockname(struct socket *sock,
 			struct sockaddr *addr, int *addrlen) {
 	return sock->ops->getname(sock, addr, addrlen, 0);
 }
 
-int kernel_getpeername(struct socket *sock,
+int kernel_socket_getpeername(struct socket *sock,
 			struct sockaddr *addr, int *addrlen) {
 	return sock->ops->getname(sock, addr, addrlen, 1);
 }
 
-int kernel_getsockopt(struct socket *sock, int level, int optname,
+int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
 		char *optval, int *optlen) {
 	return sock->ops->getsockopt(sock, level, optname, optval, optlen);
 }
 
-int kernel_setsockopt(struct socket *sock, int level, int optname,
+int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
 		char *optval, int optlen) {
 	return sock->ops->setsockopt(sock, level, optname, optval, optlen);
 }
 
-int kernel_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
+int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
 			size_t total_len) {
 	return sock->ops->sendmsg(iocb, sock, m, total_len);
 }
 
-int kernel_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
+int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
 			size_t total_len, int flags) {
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
@@ -217,22 +203,6 @@ int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg) {
 	return err;
 }
 #endif
-
-struct socket * sockfd_lookup(int fd) {
-	struct socket_info *socket_info;
-
-	if ((fd < 0) || (fd >= CONFIG_MAX_KERNEL_SOCKETS)) {
-		return NULL;
-	}
-
-	socket_info = (struct socket_info *)sockets_pool.storage + fd;
-
-	return (struct socket *)socket_info ;
-}
-
-int sock_get_fd(struct socket *sock) {
-	return ((struct socket_info *)sock)->sockfd;
-}
 
 int sock_register(const struct net_proto_family *ops) {
 	if (ops->family >= NPROTO) {

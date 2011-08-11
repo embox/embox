@@ -233,7 +233,7 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	iov.iov_base = (void *) packet;
 	iov.iov_len = IP_HEADER_SIZE(iph) + ICMP_HEADER_SIZE + DATA_SIZE(iph);
 	m.msg_iov = &iov;
-	kernel_sendmsg(NULL, __icmp_socket, &m, iov.iov_len);
+	kernel_socket_sendmsg(NULL, __icmp_socket, &m, iov.iov_len);
 
 	kfree_skb(skb_in);
 }

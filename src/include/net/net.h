@@ -37,10 +37,10 @@
 
 
 typedef enum {
-	SS_FREE = 0, /* not allocated                */
-	SS_UNCONNECTED, /* unconnected to any socket    */
-	SS_CONNECTING, /* in process of connecting     */
-	SS_CONNECTED, /* connected to socket          */
+	SS_FREE = 0,    /* not allocated */
+	SS_UNCONNECTED, /* unconnected to any socket */
+	SS_CONNECTING,  /* in process of connecting */
+	SS_CONNECTED,   /* connected to socket */
 	SS_DISCONNECTING
 /* in process of disconnecting  */
 } socket_state;
@@ -67,10 +67,9 @@ enum sock_type {
 //	SOCK_RDM	= 4,
 //	SOCK_SEQPACKET	= 5,
 //	SOCK_DCCP	= 6,
-	SOCK_PACKET	= 10
+	SOCK_PACKET	= 10,
+	SOCK_MAX /* i.e. SOCK_PACKET + 1 */
 };
-
-#define SOCK_MAX (SOCK_PACKET + 1)
 
 /**
  * General BSD socket

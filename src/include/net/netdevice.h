@@ -208,14 +208,14 @@ extern int dev_close(net_device_t *dev);
  * Get flags from device.
  * @param dev device to get flags
  */
-extern unsigned dev_get_flags(const net_device_t *dev);
+extern unsigned int dev_get_flags(const net_device_t *dev);
 
 /**
  * Set the flags on device.
  * @param dev device to set flags
  * @param flags
  */
-extern int dev_change_flags(net_device_t *dev, unsigned flags);
+extern int dev_set_flags(net_device_t *dev, unsigned flags);
 
 /**
  * this function call ip protocol,

@@ -9,8 +9,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef ARP_H_
-#define ARP_H_
+#ifndef NET_ARP_H_
+#define NET_ARP_H_
 
 #include <stdint.h>
 #include <net/if_arp.h>
@@ -20,12 +20,12 @@
  * struct for arp_table_records
  */
 typedef struct {
-	uint8_t hw_addr[ETH_ALEN];  /**< hardware addr */
-	in_addr_t pw_addr;                /**< protocol addr */
-	in_device_t *if_handler;          /**< inet device */
-	uint32_t ctime;               /**< time to alive */
-	uint8_t state;
-	uint8_t flags;
+	uint8_t hw_addr[ETH_ALEN]; /* hardware addr */
+	in_addr_t pw_addr;         /* protocol addr */
+	in_device_t *if_handler;   /* inet device */
+	uint32_t ctime;            /* time to alive */
+	uint8_t state;             /* valid or not */
+	uint8_t flags;             /* ATF_COM or ATF_COM */
 } arp_entity_t;
 
 /* ARP Flag values. */
@@ -103,7 +103,7 @@ extern int arp_send(int type, int ptype, in_addr_t dest_ip,
  * @param in_dev (handler of ifdev struct) which identificate network interface where address can resolve
  * @param ip addr
  * @param hardware addr
- * @return number of entry in table if success else -1
+ * @return 0 if success, otherwise error code
  */
 extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, uint8_t *hw, uint8_t flags);
 
@@ -112,8 +112,8 @@ extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, uint8_t *hw, ui
  * @param in_dev (handler of ifdev struct) which identificate network interface where address can resolve
  * @param ip addr
  * @param hardware addr
- * @return number of entry in table if success else -1
+ * @return 0 if success, otherwise error code
  */
 extern int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *hw);
 
-#endif /* ARP_H_ */
+#endif /* NET_ARP_H_ */

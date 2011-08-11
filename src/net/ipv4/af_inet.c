@@ -10,7 +10,6 @@
 #include <errno.h>
 #include <embox/net/pack.h>
 #include <framework/net/sock/api.h>
-//#include <framework/net/sock/types.h> // should be included
 #include <stddef.h>
 #include <linux/aio.h>
 #include <net/protocol.h>
@@ -132,5 +131,5 @@ struct net_proto_family inet_family_ops = {
 };
 
 static int inet_init(void) {
-	return sock_register(&inet_family_ops);;
+	return sock_register(&inet_family_ops);
 }
