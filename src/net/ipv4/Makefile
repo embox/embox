@@ -26,7 +26,7 @@ $_DEPS-udp      += embox.net.socket
 $_DEPS-tcp      += embox.net.socket
 $_DEPS-raw_sock += embox.net.socket
 
-$_DEPS-tcp      += tcp_sock
+#$_DEPS-tcp      += tcp_sock
 $_DEPS-tcp_sock += embox.net.socket
 $_DEPS-udp      += udp_sock
 $_DEPS-udp_sock += embox.net.socket
