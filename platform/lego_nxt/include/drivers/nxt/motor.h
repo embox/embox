@@ -5,7 +5,7 @@
  * @details NXT motor's interface includes functions for work  both with motor
  *          power and tachometer sensors. NXT brick has three motor's port A, B
  *          and C. First of all you should get motor's descriptor for required
- *          port (#NXT_PORT_A, #NXT_PORT_B and #NXT_PORT_C). Then you can use
+ *          port (NXT_PORT_A, NXT_PORT_B and NXT_PORT_C). Then you can use
  *          function #nxt_motor_set_power for start motor or functions
  *          #nxt_motor_tacho_set_counter and #nxt_motor_tacho_get_counter
  *
@@ -23,7 +23,20 @@
 /**
  * Total number of motors available in system
  */
-#define NXT_N_MOTORS       3
+#define NXT_N_MOTORS            3
+
+/**
+ * Maximum power for NXT motor.
+ * It is used in #nxt_motor_set_power set -NXT_MOTOR_POWER_MAX for
+ * the most reverse and NXT_MOTOR_POWER_MAX for start motor with maximum power
+ */
+#define NXT_MOTOR_POWER_MAX     100
+/**
+ * Value of a motor's power for switch off the motor. Use it in
+ * the #nxt_motor_set_power function
+ */
+#define NXT_MOTOR_POWER_OFF     0
+
 
 /**
  * Gets a motor's port. You should use NXT_MOTOR_X macros to receive specific
@@ -66,15 +79,14 @@ struct nxt_motor {
 /** typedef for #nxt_motor structure */
 typedef struct nxt_motor nxt_motor_t;
 
-
 /**
  * Set power motor
  * @param motor pointer to the structure @link #nxt_motor @endlink
  * @param power for motor:
  *		0    means stop
- *		-100 means full counterclockwise
- *		100	 measn full clockwise
- * */
+ *		-#NXT_MOTOR_POWER_MAX (-100) means full counterclockwise
+ *		#NXT_MOTOR_POWER_MAX (100) means full clockwise
+ */
 extern void nxt_motor_set_power(nxt_motor_t *motor, int8_t power);
 
 /**
