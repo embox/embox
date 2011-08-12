@@ -12,410 +12,423 @@
  * @author Biff
  *         - Initial implementation
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  *         - Adaptation for embox
  */
 
-#include <types.h>
 #include <string.h>
 #include <asm/io.h>
 #include <kernel/irq.h>
-#include <net/if_ether.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
-#include <net/net.h>
 #include <net/etherdevice.h>
 #include <embox/unit.h>
+#include <stdint.h>
 #include <linux/init.h>
 #include <drivers/pci.h>
 #include <net/ne2k_pci.h>
 #include <stdio.h>
+#include <net/in.h>
+#include <err.h>
+#include <errno.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
-#define E8390_CMD    0x00 /* The command register (for all pages) */
-#define E8390_STOP   0x01 /* Stop and reset the chip */
-#define E8390_START  0x02 /* Start the chip, clear reset */
-#define E8390_RREAD  0x08 /* Remote read */
-#define E8390_RWRITE 0x10 /* Remote write  */
-#define E8390_NODMA  0x20 /* Remote DMA */
-#define E8390_PAGE0  0x00 /* Select page chip registers */
-#define E8390_PAGE1  0x40 /* using the two high-order bits */
-#define E8390_PAGE2  0x80
-#define E8390_PAGE3  0xC0 /* Page 3 is invalid on the real 8390. */
-#define E8390_RXOFF  0x20 /* EN0_RXCR: Accept no packets */
-#define E8390_TXOFF  0x02 /* EN0_TXCR: Transmitter off */
 
-/* Page 0 register offsets. */
-#define EN0_CRDALO  0x08  /* low byte of current remote dma address RD */
-#define EN0_CRDAHI  0x09  /* high byte, current remote dma address RD */
+static net_device_stats_t * get_eth_stat(struct net_device *dev);
 
-#define NE1SM_START_PG  0x20 /* First page of TX buffer */
-#define NE1SM_STOP_PG   0x40 /* Last page +1 of RX ring */
-#define NESM_START_PG   0x40 /* First page of TX buffer */
-#define NESM_STOP_PG    0x80 /* Last page +1 of RX ring */
+#define E8390_STOP     0x01 /* Stop and reset the chip */
+#define E8390_START    0x02 /* Start the chip, clear reset */
+#define E8390_TXOFF    0x02 /* EN0_TXCR: Transmitter off */
+#define E8390_TRANS    0x04 /* Transmit a frame */
+#define E8390_RREAD    0x08 /* Remote read */
+#define E8390_RWRITE   0x10 /* Remote write  */
+#define E8390_NODMA    0x20 /* Remote DMA */
+#define E8390_RXOFF    0x20 /* EN0_RXCR: Accept no packets */
+#define E8390_PAGE0    0x00 /* Select page chip registers */
+#define E8390_PAGE1    0x40 /* using the two high-order bits */
+#define E8390_PAGE2    0x80 /* Page 3 is invalid. */
+#define E8390_CMD      0x00 /* The command register (for all pages) */
+#define E8390_RXCONFIG 0x04 /* EN0_RXCR: broadcasts, no multicast,errors */
+#define E8390_TXCONFIG 0x00 /* EN0_TXCR: Normal transmit mode */
 
-char *name;
-int word16;
-unsigned char tx_start_page, rx_start_page, tx_stop_page;
-unsigned long ba;
+/* The per-packet-header format. */
+struct e8390_pkt_hdr {
+	uint8_t status; /* status */
+	uint8_t next;   /* pointer to next packet. */
+	uint16_t count; /* header + packet lenght in bytes */
+};
 
-static inline void rx_enable(void) {
-	out8(NE_PAGE0_STOP,   NE_CMD);
-	out8(RX_BUFFER_START, EN0_BOUNDARY);
-	out8(NE_PAGE1_STOP,   NE_CMD);
-	out8(RX_BUFFER_START, EN1_CURPAG);
-	out8(NE_START,        NE_CMD);
-}
 
-static inline void rx_disable(void) {
-	/* do nothing */
-	out8(NE_STOP, NE_CMD);
-}
-
-static inline void set_tx_count(uint16_t val) {
-	/* Set how many bytes we're going to send. */
-	out8(val & 0xff, EN0_TBCR_LO);
-	out8(val >> 8, EN0_TBCR_HI);
-}
-
-static inline void set_rem_address(uint16_t val) {
-	/* Set how many bytes we're going to send. */
-	out8(val & 0xff, EN0_RSARLO);
-	out8(val >> 8, EN0_RSARHI);
-}
-
-static inline void set_rem_byte_count(uint16_t val) {
-	/* Set how many bytes we're going to send. */
-	out8(val & 0xff, EN0_RCNTLO);
-	out8(val >> 8, EN0_RCNTHI);
-}
-#if 0
-static void copy_data_to_card(uint16_t dest, uint8_t* src, uint16_t length) {
-	uint16_t i;
-	set_rem_address(dest);
-	set_rem_byte_count(length);
-	for (i = 0; i < length; i++) {
-		out8(*src, NE_BASE + 0x10);
-		src++;
-	}
-}
-// XXX defined but not used
-static void copy_data_from_card(uint32_t src, uint8_t *dest, uint32_t length) {
-	uint32_t i;
-	set_rem_address(src);
-	set_rem_byte_count(length);
-	for (i = 0; i < length; i++) {
-		*dest = in8(NE_BASE + 0x10);
-		dest++;
-	}
-}
-/**
- * Copy data out of the receive buffer.
- */
-static size_t copy_pkt_from_card(uint8_t *dest, uint32_t max_len) {
-	uint32_t next, total_length;
-	uint8_t header[4];
-	/* Find out where the next packet is in card memory */
-	uint32_t src = in8(EN0_BOUNDARY) * 256;
-
-	copy_data_from_card(src, header, sizeof(header));
-
-	next = header[1];
-
-	total_length = header[3];
-	total_length <<= 8;
-	total_length |=  header[2];
-
-	/* Now copy it to buffer, if possible, skipping the info header. */
-	src += 4;
-	total_length -= 4;
-	copy_data_from_card(src, dest, total_length);
-
-	/* Release the buffer by increasing the boundary pointer. */
-	out8(next, EN0_BOUNDARY);
-
-	return total_length;
-}
-
-/**
- * Returns size of pkt, or zero if none received.
- */
-static size_t pkt_receive(struct sk_buff *skb) {
-	uint32_t boundary, current;
-	size_t ret = 0;
-
-	out8(NE_PAGE1, NE_CMD);
-	current = in8(EN1_CURPAG);
-
-	/* Check if rsr fired. */
-	out8(NE_PAGE0, NE_CMD);
-	boundary = in8(EN0_BOUNDARY);
-
-	if (boundary != current) {
-		ret = copy_pkt_from_card(skb->data, skb->len);
-	}
-	return ret;
-}
-#endif
-
-/**
- * queue packet for transmission
- */
-static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
-	unsigned long nic_base = dev->base_addr;
-    int start_page = tx_start_page;
-    unsigned char *buf = skb->data;
-    unsigned int i, count = skb->len;
-
-    /* We should already be in page 0, but to be safe... */
-    out8(E8390_PAGE0 + E8390_START + E8390_NODMA, nic_base + NE_CMD);
-
-    /* Now the normal output. */
-    out8(count & 0xff, nic_base + EN0_RCNTLO);
-    out8(count >> 8,   nic_base + EN0_RCNTHI);
-    out8(0x00, nic_base + EN0_RSARLO);
-    out8(start_page, nic_base + EN0_RSARHI);
-
-    out8(E8390_RWRITE+E8390_START, nic_base + NE_CMD);
-	for (i = 0; i < count; i++) {
-		out8(buf[i], nic_base + NE_DATAPORT);
-	}
-
-    return count;
-}
-
-static int open(net_device_t *dev) {
-	unsigned long nic_base;
-	if (NULL == dev) {
-		return -1;
-	}
-	nic_base = dev->base_addr;
-#if 0
-	/* 8-bit access only, makes the maths simpler. */
-	out8(0, nic_base + 0x0e);
-
-	/* setup receive buffer location */
-	out8(RX_BUFFER_START, EN0_STARTPG);
-	out8(RX_BUFFER_END, EN0_STOPPG);
-#endif
-	return 0;
-}
-
-static int probe(net_device_t *dev) {
-    unsigned char SA_prom[32];
-    char *card_name;
-    int i, wordlength;
-    int start_page, stop_page;
-    int neX000, ctron, dlink, dfi;
-	unsigned long nic_base;
-    int reg0;
-
-	if (NULL == dev) {
-		return -1;
-	}
-	nic_base = dev->base_addr;
-	reg0 = inb(nic_base);
-    if (reg0 == 0xFF) {
-    	return -1;
+/* Debugging routines */
+static inline void ne2k_show_page(unsigned long base_addr) {
+	uint8_t i, page, val;
+	/* Page Dump*/
+    printf("\n            ");
+    for (i = 0; i < 16; i++) {
+    	printf(" 0%X", i);
     }
-
-    wordlength = 2;
-    /* Do a quick preliminary check that we have a 8390. */
-    {	int regd;
-	outb_p(E8390_NODMA + E8390_PAGE1 + E8390_STOP, nic_base + E8390_CMD);
-	regd = inb_p(nic_base + 0x0d);
-	outb_p(0xff, nic_base + 0x0d);
-	outb_p(E8390_NODMA + E8390_PAGE0, nic_base + E8390_CMD);
-	inb_p(nic_base + EN0_COUNTER0); /* Clear the counter by reading. */
-	if (inb_p(nic_base + EN0_COUNTER0) != 0) {
-	    outb_p(reg0, nic_base);
-	    outb(regd, nic_base + 0x0d);	/* Restore the old values. */
-	    return 0;
-	}
-    }
-
-    printf("\nNE*000 ethercard probe at %3lx:", nic_base);
-
-    /* Read the 16 bytes of station address prom, returning 1 for
-       an eight-bit interface and 2 for a 16-bit interface.
-       We must first initialize registers, similar to NS8390_init(eifdev, 0).
-       We can't reliably read the SAPROM address without this.
-       (I learned the hard way!). */
-	{
-	struct {unsigned char value, offset; } program_seq[] = {
-	    {E8390_NODMA + E8390_PAGE0 + E8390_STOP, E8390_CMD}, /* Select page 0*/
-	    {0x48,	EN0_DCFG},	/* Set byte-wide (0x48) access. */
-	    {0x00,	EN0_RCNTLO},	/* Clear the count regs. */
-	    {0x00,	EN0_RCNTHI},
-	    {0x00,	EN0_IMR},	/* Mask completion irq. */
-	    {0xFF,	EN0_ISR},
-	    {E8390_RXOFF, EN0_RXCR},	/* 0x20  Set to monitor */
-	    {E8390_TXOFF, EN0_TXCR},	/* 0x02  and loopback mode. */
-	    {32,	EN0_RCNTLO},
-	    {0x00,	EN0_RCNTHI},
-	    {0x00,	EN0_RSARLO},	/* DMA starting at 0x0000. */
-	    {0x00,	EN0_RSARHI},
-	    {E8390_RREAD + E8390_START, E8390_CMD},
-	};
-	for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++) {
-	    outb_p(program_seq[i].value, nic_base + program_seq[i].offset);
-	}
-    }
-    for(i = 0; i < 32 /*sizeof(SA_prom)*/; i+=2) {
-		SA_prom[i] = inb(nic_base + NE_DATAPORT);
-		SA_prom[i+1] = inb(nic_base + NE_DATAPORT);
-		if (SA_prom[i] != SA_prom[i+1])
-			wordlength = 1;
-    }
-
-	/* PAGE0[READ]:07 (ISR) */
-    if (wordlength == 2) {
-		/* We must set the 8390 for word mode. */
-		outb_p(0x49, nic_base + EN0_DCFG);
-		/* We used to reset the ethercard here, but it doesn't seem
-		   to be necessary. */
-		/* Un-double the SA_prom values. */
-		for (i = 0; i < 16; i++) {
-			SA_prom[i] = SA_prom[i+i];
+	for (page = 0; page < 4; page++) {
+		printf("\n8390 page %d:", page);
+		out8(E8390_NODMA | (page << 6), base_addr + E8390_CMD);
+		for(i = 0; i < 16; i++) {
+			val = in8(base_addr + i);
+			if (!val) {
+				printf(" ..");
+			}
+			else if (val < 0x10) {
+				printf(" 0%X", val);
+			}
+			else {
+				printf(" %X", val);
+			}
 		}
-    }
+	}
+    printf("\n.\n");
+}
 
-    for(i = 0; i < ETHER_ADDR_LEN; i++) {
-		dev->dev_addr[i] = SA_prom[i];
-    }
-    dev->addr_len = ETHER_ADDR_LEN;
-
-    neX000 = (SA_prom[14] == 0x57  &&  SA_prom[15] == 0x57);
-    ctron =  (SA_prom[0] == 0x00 && SA_prom[1] == 0x00 && SA_prom[2] == 0x1d);
-    dlink =  (SA_prom[0] == 0x00 && SA_prom[1] == 0xDE && SA_prom[2] == 0x01);
-    dfi   =  (SA_prom[0] == 'D' && SA_prom[1] == 'F' && SA_prom[2] == 'I');
-
-    /* Set up the rest of the parameters. */
-    if (neX000 || dlink || dfi) {
-		if (wordlength == 2) {
-			card_name = dlink ? "DE200" : "NE2000";
-			start_page = NESM_START_PG;
-			stop_page = NESM_STOP_PG;
+static inline void ne2k_show_packet(uint8_t *raw, uint16_t size, char *title) {
+	uint8_t i, val;
+	/* Page Dump*/
+    printf("\nPACKET %s:", title);
+	for (i = 0; i < size; i++) {
+		if (!(i % 16)) {
+			printf("\n");
+		}
+		val = *(raw + i);
+		if (val < 0x10) {
+			printf(" 0%X", val);
 		}
 		else {
-			card_name = dlink ? "DE100" : "NE1000";
-			start_page = NE1SM_START_PG;
-			stop_page = NE1SM_STOP_PG;
+			printf(" %X", val);
 		}
-    }
-    else if (ctron) {
-    	card_name = "Cabletron";
-		start_page = 0x01;
-		stop_page = (wordlength == 2) ? 0x40 : 0x20;
-    }
-    else {
-		printf(" not found.\n");
-		return 0;
-    }
-    printf("(%s)", card_name);
-
-    name = name;
-    tx_start_page = start_page;
-    tx_stop_page = stop_page;
-    word16 = (wordlength == 2);
-
-    rx_start_page = start_page + 12;
-
-	return 0;
-}
-
-static int stop(net_device_t *dev) {
-	if (NULL == dev) {
-		return 0;
 	}
-	//TODO
-	return 1;
+    printf("\n.\n");
 }
 
-static int set_mac_address(struct net_device *dev, void *addr) {
-	if (NULL == dev || NULL == addr) {
-		return -1;
+static inline void ne2k_get_addr_from_prom(struct net_device *dev) {
+	uint8_t i;
+
+	dev->addr_len = ETHER_ADDR_LEN;
+	/* Copy the station address into the DS8390 registers,
+	   and set the multicast hash bitmap to receive all multicasts. */
+	out8(NE_PAGE1_STOP, dev->base_addr); /* 0x61 */
+	out8(NESM_START_PG_RX, dev->base_addr + EN1_CURPAG);
+
+	/* Get mac-address from prom*/
+	out8(E8390_PAGE0 | E8390_RREAD, dev->base_addr + E8390_CMD);
+	for(i = 0; i < ETHER_ADDR_LEN; i++) {
+		dev->dev_addr[i] = in8(dev->base_addr + NE_DATAPORT);
 	}
-	//TODO
-	return 0;
+
+	/* Copy the station address and set the multicast
+	 * hash bitmap to recive all multicast */
+	out8(E8390_PAGE1 | E8390_START, dev->base_addr + E8390_CMD);
+	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+		out8(dev->dev_addr[i], dev->base_addr + EN1_PHYS_SHIFT(i));
+		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
+	}
 }
 
-/**
- * Get RX/TX stats
- */
-static net_device_stats_t *get_eth_stat(net_device_t *dev) {
-	return &(dev->stats);
+/* configure board */
+static inline void ne2k_config(struct net_device *dev) {
+	unsigned int base_addr;
+
+	base_addr = dev->base_addr;
+
+	/*stop*/
+	out8(E8390_PAGE0 | E8390_STOP, base_addr);
+	out8(0x49, base_addr + EN0_DCFG); /*16 bit & normal & 4fifo */
+
+	/* Set the transmit page and receive ring. */
+	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
+	out8(NESM_START_PG_RX, base_addr + EN0_STARTPG);
+	out8(NESM_STOP_PG - 1, base_addr + EN0_BOUNDARY);
+	out8(NESM_STOP_PG, base_addr + EN0_STOPPG);
+
+	out8(0xFF, base_addr + EN0_ISR);
+	out8(ENISR_ALL, base_addr + EN0_IMR);
+	out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on */
+	out8(E8390_RXCONFIG, base_addr + EN0_RXCR); /* rx on */
+
+//	out8(E8390_PAGE1 | E8390_STOP, base_addr);
+//	out8(NESM_START_PG_RX, base_addr + EN1_CURPAG); /* set current page */
+}
+
+
+static inline void set_tx_count(uint16_t val, unsigned long base_addr) {
+	/* Set how many bytes we're going to send. */
+	out8(val & 0xff, EN0_TBCR_LO + base_addr);
+	out8(val >> 8, EN0_TBCR_HI + base_addr);
+}
+
+static inline void set_rem_address(uint16_t val, unsigned long base_addr) {
+	out8(val & 0xff, EN0_RSARLO + base_addr);
+	out8(val >> 8, EN0_RSARHI + base_addr);
+}
+
+static inline void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
+	out8(val & 0xff, EN0_RCNTLO + base_addr);
+	out8(val >> 8, EN0_RCNTHI + base_addr);
+}
+
+
+static inline void copy_data_to_card(uint16_t dest, uint8_t *src, uint16_t len, unsigned long base_addr) {
+	out8(E8390_NODMA | E8390_PAGE0, base_addr + NE_CMD); // switch to PAGE0
+	set_rem_address(dest, base_addr);
+	set_rem_byte_count(len, base_addr);
+	out8(E8390_RWRITE | E8390_START | E8390_PAGE0, base_addr + NE_CMD);
+	if (len & 1) { /* rounding */
+		len++;
+	}
+	outsw(base_addr + NE_DATAPORT, src, len >> 1);
+	while (0 == (in8(base_addr + EN0_ISR) & ENISR_RDC));
+}
+
+static inline void copy_data_from_card(uint16_t src, uint8_t *dest, uint32_t length, unsigned long base_addr) {
+	out8(E8390_NODMA | E8390_PAGE0, base_addr + NE_CMD);
+	set_rem_address(src, base_addr);
+	set_rem_byte_count(length, base_addr);
+	out8(E8390_RREAD | E8390_START | E8390_PAGE0, base_addr + NE_CMD);
+	insw(base_addr + NE_DATAPORT, dest, length>>1);
+	if (length & 1) {
+		*(dest + length - 1) = in8(base_addr + NE_DATAPORT);
+	}
+}
+
+
+static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
+	uint16_t count;
+	unsigned long base_addr;
+
+	if ((NULL == skb) || (NULL == dev)) {
+		return -EINVAL;
+	}
+
+	base_addr = dev->base_addr;
+
+	if (in8(base_addr + NE_CMD) & E8390_TRANS) { /* no matter, which page is active */
+		printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
+		return -EBUSY;
+	}
+
+    count = skb->len;
+	copy_data_to_card(NESM_START_PG_TX << 8, skb->data, count, base_addr);
+
+	/* switch off dma */
+	out8(E8390_NODMA | E8390_START | E8390_PAGE0, base_addr + NE_CMD);
+
+	/* send */
+	set_tx_count(count, base_addr);
+	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
+	out8(E8390_TRANS | E8390_NODMA | E8390_START, base_addr + NE_CMD);
+	while (in8(base_addr + NE_CMD) & E8390_TRANS) ; /* Wait for transmission to complete. */
+
+//	ne2k_show_packet(skb->data, skb->len, "send"); /* debug */
+	kfree_skb(skb); /* free packet */
+
+	return (int)count;
+}
+
+static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset, struct net_device *dev) {
+	struct sk_buff *skb;
+
+	skb = alloc_skb(total_length, 0);
+	if (skb == NULL) {
+		return NULL;
+	}
+
+	skb->dev = dev;
+	copy_data_from_card(offset, skb->data, total_length, dev->base_addr);
+	skb->protocol = ntohs(skb->mac.ethh->h_proto);
+
+	return skb;
+}
+
+static size_t ne2k_receive(struct net_device *dev) {
+	uint16_t total_length, ring_offset;
+	uint8_t this_frame, next_frame;//, current;
+	struct e8390_pkt_hdr rx_frame;
+	net_device_stats_t *stat;
+	unsigned long base_addr;
+	struct sk_buff *skb;
+
+	base_addr = dev->base_addr;
+	stat = get_eth_stat(dev);
+
+	/* Get the rx page (incoming packet pointer). */
+	out8(E8390_PAGE1, base_addr + E8390_CMD);
+
+	/* Remove one frame from the ring.  Boundary is alway a page behind. */
+	out8(E8390_PAGE0 | E8390_START, base_addr + E8390_CMD);
+	this_frame = in8(base_addr + EN0_BOUNDARY) + 1;
+	if (this_frame >= NESM_STOP_PG) {
+		this_frame = NESM_START_PG_RX;
+	}
+
+	ring_offset =  this_frame << 8;
+	/* Find out where the next packet is in card memory */
+	copy_data_from_card(ring_offset, (uint8_t *)&rx_frame, sizeof(struct e8390_pkt_hdr), base_addr);
+	total_length = rx_frame.count - sizeof(struct e8390_pkt_hdr);
+	next_frame = this_frame + 1 + (rx_frame.count >> 8);
+	if ((rx_frame.next != next_frame)
+		&& (rx_frame.next != next_frame + 1)
+		&& (rx_frame.next != next_frame - (NESM_STOP_PG - NESM_START_PG_RX))
+		&& (rx_frame.next != next_frame + 1 - (NESM_STOP_PG - NESM_START_PG_RX))) {
+		stat->rx_err++;
+	}
+	if ((total_length < 60) || (total_length > 1518)) {
+		stat->rx_err++;
+		LOG_WARN("ne2k_receive: bad packet size\n");
+	}
+	else if ((rx_frame.status & 0x0F) == ENRSR_RXOK) {
+		skb = get_skb_from_card(total_length, ring_offset + sizeof(struct e8390_pkt_hdr), dev);
+		if (skb) {
+			stat->rx_packets++;
+			netif_rx(skb);
+		}
+		else {
+			stat->rx_dropped++;
+			LOG_WARN("ne2k_receive: couldn't allocate memory for packet\n");
+		}
+	}
+	else {
+		if (rx_frame.status & ENRSR_FO) {
+			stat->rx_fifo_errors++;
+		}
+		LOG_WARN("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
+	}
+	out8(rx_frame.next - 1, base_addr + EN0_BOUNDARY);
+
+	return ENOERR;
 }
 
 static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
-	TRACE("irq fired\n");
+	uint8_t isr, status;
+	net_device_stats_t *stat;
+	unsigned long base_addr;
+
+	stat = get_eth_stat((struct net_device *)dev_id);
+	base_addr = ((struct net_device *)dev_id)->base_addr;
+	out8(E8390_PAGE0, base_addr + E8390_CMD);
+	isr = in8(base_addr + EN0_ISR); /* Gets Interrupt Status Register */
+	out8(0xFF, base_addr + EN0_ISR); /* Clean ISR */
+	/* IF (isr & (ENISR_RDC | ENISR_TX_ERR)) DO NOTHING */
+	if (isr & ENISR_OVER) {
+		stat->rx_over_errors++;
+		out8(E8390_STOP, base_addr + E8390_CMD);
+		while ((in8(base_addr + EN0_ISR) & ENISR_RESET)) ;
+		ne2k_receive(dev_id); /* Remove packets right away. */
+		out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on. */
+	}
+	else if (isr & (ENISR_RX + ENISR_RX_ERR)) {
+		ne2k_receive(dev_id);
+	}
+	if (isr & ENISR_TX) {
+		status = in8(base_addr + EN0_TSR);
+		if (status & ENTSR_COL) { stat->collisions++; }
+		if (status & ENTSR_PTX) { stat->tx_packets++; }
+		else {
+			stat->tx_err++;
+			if (status & ENTSR_ABT) { stat->tx_aborted_errors++; }
+			if (status & ENTSR_CRS) { stat->tx_carrier_errors++; }
+			if (status & ENTSR_FU) { stat->tx_fifo_errors++; }
+			if (status & ENTSR_CDH) { stat->tx_heartbeat_errors++; }
+			if (status & ENTSR_OWC) { stat->tx_window_errors++; }
+		}
+	}
+	else if (isr & ENISR_COUNTERS) {
+		stat->rx_frame_errors += in8(base_addr + EN0_COUNTER0);
+		stat->rx_crc_errors += in8(base_addr + EN0_COUNTER1);
+		stat->rx_missed_errors += in8(base_addr + EN0_COUNTER2);
+	}
+
 	return IRQ_HANDLED;
 }
 
+static net_device_stats_t * get_eth_stat(struct net_device *dev) {
+	return &(dev->stats);
+}
+
+static int set_mac_address(struct net_device *dev, void *addr) {
+	uint32_t i;
+
+	if (NULL == dev || NULL == addr) {
+		return -EINVAL;
+	}
+
+	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
+	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
+#if 0
+		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
+#endif
+	}
+	memcpy(dev->dev_addr, addr, ETHER_ADDR_LEN);
+
+	return ENOERR;
+}
+
+
+static int open(struct net_device *dev) {
+	if (NULL == dev) {
+		return -EINVAL;
+	}
+
+	ne2k_get_addr_from_prom(dev);
+	ne2k_config(dev);
+
+	return ENOERR;
+}
+
+static int stop(struct net_device *dev) {
+	if (NULL == dev) {
+		return -EINVAL;
+	}
+
+	/* reset */
+	out8(E8390_PAGE0 | E8390_STOP, dev->base_addr);
+	out8(0xFF, dev->base_addr + EN0_ISR);
+	out8(0x00, dev->base_addr + EN0_IMR);
+
+	return ENOERR;
+}
+
 static const struct net_device_ops _netdev_ops = {
-        .ndo_start_xmit      = start_xmit,
-        .ndo_open            = open,
-        .ndo_stop            = stop,
-        .ndo_get_stats       = get_eth_stat,
-        .ndo_set_mac_address = set_mac_address
+	.ndo_start_xmit = start_xmit,
+	.ndo_open = open,
+	.ndo_stop = stop,
+	.ndo_get_stats = get_eth_stat,
+	.ndo_set_mac_address = set_mac_address
 };
 
 static int __init unit_init(void) {
-	net_device_t *nic;
-	uint16_t new_command, pci_command;
-	uint8_t  pci_latency;
+	int res;
+	uint32_t nic_base;
+	struct net_device *nic;
 	struct pci_dev *pci_dev;
 
-	pci_dev = pci_find_dev(0x10EC, 0x8029);
+	pci_dev = pci_find_dev(0x10EC, 0x8029); //TODO pci ID
 	if (NULL == pci_dev) {
-		LOG_WARN("Couldn't find NE2K_PCI device");
-		return 0;
+		LOG_WARN("couldn't find NE2K_PCI device\n");
+		return ENOERR;
 	}
 
-	if (NULL != (nic = alloc_etherdev(0))) {
-		nic->netdev_ops = &_netdev_ops;
-		//TODO: get devfn=0x18 from pci_find_dev
-		pci_read_config32(0, 0x18, PCI_BASE_ADDR_REG_0, (uint32_t *) &nic->base_addr);
-		ba = nic->base_addr;
-		pci_read_config8(0, 0x18, PCI_INTERRUPT_LINE, (uint8_t *) &nic->irq);
-		nic->base_addr &= PCI_BASE_ADDR_IO_MASK;
+	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
+
+	nic = alloc_etherdev(0);
+	if (nic == NULL) {
+		LOG_WARN("couldn't alloc netdev for NE2K_PCI\n");
+		return -ENOMEM;
+	}
+	nic->netdev_ops = &_netdev_ops;
+	nic->irq = pci_dev->irq;
+	nic->base_addr = nic_base;
+
+	res = irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k");
+	if (res != 0) {
+		return res;
 	}
 
-	/* Set device to be bus master */
-	pci_read_config16(0, 0x18, PCI_COMMAND, &pci_command);
-	new_command = pci_command | PCI_COMMAND_MASTER | PCI_COMMAND_IO;
-	pci_write_config16(0, 0x18, PCI_COMMAND, new_command);
-
-	/* Set latency */
-	pci_read_config8(0, 0x18, PCI_LATENCY_TIMER, &pci_latency);
-	if (pci_latency < 32) {
-		pci_write_config8(0, 0x18, PCI_LATENCY_TIMER, 32);
-	}
-
-	/* Reset */
-	out8(in8(nic->base_addr + NE_RESET), nic->base_addr + NE_RESET);
-	out8(ENISR_RESET, nic->base_addr + EN0_ISR);
-
-	if (-1 == irq_attach(nic->irq, ne2k_handler, 0, nic, "ne2k")) {
-		return -1;
-	}
-
-	probe(nic);
-
-	/* Back to page 0 */
-	out8(NE_PAGE0_STOP, nic->base_addr + NE_CMD);
-
-	/* That's for the card area, however we must also set the mac
-	 * in the card ram as well, because that's what the
-	 * qemu emulation actually uses to determine if the packet's
-	 * bound for this NIC.
-	 */
-	//	mac = (uint8_t*) ETHER_MAC;
-	//	for (uint32_t i = 0; i < 6; i++) {
-	//		copy_data_to_card(i * 2, mac, 1);
-	//		mac++;
-	//	}
-
-	//	rx_disable();
-	return 0;
+	return ENOERR;
 }

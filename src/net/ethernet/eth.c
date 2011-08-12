@@ -42,8 +42,8 @@ int eth_rebuild_header(sk_buff_t *pack) {
 	ethhdr_t     *eth = (ethhdr_t*) pack->data;
 	net_device_t *dev = pack->dev;
 
-	eth->h_proto = pack->protocol;
-	if (eth->h_proto == htons(ETH_P_IP)) {
+	eth->h_proto = htons(pack->protocol);
+	if (pack->protocol == ETH_P_IP) {
 		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
 		return arp_resolve(pack);
 	} else {

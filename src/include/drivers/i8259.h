@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef APIC_H_
-#define APIC_H_
+#ifndef I8259_H_
+#define I8259_H_
 
 #define PIC1            0x20   /* IO base address for master PIC */
 #define PIC2            0xA0   /* IO base address for slave PIC */
@@ -97,25 +97,25 @@
  * Standard PIC initialization values
  */
 #define PIC1_ICW1       (ICW_TEMPLATE | EDGE_TRIGGER | ADDR_INTRVL8 \
-			 | CASCADE_MODE | ICW4__NEEDED)
+                         | CASCADE_MODE | ICW4__NEEDED)
 #define PIC1_ICW3       (SLAVE_ON_IR2)
 #define PIC1_ICW4       (SNF_MODE_DIS | NONBUFD_MODE | NRML_EOI_MOD \
-			 | I8086_EMM_MOD)
+                         | I8086_EMM_MOD)
 
 #define PIC2_ICW1       (ICW_TEMPLATE | EDGE_TRIGGER | ADDR_INTRVL8 \
-			 | CASCADE_MODE | ICW4__NEEDED)
+                         | CASCADE_MODE | ICW4__NEEDED)
 #define PIC2_ICW3       (I_AM_SLAVE_2)
 #define PIC2_ICW4       (SNF_MODE_DIS | NONBUFD_MODE | NRML_EOI_MOD \
-			 | I8086_EMM_MOD)
+                         | I8086_EMM_MOD)
 
 #define apic_enable_all() { \
-	out8(0, PIC1_DATA); \
-	out8(0, PIC2_DATA); \
+        out8(0, PIC1_DATA); \
+        out8(0, PIC2_DATA); \
 }
 
 #define apic_disable_all() {        \
-	out8(PICM_MASK, PIC1_DATA); \
-	out8(PICS_MASK, PIC2_DATA); \
+        out8(PICM_MASK, PIC1_DATA); \
+        out8(PICS_MASK, PIC2_DATA); \
 }
 
-#endif /* APIC_H_ */
+#endif /* I8259_H_ */

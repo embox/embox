@@ -7,6 +7,7 @@
  * @author Nikolay Korotky
  * 	- implement ping through raw socket.
  * 	- major refactoring
+ * @author Ilia Vaprol
  */
 
 #include <embox/cmd.h>
@@ -19,6 +20,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 EMBOX_CMD(exec);
 
@@ -61,63 +63,81 @@ enum {
 static int ping(ping_info_t *pinfo) {
 	int cnt_resp = 0, cnt_err = 0, sk;
 	size_t i;
-	iphdr_t *iph;
-	icmphdr_t *icmph;
-	char *from_addr_str, *dst_addr_str;
+	iphdr_t *iph_s, *iph_r;
+	icmphdr_t *icmph_s, *icmph_r;
+	char *dst_addr_str;
 	char packet[IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
 	char rcv_buff[IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
+	uint32_t timeout, start, delta, total;
+
+	timeout = pinfo->timeout * 1000;
 	dst_addr_str = inet_ntoa(pinfo->dst);
-	from_addr_str = inet_ntoa(pinfo->from);
 	printf("PING %s %d bytes of data.\n", dst_addr_str, pinfo->padding_size);
 
 	if ((sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
 		LOG_ERROR("socket error\n");
 		return -1;
 	}
-	iph = (iphdr_t *) packet;
-	icmph = (icmphdr_t *) (packet + IP_MIN_HEADER_SIZE);
+	iph_s = (iphdr_t *) packet;
+	icmph_s = (icmphdr_t *) (packet + IP_MIN_HEADER_SIZE);
 	memset(packet, 0, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
-	memset(icmph, pinfo->pattern, pinfo->padding_size);
-	iph->version = 4;
-	iph->ihl = IP_MIN_HEADER_SIZE >> 2;
-	iph->tos = 0;
-	iph->frag_off = IP_DF;
-	iph->saddr = pinfo->from.s_addr;
-	iph->daddr = pinfo->dst.s_addr;
-	iph->tot_len = IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size;
-	iph->ttl = pinfo->ttl;
-	iph->proto = IPPROTO_ICMP;
-	icmph->type = ICMP_ECHO;
-	icmph->code = 0;
-	icmph->un.echo.id = /*TID*/0;
+	memset(icmph_s, pinfo->pattern, pinfo->padding_size);
+	iph_s->version = 4;
+	iph_s->ihl = IP_MIN_HEADER_SIZE >> 2;
+	iph_s->tos = 0;
+	iph_s->frag_off = htons(IP_DF);
+	iph_s->saddr = pinfo->from.s_addr;
+	iph_s->daddr = pinfo->dst.s_addr;
+	iph_s->tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
+	iph_s->ttl = pinfo->ttl;
+	iph_s->proto = IPPROTO_ICMP;
+	icmph_s->type = ICMP_ECHO;
+	icmph_s->code = 0;
+	icmph_s->un.echo.id = /*TID*/0;
 
-	for (i = 0; i < pinfo->count; i++) {
-		icmph->un.echo.sequence++;
-		icmph->checksum = 0;
-		icmph->checksum = ptclbsum(packet + IP_MIN_HEADER_SIZE,
+	/* set header for recive packet */
+	iph_r = (iphdr_t *) rcv_buff;
+	icmph_r = (icmphdr_t *) (rcv_buff + IP_MIN_HEADER_SIZE);
+
+	total = clock();
+	for (i = 1; i <= pinfo->count; i++) {
+		icmph_s->un.echo.sequence = htons(ntohs(icmph_s->un.echo.sequence) + 1);
+		icmph_s->checksum = 0;
+		icmph_s->checksum = ptclbsum(packet + IP_MIN_HEADER_SIZE,
 						ICMP_HEADER_SIZE + pinfo->padding_size);
 
-		sendto(sk, packet, iph->tot_len, 0, (struct sockaddr *)&pinfo->dst, 0);
-		sleep(pinfo->timeout);
+		sendto(sk, packet, ntohs(iph_s->tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 
-		/* we don't need to get pad data, only header */
-		if (recvfrom(sk, rcv_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
-				(struct sockaddr *) &pinfo->from, NULL) > 0) {
-			printf("%d bytes from %s to %s: icmp_seq=%d ttl=%d time=%d ms\n",
-					pinfo->padding_size, from_addr_str, dst_addr_str, i + 1, pinfo->ttl, 0);
+		start = clock();
+		while ((delta = clock() - start) < timeout) {
+			/* we don't need to get pad data, only header */
+			if (!recvfrom(sk, rcv_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE,
+					0, (struct sockaddr *)&pinfo->from, NULL)) {
+				continue;
+			}
+			if ((icmph_r->type != ICMP_ECHOREPLY) || (icmph_s->un.echo.sequence != icmph_r->un.echo.sequence)
+					||(iph_s->daddr != iph_r->saddr)) {
+				continue;
+			}
+			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%d ms\n",
+					pinfo->padding_size, dst_addr_str, i, pinfo->ttl, delta);
 			cnt_resp++;
-		} else {
-			printf("Destination Host Unreachable\n");
+			break;
+		}
+		if (delta >= timeout) {
+			printf("From %s icmp_seq=%d Destination Host Unreachable\n", dst_addr_str, i);
 			cnt_err++;
 		}
 		sleep(pinfo->interval);
 	}
 	printf("--- %s ping statistics ---\n", dst_addr_str);
 	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
-		cnt_resp + cnt_err, cnt_resp, cnt_err*100/(cnt_err+cnt_resp), 0);
+		cnt_resp + cnt_err,
+		cnt_resp,
+		(cnt_err * 100) / (cnt_err + cnt_resp),
+		(int)(clock() - total));
 
 	free(dst_addr_str);
-	free(from_addr_str);
 	close(sk);
 	return 0;
 }

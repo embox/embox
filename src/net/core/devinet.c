@@ -101,6 +101,7 @@ int inet_dev_listen(in_device_t *dev, unsigned short type,
 
 net_device_t *ip_dev_find(in_addr_t addr) {
 	size_t i;
+
 	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
 		if (ifs_info[i].dev.ifa_address == addr) {
 			return ifs_info[i].dev.dev;

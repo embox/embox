@@ -21,25 +21,24 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-static net_device_stats_t *lb_stats;
 
 static int loopback_xmit(sk_buff_t *skb, net_device_t *dev) {
-	int len;
+	net_device_stats_t *lb_stats;
+
 	if (NULL == skb || NULL == dev) {
 		return -1;
 	}
 
 	lb_stats = &(dev->stats);
-
-	len = skb->len;
 #if 0
-	skb->protocol = eth_type_trans(rx_skb, dev);
-	skb->dev = skb->dev;
+	skb->dev = dev;
+	skb->protocol = ntohs(eth_type_trans(skb, dev));
 #endif
 	if (netif_rx(skb) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
-		lb_stats->tx_bytes += len;
+		lb_stats->tx_bytes += skb->len;
 	} else {
+		lb_stats->rx_err++;
 		lb_stats->tx_err++;
 	}
 	return 0;

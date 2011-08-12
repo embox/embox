@@ -22,12 +22,12 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	int opt;
-	int cnt = 4, cnt_resp = 0, i, j;
+	int cnt = 4, cnt_resp = 0, i;
 	in_device_t *in_dev = inet_dev_find_by_name("eth0");
 	struct in_addr dst;
 	char *dst_b, *from_b;
 	struct in_addr from;
-	unsigned char mac[18];
+	unsigned char mac[18], *hw_addr;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
@@ -73,8 +73,8 @@ static int exec(int argc, char **argv) {
 		arp_send(ARPOP_REQUEST, ETH_P_ARP, dst.s_addr, in_dev->dev,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
 		usleep(ARP_RES_TIME);
-		if (-1 != (j = arp_lookup(in_dev, dst.s_addr))) {
-			macaddr_print(mac, arp_tables[j].hw_addr);
+		if ((hw_addr = arp_lookup(in_dev, dst.s_addr))) {
+			macaddr_print(mac, hw_addr);
 			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
 			cnt_resp++;
 		}

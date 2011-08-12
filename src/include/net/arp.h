@@ -9,9 +9,10 @@
  * @author Ilia Vaprol
  */
 
-#ifndef ARP_H_
-#define ARP_H_
+#ifndef NET_ARP_H_
+#define NET_ARP_H_
 
+#include <stdint.h>
 #include <net/if_arp.h>
 #include <net/inetdevice.h>
 
@@ -19,12 +20,12 @@
  * struct for arp_table_records
  */
 typedef struct {
-	unsigned char hw_addr[ETH_ALEN];  /**< hardware addr */
-	in_addr_t pw_addr;                /**< protocol addr */
-	in_device_t *if_handler;          /**< inet device */
-	unsigned int ctime;               /**< time to alive */
-	unsigned int state;
-	unsigned int flags;
+	uint8_t hw_addr[ETH_ALEN]; /* hardware addr */
+	in_addr_t pw_addr;         /* protocol addr */
+	in_device_t *if_handler;   /* inet device */
+	uint32_t ctime;            /* time to alive */
+	uint8_t state;             /* valid or not */
+	uint8_t flags;             /* ATF_COM or ATF_COM */
 } arp_entity_t;
 
 /* ARP Flag values. */
@@ -45,12 +46,6 @@ typedef struct {
 #define ARP_CHECK_INTERVAL   10000
 
 /*
- * The number of times an broadcast arp request is send, until
- * the host is considered temporarily unreachable.
- */
-#define ARP_MAX_TRIES        3 /* 2 */
-
-/*
  * If an arp request is send, ARP_RES_TIME is the timeout value until the
  * next request is send.
  * RFC1122: Throttles ARPing, as per 2.3.2.1. (MUST)
@@ -66,17 +61,12 @@ typedef struct {
  */
 #define ARP_CACHE_SIZE     CONFIG_ARP_CACHE_SIZE
 
-extern arp_entity_t arp_tables[ARP_CACHE_SIZE];  /** arp table */
+extern arp_entity_t arp_cache[ARP_CACHE_SIZE];  /** arp table */
 
 /**
- * This will find an entry in the ARP table.
+ * This will find an entry in the ARP table and return hardware address
  */
-extern int arp_lookup(in_device_t *in_dev, in_addr_t dst_addr);
-
-/**
- * Queue an IP packet, while waiting for the ARP reply packet.
- */
-extern void arp_queue(sk_buff_t *skb);
+extern uint8_t * arp_lookup(in_device_t *in_dev, in_addr_t dst_addr);
 
 /**
  * Functions provided by arp.c
@@ -101,14 +91,6 @@ extern int arp_rcv(sk_buff_t *pack, net_device_t *dev,
 extern int arp_resolve(sk_buff_t *pack);
 
 /**
- * Create an arp packet.
- */
-extern sk_buff_t *arp_create(int type, int ptype, in_addr_t dest_ip,
-			net_device_t *dev, in_addr_t src_ip,
-			const unsigned char *dest_hw, const unsigned char *src_hw,
-			const unsigned char *target_hw);
-
-/**
  * Create and send an arp packet.
  */
 extern int arp_send(int type, int ptype, in_addr_t dest_ip,
@@ -121,24 +103,17 @@ extern int arp_send(int type, int ptype, in_addr_t dest_ip,
  * @param in_dev (handler of ifdev struct) which identificate network interface where address can resolve
  * @param ip addr
  * @param hardware addr
- * @return number of entry in table if success else -1
+ * @return 0 if success, otherwise error code
  */
-extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *hw, unsigned int flags);
+extern int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr, uint8_t *hw, uint8_t flags);
 
 /**
  * this function delete entry from arp table if can
  * @param in_dev (handler of ifdev struct) which identificate network interface where address can resolve
  * @param ip addr
  * @param hardware addr
- * @return number of entry in table if success else -1
+ * @return 0 if success, otherwise error code
  */
 extern int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr, unsigned char *hw);
 
-#if 0
-/**
- * Send an arp packet.
- */
-extern int arp_xmit(sk_buff_t *skb);
-#endif
-
-#endif /* ARP_H_ */
+#endif /* NET_ARP_H_ */

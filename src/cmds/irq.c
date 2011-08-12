@@ -9,6 +9,7 @@
  */
 
 #include <embox/cmd.h>
+#include <stdio.h>
 
 #include <getopt.h>
 
@@ -17,10 +18,10 @@
 EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
-	interrupt_mask_t mask, pending = 0;
+	interrupt_mask_t mask;
 	mask = irqc_get_mask();
 
-	pritnf ("irq mask = 0x%X\n", irqc_get_mask());
+	printf("irq mask = 0x%X\n", (unsigned int)mask);
 
 	return 0;
 }
