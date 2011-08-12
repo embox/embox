@@ -3,42 +3,30 @@
 # TODO Suggested renaming package to net.ipv4
 $_PACKAGE := embox.net
 
-$_MODS         += af_inet
-$_SRCS-af_inet += af_inet.c
-$_SRCS-af_inet += protocol.c
-$_SRCS-af_inet += route.c
-$_SRCS-af_inet += ipconfig.c
-$_DEPS-af_inet += embox.net.socket
-$_DEPS-af_inet += embox.net.raw_sock
+$_MODS += af_inet ipv4 arp icmp udp tcp raw_sock tcp_sock udp_sock
 
-$_MODS      += ipv4
-$_SRCS-ipv4 += ip_input.c : ip_options.c
-$_SRCS-ipv4 += ip_output.c
+$_SRCS-af_inet  += af_inet.c
+$_SRCS-af_inet  += protocol.c
+$_SRCS-af_inet  += route.c
+$_SRCS-af_inet  += ipconfig.c
 
-$_MODS     += arp
-$_SRCS-arp += arp.c
-
-$_MODS      += icmp
-$_SRCS-icmp += icmp.c
-
-$_MODS     += udp
-$_SRCS-udp += udp.c
-$_DEPS-udp += embox.net.socket
-$_DEPS-udp += udp_sock
-
-$_MODS     += tcp
-$_SRCS-tcp += tcp.c
-$_DEPS-tcp += embox.net.socket
-$_DEPS-tcp += tcp_sock
-
-$_MODS          += raw_sock
+$_SRCS-arp      += arp.c
+$_SRCS-ipv4     += ip_input.c : ip_options.c
+$_SRCS-ipv4     += ip_output.c
+$_SRCS-icmp     += icmp.c
+$_SRCS-udp      += udp.c
+$_SRCS-tcp      += tcp.c
 $_SRCS-raw_sock += raw_sock.c
+$_SRCS-tcp_sock += tcp_sock.c
+$_SRCS-udp_sock += udp_sock.c
+
+$_DEPS-af_inet  += embox.net.socket
+$_DEPS-af_inet  += embox.net.raw_sock
+$_DEPS-udp      += embox.net.socket
+$_DEPS-tcp      += embox.net.socket
 $_DEPS-raw_sock += embox.net.socket
 
-$_MODS          += tcp_sock
-$_SRCS-tcp_sock += tcp_sock.c
+#$_DEPS-tcp      += tcp_sock
 $_DEPS-tcp_sock += embox.net.socket
-
-$_MODS          += udp_sock
-$_SRCS-udp_sock += udp_sock.c
+$_DEPS-udp      += udp_sock
 $_DEPS-udp_sock += embox.net.socket
