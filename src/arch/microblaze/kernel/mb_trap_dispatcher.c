@@ -19,10 +19,11 @@ int mb_exception_dispatcher(uint32_t number, void *data, struct pt_regs *regs) {
 	return sotftrap_handler[number](number, data);
 }
 
-void mb_hwtrap_dispatcher(uint32_t number, void *data, struct pt_regs *regs) {
+//FIXME [MB] now we pass pc reg directly and want to path pointer to pt_regs structure
+void mb_hwtrap_dispatcher(uint32_t number, void *data, uint32_t *regs) {
 	if (NULL == hwtrap_handler[number])
 		return;
 	if (0 == hwtrap_handler[number](number, data)) {
-		 regs->regs[31-17] += 4;
+		(*regs) += 4;
 	}
 }

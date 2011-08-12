@@ -72,75 +72,72 @@ struct pt_regs {
 /* PTO-PT offset. Stack frame may include some function arguments and we must
  * allocate memory for it. See microblaze reference manual
  */
-#define PTO     0
-#define STATE_SAVE_SIZE (PTO + PT_SIZE)
+#define STATE_SAVE_SIZE (PT_SIZE)
 
 /* save processor registers to current stack frame */
 #define SAVE_REGS \
-	swi	r2, r1, PTO+PT_R2;     \
-	swi	r3, r1, PTO+PT_R3;     \
-	swi	r4, r1, PTO+PT_R4;     \
-	swi	r5, r1, PTO+PT_R5;     \
-	swi	r6, r1, PTO+PT_R6;     \
-	swi	r7, r1, PTO+PT_R7;     \
-	swi	r8, r1, PTO+PT_R8;     \
-	swi	r9, r1, PTO+PT_R9;     \
-	swi	r10, r1, PTO+PT_R10;   \
-	swi	r11, r1, PTO+PT_R11;   \
-	swi	r12, r1, PTO+PT_R12;   \
-	swi	r13, r1, PTO+PT_R13;   \
-	swi	r14, r1, PTO+PT_R14;   \
-	swi	r15, r1, PTO+PT_R15;   \
-	swi	r18, r1, PTO+PT_R18;   \
-	swi	r19, r1, PTO+PT_R19;   \
-	swi	r20, r1, PTO+PT_R20;   \
-	swi	r21, r1, PTO+PT_R21;   \
-	swi	r22, r1, PTO+PT_R22;   \
-	swi	r23, r1, PTO+PT_R23;   \
-	swi	r24, r1, PTO+PT_R24;   \
-	swi	r25, r1, PTO+PT_R25;   \
-	swi	r26, r1, PTO+PT_R26;   \
-	swi	r27, r1, PTO+PT_R27;   \
-	swi	r28, r1, PTO+PT_R28;   \
-	swi	r29, r1, PTO+PT_R29;   \
-	swi	r30, r1, PTO+PT_R30;   \
-	swi	r31, r1, PTO+PT_R31;   \
-	mfs	r11, rmsr;             \
-	nop;                           \
-	swi	r11, r1, PTO+PT_MSR;
+	swi	r31, r1, -PT_R31;     \
+	swi	r30, r1, -PT_R30;     \
+	swi	r29, r1, -PT_R29;     \
+	swi	r28, r1, -PT_R28;     \
+	swi	r27, r1, -PT_R27;     \
+	swi	r26, r1, -PT_R26;     \
+	swi	r25, r1, -PT_R25;     \
+	swi	r24, r1, -PT_R24;     \
+	swi	r23, r1, -PT_R23;   \
+	swi	r22, r1, -PT_R22;   \
+	swi	r21, r1, -PT_R21;   \
+	swi	r20, r1, -PT_R20;   \
+	swi	r19, r1, -PT_R19;   \
+	swi	r18, r1, -PT_R18;   \
+	swi	r17, r1, -PT_R17;   \
+	swi	r16, r1, -PT_R16;   \
+	swi	r15, r1, -PT_R15;   \
+	swi	r14, r1, -PT_R14;   \
+	swi	r13, r1, -PT_R13;   \
+	swi	r12, r1, -PT_R12;   \
+	swi	r11, r1, -PT_R11;   \
+	swi	r10, r1, -PT_R10;   \
+	swi	r9, r1, -PT_R9;   \
+	swi	r8, r1, -PT_R8;   \
+	swi	r7, r1, -PT_R7;   \
+	swi	r6, r1, -PT_R6;   \
+	swi	r5, r1, -PT_R5;   \
+	swi	r4, r1, -PT_R4;   \
+	swi	r3, r1, -PT_R3;   \
+	swi	r2, r1, -PT_R2;   \
 
 /* restore processor registers from current stack frame */
 #define RESTORE_REGS \
-	lwi	r11, r1, PTO+PT_MSR;    \
-	mts	rmsr , r11;             \
-	nop;                            \
-	lwi	r2, r1, PTO+PT_R2;      \
-	lwi	r3, r1, PTO+PT_R3;      \
-	lwi	r4, r1, PTO+PT_R4;      \
-	lwi	r5, r1, PTO+PT_R5;      \
-	lwi	r6, r1, PTO+PT_R6;      \
-	lwi	r7, r1, PTO+PT_R7;      \
-	lwi	r8, r1, PTO+PT_R8;      \
-	lwi	r9, r1, PTO+PT_R9;      \
-	lwi	r10, r1, PTO+PT_R10;    \
-	lwi	r11, r1, PTO+PT_R11;    \
-	lwi	r12, r1, PTO+PT_R12;    \
-	lwi	r13, r1, PTO+PT_R13;    \
-	lwi	r14, r1, PTO+PT_R14;    \
-	lwi	r15, r1, PTO+PT_R15;    \
-	lwi	r18, r1, PTO+PT_R18;    \
-	lwi	r19, r1, PTO+PT_R19;    \
-	lwi	r20, r1, PTO+PT_R20;    \
-	lwi	r21, r1, PTO+PT_R21;    \
-	lwi	r22, r1, PTO+PT_R22;    \
-	lwi	r23, r1, PTO+PT_R23;    \
-	lwi	r24, r1, PTO+PT_R24;    \
-	lwi	r25, r1, PTO+PT_R25;    \
-	lwi	r26, r1, PTO+PT_R26;    \
-	lwi	r27, r1, PTO+PT_R27;    \
-	lwi	r28, r1, PTO+PT_R28;    \
-	lwi	r29, r1, PTO+PT_R29;    \
-	lwi	r30, r1, PTO+PT_R30;    \
-	lwi	r31, r1, PTO+PT_R31;    \
+	lwi	r2, r1, -PT_R2;      \
+	lwi	r3, r1, -PT_R3;      \
+	lwi	r4, r1, -PT_R4;      \
+	lwi	r5, r1, -PT_R5;      \
+	lwi	r6, r1, -PT_R6;      \
+	lwi	r7, r1, -PT_R7;      \
+	lwi	r8, r1, -PT_R8;      \
+	lwi	r9, r1, -PT_R9;      \
+	lwi	r10, r1, -PT_R10;    \
+	lwi	r11, r1, -PT_R11;    \
+	lwi	r12, r1, -PT_R12;    \
+	lwi	r13, r1, -PT_R13;    \
+	lwi	r14, r1, -PT_R14;    \
+	lwi	r15, r1, -PT_R15;    \
+	lwi	r16, r1, -PT_R16;    \
+	lwi	r17, r1, -PT_R17;    \
+	lwi	r18, r1, -PT_R18;    \
+	lwi	r19, r1, -PT_R19;    \
+	lwi	r20, r1, -PT_R20;    \
+	lwi	r21, r1, -PT_R21;    \
+	lwi	r22, r1, -PT_R22;    \
+	lwi	r23, r1, -PT_R23;    \
+	lwi	r24, r1, -PT_R24;    \
+	lwi	r25, r1, -PT_R25;    \
+	lwi	r26, r1, -PT_R26;    \
+	lwi	r27, r1, -PT_R27;    \
+	lwi	r28, r1, -PT_R28;    \
+	lwi	r29, r1, -PT_R29;    \
+	lwi	r30, r1, -PT_R30;    \
+	lwi	r31, r1, -PT_R31;    \
 
 #endif /* MICROBLAZE_PTRACE_H_ */
