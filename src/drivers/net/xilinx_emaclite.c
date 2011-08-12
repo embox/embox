@@ -8,6 +8,7 @@
 
 #include <types.h>
 #include <string.h>
+#include <errno.h>
 
 #include <asm/cpu_conf.h>
 #include <kernel/irq.h>
@@ -18,6 +19,7 @@
 #include <net/etherdevice.h>
 #include <embox/unit.h>
 #include <linux/init.h>
+
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -321,7 +323,7 @@ static int __init unit_init(void) {
 	 * information about them to local massive */
 	net_device = alloc_etherdev(0);
 	if (net_device == NULL) {
-		return -NOEMEM;
+		return -ENOMEM;
 	}
 	net_device->netdev_ops = &_netdev_ops;
 	net_device->irq = XILINX_EMACLITE_IRQ_NUM;
