@@ -26,7 +26,7 @@
  */
 EMBOX_EXAMPLE(run);
 
-/* struct you want to allocate in your allocator */
+/** struct you want to allocate in your allocator */
 struct object_example {
 	/* storage data */
 	int data;
@@ -47,6 +47,8 @@ static int run(int argc, char **argv) {
 	/* allocate object in your allocator and use it after by pointer object */
 	struct object_example *object = (struct object_example *) objalloc(
 			&allocator_name);
+
+	printf("Can start!");
 	if (!object) {
 		printf("Can not allocate!");
 	}
@@ -68,7 +70,7 @@ static int run(int argc, char **argv) {
 		printf("Can not init allocator!");
 	}
 
-	/**
+	/*
 	 *  now allocate and destroy your objects as above.
 	 */
 

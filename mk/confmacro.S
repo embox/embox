@@ -30,6 +30,9 @@
 #define test_platform(mod_name, ...) \
 	mod($(if $(PLATFORM),$(PLATFORM).test.##mod_name), $(or __VA_ARGS__,1))
 
+#define example(mod_name, ...) \
+	mod(embox.example.##mod_name, $(or __VA_ARGS__, 1))
+
 #define cmd(mod_name) \
 	mod(embox.cmd.##mod_name)
 #define cmd_platform(mod_name) \
