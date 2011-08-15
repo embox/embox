@@ -198,7 +198,7 @@ static void *run_shell(void *data) {
 extern void tty_vconsole_putchar( struct vconsole *con, uint8_t ch);
 extern void tty_vconsole_putchar_cc( struct vconsole *con, uint8_t ch,bool cc_flag);
 
-void timer_handler(sys_tmr_ptr timer, void *param) {
+void timer_handler(sys_tmr_t * timer, void *param) {
 #if ENABLE_CONSOLE_QUEUE
 	uint32_t cc; /* console in cycle */
 #endif

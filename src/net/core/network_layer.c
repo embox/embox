@@ -18,8 +18,6 @@
 #include <kernel/irq.h>
 #include <linux/interrupt.h>
 
-extern int dev_is_busy(int num);
-
 EMBOX_UNIT_INIT(unit_init);
 
 /*FIXME we must have queue for each netdevice or if we want to use the only
@@ -79,16 +77,17 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	net_device_t *dev;
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
+
 	if (NULL == skb) {
 		return -1;
 	}
 	dev = skb->dev;
 	if (NULL == dev) {
+		kfree_skb(skb);
 		return -1;
 	}
 	ops = dev->netdev_ops;
 	stats = ops->ndo_get_stats(dev);
-
 	if (dev->flags & IFF_UP) {
 		if (ETH_P_ARP != skb->protocol) {
 			if (-1 == dev->header_ops->rebuild(skb)) {
@@ -106,10 +105,6 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		stats->tx_packets++;
 		stats->tx_bytes += skb->len;
 	}
-#if 0
-	/* now kfree have to call from drivers*/
-	kfree_skb(skb);
-#endif
 	return 0;
 }
 
@@ -117,13 +112,13 @@ int dev_queue_xmit(struct sk_buff *skb) {
 int netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 	struct packet_type *q = NULL;
-	int rc_rx = 0;
 
 	if (NULL == skb) {
 		return NET_RX_DROP;
 	}
 	dev = skb->dev;
 	if (NULL == dev) {
+		kfree_skb(skb);
 		return NET_RX_DROP;
 	}
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
@@ -132,7 +127,7 @@ int netif_rx(struct sk_buff *skb) {
 		if (q->type == skb->protocol) {
 			skb_queue_tail(&(dev->dev_queue), skb);
 			netif_rx_schedule(dev);
-			return rc_rx;
+			return NET_RX_SUCCESS;
 		}
 	}
 	kfree_skb(skb);
@@ -141,14 +136,14 @@ int netif_rx(struct sk_buff *skb) {
 
 int netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
+
 	list_for_each_entry(q, &ptype_base, list) {
 		if (q->type == skb->protocol) {
-			q->func(skb, skb->dev, q, NULL);
-			return 0;
+			return q->func(skb, skb->dev, q, NULL);
 		}
 	}
 	kfree_skb(skb);
-	return 0;
+	return NET_RX_DROP;
 }
 
 
@@ -156,13 +151,16 @@ void netif_rx_schedule(net_device_t *dev) {
 	//TODO:
 	raise_softirq(NET_RX_SOFTIRQ);
 }
+
+extern int dev_is_busy(int num);
 extern net_device_t *get_dev_by_idx(int num);
+
 static void net_rx_action(struct softirq_action *action) {
 	size_t i;
 	net_device_t *dev;
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
-		if (dev_is_busy(i)) {
-			dev = get_dev_by_idx(i);
+		dev = get_dev_by_idx(i);
+		if (dev) {
 			dev->poll(dev);
 		}
 	}

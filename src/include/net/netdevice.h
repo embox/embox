@@ -115,7 +115,7 @@ typedef struct net_device {
 	struct net_device *tx_netdev_list;
 
 	char name[IFNAMSIZ]; /**< Name of the interface.  */
-	unsigned char dev_addr[ETHER_ADDR_LEN]; /**< hw address              */
+	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
 	unsigned long state;
 	unsigned short type; /**< interface hardware type      */
@@ -208,14 +208,14 @@ extern int dev_close(net_device_t *dev);
  * Get flags from device.
  * @param dev device to get flags
  */
-extern unsigned dev_get_flags(const net_device_t *dev);
+extern unsigned int dev_get_flags(const net_device_t *dev);
 
 /**
  * Set the flags on device.
  * @param dev device to set flags
  * @param flags
  */
-extern int dev_change_flags(net_device_t *dev, unsigned flags);
+extern int dev_set_flags(net_device_t *dev, unsigned flags);
 
 /**
  * this function call ip protocol,

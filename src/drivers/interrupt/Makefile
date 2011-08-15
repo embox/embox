@@ -8,9 +8,9 @@ $_MODS               += at91_aic
 $_SRCS-at91_aic      += at91_aic.c
 $_PROVIDES-at91_aic  += embox.hal.interrupt
 
-$_MODS               += apic
-$_SRCS-apic          += apic.c
-$_PROVIDES-apic      += embox.hal.interrupt
+$_MODS               += i8259
+$_SRCS-i8259          += i8259.c
+$_PROVIDES-i8259      += embox.hal.interrupt
 
 $_MODS               += irqmp
 $_SRCS-irqmp         += irqmp.c

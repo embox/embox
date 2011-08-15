@@ -1,6 +1,7 @@
 $_MODS += arping
 $_SRCS-arping += arping.c
 $_DEPS-arping += embox.net.arp
+$_DEPS-arping += embox.net.neighbour
 
 $_BRIEF-arping = Send ARP REQUEST to a neighbour host
 

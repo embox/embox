@@ -6,10 +6,10 @@
  * @author Nikolay Korotky
  */
 
-#ifndef IF_H_
-#define IF_H_
+#ifndef NET_IF_H_
+#define NET_IF_H_
 
-#define IFNAMSIZ        0x6
+#define IFNAMSIZ        0x06
 
 /* Standard interface flags (net_device->flags). */
 #define IFF_UP          0x1             /**< interface is up              */
@@ -24,4 +24,4 @@
 #define IFF_ALLMULTI    0x200           /**< receive all multicast packets*/
 #define IFF_MULTICAST   0x1000          /**< Supports multicast           */
 
-#endif /* IF_H_ */
+#endif /* NET_IF_H_ */

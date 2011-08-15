@@ -29,8 +29,19 @@ typedef struct sys_tmr sys_tmr_t;
  */
 typedef void (*TIMER_FUNC)(sys_tmr_t *timer, void *param);
 
-#include __module_headers(core/kernel/timer/timer_api)
-
+//TODO why is place here? And it isn't work on arm nxt template
+//#include __module_headers(core/kernel/timer/timer_api)
+#include <types.h>
+#include <kernel/irq.h>
+#include <lib/list.h>
+struct sys_tmr {
+	struct list_head lnk;
+	uint32_t   load;
+	uint32_t   cnt;
+	TIMER_FUNC handle;
+	void       *param;
+	bool       is_preallocated;
+};
 /**
  * Set 'handle' timer for executing every 'ticks' ms.
  * Memory for set_tmr instance should be allocated before run init_timer.

@@ -17,7 +17,7 @@
 #include <net/inet_common.h>
 #include <embox/net/proto.h>
 
-EMBOX_NET_PROTO(IPPROTO_TCP, tcp_v4_rcv, NULL, NULL);
+EMBOX_NET_PROTO(IPPROTO_TCP, tcp_v4_rcv, NULL);
 
 static int tcp_v4_rcv(sk_buff_t *skb) {
 	printf("stub: receive tcp packet\n");

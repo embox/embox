@@ -55,6 +55,7 @@ $_PROVIDES-irq += irq_api
 
 $_SRCS-softirq += softirq.c
 $_PROVIDES-softirq += softirq_api
+$_REQUIRES-softirq += core.kernel.timer.timer_api
   #$_DEPS-irq     += core.kernel.critical.core
 
 #ifdef CONFIG_PRINTK

@@ -12,13 +12,13 @@
 
 EMBOX_TEST(run);
 
-static void test_timer_handler(sys_tmr_ptr timer, void *param) {
+static void test_timer_handler(sys_tmr_t* timer, void *param) {
 	*(bool *)param = true;
 }
 
 static int run(void) {
 	long i;
-	sys_tmr_ptr timer;
+	sys_tmr_t * timer;
 	bool tick_happened;
 
 	/* Timer value changing means ok */
@@ -32,7 +32,7 @@ static int run(void) {
 			break;
 		}
 	}
-	close_timer(&timer);
+	close_timer(timer);
 
 	return tick_happened ? 0 : -1;
 }

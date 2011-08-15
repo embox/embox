@@ -79,7 +79,7 @@ struct sk_buff *alloc_skb(unsigned int size, gfp_t priority) {
 		kfree_skb(skb);
 		return NULL;
 	}
-	skb ->len = size;
+	skb->len = size;
 	skb->mac.raw = skb->data;
 	return skb;
 }

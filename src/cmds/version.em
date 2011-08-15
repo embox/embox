@@ -12,7 +12,7 @@ endef
 
 #TODO this must be a script or special make target
 
-SVN_REV = $(shell svn info $(ROOT_DIR) | grep Rev: | awk '{print $$4}')
+¹SVN_REV = $(shell svn info $(ROOT_DIR) | grep Rev: | awk '{print $$4}')
 
 svn_get_revision:
 ifeq ($(SVN_REV),)

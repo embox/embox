@@ -1,27 +1,31 @@
 /**
  * @file
  * @brief angle sensor example
- * @details example demonstrates using angle sensor
+ * @details This example demonstrates using an angle sensor
  * @note view sonar example first
+ *
  * @date 12.07.11
  * @author Anton Kozlov
  */
 
 #include <types.h>
-#include <embox/example.h>
 #include <unistd.h>
-#include <drivers/nxt/buttons.h>
+#include <framework/example/self.h>
 
+#include <drivers/nxt/buttons.h>
 #include <drivers/nxt/angle_sensor.h>
 
+/* Example declaration */
 EMBOX_EXAMPLE(angle_example);
 
-static int angle(void) {
-	int buts;
+static int angle_example(int argc, char **argv) {
+	int buttons;
 
-	nxt_angle_init(NXT_SENSOR_1);
+	/* initialize angle sensor on the first port */
+	nxt_angle_sensor_init(NXT_SENSOR_1);
 
-	while (!(( buts = nxt_buttons_pressed()) & NXT_BUTTON_DOWN)) {
+	/* wait untill button DOWN will be pressed */
+	while (!(( buttons = nxt_buttons_pressed()) & NXT_BUTTON_DOWN)) {
 		/* get angle value divided by 2 -- this is default value of
 		   sensor_get_val. Full equivalent of
 		   nxt_sensor_active_get_val(NXT_SENSOR_1, NXT_ANGLE_COMMAND_2DIV_ANGLE) */

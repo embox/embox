@@ -17,7 +17,7 @@
  */
 typedef struct in_device {
 	struct net_device *dev;
-	in_addr_t         ifa_address;
+	in_addr_t         ifa_address; /* ip-address in network byte order */
 	in_addr_t         ifa_mask;
 	in_addr_t         ifa_broadcast;
 	in_addr_t         ifa_anycast;

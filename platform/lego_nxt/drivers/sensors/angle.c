@@ -11,7 +11,7 @@
 #include <drivers/nxt/sensor.h>
 
 void nxt_angle_sensor_init (nxt_sensor_t *sensor) {
-	sensor->def_comm = NXT_ANGLE_COMMAND_2X_ANGLE;
+	sensor->def_comm = NXT_ANGLE_COMMAND_2DIV_ANGLE;
 	nxt_sensor_conf_active(sensor);
 }
 

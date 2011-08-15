@@ -44,6 +44,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (iph->ihl < 5 || iph->version != 4) {
 		LOG_ERROR("invalid IPv4 header\n");
 		stats->rx_err++;
+		kfree_skb(skb);
 		return NET_RX_DROP;
 	}
 	tmp = iph->check;
@@ -51,6 +52,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
 		LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors++;
+		kfree_skb(skb);
 		return NET_RX_DROP;
 	}
 
@@ -58,6 +60,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (skb->len < len || len < IP_HEADER_SIZE(iph)) {
 		LOG_ERROR("invalid IPv4 header length\n");
 		stats->rx_length_errors++;
+		kfree_skb(skb);
 		return NET_RX_DROP;
 	}
 
@@ -74,14 +77,17 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		opts->optlen = optlen;
 		if (ip_options_compile(skb, opts)) {
 			stats->rx_err++;
+			kfree_skb(skb);
 			return NET_RX_DROP;
 		}
 		if (ip_options_handle_srr(skb)) {
 			stats->tx_err++;
+			kfree_skb(skb);
 			return NET_RX_DROP;
 		}
 	}
 
+#if 0
 	/**
 	 * Check the destination address, and if it doesn't match
 	 * any of own addresses, retransmit packet according to routing table.
@@ -92,10 +98,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		}
 		return 0;
 	}
-	/* When a packet is received, it is passed to any raw sockets
-	 * which have been bound to its protocol before it is passed
-	 * to other protocol handlers */
-	raw_rcv(skb);
+#endif
 
 	net_proto_foreach(net_proto_ptr) {
 		p_netproto = net_proto_ptr->netproto;
@@ -103,5 +106,10 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			p_netproto->handler(skb);
 		}
 	}
+
+	/* When a packet is received, it is passed to any raw sockets
+	 * which have been bound to its protocol */
+	raw_rcv(skb);
+
 	return NET_RX_SUCCESS;
 }

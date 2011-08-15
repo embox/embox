@@ -8,6 +8,7 @@
 
 #include <types.h>
 #include <string.h>
+#include <errno.h>
 
 #include <asm/cpu_conf.h>
 #include <kernel/irq.h>
@@ -18,6 +19,7 @@
 #include <net/etherdevice.h>
 #include <embox/unit.h>
 #include <linux/init.h>
+
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -143,13 +145,13 @@ static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
  */
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	if ((NULL == skb) || (NULL == dev)) {
-		return -1;
+		return -EINVAL;
 	}
 
 	if (0 != (TX_CTRL_REG & XEL_TSR_XMIT_BUSY_MASK)) {
 		switch_tx_buff();
 		if (0 != (TX_CTRL_REG & XEL_TSR_XMIT_BUSY_MASK)) {
-			return -1; /*transmitter is busy*/
+			return -EBUSY; /*transmitter is busy*/
 		}
 	}
 	memcpy32((uint32_t*) TX_PACK, skb->data, skb->len);
@@ -239,7 +241,7 @@ const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
 
 static int open(net_device_t *dev) {
 	if (NULL == dev) {
-		return -1;
+		return -EINVAL;
 	}
 
 	current_rx_regs = &emaclite->rx_ping;
@@ -270,20 +272,20 @@ static int open(net_device_t *dev) {
 #endif
 
 	GIE_REG = XEL_GIER_GIE_MASK;
-	return 0;
+	return ENOERR;
 }
 
 static int stop(net_device_t *dev) {
 	if (NULL == dev) {
-		return 0;
+		return -EINVAL;
 	}
 
-	return 1;
+	return ENOERR;
 }
 
 static int set_mac_address(struct net_device *dev, void *addr) {
 	if (NULL == dev || NULL == addr) {
-		return -1;
+		return -EINVAL;
 	}
 #if 0
 	out_be32 (emaclite.baseaddress + XEL_TSR_OFFSET, 0);
@@ -295,7 +297,7 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	while ((in_be32 (emaclite.baseaddress + XEL_TSR_OFFSET) &
 					XEL_TSR_PROG_MAC_ADDR) != 0);
 #endif
-	return 0;
+	return ENOERR;
 }
 
 /*
@@ -315,18 +317,23 @@ static const struct net_device_ops _netdev_ops = {
 
 static int __init unit_init(void) {
 	/*if some module lock irq number we break initializing*/
+	int res;
 	net_device_t *net_device;
 	/*initialize net_device structures and save
 	 * information about them to local massive */
-	if (NULL != (net_device = alloc_etherdev(0))) {
-		net_device->netdev_ops = &_netdev_ops;
-		net_device->irq = XILINX_EMACLITE_IRQ_NUM;
-		net_device->base_addr = XILINX_EMACLITE_BASEADDR;
+	net_device = alloc_etherdev(0);
+	if (net_device == NULL) {
+		return -ENOMEM;
+	}
+	net_device->netdev_ops = &_netdev_ops;
+	net_device->irq = XILINX_EMACLITE_IRQ_NUM;
+	net_device->base_addr = XILINX_EMACLITE_BASEADDR;
+
+	res = irq_attach(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
+			net_device, "xilinx emaclite");
+	if (res < 0) {
+		return res;
 	}
 
-	if (-1 == irq_attach(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
-			net_device, "xilinx emaclite")) {
-		return -1;
-	}
-	return 0;
+	return ENOERR;
 }
