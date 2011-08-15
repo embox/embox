@@ -3,12 +3,15 @@
 # TODO Suggested renaming package to net.core
 $_PACKAGE := embox.net
 
-$_MODS += core dev
+$_MODS      += core
+$_SRCS-core += devinet.c
+$_SRCS-core += sock.c
+$_SRCS-core += skbuff.c
+$_DEPS-core += embox.net.dev
 
-$_SRCS-core  += devinet.c
-$_SRCS-core  += sock.c
-$_SRCS-core  += skbuff.c
+$_MODS     += dev
+$_SRCS-dev += dev.c
+$_SRCS-dev += network_layer.c
 
-$_SRCS-dev  += dev.c network_layer.c
-
-$_DEPS-core += dev
+$_MODS           += neighbour
+$_SRCS-neighbour += neighbour.c

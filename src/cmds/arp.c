@@ -10,7 +10,8 @@
 
 #include <getopt.h>
 #include <netutils.h>
-#include <net/arp.h>
+#include <net/if_arp.h>
+#include <net/neighbour.h>
 
 EMBOX_CMD(exec);
 
@@ -19,25 +20,32 @@ static void print_usage(void) {
 }
 
 static void print_arp_cache(void *ifdev) {
-	size_t i;
 	unsigned char mac[18];
 	net_device_t *net_dev;
 	struct in_addr addr;
+	struct neighbour *entity;
 
-	printf("Address\t\t\tHWtype\tHWaddress\t\tFlags\tIface\n");
+	entity = neighbour_get_first();
 
-	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_cache[i].state != 0) && (ifdev == NULL || ifdev
-				== arp_cache[i].if_handler)) {
-			net_dev = arp_cache[i].if_handler->dev;
-			macaddr_print(mac, arp_cache[i].hw_addr);
-			addr.s_addr = arp_cache[i].pw_addr;
-			printf("%s\t\t%s\t%s\t%c\t%s\n", inet_ntoa(addr),
-					arp_cache[i].if_handler->dev->type == 1 ? "ether" : "",
-					mac, arp_cache[i].flags == ATF_COM ? 'C' : 'P',
+	if (entity == NULL) {
+		return;
+	}
+
+	printf("Address         HWtype  HWaddress         Flags Iface\n");
+
+	do {
+		if ((ifdev == entity->if_handler)
+				|| (ifdev == NULL)) {
+			net_dev = entity->if_handler->dev;
+			macaddr_print(mac, entity->hw_addr);
+			addr.s_addr = entity->ip_addr;
+			printf("%15s %6s %17s %5s %5s\n", inet_ntoa(addr),
+					(net_dev->type == ARPHRD_ETHER) ? "ether" : "",
+					mac, entity->flags == ATF_COM ? "C" : "P",
 					net_dev->name);
 		}
-	}
+		neighbour_get_next(&entity);
+	} while (entity != NULL);
 }
 
 static int exec(int argc, char **argv) {
@@ -89,9 +97,9 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (op) {
-		arp_add_entity(ifdev, addr.s_addr, hwaddr, ATF_PERM);
+		neighbour_add(ifdev, addr.s_addr, hwaddr, ATF_PERM);
 	} else {
-		arp_delete_entity(ifdev, addr.s_addr, hwaddr);
+		neighbour_delete(ifdev, addr.s_addr);
 	}
 
 	return 0;

@@ -13,6 +13,7 @@
 #include <getopt.h>
 #include <netutils.h>
 #include <net/arp.h>
+#include <net/neighbour.h>
 
 EMBOX_CMD(exec);
 
@@ -69,11 +70,11 @@ static int exec(int argc, char **argv) {
 	from_b = inet_ntoa(from);
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {
-		arp_delete_entity(NULL, dst.s_addr, NULL);
+		neighbour_delete(in_dev, dst.s_addr);
 		arp_send(ARPOP_REQUEST, ETH_P_ARP, dst.s_addr, in_dev->dev,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
-		usleep(ARP_RES_TIME);
-		if ((hw_addr = arp_lookup(in_dev, dst.s_addr))) {
+		usleep(NEIGHBOUR_RES_TIME);
+		if ((hw_addr = neighbour_lookup(in_dev, dst.s_addr))) {
 			macaddr_print(mac, hw_addr);
 			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
 			cnt_resp++;

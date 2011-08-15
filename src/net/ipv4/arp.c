@@ -17,6 +17,7 @@
 #include <net/ip.h>
 #include <embox/net/pack.h>
 #include <errno.h>
+#include <net/neighbour.h>
 
 /*
  * FIXME:
@@ -36,120 +37,10 @@
 
 EMBOX_NET_PACK(ETH_P_ARP, arp_rcv, arp_init);
 
-/* Declaration of ARP-Cache */
-
-#define ARP_TIMER_ID 12
-/* ARP Table state. */
-#define ATS_FREE 0x00 /* entity is free (not used) */
-//#define ATS_WAIT 0x01 /* entity should be confirmed  */
-#define ATS_USED 0x02 /* entity used */
-
-arp_entity_t arp_cache[ARP_CACHE_SIZE]; /* table for arp request */
-static sys_tmr_t *arp_refresh_timer; /* timer for update the table */
-
-/**
- * this function add entry in arp table (rewrite) if can
- * @param in_dev (handler of inet_dev struct) which identificate network interface where address can resolve
- * @param ip addr
- * @param hardware addr
- * @param ATF_COM or ATF_PERM
- * @return 0 if success else error code
- */
-int arp_add_entity(in_device_t *in_dev, in_addr_t ipaddr,
-		uint8_t *macaddr, uint8_t flags) {
-	size_t i;
-
-	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_cache[i].state == ATS_FREE) || ((arp_cache[i].pw_addr == ipaddr)
-				&& (arp_cache[i].if_handler == in_dev))) {
-			arp_cache[i].if_handler = in_dev;
-			arp_cache[i].pw_addr = ipaddr;
-			arp_cache[i].ctime = 0;
-			arp_cache[i].state = ATS_USED;
-			arp_cache[i].flags = flags;
-			memcpy(arp_cache[i].hw_addr, macaddr, ETH_ALEN);
-			return ENOERR;
-		}
-	}
-	return -ENOMEM;
-}
-
-/**
- * this function delete entry from arp table if can
- * @param in_dev (handler of inet_dev struct) which identificate network interface where address can resolve
- * @param ip addr
- * @param hardware addr
- * @return number of entry in table if success else -1
- */
-int arp_delete_entity(in_device_t *in_dev, in_addr_t ipaddr,
-		unsigned char *macaddr) {
-	size_t i;
-
-	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_cache[i].pw_addr == ipaddr)
-				&& (in_dev == arp_cache[i].if_handler)
-				&& !memcmp(arp_cache[i].hw_addr, macaddr, ETH_ALEN)) {
-			arp_cache[i].state = ATS_FREE;
-			return ENOERR;
-		}
-	}
-	return -EINVAL;
-}
-
-/**
- * this function search entry from arp table if can
- * @param in_dev (handler of inet_dev struct)
- * @param destination ip address
- * @return hardware address if can else NULL
- */
-uint8_t * arp_lookup(in_device_t *in_dev, in_addr_t dst_addr) {
-	size_t i;
-
-	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_cache[i].pw_addr == dst_addr)
-				&& (arp_cache[i].if_handler == in_dev)
-				&& (arp_cache[i].state == ATS_USED)) {
-			return arp_cache[i].hw_addr;
-		}
-	}
-	return NULL;
-}
-
-/**
- * Check if there are entries that are too old and remove them.
- */
-static void arp_check_expire(struct sys_tmr * timer, void *param) {
-	size_t i;
-
-	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		if ((arp_cache[i].flags == ATF_COM) && (arp_cache[i].state != ATS_FREE)) {
-			arp_cache[i].ctime += ARP_CHECK_INTERVAL;
-			if (arp_cache[i].ctime >= ARP_TIMEOUT) {
-				arp_cache[i].state = ATS_FREE;
-			}
-		}
-	}
-}
-
-static int arp_init(void) {
-	uint8_t i;
-
-	if (set_timer(&arp_refresh_timer, ARP_CHECK_INTERVAL, arp_check_expire, NULL)) {
-		return -1;
-	}
-	/* clear table */
-	for (i = 0; i < ARP_CACHE_SIZE; i++) {
-		arp_cache[i].state = ATS_FREE;
-	}
-
-	return 0;
-}
-
-/* ARP Protocol */
-
-static int arp_header(sk_buff_t *skb, int type, int ptype, in_addr_t dest_ip,
-		net_device_t *dev, in_addr_t src_ip, const unsigned char *dest_hw,
-		const unsigned char *src_hw, const unsigned char *target_hw) {
+static int arp_header(sk_buff_t *skb, int type, int ptype,
+		in_addr_t dest_ip, net_device_t *dev, in_addr_t src_ip,
+		const unsigned char *dest_hw, const unsigned char *src_hw,
+		const unsigned char *target_hw) {
 	struct arphdr *arp;
 
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
@@ -167,8 +58,8 @@ static int arp_header(sk_buff_t *skb, int type, int ptype, in_addr_t dest_ip,
 	/*
 	 * Fill the device header for the ARP frame
 	 */
-	if (dev_hard_header(skb, dev, ptype, (void*) dest_hw, (void*) src_hw,
-			skb->len) < 0) {
+	if (dev_hard_header(skb, dev, ptype, (void *)dest_hw,
+			(void *)src_hw, skb->len) < 0) {
 		return -1;
 	}
 
@@ -192,9 +83,10 @@ static int arp_xmit(sk_buff_t *skb) {
 	return dev_queue_xmit(skb);
 }
 
-int arp_send(int type, int ptype, in_addr_t dest_ip, struct net_device *dev,
-		in_addr_t src_ip, const unsigned char *dest_hw,
-		const unsigned char *src_hw, const unsigned char *th) {
+int arp_send(int type, int ptype, in_addr_t dest_ip,
+		struct net_device *dev, in_addr_t src_ip,
+		const unsigned char *dest_hw, const unsigned char *src_hw,
+		const unsigned char *th) {
 	struct sk_buff *skb;
 
 	if (!dev) {
@@ -224,8 +116,9 @@ int arp_resolve(sk_buff_t *pack) {
 	ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
 	if (ipv4_is_loopback(ip->daddr)) {
-		// Loopback address is 127.*.*.*
-		// so previous check is incorrect: ip->daddr == htonl(INADDR_LOOPBACK)
+		/* Loopback address is 127.*.*.*
+		 * so previous check is incorrect:
+		 * ip->daddr == htonl(INADDR_LOOPBACK) */
 		memset(pack->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return 0;
 	}
@@ -234,7 +127,7 @@ int arp_resolve(sk_buff_t *pack) {
 		return 0;
 	}
 	dev = pack->dev;
-	if ((hw_addr = arp_lookup(in_dev_get(dev), ip->daddr))) {
+	if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr))) {
 		memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
 		return 0;
 	}
@@ -253,7 +146,7 @@ static int received_resp(sk_buff_t *pack) {
 	arp = pack->nh.arph;
 	/*TODO need add function for getting ip addr*/
 	/* add record into arp_tables */
-	return arp_add_entity(in_dev_get(pack->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
+	return neighbour_add(in_dev_get(pack->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
 }
 
 /**
@@ -284,7 +177,7 @@ static int arp_process(sk_buff_t *skb) {
 	}
 	if (arp->ar_tip != in_dev_get(skb->dev)->ifa_address) {
 		if (arp->ar_tip == arp->ar_sip) { /* RFC 3927 - ARP Announcement */
-			arp_add_entity(in_dev_get(skb->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
+			neighbour_add(in_dev_get(skb->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
 		}
 		kfree_skb(skb);
 		return -1;
@@ -315,4 +208,8 @@ int arp_rcv(sk_buff_t *skb, net_device_t *dev, packet_type_t *pt,
 		return NET_RX_SUCCESS;
 	}
 	return (arp_process(skb) ? NET_RX_DROP : NET_RX_SUCCESS);
+}
+
+static int arp_init(void) {
+	return ENOERR;
 }
