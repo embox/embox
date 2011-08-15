@@ -43,7 +43,7 @@ __entity_check = \
   $(if $(and $(filter 5,$(words $1)), \
              $(filter __entity,$(word 1,$1)), \
              $(call entity_check_type,$(__entity_type)), \
-             $(call entity_check_name,$(__entity_name))),$(subst $(\space),,$1))
+             $(call entity_check_name,$(__entity_name))),$(subst $(\s),,$1))
 
 entity_valid_types := api module library package
 

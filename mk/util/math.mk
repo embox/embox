@@ -81,13 +81,12 @@ __util_math_mk := 1
 # Integers a represented by lists with the equivalent number of x's.
 # For example the number 4 is x x x x.  The maximum integer that the
 # library can handle as _input_ is __gmsl_input_int which is defined
-# here as 65536
+# here as 4096
 
 __gmsl_sixteen := x x x x x x x x x x x x x x x x
 __gmsl_input_int := $(foreach a,$(__gmsl_sixteen),         \
                         $(foreach b,$(__gmsl_sixteen),     \
-                            $(foreach c,$(__gmsl_sixteen), \
-                                $(__gmsl_sixteen)))))
+                                $(__gmsl_sixteen))))
 
 #
 # Function:  int_decode
@@ -251,12 +250,12 @@ int_ne  = $(call not,$(call int_eq,$1,$2))
 # eq    First argument is numerically equal to the second argument
 # ne    First argument is not numerically equal to the second argument
 #
-gt  = $(call __gmsl_int_wrap2,int_gt,$1,$2)
-gte = $(call __gmsl_int_wrap2,int_gte,$1,$2)
-lt  = $(call __gmsl_int_wrap2,int_lt,$1,$2)
-lte = $(call __gmsl_int_wrap2,int_lte,$1,$2)
-eq  = $(call __gmsl_int_wrap2,int_eq,$1,$2)
-ne  = $(call __gmsl_int_wrap2,int_ne,$1,$2)
+$(subst ,,>)  = $(call __gmsl_int_wrap2,int_gt,$1,$2)
+$(subst ,,>=) = $(call __gmsl_int_wrap2,int_gte,$1,$2)
+$(subst ,,<)  = $(call __gmsl_int_wrap2,int_lt,$1,$2)
+$(subst ,,<=) = $(call __gmsl_int_wrap2,int_lte,$1,$2)
+$(subst ,,==) = $(call __gmsl_int_wrap2,int_eq,$1,$2)
+$(subst ,,!=) = $(call __gmsl_int_wrap2,int_ne,$1,$2)
 
 # increment adds 1 to its argument, decrement subtracts 1.  Note that
 # decrement does not range check and hence will not underflow, but

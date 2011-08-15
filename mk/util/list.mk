@@ -34,8 +34,8 @@
 ifndef __util_list_mk
 __util_list_mk := 1
 
-include core/common.mk
-include core/string.mk
+include mk/core/common.mk
+include mk/core/string.mk
 
 ##
 # Compares two lists against each other.
