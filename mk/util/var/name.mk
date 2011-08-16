@@ -75,11 +75,11 @@ __util_var_name_mk := 1
 #  # var name found: [and   with whitespaces   in its name]
 #
 
-include core/common.mk
-include core/string.mk # firstword/nofirstword
-include util/var/info.mk # var_defined
-include util/math.mk # sequences generator
-include util/list.mk # pairmap, fold
+include mk/core/common.mk
+include mk/core/string.mk # firstword/nofirstword
+include mk/util/var/info.mk # var_defined
+include mk/util/math.mk # sequences generator
+include mk/util/list.mk # pairmap, fold
 
 ##
 # Escapes variables list in a special way so that it becomes possible to
@@ -201,9 +201,9 @@ __var_name_unescape_word = \
 # Escape/unescape space, tab and new line.
 
 __var_name_escape_whitespace = \
-  $(subst $(\space),_$$s,$(subst $(\t),_$$t,$(subst $(\n),_$$n,$1)))
+  $(subst $(\s),_$$s,$(subst $(\t),_$$t,$(subst $(\n),_$$n,$1)))
 __var_name_unescape_whitespace = \
-  $(subst _$$s,$(\space),$(subst _$$t,$(\t),$(subst _$$n,$(\n),$1)))
+  $(subst _$$s,$(\s),$(subst _$$t,$(\t),$(subst _$$n,$(\n),$1)))
 
 # TODO a possible optimization: on each iteration filter out
 #      single-, double-, triple-, etc. -worded variables. -- Eldar

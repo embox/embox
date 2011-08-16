@@ -20,7 +20,7 @@ include core/common.mk
 # Returns: Human-readable multiline string containing variable information.
 #
 define var_info_string
-$(call assert,$1,Variable name is empty)Variable [$1] info:
+Variable [$1] info:
    flavor: [$(flavor $1)]
    origin: [$(origin $1)]
     value: [$(value $1)]
@@ -43,19 +43,6 @@ var_info = \
   $(info $(call var_info_string,$1))
 
 ##
-# Function: var_defined
-#
-# Checks whether the specified variable is defined.
-#
-# Params:
-#  1. The target variable name
-#
-# Returns: true if the specified variable exists, false otherwise
-#
-var_defined = \
-  $(call not,$(call var_undefined,$1))
-
-##
 # Function: var_simple
 #
 # Checks whether the specified variable is defined as statically expanded.
@@ -67,7 +54,7 @@ var_defined = \
 #          false otherwise
 #
 var_simple = \
-  $(call make_bool,$(findstring simple,$(flavor $1)))
+	$(findstring simple,$(flavor $1))
 
 ##
 # Function: var_recursive
@@ -81,7 +68,20 @@ var_simple = \
 #          false otherwise
 #
 var_recursive = \
-  $(call make_bool,$(findstring recursive,$(flavor $1)))
+	$(findstring recursive,$(flavor $1))
+
+##
+# Function: var_defined
+#
+# Checks whether the specified variable is defined.
+#
+# Params:
+#  1. The target variable name
+#
+# Returns: true if the specified variable exists, false otherwise
+#
+var_defined = \
+	$(filter simple recursive,$(flavor $1))
 
 ##
 # Function: var_undefined
@@ -94,6 +94,6 @@ var_recursive = \
 # Returns: true if the variable has not been defined yet, false otherwise
 #
 var_undefined = \
-  $(call make_bool,$(findstring undefined,$(flavor $1)))
+	$(findstring undefined,$(flavor $1))
 
 endif # __util_var_info_mk

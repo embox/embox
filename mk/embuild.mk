@@ -227,7 +227,7 @@ fix_indent_common_dollar_escaped = \
 
 fix_indent_common_escaped = \
   $(if $(call singleword,$1) \
-        ,,$(subst $(\space),,$(call list_fold,fix_indent_fold, \
+        ,,$(subst $(\s),,$(call list_fold,fix_indent_fold, \
            $(call fix_indent_tokenize_line,$(call firstword,$1)), \
                                          $(call nofirstword,$1))))
 
@@ -243,9 +243,9 @@ fix_indent_tokenize_line = \
   $(subst _$$s, _$$s ,$(subst _$$t, _$$t ,$1))
 
 fix_indent_escape = \
-  $(subst $(\n),_$$n,$(subst $(\space),_$$s,$(subst $(\t),_$$t,$1)))
+  $(subst $(\n),_$$n,$(subst $(\s),_$$s,$(subst $(\t),_$$t,$1)))
 fix_indent_unescape = \
-  $(subst _$$n,$(\n),$(subst _$$s,$(\space),$(subst _$$t,$(\t),$1)))
+  $(subst _$$n,$(\n),$(subst _$$s,$(\s),$(subst _$$t,$(\t),$1)))
 
 __UNITS_PROCESS = $(info Processing units) \
   $(foreach unit,$(MODS) $(LIBS), \

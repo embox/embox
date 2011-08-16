@@ -216,9 +216,9 @@
 						<useDefaultCommand>false</useDefaultCommand>
 						<runAllBuilders>true</runAllBuilders>
 					</target>
-					<target name="Config  biffboard" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+					<target name="config x86 bifferboard" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments>PROJECT=x86 PROFILE=biffboard</buildArguments>
+						<buildArguments>PROJECT=x86 PROFILE=bifferboard</buildArguments>
 						<buildTarget>config</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>

@@ -78,7 +78,6 @@ include util/wildcard.mk
 #   If not specified traverse will search for files named Makefile and makefile
 #
 traverse = $(strip \
-  $(call assert_called,traverse,$0) \
   $(foreach __traverse_root,$(call d-wildcard,$1), \
     $(call __traverse_invoke,$(__traverse_root),$2) \
   ) \

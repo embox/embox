@@ -75,9 +75,6 @@ override PROFILE = $(word 2,$(subst /, ,$(TEMPLATE)))
 
 endif
 
-#include gmd.mk
-
-include rules.mk
 include util.mk
 include util/wildcard.mk
 

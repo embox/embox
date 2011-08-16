@@ -40,7 +40,7 @@ __util_var_assign_mk := 1
 #  At this point I think it was unnecessary. If some day I'll change my
 #  opinion, the previous solution can be found in embuild_experimental @ r895.
 
-include core/common.mk
+include mk/core/common.mk
 
 ##
 # Function: var_assign_simple, var:=
@@ -86,7 +86,7 @@ var_assign_simple = \
 #  $(call var_info,foo) # value is $(bar), flavor is recursive
 #  $(info $(foo)) # the expansion is expansion of variable 'bar'
 #
-# See also: var_assign_recursive_sl var_assign_recursive_sl
+# See also: var_assign_recursive_sl var_assign_recursive_ml
 #
 var_assign_recursive = \
   $(var_assign_recursive_$(if $(findstring $(\n),$2),ml,sl))
@@ -108,7 +108,7 @@ var_assign_recursive = \
 #       (see GNU Make manual).
 #
 var_assign_recursive_sl = \
-  ${eval $$1 = $2}
+  ${eval $$1 = $(subst $(\h),\$(\h),$2)}
 
 ##
 # Function: var_assign_recursive_ml

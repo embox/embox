@@ -100,22 +100,22 @@ __gmsl_dollar := $$
 #            with the requested version number, otherwise $(false)
 #
 gmsl_compatible = $(strip                                                 \
-    $(if $(call gt,$(word 1,$1),$(word 1,$(gmsl_version))),               \
+    $(if $(call >,$(word 1,$1),$(word 1,$(gmsl_version))),               \
         $(false),                                                         \
-        $(if $(call lt,$(word 1,$1),$(word 1,$(gmsl_version))),           \
+        $(if $(call <,$(word 1,$1),$(word 1,$(gmsl_version))),           \
             $(true),                                                      \
-            $(if $(call gt,$(word 2,$1),$(word 2,$(gmsl_version))),       \
+            $(if $(call >,$(word 2,$1),$(word 2,$(gmsl_version))),       \
                 $(false),                                                 \
-                $(if $(call lt,$(word 2,$1),$(word 2,$(gmsl_version))),   \
+                $(if $(call <,$(word 2,$1),$(word 2,$(gmsl_version))),   \
                     $(true),                                              \
-                    $(call lte,$(word 3,$1),$(word 3,$(gmsl_version))))))))
+                    $(call <=,$(word 3,$1),$(word 3,$(gmsl_version))))))))
 
 # Helper function that translates any GNU Make 'true' value (i.e. a
 # non-empty string) to our $(true)
 __gmsl_make_bool = $(make_bool)
 
 # This results in __gmsl_space containing just a space
-__gmsl_space := $(\space)
+__gmsl_space := $(\s)
 
 # This results in __gmsl_newline containing just a newline
 __gmsl_newline := $(\n)

@@ -51,9 +51,9 @@ endif
 CC_VERSION_MAJOR := $(word 1,$(CC_VERSION))
 CC_VERSION_MINOR := $(word 2,$(CC_VERSION))
 
-ifneq ($(or $(call gt,$(CC_VERSION_MAJOR),4), \
-       $(and $(call  eq,$(CC_VERSION_MAJOR),4), \
-             $(call gte,$(CC_VERSION_MINOR),2))),)
+ifneq ($(or $(call >,$(CC_VERSION_MAJOR),4), \
+       $(and $(call  ==,$(CC_VERSION_MAJOR),4), \
+             $(call >=,$(CC_VERSION_MINOR),2))),)
 CC_SUPPORTS_@file := 1
 endif
 
