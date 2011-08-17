@@ -12,19 +12,19 @@
 
 EMBOX_TEST(run);
 
-static void test_timer_handler(sys_tmr_t* timer, void *param) {
+static void test_timer_handler(sys_timer_t* timer, void *param) {
 	*(bool *)param = true;
 }
 
 static int run(void) {
 	long i;
-	sys_tmr_t * timer;
+	sys_timer_t * timer;
 	bool tick_happened;
 
 	/* Timer value changing means ok */
 	tick_happened = false;
 
-	if (set_timer(&timer, TEST_TIMER_TICKS, test_timer_handler, &tick_happened)) {
+	if (timer_set(&timer, TEST_TIMER_TICKS, test_timer_handler, &tick_happened)) {
 		test_fail("failed to install timer");
 	}
 	for (i = 0; i < (1 << 30); i++) {
@@ -32,7 +32,7 @@ static int run(void) {
 			break;
 		}
 	}
-	close_timer(timer);
+	timer_close(timer);
 
 	return tick_happened ? 0 : -1;
 }

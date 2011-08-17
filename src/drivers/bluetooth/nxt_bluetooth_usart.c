@@ -223,7 +223,7 @@ static int nxt_bluetooth_init(void) {
 	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
 		(irq_handler_t) &nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
-	set_timer(3, 200, (TIMER_FUNC) &nxt_bt_timer_handler);
+	timer_set(3, 200, (sys_timer_handler_t) &nxt_bt_timer_handler);
 	bt_receive_init();
 	return 0;
 }

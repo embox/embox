@@ -34,7 +34,7 @@ EMBOX_UNIT(unit_init, unit_fini);
 static int resched;
 
 /** Timer, which calls scheduler_tick. */
-sys_tmr_t *tick_timer;
+sys_timer_t *tick_timer;
 
 int sched_init(struct thread* current, struct thread *idle) {
 	int error;
@@ -57,7 +57,7 @@ int sched_init(struct thread* current, struct thread *idle) {
  * Is regularly called to show that current thread to be changed.
  * @param id nothing significant
  */
-static void sched_tick(sys_tmr_t *timer, void *param) {
+static void sched_tick(sys_timer_t *timer, void *param) {
 	resched = true;
 }
 
@@ -277,7 +277,7 @@ void sched_check_switch(void) {
 }
 
 static int unit_init(void) {
-	if (set_timer(&tick_timer, SCHED_TICK_INTERVAL, sched_tick, NULL)) {
+	if (timer_set(&tick_timer, SCHED_TICK_INTERVAL, sched_tick, NULL)) {
 		return -EBUSY;
 	}
 
@@ -285,7 +285,7 @@ static int unit_init(void) {
 }
 
 static int unit_fini(void) {
-	close_timer(tick_timer);
+	timer_close(tick_timer);
 
 	return 0;
 }

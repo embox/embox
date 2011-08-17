@@ -19,7 +19,7 @@
 
 #define TIMER_POOL_SZ 20 /**< system timers quantity */
 
-EMBOX_UNIT_INIT(timer_init);
+EMBOX_UNIT_INIT(module_init);
 
 static clock_t sys_ticks; /* ticks after start system. */
 
@@ -27,11 +27,11 @@ clock_t clock(void) {
 	return sys_ticks;
 }
 
-POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ);
+POOL_DEF(timer_pool, sys_timer_t, TIMER_POOL_SZ);
 static struct list_head *sys_timers_list;
 
-int init_timer(sys_tmr_t *ptimer, uint32_t ticks,
-		TIMER_FUNC handler, void *param) {
+int timer_init(sys_timer_t *ptimer, uint32_t ticks,
+		sys_timer_handler_t handler, void *param) {
 	if (!handler || !ptimer) {
 		return -EINVAL;
 	}
@@ -45,23 +45,23 @@ int init_timer(sys_tmr_t *ptimer, uint32_t ticks,
 	return 0;
 }
 
-int set_timer(sys_tmr_t **ptimer, uint32_t ticks,
-		TIMER_FUNC handler, void *param) {
+int timer_set(sys_timer_t **ptimer, uint32_t ticks,
+		sys_timer_handler_t handler, void *param) {
 
 	if (NULL == handler || NULL == ptimer) {
 		return -EINVAL;
 	}
-	if (NULL == (*ptimer = (sys_tmr_t*) pool_alloc(&timer_pool))) {
+	if (NULL == (*ptimer = (sys_timer_t*) pool_alloc(&timer_pool))) {
 		return -ENOMEM;
 	}
 	/* we know that init will be success (right ptimer and handler) */
-	init_timer(*ptimer, ticks, handler, param);
+	timer_init(*ptimer, ticks, handler, param);
 	(*ptimer)->is_preallocated = true;
 
 	return 0;
 }
 
-int close_timer(sys_tmr_t *ptimer) {
+int timer_close(sys_timer_t *ptimer) {
 	if (NULL == ptimer) {
 		return -EINVAL;
 	}
@@ -81,10 +81,10 @@ int close_timer(sys_tmr_t *ptimer) {
  */
 static void inc_sys_timers(void) {
 	struct list_head *tmp, *tmp2;
-	sys_tmr_t *tmr;
+	sys_timer_t *tmr;
 
 	list_for_each_safe(tmp, tmp2, sys_timers_list) {
-		tmr = (sys_tmr_t*) tmp;
+		tmr = (sys_timer_t*) tmp;
 		if (0 == tmr->cnt--) {
 			tmr->handle(tmr, tmr->param);
 			tmr->cnt = tmr->load;
@@ -105,7 +105,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  *
  * @return 0 if success
  */
-int timer_init(void) {
+int module_init(void) {
 	sys_ticks = 0;
 	clock_init();
 	clock_setup(clock_source_get_precision());

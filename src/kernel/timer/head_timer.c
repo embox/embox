@@ -57,11 +57,11 @@ static inline void timer_safe_section_end(void) {
 }
 
 
-POOL_DEF(timer_pool, sys_tmr_t, TIMER_POOL_SZ); //TODO: new allocator (objalloc)
+POOL_DEF(timer_pool, sys_timer_t, TIMER_POOL_SZ); //TODO: new allocator (objalloc)
 
 static struct list_head *sys_timers_list; /* list head was allocated by clock driver */
 
-static inline void timer_insert_into_list(struct sys_tmr *tmr) {
+static inline void timer_insert_into_list(struct sys_timer *tmr) {
 	struct list_head *iter, *tmp;
 
 	tmr->cnt = tmr->load;
@@ -75,7 +75,7 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 
 	/* find first element that its time bigger than inserting @new_time */
 	list_for_each_safe(iter, tmp, sys_timers_list) {
-		struct sys_tmr *it_tmr = (struct sys_tmr*) iter;
+		struct sys_timer *it_tmr = (struct sys_timer*) iter;
 
 		if (it_tmr->cnt >= tmr->cnt) {
 			/* decrease value of next timer after inserting */
@@ -91,23 +91,23 @@ static inline void timer_insert_into_list(struct sys_tmr *tmr) {
 	list_add_tail(&tmr->lnk, sys_timers_list);
 }
 
-int set_timer(struct sys_tmr **ptimer, uint32_t ticks,	TIMER_FUNC handler,
+int timer_set(struct sys_timer **ptimer, uint32_t ticks,	sys_timer_handler_t handler,
 		void *param) {
 
 	if (NULL == handler || NULL == ptimer) {
 		return -EINVAL;
 	}
-	if (NULL == (*ptimer = (sys_tmr_t*) pool_alloc(&timer_pool))) {
+	if (NULL == (*ptimer = (sys_timer_t*) pool_alloc(&timer_pool))) {
 		return -ENOMEM;
 	}
 	/* we know that init will be success (right ptimer and handler) */
-	init_timer(*ptimer, ticks, handler, param);
+	timer_init(*ptimer, ticks, handler, param);
 	(*ptimer)->is_preallocated = true;
 
 	return 0;
 }
 
-int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
+int timer_init(struct sys_timer *ptimer, uint32_t ticks,	sys_timer_handler_t handler,
 		void *param) {
 
 	if (NULL == handler || NULL == ptimer) {
@@ -126,7 +126,7 @@ int init_timer(struct sys_tmr *ptimer, uint32_t ticks,	TIMER_FUNC handler,
 	return 0;
 }
 
-int close_timer(sys_tmr_t *ptimer) {
+int timer_close(sys_timer_t *ptimer) {
 	if(NULL == ptimer) {
 		return -EINVAL;
 	}
@@ -149,21 +149,21 @@ static inline bool timers_need_schedule(void) {
 		return false;
 	}
 
-	if(0 == ((sys_tmr_t*)sys_timers_list->next)->cnt) {
+	if(0 == ((sys_timer_t*)sys_timers_list->next)->cnt) {
 		return true;
 	} else {
-		((sys_tmr_t*)sys_timers_list->next)->cnt--;
+		((sys_timer_t*)sys_timers_list->next)->cnt--;
 	}
 
 	return false;
 }
 
 static inline void timers_schedule(void) {
-	struct sys_tmr *timer;
+	struct sys_timer *timer;
 	struct list_head *iter, *tmp;
 
 	list_for_each_safe(iter, tmp, sys_timers_list) {
-		timer = (struct sys_tmr *)iter;
+		timer = (struct sys_timer *)iter;
 
 		if (0 != timer->cnt) {
 			return;

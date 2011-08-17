@@ -94,7 +94,7 @@ static int init(void) {
 
 	sensors_init();
 
-	set_timer(0, 1, (TIMER_FUNC) avr_handler, 0);
+	timer_set(0, 1, (sys_timer_handler_t) avr_handler, 0);
 
 	return result;
 }

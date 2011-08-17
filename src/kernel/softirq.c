@@ -32,14 +32,14 @@ struct softirq_action {
 volatile static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
 volatile static uint32_t softirq_pending;
 
-static sys_tmr_t *softirq_disp_timer;
+static sys_timer_t *softirq_disp_timer;
 
-static void softirq_disp_timer_handler(sys_tmr_t *timer, void *param ) {
+static void softirq_disp_timer_handler(sys_timer_t *timer, void *param ) {
 	softirq_dispatch();
 }
 
 static int softirq_unit_init(void) {
-	return set_timer(&softirq_disp_timer, 1, softirq_disp_timer_handler, NULL);
+	return timer_set(&softirq_disp_timer, 1, softirq_disp_timer_handler, NULL);
 }
 
 void softirq_init(void) {

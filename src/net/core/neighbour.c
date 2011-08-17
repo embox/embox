@@ -37,12 +37,12 @@ POOL_DEF(neighbour_pool, struct neighbour_head, CONFIG_ARP_CACHE_SIZE);
 static LIST_HEAD(used_neighbours_list);
 //static LIST_HEAD(wait_neighbours_list); // TODO
 
-static struct sys_tmr *neighbour_refresh_timer;
+static struct sys_timer *neighbour_refresh_timer;
 
 /**
  * This function check expires of entity from neighbour cache
  */
-static void neighbour_refresh(struct sys_tmr *timer, void *param) {
+static void neighbour_refresh(struct sys_timer *timer, void *param) {
 	struct neighbour *entity;
 	struct list_head *tmp;
 	union {
@@ -186,7 +186,7 @@ int neighbour_get_next(struct neighbour **pentity) {
 static int unit_init(void) {
 	int res;
 
-	res = set_timer(&neighbour_refresh_timer, NEIGHBOUR_CHECK_INTERVAL, neighbour_refresh, NULL);
+	res = timer_set(&neighbour_refresh_timer, NEIGHBOUR_CHECK_INTERVAL, neighbour_refresh, NULL);
 	if (res < 0) {
 		return res;
 	}

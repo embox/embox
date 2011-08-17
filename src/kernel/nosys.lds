@@ -23,8 +23,8 @@ PROVIDE(sched_sleep_locked = nosys);
 PROVIDE(printk = nosys);
 
 PROVIDE(timer_init = nosys);
-PROVIDE(set_timer = nosys);
-PROVIDE(close_timer = nosys);
+PROVIDE(timer_set = nosys);
+PROVIDE(timer_close = nosys);
 PROVIDE(timers_off = nosys);
 PROVIDE(irq_func_tmr_1mS = nosys);
 PROVIDE(usleep = nosys);
