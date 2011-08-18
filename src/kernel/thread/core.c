@@ -56,8 +56,6 @@ static void thread_free(struct thread *t);
 
 /**
  * Wrapper for thread start routine.
- *
- * @param thread_pointer pointer at thread.
  */
 static void __attribute__((noreturn)) thread_trampoline(void) {
 	struct thread *current;

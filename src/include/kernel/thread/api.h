@@ -124,9 +124,9 @@ extern struct thread *thread_self(void);
  * #thread_detach() must be called for each joinable thread, so that
  * system resources for the thread can be released after it terminates.
  *
- * Once the thread becomes detached it be made joinable again. Furthermore
- * it <b>must not be used</b> at all and each reference to it should be
- * assumed invalid.
+ * Once the thread becomes detached it can't be made joinable again.
+ * Furthermore it <b>must not be used</b> at all and each reference to it
+ * should be assumed invalid.
  *
  * @param p_thread
  *   Upon successful completion a pointer to the newly created thread is stored
@@ -235,46 +235,5 @@ extern int thread_resume(struct thread *thread);
 
 extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
-
-// XXX the following functions are considered obsolete. -- Eldar
-#if 0
-/**
- * Performs basic thread initialization.
- *
- * @param thread
- *   The thread being initialized.
- * @param run
- *   The thread start routine.
- * @param stack_address
- *   address of thread's stack.
- * @return
- *   The first argument if the initialization has succeeded.
- * @return NULL
- *   If something went wrong (e.g. invalid arguments).
- */
-extern struct thread *thread_init(struct thread *thread, void *(*run)(void *),
-		void *stack_address, size_t stack_size);
-
-/**
- * Starts a thread.
- */
-extern void thread_start(struct thread *thread);
-
-/**
- * Stops chosen thread.
- * Deletes previous zombie.
- * Makes it a zombie.
- */
-extern int thread_stop(struct thread *stopped_thread);
-
-/**
- * Changes thread's priority.
- */
-extern void thread_change_priority(struct thread *thread, int new_priority);
-
-extern struct thread *thread_alloc(void);
-
-extern void thread_free(struct thread *thread);
-#endif
 
 #endif /* KERNEL_THREAD_API_H_ */
