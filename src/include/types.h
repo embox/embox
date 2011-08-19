@@ -36,6 +36,11 @@ typedef unsigned short    ushort;
 typedef unsigned int      uint;
 typedef unsigned long     ulong;
 
+/* minix */
+typedef unsigned char 		u8_t;
+typedef unsigned short int 	u16_t;
+typedef unsigned long int 	u32_t;
+
 #ifndef NULL
 #define NULL ((void *) 0x0)
 #endif
