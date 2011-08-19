@@ -1,4 +1,4 @@
-$_PACKAGE := embox.example.kernel
+$_PACKAGE := embox.example.kernel.timer
 
 $_MODS               += timer
 $_SRCS-timer         += timer.c
