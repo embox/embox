@@ -262,4 +262,24 @@ extern void *memset(void *ptr, int c, size_t n);
  */
 extern int memcmp(const void *ptr1, const void *ptr2, size_t n);
 
+/**
+ * map upper-case characters in a string to lower-case.
+ *
+ * @param str
+ *   C-style null-terminated string.
+ * @return
+ *   C-style null-terminated string.
+ */
+extern char * strlwr (char * str);
+
+/**
+ * map lower-case characters in a string to upper-case.
+ *
+ * @param str
+ *   C-style null-terminated string.
+ * @return
+ *   C-style null-terminated string.
+ */
+extern char * strupr (char * str);
+
 #endif /* STRING_H_ */
