@@ -34,7 +34,7 @@ EMBOX_UNIT(unit_init, unit_fini);
 static int resched;
 
 /** Timer, which calls scheduler_tick. */
-sys_timer_t *tick_timer;
+static sys_timer_t *tick_timer;
 
 int sched_init(struct thread* current, struct thread *idle) {
 	int error;
