@@ -1,7 +1,5 @@
 
-# Auto-generated package declaration inherited from parent directory.
-# TODO Suggested renaming package to tests.softirq
-$_PACKAGE := embox.test
+$_PACKAGE := embox.example.kernel.softirq
 
 $_MODS += softirq
 $_SRCS-softirq += softirq.c

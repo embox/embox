@@ -1,84 +1,80 @@
 /**
  * @file
- * @brief Test softirq subsistem
+ * @brief Test softirq subsystem
  *
  * @date 19.11.10
  * @author Sergey Knolodilov
  */
-
-#include <kernel/softirq.h>
 #include <stdio.h>
-#include <embox/test.h>
+#include <errno.h>
+#include <framework/example/self.h>
+#include <unistd.h>
+#include <kernel/softirq.h>
 
-EMBOX_TEST(run);
+/**
+ * This macro is used for registration of this example at system
+ * run - function which describe work of example
+ */
+EMBOX_EXAMPLE(run);
 
 /* softirq numbers, that will be reseted by test */
-#define HANDLER1_SOFTIRQ 10
-#define HANDLER2_SOFTIRQ 11
+#define SOFTIRQ_HELLO_NUMBER      10
+#define SOFTIRQ_REQURSION_NUMBER  11
 
-volatile static int flag1 = 0;
 
 /*
  * Data should be zero terminated char*
  * Output string and set global flag
  */
-static void handler1(softirq_nr_t nt, void* data) {
-	TRACE("softirq #%d, data: %s\n", nt, (char*) data);
-	flag1 = 1;
+static void handler_hello(softirq_nr_t nt, void* data) {
+	printf("softirq #%d, data: %s\n", nt, (char*) data);
 }
 
 /*
  * Data should be int*.
  * Raise itself several times
  */
-static void handler2(softirq_nr_t nt, void* data) {
+static void handler_recursion(softirq_nr_t nt, void* data) {
 	int* count = (int*) data;
 
-	TRACE("softirq #%d, data: %d\n", nt, *count);
-
-	*count += 1;
-
-	if (*count < 5)
+	printf("softirq #%d, data: %d\n", nt, *count);
+	*count -= 1;
+	if(*count > 0) {
 		softirq_raise(nt);
+	}
 }
 
-/**
- * The test itself. Will reset 10 and 11 softirqs!
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
-static int run(void) {
-	int err = 0;
-	volatile static int flag2 = 0;
-
-	flag1 = 0;
-	flag2 = 0;
-
-	err = softirq_install(HANDLER1_SOFTIRQ, handler1, "hello!");
-
-	if (err) {
-		TRACE("Can not install softirq #%d, error %d", HANDLER1_SOFTIRQ, err);
-		return 1;
+int example_hello(void) {
+	if(softirq_install(SOFTIRQ_HELLO_NUMBER, handler_hello, "hello softirq!")) {
+		printf("Can not install softirq #%d\n", SOFTIRQ_HELLO_NUMBER);
+		return -EBUSY;
 	}
 
-	softirq_install(HANDLER2_SOFTIRQ, handler2, &flag2);
+	softirq_raise(SOFTIRQ_HELLO_NUMBER);
+	return ENOERR;
+}
 
-	if (err) {
-		TRACE("Can not install softirq #%d, error %d", HANDLER2_SOFTIRQ, err);
-		return 1;
+int example_recursion(int cnt) {
+	int count = 0;
+
+	if(softirq_install(SOFTIRQ_REQURSION_NUMBER, handler_recursion, &count)) {
+		printf("Can not install softirq #%d\n", SOFTIRQ_REQURSION_NUMBER);
+		return -EBUSY;
 	}
-
-	softirq_raise(HANDLER1_SOFTIRQ);
-	softirq_raise(HANDLER2_SOFTIRQ);
+	count = cnt;
+	softirq_raise(SOFTIRQ_REQURSION_NUMBER);
 
 	sleep(1);
 
-	if ((flag1 == 0) || (flag2 == 0)) {
-		TRACE("bad results: falg1 = %d, flag2 = %d", flag1, flag2);
-		return 1;
-	}
+	return ENOERR;
+}
 
-	return 0;
+/**
+ * Example's execution routine
+ * It has been declared with macro EMBOX_EXAMPLE
+ */
+static int run(int argc, char **argv) {
+	example_hello();
+	example_recursion(5);
+	return ENOERR;
 }
