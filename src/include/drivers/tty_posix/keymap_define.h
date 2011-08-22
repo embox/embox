@@ -7,8 +7,8 @@
  * @author Gerald Hoch
  */
 
-#ifndef TTYI_KEYMAP_DEFINE_H_
-#define TTYI_KEYMAP_DEFINE_H_
+#ifndef KEYMAP_DEFINE_H_
+#define KEYMAP_DEFINE_H_
 
 
 	#define KEYBOARD_MAPPING_DE 0
@@ -153,4 +153,4 @@
 
 	#define KEY_MAGIC	"KMAZ"	/* Magic number of keymap file */
 
-#endif /* TTYI_KEYMAP_DEFINE_H_ */
+#endif /* KEYMAP_DEFINE_H_ */

@@ -1,55 +1,20 @@
 ####################################################
 # Posix TTY Device Module
-#---------------------------------------------------
-#  - base ( required for all below )
 ####################################################
 $_PACKAGE := embox.driver
 
-#################################################################
-# Virtual service, consists of screen,keyboard,console
-# ---------------------------------------------------------------
-$_APIS += embox.hal.ttyx
+$_MODS += tty_posix
 
-# TTY Factory Base
-############################
-$_MODS += tty_factory
-#---------------------------
-$_PROVIDES-tty_factory += embox.hal.ttyx
-$_DEPS-tty_factory += embox.kernel.timer.sleep_nosched
-$_DEPS-tty_factory += embox.kernel.timer.timer
-$_DEPS-tty_factory += embox.kernel.softirq
-$_DEPS-tty_factory += embox.kernel.irq
-$_DEPS-tty_factory += embox.fs.devfs
-$_SRCS-tty_factory += tty.c
+$_DEPS-tty_posix += core.kernel.timer.sleep_nosched
+$_DEPS-tty_posix += core.kernel.timer.timer
+$_DEPS-tty_posix += core.kernel.softirq
+$_DEPS-tty_posix += core.kernel.irq
+$_DEPS-tty_posix += embox.fs.devfs
 
-# keyboard Depends on TTY base
-################################
-$_MODS += tty_kbd
-#-------------------------------
-$_REQUIRES-tty_kbd += embox.hal.ttyx
-$_SRCS-tty_kbd += kbd.c
-$_DEPS-tty_kbd += tty_factory
+$_SRCS-tty_posix += keyboard.c
+#$_SRCS-tty_posix += console.c
+#$_SRCS-tty_posix += pty.c
+#$_SRCS-tty_posix += rs232.c
+$_SRCS-tty_posix += tty.c
 
-# screen Depends on TTY base
-################################
-#$_MODS += ttyo
-#-------------------------------
-#$_REQUIRES-ttyo += embox.hal.ttyx
-#$_SRCS-ttyo += ttyo.c
-#$_DEPS-ttyo += tty_factory
-
-# RS232 Depends on TTY base
-###############################
-#$_MODS += ttys
-#------------------------------
-#$_REQUIRES-ttys += embox.hal.ttyx
-#$_SRCS-ttys += ttys.c
-#$_DEPS-ttys += tty_factory
-
-# pseudo Depends on tty base
-###############################
-#$_MODS += ttyp
-#------------------------------
-#$_REQUIRES-ttyp += embox.hal.ttyx
-#$_SRCS-ttyp += ttyp.c
-#$_DEPS-ttyp += tty_factory
+$_BRIEF-tty_posix = TTY posix implementation

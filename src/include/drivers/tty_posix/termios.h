@@ -1,20 +1,16 @@
-/**
- * @file
- *
- * @date 03.08.2011
- * @author Gerald Hoch
- */
+/* The <termios.h> header is used for controlling tty modes. */
 
-#ifndef TERMIOS_H_
-#define TERMIOS_H_
+#ifndef _TERMIOS_H
+#define _TERMIOS_H
 
-#define MINIX_EXTENSION
+#define _MINIX
 
-typedef unsigned short 	tcflag_t;
-typedef unsigned char 	cc_t;
-typedef unsigned int 	speed_t;
+typedef unsigned short tcflag_t;
+typedef unsigned char cc_t;
+typedef unsigned int speed_t;
 
-#define NCCS		   20	/* size of cc_c array, some extra space * for extensions. */
+#define NCCS		20	/* size of cc_c array, some extra space
+				 * for extensions. */
 
 /* Primary terminal control structure. POSIX Table 7-1. */
 struct termios {
@@ -47,10 +43,10 @@ struct termios {
 #define CLOCAL		0x0001	/* ignore modem status lines */
 #define CREAD		0x0002	/* enable receiver */
 #define CSIZE		0x000C	/* number of bits per character */
-#define	CS5			0x0000	/* if CSIZE is CS5, characters are 5 bits */
-#define	CS6			0x0004	/* if CSIZE is CS6, characters are 6 bits */
-#define	CS7			0x0008	/* if CSIZE is CS7, characters are 7 bits */
-#define	CS8			0x000C	/* if CSIZE is CS8, characters are 8 bits */
+#define		CS5	0x0000	/* if CSIZE is CS5, characters are 5 bits */
+#define		CS6	0x0004	/* if CSIZE is CS6, characters are 6 bits */
+#define		CS7	0x0008	/* if CSIZE is CS7, characters are 7 bits */
+#define		CS8	0x000C	/* if CSIZE is CS8, characters are 8 bits */
 #define CSTOPB		0x0010	/* send 2 stop bits if set, else 1 */
 #define HUPCL		0x0020	/* hang up on last close */
 #define PARENB		0x0040	/* enable parity on output */
@@ -68,17 +64,17 @@ struct termios {
 #define TOSTOP		0x0100	/* send SIGTTOU (job control, not implemented*/
 
 /* Indices into c_cc array.  Default values in parentheses. POSIX Table 7-5. */
-#define VEOF                 0	/* cc_c[VEOF] = EOF char (^D) */
-#define VEOL                 1	/* cc_c[VEOL] = EOL char (undef) */
-#define VERASE               2	/* cc_c[VERASE] = ERASE char (^H) */
-#define VINTR                3	/* cc_c[VINTR] = INTR char (DEL) */
-#define VKILL                4	/* cc_c[VKILL] = KILL char (^U) */
-#define VMIN                 5	/* cc_c[VMIN] = MIN value for timer */
-#define VQUIT                6	/* cc_c[VQUIT] = QUIT char (^\) */
-#define VTIME                7	/* cc_c[VTIME] = TIME value for timer */
-#define VSUSP                8	/* cc_c[VSUSP] = SUSP (^Z, ignored) */
-#define VSTART               9	/* cc_c[VSTART] = START char (^S) */
-#define VSTOP               10	/* cc_c[VSTOP] = STOP char (^Q) */
+#define VEOF               0	/* cc_c[VEOF] = EOF char (^D) */
+#define VEOL               1	/* cc_c[VEOL] = EOL char (undef) */
+#define VERASE             2	/* cc_c[VERASE] = ERASE char (^H) */
+#define VINTR              3	/* cc_c[VINTR] = INTR char (DEL) */
+#define VKILL              4	/* cc_c[VKILL] = KILL char (^U) */
+#define VMIN               5	/* cc_c[VMIN] = MIN value for timer */
+#define VQUIT              6	/* cc_c[VQUIT] = QUIT char (^\) */
+#define VTIME              7	/* cc_c[VTIME] = TIME value for timer */
+#define VSUSP              8	/* cc_c[VSUSP] = SUSP (^Z, ignored) */
+#define VSTART             9	/* cc_c[VSTART] = START char (^S) */
+#define VSTOP             10	/* cc_c[VSTOP] = STOP char (^Q) */
 
 #define _POSIX_VDISABLE	  (cc_t)0xFF	/* You can't even generate this
 					 * character with 'normal' keyboards.
@@ -89,9 +85,9 @@ struct termios {
 					 */
 
 /* Values for the baud rate settings.  POSIX Table 7-6. */
-#define B0			0x0000	/* hang up the line */
-#define B50			0x1000	/* 50 baud */
-#define B75			0x2000	/* 75 baud */
+#define B0		0x0000	/* hang up the line */
+#define B50		0x1000	/* 50 baud */
+#define B75		0x2000	/* 75 baud */
 #define B110		0x3000	/* 110 baud */
 #define B134		0x4000	/* 134.5 baud */
 #define B150		0x5000	/* 150 baud */
@@ -122,42 +118,25 @@ struct termios {
 #define TCIOFF             3	/* transmit a STOP character on the line */
 #define TCION              4	/* transmit a START character on the line */
 
-/* Legacy <sgtty.h> */
-#define TIOCGETP	1
-#define TIOCSETP	2
-#define TIOCGETC	3
-#define TIOCSETC	4
-/* Keyboard ioctls. */
-#define KIOCSMAP	5	/* Terminal ioctls. */
-#define TCGETS		8 	/* tcgetattr */
-#define TCSETS		9 	/* tcsetattr, TCSANOW */
-#define TCSETSW		10 	/* tcsetattr, TCSADRAIN */
-#define TCSETSF		11 	/* tcsetattr, TCSAFLUSH */
-#define TCSBRK		12	/* tcsendbreak */
-#define TCDRAIN		13	/* tcdrain */
-#define TCFLOW		14	/* tcflow */
-#define TCFLSH		15	/* tcflush */
-#define	TIOCGWINSZ	16
-#define	TIOCSWINSZ	17
-#define	TIOCGPGRP	18
-#define	TIOCSPGRP	19
-#define TIOCSFON	20
 
-int tcsendbreak		(int _filedes, int _duration);
-int tcdrain			(int _filedes)	;
-int tcflush			(int _filedes, int _queue_selector);
-int tcflow			(int _filedes, int _action)	;
-int tcgetattr		(int _filedes, struct termios *_termios_p) ;
-int tcsetattr		(int _filedes, int _opt_actions, const struct termios *_termios_p) ;
-int tcioctl			(int fd, int request, void *data);
+_PROTOTYPE( int tcsendbreak, (int _fildes, int _duration)		     );
+_PROTOTYPE( int tcdrain, (int _filedes)				   	     );
+_PROTOTYPE( int tcflush, (int _filedes, int _queue_selector)		     );
+_PROTOTYPE( int tcflow, (int _filedes, int _action)			     );
+_PROTOTYPE( int tcgetattr, (int _filedes, struct termios *_termios_p)        );
+_PROTOTYPE( int tcsetattr, (int _filedes, int _opt_actions, const struct termios *_termios_p)   );
 
 #define cfgetispeed(termios_p)		((termios_p)->c_ispeed)
 #define cfgetospeed(termios_p)		((termios_p)->c_ospeed)
 #define cfsetispeed(termios_p, speed)	((termios_p)->c_ispeed = (speed), 0)
 #define cfsetospeed(termios_p, speed)	((termios_p)->c_ospeed = (speed), 0)
 
-#ifdef  MINIX_EXTENSION
-// TODO include Minix extension or not?
+#ifdef _MINIX
+/* Here are the local extensions to the POSIX standard for Minix. Posix
+ * conforming programs are not able to access these, and therefore they are
+ * only defined when a Minix program is compiled.
+ */
+
 /* Extensions to the termios c_iflag bit map.  */
 #define IXANY		0x0800	/* allow any key to continue ouptut */
 
@@ -190,7 +169,7 @@ int tcioctl			(int fd, int request, void *data);
 #define TEOF_DEF	'\4'	/* ^D */
 #define TEOL_DEF	_POSIX_VDISABLE
 #define TERASE_DEF	'\10'	/* ^H */
-#define TINTR_DEF	'\3'	/* ^C */
+#define TINTR_DEF	'\177'	/* ^? */
 #define TKILL_DEF	'\25'	/* ^U */
 #define TMIN_DEF	1
 #define TQUIT_DEF	'\34'	/* ^\ */
@@ -215,6 +194,6 @@ struct winsize
 	unsigned short	ws_xpixel;	/* horizontal size, pixels */
 	unsigned short	ws_ypixel;	/* vertical size, pixels */
 };
-#endif
+#endif /* _MINIX */
 
-#endif /* TERMIOS_H_ */
+#endif /* _TERMIOS_H */
