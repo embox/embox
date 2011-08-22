@@ -9,11 +9,8 @@ $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
 # TODO too more mods fro embox.kernel
-$_MODS += softirq drv_subsys #printk
+$_MODS += drv_subsys #printk
 $_MODS += printk
-$_MODS += softirq_critical
-
-$_APIS += softirq_api
 
 #$_SRCS-main += main.c
 $_SRCS-main += init.c
@@ -22,7 +19,6 @@ $_DEPS-main += embox.hal.arch
 #$_DEPS-main += timer
 $_DEPS-REQUIRES += embox.kernel.timer.timer_api
 #$_DEPS-main += printk
-#$_DEPS-main += softirq
 #$_REQUIRES-main += embox.hal.diag
 $_REQUIRES-main += softirq_api
 $_REQUIRES-main += embox.kernel.sched_api
@@ -34,13 +30,6 @@ endif
 ifdef CONFIG_MMU_SUPPORT
 $_DEPS-main += embox.hal.mm.mmu
 endif
-
-$_SRCS-softirq_critical += softirq_critical.h
-$_PROVIDES-softirq_critical += softirq_api
-
-$_SRCS-softirq += softirq.c
-$_PROVIDES-softirq += softirq_api
-$_REQUIRES-softirq += embox.kernel.timer.timer_api
 
 #ifdef CONFIG_PRINTK
 #  $_SRCS-printk  += printk.c
