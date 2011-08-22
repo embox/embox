@@ -1,7 +1,6 @@
 
-$_PACKAGE := core.kernel
+$_PACKAGE := embox.kernel
 
-$_CPPFLAGS += -D__KERNEL__
 #TODO mb-gcc doesn't recognize multiple -T flag
 #$_LDFLAGS  += -T $($_SELFDIR)/nosys.lds
 $_LDFLAGS  += $($_SELFDIR)/nosys.lds
@@ -9,7 +8,7 @@ $_LDFLAGS  += $($_SELFDIR)/nosys.lds
 $(IMAGE): $($_SELFDIR)/nosys.lds
 
 $_MODS_CORE += main
-# TODO too more mods fro core.kernel
+# TODO too more mods fro embox.kernel
 $_MODS += irq softirq drv_subsys #printk
 $_MODS += printk
 $_MODS += irq_critical softirq_critical irq_nested
@@ -22,16 +21,16 @@ $_SRCS-main += nosys.c
 $_DEPS-main += embox.hal.arch
 #$_DEPS-main += irq
 #$_DEPS-main += timer
-$_DEPS-REQUIRES += core.kernel.timer.timer_api
+$_DEPS-REQUIRES += embox.kernel.timer.timer_api
 #$_DEPS-main += printk
 #$_DEPS-main += softirq
 #$_REQUIRES-main += embox.hal.diag
 $_REQUIRES-main += softirq_api
 $_REQUIRES-main += irq_api
-$_REQUIRES-main += core.kernel.sched_api
+$_REQUIRES-main += embox.kernel.sched_api
 
 ifdef CONFIG_THREAD
-#$_DEPS-main += core.kernel.thread.core
+#$_DEPS-main += embox.kernel.thread.core
 endif
 
 ifdef CONFIG_MMU_SUPPORT
@@ -51,12 +50,12 @@ $_DEPS-irq     += irq_nested
 $_REQUIRES-irq += embox.hal.interrupt
 $_PROVIDES-irq += irq_api
 # $_DEPS-irq     += softirq
-# $_DEPS-irq     += core.kernel.critical.core
+# $_DEPS-irq     += embox.kernel.critical.core
 
 $_SRCS-softirq += softirq.c
 $_PROVIDES-softirq += softirq_api
-$_REQUIRES-softirq += core.kernel.timer.timer_api
-  #$_DEPS-irq     += core.kernel.critical.core
+$_REQUIRES-softirq += embox.kernel.timer.timer_api
+  #$_DEPS-irq     += embox.kernel.critical.core
 
 #ifdef CONFIG_PRINTK
 #  $_SRCS-printk  += printk.c
@@ -69,7 +68,7 @@ $_REQUIRES-softirq += core.kernel.timer.timer_api
 #  $_REQUIRES-timer += embox.hal.clock
 #endif
 ifdef CONFIG_DRIVER_SUBSYSTEM
-# It's core.kernel.drv_subsys
+# It's embox.kernel.drv_subsys
   $_MODS += drv_subsys
   $_SRCS-drv_subsys += driver.c
   $_DEPS-drv_subsys += embox.hal.mm.slob
@@ -91,5 +90,16 @@ $_SRCS-clock_source     += clock_source.c
 
 $_MODS      += time
 $_SRCS-time += time.c
-$_REQUIRES-time += core.kernel.timer.timer_api
-$_DEPS-time += core.kernel.clock_source
+$_REQUIRES-time += embox.kernel.timer.timer_api
+$_DEPS-time += embox.kernel.clock_source
+
+
+
+#########
+
+
+
+SELFDIR ?= .
+__CMD_EM_FILES := $(wildcard $(SELFDIR)/*.em)
+
+include $(__CMD_EM_FILES)

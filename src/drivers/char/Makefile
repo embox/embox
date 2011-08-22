@@ -13,9 +13,9 @@ $_SRCS-terminal += terminal.c
 ifdef CONFIG_DRIVER_SUBSYSTEM
 $_MODS += zero
 $_SRCS-zero += zero.c
-$_DEPS-zero += core.kernel.drv_subsys
+$_DEPS-zero += embox.kernel.drv_subsys
 
 $_MODS += pipe
 $_SRCS-pipe += pipe.c
-$_DEPS-pipe += core.kernel.drv_subsys
+$_DEPS-pipe += embox.kernel.drv_subsys
 endif

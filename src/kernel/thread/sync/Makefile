@@ -1,4 +1,4 @@
-$_PACKAGE := core.kernel.thread
+$_PACKAGE := embox.kernel.thread
 
 $_MODS += sync
 

@@ -1,4 +1,4 @@
-$_PACKAGE := core.kernel.thread.sched_policy
+$_PACKAGE := embox.kernel.thread.sched_policy
 
 $_APIS                    += api
 

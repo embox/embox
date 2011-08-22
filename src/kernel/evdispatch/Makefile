@@ -1,4 +1,4 @@
-$_PACKAGE := core.kernel
+$_PACKAGE := embox.kernel
 
 $_MODS += evdispatch
 $_MODS += evdispatch2

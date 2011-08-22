@@ -1,6 +1,6 @@
 $_MODS += esh
 $_SRCS-esh += esh/esh.c
-$_DEPS-esh += core.kernel.thread.core
+$_DEPS-esh += embox.kernel.thread.core
 $_USES-esh += libframework.a
 
 $_BRIEF-esh = Embox shell

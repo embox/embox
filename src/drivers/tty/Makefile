@@ -8,9 +8,9 @@ $_USES-tty += libc.a
 #need for vtbuilder, vtparser
 $_DEPS-tty += embox.driver.terminal
 $_DEPS-tty += embox.cmd.esh
-#$_DEPS-tty += core.kernel.thread.sched
+#$_DEPS-tty += embox.kernel.thread.sched
 $_DEPS-tty += tty_common
-$_DEPS-tty += core.kernel.evdispatch
+$_DEPS-tty += embox.kernel.evdispatch
 $_REQUIRES-tty += embox.hal.diag
 
 $_MODS += tty_one_console

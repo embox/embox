@@ -1,4 +1,4 @@
-$_PACKAGE := core.kernel.thread
+$_PACKAGE := embox.kernel.thread
 
 $_APIS += sched_api
 
@@ -10,10 +10,10 @@ $_DEPS-core += sync
 $_DEPS-core += embox.hal.context
 
 $_SRCS-sched += sched.c
-$_DEPS-REQUIRES += core.kernel.timer.timer_api
+$_DEPS-REQUIRES += embox.kernel.timer.timer_api
 $_DEPS-sched += embox.hal.context
-#$_DEPS-sched += core.kernel.critical.core
-$_REQUIRES-sched += core.kernel.thread.sched_policy.api
+#$_DEPS-sched += embox.kernel.critical.core
+$_REQUIRES-sched += embox.kernel.thread.sched_policy.api
 $_PROVIDES-sched += sched_api
 
 $_SRCS-sched_critical += sched_critical.h

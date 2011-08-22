@@ -5,5 +5,5 @@ $_PACKAGE := embox.test
 
 $_MODS += evdispatch
 $_SRCS-evdispatch += evdispatch.c
-$_DEPS-evdispatch += core.kernel.evdispatch
-$_DEPS-evdispatch += core.kernel.softirq
+$_DEPS-evdispatch += embox.kernel.evdispatch
+$_DEPS-evdispatch += embox.kernel.softirq

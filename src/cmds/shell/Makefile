@@ -12,7 +12,7 @@ ifeq ($(CONFIG_SHELL_SOURCE:shell.c=),) # old
 
     $_SRCS-shell += shell.c console/*.c
 #    $_DEPS-shell += \
-       core.kernel.job \
+       embox.kernel.job \
        embox.hal.context \
        embox.driver.apbuart \
        embox.driver.diag_apbuart
@@ -27,11 +27,11 @@ else # new
 
     $_SRCS-shell += $(CONFIG_SHELL_SOURCE)
     $_DEPS-shell += \
-       core.kernel.job \
+       embox.kernel.job \
        embox.hal.context \
-       core.kernel.drv_subsys \
-       core.kernel.scheduler \
-       core.kernel.thread
+       embox.kernel.drv_subsys \
+       embox.kernel.scheduler \
+       embox.kernel.thread
 
 endif
 

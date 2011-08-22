@@ -15,10 +15,10 @@ $_APIS += embox.hal.ttyx
 $_MODS += tty_factory
 #---------------------------
 $_PROVIDES-tty_factory += embox.hal.ttyx
-$_DEPS-tty_factory += core.kernel.timer.sleep_nosched
-$_DEPS-tty_factory += core.kernel.timer.timer
-$_DEPS-tty_factory += core.kernel.softirq
-$_DEPS-tty_factory += core.kernel.irq
+$_DEPS-tty_factory += embox.kernel.timer.sleep_nosched
+$_DEPS-tty_factory += embox.kernel.timer.timer
+$_DEPS-tty_factory += embox.kernel.softirq
+$_DEPS-tty_factory += embox.kernel.irq
 $_DEPS-tty_factory += embox.fs.devfs
 $_SRCS-tty_factory += tty.c
 
