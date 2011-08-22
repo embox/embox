@@ -25,5 +25,4 @@ $_MODS                   += sleep_nosched
 $_SRCS-sleep_nosched     += sleep_nosched.c
 $_PROVIDES-sleep_nosched += sleep_api
 $_REQUIRES-sleep_nosched += embox.kernel.timer.timer_api
-$_DEPS-sleep     += embox.kernel.thread.core
 
