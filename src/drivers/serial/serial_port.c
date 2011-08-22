@@ -7,8 +7,10 @@
  */
 
 #include <types.h>
-#include <kernel/diag.h>
+
 #include <asm/io.h>
+#include <kernel/diag.h>
+#include <kernel/irq.h>
 
 /**
  * UART registers

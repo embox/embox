@@ -14,9 +14,10 @@
 #include <stdarg.h>
 #include <types.h>
 #include <kernel/printk.h>
-#include <kernel/driver.h>
 
 #define EOF (-1)
+
+typedef int FILE;
 
 struct stat;
 
