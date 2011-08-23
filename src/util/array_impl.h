@@ -120,11 +120,7 @@
 
 #define __array_range_foreach_nm(element, array_begin, array_end, _ptr, _end) \
 	for (const typeof(element) *_ptr = (array_begin), *_end = (array_end); \
-			__extension__ ({           \
-				if (_ptr < _end)       \
-					(element) = *_ptr; \
-				_ptr < _end;           \
-			}); ++_ptr)
+			(_ptr < _end) && (((element) = *_ptr) || 1); ++_ptr)
 
 #define __array_nullterm_foreach(element, array) \
 	__array_nullterm_foreach_nm(element, array, \
@@ -147,10 +143,6 @@
 #define __array_range_foreach_ptr_nm(element_ptr, array_begin, array_end, \
 		_ptr, _end) \
 	for (typeof(element_ptr) _ptr = (array_begin), _end = (array_end); \
-			__extension__ ({           \
-				if (_ptr < _end)       \
-					(element_ptr) = _ptr; \
-				_ptr < _end;           \
-			}); ++_ptr)
+			(_ptr < _end) && ((element_ptr) = _ptr); ++_ptr)
 
 #endif /* UTIL_ARRAY_IMPL_H_ */
