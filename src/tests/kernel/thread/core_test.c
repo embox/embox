@@ -14,7 +14,6 @@
 EMBOX_TEST_SUITE("test for thread API");
 
 static void *arg_invert_run(void *arg) {
-	printf("bbb\n");
 	return (void *) ~((unsigned long) arg);
 }
 
@@ -44,7 +43,6 @@ TEST_CASE("thread_create with THREAD_FLAG_DETACHED should return zero even if "
 	test_assert_zero(
 			thread_create(NULL, THREAD_FLAG_DETACHED, arg_invert_run, NULL));
 }
-#if 0
 TEST_CASE("thread_join should retrieve the result of thread execution") {
 	struct thread *foo;
 	void *ret;
@@ -59,7 +57,8 @@ TEST_CASE("thread_resume should return 0 if the thread was created with "
 		"THREAD_FLAG_SUSPENDED flag") {
 	struct thread *foo;
 
-	test_assert_zero(thread_create(&foo, THREAD_FLAG_SUSPENDED, arg_invert_run, NULL));
+	test_assert_zero(
+			thread_create(&foo, THREAD_FLAG_SUSPENDED, arg_invert_run, NULL));
 	test_assert_zero(thread_resume(foo));
 	test_assert_zero(thread_detach(foo));
 }
@@ -72,4 +71,3 @@ TEST_CASE("thread_resume should return an error if the thread hasn't been "
 	test_assert_not_zero(thread_resume(foo));
 	test_assert_zero(thread_detach(foo));
 }
-#endif

@@ -33,7 +33,7 @@ static inline void softirq_lock(void) {
  */
 static inline void softirq_unlock(void) {
 	critical_leave(__CRITICAL_SOFTIRQ);
-	critical_check_pending(__CRITICAL_SOFTIRQ);
+	critical_check_dispatch(__CRITICAL_SOFTIRQ);
 }
 
 #endif /* KERNEL_SOFTIRQ_CRITICAL_H_ */

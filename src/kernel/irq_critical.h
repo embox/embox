@@ -44,7 +44,7 @@ static inline void irq_unlock(void) {
 		ipl_restore(__irq_critical_ipl);
 	}
 
-	critical_check_pending(__CRITICAL_HARDIRQ);
+	critical_check_dispatch(__CRITICAL_HARDIRQ);
 }
 
 #endif /* KERNEL_IRQ_CRITICAL_H_ */

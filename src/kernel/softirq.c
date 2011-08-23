@@ -18,11 +18,6 @@
 #include <kernel/softirq.h>
 #include __impl_x(kernel/softirq_critical.h)
 #include <hal/ipl.h>
-#include <kernel/timer.h>
-
-#include <embox/unit.h>
-
-EMBOX_UNIT_INIT(softirq_unit_init);
 
 struct softirq_action {
 	softirq_handler_t handler;
@@ -31,16 +26,6 @@ struct softirq_action {
 
 volatile static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
 volatile static uint32_t softirq_pending;
-
-static sys_timer_t *softirq_disp_timer;
-
-static void softirq_disp_timer_handler(sys_timer_t *timer, void *param ) {
-	softirq_dispatch();
-}
-
-static int softirq_unit_init(void) {
-	return timer_set(&softirq_disp_timer, 1, softirq_disp_timer_handler, NULL);
-}
 
 void softirq_init(void) {
 	// TODO install common softirqs. -- Eldar
@@ -72,10 +57,7 @@ int softirq_raise(softirq_nr_t nr) {
 	softirq_pending |= (1 << nr);
 	ipl_restore(ipl);
 
-	if (critical_allows(__CRITICAL_PREEMPT)) {
-		__sched_dispatch();
-	} else
-		__critical_count_set_bit(__CRITICAL_PREEMPT);
+	critical_request_dispatch(CRITICAL_SOFTIRQ);
 
 	return 0;
 }

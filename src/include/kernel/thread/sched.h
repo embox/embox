@@ -11,6 +11,8 @@
 #ifndef KERNEL_THREAD_SCHED_H_
 #define KERNEL_THREAD_SCHED_H_
 
+#include <kernel/thread/sched_lock.h>
+
 #include __impl_x(kernel/thread/sched_impl.h)
 
 struct thread;
@@ -31,18 +33,6 @@ struct thread;
  *   failed.
  */
 extern int sched_init(struct thread *current, struct thread *idle);
-
-/**
- * Does the same as #sched_unlock() except that the outermost unlock doesn't
- * perform any special actions.
- */
-extern void sched_unlock_noswitch(void);
-
-/**
- * Checks the need to reschedule the current thread and performs the switch
- * if needed.
- */
-extern void sched_check_switch(void);
 
 /**
  * Starts scheduling of the given @a thread.
@@ -122,24 +112,6 @@ extern void sched_yield(void);
 extern void sched_suspend(struct thread *thread);
 
 extern void sched_resume(struct thread *thread);
-
-/**
- * Locks the scheduler which means disabling thread switch until
- * #sched_unlock() is called. Each lock must be balanced with the corresponding
- * unlock.
- *
- * @see sched_unlock()
- */
-extern void sched_lock(void);
-
-/**
- * Unlocks the scheduler after #sched_lock(). Must be called on the
- * previously locked scheduler only. Outermost unlock (which corresponds to
- * the first lock call) also dispatches pending thread switches (if any).
- *
- * @see sched_lock()
- */
-extern void sched_unlock(void);
 
 #endif /* KERNEL_THREAD_SCHED_H_ */
 

@@ -1,6 +1,6 @@
 
-# Auto-generated package declaration inherited from parent directory.
-# TODO Suggested renaming package to tests.kernel
-$_PACKAGE := embox.test
+$_PACKAGE := embox.test.kernel
 
-# Suppress build system warnings.
+$_MODS             += softirq_test
+$_SRCS-softirq_test = softirq_test.c
+$_DEPS-softirq_test = embox.kernel.softirq

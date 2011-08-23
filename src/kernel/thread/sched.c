@@ -22,8 +22,6 @@
 #include <hal/context.h>
 #include <hal/ipl.h>
 
-#include __impl_x(kernel/thread/sched_critical.h)
-
 #include "types.h"
 
 /** Interval, what scheduler_tick is called in. */
@@ -31,10 +29,18 @@
 
 EMBOX_UNIT(unit_init, unit_fini);
 
-static int resched;
-
 /** Timer, which calls scheduler_tick. */
 static sys_timer_t *tick_timer;
+
+static void request_switch(void) {
+	critical_request_dispatch(CRITICAL_PREEMPT);
+}
+
+static void request_switch_if(int cond) {
+	if (cond) {
+		request_switch();
+	}
+}
 
 int sched_init(struct thread* current, struct thread *idle) {
 	int error;
@@ -58,7 +64,7 @@ int sched_init(struct thread* current, struct thread *idle) {
  * @param id nothing significant
  */
 static void sched_tick(sys_timer_t *timer, void *param) {
-	resched = true;
+	request_switch();
 }
 
 /**
@@ -70,6 +76,8 @@ static void sched_switch(void) {
 
 	current = sched_current();
 	next = sched_policy_switch(current);
+
+	assert(thread_state_running(next->state));
 
 	if (next == current) {
 		return;
@@ -86,10 +94,7 @@ void __sched_dispatch(void) {
 
 	sched_lock();
 
-	while (resched) {
-		resched = false;
-		sched_switch();
-	}
+	sched_switch();
 
 	sched_unlock();
 }
@@ -103,7 +108,7 @@ void sched_start(struct thread *t) {
 	t->state = THREAD_STATE_RUNNING;
 #endif
 
-	resched |= sched_policy_start(t);
+	request_switch_if(sched_policy_start(t));
 
 	sched_unlock();
 }
@@ -113,7 +118,7 @@ void sched_stop(struct thread *t) {
 
 	sched_lock();
 
-	resched |= sched_policy_stop(t);
+	request_switch_if(sched_policy_stop(t));
 
 #if 0
 	t->state = 0;
@@ -130,15 +135,20 @@ int sched_sleep_locked(struct event *e) {
 
 	current = sched_current();
 
-	resched |= sched_policy_stop(current);
+	request_switch_if(sched_policy_stop(current));
 
 	current->state = thread_state_do_sleep(current->state);
 
 	list_add(&current->sched_list, &e->sleep_queue);
 
-	sched_unlock();
 	/* Switch from the current thread. */
+	sched_unlock();
+
+	/* At this point we have been awakened and are ready to go. */
 	assert(critical_allows(CRITICAL_PREEMPT));
+	assert(thread_state_running(current->state));
+
+	/* Restore the locked state and return. */
 	sched_lock();
 
 	return 0;
@@ -167,7 +177,7 @@ static void sched_wakeup_thread(struct thread *t) {
 	t->state = thread_state_do_wake(t->state);
 
 	if (thread_state_running(t->state)) {
-		resched |= sched_policy_start(t);
+		request_switch_if(sched_policy_start(t));
 	}
 }
 
@@ -202,18 +212,14 @@ int sched_wake_one(struct event *e) {
 }
 
 void sched_yield(void) {
-	sched_lock();
-
-	resched = true;
-
-	sched_unlock();
+	request_switch();
 }
 
 void sched_suspend(struct thread *t) {
 	sched_lock();
 
 	if (thread_state_running(t->state)) {
-		resched |= sched_policy_stop(t);
+		request_switch_if(sched_policy_stop(t));
 	}
 
 	t->state = thread_state_do_suspend(t->state);
@@ -227,7 +233,7 @@ void sched_resume(struct thread *t) {
 	t->state = thread_state_do_resume(t->state);
 
 	if (thread_state_running(t->state)) {
-		resched |= sched_policy_start(t);
+		request_switch_if(sched_policy_start(t));
 	}
 
 	sched_unlock();
@@ -244,15 +250,11 @@ int sched_change_scheduling_priority(struct thread *t, __thread_priority_t new) 
 
 	need_restart = thread_state_running(t->state);
 
-	if (need_restart) {
-		resched |= sched_policy_stop(t);
-	}
+	request_switch_if(need_restart && sched_policy_stop(t));
 
 	t->priority = new;
 
-	if (need_restart) {
-		resched |= sched_policy_start(t);
-	}
+	request_switch_if(need_restart && sched_policy_start(t));
 
 	sched_unlock();
 
@@ -266,14 +268,6 @@ void sched_set_priority(struct thread *t, __thread_priority_t new) {
 	t->initial_priority = new;
 
 	sched_unlock();
-}
-
-// TODO make it inline. -- Eldar
-void sched_check_switch(void) {
-	extern void __sched_dispatch(void);
-	if (critical_allows(CRITICAL_PREEMPT) && resched) {
-		__sched_dispatch();
-	}
 }
 
 static int unit_init(void) {

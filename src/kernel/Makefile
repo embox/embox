@@ -11,10 +11,6 @@ $_SRCS-main += init.c
 $_SRCS-main += nosys.c
 $_DEPS-main += embox.hal.arch
 
-# TODO For what?
-$_REQUIRES-main += softirq_api
-$_REQUIRES-main += embox.kernel.sched_api
-
 ifdef CONFIG_MMU_SUPPORT
 $_DEPS-main += embox.hal.mm.mmu
 endif
@@ -33,6 +29,8 @@ endif
 # Include em-files from current directory.
 
 SELFDIR ?= .
-__CMD_EM_FILES := $(wildcard $(SELFDIR)/*.em)
+__KERNEL_EM_FILES := $(wildcard $(SELFDIR)/*.em)
+$(SELFDIR)/Makefile : $(__KERNEL_EM_FILES)
+	@touch $@
 
-include $(__CMD_EM_FILES)
+include $(__KERNEL_EM_FILES)

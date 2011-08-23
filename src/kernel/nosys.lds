@@ -13,20 +13,12 @@ PROVIDE(softirq_install  = nosys);
 PROVIDE(softirq_raise    = nosys);
 PROVIDE(softirq_dispatch = nosys);
 
-PROVIDE(sched_policy_current = nosys);
-PROVIDE(__sched_dispatch = nosys);
-PROVIDE(sched_check_switch = nosys);
-PROVIDE(sched_unlock = nosys);
-PROVIDE(sched_wake = nosys);
-PROVIDE(sched_sleep_locked = nosys);
-
 PROVIDE(printk = nosys);
 
 PROVIDE(timer_init = nosys);
 PROVIDE(timer_set = nosys);
 PROVIDE(timer_close = nosys);
 PROVIDE(timers_off = nosys);
-PROVIDE(irq_func_tmr_1mS = nosys);
 PROVIDE(usleep = nosys);
 
 /* XXX remove from here. -- Eldar */
