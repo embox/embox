@@ -21,10 +21,9 @@
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
 static int inet_create(struct socket *sock, int protocol) {
-	int res;
 	struct sock *sk;
 	struct inet_sock *inet;
-	struct inet_protosw *p_netsock;
+	struct inet_protosw *p_netsock = NULL;
 	const struct net_sock *net_sock_ptr;
 
 	net_sock_foreach(net_sock_ptr) {
@@ -49,7 +48,12 @@ static int inet_create(struct socket *sock, int protocol) {
 		/* TODO What if loop was completed without break? */
 	}
 
-	sk = sk_alloc(PF_INET, 0, (struct proto *)p_netsock->prot);
+	// TODO what if there was no appropriate netsock? -- Eldar
+	if (!p_netsock) {
+		return -ENOENT;
+	}
+
+	sk = sk_alloc(PF_INET, 0, (struct proto *) p_netsock->prot);
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
@@ -65,10 +69,11 @@ static int inet_create(struct socket *sock, int protocol) {
 	inet->mc_ttl = 64;
 
 	if (sk->sk_prot->init != NULL) {
-		res = sk->sk_prot->init(sk);
+		return sk->sk_prot->init(sk);
 	}
 
-	return res;
+	// TODO Is it right to return no error if there is not init function?
+	return 0;
 }
 
 void inet_release(struct socket *sock) {

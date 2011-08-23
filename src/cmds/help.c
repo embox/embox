@@ -22,7 +22,6 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	const struct cmd *cmd;
 	int opt;
-	cmd = NULL; /* warning fix */
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "h"))) {

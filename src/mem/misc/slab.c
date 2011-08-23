@@ -248,7 +248,6 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 	return 0;
 }
 
-
 cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	cache_t *cachep;
 
@@ -256,11 +255,11 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 			|| obj_size >= CONFIG_PAGE_SIZE << MAX_OBJ_ORDER)
 		return NULL;
 
-	strcpy(cachep->name, name);
-
 	if (!(cachep = (cache_t *) cache_alloc(&cache_chain))) {
 		return NULL;
 	}
+
+	strcpy(cachep->name, name);
 
 	if (0 != cache_init(cachep, obj_size, obj_num)) {
 		cache_free(&cache_chain, cachep);
@@ -270,9 +269,7 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	return cachep;
 }
 
-
 int cache_destroy(cache_t *cachep) {
-
 	struct list_head *ptr;
 	slab_t * slabp;
 
@@ -311,7 +308,7 @@ int cache_destroy(cache_t *cachep) {
 	list_del(&cachep->next);
 	cache_free(&cache_chain, cachep);
 
-    return 0;
+	return 0;
 }
 
 void *cache_alloc(cache_t *cachep) {

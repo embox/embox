@@ -26,14 +26,18 @@ const struct mod_ops __net_mod_ops = {
 static int net_mod_enable(struct mod_info *mod_info) {
 	int ret;
 	const struct net *net = (const struct net *) mod_info->data;
-	//const struct mod *mod = mod_info->mod; /* warning fix */
 	packet_type_t *netpack = net->netpack;
+#if 0
+	const struct mod *mod = mod_info->mod;
+#endif
 
 	if (!netpack || !netpack->init) {
 		return 0;
 	}
 
-	//TRACE("NET: initializing %s.%s: ", mod->package->name, mod->name); /* warning fix */
+#if 0
+	TRACE("NET: initializing %s.%s: ", mod->package->name, mod->name); /* warning fix */
+#endif
 
 	if ((ret = netpack->init()) != 0) {
 		TRACE("error: %s\n", strerror(-ret));
