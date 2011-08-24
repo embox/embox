@@ -22,7 +22,7 @@
  * @see softirq_lock()
  */
 static inline void softirq_lock(void) {
-	critical_enter(__CRITICAL_SOFTIRQ);
+	critical_enter(CRITICAL_SOFTIRQ_LOCK);
 }
 
 /**
@@ -32,8 +32,8 @@ static inline void softirq_lock(void) {
  * @see softirq_lock()
  */
 static inline void softirq_unlock(void) {
-	critical_leave(__CRITICAL_SOFTIRQ);
-	critical_check_dispatch(__CRITICAL_SOFTIRQ);
+	critical_leave(CRITICAL_SOFTIRQ_LOCK);
+	critical_check_dispatch(CRITICAL_SOFTIRQ_LOCK);
 }
 
 #endif /* KERNEL_SOFTIRQ_CRITICAL_H_ */

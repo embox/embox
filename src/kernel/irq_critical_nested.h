@@ -11,12 +11,12 @@
 #include <kernel/critical/api.h>
 
 static inline void irq_nested_lock(void) {
-	critical_enter(__CRITICAL_IRQ_NESTED);
+	critical_enter(CRITICAL_IRQ_HANDLER);
 }
 
 static inline void irq_nested_unlock(void) {
-	critical_leave(__CRITICAL_IRQ_NESTED);
-	critical_check_dispatch(__CRITICAL_IRQ_NESTED);
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_check_dispatch(CRITICAL_IRQ_HANDLER);
 }
 
 #endif /* KERNEL_IRQ_NESTED_H_ */

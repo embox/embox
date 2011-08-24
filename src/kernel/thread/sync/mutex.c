@@ -30,7 +30,7 @@ void mutex_init(struct mutex *m) {
 
 void mutex_lock(struct mutex *m) {
 	struct thread *current;
-	assert(critical_allows(CRITICAL_PREEMPT));
+	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
 

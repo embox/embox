@@ -19,7 +19,7 @@
  * @see sched_unlock()
  */
 static inline void sched_lock(void) {
-	critical_enter(CRITICAL_PREEMPT);
+	critical_enter(CRITICAL_SCHED_LOCK);
 }
 
 /**
@@ -30,8 +30,8 @@ static inline void sched_lock(void) {
  * @see sched_lock()
  */
 static inline void sched_unlock(void) {
-	critical_leave(CRITICAL_PREEMPT);
-	critical_check_dispatch(CRITICAL_PREEMPT);
+	critical_leave(CRITICAL_SCHED_LOCK);
+	critical_check_dispatch(CRITICAL_SCHED_LOCK);
 }
 
 /**
@@ -41,7 +41,7 @@ static inline void sched_unlock(void) {
  * @note This function is not intended for wide usage.
  */
 static inline void sched_unlock_noswitch(void) {
-	critical_leave(CRITICAL_PREEMPT);
+	critical_leave(CRITICAL_SCHED_LOCK);
 }
 
 #endif /* KERNEL_THREAD_SCHED_LOCK_H_ */

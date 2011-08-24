@@ -23,11 +23,11 @@
  */
 static inline void irq_lock(void) {
 	extern ipl_t __irq_critical_ipl;
-	if (!critical_inside(__CRITICAL_HARDIRQ)) {
+	if (!critical_inside(CRITICAL_IRQ_LOCK)) {
 		__irq_critical_ipl = ipl_save();
 	}
 
-	critical_enter(__CRITICAL_HARDIRQ);
+	critical_enter(CRITICAL_IRQ_LOCK);
 }
 
 /**
@@ -38,13 +38,13 @@ static inline void irq_lock(void) {
  */
 static inline void irq_unlock(void) {
 	extern ipl_t __irq_critical_ipl;
-	critical_leave(__CRITICAL_HARDIRQ);
+	critical_leave(CRITICAL_IRQ_LOCK);
 
-	if (!critical_inside(__CRITICAL_HARDIRQ)) {
+	if (!critical_inside(CRITICAL_IRQ_LOCK)) {
 		ipl_restore(__irq_critical_ipl);
 	}
 
-	critical_check_dispatch(__CRITICAL_HARDIRQ);
+	critical_check_dispatch(CRITICAL_IRQ_LOCK);
 }
 
 #endif /* KERNEL_IRQ_CRITICAL_H_ */

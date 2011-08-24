@@ -33,7 +33,7 @@ EMBOX_UNIT(unit_init, unit_fini);
 static sys_timer_t *tick_timer;
 
 static void request_switch(void) {
-	critical_request_dispatch(CRITICAL_PREEMPT);
+	critical_request_dispatch(CRITICAL_SCHED_LOCK);
 }
 
 static void request_switch_if(int cond) {
@@ -90,7 +90,7 @@ static void sched_switch(void) {
 }
 
 void __sched_dispatch(void) {
-	assert(critical_allows(CRITICAL_PREEMPT));
+	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
 
@@ -131,7 +131,7 @@ int sched_sleep_locked(struct event *e) {
 	struct thread *current;
 
 	assert(e);
-	assert(critical_inside(CRITICAL_PREEMPT));
+	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	current = sched_current();
 
@@ -145,7 +145,7 @@ int sched_sleep_locked(struct event *e) {
 	sched_unlock();
 
 	/* At this point we have been awakened and are ready to go. */
-	assert(critical_allows(CRITICAL_PREEMPT));
+	assert(critical_allows(CRITICAL_SCHED_LOCK));
 	assert(thread_state_running(current->state));
 
 	/* Restore the locked state and return. */
@@ -158,7 +158,7 @@ int sched_sleep(struct event *e) {
 	int ret;
 
 	assert(e);
-	assert(critical_allows(CRITICAL_PREEMPT));
+	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
 
@@ -170,7 +170,7 @@ int sched_sleep(struct event *e) {
 }
 
 static void sched_wakeup_thread(struct thread *t) {
-	assert(critical_inside(CRITICAL_PREEMPT));
+	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	list_del_init(&t->sched_list);
 
