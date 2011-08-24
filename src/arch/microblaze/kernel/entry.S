@@ -14,58 +14,61 @@
 
 //XXX Microblaze not suport nested irq
 C_ENTRY(_interrupt_handler):
+ 	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
 	SAVE_REGS
-	/* set third param */
-	addik   r7, r1, STATE_SAVE_SIZE
 
 	brlid	r15, interrupt_handler
-	 addik	r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
-
-	addik	r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */
+	 addik   r7, r1, PT_OFFSET  /* set third param */
 
 	RESTORE_REGS
+	addik	r1, r1, STATE_SAVE_SIZE	/* Clean up stack space.  */
 
 	rtid	 r14, 0 /*return and enable interrupts*/
-	nop
+	 nop
 
 C_ENTRY(_user_exception):
 C_ENTRY(_debug_exception):
+	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
 	SAVE_REGS
-	/* set third param */
-	addik   r7, r1, STATE_SAVE_SIZE
-/* we already have trap number in r5 and user data in r6 */
+
+    /* we already have trap number in r5 and user data in r6 */
 	brlid   r15, mb_exception_dispatcher
-	 addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
+	 addik   r7, r1, PT_OFFSET /* set third param */
+
+	swi	r3, r1, PT_R3 /*save the result */
+	RESTORE_REGS
 
 	addik   r1, r1, STATE_SAVE_SIZE		/* Clean up stack space.  */
 
-    /* the result */
-	swi	r3, r1, -PT_R3;
-
-	RESTORE_REGS
-
 	/*return and clear msr[BIP] bit*/
-	rtbd    r16,8
-	nop
+	rtbd    r16, 8
+	 nop
 
 C_ENTRY(_hw_exception_handler):
-	SAVE_REGS
+ 	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
+ 	SAVE_REGS
+
+	/* disable interupts*/
+	mfs	r12, rmsr
+	andni r12, r12, 0x2
+	mts	rmsr, r12
 
 
 	/* set first param (number of exception)*/
 	mfs	    r5, resr
 	andi    r5, r5, 0x1f
 
-	/* set third param (pt pointer) */
-	addi   r7, r1, -PT_R17
-
 	brlid   r15, mb_hwtrap_dispatcher
- 	addi   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
+	 addik   r7, r1, PT_OFFSET /* set third param (pt pointer) */
 
- 	addi   r1, r1, STATE_SAVE_SIZE; /* Clean up stack space.  */
 
+	/* enable interupts */
+	mfs	r12, rmsr
+	ori	r12, r12, 0x2
+	mts	rmsr, r12
 
 	RESTORE_REGS
+ 	addik   r1, r1, STATE_SAVE_SIZE; /* Clean up stack space.  */
 
 	rted    r17, 0
-	nop
+	 nop

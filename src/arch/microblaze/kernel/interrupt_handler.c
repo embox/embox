@@ -11,7 +11,7 @@
 #include <kernel/irq.h>
 #include <hal/interrupt.h>
 #include <asm/msr.h>
-extern int blin_timer;
+
 /* we havn't interrupts acknowledgment in microblaze architecture
  * and must receive interrupt number our self and then clear pending bit in
  * pending register
