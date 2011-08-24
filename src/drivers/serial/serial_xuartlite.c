@@ -9,7 +9,6 @@
 
 #include <types.h>
 #include <bitops.h>
-#include <asm/cpu_conf.h>
 #include <kernel/irq.h>
 
 typedef struct uart_regs {
@@ -47,7 +46,7 @@ typedef struct uart_regs {
 #define CTRL_RST_TX_FIFO             REVERSE_MASK(CTRL_RST_TX_FIFO_BIT)
 
 /*set registers base*/
-static volatile uart_regs_t *uart = (uart_regs_t *) XILINX_UARTLITE_BASEADDR;
+static volatile uart_regs_t *uart = (uart_regs_t *) CONFIG_XILINX_UARTLITE_BASEADDR;
 
 static inline int is_rx_empty(void) {
 	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
@@ -88,7 +87,7 @@ void diag_putc(char ch) {
 
 /* TODO uart_set_irq_handler haven't to be used*/
 int uart_set_irq_handler(irq_handler_t pfunc) {
-	irq_attach(XILINX_UARTLITE_IRQ_NUM, pfunc, 0, "xil_uartlite", NULL);
+	irq_attach(CONFIG_XILINX_UARTLITE_IRQ_NUM, pfunc, 0, "xil_uartlite", NULL);
 	return 0;
 }
 

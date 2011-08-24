@@ -10,7 +10,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include <asm/cpu_conf.h>
 #include <kernel/irq.h>
 #include <net/if_ether.h>
 #include <net/skbuff.h>
@@ -72,7 +71,7 @@ typedef struct xilinx_emaclite_regs {
 } xilinx_emaclite_regs_t;
 
 static struct xilinx_emaclite_regs *emaclite =
-		(struct xilinx_emaclite_regs *) XILINX_EMACLITE_BASEADDR;
+		(struct xilinx_emaclite_regs *) CONFIG_XILINX_EMACLITE_BASEADDR;
 static pingpong_regs_t *current_rx_regs = NULL;
 static pingpong_regs_t *current_tx_regs = NULL;
 
@@ -326,10 +325,10 @@ static int __init unit_init(void) {
 		return -ENOMEM;
 	}
 	net_device->netdev_ops = &_netdev_ops;
-	net_device->irq = XILINX_EMACLITE_IRQ_NUM;
-	net_device->base_addr = XILINX_EMACLITE_BASEADDR;
+	net_device->irq = CONFIG_XILINX_EMACLITE_IRQ_NUM;
+	net_device->base_addr = CONFIG_XILINX_EMACLITE_BASEADDR;
 
-	res = irq_attach(XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
+	res = irq_attach(CONFIG_XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
 			net_device, "xilinx emaclite");
 	if (res < 0) {
 		return res;
