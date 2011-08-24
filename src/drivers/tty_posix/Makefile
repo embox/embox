@@ -5,10 +5,10 @@ $_PACKAGE := embox.driver
 
 $_MODS += tty_posix
 
-$_DEPS-tty_posix += core.kernel.timer.sleep_nosched
-$_DEPS-tty_posix += core.kernel.timer.timer
-$_DEPS-tty_posix += core.kernel.softirq
-$_DEPS-tty_posix += core.kernel.irq
+$_DEPS-tty_posix += embox.kernel.timer.sleep_nosched
+$_DEPS-tty_posix += embox.kernel.timer.timer
+$_DEPS-tty_posix += embox.kernel.softirq
+$_DEPS-tty_posix += embox.kernel.irq
 $_DEPS-tty_posix += embox.fs.devfs
 
 $_SRCS-tty_posix += keyboard.c
