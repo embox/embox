@@ -95,8 +95,6 @@ static inline void __slist_insert_link(struct __slist_link *link,
 #define __slist_remove_first(slist, type, m_link) \
 	__slist_link_safe_cast(slist_remove_first_link(slist), type, m_link)
 
-
-
 #define __slist_foreach_cast_assign(_iter, element, member) \
 	element = structof(structof(_iter, struct slist_link, l), \
 			typeof(*element), member)
@@ -106,9 +104,9 @@ static inline void __slist_insert_link(struct __slist_link *link,
 
 #define __slist_foreach__(node, slist, iter_cast, cast_arg) \
 	__slist_foreach_guarded(node, slist, iter_cast, cast_arg, \
-			MACRO_GUARD(__slist_foreach_iter), \
-			MACRO_GUARD(__slist_foreach_head), \
-			MACRO_GUARD(__slist_foreach_next))
+			MACRO_GUARD(__iter), \
+			MACRO_GUARD(__head), \
+			MACRO_GUARD(__next))
 
 #define __slist_foreach_guarded(node, slist, iter_cast_assign, cast_arg, \
 		_iter, _head, _next) \

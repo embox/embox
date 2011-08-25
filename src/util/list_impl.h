@@ -91,9 +91,9 @@ static inline void __list_insert_link(struct __list_link *link,
 
 #define __list_foreach__(node, list, iter_cast, cast_arg) \
 	__list_foreach_guarded(node, list, iter_cast, cast_arg, \
-			MACRO_GUARD(__list_foreach_iter), \
-			MACRO_GUARD(__list_foreach_head), \
-			MACRO_GUARD(__list_foreach_next))
+			MACRO_GUARD(__iter), \
+			MACRO_GUARD(__head), \
+			MACRO_GUARD(__next))
 
 #define __list_foreach_guarded(node, list, iter_cast_assign, cast_arg, \
 		_iter, _head, _next) \
