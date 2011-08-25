@@ -35,23 +35,26 @@ static void inet_dev_show_info(void *handler) {
 	struct in_addr ip, bcast, mask;
 	char *s_ip, *s_bcast, *s_mask;
 
-	macaddr_print(mac, dev->dev_addr);
-
 	eth_stat = dev->netdev_ops->ndo_get_stats(dev);
 	TRACE("%s\tencap:", dev->name);
 	if (dev->flags & IFF_LOOPBACK) {
-		TRACE("Local Loopback");
+		TRACE("Local Loopback\n");
 	} else {
+		macaddr_print(mac, dev->dev_addr);
 		TRACE("Ethernet");
+		TRACE(" HWaddr %s\n", mac);
 	}
-	TRACE(" HWaddr %s\n", mac);
 	ip.s_addr = in_dev->ifa_address;
-	bcast.s_addr = in_dev->ifa_broadcast;
 	mask.s_addr = in_dev->ifa_mask;
 	s_ip = inet_ntoa(ip);
-	s_bcast = inet_ntoa(bcast);
 	s_mask = inet_ntoa(mask);
-	TRACE("\tinet addr:%s Bcast:%s  Mask:%s\n\t", s_ip, s_bcast, s_mask);
+	if (dev->flags & IFF_LOOPBACK) {
+		TRACE("\tinet addr:%s  Mask:%s\n\t", s_ip, s_mask);
+	} else {
+		bcast.s_addr = in_dev->ifa_broadcast;
+		s_bcast = inet_ntoa(bcast);
+		TRACE("\tinet addr:%s  Bcast:%s  Mask:%s\n\t", s_ip, s_bcast, s_mask);
+	}
 	free(s_ip);
 	free(s_bcast);
 	free(s_mask);
@@ -83,7 +86,9 @@ static void inet_dev_show_info(void *handler) {
 	TRACE("\tRX bytes:%ld (%ld MiB)  TX bytes:%ld (%ld MiB)\n",
 			eth_stat->rx_bytes, eth_stat->rx_bytes/1048576,
 			eth_stat->tx_bytes, eth_stat->tx_bytes/1048576);
-	TRACE("\tInterrupt:%d Base address:0x%08lX\n", dev->irq, dev->base_addr);
+	if (!(dev->flags & IFF_LOOPBACK)) {
+		TRACE("\tInterrupt:%d Base address:0x%08lX\n", dev->irq, dev->base_addr);
+	}
 }
 
 /**
