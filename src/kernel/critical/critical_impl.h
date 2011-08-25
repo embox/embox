@@ -79,21 +79,28 @@
 #define __CRITICAL_PENDING(level) \
 	((level | __CRITICAL_HARDER(level)) + 1)
 
-/* Check for defined masks values. */
-#define __CRITICAL_CHECK \
-	  __CRITICAL_CHECK_EACH(CRITICAL_IRQ_LOCK)        \
-	& __CRITICAL_CHECK_EACH(CRITICAL_IRQ_HANDLER)     \
-	& __CRITICAL_CHECK_EACH(CRITICAL_SOFTIRQ_LOCK)    \
-	& __CRITICAL_CHECK_EACH(CRITICAL_SOFTIRQ_HANDLER) \
-	& __CRITICAL_CHECK_EACH(CRITICAL_SOFTIRQ_PENDING) \
-	& __CRITICAL_CHECK_EACH(CRITICAL_SCHED_LOCK)      \
-	& __CRITICAL_CHECK_EACH(CRITICAL_SCHED_PENDING)   \
-		== ~0
-#define __CRITICAL_CHECK_EACH(level) \
+/* Valid critical level mask is a single contiguous block of set bits. */
+#define __CRITICAL_CHECK_BIT_BLOCK(level) \
 	(__CRITICAL_SOFTER(level) | (level) | __CRITICAL_HARDER(level))
 
-#if !__CRITICAL_CHECK
-# error "Bad CRITICAL_XXX masks"
+#if ~0 != \
+	  __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_LOCK)        \
+	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_HANDLER)     \
+	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SOFTIRQ_LOCK)    \
+	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SOFTIRQ_HANDLER) \
+	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SOFTIRQ_PENDING) \
+	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SCHED_LOCK)      \
+	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SCHED_PENDING)
+# error "CRITICAL_XXX must contain a single contiguous block of bits"
+#endif
+
+/* Pending bit mask is a power of two. */
+#define __CRITICAL_CHECK_PENDING(level) \
+	!((level) & ((level) - 1))
+
+#if	   !__CRITICAL_CHECK_PENDING(CRITICAL_SOFTIRQ_PENDING) \
+	|| !__CRITICAL_CHECK_PENDING(CRITICAL_SCHED_PENDING)
+# error "CRITICAL_XXX_PENDING must be a power of two (only one single bit)"
 #endif
 
 static inline int critical_allows(__critical_t level) {
@@ -124,46 +131,44 @@ static inline int critical_pending_dispatch(__critical_t level) {
 	return __critical_count_get() & __CRITICAL_PENDING(level);
 }
 
-static inline int __critical_need_dispatch(__critical_t level) {
-	int need = critical_allows(level) && critical_pending_dispatch(level);
-	if (need) {
+static inline int __critical_pending_test_and_clear(__critical_t level,
+		__critical_t pending) {
+	/* Don't check pending state for levels harder then the current one.
+	 * For example, we don't need to check for pending softirq's when unlocking
+	 * the scheduler.
+	 * This test only involves values known at compile time so actually this
+	 * check will be optimized out (well, if constant propagation is performed
+	 * honestly which is true at least for modern GCC's). */
+	if (pending & __CRITICAL_HARDER(level)) {
+		return 0;
 	}
-	return need;
+	/* In case when pending bit is not set (nothing to dispatch) or there are
+	 * any lower bits set (that means being inside a too hard context)
+	 * we can't take any action and, well, we don't. */
+	if ((pending ^ __critical_count_get()) & (pending ^ (pending - 1))) {
+		return 0;
+	}
+
+	__critical_count_clr_bit(pending);
+	return 1;
 }
 
-// TODO replace with macros or inlined calls. -- Eldar
-extern void __attribute__ ((weak)) __sched_dispatch(void);
-extern void __attribute__ ((weak)) softirq_dispatch(void);
+static inline void critical_check_dispatch(__critical_t level) {
+	// TODO replace with macros or inlined calls. -- Eldar
+	extern void __attribute__ ((weak)) __sched_dispatch(void);
+	extern void __attribute__ ((weak)) softirq_dispatch(void);
 
-#define __critical_check_pending(level, pending, dispatch_fn) \
-	if (pending & __CRITICAL_SOFTER(level)) {       \
-		if (pending == (~__CRITICAL_SOFTER(pending) \
-				& __critical_count_get())) {        \
-			__critical_count_clr_bit(pending);      \
-			assert(dispatch_fn);                    \
-			dispatch_fn();                          \
-		}                                           \
+	if (__critical_pending_test_and_clear(level, CRITICAL_SOFTIRQ_PENDING)) {
+		softirq_dispatch();
 	}
-
-#define critical_check_dispatch(level) \
-	do {                                                     \
-		__critical_check_pending(level,                      \
-				CRITICAL_SOFTIRQ_PENDING, softirq_dispatch); \
-		__critical_check_pending(level,                      \
-				CRITICAL_SCHED_PENDING, __sched_dispatch);   \
-	} while(0)
+	if (__critical_pending_test_and_clear(level, CRITICAL_SCHED_PENDING)) {
+		__sched_dispatch();
+	}
+}
 
 static inline void critical_request_dispatch(__critical_t level) {
 	__critical_set_pending(level);
 	critical_check_dispatch(level);
-
-#if 0
-	if (critical_allows(level)) {
-		// TODO
-	} else {
-		__critical_set_pending(level);
-	}
-#endif
 }
 
 #endif /* KERNEL_CRITICAL_API_IMPL_H_ */

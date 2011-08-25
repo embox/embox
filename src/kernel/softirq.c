@@ -57,7 +57,7 @@ int softirq_raise(softirq_nr_t nr) {
 	softirq_pending |= (1 << nr);
 	ipl_restore(ipl);
 
-	critical_request_dispatch(CRITICAL_SOFTIRQ_HANDLER);
+	critical_request_dispatch(CRITICAL_SOFTIRQ_LOCK);
 
 	return 0;
 }

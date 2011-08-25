@@ -29,8 +29,7 @@ extern void critical_enter(critical_t level);
 extern void critical_leave(critical_t level);
 
 extern void critical_request_dispatch(critical_t level);
-// XXX macro
-//extern void critical_check_dispatch(critical_t level);
+extern void critical_check_dispatch(critical_t level);
 extern int critical_pending_dispatch(critical_t level);
 
 #endif /* KERNEL_CRITICAL_API_H_ */
