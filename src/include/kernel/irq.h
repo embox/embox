@@ -15,6 +15,8 @@
 #define IRQ_H_
 
 #include <stdbool.h>
+
+#include <kernel/irq_lock.h>
 #include <hal/interrupt.h>
 
 /**
