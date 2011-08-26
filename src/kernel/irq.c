@@ -18,14 +18,10 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include <kernel/thread/sched.h>
 #include <kernel/irq.h>
-#include <kernel/softirq.h>
+#include <kernel/critical.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
-#include <kernel/critical.h>
-#include __impl_x(kernel/irq_critical.h)
-#include __impl_x(kernel/irq_critical_nested.h)
 
 struct irq_action {
 	irq_handler_t handler;
@@ -111,7 +107,7 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-    irq_nested_lock();
+	critical_enter(CRITICAL_IRQ_HANDLER);
 
 	irq_table[irq_nr].count++;
 	action = irq_table[irq_nr].action;
@@ -124,5 +120,6 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 		}
 	}
 
-	irq_nested_unlock();
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
 }
