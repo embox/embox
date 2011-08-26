@@ -13,7 +13,7 @@
 
 #include <embox/unit.h>
 #include <lib/list.h>
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_policy.h>
@@ -57,8 +57,6 @@ int sched_init(struct thread* current, struct thread *idle) {
 	if ((error = sched_policy_init(current, idle))) {
 		return error;
 	}
-
-	sched_unlock();
 
 	return 0;
 }

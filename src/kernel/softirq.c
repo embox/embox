@@ -16,7 +16,7 @@
 #include <errno.h>
 
 #include <kernel/softirq.h>
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 #include <hal/ipl.h>
 
 #include __impl_x(kernel/softirq_critical.h)

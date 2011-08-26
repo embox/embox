@@ -10,7 +10,7 @@
 
 #include <kernel/irq.h>
 #include <hal/ipl.h>
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 
 /**
  * Locks hardirq and to come in critical section.

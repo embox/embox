@@ -9,7 +9,7 @@
 #define KERNEL_SOFTIRQ_CRITICAL_H_
 
 #include <kernel/softirq.h>
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 
 /**
  * Locks hardirq and to come in critical section.

@@ -26,7 +26,7 @@
 #include <mem/misc/pool.h>
 #include <util/math.h>
 #include <util/structof.h>
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/state.h>

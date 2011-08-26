@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SCHED_LOCK_H_
 #define KERNEL_THREAD_SCHED_LOCK_H_
 
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 
 /**
  * Locks the scheduler which means disabling thread switch until

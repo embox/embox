@@ -8,7 +8,7 @@
 #ifndef KERNEL_IRQ_NESTED_H_
 #define KERNEL_IRQ_NESTED_H_
 
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 
 static inline void irq_nested_lock(void) {
 	critical_enter(CRITICAL_IRQ_HANDLER);

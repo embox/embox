@@ -12,7 +12,7 @@
 #ifndef SOFTIRQ_H_
 #define SOFTIRQ_H_
 
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 
 /**
  * Total amount of possible soft IRQs.

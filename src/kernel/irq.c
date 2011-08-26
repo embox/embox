@@ -23,7 +23,7 @@
 #include <kernel/softirq.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 #include __impl_x(kernel/irq_critical.h)
 #include __impl_x(kernel/irq_critical_nested.h)
 

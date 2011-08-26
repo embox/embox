@@ -6,7 +6,7 @@
  * @author Eldar Abusalimov
  */
 
-#include <kernel/critical/api.h>
+#include <kernel/critical.h>
 
 critical_t __critical_count;
 
