@@ -8,14 +8,14 @@
 
 #include <kernel/critical/api.h>
 
-__critical_t __critical_count;
+critical_t __critical_count;
 
 static struct critical_dispatcher *dispatch_queue;
 
 void critical_dispatch_pending(void) {
 	struct critical_dispatcher *d;
-	__critical_t mask;
-	__critical_t count = __critical_count_get();
+	critical_t mask;
+	critical_t count = __critical_count_get();
 	ipl_t ipl;
 
 	ipl = ipl_save();
@@ -32,7 +32,7 @@ void critical_dispatch_pending(void) {
 
 void critical_request_dispatch(struct critical_dispatcher *d) {
 	struct critical_dispatcher **pp = &dispatch_queue;
-	__critical_t inv_mask;
+	critical_t inv_mask;
 	ipl_t ipl;
 
 	assert(d != NULL);
