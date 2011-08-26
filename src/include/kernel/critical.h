@@ -3,11 +3,56 @@
  * @brief Kernel critical API.
  *
  * @details
+ * Embox kernel is fully preemptive and supports both hardware and software
+ * interrupts. TODO What is preemption? -- Eldar
+ *
+ * Lets draw up a quick overview of possible execution contexts:
+ *
+ *   - Non-preemptable context between calls of #ipl_save() and #ipl_restore()
+ *     in which no hardware interrupt can occur and which must be as fast as
+ *     possible to retain suitable reaction time of the system. Of course there
+ *     can't be any software interrupt dispatched or thread switched within
+ *     such sections.
+ *
+ *   - Hardware IRQ handlers which can be entered at any time except when
+ *     certain interrupts are masked on the CPU using IPL. An IRQ with
+ *     higher priority can also preempt others, thus handlers can be nested.
+ *     As in the previous described context, soft interrupts and scheduling are
+ *     disabled within hardware interrupt handlers.
+ *
+ *   - Software interrupts are designed by analogy with the hardware
+ *     interrupts. Software interrupts can be locked too to temporally prevent
+ *     dispatching deferring it when they become unlocked again.
+ *
+ *   - Software IRQ handlers that can nest similarly to hardware ones.
+ *     Because a handler can start execution only outside hardware IRQ context
+ *     it can be preempted as well. However scheduling from the handler is
+ *     still impossible.
+ *
+ *   - And finally there is a special context for scheduling locked state to
+ *     protect internal structures of the scheduler itself.
+ *
+ * it becomes rather complicated to answer questions like:
+ *   - If driver raises a software interrupt being inside a hardware interrupt
+ *     handler, so when the kernel have to actually invoke it?
+ *     When leaving the hardware interrupt handler? Or leaving the outermost
+ *     handler in case of interrupts nesting? And what if someone have
+ *     locked software interrupts previously?
+ *
+ *   - How should we check for pending soft interrupt dispatching? Is such
+ *     check is needed on each unlock and after leaving hardware interrupt
+ *     handler? And how to be in case when the system is configured without
+ *     softirq support at all?
+ *
+ *   - What's about reentrancy and interrupt safety?
+ *
+ * Critical API consolidates tracking of the current execution context and
+ * provides a way to give answers for such questions.
  *
  @verbatim
  ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
  level    sched_lck   swirq_hnd   swirq_lck   hwirq_hnd   hwirq_lck
- bit_nr   30 ... 25   24 ... 19   17 ... 12   11 ...  6    5 ...  0
+ bit_nr   29 ... 24   23 ... 18   17 ... 12   11 ...  6    5 ...  0
  ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
  @endverbatim
  *
@@ -16,7 +61,7 @@
  @verbatim
  ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
  level    sched_lck   swirq_hnd   swirq_lck   hwirq_hnd   hwirq_lck
- bit_nr   30 ... 25   24 ... 19   17 ... 12   11 ...  6    5 ...  0
+ bit_nr   29 ... 24   23 ... 18   17 ... 12   11 ...  6    5 ...  0
  ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
  mask                                                      *  **  *
  harder
@@ -30,7 +75,7 @@
  @verbatim
  ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
  level    sched_lck   swirq_hnd   swirq_lck   hwirq_hnd   hwirq_lck
- bit_nr   30 ... 25   24 ... 19   17 ... 12   11 ...  6    5 ...  0
+ bit_nr   29 ... 24   23 ... 18   17 ... 12   11 ...  6    5 ...  0
  ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
  mask                  *  **  *
  harder                            *  **  *    *  **  *    *  **  *
@@ -50,11 +95,11 @@
 
 /* Critical levels mask. */
 
-#define CRITICAL_IRQ_LOCK         0x0000003f
-#define CRITICAL_IRQ_HANDLER      0x00000fc0
-#define CRITICAL_SOFTIRQ_LOCK     0x0003f000
-#define CRITICAL_SOFTIRQ_HANDLER  0x00fc0000
-#define CRITICAL_SCHED_LOCK       0x3f000000
+#define CRITICAL_IRQ_LOCK         0x0000003f /**< 64 calls depth. */
+#define CRITICAL_IRQ_HANDLER      0x00000fc0 /**< 64 nested interrupts. */
+#define CRITICAL_SOFTIRQ_LOCK     0x0003f000 /**< 64 calls. */
+#define CRITICAL_SOFTIRQ_HANDLER  0x00fc0000 /**< 64 nested handlers. */
+#define CRITICAL_SCHED_LOCK       0x3f000000 /**< 64 calls. */
 
 /* Internal helper macros for bit masks transformation. */
 
