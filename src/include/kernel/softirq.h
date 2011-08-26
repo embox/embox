@@ -71,11 +71,4 @@ extern int softirq_install(softirq_nr_t nr, softirq_handler_t handler,
  */
 extern int softirq_raise(softirq_nr_t nr);
 
-/**
- * Called by IRQ-related kernel code when leaving the interrupt context with
- * max IPL (all IRQ disabled).
- * TODO
- */
-extern void softirq_dispatch(void);
-
 #endif /* SOFTIRQ_H_ */

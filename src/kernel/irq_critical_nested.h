@@ -16,7 +16,7 @@ static inline void irq_nested_lock(void) {
 
 static inline void irq_nested_unlock(void) {
 	critical_leave(CRITICAL_IRQ_HANDLER);
-	critical_check_dispatch(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
 }
 
 #endif /* KERNEL_IRQ_NESTED_H_ */

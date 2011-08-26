@@ -31,7 +31,7 @@ static inline void sched_lock(void) {
  */
 static inline void sched_unlock(void) {
 	critical_leave(CRITICAL_SCHED_LOCK);
-	critical_check_dispatch(CRITICAL_SCHED_LOCK);
+	critical_dispatch_pending();
 }
 
 /**

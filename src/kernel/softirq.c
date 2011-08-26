@@ -16,8 +16,15 @@
 #include <errno.h>
 
 #include <kernel/softirq.h>
-#include __impl_x(kernel/softirq_critical.h)
+#include <kernel/critical/api.h>
 #include <hal/ipl.h>
+
+#include __impl_x(kernel/softirq_critical.h)
+
+static void softirq_dispatch(void);
+
+CRITICAL_DISPATCHER_DEF(softirq_critical, softirq_dispatch,
+		CRITICAL_SOFTIRQ_LOCK | __CRITICAL_HARDER(CRITICAL_SOFTIRQ_LOCK));
 
 struct softirq_action {
 	softirq_handler_t handler;
@@ -57,12 +64,15 @@ int softirq_raise(softirq_nr_t nr) {
 	softirq_pending |= (1 << nr);
 	ipl_restore(ipl);
 
-	critical_request_dispatch(CRITICAL_SOFTIRQ_LOCK);
+	critical_request_dispatch(&softirq_critical);
 
 	return 0;
 }
 
-void softirq_dispatch(void) {
+/**
+ * Called by critical dispatching code with max IPL (all IRQ disabled).
+ */
+static void softirq_dispatch(void) {
 	uint32_t pending;
 	softirq_nr_t nr;
 	softirq_handler_t handler;

@@ -29,11 +29,16 @@
 
 EMBOX_UNIT(unit_init, unit_fini);
 
+static void sched_switch(void);
+
+CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch,
+		CRITICAL_SCHED_LOCK | __CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
+
 /** Timer, which calls scheduler_tick. */
 static sys_timer_t *tick_timer;
 
 static void request_switch(void) {
-	critical_request_dispatch(CRITICAL_SCHED_LOCK);
+	critical_request_dispatch(&sched_critical);
 }
 
 static void request_switch_if(int cond) {
@@ -72,7 +77,13 @@ static void sched_tick(sys_timer_t *timer, void *param) {
  */
 static void sched_switch(void) {
 	struct thread *current, *next;
-	ipl_t ipl;
+
+	sched_lock();
+
+	ipl_enable();
+
+	// XXX
+	//assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	current = sched_current();
 	next = sched_policy_switch(current);
@@ -83,18 +94,9 @@ static void sched_switch(void) {
 		return;
 	}
 
-	ipl = ipl_save();
+	ipl_disable();
+
 	context_switch(&current->context, &next->context);
-	ipl_restore(ipl);
-
-}
-
-void __sched_dispatch(void) {
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
-
-	sched_lock();
-
-	sched_switch();
 
 	sched_unlock();
 }
