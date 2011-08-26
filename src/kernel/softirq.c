@@ -19,8 +19,6 @@
 #include <kernel/critical.h>
 #include <hal/ipl.h>
 
-#include __impl_x(kernel/softirq_critical.h)
-
 static void softirq_dispatch(void);
 
 CRITICAL_DISPATCHER_DEF(softirq_critical, softirq_dispatch,
@@ -78,6 +76,8 @@ static void softirq_dispatch(void) {
 	softirq_handler_t handler;
 	void *data;
 
+	critical_enter(CRITICAL_SOFTIRQ_HANDLER);
+
 	while (0x0 != (pending = softirq_pending)) {
 		softirq_pending = 0;
 		for (nr = 0; pending; pending >>= 1, ++nr) {
@@ -93,4 +93,7 @@ static void softirq_dispatch(void) {
 			}
 		}
 	}
+
+	critical_leave(CRITICAL_SOFTIRQ_HANDLER);
+	critical_dispatch_pending();
 }

@@ -9,11 +9,8 @@
 #ifndef KERNEL_IRQ_LOCK_H_
 #define KERNEL_IRQ_LOCK_H_
 
-#include <kernel/irq.h>
-#include <hal/ipl.h>
 #include <kernel/critical.h>
-
-ipl_t __attribute__ ((common)) __irq_lock_ipl;
+#include <hal/ipl.h>
 
 /**
  * Locks hardware interrupt.
