@@ -1,4 +1,4 @@
 $_PACKAGE := embox.kernel.critical
 
 $_LIBS     += libcritical.a
-$_SRCS-libcritical.a += count.c
+$_SRCS-libcritical.a += critical.c
