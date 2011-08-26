@@ -31,8 +31,7 @@ EMBOX_UNIT(unit_init, unit_fini);
 
 static void sched_switch(void);
 
-CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch,
-		CRITICAL_SCHED_LOCK | __CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
+CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
 /** Timer, which calls scheduler_tick. */
 static sys_timer_t *tick_timer;

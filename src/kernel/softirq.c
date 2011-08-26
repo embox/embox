@@ -24,7 +24,7 @@
 static void softirq_dispatch(void);
 
 CRITICAL_DISPATCHER_DEF(softirq_critical, softirq_dispatch,
-		CRITICAL_SOFTIRQ_LOCK | __CRITICAL_HARDER(CRITICAL_SOFTIRQ_LOCK));
+		CRITICAL_SOFTIRQ_LOCK);
 
 struct softirq_action {
 	softirq_handler_t handler;

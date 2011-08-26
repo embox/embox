@@ -33,9 +33,10 @@ struct critical_dispatcher {
 };
 
 #define CRITICAL_DISPATCHER_DEF(name, dispatch_fn, critical_mask) \
-	static struct critical_dispatcher name = { \
-		.dispatch = (dispatch_fn), \
-		.mask = ~(critical_mask),   \
+	static struct critical_dispatcher name = {       \
+		.dispatch = (dispatch_fn),                   \
+		.mask = ~((critical_mask)                    \
+				| __CRITICAL_HARDER(critical_mask)), \
 	}
 
 extern int critical_allows(critical_t level);
