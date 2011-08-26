@@ -12,7 +12,7 @@ $_DEPS-core += embox.hal.context
 $_SRCS-sched += sched.c
 $_REQUIRES-sched += embox.kernel.timer.timer_api
 $_DEPS-sched += embox.hal.context
-#$_DEPS-sched += embox.kernel.critical.core
+$_DEPS-sched += embox.kernel.critical
 $_REQUIRES-sched += embox.kernel.thread.sched_policy.api
 $_PROVIDES-sched += sched_api
 

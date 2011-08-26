@@ -43,13 +43,10 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef KERNEL_CRITICAL_API_H_
-#define KERNEL_CRITICAL_API_H_
+#ifndef KERNEL_CRITICAL_H_
+#define KERNEL_CRITICAL_H_
 
-#include <assert.h>
-#include <stddef.h>
-
-#include __impl_x(kernel/critical/critical_impl.h)
+#include __impl_x(kernel/critical_impl.h)
 
 /* Critical levels mask. */
 
@@ -135,6 +132,6 @@ extern void critical_dispatch_pending(void);
 # error "CRITICAL_XXX must contain a single contiguous block of bits"
 #endif
 
-#endif /* KERNEL_CRITICAL_API_H_ */
+#endif /* KERNEL_CRITICAL_H_ */
 
 

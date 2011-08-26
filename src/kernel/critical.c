@@ -6,7 +6,11 @@
  * @author Eldar Abusalimov
  */
 
+#include <assert.h>
+#include <stddef.h>
+
 #include <kernel/critical.h>
+#include <hal/ipl.h>
 
 critical_t __critical_count;
 

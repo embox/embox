@@ -2,12 +2,12 @@
  * @file
  * @brief Critical count operations.
  *
- * @date 30.05.10
+ * @date 16.05.10
  * @author Eldar Abusalimov
  */
 
-#ifndef KERNEL_CRITICAL_COUNT_H_
-#define KERNEL_CRITICAL_COUNT_H_
+#ifndef KERNEL_CRITICAL_IMPL_H_
+#define KERNEL_CRITICAL_IMPL_H_
 
 /** Optimization barrier.
  * TODO move somewhere */
@@ -51,4 +51,4 @@ static inline void __critical_count_sub(__critical_t count) {
 	__critical_count_sub_nobarrier(count);
 }
 
-#endif /* KERNEL_CRITICAL_API_IMPL_H_ */
+#endif /* KERNEL_CRITICAL_API_H_ */
