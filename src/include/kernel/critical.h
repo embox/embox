@@ -82,7 +82,7 @@ typedef __critical_t critical_t;
 
 struct critical_dispatcher {
 	struct critical_dispatcher *next;
-	critical_t mask;
+	critical_t mask; /**< Inverted in case when dispatching is not pending. */
 	void (*dispatch)(void);
 };
 
