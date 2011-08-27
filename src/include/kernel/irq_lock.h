@@ -43,9 +43,9 @@ static inline void irq_unlock(void) {
 
 	if (!critical_inside(CRITICAL_IRQ_LOCK)) {
 		ipl_restore(__irq_lock_ipl);
+		/* We know there is no level more critical than the IRQ lock. */
+		critical_dispatch_pending();
 	}
-
-	critical_dispatch_pending();
 }
 
 #endif /* KERNEL_IRQ_LOCK_H_ */

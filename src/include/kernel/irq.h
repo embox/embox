@@ -11,10 +11,8 @@
  *         - Rewriting from scratch, interface change
  */
 
-#ifndef IRQ_H_
-#define IRQ_H_
-
-#include <stdbool.h>
+#ifndef KERNEL_IRQ_H_
+#define KERNEL_IRQ_H_
 
 #include <kernel/irq_lock.h>
 #include <hal/interrupt.h>
@@ -23,16 +21,15 @@
  * Total amount of possible IRQs in the system.
  * @note Equals to HAL #INTERRUPT_NRS_TOTAL value.
  */
-#define IRQ_NRS_TOTAL INTERRUPT_NRS_TOTAL
+#define IRQ_NRS_TOTAL \
+	INTERRUPT_NRS_TOTAL
 
 /**
  * Checks if the specified irq_nr represents valid IRQ number.
  * @note The same as HAL @link interrupt_nr_valid() @endlink macro.
  */
-#define irq_nr_valid(irq_nr) interrupt_nr_valid(irq_nr)
-
-#define IRQ_NONE    (false)
-#define IRQ_HANDLED (true)
+#define irq_nr_valid(irq_nr) \
+	interrupt_nr_valid(irq_nr)
 
 /**
  * Type representing interrupt request number.
@@ -40,24 +37,30 @@
  */
 typedef interrupt_nr_t irq_nr_t;
 
+#define IRQ_NONE    0
+#define IRQ_HANDLED 1
+
 /**
  * IRQ handler return type. Must be either #IRQ_HANDLED or #IRQ_NONE.
  */
-typedef bool irq_return_t;
+typedef int irq_return_t;
 
 /**
  * Interrupt Service Routine type.
  *
- * @param irq_nr the number of interrupt request being handled
- * @param data the device tag specified at @link irq_attach() @endlink time
+ * @param irq_nr
+ *   The number of interrupt request being handled.
+ * @param data
+ *   The device data specified at #irq_attach() time (if any).
  *
- * @return interrupt handling result
- * @retval IRQ_NONE if ISR didn't handled the interrupt
- * @retval IRQ_HANDLED if interrupt has been handled by this ISR
+ * @return
+ *   Interrupt handling result.
+ * @retval IRQ_NONE
+ *   If the ISR didn't actually handled this interrupt.
+ * @retval IRQ_HANDLED
+ *   If the interrupt has been successfully handled.
  */
 typedef irq_return_t (*irq_handler_t)(irq_nr_t irq_nr, void *data);
-
-typedef unsigned long irq_flags_t;
 
 /**
  * Initializes IRQ subsystem.
@@ -65,36 +68,54 @@ typedef unsigned long irq_flags_t;
 extern void irq_init(void);
 
 /**
- * Attaches @link #irq_handler_t interrupt service routine @endlink to the
+ * Attaches an @link #irq_handler_t interrupt service routine @endlink to the
  * specified @link #irq_nr_t IRQ number @endlink.
  *
- * @param irq_nr the IRQ number to attach the @c handler to
- * @param handler the ISR itself
+ * @param irq_nr
+ *   The IRQ number to attach the @a handler to.
  * @param flags TODO not yet implemented -- Eldar
- * @param data the optional device tag which will be passed to the ISR.
- * @param dev_name the optional device name
+ * @param handler
+ *   The ISR itself.
+ * @param data
+ *   The optional device data which will be passed to the ISR as the sole
+ *   argument.
+ * @param dev_name TODO the optional device name
  *
- * @return attach result
- * @retval 0 if all is OK
- * @retval -EINVAL if @c irq_nr is not @link #irq_nr_valid() valid @endlink or
- *                 if the @c handler is @c NULL
- * @retval -EBUSY if another ISR has already been attached to the specified IRQ
- *                number
- * @retval -ENOSYS if kernel is compiled without IRQ support
+ * @return
+ *   Result of attaching the specified handler.
+ * @retval 0
+ *   If everything is OK.
+ * @retval -EINVAL
+ *   If @a irq_nr is not @link #irq_nr_valid() valid @endlink, or
+ *   if the @a handler is @c NULL.
+ * @retval -EBUSY
+ *   If another ISR has already been attached to the requested IRQ number.
+ * @retval -ENOMEM
+ *   If there is no memory to allocate internal structures for the new handler.
+ * @retval -ENOSYS
+ *   If kernel is compiled without IRQ support.
  */
 extern int irq_attach(irq_nr_t irq_nr, irq_handler_t handler,
-		irq_flags_t flags, void *data, const char *dev_name);
+		unsigned int flags, void *data, const char *dev_name);
 
 /**
  * Detaches ISR from the specified @link #irq_nr_t IRQ number @endlink.
  *
- * @param irq_nr the IRQ number to detach ISR from
- * @param data device tag specified at #irq_attach() time
+ * @param irq_nr
+ *   The IRQ number to detach the ISR from.
+ * @param data
+ *   Device data specified at #irq_attach() time.
  *
- * @return detach result
- * @retval 0 if all is OK
- * @retval -EINVAL if @c irq_nr is not @link #irq_nr_valid() valid @endlink
- * @retval -ENOSYS if kernel is compiled without IRQ support
+ * @return
+ *   Result of detaching.
+ * @retval 0
+ *   If all is OK.
+ * @retval -EINVAL
+ *   If @a irq_nr is not @link #irq_nr_valid() valid @endlink.
+ * @retval -ENOENT
+ *   If such handler have not been attached.
+ * @retval -ENOSYS
+ *   If kernel is compiled without IRQ support.
  */
 extern int irq_detach(irq_nr_t irq_nr, void *data);
 
@@ -104,10 +125,4 @@ extern int irq_detach(irq_nr_t irq_nr, void *data);
  */
 extern void irq_dispatch(interrupt_nr_t interrupt_nr);
 
-
-/**
- * Try to call irq_dispath().
- */
-extern void irq_try_dispatch(void);
-
-#endif /* IRQ_H_ */
+#endif /* KERNEL_IRQ_H_ */

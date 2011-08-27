@@ -2,16 +2,18 @@
  * @file
  * @brief Kernel interrupt requests handling.
  *
+ * @date 12.06.2004
+ * @author Sergei Yakoushkin
+ *           - Initial contribution for SPARC
  * @author Anton Bondarev
- *         - Initial implementation for SPARC
- *         - Extracting arch-independent code
+ *           - Extracting arch-independent code
  * @author Alexandr Batyukov, Alexey Fomin
- *         - Reviewing and rewriting some parts
+ *           - Reviewing and rewriting some parts
  * @author Eldar Abusalimov
- *          - Rewriting from scratch:
- *          - Adapting for new HAL interface
- *          - Introducing locks and statistics accounting
- *          - Documentation
+ *           - Rewriting from scratch:
+ *               - Adapting for new HAL interface
+ *               - Introducing locks and statistics accounting
+ *               - Documentation
  */
 
 #include <assert.h>
@@ -19,107 +21,115 @@
 #include <stddef.h>
 
 #include <kernel/irq.h>
+#include <kernel/irq_lock.h>
 #include <kernel/critical.h>
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
+#include <mem/objalloc.h>
 
 struct irq_action {
 	irq_handler_t handler;
-	irq_flags_t flags;
 	void *dev_id;
-	const char *dev_name;
-	unsigned int count_handled;
-	unsigned int count_unhandled;
 };
 
-struct irq_entry {
-	struct irq_action *action;
-	unsigned int count;
-};
+OBJALLOC_DEF(irq_actions, struct irq_action, IRQ_NRS_TOTAL);
 
-/*
- * Temporal solution while preparing to introduce shared IRQs. This is just a
- * static place holder, in future this array will be replaced by dynamically
- * allocated linked lists.
- * TODO see above. -- Eldar
- */
-static struct irq_action irq_actions[IRQ_NRS_TOTAL];
-
-static struct irq_entry irq_table[IRQ_NRS_TOTAL];
+static struct irq_action *irq_table[IRQ_NRS_TOTAL];
 
 void irq_init(void) {
 	interrupt_init();
 }
 
-int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, irq_flags_t flags,
+int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, unsigned int flags,
 		void *dev_id, const char *dev_name) {
 	struct irq_action *action;
-	ipl_t ipl;
+	int ret = ENOERR;
 
-	if (!irq_nr_valid(irq_nr) || NULL == handler) {
+	if (!irq_nr_valid(irq_nr) || !handler) {
 		return -EINVAL;
 	}
 
-	ipl = ipl_save();
-	if (irq_table[irq_nr].action != NULL) {
+	irq_lock();
+
+	if (irq_table[irq_nr]) {
 		/* IRQ sharing is not supported for now... */
-		ipl_restore(ipl);
-		return -EBUSY;
+		ret = -EBUSY;
+		goto out_unlock;
 	}
 
 	/* Action allocation. */
-	action = &irq_actions[irq_nr];
+	if (!(action = objalloc(&irq_actions))) {
+		ret = -ENOMEM;
+		goto out_unlock;
+	}
 
 	action->handler = handler;
-	action->flags = flags;
 	action->dev_id = dev_id;
-	action->dev_name = dev_name;
-	action->count_handled = 0;
-	action->count_unhandled = 0;
 
-	irq_table[irq_nr].action = action;
+	irq_table[irq_nr] = action;
 
 	interrupt_enable(irq_nr);
 
-	ipl_restore(ipl);
-	return 0;
+	out_unlock: irq_unlock();
+	return ret;
 }
 
 int irq_detach(irq_nr_t irq_nr, void *dev_id) {
-	ipl_t ipl;
+	struct irq_action *action;
+	int ret = ENOERR;
 
 	if (!irq_nr_valid(irq_nr)) {
 		return -EINVAL;
 	}
 
-	ipl = ipl_save();
+	irq_lock();
 
-	irq_table[irq_nr].action = NULL;
+	if (!(action = irq_table[irq_nr]) || action->dev_id != dev_id) {
+		ret = -ENOENT;
+		goto out_unlock;
+	}
 
-	ipl_restore(ipl);
-	return 0;
+	objfree(&irq_actions, action);
+	irq_table[irq_nr] = NULL;
+
+	out_unlock: irq_unlock();
+	return ret;
 }
 
 void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_nr_t irq_nr = interrupt_nr;
 	struct irq_action *action;
-	irq_return_t irq_return;
+	irq_handler_t handler;
+	void *dev_id;
+	ipl_t ipl;
 
 	assert(interrupt_nr_valid(interrupt_nr));
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
+	// TODO there is a little chance that an IRQ with higher priority might
+	// interrupt us before we enter the following critical section.
+	// In that case the inner interrupt will call dispatch pending actually
+	// being still inside the context of the outer interrupt handler.
+	//  -- Eldar
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
-
-	irq_table[irq_nr].count++;
-	action = irq_table[irq_nr].action;
-	if (action != NULL && action->handler != NULL) {
-		irq_return = action->handler(irq_nr, action->dev_id);
-		if (irq_return == IRQ_HANDLED) {
-			action->count_handled++;
-		} else {
-			action->count_unhandled++;
+	{
+		ipl = ipl_save();
+		{
+			if ((action = irq_table[irq_nr])) {
+				handler = action->handler;
+				dev_id = action->dev_id;
+			}
 		}
-	}
+		ipl_restore(ipl);
 
-	critical_leave(CRITICAL_IRQ_HANDLER);
+		if (!action) {
+			goto out_leave;
+		}
+
+		assert(handler != NULL);
+		handler(irq_nr, dev_id);
+	}
+	out_leave: critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
 }

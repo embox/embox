@@ -179,4 +179,3 @@ extern void critical_dispatch_pending(void);
 
 #endif /* KERNEL_CRITICAL_H_ */
 
-
