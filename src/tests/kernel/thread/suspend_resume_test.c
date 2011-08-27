@@ -32,35 +32,35 @@ TEST_CASE() {
 	test_assert_not_null(low);
 	test_assert_zero(thread_set_priority(low, THREAD_PRIORITY_LOW));
 
-	test_emit(&buff1, 'a');
+	test_emit_into(&buff1, 'a');
 
 	test_assert_zero(thread_resume(low));
 	test_assert_zero(thread_join(low, &ret));
 	test_assert_null(ret);
 
-	test_emit(&buff1, 'e');
+	test_emit_into(&buff1, 'e');
 
 	test_assert_zero(thread_resume(high));
 	test_assert_zero(thread_join(high, &ret));
 	test_assert_null(ret);
 
-	test_assert_str_equal(test_emit_buffer_str(&buff1), "abcdef");
+	test_assert_str_equal(test_get_emitted_into(&buff1), "abcdef");
 }
 
 static void *low_run(void *arg) {
 	struct thread *high = (struct thread *) arg;
 
-	test_emit(&buff1, 'b');
+	test_emit_into(&buff1, 'b');
 	thread_resume(high);
-	test_emit(&buff1, 'd');
+	test_emit_into(&buff1, 'd');
 
 	return NULL;
 }
 
 static void *high_run(void *arg) {
-	test_emit(&buff1, 'c');
+	test_emit_into(&buff1, 'c');
 	thread_suspend(thread_self());
-	test_emit(&buff1, 'f');
+	test_emit_into(&buff1, 'f');
 
 	return NULL;
 }

@@ -43,9 +43,9 @@ TEST_CASE("one sleep") {
  */
 
 static void * handler1(void* args) {
-	test_emit(&buff, '0' + (uint32_t) args);
+	test_emit_into(&buff, '0' + (uint32_t) args);
 	usleep(TIME_TO_SLEEP * (uint32_t) args);
-	test_emit(&buff, '0' + (uint32_t) args);
+	test_emit_into(&buff, '0' + (uint32_t) args);
 	return NULL;
 }
 
@@ -65,7 +65,7 @@ TEST_CASE("simple multi-threaded check") {
 	test_assert_zero(thread_join(t2, NULL));
 	test_assert_zero(thread_join(t3, NULL));
 
-	test_assert_str_equal(test_emit_buffer_str(&buff), "123123");
+	test_assert_str_equal(test_get_emitted_into(&buff), "123123");
 }
 
 /**
@@ -75,7 +75,7 @@ TEST_CASE("simple multi-threaded check") {
 
 static void * handler2(void* args) {
 	usleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
-	test_emit(&buff, '1' + (uint32_t) args);
+	test_emit_into(&buff, '1' + (uint32_t) args);
 	return NULL;
 }
 
@@ -93,13 +93,13 @@ TEST_CASE("sleep sort") {
 		test_assert_zero(thread_join(t[i], NULL));
 	}
 	for (i=0;i<10;++i);
-	test_assert_str_equal(test_emit_buffer_str(&buff), "87654321");
+	test_assert_str_equal(test_get_emitted_into(&buff), "87654321");
 }
 
 TEST_CASE("sleep 0 seconds") {
 	test_emit_buffer_reset(&buff);
-	test_emit(&buff, '1');
+	test_emit_into(&buff, '1');
 	usleep(0);
-	test_emit(&buff, '2');
-	test_assert_str_equal(test_emit_buffer_str(&buff), "12");
+	test_emit_into(&buff, '2');
+	test_assert_str_equal(test_get_emitted_into(&buff), "12");
 }

@@ -14,7 +14,7 @@
  * @see TEST_CASE()
  *
  * @see test_assert()
- * @see test_emit()
+ * @see test_emit_into()
  *
  * @note
  *   This file is just a shortcut for <framework/test/self.h>,

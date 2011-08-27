@@ -51,35 +51,35 @@ TEST_CASE("without inheritance") {
 	test_assert_zero(thread_join(mid, NULL));
 	test_assert_zero(thread_join(high, NULL));
 
-	test_assert_str_equal(test_emit_buffer_str(&buff), "abcdefghijk");
-//	TRACE("%s", test_emit_buffer_str(&buff));
+	test_assert_str_equal(test_get_emitted_into(&buff), "abcdefghijk");
+//	TRACE("%s", test_get_emitted_into(&buff));
 }
 
 static void *low_run(void *arg) {
 	struct mutex *m = (struct mutex *) arg;
 
-	test_emit(&buff, 'a');
+	test_emit_into(&buff, 'a');
 
 	mutex_lock(m);
 
-	test_emit(&buff, 'b');
+	test_emit_into(&buff, 'b');
 
 	thread_resume(high);
-	test_emit(&buff, 'd');
+	test_emit_into(&buff, 'd');
 	thread_resume(mid);
 
-	test_emit(&buff, 'e');
+	test_emit_into(&buff, 'e');
 
 	mutex_unlock(m);
 
-	test_emit(&buff, 'k');
+	test_emit_into(&buff, 'k');
 
 	return NULL;
 }
 
 static void *mid_run(void *arg) {
-	test_emit(&buff, 'i');
-	test_emit(&buff, 'j');
+	test_emit_into(&buff, 'i');
+	test_emit_into(&buff, 'j');
 
 	return NULL;
 }
@@ -87,16 +87,16 @@ static void *mid_run(void *arg) {
 static void *high_run(void *arg) {
 	struct mutex *m = (struct mutex *) arg;
 
-	test_emit(&buff, 'c');
+	test_emit_into(&buff, 'c');
 
 	mutex_lock(m);
 
-	test_emit(&buff, 'f');
-	test_emit(&buff, 'g');
+	test_emit_into(&buff, 'f');
+	test_emit_into(&buff, 'g');
 
 	mutex_unlock(m);
 
-	test_emit(&buff, 'h');
+	test_emit_into(&buff, 'h');
 
 	return NULL;
 }
