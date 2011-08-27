@@ -7,7 +7,6 @@
  */
 
 #include <embox/test.h>
-#include <test/misc.h>
 
 EMBOX_TEST_SUITE("Stack usage tests");
 

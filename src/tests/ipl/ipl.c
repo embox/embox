@@ -7,22 +7,39 @@
  */
 
 #include <embox/test.h>
+#include <kernel/irq.h>
 #include <hal/ipl.h>
-#include <test/misc.h>
+
+EMBOX_TEST_SUITE("Interrupt priority level tests");
 
 #define TEST_IRQ_NR 10
 
-EMBOX_TEST(run);
+static irq_return_t test_isr(irq_nr_t irq_nr, void *dev_id) {
+	test_emit((int) dev_id);
+	return IRQ_HANDLED;
+}
 
-static int run(void) {
+TEST_CASE("An interrupt forced after a call to ipl_save() must not run until "
+		"the corresponding ipl_restore() is called") {
 	ipl_t ipl;
-	int ret;
+
+	test_emit('{');
+
+	test_assert_zero(
+			irq_attach(TEST_IRQ_NR, test_isr, 0, (void *) '0', "test_irq"));
 
 	ipl = ipl_save();
 
-	ret = (0 == test_misc_irq_force(TEST_IRQ_NR)) ? -1 : 0;
+	test_emit('[');
+	interrupt_force(TEST_IRQ_NR);
+	test_emit(']');
 
 	ipl_restore(ipl);
 
-	return ret;
+	test_assert_zero(irq_detach(TEST_IRQ_NR, (void *) '0'));
+
+	test_emit('}');
+
+	test_assert_emitted("{[]0}");
 }
+
