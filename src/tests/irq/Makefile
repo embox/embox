@@ -4,7 +4,7 @@
 $_PACKAGE := embox.test
 
 $_MODS                  += irq_nesting
-$_SRCS-irq_nesting      += irq_nesting.c
+$_SRCS-irq_nesting      += irq_test.c
 $_DEPS-irq_nesting      += embox.kernel.irq
 $_REQUIRES-irq_nesting  += embox.hal.interrupt
 
