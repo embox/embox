@@ -14,6 +14,7 @@
 #include <util/location.h>
 
 #include "types.h"
+#include "emit_impl.h"
 
 extern void __test_assertion_handle(int pass,
 		const struct __test_assertion_point *point);
@@ -71,35 +72,45 @@ extern void __test_assertion_handle(int pass,
 			__test_assertion_point_ref( "test_assert_not_equal(" act_str ", " \
 					exp_str ")"))
 
-#define __test_assert_str_equal(actual, expected, act_str, exp_str) \
+#define __test_assert_str_equal(actual, expected, \
+		act_str, exp_str) \
 	__test_assertion_handle(0 == strcmp((actual), (expected)), \
 			__test_assertion_point_ref( "test_assert_str_equal(" \
 					act_str ", " exp_str ")"))
 
-#define __test_assert_str_not_equal(actual, expected, act_str, exp_str) \
+#define __test_assert_str_not_equal(actual, expected, \
+		act_str, exp_str) \
 	__test_assertion_handle(0 != strcmp((actual), (expected)), \
 			__test_assertion_point_ref( "test_assert_str_not_equal(" \
 					act_str ", " exp_str ")"))
 
-#define __test_assert_strn_equal(actual, expected, n, act_str, exp_str) \
+#define __test_assert_strn_equal(actual, expected, n, \
+		act_str, exp_str, n_str) \
 	__test_assertion_handle(0 == strncmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_strn_equal(" \
 					act_str ", " exp_str ")"))
 
-#define __test_assert_strn_not_equal(actual, expected, n, act_str, exp_str) \
+#define __test_assert_strn_not_equal(actual, expected, n, \
+		act_str, exp_str, n_str) \
 	__test_assertion_handle(0 != strcmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_strn_not_equal(" \
 					act_str ", " exp_str ")"))
 
-#define __test_assert_mem_equal(actual, expected, n, act_str, exp_str) \
+#define __test_assert_mem_equal(actual, expected, n, \
+		act_str, exp_str, n_str) \
 	__test_assertion_handle(0 == memcmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_mem_equal(" \
 					act_str ", " exp_str ")"))
 
-#define __test_assert_mem_not_equal(actual, expected, n, act_str, exp_str) \
+#define __test_assert_mem_not_equal(actual, expected, n, \
+		act_str, exp_str, n_str) \
 	__test_assertion_handle(0 != memcmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_mem_not_equal(" \
 					act_str ", " exp_str ")"))
+
+#define __test_assert_emitted(expected, exp_str) \
+	__test_assertion_handle(0 == strcmp(test_get_emitted(), (expected)), \
+			__test_assertion_point_ref( "test_assert_emitted(" exp_str ")"))
 
 /* Hide internals from CDT macro expansion. */
 #ifdef __CDT_PARSER__
@@ -153,20 +164,28 @@ extern void __test_assertion_handle(int pass,
 	test_assert_str_not_equal(actual, expected)
 
 #undef __test_assert_strn_equal
-#define __test_assert_strn_equal(actual, expected, n, act_str, exp_str) \
+#define __test_assert_strn_equal(actual, expected, n, \
+		act_str, exp_str, n_str) \
 	test_assert_strn_equal(actual, expected, n)
 
 #undef __test_assert_strn_not_equal
-#define __test_assert_strn_not_equal(actual, expected, n, act_str, exp_str) \
+#define __test_assert_strn_not_equal(actual, expected, n, \
+		act_str, exp_str, n_str) \
 	test_assert_strn_not_equal(actual, expected, n)
 
 #undef __test_assert_mem_equal
-#define __test_assert_mem_equal(actual, expected, n, act_str, exp_str) \
+#define __test_assert_mem_equal(actual, expected, n, \
+		act_str, exp_str, n_str) \
 	test_assert_mem_equal(actual, expected, n)
 
 #undef __test_assert_mem_not_equal
-#define __test_assert_mem_not_equal(actual, expected, n, act_str, exp_str) \
+#define __test_assert_mem_not_equal(actual, expected, n, \
+		act_str, exp_str, n_str) \
 	test_assert_mem_not_equal(actual, expected, n)
+
+#undef __test_assert_emitted
+#define __test_assert_emitted(expected, exp_str) \
+	test_assert_emitted(expected)
 
 #endif /* __CDT_PARSER__ */
 

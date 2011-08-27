@@ -12,16 +12,12 @@
 
 EMBOX_TEST_SUITE("Thread suspend/resume");
 
-TEST_EMIT_BUFFER_DEF(buff1, 'f' - 'a' + 1);
-
 static void *low_run(void *);
 static void *high_run(void *);
 
 TEST_CASE() {
 	struct thread *low = NULL, *high = NULL;
 	void *ret;
-
-	test_emit_buffer_reset(&buff1);
 
 	test_assert_zero(
 			thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, NULL));
@@ -32,35 +28,35 @@ TEST_CASE() {
 	test_assert_not_null(low);
 	test_assert_zero(thread_set_priority(low, THREAD_PRIORITY_LOW));
 
-	test_emit_into(&buff1, 'a');
+	test_emit('a');
 
 	test_assert_zero(thread_resume(low));
 	test_assert_zero(thread_join(low, &ret));
 	test_assert_null(ret);
 
-	test_emit_into(&buff1, 'e');
+	test_emit('e');
 
 	test_assert_zero(thread_resume(high));
 	test_assert_zero(thread_join(high, &ret));
 	test_assert_null(ret);
 
-	test_assert_str_equal(test_get_emitted_into(&buff1), "abcdef");
+	test_assert_emitted("abcdef");
 }
 
 static void *low_run(void *arg) {
 	struct thread *high = (struct thread *) arg;
 
-	test_emit_into(&buff1, 'b');
+	test_emit('b');
 	thread_resume(high);
-	test_emit_into(&buff1, 'd');
+	test_emit('d');
 
 	return NULL;
 }
 
 static void *high_run(void *arg) {
-	test_emit_into(&buff1, 'c');
+	test_emit('c');
 	thread_suspend(thread_self());
-	test_emit_into(&buff1, 'f');
+	test_emit('f');
 
 	return NULL;
 }

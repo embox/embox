@@ -84,6 +84,16 @@ static inline void test_emit_into(struct test_emit_buffer *b, char ch) {
 	}
 }
 
+static inline void test_emit(char ch) {
+	extern struct test_emit_buffer *__test_emit_buffer_current(void);
+	test_emit_into(__test_emit_buffer_current(), ch);
+}
+
+static inline char *test_get_emitted(void) {
+	extern struct test_emit_buffer *__test_emit_buffer_current(void);
+	return test_get_emitted_into(__test_emit_buffer_current());
+}
+
 #ifdef __CDT_PARSER__
 
 #undef __TEST_EMIT_BUFFER_DEF
