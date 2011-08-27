@@ -38,7 +38,8 @@ TEST_CASE("softirq_raise called outside any hardware ISR should invoke "
 	test_assert_zero(softirq_raise(TEST_SOFTIRQ_NR));
 
 	test_emit(&softirq_out, 'f');
-	// TODO detach softirq handler
+
+	test_assert_zero(softirq_install(TEST_SOFTIRQ_NR, NULL, NULL));
 
 	test_assert_str_equal(test_emit_buffer_str(&softirq_out), "abcdef");
 }

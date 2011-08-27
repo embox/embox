@@ -9,8 +9,8 @@
  *         - Documenting some parts of API
  */
 
-#ifndef SOFTIRQ_H_
-#define SOFTIRQ_H_
+#ifndef KERNEL_SOFTIRQ_H_
+#define KERNEL_SOFTIRQ_H_
 
 #include <kernel/softirq_lock.h>
 
@@ -36,11 +36,6 @@ typedef unsigned int softirq_nr_t;
  * @param data the device tag specified at #softirq_install() time
  */
 typedef void (*softirq_handler_t)(softirq_nr_t softirq_nr, void *data);
-
-/**
- * Initializes soft IRQ subsystem.
- */
-extern void softirq_init(void);
 
 /**
  * Installs the handler on the specified soft IRQ number replacing an old one
@@ -71,4 +66,4 @@ extern int softirq_install(softirq_nr_t nr, softirq_handler_t handler,
  */
 extern int softirq_raise(softirq_nr_t nr);
 
-#endif /* SOFTIRQ_H_ */
+#endif /* KERNEL_SOFTIRQ_H_ */

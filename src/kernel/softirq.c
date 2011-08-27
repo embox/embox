@@ -29,12 +29,8 @@ struct softirq_action {
 	void *data;
 };
 
-volatile static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
-volatile static uint32_t softirq_pending;
-
-void softirq_init(void) {
-	// TODO install common softirqs. -- Eldar
-}
+static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
+static uint32_t softirq_pending;
 
 int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *data) {
 	ipl_t ipl;
@@ -72,21 +68,22 @@ int softirq_raise(softirq_nr_t nr) {
  */
 static void softirq_dispatch(void) {
 	uint32_t pending;
-	softirq_nr_t nr;
 	softirq_handler_t handler;
 	void *data;
 
 	critical_enter(CRITICAL_SOFTIRQ_HANDLER);
 
-	while (0x0 != (pending = softirq_pending)) {
+	while ((pending = softirq_pending)) {
 		softirq_pending = 0;
-		for (nr = 0; pending; pending >>= 1, ++nr) {
-			if (0x0 == (pending & 0x1)) {
+
+		for (softirq_nr_t nr = 0; pending; pending >>= 1, ++nr) {
+			if (!(pending & 0x1)) {
 				continue;
 			}
 
-			if (NULL != (handler = softirq_actions[nr].handler)) {
+			if ((handler = softirq_actions[nr].handler)) {
 				data = softirq_actions[nr].data;
+
 				ipl_enable();
 				handler(nr, data);
 				ipl_disable();

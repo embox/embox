@@ -5,11 +5,6 @@ PROVIDE(diag_putc = nosys);
 
 PROVIDE(irq_dispatch = nosys);
 
-PROVIDE(softirq_init     = nosys);
-PROVIDE(softirq_install  = nosys);
-PROVIDE(softirq_raise    = nosys);
-PROVIDE(softirq_dispatch = nosys);
-
 PROVIDE(printk = nosys);
 
 PROVIDE(timer_init = nosys);
