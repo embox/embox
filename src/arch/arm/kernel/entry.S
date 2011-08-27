@@ -10,14 +10,14 @@
 
 .text
 .align 4
-.global	SWI_handler
-.global	IRQ_handler
-.global IRQ_def_handler
+.global	swi_handler
+.global	irq_handler
+.global irq_def_handler
 
-IRQ_def_handler :
-	b IRQ_def_handler
+irq_def_handler:
+	b irq_def_handler
 
-IRQ_handler:
+irq_handler:
 	sub	LR, LR, #4
 
 	/* storing LP */
@@ -46,7 +46,7 @@ IRQ_handler:
 	/*What a Terrible Failure? */
 	b die
 
-SWI_handler:
+swi_handler:
 	/*unimplemented */
 die:
 	b die

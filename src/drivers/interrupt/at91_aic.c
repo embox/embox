@@ -1,39 +1,45 @@
 /**
  * @file
- * @brief Interrupt interface realization
+ * @brief Driver for Advanced Interrupt Controller.
  *
  * @date 11.07.10
  * @author Anton Kozlov
  */
 
 #include <assert.h>
+#include <types.h>
+
+#include <asm/psr.h>
+#include <asm/modes.h>
+#include <drivers/at91sam7s256.h>
+#include <kernel/irq.h>
 #include <hal/arch.h>
 #include <hal/interrupt.h>
 #include <hal/reg.h>
-#include <asm/psr.h>
-#include <asm/modes.h>
-#include <types.h>
-#include <drivers/at91sam7s256.h>
 
-#include <kernel/irq.h>
+#include <embox/unit.h>
 
-extern void IRQ_def_handler(void);
+EMBOX_UNIT_INIT(unit_init);
 
-void interrupt_init(void) {
-	size_t i;
+static int unit_init(void) {
+	extern void irq_def_handler(void);
+
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0 |
 			1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA20_IRQ0 |
 			AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
 	REG_STORE(AT91C_PIOA_BSR, AT91C_PA20_IRQ0 |
 			AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
-	for (i = 0; i < 32; i++) {
-		REG_STORE(AT91C_AIC_SVR[i],(uint32_t) &IRQ_def_handler);
+	for (int i = 0; i < 32; i++) {
+		REG_STORE(AT91C_AIC_SVR[i],(uint32_t) &irq_def_handler);
 		REG_STORE(AT91C_AIC_SMR + i,
 				AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
 	}
+
 	REG_STORE(AT91C_AIC_IDCR, ~0); /* disabling all interrupts */
 	REG_STORE(AT91C_AIC_ICCR, ~0); /* clearing all pending interrupts */
+
+	return 0;
 }
 
 void interrupt_enable(interrupt_nr_t interrupt_nr) {
@@ -70,7 +76,6 @@ static inline void disable_interrupts(void) {
 static inline void enable_interrupts(void) {
 	__set_cpsr(__get_cpsr() & ~(I_BIT | F_BIT));
 }
-
 
 void interrupt_handle(void) {
 	uint32_t source;

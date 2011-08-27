@@ -14,6 +14,7 @@
  *               - Adapting for new HAL interface
  *               - Introducing locks and statistics accounting
  *               - Documentation
+ *           - Using object allocator for internal structures
  */
 
 #include <assert.h>
@@ -26,10 +27,6 @@
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
 #include <mem/objalloc.h>
-
-#include <embox/unit.h>
-
-EMBOX_UNIT_INIT(unit_init);
 
 struct irq_action {
 	irq_handler_t handler;
@@ -134,7 +131,3 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	critical_dispatch_pending();
 }
 
-static int unit_init(void) {
-	interrupt_init();
-	return 0;
-}

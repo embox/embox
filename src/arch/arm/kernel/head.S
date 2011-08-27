@@ -26,7 +26,7 @@
     .align 4
 
     .global start
-.extern IRQ_handler
+.extern irq_handler
 
 .section .trap_table, "x"
 /* trap table
@@ -37,27 +37,27 @@
 start:
     ldr pc, reset_handler_addr
     ldr pc, undef_handler_addr
-    ldr pc, SWI_handler_addr
+    ldr pc, swi_handler_addr
     ldr pc, prefetch_abt_handler_addr
     ldr pc, data_abt_handler_addr
     nop /*bad exception not_used:		.word not_used*/
-    ldr pc, IRQ_handler_addr
-    ldr pc, FIQ_handler_addr
+    ldr pc, irq_handler_addr
+    ldr pc, fiq_handler_addr
 
 reset_handler_addr:
     .word reset_handler
 undef_handler_addr:
     .word undef_handler
-SWI_handler_addr:
-    .word SWI_handler
+swi_handler_addr:
+    .word swi_handler
 prefetch_abt_handler_addr:
     .word prefetch_abt_handler
 data_abt_handler_addr:
     .word data_abt_handler
-IRQ_handler_addr:
-    .word IRQ_handler
-FIQ_handler_addr:
-    .word FIQ_handler
+irq_handler_addr:
+    .word irq_handler
+fiq_handler_addr:
+    .word fiq_handler
 
 /* stubs */
 undef_handler:
@@ -66,8 +66,8 @@ prefetch_abt_handler:
     B prefetch_abt_handler
 data_abt_handler:
     B data_abt_handler
-FIQ_handler:
-    B FIQ_handler
+fiq_handler:
+    B fiq_handler
 
 .text
 /* initialize stack */

@@ -11,12 +11,13 @@
 #include <errno.h>
 #include <types.h>
 
-#include <kernel/panic.h>
-#include <kernel/printk.h>
-#include <kernel/irq.h>
 #include <hal/interrupt.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
+
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(unit_init);
 
 struct irqmp_regs {
 	/* 0x00 */uint32_t level;
@@ -58,11 +59,16 @@ void interrupt_force(interrupt_nr_t interrupt_nr) {
 	REG_ORIN(&dev_regs->force, 1 << interrupt_nr);
 }
 
-void interrupt_init(void) {
-	assert(NULL == dev_regs);
+interrupt_mask_t interrupt_get_status(void) {
+	return (REG_LOAD(&dev_regs->pending)) | REG_LOAD(&dev_regs->force);
+}
 
-	if (0 != dev_regs_init()) {
-		panic("Unable to initialize irqmp dev_regs");
+static int unit_init(void) {
+	int error;
+
+	assert(NULL == dev_regs);
+	if (0 != (error = dev_regs_init())) {
+		return error;
 	}
 	assert(NULL != dev_regs);
 
@@ -71,10 +77,8 @@ void interrupt_init(void) {
 	REG_STORE(&dev_regs->pending, 0x0);
 	REG_STORE(&dev_regs->force, 0x0);
 	REG_STORE(&dev_regs->clear, ~0x0);
-}
 
-interrupt_mask_t interrupt_get_status(void) {
-	return (REG_LOAD(&dev_regs->pending)) | REG_LOAD(&dev_regs->force);
+	return 0;
 }
 
 #ifdef CONFIG_AMBAPP
@@ -82,9 +86,6 @@ static int dev_regs_init(void) {
 	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
 			AMBAPP_DEVICE_GAISLER_IRQMP, false, false)) {
-		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",
-			AMBAPP_VENDOR_GAISLER,
-			AMBAPP_DEVICE_GAISLER_IRQMP);
 		return -ENODEV;
 	}
 	dev_regs = (volatile struct irqmp_regs *) amba_dev.bar[0].start;

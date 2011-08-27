@@ -11,21 +11,24 @@
  */
 
 #include <types.h>
-#include <hal/arch.h>
-#include <hal/interrupt.h>
-#include <hal/reg.h>
-#include <kernel/irq.h>
-#include <hal/interrupt.h>
+
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/io.h>
 #include <asm/cpu.h>
 #include <drivers/i8259.h>
+#include <hal/arch.h>
+#include <hal/reg.h>
+#include <hal/interrupt.h>
+
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(unit_init);
 
 /**
  * Initialize the PIC
  */
-void interrupt_init(void) {
+static int unit_init(void) {
 	/* Initialize the master */
 	out8(PIC1_ICW1, PIC1_COMMAND);
 	out8(PIC1_BASE, PIC1_DATA);
@@ -44,6 +47,8 @@ void interrupt_init(void) {
 	apic_disable_all();
 	interrupt_enable(7); /* enable slave irq controller irq 8-16 */
 	irq_enable();
+
+	return 0;
 }
 
 void interrupt_enable(interrupt_nr_t int_nr) {
@@ -63,7 +68,7 @@ void interrupt_disable(interrupt_nr_t int_nr) {
 }
 
 void interrupt_force(interrupt_nr_t irq_num) {
-
+	// TODO Emm?.. -- Eldar
 }
 
 void irqc_set_mask(__interrupt_mask_t mask) {
