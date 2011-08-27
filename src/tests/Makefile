@@ -3,8 +3,6 @@ SUBDIRS := $(filter-out _template,$(SUBDIRS))
 
 $_PACKAGE := embox.test
 
-$_CPPFLAGS += -I$($_SELFDIR)/_misc/include
-
 # Util for adding new test.
 # Usage example: TEST_NAME=test make at
 
