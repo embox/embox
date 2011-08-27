@@ -152,6 +152,7 @@ static bool handler_was_set = false;
 #define UART_IER_RX_ENABLE 0x1
 int uart_set_irq_handler(irq_handler_t pfunc) {
 	/*FIXME x86 uart 4 is number only for first port*/
+	// TODO check return code.
 	irq_attach(COM0_IRQ_NUM, pfunc,0,NULL,"uart");
 	handler_was_set = true;
 	/*enable rx interrupt*/

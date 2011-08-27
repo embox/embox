@@ -63,11 +63,6 @@ typedef int irq_return_t;
 typedef irq_return_t (*irq_handler_t)(irq_nr_t irq_nr, void *data);
 
 /**
- * Initializes IRQ subsystem.
- */
-extern void irq_init(void);
-
-/**
  * Attaches an @link #irq_handler_t interrupt service routine @endlink to the
  * specified @link #irq_nr_t IRQ number @endlink.
  *

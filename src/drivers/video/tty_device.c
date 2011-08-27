@@ -40,6 +40,7 @@ static void *open(const char *fname, const char *mode) {
 	tty.file_op = &file_op;
 	tty_register(&tty);
 
+	// TODO check return code.
 	irq_attach(1, irq_handler, 0, NULL, "kbd");
 	return (void *)&file_op;
 }

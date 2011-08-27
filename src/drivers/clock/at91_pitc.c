@@ -26,6 +26,7 @@ irq_return_t clock_handler(int irq_num, void *dev_id) {
 
 void clock_init(void) {
 	REG_STORE(AT91C_PMC_PCER, AT91C_ID_SYS);
+	// TODO check return code.
 	irq_attach((irq_nr_t) AT91C_ID_SYS,
 		(irq_handler_t) &clock_handler, 0, NULL, "at91 PIT");
 	at91_pit_clock_source.flags = 1;

@@ -330,7 +330,7 @@ static int __init unit_init(void) {
 
 	res = irq_attach(CONFIG_XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
 			net_device, "xilinx emaclite");
-	if (res < 0) {
+	if (res != 0) {
 		return res;
 	}
 

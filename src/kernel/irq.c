@@ -27,6 +27,10 @@
 #include <hal/ipl.h>
 #include <mem/objalloc.h>
 
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(unit_init);
+
 struct irq_action {
 	irq_handler_t handler;
 	void *dev_id;
@@ -35,10 +39,6 @@ struct irq_action {
 OBJALLOC_DEF(irq_actions, struct irq_action, IRQ_NRS_TOTAL);
 
 static struct irq_action *irq_table[IRQ_NRS_TOTAL];
-
-void irq_init(void) {
-	interrupt_init();
-}
 
 int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, unsigned int flags,
 		void *dev_id, const char *dev_name) {
@@ -132,4 +132,9 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	}
 	out_leave: critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
+}
+
+static int unit_init(void) {
+	interrupt_init();
+	return 0;
 }

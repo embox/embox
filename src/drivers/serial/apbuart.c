@@ -134,6 +134,7 @@ static bool handler_was_set = false;
 int uart_set_irq_handler(irq_handler_t pfunc) {
 	REG_ORIN((&dev_regs->ctrl), UART_CTRL_RI);
 
+	// TODO check return code.
 	irq_attach(irq_num, pfunc,0,NULL,"uart");
 	handler_was_set = true;
 	return 0;

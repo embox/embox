@@ -3,9 +3,6 @@ PROVIDE(diag_init = nosys);
 PROVIDE(diag_getc = nosys);
 PROVIDE(diag_putc = nosys);
 
-PROVIDE(irq_init     = nosys);
-PROVIDE(irq_attach   = nosys);
-PROVIDE(irq_detach   = nosys);
 PROVIDE(irq_dispatch = nosys);
 
 PROVIDE(softirq_init     = nosys);

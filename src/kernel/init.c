@@ -10,7 +10,6 @@
 
 #include <hal/arch.h>
 #include <hal/ipl.h>
-#include <kernel/irq.h>
 #include <kernel/softirq.h>
 #include <kernel/timer.h>
 #include <kernel/diag.h>
@@ -43,11 +42,10 @@ void kernel_start(void) {
  */
 static void kernel_init(void) {
 	arch_init();
-	irq_init();
 
 	diag_init();
 
-	softirq_init();
+//	softirq_init();
 
 	uart_init(); // XXX
 

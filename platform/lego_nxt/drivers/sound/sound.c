@@ -7,12 +7,14 @@
  */
 
 #include <types.h>
-#include <embox/unit.h>
-#include <linux/init.h>
 #include <unistd.h>
-#include <hal/reg.h>
-#include <drivers/at91sam7s256.h>
+
+#include <kernel/irq.h>
 #include <drivers/sound.h>
+#include <drivers/at91sam7s256.h>
+#include <hal/reg.h>
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(sound_init);
 
@@ -34,7 +36,7 @@ void sound_stop_play(void) {
 	REG_STORE(AT91C_SSC_PTCR, AT91C_PDC_TXTDIS);
 }
 
-static int __init sound_init(void) {
+static int sound_init(void) {
 	int res = 0;
 	res = irq_attach((irq_nr_t) AT91C_ID_SSC,
 		(irq_handler_t) &sound_interrupt, 0,

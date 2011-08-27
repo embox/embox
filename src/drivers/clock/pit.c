@@ -78,6 +78,7 @@ irq_return_t clock_handler(int irq_nr, void *dev_id) {
 }
 
 void clock_init(void) {
+	// TODO check return code.
 	irq_attach((irq_nr_t) IRQ0,
 		(irq_handler_t) &clock_handler, 0, NULL, "PIT");
 	/* Initialization of clock source structure */

@@ -41,12 +41,14 @@ void tc_set_limit(uint8_t channel, uint32_t limit) {
 }
 
 void tc_limit_int_enable(uint8_t channel, irq_handler_t handler) {
+	// TODO check return code.
 	irq_attach(AT91C_ID_TC0 + channel, handler, 0, NULL, "Timer limit handler");
 	REG_STORE(((uint8_t *) AT91C_TC0_IER) + channel * sizeof(AT91S_TCB), AT91C_TC_CPCS);
 }
 
 void tc_limit_int_disable(uint8_t channel) {
 	REG_STORE(((uint8_t *) AT91C_TC0_IDR) + channel * sizeof(AT91S_TCB), AT91C_TC_CPCS);
+	// TODO check return code.
 	irq_detach(AT91C_ID_TC0 + channel, NULL);
 }
 

@@ -2,6 +2,7 @@ $_PACKAGE := embox.driver.serial
 
 $_MODS                 += xuartlite
 $_SRCS-xuartlite       += serial_xuartlite.c
+$_DEPS-xuartlite       += embox.kernel.irq
 $_PROVIDES-xuartlite   += embox.hal.diag
 
 $_MODS                 += at91_uart
@@ -14,6 +15,7 @@ $_PROVIDES-skyeye_uart += embox.hal.diag
 
 $_MODS                 += serial_port
 $_SRCS-serial_port     += serial_port.c
+$_DEPS-serial_port     += embox.kernel.irq
 $_PROVIDES-serial_port += embox.hal.diag
 
 $_MODS                  += diag_apbuart
@@ -22,6 +24,7 @@ $_PROVIDES-diag_apbuart += embox.hal.diag
 
 $_MODS           += apbuart
 $_SRCS-apbuart   += apbuart.c
+$_DEPS-apbuart   += embox.kernel.irq
 ifdef CONFIG_AMBAPP
   $_DEPS-apbuart += embox.driver.ambapp
 endif

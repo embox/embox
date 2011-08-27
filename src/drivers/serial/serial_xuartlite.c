@@ -87,6 +87,7 @@ void diag_putc(char ch) {
 
 /* TODO uart_set_irq_handler haven't to be used*/
 int uart_set_irq_handler(irq_handler_t pfunc) {
+	// TODO check return code.
 	irq_attach(CONFIG_XILINX_UARTLITE_IRQ_NUM, pfunc, 0, "xil_uartlite", NULL);
 	return 0;
 }

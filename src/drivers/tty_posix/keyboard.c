@@ -188,7 +188,8 @@ static void *open(const char *fname, const char *mode) {
 
 	kb_init(tp);
 
-   /* Set interrupt handler and enable keyboard IRQ. */
+	/* Set interrupt handler and enable keyboard IRQ. */
+	// TODO check return code.
 	irq_attach((irq_nr_t) KEYBOARD_IRQ,keyboard_int_handler, 0, NULL, "keyboard");
 
 	return (void *)&file_op;

@@ -17,8 +17,8 @@ EMBOX_UNIT_INIT(at91_pin_init);
 
 static int at91_pin_init(void) {
 	REG_STORE(AT91C_PMC_PCER, 1L << AT91C_ID_PIOA);
-	irq_attach(AT91C_ID_PIOA, (irq_handler_t) &irq_pin_handler,
-			1, NULL, "AT91 PIO pins");
+	// TODO check return value.
+	irq_attach(AT91C_ID_PIOA, irq_pin_handler, 0, NULL, "AT91 PIO pins");
 	pin_get_input_changed();
 	return 0;
 }
