@@ -83,12 +83,11 @@
 		.location = LOCATION_INIT,                       \
 		.description = _description,                     \
 	};                                                   \
-	extern const struct test_case *__TEST_CASES_ARRAY[]; \
 	ARRAY_SPREAD_ADD(__TEST_CASES_ARRAY, &test_case_nm); \
 	static void run_nm(void)
 
 #define __TEST_CASES_ARRAY \
-	MACRO_CONCAT(__test_cases__,__EMBUILD_MOD__)
+	MACRO_CONCAT(__test_cases_in_suite__,__EMBUILD_MOD__)
 
 /* This is implemented on top of test suite and test case. */
 #define __EMBOX_TEST(_run) \
