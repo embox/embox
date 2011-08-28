@@ -9,6 +9,7 @@
 #ifndef TIMER_COUNTER_H_
 #define TIMER_COUNTER_H_
 
+#include <kernel/irq.h>
 #include <drivers/at91sam7_tcc.h>
 
 /**
