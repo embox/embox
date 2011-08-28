@@ -1,14 +1,25 @@
-#ifndef HAL_INTERRUPT_H_
-# error "Do not include this file directly!"
-#endif /* HAL_INTERRUPT_H_ */
+/**
+ * @file
+ * @brief Definitions for i8952 interrupt controller.
+ *
+ * @date 22.12.10
+ * @author Nikolay Korotky
+ */
+
+#ifndef HAL_INTERRUPT_I8259_H_
+#define HAL_INTERRUPT_I8259_H_
 
 #define __INTERRUPT_NRS_TOTAL 15
-
-#ifndef __ASSEMBLER__
 
 typedef unsigned char __interrupt_nr_t;
 typedef unsigned long __interrupt_mask_t;
 
+// TODO namespace? -- Eldar
+extern void irqc_set_mask(__interrupt_mask_t mask);
+extern __interrupt_mask_t irqc_get_mask(void);
+
+// TODO the following defs seem to be unused, may be throw them out? -- Eldar
+#if 0
 /**
  * There are 256 IDT entries (each entry is 8 bytes)
  * Vectors 0...31 : system traps and exceptions
@@ -35,7 +46,6 @@ typedef unsigned long __interrupt_mask_t;
 #define T_GENERAL_PROTECTION    0x0D /* General Protection */
 #define T_PAGE_FAULT            0x0E /* Page Fault */
 
-extern void irqc_set_mask(__interrupt_mask_t mask);
-extern __interrupt_mask_t irqc_get_mask(void);
+#endif
 
-#endif /*__ASSEMBLER__*/
+#endif /* HAL_INTERRUPT_I8259_H_ */
