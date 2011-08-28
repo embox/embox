@@ -95,10 +95,6 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 
 void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_nr_t irq_nr = interrupt_nr;
-	struct irq_action *action;
-	irq_handler_t handler;
-	void *dev_id;
-	ipl_t ipl;
 
 	assert(interrupt_nr_valid(interrupt_nr));
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
@@ -111,6 +107,11 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
+		struct irq_action *action;
+		irq_handler_t handler = NULL;
+		void *dev_id = NULL;
+		ipl_t ipl;
+
 		ipl = ipl_save();
 		{
 			if ((action = irq_table[irq_nr])) {

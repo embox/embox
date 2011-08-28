@@ -268,8 +268,10 @@ static size_t ne2k_receive(struct net_device *dev) {
 
 	ring_offset =  this_frame << 8;
 	/* Find out where the next packet is in card memory */
-	copy_data_from_card(ring_offset, (uint8_t *)&rx_frame, sizeof(struct e8390_pkt_hdr), base_addr);
-	total_length = rx_frame.count - sizeof(struct e8390_pkt_hdr);
+	copy_data_from_card(ring_offset, (uint8_t *) &rx_frame, sizeof(rx_frame),
+			base_addr);
+	// FIXME -O2: error: ‘rx_frame’ is used uninitialized in this function.
+	total_length = rx_frame.count - sizeof(rx_frame);
 	next_frame = this_frame + 1 + (rx_frame.count >> 8);
 	if ((rx_frame.next != next_frame)
 		&& (rx_frame.next != next_frame + 1)

@@ -54,9 +54,9 @@ static void inet_dev_show_info(void *handler) {
 		bcast.s_addr = in_dev->ifa_broadcast;
 		s_bcast = inet_ntoa(bcast);
 		TRACE("\tinet addr:%s  Bcast:%s  Mask:%s\n\t", s_ip, s_bcast, s_mask);
+		free(s_bcast);
 	}
 	free(s_ip);
-	free(s_bcast);
 	free(s_mask);
 	if (dev->flags & IFF_UP)
 		TRACE("UP ");
