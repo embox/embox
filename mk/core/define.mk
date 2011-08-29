@@ -849,23 +849,24 @@ define builtin_callers
 endef
 $(call def,builtin_callers)
 
+# A shorthand for $(firstword $(builtin_callers)).
+# Return:
+#   Name of the direct caller of the current function (if any).
+builtin_caller = \
+	$(firstword $(builtin_callers))
+
+# A shorthand for $(word depth,$(builtin_callers)).
 # Gets the name of a function which is upper in the expansion stack than the
-# current one by the specified depth (if any).
+# current one by the specified depth.
 # Params:
-#   1. (Optional) depth, '1' by default which mean direct caller.
+#   1. Depth, where '1' means direct caller.
 # Return:
 #   Function name or empty if the argument is bigger than actual stack depth.
 # Example:
 #   In case of handling the innermost function of $(foo $(bar $(baz ...))),
 #   namely 'baz', its direct caller is 'bar' and a caller at depth 2 is 'foo'.
-# Note:
-#   This function is a shorthand for $(word depth,$(builtin_callers)).
-define builtin_caller_at
-	$(word $(or $(if $(filter builtin_caller_at,$0),$(value 1)),1),
-		$(builtin_callers)
-	)
-endef
-$(call def,builtin_caller_at)
+builtin_caller_at = \
+	$(word $1,$(builtin_callers))
 
 #
 # Helper functions for error/warning reporting.
@@ -1176,7 +1177,7 @@ define __builtin_to_function_inline
 				# Check the presence of each argument in the list of
 				# actually inlined arguments that we have collected during
 				# the expansion. The argument should be listed exactly once.
-				$(filter-out 1,$(words $(filter $(arg),
+				$(call not,$(call singleword,$(filter $(arg),
 						$(__builtin_to_function_inline_expanded_args)))),
 
 				# Well, the argument has been inlined more than once or has not
@@ -1184,7 +1185,7 @@ define __builtin_to_function_inline
 				# any expansion that could lead to possible side effects.
 				# The check itself is rather simple: we just search the value
 				# of the argument for any unescaped dollars that do not refer
-				# to the first ten function call arguments ($0 .. $9): the
+				# to the first ten function call arguments ($0 .. $9). The
 				# latters are guaranteed to be simply expanded variables with
 				# no possible side effects or any performance overhead.
 				$(findstring $$,
