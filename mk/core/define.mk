@@ -934,6 +934,8 @@ __def_builtin = \
 #
 # Extension: 'lambda' builtin function.
 #
+# Def-time anonymous function definition.
+#
 # '$(lambda body)'
 #
 define builtin_func_lambda
@@ -952,6 +954,8 @@ lambda = $(warning lambda: illegal invocation)
 #
 # Extension: 'with' builtin function.
 #
+# Def-time function definition with args applied at the runtime.
+#
 # '$(with args...,body)'
 #
 define builtin_func_with
@@ -969,6 +973,13 @@ $(call def,builtin_func_with)
 # Stub for case of $(lambda) or $(call lambda,...).
 with = $(warning with: illegal invocation)
 
+#
+# Extension: 'expand' builtin function.
+#
+# Expands the argument inside the context of the caller function.
+#
+# '$(expand code...)'
+#
 define builtin_func_expand
 	$${eval \
 		__def_tmp__ := \
@@ -985,6 +996,23 @@ $(call def,builtin_func_expand)
 
 expand = $(expand $1)
 $(call def,expand)
+
+#
+# Extension: 'papply' builtin function.
+#
+# Runtime partial application.
+#
+# '$(papply func,args...)'
+#
+define builtin_func_papply
+	$$(foreach aux,$$(builtin_aux_alloc),# XXX use own private allocation.
+		$$(eval \
+			$$(aux) = $$$$(call $(builtin_args),$$$$1)
+		)
+		$$(aux)
+	)
+endef
+$(call def,builtin_func_papply)
 
 #
 # Builtin to user-defined function call converters.
