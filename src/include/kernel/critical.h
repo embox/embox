@@ -35,7 +35,34 @@
  *
  * As you may have noticed, there is a one regularity in the list above.
  * A context can be dispatched (run a specific handler) only being outside
- * any context which is more critical than the given one.
+ * any context which is more critical than the given one. Otherwise the
+ * dispatching is deferred until the execution leaves these contexts.
+ *
+ * @code
+ *  irq_lock(); // Kernel enters interrupts locked context.
+ *  {
+ *  	...
+ *  	// A hardware interrupt occurs here but actual dispatching is deferred.
+ *  	...
+ *  }
+ *  irq_unlock(); // Interrupts are unlocked and pending dispatch takes place.
+ *
+ *  irq_dispatch(); // Processing pending interrupt requests.
+ *  {
+ *  	some_irq_handler(); // Registered interrupt handler is invoked.
+ *  	{
+ *  		...
+ *  		// Handler wakes up some thread,
+ *  		// but rescheduling can't occur immediately
+ *  		// because of being inside interrupt handler.
+ *  		sched_wake();
+ *  		...
+ *  	}
+ *  }
+ *
+ *  sched_switch(); // Scheduling and thread context switch is performed here.
+ *
+ * @endcode
  *
  * it becomes rather complicated to answer questions like:
  *   - If driver raises a software interrupt being inside a hardware interrupt

@@ -1,7 +1,5 @@
 /**
  * @file
- * @brief
- * @details
  *
  * @date 19.07.2011
  * @author Alexandr Kalmuk

@@ -37,8 +37,8 @@
  */
 typedef interrupt_nr_t irq_nr_t;
 
-#define IRQ_NONE    0
-#define IRQ_HANDLED 1
+#define IRQ_NONE    0 /**< Interrupt has not been handled. */
+#define IRQ_HANDLED 1 /**< Interrupt has been processed by the handler*/
 
 /**
  * IRQ handler return type. Must be either #IRQ_HANDLED or #IRQ_NONE.
