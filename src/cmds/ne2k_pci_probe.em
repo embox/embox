@@ -1,6 +1,6 @@
 $_MODS += ne2k_pci_probe
 $_SRCS-ne2k_pci_probe += ne2k_pci_probe.c
-$_DEPS-ne2k_pci_probe += embox.driver.mac
+$_DEPS-ne2k_pci_probe += embox.driver.net.ne2k_pci
 
 $_BRIEF-ne2k_pci_probe = show physical address of the net device
 
