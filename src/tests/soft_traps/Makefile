@@ -3,19 +3,9 @@
 # TODO Suggested renaming package to tests.soft_traps
 $_PACKAGE := embox.test
 
-$_MODS += soft_trap
-#$_MODS += soft_traps_data
-#$_MODS += soft_traps_flags
+$_MODS += softtrap_test
 
-$_SRCS-soft_trap       += soft_traps.c
-#$_SRCS-soft_traps_data  += soft_traps_data.c
-#$_SRCS-soft_traps_flags += soft_traps_flags.c
+$_SRCS-softtrap_test       += softtrap_test.c
 
-$_DEPS-soft_trap += embox.hal.test.traps
-$_DEPS-soft_trap += embox.hal.traps
-
-#$_DEPS-soft_traps_data += embox.hal.test.traps
-#$_DEPS-soft_traps_data += embox.hal.traps
-
-#$_DEPS-soft_traps_flags += embox.hal.test.traps
-#$_DEPS-soft_traps_flags += embox.hal.traps
+$_DEPS-softtrap_test += embox.hal.test.traps
+$_DEPS-softtrap_test += embox.hal.traps
