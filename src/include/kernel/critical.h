@@ -1,10 +1,11 @@
 /**
- * @file
- * @brief Kernel critical API.
+ * Kernel critical API.
  *
- * @details
  * Embox kernel is fully preemptive and supports both hardware and software
- * interrupts. TODO What is preemption? -- Eldar
+ * interrupts. Preemption in terms of Critical API has more generic meaning
+ * than a regular preemption of a thread by a one with higher priority and
+ * also includes hardware and software interrupts. In other words, we speak
+ * about preemption of execution contexts, not only threads.
  *
  * Lets draw up a quick overview of possible execution contexts:
  *
@@ -22,7 +23,7 @@
  *
  *   - Software interrupts are designed by analogy with the hardware
  *     interrupts. Software interrupts can be locked too to temporally prevent
- *     dispatching deferring it when they become unlocked again.
+ *     dispatching and deferring it when they become unlocked again.
  *
  *   - Software IRQ handlers that can nest similarly to hardware ones.
  *     Because a handler can start execution only outside hardware IRQ context
@@ -31,6 +32,10 @@
  *
  *   - And finally there is a special context for scheduling locked state to
  *     protect internal structures of the scheduler itself.
+ *
+ * As you may have noticed, there is a one regularity in the list above.
+ * A context can be dispatched (run a specific handler) only being outside
+ * any context which is more critical than the given one.
  *
  * it becomes rather complicated to answer questions like:
  *   - If driver raises a software interrupt being inside a hardware interrupt
@@ -84,6 +89,7 @@
  ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
  @endverbatim
  *
+ * @file
  * @date 16.05.10
  * @author Eldar Abusalimov
  */
