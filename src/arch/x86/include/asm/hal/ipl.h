@@ -15,12 +15,26 @@
 
 typedef uint32_t __ipl_t;
 
+extern __ipl_t __cur_ipl;
+
 static inline void ipl_init(void) {
+	__cur_ipl = 0;
+	//__asm__ __volatile__ ("sti;\n\t");
 }
 
-static inline __ipl_t ipl_save(void) {
-	return 0;
+static inline unsigned int ipl_save(void) {
+	unsigned int ret;
+	__asm__ __volatile__ ("cli;\n\t");
+	ret = __cur_ipl;
+	__cur_ipl = 15;
+
+	return ret;
 }
 
-static inline void ipl_restore(__ipl_t ipl) {
+static inline void ipl_restore(unsigned int ipl) {
+	__asm__ __volatile__("cli;\n\t");
+	__cur_ipl = ipl;
+	if (0 == ipl) {
+		__asm__ __volatile__("sti;\n\t");
+	}
 }
