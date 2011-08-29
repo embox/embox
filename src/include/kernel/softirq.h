@@ -19,6 +19,8 @@
  */
 #define SOFTIRQ_NRS_TOTAL 32
 
+#define SOFTIRQ_NR_TEST 31
+
 /**
  * Checks if the specified softirq_nr represents valid soft IRQ number.
  */
