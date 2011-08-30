@@ -76,25 +76,23 @@ static void sched_switch(void) {
 	struct thread *current, *next;
 
 	sched_lock();
+	{
+		ipl_enable();
 
-	ipl_enable();
+		// XXX
+		//assert(critical_allows(CRITICAL_SCHED_LOCK));
 
-	// XXX
-	//assert(critical_allows(CRITICAL_SCHED_LOCK));
+		current = sched_current();
+		next = sched_policy_switch(current);
 
-	current = sched_current();
-	next = sched_policy_switch(current);
+		assert(thread_state_running(next->state));
 
-	assert(thread_state_running(next->state));
+		ipl_disable();
 
-	if (next == current) {
-		return;
+		if (next != current) {
+			context_switch(&current->context, &next->context);
+		}
 	}
-
-	ipl_disable();
-
-	context_switch(&current->context, &next->context);
-
 	sched_unlock();
 }
 
@@ -281,4 +279,38 @@ static int unit_fini(void) {
 	timer_close(tick_timer);
 
 	return 0;
+}
+
+
+/**
+ * Locks the scheduler which means disabling thread switch until
+ * #sched_unlock() is called. Each lock must be balanced with the corresponding
+ * unlock.
+ *
+ * @see sched_unlock()
+ */
+void sched_lock(void) {
+	critical_enter(CRITICAL_SCHED_LOCK);
+}
+
+/**
+ * Unlocks the scheduler after #sched_lock(). Must be called on the
+ * previously locked scheduler only. Outermost unlock (which corresponds to
+ * the first lock call) also dispatches pending thread switches (if any).
+ *
+ * @see sched_lock()
+ */
+void sched_unlock(void) {
+	critical_leave(CRITICAL_SCHED_LOCK);
+	critical_dispatch_pending();
+}
+
+/**
+ * Does the same as #sched_unlock() except that the outermost call does not
+ * perform a check for pending switches.
+ *
+ * @note This function is not intended for wide usage.
+ */
+void sched_unlock_noswitch(void) {
+	critical_leave(CRITICAL_SCHED_LOCK);
 }
