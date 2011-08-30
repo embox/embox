@@ -26,10 +26,10 @@ TEST_CASE("softirq_raise called outside any hardware ISR should invoke "
 		"the handler immediately") {
 	test_emit('a');
 	test_assert_zero(softirq_install(
-					TEST_SOFTIRQ_NR, test_softirq_handler, (void *) 'd'));
+			SOFTIRQ_NR_TEST, test_softirq_handler, (void *) 'd'));
 
 	test_emit('b');
-	test_assert_zero(softirq_raise(TEST_SOFTIRQ_NR));
+	test_assert_zero(softirq_raise(SOFTIRQ_NR_TEST));
 
 	test_emit('f');
 
