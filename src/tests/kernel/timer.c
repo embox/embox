@@ -8,23 +8,23 @@
 #include <embox/test.h>
 #include <kernel/timer.h>
 
-#define TEST_TIMER_TICKS 10
+EMBOX_TEST_SUITE("basic softirq tests");
 
-EMBOX_TEST(run);
+#define TEST_TIMER_PERIOD      100 /*in ms*/
 
 static void test_timer_handler(sys_timer_t* timer, void *param) {
-	*(bool *)param = true;
+	*(int *)param = 1;
 }
 
-static int run(void) {
+TEST_CASE("testing timer_set function")  {
 	long i;
 	sys_timer_t * timer;
-	bool tick_happened;
+	volatile int tick_happened;
 
 	/* Timer value changing means ok */
-	tick_happened = false;
+	tick_happened = 0;
 
-	if (timer_set(&timer, TEST_TIMER_TICKS, test_timer_handler, &tick_happened)) {
+	if (timer_set(&timer, TEST_TIMER_PERIOD, test_timer_handler,(void *) &tick_happened)) {
 		test_fail("failed to install timer");
 	}
 	for (i = 0; i < (1 << 30); i++) {
@@ -34,5 +34,5 @@ static int run(void) {
 	}
 	timer_close(timer);
 
-	return tick_happened ? 0 : -1;
+	test_assert_not_zero(tick_happened);
 }

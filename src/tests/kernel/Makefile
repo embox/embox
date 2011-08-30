@@ -9,3 +9,7 @@ $_REQUIRES-irq_test  += embox.hal.interrupt
 $_MODS             += softirq_test
 $_SRCS-softirq_test = softirq_test.c
 $_DEPS-softirq_test = embox.kernel.softirq
+
+$_MODS       += timer
+$_SRCS-timer += timer.c
+$_REQUIRES-timer += embox.kernel.timer.timer_api
