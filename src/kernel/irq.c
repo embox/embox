@@ -2,10 +2,9 @@
  * @file
  * @brief Kernel interrupt requests handling.
  *
- * @date 12.06.2004
- * @author Sergei Yakoushkin
- *           - Initial contribution for SPARC
+ * @date 01.12.2008
  * @author Anton Bondarev
+ *           - Initial contribution for SPARC
  *           - Extracting arch-independent code
  * @author Alexandr Batyukov, Alexey Fomin
  *           - Reviewing and rewriting some parts
