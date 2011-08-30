@@ -8,7 +8,7 @@
 #include <embox/test.h>
 #include <kernel/timer.h>
 
-EMBOX_TEST_SUITE("basic softirq tests");
+EMBOX_TEST_SUITE("basic timer tests");
 
 #define TEST_TIMER_PERIOD      100 /*in ms*/
 

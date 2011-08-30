@@ -248,7 +248,7 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset
 static size_t ne2k_receive(struct net_device *dev) {
 	uint16_t total_length, ring_offset;
 	uint8_t this_frame, next_frame;//, current;
-	struct e8390_pkt_hdr rx_frame;
+	struct e8390_pkt_hdr rx_frame = {0};
 	net_device_stats_t *stat;
 	unsigned long base_addr;
 	struct sk_buff *skb;
