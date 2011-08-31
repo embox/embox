@@ -17,17 +17,13 @@
 
 EMBOX_CMD(exec);
 
-static void print_usage(void) {
-	printf("Usage: man cmd ...\n");
-}
-
 static int exec(int argc, char **argv) {
 	const struct cmd *cmd;
 	char *name;
 
 	if (argc <= 1) {
-		print_usage();
-		return -1;
+		printf("What manual page do you want?\n");
+		return 0;
 	}
 
 	array_foreach(name, argv + 1, argc - 1) {
