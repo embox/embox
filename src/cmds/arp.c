@@ -9,7 +9,7 @@
 #include <embox/cmd.h>
 
 #include <getopt.h>
-#include <netutils.h>
+#include <net/util.h>
 #include <net/if_arp.h>
 #include <net/neighbour.h>
 

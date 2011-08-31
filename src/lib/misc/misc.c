@@ -7,7 +7,7 @@
 
 #include <lib/bits/byteswap.h>
 #include <net/in.h>
-#include <netutils.h>
+#include <net/util.h>
 #include <stdio.h>
 #include <string.h>
 #include <util/array.h>

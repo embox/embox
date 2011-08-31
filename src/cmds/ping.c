@@ -16,7 +16,7 @@
 #include <net/ip.h>
 #include <net/inetdevice.h>
 #include <net/checksum.h>
-#include <netutils.h>
+#include <net/util.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>

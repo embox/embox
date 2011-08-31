@@ -9,7 +9,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include <netutils.h>
+#include <net/util.h>
 #include <net/netdevice.h>
 #include <net/arp.h>
 #include <net/ip.h>
