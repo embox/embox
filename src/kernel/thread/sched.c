@@ -75,12 +75,11 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 static void sched_switch(void) {
 	struct thread *current, *next;
 
+	assert(critical_allows(CRITICAL_SCHED_LOCK));
+
 	sched_lock();
 	{
 		ipl_enable();
-
-		// XXX
-		//assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 		current = sched_current();
 		next = sched_policy_switch(current);
