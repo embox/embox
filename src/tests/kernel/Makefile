@@ -10,6 +10,6 @@ $_MODS             += softirq_test
 $_SRCS-softirq_test = softirq_test.c
 $_DEPS-softirq_test = embox.kernel.softirq
 
-$_MODS       += timer
-$_SRCS-timer += timer.c
-$_REQUIRES-timer += embox.kernel.timer.timer_api
+$_MODS                += timer_test
+$_SRCS-timer_test     += timer_test.c
+$_REQUIRES-timer_test += embox.kernel.timer.timer_api

@@ -5,18 +5,19 @@
  * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
+#include <unistd.h>
 #include <embox/test.h>
 #include <kernel/timer.h>
 
 EMBOX_TEST_SUITE("basic timer tests");
 
-#define TEST_TIMER_PERIOD      100 /*in ms*/
+#define TEST_TIMER_PERIOD      100 /* milliseconds */
 
 static void test_timer_handler(sys_timer_t* timer, void *param) {
-	*(int *)param = 1;
+	*(int *) param = 1;
 }
 
-TEST_CASE("testing timer_set function")  {
+TEST_CASE("testing timer_set function") {
 	long i;
 	sys_timer_t * timer;
 	volatile int tick_happened;
@@ -24,7 +25,10 @@ TEST_CASE("testing timer_set function")  {
 	/* Timer value changing means ok */
 	tick_happened = 0;
 
-	if (timer_set(&timer, TEST_TIMER_PERIOD, test_timer_handler,(void *) &tick_happened)) {
+	usleep(1);
+
+	if (timer_set(&timer, TEST_TIMER_PERIOD, test_timer_handler,
+			(void *) &tick_happened)) {
 		test_fail("failed to install timer");
 	}
 	for (i = 0; i < (1 << 30); i++) {
@@ -34,5 +38,5 @@ TEST_CASE("testing timer_set function")  {
 	}
 	timer_close(timer);
 
-	test_assert_not_zero(tick_happened);
+	test_assert(tick_happened);
 }
