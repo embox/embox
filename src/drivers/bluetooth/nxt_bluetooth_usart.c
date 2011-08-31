@@ -204,6 +204,8 @@ static void init_adc(void) {
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
 
+static struct sys_timer *ntx_bt_timer;
+
 static int nxt_bluetooth_init(void) {
 	init_usart();
 
@@ -223,7 +225,7 @@ static int nxt_bluetooth_init(void) {
 	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
 		(irq_handler_t) &nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
-	timer_set(3, 200, (sys_timer_handler_t) &nxt_bt_timer_handler);
+	timer_set(&ntx_bt_timer, 200, (sys_timer_handler_t) &nxt_bt_timer_handler, NULL);
 	bt_receive_init();
 	return 0;
 }

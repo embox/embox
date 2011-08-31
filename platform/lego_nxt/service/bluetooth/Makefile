@@ -6,4 +6,4 @@ $_PACKAGE := lego_nxt.service
 
 $_MODS += bluetooth_debug
 $_SRCS-bluetooth_debug += bluetooth_debug.c
-$_REQUIRES-bluetooth_debug += embox.hal.bluetooth_drv
+$_REQUIRES-bluetooth_debug += embox.hal.bluetooth
