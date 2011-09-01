@@ -57,4 +57,6 @@ typedef struct lsof_map {
 	FILE             *fd;
 } lsof_map_t;
 
+extern void lsof_map_init(void);
+
 #endif /* FILE_H_ */

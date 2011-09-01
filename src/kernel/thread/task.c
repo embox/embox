@@ -6,22 +6,22 @@
  * @author Anton Kozlov
  */
 
-#include "task.h"
 #include <errno.h>
 #include <kernel/thread/api.h>
 #include <mem/objalloc.h>
-#include <errno.h>
+#include <kernel/thread/task.h>
+//#include <util/list.h>
+
 
 OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
 
 
 static struct task *task_alloc(void) {
-	struct tast *new_task =  (struct task *) objalloc(&task_pool);
+	struct task *new_task =  (struct task *) objalloc(&task_pool);
 
-	lsof_map_init();
 
-	list_init(new_task->threads);
-	list_init(new_task->child_tasks);
+	//dlist_init(new_task->threads);
+	//dlist_init(new_task->child_tasks);
 	new_task->parent = task_self();
 	return new_task;
 }

@@ -13,7 +13,7 @@
 #include <hal/context.h>
 #include <kernel/thread/event.h>
 
-#include "task.h"
+#include <kernel/thread/task.h>
 
 typedef int __thread_id_t;
 typedef short __thread_priority_t;
