@@ -10,44 +10,51 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <lib/list.h>
+#include <fs/file.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <util/array.h>
+#include <kernel/thread/api.h>
 
-typedef struct lsof_map {
-	struct list_head *next;
-	struct list_head *prev;
-	const char        path[CONFIG_MAX_LENGTH_FILE_NAME];
-	FILE             *fd;
-} lsof_map_t;
+//static lsof_map_t lsof_pool[CONFIG_QUANTITY_NODE];
+//static LIST_HEAD(free_list);
+//static LIST_HEAD(fd_cache);
 
-static lsof_map_t lsof_pool[CONFIG_QUANTITY_NODE];
-static LIST_HEAD(free_list);
-static LIST_HEAD(fd_cache);
+
+extern struct task *task_self(void);
 
 #define fd_to_head(file) (uint32_t)(file - offsetof(lsof_map_t, fd))
 
 void lsof_map_init(void) {
 	size_t i;
+
+	lsof_map_t *lsof_pool = (task_self())->lsof_pool;
+	struct list_head *free_list = task_self()->free_list;
+
 	for (i = 0; i < ARRAY_SIZE(lsof_pool); i++) {
-		list_add((struct list_head *) &lsof_pool[i], &free_list);
+		list_add((struct list_head *) &lsof_pool[i], free_list);
 	}
 }
 
 static void cache_fd(const char *path, FILE *file) {
+	lsof_map_t *lsof_pool = task_self()->lsof_pool;
+	struct list_head *free_list = task_self()->free_list;
+	struct list_head *fd_cache = task_self()->fd_cache;
+
 	lsof_map_t *head;
-	if (list_empty(&free_list)) {
+	if (list_empty(free_list)) {
 		return;
 	}
-	head = (lsof_map_t *) free_list.next;
+	head = (lsof_map_t *) free_list->next;
 	head->fd = file;
 	strcpy((void*) head->path, path);
-	list_move((struct list_head*) head, &fd_cache);
+	list_move((struct list_head*) head, fd_cache);
 }
 
 static void uncache_fd(FILE *file) {
-	list_move((struct list_head*) fd_to_head(file), &free_list);
+	struct list_head *free_list = task_self()->free_list;
+	list_move((struct list_head*) fd_to_head(file), free_list);
 }
 
 #if 0

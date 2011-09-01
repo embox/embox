@@ -100,6 +100,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 
 	thread_init(t, flags, run, arg);
 	thread_context_init(t);
+	t->task = task_self();
 
 	sched_start(t);
 

@@ -77,7 +77,7 @@ static int __init unit_init(void) {
 		root_fs->fsop->mount(NULL);
 	}
 
-	lsof_map_init();
+	//lsof_map_init();
 
 	return ENOERR;
 }

@@ -48,7 +48,7 @@ struct thread {
 	struct list_head  messages;      /**< Messages sent to the thread. */
 	struct event      msg_event;     /**< Thread receives a message. */
 
-	struct task task;
+	struct task	  *task;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */
