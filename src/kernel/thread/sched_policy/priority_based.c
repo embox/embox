@@ -53,8 +53,8 @@ static struct run_thread_list priorities[THREAD_PRIORITY_TOTAL];
 static struct list_head run_queue;
 
 /* Run queue manipulation methods. */
-static void run_enqueue(struct thread *thread);
-static void run_push(struct thread *thread);
+static void run_enqueue(struct thread *t);
+static void run_push(struct thread *t);
 
 static struct thread *run_dequeue(void);
 static struct thread *run_peek(void);
@@ -66,12 +66,16 @@ static void run_insert_priority(struct run_thread_list *priority);
  * @param thread
  *   Thread to add.
  */
-static void run_enqueue(struct thread *thread) {
-	struct run_thread_list *priority = priorities + thread->priority;
+static void run_enqueue(struct thread *t) {
+	struct run_thread_list *priority = priorities + t->priority;
+
+	assert(list_empty(&t->sched_list));
+
 	if (list_empty(&priority->priority_link)) {
 		run_insert_priority(priority);
 	}
-	list_add_tail(&thread->sched_list, &priority->thread_list);
+
+	list_add_tail(&t->sched_list, &priority->thread_list);
 }
 
 /**
@@ -80,14 +84,14 @@ static void run_enqueue(struct thread *thread) {
  *   Queue top.
  */
 static struct thread *run_dequeue(void) {
-	struct thread *thread = run_peek();
+	struct thread *t = run_peek();
 
-	if (!thread) {
+	if (!t) {
 		return NULL;
 	}
 
-	list_del_init(&thread->sched_list);
-	return thread;
+	list_del_init(&t->sched_list);
+	return t;
 }
 
 /**
@@ -95,12 +99,15 @@ static struct thread *run_dequeue(void) {
  * @param thread
  *   Thread to add.
  */
-static void run_push(struct thread *thread) {
-	struct run_thread_list *priority = priorities + thread->priority;
+static void run_push(struct thread *t) {
+	struct run_thread_list *priority = priorities + t->priority;
+
 	if (list_empty(&priority->priority_link)) {
+		assert(t != current);
 		run_insert_priority(priority);
 	}
-	list_add(&thread->sched_list, &priority->thread_list);
+
+	list_add(&t->sched_list, &priority->thread_list);
 }
 
 /**
@@ -143,7 +150,7 @@ static void run_insert_priority(struct run_thread_list *priority) {
 }
 
 bool sched_policy_start(struct thread *t) {
-//	assert(t->state == THREAD_STATE_RUNNING);
+	assert(thread_state_running(t->state));
 
 	run_enqueue(t);
 
@@ -153,8 +160,7 @@ bool sched_policy_start(struct thread *t) {
 bool sched_policy_stop(struct thread *t) {
 	struct run_thread_list *priority = priorities + t->priority;
 
-	// TODO only running thread must be managed by sched_policy -- Eldar
-	//assert(t->state == THREAD_STATE_RUNNING);
+	assert(thread_state_running(t->state));
 
 	if (t != current) {
 		list_del_init(&t->sched_list);
@@ -173,8 +179,10 @@ struct thread *sched_policy_switch(struct thread *t) {
 
 	assert(current != NULL);
 
+	next = run_dequeue();
+
 	if (thread_state_running(current->state)) {
-		if (!(next = run_peek())) {
+		if (!next) {
 			return current;
 		}
 		if (current->priority < next->priority) {
@@ -186,11 +194,12 @@ struct thread *sched_policy_switch(struct thread *t) {
 		}
 	}
 
-	if (!(next = run_dequeue())) {
-		return current;
-	}
+	assert(next != NULL);
+	assert(thread_state_running(next->state));
 
-	return (current = next);
+	current = next;
+
+	return current;
 }
 
 struct thread *sched_policy_current(void) {
