@@ -5,7 +5,7 @@ $_APIS += sched_api tasks_api
 $_MODS      += core sched sched_critical tasks no_tasks
 
 $_SRCS-tasks += task.c
-$_DEPS-tasks += core
+//$_DEPS-tasks += core
 $_PROVIDES-tasks += embox.kernel.thread.tasks_api
 
 $_SRCS-core += core.c
