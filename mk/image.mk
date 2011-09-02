@@ -43,7 +43,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE    = $(CROSS_COMPILE)size
 
 
-CC_VERSION = $(shell $(HOSTCC) -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
+CC_VERSION = $(shell $(CC) -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
 
 ifeq ($(strip $(CC_VERSION)),)
 $(error Unable to get GCC version: $(shell $(CC) -v 2>&1 | cat))
