@@ -35,6 +35,9 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 
+extern struct task *task_alloc(void);
+extern void task_init(struct task *new_task, struct task *parent);
+
 #define STACK_SZ 0x2000
 
 EMBOX_UNIT(unit_init, unit_fini);
@@ -371,7 +374,7 @@ static void *idle_run(void *arg) {
 static int unit_init(void) {
 	static struct thread bootstrap;
 	struct thread *idle;
-
+	struct task *first_task;
 	id_counter = 0;
 
 	bootstrap.id = id_counter++;
@@ -386,6 +389,13 @@ static int unit_init(void) {
 	}
 	thread_init(idle, 0, idle_run, NULL);
 	thread_context_init(idle);
+
+	first_task = task_alloc();
+	task_init(first_task, first_task);
+
+	bootstrap.task = first_task;
+	idle->task = first_task;
+
 	idle->priority = THREAD_PRIORITY_MIN;
 
 	return sched_init(&bootstrap, idle);

@@ -17,21 +17,20 @@ extern int thread_create_task(struct thread **p_thread, unsigned int flags,
 OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
 
 
-static struct task *task_alloc(void) {
+struct task *task_alloc(void) {
 	struct task *new_task =  (struct task *) objalloc(&task_pool);
-
 
 	return new_task;
 }
 
-static void task_init(struct task *new_task, struct task *parent) {
+void task_init(struct task *new_task, struct task *parent) {
 	INIT_LIST_HEAD(&new_task->threads);
 	INIT_LIST_HEAD(&new_task->child_tasks);
 	INIT_LIST_HEAD(&new_task->child_link);
 
 	new_task->parent = parent;
 
-	list_add(&new_task->child_link, &task_self()->child_tasks);
+	list_add(&new_task->child_link, &parent->child_tasks);
 }
 
 int task_create(struct thread **p_thread, unsigned int flags,
