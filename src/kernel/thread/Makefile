@@ -6,11 +6,13 @@ $_MODS      += core sched sched_critical tasks no_tasks
 
 $_SRCS-tasks += task.c
 $_DEPS-tasks += core
+$_PROVIDES-tasks += embox.kernel.thread.tasks_api
 
 $_SRCS-core += core.c
 $_DEPS-core += sched
 $_DEPS-core += sync
 $_DEPS-core += embox.hal.context
+$_REQUIRES-core += tasks_api
 
 $_SRCS-sched += sched.c
 $_REQUIRES-sched += embox.kernel.timer.timer_api
