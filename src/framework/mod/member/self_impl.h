@@ -28,7 +28,6 @@
 
 #define __MOD_MEMBER_DEF_NM(mod_nm, _ops, _data, member_nm) \
 	static const struct mod_member member_nm = { \
-		.mod = &__MOD(mod_nm),                   \
 		.ops = _ops,                             \
 		.data = (void *) _data,                  \
 	};                                           \

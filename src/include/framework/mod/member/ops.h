@@ -39,7 +39,6 @@ struct mod_member_ops {
 };
 
 struct mod_member {
-	const struct mod            *mod;  /**< Corresponding module. */
 	const struct mod_member_ops *ops;  /**< (optional) Available operations. */
 	void                        *data; /**< (optional) Member specific data. */
 };
