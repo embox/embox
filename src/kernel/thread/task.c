@@ -31,7 +31,9 @@ static void task_init(struct task *new_task, struct task *parent) {
 
 	new_task->parent = parent;
 
-	list_add(&new_task->child_link, &parent->child_tasks);
+	if (parent != NULL) {
+		list_add(&new_task->child_link, &parent->child_tasks);
+	}
 }
 
 int task_create(struct task **new, struct task *parent) {
