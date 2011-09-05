@@ -73,7 +73,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	thread_exit(current->run(current->run_arg));
 }
 
-int thread_create_task(struct thread **p_thread, unsigned int flags,
+static int thread_create_task(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg, struct task *tsk) {
 	struct thread *t;
 		int save_ptr = (flags & THREAD_FLAG_SUSPENDED) || !(flags
@@ -374,7 +374,7 @@ static void *idle_run(void *arg) {
 static int unit_init(void) {
 	static struct thread bootstrap;
 	struct thread *idle;
-	struct task *first_task;
+	struct task *default_task;
 	id_counter = 0;
 
 	bootstrap.id = id_counter++;
@@ -390,10 +390,10 @@ static int unit_init(void) {
 	thread_init(idle, 0, idle_run, NULL);
 	thread_context_init(idle);
 
-	first_task = task_default_get();
+	default_task = task_default_get();
 
-	bootstrap.task = first_task;
-	idle->task = first_task;
+	bootstrap.task = default_task;
+	idle->task = default_task;
 
 	idle->priority = THREAD_PRIORITY_MIN;
 
