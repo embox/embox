@@ -31,11 +31,11 @@ static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 	char buf[9];
 	buf[8] = '\0';
 	if (memcmp(cpio_h->c_magic, MAGIC_OLD_BINARY, 6)==0) {
-		TRACE("Use -H newc option for create cpio arch\n");
+		printk("Use -H newc option for create cpio arch\n");
 		return NULL;
 	}
 	if (memcmp(cpio_h->c_magic, MAGIC_NEWC, 6)) {
-		TRACE("Newc ASCII CPIO format not recognized.\n");
+		printk("Newc ASCII CPIO format not recognized.\n");
 		return NULL;
 	}
 	s = (char*) cpio_h;
@@ -71,10 +71,10 @@ int unpack_to_rootfs(void) {
 	char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];
 
 	if (&_ramfs_end == &_ramfs_start) {
-		TRACE("No availible initramfs\n");
+		printk("No availible initramfs\n");
 		return -1;
 	}
-	TRACE("cpio initramfs at 0x%08x\n", (unsigned int)&_ramfs_start);
+	printk("cpio initramfs at 0x%08x\n", (unsigned int)&_ramfs_start);
 
 	init_fs = find_filesystem("ramfs");
 

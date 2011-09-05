@@ -102,10 +102,10 @@ static int sensor_send(uint8_t sensor_id, int *addit_len) {
 static int keep_alive_send(int *addit_len) {
 	*addit_len = 4;
 #ifdef LEGO_COMPATIBLE
-	TRACE("Hi! I'm Lego =(\n");
+	printf("Hi! I'm Lego =(\n");
 	return 0;
 #else
-	TRACE("Hi! I'm Embox!\n");
+	printf("Hi! I'm Embox!\n");
 	return 1;
 #endif
 

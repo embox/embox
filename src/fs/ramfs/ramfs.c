@@ -74,7 +74,7 @@ static void *ramfs_fopen(const char *file_name, const char *mode) {
 	ramfs_file_description_t *fd;
 
 	if (NULL == (nod = vfs_find_node(file_name, NULL))) {
-		TRACE("can't find file %s\n", file_name);
+		printk("can't find file %s\n", file_name);
 		return NULL;
 	}
 	fd = (ramfs_file_description_t*) nod->attr;
@@ -238,7 +238,6 @@ static int __init ramfs_init(void * par) {
 static int __init ramfs_mount(void * par) {
 #ifdef CONFIG_RAMFS_CPIO
 	unpack_to_rootfs();
-	TRACE("RAMFS: inited\n");
 #endif
 	return 0;
 }

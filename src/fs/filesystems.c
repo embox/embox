@@ -45,15 +45,12 @@ static fs_driver_head_t *alloc(file_system_driver_t *drv) {
 	head = (fs_driver_head_t *) free_list.next;
 	head->drv = drv;
 	list_move((struct list_head*) head, &file_systems);
-#if 0
-	TRACE("register %s\n", drv->name);
-#endif
+
 	return head;
 }
 
 static void free(file_system_driver_t *drv) {
 	list_move((struct list_head*) drv_to_head(drv), &free_list);
-	TRACE("unregister %s\n", drv->name);
 	return;
 }
 
@@ -72,7 +69,7 @@ static int __init unit_init(void) {
 	}
 
 	if (NULL == (root_fs = find_filesystem("rootfs"))) {
-		TRACE("File systems not found rootfs driver\n");
+		printk("File systems not found rootfs driver\n");
 	} else {
 		root_fs->fsop->mount(NULL);
 	}

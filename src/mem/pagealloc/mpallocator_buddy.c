@@ -42,7 +42,7 @@ extern char *_heap_start;
 extern char *_heap_end;
 # define HEAP_START_PTR 	_heap_start
 # define HEAP_END_PTR		_heap_end
-# define TRACE printf
+# define printk printf
 #endif
 
 #define PAGE_QUANTITY \
@@ -329,37 +329,37 @@ void multipage_info(void) {
 
 	int var = 5;
 	set_bits(var,0);
-	TRACE("\n");
+	printk("\n");
 
-	TRACE("%d\n",VAR);
+	printk("%d\n",VAR);
 	SET_BIT1(var,4);
-	TRACE("%d\n",VAR);
+	printk("%d\n",VAR);
 	SET_BIT1(var,2);
-	TRACE("%d\n",VAR);
+	printk("%d\n",VAR);
 	if (HAS_BIT(var,4)) {
-		TRACE("Has bit 4\n");
+		printk("Has bit 4\n");
 	}
 	SET_BIT0(var,4);
-	TRACE("%d\n",VAR);
+	printk("%d\n",VAR);
 
 #undef VAR
 #endif
 
-	TRACE("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
-	TRACE("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
-	TRACE("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
-	TRACE("\tpool start: %08x \n\tpool end: %08x \n",(unsigned long) HEAP_START_PTR,
+	printk("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
+	printk("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
+	printk("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
+	printk("\tpool start: %08x \n\tpool end: %08x \n",(unsigned long) HEAP_START_PTR,
 			(unsigned long) HEAP_END_PTR);
-	TRACE("\treal heap start (for return): %08x\n",(unsigned long) heap_start);
-	TRACE("\tmaxblocksize=(dec)%ld\n",maxblocksize);
-	TRACE("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
-	TRACE("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
-	TRACE("\n\tTree:\n\t\t");
+	printk("\treal heap start (for return): %08x\n",(unsigned long) heap_start);
+	printk("\tmaxblocksize=(dec)%ld\n",maxblocksize);
+	printk("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
+	printk("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
+	printk("\n\tTree:\n\t\t");
 	for (ptr = HEAP_START_PTR; ptr < (HEAP_START_PTR + 2 * rootblocksize - 1); ++ptr) {
-		TRACE("%ld ", *ptr);
+		printk("%ld ", *ptr);
 	}
-	TRACE("\n");
-	TRACE("info end\n");
+	printk("\n");
+	printk("info end\n");
 }
 
 #endif

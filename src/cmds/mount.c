@@ -42,7 +42,7 @@ static int exec(int argc, char **argv) {
 				LOG_ERROR("wrong -t argument %s\n", optarg);
 				return -1;
 			}
-			TRACE("type is %s\n", fs_type);
+			printf("type is %s\n", fs_type);
 		case -1:
 			break;
 		default:

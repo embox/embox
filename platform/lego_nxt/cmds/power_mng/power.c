@@ -16,7 +16,7 @@
 EMBOX_CMD(power_mng_cmd);
 
 static int power_mng_cmd(int argc, char **argv) {
-	TRACE("L:HALT R:FLASH D:SKIP\n");
+	printf("L:HALT R:FLASH D:SKIP\n");
 	while (true) {
 		int buts = nxt_buttons_was_pressed();
 		if (buts & BT_LEFT) {

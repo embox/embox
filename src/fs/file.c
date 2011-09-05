@@ -51,7 +51,7 @@ static lsof_map_t *find_fd(FILE *file) {
 			return (lsof_map_t *) p;
 		}
 	}
-	TRACE("File maybe not opened\n");
+	printk("File maybe not opened\n");
 	return NULL;
 }
 #endif

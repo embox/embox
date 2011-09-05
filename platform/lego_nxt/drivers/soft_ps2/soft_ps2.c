@@ -74,7 +74,7 @@ void hard_delay(int val) {
 int ps2_write(uint8_t data) {
 	while (ps2_state != SOFT_PS2_IDLE) {
 	}
-	TRACE("write goes\n");
+	printk("write goes\n");
 	ps2_state = SOFT_PS2_BYPASS;
 	cnt = WRITE_CNT;
 	write_val = (data & 0x7f) | (parity(data) << 1);

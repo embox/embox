@@ -87,7 +87,7 @@ void* kmalloc(size_t size) {
 			return ADDRESS(tmp_begin);
 		}
 	}
-	TRACE("\n === INFERNAL FUCK! === \n");
+	printk("\n === INFERNAL FUCK! === \n");
 	/* fuck, there are something wrong */
 	return 0;
 }

@@ -35,13 +35,13 @@ static int exec(int argc, char **argv) {
 		switch (opt) {
 		case 'I': /* get interface */
 			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
-				TRACE("arping: unknown iface %s\n", optarg);
+				printf("arping: unknown iface %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'c': /* get ping cnt */
 			if (1 != sscanf(optarg, "%d", &cnt)) {
-				TRACE("arping: bad number of packets to transmit.\n");
+				printf("arping: bad number of packets to transmit.\n");
 				return -1;
 			}
 			break;
