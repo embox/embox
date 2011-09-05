@@ -28,15 +28,13 @@
 #include <util/structof.h>
 #include <kernel/critical.h>
 #include <kernel/thread/api.h>
+#include <kernel/thread/task.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/state.h>
 #include <kernel/panic.h>
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
-
-extern struct task *task_alloc(void);
-extern void task_init(struct task *new_task, struct task *parent);
 
 #define STACK_SZ 0x2000
 
@@ -128,7 +126,9 @@ int thread_create_task(struct thread **p_thread, unsigned int flags,
 
 int thread_create(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg) {
-	return thread_create_task(p_thread, flags, run, arg, task_self());
+	struct task *tsk = task_self();
+
+	return thread_create_task(p_thread, flags, run, arg, tsk);
 }
 
 static void thread_init(struct thread *t, unsigned int flags,
@@ -390,8 +390,7 @@ static int unit_init(void) {
 	thread_init(idle, 0, idle_run, NULL);
 	thread_context_init(idle);
 
-	first_task = task_alloc();
-	task_init(first_task, first_task);
+	first_task = task_default_get();
 
 	bootstrap.task = first_task;
 	idle->task = first_task;

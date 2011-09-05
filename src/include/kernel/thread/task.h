@@ -9,13 +9,12 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <fs/file.h>
+#include <kernel/thread/api.h>
 
-typedef struct task {
-	struct task *parent;
-	struct list_head fd_list;
-} task_t;
+extern int task_create(struct task **new, struct task *parent);
 
 extern struct task *task_self(void);
+
+extern struct task *task_default_get(void);
 
 #endif /* TASK_H_ */
