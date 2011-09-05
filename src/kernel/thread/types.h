@@ -19,19 +19,6 @@ typedef unsigned short __thread_state_t;
 
 struct context;
 
-
-typedef struct task {
-	struct task *parent;
-
-	struct list_head child_tasks;
-	struct list_head child_link;
-
-	struct list_head threads;
-
-	struct list_head fd_list;
-
-} task_t;
-
 struct thread {
 
 	struct context    context;       /**< Architecture-dependent CPU state. */

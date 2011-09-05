@@ -9,7 +9,8 @@
 #include <errno.h>
 #include <kernel/thread/api.h>
 #include <mem/objalloc.h>
-#include <kernel/thread/task.h>
+#include <kernel/task.h>
+#include <fs/file.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(tasks_init);
@@ -31,13 +32,20 @@ static void task_init(struct task *new_task, struct task *parent) {
 
 	new_task->parent = parent;
 
-	if (parent != NULL) {
-		list_add(&new_task->child_link, &parent->child_tasks);
+	if (parent == NULL) {
+		return;
 	}
+
+	list_add(&new_task->child_link, &parent->child_tasks);
+
+	new_task->stdin = parent->stdin;
+	new_task->stdout = parent->stdout;
+	new_task->stderr = parent->stderr;
 }
 
 int task_create(struct task **new, struct task *parent) {
 	struct task *new_task;
+
 	*new = (struct task *) NULL;
 
 	new_task = task_alloc();
@@ -64,6 +72,9 @@ int task_delete(struct task *tsk) {
 }
 
 static int tasks_init(void) {
+	FILE *diag_dev;
+
 	task_init(&default_task, NULL);
+
 	return 0;
 }

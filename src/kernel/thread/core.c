@@ -28,7 +28,7 @@
 #include <util/structof.h>
 #include <kernel/critical.h>
 #include <kernel/thread/api.h>
-#include <kernel/thread/task.h>
+#include <kernel/task.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/state.h>
 #include <kernel/panic.h>

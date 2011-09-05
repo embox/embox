@@ -9,6 +9,7 @@ $_MODS_CORE += main
 
 $_SRCS-main += init.c
 $_SRCS-main += nosys.c
+
 $_DEPS-main += embox.hal.arch
 
 ifdef CONFIG_MMU_SUPPORT
