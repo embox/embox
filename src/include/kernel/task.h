@@ -13,22 +13,29 @@
 #include <lib/list.h>
 
 struct __fd_list {
-	struct list_head list_hnd;
+	struct list_head link;
 	FILE *file;
 	int fd;
+};
+
+#define FD_N_MAX 16
+
+struct __fd_array {
+	struct list_head free_fds;
+	struct list_head opened_fds;
+	struct __fd_list fds[FD_N_MAX];
 };
 
 typedef struct task {
 	struct task *parent;
 
-	struct list_head child_tasks;
-	struct list_head child_link;
+	struct list_head children;
+	struct list_head link;
 
 	struct list_head threads;
 
-	struct list_head free_fds;
-	struct list_head opened_fds;
-	struct __fd_list fds[16];
+	/* files */
+	struct __fd_array fd_array;
 
 } task_t;
 

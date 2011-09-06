@@ -12,18 +12,18 @@
 #include <lib/list.h>
 
 static int alloc_fd(struct task *tsk) {
-	if (list_empty(&tsk->free_fds)) {
+	if (list_empty(&tsk->fd_array.free_fds)) {
 		return -ENOMEM;
 	}
 
-	list_move(tsk->free_fds.next, &tsk->opened_fds);
+	list_move(tsk->fd_array.free_fds.next, &tsk->fd_array.opened_fds);
 
 	return ENOERR;
 }
 
 static void free_fd(struct task *tsk, int fd) {
-	struct __fd_list *fd_lst = &tsk->fds[fd];
-	list_move(&fd_lst->list_hnd, &tsk->free_fds);
+	struct __fd_list *fd_lst = &tsk->fd_array.fds[fd];
+	list_move(&fd_lst->link, &tsk->fd_array.free_fds);
 }
 
 static int file_opened(FILE *file, struct task *tsk) {
@@ -31,22 +31,29 @@ static int file_opened(FILE *file, struct task *tsk) {
 
 	fd = alloc_fd(tsk);
 
-	tsk->fds[fd].file = file;
+	tsk->fd_array.fds[fd].file = file;
 
 	return fd;
 }
 
 static void file_closed(int fd, struct task *tsk) {
-	tsk->fds[fd].file = NULL;
+	tsk->fd_array.fds[fd].file = NULL;
 	free_fd(tsk, fd);
 }
 #if 0
 static int reopen_fd(int fd, FILE *file, struct task *tsk) {
-	if (tsk->fds[fd].file != NULL) {
-		fclose(tsk->fds[fd].file);
+	int res;
+	if (tsk->fd_array.fds[fd].file != NULL) {
+		res = fclose(tsk->fd_array.fds[fd].file);
+		if (res != 0) {
+			return res;
+		}
 		file_closed(fd, tsk);
 	}
-	file_opened(file, tsk);
+	res = file_opened(file, tsk);
+	if (res != 0) {
+		return res;
+	}
 	return 0;
 }
 #endif
@@ -60,7 +67,7 @@ int open(const char *path, const char *mode) {
 int file_close(int fd) {
 	struct task *tsk = task_self();
 
-	FILE *file = tsk->fds[fd].file;
+	FILE *file = tsk->fd_array.fds[fd].file;
 
 	if (file == NULL) {
 		return -EBADF;
@@ -74,7 +81,7 @@ int file_close(int fd) {
 ssize_t write(int fd, const void *buf, size_t nbyte) {
 	struct task *tsk = task_self();
 
-	return fwrite(buf, 1, nbyte, tsk->fds[fd].file);
+	return fwrite(buf, 1, nbyte, tsk->fd_array.fds[fd].file);
 }
 
 //FIXME KILL-ME

@@ -15,62 +15,51 @@
 
 EMBOX_UNIT_INIT(tasks_init);
 
-#define FD_N_MAX 16
-
-struct __fd_array {
-	struct __fd_list fds[FD_N_MAX];
-};
-
-//OBJALLOC_DEF(fds_arrays, struct __fd_array, CONFIG_TASKS_N_MAX);
-
 OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
 
 static struct task default_task;
 
-static struct task *task_alloc(void) {
-	struct task *new_task =  (struct task *) objalloc(&task_pool);
+static void fd_list_init(struct __fd_array *fd_array) {
+	INIT_LIST_HEAD(&fd_array->free_fds);
+	INIT_LIST_HEAD(&fd_array->opened_fds);
 
-	return new_task;
+	for (int i = 0; i < FD_N_MAX; i++) {
+		fd_array->fds[i].fd = i;
+		INIT_LIST_HEAD(&fd_array->fds[i].link);
+		list_add_tail(&fd_array->fds[i].link,
+						&fd_array->free_fds);
+	}
+}
+
+static void task_root_init(struct task *new_task) {
+	INIT_LIST_HEAD(&new_task->threads);
+	INIT_LIST_HEAD(&new_task->children);
+	INIT_LIST_HEAD(&new_task->link);
+
+	new_task->parent = NULL;
+
+	fd_list_init(&new_task->fd_array);
 }
 
 static void task_init(struct task *new_task, struct task *parent) {
 
-	INIT_LIST_HEAD(&new_task->threads);
-	INIT_LIST_HEAD(&new_task->child_tasks);
-	INIT_LIST_HEAD(&new_task->child_link);
-	INIT_LIST_HEAD(&new_task->free_fds);
-	INIT_LIST_HEAD(&new_task->opened_fds);
-
 	new_task->parent = parent;
 
-	for (int i = 0; i < FD_N_MAX; i++) {
-		new_task->fds[i].fd = i;
-		INIT_LIST_HEAD(&new_task->fds[i].list_hnd);
-		list_add_tail(&new_task->fds[i].list_hnd,
-				&new_task->free_fds);
-	}
-
-	if (parent == NULL) {
-		return;
-	}
-
-	list_add(&new_task->child_link, &parent->child_tasks);
-
+	list_add(&new_task->link, &parent->children);
 }
 
 int task_create(struct task **new, struct task *parent) {
-	struct task *new_task;
 
-	*new = (struct task *) NULL;
-
-	new_task = task_alloc();
-	if (new_task == NULL) {
+	if (NULL == (*new = (struct task *) objalloc(&task_pool))) {
 		return -ENOMEM;
 	}
 
-	task_init(new_task, parent);
+	if (parent != NULL) {
+		task_init(*new, parent);
+	} else {
+		task_root_init(*new);
+	}
 
-	*new = new_task;
 	return ENOERR;
 }
 
