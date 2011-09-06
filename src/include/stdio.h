@@ -49,9 +49,9 @@ extern int printf(const char *format, ...);
  */
 extern int sprintf(char *s, const char *format, ...);
 
-int vprintf(const char *format, va_list args);
+extern int vprintf(const char *format, va_list args);
 
-int vsprintf(char *s, const char *format, va_list args);
+extern int vsprintf(char *s, const char *format, va_list args);
 
 /**
  * Read formatted input from stdin according to the format string FORMAT.
@@ -117,9 +117,12 @@ extern int fioctl(FILE *fp, int request, ...);
  */
 extern int fstat(const char *path, struct stat *buf);
 
+
+#include <kernel/prom_printf.h>
+#if 0
 #if defined(CONFIG_TRACE)
   #if defined(CONFIG_PROM_PRINTF)
-     #include <kernel/prom_printf.h>
+
      # define TRACE(...) prom_printf(__VA_ARGS__)
   #else
      # define TRACE(...)  do ; while (0)
@@ -130,6 +133,6 @@ extern int fstat(const char *path, struct stat *buf);
 # define TRACE(...)  do ; while (0)
 #define prom_printf(...)  do ; while (0)
 #endif
-
+#endif
 
 #endif /* STDIO_H_ */

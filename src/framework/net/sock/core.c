@@ -5,7 +5,7 @@
  * @date 05.07.11
  * @author Dmitry Zubarevich
  */
-
+#include <kernel/prom_printf.h>
 #include <string.h>
 #include <framework/mod/ops.h>
 #include <framework/net/sock/api.h>
@@ -25,8 +25,8 @@ static int net_sock_mod_enable(struct mod_info *mod) {
 	int ret = 0;
 
 	net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
-	TRACE("NET: initializing socket %s.%s: ", mod->mod->package->name, mod->mod->name);
-	TRACE("done\n");
+	prom_printf("NET: initializing socket %s.%s: ", mod->mod->package->name, mod->mod->name);
+	prom_printf("done\n");
 
 	if (net_proto_family != NULL) {
 		ret = sock_register(net_proto_family);

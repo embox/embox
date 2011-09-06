@@ -72,7 +72,7 @@ int task_delete(struct task *tsk) {
 }
 
 static int tasks_init(void) {
-	FILE *diag_dev;
+/*	FILE *diag_dev; */
 
 	task_init(&default_task, NULL);
 

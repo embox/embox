@@ -19,7 +19,7 @@ int32_t elf_read_header(FILE *fd, Elf32_Ehdr *head) {
             head->e_ident[EI_MAG1] != ELFMAG1 ||
             head->e_ident[EI_MAG2] != ELFMAG2 ||
             head->e_ident[EI_MAG3] != ELFMAG3) {
-                TRACE("Not an ELF file: wrong magic bytes at the start\n");
+                printf("Not an ELF file: wrong magic bytes at the start\n");
                 return -1;
         }
         return size;

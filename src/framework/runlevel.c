@@ -7,7 +7,7 @@
  */
 
 #include <errno.h>
-#include <stdio.h>
+#include <kernel/prom_printf.h>
 
 #include <embox/runlevel.h>
 
@@ -75,7 +75,7 @@ static int init_mod_enable(struct mod_info *mod_info) {
 		return ret;
 	}
 	init_level = level;
-	TRACE("runlevel: init level is %d\n", init_level);
+	prom_printf("runlevel: init level is %d\n", init_level);
 
 	return 0;
 }
@@ -89,7 +89,7 @@ static int init_mod_disable(struct mod_info *mod_info) {
 		return ret;
 	}
 	init_level = level - 1;
-	TRACE("runlevel: init level is %d\n", init_level);
+	prom_printf("runlevel: init level is %d\n", init_level);
 
 	return 0;
 }
