@@ -9,6 +9,7 @@
 #include <types.h>
 #include <string.h>
 #include <errno.h>
+#include <err.h>
 
 #include <kernel/irq.h>
 #include <net/if_ether.h>
@@ -261,7 +262,7 @@ static int open(net_device_t *dev) {
 	/*
 	 * RX - RX_PING & RX_PONG initialization
 	 */
-	TRACE("emaclite->rx_ctrl addr = 0x%X\n", (unsigned int)&RX_CTRL_REG);
+	//TRACE("emaclite->rx_ctrl addr = 0x%X\n", (unsigned int)&RX_CTRL_REG);
 	RX_CTRL_REG = XEL_RSR_RECV_IE_MASK;
 #ifdef PINPONG_BUFFER
 	switch_rx_buff();

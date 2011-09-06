@@ -10,3 +10,4 @@ $_LIBS += liblinux.a
 $_USES-liblinux.a += libc.a
 
 $_CPPFLAGS-liblinux.a += -I$($_SELFDIR)/include
+$_CPPFLAGS-liblinux.a += -I$(SRC_DIR)/include/posix

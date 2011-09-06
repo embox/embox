@@ -11,7 +11,7 @@
 #include <hal/interrupt.h>
 #include <util/math.h>
 #include <kernel/measure.h>
-#include <kernel/time.h>
+#include <sys/time.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(measure_init);

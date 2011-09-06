@@ -9,7 +9,7 @@
 
 #include <errno.h>
 #include <types.h>
-#include <time.h>
+#include <sys/time.h>
 
 #include <kernel/timer.h>
 #include <kernel/thread/sched.h>

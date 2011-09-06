@@ -9,7 +9,7 @@
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <lib/list.h>
-#include <lib/cpio.h>
+#include <cpio.h>
 #include <stdlib.h>
 #include <string.h>
 

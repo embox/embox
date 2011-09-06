@@ -7,7 +7,7 @@
 
 #include <embox/cmd.h>
 #include <unistd.h>
-#include <kernel/time.h>
+#include <sys/time.h>
 #include <drivers/nxt_buttons.h>
 #include <drivers/lcd.h>
 extern __u8 display_buffer[NXT_LCD_DEPTH+1][NXT_LCD_WIDTH];

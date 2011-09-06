@@ -11,6 +11,7 @@
 #include <asm/io.h>
 #include <kernel/diag.h>
 #include <kernel/irq.h>
+#include <stdio.h>
 
 /**
  * UART registers

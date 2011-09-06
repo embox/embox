@@ -10,7 +10,7 @@
 #include <embox/test.h>
 #include <unistd.h>
 #include <util/math.h>
-#include <time.h>
+#include <sys/time.h>
 #include <kernel/thread/api.h>
 
 EMBOX_TEST_SUITE("sleep suite");

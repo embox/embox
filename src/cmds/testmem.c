@@ -11,6 +11,8 @@
 #include <types.h>
 #include <asm/cache.h>
 #include <string.h>
+#include <stdio.h>
+#include <err.h>
 
 #include "memory_tests.h"
 

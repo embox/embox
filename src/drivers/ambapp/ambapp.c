@@ -9,6 +9,7 @@
 #include <types.h>
 #include <util/array.h>
 #include <drivers/amba_pnp.h>
+#include <err.h>
 
 /** AMBA High-performance Bus (AHB) slot */
 typedef struct ahb_slot {

@@ -6,7 +6,7 @@
  * @author Nikolay Korotky
  */
 
-#include <time.h>
+#include <sys/time.h>
 #include <stdio.h>
 
 #define EPOCH_START 1970

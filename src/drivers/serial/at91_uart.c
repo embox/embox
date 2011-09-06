@@ -7,6 +7,7 @@
  */
 
 #include <types.h>
+#include <stdio.h>
 #include <kernel/diag.h>
 #include <kernel/irq.h>
 #include <hal/reg.h>

@@ -13,7 +13,7 @@
 #include <fs/vfs.h>
 #include <stdio.h>
 #include <string.h>
-#include <lib/cpio.h>
+#include <cpio.h>
 #include <err.h>
 
 EMBOX_CMD(exec);
