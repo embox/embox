@@ -10,6 +10,13 @@
 #define TASK_H_
 
 #include <fs/file.h>
+#include <lib/list.h>
+
+struct __fd_list {
+	struct list_head list_hnd;
+	FILE *file;
+	int fd;
+};
 
 typedef struct task {
 	struct task *parent;
@@ -18,9 +25,10 @@ typedef struct task {
 	struct list_head child_link;
 
 	struct list_head threads;
-	FILE *stdin;
-	FILE *stdout;
-	FILE *stderr;
+
+	struct list_head free_fds;
+	struct list_head opened_fds;
+	struct __fd_list fds[16];
 
 } task_t;
 
