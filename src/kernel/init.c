@@ -13,6 +13,7 @@
 #include <kernel/timer.h>
 #include <kernel/diag.h>
 #include <embox/runlevel.h>
+#include <kernel/prom_printf.h>
 
 static void kernel_init(void);
 static int init(void);

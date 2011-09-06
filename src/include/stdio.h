@@ -117,22 +117,4 @@ extern int fioctl(FILE *fp, int request, ...);
  */
 extern int fstat(const char *path, struct stat *buf);
 
-
-#include <kernel/prom_printf.h>
-#if 0
-#if defined(CONFIG_TRACE)
-  #if defined(CONFIG_PROM_PRINTF)
-
-     # define TRACE(...) prom_printf(__VA_ARGS__)
-  #else
-     # define TRACE(...)  do ; while (0)
-     #define prom_printf(...)  do ; while (0)
- #endif
-//# define TRACE(...)  printk(__VA_ARGS__)
-#else
-# define TRACE(...)  do ; while (0)
-#define prom_printf(...)  do ; while (0)
-#endif
-#endif
-
 #endif /* STDIO_H_ */
