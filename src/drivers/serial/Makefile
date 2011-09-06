@@ -25,6 +25,10 @@ $_PROVIDES-diag_apbuart += embox.hal.diag
 $_MODS           += apbuart
 $_SRCS-apbuart   += apbuart.c
 $_DEPS-apbuart   += embox.kernel.irq
+
+ifdef CONFIG_FS
+	$_DEPS-apbuart += embox.fs.devfs
+endif
 ifdef CONFIG_AMBAPP
   $_DEPS-apbuart += embox.driver.ambapp
 endif

@@ -12,6 +12,8 @@
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 #include <kernel/printk.h>
+#include <embox/device.h>
+#include <fs/file.h>
 
 #define UART_SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
@@ -152,13 +154,6 @@ int uart_remove_irq_handler(void) {
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
-#ifdef CONFIG_TTY_DEVICE
-#include <embox/device.h>
-#include <fs/file.h>
-#include <drivers/tty.h>
-
-static tty_device_t tty;
-
 static void *open(const char *fname, const char *mode);
 static int close(void *file);
 static size_t read(void *buf, size_t size, size_t count, void *file);
@@ -171,29 +166,35 @@ static file_operations_t file_op = {
 		.fwrite = write
 };
 
-static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
-	tty_add_char(&tty, uart_getc());
-	return 0;
-}
-
 /*
  * file_operation
  */
 static void *open(const char *fname, const char *mode) {
+#ifdef CONFIG_TTY_DEVICE //XXX KILL-ME
 	tty.file_op = &file_op;
 	tty_register(&tty);
 	uart_set_irq_handler(irq_handler);
+#endif
 	return (void *)&file_op;
 }
 
 static int close(void *file) {
+#ifdef CONFIG_TTY_DEVICE //XXX KILL-ME
 	tty_unregister(&tty);
 	uart_remove_irq_handler();
+#endif
 	return 0;
 }
 
 static size_t read(void *buf, size_t size, size_t count, void *file) {
-	//TODO if we havn't irq
+	char *ch_buf = (char *) buf;
+
+	int i = count * size;
+
+	while (i --) {
+		*(ch_buf++) = uart_getc();
+	}
+
 	return 0;
 }
 
@@ -209,4 +210,19 @@ static size_t write(const void *buff, size_t size, size_t count, void *file) {
 
 
 EMBOX_DEVICE("uart", &file_op);
+
+//XXX KILL-ME
+#ifdef CONFIG_TTY_DEVICE
+#include <embox/device.h>
+#include <fs/file.h>
+#include <drivers/tty.h>
+
+static tty_device_t tty;
+
+static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
+	tty_add_char(&tty, uart_getc());
+	return 0;
+}
+
+
 #endif
