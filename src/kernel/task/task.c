@@ -77,7 +77,7 @@ int task_delete(struct task *tsk) {
 
 static int tasks_init(void) {
 
-	task_init(&default_task, NULL);
+	task_root_init(&default_task);
 
 	return 0;
 }
