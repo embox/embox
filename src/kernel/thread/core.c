@@ -73,7 +73,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	thread_exit(current->run(current->run_arg));
 }
 
-static int thread_create_task(struct thread **p_thread, unsigned int flags,
+int thread_create_task(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg, struct task *tsk) {
 	struct thread *t;
 		int save_ptr = (flags & THREAD_FLAG_SUSPENDED) || !(flags
