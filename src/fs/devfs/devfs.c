@@ -54,20 +54,24 @@ static void *devfs_open(const char *fname, const char *mode) {
 }
 
 static int devfs_close(void *file) {
-	return 0;
+	node_t *node = (node_t *) file;
+	return ((file_operations_t *)node->file_info)->fclose(file);
 }
 
 static size_t devfs_read(void *buf, size_t size, size_t count, void *file) {
-	return 0;
+	node_t *node = (node_t *) file;
+	return ((file_operations_t *)node->file_info)->fread(buf, size, count, file);
 }
 
 static size_t devfs_write(const void *buf, size_t size, size_t count,
 		void *file) {
-	return 0;
+	node_t *node = (node_t *) file;
+	return ((file_operations_t *)node->file_info)->fwrite(buf, size, count, file);
 }
 
 static int devfs_ioctl(void *file, int request, va_list args) {
-	return 0;
+	node_t *node = (node_t *) file;
+	return ((file_operations_t *)node->file_info)->ioctl(file, request, args);
 }
 
 static fsop_desc_t devfs_fsop = { devfs_init, devfs_create, devfs_delete,
