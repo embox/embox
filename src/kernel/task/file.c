@@ -40,15 +40,16 @@ static void file_closed(int fd, struct task *tsk) {
 	tsk->fds[fd].file = NULL;
 	free_fd(tsk, fd);
 }
-
+#if 0
 static int reopen_fd(int fd, FILE *file, struct task *tsk) {
 	if (tsk->fds[fd].file != NULL) {
 		fclose(tsk->fds[fd].file);
 		file_closed(fd, tsk);
 	}
 	file_opened(file, tsk);
+	return 0;
 }
-
+#endif
 int open(const char *path, const char *mode) {
 	FILE *file = fopen(path, mode);
 
