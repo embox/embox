@@ -3,6 +3,9 @@ $_PACKAGE := embox.fs
 
 $_MODS += rootfs core driver_allocator node
 
+
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+
 $_SRCS-core += file.c
 $_SRCS-core += filesystems.c
 $_SRCS-core += vfs.c

@@ -14,8 +14,10 @@
 #include <util/array.h>
 #include <cmd/cmdline.h>
 #include <framework/cmd/api.h>
+#include <err.h>
 
 #include "console/console.h"
+
 
 // XXX just for now -- Eldar
 EMBOX_UNIT(shell_start, shell_stop);

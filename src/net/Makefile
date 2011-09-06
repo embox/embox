@@ -11,3 +11,4 @@ $_DEPS-socket += embox.net.core
 $_DEPS-socket += embox.driver.net.loopback
 
 $_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix

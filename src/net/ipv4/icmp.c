@@ -19,6 +19,7 @@
 #include <net/kernel_socket.h>
 #include <linux/init.h>
 #include <embox/net/proto.h>
+#include <err.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 

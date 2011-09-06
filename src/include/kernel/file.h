@@ -9,6 +9,8 @@
 #ifndef KERNEL_FILE_H_
 #define KERNEL_FILE_H_
 
+#include <stdarg.h>
+
 typedef void  *(*FILEOP_OPEN)(const char *file_name, const char *mode);
 typedef int    (*FILEOP_CLOSE)(void * file);
 typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);

@@ -9,6 +9,7 @@
 #define FS_FILE_H_
 
 #include <types.h>
+#include <stdio.h>
 #include <kernel/file.h>
 
 typedef struct file {

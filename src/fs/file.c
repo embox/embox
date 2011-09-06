@@ -14,6 +14,7 @@
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <util/array.h>
+#include <err.h>
 
 static lsof_map_t lsof_pool[CONFIG_QUANTITY_NODE];
 static LIST_HEAD(free_list);

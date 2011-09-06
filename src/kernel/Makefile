@@ -5,6 +5,8 @@ $_LDFLAGS  += $($_SELFDIR)/nosys.lds
 
 $(IMAGE): $($_SELFDIR)/nosys.lds
 
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+
 $_MODS_CORE += main
 
 $_SRCS-main += init.c

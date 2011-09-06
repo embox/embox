@@ -3,6 +3,8 @@ SUBDIRS := $(filter-out _template,$(SUBDIRS))
 
 $_PACKAGE := embox.test
 
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+
 # Util for adding new test.
 # Usage example: TEST_NAME=test make at
 

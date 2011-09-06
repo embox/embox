@@ -14,6 +14,7 @@
 
 #include <drivers/vtparse.h>
 #include <drivers/vtparse_state.h>
+#include <err.h>
 
 struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
 	if (parser == NULL) {
