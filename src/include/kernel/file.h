@@ -6,6 +6,9 @@
  * @author Anton Kozlov
  */
 
+#ifndef KERNEL_FILE_H_
+#define KERNEL_FILE_H_
+
 typedef void  *(*FILEOP_OPEN)(const char *file_name, const char *mode);
 typedef int    (*FILEOP_CLOSE)(void * file);
 typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
@@ -22,3 +25,4 @@ typedef struct file_operations {
 	FILEOP_IOCTL ioctl;
 } file_operations_t;
 
+#endif /* KERNEL_FILE_H_ */

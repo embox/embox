@@ -5,8 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef FILE_H_
-#define FILE_H_
+#ifndef FS_FILE_H_
+#define FS_FILE_H_
 
 #include <types.h>
 #include <kernel/file.h>
@@ -44,4 +44,4 @@ typedef struct lsof_map {
 
 extern void lsof_map_init(void);
 
-#endif /* FILE_H_ */
+#endif /* FS_FILE_H_ */
