@@ -33,7 +33,7 @@ static int task_io_example_run(int argc, char **argv) {
 	struct task *new_task;
 	struct thread *thd;
 	void *ret;
-	FILE *file = fopen("/dev/uart", "rw");
+	FILE *file = fopen("/dev/diag", "rw");
 
 	printf("file opened\n");
 	task_create_with_io(&new_task, NULL, file, file, file);
