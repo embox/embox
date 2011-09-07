@@ -12,9 +12,9 @@
 #include <framework/example/self.h>
 #include <kernel/task.h>
 #include <kernel/thread/api.h>
+#include <unistd.h>
 
 extern int task_create_with_io(struct task **new, struct task *parent, FILE *stdin, FILE *stdout, FILE *stderr);
-extern ssize_t write(int fd, const void *buf, size_t nbyte);
 extern int thread_create_task(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg, struct task *tsk);
 

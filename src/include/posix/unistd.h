@@ -37,4 +37,8 @@ extern int sleep(unsigned int seconds);
  */
 extern int usleep(useconds_t useconds);
 
+extern ssize_t write(int fd, const void *buf, size_t nbyte);
+
+extern ssize_t read(int fd, void *buf, size_t count);
+
 #endif /* UNISTD_H_ */

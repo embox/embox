@@ -9,7 +9,7 @@
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <string.h>
-#include <sys/time.h>
+#include <time.h>
 #include <fs/file.h>
 #include <fs/vfs.h>
 #include <fs/ramfs.h>

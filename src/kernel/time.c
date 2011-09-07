@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <sys/time.h>
+#include <time.h>
 #include <kernel/clock_source.h>
 
 static useconds_t time_usec(void) {

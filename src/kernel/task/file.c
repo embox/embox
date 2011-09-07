@@ -10,6 +10,8 @@
 #include <errno.h>
 #include <kernel/task.h>
 #include <lib/list.h>
+#include <unistd.h>
+#include <fctrl.h>
 
 static int alloc_fd(struct task *tsk) {
 	if (list_empty(&tsk->fd_array.free_fds)) {

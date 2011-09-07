@@ -10,7 +10,7 @@
 #include <lib/list.h>
 #include <mem/misc/pool.h>
 #include <types.h>
-#include <sys/time.h>
+#include <time.h>
 #include <assert.h>
 
 struct clock_source_head {
