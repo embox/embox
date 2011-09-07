@@ -7,6 +7,7 @@
  */
 
 #include <string.h>
+#include <assert.h>
 #include <fs/ramfs.h>
 #include <fs/fs.h>
 #include <linux/init.h>
@@ -38,6 +39,7 @@ static int rootfs_init(void * par) {
 }
 
 node_t *rootfs_get_node(void) {
+	assert(NULL != root_node);
 	return root_node;
 }
 

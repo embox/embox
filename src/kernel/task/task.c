@@ -76,8 +76,13 @@ int task_delete(struct task *tsk) {
 }
 
 static int tasks_init(void) {
+	FILE* file;
 
 	task_root_init(&default_task);
+	file = fopen(CONFIG_DEFAULT_CONSOLE, "rw");
+	default_task.fd_array.fds[0].file = file;
+	default_task.fd_array.fds[1].file = file;
+	default_task.fd_array.fds[2].file = file;
 
 	return 0;
 }

@@ -29,16 +29,19 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <types.h>
+#include <kernel/task.h>
+#include <fs/file.h>
 
 int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args);
 
 static void printchar(char **str, int c) {
+	char ch = (char) c;
 	if (str) {
 		**str = c;
 		++(*str);
 	} else {
-		putchar(c);
+		fwrite(&ch, 1, 1, task_self()->fd_array.fds[1].file);
 	}
 }
 
