@@ -12,14 +12,9 @@
 #include <kernel/softirq.h>
 #include <kernel/irq.h>
 
-#define UART_SOFTIRQ_NR 31
-
-/*#define FIRE_CALLBACK(cb, func, view, args...)	((cb->func != NULL) ? cb->func(cb, view, ##args) : 0)*/
 #define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
 extern CONSOLE *cur_console;
 
-//extern int uart_set_irq_handler(irq_handler_t);
-//extern int uart_remove_irq_handler(void);
 
 static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 	SCREEN_CALLBACK *cb = this->callback;
@@ -116,45 +111,20 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 	prev_token = token;
 }
 
-void uart_softirq_handler(softirq_nr_t softirq_nr, void *data) {
-	char ch;
-	TERMINAL_TOKEN token;
-	short *params;
-	int params_len;
-	SCREEN *this;
-//	if (!sys_exec_is_started()) {
-//		return;
-//	}
-	this = cur_console->view;
-	terminal_receive(this->terminal, &token, &params, &params_len);
-	ch = token & 0xFF;
-	/*TODO:*/
-	if (ch == token) {
-		handle_char_token(this, token);
-	} else {
-		handle_ctrl_token(this, token, params, params_len);
-	}
-}
-
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
-//#ifndef CONFIG_SOFTIRQ
 	static TERMINAL_TOKEN token;
 	short *params;
 	int params_len;
 	char ch;
-//#endif
+
 	if ((this == NULL) || this->running) {
 		return;
 	}
 	this->running = true;
 
 	this->callback = cb;
-//#ifdef CONFIG_SOFTIRQ
-//	softirq_install(UART_SOFTIRQ_NR, uart_softirq_handler, NULL);
-	//uart_set_irq_handler(uart_irq_handler);
-//	while (1) {uart_getc();};
-//#else
+
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			&params, &params_len)) {
 		ch = token & 0xFF;
@@ -164,7 +134,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 			handle_ctrl_token(this, token, params, params_len);
 		}
 	}
-//#endif
+
 	assert(this->callback == NULL);
 	this->running = false;
 }
@@ -173,6 +143,6 @@ void screen_in_stop(SCREEN *this) {
 	if (this == NULL) {
 		return;
 	}
-//	uart_remove_irq_handler();
+
 	this->callback = NULL;
 }

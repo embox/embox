@@ -147,7 +147,7 @@ void diag_putc(char ch) {
 	out8((uint8_t) ch, COM0_PORT + UART_TX);
 }
 
-
+#ifdef CONFIG_TTY_DEVICE
 static bool handler_was_set = false;
 #define COM0_IRQ_NUM 0x4
 #define UART_IER_RX_ENABLE 0x1
@@ -173,9 +173,7 @@ int uart_remove_irq_handler(void) {
 	return 0;
 }
 
-/* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
-#ifdef CONFIG_TTY_DEVICE
 #include <embox/device.h>
 #include <fs/file.h>
 #include <drivers/tty.h>
