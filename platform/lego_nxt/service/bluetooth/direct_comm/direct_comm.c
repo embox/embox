@@ -159,7 +159,8 @@ static int direct_comm_handle(int msg, uint8_t *buff) {
 	int next_read_cnt = 0;
 	uint8_t *cbuf;
 	uint8_t status;
-	int addit_len;
+	int addit_len = 0;
+
 	if (msg == BT_DRV_MSG_CONNECTED) {
 	    bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
 	} else if (msg == BT_DRV_MSG_READ) {
