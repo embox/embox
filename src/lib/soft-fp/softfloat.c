@@ -8,6 +8,81 @@
 
 #include "softfloat.h"
 
+typedef union
+{
+    uint32_t all;
+    struct
+    {
+#ifdef _YUGA_LITTLE_ENDIAN
+        su_int low;
+        su_int high;
+#else
+       uint16_t high;
+       uint16_t low;
+#endif /* _YUGA_LITTLE_ENDIAN */
+    }s;
+} udwords;
+
+typedef union
+{
+	udwords u;
+    double  f;
+} double_bits;
+
+uint32_t __fixunsdfsi(double a)
+{
+    double_bits fb;
+    fb.f = a;
+    int e = ((fb.u.s.high & 0x7FF00000) >> 20) - 1023;
+    if (e < 0 || (fb.u.s.high & 0x80000000))
+        return 0;
+    return (
+                0x80000000u                      |
+                ((fb.u.s.high & 0x000FFFFF) << 11) |
+                (fb.u.s.low >> 21)
+           ) >> (31 - e);
+}
+
+/* TODO SINGLE_PRESISIN*/
+#define CHAR_BIT 8
+#define significandBits 23
+#define REP_C(v) v ## U
+#define implicitBit   (REP_C(1) << significandBits)
+
+#define typeWidth       (sizeof(uint32_t)*CHAR_BIT)
+#define exponentBits    (typeWidth - significandBits - 1)
+#define maxExponent     ((1 << exponentBits) - 1)
+#define exponentBias    (maxExponent >> 1)
+
+
+
+static inline float fromRep(uint32_t x) {
+    const union { float f; uint32_t i; } rep = {.i = x};
+    return rep.f;
+}
+
+
+float __floatunsidf(unsigned int a) {
+
+    const int aWidth = sizeof a * CHAR_BIT;
+
+    // Handle zero as a special case to protect clz
+    if (a == 0) return fromRep(0);
+
+    // Exponent of (fp_t)a is the width of abs(a).
+    const int exponent = (aWidth - 1) - __builtin_clz(a);
+    uint32_t result;
+
+    // Shift a into the significand field and clear the implicit bit.
+    const int shift = significandBits - exponent;
+    result = (uint32_t)a << shift ^ implicitBit;
+
+    // Insert the exponent
+    result += (uint32_t)(exponent + exponentBias) << significandBits;
+    return fromRep(result);
+}
+
+
 /**
  * Floating-point rounding mode and exception flags.
  */

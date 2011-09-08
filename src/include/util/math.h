@@ -63,4 +63,6 @@
  */
 static inline int blog2(int val);
 
+extern double floor(double x);
+
 #endif /* UTIL_MATH_H_ */
