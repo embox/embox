@@ -21,7 +21,7 @@
 
 
 EMBOX_CMD(main);
-
+gjgjh
 static const int errno = -1;
 //#include <sys/time.h>
 #include <unistd.h>

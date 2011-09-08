@@ -21,8 +21,10 @@ typedef int FILE;
 
 struct stat;
 
-extern int fputc(FILE f, int c);
-extern int fgetc(FILE f);
+extern int fputc(FILE *f, int c);
+extern int fgetc(FILE *f);
+
+#define getc(file) fgetc(file)
 
 /**
  * Writes the string s and a trailing newline to stdout.

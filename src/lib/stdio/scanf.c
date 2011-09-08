@@ -71,16 +71,16 @@ static void unscanchar(char **str, int ch) {
 		ungetchar(ch);
 	}
 }
-#define getc(file) 0
+
 static int scanchar(char **str) {
 	extern int getchar(void);
 	int ch;
-	if (str >= 2) {
+	if ((int)str >= 2) {
 		ch = **str;
 		(*str)++;
 		return ch;
 
-	} if (str == 1) {
+	} if ((int)str == 1) {
 	    return getc(file);
 	} else {
 		if ('\r' == (ch = getchar())) {
@@ -305,7 +305,7 @@ int fscanf(FILE *stream, const char *format, ...) {
 	file = stream;
 
 	va_start(args, format);
-	rv = scan(1, format, args);
+	rv = scan((char **)1, format, args);
 	va_end(args);
 
 	return rv;
