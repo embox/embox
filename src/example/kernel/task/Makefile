@@ -6,5 +6,4 @@ $_DEPS-task += embox.fs.core embox.fs.rootfs
 $_DEPS-task += embox.kernel.thread.sched embox.kernel.thread.core
 $_REQUIRES-task += embox.kernel.tasks_api
 
-$_BRIEF-task = new taks IO managment example
-
+$_BRIEF-task = new tasks IO managment example

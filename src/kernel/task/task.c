@@ -41,8 +41,26 @@ static void task_root_init(struct task *new_task) {
 }
 
 static void task_init(struct task *new_task, struct task *parent) {
-
+	struct list_head *it;
+	struct __fd_list *fdl;
+	int fd;
 	new_task->parent = parent;
+
+	fd_list_init(&new_task->fd_array);
+
+	list_for_each(it, parent->fd_array.opened_fds.next) {
+		if (it == &parent->fd_array.opened_fds) {
+			break;
+		}
+		fdl = (struct __fd_list *) it;
+		fd = sizeof(parent->fd_array.fds) / sizeof(struct __fd_list);
+
+		new_task->fd_array.fds[fd].file = fdl->file;
+
+		list_move(&new_task->fd_array.fds[fd].link, &new_task->fd_array.opened_fds);
+
+		list_add(&new_task->fd_array.fds[fd].file_link, &fdl->file_link);
+	}
 
 	list_add(&new_task->link, &parent->children);
 }
@@ -79,9 +97,9 @@ static int tasks_init(void) {
 
 	task_root_init(&default_task);
 
-	default_task.fd_array.fds[0].file = file;
-	default_task.fd_array.fds[1].file = file;
-	default_task.fd_array.fds[2].file = file;
+	__file_opened_fd(0, file, &default_task);
+	__file_opened_fd(1, file, &default_task);
+	__file_opened_fd(2, file, &default_task);
 
 	return 0;
 }

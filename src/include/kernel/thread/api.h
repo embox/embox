@@ -64,6 +64,8 @@ typedef __thread_priority_t thread_priority_t;
 #define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 4)
 #define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
 
+#define THREAD_FLAG_IN_NEW_TASK (0x1 << 6)
+
 /**
  * Iterates over the list of all threads existing in the system.
  *

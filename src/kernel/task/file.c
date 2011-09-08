@@ -12,72 +12,88 @@
 #include <lib/list.h>
 #include <unistd.h>
 #include <fctrl.h>
-
+#include <assert.h>
+#if 0
 static int alloc_fd(struct task *tsk) {
+	struct list_head *lnk;
+
 	if (list_empty(&tsk->fd_array.free_fds)) {
 		return -ENOMEM;
 	}
 
-	list_move(tsk->fd_array.free_fds.next, &tsk->fd_array.opened_fds);
+	lnk = tsk->fd_array.free_fds.next;
+	list_move(lnk, &tsk->fd_array.opened_fds);
 
-	return ENOERR;
-}
-
-static void free_fd(struct task *tsk, int fd) {
-	struct __fd_list *fd_lst = &tsk->fd_array.fds[fd];
-	list_move(&fd_lst->link, &tsk->fd_array.free_fds);
+	return ((int) list_entry(lnk, struct __fd_list, link) - tsk->fd_array) /sizeof(struct __fd_list);
 }
 
 static int file_opened(FILE *file, struct task *tsk) {
 	int fd;
 
 	fd = alloc_fd(tsk);
-
 	tsk->fd_array.fds[fd].file = file;
+	INIT_LIST_HEAD(&tsk->fd_array.fds[fd].file_link);
+
+	return fd;
+}
+#endif
+
+int __file_opened_fd(int fd, FILE *file, struct task *tsk) {
+	struct __fd_list *fdl = &tsk->fd_array.fds[fd];
+
+	assert(fdl->file == NULL);
+
+	fdl->file = file;
+	INIT_LIST_HEAD(&fdl->file_link);
+	list_move(&fdl->link, &tsk->fd_array.opened_fds);
 
 	return fd;
 }
 
+static int file_opened(FILE *file, struct task *tsk) {
+	int fd = (int)
+			((int) list_entry(tsk->fd_array.free_fds.next, struct __fd_list, link)
+			- (int) &tsk->fd_array) / sizeof(struct __fd_list);
+	return __file_opened_fd(fd, file, tsk);
+}
+
 static void file_closed(int fd, struct task *tsk) {
 	tsk->fd_array.fds[fd].file = NULL;
-	free_fd(tsk, fd);
+	list_move(&tsk->fd_array.fds[fd].link, &tsk->fd_array.free_fds);
 }
 
 int reopen(int fd, FILE *file) {
 	int res;
-	struct task *tsk = task_self();
 
-	if (tsk->fd_array.fds[fd].file != NULL) {
-		res = fclose(tsk->fd_array.fds[fd].file);
-		if (res != 0) {
-			return res;
-		}
-		file_closed(fd, tsk);
-	}
-	res = file_opened(file, tsk);
-	if (res != 0) {
+	file_close(fd);
+
+	if (0 != (res = __file_opened_fd(fd, file, task_self()))) {
 		return res;
 	}
+
 	return 0;
 }
 
 int open(const char *path, const char *mode) {
-	FILE *file = fopen(path, mode);
-
-	return file_opened(file, task_self());
+	return file_opened(fopen(path, mode), task_self());
 }
 
 //XXX should be just close, interference with socket's close
 int file_close(int fd) {
-	struct task *tsk = task_self();
-
-	FILE *file = tsk->fd_array.fds[fd].file;
+	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
+	FILE *file = fdl->file;
 
 	if (file == NULL) {
 		return -EBADF;
 	}
 
-	file_closed(fd, tsk);
+	if (fdl->file_link.next == &fdl->file_link) {
+		fclose(file);
+	} else {
+		list_del(&fdl->file_link);
+	}
+
+	file_closed(fd, task_self());
 
 	return ENOERR;
 }

@@ -13,8 +13,9 @@
 #include <lib/list.h>
 
 struct __fd_list {
-	struct list_head link;
-	FILE *file;
+	struct list_head link; /**< link in opened/free lists. */
+	struct list_head file_link; /**< link in list of all fds that corresponding for this FILE*. */
+	FILE *file; /** FILE*, for which this fd is corresponding. */
 };
 
 #define FD_N_MAX 16
@@ -43,5 +44,14 @@ extern int task_create(struct task **new, struct task *parent);
 extern struct task *task_self(void);
 
 extern struct task *task_default_get(void);
+
+/**
+ * Internal function that assign fd with file in task
+ * @param fd Integer representing file
+ * @param file Stream to be assigned
+ * @param tsk Task
+ * @return
+ */
+extern int __file_opened_fd(int fd, FILE *file, struct task *tsk);
 
 #endif /* TASK_H_ */

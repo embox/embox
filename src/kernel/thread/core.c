@@ -73,7 +73,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	thread_exit(current->run(current->run_arg));
 }
 
-int thread_create_task(struct thread **p_thread, unsigned int flags,
+static int thread_create_task(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg, struct task *tsk) {
 	struct thread *t;
 		int save_ptr = (flags & THREAD_FLAG_SUSPENDED) || !(flags
@@ -157,6 +157,10 @@ static void thread_init(struct thread *t, unsigned int flags,
 		t->priority++;
 	}
 
+	if (flags & THREAD_FLAG_IN_NEW_TASK) {
+		task_create(&t->task, task_self());
+	}
+
 	// TODO new priority range check, should fail on error. -- Eldar
 	t->initial_priority = clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
 	t->priority = t->initial_priority;
@@ -169,7 +173,6 @@ static void thread_init(struct thread *t, unsigned int flags,
 
 	INIT_LIST_HEAD(&t->task_link);
 
-	//thread_ugly_init(t);
 }
 
 static void thread_context_init(struct thread *t) {

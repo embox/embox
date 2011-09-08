@@ -38,7 +38,7 @@ static int task_io_example_run(int argc, char **argv) {
 
 	printf("thread created\n");
 
-	thread_create(&thd, 0, thread_handler, NULL);
+	thread_create(&thd, THREAD_FLAG_IN_NEW_TASK, thread_handler, NULL);
 
 	thread_join(thd, &ret);
 	return 0;
