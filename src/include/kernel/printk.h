@@ -9,7 +9,7 @@
 #ifndef PRINTK_H_
 #define PRINTK_H_
 
-#include <stdio.h>
+#include <posix/stdio.h>
 
 extern int printk(const char *format, ...) __attribute__ ((format
 				(printf, 1, 2)));
