@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <posix/stdio.h>
+#include <stdio.h>
 #include <errno.h>
 #include <framework/example/self.h>
 #include <kernel/task.h>
