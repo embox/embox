@@ -15,7 +15,6 @@
 struct __fd_list {
 	struct list_head link;
 	FILE *file;
-	int fd;
 };
 
 #define FD_N_MAX 16
