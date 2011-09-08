@@ -17,3 +17,4 @@ $_DEPS-core += driver_allocator node
 $_DEPS-rootfs += core
 
 $_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix
