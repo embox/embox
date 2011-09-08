@@ -154,22 +154,22 @@ int uart_remove_irq_handler(void) {
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
-static void *open(const char *fname, const char *mode);
-static int close(void *file);
-static size_t read(void *buf, size_t size, size_t count, void *file);
-static size_t write(const void *buff, size_t size, size_t count, void *file);
+static void *apb_open(const char *fname, const char *mode);
+static int apb_close(void *file);
+static size_t apb_read(void *buf, size_t size, size_t count, void *file);
+static size_t apb_write(const void *buff, size_t size, size_t count, void *file);
 
 static file_operations_t file_op = {
-		.fread = read,
-		.fopen = open,
-		.fclose = close,
-		.fwrite = write
+		.fread = apb_read,
+		.fopen = apb_open,
+		.fclose = apb_close,
+		.fwrite = apb_write
 };
 
 /*
  * file_operation
  */
-static void *open(const char *fname, const char *mode) {
+static void *apb_open(const char *fname, const char *mode) {
 #ifdef CONFIG_TTY_DEVICE //XXX KILL-ME
 	tty.file_op = &file_op;
 	tty_register(&tty);
@@ -178,7 +178,7 @@ static void *open(const char *fname, const char *mode) {
 	return (void *)&file_op;
 }
 
-static int close(void *file) {
+static int apb_close(void *file) {
 #ifdef CONFIG_TTY_DEVICE //XXX KILL-ME
 	tty_unregister(&tty);
 	uart_remove_irq_handler();
@@ -186,7 +186,7 @@ static int close(void *file) {
 	return 0;
 }
 
-static size_t read(void *buf, size_t size, size_t count, void *file) {
+static size_t apb_read(void *buf, size_t size, size_t count, void *file) {
 	char *ch_buf = (char *) buf;
 
 	int i = count * size;
@@ -198,7 +198,7 @@ static size_t read(void *buf, size_t size, size_t count, void *file) {
 	return 0;
 }
 
-static size_t write(const void *buff, size_t size, size_t count, void *file) {
+static size_t apb_write(const void *buff, size_t size, size_t count, void *file) {
 	size_t cnt = 0;
 	char *b = (char*) buff;
 
