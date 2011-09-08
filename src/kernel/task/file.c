@@ -42,9 +42,11 @@ static void file_closed(int fd, struct task *tsk) {
 	tsk->fd_array.fds[fd].file = NULL;
 	free_fd(tsk, fd);
 }
-#if 0
-static int reopen_fd(int fd, FILE *file, struct task *tsk) {
+
+int reopen(int fd, FILE *file) {
 	int res;
+	struct task *tsk = task_self();
+
 	if (tsk->fd_array.fds[fd].file != NULL) {
 		res = fclose(tsk->fd_array.fds[fd].file);
 		if (res != 0) {
@@ -58,7 +60,7 @@ static int reopen_fd(int fd, FILE *file, struct task *tsk) {
 	}
 	return 0;
 }
-#endif
+
 int open(const char *path, const char *mode) {
 	FILE *file = fopen(path, mode);
 
@@ -81,23 +83,9 @@ int file_close(int fd) {
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
-	struct task *tsk = task_self();
-
-	return fwrite(buf, 1, nbyte, tsk->fd_array.fds[fd].file);
+	return fwrite(buf, 1, nbyte, task_self()->fd_array.fds[fd].file);
 }
 
-//FIXME KILL-ME
-int task_create_with_io(struct task **new, struct task *parent, FILE *stdin, FILE *stdout, FILE *stderr) {
-
-	int res = task_create(new, parent);
-	if (res != 0) {
-		return res;
-	}
-
-	file_opened(stdin, *new);
-	file_opened(stdout, *new);
-	file_opened(stderr, *new);
-
-	return ENOERR;
+ssize_t read(int fd, void *buf, size_t nbyte) {
+	return fread(buf, 1, nbyte, task_self()->fd_array.fds[fd].file);
 }
-

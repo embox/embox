@@ -30,7 +30,7 @@
 #include <stdarg.h>
 #include <types.h>
 #include <kernel/task.h>
-#include <fs/file.h>
+#include <kernel/file.h>
 
 int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args);
@@ -41,7 +41,7 @@ static void printchar(char **str, int c) {
 		**str = c;
 		++(*str);
 	} else {
-		fwrite(&ch, 1, 1, task_self()->fd_array.fds[1].file);
+		write(1, &ch, 1);
 	}
 }
 

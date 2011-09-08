@@ -12,7 +12,7 @@
 #include <kernel/task.h>
 #include <fs/file.h>
 #include <embox/unit.h>
-
+#include <diag/diag_device.h>
 EMBOX_UNIT_INIT(tasks_init);
 
 OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
@@ -24,7 +24,6 @@ static void fd_list_init(struct __fd_array *fd_array) {
 	INIT_LIST_HEAD(&fd_array->opened_fds);
 
 	for (int i = 0; i < FD_N_MAX; i++) {
-		fd_array->fds[i].fd = i;
 		INIT_LIST_HEAD(&fd_array->fds[i].link);
 		list_add_tail(&fd_array->fds[i].link,
 						&fd_array->free_fds);
@@ -76,10 +75,10 @@ int task_delete(struct task *tsk) {
 }
 
 static int tasks_init(void) {
-	FILE* file;
+	FILE* file = diag_device_get();
 
 	task_root_init(&default_task);
-	file = fopen(CONFIG_DEFAULT_CONSOLE, "rw");
+
 	default_task.fd_array.fds[0].file = file;
 	default_task.fd_array.fds[1].file = file;
 	default_task.fd_array.fds[2].file = file;

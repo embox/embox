@@ -7,22 +7,24 @@
  */
 
 #include <types.h>
-#include <stdio.h>
+#include <posix/stdio.h>
 #include <errno.h>
 #include <framework/example/self.h>
 #include <kernel/task.h>
 #include <kernel/thread/api.h>
-#include <unistd.h>
-
-extern int task_create_with_io(struct task **new, struct task *parent, FILE *stdin, FILE *stdout, FILE *stderr);
-extern int thread_create_task(struct thread **p_thread, unsigned int flags,
-		void *(*run)(void *), void *arg, struct task *tsk);
+#include <posix/unistd.h>
 
 EMBOX_EXAMPLE(task_io_example_run);
 
 static void *thread_handler(void *data) {
+	FILE *file = fopen("/dev/uart", "rw");
+	reopen(0, file);
+	reopen(1, file);
+	reopen(2, file);
+
 	char ch = 'a';
 	int count = 10;
+
 	while (count--) {
 		write(0, &ch, 1);
 	}
@@ -30,15 +32,13 @@ static void *thread_handler(void *data) {
 }
 
 static int task_io_example_run(int argc, char **argv) {
-	struct task *new_task;
+	//struct task *new_task;
 	struct thread *thd;
 	void *ret;
-	FILE *file = fopen("/dev/diag", "rw");
 
-	printf("file opened\n");
-	task_create_with_io(&new_task, NULL, file, file, file);
+	printf("thread created\n");
 
-	thread_create_task(&thd, 0, thread_handler, NULL, new_task);
+	thread_create(&thd, 0, thread_handler, NULL);
 
 	thread_join(thd, &ret);
 	return 0;
