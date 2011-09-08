@@ -7,9 +7,7 @@
  */
 
 #include <types.h>
-
 #include <asm/io.h>
-#include <kernel/diag.h>
 #include <kernel/irq.h>
 #include <stdio.h>
 
@@ -98,21 +96,8 @@
 static bool serial_inited = 0;
 
 int uart_init(void) {
-	diag_init();
-	return 0;
-}
-
-void uart_putc(char ch) {
-	diag_putc(ch);
-}
-
-char uart_getc(void) {
-	return diag_getc();
-}
-
-void diag_init(void) {
 	if (serial_inited) {
-		return;
+		return 1;
 	}
 	/* Turn off the interrupt */
 	out8(0x0, COM0_PORT + UART_IER);
@@ -128,23 +113,24 @@ void diag_init(void) {
 	/* Uart enable modem (turn on DTR, RTS, and OUT2) */
 	out8(UART_ENABLE_MODEM, COM0_PORT + UART_MCR);
 	serial_inited = 1;
+	return 0;
 }
 
-int diag_has_symbol(void) {
-	if (!serial_inited) {
-		return EOF;
-	}
-	return in8(COM0_PORT + UART_LSR) & UART_DATA_READY;
+void uart_putc(char ch) {
+	while (!(in8(COM0_PORT + UART_LSR) & UART_EMPTY_TX));
+	out8((uint8_t) ch, COM0_PORT + UART_TX);
 }
 
-char diag_getc(void) {
+char uart_getc(void) {
 	while (!diag_has_symbol());
 	return in8(COM0_PORT + UART_RX);
 }
 
-void diag_putc(char ch) {
-	while (!(in8(COM0_PORT + UART_LSR) & UART_EMPTY_TX));
-	out8((uint8_t) ch, COM0_PORT + UART_TX);
+int uart_has_symbos(void) {
+	if (!serial_inited) {
+		return EOF;
+	}
+	return in8(COM0_PORT + UART_LSR) & UART_DATA_READY;
 }
 
 #ifdef CONFIG_TTY_DEVICE

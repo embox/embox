@@ -14,6 +14,7 @@
 #include <kernel/printk.h>
 #include <embox/device.h>
 #include <fs/file.h>
+#include <embox/unit.h>
 
 #define UART_SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
@@ -210,19 +211,3 @@ static size_t apb_write(const void *buff, size_t size, size_t count, void *file)
 
 
 EMBOX_DEVICE("uart", &file_op);
-
-//XXX KILL-ME
-#ifdef CONFIG_TTY_DEVICE
-#include <embox/device.h>
-#include <fs/file.h>
-#include <drivers/tty.h>
-
-static tty_device_t tty;
-
-static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
-	tty_add_char(&tty, uart_getc());
-	return 0;
-}
-
-
-#endif

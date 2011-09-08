@@ -70,19 +70,8 @@ void uart_putc(char ch) {
 	uart->tx_data = (unsigned int)ch;
 }
 
-/*
- * diag interface
- */
-int diag_init(void) {
-	return uart_init();
-}
-
-char diag_getc(void) {
-	return uart_getc();
-}
-
-void diag_putc(char ch) {
-	uart_putc(ch);
+int uart_has_symbol(void) {
+	return !is_rx_empty();
 }
 
 /* TODO uart_set_irq_handler haven't to be used*/

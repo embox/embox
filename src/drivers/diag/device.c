@@ -72,4 +72,7 @@ static size_t diag_write(const void *buff, size_t size, size_t count, void *file
 	return 0;
 }
 
-EMBOX_DEVICE("diag", &file_op); /* doesn't matter if we have fs */
+/* doesn't matter if we have fs:
+if have, dependency added automaticly;
+else this have no effect*/
+EMBOX_DEVICE("diag", &file_op);
