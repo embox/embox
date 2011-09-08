@@ -28,7 +28,7 @@ typedef struct pci_slot {
 	uint32_t bar[6];
 } pci_slot_t;
 
-POOL_DEF(devs_pool, struct pci_dev, 0x10);
+POOL_DEF(devs_pool, struct pci_dev, CONFIG_MAX_PCI_DEVS);
 
 struct slist __pci_devs_list = SLIST_INIT(&__pci_devs_list);
 
@@ -118,4 +118,3 @@ struct pci_dev *pci_find_dev(uint16_t ven_id, uint16_t dev_id) {
 	}
 	return NULL;
 }
-
