@@ -29,6 +29,7 @@ void lsof_map_init(void) {
 	}
 }
 
+#if 0
 static void cache_fd(const char *path, FILE *file) {
 	lsof_map_t *head;
 	if (list_empty(&free_list)) {
@@ -44,7 +45,6 @@ static void uncache_fd(FILE *file) {
 	list_move((struct list_head*) fd_to_head(file), &free_list);
 }
 
-#if 0
 static lsof_map_t *find_fd(FILE *file) {
 	struct list_head *p;
 	list_for_each(p, &fd_cache) {
@@ -91,7 +91,7 @@ FILE *fopen(const char *path, const char *mode) {
 		return NULL;
 	}
 	file = drv->file_op->fopen(path, mode);
-	cache_fd(path, file);
+	//cache_fd(path, file);
 	return file;
 }
 
@@ -143,7 +143,7 @@ int fclose(FILE *fp) {
 	if (NULL == drv->file_op->fclose) {
 		return -EOF;
 	}
-	uncache_fd(fp);
+	//uncache_fd(fp);
 	return drv->file_op->fclose(fp);
 }
 
