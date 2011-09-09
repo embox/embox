@@ -10,6 +10,7 @@
 #include <asm/io.h>
 #include <kernel/irq.h>
 #include <stdio.h>
+#include <drivers/serial.h>
 
 /**
  * UART registers
@@ -122,11 +123,11 @@ void uart_putc(char ch) {
 }
 
 char uart_getc(void) {
-	while (!diag_has_symbol());
+	while (!uart_has_symbol());
 	return in8(COM0_PORT + UART_RX);
 }
 
-int uart_has_symbos(void) {
+int uart_has_symbol(void) {
 	if (!serial_inited) {
 		return EOF;
 	}
