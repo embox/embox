@@ -226,7 +226,7 @@ static void vga_esc_putc(char c) {
 	}
 }
 
-static void vga_putc(char c) {
+void vga_putc(char c) {
 	size_t i;
 	if (esc_state == 1) {
 		vga_esc_putc(c);
@@ -292,32 +292,12 @@ static void vga_putc(char c) {
 		break;
 	}
 }
-
+#if 0
 //TODO: workaround
-extern int keyboard_getchar(void);
+extern int keyboard_getc(void);
 
 int vga_getc(void) {
 	blink_cursor(con.x, con.y);
-	return keyboard_getchar();
+	return keyboard_getc();
 }
-
-void diag_init(void) {
-	vga_console_init(80, 25);
-}
-
-void diag_putc(int c) {
-	vga_putc((char) c);
-}
-
-int diag_getc(void) {
-	return vga_getc();
-}
-
-/*TODO: temporary */
-void uart_putc(int c) {
-	vga_putc(c);
-}
-
-int uart_getc(void) {
-	return vga_getc();
-}
+#endif

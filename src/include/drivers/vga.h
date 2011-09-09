@@ -17,11 +17,13 @@ extern void vga_console_init(unsigned width, unsigned height);
 /**
  * Put the character C on the screen.
  */
-//extern void vga_putc(char c);
+extern void vga_putc(char c);
 
+#if 0
 /**
  * Get the character from the screen.
  */
-extern int vga_getc(void);
+extern int vga_putc(void);
+#endif
 
 #endif /* VIDEO_VGA_H_ */

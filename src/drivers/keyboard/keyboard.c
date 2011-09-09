@@ -119,8 +119,8 @@ static const unsigned char keymap[][2] = {
 	{0xb0,0xb0},   /* 82 - Numeric keypad 0 */
 	{0xae,0xae},   /* 83 - Numeric keypad '.' */
 };
-
-int keyboard_get_scancode(void) {
+#if 0
+static int keyboard_get_scancode(void) {
 	static unsigned shift_state;
 	unsigned status, scan_code, ch;
 	status = inb(CMD_PORT);
@@ -148,10 +148,46 @@ int keyboard_get_scancode(void) {
 	}
 	return ch;
 }
+#endif
+static int keyboard_havechar(void) {
+	unsigned char c = inb(0x64);
+	return (c == 0xFF) ? 0 : c & 1;
+}
 
-int keyboard_getchar(void) {
+static int keyboard_wait_read(void) {
+	while (0 == (inb(0x64) & 0x01))
+		;
+
+	return 0;
+}
+
+static int keyboard_wait_write(void) {
+	while (0 != (inb(0x64) & 0x02))
+		;
+
+	return 0;
+}
+
+static unsigned char keyboard_get_mode(void) {
+	outb(I8042_CMD_READ_MODE, CMD_PORT);
+	keyboard_wait_read();
+	return inb(DATA_PORT);
+}
+
+static void keyboard_set_mode(unsigned char mode) {
+	outb(I8042_CMD_WRITE_MODE, CMD_PORT);
+	keyboard_wait_write();
+	outb(mode, DATA_PORT);
+}
+
+int keyboard_has_symbol(void) {
+	return keyboard_havechar();
+}
+
+char keyboard_getc(void) {
 	static unsigned shift_state;
-	unsigned status, scan_code, ch;
+	unsigned status, scan_code;
+	char ch;
 
 	while (1) {
 		status = inb(CMD_PORT);
@@ -184,36 +220,7 @@ int keyboard_getchar(void) {
 	}
 }
 
-static int keyboard_havechar(void) {
-	unsigned char c = inb(0x64);
-	return (c == 0xFF) ? 0 : c & 1;
-}
 
-static int keyboard_wait_read(void) {
-	while (0 == (inb(0x64) & 0x01))
-		;
-
-	return 0;
-}
-
-static int keyboard_wait_write(void) {
-	while (0 != (inb(0x64) & 0x02))
-		;
-
-	return 0;
-}
-
-static unsigned char keyboard_get_mode(void) {
-	outb(I8042_CMD_READ_MODE, CMD_PORT);
-	keyboard_wait_read();
-	return inb(DATA_PORT);
-}
-
-static void keyboard_set_mode(unsigned char mode) {
-	outb(I8042_CMD_WRITE_MODE, CMD_PORT);
-	keyboard_wait_write();
-	outb(mode, DATA_PORT);
-}
 #if 0
 static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
 	uint8_t scancode;
@@ -233,7 +240,7 @@ void keyboard_init(void) {
 	}
 
 	/* Empty keyboard buffer */
-	while (keyboard_havechar()) keyboard_getchar();
+	while (keyboard_havechar()) keyboard_getc();
 
 	/* Read the current mode */
 	mode = keyboard_get_mode();
