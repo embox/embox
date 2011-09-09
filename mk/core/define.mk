@@ -1001,19 +1001,39 @@ $(call def,expand)
 #
 # Extension: 'papply' builtin function.
 #
-# Runtime partial application.
+# Runtime partial function application.
 #
 # '$(papply func,args...)'
 #
 define builtin_func_papply
-	$$(foreach aux,$$(builtin_aux_alloc),# XXX use own private allocation.
-		$$(eval \
-			$$(aux) = $$$$(call $(builtin_args),$$$$1)
+	$(with \
+		$(expand \
+			$(subst $(\comma)$(\s),$(\comma),
+				$(foreach arg,$(builtin_args_list),
+					$(if $(findstring $$,$(subst $$$$,,$($(arg)))),
+						$(call list_fold,
+							$(lambda $$$$(subst $$$$($2),$$$$$$$${$2},$1)),
+							$$$$(subst $$$$$$$$,$$$$$$$$$$$$$$$$,$$($(arg))),
+							\comma \p[ \p]
+						),
+						$(subst $$,$$$$$$$$,$($(arg)))
+					)
+					$(\comma)
+				)
+			)
+		),
+		$$(foreach fn,__papply$$(words $$(__builtin_func_papply_cnt)),
+			$$(eval \
+				__builtin_func_papply_cnt += x$$(\n)
+				define $$(fn)$$(\n)$$$$(call $$$$(\0)$1$$$$1)$$(\n)endef
+			)
+			$$(fn)
 		)
-		$$(aux)
 	)
 endef
 $(call def,builtin_func_papply)
+
+__builtin_func_papply_cnt :=# Initially empty.
 
 #
 # Builtin to user-defined function call converters.
