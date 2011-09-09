@@ -179,11 +179,11 @@ static void sched_wakeup_thread(struct thread *t) {
 
 int sched_wake(struct event *e) {
 	struct thread *t, *tmp;
-	struct thread *current;
+//	struct thread *current;
 
 	sched_lock();
 
-	current = sched_current();
+//	current = sched_current();
 
 	list_for_each_entry_safe(t, tmp, &e->sleep_queue, sched_list) {
 		sched_wakeup_thread(t);

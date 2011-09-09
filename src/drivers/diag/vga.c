@@ -20,7 +20,7 @@ void diag_putc(char c) {
 }
 
 char diag_getc(void) {
-	blink_cursor(con.x, con.y);
+//	blink_cursor(con.x, con.y);
 	return keyboard_getc();
 }
 
