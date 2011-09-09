@@ -37,4 +37,8 @@ extern int file_close(int fd);
 extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
 extern ssize_t read(int fd, void *buf, size_t nbyte);
+
+extern int ngetc(int fd);
+
+extern void ungetc(char ch, int fd);
 #endif /* KERNEL_FILE_H_ */

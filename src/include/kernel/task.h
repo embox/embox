@@ -16,6 +16,7 @@ struct __fd_list {
 	struct list_head link; /**< link in opened/free lists. */
 	struct list_head file_link; /**< link in list of all fds that corresponding for this FILE*. */
 	FILE *file; /** FILE*, for which this fd is corresponding. */
+	char unchar;
 };
 
 #define FD_N_MAX 16

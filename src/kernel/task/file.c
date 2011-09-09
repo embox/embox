@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <fctrl.h>
 #include <assert.h>
+#include <stdio.h>
+#include <kernel/file.h>
 #if 0
 static int alloc_fd(struct task *tsk) {
 	struct list_head *lnk;
@@ -47,6 +49,7 @@ int __file_opened_fd(int fd, FILE *file, struct task *tsk) {
 	INIT_LIST_HEAD(&fdl->file_link);
 	list_move(&fdl->link, &tsk->fd_array.opened_fds);
 
+	fdl->unchar = EOF;
 	return fd;
 }
 
@@ -102,6 +105,25 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 	return fwrite(buf, 1, nbyte, task_self()->fd_array.fds[fd].file);
 }
 
+//TODO doesn't handle unchar
 ssize_t read(int fd, void *buf, size_t nbyte) {
 	return fread(buf, 1, nbyte, task_self()->fd_array.fds[fd].file);
 }
+
+int ngetc(int fd) {
+	char ch;
+	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
+	if (fdl->unchar != EOF) {
+		ch = fdl->unchar;
+		fdl->unchar = EOF;
+	} else {
+		read(fd, &ch, 1);
+	}
+	return ch;
+}
+
+void ungetc(char ch, int fd) {
+	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
+	fdl->unchar = ch;
+}
+
