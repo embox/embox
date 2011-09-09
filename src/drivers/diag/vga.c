@@ -11,12 +11,12 @@
 #include <drivers/vga.h>
 
 void diag_init(void) {
-	vga_console_init(80, 25);
+	vga_console_init(vga_console_diag(), 80, 25);
 	keyboard_init();
 }
 
 void diag_putc(char c) {
-	vga_putc(c);
+	vga_putc(vga_console_diag(), c);
 }
 
 char diag_getc(void) {
