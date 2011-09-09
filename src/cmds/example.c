@@ -24,13 +24,15 @@ static void print_examples(void) {
 	int i = 0;
 
 	example_foreach(example) {
-		printf("%3d. %s\n", ++i, example_name(example));
+		printf("%3d. %s.%s\n", ++i, example_path(example), example_name(example));
 	}
 	printf("\nTotal examples: %d\n", i);
 }
 
 static int exec(int argc, char **argv) {
 	int opt;
+	const struct example *example;
+
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch (opt) {
@@ -42,6 +44,11 @@ static int exec(int argc, char **argv) {
 			return -EINVAL;
 		}
 	};
+	if (argc > 1) {
+		example = example_lookup(argv[1]);
+		example_exec(example, 0, NULL);
+		return 0;
+	}
 
 	print_examples();
 

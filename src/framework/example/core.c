@@ -34,11 +34,37 @@ static int example_enable(struct mod_info *mod) {
 	return example->exec(0, NULL);
 }
 
-const struct example *example_lookup(const char *name) {
-	const struct example *example = NULL;
+static int parse_name(const char *full_name, char **path, char **name) {
+	char *iter = (char *)full_name;
+	char *splitter = NULL;
 
+	while('\0' != *iter) {
+		if('.' == *iter) {
+			splitter = iter;
+		}
+		iter ++;
+	}
+	if(NULL != splitter) {
+		*splitter = '\0';
+		*name = splitter + 1;
+		*path = (char *)full_name;
+		return 0;
+	}
+	*name = (char *)full_name;
+	*path = NULL;
+
+	return 0;
+}
+
+const struct example *example_lookup(const char *full_name) {
+	const struct example *example = NULL;
+	char *path;
+	char *name;
+
+	parse_name(full_name, &path, &name);
 	example_foreach(example) {
-		if (strcmp(example_name(example), name) == 0) {
+		if ((strcmp(example_name(example), name) == 0) &&
+				(strcmp(example_path(example), path) == 0)) {
 			return example;
 		}
 	}

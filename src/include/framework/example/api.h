@@ -26,5 +26,11 @@ static inline const char *example_name(const struct example *example) {
 	return (NULL != example) ? example->mod->name : NULL;
 }
 
+static inline const char *example_path(const struct example *example) {
+	return (NULL != example) ? example->mod->package->name +
+	                         sizeof("embox.example") : NULL;
+}
+
+extern const struct example *example_lookup(const char *name);
 
 #endif /* FRAMEWORK_EXAMPLE_API_H_ */
