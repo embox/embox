@@ -26,7 +26,7 @@ char diag_getc(void) {
 }
 
 void diag_putc(char ch) {
-	uart_getc();
+	uart_putc(ch);
 }
 
 static int diag_serial_init(void) {
