@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Creates zero file in /dev
+ * @brief Creates file /dev/zero
  *
  * @date 08.09.11
  * @author Anton Kozlov

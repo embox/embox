@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Creates null file in /dev
+ * @brief Creates file /dev/null
  *
  * @date 08.09.11
  * @author Anton Kozlov
@@ -39,4 +39,4 @@ static size_t null_write(const void *buff, size_t size, size_t count, void *file
 	return count * size;
 }
 
-EMBOX_DEVICE("zero", &file_op); /* doesn't matter if we have fs */
+EMBOX_DEVICE("null", &file_op); /* doesn't matter if we have fs */

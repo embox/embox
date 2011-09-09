@@ -13,6 +13,7 @@
 #include <fs/file.h>
 #include <embox/unit.h>
 #include <diag/diag_device.h>
+
 EMBOX_UNIT_INIT(tasks_init);
 
 OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
