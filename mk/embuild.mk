@@ -28,7 +28,9 @@ endif
 dir = $(SELFDIR)
 
 DIRS := $(call traverse,$(SRC_DIR),Makefile.em) \
-  $(if $(PLATFORM),$(call traverse,$(PLATFORM_DIR),Makefile.em))
+  $(if $(PLATFORM),$(call traverse,$(PLATFORM_DIR),Makefile.em)) \
+  $(call traverse,$(THIRDPARTY_DIR),Makefile.em)
+
 
 # XXX -- Eldar
 DIRS := $(patsubst %/,%,$(dir \
