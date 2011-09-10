@@ -22,12 +22,17 @@ image: checksum
 endif
 image: image_fini
 
-image_init image_fini:
+image_init image_fini: rootfs_prepare
 
 .PHONY: image_prepare
-prepare: image_prepare
+prepare: image_prepare rootfs_prepare
 image_prepare:
 	@mkdir -p $(OBJ_SUBDIRS)
+
+rootfs_prepare:
+	@mkdir -p $(BUILD_DIR)/rootfs
+	@echo $(__ROOTFS_SRCS)
+
 
 .PHONY: checksum
 checksum:

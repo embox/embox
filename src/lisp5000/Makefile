@@ -10,5 +10,4 @@ $(SELFDIR)/lisp500.c:$(BUILD_DIR)/rootfs/init500.lisp
 
 
 $(BUILD_DIR)/rootfs/init500.lisp:$(SELFDIR)/init500.lisp
-	@mkdir $(BUILD_DIR)/rootfs
 	cp $< $@
