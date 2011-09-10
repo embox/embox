@@ -100,21 +100,22 @@
 
 #define LINENOISE_DEFAULT_HISTORY_MAX_LEN 100
 #define LINENOISE_MAX_LINE 4096
-#define LINENOISE_HISTORY_LEN 1024
-
-static linenoiseCompletionCallback *completionCallback = NULL;
+#define LINENOISE_HISTORY_LEN 80
+#define LINENOISE_HISTORY_COUNT 10
 
 #if 0
+static linenoiseCompletionCallback *completionCallback = NULL;
 static int atexit_registered = 0; /* register atexit just 1 time */
 static int history_max_len = LINENOISE_DEFAULT_HISTORY_MAX_LEN;
 static int history_len = LINENOISE_HISTORY_LEN;
 char history_buf[LINENOISE_HISTORY_LEN];
 char **history = (char **) &(history_buf);
 #endif
-
+char history[LINENOISE_HISTORY_COUNT][LINENOISE_HISTORY_LEN];
+int history_pos = 0;
+int history_len = 0;
 //static void linenoiseAtExit(void);
 int linenoiseHistoryAdd(const char *line);
-
 #if 0
 static void freeHistory(void) {
     if (history) {
@@ -176,11 +177,10 @@ static void refreshLine(int fd, const char *prompt, char *buf, size_t len, size_
     if (write(fd,seq,strlen(seq)) == -1) return;
 }
 
-static void beep(void) {
 #if 0
+static void beep(void) {
     fprintf(stderr, "\x7");
     fflush(stderr);
-#endif
 }
 
 static void freeCompletions(linenoiseCompletions *lc) {
@@ -246,7 +246,7 @@ static int completeLine(int fd, const char *prompt, char *buf, size_t buflen, si
     freeCompletions(&lc);
     return c; /* Return last read character */
 }
-
+#endif
 void linenoiseClearScreen(void) {
     if (write(STDIN_FILENO,"\x1b[H\x1b[2J",7) <= 0) {
         /* nothing to do, just to avoid warning. */
@@ -258,8 +258,8 @@ static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt)
     size_t pos = 0;
     size_t len = 0;
     size_t cols = getColumns();
-//    int history_index = 0;
-
+    int history_index = history_pos;
+    int history_n = history_len;
     buf[0] = '\0';
     buflen--; /* Make sure there is always space for the nulterm */
 
@@ -275,7 +275,7 @@ static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt)
 
         nread = read(fd,&c,1);
         if (nread <= 0) return len;
-
+#if 0
         /* Only autocomplete when the callback is set. It returns < 0 when
          * there was an error reading from fd. Otherwise it will return the
          * character that should be handled next. */
@@ -286,6 +286,10 @@ static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt)
             /* Read next character when 0 */
             if (c == 0) continue;
         }
+#endif
+	if (c == 9) {
+	    /* Handle tab */
+	}
 
         switch(c) {
         case 13:    /* enter */
@@ -311,8 +315,8 @@ static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt)
                 buf[len] = '\0';
                 refreshLine(fd,prompt,buf,len,pos,cols);
             } else if (len == 0) {
-                history_len--;
-                free(history[history_len]);
+//                history_len--;
+//                free(history[history_len]);
                 return -1;
             }
             break;
@@ -356,25 +360,29 @@ right_arrow:
 up_down_arrow:
                 /* up and down arrow: history */
                 if (history_len > 1) {
-#if 0 //XXX
+		    int d = (seq[1] == 65) ? -1 : 1;
+
                     /* Update the current history entry before to
                      * overwrite it with tne next one. */
+		    /*
                     free(history[history_len-1-history_index]);
                     history[history_len-1-history_index] = strdup(buf);
+		    */
+		    strcpy(history[history_index], buf);
                     /* Show the new entry */
-                    history_index += (seq[1] == 65) ? 1 : -1;
-                    if (history_index < 0) {
-                        history_index = 0;
+                    history_n += d;
+                    if (history_n < 0) {
+                        history_n = 0;
                         break;
-                    } else if (history_index >= history_len) {
-                        history_index = history_len-1;
+                    } else if (history_n >= history_len) {
+                        history_n = history_len-1;
                         break;
                     }
-                    strncpy(buf,history[history_len-1-history_index],buflen);
-                    buf[buflen] = '\0';
+		    history_index += d;
+                    strcpy(buf,history[history_index]);
+//                    buf[buflen] = '\0';
                     len = pos = strlen(buf);
                     refreshLine(fd,prompt,buf,len,pos,cols);
-#endif
                 }
             } else if (seq[0] == 91 && seq[1] > 48 && seq[1] < 55) {
                 /* extended escape */
@@ -491,7 +499,7 @@ int linenoise(const char *prompt, char *buf, int len) {
 //    if (count == -1) return NULL;
     return count;
 }
-
+#if 0
 /* Register a callback function to be called for tab-completion. */
 void linenoiseSetCompletionCallback(linenoiseCompletionCallback *fn) {
     completionCallback = fn;
@@ -504,9 +512,15 @@ void linenoiseAddCompletion(linenoiseCompletions *lc, char *str) {
     lc->cvec = realloc(lc->cvec,sizeof(char*)*(lc->len+1));
     lc->cvec[lc->len++] = copy;
 }
-
+#endif
 /* Using a circular buffer is smarter, but a bit more complex to handle. */
+/* Using static circular buffer -- AK */
 int linenoiseHistoryAdd(const char *line) {
+    strcpy(history[history_pos], line);
+    history_pos = (history_pos + 1) % LINENOISE_HISTORY_COUNT;
+    if (history_len < LINENOISE_HISTORY_LEN) {
+	history_len ++;
+    }
 #if 0
     char *linecopy;
 
