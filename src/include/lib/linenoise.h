@@ -37,7 +37,11 @@
 #ifndef __LINENOISE_H
 #define __LINENOISE_H
 
+typedef int (*compl_callback_t)(char *buf, char *out_buf);
+
 int linenoise(const char *prompt, char *buf, int len);
+
+int linenoise_compl(const char *prompt, char *buf, int len, compl_callback_t cb);
 
 int linenoiseHistoryAdd(const char *line);
 

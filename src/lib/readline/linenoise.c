@@ -98,11 +98,9 @@
 #include <unistd.h>
 #include <lib/linenoise.h>
 
-#define LINENOISE_DEFAULT_HISTORY_MAX_LEN 100
-#define LINENOISE_MAX_LINE 4096
 #define LINENOISE_HISTORY_LEN 80
 #define LINENOISE_HISTORY_COUNT 10
-
+#define LINENOISE_COMPL_LEN 256
 #if 0
 static linenoiseCompletionCallback *completionCallback = NULL;
 static int atexit_registered = 0; /* register atexit just 1 time */
@@ -114,6 +112,20 @@ char **history = (char **) &(history_buf);
 char history[LINENOISE_HISTORY_COUNT][LINENOISE_HISTORY_LEN];
 int history_pos = 0;
 int history_len = 0;
+
+char compl[LINENOISE_COMPL_LEN];
+
+void print_compl(int fd, int cnt, char *buf) {
+    char n = '\n';
+    while (cnt --) {
+	int len = strlen(buf);
+	write(fd, &n, 1);
+	write(fd, buf, len);
+	buf += len + 1;
+    }
+    write(fd, &n, 1);
+}
+
 //static void linenoiseAtExit(void);
 int linenoiseHistoryAdd(const char *line);
 #if 0
@@ -253,13 +265,14 @@ void linenoiseClearScreen(void) {
     }
 }
 
-static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt) {
+static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt, compl_callback_t cb) {
     size_t plen = strlen(prompt);
     size_t pos = 0;
     size_t len = 0;
     size_t cols = getColumns();
     int history_index = history_pos;
     int history_n = history_len;
+    int compl_cnt = 0;
     buf[0] = '\0';
     buflen--; /* Make sure there is always space for the nulterm */
 
@@ -275,21 +288,25 @@ static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt)
 
         nread = read(fd,&c,1);
         if (nread <= 0) return len;
-#if 0
         /* Only autocomplete when the callback is set. It returns < 0 when
          * there was an error reading from fd. Otherwise it will return the
          * character that should be handled next. */
-        if (c == 9 && completionCallback != NULL) {
-            c = completeLine(fd,prompt,buf,buflen,&len,&pos,cols);
-            /* Return on errors */
-            if (c < 0) return len;
-            /* Read next character when 0 */
-            if (c == 0) continue;
+        if (c == 9 && cb != NULL) {
+	    if (compl_cnt == 0) {
+		compl_cnt = cb(buf, compl);
+	    }
+	    if (compl_cnt == 1) {
+		strcpy(buf, compl);
+		len = strlen(buf);
+		pos = len;
+	    } else {
+		print_compl(fd, compl_cnt, compl);
+	    }
+	    refreshLine(fd,prompt,buf,len,pos,cols);
+	    continue;
         }
-#endif
-	if (c == 9) {
-	    /* Handle tab */
-	}
+
+	compl_cnt = 0;
 
         switch(c) {
         case 13:    /* enter */
@@ -448,7 +465,7 @@ up_down_arrow:
     return len;
 }
 
-static int linenoiseRaw(char *buf, size_t buflen, const char *prompt) {
+static int linenoiseRaw(char *buf, size_t buflen, const char *prompt, compl_callback_t cb) {
     int fd = STDIN_FILENO;
     int count;
 #if 0
@@ -469,7 +486,7 @@ static int linenoiseRaw(char *buf, size_t buflen, const char *prompt) {
     if (enableRawMode(fd) == -1) {
 	return -1;
     }
-    count = linenoisePrompt(fd, buf, buflen, prompt);
+    count = linenoisePrompt(fd, buf, buflen, prompt, cb);
 
     disableRawMode(fd);
 
@@ -478,7 +495,7 @@ static int linenoiseRaw(char *buf, size_t buflen, const char *prompt) {
     return count;
 }
 
-int linenoise(const char *prompt, char *buf, int len) {
+int linenoise_compl(const char *prompt, char *buf, int len, compl_callback_t cb) {
     int count;
 #if 0
     if (isUnsupportedTerm()) {
@@ -495,10 +512,16 @@ int linenoise(const char *prompt, char *buf, int len) {
         return strdup(buf);
     } else {
 #endif
-    count = linenoiseRaw(buf,len,prompt);
+    count = linenoiseRaw(buf, len, prompt, cb);
 //    if (count == -1) return NULL;
     return count;
 }
+
+int linenoise(const char *prompt, char *buf, int len) {
+    return linenoise_compl(prompt, buf, len, NULL);
+}
+
+
 #if 0
 /* Register a callback function to be called for tab-completion. */
 void linenoiseSetCompletionCallback(linenoiseCompletionCallback *fn) {
