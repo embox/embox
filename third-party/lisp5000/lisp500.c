@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <embox/cmd.h>
+//#include <embox/cmd.h>
 
 #include <unistd.h>
 #include <kernel/file.h>
@@ -22,7 +22,7 @@
 #endif
 #define X
 
-EMBOX_CMD(lisp5000_main);
+//EMBOX_CMD(lisp5000_main);
 static const int errno = -1;
 //#include <sys/time.h>
 //#include <dlfcn.h>
