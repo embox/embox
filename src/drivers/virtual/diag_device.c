@@ -59,7 +59,7 @@ static size_t diag_read(void *buf, size_t size, size_t count, void *file) {
 		*(ch_buf++) = diag_getc();
 	}
 
-	return 0;
+	return count * size;
 }
 
 static size_t diag_write(const void *buff, size_t size, size_t count, void *file) {
@@ -69,7 +69,7 @@ static size_t diag_write(const void *buff, size_t size, size_t count, void *file
 	while (cnt != count * size) {
 		diag_putc(b[cnt++]);
 	}
-	return 0;
+	return cnt;
 }
 
 /* doesn't matter if we have fs:
