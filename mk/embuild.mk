@@ -133,7 +133,9 @@ __MODS      = $(info Listing mods) $(call mod_collect,MODS)
 # Interfaces.
 __APIS      = $(info Listing apis) $(call mod_collect,APIS)
 # Rootfs srcs
-__ROOTFS_SRCS   = $(info Listing mods) $(call mod_collect,ROOTFS_SRCS)
+__ROOTFS_SRCS   = $(info Listing mods) $(call rootfs_collect,ROOTFS_SRCS)
+
+rootfs_collect = $(sort $(foreach dir,$(DIRS),$(call unit_def,$($_$1))))
 
 mod_collect = $(sort \
   $(foreach dir,$(DIRS),$(call unit_def,$(call canonize_mod_name,$($_$1)))) \

@@ -31,8 +31,8 @@ image_prepare:
 
 rootfs_prepare:
 	@mkdir -p $(BUILD_DIR)/rootfs
-	@echo $(__ROOTFS_SRCS)
-
+	@cp $(__ROOTFS_SRCS) $(BUILD_DIR)/rootfs/
+	#pushd $(ROOTFS_DIR); find ./ -depth -print | cpio -H newc -ov > $(ROOTFS_IMAGE); popd;
 
 .PHONY: checksum
 checksum:

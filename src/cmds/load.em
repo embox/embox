@@ -1,7 +1,7 @@
 $_MODS += load
 $_SRCS-load += load.c
 $_DEPS-load += embox.fs.core
-$_DEPS-load += embox.fs.ramfs
+//$_DEPS-load += embox.fs.ramfs
 
 $_BRIEF-load = Load image file into memory
 
