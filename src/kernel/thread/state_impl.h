@@ -48,47 +48,28 @@ static inline bool thread_state_dead(__thread_state_t state) {
 	return thread_state_detached(state) && thread_state_exited(state);
 }
 
-static inline bool thread_state_can_sleep(__thread_state_t state) {
-	return thread_state_running(state);
-}
-static inline bool thread_state_can_wake(__thread_state_t state) {
-	return !thread_state_exited(state) && thread_state_sleeping(state);
-}
-static inline bool thread_state_can_suspend(__thread_state_t state) {
-	return !thread_state_exited(state) && !thread_state_suspended(state);
-}
-static inline bool thread_state_can_resume(__thread_state_t state) {
-	return !thread_state_exited(state) && thread_state_suspended(state);
-}
-static inline bool thread_state_can_exit(__thread_state_t state) {
-	return thread_state_running(state);
-}
-static inline bool thread_state_can_detach(__thread_state_t state) {
-	return !thread_state_detached(state);
-}
-
 static inline __thread_state_t thread_state_do_sleep(__thread_state_t state) {
-	assert(thread_state_can_sleep(state));
+	assert(thread_state_running(state));
 	return state | __THREAD_STATE_SLEEPING;
 }
 static inline __thread_state_t thread_state_do_wake(__thread_state_t state) {
-	assert(thread_state_can_wake(state));
+	assert(!thread_state_exited(state) && thread_state_sleeping(state));
 	return state & ~__THREAD_STATE_SLEEPING;
 }
 static inline __thread_state_t thread_state_do_suspend(__thread_state_t state) {
-	assert(thread_state_can_suspend(state));
+	assert(!thread_state_exited(state) && !thread_state_suspended(state));
 	return state | __THREAD_STATE_SUSPENDED;
 }
 static inline __thread_state_t thread_state_do_resume(__thread_state_t state) {
-	assert(thread_state_can_resume(state));
+	assert(!thread_state_exited(state) && thread_state_suspended(state));
 	return state & ~__THREAD_STATE_SUSPENDED;
 }
 static inline __thread_state_t thread_state_do_exit(__thread_state_t state) {
-	assert(thread_state_can_exit(state));
+	assert(thread_state_running(state));
 	return state | __THREAD_STATE_EXITED;
 }
 static inline __thread_state_t thread_state_do_detach(__thread_state_t state) {
-	assert(thread_state_can_detach(state));
+	assert(!thread_state_detached(state));
 	return state | __THREAD_STATE_DETACHED;
 }
 
