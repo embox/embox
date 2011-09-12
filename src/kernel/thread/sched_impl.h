@@ -9,12 +9,16 @@
 #ifndef KERNEL_THREAD_SCHED_IMPL_H_
 #define KERNEL_THREAD_SCHED_IMPL_H_
 
-#include <kernel/thread/sched_policy.h>
+struct event;
 
-struct thread;
+static inline void sched_wake(struct event *e) {
+	extern void __sched_wake(struct event *e, int wake_all);
+	__sched_wake(e, 1);
+}
 
-static inline struct thread *sched_current(void) {
-	return sched_policy_current();
+static inline void sched_wake_one(struct event *e) {
+	extern void __sched_wake(struct event *e, int wake_all);
+	__sched_wake(e, 0);
 }
 
 #endif /* KERNEL_THREAD_SCHED_IMPL_H_ */

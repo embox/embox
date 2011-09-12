@@ -13,7 +13,14 @@
 
 typedef struct task {
 	struct task *parent;
+
+	struct list_head child_tasks;
+	struct list_head child_link;
+
+	struct list_head threads;
+
 	struct list_head fd_list;
+
 } task_t;
 
 extern struct task *task_self(void);

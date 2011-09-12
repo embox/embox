@@ -14,14 +14,80 @@
  */
 
 #include <assert.h>
-#include <stdbool.h>
+#include <stddef.h>
 
 #include <lib/list.h>
 #include <util/array.h>
+
 #include <kernel/thread/api.h>
-#include <kernel/thread/sched_policy.h>
+#include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 
+void sched_strategy_init(struct sched_strategy_data *s) {
+	INIT_LIST_HEAD(&s->thread_link);
+	s->null = NULL;
+}
+
+void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
+	rq->current = current;
+	INIT_LIST_HEAD(&rq->priority_list);
+	runq_start(rq, idle);
+}
+
+int runq_start(struct runq *rq, struct thread *t) {
+	thread_priority_t priority = t->priority;
+	struct thread *next = NULL;
+
+	assert(!list_empty(&rq->priority_list));
+
+	list_for_each_entry(next, &rq->priority_list, sched.priority_link) {
+		if (next->priority <= priority) {
+			break;
+		}
+	}
+	assert(next != NULL);
+
+	if (next->priority == priority) {
+		list_add_tail(&t->sched.thread_link, &next->sched.thread_link);
+		t->sched.priority_head = &next->sched;
+		t->sched.null = NULL;
+
+	} else {
+		list_add_tail(&t->sched.priority_link, &next->sched.priority_link);
+		assert(list_empty(&t->sched.thread_link));
+	}
+
+	return (t->priority > rq->current->priority);
+}
+
+int runq_stop(struct runq *rq, struct thread *t) {
+	return 0;
+}
+
+int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
+	return 0;
+}
+int runq_sleep(struct runq *rq, struct sleepq *sq) {
+	return 0;
+}
+
+int runq_priority_changing(struct runq *rq, struct thread *t, int new_priority) {
+	return 0;
+}
+
+int runq_switch(struct runq *rq) {
+	return 0;
+}
+
+int sleepq_empty(struct sleepq *sq) {
+	return 0;
+}
+
+void sleepq_priority_changing(struct sleepq *sq, struct thread *t,
+		int new_priority) {
+}
+
+#if 0
 /**
  * Structure priority in list.
  */
@@ -231,3 +297,4 @@ int sched_policy_init(struct thread *_current, struct thread *idle) {
 
 	return 0;
 }
+#endif
