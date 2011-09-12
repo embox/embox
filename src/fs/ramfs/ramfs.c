@@ -236,8 +236,6 @@ static int __init ramfs_init(void * par) {
 }
 
 static int __init ramfs_mount(void * par) {
-#ifdef CONFIG_RAMFS_CPIO
-	unpack_to_rootfs();
-#endif
+	cpio_unpack();
 	return 0;
 }

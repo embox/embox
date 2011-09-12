@@ -65,7 +65,7 @@ static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 	return (cpio_newc_header_t*) F_ALIGN(start_addr + file_size);
 }
 
-int unpack_to_rootfs(void) {
+int cpio_unpack(void) {
 	extern char _ramfs_start, _ramfs_end;
 	cpio_newc_header_t *cpio_h, *cpio_next;
 	char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];

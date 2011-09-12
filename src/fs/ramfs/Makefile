@@ -9,9 +9,8 @@ $_SRCS-ramfs += ramfs.c
 $_DEPS-ramfs += core
 
 #describe special section
-#ifdef CONFIG_RAMFS_CPIO
 
-$_SRCS-ramfs += initramfs.c
+$_SRCS-ramfs += cpio.c
 $_SRCS-ramfs += ramfs_cpio.S
 $_LDFLAGS += $($_lds)
 
@@ -23,7 +22,6 @@ $($_lds): $($_SELFDIR)/ramfs.lds.S $(AUTOCONF_DIR)/config.lds.h
 		-imacros $(AUTOCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
 
 -include $($_lds).d
-#endif
 
 $(SELFDIR)/ramfs_cpio.S: create_rootfs
 
