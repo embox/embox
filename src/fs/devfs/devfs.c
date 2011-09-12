@@ -17,6 +17,10 @@ ARRAY_SPREAD_DEF(const device_module_t, __device_registry);
 
 static const file_system_driver_t devfs_drv;
 
+const file_system_driver_t *devfs_get_fs(void) {
+    return &devfs_drv;
+}
+
 static int devfs_init(void * par) {
 	return 0;
 }
@@ -35,6 +39,7 @@ static int devfs_mount(void *par) {
 			devnod->fs_type = (file_system_driver_t *) &devfs_drv;
 		}
 	}
+
 	return 0;
 }
 

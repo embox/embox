@@ -118,7 +118,7 @@ static void ansi_attrib(vga_console_t *con, int a) {
 	};
 }
 
-static void blink_cursor(unsigned x, unsigned y) {
+void blink_cursor(unsigned x, unsigned y) {
 	unsigned pos = 80 * y + x;
 
 	out16((pos & 0xff00) | 0x0e, dev_reg);
