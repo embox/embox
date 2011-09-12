@@ -11,6 +11,7 @@
 
 #define TTY_INP_Q_LEN 32
 
+#include <kernel/file.h>
 #include <kernel/thread/sync/mutex.h>
 
 struct tty_buf {
