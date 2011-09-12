@@ -45,7 +45,7 @@ struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 static int id_counter;
 
 static void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg);
+		void *(*run)(void *), void *arg, struct task *tsk);
 static void thread_context_init(struct thread *t);
 //static void thread_ugly_init(struct thread *t);
 
@@ -99,10 +99,9 @@ static int thread_create_task(struct thread **p_thread, unsigned int flags,
 			return -ENOMEM;
 		}
 
-		thread_init(t, flags, run, arg);
+		thread_init(t, flags, run, arg, tsk);
 		thread_context_init(t);
 
-		t->task = tsk;
 		list_add(&t->task_link, &tsk->threads);
 
 		sched_start(t);
@@ -132,7 +131,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 }
 
 static void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg) {
+		void *(*run)(void *), void *arg, struct task *tsk) {
 	assert(t);
 #if 0
 	assert(run);
@@ -158,7 +157,9 @@ static void thread_init(struct thread *t, unsigned int flags,
 	}
 
 	if (flags & THREAD_FLAG_IN_NEW_TASK) {
-		task_create(&t->task, task_self());
+		task_create(&t->task, tsk);
+	} else {
+		t->task = tsk;
 	}
 
 	// TODO new priority range check, should fail on error. -- Eldar
@@ -383,17 +384,17 @@ static int unit_init(void) {
 	bootstrap.id = id_counter++;
 	list_add_tail(&bootstrap.thread_link, &__thread_list);
 
-	thread_init(&bootstrap, 0, NULL, NULL);
+	default_task = task_default_get();
+
+	thread_init(&bootstrap, 0, NULL, NULL, default_task);
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_NORMAL;
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
 	}
-	thread_init(idle, 0, idle_run, NULL);
+	thread_init(idle, 0, idle_run, NULL, default_task);
 	thread_context_init(idle);
-
-	default_task = task_default_get();
 
 	bootstrap.task = default_task;
 	idle->task = default_task;

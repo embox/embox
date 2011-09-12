@@ -49,12 +49,9 @@ static void task_init(struct task *new_task, struct task *parent) {
 
 	fd_list_init(&new_task->fd_array);
 
-	list_for_each(it, parent->fd_array.opened_fds.next) {
-		if (it == &parent->fd_array.opened_fds) {
-			break;
-		}
+	list_for_each(it, &parent->fd_array.opened_fds) {
 		fdl = (struct __fd_list *) it;
-		fd = sizeof(parent->fd_array.fds) / sizeof(struct __fd_list);
+		fd = ((int) fdl - (int)parent->fd_array.fds) / sizeof(struct __fd_list);
 
 		new_task->fd_array.fds[fd].file = fdl->file;
 
