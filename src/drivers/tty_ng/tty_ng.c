@@ -16,6 +16,11 @@
 
 EMBOX_UNIT_INIT(tty_ng_manager_init);
 
+struct param {
+	FILE *file;
+	void (*run)(void);
+};
+
 static struct tty_buf *current_tty;
 
 static void *_open(const char *fname, const char *mode) {
@@ -80,15 +85,12 @@ static void tty_putc_buf(struct tty_buf *tty, char ch) {
 }
 
 static void *thread_handler(void* args) {
-	FILE *file = (FILE *) args;
-	char ch;
+	struct param *p = (struct param *) args;
+	FILE *file = (FILE *) p->file;
 	reopen(0, file);
 	reopen(1, file);
 	reopen(2, file);
-	while (1) {
-		read(0, &ch, 1);
-		printf("tty%s!%c\n", ((node_t *) file)->name, ch);
-	}
+	p->run();
 	return NULL;
 }
 
@@ -107,6 +109,7 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 	struct thread *thds[count];
 	struct tty_buf ttys[count];
 	node_t nodes[count];
+	struct param params[count];
 	char ch;
 	char nm[] = "0";
 
@@ -117,7 +120,9 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 		nodes[i].file_info = (void *) &ttys[i].file_op;
 		strcpy((char *) nodes[i].name, nm);
 		nm[0]++;
-		thread_create(&thds[i], THREAD_FLAG_IN_NEW_TASK, thread_handler, (FILE *) &nodes[i]);
+		params[i].file = (FILE *) &nodes[i];
+		params[i].run = run;
+		thread_create(&thds[i], THREAD_FLAG_IN_NEW_TASK, thread_handler, &params[i]);
 	}
 
 	current_tty = &ttys[0];

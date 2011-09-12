@@ -52,6 +52,14 @@ static void vga_pc(struct tty_buf *tty, char ch) {
 #endif
 }
 
+static void run(void) {
+	char ch;
+	while (1) {
+		read(0, &ch, 1);
+		printf("tty!%c\n", ch);
+	}
+}
+
 static void tty_vga_init(struct tty_buf *tty) {
 	tty->id = buf_pos;
 	vga_console_init(&cons[buf_pos], 80, 25);
@@ -66,7 +74,7 @@ static void tty_vga_init(struct tty_buf *tty) {
 
 static int vga_con_manager(void) {
 
-	tty_ng_manager(VGA_N_CON, tty_vga_init, NULL);
+	tty_ng_manager(VGA_N_CON, tty_vga_init, run);
 	return 0;
 }
 
