@@ -7,6 +7,7 @@
  */
 
 #include <errno.h>
+#include <util/array.h>
 #include <kernel/thread/api.h>
 #include <mem/objalloc.h>
 #include <kernel/task.h>
@@ -41,6 +42,16 @@ static void task_root_init(struct task *new_task) {
 	fd_list_init(&new_task->fd_array);
 }
 
+static int desc2idx(struct task *parent, struct __fd_list *desc) {
+	int i;
+	for(i = 0; i < ARRAY_SIZE(parent->fd_array.fds); i ++) {
+		if(parent->fd_array.fds[i].file == desc->file) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 static void task_init(struct task *new_task, struct task *parent) {
 	struct list_head *it;
 	struct __fd_list *fdl;
@@ -51,9 +62,12 @@ static void task_init(struct task *new_task, struct task *parent) {
 
 	list_for_each(it, &parent->fd_array.opened_fds) {
 		fdl = (struct __fd_list *) it;
-		fd = ((int) fdl - (int)parent->fd_array.fds) / sizeof(struct __fd_list);
+		if (-1 == (fd = desc2idx(parent, fdl))) {
+			continue;
+		}
+		//fd = ((int) fdl - (int)parent->fd_array.fds) / sizeof(struct __fd_list);
 
-		new_task->fd_array.fds[fd].file = fdl->file;
+		new_task->fd_array.fds[fd].file = parent->fd_array.fds[fd].file;
 
 		list_move(&new_task->fd_array.fds[fd].link, &new_task->fd_array.opened_fds);
 
