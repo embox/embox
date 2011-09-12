@@ -12,8 +12,8 @@
 
 EMBOX_CMD(exec);
 
+extern int lisp5000_main(int argc, char *argv[]);
 
 static int exec(int argc, char **argv) {
-
-	return 0;
+	return lisp5000_main(argc, argv);
 }

@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#include <embox/cmd.h>
 
 #include <unistd.h>
 #include <kernel/file.h>
@@ -22,44 +21,11 @@
 #endif
 #define X
 
-//EMBOX_CMD(lisp5000_main);
 static const int errno = -1;
-//#include <sys/time.h>
+#include <sys/time.h>
 //#include <dlfcn.h>
 //#include <sys/utsname.h>
 
-#if 0
-#define BUFF_SIZE 80
-static char string_buf[BUFF_SIZE];
-static int pos = 0;
-char ungetc_char = EOF;
-
-static int lisp_getc(FILE *stream) {
-    char c;
-    if (ungetc_char != EOF) {
-	c = ungetc_char;
-	ungetc_char = EOF;
-	return (int) c;
-    }
-    if (string_buf[pos] == 0) {
-	pos = 0;
-	do {
-	    c = (string_buf[pos++] = getc(stream));
-	} while (c != '\r');
-	string_buf[pos] = 0;
-	pos = 0;
-    }
-    return (int) string_buf[pos++];
-}
-
-static int lisp_ungetc(char c, FILE *stream) {
-    ungetc_char = c;
-    return (int) c;
-}
-#endif
-
-//#define getc lisp_getc
-//#define ungetc lisp_ungetc
 
 typedef int lval;
 static lval *o2c(lval o) {
@@ -350,7 +316,7 @@ static double o2d(lval o) {
         return sp(o) ? *(double *) (o2s(o) + 2) : o >> 5;
 }
 
-lval d2o(lval * g, double d) {
+static lval d2o(lval * g, double d) {
         lval x = (lval) d << 5 | 16;
         lval *a;
         if (o2d(x) == d)
@@ -526,7 +492,7 @@ static lval mvalues(lval a) {
         return car(a);
 }
 
-lval infn(lval * f, lval * h) {
+static lval infn(lval * f, lval * h) {
         jmp_buf jmp;
         lval vs;
         lval *g = h + 1;
@@ -1223,7 +1189,7 @@ lval luname(lval * f) {
 #endif
 #endif
 //static FILE *ins;
-int ins;
+static int ins;
 static void load(lval * f, char *s) {
         lval r;
         //FILE *oldins = ins;
