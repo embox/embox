@@ -64,8 +64,7 @@ void __assertion_handle(int pass, const struct __assertion_point *point) {
 
 # undef  __assert
 # define __assert(condition, expr_str) \
-	assert(condition \
-		/* The expansion of assert macro is not shown, see assert.h */)
+	__assert(condition, /* see assert.h */ expr_str)
 
 #endif /* __CDT_PARSER__ */
 
