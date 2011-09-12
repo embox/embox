@@ -11,7 +11,7 @@
 #include <kernel/task.h>
 #include <lib/list.h>
 #include <unistd.h>
-#include <fctrl.h>
+#include <fcntl.h>
 #include <assert.h>
 #include <stdio.h>
 #include <kernel/file.h>
