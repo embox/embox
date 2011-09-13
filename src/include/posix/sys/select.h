@@ -16,7 +16,8 @@
 #define _FDSETWORDS       0x10
 #define _FDSETBITSPERWORD 0x20 /* 32 bits */
 
-#define _FD_BITMASK	(b) 	   (1L << ((b) % _FDSETBITSPERWORD))
+#define _FD_BITMASK(b) 	   (1L << ((b) % _FDSETBITSPERWORD))
+#define _FD_BITWORD(b)     ((b)/_FDSETBITSPERWORD)
 
 
 /* The fd_set member is required to be an array of longs.  */

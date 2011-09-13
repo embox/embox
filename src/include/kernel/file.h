@@ -30,7 +30,7 @@ typedef struct file_operations {
 
 extern int reopen(int fd, FILE *file);
 
-extern int open(const char *path, const char *mode);
+//extern int open(const char *path, const char *mode);
 
 extern int file_close(int fd);
 

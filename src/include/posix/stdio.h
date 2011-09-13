@@ -15,6 +15,7 @@
 #include <types.h>
 #include <kernel/printk.h>
 
+
 #define EOF (-1)
 
 typedef int FILE;
@@ -122,5 +123,10 @@ extern int fioctl(FILE *fp, int request, ...);
  * Get file status (size, mode, mtime and so on)
  */
 extern int fstat(const char *path, struct stat *buf);
+
+#include <kernel/task.h>
+/*extern FILE *stdin;*/
+#define stdin task_self()->fd_array.fds[0].file
+
 
 #endif /* STDIO_H_ */
