@@ -7,10 +7,12 @@
 
 #include <types.h>
 #include <string.h>
+#include <util/math.h>
 #include <fs/fs.h>
 #include <fs/file.h>
 #include <fs/node.h>
 #include <kernel/thread/api.h>
+#include <lib/linenoise.h>
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>
 
@@ -56,6 +58,23 @@ static size_t _read(void *buf, size_t size, size_t count, void *file) {
 	return count * size;
 }
 
+static size_t _canon_read(void *buf, size_t size, size_t count, void *file) {
+	struct tty_buf *tty = (struct tty_buf *) ((node_t *) file)->file_info;
+	if (tty->canonical) {
+		int to_write;
+		if (tty->canon_left == 0) {
+			tty->canon_left = linenoise("", tty->canon_inp, TTY_CANON_INP_LEN, NULL, NULL);
+			tty->canon_pos = 0;
+		}
+		to_write = min(count * size, tty->canon_left);
+		memcpy(buf, tty->canon_inp + tty->canon_pos, to_write);
+		tty->canon_left -= to_write;
+		tty->canon_pos += to_write;
+		return to_write;
+	}
+	return _read(buf, size, count, file);
+}
+
 static size_t _write(const void *buff, size_t size, size_t count, void *file) {
 	size_t cnt = 0;
 	char *b = (char*) buff;
@@ -94,13 +113,35 @@ static void *thread_handler(void* args) {
 	return NULL;
 }
 
+static int _ioctl(void *file, int request, va_list args) {
+	struct tty_buf *tty = (struct tty_buf *) ((node_t *) file)->file_info;
+	switch (request) {
+		case TTY_IOCTL_SET_RAW:
+			tty->canonical = 0;
+			break;
+		case TTY_IOCTL_SET_CANONICAL:
+			tty->canonical = 1;
+			break;
+		case TTY_IOCTL_REQUEST_MODE:
+			return tty->canonical;
+		default:
+			break;
+	}
+	return 0;
+}
+
 static void tty_init(struct tty_buf *tty) {
-	tty->file_op.fread = _read;
+	tty->file_op.fread = _canon_read;
 	tty->file_op.fclose = _close;
 	tty->file_op.fwrite = _write;
 	tty->file_op.fopen = _open;
+	tty->file_op.ioctl = _ioctl;
 
 	tty->inp_begin = tty->inp_end = tty->inp_len = 0;
+
+	tty->canon_pos = tty->canon_left = 0;
+	tty->canonical = 1;
+
 }
 
 extern file_system_driver_t *devfs_get_fs(void);

@@ -94,6 +94,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <kernel/file.h>
+#include <drivers/tty_ng.h>
 #include <unistd.h>
 #include <lib/linenoise.h>
 
@@ -162,9 +163,13 @@ static int linenoise_prompt(int fd, char *buf, size_t buflen, const char *prompt
     size_t pos = 0;
     size_t len = 0;
     size_t cols = getColumns();
-    int history_index = history->pos;
-    int history_n = history->len;
+    int history_index = 0;
+    int history_n = 0;
     int compl_cnt = 0;
+    if (history != NULL) {
+	history_index = history->pos;
+	history_n = history->len;
+    }
     buf[0] = '\0';
     buflen--; /* Make sure there is always space for the nulterm */
 
@@ -254,6 +259,9 @@ right_arrow:
                 }
             } else if (seq[0] == 91 && (seq[1] == 65 || seq[1] == 66)) {
 up_down_arrow:
+		if (history == NULL) {
+		    break;
+		}
                 /* up and down arrow: history */
                 if (history->len >= 1) {
 		    int d = (seq[1] == 65) ? -1 : 1;
@@ -348,6 +356,10 @@ void linenoise_history_init(struct hist *h) {
 
 int linenoise(const char *prompt, char *buf, int len, struct hist *history, compl_callback_t cb) {
     int fd = STDIN_FILENO;
-    return linenoise_prompt(fd, buf, len, prompt, history, cb);
+    int mode = ioctl(fd, TTY_IOCTL_REQUEST_MODE, NULL);
+    ioctl(fd, TTY_IOCTL_SET_RAW, NULL); /* this works, beleive */
+    int count = linenoise_prompt(fd, buf, len, prompt, history, cb);
+    ioctl(fd, mode, NULL); /* this works, beleive */
+    return count;
 }
 

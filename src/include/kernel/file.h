@@ -38,6 +38,10 @@ extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
 extern ssize_t read(int fd, void *buf, size_t nbyte);
 
+extern ssize_t read(int fd, void *buf, size_t nbyte);
+
+extern int ioctl(int fd, int request, va_list args);
+
 extern int ngetc(int fd);
 
 #endif /* KERNEL_FILE_H_ */

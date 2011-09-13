@@ -110,6 +110,10 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	return fread(buf, 1, nbyte, task_self()->fd_array.fds[fd].file);
 }
 
+int ioctl(int fd, int request, va_list args) {
+	return fioctl(task_self()->fd_array.fds[fd].file, request, args);
+}
+
 int ngetc(int fd) {
 	char ch;
 	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];

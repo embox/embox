@@ -74,8 +74,16 @@ static void tty_serial_init(struct tty_buf *tty) {
 	buf_pos ++;
 }
 
+static void run(void) {
+	char ch;
+	while (1) {
+		read(0, &ch, 1);
+		printf("tty!%c\n", ch);
+	}
+}
+
 static int serial_con_manager(void) {
 
-	tty_ng_manager(SERIAL_N_CON, tty_serial_init, shell_run);
+	tty_ng_manager(SERIAL_N_CON, tty_serial_init, run);
 	return 0;
 }
