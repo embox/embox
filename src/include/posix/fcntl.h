@@ -16,4 +16,13 @@ extern int open (const char *path, int __oflag, ...);
 extern int open(const char *path, const char *mode);
 #endif
 
+extern int close(int file);
+
+#define O_RDONLY           0
+#define O_WRONLY           1
+#define O_RDWR             2
+
+#define O_CREAT        00100
+#define O_TRUNC        01000
+
 #endif /* FCNTL_H_ */

@@ -13,6 +13,8 @@
 
 #include <asm/types.h>
 
+#include <sys/select.h>
+
 #ifndef __size_t_defined
 #define __size_t_defined
 typedef int size_t; /**<Used for sizes of objects*/
@@ -38,7 +40,9 @@ typedef struct {
 	volatile int counter;
 } atomic_t;
 
-typedef long __time_t;
+typedef long time_t;
+
+typedef int            pid_t;
 
 #endif /* __ASSEMBLER__ */
 

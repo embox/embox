@@ -41,6 +41,8 @@ extern char *gets(char *s);
 
 extern int getchar(void);
 
+extern int ungetc(int c, FILE *stream);
+
 /**
  * Write formatted output to stdout from the format string FORMAT.
  */
@@ -59,6 +61,8 @@ extern int vsprintf(char *s, const char *format, va_list args);
  * Read formatted input from stdin according to the format string FORMAT.
  */
 extern int scanf(const char *format, ...);
+
+extern int fscanf(FILE *stream, const char *format, ...);
 
 /**
  * Read formatted input from S, according to the format string FORMAT.

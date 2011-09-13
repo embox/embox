@@ -11,16 +11,11 @@
 #define TIME_H_
 
 #include <sys/types.h>
+#include <sys/time.h>
 
 #define MILLISEC_PER_SEC 1000
 #define MICROSEC_PER_SEC 1000000
 
-typedef __time_t time_t;
-
-struct timeval {
-	time_t		tv_sec;
-	useconds_t	tv_usec;
-};
 
 extern char *ctime(const time_t *timep, char *buff);
 

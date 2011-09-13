@@ -15,7 +15,7 @@
 #define STDLIB_H_
 
 #include <stddef.h>
-
+#include <sys/wait.h>
 /**
  * Converts the initial part of the string in @a nptr to a long integer value
  * according to the given @a base, which must be between 2 and 36 inclusive,

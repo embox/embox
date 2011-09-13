@@ -40,5 +40,4 @@ extern ssize_t read(int fd, void *buf, size_t nbyte);
 
 extern int ngetc(int fd);
 
-extern void ungetc(char ch, int fd);
 #endif /* KERNEL_FILE_H_ */

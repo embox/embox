@@ -39,4 +39,13 @@ extern int usleep(useconds_t useconds);
 
 extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
+extern ssize_t read(int fd, void *buf, size_t nbyte);
+
+extern int fsync(int);
+
+extern pid_t fork(void);
+
+extern int execv(const char *path, char *const argv[]);
+
+
 #endif /* UNISTD_H_ */

@@ -87,4 +87,6 @@
 #define EHOSTDOWN        364   /* Host is down */
 #define EHOSTUNREACH     365   /* No route to host */
 
+extern int errno;
+
 #endif /* ERRNO_H_ */

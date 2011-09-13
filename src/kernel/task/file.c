@@ -122,8 +122,9 @@ int ngetc(int fd) {
 	return ch;
 }
 
-void ungetc(char ch, int fd) {
-	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
-	fdl->unchar = ch;
+int ungetc(int ch, FILE * fd) {
+//	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
+//	fdl->unchar = ch;
+	return 0;
 }
 
