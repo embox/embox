@@ -10,11 +10,10 @@
 #ifndef FCNTL_H_
 #define FCNTL_H_
 
-#if 0
+/* int open (const char *path, int __oflag);
+ * int open (const char *path, int __oflag, mode_t mode);
+ */
 extern int open (const char *path, int __oflag, ...);
-#else
-extern int open(const char *path, const char *mode);
-#endif
 
 extern int close(int file);
 

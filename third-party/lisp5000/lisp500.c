@@ -1092,11 +1092,14 @@ lval lfinish_fs(lval * f) {
 	return 0;
 }
 lval lfasl(lval * f) {
+#if 0
 	void *h;
 	lval(*s) ();
 	h = dlopen(o2z(f[1]), RTLD_NOW);
 	s = dlsym(h, "init");
 	return s(f);
+#endif
+	return 0;
 }
 lval strf(lval * f, const char *s);
 lval luname(lval * f) {
@@ -1553,7 +1556,7 @@ lval lrp(lval * f, lval * h) {
 	} return d2o(f, r);
 }
 #endif
-int main(int argc, char *argv[])
+int lisp5000_main(int argc, char *argv[])
 {
 	lval *g;
 	int i;

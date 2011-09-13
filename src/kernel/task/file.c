@@ -77,8 +77,8 @@ int reopen(int fd, FILE *file) {
 	return 0;
 }
 
-int open(const char *path, const char *mode) {
-	return file_opened(fopen(path, mode), task_self());
+int open(const char *path, int __oflag, ...) {
+	return file_opened(fopen(path, "rw"), task_self());
 }
 
 //XXX should be just close, interference with socket's close
@@ -129,6 +129,10 @@ int ngetc(int fd) {
 int ungetc(int ch, FILE * fd) {
 //	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
 //	fdl->unchar = ch;
+	return 0;
+}
+
+int fsync(int fd) {
 	return 0;
 }
 
