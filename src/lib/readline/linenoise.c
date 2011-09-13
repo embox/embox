@@ -278,7 +278,7 @@ static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt,
 
     /* The latest history entry is always our current buffer, that
      * initially is just an empty string. */
-    linenoiseHistoryAdd("");
+//    linenoiseHistoryAdd("");
 
     if (write(fd,prompt,plen) == -1) return -1;
     while(1) {
@@ -312,8 +312,6 @@ static int linenoisePrompt(int fd, char *buf, size_t buflen, const char *prompt,
 
         switch(c) {
         case 13:    /* enter */
-            history_len--;
-            free(history[history_len]);
             return (int)len;
         case 3:     /* ctrl-c */
             return -EAGAIN;
@@ -378,15 +376,11 @@ right_arrow:
             } else if (seq[0] == 91 && (seq[1] == 65 || seq[1] == 66)) {
 up_down_arrow:
                 /* up and down arrow: history */
-                if (history_len > 1) {
+                if (history_len >= 1) {
 		    int d = (seq[1] == 65) ? -1 : 1;
 
                     /* Update the current history entry before to
                      * overwrite it with tne next one. */
-		    /*
-                    free(history[history_len-1-history_index]);
-                    history[history_len-1-history_index] = strdup(buf);
-		    */
 		    strcpy(history[history_index], buf);
                     /* Show the new entry */
                     history_n += d;
@@ -398,6 +392,7 @@ up_down_arrow:
                         break;
                     }
 		    history_index += d;
+		    history_index = (history_index + LINENOISE_HISTORY_COUNT) % LINENOISE_HISTORY_COUNT;
                     strcpy(buf,history[history_index]);
 //                    buf[buflen] = '\0';
                     len = pos = strlen(buf);
