@@ -37,26 +37,22 @@
 #ifndef __LINENOISE_H
 #define __LINENOISE_H
 
+#define LINENOISE_HISTORY_LEN 80
+#define LINENOISE_HISTORY_COUNT 10
+#define LINENOISE_COMPL_LEN 256
+
+struct hist {
+    char h[LINENOISE_HISTORY_COUNT][LINENOISE_HISTORY_LEN];
+    int pos;
+    int len;
+};
+
 typedef int (*compl_callback_t)(char *buf, char *out_buf);
 
-int linenoise(const char *prompt, char *buf, int len);
+void linenoise_history_init(struct hist *h);
 
-int linenoise_compl(const char *prompt, char *buf, int len, compl_callback_t cb);
+int linenoise(const char *prompt, char *buf, int len, struct hist *history, compl_callback_t cb);
 
-int linenoiseHistoryAdd(const char *line);
+int linenoise_history_add(const char *line, struct hist *history);
 
-#if 0
-typedef struct linenoiseCompletions {
-  size_t len;
-  char **cvec;
-} linenoiseCompletions;
-
-typedef void(linenoiseCompletionCallback)(const char *, linenoiseCompletions *);
-void linenoiseSetCompletionCallback(linenoiseCompletionCallback *);
-void linenoiseAddCompletion(linenoiseCompletions *, char *);
-int linenoiseHistorySetMaxLen(int len);
-int linenoiseHistorySave(char *filename);
-int linenoiseHistoryLoad(char *filename);
-void linenoiseClearScreen(void);
-#endif
 #endif /* __LINENOISE_H */

@@ -34,9 +34,11 @@ static int compl(char *buf, char *out_buf) {
 #define BUF_SIZE 128
 static int line_noise_run(int argc, char **argv) {
 	char buf[BUF_SIZE];
-	linenoiseHistoryAdd("history1");
-	linenoiseHistoryAdd("history2");
-	linenoise_compl("enter string> ", buf, BUF_SIZE, (compl_callback_t) compl);
+	struct hist h;
+	linenoise_history_init(&h);
+	linenoise_history_add("history1", &h);
+	linenoise_history_add("history2", &h);
+	linenoise("enter string> ", buf, BUF_SIZE, &h, (compl_callback_t) compl);
 
 	printf("You've entered %s.\n", buf);
 

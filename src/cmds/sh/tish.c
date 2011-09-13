@@ -48,6 +48,10 @@ static int run_cmd(int argc, char *argv[]) {
 	const struct cmd *cmd;
 	int code;
 
+	if (argc == 0) {
+		return 0;
+	}
+
 	if (NULL == (cmd = cmd_lookup(argv[0]))) {
 		printf("%s: Command not found\n", argv[0]);
 		return 0;
@@ -80,11 +84,15 @@ static int line_input(char *line) {
 void shell_run(void) {
 	const char *prompt = CONFIG_SHELL_PROMPT;
 	char inp_buf[BUF_INP_SIZE];
+	struct hist h;
+
+	linenoise_history_init(&h);
 
 	printf("\n%s", CONFIG_SHELL_WELCOME_MSG);
+
 	while (1) {
-		linenoise_compl(prompt, inp_buf, BUF_INP_SIZE, (compl_callback_t) cmd_compl);
-		linenoiseHistoryAdd(inp_buf);
+		linenoise(prompt, inp_buf, BUF_INP_SIZE, &h, (compl_callback_t) cmd_compl);
+		linenoise_history_add(inp_buf, &h);
 		line_input(inp_buf);
 	}
 }
