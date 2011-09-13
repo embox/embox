@@ -57,7 +57,7 @@ extern int ungetchar(int ch);
 
 static void unscanchar(char **str, int ch) {
 	/*	extern int ungetchar();*/
-	if (str) {
+	if ((int) str >= 2) {
 #if 0
 		*str --;
 		**str = ch;
@@ -122,7 +122,7 @@ static int scan_int(char **in, int base, int widht) {
 	if ((ch == '-') || (ch == '+')) {
 		neg = (ch == '-');
 	} else {
-		dst = ch_to_digit(ch, base);
+		dst = 0;
 	}
 
 	for (i = 0; (ch = (int) toupper(scanchar(in))) != EOF; i++) {
@@ -131,8 +131,6 @@ static int scan_int(char **in, int base, int widht) {
 			/*end conversion*/
 			break;
 		}
-		unscanchar(in, ch);
-
 		dst = base * dst + ch_to_digit(ch, base);
 	}
 
@@ -219,6 +217,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 			}
 				continue;
 			case 'u':
+			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
 				int dst;
 				dst = scan_int(in, 10, widht);
@@ -272,10 +271,6 @@ static int scan(char **in, const char *fmt, va_list args) {
 			}
 				continue;
 #endif
-			case 'f': {
-				/*TODO: scanf haven't realized float variable operations*/
-			}
-				continue;
 			}
 		} else {
 			if (*fmt++ != *(*in)++) {

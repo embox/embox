@@ -73,7 +73,7 @@ static void tty_serial_init(struct tty_buf *tty) {
 	tty->make_inactive = serial_make_inactive;
 	buf_pos ++;
 }
-
+#if 0
 static void run(void) {
 	char ch;
 	while (1) {
@@ -81,9 +81,9 @@ static void run(void) {
 		printf("tty!%c\n", ch);
 	}
 }
-
+#endif
 static int serial_con_manager(void) {
 
-	tty_ng_manager(SERIAL_N_CON, tty_serial_init, run);
+	tty_ng_manager(SERIAL_N_CON, tty_serial_init, shell_run);
 	return 0;
 }

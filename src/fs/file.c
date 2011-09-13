@@ -90,6 +90,7 @@ FILE *fopen(const char *path, const char *mode) {
 		LOG_ERROR("fop->fopen is NULL handler\n");
 		return NULL;
 	}
+	nod->unchar = EOF;
 	file = drv->file_op->fopen(path, mode);
 	//cache_fd(path, file);
 	return file;
@@ -124,6 +125,28 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	}
 	return drv->file_op->fread(buf, size, count, file);
 }
+
+int fgetc(FILE *file) {
+	node_t *nod = (node_t *) file;
+	char ch;
+	if (NULL == nod) {
+		return -EBADF;
+	}
+	if (nod->unchar != EOF) {
+		ch = nod->unchar;
+		nod->unchar = EOF;
+		return ch;
+	}
+	fread(&ch, 1, 1, file);
+	return ch;
+}
+
+int ungetc(int ch, FILE *file) {
+	node_t *nod = (node_t *) file;
+	nod->unchar = (char) ch;
+	return ch;
+}
+
 
 int fclose(FILE *fp) {
 	node_t *nod;

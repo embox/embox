@@ -206,6 +206,8 @@ static int linenoise_prompt(int fd, char *buf, size_t buflen, const char *prompt
         switch(c) {
         case 13:    /* enter */
 	    printf("\n");
+	    buf[len++] = '\n';
+	    buf[len] = '\0';
             return (int)len;
         case 3:     /* ctrl-c */
             return -EAGAIN;
@@ -220,6 +222,9 @@ static int linenoise_prompt(int fd, char *buf, size_t buflen, const char *prompt
             }
             break;
         case 4:     /* ctrl-d, remove char at right of cursor */
+	    buf[0] = EOF;
+	    buf[1] = 0;
+	    return 1;
             break;
         case 20:    /* ctrl-t */
             if (pos > 0 && pos < len) {

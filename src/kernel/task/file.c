@@ -114,24 +114,6 @@ int ioctl(int fd, int request, va_list args) {
 	return fioctl(task_self()->fd_array.fds[fd].file, request, args);
 }
 
-int ngetc(int fd) {
-	char ch;
-	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
-	if (fdl->unchar != EOF) {
-		ch = fdl->unchar;
-		fdl->unchar = EOF;
-	} else {
-		read(fd, &ch, 1);
-	}
-	return ch;
-}
-
-int ungetc(int ch, FILE * fd) {
-//	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
-//	fdl->unchar = ch;
-	return 0;
-}
-
 int fsync(int fd) {
 	return 0;
 }

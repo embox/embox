@@ -1446,8 +1446,10 @@ lval lread(lval * g) {
 		return list2(g, 39);
 	} ungetc(c, ins);
 	if (isdigit(c)) {
+		int i;
 		double d;
-		fscanf(ins, "%lf", &d);
+		fscanf(ins, "%d", &i);
+		d = i;
 		return d2o(g, d);
 	} if (c == ':')
 		getnws();
@@ -1561,7 +1563,7 @@ int lisp5000_main(int argc, char *argv[])
 	lval *g;
 	int i;
 	lval sym;
-	memory_size = 4 * 2048 * 1024;
+	memory_size = 1 * 1024 * 1024;
 	memory = malloc(memory_size);
 	memf = memory;
 	memset(memory, 0, memory_size);

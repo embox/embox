@@ -9,7 +9,7 @@
 #include <err.h>
 #include <string.h>
 
-#define MEM_POOL_SIZE 0x11CA
+#define MEM_POOL_SIZE 0x11CA000
 
 static int has_initialized = 0;
 static char *managed_memory_start;

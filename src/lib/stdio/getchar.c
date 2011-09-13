@@ -11,23 +11,10 @@
 #include <drivers/vconsole.h>
 #include <drivers/tty_action.h>
 
-#ifdef CONFIG_TTY_CONSOLE_COUNT
 int getchar(void) {
-	return console_getchar();
+	return getc(stdin);
 }
 
 int ungetchar(int ch) {
-	getchar();
-	return ch;
+	return ungetc(ch, stdin);
 }
-
-#else
-int getchar(void) {
-	return diag_getc();
-}
-
-int ungetchar(int ch) {
-	getchar();
-	return ch;
-}
-#endif

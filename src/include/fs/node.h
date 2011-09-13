@@ -18,6 +18,7 @@ typedef struct node {
 	void                 *attr;
 	struct list_head      neighbors;
 	struct list_head      leaves;
+	char		     unchar;
 } node_t;
 
 extern node_t *alloc_node(const char *name);

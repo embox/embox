@@ -7,6 +7,7 @@
 
 #include <types.h>
 #include <string.h>
+#include <stdio.h>
 #include <util/math.h>
 #include <fs/fs.h>
 #include <fs/file.h>
@@ -159,6 +160,7 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 		tty_init(&ttys[i]);
 		nodes[i].fs_type = devfs_get_fs();
 		nodes[i].file_info = (void *) &ttys[i].file_op;
+		nodes[i].unchar = EOF;
 		strcpy((char *) nodes[i].name, nm);
 		nm[0]++;
 		params[i].file = (FILE *) &nodes[i];
