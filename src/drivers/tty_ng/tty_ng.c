@@ -53,7 +53,7 @@ static size_t _read(void *buf, size_t size, size_t count, void *file) {
 
 //		mutex_unlock(tty->inp_mutex);
 	}
-	return 0;
+	return count * size;
 }
 
 static size_t _write(const void *buff, size_t size, size_t count, void *file) {
@@ -64,7 +64,7 @@ static size_t _write(const void *buff, size_t size, size_t count, void *file) {
 	while (cnt != count * size) {
 		tty->putc(tty, b[cnt++]);
 	}
-	return 0;
+	return count * size;
 }
 
 static void tty_putc_buf(struct tty_buf *tty, char ch) {
@@ -126,10 +126,12 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 	}
 
 	current_tty = &ttys[0];
+	current_tty->make_active(current_tty);
 
 	while (1) {
+		sleep(0);
 		read(0, &ch, 1);
-		if (ch == 's') {
+		if (ch == '`') {
 			read(0, &ch, 1);
 			if ('0' <= ch && ch <= '9') {
 				int n = ch - '0';
@@ -143,7 +145,6 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 		}
 
 		tty_putc_buf(current_tty, ch);
-		sleep(0);
 	}
 }
 

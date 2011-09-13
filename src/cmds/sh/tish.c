@@ -14,7 +14,6 @@
 #include <lib/linenoise.h>
 #include <ctype.h>
 
-#include <embox/unit.h>
 #include <framework/cmd/api.h>
 
 #include <cmd/shell.h>
@@ -95,11 +94,4 @@ void shell_run(void) {
 		linenoise_history_add(inp_buf, &h);
 		line_input(inp_buf);
 	}
-}
-
-EMBOX_UNIT_INIT(shell_start);
-
-static int shell_start(void) {
-	shell_run();
-	return 0;
 }

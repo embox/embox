@@ -9,6 +9,7 @@
 #include <drivers/serial.h>
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>
+#include <cmd/shell.h>
 
 EMBOX_UNIT_INIT(serial_con_manager);
 
@@ -64,14 +65,6 @@ static void serial_pc(struct tty_buf *tty, char ch) {
 
 }
 
-static void run(void) {
-	char ch;
-	while (1) {
-		read(0, &ch, 1);
-		printf("tty!%c\n", ch);
-	}
-}
-
 static void tty_serial_init(struct tty_buf *tty) {
 	tty->id = buf_pos;
 	tty->out_buf = serial_buffer + (buf_pos * BUF_SIZE);
@@ -83,6 +76,6 @@ static void tty_serial_init(struct tty_buf *tty) {
 
 static int serial_con_manager(void) {
 
-	tty_ng_manager(SERIAL_N_CON, tty_serial_init, run);
+	tty_ng_manager(SERIAL_N_CON, tty_serial_init, shell_run);
 	return 0;
 }

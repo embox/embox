@@ -12,4 +12,4 @@ $_DEPS-vga += core embox.driver.video.vga_console
 $_MODS += serial
 $_SRCS-serial += serial.c
 $_DEPS-serial += core
-$_REQUIRES-serial += embox.hal.serial
+$_REQUIRES-serial += embox.hal.serial embox.cmd.sh.shell_api

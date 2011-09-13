@@ -27,12 +27,13 @@ int putchar(int c) {
 #else
 int putchar(int c) {
 	static char prev = 0;
-
+	char ch;
 	if (c == '\n' && prev != '\r') {
-		diag_putc('\r');
+		ch = '\r';
+		write(1, &ch, 1);
 	}
-	diag_putc((char) c);
-
+	ch = c;
+	write(1, &ch, 1);
 	return (prev = c);
 }
 #endif
