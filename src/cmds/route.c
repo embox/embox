@@ -95,22 +95,21 @@ static int exec(int argc, char *argv[]) {
 
 		rt = rt_fib_get_first();
 		while (rt != NULL) {
-			memset(&buff[OFFSET_START], ' ', OFFSET_EOS); /* clear string */
+			memset(&buff[OFFSET_START], 0, OFFSET_EOS); /* clear string */
 
 			addr.s_addr = rt->rt_dst;
 			str = inet_ntoa(addr);
-			memcpy(&buff[OFFSET_DEST], str, strlen(str));
-			free(str);
+			strncpy(&buff[OFFSET_DEST], str, strlen(str));
+
 
 			addr.s_addr = rt->rt_gateway;
 			str = inet_ntoa(addr);
-			memcpy(&buff[OFFSET_GATEWAY], str, strlen(str));
-			free(str);
+			strncpy(&buff[OFFSET_GATEWAY], str, strlen(str));
 
 			addr.s_addr = rt->rt_mask;
 			str = inet_ntoa(addr);
-			memcpy(&buff[OFFSET_GENMASK], str, strlen(str));
-			free(str);
+			strncpy(&buff[OFFSET_GENMASK], str, strlen(str));
+
 
 			i = OFFSET_FLAGS;
 			if (rt->rt_flags & RTF_UP) {

@@ -119,10 +119,10 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 	}
 	return 1;
 }
+static char ntoa_buffer[] = "xxx.xxx.xxx.xxx";
 
 char *inet_ntoa(struct in_addr in) {
 	unsigned char *bytes = (unsigned char *) &in;
-	char *buffer = (char*) malloc(24*sizeof(char));
-	sprintf(buffer, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
-	return buffer;
+	sprintf(ntoa_buffer, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
+	return ntoa_buffer;
 }

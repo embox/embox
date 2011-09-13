@@ -16,6 +16,7 @@
 #include <net/util.h>
 #include <net/arp.h>
 #include <net/neighbour.h>
+#include <string.h>
 
 
 EMBOX_CMD(exec);
@@ -29,7 +30,8 @@ static int exec(int argc, char **argv) {
 	int cnt = 4, cnt_resp = 0, i;
 	in_device_t *in_dev = inet_dev_find_by_name("eth0");
 	struct in_addr dst;
-	char *dst_b, *from_b;
+	char dst_b[] = "xxx.xxx.xxx.xxx";
+	char from_b[] = "xxx.xxx.xxx.xxx";
 	struct in_addr from;
 	unsigned char mac[18], *hw_addr;
 
@@ -68,9 +70,9 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	dst_b = inet_ntoa(dst);
+	strncpy(dst_b, inet_ntoa(dst), sizeof(dst_b));
 	from.s_addr = in_dev->ifa_address;
-	from_b = inet_ntoa(from);
+	strncpy(from_b, inet_ntoa(from), sizeof(from_b));
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {
 		neighbour_delete(in_dev, dst.s_addr);
@@ -85,7 +87,6 @@ static int exec(int argc, char **argv) {
 	}
 	printf("Sent %d probes (%d broadcast(s))\n", cnt, 1);
 	printf("Received %d response(s)\n", cnt_resp);
-	free(dst_b);
-	free(from_b);
+
 	return 0;
 }

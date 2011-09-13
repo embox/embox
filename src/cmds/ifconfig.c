@@ -8,6 +8,7 @@
  */
 
 #include <embox/cmd.h>
+#include <string.h>
 #include <getopt.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,7 +35,9 @@ static void inet_dev_show_info(void *handler) {
 	net_device_stats_t *eth_stat;
 	unsigned char mac[18];
 	struct in_addr ip, bcast, mask;
-	char *s_ip, *s_bcast, *s_mask;
+	char s_ip[] = "xxx.xxx.xxx.xxx";;
+	char s_bcast[] = "xxx.xxx.xxx.xxx";;
+	char s_mask[] = "xxx.xxx.xxx.xxx";;
 
 	eth_stat = dev->netdev_ops->ndo_get_stats(dev);
 	printf("%s\tencap:", dev->name);
@@ -47,18 +50,16 @@ static void inet_dev_show_info(void *handler) {
 	}
 	ip.s_addr = in_dev->ifa_address;
 	mask.s_addr = in_dev->ifa_mask;
-	s_ip = inet_ntoa(ip);
-	s_mask = inet_ntoa(mask);
+	strncpy(s_ip, inet_ntoa(ip), sizeof(s_ip));
+	strncpy(s_mask, inet_ntoa(mask), sizeof(s_mask));
 	if (dev->flags & IFF_LOOPBACK) {
 		printf("\tinet addr:%s  Mask:%s\n\t", s_ip, s_mask);
 	} else {
 		bcast.s_addr = in_dev->ifa_broadcast;
-		s_bcast = inet_ntoa(bcast);
+		strncpy(s_bcast, inet_ntoa(bcast), sizeof(s_bcast));
 		printf("\tinet addr:%s  Bcast:%s  Mask:%s\n\t", s_ip, s_bcast, s_mask);
-		free(s_bcast);
 	}
-	free(s_ip);
-	free(s_mask);
+
 	if (dev->flags & IFF_UP)
 		printf("UP ");
 	if (dev->flags & IFF_BROADCAST)
