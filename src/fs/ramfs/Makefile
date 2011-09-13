@@ -18,7 +18,7 @@ $_lds := $(OBJ_DIR)/fs/ramfs/ramfs.lds
 $(IMAGE): $($_lds)
 
 $($_lds): $($_SELFDIR)/ramfs.lds.S $(AUTOCONF_DIR)/config.lds.h
-	mkdir -p $(@D) && $(CPP) -Wp, -P -undef $(CPPFLAGS) \
+	mkdir -p $(@D) && $(CPP) -P -undef $(CPPFLAGS) \
 		-imacros $(AUTOCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
 
 -include $($_lds).d
