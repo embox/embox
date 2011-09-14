@@ -95,8 +95,20 @@ int runq_stop(struct runq *rq, struct thread *t) {
 }
 
 int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
-	return 0;
+	struct thread *top;
+
+	assert(rq && sq);
+
+	if (sleepq_empty(sq)) {
+		return 0;
+	}
+
+	top = list_entry(sq->priority_list.next,
+			struct thread, sched.priority_link);
+
+	return (top->priority > rq->current->priority);
 }
+
 int runq_sleep(struct runq *rq, struct sleepq *sq) {
 	return 0;
 }
