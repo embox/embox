@@ -61,18 +61,18 @@ extern file_system_driver_t *alloc_fs_drivers(void);
  */
 extern void free_fs_drivers(file_system_driver_t *);
 
-extern file_system_driver_t *find_filesystem(const char *name);
+extern file_system_driver_t *filesystem_find_drv(const char *name);
 
 /**
  * register a new filesystem
  * @param fs the file system structure
  */
-extern int register_filesystem(file_system_driver_t *);
+extern int filesystem_register_drv(file_system_driver_t *);
 
 /**
  * unregister a file system
  * @param fs filesystem to unregister
  */
-extern int unregister_filesystem(file_system_driver_t *);
+extern int filesystem_unregister_drv(file_system_driver_t *);
 
 #endif /* FS_H_ */

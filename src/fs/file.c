@@ -16,47 +16,6 @@
 #include <util/array.h>
 #include <err.h>
 
-static lsof_map_t lsof_pool[CONFIG_QUANTITY_NODE];
-static LIST_HEAD(free_list);
-static LIST_HEAD(fd_cache);
-
-#define fd_to_head(file) (uint32_t)(file - offsetof(lsof_map_t, fd))
-
-void lsof_map_init(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(lsof_pool); i++) {
-		list_add((struct list_head *) &lsof_pool[i], &free_list);
-	}
-}
-
-#if 0
-static void cache_fd(const char *path, FILE *file) {
-	lsof_map_t *head;
-	if (list_empty(&free_list)) {
-		return;
-	}
-	head = (lsof_map_t *) free_list.next;
-	head->fd = file;
-	strcpy((void*) head->path, path);
-	list_move((struct list_head*) head, &fd_cache);
-}
-
-static void uncache_fd(FILE *file) {
-	list_move((struct list_head*) fd_to_head(file), &free_list);
-}
-
-static lsof_map_t *find_fd(FILE *file) {
-	struct list_head *p;
-	list_for_each(p, &fd_cache) {
-		if (((lsof_map_t *) p)->fd == file) {
-			return (lsof_map_t *) p;
-		}
-	}
-	printk("File maybe not opened\n");
-	return NULL;
-}
-#endif
-
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;
 	file_system_driver_t *drv;
@@ -65,34 +24,28 @@ FILE *fopen(const char *path, const char *mode) {
 
 	nod = vfs_find_node(path, NULL);
 
-	if (nod == NULL) {
-		//FIXME: ahtung! workaround.
-		ramfs_create_param_t param;
-		strcpy(param.name, path);
-		param.size = 0;
-		param.mode = 0;
-		param.start_addr = 0x44100000;
-		drv = find_filesystem("ramfs");
-		drv->fsop->create_file(&param);
-		nod = vfs_find_node(path, NULL);
+	if (NULL == nod) {
+		errno = -EINVAL;
+		return NULL;
 	}
-
 	if (NULL != nod->file_info) {
 		/*if fop set*/
 		fop = (file_operations_t *) nod->file_info;
 		if (NULL == fop->fopen(path, mode)) {
+			errno = -EINVAL;
 			return NULL;
 		}
 		return (FILE *) nod;
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fopen) {
+		errno = -EINVAL;
 		LOG_ERROR("fop->fopen is NULL handler\n");
 		return NULL;
 	}
 	nod->unchar = EOF;
 	file = drv->file_op->fopen(path, mode);
-	//cache_fd(path, file);
+
 	return file;
 }
 
@@ -106,7 +59,7 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fwrite) {
 		LOG_ERROR("fop->fwrite is NULL handler\n");
-		return -1;
+		return -EBADF;
 	}
 	return drv->file_op->fwrite(buf, size, count, file);
 }
@@ -121,7 +74,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fread) {
 		LOG_ERROR("fop->fread is NULL handler\n");
-		return -1;
+		return -EBADF;
 	}
 	return drv->file_op->fread(buf, size, count, file);
 }
@@ -166,7 +119,6 @@ int fclose(FILE *fp) {
 	if (NULL == drv->file_op->fclose) {
 		return -EOF;
 	}
-	//uncache_fd(fp);
 	return drv->file_op->fclose(fp);
 }
 
@@ -181,7 +133,7 @@ int fseek(FILE *stream, long int offset, int origin) {
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fseek) {
 		LOG_ERROR("fop->fseek is NULL handler\n");
-		return -1;
+		return -EBADF;
 	}
 
 	return drv->file_op->fseek(stream, offset, origin);
@@ -199,7 +151,7 @@ int fioctl(FILE *fp, int request, ...) {
 	}
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->ioctl) {
-		return -1;
+		return -EBADF;
 	}
 	return drv->file_op->ioctl(fp, request, args);
 }
@@ -209,7 +161,7 @@ int remove(const char *pathname) {
 	file_system_driver_t *drv = nod->fs_type;
 	if (NULL == drv->fsop->delete_file) {
 		LOG_ERROR("fsop->delete_file is NULL handler\n");
-		return -1;
+		return -EBADF;
 	}
 	return drv->fsop->delete_file(pathname);
 }

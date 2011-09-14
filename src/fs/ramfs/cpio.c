@@ -76,7 +76,7 @@ int cpio_unpack(void) {
 	}
 	printk("cpio initramfs at 0x%08x\n", (unsigned int)&_ramfs_start);
 
-	init_fs = find_filesystem("ramfs");
+	init_fs = filesystem_find_drv("ramfs");
 
 	cpio_h = (cpio_newc_header_t *)&_ramfs_start;
 	while (NULL != (cpio_next = parse_item(cpio_h, buff_name))) {

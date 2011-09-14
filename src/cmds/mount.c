@@ -58,7 +58,7 @@ static int exec(int argc, char **argv) {
 
 	vfs_add_path(argv[argc - 1], NULL);
 	node = vfs_find_node(argv[argc - 1], NULL);
-	drv = find_filesystem(fs_type);
+	drv = filesystem_find_drv(fs_type);
 	drv->fsop->init(node);
 
 	return 0;

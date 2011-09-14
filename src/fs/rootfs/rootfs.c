@@ -53,10 +53,10 @@ static int rootfs_delete(const char *file_name) {
 
 static int rootfs_mount(void *par) {
 	file_system_driver_t *fsdrv;
-	if (NULL != (fsdrv = find_filesystem("ramfs"))) {
+	if (NULL != (fsdrv = filesystem_find_drv("ramfs"))) {
 		fsdrv->fsop->mount(NULL);
 	}
-	if (NULL != (fsdrv = find_filesystem("devfs"))) {
+	if (NULL != (fsdrv = filesystem_find_drv("devfs"))) {
 		fsdrv->fsop->mount(NULL);
 	}
 	return 0;

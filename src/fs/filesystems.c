@@ -28,8 +28,6 @@ static LIST_HEAD(file_systems);
 
 #define drv_to_head(fs_drv) (uint32_t)(fs_drv - offsetof(fs_driver_head_t, drv))
 
-extern void lsof_map_init(void);
-
 static void init_pool(void) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(pool); i++) {
@@ -37,7 +35,7 @@ static void init_pool(void) {
 	}
 }
 
-static fs_driver_head_t *alloc(file_system_driver_t *drv) {
+static fs_driver_head_t *filesystem_alloc(file_system_driver_t *drv) {
 	fs_driver_head_t *head;
 	if (list_empty(&free_list)) {
 		return NULL;
@@ -49,7 +47,7 @@ static fs_driver_head_t *alloc(file_system_driver_t *drv) {
 	return head;
 }
 
-static void free(file_system_driver_t *drv) {
+static void filesystem_free(file_system_driver_t *drv) {
 	list_move((struct list_head*) drv_to_head(drv), &free_list);
 	return;
 }
@@ -61,25 +59,23 @@ static int __init unit_init(void) {
 
 	init_pool();
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__fs_drivers_registry); i++) {
-		if (NULL == (head = alloc(
+		if (NULL == (head = filesystem_alloc(
 				(file_system_driver_t *) __fs_drivers_registry[i]))) {
 			return 0;
 		}
 		__fs_drivers_registry[i]->fsop->init(NULL);
 	}
 
-	if (NULL == (root_fs = find_filesystem("rootfs"))) {
+	if (NULL == (root_fs = filesystem_find_drv("rootfs"))) {
 		printk("File systems not found rootfs driver\n");
 	} else {
 		root_fs->fsop->mount(NULL);
 	}
 
-	//lsof_map_init();
-
 	return ENOERR;
 }
 
-file_system_driver_t *find_filesystem(const char *name) {
+file_system_driver_t *filesystem_find_drv(const char *name) {
 	struct list_head *p;
 	list_for_each(p, &file_systems) {
 		if (0 == strcmp(((fs_driver_head_t *) p)->drv->name, name)) {
@@ -89,7 +85,7 @@ file_system_driver_t *find_filesystem(const char *name) {
 	return NULL;
 }
 
-int register_filesystem(file_system_driver_t *fs) {
+int filesystem_register_drv(file_system_driver_t *fs) {
 	int res = 0;
 	file_system_driver_t *p;
 
@@ -97,22 +93,22 @@ int register_filesystem(file_system_driver_t *fs) {
 		return EINVAL;
 	}
 
-	p = find_filesystem(fs->name);
+	p = filesystem_find_drv(fs->name);
 	if (NULL != p) {
 		return -EBUSY;
 	}
-	if (NULL == alloc(fs)) {
+	if (NULL == filesystem_alloc(fs)) {
 		return -EBUSY;
 	}
 
 	return res;
 }
 
-int unregister_filesystem(file_system_driver_t *fs) {
+int filesystem_unregister_drv(file_system_driver_t *fs) {
 	if (NULL == fs) {
 		return -EINVAL;
 	}
-	free(fs);
+	filesystem_free(fs);
 
 	return ENOERR;
 }
