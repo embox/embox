@@ -41,6 +41,7 @@ int runq_start(struct runq *rq, struct thread *t) {
 	struct thread *next = NULL;
 	struct sched_strategy_data *next_data;
 
+	assert(rq && t);
 	assert(!list_empty(&rq->priority_list));
 
 	list_for_each_entry(next, &rq->priority_list, sched.priority_link) {
@@ -53,12 +54,13 @@ int runq_start(struct runq *rq, struct thread *t) {
 
 	if (next->priority == priority) {
 		list_add_tail(&td->thread_link, &next_data->thread_link);
-		td->p_priority_link = &next_data->priority_link;
+//		td->p_priority_link = &next_data->priority_link;
 		td->is_priority_link = 0;
 
 	} else {
 		list_add_tail(&td->priority_link, &next_data->priority_link);
-		assert(list_empty(&td->thread_link));
+		assert(td->is_priority_link);
+		INIT_LIST_HEAD(&td->thread_link);
 
 	}
 
@@ -66,7 +68,30 @@ int runq_start(struct runq *rq, struct thread *t) {
 }
 
 int runq_stop(struct runq *rq, struct thread *t) {
-	return 0;
+	struct sched_strategy_data *td = &t->sched;
+
+	assert(rq && t);
+	assert(!list_empty(&rq->priority_list));
+
+	if (list_empty(&td->thread_link)) {
+		/* The whole chain consists of a single thread. */
+		assert(td->is_priority_link);
+		list_del(&td->priority_link);
+
+	} else {
+		if (td->is_priority_link) {
+			struct list_head *new_priority_link = td->thread_link.next;
+
+			/* Replace priority link being deleted with a new one. */
+			list_add(new_priority_link, &td->priority_link);
+			list_del(&td->priority_link);
+		}
+
+		/* Remove it from the chain. */
+		list_del(&td->thread_link);
+	}
+
+	return (t == rq->current);
 }
 
 int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
@@ -89,7 +114,7 @@ int sleepq_empty(struct sleepq *sq) {
 }
 
 void sleepq_priority_changing(struct sleepq *sq, struct thread *t,
-		int new_priority) {
+        int new_priority) {
 }
 
 #if 0

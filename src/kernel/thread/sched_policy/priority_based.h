@@ -17,7 +17,7 @@ struct thread;
 
 struct sched_strategy_data {
 
-	/** Link within a chain of threads with the given priority. */
+	/** Link within a headless chain of threads with the given priority. */
 	struct list_head thread_link;
 
 	__extension__ union {
@@ -27,7 +27,7 @@ struct sched_strategy_data {
 
 		/** For the rest threads in the chain. */
 		__extension__ struct {
-			struct list_head *p_priority_link; /**< Pointer to the head. */
+//			struct list_head *p_priority_link; /**< Pointer to the head. */
 			void            *is_priority_link; /**< Contains @c NULL if not. */
 		} /* unnamed */;
 
