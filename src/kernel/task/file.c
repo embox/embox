@@ -5,7 +5,7 @@
  * @date 06.09.11
  * @author Anton Kozlov
  */
-
+#include <fs/file_desc.h>
 #include <types.h>
 #include <errno.h>
 #include <kernel/task.h>
@@ -15,30 +15,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <kernel/file.h>
-#if 0
-static int alloc_fd(struct task *tsk) {
-	struct list_head *lnk;
 
-	if (list_empty(&tsk->fd_array.free_fds)) {
-		return -ENOMEM;
-	}
-
-	lnk = tsk->fd_array.free_fds.next;
-	list_move(lnk, &tsk->fd_array.opened_fds);
-
-	return ((int) list_entry(lnk, struct __fd_list, link) - tsk->fd_array) /sizeof(struct __fd_list);
-}
-
-static int file_opened(FILE *file, struct task *tsk) {
-	int fd;
-
-	fd = alloc_fd(tsk);
-	tsk->fd_array.fds[fd].file = file;
-	INIT_LIST_HEAD(&tsk->fd_array.fds[fd].file_link);
-
-	return fd;
-}
-#endif
 
 int __file_opened_fd(int fd, FILE *file, struct task *tsk) {
 	struct __fd_list *fdl = &tsk->fd_array.fds[fd];

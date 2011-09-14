@@ -93,9 +93,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <kernel/file.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
 #include <drivers/tty_ng.h>
-#include <unistd.h>
 #include <lib/linenoise.h>
 
 /* Using static circular buffer -- AK */

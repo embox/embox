@@ -16,6 +16,8 @@
 #include <util/array.h>
 #include <err.h>
 
+#include <fs/file_desc.h>
+
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;
 	file_system_driver_t *drv;
@@ -28,6 +30,8 @@ FILE *fopen(const char *path, const char *mode) {
 		errno = -EINVAL;
 		return NULL;
 	}
+	/* check permissions */
+
 	if (NULL != nod->file_info) {
 		/*if fop set*/
 		fop = (file_operations_t *) nod->file_info;
@@ -37,6 +41,7 @@ FILE *fopen(const char *path, const char *mode) {
 		}
 		return (FILE *) nod;
 	}
+
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fopen) {
 		errno = -EINVAL;
@@ -77,27 +82,6 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		return -EBADF;
 	}
 	return drv->file_op->fread(buf, size, count, file);
-}
-
-int fgetc(FILE *file) {
-	node_t *nod = (node_t *) file;
-	char ch;
-	if (NULL == nod) {
-		return -EBADF;
-	}
-	if (nod->unchar != EOF) {
-		ch = nod->unchar;
-		nod->unchar = EOF;
-		return ch;
-	}
-	fread(&ch, 1, 1, file);
-	return ch;
-}
-
-int ungetc(int ch, FILE *file) {
-	node_t *nod = (node_t *) file;
-	nod->unchar = (char) ch;
-	return ch;
 }
 
 
@@ -156,6 +140,7 @@ int fioctl(FILE *fp, int request, ...) {
 	return drv->file_op->ioctl(fp, request, args);
 }
 
+//TODO !!!!!!!!!!!!!!!!!!!!!!!! move from here
 int remove(const char *pathname) {
 	node_t *nod = vfs_find_node(pathname, NULL);
 	file_system_driver_t *drv = nod->fs_type;
@@ -177,3 +162,25 @@ int fstat(const char *path, stat_t *buf) {
 	buf->st_mtime = desc->mtime;
 	return 0;
 }
+
+int fgetc(FILE *file) {
+	node_t *nod = (node_t *) file;
+	char ch;
+	if (NULL == nod) {
+		return -EBADF;
+	}
+	if (nod->unchar != EOF) {
+		ch = nod->unchar;
+		nod->unchar = EOF;
+		return ch;
+	}
+	fread(&ch, 1, 1, file);
+	return ch;
+}
+
+int ungetc(int ch, FILE *file) {
+	node_t *nod = (node_t *) file;
+	nod->unchar = (char) ch;
+	return ch;
+}
+

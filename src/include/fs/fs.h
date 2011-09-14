@@ -33,17 +33,8 @@ typedef struct file_system_driver {
 	const char          *name;
 	const file_operations_t   *file_op;
 	const fsop_desc_t         *fsop;
-#if 0
-	int fs_flags;
-	struct list_head fs_supers;
-#endif
 } file_system_driver_t;
-#if 0
-#define DECLARE_FILE_SYSTEM_DRIVER(fs_driver) \
-	static const file_system_driver_t *p##fs_driver \
-		__attribute__ ((used, section(".drivers.fs"))) \
-		= &fs_driver
-#endif
+
 
 extern const file_system_driver_t * __fs_drivers_registry[];
 
