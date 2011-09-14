@@ -16,18 +16,23 @@
 struct thread;
 
 struct sched_strategy_data {
+
 	/** Link within a chain of threads with the given priority. */
 	struct list_head thread_link;
 
 	__extension__ union {
+
 		/** Link within priorities tier for a head of the threads chain. */
 		struct list_head priority_link;
+
+		/** For the rest threads in the chain. */
 		__extension__ struct {
-			/** Pointer to a head of the chain for the rest threads. */
-			struct sched_strategy_data *priority_head;
-			void *null; /**< Contains @c NULL. */
+			struct list_head *p_priority_link; /**< Pointer to the head. */
+			void            *is_priority_link; /**< Contains @c NULL if not. */
 		} /* unnamed */;
+
 	} /* unnamed */;
+
 };
 
 struct runq {

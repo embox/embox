@@ -25,7 +25,7 @@
 
 void sched_strategy_init(struct sched_strategy_data *s) {
 	INIT_LIST_HEAD(&s->thread_link);
-	s->null = NULL;
+	s->is_priority_link = 0;
 }
 
 void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
@@ -36,7 +36,10 @@ void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
 
 int runq_start(struct runq *rq, struct thread *t) {
 	thread_priority_t priority = t->priority;
+	struct sched_strategy_data *td = &t->sched;
+
 	struct thread *next = NULL;
+	struct sched_strategy_data *next_data;
 
 	assert(!list_empty(&rq->priority_list));
 
@@ -46,18 +49,20 @@ int runq_start(struct runq *rq, struct thread *t) {
 		}
 	}
 	assert(next != NULL);
+	next_data = &next->sched;
 
 	if (next->priority == priority) {
-		list_add_tail(&t->sched.thread_link, &next->sched.thread_link);
-		t->sched.priority_head = &next->sched;
-		t->sched.null = NULL;
+		list_add_tail(&td->thread_link, &next_data->thread_link);
+		td->p_priority_link = &next_data->priority_link;
+		td->is_priority_link = 0;
 
 	} else {
-		list_add_tail(&t->sched.priority_link, &next->sched.priority_link);
-		assert(list_empty(&t->sched.thread_link));
+		list_add_tail(&td->priority_link, &next_data->priority_link);
+		assert(list_empty(&td->thread_link));
+
 	}
 
-	return (t->priority > rq->current->priority);
+	return (priority > rq->current->priority);
 }
 
 int runq_stop(struct runq *rq, struct thread *t) {
