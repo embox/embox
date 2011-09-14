@@ -59,13 +59,4 @@ void __assertion_handle(int pass, const struct __assertion_point *point) {
 
 #endif /* NDEBUG */
 
-/* Hide assert internals from CDT macro expansion. */
-#ifdef __CDT_PARSER__
-
-# undef  __assert
-# define __assert(condition, expr_str) \
-	__assert(condition, /* see assert.h */ expr_str)
-
-#endif /* __CDT_PARSER__ */
-
 #endif /* LIBC_ASSERT_IMPL_H_ */
