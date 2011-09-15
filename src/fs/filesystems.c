@@ -19,7 +19,7 @@ EMBOX_UNIT_INIT(unit_init);
 typedef struct fs_driver_head {
 	struct list_head *next;
 	struct list_head *prev;
-	file_system_driver_t *drv;
+	fs_drv_t *drv;
 } fs_driver_head_t;
 
 static fs_driver_head_t pool[CONFIG_MAX_FS_DRIVERS];
@@ -35,7 +35,7 @@ static void init_pool(void) {
 	}
 }
 
-static fs_driver_head_t *filesystem_alloc(file_system_driver_t *drv) {
+static fs_driver_head_t *filesystem_alloc(fs_drv_t *drv) {
 	fs_driver_head_t *head;
 	if (list_empty(&free_list)) {
 		return NULL;
@@ -47,20 +47,20 @@ static fs_driver_head_t *filesystem_alloc(file_system_driver_t *drv) {
 	return head;
 }
 
-static void filesystem_free(file_system_driver_t *drv) {
+static void filesystem_free(fs_drv_t *drv) {
 	list_move((struct list_head*) drv_to_head(drv), &free_list);
 	return;
 }
 
 static int __init unit_init(void) {
 	fs_driver_head_t *head;
-	file_system_driver_t *root_fs;
+	fs_drv_t *root_fs;
 	size_t i;
 
 	init_pool();
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__fs_drivers_registry); i++) {
 		if (NULL == (head = filesystem_alloc(
-				(file_system_driver_t *) __fs_drivers_registry[i]))) {
+				(fs_drv_t *) __fs_drivers_registry[i]))) {
 			return 0;
 		}
 		__fs_drivers_registry[i]->fsop->init(NULL);
@@ -75,7 +75,7 @@ static int __init unit_init(void) {
 	return ENOERR;
 }
 
-file_system_driver_t *filesystem_find_drv(const char *name) {
+fs_drv_t *filesystem_find_drv(const char *name) {
 	struct list_head *p;
 	list_for_each(p, &file_systems) {
 		if (0 == strcmp(((fs_driver_head_t *) p)->drv->name, name)) {
@@ -85,9 +85,9 @@ file_system_driver_t *filesystem_find_drv(const char *name) {
 	return NULL;
 }
 
-int filesystem_register_drv(file_system_driver_t *fs) {
+int filesystem_register_drv(fs_drv_t *fs) {
 	int res = 0;
-	file_system_driver_t *p;
+	fs_drv_t *p;
 
 	if (NULL == fs) {
 		return EINVAL;
@@ -104,7 +104,7 @@ int filesystem_register_drv(file_system_driver_t *fs) {
 	return res;
 }
 
-int filesystem_unregister_drv(file_system_driver_t *fs) {
+int filesystem_unregister_drv(fs_drv_t *fs) {
 	if (NULL == fs) {
 		return -EINVAL;
 	}

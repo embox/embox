@@ -14,7 +14,7 @@
 typedef struct node {
 	const char            name[CONFIG_MAX_LENGTH_FILE_NAME];
 	void                 *file_info; /* WTF? maybe introduce Node Attribute Structure(NAS)? (sikmir) */
-	file_system_driver_t *fs_type;
+	struct fs_drv        *fs_type;
 	void                 *attr;
 	struct list_head      neighbors;
 	struct list_head      leaves;

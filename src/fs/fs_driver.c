@@ -11,7 +11,7 @@
 #include <lib/list.h>
 #include <fs/fs.h>
 
-ARRAY_SPREAD_DEF(const file_system_driver_t *, __fs_drivers_registry);
+ARRAY_SPREAD_DEF(const fs_drv_t *, __fs_drivers_registry);
 
 
 /*fs drivers pool*/
@@ -19,7 +19,7 @@ ARRAY_SPREAD_DEF(const file_system_driver_t *, __fs_drivers_registry);
 typedef struct fs_driver_head {
 	struct list_head     *next;
 	struct list_head     *prev;
-	file_system_driver_t  drv;
+	fs_drv_t  drv;
 } fs_driver_head_t;
 
 static fs_driver_head_t pool[CONFIG_MAX_FS_DRIVERS];
@@ -37,8 +37,8 @@ static int __init unit_init(void) {
 	return 0;
 }
 
-file_system_driver_t *alloc_fs_drivers(void) {
-	file_system_driver_t *drv;
+fs_drv_t *alloc_fs_drivers(void) {
+	fs_drv_t *drv;
 	if (list_empty(&free_list)) {
 		return NULL;
 	}
@@ -49,7 +49,7 @@ file_system_driver_t *alloc_fs_drivers(void) {
 	return drv;
 }
 
-void free_fs_drivers(file_system_driver_t *fs_drv) {
+void free_fs_drivers(fs_drv_t *fs_drv) {
 	if (NULL == fs_drv) {
 		return;
 	}

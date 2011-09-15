@@ -15,9 +15,9 @@
 
 ARRAY_SPREAD_DEF(const device_module_t, __device_registry);
 
-static const file_system_driver_t devfs_drv;
+static const fs_drv_t devfs_drv;
 
-const file_system_driver_t *devfs_get_fs(void) {
+const fs_drv_t *devfs_get_fs(void) {
     return &devfs_drv;
 }
 
@@ -36,7 +36,7 @@ static int devfs_mount(void *par) {
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); i++) {
 		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
 			devnod->file_info = (void*) __device_registry[i].fops;
-			devnod->fs_type = (file_system_driver_t *) &devfs_drv;
+			devnod->fs_type = (fs_drv_t *) &devfs_drv;
 		}
 	}
 
@@ -54,13 +54,12 @@ static int devfs_delete(const char *fname) {
 /*
  * file_operation
  */
-static void *devfs_open(const char *fname, const char *mode) {
-	return NULL;
+static void *devfs_open(struct file_desc *desc) {
+	return desc->ops->fopen(desc);
 }
 
-static int devfs_close(void *file) {
-	node_t *node = (node_t *) file;
-	return ((file_operations_t *)node->file_info)->fclose(file);
+static int devfs_close(struct file_desc *desc) {
+	return desc->ops->fclose(desc);
 }
 
 static size_t devfs_read(void *buf, size_t size, size_t count, void *file) {
@@ -85,6 +84,6 @@ static fsop_desc_t devfs_fsop = { devfs_init, devfs_create, devfs_delete,
 static file_operations_t devfs_fop = { devfs_open, devfs_close, devfs_read,
 		devfs_write, NULL, devfs_ioctl };
 
-static const file_system_driver_t devfs_drv = { "devfs", &devfs_fop,
+static const fs_drv_t devfs_drv = { "devfs", &devfs_fop,
 		&devfs_fsop };
 DECLARE_FILE_SYSTEM_DRIVER(devfs_drv);

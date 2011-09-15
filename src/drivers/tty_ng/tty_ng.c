@@ -145,7 +145,7 @@ static void tty_init(struct tty_buf *tty) {
 
 }
 
-extern file_system_driver_t *devfs_get_fs(void);
+extern fs_drv_t *devfs_get_fs(void);
 
 void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(void)) {
 	struct thread *thds[count];

@@ -11,6 +11,7 @@
 #include <lib/list.h>
 #include <fs/file.h>
 #include <unistd.h>
+#include <fs/file_desc.h>
 
 typedef int (*FS_CREATE_FUNC)(void *params);
 typedef int (*FS_DELETE_FUNC)(const char *file_name);
@@ -29,14 +30,14 @@ typedef struct fsop_desc {
  * We can mount some file system with name of FS which has been registered in
  * our system.
  */
-typedef struct file_system_driver {
+typedef struct fs_drv {
 	const char          *name;
-	const file_operations_t   *file_op;
+	const struct file_operations   *file_op;
 	const fsop_desc_t         *fsop;
-} file_system_driver_t;
+} fs_drv_t;
 
 
-extern const file_system_driver_t * __fs_drivers_registry[];
+extern const fs_drv_t * __fs_drivers_registry[];
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver) \
 		ARRAY_SPREAD_ADD(__fs_drivers_registry, &fs_driver)
@@ -45,25 +46,25 @@ extern const file_system_driver_t * __fs_drivers_registry[];
  * allocate structure for fs_driver structure
  * @return pointer to allocated memory
  */
-extern file_system_driver_t *alloc_fs_drivers(void);
+extern fs_drv_t *alloc_fs_drivers(void);
 
 /**
  * free early allocated driver with function alloc_fs_drivers
  */
-extern void free_fs_drivers(file_system_driver_t *);
+extern void free_fs_drivers(fs_drv_t *);
 
-extern file_system_driver_t *filesystem_find_drv(const char *name);
+extern fs_drv_t *filesystem_find_drv(const char *name);
 
 /**
  * register a new filesystem
  * @param fs the file system structure
  */
-extern int filesystem_register_drv(file_system_driver_t *);
+extern int filesystem_register_drv(fs_drv_t *);
 
 /**
  * unregister a file system
  * @param fs filesystem to unregister
  */
-extern int filesystem_unregister_drv(file_system_driver_t *);
+extern int filesystem_unregister_drv(fs_drv_t *);
 
 #endif /* FS_H_ */

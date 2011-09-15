@@ -58,8 +58,8 @@ static void ramfs_info_free(ramfs_file_description_t *desc) {
 
 /* File operations */
 
-static void *ramfs_fopen(const char *path, const char *mode);
-static int ramfs_fclose(void *file);
+static void *ramfs_fopen(struct file_desc *desc);
+static int ramfs_fclose(struct file_desc *desc);
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count,
 		void *file);
@@ -69,47 +69,48 @@ static int ramfs_ioctl(void *file, int request, va_list args);
 static file_operations_t ramfs_fop = { ramfs_fopen, ramfs_fclose, ramfs_fread,
 		ramfs_fwrite, ramfs_fseek, ramfs_ioctl };
 
-static void *ramfs_fopen(const char *file_name, const char *mode) {
+static void *ramfs_fopen(struct file_desc *desc) {
 	node_t *nod;
 	ramfs_file_description_t *fd;
 
-	if (NULL == (nod = vfs_find_node(file_name, NULL))) {
-		printk("can't find file %s\n", file_name);
-		return NULL;
-	}
+
+	nod = desc->node;
 	fd = (ramfs_file_description_t*) nod->attr;
 	fd->cur_pointer = 0;
 	fd->lock = 1;
 	return nod;
 }
 
-static int ramfs_fclose(void *file) {
-	ramfs_file_description_t *fd;
-	node_t *nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->attr;
-	fd->lock = 0;
+static int ramfs_fclose(struct file_desc *desc) {
+//	ramfs_file_description_t *fd;
+
+//	node_t *nod = (node_t *) file;
+//	fd = (ramfs_file_description_t*) nod->attr;
+//	fd->lock = 0;
 	return 0;
 }
 
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 	ramfs_file_description_t *fd;
-	node_t *nod;
-	size_t size_to_read = size * count;
-	nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->attr;
+	struct file_desc *desc;
+	size_t size_to_read;
+
+	size_to_read = size * count;
+	desc = (struct file_desc *) file;
+	fd = (ramfs_file_description_t*) desc->node->attr;
 
 	if (fd == NULL) {
 		return -ENOENT;
 	}
 
-	if (size * count >= (fd->size - fd->cur_pointer)) {
-		size_to_read = fd->size - fd->cur_pointer;
+	if (size * count >= (fd->size - desc->cursor)) {
+		size_to_read = fd->size - desc->cursor;
 	}
 
-	memcpy((void*) buf, (const void *) (fd->start_addr + fd->cur_pointer),
+	memcpy((void*) buf, (const void *) (fd->start_addr + desc->cursor),
 			size_to_read);
-	fd->cur_pointer += size_to_read;
-	return size_to_read;
+	desc->cursor += size_to_read;
+	return size_to_read / size; /* number of item not characters */
 }
 
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count,
@@ -192,7 +193,7 @@ static int ramfs_mount(void * par);
 static fsop_desc_t ramfs_fsop = { ramfs_init, ramfs_create, ramfs_delete,
 		ramfs_mount };
 
-static file_system_driver_t ramfs_drv = { "ramfs", &ramfs_fop, &ramfs_fsop };
+static fs_drv_t ramfs_drv = { "ramfs", &ramfs_fop, &ramfs_fsop };
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_drv);
 

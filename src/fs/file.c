@@ -17,29 +17,41 @@
 #include <err.h>
 
 #include <fs/file_desc.h>
-
+#include <kernel/prom_printf.h>
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;
-	file_system_driver_t *drv;
+	fs_drv_t *drv;
 	file_operations_t *fop;
 	FILE *file;
+	struct file_desc *desc;
 
-	nod = vfs_find_node(path, NULL);
-
-	if (NULL == nod) {
+	prom_printf("openning %s\n", path);
+	if (NULL == (nod = vfs_find_node(path, NULL))) {
 		errno = -EINVAL;
 		return NULL;
 	}
 	/* check permissions */
 
+	/* allocate new descriptor */
+	if (NULL == (desc = file_desc_alloc())) {
+		errno = -EINVAL;
+		return NULL;
+	}
+
+	desc->cursor = 0;
+	desc->node = nod;
 	if (NULL != nod->file_info) {
-		/*if fop set*/
+		/*if fop set devfs for example*/
 		fop = (file_operations_t *) nod->file_info;
-		if (NULL == fop->fopen(path, mode)) {
+
+		desc->ops = fop;
+
+		if (NULL == fop->fopen(desc)) {
 			errno = -EINVAL;
 			return NULL;
 		}
-		return (FILE *) nod;
+		//return (FILE *) nod;
+		return (FILE *)desc;
 	}
 
 	drv = nod->fs_type;
@@ -49,66 +61,82 @@ FILE *fopen(const char *path, const char *mode) {
 		return NULL;
 	}
 	nod->unchar = EOF;
-	file = drv->file_op->fopen(path, mode);
+	file = drv->file_op->fopen(desc);
 
 	return file;
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	node_t *nod;
-	file_system_driver_t *drv;
-	nod = (node_t *) file;
-	if (NULL == nod) {
+	//node_t *nod;
+	//fs_drv_t *drv;
+	struct file_desc *desc;
+
+	if(NULL == file) {
 		return -EBADF;
 	}
-	drv = nod->fs_type;
-	if (NULL == drv->file_op->fwrite) {
-		LOG_ERROR("fop->fwrite is NULL handler\n");
-		return -EBADF;
-	}
-	return drv->file_op->fwrite(buf, size, count, file);
+
+	desc = (struct file_desc *)file;
+
+	return desc->ops->fwrite(buf, size, count, file);
+//	drv = desc->nod->fs_type;
+//	if (NULL == drv->file_op->fwrite) {
+//		LOG_ERROR("fop->fwrite is NULL handler\n");
+//		return -EBADF;
+//	}
+//	return drv->file_op->fwrite(buf, size, count, file);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
-	node_t *nod;
-	file_system_driver_t *drv;
-	nod = (node_t *) file;
-	if (NULL == nod) {
+//	node_t *nod;
+//	fs_drv_t *drv;
+	struct file_desc *desc;
+
+	if(NULL == file) {
 		return -EBADF;
 	}
-	drv = nod->fs_type;
-	if (NULL == drv->file_op->fread) {
-		LOG_ERROR("fop->fread is NULL handler\n");
-		return -EBADF;
-	}
-	return drv->file_op->fread(buf, size, count, file);
+
+	desc = (struct file_desc *)file;
+
+	return desc->ops->fwrite(buf, size, count, file);
+
+//	drv = nod->fs_type;
+//	if (NULL == drv->file_op->fread) {
+//		LOG_ERROR("fop->fread is NULL handler\n");
+//		return -EBADF;
+//	}
+//	return drv->file_op->fread(buf, size, count, file);
 }
 
 
-int fclose(FILE *fp) {
-	node_t *nod;
-	file_system_driver_t *drv;
-	file_operations_t *fop;
+int fclose(FILE *file) {
+	struct file_desc *desc;
 
-	nod = (node_t *) fp;
-	if (NULL == nod) {
+	if(NULL == file) {
 		return -EBADF;
 	}
-	if (NULL != nod->file_info) {
-		/*if fop set*/
-		fop = (file_operations_t *) nod->file_info;
-		return fop->fclose(fp);
-	}
-	drv = nod->fs_type;
-	if (NULL == drv->file_op->fclose) {
-		return -EOF;
-	}
-	return drv->file_op->fclose(fp);
+
+	desc = (struct file_desc *)file;
+	desc->ops->fclose(desc);;
+	file_desc_free(desc);
+
+	return 0;
+
+
+//	if (NULL != nod->file_info) {
+//		/*if fop set*/
+//		fop = (file_operations_t *) nod->file_info;
+//		return fop->fclose(file);
+//	}
+//	drv = nod->fs_type;
+//	if (NULL == drv->file_op->fclose) {
+//		return -EOF;
+//	}
+//	return drv->file_op->fclose(file);
 }
 
 int fseek(FILE *stream, long int offset, int origin) {
 	node_t *nod;
-	file_system_driver_t *drv;
+	fs_drv_t *drv;
 	nod = (node_t *) stream;
 
 	if (NULL == nod) {
@@ -125,7 +153,7 @@ int fseek(FILE *stream, long int offset, int origin) {
 
 int fioctl(FILE *fp, int request, ...) {
 	node_t *nod;
-	file_system_driver_t *drv;
+	fs_drv_t *drv;
 	va_list args;
 	va_start(args, request);
 
@@ -143,7 +171,7 @@ int fioctl(FILE *fp, int request, ...) {
 //TODO !!!!!!!!!!!!!!!!!!!!!!!! move from here
 int remove(const char *pathname) {
 	node_t *nod = vfs_find_node(pathname, NULL);
-	file_system_driver_t *drv = nod->fs_type;
+	fs_drv_t *drv = nod->fs_type;
 	if (NULL == drv->fsop->delete_file) {
 		LOG_ERROR("fsop->delete_file is NULL handler\n");
 		return -EBADF;

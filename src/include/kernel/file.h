@@ -11,9 +11,12 @@
 
 #include <stdarg.h>
 #include <stdio.h> /* FILE */
+#include <fs/file_desc.h>
 
-typedef void  *(*FILEOP_OPEN)(const char *file_name, const char *mode);
-typedef int    (*FILEOP_CLOSE)(void * file);
+struct file_desc;
+
+typedef void  *(*FILEOP_OPEN)(struct file_desc *desc);
+typedef int    (*FILEOP_CLOSE)(struct file_desc *desc);
 typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
 typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
 typedef int    (*FILEOP_FSEEK)(void *file, long offset, int whence);

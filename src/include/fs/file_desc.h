@@ -17,7 +17,7 @@ struct file_desc {
 	//struct list_head;
 	struct node *node;
 	struct file_operations *ops;
-	int cursor;
+	size_t cursor;
 	int ungetsym;
 };
 

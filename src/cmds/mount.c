@@ -28,7 +28,7 @@ static int exec(int argc, char **argv) {
 	char *src, *dir;
 	char fs_type[0x20];
 	node_t *node;
-	file_system_driver_t * drv;
+	fs_drv_t * drv;
 
 	fs_type[0] = '\0';
 	getopt_init();

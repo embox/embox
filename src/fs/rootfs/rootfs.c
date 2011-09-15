@@ -14,8 +14,8 @@
 #include <fs/node.h>
 #include <util/array.h>
 
-static void   *rootfs_open(const char *path, const char *mode);
-static int     rootfs_close(void *file);
+static void   *rootfs_open(struct file_desc *desc);
+static int     rootfs_close(struct file_desc *desc);
 static size_t  rootfs_read(void *buf, size_t size, size_t count, void *file);
 static size_t  rootfs_write(const void *buf, size_t size, size_t count, void *file);
 static int     rootfs_seek(void *file, long offset, int whence);
@@ -52,7 +52,7 @@ static int rootfs_delete(const char *file_name) {
 }
 
 static int rootfs_mount(void *par) {
-	file_system_driver_t *fsdrv;
+	fs_drv_t *fsdrv;
 	if (NULL != (fsdrv = filesystem_find_drv("ramfs"))) {
 		fsdrv->fsop->mount(NULL);
 	}
@@ -69,7 +69,7 @@ static fsop_desc_t rootfs_fsop = {
 	rootfs_mount
 };
 
-static const file_system_driver_t rootfs_drv = {
+static const fs_drv_t rootfs_drv = {
 	"rootfs",
 	&rootfs_fop,
 	&rootfs_fsop
@@ -77,11 +77,11 @@ static const file_system_driver_t rootfs_drv = {
 
 DECLARE_FILE_SYSTEM_DRIVER(rootfs_drv);
 
-static void *rootfs_open(const char *file_name, const char *mode) {
+static void *rootfs_open(struct file_desc *desc) {
 	return NULL;
 }
 
-static int rootfs_close(void * file) {
+static int rootfs_close(struct file_desc *desc) {
 	return 0;
 }
 

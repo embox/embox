@@ -21,7 +21,7 @@
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
 #define F_ALIGN(len) (((len) + 3) & ~3)
 
-static file_system_driver_t *init_fs;
+static fs_drv_t *init_fs;
 
 static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 	char *s;

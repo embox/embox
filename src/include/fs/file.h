@@ -36,13 +36,4 @@ typedef struct stat {
 	unsigned  st_ctime;   /* time of last status change */
 } stat_t;
 
-typedef struct lsof_map {
-	struct list_head *next;
-	struct list_head *prev;
-	const char        path[CONFIG_MAX_LENGTH_FILE_NAME];
-	FILE             *fd;
-} lsof_map_t;
-
-//extern void lsof_map_init(void);
-
 #endif /* FS_FILE_H_ */

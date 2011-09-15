@@ -13,8 +13,8 @@
 #include <embox/device.h>
 #include <diag/diag_device.h>
 
-static void *diag_open(const char *fname, const char *mode);
-static int diag_close(void *file);
+static void *diag_open(struct file_desc *desc);
+static int diag_close(struct file_desc *desc);
 static size_t diag_read(void *buf, size_t size, size_t count, void *file);
 static size_t diag_write(const void *buff, size_t size, size_t count, void *file);
 
@@ -26,7 +26,7 @@ static file_operations_t file_op = {
 		.fwrite = diag_write
 };
 
-static file_system_driver_t fs_drv = {
+static fs_drv_t fs_drv = {
 		.file_op = &file_op
 };
 
@@ -36,17 +36,22 @@ static node_t diag_node = {
 };
 
 FILE *diag_device_get(void) {
-	return (FILE *) &diag_node;
+	struct file_desc *desc;
+	desc = file_desc_alloc();
+	desc->ops = &file_op;
+	desc->node = &diag_node;
+
+	return (FILE *) desc;
 }
 
 /*
  * file_operation
  */
-static void *diag_open(const char *fname, const char *mode) {
+static void *diag_open(struct file_desc *desc) {
 	return (void *)&file_op;
 }
 
-static int diag_close(void *file) {
+static int diag_close(struct file_desc *desc) {
 	return 0;
 }
 
