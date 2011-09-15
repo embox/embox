@@ -1602,6 +1602,8 @@ int lisp5000_main(int argc, char *argv[])
 	do
 		printf("? ");
 	while (ep(g, lread(g)));
+	free(memory);
+	free(stack);
 	return 0;
 }
 struct symbol_init symi[] = {{"NIL"}, {"T"}, {"&REST"}, {"&BODY"},

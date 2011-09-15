@@ -169,18 +169,20 @@ int fgetc(FILE *file) {
 	if (NULL == nod) {
 		return -EBADF;
 	}
-	if (nod->unchar != EOF) {
-		ch = nod->unchar;
-		nod->unchar = EOF;
-		return ch;
+	if (nod->has_unchar) {
+		nod->has_unchar = 0;
+		return nod->unchar;
 	}
-	fread(&ch, 1, 1, file);
+	if (fread(&ch, 1, 1, file) == 0) {
+		ch = EOF;
+	}
 	return ch;
 }
 
 int ungetc(int ch, FILE *file) {
 	node_t *nod = (node_t *) file;
 	nod->unchar = (char) ch;
+	nod->has_unchar = 1;
 	return ch;
 }
 

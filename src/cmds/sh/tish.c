@@ -91,6 +91,7 @@ void shell_run(void) {
 
 	while (1) {
 		linenoise(prompt, inp_buf, BUF_INP_SIZE, &h, (compl_callback_t) cmd_compl);
+		inp_buf[strlen(inp_buf) - 1] = '\0';
 		linenoise_history_add(inp_buf, &h);
 		line_input(inp_buf);
 	}

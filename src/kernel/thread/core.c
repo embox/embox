@@ -36,7 +36,11 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 
-#define STACK_SZ 0x2000
+#ifdef CONFIG_THREAD_STACK_SIZE
+  #define STACK_SZ CONFIG_THREAD_STACK_SIZE
+#else
+  #define STACK_SZ 0x2000
+#endif
 
 EMBOX_UNIT(unit_init, unit_fini);
 

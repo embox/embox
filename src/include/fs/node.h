@@ -18,6 +18,7 @@ typedef struct node {
 	void                 *attr;
 	struct list_head      neighbors;
 	struct list_head      leaves;
+	int		     has_unchar;
 	char		     unchar;
 } node_t;
 

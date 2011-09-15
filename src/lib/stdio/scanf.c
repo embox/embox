@@ -67,6 +67,8 @@ static void unscanchar(char **str, int ch) {
 		 *p = ch;
 		 *str = p;*/
 #endif
+	} else if ((int) str == 1) {
+		ungetc(ch, file);
 	} else {
 		ungetchar(ch);
 	}

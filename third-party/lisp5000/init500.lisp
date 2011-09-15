@@ -94,6 +94,7 @@
       (list 'quote list)))
 (defmacro backquote (form)
   (backquote-expand form 0))
+
 (defun macro-function (symbol &optional environment)
   "(dolist (binding environment)
     (when (and (consp (car binding))
