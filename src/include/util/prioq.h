@@ -95,8 +95,8 @@ extern struct prioq_link *prioq_dequeue_link(prioq_comparator_t link_comparator,
 	__prioq_safe_cast(prioq_peek_link(link_comparator, prioq), \
 			element_type, link_member)
 
-extern struct prioq_link *prioq_peek_link(prioq_comparator_t link_comparator,
-		struct prioq *prioq) {
+static inline struct prioq_link *prioq_peek_link(
+		prioq_comparator_t link_comparator, struct prioq *prioq) {
 	assert(prioq != NULL);
 
 	if (prioq_empty(prioq)) {
