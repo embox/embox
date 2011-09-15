@@ -1,0 +1,115 @@
+/**
+ * @file
+ * @brief TODO documentation for prioq.h -- Eldar Abusalimov
+ *
+ * @date Sep 15, 2011
+ * @author Eldar Abusalimov
+ */
+
+#ifndef UTIL_PRIOQ_H_
+#define UTIL_PRIOQ_H_
+
+#include <assert.h>
+#include <lib/list.h>
+
+#include __impl_x(util/prioq_impl.h)
+
+struct prioq {
+	struct list_head prio_list;
+};
+
+struct prioq_link {
+	struct list_head prio_link;
+	struct list_head elem_link;
+};
+
+#define PRIOQ_INIT(prioq) \
+	{                                                  \
+		.prio_list = LIST_HEAD_INIT(prioq->prio_list), \
+	}
+
+#define PRIOQ_LINK_INIT(link) \
+	{                                                 \
+		.prio_link = LIST_HEAD_INIT(link->prio_link), \
+		.elem_link = LIST_HEAD_INIT(link->elem_link), \
+	}
+
+static inline struct prioq *prioq_init(struct prioq *prioq) {
+	assert(prioq != NULL);
+
+	INIT_LIST_HEAD(&prioq->prio_list);
+
+	return prioq;
+}
+
+static inline struct prioq_link *prioq_link_init(struct prioq_link *link) {
+	assert(link != NULL);
+
+	INIT_LIST_HEAD(&link->prio_link);
+	INIT_LIST_HEAD(&link->elem_link);
+
+	return link;
+}
+
+#define prioq_element(link, element_type, link_member) \
+	structof(__prioq_check(link), element_type, link_member)
+
+typedef int (*prioq_comparator_t)(struct prioq_link *first,
+		struct prioq_link *second);
+
+/**
+ * Example comparator which defines an order based on elements addresses.
+ * Just to show how it could be implemented.
+ *
+ * @param first
+ * @param second
+ * @return
+ *   The result of address comparison of the @a first and the @a second.
+ */
+static inline int prioq_address_comparator(struct prioq_link *first,
+		struct prioq_link *second) {
+	return first - second;
+}
+
+static inline int prioq_empty(struct prioq *prioq) {
+	assert(prioq != NULL);
+
+	return list_empty(&prioq->prio_list);
+}
+
+#define prioq_enqueue(element, link_comparator, prioq, link_member) \
+	prioq_enqueue_link(&__prioq_check(element)->link_member, \
+			link_comparator, prioq)
+
+extern void prioq_enqueue_link(struct prioq_link *new_link,
+		prioq_comparator_t link_comparator, struct prioq *prioq);
+
+#define prioq_dequeue(link_comparator, prioq, element_type, link_member) \
+	__prioq_safe_cast(prioq_dequeue_link(link_comparator, prioq), \
+			element_type, link_member)
+
+extern struct prioq_link *prioq_dequeue_link(prioq_comparator_t link_comparator,
+		struct prioq *prioq);
+
+#define prioq_peek(link_comparator, prioq, element_type, link_member) \
+	__prioq_safe_cast(prioq_peek_link(link_comparator, prioq), \
+			element_type, link_member)
+
+extern struct prioq_link *prioq_peek_link(prioq_comparator_t link_comparator,
+		struct prioq *prioq) {
+	assert(prioq != NULL);
+
+	if (prioq_empty(prioq)) {
+		return NULL;
+	}
+
+	return list_entry(prioq->prio_list.next, struct prioq_link, prio_link);
+}
+
+#define prioq_remove(element, link_comparator, link_member) \
+	prioq_remove_link(&__prioq_check(element)->link_member, link_comparator)
+
+extern void prioq_remove_link(struct prioq_link *link,
+		prioq_comparator_t link_comparator);
+
+#endif /* UTIL_PRIOQ_H_ */
