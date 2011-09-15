@@ -31,7 +31,8 @@ static inline void prioq_enqueue_link(struct prioq_link *new_link,
 
 	assert(new_link && link_comparator && prioq);
 
-	list_for_each_entry(next, &prioq->prio_list, prio_link) {
+	list_for_each_entry(next, &prioq->prio_list, prio_link)
+	{
 		if ((comparison = link_comparator(next, new_link)) <= 0) {
 			found = next;
 			break;
@@ -52,6 +53,27 @@ static inline void prioq_enqueue_link(struct prioq_link *new_link,
 		list_add_tail(&new_link->elem_link, &found->elem_link);
 
 	}
+}
+
+static inline void prioq_remove_link(struct prioq_link *link,
+		prioq_comparator_t link_comparator) {
+	assert(link && link_comparator);
+
+	if (list_empty(&link->prio_link)) {
+		assert(!list_empty(&link->elem_link));
+		list_del_init(&link->elem_link);
+		return;
+	}
+
+	if (!list_empty(&link->elem_link)) {
+		struct list_head *new_prio_link = link->elem_link.next;
+
+		/* Replace priority link being deleted with a new one. */
+		list_add(new_prio_link, &link->prio_link);
+	}
+
+	list_del_init(&link->prio_link);
+	list_del_init(&link->elem_link);
 }
 
 #endif /* UTIL_PRIOQ_IMPL_H_ */
