@@ -90,8 +90,8 @@ TEST_CASE("list_link_init should have the same effect as static initializer") {
 	test_assert_mem_equal(buff, list_link_init(&e.lnk), sizeof(e.lnk));
 }
 
-TEST_CASE("list_empty should return true for just created list") {
-	test_assert_true(list_empty(&m));
+TEST_CASE("list_is_empty should return true for just created list") {
+	test_assert_true(list_is_empty(&m));
 }
 
 TEST_CASE("list_alone_link should return true for just initialized link") {
@@ -122,7 +122,7 @@ TEST_CASE("list_add_first should make the list non empty "
 		"and the element not alone") {
 	list_add_first(&x, &m, lnk);
 
-	test_assert_false(list_empty(&m));
+	test_assert_false(list_is_empty(&m));
 	test_assert_false(list_alone(&x, lnk));
 }
 
@@ -130,7 +130,7 @@ TEST_CASE("list_add_last should make the list non empty "
 		"and the element not alone") {
 	list_add_last(&x, &m, lnk);
 
-	test_assert_false(list_empty(&m));
+	test_assert_false(list_is_empty(&m));
 	test_assert_false(list_alone(&x, lnk));
 }
 
@@ -138,7 +138,7 @@ TEST_CASE("list_add_first_link should make the list non empty "
 		"and the element's link not alone") {
 	list_add_first_link(&x.lnk, &m);
 
-	test_assert_false(list_empty(&m));
+	test_assert_false(list_is_empty(&m));
 	test_assert_false(list_alone_link(&x.lnk));
 }
 
@@ -146,7 +146,7 @@ TEST_CASE("list_add_last_link should make the list non empty "
 		"and the element's link not alone") {
 	list_add_last_link(&x.lnk, &m);
 
-	test_assert_false(list_empty(&m));
+	test_assert_false(list_is_empty(&m));
 	test_assert_false(list_alone_link(&x.lnk));
 }
 
@@ -194,7 +194,7 @@ TEST_CASE("list_remove on a single element list should make the list empty "
 
 	list_remove(&x, lnk);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	test_assert_true(list_alone(&x, lnk));
 }
 
@@ -207,8 +207,8 @@ TEST_CASE("single list_remove and subsequent list_add_first to another list "
 	list_remove(&x, lnk);
 	list_add_first(&x, &n, lnk);
 
-	test_assert_true(list_empty(&m));
-	test_assert_false(list_empty(&n));
+	test_assert_true(list_is_empty(&m));
+	test_assert_false(list_is_empty(&n));
 	test_assert_false(list_alone(&x, lnk));
 }
 
@@ -222,8 +222,8 @@ TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
 
 	fill_in_from(xyz, &n);
 
-	test_assert_true(list_empty(&m));
-	test_assert_false(list_empty(&n));
+	test_assert_true(list_is_empty(&m));
+	test_assert_false(list_is_empty(&n));
 	test_assert_false(list_alone(&x, lnk));
 	test_assert_false(list_alone(&y, lnk));
 	test_assert_false(list_alone(&z, lnk));
@@ -246,7 +246,7 @@ TEST_CASE("list_remove_first on a single element list should return the "
 
 	test_assert_equal(list_remove_first(&m, struct element, lnk), &x);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	test_assert_true(list_alone(&x, lnk));
 }
 
@@ -256,7 +256,7 @@ TEST_CASE("list_remove_last on a single element list should return the "
 
 	test_assert_equal(list_remove_last(&m, struct element, lnk), &x);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	test_assert_true(list_alone(&x, lnk));
 }
 
@@ -325,7 +325,7 @@ TEST_CASE("list_bulk_add_first shouldn't modify a destination list "
 
 	list_bulk_add_first(&m, &n);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	compare_with(xyz, &n);
 }
 
@@ -335,7 +335,7 @@ TEST_CASE("list_bulk_add_last shouldn't modify a destination list "
 
 	list_bulk_add_last(&m, &n);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	compare_with(xyz, &n);
 }
 
@@ -346,7 +346,7 @@ TEST_CASE("list_bulk_add_first should move all the elements from a source "
 
 	list_bulk_add_first(&m, &n);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	compare_with(xyz, &n);
 }
 
@@ -357,7 +357,7 @@ TEST_CASE("list_bulk_add_last should move all the elements from a source "
 
 	list_bulk_add_last(&m, &n);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	compare_with(xyz, &n);
 }
 
@@ -367,7 +367,7 @@ TEST_CASE("list_bulk_insert_before shouldn't modify a destination list "
 
 	list_bulk_insert_before(&m, &y, lnk);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	compare_with(xyz, &n);
 }
 
@@ -377,7 +377,7 @@ TEST_CASE("list_bulk_insert_after shouldn't modify a destination list "
 
 	list_bulk_insert_after(&m, &y, lnk);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	compare_with(xyz, &n);
 }
 
@@ -389,7 +389,7 @@ TEST_CASE("list_bulk_insert_before: inserting new elements before the last "
 
 	list_bulk_insert_before(&m, &z, lnk);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	compare_with(xyz, &n);
 }
 
@@ -401,7 +401,7 @@ TEST_CASE("list_bulk_insert_after: inserting new elements after the first "
 
 	list_bulk_insert_after(&m, &x, lnk);
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 	compare_with(xyz, &n);
 }
 
@@ -472,7 +472,7 @@ TEST_CASE("list_foreach_link should support safe removal of the element "
 		list_remove_link(lnk);
 	}
 
-	test_assert_true(list_empty(&m));
+	test_assert_true(list_is_empty(&m));
 }
 
 TEST_CASE("list_foreach simple test case") {
@@ -492,12 +492,12 @@ static struct list *fill_in_from(struct element * const array[],
 		struct list *list) {
 	struct element *e;
 
-	test_assert_true(list_empty(list));
+	test_assert_true(list_is_empty(list));
 	array_nullterm_foreach(e, array) {
 		test_assert_true(list_alone(e, lnk));
 		list_add_last(e, list, lnk);
 	}
-	test_assert_false(list_empty(list));
+	test_assert_false(list_is_empty(list));
 
 	return list;
 }
@@ -509,7 +509,7 @@ static struct list *compare_with(struct element * const array[],
 	array_nullterm_foreach(e, array) {
 		test_assert_equal(list_remove_first(list, typeof(*e), lnk), e);
 	}
-	test_assert_true(list_empty(list));
+	test_assert_true(list_is_empty(list));
 
 	return list;
 }

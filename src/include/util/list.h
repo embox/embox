@@ -24,7 +24,7 @@ struct list_link;
 extern struct list *list_init(struct list *list);
 extern struct list_link *list_link_init(struct list_link *link);
 
-extern int list_empty(struct list *list);
+extern int list_is_empty(struct list *list);
 
 #define list_alone(element, link_member) \
 	  __list_alone(element, link_member)
