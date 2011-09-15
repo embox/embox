@@ -12,8 +12,6 @@
 #include <assert.h>
 #include <lib/list.h>
 
-#include __impl_x(util/prioq_impl.h)
-
 struct prioq {
 	struct list_head prio_list;
 };
@@ -22,6 +20,28 @@ struct prioq_link {
 	struct list_head prio_link;
 	struct list_head elem_link;
 };
+
+#define prioq_element(link, element_type, link_member) \
+	structof(__prioq_check(link), element_type, link_member)
+
+typedef int (*prioq_comparator_t)(struct prioq_link *first,
+		struct prioq_link *second);
+
+#include __impl_x(util/prioq_impl.h)
+
+/**
+ * Example comparator which defines an order based on elements addresses.
+ * Just to show how it could be implemented.
+ *
+ * @param first
+ * @param second
+ * @return
+ *   The result of address comparison of the @a first and the @a second.
+ */
+static inline int prioq_address_comparator(struct prioq_link *first,
+		struct prioq_link *second) {
+	return first - second;
+}
 
 #define PRIOQ_INIT(prioq) \
 	{                                                  \
@@ -49,26 +69,6 @@ static inline struct prioq_link *prioq_link_init(struct prioq_link *link) {
 	INIT_LIST_HEAD(&link->elem_link);
 
 	return link;
-}
-
-#define prioq_element(link, element_type, link_member) \
-	structof(__prioq_check(link), element_type, link_member)
-
-typedef int (*prioq_comparator_t)(struct prioq_link *first,
-		struct prioq_link *second);
-
-/**
- * Example comparator which defines an order based on elements addresses.
- * Just to show how it could be implemented.
- *
- * @param first
- * @param second
- * @return
- *   The result of address comparison of the @a first and the @a second.
- */
-static inline int prioq_address_comparator(struct prioq_link *first,
-		struct prioq_link *second) {
-	return first - second;
 }
 
 static inline int prioq_empty(struct prioq *prioq) {
