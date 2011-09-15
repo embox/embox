@@ -18,20 +18,17 @@
 
 #include <lib/list.h>
 #include <util/array.h>
+#include <util/prioq.h>
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 
-void sched_strategy_init(struct sched_strategy_data *s) {
-	INIT_LIST_HEAD(&s->thread_link);
-	s->is_priority_link = 0;
-}
-
-void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
-	rq->current = current;
-	INIT_LIST_HEAD(&rq->priority_list);
-	runq_start(rq, idle);
+static inline int thread_priority_comparator(struct prioq_link *first,
+		struct prioq_link *second) {
+	struct thread *t1 = prioq_element(first, struct thread, sched.pq_link);
+	struct thread *t2 = prioq_element(second, struct thread, sched.pq_link);
+	return t1->priority - t2->priority;
 }
 
 int runq_start(struct runq *rq, struct thread *t) {
@@ -42,27 +39,8 @@ int runq_start(struct runq *rq, struct thread *t) {
 	struct sched_strategy_data *next_data;
 
 	assert(rq && t);
-	assert(!list_empty(&rq->priority_list));
 
-	list_for_each_entry(next, &rq->priority_list, sched.priority_link) {
-		if (next->priority <= priority) {
-			break;
-		}
-	}
-	assert(next != NULL);
-	next_data = &next->sched;
-
-	if (next->priority == priority) {
-		list_add_tail(&td->thread_link, &next_data->thread_link);
-//		td->p_priority_link = &next_data->priority_link;
-		td->is_priority_link = 0;
-
-	} else {
-		list_add_tail(&td->priority_link, &next_data->priority_link);
-		assert(td->is_priority_link);
-		INIT_LIST_HEAD(&td->thread_link);
-
-	}
+	prioq_enqueue(t, thread_priority_comparator, &rq->pq, sched.pq_link);
 
 	return (priority > rq->current->priority);
 }
@@ -71,31 +49,16 @@ int runq_stop(struct runq *rq, struct thread *t) {
 	struct sched_strategy_data *td = &t->sched;
 
 	assert(rq && t);
-	assert(!list_empty(&rq->priority_list));
+//	assert(!list_empty(&rq->priority_list));
 
-	if (list_empty(&td->thread_link)) {
-		/* The whole chain consists of a single thread. */
-		assert(td->is_priority_link);
-		list_del(&td->priority_link);
-
-	} else {
-		if (td->is_priority_link) {
-			struct list_head *new_priority_link = td->thread_link.next;
-
-			/* Replace priority link being deleted with a new one. */
-			list_add(new_priority_link, &td->priority_link);
-			list_del(&td->priority_link);
-		}
-
-		/* Remove it from the chain. */
-		list_del(&td->thread_link);
-	}
+	prioq_remove(t, thread_priority_comparator, sched.pq_link);
 
 	return (t == rq->current);
 }
 
+#if 0
 int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
-	struct thread *top;
+	struct thread *t, *top;
 
 	assert(rq && sq);
 
@@ -103,11 +66,19 @@ int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 		return 0;
 	}
 
-	top = list_entry(sq->priority_list.next,
-			struct thread, sched.priority_link);
+	top = prioq_peek(thread_priority_comparator, &sq->pq, struct thread, sched.pq_link);
+
+	while ((t = prioq_dequeue_link(thread_priority_comparator, &sq->pq))) {
+
+	}
 
 	return (top->priority > rq->current->priority);
 }
+#else
+int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
+	return 0;
+}
+#endif
 
 int runq_sleep(struct runq *rq, struct sleepq *sq) {
 	return 0;
@@ -126,7 +97,7 @@ int sleepq_empty(struct sleepq *sq) {
 }
 
 void sleepq_priority_changing(struct sleepq *sq, struct thread *t,
-        int new_priority) {
+		int new_priority) {
 }
 
 #if 0
