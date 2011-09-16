@@ -24,6 +24,10 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 
+static void move_thread_to_another_q(struct prioq *pq, struct thread *t);
+static void change_thread_priority(struct prioq *pq, struct thread *t,
+		int new_priority);
+
 static inline int thread_prio_comparator(struct prioq_link *first,
 		struct prioq_link *second) {
 	struct thread *t1 = prioq_element(first, struct thread, sched.pq_link);
@@ -47,7 +51,6 @@ int runq_start(struct runq *rq, struct thread *t) {
 
 int runq_stop(struct runq *rq, struct thread *t) {
 	assert(rq && t);
-//	assert(!list_empty(&rq->priority_list));
 
 	prioq_remove(t, thread_prio_comparator, sched.pq_link);
 
@@ -104,32 +107,15 @@ int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 
 void runq_sleep(struct runq *rq, struct sleepq *sq) {
 	struct thread *current;
-	struct prioq_link *current_link;
 
 	assert(rq && sq);
 
 	current = rq->current;
-	current_link = &current->sched.pq_link;
-
 	assert(current->runq == rq);
 
-	prioq_remove_link(current_link, thread_prio_comparator);
-	prioq_enqueue_link(current_link, thread_prio_comparator, &sq->pq);
+	move_thread_to_another_q(&sq->pq, current);
 
 	current->sleepq = sq;
-}
-
-static void change_thread_priority(struct prioq *pq, struct thread *t,
-		int new_priority) {
-	struct prioq_link *link;
-
-	assert(pq && t);
-
-	link = &t->sched.pq_link;
-
-	prioq_remove_link(link, thread_prio_comparator);
-	t->priority = new_priority;
-	prioq_enqueue_link(link, thread_prio_comparator, pq);
 }
 
 int runq_change_priority(struct runq *rq, struct thread *t, int new_priority) {
@@ -161,25 +147,39 @@ void sleepq_change_priority(struct sleepq *sq, struct thread *t,
 }
 
 void sleepq_on_suspend(struct sleepq *sq, struct thread *t) {
-	struct prioq_link *link;
-
 	assert(sq && t);
 
-	link = &t->sched.pq_link;
-	prioq_remove_link(link, thread_prio_comparator);
-
-	prioq_enqueue_link(link, thread_prio_comparator, &sq->suspended);
+	move_thread_to_another_q(&sq->suspended, t);
 }
 
 void sleepq_on_resume(struct sleepq *sq, struct thread *t) {
-	struct prioq_link *link;
-
 	assert(sq && t);
 
-	link = &t->sched.pq_link;
-	prioq_remove_link(link, thread_prio_comparator);
+	move_thread_to_another_q(&sq->pq, t);
+}
 
-	prioq_enqueue_link(link, thread_prio_comparator, &sq->pq);
+static void move_thread_to_another_q(struct prioq *pq, struct thread *t) {
+	struct prioq_link *link;
+
+	assert(pq && t);
+
+	link = &t->sched.pq_link;
+
+	prioq_remove_link(link, thread_prio_comparator);
+	prioq_enqueue_link(link, thread_prio_comparator, pq);
+}
+
+static void change_thread_priority(struct prioq *pq, struct thread *t,
+		int new_priority) {
+	struct prioq_link *link;
+
+	assert(pq && t);
+
+	link = &t->sched.pq_link;
+
+	prioq_remove_link(link, thread_prio_comparator);
+	t->priority = new_priority;
+	prioq_enqueue_link(link, thread_prio_comparator, pq);
 }
 
 #if 0
