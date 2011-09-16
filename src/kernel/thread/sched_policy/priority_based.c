@@ -79,7 +79,18 @@ int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 }
 
 int runq_sleep(struct runq *rq, struct sleepq *sq) {
-	return 0;
+	struct thread *current;
+	struct prioq_link *current_link;
+
+	assert(rq && sq);
+
+	current = rq->current;
+	current_link = &current->sched.pq_link;
+
+	prioq_remove_link(current_link, thread_prio_comparator);
+	prioq_enqueue_link(current_link, thread_prio_comparator, &sq->pq);
+
+	return 1;
 }
 
 int runq_priority_changing(struct runq *rq, struct thread *t, int new_priority) {
