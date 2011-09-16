@@ -27,5 +27,12 @@ extern const struct mod_ops __example_mod_ops;
 		});                                                    \
 	MOD_INFO_BIND(&__example_mod_ops, __example)
 
+#ifdef __CDT_PARSER__
+
+# undef  EMBOX_EXAMPLE
+# define EMBOX_EXAMPLE(_exec) \
+	static int _exec(int, char **)
+
+#endif /* __CDT_PARSER__ */
 
 #endif /* FRAMEWORK_EXAMPLE_SELF_H_ */

@@ -10,6 +10,8 @@
  * @author Anton Kozlov
  */
 
+#include <unistd.h>
+
 #include <framework/example/self.h>   /* example declaration */
 #include <drivers/nxt/motor.h>        /* NXT API interface */
 
