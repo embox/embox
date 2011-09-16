@@ -78,7 +78,7 @@ static void *ramfs_fopen(struct file_desc *desc) {
 	fd = (ramfs_file_description_t*) nod->attr;
 	fd->cur_pointer = 0;
 	fd->lock = 1;
-	return nod;
+	return desc;
 }
 
 static int ramfs_fclose(struct file_desc *desc) {

@@ -55,6 +55,9 @@ FILE *fopen(const char *path, const char *mode) {
 	}
 #endif
 	drv = nod->fs_type;
+
+	desc->ops = (struct file_operations *) drv->file_op;
+
 	if (NULL == drv->file_op->fopen) {
 		errno = -EINVAL;
 		LOG_ERROR("fop->fopen is NULL handler\n");
