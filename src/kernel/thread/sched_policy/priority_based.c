@@ -50,16 +50,22 @@ int runq_start(struct runq *rq, struct thread *t) {
 }
 
 int runq_stop(struct runq *rq, struct thread *t) {
+	int is_current;
+
 	assert(rq && t);
 
-	prioq_remove(t, thread_prio_comparator, sched.pq_link);
+	if (!(is_current = (t == rq->current))) {
+		prioq_remove(t, thread_prio_comparator, sched.pq_link);
+	}
 
-	return (t == rq->current);
+	return is_current;
 }
 
 static void wakeup_thread(struct runq *rq, struct thread *t) {
 	t->state = thread_state_do_wake(t->state);
 	assert(thread_state_running(t->state));
+
+	t->runq = rq;
 
 	prioq_enqueue(t, thread_prio_comparator, &rq->pq, sched.pq_link);
 }
@@ -116,6 +122,7 @@ void runq_sleep(struct runq *rq, struct sleepq *sq) {
 	move_thread_to_another_q(&sq->pq, current);
 
 	current->sleepq = sq;
+	current->state = thread_state_do_sleep(current->state);
 }
 
 int runq_change_priority(struct runq *rq, struct thread *t, int new_priority) {

@@ -92,8 +92,8 @@ static void do_thread_resume(struct thread *t) {
 		thread_state_t state = t->state = thread_state_do_resume(t->state);
 
 		if (thread_state_running(state)) {
-			post_switch_if(runq_start(&rq, t));
-			assert(t->runq == &rq);
+			t->runq = &rq;
+			post_switch_if(runq_start(t->runq, t));
 
 		} else {
 			assert(thread_state_sleeping(state));
@@ -113,7 +113,7 @@ void sched_suspend(struct thread *t) {
 
 		if (thread_state_running(state)) {
 			post_switch_if(runq_stop(t->runq, t));
-			assert(t->runq == NULL);
+			t->runq = NULL;
 
 		} else {
 			assert(thread_state_sleeping(state));
@@ -150,6 +150,7 @@ static void do_event_sleep_locked(struct event *e) {
 	struct thread *current = runq_current(&rq);
 
 	assert(!in_harder_critical());
+	assert(thread_state_running(current->state));
 
 	runq_sleep(&rq, &e->sleepq);
 
