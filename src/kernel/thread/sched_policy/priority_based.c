@@ -119,7 +119,7 @@ void runq_sleep(struct runq *rq, struct sleepq *sq) {
 	current = rq->current;
 	assert(current->runq == rq);
 
-	move_thread_to_another_q(&sq->pq, current);
+	prioq_enqueue(current, thread_prio_comparator, &sq->pq, sched.pq_link);
 
 	current->sleepq = sq;
 	current->state = thread_state_do_sleep(current->state);
