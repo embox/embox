@@ -167,8 +167,8 @@ int uart_remove_irq_handler(void) {
 
 static tty_device_t tty;
 
-static void *open(const char *fname, const char *mode);
-static int close(void *file);
+static void *open(struct file_desc *desc);
+static int close(struct file_desc *desc);
 static size_t read(void *buf, size_t size, size_t count, void *file);
 static size_t write(const void *buff, size_t size, size_t count, void *file);
 
@@ -187,14 +187,15 @@ static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
 /*
  * file_operation
  */
-static void *open(const char *fname, const char *mode) {
+static void *open(struct file_desc *desc) {
 	tty.file_op = &file_op;
+	desc->ops = &file_op;
 	tty_register(&tty);
 	uart_set_irq_handler(irq_handler);
-	return (void *)&file_op;
+	return (void *) desc;
 }
 
-static int close(void *file) {
+static int close(struct file_desc *desc) {
 	tty_unregister(&tty);
 	uart_remove_irq_handler();
 	return 0;

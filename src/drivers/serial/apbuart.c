@@ -155,8 +155,8 @@ int uart_remove_irq_handler(void) {
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
-static void *apb_open(const char *fname, const char *mode);
-static int apb_close(void *file);
+static void *apb_open(struct file_desc *desc);
+static int apb_close(struct file_desc *desc);
 static size_t apb_read(void *buf, size_t size, size_t count, void *file);
 static size_t apb_write(const void *buff, size_t size, size_t count, void *file);
 
@@ -170,20 +170,12 @@ static file_operations_t file_op = {
 /*
  * file_operation
  */
-static void *apb_open(const char *fname, const char *mode) {
-#ifdef CONFIG_TTY_DEVICE //XXX KILL-ME
-	tty.file_op = &file_op;
-	tty_register(&tty);
-	uart_set_irq_handler(irq_handler);
-#endif
-	return (void *)&file_op;
+static void *apb_open(struct file_desc *desc) {
+	desc->ops = &file_op;
+	return (void *) desc;
 }
 
-static int apb_close(void *file) {
-#ifdef CONFIG_TTY_DEVICE //XXX KILL-ME
-	tty_unregister(&tty);
-	uart_remove_irq_handler();
-#endif
+static int apb_close(struct file_desc *desc) {
 	return 0;
 }
 
