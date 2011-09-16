@@ -21,7 +21,6 @@
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;
 	fs_drv_t *drv;
-	file_operations_t *fop;
 	FILE *file;
 	struct file_desc *desc;
 
@@ -40,6 +39,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	desc->cursor = 0;
 	desc->node = nod;
+#if 0
 	if (NULL != nod->file_info) {
 		/*if fop set devfs for example*/
 		fop = (file_operations_t *) nod->file_info;
@@ -53,14 +53,13 @@ FILE *fopen(const char *path, const char *mode) {
 		//return (FILE *) nod;
 		return (FILE *)desc;
 	}
-
+#endif
 	drv = nod->fs_type;
 	if (NULL == drv->file_op->fopen) {
 		errno = -EINVAL;
 		LOG_ERROR("fop->fopen is NULL handler\n");
 		return NULL;
 	}
-	nod->unchar = EOF;
 	file = drv->file_op->fopen(desc);
 
 	return file;
@@ -97,7 +96,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 
 	desc = (struct file_desc *)file;
 
-	return desc->ops->fwrite(buf, size, count, file);
+	return desc->ops->fread(buf, size, count, file);
 
 //	drv = nod->fs_type;
 //	if (NULL == drv->file_op->fread) {
@@ -152,20 +151,18 @@ int fseek(FILE *stream, long int offset, int origin) {
 }
 
 int fioctl(FILE *fp, int request, ...) {
-	node_t *nod;
-	fs_drv_t *drv;
+	struct file_desc *desc = (struct file_desc *) fp;
 	va_list args;
 	va_start(args, request);
 
-	nod = (node_t *) fp;
-	if (NULL == nod) {
+	if (NULL == fp) {
 		return -EBADF;
 	}
-	drv = nod->fs_type;
-	if (NULL == drv->file_op->ioctl) {
+
+	if (NULL == desc->ops->ioctl) {
 		return -EBADF;
 	}
-	return drv->file_op->ioctl(fp, request, args);
+	return desc->ops->ioctl(fp, request, args);
 }
 
 //TODO !!!!!!!!!!!!!!!!!!!!!!!! move from here
@@ -192,14 +189,14 @@ int fstat(const char *path, stat_t *buf) {
 }
 
 int fgetc(FILE *file) {
-	node_t *nod = (node_t *) file;
+	struct file_desc *desc = (struct file_desc *) file;
 	char ch;
-	if (NULL == nod) {
+	if (NULL == desc) {
 		return -EBADF;
 	}
-	if (nod->has_unchar) {
-		nod->has_unchar = 0;
-		return nod->unchar;
+	if (desc->has_ungetc) {
+		desc->has_ungetc = 0;
+		return desc->ungetc;
 	}
 	if (fread(&ch, 1, 1, file) == 0) {
 		ch = EOF;
@@ -208,9 +205,9 @@ int fgetc(FILE *file) {
 }
 
 int ungetc(int ch, FILE *file) {
-	node_t *nod = (node_t *) file;
-	nod->unchar = (char) ch;
-	nod->has_unchar = 1;
+	struct file_desc *desc = (struct file_desc *) file;
+	desc->ungetc = (char) ch;
+	desc->has_ungetc = 1;
 	return ch;
 }
 

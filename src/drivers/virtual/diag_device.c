@@ -26,29 +26,17 @@ static file_operations_t file_op = {
 		.fwrite = diag_write
 };
 
-static fs_drv_t fs_drv = {
-		.file_op = &file_op
-};
-
-
-static node_t diag_node = {
-		.fs_type = &fs_drv
-};
-
 FILE *diag_device_get(void) {
-	struct file_desc *desc;
-	desc = file_desc_alloc();
-	desc->ops = &file_op;
-	desc->node = &diag_node;
-
-	return (FILE *) desc;
+	struct file_desc *desc = file_desc_alloc();
+	return diag_open(desc);
 }
 
 /*
  * file_operation
  */
 static void *diag_open(struct file_desc *desc) {
-	return (void *)&file_op;
+	desc->ops = &file_op;
+	return (void *) desc;
 }
 
 static int diag_close(struct file_desc *desc) {

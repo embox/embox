@@ -17,6 +17,8 @@ ARRAY_SPREAD_DEF(const device_module_t, __device_registry);
 
 static const fs_drv_t devfs_drv;
 
+static file_operations_t devfs_fop;
+
 const fs_drv_t *devfs_get_fs(void) {
     return &devfs_drv;
 }
@@ -59,31 +61,38 @@ static void *devfs_open(struct file_desc *desc) {
 }
 
 static int devfs_close(struct file_desc *desc) {
-	return desc->ops->fclose(desc);
+	return 0;
 }
 
 static size_t devfs_read(void *buf, size_t size, size_t count, void *file) {
-	node_t *node = (node_t *) file;
-	return ((file_operations_t *)node->file_info)->fread(buf, size, count, file);
+	return 0;
 }
 
 static size_t devfs_write(const void *buf, size_t size, size_t count,
 		void *file) {
-	node_t *node = (node_t *) file;
-	return ((file_operations_t *)node->file_info)->fwrite(buf, size, count, file);
+	return 0;
 }
 
 static int devfs_ioctl(void *file, int request, va_list args) {
-	node_t *node = (node_t *) file;
-	return ((file_operations_t *)node->file_info)->ioctl(file, request, args);
+	return 0;
 }
 
 static fsop_desc_t devfs_fsop = { devfs_init, devfs_create, devfs_delete,
 		devfs_mount };
 
-static file_operations_t devfs_fop = { devfs_open, devfs_close, devfs_read,
-		devfs_write, NULL, devfs_ioctl };
+static file_operations_t devfs_fop = {
+       .fopen = devfs_open,
+       .fclose = devfs_close,
+       .fread = devfs_read,
+       .fwrite = devfs_write,
+       .fseek =  NULL,
+       .ioctl = devfs_ioctl
+};
 
-static const fs_drv_t devfs_drv = { "devfs", &devfs_fop,
-		&devfs_fsop };
+static const fs_drv_t devfs_drv = {
+	.name = "devfs",
+	.file_op = &devfs_fop,
+	.fsop = &devfs_fsop
+};
+
 DECLARE_FILE_SYSTEM_DRIVER(devfs_drv);

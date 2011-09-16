@@ -18,7 +18,8 @@ struct file_desc {
 	struct node *node;
 	struct file_operations *ops;
 	size_t cursor;
-	int ungetsym;
+	int ungetc;
+	int has_ungetc;
 };
 
 extern struct file_desc *file_desc_alloc(void);
