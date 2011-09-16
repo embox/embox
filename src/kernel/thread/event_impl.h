@@ -23,6 +23,7 @@ struct event {
 
 static inline void event_init(struct event *e, const char *name) {
 	sleepq_init(&e->sleepq);
+	slist_link_init(&e->startq_link);
 	e->name = name;
 }
 

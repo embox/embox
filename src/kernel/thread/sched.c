@@ -66,6 +66,12 @@ static inline int __attribute__((unused)) in_sched_locked(void) {
 }
 
 int sched_init(struct thread* current, struct thread *idle) {
+	current->state = thread_state_do_resume(current->state);
+	current->runq = &rq;
+
+	idle->state = thread_state_do_resume(idle->state);
+	idle->runq = &rq;
+
 	runq_init(&rq, current, idle);
 	return 0;
 }
@@ -189,7 +195,11 @@ int sched_sleep(struct event *e) {
 }
 
 void sched_yield(void) {
-	post_switch_if(1);
+	sched_lock();
+	{
+		post_switch_if(1);
+	}
+	sched_unlock();
 }
 
 int sched_change_scheduling_priority(struct thread *t,
@@ -208,6 +218,9 @@ int sched_change_scheduling_priority(struct thread *t,
 
 		} else if (thread_state_sleeping(t->state)) {
 			sleepq_change_priority(t->sleepq, t, new_priority);
+
+		} else {
+			t->priority = new_priority;
 
 		}
 
@@ -231,7 +244,7 @@ static int switch_posted;
 
 static void post_switch_if(int condition) {
 	assert(in_sched_locked());
-	assert(!in_harder_critical());
+//	assert(!in_harder_critical());
 
 	if (condition) {
 		switch_posted = 1;
@@ -281,7 +294,10 @@ struct startq {
 	struct slist thread_resume;
 };
 
-static struct startq startq;
+static struct startq startq = {
+			.event_wake = SLIST_INIT(&startq.event_wake),
+			.thread_resume = SLIST_INIT(&startq.thread_resume),
+	};
 
 /**
  * Called outside any interrupt handler as part of critical dispatcher

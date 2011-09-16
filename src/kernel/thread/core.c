@@ -103,11 +103,11 @@ int thread_create_task(struct thread **p_thread, unsigned int flags,
 	thread_init(t, flags, run, arg);
 	thread_context_init(t);
 
-	t->task = tsk;
-	list_add(&t->task_link, &tsk->threads);
+//	t->task = tsk;
+//	list_add(&t->task_link, &tsk->threads);
 
 	if (!(flags & THREAD_FLAG_SUSPENDED)) {
-		sched_resume(t);
+		thread_resume(t);
 	}
 
 	if (flags & THREAD_FLAG_DETACHED) {
@@ -140,7 +140,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->run = run;
 	t->run_arg = arg;
 
-	t->suspend_count = 0;
+	t->suspend_count = 1;
 
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		t->priority = thread_self()->priority;
@@ -160,6 +160,8 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->priority = t->initial_priority;
 
 	sched_strategy_init(&t->sched);
+	slist_link_init(&t->startq_link);
+
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");
 	event_init(&t->exit_event, "thread_exit");
