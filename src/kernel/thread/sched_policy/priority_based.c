@@ -64,7 +64,6 @@ static void wakeup_thread(struct runq *rq, struct thread *t) {
 int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 	int ret = 0;
 	struct thread *t;
-	struct prioq_link *awaken;
 
 	assert(rq && sq);
 
