@@ -11,8 +11,7 @@ $_SRCS-core += filesystems.c
 $_SRCS-core += vfs.c
 $_SRCS-node += node.c
 $_SRCS-file_desc += file_desc.c
-$_SRCS-driver_allocator += fs_driver.c
-$_DEPS-core += driver_allocator node file_desc
+$_DEPS-core += node file_desc
 
 $_DEPS-rootfs += core
 

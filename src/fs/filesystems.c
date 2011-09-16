@@ -22,6 +22,8 @@ typedef struct fs_driver_head {
 	fs_drv_t *drv;
 } fs_driver_head_t;
 
+ARRAY_SPREAD_DEF(const fs_drv_t *, __fs_drivers_registry);
+
 static fs_driver_head_t pool[CONFIG_MAX_FS_DRIVERS];
 static LIST_HEAD(free_list);
 static LIST_HEAD(file_systems);
