@@ -24,41 +24,39 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 
-static inline int thread_priority_comparator(struct prioq_link *first,
+static inline int thread_prio_comparator(struct prioq_link *first,
 		struct prioq_link *second) {
 	struct thread *t1 = prioq_element(first, struct thread, sched.pq_link);
 	struct thread *t2 = prioq_element(second, struct thread, sched.pq_link);
 	return t1->priority - t2->priority;
 }
 
+void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
+	rq->current = current;
+	prioq_init(&rq->pq);
+	runq_start(rq, idle);
+}
+
 int runq_start(struct runq *rq, struct thread *t) {
-	thread_priority_t priority = t->priority;
-	struct sched_strategy_data *td = &t->sched;
-
-	struct thread *next = NULL;
-	struct sched_strategy_data *next_data;
-
 	assert(rq && t);
 
-	prioq_enqueue(t, thread_priority_comparator, &rq->pq, sched.pq_link);
+	prioq_enqueue(t, thread_prio_comparator, &rq->pq, sched.pq_link);
 
-	return (priority > rq->current->priority);
+	return (t->priority > rq->current->priority);
 }
 
 int runq_stop(struct runq *rq, struct thread *t) {
-	struct sched_strategy_data *td = &t->sched;
-
 	assert(rq && t);
 //	assert(!list_empty(&rq->priority_list));
 
-	prioq_remove(t, thread_priority_comparator, sched.pq_link);
+	prioq_remove(t, thread_prio_comparator, sched.pq_link);
 
 	return (t == rq->current);
 }
 
-#if 0
 int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
-	struct thread *t, *top;
+	struct thread *top;
+	struct prioq_link *awaken;
 
 	assert(rq && sq);
 
@@ -66,19 +64,19 @@ int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 		return 0;
 	}
 
-	top = prioq_peek(thread_priority_comparator, &sq->pq, struct thread, sched.pq_link);
+	top = prioq_dequeue(thread_prio_comparator, &sq->pq,
+			struct thread, sched.pq_link);
+	assert(top != NULL);
+	prioq_enqueue(top, thread_prio_comparator, &rq->pq, sched.pq_link);
 
-	while ((t = prioq_dequeue_link(thread_priority_comparator, &sq->pq))) {
-
+	if (wake_all) {
+		while ((awaken = prioq_dequeue_link(thread_prio_comparator, &sq->pq))) {
+			prioq_enqueue_link(awaken, thread_prio_comparator, &rq->pq);
+		}
 	}
 
 	return (top->priority > rq->current->priority);
 }
-#else
-int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
-	return 0;
-}
-#endif
 
 int runq_sleep(struct runq *rq, struct sleepq *sq) {
 	return 0;

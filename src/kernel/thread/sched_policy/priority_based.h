@@ -33,12 +33,6 @@ static inline void sched_strategy_init(struct sched_strategy_data *s) {
 	prioq_link_init(&s->pq_link);
 }
 
-static inline void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
-	rq->current = current;
-	prioq_init(&rq->pq);
-	runq_start(rq, idle);
-}
-
 static inline void sleepq_init(struct sleepq *sq) {
 	prioq_init(&sq->pq);
 }
