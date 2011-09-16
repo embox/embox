@@ -15,7 +15,7 @@
 // TODO don't like this include. -- Eldar
 #include "types.h"
 
-#define __THREAD_STATE_INIT       0x0
+#define __THREAD_STATE_INIT       __THREAD_STATE_SUSPENDED
 
 #define __THREAD_STATE_SLEEPING  (0x1 << 0)
 #define __THREAD_STATE_SUSPENDED (0x1 << 1)
@@ -65,7 +65,7 @@ static inline __thread_state_t thread_state_do_resume(__thread_state_t state) {
 	return state & ~__THREAD_STATE_SUSPENDED;
 }
 static inline __thread_state_t thread_state_do_exit(__thread_state_t state) {
-	assert(thread_state_running(state));
+	assert(thread_state_suspended(state) && !thread_state_sleeping(state));
 	return state | __THREAD_STATE_EXITED;
 }
 static inline __thread_state_t thread_state_do_detach(__thread_state_t state) {
