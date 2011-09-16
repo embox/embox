@@ -134,7 +134,27 @@ int runq_change_priority(struct runq *rq, struct thread *t, int new_priority) {
 }
 
 int runq_switch(struct runq *rq) {
-	return 0;
+	struct thread *prev, *next;
+
+	assert(rq);
+
+	prev = rq->current;
+	next = prioq_dequeue(thread_prio_comparator, &rq->pq,
+			struct thread, sched.pq_link);
+
+	if (thread_state_running(prev->state)) {
+		if (!next) {
+			return 0;
+		}
+		prioq_enqueue(prev, thread_prio_comparator, &rq->pq, sched.pq_link);
+	}
+
+	assert(next != NULL);
+	assert(thread_state_running(next->state));
+
+	rq->current = next;
+
+	return 1;
 }
 
 int sleepq_empty(struct sleepq *sq) {
