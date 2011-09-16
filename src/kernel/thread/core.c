@@ -194,6 +194,7 @@ static void thread_ugly_init(struct thread *t) {
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct thread *joining;
+	struct sleepq *exit_sq;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
@@ -205,8 +206,14 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	/* Copy exit code to a joining thread (if any) so that the current thread
 	 * could be safely reclaimed in case that it has already been detached
 	 * without waiting for the joining thread to get the control. */
-	sleepq_foreach(joining, &current->exit_event.sleepq) {
-		// TODO iterating over a single element or empty list. -- Eldar
+	// XXX just for now. -- Eldar
+	exit_sq = &current->exit_event.sleepq;
+	if (!sleepq_empty(exit_sq)) {
+		struct prioq *pq =
+				prioq_empty(&exit_sq->pq) ? &exit_sq->suspended : &exit_sq->pq;
+		assert(!prioq_empty(pq));
+		joining = prioq_peek(prioq_address_comparator, pq,
+				struct thread, sched.pq_link);
 		joining->join_ret = ret;
 	}
 
