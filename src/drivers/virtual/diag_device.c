@@ -26,9 +26,10 @@ static file_operations_t file_op = {
 		.fwrite = diag_write
 };
 
+static struct file_desc diag_desc;
+
 FILE *diag_device_get(void) {
-	struct file_desc *desc = file_desc_alloc();
-	return diag_open(desc);
+	return diag_open(&diag_desc);
 }
 
 /*

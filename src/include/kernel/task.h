@@ -47,13 +47,5 @@ extern struct task *task_self(void);
 
 extern struct task *task_default_get(void);
 
-/**
- * Internal function that assign fd with file in task
- * @param fd Integer representing file
- * @param file Stream to be assigned
- * @param tsk Task
- * @return
- */
-extern int __file_opened_fd(int fd, FILE *file, struct task *tsk);
 
 #endif /* TASK_H_ */

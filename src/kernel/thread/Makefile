@@ -1,6 +1,6 @@
 $_PACKAGE := embox.kernel.thread
 
-$_APIS += sched_api tasks_api
+$_APIS += sched_api
 
 $_MODS      += core sched sched_critical
 

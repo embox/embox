@@ -15,7 +15,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <kernel/file.h>
-
+#include "task_common.h"
 
 int __file_opened_fd(int fd, FILE *file, struct task *tsk) {
 	struct __fd_list *fdl = &tsk->fd_array.fds[fd];
