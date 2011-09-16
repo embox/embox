@@ -179,14 +179,14 @@ int sched_change_scheduling_priority(struct thread *t,
 		}
 
 		if (thread_state_running(t->state)) {
-			post_switch_if(runq_priority_changing(t->runq, t, new_priority));
+			post_switch_if(runq_change_priority(t->runq, t, new_priority));
 
 		} else if (thread_state_sleeping(t->state)) {
-			sleepq_priority_changing(t->sleepq, t, new_priority);
+			sleepq_change_priority(t->sleepq, t, new_priority);
 
 		}
 
-		t->priority = new_priority;
+		assert(t->priority == new_priority);
 	}
 	sched_unlock();
 

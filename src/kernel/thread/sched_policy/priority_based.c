@@ -93,7 +93,7 @@ int runq_sleep(struct runq *rq, struct sleepq *sq) {
 	return 1;
 }
 
-int runq_priority_changing(struct runq *rq, struct thread *t, int new_priority) {
+int runq_change_priority(struct runq *rq, struct thread *t, int new_priority) {
 	struct prioq_link *link;
 
 	assert(rq && t);
@@ -115,7 +115,7 @@ int sleepq_empty(struct sleepq *sq) {
 	return 0;
 }
 
-void sleepq_priority_changing(struct sleepq *sq, struct thread *t,
+void sleepq_change_priority(struct sleepq *sq, struct thread *t,
 		int new_priority) {
 }
 
