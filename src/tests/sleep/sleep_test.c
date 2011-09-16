@@ -40,7 +40,6 @@ TEST_CASE("one sleep") {
  */
 
 static void * handler1(void* args) {
-	test_emit('0' + (uint32_t) args);
 	usleep(TIME_TO_SLEEP * (uint32_t) args);
 	test_emit('0' + (uint32_t) args);
 	return NULL;
@@ -62,7 +61,7 @@ TEST_CASE("simple multi-threaded check") {
 	test_assert_zero(thread_join(t2, NULL));
 	test_assert_zero(thread_join(t3, NULL));
 
-	test_assert_emitted("123123");
+	test_assert_emitted("123");
 }
 
 /**
