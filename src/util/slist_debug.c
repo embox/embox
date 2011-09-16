@@ -51,6 +51,8 @@ struct slist_link *slist_first_link(struct slist *list) {
 	assert(list != NULL);
 	l = &list->l;
 	first = l->next;
+
+	assert(first != NULL);
 	return first != l ? structof(first, struct slist_link, l) : NULL;
 }
 
