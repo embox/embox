@@ -31,7 +31,7 @@ extern int runq_start(struct runq *runq, struct thread *thread);
 extern int runq_stop(struct runq *runq, struct thread *thread);
 
 extern int runq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all);
-extern int runq_sleep(struct runq *runq, struct sleepq *sleepq);
+extern void runq_sleep(struct runq *runq, struct sleepq *sleepq);
 
 extern int runq_change_priority(struct runq *runq, struct thread *thread,
 		int new_priority);
@@ -45,8 +45,11 @@ extern int sleepq_empty(struct sleepq *sleepq);
 #define sleepq_foreach(thread, sleepq) \
 	  __sleepq_foreach(thread, sleepq)
 
-extern void sleepq_change_priority(struct sleepq *sleepq,
-		struct thread *thread, int new_priority);
+extern void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread,
+		int new_priority);
+
+extern void sleepq_on_suspend(struct sleepq *sleepq, struct thread *thread);
+extern void sleepq_on_resume(struct sleepq *sleepq, struct thread *thread);
 
 #if 0
 /**

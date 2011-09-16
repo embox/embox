@@ -27,6 +27,7 @@ struct runq {
 
 struct sleepq {
 	struct prioq pq;
+	struct list_head suspended;
 };
 
 static inline void sched_strategy_init(struct sched_strategy_data *s) {

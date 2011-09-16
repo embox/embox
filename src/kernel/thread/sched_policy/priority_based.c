@@ -71,14 +71,20 @@ int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 
 	if (wake_all) {
 		while ((awaken = prioq_dequeue_link(thread_prio_comparator, &sq->pq))) {
+			struct thread __attribute__((unused)) *t =
+					prioq_element(awaken, struct thread, sched.pq_link);
+
 			prioq_enqueue_link(awaken, thread_prio_comparator, &rq->pq);
+
+			t->state = thread_state_do_wake(t->state);
+			assert(thread_state_running(t->state));
 		}
 	}
 
 	return (top->priority > rq->current->priority);
 }
 
-int runq_sleep(struct runq *rq, struct sleepq *sq) {
+void runq_sleep(struct runq *rq, struct sleepq *sq) {
 	struct thread *current;
 	struct prioq_link *current_link;
 
@@ -87,10 +93,12 @@ int runq_sleep(struct runq *rq, struct sleepq *sq) {
 	current = rq->current;
 	current_link = &current->sched.pq_link;
 
+	assert(current->runq == rq);
+
 	prioq_remove_link(current_link, thread_prio_comparator);
 	prioq_enqueue_link(current_link, thread_prio_comparator, &sq->pq);
 
-	return 1;
+	current->sleepq = sq;
 }
 
 int runq_change_priority(struct runq *rq, struct thread *t, int new_priority) {
@@ -112,11 +120,34 @@ int runq_switch(struct runq *rq) {
 }
 
 int sleepq_empty(struct sleepq *sq) {
-	return 0;
+	assert(sq);
+	return prioq_empty(&sq->pq) && list_empty(&sq->suspended);
 }
 
 void sleepq_change_priority(struct sleepq *sq, struct thread *t,
 		int new_priority) {
+}
+
+void sleepq_on_suspend(struct sleepq *sq, struct thread *t) {
+	struct prioq_link *link;
+
+	assert(sq && t);
+
+	link = &t->sched.pq_link;
+	prioq_remove_link(link, thread_prio_comparator);
+
+	list_add_tail(&link->elem_link, &sq->suspended);
+}
+
+void sleepq_on_resume(struct sleepq *sq, struct thread *t) {
+	struct prioq_link *link;
+
+	assert(sq && t);
+
+	link = &t->sched.pq_link;
+	list_del_init(&link->elem_link);
+
+	prioq_enqueue_link(link, thread_prio_comparator, &sq->pq);
 }
 
 #if 0

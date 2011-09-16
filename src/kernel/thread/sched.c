@@ -45,6 +45,7 @@ static void startq_enqueue_resume(struct thread *t);
 
 static void do_thread_resume(struct thread *t);
 static void do_event_wake(struct event *e, int wake_all);
+static void do_event_sleep_locked(struct event *e);
 
 static void post_switch_if(int condition);
 
@@ -91,8 +92,13 @@ static void do_thread_resume(struct thread *t) {
 		thread_state_t state = t->state = thread_state_do_resume(t->state);
 
 		if (thread_state_running(state)) {
-			t->runq = &rq; // XXX
-			post_switch_if(runq_start(t->runq, t));
+			post_switch_if(runq_start(&rq, t));
+			assert(t->runq == &rq);
+
+		} else {
+			assert(thread_state_sleeping(state));
+			sleepq_on_resume(t->sleepq, t);
+
 		}
 	}
 	sched_unlock();
@@ -107,7 +113,12 @@ void sched_suspend(struct thread *t) {
 
 		if (thread_state_running(state)) {
 			post_switch_if(runq_stop(t->runq, t));
-			t->runq = NULL; // XXX
+			assert(t->runq == NULL);
+
+		} else {
+			assert(thread_state_sleeping(state));
+			sleepq_on_suspend(t->sleepq, t);
+
 		}
 
 		t->state = thread_state_do_suspend(state);
@@ -135,10 +146,23 @@ static void do_event_wake(struct event *e, int wake_all) {
 	sched_unlock();
 }
 
+static void do_event_sleep_locked(struct event *e) {
+	struct thread *current = runq_current(&rq);
+
+	assert(!in_harder_critical());
+
+	runq_sleep(&rq, &e->sleepq);
+
+	assert(current->sleepq == &e->sleepq);
+	assert(thread_state_sleeping(current->state));
+
+	post_switch_if(1);
+}
+
 int sched_sleep_locked(struct event *e) {
 	struct thread *current = runq_current(&rq);
 
-	post_switch_if(runq_sleep(&rq, &e->sleepq));
+	do_event_sleep_locked(e);
 
 	sched_unlock();
 
@@ -156,7 +180,7 @@ int sched_sleep(struct event *e) {
 
 	sched_lock();
 	{
-		post_switch_if(runq_sleep(&rq, &e->sleepq));
+		do_event_sleep_locked(e);
 	}
 	sched_unlock();
 
