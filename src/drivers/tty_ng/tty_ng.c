@@ -11,7 +11,7 @@
 #include <util/math.h>
 #include <fs/fs.h>
 #include <fs/file.h>
-#include <fs/node.h>
+#include <fs/file_desc.h>
 #include <kernel/thread/api.h>
 #include <lib/linenoise.h>
 #include <drivers/tty_ng.h>
@@ -26,18 +26,10 @@ struct param {
 
 static struct tty_buf *current_tty;
 
-static void *_open(const char *fname, const char *mode) {
-	return NULL;
-}
-
-static int _close(void *file) {
-	return 0;
-}
-
 static size_t _read(void *buf, size_t size, size_t count, void *file) {
 	char *ch_buf = (char *) buf;
 
-	struct tty_buf *tty = (struct tty_buf *) ((node_t *) file)->file_info;
+	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
 
 	int i = count * size;
 
@@ -60,7 +52,7 @@ static size_t _read(void *buf, size_t size, size_t count, void *file) {
 }
 
 static size_t _canon_read(void *buf, size_t size, size_t count, void *file) {
-	struct tty_buf *tty = (struct tty_buf *) ((node_t *) file)->file_info;
+	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
 	if (tty->canonical) {
 		int to_write;
 		if (tty->canon_left == 0) {
@@ -79,7 +71,7 @@ static size_t _canon_read(void *buf, size_t size, size_t count, void *file) {
 static size_t _write(const void *buff, size_t size, size_t count, void *file) {
 	size_t cnt = 0;
 	char *b = (char*) buff;
-	struct tty_buf *tty = (struct tty_buf *) ((node_t *) file)->file_info;
+	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
 
 	while (cnt != count * size) {
 		tty->putc(tty, b[cnt++]);
@@ -115,7 +107,7 @@ static void *thread_handler(void* args) {
 }
 
 static int _ioctl(void *file, int request, va_list args) {
-	struct tty_buf *tty = (struct tty_buf *) ((node_t *) file)->file_info;
+	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
 	switch (request) {
 		case TTY_IOCTL_SET_RAW:
 			tty->canonical = 0;
@@ -132,10 +124,10 @@ static int _ioctl(void *file, int request, va_list args) {
 }
 
 static void tty_init(struct tty_buf *tty) {
+	tty->file_op.fopen = NULL;
+	tty->file_op.fclose = NULL;
 	tty->file_op.fread = _canon_read;
-	tty->file_op.fclose = _close;
 	tty->file_op.fwrite = _write;
-	tty->file_op.fopen = _open;
 	tty->file_op.ioctl = _ioctl;
 
 	tty->inp_begin = tty->inp_end = tty->inp_len = 0;
@@ -150,7 +142,7 @@ extern fs_drv_t *devfs_get_fs(void);
 void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(void)) {
 	struct thread *thds[count];
 	struct tty_buf ttys[count];
-	node_t nodes[count];
+	struct file_desc descs[count];
 	struct param params[count];
 	char ch;
 	char nm[] = "0";
@@ -158,12 +150,10 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 	for (int i = 0; i < count; i++) {
 		init(&ttys[i]);
 		tty_init(&ttys[i]);
-		nodes[i].fs_type = devfs_get_fs();
-		nodes[i].file_info = (void *) &ttys[i].file_op;
-		nodes[i].unchar = EOF;
-		strcpy((char *) nodes[i].name, nm);
+		descs[i].ops = &ttys[i].file_op;
+		descs[i].has_ungetc = 0;
 		nm[0]++;
-		params[i].file = (FILE *) &nodes[i];
+		params[i].file = (FILE *) &descs[i];
 		params[i].run = run;
 		thread_create(&thds[i], THREAD_FLAG_IN_NEW_TASK, thread_handler, &params[i]);
 	}
