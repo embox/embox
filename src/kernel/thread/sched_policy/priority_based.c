@@ -101,6 +101,7 @@ int runq_priority_changing(struct runq *rq, struct thread *t, int new_priority) 
 	link = &t->sched.pq_link;
 
 	prioq_remove_link(link, thread_prio_comparator);
+	t->priority = new_priority;
 	prioq_enqueue_link(link, thread_prio_comparator, &rq->pq);
 
 	return (new_priority > rq->current->priority);
