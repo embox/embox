@@ -47,5 +47,9 @@ extern pid_t fork(void);
 
 extern int execv(const char *path, char *const argv[]);
 
+extern int unlink(const char *pathname);
+
+extern int rmdir(const char *pathname);
+
 
 #endif /* UNISTD_H_ */
