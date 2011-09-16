@@ -66,7 +66,7 @@ static int general_handler(int state, uint8_t *buff) {
 			rs_pos++;
 			res = 1;
 		} else {
-			rs_pos == 0;
+			rs_pos = 0;
 			res = 0;
 		}
 		if (stamp[rs_comm][rs_pos] == 0) {
@@ -110,7 +110,6 @@ static int lrlf_string_handler(uint8_t *buff) {
 }
 
 static void comm_manager(uint8_t *buff) {
-	int i;
 	switch (conn_state) {
 	case CONN_DISCONNECTED:
 		string_handler(buff);
