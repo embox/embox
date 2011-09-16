@@ -85,7 +85,7 @@ extern void prioq_enqueue_link(struct prioq_link *new_link,
 		prioq_comparator_t link_comparator, struct prioq *prioq);
 
 #define prioq_peek(link_comparator, prioq, element_type, link_member) \
-	__prioq_safe_cast(prioq_peek_link(link_comparator, prioq), \
+	__prioq_link_safe_cast(prioq_peek_link(link_comparator, prioq), \
 			element_type, link_member)
 
 static inline struct prioq_link *prioq_peek_link(
@@ -106,7 +106,7 @@ extern void prioq_remove_link(struct prioq_link *link,
 		prioq_comparator_t link_comparator);
 
 #define prioq_dequeue(link_comparator, prioq, element_type, link_member) \
-	__prioq_safe_cast(prioq_dequeue_link(link_comparator, prioq), \
+	__prioq_link_safe_cast(prioq_dequeue_link(link_comparator, prioq), \
 			element_type, link_member)
 
 static inline struct prioq_link *prioq_dequeue_link(

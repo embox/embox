@@ -20,7 +20,7 @@
 	__extension__ ({ \
 		struct prioq_link *__prioq_link__ = (link); \
 		__prioq_link__ \
-				? prioq_link_element(__prioq_link__, type, m_link) \
+				? prioq_element(__prioq_link__, type, m_link) \
 				: NULL; \
 	})
 
