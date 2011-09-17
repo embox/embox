@@ -8,6 +8,10 @@
 
 #include <kernel/panic.h>
 
+#ifdef NDEBUG
+# error "Compiling assert.c for NDEBUG configuration"
+#endif
+
 #define __ASSERT_HANDLE_NO_EXTERN_INLINE
 #include "assert_impl.h"
 
