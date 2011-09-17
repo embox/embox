@@ -41,7 +41,6 @@ struct thread {
 
 	struct sched_strategy_data sched;/**< Scheduler-private data. */
 
-//	struct list_head  sched_list;    /**< Scheduler-private link. */
 	__thread_priority_t initial_priority; /**< Scheduling priority. */
 	__thread_priority_t priority;    /**< Current scheduling priority. */
 
@@ -51,6 +50,8 @@ struct thread {
 		struct runq      *runq;      /**< For running/ready state. */
 		struct sleepq    *sleepq;    /**< For sleeping state. */
 	} /* unnamed */;
+
+	struct mutex     *mutex_waiting; /**< Mutex we are waiting for (if any). */
 
 	__thread_id_t     id;            /**< Unique identifier. */
 	struct list_head  thread_link;   /**< Linkage on all threads. */

@@ -9,7 +9,7 @@ $_DEPS-tasks += core
 
 $_SRCS-core += core.c
 $_DEPS-core += sched
-#$_DEPS-core += sync
+$_DEPS-core += sync
 $_DEPS-core += embox.hal.context
 
 $_SRCS-sched += sched.c
