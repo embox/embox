@@ -8,6 +8,7 @@
  */
 
 #include <types.h>
+#include <err.h>
 #include <drivers/pci.h>
 
 //TODO separate common and architecture pci's part

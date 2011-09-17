@@ -13,6 +13,7 @@
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <lib/libelf.h>
 #include <string.h>
 #include <errno.h>

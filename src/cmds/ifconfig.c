@@ -8,12 +8,14 @@
  */
 
 #include <embox/cmd.h>
+#include <string.h>
 #include <getopt.h>
 #include <string.h>
 #include <stdlib.h>
 #include <net/inetdevice.h>
 #include <net/util.h>
 #include <util/array.h>
+#include <err.h>
 
 EMBOX_CMD(exec);
 
@@ -33,61 +35,61 @@ static void inet_dev_show_info(void *handler) {
 	net_device_stats_t *eth_stat;
 	unsigned char mac[18];
 	struct in_addr ip, bcast, mask;
-	char *s_ip, *s_bcast, *s_mask;
+	char s_ip[] = "xxx.xxx.xxx.xxx";
+	char s_bcast[] = "xxx.xxx.xxx.xxx";
+	char s_mask[] = "xxx.xxx.xxx.xxx";
 
 	eth_stat = dev->netdev_ops->ndo_get_stats(dev);
-	TRACE("%s\tencap:", dev->name);
+	printf("%s\tencap:", dev->name);
 	if (dev->flags & IFF_LOOPBACK) {
-		TRACE("Local Loopback\n");
+		printf("Local Loopback\n");
 	} else {
 		macaddr_print(mac, dev->dev_addr);
-		TRACE("Ethernet");
-		TRACE(" HWaddr %s\n", mac);
+		printf("Ethernet");
+		printf(" HWaddr %s\n", mac);
 	}
 	ip.s_addr = in_dev->ifa_address;
 	mask.s_addr = in_dev->ifa_mask;
-	s_ip = inet_ntoa(ip);
-	s_mask = inet_ntoa(mask);
+	strncpy(s_ip, inet_ntoa(ip), sizeof(s_ip));
+	strncpy(s_mask, inet_ntoa(mask), sizeof(s_mask));
 	if (dev->flags & IFF_LOOPBACK) {
-		TRACE("\tinet addr:%s  Mask:%s\n\t", s_ip, s_mask);
+		printf("\tinet addr:%s  Mask:%s\n\t", s_ip, s_mask);
 	} else {
 		bcast.s_addr = in_dev->ifa_broadcast;
-		s_bcast = inet_ntoa(bcast);
-		TRACE("\tinet addr:%s  Bcast:%s  Mask:%s\n\t", s_ip, s_bcast, s_mask);
-		free(s_bcast);
+		strncpy(s_bcast, inet_ntoa(bcast), sizeof(s_bcast));
+		printf("\tinet addr:%s  Bcast:%s  Mask:%s\n\t", s_ip, s_bcast, s_mask);
 	}
-	free(s_ip);
-	free(s_mask);
+
 	if (dev->flags & IFF_UP)
-		TRACE("UP ");
+		printf("UP ");
 	if (dev->flags & IFF_BROADCAST)
-		TRACE("BROADCAST ");
+		printf("BROADCAST ");
 	if (dev->flags & IFF_DEBUG)
-		TRACE("DEBUG ");
+		printf("DEBUG ");
 	if (dev->flags & IFF_LOOPBACK)
-		TRACE("LOOPBACK ");
+		printf("LOOPBACK ");
 	if (dev->flags & IFF_RUNNING)
-		TRACE("RUNNING ");
+		printf("RUNNING ");
 	if (dev->flags & IFF_PROMISC)
-		TRACE("PROMISC ");
+		printf("PROMISC ");
 	if (dev->flags & IFF_MULTICAST)
-		TRACE("MULTICAST ");
-	TRACE("MTU:%d  Metric:%d\n",dev->mtu,0);
-	TRACE("\tRX packets:%ld errors:%ld dropped:%ld overruns:%ld frame:%ld\n",
+		printf("MULTICAST ");
+	printf("MTU:%d  Metric:%d\n",dev->mtu,0);
+	printf("\tRX packets:%ld errors:%ld dropped:%ld overruns:%ld frame:%ld\n",
 			eth_stat->rx_packets, eth_stat->rx_err,
 			eth_stat->rx_dropped, eth_stat->rx_over_errors,
 			eth_stat->rx_frame_errors);
-	TRACE("\tTX packets:%ld errors:%ld dropped:%ld overruns:%ld carrier:%ld\n",
+	printf("\tTX packets:%ld errors:%ld dropped:%ld overruns:%ld carrier:%ld\n",
 			eth_stat->tx_packets, eth_stat->tx_err,
 			eth_stat->tx_dropped, eth_stat->rx_over_errors,
 			eth_stat->tx_carrier_errors);
-	TRACE("\tcollisions:%ld txqueuelen:%ld\n",
+	printf("\tcollisions:%ld txqueuelen:%ld\n",
 			eth_stat->collisions, dev->tx_queue_len);
-	TRACE("\tRX bytes:%ld (%ld MiB)  TX bytes:%ld (%ld MiB)\n",
+	printf("\tRX bytes:%ld (%ld MiB)  TX bytes:%ld (%ld MiB)\n",
 			eth_stat->rx_bytes, eth_stat->rx_bytes/1048576,
 			eth_stat->tx_bytes, eth_stat->tx_bytes/1048576);
 	if (!(dev->flags & IFF_LOOPBACK)) {
-		TRACE("\tInterrupt:%d Base address:0x%08lX\n", dev->irq, dev->base_addr);
+		printf("\tInterrupt:%d Base address:0x%08lX\n", dev->irq, dev->base_addr);
 	}
 }
 
@@ -138,7 +140,7 @@ static int exec(int argc, char **argv) {
 
 		case 'x': /* find interface by name */
 			strncpy(iname, optarg, ARRAY_SIZE(iname));
-			TRACE("iface = %s\n", optarg);
+			printf("iface = %s\n", optarg);
 			if (!(in_dev = inet_dev_find_by_name(optarg))) {
 				LOG_ERROR("can't find interface %s\n", optarg);
 				return -1;

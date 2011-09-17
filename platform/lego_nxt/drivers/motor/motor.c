@@ -78,14 +78,8 @@ uint32_t nxt_motor_tacho_get_counter(nxt_motor_t *motor) {
 
 static void motor_pin_handler(int ch_mask, int mon_mask) {
 	size_t i;
-	for (i = 0; i < NXT_AVR_N_OUTPUTS; i++) {
-		/* this needs for building with -O2: otherwise
-		 * error: array subscript is above array bounds
-		 * occurs
-		 */
-		if(i > ARRAY_SIZE(pin_motor_S0)) {
-			break;
-		}
+//	for (i = 0; i < NXT_AVR_N_OUTPUTS; i++) {
+	for (i = 0; i < ARRAY_SIZE(pin_motor_S0); i++) {
 		if (pin_motor_S0[i] & mon_mask) {
 			nxt_motors[i].tacho_count--;
 			if (nxt_motors[i].tacho_count == 0) {

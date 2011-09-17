@@ -5,10 +5,12 @@
  * @author Anton Bondarev
  */
 
-#ifndef FILE_H_
-#define FILE_H_
+#ifndef FS_FILE_H_
+#define FS_FILE_H_
 
 #include <types.h>
+#include <stdio.h>
+#include <kernel/file.h>
 
 typedef struct file {
 	const char                    *f_path;
@@ -17,22 +19,6 @@ typedef struct file {
 	unsigned int                   f_mode;
 	unsigned int                   f_pos;
 } file_t;
-
-typedef void  *(*FILEOP_OPEN)(const char *file_name, const char *mode);
-typedef int    (*FILEOP_CLOSE)(void * file);
-typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
-typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
-typedef int    (*FILEOP_FSEEK)(void *file, long offset, int whence);
-typedef int    (*FILEOP_IOCTL)(void *file, int request, va_list args);
-
-typedef struct file_operations {
-	FILEOP_OPEN  fopen;
-	FILEOP_CLOSE fclose;
-	FILEOP_READ  fread;
-	FILEOP_WRITE fwrite;
-	FILEOP_FSEEK fseek;
-	FILEOP_IOCTL ioctl;
-} file_operations_t;
 
 typedef struct stat {
 	int       st_dev;     /* ID of device containing file */
@@ -50,13 +36,4 @@ typedef struct stat {
 	unsigned  st_ctime;   /* time of last status change */
 } stat_t;
 
-typedef struct lsof_map {
-	struct list_head *next;
-	struct list_head *prev;
-	const char        path[CONFIG_MAX_LENGTH_FILE_NAME];
-	FILE             *fd;
-} lsof_map_t;
-
-extern void lsof_map_init(void);
-
-#endif /* FILE_H_ */
+#endif /* FS_FILE_H_ */

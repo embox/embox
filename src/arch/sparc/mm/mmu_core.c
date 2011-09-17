@@ -21,6 +21,8 @@
 #include <asm/hal/mm/table_alloc.h>
 #include <mem/pagealloc/opallocator.h>
 
+#include <err.h>
+
 /* main system MMU environment*/
 static mmu_env_t system_env;
 /*static*/ mmu_env_t *cur_env;

@@ -9,30 +9,19 @@
 /* FIXME may be refactoring this using interfaces */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <kernel/diag.h>
 #include <drivers/vconsole.h>
 #include <drivers/tty_action.h>
 
-#ifdef CONFIG_TTY_CONSOLE_COUNT
 int putchar(int c) {
 	static char prev = 0;
-
+	char ch;
 	if (c == '\n' && prev != '\r') {
-		console_putchar( '\r'); /* FIXME must be 'cur_tty->console[ cur_tty->console_cur ]' */
+		ch = '\r';
+		write(1, &ch, 1);
 	}
-	console_putchar( (char) c);
-
+	ch = c;
+	write(1, &ch, 1);
 	return (prev = c);
 }
-#else
-int putchar(int c) {
-	static char prev = 0;
-
-	if (c == '\n' && prev != '\r') {
-		diag_putc('\r');
-	}
-	diag_putc((char) c);
-
-	return (prev = c);
-}
-#endif

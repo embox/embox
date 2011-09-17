@@ -16,6 +16,7 @@
 #include <net/protocol.h>
 #include <net/inet_common.h>
 #include <embox/net/proto.h>
+#include <err.h>
 
 EMBOX_NET_PROTO(IPPROTO_TCP, tcp_v4_rcv, NULL);
 

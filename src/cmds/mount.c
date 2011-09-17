@@ -12,9 +12,10 @@
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <lib/list.h>
-#include <lib/cpio.h>
+#include <cpio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
 
 EMBOX_CMD(exec);
 
@@ -27,7 +28,7 @@ static int exec(int argc, char **argv) {
 	char *src, *dir;
 	char fs_type[0x20];
 	node_t *node;
-	file_system_driver_t * drv;
+	fs_drv_t * drv;
 
 	fs_type[0] = '\0';
 	getopt_init();
@@ -42,7 +43,7 @@ static int exec(int argc, char **argv) {
 				LOG_ERROR("wrong -t argument %s\n", optarg);
 				return -1;
 			}
-			TRACE("type is %s\n", fs_type);
+			printf("type is %s\n", fs_type);
 		case -1:
 			break;
 		default:
@@ -57,7 +58,7 @@ static int exec(int argc, char **argv) {
 
 	vfs_add_path(argv[argc - 1], NULL);
 	node = vfs_find_node(argv[argc - 1], NULL);
-	drv = find_filesystem(fs_type);
+	drv = filesystem_find_drv(fs_type);
 	drv->fsop->init(node);
 
 	return 0;

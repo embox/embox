@@ -38,6 +38,7 @@
 #include <hal/reg.h>
 #include <fs/node.h>
 #include <fs/file.h>
+#include <err.h>
 
 /**
  * include TTY specific headers
@@ -57,11 +58,11 @@
  */
 
 static irq_return_t	keyboard_int_handler(irq_nr_t irq_num, void *data);
-static void 	*open					(const char *fname, const char *mode);
-static int 		close					(void *file);
-static size_t 	read					(void *buf, size_t size, size_t count, void *file);
-static size_t 	write					(const void *buff, size_t size, size_t count, void *file);
-static int		ioctl					(void *file, int request, va_list args);
+static void 	*kbd_open					(struct file_desc *desc);
+static int 		kbd_close					(struct file_desc *desc);
+static size_t 	kbd_read					(void *buf, size_t size, size_t count, void *file);
+static size_t 	kbd_write					(const void *buff, size_t size, size_t count, void *file);
+static int		kbd_ioctl					(void *file, int request, va_list args);
 static void 	diag_timer_handler		(sys_timer_t* timer, void *param);
 static int 		diag_waiting_key		(int sec);
 static tty_t	*getTty					(void* file);
@@ -75,11 +76,11 @@ volatile static int 	ignore_chars= -1;
 
 
 static file_operations_t file_op = {
-	.fread 	= read,
-	.fopen 	= open,
-	.fclose = close,
-	.fwrite = write,
-	.ioctl  = ioctl
+	.fread 	= kbd_read,
+	.fopen 	= kbd_open,
+	.fclose = kbd_close,
+	.fwrite = kbd_write,
+	.ioctl  = kbd_ioctl
 };
 
 /**
@@ -179,13 +180,13 @@ static tty_t * getTty(void* file) {
 /*
  * file_operation
  */
-static void *open(const char *fname, const char *mode) {
+static void *kbd_open(struct file_desc *desc) {
 
 	struct tty *tp = tty_addr(CONSOLE);
-
+#if 0
 	if (strcmp(strupr((char *)mode),"R") != 0)
 		return NULL;
-
+#endif
 	kb_init(tp);
 
 	/* Set interrupt handler and enable keyboard IRQ. */
@@ -195,24 +196,24 @@ static void *open(const char *fname, const char *mode) {
 	return (void *)&file_op;
 }
 
-static int close(void *file) {
+static int kbd_close(struct file_desc *desc) {
 	//tty_t *tp = getTty(file);
 	irq_detach((irq_nr_t) KEYBOARD_IRQ,NULL);
 
 	return 0;
 }
 
-static size_t read(void *buf, size_t size, size_t count, void *file) {
+static size_t kbd_read(void *buf, size_t size, size_t count, void *file) {
 	//tty_t *tp = getTty(file);
 	return 0;
 }
 
-static size_t write(const void *buff, size_t size, size_t count, void *file) {
+static size_t kbd_write(const void *buff, size_t size, size_t count, void *file) {
 	//tty_t *tp = getTty(file);
 	return 0;
 }
 
-static int ioctl(void *file, int request, va_list ar) {
+static int kbd_ioctl(void *file, int request, va_list ar) {
 	va_list 	args;
 	tty_t *tp_out;
 	tty_t *tp_base = getTty(file);

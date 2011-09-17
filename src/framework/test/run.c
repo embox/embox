@@ -9,7 +9,7 @@
  *         - Separating from tests registry code
  *         - Test fixtures and assertions support
  */
-
+#include <kernel/prom_printf.h>
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
@@ -64,7 +64,7 @@ int test_suite_run(const struct test_suite *test) {
 
 	fixture_ops = &test->suite_fixture_ops;
 
-	TRACE("\ttest: running %s ", test_name(test));
+	prom_printf("\ttest: running %s ", test_name(test));
 
 	if ((fx_op = *fixture_ops->p_setup) && (ret = fx_op()) != 0) {
 		handle_suite_fixture_failure(test, ret, 1);
@@ -147,26 +147,26 @@ void __test_assertion_handle(int pass,
 
 static void handle_suite_fixture_failure(const struct test_suite *test_suite,
 		int code, int setup) {
-	TRACE("\n\tsuite fixture %s failed with code %d: %s\n",
+	prom_printf("\n\tsuite fixture %s failed with code %d: %s\n",
 			setup ? "setup" : "tear down", code, strerror(-code));
 }
 
 static void handle_suite_result(const struct test_suite *test_suite,
 		int failures, int total) {
 	if (failures > 0) {
-		TRACE("\n\ttesting %s (%s) failed\n"
+		prom_printf("\n\ttesting %s (%s) failed\n"
 				"\t\t%d/%d failures\n",
 				test_name(test_suite), test_suite->description,
 				failures, total);
 	} else if (!failures) {
-		TRACE(" done\n");
+		prom_printf(" done\n");
 	}
 
 }
 
 static void handle_case_fixture_failure(const struct test_case *test_case,
 		int code, int setup) {
-	TRACE("\n\tcase fixture %s failed with code %d: %s\n",
+	prom_printf("\n\tcase fixture %s failed with code %d: %s\n",
 			setup ? "setup" : "tear down", code, strerror(-code));
 }
 
@@ -176,18 +176,18 @@ static void handle_case_result(const struct test_case *test_case,
 	const struct location_func *fail_loc;
 
 	if (!failure) {
-		TRACE(".");
+		prom_printf(".");
 		return;
 	}
 
 	test_loc = &test_case->location;
 	fail_loc = &failure->location;
 
-	TRACE("\n\tfailure at %s : %d, in function %s\n"
+	prom_printf("\n\tfailure at %s : %d, in function %s\n"
 			"\t\t%s\n",
 			fail_loc->at.file, fail_loc->at.line, fail_loc->func,
 			failure->reason);
-	TRACE("\t   case at %s : %d\n"
+	prom_printf("\t   case at %s : %d\n"
 			"\t\t\"%s\"\n\t",
 			test_loc->file, test_loc->line, test_case->description);
 }

@@ -22,12 +22,17 @@ image: checksum
 endif
 image: image_fini
 
-image_init image_fini:
+image_init image_fini: rootfs_prepare
 
 .PHONY: image_prepare
-prepare: image_prepare
+prepare: image_prepare rootfs_prepare
 image_prepare:
 	@mkdir -p $(OBJ_SUBDIRS)
+
+rootfs_prepare:
+	@mkdir -p $(BUILD_DIR)/rootfs
+	@cp $(__ROOTFS_SRCS) $(BUILD_DIR)/rootfs/
+	#pushd $(ROOTFS_DIR); find ./ -depth -print | cpio -H newc -ov > $(ROOTFS_IMAGE); popd;
 
 .PHONY: checksum
 checksum:
@@ -43,7 +48,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE    = $(CROSS_COMPILE)size
 
 
-CC_VERSION = $(shell $(HOSTCC) -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
+CC_VERSION = $(shell $(CC) -v 2>&1 | grep -e "^gcc" | cut -d' ' -f3 )
 
 ifeq ($(strip $(CC_VERSION)),)
 $(error Unable to get GCC version: $(shell $(CC) -v 2>&1 | cat))

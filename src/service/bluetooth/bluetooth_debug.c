@@ -21,6 +21,10 @@ static uint8_t read_buff[BUFF_SIZE];
 static int pos = 0;
 
 static int handler(int msg, uint8_t *buff) {
+	if (msg == BT_DRV_MSG_DISCONNECTED) {
+	    pos = 0;
+	    return 0;
+	}
 	if (msg == BT_DRV_MSG_READ) {
 		pos++;
 	}

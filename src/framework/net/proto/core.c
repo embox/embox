@@ -5,7 +5,7 @@
  * @date 04.07.11
  * @author Dmitry Zubarevich
  */
-
+#include <kernel/prom_printf.h>
 #include <string.h>
 #include <framework/mod/ops.h>
 #include <framework/net/proto/api.h>
@@ -26,7 +26,7 @@ static int net_proto_mod_enable(struct mod_info *mod) {
 	net_proto_t *net_proto_ptr = ((struct net_proto *) mod->data);
 	net_protocol_t *net_proto = net_proto_ptr->netproto;
 
-	TRACE("NET: initializing protocol %s.%s: ", mod->mod->package->name, mod->mod->name);
+	prom_printf("NET: initializing protocol %s.%s: ", mod->mod->package->name, mod->mod->name);
 
 	if ((ret = inet_add_protocol(net_proto, net_proto->type)) >= 0) {
 		if (net_proto_ptr->init != NULL) {
@@ -34,9 +34,9 @@ static int net_proto_mod_enable(struct mod_info *mod) {
 		}
 	}
 	if (ret == 0) {
-		TRACE("done\n");
+		prom_printf("done\n");
 	} else {
-		TRACE("error: %s\n", strerror(-ret));
+		prom_printf("error: %s\n", strerror(-ret));
 	}
 	return ret;
 }
@@ -45,11 +45,11 @@ static int net_proto_mod_disable(struct mod_info *mod) {
 	int ret = 0;
 	net_protocol_t *net_proto = ((struct net_proto *) mod->data)->netproto;
 
-	TRACE("NET: finalizing protocol %s: ", mod->mod->name);
+	prom_printf("NET: finalizing protocol %s: ", mod->mod->name);
 	if (inet_del_protocol(net_proto, net_proto->type) < 0) {
-		TRACE("done\n");
+		prom_printf("done\n");
 	} else {
-		TRACE("error: %s\n", strerror(-ret));
+		prom_printf("error: %s\n", strerror(-ret));
 	}
 
 	return ret;

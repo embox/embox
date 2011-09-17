@@ -1,5 +1,3 @@
-
-#ifdef CONFIG_RAMFS_CPIO
 .section .ramfs
-.incbin CONFIG_RAMFS_CPIO
-#endif
+.incbin "build/base/rootfs.cpio"
+

@@ -11,6 +11,8 @@
 #include <types.h>
 #include <asm/cache.h>
 #include <string.h>
+#include <stdio.h>
+#include <err.h>
 
 #include "memory_tests.h"
 
@@ -99,7 +101,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	cache_data_disable();
-	TRACE("Before starting: address: 0x%08x, amount: 0x%08x\n", (unsigned)address, (unsigned)amount);
+	printf("Before starting: address: 0x%08x, amount: 0x%08x\n", (unsigned)address, (unsigned)amount);
 	(*test_mem_func)(address, amount, template, &last_err);
 	cache_data_enable();
 	return 0;

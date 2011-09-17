@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdio.h>
+#include <err.h>
 
 EMBOX_CMD(exec);
 
@@ -137,7 +139,6 @@ static int ping(ping_info_t *pinfo) {
 		(cnt_err * 100) / (cnt_err + cnt_resp),
 		(int)(clock() - total));
 
-	free(dst_addr_str);
 	close(sk);
 	return 0;
 }

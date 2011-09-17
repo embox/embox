@@ -9,6 +9,7 @@
 #include <asm/hal/mm/mmu_core.h>
 #include <mem/pagealloc/mpallocator.h>
 #include <hal/mm/mmu_core.h>
+#include <err.h>
 
 /* must be aligned for sizes of all tables */
 #define PAGE_HEADER_SIZE 0x400

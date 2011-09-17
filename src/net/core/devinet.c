@@ -11,6 +11,7 @@
 #include <net/inetdevice.h>
 #include <linux/init.h>
 #include <util/array.h>
+#include <err.h>
 
 #define IFDEV_CBINFO_QUANTITY 8
 

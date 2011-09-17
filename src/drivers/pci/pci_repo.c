@@ -87,4 +87,3 @@ const char *find_class_name(uint8_t base, uint8_t sub) {
 	}
 	return NULL;
 }
-

@@ -189,7 +189,7 @@ extern char *strstr(const char *haystack, const char *needle);
  * @return
  *   C-style string, containing a descriptive error message
  */
-extern char *strerror(int errno);
+extern char *strerror(int err);
 
 /**
  * Copies @a n bytes from @a src to @a dst which must be two non-overlapping

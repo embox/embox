@@ -102,10 +102,10 @@ static int sensor_send(uint8_t sensor_id, int *addit_len) {
 static int keep_alive_send(int *addit_len) {
 	*addit_len = 4;
 #ifdef LEGO_COMPATIBLE
-	TRACE("Hi! I'm Lego =(\n");
+	printf("Hi! I'm Lego =(\n");
 	return 0;
 #else
-	TRACE("Hi! I'm Embox!\n");
+	printf("Hi! I'm Embox!\n");
 	return 1;
 #endif
 
@@ -159,7 +159,8 @@ static int direct_comm_handle(int msg, uint8_t *buff) {
 	int next_read_cnt = 0;
 	uint8_t *cbuf;
 	uint8_t status;
-	int addit_len;
+	int addit_len = 0;
+
 	if (msg == BT_DRV_MSG_CONNECTED) {
 	    bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
 	} else if (msg == BT_DRV_MSG_READ) {

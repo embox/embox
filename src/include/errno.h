@@ -10,6 +10,8 @@
 #ifndef ERRNO_H_
 #define ERRNO_H_
 
+#include <kernel/task.h>
+
 #define ENOERR           0     /* No error */
 #define EPERM            1     /* Not permitted */
 #define ENOENT           2     /* No such entity */
@@ -86,5 +88,8 @@
 
 #define EHOSTDOWN        364   /* Host is down */
 #define EHOSTUNREACH     365   /* No route to host */
+
+/*extern int errno;*/
+#define errno task_self()->fd_array.fds[0].err
 
 #endif /* ERRNO_H_ */

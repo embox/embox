@@ -28,7 +28,9 @@ endif
 dir = $(SELFDIR)
 
 DIRS := $(call traverse,$(SRC_DIR),Makefile.em) \
-  $(if $(PLATFORM),$(call traverse,$(PLATFORM_DIR),Makefile.em))
+  $(if $(PLATFORM),$(call traverse,$(PLATFORM_DIR),Makefile.em)) \
+  $(call traverse,$(THIRDPARTY_DIR),Makefile.em)
+
 
 # XXX -- Eldar
 DIRS := $(patsubst %/,%,$(dir \
@@ -130,6 +132,10 @@ __MODS_CORE = $(info Listing core mods) $(call mod_collect,MODS_CORE)
 __MODS      = $(info Listing mods) $(call mod_collect,MODS)
 # Interfaces.
 __APIS      = $(info Listing apis) $(call mod_collect,APIS)
+# Rootfs srcs
+__ROOTFS_SRCS   = $(info Listing mods) $(call rootfs_collect,ROOTFS_SRCS)
+
+rootfs_collect = $(sort $(foreach dir,$(DIRS),$(call unit_def,$($_$1))))
 
 mod_collect = $(sort \
   $(foreach dir,$(DIRS),$(call unit_def,$(call canonize_mod_name,$($_$1)))) \

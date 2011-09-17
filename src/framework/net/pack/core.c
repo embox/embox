@@ -5,7 +5,7 @@
  * @date 01.07.11
  * @author Dmitry Zubarevich
  */
-
+#include <kernel/prom_printf.h>
 #include <string.h>
 #include <framework/mod/ops.h>
 #include <framework/net/pack/api.h>
@@ -24,16 +24,16 @@ static int net_pack_mod_enable(struct mod_info *mod) {
 	packet_type_t *net_pack = ((struct net_pack *) mod->data)->netpack;
 
 	if (NULL == net_pack || NULL == net_pack->init) {
-		TRACE ("\nWrong packet descriptor\n");
+		prom_printf ("\nWrong packet descriptor\n");
 		return 0;
 	}
-	TRACE("NET: initializing packet %s.%s: ", mod->mod->package->name, mod->mod->name);
+	prom_printf("NET: initializing packet %s.%s: ", mod->mod->package->name, mod->mod->name);
 
 	if (0 == (ret = net_pack->init())) {
 		dev_add_pack(net_pack);
-		TRACE("done\n");
+		prom_printf("done\n");
 	} else {
-		TRACE("error: %s\n", strerror(-ret));
+		prom_printf("error: %s\n", strerror(-ret));
 	}
 
 	return ret;

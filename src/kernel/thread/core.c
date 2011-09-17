@@ -12,6 +12,8 @@
  * @author Eldar Abusalimov
  *          - Reviewing and simplifying threads API
  *          - Stack allocation
+ * @author Anton Kozlov
+ *          - Tasks binding
  *
  * @see tests/kernel/thread/core_test.c
  */
@@ -28,7 +30,7 @@
 #include <util/structof.h>
 #include <kernel/critical.h>
 #include <kernel/thread/api.h>
-#include <kernel/thread/task.h>
+#include <kernel/task.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
@@ -37,7 +39,11 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 
-#define STACK_SZ 0x2000
+#ifdef CONFIG_THREAD_STACK_SIZE
+# define STACK_SZ CONFIG_THREAD_STACK_SIZE
+#else
+# define STACK_SZ 0x2000
+#endif
 
 EMBOX_UNIT(unit_init, unit_fini);
 
@@ -46,9 +52,8 @@ struct list_head __thread_list = LIST_HEAD_INIT(__thread_list);
 static int id_counter;
 
 static void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg);
+		void *(*run)(void *), void *arg, struct task *tsk);
 static void thread_context_init(struct thread *t);
-//static void thread_ugly_init(struct thread *t);
 
 static struct thread *thread_new(void);
 static void thread_delete(struct thread *t);
@@ -74,7 +79,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	thread_exit(current->run(current->run_arg));
 }
 
-int thread_create_task(struct thread **p_thread, unsigned int flags,
+static int thread_create_task(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg, struct task *tsk) {
 	struct thread *t;
 	int save_ptr = (flags & THREAD_FLAG_SUSPENDED)
@@ -100,11 +105,8 @@ int thread_create_task(struct thread **p_thread, unsigned int flags,
 		return -ENOMEM;
 	}
 
-	thread_init(t, flags, run, arg);
+	thread_init(t, flags, run, arg, tsk);
 	thread_context_init(t);
-
-//	t->task = tsk;
-//	list_add(&t->task_link, &tsk->threads);
 
 	if (!(flags & THREAD_FLAG_SUSPENDED)) {
 		thread_resume(t);
@@ -125,11 +127,13 @@ int thread_create_task(struct thread **p_thread, unsigned int flags,
 
 int thread_create(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg) {
-	return thread_create_task(p_thread, flags, run, arg, /* task_self() */ NULL);
+	struct task *tsk = task_self();
+
+	return thread_create_task(p_thread, flags, run, arg, tsk);
 }
 
 static void thread_init(struct thread *t, unsigned int flags,
-		void *(*run)(void *), void *arg) {
+		void *(*run)(void *), void *arg, struct task *tsk) {
 	assert(t);
 #if 0
 	assert(run);
@@ -154,6 +158,13 @@ static void thread_init(struct thread *t, unsigned int flags,
 		t->priority++;
 	}
 
+	if (flags & THREAD_FLAG_IN_NEW_TASK) {
+		task_create(&tsk, tsk);
+	}
+
+	t->task = tsk;
+	list_add(&t->task_link, &tsk->threads);
+
 	// TODO new priority range check, should fail on error. -- Eldar
 	t->initial_priority = clamp(t->priority,
 			THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
@@ -167,9 +178,6 @@ static void thread_init(struct thread *t, unsigned int flags,
 	event_init(&t->exit_event, "thread_exit");
 	t->need_message = false;
 
-	INIT_LIST_HEAD(&t->task_link);
-
-	//thread_ugly_init(t);
 }
 
 static void thread_context_init(struct thread *t) {
@@ -181,17 +189,6 @@ static void thread_context_init(struct thread *t) {
 	context_set_entry(&t->context, thread_trampoline);
 	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
 }
-
-#if 0
-static void thread_ugly_init(struct thread *t) {
-	struct thread *current;
-
-	// XXX WTF?
-	if (NULL != (current = thread_self())) {
-		memcpy(&(t->task), &(current->task), sizeof(struct task));
-	}
-}
-#endif
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
@@ -230,7 +227,8 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	sched_unlock();
 
-	/* NOTREACHED */panic("Returning from thread_exit()");
+	/* NOTREACHED */
+	panic("Returning from thread_exit()");
 }
 
 int thread_join(struct thread *t, void **p_ret) {
@@ -380,21 +378,27 @@ static void *idle_run(void *arg) {
 static int unit_init(void) {
 	static struct thread bootstrap;
 	struct thread *idle;
-
+	struct task *default_task;
 	id_counter = 0;
 
 	bootstrap.id = id_counter++;
 	list_add_tail(&bootstrap.thread_link, &__thread_list);
 
-	thread_init(&bootstrap, 0, NULL, NULL);
+	default_task = task_default_get();
+
+	thread_init(&bootstrap, 0, NULL, NULL, default_task);
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_NORMAL;
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
 	}
-	thread_init(idle, 0, idle_run, NULL);
+	thread_init(idle, 0, idle_run, NULL, default_task);
 	thread_context_init(idle);
+
+	bootstrap.task = default_task;
+	idle->task = default_task;
+
 	idle->priority = THREAD_PRIORITY_MIN;
 
 	return sched_init(&bootstrap, idle);

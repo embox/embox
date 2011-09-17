@@ -27,7 +27,7 @@ static inline void set_control(unsigned long mask) {
 	unsigned long tmp;
 	/* Select control register */
 	out32(RDC_CONTROL, PCI_ADDR_SEL);
-	tmp = inl(PCI_DATA_REG);
+	tmp = in32(PCI_DATA_REG);
 	/* raise to set GPIO function */
 	tmp |= mask;
 	out32(tmp, PCI_DATA_REG);

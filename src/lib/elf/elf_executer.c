@@ -26,7 +26,7 @@ int elf_execve(unsigned long *file_addr, char *argv[]) {
 	    EH->e_ident[EI_MAG1] != ELFMAG1 ||
 	    EH->e_ident[EI_MAG2] != ELFMAG2 ||
 	    EH->e_ident[EI_MAG3] != ELFMAG3) {
-		TRACE("not an ELF file\n");
+		printf("not an ELF file\n");
 		return -1;
 	}
 
@@ -42,13 +42,13 @@ int elf_execve(unsigned long *file_addr, char *argv[]) {
 		EPH = (Elf32_Phdr *) ((unsigned char *) EPH + EH->e_phentsize);
 	}
 
-	TRACE("Data allocated.\n");
-	TRACE("Trying to start at %ld(0x%x)\n\n\n", (long) EH->e_entry, (uint32_t)EH->e_entry);
+	printf("Data allocated.\n");
+	printf("Trying to start at %ld(0x%x)\n\n\n", (long) EH->e_entry, (uint32_t)EH->e_entry);
 
 	function_main = (int (*)(int argc, char *argv[])) EH->e_entry;
 	result = function_main (0, argv);
 	ipl_restore(ipl);
 
-	TRACE("\n result : %d\n", result);
+	printf("\n result : %d\n", result);
 	return result;
 }

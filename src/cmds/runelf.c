@@ -53,12 +53,12 @@ static int exec(int argc, char **argv) {
 	} while (opt != -1);
 
 	if (NULL == file_name) {
-		TRACE("\n please setup file name\n");
+		printf("\n please setup file name\n");
 		return 0;
 	}
 	file = fopen(file_name, "r");
 	if (NULL == file) {
-		TRACE("\nCan't open file %s\n", file_name);
+		printf("\nCan't open file %s\n", file_name);
 		return 0;
 	}
 	fioctl(file, 0, &file_addr);

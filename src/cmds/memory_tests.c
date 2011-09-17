@@ -14,7 +14,7 @@
 
 static inline void print_error(volatile uint32_t *addr,
 		volatile uint32_t expected_value) {
-	TRACE("FAILED! at address 0x%08x value 0x%08x (0x%8x expected)\n",
+	printf("FAILED! at address 0x%08x value 0x%08x (0x%8x expected)\n",
 			(unsigned)addr, *addr, expected_value);
 }
 
@@ -141,17 +141,17 @@ static int memory_test_quick(uint32_t *base_addr, long int amount,
 		uint32_t template, memtest_err_t *s_err) {
 	if (MEMTEST_RETCODE_PASSED == memory_test_data_bus(base_addr, 1, template,
 			s_err)) {
-		TRACE ("Data bus test ok\n");
+		printf ("Data bus test ok\n");
 	} else {
-		TRACE("Data bus failed\n");
+		printf("Data bus failed\n");
 		return MEMTEST_RETCODE_FAILED;
 	}
 
 	if (MEMTEST_RETCODE_PASSED == memory_test_addr_bus(base_addr, amount,
 			template, s_err)) {
-		TRACE("Addr bus test ok\n");
+		printf("Addr bus test ok\n");
 	} else {
-		TRACE("Addr bus failed\n");
+		printf("Addr bus failed\n");
 		return MEMTEST_RETCODE_FAILED;
 	}
 	return MEMTEST_RETCODE_PASSED;
@@ -236,7 +236,7 @@ static int memory_test_address(uint32_t *base_addr, long int amount,
 	end_addr = base_addr + amount;
 	while (addr < end_addr) {
 		if ((uint32_t) addr % 15 == 0) {
-			TRACE("Writing address 0x%08x\n", (unsigned)addr);
+			printf("Writing address 0x%08x\n", (unsigned)addr);
 		}
 		*addr = (uint32_t) addr;
 		addr++;
@@ -247,7 +247,7 @@ static int memory_test_address(uint32_t *base_addr, long int amount,
 	addr = base_addr;
 	while (addr < end_addr) {
 		if ((uint32_t) addr % 15 == 0) {
-			TRACE("Checking address 0x%8x\n", (unsigned)addr);
+			printf("Checking address 0x%8x\n", (unsigned)addr);
 		}
 		if (*addr != (uint32_t) addr) {
 			return return_error(s_err, "address", addr, *addr, (uint32_t) addr);
@@ -321,7 +321,7 @@ static int memory_test_loop(uint32_t *addr, long int counter,
 
 	/*Finite loop case*/
 	while (counter--) {
-		TRACE("%ld=n", counter);
+		printf("%ld=n", counter);
 		*addr = value;
 		if (*addr != value) {
 			return return_error(s_err, "loop", addr, *addr, value);

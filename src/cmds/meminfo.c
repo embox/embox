@@ -15,6 +15,7 @@
 #include <mem/misc/slab_statistic.h>
 #include <lib/list.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 EMBOX_CMD(exec);
 

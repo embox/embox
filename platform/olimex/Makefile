@@ -8,3 +8,4 @@ $_PACKAGE := olimex
 SUBDIRS := $(filter-out include,$(SUBDIRS))
 
 $_CPPFLAGS += -I$($_SELFDIR)/include
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix

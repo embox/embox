@@ -41,11 +41,11 @@ static int run(int argc, char **argv) {
 	 * */
 	if (0 > (sock = socket(AF_INET, SOCK_DGRAM, 0))) {
 		/* if creation was failed report about it and exit from test */
-		TRACE("\nCan't create socket");
+		printf("\nCan't create socket");
 		return 0;
 	} else {
 		/* if creation was success print message about it */
-		TRACE("\nSocket was created");
+		printf("\nSocket was created");
 	}
 
 	/* define of address to send and receive of message */
@@ -72,11 +72,11 @@ static int run(int argc, char **argv) {
 	 * */
 	if (0 > (sendto(sock, msg_send, msg_size, 0, (struct sockaddr *) &addr, addr_size))) {
 		/* if transmission was failed report about it and exit from test */
-		TRACE("\nCan't send message");
+		printf("\nCan't send message");
 		return 0;
 	} else {
 		/* if sending was success print sent message */
-		TRACE("\nIt was sent message: %s", msg_send);
+		printf("\nIt was sent message: %s", msg_send);
 	}
 
 	/** receiving of test message
@@ -94,11 +94,11 @@ static int run(int argc, char **argv) {
 			(struct sockaddr *) &addr,
 			&addr_size))) {
 		/* if receiving was failed report about it and exit from test */
-		TRACE("\nCan't receive message");
+		printf("\nCan't receive message");
 		return 0;
 	} else {
 		/* if receiving was success print received message */
-		TRACE("\nIt was received message: %s", msg_recv);
+		printf("\nIt was received message: %s", msg_recv);
 	}
 
 	/** close of socket
@@ -108,11 +108,11 @@ static int run(int argc, char **argv) {
 	 * */
 	if (0 > close(sock)) {
 		/* if close was failed report about it and exit from test */
-		TRACE("\nIt was bad close of socket");
+		printf("\nIt was bad close of socket");
 		return 0;
 	} else {
 		/* if creation was success print message about it */
-		TRACE("\nSocket was closed");
+		printf("\nSocket was closed");
 	}
 
 	return 0;

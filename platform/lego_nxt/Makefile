@@ -8,5 +8,6 @@ $_PACKAGE := lego_nxt
 SUBDIRS := $(filter-out include,$(SUBDIRS))
 
 $_CPPFLAGS += -I$($_SELFDIR)/include
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix
 
 $_MODS_CORE += lego_nxt.driver.nxt_avr_init

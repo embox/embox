@@ -12,6 +12,9 @@
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 #include <kernel/printk.h>
+#include <embox/device.h>
+#include <fs/file.h>
+#include <embox/unit.h>
 
 #define UART_SCALER_VAL \
 	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
@@ -152,52 +155,43 @@ int uart_remove_irq_handler(void) {
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
-#ifdef CONFIG_TTY_DEVICE
-#include <embox/device.h>
-#include <fs/file.h>
-#include <drivers/tty.h>
-
-static tty_device_t tty;
-
-static void *open(const char *fname, const char *mode);
-static int close(void *file);
-static size_t read(void *buf, size_t size, size_t count, void *file);
-static size_t write(const void *buff, size_t size, size_t count, void *file);
+static void *apb_open(struct file_desc *desc);
+static int apb_close(struct file_desc *desc);
+static size_t apb_read(void *buf, size_t size, size_t count, void *file);
+static size_t apb_write(const void *buff, size_t size, size_t count, void *file);
 
 static file_operations_t file_op = {
-		.fread = read,
-		.fopen = open,
-		.fclose = close,
-		.fwrite = write
+		.fread = apb_read,
+		.fopen = apb_open,
+		.fclose = apb_close,
+		.fwrite = apb_write
 };
-
-static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
-	tty_add_char(&tty, uart_getc());
-	return 0;
-}
 
 /*
  * file_operation
  */
-static void *open(const char *fname, const char *mode) {
-	tty.file_op = &file_op;
-	tty_register(&tty);
-	uart_set_irq_handler(irq_handler);
-	return (void *)&file_op;
+static void *apb_open(struct file_desc *desc) {
+	desc->ops = &file_op;
+	return (void *) desc;
 }
 
-static int close(void *file) {
-	tty_unregister(&tty);
-	uart_remove_irq_handler();
+static int apb_close(struct file_desc *desc) {
 	return 0;
 }
 
-static size_t read(void *buf, size_t size, size_t count, void *file) {
-	//TODO if we havn't irq
+static size_t apb_read(void *buf, size_t size, size_t count, void *file) {
+	char *ch_buf = (char *) buf;
+
+	int i = count * size;
+
+	while (i --) {
+		*(ch_buf++) = uart_getc();
+	}
+
 	return 0;
 }
 
-static size_t write(const void *buff, size_t size, size_t count, void *file) {
+static size_t apb_write(const void *buff, size_t size, size_t count, void *file) {
 	size_t cnt = 0;
 	char *b = (char*) buff;
 
@@ -209,4 +203,3 @@ static size_t write(const void *buff, size_t size, size_t count, void *file) {
 
 
 EMBOX_DEVICE("uart", &file_op);
-#endif

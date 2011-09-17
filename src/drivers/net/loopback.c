@@ -8,6 +8,7 @@
  */
 
 #include <string.h>
+#include <err.h>
 
 #include <net/skbuff.h>
 #include <net/netdevice.h>

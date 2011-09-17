@@ -12,6 +12,9 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <types.h>
+#include <fs/file.h>
+
+FILE *file;
 
 /*TODO: throw out.*/
 /**
@@ -54,7 +57,7 @@ extern int ungetchar(int ch);
 
 static void unscanchar(char **str, int ch) {
 	/*	extern int ungetchar();*/
-	if (str) {
+	if ((int) str >= 2) {
 #if 0
 		*str --;
 		**str = ch;
@@ -64,6 +67,8 @@ static void unscanchar(char **str, int ch) {
 		 *p = ch;
 		 *str = p;*/
 #endif
+	} else if ((int) str == 1) {
+		ungetc(ch, file);
 	} else {
 		ungetchar(ch);
 	}
@@ -72,11 +77,13 @@ static void unscanchar(char **str, int ch) {
 static int scanchar(char **str) {
 	extern int getchar(void);
 	int ch;
-	if (str) {
+	if ((int)str >= 2) {
 		ch = **str;
 		(*str)++;
 		return ch;
 
+	} if ((int)str == 1) {
+	    return getc(file);
 	} else {
 		if ('\r' == (ch = getchar())) {
 			return EOF;
@@ -117,18 +124,17 @@ static int scan_int(char **in, int base, int widht) {
 	if ((ch == '-') || (ch == '+')) {
 		neg = (ch == '-');
 	} else {
-		dst = ch_to_digit(ch, base);
+		dst = 0;
 	}
 
-	for (i = 0; (ch = (int) toupper(scanchar(in))) != EOF; i++) {
+	for (i = 0; (ch = (int) toupper(ch)) != EOF; i++) {
 		if (!(base == 10 ? isdigit(ch) : isxdigit(ch)) || (0 == widht)) {
 			unscanchar(in, ch);
 			/*end conversion*/
 			break;
 		}
-		unscanchar(in, ch);
-
 		dst = base * dst + ch_to_digit(ch, base);
+		ch = scanchar(in);
 	}
 
 	if (neg)
@@ -136,7 +142,7 @@ static int scan_int(char **in, int base, int widht) {
 	return dst;
 }
 #if 0
-static double scan_double(char **in, int base) {
+static double scan_double(char **in, int base, int width) {
 	int neg = 0;
 	double dst = 0;
 	int ch;
@@ -150,7 +156,7 @@ static double scan_double(char **in, int base) {
 			continue;
 		}
 
-		if (!isdigit(ch, base)) {
+		if (!isdigit(ch)) {
 			ungetchar(ch);
 			break;
 		}
@@ -214,6 +220,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 			}
 				continue;
 			case 'u':
+			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
 				int dst;
 				dst = scan_int(in, 10, widht);
@@ -227,7 +234,7 @@ static int scan(char **in, const char *fmt, va_list args) {
 			case 'D': {
 					double dst;
 					dst = scan_double(in,10,widht);
-					va_arg(args, int) = dst;
+					*va_arg(args, int*) = dst;
 					++converted;
 				}
 				continue;
@@ -267,10 +274,6 @@ static int scan(char **in, const char *fmt, va_list args) {
 			}
 				continue;
 #endif
-			case 'f': {
-				/*TODO: scanf haven't realized float variable operations*/
-			}
-				continue;
 			}
 		} else {
 			if (*fmt++ != *(*in)++) {
@@ -293,6 +296,18 @@ int scanf(const char *format, ...) {
 	return rv;
 }
 
+int fscanf(FILE *stream, const char *format, ...) {
+	va_list args;
+	int rv;
+
+	file = stream;
+
+	va_start(args, format);
+	rv = scan((char **)1, format, args);
+	va_end(args);
+
+	return rv;
+}
 int sscanf(char *out, const char *format, ...) {
 	va_list args;
 	int rv;

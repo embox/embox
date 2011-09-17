@@ -109,7 +109,6 @@ void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi) {
 	);
 	*tlblo = tmp1;
 	*tlbhi = tmp2;
-	//TRACE("get_utlb: tmp1 = 0x%x, tmp2 = 0x%x\n", tmp1, tmp2);
 }
 
 void mmu_save_table(__mmu_table_t utlb) {
@@ -169,10 +168,10 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 			((flags & MMU_PAGE_WRITEABLE) ? 1 : 0));
 
 #if 0
-	TRACE("\n\nin mmu_map_region: ctx = 0x%x, phy_addr = 0x%x, virt_addr = 0x%x,"
+	printk("\n\nin mmu_map_region: ctx = 0x%x, phy_addr = 0x%x, virt_addr = 0x%x,"
 			" reg_size = 0x%x, flags = 0x%x\n",
 			ctx, phy_addr, virt_addr, reg_size, flags);
-	TRACE("\ttlblo = 0x%X tlbhi=0x%X\n", tlblo, tlbhi);
+	printk("\ttlblo = 0x%X tlbhi=0x%X\n", tlblo, tlbhi);
 #endif
 	set_utlb_record((cur_utlb_idx++) % UTLB_QUANTITY_RECORDS, tlblo, tlbhi);
 

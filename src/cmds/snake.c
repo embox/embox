@@ -10,7 +10,7 @@
 #include <drivers/vt.h>
 #include <kernel/diag.h>
 #include <unistd.h>
-#include <kernel/time.h>
+#include <time.h>
 
 EMBOX_CMD(exec);
 

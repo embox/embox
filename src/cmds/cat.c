@@ -20,7 +20,7 @@ static void print_usage(void) {
 static int exec(int argc, char **argv) {
 	int opt;
 	FILE *fd;
-	char buff[1] = " ";
+	char buff;
 	getopt_init();
 	do {
 		opt = getopt(argc - 1, argv, "h");
@@ -43,8 +43,8 @@ static int exec(int argc, char **argv) {
                 printf("Can't open file %s\n", argv[argc - 1]);
                 return -1;
         }
-	while (fread(buff, sizeof(buff), 1, fd) > 0) {
-		printf("%s", buff);
+	while (fread(&buff, 1, 1, fd) > 0) {
+		printf("%c", buff);
 	}
 	fclose(fd);
 	return 0;

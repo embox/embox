@@ -129,7 +129,8 @@ static int udp_rcv(sk_buff_t *skb) {
 }
 
 void udp_err(sk_buff_t *skb, uint32_t info) {
-	printf("todo: udp_err\n");
+	//printf("todo: udp_err\n");
+	//TODO BLIN!!! it's not printf("todo")
 }
 
 

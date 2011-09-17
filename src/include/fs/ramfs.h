@@ -27,6 +27,6 @@ typedef struct _ramfs_file_description {
         int           lock;
 } ramfs_file_description_t;
 
-extern int unpack_to_rootfs(void);
+extern int cpio_unpack(void);
 
 #endif /* FS_RAMFS_H_ */
