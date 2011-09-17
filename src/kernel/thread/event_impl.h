@@ -9,15 +9,21 @@
 #ifndef KERNEL_THREAD_EVENT_IMPL_H_
 #define KERNEL_THREAD_EVENT_IMPL_H_
 
-#include <lib/list.h>
+#include <kernel/thread/sched_strategy.h>
+#include <util/slist.h>
 
 struct event {
-	struct list_head sleep_queue;
+	struct sleepq sleepq;
+	__extension__ struct {
+		struct slist_link startq_link;
+		int               startq_wake_all;
+	} /* unnamed */;   /**< For wakes called inside critical. */
 	const char *name;
 };
 
 static inline void event_init(struct event *e, const char *name) {
-	INIT_LIST_HEAD(&e->sleep_queue);
+	sleepq_init(&e->sleepq);
+	slist_link_init(&e->startq_link);
 	e->name = name;
 }
 

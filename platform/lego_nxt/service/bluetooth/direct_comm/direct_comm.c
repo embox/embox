@@ -113,8 +113,9 @@ static int keep_alive_send(int *addit_len) {
 
 
 static int handle_body(uint8_t *buff, int *addit_len) {
-	reader_state = COMM_TYPE;
 	uint8_t power;
+
+	reader_state = COMM_TYPE;
 	switch (command) {
 	case DC_SET_OUTPUT_STATE:
 		power = buff[1];
@@ -127,27 +128,21 @@ static int handle_body(uint8_t *buff, int *addit_len) {
 		}
 		*addit_len = 0;
 		return 0;
-		break;
 	case DC_GET_INPUT_VALUES:
 		return sensor_send(buff[0], addit_len);
-		break;
 	case DC_KEEP_ALIVE:
 		return keep_alive_send(addit_len);
-		break;
 	case DC_EX_SET_M_OUTPUT_STATE:
 		nxt_motor_set_power(NXT_MOTOR_A, buff[0]);
 		nxt_motor_set_power(NXT_MOTOR_B, buff[1]);
 		nxt_motor_set_power(NXT_MOTOR_C, buff[2]);
 		*addit_len = 0;
 		return 0;
-		break;
 	case DC_QREAL_HELLO:
 		return 0x42;
-		break;
 	default:
-		break;
+		return 0;
 	}
-	return 0;
 }
 
 static int handle_size(uint8_t *buff) {

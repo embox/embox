@@ -47,7 +47,7 @@ static inline int list_alone_link(struct list_link *link) {
 	return __list_link_alone(&link->l);
 }
 
-static inline int list_empty(struct list *list) {
+static inline int list_is_empty(struct list *list) {
 	return __list_link_alone(&list->l);
 }
 
@@ -89,7 +89,7 @@ static inline void list_bulk_add_first(struct list *from_list,
 		struct list *to_list) {
 	struct __list_link *from = &from_list->l, *to = &to_list->l;
 
-	if (!list_empty(from_list)) {
+	if (!list_is_empty(from_list)) {
 		__list_insert_chain(from->next, from->prev, to, to->next);
 		__list_link_init(from);
 	}
@@ -99,7 +99,7 @@ static inline void list_bulk_add_last(struct list *from_list,
 		struct list *to_list) {
 	struct __list_link *from = &from_list->l, *to = &to_list->l;
 
-	if (!list_empty(from_list)) {
+	if (!list_is_empty(from_list)) {
 		__list_insert_chain(from->next, from->prev, to->prev, to);
 		__list_link_init(from);
 	}
@@ -109,7 +109,7 @@ static inline void list_bulk_insert_before_link(struct list *from_list,
 		struct list_link *link) {
 	struct __list_link *from = &from_list->l, *l = &link->l;
 
-	if (!list_empty(from_list)) {
+	if (!list_is_empty(from_list)) {
 		__list_insert_chain(from->next, from->prev, l->prev, l);
 		__list_link_init(from);
 	}
@@ -119,7 +119,7 @@ static inline void list_bulk_insert_after_link(struct list *from_list,
 		struct list_link *link) {
 	struct __list_link *from = &from_list->l, *l = &link->l;
 
-	if (!list_empty(from_list)) {
+	if (!list_is_empty(from_list)) {
 		__list_insert_chain(from->next, from->prev, l, l->next);
 		__list_link_init(from);
 	}

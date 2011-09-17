@@ -12,6 +12,8 @@
  * @author Eldar Abusalimov
  *          - Reviewing and simplifying threads API
  *          - Stack allocation
+ * @author Anton Kozlov
+ *          - Tasks binding
  *
  * @see tests/kernel/thread/core_test.c
  */
@@ -30,6 +32,7 @@
 #include <kernel/thread/api.h>
 #include <kernel/task.h>
 #include <kernel/thread/sched.h>
+#include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 #include <kernel/panic.h>
 #include <hal/context.h>
@@ -37,9 +40,9 @@
 #include <hal/ipl.h>
 
 #ifdef CONFIG_THREAD_STACK_SIZE
-  #define STACK_SZ CONFIG_THREAD_STACK_SIZE
+# define STACK_SZ CONFIG_THREAD_STACK_SIZE
 #else
-  #define STACK_SZ 0x2000
+# define STACK_SZ 0x2000
 #endif
 
 EMBOX_UNIT(unit_init, unit_fini);
@@ -51,7 +54,6 @@ static int id_counter;
 static void thread_init(struct thread *t, unsigned int flags,
 		void *(*run)(void *), void *arg, struct task *tsk);
 static void thread_context_init(struct thread *t);
-//static void thread_ugly_init(struct thread *t);
 
 static struct thread *thread_new(void);
 static void thread_delete(struct thread *t);
@@ -80,51 +82,47 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 static int thread_create_task(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg, struct task *tsk) {
 	struct thread *t;
-		int save_ptr = (flags & THREAD_FLAG_SUSPENDED) || !(flags
-				& THREAD_FLAG_DETACHED);
+	int save_ptr = (flags & THREAD_FLAG_SUSPENDED)
+			|| !(flags & THREAD_FLAG_DETACHED);
 
-		if ((flags & THREAD_FLAG_PRIORITY_LOWER) && (flags
-				& THREAD_FLAG_PRIORITY_HIGHER)) {
-			return -EINVAL;
-		}
+	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
+			&& (flags & THREAD_FLAG_PRIORITY_HIGHER)) {
+		return -EINVAL;
+	}
 
-		if (save_ptr && !p_thread) {
-			return -EINVAL;
-		}
+	if (save_ptr && !p_thread) {
+		return -EINVAL;
+	}
 
-		if (!run) {
-			return -EINVAL;
-		}
+	if (!run) {
+		return -EINVAL;
+	}
 
-		sched_lock();
+	sched_lock();
 
-		if (!(t = thread_new())) {
-			sched_unlock();
-			return -ENOMEM;
-		}
-
-		thread_init(t, flags, run, arg, tsk);
-		thread_context_init(t);
-
-		list_add(&t->task_link, &tsk->threads);
-
-		sched_start(t);
-
-		if (flags & THREAD_FLAG_SUSPENDED) {
-			thread_suspend(t);
-		}
-
-		if (flags & THREAD_FLAG_DETACHED) {
-			thread_detach(t);
-		}
-
-		if (save_ptr) {
-			*p_thread = t;
-		}
-
+	if (!(t = thread_new())) {
 		sched_unlock();
+		return -ENOMEM;
+	}
 
-		return 0;
+	thread_init(t, flags, run, arg, tsk);
+	thread_context_init(t);
+
+	if (!(flags & THREAD_FLAG_SUSPENDED)) {
+		thread_resume(t);
+	}
+
+	if (flags & THREAD_FLAG_DETACHED) {
+		thread_detach(t);
+	}
+
+	if (save_ptr) {
+		*p_thread = t;
+	}
+
+	sched_unlock();
+
+	return 0;
 }
 
 int thread_create(struct thread **p_thread, unsigned int flags,
@@ -146,7 +144,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->run = run;
 	t->run_arg = arg;
 
-	t->suspend_count = 0;
+	t->suspend_count = 1;
 
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		t->priority = thread_self()->priority;
@@ -161,22 +159,24 @@ static void thread_init(struct thread *t, unsigned int flags,
 	}
 
 	if (flags & THREAD_FLAG_IN_NEW_TASK) {
-		task_create(&t->task, tsk);
-	} else {
-		t->task = tsk;
+		task_create(&tsk, tsk);
 	}
 
+	t->task = tsk;
+	list_add(&t->task_link, &tsk->threads);
+
 	// TODO new priority range check, should fail on error. -- Eldar
-	t->initial_priority = clamp(t->priority, THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
+	t->initial_priority = clamp(t->priority,
+			THREAD_PRIORITY_MIN, THREAD_PRIORITY_HIGH);
 	t->priority = t->initial_priority;
 
-	INIT_LIST_HEAD(&t->sched_list);
+	sched_strategy_init(&t->sched);
+	slist_link_init(&t->startq_link);
+
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");
 	event_init(&t->exit_event, "thread_exit");
 	t->need_message = false;
-
-	INIT_LIST_HEAD(&t->task_link);
 
 }
 
@@ -190,33 +190,29 @@ static void thread_context_init(struct thread *t) {
 	context_set_stack(&t->context, (char *) t->stack + t->stack_sz);
 }
 
-#if 0
-static void thread_ugly_init(struct thread *t) {
-	struct thread *current;
-
-	// XXX WTF?
-	if (NULL != (current = thread_self())) {
-		memcpy(&(t->task), &(current->task), sizeof(struct task));
-	}
-}
-#endif
-
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct thread *joining;
+	struct sleepq *exit_sq;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
 
-	sched_stop(current);
+	sched_suspend(current);
 
 	current->state = thread_state_do_exit(current->state);
 	/* Copy exit code to a joining thread (if any) so that the current thread
 	 * could be safely reclaimed in case that it has already been detached
 	 * without waiting for the joining thread to get the control. */
-	list_for_each_entry(joining, &current->exit_event.sleep_queue, sched_list) {
-		// TODO iterating over a single element or empty list. -- Eldar
+	// XXX just for now. -- Eldar
+	exit_sq = &current->exit_event.sleepq;
+	if (!sleepq_empty(exit_sq)) {
+		struct prioq *pq =
+				prioq_empty(&exit_sq->pq) ? &exit_sq->suspended : &exit_sq->pq;
+		assert(!prioq_empty(pq));
+		joining = prioq_peek(prioq_address_comparator, pq,
+				struct thread, sched.pq_link);
 		joining->join_ret = ret;
 	}
 
@@ -231,7 +227,8 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	sched_unlock();
 
-	/* NOTREACHED */panic("Returning from thread_exit()");
+	/* NOTREACHED */
+	panic("Returning from thread_exit()");
 }
 
 int thread_join(struct thread *t, void **p_ret) {
@@ -255,8 +252,7 @@ int thread_join(struct thread *t, void **p_ret) {
 		thread_delete(t);
 
 	} else {
-		// TODO using event internals. -- Eldar
-		assert(list_empty(&t->exit_event.sleep_queue));
+		assert(sleepq_empty(&t->exit_event.sleepq));
 		sched_sleep_locked(&t->exit_event);
 
 		/* At this point the target thread has already deleted itself.

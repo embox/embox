@@ -35,9 +35,9 @@ static void inet_dev_show_info(void *handler) {
 	net_device_stats_t *eth_stat;
 	unsigned char mac[18];
 	struct in_addr ip, bcast, mask;
-	char s_ip[] = "xxx.xxx.xxx.xxx";;
-	char s_bcast[] = "xxx.xxx.xxx.xxx";;
-	char s_mask[] = "xxx.xxx.xxx.xxx";;
+	char s_ip[] = "xxx.xxx.xxx.xxx";
+	char s_bcast[] = "xxx.xxx.xxx.xxx";
+	char s_mask[] = "xxx.xxx.xxx.xxx";
 
 	eth_stat = dev->netdev_ops->ndo_get_stats(dev);
 	printf("%s\tencap:", dev->name);

@@ -18,8 +18,9 @@
  */
 struct mutex {
 	struct event event;
-	int lock_count;
 	struct thread *holder;
+	int priority;
+	int lock_count;
 };
 
 /**

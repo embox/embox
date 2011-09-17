@@ -117,7 +117,7 @@ cflags := $(CFLAGS)
 override CFLAGS  = -pedantic -std=gnu99
 override CFLAGS += -fno-strict-aliasing -fno-common
 override CFLAGS += -Wall -Werror
-override CFLAGS += -Wstrict-prototypes
+override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
 override CFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CFLAGS += -pipe
 override CFLAGS += $(cflags)

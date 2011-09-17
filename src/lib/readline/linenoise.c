@@ -362,9 +362,12 @@ void linenoise_history_init(struct hist *h) {
 int linenoise(const char *prompt, char *buf, int len, struct hist *history, compl_callback_t cb) {
     int fd = STDIN_FILENO;
     int mode = ioctl(fd, TTY_IOCTL_REQUEST_MODE, NULL);
-    ioctl(fd, TTY_IOCTL_SET_RAW, NULL); /* this works, beleive */
-    int count = linenoise_prompt(fd, buf, len, prompt, history, cb);
-    ioctl(fd, mode, NULL); /* this works, beleive */
+    int count;
+
+    ioctl(fd, TTY_IOCTL_SET_RAW, NULL); /* this works, believe */
+    count = linenoise_prompt(fd, buf, len, prompt, history, cb);
+    ioctl(fd, mode, NULL); /* this works, believe */
+
     return count;
 }
 

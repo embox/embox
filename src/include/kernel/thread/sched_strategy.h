@@ -8,13 +8,50 @@
  * @author Dmitry Avdyukhin
  */
 
-#ifndef KERNEL_THREAD_SCHED_POLICY_H_
-#define KERNEL_THREAD_SCHED_POLICY_H_
+#ifndef KERNEL_THREAD_SCHED_STRATEGY_H_
+#define KERNEL_THREAD_SCHED_STRATEGY_H_
 
-#include <stdbool.h>
+#include __module_headers(embox/kernel/thread/sched_policy/api)
 
-#include __impl_x(kernel/thread/types.h)
+struct thread;
 
+struct sched_strategy_data;
+
+struct runq;
+struct sleepq;
+
+extern void sched_strategy_init(struct sched_strategy_data *data);
+
+extern void runq_init(struct runq *runq, struct thread *current,
+		struct thread *idle);
+
+extern struct thread *runq_current(struct runq *runq);
+
+extern int runq_start(struct runq *runq, struct thread *thread);
+extern int runq_stop(struct runq *runq, struct thread *thread);
+
+extern int runq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all);
+extern void runq_sleep(struct runq *runq, struct sleepq *sleepq);
+
+extern int runq_change_priority(struct runq *runq, struct thread *thread,
+		int new_priority);
+
+extern int runq_switch(struct runq *runq);
+
+extern void sleepq_init(struct sleepq *sleepq);
+
+extern int sleepq_empty(struct sleepq *sleepq);
+
+#define sleepq_foreach(thread, sleepq) \
+	  __sleepq_foreach(thread, sleepq)
+
+extern void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread,
+		int new_priority);
+
+extern void sleepq_on_suspend(struct sleepq *sleepq, struct thread *thread);
+extern void sleepq_on_resume(struct sleepq *sleepq, struct thread *thread);
+
+#if 0
 /**
  * Initializes all that is necessary for scheduling algorithm.
  * Implementation should properly add the given threads as if both of them has
@@ -69,5 +106,6 @@ extern struct thread *sched_policy_switch(struct thread *prev_thread);
  *  Thread that runs now.
  */
 extern struct thread *sched_policy_current(void);
+#endif
 
-#endif /* KERNEL_THREAD_SCHED_POLICY_H_ */
+#endif /* KERNEL_THREAD_SCHED_STRATEGY_H_ */

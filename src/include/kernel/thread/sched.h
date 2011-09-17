@@ -12,8 +12,10 @@
 #define KERNEL_THREAD_SCHED_H_
 
 #include <kernel/thread/sched_lock.h>
+#include <kernel/thread/sched_priority.h>
 
 #include __impl_x(kernel/thread/sched_impl.h)
+#include __impl_x(kernel/thread/types.h)
 
 struct thread;
 
@@ -34,6 +36,9 @@ struct thread;
  */
 extern int sched_init(struct thread *current, struct thread *idle);
 
+extern struct thread *sched_current(void);
+
+#if 0
 /**
  * Starts scheduling of the given @a thread.
  *
@@ -49,6 +54,7 @@ extern void sched_start(struct thread *thread);
  *   The thread being stopped.
  */
 extern void sched_stop(struct thread *thread);
+#endif
 
 extern void sched_set_priority(struct thread *thread,
 		__thread_priority_t new_priority);
@@ -94,7 +100,7 @@ extern int sched_sleep_locked(struct event *event);
  * @param event
  *   The occurred event.
  */
-extern int sched_wake(struct event *event);
+extern void sched_wake(struct event *event);
 
 /**
  * Wakes up one of the threads sleeping on the given @a event.
@@ -102,7 +108,7 @@ extern int sched_wake(struct event *event);
  * @param event
  *   The occurred event.
  */
-extern int sched_wake_one(struct event *event);
+extern void sched_wake_one(struct event *event);
 
 /**
  * Moves the current thread to the end of the queue for its priority.

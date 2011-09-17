@@ -32,8 +32,10 @@ typedef union
 uint32_t __fixunsdfsi(double a)
 {
     double_bits fb;
+    int e;
+
     fb.f = a;
-    int e = ((fb.u.s.high & 0x7FF00000) >> 20) - 1023;
+    e = ((fb.u.s.high & 0x7FF00000) >> 20) - 1023;
     if (e < 0 || (fb.u.s.high & 0x80000000))
         return 0;
     return (
@@ -63,18 +65,21 @@ static inline float fromRep(uint32_t x) {
 
 
 float __floatunsidf(unsigned int a) {
+    uint32_t result;
+	int aWidth;
+	int exponent;
+	int shift;
 
-    const int aWidth = sizeof a * CHAR_BIT;
+    aWidth = sizeof a * CHAR_BIT;
 
     // Handle zero as a special case to protect clz
     if (a == 0) return fromRep(0);
 
     // Exponent of (fp_t)a is the width of abs(a).
-    const int exponent = (aWidth - 1) - __builtin_clz(a);
-    uint32_t result;
+    exponent = (aWidth - 1) - __builtin_clz(a);
 
     // Shift a into the significand field and clear the implicit bit.
-    const int shift = significandBits - exponent;
+    shift = significandBits - exponent;
     result = (uint32_t)a << shift ^ implicitBit;
 
     // Insert the exponent

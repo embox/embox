@@ -40,7 +40,7 @@ int list_alone_link(struct list_link *link) {
 	return __list_link_alone(&link->l);
 }
 
-int list_empty(struct list *list) {
+int list_is_empty(struct list *list) {
 	assert(list != NULL);
 	return __list_link_alone(&list->l);
 }
@@ -110,7 +110,7 @@ void list_bulk_add_first(struct list *from_list, struct list *to_list) {
 
 	assert(to_list != NULL);
 
-	if (!list_empty(from_list)) {
+	if (!list_is_empty(from_list)) {
 		from = &from_list->l;
 		to = &to_list->l;
 
@@ -124,7 +124,7 @@ void list_bulk_add_last(struct list *from_list, struct list *to_list) {
 
 	assert(to_list != NULL);
 
-	if (!list_empty(from_list)) {
+	if (!list_is_empty(from_list)) {
 		from = &from_list->l;
 		to = &to_list->l;
 
@@ -139,7 +139,7 @@ void list_bulk_insert_before_link(struct list *from_list,
 
 	assert(link != NULL);
 
-	if (!list_empty(from_list)) {
+	if (!list_is_empty(from_list)) {
 		from = &from_list->l;
 		l = &link->l;
 
@@ -154,7 +154,7 @@ void list_bulk_insert_after_link(struct list *from_list,
 
 	assert(link != NULL);
 
-	if (!list_empty(from_list)) {
+	if (!list_is_empty(from_list)) {
 		from = &from_list->l;
 		l = &link->l;
 
