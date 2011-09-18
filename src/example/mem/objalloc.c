@@ -17,7 +17,7 @@
 #include <framework/example/self.h>
 #include <mem/objalloc.h>
 
-/* initial count of objectects in allocator */
+/* Initial count of objects in the allocator */
 #define TOTAL_OBJECTS 16
 
 /**
@@ -26,7 +26,7 @@
  */
 EMBOX_EXAMPLE(run);
 
-/** struct you want to allocate in your allocator */
+/** Struct of object you want to allocate in your allocator */
 struct object_example {
 	/* storage data */
 	int data;
@@ -35,46 +35,48 @@ struct object_example {
 typedef struct object_example object_example_t;
 
 /**
- *  Create and initialize allocator.
+ *  Creates and initializes allocator.
  *  You can use your allocator immediately after it was created.
  *  @param allocator_name     - name of allocator
  *  @param struct object_example - type of objectects in allocator
- *  @param TOTAL_OBJECTS      - initial count of objectects in allocator
+ *  @param TOTAL_OBJECTS      - initial count of objects in allocator
  */
 OBJALLOC_DEF(allocator_name, struct object_example, TOTAL_OBJECTS);
 
 static int run(int argc, char **argv) {
-	/* allocate object in your allocator and use it after by pointer object */
+	/* Allocate object in your allocator and use it after by object pointer */
 	struct object_example *object = (struct object_example *) objalloc(
 			&allocator_name);
 
-	printf("Can start!");
+	printf("Now you can use it!");
 	if (!object) {
-		printf("Can not allocate!");
+		printf("Object was not allocated!");
 	}
 
-	/* use your created object */
+	/* Use your object */
 	object->data = 1;
 
-	/* if your object is useless you can delete it.
+	/* If your object is useless you can delete it.
 	 * Memory for object will be free */
 	objfree(&allocator_name, object);
 
-	/* if your allocator is useless you can delete it */
+	/* If your allocator is useless you can delete it */
 	objalloc_destroy(&allocator_name);
 
-	/* if you want to use function, but no macro */
+	/* If you want to use function, but no macro */
 	objalloc_t allocator;
-	/* init your allocator and check if it was inited */
+
+	/* It is the other way to initialize allocator:
+	 * Init your allocator and check if it was inited */
 	if(!objalloc_init(&allocator, sizeof(struct object_example), TOTAL_OBJECTS)) {
 		printf("Can not init allocator!");
 	}
 
 	/*
-	 *  now allocate and destroy your objects as above.
+	 *  Now allocate and destroy your objects as above.
 	 */
 
-	/* if your allocator is useless you can delete it */
+	/* If your allocator is useless you can delete it */
 	objalloc_destroy(&allocator);
 
 	return 0;
