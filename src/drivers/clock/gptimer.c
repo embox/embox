@@ -133,8 +133,6 @@ void clock_init(void) {
 
 	gptimer_clock_source.flags = 1;
 	gptimer_clock_source.precision = 1000;
-	gptimer_clock_source.timers_list.next = &gptimer_clock_source.timers_list;
-	gptimer_clock_source.timers_list.prev = &gptimer_clock_source.timers_list;
 	clock_source_register(&gptimer_clock_source);
 }
 
