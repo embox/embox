@@ -14,11 +14,11 @@ EMBOX_TEST_SUITE("basic timer tests");
 #define TEST_TIMER_PERIOD      100 /* milliseconds */
 
 static void test_timer_handler(sys_timer_t* timer, void *param) {
-	*(int *) param = 1;
+	*((int *) param) = 1;
 }
 
 TEST_CASE("testing timer_set function") {
-	long i;
+	unsigned long i;
 	sys_timer_t * timer;
 	volatile int tick_happened;
 
@@ -31,11 +31,11 @@ TEST_CASE("testing timer_set function") {
 			(void *) &tick_happened)) {
 		test_fail("failed to install timer");
 	}
-	for (i = 0; i < (1 << 30); i++) {
-		if (tick_happened) {
-			break;
-		}
-	}
+
+	i = -1;
+
+	while (i-- && !tick_happened);
+
 	timer_close(timer);
 
 	test_assert(tick_happened);

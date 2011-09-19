@@ -15,7 +15,6 @@
 struct clock_source {
 	uint32_t flags; // periodical or not
 	uint32_t precision;
-	struct list_head timers_list;
 };
 
 /* register new clock_source at system */

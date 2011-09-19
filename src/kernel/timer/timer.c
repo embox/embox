@@ -28,7 +28,7 @@ clock_t clock(void) {
 }
 
 POOL_DEF(timer_pool, sys_timer_t, TIMER_POOL_SZ);
-static struct list_head *sys_timers_list;
+static struct list_head sys_timers_list;
 
 int timer_init(sys_timer_t *ptimer, uint32_t ticks,
 		sys_timer_handler_t handler, void *param) {
@@ -40,7 +40,7 @@ int timer_init(sys_timer_t *ptimer, uint32_t ticks,
 	ptimer->cnt    = ptimer->load = ticks;
 	ptimer->handle = handler;
 	ptimer->param  = param;
-	list_add_tail(&ptimer->lnk, sys_timers_list);
+	list_add_tail(&ptimer->lnk, &sys_timers_list);
 
 	return 0;
 }
@@ -83,7 +83,7 @@ static void inc_sys_timers(void) {
 	struct list_head *tmp, *tmp2;
 	sys_timer_t *tmr;
 
-	list_for_each_safe(tmp, tmp2, sys_timers_list) {
+	list_for_each_safe(tmp, tmp2, &sys_timers_list) {
 		tmr = (sys_timer_t*) tmp;
 		if (0 == tmr->cnt--) {
 			tmr->handle(tmr, tmr->param);
@@ -107,8 +107,9 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  */
 int module_init(void) {
 	sys_ticks = 0;
+	INIT_LIST_HEAD(&sys_timers_list);
 	clock_init();
 	clock_setup(clock_source_get_precision());
-	sys_timers_list = clock_source_get_timers_list();
+//	sys_timers_list = clock_source_get_timers_list();
 	return 0;
 }

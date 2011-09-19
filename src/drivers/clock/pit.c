@@ -84,8 +84,6 @@ void clock_init(void) {
 	/* Initialization of clock source structure */
 	pit_clock_source.flags = 1;
 	pit_clock_source.precision = 1000;
-	pit_clock_source.timers_list.next = &pit_clock_source.timers_list;
-	pit_clock_source.timers_list.prev = &pit_clock_source.timers_list;
 	clock_source_register(&pit_clock_source);
 }
 

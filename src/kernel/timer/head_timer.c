@@ -56,10 +56,9 @@ static inline void timer_safe_section_end(void) {
 #endif
 }
 
-
 POOL_DEF(timer_pool, sys_timer_t, TIMER_POOL_SZ); //TODO: new allocator (objalloc)
 
-static struct list_head *sys_timers_list; /* list head was allocated by clock driver */
+static struct list_head sys_timers_list; /* list head to timers */
 
 static inline void timer_insert_into_list(struct sys_timer *tmr) {
 	struct list_head *iter, *tmp;
@@ -67,14 +66,14 @@ static inline void timer_insert_into_list(struct sys_timer *tmr) {
 	tmr->cnt = tmr->load;
 
 	/* if we haven't any timers we just insert new timer into the list */
-	if (list_empty(sys_timers_list)) {
+	if (list_empty(&sys_timers_list)) {
 		/* we just add timer to list */
-		list_add(&tmr->lnk, sys_timers_list);
+		list_add(&tmr->lnk, &sys_timers_list);
 		return;
 	}
 
 	/* find first element that its time bigger than inserting @new_time */
-	list_for_each_safe(iter, tmp, sys_timers_list) {
+	list_for_each_safe(iter, tmp, &sys_timers_list) {
 		struct sys_timer *it_tmr = (struct sys_timer*) iter;
 
 		if (it_tmr->cnt >= tmr->cnt) {
@@ -88,7 +87,7 @@ static inline void timer_insert_into_list(struct sys_timer *tmr) {
 	}
 
 	/* add the latest timer to end of list */
-	list_add_tail(&tmr->lnk, sys_timers_list);
+	list_add_tail(&tmr->lnk, &sys_timers_list);
 }
 
 int timer_set(struct sys_timer **ptimer, uint32_t ticks,	sys_timer_handler_t handler,
@@ -145,14 +144,14 @@ int timer_close(sys_timer_t *ptimer) {
 }
 
 static inline bool timers_need_schedule(void) {
-	if(list_empty(sys_timers_list)) {
+	if(list_empty(&sys_timers_list)) {
 		return false;
 	}
 
-	if(0 == ((sys_timer_t*)sys_timers_list->next)->cnt) {
+	if(0 == ((sys_timer_t*)sys_timers_list.next)->cnt) {
 		return true;
 	} else {
-		((sys_timer_t*)sys_timers_list->next)->cnt--;
+		((sys_timer_t*)sys_timers_list.next)->cnt--;
 	}
 
 	return false;
@@ -162,7 +161,7 @@ static inline void timers_schedule(void) {
 	struct sys_timer *timer;
 	struct list_head *iter, *tmp;
 
-	list_for_each_safe(iter, tmp, sys_timers_list) {
+	list_for_each_safe(iter, tmp, &sys_timers_list) {
 		timer = (struct sys_timer *)iter;
 
 		if (0 != timer->cnt) {
@@ -207,9 +206,9 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  */
 static int unit_init(void) {
 	sys_ticks = 0;
+	INIT_LIST_HEAD(&sys_timers_list);
 	clock_init();
 	clock_setup(clock_source_get_precision());
-	sys_timers_list = clock_source_get_timers_list();
 	timer_safe_section_init();
 	return 0;
 }

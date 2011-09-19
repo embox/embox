@@ -46,8 +46,3 @@ useconds_t clock_source_clock_to_usec(clock_t cl) {
 	assert(!list_empty(&clock_source_list));
 	return (useconds_t) (((useconds_t) cl) * ((struct clock_source_head *)clock_source_list.next)->clock_source->precision);
 }
-
-struct list_head * clock_source_get_timers_list(void) {
-	assert(!list_empty(&clock_source_list));
-	return &((struct clock_source_head *)clock_source_list.next)->clock_source->timers_list;
-}
