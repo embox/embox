@@ -8,9 +8,11 @@
 #include <types.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 #include <util/math.h>
 #include <fs/fs.h>
 #include <fs/file.h>
+#include <fs/ioctl.h>
 #include <fs/file_desc.h>
 #include <kernel/thread/api.h>
 #include <lib/linenoise.h>
@@ -161,11 +163,15 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 	current_tty = &ttys[0];
 	current_tty->make_active(current_tty);
 
+	fioctl(stdin, O_NONBLOCK_SET, NULL);
 	while (1) {
-		sleep(0);
-		read(0, &ch, 1);
+		while (-EAGAIN == read(0, &ch, 1)) {
+			sleep(0);
+		}
 		if (ch == '`') {
-			read(0, &ch, 1);
+			while (-EAGAIN == read(0, &ch, 1)) {
+				sleep(0);
+			}
 			if ('0' <= ch && ch <= '9') {
 				int n = ch - '0';
 				if (n < count) {
