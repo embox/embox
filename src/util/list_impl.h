@@ -71,13 +71,6 @@ static inline void __list_insert_link(struct __list_link *link,
 	__list_insert_chain(link, link, prev, next);
 }
 
-/* This is simply defined through structof macro. */
-#define __list_link_element(link, type, m_link) \
-	structof(__list_check(link), type, m_link)
-
-#define __list_alone(element, m_link) \
-	list_alone_link(&__list_check(element)->m_link)
-
 #define __list_foreach_link(link, list) \
 	__list_foreach__(link, list, __list_foreach_link_cast_assign, /* unused */)
 #define __list_foreach_link_cast_assign(_iter, link, ignored) \
@@ -121,42 +114,5 @@ static inline void __list_insert_link(struct __list_link *link,
 		struct list_link *__list_link__ = (link); \
 		__list_link__ ? list_link_element(__list_link__, type, m_link) : NULL;\
 	})
-
-#define __list_first(list, type, m_link) \
-	__list_link_safe_cast(list_first_link(list), type, m_link)
-
-#define __list_last(list, type, m_link) \
-	__list_link_safe_cast(list_last_link(list), type, m_link)
-
-#define __list_add_first(element, list, m_link) \
-	list_add_first_link(&__list_check(element)->m_link, list)
-
-#define __list_add_last(element, list, m_link) \
-	list_add_last_link(&__list_check(element)->m_link, list)
-
-#define __list_insert_before(element, list_element, m_link) \
-	list_insert_before_link(&__list_check(element)->m_link, \
-			&__list_check(list_element)->m_link)
-
-#define __list_insert_after(element, list_element, m_link) \
-	list_insert_after_link(&__list_check(element)->m_link, \
-			&__list_check(list_element)->m_link)
-
-#define __list_bulk_insert_before(from_list, before_element, m_link) \
-	list_bulk_insert_before_link(from_list, \
-			&__list_check(before_element)->m_link)
-
-#define __list_bulk_insert_after(from_list, after_element, m_link) \
-	list_bulk_insert_after_link(from_list, \
-			&__list_check(after_element)->m_link)
-
-#define __list_remove_first(list, type, m_link) \
-	__list_link_safe_cast(list_remove_first_link(list), type, m_link)
-
-#define __list_remove_last(list, type, m_link) \
-	__list_link_safe_cast(list_remove_last_link(list), type, m_link)
-
-#define __list_remove(element, m_link) \
-	list_remove_link(&__list_check(element)->m_link)
 
 #endif /* UTIL_LIST_IMPL_H_ */
