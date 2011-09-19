@@ -58,8 +58,8 @@ extern int ungetchar(int ch);
 static void unscanchar(char **str, int ch) {
 	/*	extern int ungetchar();*/
 	if ((int) str >= 2) {
-#if 0
-		*str --;
+#if 1
+		(*str) --;
 		**str = ch;
 
 		/*int *p;
@@ -118,8 +118,9 @@ static int scan_int(char **in, int base, int widht) {
 	int ch;
 	int i;
 
-	if (EOF == (ch = trim_leading(in)))
+	if (EOF == (ch = trim_leading(in))) {
 		return 0;/*error*/
+	}
 
 	if ((ch == '-') || (ch == '+')) {
 		neg = (ch == '-');
@@ -127,14 +128,14 @@ static int scan_int(char **in, int base, int widht) {
 		dst = 0;
 	}
 
-	for (i = 0; (ch = (int) toupper(ch)) != EOF; i++) {
+	for (i = 0; (ch = (int) toupper(scanchar(in))) != EOF; i++) {
 		if (!(base == 10 ? isdigit(ch) : isxdigit(ch)) || (0 == widht)) {
 			unscanchar(in, ch);
 			/*end conversion*/
 			break;
 		}
 		dst = base * dst + ch_to_digit(ch, base);
-		ch = scanchar(in);
+//		ch = scanchar(in);
 	}
 
 	if (neg)
