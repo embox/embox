@@ -43,10 +43,12 @@ static inline void prioq_enqueue_link(struct prioq_link *new_link,
 	if (!found) {
 		/* All of the existing elements (if any) have higher priority. */
 		list_add_tail(&new_link->prio_link, &prioq->prio_list);
+		assert(list_empty(&new_link->elem_link));
 
-	} else if (comparison <= 0) {
+	} else if (comparison < 0) {
 		/* Found a chain with lower priority. */
 		list_add(&new_link->prio_link, &found->prio_link);
+		assert(list_empty(&new_link->elem_link));
 
 	} else {
 		/* Found a chain with the same priority. */
