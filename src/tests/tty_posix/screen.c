@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <embox/runlevel.h>
-extern int ttyo_diag_init(void);
+extern int tty_posix_console_diag_init(void);
 
 EMBOX_TEST(run);
 
@@ -27,9 +27,7 @@ static int run(void) {
 	if (runlevel < 2)
 		return 0;
 
-	rc = ttyo_diag_init();
-	if (rc == -1)
-		test_fail("timeout or wrong key");
+	rc = tty_posix_console_diag_init();
 
 	return rc;
 }
