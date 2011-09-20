@@ -14,8 +14,8 @@
 #include <asm/io.h>
 #include <drivers/i8259.h>
 
-void irq_handler(pt_regs_t regs) {
-	int irqn = regs.trapno - 0x20;
+void irq_handler(pt_regs_t *regs) {
+	int irqn = regs->trapno - 0x20;
 	/* Send an EOI (end of interrupt) signal to the PICs.
 	   If this interrupt involved the slave. */
 	interrupt_disable(irqn);

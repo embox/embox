@@ -116,9 +116,14 @@ irq_stub:
 	movl    %ss, %eax
 	movl    %eax, %ds
 	movl    %eax, %es
-	movl    %esp, %eax
+
+	mov	    %esp, %ebp		/* Save current stack */
+
+	pushl   %ebp
 
 	call    EXT_C(irq_handler)
+
+	movl    %ebp, %esp		/* Restore original stack */
 
 	pop     %gs
 	pop     %fs
@@ -126,6 +131,7 @@ irq_stub:
 	pop     %ds
 
 	popa
+
 	add     $8, %esp
 
 	iret
