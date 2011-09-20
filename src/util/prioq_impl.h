@@ -40,6 +40,7 @@ static inline void prioq_enqueue_link(struct prioq_link *new_link,
 	}
 
 	// TODO May be extract the following into a non-inline function. -- Eldar
+	// TODO Don't like it, too many code repetition
 	if (!found) {
 		/* All of the existing elements (if any) have higher priority. */
 		list_add_tail(&new_link->prio_link, &prioq->prio_list);
@@ -47,7 +48,7 @@ static inline void prioq_enqueue_link(struct prioq_link *new_link,
 
 	} else if (comparison < 0) {
 		/* Found a chain with lower priority. */
-		list_add(&new_link->prio_link, &found->prio_link);
+		list_add_tail(&new_link->prio_link, &found->prio_link);
 		assert(list_empty(&new_link->elem_link));
 
 	} else {
