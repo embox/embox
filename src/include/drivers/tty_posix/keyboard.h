@@ -8,7 +8,7 @@
 #ifndef KEYBOARD_H_
 #define KEYBOARD_H_
 
-#define FUNC_KEY_USED 0
+
 
 /* Standard and AT keyboard.  (PS/2 MCA implies AT throughout.) */
 #define KEYBD		0x60	/* I/O port for keyboard data */
@@ -59,7 +59,8 @@ FORWARD _PROTOTYPE( unsigned make_break, (int scode) );
 FORWARD _PROTOTYPE( void set_leds, (void) );
 FORWARD _PROTOTYPE( void kb_read, (struct tty *tp) );
 FORWARD _PROTOTYPE( unsigned map_key, (int scode) );
-FORWARD void kb_init(struct tty *tp);
+PUBLIC void kb_init(struct tty *tp);
+
 //FORWARD void kb_reset(void);
 
 /**

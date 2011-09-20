@@ -8,11 +8,39 @@
 #ifndef TTY_H_
 #define TTY_H_
 
+/**
+ * DEVICDE config
+ */
+/* First minor numbers for the various classes of TTY devices. */
+#define CONS_MINOR	  0
+#define LOG_MINOR	 15
+#define RS232_MINOR	 16
+#define TTYPX_MINOR	128
+#define PTYPX_MINOR	192
+
+
+#ifndef CONFIG_NR_CONS
+#define CONFIG_NR_CONS 1
+#endif
+#ifndef CONFIG_NR_RS_LINES
+#define CONFIG_NR_RS_LINES 0
+#endif
+#ifndef CONFIG_NR_PTYS
+#define CONFIG_NR_PTYS 0
+#endif
+
+#define USE_BEEP 0				/* use the Beep or not */
+#define FUNC_KEY_USED 0			/* use function keys */
+
 #define TTY_IN_BYTES     256	/* tty input queue size */
 #define TAB_SIZE           8	/* distance between tab stops */
 #define TAB_MASK           7	/* mask to compute a tab stop position */
 
 #define ESC             '\33'	/* escape */
+
+#define REVIVE	 	  67	/* to FS: revive a sleeping process */
+#define TASK_REPLY	  68	/* to FS: reply code from tty task */
+
 
 #define O_NOCTTY       00400	/* from <fcntl.h>, or cc will choke */
 #define O_NONBLOCK     04000
@@ -24,7 +52,7 @@ typedef void (*devfunarg_t) (struct tty *tp, int c) ;
 
 typedef struct tty {
   int tty_events;		/* set when TTY should inspect this line */
-
+  int	tty_instance;	/* instance of console,rs232 or pty */
   /* Input queue.  Typed characters are stored here until read by a program. */
   u16_t *tty_inhead;		/* pointer to place where next char goes */
   u16_t *tty_intail;		/* pointer to next char to be given to prog */
@@ -52,19 +80,19 @@ typedef struct tty {
 
   /* Information about incomplete I/O requests is stored here. */
   char tty_inrepcode;		/* reply code, TASK_REPLY or REVIVE */
-  char tty_incaller;		/* process that made the call (usually FS) */
-  char tty_inproc;		/* process that wants to read from tty */
+  struct thread * tty_incaller;		/* process that made the call (usually FS) */
+  struct thread * tty_inproc;		/* process that wants to read from tty */
   vir_bytes tty_in_vir;		/* virtual address where data is to go */
   int tty_inleft;		/* how many chars are still needed */
   int tty_incum;		/* # chars input so far */
   char tty_outrepcode;		/* reply code, TASK_REPLY or REVIVE */
-  char tty_outcaller;		/* process that made the call (usually FS) */
-  char tty_outproc;		/* process that wants to write to tty */
+  struct thread * tty_outcaller;		/* process that made the call (usually FS) */
+  struct thread * tty_outproc;		/* process that wants to write to tty */
   vir_bytes tty_out_vir;	/* virtual address where data comes from */
   int tty_outleft;		/* # chars yet to be output */
   int tty_outcum;		/* # chars output so far */
-  char tty_iocaller;		/* process that made the call (usually FS) */
-  char tty_ioproc;		/* process that wants to do an ioctl */
+  struct thread * tty_iocaller;		/* process that made the call (usually FS) */
+  struct thread * tty_ioproc;		/* process that wants to do an ioctl */
   int tty_ioreq;		/* ioctl request code */
   vir_bytes tty_iovir;		/* virtual address of ioctl buffer */
 
@@ -77,6 +105,7 @@ typedef struct tty {
 
   u16_t tty_inbuf[TTY_IN_BYTES];/* tty input buffer */
 } tty_t;
+
 
 EXTERN tty_t tty_table[CONFIG_NR_CONS + CONFIG_NR_RS_LINES + CONFIG_NR_PTYS];
 EXTERN int current;				/* currently visible console */
@@ -118,7 +147,66 @@ EXTERN tty_t *tty_timelist;	/* list of ttys with active timers */
 #define buflen(buf)	(sizeof(buf) / sizeof((buf)[0]))
 #define bufend(buf)	((buf) + buflen(buf))
 
-EXTERN int in_process		(register tty_t *tp, char *buf, int count);
-EXTERN void select_console	(int cons_line);
+EXTERN int	 	in_process		(register tty_t *tp, char *buf, int count);
+EXTERN void 	select_console	(int cons_line);
+EXTERN void 	tty_reply		(int code, struct thread *replyee, struct thread *proc_nr, int status);
+EXTERN tty_t* 	getTTY			(int line);
+EXTERN tty_t* 	getTTY_Cons		(int line);
+EXTERN tty_t* 	getTTY_Log		(int line);
+EXTERN tty_t* 	getTTY_Rs232	(int line);
+EXTERN tty_t* 	getTTY_TTYPX	(int line);
+EXTERN tty_t* 	getTTY_PTYPX	(int line);
+
+//#####################################################################
+// Message Types, defines
+//#####################################################################
+typedef struct {int m2i1, m2i2, m2i3; long m2l1, m2l2; char *m2p1;struct thread * m2p2;} mess_2;
+typedef struct tty_msg {
+	struct thread *  m_source;			/* who sent the message */
+	int m_type;			/* what kind of message is it */
+	union {
+		mess_2 m_m2;
+	} m_u;
+} tty_msg_t;
+
+#define m2_i1  m_u.m_m2.m2i1
+#define m2_i2  m_u.m_m2.m2i2
+#define m2_i3  m_u.m_m2.m2i3
+#define m2_l1  m_u.m_m2.m2l1
+#define m2_l2  m_u.m_m2.m2l2
+#define m2_p1  m_u.m_m2.m2p1
+#define m2_p2  m_u.m_m2.m2p2
+
+/* Names of message fields used for messages to block and character tasks. */
+#define DEVICE         m2_i1	/* major-minor device */
+#define PROC_NR        m2_p2	/* which (proc) wants I/O? */
+#define COUNT          m2_i3	/* how many bytes to transfer */
+#define REQUEST        m2_i3	/* ioctl request code */
+#define POSITION       m2_l1	/* file offset */
+#define ADDRESS        m2_p1	/* core buffer address */
+
+/* Names of messages fields used in reply messages from tasks. */
+#define REP_PROC_NR    m2_i1	/* # of proc on whose behalf I/O was done */
+#define REP_STATUS     m2_i2	/* bytes transferred or error number */
+
+/* Names of message fields for messages to TTY task. */
+#define TTY_LINE       DEVICE	/* message parameter: terminal line */
+#define TTY_REQUEST    COUNT	/* message parameter: ioctl request code */
+#define TTY_SPEK       POSITION	/* message parameter: ioctl speed, erasing */
+#define TTY_FLAGS      m2_l2	/* message parameter: ioctl tty mode */
+#define TTY_PGRP       m2_i3	/* message parameter: process group */
+
+// possible m_type values
+#define CANCEL       0	/* general req to force a task to cancel */
+#define HARD_INT     2	/* fcn code for all hardware interrupts */
+#define DEV_READ	    3	/* fcn code for reading from tty */
+#define DEV_WRITE    4	/* fcn code for writing to tty */
+#define DEV_IOCTL    5	/* fcn code for ioctl */
+#define DEV_OPEN     6	/* fcn code for opening tty */
+#define DEV_CLOSE    7	/* fcn code for closing tty */
+#define DEV_SCATTER  8	/* fcn code for writing from a vector */
+#define DEV_GATHER   9	/* fcn code for reading into a vector */
+#define TTY_SETPGRP 10	/* fcn code for setpgroup */
+#define TTY_EXIT	   11	/* a process group leader has exited */
 
 #endif /* TTY_H_ */
