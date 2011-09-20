@@ -92,7 +92,8 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 	if (hash_idx == 0) {
 		strncpy(dev->name, name, sizeof(dev->name) - 1);
 	} else {
-		sprintf(buff, name, hash_idx - 1); /* FIXME can happen array bounds exceeded. Need snprintf() function */
+		/* FIXME can happen array bounds exceeded. Need snprintf() function */
+		sprintf(buff, "%s%d", name, hash_idx - 1);
 		strncpy(dev->name, buff, sizeof(dev->name) - 1);
 	}
 

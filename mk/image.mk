@@ -119,6 +119,7 @@ override CFLAGS += -fno-strict-aliasing -fno-common
 override CFLAGS += -Wall -Werror
 override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
 override CFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
+override CFLAGS += -Wformat -Wformat-nonliteral -Wno-format-zero-length
 override CFLAGS += -pipe
 override CFLAGS += $(cflags)
 
