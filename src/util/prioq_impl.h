@@ -68,7 +68,8 @@ static inline void prioq_remove_link(struct prioq_link *link,
 	}
 
 	if (!list_empty(&link->elem_link)) {
-		struct list_head *new_prio_link = link->elem_link.next;
+		struct prioq_link *new_link = list_entry(link->elem_link.next, struct prioq_link, elem_link);
+		struct list_head *new_prio_link = &new_link->prio_link;
 
 		/* Replace priority link being deleted with a new one. */
 		list_add(new_prio_link, &link->prio_link);
