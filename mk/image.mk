@@ -114,7 +114,7 @@ override ASFLAGS += $(asflags)
 
 # Compiler flags
 cflags := $(CFLAGS)
-override CFLAGS  = -pedantic -std=gnu99
+override CFLAGS  = -std=gnu99
 override CFLAGS += -fno-strict-aliasing -fno-common
 override CFLAGS += -Wall -Werror
 override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
