@@ -13,7 +13,7 @@
 
 #ifdef NDEBUG
 
-# define __assert(condition, expr_str) \
+# define __assert(condition, expr_str, message...) \
 	do { } while (0)
 
 #else
@@ -26,36 +26,19 @@ struct __assertion_point {
 extern void __attribute__ ((noreturn)) __assertion_handle_failure(
 		const struct __assertion_point *point);
 
-// TODO don't like it anymore. -- Eldar
-# ifndef __ASSERT_HANDLE_NO_EXTERN_INLINE
-extern inline
-#  ifdef __GNUC_STDC_INLINE__
-__attribute__((__gnu_inline__))
-#  endif /* __GNUC_STDC_INLINE__ */
-# else
-/* Included from assert.c, emit global symbol for __assertion_handle. */
-# endif /* __ASSERT_HANDLE_NO_EXTERN_INLINE */
-void __assertion_handle(int pass, const struct __assertion_point *point) {
-	if (!pass) {
-		__assertion_handle_failure(point);
-	}
-}
-
-# define __assertion_point__(expression_str) \
-	({                                                              \
-		static const struct __assertion_point __assertion_point = { \
-			.location = LOCATION_FUNC_INIT,                         \
-			.expression = expression_str,                           \
-		};                                                          \
-		&__assertion_point;                                         \
-	})
-
-# define __assert(condition, expr_str) \
-	(__builtin_constant_p(condition)                                               \
-		? ((condition)                                                         \
-			? (void) 0                                                     \
-			: __assertion_handle_failure(__assertion_point__(expr_str)))   \
-		: __assertion_handle((int) (condition), __assertion_point__(expr_str)))
+# define __assert(condition, expr_str, message...) \
+	do { \
+		if (!(condition)) {                                             \
+			extern char *__assertion_message_buff;                      \
+			static const struct __assertion_point __assertion_point = { \
+				.location = LOCATION_FUNC_INIT,                         \
+				.expression = expr_str,                                 \
+			};                                                          \
+			extern int sprintf(char *s, const char *format, ...);       \
+			sprintf(__assertion_message_buff, "" message);              \
+			__assertion_handle_failure(&__assertion_point);             \
+		}                                                               \
+	} while(0)
 
 #endif /* NDEBUG */
 

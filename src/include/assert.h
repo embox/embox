@@ -23,14 +23,16 @@
  *
  * @param condition
  *   The expression being asserted.
+ * @param message
+ *   Optional message in @c printf format.
  */
-#define assert(condition) \
-	  __assert(condition, #condition)
+#define assert(condition, message...) \
+	  __assert(condition, #condition, message)
 
 /* Hide assert internals from CDT macro expansion and code formatter. */
 #ifdef __CDT_PARSER__
 # undef assert
-extern void assert(int condition);
+extern void assert(int condition, ...);
 #endif /* __CDT_PARSER__ */
 
 #endif /* ASSERT_H_ */
