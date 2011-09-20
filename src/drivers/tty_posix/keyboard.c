@@ -66,14 +66,14 @@ static int		kbd_ioctl					(void *file, int request, va_list args);
 static void 	diag_timer_handler		(sys_timer_t* timer, void *param);
 static int 		diag_waiting_key		(int sec);
 static tty_t	*getTty					(void* file);
-
+PUBLIC void 	kb_init					(struct tty *tp);
 /**
  * vars
  */
 volatile static bool	diagMode 	= false;		// dont optimize
 volatile static int 	diagKey 	= -1;
 volatile static int 	ignore_chars= -1;
-
+static bool irqInitialized = false;
 
 static file_operations_t file_op = {
 	.fread 	= kbd_read,
@@ -189,17 +189,13 @@ static void *kbd_open(struct file_desc *desc) {
 #endif
 	kb_init(tp);
 
-	/* Set interrupt handler and enable keyboard IRQ. */
-	// TODO check return code.
-	irq_attach((irq_nr_t) KEYBOARD_IRQ,keyboard_int_handler, 0, NULL, "keyboard");
-
 	return (void *)&file_op;
 }
 
 static int kbd_close(struct file_desc *desc) {
 	//tty_t *tp = getTty(file);
 	irq_detach((irq_nr_t) KEYBOARD_IRQ,NULL);
-
+	irqInitialized = true;
 	return 0;
 }
 
@@ -504,6 +500,12 @@ irq_return_t keyboard_int_handler(irq_nr_t irq_num, void *data) {
 PUBLIC void kb_init(tp)
 tty_t *tp;
 {
+
+	if (!irqInitialized) {
+		/* Set interrupt handler and enable keyboard IRQ. */
+		irq_attach((irq_nr_t) KEYBOARD_IRQ,keyboard_int_handler, 0, NULL, "keyboard");
+		irqInitialized = true;
+	}
 	tp->tty_devread = kb_read;	/* Input function */
 
 	set_leds();			/* Turn off numlock led */

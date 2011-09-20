@@ -56,6 +56,8 @@
 #include <types.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#include <stdlib.h>
 #include <embox/unit.h>
 #include <embox/device.h>
 #include <embox/service/callback.h>
@@ -63,6 +65,8 @@
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 #include <kernel/timer.h>
+#include <kernel/thread/api.h>
+#include <kernel/thread/sync/message.h>
 #include <hal/reg.h>
 #include <fs/node.h>
 #include <fs/file.h>
@@ -90,14 +94,6 @@ static int 		ioctl		(void *file, int request, va_list args);
 #endif
 
 
-/* First minor numbers for the various classes of TTY devices. */
-#define CONS_MINOR	  0
-#define LOG_MINOR	 15
-#define RS232_MINOR	 16
-#define TTYPX_MINOR	128
-#define PTYPX_MINOR	192
-
-
 #define ENABLE_SRCCOMPAT 0
 #define ENABLE_BINCOMPAT 0
 
@@ -111,15 +107,15 @@ static int 		ioctl		(void *file, int request, va_list args);
 	#define do_pty(tp, mp)	((void) 0)
 #endif
 
-#if 0
-FORWARD _PROTOTYPE( void do_cancel, (tty_t *tp, message *m_ptr)		);
-FORWARD _PROTOTYPE( void do_ioctl, (tty_t *tp, message *m_ptr)		);
-FORWARD _PROTOTYPE( void do_open, (tty_t *tp, message *m_ptr)		);
-FORWARD _PROTOTYPE( void do_close, (tty_t *tp, message *m_ptr)		);
-FORWARD _PROTOTYPE( void do_read, (tty_t *tp, message *m_ptr)		);
-FORWARD _PROTOTYPE( void do_write, (tty_t *tp, message *m_ptr)		);
+#if 1
+FORWARD _PROTOTYPE( void do_cancel, (tty_t *tp, tty_msg_t *m_ptr)		);
+FORWARD _PROTOTYPE( void do_ioctl, (tty_t *tp, tty_msg_t *m_ptr)		);
+FORWARD _PROTOTYPE( void do_open, (tty_t *tp, tty_msg_t *m_ptr)		);
+FORWARD _PROTOTYPE( void do_close, (tty_t *tp, tty_msg_t *m_ptr)		);
+FORWARD _PROTOTYPE( void do_read, (tty_t *tp, tty_msg_t *m_ptr)		);
+FORWARD _PROTOTYPE( void do_write, (tty_t *tp, tty_msg_t *m_ptr)		);
 #endif
-#if 0
+#if 1
 FORWARD _PROTOTYPE( void in_transfer, (tty_t *tp)			);
 FORWARD _PROTOTYPE( int echo, (tty_t *tp, int ch)			);
 FORWARD _PROTOTYPE( void rawecho, (tty_t *tp, int ch)			);
@@ -129,6 +125,7 @@ FORWARD _PROTOTYPE( void dev_ioctl, (tty_t *tp)				);
 FORWARD _PROTOTYPE( void setattr, (tty_t *tp)				);
 FORWARD _PROTOTYPE( void tty_icancel, (tty_t *tp)			);
 FORWARD _PROTOTYPE( void tty_init, (tty_t *tp)				);
+FORWARD _PROTOTYPE( void tty_devnop,(tty_t *tp)				);
 FORWARD _PROTOTYPE( void settimer, (tty_t *tp, int on)			);
 #if ENABLE_SRCCOMPAT || ENABLE_BINCOMPAT
 FORWARD _PROTOTYPE( int compat_getp, (tty_t *tp, struct sgttyb *sg)	);
@@ -138,7 +135,7 @@ FORWARD _PROTOTYPE( int compat_setc, (tty_t *tp, struct tchars *sg)	);
 FORWARD _PROTOTYPE( int tspd2sgspd, (speed_t tspd)			);
 FORWARD _PROTOTYPE( speed_t sgspd2tspd, (int sgspd)			);
 #if ENABLE_BINCOMPAT
-FORWARD _PROTOTYPE( void do_ioctl_compat, (tty_t *tp, message *m_ptr)	);
+FORWARD _PROTOTYPE( void do_ioctl_compat, (tty_t *tp, tty_msg *m_ptr)	);
 #endif
 #endif
 
@@ -156,52 +153,98 @@ PRIVATE struct winsize winsize_defaults;	/* = all zeroes */
 
 PUBLIC int current = 0;		/* currently visible console */
 PUBLIC tty_t tty_table[CONFIG_NR_CONS + CONFIG_NR_RS_LINES + CONFIG_NR_PTYS];
+PUBLIC struct thread *tty_thread;
+#define TTY &tty_thread
+clock_t tty_timeout;	/* time to wake up the TTY task */
+static void *tty_task(void *data);
+PUBLIC void handle_events(tty_t *tp);
 
-#if 0
+
+EMBOX_UNIT_INIT(tty_task_init);
+static int tty_task_init(void)
+{
+	// create thread
+	thread_create(	&tty_thread,
+					THREAD_FLAG_PRIORITY_INHERIT | THREAD_FLAG_DETACHED,
+					tty_task,
+					NULL);
+	// TODO create timer
+	return 0;
+}
 /*===========================================================================*
  *				tty_task				     *
  *===========================================================================*/
-PUBLIC void tty_task()
+static void *tty_task(void *data)
 {
 /* Main routine of the terminal task. */
 
-  message tty_mess;		/* buffer for all incoming messages */
+  tty_msg_t *tty_mess;		/* buffer for all incoming messages */
+  struct message *pMsg;
   register tty_t *tp;
   unsigned line;
+  FILE *f;
+  int i;
+
+  // create all console devices
+  f = fopen("/dev/console", "w");
+  if (NULL == f) {
+	  LOG_ERROR("/dev/console has not registered!\n");
+	  return -1;
+  }
 
   /* Initialize the terminal lines. */
-  for (tp = FIRST_TTY; tp < END_TTY; tp++) tty_init(tp);
+  line  = 0;
+  idx 	= 0;
+  int uLineCon 	= 1;
+  int dLineCon 	= CONFIG_NR_CONS;
 
-  /* Display the Minix startup banner. */
-  printf("Minix %s.%s  Copyright 2001 Prentice-Hall, Inc.\n\n",
-						OS_RELEASE, OS_VERSION);
+  int uLineRs 	= CONFIG_NR_CONS + 1;
+  int dLineRs 	= CONFIG_NR_CONS + 1 + CONFIG_NR_RS_LINES;
 
-#if (CHIP == INTEL)
-  /* Real mode, or 16/32-bit protected mode? */
-#if _WORD_SIZE == 4
-  printf("Executing in 32-bit protected mode\n\n");
-#else
-  printf("Executing in %s mode\n\n",
-	protected_mode ? "16-bit protected" : "real");
-#endif
-#endif
+  int uLinePty 	= CONFIG_NR_CONS + 1 + CONFIG_NR_RS_LINES + 1;
+  int dLinePty	= CONFIG_NR_PTYS;
+
+  for (tp = FIRST_TTY; tp < END_TTY; tp++) {
+
+	  if (line <  CONFIG_NR_CONS)
+	  {
+		  idx = line;
+	  }
+	  if (line >= uLineCon && line <= dLineCon)
+	  {
+		  idx = line - uLineCon;
+	  }
+	  if (line >= uLineRs && line <= dLineRs)
+	  {
+		  idx = line - uLineRs;
+	  }
+	  if (line >= uLinePty && line <= dLinePty)
+	  {
+		  idx = line - uLinePty;
+	  }
+
+	  tty_init(tp,idx);
+
+	  i = ++line;
+  }
 
   while (TRUE) {
 	/* Check if a timer expired. */
-	if (cproc_addr(TTY)->p_exptimers != NULL) tmr_exptimers();
-
+	#if 0
+	  if (cproc_addr(TTY)->p_exptimers != NULL) tmr_exptimers();
+	#endif
 	/* Handle any events on any of the ttys. */
 	for (tp = FIRST_TTY; tp < END_TTY; tp++) {
 		if (tp->tty_events) handle_events(tp);
 	}
-
-	receive(ANY, &tty_mess);
+	pMsg = message_receive();
+	tty_mess = (tty_msg_t *)pMsg->data;
 
 	/* A hardware interrupt is an invitation to check for events. */
-	if (tty_mess.m_type == HARD_INT) continue;
+	if (tty_mess->m_type == HARD_INT) continue;
 
 	/* Check the minor device number. */
-	line = tty_mess.TTY_LINE;
+	line = tty_mess->TTY_LINE;
 	if ((line - CONS_MINOR) < CONFIG_NR_CONS) {
 		tp = tty_addr(line - CONS_MINOR);
 	} else
@@ -216,8 +259,9 @@ PUBLIC void tty_task()
 	} else
 	if ((line - PTYPX_MINOR) < CONFIG_NR_PTYS) {
 		tp = tty_addr(line - PTYPX_MINOR + CONFIG_NR_CONS + CONFIG_NR_RS_LINES);
-		if (tty_mess.m_type != DEV_IOCTL) {
-			do_pty(tp, &tty_mess);
+		if (tty_mess->m_type != DEV_IOCTL) {
+			do_pty(tp, tty_mess);
+			free(tty_mess);
 			continue;
 		}
 	} else {
@@ -226,32 +270,75 @@ PUBLIC void tty_task()
 
 	/* If the device doesn't exist or is not configured return ENXIO. */
 	if (tp == NULL || !tty_active(tp)) {
-		tty_reply(TASK_REPLY, tty_mess.m_source,
-						tty_mess.PROC_NR, ENXIO);
+		tty_reply(TASK_REPLY, tty_mess->m_source,tty_mess->PROC_NR, ENXIO);
+		free(tty_mess);
 		continue;
 	}
 
 	/* Execute the requested function. */
-	switch (tty_mess.m_type) {
-	    case DEV_READ:	do_read(tp, &tty_mess);		break;
-	    case DEV_WRITE:	do_write(tp, &tty_mess);	break;
-	    case DEV_IOCTL:	do_ioctl(tp, &tty_mess);	break;
-	    case DEV_OPEN:	do_open(tp, &tty_mess);		break;
-	    case DEV_CLOSE:	do_close(tp, &tty_mess);	break;
-	    case CANCEL:	do_cancel(tp, &tty_mess);	break;
-	    default:		tty_reply(TASK_REPLY, tty_mess.m_source,
-						tty_mess.PROC_NR, EINVAL);
+	switch (tty_mess->m_type) {
+	    case DEV_READ:	do_read(tp, tty_mess);		break;
+	    case DEV_WRITE:	do_write(tp, tty_mess);	break;
+	    case DEV_IOCTL:	do_ioctl(tp, tty_mess);	break;
+	    case DEV_OPEN:	do_open(tp, tty_mess);		break;
+	    case DEV_CLOSE:	do_close(tp, tty_mess);	break;
+	    case CANCEL:	do_cancel(tp, tty_mess);	break;
+	    default:		tty_reply(TASK_REPLY, tty_mess->m_source,tty_mess->PROC_NR, EINVAL);
 	}
+	free(tty_mess);
   }
+  return 0;
 }
 
+/*==========================================================================*
+ *				tty_init				    *
+ *==========================================================================*/
+PRIVATE void tty_init(tty_t *tp,int line)
+/* TTY line to initialize.
+ * instance line */
+{
+/* Initialize tty structure and call device initialization routines. */
+	FILE *fc,*fk;
+	node_t* node;
+
+	tp->tty_intail = tp->tty_inhead = tp->tty_inbuf;
+	tp->tty_min = 1;
+	tp->tty_termios = termios_defaults;
+	tp->tty_icancel = tp->tty_ocancel = tp->tty_ioctl = tp->tty_close = tty_devnop;
+
+	if (tp < tty_addr(CONFIG_NR_CONS)) {
+
+		fc = fopen(sprintf("/dev/console/%d",line), "w");
+		if (NULL == fc) {
+			LOG_ERROR("/dev/console/0 has not registered!\n");
+			return -1;
+		}
+		node = (node_t*) fc;
+		cons = (console_t *)node->attr;
+
+		if (tp == tty_addr(CONFIG_NR_CONS)) {
+			fk = fopen("/dev/kbd", "r");
+			if (NULL == fk) {
+				LOG_ERROR("/dev/kbd has not registered!\n");
+				return -1;
+			}
+		}
+
+	} else {
+		if (tp < tty_addr(CONFIG_NR_CONS+CONFIG_NR_RS_LINES)) {
+			rs_init(tp);
+		} else {
+			pty_init(tp);
+		}
+	}
+}
 
 /*===========================================================================*
  *				do_read					     *
  *===========================================================================*/
 PRIVATE void do_read(tp, m_ptr)
 register tty_t *tp;		/* pointer to tty struct */
-message *m_ptr;			/* pointer to message sent to the task */
+tty_msg_t *m_ptr;			/* pointer to tty_msg sent to the task */
 {
 /* A process wants to read from a terminal. */
   int r;
@@ -268,7 +355,7 @@ message *m_ptr;			/* pointer to message sent to the task */
   if (numap(m_ptr->PROC_NR, (vir_bytes) m_ptr->ADDRESS, m_ptr->COUNT) == 0) {
 	r = EFAULT;
   } else {
-	/* Copy information from the message to the tty struct. */
+	/* Copy information from the tty_msg to the tty struct. */
 	tp->tty_inrepcode = TASK_REPLY;
 	tp->tty_incaller = m_ptr->m_source;
 	tp->tty_inproc = m_ptr->PROC_NR;
@@ -324,7 +411,7 @@ message *m_ptr;			/* pointer to message sent to the task */
  *===========================================================================*/
 PRIVATE void do_write(tp, m_ptr)
 register tty_t *tp;
-register message *m_ptr;	/* pointer to message sent to the task */
+register tty_msg_t *m_ptr;	/* pointer to tty_msg sent to the task */
 {
 /* A process wants to write on a terminal. */
   int r;
@@ -341,7 +428,7 @@ register message *m_ptr;	/* pointer to message sent to the task */
   if (numap(m_ptr->PROC_NR, (vir_bytes) m_ptr->ADDRESS, m_ptr->COUNT) == 0) {
 	r = EFAULT;
   } else {
-	/* Copy message parameters to the tty structure. */
+	/* Copy tty_msg parameters to the tty structure. */
 	tp->tty_outrepcode = TASK_REPLY;
 	tp->tty_outcaller = m_ptr->m_source;
 	tp->tty_outproc = m_ptr->PROC_NR;
@@ -372,7 +459,7 @@ register message *m_ptr;	/* pointer to message sent to the task */
  *===========================================================================*/
 PRIVATE void do_ioctl(tp, m_ptr)
 register tty_t *tp;
-message *m_ptr;			/* pointer to message sent to task */
+tty_msg_t *m_ptr;			/* pointer to tty_msg sent to task */
 {
 /* Perform an IOCTL on this terminal. Posix termios calls are handled
  * by the IOCTL system call
@@ -578,7 +665,7 @@ message *m_ptr;			/* pointer to message sent to task */
  *===========================================================================*/
 PRIVATE void do_open(tp, m_ptr)
 register tty_t *tp;
-message *m_ptr;			/* pointer to message sent to task */
+tty_msg_t *m_ptr;			/* pointer to tty_msg sent to task */
 {
 /* A tty line has been opened.  Make it the callers controlling tty if
  * O_NOCTTY is *not* set and it is not the log device.  1 is returned if
@@ -605,7 +692,7 @@ message *m_ptr;			/* pointer to message sent to task */
  *===========================================================================*/
 PRIVATE void do_close(tp, m_ptr)
 register tty_t *tp;
-message *m_ptr;			/* pointer to message sent to task */
+tty_msg_t *m_ptr;			/* pointer to tty_msg sent to task */
 {
 /* A tty line has been closed.  Clean up the line if it is the last close. */
 
@@ -627,7 +714,7 @@ message *m_ptr;			/* pointer to message sent to task */
  *===========================================================================*/
 PRIVATE void do_cancel(tp, m_ptr)
 register tty_t *tp;
-message *m_ptr;			/* pointer to message sent to task */
+tty_msg_t *m_ptr;			/* pointer to tty_msg sent to task */
 {
 /* A signal has been sent to a process that is hanging trying to read or write.
  * The pending read or write must be finished off immediately.
@@ -657,7 +744,6 @@ message *m_ptr;			/* pointer to message sent to task */
   tty_reply(TASK_REPLY, m_ptr->m_source, proc_nr, EINTR);
 }
 
-
 /*===========================================================================*
  *				handle_events				     *
  *===========================================================================*/
@@ -670,7 +756,7 @@ tty_t *tp;			/* TTY to check for events. */
  * Two kinds of events are prominent:
  *	- a character has been received from the console or an RS232 line.
  *	- an RS232 line has completed a write request (on behalf of a user).
- * The interrupt handler may delay the interrupt message at its discretion
+ * The interrupt handler may delay the interrupt tty_msg at its discretion
  * to avoid swamping the TTY task.  Messages may be overwritten when the
  * lines are fast or when there are races between different lines, input
  * and output, because MINIX only provides single buffering for interrupt
@@ -770,7 +856,6 @@ register tty_t *tp;		/* pointer to terminal to read from */
 	tp->tty_inleft = tp->tty_incum = 0;
   }
 }
-
 
 /*===========================================================================*
  *				in_process				     *
@@ -934,7 +1019,7 @@ int count;			/* number of input characters */
   }
   return ct;
 }
-
+#if 0
 
 /*===========================================================================*
  *				echo					     *
@@ -1249,28 +1334,78 @@ tty_t *tp;
   (*tp->tty_ioctl)(tp);
 }
 
-
+#endif
 /*===========================================================================*
  *				tty_reply				     *
  *===========================================================================*/
-PUBLIC void tty_reply(code, replyee, proc_nr, status)
-int code;			/* TASK_REPLY or REVIVE */
-int replyee;			/* destination address for the reply */
-int proc_nr;			/* to whom should the reply go? */
-int status;			/* reply code */
+PUBLIC void tty_reply(int code, struct thread *replyee, struct thread * proc_nr, int status)
+//int code;			/* TASK_REPLY or REVIVE */
+//int replyee;		/* destination address for the reply */
+//int proc_nr;		/* to whom should the reply go? */
+//int status;			/* reply code */
 {
 /* Send a reply to a process that wanted to read or write data. */
 
-  message tty_mess;
+	  message msg;
+	  tty_msg_t *pTTYMsg;
 
-  tty_mess.m_type = code;
-  tty_mess.REP_PROC_NR = proc_nr;
-  tty_mess.REP_STATUS = status;
-  if ((status = send(replyee, &tty_mess)) != OK)
-	panic("tty_reply failed, status\n", status);
+	  pTTYMsg = malloc (sizeof(tty_msg));
+	  if (pTTYMsg == NULL)
+		  return;
+
+	  msg.data = pTTYMsg;
+	  msg.m_type = code;
+
+	  pTTYMsg->m_type 		= code;
+	  pTTYMsg->REP_PROC_NR 	= proc_nr;
+	  pTTYMsg->REP_STATUS 	= status;
+
+	  message_send(&msg, replyee);
+}
+/*==========================================================================*
+ *				tty_devnop				    *
+ *==========================================================================*/
+PUBLIC void tty_devnop(tp)
+tty_t *tp;
+{
+  /* Some functions need not be implemented at the device level. */
+}
+
+/*===========================================================================*
+ *				settimer				     *
+ *===========================================================================*/
+PRIVATE void settimer(tp, on)
+tty_t *tp;			/* line to set or unset a timer on */
+int on;				/* set timer if true, otherwise unset */
+{
+/* Set or unset a TIME inspired timer.  This function is interrupt sensitive
+ * due to tty_wakeup(), so it must be called from within lock()/unlock().
+ */
+  tty_t **ptp;
+
+  /* Take tp out of the timerlist if present. */
+  for (ptp = &tty_timelist; *ptp != NULL; ptp = &(*ptp)->tty_timenext) {
+	if (tp == *ptp) {
+		*ptp = tp->tty_timenext;	/* take tp out of the list */
+		break;
+	}
+  }
+  if (!on) return;				/* unsetting it is enough */
+
+  /* Timeout occurs TIME deciseconds from now. */
+  tp->tty_time = get_uptime() + tp->tty_termios.c_cc[VTIME] * (HZ/10);
+
+  /* Find a new place in the list. */
+  for (ptp = &tty_timelist; *ptp != NULL; ptp = &(*ptp)->tty_timenext) {
+	if (tp->tty_time <= (*ptp)->tty_time) break;
+  }
+  tp->tty_timenext = *ptp;
+  *ptp = tp;
+  if (tp->tty_time < tty_timeout) tty_timeout = tp->tty_time;
 }
 
 
+#if 0
 /*===========================================================================*
  *				sigchar					     *
  *===========================================================================*/
@@ -1310,29 +1445,6 @@ register tty_t *tp;
 }
 
 
-/*==========================================================================*
- *				tty_init				    *
- *==========================================================================*/
-PRIVATE void tty_init(tp)
-tty_t *tp;			/* TTY line to initialize. */
-{
-/* Initialize tty structure and call device initialization routines. */
-
-  tp->tty_intail = tp->tty_inhead = tp->tty_inbuf;
-  tp->tty_min = 1;
-  tp->tty_termios = termios_defaults;
-  tp->tty_icancel = tp->tty_ocancel = tp->tty_ioctl = tp->tty_close =
-								tty_devnop;
-  if (tp < tty_addr(CONFIG_NR_CONS)) {
-	scr_init(tp);
-  } else
-  if (tp < tty_addr(CONFIG_NR_CONS+CONFIG_NR_RS_LINES)) {
-	rs_init(tp);
-  } else {
-	pty_init(tp);
-  }
-}
-
 
 /*==========================================================================*
  *				tty_wakeup				    *
@@ -1360,43 +1472,25 @@ clock_t now;				/* current time */
 
   /* Let TTY know there is something afoot. */
   interrupt(TTY);
+
 }
-
-
-/*===========================================================================*
- *				settimer				     *
- *===========================================================================*/
-PRIVATE void settimer(tp, on)
-tty_t *tp;			/* line to set or unset a timer on */
-int on;				/* set timer if true, otherwise unset */
+void interrupt(struct thread *thread)
 {
-/* Set or unset a TIME inspired timer.  This function is interrupt sensitive
- * due to tty_wakeup(), so it must be called from within lock()/unlock().
- */
-  tty_t **ptp;
+	  message msg;
+	  tty_msg_t *pTTYMsg;
 
-  /* Take tp out of the timerlist if present. */
-  for (ptp = &tty_timelist; *ptp != NULL; ptp = &(*ptp)->tty_timenext) {
-	if (tp == *ptp) {
-		*ptp = tp->tty_timenext;	/* take tp out of the list */
-		break;
-	}
-  }
-  if (!on) return;				/* unsetting it is enough */
+	  pTTYMsg = malloc (sizeof(tty_msg));
+	  if (pTTYMsg == NULL)
+		  return;
 
-  /* Timeout occurs TIME deciseconds from now. */
-  tp->tty_time = get_uptime() + tp->tty_termios.c_cc[VTIME] * (HZ/10);
+	  msg.data = pTTYMsg;
+	  msg.m_type = code;
 
-  /* Find a new place in the list. */
-  for (ptp = &tty_timelist; *ptp != NULL; ptp = &(*ptp)->tty_timenext) {
-	if (tp->tty_time <= (*ptp)->tty_time) break;
-  }
-  tp->tty_timenext = *ptp;
-  *ptp = tp;
-  if (tp->tty_time < tty_timeout) tty_timeout = tp->tty_time;
+	  pTTYMsg->m_source = HARDWARE;
+	  pTTYMsg->m_type = HARD_INT;
+
+	  message_send(&msg,thread);
 }
-
-
 /*==========================================================================*
  *				tty_devnop				    *
  *==========================================================================*/
@@ -1681,17 +1775,17 @@ int sgspd;
  *===========================================================================*/
 PRIVATE void do_ioctl_compat(tp, m_ptr)
 tty_t *tp;
-message *m_ptr;
+tty_msg *m_ptr;
 {
 /* Handle the old sgtty ioctl's that packed the sgtty or tchars struct into
- * the Minix message.  Efficient then, troublesome now.
+ * the Minix tty_msg.  Efficient then, troublesome now.
  */
   int minor, proc, func, result, r;
   long flags, erki, spek;
   u8_t erase, kill, intr, quit, xon, xoff, brk, eof, ispeed, ospeed;
   struct sgttyb sg;
   struct tchars tc;
-  message reply_mess;
+  tty_msg reply_mess;
 
   minor = m_ptr->TTY_LINE;
   proc = m_ptr->PROC_NR;
@@ -1751,8 +1845,79 @@ message *m_ptr;
 #endif /* ENABLE_BINCOMPAT */
 #endif /* ENABLE_SRCCOMPAT || ENABLE_BINCOMPAT */
 #else
-clock_t tty_timeout;	/* time to wake up the TTY task */
-int in_process		(register tty_t *tp, char *buf, int count){return 0;}
-void select_console	(int cons_line){}
+
+PUBLIC tty_t* getTTY(int line) {
+	tty_t* tp;
+
+	if ((line - CONS_MINOR) < CONFIG_NR_CONS) {
+		tp = tty_addr(line - CONS_MINOR);
+	} else
+	if (line == LOG_MINOR) {
+		tp = tty_addr(0);
+	} else
+	if ((line - RS232_MINOR) < CONFIG_NR_RS_LINES) {
+		tp = tty_addr(line - RS232_MINOR + CONFIG_NR_CONS);
+	} else
+	if ((line - TTYPX_MINOR) < CONFIG_NR_PTYS) {
+		tp = tty_addr(line - TTYPX_MINOR + CONFIG_NR_CONS + CONFIG_NR_RS_LINES);
+	} else
+	if ((line - PTYPX_MINOR) < CONFIG_NR_PTYS) {
+		tp = tty_addr(line - PTYPX_MINOR + CONFIG_NR_CONS + CONFIG_NR_RS_LINES);
+	} else {
+		tp = NULL;
+	}
+	return tp;
+}
+
+PUBLIC tty_t* getTTY_Cons(int line) {
+	tty_t* tp;
+
+	if ((line - CONS_MINOR) < CONFIG_NR_CONS) {
+		tp = tty_addr(line - CONS_MINOR);
+	} else {
+		tp = NULL;
+	}
+	return tp;
+}
+PUBLIC tty_t* getTTY_Log(int line) {
+	tty_t* tp;
+
+	if (line == LOG_MINOR) {
+		tp = tty_addr(0);
+	} else {
+		tp = NULL;
+	}
+	return tp;
+}
+PUBLIC tty_t* getTTY_Rs232(int line) {
+	tty_t* tp;
+
+	if ((line - RS232_MINOR) < CONFIG_NR_RS_LINES) {
+		tp = tty_addr(line - RS232_MINOR + CONFIG_NR_CONS);
+	} else {
+		tp = NULL;
+	}
+	return tp;
+}
+PUBLIC tty_t* getTTY_TTYPX(int line) {
+	tty_t* tp;
+
+	if ((line - TTYPX_MINOR) < CONFIG_NR_PTYS) {
+		tp = tty_addr(line - TTYPX_MINOR + CONFIG_NR_CONS + CONFIG_NR_RS_LINES);
+	} else {
+		tp = NULL;
+	}
+	return tp;
+}
+PUBLIC tty_t* getTTY_PTYPX(int line) {
+	tty_t* tp;
+
+	if ((line - PTYPX_MINOR) < CONFIG_NR_PTYS) {
+		tp = tty_addr(line - PTYPX_MINOR + CONFIG_NR_CONS + CONFIG_NR_RS_LINES);
+	} else {
+		tp = NULL;
+	}
+	return tp;
+}
 
 #endif
