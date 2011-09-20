@@ -10,7 +10,6 @@
 #define EXCEPTION(n, name)       \
 	.globl name             ;\
 name:                           ;\
-	cli                     ;\
 	pushl	$(0)		;\
 	pushl	$(n)		;\
 	jmp	excep_stub
@@ -18,7 +17,6 @@ name:                           ;\
 #define IRQ_ENTRY(n)      \
 	.globl irq##n    ;\
 irq##n:                  ;\
-	cli              ;\
 	pushl   $(0)     ;\
 	pushl   $(32 + n);\
 	jmp     irq_stub
@@ -76,10 +74,12 @@ IRQ_ENTRY(15) /* secondary ATA channel */
 
 excep_stub:
 	pusha
+
 	pushl	%ds
 	pushl	%es
 	pushl	%fs
 	pushl	%gs
+
 	movl	%ss, %eax
 	movl	%eax, %ds
 	movl	%eax, %es
@@ -91,9 +91,11 @@ excep_stub:
 	pop     %fs
 	pop     %es
 	pop     %ds
+
 	popa
+
 	add     $8, %esp
-	sti
+
 	iret
 
 irq_stub:
@@ -106,7 +108,6 @@ irq_stub:
 	 */
 	pusha /*pushes edi,esi,ebp,esp,ebx,edx,ecx,eax*/
 
-#if 1
 	pushl   %ds
 	pushl   %es
 	pushl   %fs
@@ -116,25 +117,9 @@ irq_stub:
 	movl    %eax, %ds
 	movl    %eax, %es
 	movl    %esp, %eax
-#else
-	movw %ds, %ax /* Lower 16-bits of eax = ds. */
-	pushl %eax    /* Save the data segment descriptor. */
 
-	movw  $0x10, %ax /* Load the kernel data segment descriptor */
-	movw %ax, %ds
-	movw %ax, %es
-	movw %ax, %fs
-	movw %ax, %gs
-
-	pushl %esp /* Push a pointer to the current top of stack -
-	              this becomes the registers_t* parameter. */
-#endif
 	call    EXT_C(irq_handler)
-#if 0
-	add $4,%esp /* Remove the registers_t* parameter. */
 
-	popl %ebx   /* Reload the original data segment descriptor */
-#endif
 	pop     %gs
 	pop     %fs
 	pop     %es
@@ -142,5 +127,5 @@ irq_stub:
 
 	popa
 	add     $8, %esp
-	sti
+
 	iret
