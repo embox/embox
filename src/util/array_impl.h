@@ -36,9 +36,8 @@
 /* Every array entry, group of entries or marker symbols are backed by an
  * individual array (empty for markers) defined as follows. */
 #define __ARRAY_SPREAD_ENTRY_DEF(type, array_nm, entry_nm, section_order_tag) \
-	/* __extension__ bypasses compiler warnings about empty arrays. */        \
-	__extension__ const type entry_nm[] __attribute__ ((used,                 \
-			section(__ARRAY_SPREAD_SECTION(array_nm, section_order_tag)),     \
+	const type entry_nm[] __attribute__ ((used,                           \
+			section(__ARRAY_SPREAD_SECTION(array_nm, section_order_tag)), \
 			aligned(__alignof__(array_nm[0]))))
 
 /* Spread arrays implementation-private entries are named as follows
@@ -63,7 +62,7 @@
  *  - first time is for define its type, and
  *  - second time - to add necessary attributes (alignment in particular). */
 #define __ARRAY_SPREAD_DEF_TERMINATED(element_t, array_nm, terminator) \
-	__extension__ const element_t array_nm[] __attribute__             \
+	const element_t array_nm[] __attribute__                           \
 		/* Some versions of GCC do not take into an account section    \
 		 * attribute if it appears after the definition. */            \
 			((section(__ARRAY_SPREAD_SECTION(array_nm, "0_head")))) =  \
@@ -97,7 +96,8 @@
 #define __ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_nm) \
 		__ARRAY_SPREAD_SIZE_MARKER(array_nm, term)
 
-#define __ARRAY_SPREAD_SIZE_MARKER(array_nm, marker) __extension__ ({ \
+#define __ARRAY_SPREAD_SIZE_MARKER(array_nm, marker) \
+	({ \
 		extern typeof(array_nm) __ARRAY_SPREAD_PRIVATE(array_nm, marker); \
 		(size_t) (__ARRAY_SPREAD_PRIVATE(array_nm, marker) - array_nm);   \
 	})

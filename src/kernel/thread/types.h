@@ -31,7 +31,7 @@ struct thread {
 	struct context    context;       /**< Architecture-dependent CPU state. */
 
 	void           *(*run)(void *);  /**< Start routine. */
-	__extension__ union {
+	union {
 		void         *run_arg;       /**< Argument to pass to start routine. */
 		void         *run_ret;       /**< Return value of the routine. */
 		void         *join_ret;      /**< Exit value of a join target. */
@@ -46,7 +46,7 @@ struct thread {
 
 	struct slist_link startq_link;   /**< Resuming the thread from critical. */
 
-	__extension__ union {
+	union {
 		struct runq      *runq;      /**< For running/ready state. */
 		struct sleepq    *sleepq;    /**< For sleeping state. */
 	} /* unnamed */;

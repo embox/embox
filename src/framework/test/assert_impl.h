@@ -20,7 +20,7 @@ extern void __test_assertion_handle(int pass,
 		const struct __test_assertion_point *point);
 
 #define __test_assertion_point_ref(_reason) \
-	__extension__ ({                        \
+	({                                                                        \
 		/* Statically allocate and define. Location and reason message are    \
 		 * known at compile time and nobody cares about .rodata section. */   \
 		static const struct __test_assertion_point __test_assertion_point = { \

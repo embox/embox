@@ -20,7 +20,7 @@
 
 #define BUF_INP_SIZE 128
 #if 0
-__extension__ static const char *script_commands[] = {
+static const char *script_commands[] = {
 	#include <start_script.inc>
 };
 #endif

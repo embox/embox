@@ -56,10 +56,10 @@
 
 typedef struct iphdr {
 #if defined(__LITTLE_ENDIAN)
-	__extension__ __u8 ihl:4,  /* ihl = 5 */
+	__u8 ihl:4,  /* ihl = 5 */
 			version:4; /* version = 4 */
 #elif defined (__BIG_ENDIAN)
-	__extension__ __u8 version:4, /* version = 4 */
+	__u8 version:4, /* version = 4 */
 			    ihl:4;    /* ihl = 5 */
 #endif
 	__u8        tos;          /**< Type of Services, always 0 */

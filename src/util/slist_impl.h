@@ -77,9 +77,11 @@ static inline void __slist_insert_link(struct __slist_link *link,
  *   If the @a link is @c NULL.
  */
 #define __slist_link_safe_cast(link, type, m_link) \
-	__extension__ ({ \
-		struct slist_link *__slist_link__ = (link); \
-		__slist_link__ ? slist_link_element(__slist_link__, type, m_link) : NULL;\
+	({ \
+		struct slist_link *__slist_link__ = (link);                \
+		__slist_link__                                             \
+				? slist_link_element(__slist_link__, type, m_link) \
+				: NULL;                                            \
 	})
 
 #define __slist_first(slist, type, m_link) \

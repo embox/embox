@@ -46,7 +46,7 @@ struct list_link {
 	}
 
 #define __list_check(expr) \
-	__extension__ ({                       \
+	({                                     \
 		typeof(expr) __list_expr = (expr); \
 		assert(__list_expr != NULL);       \
 		__list_expr;                       \

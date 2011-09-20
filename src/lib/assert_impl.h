@@ -42,10 +42,10 @@ void __assertion_handle(int pass, const struct __assertion_point *point) {
 }
 
 # define __assertion_point__(expression_str) \
-	__extension__ ({                                                    \
+	({                                                              \
 		static const struct __assertion_point __assertion_point = { \
-			.location = LOCATION_FUNC_INIT,                     \
-			.expression = expression_str,                       \
+			.location = LOCATION_FUNC_INIT,                         \
+			.expression = expression_str,                           \
 		};                                                          \
 		&__assertion_point;                                         \
 	})

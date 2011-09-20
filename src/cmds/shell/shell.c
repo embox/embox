@@ -89,7 +89,7 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 	}
 }
 
-__extension__ static const char *script_commands[] = {
+static const char *script_commands[] = {
 	#include <start_script.inc>
 };
 

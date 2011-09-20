@@ -10,14 +10,14 @@
 #define UTIL_PRIOQ_IMPL_H_
 
 #define __prioq_check(expr) \
-	__extension__ ({                        \
+	({ \
 		typeof(expr) __prioq_expr = (expr); \
 		assert(__prioq_expr != NULL);       \
 		__prioq_expr;                       \
 	})
 
 #define __prioq_link_safe_cast(link, type, m_link) \
-	__extension__ ({ \
+	({ \
 		struct prioq_link *__prioq_link__ = (link); \
 		__prioq_link__ \
 				? prioq_element(__prioq_link__, type, m_link) \

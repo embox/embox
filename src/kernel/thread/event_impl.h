@@ -14,7 +14,7 @@
 
 struct event {
 	struct sleepq sleepq;
-	__extension__ struct {
+	struct {
 		struct slist_link startq_link;
 		int               startq_wake_all;
 	} /* unnamed */;   /**< For wakes called inside critical. */

@@ -58,7 +58,6 @@ const __vtparse_state_actions_entry_t  __vtparse_state_actions_table
 		[0x9d         ] = ACTION_TRANSIT(NONE, OSC_STRING),        \
 		[0x9b         ] = ACTION_TRANSIT(NONE, CSI_ENTRY),
 
-__extension__ /* GNU C designated initializers. */
 const __vtparse_state_transition_entry_t  __vtparse_state_transition_table
 				[VTPARSE_STATES_TOTAL][0x100] = {
 	[STATE_INDEX(CSI_ENTRY)] = {
