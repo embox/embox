@@ -12,3 +12,5 @@ $_SRCS-context += context.c context_switch.S
 $_SRCS-arch    += arch.c
 $_SRCS-locore  += ipl.c
 $_SRCS-locore  += exception_handler.c
+$_SRCS-locore  += traps_core.c
+
