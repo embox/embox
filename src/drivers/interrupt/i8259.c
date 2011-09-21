@@ -45,7 +45,7 @@ static int unit_init(void) {
 	out8(NON_SPEC_EOI, PIC2_COMMAND);
 
 	apic_disable_all();
-	interrupt_enable(7); /* enable slave irq controller irq 8-16 */
+	interrupt_enable(2); /* enable slave irq controller irq 8-16 */
 
 	return 0;
 }
