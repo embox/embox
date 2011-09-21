@@ -25,8 +25,8 @@ void irq_handler(pt_regs_t *regs) {
 	}
 	/* Send reset signal to master. (As well as slave, if necessary). */
 	out8(NON_SPEC_EOI, PIC1_COMMAND);
-#ifdef CONFIG_IRQ
+
 	irq_dispatch(irqn);
-#endif
+
 	interrupt_enable(irqn);
 }

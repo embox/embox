@@ -11,3 +11,4 @@ $_SRCS-locore  += gdt.c gdt_flush.S
 $_SRCS-context += context.c context_switch.S
 $_SRCS-arch    += arch.c
 $_SRCS-locore  += ipl.c
+$_SRCS-locore  += exception_handler.c

@@ -7,12 +7,13 @@
 
 #include <hal/arch.h>
 #include <asm/traps.h>
-#include <asm/cpu.h>
-
+#include <hal/ipl.h>
 
 void arch_init(void) {
-	idt_init();
 	gdt_init();
+	idt_init();
+	ipl_enable();
+
 }
 
 void arch_idle(void) {

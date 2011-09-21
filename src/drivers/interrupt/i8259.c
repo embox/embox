@@ -16,7 +16,6 @@
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/io.h>
-#include <asm/cpu.h>
 #include <drivers/i8259.h>
 #include <hal/arch.h>
 #include <hal/reg.h>
@@ -47,7 +46,6 @@ static int unit_init(void) {
 
 	apic_disable_all();
 	interrupt_enable(7); /* enable slave irq controller irq 8-16 */
-	irq_enable();
 
 	return 0;
 }
