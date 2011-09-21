@@ -5,21 +5,8 @@
  * @author Nikolay Korotky
  */
 
-#include <asm/multiboot.h>
-
-#define EXCEPTION(n, name)       \
-	.globl name             ;\
-name:                           ;\
-	pushl	$(0)		;\
-	pushl	$(n)		;\
-	jmp	excep_stub
-
-#define IRQ_ENTRY(n)      \
-	.globl irq##n    ;\
-irq##n:                  ;\
-	pushl   $(0)     ;\
-	pushl   $(32 + n);\
-	jmp     irq_stub
+#include <asm/traps.h>
+#include <asm/entry.h>
 
 EXCEPTION(0x00, t_excep0)    /* Divide By Zero Exception */
 EXCEPTION(0x01, t_excep1)    /* Debug Exception */
@@ -73,65 +60,32 @@ IRQ_ENTRY(14) /* primary ATA channel */
 IRQ_ENTRY(15) /* secondary ATA channel */
 
 excep_stub:
-	pusha
+	SAVE_ALL
 
-	pushl	%ds
-	pushl	%es
-	pushl	%fs
-	pushl	%gs
-
-	movl	%ss, %eax
-	movl	%eax, %ds
-	movl	%eax, %es
-	movl	%esp, %eax
-
-	call    EXT_C(exception_handler)
-
-	pop     %gs
-	pop     %fs
-	pop     %es
-	pop     %ds
-
-	popa
-
-	add     $8, %esp
-
-	iret
-
-irq_stub:
-	/* At this point on the stack there is:
-	 *  0(%esp) vector
-	 *  4(%esp) error code
-	 *  8(%esp) eip
-	 * 12(%esp) cs
-	 * 16(%esp) eflags
-	 */
-	pusha /*pushes edi,esi,ebp,esp,ebx,edx,ecx,eax*/
-
-	pushl   %ds
-	pushl   %es
-	pushl   %fs
-	pushl   %gs
-
-	movl    %ss, %eax
-	movl    %eax, %ds
-	movl    %eax, %es
+	SETUP_SEGMENTS
 
 	mov	    %esp, %ebp		/* Save current stack */
+	pushl   %ebp            /* first parameter struct pt_regs *regs */
 
-	pushl   %ebp
-
-	call    EXT_C(irq_handler)
+	call    exception_handler
 
 	movl    %ebp, %esp		/* Restore original stack */
 
-	pop     %gs
-	pop     %fs
-	pop     %es
-	pop     %ds
-
-	popa
-
+	RESTORE_ALL
 	add     $8, %esp
+	iret
 
+irq_stub:
+	SAVE_ALL
+
+	SETUP_SEGMENTS
+
+	mov	    %esp, %ebp		/* Save current stack */
+	pushl   %ebp            /* first parameter struct pt_regs *regs */
+	call    irq_handler
+
+	movl    %ebp, %esp		/* Restore original stack */
+
+	RESTORE_ALL
+	add     $8, %esp
 	iret
