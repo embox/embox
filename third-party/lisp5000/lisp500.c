@@ -167,7 +167,7 @@ lval gc(lval * f)
 	lval *m;
 	int l;
 	int u = 0;
-	int ml;
+	int ml = 0;
 	printf(";garbage collecting...\n");
 	while (memf) {
 		lval *n = (lval *) memf[0];
