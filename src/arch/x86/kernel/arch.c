@@ -12,8 +12,6 @@
 void arch_init(void) {
 	gdt_init();
 	idt_init();
-	ipl_enable();
-
 }
 
 void arch_idle(void) {

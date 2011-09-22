@@ -19,7 +19,7 @@ extern __ipl_t __cur_ipl;
 
 static inline void ipl_init(void) {
 	__cur_ipl = 0;
-	//__asm__ __volatile__ ("sti;\n\t");
+	__asm__ __volatile__ ("sti;\n\t");
 }
 
 static inline unsigned int ipl_save(void) {
