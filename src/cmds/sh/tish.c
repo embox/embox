@@ -19,11 +19,8 @@
 #include <cmd/shell.h>
 
 #define BUF_INP_SIZE 128
-#if 0
-static const char *script_commands[] = {
-	#include <start_script.inc>
-};
-#endif
+
+
 static int cmd_compl(char *buf, char *out_buf) {
 	const struct cmd *cmd = NULL;
 	int buf_len = strlen(buf);
@@ -80,10 +77,26 @@ static int line_input(char *line) {
 	return run_cmd(tok_pos, token_line);
 }
 
+static const char *script_commands[] = {
+	#include <start_script.inc>
+};
+
+
 void shell_run(void) {
 	const char *prompt = CONFIG_SHELL_PROMPT;
 	char inp_buf[BUF_INP_SIZE];
 	struct hist h;
+	const char *command;
+	static int start_script_fulfilled = 0;
+
+	if(0 == start_script_fulfilled) {
+		start_script_fulfilled = 1;
+		printf("\nloading start script\n");
+		array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
+			printf("> %s \n", command);
+			line_input((char *)command);
+		}
+	}
 
 	linenoise_history_init(&h);
 
