@@ -12,15 +12,56 @@
 #include <assert.h>
 #include <stddef.h>
 
+/**
+ * Gets a type of @a member within the specified one.
+ *
+ * @param type
+ *   The type of the container (or an expression of such type).
+ * @param member
+ *   The name of the member within the structure/union.
+ * @return
+ *   Result of @c typeof applied to the member.
+ */
 #define member_typeof(type, member) \
 	typeof(__member_of(type, member))
 
+/**
+ * Gets a size of @a member within the specified @a type.
+ *
+ * @param type
+ *   The type of the container (or an expression of such type).
+ * @param member
+ *   The name of the member within the structure/union.
+ * @return
+ *   Result of @c sizeof applied to the member.
+ */
 #define member_sizeof(type, member) \
 	sizeof(__member_of(type, member))
 
+#define __member_of(type, member) \
+	((typeof(type) *) 0x0)->member
+
+/**
+ * Gets a pointer to @a member of the specified expression.
+ *
+ * @param struct_ptr
+ *   The pointer to the container. Must not be null.
+ * @param member
+ *   The name of the member within the structure/union.
+ * @return
+ *   Pointer to the member.
+ */
 #define member_in(struct_ptr, member) \
 	(&__member_check_notnull(struct_ptr)->member)
 
+/**
+ * A version of #member_in() which allows @a struct_ptr to be null.
+ *
+ * @return
+ *   Pointer to the member if @a struct_ptr is a non-null pointer.
+ * @retval NULL
+ *   In case when the first argument is also @c NULL.
+ */
 #define member_in_or_null(struct_ptr, member) \
 	({ \
 		typeof(struct_ptr) __member_expr__ = (struct_ptr); \
@@ -61,9 +102,6 @@
 						- offsetof(type, member))      \
 				: NULL;                                \
 	})
-
-#define __member_of(type, member) \
-	((typeof(type) *) 0x0)->member
 
 #ifdef NDEBUG
 # define __member_check_notnull(expr) \
