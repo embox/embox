@@ -50,6 +50,10 @@ static int unit_init(void) {
 	return 0;
 }
 
+void apic_init(void) {
+	unit_init();
+}
+
 void interrupt_enable(interrupt_nr_t int_nr) {
 	if (int_nr > 8) {
 		out8(in8(PIC2_DATA) & ~(1 << int_nr), PIC2_DATA);
