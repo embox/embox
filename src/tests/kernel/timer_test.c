@@ -25,8 +25,6 @@ TEST_CASE("testing timer_set function") {
 	/* Timer value changing means ok */
 	tick_happened = 0;
 
-	usleep(1);
-
 	if (timer_set(&timer, TEST_TIMER_PERIOD, test_timer_handler,
 			(void *) &tick_happened)) {
 		test_fail("failed to install timer");
@@ -34,7 +32,8 @@ TEST_CASE("testing timer_set function") {
 
 	i = -1;
 
-	while (i-- && !tick_happened);
+	while (i-- && !tick_happened) {
+	}
 
 	timer_close(timer);
 
