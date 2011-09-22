@@ -18,11 +18,24 @@
 #include <net/netdevice.h>
 #include <drivers/r6040.h>
 
+/* PHY CHIP Address */
+#define PHY1_ADDR      1       /* For MAC1 */
+#define PHY2_ADDR      3       /* For MAC2 */
+#define PHY_MODE       0x3100  /* PHY CHIP Register 0 */
+#define PHY_CAP        0x01E1  /* PHY CHIP Register 4 */
+
+/* RDC MAC I/O Size */
+#define R6040_IO_SIZE   256
+
+//TODO: get from PCI
 #define IOADDR         0xe800
 
 /* MAC registers */
 #define MCR0           (IOADDR + 0x00) /* Control register 0 */
+#define MCR0_PROMISC   0x0020          /* Promiscuous mode */
+#define MCR0_HASH_EN   0x0100          /* Enable multicast hash table function */
 #define MCR1           (IOADDR + 0x04) /* Control register 1 */
+#define MAC_RST        0x0001          /* Reset the MAC */
 #define MBCR           (IOADDR + 0x08) /* Bus control */
 #define MT_ICR         (IOADDR + 0x0C) /* TX interrupt control */
 #define MR_ICR         (IOADDR + 0x10) /* RX interrupt control */
@@ -30,6 +43,11 @@
 #define MR_BSR         (IOADDR + 0x18) /* RX buffer size */
 #define MR_DCR         (IOADDR + 0x1A) /* RX descriptor control */
 #define MLSR           (IOADDR + 0x1C) /* Last status */
+#define MMDIO          (IOADDR + 0x20) /* MDIO control register */
+#define MDIO_WRITE     0x4000          /* MDIO write */
+#define MDIO_READ      0x2000          /* MDIO read  */
+#define MMRD           (IOADDR + 0x24) /* MDIO read data register  */
+#define MMWD           (IOADDR + 0x28) /* MDIO write data register */
 #define TX_START_LOW   (IOADDR + 0x2c) /* TX descriptor start address 0 */
 #define TX_START_HIGH  (IOADDR + 0x30) /* TX descriptor start address 1 */
 #define RX_START_LOW   (IOADDR + 0x34) /* RX descriptor start address 0 */
@@ -40,17 +58,49 @@
 #define RX_FINISH      0x0001          /* RX finished */
 #define RX_NO_DESC     0x0002          /* No RX descriptor available */
 #define RX_FIFO_FULL   0x0004          /* RX FIFO full */
+#define RX_EARLY       0x0008          /* RX early */
 #define TX_FINISH      0x0010          /* TX finished */
+#define TX_EARLY       0x0080          /* TX early */
+#define EVENT_OVRFL    0x0100          /* Event counter overflow */
+#define LINK_CHANGED   0x0200          /* PHY link changed */
+#define ME_CISR        (IOADDR + 0x44) /* Event counter INT status */
+#define ME_CIER        (IOADDR + 0x48) /* Event counter INT enable */
+#define MR_CNT         (IOADDR + 0x50) /* Successfully received packet counter */
+#define ME_CNT0        (IOADDR + 0x52) /* Event counter 0 */
+#define ME_CNT1        (IOADDR + 0x54) /* Event counter 1 */
+#define ME_CNT2        (IOADDR + 0x56) /* Event counter 2 */
+#define ME_CNT3        (IOADDR + 0x58) /* Event counter 3 */
+#define MT_CNT         (IOADDR + 0x5A) /* Successfully transmit packet counter */
+#define ME_CNT4        (IOADDR + 0x5C) /* Event counter 4 */
+#define MP_CNT         (IOADDR + 0x5E) /* Pause frame counter register */
+#define MAR0           (IOADDR + 0x60) /* Hash table 0 */
+#define MAR1           (IOADDR + 0x62) /* Hash table 1 */
+#define MAR2           (IOADDR + 0x64) /* Hash table 2 */
+#define MAR3           (IOADDR + 0x66) /* Hash table 3 */
 
-#define MMDIO          (IOADDR + 0x20) /* MDIO control register */
-#define MDIO_WRITE     0x4000          /* MDIO write */
-#define MDIO_READ      0x2000          /* MDIO read  */
-#define MMRD           (IOADDR + 0x24) /* MDIO read data register  */
-#define MMWD           (IOADDR + 0x28) /* MDIO write data register */
+#define MAC_SM         (IOADDR + 0xAC) /* MAC status machine */
+
+#define TX_DCNT         0x80    /* TX descriptor count */
+#define RX_DCNT         0x80    /* RX descriptor count */
+#define MAX_BUF_SIZE    0x600
+//#define RX_DESC_SIZE    (RX_DCNT * sizeof(struct eth_desc))
+//#define TX_DESC_SIZE    (TX_DCNT * sizeof(struct eth_desc))
+#define MBCR_DEFAULT    0x012A  /* MAC Bus Control Register */
 
 /* Descriptor status */
-#define DSC_OWNER_MAC  0x8000          /* MAC is the owner of this descriptor */
-#define DSC_RX_OK      0x4000          /* RX was successful */
+#define DSC_OWNER_MAC   0x8000  /* MAC is the owner of this descriptor */
+#define DSC_RX_OK       0x4000  /* RX was successful */
+#define DSC_RX_ERR      0x0800  /* RX PHY error */
+#define DSC_RX_ERR_DRI  0x0400  /* RX dribble packet */
+#define DSC_RX_ERR_BUF  0x0200  /* RX length exceeds buffer size */
+#define DSC_RX_ERR_LONG 0x0100  /* RX length > maximum packet length */
+#define DSC_RX_ERR_RUNT 0x0080  /* RX packet length < 64 byte */
+#define DSC_RX_ERR_CRC  0x0040  /* RX CRC error */
+#define DSC_RX_BCAST    0x0020  /* RX broadcast (no error) */
+#define DSC_RX_MCAST    0x0010  /* RX multicast (no error) */
+#define DSC_RX_MCH_HIT  0x0008  /* RX multicast hit in hash table (no error) */
+#define DSC_RX_MIDH_HIT 0x0004  /* RX MID table hit (no error) */
+#define DSC_RX_IDX_MID_MASK 3   /* RX mask for the index of matched MIDx */
 
 /* RX and TX interrupts that we handle */
 #define RX_INTS        (RX_FIFO_FULL | RX_NO_DESC | RX_FINISH)
@@ -62,7 +112,7 @@
  * doubles as the TX and RX descriptor
  */
 typedef struct eth_desc {
-	uint16_t       status;
+	volatile uint16_t status;
 	uint16_t       dlen;
 	unsigned char *buf;
 	struct eth_desc *DNX;
@@ -100,18 +150,18 @@ static eth_desc_t *rxd_init(size_t pkt_size) {
 
 static void r6040_tx_enable(void) {
 	unsigned short tmp = in16(MCR0);
-	out8(tmp | (1 << 12), MCR0);
+	out16(tmp | (1 << 12), MCR0);
 }
 
 static void r6040_tx_disable(void) {
 	unsigned short tmp = in16(MCR0);
-	out8(tmp & ~(1 << 12), MCR0);
+	out16(tmp & ~(1 << 12), MCR0);
 }
 
 void r6040_rx_enable(void) {
 	unsigned short tmp = in16(MCR0);
-	out8(tmp | (1 << 1), MCR0);
-//	out8(2, MCR0);
+	out16(tmp | (1 << 1), MCR0);
+//	out16(2, MCR0);
 }
 
 static void r6040_rx_disable(void) {
@@ -120,16 +170,16 @@ static void r6040_rx_disable(void) {
 
 static void r6040_set_tx_start(eth_desc_t* desc) {
 	unsigned long tmp = (unsigned long) desc;
-	out8((tmp & 0xffff), TX_START_LOW);
+	out16((tmp & 0xffff), TX_START_LOW);
 	tmp >>= 16;
-	out8((tmp & 0xffff), TX_START_HIGH);
+	out16((tmp & 0xffff), TX_START_HIGH);
 }
 
 static void r6040_set_rx_start(eth_desc_t* desc) {
 	unsigned long tmp = (unsigned long) desc;
-	out8((tmp & 0xffff), RX_START_LOW);
+	out16((tmp & 0xffff), RX_START_LOW);
 	tmp >>= 16;
-	out8((tmp & 0xffff), RX_START_HIGH);
+	out16((tmp & 0xffff), RX_START_HIGH);
 }
 #if 0
 /* The RDC interrupt handler */
