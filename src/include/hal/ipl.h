@@ -22,7 +22,7 @@ typedef __ipl_t ipl_t;
  * @note Implementation should set the lowest interrupt priority level allowing
  * all IRQs.
  */
-void ipl_init(void);
+extern void ipl_init(void);
 
 /**
  * Set the lowest interrupt priority level allowing all IRQs.

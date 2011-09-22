@@ -29,6 +29,12 @@ EMBOX_UNIT_INIT(unit_init);
  * Initialize the PIC
  */
 static int unit_init(void) {
+	static int inited = 0;
+	if (1 == inited) {
+		return 0;
+	}
+	inited = 1;
+
 	/* Initialize the master */
 	out8(PIC1_ICW1, PIC1_COMMAND);
 	out8(PIC1_BASE, PIC1_DATA);
@@ -44,7 +50,9 @@ static int unit_init(void) {
 	out8(NON_SPEC_EOI, PIC1_COMMAND);
 	out8(NON_SPEC_EOI, PIC2_COMMAND);
 
-	apic_disable_all();
+    out8(PICM_MASK, PIC1_DATA);
+    out8(PICS_MASK, PIC2_DATA);
+
 	interrupt_enable(2); /* enable slave irq controller irq 8-16 */
 
 	return 0;
