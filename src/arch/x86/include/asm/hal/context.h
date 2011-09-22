@@ -4,6 +4,8 @@
 
 #include <types.h>
 
+#ifndef __ASSEMBLER__
+
 struct context {
 	/* 0x00 */uint32_t eip; /**< TODO */
 	/* 0x04 */uint32_t ebx; /**< TODO */
@@ -12,3 +14,5 @@ struct context {
 	/* 0x10 */uint32_t ebp; /**< TODO */
 	/* 0x14 */uint32_t esp; /**< TODO */
 };
+
+#endif /* __ASSEMBLER__ */

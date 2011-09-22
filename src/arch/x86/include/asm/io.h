@@ -42,25 +42,25 @@ static inline uint32_t in32(unsigned long port) {
 	return tmp;
 }
 
-#define inb(port)   in8(port)
+#define inb(port)     in8(port)
 #define inb_p(port)   in8(port)
-#define inw(port)   in16(port)
-#define inl(port)   in32(port)
+#define inw(port)     in16(port)
+#define inl(port)     in32(port)
 
-#define out8(val, port)          \
-	__asm__ __volatile__(        \
+#define out8(val, port)                  \
+	__asm__ __volatile__(            \
 		"outb %b0, %w1"          \
 		: : "a"(val), "Nd"(port) \
 	)
 
-#define out16(val, port)         \
-	__asm__ __volatile__(        \
+#define out16(val, port)                 \
+	__asm__ __volatile__(            \
 		"outw %w0, %w1"          \
 		: : "a"(val), "Nd"(port) \
 	)
 
-#define out32(val, port)         \
-	__asm__ __volatile__(        \
+#define out32(val, port)                 \
+	__asm__ __volatile__(            \
 		"out %0, %w1"            \
 		: : "a"(val), "Nd"(port) \
 	)
@@ -70,15 +70,25 @@ static inline uint32_t in32(unsigned long port) {
 #define outl(value, port)   out32(value, port)
 
 // so would easier
-#define __INS(suffix)                                                                \
-static inline void ins##suffix(unsigned short port, void *addr, unsigned long count) \
-{ __asm__ __volatile__ ("cld ; rep ; ins" #suffix                                    \
-: "=D" (addr), "=c" (count) : "d" (port),"0" (addr),"1" (count)); }
+#define __INS(suffix) \
+	static inline void ins##suffix(unsigned short port, void *addr, \
+			unsigned long count) {                  \
+		__asm__ __volatile__ (                          \
+			"cld ; rep ; ins" #suffix               \
+			: "=D" (addr), "=c" (count)             \
+			: "d" (port), "0" (addr), "1" (count)   \
+		);                                              \
+	}
 
-#define __OUTS(suffix)                                                                      \
-static inline void outs##suffix(unsigned short port, const void *addr, unsigned long count) \
-{ __asm__ __volatile__ ("cld ; rep ; outs" #suffix                                          \
-: "=S" (addr), "=c" (count) : "d" (port),"0" (addr),"1" (count)); }
+#define __OUTS(suffix) \
+	static inline void outs##suffix(unsigned short port, const void *addr, \
+			unsigned long count) {                \
+		__asm__ __volatile__ (                        \
+			"cld ; rep ; outs" #suffix            \
+			: "=S" (addr), "=c" (count)           \
+			: "d" (port), "0" (addr), "1" (count) \
+		);                                            \
+	}
 
 __INS(b)
 __INS(w)

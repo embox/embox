@@ -25,11 +25,11 @@ extern void gdt_init(void);
 
 #else
 
-#define EXCEPTION(n, name)       \
-	.globl name             ;\
-name:                           ;\
-	pushl	$(0)		;\
-	pushl	$(n)		;\
+#define EXCEPTION(n, name)  \
+	.globl name        ;\
+name:                      ;\
+	pushl	$(0)       ;\
+	pushl	$(n)       ;\
 	jmp	excep_stub
 
 #define IRQ_ENTRY(n)      \
@@ -39,6 +39,6 @@ irq##n:                  ;\
 	pushl   $(32 + n);\
 	jmp     irq_stub
 
-#endif
+#endif /* __ASSEMBLER__ */
 
 #endif /* X86_TRAPS_H_ */

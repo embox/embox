@@ -1,9 +1,9 @@
 /**
  * @file
+ * @brief Defines specific features for working with
+ *        trap handlers in x86 architecture
  *
- * @brief
- *
- * @date 21.09.2011
+ * @date 21.09.11
  * @author Anton Bondarev
  */
 
