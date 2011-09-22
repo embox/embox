@@ -17,7 +17,7 @@
 #define TTY_CANON_INP_LEN 128
 
 #include <kernel/file.h>
-#include <kernel/thread/sync/mutex.h>
+//#include <kernel/thread/sync/mutex.h>
 
 struct tty_buf {
 	file_operations_t file_op; /**< must be first */
@@ -31,7 +31,7 @@ struct tty_buf {
 	char canon_left;
 
 	char inp[TTY_INP_Q_LEN];
-	struct mutex *inp_mutex;
+//	struct mutex *inp_mutex;
 	int inp_len;
 	int inp_begin;
 	int inp_end;
