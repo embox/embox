@@ -12,8 +12,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <util/structof.h>
-
 struct slist;
 struct slist_link;
 struct __slist_link;

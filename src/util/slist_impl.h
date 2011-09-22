@@ -9,6 +9,9 @@
 #ifndef UTIL_SLIST_IMPL_H_
 #define UTIL_SLIST_IMPL_H_
 
+#include <util/member.h>
+#include <util/macro.h>
+
 struct __slist_link {
 	struct __slist_link *next;
 };
@@ -55,9 +58,8 @@ static inline void __slist_insert_link(struct __slist_link *link,
 #define __slist_check(expr) (expr)
 #endif
 
-/* This is simply defined through structof macro. */
 #define __slist_link_element(link, type, m_link) \
-	structof(__slist_check(link), type, m_link)
+	member_out(link, type, m_link)
 
 #define __slist_alone(element, m_link) \
 	slist_alone_link(&__slist_check(element)->m_link)
@@ -98,8 +100,7 @@ static inline void __slist_insert_link(struct __slist_link *link,
 	__slist_link_safe_cast(slist_remove_first_link(slist), type, m_link)
 
 #define __slist_foreach_cast_assign(_iter, element, member) \
-	element = structof(structof(_iter, struct slist_link, l), \
-			typeof(*element), member)
+	element = member_out(_iter, typeof(*element), member.l)
 
 #define __slist_foreach(element, slist, m_link) \
 	__slist_foreach__(element, slist, __slist_foreach_cast_assign, m_link)

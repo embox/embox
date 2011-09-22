@@ -12,7 +12,6 @@
 
 #include <assert.h>
 #include <mem/misc/pool.h>
-#include <util/structof.h>
 #include <lib/list.h>
 
 static struct pool *pool_init(struct pool *pool) {

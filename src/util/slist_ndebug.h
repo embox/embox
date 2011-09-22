@@ -9,7 +9,7 @@
 #ifndef UTIL_SLIST_NDEBUG_H_
 #define UTIL_SLIST_NDEBUG_H_
 
-#include <util/structof.h>
+#include <util/member.h>
 
 struct slist;
 struct slist_link;
@@ -53,7 +53,7 @@ static inline int slist_empty(struct slist *list) {
 
 static inline struct slist_link *slist_first_link(struct slist *list) {
 	struct __slist_link *l = &list->l, *first = l->next;
-	return first != l ? structof(first, struct slist_link, l) : NULL;
+	return first != l ? member_out(first, struct slist_link, l) : NULL;
 }
 
 static inline void slist_add_first_link(struct slist_link *new_link,

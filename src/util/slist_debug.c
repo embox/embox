@@ -13,7 +13,7 @@
 #include <assert.h>
 
 #include <util/slist.h>
-#include <util/structof.h>
+#include <util/member.h>
 
 struct slist_link *slist_link_init(struct slist_link *link) {
 	assert(link != NULL);
@@ -53,7 +53,7 @@ struct slist_link *slist_first_link(struct slist *list) {
 	first = l->next;
 
 	assert(first != NULL);
-	return first != l ? structof(first, struct slist_link, l) : NULL;
+	return first != l ? member_out(first, struct slist_link, l) : NULL;
 }
 
 void slist_add_first_link(struct slist_link *new_link, struct slist *list) {

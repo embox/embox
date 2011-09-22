@@ -9,7 +9,8 @@
 #ifndef UTIL_LIST_IMPL_H_
 #define UTIL_LIST_IMPL_H_
 
-#include <util/structof.h>
+#include <util/member.h>
+#include <util/macro.h>
 
 struct __list_link {
 	struct __list_link *next, *prev;
@@ -74,13 +75,12 @@ static inline void __list_insert_link(struct __list_link *link,
 #define __list_foreach_link(link, list) \
 	__list_foreach__(link, list, __list_foreach_link_cast_assign, /* unused */)
 #define __list_foreach_link_cast_assign(_iter, link, ignored) \
-	link = structof(_iter, struct list_link, l)
+	link = member_out(_iter, struct list_link, l)
 
 #define __list_foreach(element, list, m_link) \
 	__list_foreach__(element, list, __list_foreach_cast_assign, m_link)
 #define __list_foreach_cast_assign(_iter, element, member) \
-	element = structof(structof(_iter, struct list_link, l), \
-			typeof(*element), member)
+	element = member_out(_iter, typeof(*element), member.l)
 
 #define __list_foreach__(node, list, iter_cast, cast_arg) \
 	__list_foreach_guarded(node, list, iter_cast, cast_arg, \

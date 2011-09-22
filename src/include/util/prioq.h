@@ -10,19 +10,21 @@
 #define UTIL_PRIOQ_H_
 
 #include <assert.h>
+#include <util/member.h>
+#include <util/list.h>
 #include <lib/list.h>
 
 struct prioq {
-	struct list_head prio_list;
+	struct list prio_list;
 };
 
 struct prioq_link {
-	struct list_head prio_link;
+	struct list_link prio_link;
 	struct list_head elem_link;
 };
 
 #define prioq_element(link, element_type, link_member) \
-	structof(__prioq_check(link), element_type, link_member)
+	member_out(link, element_type, link_member)
 
 typedef int (*prioq_comparator_t)(struct prioq_link *first,
 		struct prioq_link *second);
@@ -45,19 +47,19 @@ static inline int prioq_address_comparator(struct prioq_link *first,
 
 #define PRIOQ_INIT(prioq) \
 	{                                                  \
-		.prio_list = LIST_HEAD_INIT(prioq->prio_list), \
+		.prio_list = LIST_INIT(prioq->prio_list), \
 	}
 
 #define PRIOQ_LINK_INIT(link) \
 	{                                                 \
-		.prio_link = LIST_HEAD_INIT(link->prio_link), \
+		.prio_link = LIST_LINK_INIT(link->prio_link), \
 		.elem_link = LIST_HEAD_INIT(link->elem_link), \
 	}
 
 static inline struct prioq *prioq_init(struct prioq *prioq) {
 	assert(prioq != NULL);
 
-	INIT_LIST_HEAD(&prioq->prio_list);
+	list_init(&prioq->prio_list);
 
 	return prioq;
 }
@@ -65,7 +67,7 @@ static inline struct prioq *prioq_init(struct prioq *prioq) {
 static inline struct prioq_link *prioq_link_init(struct prioq_link *link) {
 	assert(link != NULL);
 
-	INIT_LIST_HEAD(&link->prio_link);
+	list_link_init(&link->prio_link);
 	INIT_LIST_HEAD(&link->elem_link);
 
 	return link;
@@ -74,7 +76,7 @@ static inline struct prioq_link *prioq_link_init(struct prioq_link *link) {
 static inline int prioq_empty(struct prioq *prioq) {
 	assert(prioq != NULL);
 
-	return list_empty(&prioq->prio_list);
+	return list_is_empty(&prioq->prio_list);
 }
 
 #define prioq_enqueue(element, link_comparator, prioq, link_member) \
@@ -92,11 +94,7 @@ static inline struct prioq_link *prioq_peek_link(
 		prioq_comparator_t link_comparator, struct prioq *prioq) {
 	assert(prioq != NULL);
 
-	if (prioq_empty(prioq)) {
-		return NULL;
-	}
-
-	return list_entry(prioq->prio_list.next, struct prioq_link, prio_link);
+	return list_first(&prioq->prio_list, struct prioq_link, prio_link);
 }
 
 #define prioq_remove(element, link_comparator, link_member) \

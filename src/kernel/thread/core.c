@@ -27,7 +27,7 @@
 
 #include <mem/misc/pool.h>
 #include <util/math.h>
-#include <util/structof.h>
+#include <util/member.h>
 #include <kernel/critical.h>
 #include <kernel/thread/api.h>
 #include <kernel/task.h>
@@ -476,6 +476,6 @@ static void thread_free(struct thread *t) {
 	assert(t != NULL);
 
 	// TODO may be this is not the best way... -- Eldar
-	block = structof(t, union thread_pool_entry, thread);
+	block = member_out(t, union thread_pool_entry, thread);
 	pool_free(&thread_pool, block);
 }

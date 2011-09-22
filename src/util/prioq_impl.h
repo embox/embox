@@ -31,8 +31,7 @@ static inline void prioq_enqueue_link(struct prioq_link *new_link,
 
 	assert(new_link && link_comparator && prioq);
 
-	list_for_each_entry(next, &prioq->prio_list, prio_link)
-	{
+	list_foreach(next, &prioq->prio_list, prio_link) {
 		if ((comparison = link_comparator(next, new_link)) <= 0) {
 			found = next;
 			break;
@@ -43,12 +42,12 @@ static inline void prioq_enqueue_link(struct prioq_link *new_link,
 	// TODO Don't like it, too many code repetition
 	if (!found) {
 		/* All of the existing elements (if any) have higher priority. */
-		list_add_tail(&new_link->prio_link, &prioq->prio_list);
+		list_add_last(new_link, &prioq->prio_list, prio_link);
 		assert(list_empty(&new_link->elem_link));
 
 	} else if (comparison < 0) {
 		/* Found a chain with lower priority. */
-		list_add_tail(&new_link->prio_link, &found->prio_link);
+		list_insert_before(new_link, found, prio_link);
 		assert(list_empty(&new_link->elem_link));
 
 	} else {
@@ -62,21 +61,21 @@ static inline void prioq_remove_link(struct prioq_link *link,
 		prioq_comparator_t link_comparator) {
 	assert(link && link_comparator);
 
-	if (list_empty(&link->prio_link)) {
+	if (list_alone(link, prio_link)) {
 		assert(!list_empty(&link->elem_link));
 		list_del_init(&link->elem_link);
 		return;
 	}
 
 	if (!list_empty(&link->elem_link)) {
-		struct prioq_link *new_link = list_entry(link->elem_link.next, struct prioq_link, elem_link);
-		struct list_head *new_prio_link = &new_link->prio_link;
+		struct prioq_link *new_link = list_entry(link->elem_link.next,
+				struct prioq_link, elem_link);
 
 		/* Replace priority link being deleted with a new one. */
-		list_add(new_prio_link, &link->prio_link);
+		list_insert_after(new_link, link, prio_link);
 	}
 
-	list_del_init(&link->prio_link);
+	list_remove_link(&link->prio_link);
 	list_del_init(&link->elem_link);
 }
 

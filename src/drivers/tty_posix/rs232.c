@@ -9,6 +9,8 @@
 #include "tty.h"
 #include "proc.h"
 
+#include <util/member.h>
+
 #if NR_RS_LINES > 0
 
 #if (MACHINE != IBM_PC) && (MACHINE != ATARI)
@@ -723,7 +725,7 @@ irq_hook_t *hook;
 {
 /* Interrupt hander for RS232. */
 
-  register rs232_t *rs = structof(rs232_t, hook, hook);
+  register rs232_t *rs = member_out(rs232_t, hook, hook);
 
   while (TRUE) {
 	/* Loop to pick up ALL pending interrupts for device.

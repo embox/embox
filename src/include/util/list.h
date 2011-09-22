@@ -9,6 +9,8 @@
 #ifndef UTIL_LIST_H_
 #define UTIL_LIST_H_
 
+#include <util/member.h>
+
 #include __impl_x(util/list_impl.h)
 
 struct list;
@@ -16,7 +18,7 @@ struct list;
 struct list_link;
 
 #define list_link_element(link, element_type, link_member) \
-	structof(__list_check(link), element_type, link_member)
+	member_out(link, element_type, link_member)
 
 #define LIST_INIT(list) \
 	  __LIST_INIT(list)
