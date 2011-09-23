@@ -34,9 +34,9 @@ static int setup(void) {
 }
 
 
-TEST_CASE("slist_link_element should cast link member out to its container") {
+TEST_CASE("slist_element should cast link member out to its container") {
 	struct slist_link *link = &x.lnk;
-	test_assert_equal(slist_link_element(link, struct element, lnk), &x);
+	test_assert_equal(slist_element(link, struct element, lnk), &x);
 }
 
 TEST_CASE("slist_init should return its argument") {

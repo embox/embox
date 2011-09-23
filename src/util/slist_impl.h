@@ -58,7 +58,7 @@ static inline void __slist_insert_link(struct __slist_link *link,
 #define __slist_check(expr) (expr)
 #endif
 
-#define __slist_link_element(link, type, m_link) \
+#define __slist_element(link, type, m_link) \
 	member_out(link, type, m_link)
 
 #define __slist_alone(element, m_link) \
@@ -82,7 +82,7 @@ static inline void __slist_insert_link(struct __slist_link *link,
 	({ \
 		struct slist_link *__slist_link__ = (link);                \
 		__slist_link__                                             \
-				? slist_link_element(__slist_link__, type, m_link) \
+				? slist_element(__slist_link__, type, m_link) \
 				: NULL;                                            \
 	})
 

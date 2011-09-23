@@ -44,8 +44,8 @@ extern int slist_empty(struct slist *list);
 #define slist_remove_first(slist, element_type, link_member) \
 	  __slist_remove_first(slist, element_type, link_member)
 
-#define slist_link_element(link, element_type, link_member) \
-	  __slist_link_element(link, element_type, link_member)
+#define slist_element(link, element_type, link_member) \
+	  __slist_element(link, element_type, link_member)
 
 extern int slist_alone_link(struct slist_link *link);
 

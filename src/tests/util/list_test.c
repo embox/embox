@@ -57,9 +57,9 @@ static struct list *fill_in_from(struct element * const array[],
 static struct list *compare_with(struct element * const array[],
 		struct list *list);
 
-TEST_CASE("list_link_element should cast link member out to its container") {
+TEST_CASE("list_element should cast link member out to its container") {
 	struct list_link *link = &x.lnk;
-	test_assert_equal(list_link_element(link, struct element, lnk), &x);
+	test_assert_equal(list_element(link, struct element, lnk), &x);
 }
 
 TEST_CASE("list_init should return its argument") {

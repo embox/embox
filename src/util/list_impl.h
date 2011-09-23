@@ -113,7 +113,7 @@ static inline void __list_insert_link(struct __list_link *link,
 	({                                                           \
 		struct list_link *__list_link__ = (link);                \
 		__list_link__                                            \
-				? list_link_element(__list_link__, type, m_link) \
+				? list_element(__list_link__, type, m_link) \
 				: NULL;                                          \
 	})
 

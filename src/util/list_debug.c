@@ -15,6 +15,8 @@
 #include <util/list.h>
 #include <util/member.h>
 
+#if 0
+
 struct list_link *list_link_init(struct list_link *link) {
 	assert(link != NULL);
 
@@ -193,3 +195,6 @@ struct list_link *list_remove_last_link(struct list *list) {
 
 	return ret;
 }
+
+#endif
+
