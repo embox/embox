@@ -13,27 +13,17 @@
 
 #define adt_element_t(element_type, link_member) \
 	union __attribute__ ((packed)) { \
+		typeof(element_type) element;                           \
 		struct __attribute__ ((packed)) {                       \
 			char __offset[offsetof(element_type, link_member)]; \
-			member_typeof(element_type, link_member) type;      \
-		} link[0];                                              \
-		struct __attribute__ ((packed)) {                       \
-			typeof(element_type) type;                          \
-		} element[0];                                           \
+			member_typeof(element_type, link_member) m_link;    \
+		} /* unnamed */;                                        \
 	}
 
-#define adt_to_link(element_ptr, adt_element) \
-	(__adt_typeof_link(adt_link) *) \
-		member_in((typeof(adt_link) *) (element_ptr), link[0].type)
+#define adt_to_link(element_ptr, adt) \
+	member_in((typeof(adt) *) (element_ptr), m_link)
 
-#define adt_from_link(link_ptr, adt_element) \
-	 (__adt_typeof_element(adt_link) *) \
-	 	 member_out((__adt_typeof_link(adt_link) *) (link_ptr), \
-	 			 typeof(adt_link), link[0].type)
-
-#define __adt_typeof_link(adt_link) \
-	member_typeof(adt_link, link[0].type)
-#define __adt_typeof_element(adt_link) \
-	member_typeof(adt_link, element[0].type)
+#define adt_from_link(link_ptr, adt) \
+	 &(member_out((link_ptr), typeof(adt), m_link)->element)
 
 #endif /* UTIL_ADT_H_ */
