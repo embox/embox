@@ -137,7 +137,7 @@ init_hook:
     blne    software_init_hook
 
 /* enabling interrupts */
-    msr	    CPSR_c, #ARM_MODE_SVC
+/* msr	    CPSR_c, #ARM_MODE_SVC */ /* now it's in ipl init */
 
 /* kernel start */
 	bl		kernel_start
