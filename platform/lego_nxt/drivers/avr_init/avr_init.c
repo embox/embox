@@ -36,33 +36,21 @@ static bool avr_line_locked = false;
 static int avr_send_data(to_avr_t *data_to_avr) {
 	int res = 0;
 
-#ifdef CONFIG_MEASURE
-	measure_start();
-#endif
 	avr_line_locked = true;
 	twi_send(NXT_AVR_ADDRESS, (uint8_t *) data_to_avr, sizeof(to_avr_t));
 	avr_line_locked = false;
 
-#ifdef CONFIG_MEASURE
-	avr_send_process(measure_stop());
-#endif
 	return res;
 }
 
 static int avr_get_data(from_avr_t *data_from_avr) {
 	int res = 0;
 
-#ifdef CONFIG_MEASURE
-	measure_start();
-#endif
-
 	avr_line_locked = true;
 	res = twi_receive(NXT_AVR_ADDRESS, (uint8_t *) data_from_avr,
 		sizeof(from_avr_t));
 	avr_line_locked = false;
-#ifdef CONFIG_MEASURE
-	avr_get_process(measure_stop());
-#endif
+
 	return res;
 }
 
@@ -83,6 +71,7 @@ static uint32_t avr_handler(void) {
 
 static int init(void) {
 	int result = 0;
+	struct sys_timer *avr_timer;
 
 	twi_write(NXT_AVR_ADDRESS, (const uint8_t *) avr_brainwash_string,
 					strlen(avr_brainwash_string));
@@ -94,7 +83,7 @@ static int init(void) {
 
 	sensors_init();
 
-	timer_set(0, 1, (sys_timer_handler_t) avr_handler, 0);
+	result = timer_set(&avr_timer, 1, (sys_timer_handler_t) avr_handler, 0);
 
 	return result;
 }

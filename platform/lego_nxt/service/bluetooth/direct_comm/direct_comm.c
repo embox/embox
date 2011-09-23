@@ -100,7 +100,7 @@ static int sensor_send(uint8_t sensor_id, int *addit_len) {
 }
 
 static int keep_alive_send(int *addit_len) {
-	*addit_len = 4;
+	*addit_len = 3;
 #ifdef LEGO_COMPATIBLE
 	printf("Hi! I'm Lego =(\n");
 	return 0;

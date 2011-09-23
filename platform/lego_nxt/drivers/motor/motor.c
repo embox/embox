@@ -43,7 +43,7 @@ extern to_avr_t data_to_avr;
 static nxt_motor_t nxt_motors[NXT_N_MOTORS];
 
 nxt_motor_t *nxt_get_motor(int num) {
-	if (3 < num) {
+	if (num >= NXT_N_MOTORS) {
 		return NULL;
 	}
 	return &nxt_motors[num];

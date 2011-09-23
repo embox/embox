@@ -12,8 +12,8 @@
 #include <lib/list.h>
 #include <embox/unit.h>
 #include <kernel/timer.h>
-#include <kernel/thread/event.h>
-#include <kernel/thread/sched.h>
+//#include <kernel/thread/event.h>
+//#include <kernel/thread/sched.h>
 #include <kernel/clock_source.h>
 #include <errno.h>
 

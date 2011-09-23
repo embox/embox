@@ -153,7 +153,6 @@ static irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
 }
 
 static void init_usart(void) {
-	volatile uint8_t tmp;
 	/* Configure the usart */
 	REG_STORE(AT91C_PMC_PCER, (1 << CONFIG_NXT_BT_US_DEV_ID));
 
@@ -176,8 +175,8 @@ static void init_usart(void) {
 	REG_STORE(&(us_dev_regs->US_TCR), 0);
 	REG_STORE(&(us_dev_regs->US_RNPR), 0);
 	REG_STORE(&(us_dev_regs->US_TNPR), 0);
-	tmp = REG_LOAD(&(us_dev_regs->US_RHR));
-	tmp = REG_LOAD(&(us_dev_regs->US_CSR));
+	REG_LOAD(&(us_dev_regs->US_RHR));
+	REG_LOAD(&(us_dev_regs->US_CSR));
 
 	REG_STORE(&(us_dev_regs->US_CR), AT91C_US_RXEN | AT91C_US_TXEN);
 	REG_STORE(&(us_dev_regs->US_PTCR), AT91C_PDC_RXTEN | AT91C_PDC_TXTEN);
@@ -212,7 +211,6 @@ static int nxt_bluetooth_init(void) {
 	init_control_pins();
 
 	init_adc();
-
 
 	bt_clear_arm7_cmd();
 
