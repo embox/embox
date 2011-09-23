@@ -20,7 +20,8 @@ static void printchar(char **str, int c) {
 		**str = c;
 		++(*str);
 	} else {
-		static char prev;
+		static int prev;
+		prev = c;
 		if (c == '\n' && prev != '\r') {
 			diag_putc('\r');
 		}
