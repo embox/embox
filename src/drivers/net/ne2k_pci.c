@@ -431,6 +431,7 @@ static int __init unit_init(void) {
 	if (res != 0) {
 		return res;
 	}
+	register_netdev(nic);
 
 	return ENOERR;
 }

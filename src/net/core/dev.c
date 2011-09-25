@@ -15,15 +15,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <lib/list.h>
 
 POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
 
 static struct net_device * opened_netdevs[CONFIG_NET_DEVICES_QUANTITY];
 
-#if 0
-static struct net_device *rx_netdevs;
-static struct net_device *tx_netdevs;
-#endif
+static LIST_HEAD(registered_dev);
+
 
 struct net_device * get_dev_by_idx(int num) {
 	if ((num < 0) || (num >= CONFIG_NET_DEVICES_QUANTITY)) {
@@ -33,7 +32,10 @@ struct net_device * get_dev_by_idx(int num) {
 }
 
 int dev_alloc_name(struct net_device *dev, const char *name) {
-	strcpy(dev->name, name);
+	char buff[IFNAMSIZ];
+
+	sprintf(buff, "eth%d", 0);
+	strcpy(dev->name, buff);
 	return ENOERR;
 }
 
@@ -49,6 +51,7 @@ static int process_backlog(struct net_device *dev) {
 	return ENOERR;
 }
 
+#if 0
 static int netdev_get_hash_idx(const char *if_name) {
 	int idx;
 
@@ -66,12 +69,13 @@ static int netdev_get_hash_idx(const char *if_name) {
 	/* if there => unknown, so error */
 	return -EINVAL;
 }
+#endif
 
 struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
-	char buff[IFNAMSIZ];
-	int hash_idx;
+
+//	int hash_idx;
 
 	if ((name == NULL) || (setup == NULL)) {
 		return NULL; /* Invalid args */
@@ -82,23 +86,6 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 		return NULL;
 	}
 
-	/* Get id in hash table */
-	hash_idx = netdev_get_hash_idx(name);
-	if (hash_idx < 0) {
-		pool_free(&netdev_pool, dev);
-		return NULL;
-	}
-
-	if (hash_idx == 0) {
-		strncpy(dev->name, name, sizeof(dev->name) - 1);
-	} else {
-		/* FIXME can happen array bounds exceeded. Need snprintf() function */
-		sprintf(buff, "%s%d", name, hash_idx - 1);
-		strncpy(dev->name, buff, sizeof(dev->name) - 1);
-	}
-
-	opened_netdevs[hash_idx] = dev;
-
 	setup(dev);
 
 	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
@@ -107,6 +94,8 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 	dev->dev_queue.lock = 0;
 	dev->poll = process_backlog;
 
+	strncpy(dev->name, name, sizeof(dev->name));
+
 	return dev;
 }
 
@@ -114,18 +103,50 @@ void free_netdev(struct net_device *dev) {
 	pool_free(&netdev_pool, dev);
 }
 
-#if 0
+
 int register_netdev(struct net_device *dev) {
-	/*FIXME we must create queue for each device*/
+	int err;
+
+	/*
+	 * If the name is a format string the caller wants us to do a
+	 * name allocation.
+	 */
+	if (strchr(dev->name, '%')) {
+		err = dev_alloc_name(dev, dev->name);
+	}
+	/* Get id in hash table */
+//	hash_idx = netdev_get_hash_idx(name);
+//	if (hash_idx < 0) {
+//		pool_free(&netdev_pool, dev);
+//		return NULL;
+//	}
+
+
+//	opened_netdevs[hash_idx] = dev;
+
+	list_add(&dev->registered_dev, &registered_dev);
+
 	return 0;
 }
 
 void unregister_netdev(struct net_device *dev) {
 
 }
-#endif
+
 
 struct net_device * netdev_get_by_name(const char *name) {
+	struct net_device *dev;
+	struct list_head *lnk;
+
+	list_for_each(lnk, &registered_dev) {
+		dev = list_entry(lnk, struct net_device, registered_dev);
+		if(0 == strncmp(name, dev->name, sizeof(dev->name))) {
+			return dev;
+		}
+	}
+	return NULL;
+
+#if 0
 	int idx;
 
 	idx = netdev_get_hash_idx(name);
@@ -134,6 +155,7 @@ struct net_device * netdev_get_by_name(const char *name) {
 	}
 
 	return opened_netdevs[idx];
+#endif
 }
 
 struct net_device * dev_getbyhwaddr(unsigned short type, char *hw_addr) {
