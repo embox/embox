@@ -41,13 +41,13 @@ static void printchar(char **str, int c) {
 		**str = c;
 		++(*str);
 	} else {
-		static int prev;
-		prev = c;
+		static int prev = 0;
 		if (c == '\n' && prev != '\r') {
 			char tmp = '\r';
 			write(1, &tmp, 1);
 		}
 		write(1, &ch, 1);
+		prev = c;
 	}
 }
 
