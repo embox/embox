@@ -114,6 +114,8 @@ typedef struct net_device {
 	struct net_device *rx_netdev_list;
 	struct net_device *tx_netdev_list;
 
+	struct list_head registered_dev;
+
 	char name[IFNAMSIZ]; /**< Name of the interface.  */
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
@@ -137,7 +139,7 @@ static inline void *netdev_priv(struct net_device *dev) {
 	return dev->priv;
 }
 
-int dev_alloc_name(struct net_device *dev, const char *name);
+//int dev_alloc_name(struct net_device *dev, const char *name);
 
 /**
  * Find an network device by its name
@@ -167,9 +169,9 @@ extern net_device_t *alloc_netdev(int sizeof_priv, const char *name,
  */
 extern void free_netdev(net_device_t *dev);
 
-int register_netdev(struct net_device *dev);
+extern int register_netdev(struct net_device *dev);
 
-void unregister_netdev(struct net_device *dev);
+extern void unregister_netdev(struct net_device *dev);
 
 /**
  * Add packet handler
