@@ -2,7 +2,7 @@
  * @file
  * @brief Implements macros for binding #mod_member.
  *
- * @date Jul 05, 2011
+ * @date 05.06.11
  * @author Alexandr Kalmuk
  */
 
@@ -27,10 +27,10 @@
 			MACRO_GUARD(MACRO_CONCAT(__mod_member__, mod_nm)))
 
 #define __MOD_MEMBER_DEF_NM(mod_nm, _ops, _data, member_nm) \
-	static const struct mod_member member_nm = { \
-		.ops = _ops,                             \
-		.data = (void *) _data,                  \
-	};                                           \
+	static const struct mod_member member_nm = {             \
+		.ops = _ops,                                     \
+		.data = (void *) _data,                          \
+	};                                                       \
 	extern const struct mod_member *__MOD_MEMBERS(mod_nm)[]; \
 	ARRAY_SPREAD_ADD(__MOD_MEMBERS(mod_nm), &member_nm)
 
