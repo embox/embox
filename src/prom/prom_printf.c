@@ -20,12 +20,12 @@ static void printchar(char **str, int c) {
 		**str = c;
 		++(*str);
 	} else {
-		static int prev;
-		prev = c;
+		static int prev = 0;
 		if (c == '\n' && prev != '\r') {
 			diag_putc('\r');
 		}
 		diag_putc((char) c);
+		prev = c;
 	}
 }
 
