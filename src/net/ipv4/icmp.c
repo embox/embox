@@ -82,8 +82,8 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 	skb->h.icmph->type = icmp_param->data.icmph.type;
 	skb->h.icmph->code = icmp_param->data.icmph.code;
 	skb->h.icmph->checksum = 0;
-	skb->h.icmph->checksum = ptclbsum(skb->h.raw,
-				htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
+	skb->h.icmph->checksum = htons(ptclbsum(skb->h.raw,
+				htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph)));
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
 				icmp_param->skb->nh.iph->saddr, skb, 0);
@@ -229,7 +229,7 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	icmph->code = code;
 	icmph->un.gateway = info;
 	icmph->checksum = 0;
-	icmph->checksum = ptclbsum(icmph, iph->tot_len - IP_HEADER_SIZE(iph));
+	icmph->checksum = htons(ptclbsum(icmph, htons(iph->tot_len) - IP_HEADER_SIZE(iph)));
 
 	iov.iov_base = (void *) packet;
 	iov.iov_len = IP_HEADER_SIZE(iph) + ICMP_HEADER_SIZE + DATA_SIZE(iph);
@@ -357,9 +357,9 @@ static int icmp_rcv(sk_buff_t *pack) {
 	}
 
 	//TODO: check summ icmp? not need, if ip checksum is ok.
-	tmp = icmph->checksum;
+	tmp = ntohs(icmph->checksum);
 	icmph->checksum = 0;
-	if (tmp != (icmph->checksum = ptclbsum(pack->h.raw, ntohs(pack->nh.iph->tot_len) - IP_HEADER_SIZE(pack->nh.iph)))) {
+	if (tmp != ptclbsum(pack->h.raw, ntohs(pack->nh.iph->tot_len) - IP_HEADER_SIZE(pack->nh.iph))) {
 		LOG_ERROR("bad icmp checksum\n");
 		kfree_skb(pack);
 		return -1;
