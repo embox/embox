@@ -16,21 +16,22 @@
  *         - Adaptation for embox
  */
 
-#include <string.h>
 #include <asm/io.h>
-#include <kernel/irq.h>
-#include <net/skbuff.h>
-#include <net/netdevice.h>
-#include <net/etherdevice.h>
 #include <embox/unit.h>
-#include <stdint.h>
-#include <linux/init.h>
-#include <drivers/pci.h>
-#include <net/ne2k_pci.h>
-#include <stdio.h>
-#include <net/in.h>
 #include <err.h>
 #include <errno.h>
+#include <drivers/pci.h>
+#include <kernel/irq.h>
+#include <linux/init.h>
+#include <net/etherdevice.h>
+#include <net/in.h>
+#include <net/ne2k_pci.h>
+#include <net/netdevice.h>
+#include <net/skbuff.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -197,7 +198,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint16_t count;
 	unsigned long base_addr;
 
-	if ((NULL == skb) || (NULL == dev)) {
+	if ((skb == NULL) || (dev == NULL)) {
 		return -EINVAL;
 	}
 
@@ -223,7 +224,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 //	ne2k_show_packet(skb->data, skb->len, "send"); /* debug */
 	kfree_skb(skb); /* free packet */
 
-	return (int)count;
+	return ENOERR;
 }
 
 static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset, struct net_device *dev) {
@@ -351,7 +352,7 @@ static net_device_stats_t * get_eth_stat(struct net_device *dev) {
 static int set_mac_address(struct net_device *dev, void *addr) {
 	uint32_t i;
 
-	if (NULL == dev || NULL == addr) {
+	if ((dev == NULL) || (addr == NULL)) {
 		return -EINVAL;
 	}
 
@@ -369,7 +370,7 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 
 
 static int open(struct net_device *dev) {
-	if (NULL == dev) {
+	if (dev == NULL) {
 		return -EINVAL;
 	}
 
@@ -380,7 +381,7 @@ static int open(struct net_device *dev) {
 }
 
 static int stop(struct net_device *dev) {
-	if (NULL == dev) {
+	if (dev == NULL) {
 		return -EINVAL;
 	}
 
@@ -407,8 +408,8 @@ static int __init unit_init(void) {
 	struct pci_dev *pci_dev;
 
 	pci_dev = pci_find_dev(0x10EC, 0x8029); //TODO pci ID
-	if (NULL == pci_dev) {
-		LOG_WARN("couldn't find NE2K_PCI device\n");
+	if (pci_dev == NULL) {
+		LOG_WARN("Couldn't find NE2K_PCI device\n");
 		return ENOERR;
 	}
 
@@ -416,7 +417,7 @@ static int __init unit_init(void) {
 
 	nic = alloc_etherdev(0);
 	if (nic == NULL) {
-		LOG_WARN("couldn't alloc netdev for NE2K_PCI\n");
+		LOG_ERROR("Couldn't alloc netdev for NE2K_PCI\n");
 		return -ENOMEM;
 	}
 	nic->netdev_ops = &_netdev_ops;
@@ -424,10 +425,9 @@ static int __init unit_init(void) {
 	nic->base_addr = nic_base;
 
 	res = irq_attach(pci_dev->irq, ne2k_handler, 0, nic, "ne2k");
-	if (res != 0) {
+	if (res < 0) {
 		return res;
 	}
-	register_netdev(nic);
 
-	return ENOERR;
+	return register_netdev(nic);
 }

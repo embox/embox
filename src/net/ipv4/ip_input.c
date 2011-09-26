@@ -103,7 +103,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	net_proto_foreach(net_proto_ptr) {
 		p_netproto = net_proto_ptr->netproto;
 		if (p_netproto->type == iph->proto) {
-			p_netproto->handler(skb);
+			p_netproto->handler(skb); // TODO must not free the skb
 		}
 	}
 

@@ -14,6 +14,7 @@
 #include <net/skbuff.h>
 #include <net/sock.h>
 #include <hal/ipl.h>
+#include <stdio.h>
 POOL_DEF(skb_pool, struct sk_buff, CONFIG_QUANTITY_SKB);
 POOL_DEF(skb_queue_pool, struct sk_buff_head, CONFIG_QUANTITY_SKB_QUEUE);
 POOL_DEF(net_buff_pool, unsigned char[CONFIG_ETHERNET_V2_FRAME_SIZE],
@@ -101,6 +102,8 @@ void kfree_skb(struct sk_buff *skb) {
 
 void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
 	ipl_t sp;
+//	printf("\nskb_queue_tail()\n");
+//	printf("<<<append %p to sock %p>>>", (void *)newsk, (void *)list);
 	if (NULL == list || NULL == newsk) {
 		return;
 	}
@@ -120,6 +123,8 @@ sk_buff_t *skb_peek(struct sk_buff_head *list_) {
 
 void skb_unlink(sk_buff_t *skb, struct sk_buff_head *list) {
 	struct sk_buff *next, *prev;
+//	printf("\nskb_unlink()\n");
+//	printf("<<<take %p from sock %p>>>", (void *)skb, (void *)list);
 	list->qlen--;
 	next = skb->next;
 	prev = skb->prev;

@@ -17,6 +17,7 @@
 #include <net/inetdevice.h>
 #include <kernel/irq.h>
 #include <linux/interrupt.h>
+#include <errno.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -74,38 +75,41 @@ static void print_packet (sk_buff_t *skb) {
 #endif
 
 int dev_queue_xmit(struct sk_buff *skb) {
+	int res;
 	net_device_t *dev;
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
 
-	if (NULL == skb) {
-		return -1;
+	if (skb == NULL) {
+		return -EINVAL;
 	}
+
 	dev = skb->dev;
 	if (NULL == dev) {
 		kfree_skb(skb);
-		return -1;
+		return -EINVAL;
 	}
+
 	ops = dev->netdev_ops;
 	stats = ops->ndo_get_stats(dev);
 	if (dev->flags & IFF_UP) {
-		if (ETH_P_ARP != skb->protocol) {
-			if (-1 == dev->header_ops->rebuild(skb)) {
-				kfree_skb(skb);
-				stats->tx_err++;
-				return -1;
-			}
-		}
-		if (-1 == ops->ndo_start_xmit(skb, dev)) {
+		res = dev->header_ops->rebuild(skb);
+		if (res < 0) {
 			kfree_skb(skb);
 			stats->tx_err++;
-			return -1;
+			return res;
+		}
+		res = ops->ndo_start_xmit(skb, dev);
+		if (res < 0) {
+			kfree_skb(skb);
+			stats->tx_err++;
+			return res;
 		}
 		/* update statistic */
 		stats->tx_packets++;
 		stats->tx_bytes += skb->len;
 	}
-	return 0;
+	return ENOERR;
 }
 
 
@@ -152,8 +156,7 @@ void netif_rx_schedule(net_device_t *dev) {
 	raise_softirq(NET_RX_SOFTIRQ);
 }
 
-extern int dev_is_busy(int num);
-extern net_device_t *get_dev_by_idx(int num);
+extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
 
 static void net_rx_action(struct softirq_action *action) {
 	size_t i;

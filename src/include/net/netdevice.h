@@ -111,11 +111,10 @@ typedef struct packet_type {
  * structure of net device
  */
 typedef struct net_device {
+#if 0
 	struct net_device *rx_netdev_list;
 	struct net_device *tx_netdev_list;
-
-	struct list_head registered_dev;
-
+#endif
 	char name[IFNAMSIZ]; /**< Name of the interface.  */
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
@@ -139,38 +138,45 @@ static inline void *netdev_priv(struct net_device *dev) {
 	return dev->priv;
 }
 
-//int dev_alloc_name(struct net_device *dev, const char *name);
-
 /**
  * Find an network device by its name
  * @param name name to find
  * @return NULL is returned if no matching device is found.
  */
-extern net_device_t *netdev_get_by_name(const char *name);
+extern struct net_device * netdev_get_by_name(const char *name);
 
 /**
  * Find an network device by its hw addr
+ * @param type
  * @param hwaddr addr to find
  * @return NULL is returned if no matching device is found.
  */
-extern net_device_t  *dev_getbyhwaddr(unsigned short type, char *hwaddr);
+extern struct net_device * dev_getbyhwaddr(unsigned short type, char *hwaddr);
 
 /**
  * Allocate network device
  * @param name device name format string
  * @param callback to initialize device
  */
-extern net_device_t *alloc_netdev(int sizeof_priv, const char *name,
-		void(*setup)(net_device_t *));
+extern struct net_device * alloc_netdev(int sizeof_priv, const char *name,
+		void(*setup)(struct net_device *));
 
 /**
  * Free network device
  * @param dev net_device handler
  */
-extern void free_netdev(net_device_t *dev);
+extern void free_netdev(struct net_device *dev);
 
+/**
+ * Register network device
+ * @param dev net_device handler
+ */
 extern int register_netdev(struct net_device *dev);
 
+/**
+ * Unregister network device
+ * @param dev net_device handler
+ */
 extern void unregister_netdev(struct net_device *dev);
 
 /**
@@ -198,26 +204,26 @@ extern void dev_remove_pack(packet_type_t *pt);
  * Pepare an interface for use.
  * @param dev device to open
  */
-extern int dev_open(net_device_t *dev);
+extern int dev_open(struct net_device *dev);
 
 /**
  * Shutdown an interface.
  * @param dev device to close
  */
-extern int dev_close(net_device_t *dev);
+extern int dev_close(struct net_device *dev);
 
 /**
  * Get flags from device.
  * @param dev device to get flags
  */
-extern unsigned int dev_get_flags(const net_device_t *dev);
+extern unsigned int dev_get_flags(const struct net_device *dev);
 
 /**
  * Set the flags on device.
  * @param dev device to set flags
  * @param flags
  */
-extern int dev_set_flags(net_device_t *dev, unsigned flags);
+extern int dev_set_flags(struct net_device *dev, unsigned flags);
 
 /**
  * this function call ip protocol,

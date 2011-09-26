@@ -62,6 +62,25 @@ enum {
 	MAX_TIMEOUT = 2148,
 };
 
+static inline void ne2k_show_packet(uint8_t *raw, uint16_t size, char *title) {
+	uint8_t i, val;
+
+    printf("\nPACKET %s:", title);
+	for (i = 0; i < size; i++) {
+		if (!(i % 16)) {
+			printf("\n");
+		}
+		val = *(raw + i);
+		if (val < 0x10) {
+			printf(" 0%X", val);
+		}
+		else {
+			printf(" %X", val);
+		}
+	}
+    printf("\n.\n");
+}
+
 static int ping(ping_info_t *pinfo) {
 	int cnt_resp = 0, cnt_err = 0, sk;
 	size_t i;
@@ -105,9 +124,11 @@ static int ping(ping_info_t *pinfo) {
 	for (i = 1; i <= pinfo->count; i++) {
 		icmph_s->un.echo.sequence = htons(ntohs(icmph_s->un.echo.sequence) + 1);
 		icmph_s->checksum = 0;
-		icmph_s->checksum = ptclbsum(packet + IP_MIN_HEADER_SIZE,
-						ICMP_HEADER_SIZE + pinfo->padding_size);
+		icmph_s->checksum = htons(ptclbsum(packet + IP_MIN_HEADER_SIZE,
+						ICMP_HEADER_SIZE + pinfo->padding_size));
 
+//		ne2k_show_packet((uint8_t *)packet + IP_MIN_HEADER_SIZE, ICMP_HEADER_SIZE + pinfo->padding_size, "ping");
+//		printf("Pakcet len: %d\n", ICMP_HEADER_SIZE + pinfo->padding_size);
 		sendto(sk, packet, ntohs(iph_s->tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 
 		start = clock();
@@ -117,6 +138,7 @@ static int ping(ping_info_t *pinfo) {
 					0, (struct sockaddr *)&pinfo->from, NULL)) {
 				continue;
 			}
+//			printf("RECV\n");
 			if ((icmph_r->type != ICMP_ECHOREPLY) || (icmph_s->un.echo.sequence != icmph_r->un.echo.sequence)
 					||(iph_s->daddr != iph_r->saddr)) {
 				continue;

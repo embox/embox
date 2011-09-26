@@ -53,6 +53,12 @@ int raw_rcv(sk_buff_t *skb) {
 		if (sk && sk->sk_protocol == iph->proto) {
 			if (raw_rcv_skb(sk, skb) == NET_RX_SUCCESS) {
 				need_free = 0;
+				/* TODO rwq_rcv_skb changes next and
+				 * prev pointers, so it's works incorrect
+				 * with few sockets, which are registered
+				 * on the same protocol.
+				 */
+				break; // see above
 			}
 		}
 	}

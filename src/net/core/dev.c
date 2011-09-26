@@ -15,28 +15,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <lib/list.h>
 
 POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
-
-static struct net_device * opened_netdevs[CONFIG_NET_DEVICES_QUANTITY];
-
-static LIST_HEAD(registered_dev);
-
+static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY] = {0}; /* We must clear array */
 
 struct net_device * get_dev_by_idx(int num) {
 	if ((num < 0) || (num >= CONFIG_NET_DEVICES_QUANTITY)) {
 		return NULL;
 	}
+
 	return opened_netdevs[num];
-}
-
-int dev_alloc_name(struct net_device *dev, const char *name) {
-	char buff[IFNAMSIZ];
-
-	sprintf(buff, "eth%d", 0);
-	strcpy(dev->name, buff);
-	return ENOERR;
 }
 
 static int process_backlog(struct net_device *dev) {
@@ -51,31 +39,9 @@ static int process_backlog(struct net_device *dev) {
 	return ENOERR;
 }
 
-#if 0
-static int netdev_get_hash_idx(const char *if_name) {
-	int idx;
-
-	if (strcmp(if_name, "lo") == 0) { /* Loopback interface */
-		return 0;
-	}
-	else if (strncmp(if_name, "eth", 3) == 0) { /* Ethernet */
-		idx = (int)strtol(if_name + 3, NULL, 10) + 1;
-		if (idx >= CONFIG_NET_DEVICES_QUANTITY) {
-			return -ENOMEM;
-		}
-		return idx;
-	}
-
-	/* if there => unknown, so error */
-	return -EINVAL;
-}
-#endif
-
 struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
-
-//	int hash_idx;
 
 	if ((name == NULL) || (setup == NULL)) {
 		return NULL; /* Invalid args */
@@ -94,75 +60,75 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 	dev->dev_queue.lock = 0;
 	dev->poll = process_backlog;
 
-	strncpy(dev->name, name, sizeof(dev->name));
+	strncpy(dev->name, name, IFNAMSIZ);
 
 	return dev;
 }
 
 void free_netdev(struct net_device *dev) {
+	if (dev == NULL) {
+		return;
+	}
 	pool_free(&netdev_pool, dev);
 }
 
 
 int register_netdev(struct net_device *dev) {
-	int err;
+	size_t idx;
 
-	/*
-	 * If the name is a format string the caller wants us to do a
-	 * name allocation.
-	 */
-	if (strchr(dev->name, '%')) {
-		err = dev_alloc_name(dev, dev->name);
+	if (dev == NULL) {
+		return -EINVAL;
 	}
-	/* Get id in hash table */
-//	hash_idx = netdev_get_hash_idx(name);
-//	if (hash_idx < 0) {
-//		pool_free(&netdev_pool, dev);
-//		return NULL;
-//	}
 
+	for (idx = 0; idx < CONFIG_NET_DEVICES_QUANTITY; ++idx) {
+		if (opened_netdevs[idx] == NULL) {
+			opened_netdevs[idx] = dev;
+			return ENOERR;
+		}
+	}
 
-//	opened_netdevs[hash_idx] = dev;
-
-	list_add(&dev->registered_dev, &registered_dev);
-
-	return 0;
+	return -ENOMEM;
 }
 
 void unregister_netdev(struct net_device *dev) {
+	size_t i;
 
+	if (dev == NULL) {
+		return;
+	}
+
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+		if (opened_netdevs[i] == dev) {
+			opened_netdevs[i] = NULL;
+			return;
+		}
+	}
 }
 
 
 struct net_device * netdev_get_by_name(const char *name) {
+	size_t i;
 	struct net_device *dev;
-	struct list_head *lnk;
 
-	list_for_each(lnk, &registered_dev) {
-		dev = list_entry(lnk, struct net_device, registered_dev);
-		if(0 == strncmp(name, dev->name, sizeof(dev->name))) {
-			return dev;
-		}
-	}
-	return NULL;
-
-#if 0
-	int idx;
-
-	idx = netdev_get_hash_idx(name);
-	if (idx < 0) {
+	if (name == NULL) {
 		return NULL;
 	}
 
-	return opened_netdevs[idx];
-#endif
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+		dev = opened_netdevs[i];
+		if (strncmp(name, dev->name, IFNAMSIZ) == 0) {
+			return dev;
+		}
+	}
+
+	return NULL;
 }
 
 struct net_device * dev_getbyhwaddr(unsigned short type, char *hw_addr) {
 	size_t i;
 	struct net_device *dev;
 
-	for (i = 1; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
+	for (i = 1; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
 		dev = opened_netdevs[i];
 		if ((dev != NULL) && (memcmp(hw_addr, dev->dev_addr, dev->addr_len) == 0)) {
 			return dev;

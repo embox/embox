@@ -7,12 +7,15 @@
  * @author Anton Bondarev
  */
 
-#ifndef ETHERDEVICE_H_
-#define ETHERDEVICE_H_
+#ifndef NET_ETHERDEVICE_H_
+#define NET_ETHERDEVICE_H_
 
 #define NET_TYPE_ALL_PROTOCOL 0
 
 #include <net/netdevice.h>
+#include <net/skbuff.h>
+#include <net/socket.h>
+#include <stdint.h>
 
 typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 
@@ -73,9 +76,9 @@ int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr);
 /**
  * Set new Ethernet hardware address.
  * @param dev network device
- * @param p socket address
+ * @param addr socket address
  */
-int eth_mac_addr(struct net_device *dev, void *p);
+int eth_mac_addr(struct net_device *dev, struct sockaddr *addr);
 
 /**
  * Create the Ethernet header
@@ -86,7 +89,7 @@ int eth_mac_addr(struct net_device *dev, void *p);
  * @param saddr source address (NULL use device source address)
  * @paramlen packet length (<= pack->len)
  */
-extern int eth_header(sk_buff_t *pack, net_device_t *dev,
+extern int eth_header(sk_buff_t *pack, struct net_device *dev,
 			unsigned short type, void *daddr, void *saddr, unsigned len);
 
 /**
@@ -100,32 +103,37 @@ extern int eth_rebuild_header(sk_buff_t *pack);
  * @param dev network device
  * @param new_mtu new Maximum Transfer Unit
  */
-extern int eth_change_mtu(net_device_t *dev, int new_mtu);
+extern int eth_change_mtu(struct net_device *dev, int new_mtu);
 
 /**
  * Setup Ethernet network device
  * @param dev network device
  * Fill in the fields of the device structure with Ethernet-generic values.
  */
-extern void ether_setup(net_device_t *dev);
+extern void ether_setup(struct net_device *dev);
 
-extern const header_ops_t *get_eth_header_ops(void);
+extern const header_ops_t * get_eth_header_ops(void);
 
 /**
  * Allocates and sets up an Ethernet device
  */
-extern net_device_t *alloc_etherdev(int sizeof_priv);
+extern struct net_device * alloc_etherdev(int sizeof_priv);
+
+/**
+ * Frees an Ethernet device
+ */
+extern void free_etherdev(struct net_device *dev);
 
 /**
  * Determine the packet's protocol ID.
  */
 extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
 
-extern int eth_flag_up(net_device_t *dev, int flag_type);
-extern int eth_flag_down(net_device_t *dev, int flag_type);
-extern int eth_set_irq(net_device_t *dev, int irq_num);
-extern int eth_set_baseaddr(net_device_t *dev, unsigned long base_addr);
-extern int eth_set_txqueuelen(net_device_t *dev, unsigned long new_len);
-extern int eth_set_broadcast_addr(net_device_t *dev, unsigned char broadcast_addr[]);
+extern int eth_flag_up(struct net_device *dev, int flag_type);
+extern int eth_flag_down(struct net_device *dev, int flag_type);
+extern int eth_set_irq(struct net_device *dev, int irq_num);
+extern int eth_set_baseaddr(struct net_device *dev, unsigned long base_addr);
+extern int eth_set_txqueuelen(struct net_device *dev, unsigned long new_len);
+extern int eth_set_broadcast_addr(struct net_device *dev, unsigned char broadcast_addr[]);
 
-#endif /* ETHERDEVICE_H_ */
+#endif /* NET_ETHERDEVICE_H_ */
