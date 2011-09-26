@@ -85,9 +85,10 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 	skb->h.icmph->checksum = htons(ptclbsum(skb->h.raw,
 				htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph)));
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
+	printf("\nMy reply is 0x%p\n", skb);
 	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
 				icmp_param->skb->nh.iph->saddr, skb, 0);
-	kfree_skb(skb);
+//	kfree_skb(skb);
 }
 
 /**
@@ -366,8 +367,9 @@ static int icmp_rcv(sk_buff_t *pack) {
 	}
 	if (NULL != icmp_pointers[icmph->type].handler) {
 		icmp_pointers[icmph->type].handler(pack);
-		kfree_skb(pack);
+//		kfree_skb(pack);
 		return 0;
 	}
+	kfree_skb(pack);
 	return -1;
 }
