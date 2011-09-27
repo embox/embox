@@ -8,12 +8,24 @@
  * @author Anton Kozlov
  */
 
+#include <stdio.h>
 #include <cmd/shell.h>
 #include <embox/unit.h>
+#include <util/array.h>
 
 EMBOX_UNIT_INIT(shell_start);
 
+static const char *script_commands[] = {
+	#include <start_script.inc>
+};
+
 static int shell_start(void) {
+	const char *command;
+	printf("\nloading start script\n");
+	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
+		printf("> %s \n", command);
+		shell_line_input((char *)command);
+	}
 	shell_run();
 	return 0;
 }

@@ -11,4 +11,6 @@
 
 extern void shell_run(void);
 
+extern int shell_line_input(char *line);
+
 #endif

@@ -20,7 +20,6 @@
 
 #define BUF_INP_SIZE 128
 
-
 static int cmd_compl(char *buf, char *out_buf) {
 	const struct cmd *cmd = NULL;
 	int buf_len = strlen(buf);
@@ -60,7 +59,7 @@ static int run_cmd(int argc, char *argv[]) {
 	return code;
 }
 
-static int line_input(char *line) {
+int shell_line_input(char *line) {
 	char *token_line[(BUF_INP_SIZE + 1) / 2];
 	int tok_pos = 0;
 	int last_was_blank = 1;
@@ -77,26 +76,10 @@ static int line_input(char *line) {
 	return run_cmd(tok_pos, token_line);
 }
 
-static const char *script_commands[] = {
-	#include <start_script.inc>
-};
-
-
 void shell_run(void) {
 	const char *prompt = CONFIG_SHELL_PROMPT;
 	char inp_buf[BUF_INP_SIZE];
 	struct hist h;
-	const char *command;
-	static int start_script_fulfilled = 0;
-
-	if(0 == start_script_fulfilled) {
-		start_script_fulfilled = 1;
-		printf("\nloading start script\n");
-		array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
-			printf("> %s \n", command);
-			line_input((char *)command);
-		}
-	}
 
 	linenoise_history_init(&h);
 
@@ -106,6 +89,6 @@ void shell_run(void) {
 		linenoise(prompt, inp_buf, BUF_INP_SIZE, &h, (compl_callback_t) cmd_compl);
 		inp_buf[strlen(inp_buf) - 1] = '\0';
 		linenoise_history_add(inp_buf, &h);
-		line_input(inp_buf);
+		shell_line_input(inp_buf);
 	}
 }
