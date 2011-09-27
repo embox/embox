@@ -476,6 +476,6 @@ static void thread_free(struct thread *t) {
 	assert(t != NULL);
 
 	// TODO may be this is not the best way... -- Eldar
-	block = member_out(t, union thread_pool_entry, thread);
+	block = member_cast_out(t, union thread_pool_entry, thread);
 	pool_free(&thread_pool, block);
 }

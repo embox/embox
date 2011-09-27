@@ -24,7 +24,7 @@ struct prioq_link {
 };
 
 #define prioq_element(link, element_type, link_member) \
-	member_out(link, element_type, link_member)
+	member_cast_out(link, element_type, link_member)
 
 typedef int (*prioq_comparator_t)(struct prioq_link *first,
 		struct prioq_link *second);
@@ -94,7 +94,7 @@ static inline struct prioq_link *prioq_peek_link(
 		prioq_comparator_t link_comparator, struct prioq *prioq) {
 	assert(prioq != NULL);
 
-	return list_first(&prioq->prio_list, struct prioq_link, prio_link);
+	return list_first(__prioq_chain, &prioq->prio_list);
 }
 
 #define prioq_remove(element, link_comparator, link_member) \

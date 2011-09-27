@@ -22,6 +22,8 @@ struct element {
 	struct list_link lnk;
 };
 
+typedef member_t(struct element, lnk) element_in_list;
+
 static struct element x, y, z;
 static struct list m, n;
 
@@ -103,11 +105,11 @@ TEST_CASE("list_alone should return true for just initialized element") {
 }
 
 TEST_CASE("list_first should return null for empty list") {
-	test_assert_null(list_first(&m, struct element, lnk));
+	test_assert_null(list_first(element_in_list, &m));
 }
 
 TEST_CASE("list_last should return null for empty list") {
-	test_assert_null(list_last(&m, struct element, lnk));
+	test_assert_null(list_last(element_in_list, &m));
 }
 
 TEST_CASE("list_first_link should return null for empty list") {
@@ -120,7 +122,7 @@ TEST_CASE("list_last_link should return null for empty list") {
 
 TEST_CASE("list_add_first should make the list non empty "
 		"and the element not alone") {
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
 	test_assert_false(list_is_empty(&m));
 	test_assert_false(list_alone(&x, lnk));
@@ -128,7 +130,7 @@ TEST_CASE("list_add_first should make the list non empty "
 
 TEST_CASE("list_add_last should make the list non empty "
 		"and the element not alone") {
-	list_add_last(&x, &m, lnk);
+	list_add_last(element_in_list, &x, &m);
 
 	test_assert_false(list_is_empty(&m));
 	test_assert_false(list_alone(&x, lnk));
@@ -152,7 +154,7 @@ TEST_CASE("list_add_last_link should make the list non empty "
 
 TEST_CASE("list_first_link and list_last_link on a single element list "
 		"constructed using list_add_first should return the element's link") {
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
 	test_assert_equal(list_first_link(&m), &x.lnk);
 	test_assert_equal(list_last_link(&m), &x.lnk);
@@ -160,7 +162,7 @@ TEST_CASE("list_first_link and list_last_link on a single element list "
 
 TEST_CASE("list_first_link and list_last_link on a single element list "
 		"constructed using list_add_last should return the element's link") {
-	list_add_last(&x, &m, lnk);
+	list_add_last(element_in_list, &x, &m);
 
 	test_assert_equal(list_first_link(&m), &x.lnk);
 	test_assert_equal(list_last_link(&m), &x.lnk);
@@ -170,8 +172,8 @@ TEST_CASE("list_first_link and list_last_link should return a new and an old "
 		"element accordingly after adding a new one with list_add_first") {
 	test_assert_not_equal(&x, &y);
 
-	list_add_first(&x, &m, lnk);
-	list_add_first(&y, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
+	list_add_first(element_in_list, &y, &m);
 
 	test_assert_equal(list_first_link(&m), &y.lnk);
 	test_assert_equal(list_last_link(&m), &x.lnk);
@@ -181,8 +183,8 @@ TEST_CASE("list_first_link and list_last_link should return a new and an old "
 		"element accordingly after adding a new one with list_add_last") {
 	test_assert_not_equal(&x, &y);
 
-	list_add_last(&x, &m, lnk);
-	list_add_last(&y, &m, lnk);
+	list_add_last(element_in_list, &x, &m);
+	list_add_last(element_in_list, &y, &m);
 
 	test_assert_equal(list_first_link(&m), &x.lnk);
 	test_assert_equal(list_last_link(&m), &y.lnk);
@@ -190,7 +192,7 @@ TEST_CASE("list_first_link and list_last_link should return a new and an old "
 
 TEST_CASE("list_remove on a single element list should make the list empty "
 		"and element alone again") {
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
 	list_remove(&x, lnk);
 
@@ -202,10 +204,10 @@ TEST_CASE("single list_remove and subsequent list_add_first to another list "
 		"should make the first list empty but an element not alone") {
 	test_assert_not_equal(&m, &n);
 
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
 	list_remove(&x, lnk);
-	list_add_first(&x, &n, lnk);
+	list_add_first(element_in_list, &x, &n);
 
 	test_assert_true(list_is_empty(&m));
 	test_assert_false(list_is_empty(&n));
@@ -242,7 +244,7 @@ TEST_CASE("list_remove_last should return null for empty list") {
 
 TEST_CASE("list_remove_first on a single element list should return the "
 		"element and make the list empty and element alone again") {
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
 	test_assert_equal(list_remove_first(&m, struct element, lnk), &x);
 
@@ -252,7 +254,7 @@ TEST_CASE("list_remove_first on a single element list should return the "
 
 TEST_CASE("list_remove_last on a single element list should return the "
 		"element and make the list empty and element alone again") {
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
 	test_assert_equal(list_remove_last(&m, struct element, lnk), &x);
 
@@ -262,9 +264,9 @@ TEST_CASE("list_remove_last on a single element list should return the "
 
 TEST_CASE("list_insert_before on a single element list should make "
 		"a new element the first one in the list") {
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
-	list_insert_before(&y, &x, lnk);
+	list_insert_before(element_in_list, &y, &x);
 
 	test_assert_equal(list_last_link(&m), &x.lnk);
 	test_assert_equal(list_first_link(&m), &y.lnk);
@@ -272,9 +274,9 @@ TEST_CASE("list_insert_before on a single element list should make "
 
 TEST_CASE("list_insert_after on a single element list should make "
 		"a new element the last one in the list") {
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
-	list_insert_after(&y, &x, lnk);
+	list_insert_after(element_in_list, &y, &x);
 
 	test_assert_equal(list_first_link(&m), &x.lnk);
 	test_assert_equal(list_last_link(&m), &y.lnk);
@@ -282,10 +284,10 @@ TEST_CASE("list_insert_after on a single element list should make "
 
 TEST_CASE("list_insert_before: inserting a new element before the last one "
 		"in a list of two elements should insert a new one between them") {
-	list_add_first(&x, &m, lnk);
-	list_add_last(&z, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
+	list_add_last(element_in_list, &z, &m);
 
-	list_insert_before(&y, &z, lnk);
+	list_insert_before(element_in_list, &y, &z);
 
 	test_assert_equal(list_remove_first_link(&m), &x.lnk);
 	test_assert_equal(list_remove_last_link(&m), &z.lnk);
@@ -296,10 +298,10 @@ TEST_CASE("list_insert_before: inserting a new element before the last one "
 
 TEST_CASE("list_insert_after: inserting a new element after the first one "
 		"in a list of two elements should insert a new one between them") {
-	list_add_first(&x, &m, lnk);
-	list_add_last(&z, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
+	list_add_last(element_in_list, &z, &m);
 
-	list_insert_after(&y, &x, lnk);
+	list_insert_after(element_in_list, &y, &x);
 
 	test_assert_equal(list_remove_first_link(&m), &x.lnk);
 	test_assert_equal(list_remove_last_link(&m), &z.lnk);
@@ -310,10 +312,10 @@ TEST_CASE("list_insert_after: inserting a new element after the first one "
 
 TEST_CASE("list_insert_before and list_insert_after on a single element list"
 		"should make new elements the first and the last accordingly") {
-	list_add_first(&y, &m, lnk);
+	list_add_first(element_in_list, &y, &m);
 
-	list_insert_before(&x, &y, lnk);
-	list_insert_after(&z, &y, lnk);
+	list_insert_before(element_in_list, &x, &y);
+	list_insert_after(element_in_list, &z, &y);
 
 	test_assert_equal(list_first_link(&m), &x.lnk);
 	test_assert_equal(list_last_link(&m), &z.lnk);
@@ -342,7 +344,7 @@ TEST_CASE("list_bulk_add_last shouldn't modify a destination list "
 TEST_CASE("list_bulk_add_first should move all the elements from a source "
 		"list to the beginning of a destination and make the source empty") {
 	fill_in_from(xy, &m);
-	list_add_last(&z, &n, lnk);
+	list_add_last(element_in_list, &z, &n);
 
 	list_bulk_add_first(&m, &n);
 
@@ -352,7 +354,7 @@ TEST_CASE("list_bulk_add_first should move all the elements from a source "
 
 TEST_CASE("list_bulk_add_last should move all the elements from a source "
 		"list to the end of a destination and make the source empty") {
-	list_add_first(&x, &n, lnk);
+	list_add_first(element_in_list, &x, &n);
 	fill_in_from(yz, &m);
 
 	list_bulk_add_last(&m, &n);
@@ -384,7 +386,7 @@ TEST_CASE("list_bulk_insert_after shouldn't modify a destination list "
 TEST_CASE("list_bulk_insert_before: inserting new elements before the last "
 		"one in a list of two elements should insert them in the middle of the"
 		"target list") {
-	list_add_last(&y, &m, lnk);
+	list_add_last(element_in_list, &y, &m);
 	fill_in_from(xz, &n);
 
 	list_bulk_insert_before(&m, &z, lnk);
@@ -396,7 +398,7 @@ TEST_CASE("list_bulk_insert_before: inserting new elements before the last "
 TEST_CASE("list_bulk_insert_after: inserting new elements after the first "
 		"one in a list of two elements should insert them in the middle of the"
 		"target list") {
-	list_add_last(&y, &m, lnk);
+	list_add_last(element_in_list, &y, &m);
 	fill_in_from(xz, &n);
 
 	list_bulk_insert_after(&m, &x, lnk);
@@ -421,7 +423,7 @@ TEST_CASE("list_foreach_link on a single element list should execute the body "
 	struct list_link *lnk = NULL;
 	int executed = 0;
 
-	list_add_first(&x, &m, lnk);
+	list_add_first(element_in_list, &x, &m);
 
 	list_foreach_link(lnk, &m) {
 		test_assert_zero(executed++);
@@ -495,7 +497,7 @@ static struct list *fill_in_from(struct element * const array[],
 	test_assert_true(list_is_empty(list));
 	array_nullterm_foreach(e, array) {
 		test_assert_true(list_alone(e, lnk));
-		list_add_last(e, list, lnk);
+		list_add_last(element_in_list, e, list);
 	}
 	test_assert_false(list_is_empty(list));
 

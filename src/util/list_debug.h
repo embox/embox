@@ -16,6 +16,16 @@ struct list;
 struct list_link;
 struct __list_link;
 
+struct __list_link {
+	struct __list_link *next, *prev;
+};
+
+#define __LIST_LINK_INIT__(__link) \
+	{                     \
+		.next = (__link), \
+		.prev = (__link), \
+	}
+
 struct list {
 	unsigned int poison;
 	int offset;

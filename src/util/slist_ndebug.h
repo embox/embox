@@ -53,7 +53,7 @@ static inline int slist_empty(struct slist *list) {
 
 static inline struct slist_link *slist_first_link(struct slist *list) {
 	struct __slist_link *l = &list->l, *first = l->next;
-	return first != l ? member_out(first, struct slist_link, l) : NULL;
+	return first != l ? member_cast_out(first, struct slist_link, l) : NULL;
 }
 
 static inline void slist_add_first_link(struct slist_link *new_link,

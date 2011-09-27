@@ -725,7 +725,7 @@ irq_hook_t *hook;
 {
 /* Interrupt hander for RS232. */
 
-  register rs232_t *rs = member_out(rs232_t, hook, hook);
+  register rs232_t *rs = member_cast_out(rs232_t, hook, hook);
 
   while (TRUE) {
 	/* Loop to pick up ALL pending interrupts for device.

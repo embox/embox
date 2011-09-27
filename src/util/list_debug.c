@@ -53,7 +53,7 @@ struct list_link *list_first_link(struct list *list) {
 	assert(list != NULL);
 	l = &list->l;
 	first = l->next;
-	return first != l ? member_out(first, struct list_link, l) : NULL;
+	return first != l ? member_cast_out(first, struct list_link, l) : NULL;
 }
 
 struct list_link *list_last_link(struct list *list) {
@@ -62,7 +62,7 @@ struct list_link *list_last_link(struct list *list) {
 	assert(list != NULL);
 	l = &list->l;
 	last = l->prev;
-	return last != l ? member_out(last, struct list_link, l) : NULL;
+	return last != l ? member_cast_out(last, struct list_link, l) : NULL;
 }
 
 void list_add_first_link(struct list_link *new_link, struct list *list) {
