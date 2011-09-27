@@ -12,7 +12,7 @@
 #include <util/member.h>
 #include <util/macro.h>
 
-#ifdef CONFIG_LIST_NDEBUG
+#if defined CONFIG_LIST_NDEBUG || 1
 # include __impl_x(util/list_ndebug.h)
 #else
 # include __impl_x(util/list_debug.h)
