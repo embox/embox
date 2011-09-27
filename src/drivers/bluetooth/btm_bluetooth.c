@@ -182,6 +182,9 @@ static int btm_bluetooth_init(void) {
 
 
 	pin_config_output(CONFIG_BTM_BT_RST_PIN);
+	pin_set_output(CONFIG_BTM_BT_RST_PIN);
+	usleep(1000);
+
 	pin_clear_output(CONFIG_BTM_BT_RST_PIN);
 	usleep(5000);
 
