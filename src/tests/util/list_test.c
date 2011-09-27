@@ -101,7 +101,7 @@ TEST_CASE("list_alone_link should return true for just initialized link") {
 }
 
 TEST_CASE("list_alone should return true for just initialized element") {
-	test_assert_true(list_alone(&x, lnk));
+	test_assert_true(list_alone(element_in_list, &x));
 }
 
 TEST_CASE("list_first should return null for empty list") {
@@ -125,7 +125,7 @@ TEST_CASE("list_add_first should make the list non empty "
 	list_add_first(element_in_list, &x, &m);
 
 	test_assert_false(list_is_empty(&m));
-	test_assert_false(list_alone(&x, lnk));
+	test_assert_false(list_alone(element_in_list, &x));
 }
 
 TEST_CASE("list_add_last should make the list non empty "
@@ -133,7 +133,7 @@ TEST_CASE("list_add_last should make the list non empty "
 	list_add_last(element_in_list, &x, &m);
 
 	test_assert_false(list_is_empty(&m));
-	test_assert_false(list_alone(&x, lnk));
+	test_assert_false(list_alone(element_in_list, &x));
 }
 
 TEST_CASE("list_add_first_link should make the list non empty "
@@ -190,76 +190,76 @@ TEST_CASE("list_first_link and list_last_link should return a new and an old "
 	test_assert_equal(list_last_link(&m), &y.lnk);
 }
 
-TEST_CASE("list_remove on a single element list should make the list empty "
+TEST_CASE("list_unlink on a single element list should make the list empty "
 		"and element alone again") {
 	list_add_first(element_in_list, &x, &m);
 
-	list_remove(&x, lnk);
+	list_unlink(element_in_list, &x);
 
 	test_assert_true(list_is_empty(&m));
-	test_assert_true(list_alone(&x, lnk));
+	test_assert_true(list_alone(element_in_list, &x));
 }
 
-TEST_CASE("single list_remove and subsequent list_add_first to another list "
+TEST_CASE("single list_unlink and subsequent list_add_first to another list "
 		"should make the first list empty but an element not alone") {
 	test_assert_not_equal(&m, &n);
 
 	list_add_first(element_in_list, &x, &m);
 
-	list_remove(&x, lnk);
+	list_unlink(element_in_list, &x);
 	list_add_first(element_in_list, &x, &n);
 
 	test_assert_true(list_is_empty(&m));
 	test_assert_false(list_is_empty(&n));
-	test_assert_false(list_alone(&x, lnk));
+	test_assert_false(list_alone(element_in_list, &x));
 }
 
-TEST_CASE("multiple list_remove and subsequent list_add_first to another list "
+TEST_CASE("multiple list_unlink and subsequent list_add_first to another list "
 		"should make the first list empty but elements not alone") {
 	fill_in_from(xyz, &m);
 
-	list_remove(&x, lnk);
-	list_remove(&z, lnk);
-	list_remove(&y, lnk);
+	list_unlink(element_in_list, &x);
+	list_unlink(element_in_list, &z);
+	list_unlink(element_in_list, &y);
 
 	fill_in_from(xyz, &n);
 
 	test_assert_true(list_is_empty(&m));
 	test_assert_false(list_is_empty(&n));
-	test_assert_false(list_alone(&x, lnk));
-	test_assert_false(list_alone(&y, lnk));
-	test_assert_false(list_alone(&z, lnk));
+	test_assert_false(list_alone(element_in_list, &x));
+	test_assert_false(list_alone(element_in_list, &y));
+	test_assert_false(list_alone(element_in_list, &z));
 
 	test_assert_equal(list_first_link(&n), &x.lnk);
 	test_assert_equal(list_last_link(&n), &z.lnk);
 }
 
 TEST_CASE("list_remove_first should return null for empty list") {
-	test_assert_null(list_remove_first(&m, struct element, lnk));
+	test_assert_null(list_remove_first(element_in_list, &m));
 }
 
 TEST_CASE("list_remove_last should return null for empty list") {
-	test_assert_null(list_remove_last(&m, struct element, lnk));
+	test_assert_null(list_remove_last(element_in_list, &m));
 }
 
 TEST_CASE("list_remove_first on a single element list should return the "
 		"element and make the list empty and element alone again") {
 	list_add_first(element_in_list, &x, &m);
 
-	test_assert_equal(list_remove_first(&m, struct element, lnk), &x);
+	test_assert_equal(list_remove_first(element_in_list, &m), &x);
 
 	test_assert_true(list_is_empty(&m));
-	test_assert_true(list_alone(&x, lnk));
+	test_assert_true(list_alone(element_in_list, &x));
 }
 
 TEST_CASE("list_remove_last on a single element list should return the "
 		"element and make the list empty and element alone again") {
 	list_add_first(element_in_list, &x, &m);
 
-	test_assert_equal(list_remove_last(&m, struct element, lnk), &x);
+	test_assert_equal(list_remove_last(element_in_list, &m), &x);
 
 	test_assert_true(list_is_empty(&m));
-	test_assert_true(list_alone(&x, lnk));
+	test_assert_true(list_alone(element_in_list, &x));
 }
 
 TEST_CASE("list_insert_before on a single element list should make "
@@ -471,7 +471,7 @@ TEST_CASE("list_foreach_link should support safe removal of the element "
 	fill_in_from(xyz, &m);
 
 	list_foreach_link(lnk, &m) {
-		list_remove_link(lnk);
+		list_unlink_link(lnk);
 	}
 
 	test_assert_true(list_is_empty(&m));
@@ -496,7 +496,7 @@ static struct list *fill_in_from(struct element * const array[],
 
 	test_assert_true(list_is_empty(list));
 	array_nullterm_foreach(e, array) {
-		test_assert_true(list_alone(e, lnk));
+		test_assert_true(list_alone(element_in_list, e));
 		list_add_last(element_in_list, e, list);
 	}
 	test_assert_false(list_is_empty(list));
@@ -509,7 +509,7 @@ static struct list *compare_with(struct element * const array[],
 	struct element *e;
 
 	array_nullterm_foreach(e, array) {
-		test_assert_equal(list_remove_first(list, typeof(*e), lnk), e);
+		test_assert_equal(list_remove_first(element_in_list, list), e);
 	}
 	test_assert_true(list_is_empty(list));
 

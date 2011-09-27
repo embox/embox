@@ -63,7 +63,7 @@ static inline void prioq_remove_link(struct prioq_link *link,
 		prioq_comparator_t link_comparator) {
 	assert(link && link_comparator);
 
-	if (list_alone(link, prio_link)) {
+	if (list_alone(__prioq_chain, link)) {
 		assert(!list_empty(&link->elem_link));
 		list_del_init(&link->elem_link);
 		return;
@@ -77,7 +77,7 @@ static inline void prioq_remove_link(struct prioq_link *link,
 		list_insert_after(__prioq_chain, new_link, link);
 	}
 
-	list_remove_link(&link->prio_link);
+	list_unlink_link(&link->prio_link);
 	list_del_init(&link->elem_link);
 }
 

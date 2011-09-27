@@ -91,7 +91,7 @@ static inline void list_insert_before_link(struct list_link *new_link,
 	__list_bind(new_link, link);
 }
 
-static inline void list_remove_link(struct list_link *link) {
+static inline void list_unlink_link(struct list_link *link) {
 	__list_bind(link->prev, link->next);
 	list_link_init(link);
 }
@@ -100,7 +100,7 @@ static inline struct list_link *list_remove_first_link(struct list *list) {
 	struct list_link *ret;
 
 	if ((ret = list_first_link(list))) {
-		list_remove_link(ret);
+		list_unlink_link(ret);
 	}
 	return ret;
 }
@@ -109,7 +109,7 @@ static inline struct list_link *list_remove_last_link(struct list *list) {
 	struct list_link *ret;
 
 	if ((ret = list_last_link(list))) {
-		list_remove_link(ret);
+		list_unlink_link(ret);
 	}
 	return ret;
 }

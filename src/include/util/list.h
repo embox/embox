@@ -105,15 +105,25 @@ extern struct list *list_init(struct list *list);
  */
 extern struct list_link *list_link_init(struct list_link *link);
 
-#define list_alone_element(list_type, element) \
-	list_alone_link(adt_to_link(element, list_type))
+extern int list_is_empty(struct list *list);
 
-#define list_alone(element, link_member) \
+#define list_alone(linkage_t, element) \
+	list_alone_link(member_of_object(element, linkage_t))
+
+#define list_alone_element(element, link_member) \
 	list_alone_link(member_cast_in(element, link_member))
 
 extern int list_alone_link(struct list_link *link);
 
-extern int list_is_empty(struct list *list);
+/* Unlinking an element from its list. */
+
+#define list_unlink(linkage_t, element) \
+	list_unlink_link(member_of_object(element, linkage_t))
+
+#define list_unlink_element(element, link_member) \
+	list_unlink_link(member_cast_in(element, link_member))
+
+extern void list_unlink_link(struct list_link *link);
 
 /* Retrieving the first/last elements. */
 
@@ -151,6 +161,8 @@ extern void list_add_first_link(struct list_link *new_link, struct list *list);
 
 extern void list_add_last_link(struct list_link *new_link, struct list *list);
 
+/* Insertion of an element near a given one. */
+
 #define list_insert_before(linkage_t, new_element, element) \
 	list_insert_before_link(member_of_object(new_element, linkage_t), \
 			member_of_object(element, linkage_t))
@@ -173,17 +185,20 @@ extern void list_insert_before_link(struct list_link *new_link,
 extern void list_insert_after_link(struct list_link *new_link,
 		struct list_link *link);
 
-#define list_remove(element, link_member) \
-	list_remove_link(member_cast_in(element, link_member))
+/* Popping an element from the list ends. */
 
-extern void list_remove_link(struct list_link *link);
+#define list_remove_first(linkage_t, list) \
+	member_to_object_or_null(list_remove_first_link(list), linkage_t)
 
-#define list_remove_first(list, element_type, link_member) \
+#define list_remove_first_element(list, element_type, link_member) \
 	member_cast_out_or_null(list_remove_first_link(list), element_type, link_member)
 
 struct list_link *list_remove_first_link(struct list *list);
 
-#define list_remove_last(list, element_type, link_member) \
+#define list_remove_last(linkage_t, list) \
+	member_to_object_or_null(list_remove_last_link(list), linkage_t)
+
+#define list_remove_last_element(list, element_type, link_member) \
 	member_cast_out_or_null(list_remove_last_link(list), element_type, link_member)
 
 extern struct list_link *list_remove_last_link(struct list *list);

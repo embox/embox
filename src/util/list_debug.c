@@ -165,7 +165,7 @@ void list_bulk_insert_after_link(struct list *from_list,
 	}
 }
 
-void list_remove_link(struct list_link *link) {
+void list_unlink_link(struct list_link *link) {
 	struct __list_link *l;
 
 	assert(link != NULL);
@@ -180,7 +180,7 @@ struct list_link *list_remove_first_link(struct list *list) {
 	struct list_link *ret;
 
 	if ((ret = list_first_link(list))) {
-		list_remove_link(ret);
+		list_unlink_link(ret);
 	}
 
 	return ret;
@@ -190,7 +190,7 @@ struct list_link *list_remove_last_link(struct list *list) {
 	struct list_link *ret;
 
 	if ((ret = list_last_link(list))) {
-		list_remove_link(ret);
+		list_unlink_link(ret);
 	}
 
 	return ret;
