@@ -18,7 +18,7 @@
 
 #include <cmd/shell.h>
 
-#define BUF_INP_SIZE 128
+#define BUF_INP_SIZE CONFIG_MAX_PROMPT_LENGTH
 
 static int cmd_compl(char *buf, char *out_buf) {
 	const struct cmd *cmd = NULL;

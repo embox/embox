@@ -8,12 +8,12 @@
 #include <string.h>
 #include <drivers/serial.h>
 #include <drivers/tty_ng.h>
-#include <embox/unit.h>
+#include <embox/cmd.h>
 #include <cmd/shell.h>
 
-EMBOX_UNIT_INIT(serial_con_manager);
+EMBOX_CMD(serial_con_manager);
 
-#define SERIAL_N_CON 3
+#define SERIAL_N_CON 10
 #define BUF_SIZE (80 * 30)
 
 static char serial_buffer[SERIAL_N_CON * BUF_SIZE];
@@ -22,7 +22,7 @@ static int sz[SERIAL_N_CON];
 static int buf_pos = 0;
 static int act_id = 0;
 
-const char clrscr[] =  "\x1b[2J\x1b[H";
+static const char clrscr[] =  "\x1b[2J\x1b[H";
 
 static void serial_make_active(struct tty_buf *tty) {
 	int cnt = sz[tty->id];
@@ -73,17 +73,18 @@ static void tty_serial_init(struct tty_buf *tty) {
 	tty->make_inactive = serial_make_inactive;
 	buf_pos ++;
 }
-#if 0
-static void run(void) {
-	char ch;
-	while (1) {
-		read(0, &ch, 1);
-		printf("tty!%c\n", ch);
-	}
-}
-#endif
-static int serial_con_manager(void) {
 
-	tty_ng_manager(SERIAL_N_CON, tty_serial_init, shell_run);
+static int serial_con_manager(int argc, char *argv[]) {
+	int n = 1;
+
+	if (argc <= 1) {
+		printf("Must be run with n: count of virtual consoles\n");
+		return -1;
+	}
+
+	sscanf(argv[1], "%d", &n);
+
+	tty_ng_manager(n, tty_serial_init, shell_run);
+
 	return 0;
 }
