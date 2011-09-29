@@ -13,10 +13,13 @@
 
 #include <asm/types.h>
 
-#define offsetof(type, member) \
+#if __GNUC__ < 4 || defined(__CDT_PARSER__)
+# define offsetof(type, member) \
 	((size_t) &((type *) 0x0)->member)
-
-#define FIELD_SIZEOF(t, f) (sizeof(((t∗)0)−>f))
+#else
+# define offsetof(type, member) \
+	__builtin_offsetof(type, member)
+#endif
 
 #ifndef NULL
 #define NULL ((void *) 0x0)
