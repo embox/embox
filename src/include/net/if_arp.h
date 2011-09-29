@@ -6,10 +6,13 @@
  * @author Nikolay Korotky
  */
 
-#ifndef _IF_ARP_H
-#define _IF_ARP_H
+#ifndef NET_IF_ARP_H
+#define NET_IF_ARP_H
 
-#include <net/netdevice.h>
+#include <types.h>
+#include <net/if_ether.h>
+#include <net/in.h>
+#include <net/skbuff.h>
 
 /* ARP protocol HARDWARE identifiers. */
 #define ARPHRD_ETHER 	1      /* Ethernet 10Mbps */
@@ -45,4 +48,4 @@ static inline arphdr_t *arp_hdr(const sk_buff_t *skb) {
 	return (arphdr_t *) skb->nh.raw;
 }
 
-#endif	/* _IF_ARP_H */
+#endif	/* NET_IF_ARP_H */

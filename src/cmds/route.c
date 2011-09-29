@@ -4,6 +4,7 @@
  *
  * @date 16.11.09
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
 #include <embox/cmd.h>
@@ -34,6 +35,7 @@ static int exec(int argc, char *argv[]) {
 	int i, opt;
 	in_device_t *ifdev;
 	struct rt_entry *rt;
+	size_t iterator;
 	in_addr_t net, mask, gw;
 	struct in_addr addr;
 	char buff[BUFF_SZ], *str;
@@ -93,7 +95,7 @@ static int exec(int argc, char *argv[]) {
 
 		printf("%s\n", &buff[OFFSET_START]);  /* print title */
 
-		rt = rt_fib_get_first();
+		rt = rt_fib_get_first(&iterator);
 		while (rt != NULL) {
 			memset(&buff[OFFSET_START], 0, OFFSET_EOS); /* clear string */
 
@@ -127,7 +129,7 @@ static int exec(int argc, char *argv[]) {
 
 			printf("%s\n", &buff[OFFSET_START]);  /* print info */
 
-			rt = rt_fib_get_next();
+			rt = rt_fib_get_next(&iterator);
 		}
 	}
 	return 0;

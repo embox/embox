@@ -221,7 +221,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	out8(E8390_TRANS | E8390_NODMA | E8390_START, base_addr + NE_CMD);
 	while (in8(base_addr + NE_CMD) & E8390_TRANS) ; /* Wait for transmission to complete. */
 
-//	ne2k_show_packet(skb->data, skb->len, "send"); /* debug */
+	ne2k_show_packet(skb->data, skb->len, "send"); /* debug */
 	kfree_skb(skb); /* free packet */
 
 	return ENOERR;
@@ -238,6 +238,7 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset
 	skb->dev = dev;
 	copy_data_from_card(offset, skb->data, total_length, dev->base_addr);
 	skb->protocol = ntohs(skb->mac.ethh->h_proto);
+	ne2k_show_packet(skb->data, skb->len, "recv"); /* debug */
 
 	return skb;
 }

@@ -69,8 +69,8 @@ struct sock *sk_alloc(/*struct net *net,*/int family, gfp_t priority,
 	if (sk) {
 		sk->sk_family = family;
 		sk->sk_prot = prot;
-		sk->sk_receive_queue = alloc_skb_queue(CONFIG_QUANTITY_SKB_QUEUE);
-		sk->sk_write_queue = alloc_skb_queue(CONFIG_QUANTITY_SKB_QUEUE);
+		sk->sk_receive_queue = alloc_skb_queue(0);
+		sk->sk_write_queue = alloc_skb_queue(0);
 		sk->sk_destruct = NULL;
 	}
 	return sk;

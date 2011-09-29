@@ -56,8 +56,10 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 
 	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
 	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
+#if 0
 	dev->dev_queue.qlen = 0;
 	dev->dev_queue.lock = 0;
+#endif
 	dev->poll = process_backlog;
 
 	strncpy(dev->name, name, IFNAMSIZ);

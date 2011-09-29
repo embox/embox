@@ -13,6 +13,7 @@
 #include <types.h>
 #include <net/skbuff.h>
 #include <net/ip.h>
+#include <stddef.h>
 
 /**
  * Routing table entry.
@@ -40,8 +41,6 @@ typedef struct rt_entry {
 #endif
 #define RTF_REJECT      0x0200          /* Reject route                 */
 
-extern int ip_rt_init(void);
-
 /**
  * Add new route to table.
  * @param dev Iface
@@ -68,8 +67,21 @@ extern int rt_del_route(net_device_t *dev, in_addr_t dst,
  */
 extern int ip_route(sk_buff_t *skbuff);
 
-/**< iterators */
-extern rt_entry_t *rt_fib_get_first(void);
-extern rt_entry_t *rt_fib_get_next(void);
+/**
+ * Get first element from route from table.
+ * @param iter pointer to iterator
+ * @return pointer to first entity
+ * @retval NULL if entity not found
+ */
+extern rt_entry_t *rt_fib_get_first(size_t *iter);
+
+/**
+ * Get next element from route from table uses iter.
+ * Use this function after tr_fib_get_first
+ * @param iter pointer to iterator
+ * @return pointer to first entity
+ * @retval NULL if entity more not found
+ */
+extern rt_entry_t *rt_fib_get_next(size_t *iter);
 
 #endif /* ROUTE_H_ */

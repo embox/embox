@@ -202,7 +202,7 @@ int arp_rcv(sk_buff_t *skb, net_device_t *dev, packet_type_t *pt,
 	arp = skb->nh.arph;
 	if ((arp->ar_hln != dev->addr_len) || (dev->flags & IFF_NOARP)
 			|| (skb->pkt_type == PACKET_OTHERHOST)
-			|| (skb->pkt_type == PACKET_LOOPBACK) // why?
+			|| (skb->pkt_type == PACKET_LOOPBACK)
 			|| (arp->ar_pln != 4)) {
 		kfree_skb(skb);
 		return NET_RX_SUCCESS;

@@ -1,6 +1,6 @@
 $_MODS += route
 $_SRCS-route += route.c
-$_DEPS-route += embox.net.ipv4
+$_DEPS-route += embox.net.af_inet
 
 $_BRIEF-route = Manipilate routing table
 

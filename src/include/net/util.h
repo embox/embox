@@ -8,8 +8,6 @@
 #ifndef NETUTILS_H_
 #define NETUTILS_H_
 
-#include <net/if_ether.h>
-
 unsigned char *ipaddr_scan(const unsigned char *addr, unsigned char *res);
 unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res);
 void macaddr_print(unsigned char *buf, const unsigned char *addr);
