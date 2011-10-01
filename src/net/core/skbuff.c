@@ -269,7 +269,7 @@ struct sk_buff * skb_recv_datagram(struct sock *sk, unsigned flags, int noblock,
 	ipl_t sp;
 	struct sk_buff *skb;
 
-	if ((sk != NULL) && (sk->sk_receive_queue != NULL)) {
+	if ((sk == NULL) || (sk->sk_receive_queue == NULL)) {
 		return NULL;
 	}
 
