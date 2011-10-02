@@ -21,12 +21,11 @@ int comp(struct tree_link* first, struct tree_link* second) {
 
 TEST_CASE("Any test for tree") {
 	test_emit('-');
-	tree_init(&tree, comp);
+	tree_init(&tree);
 	tree_min_link(&tree);
-	tree_add_link(&tree, link+1);
-	tree_add_link(&tree, link+0);
-	tree_add_link(&tree, link+2);
-	test_assert_null(0);
+	tree_add_link(&tree, link+1, comp);
+	tree_add_link(&tree, link+0, comp);
+	tree_add_link(&tree, link+2, comp);
 }
 
 

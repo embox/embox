@@ -12,10 +12,9 @@
 #include <assert.h>
 #include <util/member.h>
 
-typedef struct tree_link* pnode;
 struct tree_link {
-	pnode left;
-	pnode right;
+	struct tree_link *left;
+	struct tree_link *right;
 };
 
 /**
@@ -26,67 +25,71 @@ struct tree_link {
  * @return
  *   The result of comparison of the @a first and the @a second.
  */
-typedef int (*tree_comparator_t)(pnode first, pnode second);
+typedef int (*tree_comparator_t)(struct tree_link *first, struct tree_link *second);
 
 struct tree {
-	pnode root;
-	tree_comparator_t comparator;
+	struct tree_link *root;
 };
 
 #define tree_element(link, element_type, link_member) \
 	member_cast_out(link, element_type, link_member)
 
-
-inline struct tree *tree_init(struct tree *tree, tree_comparator_t comparator) {
-	assert(tree != NULL);
-	assert(comparator != NULL);
-	tree->root = NULL;
-	tree->comparator = comparator;
-	return tree;
-}
-
-inline pnode tree_link_init(pnode link) {
-	assert(link != NULL);
-	link->left = link->right = NULL;
-	return link;
-}
-
 #include __impl_x(util/tree_impl.h)
 
-inline int tree_empty(struct tree *tree) {
-	assert(tree != NULL);
-	return tree->root == NULL;
-}
+/**
+ * Initialize tree.
+ * @param tree Tree to initialize.
+ */
+extern struct tree *tree_init(struct tree *tree);
+
+/**
+ * Initialize tree link.
+ * @param tree Link to initialize.
+ */
+extern struct tree_link *tree_link_init(struct tree_link *link);
+
+/**
+ * Check whether the tree is empty.
+ * @param tree
+ * @return true iff tree is empty.
+ */
+extern bool tree_empty(struct tree *tree);
 
 /**
  * Find element in the tree.
  * Element is considered to be found if result of compare function is zero.
  * @param tree Tree, where element is searched
  * @param link Element, equal to which is found.
+ * @param compare Compare function
  * @return
  * 	NULL, if there is no such element in tree.
  *	Pointer to this element otherwise.
  */
-inline pnode tree_find_link(struct tree* tree, pnode link);
+extern struct tree_link *tree_find_link(struct tree *tree,
+		struct tree_link *link, tree_comparator_t compare);
 
 /**
  * Add element to tree.
  * If there was an element equaled to added, it would be replaced.
  * @param tree Tree, element is inserted into
  * @param link Added element
+ * @param compare Compare function
  * @return
  * 	true, if element wasn't in tree.
  */
-bool tree_add_link(struct tree* tree, pnode link);
+extern bool tree_add_link(struct tree *tree,
+		struct tree_link *link, tree_comparator_t compare);
 
 /**
  * Delete element from tree, which compare result with given element is zero.
  * @param tree Tree, element is deleted from
  * @param link Deleted element
+ * @param compare Compare function
  * @return
  * 	true, if element was in tree before deletion.
  */
-bool tree_remove_link(struct tree* tree, pnode link);
+extern bool tree_remove_link(struct tree* tree,
+		struct tree_link *link, tree_comparator_t compare);
 
 /**
  * Return the most left element of the tree.
@@ -94,7 +97,7 @@ bool tree_remove_link(struct tree* tree, pnode link);
  * @param tree
  * @return The smallest element of the tree.
  */
-inline pnode tree_min_link(struct tree *tree);
+extern struct tree_link *tree_min_link(struct tree *tree);
 
 /**
  * Return the most right element of the tree.
@@ -102,7 +105,6 @@ inline pnode tree_min_link(struct tree *tree);
  * @param tree
  * @return The greatest element of the tree.
  */
-inline pnode tree_max_link(struct tree *tree);
-
+extern struct tree_link *tree_max_link(struct tree *tree);
 
 #endif /* UTIL_TREE_H_ */

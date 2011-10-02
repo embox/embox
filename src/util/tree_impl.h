@@ -9,18 +9,36 @@
 #ifndef UTIL_TREE_IMPL_H_
 #define UTIL_TREE_IMPL_H_
 
-inline pnode tree_find_link(struct tree* tree, pnode link) {
-	pnode cur;
+static inline struct tree *tree_init(struct tree *tree) {
+	assert(tree != NULL);
+	tree->root = NULL;
+	return tree;
+}
+
+static inline struct tree_link *tree_link_init(struct tree_link * link) {
+	assert(link != NULL);
+	link->left = link->right = NULL;
+	return link;
+}
+
+static inline bool tree_empty(struct tree *tree) {
+	assert(tree != NULL);
+	return tree->root == NULL;
+}
+
+static inline struct tree_link *tree_find_link(struct tree *tree,
+		struct tree_link *link, tree_comparator_t compare) {
+	struct tree_link * cur;
 	int comp_res;
 	assert(tree != NULL);
 	assert(link != NULL);
+
 	cur = tree->root;
 	while (cur) {
-		comp_res = tree->comparator(link, cur);
+		comp_res = compare(link, cur);
 		if (comp_res == 0) {
 			return cur;
-		} else
-		if (comp_res < 0) {
+		} else if (comp_res < 0) {
 			cur = cur->left;
 		} else {
 			cur = cur->right;
@@ -29,16 +47,18 @@ inline pnode tree_find_link(struct tree* tree, pnode link) {
 	return NULL;
 }
 
-inline bool tree_add_link(struct tree* tree, pnode link) {
-	pnode* cur;
-	pnode other;
+static inline bool tree_add_link(struct tree *tree,
+		struct tree_link *link, tree_comparator_t compare) {
+	struct tree_link **cur;
+	struct tree_link *other;
 	int comp_res;
 	assert(tree != NULL);
 	assert(link != NULL);
+
 	cur = &tree->root;
 	tree_link_init(link);
 	while (*cur) {
-		comp_res = tree->comparator(link, *cur);
+		comp_res = compare(link, *cur);
 		if (comp_res == 0) {
 			other = *cur;
 			link->left = other->left;
@@ -46,8 +66,7 @@ inline bool tree_add_link(struct tree* tree, pnode link) {
 			*cur = link;
 			tree_link_init(other);
 			return false;
-		} else
-		if (comp_res < 0) {
+		} else if (comp_res < 0) {
 			cur = &(*cur)->left;
 		} else {
 			cur = &(*cur)->right;
@@ -57,19 +76,23 @@ inline bool tree_add_link(struct tree* tree, pnode link) {
 	return true;
 }
 
-inline bool tree_remove_link(struct tree* tree, pnode link) {
-	pnode* del_pos;
-	pnode deleted;
-	// position, where node can be inserted to be deleted easily
-	pnode* other_pos;
-	// element, what possible take deleted one's position
-	pnode other;
+static inline bool tree_remove_link(struct tree *tree,
+		struct tree_link *link, tree_comparator_t compare) {
+	struct tree_link **del_pos;
+	struct tree_link *deleted;
+
+	/* position, where node can be inserted to be deleted easily */
+	struct tree_link **other_pos;
+	/* element, what possible take deleted one's position */
+	struct tree_link *other;
+
 	int comp_res;
 	assert(tree != NULL);
 	assert(link != NULL);
+
 	del_pos = &tree->root;
 	while (*del_pos) {
-		comp_res = tree->comparator(link, *del_pos);
+		comp_res = compare(link, *del_pos);
 		if (comp_res == 0) {
 			break;
 		} else
@@ -83,9 +106,12 @@ inline bool tree_remove_link(struct tree* tree, pnode link) {
 	if (deleted == NULL) {
 		return false;
 	}
+
 	if (!deleted->left || !deleted->right) {
+		/* There is less then two children of deleted node */
 		*del_pos = deleted->left ? deleted->left : deleted->right;
 	} else {
+		/* Give element from the right subtree */
 		other_pos = &deleted->right;
 		while ((*other_pos)->left) {
 			other_pos = &(*other_pos)->left;
@@ -100,9 +126,10 @@ inline bool tree_remove_link(struct tree* tree, pnode link) {
 	return true;
 }
 
-inline pnode tree_min_link(struct tree *tree) {
-	pnode result;
+static inline struct tree_link *tree_min_link(struct tree *tree) {
+	struct tree_link *result;
 	assert(tree != NULL);
+
 	result = tree->root;
 	if (!result) {
 		return NULL;
@@ -113,9 +140,10 @@ inline pnode tree_min_link(struct tree *tree) {
 	return result;
 }
 
-inline pnode tree_max_link(struct tree *tree) {
-	pnode result;
+static inline struct tree_link *tree_max_link(struct tree *tree) {
+	struct tree_link *result;
 	assert(tree != NULL);
+
 	result = tree->root;
 	if (!result) {
 		return NULL;
