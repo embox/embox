@@ -37,21 +37,6 @@ EMBOX_UNIT_INIT(unit_init);
 
 static net_device_stats_t * get_eth_stat(struct net_device *dev);
 
-#define E8390_STOP     0x01 /* Stop and reset the chip */
-#define E8390_START    0x02 /* Start the chip, clear reset */
-#define E8390_TXOFF    0x02 /* EN0_TXCR: Transmitter off */
-#define E8390_TRANS    0x04 /* Transmit a frame */
-#define E8390_RREAD    0x08 /* Remote read */
-#define E8390_RWRITE   0x10 /* Remote write  */
-#define E8390_NODMA    0x20 /* Remote DMA */
-#define E8390_RXOFF    0x20 /* EN0_RXCR: Accept no packets */
-#define E8390_PAGE0    0x00 /* Select page chip registers */
-#define E8390_PAGE1    0x40 /* using the two high-order bits */
-#define E8390_PAGE2    0x80 /* Page 3 is invalid. */
-#define E8390_CMD      0x00 /* The command register (for all pages) */
-#define E8390_RXCONFIG 0x04 /* EN0_RXCR: broadcasts, no multicast,errors */
-#define E8390_TXCONFIG 0x00 /* EN0_TXCR: Normal transmit mode */
-
 /* The per-packet-header format. */
 struct e8390_pkt_hdr {
 	uint8_t status; /* status */
@@ -60,33 +45,9 @@ struct e8390_pkt_hdr {
 };
 
 /* Debugging routines */
-static inline void ne2k_show_page(unsigned long base_addr) {
-	uint8_t i, page, val;
-	/* Page Dump*/
-	printf("\n            ");
-	for (i = 0; i < 16; i++) {
-    		printf(" 0%X", i);
-	}
-	for (page = 0; page < 4; page++) {
-		printf("\n8390 page %d:", page);
-		out8(E8390_NODMA | (page << 6), base_addr + E8390_CMD);
-		for(i = 0; i < 16; i++) {
-			val = in8(base_addr + i);
-			if (!val) {
-				printf(" ..");
-			} else if (val < 0x10) {
-				printf(" 0%X", val);
-			} else {
-				printf(" %X", val);
-			}
-		}
-	}
-	printf("\n.\n");
-}
-
-static inline void ne2k_show_packet(uint8_t *raw, uint16_t size, char *title) {
+static void show_packet(uint8_t *raw, uint16_t size, char *title) {
 	uint8_t i, val;
-	/* Page Dump*/
+
 	printf("\nPACKET %s:", title);
 	for (i = 0; i < size; i++) {
 		if (!(i % 16)) {
@@ -221,7 +182,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	out8(E8390_TRANS | E8390_NODMA | E8390_START, base_addr + NE_CMD);
 	while (in8(base_addr + NE_CMD) & E8390_TRANS) ; /* Wait for transmission to complete. */
 
-	ne2k_show_packet(skb->data, skb->len, "send"); /* debug */
+	show_packet(skb->data, skb->len, "send"); /* debug */
 	kfree_skb(skb); /* free packet */
 
 	return ENOERR;
@@ -238,7 +199,7 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset
 	skb->dev = dev;
 	copy_data_from_card(offset, skb->data, total_length, dev->base_addr);
 	skb->protocol = ntohs(skb->mac.ethh->h_proto);
-	ne2k_show_packet(skb->data, skb->len, "recv"); /* debug */
+	show_packet(skb->data, skb->len, "recv"); /* debug */
 
 	return skb;
 }
