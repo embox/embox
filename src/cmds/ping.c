@@ -26,43 +26,30 @@
 
 EMBOX_CMD(exec);
 
-static void print_usage(void) {
-	printf("Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl]\n"
-		"[-i interval] [-p pattern] [-s packetsize] destination\n");
-}
+/* Constants */
+#define DEFAULT_COUNT    4
+#define DEFAULT_PADLEN   56
+#define DEFAULT_TIMEOUT  1
+#define DEFAULT_INTERVAL 1
+#define DEFAULT_PATTERN  0xFF
+#define DEFAULT_TTL      59
+#define MAX_PADLEN       65507
 
-typedef struct ping_info {
-	/* Stop after sending count ECHO_REQUEST packets. */
-	int count;
-	/* The number of data bytes to be sent. */
-	int padding_size;
-	/* Time  to wait for a response, in seconds. */
-	int timeout;
-	/* Wait  interval seconds between sending each packet. */
-	int interval;
-	/* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
-	int pattern;
-	/* IP Time to Live. */
-	int ttl;
-	/* Source address to specified interface address. */
-	struct in_addr from;
-	/* Destination host */
-	struct in_addr dst;
+struct ping_info {
+	int count;           /* Stop after sending count ECHO_REQUEST packets. */
+	int padding_size;    /* The number of data bytes to be sent. */
+	int timeout;         /* Time  to wait for a response, in seconds. */
+	int interval;        /* Wait  interval seconds between sending each packet. */
+	int pattern;         /* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
+	int ttl;             /* IP Time to Live. */
+	struct in_addr from; /* Source address to specified interface address. */
+	struct in_addr dst;  /* Destination host */
 } ping_info_t;
 
-/* boundary and default */
-enum {
-	DEF_COUNT = 4,
-	DEF_PADLEN = 56,
-	DEF_TIMEOUT = 1,
-	DEF_INTERVAL = 1,
-	DEF_PATTERN = 0xFF,
-	DEF_TTL = 59,
-	MAX_PADLEN = 65507,
-	MAX_TIMEOUT = 2148,
-};
+static void print_usage(void) {
+}
 
-static int ping(ping_info_t *pinfo) {
+static int ping(struct ping_info *pinfo) {
 	int cnt_resp = 0, cnt_err = 0, sk;
 	size_t i;
 	iphdr_t *iph_s, *iph_r;
@@ -88,7 +75,7 @@ static int ping(ping_info_t *pinfo) {
 	iph_s->ihl = IP_MIN_HEADER_SIZE >> 2;
 	iph_s->tos = 0;
 	iph_s->frag_off = htons(IP_DF);
-	iph_s->saddr = pinfo->from.s_addr;
+//	iph_s->saddr = pinfo->from.s_addr;
 	iph_s->daddr = pinfo->dst.s_addr;
 	iph_s->tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
 	iph_s->ttl = pinfo->ttl;
@@ -102,7 +89,8 @@ static int ping(ping_info_t *pinfo) {
 	icmph_r = (icmphdr_t *) (rcv_buff + IP_MIN_HEADER_SIZE);
 
 	total = clock();
-	for (i = 1; i <= pinfo->count; i++) {
+	i = 0;
+	for (;;) {
 		icmph_s->un.echo.sequence = htons(ntohs(icmph_s->un.echo.sequence) + 1);
 		icmph_s->checksum = 0;
 		icmph_s->checksum = htons(ptclbsum(packet + IP_MIN_HEADER_SIZE,
@@ -110,6 +98,7 @@ static int ping(ping_info_t *pinfo) {
 
 		sendto(sk, packet, ntohs(iph_s->tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 
+		++i;
 		start = clock();
 		while ((delta = clock() - start) < timeout) {
 			/* we don't need to get pad data, only header */
@@ -121,14 +110,23 @@ static int ping(ping_info_t *pinfo) {
 					||(iph_s->daddr != iph_r->saddr)) {
 				continue;
 			}
-			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%d ms\n",
-					pinfo->padding_size, dst_addr_str, i, pinfo->ttl, delta);
+			if (delta < 1) {
+				printf("%d bytes from %s: icmp_seq=%d ttl=%d time <1ms\n",
+						pinfo->padding_size, dst_addr_str, i, pinfo->ttl);
+			}
+			else {
+				printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%d ms\n",
+						pinfo->padding_size, dst_addr_str, i, pinfo->ttl, delta);
+			}
 			cnt_resp++;
 			break;
 		}
 		if (delta >= timeout) {
 			printf("From %s icmp_seq=%d Destination Host Unreachable\n", dst_addr_str, i);
 			cnt_err++;
+		}
+		if (i >= pinfo->count) {
+			break;
 		}
 		sleep(pinfo->interval);
 	}
@@ -144,92 +142,100 @@ static int ping(ping_info_t *pinfo) {
 }
 
 static int exec(int argc, char **argv) {
-	ping_info_t pinfo;
 	int opt;
-	in_device_t *in_dev = inet_dev_find_by_name("eth0");
-	pinfo.count = DEF_COUNT;
-	pinfo.interval = DEF_INTERVAL;
-	pinfo.padding_size = DEF_PADLEN;
-	pinfo.pattern = DEF_PATTERN;
-	pinfo.timeout = DEF_TIMEOUT;
-	pinfo.ttl = DEF_TTL;
+	in_device_t *in_dev;
+	struct ping_info pinfo;
+
+	in_dev = NULL;
+	pinfo.count = DEFAULT_COUNT;
+	pinfo.interval = DEFAULT_INTERVAL;
+	pinfo.padding_size = DEFAULT_PADLEN;
+	pinfo.pattern = DEFAULT_PATTERN;
+	pinfo.timeout = DEFAULT_TIMEOUT;
+	pinfo.ttl = DEFAULT_TTL;
 	getopt_init();
 	do {
-		opt = getopt(argc, argv, "I:c:t:W:s:i:p:h");
+		opt = getopt(argc, argv, "I:c:t:W:s:i:p:");
 		switch(opt) {
-		case 'h':
-			print_usage();
-			return 0;
-		case 'I':
-			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
-				printf("ping: unknown iface %s\n", optarg);
-				return -1;
-			}
-			break;
-		case 'c':
-			if (1 != sscanf(optarg, "%d", &pinfo.count) || pinfo.count < 1) {
-				printf("ping: bad number of packets to transmit.\n");
-				return -1;
-			}
-			break;
-		case 't':
-			if (1 != sscanf(optarg, "%d", &pinfo.ttl)) {
-				printf("ping: can't set unicast time-to-live: Invalid argument\n");
-				return -1;
-			}
-			break;
-		case 'W':
-			if (1 != sscanf(optarg, "%d", &pinfo.timeout)) {
-				pinfo.timeout = 1;
-			}
-			if (pinfo.timeout > MAX_TIMEOUT || pinfo.timeout < 0) {
-				printf("ping: bad linger time.\n");
-				return -1;
-			}
-			break;
-		case 's':
-			if (1 != sscanf(optarg, "%d", &pinfo.padding_size)) {
-				pinfo.padding_size = 0;
-			}
-			if (pinfo.padding_size > MAX_PADLEN) {
-				printf("packet size is too large. Maximum is 65507\n");
-			} else if (pinfo.padding_size < 0) {
-				printf("illegal negative packet size\n");
-			}
-			break;
-		case 'i':
-			if (1 != sscanf(optarg, "%d", &pinfo.interval) ||
-					pinfo.interval < 0) {
-				printf("ping: bad timing interval.\n");
-				return -1;
-			}
-			break;
-		case 'p':
-			if (1 != sscanf(optarg, "%d", &pinfo.pattern)) {
-				printf("ping: patterns must be specified as hex digits.\n");
-				return -1;
-			}
-			break;
-		case -1:
-			break;
-		default:
-			return 0;
+			case 'I':
+				in_dev = inet_dev_find_by_name(optarg);
+				if (in_dev == NULL) {
+					printf("ping: unknown Iface %s\n", optarg);
+					return -1;
+				}
+				break;
+			case 'c':
+				if ((sscanf(optarg, "%d", &pinfo.count) != 1)  || (pinfo.count < 1)) {
+					printf("ping: bad number of packets to transmit\n");
+					return -1;
+				}
+				break;
+			case 't':
+				if (sscanf(optarg, "%d", &pinfo.ttl) != 1) {
+					printf("ping: can't set unicast time-to-live: Invalid argument\n");
+					return -1;
+				}
+				break;
+			case 'W':
+				if ((sscanf(optarg, "%d", &pinfo.timeout) != 1)
+						|| (pinfo.timeout < 0)) {
+					printf("ping: bad linger time\n");
+					return -1;
+				}
+				break;
+			case 's':
+				if ((sscanf(optarg, "%d", &pinfo.padding_size) != 1)
+						|| (pinfo.padding_size < 0)) {
+					printf("ping: bad padding size\n");
+					return -1;
+				}
+				if (pinfo.padding_size > MAX_PADLEN) {
+					printf("packet size is too large. Maximum is %d\n", MAX_PADLEN);
+				}
+				break;
+			case 'i':
+				if ((sscanf(optarg, "%d", &pinfo.interval) != 1) ||
+						(pinfo.interval < 0)) {
+					printf("ping: bad timing interval.\n");
+					return -1;
+				}
+				break;
+			case 'p':
+				if (sscanf(optarg, "%d", &pinfo.pattern) != 1) {
+					printf("ping: patterns must be specified as hex digits.\n");
+					return -1;
+				}
+				break;
+			case -1:
+				break;
+			default:
+				return 0;
 		}
-	} while (-1 != opt);
+	} while (opt != -1);
 
 	if (argc == 1) {
-		print_usage();
+		printf("Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl]\n"
+			"[-i interval] [-p pattern] [-s packetsize] destination\n");
 		return 0;
 	}
 
-	/* get destination addr */
-	if (0 == inet_aton(argv[argc - 1], &pinfo.dst)) {
+//	inet_dev_find_by_name("eth0");
+	/* Get destination addr */
+	if (inet_aton(argv[argc - 1], &pinfo.dst) == 0) {
 		printf("wrong ip addr format (%s)\n", argv[argc - 1]);
 		print_usage();
 		return -1;
 	}
-	pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);
-	/* carry out command */
+
+	/* Get source addr */
+	if (in_dev != NULL) {
+		pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);
+	}
+	else {
+		pinfo.from.s_addr = 0;
+	}
+
 	ping(&pinfo);
+
 	return 0;
 }

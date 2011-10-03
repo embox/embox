@@ -356,7 +356,6 @@ static int icmp_rcv(sk_buff_t *pack) {
 		}
 	}
 
-	//TODO: check summ icmp? not need, if ip checksum is ok.
 	tmp = ntohs(icmph->checksum);
 	icmph->checksum = 0;
 	if (tmp != ptclbsum(pack->h.raw, ntohs(pack->nh.iph->tot_len) - IP_HEADER_SIZE(pack->nh.iph))) {
