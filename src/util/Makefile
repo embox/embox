@@ -15,5 +15,6 @@ $_SRCS-libutil.a += slist_debug.c
 endif
 #$_SRCS-libutil.a += pool.c
 
+$_SRCS-libutil.a += hashtable.c
 $_SRCS-libutil.a += tree_impl.c
 $_USES-libutil.a += libc.a
