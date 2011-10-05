@@ -877,9 +877,8 @@ builtin_caller_at = \
 #   Nothing.
 define builtin_print_stack
 	$(warning Expansion stack:)
-	$(strip $(foreach e,
-			$(subst $(\s),$(\comma),$(__def_stack_top)) \
-			$(__def_stack),
+	$(warning $(\t)function '$(firstword $(__def_stack_top))')
+	$(strip $(foreach e,$(__def_stack),
 		$(warning \
 			$(\t)arg $(words $(call nofirstword,$(subst $(\comma), ,$e))) \
 				of '$(firstword $(subst $(\comma), ,$e))'
@@ -920,13 +919,31 @@ $(call def,builtin_error)
 # Return:
 #   A unique name in a private namespace.
 define builtin_aux_alloc
-	__builtin_aux$(words $(__builtin_aux_cnt))_$(__def_var)
 	${eval \
 		__builtin_aux_cnt += x
 	}
+	$(builtin_aux_last)
 endef
 $(call def,builtin_aux_alloc)
 __builtin_aux_cnt :=# Initially empty.
+
+# Allocates a new auxiliary function and assigns a value to it.
+# Params:
+#   1. A single-line value to assign.
+# Return:
+#   The name of the newly defined function.
+define builtin_aux_def
+	$(foreach aux,$(builtin_aux_alloc),
+		$(call var_assign_recursive_sl,$(aux),$1)
+		$(aux)# Return.
+	)
+endef
+$(call def,builtin_aux_def)
+
+# Gets the last allocated name.
+# Return:
+#   Result of the last call to 'builtin_aux_alloc' or to 'builtin_aux_def'.
+builtin_aux_last = __builtin_aux$(words $(__builtin_aux_cnt))_$(__def_var)
 
 # Builtins definition framework is mostly up. Enable it here.
 __def_builtin = \
@@ -939,15 +956,8 @@ __def_builtin = \
 #
 # '$(lambda body)'
 #
-define builtin_func_lambda
-	$(foreach aux,$(builtin_aux_alloc),
-		# Define external function.
-		$(call var_assign_recursive_sl,$(aux),$(builtin_args))
-		# The value being returned.
-		$(aux)
-	)
-endef
-$(call def,builtin_func_lambda)
+builtin_func_lambda = \
+	$(call builtin_aux_def,$(builtin_args))
 
 # Stub for case of $(lambda) or $(call lambda,...).
 lambda = $(warning lambda: illegal invocation)
@@ -960,12 +970,9 @@ lambda = $(warning lambda: illegal invocation)
 # '$(with args...,body)'
 #
 define builtin_func_with
-	$(foreach aux,$(builtin_aux_alloc),
-		$(call var_assign_recursive_sl,$(aux),$(builtin_lastarg))
-		$$(call $(aux)
-			$(if $(call nolastword,$(builtin_args_list)),
-				$(\comma)$(builtin_nolastarg)
-			)
+	$$(call $(call builtin_aux_def,$(builtin_lastarg))
+		$(if $(call nolastword,$(builtin_args_list)),
+			$(\comma)$(builtin_nolastarg)
 		)
 	)
 endef
