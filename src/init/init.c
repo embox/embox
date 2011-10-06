@@ -9,11 +9,11 @@
 #include <embox/unit.h>
 #include <ctype.h>
 #include <framework/cmd/api.h>
-#include <posix/stdio.h>
+#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 
-#define BUF_INP_SIZE 15
+#define BUF_INP_SIZE CONFIG_MAX_PROMPT_LENGTH
 
 EMBOX_UNIT_INIT(run);
 
@@ -43,12 +43,14 @@ static int run_cmd(int argc, char *argv[]) {
 }
 
 static int parse(char *line) {
-	char *token_line[(BUF_INP_SIZE + 1) / 2];int tok_pos = 0;
+	char *token_line[(BUF_INP_SIZE+1)/2];
+	int tok_pos = 0;
 	int last_was_blank = 1;
 	while (*line != '\0') {
 		if (last_was_blank && !isspace(*line)) {
 			token_line[tok_pos++] = line;
 		}
+		printf("%s \n", line);
 		last_was_blank = isspace(*line);
 		if (isspace(*line)) {
 			*line = '\0';
@@ -60,9 +62,13 @@ static int parse(char *line) {
 
 static int run(void) {
 	const char *command;
+	char *line;
+	printf("\nloading start script\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
-		parse((char *) command);
+		printf("> %s \n", command);
+		*line = *command;
+		parse(line);
 	}
-
 	return 0;
 }
+
