@@ -21,12 +21,10 @@ static const char *script_commands[] = {
 
 static int shell_start(void) {
 	const char *command;
-	char *line;
 	printf("\nloading start script\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		printf("> %s \n", command);
-		*line = *command;
-		shell_line_input(line);
+		shell_line_input((char *)command);
 	}
 	shell_run();
 	return 0;

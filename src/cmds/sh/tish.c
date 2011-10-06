@@ -59,10 +59,15 @@ static int run_cmd(int argc, char *argv[]) {
 	return code;
 }
 
-int shell_line_input(char *line) {
+int shell_line_input(const char *const_line) {
 	char *token_line[(BUF_INP_SIZE + 1) / 2];
+	char cline[BUF_INP_SIZE];
+	char *line = cline;
 	int tok_pos = 0;
 	int last_was_blank = 1;
+
+        strncpy(cline, const_line, BUF_INP_SIZE);
+
 	while (*line != '\0') {
 		if (last_was_blank && !isspace(*line)) {
 			token_line[tok_pos++] = line;
