@@ -140,7 +140,8 @@ $(call def,__object_init)
 #   1. Class
 #  ... Constructor arguments
 define __object_init_field_mk
-  $0.$(__field_name) := $($(call __member_prefix,$1,field$(__field_index)))
+  $0.$(__field_name) := \
+    $($(call __member_prefix,$1,field$(__field_index))$(__field_name))
 endef
 
 # Params:
@@ -157,10 +158,17 @@ define __object_handle_value
 		$$(foreach 0,$$(value 1),
 			$$(foreach 1,$0,
 				$${eval \
-					__object_tmp__ := $$(or \
-						$$(value $(subst $$,$$$$,$($(\comma)))$$0),
-						$$(error $$1: No such member: '$$0')
-					)
+					__object_tmp__ :=
+						$(foreach m,$(subst $$,$$$$,$($(\comma)))$$0,
+							$$(or \
+								$$(value $m),
+								$$(if $$(findstring undefined,$$(flavor $m)),
+									$$(error $$1: \
+										No member '$$0' in class '$$($1.name)'
+									)
+								)
+							)
+						)
 				}
 				$$(__object_tmp__)
 			)
@@ -222,7 +230,7 @@ __field_index_cnt :=
 define __field_init_mk
   # Replace period function expansion ('$.') in value of 'fields'
   # with field name and index separated by period (name.index).
-  $1.fields := $($1.fields:$(call __member_prefix,$1,$3)=$2.$3)
+  $1.fields := $($1.fields:$(call __member_prefix,$1,field$3)=$2.$3)
   # Define the corresponding getter/setter.
   $,$2 = $(__field_handle)
 endef
@@ -263,9 +271,10 @@ __class_load_filter = $(and \
   $(call doubleword,$1), \
   $(filter class,$(word 1,$1)), \
   $(filter    $2,$(word 2,$1)), \
-  $(or $(call __class_object,$2), \
-       $(error __class_load: Attempting to reload class '$2')), \
-  ${eval $(call __class,$2) := $(call new,class,$2,$(value $1))} \
+  $(if $(call __class_object,$2),$ \
+       $(error __class_load: Attempting to reload class '$2'),$ \
+  ${eval $$(call __class,$2) := $(call new,class,$2,$(value $1))}$ \
+     $(call __class_object,$2)) \
 )
 
 # 1. Class name
@@ -345,9 +354,10 @@ endef
 # 3. Unexpanded value of class content
 __class_init = \
   ${eval $$1.name := $$2} \
+  ${eval $$1.members :=} \
+  ${eval $$1.fields :=} \
   $(call var_list_filter_out_invoke,__init_member_filter,$1, \
-      $(.VARIABLES)${eval $3})
-
+      $(.VARIABLES)${eval $$$(\comma)$2 :=$(\n)$3})
 #
 # Bootstrap...
 #
