@@ -42,15 +42,17 @@ static int run_cmd(int argc, char *argv[]) {
 	return code;
 }
 
-static int parse(char *line) {
-	char *token_line[(BUF_INP_SIZE+1)/2];
+int parse(const char *const_line) {
+	char *token_line[(BUF_INP_SIZE + 1) / 2];
+	char cline[BUF_INP_SIZE];
+	char *line = cline;
 	int tok_pos = 0;
 	int last_was_blank = 1;
+	strncpy(cline, const_line, BUF_INP_SIZE);
 	while (*line != '\0') {
 		if (last_was_blank && !isspace(*line)) {
 			token_line[tok_pos++] = line;
 		}
-		printf("%s \n", line);
 		last_was_blank = isspace(*line);
 		if (isspace(*line)) {
 			*line = '\0';
@@ -62,12 +64,10 @@ static int parse(char *line) {
 
 static int run(void) {
 	const char *command;
-	char *line;
 	printf("\nloading start script\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		printf("> %s \n", command);
-		*line = *command;
-		parse(line);
+		parse(command);
 	}
 	return 0;
 }
