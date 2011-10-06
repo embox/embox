@@ -1006,13 +1006,13 @@ expand = $(expand $1)
 $(call def,expand)
 
 #
-# Extension: 'papply' builtin function.
+# Extension: 'fx' builtin function.
 #
 # Runtime partial function application.
 #
-# '$(papply func,args...)'
+# '$(fx func,args...)'
 #
-define builtin_func_papply
+define builtin_func_fx
 	$(with \
 		$(expand \
 			$(subst $(\comma)$(\s),$(\comma),
@@ -1029,18 +1029,21 @@ define builtin_func_papply
 				)
 			)
 		),
-		$$(foreach fn,__papply$$(words $$(__builtin_func_papply_cnt)),
-			$$(eval \
-				__builtin_func_papply_cnt += x$$(\n)
-				define $$(fn)$$(\n)$$$$(call $$$$(\0)$1$$$$1)$$(\n)endef
-			)
-			$$(fn)
+		$(if $(findstring $$,$(subst $$$$$$$$,,$1)),
+			$$(foreach fn,__fx$$(words $$(__builtin_func_fx_cnt)),
+				$$(eval \
+					__builtin_func_fx_cnt += x$$(\n)
+					define $$(fn)$$(\n)$$$$(call $1$$$$1)$$(\n)endef
+				)
+				$$(fn)
+			),
+			$(call builtin_aux_def,$$(call $(subst $$$$,$$,$1)$$1))
 		)
 	)
 endef
-$(call def,builtin_func_papply)
+$(call def,builtin_func_fx)
 
-__builtin_func_papply_cnt :=# Initially empty.
+__builtin_func_fx_cnt :=# Initially empty.
 
 #
 # Builtin to user-defined function call converters.
