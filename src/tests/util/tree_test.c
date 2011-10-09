@@ -2,8 +2,8 @@
  * @file
  * @brief Test unit for util/tree.
  *
- * @date 12.03.11
- * @author Eldar Abusalimov
+ * @date Oct 8, 2011
+ * @author Avdyukhin Dmitry
  */
 
 #include <embox/test.h>
@@ -13,20 +13,12 @@
 
 EMBOX_TEST_SUITE("util/tree test");
 
-struct tree tree;
-struct tree_link link[3];
-int comp(struct tree_link* first, struct tree_link* second) {
-	return first - second;
-}
+struct tree_link links[3];
 
 TEST_CASE("Any test for tree") {
 	test_emit('-');
-	tree_init(&tree);
-	tree_min_link(&tree);
-	tree_add_link(&tree, link+1, comp);
-	tree_add_link(&tree, link+0, comp);
-	tree_add_link(&tree, link+2, comp);
+	tree_link_init(links + 1);
+	tree_add_link(links+1, links+0);
+	tree_add_link(links+1, links+2);
 }
-
-
 

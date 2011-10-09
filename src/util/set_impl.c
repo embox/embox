@@ -1,39 +1,53 @@
 /**
  * @file
- * @brief Implementation of methods in util/tree.h
+ * @brief Implementation of methods in util/set.h
  *
  * @date Oct 1, 2011
  * @author Avdyukhin Dmitry
  */
 
-#ifndef UTIL_TREE_IMPL_H_
-#define UTIL_TREE_IMPL_H_
+#ifndef UTIL_SET_IMPL_H_
+#define UTIL_SET_IMPL_H_
 
-static inline struct tree *tree_init(struct tree *tree) {
-	assert(tree != NULL);
-	tree->root = NULL;
-	return tree;
+#include <stddef.h>
+#include <assert.h>
+
+struct set_link {
+	struct set_link *left;
+	struct set_link *right;
+};
+
+struct set {
+	struct set_link *root;
+};
+
+typedef int (*set_comparator_t)(struct set_link *first, struct set_link *second);
+
+static inline struct set *set_init(struct set *set) {
+	assert(set != NULL);
+	set->root = NULL;
+	return set;
 }
 
-static inline struct tree_link *tree_link_init(struct tree_link * link) {
+static inline struct set_link *set_link_init(struct set_link * link) {
 	assert(link != NULL);
 	link->left = link->right = NULL;
 	return link;
 }
 
-static inline bool tree_empty(struct tree *tree) {
-	assert(tree != NULL);
-	return tree->root == NULL;
+static inline int set_empty(struct set *set) {
+	assert(set != NULL);
+	return set->root == NULL;
 }
 
-static inline struct tree_link *tree_find_link(struct tree *tree,
-		struct tree_link *link, tree_comparator_t compare) {
-	struct tree_link * cur;
+static inline struct set_link *set_find_link(struct set *set,
+		struct set_link *link, set_comparator_t compare) {
+	struct set_link * cur;
 	int comp_res;
-	assert(tree != NULL);
+	assert(set != NULL);
 	assert(link != NULL);
 
-	cur = tree->root;
+	cur = set->root;
 	while (cur) {
 		comp_res = compare(link, cur);
 		if (comp_res == 0) {
@@ -47,16 +61,16 @@ static inline struct tree_link *tree_find_link(struct tree *tree,
 	return NULL;
 }
 
-static inline bool tree_add_link(struct tree *tree,
-		struct tree_link *link, tree_comparator_t compare) {
-	struct tree_link **cur;
-	struct tree_link *other;
+static inline int set_add_link(struct set *set,
+		struct set_link *link, set_comparator_t compare) {
+	struct set_link **cur;
+	struct set_link *other;
 	int comp_res;
-	assert(tree != NULL);
+	assert(set != NULL);
 	assert(link != NULL);
 
-	cur = &tree->root;
-	tree_link_init(link);
+	cur = &set->root;
+	set_link_init(link);
 	while (*cur) {
 		comp_res = compare(link, *cur);
 		if (comp_res == 0) {
@@ -64,8 +78,8 @@ static inline bool tree_add_link(struct tree *tree,
 			link->left = other->left;
 			link->right = other->right;
 			*cur = link;
-			tree_link_init(other);
-			return false;
+			set_link_init(other);
+			return 0;
 		} else if (comp_res < 0) {
 			cur = &(*cur)->left;
 		} else {
@@ -73,24 +87,24 @@ static inline bool tree_add_link(struct tree *tree,
 		}
 	}
 	*cur = link;
-	return true;
+	return 1;
 }
 
-static inline bool tree_remove_link(struct tree *tree,
-		struct tree_link *link, tree_comparator_t compare) {
-	struct tree_link **del_pos;
-	struct tree_link *deleted;
+static inline int set_remove_link(struct set *set,
+		struct set_link *link, set_comparator_t compare) {
+	struct set_link **del_pos;
+	struct set_link *deleted;
 
 	/* position, where node can be inserted to be deleted easily */
-	struct tree_link **other_pos;
+	struct set_link **other_pos;
 	/* element, what possible take deleted one's position */
-	struct tree_link *other;
+	struct set_link *other;
 
 	int comp_res;
-	assert(tree != NULL);
+	assert(set != NULL);
 	assert(link != NULL);
 
-	del_pos = &tree->root;
+	del_pos = &set->root;
 	while (*del_pos) {
 		comp_res = compare(link, *del_pos);
 		if (comp_res == 0) {
@@ -104,7 +118,7 @@ static inline bool tree_remove_link(struct tree *tree,
 	}
 	deleted = *del_pos;
 	if (deleted == NULL) {
-		return false;
+		return 0;
 	}
 
 	if (!deleted->left || !deleted->right) {
@@ -122,15 +136,15 @@ static inline bool tree_remove_link(struct tree *tree,
 		other->right = deleted->right;
 		*del_pos = other;
 	}
-	tree_link_init(deleted);
-	return true;
+	set_link_init(deleted);
+	return 1;
 }
 
-static inline struct tree_link *tree_min_link(struct tree *tree) {
-	struct tree_link *result;
-	assert(tree != NULL);
+static inline struct set_link *set_min_link(struct set *set) {
+	struct set_link *result;
+	assert(set != NULL);
 
-	result = tree->root;
+	result = set->root;
 	if (!result) {
 		return NULL;
 	}
@@ -140,11 +154,11 @@ static inline struct tree_link *tree_min_link(struct tree *tree) {
 	return result;
 }
 
-static inline struct tree_link *tree_max_link(struct tree *tree) {
-	struct tree_link *result;
-	assert(tree != NULL);
+static inline struct set_link *set_max_link(struct set *set) {
+	struct set_link *result;
+	assert(set != NULL);
 
-	result = tree->root;
+	result = set->root;
 	if (!result) {
 		return NULL;
 	}
@@ -154,4 +168,4 @@ static inline struct tree_link *tree_max_link(struct tree *tree) {
 	return result;
 }
 
-#endif /* UTIL_TREE_IMPL_H_ */
+#endif /* UTIL_SET_IMPL_H_ */
