@@ -208,13 +208,17 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	// XXX just for now. -- Eldar
 	exit_sq = &current->exit_event.sleepq;
 	if (!sleepq_empty(exit_sq)) {
+#if 0
 		struct prioq *pq =
 				prioq_empty(&exit_sq->pq) ? &exit_sq->suspended : &exit_sq->pq;
 		assert(!prioq_empty(pq));
 		joining = prioq_peek(prioq_address_comparator, pq,
 				struct thread, sched.pq_link);
+#endif
+		joining = sleepq_get_thread(exit_sq);
 		joining->join_ret = ret;
 	}
+
 
 	/* Wake up a joining thread (if any). */
 	sched_wake(&current->exit_event);

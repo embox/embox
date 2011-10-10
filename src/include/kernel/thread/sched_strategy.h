@@ -51,6 +51,8 @@ extern void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread,
 extern void sleepq_on_suspend(struct sleepq *sleepq, struct thread *thread);
 extern void sleepq_on_resume(struct sleepq *sleepq, struct thread *thread);
 
+extern struct thread *sleepq_get_thread(struct sleepq *sleepq);
+
 #if 0
 /**
  * Initializes all that is necessary for scheduling algorithm.

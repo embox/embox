@@ -2,7 +2,7 @@
  * @file
  * @brief Trivial scheduler based on lists
  *
- * @date Oct 8, 2011
+ * @date Oct 10, 2011
  * @author Avdyukhin Dmitry
  * @author Anton Bulychev
  */
@@ -119,7 +119,6 @@ void runq_sleep(struct runq *runq, struct sleepq *sleepq) {
 
 int runq_change_priority(struct runq *runq, struct thread *thread, int new_priority) {
 	assert(runq && thread);
-
 	thread->priority = new_priority;
 	return 0;
 }
@@ -155,14 +154,6 @@ int sleepq_empty(struct sleepq *sleepq) {
 	return list_empty(&sleepq->rq) && list_empty(&sleepq->sq);
 }
 
-#if 0
-#define sleepq_foreach(thread, sleepq) \
-	  __sleepq_foreach(thread, sleepq)
-
-#define __sleepq_foreach(t, sleepq) \
-	for(t = NULL;;)
-#endif
-
 void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread, int new_priority) {
 	assert(sleepq && thread);
 	thread->priority = new_priority;
@@ -170,7 +161,6 @@ void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread, int ne
 
 static void move_thread_to_another_q(struct list_head *q, struct thread *thread) {
 	struct list_head *link;
-
 	assert(q && thread);
 
 	link = &thread->sched.l_link;
@@ -180,17 +170,20 @@ static void move_thread_to_another_q(struct list_head *q, struct thread *thread)
 
 void sleepq_on_suspend(struct sleepq *sleepq, struct thread *thread) {
 	assert(sleepq && thread);
-
 	move_thread_to_another_q(&sleepq->sq, thread);
 }
 
 void sleepq_on_resume(struct sleepq *sleepq, struct thread *thread) {
 	assert(sleepq && thread);
-
 	move_thread_to_another_q(&sleepq->rq, thread);
 }
 
-struct thread *sleepq_first(struct sleepq *sleepq) {
+struct thread *sleepq_get_thread(struct sleepq *sleepq) {
+	/**
+	 * We suggest that there is only one thread in all sleepq
+	 * TODO: asserts
+	 */
+
 	struct list_head *q;
 	assert(sleepq && !sleepq_empty(sleepq));
 
