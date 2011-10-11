@@ -330,6 +330,13 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	return ENOERR;
 }
 
+/////////////TODO/////////////////
+#include <kernel/timer.h>
+sys_timer_t *tmr;
+static void handler(sys_timer_t *tmr, void *dev) {
+	ne2k_handler(0, dev);
+}
+//////////////////////////////////
 
 static int open(struct net_device *dev) {
 	if (dev == NULL) {
@@ -339,6 +346,13 @@ static int open(struct net_device *dev) {
 	ne2k_get_addr_from_prom(dev);
 	ne2k_config(dev);
 
+/////////////TODO/////////////////
+	if (timer_set(&tmr, 1, handler,
+			dev)) {
+		LOG_ERROR("Failed to install timer\n");
+		return -1;
+	}
+//////////////////////////////////
 	return ENOERR;
 }
 
@@ -352,6 +366,9 @@ static int stop(struct net_device *dev) {
 	out8(0xFF, dev->base_addr + EN0_ISR);
 	out8(0x00, dev->base_addr + EN0_IMR);
 
+/////////////TODO/////////////////
+	timer_close(tmr);
+//////////////////////////////////
 	return ENOERR;
 }
 
