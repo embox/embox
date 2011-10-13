@@ -107,7 +107,7 @@ static int exec(int argc, char *argv[]) {
 
 
 			addr.s_addr = rt->rt_gateway;
-			str = inet_ntoa(addr);
+			str = (addr.s_addr == INADDR_ANY) ? "*" : inet_ntoa(addr);
 			l = strlen(str);
 			memcpy(&buff[OFFSET_GW], str, (l < LEN_GW ? l : LEN_GW) * sizeof(char));
 
