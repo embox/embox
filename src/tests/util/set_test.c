@@ -45,7 +45,7 @@ static int set_int_comp(struct set_link *first, struct set_link *second) {
 
 static struct int_set_element elements[ELEMENT_COUNT];
 static int elem_cnt;
-int add_cnt = ELEMENT_COUNT >> 1, del_cnt = ELEMENT_COUNT >> 1;
+static int add_cnt = ELEMENT_COUNT >> 1, del_cnt = ELEMENT_COUNT >> 1;
 
 static struct set set;
 
@@ -136,7 +136,9 @@ static void del(int num) {
 	set_remove_link(&set, &elem->link, set_int_comp);
 	array_del(elem);
 	//print();
-	assert(compare());
+	if (!compare()) {
+		assert(false);
+	}
 }
 
 TEST_CASE("Big random test for set") {
