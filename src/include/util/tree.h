@@ -75,7 +75,7 @@ extern struct tree_link *tree_next_link(struct tree_link *link);
 extern struct tree_link *tree_begin(struct tree_link *tree);
 
 /** End of iteration (exclusive). */
-#define tree_end(tree) NULL
+#define tree_end(tree) ((tree)->par)
 
 /** Iteration on tree. Elements are links (without casting from links). */
 #define tree_foreach_link(link, tree) \

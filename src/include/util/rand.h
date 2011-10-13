@@ -14,11 +14,11 @@
 
 static unsigned long seed = 314567651;
 
-inline void srand(unsigned long new_seed) {
+static inline void srand(unsigned long new_seed) {
 	seed = new_seed;
 }
 
-inline unsigned long rand(void) {
+static inline unsigned long rand(void) {
 	seed = (unsigned long)(seed * 16546134871 + 513585871) % (104814687);
 	return seed;
 }

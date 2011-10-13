@@ -21,14 +21,22 @@ static int set_address_comp(struct set_link* first, struct set_link* second) {
 }
 
 TEST_CASE("Any test for set") {
+//	int i;
 	struct set_link *link;
-	test_emit('-');
+//	printf("+++++++++++++++++++");
+//	for (i = 0; i < 10000000; i++) { }
 	set_init(&simple_set);
+//	printf("-------------------");
 	set_min_link(&simple_set);
+//	printf("+++++++++++++++++++");
 	set_add_link(&simple_set, set_links + 1, set_address_comp);
+//	printf("-------------------");
 	set_add_link(&simple_set, set_links + 0, set_address_comp);
+//	printf("+++++++++++++++++++");
 	set_add_link(&simple_set, set_links + 2, set_address_comp);
+//	printf("-------------------");
 	set_foreach_link(link, &simple_set) { }
+//	printf("+++++++++++++++++++");
 }
 
 struct int_set_element {
@@ -52,7 +60,7 @@ static struct set set;
 static struct int_set_element *ideal[ELEMENT_COUNT];
 static int ideal_size;
 
-void array_add(struct int_set_element *elem) {
+static void array_add(struct int_set_element *elem) {
 	int i, j, comp_res;
 	for (i = 0; i < ideal_size; i++) {
 		comp_res = elem->data - ideal[i]->data;
@@ -70,7 +78,7 @@ void array_add(struct int_set_element *elem) {
 	ideal_size++;
 }
 
-void array_del(struct int_set_element * elem) {
+static void array_del(struct int_set_element * elem) {
 	int i, j, comp_res;
 	for (i = 0; i < ideal_size; i++) {
 		comp_res = elem->data - ideal[i]->data;
@@ -95,13 +103,12 @@ static bool compare(void) {
 	struct int_set_element *elem;
 	int i = 0;
 	set_foreach(link, elem, &set, link) {
-//		if ((int)elem != (int)ideal[i]) {
 		if (elem->data != ideal[i]->data) {
 			return false;
 		}
 		i++;
 	}
-	assert(i == ideal_size);
+	test_assert(i == ideal_size);
 	return true;
 }
 #if 0
@@ -121,36 +128,35 @@ static void print(void){
 }
 #endif
 static void add(int num) {
-//	int i;
 	struct int_set_element *elem = elements + elem_cnt++;
+//	printf ("%d\n", num);
 	elem->data = num;
 	set_add_link(&set, &elem->link, set_int_comp);
 	array_add(elem);
-	//print();
+//	print();
 	assert(compare());
 }
 
 static void del(int num) {
 	struct int_set_element *elem = elements + elem_cnt++;
+//	printf ("%d\n", num);
 	elem->data = num;
 	set_remove_link(&set, &elem->link, set_int_comp);
 	array_del(elem);
-	//print();
-	if (!compare()) {
-		assert(false);
-	}
+//	print();
+	test_assert(compare());
 }
 
 TEST_CASE("Big random test for set") {
 	int i, num;
 	set_init(&set);
 	ideal_size = 0;
-	//printf("Add... ");
+//	printf("Add... ");
 	for (i = 0; i < add_cnt; i++) {
 		num = rand() % 100;
 		add(num);
 	}
-	//printf("Del...");
+//	printf("Del...");
 	for (i = 0; i < del_cnt; i++) {
 		num = rand() % 100;
 		del(num);

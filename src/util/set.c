@@ -13,24 +13,24 @@
 #include <assert.h>
 #include <util/set.h>
 
-inline struct set *set_init(struct set *set) {
+struct set *set_init(struct set *set) {
 	assert(set != NULL);
 	set->root = NULL;
 	return set;
 }
 
-inline struct set_link *set_link_init(struct set_link * link) {
+struct set_link *set_link_init(struct set_link * link) {
 	assert(link != NULL);
 	link->left = link->right = link->par = NULL;
 	return link;
 }
 
-inline int set_empty(struct set *set) {
+int set_empty(struct set *set) {
 	assert(set != NULL);
 	return set->root == NULL;
 }
 
-inline struct set_link *set_find_link(struct set *set,
+struct set_link *set_find_link(struct set *set,
 		struct set_link *link, set_comparator_t compare) {
 	struct set_link * cur;
 	int comp_res;
@@ -51,7 +51,7 @@ inline struct set_link *set_find_link(struct set *set,
 	return NULL;
 }
 
-inline int set_add_link(struct set *set,
+int set_add_link(struct set *set,
 		struct set_link *link, set_comparator_t compare) {
 	struct set_link *cur, **pos;
 	int comp_res;
@@ -67,11 +67,17 @@ inline int set_add_link(struct set *set,
 		cur = *pos;
 		comp_res = compare(link, cur);
 		if (comp_res == 0) {
-//			link->left = cur->left;
-//			link->right = cur->right;
-//			link->par = cur->par;
-//			*pos = link;
-//			set_link_init(cur);
+			link->left = cur->left;
+			link->right = cur->right;
+			link->par = cur->par;
+			if (link->right != NULL) {
+				link->right->par = link;
+			}
+			if (link->left != NULL) {
+				link->left->par = link;
+			}
+			*pos = link;
+			set_link_init(cur);
 			return 0;
 		} else {
 			if (comp_res < 0) {
@@ -86,7 +92,7 @@ inline int set_add_link(struct set *set,
 	return 1;
 }
 
-inline int set_remove_link(struct set *set,
+int set_remove_link(struct set *set,
 		struct set_link *link, set_comparator_t compare) {
 	struct set_link **del_pos;
 	struct set_link *deleted;
@@ -154,7 +160,7 @@ inline int set_remove_link(struct set *set,
 
 /* Operations on subtree, represented with their root nodes. */
 
-inline struct set_link *__set_min_link(struct set_link *root) {
+struct set_link *__set_min_link(struct set_link *root) {
 	struct set_link *result;
 	result = root;
 	if (result == NULL) {
@@ -166,12 +172,12 @@ inline struct set_link *__set_min_link(struct set_link *root) {
 	return result;
 }
 
-inline struct set_link *set_min_link(struct set *set) {
+struct set_link *set_min_link(struct set *set) {
 	assert(set != NULL);
 	return __set_min_link(set->root);
 }
 
-inline struct set_link *__set_max_link(struct set_link *root) {
+struct set_link *__set_max_link(struct set_link *root) {
 	struct set_link *result;
 	result = root;
 	if (result == NULL) {
@@ -183,12 +189,12 @@ inline struct set_link *__set_max_link(struct set_link *root) {
 	return result;
 }
 
-inline struct set_link *set_max_link(struct set *set) {
+struct set_link *set_max_link(struct set *set) {
 	assert(set != NULL);
 	return __set_max_link(set->root);
 }
 
-inline struct set_link *set_next_link(struct set_link *link) {
+struct set_link *set_next_link(struct set_link *link) {
 	struct set_link *par;
 	assert(link != NULL);
 	if (link->right != NULL) {
@@ -205,7 +211,7 @@ inline struct set_link *set_next_link(struct set_link *link) {
 	}
 }
 
-inline struct set_link *set_prev_link(struct set_link *link) {
+struct set_link *set_prev_link(struct set_link *link) {
 	struct set_link *par;
 	assert(link != NULL);
 	if (link->left != NULL) {
