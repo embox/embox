@@ -18,24 +18,34 @@
 
 EMBOX_CMD(exec);
 
-#define OFFSET_START   0
-#define OFFSET_DEST    (0 + OFFSET_START)
-#define OFFSET_GATEWAY (16 + OFFSET_DEST)
-#define OFFSET_GENMASK (16 + OFFSET_GATEWAY)
-#define OFFSET_FLAGS   (16 + OFFSET_GENMASK)
-#define OFFSET_IFACE   (6 + OFFSET_FLAGS)
-#define OFFSET_EOS     (6 + OFFSET_IFACE)
-#define BUFF_SZ        (1 + OFFSET_EOS)
+enum {
+	LEN_DEST  = 15,
+	LEN_GW    = 15,
+	LEN_NMASK = 15,
+	LEN_FLAGS = 5,
+	LEN_IFACE = 5,
+};
+
+enum {
+	OFFSET_START,
+	OFFSET_DEST  = OFFSET_START,
+	OFFSET_GW    = OFFSET_DEST + LEN_DEST + 1,
+	OFFSET_NMASK = OFFSET_GW + LEN_GW + 1,
+	OFFSET_FLAGS = OFFSET_NMASK + LEN_NMASK + 1,
+	OFFSET_IFACE = OFFSET_FLAGS + LEN_FLAGS + 1,
+	OFFSET_EOS   = OFFSET_IFACE + LEN_IFACE + 1,
+	BUFF_SZ
+};
 
 static void print_usage(void) {
 	printf("Usage: route [-nmgdh] [add|del]\n");
 }
 
 static int exec(int argc, char *argv[]) {
-	int i, opt;
+	int opt;
 	in_device_t *ifdev;
 	struct rt_entry *rt;
-	size_t iterator;
+	size_t l, iterator;
 	in_addr_t net, mask, gw;
 	struct in_addr addr;
 	char buff[BUFF_SZ], *str;
@@ -83,49 +93,44 @@ static int exec(int argc, char *argv[]) {
 	} else if (!strcmp(argv[argc - 1], "del")) {
 		rt_del_route(ifdev->dev, net, mask, gw);
 	} else {
-		/* set end of string */
+		printf("Destination     Gateway         Genmask         Flags Iface\n");
+
 		buff[OFFSET_EOS] = '\0';
-
-		memset(&buff[OFFSET_START], ' ', OFFSET_EOS); /* clear string */
-		memcpy(&buff[OFFSET_DEST], "Destination", 11);
-		memcpy(&buff[OFFSET_GATEWAY], "Gateway", 7);
-		memcpy(&buff[OFFSET_GENMASK], "Genmask", 7);
-		memcpy(&buff[OFFSET_FLAGS], "Flags", 5);
-		memcpy(&buff[OFFSET_IFACE], "Iface", 5);
-
-		printf("%s\n", &buff[OFFSET_START]);  /* print title */
-
 		rt = rt_fib_get_first(&iterator);
 		while (rt != NULL) {
-			memset(&buff[OFFSET_START], 0, OFFSET_EOS); /* clear string */
+			memset(&buff[0], ' ', (BUFF_SZ - 1) * sizeof(char));
 
 			addr.s_addr = rt->rt_dst;
 			str = inet_ntoa(addr);
-			strncpy(&buff[OFFSET_DEST], str, strlen(str));
+			l = strlen(str);
+			memcpy(&buff[OFFSET_DEST], str, (l < LEN_DEST ? l : LEN_DEST) * sizeof(char));
 
 
 			addr.s_addr = rt->rt_gateway;
 			str = inet_ntoa(addr);
-			strncpy(&buff[OFFSET_GATEWAY], str, strlen(str));
+			l = strlen(str);
+			memcpy(&buff[OFFSET_GW], str, (l < LEN_GW ? l : LEN_GW) * sizeof(char));
 
 			addr.s_addr = rt->rt_mask;
 			str = inet_ntoa(addr);
-			strncpy(&buff[OFFSET_GENMASK], str, strlen(str));
+			l = strlen(str);
+			memcpy(&buff[OFFSET_NMASK], str, (l < LEN_NMASK ? l : LEN_NMASK) * sizeof(char));
 
 
-			i = OFFSET_FLAGS;
+			l = OFFSET_FLAGS;
 			if (rt->rt_flags & RTF_UP) {
-				buff[i++] = 'U';
+				buff[l++] = 'U';
 			}
 			if (rt->rt_flags & RTF_GATEWAY) {
-				buff[i++] = 'G';
+				buff[l++] = 'G';
 			}
 			if (rt->rt_flags & RTF_REJECT) {
-				buff[i++] = 'R';
+				buff[l++] = 'R';
 			}
 
 			str = rt->dev->name;
-			memcpy(&buff[OFFSET_IFACE], str, strlen(str));
+			l = strlen(str);
+			memcpy(&buff[OFFSET_IFACE], str, (l < LEN_IFACE ? l : LEN_IFACE) * sizeof(char));
 
 			printf("%s\n", &buff[OFFSET_START]);  /* print info */
 
