@@ -67,28 +67,26 @@ static int exec(int argc, char **argv) {
 	do {
 		opt = getopt(argc, argv, "pf");
 		switch(opt) {
-			case 'p':
-				page = 1;
-				break;
-			case 'f':
-				full = 1;
-				break;
-			case -1:
-				break;
-			default:
-				printf("Usage: %s [-fp]\n", *argv);
-				return 0;
+		case 'p':
+			page = 1;
+			break;
+		case 'f':
+			full = 1;
+			break;
+		case -1:
+			break;
+		default:
+			printf("Usage: %s [-fp]\n", *argv);
+			return 0;
 		}
 	} while (opt != -1);
 
 	if (full) {
 		show_mac(dev);
 	 	show_page(dev->base_addr);
-	}
-	else if (page) {
+	} else if (page) {
 	 	show_page(dev->base_addr);
-	}
-	else {
+	} else {
 		show_mac(dev);
 	}
 

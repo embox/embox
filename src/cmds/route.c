@@ -45,35 +45,35 @@ static int exec(int argc, char *argv[]) {
 	getopt_init();
 	while ((opt = getopt(argc, argv, "n:m:d:g:h")) != -1) {
 		switch ((char)opt) {
-			case 'h':
-				print_usage();
-				return 0;
-			case 'n':
-				if ((net = inet_addr(optarg)) == INADDR_NONE) {
-					printf("Unknown host\n");
-					return -1;
-				}
-				break;
-			case 'm':
-				if ((mask = inet_addr(optarg)) == INADDR_NONE) {
-					printf("Unknown mask\n");
-					return -1;
-				}
-				break;
-			case 'g':
-				if ((gw = inet_addr(optarg)) == INADDR_NONE) {
-					printf("Unknown gateway\n");
-					return -1;
-				}
-				break;
-			case 'd':
-				if ((ifdev = inet_dev_find_by_name(optarg)) == NULL) {
-					printf("route: unknown iface %s\n", optarg);
-					return -1;
-				}
-				break;
-			default:
-				return 0;
+		case 'h':
+			print_usage();
+			return 0;
+		case 'n':
+			if ((net = inet_addr(optarg)) == INADDR_NONE) {
+				printf("Unknown host\n");
+				return -1;
+			}
+			break;
+		case 'm':
+			if ((mask = inet_addr(optarg)) == INADDR_NONE) {
+				printf("Unknown mask\n");
+				return -1;
+			}
+			break;
+		case 'g':
+			if ((gw = inet_addr(optarg)) == INADDR_NONE) {
+				printf("Unknown gateway\n");
+				return -1;
+			}
+			break;
+		case 'd':
+			if ((ifdev = inet_dev_find_by_name(optarg)) == NULL) {
+				printf("route: unknown iface %s\n", optarg);
+				return -1;
+			}
+			break;
+		default:
+			return 0;
 		}
 	}
 

@@ -113,8 +113,7 @@ static int ping(struct ping_info *pinfo) {
 			if (delta < 1) {
 				printf("%d bytes from %s: icmp_seq=%d ttl=%d time <1ms\n",
 						pinfo->padding_size, dst_addr_str, i, pinfo->ttl);
-			}
-			else {
+			} else {
 				printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%d ms\n",
 						pinfo->padding_size, dst_addr_str, i, pinfo->ttl, delta);
 			}
@@ -157,59 +156,59 @@ static int exec(int argc, char **argv) {
 	do {
 		opt = getopt(argc, argv, "I:c:t:W:s:i:p:");
 		switch(opt) {
-			case 'I':
-				in_dev = inet_dev_find_by_name(optarg);
-				if (in_dev == NULL) {
-					printf("ping: unknown Iface %s\n", optarg);
-					return -1;
-				}
-				break;
-			case 'c':
-				if ((sscanf(optarg, "%d", &pinfo.count) != 1)  || (pinfo.count < 1)) {
-					printf("ping: bad number of packets to transmit\n");
-					return -1;
-				}
-				break;
-			case 't':
-				if (sscanf(optarg, "%d", &pinfo.ttl) != 1) {
-					printf("ping: can't set unicast time-to-live: Invalid argument\n");
-					return -1;
-				}
-				break;
-			case 'W':
-				if ((sscanf(optarg, "%d", &pinfo.timeout) != 1)
-						|| (pinfo.timeout < 0)) {
-					printf("ping: bad linger time\n");
-					return -1;
-				}
-				break;
-			case 's':
-				if ((sscanf(optarg, "%d", &pinfo.padding_size) != 1)
-						|| (pinfo.padding_size < 0)) {
-					printf("ping: bad padding size\n");
-					return -1;
-				}
-				if (pinfo.padding_size > MAX_PADLEN) {
-					printf("packet size is too large. Maximum is %d\n", MAX_PADLEN);
-				}
-				break;
-			case 'i':
-				if ((sscanf(optarg, "%d", &pinfo.interval) != 1) ||
-						(pinfo.interval < 0)) {
-					printf("ping: bad timing interval.\n");
-					return -1;
-				}
-				break;
-			case 'p':
-				if (sscanf(optarg, "%d", &pinfo.pattern) != 1) {
-					printf("ping: patterns must be specified as hex digits.\n");
-					return -1;
-				}
-				break;
-			case -1:
-				break;
-			default:
-				return 0;
+		case 'I':
+			in_dev = inet_dev_find_by_name(optarg);
+			if (in_dev == NULL) {
+				printf("ping: unknown Iface %s\n", optarg);
+				return -1;
+			}
+			break;
+		case 'c':
+			if ((sscanf(optarg, "%d", &pinfo.count) != 1)  || (pinfo.count < 1)) {
+				printf("ping: bad number of packets to transmit\n");
+				return -1;
+			}
+			break;
+		case 't':
+			if (sscanf(optarg, "%d", &pinfo.ttl) != 1) {
+				printf("ping: can't set unicast time-to-live: Invalid argument\n");
+				return -1;
+			}
+			break;
+		case 'W':
+			if ((sscanf(optarg, "%d", &pinfo.timeout) != 1)
+					|| (pinfo.timeout < 0)) {
+				printf("ping: bad linger time\n");
+				return -1;
+			}
+			break;
+		case 's':
+			if ((sscanf(optarg, "%d", &pinfo.padding_size) != 1)
+					|| (pinfo.padding_size < 0)) {
+				printf("ping: bad padding size\n");
+				return -1;
+			}
+			if (pinfo.padding_size > MAX_PADLEN) {
+				printf("packet size is too large. Maximum is %d\n", MAX_PADLEN);
+			}
+			break;
+		case 'i':
+			if ((sscanf(optarg, "%d", &pinfo.interval) != 1) ||
+					(pinfo.interval < 0)) {
+				printf("ping: bad timing interval.\n");
+				return -1;
+			}
+			break;
+		case 'p':
+			if (sscanf(optarg, "%d", &pinfo.pattern) != 1) {
+				printf("ping: patterns must be specified as hex digits.\n");
+				return -1;
+			}
+			break;
+		case -1:
+			break;
+		default:
+			return 0;
 		}
 	} while (opt != -1);
 
@@ -230,8 +229,7 @@ static int exec(int argc, char **argv) {
 	/* Get source addr */
 	if (in_dev != NULL) {
 		pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);
-	}
-	else {
+	} else {
 		pinfo.from.s_addr = 0;
 	}
 
