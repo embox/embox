@@ -13,8 +13,17 @@
 
 #ifdef NDEBUG
 
+/* Do nothing.
+ *
+ * Implementation note: casting zero to typeof(condition) in the 'while' clause
+ * is needed for two reasons:
+ *   1. It forces compiler to check that the condition is a scalar value and
+ *      thus can be used in 'if' when NDEBUG is off.
+ *   2. It suppresses a warning about any variables that would be otherwise
+ *      unused.
+ */
 # define __assert(condition, expr_str, message...) \
-	do { } while (0)
+	do { } while ((typeof(condition)) 0)
 
 #else
 

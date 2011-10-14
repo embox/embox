@@ -61,7 +61,7 @@ static inline int in_harder_critical(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
 }
 
-static inline int __attribute__((unused)) in_sched_locked(void) {
+static inline int in_sched_locked(void) {
 	return !critical_allows(CRITICAL_SCHED_LOCK);
 }
 
@@ -153,7 +153,7 @@ static void do_event_wake(struct event *e, int wake_all) {
 }
 
 static void do_event_sleep_locked(struct event *e) {
-	struct thread __attribute__((unused)) *current = runq_current(&rq);
+	struct thread *current = runq_current(&rq);
 
 	assert(!in_harder_critical());
 	assert(thread_state_running(current->state));
@@ -167,7 +167,7 @@ static void do_event_sleep_locked(struct event *e) {
 }
 
 int sched_sleep_locked(struct event *e) {
-	struct thread __attribute__((unused)) *current = runq_current(&rq);
+	struct thread *current = runq_current(&rq);
 
 	do_event_sleep_locked(e);
 

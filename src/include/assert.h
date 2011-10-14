@@ -32,6 +32,8 @@
 /* Hide assert internals from CDT macro expansion and code formatter. */
 #ifdef __CDT_PARSER__
 # undef assert
+/* Actually assert is a macro, but it is hidden from Eclipse CDT macro
+ * expansion. Check assert_impl.h for the details. */
 extern void assert(int condition, ...);
 #endif /* __CDT_PARSER__ */
 
