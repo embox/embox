@@ -93,8 +93,11 @@ static int ping(struct ping_info *pinfo) {
 	for (;;) {
 		icmph_s->un.echo.sequence = htons(ntohs(icmph_s->un.echo.sequence) + 1);
 		icmph_s->checksum = 0;
-		icmph_s->checksum = htons(ptclbsum(packet + IP_MIN_HEADER_SIZE,
-						ICMP_HEADER_SIZE + pinfo->padding_size));
+		/* TODO checksum must be at network byte order */
+		/* XXX linux-0.2.img sends checksum in host byte order,
+		 * but it's wrong */
+		icmph_s->checksum = ptclbsum(packet + IP_MIN_HEADER_SIZE,
+						ICMP_HEADER_SIZE + pinfo->padding_size);
 
 		sendto(sk, packet, ntohs(iph_s->tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 
