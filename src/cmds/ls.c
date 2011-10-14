@@ -69,7 +69,7 @@ static int exec(int argc, char **argv) {
 	int opt;
 	getopt_init();
 	do {
-		opt = getopt(argc - 1, argv, "Rlh");
+		opt = getopt(argc, argv, "Rlh");
 		switch(opt) {
 		case 'h':
 			print_usage();
@@ -84,17 +84,23 @@ static int exec(int argc, char **argv) {
 		case -1:
 			break;
 		default:
-			return 0;
+			printf("ls: invalid option -- '%c'\n", optopt);
+			return -1;
 		}
 	} while (-1 != opt);
 
-	if (argc > 1) {
-		sprintf(path, "%s", argv[argc - 1]);
+	//TODO: Maybe we should support multiple file args
+	if (argc > optind) {
+		sprintf(path, "%s", argv[optind]);
 	} else {
 		sprintf(path, "/");
 	}
 
 	nod = vfs_find_node(path, NULL);
+	if (NULL == nod) {
+		printf("ls: cannot access %s: No such file or directory\n", path);
+		return -1;
+	}
 	print_func(path, nod, recursive);
 
 	return 0;
