@@ -10,6 +10,22 @@
 #include <util/list.h>
 #include <mem/kmalloc.h>
 
+int good_sizes[] = {
+17, 31, 53, 97, 193, 389,
+769, 1543, 3079, 6151,
+12289, 24593, 49157, 98317,
+196613, 393241, 786433, 1572869,
+3145739, 6291469, 12582917, 25165843,
+50331653, 100663319, 201326611, 402653189,
+805306457, 1610612741
+};
+
+const int density1 = 2;
+const int density2 = 3;
+
+const int max_index = 27;
+const int min_index = 0;
+
 hashtable *hashtable_create(hashtable *hash_tab, int index_of_size,
 		hash_key hash, compare_keys compare) {
 	int length = good_sizes[index_of_size];
@@ -62,12 +78,11 @@ void hashtable_insert(hashtable *hash_tab, key_t *key, data_t *value) {
 
 	if (hashtable_search(hash_tab, key) == NULL)
 		return;
-
 	element->key = key;
 	element->value = value;
 	list_add_last_link(&(element->lnk), hash_tab->data[index]);
 	hash_tab->count++;
-	if ((double)(hash_tab->count)/good_sizes[size_index] >= density &&
+	if (hash_tab->count * density2 >= good_sizes[size_index] * density1 &&
 			size_index < max_index)
 		hashtable_resize(hash_tab, hash_tab->index_of_size + 1);
 }
@@ -101,7 +116,7 @@ void hashtable_remove (hashtable *hash_tab, key_t *key) {
 			good_sizes[size_index];
 	struct list* list = hash_tab->data[index];
 	hash_tab->count -= list_remove(list, key, hash_tab);
-	if ((double)(hash_tab->count)/good_sizes[size_index] < density &&
+	if (hash_tab->count * density2 < good_sizes[size_index] * density1 &&
 			size_index > min_index)
 		hashtable_resize(hash_tab, hash_tab->index_of_size - 1);
 }

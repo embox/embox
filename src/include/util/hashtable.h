@@ -9,32 +9,24 @@
 #ifndef UTIL_HASHTABLE_H_
 #define UTIL_HASHTABLE_H_
 
+#include <assert.h>
 #include <util/list.h>
+
+/* standard sizes of hashtables */
+extern int good_sizes[];
 
 /* type of key for data */
 typedef char key_t;
 /* type of data in hashtable */
 typedef char data_t;
+/* hash function delegate */
+typedef int (*hash_key) (const key_t *);
+/* compare function delegate */
+typedef int (*compare_keys) (const key_t *, const key_t *);
 
-typedef struct pool pool_t;
+//typedef struct hashtable hashtable;
 
-/* standard sizes of hashtables */
-int good_sizes[] = {
-17, 31, 53, 97, 193, 389,
-769, 1543, 3079, 6151,
-12289, 24593, 49157, 98317,
-196613, 393241, 786433, 1572869,
-3145739, 6291469, 12582917, 25165843,
-50331653, 100663319, 201326611, 402653189,
-805306457, 1610612741
-};
-
-const double density = 0.6666667;
-
-const int max_index = 27;
-const int min_index = 0;
-
-#define HASHTABLE_COUNT 0x10
+//typedef struct ht_element ht_element;
 
 /* Element of list */
 typedef struct ht_element {
@@ -42,11 +34,6 @@ typedef struct ht_element {
 	data_t* value;
 	struct list_link lnk;
 } ht_element;
-
-/* hash function delegate */
-typedef int (*hash_key) (const key_t *);
-/* compare function delegate */
-typedef int (*compare_keys) (const key_t *, const key_t *);
 
 /* hashtable structure */
 typedef struct hashtable {
@@ -118,6 +105,6 @@ data_t *hashtable_search(hashtable *hash_tab, key_t *key);
  */
 #define hashtable_foreach(element, hash_tab) 					\
 	for (int i = 0; i < hash_tab->index_of_size; i++)   		\
-		list_foreach(element, hash_tab->data[i], lnk)  \
+		list_foreach(element, hash_tab->data[i], lnk)           \
 
 #endif /* UTIL_HASHTABLE_H_ */
