@@ -6,9 +6,6 @@
  * @author Avdyukhin Dmitry
  */
 
-#ifndef UTIL_TREE_IMPL_C_
-#define UTIL_TREE_IMPL_C_
-
 #include <assert.h>
 #include <util/list.h>
 #include <util/tree.h>
@@ -66,4 +63,3 @@ inline struct tree_link *tree_begin(struct tree_link *tree) {
 	return tree;
 }
 
-#endif /* UTIL_TREE_IMPL_C_ */

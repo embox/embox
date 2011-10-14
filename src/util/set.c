@@ -6,9 +6,6 @@
  * @author Avdyukhin Dmitry
  */
 
-#ifndef UTIL_SET_IMPL_C_
-#define UTIL_SET_IMPL_C_
-
 #include <stddef.h>
 #include <assert.h>
 #include <util/set.h>
@@ -63,6 +60,7 @@ int set_add_link(struct set *set,
 		return 1;
 	}
 	pos = &set->root;
+	cur = NULL;
 	while (*pos) {
 		cur = *pos;
 		comp_res = compare(link, cur);
@@ -228,4 +226,3 @@ struct set_link *set_prev_link(struct set_link *link) {
 	}
 }
 
-#endif /* UTIL_SET_IMPL_C_ */

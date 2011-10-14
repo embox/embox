@@ -151,6 +151,7 @@ TEST_CASE("Big random test for set") {
 	int i, num;
 	set_init(&set);
 	ideal_size = 0;
+	elem_cnt = 0;
 //	printf("Add... ");
 	for (i = 0; i < add_cnt; i++) {
 		num = rand() % 100;
