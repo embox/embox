@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Trivial scheduler based on lists
+ * @brief Trivial scheduler based on lists.
  *
  * @date Oct 10, 2011
  * @author Avdyukhin Dmitry
@@ -11,7 +11,8 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 
-static int wakeup_thread(struct runq *runq, struct thread *thread);
+static int wakeup_resumed_thread(struct runq *runq, struct sleepq *sleepq);
+static void wakeup_suspended_thread(struct runq *runq, struct sleepq *sleepq);
 static void move_thread_to_another_q(struct list_head *q, struct thread *thread);
 
 inline void sched_strategy_init(struct sched_strategy_data *data) {
@@ -30,7 +31,7 @@ inline struct thread *runq_current(struct runq *runq) {
 }
 
 int runq_start(struct runq *runq, struct thread *thread) {
-	int ret = 0; /* Test Data */
+	int ret = 0;
 	assert(runq && thread);
 
 	if (list_empty(&runq->rq)) ret = 1;
@@ -49,13 +50,17 @@ int runq_stop(struct runq *runq, struct thread *thread) {
 	return 0;
 }
 
-static int wakeup_thread(struct runq *runq, struct thread *thread) {
-	int ret = 0; /* Test Data */
-	assert(runq && thread);
+static int wakeup_resumed_thread(struct runq *runq, struct sleepq *sleepq) {
+	struct thread *thread;
+	int ret = 0;
+	assert(runq && sleepq);
+
+	thread = list_entry(sleepq->rq.next, struct thread, sched.l_link);
+	assert(thread);
+	list_del(&thread->sched.l_link);
 
 	thread->state = thread_state_do_wake(thread->state);
 	assert(thread_state_running(thread->state));
-
 	thread->runq = runq;
 
 	if (list_empty(&runq->rq)) ret = 1;
@@ -63,9 +68,20 @@ static int wakeup_thread(struct runq *runq, struct thread *thread) {
 	return ret;
 }
 
+static void wakeup_suspended_thread(struct runq *runq, struct sleepq *sleepq) {
+	struct thread *thread;
+	assert(runq && sleepq);
+
+	thread = list_entry(sleepq->sq.next, struct thread, sched.l_link);
+	assert(thread);
+	list_del(&thread->sched.l_link);
+
+	thread->state = thread_state_do_wake(thread->state);
+	assert(thread_state_suspended(thread->state));
+}
+
 int runq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all) {
-	int ret = 0; /* Test Data */
-	struct thread *t;
+	int ret = 0;
 	assert(runq && sleepq);
 
 	if (sleepq_empty(sleepq)) {
@@ -73,31 +89,18 @@ int runq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all) {
 	}
 
 	if (!list_empty(&sleepq->rq)) {
-		t = list_entry(sleepq->rq.next, struct thread, sched.l_link);
-		list_del(&t->sched.l_link);
-		ret = wakeup_thread(runq, t);
+		ret = wakeup_resumed_thread(runq, sleepq);
 	} else {
 		assert(!list_empty(&sleepq->sq));
-		t = list_entry(sleepq->sq.next, struct thread, sched.l_link);
-		list_del(&t->sched.l_link);
-
-		t->state = thread_state_do_wake(t->state);
-		assert(thread_state_suspended(t->state));
+		wakeup_suspended_thread(runq, sleepq);
 	}
-
 
 	if (wake_all) {
 		while (!list_empty(&sleepq->rq)) {
-			t = list_entry(sleepq->rq.next, struct thread, sched.l_link);
-			list_del(&t->sched.l_link);
-			wakeup_thread(runq, t);
+			wakeup_resumed_thread(runq, sleepq);
 		}
 		while (!list_empty(&sleepq->sq)) {
-			t = list_entry(sleepq->sq.next, struct thread, sched.l_link);
-			list_del(&t->sched.l_link);
-
-			t->state = thread_state_do_wake(t->state);
-			assert(thread_state_suspended(t->state));
+			wakeup_suspended_thread(runq, sleepq);
 		}
 	}
 
@@ -179,11 +182,6 @@ void sleepq_on_resume(struct sleepq *sleepq, struct thread *thread) {
 }
 
 struct thread *sleepq_get_thread(struct sleepq *sleepq) {
-	/**
-	 * We suggest that there is only one thread in all sleepq
-	 * TODO: asserts
-	 */
-
 	struct list_head *q;
 	assert(sleepq && !sleepq_empty(sleepq));
 
