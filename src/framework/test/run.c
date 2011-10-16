@@ -9,7 +9,7 @@
  *         - Separating from tests registry code
  *         - Test fixtures and assertions support
  */
-#include <kernel/prom_printf.h>
+
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
@@ -17,6 +17,7 @@
 #include <string.h>
 #include <setjmp.h>
 
+#include <kernel/prom_printf.h>
 #include <util/location.h>
 
 #include <framework/test/api.h>
