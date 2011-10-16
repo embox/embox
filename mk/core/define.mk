@@ -943,11 +943,28 @@ $(call def,builtin_aux_def)
 # Gets the last allocated name.
 # Return:
 #   Result of the last call to 'builtin_aux_alloc' or to 'builtin_aux_def'.
-builtin_aux_last = __builtin_aux$(words $(__builtin_aux_cnt))_$(__def_var)
+builtin_aux_last = $(__def_var)_aux$(words $(__builtin_aux_cnt))
 
 # Builtins definition framework is mostly up. Enable it here.
 __def_builtin = \
 	$(call __def_builtin_real,$1)
+
+#
+# Extension: 'assert' builtin function.
+#
+# Runtime assertions.
+#
+# '$(assert condition[,message...])'
+#
+define builtin_func_assert
+	$$(if $1,,
+		$$(error \
+			ASSERTION FAILED: '$(subst $$,$$$$,$1)'
+			$(if $(value 2),: $(builtin_nofirstarg))
+		)
+	)
+endef
+$(call def,builtin_func_assert)
 
 #
 # Extension: 'lambda' builtin function.
