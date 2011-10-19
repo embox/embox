@@ -168,7 +168,7 @@ var_assign_simple_append = \
 
 var_assign_simple_remove = \
   $(if $(findstring %,$2),$(__var_assign_simple_remove_escaped)$ \
-      ,${eval $$1 := $$(filter-out $$2,$$($$1))}
+      ,${eval $$1 := $$(filter-out $$2,$$($$1))})
 __var_assign_simple_remove_escaped = \
   $(error __var_assign_simple_remove_escaped not yet implemented)
 
