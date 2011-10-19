@@ -490,8 +490,22 @@ endef
 #   Resulting value with necessary outer hooks installed in case that it is
 #   a valid function call, or empty otherwise.
 define __def_inner_handle_function
-	$$(call __def_outer_hook_push,$(first))
+	$(if $(findstring undefined,$(flavor builtin_push_$(first))),
 
+		# Plain push and handle.
+		$$(call __def_outer_hook_push,$(first))
+		$(__def_inner_handle_function_pushed),
+
+		# Handle only if the push handler resulted in a non-empty tag.
+		$$(foreach __def_outer_tag_$(first),
+			$$(call __def_outer_hook_push_tag,$(first)),
+			$(__def_inner_handle_function_pushed)
+		)
+	)
+endef
+
+# See '__def_inner_handle_function'
+define __def_inner_handle_function_pushed
 	$$(call __def_outer_hook_func
 
 		# Unescape any escaped commas and install argument hooks
@@ -521,7 +535,7 @@ define __def_inner_handle_function
 					_$$[
 					$$_$$[call __def_outer_hook_push$(\comma)__paren___$$],
 					$(subst $(\p]),
-						$$_$$[call __def_outer_hook_pop$(\comma)__paren___$$]
+						$$_$$[__def_outer_hook_pop_$$]
 						_$$],
 						$(call nofirstword,$1$$_$$[\0_$$])
 					)
@@ -529,8 +543,6 @@ define __def_inner_handle_function
 			)
 		)
 	)
-
-	$$(call __def_outer_hook_pop,$(first))
 endef
 
 #
@@ -552,6 +564,35 @@ __def_stack     :=# Initially empty.
 #   boo 1 2 3
 __def_stack_top :=# Empty too.
 
+# Params:
+#   1. Function name.
+define __def_stack_push_mk
+  # Save the current value of the top into the stack.
+  __def_stack := \
+    $(subst $(\s),$(\comma),$(__def_stack_top)) \
+    $(__def_stack)
+  # Put new function name onto the top.
+  __def_stack_top := $1
+endef
+__def_stack_push_mk := $(value __def_stack_push_mk)
+
+define __def_stack_arg_mk
+  # Append the next argument number to the stack top.
+  __def_stack_top += \
+    $(words $(__def_stack_top))
+endef
+__def_stack_arg_mk := $(value __def_stack_arg_mk)
+
+define __def_stack_pop_mk
+  # Restore the top from the stack.
+  __def_stack_top := \
+    $(subst $(\comma),$(\s),$(firstword $(__def_stack)))
+  # And remove from the stack.
+  __def_stack := \
+    $(call nofirstword,$(__def_stack))
+endef
+__def_stack_pop_mk := $(value __def_stack_pop_mk)
+
 # Debugging stuff.
 ifdef DEF_DEBUG
 # 1. Msg.
@@ -571,39 +612,32 @@ endif # DEF_DEBUG
 define __def_outer_hook_push
 	$(call __def_debug,push [$1])
 	${eval \
-		$(__def_outer_hook_push_mk)
+		$(__def_stack_push_mk)
 	}
 endef
 
-define __def_outer_hook_push_mk
-  # Save the current value of the top into the stack.
-  __def_stack := \
-    $(subst $(\s),$(\comma),$(__def_stack_top)) \
-    $(__def_stack)
-  # Put new function name onto the top.
-  __def_stack_top := $1
-endef
-__def_outer_hook_push_mk := $(value __def_outer_hook_push_mk)
-
-# Removes an element from the top and restores the previous element.
+# Params:
+#   1. Value to push.
 # Return:
-#   Nothing.
-define __def_outer_hook_pop
-	${eval \
-		$(__def_outer_hook_pop_mk)
-	}
-	$(call __def_debug,pop [$1])
+#   A singleword tag or empty to omit the whole subexpression.
+define __def_outer_hook_push_tag
+	$(__def_outer_hook_push)
+	$(or \
+		$(call __def_outer_tag_check,$(call builtin_push_$1)),
+		$(__def_outer_hook_pop)
+	)
 endef
 
-define __def_outer_hook_pop_mk
-  # Restore the top from the stack.
-  __def_stack_top := \
-    $(subst $(\comma),$(\s),$(firstword $(__def_stack)))
-  # And remove from the stack.
-  __def_stack := \
-    $(call nofirstword,$(__def_stack))
+# Params:
+#   1. Return value of the push handler.
+# Return:
+#   The argument if is ok, no return (die) otherwise.
+define __def_outer_tag_check
+	$(if $(word 2,$1),
+		$(error Bad return value of '$(builtin_name)' push handler: '$1')
+	)
+	$(firstword $1)
 endef
-__def_outer_hook_pop_mk := $(value __def_outer_hook_pop_mk)
 
 # Increments the number of arguments of the function call being handled now.
 # Return:
@@ -611,16 +645,19 @@ __def_outer_hook_pop_mk := $(value __def_outer_hook_pop_mk)
 define __def_outer_hook_arg
 	$(call __def_debug,arg$(words $(__def_stack_top)))
 	${eval \
-		$(__def_outer_hook_arg_mk)
+		$(__def_stack_arg_mk)
 	}
 endef
 
-define __def_outer_hook_arg_mk
-  # Append the next argument number to the stack top.
-  __def_stack_top += \
-    $(words $(__def_stack_top))
+# Removes an element from the top and restores the previous element.
+# Return:
+#   Nothing.
+define __def_outer_hook_pop
+	${eval \
+		$(__def_stack_pop_mk)
+	}
+	$(call __def_debug,pop)
 endef
-__def_outer_hook_arg_mk := $(value __def_outer_hook_arg_mk)
 
 # Handles a function expansion. Performs generic checks (arity, ...) and
 # a special translation in case of user-defined builtin.
@@ -649,6 +686,7 @@ define __def_outer_hook_func
 			$(builtin_reconstruct)
 		)
 	)
+	$(__def_outer_hook_pop)
 endef
 
 # Issues a warning with the specified message including the expansion stack.
