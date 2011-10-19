@@ -20,7 +20,7 @@ typedef struct net_packet {
 	net_node_t;
 
 	void* data;
-}
+} *net_packet_t;
 
 typedef	(*net_hnd)(net_node_t this, void* data);
 
@@ -28,7 +28,7 @@ typedef struct net_proto {
 	net_id_t proto_id;
 	net_hnd rx_hnd;
 	net_hnd tx_hnd;
-} net_proto_t;
+} *net_proto_t;
 
 #define CHILD_CNT 0x10
 
@@ -37,4 +37,4 @@ typedef struct net_node {
 	net_addr_t node_addr;
 	net_proto_t proto;
 	net_node_t children[CHILD_CNT];
-} net_node_t;
+} *net_node_t;
