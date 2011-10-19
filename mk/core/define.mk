@@ -72,20 +72,19 @@ include mk/util/var/info.mk
 #
 # Params:
 #   1. Name of the function(s) being defined.
+#   2. (optional) Value interceptor function ('value' by default).
 # Return:
 #   Nothing.
 def = \
-	$(strip \
-		$(foreach __def_var,$1, \
-			$(if $(call var_recursive,$(__def_var)), \
-				$(call var_assign_recursive_sl,$(__def_var),$ \
-						$(call __def,$(value $(__def_var)))), \
-				$(if $(call var_undefined,$(__def_var)), \
-					$(error Function '$(__def_var)' is not defined) \
-				) \
+	$(and $(foreach __def_var,$1, \
+		$(if $(call var_recursive,$(__def_var)), \
+			$(call var_assign_recursive_sl,$(__def_var),$ \
+				$(call __def,$(call $(or $(value 2),value),$(__def_var)))), \
+			$(if $(call var_undefined,$(__def_var)), \
+				$(error Function '$(__def_var)' is not defined) \
 			) \
-		)$(call var+=,__def_done,$1) \
-	)
+		) \
+	),)$(call var+=,__def_done,$1)
 
 ##
 # Translates all functions defined since the last call.
