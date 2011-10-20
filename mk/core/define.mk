@@ -489,7 +489,7 @@ endef
 #   Resulting value with necessary outer hooks installed in case that it is
 #   a valid function call, or empty otherwise.
 define __def_inner_handle_function
-	$(if $(findstring undefined,$(flavor builtin_push_$(first))),
+	$(if $(findstring undefined,$(flavor builtin_tag_$(first))),
 
 		# Plain push and handle.
 		$$(call __def_outer_hook_push,$(first))
@@ -622,7 +622,7 @@ endef
 define __def_outer_hook_push_tag
 	$(__def_outer_hook_push)
 	$(or \
-		$(call __def_outer_tag_check,$(call builtin_push_$1)),
+		$(call __def_outer_tag_check,$(call builtin_tag_$1)),
 		$(__def_outer_hook_pop)
 	)
 endef
@@ -915,6 +915,20 @@ endef
 #   namely 'baz', its direct caller is 'bar' and a caller at depth 2 is 'foo'.
 define builtin_caller_at
 	$(word $1,$(builtin_callers))
+endef
+
+# Retrieves a tag if it has been defined.
+#
+# Params:
+#   1. Function name.
+# Return:
+#   The tag of the nearest expansion of the specified builtin (if any).
+# Example:
+#   In case of handling 'baz' builtin in expression $(foo $(bar $(baz ...))),
+#   and assuming that 'builtin_tag_bar' returned 'moo', the result of calling
+#   '$(call builtin_tag,bar)' will be 'moo'.
+define builtin_tag
+	$(value __def_outer_tag_$1)
 endef
 
 #
