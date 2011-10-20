@@ -6,6 +6,7 @@
  * @author Anton Kozlov
  */
 
+#include <stddef.h>
 #include <net/types.h>
 #include <net/core.h>
 
@@ -19,7 +20,11 @@ int net_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx) {
 }
 
 int node_attach(net_node_t node, net_id_t id, net_node_t parent) {
-	parent->children[id] = node;
+	if (id != -1 && parent != NULL) {
+		parent->children[id] = node;
+	}
+
+	node->parent = parent;
 	return 0;
 }
 
