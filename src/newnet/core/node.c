@@ -17,9 +17,11 @@ net_node_t net_node_alloc(net_addr_t addr, net_proto_t proto) {
 	net_node_t node = (net_node_t) objalloc(&net_nodes);
 	node->node_addr = addr;
 	node->proto = proto;
+
 	for (int i = 0; i < CHILD_CNT; i++) {
 		node->children[i] = NULL;
 	}
+
 	return node;
 }
 

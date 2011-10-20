@@ -30,6 +30,8 @@ int node_attach(net_node_t node, net_id_t id, net_node_t parent) {
 
 net_node_t proto_attach(net_proto_t proto, net_addr_t addr, net_node_t parent) {
       	net_node_t node = net_node_alloc(addr, proto);
+
 	node_attach(node, proto->proto_id, parent);
+
 	return node;
 }

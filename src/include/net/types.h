@@ -14,6 +14,8 @@
 typedef int net_addr_t;
 typedef int net_id_t;
 
+struct net_node;
+
 typedef struct net_packet *net_packet_t;
 
 typedef	int (*net_hnd)(net_packet_t pack);
@@ -32,6 +34,7 @@ struct net_node {
 	struct net_proto *proto;
 	struct net_node *parent;
 	struct net_node *children[CHILD_CNT];
+	struct net_node *dfault;
 };
 typedef struct net_node *net_node_t;
 

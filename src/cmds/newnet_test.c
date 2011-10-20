@@ -14,19 +14,22 @@
 
 EMBOX_CMD(newnet_test_cmd);
 
-extern net_node_t net_loopback_dev_get(void);
+extern net_dev_t net_loopback_dev_get(void);
 
 #define SOCKET_N 5
 
 int newnet_test_cmd(int argc, char *argv[]) {
 	net_socket_t sock = NULL;
-
+	net_dev_t dev = NULL;
 	if (argc <= 1) {
 		return -EINVAL;
 
 	}
 
-	sock = net_socket_open(SOCKET_N, net_loopback_dev_get());
+	dev = net_loopback_dev_get();
+
+	sock = net_socket_open(SOCKET_N, dev->node);
+	dev->node->dfault = &sock->node;
 
 	net_core_send((net_node_t) sock, argv[1], strlen(argv[1]));
 

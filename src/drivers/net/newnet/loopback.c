@@ -23,8 +23,8 @@ static int qend = 0;
 
 static net_dev_t dev = NULL;
 
-net_node_t net_loopback_dev_get(void) {
-	return dev->node;
+net_dev_t net_loopback_dev_get(void) {
+	return dev;
 }
 
 static int loopback_tx(net_packet_t pack, net_dev_t dev) {

@@ -6,7 +6,9 @@
  * @author Anton Kozlov
  */
 
-//#include <stdio.h>
+#include <posix/stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <net/types.h>
 #include <net/core.h>
 #include <embox/unit.h>
@@ -16,24 +18,33 @@ EMBOX_UNIT_INIT(net_socket_init);
 
 #define NET_SOCKET_CNT 0x10
 
-//OBJALLOC_DEF(sockets, struct net_socket, NET_SOCKET_CNT);
+OBJALLOC_DEF(sockets, struct net_socket, NET_SOCKET_CNT);
 
 static int rx_hnd(net_packet_t pack) {
-	//printf("%s\n", (char *) data);
-	return 0;
+	net_id_t id = *((net_id_t *) pack->data);
+	pack->data = (void *) (((char *) (pack->data)) + sizeof(net_id_t));
+
+	printf("%d: %s", id, (char *) pack->data);
+	return id;
 }
 
 static int tx_hnd(net_packet_t pack) {
-#if 0
 	int new_len = pack->len + sizeof(net_id_t);
-	void *new_data = malloc(new_len);
-	(net_id_t *) new_data = pack->id;
-	((char *) new_data) += sizeof(net_id_t);
-	//TODO free old data
+	char *new_data = (char *) malloc(new_len);
+
+	net_id_t *data_header = (net_id_t *) new_data;
+
+	*data_header = pack->node->id;
+
+	memcpy(new_data + sizeof(net_id_t), pack->data, pack->len);
+
+	//TODO free old data, like below
+	//free(pack->orig_data);
+
 	pack->data = new_data;
+	pack->orig_data = new_data;
 	pack->len = new_len;
 
-#endif
 	return 0;
 }
 
@@ -46,11 +57,10 @@ static int net_socket_init(void) {
 }
 
 net_socket_t net_socket_open(net_id_t id, net_node_t parent) {
-//	net_socket_t sock = (net_socket_t) objalloc(&sockets);
+	net_socket_t sock = (net_socket_t) objalloc(&sockets);
 
-	net_node_t node = net_node_alloc(id, &socket_proto);
+	node_attach(&sock->node, id, parent);
+	sock->node.proto = &socket_proto;
 
-	node_attach(node, id, parent);
-
-	return (net_socket_t) node;
+	return sock;
 }

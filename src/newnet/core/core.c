@@ -58,7 +58,22 @@ int net_core_send(net_node_t node, void *data, int len) {
 }
 
 int __net_core_receive(net_packet_t pack) {
-//	net_node_t node = pack->node;
+	net_node_t node = pack->node;
+	net_id_t res = -1;
+
+	if (node->proto->rx_hnd != NULL) {
+		res = node->proto->rx_hnd(pack);
+	}
+
+	if (res == -1) {
+		pack->node = pack->node->dfault;
+	} else if (res > 0 ){
+		pack->node = pack->node->children[res];
+	}
+
+	if (res < -1) {
+		__net_core_receive(pack);
+	}
 
 	return 0;
 }

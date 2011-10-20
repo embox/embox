@@ -19,7 +19,6 @@ int netif_rx(struct sk_buff skb) {
 
 	return 0;
 }
-#endif
 
 //static struct thread *pnet_rx_threads[0x20];
 //TODO move from here
@@ -38,3 +37,4 @@ int netif_rx_dispatch(void) {
 
 	return 0;
 }
+#endif
