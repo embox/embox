@@ -71,7 +71,7 @@ int __net_core_receive(net_packet_t pack) {
 		pack->node = pack->node->children[res];
 	}
 
-	if (res < -1) {
+	if (res >= -1) {
 		__net_core_receive(pack);
 	}
 

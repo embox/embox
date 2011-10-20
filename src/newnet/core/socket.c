@@ -24,8 +24,8 @@ static int rx_hnd(net_packet_t pack) {
 	net_id_t id = *((net_id_t *) pack->data);
 	pack->data = (void *) (((char *) (pack->data)) + sizeof(net_id_t));
 
-	printf("%d: %s", id, (char *) pack->data);
-	return id;
+	printf("%d: %s\n", id, (char *) pack->data);
+	return -2;
 }
 
 static int tx_hnd(net_packet_t pack) {
@@ -60,6 +60,7 @@ net_socket_t net_socket_open(net_id_t id, net_node_t parent) {
 	net_socket_t sock = (net_socket_t) objalloc(&sockets);
 
 	node_attach(&sock->node, id, parent);
+
 	sock->node.proto = &socket_proto;
 
 	return sock;

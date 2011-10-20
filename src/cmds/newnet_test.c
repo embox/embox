@@ -28,8 +28,9 @@ int newnet_test_cmd(int argc, char *argv[]) {
 
 	dev = net_loopback_dev_get();
 
-	sock = net_socket_open(SOCKET_N, dev->node);
-	dev->node->dfault = &sock->node;
+	sock = net_socket_open(-1, dev->node);
+
+	sock->node.id = SOCKET_N;
 
 	net_core_send((net_node_t) sock, argv[1], strlen(argv[1]));
 

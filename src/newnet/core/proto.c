@@ -20,8 +20,12 @@ int net_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx) {
 }
 
 int node_attach(net_node_t node, net_id_t id, net_node_t parent) {
-	if (id != -1 && parent != NULL) {
-		parent->children[id] = node;
+	if (parent != NULL) {
+		if (id > 0) {
+			parent->children[id] = node;
+		} else {
+			parent->dfault = node;
+		}
 	}
 
 	node->parent = parent;
