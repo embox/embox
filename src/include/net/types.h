@@ -14,7 +14,6 @@
 typedef int net_addr_t;
 typedef int net_id_t;
 
-typedef struct net_node *net_node_t;
 typedef struct net_packet *net_packet_t;
 
 typedef	int (*net_hnd)(net_packet_t pack);
@@ -30,10 +29,11 @@ typedef struct net_proto {
 struct net_node {
 	int id;
 	net_addr_t node_addr;
-	net_proto_t proto;
-	net_node_t parent;
-	net_node_t children[CHILD_CNT];
+	struct net_proto *proto;
+	struct net_node *parent;
+	struct net_node *children[CHILD_CNT];
 };
+typedef struct net_node *net_node_t;
 
 #define SOCK_BUF_LEN 0x20
 
@@ -60,17 +60,18 @@ struct net_packet {
 	void *data;
 };
 
-typedef struct net_dev *net_dev_t;
 
-typedef int (*net_dev_op)(net_packet_t pack, net_dev_t dev);
+struct net_dev;
+typedef int (*net_dev_op)(net_packet_t pack, struct net_dev *dev);
 
 typedef struct net_dev_ops {
 	net_dev_op tx;
 } *net_dev_ops_t;
 
-typedef struct net_dev {
+struct net_dev {
 	net_node_t node;
 	net_dev_ops_t ops;
-} *net_dev_t;
+};
+typedef struct net_dev *net_dev_t;
 
 #endif
