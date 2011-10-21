@@ -11,11 +11,9 @@
 #include <pnet/core.h>
 #include <pnet/prior_path.h>
 
-static void __decrease_prior_low(net_node_t node, net_prior_t prior);
+static void decrease_prior_down(net_node_t node, net_prior_t prior);
 static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior);
 static int node_for_each_increase_prior(net_node_t node, net_prior_t prior);
-
-//static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap
 
 int path_set_prior(net_node_t node, net_prior_t prior) {
 	if (node->prior <= prior) {
@@ -27,37 +25,36 @@ int path_set_prior(net_node_t node, net_prior_t prior) {
 
 static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior) {
 	net_node_t cur_node = node;
-	if (cur_node->prior > prior) {
-		cur_node->prior = prior;
-		cur_node = cur_node->parent;
-		while (cur_node != NULL) {
-			for (int i = 0; i < CHILD_CNT; i++) {
-				if (cur_node->prior < cur_node->children[i]->prior) {
-					cur_node->prior = cur_node->children[i]->prior;
+	net_node_t node_child;
+
+	cur_node->prior = prior;
+	cur_node = cur_node->parent;
+	while (cur_node != NULL) {
+		cur_node->prior = 0;
+		for (int i = 0; i < CHILD_CNT; i++) {
+			if (NULL != (node_child = cur_node->children[i])) {
+				if (cur_node->prior <= node_child->prior) {
+					cur_node->prior = node_child->prior;
 				}
 			}
-			cur_node = cur_node->parent;
 		}
-		decrease_prior_low(node, prior);
+		cur_node = cur_node->parent;
 	}
-	return 0;
+	return decrease_prior_down(node, prior);
 }
 
-// if we want decrease priority not only for sockets
-static int __decrease_prior_low(net_node_t node, net_prior_t prior) {
+static int decrease_prior_down(net_node_t node, net_prior_t prior) {
 	net_node_t node_child = node;
-	node->prior = prior;
-	while (node != NULL) {
+
+	if (node != NULL) {
 		for (int i = 0; i < CHILD_CNT; i++) {
 			if (NULL != (node_child = node->children[i])) {
 				if (node_child->prior <= prior) {
 					break;
 				}
 				node_child->prior = prior;
+				decrease_prior_down(node_child, prior);
 			}
-		}
-		for (int i = 0; i < CHILD_CNT; i++) {
-			__decrease_prior_low(node->children[i], node->prior);
 		}
 	}
 
@@ -123,7 +120,6 @@ int pnet_process(net_packet_t pack) {
 struct pnet_path *pnet_get_dev_prior(struct net_device *dev) {
 	return NULL;
 }
-
 
 static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap
 static int prior_cnt = 0;
