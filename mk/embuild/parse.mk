@@ -5,6 +5,9 @@
 # Author: Eldar Abusalimov
 #
 
+ifndef __embuild_parse_mk
+__embuild_parse_mk := 1
+
 include mk/core/define.mk
 include mk/core/object.mk
 
@@ -80,7 +83,6 @@ $(call def,builtin_func_parser)
 # 2. Return value of a parser (result + rest string).
 # 3. Continuation.
 define __parser_cont
-	$(warning $0: [$1][$2][$3])
 	$(foreach $1,$(firstword $2),
 		$(call $3,$(nofirstword $2))
 	)
@@ -90,7 +92,6 @@ $(call def,__parser_cont)
 # 1. Result of parsing.
 # 2. Unparsed string.
 define __parser_result
-	$(warning $0: [$1][$2])
 	$(or $(singleword $1),
 		$(error \
 			Parser must return a singleword result, got '$1' instead
@@ -99,67 +100,112 @@ define __parser_result
 endef
 $(call def,__parser_result)
 
-define class string
-  $.value = $(value 2)
-endef
+#define class string
+#  $.value = $(value 2)
+#  $,string = $(info new string $1: "$(value 2)")
+#  $,to_string = $($1.value)
+#endef
 
-# 1. String
-define parse_any
-	$1
+define parse_do_unescape
+	$(subst \\,\,
+		$(subst \s,$(\s),
+			$(subst \t,$(\t),
+				$(subst \n,$(\n),
+					$(subst $(\s),,
+						$1
+					)
+				)
+			)
+		)
+	)
 endef
-$(call def,parse_any)
+$(call def,parse_do_unescape)
 
 # 1. Parser
 # 2. String
 define parse_*
-	$(or $(call $1,$2),$(call new,string) $2)# XXX
+	$(foreach ret,$(call new,string),
+		$(ret) \
+		$(with $1,$(call $1,$2),
+			# 1. Parser
+			# 2. Parsing result
+			$(if $2,
+				$(call $(ret),value,+=,$(firstword $2))
+				$(or $(call $0,$1,$(call $1,$(nofirstword $2))),$(nofirstword $2))
+				# TODO optimize
+			)
+		)
+	)
 endef
 $(call def,parse_*)
 
 # 1. Parser
 # 2. String
 define parse_?
-	$(or $(call $1,$2),$(call new,string) $2)
+	$(with $(call $1,$2),$2,
+		$(call new,string,$(firstword $1)) $(or $(nofirstword $1),$2)
+	)
 endef
 $(call def,parse_?)
 
-# 1. Predicate
+# 1. Parser
 # 2. String
-define parse_sat
-	$(if $(call $1,$(firstword $2)),$2)
+define parse_+
+	$(foreach ret,$(call parse_*,$1,$2),
+		$(if $($(ret).value),$(ret))
+	)
 endef
-$(call def,parse_sat)
+$(call def,parse_+)
+
+# 1. String
+define parse_raw_any
+	$1
+endef
+$(call def,parse_raw_any)
 
 # 1. Char
 # 2. String
-define parse_char
-	$(info $0: [$1] [$2])
-	$(if $(eq $1,$(firstword $2)),$2)
+define parse_raw_char
+	$(if $(eq $(or $1,$(error $0: empty argument)),$(firstword $2)),$2)
 endef
-$(call def,parse_char)
+$(call def,parse_raw_char)
+
+# 1. Char
+# 2. String
+define parse_raw_char_not
+	$(if $(eq $(or $1,$(error $0: empty argument)),$(firstword $2)),,$2)
+endef
+$(call def,parse_raw_char_not)
+
+# 1. Predicate
+# 2. String
+define parse_raw_char_that
+	$(foreach __char,$(firstword $2),
+		$(if $(call $1,$(__char)),$2)
+	)
+endef
+$(call def,parse_raw_char_that)
+
+# 1. Predicate
+# 2. String
+define parse_raw_char_that_not
+	$(foreach __char,$(firstword $2),
+		$(if $(call $1,$(__char)),,$2)
+	)
+endef
+$(call def,parse_raw_char_that_not)
 
 # 1. String
 define parse_string_term
 	$(call $(parser \
-		,$(fx parse_char,"),
-		str,$(fx parse_*,$(fx parse_sat,$(lambda $(not $(eq ",$1))))),
-		,$(fx parse_char,"),
-		$(str)
+		,$(fx parse_raw_char,"),
+		str,$(fx parse_*,$(fx parse_raw_char_not,")),
+		,$(fx parse_raw_char,"),
+		$(call $(str),value,=,
+			$(call parse_do_unescape,$($(str).value))
+		)$(str)
 	),$1)
 endef
 $(call def,parse_string_term)
 
-define foo
-	$(call $(parser \
-		a1,parse_any,# Just consume the first token.
-		a2,$(fx parse_?,parse_string_term),
-		a3,$(fx parse_char,^),
-		{$(a1)} {$($(a2).value)} {$(a3)}$(bar)
-	),$1)
-endef
-$(call def,foo)
-
-bar = $(foreach v,$(filter __obj2%,$(.VARIABLES)), \
-  $(warning $v = [$(value $v)]))
-$(error [$(value foo)][$(call foo,z " sdfsd " ^)])
-
+endif # __embuild_parse_mk
