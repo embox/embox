@@ -11,7 +11,8 @@
 #include <pnet/core.h>
 #include <pnet/prior_path.h>
 
-//static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap
+static int node_for_each_increase_prior(net_node_t node, net_prior_t prior);
+static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior);
 
 static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior);
 static int node_for_each_increase_prior(net_node_t node, net_prior_t prior);
@@ -102,8 +103,24 @@ struct pnet_path *pnet_get_dev_prior(struct net_device *dev) {
 	return NULL;
 }
 
-int pnet_path_add(char prior, struct pnet_path *path) {
 
-	return 0;
+static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap
+static int prior_cnt = 0;
 
+struct pnet_path *pnet_calc_socket_path(struct sock *sock) {
+	prior_table[prior_cnt].prior_level = 0x10;
+	prior_cnt++;
+	return NULL;
+}
+
+struct _pnet_path *pnet_calc_netdev_path(struct net_device *netdev) {
+	prior_table[prior_cnt++].own_mac = netdev->dev_addr;
+	prior_cnt++;
+	return NULL;
+}
+
+struct _pnet_path *pnet_calc_chardev_path(char *dev_name) {
+	prior_table[prior_cnt++].prior_level = 0x10;
+	prior_cnt++;
+	return NULL;
 }

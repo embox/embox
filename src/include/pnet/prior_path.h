@@ -14,7 +14,7 @@
 #include <net/in.h>
 
 struct pnet_path {
-	unsigned char    own_mac[MAX_ADDR_LEN];
+	unsigned char    *own_mac;
 	unsigned char    partner_mac[MAX_ADDR_LEN];
 	unsigned short   type; /* IP, ARP */
 	struct in_addr   sin_addr; /*log addr*/

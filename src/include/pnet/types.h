@@ -13,7 +13,7 @@
 
 typedef int net_addr_t;
 typedef int net_id_t;
-typedef short net_prior_t;
+typedef char net_prior_t;
 
 struct net_node;
 
