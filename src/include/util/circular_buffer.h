@@ -11,7 +11,7 @@
 
 #include <stddef.h>
 
-	struct c_buf {
+struct c_buf {
 	int len;
 	int size;
 	int beg;
@@ -22,6 +22,8 @@
 extern int __c_buf_add(struct c_buf *buf, void *elem, size_t elem_size);
 
 extern int __c_buf_get(struct c_buf *buf, void *elem, size_t elem_size);
+
+extern int c_buf_init(struct c_buf *buf, int count, void *storage);
 
 #define CIRCULAR_BUFFER_DEF(name, elem_type, len) \
 	__CIRCULAR_BUFFER_DEF(name, name##_storage, elem_type, len)
@@ -37,10 +39,10 @@ extern int __c_buf_get(struct c_buf *buf, void *elem, size_t elem_size);
 	}
 
 #define c_buf_add(name, elem) \
-	__c_buf_add(&name, (void *) &elem, sizeof(elem))
+	__c_buf_add(name, (void *) &elem, sizeof(elem))
 
 #define c_buf_get(name, elem) \
-	__c_buf_get(&name, (void *) &elem, sizeof(elem))
+	__c_buf_get(name, (void *) &elem, sizeof(elem))
 
 #endif
 

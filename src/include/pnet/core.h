@@ -11,8 +11,11 @@
 
 #include <pnet/types.h>
 
+#define PNET_PRIORITY_COUNT 0x10
+
 #define NET_HND_DFAULT -1
 #define NET_HND_SUPPRESSED -2
+
 
 extern int net_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx);
 
@@ -34,6 +37,7 @@ extern int pnet_process(net_packet_t pack);
 
 extern net_dev_t net_dev_register(net_dev_ops_t dev_ops);
 
+extern int rx_thread_add(net_packet_t pack);
 
 ////
 extern net_socket_t net_socket_open(net_id_t id, net_node_t parent);

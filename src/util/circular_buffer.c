@@ -34,3 +34,13 @@ int __c_buf_get(struct c_buf *buf, void *elem, size_t elem_size) {
 	return 0;
 }
 
+int c_buf_init(struct c_buf *buf, int count, void *storage) {
+	buf->len  = count;
+	buf->size = 0;
+	buf->beg  = 0;
+	buf->end  = 0;
+	buf->buf  = storage;
+	return 0;
+}
+
+

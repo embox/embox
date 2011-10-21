@@ -13,6 +13,9 @@
 
 //static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap
 
+static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior);
+static int node_for_each_increase_prior(net_node_t node, net_prior_t prior);
+
 int path_set_prior(net_node_t node, net_prior_t prior) {
 	if (node->prior <= prior) {
 		return node_for_each_increase_prior(node, prior);
@@ -66,7 +69,7 @@ static int __net_core_receive(net_packet_t pack) {
 	}
 
 	if (res != NET_HND_SUPPRESSED) {
-		pnet_process(pack);
+		rx_thread_add(pack);
 	}
 
 	return 0;
@@ -82,7 +85,7 @@ static int __net_core_send(net_packet_t pack) {
 
 	if (res == NET_HND_DFAULT) {
 		pack->node = pack->node->parent;
-		pnet_process(pack);
+		rx_thread_add(pack);
 	}
 
 	return ENOERR;

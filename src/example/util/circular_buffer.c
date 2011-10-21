@@ -19,11 +19,11 @@ CIRCULAR_BUFFER_DEF(test_buffer, int, 10);
 static int circular_buffer_ex_run(int argc, char *argv[]) {
 	int a = 5;
 
-	c_buf_add(test_buffer, a);
+	c_buf_add(&test_buffer, a);
 
 	a = 6;
 
-	c_buf_get(test_buffer, a);
+	c_buf_get(&test_buffer, a);
 
 	return 0;
 }

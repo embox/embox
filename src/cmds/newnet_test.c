@@ -30,6 +30,8 @@ int newnet_test_cmd(int argc, char *argv[]) {
 
 	sock = net_socket_open(-1, dev->node);
 
+	path_set_prior((net_node_t) sock, 5);
+
 	sock->node.id = SOCKET_N;
 
 	net_core_send((net_node_t) sock, argv[1], strlen(argv[1]));
