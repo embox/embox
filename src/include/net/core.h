@@ -28,6 +28,10 @@ extern int net_core_send(net_node_t node, void *data, int len);
 
 extern int net_core_receive(net_node_t  node, void *data, int len);
 
+extern int path_set_prior(net_node_t node, net_prior_t prior);
+
+extern int pnet_process(net_packet_t pack);
+
 extern net_dev_t net_dev_register(net_dev_ops_t dev_ops);
 
 

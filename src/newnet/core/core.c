@@ -35,55 +35,41 @@ int net_pack_free(net_packet_t pack) {
 	return 0;
 }
 
-static int __net_core_send(net_packet_t pack) {
-	net_node_t node = pack->node;
-	int res = NET_HND_DFAULT;
-
-	if (node->proto->tx_hnd != NULL) {
-		res = node->proto->tx_hnd(pack);
-	}
-
-	if (res == NET_HND_DFAULT) {
-		pack->node = pack->node->parent;
-		__net_core_send(pack);
-	}
-
-	return ENOERR;
-}
-
 int net_core_send(net_node_t node, void *data, int len) {
 	net_packet_t pack = net_pack_alloc(node, NET_PACKET_TX, data, len);
 
-	return __net_core_send(pack);
-}
-
-int __net_core_receive(net_packet_t pack) {
-	net_node_t node = pack->node;
-	net_id_t res = NET_HND_DFAULT;
-
-	if (node->proto->rx_hnd != NULL) {
-		res = node->proto->rx_hnd(pack);
-	}
-
-	if (res == NET_HND_DFAULT) {
-		pack->node = pack->node->dfault;
-	} else if (res > 0 ){
-		pack->node = pack->node->children[res];
-	}
-
-	if (res != NET_HND_SUPPRESSED) {
-		__net_core_receive(pack);
-	}
-
-	return 0;
+	return pnet_process(pack);
 }
 
 int net_core_receive(net_node_t node, void *data, int len) {
 	net_packet_t pack = net_pack_alloc(node, NET_PACKET_RX, data, len);
 
-	return __net_core_receive(pack);
+	return pnet_process(pack);
 }
 
+
+int node_attach(net_node_t node, net_id_t id, net_node_t parent) {
+	if (parent != NULL) {
+		if (id > 0) {
+			parent->children[id] = node;
+		} else {
+			parent->dfault = node;
+		}
+	}
+
+	node->prior = 0;
+	node->parent = parent;
+
+	return 0;
+}
+
+net_node_t proto_attach(net_proto_t proto, net_addr_t addr, net_node_t parent) {
+      	net_node_t node = net_node_alloc(addr, proto);
+
+	node_attach(node, proto->proto_id, parent);
+
+	return node;
+}
 static int net_core_init(void) {
 
 	return 0;

@@ -19,23 +19,3 @@ int net_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx) {
 	return 0;
 }
 
-int node_attach(net_node_t node, net_id_t id, net_node_t parent) {
-	if (parent != NULL) {
-		if (id > 0) {
-			parent->children[id] = node;
-		} else {
-			parent->dfault = node;
-		}
-	}
-
-	node->parent = parent;
-	return 0;
-}
-
-net_node_t proto_attach(net_proto_t proto, net_addr_t addr, net_node_t parent) {
-      	net_node_t node = net_node_alloc(addr, proto);
-
-	node_attach(node, proto->proto_id, parent);
-
-	return node;
-}

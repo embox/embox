@@ -13,6 +13,7 @@
 
 typedef int net_addr_t;
 typedef int net_id_t;
+typedef short net_prior_t;
 
 struct net_node;
 
@@ -30,6 +31,7 @@ typedef struct net_proto {
 
 struct net_node {
 	int id;
+	net_prior_t prior;
 	net_addr_t node_addr;
 	struct net_proto *proto;
 	struct net_node *parent;
