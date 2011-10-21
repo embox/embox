@@ -40,7 +40,7 @@ static int __net_core_receive(net_packet_t pack) {
 	}
 
 	if (res != NET_HND_SUPPRESSED) {
-		__net_core_receive(pack);
+		pnet_process(pack);
 	}
 
 	return 0;
@@ -57,7 +57,6 @@ static int __net_core_send(net_packet_t pack) {
 	if (res == NET_HND_DFAULT) {
 		pack->node = pack->node->parent;
 		pnet_process(pack);
-		__net_core_send(pack);
 	}
 
 	return ENOERR;
