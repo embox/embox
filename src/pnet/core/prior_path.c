@@ -10,7 +10,6 @@
 #include <errno.h>
 #include <pnet/core.h>
 #include <pnet/prior_path.h>
-#include <util/array.h>
 
 //static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap
 
@@ -18,7 +17,7 @@ int path_set_prior(net_node_t node, net_prior_t prior) {
 	if (node->prior <= prior) {
 		return node_for_each_increase_prior(node, prior);
 	} else {
-		return node_for_each_increase_prior(node, prior);
+		return node_for_each_decrease_prior(node, prior);
 	}
 }
 
@@ -37,6 +36,7 @@ static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior) {
 			node_for_each_decrease_prior(node->children[i], node->prior);
 		}
 	}
+	return 0;
 }
 
 static int node_for_each_increase_prior(net_node_t node, net_prior_t prior) {
