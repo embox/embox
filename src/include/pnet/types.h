@@ -52,6 +52,8 @@ enum net_packet_dir {
 	NET_PACKET_TX
 };
 
+struct sk_buff;
+
 struct net_packet {
 	enum net_packet_dir dir;
 
@@ -63,6 +65,8 @@ struct net_packet {
 			   while *data can be offsetted
 			   free packet mem from here */
 	void *data;
+
+	struct sk_buff *skbuf;
 };
 
 

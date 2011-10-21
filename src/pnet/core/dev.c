@@ -33,9 +33,7 @@ net_dev_t net_dev_register(net_dev_ops_t dev_ops) {
 	return dev;
 }
 
-#if 1
 static int net_dev_init(void) {
 	net_proto_init(&dev_proto, 0, NULL, tx_hnd);
 	return 0;
 }
-#endif
