@@ -7,12 +7,12 @@
  * @author Anton Bondarev
  */
 
-#include <net/skbuff.h>
+#if 0
 #include <net/in.h>
 #include <pnet/prior_path.h>
 #include <kernel/thread/api.h>
+#include <net/skbuff.h>
 
-#if 0
 int netif_rx(struct sk_buff skb) {
 	netif_add_rx_pack(skb);
 	softirq_fire();

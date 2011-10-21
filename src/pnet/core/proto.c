@@ -7,8 +7,7 @@
  */
 
 #include <stddef.h>
-#include <net/types.h>
-#include <net/core.h>
+#include <pnet/core.h>
 
 #define NET_PROTO_CNT 0x10
 

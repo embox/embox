@@ -7,7 +7,7 @@
  */
 
 #include <stddef.h>
-#include <net/types.h>
+#include <pnet/types.h>
 #include <mem/objalloc.h>
 #define NET_NODES_CNT 0x10
 

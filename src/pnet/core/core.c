@@ -6,9 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <errno.h>
-#include <net/types.h>
-#include <net/core.h>
+#include <pnet/core.h>
 #include <mem/objalloc.h>
 
 #include <embox/unit.h>

@@ -6,8 +6,8 @@
  * @author Anton Kozlov
  */
 
-#include <net/types.h>
-#include <net/core.h>
+#include <pnet/types.h>
+#include <pnet/core.h>
 #include <embox/unit.h>
 
 #include <errno.h>

@@ -8,7 +8,7 @@
  */
 
 #include <errno.h>
-#include <net/core.h>
+#include <pnet/core.h>
 #include <pnet/prior_path.h>
 
 //static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap

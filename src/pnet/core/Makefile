@@ -1,5 +1,8 @@
 
-$_PACKAGE := embox.newnet
+$_PACKAGE := embox.pnet
+
+$_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix
 
 $_MODS += core
 $_SRCS-core += node.c proto.c core.c rx_thread.c

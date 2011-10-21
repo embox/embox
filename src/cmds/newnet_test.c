@@ -7,7 +7,7 @@
  */
 
 #include <errno.h>
-#include <net/core.h>
+#include <pnet/core.h>
 #include <string.h>
 
 #include <embox/cmd.h>

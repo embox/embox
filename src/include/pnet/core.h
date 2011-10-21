@@ -9,7 +9,7 @@
 #ifndef _NET_CORE_H
 #define _NET_CORE_H
 
-#include <net/types.h>
+#include <pnet/types.h>
 
 #define NET_HND_DFAULT -1
 #define NET_HND_SUPPRESSED -2

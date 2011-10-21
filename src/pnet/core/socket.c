@@ -9,8 +9,7 @@
 #include <posix/stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <net/types.h>
-#include <net/core.h>
+#include <pnet/core.h>
 #include <embox/unit.h>
 #include <mem/objalloc.h>
 
