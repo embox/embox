@@ -182,8 +182,8 @@ list_pairmap = \
 
 __list_pairmap = $(foreach 2,$2 \
   ,$(call __list_pairmap_each,$1,$(subst $$$$,$$,$(subst _$$_, _ ,$2)),$3))
-__list_pairmap_each = $(if $(call singleword,$2) \
-    ,$(call $1,,$2,$3),$(call $1,$(word 1,$2),$(word 3,$2),$3))
+__list_pairmap_each = \
+  $(if $(word 2,$2),$(call $1,$(word 1,$2),$(word 3,$2),$3),$(call $1,,$2,$3))
 
 ##
 # Object-oriented version of 'list_pairmap'.
