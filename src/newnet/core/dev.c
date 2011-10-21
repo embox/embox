@@ -21,7 +21,7 @@ OBJALLOC_DEF(net_devs, struct net_dev, CONFIG_NET_DEVICES_QUANTITY);
 static int tx_hnd(net_packet_t pack) {
 	net_dev_t dev = (net_dev_t) pack->node->node_addr;
 	dev->ops->tx(pack, dev);
-	return 1; /* not to be processed further */
+	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
 struct net_proto dev_proto;

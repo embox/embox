@@ -11,6 +11,9 @@
 
 #include <net/types.h>
 
+#define NET_HND_DFAULT -1
+#define NET_HND_SUPPRESSED -2
+
 extern int net_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx);
 
 extern int node_attach(net_node_t node, net_id_t id, net_node_t parent);

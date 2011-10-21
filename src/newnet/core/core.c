@@ -37,13 +37,13 @@ int net_pack_free(net_packet_t pack) {
 
 static int __net_core_send(net_packet_t pack) {
 	net_node_t node = pack->node;
-	int res = 0;
+	int res = NET_HND_DFAULT;
 
 	if (node->proto->tx_hnd != NULL) {
 		res = node->proto->tx_hnd(pack);
 	}
 
-	if (res == 0) {
+	if (res == NET_HND_DFAULT) {
 		pack->node = pack->node->parent;
 		__net_core_send(pack);
 	}
@@ -59,19 +59,19 @@ int net_core_send(net_node_t node, void *data, int len) {
 
 int __net_core_receive(net_packet_t pack) {
 	net_node_t node = pack->node;
-	net_id_t res = -1;
+	net_id_t res = NET_HND_DFAULT;
 
 	if (node->proto->rx_hnd != NULL) {
 		res = node->proto->rx_hnd(pack);
 	}
 
-	if (res == -1) {
+	if (res == NET_HND_DFAULT) {
 		pack->node = pack->node->dfault;
 	} else if (res > 0 ){
 		pack->node = pack->node->children[res];
 	}
 
-	if (res >= -1) {
+	if (res != NET_HND_SUPPRESSED) {
 		__net_core_receive(pack);
 	}
 

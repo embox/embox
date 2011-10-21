@@ -25,7 +25,7 @@ static int rx_hnd(net_packet_t pack) {
 	pack->data = (void *) (((char *) (pack->data)) + sizeof(net_id_t));
 
 	printf("%d: %s\n", id, (char *) pack->data);
-	return -2;
+	return NET_HND_SUPPRESSED;
 }
 
 static int tx_hnd(net_packet_t pack) {
@@ -45,7 +45,7 @@ static int tx_hnd(net_packet_t pack) {
 	pack->orig_data = new_data;
 	pack->len = new_len;
 
-	return 0;
+	return NET_HND_DFAULT;
 }
 
 
