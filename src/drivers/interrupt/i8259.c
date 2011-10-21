@@ -64,7 +64,7 @@ void apic_init(void) {
 
 void interrupt_enable(interrupt_nr_t int_nr) {
 	if (int_nr > 8) {
-		out8(in8(PIC2_DATA) & ~(1 << int_nr), PIC2_DATA);
+		out8(in8(PIC2_DATA) & ~(1 << (int_nr - 8)), PIC2_DATA);
 	} else {
 		out8(in8(PIC1_DATA) & ~(1 << int_nr), PIC1_DATA);
 	}
@@ -72,7 +72,7 @@ void interrupt_enable(interrupt_nr_t int_nr) {
 
 void interrupt_disable(interrupt_nr_t int_nr) {
 	if (int_nr > 8) {
-		out8(in8(PIC2_DATA) | (1 << int_nr), PIC2_DATA);
+		out8(in8(PIC2_DATA) | (1 << (int_nr - 8)), PIC2_DATA);
 	} else {
 		out8(in8(PIC1_DATA) | (1 << int_nr), PIC1_DATA);
 	}

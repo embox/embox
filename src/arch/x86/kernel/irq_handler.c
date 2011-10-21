@@ -18,7 +18,7 @@ void irq_handler(pt_regs_t *regs) {
 	int irqn = regs->trapno - 0x20;
 	/* Send an EOI (end of interrupt) signal to the PICs.
 	   If this interrupt involved the slave. */
-//	interrupt_disable(irqn);
+	interrupt_disable(irqn);
 	if (irqn > 7) {
 		/* Send reset signal to slave. */
 		out8(NON_SPEC_EOI, PIC2_COMMAND);
@@ -28,5 +28,5 @@ void irq_handler(pt_regs_t *regs) {
 
 	irq_dispatch(irqn);
 
-//	interrupt_enable(irqn);
+	interrupt_enable(irqn);
 }
