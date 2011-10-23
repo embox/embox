@@ -12,8 +12,8 @@ $_SRCS-slist_test = slist_test.c
 $_MODS           += tree_test
 $_SRCS-tree_test  = tree_test.c
 
-$_MODS           += set_test
-$_SRCS-set_test  = set_test.c
+$_MODS           += tree_set_test
+$_SRCS-tree_set_test  = tree_set_test.c
 
 $_MODS           += pool_test
 $_SRCS-pool_test  = pool_test.c

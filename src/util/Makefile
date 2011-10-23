@@ -16,7 +16,7 @@ endif
 #$_SRCS-libutil.a += pool.c
 
 $_SRCS-libutil.a += tree.c
-$_SRCS-libutil.a += set.c
+$_SRCS-libutil.a += tree_set.c
 $_USES-libutil.a += libc.a
 
 $_SRCS-libutil.a += circular_buffer.c

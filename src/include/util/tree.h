@@ -16,8 +16,6 @@
 	(link == NULL ? NULL \
 		 : member_cast_out(link, element_type, link_member)
 
-/*#include __impl_x(util/tree_impl.c)*/
-
 /**
  * Link on element of tree, keeping in each element.
  */
@@ -40,53 +38,120 @@ extern struct tree_link *tree_link_init(struct tree_link *link);
 
 /**
  * Add element to tree by adding new link into list of children of another node.
- * XXX
- * So, more than one equal subtree can be a descedant of a node (or even different nodes).
- * This isn't good and with high probability lead will to bugs, because:
- *   1) Different parent nodes - we not always know from here delete node;
- *   2) Operation with one subtree will cause effect to another clone.
+ *   Added tree_link must be initialized before and have no parent.
  * @param parent Parent of new node.
  * @param link Added element
  */
 extern void tree_add_link(struct tree_link *parent, struct tree_link *link);
 
 /**
- * Delete element from tree. Pointers, concerned with its subtree, won't be erased.
- * Actually, this function separates node from its parent.
- * @param link Deleted element
+ * Unlink specified tree_link from its parent and bind it to new parent.
+ * @param parent Parent of new node.
+ * @param link Added element
+ */
+extern void tree_move_link(struct tree_link *parent, struct tree_link *link);
+
+/**
+ * Separates node from its parent.
+ *   This parent can not exist.
+ * @param link Unlinked element
  * @return
  * 	true, if element was in the tree before deletion.
  */
-extern int tree_remove_link(struct tree_link *link);
+extern int tree_unlink_link(struct tree_link *link);
+
+/**
+ * Delete all subtree with this node.
+ * For each element dispose method will be called,
+ * @param link Link, what subtree will be deleted.
+ * @param dispose Dispose method for each element.
+ */
+extern void tree_delete_link(struct tree_link *link, void dispose(struct tree_link *));
 
 /**
  * 'Next' link in the tree according to selected order. Used for iteration.
- * The order is: firstly recursively we enumerate all children of node,
+ * The order is: firstly we recursively enumerate all children of node,
  *   then the node itself.
  * @param link Current node.
  * @return Next node in the tree.
  */
-extern struct tree_link *tree_next_link(struct tree_link *link);
+extern struct tree_link *tree_postorder_next(struct tree_link *link);
 
 /**
  * First node for enumeration.
  * @param tree Tree to enumerate.
  */
-extern struct tree_link *tree_begin(struct tree_link *tree);
+extern struct tree_link *tree_postorder_begin(struct tree_link *tree);
 
-/** End of iteration (exclusive). */
-#define tree_end(tree) ((tree)->par)
+/**
+ * End of iteration (exclusive).
+ * @param tree Tree to enumerate.
+ */
+static inline struct tree_link *tree_postorder_end(struct tree_link *tree) {
+	return tree->par;
+}
 
-/** Iteration on tree. Elements are links (without casting from links). */
-#define tree_foreach_link(link, tree) \
-	for (link = tree_begin(tree); \
-			link != tree_end(tree); \
-			link = tree_next_link(link))
+/**
+ * Iteration on tree. Elements are links (without casting from links).
+ * For enumeration functions begin, end, next are used, corresponding to
+ *   first element of enumeration, last(exclusively)
+ *   and obtaining next element according to given current.
+ */
+#define tree_foreach_link(link, tree, begin, end, next) \
+	for (link = begin(tree); \
+		link != end(tree); \
+		link = next(link))
 
-/** Iteration with casting. */
-#define tree_foreach(link, element, tree, link_member) \
-	for (link = tree_begin(set), element = tree_element(link, typeof(*element), link_member); \
-			link != tree_end(set); \
-		link = tree_next_link(link), element = tree_element(link, typeof(*element), link_member)) \
+/**
+ * Iteration on tree. Elements are links (without casting from links).
+ * Calculates next element before processing of current.
+ * E.g., this Allows deletion of current element.
+ * For enumeration functions begin, end, next are used, corresponding to
+ *   first element of enumeration, last(exclusively)
+ *   and obtaining next element according to given current.
+ *   'Next' function must not cause an error if it's applyed to end of enumeration.
+ */
+#define tree_foreach_link_safe(link, next_link, tree, begin, end, next) \
+	for (link = begin(tree), \
+			next_link = next(link); \
+		link != end(tree); \
+		link = next_link, \
+			next_link = next(link))
+
+/**
+ * Iteration with casting.
+ * For enumeration functions begin, end, next are used, corresponding to
+ *   first element of enumeration, last(exclusively)
+ *   and obtaining next element according to given current.
+ */
+#define tree_foreach(link, element, tree, link_member, begin, end, next) \
+	for (link = begin(set), \
+			element = tree_element(link, typeof(*element), link_member); \
+		link != end(set); \
+		link = next(link), \
+			element = tree_element(link, typeof(*element), link_member))
+
+/**
+ * Postorder iteration on tree.
+ * Elements are links (without casting from links).
+ */
+#define tree_postorder_traversal_link(link, tree) \
+	tree_foreach_link(link, tree, \
+			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+
+/**
+ * Postorder iteration on tree.
+ * Elements are links (without casting from links).
+ * Calculates next element before processing of current.
+ * E.g., this Allows deletion of current element.
+ */
+#define tree_postorder_traversal_link_safe(link, next_link, tree) \
+	tree_foreach_link_safe(link, next_link, tree, \
+			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+
+/** Postorder iteration with casting. */
+#define tree_postorder_traversal(link, element, tree, link_member) \
+	tree_foreach(link, element, tree, \
+			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 #endif /* UTIL_TREE_H_ */
