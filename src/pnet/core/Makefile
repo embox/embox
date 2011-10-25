@@ -13,6 +13,7 @@ $_SRCS-socket += socket.c
 
 $_MODS += dev
 $_SRCS-dev += dev.c
+$_DEPS-dev += embox.pnet.node.null
 
 $_MODS += prior_path
 $_SRCS-prior_path += prior_path.c

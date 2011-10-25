@@ -46,7 +46,7 @@ static int rx_thread_init(void) {
 	return 0;
 }
 
-int rx_thread_add(net_packet_t pack) {
+int pnet_rx_thread_add(net_packet_t pack) {
 	net_prior_t prior = pack->node->prior;
 
 	c_buf_add(&c_bufs[prior], pack);

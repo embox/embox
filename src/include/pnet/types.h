@@ -8,8 +8,12 @@
 
 //#include <net/skbuff.h>
 
-#ifndef _NET_TYPES_H
-#define _NET_TYPES_H
+#ifndef _PNET_TYPES_H
+#define _PNET_TYPES_H
+
+#include <net/in.h>
+#include <net/if_ether.h>
+#include <lib/list.h>
 
 typedef int net_addr_t;
 typedef int net_id_t;
@@ -79,6 +83,7 @@ typedef struct net_dev_ops {
 
 struct net_dev {
 	net_node_t node;
+	int id;
 	net_dev_ops_t ops;
 };
 typedef struct net_dev *net_dev_t;

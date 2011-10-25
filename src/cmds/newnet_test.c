@@ -14,27 +14,25 @@
 
 EMBOX_CMD(newnet_test_cmd);
 
-extern net_dev_t net_loopback_dev_get(void);
-
 #define SOCKET_N 5
 
 int newnet_test_cmd(int argc, char *argv[]) {
 	net_socket_t sock = NULL;
-	net_dev_t dev = NULL;
+	net_node_t dev = NULL;
 	if (argc <= 1) {
 		return -EINVAL;
 
 	}
 
-	dev = net_loopback_dev_get();
+	dev = pnet_dev_get_entry();
 
-	sock = net_socket_open(-1, dev->node);
+	sock = pnet_socket_open(NET_RX_DFAULT, dev);
 
-	path_set_prior((net_node_t) sock, 5);
+	pnet_path_set_prior((net_node_t) sock, 5);
 
 	sock->node.id = SOCKET_N;
 
-	net_core_send((net_node_t) sock, argv[1], strlen(argv[1]));
+	pnet_core_send((net_node_t) sock, argv[1], strlen(argv[1]));
 
 	return 0;
 }

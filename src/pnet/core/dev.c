@@ -6,13 +6,15 @@
  * @author Anton Kozlov
  */
 
-#include <pnet/types.h>
-#include <pnet/core.h>
-#include <embox/unit.h>
-
 #include <errno.h>
 #include <string.h>
 #include <mem/objalloc.h>
+
+#include <pnet/types.h>
+#include <pnet/core.h>
+#include <pnet/node.h>
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(net_dev_init);
 
@@ -24,16 +26,50 @@ static int tx_hnd(net_packet_t pack) {
 	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
-struct net_proto dev_proto;
+static struct net_proto dev_proto;
 
-net_dev_t net_dev_register(net_dev_ops_t dev_ops) {
+/* single entry for all devices
+       devices
+	o o o
+	\ | /
+	  o
+      dev_entry
+
+*/
+static struct net_node dev_entry;
+
+static struct net_proto dev_entry_proto;
+
+static int entry_tx_hnd(net_packet_t pack) {
+	pack->node = pack->node->parent; //TODO
+	return 0;
+}
+
+net_dev_t pnet_dev_register(net_dev_ops_t dev_ops) {
 	net_dev_t dev = objalloc(&net_devs);
+
 	dev->ops = dev_ops;
-	dev->node = net_node_alloc((net_addr_t)	dev, &dev_proto);
+	dev->id = ((int) dev - (int) net_devs.storage) / sizeof (struct net_dev);
+	dev->node = pnet_node_alloc((net_addr_t) dev, &dev_proto);
+
+	dev->node->dfault = &dev_entry;
+
+	dev_entry.children[dev->id] = dev->node;
+
 	return dev;
 }
 
+net_node_t pnet_dev_get_entry(void) {
+	return &dev_entry;
+}
+
 static int net_dev_init(void) {
-	net_proto_init(&dev_proto, 0, NULL, tx_hnd);
+	pnet_proto_init(&dev_proto, 0, NULL, tx_hnd);
+
+	pnet_proto_init(&dev_entry_proto, 0, NULL, entry_tx_hnd);
+
+	dev_entry.proto = &dev_entry_proto;
+        dev_entry.dfault = pnet_get_node_null();
+
 	return 0;
 }

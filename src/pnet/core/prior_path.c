@@ -13,7 +13,7 @@
 #include <pnet/core.h>
 #include <pnet/prior_path.h>
 
-static void decrease_prior_down(net_node_t node, net_prior_t prior);
+static int decrease_prior_down(net_node_t node, net_prior_t prior);
 static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior);
 static int node_for_each_increase_prior(net_node_t node, net_prior_t prior);
 
@@ -77,20 +77,20 @@ static int node_for_each_increase_prior(net_node_t node, net_prior_t prior) {
 
 static int __net_core_receive(net_packet_t pack) {
 	net_node_t node = pack->node;
-	net_id_t res = NET_HND_DFAULT;
+	net_id_t res = NET_RX_DFAULT;
 
 	if (node->proto->rx_hnd != NULL) {
 		res = node->proto->rx_hnd(pack);
 	}
 
-	if (res == NET_HND_DFAULT) {
+	if (res == NET_RX_DFAULT) {
 		pack->node = pack->node->dfault;
 	} else if (res > 0) {
 		pack->node = pack->node->children[res];
 	}
 
 	if (res != NET_HND_SUPPRESSED) {
-		rx_thread_add(pack);
+		pnet_rx_thread_add(pack);
 	}
 
 	return 0;
@@ -98,15 +98,18 @@ static int __net_core_receive(net_packet_t pack) {
 
 static int __net_core_send(net_packet_t pack) {
 	net_node_t node = pack->node;
-	int res = NET_HND_DFAULT;
+	int res = NET_TX_DFAULT;
 
 	if (node->proto->tx_hnd != NULL) {
 		res = node->proto->tx_hnd(pack);
 	}
 
-	if (res == NET_HND_DFAULT) {
+	if (res == NET_TX_DFAULT) {
 		pack->node = pack->node->parent;
-		rx_thread_add(pack);
+	}
+
+	if (res != NET_HND_SUPPRESSED) {
+		pnet_rx_thread_add(pack);
 	}
 
 	return ENOERR;

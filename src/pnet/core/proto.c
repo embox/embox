@@ -11,7 +11,7 @@
 
 #define NET_PROTO_CNT 0x10
 
-int net_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx) {
+int pnet_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx) {
 	proto->proto_id = id;
 	proto->rx_hnd = rx;
 	proto->tx_hnd = tx;

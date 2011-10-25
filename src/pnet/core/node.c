@@ -13,7 +13,7 @@
 
 OBJALLOC_DEF(net_nodes, struct net_node, NET_NODES_CNT);
 
-net_node_t net_node_alloc(net_addr_t addr, net_proto_t proto) {
+net_node_t pnet_node_alloc(net_addr_t addr, net_proto_t proto) {
 	net_node_t node = (net_node_t) objalloc(&net_nodes);
 	node->node_addr = addr;
 	node->proto = proto;
@@ -25,6 +25,6 @@ net_node_t net_node_alloc(net_addr_t addr, net_proto_t proto) {
 	return node;
 }
 
-void net_node_free(net_node_t node) {
+void pnet_node_free(net_node_t node) {
 	objfree(&net_nodes, node);
 }

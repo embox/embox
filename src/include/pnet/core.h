@@ -6,40 +6,45 @@
  * @author Anton Kozlov
  */
 
-#ifndef _NET_CORE_H
-#define _NET_CORE_H
+#ifndef _PNET_CORE_H
+#define _PNET_CORE_H
 
 #include <pnet/types.h>
 
 #define PNET_PRIORITY_COUNT 0x10
 
-#define NET_HND_DFAULT -1
+#define NET_RX_DFAULT -1
+
+#define NET_TX_DFAULT -1
+
 #define NET_HND_SUPPRESSED -2
 
 
-extern int net_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx);
+extern int pnet_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx);
 
-extern int node_attach(net_node_t node, net_id_t id, net_node_t parent);
+extern int pnet_node_attach(net_node_t node, net_id_t id, net_node_t parent);
 
-extern net_node_t net_node_alloc(net_addr_t addr, net_proto_t proto);
+extern net_node_t pnet_node_alloc(net_addr_t addr, net_proto_t proto);
 
-extern net_packet_t net_pack_alloc(net_node_t node, enum net_packet_dir dir, void *data, int len);
+extern net_packet_t pnet_pack_alloc(net_node_t node, enum net_packet_dir dir, void *data, int len);
 
-extern int net_pack_free(net_packet_t pack);
+extern int pnet_pack_free(net_packet_t pack);
 
-extern int net_core_send(net_node_t node, void *data, int len);
+extern int pnet_core_send(net_node_t node, void *data, int len);
 
-extern int net_core_receive(net_node_t  node, void *data, int len);
+extern int pnet_core_receive(net_node_t  node, void *data, int len);
 
-extern int path_set_prior(net_node_t node, net_prior_t prior);
+extern int pnet_path_set_prior(net_node_t node, net_prior_t prior);
 
 extern int pnet_process(net_packet_t pack);
 
-extern net_dev_t net_dev_register(net_dev_ops_t dev_ops);
+extern net_dev_t pnet_dev_register(net_dev_ops_t dev_ops);
 
-extern int rx_thread_add(net_packet_t pack);
+extern net_node_t pnet_dev_get_entry(void);
+
+extern int pnet_rx_thread_add(net_packet_t pack);
 
 ////
-extern net_socket_t net_socket_open(net_id_t id, net_node_t parent);
+extern net_socket_t pnet_socket_open(net_id_t id, net_node_t parent);
 
 #endif

@@ -44,21 +44,21 @@ static int tx_hnd(net_packet_t pack) {
 	pack->orig_data = new_data;
 	pack->len = new_len;
 
-	return NET_HND_DFAULT;
+	return NET_TX_DFAULT;
 }
 
 
 static struct net_proto socket_proto;
 
 static int net_socket_init(void) {
-	net_proto_init(&socket_proto, 0, rx_hnd, tx_hnd);
+	pnet_proto_init(&socket_proto, 0, rx_hnd, tx_hnd);
 	return 0;
 }
 
-net_socket_t net_socket_open(net_id_t id, net_node_t parent) {
+net_socket_t pnet_socket_open(net_id_t id, net_node_t parent) {
 	net_socket_t sock = (net_socket_t) objalloc(&sockets);
 
-	node_attach(&sock->node, id, parent);
+	pnet_node_attach(&sock->node, id, parent);
 
 	sock->node.proto = &socket_proto;
 

@@ -28,9 +28,9 @@ net_dev_t net_loopback_dev_get(void) {
 }
 
 static int loopback_tx(net_packet_t pack, net_dev_t dev) {
-	net_packet_t new_pack = net_pack_alloc(pack->node, NET_PACKET_RX, pack->data, pack->len);
+	net_packet_t new_pack = pnet_pack_alloc(pack->node, NET_PACKET_RX, pack->data, pack->len);
 
-	net_pack_free(pack);
+	pnet_pack_free(pack);
 
 	packq[qend] = new_pack;
 	qend = (qend + 1) % QLEN;
@@ -41,7 +41,7 @@ static int loopback_tx(net_packet_t pack, net_dev_t dev) {
 
 static int rx(net_packet_t pack) {
 	pack->dir = NET_PACKET_RX;
-	return net_core_receive(dev->node, pack->data, pack->len);
+	return pnet_core_receive(dev->node, pack->data, pack->len);
 }
 
 static struct net_dev_ops loopback_ops = {
@@ -61,7 +61,7 @@ static void lb_timer_handler(struct sys_timer *timer, void *param) {
 
 static int loopback_init(void) {
 	const int delay = 100;
-	dev = net_dev_register(&loopback_ops);
+	dev = pnet_dev_register(&loopback_ops);
 	return timer_init(&loopback_timer, delay,
 			lb_timer_handler, (void *) NULL);
 }
