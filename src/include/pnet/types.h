@@ -83,4 +83,18 @@ struct net_dev {
 };
 typedef struct net_dev *net_dev_t;
 
+struct match_rule {
+	struct ethhdr ether_header;
+	in_addr_t dest_ip;
+	in_addr_t src_ip;
+	uint8_t proto;
+	uint16_t dest_port;
+	uint16_t src_port;
+	net_node_t *node;	/* associated node */
+	net_node_t *next_node; /* node which must match packet next */
+	struct list_head lnk;
+};
+
+typedef struct match_rule match_rule_t;
+
 #endif

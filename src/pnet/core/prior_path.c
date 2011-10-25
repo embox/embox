@@ -5,6 +5,8 @@
  *
  * @date 20.10.2011
  * @author Anton Bondarev
+ * @author Alexander Kalmuk
+ * 			- add node_for_each
  */
 
 #include <errno.h>
@@ -15,7 +17,7 @@ static void decrease_prior_down(net_node_t node, net_prior_t prior);
 static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior);
 static int node_for_each_increase_prior(net_node_t node, net_prior_t prior);
 
-int path_set_prior(net_node_t node, net_prior_t prior) {
+int pnet_path_set_prior(net_node_t node, net_prior_t prior) {
 	if (node->prior <= prior) {
 		return node_for_each_increase_prior(node, prior);
 	} else {
