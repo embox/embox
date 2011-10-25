@@ -49,11 +49,34 @@ struct tree_set_link *tree_set_find_link(struct tree_set *tree_set,
 	return NULL;
 }
 
+/**
+ * Copy tree pointers and color from one link to another
+ *         (except pointer from parent node to specified).
+ * @param src - Source node of links.
+ * @param dest - Destination node.
+ */
+static void tree_set_copy_links(struct tree_set_link *src, struct tree_set_link *dest) {
+	assert(src != NULL);
+	assert(dest != NULL);
+
+	dest->left = src->left;
+	dest->right = src->right;
+	dest->par = src->par;
+	dest->color = src->color;
+	if (dest->right != NULL) {
+		dest->right->par = dest;
+	}
+	if (dest->left != NULL) {
+		dest->left->par = dest;
+	}
+}
+
 /** Left rotation of tree node. */
 static void tree_set_left_rotate(struct tree_set *tree, struct tree_set_link *link) {
 	struct tree_set_link *par;
-	struct tree_set_link *other = link->right;
+	struct tree_set_link *other;
 	assert(link != NULL);
+	other = link->right;
 	assert(other != NULL);
 	par = link->par;
 	link->right = other->left;
@@ -77,8 +100,9 @@ static void tree_set_left_rotate(struct tree_set *tree, struct tree_set_link *li
 /** Right rotation of tree node. */
 static void tree_set_right_rotate(struct tree_set *tree, struct tree_set_link *link) {
 	struct tree_set_link *par;
-	struct tree_set_link *other = link->left;
+	struct tree_set_link *other;
 	assert(link != NULL);
+	other = link->left;
 	assert(other != NULL);
 	par = link->par;
 	link->left = other->right;
@@ -119,6 +143,7 @@ static void tree_set_insert_balance(struct tree_set *tree, struct tree_set_link 
 					link = par;
 					tree_set_left_rotate(tree, par);
 					par = link->par;
+					par2 = par->par;
 				}
 				par->color = TREE_SET_BLACK;
 				par2->color = TREE_SET_RED;
@@ -136,12 +161,14 @@ static void tree_set_insert_balance(struct tree_set *tree, struct tree_set_link 
 					link = par;
 					tree_set_right_rotate(tree, par);
 					par = link->par;
+					par2 = par->par;
 				}
 				par->color = TREE_SET_BLACK;
 				par2->color = TREE_SET_RED;
 				tree_set_left_rotate(tree, par2);
 			}
 		}
+		par = link->par;
 	}
 	tree->root->color = TREE_SET_BLACK;
 }
@@ -164,15 +191,7 @@ int tree_set_add_link(struct tree_set *tree_set,
 		cur = *pos;
 		comp_res = compare(link, cur);
 		if (comp_res == 0) {
-			link->left = cur->left;
-			link->right = cur->right;
-			link->par = cur->par;
-			if (link->right != NULL) {
-				link->right->par = link;
-			}
-			if (link->left != NULL) {
-				link->left->par = link;
-			}
+			tree_set_copy_links(cur, link);
 			*pos = link;
 			tree_set_link_init(cur);
 			return 0;
@@ -256,46 +275,39 @@ void tree_set_delete_balance(struct tree_set* tree, struct tree_set_link *link) 
 	link->color = TREE_SET_BLACK;
 }
 
-/** Delete node on selected position */
-static int tree_set_remove_found_link(struct tree_set *tree,
-				struct tree_set_link **del_pos) {
+/**
+ * Replace found link with other one and remove from tree.
+ * @param del_pos - Position, where we delete node from.
+ * @param pnil - Pointer to nil of tree.
+ * Returns postition to start balancing from (or NULL if wi don't need it).
+ */
+static inline struct tree_set_link *tree_set_replace_link(
+		struct tree_set_link **del_pos, struct tree_set_link *pnil) {
 
 	struct tree_set_link *deleted;
 
-	/* position, where node can be inserted to be deleted easily */
+	/* Position, where node can be inserted to be deleted easily */
 	struct tree_set_link **other_pos;
 
-	/* element, what possible take deleted one's position */
+	/* Element, what possible take deleted one's position */
 	struct tree_set_link *other;
 
-	/* Real representation of null referense. */
-	struct tree_set_link nil;
-
-	/* Temp color for detecting if we need balancing. */
-	enum tree_set_color temp_color;
-
-	/* Where start balancing. */
-	struct tree_set_link *start;
+	/* Start of balancing. */
+	struct tree_set_link *res;
 
 	deleted = *del_pos;
-	if (deleted == NULL) {
-		return 0;
-	}
-	start = NULL;
-	nil.par = NULL;
 
 	if (deleted->left == NULL || deleted->right == NULL) {
 		/* There is less then two children of deleted node */
 		*del_pos = (deleted->left != NULL) ? deleted->left : deleted->right;
-		temp_color = deleted->color;
 		if (*del_pos != NULL) {
 			(*del_pos)->par = deleted->par;
 		} else {
-			nil.color = TREE_SET_BLACK;
-			nil.par = deleted->par;
-			*del_pos = &nil;
+			pnil->color = TREE_SET_BLACK;
+			pnil->par = deleted->par;
+			*del_pos = pnil;
 		}
-		start = *del_pos;
+		res = (deleted->color == TREE_SET_BLACK) ? (*del_pos) : NULL;
 	} else {
 		/* Give element from the right subtree */
 		other_pos = &deleted->right;
@@ -303,34 +315,40 @@ static int tree_set_remove_found_link(struct tree_set *tree,
 			other_pos = &(*other_pos)->left;
 		}
 		other = *other_pos;
-		*other_pos = (other->right != NULL) ? other->right : &nil;
+		*other_pos = (other->right != NULL) ? other->right : pnil;
 		if (other->right != NULL) {
 			if (other->par != deleted) {
 				other->right->par = other->par;
 			}
 		} else {
-			nil.color = TREE_SET_BLACK;
+			pnil->color = TREE_SET_BLACK;
 			if (other->par != deleted) {
-				nil.par = other->par;
+				pnil->par = other->par;
 			} else {
-				nil.par = other;
+				pnil->par = other;
 			}
 		}
-		start = *other_pos;
-		other->left = deleted->left;
-		if (other->left != NULL) {
-			other->left->par = other;
-		}
-		other->right = deleted->right;
-		if (other->right != NULL) {
-			other->right->par = other;
-		}
-		other->par = deleted->par;
-		temp_color = other->color;
-		other->color = deleted->color;
+		res = (other->color == TREE_SET_BLACK) ? (*other_pos) : NULL;
+		tree_set_copy_links(deleted, other);
 		*del_pos = other;
 	}
-	if (temp_color == TREE_SET_BLACK) {
+	tree_set_link_init(deleted);
+	return res;
+}
+
+/** Delete node on selected position */
+static int tree_set_remove_found_link(struct tree_set *tree,
+				struct tree_set_link **del_pos) {
+
+	/* Real representation of null referense. */
+	struct tree_set_link nil;
+
+	/* Where start balancing. */
+	struct tree_set_link *start;
+
+	nil.par = NULL;
+	start = tree_set_replace_link(del_pos, &nil);
+	if (start != NULL) {
 		tree_set_delete_balance(tree, start);
 	}
 	if (nil.par != NULL) {
@@ -345,7 +363,6 @@ static int tree_set_remove_found_link(struct tree_set *tree,
 			tree->root = NULL;
 		}
 	}
-	tree_set_link_init(deleted);
 	return 1;
 }
 

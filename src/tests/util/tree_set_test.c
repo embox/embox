@@ -99,9 +99,33 @@ static bool compare(void) {
 		}
 		i++;
 	}
-	test_assert(i == ideal_size);
-	return true;
+	return i == ideal_size;
 }
+
+/* Return color of node (black if node is NULL). */
+static enum tree_set_color get_color(struct tree_set_link *node) {
+	return (node != NULL) ? node->color : TREE_SET_BLACK;
+}
+
+/* Check for subtree if children of red node are black. */
+static bool check_rb_node(struct tree_set_link *node) {
+	if (node == NULL) {
+		return true;
+	}
+	if (node->color == TREE_SET_RED) {
+		if (get_color(node->left) != TREE_SET_BLACK
+				|| get_color(node->right) != TREE_SET_BLACK) {
+			return false;
+		}
+	}
+	return (check_rb_node(node->left) && check_rb_node(node->right));
+}
+
+/* Check for each red node in tree that all of it's children are black. */
+static bool check_rb(struct tree_set *set) {
+	return check_rb_node(set->root);
+}
+
 #if 0
 static void print(void){
 	int i;
@@ -120,22 +144,24 @@ static void print(void){
 #endif
 static void add(int num) {
 	struct int_tree_set_element *elem = elements + elem_cnt++;
-//	printf ("%d\n", num);
+	/* printf ("%d\n", num); */
 	elem->data = num;
 	tree_set_add_link(&tree_set, &elem->link, tree_set_int_comp);
 	array_add(elem);
-//	print();
+	/* print(); */
 	test_assert(compare());
+	test_assert(check_rb(&tree_set));
 }
 
 static void del(int num) {
 	struct int_tree_set_element *elem = elements + elem_cnt++;
-//	printf ("%d\n", num);
+	/* printf ("%d\n", num); */
 	elem->data = num;
 	tree_set_remove_link(&tree_set, &elem->link, tree_set_int_comp);
 	array_del(elem);
-//	print();
+	/* print(); */
 	test_assert(compare());
+	test_assert(check_rb(&tree_set));
 }
 
 TEST_CASE("Add test for tree_set") {
@@ -143,8 +169,9 @@ TEST_CASE("Add test for tree_set") {
 	tree_set_init(&tree_set);
 	ideal_size = 0;
 	elem_cnt = 0;
-//	printf("Add... ");
+	/* printf("Add... "); */
 	for (i = 0; i < add_cnt; i++) {
+		/* printf("%d ", i); */
 		num = rand() % 100;
 		add(num);
 	}
@@ -152,8 +179,9 @@ TEST_CASE("Add test for tree_set") {
 
 TEST_CASE("Delete test for tree_set") {
 	int i, num;
-//	printf("Del...");
+	/* printf("Del..."); */
 	for (i = 0; i < del_cnt; i++) {
+	/* printf("%d ", i); */
 		num = rand() % 100;
 		del(num);
 	}
