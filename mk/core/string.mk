@@ -120,6 +120,32 @@ nolastword = \
 builtin_func_nolastword = $(builtin_to_function_inline)
 
 ##
+# Builtin function: words-to
+# Gets the list of words ending with word at given index (inclusive).
+#
+# Params:
+#  1. Upper bound.
+#  2. The target list of words.
+# Return:
+#     Words [1 .. arg].
+words-to = \
+	$(wordlist 1,$1,$2)
+builtin_func_words-to = $(builtin_to_function_inline)
+
+##
+# Builtin function: words-from
+# Gets the list of words starting with word at given index (inclusive).
+#
+# Params:
+#  1. Lower bound.
+#  2. The target list of words.
+# Return:
+#     Words [arg .. nwords].
+words-from = \
+	$(wordlist $1,2147483647,$2)
+builtin_func_words-from = $(builtin_to_function_inline)
+
+##
 # Builtin function: trim
 # Removes leading and trailing whitespaces.
 #
