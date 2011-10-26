@@ -39,21 +39,14 @@ int hwaddrs_rule_create(net_node_matcher_t node, char *h_src,
 }
 
 static int match_hwaddrs(net_packet_t packet, match_rule_t rule) {
-	unsigned char *h_src;
-	net_node_matcher_t node;
-	unsigned char *t;
-	int n = ETH_ALEN;
+	unsigned char *h_src, *t;
 
-	node = (net_node_matcher_t) packet->node;
+	assert(rule != NULL);
+
 	h_src = packet->skbuf->mac.ethh->h_source;
-
-	assert(&rule->ether_header);
-	t = (unsigned char*) &rule->ether_header.h_source;
-	while ((*t == *h_src || *t == 255) && n--) {
-		t++;
-		h_src++;
-	}
-	if (n == 0) {
+	t = rule->ether_header.h_source;
+	if ((memcmp(t, h_src, ETH_ALEN) == 0)
+			|| !(t[0] | t[1] | t[2] | t[3] | t[4] | t[5])) {
 		return 0;
 	}
 
@@ -64,7 +57,7 @@ static int match_ip(net_packet_t packet, match_rule_t rule) {
 	in_addr_t ip;
 
 	ip = packet->skbuf->nh.iph->saddr;
-	assert(&rule->src_ip);
+	assert(rule != NULL);
 
 	for (int i = 0; i < 4; i++) {
 		if (rule->src_ip & 255 << i) {
