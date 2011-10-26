@@ -30,7 +30,7 @@ typedef struct net_node_matcher {
 	struct net_node node;
 	struct list_head match_rx_rules;
 	struct list_head match_tx_rules;
-} *net_node_matcher_t;
+}*net_node_matcher_t;
 
 static inline void pnet_rule_set_next_node(match_rule_t rule, net_node_t node) {
 	rule->next_node = node;
@@ -45,9 +45,8 @@ extern match_rule_t pnet_rule_alloc(void);
 
 extern int add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t node);
 
-extern int hwaddrs_rule_create(net_node_matcher_t node, char *h_dest, net_node_t next_node);
-
-//extern int match_hwaddrs(net_packet_t packet);
+extern int hwaddrs_rule_create(net_node_matcher_t node, char *h_dest,
+		net_node_t next_node);
 
 extern net_node_matcher_t pnet_get_node_matcher(void);
 
