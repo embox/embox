@@ -32,6 +32,8 @@ typedef struct net_node_matcher {
 	struct list_head match_tx_rules;
 }*net_node_matcher_t;
 
+extern int match(net_packet_t packet);
+
 static inline void pnet_rule_set_next_node(match_rule_t rule, net_node_t node) {
 	rule->next_node = node;
 }
