@@ -9,7 +9,9 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 
+static int stamp = 1;
 static void print_pack(net_packet_t pack) {
+	printf("%d: ", stamp++);
 	switch(pack->dir) {
 		case NET_PACKET_RX:
 			printf("RX");
