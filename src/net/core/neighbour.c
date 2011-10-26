@@ -109,21 +109,18 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 
 	if (ptr.lh == &used_neighbours_list) { /* if not found then alloc new */
 		ptr.v = pool_alloc(&neighbour_pool);
-
-		list_add_tail(ptr.lh, &used_neighbours_list);
-
 		if (ptr.v == NULL) {
-			return -ENOMEM;
+      return -ENOMEM;
 		}
-		entity = &ptr.nh->n;
-	}
+  	list_add_tail(ptr.lh, &used_neighbours_list);
+  	entity = &ptr.nh->n;
+ 	}
 
 	ptr.nh->ctime = 0;
 	memcpy(entity->hw_addr, hw_addr, ETH_ALEN);
 	entity->if_handler = if_handler;
 	entity->ip_addr = ip_addr;
 	entity->flags = flags;
-
 
 	return ENOERR;
 }
@@ -188,11 +185,5 @@ int neighbour_get_next(struct neighbour **pentity) {
 }
 
 static int unit_init(void) {
-	int res;
-
-	res = timer_set(&neighbour_refresh_timer, NEIGHBOUR_CHECK_INTERVAL, neighbour_refresh, NULL);
-	if (res < 0) {
-		return res;
-	}
-	return ENOERR;
-}
+	return timer_set(&neighbour_refresh_timer, NEIGHBOUR_CHECK_INTERVAL, neighbour_refresh, NULL);
+ }
