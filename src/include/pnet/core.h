@@ -23,6 +23,7 @@
 
 extern int pnet_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx);
 
+extern net_node_t pnet_node_get(net_node_t node, net_id_t id);
 extern int pnet_node_attach(net_node_t node, net_id_t id, net_node_t parent);
 
 extern net_node_t pnet_node_alloc(net_addr_t addr, net_proto_t proto);
