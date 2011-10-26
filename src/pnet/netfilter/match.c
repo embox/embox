@@ -14,6 +14,7 @@
 #include <mem/objalloc.h>
 #include <lib/list.h>
 #include <assert.h>
+#include <net/udp.h>
 
 #define NET_NODES_CNT 0x10
 
@@ -73,6 +74,11 @@ static int match_ip(net_packet_t packet, match_rule_t rule) {
 	return NET_HND_DFAULT;
 }
 
+static int match_port(net_packet_t packet, match_rule_t rule) {
+	return (rule->src_port == packet->skbuf->h.uh->source)
+			? 0 : NET_HND_DFAULT;
+}
+
 int match(net_packet_t packet) {
 	match_rule_t curr;
 	net_node_matcher_t node;
@@ -83,7 +89,8 @@ int match(net_packet_t packet) {
 	list_for_each (h, &node->match_rx_rules) {
 		curr = member_cast_out(h, struct match_rule, lnk);
 		if ((0 == match_hwaddrs(packet, curr))
-				&& (0 == match_ip(packet, curr))) {
+				&& (0 == match_ip(packet, curr))
+				&& (0 == match_port(packet, curr))) {
 			packet->node = curr->next_node;
 			return 0;
 		}
@@ -100,8 +107,11 @@ static int matcher_free(net_node_t node) {
 	return 0;
 }
 
-static struct net_proto hwaddr_matcher_proto = { .tx_hnd = match, .rx_hnd =
-		match, .free = matcher_free };
+static struct net_proto hwaddr_matcher_proto = {
+	.tx_hnd = match,
+	.rx_hnd = match,
+	.free = matcher_free
+};
 
 net_node_matcher_t pnet_get_node_matcher(void) {
 	net_node_matcher_t matcher = objalloc(&matcher_nodes);
