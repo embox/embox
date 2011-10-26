@@ -45,8 +45,7 @@ static int match_hwaddrs(net_packet_t packet, match_rule_t rule) {
 
 	h_src = packet->skbuf->mac.ethh->h_source;
 	t = rule->ether_header.h_source;
-	if ((memcmp(t, h_src, ETH_ALEN) == 0)
-			|| !(t[0] | t[1] | t[2] | t[3] | t[4] | t[5])) {
+	if (memcmp(t, h_src, ETH_ALEN) == 0) {
 		return 0;
 	}
 
