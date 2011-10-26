@@ -17,7 +17,8 @@
 
 #define NET_TX_DFAULT -1
 
-#define NET_HND_SUPPRESSED -2
+#define NET_HND_DFAULT     (0x01L << 0)
+#define NET_HND_SUPPRESSED (0x01L << 1)
 
 
 extern int pnet_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx);

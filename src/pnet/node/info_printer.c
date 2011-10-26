@@ -27,12 +27,12 @@ static void print_pack(net_packet_t pack) {
 
 static int net_info_tx_hnd(net_packet_t pack) {
 	print_pack(pack);
-	return NET_TX_DFAULT;
+	return NET_HND_DFAULT;
 }
 
 static int net_info_rx_hnd(net_packet_t pack) {
 	print_pack(pack);
-	return NET_RX_DFAULT;
+	return NET_HND_DFAULT;
 }
 
 static struct net_proto info_proto = {

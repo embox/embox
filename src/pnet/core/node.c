@@ -18,10 +18,7 @@ net_node_t pnet_node_alloc(net_addr_t addr, net_proto_t proto) {
 	node->node_addr = addr;
 	node->proto = proto;
 
-	for (int i = 0; i < CHILD_CNT; i++) {
-		node->children[i] = NULL;
-	}
-
+	node->rx_dfault = node->tx_dfault = NULL;
 	return node;
 }
 

@@ -37,9 +37,8 @@ struct net_node {
 	net_prior_t prior;
 	net_addr_t node_addr;
 	struct net_proto *proto;
-	struct net_node *parent;
-	struct net_node *children[CHILD_CNT];
-	struct net_node *dfault;
+	struct net_node *tx_dfault;
+	struct net_node *rx_dfault;
 	struct list_head match_rx_rules;
 	struct list_head match_tx_rules;
 };

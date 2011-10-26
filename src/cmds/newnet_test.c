@@ -28,7 +28,7 @@ int newnet_test_cmd(int argc, char *argv[]) {
 
 	sock = pnet_socket_open(NET_RX_DFAULT, dev);
 
-	pnet_path_set_prior((net_node_t) sock, 5);
+	//pnet_path_set_prior((net_node_t) sock, 5);
 
 	sock->node.id = SOCKET_N;
 

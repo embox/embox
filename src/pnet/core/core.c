@@ -46,22 +46,24 @@ int pnet_core_receive(net_node_t node, void *data, int len) {
 	return pnet_process(pack);
 }
 
-
-int pnet_node_attach(net_node_t node, net_id_t id, net_node_t parent) {
-	if (parent != NULL) {
-		if (id > 0) {
-			parent->children[id] = node;
-		} else if (id == NET_RX_DFAULT) {
-			parent->dfault = node;
-		}
+int pnet_node_attach(net_node_t node, net_id_t id, net_node_t other) {
+	if (other == NULL) {
+		return -1;
 	}
 
-	node->prior = 0;
-	node->parent = parent;
+	switch (id) {
+	case NET_RX_DFAULT:
+		other->rx_dfault = node;
+		break;
+	default:
+		break;
+	}
+
+	node->tx_dfault = other;
 
 	return 0;
 }
-
+#if 0
 net_node_t pnet_proto_attach(net_proto_t proto, net_addr_t addr, net_node_t parent) {
       	net_node_t node = pnet_node_alloc(addr, proto);
 
@@ -69,7 +71,7 @@ net_node_t pnet_proto_attach(net_proto_t proto, net_addr_t addr, net_node_t pare
 
 	return node;
 }
-
+#endif
 static int net_core_init(void) {
 	net_node_t devs = pnet_dev_get_entry();
 	net_node_t info = pnet_get_node_info();

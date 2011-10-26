@@ -41,7 +41,7 @@ static struct net_node dev_entry;
 static struct net_proto dev_entry_proto;
 
 static int entry_tx_hnd(net_packet_t pack) {
-	pack->node = pack->node->parent; //TODO
+	pack->node = pack->node->tx_dfault; //TODO
 	return 0;
 }
 
@@ -52,9 +52,7 @@ net_dev_t pnet_dev_register(net_dev_ops_t dev_ops) {
 	dev->id = ((int) dev - (int) net_devs.storage) / sizeof (struct net_dev);
 	dev->node = pnet_node_alloc((net_addr_t) dev, &dev_proto);
 
-	dev->node->dfault = &dev_entry;
-
-	dev_entry.children[dev->id] = dev->node;
+	dev->node->rx_dfault = &dev_entry;
 
 	return dev;
 }
@@ -69,7 +67,7 @@ static int net_dev_init(void) {
 	pnet_proto_init(&dev_entry_proto, 0, NULL, entry_tx_hnd);
 
 	dev_entry.proto = &dev_entry_proto;
-        dev_entry.dfault = pnet_get_node_null();
+        dev_entry.rx_dfault = pnet_get_node_null();
 
 	return 0;
 }

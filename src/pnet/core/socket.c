@@ -44,7 +44,7 @@ static int tx_hnd(net_packet_t pack) {
 	pack->orig_data = new_data;
 	pack->len = new_len;
 
-	return NET_TX_DFAULT;
+	return NET_HND_DFAULT;
 }
 
 
