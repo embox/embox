@@ -51,6 +51,7 @@ static void neighbour_refresh(struct sys_timer *timer, void *param) {
 		void *v;
 	} ptr;
 
+
 	list_for_each_safe(ptr.lh, tmp, &used_neighbours_list) {
 		entity = &ptr.nh->n;
 		if (entity->flags == ATF_COM) {
@@ -108,6 +109,9 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 
 	if (ptr.lh == &used_neighbours_list) { /* if not found then alloc new */
 		ptr.v = pool_alloc(&neighbour_pool);
+
+		list_add_tail(ptr.lh, &used_neighbours_list);
+
 		if (ptr.v == NULL) {
 			return -ENOMEM;
 		}
@@ -120,12 +124,12 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 	entity->ip_addr = ip_addr;
 	entity->flags = flags;
 
-	list_add_tail(ptr.lh, &used_neighbours_list);
 
 	return ENOERR;
 }
 
 int neighbour_delete(struct in_device *if_handler, in_addr_t ip_addr) {
+	struct list_head *tmp;
 	struct neighbour *entity;
 	union {
 		struct neighbour_head *nh;
@@ -137,7 +141,7 @@ int neighbour_delete(struct in_device *if_handler, in_addr_t ip_addr) {
 		return -EINVAL;
 	}
 
-	list_for_each(ptr.lh, &used_neighbours_list) {
+	list_for_each_safe(ptr.lh, tmp, &used_neighbours_list) {
 		entity = &ptr.nh->n;
 		if ((entity->ip_addr == ip_addr)
 				&& (entity->if_handler == if_handler)) {
@@ -190,6 +194,5 @@ static int unit_init(void) {
 	if (res < 0) {
 		return res;
 	}
-
 	return ENOERR;
 }
