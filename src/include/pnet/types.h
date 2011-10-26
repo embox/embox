@@ -23,12 +23,14 @@ struct net_node;
 typedef struct net_packet *net_packet_t;
 
 typedef int (*net_hnd)(net_packet_t pack);
+typedef int (*net_node_free_hnd)(struct net_node *node);
 
 typedef struct net_proto {
 	net_id_t proto_id;
 	net_hnd rx_hnd;
 	net_hnd tx_hnd;
-}*net_proto_t;
+	net_node_free_hnd free;
+} *net_proto_t;
 
 #define CHILD_CNT 0x10
 
@@ -39,8 +41,6 @@ struct net_node {
 	struct net_proto *proto;
 	struct net_node *tx_dfault;
 	struct net_node *rx_dfault;
-	struct list_head match_rx_rules;
-	struct list_head match_tx_rules;
 };
 typedef struct net_node *net_node_t;
 
@@ -85,18 +85,5 @@ struct net_dev {
 	net_dev_ops_t ops;
 };
 typedef struct net_dev *net_dev_t;
-
-struct match_rule {
-	struct ethhdr ether_header;
-	in_addr_t dest_ip;
-	in_addr_t src_ip;
-	uint8_t proto;
-	uint16_t dest_port;
-	uint16_t src_port;
-	int next_node;
-	struct list_head lnk;
-};
-
-typedef struct match_rule match_rule_t;
 
 #endif

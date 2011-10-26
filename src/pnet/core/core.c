@@ -8,6 +8,8 @@
 
 #include <pnet/core.h>
 #include <pnet/node.h>
+#include <pnet/match.h>
+
 #include <mem/objalloc.h>
 
 #include <embox/unit.h>
@@ -47,22 +49,31 @@ int pnet_core_receive(net_node_t node, void *data, int len) {
 }
 
 int pnet_node_attach(net_node_t node, net_id_t id, net_node_t other) {
-	if (other == NULL) {
+	if (node == NULL) {
 		return -1;
 	}
 
 	switch (id) {
 	case NET_RX_DFAULT:
-		other->rx_dfault = node;
+		node->rx_dfault = other;
 		break;
-	default:
-		break;
+	case NET_TX_DFAULT:
+		node->tx_dfault = other;
 	}
-
-	node->tx_dfault = other;
 
 	return 0;
 }
+
+net_node_t pnet_node_get(net_node_t node, net_id_t id) {
+	switch (id) {
+	case NET_RX_DFAULT:
+		return node->rx_dfault;
+	case NET_TX_DFAULT:
+		return node->tx_dfault;
+	}
+	return NULL;
+}
+
 #if 0
 net_node_t pnet_proto_attach(net_proto_t proto, net_addr_t addr, net_node_t parent) {
       	net_node_t node = pnet_node_alloc(addr, proto);
@@ -73,13 +84,36 @@ net_node_t pnet_proto_attach(net_proto_t proto, net_addr_t addr, net_node_t pare
 }
 #endif
 static int net_core_init(void) {
+	char src_mac[] = { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x01 };
+
 	net_node_t devs = pnet_dev_get_entry();
 	net_node_t info = pnet_get_node_info();
 	net_node_t lin_gate = pnet_get_node_linux_gate();
 
-	pnet_node_attach(info, NET_RX_DFAULT, devs);
+	net_node_matcher_t match = pnet_get_node_matcher();
+	net_node_t match_node = (net_node_t) match;
 
-	pnet_node_attach(lin_gate, NET_RX_DFAULT, info);
+	match_rule_t rule;
+
+	pnet_node_attach(devs, NET_RX_DFAULT, lin_gate);
+
+	/* */
+
+	pnet_node_attach(devs, NET_RX_DFAULT, match_node);
+
+	pnet_node_attach(match_node, NET_RX_DFAULT, lin_gate);
+
+
+	/* */
+
+	rule = pnet_rule_alloc();
+
+	pnet_rule_set_eth_src(rule, src_mac);
+	pnet_rule_set_next_node(rule, info);
+
+	add_new_rx_rule(rule, match);
+
+	pnet_node_attach(info, NET_RX_DFAULT, lin_gate);
 
 	return 0;
 }

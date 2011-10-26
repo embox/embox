@@ -15,7 +15,7 @@
 
 #define NET_RX_DFAULT -1
 
-#define NET_TX_DFAULT -1
+#define NET_TX_DFAULT -2
 
 #define NET_HND_DFAULT     (0x01L << 0)
 #define NET_HND_SUPPRESSED (0x01L << 1)
@@ -26,6 +26,7 @@ extern int pnet_proto_init(net_proto_t proto, net_id_t id, net_hnd rx, net_hnd t
 extern int pnet_node_attach(net_node_t node, net_id_t id, net_node_t parent);
 
 extern net_node_t pnet_node_alloc(net_addr_t addr, net_proto_t proto);
+extern net_node_t pnet_node_init(net_node_t node, net_addr_t addr, net_proto_t proto);
 
 extern net_packet_t pnet_pack_alloc(net_node_t node, enum net_packet_dir dir, void *data, int len);
 

@@ -13,46 +13,80 @@
 #include <lib/list.h>
 #include <assert.h>
 
-OBJALLOC_DEF(match_rules, match_rule_t, MAX_RULE_COUNT);
+#define NET_NODES_CNT 0x10
+
+OBJALLOC_DEF(matcher_nodes, struct net_node_matcher, NET_NODES_CNT);
 
 net_node_t create_matcher(net_hnd rx_matcher, net_hnd tx_matcher) {
 	net_proto_t proto = NULL;
 
 	proto->rx_hnd = rx_matcher;
 	proto->tx_hnd = tx_matcher;
+
 	return (net_node_t) pnet_node_alloc((net_addr_t)0, proto);
 }
 
-int add_new_rx_rule(match_rule_t *new_rule, net_node_t node) {
-	list_add(&new_rule->lnk, &node->match_rx_rules);
+int add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t node) {
+
+	list_add_tail(&new_rule->lnk, &node->match_rx_rules);
+
 	return 0;
 }
 
-int hwaddrs_rule_create(char *h_dest, net_node_t node) {
-	match_rule_t *new_rule;
+int hwaddrs_rule_create(net_node_matcher_t node, char *h_src, net_node_t next_node) {
+	match_rule_t new_rule = pnet_rule_alloc();
 
-	new_rule = (match_rule_t*) objalloc(&match_rules);
-	memcpy((void*) new_rule->ether_header.h_dest, (void*) h_dest, ETH_ALEN);
-	list_add(&node->match_rx_rules, &new_rule->lnk);
+	memcpy((void*) new_rule->ether_header.h_source, (void*) h_src, ETH_ALEN);
+	new_rule->next_node = next_node;
+
+	add_new_rx_rule(new_rule, node);
+
 	return 0;
 }
 
-int match_hwaddrs(net_packet_t packet) {
-	unsigned char *h_dest;
-	match_rule_t *curr;
-	net_node_t node;
+static int match_hwaddrs(net_packet_t packet) {
+	unsigned char *h_src;
+	match_rule_t curr;
+	net_node_matcher_t node;
 	struct list_head *h;
 
-	node = packet->node;
-	h_dest = packet->skbuf->mac.ethh->h_dest;
-	h = &curr->lnk;
+	node = (net_node_matcher_t) packet->node;
+	h_src = packet->skbuf->mac.ethh->h_source;
+
 	list_for_each (h, &node->match_rx_rules) {
-		curr = member_cast_out(h, match_rule_t, lnk);
+		curr = member_cast_out(h, struct match_rule, lnk);
 		assert(&curr->ether_header);
-		if (memcmp((void*)&curr->ether_header.h_dest, (void*)h_dest, ETH_ALEN)) {
-			return curr->next_node;
+		if (0 == memcmp((void*)&curr->ether_header.h_source, (void *) h_src, ETH_ALEN)) {
+			packet->node = curr->next_node;
+			return 0;
 		}
 	}
 
+	return NET_HND_DFAULT;
+}
+
+static int matcher_free(net_node_t node) {
+	net_node_matcher_t m = (net_node_matcher_t) node;
+
+	objfree(&matcher_nodes, m);
+
 	return 0;
 }
+
+static struct net_proto hwaddr_matcher_proto = {
+	.tx_hnd = match_hwaddrs,
+	.rx_hnd = match_hwaddrs,
+	.free = matcher_free
+};
+
+net_node_matcher_t pnet_get_node_matcher(void) {
+	net_node_matcher_t matcher = objalloc(&matcher_nodes);
+
+	pnet_node_init(&matcher->node, 0, &hwaddr_matcher_proto);
+
+	INIT_LIST_HEAD(&matcher->match_rx_rules);
+	INIT_LIST_HEAD(&matcher->match_tx_rules);
+
+	return matcher;
+}
+
