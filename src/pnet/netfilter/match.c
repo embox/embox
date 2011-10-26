@@ -40,16 +40,15 @@ int hwaddrs_rule_create(net_node_matcher_t node, char *h_src,
 
 static int match_hwaddrs(net_packet_t packet, match_rule_t rule) {
 	unsigned char *h_src, *t;
+	size_t i;
 
 	assert(rule != NULL);
 
 	h_src = packet->skbuf->mac.ethh->h_source;
 	t = rule->ether_header.h_source;
-	if (memcmp(t, h_src, ETH_ALEN) == 0) {
-		return 0;
-	}
+	for (n = ETH_ALEN; (*t == *h_src) || (*t == -1) && n; --n, ++t, ++h_src) ;
 
-	return NET_HND_DFAULT;
+	return n == 0 ? 0 : NET_HND_DFAULT;
 }
 
 static int match_ip(net_packet_t packet, match_rule_t rule) {
