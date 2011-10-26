@@ -46,24 +46,27 @@ static int match_hwaddrs(net_packet_t packet, match_rule_t rule) {
 
 	h_src = packet->skbuf->mac.ethh->h_source;
 	t = rule->ether_header.h_source;
-	for (n = ETH_ALEN; (*t == *h_src) || (*t == -1) && n; --n, ++t, ++h_src) ;
+
+	for (n = ETH_ALEN; ((*t == *h_src) || (*t == -1)) && n; --n, ++t, ++h_src);
 
 	return n == 0 ? 0 : NET_HND_DFAULT;
 }
 
 static int match_ip(net_packet_t packet, match_rule_t rule) {
 	in_addr_t ip;
+	in_addr_t rule_ip;
 
 	ip = packet->skbuf->nh.iph->saddr;
+	rule_ip = rule->src_ip;
 	assert(rule != NULL);
 
 	for (int i = 0; i < 4; i++) {
-		if (rule->src_ip & 255 << i) {
-			rule->src_ip |= 255 << i;
+		if (rule_ip & 255 << i) {
+			rule_ip |= 255 << i;
 			ip |= 255 << i;
 		}
 	}
-	if ((rule->src_ip ^ ip) == 0) {
+	if ((rule_ip ^ ip) == 0) {
 		return 0;
 	}
 
@@ -97,11 +100,8 @@ static int matcher_free(net_node_t node) {
 	return 0;
 }
 
-static struct net_proto hwaddr_matcher_proto = {
-		.tx_hnd = match,
-		.rx_hnd = match,
-		.free = matcher_free
-};
+static struct net_proto hwaddr_matcher_proto = { .tx_hnd = match, .rx_hnd =
+		match, .free = matcher_free };
 
 net_node_matcher_t pnet_get_node_matcher(void) {
 	net_node_matcher_t matcher = objalloc(&matcher_nodes);
@@ -113,4 +113,3 @@ net_node_matcher_t pnet_get_node_matcher(void) {
 
 	return matcher;
 }
-
