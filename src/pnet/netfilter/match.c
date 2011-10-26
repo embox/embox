@@ -40,7 +40,7 @@ int hwaddrs_rule_create(net_node_matcher_t node, char *h_src,
 
 static int match_hwaddrs(net_packet_t packet, match_rule_t rule) {
 	unsigned char *h_src, *t;
-	size_t i;
+	size_t n;
 
 	assert(rule != NULL);
 
