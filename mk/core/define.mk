@@ -548,7 +548,8 @@ endef
 # The main structure used by the outer expansion phase is an expansion stack.
 # The stack holds an information about how native make expansion engine
 # handles a value prepared by inner phase.
-# Each element of the stack corresponds to a function call.
+# Each element of the stack corresponds to a function call or an expression
+# inside parens.
 #
 
 # The stack element is represented by a single word in form:
