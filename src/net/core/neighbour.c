@@ -51,7 +51,6 @@ static void neighbour_refresh(struct sys_timer *timer, void *param) {
 		void *v;
 	} ptr;
 
-
 	list_for_each_safe(ptr.lh, tmp, &used_neighbours_list) {
 		entity = &ptr.nh->n;
 		if (entity->flags == ATF_COM) {
@@ -110,17 +109,19 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 	if (ptr.lh == &used_neighbours_list) { /* if not found then alloc new */
 		ptr.v = pool_alloc(&neighbour_pool);
 		if (ptr.v == NULL) {
-      return -ENOMEM;
+			return -ENOMEM;
 		}
-  	list_add_tail(ptr.lh, &used_neighbours_list);
-  	entity = &ptr.nh->n;
- 	}
+		INIT_LIST_HEAD(ptr.lh);
+		entity = &ptr.nh->n;
+	}
 
 	ptr.nh->ctime = 0;
 	memcpy(entity->hw_addr, hw_addr, ETH_ALEN);
 	entity->if_handler = if_handler;
 	entity->ip_addr = ip_addr;
 	entity->flags = flags;
+
+	list_move(ptr.lh, &used_neighbours_list);
 
 	return ENOERR;
 }
