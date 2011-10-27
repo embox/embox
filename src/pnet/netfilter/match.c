@@ -31,7 +31,8 @@ int hwaddrs_rule_create(net_node_matcher_t node, char *h_src,
 		net_node_t next_node) {
 	match_rule_t new_rule = pnet_rule_alloc();
 
-	memcpy((void*) new_rule->ether_header.h_source, (void*) h_src, ETH_ALEN);
+	memcpy((void*) new_rule->skbuf->mac.ethh->h_source, (void*) h_src,
+			ETH_ALEN);
 	new_rule->next_node = next_node;
 
 	add_new_rx_rule(new_rule, node);
@@ -39,55 +40,26 @@ int hwaddrs_rule_create(net_node_matcher_t node, char *h_src,
 	return 0;
 }
 
-static int match_hwaddrs(net_packet_t packet, match_rule_t rule) {
-	unsigned char *h_src, *t;
-	size_t n;
-
-	assert(rule != NULL);
-
-	h_src = packet->skbuf->mac.ethh->h_source;
-	t = rule->ether_header.h_source;
-
-	for (n = ETH_ALEN; ((*t == *h_src) || (*t == -1)) && n; --n, ++t, ++h_src);
-
-	return n == 0 ? 0 : NET_HND_DFAULT;
-}
-
-static int match_ip(net_packet_t packet, match_rule_t rule) {
-	in_addr_t ip, rule_ip;
-	unsigned int mask = 255;
-
-	ip = packet->skbuf->nh.iph->saddr;
-	rule_ip = rule->src_ip;
-	assert(rule != NULL);
-
-	for (int i = 0; i < 4; i++) {
-		mask <<= i;
-		if ((rule_ip & mask) == mask) {
-			ip |= mask;
-		}
-	}
-
-	return (rule_ip == ip) ? 0 : NET_HND_DFAULT;
-}
-
-static int match_port(net_packet_t packet, match_rule_t rule) {
-	return (rule->src_port == packet->skbuf->h.uh->source)
-			? 0 : NET_HND_DFAULT;
-}
-
 int match(net_packet_t packet) {
-	match_rule_t curr;
+	unsigned char *pack_curr, *rule_curr;
 	net_node_matcher_t node;
+	match_rule_t curr;
 	struct list_head *h;
+	size_t n;
 
 	node = (net_node_matcher_t) packet->node;
 
 	list_for_each (h, &node->match_rx_rules) {
 		curr = member_cast_out(h, struct match_rule, lnk);
-		if ((0 == match_hwaddrs(packet, curr))
-				&& (0 == match_ip(packet, curr))
-				&& (0 == match_port(packet, curr))) {
+		rule_curr = curr->header;
+		pack_curr = (unsigned char*) packet->skbuf->h.uh;
+
+		for (n = MAX_PACK_HEADER_SIZE;
+				((*pack_curr == *rule_curr) || (*rule_curr == -1)) && n;
+				--n, ++pack_curr, ++rule_curr)
+			;
+
+		if (n == 0) {
 			packet->node = curr->next_node;
 			return 0;
 		}
@@ -104,11 +76,8 @@ static int matcher_free(net_node_t node) {
 	return 0;
 }
 
-static struct net_proto hwaddr_matcher_proto = {
-	.tx_hnd = match,
-	.rx_hnd = match,
-	.free = matcher_free
-};
+static struct net_proto hwaddr_matcher_proto = { .tx_hnd = match, .rx_hnd =
+		match, .free = matcher_free };
 
 net_node_matcher_t pnet_get_node_matcher(void) {
 	net_node_matcher_t matcher = objalloc(&matcher_nodes);
