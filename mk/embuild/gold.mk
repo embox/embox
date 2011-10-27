@@ -98,7 +98,7 @@ define __gold_dfa_accept
 endef
 
 __gold_dfa_accept_begin  = $$$(\p[)call __gold_dfa_accept,
-__gold_dfa_accept_end    = ,$(subst -,,$(__gold_dfa_state__))$(\p])
+__gold_dfa_accept_end    = ,$(subst +,,$(__gold_dfa_state__))$(\p])
 
 # 1. Initial state
 # ... States (unused)
@@ -110,6 +110,7 @@ define builtin_func_gold-dfa-table
 		#   The code to expand to get all tokens instantiated.
 		$(__gold_prefix)_dfa_table,
 		# =
+
 		$${eval \
 			__gold_dfa_state__ := $1
 		}
@@ -121,7 +122,7 @@ define builtin_func_gold-dfa-table
 					$$($(__gold_prefix_dfa)$$(__gold_dfa_state__))
 			}
 
-			$$(if $$(findstring -,$$(__gold_dfa_state__)),
+			$$(if $$(findstring +,$$(__gold_dfa_state__)),
 				$$(__gold_dfa_accept_end)
 
 				$${eval \
@@ -134,6 +135,7 @@ define builtin_func_gold-dfa-table
 		)
 		$$(__gold_dfa_accept_end)
 	)
+	$(call var_assign_simple,$(__gold_prefix_dfa),)# Cyclic error until EOF
 endef
 
 # 1. Id
@@ -144,8 +146,9 @@ define builtin_func_gold-dfa-state
 		# Params:
 		#   1. Char code.
 		# Return:
-		#   Non-negative number: Next state Id
-		#   Other negative: Accepted symbol Id (including -1 for error)
+		#   Plain number: Next state Id;
+		#   '+' Number: Accepted symbol Id;
+		#   Empty on error.
 		$(__gold_prefix_dfa)$1,
 		# =
 		$$(info DFA state $1, char $$(word $$1,$$(ascii_table)))
@@ -153,7 +156,7 @@ define builtin_func_gold-dfa-state
 			$(foreach a,$(words-from 3,$(builtin_args_list)),
 				$($a)
 			)
-			-$(2:-1=1)
+			$(if $(findstring $2,-1),,+$2)
 		)
 	)
 endef
