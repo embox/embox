@@ -56,22 +56,21 @@ static int match_hwaddrs(net_packet_t packet, match_rule_t rule) {
 static int match_ip(net_packet_t packet, match_rule_t rule) {
 	in_addr_t ip;
 	in_addr_t rule_ip;
+	unsigned int mask = 255;
 
 	ip = packet->skbuf->nh.iph->saddr;
 	rule_ip = rule->src_ip;
 	assert(rule != NULL);
 
 	for (int i = 0; i < 4; i++) {
-		if (rule_ip & 255 << i) {
-			rule_ip |= 255 << i;
-			ip |= 255 << i;
+		mask <<= i;
+		if ((ip & mask) == mask) {
+			ip |= mask;
+			rule_ip |= mask;
 		}
 	}
-	if ((rule_ip ^ ip) == 0) {
-		return 0;
-	}
 
-	return NET_HND_DFAULT;
+	return (rule_ip == ip) ? 0 : NET_HND_DFAULT;
 }
 
 static int match_port(net_packet_t packet, match_rule_t rule) {
