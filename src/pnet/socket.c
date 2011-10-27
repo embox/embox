@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pnet/core.h>
+#include <pnet/socket.h>
 #include <embox/unit.h>
 #include <mem/objalloc.h>
 
@@ -65,8 +66,8 @@ net_socket_t pnet_socket_open(net_id_t id, net_node_t parent) {
 	return sock;
 }
 
-int pnet_core_send(net_node_t node, void *data, int len) {
-	net_packet_t pack = pnet_pack_alloc(node, NET_PACKET_TX, data, len);
+int pnet_socket_send(net_socket_t node, void *data, int len) {
+	net_packet_t pack = pnet_pack_alloc((net_node_t) node, NET_PACKET_TX, data, len);
 
 	return pnet_process(pack);
 }

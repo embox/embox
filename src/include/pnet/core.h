@@ -30,12 +30,7 @@ extern net_node_t pnet_node_alloc(net_addr_t addr, net_proto_t proto);
 extern net_node_t pnet_node_init(net_node_t node, net_addr_t addr, net_proto_t proto);
 
 extern net_packet_t pnet_pack_alloc(net_node_t node, enum net_packet_dir dir, void *data, int len);
-
 extern int pnet_pack_free(net_packet_t pack);
-
-extern int pnet_core_send(net_node_t node, void *data, int len);
-
-extern int pnet_core_receive(net_node_t  node, void *data, int len);
 
 extern int pnet_path_set_prior(net_node_t node, net_prior_t prior);
 
@@ -46,8 +41,5 @@ extern net_dev_t pnet_dev_register(net_dev_ops_t dev_ops);
 extern net_node_t pnet_dev_get_entry(void);
 
 extern int pnet_rx_thread_add(net_packet_t pack);
-
-////
-extern net_socket_t pnet_socket_open(net_id_t id, net_node_t parent);
 
 #endif

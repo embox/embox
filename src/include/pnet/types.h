@@ -23,7 +23,7 @@ struct net_node;
 typedef struct net_packet *net_packet_t;
 
 typedef int (*net_hnd)(net_packet_t pack);
-typedef int (*net_node_free_hnd)(struct net_node *node);
+typedef int (*net_node_free_hnd)(struct net_node *node); /* destructor */
 
 typedef struct net_proto {
 	net_id_t proto_id;
@@ -31,8 +31,6 @@ typedef struct net_proto {
 	net_hnd tx_hnd;
 	net_node_free_hnd free;
 } *net_proto_t;
-
-#define CHILD_CNT 0x10
 
 struct net_node {
 	int id;
@@ -43,13 +41,6 @@ struct net_node {
 	struct net_node *rx_dfault;
 };
 typedef struct net_node *net_node_t;
-
-#define SOCK_BUF_LEN 0x20
-
-typedef struct net_socket {
-	struct net_node node;
-	char buf[SOCK_BUF_LEN];
-}*net_socket_t;
 
 enum net_packet_dir {
 	NET_PACKET_RX, NET_PACKET_TX

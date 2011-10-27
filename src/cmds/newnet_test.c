@@ -1,4 +1,4 @@
-/**
+/*
  * @file
  * @brief
  *
@@ -7,8 +7,10 @@
  */
 
 #include <errno.h>
-#include <pnet/core.h>
 #include <string.h>
+
+#include <pnet/socket.h>
+#include <pnet/core.h>
 
 #include <embox/cmd.h>
 
@@ -32,7 +34,7 @@ int newnet_test_cmd(int argc, char *argv[]) {
 
 	sock->node.id = SOCKET_N;
 
-	pnet_core_send((net_node_t) sock, argv[1], strlen(argv[1]));
+	pnet_socket_send(sock, argv[1], strlen(argv[1]));
 
 	return 0;
 }
