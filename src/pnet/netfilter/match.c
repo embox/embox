@@ -54,8 +54,7 @@ static int match_hwaddrs(net_packet_t packet, match_rule_t rule) {
 }
 
 static int match_ip(net_packet_t packet, match_rule_t rule) {
-	in_addr_t ip;
-	in_addr_t rule_ip;
+	in_addr_t ip, rule_ip;
 	unsigned int mask = 255;
 
 	ip = packet->skbuf->nh.iph->saddr;
@@ -64,9 +63,8 @@ static int match_ip(net_packet_t packet, match_rule_t rule) {
 
 	for (int i = 0; i < 4; i++) {
 		mask <<= i;
-		if ((ip & mask) == mask) {
+		if ((rule_ip & mask) == mask) {
 			ip |= mask;
-			rule_ip |= mask;
 		}
 	}
 
