@@ -15,16 +15,37 @@ include mk/core/define.mk
 include mk/util/var/assign.mk
 
 ascii_table = \
-		SOH	STX	ETX	EOT	ENQ	ACK	BEL	BS	TAB	LF	VT	FF	CR	SO	SI	\
-	DLE	DC1	DC2	DC3	DC4	NAK	SYN	ETB	CAN	EM	SUB	ESC	FS	GS	RS	US	\
-	SP	!	"	\#	$	%	&	'	(	)	*	+	,	—	.	/	\
-	0	1	2	3	4	5	6	7	8	9	 :	 ;	<	=	>	?	\
-	@	A	B	C	D	E	F	G	H	I	J	K	L	M	N	O	\
-	P	Q	R	S	T	U	V	W	X	Y	Z	[	\	]	^	_	\
-	`	a	b	c	d	e	f	g	h	i	j	k	l	m	n	o	\
-	p	q	r	s	t	u	v	w	x	y	z	{	|	}	~	DEL
+       SOH STX ETX EOT ENQ ACK BEL BS  TAB LF  VT  FF  CR  SO  SI  \
+   DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US  \
+   SP  !   "   \#  $   %   &   '   (   )   *   +   ,   —   .   /   \
+   0   1   2   3   4   5   6   7   8   9   :   ;   <   =   >   ?   \
+   @   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O   \
+   P   Q   R   S   T   U   V   W   X   Y   Z   [   \   ]   ^   _   \
+   `   a   b   c   d   e   f   g   h   i   j   k   l   m   n   o   \
+   p   q   r   s   t   u   v   w   x   y   z   {   |   }   ~   DEL
+ascii_table := $(strip $(value ascii_table))
 
-ascii_table := $(subst $(\t),$(\s),$(value ascii_table))
+# Chars sorted by usage frequency (got from C source file of 1.5MB size).
+# Only the first half of the ASCII table is actually counted (0-127).
+sorted_charset := \
+      32  116 101 95  115 105 114 110 99  97  40  41  111 117 100 \
+  10  108 112 59  34  109 103 102 118 42  44  98  107 104 48  121 \
+  61  120 123 125 49  113 119 45  62  38  58  50  69  54  46  37  \
+  84  52  60  51  76  80  122 82  92  73  78  65  43  33  83  85  \
+  67  79  68  56  91  93  77  124 70  53  71  63  106 72  86  75  \
+  55  66  47  87  88  89  57  81  126 90  74  94  35  39  64  36  \
+  1   2   3   4   5   6   7   8   9   11  12  13  14  15  16  17  \
+  18  19  20  21  22  23  24  25  26  27  28  29  30  31  96  127 \
+  128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 \
+  144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 \
+  160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 \
+  176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 \
+  192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 \
+  208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 \
+  224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 \
+  240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 \
+  0
+sorted_charset := $(strip $(sorted_charset))
 
 __gold_prefix = $(call builtin_tag,gold-parser)
 
@@ -39,6 +60,10 @@ define builtin_tag_gold-parser
 endef
 
 define builtin_func_gold-parser
+	$(info $(__gold_prefix)%)
+	${eval \
+		__def_ignore += $(__gold_prefix)%
+	}
 endef
 
 __gold_prefix_symbol = $(__gold_prefix)_symbol
@@ -84,8 +109,17 @@ builtin_func_gold-charset-table =# Noop
 # ... Char codes
 define builtin_func_gold-charset
 	$(call var_assign_recursive_sl,$(__gold_prefix_charset)$1,
-		$(foreach a,$(nofirstword $(builtin_args_list)),
-			$($a)
+		$$(findstring |$$1|,
+			|
+			$(subst $(\s),|,
+				$(filter \
+					$(foreach a,$(nofirstword $(builtin_args_list)),
+						$($a)
+					),
+					$(sorted_charset)
+				)
+			)
+			|
 		)
 	)
 endef
@@ -97,43 +131,43 @@ define __gold_dfa_accept
 		[$(foreach c,$1,$(word $c,$(ascii_table)))])
 endef
 
-__gold_dfa_accept_begin  = $$$(\p[)call __gold_dfa_accept,
-__gold_dfa_accept_end    = ,$(subst +,,$(__gold_dfa_state__))$(\p])
-
 # 1. Initial state
 # ... States (unused)
 define builtin_func_gold-dfa-table
 	$(call var_assign_recursive_sl,
 		# Params:
-		#   1. Input string
+		#   1. Input string as a list of decimal char codes.
 		# Return:
-		#   The code to expand to get all tokens instantiated.
-		$(__gold_prefix)_dfa_table,
-		# =
+		#   List of tokens in form 'char1.char2...charN./symbolID'.
+		$(__gold_prefix)_dfa_table,# =
 
 		$${eval \
-			__gold_dfa_state__ := $1
+			__gold_dfa_state__ := $1# Ground.
 		}
-
-		$$(__gold_dfa_accept_begin)
-		$$(foreach 1,$$1,
-			$${eval \
-				__gold_dfa_state__ := \
-					$$($(__gold_prefix_dfa)$$(__gold_dfa_state__))
-			}
-
-			$$(if $$(findstring +,$$(__gold_dfa_state__)),
-				$$(__gold_dfa_accept_end)
-
+		$$(subst .$(\s),.,
+			$$(foreach 1,$$1,
 				$${eval \
-					__gold_dfa_state__ := $$($(__gold_prefix_dfa)$1)
+					# Advance the state.
+					__gold_dfa_state__ := \
+						$$($(__gold_prefix_dfa)$$(__gold_dfa_state__))
 				}
 
-				$$(__gold_dfa_accept_begin)
-			)
-			$$1
+				$$(if $$(findstring /,$$(__gold_dfa_state__)),
+					# Got a token, emit it as is (with slash).
+					$$(__gold_dfa_state__)$(\s)
+
+					$${eval \
+						# Make a move from ground.
+						__gold_dfa_state__ := $$($(__gold_prefix_dfa)$1)
+					}
+				)
+				$$1.
+
+			)$(\s)
+			# We still may be in some state, land to the ground.
+			$$(or $$(call $(__gold_prefix_dfa)$$(__gold_dfa_state__),),/1)
+			# TODO emit EOF
 		)
-		$$(__gold_dfa_accept_end)
 	)
 	$(call var_assign_simple,$(__gold_prefix_dfa),)# Cyclic error until EOF
 endef
@@ -147,16 +181,16 @@ define builtin_func_gold-dfa-state
 		#   1. Char code.
 		# Return:
 		#   Plain number: Next state Id;
-		#   '+' Number: Accepted symbol Id;
+		#   '/' Number: Accepted symbol Id;
 		#   Empty on error.
-		$(__gold_prefix_dfa)$1,
-		# =
-		$$(info DFA state $1, char $$(word $$1,$$(ascii_table)))
+		$(__gold_prefix_dfa)$1,# =
+
+#		$$(info DFA state $1, char $$(word $$1,$$(ascii_table)))
 		$$(or \
 			$(foreach a,$(words-from 3,$(builtin_args_list)),
 				$($a)
 			)
-			$(if $(findstring $2,-1),,+$2)
+			$(if $(findstring $2,-1),,/$2)
 		)
 	)
 endef
@@ -164,7 +198,7 @@ endef
 # 1. Charset
 # 2. Target state
 define builtin_func_gold-dfa-edge
-	$$(if $$(filter $$1,$$($(__gold_prefix_charset)$1)),$2),
+	$$(if $$($(__gold_prefix_charset)$1),$2),
 endef
 
 define builtin_func_gold-lalr-table
