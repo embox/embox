@@ -52,7 +52,7 @@ int match(net_packet_t packet) {
 	list_for_each (h, &node->match_rx_rules) {
 		curr = member_cast_out(h, struct match_rule, lnk);
 		rule_curr = curr->header;
-		pack_curr = (unsigned char*) packet->skbuf->h.uh;
+		pack_curr = (unsigned char*) packet->skbuf->data;
 
 		for (n = MAX_PACK_HEADER_SIZE;
 				((*pack_curr == *rule_curr) || (*rule_curr == -1)) && n;
