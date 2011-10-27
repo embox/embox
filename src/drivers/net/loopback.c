@@ -18,8 +18,6 @@
 #include <net/skbuff.h>
 #include <stdlib.h>
 
-#include <pnet/linux_layer.h>
-
 EMBOX_UNIT_INIT(unit_init);
 
 static int loopback_xmit(sk_buff_t *skb, struct net_device *dev) {

@@ -138,7 +138,7 @@ int netif_rx(struct sk_buff *skb) {
 	return NET_RX_DROP;
 }
 
-int netif_receive_skb(sk_buff_t *skb) {
+int __netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
 
 	list_for_each_entry(q, &ptype_base, list) {

@@ -33,8 +33,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <pnet/linux_layer.h>
-
 EMBOX_UNIT_INIT(unit_init);
 
 static net_device_stats_t * get_eth_stat(struct net_device *dev);

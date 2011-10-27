@@ -19,27 +19,12 @@
 
 EMBOX_UNIT_INIT(pnet_linux_init);
 
-net_node_t pnet_get_dev_by_device(struct net_device *dev) {
-	return pnet_dev_get_entry();
-}
-
-int pnet_netif_rx(struct sk_buff *skb) {
-	net_packet_t pack;
-	net_node_t node = pnet_get_dev_by_device(skb->dev);
-
-        pack = pnet_pack_alloc(node, NET_PACKET_RX, skb->data, skb->len);
-
-	pack->skbuf = skb;
-
-	pnet_rx_thread_add(pack);
-
-	return 0;
-}
-
 struct net_proto linux_out;
 
+extern int __netif_receive_skb(sk_buff_t *skb);
+
 static int pnet_linux_rx(net_packet_t pack) {
-	netif_rx(pack->skbuf);
+	__netif_receive_skb(pack->skbuf);
 	return NET_HND_SUPPRESSED;
 }
 
