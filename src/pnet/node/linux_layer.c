@@ -19,7 +19,7 @@
 
 EMBOX_UNIT_INIT(pnet_linux_init);
 
-struct net_proto linux_out;
+static struct pnet_proto linux_out;
 
 extern int __netif_receive_skb(sk_buff_t *skb);
 

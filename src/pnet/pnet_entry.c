@@ -15,7 +15,13 @@
 #include <pnet/node.h>
 
 static net_node_t pnet_get_dev_by_device(struct net_device *dev) {
-	return pnet_dev_get_entry();
+	net_node_t node = dev->net_node;
+
+	if (NULL == node) {
+		return pnet_dev_get_entry();
+	}
+
+	return node;
 }
 
 int netif_receive_skb(sk_buff_t *skb) {

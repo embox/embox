@@ -14,6 +14,7 @@
 #include <net/in.h>
 #include <lib/list.h>
 
+#include <pnet/types.h>
 
 /* Backlog congestion levels */
 #define NET_RX_SUCCESS       0
@@ -133,6 +134,7 @@ typedef struct net_device {
 	void *priv; /**< pointer to private data      */
 	struct sk_buff_head dev_queue;
 	int (*poll)(struct net_device *dev);
+	struct net_node *net_node;
 } net_device_t;
 
 static inline void *netdev_priv(struct net_device *dev) {

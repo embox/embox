@@ -37,7 +37,7 @@ static int net_info_rx_hnd(net_packet_t pack) {
 	return NET_HND_DFAULT;
 }
 
-static struct net_proto info_proto = {
+static struct pnet_proto info_proto = {
 	.tx_hnd = net_info_tx_hnd,
 	.rx_hnd = net_info_rx_hnd
 };

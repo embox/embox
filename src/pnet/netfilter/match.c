@@ -76,8 +76,11 @@ static int matcher_free(net_node_t node) {
 	return 0;
 }
 
-static struct net_proto hwaddr_matcher_proto = { .tx_hnd = match, .rx_hnd =
-		match, .free = matcher_free };
+static struct pnet_proto hwaddr_matcher_proto = {
+	.tx_hnd = match,
+	.rx_hnd = match,
+	.free = matcher_free
+};
 
 net_node_matcher_t pnet_get_node_matcher(void) {
 	net_node_matcher_t matcher = objalloc(&matcher_nodes);

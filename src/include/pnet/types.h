@@ -25,18 +25,18 @@ typedef struct net_packet *net_packet_t;
 typedef int (*net_hnd)(net_packet_t pack);
 typedef int (*net_node_free_hnd)(struct net_node *node); /* destructor */
 
-typedef struct net_proto {
+typedef struct pnet_proto {
 	net_id_t proto_id;
 	net_hnd rx_hnd;
 	net_hnd tx_hnd;
 	net_node_free_hnd free;
-} *net_proto_t;
+} *pnet_proto_t;
 
 struct net_node {
 	int id;
 	net_prior_t prior;
 	net_addr_t node_addr;
-	struct net_proto *proto;
+	struct pnet_proto *proto;
 	struct net_node *tx_dfault;
 	struct net_node *rx_dfault;
 };

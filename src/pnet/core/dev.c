@@ -14,19 +14,26 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 
+#include <util/member.h>
+#include <net/netdevice.h>
+
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(net_dev_init);
 
-OBJALLOC_DEF(net_devs, struct net_dev, CONFIG_NET_DEVICES_QUANTITY);
+//OBJALLOC_DEF(net_devs, struct net_dev, CONFIG_NET_DEVICES_QUANTITY);
 
 static int tx_hnd(net_packet_t pack) {
-	net_dev_t dev = (net_dev_t) pack->node->node_addr;
-	dev->ops->tx(pack, dev);
+	net_node_t node = pack->node;
+	struct net_device *dev = member_cast_out(node, struct net_device, net_node);
+	struct sk_buff *skb = pack->skbuf;
+	skb->dev = dev;
+	dev_queue_xmit(skb);
+
 	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
-static struct net_proto dev_proto;
+static struct pnet_proto dev_proto;
 
 /* single entry for all devices
        devices
@@ -38,23 +45,23 @@ static struct net_proto dev_proto;
 */
 static struct net_node dev_entry;
 
-static struct net_proto dev_entry_proto;
+static struct pnet_proto dev_entry_proto;
 
 static int entry_tx_hnd(net_packet_t pack) {
 	pack->node = pack->node->tx_dfault; //TODO
 	return 0;
 }
 
-net_dev_t pnet_dev_register(net_dev_ops_t dev_ops) {
-	net_dev_t dev = objalloc(&net_devs);
+net_node_t pnet_dev_register(struct net_device *dev) {
+	net_node_t node = pnet_node_alloc(0, &dev_proto);
 
-	dev->ops = dev_ops;
-	dev->id = ((int) dev - (int) net_devs.storage) / sizeof (struct net_dev);
-	dev->node = pnet_node_alloc((net_addr_t) dev, &dev_proto);
+	pnet_node_attach(node, NET_RX_DFAULT, &dev_entry);
 
-	dev->node->rx_dfault = &dev_entry;
+	return node;
+}
 
-	return dev;
+pnet_proto_t pnet_dev_get_proto(void) {
+	return &dev_proto;
 }
 
 net_node_t pnet_dev_get_entry(void) {

@@ -17,7 +17,7 @@ static int net_null_rx_hnd(net_packet_t pack) {
 	return NET_HND_SUPPRESSED;
 }
 
-static struct net_proto null_proto = {
+static struct pnet_proto null_proto = {
 	.tx_hnd = net_null_tx_hnd,
 	.rx_hnd = net_null_rx_hnd
 };

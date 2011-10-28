@@ -49,7 +49,7 @@ static int tx_hnd(net_packet_t pack) {
 }
 
 
-static struct net_proto socket_proto;
+static struct pnet_proto socket_proto;
 
 static int net_socket_init(void) {
 	pnet_proto_init(&socket_proto, 0, rx_hnd, tx_hnd);
