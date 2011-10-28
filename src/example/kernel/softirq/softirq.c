@@ -21,7 +21,6 @@ EMBOX_EXAMPLE(run);
 #define SOFTIRQ_HELLO_NUMBER      10
 #define SOFTIRQ_REQURSION_NUMBER  11
 
-
 /*
  * Data should be zero terminated char*
  * Output string and set global flag

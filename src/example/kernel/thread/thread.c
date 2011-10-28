@@ -17,7 +17,6 @@
  */
 EMBOX_EXAMPLE(run);
 
-
 #define THREADS_QUANTITY      0x8 /* number of executing threads */
 
 static void *thread_handler(void *args) {
@@ -53,4 +52,3 @@ static int run(int argc, char **argv) {
 
 	return ENOERR;
 }
-

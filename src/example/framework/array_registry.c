@@ -29,7 +29,6 @@
 #include <string.h>
 #include <framework/example/self.h>
 
-
 /**
  * This macro is used for registration of this example at system
  * run - function which describe work of example
@@ -84,7 +83,6 @@ static struct example_array_registry_data *lookup_in_repo(char *name,
 	}
 	return NULL;
 }
-
 
 /** declare first item and add it to the repo */
 DEFINE_ITEM("first_item", first_run);

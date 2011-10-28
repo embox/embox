@@ -21,7 +21,6 @@
  */
 EMBOX_EXAMPLE(run);
 
-
 static void timer_handler(sys_timer_t* timer, void *param) {
 	*(volatile int *)param += 1;
 }

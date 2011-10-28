@@ -44,4 +44,3 @@ static int line_noise_run(int argc, char **argv) {
 
 	return ENOERR;
 }
-

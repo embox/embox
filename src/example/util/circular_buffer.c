@@ -27,4 +27,3 @@ static int circular_buffer_ex_run(int argc, char *argv[]) {
 
 	return 0;
 }
-

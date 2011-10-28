@@ -23,7 +23,6 @@ static int pnet_general_example(int argc, char **argv) {
 	net_node_t devs = pnet_dev_get_entry();
 	net_node_t lin_gate = pnet_get_node_linux_gate();
 
-
 	net_node_matcher_t match = pnet_get_node_matcher();
 	net_node_t match_node = (net_node_t) match;
 

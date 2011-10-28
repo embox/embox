@@ -3,7 +3,6 @@
  *
  * @brief Demonstrates wotk with "critical" API
  *
- *
  * @date 26.08.2011
  * @author Anton Bondarev
  */
