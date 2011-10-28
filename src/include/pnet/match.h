@@ -15,7 +15,7 @@
 
 #define MATCH_WILDCARD -1
 
-#define MAX_PACK_HEADER_SIZE	0x100
+#define MAX_PACK_HEADER_SIZE	0x30
 
 struct match_rule {
 	unsigned char header[MAX_PACK_HEADER_SIZE];
@@ -42,6 +42,24 @@ static inline void pnet_rule_set_mac_src(match_rule_t rule, char *h_src) {
 	memcpy((void*) rule->skbuf->mac.ethh->h_source, (void*) h_src, ETH_ALEN);
 }
 
+static inline void pnet_rule_set_pack_type(match_rule_t rule, uint16_t *port) {
+	memcpy((void*) &rule->skbuf->mac.ethh->h_proto, (void*) port,
+			sizeof(unsigned short));
+	/* TODO */
+	switch (rule->skbuf->mac.ethh->h_proto) {
+	case ETH_P_IP:
+		rule->skbuf->h.raw = rule->skbuf->nh.raw + IP_MIN_HEADER_SIZE;
+		break;
+	case ETH_P_LOOP:
+		break;
+	case ETH_P_ARP:
+		break;
+	case ETH_P_ALL:
+		rule->skbuf->mac.ethh->h_proto = -1;
+		break;
+	}
+}
+
 static inline void pnet_rule_set_ip_src(match_rule_t rule, net_addr_t ip_src) {
 	rule->skbuf->nh.iph->saddr = ip_src;
 }
@@ -52,9 +70,7 @@ static inline void pnet_rule_set_udp_port_src(match_rule_t rule,
 }
 
 static inline void pnet_rule_set_pack_type_ip(match_rule_t rule) {
-	rule->skbuf->mac.ethh = (struct ethhdr*) rule->header
-				+ sizeof(rule->skbuf->h) + sizeof(rule->skbuf->nh);
-	rule->skbuf->mac.ethh->h_proto = 0x0800;
+	rule->skbuf->mac.ethh->h_proto = ETH_P_IP;
 }
 
 //extern net_node_t pnet_create_matcher(net_hnd rx_matcher, net_hnd tx_matcher);

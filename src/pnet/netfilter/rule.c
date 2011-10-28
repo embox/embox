@@ -17,7 +17,7 @@
 
 OBJALLOC_DEF(match_rules, match_rule_t, MAX_RULE_COUNT);
 
-static void init_rule(match_rule_t rule) {
+static void rule_init(match_rule_t rule) {
 	rule->skbuf->data = rule->header;
 
 	/*  Link layer header allocate in rule */
@@ -25,11 +25,6 @@ static void init_rule(match_rule_t rule) {
 
 	/* Network layer header allocate in rule */
 	rule->skbuf->nh.raw = (unsigned char*) rule->header + ETH_HEADER_SIZE;
-
-	/*Transport layer header allocate in rule */
-	rule->skbuf->h.raw = rule->skbuf->nh.raw
-			+ IP_HEADER_SIZE(rule->skbuf->nh.iph);
-
 }
 
 match_rule_t pnet_rule_alloc(void) {
@@ -37,7 +32,7 @@ match_rule_t pnet_rule_alloc(void) {
 
 	memset(rule, MATCH_WILDCARD, sizeof(struct match_rule));
 
-	init_rule(rule);
+	rule_init(rule);
 
 	return rule;
 }
