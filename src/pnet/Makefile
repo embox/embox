@@ -7,6 +7,7 @@ $_DEPS-socket += embox.pnet.core
 
 $_MODS 	              += pnet_entry
 $_SRCS-pnet_entry     += pnet_entry.c
+$_DEPS-pnet_entry     += embox.pnet.core
 $_PROVIDES-pnet_entry += embox.net.api_entry
 
 $_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include

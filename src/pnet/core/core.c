@@ -18,9 +18,9 @@ EMBOX_UNIT_INIT(net_core_init);
 
 static int net_core_init(void) {
 	net_node_t devs = pnet_dev_get_entry();
-	net_node_t lin_gate = pnet_get_node_linux_gate();
+	net_node_t null = pnet_get_node_null();
 
-	pnet_node_attach(devs, NET_RX_DFAULT, lin_gate);
+	pnet_node_attach(devs, NET_RX_DFAULT, null);
 
 	return 0;
 }

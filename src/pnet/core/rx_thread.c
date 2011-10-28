@@ -47,14 +47,12 @@ static int rx_thread_init(void) {
 }
 
 int pnet_rx_thread_add(net_packet_t pack) {
-#if 0
 	net_prior_t prior = pack->node->prior;
 
 	c_buf_add(&c_bufs[prior], pack);
 
 	thread_resume(pnet_rx_threads[prior]);
-#endif
-	pnet_process(pack);
+
 	return 0;
 }
 
