@@ -8,10 +8,10 @@
  */
 
 
-static enum {
-	COMM_HEADER,
-	COMM_BODY,
-} reader_state;
+//static enum {
+//	COMM_HEADER,
+//	COMM_BODY,
+//} reader_state;
 
 
 #define DC_BUFF_SIZE 0x20 /* lego_nxt direct command maximum length */

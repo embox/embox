@@ -73,7 +73,7 @@ typedef struct {
 } bt_message_t;
 
 
-extern uint16_t bt_mod_version; /*bt module version */
+//extern uint16_t bt_mod_version; /*bt module version */
 
 extern int bt_wrap(bt_message_t *header, uint8_t *buffer);
 
