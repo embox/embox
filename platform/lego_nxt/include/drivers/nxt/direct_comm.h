@@ -8,7 +8,11 @@
 #ifndef NXT_DIRECT_COMM_H_
 #define NXT_DIRECT_COMM_H_
 
-#define MSG_SIZE_BYTE_CNT 2
+/* DC_MSG
+ * bytes | 1    | 2      | 3     | 4 |
+ *       | type | length | depends on types and length
+ */
+#define MSG_SIZE_BYTE_CNT 2 //TODO rename it DC_HEADER_LENGTH
 
 #define DC_SET_OUTPUT_STATE 0x04
 #define DC_GET_INPUT_VALUES 0x07
