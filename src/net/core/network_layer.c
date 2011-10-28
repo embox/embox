@@ -74,7 +74,7 @@ static void print_packet (sk_buff_t *skb) {
 }
 #endif
 
-int __dev_queue_xmit(struct sk_buff *skb) {
+int dev_queue_xmit(struct sk_buff *skb) {
 	int res;
 	net_device_t *dev;
 	const struct net_device_ops *ops;

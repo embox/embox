@@ -28,7 +28,3 @@ int netif_rx(struct sk_buff *skb) {
 int netif_receive_skb(sk_buff_t *skb) {
 	return __netif_receive_skb(skb);
 }
-
-int dev_queue_xmit(struct sk_buff *skb) {
-	return __dev_queue_xmit(skb);
-}

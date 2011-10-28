@@ -28,8 +28,7 @@ static int tx_hnd(net_packet_t pack) {
 	struct net_device *dev = member_cast_out(node, struct net_device, net_node);
 	struct sk_buff *skb = pack->skbuf;
 	skb->dev = dev;
-	dev_queue_xmit(skb);
-
+	dev->netdev_ops->ndo_start_xmit(skb, dev);
 	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
