@@ -22,7 +22,7 @@ static bt_message_t out_msg;
 
 static uint16_t bt_mod_version = 0xffff; /*bt module version */
 
-uint8_t bt_tx_buff[256];
+//uint8_t bt_tx_buff[256];
 
 extern void bt_set_uart_state(void); //TODO bt
 
@@ -38,22 +38,25 @@ static int bt_bc_handle = 0; //TODO what does it mean
 int bt_wrap(bt_message_t *header, uint8_t *buff) {
 	int i;
 	uint16_t sum = 0;
-	uint8_t *buffer;
+	uint8_t *buffer = (uint8_t *) header;
 
 	//*buffer++ = header->length + 3;
 	//*buffer++ = header->type;
+	buffer++;
+	buffer++;
 	header->length += 3;
 
 	sum += header->type;
 	sum += header->length; //is it need?
 	for (i = 0; i < data_len(header->length); i++) {
 		//*buffer++ = header->content[i];
+		buffer++;
 		sum += header->content[i];
 	}
 	sum = ~sum + 1;
 	*buffer++ = sum >> 8;
 	*buffer++ = sum & 0xff;
-	return 1 + header->length + 3;
+	return 1 + header->length;
 }
 
 //void bt_unwrap(bt_message_t *header, uint8_t *buffer) {
@@ -116,8 +119,8 @@ static void process_msg(bt_message_t *msg) {
 	default:
 		return;
 	}
-	len = bt_wrap(&out_msg, bt_tx_buff);
-	bluetooth_write(bt_tx_buff, len);
+	len = bt_wrap(&out_msg, NULL);
+	bluetooth_write((uint8_t *) &out_msg, len);
 }
 
 void bt_handle(uint8_t *buff) {
