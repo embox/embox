@@ -1,21 +1,24 @@
 /**
  * @file
- * @brief Lego NXT direct command manager
+ * @brief Lego NXT direct command to pnet forwarder
  *
- * @date 13.03.11
+ * @date 28.10.11
  * @author Anton Kozlov
  */
 
 #include <types.h>
-#include <embox/unit.h>
 #include <hal/reg.h>
-#include <drivers/nxt/direct_comm.h>
-#include <drivers/nxt/motor.h>
-#include <drivers/bluetooth.h>
-#include <drivers/nxt/sensor.h>
 #include <unistd.h>
 #include <string.h>
 #include <kernel/panic.h>
+
+#include <drivers/nxt/direct_comm.h>
+#include <drivers/nxt/motor.h>
+#include <drivers/nxt/sensor.h>
+
+#include <drivers/bluetooth.h>
+
+#include <embox/unit.h>
 
 static enum {
 	COMM_SIZE,
