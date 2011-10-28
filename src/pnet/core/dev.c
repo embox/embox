@@ -53,7 +53,7 @@ static int entry_tx_hnd(net_packet_t pack) {
 }
 
 net_node_t pnet_dev_register(struct net_device *dev) {
-	net_node_t node = pnet_node_alloc(0, &dev_proto);
+	net_node_t node = pnet_node_init(&dev->net_node, 0, &dev_proto);
 
 	pnet_node_attach(node, NET_RX_DFAULT, &dev_entry);
 

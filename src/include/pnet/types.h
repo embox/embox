@@ -53,13 +53,6 @@ struct net_packet {
 
 	net_node_t node;
 
-	int len;
-
-	void *orig_data; /* this holds original data
-	 while *data can be offsetted
-	 free packet mem from here */
-	void *data;
-
 	struct sk_buff *skbuf;
 };
 

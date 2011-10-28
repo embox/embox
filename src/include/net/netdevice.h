@@ -134,7 +134,7 @@ typedef struct net_device {
 	void *priv; /**< pointer to private data      */
 	struct sk_buff_head dev_queue;
 	int (*poll)(struct net_device *dev);
-	struct net_node *net_node;
+	struct net_node net_node;
 } net_device_t;
 
 static inline void *netdev_priv(struct net_device *dev) {

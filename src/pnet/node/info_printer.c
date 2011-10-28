@@ -21,7 +21,7 @@ static void print_pack(net_packet_t pack) {
 			break;
 	};
 
-	printf(": %d bytes\n", pack->len);
+	printf(": %d bytes\n", pack->skbuf->len);
 }
 
 

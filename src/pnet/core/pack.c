@@ -6,6 +6,9 @@
  * @author Anton Kozlov
  */
 
+#include <string.h>
+
+#include <net/skbuff.h>
 #include <pnet/core.h>
 
 #include <mem/objalloc.h>
@@ -20,9 +23,11 @@ net_packet_t pnet_pack_alloc(net_node_t node, enum net_packet_dir dir, void *dat
 	net_packet_t pack = objalloc(&net_packs);
 
 	pack->node = node;
-	pack->data = data;
-	pack->len  = len;
 	pack->dir  = dir;
+
+	pack->skbuf = alloc_skb(len, 0);
+
+	memcpy(pack->skbuf->data, data, len);
 
 	return pack;
 }
