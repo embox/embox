@@ -74,7 +74,7 @@ static void print_packet (sk_buff_t *skb) {
 }
 #endif
 
-int dev_queue_xmit(struct sk_buff *skb) {
+int __dev_queue_xmit(struct sk_buff *skb) {
 	int res;
 	net_device_t *dev;
 	const struct net_device_ops *ops;
@@ -113,7 +113,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 }
 
 
-int netif_rx(struct sk_buff *skb) {
+int __netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 	struct packet_type *q = NULL;
 

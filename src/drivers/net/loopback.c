@@ -69,17 +69,17 @@ static void loopback_setup(struct net_device *dev) {
 	dev->header_ops         = get_eth_header_ops();
 }
 
+struct net_device *loopback_dev;
 /**
  * The initialization of loopback device
  */
 static int __init unit_init(void) {
-	struct net_device *dev;
 
-	dev = alloc_netdev(0, "lo", loopback_setup);
-	if (dev == NULL) {
+	loopback_dev = alloc_netdev(0, "lo", loopback_setup);
+	if (loopback_dev == NULL) {
 		LOG_ERROR("Can't allocate net device\n");
 		return -ENOMEM;
 	}
 
-	return register_netdev(dev);
+	return register_netdev(loopback_dev);
 }
