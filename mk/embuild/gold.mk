@@ -72,15 +72,15 @@ builtin_func_gold-symbol-table =# Noop
 
 # 1. Id
 # 2. Symbol type:
-#     0: Normal Nonterminal.
-#     1: Normal Terminal.
-#     2: Whitespace Terminal.
-#     3: End of File.
-#     4: Start of a block quote.
-#     5: End of a block quote.
-#     6: Line Comment Terminal.
-#     7: Error Terminal.
-# 3. Instantiation function.
+#     0: Normal Nonterminal
+#     1: Normal Terminal
+#     2: Whitespace Terminal
+#     3: End of File
+#     4: Start of a block quote
+#     5: End of a block quote
+#     6: Line Comment Terminal
+#     7: Error Terminal
+# 3. Instantiation function
 define builtin_func_gold-symbol
 	$(call var_assign_simple,$(__gold_prefix_symbol)$1,
 		$2 $3
@@ -97,7 +97,7 @@ builtin_func_gold-rule-table =# Noop
 # 4. Instantiation function.
 define builtin_func_gold-rule
 	$(call var_assign_simple,$(__gold_prefix_rule)$1,
-		$3 $4# TODO do I actually need an Id of Nonterminal?
+		$2 $3 $4
 	)
 endef
 
@@ -164,9 +164,9 @@ define builtin_func_gold-dfa-table
 				$$1.
 
 			)$(\s)
-			# We still may be in some state, land to the ground.
-			$$(or $$(call $(__gold_prefix_dfa)$$(__gold_dfa_state__),),/1)
-			# TODO emit EOF
+			# We still may be in some state, so land to the ground.
+			# Assume EOF symbol is 0 and Error is 1.
+			$$(or $$(call $(__gold_prefix_dfa)$$(__gold_dfa_state__),),/1) /0
 		)
 	)
 	$(call var_assign_simple,$(__gold_prefix_dfa),)# Cyclic error until EOF
@@ -185,7 +185,6 @@ define builtin_func_gold-dfa-state
 		#   Empty on error.
 		$(__gold_prefix_dfa)$1,# =
 
-#		$$(info DFA state $1, char $$(word $$1,$$(ascii_table)))
 		$$(or \
 			$(foreach a,$(words-from 3,$(builtin_args_list)),
 				$($a)
@@ -201,13 +200,114 @@ define builtin_func_gold-dfa-edge
 	$$(if $$($(__gold_prefix_charset)$1),$2),
 endef
 
+__gold_prefix_lalr    = $(__gold_prefix)_lalr
+
+# 1. Initial state
+# ... States (unused)
 define builtin_func_gold-lalr-table
+	$(call var_assign_recursive_sl,
+		# Params:
+		#   1. List of tokens returned by lexer.
+		# Return:
+		$(__gold_prefix)_lalr_table,# =
+
+		$${eval \
+			__gold_lalr_state__ := $1$(\n)# Ground.
+			__gold_lalr_stack__ := # Empty.
+		}
+		$$(foreach 1,$$1,
+			$$(foreach a,$$($(__gold_prefix_lalr)$$(__gold_lalr_state__)),
+
+				$$(if $$(findstring .1,$$a),# Shift.
+					$${eval \
+						# Push the current token onto the stack.
+						__gold_lalr_stack__ := \
+							$$1.$$(__gold_lalr_state__) \
+							  $$$$(__gold_lalr_stack__)$$(\n)
+						# Move to a new state.
+						__gold_lalr_state__ := \
+							$$(basename $$a)
+					}
+				)
+
+				$$(if $$(findstring .2,$$a),# Reduce.
+					$$(foreach r,$$(basename $$a),
+						$$(foreach n,$$(word 2,$$($(__gold_prefix_rule)$$r)),
+							$${eval \
+								# Pop n symbols from the stack.
+								__gold_lalr_stack__ := \
+									$$$$(wordlist $$n,2147483647,
+										$$$$(__gold_lalr_state__))$$(\n)
+								# Move to a new state.
+								__gold_lalr_state__ := \
+									$$(basename $$a)
+							}
+						)
+					)
+					$${eval \
+						# Push the current token onto the stack.
+						__gold_lalr_stack__ := \
+							$$1.$$(__gold_lalr_state__) \
+								$$(__gold_lalr_stack__)$$(\n)
+						# Move to a new state.
+						__gold_lalr_state__ := \
+							$$(basename $$a)
+					}
+				)
+
+				$${eval \
+					# Make a move from ground.
+					__gold_dfa_state__ := $$($(__gold_prefix_dfa)$1)
+				}
+
+				$${eval \
+					# Get the next action: 'Value.Action'.
+					__gold_lalr_state__ := \
+						$$($(__gold_prefix_lalr)
+								$$(basename $$(__gold_lalr_state__)))
+				}
+
+				$$1.
+
+			)
+		)$(\s)
+		# We still may be in some state, so land to the ground.
+		# Assume EOF symbol is 0 and Error is 1.
+		$$(or $$(call $(__gold_prefix_dfa)$$(__gold_dfa_state__),),/1) /0
+	)
+#	$(call var_assign_simple,$(__gold_prefix_dfa),)# Cyclic error until EOF
 endef
 
+# 1. Id
+# ... Actions
 define builtin_func_gold-lalr-state
+	$(call var_assign_recursive_sl,
+		# Params:
+		#   1. Char code.
+		# Return:
+		#   Two numbers: Value.Action;
+		#   Empty on error.
+		$(__gold_prefix_lalr)$1,# =
+
+		$$(or \
+			$(foreach a,$(nofirstword $(builtin_args_list)),
+				$($a)
+			)
+		)
+	)
 endef
 
+# 1. Symbol
+# 2. Action:
+#     1: Shift
+#     2: Reduce
+#     3: Goto
+#     4: Accept
+# 3. Value:
+#     Rule Id for Reduce action
+#     Target state in case of Shift or Goto
 define builtin_func_gold-lalr-action
+	$$(if $$(findstring [$$1],[$1]),$3.$2),
 endef
 
 $(def_all)
