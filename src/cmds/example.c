@@ -46,7 +46,7 @@ static int exec(int argc, char **argv) {
 	};
 	if (argc > 1) {
 		example = example_lookup(argv[1]);
-		example_exec(example, 0, NULL);
+		example_exec(example, argc - 1, argv + 1);
 		return 0;
 	}
 
