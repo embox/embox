@@ -35,7 +35,7 @@ static int pnet_general_example(int argc, char **argv) {
 
 	rule = pnet_rule_alloc();
 
-	pnet_rule_set_eth_src(rule, src_mac);
+	pnet_rule_set_mac_src(rule, src_mac);
 	pnet_rule_set_next_node(rule, info);
 
 	add_new_rx_rule(rule, match);
