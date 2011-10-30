@@ -8,16 +8,15 @@
 
 #include <types.h>
 #include <embox/unit.h>
-#include <hal/reg.h>
+//#include <hal/reg.h>
 
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
 #include <kernel/timer.h>
-#include <assert.h>
 #include <unistd.h>
 
-extern void bt_handle(uint8_t *buff);
+//extern void bt_handle(uint8_t *buff);
 
 #define NXT_BT_RX_PIN  ((uint32_t) CONFIG_NXT_BT_RX_PIN)
 #define NXT_BT_TX_PIN  ((uint32_t) CONFIG_NXT_BT_TX_PIN)
@@ -35,8 +34,8 @@ EMBOX_UNIT_INIT(nxt_bluetooth_init);
 static uint8_t *nxt_bt_read_buff;
 
 #define RX_BUFF_SIZE 0x40
-#define TX_BUFF_SIZE 0x40
-static uint8_t bt_buff[RX_BUFF_SIZE];
+//#define TX_BUFF_SIZE 0x40
+//static uint8_t bt_buff[RX_BUFF_SIZE];
 
 void bt_clear_arm7_cmd(void) {
 	REG_STORE(AT91C_PIOA_CODR, CONFIG_NXT_BT_CMD_PIN);
@@ -55,31 +54,31 @@ void bt_set_reset_low(void) {
 }
 
 volatile enum {SIZE_READ, COMM_READ, UART_MODE} bt_us_state;
-
+#if 0
 void bt_set_uart_state(void) {
 	bt_us_state = UART_MODE;
 	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDTX);
 }
 
+#endif
 
+//static int bt_buff_pos = 0;
 
-static int bt_buff_pos = 0;
+//volatile int bt_uart_inited = 0;
 
-volatile int bt_uart_inited = 0;
-
-static void bt_receive_init(void) {
-
-	bt_us_state = SIZE_READ;
-	bt_uart_inited = 0;
-	bt_buff_pos = 0;
-	bluetooth_read(bt_buff, 1);
-}
+//static void bt_receive_init(void) {
+//	bt_us_state = SIZE_READ;
+//	bt_uart_inited = 0;
+//	bt_buff_pos = 0;
+//	bluetooth_read(bt_buff, 1);
+//}
 
 CALLBACK_INIT(bluetooth_uart)
 
 static void comm_handler(int msg, uint8_t *data) {
 	CALLBACK_DO(bluetooth_uart, msg, data);
 }
+#if 0
 static void bt_us_read_handle(void) {
 	int msg_len = bt_buff[bt_buff_pos];
 
@@ -111,35 +110,42 @@ static void bt_us_read_handle(void) {
 		break;
 	}
 }
+#endif
 
-static void bt_us_receive_init(void) {
-	int delay = 3000;
-	REG_STORE(&(us_dev_regs->US_IDR), AT91C_US_ENDTX);
-	bt_uart_inited = 1;
-	while (delay--);
-	bt_set_arm7_cmd();
-	delay = 3000;
-	while (delay--);
+//static void bt_us_receive_init(void) {
+//	int delay = 3000;
+//	REG_STORE(&(us_dev_regs->US_IDR), AT91C_US_ENDTX);
+////	bt_uart_inited = 1;
+//	while (delay--);
+//	bt_set_arm7_cmd();
+//	delay = 3000;
+//	while (delay--);
+//
+//	/*doing last steps for init*/
+////	bt_buff_pos = 0;
+//
+//	comm_handler(BT_DRV_MSG_CONNECTED, NULL);
+//
+//}
 
-	/*doing last steps for init*/
-	bt_buff_pos = 0;
-
-	comm_handler(BT_DRV_MSG_CONNECTED, NULL);
-
+static nxt_bt_rx_handle_t nxt_bt_rx_handle;
+void nxt_bt_set_rx_handle(nxt_bt_rx_handle_t handle) {
+	nxt_bt_rx_handle = handle;
 }
 
 static irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
 	uint32_t us_state = REG_LOAD(&(us_dev_regs->US_CSR));
 
 	if (us_state & AT91C_US_ENDRX) {
-		bt_us_read_handle();
+		nxt_bt_rx_handle();
 	}
 	//TODO rewrite it
-	if ((us_state & AT91C_US_ENDTX) && !bt_uart_inited && (bt_us_state == UART_MODE)) {
-		bt_us_receive_init();
-	}
+//	if ((us_state & AT91C_US_ENDTX) && !bt_uart_inited && (bt_us_state == UART_MODE)) {
+//		bt_us_receive_init();
+//	}
 	return IRQ_HANDLED;
 }
+
 
 size_t bluetooth_write(uint8_t *buff, size_t len) {
 	while (!(REG_LOAD(&(us_dev_regs->US_CSR)) & AT91C_US_ENDTX)) {
@@ -217,11 +223,18 @@ static void  nxt_bt_timer_handler(int id) {
 	if (bt_last_state != bt_state) {
 		if (!bt_state) {
 			comm_handler(BT_DRV_MSG_DISCONNECTED, NULL);
-			bt_receive_init();
+			//bt_receive_init();
 		}
 	}
 	bt_last_state = bt_state;
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
+}
+
+void nxt_bluetooth_reset(void) {
+	bt_set_reset_low();
+	usleep(2000);
+	bt_set_reset_high();
+	usleep(5000);
 }
 
 static struct sys_timer *ntx_bt_timer;
@@ -235,18 +248,14 @@ static int nxt_bluetooth_init(void) {
 
 	bt_clear_arm7_cmd();
 
-	usleep(2000);
-
-	bt_set_reset_high();
-
-	usleep(5000);
-
 	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
 		(irq_handler_t) nxt_bt_us_handler, 0, NULL, "nxt bt reader");
+
+//	nxt_bluetooth_reset();
 //TODO may be it must set when bt has been connected?
 	timer_set(&ntx_bt_timer, 200, (sys_timer_handler_t) &nxt_bt_timer_handler, NULL);
 	bt_clear_arm7_cmd();
-	bt_receive_init();
+//	bt_receive_init();
 
 	return 0;
 }

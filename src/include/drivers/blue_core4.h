@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef NXT_BLUETOOTH_H_
-#define NXT_BLUETOOTH_H_
+#ifndef BLUE_CORE4_H_
+#define BLUE_CORE4_H_
 
 #include <types.h>
 
@@ -65,17 +65,14 @@
 #define MSG_GET_BRICK_STATUSBYTE        51
 #define MSG_SET_BRICK_STATUSBYTE        52
 
-typedef struct bt_message {
+
+#define BC_MAX_MESSAGE_LEN 0x20
+
+struct bc_msg { //union?
 	uint8_t  length;
 	uint8_t  type;
-	uint8_t  content[256];
-	uint16_t sum;
-} bt_message_t;
+	uint8_t  content[BC_MAX_MESSAGE_LEN];
+	/*uint16_t sum;*/
+};
 
-
-//extern uint16_t bt_mod_version; /*bt module version */
-
-//extern int bt_wrap(bt_message_t *header, uint8_t *buffer);
-
-//extern void bt_unwrap(bt_message_t *header, uint8_t *buffer);
-#endif /* NXT_BLUETOOTH_H_ */
+#endif /* BLUE_CORE4_H_ */

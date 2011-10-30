@@ -7,11 +7,11 @@
  */
 
 #include <types.h>
-#include <embox/unit.h>
-#include <hal/reg.h>
-#include <unistd.h>
+//#include <embox/unit.h>
+//#include <hal/reg.h>
+//#include <unistd.h>
 #include <string.h>
-#include <kernel/panic.h>
+//#include <kernel/panic.h>
 
 #include <drivers/bluetooth.h>
 #include <drivers/nxt_bluetooth.h>

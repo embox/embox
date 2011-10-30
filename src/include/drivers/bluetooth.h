@@ -26,4 +26,13 @@ extern size_t bluetooth_write(uint8_t *buff, size_t len);
 
 CALLBACK_DECLARE(bluetooth_uart);
 
+
+
+typedef int (*nxt_bt_rx_handle_t)(void);
+extern void nxt_bt_set_rx_handle(nxt_bt_rx_handle_t handle);
+
+extern void nxt_bluetooth_reset(void);
+
+
+
 #endif /* BLUETOOTH_H_ */
