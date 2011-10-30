@@ -47,7 +47,8 @@ sorted_charset := \
   0
 sorted_charset := $(strip $(sorted_charset))
 
-__gold_prefix = $(call builtin_tag,gold-parser)
+#__gold_prefix = $(call builtin_tag,gold-parser)
+__gold_prefix := __golden
 
 define builtin_tag_gold-parser
 #	$(or \
@@ -96,6 +97,27 @@ builtin_func_gold-rule-table =# Noop
 # 3. Number of symbols in right-hand side
 # 4. Instantiation function.
 define builtin_func_gold-rule
+	$(and \
+		$(filter-out 0,$3),
+		$(call var_undefined,__gold_xs$3),
+
+		# Each __gold_xsN-1 contains N-1 whitespace separated 'x's
+		# __gold_xs3-1 = x x
+		$(call var_assign_simple,__gold_xs$3-1,
+			$(with $3,,
+				$(if $(word $1,x $2),
+					$2,
+					$(call $0,$1,x $2)
+				)
+			)
+		)
+		# .. and __gold_nN+1 is value of N+1.
+		# __gold_n3+1 = 4
+		$(call var_assign_simple,__gold_n$3+1,
+			$(words $(__gold_xs$3-1) x x)
+		)
+	)
+
 	$(call var_assign_simple,$(__gold_prefix_rule)$1,
 		$2 $3 $4
 	)
@@ -212,70 +234,90 @@ define builtin_func_gold-lalr-table
 		$(__gold_prefix)_lalr_table,# =
 
 		$${eval \
-			__gold_lalr_state__ := $1$(\n)# Ground.
-			__gold_lalr_stack__ := # Empty.
+			__gold_lalr_state__ := $1# Ground.
+			$$(\n)
+			__gold_lalr_stack__ :=# Empty.
 		}
-		$$(foreach 1,$$1,
-			$$(foreach a,$$($(__gold_prefix_lalr)$$(__gold_lalr_state__)),
 
-				$$(if $$(findstring .1,$$a),# Shift.
-					$${eval \
-						# Push the current token onto the stack.
-						__gold_lalr_stack__ := \
-							$$1.$$(__gold_lalr_state__) \
-							  $$$$(__gold_lalr_stack__)$$(\n)
-						# Move to a new state.
-						__gold_lalr_state__ := \
-							$$(basename $$a)
-					}
-				)
+		$$(and $$(foreach 1,$$1,
+			$$(__gold_parse_token)
+		),)
 
-				$$(if $$(findstring .2,$$a),# Reduce.
-					$$(foreach r,$$(basename $$a),
-						$$(foreach n,$$(word 2,$$($(__gold_prefix_rule)$$r)),
-							$${eval \
-								# Pop n symbols from the stack.
-								__gold_lalr_stack__ := \
-									$$$$(wordlist $$n,2147483647,
-										$$$$(__gold_lalr_state__))$$(\n)
-								# Move to a new state.
-								__gold_lalr_state__ := \
-									$$(basename $$a)
-							}
-						)
-					)
-					$${eval \
-						# Push the current token onto the stack.
-						__gold_lalr_stack__ := \
-							$$1.$$(__gold_lalr_state__) \
-								$$(__gold_lalr_stack__)$$(\n)
-						# Move to a new state.
-						__gold_lalr_state__ := \
-							$$(basename $$a)
-					}
-				)
-
-				$${eval \
-					# Make a move from ground.
-					__gold_dfa_state__ := $$($(__gold_prefix_dfa)$1)
-				}
-
-				$${eval \
-					# Get the next action: 'Value.Action'.
-					__gold_lalr_state__ := \
-						$$($(__gold_prefix_lalr)
-								$$(basename $$(__gold_lalr_state__)))
-				}
-
-				$$1.
-
-			)
-		)$(\s)
-		# We still may be in some state, so land to the ground.
-		# Assume EOF symbol is 0 and Error is 1.
-		$$(or $$(call $(__gold_prefix_dfa)$$(__gold_dfa_state__),),/1) /0
+		$$(basename $$(__gold_lalr_stack__))
 	)
-#	$(call var_assign_simple,$(__gold_prefix_dfa),)# Cyclic error until EOF
+endef
+
+# Params:
+#   1. Token.
+# Return:
+define __gold_parse_token
+	$(info )
+	$(info __gold_parse_token: __gold_lalr_stack__ = $(__gold_lalr_stack__))
+	$(info __gold_parse_token: __gold_lalr_state__ = $(__gold_lalr_state__))
+	$(info __gold_parse_token: token:  [$1])
+	$(info __gold_parse_token: action: [$($(__gold_prefix_lalr)$(__gold_lalr_state__))])
+	$(foreach a,$($(__gold_prefix_lalr)$(__gold_lalr_state__)),
+
+		$(if $(findstring .1,$a),# Shift.
+			$(info __gold_parse_token: shift)
+			${eval \
+				# Push the current token onto the stack.
+				__gold_lalr_stack__ += $1.$(__gold_lalr_state__)
+				$(\n)
+				# Move to a new state.
+				__gold_lalr_state__ := $(basename $a)
+			}
+		)
+
+		$(if $(findstring .2,$a),# Reduce.
+			$(info __gold_parse_token: reduce)
+			${eval \
+				$(__gold_lalr_reduce_mk)
+			}
+			$(call __gold_parse_token,$1)
+		)
+		$(if $(findstring .3,$a),# Goto.
+			$(error Unexpected goto)
+		)
+	)
+endef
+
+# Params:
+#   1. Current token.
+#   a. Value.Action
+define __gold_lalr_reduce_mk
+	$(foreach r,$(basename $a),$(foreach n,$(word 2,$($(__gold_prefix_rule)$r)),
+		$(if $(findstring $n,0),
+			# Append a reduction.
+			__gold_lalr_stack__ += \
+				($r).$(__gold_lalr_state__)
+
+			,# else
+			$(foreach d,$(words $(__gold_lalr_stack__)),
+				# Pop N symbols.
+				__gold_tmp__ := \
+					$$(wordlist $d,2147483647,# stack[depth-$n+1 .. depth]
+							$(__gold_xs$n-1) $$(__gold_lalr_stack__))
+				$(\n)
+				# Replace the current state by one saved in the first
+				# reduced symbol.
+				__gold_lalr_state__ := \
+					$$(subst .,,$$(suffix $$(firstword $$(__gold_tmp__))))
+				$(\n)
+				# Replace them with a reduction.
+				__gold_lalr_stack__ := \
+					$$(wordlist $(__gold_n$n+1),$d,# stack[1 .. depth-$n]
+							x $(__gold_xs$n-1) $$(__gold_lalr_stack__)) \
+					($$(subst $$(\s),$$(\comma),$$(basename $$(__gold_tmp__))),
+							$r).$$(__gold_lalr_state__)
+			)
+		)
+		$(\n)
+		# Go to a new state.
+		__gold_lalr_state__ := \
+			$$(basename $$(call $(__gold_prefix_lalr)$$(__gold_lalr_state__),
+					$(firstword $($(__gold_prefix_rule)$r))))
+	))
 endef
 
 # 1. Id
@@ -307,7 +349,7 @@ endef
 #     Rule Id for Reduce action
 #     Target state in case of Shift or Goto
 define builtin_func_gold-lalr-action
-	$$(if $$(findstring [$$1],[$1]),$3.$2),
+	$$(if $$(findstring [$$(notdir $$1)],[$1]),$3.$2),
 endef
 
 $(def_all)
