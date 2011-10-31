@@ -47,17 +47,15 @@ sorted_charset := \
   0
 sorted_charset := $(strip $(sorted_charset))
 
-#__gold_prefix = $(call builtin_tag,gold-parser)
-__gold_prefix := __golden
+__gold_prefix = $(call builtin_tag,gold-parser)
 
 define builtin_tag_gold-parser
-#	$(or \
-#		$(call filter-patsubst,%parser,%,$(__def_var)),
-#		$(call builtin_error,
-#			Bad variable name: '$(__def_var)'
-#		)
-#	)
-	__golden# TODO for devel only
+	$(or \
+		$(filter-patsubst %parser,%,$(__def_var)),
+		$(call builtin_error,
+			Bad variable name: '$(__def_var)'
+		)
+	)
 endef
 
 define builtin_func_gold-parser
@@ -151,39 +149,55 @@ define builtin_func_gold-dfa-table
 	$(call var_assign_recursive_sl,
 		# Params:
 		#   1. Input string as a list of decimal char codes.
+		# Context:
+		#   g. Prefix.
 		# Return:
 		#   List of tokens in form 'char1.char2...charN./symbolID'.
 		$(__gold_prefix)_dfa_table,# =
 
-		$${eval \
-			__gold_dfa_state__ := $1# Ground.
-		}
-		$$(subst .$(\s),.,
-			$$(foreach 1,$$1,
-				$${eval \
-					# Advance the state.
-					__gold_dfa_state__ := \
-						$$($(__gold_prefix)_dfa$$(__gold_dfa_state__))
-				}
-
-				$$(if $$(findstring /,$$(__gold_dfa_state__)),
-					# Got a token, emit it as is (with slash).
-					$$(__gold_dfa_state__)$(\s)
-
-					$${eval \
-						# Make a move from ground.
-						__gold_dfa_state__ := $$($(__gold_prefix)_dfa$1)
-					}
-				)
-				$$1.
-
-			)$(\s)
-			# We still may be in some state, so land to the ground.
-			# Assume EOF symbol is 0 and Error is 1.
-			$$(or $$(call $(__gold_prefix)_dfa$$(__gold_dfa_state__),),/1) /0
+		$$(foreach g,$(__gold_prefix),
+			$$(foreach s,$1,
+				$$(__gold_lex)
+			)
 		)
 	)
 	$(call var_assign_simple,$(__gold_prefix)_dfa,)# Cyclic error until EOF
+endef
+
+# Params:
+#   1. Input string as a list of decimal char codes.
+# Context:
+#   s. Initial state.
+#   g. Prefix.
+# Return:
+#   List of tokens in form 'char1.char2...charN./symbolID'.
+define __gold_lex
+	${eval \
+		__gold_state__ := $s# Ground.
+	}
+
+	$(subst . ,.,$(foreach 1,$1,
+		${eval \
+			# Advance the state.
+			__gold_state__ := $($g_dfa$(__gold_state__))
+		}
+
+		$(if $(findstring /,$(__gold_state__)),
+			# Got a token, emit it as is (with slash) appending a space.
+			$(__gold_state__) \
+
+			${eval \
+				# Make a move from ground.
+				__gold_state__ := $($g_dfa$s)
+			}
+		)
+		$1.
+
+	) )# <- a space after the last char.
+
+	# We still may be in some state, so land to the ground.
+	# Assume EOF symbol is 0 and Error is 1.
+	$(or $(call $g_dfa$(__gold_state__),),/1) /0
 endef
 
 # 1. Id
@@ -223,36 +237,53 @@ define builtin_func_gold-lalr-table
 		# Return:
 		$(__gold_prefix)_lalr_table,# =
 
-		$${eval \
-			__gold_lalr_state__ := .$1# Ground.
-			$$(\n)
-			__gold_lalr_stack__ :=# Empty.
-		}
-
-		$$(and $$(foreach t,$$1,
-			$$(__gold_parse_token)
-		),)
-
-		$$(basename $$(__gold_lalr_stack__))
+		$$(foreach g,$(__gold_prefix),
+			$$(foreach s,$1,
+				$$(__gold_parse)
+			)
+		)
 	)
 endef
 
 # Params:
-#   t. Token.
+#   1. List of tokens returned by lexer.
+# Context:
+#   s. Initial state.
+#   g. Prefix.
 # Return:
-define __gold_parse_token
-	$(info )
-	$(info __gold_parse_token: __gold_lalr_stack__ = $(__gold_lalr_stack__))
-	$(info __gold_parse_token: __gold_lalr_state__ = $(__gold_lalr_state__))
-	$(info __gold_parse_token: token:  [$t])
+#   Code that reflects a parse tree.
+define __gold_parse
+	${eval \
+		__gold_state__ := .$s# Ground.
+		$(\n)
+		__gold_stack__ :=# Empty.
+	}
 
-	$(if $(foreach a,
-		# shift:  '/Token/+/State'
-		# reduce: '/Token/-/Rule'
-		# accept: '/Token'
-		# error:  '/'
-		/$(filter $(notdir $t)/%,$($(__gold_prefix)_lalr$(__gold_lalr_state__))),
-		$(info __gold_parse_token: action: [$a])
+	$(and $(foreach t,$1,# t: Token.
+		$(__gold_parse_token)
+	),)
+
+
+endef
+
+# Context:
+#   t. Token.
+#   g. Prefix.
+# Return:
+#   Nothing.
+define __gold_parse_token
+#	$(info )
+#	$(info __gold_parse_token: __gold_stack__ = $(__gold_stack__))
+#	$(info __gold_parse_token: __gold_state__ = $(__gold_state__))
+#	$(info __gold_parse_token: token:  [$t])
+
+	$(if $(foreach a,/$(filter $(notdir $t)/%,$($g_lalr$(__gold_state__))),
+		# a: An action in one of the following forms:
+		#     shift:  '/Token/+/State'
+		#     reduce: '/Token/-/Rule'
+		#     accept: '/Token'
+		#     error:  '/'
+#		$(info __gold_parse_token: action: [$a])
 
 		$(__gold_lalr_handle$(findstring +,$a)$(findstring -,$a))
 
@@ -262,65 +293,81 @@ endef
 # Shift (hot).
 #   a. Action: '/Token/+/State'
 #   t. Token
+# Return:
+#   Nothing.
 define __gold_lalr_handle+
-	$(info __gold_parse_token: shift)
+#	$(info __gold_parse_token: shift)
 
 	${eval \
 		# Push the current token onto the stack.
-		__gold_lalr_stack__ += [$t]$(__gold_lalr_state__)
+		__gold_stack__ += [$t]$(__gold_state__)
 		$(\n)
 		# Move to a new state.
-		__gold_lalr_state__ := .$(notdir $a)
+		__gold_state__ := .$(notdir $a)
 	}
 endef
 
 # Reduce (hot).
 #   a. Action: '/Token/-/Rule'
 #   t. Token
+#   g. Prefix.
+# Return:
+#   Non-empty.
 define __gold_lalr_handle-
-	$(info __gold_parse_token: reduce)
-	${eval \
-			$(foreach r,$(notdir $a),# r: Rule Id.
-			$(foreach n,$(word 2,$($(__gold_prefix)_rule$r)),# n: N of symbols.
+#	$(info __gold_parse_token: reduce)
+
+	${eval $(foreach r,$(notdir $a),$(foreach n,$(word 2,$($g_rule$r)),
+		# r: Rule Id.
+		# n: N of symbols.
 
 		$(if $(findstring $n,0),
 			# Just append a reduction.
-			__gold_lalr_stack__ += \
-				($r)$(__gold_lalr_state__)
+			__gold_stack__ += \
+				($r)$(__gold_state__)
 
 			,# else
-			$(foreach d,$(words $(__gold_lalr_stack__)),# Current stack depth.
+			$(foreach d,$(words $(__gold_stack__)),
+				# d: Current stack depth.
+
 				# Pop N symbols.
 				__gold_tmp__ := \
 					$$(wordlist $d,2147483647,# stack[depth-$n+1 .. depth]
-							$(__gold_xs$n-1) $$(__gold_lalr_stack__))
+							$(__gold_xs$n-1) $$(__gold_stack__))
 				$(\n)
+
 				# Replace the current state by one saved in the first
 				# reduced symbol.
-				__gold_lalr_state__ := \
+				__gold_state__ := \
 					$$(suffix $$(firstword $$(__gold_tmp__)))
 				$(\n)
+
 				# Replace them with a reduction.
-				__gold_lalr_stack__ := \
+				__gold_stack__ := \
 					$$(wordlist $(__gold_n$n+1),$d,# stack[1 .. depth-$n]
-							x $(__gold_xs$n-1) $$(__gold_lalr_stack__)) \
+							x $(__gold_xs$n-1) $$(__gold_stack__)) \
 					($$(subst $$(\s),$$(\comma),$$(basename $$(__gold_tmp__))),
-							$r)$$(__gold_lalr_state__)
+							$r)$$(__gold_state__)
 			)
 		)
 		$(\n)
+
 		# Go to a new state.
-		__gold_lalr_state__ := \
-			.$$(notdir $$(filter $(firstword $($(__gold_prefix)_rule$r))/%,
-				$$($(__gold_prefix)_goto$$(__gold_lalr_state__))
+		__gold_state__ := \
+			.$$(notdir $$(filter $(firstword $($g_rule$r))/%,
+				$$($g_goto$$(__gold_state__))
 			))
 	))}
+
 	x# Need to repeat handling of the token in a new state.
 endef
 
 # Accept or error (cold).
 define __gold_lalr_handle
-	$(info accept/error)
+	$(info )
+	$(info accept/error: $a : [$t])
+	$(info __gold_parse_token: __gold_stack__ = $(__gold_stack__))
+	$(info __gold_parse_token: __gold_state__ = $(__gold_state__))
+	$(error )
 endef
 
 # 1. Id
