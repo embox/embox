@@ -82,6 +82,9 @@
 //#define PF_IUCV		AF_IUCV
 #define PF_MAX		AF_MAX
 
+
+#define PNET_GRAPH   40
+
 /* Maximum queue length specifiable by listen.  */
 //#define SOMAXCONN 128
 
