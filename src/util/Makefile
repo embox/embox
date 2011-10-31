@@ -18,6 +18,7 @@ endif
 $_SRCS-libutil.a += tree.c
 $_SRCS-libutil.a += tree_set.c
 $_SRCS-libutil.a += priority_q.c
+$_SRCS-libutil.a += binary_heap.c
 $_USES-libutil.a += libc.a
 
 $_SRCS-libutil.a += circular_buffer.c

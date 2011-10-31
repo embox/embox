@@ -11,17 +11,19 @@
 
 #include <util/list.h>
 
-typedef struct bh_t {
+struct bh {
 	struct list *elements;
 	int counter;
-}bh_t;
+};
 
-extern bh_t *bh_init();
+extern struct bh *bh_init(struct bh *binary_heap);
 
-int bh_count();
+extern int bh_add(struct bh *heap,struct list_link *link);
 
-extern int bh_add(bh_t *heap,struct list_link *link);
+extern int bh_remove(struct bh *heap, struct list_link *link);
 
-extern int bh_remove(bh_t *heap, struct list_link *link);
+extern int bh_count(void);
+
+int sort_bh(struct bh *binary_heap, struct list_link *value);
 
 #endif /* UTIL_HEAP_H_ */
