@@ -67,8 +67,6 @@ define builtin_func_gold-parser
 	}
 endef
 
-__gold_prefix_symbol = $(__gold_prefix)_symbol
-
 builtin_func_gold-symbol-table =# Noop
 
 # 1. Id
@@ -83,7 +81,7 @@ builtin_func_gold-symbol-table =# Noop
 #     7: Error Terminal
 # 3. Instantiation function
 define builtin_func_gold-symbol
-	$(call var_assign_simple,$(__gold_prefix_symbol)$1,
+	$(call var_assign_simple,$(__gold_prefix)_symbol$1,
 		$2 $3
 	)
 endef
@@ -121,14 +119,12 @@ define builtin_func_gold-rule
 	)
 endef
 
-__gold_prefix_charset = $(__gold_prefix)_charset
-
 builtin_func_gold-charset-table =# Noop
 
 # 1. Id
 # ... Char codes
 define builtin_func_gold-charset
-	$(call var_assign_recursive_sl,$(__gold_prefix_charset)$1,
+	$(call var_assign_recursive_sl,$(__gold_prefix)_cs$1,
 		$$(findstring |$$1|,
 			|
 			$(subst $(\s),|,
@@ -143,8 +139,6 @@ define builtin_func_gold-charset
 		)
 	)
 endef
-
-__gold_prefix_dfa     = $(__gold_prefix)_dfa
 
 define __gold_dfa_accept
 	$(info DFA accept symbol $2 ($(word 2,$(__golden_symbol$2))): \
@@ -169,7 +163,7 @@ define builtin_func_gold-dfa-table
 				$${eval \
 					# Advance the state.
 					__gold_dfa_state__ := \
-						$$($(__gold_prefix_dfa)$$(__gold_dfa_state__))
+						$$($(__gold_prefix)_dfa$$(__gold_dfa_state__))
 				}
 
 				$$(if $$(findstring /,$$(__gold_dfa_state__)),
@@ -178,7 +172,7 @@ define builtin_func_gold-dfa-table
 
 					$${eval \
 						# Make a move from ground.
-						__gold_dfa_state__ := $$($(__gold_prefix_dfa)$1)
+						__gold_dfa_state__ := $$($(__gold_prefix)_dfa$1)
 					}
 				)
 				$$1.
@@ -186,10 +180,10 @@ define builtin_func_gold-dfa-table
 			)$(\s)
 			# We still may be in some state, so land to the ground.
 			# Assume EOF symbol is 0 and Error is 1.
-			$$(or $$(call $(__gold_prefix_dfa)$$(__gold_dfa_state__),),/1) /0
+			$$(or $$(call $(__gold_prefix)_dfa$$(__gold_dfa_state__),),/1) /0
 		)
 	)
-	$(call var_assign_simple,$(__gold_prefix_dfa),)# Cyclic error until EOF
+	$(call var_assign_simple,$(__gold_prefix)_dfa,)# Cyclic error until EOF
 endef
 
 # 1. Id
@@ -203,7 +197,7 @@ define builtin_func_gold-dfa-state
 		#   Plain number: Next state Id;
 		#   '/' Number: Accepted symbol Id;
 		#   Empty on error.
-		$(__gold_prefix_dfa)$1,# =
+		$(__gold_prefix)_dfa$1,# =
 
 		$$(or \
 			$(foreach a,$(words-from 3,$(builtin_args_list)),
@@ -217,7 +211,7 @@ endef
 # 1. Charset
 # 2. Target state
 define builtin_func_gold-dfa-edge
-	$$(if $$($(__gold_prefix_charset)$1),$2),
+	$$(if $$($(__gold_prefix)_cs$1),$2),
 endef
 
 # 1. Initial state
