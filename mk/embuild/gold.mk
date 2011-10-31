@@ -88,8 +88,6 @@ define builtin_func_gold-symbol
 	)
 endef
 
-__gold_prefix_rule = $(__gold_prefix)_rule
-
 builtin_func_gold-rule-table =# Noop
 
 # 1. Id
@@ -118,7 +116,7 @@ define builtin_func_gold-rule
 		)
 	)
 
-	$(call var_assign_simple,$(__gold_prefix_rule)$1,
+	$(call var_assign_simple,$(__gold_prefix)_rule$1,
 		$2 $3 $4
 	)
 endef
@@ -222,8 +220,6 @@ define builtin_func_gold-dfa-edge
 	$$(if $$($(__gold_prefix_charset)$1),$2),
 endef
 
-__gold_prefix_lalr    = $(__gold_prefix)_lalr
-
 # 1. Initial state
 # ... States (unused)
 define builtin_func_gold-lalr-table
@@ -234,12 +230,12 @@ define builtin_func_gold-lalr-table
 		$(__gold_prefix)_lalr_table,# =
 
 		$${eval \
-			__gold_lalr_state__ := $1# Ground.
+			__gold_lalr_state__ := .$1# Ground.
 			$$(\n)
 			__gold_lalr_stack__ :=# Empty.
 		}
 
-		$$(and $$(foreach 1,$$1,
+		$$(and $$(foreach t,$$1,
 			$$(__gold_parse_token)
 		),)
 
@@ -248,52 +244,58 @@ define builtin_func_gold-lalr-table
 endef
 
 # Params:
-#   1. Token.
+#   t. Token.
 # Return:
 define __gold_parse_token
 	$(info )
 	$(info __gold_parse_token: __gold_lalr_stack__ = $(__gold_lalr_stack__))
 	$(info __gold_parse_token: __gold_lalr_state__ = $(__gold_lalr_state__))
-	$(info __gold_parse_token: token:  [$1])
-	$(info __gold_parse_token: action: [$($(__gold_prefix_lalr)$(__gold_lalr_state__))])
-	$(foreach a,$($(__gold_prefix_lalr)$(__gold_lalr_state__)),
+	$(info __gold_parse_token: token:  [$t])
 
-		$(if $(findstring .1,$a),# Shift.
-			$(info __gold_parse_token: shift)
-			${eval \
-				# Push the current token onto the stack.
-				__gold_lalr_stack__ += $1.$(__gold_lalr_state__)
-				$(\n)
-				# Move to a new state.
-				__gold_lalr_state__ := $(basename $a)
-			}
-		)
+	$(if $(foreach a,
+		# shift:  '/Token/+/State'
+		# reduce: '/Token/-/Rule'
+		# accept: '/Token'
+		# error:  '/'
+		/$(filter $(notdir $t)/%,$($(__gold_prefix)_lalr$(__gold_lalr_state__))),
+		$(info __gold_parse_token: action: [$a])
 
-		$(if $(findstring .2,$a),# Reduce.
-			$(info __gold_parse_token: reduce)
-			${eval \
-				$(__gold_lalr_reduce_mk)
-			}
-			$(call __gold_parse_token,$1)
-		)
-		$(if $(findstring .3,$a),# Goto.
-			$(error Unexpected goto)
-		)
-	)
+		$(__gold_lalr_handle$(findstring +,$a)$(findstring -,$a))
+
+	),$(call __gold_parse_token))
 endef
 
-# Params:
-#   1. Current token.
-#   a. Value.Action
-define __gold_lalr_reduce_mk
-	$(foreach r,$(basename $a),$(foreach n,$(word 2,$($(__gold_prefix_rule)$r)),
+# Shift (hot).
+#   a. Action: '/Token/+/State'
+#   t. Token
+define __gold_lalr_handle+
+	$(info __gold_parse_token: shift)
+
+	${eval \
+		# Push the current token onto the stack.
+		__gold_lalr_stack__ += [$t]$(__gold_lalr_state__)
+		$(\n)
+		# Move to a new state.
+		__gold_lalr_state__ := .$(notdir $a)
+	}
+endef
+
+# Reduce (hot).
+#   a. Action: '/Token/-/Rule'
+#   t. Token
+define __gold_lalr_handle-
+	$(info __gold_parse_token: reduce)
+	${eval \
+			$(foreach r,$(notdir $a),# r: Rule Id.
+			$(foreach n,$(word 2,$($(__gold_prefix)_rule$r)),# n: N of symbols.
+
 		$(if $(findstring $n,0),
-			# Append a reduction.
+			# Just append a reduction.
 			__gold_lalr_stack__ += \
-				($r).$(__gold_lalr_state__)
+				($r)$(__gold_lalr_state__)
 
 			,# else
-			$(foreach d,$(words $(__gold_lalr_stack__)),
+			$(foreach d,$(words $(__gold_lalr_stack__)),# Current stack depth.
 				# Pop N symbols.
 				__gold_tmp__ := \
 					$$(wordlist $d,2147483647,# stack[depth-$n+1 .. depth]
@@ -302,39 +304,61 @@ define __gold_lalr_reduce_mk
 				# Replace the current state by one saved in the first
 				# reduced symbol.
 				__gold_lalr_state__ := \
-					$$(subst .,,$$(suffix $$(firstword $$(__gold_tmp__))))
+					$$(suffix $$(firstword $$(__gold_tmp__)))
 				$(\n)
 				# Replace them with a reduction.
 				__gold_lalr_stack__ := \
 					$$(wordlist $(__gold_n$n+1),$d,# stack[1 .. depth-$n]
 							x $(__gold_xs$n-1) $$(__gold_lalr_stack__)) \
 					($$(subst $$(\s),$$(\comma),$$(basename $$(__gold_tmp__))),
-							$r).$$(__gold_lalr_state__)
+							$r)$$(__gold_lalr_state__)
 			)
 		)
 		$(\n)
 		# Go to a new state.
 		__gold_lalr_state__ := \
-			$$(basename $$(call $(__gold_prefix_lalr)$$(__gold_lalr_state__),
-					$(firstword $($(__gold_prefix_rule)$r))))
-	))
+			.$$(notdir $$(filter $(firstword $($(__gold_prefix)_rule$r))/%,
+				$$($(__gold_prefix)_goto$$(__gold_lalr_state__))
+			))
+	))}
+	x# Need to repeat handling of the token in a new state.
+endef
+
+# Accept or error (cold).
+define __gold_lalr_handle
+	$(info accept/error)
 endef
 
 # 1. Id
 # ... Actions
 define builtin_func_gold-lalr-state
-	$(call var_assign_recursive_sl,
-		# Params:
-		#   1. Char code.
-		# Return:
-		#   Two numbers: Value.Action;
-		#   Empty on error.
-		$(__gold_prefix_lalr)$1,# =
+	$(with \
+		$1,
+		$(foreach a,$(nofirstword $(builtin_args_list)),
+			$($a)
+		),
 
-		$$(or \
-			$(foreach a,$(nofirstword $(builtin_args_list)),
-				$($a)
-			)
+		# Goto action is only used to advance the state after a reduction is
+		# performed. We can use such knowledge to decrease a total size of
+		# state lookup table.
+		# So goto action does not contribute to the general transition table of
+		# the particular state. Instead of doing that we'll put it into
+		# a special goto table of the state.
+		$(call var_assign_simple,
+			# List of elements in form 'Symbol/Value'
+			$(__gold_prefix)_goto.$1,# :=
+
+			$(filter-patsubst :%,%,$2)
+		)
+
+		$(call var_assign_simple,
+			# List of elements in form:
+			#   'Symbol/+/State' for shift
+			#   'Symbol/-/Rule'  for reduce
+			#   'Symbol/'        for accept
+			$(__gold_prefix)_lalr.$1,# :=
+
+			$(filter-out :%,$2)
 		)
 	)
 endef
@@ -349,7 +373,12 @@ endef
 #     Rule Id for Reduce action
 #     Target state in case of Shift or Goto
 define builtin_func_gold-lalr-action
-	$$(if $$(findstring [$$(notdir $$1)],[$1]),$3.$2),
+	$(or \
+		$(and $(eq 1,$2),$1/+/$3),
+		$(and $(eq 2,$2),$1/-/$3),
+		$(and $(eq 3,$2),:$1/$3),
+		$(and $(eq 4,$2),$1/),
+	)
 endef
 
 $(def_all)
