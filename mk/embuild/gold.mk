@@ -79,6 +79,20 @@ builtin_func_gold-symbol-table =# Noop
 #     7: Error Terminal
 # 3. Instantiation function
 define builtin_func_gold-symbol
+	$(assert $(if $(eq 0,$1),$(eq 3,$2),ok),
+		EOF terminal is assumed to have Id 0)
+	$(assert $(if $(eq 1,$1),$(eq 7,$2),ok),
+		Error terminal is assumed to have Id 1)
+	$(assert $(if $(eq 2,$1),$(eq 2,$2),ok),
+		Whitespace terminal is assumed to have Id 2)
+
+	$(if $(filter 4 5 6,$2),
+		$(call builtin_error,
+			Comment terminals are not supported, \
+				incorporate them into whitespace terminal
+		)
+	)
+
 	$(call var_assign_simple,$(__gold_prefix)_symbol$1,
 		$2 $3
 	)
@@ -259,7 +273,8 @@ define __gold_parse
 		__gold_stack__ :=# Empty.
 	}
 
-	$(and $(foreach t,$1,# t: Token.
+	$(and $(foreach t,$(filter-out %/2,$1),# Omit whitespaces.
+		# t: Token.
 		$(__gold_parse_token)
 	),)
 
