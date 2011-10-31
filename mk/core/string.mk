@@ -198,5 +198,6 @@ builtin_func_prepend = $(builtin_to_function_call)
 #     The result of patsubst applied to filtered string.
 filter-patsubst = \
 	$(foreach 1,$1,$(patsubst $1,$2,$(filter $1,$3)))
+builtin_func_filter-patsubst = $(builtin_to_function_inline)
 
 endif # __core_string_mk
