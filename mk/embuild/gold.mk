@@ -49,6 +49,7 @@ sorted_charset := $(strip $(sorted_charset))
 
 __gold_prefix = $(call builtin_tag,gold-parser)
 
+# Retrieves user-defined 'gold_prefix'
 define builtin_tag_gold-parser
 	$(or \
 		$(filter-patsubst %parser,%,$(__def_var)),
@@ -58,11 +59,72 @@ define builtin_tag_gold-parser
 	)
 endef
 
+# Params: ignored
 define builtin_func_gold-parser
-	$(info $(__gold_prefix)%)
 	${eval \
 		__def_ignore += $(__gold_prefix)%
 	}
+
+	$$(foreach g,$(__gold_prefix),
+		$$(call __gold_expand,
+			$$(call $(__gold_prefix)_do_lalr,
+				 $$($(__gold_prefix)_do_dfa)
+			)
+		)
+	)
+endef
+
+# Params:
+#   1. Parse tree.
+# Return:
+#   Result of tree expansion.
+define __gold_expand
+	${eval \
+		# Transform tree into a code.
+		__gold_tmp__ := \
+			$(subst [,$$$(\p[)call __gold_token_hook$(\comma),
+				$(subst $(\p[),$$$(\p[)call __gold_rule_hook$(\comma),
+					$(subst ],$(\p]),
+						$(subst ., ,$(subst /,$(\comma),$(subst ./,/,
+							$1
+						)))
+					)
+				)
+			)
+	}
+	$(__gold_tmp__)
+endef
+
+# 1. Chars
+# 2. Symbol Id
+define __gold_token_hook
+	$(with \
+		$(subst $(\s),,$(foreach c,$1,
+			$(if $(eq 0,$c),
+				<0>,
+				$(word $c,$(ascii_table))
+			)
+		)),
+		$2,
+
+		$(info $(word 2,$($g_symbol$2)): $1)
+		$1
+	)
+endef
+
+# 1. Rule Id
+# ... Symbols
+define __gold_rule_hook
+	$(with \
+		$(word 3,$($g_rule$1))
+		$(if $(not $(eq 0,$(word 2,$($g_rule$1)))),
+			: $(foreach a,$(wordlist 1,$(word 2,$($g_rule$1)),2 3 4 5 6 7 8 9),
+				$($a)
+			)
+		),
+		$(info $1)
+		{$1}
+	)
 endef
 
 builtin_func_gold-symbol-table =# Noop
@@ -167,12 +229,10 @@ define builtin_func_gold-dfa-table
 		#   g. Prefix.
 		# Return:
 		#   List of tokens in form 'char1.char2...charN./symbolID'.
-		$(__gold_prefix)_dfa_table,# =
+		$(__gold_prefix)_do_dfa,# =
 
-		$$(foreach g,$(__gold_prefix),
-			$$(foreach s,$1,
-				$$(__gold_lex)
-			)
+		$$(foreach s,$1,
+			$$(__gold_lex)
 		)
 	)
 	$(call var_assign_simple,$(__gold_prefix)_dfa,)# Cyclic error until EOF
@@ -248,13 +308,13 @@ define builtin_func_gold-lalr-table
 	$(call var_assign_recursive_sl,
 		# Params:
 		#   1. List of tokens returned by lexer.
+		# Context:
+		#   g. Prefix.
 		# Return:
-		$(__gold_prefix)_lalr_table,# =
+		$(__gold_prefix)_do_lalr,# =
 
-		$$(foreach g,$(__gold_prefix),
-			$$(foreach s,$1,
-				$$(__gold_parse)
-			)
+		$$(foreach s,$1,
+			$$(__gold_parse)
 		)
 	)
 endef
@@ -265,7 +325,7 @@ endef
 #   s. Initial state.
 #   g. Prefix.
 # Return:
-#   Code that reflects a parse tree.
+#   Parse tree.
 define __gold_parse
 	${eval \
 		__gold_state__ := .$s# Ground.
@@ -278,7 +338,7 @@ define __gold_parse
 		$(__gold_parse_token)
 	),)
 
-
+	$(__gold_stack__)
 endef
 
 # Context:
@@ -287,19 +347,12 @@ endef
 # Return:
 #   Nothing.
 define __gold_parse_token
-#	$(info )
-#	$(info __gold_parse_token: __gold_stack__ = $(__gold_stack__))
-#	$(info __gold_parse_token: __gold_state__ = $(__gold_state__))
-#	$(info __gold_parse_token: token:  [$t])
-
 	$(if $(foreach a,/$(filter $(notdir $t)/%,$($g_lalr$(__gold_state__))),
 		# a: An action in one of the following forms:
 		#     shift:  '/Token/+/State'
 		#     reduce: '/Token/-/Rule'
 		#     accept: '/Token'
 		#     error:  '/'
-#		$(info __gold_parse_token: action: [$a])
-
 		$(__gold_lalr_handle$(findstring +,$a)$(findstring -,$a))
 
 	),$(call __gold_parse_token))
@@ -311,8 +364,6 @@ endef
 # Return:
 #   Nothing.
 define __gold_lalr_handle+
-#	$(info __gold_parse_token: shift)
-
 	${eval \
 		# Push the current token onto the stack.
 		__gold_stack__ += [$t]$(__gold_state__)
@@ -329,8 +380,6 @@ endef
 # Return:
 #   Non-empty.
 define __gold_lalr_handle-
-#	$(info __gold_parse_token: reduce)
-
 	${eval $(foreach r,$(notdir $a),$(foreach n,$(word 2,$($g_rule$r)),
 		# r: Rule Id.
 		# n: N of symbols.
@@ -360,8 +409,10 @@ define __gold_lalr_handle-
 				__gold_stack__ := \
 					$$(wordlist $(__gold_n$n+1),$d,# stack[1 .. depth-$n]
 							x $(__gold_xs$n-1) $$(__gold_stack__)) \
-					($$(subst $$(\s),$$(\comma),$$(basename $$(__gold_tmp__))),
-							$r)$$(__gold_state__)
+					($r,
+						$$(subst $$(\s),$$(\comma),
+								$$(basename $$(__gold_tmp__)))
+					)$$(__gold_state__)
 			)
 		)
 		$(\n)
@@ -382,7 +433,7 @@ define __gold_lalr_handle
 	$(info accept/error: $a : [$t])
 	$(info __gold_parse_token: __gold_stack__ = $(__gold_stack__))
 	$(info __gold_parse_token: __gold_state__ = $(__gold_state__))
-	$(error )
+#	$(error )
 endef
 
 # 1. Id
