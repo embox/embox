@@ -25,28 +25,6 @@ ascii_table = \
    p   q   r   s   t   u   v   w   x   y   z   {   |   }   ~   DEL
 ascii_table := $(strip $(value ascii_table))
 
-# Chars sorted by usage frequency (got from C source file of 1.5MB size).
-# Only the first half of the ASCII table is actually counted (0-127).
-sorted_charset := \
-      32  116 101 95  115 105 114 110 99  97  40  41  111 117 100 \
-  10  108 112 59  34  109 103 102 118 42  44  98  107 104 48  121 \
-  61  120 123 125 49  113 119 45  62  38  58  50  69  54  46  37  \
-  84  52  60  51  76  80  122 82  92  73  78  65  43  33  83  85  \
-  67  79  68  56  91  93  77  124 70  53  71  63  106 72  86  75  \
-  55  66  47  87  88  89  57  81  126 90  74  94  35  39  64  36  \
-  1   2   3   4   5   6   7   8   9   11  12  13  14  15  16  17  \
-  18  19  20  21  22  23  24  25  26  27  28  29  30  31  96  127 \
-  128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 \
-  144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 \
-  160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 \
-  176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 \
-  192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 \
-  208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 \
-  224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 \
-  240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 \
-  0
-sorted_charset := $(strip $(sorted_charset))
-
 __gold_prefix = $(call builtin_tag,gold-parser)
 
 # Retrieves user-defined 'gold_prefix'
@@ -74,79 +52,37 @@ define builtin_func_gold-parser
 	)
 endef
 
+#
+# Symbols.
+#
+#	$(gold-symbol-table \
+#		# Args: Id,Type,Name
+#		$(gold-symbol  0,3,# (EOF)
+#			Symbol_Eof),
+#		# ...
+#	),
+#
+# Symbols are easy: each one is represented by a simple variable:
+#	$g_symbol$(id) := $(type) $(handler)
+# where:
+#      'id' is an index of the symbol,
+#    'type' defines a kind of the symbol:
+#            0: Normal Nonterminal
+#            1: Normal Terminal
+#            2: Whitespace Terminal
+#            3: End of File
+#            4: Start of a block quote
+#            5: End of a block quote
+#            6: Line Comment Terminal
+#            7: Error Terminal
+# 'handler' is a name of a function used to instantiate terminal tokens, and
+#       'g' refers to a namespace of a parser.
+#
+
 # Params:
-#   1. Parse tree.
-# Return:
-#   Result of tree expansion.
-define __gold_expand
-	${eval \
-		# Transform tree into a code.
-		__gold_tmp__ := \
-			$(subst [,$$$(\p[)call __gold_token_hook$(\comma),
-				$(subst $(\p[),$$$(\p[)call __gold_rule_hook_n,
-					$(subst ],$(\p]),
-						$(subst ., ,$(subst /,$(\comma),$(subst ./,/,
-							$1
-						)))
-					)
-				)
-			)
-	}
-	$(__gold_tmp__)
-endef
-
-__gold_rule_hook_n0 = $(foreach r,$1,$(__gold_rule_hook))
-
-# 1. Chars
-# 2. Symbol Id
-define __gold_token_hook
-	$(with \
-		$(subst $(\s),,$(foreach c,$1,
-			$(if $(eq 0,$c),
-				<0>,
-				$(word $c,$(ascii_table))
-			)
-		)),
-		$2,
-
-		$(info $(word 2,$($g_symbol$2)): $1)
-		$1
-	)
-endef
-
-# Context:
-#   r. Rule Id
-# Params:
-#   ... Symbols
-define __gold_rule_hook
-	$(with \
-		$(word 3,$($g_rule$r)) {
-			$(subst $(\n),$(\n)$(\t),
-				$(if $(not $(eq 0,$(word 2,$($g_rule$1)))),
-					$(foreach a,$(wordlist 1,$(word 2,$($g_rule$r)),1 2 3 4 5 6 7 8 9),
-						$(\n)$a: $($a)
-					)
-				)
-			) $(\n)
-		},
-#		$(info $1)
-		$1
-	)
-endef
-
-builtin_func_gold-symbol-table =# Noop
-
-# 1. Id
-# 2. Symbol type:
-#     0: Normal Nonterminal
-#     1: Normal Terminal
-#     2: Whitespace Terminal
-#     3: End of File
-#     4: Start of a block quote
-#     5: End of a block quote
-#     6: Line Comment Terminal
-#     7: Error Terminal
-# 3. Instantiation function
+#   1. Id.
+#   2. Symbol type (see above).
+#   3. Instantiation function.
 define builtin_func_gold-symbol
 	$(assert $(if $(eq 0,$1),$(eq 3,$2),ok),
 		EOF terminal is assumed to have Id 0)
@@ -166,6 +102,8 @@ define builtin_func_gold-symbol
 		$2 $3
 	)
 endef
+
+builtin_func_gold-symbol-table =# Noop.
 
 builtin_func_gold-rule-table =# Noop
 
@@ -208,6 +146,8 @@ define builtin_func_gold-rule
 	)
 endef
 
+__gold_rule_hook_n0 = $(foreach r,$1,$(__gold_rule_hook))
+
 builtin_func_gold-charset-table =# Noop
 
 # 1. Id
@@ -221,13 +161,35 @@ define builtin_func_gold-charset
 					$(foreach a,$(nofirstword $(builtin_args_list)),
 						$($a)
 					),
-					$(sorted_charset)
+					$(__gold_cs_freq_sort)
 				)
 			)
 			|
 		)
 	)
 endef
+
+# Chars sorted by usage frequency (got from C source file of 1.5MB size).
+# Only the first half of the ASCII table is actually counted (0-127).
+__gold_cs_freq_sort := \
+      32  116 101 95  115 105 114 110 99  97  40  41  111 117 100 \
+  10  108 112 59  34  109 103 102 118 42  44  98  107 104 48  121 \
+  61  120 123 125 49  113 119 45  62  38  58  50  69  54  46  37  \
+  84  52  60  51  76  80  122 82  92  73  78  65  43  33  83  85  \
+  67  79  68  56  91  93  77  124 70  53  71  63  106 72  86  75  \
+  55  66  47  87  88  89  57  81  126 90  74  94  35  39  64  36  \
+  1   2   3   4   5   6   7   8   9   11  12  13  14  15  16  17  \
+  18  19  20  21  22  23  24  25  26  27  28  29  30  31  96  127 \
+  128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 \
+  144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 \
+  160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 \
+  176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 \
+  192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 \
+  208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 \
+  224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 \
+  240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 \
+  0
+__gold_cs_freq_sort := $(strip $(__gold_cs_freq_sort))
 
 define __gold_dfa_accept
 	$(info DFA accept symbol $2 ($(word 2,$(__golden_symbol$2))): \
@@ -499,6 +461,64 @@ define builtin_func_gold-lalr-action
 		$(and $(eq 2,$2),$1/-/$3),
 		$(and $(eq 3,$2),:$1/$3),
 		$(and $(eq 4,$2),$1/),
+	)
+endef
+
+# Params:
+#   1. Parse tree.
+# Return:
+#   Result of tree expansion.
+define __gold_expand
+	${eval \
+		# Transform tree into a code.
+		__gold_tmp__ := \
+			$(subst [,$$$(\p[)call __gold_token_hook$(\comma),
+				$(subst $(\p[),$$$(\p[)call __gold_rule_hook_n,
+					$(subst ],$(\p]),
+						$(subst ., ,$(subst /,$(\comma),$(subst ./,/,
+							$1
+						)))
+					)
+				)
+			)
+	}
+	$(__gold_tmp__)
+endef
+
+# 1. Chars
+# 2. Symbol Id
+define __gold_token_hook
+	$(with \
+		$(subst $(\s),,$(foreach c,$1,
+			$(if $(eq 0,$c),
+				<0>,
+				$(word $c,$(ascii_table))
+			)
+		)),
+		$2,
+
+		$(info $(word 2,$($g_symbol$2)): $1)
+		$1
+	)
+endef
+
+# Context:
+#   r. Rule Id
+# Params:
+#   ... Symbols
+define __gold_rule_hook
+	$(with \
+		$(word 3,$($g_rule$r)) {
+			$(subst $(\n),$(\n)$(\t),
+				$(if $(not $(eq 0,$(word 2,$($g_rule$1)))),
+					$(foreach a,$(wordlist 1,$(word 2,$($g_rule$r)),1 2 3 4 5 6 7 8 9),
+						$(\n)$a: $($a)
+					)
+				)
+			) $(\n)
+		},
+#		$(info $1)
+		$1
 	)
 endef
 
