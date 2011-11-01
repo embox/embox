@@ -3,6 +3,8 @@
 "Version"  = '0.1'
 "About"    = 'MyBuild file'
 
+"Case Sensitive" = True
+
 "Start Symbol" = <Model>
 
 ! -------------------------------------------------
@@ -35,7 +37,7 @@ StringLiteral = '"' ( {String Chars} | '\' {Printable} )* '"'
           | Identifier
 
 <QualifiedNameWithWildcard>
-        ::= <QualifiedName> '.' '*'
+        ::= <QualifiedName> '.*'
           | <QualifiedName>
 
 ! The grammar starts below
