@@ -1,0 +1,105 @@
+"Name"     = 'MyFile'
+"Author"   = 'Eldar Abusalimov'
+"Version"  = '0.1'
+"About"    = 'MyBuild file'
+
+"Start Symbol" = <Model>
+
+! -------------------------------------------------
+! Character Sets
+! -------------------------------------------------
+
+{ID Head}      = {Letter} + [_]
+{ID Tail}      = {Alphanumeric} + [_]
+{String Chars} = {Printable} + {HT} - ["\]
+
+{Non Slash}    = {Printable} - [/]
+{Non Asterisk} = {Printable} - [*]
+
+! -------------------------------------------------
+! Terminals
+! -------------------------------------------------
+
+Whitespace    = {Whitespace}+
+              | '/*' (  {Non Asterisk} | '*' {Non Slash}? )*  '*/'
+
+Identifier    = {ID Head}{ID Tail}*
+StringLiteral = '"' ( {String Chars} | '\' {Printable} )* '"'
+
+! -------------------------------------------------
+! Rules
+! -------------------------------------------------
+
+<QualifiedName>
+        ::= Identifier '.' <QualifiedName>
+          | Identifier
+
+<QualifiedNameWithWildcard>
+        ::= <QualifiedName> '.' '*'
+          | <QualifiedName>
+
+! The grammar starts below
+<Model>
+        ::= <PackageDecl> <ImportDecls> <ModuleDecls>
+
+<PackageDecl>
+        ::= 'package' <QualifiedName> ';'
+          |
+
+<ImportDecls>
+        ::= <ImportDecl> <ImportDecls>
+          |
+
+<ImportDecl>
+        ::= 'import' <QualifiedNameWithWildcard> ';'
+
+<ModuleDecls>
+        ::= <ModuleDecl> <ModuleDecls>
+          |
+
+<ModuleDecl>
+        ::= <ModuleModifiers> 'module' Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
+
+<ModuleModifiers>
+        ::= <ModuleModifier> <ModuleModifiers>
+          |
+
+<ModuleModifier>
+        ::= 'static'
+          | 'abstract'
+
+
+<SuperModules>
+        ::= 'extends' <SuperModulesList>
+          |
+
+<SuperModulesList>
+        ::= <QualifiedName> ',' <SuperModulesList>
+          | <QualifiedName>
+
+<ModuleBodyDecls>
+        ::= <ModuleBodyDecl> <ModuleBodyDecls>
+          |
+
+<ModuleBodyDecl>
+        ::= <SourceDecl>
+          | <DependencyDecl>
+
+<SourceDecl>
+        ::= 'source' <SourceBody>
+
+<SourceBody>
+        ::= '{' <SourceStatements> '}'
+          | <SourceStatement>
+
+<SourceStatements>
+        ::= <SourceStatement> <SourceStatements>
+          |
+
+<SourceStatement>
+        ::= 'file' StringLiteral ';'
+
+<DependencyDecl>
+        ::= 'depends'
+
+
