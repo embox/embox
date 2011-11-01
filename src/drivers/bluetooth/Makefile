@@ -1,7 +1,10 @@
 $_APIS += embox.hal.bluetooth
 
-$_MODS += nxt_bluetooth btm_bluetooth
-$_SRCS-nxt_bluetooth += nxt_bluetooth_usart.c nxt_bluetooth_assist.c
+$_MODS += nxt_bluetooth btm_bluetooth blue_core
+$_SRCS-nxt_bluetooth += nxt_bluetooth_usart_new.c
+
+$_SRCS-blue_core += blue_core4.c
+$_DEPS-blue_core += nxt_bluetooth
 $_DEPS-nxt_bluetooth += embox.driver.pins
 $_DEPS-nxt_bluetooth += embox.kernel.irq
 $_PROVIDES-nxt_bluetooth += embox.hal.bluetooth

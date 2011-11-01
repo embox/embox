@@ -10,26 +10,31 @@
 #include <types.h>
 #include <embox/cmd.h>
 
-EMBOX_CMD(main);
+#include <net/socket.h>
+#include <pnet/repo.h>
+#include <pnet/types.h>
+#include <pnet/graph.h>
 
-static int main(int argc, char **argv) {
-	struct sock sock;
-	struct pnet_graph graph;
-	struct pnet_node node, src;
+EMBOX_CMD(bt_main);
 
-	if (sock = socket(PNET_GRAPH, 0, 0)) {
+static int bt_main(int argc, char **argv) {
+	int sock;
+	struct pnet_graph *graph;
+	struct net_node *node, *src;
+
+	if (-1 == (sock = socket(PNET_GRAPH, 0, 0))) {
 		//error
 	}
 
 	graph = pnet_get_graph(sock);
 
-	src = pnet_get_node("lego_blue_core");
+	src = pnet_get_module("lego_blue_core");
 
-	pnet_add_src(graph, src);
+	pnet_graph_add_src(graph, src);
 
-	node = pnet_get_node("lego_direct");
+	node = pnet_get_module("lego_direct");
 
-	pnet_link(src, node);
+	pnet_node_link(src, node);
 
 	pnet_graph_start(graph);
 
