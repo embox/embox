@@ -63,7 +63,9 @@ endef
 #	),
 #
 # Symbols are easy: each one is represented by a simple variable:
+#
 #	$g_symbol$(id) := $(type) $(handler)
+#
 # where:
 #      'id' is an index of the symbol,
 #    'type' defines a kind of the symbol:
@@ -71,11 +73,12 @@ endef
 #            1: Normal Terminal
 #            2: Whitespace Terminal
 #            3: End of File
-#            4: Start of a block quote
-#            5: End of a block quote
-#            6: Line Comment Terminal
+#            4: Start of a block quote (Not supported)
+#            5: End of a block quote (Not supported)
+#            6: Line Comment Terminal (Not supported)
 #            7: Error Terminal
-# 'handler' is a name of a function used to instantiate terminal tokens, and
+# 'handler' is a name of a function used to instantiate terminal tokens
+#           from the list of character codes, and
 #       'g' refers to a namespace of a parser.
 #
 
@@ -105,7 +108,41 @@ endef
 
 builtin_func_gold-symbol-table =# Noop.
 
-builtin_func_gold-rule-table =# Noop
+#
+# Rules.
+#
+#	$(gold-rule-table \
+#		# Args: Id,Nonterminal,SymbolsNr,Name
+#		$(gold-rule 0,9,1,# <Program> ::= <Expression>
+#			Rule_Program),
+#		# ...
+#	),
+#
+# For each rule we define a simple variable in parser's namespace:
+#
+#	$g_rule$(id) := $(nonterminal_id) $(number_of_symbols) $(handler)
+#
+# where:
+#      'id' is an index of the rule,
+# 'nonterminal_id'    points to a symbol produced by the rule (LHS),
+# 'number_of_symbols' number of symbols in RHS,
+# 'handler' is a name of a function called when the parser completes reading
+#           all of the rule's symbols, and
+#       'g' refers to a namespace of a parser.
+#
+# Also there are few auxiliary variables defined in a common namespace and
+# shared by all parsers:
+#
+#	__gold_xs$(n)-1 := <list of N minus one 'x's>
+#	__gold_n$(n)+1  := <literal value of N plus one>
+#
+# where 'n' gets all possible values of number of symbols for each defined
+# rule (except for zero). These values are used later in LALR reduce handler.
+#
+#	__gold_rule_hook_n$(n) = <proxy function>
+#
+# The latters are used by in last parsing phase to redirect expansion hooks.
+#
 
 # 1. Id
 # 2. Nonterminal
@@ -132,9 +169,9 @@ define builtin_func_gold-rule
 			$(words $(__gold_xs$3-1) x x)
 		)
 
+		# Proxy function to the real hook handler.
 		# Used by __gold_expand.
 		$(call var_assign_recursive_sl,__gold_rule_hook_n$3,
-			# Magic-magic!
 			$$(foreach r,$$($(__gold_n$3+1)),
 				$$(__gold_rule_hook)
 			)
@@ -147,6 +184,8 @@ define builtin_func_gold-rule
 endef
 
 __gold_rule_hook_n0 = $(foreach r,$1,$(__gold_rule_hook))
+
+builtin_func_gold-rule-table =# Noop
 
 builtin_func_gold-charset-table =# Noop
 
