@@ -141,8 +141,8 @@ static int handle_body(uint8_t *buff, int *addit_len) {
 		nxt_motor_set_power(NXT_MOTOR_C, buff[2]);
 		*addit_len = 0;
 		return 0;
-	case DC_QREAL_HELLO:
-		return 0x42;
+//	case DC_QREAL_HELLO:
+//		return 0x42;
 	default:
 		return 0;
 	}
