@@ -83,7 +83,7 @@ define __gold_expand
 		# Transform tree into a code.
 		__gold_tmp__ := \
 			$(subst [,$$$(\p[)call __gold_token_hook$(\comma),
-				$(subst $(\p[),$$$(\p[)call __gold_rule_hook$(\comma),
+				$(subst $(\p[),$$$(\p[)call __gold_rule_hook_n,
 					$(subst ],$(\p]),
 						$(subst ., ,$(subst /,$(\comma),$(subst ./,/,
 							$1
@@ -94,6 +94,8 @@ define __gold_expand
 	}
 	$(__gold_tmp__)
 endef
+
+__gold_rule_hook_n0 = $(foreach r,$1,$(__gold_rule_hook))
 
 # 1. Chars
 # 2. Symbol Id
@@ -112,18 +114,23 @@ define __gold_token_hook
 	)
 endef
 
-# 1. Rule Id
-# ... Symbols
+# Context:
+#   r. Rule Id
+# Params:
+#   ... Symbols
 define __gold_rule_hook
 	$(with \
-		$(word 3,$($g_rule$1))
-		$(if $(not $(eq 0,$(word 2,$($g_rule$1)))),
-			: $(foreach a,$(wordlist 1,$(word 2,$($g_rule$1)),2 3 4 5 6 7 8 9),
-				$($a)
-			)
-		),
-		$(info $1)
-		{$1}
+		$(word 3,$($g_rule$r)) {
+			$(subst $(\n),$(\n)$(\t),
+				$(if $(not $(eq 0,$(word 2,$($g_rule$1)))),
+					$(foreach a,$(wordlist 1,$(word 2,$($g_rule$r)),1 2 3 4 5 6 7 8 9),
+						$(\n)$a: $($a)
+					)
+				)
+			) $(\n)
+		},
+#		$(info $1)
+		$1
 	)
 endef
 
@@ -185,6 +192,14 @@ define builtin_func_gold-rule
 		# __gold_n3+1 = 4
 		$(call var_assign_simple,__gold_n$3+1,
 			$(words $(__gold_xs$3-1) x x)
+		)
+
+		# Used by __gold_expand.
+		$(call var_assign_recursive_sl,__gold_rule_hook_n$3,
+			# Magic-magic!
+			$$(foreach r,$$($(__gold_n$3+1)),
+				$$(__gold_rule_hook)
+			)
 		)
 	)
 
@@ -409,10 +424,9 @@ define __gold_lalr_handle-
 				__gold_stack__ := \
 					$$(wordlist $(__gold_n$n+1),$d,# stack[1 .. depth-$n]
 							x $(__gold_xs$n-1) $$(__gold_stack__)) \
-					($r,
-						$$(subst $$(\s),$$(\comma),
-								$$(basename $$(__gold_tmp__)))
-					)$$(__gold_state__)
+					($n,$$(subst $$(\s),$$(\comma),
+							$$(basename $$(__gold_tmp__))),$r)
+					$$(__gold_state__)
 			)
 		)
 		$(\n)
