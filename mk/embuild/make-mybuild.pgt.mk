@@ -10,7 +10,6 @@ This template outputs the tables using extended syntax of Make functional langua
 ##ID-SEPARATOR '_'
 ##ID-SYMBOL-PREFIX 'Symbol'
 ##ID-RULE-PREFIX 'Rule'
-##ID-CASE ProperCase
 ##PARAMETERS
 
 # Override to define everything in a different namespace. Must not be empty.
