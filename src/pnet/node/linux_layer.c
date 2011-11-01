@@ -16,6 +16,7 @@
 #include <pnet/core.h>
 
 #include <embox/unit.h>
+#include <pnet/repo.h>
 
 EMBOX_UNIT_INIT(pnet_linux_init);
 
@@ -42,3 +43,4 @@ static int pnet_linux_init(void) {
 	return res;
 }
 
+PNET_MODULE("linux gate", lin_gate);
