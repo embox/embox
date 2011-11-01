@@ -21,17 +21,18 @@
 #include <pnet/core.h>
 
 #include <embox/unit.h>
-static enum {
-	COMM_HEADER,
-	COMM_BODY,
-} reader_state;
-
 
 EMBOX_UNIT_INIT(nxt_direct_comm_init);
 
 #define DC_BUFF_SIZE 40
 
 static uint8_t direct_comm_buff[DC_BUFF_SIZE];
+
+static struct net_device *dev;
+
+static int dc_hnd_body(int msg, uint8_t *buff);
+static int dc_hnd_size(int msg, uint8_t *buff);
+static int dc_hnd_conn(int msg, uint8_t *buff);
 
 static int size = 0;
 static int handle_size(uint8_t *buff) {
@@ -41,35 +42,36 @@ static int handle_size(uint8_t *buff) {
 static void send_to_net(uint8_t *data, int len) {
 	struct sk_buff *skb = alloc_skb(len, 0);
 	memcpy(skb->data, data, len);
-	//skb->net_node;
+	skb->dev = dev;
 	netif_rx(skb);
 	return;
 }
 
-static int direct_comm_handle(int msg, uint8_t *buff) {
-	if (msg == BT_DRV_MSG_CONNECTED) {
-	    bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
-	} else if (msg == BT_DRV_MSG_READ) {
-	    switch (reader_state) {
-	    case COMM_HEADER:
-		    reader_state = COMM_BODY;
-		    size = handle_size(buff);
-
-		    bluetooth_read(direct_comm_buff + MSG_SIZE_BYTE_CNT, size);
-
-		    break;
-	    case COMM_BODY:
-		    reader_state = COMM_HEADER;
-
-		    send_to_net(direct_comm_buff, MSG_SIZE_BYTE_CNT + size);
-
-		    bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
-
-		    break;
-	    default:
-		    break;
-	    }
+static int dc_hnd_body(int msg, uint8_t *buff) {
+	if (msg != BT_DRV_MSG_READ) {
+		CALLBACK_REG(bluetooth_uart, (callback_t) dc_hnd_conn);
+		return 0;
 	}
+	send_to_net(direct_comm_buff, MSG_SIZE_BYTE_CNT + size);
+	CALLBACK_REG(bluetooth_uart, (callback_t) dc_hnd_size);
+	bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
+	return 0;
+}
+
+static int dc_hnd_size(int msg, uint8_t *buff) {
+	if (msg != BT_DRV_MSG_READ) {
+		CALLBACK_REG(bluetooth_uart, (callback_t) dc_hnd_conn);
+		return 0;
+	}
+	size = handle_size(buff);
+	CALLBACK_REG(bluetooth_uart, (callback_t) dc_hnd_body);
+	bluetooth_read(direct_comm_buff + MSG_SIZE_BYTE_CNT, size);
+	return 0;
+}
+
+static int dc_hnd_conn(int msg, uint8_t *buff) {
+	CALLBACK_REG(bluetooth_uart, (callback_t) dc_hnd_size);
+	bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
 	return 0;
 }
 
@@ -112,15 +114,18 @@ static void bt_setup(struct net_device *dev) {
 static net_node_t bt_node = NULL;
 
 static int nxt_direct_comm_init(void) {
-	struct net_device *dev = alloc_netdev(0, "nxt_bt", bt_setup);
+	dev = alloc_netdev(0, "nxt_bt", bt_setup);
 	if (dev == NULL) {
 		return -ENOMEM;
 	}
 
+	if (0 != register_netdev(dev) ) {
+		return -EINVAL;
+	}
+
 	bt_node = pnet_dev_register(dev);
 
-	reader_state = COMM_HEADER;
-	CALLBACK_REG(bluetooth_uart, (callback_t) direct_comm_handle);
+	CALLBACK_REG(bluetooth_uart, (callback_t) dc_hnd_conn);
 
 	return 0;
 }
