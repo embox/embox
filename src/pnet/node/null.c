@@ -9,11 +9,17 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 
+#include <kernel/prom_printf.h>
+
 static int net_null_tx_hnd(net_packet_t pack) {
+
+	pnet_pack_free(pack);
 	return NET_HND_SUPPRESSED;
 }
 
 static int net_null_rx_hnd(net_packet_t pack) {
+	pnet_pack_free(pack);
+	prom_printf("5");
 	return NET_HND_SUPPRESSED;
 }
 

@@ -32,24 +32,31 @@ static int tx_hnd(net_packet_t pack) {
 	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
-static struct pnet_proto dev_proto;
+static struct pnet_proto dev_proto = {
+	.tx_hnd = tx_hnd
+};
 
 /* single entry for all devices
        devices
-	o o o
+       o  o  o
 	\ | /
 	  o
       dev_entry
 
 */
-static struct net_node dev_entry;
-
-static struct pnet_proto dev_entry_proto;
 
 static int entry_tx_hnd(net_packet_t pack) {
 	pack->node = pack->node->tx_dfault; //TODO
 	return 0;
 }
+
+static struct pnet_proto dev_entry_proto = {
+	.tx_hnd = entry_tx_hnd
+};
+
+static struct net_node dev_entry = {
+	.proto = &dev_entry_proto
+};
 
 net_node_t pnet_dev_register(struct net_device *dev) {
 	net_node_t node = pnet_node_init(&dev->net_node, 0, &dev_proto);
@@ -68,12 +75,6 @@ net_node_t pnet_dev_get_entry(void) {
 }
 
 static int net_dev_init(void) {
-	pnet_proto_init(&dev_proto, 0, NULL, tx_hnd);
-
-	pnet_proto_init(&dev_entry_proto, 0, NULL, entry_tx_hnd);
-
-	dev_entry.proto = &dev_entry_proto;
-        dev_entry.rx_dfault = pnet_get_node_null();
 
 	return 0;
 }
