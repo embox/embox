@@ -66,6 +66,18 @@ endef
 #
 # Rules.
 #
+# As for symbols each rule can have a handler that is used to create an
+# application-specific representation if the rule data.
+# The signature of handlers is the following:
+#
+# Params:
+#  ... Each argument contains a value of the corresponding symbol
+#      in the rule's RHS.
+#
+# Return:
+#   Converted value that is passed to a symbol handler corresponding to
+#   the rule's LHS (if any has been defined).
+#
 
 ##RULES
 # Rule: %Description%
