@@ -25,6 +25,8 @@ struct pnet_graph {
 
 extern struct pnet_graph *pnet_get_graph(int sock);
 
+extern struct pnet_graph *pnet_graph_create(void);
+
 extern int pnet_graph_start(struct pnet_graph *graph);
 extern int pnet_graph_stop(struct pnet_graph *graph);
 

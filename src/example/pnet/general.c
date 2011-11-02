@@ -21,7 +21,7 @@ static int pnet_general_example(int argc, char **argv) {
 	match_rule_t rule;
 
 	net_node_t devs = pnet_dev_get_entry();
-	net_node_t lin_gate = pnet_get_node_linux_gate();
+	net_node_t lin_gate = pnet_get_node("gate lin");
 
 	net_node_matcher_t match = pnet_get_node_matcher();
 	net_node_t match_node = (net_node_t) match;
@@ -32,6 +32,8 @@ static int pnet_general_example(int argc, char **argv) {
 
 	info = pnet_get_node_info();
 	pnet_node_attach(info, NET_RX_DFAULT, lin_gate);
+
+
 
 	rule = pnet_rule_alloc();
 

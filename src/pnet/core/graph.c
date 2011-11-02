@@ -21,6 +21,9 @@ OBJALLOC_DEF(graphs, struct pnet_graph, CONFIG_PNET_GRAPH_CNT);
 struct pnet_graph *pnet_get_graph(int sock) {
 	return (struct pnet_graph *) objalloc(&graphs);
 }
+struct pnet_graph *pnet_graph_create(void) {
+	return (struct pnet_graph *) objalloc(&graphs);
+}
 
 int pnet_graph_start(struct pnet_graph *graph) {
 	if (graph->state != PNET_GRAPH_STOPPED) {

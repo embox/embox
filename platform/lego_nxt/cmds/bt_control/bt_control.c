@@ -17,16 +17,52 @@
 
 EMBOX_CMD(bt_main);
 
+static int control_handle(net_packet_t pack) {
+	return 0;
+}
+
+static struct pnet_proto control_proto = {
+	.rx_hnd = control_handle
+};
+static struct net_node pnet_control = {
+	.proto = &control_proto
+};
+
+#if 0
+typedef int (* pnet_node_connect_ht)(void);
+typedef int (* pnet_node_start_ht)(void);
+typedef int (* pnet_node_receive_ht)(void);
+
+struct pnet_node {
+	pnet_node_connect_ht connect;
+	pnet_node_start_ht start;
+	pnet_node_receive_ht receive;
+};
+
+static int pnet_control_connect(void) {
+	return 0;
+}
+
+static int pnet_control_start(void) {
+	return 0;
+}
+
+static int pnet_control_rx(void) {
+	return 0;
+}
+
+static struct pnet_node  pnet_control = {
+	.connect = pnet_control_connect,
+	.start = pnet_control_start,
+	.receive = pnet_control_rx
+};
+#endif
+
 static int bt_main(int argc, char **argv) {
-	int sock;
-	struct pnet_graph *graph;
+	struct pnet_graph *graph ;
 	struct net_node *node, *src;
 
-	if (-1 == (sock = socket(PNET_GRAPH, 0, 0))) {
-		//error
-	}
-
-	graph = pnet_get_graph(sock);
+	graph = pnet_graph_create();
 
 	src = pnet_get_module("lego_blue_core");
 
@@ -34,9 +70,11 @@ static int bt_main(int argc, char **argv) {
 
 	node = pnet_get_module("lego_direct");
 
-	pnet_graph_add_node(node);
+	pnet_graph_add_node(graph, node);
 
 	pnet_node_link(src, node);
+
+	pnet_node_link(node, (struct net_node *)&pnet_control);
 
 	pnet_graph_start(graph);
 
