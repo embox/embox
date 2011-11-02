@@ -10,6 +10,7 @@
 #ifndef PNET_GRAPH_H_
 #define PNET_GRAPH_H_
 
+#include <pnet/types.h>
 struct pnet_graph {
 	int id;
 };

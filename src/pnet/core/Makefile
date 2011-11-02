@@ -4,7 +4,7 @@ $_PACKAGE := embox.pnet
 $_APIS += rx_worker_api init_api
 
 $_MODS += core
-$_SRCS-core += node.c proto.c pack.c connect.c repo.c
+$_SRCS-core += node.c proto.c pack.c connect.c repo.c graph.c
 $_DEPS-core += dev prior_path
 $_REQUIRES-core += rx_worker_api init_api
 
