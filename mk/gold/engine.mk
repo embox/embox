@@ -13,6 +13,38 @@ include mk/core/string.mk
 include mk/core/define.mk
 
 include mk/util/var/assign.mk
+include mk/util/var/info.mk
+
+#
+# Parses the given file with a grammar specified by its prefix.
+#
+# Params:
+#   1. Gold prefix of the grammar.
+#   2. Input file name.
+# Return:
+#   Result of interpreting parse tree with user-defined handlers.
+#   TODO error handling.
+# Note:
+#   The grammar must be previously loaded.
+define gold_parse_file
+	$(if $(call var_undefined,__gold_$1_parse),
+		$(error Grammar '$1' does not seem to be loaded)
+	)
+	$(call __gold_$1_parse,$(shell od -v -A n -t uC $2))
+endef
+
+#
+# Params:
+#   1. Stream of decimal char codes representing an input.
+# Return:
+#   Result of interpreting parse tree with user-defined handlers.
+#   TODO error handling.
+# Note:
+#   The grammar must be previously loaded.
+define gold_parse_stream
+	$(call __gold_$1_parse,$1)
+endef
+
 
 ascii_table = \
        SOH STX ETX EOT ENQ ACK BEL BS  TAB LF  VT  FF  CR  SO  SI  \
@@ -30,7 +62,7 @@ __gold_prefix = $(call builtin_tag,gold-parser)
 # Retrieves user-defined 'gold_prefix'
 define builtin_tag_gold-parser
 	$(or \
-		$(filter-patsubst %parser,%,$(__def_var)),
+		$(filter-patsubst __gold_%_parse,__g_%,$(__def_var)),
 		$(call builtin_error,
 			Bad variable name: '$(__def_var)'
 		)
