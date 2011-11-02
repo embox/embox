@@ -15,32 +15,17 @@
 #include <lib/list.h>
 #include <assert.h>
 #include <net/udp.h>
+#include <stdio.h>
+#include <embox/unit.h>
+#include <pnet/node.h>
 
 #define NET_NODES_CNT 0x10
 
+//EMBOX_UNIT_INIT(run_pnet);
+
 OBJALLOC_DEF(matcher_nodes, struct net_node_matcher, NET_NODES_CNT);
 
-int add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t node) {
-
-	list_add_tail(&new_rule->lnk, &node->match_rx_rules);
-
-	return 0;
-}
-
-int hwaddrs_rule_create(net_node_matcher_t node, char *h_src,
-		net_node_t next_node) {
-	match_rule_t new_rule = pnet_rule_alloc();
-
-	memcpy((void*) new_rule->skbuf->mac.ethh->h_source, (void*) h_src,
-			ETH_ALEN);
-	new_rule->next_node = next_node;
-
-	add_new_rx_rule(new_rule, node);
-
-	return 0;
-}
-
-int match(net_packet_t packet) {
+static int match(net_packet_t packet) {
 	unsigned char *pack_curr, *rule_curr;
 	net_node_matcher_t node;
 	match_rule_t curr;
@@ -51,11 +36,11 @@ int match(net_packet_t packet) {
 
 	list_for_each (h, &node->match_rx_rules) {
 		curr = member_cast_out(h, struct match_rule, lnk);
-		rule_curr = curr->header;
+		rule_curr = &curr->header[0];
 		pack_curr = (unsigned char*) packet->skbuf->data;
 
 		for (n = MAX_PACK_HEADER_SIZE;
-				((*pack_curr == *rule_curr) || (*rule_curr == -1)) && n;
+				((*pack_curr == *rule_curr) || (*rule_curr == 255)) && n;
 				--n, ++pack_curr, ++rule_curr)
 			;
 
@@ -76,7 +61,7 @@ static int matcher_free(net_node_t node) {
 	return 0;
 }
 
-static struct pnet_proto hwaddr_matcher_proto = {
+static struct pnet_proto matcher_proto = {
 	.tx_hnd = match,
 	.rx_hnd = match,
 	.free = matcher_free
@@ -85,7 +70,7 @@ static struct pnet_proto hwaddr_matcher_proto = {
 net_node_matcher_t pnet_get_node_matcher(void) {
 	net_node_matcher_t matcher = objalloc(&matcher_nodes);
 
-	pnet_node_init(&matcher->node, 0, &hwaddr_matcher_proto);
+	pnet_node_init(&matcher->node, 1, &matcher_proto);
 
 	INIT_LIST_HEAD(&matcher->match_rx_rules);
 	INIT_LIST_HEAD(&matcher->match_tx_rules);

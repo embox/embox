@@ -10,6 +10,11 @@
 #include <net/ip.h>
 #include <net/udp.h>
 #include <string.h>
+#include <net/skbuff.h>
+#include <pnet/core.h>
+#include <net/in.h>
+
+#define ETH_P_IP_REV	0x8
 
 #define MAX_RULE_COUNT 0x10
 
@@ -32,21 +37,23 @@ typedef struct net_node_matcher {
 	struct list_head match_tx_rules;
 }*net_node_matcher_t;
 
-extern int match(net_packet_t packet);
+
+/* XXX */
+extern net_packet_t get_packet(struct sk_buff *skbuff);
 
 static inline void pnet_rule_set_next_node(match_rule_t rule, net_node_t node) {
 	rule->next_node = node;
 }
 
-static inline void pnet_rule_set_mac_src(match_rule_t rule, char *h_src) {
+static inline void pnet_rule_set_src_mac(match_rule_t rule, unsigned char *h_src) {
 	memcpy((void*) rule->skbuf->mac.ethh->h_source, (void*) h_src, ETH_ALEN);
 }
 
-static inline void pnet_rule_set_pack_type(match_rule_t rule, uint16_t *port) {
-	memcpy((void*) &rule->skbuf->mac.ethh->h_proto, (void*) port,
-			sizeof(unsigned short));
+static inline void pnet_rule_set_pack_type(match_rule_t rule, uint16_t type) {
+	uint16_t t = ntohs(type);
+	memcpy((void*) &rule->skbuf->mac.ethh->h_proto, (void*) &t, sizeof(unsigned short));
 	/* TODO */
-	switch (rule->skbuf->mac.ethh->h_proto) {
+	switch (type) {
 	case ETH_P_IP:
 		rule->skbuf->h.raw = rule->skbuf->nh.raw + IP_MIN_HEADER_SIZE;
 		break;
@@ -60,26 +67,27 @@ static inline void pnet_rule_set_pack_type(match_rule_t rule, uint16_t *port) {
 	}
 }
 
-static inline void pnet_rule_set_ip_src(match_rule_t rule, net_addr_t ip_src) {
+static inline void pnet_rule_set_src_ip(match_rule_t rule, net_addr_t ip_src) {
+	pnet_rule_set_pack_type(rule, ETH_P_IP);
 	rule->skbuf->nh.iph->saddr = ip_src;
 }
 
-static inline void pnet_rule_set_udp_port_src(match_rule_t rule,
+static inline void pnet_rule_set_src_udp_port(match_rule_t rule,
 		uint16_t src_port) {
 	rule->skbuf->h.uh->source = src_port;
 }
 
-static inline void pnet_rule_set_pack_type_ip(match_rule_t rule) {
-	rule->skbuf->mac.ethh->h_proto = ETH_P_IP;
+static inline void pnet_rule_set_proto(match_rule_t rule, unsigned char proto) {
+	memcpy((void*) &rule->skbuf->nh.iph->proto, (void*)&proto, sizeof(unsigned char));
 }
 
 //extern net_node_t pnet_create_matcher(net_hnd rx_matcher, net_hnd tx_matcher);
 extern match_rule_t pnet_rule_alloc(void);
 
-extern int add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t node);
-
-extern int hwaddrs_rule_create(net_node_matcher_t node, char *h_dest,
-		net_node_t next_node);
+static inline int pnet_add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t node) {
+	list_add_tail(&new_rule->lnk, &node->match_rx_rules);
+	return 0;
+}
 
 extern net_node_matcher_t pnet_get_node_matcher(void);
 

@@ -62,7 +62,7 @@
 	b = temp;
 
 
-static void insert(struct priority_q *pq, int value) {
+void insert(struct priority_q *pq, int value) {
 	int idx;
 	pq->a[pq->size++] = value;
 	for(idx = pq->size - 1; (idx != 0 && lss(pq, idx, (idx - 1) >> 1)); idx = (idx - 1) >> 1) {
@@ -70,7 +70,7 @@ static void insert(struct priority_q *pq, int value) {
 	}
 }
 
-static void pop(struct priority_q *pq) {
+void pop(struct priority_q *pq) {
 	int idx;
 	if(empty(pq)) {
 		return;
