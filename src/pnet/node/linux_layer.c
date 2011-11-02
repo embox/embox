@@ -43,4 +43,4 @@ static int pnet_linux_init(void) {
 	return res;
 }
 
-PNET_MODULE("linux gate", lin_gate);
+PNET_NODE_STATIC_DEF("linux gate", lin_gate);

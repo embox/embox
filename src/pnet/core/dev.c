@@ -21,8 +21,6 @@
 
 EMBOX_UNIT_INIT(net_dev_init);
 
-//OBJALLOC_DEF(net_devs, struct net_dev, CONFIG_NET_DEVICES_QUANTITY);
-
 static int tx_hnd(net_packet_t pack) {
 	net_node_t node = pack->node;
 	struct net_device *dev = member_cast_out(node, struct net_device, net_node);
@@ -64,6 +62,10 @@ net_node_t pnet_dev_register(struct net_device *dev) {
 	pnet_node_attach(node, NET_RX_DFAULT, &dev_entry);
 
 	return node;
+}
+
+struct net_device *pnet_get_net_device(net_node_t *node) {
+	return member_cast_out(node, struct net_device, net_node);
 }
 
 pnet_proto_t pnet_dev_get_proto(void) {

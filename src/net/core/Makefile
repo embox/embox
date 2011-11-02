@@ -3,7 +3,7 @@
 # TODO Suggested renaming package to net.core
 $_PACKAGE := embox.net
 
-$_APIS 	    += api_entry
+$_APIS 	    += entry_api
 
 $_MODS      += core
 $_SRCS-core += devinet.c
@@ -14,11 +14,11 @@ $_DEPS-core += embox.net.dev
 $_MODS     += dev
 $_SRCS-dev += dev.c
 $_SRCS-dev += network_layer.c
-$_REQUIRES-dev += api_entry
+$_REQUIRES-dev += entry_api
 
 $_MODS 	             += net_entry
 $_SRCS-net_entry     += net_entry.c
-$_PROVIDES-net_entry += api_entry
+$_PROVIDES-net_entry += entry_api
 
 
 $_MODS           += neighbour
