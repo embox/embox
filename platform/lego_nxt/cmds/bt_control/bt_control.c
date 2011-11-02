@@ -34,6 +34,8 @@ static int bt_main(int argc, char **argv) {
 
 	node = pnet_get_module("lego_direct");
 
+	pnet_graph_add_node(node);
+
 	pnet_node_link(src, node);
 
 	pnet_graph_start(graph);

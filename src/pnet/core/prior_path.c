@@ -13,12 +13,18 @@
 #include <pnet/core.h>
 #include <pnet/prior_path.h>
 
+#include <pnet/graph.h>
+
 #include <kernel/prom_printf.h>
 
 
 static int __net_core_receive(net_packet_t pack) {
 	net_node_t node = pack->node;
 	net_id_t res = NET_HND_DFAULT;
+
+	if (0 != pnet_graph_run_valid(node->graph)) {
+		return -EINVAL;
+	}
 
 	if (node->proto != NULL && node->proto->rx_hnd != NULL) {
 		res = node->proto->rx_hnd(pack);
@@ -38,6 +44,10 @@ static int __net_core_receive(net_packet_t pack) {
 static int __net_core_send(net_packet_t pack) {
 	net_node_t node = pack->node;
 	int res = NET_TX_DFAULT;
+
+	if (0 != pnet_graph_run_valid(node->graph)) {
+		return -EINVAL;
+	}
 
 	if (node->proto != NULL && node->proto->tx_hnd != NULL) {
 		res = node->proto->tx_hnd(pack);
