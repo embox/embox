@@ -435,7 +435,7 @@ define __gold_lalr_handle-
 		$(if $(findstring $n,0),
 			# Just append a reduction.
 			__gold_stack__ += \
-				($r)$(__gold_state__)
+				(0,$r)$(__gold_state__)
 
 			,# else
 			$(foreach d,$(words $(__gold_stack__)),
@@ -540,6 +540,7 @@ endef
 # Return:
 #   Result of tree expansion.
 define __gold_expand
+	$(info stack: [$1])
 	${eval \
 		# Transform tree into a code.
 		__gold_tmp__ := \
