@@ -23,12 +23,12 @@ struct priority_q {
  * @param priority_q queue to insert element into
  * @param value value to insert into queue
  */
-inline void insert(struct priority_q *pq, int value);
+extern void insert(struct priority_q *pq, int value);
 
 /**
  * @brief pops the lowest element from the queue
  */
-inline void pop(struct priority_q *pq);
+extern void pop(struct priority_q *pq);
 
 /**
  * @brief Returns the lowest element in the queue
