@@ -22,6 +22,7 @@
 
 #include <pnet/core.h>
 #include <pnet/node.h>
+#include <pnet/repo.h>
 
 #include <kernel/diag.h>
 
@@ -111,7 +112,7 @@ static int handle_body(uint8_t command, uint8_t *buff, int *addit_len, uint8_t a
 }
 
 static int dc_rx_hnd(net_packet_t pack) {
-	struct direct_comm_msg *dc = (struct direct_comm_msg *) pack->skbuf->data;
+	struct direct_comm_msg *dc = (struct direct_comm_msg *) pnet_pack_get_data(pack);
 	int addit_len = 0;
 	int status = handle_body(dc->command, dc->addit_msg, &addit_len, dc_out_msg.addit_msg + 1);
 
@@ -133,10 +134,10 @@ net_node_t pnet_get_node_direct_comm(void) {
 }
 
 static int node_dc_init(void) {
-	net_node_t devs = pnet_dev_get_entry();
+	net_node_t bt_dev = pnet_get_module("lego_nxt_bt");
 	net_node_t dc_hnd = pnet_get_node_direct_comm();
 
-	pnet_node_attach(devs, NET_RX_DFAULT, dc_hnd);
+	pnet_node_attach(bt_dev, NET_RX_DFAULT, dc_hnd);
 
 	return 0;
 }

@@ -19,6 +19,7 @@
 #include <net/skbuff.h>
 
 #include <pnet/core.h>
+#include <pnet/repo.h>
 
 #include <embox/unit.h>
 
@@ -28,7 +29,9 @@ EMBOX_UNIT_INIT(nxt_direct_comm_init);
 
 static uint8_t direct_comm_buff[DC_BUFF_SIZE];
 
+#if 0
 static struct net_device *dev;
+#endif
 
 static int dc_hnd_body(int msg, uint8_t *buff);
 static int dc_hnd_size(int msg, uint8_t *buff);
@@ -40,10 +43,12 @@ static int handle_size(uint8_t *buff) {
 }
 
 static void send_to_net(uint8_t *data, int len) {
-	struct sk_buff *skb = alloc_skb(len, 0);
-	memcpy(skb->data, data, len);
-	skb->dev = dev;
-	netif_rx(skb);
+	net_packet_t pack = pnet_pack_alloc(NULL, NET_PACKET_RX, (void *) data, len);
+
+	memcpy(pnet_pack_get_data(pack), data, len);
+
+	pnet_entry(pack);
+
 	return;
 }
 
@@ -74,7 +79,7 @@ static int dc_hnd_conn(int msg, uint8_t *buff) {
 	bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
 	return 0;
 }
-
+#if 0
 static int bt_xmit(sk_buff_t *skb, struct net_device *dev) {
 
 	return ENOERR;
@@ -110,14 +115,21 @@ static void bt_setup(struct net_device *dev) {
 	dev->netdev_ops         = &bt_ops;
 	dev->header_ops         = &header_ops;
 }
-
 static net_node_t bt_node = NULL;
+#endif
+
+static struct net_node bt_node;
+
+PNET_NODE_STATIC_DEF("lego_nxt_bt", bt_node);
 
 static int nxt_direct_comm_init(void) {
+#if 0
 	dev = alloc_netdev(0, "nxt_bt", bt_setup);
 	if (dev == NULL) {
 		return -ENOMEM;
 	}
+
+	pnet_node_init(&bt_node,
 
 	if (0 != register_netdev(dev) ) {
 		return -EINVAL;
@@ -125,6 +137,8 @@ static int nxt_direct_comm_init(void) {
 
 	bt_node = pnet_dev_register(dev);
 
+#endif
+	pnet_node_init(&bt_node, 0, NULL);
 	CALLBACK_REG(bluetooth_uart, (callback_t) dc_hnd_conn);
 
 	return 0;
