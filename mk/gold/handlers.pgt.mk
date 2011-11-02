@@ -1,17 +1,25 @@
-##TEMPLATE-NAME 'Make MyBuild'
+##TEMPLATE-NAME 'Make - MyBuild engine (application stub)'
 ##LANGUAGE 'GNU Make'
 ##ENGINE-NAME 'MyBuild'
 ##AUTHOR 'Eldar Abusalimov'
 ##FILE-EXTENSION 'mk'
 ##NOTES
-This template outputs the tables using extended syntax of Make functional language.
+This template generates handler function stubs for symbols and rules.
+
+Handlers are used to convert each node of a parse tree into
+an application-specific representation.
 ##END-NOTES
 ##DELIMITER ','
 ##ID-SEPARATOR '_'
 ##ID-SYMBOL-PREFIX 'Symbol'
 ##ID-RULE-PREFIX 'Rule'
 ##PARAMETERS
+# Application for '%Name%' grammar (version %Version%).
+#    %About%
+# Author: %Author%
+##END-PARAMETERS
 
+#
 # All API functions and internals of the parser are defined in their own
 # namespace which defaults to the basename of the definition script.
 #
