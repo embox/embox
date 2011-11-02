@@ -24,12 +24,14 @@ struct pnet_graph;
 typedef struct net_packet *net_packet_t;
 
 typedef int (*net_hnd)(net_packet_t pack);
-typedef int (*net_node_free_hnd)(struct net_node *node); /* destructor */
+typedef int (*net_node_free_hnd)(struct net_node *node); /* destructor  */
+typedef int (*net_node_init_hnd)(struct net_node *node); /* initializer */
 
 typedef struct pnet_proto {
 	net_id_t proto_id;
 	net_hnd rx_hnd;
 	net_hnd tx_hnd;
+	net_node_init_hnd init;
 	net_node_free_hnd free;
 } *pnet_proto_t;
 

@@ -42,11 +42,12 @@ struct pnet_module {
 	})
 
 
-#define __PNET_PROTO_DEF_NAME(name, rx, tx, fr) \
+#define __PNET_PROTO_DEF_NAME(name, rx, tx, _in, fr) \
 	static struct pnet_proto name = {\
 		.rx_hnd = rx, \
 		.tx_hnd = tx, \
-		.free   = fr \
+		.init   = _in, \
+		.free   = fr  \
 	};
 
 #define __PNET_NODE_DEF_NAME(name, proto_name) \
@@ -54,18 +55,18 @@ struct pnet_module {
 		.proto = &proto_name\
 	};
 
-#define __PNET_PROTO_DEF_NAME_REPO(str_id, name, rx, tx, fr) \
-	__PNET_PROTO_DEF_NAME(name, rx, tx, fr) \
+#define __PNET_PROTO_DEF_NAME_REPO(str_id, name, rx, tx, _in, fr) \
+	__PNET_PROTO_DEF_NAME(name, rx, tx, _in, fr) \
 	__PNET_REPO_PROTO_ADD(str_id, name)
 
 #define __PNET_NODE_DEF_NAME_REPO(str_id, name, proto_name, rx, tx) \
-	__PNET_PROTO_DEF_NAME(proto_name, rx, tx, NULL) \
+	__PNET_PROTO_DEF_NAME(proto_name, rx, tx, NULL, NULL) \
 	__PNET_NODE_DEF_NAME(name, proto_name) \
 	__PNET_REPO_NODE_ADD(str_id, name)
 
 
-#define PNET_PROTO_DEF(str_id, rx, tx, fr) \
-	__PNET_PROTO_DEF_NAME_REPO(str_id, __##rx##__##tx##__##fr##__proto, rx, tx, fr)
+#define PNET_PROTO_DEF(str_id, rx, tx, in, fr) \
+	__PNET_PROTO_DEF_NAME_REPO(str_id, __##rx##__##tx##__proto, rx, tx, in, fr)
 
 #define PNET_NODE_DEF(str_id, rx, tx)\
 	__PNET_NODE_DEF_NAME_REPO(str_id, __##rx##__##tx##__node, __##rx##__##tx##__proto, rx, tx)

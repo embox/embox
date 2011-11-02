@@ -23,7 +23,15 @@ net_node_t pnet_node_init(net_node_t node, net_addr_t addr, pnet_proto_t proto) 
 
 net_node_t pnet_node_alloc(net_addr_t addr, pnet_proto_t proto) {
 	net_node_t node = (net_node_t) objalloc(&net_nodes);
-	return pnet_node_init(node, addr, proto);
+	pnet_node_init(node, addr, proto);
+	if (node->proto->init != NULL) {
+		if (node->proto->init(node) != 0) {
+			objfree(&net_nodes, node);
+			return NULL;
+		}
+	}
+	return node;
+
 }
 
 int pnet_node_free(net_node_t node) {

@@ -24,7 +24,7 @@ struct net_node *pnet_get_module(const char *name) {
 			if (mod->node != NULL) {
 				return mod->node;
 			}
-			return pnet_node_alloc(0, (pnet_proto_t) mod->proto);
+			return pnet_node_alloc(0, mod->proto);
 		}
 	}
 	return NULL;

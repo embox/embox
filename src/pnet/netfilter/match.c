@@ -19,6 +19,8 @@
 #include <embox/unit.h>
 #include <pnet/node.h>
 
+#include <pnet/repo.h>
+
 #define NET_NODES_CNT 0x10
 
 //EMBOX_UNIT_INIT(run_pnet);
@@ -61,6 +63,7 @@ static int matcher_free(net_node_t node) {
 	return 0;
 }
 
+#if 0
 static struct pnet_proto matcher_proto = {
 	.tx_hnd = match,
 	.rx_hnd = match,
@@ -77,3 +80,17 @@ net_node_matcher_t pnet_get_node_matcher(void) {
 
 	return matcher;
 }
+#endif
+
+static int matcher_init(struct net_node *node) {
+	net_node_matcher_t matcher = (net_node_matcher_t) node;
+
+	INIT_LIST_HEAD(&matcher->match_rx_rules);
+	INIT_LIST_HEAD(&matcher->match_tx_rules);
+
+	return 0;
+}
+
+PNET_PROTO_DEF("matcher", match, NULL, matcher_init, matcher_free);
+
+
