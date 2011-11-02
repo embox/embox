@@ -15,11 +15,11 @@
 
 #define DC_MAX_LEN 64
 
-struct direct_comm_msg {
+struct lego_dc_msg {
 	__le16 len;
 	uint8_t type;
 	uint8_t command;
-	uint8_t addit_msg[DC_MAX_LEN - 2];
+	uint8_t body[DC_MAX_LEN - 2];
 };
 
 #define MSG_SIZE_BYTE_CNT 2 //TODO rename it DC_HEADER_LENGTH

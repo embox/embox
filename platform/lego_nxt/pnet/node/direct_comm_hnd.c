@@ -7,51 +7,39 @@
  */
 
 #include <types.h>
-#include <hal/reg.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <string.h>
-#include <kernel/panic.h>
+#include <embox/unit.h>
 
-#include <drivers/nxt/direct_comm.h>
 #include <drivers/nxt/motor.h>
 #include <drivers/nxt/sensor.h>
-
+#include <drivers/nxt/direct_comm.h>
 #include <drivers/bluetooth.h>
-
-#include <embox/unit.h>
 
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
 
-#include <kernel/diag.h>
 
 EMBOX_UNIT_INIT(node_dc_init);
 
-#define ADDIT_MAX_LEN 62
+static struct lego_dc_msg dc_out_msg;
 
-static struct direct_comm_msg dc_out_msg;
-
-static int reply_need(struct direct_comm_msg *dc) {
-	if (dc->type & 0x80) {
-		return 0;
-	}
-	return 1;
+static int reply_need(struct lego_dc_msg *dc) {
+	return dc->type & 0x80;
 }
 
-#include <kernel/prom_printf.h>
-
-static void reply_handle(uint8_t status, uint8_t cmd, int addit_len, struct direct_comm_msg *dc_out_msg) {
+static void reply_handle(uint8_t status, uint8_t cmd, int addit_len, struct lego_dc_msg *dc_out_msg) {
 	int extra_len = sizeof(dc_out_msg->type) +
-		sizeof(dc_out_msg->command) + sizeof(dc_out_msg->addit_msg[0]); // 3
+		sizeof(dc_out_msg->command) + sizeof(dc_out_msg->body[0]); // 3
 	dc_out_msg->len = addit_len + extra_len;
 	dc_out_msg->type = 0x02;
 	dc_out_msg->command = cmd;
-	dc_out_msg->addit_msg[0] = status;
+	dc_out_msg->body[0] = status;
 	bluetooth_write((uint8_t *) dc_out_msg, sizeof(dc_out_msg->len) + extra_len + addit_len);
 }
 
-#define EDGE 200
+#define SENSOR_VALUE_THRESHOLD 200
 
 static int sensor_send(uint8_t sensor_id, int *addit_len, uint8_t addit_msg[]) {
 	sensor_val_t sens_val =  nxt_sensor_get_val(nxt_get_sensor(sensor_id));
@@ -64,7 +52,7 @@ static int sensor_send(uint8_t sensor_id, int *addit_len, uint8_t addit_msg[]) {
 	addit_msg[9] = sens_val & 0xff;
 	addit_msg[10] = addit_msg[8];
 	addit_msg[11] = addit_msg[9];
-	addit_msg[14] = (sens_val > EDGE ? 0 : 1);
+	addit_msg[14] = (sens_val > SENSOR_VALUE_THRESHOLD ? 0 : 1);
 	*addit_len = 16;
 	return 0;
 }
@@ -81,10 +69,11 @@ static int keep_alive_send(int *addit_len, uint8_t addit_msg[]) {
 
 }
 
-static int handle_body(uint8_t command, uint8_t *buff, int *addit_len, uint8_t addit_msg[]) {
+static int handle_body(struct lego_dc_msg *msg, int *addit_len, uint8_t addit_msg[]) {
 	uint8_t power;
+	uint8_t *buff = msg->body;
 
-	switch (command) {
+	switch (msg->command) {
 	case DC_SET_OUTPUT_STATE:
 		power = buff[1];
 		if (buff[0] != 0xff) {
@@ -112,32 +101,30 @@ static int handle_body(uint8_t command, uint8_t *buff, int *addit_len, uint8_t a
 }
 
 static int dc_rx_hnd(net_packet_t pack) {
-	struct direct_comm_msg *dc = (struct direct_comm_msg *) pnet_pack_get_data(pack);
+	struct lego_dc_msg *msg;
 	int addit_len = 0;
-	int status = handle_body(dc->command, dc->addit_msg, &addit_len, dc_out_msg.addit_msg + 1);
+	int status;
 
-	if (reply_need(dc)) {
-	    reply_handle(status, dc->command, addit_len, &dc_out_msg);
+	msg = (struct lego_dc_msg *) pnet_pack_get_data(pack);
+
+	status = handle_body(msg, &addit_len, dc_out_msg.body + 1);
+
+	if (reply_need(msg)) {
+	    reply_handle(status, msg->command, addit_len, &dc_out_msg);
 	}
 
 	pnet_pack_free(pack);
 	return NET_HND_SUPPRESSED;
 }
 
-static struct pnet_proto dc_proto = {
-//	.tx_hnd = dc_tx_hnd,
-	.rx_hnd = dc_rx_hnd
-};
+//static struct pnet_proto dc_proto = {
+//	.rx_hnd = dc_rx_hnd
+//};
 
-net_node_t pnet_get_node_direct_comm(void) {
-	return pnet_node_alloc(0, &dc_proto);
-}
+
 
 static int node_dc_init(void) {
-	net_node_t bt_dev = pnet_get_module("lego_nxt_bt");
-	net_node_t dc_hnd = pnet_get_node_direct_comm();
-
-	pnet_node_attach(bt_dev, NET_RX_DFAULT, dc_hnd);
-
 	return 0;
 }
+
+PNET_NODE_DEF("nxt direct handler", dc_rx_hnd, NULL);
