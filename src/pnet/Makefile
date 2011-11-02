@@ -12,9 +12,9 @@ $_SRCS-pnet_entry     += pnet_entry.c
 $_DEPS-pnet_entry     += embox.pnet.core
 $_PROVIDES-pnet_entry += embox.pnet.entry_api
 
-$_MODS               += net_netry
+$_MODS               += net_entry
 $_SRCS-net_entry     += net_entry.c
-$_DEPS-net_entry     += embox.pnet.core
+$_DEPS-net_entry     += embox.pnet.core embox.pnet.core.pack.pack_skbuf
 $_PROVIDES-net_entry += embox.pnet.entry_api embox.net.entry_api
 
 

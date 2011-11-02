@@ -6,6 +6,9 @@
  * @author Anton Kozlov
  */
 
+#ifndef PNET_PACK_SKB_H_
+#define PNET_PACK_SKB_H_
+
 struct sk_buff;
 
 struct net_packet {
@@ -25,3 +28,4 @@ static inline int pnet_pack_get_len(struct net_packet *pack) {
 	return pack->len;
 }
 
+#endif
