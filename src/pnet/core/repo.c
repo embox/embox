@@ -10,6 +10,8 @@
 
 #include <util/array.h>
 #include <string.h>
+
+#include <pnet/core.h>
 #include <pnet/repo.h>
 
 
@@ -19,7 +21,10 @@ struct net_node *pnet_get_module(const char *name) {
 	const struct pnet_module *mod;
 	array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
 		if (0 == strcmp(mod->name, name)) {
-			return mod->node;
+			if (mod->node != NULL) {
+				return mod->node;
+			}
+			return pnet_node_alloc(0, (pnet_proto_t) mod->proto);
 		}
 	}
 	return NULL;

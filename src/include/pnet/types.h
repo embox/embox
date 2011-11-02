@@ -19,6 +19,7 @@ typedef int net_id_t;
 typedef char net_prior_t;
 
 struct net_node;
+struct pnet_graph;
 
 typedef struct net_packet *net_packet_t;
 
@@ -34,6 +35,7 @@ typedef struct pnet_proto {
 
 struct net_node {
 	int id;
+	struct pnet_graph *graph;
 	net_prior_t prior;
 	net_addr_t node_addr;
 	struct pnet_proto *proto;

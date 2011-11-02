@@ -26,7 +26,7 @@ static net_node_t pnet_get_dev_by_device(struct net_device *dev) {
 	return node;
 }
 
-int pnet_entry(struct net_packet_t *pack) {
+int pnet_entry(struct net_packet *pack) {
 	net_device_t *dev = pnet_get_net_device(pack->node);
 	pack->skbuf->dev = dev;
 

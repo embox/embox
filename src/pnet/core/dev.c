@@ -64,7 +64,7 @@ net_node_t pnet_dev_register(struct net_device *dev) {
 	return node;
 }
 
-struct net_device *pnet_get_net_device(net_node_t *node) {
+struct net_device *pnet_get_net_device(net_node_t node) {
 	return member_cast_out(node, struct net_device, net_node);
 }
 
