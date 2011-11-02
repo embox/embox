@@ -18,10 +18,6 @@
 #include <embox/unit.h>
 #include <pnet/repo.h>
 
-EMBOX_UNIT_INIT(pnet_linux_init);
-
-static struct pnet_proto linux_out;
-
 extern int __netif_receive_skb(sk_buff_t *skb);
 
 static int pnet_linux_rx(net_packet_t pack) {
@@ -29,18 +25,4 @@ static int pnet_linux_rx(net_packet_t pack) {
 	return NET_HND_SUPPRESSED;
 }
 
-static struct net_node lin_gate = {
-	.proto = &linux_out
-};
-
-net_node_t pnet_get_node_linux_gate(void) {
-	return &lin_gate;
-}
-
-static int pnet_linux_init(void) {
-	int res = pnet_proto_init(&linux_out, 0, pnet_linux_rx, NULL);
-
-	return res;
-}
-
-PNET_NODE_STATIC_DEF("linux gate", lin_gate);
+PNET_PROTO_DEF("linux gate", pnet_linux_rx, NULL, NULL);

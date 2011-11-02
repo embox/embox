@@ -9,6 +9,7 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/match.h>
+#include <pnet/repo.h>
 
 #include <mem/objalloc.h>
 
@@ -18,7 +19,7 @@ EMBOX_UNIT_INIT(net_core_init);
 
 static int net_core_init(void) {
 	net_node_t devs = pnet_dev_get_entry();
-	net_node_t gate = pnet_get_node_linux_gate();
+	net_node_t gate = pnet_get_module("linux gate");
 
 	pnet_node_attach(devs, NET_RX_DFAULT, gate);
 
