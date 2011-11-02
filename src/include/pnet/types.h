@@ -46,16 +46,6 @@ enum net_packet_dir {
 	NET_PACKET_RX, NET_PACKET_TX
 };
 
-struct sk_buff;
-
-struct net_packet {
-	enum net_packet_dir dir;
-
-	net_node_t node;
-
-	struct sk_buff *skbuf;
-};
-
 struct net_dev;
 typedef int (*net_dev_op)(net_packet_t pack, struct net_dev *dev);
 
@@ -69,5 +59,7 @@ struct net_dev {
 	net_dev_ops_t ops;
 };
 typedef struct net_dev *net_dev_t;
+
+#include __module_headers(embox/pnet/core/pack/api)
 
 #endif

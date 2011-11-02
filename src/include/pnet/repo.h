@@ -16,6 +16,7 @@ struct pnet_module {
 	const char *name;
 	int type;
 	struct net_node *node;
+	struct net_proto *proto;
 	/*connect;
 	start;
 	stop;
@@ -24,12 +25,22 @@ struct pnet_module {
 	*/
 };
 
-#define PNET_MODULE(str_id,pnode) \
+#define PNET_NODE_STATIC_DEF(str_id,pnode) \
 	extern const struct pnet_module __pnet_mod_repo[]; \
 	ARRAY_SPREAD_ADD(__pnet_mod_repo, { \
 		.name = str_id, \
-		.node = &pnode \
+		.node = &pnode, \
+		.proto = NULL\
 	})
+
+#define PNET_NODE_DEF(str_id, pproto) \
+	extern const struct pnet_module __pnet_mod_repo[]; \
+	ARRAY_SPREAD_ADD(__pnet_mod_repo, { \
+		.name = str_id, \
+		.node = NULL,  \
+		.proto = pproto\
+	})
+
 
 
 extern struct net_node *pnet_get_module(const char *name);

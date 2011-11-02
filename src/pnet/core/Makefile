@@ -1,16 +1,17 @@
 
+
 $_PACKAGE := embox.pnet
 
 $_APIS += rx_worker_api init_api
 
 $_MODS += core
-$_SRCS-core += node.c proto.c pack.c connect.c repo.c graph.c
-$_DEPS-core += dev prior_path
-$_REQUIRES-core += rx_worker_api init_api
+$_SRCS-core += node.c proto.c connect.c repo.c graph.c
+$_DEPS-core += prior_path
+$_REQUIRES-core += rx_worker_api embox.pnet.core.pack.api
 
 $_MODS += init_null
 $_SRCS-init_null += init_null.c
-$_DEPS-init_null += embox.pnet.node.null dev
+$_DEPS-init_null += embox.pnet.node.null core
 $_PROVIDES-init_null += init_api
 
 $_MODS += init_linux_layer

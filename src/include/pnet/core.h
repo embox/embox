@@ -35,9 +35,11 @@ extern int pnet_pack_free(net_packet_t pack);
 
 extern int pnet_path_set_prior(net_node_t node, net_prior_t prior);
 
+extern int pnet_entry(struct net_packet *pack);
 extern int pnet_process(net_packet_t pack);
 
 extern net_node_t pnet_dev_register(struct net_device *dev);
+extern struct net_device *pnet_get_net_device(net_node_t *node);
 
 extern net_node_t pnet_dev_get_entry(void);
 
