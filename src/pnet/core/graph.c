@@ -12,6 +12,8 @@
 #include <pnet/core.h>
 #include <pnet/graph.h>
 
+#include <util/fun_call.h>
+
 #include <mem/objalloc.h>
 
 #define CONFIG_PNET_GRAPH_CNT 0x1
@@ -22,12 +24,19 @@ struct pnet_graph *pnet_get_graph(int sock) {
 	return (struct pnet_graph *) objalloc(&graphs);
 }
 struct pnet_graph *pnet_graph_create(void) {
-	return (struct pnet_graph *) objalloc(&graphs);
+	struct pnet_graph *gr = (struct pnet_graph *) objalloc(&graphs);
+	list_init(&gr->nodes);
+	return gr;
 }
 
 int pnet_graph_start(struct pnet_graph *graph) {
+	net_node_t node = NULL;
 	if (graph->state != PNET_GRAPH_STOPPED) {
 		return -EINVAL;
+	}
+
+	list_foreach(node, &graph->nodes, gr_link) {
+		fun_call(node->proto->stop, node);
 	}
 
 	graph->state = PNET_GRAPH_STARTED;
@@ -36,8 +45,13 @@ int pnet_graph_start(struct pnet_graph *graph) {
 }
 
 int pnet_graph_stop(struct pnet_graph *graph) {
+	net_node_t node = NULL;
 	if (graph->state != PNET_GRAPH_STARTED) {
 		return -EINVAL;
+	}
+
+	list_foreach(node, &graph->nodes, gr_link) {
+		fun_call(node->proto->stop, node);
 	}
 
 	graph->state = PNET_GRAPH_STOPPED;
@@ -56,6 +70,8 @@ int pnet_graph_add_node(struct pnet_graph *graph, struct net_node *node) {
 	}
 
 	node->graph = graph;
+
+	list_add_last_element(node, &graph->nodes, gr_link);
 
 	return 0;
 }

@@ -10,6 +10,7 @@
  */
 
 #include <errno.h>
+#include <util/fun_call.h>
 #include <pnet/core.h>
 #include <pnet/prior_path.h>
 
@@ -26,8 +27,8 @@ static int __net_core_receive(net_packet_t pack) {
 		return -EINVAL;
 	}
 
-	if (node->proto != NULL && node->proto->rx_hnd != NULL) {
-		res = node->proto->rx_hnd(pack);
+	if (node->proto != NULL) {
+		fun_call_res(res, node->proto->rx_hnd, pack);
 	}
 
 	if (res & NET_HND_DFAULT) {
@@ -49,8 +50,8 @@ static int __net_core_send(net_packet_t pack) {
 		return -EINVAL;
 	}
 
-	if (node->proto != NULL && node->proto->tx_hnd != NULL) {
-		res = node->proto->tx_hnd(pack);
+	if (node->proto != NULL) {
+		fun_call_res(res, node->proto->tx_hnd, pack);
 	}
 
 	if (res & NET_HND_DFAULT) {
