@@ -28,36 +28,6 @@ static struct net_node pnet_control = {
 	.proto = &control_proto
 };
 
-#if 0
-typedef int (* pnet_node_connect_ht)(void);
-typedef int (* pnet_node_start_ht)(void);
-typedef int (* pnet_node_receive_ht)(void);
-
-struct pnet_node {
-	pnet_node_connect_ht connect;
-	pnet_node_start_ht start;
-	pnet_node_receive_ht receive;
-};
-
-static int pnet_control_connect(void) {
-	return 0;
-}
-
-static int pnet_control_start(void) {
-	return 0;
-}
-
-static int pnet_control_rx(void) {
-	return 0;
-}
-
-static struct pnet_node  pnet_control = {
-	.connect = pnet_control_connect,
-	.start = pnet_control_start,
-	.receive = pnet_control_rx
-};
-#endif
-
 static int bt_main(int argc, char **argv) {
 	struct pnet_graph *graph ;
 	struct net_node *node, *src;
