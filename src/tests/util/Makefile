@@ -17,3 +17,6 @@ $_SRCS-tree_set_test  = tree_set_test.c
 
 $_MODS           += pool_test
 $_SRCS-pool_test  = pool_test.c
+
+$_MODS		 += math_test
+$_SRCS-math_test += math.c
