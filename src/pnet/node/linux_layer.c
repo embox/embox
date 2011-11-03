@@ -25,4 +25,7 @@ static int pnet_linux_rx(net_packet_t pack) {
 	return NET_HND_SUPPRESSED;
 }
 
-PNET_NODE_DEF("linux gate", pnet_linux_rx, NULL);
+PNET_NODE_DEF("linux gate", {
+	.rx_hnd = pnet_linux_rx,
+	.tx_hnd = NULL
+});

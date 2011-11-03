@@ -80,8 +80,8 @@ net_node_matcher_t pnet_get_node_matcher(void) {
 
 	return matcher;
 }
-#endif
 
+#endif
 static int matcher_init(struct net_node *node) {
 	net_node_matcher_t matcher = (net_node_matcher_t) node;
 
@@ -91,6 +91,10 @@ static int matcher_init(struct net_node *node) {
 	return 0;
 }
 
-PNET_PROTO_DEF("matcher", match, NULL, matcher_init, matcher_free);
+PNET_PROTO_DEF("matcher", {
+	.rx_hnd = match,
+	.init = matcher_init,
+	.free = matcher_free
+});
 
 
