@@ -117,12 +117,6 @@ static int dc_rx_hnd(net_packet_t pack) {
 	return NET_HND_SUPPRESSED;
 }
 
-//static struct pnet_proto dc_proto = {
-//	.rx_hnd = dc_rx_hnd
-//};
-
-
-
 static int node_dc_init(void) {
 	return 0;
 }

@@ -25,6 +25,18 @@ EMBOX_UNIT_INIT(nxt_bluecore_init);
 static struct bc_msg out_msg;
 static struct bc_msg in_msg;
 
+static net_node_t bc4;
+
+static void send_to_net(char *data, int len) {
+	net_packet_t pack = pnet_pack_alloc(bc4, NET_PACKET_RX, (void *) data, len);
+
+	memcpy(pnet_pack_get_data(pack), data, len);
+
+	pnet_entry(pack);
+
+	return;
+}
+
 static uint16_t calc_chksumm(struct bc_msg * msg) {
 	uint16_t sum;
 	int i;
@@ -77,6 +89,7 @@ static void process_msg(struct bc_msg *msg) {
 	case MSG_CONNECT_RESULT:
 		if (msg->content[0]) {
 			//bt_set_uart_state();
+			send_to_net("connect", strlen("connect"));
 			out_msg.type = MSG_OPEN_STREAM;
 			out_msg.length = 1;
 			out_msg.content[0] = bt_bc_handle;
@@ -86,8 +99,6 @@ static void process_msg(struct bc_msg *msg) {
 		}
 		break;
 	case MSG_GET_VERSION_RESULT: {
-		uint16_t bt_mod_version = 0xffff; /*bt module version */
-		bt_mod_version = (msg->content[0] << 8) + msg->content[1];
 		return;
 	}
 	default:
