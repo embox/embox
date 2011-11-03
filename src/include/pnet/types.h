@@ -38,6 +38,7 @@ typedef struct pnet_proto {
 } *pnet_proto_t;
 
 struct net_node {
+	struct net_node *this;
 	struct pnet_graph *graph;
 	struct list_link gr_link;
 	struct pnet_proto *proto;
