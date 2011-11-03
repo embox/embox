@@ -9,13 +9,15 @@
 #include <stddef.h>
 #include <pnet/types.h>
 #include <mem/objalloc.h>
-#define NET_NODES_CNT 0x10
 
-OBJALLOC_DEF(net_nodes, struct net_node, NET_NODES_CNT);
+#include <util/list.h>
 
-net_node_t pnet_node_init(net_node_t node, net_addr_t addr, pnet_proto_t proto) {
-	node->node_addr = addr;
+OBJALLOC_DEF(net_nodes, struct net_node, CONFIG_PNET_NODES_QUANTITY);
+
+net_node_t pnet_node_init(net_node_t node, pnet_proto_t proto) {
 	node->proto = proto;
+
+	list_link_init(&node->gr_link);
 
 	node->rx_dfault = node->tx_dfault = NULL;
 	return node;
@@ -23,7 +25,7 @@ net_node_t pnet_node_init(net_node_t node, net_addr_t addr, pnet_proto_t proto) 
 
 net_node_t pnet_node_alloc(net_addr_t addr, pnet_proto_t proto) {
 	net_node_t node = (net_node_t) objalloc(&net_nodes);
-	pnet_node_init(node, addr, proto);
+	pnet_node_init(node, proto);
 	if (node->proto->init != NULL) {
 		if (node->proto->init(node) != 0) {
 			objfree(&net_nodes, node);

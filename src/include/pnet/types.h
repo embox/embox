@@ -12,7 +12,7 @@
 
 #include <net/in.h>
 #include <net/if_ether.h>
-#include <lib/list.h>
+#include <util/list.h>
 
 typedef int net_addr_t;
 typedef int net_id_t;
@@ -24,25 +24,27 @@ struct pnet_graph;
 typedef struct net_packet *net_packet_t;
 
 typedef int (*net_hnd)(net_packet_t pack);
-typedef int (*net_node_free_hnd)(struct net_node *node); /* destructor  */
-typedef int (*net_node_init_hnd)(struct net_node *node); /* initializer */
+typedef int (*net_node_hnd)(struct net_node *node);
 
 typedef struct pnet_proto {
 	net_id_t proto_id;
 	net_hnd rx_hnd;
 	net_hnd tx_hnd;
-	net_node_init_hnd init;
-	net_node_free_hnd free;
+	net_node_hnd init;
+	net_node_hnd free;
+	net_node_hnd start;
+	net_node_hnd stop;
 } *pnet_proto_t;
 
 struct net_node {
-	int id;
 	struct pnet_graph *graph;
-	net_prior_t prior;
-	net_addr_t node_addr;
+	struct list_link gr_link;
 	struct pnet_proto *proto;
+
 	struct net_node *tx_dfault;
 	struct net_node *rx_dfault;
+
+	net_prior_t prior;
 };
 typedef struct net_node *net_node_t;
 

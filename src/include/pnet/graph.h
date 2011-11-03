@@ -12,6 +12,7 @@
 
 #include <pnet/types.h>
 #include <mem/objalloc.h>
+#include <util/list.h>
 
 enum pnet_graph_state {
 	PNET_GRAPH_STOPPED,
@@ -21,6 +22,7 @@ enum pnet_graph_state {
 struct pnet_graph {
 	int id;
 	enum pnet_graph_state state;
+	struct list nodes;
 };
 
 extern struct pnet_graph *pnet_get_graph(int sock);

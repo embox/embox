@@ -20,7 +20,6 @@
 #define NET_HND_DFAULT     (0x01L << 0)
 #define NET_HND_SUPPRESSED (0x01L << 1)
 
-
 extern int pnet_proto_init(pnet_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx);
 
 extern net_node_t pnet_node_get(net_node_t node, net_id_t id);
