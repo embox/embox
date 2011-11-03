@@ -136,6 +136,7 @@ static int nxt_bluecore_start(struct net_node *node) {
 }
 
 static int nxt_bluecore_init(void) {
+	bc4 = pnet_get_module("lego_blue_core");
 	return 0;
 }
 
