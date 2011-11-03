@@ -15,6 +15,10 @@
 #include <drivers/blue_core4.h>
 #include <drivers/bluetooth.h>
 
+#include <pnet/core.h>
+#include <pnet/node.h>
+#include <pnet/repo.h>
+
 
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
@@ -113,9 +117,17 @@ static int irq_handler_get_body(void) {
 }
 
 
-static int nxt_bluecore_init(void) {
+static int nxt_bluecore_start(struct net_node *node) {
 	nxt_bluetooth_reset();
 	nxt_bt_set_rx_handle(irq_handler_get_length);
 	bluetooth_read((uint8_t *)&(in_msg.type), 1);
 	return 0;
 }
+
+static int nxt_bluecore_init(void) {
+	return 0;
+}
+
+PNET_NODE_DEF("lego_blue_core",  {
+		.start = nxt_bluecore_start
+	});

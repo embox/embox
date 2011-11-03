@@ -127,4 +127,7 @@ static int node_dc_init(void) {
 	return 0;
 }
 
-PNET_NODE_DEF("nxt direct handler", dc_rx_hnd, NULL);
+PNET_NODE_DEF("nxt direct handler",  {
+		.rx_hnd = dc_rx_hnd,
+		.tx_hnd = NULL
+	});
