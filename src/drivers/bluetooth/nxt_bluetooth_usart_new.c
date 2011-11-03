@@ -33,6 +33,16 @@ EMBOX_UNIT_INIT(nxt_bluetooth_init);
 
 static uint8_t *nxt_bt_read_buff;
 
+static nxt_bt_rx_handle_t nxt_bt_rx_handle;
+void nxt_bt_set_rx_handle(nxt_bt_rx_handle_t handle) {
+	nxt_bt_rx_handle = handle;
+}
+
+static nxt_bt_state_handle_t nxt_bt_state_handle;
+void nxt_bt_state_rx_handle(nxt_bt_state_handle_t handle) {
+	nxt_bt_state_handle = handle;
+}
+
 #define RX_BUFF_SIZE 0x40
 //#define TX_BUFF_SIZE 0x40
 //static uint8_t bt_buff[RX_BUFF_SIZE];
@@ -73,12 +83,12 @@ void bt_set_uart_state(void) {
 //	bluetooth_read(bt_buff, 1);
 //}
 
+#if 0
 CALLBACK_INIT(bluetooth_uart)
 
 static void comm_handler(int msg, uint8_t *data) {
 	CALLBACK_DO(bluetooth_uart, msg, data);
 }
-#if 0
 static void bt_us_read_handle(void) {
 	int msg_len = bt_buff[bt_buff_pos];
 
@@ -127,11 +137,6 @@ static void bt_us_read_handle(void) {
 //	comm_handler(BT_DRV_MSG_CONNECTED, NULL);
 //
 //}
-
-static nxt_bt_rx_handle_t nxt_bt_rx_handle;
-void nxt_bt_set_rx_handle(nxt_bt_rx_handle_t handle) {
-	nxt_bt_rx_handle = handle;
-}
 
 static irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
 	uint32_t us_state = REG_LOAD(&(us_dev_regs->US_CSR));
@@ -222,7 +227,8 @@ static void  nxt_bt_timer_handler(int id) {
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
 	if (bt_last_state != bt_state) {
 		if (!bt_state) {
-			comm_handler(BT_DRV_MSG_DISCONNECTED, NULL);
+			nxt_bt_state_handle();
+			//comm_handler(BT_DRV_MSG_DISCONNECTED, NULL);
 			//bt_receive_init();
 		}
 	}
