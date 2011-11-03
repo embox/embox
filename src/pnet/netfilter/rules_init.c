@@ -6,7 +6,6 @@
 
 #include <pnet/match.h>
 #include <pnet/core.h>
-#include <pnet/match.h>
 #include <pnet/types.h>
 #include <pnet/node.h>
 #include <util/array.h>
@@ -15,8 +14,10 @@
 #include <framework/cmd/api.h>
 #include <net/util.h>
 #include <net/if_ether.h>
+#include <pnet/repo.h>
+#include <util/member.h>
+#include <stdio.h>
 
-#define MAX_RULE_SIZE    100
 #define RULE_ELEMS_COUNT 5
 
 EMBOX_UNIT_INIT(init);
@@ -25,9 +26,9 @@ static const char *rules[] = {
 	#include <pnet/pnet_rules.inc>
 };
 
-static match_rule_t form_rule(match_rule_t rule, const char *rule_elem, int num) {
+static int form_rule(match_rule_t rule, const char *rule_elem, int num) {
 	if ('*' == rule_elem[0]) {
-		return rule;
+		return 0;
 	}
 
 	switch (num) {
@@ -58,7 +59,7 @@ static match_rule_t form_rule(match_rule_t rule, const char *rule_elem, int num)
 		break;
 	}
 
-	return rule;
+	return 0;
 }
 
 static int init(void) {
@@ -71,25 +72,27 @@ static int init(void) {
 	net_node_t devs;
 	net_node_t tmp;
 	net_node_t lin_gate;
+	net_node_t info;
 
 	devs = pnet_dev_get_entry();
-	lin_gate = pnet_get_node_linux_gate();
+	lin_gate = pnet_get_module("linux gate");
+	info = pnet_get_module("info printer");
+	match_node = pnet_get_module("matcher");
 
-	match = pnet_get_node_matcher();
-	match_node = (net_node_t) match;
+	match = (net_node_matcher_t)  match_node;
 
 	tmp = pnet_node_get(devs, NET_RX_DFAULT);
 	pnet_node_attach(devs, NET_RX_DFAULT, match_node);
 
 	pnet_node_attach(match_node, NET_RX_DFAULT, lin_gate);
-
+	pnet_node_attach(info, NET_RX_DFAULT, lin_gate);
 
 	new_rule = pnet_rule_alloc();
-	new_rule->next_node = lin_gate;
+	new_rule->next_node = info;
 
 	array_foreach(rule_elem, rules, ARRAY_SIZE(rules)) {
 		cur++;
-		new_rule = form_rule(new_rule, rule_elem, cur);
+		form_rule(new_rule, rule_elem, cur);
 
 		if (cur > 0 && cur % RULE_ELEMS_COUNT == 0) {
 			pnet_add_new_rx_rule(new_rule, match);

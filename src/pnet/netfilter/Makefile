@@ -11,6 +11,5 @@ $_DEPS-rules_init += match
 $_CPPFLAGS += -I$(SRC_DIR)/include/posix
 $_CPPFLAGS-rules_init += -I$(CONF_DIR)
 
-#$($_SELFDIR)/rules_init.c : $(AUTOCONF_DIR)/start_script.inc
 
 

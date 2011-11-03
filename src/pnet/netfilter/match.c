@@ -23,9 +23,33 @@
 
 #define NET_NODES_CNT 0x10
 
-//EMBOX_UNIT_INIT(run_pnet);
+#define PRINT_WAYS
 
 OBJALLOC_DEF(matcher_nodes, struct net_node_matcher, NET_NODES_CNT);
+
+#ifdef PRINT_WAYS
+static void print_pack_way(net_packet_t pack, match_rule_t rule , int n) {
+	net_node_t node;
+
+	printf("%s->", "matcher");
+
+	if (n == 0) {
+		node = rule->next_node;
+		printf("%s->", node->proto->name);
+	} else {
+		node = pack->node->rx_dfault;
+		printf("%s->", node->proto->name);
+	}
+
+	while (node->rx_dfault != NULL) {
+		node = node->rx_dfault;
+		printf("%s->", node->proto->name);
+	}
+
+	printf("%s\n", ";");
+
+}
+#endif
 
 static int match(net_packet_t packet) {
 	unsigned char *pack_curr, *rule_curr;
@@ -42,16 +66,21 @@ static int match(net_packet_t packet) {
 		pack_curr = (unsigned char*) packet->skbuf->data;
 
 		for (n = MAX_PACK_HEADER_SIZE;
-				((*pack_curr == *rule_curr) || (*rule_curr == 255)) && n;
+				(((*rule_curr == 255) || *pack_curr == *rule_curr)) && n;
 				--n, ++pack_curr, ++rule_curr)
 			;
 
 		if (n == 0) {
 			packet->node = curr->next_node;
+#ifdef PRINT_WAYS
+		print_pack_way(packet,curr,n);
+#endif
 			return 0;
 		}
 	}
-
+#ifdef PRINT_WAYS
+		print_pack_way(packet,curr,n);
+#endif
 	return NET_HND_DFAULT;
 }
 
@@ -74,6 +103,7 @@ net_node_matcher_t pnet_get_node_matcher(void) {
 	net_node_matcher_t matcher = objalloc(&matcher_nodes);
 
 	pnet_node_init(&matcher->node, 1, &matcher_proto);
+	pnet_node_add_name(&matcher->node,"matcher");
 
 	INIT_LIST_HEAD(&matcher->match_rx_rules);
 	INIT_LIST_HEAD(&matcher->match_tx_rules);
@@ -92,9 +122,8 @@ static int matcher_init(struct net_node *node) {
 }
 
 PNET_PROTO_DEF("matcher", {
+	.name = "matcher",
 	.rx_hnd = match,
 	.init = matcher_init,
 	.free = matcher_free
 });
-
-

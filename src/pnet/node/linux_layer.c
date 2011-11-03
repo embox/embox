@@ -26,6 +26,7 @@ static int pnet_linux_rx(net_packet_t pack) {
 }
 
 PNET_NODE_DEF("linux gate", {
+	.name = "linux gate",
 	.rx_hnd = pnet_linux_rx,
 	.tx_hnd = NULL
 });

@@ -27,6 +27,7 @@ typedef int (*net_hnd)(net_packet_t pack);
 typedef int (*net_node_hnd)(struct net_node *node);
 
 typedef struct pnet_proto {
+	const char *name;
 	net_id_t proto_id;
 	net_hnd rx_hnd;
 	net_hnd tx_hnd;

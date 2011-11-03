@@ -15,7 +15,7 @@
 #include <pnet/types.h>
 #include <pnet/match.h>
 
-OBJALLOC_DEF(match_rules, match_rule_t, MAX_RULE_COUNT);
+OBJALLOC_DEF(match_rules, struct match_rule, MAX_RULE_COUNT);
 
 static void rule_init(match_rule_t rule) {
 	rule->skbuf->data = rule->header;
