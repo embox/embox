@@ -51,3 +51,8 @@ static int tasks_init(void) {
 
 	return 0;
 }
+
+int task_get_index(int type) {
+	static int idx = 3;
+	return idx ++;
+}

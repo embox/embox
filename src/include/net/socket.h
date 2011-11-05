@@ -244,4 +244,9 @@ extern int empty_socket(int sockfd);
  */
 extern int close(int sockfd);
 
+
+extern struct socket * socket_alloc(void);
+extern void socket_free(struct socket *sock);
+
+
 #endif /* NET_SOCKET_H_ */

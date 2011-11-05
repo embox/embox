@@ -68,6 +68,6 @@ struct net_dev {
 };
 typedef struct net_dev *net_dev_t;
 
-#include __module_headers(embox/pnet/core/pack/api)
+//#include __module_headers(embox/pnet/core/pack/api)
 
 #endif

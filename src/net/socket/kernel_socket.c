@@ -10,45 +10,16 @@
 #include <errno.h>
 #include <hal/ipl.h>
 #include <linux/aio.h>
-#include <mem/misc/pool.h>
 #include <net/net.h>
 #include <net/socket.h>
 #include <stddef.h>
 #include <types.h>
 
-#ifndef CONFIG_MAX_KERNEL_SOCKETS
-#define CONFIG_MAX_KERNEL_SOCKETS 0x4
-#endif
-/* pool for allocate sockets */
-POOL_DEF(socket_pool, struct socket, CONFIG_MAX_KERNEL_SOCKETS);
 
 /**
  * The protocol list. Each protocol is registered in here.
  */
 static const struct net_proto_family *net_families[NPROTO] = {0};
-
-static struct socket * socket_alloc(void) {
-	struct socket *sock;
-	ipl_t flags;
-
-	flags = ipl_save();
-
-	sock = pool_alloc(&socket_pool);
-
-	ipl_restore(flags);
-
-	return sock;
-}
-
-static void socket_free(struct socket *sock) {
-	ipl_t flags;
-
-	flags = ipl_save();
-
-	pool_free(&socket_pool, sock); /* return sock into pool */
-
-	ipl_restore(flags);
-}
 
 int kernel_socket_create(int family, int type, int protocol, struct socket **psock) {
 	int res;
@@ -104,7 +75,8 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
 
-	res = sock - (struct socket *)socket_pool.storage; /* calculate sockfd */
+	//res = sock - (struct socket *)socket_pool.storage; /* calculate sockfd */
+	res = task_get_index(TASK_IDX_TYPE_SOCKET);
 	*psock = sock; /* and save struct */
 
 	return res;

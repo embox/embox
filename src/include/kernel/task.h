@@ -47,5 +47,11 @@ extern struct task *task_self(void);
 
 extern struct task *task_default_get(void);
 
+enum {
+	TASK_IDX_TYPE_FILE = 0, TASK_IDX_TYPE_SOCKET = 1
+};
+
+extern int task_get_index(int type);
+
 
 #endif /* TASK_H_ */
