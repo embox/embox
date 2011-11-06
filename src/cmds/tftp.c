@@ -10,6 +10,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include "tftp.h"
 
 EMBOX_CMD(exec);

@@ -31,8 +31,8 @@ typedef struct file_operations {
 	FILEOP_IOCTL ioctl;
 } file_operations_t;
 
-extern int reopen(int fd, FILE *file);
-
-extern int file_close(int fd);
+extern int task_file_reopen(int fd, FILE *file);
+struct task;
+extern int task_file_close(int fd, struct task * task);
 
 #endif /* KERNEL_FILE_H_ */

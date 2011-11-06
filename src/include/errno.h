@@ -90,6 +90,6 @@
 #define EHOSTUNREACH     365   /* No route to host */
 
 /*extern int errno;*/
-#define errno task_self()->fd_array.fds[0].err
+#define errno task_self()->errno
 
 #endif /* ERRNO_H_ */

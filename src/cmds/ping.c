@@ -22,6 +22,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <err.h>
 
 EMBOX_CMD(exec);

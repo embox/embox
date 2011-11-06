@@ -52,7 +52,50 @@ static int tasks_init(void) {
 	return 0;
 }
 
-int task_get_index(int type) {
-	static int idx = 3;
-	return idx ++;
+int task_idx_alloc(int type) {
+	struct task *task = task_self();
+	switch(type) {
+	case TASK_IDX_TYPE_FILE:
+		return task->rc_manager.file_idx_cnt++;
+	case TASK_IDX_TYPE_SOCKET:
+		return task->rc_manager.sock_idx_cnt++;
+	default:
+		return -1;
+	}
+}
+
+int task_idx_to_type(int fd) {
+	return 0xFF & (fd >> 8);
+}
+
+int task_idx_save(int fd, void *desc) {
+	struct task *task = task_self();
+	switch(task_idx_to_type(fd)) {
+	case TASK_IDX_TYPE_FILE:
+		//task->fd_array.socket_fds[fd & 0xFF] = data;
+		return 0;
+	case TASK_IDX_TYPE_SOCKET:
+		task->fd_array.socket_fds[fd & 0xFF].socket = (struct socket *)desc;
+		return 0;
+	default:
+		return -1;
+	}
+}
+
+void * task_idx_to_desc(int fd){
+	struct task *task = task_self();
+	switch(task_idx_to_type(fd)) {
+	case TASK_IDX_TYPE_FILE:
+		//task->fd_array.socket_fds[fd & 0xFF] = data;
+		return NULL;
+	case TASK_IDX_TYPE_SOCKET:
+		return (void *)task->fd_array.socket_fds[fd & 0xFF].socket;
+
+	default:
+		return NULL;
+	}
+}
+
+int task_idx_release(int idx) {
+	return task_idx_save(idx, NULL);
 }

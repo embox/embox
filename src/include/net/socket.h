@@ -242,7 +242,10 @@ extern int empty_socket(int sockfd);
  * @param sockfd socket description
  * @return 0 on success. On error, result < 0.
  */
-extern int close(int sockfd);
+extern int socket_close(int sockfd);
+
+//TODO not implement now
+extern int socket_shutdown(int socket, int how);
 
 
 extern struct socket * socket_alloc(void);

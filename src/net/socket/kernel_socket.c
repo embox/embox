@@ -76,7 +76,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	 */
 
 	//res = sock - (struct socket *)socket_pool.storage; /* calculate sockfd */
-	res = task_get_index(TASK_IDX_TYPE_SOCKET);
+	res = task_idx_alloc(TASK_IDX_TYPE_SOCKET);
 	*psock = sock; /* and save struct */
 
 	return res;
