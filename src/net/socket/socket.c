@@ -44,7 +44,7 @@ int socket(int domain, int type, int protocol) {
 int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 	struct socket *sock;
 
-	if ((sockfd < 0) || (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)) {
+	if ((sockfd < 0) /*|| (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)*/) {
 		return -EBADF;
 	}
 
@@ -60,7 +60,7 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct socket *sock;
 
-	if ((sockfd < 0) || (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)) {
+	if ((sockfd < 0) /*|| (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)*/) {
 		return -EBADF;
 	}
 
@@ -82,7 +82,7 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 	struct msghdr m;
 	struct sockaddr_in *dest_addr;
 
-	if ((sockfd < 0) || (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)) {
+	if ((sockfd < 0) /* || (sockfd >= CONFIG_MAX_KERNEL_SOCKETS) */) {
 		return -EBADF;
 	}
 
@@ -122,7 +122,7 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 	struct msghdr m;
 	struct sockaddr_in *dest_addr;
 
-	if ((sockfd < 0) || (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)) {
+	if ((sockfd < 0) /*|| (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)*/) {
 		return -EBADF;
 	}
 
@@ -152,7 +152,7 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 int socket_close(int sockfd) {
 	struct socket *sock;
 
-	if ((sockfd < 0) || (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)) {
+	if ((sockfd < 0) /*|| (sockfd >= CONFIG_MAX_KERNEL_SOCKETS) */) {
 		return -EBADF;
 	}
 

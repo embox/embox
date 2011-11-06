@@ -58,7 +58,7 @@ int task_idx_alloc(int type) {
 	case TASK_IDX_TYPE_FILE:
 		return task->rc_manager.file_idx_cnt++;
 	case TASK_IDX_TYPE_SOCKET:
-		return task->rc_manager.sock_idx_cnt++;
+		return (TASK_IDX_TYPE_SOCKET << 8) | task->rc_manager.sock_idx_cnt++;
 	default:
 		return -1;
 	}
