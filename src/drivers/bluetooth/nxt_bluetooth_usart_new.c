@@ -33,12 +33,16 @@ EMBOX_UNIT_INIT(nxt_bluetooth_init);
 
 static uint8_t *nxt_bt_read_buff;
 
-static nxt_bt_rx_handle_t nxt_bt_rx_handle;
+static int nop(void) {
+	return 0;
+}
+
+static nxt_bt_rx_handle_t nxt_bt_rx_handle = nop;
 void nxt_bt_set_rx_handle(nxt_bt_rx_handle_t handle) {
 	nxt_bt_rx_handle = handle;
 }
 
-static nxt_bt_state_handle_t nxt_bt_state_handle;
+static nxt_bt_state_handle_t nxt_bt_state_handle = nop;
 void nxt_bt_state_rx_handle(nxt_bt_state_handle_t handle) {
 	nxt_bt_state_handle = handle;
 }

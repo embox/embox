@@ -26,10 +26,12 @@ static void send_to_net(uint8_t *data, int len) {
 //	netif_rx(skb);
 	return;
 }
+
 static int size = 0;
 static int handle_size(uint8_t *buff) {
 	return buff[0] + (buff[1] << 8);
 }
+
 static int direct_wait_body(void /*int msg, uint8_t *buff*/);
 static int direct_get_header(void /*int msg, uint8_t *buff*/) {
 
@@ -38,7 +40,7 @@ static int direct_get_header(void /*int msg, uint8_t *buff*/) {
 	if (size > DC_BUFF_SIZE - MSG_SIZE_BYTE_CNT) {
 		//TODO error length
 	}
-	CALLBACK_REG(bluetooth_uart, (callback_t) direct_wait_body);
+	nxt_bt_set_rx_handle(direct_wait_body);
 	bluetooth_read(direct_comm_buff + MSG_SIZE_BYTE_CNT, size);
 	return 0;
 }

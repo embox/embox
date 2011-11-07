@@ -13,7 +13,11 @@
 #include <errno.h>
 #include <string.h>
 
+#ifdef CONFIG_MAX_PROMPT_LENGTH
 #define BUF_INP_SIZE CONFIG_MAX_PROMPT_LENGTH
+#else
+#define BUF_INP_SIZE 0x30
+#endif
 
 EMBOX_UNIT_INIT(run);
 

@@ -17,20 +17,9 @@
 
 EMBOX_CMD(bt_main);
 
-static int control_handle(net_packet_t pack) {
-	return 0;
-}
-
-static struct pnet_proto control_proto = {
-	.rx_hnd = control_handle
-};
-static struct net_node pnet_control = {
-	.proto = &control_proto
-};
-
 static int bt_main(int argc, char **argv) {
 	struct pnet_graph *graph ;
-	struct net_node *node, *src;
+	struct net_node *node, *src, *dc_hnd;
 
 	graph = pnet_graph_create();
 
@@ -38,13 +27,15 @@ static int bt_main(int argc, char **argv) {
 
 	pnet_graph_add_src(graph, src);
 
-	node = pnet_get_module("lego_direct");
+	node = pnet_get_module("lego_nxt_bt");
 
 	pnet_graph_add_node(graph, node);
 
 	pnet_node_link(src, node);
 
-	pnet_node_link(node, (struct net_node *)&pnet_control);
+	dc_hnd = pnet_get_module("nxt direct handler");
+
+	pnet_node_link(node, dc_hnd);
 
 	pnet_graph_start(graph);
 

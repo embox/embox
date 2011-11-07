@@ -1,5 +1,8 @@
 $_PACKAGE := embox.init
 
+$($_SELFDIR)/init.c : $(AUTOCONF_DIR)/start_script.inc
+
+
 $_MODS += init
 $_SRCS-init += init.c
 $_CPPFLAGS-init += -I$(AUTOCONF_DIR)
