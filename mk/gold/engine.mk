@@ -176,10 +176,11 @@ builtin_func_gold-symbol-table =# Noop.
 # The latters are used by in last parsing phase to redirect expansion hooks.
 #
 
-# 1. Id
-# 2. Nonterminal
-# 3. Number of symbols in right-hand side
-# 4. Instantiation function.
+# Params:
+#   1. Id
+#   2. Nonterminal
+#   3. Number of symbols in right-hand side
+#   4. Instantiation function.
 define builtin_func_gold-rule
 	$(and \
 		$(filter-out 0,$3),
@@ -203,7 +204,11 @@ define builtin_func_gold-rule
 
 		# Proxy function to the real hook handler.
 		# Used by __gold_expand.
-		$(call var_assign_recursive_sl,__gold_rule_hook_n$3,
+		$(call var_assign_recursive_sl,
+			# Params:
+			#   1..N: RHS Symbols.
+			#   N+1:  Rule Id.
+			__gold_rule_hook_n$3,
 			$$(foreach r,$$($(__gold_n$3+1)),
 				$$(__gold_rule_hook)
 			)
@@ -215,13 +220,35 @@ define builtin_func_gold-rule
 	)
 endef
 
+# Params:
+#   1:  Rule Id.
 __gold_rule_hook_n0 = $(foreach r,$1,$(__gold_rule_hook))
 
 builtin_func_gold-rule-table =# Noop
 
-builtin_func_gold-charset-table =# Noop
+#
+# Charsets.
+#
+#	$(gold-charset-table \
+#		# Args: Id,Chars...
+#		$(gold-charset 0,# &#9;&#10;&#11;&#12;&#13; &#160; #
+#			9,10,11,12,13,32,160),
+#		# ...
+#	),
+#
+# Charsets are used during DFA scanning to match an incoming character.
+# Each charset is a matcher function which takes a char code and tells whether
+# the char is included in the given charset.
+#
+#	$g_cs$(id) = ...
+#
+# where:
+#      'id' is a unique index of the charset, and
+#       'g' refers to a namespace of a parser.
+#
 
-# 1. Id
+# Params:
+#   1. Id
 # ... Char codes
 define builtin_func_gold-charset
 	$(call var_assign_recursive_sl,$(__gold_prefix)_cs$1,
@@ -242,6 +269,8 @@ endef
 
 # Chars sorted by usage frequency (got from C source file of 1.5MB size).
 # Only the first half of the ASCII table is actually counted (0-127).
+# Sorting chars in a charset gives a little gain in matching speed because of
+# the way 'findstring' is implemented in GNU Make.
 __gold_cs_freq_sort := \
       32  116 101 95  115 105 114 110 99  97  40  41  111 117 100 \
   10  108 112 59  34  109 103 102 118 42  44  98  107 104 48  121 \
@@ -261,6 +290,8 @@ __gold_cs_freq_sort := \
   240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 \
   0
 __gold_cs_freq_sort := $(strip $(__gold_cs_freq_sort))
+
+builtin_func_gold-charset-table =# Noop
 
 define __gold_dfa_accept
 	$(info DFA accept symbol $2 ($(word 2,$(__golden_symbol$2))): \
