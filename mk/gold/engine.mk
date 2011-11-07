@@ -255,6 +255,7 @@ define builtin_func_gold-charset
 		$$(findstring |$$1|,
 			|
 			$(subst $(\s),|,
+				# Sort chars by their usage frequency.
 				$(filter \
 					$(foreach a,$(nofirstword $(builtin_args_list)),
 						$($a)
@@ -293,13 +294,53 @@ __gold_cs_freq_sort := $(strip $(__gold_cs_freq_sort))
 
 builtin_func_gold-charset-table =# Noop
 
-define __gold_dfa_accept
-	$(info DFA accept symbol $2 ($(word 2,$(__golden_symbol$2))): \
-		[$(foreach c,$1,$(word $c,$(ascii_table)))])
+#
+# DFA lexer.
+#
+#	$(gold-dfa-table 0,# <- Initial state
+#		# Args: Id,Accept symbol (if any)
+#		$(gold-dfa-state 0,-1,
+#			# Args: Charset,New state
+#			$(gold-dfa-edge 0,1),
+#			# ...
+#		),
+#		# ...
+#	),
+
+# Params:
+#   1. Charset
+#   2. Target state
+define builtin_func_gold-dfa-edge
+	# Emit a call to charset matcher.
+	$$(if $$($(__gold_prefix)_cs$1),$2),
 endef
 
-# 1. Initial state
-# ... States (unused)
+# Params:
+#   1. Id
+#   2. Accept symbol or -1
+#   ... Edges
+define builtin_func_gold-dfa-state
+	$(call var_assign_recursive_sl,
+		# Params:
+		#   1. Char code.
+		# Return:
+		#   Plain number: Next state Id;
+		#   '/' Number: Accepted symbol Id;
+		#   Empty on error.
+		$(__gold_prefix)_dfa$1,# =
+
+		$$(or \
+			$(foreach a,$(words-from 3,$(builtin_args_list)),
+				$($a)
+			)
+			$(if $(findstring $2,-1),,/$2)
+		)
+	)
+endef
+
+# Params:
+#   1. Initial state
+#   ... States (unused)
 define builtin_func_gold-dfa-table
 	$(call var_assign_recursive_sl,
 		# Params:
@@ -317,6 +358,8 @@ define builtin_func_gold-dfa-table
 	$(call var_assign_simple,$(__gold_prefix)_dfa,)# Cyclic error until EOF.
 endef
 
+# The lexer itself.
+#
 # Params:
 #   1. Input string as a list of decimal char codes.
 # Context:
@@ -354,36 +397,76 @@ define __gold_lex
 	$(or $(call $g_dfa$(__gold_state__),),/1) /0
 endef
 
-# 1. Id
-# 2. Accept symbol or -1
-# ... Edges
-define builtin_func_gold-dfa-state
-	$(call var_assign_recursive_sl,
-		# Params:
-		#   1. Char code.
-		# Return:
-		#   Plain number: Next state Id;
-		#   '/' Number: Accepted symbol Id;
-		#   Empty on error.
-		$(__gold_prefix)_dfa$1,# =
+#
+# LALR parser.
+#
+#	$(gold-lalr-table 0,# <- Initial state
+#		# Args: Id
+#		$(gold-lalr-state 0,
+#			# Args: Symbol,Action,Value
+#			$(gold-lalr-action 4,1,1),# Shift to State 1
+#			# ...
+#		),
+#		# ...
+#	)
 
-		$$(or \
-			$(foreach a,$(words-from 3,$(builtin_args_list)),
-				$($a)
-			)
-			$(if $(findstring $2,-1),,/$2)
+# Params:
+#   1. Symbol
+#   2. Action:
+#       1: Shift
+#       2: Reduce
+#       3: Goto
+#       4: Accept
+#   3. Value:
+#       Rule Id for Reduce action
+#       Target state in case of Shift or Goto
+define builtin_func_gold-lalr-action
+	$(or \
+		$(and $(eq 1,$2),$1/+/$3),
+		$(and $(eq 2,$2),$1/-/$3),
+		$(and $(eq 3,$2),:$1/$3),
+		$(and $(eq 4,$2),$1/),
+	)
+endef
+
+# Params:
+#   1. Id
+#   ... Actions
+define builtin_func_gold-lalr-state
+	$(with \
+		$1,
+		$(foreach a,$(nofirstword $(builtin_args_list)),
+			$($a)
+		),
+
+		# Goto action is only used to advance the state after a reduction is
+		# performed. We can use such knowledge to decrease a total size of
+		# state lookup table.
+		# So goto action does not contribute to the general transition table of
+		# the particular state. Instead of doing that we'll put it into
+		# a special goto table of the state.
+		$(call var_assign_simple,
+			# List of elements in form 'Symbol/Value'
+			$(__gold_prefix)_goto.$1,# :=
+
+			$(filter-patsubst :%,%,$2)
+		)
+
+		$(call var_assign_simple,
+			# List of elements in form:
+			#   'Symbol/+/State' for shift
+			#   'Symbol/-/Rule'  for reduce
+			#   'Symbol/'        for accept
+			$(__gold_prefix)_lalr.$1,# :=
+
+			$(filter-out :%,$2)
 		)
 	)
 endef
 
-# 1. Charset
-# 2. Target state
-define builtin_func_gold-dfa-edge
-	$$(if $$($(__gold_prefix)_cs$1),$2),
-endef
-
-# 1. Initial state
-# ... States (unused)
+# Params:
+#   1. Initial state
+#   ... States (unused)
 define builtin_func_gold-lalr-table
 	$(call var_assign_recursive_sl,
 		# Params:
@@ -560,58 +643,6 @@ define __gold_handle_error
 	${eval \
 		__gold_stack__ :=# Parse tree becomes empty in case of error.
 	}
-endef
-
-# 1. Id
-# ... Actions
-define builtin_func_gold-lalr-state
-	$(with \
-		$1,
-		$(foreach a,$(nofirstword $(builtin_args_list)),
-			$($a)
-		),
-
-		# Goto action is only used to advance the state after a reduction is
-		# performed. We can use such knowledge to decrease a total size of
-		# state lookup table.
-		# So goto action does not contribute to the general transition table of
-		# the particular state. Instead of doing that we'll put it into
-		# a special goto table of the state.
-		$(call var_assign_simple,
-			# List of elements in form 'Symbol/Value'
-			$(__gold_prefix)_goto.$1,# :=
-
-			$(filter-patsubst :%,%,$2)
-		)
-
-		$(call var_assign_simple,
-			# List of elements in form:
-			#   'Symbol/+/State' for shift
-			#   'Symbol/-/Rule'  for reduce
-			#   'Symbol/'        for accept
-			$(__gold_prefix)_lalr.$1,# :=
-
-			$(filter-out :%,$2)
-		)
-	)
-endef
-
-# 1. Symbol
-# 2. Action:
-#     1: Shift
-#     2: Reduce
-#     3: Goto
-#     4: Accept
-# 3. Value:
-#     Rule Id for Reduce action
-#     Target state in case of Shift or Goto
-define builtin_func_gold-lalr-action
-	$(or \
-		$(and $(eq 1,$2),$1/+/$3),
-		$(and $(eq 2,$2),$1/-/$3),
-		$(and $(eq 3,$2),:$1/$3),
-		$(and $(eq 4,$2),$1/),
-	)
 endef
 
 # Params:
