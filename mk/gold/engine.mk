@@ -283,7 +283,7 @@ define builtin_func_gold-dfa-table
 			$$(__gold_lex)
 		)
 	)
-	$(call var_assign_simple,$(__gold_prefix)_dfa,)# Cyclic error until EOF
+	$(call var_assign_simple,$(__gold_prefix)_dfa,)# Cyclic error until EOF.
 endef
 
 # Params:
@@ -366,6 +366,7 @@ define builtin_func_gold-lalr-table
 			$$(__gold_parse)
 		)
 	)
+	$(call var_assign_simple,$(__gold_prefix)_lalr,)# Cyclic error until EOF.
 endef
 
 # Params:
@@ -387,6 +388,8 @@ define __gold_parse
 		$(__gold_parse_token)
 	),)
 
+	$(assert $(not $(__gold_state__)),
+		Parsing must end up with either Accept or Error)
 	$(__gold_stack__)
 endef
 
@@ -485,30 +488,46 @@ endef
 #   Nothing.
 define __gold_lalr_handle[]
 	$(if $(eq /,$a),
-
 		# Error.
 		$(__gold_handle_error),
-
 		# Accept.
-		$(assert $(eq /0,$t),Only EOF may cause Accept action)
-		${eval \
-			__gold_stack__ := $$(basename $$(__gold_stack__))
-		}
+		$(__gold_do_accept)
 	)
+	${eval \
+		# Reset the state. This indicates that parsing is done.
+		__gold_state__ :=
+	}
+endef
+
+# Accepting is just removing the suffix
+#   t. Token, assumed to be EOF.
+#   g. Prefix.
+define __gold_do_accept
+	$(assert $(eq /0,$t),
+		Only EOF may cause Accept action)
+	$(assert $(singleword $(__gold_stack__)),
+		Only a single symbol may be accepted as a root of the parse tree)
+	$(assert $(eq .0,$(suffix $(__gold_stack__))),
+		Accept may occur only in the ground state)
+
+	${eval \
+		__gold_stack__ := $$(basename $$(__gold_stack__))
+	}
 endef
 
 # Error handling always occurs in LALR parse phase, even for DFA lex errors.
 #   t. Token
 #   g. Prefix.
 define __gold_handle_error
-	$(if $(eq 1,$(notdir $t)),
-		$(info Lexical error.),
-		$(info Syntax error.)
+	$(if $(__gold_state__),# Prevent repeated error reporting.
+		$(if $(eq 1,$(notdir $t)),
+			$(info Lexical error.),
+			$(info Syntax error.)
+		)
 	)
 
 	${eval \
-		# Reset the state.
-		__gold_state__ :=
+		__gold_stack__ :=# Parse tree becomes empty in case of error.
 	}
 endef
 
