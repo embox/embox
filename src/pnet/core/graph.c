@@ -77,7 +77,7 @@ int pnet_graph_add_node(struct pnet_graph *graph, struct net_node *node) {
 }
 
 int pnet_node_link(struct net_node *src, struct net_node *node) {
-	if (src->graph != node->graph || src->graph != PNET_GRAPH_STOPPED) {
+	if (src->graph != node->graph || src->graph->state != PNET_GRAPH_STOPPED) {
 		return -EINVAL;
 	}
 
