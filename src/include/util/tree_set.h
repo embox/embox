@@ -52,6 +52,13 @@ struct tree_set {
  */
 typedef int (*tree_set_comparator_t)(struct tree_set_link *first, struct tree_set_link *second);
 
+/**
+ * Dispose element, related with specified link. Used in clear function.
+ *
+ * @param link Link to be disposed.
+ */
+typedef void (*tree_set_dispose_t)(struct tree_set_link *link);
+
 /* Cast between link member and the element. */
 
 /**
@@ -122,8 +129,16 @@ extern int tree_set_add_link(struct tree_set *tree_set,
  * @return
  * 	true, if element was in tree_set before deletion.
  */
-extern int tree_set_remove_link(struct tree_set* tree_set,
+extern int tree_set_remove_link(struct tree_set *tree_set,
 		struct tree_set_link *link, tree_set_comparator_t compare);
+
+/**
+ * Delete all elements from set. Applies dispose function to each element.
+ *
+ * @param set Set to clear
+ * @param dispose Dispose function, applied to each element of set after deletion.
+ */
+extern void tree_set_clear(struct tree_set *set, tree_set_dispose_t dispose);
 
 /**
  * Return the most left element of the tree_set.

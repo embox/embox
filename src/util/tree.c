@@ -85,3 +85,27 @@ struct tree_link *tree_postorder_begin(struct tree_link *tree) {
 	return tree;
 }
 
+struct tree_link *tree_children_find(struct tree_link *node,
+		tree_link_predicate_t predicate) {
+	struct tree_link *link;
+	assert(node != NULL);
+	list_foreach(link, &node->children, list_link) {
+		if (predicate(link)) {
+			return link;
+		}
+	}
+	return NULL;
+}
+
+struct tree_link *tree_find(struct tree_link *tree,
+		tree_link_predicate_t predicate) {
+	struct tree_link *link;
+	assert(tree != NULL);
+	tree_postorder_traversal_link(link, tree) {
+		if (predicate(link)) {
+			return link;
+		}
+	}
+	return NULL;
+}
+

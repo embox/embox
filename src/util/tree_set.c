@@ -390,15 +390,30 @@ int tree_set_remove_link(struct tree_set *tree_set,
 	return tree_set_remove_found_link(tree_set, del_pos);
 }
 
+/** Clear subtree, corresponding to the node. */
+static void tree_set_clear_link(struct tree_set_link *link, tree_set_dispose_t dispose) {
+	if (link != NULL) {
+		tree_set_clear_link(link->left, dispose);
+		tree_set_clear_link(link->right, dispose);
+		dispose(link);
+	}
+}
+
+void tree_set_clear(struct tree_set *set, tree_set_dispose_t dispose) {
+	assert(set != NULL);
+	tree_set_clear_link(set->root, dispose);
+	set->root = NULL;
+}
+
 /* Operations on subtree, represented with their root nodes. */
 
 struct tree_set_link *__tree_set_min_link(struct tree_set_link *root) {
 	struct tree_set_link *result;
-	result = root;
-	if (result == NULL) {
+	if (root == NULL) {
 		return NULL;
 	}
-	while (result->left) {
+	result = root;
+	while (result->left != NULL) {
 		result = result->left;
 	}
 	return result;
@@ -415,7 +430,7 @@ struct tree_set_link *__tree_set_max_link(struct tree_set_link *root) {
 	if (result == NULL) {
 		return NULL;
 	}
-	while (result->right) {
+	while (result->right != NULL) {
 		result = result->right;
 	}
 	return result;
@@ -433,9 +448,9 @@ struct tree_set_link *tree_set_next_link(struct tree_set_link *link) {
 		/* Search for the most left element in right subtree */
 		return __tree_set_min_link(link->right);
 	} else {
-		/* Search for the first parent, placed righter than its son. */
+		/* Search for the first parent, placed righter than it's son. */
 		par = link->par;
-		while (par && par->right == link) {
+		while (par != NULL && par->right == link) {
 			link = par;
 			par = par->par;
 		}

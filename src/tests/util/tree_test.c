@@ -31,7 +31,7 @@ TEST_CASE("Any test for tree") {
 		/* printf("%d ", (int)link); */
 	}
 	tree_postorder_traversal_link_safe(link, next_link, links+1) {
-		// Nothing
+		/* Nothing */
 	}
 	tree_delete_link(links+1, dispose);
 }

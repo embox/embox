@@ -31,6 +31,11 @@ struct tree_link {
 };
 
 /**
+ * Type of functions, returning true or false for given tree_link.
+ */
+typedef int (*tree_link_predicate_t)(struct tree_link *link);
+
+/*
  * Initialize tree link.
  * @param tree_link Link to initialize.
  */
@@ -90,6 +95,28 @@ extern struct tree_link *tree_postorder_begin(struct tree_link *tree);
 static inline struct tree_link *tree_postorder_end(struct tree_link *tree) {
 	return tree->par;
 }
+
+/**
+ * Find children of given node, for what specified predicate is true.
+ *
+ * @param node Node, what children are tested.
+ * @param predicate Predicate, with what nodes are tested.
+ *
+ * @return Child, for what predicate is true, or NULL, if it doesn't exist.
+ */
+extern struct tree_link *tree_children_find(struct tree_link *node,
+		tree_link_predicate_t predicate);
+
+/**
+ * Find element of subtree, for what specified predicate is true.
+ *
+ * @param tree Node, subtree of what (including itself) is tested.
+ * @param predicate Predicate, with what nodes are tested.
+ *
+ * @return Node, for what predicate is true, or NULL, if it doesn't exist.
+ */
+extern struct tree_link *tree_find(struct tree_link *tree,
+		tree_link_predicate_t predicate);
 
 /**
  * Iteration on tree. Elements are links (without casting from links).
