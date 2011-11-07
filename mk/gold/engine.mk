@@ -303,6 +303,7 @@ define __gold_lex
 			# Advance the state.
 			__gold_state__ := $($g_dfa$(__gold_state__))
 		}
+#		$(info DFA: $1  	[$(word $1,$(ascii_table))]	-> state $(__gold_state__))
 
 		$(if $(findstring /,$(__gold_state__)),
 			# Got a token, emit it as is (with slash) appending a space.
@@ -399,9 +400,9 @@ define __gold_parse_token
 		# a: An action in one of the following forms:
 		#     shift:  '/Token/+/State'
 		#     reduce: '/Token/-/Rule'
-		#     accept: '/Token'
+		#     accept: '/Token/'
 		#     error:  '/'
-		$(__gold_lalr_handle$(findstring +,$a)$(findstring -,$a))
+		$(__gold_lalr_handle[$(findstring +,$a)$(findstring -,$a)])
 
 	),$(call __gold_parse_token))
 endef
@@ -411,7 +412,7 @@ endef
 #   t. Token
 # Return:
 #   Nothing.
-define __gold_lalr_handle+
+define __gold_lalr_handle[+]
 	${eval \
 		# Push the current token onto the stack.
 		__gold_stack__ += [$t]$(__gold_state__)
@@ -423,11 +424,11 @@ endef
 
 # Reduce (hot).
 #   a. Action: '/Token/-/Rule'
-#   t. Token
+#   t. Token: 'Chars.../Type'
 #   g. Prefix.
 # Return:
-#   Non-empty.
-define __gold_lalr_handle-
+#   Non-empty always.
+define __gold_lalr_handle[-]
 	${eval $(foreach r,$(notdir $a),$(foreach n,$(word 2,$($g_rule$r)),
 		# r: Rule Id.
 		# n: N of symbols.
@@ -475,12 +476,40 @@ define __gold_lalr_handle-
 endef
 
 # Accept or error (cold).
-define __gold_lalr_handle
-	$(info )
-	$(info accept/error: $a : [$t])
-	$(info __gold_parse_token: __gold_stack__ = $(__gold_stack__))
-	$(info __gold_parse_token: __gold_state__ = $(__gold_state__))
-#	$(error )
+#   a. Action:
+#       Accept: '/Token/'
+#       Error:  '/'
+#   t. Token
+#   g. Prefix.
+# Return:
+#   Nothing.
+define __gold_lalr_handle[]
+	$(if $(eq /,$a),
+
+		# Error.
+		$(__gold_handle_error),
+
+		# Accept.
+		$(assert $(eq /0,$t),Only EOF may cause Accept action)
+		${eval \
+			__gold_stack__ := $$(basename $$(__gold_stack__))
+		}
+	)
+endef
+
+# Error handling always occurs in LALR parse phase, even for DFA lex errors.
+#   t. Token
+#   g. Prefix.
+define __gold_handle_error
+	$(if $(eq 1,$(notdir $t)),
+		$(info Lexical error.),
+		$(info Syntax error.)
+	)
+
+	${eval \
+		# Reset the state.
+		__gold_state__ :=
+	}
 endef
 
 # 1. Id
@@ -540,7 +569,6 @@ endef
 # Return:
 #   Result of tree expansion.
 define __gold_expand
-	$(info stack: [$1])
 	${eval \
 		# Transform tree into a code.
 		__gold_tmp__ := \
@@ -569,8 +597,8 @@ define __gold_token_hook
 		)),
 		$2,
 
-		$(info $(word 2,$($g_symbol$2)): $1)
-		$1
+#		$(info $(word 2,$($g_symbol$2)): $1)
+		[$1]
 	)
 endef
 
@@ -582,7 +610,7 @@ define __gold_rule_hook
 	$(with \
 		$(word 3,$($g_rule$r)) {
 			$(subst $(\n),$(\n)$(\t),
-				$(if $(not $(eq 0,$(word 2,$($g_rule$1)))),
+				$(if $(not $(eq 0,$(word 2,$($g_rule$r)))),
 					$(foreach a,$(wordlist 1,$(word 2,$($g_rule$r)),1 2 3 4 5 6 7 8 9),
 						$(\n)$a: $($a)
 					)
