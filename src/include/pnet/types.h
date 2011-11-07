@@ -12,6 +12,7 @@
 
 #include <net/in.h>
 #include <net/if_ether.h>
+#include <net/netdevice.h>
 #include <util/list.h>
 
 typedef int net_addr_t;
@@ -25,13 +26,13 @@ typedef struct net_packet *net_packet_t;
 
 typedef int (*net_hnd)(net_packet_t pack);
 typedef int (*net_node_hnd)(struct net_node *node);
+typedef struct net_node *(*net_alloc_hnd)(void);
 
 typedef struct pnet_proto {
 	const char *name;
-	net_id_t proto_id;
 	net_hnd rx_hnd;
 	net_hnd tx_hnd;
-	net_node_hnd init;
+	net_alloc_hnd alloc;
 	net_node_hnd free;
 	net_node_hnd start;
 	net_node_hnd stop;
@@ -61,13 +62,12 @@ typedef struct net_dev_ops {
 	net_dev_op tx;
 }*net_dev_ops_t;
 
-struct net_dev {
-	net_node_t node;
-	int id;
-	net_dev_ops_t ops;
-};
-typedef struct net_dev *net_dev_t;
+struct pnet_dev {
+	struct net_node node;
+	struct net_device *dev;
 
-//#include __module_headers(embox/pnet/core/pack/api)
+};
+
+#include __module_headers(embox/pnet/core/pack/api)
 
 #endif

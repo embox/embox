@@ -15,12 +15,13 @@
 
 #include <pnet/core.h>
 #include <pnet/node.h>
+#include <pnet/repo.h>
 
 static net_node_t pnet_get_dev_by_device(struct net_device *dev) {
-	net_node_t node = &dev->net_node;
+	net_node_t node = dev->pnet_node;
 
 	if (NULL == node->rx_dfault) {
-		return pnet_dev_get_entry();
+		return pnet_get_module("devs entry");
 	}
 
 	return node;

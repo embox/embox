@@ -111,7 +111,6 @@ net_node_matcher_t pnet_get_node_matcher(void) {
 	return matcher;
 }
 
-#endif
 static int matcher_init(struct net_node *node) {
 	net_node_matcher_t matcher = (net_node_matcher_t) node;
 
@@ -120,10 +119,20 @@ static int matcher_init(struct net_node *node) {
 
 	return 0;
 }
+#endif
+
+net_node_t *matcher_alloc(void) {
+	net_node_matcher_t matcher = objalloc(&matcher_nodes);
+
+	INIT_LIST_HEAD(&matcher->match_rx_rules);
+	INIT_LIST_HEAD(&matcher->match_tx_rules);
+
+	return (net_node_t) matcher;
+}
 
 PNET_PROTO_DEF("matcher", {
 	.name = "matcher",
 	.rx_hnd = match,
-	.init = matcher_init,
-	.free = matcher_free
+	.alloc  = matcher_alloc,
+	.free   = matcher_free
 });

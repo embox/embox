@@ -14,8 +14,6 @@
 #include <net/in.h>
 #include <lib/list.h>
 
-#include <pnet/types.h>
-
 /* Backlog congestion levels */
 #define NET_RX_SUCCESS       0
 #define NET_RX_DROP          1
@@ -28,6 +26,8 @@
 /** Largest hardware address length */
 #define MAX_ADDR_LEN    32
 #define ETHER_ADDR_LEN  6
+
+struct net_node;
 
 /**
  * Network device statistics structure.
@@ -134,7 +134,7 @@ typedef struct net_device {
 	void *priv; /**< pointer to private data      */
 	struct sk_buff_head dev_queue;
 	int (*poll)(struct net_device *dev);
-	struct net_node net_node;
+	struct net_node *pnet_node;
 } net_device_t;
 
 static inline void *netdev_priv(struct net_device *dev) {

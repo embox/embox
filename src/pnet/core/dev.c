@@ -13,6 +13,7 @@
 #include <pnet/types.h>
 #include <pnet/core.h>
 #include <pnet/node.h>
+#include <pnet/repo.h>
 
 #include <util/member.h>
 #include <net/netdevice.h>
@@ -22,17 +23,17 @@
 EMBOX_UNIT_INIT(net_dev_init);
 
 static int tx_hnd(net_packet_t pack) {
-	net_node_t node = pack->node;
-	struct net_device *dev = member_cast_out(node, struct net_device, net_node);
+	struct net_device *dev = ((struct pnet_dev *) pack->node)->dev;
 	struct sk_buff *skb = pack->skbuf;
 	skb->dev = dev;
 	dev->netdev_ops->ndo_start_xmit(skb, dev);
 	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
-static struct pnet_proto dev_proto = {
-	.tx_hnd = tx_hnd
-};
+static int entry_tx_hnd(net_packet_t pack) {
+	pack->node = pack->node->tx_dfault; //TODO
+	return 0;
+}
 
 /* single entry for all devices
        devices
@@ -43,40 +44,31 @@ static struct pnet_proto dev_proto = {
 
 */
 
-static int entry_tx_hnd(net_packet_t pack) {
-	pack->node = pack->node->tx_dfault; //TODO
-	return 0;
-}
-
-static struct pnet_proto dev_entry_proto = {
-	.tx_hnd = entry_tx_hnd
-};
-
-static struct net_node dev_entry = {
-	.proto = &dev_entry_proto
-};
-
 net_node_t pnet_dev_register(struct net_device *dev) {
-	net_node_t node = pnet_node_init(&dev->net_node, 0, &dev_proto);
+	net_node_t node = pnet_get_module("dev");
+	struct pnet_dev *node_dev = (struct pnet_dev *) node;
 
-	pnet_node_attach(node, NET_RX_DFAULT, &dev_entry);
+	node_dev->dev = dev;
+
+//	pnet_node_attach(node, NET_RX_DFAULT, pnet_get_module("devs entry");
 
 	return node;
 }
 
 struct net_device *pnet_get_net_device(net_node_t node) {
-	return member_cast_out(node, struct net_device, net_node);
-}
-
-pnet_proto_t pnet_dev_get_proto(void) {
-	return &dev_proto;
-}
-
-net_node_t pnet_dev_get_entry(void) {
-	return &dev_entry;
+	return ((struct pnet_dev *) node)->dev;
 }
 
 static int net_dev_init(void) {
 
 	return 0;
 }
+
+PNET_NODE_DEF("devs entry", {
+	.tx_hnd = entry_tx_hnd
+});
+
+PNET_PROTO_DEF("dev", {
+	.tx_hnd = tx_hnd
+});
+
