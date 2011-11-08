@@ -155,4 +155,6 @@ extern int sock_register(const struct net_proto_family *ops);
  */
 extern void sock_unregister(int family);
 
+extern const struct net_proto_family * socket_repo_get_family(int family);
+
 #endif /* NET_NET_H_ */

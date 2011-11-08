@@ -16,33 +16,20 @@
 #include <types.h>
 
 
-/**
- * The protocol list. Each protocol is registered in here.
- */
-static const struct net_proto_family *net_families[NPROTO] = {0};
-
 int kernel_socket_create(int family, int type, int protocol, struct socket **psock) {
 	int res;
 	struct socket *sock;
 	const struct net_proto_family *pf;
 
-	/*
-	 * Check protocol is in range
-	 */
-	if ((family < 0) || (family >= NPROTO)) {
-		return -EINVAL;
-	}
 	if ((type < 0) || (type >= SOCK_MAX)) {
 		return -EINVAL;
 	}
-
 	if ((family == PF_INET) && (type == SOCK_PACKET)) {
 		family = PF_PACKET;
 	}
 
-	/*pf = rcu_dereference(net_families[family]);*/
+	pf = socket_repo_get_family(family);
 
-	pf = net_families[family];
 	if ((pf == NULL) || (pf->create == NULL)) {
 		return -EINVAL;
 	}
@@ -158,44 +145,3 @@ int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
 
-#if 0
-int kernel_sendpage(struct socket *sock, struct page *page, int offset,
-		size_t size, int flags) {
-	if (sock->ops->sendpage)
-		return sock->ops->sendpage(sock, page, offset, size, flags);
-
-	return sock_no_sendpage(sock, page, offset, size, flags);
-}
-
-int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg) {
-	mm_segment_t oldfs = get_fs();
-	int err;
-
-	set_fs(KERNEL_DS);
-	err = sock->ops->ioctl(sock, cmd, arg);
-	set_fs(oldfs);
-
-	return err;
-}
-#endif
-
-int sock_register(const struct net_proto_family *ops) {
-	if (ops->family >= NPROTO) {
-		return -ENOBUFS; /* FIXME mb -EINVAL ? */
-	}
-	if (net_families[ops->family] != NULL) {
-		return -EEXIST;
-	}
-
-	net_families[ops->family] = ops;
-
-	return ENOERR;
-}
-
-void sock_unregister(int family) {
-	if ((family < 0) || (family >= NPROTO)) {
-		return;
-	}
-
-	net_families[family] = NULL;
-}

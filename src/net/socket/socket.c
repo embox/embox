@@ -23,9 +23,6 @@
 #endif
 /* TODO: remove all below from here */
 
-/* opened sockets in system */
-//static struct socket * opened_sockets[CONFIG_MAX_KERNEL_SOCKETS] = {0};
-
 int socket(int domain, int type, int protocol) {
 	int fd;
 	struct socket *sock;
@@ -35,7 +32,6 @@ int socket(int domain, int type, int protocol) {
 		return fd; /* return error code */
 	}
 
-	//opened_sockets[fd] = sock; /* save socket */
 	task_idx_save(fd, sock);
 
 	return fd;
@@ -44,11 +40,10 @@ int socket(int domain, int type, int protocol) {
 int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 	struct socket *sock;
 
-	if ((sockfd < 0) /*|| (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)*/) {
+	if (sockfd < 0) {
 		return -EBADF;
 	}
 
-	//sock = opened_sockets[sockfd];
 	sock = task_idx_to_desc(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
@@ -60,11 +55,10 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct socket *sock;
 
-	if ((sockfd < 0) /*|| (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)*/) {
+	if (sockfd < 0) {
 		return -EBADF;
 	}
 
-	//sock = opened_sockets[sockfd];
 	sock = task_idx_to_desc(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
@@ -82,11 +76,10 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 	struct msghdr m;
 	struct sockaddr_in *dest_addr;
 
-	if ((sockfd < 0) /* || (sockfd >= CONFIG_MAX_KERNEL_SOCKETS) */) {
+	if (sockfd < 0) {
 		return -EBADF;
 	}
 
-	//sock = opened_sockets[sockfd];
 	sock = task_idx_to_desc(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
@@ -122,11 +115,10 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 	struct msghdr m;
 	struct sockaddr_in *dest_addr;
 
-	if ((sockfd < 0) /*|| (sockfd >= CONFIG_MAX_KERNEL_SOCKETS)*/) {
+	if (sockfd < 0) {
 		return -EBADF;
 	}
 
-	//sock = opened_sockets[sockfd];
 	sock = task_idx_to_desc(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
@@ -152,17 +144,15 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 int socket_close(int sockfd) {
 	struct socket *sock;
 
-	if ((sockfd < 0) /*|| (sockfd >= CONFIG_MAX_KERNEL_SOCKETS) */) {
+	if (sockfd < 0) {
 		return -EBADF;
 	}
 
-	//sock = opened_sockets[sockfd];
 	sock = task_idx_to_desc(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
 	}
 
-	//opened_sockets[sockfd] = NULL; /* clear cache */
 	task_idx_release(sockfd);
 
 	return kernel_socket_release(sock);
