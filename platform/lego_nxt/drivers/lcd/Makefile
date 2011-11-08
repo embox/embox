@@ -5,7 +5,7 @@ $_PACKAGE := lego_nxt.driver
 
 $_MODS         += nxt_lcd
 $_SRCS-nxt_lcd += nxt_lcd.c
-$_SRCS-nxt_lcd += display.c
+$_SRCS-nxt_lcd += ../../lib/display.c
 
 $_MODS                  += nxt_diag_lcd
 $_SRCS-nxt_diag_lcd     += diag.c

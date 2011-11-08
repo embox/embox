@@ -4,7 +4,7 @@
  *
  * @date 11.10.10
  * @author Nikolay Korotky
- * @author Darya Dzendzik
+ * @author Daria Dzendzik
  */
 
 #ifndef NXT_LCD_H_

@@ -24,6 +24,7 @@ void diag_putc(char ch) {
 	display_char(ch);
 }
 
+
 int diag_has_symbol(void) {
 	/* as no symbol can be obtained... */
 #define DEBUG_GETC
