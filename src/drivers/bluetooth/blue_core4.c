@@ -108,6 +108,7 @@ static int process_msg(struct bc_msg *msg) {
 			out_msg.length = 2;
 			out_msg.content[0] = bt_bc_handle;
 			send_to_net("connect", strlen("connect"));
+			bt_set_arm7_cmd();
 			res = 1;
 		} else {
 			/* TODO nxt bt if coudn't may be reset the chip */
@@ -148,7 +149,6 @@ static int irq_handler_get_body(void) {
 
 
 static int nxt_bluecore_start(struct net_node *node) {
-	prom_printf("s");
 	nxt_bluetooth_reset();
 	nxt_bt_set_rx_handle(irq_handler_get_length);
 	bluetooth_read((uint8_t *)&(in_msg.length), 1);

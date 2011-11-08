@@ -17,6 +17,9 @@
 #define BT_DRV_MSG_READ 2
 #define BT_DRV_MSG_DISCONNECTED 3
 
+void bt_clear_arm7_cmd(void);
+void bt_set_arm7_cmd(void);
+
 typedef int(*bt_comm_handler_t)(int msg, uint8_t *buff);
 
 extern void bluetooth_set_handler(bt_comm_handler_t handler);

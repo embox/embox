@@ -20,13 +20,14 @@
 #include <pnet/node.h>
 #include <pnet/repo.h>
 
+#include <kernel/prom_printf.h>
 
 EMBOX_UNIT_INIT(node_dc_init);
 
 static struct lego_dc_msg dc_out_msg;
 
 static int reply_need(struct lego_dc_msg *dc) {
-	return dc->type & 0x80;
+	return !(dc->type & 0x80);
 }
 
 static void reply_handle(uint8_t status, uint8_t cmd, int addit_len, struct lego_dc_msg *dc_out_msg) {
@@ -60,7 +61,7 @@ static int sensor_send(uint8_t sensor_id, int *addit_len, uint8_t addit_msg[]) {
 static int keep_alive_send(int *addit_len, uint8_t addit_msg[]) {
 	*addit_len = 0;
 #ifdef LEGO_COMPATIBLE
-	printf("Hi! I'm Lego =(\n");
+//	printf("Hi! I'm Lego =(\n");
 	return 0;
 #else
 	printf("Hi! I'm Embox!\n");

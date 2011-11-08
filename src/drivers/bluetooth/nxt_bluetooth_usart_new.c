@@ -264,7 +264,6 @@ static int nxt_bluetooth_init(void) {
 //	nxt_bluetooth_reset();
 //TODO may be it must set when bt has been connected?
 	timer_set(&ntx_bt_timer, 200, (sys_timer_handler_t) &nxt_bt_timer_handler, NULL);
-	bt_clear_arm7_cmd();
 //	bt_receive_init();
 
 	return 0;

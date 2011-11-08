@@ -14,6 +14,8 @@
 #include <pnet/node.h>
 
 int pnet_entry(net_packet_t pack) {
+	pack->node = pack->node->rx_dfault;
 	return pnet_rx_thread_add(pack);
 }
+
 
