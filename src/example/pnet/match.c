@@ -7,7 +7,7 @@
  *
  * where *->*-> is packet way through packet handlers.
  *
- * @date 26.10.2011
+ * @date 8.11.2011
  * @author Alexander Kalmuk
  */
 
@@ -23,7 +23,6 @@ EMBOX_EXAMPLE(match_example);
 
 static int match_example(int argc, char **argv) {
 	struct pnet_graph *graph;
-	match_rule_t new_rule;
 	net_node_t match_node;
 	net_node_t devs;
 	net_node_t lin_gate;
@@ -47,10 +46,11 @@ static int match_example(int argc, char **argv) {
 	pnet_node_link(match_node, lin_gate);
 	pnet_node_link(info, lin_gate);
 
-	/* create rule */
-	new_rule = pnet_rule_alloc();
-	new_rule->next_node = info;
+	/* You can also create rules in pnet_rules.inc.
+	 * They will be initialize in rules_init function. See pnet/rules_init.c
+	 * for more details */
 
+	/* now graph can packets handle */
 	pnet_graph_start(graph);
 
 	return 0;

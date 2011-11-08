@@ -92,36 +92,7 @@ static int matcher_free(net_node_t node) {
 	return 0;
 }
 
-#if 0
-static struct pnet_proto matcher_proto = {
-	.tx_hnd = match,
-	.rx_hnd = match,
-	.free = matcher_free
-};
-
-net_node_matcher_t pnet_get_node_matcher(void) {
-	net_node_matcher_t matcher = objalloc(&matcher_nodes);
-
-	pnet_node_init(&matcher->node, 1, &matcher_proto);
-	pnet_node_add_name(&matcher->node,"matcher");
-
-	INIT_LIST_HEAD(&matcher->match_rx_rules);
-	INIT_LIST_HEAD(&matcher->match_tx_rules);
-
-	return matcher;
-}
-
-static int matcher_init(struct net_node *node) {
-	net_node_matcher_t matcher = (net_node_matcher_t) node;
-
-	INIT_LIST_HEAD(&matcher->match_rx_rules);
-	INIT_LIST_HEAD(&matcher->match_tx_rules);
-
-	return 0;
-}
-#endif
-
-net_node_t *matcher_alloc(void) {
+net_node_t matcher_alloc(void) {
 	net_node_matcher_t matcher = objalloc(&matcher_nodes);
 
 	INIT_LIST_HEAD(&matcher->match_rx_rules);
