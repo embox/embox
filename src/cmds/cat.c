@@ -14,17 +14,21 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: cat [FILES]\n");
+	printf("Usage: cat [OPTION]... [FILE]...\n");
 }
 
 static int exec(int argc, char **argv) {
 	int opt;
+	int number = 0, line = 0, new_line = 1;
 	FILE *fd;
 	char buff;
 	getopt_init();
 	do {
-		opt = getopt(argc - 1, argv, "h");
+		opt = getopt(argc, argv, "nh");
 		switch(opt) {
+		case 'n':
+			number = 1;
+			break;
 		case 'h':
 			print_usage();
 			return 0;
@@ -43,8 +47,14 @@ static int exec(int argc, char **argv) {
                 printf("Can't open file %s\n", argv[argc - 1]);
                 return -1;
         }
+
 	while (fread(&buff, 1, 1, fd) > 0) {
-		printf("%c", buff);
+		if (new_line && number) {
+			printf("\t%d %c", line++, buff);
+		} else {
+			printf("%c", buff);
+		}
+		new_line = (buff == '\n') ? 1 : 0;
 	}
 	fclose(fd);
 	return 0;

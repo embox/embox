@@ -8,9 +8,11 @@ define $_DETAILS-cat
 	NAME
 		cat - concatenate files and print on the standard output
 	SYNOPSIS
-		cat [FILES]
+		cat [OPTION]... [FILE]...
 	DESCRIPTION
 		Concatenate FILE(s) to standard output.
+	OPTIONS
+		-n  number all output lines
 	AUTHORS
 		Nikolay Korotky
 endef
