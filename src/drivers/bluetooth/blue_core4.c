@@ -19,6 +19,7 @@
 #include <pnet/node.h>
 #include <pnet/repo.h>
 
+#include <kernel/prom_printf.h>
 
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
@@ -40,9 +41,9 @@ static void send_to_net(char *data, int len) {
 static uint16_t calc_chksumm(struct bc_msg * msg) {
 	uint16_t sum;
 	int i;
-	uint8_t *buffer = (uint8_t *)msg;
+	uint8_t *buffer = (uint8_t *)&(msg->type);
 
-	for (i = 0; i < (msg->length - 1); buffer++, i++) {
+	for (i = 0; i < msg->length; buffer++, i++) {
 		sum += *buffer;
 	}
 	sum = ~sum + 1;
@@ -54,28 +55,42 @@ static uint16_t calc_chksumm(struct bc_msg * msg) {
 
 static void send_msg(struct bc_msg * msg) {
 	calc_chksumm(msg);
-	bluetooth_write((uint8_t *) &out_msg, msg->length+1);
+
+	msg->length += 2;
+	bluetooth_write((uint8_t *) &out_msg, msg->length + 1);
 }
 
+static void print_msg(struct bc_msg *msg) {
+#if 0
+	prom_printf("P%x:", msg->type);
+	for (int i = 0; i < msg->length - 1; i++) {
+		prom_printf("%x:", msg->content[i]);
+	}
+	prom_printf("\n");
+#endif
+}
 
-static void process_msg(struct bc_msg *msg) {
+static int process_msg(struct bc_msg *msg) {
 	/* TODO it must be return in connect result we can also get partner address
 	 * when we get port open result message */
 	static int bt_bc_handle = 0;
 
+	int res = 0;
+	print_msg(msg);
+
 	switch (msg->type) {
 	case MSG_RESET_INDICATION:
 		out_msg.type = MSG_OPEN_PORT;
-		out_msg.length = 0;
+		out_msg.length = 1;
 		break;
 	case MSG_PORT_OPEN_RESULT:
 		if (msg->content[0]) {
 			bt_bc_handle = msg->content[1];
 		}
 		/* TODO nxt bt if coudn't may be reset the chip */
-		return;
+		return res;
 	case MSG_REQUEST_PIN_CODE:
-		out_msg.length = 7 + 16; /*BT addr + pin_code*/
+		out_msg.length = 1 + 7 + 16; /*type + BT addr + pin_code*/
 		out_msg.type = MSG_PIN_CODE;
 		memcpy(&out_msg.content, &(msg->content), 7);
 		memset(out_msg.content + 7, 0, 17);
@@ -83,28 +98,30 @@ static void process_msg(struct bc_msg *msg) {
 		break;
 	case MSG_REQUEST_CONNECTION:
 		out_msg.type = MSG_ACCEPT_CONNECTION;
-		out_msg.length = 1;
+		out_msg.length = 2;
 		out_msg.content[0] = 1;
 		break;
 	case MSG_CONNECT_RESULT:
 		if (msg->content[0]) {
 			//bt_set_uart_state();
-			send_to_net("connect", strlen("connect"));
 			out_msg.type = MSG_OPEN_STREAM;
-			out_msg.length = 1;
+			out_msg.length = 2;
 			out_msg.content[0] = bt_bc_handle;
+			send_to_net("connect", strlen("connect"));
+			res = 1;
 		} else {
 			/* TODO nxt bt if coudn't may be reset the chip */
-			return;
+			return res;
 		}
 		break;
 	case MSG_GET_VERSION_RESULT: {
-		return;
+		return res;
 	}
 	default:
-		return;
+		return res;
 	}
 	send_msg(&out_msg);
+	return res;
 }
 
 static int irq_handler_get_length(void);
@@ -120,18 +137,21 @@ static int irq_handler_get_length(void) {
 }
 
 static int irq_handler_get_body(void) {
-	process_msg(&in_msg);
+	int answ = process_msg(&in_msg);
 
-	nxt_bt_set_rx_handle(irq_handler_get_length);
-	bluetooth_read((uint8_t *)&(in_msg.type), 1);
+	if (answ == 0) {
+		nxt_bt_set_rx_handle(irq_handler_get_length);
+		bluetooth_read((uint8_t *)&(in_msg.length), 1);
+	}
 	return 0;
 }
 
 
 static int nxt_bluecore_start(struct net_node *node) {
+	prom_printf("s");
 	nxt_bluetooth_reset();
 	nxt_bt_set_rx_handle(irq_handler_get_length);
-	bluetooth_read((uint8_t *)&(in_msg.type), 1);
+	bluetooth_read((uint8_t *)&(in_msg.length), 1);
 	return 0;
 }
 

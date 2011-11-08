@@ -36,7 +36,7 @@ int pnet_graph_start(struct pnet_graph *graph) {
 	}
 
 	list_foreach(node, &graph->nodes, gr_link) {
-		fun_call(node->proto->stop, node);
+		fun_call(node->proto->start, node);
 	}
 
 	graph->state = PNET_GRAPH_STARTED;

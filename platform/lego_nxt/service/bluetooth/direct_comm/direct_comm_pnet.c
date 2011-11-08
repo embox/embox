@@ -1,4 +1,4 @@
-/**
+/*
  * @file
  * @brief Lego NXT direct command manager
  *
@@ -56,14 +56,17 @@ static int direct_wait_body(void /*int msg, uint8_t *buff*/) {
 
 
 static int rx_hnd(net_packet_t pack) {
-	if (strcmp("connect", pnet_pack_get_data(pack))) {
-		nxt_bt_set_rx_handle(direct_get_header);
-		bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
+	int res = NET_HND_SUPPRESSED;
+	if (!strcmp("connect", pnet_pack_get_data(pack))) {
+		return res;
 	}
-	return 0;
+//	prom_printf("C");
+	nxt_bt_set_rx_handle(direct_get_header);
+	bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
+	return res;
 }
 
 
-PNET_NODE_DEF("lego_nxt_bt", {
+PNET_NODE_DEF("nxt direct src", {
 	.rx_hnd = rx_hnd
 });

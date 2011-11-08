@@ -27,7 +27,7 @@ static int bt_main(int argc, char **argv) {
 
 	pnet_graph_add_src(graph, src);
 
-	node = pnet_get_module("lego_nxt_bt");
+	node = pnet_get_module("nxt direct src");
 
 	pnet_graph_add_node(graph, node);
 
