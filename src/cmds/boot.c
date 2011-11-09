@@ -91,8 +91,7 @@ static int exec(int argc, char **argv) {
 	void (*entry_point)(void);
 	image_header_t *hdr;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "f:a:h");
+	while (-1 != (opt = getopt(argc, argv, "f:a:h"))) {
 		switch(opt) {
 		case 'f':
 			if (1 != sscanf(optarg, "%c", &format)) {
@@ -109,12 +108,10 @@ static int exec(int argc, char **argv) {
 		case 'h':
 			print_usage();
 			return 0;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	switch (format) {
 	case 'u':

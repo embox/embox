@@ -17,7 +17,7 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: [-h] [-a addr]\n");
+	printf("Usage: goto [-h] [-a addr]\n");
 }
 
 typedef void (*goto_t)(void) __attribute__ ((noreturn));

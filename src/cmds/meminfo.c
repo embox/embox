@@ -176,8 +176,7 @@ static void print_sstatistic(struct list_head* pseudo_list) {
 static int exec(int argc, char **argv) {
 	int opt;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "hkms");
+	while (-1 != (opt = getopt(argc, argv, "hkms"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
@@ -195,12 +194,10 @@ static int exec(int argc, char **argv) {
 		case 's':
 			print_sstatistic(&all_caches_list);
 			return 0;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	return 0;
 }

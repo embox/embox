@@ -21,8 +21,7 @@ static int exec(int argc, char **argv) {
 	int opt;
 
 	getopt_init();
-	do {
-		opt = getopt(argc - 1, argv, "h");
+	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
 		switch (opt) {
 			case 'h': /* help message */
 				print_usage();
@@ -30,7 +29,7 @@ static int exec(int argc, char **argv) {
 			default:
 				break;
 		}
-	} while (-1 != opt);
+	}
 
 	if (argc > 1) {
 		vfs_add_path(argv[argc - 1], NULL);

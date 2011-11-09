@@ -82,7 +82,7 @@ static int exec(int argc, char **argv) {
 		default:
 			return 0;
 		}
-	};
+	}
 
 	if (test_nr != -1) {
 		if (NULL == (test = get_test_by_nr(test_nr))) {

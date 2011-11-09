@@ -30,8 +30,7 @@ static int exec(int argc, char **argv) {
 	stat_t sb;
 	int opt;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "f:a:h");
+	while (-1 != (opt = getopt(argc, argv, "f:a:h"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
@@ -48,12 +47,10 @@ static int exec(int argc, char **argv) {
 				return -1;
 			}
 			break;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	if (NULL == (file = fopen(file_name, "r"))) {
 		printf("Can't open file %s\n", file_name);

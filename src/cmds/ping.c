@@ -48,6 +48,9 @@ struct ping_info {
 } ping_info_t;
 
 static void print_usage(void) {
+	printf("Usage: ping [-c count] [-i interval]\n"
+		"            [-p pattern] [-s packetsize] [-t ttl]\n"
+		"            [-I interface] [-W timeout] destination\n");
 }
 
 static int ping(struct ping_info *pinfo) {
@@ -157,8 +160,7 @@ static int exec(int argc, char **argv) {
 	pinfo.timeout = DEFAULT_TIMEOUT;
 	pinfo.ttl = DEFAULT_TTL;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "I:c:t:W:s:i:p:");
+	while (-1 != (opt = getopt(argc, argv, "I:c:t:W:s:i:p:h"))) {
 		switch(opt) {
 		case 'I':
 			in_dev = inet_dev_find_by_name(optarg);
@@ -209,16 +211,16 @@ static int exec(int argc, char **argv) {
 				return -1;
 			}
 			break;
-		case -1:
-			break;
+		case 'h':
+			print_usage();
+			return 0;
 		default:
 			return 0;
 		}
-	} while (opt != -1);
+	}
 
 	if (argc == 1) {
-		printf("Usage: ping [-I if] [-c cnt] [-W timeout] [-t ttl]\n"
-			"[-i interval] [-p pattern] [-s packetsize] destination\n");
+		print_usage();
 		return 0;
 	}
 

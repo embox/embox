@@ -32,8 +32,7 @@ static int exec(int argc, char **argv) {
 
 	fs_type[0] = '\0';
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "ht:");
+	while (-1 != (opt = getopt(argc, argv, "ht:"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
@@ -44,12 +43,10 @@ static int exec(int argc, char **argv) {
 				return -1;
 			}
 			printf("type is %s\n", fs_type);
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	if (argc > 2) {
 		src = argv[argc - 2];

@@ -20,7 +20,7 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage:[-a ipaddr] [-m macaddr] [-p mask] [-u|d] [-r 0|1] [-f 0|1] "
+	printf("Usage: ifconfig [-a ipaddr] [-m macaddr] [-p mask] [-u|d] [-r 0|1] [-f 0|1] "
 		"[-c 0|1] [-g 0|1] [-l mtu] [-b address] [-i irq_num] "
 		"[-t maxtxqueue] [-w brdcstaddr] [-z [destaddr]] [-x name|interface]\n");
 }
@@ -125,12 +125,8 @@ static int exec(int argc, char **argv) {
 	macaddr[0] = broadcastaddr[0] = 0;
 	getopt_init();
 	/* and what about loopback, broadcast, pointopoint and debug?? */
-	do {
-		opt = getopt(argc, argv, "a:p:m:udx:r:f:c:g:l:b:i:t:w:z:h");
+	while (-1 != (opt = getopt(argc, argv, "a:p:m:udx:r:f:c:g:l:b:i:t:w:z:h"))) {
 		switch (opt) {
-		case 'h': /* help message */
-			print_usage();
-			return 0;
 		case 'u': /* device up */
 			up = true;
 			break;
@@ -225,12 +221,15 @@ static int exec(int argc, char **argv) {
 				return -1;
 			}
 			break;
-		case -1:
-			break;
+		case '?':
+			printf("Invalid option `-%c'\n", optopt);
+		case 'h': /* help message */
+			print_usage();
+			return 0;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	if (argc == 1) {
 		inet_dev_show_all_info();

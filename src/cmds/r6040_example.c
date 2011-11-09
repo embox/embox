@@ -84,18 +84,15 @@ static int exec(int argc, char **argv) {
 	int t_linkup = 0;
 
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "h");
+	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	printf("Embox Ethernet packet reception example.\n");
 	// Wait up to 2 seconds for the PHY link to come up

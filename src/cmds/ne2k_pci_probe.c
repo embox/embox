@@ -64,8 +64,7 @@ static int exec(int argc, char **argv) {
 
 	page = full = 0;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "pf");
+	while (-1 != (opt = getopt(argc, argv, "pf"))) {
 		switch(opt) {
 		case 'p':
 			page = 1;
@@ -73,13 +72,11 @@ static int exec(int argc, char **argv) {
 		case 'f':
 			full = 1;
 			break;
-		case -1:
-			break;
 		default:
 			printf("Usage: %s [-fp]\n", *argv);
 			return 0;
 		}
-	} while (opt != -1);
+	}
 
 	if (full) {
 		show_mac(dev);

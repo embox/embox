@@ -84,13 +84,13 @@ static int exec(int argc, char **argv) {
 			}
 			break;
 		case '?':
+			printf("Invalid option `-%c'\n", optopt);
 		case 'h':
 			print_usage();
-			/* FALLTHROUGH */
 		default:
 			return 0;
 		}
-	};
+	}
 
 	if (op == -1) {
 		print_arp_cache(ifdev);

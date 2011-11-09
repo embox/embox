@@ -43,7 +43,7 @@ static int exec(int argc, char **argv) {
 		default:
 			return -EINVAL;
 		}
-	};
+	}
 	if (argc > 1) {
 		example = example_lookup(argv[1]);
 		example_exec(example, argc - 1, argv + 1);

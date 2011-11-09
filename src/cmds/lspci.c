@@ -64,7 +64,7 @@ static int exec(int argc, char **argv) {
 				print_error();
 				return 0;
 			}
-		};
+		}
 	}/*else have some parameters*/
 
 

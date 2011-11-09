@@ -21,8 +21,7 @@ static int exec(int argc, char **argv) {
 	//int recursive, ignore;
 	int opt;
 	getopt_init();
-	do {
-		opt = getopt(argc - 1, argv, "frh");
+	while (-1 != (opt = getopt(argc - 1, argv, "frh"))) {
 		switch(opt) {
 		case 'f':
           //              ignore = 1;
@@ -33,12 +32,10 @@ static int exec(int argc, char **argv) {
 		case 'h':
 			print_usage();
 			return 0;
-		case -1:
-			break;
 		default:
 			return -1;
 		}
-	} while (opt != -1);
+	}
 
 	file_path = argv[argc - 1];
 	//TODO:

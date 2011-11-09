@@ -273,8 +273,7 @@ static int exec(int argc, char **argv) {
 	func_show_bus_t show_func = show_all;
 	int opt;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "n:b:h");
+	while (-1 != (opt = getopt(argc, argv, "n:b:h"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
@@ -298,12 +297,10 @@ static int exec(int argc, char **argv) {
 				return -1;
 			}
 			break;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	show_func(dev_number);
 	return 0;

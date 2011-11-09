@@ -36,8 +36,7 @@ static int exec(int argc, char **argv) {
 	uint32_t template = (uint32_t) 0x55555555;
 	int opt;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "a:n:t:h");
+	while (-1 != (opt = getopt(argc, argv, "a:n:t:h"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
@@ -87,12 +86,10 @@ static int exec(int argc, char **argv) {
 			}
 
 			break;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	if (test_mem_func == NULL) {
 		LOG_ERROR("testmem: test name expected.\n");

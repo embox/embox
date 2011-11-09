@@ -23,21 +23,20 @@ static int exec(int argc, char **argv) {
 	FILE *fd;
 	char buff;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "nh");
+	while (-1 != (opt = getopt(argc, argv, "nh"))) {
 		switch(opt) {
 		case 'n':
 			number = 1;
 			break;
+		case '?':
+			printf("Invalid option `-%c'\n", optopt);
 		case 'h':
 			print_usage();
 			return 0;
-		case -1:
-			break;
 		default:
-			return 0;
+			return -1;
 		}
-	} while (-1 != opt);
+	}
 
 	if (argc < 2) {
 		print_usage();

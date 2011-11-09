@@ -240,8 +240,7 @@ static bool mmu_probe() {
 static int exec(int argc, char **argv) {
 	int opt;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "rh");
+	while (-1 != (opt = getopt(argc, argv, "rh"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
@@ -249,12 +248,10 @@ static int exec(int argc, char **argv) {
 		case 'r':
 			mmu_show_reg();
 			return 0;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	return mmu_probe();
 }

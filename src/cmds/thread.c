@@ -98,7 +98,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while ((opt = getopt(argc, argv, "hsk:")) != -1) {
+	while (-1 != (opt = getopt(argc, argv, "hsk:"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':

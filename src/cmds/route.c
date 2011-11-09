@@ -53,11 +53,8 @@ static int exec(int argc, char *argv[]) {
 	ifdev = NULL;
 	net = mask = gw = INADDR_ANY;
 	getopt_init();
-	while ((opt = getopt(argc, argv, "n:m:d:g:h")) != -1) {
+	while (-1 != (opt = getopt(argc, argv, "n:m:d:g:h"))) {
 		switch ((char)opt) {
-		case 'h':
-			print_usage();
-			return 0;
 		case 'n':
 			if ((net = inet_addr(optarg)) == INADDR_NONE) {
 				printf("Unknown host\n");
@@ -82,6 +79,11 @@ static int exec(int argc, char *argv[]) {
 				return -1;
 			}
 			break;
+		case '?':
+			printf("Invalid option `-%c'\n", optopt);
+		case 'h':
+			print_usage();
+			return 0;
 		default:
 			return 0;
 		}

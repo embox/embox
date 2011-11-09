@@ -68,8 +68,7 @@ static int exec(int argc, char **argv) {
 
 	int opt;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "Rlh");
+	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
@@ -81,13 +80,11 @@ static int exec(int argc, char **argv) {
 		case 'R':
 			recursive = 1;
 			print_func = print_folder;
-		case -1:
-			break;
 		default:
 			printf("ls: invalid option -- '%c'\n", optopt);
 			return -1;
 		}
-	} while (-1 != opt);
+	}
 
 	//TODO: Maybe we should support multiple file args
 	if (argc > optind) {

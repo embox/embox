@@ -20,18 +20,15 @@ static int exec(int argc, char **argv) {
 	int opt;
 	const char *src_path,*dst_path;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "h");
+	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	if (argc < 3) {
 		print_usage();

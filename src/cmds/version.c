@@ -21,18 +21,15 @@ static int exec(int argc, char **argv) {
 #endif
 	int opt;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "h");
+	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
-		case -1:
-			break;
 		default:
 			return 0;
 		}
-	} while (-1 != opt);
+	}
 
 	printf("                ____\n");
 	printf("               |  _ \\\n");

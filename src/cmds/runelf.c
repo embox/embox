@@ -36,8 +36,7 @@ static int exec(int argc, char **argv) {
 	char *file_name = NULL;
 	FILE *file;
 	getopt_init();
-	do {
-		opt = getopt(argc, argv, "f:h");
+	while (-1 != (opt = getopt(argc, argv, "f:h"))) {
 		switch(opt) {
 		case 'f':
 			file_name = optarg;
@@ -45,12 +44,10 @@ static int exec(int argc, char **argv) {
 		case 'h':
 			print_usage();
 			return 0;
-		case -1:
-			break;
 		default:
 			return -1;
 		}
-	} while (opt != -1);
+	}
 
 	if (NULL == file_name) {
 		printf("\n please setup file name\n");
