@@ -14,7 +14,7 @@
 
 #define tree_element(link, element_type, link_member) \
 	(link == NULL ? NULL \
-		 : member_cast_out(link, element_type, link_member)
+		 : member_cast_out(link, element_type, link_member))
 
 /**
  * Link on element of tree, keeping in each element.
@@ -44,6 +44,7 @@ extern struct tree_link *tree_link_init(struct tree_link *link);
 /**
  * Add element to tree by adding new link into list of children of another node.
  *   Added tree_link must be initialized before and have no parent.
+ *   Added element will be insert in the end of list of children.
  * @param parent Parent of new node.
  * @param link Added element
  */
@@ -92,9 +93,7 @@ extern struct tree_link *tree_postorder_begin(struct tree_link *tree);
  * End of iteration (exclusive).
  * @param tree Tree to enumerate.
  */
-static inline struct tree_link *tree_postorder_end(struct tree_link *tree) {
-	return tree->par;
-}
+extern struct tree_link *tree_postorder_end(struct tree_link *tree);
 
 /**
  * Find children of given node, for what specified predicate is true.
@@ -152,9 +151,9 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  *   and obtaining next element according to given current.
  */
 #define tree_foreach(link, element, tree, link_member, begin, end, next) \
-	for (link = begin(set), \
+	for (link = begin(tree), \
 			element = tree_element(link, typeof(*element), link_member); \
-		link != end(set); \
+		link != end(tree); \
 		link = next(link), \
 			element = tree_element(link, typeof(*element), link_member))
 
@@ -170,7 +169,7 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  * Postorder iteration on tree.
  * Elements are links (without casting from links).
  * Calculates next element before processing of current.
- * E.g., this Allows deletion of current element.
+ * E.g., this allows deletion of current element.
  */
 #define tree_postorder_traversal_link_safe(link, next_link, tree) \
 	tree_foreach_link_safe(link, next_link, tree, \
@@ -178,7 +177,7 @@ extern struct tree_link *tree_find(struct tree_link *tree,
 
 /** Postorder iteration with casting. */
 #define tree_postorder_traversal(link, element, tree, link_member) \
-	tree_foreach(link, element, tree, \
+	tree_foreach(link, element, tree, link_member, \
 			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 #endif /* UTIL_TREE_H_ */

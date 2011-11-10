@@ -287,6 +287,106 @@ TEST_CASE("Add with two right rotations") {
 	/* print_tree_set(); */
 }
 
+static struct tree_set_link *get_link(int ind) {
+	return &elements[ind].link;
+}
+
+TEST_CASE("Add test for all cases (left)") {
+	int i;
+	tree_set_reset_all();
+	for (i = 0; i < 9; i++) {
+		tree_set_link_init(&elements[i].link);
+		elements[i].data = i;
+		if (i != 2) {
+			ideal[ideal_size++] = &elements[i];
+		}
+	}
+	elem_cnt = 9;
+	set->root = get_link(6);
+
+	get_link(6)->left = get_link(1);
+	get_link(6)->right = get_link(7);
+	get_link(6)->color = TREE_SET_BLACK;
+
+	get_link(1)->left = get_link(0);
+	get_link(1)->right = get_link(4);
+	get_link(1)->par = get_link(6);
+	get_link(1)->color = TREE_SET_RED;
+
+	get_link(0)->par = get_link(1);
+	get_link(0)->color = TREE_SET_BLACK;
+
+	get_link(4)->left = get_link(3);
+	get_link(4)->right = get_link(5);
+	get_link(4)->par = get_link(1);
+	get_link(4)->color = TREE_SET_BLACK;
+
+	get_link(3)->par = get_link(4);
+	get_link(3)->color = TREE_SET_RED;
+
+	get_link(5)->par = get_link(4);
+	get_link(5)->color = TREE_SET_RED;
+
+	get_link(7)->right = get_link(8);
+	get_link(7)->par = get_link(6);
+	get_link(7)->color = TREE_SET_BLACK;
+
+	get_link(8)->par = get_link(7);
+	get_link(8)->color = TREE_SET_RED;
+
+	/* print_tree_set(); */
+	add(2);
+	/* print_tree_set(); */
+}
+
+TEST_CASE("Add test for all cases (right)") {
+	int i;
+	tree_set_reset_all();
+	for (i = 0; i < 9; i++) {
+		tree_set_link_init(&elements[i].link);
+		elements[i].data = i;
+		if (i != 6) {
+			ideal[ideal_size++] = &elements[i];
+		}
+	}
+	elem_cnt = 9;
+	set->root = get_link(2);
+
+	get_link(2)->right = get_link(7);
+	get_link(2)->left = get_link(1);
+	get_link(2)->color = TREE_SET_BLACK;
+
+	get_link(7)->right = get_link(8);
+	get_link(7)->left = get_link(4);
+	get_link(7)->par = get_link(2);
+	get_link(7)->color = TREE_SET_RED;
+
+	get_link(8)->par = get_link(7);
+	get_link(8)->color = TREE_SET_BLACK;
+
+	get_link(4)->right = get_link(5);
+	get_link(4)->left = get_link(3);
+	get_link(4)->par = get_link(7);
+	get_link(4)->color = TREE_SET_BLACK;
+
+	get_link(5)->par = get_link(4);
+	get_link(5)->color = TREE_SET_RED;
+
+	get_link(3)->par = get_link(4);
+	get_link(3)->color = TREE_SET_RED;
+
+	get_link(1)->left = get_link(0);
+	get_link(1)->par = get_link(2);
+	get_link(1)->color = TREE_SET_BLACK;
+
+	get_link(0)->par = get_link(1);
+	get_link(0)->color = TREE_SET_RED;
+
+	/* print_tree_set(); */
+	add(6);
+	/* print_tree_set(); */
+}
+
 TEST_CASE("Add test for tree_set") {
 	int i, num;
 	/* printf("Add... "); */

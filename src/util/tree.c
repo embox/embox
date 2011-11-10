@@ -22,7 +22,7 @@ void tree_add_link(struct tree_link *parent, struct tree_link *link) {
 	assert(parent != NULL);
 	assert(link != NULL);
 	assert(link->par == NULL);
-	list_add_first_link(&link->list_link, &parent->children);
+	list_add_last_link(&link->list_link, &parent->children);
 	link->par = parent;
 }
 
@@ -66,8 +66,9 @@ struct tree_link *tree_postorder_next(struct tree_link *link) {
 	/* Search for the next element in brother list. */
 	if (&link->list_link != list_last_link(&link->par->children)) {
 		/* It's not a last element in list. */
-		/* TODO dirty hack. */
-		return list_element(link->list_link.next, struct tree_link, list_link);
+		/* TODO dirty hack. XXX O(n) time. */
+		return tree_postorder_begin(
+				list_element(link->list_link.next, struct tree_link, list_link));
 	} else {
 		/* Next link is a parent */
 		return link->par;
@@ -83,6 +84,10 @@ struct tree_link *tree_postorder_begin(struct tree_link *tree) {
 					struct tree_link, list_link);
 	}
 	return tree;
+}
+
+struct tree_link *tree_postorder_end(struct tree_link *tree) {
+	return tree_postorder_next(tree);
 }
 
 struct tree_link *tree_children_find(struct tree_link *node,
