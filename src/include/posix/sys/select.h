@@ -10,7 +10,7 @@
 #ifndef SYS_SELECT_H_
 #define SYS_SELECT_H_
 
-#include <sys/types.h>
+#include <posix/sys/types.h>
 
 
 #define _FDSETWORDS       0x10
