@@ -263,6 +263,19 @@ extern void *memset(void *ptr, int c, size_t n);
 extern int memcmp(const void *ptr1, const void *ptr2, size_t n);
 
 /**
+ * Scans the first n bytes of the memory area pointed to by
+ * s for the character c.
+ *
+ * @param s
+ *   Pointer to the memory
+ * @param c
+ *   The character to search
+ * @param n
+ *   Number of bytes to scan
+ */
+extern void *memchr(const void *s, int c, size_t n);
+
+/**
  * map upper-case characters in a string to lower-case.
  *
  * @param str
@@ -270,7 +283,7 @@ extern int memcmp(const void *ptr1, const void *ptr2, size_t n);
  * @return
  *   C-style null-terminated string.
  */
-extern char * strlwr (char * str);
+extern char *strlwr(char *str);
 
 /**
  * map lower-case characters in a string to upper-case.
@@ -280,6 +293,36 @@ extern char * strlwr (char * str);
  * @return
  *   C-style null-terminated string.
  */
-extern char * strupr (char * str);
+extern char *strupr(char *str);
+
+/**
+ * Calculate the length of the initial segment of s which
+ * consists entirely of characters in accept
+ *
+ * @param s
+ *   C-style null-terminated string.
+ * @param accept
+ */
+extern size_t strspn(const char *s, const char *accept);
+
+/**
+ * Calculate the length of the initial segment of s which
+ * consists entirely of characters not in reject
+ *
+ * @param s
+ *   C-style null-terminated string.
+ * @param reject
+ */
+extern size_t strcspn(const char *s, const char *reject);
+
+/**
+ * Locate the first occurrence in the string s of any of
+ * the characters in the string accept
+ *
+ * @param s
+ *   C-style null-terminated string.
+ * @param accept
+ */
+extern char *strpbrk(const char *s, const char *accept);
 
 #endif /* STRING_H_ */
