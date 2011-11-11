@@ -374,13 +374,11 @@ define __gold_lex
 	${eval \
 		__gold_state__  := $s# Ground.
 		$(\n)
-		__gold_line__   := x
-		$(\n)
-		__gold_column__ := x
+		$(__gold_location_reset_mk)
 	}
 
 	$(subst ./,/,$(subst . ,.,
-		1.1/# Position of the first token.
+		$(__gold_location)/# Position of the first token.
 		$(foreach 1,$1,$(foreach a,$($g_dfa$(__gold_state__)),
 			# 1: char code
 			# a:
@@ -389,8 +387,7 @@ define __gold_lex
 			#   error:   '-1'
 			$(if $(findstring /,$a),
 				# Got a token.
-				$(foreach p,# p: Position mark.
-					$(words $(__gold_line__)).$(words $(__gold_column__)),
+				$(foreach p,$(__gold_location),
 					# Tail of the accepted token and head of a new one.
 					/$p$a $p/
 				)
@@ -399,24 +396,14 @@ define __gold_lex
 					# Make a move from ground.
 					__gold_state__  := $($g_dfa$s)
 					$(\n)
-					__gold_column__ += x
+					$(__gold_location_advance_mk)
 				},
 
 				${eval
 					# Advance the state.
 					__gold_state__ := $a
 					$(\n)
-
-					$(if $(findstring [10],[$1]),
-						# Line feed.
-						__gold_line__   += x
-						$(\n)
-						__gold_column__ := x
-
-						,#else
-						__gold_column__ += x
-
-					)
+					$(__gold_location_advance_mk)
 				}
 			)
 
@@ -425,13 +412,40 @@ define __gold_lex
 		# We still may be in some state, so land to the ground.
 		$(foreach a,$(call $g_dfa$(__gold_state__),),
 			# Position of the pending token.
-			/$(words $(__gold_line__)).$(words $(__gold_column__))
+			/$(__gold_location)
 			$(if $(findstring /,$a),
 				$a,# Accept the last token.
 				/1# Error token.
 			)
 		)
 	)) /0# EOF.
+endef
+
+# Return:
+#   Line.Column
+define __gold_location
+	$(words $(__gold_line__)).$(words $(__gold_column__))
+endef
+
+define __gold_location_reset_mk
+  __gold_line__   := x
+  __gold_column__ := x
+endef
+__gold_location_reset_mk := $(value __gold_location_reset_mk)
+
+# Params:
+#   1. Char code.
+define __gold_location_advance_mk
+	$(if $(findstring [$1],[10]),
+		# Line feed.
+		__gold_line__   += x
+		$(\n)
+		__gold_column__ := x
+
+		,#else
+		__gold_column__ += x
+
+	)
 endef
 
 #
@@ -709,12 +723,12 @@ endef
 # 4. Symbol Id
 define __gold_token_hook
 	$(with \
-		$(subst $(\s),,$(foreach c,$2,
+		{$1}$(subst $(\s),,$(foreach c,$2,
 			$(if $(eq 0,$c),
 				<0>,
 				$(word $c,$(ascii_table))
 			)
-		)),
+		)){$3},
 		$4,
 
 #		$(info $(word 2,$($g_symbol$2)): $1)
