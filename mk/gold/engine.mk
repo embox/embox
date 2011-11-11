@@ -388,6 +388,14 @@ define __gold_lex
 			#   accept:  '/Symbol'
 			#   error:   '-1'
 
+			$(if $(findstring /,$a),
+				# Got a token.
+				$(foreach p,$(__gold_location),
+					# Tail of the accepted token and head of a new one.
+					/$p$a $p/
+				)
+			)
+
 			${eval \
 				# Advance the state.
 				# In case of accepted token, make another move from ground.
@@ -405,14 +413,6 @@ define __gold_lex
 
 				)
 			}
-
-			$(if $(findstring /,$a),
-				# Got a token.
-				$(foreach p,$(__gold_location),
-					# Tail of the accepted token and head of a new one.
-					/$p$a $p/
-				)
-			)
 
 		)$1.)
 
