@@ -103,8 +103,11 @@ void *calloc(size_t nmemb, size_t size) {
 }
 
 void *realloc(void *ptr, size_t size) {
-	char *tmp = malloc(size);
 	struct mem_control_block *mcb;
+	char *tmp = malloc(size);
+	if (ptr == NULL) {
+		return tmp;
+	}
 	mcb = (void *) ((char *) ptr - sizeof(struct mem_control_block));
 	memcpy(tmp, ptr, mcb->size - sizeof(struct mem_control_block));
 	free(ptr);
