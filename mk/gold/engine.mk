@@ -326,14 +326,14 @@ define builtin_func_gold-dfa-state
 		# Return:
 		#   Plain number: Next state Id;
 		#   '/' Number: Accepted symbol Id;
-		#   Empty on error.
+		#   '-1' on error.
 		$(__gold_prefix)_dfa$1,# =
 
 		$$(or \
 			$(foreach a,$(words-from 3,$(builtin_args_list)),
 				$($a)
 			)
-			$(if $(findstring $2,-1),,/$2)
+			$(or $(eq -1,$2),/$2)
 		)
 	)
 endef
@@ -355,7 +355,7 @@ define builtin_func_gold-dfa-table
 			$$(__gold_lex)
 		)
 	)
-	$(call var_assign_simple,$(__gold_prefix)_dfa,)# Cyclic error until EOF.
+	$(call var_assign_simple,$(__gold_prefix)_dfa-1,)# Cyclic error until EOF.
 endef
 
 # The lexer itself.
@@ -372,25 +372,29 @@ define __gold_lex
 		__gold_state__ := $s# Ground.
 	}
 
-	$(subst . ,.,$(foreach 1,$1,
-		${eval \
-			# Advance the state.
-			__gold_state__ := $($g_dfa$(__gold_state__))
-		}
-#		$(info DFA: $1  	[$(word $1,$(ascii_table))]	-> state $(__gold_state__))
+	$(subst ./,/,$(subst . ,.,$(foreach 1,$1,
+		$(foreach a,$($g_dfa$(__gold_state__)),
+			# a:
+			#   advance: 'State'
+			#   accept:  '/Symbol'
+			#   error:   '-1'
+			$(if $(findstring /,$a),
+				# Got a token, emit it as is (with slash) appending a space.
+				$a \
+				${eval \
+					# Make a move from ground.
+					__gold_state__ := $($g_dfa$s)
+				},
 
-		$(if $(findstring /,$(__gold_state__)),
-			# Got a token, emit it as is (with slash) appending a space.
-			$(__gold_state__) \
-
-			${eval \
-				# Make a move from ground.
-				__gold_state__ := $($g_dfa$s)
-			}
+				${eval
+					# Advance the state.
+					__gold_state__ := $a
+				}
+			)
 		)
-		$1.
 
-	) )# <- a space after the last char.
+		$1.
+	) ))# <- a space after the last char.
 
 	# We still may be in some state, so land to the ground.
 	# Assume EOF symbol is 0 and Error is 1.
@@ -656,9 +660,9 @@ define __gold_expand
 			$(subst [,$$$(\p[)call __gold_token_hook$(\comma),
 				$(subst $(\p[),$$$(\p[)call __gold_rule_hook_n,
 					$(subst ],$(\p]),
-						$(subst ., ,$(subst /,$(\comma),$(subst ./,/,
+						$(subst ., ,$(subst /,$(\comma),
 							$1
-						)))
+						))
 					)
 				)
 			)
