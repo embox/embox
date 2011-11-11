@@ -42,7 +42,10 @@ endef
 # Note:
 #   The grammar must be previously loaded.
 define gold_parse_stream
-	$(call __gold_$1_parse,$1)
+	$(if $(call var_undefined,__gold_$1_parse),
+		$(error Grammar '$1' does not seem to be loaded)
+	)
+	$(call __gold_$1_parse,$2)
 endef
 
 
@@ -369,36 +372,66 @@ endef
 #   List of tokens in form 'char1.char2...charN./symbolID'.
 define __gold_lex
 	${eval \
-		__gold_state__ := $s# Ground.
+		__gold_state__  := $s# Ground.
+		$(\n)
+		__gold_line__   := x
+		$(\n)
+		__gold_column__ := x
 	}
 
-	$(subst ./,/,$(subst . ,.,$(foreach 1,$1,
-		$(foreach a,$($g_dfa$(__gold_state__)),
+	$(subst ./,/,$(subst . ,.,
+		1.1/# Position of the first token.
+		$(foreach 1,$1,$(foreach a,$($g_dfa$(__gold_state__)),
+			# 1: char code
 			# a:
 			#   advance: 'State'
 			#   accept:  '/Symbol'
 			#   error:   '-1'
 			$(if $(findstring /,$a),
-				# Got a token, emit it as is (with slash) appending a space.
-				$a \
+				# Got a token.
+				$(foreach p,# p: Position mark.
+					$(words $(__gold_line__)).$(words $(__gold_column__)),
+					# Tail of the accepted token and head of a new one.
+					/$p$a $p/
+				)
+
 				${eval \
 					# Make a move from ground.
-					__gold_state__ := $($g_dfa$s)
+					__gold_state__  := $($g_dfa$s)
+					$(\n)
+					__gold_column__ += x
 				},
 
 				${eval
 					# Advance the state.
 					__gold_state__ := $a
+					$(\n)
+
+					$(if $(findstring [10],[$1]),
+						# Line feed.
+						__gold_line__   += x
+						$(\n)
+						__gold_column__ := x
+
+						,#else
+						__gold_column__ += x
+
+					)
 				}
 			)
+
+		)$1.)
+
+		# We still may be in some state, so land to the ground.
+		$(foreach a,$(call $g_dfa$(__gold_state__),),
+			# Position of the pending token.
+			/$(words $(__gold_line__)).$(words $(__gold_column__))
+			$(if $(findstring /,$a),
+				$a,# Accept the last token.
+				/1# Error token.
+			)
 		)
-
-		$1.
-	) ))# <- a space after the last char.
-
-	# We still may be in some state, so land to the ground.
-	# Assume EOF symbol is 0 and Error is 1.
-	$(or $(call $g_dfa$(__gold_state__),),/1) /0
+	)) /0# EOF.
 endef
 
 #
@@ -670,17 +703,19 @@ define __gold_expand
 	$(__gold_tmp__)
 endef
 
-# 1. Chars
-# 2. Symbol Id
+# 1. Start position
+# 2. Chars
+# 3. End position
+# 4. Symbol Id
 define __gold_token_hook
 	$(with \
-		$(subst $(\s),,$(foreach c,$1,
+		$(subst $(\s),,$(foreach c,$2,
 			$(if $(eq 0,$c),
 				<0>,
 				$(word $c,$(ascii_table))
 			)
 		)),
-		$2,
+		$4,
 
 #		$(info $(word 2,$($g_symbol$2)): $1)
 		[$1]
@@ -706,6 +741,13 @@ define __gold_rule_hook
 		$1
 	)
 endef
+
+# Just to denote them.
+__gold_state__  :=
+__gold_stack__  :=
+__gold_tmp__    :=
+__gold_line__   :=
+__gold_column__ :=
 
 $(def_all)
 
