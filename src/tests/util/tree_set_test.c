@@ -20,7 +20,7 @@ static int tree_set_address_comp(struct tree_set_link* first, struct tree_set_li
 	return first - second;
 }
 
-TEST_CASE("Any test for tree_set") {
+TEST_CASE("Compilation test for tree_set") {
 	struct tree_set_link *link;
 	tree_set_init(&simple_tree_set);
 	tree_set_min_link(&simple_tree_set);

@@ -29,6 +29,7 @@ static struct tree_link *get_link(struct int_tree *node) {
 	return &node->link;
 }
 
+/** Allocate new node and initialize it. */
 static struct int_tree *new_node(void) {
 	tree_link_init(get_link(nodes + node_cnt));
 	return nodes + node_cnt++;
