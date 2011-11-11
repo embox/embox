@@ -374,7 +374,9 @@ define __gold_lex
 	${eval \
 		__gold_state__  := $s# Ground.
 		$(\n)
-		$(__gold_location_reset_mk)
+		__gold_line__   := x
+		$(\n)
+		__gold_column__ := x
 	}
 
 	$(subst ./,/,$(subst . ,.,
@@ -385,26 +387,31 @@ define __gold_lex
 			#   advance: 'State'
 			#   accept:  '/Symbol'
 			#   error:   '-1'
+
+			${eval \
+				# Advance the state.
+				# In case of accepted token, make another move from ground.
+				__gold_state__  := $(if $(findstring /,$a),$($g_dfa$s),$a)
+				$(\n)
+
+				$(if $(findstring [$1],[10]),
+					# Line feed.
+					__gold_line__   += x
+					$(\n)
+					__gold_column__ := x
+
+					,#else
+					__gold_column__ += x
+
+				)
+			}
+
 			$(if $(findstring /,$a),
 				# Got a token.
 				$(foreach p,$(__gold_location),
 					# Tail of the accepted token and head of a new one.
 					/$p$a $p/
 				)
-
-				${eval \
-					# Make a move from ground.
-					__gold_state__  := $($g_dfa$s)
-					$(\n)
-					$(__gold_location_advance_mk)
-				},
-
-				${eval
-					# Advance the state.
-					__gold_state__ := $a
-					$(\n)
-					$(__gold_location_advance_mk)
-				}
 			)
 
 		)$1.)
@@ -425,27 +432,6 @@ endef
 #   Line.Column
 define __gold_location
 	$(words $(__gold_line__)).$(words $(__gold_column__))
-endef
-
-define __gold_location_reset_mk
-  __gold_line__   := x
-  __gold_column__ := x
-endef
-__gold_location_reset_mk := $(value __gold_location_reset_mk)
-
-# Params:
-#   1. Char code.
-define __gold_location_advance_mk
-	$(if $(findstring [$1],[10]),
-		# Line feed.
-		__gold_line__   += x
-		$(\n)
-		__gold_column__ := x
-
-		,#else
-		__gold_column__ += x
-
-	)
 endef
 
 #
