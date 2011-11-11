@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 #include <sys/wait.h>
+
 /**
  * Converts the initial part of the string in @a nptr to a long integer value
  * according to the given @a base, which must be between 2 and 36 inclusive,
@@ -45,6 +46,9 @@
  *   @a base.
  */
 extern long int strtol(const char *nptr, char **endptr, int base);
+extern unsigned long int strtoul(const char *nptr, char **endptr, int base);
+
+extern double strtod(const char *nptr, char **endptr);
 
 /** Allocate and free dynamic memory */
 extern void *calloc(size_t nmemb, size_t size);
