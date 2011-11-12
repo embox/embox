@@ -30,24 +30,11 @@ define gold_parse_file
 	$(if $(call var_undefined,__gold_$1_parser),
 		$(error Grammar '$1' does not seem to be loaded)
 	)
-	$(foreach f,$2,
-		$(call __gold_$1_parser,$(shell od -v -A n -t uC $f))
+	$(foreach g,$(singleword $(1:%=__g_%)),
+		$(foreach f,$2,
+			$(call __gold_parse,$(shell od -v -A n -t uC $f))
+		)
 	)
-endef
-
-#
-# Params:
-#   1. Stream of decimal char codes representing an input.
-# Return:
-#   Result of interpreting parse tree with user-defined handlers.
-#   TODO error handling.
-# Note:
-#   The grammar must be previously loaded.
-define gold_parse_stream
-	$(if $(call var_undefined,__gold_$1_parser),
-		$(error Grammar '$1' does not seem to be loaded)
-	)
-	$(call __gold_$1_parser,$2)
 endef
 
 # TODO move somewhere
@@ -756,17 +743,15 @@ define builtin_func_gold-parser
 	${eval \
 		__def_ignore += $(__gold_prefix)%
 	}
-
-	$$(foreach g,$(__gold_prefix),
-		$$(__gold_parse)
-	)
 endef
 
 # Params:
-#   1.
+#   1. List of decimal char codes.
 # Context:
 #   f. File name.
 #   g. Prefix.
+# Return:
+#   Result of interpreting parse tree using user-defined handlers.
 define __gold_parse
 	$(call __gold_expand,
 		$(with $(filter-out %/2,$(__gold_lex)),# Scan and omit whitespaces.
