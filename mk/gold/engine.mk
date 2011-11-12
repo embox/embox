@@ -27,11 +27,11 @@ include mk/util/var/info.mk
 # Note:
 #   The grammar must be previously loaded.
 define gold_parse_file
-	$(if $(call var_undefined,__gold_$1_parse),
+	$(if $(call var_undefined,__gold_$1_parser),
 		$(error Grammar '$1' does not seem to be loaded)
 	)
 	$(foreach f,$2,
-		$(call __gold_$1_parse,$(shell od -v -A n -t uC $f))
+		$(call __gold_$1_parser,$(shell od -v -A n -t uC $f))
 	)
 endef
 
@@ -44,13 +44,13 @@ endef
 # Note:
 #   The grammar must be previously loaded.
 define gold_parse_stream
-	$(if $(call var_undefined,__gold_$1_parse),
+	$(if $(call var_undefined,__gold_$1_parser),
 		$(error Grammar '$1' does not seem to be loaded)
 	)
-	$(call __gold_$1_parse,$2)
+	$(call __gold_$1_parser,$2)
 endef
 
-
+# TODO move somewhere
 ascii_table = \
        SOH STX ETX EOT ENQ ACK BEL BS  TAB LF  VT  FF  CR  SO  SI  \
    DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US  \
@@ -62,12 +62,12 @@ ascii_table = \
    p   q   r   s   t   u   v   w   x   y   z   {   |   }   ~   DEL
 ascii_table := $(strip $(value ascii_table))
 
+# Retrieves user-defined 'gold_prefix'.
 __gold_prefix = $(call builtin_tag,gold-parser)
 
-# Retrieves user-defined 'gold_prefix'
 define builtin_tag_gold-parser
 	$(or \
-		$(filter-patsubst __gold_%_parse,__g_%,$(__def_var)),
+		$(filter-patsubst __gold_%_parser,__g_%,$(__def_var)),
 		$(call builtin_error,
 			Bad variable name: '$(__def_var)'
 		)
@@ -78,7 +78,6 @@ endef
 # Symbols.
 #
 #	$(gold-symbol-table \
-#		# Args: Id,Type,Name
 #		$(gold-symbol  0,3,# (EOF)
 #			Symbol_Eof),
 #		# ...
@@ -128,13 +127,12 @@ define builtin_func_gold-symbol
 	)
 endef
 
-builtin_func_gold-symbol-table =# Noop.
+builtin_func_gold-symbol-table :=# Noop.
 
 #
 # Rules.
 #
 #	$(gold-rule-table \
-#		# Args: Id,Nonterminal,SymbolsNr,Name
 #		$(gold-rule 0,9,1,# <Program> ::= <Expression>
 #			Rule_Program),
 #		# ...
@@ -214,15 +212,14 @@ endef
 #   1:  Rule Id.
 __gold_rule_hook_n0 = $(foreach r,$1,$(__gold_rule_hook))
 
-builtin_func_gold-rule-table =# Noop
+builtin_func_gold-rule-table :=# Noop
 
 #
 # Charsets.
 #
 #	$(gold-charset-table \
-#		# Args: Id,Chars...
 #		$(gold-charset 0,# &#9;&#10;&#11;&#12;&#13; &#160; #
-#			9,10,11,12,13,32,160),
+#			9.13;32;160),
 #		# ...
 #	),
 #
@@ -241,22 +238,54 @@ builtin_func_gold-rule-table =# Noop
 #   1. Id
 # ... Char codes
 define builtin_func_gold-charset
-	$(call var_assign_recursive_sl,$(__gold_prefix)_cs$1,
-		$$(findstring |$$1|,
-			|
-			$(subst $(\s),|,
-				# Sort chars by their usage frequency.
-				$(filter \
-					$(foreach a,$(nofirstword $(builtin_args_list)),
-						$($a)
-					),
-					$(__gold_cs_freq_sort)
-				)
-			)
-			|
+	$(call var_assign_recursive_sl,
+		$(__gold_prefix)_cs$1,# =
+
+		$(with \
+			# Sort chars by their usage frequency.
+			$(filter \
+				# Construct the list of chars.
+				$(foreach c,$(subst ;, ,$2),
+					$(if $(findstring .,$c),
+						# Range of chars.
+						$(foreach e,$(subst .,,$(suffix $c)),
+							# Be careful with zero as the lower bound.
+							$(if $(findstring .0.,.$c),
+								0 $(wordlist 1,$e,$(__gold_cs_seq)),
+								$(wordlist $(basename $c),$e,$(__gold_cs_seq))
+							)
+						),
+						# Plain char.
+						$c
+					)
+				),
+				$(__gold_cs_freq_sort)
+			),
+
+			$$(findstring |$$1|,|$(subst $(\s),|,$1)|)
 		)
 	)
 endef
+
+# Char sequence: [1 .. 255].
+__gold_cs_seq := \
+        1   2   3   4   5   6   7   8   9  10  11  12  13  14  15 \
+   16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31 \
+   32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47 \
+   48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63 \
+   64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79 \
+   80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95 \
+   96  97  98  99 100 101 102 103 104 105 106 107 108 109 110 111 \
+  112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 \
+  128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 \
+  144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 \
+  160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 \
+  176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 \
+  192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 \
+  208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 \
+  224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 \
+  240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255
+__gold_cs_seq := $(strip $(__gold_cs_seq))
 
 # Chars sorted by usage frequency (got from C source file of 1.5MB size).
 # Only the first half of the ASCII table is actually counted (0-127).
@@ -282,15 +311,13 @@ __gold_cs_freq_sort := \
     0
 __gold_cs_freq_sort := $(strip $(__gold_cs_freq_sort))
 
-builtin_func_gold-charset-table =# Noop
+builtin_func_gold-charset-table :=# Noop
 
 #
 # DFA lexer.
 #
-#	$(gold-dfa-table 0,# <- Initial state
-#		# Args: Id,Accept symbol (if any)
+#	$(gold-dfa-table 0,
 #		$(gold-dfa-state 0,-1,
-#			# Args: Charset,New state
 #			$(gold-dfa-edge 0,1),
 #			# ...
 #		),
@@ -321,7 +348,7 @@ define builtin_func_gold-dfa-state
 		$$(or \
 			$(foreach a,$(words-from 3,$(builtin_args_list)),
 				$($a)
-			)
+			)# <- Ends up with a comma.
 			/$(subst -1,1,$2)
 		)
 	)
@@ -331,19 +358,8 @@ endef
 #   1. Initial state
 #   ... States (unused)
 define builtin_func_gold-dfa-table
-	$(call var_assign_recursive_sl,
-		# Params:
-		#   1. Input string as a list of decimal char codes.
-		# Context:
-		#   g. Prefix.
-		# Return:
-		#   List of tokens in form 'char1.char2...charN./symbolID'.
-		$(__gold_prefix)_do_dfa,# =
-
-		$$(foreach s,$1,
-			$$(__gold_lex)
-		)
-	)
+	# Remember the initial state.
+	$(call var_assign_simple,$(__gold_prefix)_dfa_ground,$1)
 
 	# Handles the case when erroneous char occurs in the ground
 	# just after accepting some token.
@@ -355,14 +371,13 @@ endef
 # Params:
 #   1. Input string as a list of decimal char codes.
 # Context:
-#   s. Initial state.
 #   g. Prefix.
 # Return:
 #   List of tokens in form 'char1.char2...charN./symbolID'.
 define __gold_lex
 	${eval \
 		# Initialize the state.
-		__gold_state__ := $s# Ground.
+		__gold_state__ := $($g_dfa_ground)
 		$(\n)
 
 		# And reset location counters.
@@ -389,7 +404,8 @@ define __gold_lex
 			${eval \
 				# Advance the state.
 				# In case of accepted token, make another move from ground.
-				__gold_state__  := $(if $(findstring /,$a),$($g_dfa$s),$a)
+				__gold_state__  := \
+					$(if $(findstring /,$a),$($g_dfa$($g_dfa_ground)),$a)
 				$(\n)
 
 				$(__gold_location_advance_mk)
@@ -403,7 +419,7 @@ define __gold_lex
 			# Position of the pending token and a symbol code.
 			/$(__gold_location)$a
 		)
-	))) /0# EOF.
+	))) /0# EOF token at the end.
 endef
 
 # Current location in form 'Line:Column'.
@@ -417,7 +433,7 @@ define __gold_location_reset_mk
   __gold_line_nr__ := 1
   __gold_column__  := x
 endef
-# No code, make it simple.
+# No code, so make it simple.
 __gold_location_reset_mk := $(value __gold_location_reset_mk)
 
 # Params:
@@ -438,11 +454,9 @@ endef
 #
 # LALR parser.
 #
-#	$(gold-lalr-table 0,# <- Initial state
-#		# Args: Id
+#	$(gold-lalr-table 0,
 #		$(gold-lalr-state 0,
-#			# Args: Symbol,Action,Value
-#			$(gold-lalr-action 4,1,1),# Shift to State 1
+#			$(gold-lalr-action 4,1,1),
 #			# ...
 #		),
 #		# ...
@@ -506,31 +520,19 @@ endef
 #   1. Initial state
 #   ... States (unused)
 define builtin_func_gold-lalr-table
-	$(call var_assign_recursive_sl,
-		# Params:
-		#   1. List of tokens returned by lexer.
-		# Context:
-		#   g. Prefix.
-		# Return:
-		$(__gold_prefix)_do_lalr,# =
-
-		$$(foreach s,$1,
-			$$(__gold_analyze)
-		)
-	)
+	$(call var_assign_simple,$(__gold_prefix)_lalr_ground,$1)
 	$(call var_assign_simple,$(__gold_prefix)_lalr,)# Cyclic error until EOF.
 endef
 
 # Params:
 #   1. List of tokens returned by lexer.
 # Context:
-#   s. Initial state.
 #   g. Prefix.
 # Return:
 #   Parse tree.
 define __gold_analyze
 	${eval \
-		__gold_state__ := .$s# Ground.
+		__gold_state__ := .$($g_lalr_ground)
 		$(\n)
 		__gold_stack__ :=# Empty.
 	}
@@ -542,6 +544,7 @@ define __gold_analyze
 
 	$(assert $(not $(__gold_state__)),
 		Parsing must end up with either Accept or Error)
+
 	$(__gold_stack__)
 endef
 
@@ -766,10 +769,10 @@ endef
 #   g. Prefix.
 define __gold_parse
 	$(call __gold_expand,
-		$(with $(filter-out %/2,$($g_do_dfa)),# Scan and omit whitespaces.
+		$(with $(filter-out %/2,$(__gold_lex)),# Scan and omit whitespaces.
 			$(or \
 				$(filter-patsubst %/1,[%/1],$1),
-				$($g_do_lalr)
+				$(__gold_analyze)
 			)
 		)
 	)
@@ -781,52 +784,6 @@ __gold_stack__  :=
 __gold_tmp__    :=
 __gold_line__   :=
 __gold_column__ :=
-
-$(def_all)
-
-define __gold_example_parser
-	$(gold-parser \
-
-		$(gold-symbol-table \
-			# Args: Id,Type,Name
-			$(gold-symbol  0,3,# (EOF)
-				Symbol_Eof),
-			# ...
-		),
-
-		$(gold-rule-table \
-			# Args: Id,Nonterminal,SymbolsNr,Name
-			$(gold-rule 0,9,1,# <Program> ::= <Expression>
-				Rule_Program),
-			# ...
-		),
-
-		$(gold-charset-table \
-			# Args: Id,Chars...
-			$(gold-charset 0,# &#9;&#10;&#11;&#12;&#13; &#160; #
-				9,10,11,12,13,32,160),
-			# ...
-		),
-
-		$(gold-dfa-table 0,# <- Initial state
-			$(gold-dfa-state 0,-1,
-				$(gold-dfa-edge 0,1),
-				# ...
-			),
-			# ...
-		),
-
-		$(gold-lalr-table 0,# <- Initial state
-			$(gold-lalr-state 0,
-				$(gold-lalr-action 4,1,1),# Shift to State 1
-				# ...
-			),
-			# ...
-		)
-
-	)
-endef
-__gold_example_parser :=
 
 $(def_all)
 
