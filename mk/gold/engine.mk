@@ -30,7 +30,9 @@ define gold_parse_file
 	$(if $(call var_undefined,__gold_$1_parse),
 		$(error Grammar '$1' does not seem to be loaded)
 	)
-	$(call __gold_$1_parse,$(shell od -v -A n -t uC $2))
+	$(foreach f,$2,
+		$(call __gold_$1_parse,$(shell od -v -A n -t uC $f))
+	)
 endef
 
 #
@@ -68,21 +70,6 @@ define builtin_tag_gold-parser
 		$(filter-patsubst __gold_%_parse,__g_%,$(__def_var)),
 		$(call builtin_error,
 			Bad variable name: '$(__def_var)'
-		)
-	)
-endef
-
-# Params: ignored
-define builtin_func_gold-parser
-	${eval \
-		__def_ignore += $(__gold_prefix)%
-	}
-
-	$$(foreach g,$(__gold_prefix),
-		$$(call __gold_expand,
-			$$(call $(__gold_prefix)_do_lalr,
-				 $$($(__gold_prefix)_do_dfa)
-			)
 		)
 	)
 endef
@@ -328,15 +315,14 @@ define builtin_func_gold-dfa-state
 		#   1. Char code.
 		# Return:
 		#   Plain number: Next state Id;
-		#   '/' Number: Accepted symbol Id;
-		#   '-1' on error.
+		#   '/' Number: Accepted symbol Id (including error);
 		$(__gold_prefix)_dfa$1,# =
 
 		$$(or \
 			$(foreach a,$(words-from 3,$(builtin_args_list)),
 				$($a)
 			)
-			$(or $(eq -1,$2),/$2)
+			/$(subst -1,1,$2)
 		)
 	)
 endef
@@ -358,7 +344,10 @@ define builtin_func_gold-dfa-table
 			$$(__gold_lex)
 		)
 	)
-	$(call var_assign_simple,$(__gold_prefix)_dfa-1,)# Cyclic error until EOF.
+
+	# Handles the case when erroneous char occurs in the ground
+	# just after accepting some token.
+	$(call var_assign_simple,$(__gold_prefix)_dfa/1,/1)
 endef
 
 # The lexer itself.
@@ -372,21 +361,22 @@ endef
 #   List of tokens in form 'char1.char2...charN./symbolID'.
 define __gold_lex
 	${eval \
-		__gold_state__  := $s# Ground.
+		# Initialize the state.
+		__gold_state__ := $s# Ground.
 		$(\n)
-		__gold_line__   := x
-		$(\n)
-		__gold_column__ := x
+
+		# And reset location counters.
+		$(__gold_location_reset_mk)
 	}
 
-	$(subst ./,/,$(subst . ,.,
+	$(subst 1:1//1:1/1 ,,# <- Workaround for case when the first char is bad.
+			$(subst ./,/,$(subst . ,.,
 		$(__gold_location)/# Position of the first token.
 		$(foreach 1,$1,$(foreach a,$($g_dfa$(__gold_state__)),
 			# 1: char code
 			# a:
-			#   advance: 'State'
-			#   accept:  '/Symbol'
-			#   error:   '-1'
+			#   advance:       'State'
+			#   accept/error: '/Symbol'
 
 			$(if $(findstring /,$a),
 				# Got a token.
@@ -402,36 +392,47 @@ define __gold_lex
 				__gold_state__  := $(if $(findstring /,$a),$($g_dfa$s),$a)
 				$(\n)
 
-				$(if $(findstring [$1],[10]),
-					# Line feed.
-					__gold_line__   += x
-					$(\n)
-					__gold_column__ := x
-
-					,#else
-					__gold_column__ += x
-
-				)
+				$(__gold_location_advance_mk)
 			}
 
-		)$1.)
+			$1.
+		))
 
 		# We still may be in some state, so land to the ground.
 		$(foreach a,$(call $g_dfa$(__gold_state__),),
-			# Position of the pending token.
-			/$(__gold_location)
-			$(if $(findstring /,$a),
-				$a,# Accept the last token.
-				/1# Error token.
-			)
+			# Position of the pending token and a symbol code.
+			/$(__gold_location)$a
 		)
-	)) /0# EOF.
+	))) /0# EOF.
 endef
 
-# Return:
-#   Line.Column
+# Current location in form 'Line:Column'.
 define __gold_location
-	$(words $(__gold_line__)).$(words $(__gold_column__))
+	$(__gold_line_nr__):$(words $(__gold_column__))
+endef
+
+# Sets location to the file start.
+define __gold_location_reset_mk
+  __gold_line__    := x
+  __gold_line_nr__ := 1
+  __gold_column__  := x
+endef
+# No code, make it simple.
+__gold_location_reset_mk := $(value __gold_location_reset_mk)
+
+# Params:
+#   1. Char code.
+define __gold_location_advance_mk
+	$(if $(findstring [$1],[10]),
+		# Line feed.
+		__gold_line__    += x$(\n)
+		__gold_line_nr__ := $(words $(__gold_line__) x)$(\n)
+		__gold_column__  := x
+
+		,#else
+		__gold_column__  += x
+
+	)
 endef
 
 #
@@ -514,7 +515,7 @@ define builtin_func_gold-lalr-table
 		$(__gold_prefix)_do_lalr,# =
 
 		$$(foreach s,$1,
-			$$(__gold_parse)
+			$$(__gold_analyze)
 		)
 	)
 	$(call var_assign_simple,$(__gold_prefix)_lalr,)# Cyclic error until EOF.
@@ -527,14 +528,14 @@ endef
 #   g. Prefix.
 # Return:
 #   Parse tree.
-define __gold_parse
+define __gold_analyze
 	${eval \
 		__gold_state__ := .$s# Ground.
 		$(\n)
 		__gold_stack__ :=# Empty.
 	}
 
-	$(and $(foreach t,$(filter-out %/2,$1),# Omit whitespaces.
+	$(and $(foreach t,$1,
 		# t: Token.
 		$(__gold_parse_token)
 	),)
@@ -709,16 +710,21 @@ endef
 # 4. Symbol Id
 define __gold_token_hook
 	$(with \
-		{$1}$(subst $(\s),,$(foreach c,$2,
+		$(subst $(\s),,$(foreach c,$2,
 			$(if $(eq 0,$c),
 				<0>,
 				$(word $c,$(ascii_table))
 			)
-		)){$3},
+		)),
 		$4,
+		$1,$3,# start,end
 
-#		$(info $(word 2,$($g_symbol$2)): $1)
-		[$1]
+		$(info $(word 2,$($g_symbol$2)): $1)
+		$(if $(eq 1,$2),
+			# Error token.
+			$(info $f:$3: Lexical error.)
+		)
+		[$1]($3-$4)
 	)
 endef
 
@@ -739,6 +745,33 @@ define __gold_rule_hook
 		},
 #		$(info $1)
 		$1
+	)
+endef
+
+# Params: ignored
+define builtin_func_gold-parser
+	${eval \
+		__def_ignore += $(__gold_prefix)%
+	}
+
+	$$(foreach g,$(__gold_prefix),
+		$$(__gold_parse)
+	)
+endef
+
+# Params:
+#   1.
+# Context:
+#   f. File name.
+#   g. Prefix.
+define __gold_parse
+	$(call __gold_expand,
+		$(with $(filter-out %/2,$($g_do_dfa)),# Scan and omit whitespaces.
+			$(or \
+				$(filter-patsubst %/1,[%/1],$1),
+				$($g_do_lalr)
+			)
+		)
 	)
 endef
 
