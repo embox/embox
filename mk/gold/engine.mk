@@ -694,9 +694,9 @@ define __gold_expand
 	${eval \
 		# Transform tree into a code.
 		__gold_tmp__ := \
-			$(subst [,$$$(\p[)call __gold_token_hook$(\comma),
-				$(subst $(\p[),$$$(\p[)call __gold_rule_hook_n,
-					$(subst ],$(\p]),
+			$(subst [,$$$[call __gold_token_hook$(\comma),
+				$(subst $[,$$$[call __gold_rule_hook_n,
+					$(subst ],$],
 						$(subst ., ,$(subst /,$(\comma),
 							$1
 						))

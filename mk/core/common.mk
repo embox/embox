@@ -29,13 +29,9 @@ endef
 ## Single backslash: '\'
 \\ := \\# Ignored comment.
 
-## Parens.
-\p[ := (
-\p] := )
-
-## Braces.
-\b[ := {
-\b] := }
+## Parens (smile!).
+[:=(
+]:=)
 
 ## Punctuation.
 \comma   := ,
