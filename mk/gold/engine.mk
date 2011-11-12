@@ -657,19 +657,11 @@ define __gold_do_accept
 	}
 endef
 
-# Error handling always occurs in LALR parse phase, even for DFA lex errors.
 #   t. Token
 #   g. Prefix.
 define __gold_handle_error
-	$(if $(__gold_state__),# Prevent repeated error reporting.
-		$(if $(eq 1,$(notdir $t)),
-			$(info Lexical error.),
-			$(info Syntax error.)
-		)
-	)
-
 	${eval \
-		__gold_stack__ :=# Parse tree becomes empty in case of error.
+		__gold_stack__ := {$t/$(__gold_state__)}
 	}
 endef
 
@@ -678,20 +670,34 @@ endef
 # Return:
 #   Result of tree expansion.
 define __gold_expand
-	${eval \
+	$(eval \
 		# Transform tree into a code.
 		__gold_tmp__ := \
-			$(subst [,$$$[call __gold_token_hook$(\comma),
-				$(subst $[,$$$[call __gold_rule_hook_n,
-					$(subst ],$],
-						$(subst ., ,$(subst /,$(\comma),
-							$1
-						))
+			$(subst {,$${call __gold_error_hook$(\comma),
+				$(subst [,$$$[call __gold_token_hook$(\comma),
+					$(subst $[,$$$[call __gold_rule_hook_n,
+						$(subst ],$],
+							$(subst ., ,$(subst /,$(\comma),
+								$1
+							))
+						)
 					)
 				)
 			)
-	}
+	)
 	$(__gold_tmp__)
+endef
+
+# 1. Start position
+# 2. Chars
+# 3. End position
+# 4. Symbol Id
+# 5. LALR state for syntax errors.
+define __gold_error_hook
+	$(if $(eq 1,$2),
+		$(info $f:$3: Lexical error.),
+		$(info $f:$3: Syntax error.),
+	)
 endef
 
 # 1. Start position
@@ -709,11 +715,7 @@ define __gold_token_hook
 		$4,
 		$1,$3,# start,end
 
-		$(info $(word 2,$($g_symbol$2)): $1)
-		$(if $(eq 1,$2),
-			# Error token.
-			$(info $f:$3: Lexical error.)
-		)
+#		$(info $(word 2,$($g_symbol$2)): $1)
 		[$1]($3-$4)
 	)
 endef
@@ -754,11 +756,8 @@ endef
 #   Result of interpreting parse tree using user-defined handlers.
 define __gold_parse
 	$(call __gold_expand,
-		$(with $(filter-out %/2,$(__gold_lex)),# Scan and omit whitespaces.
-			$(or \
-				$(filter-patsubst %/1,[%/1],$1),
-				$(__gold_analyze)
-			)
+		$(call __gold_analyze,
+			$(filter-out %/2,$(__gold_lex))# Scan and omit whitespaces.
 		)
 	)
 endef
