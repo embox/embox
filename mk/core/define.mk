@@ -307,7 +307,7 @@ __def_brace_hook = \
 $(def_all)
 
 __def_brace = \
-	$(call __def_brace_real,$1)
+	$(if $(findstring {,$1),$(call __def_brace_real,$1),$(subst $$$$,$$,$1))
 
 #
 # Here goes builtin functions transformation stuff.
