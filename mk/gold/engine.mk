@@ -115,6 +115,21 @@ define builtin_func_gold-symbol
 	)
 endef
 
+# Params:
+#   1. Id.
+# Context:
+#   g. Prefix.
+define __gold_symbol_name
+	$(with $(word 2,$($g_symbol$1)),
+		$(or \
+			$(if $(call var_defined,$(gold_prefix)_name_$1),
+				$(trim $(call $(gold_prefix)_name_$1))
+			),
+			$(1:Symbol_%=%)
+		)
+	)
+endef
+
 builtin_func_gold-symbol-table :=# Noop.
 
 #
@@ -696,7 +711,6 @@ endef
 #   g. Prefix.
 define __gold_handle_error
 	$(if $(__gold_state__),
-		$(info t: $t)
 		${eval \
 			__gold_stack__ := {$(__gold_state__)/$t}
 		}
@@ -750,7 +764,9 @@ endef
 # 4. End position
 # 5. Symbol Id
 define __gold_syntax_error
-	$(info $f:$4: Syntax error: Unexpected token '$(word 2,$($g_symbol$5))'.)
+	$(info $f:$4: \
+		Syntax error: Unexpected '$(call __gold_symbol_name,$5)' token.
+	)
 endef
 
 # 1. Start position
@@ -809,8 +825,7 @@ endef
 #   Result of interpreting parse tree using user-defined handlers.
 define __gold_parse
 	$(call __gold_expand,
-		$(call error,
-#		$(call __gold_analyze,
+		$(call __gold_analyze,
 			$(filter-out %/2,$(__gold_lex))# Scan and omit whitespaces.
 		)
 	)
