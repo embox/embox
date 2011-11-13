@@ -30,11 +30,12 @@ define gold_parse_file
 	$(if $(call var_undefined,__gold_$1_parser),
 		$(error Grammar '$1' does not seem to be loaded)
 	)
-	$(foreach g,$(singleword $(1:%=__g_%)),
+
+	$(foreach gold_prefix,$(singleword $1),$(foreach g,__g_$(gold_prefix),
 		$(foreach f,$2,
 			$(call __gold_parse,$(shell od -v -A n -t uC $f))
 		)
-	)
+	))
 endef
 
 # TODO move somewhere
@@ -350,7 +351,7 @@ define builtin_func_gold-dfa-table
 
 	# Handles the case when erroneous char occurs in the ground
 	# just after accepting some token.
-	$(call var_assign_simple,$(__gold_prefix)_dfa/1,/1)
+	$(call var_assign_simple,$(__gold_prefix)_dfa/1,/1/)
 endef
 
 # The lexer itself.
@@ -371,42 +372,76 @@ define __gold_lex
 		$(__gold_location_reset_mk)
 	}
 
-	$(subst 1:1//1:1/1 ,,# <- Workaround for case when the first char is bad.
-			$(subst ./,/,$(subst . ,.,
+	$(subst ./,/,$(subst . ,.,
 		$(__gold_location)/# Position of the first token.
+
 		$(foreach 1,$1,$(foreach a,$($g_dfa$(__gold_state__)),
 			# 1: char code
 			# a:
 			#   advance:       'State'
-			#   accept/error: '/Symbol'
+			#   accept/error:  '/Symbol'
+			#   pending error: '/1/'
 
 			$(if $(findstring /,$a),
-				# Got a token.
-				$(foreach p,$(__gold_location),
-					# Tail of the accepted token and head of a new one.
-					/$p$a $p/
-				)
+				# Got a token or error.
+				$(foreach l,$(__gold_location),
+
+					${eval \
+						# Make a move from ground.
+						__gold_state__  := $($g_dfa$($g_dfa_ground))
+						$(\n)
+						$(__gold_location_advance_mk)
+					}
+
+					$(__gold_dfa_handle[$(findstring /1/,$(__gold_state__)$a/)])
+				),
+
+				${eval \
+					# Advance the state.
+					__gold_state__  := $a
+					$(\n)
+					$(__gold_location_advance_mk)
+				}
+				$1.
 			)
 
-			${eval \
-				# Advance the state.
-				# In case of accepted token, make another move from ground.
-				__gold_state__  := \
-					$(if $(findstring /,$a),$($g_dfa$($g_dfa_ground)),$a)
-				$(\n)
-
-				$(__gold_location_advance_mk)
-			}
-
-			$1.
 		))
 
 		# We still may be in some state, so land to the ground.
 		$(foreach a,$(call $g_dfa$(__gold_state__),),
 			# Position of the pending token and a symbol code.
-			/$(__gold_location)$a
+			$(if $(findstring $a,/1),/)/$(__gold_location)$(a:%/=%)
 		)
-	))) /0# EOF token at the end.
+	)) /0# EOF token at the end.
+endef
+
+# No error.
+# Params:
+#   1. Char code.
+# Context:
+#   a. '/' Accepted symbol Id.
+#   l. Location.
+define __gold_dfa_handle[]
+	# Accept a token and open a new one.
+	/$l$a $l/$1.
+endef
+
+# The char caused an error.
+define __gold_dfa_handle[/1/]
+	$(if $(findstring /1/1/,$(__gold_state__)$a/),
+		# The char causes errors both in the current state and on the ground.
+		# Error token will be closed on the next iteration.
+		$(if $(a:/1/=),/)$1.,# "\ %
+
+		$(if $(findstring /1/,$a/),
+			# Error in the current state.
+			$(if $(a:/1/=),/$1)/$l/1 $l/$1.,# " LF
+
+			# Error on the ground.
+			# Accept the current token and open an empty one.
+			/$l$a $l//$1.# WS %
+		)
+	)
 endef
 
 # Current location in form 'Line:Column'.
@@ -660,9 +695,12 @@ endef
 #   t. Token
 #   g. Prefix.
 define __gold_handle_error
-	${eval \
-		__gold_stack__ := {$t/$(__gold_state__)}
-	}
+	$(if $(__gold_state__),
+		$(info t: $t)
+		${eval \
+			__gold_stack__ := {$(__gold_state__)/$t}
+		}
+	)
 endef
 
 # Params:
@@ -688,16 +726,31 @@ define __gold_expand
 	$(__gold_tmp__)
 endef
 
+# 1..4. Depends on error type
+# 5. Symbol Id: '1' means DFA error, otherwise LALR error.
+define __gold_error_hook
+	$(info [$1][$2][$3][$4][$5])
+	$(if $(eq 1,$5),
+		$(__gold_lexical_error),
+		$(__gold_syntax_error)
+	)
+endef
+
 # 1. Start position
 # 2. Chars
-# 3. End position
-# 4. Symbol Id
-# 5. LALR state for syntax errors.
-define __gold_error_hook
-	$(if $(eq 1,$2),
-		$(info $f:$3: Lexical error.),
-		$(info $f:$3: Syntax error.),
-	)
+# 3. Bogus chars
+# 4. End position
+define __gold_lexical_error
+	$(info $f:$4: Lexical error.)
+endef
+
+# 1. LALR State
+# 2. Start position
+# 3. Token chars
+# 4. End position
+# 5. Symbol Id
+define __gold_syntax_error
+	$(info $f:$4: Syntax error: Unexpected token '$(word 2,$($g_symbol$5))'.)
 endef
 
 # 1. Start position
@@ -756,7 +809,8 @@ endef
 #   Result of interpreting parse tree using user-defined handlers.
 define __gold_parse
 	$(call __gold_expand,
-		$(call __gold_analyze,
+		$(call error,
+#		$(call __gold_analyze,
 			$(filter-out %/2,$(__gold_lex))# Scan and omit whitespaces.
 		)
 	)
