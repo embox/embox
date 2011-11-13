@@ -5,8 +5,8 @@
 # Author: Eldar Abusalimov
 #
 
-ifndef __embuild_gold_mk
-__embuild_gold_mk := 1
+ifndef __gold_engine_mk
+__gold_engine_mk := 1
 
 include mk/core/common.mk
 include mk/core/string.mk
@@ -50,8 +50,8 @@ ascii_table = \
    p   q   r   s   t   u   v   w   x   y   z   {   |   }   ~   DEL
 ascii_table := $(strip $(value ascii_table))
 
-# Retrieves user-defined 'gold_prefix'.
-__gold_prefix = $(call builtin_tag,gold-parser)
+# Parser private namespace.
+__gold_ns = $(call builtin_tag,gold-parser)
 
 define builtin_tag_gold-parser
 	$(or \
@@ -110,7 +110,7 @@ define builtin_func_gold-symbol
 		)
 	)
 
-	$(call var_assign_simple,$(__gold_prefix)_symbol$1,
+	$(call var_assign_simple,$(__gold_ns)_symbol$1,
 		$2 $3
 	)
 endef
@@ -191,7 +191,7 @@ define builtin_func_gold-rule
 		)
 	)
 
-	$(call var_assign_simple,$(__gold_prefix)_rule$1,
+	$(call var_assign_simple,$(__gold_ns)_rule$1,
 		$2 $3 $4
 	)
 endef
@@ -227,7 +227,7 @@ builtin_func_gold-rule-table :=# Noop
 # ... Char codes
 define builtin_func_gold-charset
 	$(call var_assign_recursive_sl,
-		$(__gold_prefix)_cs$1,# =
+		$(__gold_ns)_cs$1,# =
 
 		$(with \
 			# Sort chars by their usage frequency.
@@ -317,7 +317,7 @@ builtin_func_gold-charset-table :=# Noop
 #   2. Target state
 define builtin_func_gold-dfa-edge
 	# Emit a call to charset matcher.
-	$$(if $$($(__gold_prefix)_cs$1),$2),
+	$$(if $$($(__gold_ns)_cs$1),$2),
 endef
 
 # Params:
@@ -331,7 +331,7 @@ define builtin_func_gold-dfa-state
 		# Return:
 		#   Plain number: Next state Id;
 		#   '/' Number: Accepted symbol Id (including error);
-		$(__gold_prefix)_dfa$1,# =
+		$(__gold_ns)_dfa$1,# =
 
 		$$(or \
 			$(foreach a,$(words-from 3,$(builtin_args_list)),
@@ -347,11 +347,11 @@ endef
 #   ... States (unused)
 define builtin_func_gold-dfa-table
 	# Remember the initial state.
-	$(call var_assign_simple,$(__gold_prefix)_dfa_ground,$1)
+	$(call var_assign_simple,$(__gold_ns)_dfa_ground,$1)
 
 	# Handles the case when erroneous char occurs in the ground
 	# just after accepting some token.
-	$(call var_assign_simple,$(__gold_prefix)_dfa/1,/1/)
+	$(call var_assign_simple,$(__gold_ns)_dfa/1,/1/)
 endef
 
 # The lexer itself.
@@ -521,7 +521,7 @@ define builtin_func_gold-lalr-state
 		# a special goto table of the state.
 		$(call var_assign_simple,
 			# List of elements in form 'Symbol/Value'
-			$(__gold_prefix)_goto.$1,# :=
+			$(__gold_ns)_goto.$1,# :=
 
 			$(filter-patsubst :%,%,$2)
 		)
@@ -531,7 +531,7 @@ define builtin_func_gold-lalr-state
 			#   'Symbol/+/State' for shift
 			#   'Symbol/-/Rule'  for reduce
 			#   'Symbol/'        for accept
-			$(__gold_prefix)_lalr.$1,# :=
+			$(__gold_ns)_lalr.$1,# :=
 
 			$(filter-out :%,$2)
 		)
@@ -542,8 +542,8 @@ endef
 #   1. Initial state
 #   ... States (unused)
 define builtin_func_gold-lalr-table
-	$(call var_assign_simple,$(__gold_prefix)_lalr_ground,$1)
-	$(call var_assign_simple,$(__gold_prefix)_lalr,)# Cyclic error until EOF.
+	$(call var_assign_simple,$(__gold_ns)_lalr_ground,$1)
+	$(call var_assign_simple,$(__gold_ns)_lalr,)# Cyclic error until EOF.
 endef
 
 # Params:
@@ -796,7 +796,7 @@ endef
 # Params: ignored
 define builtin_func_gold-parser
 	${eval \
-		__def_ignore += $(__gold_prefix)%
+		__def_ignore += $(__gold_ns)%
 	}
 endef
 
@@ -825,6 +825,4 @@ __gold_column__ :=
 
 $(def_all)
 
-endif # __embuild_gold_mk
-
-
+endif # __gold_engine_mk
