@@ -685,13 +685,9 @@ define __gold_lalr_handle[]
 		# Accept.
 		$(__gold_do_accept)
 	)
-	${eval \
-		# Reset the state. This indicates that parsing is done.
-		__gold_state__ :=
-	}
 endef
 
-# Accepting is just removing the suffix
+# Accepting is just removing the suffix.
 #   t. Token, assumed to be EOF.
 #   g. Prefix.
 define __gold_do_accept
@@ -701,9 +697,15 @@ define __gold_do_accept
 		Only a single symbol may be accepted as a root of the parse tree)
 	$(assert $(eq .0,$(suffix $(__gold_stack__))),
 		Accept may occur only in the ground state)
+	$(assert $(__gold_state__),
+		Accept can't occur after an error or another accept)
 
 	${eval \
 		__gold_stack__ := $$(basename $$(__gold_stack__))
+		$(\n)
+
+		# Reset the state. This indicates that parsing is done.
+		__gold_state__ :=
 	}
 endef
 
@@ -712,7 +714,15 @@ endef
 define __gold_handle_error
 	$(if $(__gold_state__),
 		${eval \
-			__gold_stack__ := {$(__gold_state__)/$t}
+			__gold_stack__ := $(if $(t:%/1=),{lalr/$t/$(__gold_state__:.%=%)})
+			$(\n)
+			__gold_state__ :=
+		}
+	)
+
+	$(if $(filter %/1,$t),
+		${eval \
+			__gold_stack__ += {dfa/$(t:%/1=%)}
 		}
 	)
 endef
@@ -725,7 +735,7 @@ define __gold_expand
 	$(eval \
 		# Transform tree into a code.
 		__gold_tmp__ := \
-			$(subst {,$${call __gold_error_hook$(\comma),
+			$(subst {,$${call __gold_error_hook_,
 				$(subst [,$$$[call __gold_token_hook$(\comma),
 					$(subst $[,$$$[call __gold_rule_hook_n,
 						$(subst ],$],
@@ -740,32 +750,39 @@ define __gold_expand
 	$(__gold_tmp__)
 endef
 
-# 1..4. Depends on error type
-# 5. Symbol Id: '1' means DFA error, otherwise LALR error.
-define __gold_error_hook
-	$(info [$1][$2][$3][$4][$5])
-	$(if $(eq 1,$5),
-		$(__gold_lexical_error),
-		$(__gold_syntax_error)
+# 1. Start position
+# 2. Chars
+# 3. Bogus chars
+# 4. End position
+define __gold_error_hook_dfa
+#	$(info $0: [$1][$2][$3][$4])
+	$(info $f:$4: \
+		Lexical error: Unrecognized character$(if $(word 2,$3),s) \
+		$(subst $(\s),$(\comma)$(\s),$(foreach c,$3,
+			'$(if $(eq 0,$c),<0>,$(word $c,$(ascii_table)))'
+		))
 	)
 endef
 
 # 1. Start position
 # 2. Chars
-# 3. Bogus chars
-# 4. End position
-define __gold_lexical_error
-	$(info $f:$4: Lexical error.)
-endef
-
-# 1. LALR State
-# 2. Start position
-# 3. Token chars
-# 4. End position
-# 5. Symbol Id
-define __gold_syntax_error
-	$(info $f:$4: \
-		Syntax error: Unexpected '$(call __gold_symbol_name,$5)' token.
+# 3. End position
+# 4. Symbol Id
+# 5. LALR State
+define __gold_error_hook_lalr
+#	$(info $0: [$1][$2][$3][$4][$5])
+#	$(info $($g_lalr.$5))
+	$(info $f:$3: \
+		Syntax error: Unexpected '$(call __gold_symbol_name,$4)' token, \
+		expected $(with $(filter-out /%,$(subst /, /,$($g_lalr.$5))),
+			$(foreach s,$(nolastword $1),
+				'$(call __gold_symbol_name,$s)',
+			)
+			$(if $(not $(singleword $1)),
+				$(\s)or$(\s)
+			)
+			'$(call __gold_symbol_name,$(lastword $1))'
+		)
 	)
 endef
 
