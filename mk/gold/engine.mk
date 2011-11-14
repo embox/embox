@@ -185,9 +185,10 @@ define builtin_func-gold-rule
 		$(call var_assign_recursive_sl,
 			# Params:
 			#   1..N: RHS Symbols.
-			#   N+1:  Rule Id.
+			#   N+1:  Their locations.
+			#   N+2:  Rule Id.
 			__gold_hook_rule_n$3,
-			$$(foreach r,$$($(__gold_n$3+1)),
+			$$(foreach r,$$($(words $(__gold_seq$3-1) x x x)),
 				$$(__gold_hook_rule)
 			)
 		)
@@ -198,9 +199,11 @@ define builtin_func-gold-rule
 	)
 endef
 
+__gold_n0+1 := 1
+
 # Params:
 #   1:  Rule Id.
-__gold_hook_rule_n0 = $(foreach r,$1,$(__gold_hook_rule))
+__gold_hook_rule_n0 = $(foreach r,$2,$(__gold_hook_rule))
 
 # Echoes no args.
 __gold_args0 :=
@@ -214,11 +217,6 @@ __gold_rule_symbols_nr = \
 # 1. Id.
 __gold_rule_fn = \
 	$(word 3,$($g_rule$1))
-# 1. Id.
-__gold_rule_symbols_nr = \
-	$(secondword $($g_rule$1))
-
-__gold_rule_fn = \
 
 builtin_func-gold-rule-table :=# Noop
 
@@ -613,13 +611,15 @@ endef
 
 # Shift (hot).
 #   a. Action: '/Token/+/State'
-#   t. Token
+#   t. Token: 'Start/Chars/End/Type'
 # Return:
 #   Nothing.
 define __gold_lalr_handle[+]
 	${eval \
 		# Push the current token onto the stack.
-		__gold_stack__ += [$t]$(__gold_state__)
+		__gold_stack__ += \
+			$$(call $(lambda $1/[$4,$2,$1]),$(subst /,$(\comma),$t))
+			$(__gold_state__)
 		$(\n)
 		# Move to a new state.
 		__gold_state__ := .$(notdir $a)
@@ -628,7 +628,7 @@ endef
 
 # Reduce (hot).
 #   a. Action: '/Token/-/Rule'
-#   t. Token: 'Chars.../Type'
+#   t. Token.
 #   g. Prefix.
 # Return:
 #   Non-empty always.
@@ -640,7 +640,7 @@ define __gold_lalr_handle[-]
 		$(if $(findstring $n,0),
 			# Just append a reduction.
 			__gold_stack__ += \
-				(0,$r)$(__gold_state__)
+				$(firstword $(subst /, ,$t))/(0,,$r)$(__gold_state__)
 
 			,# else
 			$(foreach d,$(words $(__gold_stack__)),
@@ -662,8 +662,15 @@ define __gold_lalr_handle[-]
 				__gold_stack__ := \
 					$$(wordlist $(__gold_n$n+1),$d,# stack[1 .. depth-$n]
 							x $(__gold_seq$n-1) $$(__gold_stack__)) \
-					($n,$$(subst $$(\s),$$(\comma),
-							$$(basename $$(__gold_tmp__))),$r)
+					$$(dir $$(firstword $$(__gold_tmp__)))# Start of reduction.
+					($n,# Arg 0: N of symbols.
+						$$(subst $$(\s),$$(\comma),
+							$$(notdir $$(basename $$(__gold_tmp__)))
+						),# 1..N: Symbols.
+						$$(subst / ,.,
+								$$(dir $$(__gold_tmp__)) ),# N+2: Locations.
+						$r# N+2: Rule Id.
+					)
 					$$(__gold_state__)
 			)
 		)
@@ -710,7 +717,7 @@ define __gold_do_accept
 		Accept can't occur after an error or another accept)
 
 	${eval \
-		__gold_stack__ := $$(basename $$(__gold_stack__))
+		__gold_stack__ := $$(notdir $$(basename $$(__gold_stack__)))
 		$(\n)
 
 		# Reset the state. This indicates that parsing is done.
@@ -748,9 +755,9 @@ define __gold_expand
 				$(subst [,$$$[call __gold_hook_token$(\comma),
 					$(subst $[,$$$[call __gold_hook_rule_n,
 						$(subst ],$],
-							$(subst ., ,$(subst /,$(\comma),
+							$(subst ., ,
 								$1
-							))
+							)
 						)
 					)
 				)
@@ -810,19 +817,19 @@ endef
 __gold_default_symbol_name = \
 	$(fn)
 
-# 1. Start position
-# 2. Chars
-# 3. End position
-# 4. Symbol Id
+# Params:
+#   1. Symbol Id.
+#   2. Chars.
+#   3. Location.
 define __gold_hook_token
-	$(call __gold_invoke_create_fn,$4,$2,$1)
+	$(__gold_invoke_create_fn)
 endef
 
 # Calls symbols creation function (if any, otherwise a default one is called).
 # Params:
 #   1. Symbol Id.
 #   2. Chars/Production.
-#   3. Location for terminals.
+#   3. Location.
 define __gold_invoke_create_fn
 	$(foreach __gold_symbol_id,$1,
 		$(call \
@@ -831,7 +838,7 @@ define __gold_invoke_create_fn
 						$(gold_prefix)_create-$(__gold_symbol_fn)),
 				gold_default_create
 			),
-			$2,$(value 3)
+			$2,$3
 		)
 	)
 endef
@@ -889,7 +896,8 @@ __gold_ascii_table := \
 # Context:
 #   r. Rule Id
 # Params:
-#   ... Symbols
+#   ... Symbols,
+#   N+1 Location vector.
 define __gold_hook_rule
 	$(call __gold_invoke_create_fn,$(call __gold_rule_nonterminal_id,$r),
 		$(foreach __gold_rule_id,$r,
@@ -900,7 +908,8 @@ define __gold_hook_rule
 					gold_default_produce
 				)
 			)
-		)
+		),
+		$(firstword $($(__gold_n$(call __gold_rule_symbols_nr,$r)+1)))
 	)
 endef
 

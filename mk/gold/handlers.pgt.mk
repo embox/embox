@@ -48,20 +48,28 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #
 # Symbols.
 #
-# Each symbol is converted by the corresponding handler (if any has been
-# defined). Handler is a function with the following signature:
+# Each symbol is converted by the corresponding constructor (if any has been
+# defined). Constructor is a function with the following signature:
 #
 # Params:
-#   For terminals:
-#     1. List of decimal char codes representing the token.
-#     2. Location of the first character of this token: 'line:column'.
-#   For nonterminals:
-#     1. The result of applying one of rule handlers (it may be used
-#        to extract common symbol value postprocessing from its rules).
+#   1. For terminals: a list of decimal char codes representing the token.
+#      For nonterminals: the result of production.
+#   2. Start location in form 'line:column'.
 #
 # Return:
 #   Converted value. The value is then passed to a rule containing that symbol
 #   in its RHS or returned to user in case of the Start Symbol.
+#
+# If constructor for some symbol is not defined then the default behavior
+# is used:
+#   For terminals:
+#     Decodes an input by replacing all printable characters with their values
+#     and the rest ones with spaces.
+#   For nonterminals:
+#     Outputs the result of production as is, without modifying it.
+#
+# Constructor may also use a special 'gold_default_create' function to get
+# the default value.
 #
 
 ##SYMBOLS
@@ -70,6 +78,17 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
+##END-SYMBOLS
+
+#
+# Stubs for contructors of constant terminals.
+# Uncomment (and fix if needed) the lines corresponding to terminals which are
+# known to be immutable (i.e. keywords and punctuation) eliminates the need to
+# convert them from an input.
+#
+
+##SYMBOLS
+#$(gold_prefix)_create-%ID.Padded% := %ID%
 ##END-SYMBOLS
 
 #
@@ -87,21 +106,28 @@ $(gold_prefix)_name_of-%ID.Padded% := %Description%
 #
 # Rules.
 #
-# As for symbols each rule can have a handler that is used to create an
-# application-specific representation if the rule data.
-# The signature of handlers is the following:
+# As for symbols each rule can have a constructor that is used to produce an
+# application-specific representation of the rule data.
+# The signature of production function is the following:
 #
 # Params:
-#  ... Each argument contains a value of the corresponding symbol
-#      in the rule's RHS.
+#  1..N: Each argument contains a value of the corresponding symbol
+#        in the rule's RHS.
+#  N+1:  Location vector with 'line:column' words each of which is a start of
+#        the corresponding symbol.
 #
 # Return:
 #   Converted value that is passed to a symbol handler corresponding to
 #   the rule's LHS (if any has been defined).
 #
+# If production function is not defined then the rule is produced by
+# concatenating the RHS through a space. To reuse this default value one can
+# call 'gold_default_produce' function.
+#
 
 ##RULES
 # Rule: %Description%
+# Args: 1..%SymbolCount% - Symbols; %SymbolCount%+1 - Location vector.
 #define $(gold_prefix)_produce-%ID%
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
