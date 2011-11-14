@@ -23,13 +23,17 @@
 
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
+static int nxt_bluecore_start(struct net_node *node);
+
+PNET_NODE_DEF_NAME("lego_blue_core", this, {
+		.start = nxt_bluecore_start
+});
+
 static struct bc_msg out_msg;
 static struct bc_msg in_msg;
 
-static net_node_t this;
-
 static void send_to_net(char *data, int len) {
-	net_packet_t pack = pnet_pack_alloc(this, NET_PACKET_RX, (void *) data, len);
+	net_packet_t pack = pnet_pack_alloc(&this, NET_PACKET_RX, (void *) data, len);
 
 	memcpy(pnet_pack_get_data(pack), data, len);
 
@@ -156,10 +160,6 @@ static int nxt_bluecore_start(struct net_node *node) {
 }
 
 static int nxt_bluecore_init(void) {
-	this = pnet_get_module("lego_blue_core");
 	return 0;
 }
 
-PNET_NODE_DEF("lego_blue_core",  {
-		.start = nxt_bluecore_start
-	});

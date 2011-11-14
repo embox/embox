@@ -71,6 +71,10 @@ struct pnet_module {
 #define PNET_NODE_DEF(str_id, ...)\
 	__PNET_NODE_DEF_NAME_REPO(str_id, __node__##__COUNTER__,__proto##__COUNTER, __VA_ARGS__ )
 
+#define PNET_NODE_DEF_NAME(str_id, node_nm, ...)\
+	__PNET_NODE_DEF_NAME_REPO(str_id, node_nm,__proto##__COUNTER, __VA_ARGS__ )
+
+
 extern struct net_node *pnet_get_module(const char *name);
 
 #endif /* PNET_REPO_H_ */
