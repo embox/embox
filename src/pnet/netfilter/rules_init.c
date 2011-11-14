@@ -17,10 +17,13 @@
 #include <pnet/repo.h>
 #include <util/member.h>
 #include <stdio.h>
+#include <pnet/graph.h>
 
-#define RULE_ELEMS_COUNT 5
+#define RULE_ELEMS_COUNT 6
 
 EMBOX_UNIT_INIT(init);
+
+static net_node_t match_node;
 
 static const char *rules[] = {
 	#include <pnet/pnet_rules.inc>
@@ -57,6 +60,9 @@ static int form_rule(match_rule_t rule, const char *rule_elem, int num) {
 	case 5:
 		pnet_rule_set_src_udp_port(rule, *(uint16_t*) rule_elem);
 		break;
+	case 6:
+		rule->next_node = pnet_get_module(rule_elem);
+		break;
 	}
 
 	return 0;
@@ -67,36 +73,22 @@ static int init(void) {
 	int cur = 0;
 	match_rule_t new_rule;
 	net_node_matcher_t match;
-	//net_node_t info;
 	net_node_t match_node;
-	net_node_t devs;
-	net_node_t tmp;
-	net_node_t lin_gate;
-	net_node_t info;
 
-	devs = pnet_dev_get_entry();
-	lin_gate = pnet_get_module("linux gate");
-	info = pnet_get_module("info printer");
-	match_node = pnet_get_module("matcher");
-
-	match = (net_node_matcher_t)  match_node;
-
-	tmp = pnet_node_get(devs, NET_RX_DFAULT);
-	pnet_node_attach(devs, NET_RX_DFAULT, match_node);
-
-	pnet_node_attach(match_node, NET_RX_DFAULT, lin_gate);
-	pnet_node_attach(info, NET_RX_DFAULT, lin_gate);
-
+	match_example();
 	new_rule = pnet_rule_alloc();
-	new_rule->next_node = info;
 
 	array_foreach(rule_elem, rules, ARRAY_SIZE(rules)) {
-		cur++;
-		form_rule(new_rule, rule_elem, cur);
+		if (strncmp("RULES", rule_elem, 5) == 0) {
+			match = (net_node_matcher_t) match_node;
+		} else {
+			cur++;
+			form_rule(new_rule, rule_elem, cur);
 
-		if (cur > 0 && cur % RULE_ELEMS_COUNT == 0) {
-			pnet_add_new_rx_rule(new_rule, match);
-			new_rule = pnet_rule_alloc();
+			if (cur > 0 && cur % RULE_ELEMS_COUNT == 0) {
+				pnet_add_new_rx_rule(new_rule, match);
+				new_rule = pnet_rule_alloc();
+			}
 		}
 	}
 
