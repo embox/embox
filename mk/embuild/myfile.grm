@@ -40,14 +40,6 @@ StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
 ! Rules
 ! -------------------------------------------------
 
-<QualifiedName>
-        ::= Identifier '.' <QualifiedName>
-          | Identifier
-
-<QualifiedNameWithWildcard>
-        ::= <QualifiedName> '.*'
-          | <QualifiedName>
-
 ! The grammar starts below
 <Model>
         ::= <PackageDecl> <ImportDecls> <ModuleDecls>
@@ -93,6 +85,7 @@ StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
 
 <ModuleBodyDecl>
         ::= <SourceDecl>
+          | <CcflagsDecl>
           | <DependencyDecl>
 
 <SourceDecl>
@@ -109,7 +102,20 @@ StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
 <SourceStatement>
         ::= 'file' StringLiteral ';'
 
+<CcflagsDecl>
+        ::= 'ccfags' StringLiteral ';'
+
 <DependencyDecl>
-        ::= 'depends'
+        ::= 'depends' <QualifiedName> ';'
+
+! Exended identifiers.
+
+<QualifiedName>
+        ::= Identifier '.' <QualifiedName>
+          | Identifier
+
+<QualifiedNameWithWildcard>
+        ::= <QualifiedName> '.*'
+          | <QualifiedName>
 
 

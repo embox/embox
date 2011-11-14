@@ -84,6 +84,11 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
+# Symbol: ccfags
+#define $(gold_prefix)_create-ccfags
+#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
 # Symbol: depends
 #define $(gold_prefix)_create-depends
 #	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
@@ -142,6 +147,11 @@ define $(gold_prefix)_create-StringLiteral
 		)))))
 	)
 endef
+
+# Symbol: <CcflagsDecl>
+#define $(gold_prefix)_create-CcflagsDecl
+#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
+#endef
 
 # Symbol: <DependencyDecl>
 #define $(gold_prefix)_create-DependencyDecl
@@ -246,107 +256,25 @@ endef
 # are never actually used.
 #
 
-define $(gold_prefix)_name_of-Comma
-	','
-endef
-$(gold_prefix)_name_of-Comma := \
-	$(call trim,$(value $(gold_prefix)_name_of-Comma))
+$(gold_prefix)_name_of-Comma         := ','
+$(gold_prefix)_name_of-Dot           := '.'
+$(gold_prefix)_name_of-DotTimes      := '.*'
+$(gold_prefix)_name_of-Semi          := ';'
+$(gold_prefix)_name_of-LBrace        := '{'
+$(gold_prefix)_name_of-RBrace        := '}'
+$(gold_prefix)_name_of-abstract      := abstract
+$(gold_prefix)_name_of-ccfags        := ccfags
+$(gold_prefix)_name_of-depends       := depends
+$(gold_prefix)_name_of-extends       := extends
+$(gold_prefix)_name_of-file          := file
+$(gold_prefix)_name_of-Identifier    := Identifier
+$(gold_prefix)_name_of-import        := import
+$(gold_prefix)_name_of-module        := module
+$(gold_prefix)_name_of-package       := package
+$(gold_prefix)_name_of-source        := source
+$(gold_prefix)_name_of-static        := static
+$(gold_prefix)_name_of-StringLiteral := String literal
 
-define $(gold_prefix)_name_of-Dot
-	'.'
-endef
-$(gold_prefix)_name_of-Dot := \
-	$(call trim,$(value $(gold_prefix)_name_of-Dot))
-
-define $(gold_prefix)_name_of-DotTimes
-	'.*'
-endef
-$(gold_prefix)_name_of-DotTimes := \
-	$(call trim,$(value $(gold_prefix)_name_of-DotTimes))
-
-define $(gold_prefix)_name_of-Semi
-	';'
-endef
-$(gold_prefix)_name_of-Semi := \
-	$(call trim,$(value $(gold_prefix)_name_of-Semi))
-
-define $(gold_prefix)_name_of-LBrace
-	'{'
-endef
-$(gold_prefix)_name_of-LBrace := \
-	$(call trim,$(value $(gold_prefix)_name_of-LBrace))
-
-define $(gold_prefix)_name_of-RBrace
-	'}'
-endef
-$(gold_prefix)_name_of-RBrace := \
-	$(call trim,$(value $(gold_prefix)_name_of-RBrace))
-
-define $(gold_prefix)_name_of-abstract
-	abstract
-endef
-$(gold_prefix)_name_of-abstract := \
-	$(call trim,$(value $(gold_prefix)_name_of-abstract))
-
-define $(gold_prefix)_name_of-depends
-	depends
-endef
-$(gold_prefix)_name_of-depends := \
-	$(call trim,$(value $(gold_prefix)_name_of-depends))
-
-define $(gold_prefix)_name_of-extends
-	extends
-endef
-$(gold_prefix)_name_of-extends := \
-	$(call trim,$(value $(gold_prefix)_name_of-extends))
-
-define $(gold_prefix)_name_of-file
-	file
-endef
-$(gold_prefix)_name_of-file := \
-	$(call trim,$(value $(gold_prefix)_name_of-file))
-
-define $(gold_prefix)_name_of-Identifier
-	Identifier
-endef
-$(gold_prefix)_name_of-Identifier := \
-	$(call trim,$(value $(gold_prefix)_name_of-Identifier))
-
-define $(gold_prefix)_name_of-import
-	import
-endef
-$(gold_prefix)_name_of-import := \
-	$(call trim,$(value $(gold_prefix)_name_of-import))
-
-define $(gold_prefix)_name_of-module
-	module
-endef
-$(gold_prefix)_name_of-module := \
-	$(call trim,$(value $(gold_prefix)_name_of-module))
-
-define $(gold_prefix)_name_of-package
-	package
-endef
-$(gold_prefix)_name_of-package := \
-	$(call trim,$(value $(gold_prefix)_name_of-package))
-
-define $(gold_prefix)_name_of-source
-	source
-endef
-$(gold_prefix)_name_of-source := \
-	$(call trim,$(value $(gold_prefix)_name_of-source))
-
-define $(gold_prefix)_name_of-static
-	static
-endef
-$(gold_prefix)_name_of-static := \
-	$(call trim,$(value $(gold_prefix)_name_of-static))
-
-define $(gold_prefix)_name_of-StringLiteral
-	String literal
-endef
-$(gold_prefix)_name_of-StringLiteral := \
-	$(call trim,$(value $(gold_prefix)_name_of-StringLiteral))
 
 #
 # Rules.
@@ -363,26 +291,6 @@ $(gold_prefix)_name_of-StringLiteral := \
 #   Converted value that is passed to a symbol handler corresponding to
 #   the rule's LHS (if any has been defined).
 #
-
-# Rule: <QualifiedName> ::= Identifier '.' <QualifiedName>
-#define $(gold_prefix)_produce-QualifiedName_Identifier_Dot
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Rule: <QualifiedName> ::= Identifier
-#define $(gold_prefix)_produce-QualifiedName_Identifier
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Rule: <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
-#define $(gold_prefix)_produce-QualifiedNameWithWildcard_DotTimes
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Rule: <QualifiedNameWithWildcard> ::= <QualifiedName>
-#define $(gold_prefix)_produce-QualifiedNameWithWildcard
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
 
 # Rule: <Model> ::= <PackageDecl> <ImportDecls> <ModuleDecls>
 #define $(gold_prefix)_produce-Model
@@ -484,8 +392,13 @@ $(gold_prefix)_name_of-StringLiteral := \
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
-# Rule: <ModuleBodyDecl> ::= <DependencyDecl>
+# Rule: <ModuleBodyDecl> ::= <CcflagsDecl>
 #define $(gold_prefix)_produce-ModuleBodyDecl2
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <ModuleBodyDecl> ::= <DependencyDecl>
+#define $(gold_prefix)_produce-ModuleBodyDecl3
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
@@ -519,8 +432,33 @@ $(gold_prefix)_name_of-StringLiteral := \
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
-# Rule: <DependencyDecl> ::= depends
-#define $(gold_prefix)_produce-DependencyDecl_depends
+# Rule: <CcflagsDecl> ::= ccfags StringLiteral ';'
+#define $(gold_prefix)_produce-CcflagsDecl_ccfags_StringLiteral_Semi
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <DependencyDecl> ::= depends <QualifiedName> ';'
+#define $(gold_prefix)_produce-DependencyDecl_depends_Semi
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <QualifiedName> ::= Identifier '.' <QualifiedName>
+#define $(gold_prefix)_produce-QualifiedName_Identifier_Dot
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <QualifiedName> ::= Identifier
+#define $(gold_prefix)_produce-QualifiedName_Identifier
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
+#define $(gold_prefix)_produce-QualifiedNameWithWildcard_DotTimes
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <QualifiedNameWithWildcard> ::= <QualifiedName>
+#define $(gold_prefix)_produce-QualifiedNameWithWildcard
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
