@@ -29,9 +29,8 @@ void interrupt_handler(void) {
 
 				/*now we allow nested irq*/
 				msr_set_ie();
-#ifdef CONFIG_IRQ
+
 				irq_dispatch(irq_num);
-#endif
 			}
 		}
 	}
