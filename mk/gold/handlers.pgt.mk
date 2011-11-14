@@ -80,12 +80,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #
 
 ##SYMBOLS
-define $(gold_prefix)_name_of-%ID%
-	%Description%
-endef
-$(gold_prefix)_name_of-%ID% := \
-	$(call trim,$(value $(gold_prefix)_name_of-%ID%))
-
+$(gold_prefix)_name_of-%ID.Padded% := %Description%
 ##END-SYMBOLS
 
 

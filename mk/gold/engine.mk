@@ -431,10 +431,12 @@ define __gold_lex
 
 		# We still may be in some state, so land to the ground.
 		$(foreach a,$(call $g_dfa$(__gold_state__),),
-			# Position of the pending token and a symbol code.
-			$(if $(findstring $a,/1),/)/$(__gold_location)$(a:%/=%)
+			$(foreach l,$(__gold_location),# Position of the pending token.
+				$(if $(findstring $a,/1),/)/$(__gold_location)$(a:%/=%) \
+				$l//$l/0# EOF token at the end.
+			)
 		)
-	))) /0# EOF token at the end.
+	)))
 endef
 
 # No error.
@@ -698,7 +700,7 @@ endef
 #   t. Token, assumed to be EOF.
 #   g. Prefix.
 define __gold_do_accept
-	$(assert $(eq /0,$t),
+	$(assert $(eq 0,$(notdir $t)),
 		Only EOF may cause Accept action)
 	$(assert $(singleword $(__gold_stack__)),
 		Only a single symbol may be accepted as a root of the parse tree)
