@@ -370,7 +370,9 @@ define __gold_lex
 		$(__gold_location_reset_mk)
 	}
 
-	$(subst ./,/,$(subst . ,.,
+	$(filter-out %/2,# Omit whitespaces.
+			$(subst ./,/,$(subst . ,.,
+
 		$(__gold_location)/# Position of the first token.
 
 		$(foreach 1,$1,$(foreach a,$($g_dfa$(__gold_state__)),
@@ -410,7 +412,7 @@ define __gold_lex
 			# Position of the pending token and a symbol code.
 			$(if $(findstring $a,/1),/)/$(__gold_location)$(a:%/=%)
 		)
-	)) /0# EOF token at the end.
+	))) /0# EOF token at the end.
 endef
 
 # No error.
@@ -890,7 +892,7 @@ endef
 define __gold_parse
 	$(call __gold_expand,
 		$(call __gold_analyze,
-			$(filter-out %/2,$(__gold_lex))# Scan and omit whitespaces.
+			$(__gold_lex)
 		)
 	)
 endef
