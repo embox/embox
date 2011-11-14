@@ -38,19 +38,6 @@ define gold_parse_file
 	))
 endef
 
-__gold_ascii_table_special := \
-            \SOH    \STX    \ETX    \EOT    \ENQ    \ACK    \BEL    \
-    \BS    $$(\t)  $$(\n)   \VT     \FF     \CR     \SO     \SI     \
-    \DLE    \DC1    \DC2    \DC3    \DC4    \NAK    \SYN    \ETB    \
-    \CAN    \EM     \SUB    \ESC    \FS     \GS     \RS     \US     \
-   $$(\s)
-__gold_ascii_table_special := \
-	$(__gold_ascii_table_special:\%=$$(__gold_ascii_char_special))
-
-__gold_ascii_table := \
-  $(__gold_ascii_table_special) \
-  $(call words-from,33,$(ascii_table:$$=$$$$))
-
 # Parser private namespace.
 __gold_ns = $(call builtin_tag,gold-parser)
 
@@ -123,46 +110,8 @@ __gold_symbol_fn = \
 
 # Params:
 #   1. Id.
-# Context:
-#   g. Prefix.
-define __gold_symbol_name
-	$(with $(__gold_symbol_fn),
-		$(or \
-			$(if $(call var_defined,$(gold_prefix)_name_$1),
-				$(trim $(call $(gold_prefix)_name_$1))
-			),
-			$(1:Symbol_%=%)
-		)
-	)
-endef
-
-# Params:
-#   1. Id.
-#   2. Chars.
-#   3. Location.
-define __gold_symbol_create_terminal
-	$(call \
-		# Name of creation function.
-		$(or $(call var_defined,$(gold_prefix)_create_$(__gold_symbol_fn)),
-				__gold_default_create_symbol),
-		$2,$3
-	)
-endef
-
-define __gold_default_create_symbol
-	$(with \
-		$(subst $(\s),,$(foreach c,$2,
-			$(if $(eq 0,$c),
-				<0>,
-				$(word $c,$(ascii_table))
-			)
-		)),
-		$4,
-		$1,$3,# start,end
-
-		[$1]($3-$4)
-	)
-endef
+__gold_symbol_type = \
+	$(firstword $($g_symbol$1))
 
 builtin_func_gold-symbol-table :=# Noop.
 
@@ -793,7 +742,7 @@ define __gold_error_hook_dfa
 	$(info $f:$4: \
 		Lexical error: Unrecognized character$(if $(word 2,$3),s) \
 		$(subst $(\s),$(\comma)$(\s),$(foreach c,$3,
-			'$(if $(eq 0,$c),<0>,$(word $c,$(ascii_table)))'
+			'$(if $(eq 0,$c),NULL,$(word $c,$(ascii_table)))'
 		))
 	)
 endef
@@ -825,7 +774,17 @@ endef
 # 3. End position
 # 4. Symbol Id
 define __gold_token_hook
-	$(call __gold_symbol_create_terminal,$4,$2,$1)
+	$(foreach __gold_symbol_id,$4,
+		$(call \
+			# Name of creation function.
+			$(or \
+				$(call var_defined,
+						$(gold_prefix)_create_$(call __gold_symbol_fn,$4)),
+				gold_default_create
+			),
+			$2,$1
+		)
+	)
 endef
 
 # Context:
@@ -847,6 +806,74 @@ define __gold_rule_hook
 		$1
 	)
 endef
+
+# Params:
+#   1. Id.
+# Context:
+#   g. Prefix.
+define __gold_symbol_name
+	$(foreach fn,$(__gold_symbol_fn),
+		$(call \
+			$(or $(call var_defined,$(gold_prefix)_name_$(fn)),
+					__gold_default_symbol_name)
+		)
+	)
+endef
+
+# Context:
+#   fn. Symbol function name.
+__gold_default_symbol_name = \
+	$(fn:Symbol_%=%)
+
+# Params:
+#   1. Data.
+define gold_default_create
+	$(__gold_default_create[
+			$(filter 0 1,$(value $g_symbol$(value __gold_symbol_id)))
+		])
+endef
+
+# Bad symbol.
+define __gold_default_create[]
+	$(error \
+		'gold_default_create' function \
+		must be called within regular terminal/nonterminal creation functions
+	)
+endef
+
+# Create terminal.
+#   1. Char codes.
+define __gold_default_create[1]
+	$(foreach str,
+		$(subst $(\s),,$(foreach c,$(subst $(\s)0$(\s),256,$1),
+			$(word $c,$(__gold_ascii_table))
+		)),
+		$(if $(findstring $$,$(str)),
+			$(expand $(str)),
+			$(str)
+		)
+	)
+endef
+
+# Create nonterminal.
+#   1. Result of production.
+define __gold_default_create[0]
+	$1
+endef
+
+__gold_ascii_table_special := \
+            \SOH    \STX    \ETX    \EOT    \ENQ    \ACK    \BEL    \
+    \BS    $$(\t)  $$(\n)   \VT     \FF  $$(\empty) \SO     \SI     \
+    \DLE    \DC1    \DC2    \DC3    \DC4    \NAK    \SYN    \ETB    \
+    \CAN    \EM     \SUB    \ESC    \FS     \GS     \RS     \US     \
+   $$(\s)
+__gold_ascii_table_special := \
+	$(__gold_ascii_table_special:\%=$$(__gold_ascii_char_special))
+
+__gold_ascii_table := \
+  $(__gold_ascii_table_special) \
+  $(call words-from,33,$(ascii_table:$$=$$$$)) \
+  $$(__gold_ascii_char_special)# <- NULL as 256'th char.
 
 # Params: ignored
 define builtin_func_gold-parser
