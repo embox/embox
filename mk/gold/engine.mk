@@ -32,8 +32,8 @@ define gold_parse_file
 	)
 
 	$(foreach gold_prefix,$(singleword $1),$(foreach g,__g_$(gold_prefix),
-		$(foreach f,$2,
-			$(call __gold_parse,$(shell od -v -A n -t uC $f))
+		$(foreach gold_file,$2,
+			$(call __gold_parse,$(shell od -v -A n -t uC $(gold_file)))
 		)
 	))
 endef
@@ -771,7 +771,7 @@ endef
 # 3. Bogus chars
 # 4. End position
 define __gold_hook_error_dfa
-	$(info $f:$4: \
+	$(call gold_report,$4,
 		Lexical error: Unrecognized character$(if $(word 2,$3),s) \
 		$(subst $(\s),$(\comma)$(\s),$(foreach c,$3,
 			'$(if $(eq 0,$c),NULL,$(word $c,$(ascii_table)))'
@@ -785,7 +785,7 @@ endef
 # 4. Symbol Id
 # 5. LALR State
 define __gold_hook_error_lalr
-	$(info $f:$3: \
+	$(call gold_report,$3,
 		Syntax error: Unexpected $(call __gold_symbol_name,$4) token, \
 		expected $(with $(filter-out /%,$(subst /, /,$($g_lalr.$5))),
 			$(foreach s,$(nolastword $1),
@@ -924,6 +924,12 @@ define gold_default_produce
 			must be called within rule production functions
 		)
 	)
+endef
+
+# 1. Location.
+# 2. Message.
+define gold_report
+	$(info $(gold_file):$1: $2)
 endef
 
 # Params: ignored
