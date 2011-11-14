@@ -41,7 +41,7 @@ endef
 # Parser private namespace.
 __gold_ns = $(call builtin_tag,gold-parser)
 
-define builtin_tag_gold-parser
+define builtin_tag-gold-parser
 	$(or \
 		$(filter-patsubst __gold_%_parser,__g_%,$(__def_var)),
 		$(call builtin_error,
@@ -83,7 +83,7 @@ endef
 #   1. Id.
 #   2. Symbol type (see above).
 #   3. Instantiation function.
-define builtin_func_gold-symbol
+define builtin_func-gold-symbol
 	$(assert $(if $(eq 0,$1),$(eq 3,$2),ok),
 		EOF terminal is assumed to have Id 0)
 	$(assert $(if $(eq 1,$1),$(eq 7,$2),ok),
@@ -113,7 +113,7 @@ __gold_symbol_fn = \
 __gold_symbol_type = \
 	$(firstword $($g_symbol$1))
 
-builtin_func_gold-symbol-table :=# Noop.
+builtin_func-gold-symbol-table :=# Noop.
 
 #
 # Rules.
@@ -155,7 +155,7 @@ builtin_func_gold-symbol-table :=# Noop.
 #   2. Nonterminal
 #   3. Number of symbols in right-hand side
 #   4. Instantiation function.
-define builtin_func_gold-rule
+define builtin_func-gold-rule
 	$(and \
 		$(filter-out 0,$3),
 		$(call var_undefined,__gold_xs$3),
@@ -198,7 +198,7 @@ endef
 #   1:  Rule Id.
 __gold_rule_hook_n0 = $(foreach r,$1,$(__gold_rule_hook))
 
-builtin_func_gold-rule-table :=# Noop
+builtin_func-gold-rule-table :=# Noop
 
 #
 # Charsets.
@@ -223,7 +223,7 @@ builtin_func_gold-rule-table :=# Noop
 # Params:
 #   1. Id
 # ... Char codes
-define builtin_func_gold-charset
+define builtin_func-gold-charset
 	$(call var_assign_recursive_sl,
 		$(__gold_ns)_cs$1,# =
 
@@ -297,7 +297,7 @@ __gold_cs_freq_sort := \
     0
 __gold_cs_freq_sort := $(strip $(__gold_cs_freq_sort))
 
-builtin_func_gold-charset-table :=# Noop
+builtin_func-gold-charset-table :=# Noop
 
 #
 # DFA lexer.
@@ -313,7 +313,7 @@ builtin_func_gold-charset-table :=# Noop
 # Params:
 #   1. Charset
 #   2. Target state
-define builtin_func_gold-dfa-edge
+define builtin_func-gold-dfa-edge
 	# Emit a call to charset matcher.
 	$$(if $$($(__gold_ns)_cs$1),$2),
 endef
@@ -322,7 +322,7 @@ endef
 #   1. Id
 #   2. Accept symbol or -1
 #   ... Edges
-define builtin_func_gold-dfa-state
+define builtin_func-gold-dfa-state
 	$(call var_assign_recursive_sl,
 		# Params:
 		#   1. Char code.
@@ -343,7 +343,7 @@ endef
 # Params:
 #   1. Initial state
 #   ... States (unused)
-define builtin_func_gold-dfa-table
+define builtin_func-gold-dfa-table
 	# Remember the initial state.
 	$(call var_assign_simple,$(__gold_ns)_dfa_ground,$1)
 
@@ -492,7 +492,7 @@ endef
 #   3. Value:
 #       Rule Id for Reduce action
 #       Target state in case of Shift or Goto
-define builtin_func_gold-lalr-action
+define builtin_func-gold-lalr-action
 	$(or \
 		$(and $(eq 1,$2),$1/+/$3),
 		$(and $(eq 2,$2),$1/-/$3),
@@ -504,7 +504,7 @@ endef
 # Params:
 #   1. Id
 #   ... Actions
-define builtin_func_gold-lalr-state
+define builtin_func-gold-lalr-state
 	$(with \
 		$1,
 		$(foreach a,$(nofirstword $(builtin_args_list)),
@@ -539,7 +539,7 @@ endef
 # Params:
 #   1. Initial state
 #   ... States (unused)
-define builtin_func_gold-lalr-table
+define builtin_func-gold-lalr-table
 	$(call var_assign_simple,$(__gold_ns)_lalr_ground,$1)
 	$(call var_assign_simple,$(__gold_ns)_lalr,)# Cyclic error until EOF.
 endef
@@ -873,7 +873,7 @@ __gold_ascii_table := \
   $$(__gold_ascii_char_special)# <- NULL as 256'th char.
 
 # Params: ignored
-define builtin_func_gold-parser
+define builtin_func-gold-parser
 	${eval \
 		__def_ignore += $(__gold_ns)%
 	}

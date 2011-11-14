@@ -81,7 +81,7 @@ false :=
 # Return:
 #   '1' for empty argument, or empty value otherwise.
 not = $(if $1,,1)
-builtin_func_not = $(builtin_to_function_inline)
+builtin_func-not = $(builtin_to_function_inline)
 
 make_bool = \
   $(if $(strip $1),$(true),$(false))

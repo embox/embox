@@ -19,7 +19,7 @@ __core_string_mk := 1
 #     The value if that is the same for both arguments, empty otherwise.
 eq = \
 	$(findstring $1,$(findstring $2,$1))
-builtin_func_eq = $(builtin_to_function_inline)
+builtin_func-eq = $(builtin_to_function_inline)
 
 ##
 # Builtin function: nowords
@@ -33,7 +33,7 @@ builtin_func_eq = $(builtin_to_function_inline)
 #     false otherwise.
 nowords = \
 	$(if $(firstword $1),,1)
-builtin_func_nowords = $(builtin_to_function_inline)
+builtin_func-nowords = $(builtin_to_function_inline)
 
 ##
 # Builtin function: singleword
@@ -46,7 +46,7 @@ builtin_func_nowords = $(builtin_to_function_inline)
 #     nothing (false) otherwise.
 singleword = \
 	$(if $(word 2,$1),,$(firstword $1))
-builtin_func_singleword = $(builtin_to_function_inline)
+builtin_func-singleword = $(builtin_to_function_inline)
 
 ##
 # Builtin function: doubleword
@@ -59,7 +59,7 @@ builtin_func_singleword = $(builtin_to_function_inline)
 #     nothing (empty string) otherwise.
 doubleword = \
 	$(if $(filter 2,$(words $1)),$1)
-builtin_func_doubleword = $(builtin_to_function_inline)
+builtin_func-doubleword = $(builtin_to_function_inline)
 
 ##
 # Builtin function: firstword
@@ -82,7 +82,7 @@ firstword = \
 #     The second word of the list.
 secondword = \
 	$(word 2,$1)
-builtin_func_secondword = $(builtin_to_function_inline)
+builtin_func-secondword = $(builtin_to_function_inline)
 
 ##
 # Builtin function: lastword
@@ -105,7 +105,7 @@ lastword = \
 #     The list of words with the first one removed.
 nofirstword = \
 	$(wordlist 2,2147483647,$1)
-builtin_func_nofirstword = $(builtin_to_function_inline)
+builtin_func-nofirstword = $(builtin_to_function_inline)
 
 ##
 # Builtin function: nolastword
@@ -117,7 +117,7 @@ builtin_func_nofirstword = $(builtin_to_function_inline)
 #     The list of words with the last one removed.
 nolastword = \
 	$(wordlist 2,$(words $1),x $1)
-builtin_func_nolastword = $(builtin_to_function_inline)
+builtin_func-nolastword = $(builtin_to_function_inline)
 
 ##
 # Builtin function: words-to
@@ -130,7 +130,7 @@ builtin_func_nolastword = $(builtin_to_function_inline)
 #     Words [1 .. arg].
 words-to = \
 	$(wordlist 1,$1,$2)
-builtin_func_words-to = $(builtin_to_function_inline)
+builtin_func-words-to = $(builtin_to_function_inline)
 
 ##
 # Builtin function: words-from
@@ -143,7 +143,7 @@ builtin_func_words-to = $(builtin_to_function_inline)
 #     Words [arg .. nwords].
 words-from = \
 	$(wordlist $1,2147483647,$2)
-builtin_func_words-from = $(builtin_to_function_inline)
+builtin_func-words-from = $(builtin_to_function_inline)
 
 ##
 # Builtin function: trim
@@ -155,7 +155,7 @@ builtin_func_words-from = $(builtin_to_function_inline)
 #     The argument with no leading or trailing whitespaces.
 trim = \
 	$(wordlist 1,2147483647,$1)
-builtin_func_trim = $(builtin_to_function_inline)
+builtin_func-trim = $(builtin_to_function_inline)
 
 ##
 # Builtin function: append
@@ -169,7 +169,7 @@ builtin_func_trim = $(builtin_to_function_inline)
 #     The result of string concatenation.
 append = \
 	$1$(if $2,$(if $1, )$2)
-builtin_func_append = $(builtin_to_function_call)
+builtin_func-append = $(builtin_to_function_call)
 
 ##
 # Builtin function: prepend
@@ -183,7 +183,7 @@ builtin_func_append = $(builtin_to_function_call)
 #     The result of string concatenation.
 prepend = \
 	$2$(if $1,$(if $2, )$1)
-builtin_func_prepend = $(builtin_to_function_call)
+builtin_func-prepend = $(builtin_to_function_call)
 
 ##
 # Function: filter-patsubst
@@ -198,6 +198,6 @@ builtin_func_prepend = $(builtin_to_function_call)
 #     The result of patsubst applied to filtered string.
 filter-patsubst = \
 	$(foreach __fp,$1,$(patsubst $(__fp),$2,$(filter $(__fp),$3)))
-builtin_func_filter-patsubst = $(builtin_to_function_inline)
+builtin_func-filter-patsubst = $(builtin_to_function_inline)
 
 endif # __core_string_mk
