@@ -103,15 +103,12 @@ define builtin_func-gold-symbol
 	)
 endef
 
-# Params:
-#   1. Id.
-__gold_symbol_fn = \
-	$(word 2,$($g_symbol$1))
-
-# Params:
-#   1. Id.
+# 1. Id.
 __gold_symbol_type = \
 	$(firstword $($g_symbol$1))
+# 1. Id.
+__gold_symbol_fn = \
+	$(secondword $($g_symbol$1))
 
 builtin_func-gold-symbol-table :=# Noop.
 
@@ -139,7 +136,7 @@ builtin_func-gold-symbol-table :=# Noop.
 # Also there are few auxiliary variables defined in a common namespace and
 # shared by all parsers:
 #
-#	__gold_xs$(n)-1 := <list of N minus one 'x's>
+#	__gold_seq$(n)-1 := <sequence of numbers from 1 to N minus one>
 #	__gold_n$(n)+1  := <literal value of N plus one>
 #
 # where 'n' gets all possible values of number of symbols for each defined
@@ -158,22 +155,22 @@ builtin_func-gold-symbol-table :=# Noop.
 define builtin_func-gold-rule
 	$(and \
 		$(filter-out 0,$3),
-		$(call var_undefined,__gold_xs$3),
+		$(call var_undefined,__gold_seq$3),
 
-		# Each __gold_xsN-1 contains N-1 whitespace separated 'x's
-		# __gold_xs3-1 = x x
-		$(call var_assign_simple,__gold_xs$3-1,
+		# Each __gold_seqN-1 contains N-1 whitespace separated 'x's
+		# __gold_seq3-1 = 1 2
+		$(call var_assign_simple,__gold_seq$3-1,
 			$(with $3,,
-				$(if $(word $1,x $2),
+				$(if $(word $1,$2 x),
 					$2,
-					$(call $0,$1,x $2)
+					$(call $0,$1,$2 $(words $2 x))
 				)
 			)
 		)
 		# .. and __gold_nN+1 is value of N+1.
 		# __gold_n3+1 = 4
 		$(call var_assign_simple,__gold_n$3+1,
-			$(words $(__gold_xs$3-1) x x)
+			$(words $(__gold_seq$3-1) x x)
 		)
 
 		# Proxy function to the real hook handler.
@@ -197,6 +194,21 @@ endef
 # Params:
 #   1:  Rule Id.
 __gold_hook_rule_n0 = $(foreach r,$1,$(__gold_hook_rule))
+
+# 1. Id.
+__gold_rule_nonterminal_id = \
+	$(firstword $($g_rule$1))
+# 1. Id.
+__gold_rule_symbols_nr = \
+	$(secondword $($g_rule$1))
+# 1. Id.
+__gold_rule_fn = \
+	$(word 3,$($g_rule$1))
+# 1. Id.
+__gold_rule_symbols_nr = \
+	$(secondword $($g_rule$1))
+
+__gold_rule_fn = \
 
 builtin_func-gold-rule-table :=# Noop
 
@@ -625,7 +637,7 @@ define __gold_lalr_handle[-]
 				# Pop N symbols.
 				__gold_tmp__ := \
 					$$(wordlist $d,2147483647,# stack[depth-$n+1 .. depth]
-							$(__gold_xs$n-1) $$(__gold_stack__))
+							$(__gold_seq$n-1) $$(__gold_stack__))
 				$(\n)
 
 				# Replace the current state by one saved in the first
@@ -637,7 +649,7 @@ define __gold_lalr_handle[-]
 				# Replace them with a reduction.
 				__gold_stack__ := \
 					$$(wordlist $(__gold_n$n+1),$d,# stack[1 .. depth-$n]
-							x $(__gold_xs$n-1) $$(__gold_stack__)) \
+							x $(__gold_seq$n-1) $$(__gold_stack__)) \
 					($n,$$(subst $$(\s),$$(\comma),
 							$$(basename $$(__gold_tmp__))),$r)
 					$$(__gold_state__)
@@ -768,45 +780,6 @@ define __gold_hook_error_lalr
 	)
 endef
 
-# 1. Start position
-# 2. Chars
-# 3. End position
-# 4. Symbol Id
-define __gold_hook_token
-	$(foreach __gold_symbol_id,$4,
-		$(call \
-			# Name of creation function.
-			$(or \
-				$(call var_defined,
-						$(gold_prefix)_create-$(call __gold_symbol_fn,$4)),
-				gold_default_create
-			),
-			$2,$1
-		)
-	)
-endef
-
-# Called by '__gold_hook_rule_nN' proxy.
-# Context:
-#   r. Rule Id
-# Params:
-#   ... Symbols
-define __gold_hook_rule
-	$(with \
-		$(word 3,$($g_rule$r)) {
-			$(subst $(\n),$(\n)$(\t),
-				$(if $(not $(eq 0,$(word 2,$($g_rule$r)))),
-					$(foreach a,$(wordlist 1,$(word 2,$($g_rule$r)),1 2 3 4 5 6 7 8 9),
-						$(\n)$a: $($a)
-					)
-				)
-			) $(\n)
-		},
-#		$(info $1)
-		$1
-	)
-endef
-
 # Params:
 #   1. Id.
 # Context:
@@ -824,6 +797,24 @@ endef
 #   fn. Symbol function name.
 __gold_default_symbol_name = \
 	$(fn)
+
+# 1. Start position
+# 2. Chars
+# 3. End position
+# 4. Symbol Id
+define __gold_hook_token
+	$(foreach __gold_symbol_id,$4,
+		$(call \
+			# Name of creation function.
+			$(or \
+				$(call var_defined,
+						$(gold_prefix)_create-$(call __gold_symbol_fn,$4)),
+				gold_default_create
+			),
+			$2,$1
+		)
+	)
+endef
 
 # Params:
 #   1. Data.
@@ -857,9 +848,8 @@ endef
 
 # Create nonterminal.
 #   1. Result of production.
-define __gold_default_create[0]
+__gold_default_create[0] = \
 	$1
-endef
 
 __gold_ascii_table_special := \
             \SOH    \STX    \ETX    \EOT    \ENQ    \ACK    \BEL    \
@@ -874,6 +864,44 @@ __gold_ascii_table := \
   $(__gold_ascii_table_special) \
   $(call words-from,33,$(ascii_table:$$=$$$$)) \
   $$(__gold_ascii_char_special)# <- NULL as 256'th char.
+
+# Called by '__gold_hook_rule_nN' proxy.
+# Context:
+#   r. Rule Id
+# Params:
+#   ... Symbols
+define __gold_hook_rule
+	$(foreach __gold_rule_id,$r,
+		$(# No call to preserve expansion context
+			$(or \
+				$(call var_defined,
+						$(gold_prefix)_produce-$(call __gold_rule_fn,$4)),
+				gold_default_produce
+			)
+		)
+	)
+	$(with \
+		$(word 3,$($g_rule$r)) {
+			$(subst $(\n),$(\n)$(\t),
+				$(if $(not $(eq 0,$(word 2,$($g_rule$r)))),
+					$(foreach a,$(wordlist 1,$(word 2,$($g_rule$r)),1 2 3 4 5 6 7 8 9),
+						$(\n)$a: $($a)
+					)
+				)
+			) $(\n)
+		},
+#		$(info $1)
+		$1
+	)
+endef
+
+# Params:
+#   1. Data.
+define gold_default_produce
+	$(__gold_default_create[
+			$(filter 0 1,$(value $g_symbol$(value __gold_symbol_id)))
+		])
+endef
 
 # Params: ignored
 define builtin_func-gold-parser
