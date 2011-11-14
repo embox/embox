@@ -145,7 +145,7 @@ builtin_func-gold-symbol-table :=# Noop.
 # where 'n' gets all possible values of number of symbols for each defined
 # rule (except for zero). These values are used later in LALR reduce handler.
 #
-#	__gold_rule_hook_n$(n) = <proxy function>
+#	__gold_hook_rule_n$(n) = <proxy function>
 #
 # The latters are used by in last parsing phase to redirect expansion hooks.
 #
@@ -182,9 +182,9 @@ define builtin_func-gold-rule
 			# Params:
 			#   1..N: RHS Symbols.
 			#   N+1:  Rule Id.
-			__gold_rule_hook_n$3,
+			__gold_hook_rule_n$3,
 			$$(foreach r,$$($(__gold_n$3+1)),
-				$$(__gold_rule_hook)
+				$$(__gold_hook_rule)
 			)
 		)
 	)
@@ -196,7 +196,7 @@ endef
 
 # Params:
 #   1:  Rule Id.
-__gold_rule_hook_n0 = $(foreach r,$1,$(__gold_rule_hook))
+__gold_hook_rule_n0 = $(foreach r,$1,$(__gold_hook_rule))
 
 builtin_func-gold-rule-table :=# Noop
 
@@ -718,9 +718,9 @@ define __gold_expand
 	$(eval \
 		# Transform tree into a code.
 		__gold_tmp__ := \
-			$(subst {,$${call __gold_error_hook_,
-				$(subst [,$$$[call __gold_token_hook$(\comma),
-					$(subst $[,$$$[call __gold_rule_hook_n,
+			$(subst {,$${call __gold_hook_error_,
+				$(subst [,$$$[call __gold_hook_token$(\comma),
+					$(subst $[,$$$[call __gold_hook_rule_n,
 						$(subst ],$],
 							$(subst ., ,$(subst /,$(\comma),
 								$1
@@ -737,7 +737,7 @@ endef
 # 2. Chars
 # 3. Bogus chars
 # 4. End position
-define __gold_error_hook_dfa
+define __gold_hook_error_dfa
 	$(info $f:$4: \
 		Lexical error: Unrecognized character$(if $(word 2,$3),s) \
 		$(subst $(\s),$(\comma)$(\s),$(foreach c,$3,
@@ -751,7 +751,7 @@ endef
 # 3. End position
 # 4. Symbol Id
 # 5. LALR State
-define __gold_error_hook_lalr
+define __gold_hook_error_lalr
 	$(info $f:$3: \
 		Syntax error: Unexpected $(call __gold_symbol_name,$4) token, \
 		expected $(with $(filter-out /%,$(subst /, /,$($g_lalr.$5))),
@@ -770,7 +770,7 @@ endef
 # 2. Chars
 # 3. End position
 # 4. Symbol Id
-define __gold_token_hook
+define __gold_hook_token
 	$(foreach __gold_symbol_id,$4,
 		$(call \
 			# Name of creation function.
@@ -784,11 +784,12 @@ define __gold_token_hook
 	)
 endef
 
+# Called by '__gold_hook_rule_nN' proxy.
 # Context:
 #   r. Rule Id
 # Params:
 #   ... Symbols
-define __gold_rule_hook
+define __gold_hook_rule
 	$(with \
 		$(word 3,$($g_rule$r)) {
 			$(subst $(\n),$(\n)$(\t),
