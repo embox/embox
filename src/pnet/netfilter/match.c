@@ -102,7 +102,8 @@ net_node_t matcher_alloc(void) {
 }
 
 PNET_PROTO_DEF("matcher", {
-	.rx_hnd = match,
-	.alloc  = matcher_alloc,
-	.free   = matcher_free
+    .rx_hnd = match,
+    .alloc  = matcher_alloc,
+    .free   = matcher_free
 });
+
