@@ -173,6 +173,13 @@ define builtin_func-gold-rule
 			$(words $(__gold_seq$3-1) x x)
 		)
 
+		$(call var_assign_recursive_sl,__gold_args$3,
+			$(with $(__gold_seq$3-1) $(words $(__gold_seq$3-1) x),
+				$(patsubst %,$$%,$(words-to 9,$1))
+				$(if $(word 10,$1), $(patsubst %,$$(%),$(words-from 10,$1)))
+			)
+		)
+
 		# Proxy function to the real hook handler.
 		# Used by __gold_expand.
 		$(call var_assign_recursive_sl,
@@ -194,6 +201,9 @@ endef
 # Params:
 #   1:  Rule Id.
 __gold_hook_rule_n0 = $(foreach r,$1,$(__gold_hook_rule))
+
+# Echoes no args.
+__gold_args0 :=
 
 # 1. Id.
 __gold_rule_nonterminal_id = \
@@ -803,15 +813,23 @@ __gold_default_symbol_name = \
 # 3. End position
 # 4. Symbol Id
 define __gold_hook_token
-	$(foreach __gold_symbol_id,$4,
+	$(call __gold_invoke_create_fn,$4,$2,$1)
+endef
+
+# Calls symbols creation function (if any, otherwise a default one is called).
+# Params:
+#   1. Symbol Id.
+#   2. Chars/Production.
+#   3. Location for terminals.
+define __gold_invoke_create_fn
+	$(foreach __gold_symbol_id,$1,
 		$(call \
-			# Name of creation function.
 			$(or \
 				$(call var_defined,
-						$(gold_prefix)_create-$(call __gold_symbol_fn,$4)),
+						$(gold_prefix)_create-$(__gold_symbol_fn)),
 				gold_default_create
 			),
-			$2,$1
+			$2,$(value 3)
 		)
 	)
 endef
@@ -871,36 +889,26 @@ __gold_ascii_table := \
 # Params:
 #   ... Symbols
 define __gold_hook_rule
-	$(foreach __gold_rule_id,$r,
-		$(# No call to preserve expansion context
-			$(or \
-				$(call var_defined,
-						$(gold_prefix)_produce-$(call __gold_rule_fn,$4)),
-				gold_default_produce
+	$(call __gold_invoke_create_fn,$(call __gold_rule_nonterminal_id,$r),
+		$(foreach __gold_rule_id,$r,
+			$(# No call to preserve expansion context
+				$(or \
+					$(call var_defined,
+							$(gold_prefix)_produce-$(call __gold_rule_fn,$r)),
+					gold_default_produce
+				)
 			)
 		)
-	)
-	$(with \
-		$(word 3,$($g_rule$r)) {
-			$(subst $(\n),$(\n)$(\t),
-				$(if $(not $(eq 0,$(word 2,$($g_rule$r)))),
-					$(foreach a,$(wordlist 1,$(word 2,$($g_rule$r)),1 2 3 4 5 6 7 8 9),
-						$(\n)$a: $($a)
-					)
-				)
-			) $(\n)
-		},
-#		$(info $1)
-		$1
 	)
 endef
 
 # Params:
 #   1. Data.
 define gold_default_produce
-	$(__gold_default_create[
-			$(filter 0 1,$(value $g_symbol$(value __gold_symbol_id)))
-		])
+	$(if $(value __gold_rule_id),
+		# Echo everything.
+		$(__gold_args$(call __gold_rule_symbols_nr,$(__gold_rule_id)))
+	)
 endef
 
 # Params: ignored
