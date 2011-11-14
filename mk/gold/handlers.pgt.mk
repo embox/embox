@@ -11,8 +11,8 @@ an application-specific representation.
 ##END-NOTES
 ##DELIMITER ','
 ##ID-SEPARATOR '_'
-##ID-SYMBOL-PREFIX 'Symbol'
-##ID-RULE-PREFIX 'Rule'
+##ID-SYMBOL-PREFIX 'symbol'
+##ID-RULE-PREFIX 'rule'
 ##PARAMETERS
 # Application for '%Name%' grammar (version %Version%).
 #    %About%
@@ -54,9 +54,12 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 # defined). Handler is a function with the following signature:
 #
 # Params:
-#   1. For terminals it is a list of decimal char codes representing the token.
-#      For nonterminals - the result of applying one of rule handlers (it may
-#      be used to extract common symbol value postprocessing from its rules).
+#   For terminals:
+#     1. List of decimal char codes representing the token.
+#     2. Location of the first character of this token.
+#   For nonterminals:
+#     1. The result of applying one of rule handlers (it may be used
+#        to extract common symbol value postprocessing from its rules).
 #
 # Return:
 #   Converted value. The value is then passed to a rule containing that symbol
@@ -65,9 +68,14 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 
 ##SYMBOLS
 # Symbol: %Description%
-define $(gold_prefix)_%ID%
-	# TODO Auto-generated token handler stub! Returns empty by default.
-endef
+#define $(gold_prefix)_create_%ID%
+#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
+#endef
+#define $(gold_prefix)_create_%ID%# Valid for terminals only!
+##ID-SYMBOL-PREFIX ''
+#	%ID%# TODO Auto-generated stub! Uncomment to override.
+##ID-SYMBOL-PREFIX 'symbol'
+#endef
 
 ##END-SYMBOLS
 
@@ -89,9 +97,9 @@ endef
 
 ##RULES
 # Rule: %Description%
-define $(gold_prefix)_%ID%
-	# TODO Auto-generated rule handler stub! Returns empty by default.
-endef
+#define $(gold_prefix)_produce_%ID%
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
 
 ##END-RULES
 

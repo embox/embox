@@ -823,7 +823,7 @@ endef
 # Context:
 #   fn. Symbol function name.
 __gold_default_symbol_name = \
-	$(fn:Symbol_%=%)
+	$(fn:symbol_%=%)
 
 # Params:
 #   1. Data.
