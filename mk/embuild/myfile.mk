@@ -49,21 +49,6 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #   in its RHS or returned to user in case of the Start Symbol.
 #
 
-# Symbol: (EOF)
-#define $(gold_prefix)_create-EOF
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: (Error)
-#define $(gold_prefix)_create-Error
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: (Whitespace)
-#define $(gold_prefix)_create-Whitespace
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
 # Symbol: ','
 #define $(gold_prefix)_create-Comma
 #	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
@@ -252,24 +237,6 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 # are never actually used.
 #
 
-define $(gold_prefix)_name_of-EOF
-	(EOF)
-endef
-$(gold_prefix)_name_of-EOF := \
-	$(call trim,$(value $(gold_prefix)_name_of-EOF))
-
-define $(gold_prefix)_name_of-Error
-	(Error)
-endef
-$(gold_prefix)_name_of-Error := \
-	$(call trim,$(value $(gold_prefix)_name_of-Error))
-
-define $(gold_prefix)_name_of-Whitespace
-	(Whitespace)
-endef
-$(gold_prefix)_name_of-Whitespace := \
-	$(call trim,$(value $(gold_prefix)_name_of-Whitespace))
-
 define $(gold_prefix)_name_of-Comma
 	','
 endef
@@ -367,125 +334,10 @@ $(gold_prefix)_name_of-static := \
 	$(call trim,$(value $(gold_prefix)_name_of-static))
 
 define $(gold_prefix)_name_of-StringLiteral
-	StringLiteral
+	String literal
 endef
 $(gold_prefix)_name_of-StringLiteral := \
 	$(call trim,$(value $(gold_prefix)_name_of-StringLiteral))
-
-define $(gold_prefix)_name_of-DependencyDecl
-	<DependencyDecl>
-endef
-$(gold_prefix)_name_of-DependencyDecl := \
-	$(call trim,$(value $(gold_prefix)_name_of-DependencyDecl))
-
-define $(gold_prefix)_name_of-ImportDecl
-	<ImportDecl>
-endef
-$(gold_prefix)_name_of-ImportDecl := \
-	$(call trim,$(value $(gold_prefix)_name_of-ImportDecl))
-
-define $(gold_prefix)_name_of-ImportDecls
-	<ImportDecls>
-endef
-$(gold_prefix)_name_of-ImportDecls := \
-	$(call trim,$(value $(gold_prefix)_name_of-ImportDecls))
-
-define $(gold_prefix)_name_of-Model
-	<Model>
-endef
-$(gold_prefix)_name_of-Model := \
-	$(call trim,$(value $(gold_prefix)_name_of-Model))
-
-define $(gold_prefix)_name_of-ModuleBodyDecl
-	<ModuleBodyDecl>
-endef
-$(gold_prefix)_name_of-ModuleBodyDecl := \
-	$(call trim,$(value $(gold_prefix)_name_of-ModuleBodyDecl))
-
-define $(gold_prefix)_name_of-ModuleBodyDecls
-	<ModuleBodyDecls>
-endef
-$(gold_prefix)_name_of-ModuleBodyDecls := \
-	$(call trim,$(value $(gold_prefix)_name_of-ModuleBodyDecls))
-
-define $(gold_prefix)_name_of-ModuleDecl
-	<ModuleDecl>
-endef
-$(gold_prefix)_name_of-ModuleDecl := \
-	$(call trim,$(value $(gold_prefix)_name_of-ModuleDecl))
-
-define $(gold_prefix)_name_of-ModuleDecls
-	<ModuleDecls>
-endef
-$(gold_prefix)_name_of-ModuleDecls := \
-	$(call trim,$(value $(gold_prefix)_name_of-ModuleDecls))
-
-define $(gold_prefix)_name_of-ModuleModifier
-	<ModuleModifier>
-endef
-$(gold_prefix)_name_of-ModuleModifier := \
-	$(call trim,$(value $(gold_prefix)_name_of-ModuleModifier))
-
-define $(gold_prefix)_name_of-ModuleModifiers
-	<ModuleModifiers>
-endef
-$(gold_prefix)_name_of-ModuleModifiers := \
-	$(call trim,$(value $(gold_prefix)_name_of-ModuleModifiers))
-
-define $(gold_prefix)_name_of-PackageDecl
-	<PackageDecl>
-endef
-$(gold_prefix)_name_of-PackageDecl := \
-	$(call trim,$(value $(gold_prefix)_name_of-PackageDecl))
-
-define $(gold_prefix)_name_of-QualifiedName
-	<QualifiedName>
-endef
-$(gold_prefix)_name_of-QualifiedName := \
-	$(call trim,$(value $(gold_prefix)_name_of-QualifiedName))
-
-define $(gold_prefix)_name_of-QualifiedNameWithWildcard
-	<QualifiedNameWithWildcard>
-endef
-$(gold_prefix)_name_of-QualifiedNameWithWildcard := \
-	$(call trim,$(value $(gold_prefix)_name_of-QualifiedNameWithWildcard))
-
-define $(gold_prefix)_name_of-SourceBody
-	<SourceBody>
-endef
-$(gold_prefix)_name_of-SourceBody := \
-	$(call trim,$(value $(gold_prefix)_name_of-SourceBody))
-
-define $(gold_prefix)_name_of-SourceDecl
-	<SourceDecl>
-endef
-$(gold_prefix)_name_of-SourceDecl := \
-	$(call trim,$(value $(gold_prefix)_name_of-SourceDecl))
-
-define $(gold_prefix)_name_of-SourceStatement
-	<SourceStatement>
-endef
-$(gold_prefix)_name_of-SourceStatement := \
-	$(call trim,$(value $(gold_prefix)_name_of-SourceStatement))
-
-define $(gold_prefix)_name_of-SourceStatements
-	<SourceStatements>
-endef
-$(gold_prefix)_name_of-SourceStatements := \
-	$(call trim,$(value $(gold_prefix)_name_of-SourceStatements))
-
-define $(gold_prefix)_name_of-SuperModules
-	<SuperModules>
-endef
-$(gold_prefix)_name_of-SuperModules := \
-	$(call trim,$(value $(gold_prefix)_name_of-SuperModules))
-
-define $(gold_prefix)_name_of-SuperModulesList
-	<SuperModulesList>
-endef
-$(gold_prefix)_name_of-SuperModulesList := \
-	$(call trim,$(value $(gold_prefix)_name_of-SuperModulesList))
-
 
 #
 # Rules.
