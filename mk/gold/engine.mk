@@ -38,17 +38,18 @@ define gold_parse_file
 	))
 endef
 
-# TODO move somewhere
-ascii_table = \
-       SOH STX ETX EOT ENQ ACK BEL BS  TAB LF  VT  FF  CR  SO  SI  \
-   DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US  \
-   SP  !   "   \#  $   %   &   '   (   )   *   +   ,   —   .   /   \
-   0   1   2   3   4   5   6   7   8   9   :   ;   <   =   >   ?   \
-   @   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O   \
-   P   Q   R   S   T   U   V   W   X   Y   Z   [   \   ]   ^   _   \
-   `   a   b   c   d   e   f   g   h   i   j   k   l   m   n   o   \
-   p   q   r   s   t   u   v   w   x   y   z   {   |   }   ~   DEL
-ascii_table := $(strip $(value ascii_table))
+__gold_ascii_table_special := \
+            \SOH    \STX    \ETX    \EOT    \ENQ    \ACK    \BEL    \
+    \BS    $$(\t)  $$(\n)   \VT     \FF     \CR     \SO     \SI     \
+    \DLE    \DC1    \DC2    \DC3    \DC4    \NAK    \SYN    \ETB    \
+    \CAN    \EM     \SUB    \ESC    \FS     \GS     \RS     \US     \
+   $$(\s)
+__gold_ascii_table_special := \
+	$(__gold_ascii_table_special:\%=$$(__gold_ascii_char_special))
+
+__gold_ascii_table := \
+  $(__gold_ascii_table_special) \
+  $(call words-from,33,$(ascii_table:$$=$$$$))
 
 # Parser private namespace.
 __gold_ns = $(call builtin_tag,gold-parser)
@@ -117,16 +118,49 @@ endef
 
 # Params:
 #   1. Id.
+__gold_symbol_fn = \
+	$(word 2,$($g_symbol$1))
+
+# Params:
+#   1. Id.
 # Context:
 #   g. Prefix.
 define __gold_symbol_name
-	$(with $(word 2,$($g_symbol$1)),
+	$(with $(__gold_symbol_fn),
 		$(or \
 			$(if $(call var_defined,$(gold_prefix)_name_$1),
 				$(trim $(call $(gold_prefix)_name_$1))
 			),
 			$(1:Symbol_%=%)
 		)
+	)
+endef
+
+# Params:
+#   1. Id.
+#   2. Chars.
+#   3. Location.
+define __gold_symbol_create_terminal
+	$(call \
+		# Name of creation function.
+		$(or $(call var_defined,$(gold_prefix)_create_$(__gold_symbol_fn)),
+				__gold_default_create_symbol),
+		$2,$3
+	)
+endef
+
+define __gold_default_create_symbol
+	$(with \
+		$(subst $(\s),,$(foreach c,$2,
+			$(if $(eq 0,$c),
+				<0>,
+				$(word $c,$(ascii_table))
+			)
+		)),
+		$4,
+		$1,$3,# start,end
+
+		[$1]($3-$4)
 	)
 endef
 
@@ -791,19 +825,7 @@ endef
 # 3. End position
 # 4. Symbol Id
 define __gold_token_hook
-	$(with \
-		$(subst $(\s),,$(foreach c,$2,
-			$(if $(eq 0,$c),
-				<0>,
-				$(word $c,$(ascii_table))
-			)
-		)),
-		$4,
-		$1,$3,# start,end
-
-#		$(info $(word 2,$($g_symbol$2)): $1)
-		[$1]($3-$4)
-	)
+	$(call __gold_symbol_create_terminal,$4,$2,$1)
 endef
 
 # Context:
