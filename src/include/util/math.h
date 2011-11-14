@@ -64,5 +64,11 @@
 static inline int blog2(int val);
 
 extern double floor(double x);
+extern float floorf(float x);
+extern long double floorl(long double x);
+
+extern double pow(double x, double y);
+extern float powf(float x, float y);
+extern long double powl(long double x, long double y);
 
 #endif /* UTIL_MATH_H_ */
