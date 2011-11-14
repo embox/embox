@@ -27,83 +27,83 @@ define __gold_$(gold_prefix)_parser
 		# 		<Function name>
 		# 	),
 			$(gold-symbol 0,3,# (EOF)
-				Symbol_EOF),
+				EOF),
 			$(gold-symbol 1,7,# (Error)
-				Symbol_Error),
+				Error),
 			$(gold-symbol 2,2,# (Whitespace)
-				Symbol_Whitespace),
+				Whitespace),
 			$(gold-symbol 3,1,# ','
-				Symbol_Comma),
+				Comma),
 			$(gold-symbol 4,1,# '.'
-				Symbol_Dot),
+				Dot),
 			$(gold-symbol 5,1,# '.*'
-				Symbol_DotTimes),
+				DotTimes),
 			$(gold-symbol 6,1,# ';'
-				Symbol_Semi),
+				Semi),
 			$(gold-symbol 7,1,# '{'
-				Symbol_LBrace),
+				LBrace),
 			$(gold-symbol 8,1,# '}'
-				Symbol_RBrace),
+				RBrace),
 			$(gold-symbol 9,1,# abstract
-				Symbol_abstract),
+				abstract),
 			$(gold-symbol 10,1,# depends
-				Symbol_depends),
+				depends),
 			$(gold-symbol 11,1,# extends
-				Symbol_extends),
+				extends),
 			$(gold-symbol 12,1,# file
-				Symbol_file),
+				file),
 			$(gold-symbol 13,1,# Identifier
-				Symbol_Identifier),
+				Identifier),
 			$(gold-symbol 14,1,# import
-				Symbol_import),
+				import),
 			$(gold-symbol 15,1,# module
-				Symbol_module),
+				module),
 			$(gold-symbol 16,1,# package
-				Symbol_package),
+				package),
 			$(gold-symbol 17,1,# source
-				Symbol_source),
+				source),
 			$(gold-symbol 18,1,# static
-				Symbol_static),
+				static),
 			$(gold-symbol 19,1,# StringLiteral
-				Symbol_StringLiteral),
+				StringLiteral),
 			$(gold-symbol 20,0,# <DependencyDecl>
-				Symbol_DependencyDecl),
+				DependencyDecl),
 			$(gold-symbol 21,0,# <ImportDecl>
-				Symbol_ImportDecl),
+				ImportDecl),
 			$(gold-symbol 22,0,# <ImportDecls>
-				Symbol_ImportDecls),
+				ImportDecls),
 			$(gold-symbol 23,0,# <Model>
-				Symbol_Model),
+				Model),
 			$(gold-symbol 24,0,# <ModuleBodyDecl>
-				Symbol_ModuleBodyDecl),
+				ModuleBodyDecl),
 			$(gold-symbol 25,0,# <ModuleBodyDecls>
-				Symbol_ModuleBodyDecls),
+				ModuleBodyDecls),
 			$(gold-symbol 26,0,# <ModuleDecl>
-				Symbol_ModuleDecl),
+				ModuleDecl),
 			$(gold-symbol 27,0,# <ModuleDecls>
-				Symbol_ModuleDecls),
+				ModuleDecls),
 			$(gold-symbol 28,0,# <ModuleModifier>
-				Symbol_ModuleModifier),
+				ModuleModifier),
 			$(gold-symbol 29,0,# <ModuleModifiers>
-				Symbol_ModuleModifiers),
+				ModuleModifiers),
 			$(gold-symbol 30,0,# <PackageDecl>
-				Symbol_PackageDecl),
+				PackageDecl),
 			$(gold-symbol 31,0,# <QualifiedName>
-				Symbol_QualifiedName),
+				QualifiedName),
 			$(gold-symbol 32,0,# <QualifiedNameWithWildcard>
-				Symbol_QualifiedNameWithWildcard),
+				QualifiedNameWithWildcard),
 			$(gold-symbol 33,0,# <SourceBody>
-				Symbol_SourceBody),
+				SourceBody),
 			$(gold-symbol 34,0,# <SourceDecl>
-				Symbol_SourceDecl),
+				SourceDecl),
 			$(gold-symbol 35,0,# <SourceStatement>
-				Symbol_SourceStatement),
+				SourceStatement),
 			$(gold-symbol 36,0,# <SourceStatements>
-				Symbol_SourceStatements),
+				SourceStatements),
 			$(gold-symbol 37,0,# <SuperModules>
-				Symbol_SuperModules),
+				SuperModules),
 			$(gold-symbol 38,0,# <SuperModulesList>
-				Symbol_SuperModulesList),
+				SuperModulesList),
 		),# Total 39 symbol(s).
 
 		$(gold-rule-table \
@@ -113,69 +113,69 @@ define __gold_$(gold_prefix)_parser
 		# 		<Function name>
 		# 	),
 			$(gold-rule 0,31,3,# <QualifiedName> ::= Identifier '.' <QualifiedName>
-				Rule_QualifiedName_Identifier_Dot),
+				QualifiedName_Identifier_Dot),
 			$(gold-rule 1,31,1,# <QualifiedName> ::= Identifier
-				Rule_QualifiedName_Identifier),
+				QualifiedName_Identifier),
 			$(gold-rule 2,32,2,# <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
-				Rule_QualifiedNameWithWildcard_DotTimes),
+				QualifiedNameWithWildcard_DotTimes),
 			$(gold-rule 3,32,1,# <QualifiedNameWithWildcard> ::= <QualifiedName>
-				Rule_QualifiedNameWithWildcard),
+				QualifiedNameWithWildcard),
 			$(gold-rule 4,23,3,# <Model> ::= <PackageDecl> <ImportDecls> <ModuleDecls>
-				Rule_Model),
+				Model),
 			$(gold-rule 5,30,3,# <PackageDecl> ::= package <QualifiedName> ';'
-				Rule_PackageDecl_package_Semi),
+				PackageDecl_package_Semi),
 			$(gold-rule 6,30,0,# <PackageDecl> ::=
-				Rule_PackageDecl),
+				PackageDecl),
 			$(gold-rule 7,22,2,# <ImportDecls> ::= <ImportDecl> <ImportDecls>
-				Rule_ImportDecls),
+				ImportDecls),
 			$(gold-rule 8,22,0,# <ImportDecls> ::=
-				Rule_ImportDecls2),
+				ImportDecls2),
 			$(gold-rule 9,21,3,# <ImportDecl> ::= import <QualifiedNameWithWildcard> ';'
-				Rule_ImportDecl_import_Semi),
+				ImportDecl_import_Semi),
 			$(gold-rule 10,27,2,# <ModuleDecls> ::= <ModuleDecl> <ModuleDecls>
-				Rule_ModuleDecls),
+				ModuleDecls),
 			$(gold-rule 11,27,0,# <ModuleDecls> ::=
-				Rule_ModuleDecls2),
+				ModuleDecls2),
 			$(gold-rule 12,26,7,# <ModuleDecl> ::= <ModuleModifiers> module Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
-				Rule_ModuleDecl_module_Identifier_LBrace_RBrace),
+				ModuleDecl_module_Identifier_LBrace_RBrace),
 			$(gold-rule 13,29,2,# <ModuleModifiers> ::= <ModuleModifier> <ModuleModifiers>
-				Rule_ModuleModifiers),
+				ModuleModifiers),
 			$(gold-rule 14,29,0,# <ModuleModifiers> ::=
-				Rule_ModuleModifiers2),
+				ModuleModifiers2),
 			$(gold-rule 15,28,1,# <ModuleModifier> ::= static
-				Rule_ModuleModifier_static),
+				ModuleModifier_static),
 			$(gold-rule 16,28,1,# <ModuleModifier> ::= abstract
-				Rule_ModuleModifier_abstract),
+				ModuleModifier_abstract),
 			$(gold-rule 17,37,2,# <SuperModules> ::= extends <SuperModulesList>
-				Rule_SuperModules_extends),
+				SuperModules_extends),
 			$(gold-rule 18,37,0,# <SuperModules> ::=
-				Rule_SuperModules),
+				SuperModules),
 			$(gold-rule 19,38,3,# <SuperModulesList> ::= <QualifiedName> ',' <SuperModulesList>
-				Rule_SuperModulesList_Comma),
+				SuperModulesList_Comma),
 			$(gold-rule 20,38,1,# <SuperModulesList> ::= <QualifiedName>
-				Rule_SuperModulesList),
+				SuperModulesList),
 			$(gold-rule 21,25,2,# <ModuleBodyDecls> ::= <ModuleBodyDecl> <ModuleBodyDecls>
-				Rule_ModuleBodyDecls),
+				ModuleBodyDecls),
 			$(gold-rule 22,25,0,# <ModuleBodyDecls> ::=
-				Rule_ModuleBodyDecls2),
+				ModuleBodyDecls2),
 			$(gold-rule 23,24,1,# <ModuleBodyDecl> ::= <SourceDecl>
-				Rule_ModuleBodyDecl),
+				ModuleBodyDecl),
 			$(gold-rule 24,24,1,# <ModuleBodyDecl> ::= <DependencyDecl>
-				Rule_ModuleBodyDecl2),
+				ModuleBodyDecl2),
 			$(gold-rule 25,34,2,# <SourceDecl> ::= source <SourceBody>
-				Rule_SourceDecl_source),
+				SourceDecl_source),
 			$(gold-rule 26,33,3,# <SourceBody> ::= '{' <SourceStatements> '}'
-				Rule_SourceBody_LBrace_RBrace),
+				SourceBody_LBrace_RBrace),
 			$(gold-rule 27,33,1,# <SourceBody> ::= <SourceStatement>
-				Rule_SourceBody),
+				SourceBody),
 			$(gold-rule 28,36,2,# <SourceStatements> ::= <SourceStatement> <SourceStatements>
-				Rule_SourceStatements),
+				SourceStatements),
 			$(gold-rule 29,36,0,# <SourceStatements> ::=
-				Rule_SourceStatements2),
+				SourceStatements2),
 			$(gold-rule 30,35,3,# <SourceStatement> ::= file StringLiteral ';'
-				Rule_SourceStatement_file_StringLiteral_Semi),
+				SourceStatement_file_StringLiteral_Semi),
 			$(gold-rule 31,20,1,# <DependencyDecl> ::= depends
-				Rule_DependencyDecl_depends),
+				DependencyDecl_depends),
 		),# Total 32 rule(s).
 
 		$(gold-charset-table \

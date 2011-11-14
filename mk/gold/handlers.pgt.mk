@@ -85,6 +85,7 @@ define $(gold_prefix)_name_of-%ID%
 endef
 $(gold_prefix)_name_of-%ID% := \
 	$(call trim,$(value $(gold_prefix)_name_of-%ID%))
+
 ##END-SYMBOLS
 
 
