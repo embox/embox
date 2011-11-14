@@ -11,14 +11,11 @@
 
 #include <types.h>
 
-#include <embox/service/callback.h>
+#include <util/callback.h>
 
 #define BT_DRV_MSG_CONNECTED 1
 #define BT_DRV_MSG_READ 2
 #define BT_DRV_MSG_DISCONNECTED 3
-
-void bt_clear_arm7_cmd(void);
-void bt_set_arm7_cmd(void);
 
 typedef int(*bt_comm_handler_t)(int msg, uint8_t *buff);
 
@@ -27,16 +24,30 @@ extern void bluetooth_set_handler(bt_comm_handler_t handler);
 extern size_t bluetooth_read(uint8_t *buff, size_t len);
 extern size_t bluetooth_write(uint8_t *buff, size_t len);
 
-CALLBACK_DECLARE(bluetooth_uart);
+CALLBACK_DECLARE(bt_comm_handler_t, bluetooth_uart);
+
 
 typedef int (*nxt_bt_rx_handle_t)(void);
-extern void nxt_bt_set_rx_handle(nxt_bt_rx_handle_t handle);
+CALLBACK_DECLARE(nxt_bt_rx_handle_t, bt_rx);
 
 typedef int (*nxt_bt_state_handle_t)(void);
-extern void nxt_bt_set_state_handle(nxt_bt_state_handle_t handle);
-
-extern void nxt_bluetooth_reset(void);
+CALLBACK_DECLARE(nxt_bt_state_handle_t, bt_state);
 
 
+/*
+ * Does hard reset. Usually need during boot, or unmaintable hw failure
+ */
+extern void bluetooth_hw_hard_reset(void);
+
+/*
+ * Soft reset is a call for hw to break session and listen to incoming
+ * just like after hard reset
+ */
+extern void bluetooth_hw_soft_reset(void);
+
+/*
+ * One should call this as response on connection request
+ */
+void bluetooth_hw_accept_connect(void);
 
 #endif /* BLUETOOTH_H_ */

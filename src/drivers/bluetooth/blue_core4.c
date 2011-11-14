@@ -108,12 +108,11 @@ static int process_msg(struct bc_msg *msg) {
 		break;
 	case MSG_CONNECT_RESULT:
 		if (msg->content[0]) {
-			//bt_set_uart_state();
 			out_msg.type = MSG_OPEN_STREAM;
 			out_msg.length = 2;
 			out_msg.content[0] = bt_bc_handle;
 			send_to_net("connect", 1 + strlen("connect"));
-			bt_set_arm7_cmd();
+			bluetooth_hw_accept_connect();
 			res = 1;
 		} else {
 			/* TODO nxt bt if coudn't may be reset the chip */
@@ -137,7 +136,7 @@ static int irq_handler_get_length(void) {
 	if(in_msg.length >= sizeof(in_msg)) {
 		//error; reset?
 	}
-	nxt_bt_set_rx_handle(irq_handler_get_body);
+	CALLBACK_REG(bt_rx, irq_handler_get_body);
 	bluetooth_read((uint8_t *)&(in_msg.type), in_msg.length);
 	return 0;
 }
@@ -146,7 +145,7 @@ static int irq_handler_get_body(void) {
 	int answ = process_msg(&in_msg);
 
 	if (answ == 0) {
-		nxt_bt_set_rx_handle(irq_handler_get_length);
+		CALLBACK_REG(bt_rx, irq_handler_get_length);
 		bluetooth_read((uint8_t *)&(in_msg.length), 1);
 	}
 	return 0;
@@ -158,16 +157,16 @@ static int pin_disconnect_handler(void) {
 }
 
 static int nxt_bluecore_start(struct net_node *node) {
-	nxt_bluetooth_reset();
-	nxt_bt_set_rx_handle(irq_handler_get_length);
-	nxt_bt_set_state_handle(pin_disconnect_handler);
+	bluetooth_hw_hard_reset();
+	CALLBACK_REG(bt_rx, irq_handler_get_length);
+	CALLBACK_REG(bt_state, pin_disconnect_handler);
 	bluetooth_read((uint8_t *)&(in_msg.length), 1);
 	return 0;
 }
 
 static void deffered_disconnect(softirq_nr_t nt, void* data) {
-	bt_clear_arm7_cmd();
-	nxt_bt_set_rx_handle(irq_handler_get_length);
+	bluetooth_hw_soft_reset();
+	CALLBACK_REG(bt_rx, irq_handler_get_length);
 	bluetooth_read((uint8_t *)&(in_msg.length), 1);
 }
 

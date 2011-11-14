@@ -44,8 +44,8 @@ static int handle_size(uint8_t *buff) {
 	return buff[0] + (buff[1] << 8);
 }
 
-static int direct_wait_body(void /*int msg, uint8_t *buff*/);
-static int direct_get_header(void /*int msg, uint8_t *buff*/) {
+static int direct_wait_body(void);
+static int direct_get_header(void) {
 #if 0
 	prom_printf("%x;", direct_comm_buff[0]);
 	bluetooth_read(direct_comm_buff, 1);
@@ -55,14 +55,15 @@ static int direct_get_header(void /*int msg, uint8_t *buff*/) {
 	if (size > DC_BUFF_SIZE - MSG_SIZE_BYTE_CNT) {
 		//TODO error length
 	}
-	nxt_bt_set_rx_handle(direct_wait_body);
+	CALLBACK_REG(bt_rx, direct_wait_body);
 	bluetooth_read(direct_comm_buff + MSG_SIZE_BYTE_CNT, size);
 	return 0;
 }
 
 static int direct_wait_body(void /*int msg, uint8_t *buff*/) {
 	send_to_net(direct_comm_buff, MSG_SIZE_BYTE_CNT + size);
-	nxt_bt_set_rx_handle(direct_get_header);
+	//nxt_bt_set_rx_handle(direct_get_header);
+	CALLBACK_REG(bt_rx, direct_get_header);
 	bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
 	return 0;
 }
@@ -72,7 +73,8 @@ static int rx_hnd(net_packet_t pack) {
 	if (0 != strcmp("connect", pnet_pack_get_data(pack))) {
 		return res;
 	}
-	nxt_bt_set_rx_handle(direct_get_header);
+	CALLBACK_REG(bt_rx, direct_get_header);
+
 	pnet_pack_free(pack);
 	bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
 	return res;
