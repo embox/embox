@@ -725,12 +725,16 @@ define __gold_do_accept
 	}
 endef
 
-#   t. Token
+#   t. Token:
+#       DFA error:  'Start/Chars/Bogus/End/1'
+#       LALR error: 'Start/Chars/End/Type'
 #   g. Prefix.
 define __gold_handle_error
 	$(if $(__gold_state__),
 		${eval \
-			__gold_stack__ := $(if $(t:%/1=),{lalr/$t/$(__gold_state__:.%=%)})
+			__gold_stack__ := $(if $(t:%/1=),$$(call \
+					$(lambda {lalr,$4,$2,$1,$3,$(__gold_state__:.%=%)}),
+				$(subst /,$(\comma),$t)))
 			$(\n)
 			__gold_state__ :=
 		}
@@ -738,7 +742,9 @@ define __gold_handle_error
 
 	$(if $(filter %/1,$t),
 		${eval \
-			__gold_stack__ += {dfa/$(t:%/1=%)}
+			__gold_stack__ += $$(call \
+					$(lambda {dfa,$2,$3,$1,$4}),
+				$(subst /,$(\comma),$t))
 		}
 	)
 endef
@@ -766,27 +772,27 @@ define __gold_expand
 	$(__gold_tmp__)
 endef
 
-# 1. Start position
-# 2. Chars
-# 3. Bogus chars
+# 1. Parsed chars
+# 2. Bogus chars
+# 3. Start position
 # 4. End position
 define __gold_hook_error_dfa
 	$(call gold_report,$4,
-		Lexical error: Unrecognized character$(if $(word 2,$3),s) \
-		$(subst $(\s),$(\comma)$(\s),$(foreach c,$3,
+		Lexical error: Unrecognized character$(if $(word 2,$2),s) \
+		$(subst $(\s),$(\comma)$(\s),$(foreach c,$2,
 			'$(if $(eq 0,$c),NULL,$(word $c,$(ascii_table)))'
 		))
 	)
 endef
 
-# 1. Start position
+# 1. Symbol Id
 # 2. Chars
-# 3. End position
-# 4. Symbol Id
+# 3. Start position
+# 4. End position
 # 5. LALR State
 define __gold_hook_error_lalr
-	$(call gold_report,$3,
-		Syntax error: Unexpected $(call __gold_symbol_name,$4) token, \
+	$(call gold_report,$4,
+		Syntax error: Unexpected $(__gold_symbol_name) token$(\comma) \
 		expected $(with $(filter-out /%,$(subst /, /,$($g_lalr.$5))),
 			$(foreach s,$(nolastword $1),
 				$(call __gold_symbol_name,$s),
