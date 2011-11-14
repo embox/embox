@@ -49,88 +49,25 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #   in its RHS or returned to user in case of the Start Symbol.
 #
 
-# Symbol: ','
-#define $(gold_prefix)_create-Comma
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: '.'
-#define $(gold_prefix)_create-Dot
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: '.*'
-#define $(gold_prefix)_create-DotTimes
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: ';'
-#define $(gold_prefix)_create-Semi
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: '{'
-#define $(gold_prefix)_create-LBrace
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: '}'
-#define $(gold_prefix)_create-RBrace
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: abstract
-#define $(gold_prefix)_create-abstract
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: ccfags
-#define $(gold_prefix)_create-ccfags
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: depends
-#define $(gold_prefix)_create-depends
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: extends
-#define $(gold_prefix)_create-extends
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: file
-#define $(gold_prefix)_create-file
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
+$(gold_prefix)_create-Comma     := ,
+$(gold_prefix)_create-Dot       := .
+$(gold_prefix)_create-DotTimes  := .*
+$(gold_prefix)_create-Semi      := ;
+$(gold_prefix)_create-LBrace    := {
+$(gold_prefix)_create-RBrace    := }
+$(gold_prefix)_create-abstract  := abstract
+$(gold_prefix)_create-ccfags    := ccfags
+$(gold_prefix)_create-depends   := depends
+$(gold_prefix)_create-extends   := extends
+$(gold_prefix)_create-file      := file
+$(gold_prefix)_create-import    := import
+$(gold_prefix)_create-module    := module
+$(gold_prefix)_create-package   := package
+$(gold_prefix)_create-source    := source
+$(gold_prefix)_create-static    := static
 
 # Symbol: Identifier
 #define $(gold_prefix)_create-Identifier
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: import
-#define $(gold_prefix)_create-import
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: module
-#define $(gold_prefix)_create-module
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: package
-#define $(gold_prefix)_create-package
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: source
-#define $(gold_prefix)_create-source
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-
-# Symbol: static
-#define $(gold_prefix)_create-static
 #	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
