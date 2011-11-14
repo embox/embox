@@ -840,7 +840,7 @@ endef
 #   1. Data.
 define gold_default_create
 	$(__gold_default_create[
-			$(filter 0 1,$(value $g_symbol$(value __gold_symbol_id)))
+			$(firstword $(value $g_symbol$(value __gold_symbol_id)))
 		])
 endef
 
@@ -909,7 +909,11 @@ endef
 define gold_default_produce
 	$(if $(value __gold_rule_id),
 		# Echo everything.
-		$(__gold_args$(call __gold_rule_symbols_nr,$(__gold_rule_id)))
+		$(__gold_args$(call __gold_rule_symbols_nr,$(__gold_rule_id))),
+		$(error \
+			'gold_default_produce' function \
+			must be called within rule production functions
+		)
 	)
 endef
 
