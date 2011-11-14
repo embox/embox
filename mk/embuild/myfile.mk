@@ -130,9 +130,18 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #endef
 
 # Symbol: StringLiteral
-#define $(gold_prefix)_create-StringLiteral
-#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
+define $(gold_prefix)_create-StringLiteral
+	$(subst \\ ,\,# Unescape '\' sequences.
+		$(subst \",",$(subst \',',$(subst \t,$(\t),$(subst \n,$(\n),$(subst \r,,
+			$(subst \\,\\ ,
+				$(call gold_default_create,
+					# Remove '"' at the ends.
+					$(wordlist 3,$(words $1),x $1)
+				)
+			)
+		)))))
+	)
+endef
 
 # Symbol: <DependencyDecl>
 #define $(gold_prefix)_create-DependencyDecl
