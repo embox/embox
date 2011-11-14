@@ -60,6 +60,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 $(gold_prefix)_create-Comma     := ,
 $(gold_prefix)_create-Dot       := .
 $(gold_prefix)_create-DotTimes  := .*
+$(gold_prefix)_create-Colon     := :
 $(gold_prefix)_create-Semi      := ;
 $(gold_prefix)_create-LBrace    := {
 $(gold_prefix)_create-RBrace    := }
@@ -69,10 +70,12 @@ $(gold_prefix)_create-depends   := depends
 $(gold_prefix)_create-extends   := extends
 $(gold_prefix)_create-file      := file
 $(gold_prefix)_create-import    := import
+$(gold_prefix)_create-make      := make
 $(gold_prefix)_create-module    := module
 $(gold_prefix)_create-package   := package
 $(gold_prefix)_create-source    := source
 $(gold_prefix)_create-static    := static
+$(gold_prefix)_create-target    := target
 
 # Symbol: Identifier
 #define $(gold_prefix)_create-Identifier
@@ -110,6 +113,26 @@ endef
 
 # Symbol: <ImportDecls>
 #define $(gold_prefix)_create-ImportDecls
+#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Symbol: <MakeRuleDecl>
+#define $(gold_prefix)_create-MakeRuleDecl
+#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Symbol: <MakeRulePrerequisitiesList>
+#define $(gold_prefix)_create-MakeRulePrerequisitiesList
+#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Symbol: <MakeRulePrerequisity>
+#define $(gold_prefix)_create-MakeRulePrerequisity
+#	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Symbol: <MakeRuleRecipe>
+#define $(gold_prefix)_create-MakeRuleRecipe
 #	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
@@ -202,6 +225,7 @@ endef
 $(gold_prefix)_name_of-Comma         := ','
 $(gold_prefix)_name_of-Dot           := '.'
 $(gold_prefix)_name_of-DotTimes      := '.*'
+$(gold_prefix)_name_of-Colon         := ':'
 $(gold_prefix)_name_of-Semi          := ';'
 $(gold_prefix)_name_of-LBrace        := '{'
 $(gold_prefix)_name_of-RBrace        := '}'
@@ -212,11 +236,13 @@ $(gold_prefix)_name_of-extends       := extends
 $(gold_prefix)_name_of-file          := file
 $(gold_prefix)_name_of-Identifier    := Identifier
 $(gold_prefix)_name_of-import        := import
+$(gold_prefix)_name_of-make          := make
 $(gold_prefix)_name_of-module        := module
 $(gold_prefix)_name_of-package       := package
 $(gold_prefix)_name_of-source        := source
 $(gold_prefix)_name_of-static        := static
 $(gold_prefix)_name_of-StringLiteral := String literal
+$(gold_prefix)_name_of-target        := target
 
 
 #
@@ -391,6 +417,12 @@ endef
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
+# Rule: <ModuleBodyDecl> ::= <MakeRuleDecl>
+# Args: 1..1 - Symbols; 1+1 - Location vector.
+#define $(gold_prefix)_produce-ModuleBodyDecl4
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
 # Rule: <SourceDecl> ::= source <SourceBody>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
 define $(gold_prefix)_produce-SourceDecl_source
@@ -438,6 +470,48 @@ endef
 define $(gold_prefix)_produce-DependencyDecl_depends_Semi
 	$$_DEPS-$$m += $2$(\n)
 endef
+
+# Rule: <MakeRuleDecl> ::= target StringLiteral <MakeRulePrerequisity> <MakeRuleRecipe> ';'
+# Args: 1..5 - Symbols; 5+1 - Location vector.
+#define $(gold_prefix)_produce-MakeRuleDecl_target_StringLiteral_Semi
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <MakeRulePrerequisity> ::= ':' <MakeRulePrerequisitiesList>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+#define $(gold_prefix)_produce-MakeRulePrerequisity_Colon
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <MakeRulePrerequisity> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
+#define $(gold_prefix)_produce-MakeRulePrerequisity
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <MakeRulePrerequisitiesList> ::= StringLiteral ',' <MakeRulePrerequisitiesList>
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+#define $(gold_prefix)_produce-MakeRulePrerequisitiesList_StringLiteral_Comma
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <MakeRulePrerequisitiesList> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
+#define $(gold_prefix)_produce-MakeRulePrerequisitiesList
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <MakeRuleRecipe> ::= make StringLiteral
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+#define $(gold_prefix)_produce-MakeRuleRecipe_make_StringLiteral
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
+
+# Rule: <MakeRuleRecipe> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
+#define $(gold_prefix)_produce-MakeRuleRecipe
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
 
 # Rule: <QualifiedName> ::= Identifier '.' <QualifiedName>
 # Args: 1..3 - Symbols; 3+1 - Location vector.

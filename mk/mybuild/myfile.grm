@@ -17,8 +17,11 @@
 
 {ID Head}      = {Letter} + [_]
 {ID Tail}      = {Alphanumeric} + [_]
+
 {String Chars} = {Printable} + {HT} - ["\]
 {String Esc}   = [rnt''"\]
+{Non Quote}    = {Printable} + {Whitespace} - [''\]
+{Quote Esc}    = [''\]
 
 {Non Slash}    = {Printable} + {Whitespace} - [/]
 {Non Asterisk} = {Printable} + {Whitespace} - [*]
@@ -35,6 +38,7 @@ Whitespace    = {Whitespace}+
 
 Identifier    = {ID Head}{ID Tail}*
 StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
+              | '''''''' ( ( '''' ( '''' )? )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''''
 
 ! -------------------------------------------------
 ! Rules
@@ -87,6 +91,7 @@ StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
         ::= <SourceDecl>
           | <CcflagsDecl>
           | <DependencyDecl>
+          | <MakeRuleDecl>
 
 <SourceDecl>
         ::= 'source' <SourceBody>
@@ -107,6 +112,21 @@ StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
 
 <DependencyDecl>
         ::= 'depends' <QualifiedName> ';'
+
+<MakeRuleDecl>
+        ::= 'target' StringLiteral <MakeRulePrerequisity> <MakeRuleRecipe> ';'
+
+<MakeRulePrerequisity>
+        ::= ':' <MakeRulePrerequisitiesList>
+          |
+
+<MakeRulePrerequisitiesList>
+        ::= StringLiteral ',' <MakeRulePrerequisitiesList>
+          |
+
+<MakeRuleRecipe>
+        ::= 'make' StringLiteral
+          |
 
 ! Exended identifiers.
 
