@@ -242,176 +242,213 @@ $(gold_prefix)_name_of-StringLiteral := String literal
 #
 
 # Rule: <Model> ::= <PackageDecl> <ImportDecls> <ModuleDecls>
-define $(gold_prefix)_produce-Model
-	$(info $4)
-	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-endef
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+#define $(gold_prefix)_produce-Model
+#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
+#endef
 
 # Rule: <PackageDecl> ::= package <QualifiedName> ';'
+# Args: 1..3 - Symbols; 3+1 - Location vector.
 #define $(gold_prefix)_produce-PackageDecl_package_Semi
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <PackageDecl> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
 #define $(gold_prefix)_produce-PackageDecl
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ImportDecls> ::= <ImportDecl> <ImportDecls>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
 #define $(gold_prefix)_produce-ImportDecls
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ImportDecls> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
 #define $(gold_prefix)_produce-ImportDecls2
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ImportDecl> ::= import <QualifiedNameWithWildcard> ';'
+# Args: 1..3 - Symbols; 3+1 - Location vector.
 #define $(gold_prefix)_produce-ImportDecl_import_Semi
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleDecls> ::= <ModuleDecl> <ModuleDecls>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleDecls
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleDecls> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleDecls2
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleDecl> ::= <ModuleModifiers> module Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
+# Args: 1..7 - Symbols; 7+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleDecl_module_Identifier_LBrace_RBrace
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleModifiers> ::= <ModuleModifier> <ModuleModifiers>
-#define $(gold_prefix)_produce-ModuleModifiers
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+define $(gold_prefix)_produce-ModuleModifiers
+	$(if $(not $(eq $(words $1 $2),$(words $(sort $1 $2)))),
+		$(call gold_report,$3,
+			Repeated occurrence of '$1' modifier
+		)
+	)
+	$(gold_default_produce)
+endef
 
 # Rule: <ModuleModifiers> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleModifiers2
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleModifier> ::= static
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleModifier_static
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleModifier> ::= abstract
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleModifier_abstract
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <SuperModules> ::= extends <SuperModulesList>
-#define $(gold_prefix)_produce-SuperModules_extends
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+define $(gold_prefix)_produce-SuperModules_extends
+	$2
+endef
 
 # Rule: <SuperModules> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
 #define $(gold_prefix)_produce-SuperModules
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <SuperModulesList> ::= <QualifiedName> ',' <SuperModulesList>
-#define $(gold_prefix)_produce-SuperModulesList_Comma
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_prefix)_produce-SuperModulesList_Comma
+	$1 $3
+endef
 
 # Rule: <SuperModulesList> ::= <QualifiedName>
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-SuperModulesList
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleBodyDecls> ::= <ModuleBodyDecl> <ModuleBodyDecls>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleBodyDecls
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleBodyDecls> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleBodyDecls2
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleBodyDecl> ::= <SourceDecl>
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleBodyDecl
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleBodyDecl> ::= <CcflagsDecl>
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleBodyDecl2
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <ModuleBodyDecl> ::= <DependencyDecl>
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-ModuleBodyDecl3
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <SourceDecl> ::= source <SourceBody>
-#define $(gold_prefix)_produce-SourceDecl_source
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+define $(gold_prefix)_produce-SourceDecl_source
+	$2
+endef
 
 # Rule: <SourceBody> ::= '{' <SourceStatements> '}'
-#define $(gold_prefix)_produce-SourceBody_LBrace_RBrace
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_prefix)_produce-SourceBody_LBrace_RBrace
+	$2
+endef
 
 # Rule: <SourceBody> ::= <SourceStatement>
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-SourceBody
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <SourceStatements> ::= <SourceStatement> <SourceStatements>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
 #define $(gold_prefix)_produce-SourceStatements
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <SourceStatements> ::=
+# Args: 1..0 - Symbols; 0+1 - Location vector.
 #define $(gold_prefix)_produce-SourceStatements2
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <SourceStatement> ::= file StringLiteral ';'
-#define $(gold_prefix)_produce-SourceStatement_file_StringLiteral_Semi
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_prefix)_produce-SourceStatement_file_StringLiteral_Semi
+	$2
+endef
 
 # Rule: <CcflagsDecl> ::= ccfags StringLiteral ';'
-#define $(gold_prefix)_produce-CcflagsDecl_ccfags_StringLiteral_Semi
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_prefix)_produce-CcflagsDecl_ccfags_StringLiteral_Semi
+	$2
+endef
 
 # Rule: <DependencyDecl> ::= depends <QualifiedName> ';'
-#define $(gold_prefix)_produce-DependencyDecl_depends_Semi
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_prefix)_produce-DependencyDecl_depends_Semi
+	$2
+endef
 
 # Rule: <QualifiedName> ::= Identifier '.' <QualifiedName>
-#define $(gold_prefix)_produce-QualifiedName_Identifier_Dot
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_prefix)_produce-QualifiedName_Identifier_Dot
+	$1.$3
+endef
 
 # Rule: <QualifiedName> ::= Identifier
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-QualifiedName_Identifier
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
 # Rule: <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
-#define $(gold_prefix)_produce-QualifiedNameWithWildcard_DotTimes
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+define $(gold_prefix)_produce-QualifiedNameWithWildcard_DotTimes
+	$1.*
+endef
 
 # Rule: <QualifiedNameWithWildcard> ::= <QualifiedName>
+# Args: 1..1 - Symbols; 1+1 - Location vector.
 #define $(gold_prefix)_produce-QualifiedNameWithWildcard
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
-
 
 $(def_all)
 
