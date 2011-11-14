@@ -11,8 +11,6 @@ an application-specific representation.
 ##END-NOTES
 ##DELIMITER ','
 ##ID-SEPARATOR '_'
-##ID-SYMBOL-PREFIX 'symbol'
-##ID-RULE-PREFIX 'rule'
 ##PARAMETERS
 # Application for '%Name%' grammar (version %Version%).
 #    %About%
@@ -56,7 +54,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 # Params:
 #   For terminals:
 #     1. List of decimal char codes representing the token.
-#     2. Location of the first character of this token.
+#     2. Location of the first character of this token: 'line:column'.
 #   For nonterminals:
 #     1. The result of applying one of rule handlers (it may be used
 #        to extract common symbol value postprocessing from its rules).
@@ -68,16 +66,27 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 
 ##SYMBOLS
 # Symbol: %Description%
-#define $(gold_prefix)_create_%ID%
+#define $(gold_prefix)_create-%ID%
 #	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
-#endef
-#define $(gold_prefix)_create_%ID%# Valid for terminals only!
-##ID-SYMBOL-PREFIX ''
-#	%ID%# TODO Auto-generated stub! Uncomment to override.
-##ID-SYMBOL-PREFIX 'symbol'
 #endef
 
 ##END-SYMBOLS
+
+#
+# For each regular terminal we also define a constant with a human-readable
+# description. Due to current limitations of template generator a definition
+# is generated for all existing symbols, although variables for nonterminals
+# are never actually used.
+#
+
+##SYMBOLS
+define $(gold_prefix)_name_of-%ID%
+	%Description%
+endef
+$(gold_prefix)_name_of-%ID% := \
+	$(call trim,$(value $(gold_prefix)_name_of-%ID%))
+##END-SYMBOLS
+
 
 #
 # Rules.
@@ -97,7 +106,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 
 ##RULES
 # Rule: %Description%
-#define $(gold_prefix)_produce_%ID%
+#define $(gold_prefix)_produce-%ID%
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 

@@ -738,7 +738,6 @@ endef
 # 3. Bogus chars
 # 4. End position
 define __gold_error_hook_dfa
-#	$(info $0: [$1][$2][$3][$4])
 	$(info $f:$4: \
 		Lexical error: Unrecognized character$(if $(word 2,$3),s) \
 		$(subst $(\s),$(\comma)$(\s),$(foreach c,$3,
@@ -753,18 +752,16 @@ endef
 # 4. Symbol Id
 # 5. LALR State
 define __gold_error_hook_lalr
-#	$(info $0: [$1][$2][$3][$4][$5])
-#	$(info $($g_lalr.$5))
 	$(info $f:$3: \
-		Syntax error: Unexpected '$(call __gold_symbol_name,$4)' token, \
+		Syntax error: Unexpected $(call __gold_symbol_name,$4) token, \
 		expected $(with $(filter-out /%,$(subst /, /,$($g_lalr.$5))),
 			$(foreach s,$(nolastword $1),
-				'$(call __gold_symbol_name,$s)',
+				$(call __gold_symbol_name,$s),
 			)
 			$(if $(not $(singleword $1)),
 				$(\s)or$(\s)
 			)
-			'$(call __gold_symbol_name,$(lastword $1))'
+			$(call __gold_symbol_name,$(lastword $1))
 		)
 	)
 endef
@@ -779,7 +776,7 @@ define __gold_token_hook
 			# Name of creation function.
 			$(or \
 				$(call var_defined,
-						$(gold_prefix)_create_$(call __gold_symbol_fn,$4)),
+						$(gold_prefix)_create-$(call __gold_symbol_fn,$4)),
 				gold_default_create
 			),
 			$2,$1
@@ -814,7 +811,7 @@ endef
 define __gold_symbol_name
 	$(foreach fn,$(__gold_symbol_fn),
 		$(call \
-			$(or $(call var_defined,$(gold_prefix)_name_$(fn)),
+			$(or $(call var_defined,$(gold_prefix)_name_of-$(fn)),
 					__gold_default_symbol_name)
 		)
 	)
@@ -823,7 +820,7 @@ endef
 # Context:
 #   fn. Symbol function name.
 __gold_default_symbol_name = \
-	$(fn:symbol_%=%)
+	$(fn)
 
 # Params:
 #   1. Data.
