@@ -12,8 +12,11 @@
 #define NET_PROTO_CNT 0x10
 
 int pnet_proto_init(pnet_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx) {
+#if 0
 	proto->rx_hnd = rx;
+
 	proto->tx_hnd = tx;
+#endif
 	return 0;
 }
 

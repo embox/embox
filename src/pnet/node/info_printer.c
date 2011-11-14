@@ -52,7 +52,6 @@ net_node_t pnet_get_node_info(void) {
 #endif
 
 PNET_NODE_DEF("info printer", {
-	.name = "info printer",
 	.rx_hnd = net_info_rx_hnd,
 	.tx_hnd = net_info_tx_hnd
 });

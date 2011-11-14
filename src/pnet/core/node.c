@@ -29,10 +29,10 @@ net_node_t pnet_node_init(net_node_t node, pnet_proto_t proto) {
 
 net_node_t pnet_node_alloc(net_addr_t addr, pnet_proto_t proto) {
 	net_node_t node;
-	if (proto->alloc == NULL) {
+	if (proto->actions.alloc == NULL) {
 		node = (net_node_t) objalloc(&net_nodes);
 	} else {
-		node = proto->alloc();
+		node = proto->actions.alloc();
 	}
 
 	pnet_node_init(node, proto);
@@ -50,8 +50,8 @@ net_node_t pnet_node_alloc(net_addr_t addr, pnet_proto_t proto) {
 }
 
 int pnet_node_free(net_node_t node) {
-	if (node->proto->free != NULL) {
-		if (node->proto->free(node) == 0) {
+	if (node->proto->actions.free != NULL) {
+		if (node->proto->actions.free(node) == 0) {
 			return 0;
 		}
 	}

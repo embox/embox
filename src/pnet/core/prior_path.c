@@ -28,7 +28,7 @@ static int __net_core_receive(net_packet_t pack) {
 	}
 
 	if (node->proto != NULL) {
-		fun_call_res(res, node->proto->rx_hnd, pack);
+		res = fun_call_def(res, pnet_proto_rx_hnd(node), pack);
 	}
 
 	if (res & NET_HND_DFAULT) {
@@ -51,7 +51,7 @@ static int __net_core_send(net_packet_t pack) {
 	}
 
 	if (node->proto != NULL) {
-		fun_call_res(res, node->proto->tx_hnd, pack);
+		res = fun_call_def(res, pnet_proto_tx_hnd(node), pack);
 	}
 
 	if (res & NET_HND_DFAULT) {

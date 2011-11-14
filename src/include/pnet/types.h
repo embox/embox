@@ -15,28 +15,16 @@
 #include <net/netdevice.h>
 #include <util/list.h>
 
+
 typedef int net_addr_t;
 typedef int net_id_t;
 typedef char net_prior_t;
 
 struct net_node;
 struct pnet_graph;
+struct pnet_proto;
 
 typedef struct net_packet *net_packet_t;
-
-typedef int (*net_hnd)(net_packet_t pack);
-typedef int (*net_node_hnd)(struct net_node *node);
-typedef struct net_node *(*net_alloc_hnd)(void);
-
-typedef struct pnet_proto {
-	const char *name;
-	net_hnd rx_hnd;
-	net_hnd tx_hnd;
-	net_alloc_hnd alloc;
-	net_node_hnd free;
-	net_node_hnd start;
-	net_node_hnd stop;
-} *pnet_proto_t;
 
 struct net_node {
 	struct net_node *this;
@@ -68,6 +56,7 @@ struct pnet_dev {
 
 };
 
+#include <pnet/proto.h>
 #include __module_headers(embox/pnet/core/pack/api)
 
 #endif
