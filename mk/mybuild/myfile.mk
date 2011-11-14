@@ -243,27 +243,37 @@ $(gold_prefix)_name_of-StringLiteral := String literal
 
 # Rule: <Model> ::= <PackageDecl> <ImportDecls> <ModuleDecls>
 # Args: 1..3 - Symbols; 3+1 - Location vector.
-#define $(gold_prefix)_produce-Model
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+define $(gold_prefix)_produce-Model
+	$(if $1,$1$(\n))
+	$(if $2,$2$(\n))
+	$(if $3,
+		$(if $(findstring $$_APIS,$3),$$_APIS :=$(\n))
+		$(if $(findstring $$_MODS,$3),$$_MODS :=$(\n))
+		$(\n)$3$(\n)
+	)
+endef
 
 # Rule: <PackageDecl> ::= package <QualifiedName> ';'
 # Args: 1..3 - Symbols; 3+1 - Location vector.
-#define $(gold_prefix)_produce-PackageDecl_package_Semi
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+define $(gold_prefix)_produce-PackageDecl_package_Semi
+	$$_PACKAGE := $2$(\n)
+endef
 
 # Rule: <PackageDecl> ::=
 # Args: 1..0 - Symbols; 0+1 - Location vector.
-#define $(gold_prefix)_produce-PackageDecl
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+define $(gold_prefix)_produce-PackageDecl
+	$(call gold_report,$3,
+		Warning: using default package
+	)
+endef
 
 # Rule: <ImportDecls> ::= <ImportDecl> <ImportDecls>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
-#define $(gold_prefix)_produce-ImportDecls
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+define $(gold_prefix)_produce-ImportDecls
+	$(call gold_report,$3,
+		Imports are not yet implemented!
+	)
+endef
 
 # Rule: <ImportDecls> ::=
 # Args: 1..0 - Symbols; 0+1 - Location vector.
@@ -291,16 +301,19 @@ $(gold_prefix)_name_of-StringLiteral := String literal
 
 # Rule: <ModuleDecl> ::= <ModuleModifiers> module Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
 # Args: 1..7 - Symbols; 7+1 - Location vector.
-#define $(gold_prefix)_produce-ModuleDecl_module_Identifier_LBrace_RBrace
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+define $(gold_prefix)_produce-ModuleDecl_module_Identifier_LBrace_RBrace
+	m := $3$(\n)
+	$$_$(if $(filter abstract,$1),APIS,MODS) += $$m$(\n)
+	$4
+	$6
+endef
 
 # Rule: <ModuleModifiers> ::= <ModuleModifier> <ModuleModifiers>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
 define $(gold_prefix)_produce-ModuleModifiers
 	$(if $(not $(eq $(words $1 $2),$(words $(sort $1 $2)))),
 		$(call gold_report,$3,
-			Repeated occurrence of '$1' modifier
+			Error: Repeated occurrence of '$1' modifier
 		)
 	)
 	$(gold_default_produce)
@@ -327,7 +340,7 @@ endef
 # Rule: <SuperModules> ::= extends <SuperModulesList>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
 define $(gold_prefix)_produce-SuperModules_extends
-	$2
+	$$_PROVIDES-$$m += $2$(\n)
 endef
 
 # Rule: <SuperModules> ::=
@@ -411,19 +424,19 @@ endef
 # Rule: <SourceStatement> ::= file StringLiteral ';'
 # Args: 1..3 - Symbols; 3+1 - Location vector.
 define $(gold_prefix)_produce-SourceStatement_file_StringLiteral_Semi
-	$2
+	$$_SRCS-$$m += $2$(\n)
 endef
 
 # Rule: <CcflagsDecl> ::= ccfags StringLiteral ';'
 # Args: 1..3 - Symbols; 3+1 - Location vector.
 define $(gold_prefix)_produce-CcflagsDecl_ccfags_StringLiteral_Semi
-	$2
+	$$_CFLAGS-$$m += $2$(\n)
 endef
 
 # Rule: <DependencyDecl> ::= depends <QualifiedName> ';'
 # Args: 1..3 - Symbols; 3+1 - Location vector.
 define $(gold_prefix)_produce-DependencyDecl_depends_Semi
-	$2
+	$$_DEPS-$$m += $2$(\n)
 endef
 
 # Rule: <QualifiedName> ::= Identifier '.' <QualifiedName>
