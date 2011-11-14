@@ -38,7 +38,7 @@ Whitespace    = {Whitespace}+
 
 Identifier    = {ID Head}{ID Tail}*
 StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
-              | '''''''' ( ( '''' ( '''' )? )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''''
+              | '''''' ( ( '' ( '' )? )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
 
 ! -------------------------------------------------
 ! Rules

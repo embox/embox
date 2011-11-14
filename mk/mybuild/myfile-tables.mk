@@ -366,18 +366,18 @@ define __gold_$(gold_prefix)_parser
 				$(gold-dfa-edge 6,7),
 				$(gold-dfa-edge 7,9),
 				$(gold-dfa-edge 8,14),
-				$(gold-dfa-edge 9,25),
-				$(gold-dfa-edge 10,27),
-				$(gold-dfa-edge 11,37),
-				$(gold-dfa-edge 12,45),
-				$(gold-dfa-edge 13,51),
-				$(gold-dfa-edge 14,58),
-				$(gold-dfa-edge 15,65),
-				$(gold-dfa-edge 16,69),
-				$(gold-dfa-edge 17,75),
-				$(gold-dfa-edge 18,84),
-				$(gold-dfa-edge 19,91),
-				$(gold-dfa-edge 20,102),
+				$(gold-dfa-edge 9,23),
+				$(gold-dfa-edge 10,25),
+				$(gold-dfa-edge 11,35),
+				$(gold-dfa-edge 12,43),
+				$(gold-dfa-edge 13,49),
+				$(gold-dfa-edge 14,56),
+				$(gold-dfa-edge 15,63),
+				$(gold-dfa-edge 16,67),
+				$(gold-dfa-edge 17,73),
+				$(gold-dfa-edge 18,82),
+				$(gold-dfa-edge 19,89),
+				$(gold-dfa-edge 20,100),
 			),# Total 21 edge(s).
 			$(gold-dfa-state 1,2,
 				$(gold-dfa-edge 0,1),
@@ -425,358 +425,352 @@ define __gold_$(gold_prefix)_parser
 				$(gold-dfa-edge 8,16),
 			),# Total 1 edge(s).
 			$(gold-dfa-state 16,-1,
-				$(gold-dfa-edge 8,17),
-			),# Total 1 edge(s).
+				$(gold-dfa-edge 25,17),
+				$(gold-dfa-edge 23,18),
+				$(gold-dfa-edge 8,20),
+			),# Total 3 edge(s).
 			$(gold-dfa-state 17,-1,
-				$(gold-dfa-edge 25,18),
-				$(gold-dfa-edge 23,19),
-				$(gold-dfa-edge 8,21),
+				$(gold-dfa-edge 25,17),
+				$(gold-dfa-edge 23,18),
+				$(gold-dfa-edge 8,20),
 			),# Total 3 edge(s).
 			$(gold-dfa-state 18,-1,
-				$(gold-dfa-edge 25,18),
-				$(gold-dfa-edge 23,19),
-				$(gold-dfa-edge 8,21),
-			),# Total 3 edge(s).
-			$(gold-dfa-state 19,-1,
-				$(gold-dfa-edge 26,20),
+				$(gold-dfa-edge 26,19),
 			),# Total 1 edge(s).
+			$(gold-dfa-state 19,-1,
+				$(gold-dfa-edge 25,17),
+				$(gold-dfa-edge 23,18),
+				$(gold-dfa-edge 8,20),
+			),# Total 3 edge(s).
 			$(gold-dfa-state 20,-1,
-				$(gold-dfa-edge 25,18),
-				$(gold-dfa-edge 23,19),
+				$(gold-dfa-edge 25,17),
+				$(gold-dfa-edge 23,18),
 				$(gold-dfa-edge 8,21),
 			),# Total 3 edge(s).
 			$(gold-dfa-state 21,-1,
+				$(gold-dfa-edge 25,17),
+				$(gold-dfa-edge 23,18),
 				$(gold-dfa-edge 8,22),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 22,-1,
-				$(gold-dfa-edge 25,18),
-				$(gold-dfa-edge 23,19),
-				$(gold-dfa-edge 8,23),
 			),# Total 3 edge(s).
-			$(gold-dfa-state 23,-1,
-				$(gold-dfa-edge 8,24),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 24,22,
-				$(gold-dfa-edge 25,18),
-				$(gold-dfa-edge 23,19),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 25,4,
-				$(gold-dfa-edge 27,26),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 26,5,
+			$(gold-dfa-state 22,22,
 			),# Total 0 edge(s).
-			$(gold-dfa-state 27,-1,
+			$(gold-dfa-state 23,4,
+				$(gold-dfa-edge 27,24),
+			),# Total 1 edge(s).
+			$(gold-dfa-state 24,5,
+			),# Total 0 edge(s).
+			$(gold-dfa-state 25,-1,
+				$(gold-dfa-edge 27,26),
+				$(gold-dfa-edge 10,31),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 26,-1,
+				$(gold-dfa-edge 28,27),
 				$(gold-dfa-edge 27,28),
-				$(gold-dfa-edge 10,33),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 27,-1,
+				$(gold-dfa-edge 28,27),
+				$(gold-dfa-edge 27,28),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 28,-1,
-				$(gold-dfa-edge 28,29),
-				$(gold-dfa-edge 27,30),
+				$(gold-dfa-edge 29,29),
+				$(gold-dfa-edge 10,30),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 29,-1,
-				$(gold-dfa-edge 28,29),
-				$(gold-dfa-edge 27,30),
+				$(gold-dfa-edge 28,27),
+				$(gold-dfa-edge 27,28),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 30,-1,
-				$(gold-dfa-edge 29,31),
-				$(gold-dfa-edge 10,32),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 31,-1,
-				$(gold-dfa-edge 28,29),
-				$(gold-dfa-edge 27,30),
-			),# Total 2 edge(s).
+			$(gold-dfa-state 30,2,
+			),# Total 0 edge(s).
+			$(gold-dfa-state 31,2,
+				$(gold-dfa-edge 30,32),
+				$(gold-dfa-edge 31,33),
+				$(gold-dfa-edge 32,34),
+			),# Total 3 edge(s).
 			$(gold-dfa-state 32,2,
-			),# Total 0 edge(s).
-			$(gold-dfa-state 33,2,
-				$(gold-dfa-edge 30,34),
-				$(gold-dfa-edge 31,35),
-				$(gold-dfa-edge 32,36),
+				$(gold-dfa-edge 30,32),
+				$(gold-dfa-edge 31,33),
+				$(gold-dfa-edge 32,34),
 			),# Total 3 edge(s).
-			$(gold-dfa-state 34,2,
-				$(gold-dfa-edge 30,34),
-				$(gold-dfa-edge 31,35),
-				$(gold-dfa-edge 32,36),
-			),# Total 3 edge(s).
-			$(gold-dfa-state 35,-1,
-				$(gold-dfa-edge 32,36),
+			$(gold-dfa-state 33,-1,
+				$(gold-dfa-edge 32,34),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 36,2,
+			$(gold-dfa-state 34,2,
 			),# Total 0 edge(s).
-			$(gold-dfa-state 37,15,
+			$(gold-dfa-state 35,15,
 				$(gold-dfa-edge 33,8),
-				$(gold-dfa-edge 34,38),
+				$(gold-dfa-edge 34,36),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 36,15,
+				$(gold-dfa-edge 35,8),
+				$(gold-dfa-edge 19,37),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 37,15,
+				$(gold-dfa-edge 36,8),
+				$(gold-dfa-edge 20,38),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 38,15,
-				$(gold-dfa-edge 35,8),
-				$(gold-dfa-edge 19,39),
+				$(gold-dfa-edge 37,8),
+				$(gold-dfa-edge 38,39),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 39,15,
-				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,40),
+				$(gold-dfa-edge 39,8),
+				$(gold-dfa-edge 11,40),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 40,15,
-				$(gold-dfa-edge 37,8),
-				$(gold-dfa-edge 38,41),
+				$(gold-dfa-edge 40,8),
+				$(gold-dfa-edge 12,41),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 41,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,42),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 42,15,
-				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,43),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 43,15,
 				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,44),
+				$(gold-dfa-edge 20,42),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 44,10,
+			$(gold-dfa-state 42,10,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 45,15,
+			$(gold-dfa-state 43,15,
 				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,46),
+				$(gold-dfa-edge 12,44),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 44,15,
+				$(gold-dfa-edge 41,8),
+				$(gold-dfa-edge 15,45),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 45,15,
+				$(gold-dfa-edge 39,8),
+				$(gold-dfa-edge 11,46),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 46,15,
-				$(gold-dfa-edge 41,8),
-				$(gold-dfa-edge 15,47),
+				$(gold-dfa-edge 42,8),
+				$(gold-dfa-edge 43,47),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 47,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,48),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 48,15,
-				$(gold-dfa-edge 42,8),
-				$(gold-dfa-edge 43,49),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 49,15,
 				$(gold-dfa-edge 35,8),
-				$(gold-dfa-edge 19,50),
+				$(gold-dfa-edge 19,48),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 50,11,
+			$(gold-dfa-state 48,11,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
+			$(gold-dfa-state 49,15,
+				$(gold-dfa-edge 44,8),
+				$(gold-dfa-edge 14,50),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 50,15,
+				$(gold-dfa-edge 45,8),
+				$(gold-dfa-edge 18,51),
+			),# Total 2 edge(s).
 			$(gold-dfa-state 51,15,
 				$(gold-dfa-edge 44,8),
 				$(gold-dfa-edge 14,52),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 52,15,
-				$(gold-dfa-edge 45,8),
-				$(gold-dfa-edge 18,53),
+				$(gold-dfa-edge 46,8),
+				$(gold-dfa-edge 47,53),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 53,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,54),
+				$(gold-dfa-edge 48,8),
+				$(gold-dfa-edge 13,54),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 54,15,
-				$(gold-dfa-edge 46,8),
-				$(gold-dfa-edge 47,55),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 55,15,
-				$(gold-dfa-edge 48,8),
-				$(gold-dfa-edge 13,56),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 56,15,
 				$(gold-dfa-edge 35,8),
-				$(gold-dfa-edge 19,57),
+				$(gold-dfa-edge 19,55),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 57,12,
+			$(gold-dfa-state 55,12,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 58,15,
+			$(gold-dfa-state 56,15,
 				$(gold-dfa-edge 49,8),
-				$(gold-dfa-edge 50,59),
+				$(gold-dfa-edge 50,57),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 57,15,
+				$(gold-dfa-edge 36,8),
+				$(gold-dfa-edge 20,58),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 58,15,
+				$(gold-dfa-edge 44,8),
+				$(gold-dfa-edge 14,59),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 59,15,
-				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,60),
+				$(gold-dfa-edge 46,8),
+				$(gold-dfa-edge 47,60),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 60,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,61),
+				$(gold-dfa-edge 48,8),
+				$(gold-dfa-edge 13,61),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 61,15,
-				$(gold-dfa-edge 46,8),
-				$(gold-dfa-edge 47,62),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 62,15,
-				$(gold-dfa-edge 48,8),
-				$(gold-dfa-edge 13,63),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 63,15,
 				$(gold-dfa-edge 35,8),
-				$(gold-dfa-edge 19,64),
+				$(gold-dfa-edge 19,62),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 64,13,
+			$(gold-dfa-state 62,13,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 65,15,
+			$(gold-dfa-state 63,15,
 				$(gold-dfa-edge 51,8),
-				$(gold-dfa-edge 16,66),
+				$(gold-dfa-edge 16,64),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 66,15,
+			$(gold-dfa-state 64,15,
 				$(gold-dfa-edge 52,8),
-				$(gold-dfa-edge 53,67),
+				$(gold-dfa-edge 53,65),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 67,15,
+			$(gold-dfa-state 65,15,
 				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,68),
+				$(gold-dfa-edge 14,66),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 68,14,
+			$(gold-dfa-state 66,14,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 69,15,
+			$(gold-dfa-state 67,15,
 				$(gold-dfa-edge 54,8),
-				$(gold-dfa-edge 17,70),
+				$(gold-dfa-edge 17,68),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 68,15,
+				$(gold-dfa-edge 45,8),
+				$(gold-dfa-edge 18,69),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 69,15,
+				$(gold-dfa-edge 55,8),
+				$(gold-dfa-edge 56,70),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 70,15,
-				$(gold-dfa-edge 45,8),
-				$(gold-dfa-edge 18,71),
+				$(gold-dfa-edge 37,8),
+				$(gold-dfa-edge 38,71),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 71,15,
-				$(gold-dfa-edge 55,8),
-				$(gold-dfa-edge 56,72),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 72,15,
-				$(gold-dfa-edge 37,8),
-				$(gold-dfa-edge 38,73),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 73,15,
 				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,74),
+				$(gold-dfa-edge 20,72),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 74,16,
+			$(gold-dfa-state 72,16,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 75,15,
+			$(gold-dfa-state 73,15,
 				$(gold-dfa-edge 57,8),
-				$(gold-dfa-edge 11,76),
-				$(gold-dfa-edge 56,79),
+				$(gold-dfa-edge 11,74),
+				$(gold-dfa-edge 56,77),
 			),# Total 3 edge(s).
-			$(gold-dfa-state 76,15,
+			$(gold-dfa-state 74,15,
 				$(gold-dfa-edge 58,8),
-				$(gold-dfa-edge 59,77),
+				$(gold-dfa-edge 59,75),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 77,15,
+			$(gold-dfa-state 75,15,
 				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,78),
+				$(gold-dfa-edge 14,76),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 78,17,
+			$(gold-dfa-state 76,17,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 79,15,
+			$(gold-dfa-state 77,15,
 				$(gold-dfa-edge 48,8),
-				$(gold-dfa-edge 13,80),
+				$(gold-dfa-edge 13,78),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 78,15,
+				$(gold-dfa-edge 60,8),
+				$(gold-dfa-edge 61,79),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 79,15,
+				$(gold-dfa-edge 52,8),
+				$(gold-dfa-edge 53,80),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 80,15,
-				$(gold-dfa-edge 60,8),
-				$(gold-dfa-edge 61,81),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 81,15,
-				$(gold-dfa-edge 52,8),
-				$(gold-dfa-edge 53,82),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 82,15,
 				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,83),
+				$(gold-dfa-edge 14,81),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 83,18,
+			$(gold-dfa-state 81,18,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 84,15,
+			$(gold-dfa-state 82,15,
 				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,85),
+				$(gold-dfa-edge 11,83),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 83,15,
+				$(gold-dfa-edge 40,8),
+				$(gold-dfa-edge 12,84),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 84,15,
+				$(gold-dfa-edge 58,8),
+				$(gold-dfa-edge 59,85),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 85,15,
-				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,86),
+				$(gold-dfa-edge 39,8),
+				$(gold-dfa-edge 11,86),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 86,15,
-				$(gold-dfa-edge 58,8),
-				$(gold-dfa-edge 59,87),
+				$(gold-dfa-edge 42,8),
+				$(gold-dfa-edge 43,87),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 87,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,88),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 88,15,
-				$(gold-dfa-edge 42,8),
-				$(gold-dfa-edge 43,89),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 89,15,
 				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,90),
+				$(gold-dfa-edge 14,88),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 90,19,
+			$(gold-dfa-state 88,19,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 91,15,
+			$(gold-dfa-state 89,15,
 				$(gold-dfa-edge 62,8),
-				$(gold-dfa-edge 56,92),
-				$(gold-dfa-edge 20,97),
+				$(gold-dfa-edge 56,90),
+				$(gold-dfa-edge 20,95),
 			),# Total 3 edge(s).
-			$(gold-dfa-state 92,15,
+			$(gold-dfa-state 90,15,
 				$(gold-dfa-edge 60,8),
-				$(gold-dfa-edge 61,93),
+				$(gold-dfa-edge 61,91),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 91,15,
+				$(gold-dfa-edge 37,8),
+				$(gold-dfa-edge 38,92),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 92,15,
+				$(gold-dfa-edge 40,8),
+				$(gold-dfa-edge 12,93),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 93,15,
-				$(gold-dfa-edge 37,8),
-				$(gold-dfa-edge 38,94),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 94,15,
-				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,95),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 95,15,
 				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,96),
+				$(gold-dfa-edge 14,94),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 96,20,
+			$(gold-dfa-state 94,20,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 97,15,
+			$(gold-dfa-state 95,15,
 				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,98),
+				$(gold-dfa-edge 11,96),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 96,15,
+				$(gold-dfa-edge 36,8),
+				$(gold-dfa-edge 20,97),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 97,15,
+				$(gold-dfa-edge 51,8),
+				$(gold-dfa-edge 16,98),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 98,15,
-				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,99),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 99,15,
-				$(gold-dfa-edge 51,8),
-				$(gold-dfa-edge 16,100),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 100,15,
 				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,101),
+				$(gold-dfa-edge 12,99),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 101,21,
+			$(gold-dfa-state 99,21,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 102,15,
+			$(gold-dfa-state 100,15,
 				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,103),
+				$(gold-dfa-edge 11,101),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 101,15,
+				$(gold-dfa-edge 37,8),
+				$(gold-dfa-edge 38,102),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 102,15,
+				$(gold-dfa-edge 42,8),
+				$(gold-dfa-edge 43,103),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 103,15,
-				$(gold-dfa-edge 37,8),
-				$(gold-dfa-edge 38,104),
+				$(gold-dfa-edge 44,8),
+				$(gold-dfa-edge 14,104),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 104,15,
-				$(gold-dfa-edge 42,8),
-				$(gold-dfa-edge 43,105),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 105,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,106),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 106,15,
 				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,107),
+				$(gold-dfa-edge 20,105),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 107,23,
+			$(gold-dfa-state 105,23,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-		),# Total 108 DFA state(s).
+		),# Total 106 DFA state(s).
 
 		$(gold-lalr-table 0,# <- Initial state
 		# 	$(gold-lalr-state <ID>,
