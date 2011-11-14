@@ -23,14 +23,15 @@ EMBOX_UNIT_INIT(dc_pnet_init);
 
 #define DC_BUFF_SIZE 0x20 /* lego_nxt direct command maximum length */
 
-static net_node_t this;
+static int rx_hnd(net_packet_t pack);
+PNET_NODE_DEF_NAME("nxt direct src", this, {
+	.rx_hnd = rx_hnd
+});
 
 static uint8_t direct_comm_buff[DC_BUFF_SIZE];
 
 static void send_to_net(unsigned char *data, int len) {
-	net_packet_t pack = pnet_pack_alloc(this, NET_PACKET_RX, (void *) data, len);
-
-	memcpy(pnet_pack_get_data(pack), data, len);
+	net_packet_t pack = pnet_pack_alloc(&this, NET_PACKET_RX, (void *) data, len);
 
 	pnet_entry(pack);
 
@@ -68,7 +69,7 @@ static int direct_wait_body(void /*int msg, uint8_t *buff*/) {
 
 static int rx_hnd(net_packet_t pack) {
 	int res = NET_HND_SUPPRESSED;
-	if (!strcmp("connect", pnet_pack_get_data(pack))) {
+	if (0 != strcmp("connect", pnet_pack_get_data(pack))) {
 		return res;
 	}
 	nxt_bt_set_rx_handle(direct_get_header);
@@ -78,11 +79,7 @@ static int rx_hnd(net_packet_t pack) {
 }
 
 static int dc_pnet_init(void) {
-	this = pnet_get_module("nxt direct src");
 	return 0;
 }
 
 
-PNET_NODE_DEF("nxt direct src", {
-	.rx_hnd = rx_hnd
-});

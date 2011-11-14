@@ -43,7 +43,7 @@ void nxt_bt_set_rx_handle(nxt_bt_rx_handle_t handle) {
 }
 
 static nxt_bt_state_handle_t nxt_bt_state_handle = nop;
-void nxt_bt_state_rx_handle(nxt_bt_state_handle_t handle) {
+void nxt_bt_set_state_handle(nxt_bt_state_handle_t handle) {
 	nxt_bt_state_handle = handle;
 }
 
@@ -222,6 +222,7 @@ static void init_adc(void) {
 	REG_STORE(AT91C_ADC_CHER, AT91C_ADC_CH6 | AT91C_ADC_CH4);
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
+
 /* timer handler
  * we scan PIN_BT4 for changing and if it changed bt state switch to disconnect
  *  mode.
@@ -232,8 +233,6 @@ static void  nxt_bt_timer_handler(int id) {
 	if (bt_last_state != bt_state) {
 		if (!bt_state) {
 			nxt_bt_state_handle();
-			//comm_handler(BT_DRV_MSG_DISCONNECTED, NULL);
-			//bt_receive_init();
 		}
 	}
 	bt_last_state = bt_state;
@@ -261,10 +260,8 @@ static int nxt_bluetooth_init(void) {
 	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
 		(irq_handler_t) nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
-//	nxt_bluetooth_reset();
 //TODO may be it must set when bt has been connected?
 	timer_set(&ntx_bt_timer, 200, (sys_timer_handler_t) &nxt_bt_timer_handler, NULL);
-//	bt_receive_init();
 
 	return 0;
 }

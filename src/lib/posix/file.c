@@ -20,7 +20,7 @@ int close(int fd) {
 	case TASK_IDX_TYPE_FILE:
 		return task_file_close(fd, task_self());
 	case TASK_IDX_TYPE_SOCKET:
-		return socket_close(fd);
+//		return socket_close(fd);
 	default:
 		return -1;
 	}

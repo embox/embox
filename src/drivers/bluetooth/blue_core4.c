@@ -10,6 +10,7 @@
 
 #include <types.h>
 #include <string.h>
+#include <kernel/softirq.h>
 #include <embox/unit.h>
 
 #include <drivers/blue_core4.h>
@@ -29,13 +30,13 @@ PNET_NODE_DEF_NAME("lego_blue_core", this, {
 		.start = nxt_bluecore_start
 });
 
+#define SOFTIRQ_DEFFERED_DISCONNECT 10
+
 static struct bc_msg out_msg;
 static struct bc_msg in_msg;
 
 static void send_to_net(char *data, int len) {
 	net_packet_t pack = pnet_pack_alloc(&this, NET_PACKET_RX, (void *) data, len);
-
-	memcpy(pnet_pack_get_data(pack), data, len);
 
 	pnet_entry(pack);
 
@@ -111,7 +112,7 @@ static int process_msg(struct bc_msg *msg) {
 			out_msg.type = MSG_OPEN_STREAM;
 			out_msg.length = 2;
 			out_msg.content[0] = bt_bc_handle;
-			send_to_net("connect", strlen("connect"));
+			send_to_net("connect", 1 + strlen("connect"));
 			bt_set_arm7_cmd();
 			res = 1;
 		} else {
@@ -151,15 +152,26 @@ static int irq_handler_get_body(void) {
 	return 0;
 }
 
+static int pin_disconnect_handler(void) {
+	softirq_raise(SOFTIRQ_DEFFERED_DISCONNECT);
+	return 0;
+}
 
 static int nxt_bluecore_start(struct net_node *node) {
 	nxt_bluetooth_reset();
 	nxt_bt_set_rx_handle(irq_handler_get_length);
+	nxt_bt_set_state_handle(pin_disconnect_handler);
 	bluetooth_read((uint8_t *)&(in_msg.length), 1);
 	return 0;
 }
 
+static void deffered_disconnect(softirq_nr_t nt, void* data) {
+	bt_clear_arm7_cmd();
+	nxt_bt_set_rx_handle(irq_handler_get_length);
+	bluetooth_read((uint8_t *)&(in_msg.length), 1);
+}
+
 static int nxt_bluecore_init(void) {
-	return 0;
+	return softirq_install(SOFTIRQ_DEFFERED_DISCONNECT, deffered_disconnect, NULL);
 }
 
