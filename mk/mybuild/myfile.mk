@@ -85,14 +85,26 @@ $(gold_prefix)_create-target    := target
 # Symbol: StringLiteral
 define $(gold_prefix)_create-StringLiteral
 	$(subst \\ ,\,# Unescape '\' sequences.
-		$(subst \",",$(subst \',',$(subst \t,$(\t),$(subst \n,$(\n),$(subst \r,,
-			$(subst \\,\\ ,
-				$(call gold_default_create,
-					# Remove '"' at the ends.
-					$(wordlist 3,$(words $1),x $1)
+		$(subst \',',
+			$(if $(eq ",$(call gold_default_create,$(firstword $1))),
+				# Regular "..." string.
+				$(subst \",",$(subst \t,$(\t),$(subst \n,$(\n),$(subst \r,,
+					$(subst \\,\\ ,
+						$(call gold_default_create,
+							# Remove '"' at the ends.
+							$(wordlist 3,$(words $1),x $1)
+						)
+					)
+				)))),
+				# Verbatim '''...''' string.
+				$(subst \\,\\ ,
+					$(call gold_default_create,
+						# Remove ''' at the ends.
+						$(wordlist 7,$(words $1),x x x $1)
+					)
 				)
 			)
-		)))))
+		)
 	)
 endef
 
