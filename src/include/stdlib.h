@@ -46,14 +46,40 @@
  *   @a base.
  */
 extern long int strtol(const char *nptr, char **endptr, int base);
+
 extern unsigned long int strtoul(const char *nptr, char **endptr, int base);
 
 extern double strtod(const char *nptr, char **endptr);
 
-/** Allocate and free dynamic memory */
+/* Allocate and free dynamic memory */
 extern void *calloc(size_t nmemb, size_t size);
 extern void *malloc(size_t size);
 extern void free(void *ptr);
 extern void *realloc(void *ptr, size_t size);
+
+
+// FIXME qsort isn't realizes now
+extern void qsort(void *base, size_t nmemb, size_t size,
+		int(*compar)(const void *, const void *));
+
+extern void *bsearch(const void *key, const void *base,
+              size_t nmemb, size_t size,
+              int (*compar)(const void *, const void *));
+
+
+extern int rand(void);
+extern int rand_r(unsigned int *seedp);
+extern void srand(unsigned int seed);
+
+
+//FIXME atof atoi and so on
+extern double atof(const char *nptr);
+extern int atoi(const char *nptr);
+extern long atol(const char *nptr);
+extern long long atoll(const char *nptr);
+extern long long atoq(const char *nptr);
+extern double strtod(const char *nptr, char **endptr);
+extern float strtof(const char *nptr, char **endptr);
+extern long double strtold(const char *nptr, char **endptr);
 
 #endif /* STDLIB_H_ */

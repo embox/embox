@@ -13,7 +13,7 @@
 
 #include <asm/types.h>
 
-#include <posix/sys/select.h>
+#include <sys/select.h>
 
 #ifndef __size_t_defined
 #define __size_t_defined

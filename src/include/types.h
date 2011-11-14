@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <posix/sys/types.h>
+#include <sys/types.h>
 
 /* FIXME try to avoid using these types -- Eldar*/
 typedef __u16 __le16;
@@ -44,12 +44,6 @@ typedef unsigned long int 	u32_t;
 #define NULL ((void *) 0x0)
 #endif
 
-#if 0
-typedef __paddr_t paddr_t;
-typedef __psize_t psize_t;
-typedef __vaddr_t vaddr_t;
-typedef __vsize_t vsize_t;
-#endif
 
 #endif /* __ASSEMBLER__ */
 

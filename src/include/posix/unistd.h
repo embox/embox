@@ -11,7 +11,7 @@
 #ifndef UNISTD_H_
 #define UNISTD_H_
 
-#include <posix/sys/types.h>
+#include <sys/types.h>
 
 /* Standard file descriptors. */
 #define STDIN_FILENO    0   /* Standard input. */
