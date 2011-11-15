@@ -26,7 +26,7 @@
 
 ifndef $(already_included)
 
-include util/wildcard.mk
+include mk/util/wildcard.mk
 
 #
 # Usage:
@@ -82,6 +82,24 @@ traverse = $(strip \
     $(call __traverse_invoke,$(__traverse_root),$2) \
   ) \
 )
+
+# Params:
+#  1. Files
+traverse_files = \
+	$(foreach 1,$1,$(eval $(value __traverse_file_mk)))
+
+define __traverse_file_mk
+  SELFDIR := $(patsubst $(EM_DIR)%/,$(ROOT_DIR)%,$(dir $1))
+  $_SELFDIR := $(SELFDIR)# TODO try to avoid it
+
+  __traverse_include := \
+    $(call f-wildcard_first,$(addprefix $1/,Makefile makefile))
+  ifneq ($(__traverse_include),)
+    # Go!
+    include $(__traverse_include)
+  else
+  endif
+endef
 
 #
 # A kind of wrapper for __traverse_process that allows us to use unescaped code
