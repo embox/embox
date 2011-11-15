@@ -27,19 +27,10 @@ EMBOX_UNIT_INIT(robobot_bluetooth_car);
 
 #define BUFF_SIZE 20
 static uint8_t car_bt_buff[BUFF_SIZE];
+
+static int car_bt_disconnect(void);
+static int car_bt_connect(void);
 static int car_bt_read(void);
-
-static int robobot_bluetooth_car(void) {
-	CALLBACK_REG(bt_rx, car_bt_read);
-
-	REG_STORE(AT91C_PIOA_PDR, RIGHT_PIN | LEFT_PIN | FORWARD_PIN | BACKWARD_PIN);
-	REG_STORE(AT91C_PIOA_ASR, BACKWARD_PIN);
-	REG_STORE(AT91C_PIOA_BSR, RIGHT_PIN | LEFT_PIN | FORWARD_PIN );
-	pin_config_output(RIGHT_PIN | LEFT_PIN | FORWARD_PIN | BACKWARD_PIN);
-	pin_config_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
-
-	return 0;
-}
 
 void turn_right(void) {
 	pin_set_output(RIGHT_PIN);
@@ -117,7 +108,6 @@ static int robobot_stamp(uint8_t *buff) {
 	return 1;
 }
 
-
 static int car_bt_read(void) {
 	if (robobot_handle(car_bt_buff)) {
 		robobot_handle_car(car_bt_buff + ROBOBOT_HEADER_SIZE);
@@ -130,14 +120,29 @@ static int car_bt_read(void) {
 	return 0;
 }
 
-#if 0
 static int car_bt_connect(void) {
 	bluetooth_read(car_bt_buff, ROBOBOT_MSG_SIZE);
 	pin_set_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
+	CALLBACK_REG(bt_state, car_bt_disconnect);
 	return 0;
 }
 
 static int car_bt_disconnect(void) {
 	pin_clear_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
+	CALLBACK_REG(bt_state, car_bt_connect);
+	return 0;
 }
-#endif
+
+static int robobot_bluetooth_car(void) {
+	CALLBACK_REG(bt_rx, car_bt_read);
+	CALLBACK_REG(bt_state, car_bt_connect);
+
+	REG_STORE(AT91C_PIOA_PDR, RIGHT_PIN | LEFT_PIN | FORWARD_PIN | BACKWARD_PIN);
+	REG_STORE(AT91C_PIOA_ASR, BACKWARD_PIN);
+	REG_STORE(AT91C_PIOA_BSR, RIGHT_PIN | LEFT_PIN | FORWARD_PIN );
+	pin_config_output(RIGHT_PIN | LEFT_PIN | FORWARD_PIN | BACKWARD_PIN);
+	pin_config_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
+
+	return 0;
+}
+

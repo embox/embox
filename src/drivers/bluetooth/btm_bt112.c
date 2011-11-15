@@ -83,7 +83,10 @@ static int irq_hnd_wait_lrlf(void) {
 	if (general_handler()) {
 		set_handler(DISCONNECT_WAIT);
 		//Acknowlege about connect
+		//FIXME
+		CALLBACK(bt_state)();
 	}
+	bluetooth_read(bt_buff, 1);
 	return 0;
 }
 
@@ -98,7 +101,7 @@ static int irq_hnd_wait_disconn(void) {
 
 static int btm112_init(void) {
 	bluetooth_hw_hard_reset();
-	CALLBACK_REG(bt_rx, irq_hnd_wait_conn);
+	CALLBACK_REG(__bt_rx, irq_hnd_wait_conn);
 	bluetooth_read(bt_buff, 1);
 	return 0;
 }
