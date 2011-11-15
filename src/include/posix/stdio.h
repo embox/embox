@@ -15,7 +15,6 @@
 #include <types.h>
 #include <kernel/printk.h>
 
-
 #define EOF (-1)
 
 typedef int FILE;
@@ -32,6 +31,8 @@ extern int fgetc(FILE *f);
  */
 extern int puts(const char *s);
 
+#define fputs(s, stream) puts(s)
+
 extern int putchar(int c);
 
 /**
@@ -39,6 +40,8 @@ extern int putchar(int c);
  * either a terminating newline or EOF
  */
 extern char *gets(char *s);
+
+#define fgets(s, size, stream) gets(s)
 
 extern int getchar(void);
 
@@ -48,6 +51,8 @@ extern int ungetc(int c, FILE *stream);
  * Write formatted output to stdout from the format string FORMAT.
  */
 extern int printf(const char *format, ...);
+
+#define fprintf(stream, ...) printf(__VA_ARGS__)
 
 /**
  * Write formatted output into S, according to the format string FORMAT.
@@ -81,6 +86,12 @@ extern FILE *fopen(const char *path, const char *mode);
  * and associates a stream with it.
  */
 extern FILE *fdopen(int fd, const char *mode);
+
+/**
+ * Opens the file whose name is the string pointed to by
+ * path and associates the stream pointed to by stream with it
+ */
+extern FILE *freopen(const char *path, const char *mode, FILE *stream);
 
 /**
  * Read nmemb elements of data, each size bytes long, from the stream
@@ -128,5 +139,14 @@ extern int fstat(const char *path, struct stat *buf);
 /*extern FILE *stdin;*/
 #define stdin task_self()->fd_array.fds[0].file
 
+//TODO: stub
+
+extern void clearerr(FILE *stream);
+
+extern int feof(FILE *stream);
+
+extern int ferror(FILE *stream);
+
+extern int fileno(FILE *stream);
 
 #endif /* STDIO_H_ */

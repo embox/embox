@@ -54,6 +54,21 @@ FILE *fopen(const char *path, const char *mode) {
 	return file;
 }
 
+FILE *freopen(const char *path, const char *mode, FILE *file) {
+	//TODO:
+	return NULL;
+}
+
+int feof(FILE *file) {
+	//TODO:
+	return 0;
+}
+
+int ferror(FILE *file) {
+	//TODO:
+	return 0;
+}
+
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 	struct file_desc *desc;
 
@@ -148,4 +163,3 @@ int ungetc(int ch, FILE *file) {
 	desc->has_ungetc = 1;
 	return ch;
 }
-
