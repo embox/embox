@@ -7,54 +7,66 @@
 ifndef __util_wildcard_mk
 __util_wildcard_mk := 1
 
-include core/common.mk
-include core/string.mk
+include mk/core/common.mk
+include mk/core/string.mk
+include mk/core/define.mk
+
+include mk/util/list.mk
 
 ##
-# Function: r-wildcard
+# Builtin function: r-wildcard
+#   $(r-wildcard pattern...)
 #
 # Extended version of wildcard that understands "double asterisk" pattern (**).
 #
 # Params:
-#  1. Patterns containing wildcard characters (possibly including **)
-#
-# Returns: Wildcard expansion of the patterns.
-#
-# Usage: $(call r-wildcard,pattern...)
-#
-# Note: does not handle properly more than one ** tokens in single pattern.
-#
-r-wildcard = \
-  $(if $(call singleword,$1),$ \
-    $(call __r-wildcard,$(subst **,* *,$1)),$ \
-    $(foreach token,$(call $0,$(token)))$ \
-  )# Split argument and recall self for each single pattern.
+#   1. Patterns containing wildcard characters (possibly including **).
+# Return:
+#   Wildcard expansion of the patterns.
+# Note:
+#   It does not handle properly more than one '**' tokens in single pattern.
+define r-wildcard
+	$(foreach p,$1,
+		$(with $(subst **,* *,$p),
+			$(if $(singleword $1),
+				$(wildcard $1),
+				$(if $(doubleword $1),
+					$(foreach b,$(firstword $1),$(foreach e,$(secondword $1),
+						$(foreach d,$(if $(findstring /,$e),
+										$(firstword $(subst /,/ ,$e)),*),
+							$(__r-wildcard)
+						)
+					)),
+					$(error \
+						Handling more than one '**' tokens is not implemented
+					)
+				)
+			)
+		)
+	)
+endef
+builtin_func-r-wildcard = $(builtin_to_function_inline)
 
-# Accepts single pattern with "**" replaced by "* *",
-# performs some checks and prepares the arguments for __r-wildcard-expand.
-__r-wildcard = \
-  $(if $(call singleword,$1),$(wildcard $1),$(if $(filter 2,$(words $1)),$ \
-    $(call __r-wildcard-expand,$ \
-        $(patsubst %*,%,$(word 1,$1)),*,$(patsubst *%,%,$(word 2,$1)),),$ \
-    $(error Handling more than one ** tokens is not implemented)$ \
-  ))
+# Context:
+#   b. Path at the beginning, before '**': 'foo/b*'.
+#   e. Part after '**':                    '*r/baz'.
+#   d. $(e) up to the first '/' (if any):  '*r/' (or '*' if there is no '/').
+define __r-wildcard
+	$(with \
+		#Start with a single separator, it will grow on each recursive subcall.
+		/,# -> '/*/' -> '/*/*/' -> ...
+		$(wildcard $b$(e:*%=%) $(if $(eq */,$d),$b$(e:*/%=%))),# <- Accum.
 
-# Recursively performs wildcard expansion of double asrerisk for *, */*, ...
+#		$(info [$b]$1[$e] [$d])
+		$2 \
+		$(if $(wildcard $b$1$d),
+			# Expand wildcards while 'foo/b*/*/...' gives non-empty result.
+			$(call $0,$1*/,$(wildcard $b$1$e))
+		)
+	)
+endef
+
 #
-# Some examples:
-#  (good) foo/*/bar
-#      -> (single word after replacement, use simple wildcard)
-#  (good) foo/**/bar
-#      -> foo/* */bar
-#      -> foo/, *, /bar
-#      -> foo/, */*, /bar
-#      -> ... (expand wildcards while foo/*/*/.../ gives non-empty result)
-#  (bad)  foo/**/bar/**
-#      -> foo/* */bar/* *
-#      -> (3 words, fail with an error)
-__r-wildcard-expand = $4 \
-  $(if $(filter %/,$(wildcard $1$2/)),$(call $0,$1,$2/*,$3,$(wildcard $1$2$3)))
-
 # Directory/file versions of wildcard.
 # Both of them are based on the fact that wildcard expansion of the expression
 # containing the trailing slash drops the slash for files but leaves it for
@@ -76,7 +88,7 @@ __r-wildcard-expand = $4 \
 # Usage: $(call d-wildcard,pattern...)
 #
 d-wildcard = \
-  $(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
+	$(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
 
 ##
 # Function: f-wildcard
@@ -92,7 +104,7 @@ d-wildcard = \
 # Usage: $(call f-wildcard,pattern...)
 #
 f-wildcard = \
-  $(filter-out $(call d-wildcard,$1),$(wildcard $1))
+	$(filter-out $(call d-wildcard,$1),$(wildcard $1))
 
 ##
 # Function: wildcard_first
@@ -107,7 +119,7 @@ f-wildcard = \
 # Usage: $(call wildcard_first,pattern...)
 #
 wildcard_first = \
-  $(call list_fold,__wildcard_first_fold,,$1,wildcard)
+	$(call list_fold,__wildcard_first_fold,,$1,wildcard)
 
 ##
 # Function: d-wildcard_first
@@ -117,7 +129,7 @@ wildcard_first = \
 # See: wildcard_first, d-wildcard
 #
 d-wildcard_first = \
-  $(call list_fold,__wildcard_first_fold,,$1,d-wildcard)
+	$(call list_fold,__wildcard_first_fold,,$1,d-wildcard)
 
 ##
 # Function: f-wildcard_first
@@ -168,5 +180,7 @@ __wildcard_relative = \
 d-wildcard_relative_first = $(call __wildcard_relative,d-wildcard_first,$1,$2)
 f-wildcard_relative_first = $(call __wildcard_relative,f-wildcard_first,$1,$2)
   wildcard_relative_first = $(call __wildcard_relative,  wildcard_first,$1,$2)
+
+$(def_all)
 
 endif # __util_wildcard_mk
