@@ -272,6 +272,9 @@ extern int memcmp(const void *ptr1, const void *ptr2, size_t n);
  *   The character to search
  * @param n
  *   Number of bytes to scan
+ * @return
+ *   Pointer to the matching byte
+ * @retval NULL the character doesn't occur in the given memory area
  */
 extern void *memchr(const void *s, int c, size_t n);
 
@@ -302,6 +305,9 @@ extern char *strupr(char *str);
  * @param s
  *   C-style null-terminated string.
  * @param accept
+ * @return
+ *   Number of characters in the initial segment
+ *   of s which consist only of characters from accept
  */
 extern size_t strspn(const char *s, const char *accept);
 
@@ -312,6 +318,9 @@ extern size_t strspn(const char *s, const char *accept);
  * @param s
  *   C-style null-terminated string.
  * @param reject
+ * @return
+ *   Number of characters in the initial segment
+ *   of s which are not in the string reject
  */
 extern size_t strcspn(const char *s, const char *reject);
 
@@ -322,6 +331,10 @@ extern size_t strcspn(const char *s, const char *reject);
  * @param s
  *   C-style null-terminated string.
  * @param accept
+ * @return
+ *   Pointer to the character in s that matches one of the
+ *   characters in accept
+ * @retval NULL no such character is found
  */
 extern char *strpbrk(const char *s, const char *accept);
 

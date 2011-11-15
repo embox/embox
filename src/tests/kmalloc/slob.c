@@ -1,7 +1,9 @@
 /**
  * @file
  * @brief Test dynamic memory allocation
- * @auther Michail Skorginskii
+ *
+ * @date 12.05.10
+ * @author Michail Skorginskii
  */
 
 #include <stdio.h>

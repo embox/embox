@@ -13,16 +13,18 @@
 #include <net/in.h>
 
 /**
-* IP Options
-* @faddr - Saved first hop address
-* @is_data - Options in __data, rather than skb
-* @is_strictroute - Strict source route
-* @srr_is_hit - Packet destination addr was our one
-* @is_changed - IP checksum more not valid
-* @rr_needaddr - Need to record addr of outgoing dev
-* @ts_needtime - Need to record timestamp
-* @ts_needaddr - Need to record addr of outgoing dev
-*/
+ * @struct ip_options
+ * @brief IP Options
+ *
+ * @var faddr - Saved first hop address
+ * @var is_data - Options in __data, rather than skb
+ * @var is_strictroute - Strict source route
+ * @var srr_is_hit - Packet destination addr was our one
+ * @var is_changed - IP checksum more not valid
+ * @var rr_needaddr - Need to record addr of outgoing dev
+ * @var ts_needtime - Need to record timestamp
+ * @var ts_needaddr - Need to record addr of outgoing dev
+ */
 typedef struct ip_options {
 	in_addr_t       faddr;
 	unsigned char   optlen;
@@ -43,24 +45,26 @@ typedef struct ip_options {
 } ip_options_t;
 
 /**
-* Representation of INET sockets
-* @sk - ancestor class
-* @pinet6 - pointer to IPv6 control block
-* @daddr - Foreign IPv4 addr
-* @rcv_saddr - Bound local IPv4 addr
-* @dport - Destination port
-* @num - Local port
-* @saddr - Sending source
-* @uc_ttl - Unicast TTL
-* @sport - Source port
-* @id - ID counter for DF pkts
-* @tos - TOS
-* @mc_ttl - Multicasting TTL
-* @is_icsk - is this an inet_connection_sock?
-* @mc_index - Multicast device index
-* @mc_list - Group array
-* @cork - info to build ip hdr on each ip frag while socket is corked
-*/
+ * @struct inet_sock
+ * @brief Representation of INET sockets
+ *
+ * @var sk - ancestor class
+ * @var pinet6 - pointer to IPv6 control block
+ * @var daddr - Foreign IPv4 addr
+ * @var rcv_saddr - Bound local IPv4 addr
+ * @var dport - Destination port
+ * @var num - Local port
+ * @var saddr - Sending source
+ * @var uc_ttl - Unicast TTL
+ * @var sport - Source port
+ * @var id - ID counter for DF pkts
+ * @var tos - TOS
+ * @var mc_ttl - Multicasting TTL
+ * @var is_icsk - is this an inet_connection_sock?
+ * @var mc_index - Multicast device index
+ * @var mc_list - Group array
+ * @var cork - info to build ip hdr on each ip frag while socket is corked
+ */
 typedef struct inet_sock {
 	/* sk have to be the first member of inet_sock */
 	sock_t         sk;

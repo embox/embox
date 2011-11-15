@@ -1,5 +1,7 @@
 /**
- * NET packet matchers
+ * @file
+ * @brief NET packet matchers
+ *
  * @date 23.10.11
  * @author Alexander Kalmuk
  */
@@ -47,7 +49,6 @@ static void print_pack_way(net_packet_t pack, match_rule_t rule , int n) {
 	}
 
 	printf("%s\n", ";");
-
 }
 #endif
 
@@ -102,8 +103,7 @@ net_node_t matcher_alloc(void) {
 }
 
 PNET_PROTO_DEF("matcher", {
-    .rx_hnd = match,
-    .alloc  = matcher_alloc,
-    .free   = matcher_free
+	.rx_hnd = match,
+	.alloc  = matcher_alloc,
+	.free   = matcher_free
 });
-

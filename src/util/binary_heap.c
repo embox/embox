@@ -1,8 +1,8 @@
 /**
- * @file  binary_heap.c
+ * @file
  * @brief Implementation of heap
  *
- * @date Oct 17, 2011
+ * @date 17.10.11
  * @author Gleb Efimov
  */
 
@@ -11,20 +11,17 @@
 
 struct list_link abs_min; /* This is my "absolute" minimum */
 
-struct bh *bh_init(struct bh *binary_heap)
-{
+struct bh *bh_init(struct bh *binary_heap) {
 	binary_heap->counter = -1;
 	return binary_heap;
 }
 
-int bh_add(struct bh *binary_heap, struct list_link *value)
-{
+int bh_add(struct bh *binary_heap, struct list_link *value) {
 	binary_heap->counter++;
 	list_add_last_link(&abs_min, binary_heap->elements);
 	return sort_bh(binary_heap, value);
 }
 
-int sort_bh(struct bh *binary_heap, struct list_link *value)
-{
+int sort_bh(struct bh *binary_heap, struct list_link *value) {
 	return 0;
 }

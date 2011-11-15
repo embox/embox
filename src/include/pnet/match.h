@@ -1,10 +1,13 @@
 /**
+ * @file
+ * @brief
+ *
  * @date 24.10.11
  * @Alexander Kalmuk
  */
 
-#ifndef NET_MATCH_H_
-#define NET_MATCH_H_
+#ifndef PNET_MATCH_H_
+#define PNET_MATCH_H_
 
 #include <pnet/types.h>
 #include <net/ip.h>
@@ -91,4 +94,4 @@ static inline int pnet_add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t
 
 extern net_node_matcher_t pnet_get_node_matcher(void);
 
-#endif /* NET_MATCH_H_ */
+#endif /* PNET_MATCH_H_ */

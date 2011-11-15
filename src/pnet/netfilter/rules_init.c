@@ -1,5 +1,7 @@
 /**
- * Graph for priority NET initialization
+ * @file
+ * @brief Graph for priority NET initialization
+ *
  * @date 31.10.11
  * @author Alexander Kalmuk
  */
@@ -92,7 +94,7 @@ static char* parse_type(const char *rule) {
 }
 
 static net_node_t get_node_by_name(char *name) {
-	for (int i = 0; i < NODES_COUNT; i++) {
+	for (size_t i = 0; i < NODES_COUNT; i++) {
 		if (strcmp(nodes[i].name, name) == 0) {
 			return nodes[i].node;
 		}
@@ -106,7 +108,7 @@ static int init(void) {
 	char *tmp;
 	int cur = 0;
 	int node_cur = 0;
-	int i = 0;
+	size_t i = 0;
 	match_rule_t new_rule;
 	net_node_t src_node;
 	net_node_t dst_node;
