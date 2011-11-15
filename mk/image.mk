@@ -17,9 +17,6 @@ image: $(IMAGE) $(IMAGE_SREC) $(IMAGE_BIN) $(IMAGE_SIZE) $(IMAGE_PIGGY)
 ifeq ($(DISASSEMBLE),y)
 image: $(IMAGE_DIS)
 endif
-ifeq ($(CHECKSUM),y)
-image: checksum
-endif
 image: image_fini
 
 image_init image_fini: rootfs_prepare
@@ -32,11 +29,6 @@ image_prepare:
 rootfs_prepare:
 	@mkdir -p $(BUILD_DIR)/rootfs
 	@cp $(__ROOTFS_SRCS) $(BUILD_DIR)/rootfs/
-	#pushd $(ROOTFS_DIR); find ./ -depth -print | cpio -H newc -ov > $(ROOTFS_IMAGE); popd;
-
-.PHONY: checksum
-checksum:
-# Not yet implemented
 
 CC      = $(CROSS_COMPILE)gcc
 CPP     = $(CC) -E
@@ -139,6 +131,10 @@ LDSCRIPT = $(OBJ_DIR)/$(TARGET).lds
 SRC_TO_OBJ = \
   $(call filter-patsubst,$(ROOT_DIR)%.c $(ROOT_DIR)%.S,$(OBJ_DIR)%.o,$1)
 LIB_FILE   = $(1:%=$(LIB_DIR)/%)
+
+ifdef MYBUILD
+include mk/mybuild/read.mk
+endif
 
 # It's time to scan subdirs and prepare mods info.
 include $(MK_DIR)/embuild.mk

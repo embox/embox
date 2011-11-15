@@ -38,7 +38,9 @@ $(MKFILES_CONVERTED) : \
 		$(EM_DIR)%Makefile : $(ROOT_DIR)%Mybuild
 	@mkdir -p $(@D); printf "%b" '$(call printf_escape,$(call gold_parse_file,myfile,$<))' > $@
 
-.PHONY: convert
-convert: $(MKFILES)
+.PHONY: mybuild_prepare
+mybuild_prepare: $(MKFILES)
+
+prepare: mybuild_prepare
 
 endif # __mybuild_read_mk
