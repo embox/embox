@@ -51,9 +51,9 @@ endif
 __LDFLAGS = $(strip $(foreach dir,$(DIRS),$($_LDFLAGS)))
 
 # Name check for packages and units.
-invalid_symbols := \
+#invalid_symbols := \
   ` ~ ! @ $$ % ^ & * ( ) { } [ ] < > ; : ' " \ | / ? + = № ..
-check_name = \
+#check_name = \
   $(if $(or \
         $(filter .%,$(1)), \
         $(filter %.,$(1)), \
@@ -71,7 +71,6 @@ dir_package_lookup = \
     $(eval $_PACKAGE ?= $(strip $(call $0,$(dir $(1:%/=%))))) \
     $(eval $_PACKAGE := $($_PACKAGE)) \
     $(eval $_PACKAGE := $(if $($_PACKAGE),$($_PACKAGE),generic)) \
-    $(call check_name,$($_PACKAGE)) \
     $($_PACKAGE) \
   ))
 
@@ -144,7 +143,6 @@ mod_collect = $(sort \
 # Canonical mod name is one with package prefix.
 canonize_mod_name = \
   $(foreach name,$1, \
-    $(call check_name,$(name)) \
     $(if $(findstring .,$(name)), \
       $(name), \
       $($_PACKAGE).$(name) \
