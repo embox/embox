@@ -58,7 +58,7 @@ define __r-wildcard
 		$(wildcard $b$(e:*%=%) $(if $(eq */,$d),$b$(e:*/%=%))),# <- Accum.
 
 #		$(info [$b]$1[$e] [$d])
-		$2 \
+		$(if $2,$2 )
 		$(if $(wildcard $b$1$d),
 			# Expand wildcards while 'foo/b*/*/...' gives non-empty result.
 			$(call $0,$1*/,$(wildcard $b$1$e))
