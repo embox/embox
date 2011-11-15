@@ -1,8 +1,8 @@
  /**
- * @file   binary_heap.h
- * @brief  Heap
+ * @file
+ * @brief heap data structure created using a binary tree
  *
- * @date   17.10.2011
+ * @date 17.10.11
  * @author Gleb Efimov
  */
 
@@ -24,6 +24,6 @@ extern int bh_remove(struct bh *heap, struct list_link *link);
 
 extern int bh_count(void);
 
-int sort_bh(struct bh *binary_heap, struct list_link *value);
+extern int sort_bh(struct bh *binary_heap, struct list_link *value);
 
 #endif /* UTIL_HEAP_H_ */

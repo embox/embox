@@ -17,10 +17,8 @@
  * @return
  *  String literal containing expansion of the specified macro
  */
-#define MACRO_STRING(m) \
-		__MACRO_STRING(m)
-#define __MACRO_STRING(m) \
-	# m
+#define MACRO_STRING(m) __MACRO_STRING(m)
+#define __MACRO_STRING(m) # m
 
 /**
  * Indirect concatenation of two macros.
@@ -32,10 +30,8 @@
  * @return
  *  Concatenated expansions of the specified macros
  */
-#define MACRO_CONCAT(m1, m2) \
-		__MACRO_CONCAT(m1, m2)
-#define __MACRO_CONCAT(m1, m2) \
-	m1 ## m2
+#define MACRO_CONCAT(m1, m2) __MACRO_CONCAT(m1, m2)
+#define __MACRO_CONCAT(m1, m2) m1 ## m2
 
 /**
  * Just expands a macro argument.
@@ -45,8 +41,7 @@
  * @return
  *  Macro expansion
  */
-#define MACRO_EXPAND(m) \
-	m
+#define MACRO_EXPAND(m) m
 
 /**
  * Expands macro function with the specified parameters.
@@ -58,8 +53,7 @@
  * @return
  *  Expansion of @code m(...) @endcode
  */
-#define MACRO_INVOKE(m, ...) \
-	m(__VA_ARGS__)
+#define MACRO_INVOKE(m, ...) m(__VA_ARGS__)
 
 /**
  * Appends a guard (namely current line number) to the specified symbol.
@@ -69,9 +63,7 @@
  * @return
  *  Symbol suffixed with the guard
  */
-#define MACRO_GUARD(symbol) \
-		__MACRO_GUARD(symbol)
-#define __MACRO_GUARD(symbol) \
-	MACRO_CONCAT(symbol ## _at_line_, __LINE__)
+#define MACRO_GUARD(symbol) __MACRO_GUARD(symbol)
+#define __MACRO_GUARD(symbol) MACRO_CONCAT(symbol ## _at_line_, __LINE__)
 
 #endif /* UTIL_MACRO_H_ */

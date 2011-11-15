@@ -12,14 +12,11 @@
 #include __impl_x(util/slist_impl.h)
 
 struct slist;
-
 struct slist_link;
 
-#define SLIST_INIT(slist) \
-	  __SLIST_INIT(slist)
+#define SLIST_INIT(slist) __SLIST_INIT(slist)
 
-#define SLIST_LINK_INIT(link) \
-	  __SLIST_LINK_INIT(link)
+#define SLIST_LINK_INIT(link) __SLIST_LINK_INIT(link)
 
 extern struct slist *slist_init(struct slist *list);
 extern struct slist_link *slist_link_init(struct slist_link *link);

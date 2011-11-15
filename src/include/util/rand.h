@@ -2,7 +2,7 @@
  * @file
  * @brief Simple random generator implementation.
  *
- * @date Oct 12, 2011
+ * @date 12.10.11
  * @author Avdyukhin Dmitry
  */
 

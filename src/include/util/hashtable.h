@@ -37,11 +37,11 @@ typedef struct ht_element {
 
 /* hashtable structure */
 typedef struct hashtable {
-	struct list **data;                  /* dynamic array contains lists of data */
-	int count;           		  /* count of elements at hashtable */
-	int index_of_size;   		  /* index of element at GoodSizes[] array */
-	hash_key hash_key;            /* hash function */
-	compare_keys compare_keys;    /* key compare function */
+	struct list **data;        /* dynamic array contains lists of data */
+	int count;                 /* count of elements at hashtable */
+	int index_of_size;         /* index of element at GoodSizes[] array */
+	hash_key hash_key;         /* hash function */
+	compare_keys compare_keys; /* key compare function */
 } hashtable;
 
 /**
@@ -61,41 +61,40 @@ extern hashtable *hashtable_create(hashtable *hash_tab, int index_of_size,
  * @param hash_tab - hashtable into which will be inserted element
  * @param key - identifier of data
  * @param value - useful information
- * */
+ */
 extern void hashtable_insert (hashtable *hash_tab, key_t *key, data_t *value);
 
 /**
  * Delete element from hashtable
- * @param HashTable - hashtable from which will be deleted element
+ * @param hash_tab - hashtable from which will be deleted element
  * @param key - identifier of data in element
- * */
+ */
 extern void hashtable_remove (hashtable *hash_tab, key_t *key);
-
 
 /**
  * Getter for info about count of elements into hashtable
- * @param HashTable - hashtable into which will be element
- * */
+ * @param hash_tab - hashtable into which will be element
+ */
 extern int hashtable_count (hashtable *hash_tab);
 
 /**
  * Copy of hashtable
  * @param from - source hashtable
  * @param to - result hashtable
- * */
+ */
 extern hashtable *hashtable_copy(hashtable *from, hashtable *to);
 
 /**
  * free memory from hashtable
- * @param HashTable - finallysed hashtable
- * */
+ * @param hash_tab - finallysed hashtable
+ */
 extern void hashtable_destroy(hashtable *hash_tab);
 
 /**
  * Search of data in hashtable by key
- * @param HashTable - hashtable at which will be found element
+ * @param hash_tab - hashtable at which will be found element
  * @param key - identifier for data of element
- * */
+ */
 data_t *hashtable_search(hashtable *hash_tab, key_t *key);
 
 /**
@@ -103,8 +102,8 @@ data_t *hashtable_search(hashtable *hash_tab, key_t *key);
  * @element - pointer to current element of hashtable
  * @hash_tab - pointer to hashtable
  */
-#define hashtable_foreach(element, hash_tab) 					\
-	for (int i = 0; i < hash_tab->index_of_size; i++)   		\
-		list_foreach(element, hash_tab->data[i], lnk)           \
+#define hashtable_foreach(element, hash_tab) \
+	for (int i = 0; i < hash_tab->index_of_size; i++) \
+		list_foreach(element, hash_tab->data[i], lnk)
 
 #endif /* UTIL_HASHTABLE_H_ */

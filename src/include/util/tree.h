@@ -2,7 +2,7 @@
  * @file
  * @brief Tree data structure.
  *
- * @date Oct 8, 2011
+ * @date 08.10.11
  * @author Avdyukhin Dmitry
  */
 
@@ -124,9 +124,7 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  *   and obtaining next element according to given current.
  */
 #define tree_foreach_link(link, tree, begin, end, next) \
-	for (link = begin(tree); \
-		link != end(tree); \
-		link = next(link))
+	for (link = begin(tree); link != end(tree); link = next(link))
 
 /**
  * Iteration on tree. Elements are links (without casting from links).
@@ -138,11 +136,9 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  *   'Next' function must not cause an error if it's applyed to end of enumeration.
  */
 #define tree_foreach_link_safe(link, next_link, tree, begin, end, next) \
-	for (link = begin(tree), \
-			next_link = next(link); \
+	for (link = begin(tree), next_link = next(link); \
 		link != end(tree); \
-		link = next_link, \
-			next_link = next(link))
+		link = next_link, next_link = next(link))
 
 /**
  * Iteration with casting.
@@ -163,7 +159,7 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  */
 #define tree_postorder_traversal_link(link, tree) \
 	tree_foreach_link(link, tree, \
-			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 /**
  * Postorder iteration on tree.
@@ -173,11 +169,11 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  */
 #define tree_postorder_traversal_link_safe(link, next_link, tree) \
 	tree_foreach_link_safe(link, next_link, tree, \
-			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 /** Postorder iteration with casting. */
 #define tree_postorder_traversal(link, element, tree, link_member) \
 	tree_foreach(link, element, tree, link_member, \
-			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 #endif /* UTIL_TREE_H_ */

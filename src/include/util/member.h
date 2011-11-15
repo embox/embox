@@ -2,7 +2,7 @@
  * @file
  * @brief struct/union member utilities: casts, sizeof/typeof, etc.
  *
- * @date Sep 21, 2011
+ * @date 21.09.11
  * @author Eldar Abusalimov
  */
 
@@ -40,12 +40,12 @@
  *   for example, @c bar[42].baz.
  */
 #define member_t(object_t, member_nm) \
-	union __attribute__ ((packed)) { \
-		object_t object;                                  \
-		struct __attribute__ ((packed)) {                 \
+	union __attribute__ ((packed)) {                              \
+		object_t object;                                      \
+		struct __attribute__ ((packed)) {                     \
 			char __offset[offsetof(object_t, member_nm)]; \
 			member_typeof(object_t, member_nm) member;    \
-		} /* unnamed */;                                  \
+		} /* unnamed */;                                      \
 	}
 
 /**
@@ -99,7 +99,7 @@
  */
 #define member_to_object_or_null(member_ptr, member_type) \
 	((member_typeof(member_type, object) *) \
-			member_cast_out_or_null((member_ptr), member_type, member))
+		member_cast_out_or_null((member_ptr), member_type, member))
 
 /**
  * Gets a type of @a member within the specified one.
@@ -154,8 +154,8 @@
 	({ \
 		typeof(struct_ptr) __member_expr__ = (struct_ptr); \
 		__member_expr__                                    \
-				? &__member_expr__->member                 \
-				: (typeof(&__member_expr__->member)) NULL; \
+			? &__member_expr__->member                 \
+			: (typeof(&__member_expr__->member)) NULL; \
 	})
 
 /**
@@ -186,23 +186,21 @@
  *   In case when the first argument is also @c NULL.
  */
 #define member_cast_out_or_null(member_ptr, type, member) \
-	({ \
-		char *__member_expr__ = (char *) (member_ptr); \
-		(type *) (__member_expr__                          \
-				? __member_expr__ - offsetof(type, member) \
-				: NULL);                                   \
+	({                                                                \
+		char *__member_expr__ = (char *) (member_ptr);            \
+		(type *) (__member_expr__ ?                               \
+			__member_expr__ - offsetof(type, member) : NULL); \
 	})
 
 #ifndef NDEBUG
 # define __member_check_notnull(expr) \
-	({ \
+	({                                             \
 		typeof(expr) __member_expr__ = (expr); \
 		assert(__member_expr__ != NULL);       \
 		__member_expr__;                       \
 	})
 #else
-# define __member_check_notnull(expr) \
-	(expr)
+# define __member_check_notnull(expr) (expr)
 #endif /* NDEBUG */
 
 #endif /* UTIL_MEMBER_H_ */

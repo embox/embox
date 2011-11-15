@@ -255,4 +255,3 @@ extern void list_bulk_insert_after_link(struct list *from_list,
 #endif
 
 #endif /* UTIL_LIST_H_ */
-

@@ -1,8 +1,9 @@
 /**
  * @file
- * @brief Binary not-balanced tree data structure. There can be not more than one equal element in structure.
+ * @brief Binary not-balanced tree data structure.
+ * There can be not more than one equal element in structure.
  *
- * @date Oct 1, 2011
+ * @date 01.10.11
  * @author Avdyukhin Dmitry
  */
 
@@ -198,17 +199,17 @@ extern struct tree_set_link *tree_set_prev_link(struct tree_set_link *link);
 /** Forward iteration with casting. */
 #define tree_set_foreach(link, element, tree_set, link_member) \
 	for (link = tree_set_begin(tree_set), \
-			element = tree_set_element(link, typeof(*(element)), link_member); \
+		element = tree_set_element(link, typeof(*(element)), link_member); \
 		link != tree_set_end(tree_set); \
 		link = tree_set_next_link(link), \
-			element = tree_set_element(link, typeof(*(element)), link_member)) \
+		element = tree_set_element(link, typeof(*(element)), link_member)) \
 
 /** Backward iteration with casting. */
 #define tree_set_foreach_back(link, element, tree_set, link_member) \
 	for (link = tree_set_rbegin(tree_set), \
-			element = tree_set_element(link, typeof(*element), link_member); \
+		element = tree_set_element(link, typeof(*element), link_member); \
 		link != tree_set_end(tree_set); \
 		link = tree_set_prev_link(link), \
-			element = tree_set_element(link, typeof(*element), link_member)) \
+		element = tree_set_element(link, typeof(*element), link_member)) \
 
 #endif /* UTIL_TREE_SET_H_ */

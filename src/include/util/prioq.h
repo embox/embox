@@ -2,7 +2,7 @@
  * @file
  * @brief TODO documentation for prioq.h -- Eldar Abusalimov
  *
- * @date Sep 15, 2011
+ * @date 15.09.11
  * @author Eldar Abusalimov
  */
 
@@ -45,13 +45,11 @@ static inline int prioq_address_comparator(struct prioq_link *first,
 	return first - second;
 }
 
-#define PRIOQ_INIT(prioq) \
-	{                                                  \
+#define PRIOQ_INIT(prioq) { \
 		.prio_list = LIST_INIT(prioq->prio_list), \
 	}
 
-#define PRIOQ_LINK_INIT(link) \
-	{                                                 \
+#define PRIOQ_LINK_INIT(link) { \
 		.prio_link = LIST_LINK_INIT(link->prio_link), \
 		.elem_link = LIST_HEAD_INIT(link->elem_link), \
 	}
