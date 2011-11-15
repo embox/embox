@@ -13,7 +13,7 @@
 #include <asm/io.h>
 #include <net/checksum.h>
 #include <getopt.h>
-#include <net/ne2k_pci.h>
+#include <drivers/ne2k_pci.h>
 
 EMBOX_CMD(exec);
 

@@ -25,7 +25,7 @@
 #include <linux/init.h>
 #include <net/etherdevice.h>
 #include <net/in.h>
-#include <net/ne2k_pci.h>
+#include <drivers/ne2k_pci.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <stdio.h>
