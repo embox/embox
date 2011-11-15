@@ -56,6 +56,10 @@ AUTOCONF_DIR   := $(CODEGEN_DIR)
 ROOTFS_DIR     := $(BUILD_DIR)/rootfs/
 ROOTFS_IMAGE   := $(BUILD_DIR)/rootfs.cpio
 
+EM_DIR         := $(BUILD_DIR)/em
+
+MY_PATH := $(SRC_DIR)/** $(PLATFORM_DIR)/** $(THIRDPARTY_DIR)/**
+
 RM     := rm -f
 CP     := cp
 PRINTF := printf
@@ -76,10 +80,10 @@ override PROFILE = $(word 2,$(subst /, ,$(TEMPLATE)))
 
 endif
 
-include util.mk
-include util/wildcard.mk
+include mk/util.mk
+include mk/util/wildcard.mk
 
-include gmsl/gmsl.mk
+include mk/gmsl/gmsl.mk
 
 makegoals := $(MAKECMDGOALS)
 ifeq ($(makegoals),)
