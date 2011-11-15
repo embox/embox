@@ -103,15 +103,11 @@ void bluetooth_hw_hard_reset(void) {
 }
 
 static int btm_bluetooth_init(void) {
-	//conn_state = CONN_DISCONNECTED;
 	irq_attach((irq_nr_t) CONFIG_BTM_BT_US_IRQ,
 		(irq_handler_t) &btm_bt_us_handler, 0, NULL, "bt reader");
 
 	init_usart();
 //	pin_set_input_monitor(CONFIG_BTM_BT_LINK_PIN, &link_pin_handler);
-
-	//string_handler = conn_string_handler;
-
 
 	return 0;
 }

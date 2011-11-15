@@ -32,39 +32,53 @@ static int car_bt_disconnect(void);
 static int car_bt_connect(void);
 static int car_bt_read(void);
 
+#define MOTOR_DRY_RUN
+
 void turn_right(void) {
+#ifndef MOTOR_DRY_RUN
 	pin_set_output(RIGHT_PIN);
 	pin_clear_output(LEFT_PIN);
+#endif
 	pin_clear_output(OLIMEX_SAM7_LED1);
 }
 
 void turn_left(void) {
+#ifndef MOTOR_DRY_RUN
 	pin_clear_output(RIGHT_PIN);
 	pin_set_output(LEFT_PIN);
+#endif
 	pin_clear_output(OLIMEX_SAM7_LED1);
 }
 
 void turn_none(void) {
+#ifndef MOTOR_DRY_RUN
 	pin_clear_output(RIGHT_PIN);
 	pin_clear_output(LEFT_PIN);
+#endif
 	pin_set_output(OLIMEX_SAM7_LED1);
 }
 
 void go_forw(void) {
+#ifndef MOTOR_DRY_RUN
 	pin_set_output(FORWARD_PIN);
 	pin_clear_output(BACKWARD_PIN);
+#endif
 	pin_clear_output(OLIMEX_SAM7_LED2);
 }
 
 void go_back(void) {
+#ifndef MOTOR_DRY_RUN
 	pin_clear_output(FORWARD_PIN);
 	pin_set_output(BACKWARD_PIN);
+#endif
 	pin_clear_output(OLIMEX_SAM7_LED2);
 }
 
 void go_none(void) {
+#ifndef MOTOR_DRY_RUN
 	pin_clear_output(FORWARD_PIN);
 	pin_clear_output(BACKWARD_PIN);
+#endif
 	pin_set_output(OLIMEX_SAM7_LED2);
 }
 
