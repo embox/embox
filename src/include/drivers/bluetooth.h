@@ -26,7 +26,6 @@ extern size_t bluetooth_write(uint8_t *buff, size_t len);
 
 CALLBACK_DECLARE(bt_comm_handler_t, bluetooth_uart);
 
-
 typedef int (*nxt_bt_rx_handle_t)(void);
 CALLBACK_DECLARE(nxt_bt_rx_handle_t, bt_rx);
 

@@ -31,106 +31,20 @@ static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_BTM_BT_SERIAL_
 
 EMBOX_UNIT_INIT(btm_bluetooth_init);
 
-static uint8_t *btm_bt_read_buff;
-static int btm_bt_read_len;
+uint8_t *btm_bt_read_buff;
+int btm_bt_read_len;
 
-volatile enum {SIZE_READ, COMM_READ, UART_MODE} bt_us_state;
-
-#define BUFF_SIZE 27
-static uint8_t bt_buff[BUFF_SIZE];
-
-CALLBACK_INIT(bluetooth_uart)
-
-static enum {
-	CONN_DISCONNECTED,
-	CONN_CONNECTED
-} conn_state;
-
-static const char *stamp[] = {"CONNECT", "DISCONNECT", "\r\n", 0 };
-static int rs_comm = 0;
-static int rs_pos = 0;
-
-static int (*string_handler)(uint8_t *buff);
-
-static int lrlf_string_handler(uint8_t *buff);
-
-static int general_handler(int state, uint8_t *buff) {
-	int res = 0;
-	int cnt = btm_bt_read_len;
-	if (rs_comm != state) {
-		rs_comm = state;
-		rs_pos = 0;
-	}
-	while (cnt--) {
-		if (*buff == stamp[rs_comm][rs_pos]) {
-			rs_pos++;
-			res = 1;
-		} else {
-			rs_pos = 0;
-			res = 0;
-		}
-		if (stamp[rs_comm][rs_pos] == 0) {
-			res = 2;
-		}
-		buff++;
-	}
-	return res;
+static int nop(void) {
+	return 0;
 }
 
-static int conn_string_handler(uint8_t *buff) {
-	int res = general_handler(0, buff);
-	if (res == 2) {
-		string_handler = lrlf_string_handler;
-	}
-	bluetooth_read(bt_buff, 1);
-	return res;
-}
-
-static int disconn_string_handler(uint8_t *buff) {
-	int res = general_handler(1, buff);
-	if (res == 2) {
-		string_handler = conn_string_handler;
-		conn_state = CONN_DISCONNECTED;
-		CALLBACK_DO(bluetooth_uart, BT_DRV_MSG_DISCONNECTED, NULL);
-		bluetooth_read(bt_buff, 1);
-	}
-	return res;
-}
-
-static int lrlf_string_handler(uint8_t *buff) {
-	int res = general_handler(2, buff);
-	if (res == 2) {
-		conn_state = CONN_CONNECTED;
-		string_handler = disconn_string_handler;
-		CALLBACK_DO(bluetooth_uart, BT_DRV_MSG_CONNECTED, NULL);
-	} else {
-		bluetooth_read(bt_buff, 1);
-	}
-	return res;
-}
-
-static void comm_manager(uint8_t *buff) {
-	switch (conn_state) {
-	case CONN_DISCONNECTED:
-		string_handler(buff);
-		break;
-	case CONN_CONNECTED:
-		if (2 != string_handler(buff)) {
-			CALLBACK_DO(bluetooth_uart, BT_DRV_MSG_READ, buff);
-		}
-		break;
-	default:
-		break;
-	}
-
-
-}
+CALLBACK_INIT_DEF(nxt_bt_rx_handle_t, __bt_rx, nop);
+CALLBACK_INIT_DEF(nxt_bt_state_handle_t, bt_state, nop);
 
 static irq_return_t btm_bt_us_handler(int irq_num, void *dev_id) {
-	uint32_t us_state = REG_LOAD(&(us_dev_regs->US_CSR));
-    	if (us_state & AT91C_US_ENDRX) {
-		comm_manager(btm_bt_read_buff);
-	}
+
+	CALLBACK(__bt_rx)();
+
 	return IRQ_HANDLED;
 }
 
@@ -175,12 +89,7 @@ static void link_pin_handler(pin_mask_t ch_mask, pin_mask_t mon_mask) {
 }
 #endif
 
-static int btm_bluetooth_init(void) {
-	conn_state = CONN_DISCONNECTED;
-	irq_attach((irq_nr_t) CONFIG_BTM_BT_US_IRQ,
-		(irq_handler_t) &btm_bt_us_handler, 0, NULL, "bt reader");
-
-
+void bluetooth_hw_hard_reset(void) {
 	pin_config_output(CONFIG_BTM_BT_RST_PIN);
 	pin_set_output(CONFIG_BTM_BT_RST_PIN);
 	usleep(1000);
@@ -191,11 +100,18 @@ static int btm_bluetooth_init(void) {
 	pin_config_input(CONFIG_BTM_BT_LINK_PIN);
 	REG_STORE(AT91C_PIOA_PPUER, CONFIG_BTM_BT_LINK_PIN);
 	REG_STORE(AT91C_PIOA_MDDR, CONFIG_BTM_BT_LINK_PIN);
-//	pin_set_input_monitor(CONFIG_BTM_BT_LINK_PIN, &link_pin_handler);
+}
 
-	string_handler = conn_string_handler;
+static int btm_bluetooth_init(void) {
+	//conn_state = CONN_DISCONNECTED;
+	irq_attach((irq_nr_t) CONFIG_BTM_BT_US_IRQ,
+		(irq_handler_t) &btm_bt_us_handler, 0, NULL, "bt reader");
 
 	init_usart();
+//	pin_set_input_monitor(CONFIG_BTM_BT_LINK_PIN, &link_pin_handler);
+
+	//string_handler = conn_string_handler;
+
 
 	return 0;
 }

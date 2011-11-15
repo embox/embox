@@ -12,7 +12,7 @@
 #include <drivers/bluetooth.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
-#include <embox/service/callback.h>
+#include <util/callback.h>
 #include <drivers/at91_olimex_debug_led.h>
 
 #include <service/robobot_car.h>
@@ -27,10 +27,10 @@ EMBOX_UNIT_INIT(robobot_bluetooth_car);
 
 #define BUFF_SIZE 20
 static uint8_t car_bt_buff[BUFF_SIZE];
+static int car_bt_read(void);
 
-static int car_bt_handle(int msg, uint8_t *buff);
 static int robobot_bluetooth_car(void) {
-	CALLBACK_REG(bluetooth_uart, (callback_t) car_bt_handle);
+	CALLBACK_REG(bt_rx, car_bt_read);
 
 	REG_STORE(AT91C_PIOA_PDR, RIGHT_PIN | LEFT_PIN | FORWARD_PIN | BACKWARD_PIN);
 	REG_STORE(AT91C_PIOA_ASR, BACKWARD_PIN);
@@ -104,7 +104,6 @@ static void robobot_handle_car(uint8_t *buff) {
 	} else {
 	    turn_none();
 	}
-
 }
 
 static int robobot_stamp(uint8_t *buff) {
@@ -118,27 +117,27 @@ static int robobot_stamp(uint8_t *buff) {
 	return 1;
 }
 
-static int car_bt_handle(int msg, uint8_t *buff) {
-	if (msg == BT_DRV_MSG_CONNECTED) {
-#if 0
-	    uint8_t ack[5] = {0x03, 0x00, 0x02, 0x0D, 0x02};
-	    bluetooth_write(ack, 5);
-#endif
-	    bluetooth_read(car_bt_buff, ROBOBOT_MSG_SIZE);
-	    pin_set_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
-	} else if (msg == BT_DRV_MSG_READ) {
-	    if (robobot_handle(buff)) {
-		buff += ROBOBOT_HEADER_SIZE;
-		robobot_handle_car(buff);
-	    } else if (robobot_stamp(buff)) {
+
+static int car_bt_read(void) {
+	if (robobot_handle(car_bt_buff)) {
+		robobot_handle_car(car_bt_buff + ROBOBOT_HEADER_SIZE);
+	} else if (robobot_stamp(car_bt_buff)) {
 		/* send robobot_car id */
 		uint8_t ack[5] = {0x03, 0x00, 0x02, 0x0d, 0x02};
 		bluetooth_write(ack, 5);
-	    }
-	    bluetooth_read(car_bt_buff, ROBOBOT_MSG_SIZE);
-	} else if (msg == BT_DRV_MSG_DISCONNECTED) {
-	    pin_clear_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
 	}
-
+	bluetooth_read(car_bt_buff, ROBOBOT_MSG_SIZE);
 	return 0;
 }
+
+#if 0
+static int car_bt_connect(void) {
+	bluetooth_read(car_bt_buff, ROBOBOT_MSG_SIZE);
+	pin_set_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
+	return 0;
+}
+
+static int car_bt_disconnect(void) {
+	pin_clear_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
+}
+#endif

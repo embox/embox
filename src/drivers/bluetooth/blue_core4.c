@@ -119,9 +119,6 @@ static int process_msg(struct bc_msg *msg) {
 			return res;
 		}
 		break;
-	case MSG_GET_VERSION_RESULT: {
-		return res;
-	}
 	default:
 		return res;
 	}
