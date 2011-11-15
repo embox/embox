@@ -1,5 +1,5 @@
 /**
- * NET rules collection initialization
+ * Graph for priority NET initialization
  * @date 31.10.11
  * @author Alexander Kalmuk
  */
@@ -21,10 +21,9 @@
 #include <util/macro.h>
 
 #define RULE_ELEMS_COUNT 6
+#define NODES_COUNT 10
 
 EMBOX_UNIT_INIT(init);
-
-#define NODES_COUNT 10
 
 //TODO naming nodes as in file
 struct __node {
@@ -35,6 +34,7 @@ struct __node {
 static struct __node nodes[NODES_COUNT];
 
 static net_node_t get_node_by_name(char *name);
+static char* parse_type(const char *rule);
 
 static const char *rules[] = {
 	#include <pnet/pnet_rules.inc>
@@ -131,10 +131,10 @@ static int init(void) {
 			match_node =  get_node_by_name((char*)rule_elem + 6);
 			match = (net_node_matcher_t) match_node;
 			cur = 0;
-		} else if(strncmp("LINK", rule_elem, 4) == 0) {
-			src_node = get_node_by_name((char*)rule_elem + 5);
+		} else if(strncmp("LINK_SRC", rule_elem, 8) == 0) {
+			src_node = get_node_by_name((char*)rule_elem + 9);
 			rule_elem = rules[++i];
-			dst_node = get_node_by_name((char*)rule_elem);
+			dst_node = get_node_by_name((char*)rule_elem + 9);
 			pnet_node_link(src_node, dst_node);
 		} else {
 			cur++;
