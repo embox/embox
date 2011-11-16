@@ -11,6 +11,10 @@ ifdef EMBUILD_DEBUG
 $(info Running EMBuild [$(MAKELEVEL)])
 endif
 
+ifdef MYBUILD
+include mk/mybuild/read.mk
+endif
+
 include $(MK_DIR)/traverse.mk
 include $(MK_DIR)/util.mk
 
@@ -27,19 +31,24 @@ endif
 # Traverse always defines SELFDIR before entering sub-makefile.
 dir = $(SELFDIR)
 
+ifdef MYBUILD
+DIRS := \
+	$(patsubst $(EM_DIR)%/,$(ROOT_DIR)%,\
+			$(call traverse_files,$(MKFILES))$(sort $(dir $(MKFILES))))
+else
 DIRS := $(call traverse,$(SRC_DIR),Makefile.em) \
   $(if $(PLATFORM),$(call traverse,$(PLATFORM_DIR),Makefile.em)) \
   $(call traverse,$(THIRDPARTY_DIR),Makefile.em)
-
-
 # XXX -- Eldar
 DIRS := $(patsubst %/,%,$(dir \
   $(foreach dir,$(DIRS), \
     $(call f-wildcard_first,$(addprefix $(dir)/,Makefile.em Makefile makefile)) \
   ) \
 ))
+endif
 
 ifdef EMBUILD_DEBUG
+#$(foreach d,$(DIRS),$(warning $d))
 embuild_vars = $(filter EMBUILD/%,$(.VARIABLES))
 $(foreach v,$(embuild_vars), \
   $(info $v = $($v)) \

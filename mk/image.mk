@@ -132,10 +132,6 @@ SRC_TO_OBJ = \
   $(call filter-patsubst,$(ROOT_DIR)%.c $(ROOT_DIR)%.S,$(OBJ_DIR)%.o,$1)
 LIB_FILE   = $(1:%=$(LIB_DIR)/%)
 
-ifdef MYBUILD
-include mk/mybuild/read.mk
-endif
-
 # It's time to scan subdirs and prepare mods info.
 include $(MK_DIR)/embuild.mk
 # ...and to build dependency injection model

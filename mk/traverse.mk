@@ -91,14 +91,7 @@ traverse_files = \
 define __traverse_file_mk
   SELFDIR := $(patsubst $(EM_DIR)%/,$(ROOT_DIR)%,$(dir $1))
   $_SELFDIR := $(SELFDIR)# TODO try to avoid it
-
-  __traverse_include := \
-    $(call f-wildcard_first,$(addprefix $1/,Makefile makefile))
-  ifneq ($(__traverse_include),)
-    # Go!
-    include $(__traverse_include)
-  else
-  endif
+  -include $1
 endef
 
 #

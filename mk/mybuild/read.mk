@@ -14,6 +14,21 @@ endif
 MY_FILES := $(call r-wildcard,$(MY_PATH:%=%/Mybuild))
 EM_FILES := $(call r-wildcard,$(MY_PATH:%=%/Makefile))
 
+# 1. File name.
+# 2. List.
+my_filter = \
+	$(call my_filter_only,$(SRC_DIR)/arch,$1 $(ARCH)/, \
+		$(call my_filter_only,$(PLATFORM_DIR),$1 $(PLATFORM)/,$2))
+
+# 1. Parent directory.
+# 2. Name.
+# 3. List
+my_filter_only = \
+	$(filter-out $1/%,$3) $(filter $(2:%=$1/%%),$3)
+
+MY_FILES := $(call my_filter,Mybuild,$(MY_FILES))
+EM_FILES := $(call my_filter,Makefile,$(EM_FILES))
+
 define my_printf_escape
 	$(subst $(\n),\n,
 		$(subst \,\\,$1)
