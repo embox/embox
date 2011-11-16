@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <util/member.h>
+#include <util/macro.h>
 
 /** Color of node in RB-tree. */
 enum tree_set_color {TREE_SET_NONE, TREE_SET_BLACK, TREE_SET_RED};
@@ -197,19 +198,23 @@ extern struct tree_set_link *tree_set_prev_link(struct tree_set_link *link);
 			link = tree_set_prev_link(link))
 
 /** Forward iteration with casting. */
-#define tree_set_foreach(link, element, tree_set, link_member) \
-	for (link = tree_set_begin(tree_set), \
-		element = tree_set_element(link, typeof(*(element)), link_member); \
-		link != tree_set_end(tree_set); \
-		link = tree_set_next_link(link), \
-		element = tree_set_element(link, typeof(*(element)), link_member)) \
+#define tree_set_foreach(element, tree_set, link_member) \
+	__tree_set_foreach(MACRO_GUARD(link), element, tree_set, link_member)
+
+#define __tree_set_foreach(link, element, tree_set, link_member) \
+	for (struct tree_set_link *link = tree_set_begin(tree_set); \
+		link != tree_set_end(tree_set) \
+			&& (element = tree_set_element(link, typeof(*(element)), link_member)); \
+		link = tree_set_next_link(link))
 
 /** Backward iteration with casting. */
-#define tree_set_foreach_back(link, element, tree_set, link_member) \
-	for (link = tree_set_rbegin(tree_set), \
-		element = tree_set_element(link, typeof(*element), link_member); \
-		link != tree_set_end(tree_set); \
-		link = tree_set_prev_link(link), \
-		element = tree_set_element(link, typeof(*element), link_member)) \
+#define tree_set_foreach_back(element, tree_set, link_member) \
+	__tree_set_foreach_back(MACRO_GUARD(link), element, tree_set, link_member)
+
+#define __tree_set_foreach_back(link, element, tree_set, link_member) \
+	for (struct tree_set_link *link = tree_set_rbegin(tree_set); \
+		link != tree_set_end(tree_set) \
+			&& (element = tree_set_element(link, typeof(*element), link_member)); \
+		link = tree_set_prev_link(link)) \
 
 #endif /* UTIL_TREE_SET_H_ */

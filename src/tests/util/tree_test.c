@@ -67,7 +67,9 @@ static void compare(struct tree_link *root) {
 	}
 	printf ("\n");
 #endif
-	tree_postorder_traversal(link, elem, root, link) {
+	tree_postorder_traversal_link(link, root) {}
+	tree_postorder_traversal_link_safe(link, root) {}
+	tree_postorder_traversal(elem, root, link) {
 		/* printf("%d %d %d\n", i, elem->data, ans[i]); */
 		test_assert(elem->data == ans[i]);
 		i++;

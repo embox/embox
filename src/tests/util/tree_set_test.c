@@ -107,13 +107,12 @@ static void array_del(struct int_tree_set_element * elem) {
  * Also check that both foreach loops (forward and back) are correct.
  */
 static bool compare(void) {
-	struct tree_set_link *link;
 	struct int_tree_set_element *elem;
 	int i;
 
 	/* Forward */
 	i = 0;
-	tree_set_foreach(link, elem, set, link) {
+	tree_set_foreach(elem, set, link) {
 		if (elem->data != ideal[i]->data) {
 			return false;
 		}
@@ -125,7 +124,7 @@ static bool compare(void) {
 
 	/* Back */
 	i = ideal_size-1;
-	tree_set_foreach_back(link, elem, set, link) {
+	tree_set_foreach_back(elem, set, link) {
 		if (elem->data != ideal[i]->data) {
 			return false;
 		}

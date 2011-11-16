@@ -46,10 +46,10 @@ int tree_unlink_link(struct tree_link *link) {
 }
 
 void tree_delete_link(struct tree_link *link, void dispose(struct tree_link *)) {
-	struct tree_link *iter, *next_link;
+	struct tree_link *iter;
 	assert(link != NULL);
 	tree_unlink_link(link);
-	tree_postorder_traversal_link_safe(iter, next_link, link) {
+	tree_postorder_traversal_link_safe(iter, link) {
 		tree_link_init(iter);
 		dispose(iter);
 	}

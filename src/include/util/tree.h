@@ -10,6 +10,7 @@
 #define UTIL_TREE_H_
 
 #include <util/member.h>
+#include <util/macro.h>
 #include <util/list.h>
 
 #define tree_element(link, element_type, link_member) \
@@ -124,7 +125,12 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  *   and obtaining next element according to given current.
  */
 #define tree_foreach_link(link, tree, begin, end, next) \
-	for (link = begin(tree); link != end(tree); link = next(link))
+	__tree_foreach_link(link, MACRO_GUARD(end_link), tree, begin, end, next)
+
+#define __tree_foreach_link(link, end_link, tree, begin, end, next) \
+	for (struct tree_link *end_link = (link = begin(tree), end(tree)); \
+			link != end_link; \
+			link = next(link))
 
 /**
  * Iteration on tree. Elements are links (without casting from links).
@@ -135,9 +141,14 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  *   and obtaining next element according to given current.
  *   'Next' function must not cause an error if it's applyed to end of enumeration.
  */
-#define tree_foreach_link_safe(link, next_link, tree, begin, end, next) \
-	for (link = begin(tree), next_link = next(link); \
-		link != end(tree); \
+#define tree_foreach_link_safe(link, tree, begin, end, next) \
+	__tree_foreach_link_safe(link, MACRO_GUARD(next_link), MACRO_GUARD(end_link), \
+			tree, begin, end, next)
+
+#define __tree_foreach_link_safe(link, next_link, end_link, tree, begin, end, next) \
+	for (struct tree_link *next_link = (link = begin(tree), next(link)) \
+			, *end_link = end(tree); \
+		link != end_link; \
 		link = next_link, next_link = next(link))
 
 /**
@@ -146,12 +157,17 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  *   first element of enumeration, last(exclusively)
  *   and obtaining next element according to given current.
  */
-#define tree_foreach(link, element, tree, link_member, begin, end, next) \
-	for (link = begin(tree), \
-			element = tree_element(link, typeof(*element), link_member); \
-		link != end(tree); \
-		link = next(link), \
-			element = tree_element(link, typeof(*element), link_member))
+#define tree_foreach(element, tree, link_member, begin, end, next) \
+	__tree_foreach(MACRO_GUARD(link), MACRO_GUARD(end_link), \
+			element, tree, link_member, begin, end, next)
+
+#define __tree_foreach(link, end_link, \
+			element, tree, link_member, begin, end, next) \
+	for (struct tree_link *link = begin(tree), \
+			*end_link = end(tree);\
+		link != end_link \
+			&& (element = tree_element(link, typeof(*element), link_member)); \
+		link = next(link))
 
 /**
  * Postorder iteration on tree.
@@ -167,13 +183,13 @@ extern struct tree_link *tree_find(struct tree_link *tree,
  * Calculates next element before processing of current.
  * E.g., this allows deletion of current element.
  */
-#define tree_postorder_traversal_link_safe(link, next_link, tree) \
-	tree_foreach_link_safe(link, next_link, tree, \
+#define tree_postorder_traversal_link_safe(link, tree) \
+	tree_foreach_link_safe(link, tree, \
 		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 /** Postorder iteration with casting. */
-#define tree_postorder_traversal(link, element, tree, link_member) \
-	tree_foreach(link, element, tree, link_member, \
+#define tree_postorder_traversal(element, tree, link_member) \
+	tree_foreach(element, tree, link_member, \
 		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 #endif /* UTIL_TREE_H_ */
