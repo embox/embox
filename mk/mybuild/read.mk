@@ -30,8 +30,11 @@ MY_FILES := $(call my_filter,Mybuild,$(MY_FILES))
 EM_FILES := $(call my_filter,Makefile,$(EM_FILES))
 
 define my_printf_escape
-	$(subst $(\n),\n,
-		$(subst \,\\,$1)
+	$(or \
+		$(subst $(\n),\n,
+			$(subst \,\\,$1)
+		),
+		$(error Empty input)
 	)
 endef
 $(call def,my_printf_escape)
