@@ -18,8 +18,7 @@
 
 #include <kernel/prom_printf.h>
 
-
-static int __net_core_receive(net_packet_t pack) {
+static int step_process(net_packet_t pack, net_hnd hnd, net_node_t next_node) {
 	net_node_t node = pack->node;
 	net_id_t res = NET_HND_DFAULT;
 
@@ -28,48 +27,27 @@ static int __net_core_receive(net_packet_t pack) {
 	}
 
 	if (node->proto != NULL) {
-		res = fun_call_def(res, pnet_proto_rx_hnd(node), pack);
+		res = fun_call_def(res, hnd, pack);
 	}
 
 	if (res & NET_HND_DFAULT) {
-		pack->node = pack->node->rx_dfault;
+		pack->node = next_node;
 	}
 
-	if (!(res & NET_HND_SUPPRESSED)) {
+	if (res & NET_HND_SUPPRESSED) {
+		pnet_pack_free(pack);
+	} else {
 		pnet_rx_thread_add(pack);
 	}
 
 	return 0;
 }
 
-static int __net_core_send(net_packet_t pack) {
-	net_node_t node = pack->node;
-	int res = NET_TX_DFAULT;
-
-	if (0 != pnet_graph_run_valid(node->graph)) {
-		return -EINVAL;
-	}
-
-	if (node->proto != NULL) {
-		res = fun_call_def(res, pnet_proto_tx_hnd(node), pack);
-	}
-
-	if (res & NET_HND_DFAULT) {
-		pack->node = pack->node->tx_dfault;
-	}
-
-	if (!(res & NET_HND_SUPPRESSED)) {
-		pnet_rx_thread_add(pack);
-	}
-
-	return ENOERR;
-}
-
 int pnet_process(net_packet_t pack) {
 	if (pack->dir == NET_PACKET_RX) {
-		return __net_core_receive(pack);
+		return step_process(pack, pnet_proto_rx_hnd(pack->node), pack->node->rx_dfault);
 	}
-	return __net_core_send(pack);
+	return step_process(pack, pnet_proto_tx_hnd(pack->node), pack->node->tx_dfault);
 }
 
 struct pnet_path *pnet_get_dev_prior(struct net_device *dev) {
