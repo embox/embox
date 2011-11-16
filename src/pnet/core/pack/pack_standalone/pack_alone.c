@@ -21,15 +21,19 @@
 OBJALLOC_DEF(net_packs, struct net_packet, NET_PACKS_CNT);
 OBJALLOC_DEF(net_packs_data, unsigned char[PACK_DATA_LEN], NET_PACKS_CNT);
 
-net_packet_t pnet_pack_alloc(net_node_t node, enum net_packet_dir dir, void *data, int len) {
-	net_packet_t pack = objalloc(&net_packs);
+net_packet_t pnet_pack_alloc(net_node_t node, int len) {
+	net_packet_t pack;
+
+	if (len > PACK_DATA_LEN) {
+		return NULL;
+	}
+
+	pack = objalloc(&net_packs);
 
 	pack->node = node;
-	pack->dir  = dir;
+	pack->dir = NET_PACKET_RX; //TODO varios packet types
 
 	pack->data = objalloc(&net_packs_data);
-
-	memcpy(pack->data, data, len);
 
 	pack->len = len;
 

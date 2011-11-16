@@ -28,8 +28,8 @@ extern int pnet_node_attach(net_node_t node, net_id_t id, net_node_t parent);
 extern net_node_t pnet_node_alloc(net_addr_t addr, pnet_proto_t proto);
 extern net_node_t pnet_node_init(net_node_t node, net_addr_t addr, pnet_proto_t proto);
 
-extern net_packet_t pnet_pack_alloc(net_node_t node, enum net_packet_dir dir, void *data, int len);
-extern net_packet_t pnet_pack_alloc_skb(net_node_t node, enum net_packet_dir dir, struct sk_buff *skb);
+extern net_packet_t pnet_pack_alloc(net_node_t node, int len);
+extern net_packet_t pnet_pack_alloc_skb(net_node_t node, struct sk_buff *skb);
 extern int pnet_pack_free(net_packet_t pack);
 
 extern int pnet_path_set_prior(net_node_t node, net_prior_t prior);

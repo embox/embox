@@ -36,7 +36,9 @@ static struct bc_msg out_msg;
 static struct bc_msg in_msg;
 
 static void send_to_net(char *data, int len) {
-	net_packet_t pack = pnet_pack_alloc(&this, NET_PACKET_RX, (void *) data, len);
+	net_packet_t pack = pnet_pack_alloc(&this, len);
+
+	memcpy(pnet_pack_get_data(pack), (void *) data, len);
 
 	pnet_entry(pack);
 

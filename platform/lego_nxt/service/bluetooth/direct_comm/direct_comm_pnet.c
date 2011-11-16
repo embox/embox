@@ -31,7 +31,9 @@ PNET_NODE_DEF_NAME("nxt direct src", this, {
 static uint8_t direct_comm_buff[DC_BUFF_SIZE];
 
 static void send_to_net(unsigned char *data, int len) {
-	net_packet_t pack = pnet_pack_alloc(&this, NET_PACKET_RX, (void *) data, len);
+	net_packet_t pack = pnet_pack_alloc(&this, len);
+
+	memcpy(pnet_pack_get_data(pack), (void *) data, len);
 
 	pnet_entry(pack);
 
