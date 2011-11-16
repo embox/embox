@@ -549,6 +549,7 @@ image_init:
 
 # Here goes dump generating stuff needed to speed-up a build.
 
+EMBUILD_DUMP_PREREQUISITES += $(MKFILES)
 EMBUILD_DUMP_PREREQUISITES += $(DIRS:%=%/Makefile)
 EMBUILD_DUMP_PREREQUISITES += $(AUTOCONF_DIR)/build.mk $(MK_DIR)/embuild.mk
 
