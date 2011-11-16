@@ -9,7 +9,7 @@ $_DEPS-task_common += embox.fs.core embox.fs.rootfs
 $_MODS += tasks
 $_SRCS-tasks += task.c
 $_DEPS-tasks += embox.driver.virtual.diag_device task_common
-$_REQUIRES-task += embox.kernel.thread.sched_api
+$_DEPS-task += embox.kernel.thread.sched
 $_PROVIDES-tasks += embox.kernel.tasks_api
 
 $_MODS += no_tasks

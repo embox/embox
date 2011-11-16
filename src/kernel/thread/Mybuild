@@ -1,0 +1,24 @@
+package embox.kernel.thread;
+
+//import foo.bar.*;
+
+module core {
+	source file "core.c";
+
+	depends sched;
+	depends sync;
+	depends embox.hal.context;
+	depends embox.kernel.tasks_api;
+
+}
+
+module sched {
+	source file "sched.c";
+
+	depends embox.kernel.timer.timer_api;
+	depends embox.hal.context;
+//	depends embox.kernel.critical;
+	depends embox.kernel.thread.sched_policy.api;
+
+}
+
