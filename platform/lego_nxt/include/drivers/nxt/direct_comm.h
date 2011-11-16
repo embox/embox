@@ -16,10 +16,14 @@
 #define DC_MAX_LEN 64
 
 struct lego_dc_msg {
-	__le16 len;
 	uint8_t type;
 	uint8_t command;
 	uint8_t body[DC_MAX_LEN - 2];
+};
+
+struct lego_dc_msg_full {
+	__le16 len;
+	struct lego_dc_msg msg;
 };
 
 #define MSG_SIZE_BYTE_CNT 2 //TODO rename it DC_HEADER_LENGTH

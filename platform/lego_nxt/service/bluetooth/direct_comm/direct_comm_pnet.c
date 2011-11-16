@@ -23,63 +23,56 @@ EMBOX_UNIT_INIT(dc_pnet_init);
 
 #define DC_BUFF_SIZE 0x20 /* lego_nxt direct command maximum length */
 
-static int rx_hnd(net_packet_t pack);
-PNET_NODE_DEF_NAME("nxt direct src", this, {
-	.rx_hnd = rx_hnd
+static int ctrl_rx(net_packet_t pack);
+static int data_rx(net_packet_t pack);
+
+PNET_NODE_DEF_NAME("direct_comm formation data", this_data, {
+	.rx_hnd = data_rx
 });
 
-static uint8_t direct_comm_buff[DC_BUFF_SIZE];
+PNET_NODE_DEF_NAME("direct_comm formation ctrl", this_ctrl, {
+	.rx_hnd = ctrl_rx
+});
 
-static void send_to_net(unsigned char *data, int len) {
-	net_packet_t pack = pnet_pack_alloc(&this, len);
-
-	memcpy(pnet_pack_get_data(pack), (void *) data, len);
-
-	pnet_entry(pack);
-
-	return;
-}
-
-static int size = 0;
 
 static int handle_size(uint8_t *buff) {
 	return buff[0] + (buff[1] << 8);
 }
 
-static int direct_wait_body(void);
-static int direct_get_header(void) {
-#if 0
-	prom_printf("%x;", direct_comm_buff[0]);
-	bluetooth_read(direct_comm_buff, 1);
-#endif
-	size = handle_size(direct_comm_buff);
+static int (*data_hnd)(void *);
+static int get_body(void *msg);
+static int get_header(void *msg);
+
+static int get_header(void *msg) {
+	int size = handle_size((uint8_t *) msg);
 
 	if (size > DC_BUFF_SIZE - MSG_SIZE_BYTE_CNT) {
 		//TODO error length
 	}
-	CALLBACK_REG(bt_rx, direct_wait_body);
-	bluetooth_read(direct_comm_buff + MSG_SIZE_BYTE_CNT, size);
+	data_hnd = get_body;
+	bluetooth_read(size);
+	return NET_HND_SUPPRESSED;
+}
+
+static int get_body(void *msg) {
+	data_hnd = get_header;
+	bluetooth_read(MSG_SIZE_BYTE_CNT);
 	return 0;
 }
 
-static int direct_wait_body(void /*int msg, uint8_t *buff*/) {
-	send_to_net(direct_comm_buff, MSG_SIZE_BYTE_CNT + size);
-	//nxt_bt_set_rx_handle(direct_get_header);
-	CALLBACK_REG(bt_rx, direct_get_header);
-	bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
-	return 0;
+static int data_rx(net_packet_t pack) {
+	while (1);
+	return data_hnd(pnet_pack_get_data(pack));
 }
 
-static int rx_hnd(net_packet_t pack) {
-	int res = NET_HND_SUPPRESSED;
-	if (0 != strcmp("connect", pnet_pack_get_data(pack))) {
-		return res;
+static int ctrl_rx(net_packet_t pack) {
+	prom_printf("PC");
+	if (0 != *((uint8_t *) pnet_pack_get_data(pack))) { /* if connected */
+		data_hnd = get_header;
+		bluetooth_read(MSG_SIZE_BYTE_CNT);
 	}
-	CALLBACK_REG(bt_rx, direct_get_header);
 
-	pnet_pack_free(pack);
-	bluetooth_read(direct_comm_buff, MSG_SIZE_BYTE_CNT);
-	return res;
+	return NET_HND_SUPPRESSED;
 }
 
 static int dc_pnet_init(void) {

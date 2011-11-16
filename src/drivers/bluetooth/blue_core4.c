@@ -25,16 +25,24 @@
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
 static int nxt_bluecore_start(struct net_node *node);
+static int data_rx(struct net_packet *pack);
+static int ctrl_rx(struct net_packet *pack);
 
-PNET_NODE_DEF_NAME("lego_blue_core", this, {
-		.start = nxt_bluecore_start
+PNET_NODE_DEF_NAME("blue_core data", this_data, {
+	.rx_hnd = data_rx,
+});
+
+PNET_NODE_DEF_NAME("blue_core ctrl", this_ctrl, {
+	.rx_hnd = ctrl_rx,
+	.start = nxt_bluecore_start
 });
 
 #define SOFTIRQ_DEFFERED_DISCONNECT 10
 
 static struct bc_msg out_msg;
-static struct bc_msg in_msg;
+//static struct bc_msg in_msg;
 
+#if 0
 static void send_to_net(char *data, int len) {
 	net_packet_t pack = pnet_pack_alloc(&this, len);
 
@@ -44,6 +52,7 @@ static void send_to_net(char *data, int len) {
 
 	return;
 }
+#endif
 
 static uint16_t calc_chksumm(struct bc_msg * msg) {
 	uint16_t sum;
@@ -64,20 +73,20 @@ static void send_msg(struct bc_msg * msg) {
 	calc_chksumm(msg);
 
 	msg->length += 2;
-	bluetooth_write((uint8_t *) &out_msg, msg->length + 1);
+	bluetooth_write((uint8_t *) msg, msg->length + 1);
 }
 
-static void print_msg(struct bc_msg *msg) {
-#if 0
+static void print_msg(struct bc_msg_body *msg) {
 	prom_printf("P%x:", msg->type);
+#if 0
 	for (int i = 0; i < msg->length - 1; i++) {
 		prom_printf("%x:", msg->content[i]);
 	}
-	prom_printf("\n");
 #endif
+	prom_printf("\n");
 }
 
-static int process_msg(struct bc_msg *msg) {
+static int process_msg(struct bc_msg_body *msg) {
 	/* TODO it must be return in connect result we can also get partner address
 	 * when we get port open result message */
 	static int bt_bc_handle = 0;
@@ -113,7 +122,6 @@ static int process_msg(struct bc_msg *msg) {
 			out_msg.type = MSG_OPEN_STREAM;
 			out_msg.length = 2;
 			out_msg.content[0] = bt_bc_handle;
-			send_to_net("connect", 1 + strlen("connect"));
 			bluetooth_hw_accept_connect();
 			res = 1;
 		} else {
@@ -128,48 +136,78 @@ static int process_msg(struct bc_msg *msg) {
 	return res;
 }
 
-static int irq_handler_get_length(void);
-static int irq_handler_get_body(void);
+static int get_length(void *msg);
+static int get_body(void *msg);
+static int bypass(void *msg);
+static int wait_connect(void *msg);
+static int wait_disconnect(void *msg);
 
-static int irq_handler_get_length(void) {
-	if(in_msg.length >= sizeof(in_msg)) {
-		//error; reset?
-	}
-	CALLBACK_REG(bt_rx, irq_handler_get_body);
-	bluetooth_read((uint8_t *)&(in_msg.type), in_msg.length);
-	return 0;
+static int (*data_hnd)(void *pack_data) = get_length;
+static int (*ctrl_hnd)(void *pack_data) = wait_connect;
+
+static int data_rx(struct net_packet *pack) {
+	prom_printf("bD");
+	return data_hnd(pnet_pack_get_data(pack));
 }
 
-static int irq_handler_get_body(void) {
-	int answ = process_msg(&in_msg);
+static int ctrl_rx(struct net_packet *pack) {
+	prom_printf("bC");
+	return ctrl_hnd(pnet_pack_get_data(pack));
+
+}
+
+static int get_length(void *_msg) {
+	struct bc_msg *msg = _msg;
+	data_hnd = get_body;
+
+	bluetooth_read(msg->length);
+
+	return NET_HND_SUPPRESSED;
+}
+
+static int get_body(void *msg) {
+	int answ = process_msg((struct bc_msg_body *) msg);
 
 	if (answ == 0) {
-		CALLBACK_REG(bt_rx, irq_handler_get_length);
-		bluetooth_read((uint8_t *)&(in_msg.length), 1);
+		data_hnd = get_length;
+		bluetooth_read(1);
 	}
+
+	return NET_HND_SUPPRESSED;
+}
+
+static int bypass(void *msg) {
 	return 0;
 }
 
-static int pin_disconnect_handler(void) {
-	softirq_raise(SOFTIRQ_DEFFERED_DISCONNECT);
+static int wait_connect(void *msg) {
+	ctrl_hnd = wait_disconnect;
+	data_hnd = bypass;
+
+	return 0;
+}
+
+static int wait_disconnect(void *msg) {
+	data_hnd = get_length;
+	ctrl_hnd = wait_connect;
+
+	bluetooth_hw_soft_reset();
+	bluetooth_read(1);
+
 	return 0;
 }
 
 static int nxt_bluecore_start(struct net_node *node) {
+	data_hnd = get_length;
+	ctrl_hnd = wait_connect;
+
 	bluetooth_hw_hard_reset();
-	CALLBACK_REG(bt_rx, irq_handler_get_length);
-	CALLBACK_REG(bt_state, pin_disconnect_handler);
-	bluetooth_read((uint8_t *)&(in_msg.length), 1);
+	bluetooth_read(1);
+
 	return 0;
 }
 
-static void deffered_disconnect(softirq_nr_t nt, void* data) {
-	bluetooth_hw_soft_reset();
-	CALLBACK_REG(bt_rx, irq_handler_get_length);
-	bluetooth_read((uint8_t *)&(in_msg.length), 1);
-}
-
 static int nxt_bluecore_init(void) {
-	return softirq_install(SOFTIRQ_DEFFERED_DISCONNECT, deffered_disconnect, NULL);
+	return 0;
 }
 

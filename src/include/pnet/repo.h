@@ -11,7 +11,7 @@
 #define PNET_REPO_H_
 
 #include <util/array.h>
-
+#include <util/macro.h>
 #include <pnet/types.h>
 
 struct pnet_module {
@@ -66,13 +66,13 @@ struct pnet_module {
 
 
 #define PNET_PROTO_DEF(str_id, ...) \
-	__PNET_PROTO_DEF_NAME_REPO(str_id, __proto__##__COUNTER__, __VA_ARGS__)
+	__PNET_PROTO_DEF_NAME_REPO(str_id, MACRO_GUARD(proto), __VA_ARGS__)
 
 #define PNET_NODE_DEF(str_id, ...)\
-	__PNET_NODE_DEF_NAME_REPO(str_id, __node__##__COUNTER__,__proto##__COUNTER, __VA_ARGS__ )
+	__PNET_NODE_DEF_NAME_REPO(str_id, MACRO_GUARD(node), MACRO_GUARD(proto) , __VA_ARGS__ )
 
 #define PNET_NODE_DEF_NAME(str_id, node_nm, ...)\
-	__PNET_NODE_DEF_NAME_REPO(str_id, node_nm,__proto##__COUNTER, __VA_ARGS__ )
+	__PNET_NODE_DEF_NAME_REPO(str_id, node_nm, MACRO_GUARD(proto), __VA_ARGS__ )
 
 
 extern struct net_node *pnet_get_module(const char *name);

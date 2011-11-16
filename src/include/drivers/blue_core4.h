@@ -65,14 +65,18 @@
 #define MSG_GET_BRICK_STATUSBYTE        51
 #define MSG_SET_BRICK_STATUSBYTE        52
 
-
 #define BC_MAX_MESSAGE_LEN 0x20
 
-struct bc_msg { //union?
-	uint8_t  length;
-	uint8_t  type;
-	uint8_t  content[BC_MAX_MESSAGE_LEN];
-	/*uint16_t sum;*/
+
+struct bc_msg_body {
+	uint8_t type;
+	uint8_t content[BC_MAX_MESSAGE_LEN];
+};
+
+struct bc_msg {
+	uint8_t length;
+	uint8_t type;
+	uint8_t content[BC_MAX_MESSAGE_LEN];
 };
 
 #endif /* BLUE_CORE4_H_ */

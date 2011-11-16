@@ -24,20 +24,20 @@
 
 EMBOX_UNIT_INIT(node_dc_init);
 
-static struct lego_dc_msg dc_out_msg;
+static struct lego_dc_msg_full dc_out_msg;
 
 static int reply_need(struct lego_dc_msg *dc) {
 	return !(dc->type & 0x80);
 }
 
-static void reply_handle(uint8_t status, uint8_t cmd, int addit_len, struct lego_dc_msg *dc_out_msg) {
-	int extra_len = sizeof(dc_out_msg->type) +
-		sizeof(dc_out_msg->command) + sizeof(dc_out_msg->body[0]); // 3
-	dc_out_msg->len = addit_len + extra_len;
-	dc_out_msg->type = 0x02;
-	dc_out_msg->command = cmd;
-	dc_out_msg->body[0] = status;
-	bluetooth_write((uint8_t *) dc_out_msg, sizeof(dc_out_msg->len) + extra_len + addit_len);
+static void reply_handle(uint8_t status, uint8_t cmd, int addit_len, struct lego_dc_msg_full *msg_full) {
+	int extra_len = 3;
+	struct lego_dc_msg *out_msg = &(msg_full->msg);
+	msg_full->len = addit_len + extra_len;
+	out_msg->type = 0x02;
+	out_msg->command = cmd;
+	out_msg->body[0] = status;
+	bluetooth_write((uint8_t *) msg_full, sizeof(msg_full->len) + extra_len + addit_len);
 }
 
 #define SENSOR_VALUE_THRESHOLD 200
@@ -108,13 +108,12 @@ static int dc_rx_hnd(net_packet_t pack) {
 
 	msg = (struct lego_dc_msg *) pnet_pack_get_data(pack);
 
-	status = handle_body(msg, &addit_len, dc_out_msg.body + 1);
+	status = handle_body(msg, &addit_len, dc_out_msg.msg.body + 1);
 
 	if (reply_need(msg)) {
 	    reply_handle(status, msg->command, addit_len, &dc_out_msg);
 	}
 
-	pnet_pack_free(pack);
 	return NET_HND_SUPPRESSED;
 }
 
@@ -122,7 +121,7 @@ static int node_dc_init(void) {
 	return 0;
 }
 
-PNET_NODE_DEF("nxt direct handler",  {
+PNET_NODE_DEF("direct_comm exec",  {
 		.rx_hnd = dc_rx_hnd,
 		.tx_hnd = NULL
 	});

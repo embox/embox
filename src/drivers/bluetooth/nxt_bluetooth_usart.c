@@ -7,16 +7,19 @@
  */
 
 #include <types.h>
-#include <embox/unit.h>
+#include <string.h>
+#include <unistd.h>
 //#include <hal/reg.h>
+#include <kernel/prom_printf.h>
 
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
 #include <kernel/timer.h>
-#include <unistd.h>
 
-//extern void bt_handle(uint8_t *buff);
+#include <pnet/core.h>
+#include <pnet/repo.h>
+#include <embox/unit.h>
 
 #define NXT_BT_RX_PIN  ((uint32_t) CONFIG_NXT_BT_RX_PIN)
 #define NXT_BT_TX_PIN  ((uint32_t) CONFIG_NXT_BT_TX_PIN)
@@ -31,12 +34,12 @@ static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_NXT_BT_SERIAL_
 
 EMBOX_UNIT_INIT(nxt_bluetooth_init);
 
-static int nop(void) {
-	return 0;
-}
+PNET_NODE_DEF_NAME("bt hw data", this_data, {});
+PNET_NODE_DEF_NAME("bt hw ctrl", this_ctrl, {});
 
-CALLBACK_INIT_DEF(nxt_bt_rx_handle_t, bt_rx, nop);
-CALLBACK_INIT_DEF(nxt_bt_state_handle_t, bt_state, nop);
+#define BT_READ_BUFF 0x40
+
+struct net_packet *pack;;
 
 static void bt_clear_arm7_cmd(void) {
 	REG_STORE(AT91C_PIOA_CODR, CONFIG_NXT_BT_CMD_PIN);
@@ -63,9 +66,9 @@ void bluetooth_hw_soft_reset(void) {
 }
 
 static irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
-
-	CALLBACK(bt_rx)();
-	//nxt_bt_rx_handle();
+	if (REG_LOAD(&(us_dev_regs->US_CSR)) & AT91C_US_ENDTX) {
+		pnet_entry(pack);
+	}
 
 	return IRQ_HANDLED;
 }
@@ -79,8 +82,9 @@ size_t bluetooth_write(uint8_t *buff, size_t len) {
 	return len;
 }
 
-size_t bluetooth_read(uint8_t *buff, size_t len) {
-	REG_STORE(&(us_dev_regs->US_RPR), (uint32_t) buff);
+size_t bluetooth_read(size_t len) {
+	pack = pnet_pack_alloc(&this_data, len);
+	REG_STORE(&(us_dev_regs->US_RPR), (uint32_t) pnet_pack_get_data(pack));
 	REG_STORE(&(us_dev_regs->US_RCR), len);
 
 	return 0;
@@ -136,7 +140,6 @@ static void init_adc(void) {
 	REG_STORE(AT91C_ADC_CHER, AT91C_ADC_CH6 | AT91C_ADC_CH4);
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
-
 /* timer handler
  * we scan PIN_BT4 for changing and if it changed bt state switch to disconnect
  *  mode.
@@ -145,15 +148,15 @@ static void  nxt_bt_timer_handler(int id) {
 	static int bt_last_state; //TODO init state?
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
 	if (bt_last_state != bt_state) {
-		if (!bt_state) {
-			//nxt_bt_state_handle();
-			CALLBACK(bt_state)();
-		}
+		//struct net_packet *pack = pnet_pack_alloc(&this_ctrl, 1);
+
+//		*((uint8_t *) pnet_pack_get_data(pack)) = bt_state;
+		//pnet_entry(pack);
+		bt_last_state = bt_state;
+
 	}
-	bt_last_state = bt_state;
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
-
 void bluetooth_hw_hard_reset(void) {
 	bt_set_reset_low();
 	usleep(2000);
@@ -162,7 +165,10 @@ void bluetooth_hw_hard_reset(void) {
 }
 
 static int nxt_bluetooth_init(void) {
-	static struct sys_timer *ntx_bt_timer;
+	struct sys_timer *ntx_bt_timer;
+
+	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
+		(irq_handler_t) nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
 	init_usart();
 
@@ -172,12 +178,7 @@ static int nxt_bluetooth_init(void) {
 
 	bt_clear_arm7_cmd();
 
-	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
-		(irq_handler_t) nxt_bt_us_handler, 0, NULL, "nxt bt reader");
-
 //TODO may be it must set when bt has been connected?
-	timer_set(&ntx_bt_timer, 200, (sys_timer_handler_t) &nxt_bt_timer_handler, NULL);
-
-	return 0;
+	return timer_set(&ntx_bt_timer, 200, (sys_timer_handler_t) &nxt_bt_timer_handler, NULL);
 }
 

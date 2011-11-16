@@ -21,7 +21,7 @@ typedef int(*bt_comm_handler_t)(int msg, uint8_t *buff);
 
 extern void bluetooth_set_handler(bt_comm_handler_t handler);
 
-extern size_t bluetooth_read(uint8_t *buff, size_t len);
+extern size_t bluetooth_read(size_t len);
 extern size_t bluetooth_write(uint8_t *buff, size_t len);
 
 CALLBACK_DECLARE(bt_comm_handler_t, bluetooth_uart);
