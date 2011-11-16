@@ -282,6 +282,7 @@ $(gold_prefix)_name_of-target        := target
 # Rule: <Model> ::= <PackageDecl> <ImportDecls> <ModuleDecls>
 # Args: 1..3 - Symbols; 3+1 - Location vector.
 define $(gold_prefix)_produce-Model
+	$(\h) Generated from $(gold_file). Do not edit!$(\n)$(\n)
 	$(if $1,$1$(\n))
 	$(if $2,$2$(\n))
 	$(if $3,
@@ -327,9 +328,9 @@ endef
 
 # Rule: <ModuleDecls> ::= <ModuleDecl> <ModuleDecls>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
-#define $(gold_prefix)_produce-ModuleDecls
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+define $(gold_prefix)_produce-ModuleDecls
+	$1$2
+endef
 
 # Rule: <ModuleDecls> ::=
 # Args: 1..0 - Symbols; 0+1 - Location vector.
@@ -343,7 +344,7 @@ define $(gold_prefix)_produce-ModuleDecl_module_Identifier_LBrace_RBrace
 	m := $3$(\n)
 	$$_$(if $(filter abstract,$1),APIS,MODS) += $$m$(\n)
 	$4
-	$6
+	$6$(\n)
 endef
 
 # Rule: <ModuleModifiers> ::= <ModuleModifier> <ModuleModifiers>
@@ -401,9 +402,9 @@ endef
 
 # Rule: <ModuleBodyDecls> ::= <ModuleBodyDecl> <ModuleBodyDecls>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
-#define $(gold_prefix)_produce-ModuleBodyDecls
-#	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
-#endef
+define $(gold_prefix)_produce-ModuleBodyDecls
+	$1$2
+endef
 
 # Rule: <ModuleBodyDecls> ::=
 # Args: 1..0 - Symbols; 0+1 - Location vector.
