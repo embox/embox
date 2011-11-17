@@ -17,40 +17,26 @@
 
 struct pool {
 	void * memory;
-	void * bound_free;
 	struct slist free_blocks;
 	size_t obj_size;
 	size_t pool_size;
-	size_t current_size;
+	size_t bound_free;
 };
 
 
 #define POOL_DEF(name, object_type, size) \
 	static union {                                  \
 		typeof(object_type) object;                 \
-		struct slist free_link;      \
+		struct slist_link free_link;      \
 	} name ## _storage[size] __attribute__((section(".reserve.pool"))); \
+	struct slist temp_list;\
 	static struct pool name = { \
-			.memory = (void*)name ## _storage, \
-			.bound_free = (void*)name ## _storage, \
+			.memory = name ## _storage, \
+			/*.bound_free = (void*)name ## _storage, \*/ \
 			.obj_size = sizeof(*name ## _storage), \
 			.pool_size = sizeof(*name ## _storage) * size, \
-			.current_size = 0 \
+			.bound_free = 0 \
 };
-
-
-#if 0
-#define POOL_DEF(pool_name, elem_type, pool_size) \
-			__POOL_DEF(pool_name, elem_type, pool_size, MACRO_GUARD(__pool_##pool_name))
-
-#define __POOL_DEF(pool_name, elem_type, pool_size, storage_name)\
-			static  typeof(elem_type) obj \
-			storage_name[pool_size] __attribute__((section(".reserve.pool")));\
-			static obj_pool pool_name = { \
-					.obj_size = sizeof(elem_type) \
-			}
-
-#endif
 
 extern void *pool2_alloc(struct pool *pool);
 

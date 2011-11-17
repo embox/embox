@@ -11,18 +11,19 @@
 #include <mem/misc/pool2.h>
 
 void *pool2_alloc(struct pool* pool) {
-	if(!slist_empty(pool->free_blocks)) {
-
-	}
-	if (pool->current_size != pool->pool_size) {
-		if (0 != slist_empty(&pool->free_blocks)) {
-			pool->current_size++;
+	assert(pool);
+	if (pool->bound_free != pool->pool_size) {
+		if (!slist_empty(&pool->free_blocks)) {
+			++pool->bound_free;
 			return (void *)slist_remove_first_link(&pool->free_blocks);
 		}
-		return NULL;
+		 ++pool->bound_free;
+		return (void *)pool->memory + (pool->bound_free - 1);
 	}
 	return NULL;
 }
 
 void pool2_free(struct pool* pool, void* obj) {
+	assert(pool);
+	assert(obj);
 }
