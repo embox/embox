@@ -1,0 +1,11 @@
+package embox.kernel.thread.sched_policy;
+
+abstract module api { }
+
+module sched_trivial extends api {
+	source "sched_trivial.c", "sched_trivial.h";
+}
+
+module priority_based extends api {
+	source "priority_based.c", "priority_based.h";
+}
