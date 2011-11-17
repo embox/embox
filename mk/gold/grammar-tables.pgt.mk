@@ -1,4 +1,4 @@
-##TEMPLATE-NAME 'Make - MyBuild engine (tables)'
+##TEMPLATE-NAME 'Make - MyBuild engine (Tables file)'
 ##LANGUAGE 'GNU Make'
 ##ENGINE-NAME 'MyBuild'
 ##AUTHOR 'Eldar Abusalimov'

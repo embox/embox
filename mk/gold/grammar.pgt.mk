@@ -1,4 +1,4 @@
-##TEMPLATE-NAME 'Make - MyBuild engine (application stub)'
+##TEMPLATE-NAME 'Make - MyBuild engine (Entry point)'
 ##LANGUAGE 'GNU Make'
 ##ENGINE-NAME 'MyBuild'
 ##AUTHOR 'Eldar Abusalimov'

@@ -1,4 +1,4 @@
-##TEMPLATE-NAME 'Make - MyBuild engine (application stub)'
+##TEMPLATE-NAME 'Make - MyBuild engine (Rules)'
 ##LANGUAGE 'GNU Make'
 ##ENGINE-NAME 'MyBuild'
 ##AUTHOR 'Eldar Abusalimov'
@@ -47,6 +47,3 @@ define $(gold_grammar)_produce-%ID%
 endef
 
 ##END-RULES
-
-endif # __gold_grammar_$(gold_grammar)_mk
-

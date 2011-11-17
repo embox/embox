@@ -1,4 +1,4 @@
-##TEMPLATE-NAME 'Make - MyBuild engine (application stub)'
+##TEMPLATE-NAME 'Make - MyBuild engine (Symbols)'
 ##LANGUAGE 'GNU Make'
 ##ENGINE-NAME 'MyBuild'
 ##AUTHOR 'Eldar Abusalimov'
@@ -83,6 +83,4 @@ endef
 ##SYMBOLS
 $(gold_grammar)_name_of-%ID.Padded% := %Description%
 ##END-SYMBOLS
-
-endif # __gold_grammar_$(gold_grammar)_mk
 
