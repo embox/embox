@@ -15,8 +15,8 @@
 
 #include <embox/unit.h>
 
-#define NET_PACKS_CNT 0x10
-#define PACK_DATA_LEN 64
+#define NET_PACKS_CNT CONFIG_PNET_PACKETS_QUANTITY
+#define PACK_DATA_LEN 64 //TODO
 
 OBJALLOC_DEF(net_packs, struct net_packet, NET_PACKS_CNT);
 OBJALLOC_DEF(net_packs_data, unsigned char[PACK_DATA_LEN], NET_PACKS_CNT);

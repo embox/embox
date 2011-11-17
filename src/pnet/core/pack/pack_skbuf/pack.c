@@ -15,7 +15,7 @@
 
 #include <embox/unit.h>
 
-#define NET_PACKS_CNT 0x10
+#define NET_PACKS_CNT CONFIG_PNET_PACKETS_QUANTITY
 
 OBJALLOC_DEF(net_packs, struct net_packet, NET_PACKS_CNT);
 
