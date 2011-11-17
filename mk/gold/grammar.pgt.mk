@@ -21,11 +21,10 @@ an application-specific representation.
 # All API functions and internals of the parser are defined in their own
 # namespace which defaults to the basename of the definition script.
 #
-# This name is primarily used to refer the grammar when calling
-# 'gold_parse_file' and 'gold_parse_stream' functions.
+# This name is primarily used to refer the grammar when calling 'gold_parse'.
 #
 
-# Override this variable to define everything in a different namespace.
+# TODO Override this variable to define everything in a different namespace.
 # Must be a single word.
 gold_grammar := $(basename $(notdir $(lastword $(MAKEFILE_LIST))))
 
@@ -39,13 +38,12 @@ gold_grammar := $(call trim,$(gold_grammar))
 ifndef __gold_grammar_$(gold_grammar)_mk
 __gold_grammar_$(gold_grammar)_mk := 1
 
-# By default it is assumed that you'll place tables file in the same directory
-# with this one and name it with '-tables' prefix.
-
-# Fix the following line to override default behavior.
-include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_grammar)-tables.mk
-
-# TODO include symbols and rules.
+# TODO By default it is assumed that you'll place grammar-related files
+# in the same directory with this one and name them
+# with '-tables', '-symbols' and '-rules' prefixes.
+# Fix the following 'include' directive to override the default behavior.
+include $(addprefix $(dir $(lastword $(MAKEFILE_LIST)))$(gold_grammar)-, \
+			tables.mk symbols.mk rules.mk)
 
 $(def_all)
 

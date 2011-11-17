@@ -15,23 +15,28 @@ include mk/core/define.mk
 include mk/util/var/assign.mk
 include mk/util/var/info.mk
 
-#
+##
+# Function: gold_parse
 # Parses the given file with a grammar specified by its prefix.
 #
 # Params:
-#   1. Gold prefix of the grammar.
+#   1. The name used for definitions in your grammar files.
 #   2. Input file name.
 # Return:
-#   Result of interpreting parse tree with user-defined handlers.
-#   TODO error handling.
+#   Result of interpreting parse tree with user-defined handlers
+#   or empty on error.
 # Note:
 #   The grammar must be previously loaded.
-define gold_parse_file
+define gold_parse
+	$(if $(not $(singleword $1)),
+		$(error Invalid grammar name: '$1')
+	)
+
 	$(if $(call var_undefined,__gold_$1_parser),
 		$(error Grammar '$1' does not seem to be loaded)
 	)
 
-	$(foreach gold_grammar,$(singleword $1),$(foreach g,__g_$(gold_grammar),
+	$(foreach gold_grammar,$1,$(foreach g,__g_$(gold_grammar),
 		$(foreach gold_file,$2,
 			$(call __gold_parse,$(shell od -v -A n -t uC $(gold_file)))
 		)

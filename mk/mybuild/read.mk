@@ -55,6 +55,6 @@ $(MKFILES_CONVERTED) : mk/mybuild/read.mk mk/mybuild/myfile.mk
 $(MKFILES_CONVERTED) : \
 		$(EM_DIR)%Makefile : $(ROOT_DIR)%Mybuild
 	@echo '$< -> $@'
-	@mkdir -p $(@D); $(PRINTF) '%b' '$(call my_printf_escape,$(call gold_parse_file,myfile,$<))' > $@
+	@mkdir -p $(@D); $(PRINTF) '%b' '$(call my_printf_escape,$(call gold_parse,myfile,$<))' > $@
 
 endif # __mybuild_read_mk
