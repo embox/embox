@@ -103,12 +103,14 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	net_proto_foreach(net_proto_ptr) {
 		p_netproto = net_proto_ptr->netproto;
 		if (p_netproto->type == iph->proto) {
+			/* if we are here then socket is registered in one of hash tables */
 			p_netproto->handler(skb); // TODO must not free the skb
+			return NET_RX_SUCCESS;
 		}
 	}
 
 	/* When a packet is received, it is passed to any raw sockets
-	 * which have been bound to its protocol */
+	 * which have been bound to its protocol or to socket with concrete protocol */
 	raw_rcv(skb);
 
 	return NET_RX_SUCCESS;

@@ -43,17 +43,17 @@ static struct sock *raw_lookup(__u8 proto) {
 
 int raw_rcv(sk_buff_t *skb) {
 	size_t i;
-	//int need_free;
+	int need_free;
 	struct sock *sk;
 	iphdr_t *iph;
 
-	//need_free = 1;
+	need_free = 1;
 	iph = ip_hdr(skb);
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock*) raw_hash[i];
 		if (sk && sk->sk_protocol == iph->proto) {
 			if (raw_rcv_skb(sk, skb) == NET_RX_SUCCESS) {
-				//need_free = 0;
+				need_free = 0;
 				/* TODO rwq_rcv_skb changes next and
 				 * prev pointers, so it's works incorrect
 				 * with few sockets, which are registered
@@ -64,10 +64,10 @@ int raw_rcv(sk_buff_t *skb) {
 		}
 	}
 
-	/*if (need_free) {
+	if (need_free) {
 		kfree_skb(skb);
 		return NET_RX_DROP;
-	}*/
+	}
 	return NET_RX_SUCCESS;
 }
 
