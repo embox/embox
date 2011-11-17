@@ -1,6 +1,14 @@
 /**
- *	//TODO commen it
+ * @brief
+ * 	 We send net packet with two messages (@see example/net/sender.c) from host
+ * 	 with OS Linux. Reseiver on host with OS Embox get this messages and print them.
+ * 	 Example demonstrate how it work.
+ * 	 How it work:
+ * 	 	Execute receiver on Embox. Then you can execute sender on Linux to
+ * 	 	send messages.
+ * @date 17.10.11
  * @author Alexander Kalmuk
+ * @see example/net/sender.c
  */
 
 #include <stdio.h>
@@ -18,21 +26,28 @@ static int exec(int argc, char **argv) {
     char buf[1024];
     int bytes_read;
 
+    /* Create UDP socket for getting IP packets
+     * AF_INET - protocol type (IP in this case)
+     * SOCK_DGRAM - socket type (UDP in this case)
+     * @return On success, a file descriptor for the new socket is returned.*/
     sock = socket(AF_INET, SOCK_DGRAM, 0);
+    /* check if file descriptor is positive*/
     if(sock < 0) {
-    	prom_printf("%s", "sfaf");
+    	prom_printf("%s", "can't create socket!");
     }
 
-    prom_printf("%s", "UDPFFNGNASKG");
-
+    /* form address socket assign to*/
     addr.sin_family = AF_INET;
     addr.sin_port = htons(12345);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
+    /* assigns the address specified to by addr to the socket referred to
+     * by the file descriptor sock */
     if(bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        prom_printf("%s","bind");
+        prom_printf("%s","can't bind!");
     }
 
+    /* write data form socket in buffer buf. And then print buffer data */
     while (1) {
         bytes_read = recvfrom(sock, buf, 1024, 0, NULL, NULL);
         buf[bytes_read] = '\0';
