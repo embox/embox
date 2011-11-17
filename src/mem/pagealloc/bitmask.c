@@ -23,7 +23,7 @@ static uint32_t bitmask[((CONFIG_HEAP_SIZE/CONFIG_PAGE_SIZE)/32) + 1];
 extern char *_heap_start; //TODO calculate free memory dynamic
 
 
-#define PHY_MEM_BASE _heap_start
+#define PHY_MEM_BASE &_heap_start
 
 static void *search_single_page(void) {
 	int word_offset;
@@ -35,12 +35,16 @@ static void *search_single_page(void) {
 	for (word_offset = 0; word_offset < ARRAY_SIZE(bitmask) - 1; ++word_offset) {
 		word = bitmask[word_offset];
 		mask = 1;
+		if(word == -1) {
+			continue;
+		}
 		for (bit_offset = 0; bit_offset < 32; ++bit_offset) {
 			//TODO spinlock
 			if (0 == (word & mask)) { /* page is free */
 				bitmask[word_offset] |= mask;
 				page = (void*) (PHY_MEM_BASE + CONFIG_PAGE_SIZE
 						* ((word_offset << 5) + bit_offset));
+				return page;
 			}
 		}
 	}
