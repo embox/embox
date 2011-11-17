@@ -40,6 +40,7 @@ static struct sock *raw_lookup(__u8 proto) {
 }
 #endif
 
+
 int raw_rcv(sk_buff_t *skb) {
 	size_t i;
 	int need_free;
@@ -62,10 +63,11 @@ int raw_rcv(sk_buff_t *skb) {
 			}
 		}
 	}
-	if (need_free) {
+	//TODO
+	/*if (need_free) {
 		kfree_skb(skb);
 		return NET_RX_DROP;
-	}
+	}*/
 	return NET_RX_SUCCESS;
 }
 
@@ -81,7 +83,7 @@ static int raw_rcv_skb(struct sock *sk, sk_buff_t *skb) {
 	return NET_RX_SUCCESS;
 }
 
-static void raw_v4_hash(struct sock *sk) {
+ static void raw_v4_hash(struct sock *sk) {
 	size_t i;
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		if (raw_hash[i] == NULL) {
