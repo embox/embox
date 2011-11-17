@@ -3,20 +3,18 @@ package embox.kernel.thread;
 //import foo.bar.*;
 
 module core {
-	source file "core.c";
+	source "core.c";
 
-	depends sched;
-	depends sync;
+	depends sched, sync, embox.kernel.tasks_api;
+
 	depends embox.hal.context;
-	depends embox.kernel.tasks_api;
-
 }
 
 module sched {
-	source file "sched.c";
+	source "sched.c";
 
-	depends embox.kernel.timer.timer_api;
-	depends embox.hal.context;
+	depends embox.kernel.timer.timer_api; // for timeslices support
+	depends embox.hal.context; // context_switch
 //	depends embox.kernel.critical;
 	depends embox.kernel.thread.sched_policy.api;
 

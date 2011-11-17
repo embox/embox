@@ -54,75 +54,69 @@ define __gold_$(gold_grammar)_parser
 				depends),
 			$(gold-symbol 13,1,# extends
 				extends),
-			$(gold-symbol 14,1,# file
-				file),
-			$(gold-symbol 15,1,# Identifier
+			$(gold-symbol 14,1,# Identifier
 				Identifier),
-			$(gold-symbol 16,1,# import
+			$(gold-symbol 15,1,# import
 				import),
-			$(gold-symbol 17,1,# make
-				make),
-			$(gold-symbol 18,1,# module
+			$(gold-symbol 16,1,# module
 				module),
-			$(gold-symbol 19,1,# package
+			$(gold-symbol 17,1,# object
+				object),
+			$(gold-symbol 18,1,# package
 				package),
-			$(gold-symbol 20,1,# source
+			$(gold-symbol 19,1,# source
 				source),
-			$(gold-symbol 21,1,# static
+			$(gold-symbol 20,1,# static
 				static),
-			$(gold-symbol 22,1,# StringLiteral
+			$(gold-symbol 21,1,# StringLiteral
 				StringLiteral),
-			$(gold-symbol 23,1,# target
-				target),
-			$(gold-symbol 24,0,# <CcflagsDecl>
+			$(gold-symbol 22,0,# <CcflagsDecl>
 				CcflagsDecl),
-			$(gold-symbol 25,0,# <DependencyDecl>
-				DependencyDecl),
-			$(gold-symbol 26,0,# <ImportDecl>
+			$(gold-symbol 23,0,# <DependenciesDecl>
+				DependenciesDecl),
+			$(gold-symbol 24,0,# <Filename>
+				Filename),
+			$(gold-symbol 25,0,# <FilenameList>
+				FilenameList),
+			$(gold-symbol 26,0,# <FileOrTarget>
+				FileOrTarget),
+			$(gold-symbol 27,0,# <FileOrTargetList>
+				FileOrTargetList),
+			$(gold-symbol 28,0,# <ImportDecl>
 				ImportDecl),
-			$(gold-symbol 27,0,# <ImportDecls>
+			$(gold-symbol 29,0,# <ImportDecls>
 				ImportDecls),
-			$(gold-symbol 28,0,# <MakeRuleDecl>
-				MakeRuleDecl),
-			$(gold-symbol 29,0,# <MakeRulePrerequisitiesList>
-				MakeRulePrerequisitiesList),
-			$(gold-symbol 30,0,# <MakeRulePrerequisity>
-				MakeRulePrerequisity),
-			$(gold-symbol 31,0,# <MakeRuleRecipe>
-				MakeRuleRecipe),
-			$(gold-symbol 32,0,# <Model>
+			$(gold-symbol 30,0,# <Model>
 				Model),
-			$(gold-symbol 33,0,# <ModuleBodyDecl>
+			$(gold-symbol 31,0,# <ModuleBodyDecl>
 				ModuleBodyDecl),
-			$(gold-symbol 34,0,# <ModuleBodyDecls>
+			$(gold-symbol 32,0,# <ModuleBodyDecls>
 				ModuleBodyDecls),
-			$(gold-symbol 35,0,# <ModuleDecl>
+			$(gold-symbol 33,0,# <ModuleDecl>
 				ModuleDecl),
-			$(gold-symbol 36,0,# <ModuleDecls>
+			$(gold-symbol 34,0,# <ModuleDecls>
 				ModuleDecls),
-			$(gold-symbol 37,0,# <ModuleModifier>
+			$(gold-symbol 35,0,# <ModuleModifier>
 				ModuleModifier),
-			$(gold-symbol 38,0,# <ModuleModifiers>
+			$(gold-symbol 36,0,# <ModuleModifiers>
 				ModuleModifiers),
-			$(gold-symbol 39,0,# <PackageDecl>
+			$(gold-symbol 37,0,# <ModuleRef>
+				ModuleRef),
+			$(gold-symbol 38,0,# <ModuleRefList>
+				ModuleRefList),
+			$(gold-symbol 39,0,# <ObjectsDecl>
+				ObjectsDecl),
+			$(gold-symbol 40,0,# <PackageDecl>
 				PackageDecl),
-			$(gold-symbol 40,0,# <QualifiedName>
+			$(gold-symbol 41,0,# <QualifiedName>
 				QualifiedName),
-			$(gold-symbol 41,0,# <QualifiedNameWithWildcard>
+			$(gold-symbol 42,0,# <QualifiedNameWithWildcard>
 				QualifiedNameWithWildcard),
-			$(gold-symbol 42,0,# <SourceBody>
-				SourceBody),
-			$(gold-symbol 43,0,# <SourceDecl>
-				SourceDecl),
-			$(gold-symbol 44,0,# <SourceStatement>
-				SourceStatement),
-			$(gold-symbol 45,0,# <SourceStatements>
-				SourceStatements),
-			$(gold-symbol 46,0,# <SuperModules>
+			$(gold-symbol 43,0,# <SourcesDecl>
+				SourcesDecl),
+			$(gold-symbol 44,0,# <SuperModules>
 				SuperModules),
-			$(gold-symbol 47,0,# <SuperModulesList>
-				SuperModulesList),
-		),# Total 48 symbol(s).
+		),# Total 45 symbol(s).
 
 		$(gold-rule-table \
 		# 	$(gold-rule <ID>,
@@ -130,91 +124,85 @@ define __gold_$(gold_grammar)_parser
 		# 		<RHS total symbols>,
 		# 		<Function name>
 		# 	),
-			$(gold-rule 0,32,3,# <Model> ::= <PackageDecl> <ImportDecls> <ModuleDecls>
+			$(gold-rule 0,30,3,# <Model> ::= <PackageDecl> <ImportDecls> <ModuleDecls>
 				Model),
-			$(gold-rule 1,39,3,# <PackageDecl> ::= package <QualifiedName> ';'
+			$(gold-rule 1,40,3,# <PackageDecl> ::= package <QualifiedName> ';'
 				PackageDecl_package_Semi),
-			$(gold-rule 2,39,0,# <PackageDecl> ::=
+			$(gold-rule 2,40,0,# <PackageDecl> ::=
 				PackageDecl),
-			$(gold-rule 3,27,2,# <ImportDecls> ::= <ImportDecl> <ImportDecls>
+			$(gold-rule 3,29,2,# <ImportDecls> ::= <ImportDecl> <ImportDecls>
 				ImportDecls),
-			$(gold-rule 4,27,0,# <ImportDecls> ::=
+			$(gold-rule 4,29,0,# <ImportDecls> ::=
 				ImportDecls2),
-			$(gold-rule 5,26,3,# <ImportDecl> ::= import <QualifiedNameWithWildcard> ';'
+			$(gold-rule 5,28,3,# <ImportDecl> ::= import <QualifiedNameWithWildcard> ';'
 				ImportDecl_import_Semi),
-			$(gold-rule 6,36,2,# <ModuleDecls> ::= <ModuleDecl> <ModuleDecls>
+			$(gold-rule 6,34,2,# <ModuleDecls> ::= <ModuleDecl> <ModuleDecls>
 				ModuleDecls),
-			$(gold-rule 7,36,0,# <ModuleDecls> ::=
+			$(gold-rule 7,34,0,# <ModuleDecls> ::=
 				ModuleDecls2),
-			$(gold-rule 8,35,7,# <ModuleDecl> ::= <ModuleModifiers> module Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
+			$(gold-rule 8,33,7,# <ModuleDecl> ::= <ModuleModifiers> module Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
 				ModuleDecl_module_Identifier_LBrace_RBrace),
-			$(gold-rule 9,38,2,# <ModuleModifiers> ::= <ModuleModifier> <ModuleModifiers>
+			$(gold-rule 9,36,2,# <ModuleModifiers> ::= <ModuleModifier> <ModuleModifiers>
 				ModuleModifiers),
-			$(gold-rule 10,38,0,# <ModuleModifiers> ::=
+			$(gold-rule 10,36,0,# <ModuleModifiers> ::=
 				ModuleModifiers2),
-			$(gold-rule 11,37,1,# <ModuleModifier> ::= static
+			$(gold-rule 11,35,1,# <ModuleModifier> ::= static
 				ModuleModifier_static),
-			$(gold-rule 12,37,1,# <ModuleModifier> ::= abstract
+			$(gold-rule 12,35,1,# <ModuleModifier> ::= abstract
 				ModuleModifier_abstract),
-			$(gold-rule 13,46,2,# <SuperModules> ::= extends <SuperModulesList>
+			$(gold-rule 13,44,2,# <SuperModules> ::= extends <ModuleRefList>
 				SuperModules_extends),
-			$(gold-rule 14,46,0,# <SuperModules> ::=
+			$(gold-rule 14,44,0,# <SuperModules> ::=
 				SuperModules),
-			$(gold-rule 15,47,3,# <SuperModulesList> ::= <QualifiedName> ',' <SuperModulesList>
-				SuperModulesList_Comma),
-			$(gold-rule 16,47,1,# <SuperModulesList> ::= <QualifiedName>
-				SuperModulesList),
-			$(gold-rule 17,34,2,# <ModuleBodyDecls> ::= <ModuleBodyDecl> <ModuleBodyDecls>
+			$(gold-rule 15,32,2,# <ModuleBodyDecls> ::= <ModuleBodyDecl> <ModuleBodyDecls>
 				ModuleBodyDecls),
-			$(gold-rule 18,34,0,# <ModuleBodyDecls> ::=
+			$(gold-rule 16,32,0,# <ModuleBodyDecls> ::=
 				ModuleBodyDecls2),
-			$(gold-rule 19,33,1,# <ModuleBodyDecl> ::= <SourceDecl>
+			$(gold-rule 17,31,1,# <ModuleBodyDecl> ::= <SourcesDecl>
 				ModuleBodyDecl),
-			$(gold-rule 20,33,1,# <ModuleBodyDecl> ::= <CcflagsDecl>
+			$(gold-rule 18,31,1,# <ModuleBodyDecl> ::= <ObjectsDecl>
 				ModuleBodyDecl2),
-			$(gold-rule 21,33,1,# <ModuleBodyDecl> ::= <DependencyDecl>
+			$(gold-rule 19,31,1,# <ModuleBodyDecl> ::= <CcflagsDecl>
 				ModuleBodyDecl3),
-			$(gold-rule 22,33,1,# <ModuleBodyDecl> ::= <MakeRuleDecl>
+			$(gold-rule 20,31,1,# <ModuleBodyDecl> ::= <DependenciesDecl>
 				ModuleBodyDecl4),
-			$(gold-rule 23,43,2,# <SourceDecl> ::= source <SourceBody>
-				SourceDecl_source),
-			$(gold-rule 24,42,3,# <SourceBody> ::= '{' <SourceStatements> '}'
-				SourceBody_LBrace_RBrace),
-			$(gold-rule 25,42,1,# <SourceBody> ::= <SourceStatement>
-				SourceBody),
-			$(gold-rule 26,45,2,# <SourceStatements> ::= <SourceStatement> <SourceStatements>
-				SourceStatements),
-			$(gold-rule 27,45,0,# <SourceStatements> ::=
-				SourceStatements2),
-			$(gold-rule 28,44,3,# <SourceStatement> ::= file StringLiteral ';'
-				SourceStatement_file_StringLiteral_Semi),
-			$(gold-rule 29,24,3,# <CcflagsDecl> ::= ccfags StringLiteral ';'
+			$(gold-rule 21,22,3,# <CcflagsDecl> ::= ccfags StringLiteral ';'
 				CcflagsDecl_ccfags_StringLiteral_Semi),
-			$(gold-rule 30,25,3,# <DependencyDecl> ::= depends <QualifiedName> ';'
-				DependencyDecl_depends_Semi),
-			$(gold-rule 31,28,5,# <MakeRuleDecl> ::= target StringLiteral <MakeRulePrerequisity> <MakeRuleRecipe> ';'
-				MakeRuleDecl_target_StringLiteral_Semi),
-			$(gold-rule 32,30,2,# <MakeRulePrerequisity> ::= ':' <MakeRulePrerequisitiesList>
-				MakeRulePrerequisity_Colon),
-			$(gold-rule 33,30,0,# <MakeRulePrerequisity> ::=
-				MakeRulePrerequisity),
-			$(gold-rule 34,29,3,# <MakeRulePrerequisitiesList> ::= StringLiteral ',' <MakeRulePrerequisitiesList>
-				MakeRulePrerequisitiesList_StringLiteral_Comma),
-			$(gold-rule 35,29,0,# <MakeRulePrerequisitiesList> ::=
-				MakeRulePrerequisitiesList),
-			$(gold-rule 36,31,2,# <MakeRuleRecipe> ::= make StringLiteral
-				MakeRuleRecipe_make_StringLiteral),
-			$(gold-rule 37,31,0,# <MakeRuleRecipe> ::=
-				MakeRuleRecipe),
-			$(gold-rule 38,40,3,# <QualifiedName> ::= Identifier '.' <QualifiedName>
+			$(gold-rule 22,23,3,# <DependenciesDecl> ::= depends <ModuleRefList> ';'
+				DependenciesDecl_depends_Semi),
+			$(gold-rule 23,43,3,# <SourcesDecl> ::= source <FileOrTargetList> ';'
+				SourcesDecl_source_Semi),
+			$(gold-rule 24,39,3,# <ObjectsDecl> ::= object <FileOrTargetList> ';'
+				ObjectsDecl_object_Semi),
+			$(gold-rule 25,26,1,# <FileOrTarget> ::= <Filename>
+				FileOrTarget),
+			$(gold-rule 26,26,6,# <FileOrTarget> ::= <Filename> ':' <FilenameList> '{' StringLiteral '}'
+				FileOrTarget_Colon_LBrace_StringLiteral_RBrace),
+			$(gold-rule 27,27,3,# <FileOrTargetList> ::= <FileOrTarget> ',' <FileOrTargetList>
+				FileOrTargetList_Comma),
+			$(gold-rule 28,27,1,# <FileOrTargetList> ::= <FileOrTarget>
+				FileOrTargetList),
+			$(gold-rule 29,24,1,# <Filename> ::= StringLiteral
+				Filename_StringLiteral),
+			$(gold-rule 30,25,3,# <FilenameList> ::= <Filename> ',' <FilenameList>
+				FilenameList_Comma),
+			$(gold-rule 31,25,1,# <FilenameList> ::= <Filename>
+				FilenameList),
+			$(gold-rule 32,37,1,# <ModuleRef> ::= <QualifiedName>
+				ModuleRef),
+			$(gold-rule 33,38,3,# <ModuleRefList> ::= <ModuleRef> ',' <ModuleRefList>
+				ModuleRefList_Comma),
+			$(gold-rule 34,38,1,# <ModuleRefList> ::= <ModuleRef>
+				ModuleRefList),
+			$(gold-rule 35,41,3,# <QualifiedName> ::= Identifier '.' <QualifiedName>
 				QualifiedName_Identifier_Dot),
-			$(gold-rule 39,40,1,# <QualifiedName> ::= Identifier
+			$(gold-rule 36,41,1,# <QualifiedName> ::= Identifier
 				QualifiedName_Identifier),
-			$(gold-rule 40,41,2,# <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
+			$(gold-rule 37,42,2,# <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
 				QualifiedNameWithWildcard_DotTimes),
-			$(gold-rule 41,41,1,# <QualifiedNameWithWildcard> ::= <QualifiedName>
+			$(gold-rule 38,42,1,# <QualifiedNameWithWildcard> ::= <QualifiedName>
 				QualifiedNameWithWildcard),
-		),# Total 42 rule(s).
+		),# Total 39 rule(s).
 
 		$(gold-charset-table \
 		# 	$(gold-charset <ID>,
@@ -232,121 +220,127 @@ define __gold_$(gold_grammar)_parser
 				123),
 			$(gold-charset 5,# } #
 				125),
-			$(gold-charset 6,# ABCDEFGHIJKLMNOPQRSTUVWXYZ_bghjklnoqruvwxyz #
-				65.90;95;98;103.104;106.108;110.111;113.114;117.122),
-			$(gold-charset 7,# &quot; #
+			$(gold-charset 6,# ^ #
+				94),
+			$(gold-charset 7,# ABCDEFGHIJKLMNOPQRSTUVWXYZ_bfghjklnqrtuvwxyz #
+				65.90;95;98;102.104;106.108;110;113.114;116.122),
+			$(gold-charset 8,# &quot; #
 				34),
-			$(gold-charset 8,# ' #
+			$(gold-charset 9,# ' #
 				39),
-			$(gold-charset 9,# . #
+			$(gold-charset 10,# . #
 				46),
-			$(gold-charset 10,# / #
+			$(gold-charset 11,# / #
 				47),
-			$(gold-charset 11,# a #
+			$(gold-charset 12,# a #
 				97),
-			$(gold-charset 12,# c #
+			$(gold-charset 13,# c #
 				99),
-			$(gold-charset 13,# d #
+			$(gold-charset 14,# d #
 				100),
-			$(gold-charset 14,# e #
+			$(gold-charset 15,# e #
 				101),
-			$(gold-charset 15,# f #
-				102),
 			$(gold-charset 16,# i #
 				105),
 			$(gold-charset 17,# m #
 				109),
-			$(gold-charset 18,# p #
+			$(gold-charset 18,# o #
+				111),
+			$(gold-charset 19,# p #
 				112),
-			$(gold-charset 19,# s #
+			$(gold-charset 20,# s #
 				115),
-			$(gold-charset 20,# t #
-				116),
-			$(gold-charset 21,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz #
+			$(gold-charset 21,# ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz #
+				65.90;95;97.122),
+			$(gold-charset 22,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz #
 				48.57;65.90;95;97.122),
-			$(gold-charset 22,# &#9; !#$%&amp;'()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
+			$(gold-charset 23,# &#9; !#$%&amp;'()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
 				9;32.33;35.91;93.126;160),
-			$(gold-charset 23,# \ #
+			$(gold-charset 24,# \ #
 				92),
-			$(gold-charset 24,# &quot;'\nrt #
+			$(gold-charset 25,# &quot;'\nrt #
 				34;39;92;110;114;116),
-			$(gold-charset 25,# &#9;&#10;&#11;&#12;&#13; !&quot;#$%&amp;()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
+			$(gold-charset 26,# &#9;&#10;&#11;&#12;&#13; !&quot;#$%&amp;()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
 				9.13;32.38;40.91;93.126;160),
-			$(gold-charset 26,# '\ #
+			$(gold-charset 27,# '\ #
 				39;92),
-			$(gold-charset 27,# * #
+			$(gold-charset 28,# * #
 				42),
-			$(gold-charset 28,# &#9;&#10;&#11;&#12;&#13; !&quot;#$%&amp;'()+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
+			$(gold-charset 29,# &#9;&#10;&#11;&#12;&#13; !&quot;#$%&amp;'()+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
 				9.13;32.41;43.126;160),
-			$(gold-charset 29,# &#9;&#10;&#11;&#12;&#13; !&quot;#$%&amp;'()*+,-.0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
+			$(gold-charset 30,# &#9;&#10;&#11;&#12;&#13; !&quot;#$%&amp;'()*+,-.0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
 				9.13;32.46;48.126;160),
-			$(gold-charset 30,# &#9;&#11;&#12; !&quot;#$%&amp;'()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
+			$(gold-charset 31,# &#9;&#11;&#12; !&quot;#$%&amp;'()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~&#160; #
 				9;11.12;32.126;160),
-			$(gold-charset 31,# &#13; #
+			$(gold-charset 32,# &#13; #
 				13),
-			$(gold-charset 32,# &#10; #
+			$(gold-charset 33,# &#10; #
 				10),
-			$(gold-charset 33,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_acdefghijklmnopqrstuvwxyz #
+			$(gold-charset 34,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_acdefghijklmnopqrstuvwxyz #
 				48.57;65.90;95;97;99.122),
-			$(gold-charset 34,# b #
+			$(gold-charset 35,# b #
 				98),
-			$(gold-charset 35,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrtuvwxyz #
+			$(gold-charset 36,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrtuvwxyz #
 				48.57;65.90;95;97.114;116.122),
-			$(gold-charset 36,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrsuvwxyz #
+			$(gold-charset 37,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrsuvwxyz #
 				48.57;65.90;95;97.115;117.122),
-			$(gold-charset 37,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqstuvwxyz #
+			$(gold-charset 38,# t #
+				116),
+			$(gold-charset 39,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqstuvwxyz #
 				48.57;65.90;95;97.113;115.122),
-			$(gold-charset 38,# r #
+			$(gold-charset 40,# r #
 				114),
-			$(gold-charset 39,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_bcdefghijklmnopqrstuvwxyz #
+			$(gold-charset 41,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_bcdefghijklmnopqrstuvwxyz #
 				48.57;65.90;95;98.122),
-			$(gold-charset 40,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abdefghijklmnopqrstuvwxyz #
+			$(gold-charset 42,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abdefghijklmnopqrstuvwxyz #
 				48.57;65.90;95;97.98;100.122),
-			$(gold-charset 41,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdeghijklmnopqrstuvwxyz #
+			$(gold-charset 43,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdeghijklmnopqrstuvwxyz #
 				48.57;65.90;95;97.101;103.122),
-			$(gold-charset 42,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefhijklmnopqrstuvwxyz #
+			$(gold-charset 44,# f #
+				102),
+			$(gold-charset 45,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefhijklmnopqrstuvwxyz #
 				48.57;65.90;95;97.102;104.122),
-			$(gold-charset 43,# g #
+			$(gold-charset 46,# g #
 				103),
-			$(gold-charset 44,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdfghijklmnopqrstuvwxyz #
+			$(gold-charset 47,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdfghijklmnopqrstuvwxyz #
 				48.57;65.90;95;97.100;102.122),
-			$(gold-charset 45,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnoqrstuvwxyz #
+			$(gold-charset 48,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnoqrstuvwxyz #
 				48.57;65.90;95;97.111;113.122),
-			$(gold-charset 46,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmopqrstuvwxyz #
+			$(gold-charset 49,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmopqrstuvwxyz #
 				48.57;65.90;95;97.109;111.122),
-			$(gold-charset 47,# n #
+			$(gold-charset 50,# n #
 				110),
-			$(gold-charset 48,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcefghijklmnopqrstuvwxyz #
+			$(gold-charset 51,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcefghijklmnopqrstuvwxyz #
 				48.57;65.90;95;97.99;101.122),
-			$(gold-charset 49,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwyz #
+			$(gold-charset 52,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwyz #
 				48.57;65.90;95;97.119;121.122),
-			$(gold-charset 50,# x #
+			$(gold-charset 53,# x #
 				120),
-			$(gold-charset 51,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghjklmnopqrstuvwxyz #
-				48.57;65.90;95;97.104;106.122),
-			$(gold-charset 52,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijkmnopqrstuvwxyz #
-				48.57;65.90;95;97.107;109.122),
-			$(gold-charset 53,# l #
-				108),
 			$(gold-charset 54,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklnopqrstuvwxyz #
 				48.57;65.90;95;97.108;110.122),
 			$(gold-charset 55,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnpqrstuvwxyz #
 				48.57;65.90;95;97.110;112.122),
-			$(gold-charset 56,# o #
-				111),
-			$(gold-charset 57,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_bcdefghijklmnpqrstuvwxyz #
-				48.57;65.90;95;98.110;112.122),
-			$(gold-charset 58,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijlmnopqrstuvwxyz #
-				48.57;65.90;95;97.106;108.122),
-			$(gold-charset 59,# k #
-				107),
-			$(gold-charset 60,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstvwxyz #
+			$(gold-charset 56,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstvwxyz #
 				48.57;65.90;95;97.116;118.122),
-			$(gold-charset 61,# u #
+			$(gold-charset 57,# u #
 				117),
-			$(gold-charset 62,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnpqrsuvwxyz #
+			$(gold-charset 58,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijkmnopqrstuvwxyz #
+				48.57;65.90;95;97.107;109.122),
+			$(gold-charset 59,# l #
+				108),
+			$(gold-charset 60,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghiklmnopqrstuvwxyz #
+				48.57;65.90;95;97.105;107.122),
+			$(gold-charset 61,# j #
+				106),
+			$(gold-charset 62,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijlmnopqrstuvwxyz #
+				48.57;65.90;95;97.106;108.122),
+			$(gold-charset 63,# k #
+				107),
+			$(gold-charset 64,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnpqrsuvwxyz #
 				48.57;65.90;95;97.110;112.115;117.122),
-		),# Total 63 charset(s).
+			$(gold-charset 65,# 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghjklmnopqrstuvwxyz #
+				48.57;65.90;95;97.104;106.122),
+		),# Total 66 charset(s).
 
 		$(gold-dfa-table 0,
 		# 	$(gold-dfa-state <ID>,
@@ -364,20 +358,20 @@ define __gold_$(gold_grammar)_parser
 				$(gold-dfa-edge 4,5),
 				$(gold-dfa-edge 5,6),
 				$(gold-dfa-edge 6,7),
-				$(gold-dfa-edge 7,9),
-				$(gold-dfa-edge 8,14),
-				$(gold-dfa-edge 9,23),
-				$(gold-dfa-edge 10,25),
-				$(gold-dfa-edge 11,35),
-				$(gold-dfa-edge 12,43),
-				$(gold-dfa-edge 13,49),
-				$(gold-dfa-edge 14,56),
-				$(gold-dfa-edge 15,63),
-				$(gold-dfa-edge 16,67),
-				$(gold-dfa-edge 17,73),
-				$(gold-dfa-edge 18,82),
-				$(gold-dfa-edge 19,89),
-				$(gold-dfa-edge 20,100),
+				$(gold-dfa-edge 7,8),
+				$(gold-dfa-edge 8,10),
+				$(gold-dfa-edge 9,15),
+				$(gold-dfa-edge 10,24),
+				$(gold-dfa-edge 11,26),
+				$(gold-dfa-edge 12,36),
+				$(gold-dfa-edge 13,44),
+				$(gold-dfa-edge 14,50),
+				$(gold-dfa-edge 15,57),
+				$(gold-dfa-edge 16,64),
+				$(gold-dfa-edge 17,70),
+				$(gold-dfa-edge 18,76),
+				$(gold-dfa-edge 19,82),
+				$(gold-dfa-edge 20,89),
 			),# Total 21 edge(s).
 			$(gold-dfa-state 1,2,
 				$(gold-dfa-edge 0,1),
@@ -392,385 +386,361 @@ define __gold_$(gold_grammar)_parser
 			),# Total 0 edge(s).
 			$(gold-dfa-state 6,9,
 			),# Total 0 edge(s).
-			$(gold-dfa-state 7,15,
+			$(gold-dfa-state 7,-1,
 				$(gold-dfa-edge 21,8),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 8,15,
-				$(gold-dfa-edge 21,8),
+			$(gold-dfa-state 8,14,
+				$(gold-dfa-edge 22,9),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 9,-1,
-				$(gold-dfa-edge 22,10),
-				$(gold-dfa-edge 23,11),
-				$(gold-dfa-edge 7,13),
-			),# Total 3 edge(s).
+			$(gold-dfa-state 9,14,
+				$(gold-dfa-edge 22,9),
+			),# Total 1 edge(s).
 			$(gold-dfa-state 10,-1,
-				$(gold-dfa-edge 22,10),
 				$(gold-dfa-edge 23,11),
-				$(gold-dfa-edge 7,13),
+				$(gold-dfa-edge 24,12),
+				$(gold-dfa-edge 8,14),
 			),# Total 3 edge(s).
 			$(gold-dfa-state 11,-1,
-				$(gold-dfa-edge 24,12),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 12,-1,
-				$(gold-dfa-edge 22,10),
 				$(gold-dfa-edge 23,11),
-				$(gold-dfa-edge 7,13),
+				$(gold-dfa-edge 24,12),
+				$(gold-dfa-edge 8,14),
 			),# Total 3 edge(s).
-			$(gold-dfa-state 13,22,
-			),# Total 0 edge(s).
-			$(gold-dfa-state 14,-1,
-				$(gold-dfa-edge 8,15),
+			$(gold-dfa-state 12,-1,
+				$(gold-dfa-edge 25,13),
 			),# Total 1 edge(s).
+			$(gold-dfa-state 13,-1,
+				$(gold-dfa-edge 23,11),
+				$(gold-dfa-edge 24,12),
+				$(gold-dfa-edge 8,14),
+			),# Total 3 edge(s).
+			$(gold-dfa-state 14,21,
+			),# Total 0 edge(s).
 			$(gold-dfa-state 15,-1,
-				$(gold-dfa-edge 8,16),
+				$(gold-dfa-edge 9,16),
 			),# Total 1 edge(s).
 			$(gold-dfa-state 16,-1,
-				$(gold-dfa-edge 25,17),
-				$(gold-dfa-edge 23,18),
-				$(gold-dfa-edge 8,20),
-			),# Total 3 edge(s).
+				$(gold-dfa-edge 9,17),
+			),# Total 1 edge(s).
 			$(gold-dfa-state 17,-1,
-				$(gold-dfa-edge 25,17),
-				$(gold-dfa-edge 23,18),
-				$(gold-dfa-edge 8,20),
+				$(gold-dfa-edge 26,18),
+				$(gold-dfa-edge 24,19),
+				$(gold-dfa-edge 9,21),
 			),# Total 3 edge(s).
 			$(gold-dfa-state 18,-1,
-				$(gold-dfa-edge 26,19),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 19,-1,
-				$(gold-dfa-edge 25,17),
-				$(gold-dfa-edge 23,18),
-				$(gold-dfa-edge 8,20),
+				$(gold-dfa-edge 26,18),
+				$(gold-dfa-edge 24,19),
+				$(gold-dfa-edge 9,21),
 			),# Total 3 edge(s).
+			$(gold-dfa-state 19,-1,
+				$(gold-dfa-edge 27,20),
+			),# Total 1 edge(s).
 			$(gold-dfa-state 20,-1,
-				$(gold-dfa-edge 25,17),
-				$(gold-dfa-edge 23,18),
-				$(gold-dfa-edge 8,21),
+				$(gold-dfa-edge 26,18),
+				$(gold-dfa-edge 24,19),
+				$(gold-dfa-edge 9,21),
 			),# Total 3 edge(s).
 			$(gold-dfa-state 21,-1,
-				$(gold-dfa-edge 25,17),
-				$(gold-dfa-edge 23,18),
-				$(gold-dfa-edge 8,22),
+				$(gold-dfa-edge 26,18),
+				$(gold-dfa-edge 24,19),
+				$(gold-dfa-edge 9,22),
 			),# Total 3 edge(s).
-			$(gold-dfa-state 22,22,
+			$(gold-dfa-state 22,-1,
+				$(gold-dfa-edge 26,18),
+				$(gold-dfa-edge 24,19),
+				$(gold-dfa-edge 9,23),
+			),# Total 3 edge(s).
+			$(gold-dfa-state 23,21,
 			),# Total 0 edge(s).
-			$(gold-dfa-state 23,4,
-				$(gold-dfa-edge 27,24),
+			$(gold-dfa-state 24,4,
+				$(gold-dfa-edge 28,25),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 24,5,
+			$(gold-dfa-state 25,5,
 			),# Total 0 edge(s).
-			$(gold-dfa-state 25,-1,
-				$(gold-dfa-edge 27,26),
-				$(gold-dfa-edge 10,31),
-			),# Total 2 edge(s).
 			$(gold-dfa-state 26,-1,
 				$(gold-dfa-edge 28,27),
-				$(gold-dfa-edge 27,28),
+				$(gold-dfa-edge 11,32),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 27,-1,
-				$(gold-dfa-edge 28,27),
-				$(gold-dfa-edge 27,28),
+				$(gold-dfa-edge 29,28),
+				$(gold-dfa-edge 28,29),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 28,-1,
-				$(gold-dfa-edge 29,29),
-				$(gold-dfa-edge 10,30),
+				$(gold-dfa-edge 29,28),
+				$(gold-dfa-edge 28,29),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 29,-1,
-				$(gold-dfa-edge 28,27),
-				$(gold-dfa-edge 27,28),
+				$(gold-dfa-edge 30,30),
+				$(gold-dfa-edge 11,31),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 30,2,
-			),# Total 0 edge(s).
+			$(gold-dfa-state 30,-1,
+				$(gold-dfa-edge 29,28),
+				$(gold-dfa-edge 28,29),
+			),# Total 2 edge(s).
 			$(gold-dfa-state 31,2,
-				$(gold-dfa-edge 30,32),
-				$(gold-dfa-edge 31,33),
-				$(gold-dfa-edge 32,34),
-			),# Total 3 edge(s).
-			$(gold-dfa-state 32,2,
-				$(gold-dfa-edge 30,32),
-				$(gold-dfa-edge 31,33),
-				$(gold-dfa-edge 32,34),
-			),# Total 3 edge(s).
-			$(gold-dfa-state 33,-1,
-				$(gold-dfa-edge 32,34),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 34,2,
 			),# Total 0 edge(s).
-			$(gold-dfa-state 35,15,
-				$(gold-dfa-edge 33,8),
-				$(gold-dfa-edge 34,36),
+			$(gold-dfa-state 32,2,
+				$(gold-dfa-edge 31,33),
+				$(gold-dfa-edge 32,34),
+				$(gold-dfa-edge 33,35),
+			),# Total 3 edge(s).
+			$(gold-dfa-state 33,2,
+				$(gold-dfa-edge 31,33),
+				$(gold-dfa-edge 32,34),
+				$(gold-dfa-edge 33,35),
+			),# Total 3 edge(s).
+			$(gold-dfa-state 34,-1,
+				$(gold-dfa-edge 33,35),
+			),# Total 1 edge(s).
+			$(gold-dfa-state 35,2,
+			),# Total 0 edge(s).
+			$(gold-dfa-state 36,14,
+				$(gold-dfa-edge 34,9),
+				$(gold-dfa-edge 35,37),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 36,15,
-				$(gold-dfa-edge 35,8),
-				$(gold-dfa-edge 19,37),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 37,15,
-				$(gold-dfa-edge 36,8),
+			$(gold-dfa-state 37,14,
+				$(gold-dfa-edge 36,9),
 				$(gold-dfa-edge 20,38),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 38,15,
-				$(gold-dfa-edge 37,8),
+			$(gold-dfa-state 38,14,
+				$(gold-dfa-edge 37,9),
 				$(gold-dfa-edge 38,39),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 39,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,40),
+			$(gold-dfa-state 39,14,
+				$(gold-dfa-edge 39,9),
+				$(gold-dfa-edge 40,40),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 40,15,
-				$(gold-dfa-edge 40,8),
+			$(gold-dfa-state 40,14,
+				$(gold-dfa-edge 41,9),
 				$(gold-dfa-edge 12,41),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 41,15,
-				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,42),
+			$(gold-dfa-state 41,14,
+				$(gold-dfa-edge 42,9),
+				$(gold-dfa-edge 13,42),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 42,10,
-				$(gold-dfa-edge 21,8),
+			$(gold-dfa-state 42,14,
+				$(gold-dfa-edge 37,9),
+				$(gold-dfa-edge 38,43),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 43,10,
+				$(gold-dfa-edge 22,9),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 43,15,
-				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,44),
+			$(gold-dfa-state 44,14,
+				$(gold-dfa-edge 42,9),
+				$(gold-dfa-edge 13,45),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 44,15,
-				$(gold-dfa-edge 41,8),
-				$(gold-dfa-edge 15,45),
+			$(gold-dfa-state 45,14,
+				$(gold-dfa-edge 43,9),
+				$(gold-dfa-edge 44,46),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 45,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,46),
+			$(gold-dfa-state 46,14,
+				$(gold-dfa-edge 41,9),
+				$(gold-dfa-edge 12,47),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 46,15,
-				$(gold-dfa-edge 42,8),
-				$(gold-dfa-edge 43,47),
+			$(gold-dfa-state 47,14,
+				$(gold-dfa-edge 45,9),
+				$(gold-dfa-edge 46,48),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 47,15,
-				$(gold-dfa-edge 35,8),
-				$(gold-dfa-edge 19,48),
+			$(gold-dfa-state 48,14,
+				$(gold-dfa-edge 36,9),
+				$(gold-dfa-edge 20,49),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 48,11,
-				$(gold-dfa-edge 21,8),
+			$(gold-dfa-state 49,11,
+				$(gold-dfa-edge 22,9),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 49,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,50),
+			$(gold-dfa-state 50,14,
+				$(gold-dfa-edge 47,9),
+				$(gold-dfa-edge 15,51),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 50,15,
-				$(gold-dfa-edge 45,8),
-				$(gold-dfa-edge 18,51),
+			$(gold-dfa-state 51,14,
+				$(gold-dfa-edge 48,9),
+				$(gold-dfa-edge 19,52),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 51,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,52),
+			$(gold-dfa-state 52,14,
+				$(gold-dfa-edge 47,9),
+				$(gold-dfa-edge 15,53),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 52,15,
-				$(gold-dfa-edge 46,8),
-				$(gold-dfa-edge 47,53),
+			$(gold-dfa-state 53,14,
+				$(gold-dfa-edge 49,9),
+				$(gold-dfa-edge 50,54),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 53,15,
-				$(gold-dfa-edge 48,8),
-				$(gold-dfa-edge 13,54),
+			$(gold-dfa-state 54,14,
+				$(gold-dfa-edge 51,9),
+				$(gold-dfa-edge 14,55),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 54,15,
-				$(gold-dfa-edge 35,8),
-				$(gold-dfa-edge 19,55),
+			$(gold-dfa-state 55,14,
+				$(gold-dfa-edge 36,9),
+				$(gold-dfa-edge 20,56),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 55,12,
-				$(gold-dfa-edge 21,8),
+			$(gold-dfa-state 56,12,
+				$(gold-dfa-edge 22,9),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 56,15,
-				$(gold-dfa-edge 49,8),
-				$(gold-dfa-edge 50,57),
+			$(gold-dfa-state 57,14,
+				$(gold-dfa-edge 52,9),
+				$(gold-dfa-edge 53,58),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 57,15,
-				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,58),
+			$(gold-dfa-state 58,14,
+				$(gold-dfa-edge 37,9),
+				$(gold-dfa-edge 38,59),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 58,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,59),
+			$(gold-dfa-state 59,14,
+				$(gold-dfa-edge 47,9),
+				$(gold-dfa-edge 15,60),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 59,15,
-				$(gold-dfa-edge 46,8),
-				$(gold-dfa-edge 47,60),
+			$(gold-dfa-state 60,14,
+				$(gold-dfa-edge 49,9),
+				$(gold-dfa-edge 50,61),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 60,15,
-				$(gold-dfa-edge 48,8),
-				$(gold-dfa-edge 13,61),
+			$(gold-dfa-state 61,14,
+				$(gold-dfa-edge 51,9),
+				$(gold-dfa-edge 14,62),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 61,15,
-				$(gold-dfa-edge 35,8),
-				$(gold-dfa-edge 19,62),
+			$(gold-dfa-state 62,14,
+				$(gold-dfa-edge 36,9),
+				$(gold-dfa-edge 20,63),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 62,13,
-				$(gold-dfa-edge 21,8),
+			$(gold-dfa-state 63,13,
+				$(gold-dfa-edge 22,9),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 63,15,
-				$(gold-dfa-edge 51,8),
-				$(gold-dfa-edge 16,64),
+			$(gold-dfa-state 64,14,
+				$(gold-dfa-edge 54,9),
+				$(gold-dfa-edge 17,65),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 64,15,
-				$(gold-dfa-edge 52,8),
-				$(gold-dfa-edge 53,65),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 65,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,66),
+			$(gold-dfa-state 65,14,
+				$(gold-dfa-edge 48,9),
+				$(gold-dfa-edge 19,66),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 66,14,
-				$(gold-dfa-edge 21,8),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 67,15,
-				$(gold-dfa-edge 54,8),
-				$(gold-dfa-edge 17,68),
+				$(gold-dfa-edge 55,9),
+				$(gold-dfa-edge 18,67),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 68,15,
-				$(gold-dfa-edge 45,8),
-				$(gold-dfa-edge 18,69),
+			$(gold-dfa-state 67,14,
+				$(gold-dfa-edge 39,9),
+				$(gold-dfa-edge 40,68),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 68,14,
+				$(gold-dfa-edge 37,9),
+				$(gold-dfa-edge 38,69),
 			),# Total 2 edge(s).
 			$(gold-dfa-state 69,15,
-				$(gold-dfa-edge 55,8),
-				$(gold-dfa-edge 56,70),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 70,15,
-				$(gold-dfa-edge 37,8),
-				$(gold-dfa-edge 38,71),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 71,15,
-				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,72),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 72,16,
-				$(gold-dfa-edge 21,8),
+				$(gold-dfa-edge 22,9),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 73,15,
-				$(gold-dfa-edge 57,8),
-				$(gold-dfa-edge 11,74),
-				$(gold-dfa-edge 56,77),
+			$(gold-dfa-state 70,14,
+				$(gold-dfa-edge 55,9),
+				$(gold-dfa-edge 18,71),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 71,14,
+				$(gold-dfa-edge 51,9),
+				$(gold-dfa-edge 14,72),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 72,14,
+				$(gold-dfa-edge 56,9),
+				$(gold-dfa-edge 57,73),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 73,14,
+				$(gold-dfa-edge 58,9),
+				$(gold-dfa-edge 59,74),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 74,14,
+				$(gold-dfa-edge 47,9),
+				$(gold-dfa-edge 15,75),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 75,16,
+				$(gold-dfa-edge 22,9),
+			),# Total 1 edge(s).
+			$(gold-dfa-state 76,14,
+				$(gold-dfa-edge 34,9),
+				$(gold-dfa-edge 35,77),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 77,14,
+				$(gold-dfa-edge 60,9),
+				$(gold-dfa-edge 61,78),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 78,14,
+				$(gold-dfa-edge 47,9),
+				$(gold-dfa-edge 15,79),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 79,14,
+				$(gold-dfa-edge 42,9),
+				$(gold-dfa-edge 13,80),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 80,14,
+				$(gold-dfa-edge 37,9),
+				$(gold-dfa-edge 38,81),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 81,17,
+				$(gold-dfa-edge 22,9),
+			),# Total 1 edge(s).
+			$(gold-dfa-state 82,14,
+				$(gold-dfa-edge 41,9),
+				$(gold-dfa-edge 12,83),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 83,14,
+				$(gold-dfa-edge 42,9),
+				$(gold-dfa-edge 13,84),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 84,14,
+				$(gold-dfa-edge 62,9),
+				$(gold-dfa-edge 63,85),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 85,14,
+				$(gold-dfa-edge 41,9),
+				$(gold-dfa-edge 12,86),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 86,14,
+				$(gold-dfa-edge 45,9),
+				$(gold-dfa-edge 46,87),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 87,14,
+				$(gold-dfa-edge 47,9),
+				$(gold-dfa-edge 15,88),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 88,18,
+				$(gold-dfa-edge 22,9),
+			),# Total 1 edge(s).
+			$(gold-dfa-state 89,14,
+				$(gold-dfa-edge 64,9),
+				$(gold-dfa-edge 18,90),
+				$(gold-dfa-edge 38,95),
 			),# Total 3 edge(s).
-			$(gold-dfa-state 74,15,
-				$(gold-dfa-edge 58,8),
-				$(gold-dfa-edge 59,75),
+			$(gold-dfa-state 90,14,
+				$(gold-dfa-edge 56,9),
+				$(gold-dfa-edge 57,91),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 75,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,76),
+			$(gold-dfa-state 91,14,
+				$(gold-dfa-edge 39,9),
+				$(gold-dfa-edge 40,92),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 76,17,
-				$(gold-dfa-edge 21,8),
+			$(gold-dfa-state 92,14,
+				$(gold-dfa-edge 42,9),
+				$(gold-dfa-edge 13,93),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 93,14,
+				$(gold-dfa-edge 47,9),
+				$(gold-dfa-edge 15,94),
+			),# Total 2 edge(s).
+			$(gold-dfa-state 94,19,
+				$(gold-dfa-edge 22,9),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 77,15,
-				$(gold-dfa-edge 48,8),
-				$(gold-dfa-edge 13,78),
+			$(gold-dfa-state 95,14,
+				$(gold-dfa-edge 41,9),
+				$(gold-dfa-edge 12,96),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 78,15,
-				$(gold-dfa-edge 60,8),
-				$(gold-dfa-edge 61,79),
+			$(gold-dfa-state 96,14,
+				$(gold-dfa-edge 37,9),
+				$(gold-dfa-edge 38,97),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 79,15,
-				$(gold-dfa-edge 52,8),
-				$(gold-dfa-edge 53,80),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 80,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,81),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 81,18,
-				$(gold-dfa-edge 21,8),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 82,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,83),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 83,15,
-				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,84),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 84,15,
-				$(gold-dfa-edge 58,8),
-				$(gold-dfa-edge 59,85),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 85,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,86),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 86,15,
-				$(gold-dfa-edge 42,8),
-				$(gold-dfa-edge 43,87),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 87,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,88),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 88,19,
-				$(gold-dfa-edge 21,8),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 89,15,
-				$(gold-dfa-edge 62,8),
-				$(gold-dfa-edge 56,90),
-				$(gold-dfa-edge 20,95),
-			),# Total 3 edge(s).
-			$(gold-dfa-state 90,15,
-				$(gold-dfa-edge 60,8),
-				$(gold-dfa-edge 61,91),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 91,15,
-				$(gold-dfa-edge 37,8),
-				$(gold-dfa-edge 38,92),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 92,15,
-				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,93),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 93,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,94),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 94,20,
-				$(gold-dfa-edge 21,8),
-			),# Total 1 edge(s).
-			$(gold-dfa-state 95,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,96),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 96,15,
-				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,97),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 97,15,
-				$(gold-dfa-edge 51,8),
+			$(gold-dfa-state 97,14,
+				$(gold-dfa-edge 65,9),
 				$(gold-dfa-edge 16,98),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 98,15,
-				$(gold-dfa-edge 40,8),
-				$(gold-dfa-edge 12,99),
+			$(gold-dfa-state 98,14,
+				$(gold-dfa-edge 42,9),
+				$(gold-dfa-edge 13,99),
 			),# Total 2 edge(s).
-			$(gold-dfa-state 99,21,
-				$(gold-dfa-edge 21,8),
+			$(gold-dfa-state 99,20,
+				$(gold-dfa-edge 22,9),
 			),# Total 1 edge(s).
-			$(gold-dfa-state 100,15,
-				$(gold-dfa-edge 39,8),
-				$(gold-dfa-edge 11,101),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 101,15,
-				$(gold-dfa-edge 37,8),
-				$(gold-dfa-edge 38,102),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 102,15,
-				$(gold-dfa-edge 42,8),
-				$(gold-dfa-edge 43,103),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 103,15,
-				$(gold-dfa-edge 44,8),
-				$(gold-dfa-edge 14,104),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 104,15,
-				$(gold-dfa-edge 36,8),
-				$(gold-dfa-edge 20,105),
-			),# Total 2 edge(s).
-			$(gold-dfa-state 105,23,
-				$(gold-dfa-edge 21,8),
-			),# Total 1 edge(s).
-		),# Total 106 DFA state(s).
+		),# Total 100 DFA state(s).
 
 		$(gold-lalr-table 0,# <- Initial state
 		# 	$(gold-lalr-state <ID>,
@@ -781,79 +751,79 @@ define __gold_$(gold_grammar)_parser
 		# 		...
 		# 	),
 			$(gold-lalr-state 0,
-				$(gold-lalr-action 19,1,1),
-				$(gold-lalr-action 32,3,2),
-				$(gold-lalr-action 39,3,3),
+				$(gold-lalr-action 18,1,1),
+				$(gold-lalr-action 30,3,2),
+				$(gold-lalr-action 40,3,3),
 				$(gold-lalr-action 0,2,2),
 				$(gold-lalr-action 10,2,2),
+				$(gold-lalr-action 15,2,2),
 				$(gold-lalr-action 16,2,2),
-				$(gold-lalr-action 18,2,2),
-				$(gold-lalr-action 21,2,2),
+				$(gold-lalr-action 20,2,2),
 			),# Total 8 action(s).
 			$(gold-lalr-state 1,
-				$(gold-lalr-action 15,1,4),
-				$(gold-lalr-action 40,3,5),
+				$(gold-lalr-action 14,1,4),
+				$(gold-lalr-action 41,3,5),
 			),# Total 2 action(s).
 			$(gold-lalr-state 2,
 				$(gold-lalr-action 0,4,0),
 			),# Total 1 action(s).
 			$(gold-lalr-state 3,
-				$(gold-lalr-action 16,1,6),
-				$(gold-lalr-action 26,3,7),
-				$(gold-lalr-action 27,3,8),
+				$(gold-lalr-action 15,1,6),
+				$(gold-lalr-action 28,3,7),
+				$(gold-lalr-action 29,3,8),
 				$(gold-lalr-action 0,2,4),
 				$(gold-lalr-action 10,2,4),
-				$(gold-lalr-action 18,2,4),
-				$(gold-lalr-action 21,2,4),
+				$(gold-lalr-action 16,2,4),
+				$(gold-lalr-action 20,2,4),
 			),# Total 7 action(s).
 			$(gold-lalr-state 4,
 				$(gold-lalr-action 4,1,9),
-				$(gold-lalr-action 3,2,39),
-				$(gold-lalr-action 5,2,39),
-				$(gold-lalr-action 7,2,39),
-				$(gold-lalr-action 8,2,39),
+				$(gold-lalr-action 3,2,36),
+				$(gold-lalr-action 5,2,36),
+				$(gold-lalr-action 7,2,36),
+				$(gold-lalr-action 8,2,36),
 			),# Total 5 action(s).
 			$(gold-lalr-state 5,
 				$(gold-lalr-action 7,1,10),
 			),# Total 1 action(s).
 			$(gold-lalr-state 6,
-				$(gold-lalr-action 15,1,4),
-				$(gold-lalr-action 40,3,11),
-				$(gold-lalr-action 41,3,12),
+				$(gold-lalr-action 14,1,4),
+				$(gold-lalr-action 41,3,11),
+				$(gold-lalr-action 42,3,12),
 			),# Total 3 action(s).
 			$(gold-lalr-state 7,
-				$(gold-lalr-action 16,1,6),
-				$(gold-lalr-action 26,3,7),
-				$(gold-lalr-action 27,3,13),
+				$(gold-lalr-action 15,1,6),
+				$(gold-lalr-action 28,3,7),
+				$(gold-lalr-action 29,3,13),
 				$(gold-lalr-action 0,2,4),
 				$(gold-lalr-action 10,2,4),
-				$(gold-lalr-action 18,2,4),
-				$(gold-lalr-action 21,2,4),
+				$(gold-lalr-action 16,2,4),
+				$(gold-lalr-action 20,2,4),
 			),# Total 7 action(s).
 			$(gold-lalr-state 8,
 				$(gold-lalr-action 10,1,14),
-				$(gold-lalr-action 21,1,15),
-				$(gold-lalr-action 35,3,16),
-				$(gold-lalr-action 36,3,17),
-				$(gold-lalr-action 37,3,18),
-				$(gold-lalr-action 38,3,19),
+				$(gold-lalr-action 20,1,15),
+				$(gold-lalr-action 33,3,16),
+				$(gold-lalr-action 34,3,17),
+				$(gold-lalr-action 35,3,18),
+				$(gold-lalr-action 36,3,19),
 				$(gold-lalr-action 0,2,7),
-				$(gold-lalr-action 18,2,10),
+				$(gold-lalr-action 16,2,10),
 			),# Total 8 action(s).
 			$(gold-lalr-state 9,
-				$(gold-lalr-action 15,1,4),
-				$(gold-lalr-action 40,3,20),
+				$(gold-lalr-action 14,1,4),
+				$(gold-lalr-action 41,3,20),
 			),# Total 2 action(s).
 			$(gold-lalr-state 10,
 				$(gold-lalr-action 0,2,1),
 				$(gold-lalr-action 10,2,1),
+				$(gold-lalr-action 15,2,1),
 				$(gold-lalr-action 16,2,1),
-				$(gold-lalr-action 18,2,1),
-				$(gold-lalr-action 21,2,1),
+				$(gold-lalr-action 20,2,1),
 			),# Total 5 action(s).
 			$(gold-lalr-state 11,
 				$(gold-lalr-action 5,1,21),
-				$(gold-lalr-action 7,2,41),
+				$(gold-lalr-action 7,2,38),
 			),# Total 2 action(s).
 			$(gold-lalr-state 12,
 				$(gold-lalr-action 7,1,22),
@@ -861,301 +831,286 @@ define __gold_$(gold_grammar)_parser
 			$(gold-lalr-state 13,
 				$(gold-lalr-action 0,2,3),
 				$(gold-lalr-action 10,2,3),
-				$(gold-lalr-action 18,2,3),
-				$(gold-lalr-action 21,2,3),
+				$(gold-lalr-action 16,2,3),
+				$(gold-lalr-action 20,2,3),
 			),# Total 4 action(s).
 			$(gold-lalr-state 14,
 				$(gold-lalr-action 10,2,12),
-				$(gold-lalr-action 18,2,12),
-				$(gold-lalr-action 21,2,12),
+				$(gold-lalr-action 16,2,12),
+				$(gold-lalr-action 20,2,12),
 			),# Total 3 action(s).
 			$(gold-lalr-state 15,
 				$(gold-lalr-action 10,2,11),
-				$(gold-lalr-action 18,2,11),
-				$(gold-lalr-action 21,2,11),
+				$(gold-lalr-action 16,2,11),
+				$(gold-lalr-action 20,2,11),
 			),# Total 3 action(s).
 			$(gold-lalr-state 16,
 				$(gold-lalr-action 10,1,14),
-				$(gold-lalr-action 21,1,15),
-				$(gold-lalr-action 35,3,16),
-				$(gold-lalr-action 36,3,23),
-				$(gold-lalr-action 37,3,18),
-				$(gold-lalr-action 38,3,19),
+				$(gold-lalr-action 20,1,15),
+				$(gold-lalr-action 33,3,16),
+				$(gold-lalr-action 34,3,23),
+				$(gold-lalr-action 35,3,18),
+				$(gold-lalr-action 36,3,19),
 				$(gold-lalr-action 0,2,7),
-				$(gold-lalr-action 18,2,10),
+				$(gold-lalr-action 16,2,10),
 			),# Total 8 action(s).
 			$(gold-lalr-state 17,
 				$(gold-lalr-action 0,2,0),
 			),# Total 1 action(s).
 			$(gold-lalr-state 18,
 				$(gold-lalr-action 10,1,14),
-				$(gold-lalr-action 21,1,15),
-				$(gold-lalr-action 37,3,18),
-				$(gold-lalr-action 38,3,24),
-				$(gold-lalr-action 18,2,10),
+				$(gold-lalr-action 20,1,15),
+				$(gold-lalr-action 35,3,18),
+				$(gold-lalr-action 36,3,24),
+				$(gold-lalr-action 16,2,10),
 			),# Total 5 action(s).
 			$(gold-lalr-state 19,
-				$(gold-lalr-action 18,1,25),
+				$(gold-lalr-action 16,1,25),
 			),# Total 1 action(s).
 			$(gold-lalr-state 20,
-				$(gold-lalr-action 3,2,38),
-				$(gold-lalr-action 5,2,38),
-				$(gold-lalr-action 7,2,38),
-				$(gold-lalr-action 8,2,38),
+				$(gold-lalr-action 3,2,35),
+				$(gold-lalr-action 5,2,35),
+				$(gold-lalr-action 7,2,35),
+				$(gold-lalr-action 8,2,35),
 			),# Total 4 action(s).
 			$(gold-lalr-state 21,
-				$(gold-lalr-action 7,2,40),
+				$(gold-lalr-action 7,2,37),
 			),# Total 1 action(s).
 			$(gold-lalr-state 22,
 				$(gold-lalr-action 0,2,5),
 				$(gold-lalr-action 10,2,5),
+				$(gold-lalr-action 15,2,5),
 				$(gold-lalr-action 16,2,5),
-				$(gold-lalr-action 18,2,5),
-				$(gold-lalr-action 21,2,5),
+				$(gold-lalr-action 20,2,5),
 			),# Total 5 action(s).
 			$(gold-lalr-state 23,
 				$(gold-lalr-action 0,2,6),
 			),# Total 1 action(s).
 			$(gold-lalr-state 24,
-				$(gold-lalr-action 18,2,9),
+				$(gold-lalr-action 16,2,9),
 			),# Total 1 action(s).
 			$(gold-lalr-state 25,
-				$(gold-lalr-action 15,1,26),
+				$(gold-lalr-action 14,1,26),
 			),# Total 1 action(s).
 			$(gold-lalr-state 26,
 				$(gold-lalr-action 13,1,27),
-				$(gold-lalr-action 46,3,28),
+				$(gold-lalr-action 44,3,28),
 				$(gold-lalr-action 8,2,14),
 			),# Total 3 action(s).
 			$(gold-lalr-state 27,
-				$(gold-lalr-action 15,1,4),
-				$(gold-lalr-action 40,3,29),
-				$(gold-lalr-action 47,3,30),
-			),# Total 3 action(s).
+				$(gold-lalr-action 14,1,4),
+				$(gold-lalr-action 37,3,29),
+				$(gold-lalr-action 38,3,30),
+				$(gold-lalr-action 41,3,31),
+			),# Total 4 action(s).
 			$(gold-lalr-state 28,
-				$(gold-lalr-action 8,1,31),
+				$(gold-lalr-action 8,1,32),
 			),# Total 1 action(s).
 			$(gold-lalr-state 29,
-				$(gold-lalr-action 3,1,32),
-				$(gold-lalr-action 8,2,16),
-			),# Total 2 action(s).
+				$(gold-lalr-action 3,1,33),
+				$(gold-lalr-action 7,2,34),
+				$(gold-lalr-action 8,2,34),
+			),# Total 3 action(s).
 			$(gold-lalr-state 30,
 				$(gold-lalr-action 8,2,13),
 			),# Total 1 action(s).
 			$(gold-lalr-state 31,
-				$(gold-lalr-action 11,1,33),
-				$(gold-lalr-action 12,1,34),
-				$(gold-lalr-action 20,1,35),
-				$(gold-lalr-action 23,1,36),
-				$(gold-lalr-action 24,3,37),
-				$(gold-lalr-action 25,3,38),
-				$(gold-lalr-action 28,3,39),
-				$(gold-lalr-action 33,3,40),
-				$(gold-lalr-action 34,3,41),
-				$(gold-lalr-action 43,3,42),
-				$(gold-lalr-action 9,2,18),
-			),# Total 11 action(s).
-			$(gold-lalr-state 32,
-				$(gold-lalr-action 15,1,4),
-				$(gold-lalr-action 40,3,29),
-				$(gold-lalr-action 47,3,43),
+				$(gold-lalr-action 3,2,32),
+				$(gold-lalr-action 7,2,32),
+				$(gold-lalr-action 8,2,32),
 			),# Total 3 action(s).
+			$(gold-lalr-state 32,
+				$(gold-lalr-action 11,1,34),
+				$(gold-lalr-action 12,1,35),
+				$(gold-lalr-action 17,1,36),
+				$(gold-lalr-action 19,1,37),
+				$(gold-lalr-action 22,3,38),
+				$(gold-lalr-action 23,3,39),
+				$(gold-lalr-action 31,3,40),
+				$(gold-lalr-action 32,3,41),
+				$(gold-lalr-action 39,3,42),
+				$(gold-lalr-action 43,3,43),
+				$(gold-lalr-action 9,2,16),
+			),# Total 11 action(s).
 			$(gold-lalr-state 33,
-				$(gold-lalr-action 22,1,44),
-			),# Total 1 action(s).
+				$(gold-lalr-action 14,1,4),
+				$(gold-lalr-action 37,3,29),
+				$(gold-lalr-action 38,3,44),
+				$(gold-lalr-action 41,3,31),
+			),# Total 4 action(s).
 			$(gold-lalr-state 34,
-				$(gold-lalr-action 15,1,4),
-				$(gold-lalr-action 40,3,45),
-			),# Total 2 action(s).
+				$(gold-lalr-action 21,1,45),
+			),# Total 1 action(s).
 			$(gold-lalr-state 35,
-				$(gold-lalr-action 8,1,46),
-				$(gold-lalr-action 14,1,47),
-				$(gold-lalr-action 42,3,48),
-				$(gold-lalr-action 44,3,49),
+				$(gold-lalr-action 14,1,4),
+				$(gold-lalr-action 37,3,29),
+				$(gold-lalr-action 38,3,46),
+				$(gold-lalr-action 41,3,31),
 			),# Total 4 action(s).
 			$(gold-lalr-state 36,
-				$(gold-lalr-action 22,1,50),
-			),# Total 1 action(s).
+				$(gold-lalr-action 21,1,47),
+				$(gold-lalr-action 24,3,48),
+				$(gold-lalr-action 26,3,49),
+				$(gold-lalr-action 27,3,50),
+			),# Total 4 action(s).
 			$(gold-lalr-state 37,
-				$(gold-lalr-action 9,2,20),
-				$(gold-lalr-action 11,2,20),
-				$(gold-lalr-action 12,2,20),
-				$(gold-lalr-action 20,2,20),
-				$(gold-lalr-action 23,2,20),
-			),# Total 5 action(s).
+				$(gold-lalr-action 21,1,47),
+				$(gold-lalr-action 24,3,48),
+				$(gold-lalr-action 26,3,49),
+				$(gold-lalr-action 27,3,51),
+			),# Total 4 action(s).
 			$(gold-lalr-state 38,
-				$(gold-lalr-action 9,2,21),
-				$(gold-lalr-action 11,2,21),
-				$(gold-lalr-action 12,2,21),
-				$(gold-lalr-action 20,2,21),
-				$(gold-lalr-action 23,2,21),
-			),# Total 5 action(s).
-			$(gold-lalr-state 39,
-				$(gold-lalr-action 9,2,22),
-				$(gold-lalr-action 11,2,22),
-				$(gold-lalr-action 12,2,22),
-				$(gold-lalr-action 20,2,22),
-				$(gold-lalr-action 23,2,22),
-			),# Total 5 action(s).
-			$(gold-lalr-state 40,
-				$(gold-lalr-action 11,1,33),
-				$(gold-lalr-action 12,1,34),
-				$(gold-lalr-action 20,1,35),
-				$(gold-lalr-action 23,1,36),
-				$(gold-lalr-action 24,3,37),
-				$(gold-lalr-action 25,3,38),
-				$(gold-lalr-action 28,3,39),
-				$(gold-lalr-action 33,3,40),
-				$(gold-lalr-action 34,3,51),
-				$(gold-lalr-action 43,3,42),
-				$(gold-lalr-action 9,2,18),
-			),# Total 11 action(s).
-			$(gold-lalr-state 41,
-				$(gold-lalr-action 9,1,52),
-			),# Total 1 action(s).
-			$(gold-lalr-state 42,
 				$(gold-lalr-action 9,2,19),
 				$(gold-lalr-action 11,2,19),
 				$(gold-lalr-action 12,2,19),
-				$(gold-lalr-action 20,2,19),
-				$(gold-lalr-action 23,2,19),
+				$(gold-lalr-action 17,2,19),
+				$(gold-lalr-action 19,2,19),
+			),# Total 5 action(s).
+			$(gold-lalr-state 39,
+				$(gold-lalr-action 9,2,20),
+				$(gold-lalr-action 11,2,20),
+				$(gold-lalr-action 12,2,20),
+				$(gold-lalr-action 17,2,20),
+				$(gold-lalr-action 19,2,20),
+			),# Total 5 action(s).
+			$(gold-lalr-state 40,
+				$(gold-lalr-action 11,1,34),
+				$(gold-lalr-action 12,1,35),
+				$(gold-lalr-action 17,1,36),
+				$(gold-lalr-action 19,1,37),
+				$(gold-lalr-action 22,3,38),
+				$(gold-lalr-action 23,3,39),
+				$(gold-lalr-action 31,3,40),
+				$(gold-lalr-action 32,3,52),
+				$(gold-lalr-action 39,3,42),
+				$(gold-lalr-action 43,3,43),
+				$(gold-lalr-action 9,2,16),
+			),# Total 11 action(s).
+			$(gold-lalr-state 41,
+				$(gold-lalr-action 9,1,53),
+			),# Total 1 action(s).
+			$(gold-lalr-state 42,
+				$(gold-lalr-action 9,2,18),
+				$(gold-lalr-action 11,2,18),
+				$(gold-lalr-action 12,2,18),
+				$(gold-lalr-action 17,2,18),
+				$(gold-lalr-action 19,2,18),
 			),# Total 5 action(s).
 			$(gold-lalr-state 43,
-				$(gold-lalr-action 8,2,15),
-			),# Total 1 action(s).
+				$(gold-lalr-action 9,2,17),
+				$(gold-lalr-action 11,2,17),
+				$(gold-lalr-action 12,2,17),
+				$(gold-lalr-action 17,2,17),
+				$(gold-lalr-action 19,2,17),
+			),# Total 5 action(s).
 			$(gold-lalr-state 44,
-				$(gold-lalr-action 7,1,53),
-			),# Total 1 action(s).
+				$(gold-lalr-action 7,2,33),
+				$(gold-lalr-action 8,2,33),
+			),# Total 2 action(s).
 			$(gold-lalr-state 45,
 				$(gold-lalr-action 7,1,54),
 			),# Total 1 action(s).
 			$(gold-lalr-state 46,
-				$(gold-lalr-action 14,1,47),
-				$(gold-lalr-action 44,3,55),
-				$(gold-lalr-action 45,3,56),
-				$(gold-lalr-action 9,2,27),
-			),# Total 4 action(s).
-			$(gold-lalr-state 47,
-				$(gold-lalr-action 22,1,57),
+				$(gold-lalr-action 7,1,55),
 			),# Total 1 action(s).
-			$(gold-lalr-state 48,
-				$(gold-lalr-action 9,2,23),
-				$(gold-lalr-action 11,2,23),
-				$(gold-lalr-action 12,2,23),
-				$(gold-lalr-action 20,2,23),
-				$(gold-lalr-action 23,2,23),
-			),# Total 5 action(s).
-			$(gold-lalr-state 49,
-				$(gold-lalr-action 9,2,25),
-				$(gold-lalr-action 11,2,25),
-				$(gold-lalr-action 12,2,25),
-				$(gold-lalr-action 20,2,25),
-				$(gold-lalr-action 23,2,25),
-			),# Total 5 action(s).
-			$(gold-lalr-state 50,
-				$(gold-lalr-action 6,1,58),
-				$(gold-lalr-action 30,3,59),
-				$(gold-lalr-action 7,2,33),
-				$(gold-lalr-action 17,2,33),
+			$(gold-lalr-state 47,
+				$(gold-lalr-action 3,2,29),
+				$(gold-lalr-action 6,2,29),
+				$(gold-lalr-action 7,2,29),
+				$(gold-lalr-action 8,2,29),
 			),# Total 4 action(s).
+			$(gold-lalr-state 48,
+				$(gold-lalr-action 6,1,56),
+				$(gold-lalr-action 3,2,25),
+				$(gold-lalr-action 7,2,25),
+			),# Total 3 action(s).
+			$(gold-lalr-state 49,
+				$(gold-lalr-action 3,1,57),
+				$(gold-lalr-action 7,2,28),
+			),# Total 2 action(s).
+			$(gold-lalr-state 50,
+				$(gold-lalr-action 7,1,58),
+			),# Total 1 action(s).
 			$(gold-lalr-state 51,
-				$(gold-lalr-action 9,2,17),
+				$(gold-lalr-action 7,1,59),
 			),# Total 1 action(s).
 			$(gold-lalr-state 52,
+				$(gold-lalr-action 9,2,15),
+			),# Total 1 action(s).
+			$(gold-lalr-state 53,
 				$(gold-lalr-action 0,2,8),
 				$(gold-lalr-action 10,2,8),
-				$(gold-lalr-action 18,2,8),
-				$(gold-lalr-action 21,2,8),
+				$(gold-lalr-action 16,2,8),
+				$(gold-lalr-action 20,2,8),
 			),# Total 4 action(s).
-			$(gold-lalr-state 53,
-				$(gold-lalr-action 9,2,29),
-				$(gold-lalr-action 11,2,29),
-				$(gold-lalr-action 12,2,29),
-				$(gold-lalr-action 20,2,29),
-				$(gold-lalr-action 23,2,29),
-			),# Total 5 action(s).
 			$(gold-lalr-state 54,
-				$(gold-lalr-action 9,2,30),
-				$(gold-lalr-action 11,2,30),
-				$(gold-lalr-action 12,2,30),
-				$(gold-lalr-action 20,2,30),
-				$(gold-lalr-action 23,2,30),
+				$(gold-lalr-action 9,2,21),
+				$(gold-lalr-action 11,2,21),
+				$(gold-lalr-action 12,2,21),
+				$(gold-lalr-action 17,2,21),
+				$(gold-lalr-action 19,2,21),
 			),# Total 5 action(s).
 			$(gold-lalr-state 55,
-				$(gold-lalr-action 14,1,47),
-				$(gold-lalr-action 44,3,55),
-				$(gold-lalr-action 45,3,60),
-				$(gold-lalr-action 9,2,27),
-			),# Total 4 action(s).
+				$(gold-lalr-action 9,2,22),
+				$(gold-lalr-action 11,2,22),
+				$(gold-lalr-action 12,2,22),
+				$(gold-lalr-action 17,2,22),
+				$(gold-lalr-action 19,2,22),
+			),# Total 5 action(s).
 			$(gold-lalr-state 56,
-				$(gold-lalr-action 9,1,61),
-			),# Total 1 action(s).
-			$(gold-lalr-state 57,
-				$(gold-lalr-action 7,1,62),
-			),# Total 1 action(s).
-			$(gold-lalr-state 58,
-				$(gold-lalr-action 22,1,63),
-				$(gold-lalr-action 29,3,64),
-				$(gold-lalr-action 7,2,35),
-				$(gold-lalr-action 17,2,35),
-			),# Total 4 action(s).
-			$(gold-lalr-state 59,
-				$(gold-lalr-action 17,1,65),
-				$(gold-lalr-action 31,3,66),
-				$(gold-lalr-action 7,2,37),
+				$(gold-lalr-action 21,1,47),
+				$(gold-lalr-action 24,3,60),
+				$(gold-lalr-action 25,3,61),
 			),# Total 3 action(s).
-			$(gold-lalr-state 60,
-				$(gold-lalr-action 9,2,26),
-			),# Total 1 action(s).
-			$(gold-lalr-state 61,
+			$(gold-lalr-state 57,
+				$(gold-lalr-action 21,1,47),
+				$(gold-lalr-action 24,3,48),
+				$(gold-lalr-action 26,3,49),
+				$(gold-lalr-action 27,3,62),
+			),# Total 4 action(s).
+			$(gold-lalr-state 58,
 				$(gold-lalr-action 9,2,24),
 				$(gold-lalr-action 11,2,24),
 				$(gold-lalr-action 12,2,24),
-				$(gold-lalr-action 20,2,24),
-				$(gold-lalr-action 23,2,24),
+				$(gold-lalr-action 17,2,24),
+				$(gold-lalr-action 19,2,24),
 			),# Total 5 action(s).
-			$(gold-lalr-state 62,
-				$(gold-lalr-action 9,2,28),
-				$(gold-lalr-action 11,2,28),
-				$(gold-lalr-action 12,2,28),
-				$(gold-lalr-action 14,2,28),
-				$(gold-lalr-action 20,2,28),
-				$(gold-lalr-action 23,2,28),
-			),# Total 6 action(s).
-			$(gold-lalr-state 63,
-				$(gold-lalr-action 3,1,67),
-			),# Total 1 action(s).
-			$(gold-lalr-state 64,
-				$(gold-lalr-action 7,2,32),
-				$(gold-lalr-action 17,2,32),
+			$(gold-lalr-state 59,
+				$(gold-lalr-action 9,2,23),
+				$(gold-lalr-action 11,2,23),
+				$(gold-lalr-action 12,2,23),
+				$(gold-lalr-action 17,2,23),
+				$(gold-lalr-action 19,2,23),
+			),# Total 5 action(s).
+			$(gold-lalr-state 60,
+				$(gold-lalr-action 3,1,63),
+				$(gold-lalr-action 8,2,31),
 			),# Total 2 action(s).
+			$(gold-lalr-state 61,
+				$(gold-lalr-action 8,1,64),
+			),# Total 1 action(s).
+			$(gold-lalr-state 62,
+				$(gold-lalr-action 7,2,27),
+			),# Total 1 action(s).
+			$(gold-lalr-state 63,
+				$(gold-lalr-action 21,1,47),
+				$(gold-lalr-action 24,3,60),
+				$(gold-lalr-action 25,3,65),
+			),# Total 3 action(s).
+			$(gold-lalr-state 64,
+				$(gold-lalr-action 21,1,66),
+			),# Total 1 action(s).
 			$(gold-lalr-state 65,
-				$(gold-lalr-action 22,1,68),
+				$(gold-lalr-action 8,2,30),
 			),# Total 1 action(s).
 			$(gold-lalr-state 66,
-				$(gold-lalr-action 7,1,69),
+				$(gold-lalr-action 9,1,67),
 			),# Total 1 action(s).
 			$(gold-lalr-state 67,
-				$(gold-lalr-action 22,1,63),
-				$(gold-lalr-action 29,3,70),
-				$(gold-lalr-action 7,2,35),
-				$(gold-lalr-action 17,2,35),
-			),# Total 4 action(s).
-			$(gold-lalr-state 68,
-				$(gold-lalr-action 7,2,36),
-			),# Total 1 action(s).
-			$(gold-lalr-state 69,
-				$(gold-lalr-action 9,2,31),
-				$(gold-lalr-action 11,2,31),
-				$(gold-lalr-action 12,2,31),
-				$(gold-lalr-action 20,2,31),
-				$(gold-lalr-action 23,2,31),
-			),# Total 5 action(s).
-			$(gold-lalr-state 70,
-				$(gold-lalr-action 7,2,34),
-				$(gold-lalr-action 17,2,34),
+				$(gold-lalr-action 3,2,26),
+				$(gold-lalr-action 7,2,26),
 			),# Total 2 action(s).
-		)# Total 71 LALR state(s).
+		)# Total 68 LALR state(s).
 
 	)
 endef # __gold_$(gold_grammar)_parser

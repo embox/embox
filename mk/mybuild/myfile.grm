@@ -36,9 +36,9 @@ Whitespace    = {Whitespace}+
               | '/*' ( {Non Asterisk} | '*' {Non Slash} )*  '*/'
               | '//' {Not New Line}* ( {CR}? {LF} )?
 
-Identifier    = {ID Head}{ID Tail}*
+Identifier    = '^'? {ID Head}{ID Tail}*
 StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
-              | '''''' ( ( '' ( '' )? )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
+              | '''''' ( ( ''? '' )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
 
 ! -------------------------------------------------
 ! Rules
