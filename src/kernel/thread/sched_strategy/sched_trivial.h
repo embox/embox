@@ -7,8 +7,8 @@
  * @author Anton Bulychev
  */
 
-#ifndef KERNEL_THREAD_SCHED_POLICY_TRIVIAL_H_
-#define KERNEL_THREAD_SCHED_POLICY_TRIVIAL_H_
+#ifndef KERNEL_THREAD_SCHED_STRATEGY_TRIVIAL_H_
+#define KERNEL_THREAD_SCHED_STRATEGY_TRIVIAL_H_
 
 #include <lib/list.h>
 
@@ -30,4 +30,4 @@ struct sleepq {
 	struct list_head sq;     /* Suspend queue */
 };
 
-#endif /* KERNEL_THREAD_SCHED_POLICY_TRIVIAL_H_ */
+#endif /* KERNEL_THREAD_SCHED_STRATEGY_TRIVIAL_H_ */

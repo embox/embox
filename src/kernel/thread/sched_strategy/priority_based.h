@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef KERNEL_THREAD_SCHED_POLICY_PRIORITY_BASED_H_
-#define KERNEL_THREAD_SCHED_POLICY_PRIORITY_BASED_H_
+#ifndef KERNEL_THREAD_SCHED_STRATEGY_PRIORITY_BASED_H_
+#define KERNEL_THREAD_SCHED_STRATEGY_PRIORITY_BASED_H_
 
 #include <lib/list.h>
 #include <util/prioq.h>
@@ -51,4 +51,4 @@ static inline struct thread *runq_current(struct runq *rq) {
 	for(t = NULL;;)
 #endif
 
-#endif /* KERNEL_THREAD_SCHED_POLICY_PRIORITY_BASED_H_ */
+#endif /* KERNEL_THREAD_SCHED_STRATEGY_PRIORITY_BASED_H_ */
