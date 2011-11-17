@@ -55,80 +55,68 @@ StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
 <ImportDecls>
         ::= <ImportDecl> <ImportDecls>
           |
-
 <ImportDecl>
         ::= 'import' <QualifiedNameWithWildcard> ';'
 
 <ModuleDecls>
         ::= <ModuleDecl> <ModuleDecls>
           |
-
 <ModuleDecl>
         ::= <ModuleModifiers> 'module' Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
 
 <ModuleModifiers>
         ::= <ModuleModifier> <ModuleModifiers>
           |
-
 <ModuleModifier>
         ::= 'static'
           | 'abstract'
 
-
 <SuperModules>
-        ::= 'extends' <SuperModulesList>
+        ::= 'extends' <ModuleRefList>
           |
-
-<SuperModulesList>
-        ::= <QualifiedName> ',' <SuperModulesList>
-          | <QualifiedName>
 
 <ModuleBodyDecls>
         ::= <ModuleBodyDecl> <ModuleBodyDecls>
           |
-
 <ModuleBodyDecl>
-        ::= <SourceDecl>
+        ::= <SourcesDecl>
+          | <ObjectsDecl>
           | <CcflagsDecl>
-          | <DependencyDecl>
-          | <MakeRuleDecl>
-
-<SourceDecl>
-        ::= 'source' <SourceBody>
-
-<SourceBody>
-        ::= '{' <SourceStatements> '}'
-          | <SourceStatement>
-
-<SourceStatements>
-        ::= <SourceStatement> <SourceStatements>
-          |
-
-<SourceStatement>
-        ::= 'file' StringLiteral ';'
+          | <DependenciesDecl>
 
 <CcflagsDecl>
         ::= 'ccfags' StringLiteral ';'
 
-<DependencyDecl>
-        ::= 'depends' <QualifiedName> ';'
+<DependenciesDecl>
+        ::= 'depends' <ModuleRefList> ';'
 
-<MakeRuleDecl>
-        ::= 'target' StringLiteral <MakeRulePrerequisity> <MakeRuleRecipe> ';'
+<SourcesDecl>
+        ::= 'source' <FileOrTargetList> ';'
 
-<MakeRulePrerequisity>
-        ::= ':' <MakeRulePrerequisitiesList>
-          |
+<ObjectsDecl>
+        ::= 'object' <FileOrTargetList> ';'
 
-<MakeRulePrerequisitiesList>
-        ::= StringLiteral ',' <MakeRulePrerequisitiesList>
-          |
+<FileOrTarget>
+        ::= <Filename>
+          | <Filename> ':' <FilenameList> '{' StringLiteral '}'
 
-<MakeRuleRecipe>
-        ::= 'make' StringLiteral
-          |
+<FileOrTargetList>
+        ::= <FileOrTarget> ',' <FileOrTargetList>
+          | <FileOrTarget>
 
-! Exended identifiers.
+<Filename>
+        ::= StringLiteral
+<FilenameList>
+        ::= <Filename> ',' <FilenameList>
+          | <Filename>
+
+<ModuleRef>
+        ::= <QualifiedName>
+<ModuleRefList>
+        ::= <ModuleRef> ',' <ModuleRefList>
+          | <ModuleRef>
+
+! Extended identifiers.
 
 <QualifiedName>
         ::= Identifier '.' <QualifiedName>
