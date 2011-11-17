@@ -23,17 +23,12 @@ struct example_type {
 
 #define MY_POOL_SZ 100
 
-//POOL_DEF(my_pool,struct example_type et, MY_POOL_SZ);
-
-struct example_type my_storage[MY_POOL_SZ];
-
-struct pool my_pool = {
-	.memory = (void*)my_storage,
-	.obj_size = sizeof(struct example_type),
-	.pool_size = sizeof(struct example_type) * MY_POOL_SZ,
-	.bound_free = my_storage
-};
+POOL_DEF(my_pool, struct example_type, MY_POOL_SZ);
 
 static int run(int argc, char **argv) {
+	struct example_type* temp;
+	temp = pool2_alloc(&my_pool);
+	temp->temp = 0;
+	pool2_free(&my_pool, temp);
 	return 0;
 }

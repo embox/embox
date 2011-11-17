@@ -1,5 +1,7 @@
 $_PACKAGE := embox.hal.mm
 
+$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+
 $_MODS += mmu mpallocator opallocator slab
 
 ifdef CONFIG_HEAP_SIZE

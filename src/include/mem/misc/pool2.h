@@ -14,16 +14,30 @@
 #include <types.h>
 #include <util/macro.h>
 #include <util/slist.h>
-#include <util/list.h>
 
 struct pool {
 	void * memory;
-	size_t obj_size;
-	struct slist list_free;
-
-	size_t pool_size;
 	void * bound_free;
+	struct slist free_blocks;
+	size_t obj_size;
+	size_t pool_size;
+	size_t current_size;
 };
+
+
+#define POOL_DEF(name, object_type, size) \
+	static union {                                  \
+		typeof(object_type) object;                 \
+		struct slist free_link;      \
+	} name ## _storage[size] __attribute__((section(".reserve.pool"))); \
+	static struct pool name = { \
+			.memory = (void*)name ## _storage, \
+			.bound_free = (void*)name ## _storage, \
+			.obj_size = sizeof(*name ## _storage), \
+			.pool_size = sizeof(*name ## _storage) * size, \
+			.current_size = 0 \
+};
+
 
 #if 0
 #define POOL_DEF(pool_name, elem_type, pool_size) \
@@ -40,6 +54,6 @@ struct pool {
 
 extern void *pool2_alloc(struct pool *pool);
 
-extern void pool2_free(struct pool *pool, void *obj);
+extern void pool2_free(struct pool *pool, void* obj);
 
 #endif /* MEM_MISC_POOL2_H_ */
