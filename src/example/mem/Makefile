@@ -8,6 +8,9 @@ $_BRIEF-objalloc = demonstrates using of API for allocation fixed size object
 
 $_MODS  += pool
 $_SRCS-pool += pool.c
+$_DEPS-pool += embox.hal.mm.pool2
+$_CPPFLAGS-pool += -I$(SRC_DIR)/include/posix
+$_SRCS-pool += pool.c
 
 $_MODS  += page
 $_SRCS-page += page.c
