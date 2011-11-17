@@ -12,33 +12,34 @@
 #define MEM_MISC_POOL2_H_
 
 #include <types.h>
+#include <util/macro.h>
 #include <util/slist.h>
+#include <util/list.h>
 
-struct obj_pool {
-	size_t object_size;
-	size_t size;
-	int cnt;
-	int free_cnt;
+struct pool {
+	void * memory;
+	size_t obj_size;
 	struct slist list_free;
-	char *mem;
+
+	size_t pool_size;
+	void * bound_free;
 };
 
-const size_t OBJECT_SIZE = 1000;
+#if 0
+#define POOL_DEF(pool_name, elem_type, pool_size) \
+			__POOL_DEF(pool_name, elem_type, pool_size, MACRO_GUARD(__pool_##pool_name))
 
-struct pool_obj;
+#define __POOL_DEF(pool_name, elem_type, pool_size, storage_name)\
+			static  typeof(elem_type) obj \
+			storage_name[pool_size] __attribute__((section(".reserve.pool")));\
+			static obj_pool pool_name = { \
+					.obj_size = sizeof(elem_type) \
+			}
 
-#define POOL_DEF(pool_name,pool_size)				 				\
-		struct obj_pool  pool = {				  	 				\
-			.object_size = OBJECT_SIZE,			  	 				\
-			.size = pool_size,                   	 				\
-			.free_cnt = 0,						  	 				\
-			.cnt = 0,								 				\
-			.list_free = slist_init(&list_free),  	 				\
-			.&mem = malloc(OBJECT_SIZE * pool_size * sizeof(char))  \
-		};										     				\
+#endif
 
-extern void *pool2_alloc(struct obj_pool *pool);
+extern void *pool2_alloc(struct pool *pool);
 
-extern void pool2_free(struct obj_pool *pool, struct pool_obj *obj);
+extern void pool2_free(struct pool *pool, void *obj);
 
 #endif /* MEM_MISC_POOL2_H_ */

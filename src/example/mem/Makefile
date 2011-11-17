@@ -5,3 +5,6 @@ $_SRCS-objalloc          += objalloc.c
 $_REQUIRES-objalloc      += embox.hal.mm.objalloc
 
 $_BRIEF-objalloc = demonstrates using of API for allocation fixed size object
+
+$_MODS  += pool
+$_SRCS-pool += pool.c
