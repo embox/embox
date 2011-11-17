@@ -22,17 +22,17 @@ Generally you should not modify the generated file.
 #   Start Symbol    : %StartSymbol%
 ##END-PARAMETERS
 
-ifndef gold_prefix
-$(error 'gold_prefix' is not defined. \
+ifndef gold_grammar
+$(error 'gold_grammar' is not defined. \
 	Do not include $(notdir $(lastword $(MAKEFILE_LIST))) directly!)
-endif # gold_prefix
+endif # gold_grammar
 
-ifdef __gold_$(gold_prefix)_parser
-$(error Multiple inclusion of tables file for '$(gold_prefix)' parser. \
+ifdef __gold_$(gold_grammar)_parser
+$(error Multiple inclusion of tables file for '$(gold_grammar)' parser. \
 	Do not include $(notdir $(lastword $(MAKEFILE_LIST))) directly!)
-endif # __gold_$(gold_prefix)_parse
+endif # __gold_$(gold_grammar)_parse
 
-define __gold_$(gold_prefix)_parser
+define __gold_$(gold_grammar)_parser
 	$(gold-parser \
 ##SYMBOL-TABLE
 		$(gold-symbol-table \
@@ -114,7 +114,7 @@ define __gold_$(gold_prefix)_parser
 ##END-LALR-TABLE
 
 	)
-endef # __gold_$(gold_prefix)_parser
+endef # __gold_$(gold_grammar)_parser
 
 $(def_all)
 

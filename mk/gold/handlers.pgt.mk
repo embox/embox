@@ -27,23 +27,23 @@ an application-specific representation.
 
 # Override this variable to define everything in a different namespace.
 # Must be a single word.
-gold_prefix := $(basename $(notdir $(lastword $(MAKEFILE_LIST))))
+gold_grammar := $(basename $(notdir $(lastword $(MAKEFILE_LIST))))
 
-ifeq ($(call singleword,$(gold_prefix)),)
-$(error 'gold_prefix' is empty or not a single word, \
+ifeq ($(call singleword,$(gold_grammar)),)
+$(error 'gold_grammar' is empty or not a single word, \
 	you have to define it properly in order to continue)
 endif
 
-gold_prefix := $(call trim,$(gold_prefix))
+gold_grammar := $(call trim,$(gold_grammar))
 
-ifndef __gold_grammar_$(gold_prefix)_mk
-__gold_grammar_$(gold_prefix)_mk := 1
+ifndef __gold_grammar_$(gold_grammar)_mk
+__gold_grammar_$(gold_grammar)_mk := 1
 
 # By default it is assumed that you'll place tables file in the same directory
 # with this one and name it with '-tables' prefix.
 
 # Fix the following line to override default behavior.
-include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
+include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_grammar)-tables.mk
 
 #
 # Symbols.
@@ -74,7 +74,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 
 ##SYMBOLS
 # Symbol: %Description%
-#define $(gold_prefix)_create-%ID%
+#define $(gold_grammar)_create-%ID%
 #	$(gold_default_create)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
@@ -88,7 +88,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #
 
 ##SYMBOLS
-#$(gold_prefix)_create-%ID.Padded% := %ID%
+#$(gold_grammar)_create-%ID.Padded% := %ID%
 ##END-SYMBOLS
 
 #
@@ -99,7 +99,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))$(gold_prefix)-tables.mk
 #
 
 ##SYMBOLS
-$(gold_prefix)_name_of-%ID.Padded% := %Description%
+$(gold_grammar)_name_of-%ID.Padded% := %Description%
 ##END-SYMBOLS
 
 
@@ -128,7 +128,7 @@ $(gold_prefix)_name_of-%ID.Padded% := %Description%
 ##RULES
 # Rule: %Description%
 # Args: 1..%SymbolCount% - Symbols; %SymbolCount%+1 - Location vector.
-#define $(gold_prefix)_produce-%ID%
+#define $(gold_grammar)_produce-%ID%
 #	$(gold_default_produce)# TODO Auto-generated stub! Uncomment to override.
 #endef
 
@@ -136,7 +136,7 @@ $(gold_prefix)_name_of-%ID.Padded% := %Description%
 
 $(def_all)
 
-gold_prefix :=# Undefine.
+gold_grammar :=# Undefine.
 
-endif # __gold_grammar_$(gold_prefix)_mk
+endif # __gold_grammar_$(gold_grammar)_mk
 

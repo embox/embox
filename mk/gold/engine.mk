@@ -31,7 +31,7 @@ define gold_parse_file
 		$(error Grammar '$1' does not seem to be loaded)
 	)
 
-	$(foreach gold_prefix,$(singleword $1),$(foreach g,__g_$(gold_prefix),
+	$(foreach gold_grammar,$(singleword $1),$(foreach g,__g_$(gold_grammar),
 		$(foreach gold_file,$2,
 			$(call __gold_parse,$(shell od -v -A n -t uC $(gold_file)))
 		)
@@ -812,7 +812,7 @@ endef
 define __gold_symbol_name
 	$(foreach fn,$(__gold_symbol_fn),
 		$(call \
-			$(or $(call var_defined,$(gold_prefix)_name_of-$(fn)),
+			$(or $(call var_defined,$(gold_grammar)_name_of-$(fn)),
 					__gold_default_symbol_name)
 		)
 	)
@@ -841,7 +841,7 @@ define __gold_invoke_create_fn
 		$(call \
 			$(or \
 				$(call var_defined,
-						$(gold_prefix)_create-$(__gold_symbol_fn)),
+						$(gold_grammar)_create-$(__gold_symbol_fn)),
 				gold_default_create
 			),
 			$2,$3
@@ -910,7 +910,7 @@ define __gold_hook_rule
 			$(# No call to preserve expansion context
 				$(or \
 					$(call var_defined,
-							$(gold_prefix)_produce-$(call __gold_rule_fn,$r)),
+							$(gold_grammar)_produce-$(call __gold_rule_fn,$r)),
 					gold_default_produce
 				)
 			)
