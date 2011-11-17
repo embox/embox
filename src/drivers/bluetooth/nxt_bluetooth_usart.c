@@ -68,9 +68,11 @@ void bluetooth_hw_soft_reset(void) {
 	bt_clear_arm7_cmd();
 }
 
-static irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
+static irq_return_t nxt_bt_us_handler(irq_nr_t irq_nr, void *data) {
 	if (REG_LOAD(&(us_dev_regs->US_CSR)) & AT91C_US_ENDTX) {
-		pnet_entry(pack);
+		if (0 != pnet_entry(pack)) {
+			pnet_pack_free(pack);
+		}
 	}
 
 	return IRQ_HANDLED;
@@ -78,8 +80,6 @@ static irq_return_t nxt_bt_us_handler(int irq_num, void *dev_id) {
 
 
 size_t bluetooth_write(uint8_t *buff, size_t len) {
-	while (!(REG_LOAD(&(us_dev_regs->US_CSR)) & AT91C_US_ENDTX)) {
-	}
 	REG_STORE(&(us_dev_regs->US_TPR), (uint32_t) buff);
 	REG_STORE(&(us_dev_regs->US_TCR), len);
 	return len;
@@ -87,6 +87,7 @@ size_t bluetooth_write(uint8_t *buff, size_t len) {
 
 size_t bluetooth_read(size_t len) {
 	pack = pnet_pack_alloc(&this_data, len);
+	assert(pack);
 	REG_STORE(&(us_dev_regs->US_RPR), (uint32_t) pnet_pack_get_data(pack));
 	REG_STORE(&(us_dev_regs->US_RCR), len);
 
@@ -147,16 +148,19 @@ static void init_adc(void) {
  * we scan PIN_BT4 for changing and if it changed bt state switch to disconnect
  *  mode.
  */
-static void  nxt_bt_timer_handler(int id) {
+static void  nxt_bt_timer_handler(struct sys_timer *timer, void *param) {
 	static int bt_last_state; //TODO init state?
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
 	if (bt_last_state != bt_state) {
-		//struct net_packet *pack = pnet_pack_alloc(&this_ctrl, 1);
+		struct net_packet *pack = pnet_pack_alloc(&this_ctrl, 1);
 
-//		*((uint8_t *) pnet_pack_get_data(pack)) = bt_state;
-		//pnet_entry(pack);
+		assert(pack);
+
+		*((uint8_t *) pnet_pack_get_data(pack)) = bt_state;
+		if (0 != pnet_entry(pack)) {
+			pnet_pack_free(pack);
+		}
 		bt_last_state = bt_state;
-
 	}
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
@@ -170,8 +174,9 @@ void bluetooth_hw_hard_reset(void) {
 static int nxt_bluetooth_init(void) {
 	struct sys_timer *ntx_bt_timer;
 
+	pack = pnet_pack_alloc(NULL, 0);
 	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
-		(irq_handler_t) nxt_bt_us_handler, 0, NULL, "nxt bt reader");
+		nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
 	init_usart();
 
@@ -182,6 +187,7 @@ static int nxt_bluetooth_init(void) {
 	bt_clear_arm7_cmd();
 
 //TODO may be it must set when bt has been connected?
-	return timer_set(&ntx_bt_timer, 200, (sys_timer_handler_t) &nxt_bt_timer_handler, NULL);
+	return timer_set(&ntx_bt_timer, 200, nxt_bt_timer_handler, NULL);
+
 }
 

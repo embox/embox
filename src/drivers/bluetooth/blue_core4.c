@@ -30,18 +30,18 @@ static int ctrl_rx(struct net_packet *pack);
 
 PNET_NODE_DEF_NAME("blue_core data", this_data, {
 	.rx_hnd = data_rx,
+	.start = nxt_bluecore_start
 });
 
 PNET_NODE_DEF_NAME("blue_core ctrl", this_ctrl, {
 	.rx_hnd = ctrl_rx,
-	.start = nxt_bluecore_start
 });
 
 #define SOFTIRQ_DEFFERED_DISCONNECT 10
 
 static struct bc_msg out_msg;
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 static void print_msg(struct bc_msg_body *msg) {
 	prom_printf("P%x:", msg->type);
@@ -54,18 +54,6 @@ static void print_msg(struct bc_msg_body *msg) {
 }
 #else
 #define print_msg(msg)
-#endif
-
-#if 0
-static void send_to_net(char *data, int len) {
-	net_packet_t pack = pnet_pack_alloc(&this, len);
-
-	memcpy(pnet_pack_get_data(pack), (void *) data, len);
-
-	pnet_entry(pack);
-
-	return;
-}
 #endif
 
 static uint16_t calc_chksumm(struct bc_msg * msg) {
@@ -151,12 +139,10 @@ static int (*data_hnd)(void *pack_data) = get_length;
 static int (*ctrl_hnd)(void *pack_data) = wait_connect;
 
 static int data_rx(struct net_packet *pack) {
-	prom_printf("bD");
 	return data_hnd(pnet_pack_get_data(pack));
 }
 
 static int ctrl_rx(struct net_packet *pack) {
-	prom_printf("bC");
 	return ctrl_hnd(pnet_pack_get_data(pack));
 
 }
@@ -182,14 +168,14 @@ static int get_body(void *msg) {
 }
 
 static int bypass(void *msg) {
-	return 0;
+	return NET_HND_DFAULT;
 }
 
 static int wait_connect(void *msg) {
 	ctrl_hnd = wait_disconnect;
 	data_hnd = bypass;
 
-	return 0;
+	return NET_HND_DFAULT;
 }
 
 static int wait_disconnect(void *msg) {
@@ -199,7 +185,7 @@ static int wait_disconnect(void *msg) {
 	bluetooth_hw_soft_reset();
 	bluetooth_read(1);
 
-	return 0;
+	return NET_HND_DFAULT;
 }
 
 static int nxt_bluecore_start(struct net_node *node) {

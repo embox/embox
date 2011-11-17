@@ -31,13 +31,12 @@ static int reply_need(struct lego_dc_msg *dc) {
 }
 
 static void reply_handle(uint8_t status, uint8_t cmd, int addit_len, struct lego_dc_msg_full *msg_full) {
-	int extra_len = 3;
-	struct lego_dc_msg *out_msg = &(msg_full->msg);
-	msg_full->len = addit_len + extra_len;
-	out_msg->type = 0x02;
-	out_msg->command = cmd;
-	out_msg->body[0] = status;
-	bluetooth_write((uint8_t *) msg_full, sizeof(msg_full->len) + extra_len + addit_len);
+	struct lego_dc_msg *body = &(msg_full->body);
+	msg_full->len = addit_len + 3;
+	body->type = 0x02;
+	body->command = cmd;
+	body->tail[0] = status;
+	bluetooth_write((uint8_t *) msg_full, sizeof(msg_full->len) + 3 + addit_len);
 }
 
 #define SENSOR_VALUE_THRESHOLD 200
@@ -72,13 +71,12 @@ static int keep_alive_send(int *addit_len, uint8_t addit_msg[]) {
 
 static int handle_body(struct lego_dc_msg *msg, int *addit_len, uint8_t addit_msg[]) {
 	uint8_t power;
-	uint8_t *buff = msg->body;
 
 	switch (msg->command) {
 	case DC_SET_OUTPUT_STATE:
-		power = buff[1];
-		if (buff[0] != 0xff) {
-			nxt_motor_set_power(nxt_get_motor(buff[0]), power);
+		power = msg->tail[1];
+		if (msg->tail[0] != 0xff) {
+			nxt_motor_set_power(nxt_get_motor(msg->tail[0]), power);
 		} else {
 			nxt_motor_set_power(NXT_MOTOR_A, power);
 			nxt_motor_set_power(NXT_MOTOR_B, power);
@@ -87,13 +85,13 @@ static int handle_body(struct lego_dc_msg *msg, int *addit_len, uint8_t addit_ms
 		*addit_len = 0;
 		return 0;
 	case DC_GET_INPUT_VALUES:
-		return sensor_send(buff[0], addit_len, addit_msg);
+		return sensor_send(msg->tail[0], addit_len, addit_msg);
 	case DC_KEEP_ALIVE:
 		return keep_alive_send(addit_len, addit_msg);
 	case DC_EX_SET_M_OUTPUT_STATE:
-		nxt_motor_set_power(NXT_MOTOR_A, buff[0]);
-		nxt_motor_set_power(NXT_MOTOR_B, buff[1]);
-		nxt_motor_set_power(NXT_MOTOR_C, buff[2]);
+		nxt_motor_set_power(NXT_MOTOR_A, msg->tail[0]);
+		nxt_motor_set_power(NXT_MOTOR_B, msg->tail[1]);
+		nxt_motor_set_power(NXT_MOTOR_C, msg->tail[2]);
 		*addit_len = 0;
 		return 0;
 	default:
@@ -108,10 +106,10 @@ static int dc_rx_hnd(net_packet_t pack) {
 
 	msg = (struct lego_dc_msg *) pnet_pack_get_data(pack);
 
-	status = handle_body(msg, &addit_len, dc_out_msg.msg.body + 1);
+	status = handle_body(msg, &addit_len, dc_out_msg.body.tail + 1);
 
 	if (reply_need(msg)) {
-	    reply_handle(status, msg->command, addit_len, &dc_out_msg);
+		reply_handle(status, msg->command, addit_len, &dc_out_msg);
 	}
 
 	return NET_HND_SUPPRESSED;

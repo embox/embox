@@ -47,7 +47,6 @@ static int bt_main(int argc, char **argv) {
 
 	add_mod("direct_comm exec", graph, dc_format_data);
 
-	pnet_graph_start(graph);
+	return pnet_graph_start(graph);
 
-	return 0;
 }

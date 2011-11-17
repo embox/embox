@@ -22,7 +22,7 @@ static int step_process(net_packet_t pack, net_hnd hnd, net_node_t next_node) {
 	net_node_t node = pack->node;
 	net_id_t res = NET_HND_DFAULT;
 
-	assert(node && next_node);
+	assert(node);
 
 	if (0 != pnet_graph_run_valid(node->graph)) {
 		return -EINVAL;
@@ -33,6 +33,7 @@ static int step_process(net_packet_t pack, net_hnd hnd, net_node_t next_node) {
 	}
 
 	if (res & NET_HND_DFAULT) {
+		assert(next_node);
 		pack->node = next_node;
 	}
 
