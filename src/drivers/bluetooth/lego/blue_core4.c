@@ -28,16 +28,23 @@ static int nxt_bluecore_start(struct net_node *node);
 static int data_rx(struct net_packet *pack);
 static int ctrl_rx(struct net_packet *pack);
 
-PNET_NODE_DEF_NAME("blue_core data", this_data, {
+PNET_NODE_DEF_NAME(BLUETOOTH_DRV_BLUE_CORE4_DATA, this_data, {
 	.rx_hnd = data_rx,
 	.start = nxt_bluecore_start
 });
 
-PNET_NODE_DEF_NAME("blue_core ctrl", this_ctrl, {
+PNET_NODE_DEF_NAME(BLUETOOTH_DRV_BLUE_CORE4_CTRL, this_ctrl, {
 	.rx_hnd = ctrl_rx,
 });
 
-#define SOFTIRQ_DEFFERED_DISCONNECT 10
+static int get_length(void *msg);
+static int get_body(void *msg);
+static int bypass(void *msg);
+static int wait_connect(void *msg);
+static int wait_disconnect(void *msg);
+
+static int (*data_hnd)(void *pack_data) = get_length;
+static int (*ctrl_hnd)(void *pack_data) = wait_connect;
 
 static struct bc_msg out_msg;
 
@@ -45,12 +52,6 @@ static struct bc_msg out_msg;
 #ifdef DEBUG
 static void print_msg(struct bc_msg_body *msg) {
 	prom_printf("P%x:", msg->type);
-#if 0
-	for (int i = 0; i < msg->length - 1; i++) {
-		prom_printf("%x:", msg->content[i]);
-	}
-#endif
-	prom_printf("\n");
 }
 #else
 #define print_msg(msg)
@@ -128,15 +129,6 @@ static int process_msg(struct bc_msg_body *msg) {
 	send_msg(&out_msg);
 	return res;
 }
-
-static int get_length(void *msg);
-static int get_body(void *msg);
-static int bypass(void *msg);
-static int wait_connect(void *msg);
-static int wait_disconnect(void *msg);
-
-static int (*data_hnd)(void *pack_data) = get_length;
-static int (*ctrl_hnd)(void *pack_data) = wait_connect;
 
 static int data_rx(struct net_packet *pack) {
 	return data_hnd(pnet_pack_get_data(pack));

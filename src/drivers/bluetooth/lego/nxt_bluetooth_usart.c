@@ -15,6 +15,7 @@
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
+#include <drivers/blue_core4.h>
 #include <kernel/timer.h>
 
 #include <pnet/core.h>
@@ -22,50 +23,34 @@
 #include <embox/unit.h>
 
 //TODO may be move to lego nxt header?
-#define NXT_BT_RX_PIN  ((uint32_t) CONFIG_NXT_BT_RX_PIN)
-#define NXT_BT_TX_PIN  ((uint32_t) CONFIG_NXT_BT_TX_PIN)
-#define NXT_BT_SCK_PIN ((uint32_t) CONFIG_NXT_BT_SCK_PIN)
-#define NXT_BT_RTS_PIN ((uint32_t) CONFIG_NXT_BT_RTS_PIN)
-#define NXT_BT_CTS_PIN ((uint32_t) CONFIG_NXT_BT_CTS_PIN)
+//just short names, definitions in config
+#define RX_PIN  ((uint32_t) CONFIG_NXT_BT_RX_PIN)
+#define TX_PIN  ((uint32_t) CONFIG_NXT_BT_TX_PIN)
+#define SCK_PIN ((uint32_t) CONFIG_NXT_BT_SCK_PIN)
+#define RTS_PIN ((uint32_t) CONFIG_NXT_BT_RTS_PIN)
+#define CTS_PIN ((uint32_t) CONFIG_NXT_BT_CTS_PIN)
+
+#define CMD_PIN ((uint32_t) CONFIG_NXT_BT_CMD_PIN)
+#define RST_PIN ((uint32_t) CONFIG_NXT_BT_RST_PIN)
 
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_NXT_BT_SERIAL_PORT_OFFSET);
-
 
 #define NXT_BT_ADC_RATE 50000
 #define NXT_BT_BAUD_RATE 460800
 
 EMBOX_UNIT_INIT(nxt_bluetooth_init);
 
-//TODO name of pnet modules move to header
-PNET_NODE_DEF_NAME("bt hw data", this_data, {});
-PNET_NODE_DEF_NAME("bt hw ctrl", this_ctrl, {});
-
-#define BT_READ_BUFF 0x40
+PNET_NODE_DEF_NAME(BLUETOOTH_HW_BLUE_CORE4_DATA, this_data, {});
+PNET_NODE_DEF_NAME(BLUETOOTH_HW_BLUE_CORE4_CTRL, this_ctrl, {});
 
 static struct net_packet *pack;
 
-static void bt_clear_arm7_cmd(void) {
-	REG_STORE(AT91C_PIOA_CODR, CONFIG_NXT_BT_CMD_PIN);
-}
-
-static void bt_set_arm7_cmd(void) {
-	REG_STORE(AT91C_PIOA_SODR, CONFIG_NXT_BT_CMD_PIN);
-}
-
-static void bt_set_reset_high(void) {
-	REG_STORE(AT91C_PIOA_SODR, CONFIG_NXT_BT_RST_PIN);
-}
-
-static void bt_set_reset_low(void) {
-	REG_STORE(AT91C_PIOA_CODR, CONFIG_NXT_BT_RST_PIN);
-}
-
 void bluetooth_hw_accept_connect(void) {
-	bt_set_arm7_cmd();
+	pin_set_output(CMD_PIN);
 }
 
 void bluetooth_hw_soft_reset(void) {
-	bt_clear_arm7_cmd();
+	pin_clear_output(CMD_PIN);
 }
 
 static irq_return_t nxt_bt_us_handler(irq_nr_t irq_nr, void *data) {
@@ -77,7 +62,6 @@ static irq_return_t nxt_bt_us_handler(irq_nr_t irq_nr, void *data) {
 
 	return IRQ_HANDLED;
 }
-
 
 size_t bluetooth_write(uint8_t *buff, size_t len) {
 	REG_STORE(&(us_dev_regs->US_TPR), (uint32_t) buff);
@@ -98,10 +82,10 @@ static void init_usart(void) {
 	/* Configure the usart */
 	REG_STORE(AT91C_PMC_PCER, (1 << CONFIG_NXT_BT_US_DEV_ID));
 
-	REG_STORE(AT91C_PIOA_PDR, NXT_BT_RX_PIN | NXT_BT_TX_PIN |
-			NXT_BT_SCK_PIN | NXT_BT_RTS_PIN | NXT_BT_CTS_PIN);
-	REG_STORE(AT91C_PIOA_ASR, NXT_BT_RX_PIN | NXT_BT_TX_PIN |
-			NXT_BT_SCK_PIN | NXT_BT_RTS_PIN | NXT_BT_CTS_PIN);
+	REG_STORE(AT91C_PIOA_PDR, RX_PIN | TX_PIN |
+			SCK_PIN | RTS_PIN | CTS_PIN);
+	REG_STORE(AT91C_PIOA_ASR, RX_PIN | TX_PIN |
+			SCK_PIN | RTS_PIN | CTS_PIN);
 
 	REG_STORE(&(us_dev_regs->US_PTCR), (AT91C_PDC_RXTDIS | AT91C_PDC_TXTDIS));
 	REG_STORE(&(us_dev_regs->US_CR),  AT91C_US_RSTSTA | AT91C_US_RSTRX | AT91C_US_RSTTX);
@@ -165,10 +149,9 @@ static void  nxt_bt_timer_handler(struct sys_timer *timer, void *param) {
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
 void bluetooth_hw_hard_reset(void) {
-	bt_set_reset_low();
+	pin_clear_output(RST_PIN);
 	usleep(2000);
-	bt_set_reset_high();
-	usleep(5000);
+	pin_set_output(RST_PIN);
 }
 
 static int nxt_bluetooth_init(void) {
@@ -183,8 +166,6 @@ static int nxt_bluetooth_init(void) {
 	init_control_pins();
 
 	init_adc();
-
-	bt_clear_arm7_cmd();
 
 //TODO may be it must set when bt has been connected?
 	return timer_set(&ntx_bt_timer, 200, nxt_bt_timer_handler, NULL);

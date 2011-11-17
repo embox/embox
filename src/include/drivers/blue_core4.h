@@ -67,7 +67,6 @@
 
 #define BC_MAX_MESSAGE_LEN 0x20
 
-
 struct bc_msg_body {
 	uint8_t type;
 	uint8_t content[BC_MAX_MESSAGE_LEN];
@@ -78,5 +77,11 @@ struct bc_msg {
 	uint8_t type;
 	uint8_t content[BC_MAX_MESSAGE_LEN];
 };
+
+#define BLUETOOTH_DRV_BLUE_CORE4_DATA "blue_core4 driver data"
+#define BLUETOOTH_DRV_BLUE_CORE4_CTRL "blue_core4 driver ctrl"
+
+#define BLUETOOTH_HW_BLUE_CORE4_DATA  "blue_core4 hw data"
+#define BLUETOOTH_HW_BLUE_CORE4_CTRL  "blue_core4 hw ctrl"
 
 #endif /* BLUE_CORE4_H_ */
