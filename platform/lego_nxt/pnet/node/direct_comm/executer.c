@@ -20,6 +20,8 @@
 #include <pnet/node.h>
 #include <pnet/repo.h>
 
+#include <pnet/node/direct_comm.h>
+
 #include <kernel/prom_printf.h>
 
 EMBOX_UNIT_INIT(node_dc_init);
@@ -119,7 +121,7 @@ static int node_dc_init(void) {
 	return 0;
 }
 
-PNET_NODE_DEF("direct_comm exec",  {
+PNET_NODE_DEF(PNET_NODE_DIRECT_COMM_EXECUTER,  {
 		.rx_hnd = dc_rx_hnd,
 		.tx_hnd = NULL
 	});

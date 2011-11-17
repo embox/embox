@@ -15,6 +15,8 @@
 #include <pnet/repo.h>
 #include <pnet/node.h>
 
+#include <pnet/node/direct_comm.h>
+
 #include <kernel/prom_printf.h>
 
 #include <embox/unit.h>
@@ -26,11 +28,11 @@ EMBOX_UNIT_INIT(dc_pnet_init);
 static int ctrl_rx(net_packet_t pack);
 static int data_rx(net_packet_t pack);
 
-PNET_NODE_DEF_NAME("direct_comm formation data", this_data, {
+PNET_NODE_DEF_NAME(PNET_NODE_DIRECT_COMM_FORMATION_DATA, this_data, {
 	.rx_hnd = data_rx
 });
 
-PNET_NODE_DEF_NAME("direct_comm formation ctrl", this_ctrl, {
+PNET_NODE_DEF_NAME(PNET_NODE_DIRECT_COMM_FORMATION_DATA, this_ctrl, {
 	.rx_hnd = ctrl_rx
 });
 

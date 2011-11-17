@@ -15,6 +15,8 @@
 #include <pnet/types.h>
 #include <pnet/graph.h>
 
+#include <pnet/node/direct_comm.h>
+
 EMBOX_CMD(bt_main);
 
 static struct net_node *add_mod(const char *str_id, struct pnet_graph *graph, struct net_node *prev) {
@@ -42,10 +44,10 @@ static int bt_main(int argc, char **argv) {
 	bc_data = add_mod("blue_core data", graph, hw_data);
 	bc_ctrl = add_mod("blue_core ctrl", graph, hw_ctrl);
 
-	dc_format_data = add_mod("direct_comm formation data", graph, bc_data);
-	add_mod("direct_comm formation ctrl", graph, bc_ctrl);
+	dc_format_data = add_mod(PNET_NODE_DIRECT_COMM_FORMATION_DATA, graph, bc_data);
+	add_mod(PNET_NODE_DIRECT_COMM_FORMATION_CTRL, graph, bc_ctrl);
 
-	add_mod("direct_comm exec", graph, dc_format_data);
+	add_mod(PNET_NODE_DIRECT_COMM_EXECUTER, graph, dc_format_data);
 
 	return pnet_graph_start(graph);
 
