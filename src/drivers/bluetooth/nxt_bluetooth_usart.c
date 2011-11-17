@@ -21,6 +21,7 @@
 #include <pnet/repo.h>
 #include <embox/unit.h>
 
+//TODO may be move to lego nxt header?
 #define NXT_BT_RX_PIN  ((uint32_t) CONFIG_NXT_BT_RX_PIN)
 #define NXT_BT_TX_PIN  ((uint32_t) CONFIG_NXT_BT_TX_PIN)
 #define NXT_BT_SCK_PIN ((uint32_t) CONFIG_NXT_BT_SCK_PIN)
@@ -29,17 +30,19 @@
 
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_NXT_BT_SERIAL_PORT_OFFSET);
 
+
 #define NXT_BT_ADC_RATE 50000
 #define NXT_BT_BAUD_RATE 460800
 
 EMBOX_UNIT_INIT(nxt_bluetooth_init);
 
+//TODO name of pnet modules move to header
 PNET_NODE_DEF_NAME("bt hw data", this_data, {});
 PNET_NODE_DEF_NAME("bt hw ctrl", this_ctrl, {});
 
 #define BT_READ_BUFF 0x40
 
-struct net_packet *pack;;
+static struct net_packet *pack;
 
 static void bt_clear_arm7_cmd(void) {
 	REG_STORE(AT91C_PIOA_CODR, CONFIG_NXT_BT_CMD_PIN);

@@ -40,7 +40,21 @@ PNET_NODE_DEF_NAME("blue_core ctrl", this_ctrl, {
 #define SOFTIRQ_DEFFERED_DISCONNECT 10
 
 static struct bc_msg out_msg;
-//static struct bc_msg in_msg;
+
+#define DEBUG
+#ifdef DEBUG
+static void print_msg(struct bc_msg_body *msg) {
+	prom_printf("P%x:", msg->type);
+#if 0
+	for (int i = 0; i < msg->length - 1; i++) {
+		prom_printf("%x:", msg->content[i]);
+	}
+#endif
+	prom_printf("\n");
+}
+#else
+#define print_msg(msg)
+#endif
 
 #if 0
 static void send_to_net(char *data, int len) {
@@ -76,15 +90,6 @@ static void send_msg(struct bc_msg * msg) {
 	bluetooth_write((uint8_t *) msg, msg->length + 1);
 }
 
-static void print_msg(struct bc_msg_body *msg) {
-	prom_printf("P%x:", msg->type);
-#if 0
-	for (int i = 0; i < msg->length - 1; i++) {
-		prom_printf("%x:", msg->content[i]);
-	}
-#endif
-	prom_printf("\n");
-}
 
 static int process_msg(struct bc_msg_body *msg) {
 	/* TODO it must be return in connect result we can also get partner address
