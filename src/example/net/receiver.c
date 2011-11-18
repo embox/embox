@@ -17,11 +17,14 @@
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <kernel/prom_printf.h>
+#include <net/port.h>
+#include <err.h>
 
 EMBOX_EXAMPLE(exec);
 
 static int exec(int argc, char **argv) {
     int sock;
+    //int sock2;
     struct sockaddr_in addr;
     char buf[1024];
     int bytes_read;
@@ -31,6 +34,7 @@ static int exec(int argc, char **argv) {
      * SOCK_DGRAM - socket type (UDP in this case)
      * @return On success, a file descriptor for the new socket is returned.*/
     sock = socket(AF_INET, SOCK_DGRAM, 0);
+    //sock2 = socket(AF_INET, SOCK_DGRAM, 0);
     /* check if file descriptor is positive*/
     if(sock < 0) {
     	prom_printf("%s", "can't create socket!");
@@ -38,14 +42,22 @@ static int exec(int argc, char **argv) {
 
     /* form address socket assign to*/
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(12345);
+    //addr.sin_port = htons(0x1);
+    //addr.port_type = UDP_PORT;
+    addr.sin_port= htons(0x1);
+    /* we want assign to socket UDP port*/
+    addr.port_type = UDP_PORT;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     /* assigns the address specified to by addr to the socket referred to
-     * by the file descriptor sock */
-    if(bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        prom_printf("%s","can't bind!");
+     * by the file descriptor sock. You can bind only one socket on port of concrete type */
+    if(bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
+        printf("%s","sock can't bind!");
     }
+
+    /*if(bind(sock2, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
+         prom_printf("%s","sock2 can't bind!");
+    }*/
 
     /* write data form socket in buffer buf. And then print buffer data */
     while (1) {

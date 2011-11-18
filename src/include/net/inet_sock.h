@@ -64,6 +64,7 @@ typedef struct ip_options {
  * @var mc_index - Multicast device index
  * @var mc_list - Group array
  * @var cork - info to build ip hdr on each ip frag while socket is corked
+ * @var port_type - identificator
  */
 typedef struct inet_sock {
 	/* sk have to be the first member of inet_sock */
@@ -80,6 +81,7 @@ typedef struct inet_sock {
 	__u16          id;
 	__u8           tos;
 	__u8           mc_ttl;
+	__u16          port_type;
 } inet_sock_t;
 
 static inline inet_sock_t *inet_sk(const sock_t *sk) {

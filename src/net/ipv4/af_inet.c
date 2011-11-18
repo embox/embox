@@ -17,6 +17,7 @@
 #include <net/sock.h>
 #include <net/socket.h>
 #include <net/inet_sock.h>
+#include <net/port.h>
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
@@ -78,8 +79,12 @@ static int inet_create(struct socket *sock, int protocol) {
 
 void inet_release(struct socket *sock) {
 	struct sock *sk;
+	struct inet_sock *inet;
 
 	sk = sock->sk;
+	inet = inet_sk(sk);
+	socket_port_unlock(inet->sport, inet->port_type);
+
 	if (sk != NULL) {
 		sk->sk_prot->close(sk, 0);
 		sock->sk = NULL;
@@ -102,8 +107,13 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 
 	inet = inet_sk(sk);
 	addr_in = (struct sockaddr_in *)addr;
+	if (socket_port_is_busy(addr_in->sin_port, addr_in->port_type)) {
+		return EBUSY;
+	}
+	socket_port_lock(addr_in->sin_port, addr_in->port_type);
 	inet->rcv_saddr = inet->saddr = addr_in->sin_addr.s_addr;
 	inet->sport = addr_in->sin_port;
+	inet->port_type = addr_in->port_type;
 	inet->daddr = 0;
 	inet->dport = 0;
 

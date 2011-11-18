@@ -7,6 +7,7 @@
  * @author Anton Bondarev
  */
 #include <types.h>
+#include <net/port.h>
 
 #define SYSTEM_PORT_MAX_NUMBER  (1024)
 #define FLAGS_WORD_WIDTH        (32)
@@ -17,7 +18,7 @@ static uint32_t sys_ports[SYSTEM_PORT_MAX_NUMBER / FLAGS_WORD_WIDTH]; /* busy fl
 
 static uint32_t * ports_type[] = {sys_ports, tcp_ports, udp_ports};
 
-int socket_port_is_busy(short port, int sock_type) {
+int socket_port_is_busy(short port, unsigned short port_type) {
 	int word_offset;
 	int flag_offset;
 
@@ -27,10 +28,10 @@ int socket_port_is_busy(short port, int sock_type) {
 	word_offset = port / FLAGS_WORD_WIDTH;
 	flag_offset = port % FLAGS_WORD_WIDTH;
 
-	return (ports_type[sock_type][word_offset] >> flag_offset) & 0x1;
+	return (ports_type[port_type][word_offset] >> flag_offset) & 0x1;
 }
 
-int socket_port_lock(short port, int sock_type) {
+int socket_port_lock(short port, unsigned short port_type) {
 	int word_offset;
 	int flag_offset;
 
@@ -40,12 +41,12 @@ int socket_port_lock(short port, int sock_type) {
 	word_offset = port / FLAGS_WORD_WIDTH;
 	flag_offset = port % FLAGS_WORD_WIDTH;
 
-	ports_type[sock_type][word_offset] |= 1 << flag_offset;
+	ports_type[port_type][word_offset] |= 1 << flag_offset;
 
 	return 0;
 }
 
-int socket_port_unlock(short port, int sock_type) {
+int socket_port_unlock(short port, unsigned short port_type) {
 	int word_offset;
 	int flag_offset;
 
@@ -55,7 +56,7 @@ int socket_port_unlock(short port, int sock_type) {
 	word_offset = port / FLAGS_WORD_WIDTH;
 	flag_offset = port % FLAGS_WORD_WIDTH;
 
-	ports_type[sock_type][word_offset] &= ~(1 << flag_offset);
+	ports_type[port_type][word_offset] &= ~(1 << flag_offset);
 
 	return 0;
 }
