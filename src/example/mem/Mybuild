@@ -1,10 +1,10 @@
 package embox.example.mem;
 
 module pool {
-	source file "pool.c";
+	source "pool.c";
 }
 
 module page {
-	source file "page.c";
+	source "page.c";
 	depends embox.mem.page_api;
 }
