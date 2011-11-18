@@ -25,6 +25,7 @@ static int step_process(net_packet_t pack, net_hnd hnd, net_node_t next_node) {
 	assert(node);
 
 	if (0 != pnet_graph_run_valid(node->graph)) {
+		pnet_pack_free(pack);
 		return -EINVAL;
 	}
 

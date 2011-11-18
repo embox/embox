@@ -18,7 +18,8 @@ int pnet_entry(net_packet_t pack) {
 		return -EINVAL;
 	}
 	pack->node = pack->node->rx_dfault;
-	return pnet_rx_thread_add(pack);
+	pnet_rx_thread_add(pack);
+	return 0;
 }
 
 

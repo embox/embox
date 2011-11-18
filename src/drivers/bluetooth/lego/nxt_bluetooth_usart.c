@@ -43,7 +43,7 @@ EMBOX_UNIT_INIT(nxt_bluetooth_init);
 PNET_NODE_DEF_NAME(BLUETOOTH_HW_BLUE_CORE4_DATA, this_data, {});
 PNET_NODE_DEF_NAME(BLUETOOTH_HW_BLUE_CORE4_CTRL, this_ctrl, {});
 
-static struct net_packet *pack;
+static struct net_packet *data_pack;
 
 void bluetooth_hw_accept_connect(void) {
 	pin_set_output(CMD_PIN);
@@ -55,8 +55,11 @@ void bluetooth_hw_soft_reset(void) {
 
 static irq_return_t nxt_bt_us_handler(irq_nr_t irq_nr, void *data) {
 	if (REG_LOAD(&(us_dev_regs->US_CSR)) & AT91C_US_ENDTX) {
-		if (0 != pnet_entry(pack)) {
-			pnet_pack_free(pack);
+		struct net_packet *_pack = data_pack;
+		data_pack = NULL;
+
+		if (0 != pnet_entry(_pack)) {
+			pnet_pack_free(_pack);
 		}
 	}
 
@@ -70,9 +73,12 @@ size_t bluetooth_write(uint8_t *buff, size_t len) {
 }
 
 size_t bluetooth_read(size_t len) {
-	pack = pnet_pack_alloc(&this_data, len);
-	assert(pack);
-	REG_STORE(&(us_dev_regs->US_RPR), (uint32_t) pnet_pack_get_data(pack));
+	if (data_pack) {
+		pnet_pack_free(data_pack);
+	}
+	data_pack = pnet_pack_alloc(&this_data, len);
+	assert(data_pack);
+	REG_STORE(&(us_dev_regs->US_RPR), (uint32_t) pnet_pack_get_data(data_pack));
 	REG_STORE(&(us_dev_regs->US_RCR), len);
 
 	return 0;
@@ -133,11 +139,10 @@ static void init_adc(void) {
  *  mode.
  */
 static void  nxt_bt_timer_handler(struct sys_timer *timer, void *param) {
-	static int bt_last_state; //TODO init state?
+	static int bt_last_state; //TODO init state? //inited with 0, ok
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
 	if (bt_last_state != bt_state) {
 		struct net_packet *pack = pnet_pack_alloc(&this_ctrl, 1);
-
 		assert(pack);
 
 		*((uint8_t *) pnet_pack_get_data(pack)) = bt_state;
@@ -146,6 +151,7 @@ static void  nxt_bt_timer_handler(struct sys_timer *timer, void *param) {
 		}
 		bt_last_state = bt_state;
 	}
+
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
 void bluetooth_hw_hard_reset(void) {
@@ -156,8 +162,8 @@ void bluetooth_hw_hard_reset(void) {
 
 static int nxt_bluetooth_init(void) {
 	struct sys_timer *ntx_bt_timer;
+	data_pack = pnet_pack_alloc(NULL, 0);
 
-	pack = pnet_pack_alloc(NULL, 0);
 	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
 		nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
