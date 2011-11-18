@@ -1,0 +1,10 @@
+package embox.mem;
+
+abstract module page_api {
+
+}
+
+module bitmask extends page_api {
+	source file "bitmask.c";
+	//source file "../heap.lsd.S";
+}
