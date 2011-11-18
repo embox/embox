@@ -8,6 +8,21 @@
 ifndef __gold_engine_mk
 __gold_engine_mk := 1
 
+##
+# Technology overview.
+#
+# This is an engine for GOLD Parsing System, and its design is largely implied
+# by concepts of GOLD itself.
+#
+# Parsing is performed in three main stages:
+#   - Lexical analysis using DFA scanned,
+#   - Syntactic analysis with LALR parser, and
+#   - Parse tree interpretation.
+#
+# The first two stages are common for all GOLD parser engines, a general
+# overview of them is available at http://www.goldparser.org/.
+#
+
 include mk/core/common.mk
 include mk/core/string.mk
 include mk/core/define.mk
@@ -38,12 +53,35 @@ define gold_parse
 
 	$(foreach gold_grammar,$1,$(foreach g,__g_$(gold_grammar),
 		$(foreach gold_file,$2,
-			$(call __gold_parse,$(shell od -v -A n -t uC $(gold_file)))
+			$(__gold_parse)
 		)
 	))
 endef
 
-# Parser private namespace.
+# Params:
+#   1. List of decimal char codes.
+# Context:
+#   g. Prefix.
+# Return:
+#   Result of interpreting parse tree using user-defined handlers.
+define __gold_parse
+	$(call __gold_expand,
+		$(call __gold_analyze,
+			$(call __gold_lex,
+				$(call __gold_read_file,$(gold_file))
+			)
+		)
+	)
+endef
+
+# Params:
+#   1. File name.
+# Return:
+#   List of decimal char codes.
+__gold_read_file = \
+	$(shell od -v -A n -t uC $1)
+
+# Parser private namespace for builtins context. The same as $g in runtime.
 __gold_ns = $(call builtin_tag,gold-parser)
 
 define builtin_tag-gold-parser
@@ -53,6 +91,13 @@ define builtin_tag-gold-parser
 			Bad variable name: '$(__def_var)'
 		)
 	)
+endef
+
+# Params: ignored
+define builtin_func-gold-parser
+	${eval \
+		__def_ignore += $(__gold_ns)%
+	}
 endef
 
 #
@@ -898,6 +943,9 @@ __gold_ascii_table_special := \
 __gold_ascii_table_special := \
 	$(__gold_ascii_table_special:\%=$$(__gold_ascii_char_special))
 
+__gold_ascii_char_special = \
+	$(warning Converting special characher into a space)$(\s)
+
 __gold_ascii_table := \
   $(__gold_ascii_table_special) \
   $(call words-from,33,$(ascii_table:$$=$$$$)) \
@@ -941,28 +989,6 @@ endef
 # 2. Message.
 define gold_report
 	$(info $(gold_file):$1: $2)
-endef
-
-# Params: ignored
-define builtin_func-gold-parser
-	${eval \
-		__def_ignore += $(__gold_ns)%
-	}
-endef
-
-# Params:
-#   1. List of decimal char codes.
-# Context:
-#   f. File name.
-#   g. Prefix.
-# Return:
-#   Result of interpreting parse tree using user-defined handlers.
-define __gold_parse
-	$(call __gold_expand,
-		$(call __gold_analyze,
-			$(__gold_lex)
-		)
-	)
 endef
 
 # Just to denote them.
