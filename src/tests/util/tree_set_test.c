@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <util/tree_set.h>
-#include <util/rand.h>
+#include <stdlib.h>
 
 EMBOX_TEST_SUITE("util/tree_set test");
 
