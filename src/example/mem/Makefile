@@ -13,3 +13,8 @@ $_CPPFLAGS += -I$(SRC_DIR)/include/posix
 
 $_MODS  += page
 $_SRCS-page += page.c
+$_DEPS-page += embox.hal.mm.page
+
+$_MODS  += boundary_markers
+$_SRCS-boundary_markers += boundary_markers.c
+$_DEPS-boundary_markers += embox.hal.mm.page_alloc
