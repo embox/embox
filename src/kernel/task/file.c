@@ -23,7 +23,7 @@ int __file_opened_fd(int fd, FILE *file, struct task_resources *res) {
 	assert(fdl->file == NULL);
 
 	fdl->file = file;
-	list_move(&fdl->link, &res->fds_opened);
+//	list_move(&fdl->link, &res->fds_opened);
 
 	//fdl->unchar = EOF;
 	return fd;

@@ -31,11 +31,9 @@ int desc2idx(struct __fd_list *desc, struct task_resources *res) {
 
 void fd_list_init(struct task_resources *res) {
 	INIT_LIST_HEAD(&res->fds_free);
-	INIT_LIST_HEAD(&res->fds_opened);
 
 	for (int i = 0; i < CONFIG_TASKS_FILE_QUANTITY; i++) {
 		INIT_LIST_HEAD(&res->fds[i].link);
-		list_add_tail(&res->fds[i].link, &res->fds_free);
 	}
 }
 

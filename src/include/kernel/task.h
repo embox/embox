@@ -31,7 +31,7 @@ struct task_resources {
 	int file_idx_cnt;
 	int socket_idx_cnt;
 	struct list_head fds_free;
-	struct list_head fds_opened;
+//	struct list_head fds_opened;
 	struct __fd_list fds[CONFIG_TASKS_FILE_QUANTITY];
 	struct idx_desc socket_fds[CONFIG_TASKS_FILE_QUANTITY];
 };
