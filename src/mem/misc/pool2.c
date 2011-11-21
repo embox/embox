@@ -31,9 +31,11 @@ void *pool2_alloc(struct pool* pool) {
 }
 
 void pool2_free(struct pool* pool, void* obj) {
+	//struct slist_link* temp;
 	assert(pool);
 
 	assert(obj);
 
-	slist_add_first_link((struct slist_link *)obj, &pool->free_blocks);
+	obj = slist_link_init((struct slist_link *)obj);
+	slist_add_first_link(obj , &pool->free_blocks);
 }

@@ -26,9 +26,11 @@ struct example_type {
 POOL_DEF(my_pool, struct example_type, MY_POOL_SZ);
 
 static int run(int argc, char **argv) {
-	struct example_type* temp;
-	temp = pool2_alloc(&my_pool);
-	temp->temp = 0;
-	pool2_free(&my_pool, temp);
+	struct example_type* temp[MY_POOL_SZ];
+	for (int i = 0; i < MY_POOL_SZ; i++) {
+		temp[i] = pool2_alloc(&my_pool);
+		temp[i]->temp = i;
+	}
+	pool2_free(&my_pool, temp[52]);
 	return 0;
 }
