@@ -16,10 +16,18 @@
 #include <util/slist.h>
 
 struct pool {
+	/* Place in memory for allocation */
 	void * memory;
+	/* List of free block
+	 * (this is a block, which was used,
+	 * then was non-used and return to pool) */
 	struct slist free_blocks;
+	/* Size of object in pool (in bytes) */
 	size_t obj_size;
+	/* Size of pool */
 	size_t pool_size;
+	/* Boundary, after which begin
+	 * non-allocation memory */
 	size_t bound_free;
 };
 
@@ -29,10 +37,11 @@ struct pool {
 		typeof(object_type) object;                 \
 		struct slist_link free_link;      \
 	} name ## _storage[size] __attribute__((section(".reserve.pool"))); \
-	struct slist temp_list;\
+	static struct slist temp_list;\
 	static struct pool name = { \
 			.memory = name ## _storage, \
 			/*.bound_free = (void*)name ## _storage, \*/ \
+			.free_blocks = SLIST_INIT(&temp_list),\
 			.obj_size = sizeof(*name ## _storage), \
 			.pool_size = sizeof(*name ## _storage) * size, \
 			.bound_free = 0 \
