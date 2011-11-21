@@ -1043,7 +1043,7 @@ endef
 #   3. Optional message.
 # No return.
 define __assert_handle_failure
-	$(error \
+	$(call $(if $(__def_stack_top),builtin_error,error) \
 		ASSERTION FAILED in function '$1': '$2'$(if $(value 3),: $3)
 	)
 endef

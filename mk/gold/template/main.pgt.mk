@@ -54,7 +54,6 @@ include $(addprefix \
 			$(dir $(__gold_grammar_$(gold_grammar)_mk))$(gold_grammar)-, \
 			tables.mk symbols.mk rules.mk)
 
-
 $(def_all)
 
 gold_grammar :=# Undefine.
