@@ -15,7 +15,7 @@ EMBOX_UNIT_INIT(tasks_init);
 
 static struct task default_task;
 
-int desc2idx(struct __fd_list *desc, struct task_resources *res) {
+int task_desc2idx(struct __fd_list *desc, struct task_resources *res) {
 	return ((int) desc - (int) res->fds) / sizeof(struct __fd_list);
 
 #if 0
@@ -47,7 +47,7 @@ struct __fd_list *task_fdl_alloc(struct task_resources *res) {
 }
 
 int task_fdl_free(struct __fd_list *fdl, struct task_resources *res) {
-	int fd = desc2idx(fdl, res);
+	int fd = task_desc2idx(fdl, res);
 	if (task_valid_fd(fd)) {
 		list_add_tail(&fdl->link, &res->fds_free);
 		return 0;
@@ -82,6 +82,7 @@ static int tasks_init(void) {
 }
 
 int task_idx_alloc(int type) {
+#if 0
 	struct task *task = task_self();
 	switch(type) {
 	case TASK_IDX_TYPE_FILE:
@@ -91,6 +92,9 @@ int task_idx_alloc(int type) {
 	default:
 		return -1;
 	}
+#endif
+	struct task_resources *res = &task_self()->resources;
+	return task_desc2idx(task_fdl_alloc(res), res);
 }
 
 int task_idx_to_type(int fd) {
@@ -126,5 +130,5 @@ void * task_idx_to_desc(int fd){
 }
 
 int task_idx_release(int idx) {
-	return task_idx_save(idx, NULL);
+	return task_fdl_free(task_idx_to_desc(idx), &task_self()->resources);
 }

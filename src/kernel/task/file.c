@@ -17,21 +17,30 @@
 #include <kernel/file.h>
 #include "task_common.h"
 
+extern int task_desc2idx(struct __fd_list *desc, struct task_resources *res);
+
 int __file_opened_fd(int fd, FILE *file, struct task_resources *res) {
 	struct __fd_list *fdl = &res->fds[fd];
 
 	assert(fdl->file == NULL);
 
 	fdl->file = file;
-//	list_move(&fdl->link, &res->fds_opened);
 
-	//fdl->unchar = EOF;
 	return fd;
 }
 
 int task_file_open(FILE *file, struct task_resources *res) {
-	int fd = task_idx_alloc(TASK_IDX_TYPE_FILE);
-	return __file_opened_fd(fd, file, res);
+	struct __fd_list *fdl = task_fdl_alloc(res);
+	fdl->file = file;
+	return task_desc2idx(fdl, res);
+}
+
+static int attempt_real_close(struct __fd_list *fdl) {
+	if (list_empty(&fdl->link)) {
+		fclose(fdl->file);
+		return 1;
+	}
+	return 0;
 }
 
 int task_file_close(int fd, struct task_resources *res) {
@@ -42,21 +51,22 @@ int task_file_close(int fd, struct task_resources *res) {
 		return -EBADF;
 	}
 
-	if (list_empty(&fdl->link)) {
-		fclose(file);
-	}
+	attempt_real_close(fdl);
 
 	fdl->file = NULL;
-
 	list_move(&fdl->link, &res->fds_free);
 
 	return ENOERR;
 }
 
 int task_file_reopen(int fd, FILE *file){
-	close(fd);
+	struct __fd_list *fdl = &task_self()->resources.fds[fd];
 
-	return __file_opened_fd(fd, file, &task_self()->resources);
+	attempt_real_close(fdl);
+
+	fdl->file = file;
+
+	return 0;
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
