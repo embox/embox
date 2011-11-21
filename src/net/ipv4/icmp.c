@@ -316,7 +316,7 @@ static const struct icmp_control icmp_pointers[NR_ICMP_TYPES + 1] = {
 };
 
 static int __init icmp_init(void) {
-	//return sock_create_kern(PF_INET, SOCK_RAW, IPPROTO_ICMP, &__icmp_socket);
+	//return (-1 == kernel_socket_create(PF_INET, SOCK_RAW, IPPROTO_ICMP, &__icmp_socket));
 	return 0;
 }
 
