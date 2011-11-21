@@ -28,7 +28,7 @@ struct pool {
 	size_t pool_size;
 	/* Boundary, after which begin
 	 * non-allocation memory */
-	size_t bound_free;
+	void * bound_free;
 };
 
 
@@ -37,14 +37,12 @@ struct pool {
 		typeof(object_type) object;                 \
 		struct slist_link free_link;      \
 	} name ## _storage[size] __attribute__((section(".reserve.pool"))); \
-	static struct slist temp_list;\
 	static struct pool name = { \
 			.memory = name ## _storage, \
-			/*.bound_free = (void*)name ## _storage, \*/ \
-			.free_blocks = SLIST_INIT(&temp_list),\
+			.bound_free = name ## _storage, \
+			.free_blocks = SLIST_INIT(&name.free_blocks),\
 			.obj_size = sizeof(*name ## _storage), \
 			.pool_size = sizeof(*name ## _storage) * size, \
-			.bound_free = 0 \
 };
 
 extern void *pool2_alloc(struct pool *pool);
