@@ -32,7 +32,7 @@ typedef struct file_operations {
 } file_operations_t;
 
 extern int task_file_reopen(int fd, FILE *file);
-struct task;
-extern int task_file_close(int fd, struct task * task);
+struct task_resources;
+extern int task_file_close(int fd, struct task_resources *res);
 
 #endif /* KERNEL_FILE_H_ */

@@ -15,14 +15,46 @@ EMBOX_UNIT_INIT(tasks_init);
 
 static struct task default_task;
 
-void fd_list_init(struct resources *res) {
+int desc2idx(struct __fd_list *desc, struct task_resources *res) {
+	return ((int) desc - (int) res->fds) / sizeof(struct __fd_list);
+
+#if 0
+	int i;
+	for(i = 0; i < ARRAY_SIZE(parent->resources.fds); i ++) {
+		if(parent->resources.fds[i].file == desc->file) {
+			return i;
+		}
+	}
+	return -1;
+#endif
+}
+
+void fd_list_init(struct task_resources *res) {
 	INIT_LIST_HEAD(&res->fds_free);
 	INIT_LIST_HEAD(&res->fds_opened);
 
-	for (int i = 0; i < FD_N_MAX; i++) {
+	for (int i = 0; i < CONFIG_TASKS_FILE_QUANTITY; i++) {
 		INIT_LIST_HEAD(&res->fds[i].link);
 		list_add_tail(&res->fds[i].link, &res->fds_free);
 	}
+}
+
+struct __fd_list *task_fdl_alloc(struct task_resources *res) {
+	struct list_head *next = NULL;
+	if (!list_empty(&res->fds_free)) {
+		next = (res->fds_free.next);
+		list_del_init(next);
+	}
+	return (struct __fd_list *) next;
+}
+
+int task_fdl_free(struct __fd_list *fdl, struct task_resources *res) {
+	int fd = desc2idx(fdl, res);
+	if (task_valid_fd(fd)) {
+		list_add_tail(&fdl->link, &res->fds_free);
+		return 0;
+	}
+	return -1;
 }
 
 void task_root_init(struct task *new_task) {
@@ -44,9 +76,9 @@ static int tasks_init(void) {
 
 	task_root_init(&default_task);
 
-	__file_opened_fd(0, file, &default_task);
-	__file_opened_fd(1, file, &default_task);
-	__file_opened_fd(2, file, &default_task);
+	__file_opened_fd(0, file, &default_task.resources);
+	__file_opened_fd(1, file, &default_task.resources);
+	__file_opened_fd(2, file, &default_task.resources);
 
 	return 0;
 }
