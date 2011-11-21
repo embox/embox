@@ -17,13 +17,17 @@
 OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
 
 static int desc2idx(struct task *parent, struct __fd_list *desc) {
+	return ((int) desc - (int)parent->resources.fds) / sizeof(struct __fd_list);
+
+#if 0
 	int i;
-	for(i = 0; i < ARRAY_SIZE(parent->fd_array.fds); i ++) {
-		if(parent->fd_array.fds[i].file == desc->file) {
+	for(i = 0; i < ARRAY_SIZE(parent->resources.fds); i ++) {
+		if(parent->resources.fds[i].file == desc->file) {
 			return i;
 		}
 	}
 	return -1;
+#endif
 }
 
 static void task_init(struct task *new_task, struct task *parent) {
@@ -32,20 +36,19 @@ static void task_init(struct task *new_task, struct task *parent) {
 	int fd;
 	new_task->parent = parent;
 
-	fd_list_init(&new_task->fd_array);
+	fd_list_init(&new_task->resources);
 
-	list_for_each(it, &parent->fd_array.opened_fds) {
+	list_for_each(it, &parent->resources.fds_opened) {
 		fdl = (struct __fd_list *) it;
 		if (-1 == (fd = desc2idx(parent, fdl))) {
 			continue;
 		}
-		//fd = ((int) fdl - (int)parent->fd_array.fds) / sizeof(struct __fd_list);
 
-		new_task->fd_array.fds[fd].file = parent->fd_array.fds[fd].file;
+		new_task->resources.fds[fd].file = parent->resources.fds[fd].file;
 
-		list_move(&new_task->fd_array.fds[fd].link, &new_task->fd_array.opened_fds);
+		list_move(&new_task->resources.fds[fd].link, &new_task->resources.fds_opened);
 
-		list_add(&new_task->fd_array.fds[fd].file_link, &fdl->file_link);
+		list_add(&new_task->resources.fds[fd].file_link, &fdl->file_link);
 	}
 
 	list_add(&new_task->link, &parent->children);

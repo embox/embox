@@ -10,7 +10,7 @@
 
 void task_root_init(struct task *new_task);
 
-void fd_list_init(struct __fd_array *fd_array);
+void fd_list_init(struct resources *res);
 /**
  * Internal function that assign fd with file in task
  * @param fd Integer representing file

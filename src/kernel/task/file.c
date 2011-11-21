@@ -18,13 +18,13 @@
 #include "task_common.h"
 
 int __file_opened_fd(int fd, FILE *file, struct task *tsk) {
-	struct __fd_list *fdl = &tsk->fd_array.fds[fd];
+	struct __fd_list *fdl = &tsk->resources.fds[fd];
 
 	assert(fdl->file == NULL);
 
 	fdl->file = file;
 	INIT_LIST_HEAD(&fdl->file_link);
-	list_move(&fdl->link, &tsk->fd_array.opened_fds);
+	list_move(&fdl->link, &tsk->resources.fds_opened);
 
 	//fdl->unchar = EOF;
 	return fd;
@@ -39,7 +39,7 @@ int task_file_open(FILE *file, struct task *tsk) {
 }
 
 int task_file_close(int fd, struct task *tsk) {
-	struct __fd_list *fdl = &task_self()->fd_array.fds[fd];
+	struct __fd_list *fdl = &task_self()->resources.fds[fd];
 	FILE *file = fdl->file;
 
 	if (file == NULL) {
@@ -51,8 +51,8 @@ int task_file_close(int fd, struct task *tsk) {
 	} else {
 		list_del(&fdl->file_link);
 	}
-	tsk->fd_array.fds[fd].file = NULL;
-	list_move(&tsk->fd_array.fds[fd].link, &tsk->fd_array.free_fds);
+	tsk->resources.fds[fd].file = NULL;
+	list_move(&tsk->resources.fds[fd].link, &tsk->resources.fds_free);
 
 	return ENOERR;
 }
@@ -70,16 +70,16 @@ int task_file_reopen(int fd, FILE *file){
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
-	return fwrite(buf, 1, nbyte, task_self()->fd_array.fds[fd].file);
+	return fwrite(buf, 1, nbyte, task_self()->resources.fds[fd].file);
 }
 
 //TODO doesn't handle unchar
 ssize_t read(int fd, void *buf, size_t nbyte) {
-	return fread(buf, 1, nbyte, task_self()->fd_array.fds[fd].file);
+	return fread(buf, 1, nbyte, task_self()->resources.fds[fd].file);
 }
 
 int ioctl(int fd, int request, va_list args) {
-	return fioctl(task_self()->fd_array.fds[fd].file, request, args);
+	return fioctl(task_self()->resources.fds[fd].file, request, args);
 }
 
 int fsync(int fd) {

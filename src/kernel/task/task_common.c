@@ -15,14 +15,13 @@ EMBOX_UNIT_INIT(tasks_init);
 
 static struct task default_task;
 
-void fd_list_init(struct __fd_array *fd_array) {
-	INIT_LIST_HEAD(&fd_array->free_fds);
-	INIT_LIST_HEAD(&fd_array->opened_fds);
+void fd_list_init(struct resources *res) {
+	INIT_LIST_HEAD(&res->fds_free);
+	INIT_LIST_HEAD(&res->fds_opened);
 
 	for (int i = 0; i < FD_N_MAX; i++) {
-		INIT_LIST_HEAD(&fd_array->fds[i].link);
-		list_add_tail(&fd_array->fds[i].link,
-						&fd_array->free_fds);
+		INIT_LIST_HEAD(&res->fds[i].link);
+		list_add_tail(&res->fds[i].link, &res->fds_free);
 	}
 }
 
@@ -33,7 +32,7 @@ void task_root_init(struct task *new_task) {
 
 	new_task->parent = NULL;
 
-	fd_list_init(&new_task->fd_array);
+	fd_list_init(&new_task->resources);
 }
 
 struct task *task_default_get(void) {
@@ -56,9 +55,9 @@ int task_idx_alloc(int type) {
 	struct task *task = task_self();
 	switch(type) {
 	case TASK_IDX_TYPE_FILE:
-		return task->rc_manager.file_idx_cnt++;
+		return task->resources.file_idx_cnt++;
 	case TASK_IDX_TYPE_SOCKET:
-		return (TASK_IDX_TYPE_SOCKET << 8) | task->rc_manager.sock_idx_cnt++;
+		return (TASK_IDX_TYPE_SOCKET << 8) | task->resources.socket_idx_cnt++;
 	default:
 		return -1;
 	}
@@ -72,10 +71,10 @@ int task_idx_save(int fd, void *desc) {
 	struct task *task = task_self();
 	switch(task_idx_to_type(fd)) {
 	case TASK_IDX_TYPE_FILE:
-		//task->fd_array.socket_fds[fd & 0xFF] = data;
+		//task->resources.socket_fds[fd & 0xFF] = data;
 		return 0;
 	case TASK_IDX_TYPE_SOCKET:
-		task->fd_array.socket_fds[fd & 0xFF].socket = (struct socket *)desc;
+		task->resources.socket_fds[fd & 0xFF].socket = (struct socket *)desc;
 		return 0;
 	default:
 		return -1;
@@ -86,10 +85,10 @@ void * task_idx_to_desc(int fd){
 	struct task *task = task_self();
 	switch(task_idx_to_type(fd)) {
 	case TASK_IDX_TYPE_FILE:
-		//task->fd_array.socket_fds[fd & 0xFF] = data;
+		//task->resources.socket_fds[fd & 0xFF] = data;
 		return NULL;
 	case TASK_IDX_TYPE_SOCKET:
-		return (void *)task->fd_array.socket_fds[fd & 0xFF].socket;
+		return (void *)task->resources.socket_fds[fd & 0xFF].socket;
 
 	default:
 		return NULL;

@@ -13,8 +13,10 @@
 #include <lib/list.h>
 
 struct __fd_list {
-	struct list_head link; /**< link in opened/free lists. */
-	struct list_head file_link; /**< link in list of all fds that corresponding for this FILE*. */
+	union {
+		struct list_head link; /**< link in opened/free lists. */
+		struct list_head file_link; /**< link in list of all fds that corresponding for this FILE*. */
+	};
 	FILE *file; /** FILE*, for which this fd is corresponding. */
 	//char unchar;
 	//int err;
@@ -27,16 +29,14 @@ struct idx_desc {
 
 #define FD_N_MAX 16
 
-struct __fd_array {
-	struct list_head free_fds;
-	struct list_head opened_fds;
+struct resources {
+	int fds_cnt;
+	int file_idx_cnt;
+	int socket_idx_cnt;
+	struct list_head fds_free;
+	struct list_head fds_opened;
 	struct __fd_list fds[FD_N_MAX];
 	struct idx_desc socket_fds[FD_N_MAX];
-};
-
-struct resources_manager {
-	int file_idx_cnt;
-	int sock_idx_cnt;
 };
 
 typedef struct task {
@@ -47,10 +47,7 @@ typedef struct task {
 
 	struct list_head threads;
 
-	/* files */
-	struct __fd_array fd_array;
-
-	struct resources_manager rc_manager;
+	struct resources resources;
 
 	int errno;
 } task_t;
