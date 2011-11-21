@@ -39,7 +39,7 @@ endif
 gold_grammar := $(call trim,$(gold_grammar))
 
 ifndef __gold_grammar_$(gold_grammar)_mk
-__gold_grammar_$(gold_grammar)_mk := 1
+__gold_grammar_$(gold_grammar)_mk := $(lastword $(MAKEFILE_LIST))
 
 include mk/gold/engine.mk
 
@@ -50,8 +50,10 @@ include mk/gold/engine.mk
 # in the same directory with this one and name them
 # with '-tables', '-symbols' and '-rules' prefixes.
 # Fix the following 'include' directive to override the default behavior.
-include $(addprefix $(dir $(lastword $(MAKEFILE_LIST)))$(gold_grammar)-, \
+include $(addprefix \
+			$(dir $(__gold_grammar_$(gold_grammar)_mk))$(gold_grammar)-, \
 			tables.mk symbols.mk rules.mk)
+
 
 $(def_all)
 

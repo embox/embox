@@ -18,14 +18,15 @@ endif
 gold_grammar := $(call trim,$(gold_grammar))
 
 ifndef __gold_grammar_$(gold_grammar)_mk
-__gold_grammar_$(gold_grammar)_mk := $(dir $(lastword $(MAKEFILE_LIST)))
+__gold_grammar_$(gold_grammar)_mk := $(lastword $(MAKEFILE_LIST))
 
 include mk/gold/engine.mk
 
 #
 # Include tables file and constructors for symbols and rules.
 #
-include $(addprefix $(__gold_grammar_$(gold_grammar)_mk)$(gold_grammar)-, \
+include $(addprefix \
+			$(dir $(__gold_grammar_$(gold_grammar)_mk))$(gold_grammar)-, \
 			tables.mk symbols.mk rules.mk)
 
 $(def_all)
