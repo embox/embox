@@ -77,6 +77,9 @@ include mk/util/var/info.mk
 #   Nothing.
 def = \
 	$(and $(foreach __def_var,$1, \
+		$(if $(value DEF_TRACE), \
+				$(warning $(\s)$(\t)def: \
+						$(flavor $(__def_var))$(\t)[$(__def_var)])) \
 		$(if $(call var_recursive,$(__def_var)), \
 			$(call var_assign_recursive_sl,$(__def_var),$ \
 				$(call __def,$(call $(or $(value 2),value),$(__def_var)))), \
@@ -1043,7 +1046,7 @@ endef
 #   3. Optional message.
 # No return.
 define __assert_handle_failure
-	$(call $(if $(__def_stack_top),builtin_error,error) \
+	$(call $(if $(__def_stack_top),builtin_error,error),\
 		ASSERTION FAILED in function '$1': '$2'$(if $(value 3),: $3)
 	)
 endef
