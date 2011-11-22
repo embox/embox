@@ -16,12 +16,18 @@
 #include <net/socket.h>
 #include <stddef.h>
 #include <types.h>
-
+#include <kernel/task.h>
 
 #ifndef CONFIG_MAX_KERNEL_SOCKETS
 #define CONFIG_MAX_KERNEL_SOCKETS 0x4
 #endif
 /* TODO: remove all below from here */
+
+static struct socket *idx2sock(int fd) {
+	return task_idx_to_desc(fd);
+}
+
+
 
 int socket(int domain, int type, int protocol) {
 	int fd;
@@ -44,7 +50,7 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 		return -EBADF;
 	}
 
-	sock = task_idx_to_desc(sockfd);
+	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
 	}
@@ -59,7 +65,7 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 		return -EBADF;
 	}
 
-	sock = task_idx_to_desc(sockfd);
+	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
 	}
@@ -67,20 +73,14 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	return kernel_socket_bind(sock, addr, addrlen);
 }
 
-ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
+static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
 	int res;
-	struct socket *sock;
 	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
 	struct sockaddr_in *dest_addr;
 
-	if (sockfd < 0) {
-		return -EBADF;
-	}
-
-	sock = task_idx_to_desc(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
 	}
@@ -106,20 +106,21 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 	return (ssize_t)len;
 }
 
-ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
+		const struct sockaddr *daddr, socklen_t daddrlen) {
+
+	return sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
+
+}
+
+static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
-	struct socket *sock;
 	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
 	struct sockaddr_in *dest_addr;
 
-	if (sockfd < 0) {
-		return -EBADF;
-	}
-
-	sock = task_idx_to_desc(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
 	}
@@ -141,6 +142,13 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 	return res;
 }
 
+
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
+			struct sockaddr *daddr, socklen_t *daddrlen) {
+
+	return recvfrom_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
+}
+
 int socket_close(int sockfd) {
 	struct socket *sock;
 
@@ -148,7 +156,7 @@ int socket_close(int sockfd) {
 		return -EBADF;
 	}
 
-	sock = task_idx_to_desc(sockfd);
+	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		return -EBADF;
 	}
