@@ -8,6 +8,8 @@
  * 	- implement ping through raw socket.
  * 	- major refactoring
  * @author Ilia Vaprol
+ *
+ * @author Daria Dzendzik
  */
 
 #include <embox/cmd.h>
@@ -36,6 +38,11 @@ EMBOX_CMD(exec);
 #define DEFAULT_TTL      59
 #define MAX_PADLEN       65507
 
+static int cnt_resp = 0, cnt_err = 0, sk;
+static size_t i;
+static struct ping_info pinfo;
+char *dst_addr_str;
+
 struct ping_info {
 	int count;           /* Stop after sending count ECHO_REQUEST packets. */
 	int padding_size;    /* The number of data bytes to be sent. */
@@ -47,21 +54,67 @@ struct ping_info {
 	struct in_addr dst;  /* Destination host */
 } ping_info_t;
 
+
 static void print_usage(void) {
 	printf("Usage: ping [-c count] [-i interval]\n"
 		"            [-p pattern] [-s packetsize] [-t ttl]\n"
 		"            [-I interface] [-W timeout] destination\n");
 }
 
+union  packet {
+	char packet_buff[IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
+	struct {
+		iphdr_t ip_hdr;
+		icmphdr_t icmp_hdr;
+	} hdr;
+} __attribute__((packed));
+
+static void sent_resalt(uint32_t timeout, union packet tx_pack ){
+	uint32_t start, delta;
+	union packet rx_pack;
+	start = clock();
+	while ((delta = clock() - start) < timeout) {
+		/* we don't need to get pad data, only header */
+		if (!recvfrom(sk, rx_pack.packet_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
+				(struct sockaddr *)&pinfo.from, NULL)) {
+			continue;
+		}
+		if ((rx_pack.hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||
+				(tx_pack.hdr.icmp_hdr.un.echo.sequence != rx_pack.hdr.icmp_hdr.un.echo.sequence) ||
+				(tx_pack.hdr.ip_hdr.daddr != rx_pack.hdr.ip_hdr.saddr)) {
+			continue;
+		}
+		if (delta < 1) {
+			printf("%d bytes from %s: icmp_seq=%d ttl=%d time <1ms\n",
+					pinfo.padding_size, dst_addr_str, i, pinfo.ttl);
+		} else {
+			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%d ms\n",
+					pinfo.padding_size, dst_addr_str, i, pinfo.ttl, delta);
+		}
+		cnt_resp++;
+		break;
+	}
+	if (delta >= timeout) {
+		printf("From %s icmp_seq=%d Destination Host Unreachable\n", dst_addr_str, i);
+		cnt_err++;
+	}
+}
+
+
 static int ping(struct ping_info *pinfo) {
-	int cnt_resp = 0, cnt_err = 0, sk;
-	size_t i;
-	iphdr_t *iph_s, *iph_r;
-	icmphdr_t *icmph_s, *icmph_r;
-	char *dst_addr_str;
-	char packet[IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
-	char rcv_buff[IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + MAX_PADLEN];
-	uint32_t timeout, start, delta, total;
+
+	uint32_t timeout, total;
+
+	union packet tx_pack;
+	tx_pack.hdr.ip_hdr.version = 4;
+	tx_pack.hdr.ip_hdr.ihl = IP_MIN_HEADER_SIZE >> 2;
+	tx_pack.hdr.ip_hdr.tos = 0;
+	tx_pack.hdr.ip_hdr.frag_off = htons(IP_DF);
+//	tx_pack.hdr.ip_hdr->saddr = pinfo->from.s_addr;
+	tx_pack.hdr.ip_hdr.daddr = pinfo->dst.s_addr;
+	tx_pack.hdr.ip_hdr.tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
+	tx_pack.hdr.ip_hdr.ttl = pinfo->ttl;
+	tx_pack.hdr.ip_hdr.proto = IPPROTO_ICMP;
 
 	timeout = pinfo->timeout * 1000;
 	dst_addr_str = inet_ntoa(pinfo->dst);
@@ -71,76 +124,34 @@ static int ping(struct ping_info *pinfo) {
 		LOG_ERROR("socket error\n");
 		return -1;
 	}
-	iph_s = (iphdr_t *) packet;
-	icmph_s = (icmphdr_t *) (packet + IP_MIN_HEADER_SIZE);
-	memset(packet, 0, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
-	memset(icmph_s, pinfo->pattern, pinfo->padding_size);
-	iph_s->version = 4;
-	iph_s->ihl = IP_MIN_HEADER_SIZE >> 2;
-	iph_s->tos = 0;
-	iph_s->frag_off = htons(IP_DF);
-//	iph_s->saddr = pinfo->from.s_addr;
-	iph_s->daddr = pinfo->dst.s_addr;
-	iph_s->tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
-	iph_s->ttl = pinfo->ttl;
-	iph_s->proto = IPPROTO_ICMP;
-	icmph_s->type = ICMP_ECHO;
-	icmph_s->code = 0;
-	icmph_s->un.echo.id = /*TID*/0;
 
-	/* set header for recive packet */
-	iph_r = (iphdr_t *) rcv_buff;
-	icmph_r = (icmphdr_t *) (rcv_buff + IP_MIN_HEADER_SIZE);
+	tx_pack.hdr.icmp_hdr.type = ICMP_ECHO;
+	tx_pack.hdr.icmp_hdr.code = 0;
+	tx_pack.hdr.icmp_hdr.un.echo.id = /*TID*/0;
 
 	total = clock();
 	i = 0;
 	for (;;) {
-		icmph_s->un.echo.sequence = htons(ntohs(icmph_s->un.echo.sequence) + 1);
-		icmph_s->checksum = 0;
+		tx_pack.hdr.icmp_hdr.un.echo.sequence = htons(ntohs(tx_pack.hdr.icmp_hdr.un.echo.sequence) + 1);
+		tx_pack.hdr.icmp_hdr.checksum = 0;
 		/* TODO checksum must be at network byte order */
 		/* XXX linux-0.2.img sends checksum in host byte order,
 		 * but it's wrong */
-		icmph_s->checksum = ptclbsum(packet + IP_MIN_HEADER_SIZE,
+		tx_pack.hdr.icmp_hdr.checksum = ptclbsum(tx_pack.packet_buff + IP_MIN_HEADER_SIZE,
 						ICMP_HEADER_SIZE + pinfo->padding_size);
 
-		sendto(sk, packet, ntohs(iph_s->tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
+		sendto(sk, tx_pack.packet_buff, ntohs(tx_pack.hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 
 		++i;
-		start = clock();
-		while ((delta = clock() - start) < timeout) {
-			/* we don't need to get pad data, only header */
-			if (!recvfrom(sk, rcv_buff, IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE,
-					0, (struct sockaddr *)&pinfo->from, NULL)) {
-				continue;
-			}
-			if ((icmph_r->type != ICMP_ECHOREPLY) || (icmph_s->un.echo.sequence != icmph_r->un.echo.sequence)
-					||(iph_s->daddr != iph_r->saddr)) {
-				continue;
-			}
-			if (delta < 1) {
-				printf("%d bytes from %s: icmp_seq=%d ttl=%d time <1ms\n",
-						pinfo->padding_size, dst_addr_str, i, pinfo->ttl);
-			} else {
-				printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%d ms\n",
-						pinfo->padding_size, dst_addr_str, i, pinfo->ttl, delta);
-			}
-			cnt_resp++;
-			break;
-		}
-		if (delta >= timeout) {
-			printf("From %s icmp_seq=%d Destination Host Unreachable\n", dst_addr_str, i);
-			cnt_err++;
-		}
+		sent_resalt(timeout, tx_pack);
 		if (i >= pinfo->count) {
-			break;
+				break;
 		}
 		sleep(pinfo->interval);
 	}
 	printf("--- %s ping statistics ---\n", dst_addr_str);
 	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
-		cnt_resp + cnt_err,
-		cnt_resp,
-		(cnt_err * 100) / (cnt_err + cnt_resp),
+		cnt_resp + cnt_err, cnt_resp, (cnt_err * 100) / (cnt_err + cnt_resp),
 		(int)(clock() - total));
 
 	close(sk);
@@ -150,7 +161,6 @@ static int ping(struct ping_info *pinfo) {
 static int exec(int argc, char **argv) {
 	int opt;
 	in_device_t *in_dev;
-	struct ping_info pinfo;
 
 	in_dev = NULL;
 	pinfo.count = DEFAULT_COUNT;
