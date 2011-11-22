@@ -247,9 +247,14 @@ extern int socket_close(int sockfd);
 //TODO not implement now
 extern int socket_shutdown(int socket, int how);
 
-
+//FIXME move below from here
 extern struct socket * socket_alloc(void);
 extern void socket_free(struct socket *sock);
+#if 0
+extern size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
+		const struct sockaddr *daddr, socklen_t daddrlen);
 
-
+extern ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
+			struct sockaddr *daddr, socklen_t *daddrlen);
+#endif
 #endif /* NET_SOCKET_H_ */

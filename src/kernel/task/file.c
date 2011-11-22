@@ -48,20 +48,3 @@ int task_file_close(int fd, struct task_resources *res) {
 	return ENOERR;
 }
 
-ssize_t write(int fd, const void *buf, size_t nbyte) {
-	return fwrite(buf, 1, nbyte, task_get_resources(task_self())->fds[fd].file);
-}
-
-//TODO doesn't handle unchar
-ssize_t read(int fd, void *buf, size_t nbyte) {
-	return fread(buf, 1, nbyte, task_self()->resources.fds[fd].file);
-}
-
-int ioctl(int fd, int request, va_list args) {
-	return fioctl(task_self()->resources.fds[fd].file, request, args);
-}
-
-int fsync(int fd) {
-	return 0;
-}
-
