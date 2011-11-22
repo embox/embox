@@ -31,7 +31,6 @@ typedef struct file_operations {
 	FILEOP_IOCTL ioctl;
 } file_operations_t;
 
-extern int task_file_reopen(int fd, FILE *file);
 struct task_resources;
 extern int task_file_close(int fd, struct task_resources *res);
 

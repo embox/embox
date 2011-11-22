@@ -19,18 +19,8 @@
 
 extern int task_desc2idx(struct __fd_list *desc, struct task_resources *res);
 
-int __file_opened_fd(int fd, FILE *file, struct task_resources *res) {
-	struct __fd_list *fdl = &res->fds[fd];
-
-	assert(fdl->file == NULL);
-
-	fdl->file = file;
-
-	return fd;
-}
-
 int task_file_open(FILE *file, struct task_resources *res) {
-	int fd = task_idx_alloc(0);
+	int fd = task_idx_alloc(TASK_IDX_TYPE_FILE);
 	task_idx_save_res(fd, file, res);
 	return fd;
 }
@@ -46,9 +36,8 @@ static int attempt_real_close(struct __fd_list *fdl) {
 
 int task_file_close(int fd, struct task_resources *res) {
 	struct __fd_list *fdl = &res->fds[fd];
-	FILE *file = fdl->file;
 
-	if (file == NULL) {
+	if (fdl->file == NULL) {
 		return -EBADF;
 	}
 
@@ -57,16 +46,6 @@ int task_file_close(int fd, struct task_resources *res) {
 	fdl->file = NULL;
 
 	return ENOERR;
-}
-
-int task_file_reopen(int fd, FILE *file){
-	struct __fd_list *fdl = &task_get_resources(task_self())->fds[fd];
-
-	attempt_real_close(fdl);
-
-	fdl->file = file;
-
-	return 0;
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
