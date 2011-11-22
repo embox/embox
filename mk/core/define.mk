@@ -270,6 +270,8 @@ define __def_expand
 	$(__def_tmp__)
 endef
 
+__def_tmp__ :=
+
 # Substitutes all unescaped occurrences of ${...} expansion to $(...).
 # This does not affect pure {...} groups or escaped $${...}.
 # Params:
@@ -711,41 +713,16 @@ endef
 
 # List of GNU Make 3.81 native builtin functions with their arities.
 __builtin_native_functions := \
-	abspath/1    \
-	addprefix/2  \
-	addsuffix/2  \
-	basename/1   \
-	dir/1        \
-	notdir/1     \
-	subst/3      \
-	suffix/1     \
-	filter/2     \
-	filter-out/2 \
-	findstring/2 \
-	firstword/1  \
-	flavor/1     \
-	join/2       \
-	lastword/1   \
-	patsubst/3   \
-	realpath/1   \
-	shell/1      \
-	sort/1       \
-	strip/1      \
-	wildcard/1   \
-	word/2       \
-	wordlist/3   \
-	words/1      \
-	origin/1     \
-	foreach/3    \
-	call/1       \
-	info/1       \
-	error/1      \
-	warning/1    \
-	if/2         \
-	or/1         \
-	and/1        \
-	value/1      \
-	eval/1
+	abspath/1     addprefix/2   addsuffix/2   basename/1   \
+	dir/1         notdir/1      subst/3       suffix/1     \
+	filter/2      filter-out/2  findstring/2  firstword/1  \
+	flavor/1      join/2        lastword/1    patsubst/3   \
+	realpath/1    shell/1       sort/1        strip/1      \
+	wildcard/1    word/2        wordlist/3    words/1      \
+	origin/1      foreach/3     call/1        info/1       \
+	error/1       warning/1     if/2          or/1         \
+	and/1         value/1       eval/1
+__builtin_native_functions := $(strip $(__builtin_native_functions))
 
 #
 # Here goes an API for defining own builtin functions.
@@ -1356,6 +1333,8 @@ define __builtin_to_function_inline
 		)
 	)
 endef
+
+__builtin_to_function_inline_expanded_args :=
 
 # Finally, flush the rest and say Goodbye!
 $(def_all)
