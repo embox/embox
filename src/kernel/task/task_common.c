@@ -15,44 +15,20 @@ EMBOX_UNIT_INIT(tasks_init);
 
 static struct task default_task;
 
+int task_idx_save_res(int fd, void *desc, struct task_resources *res);
+
 int task_desc2idx(struct __fd_list *desc, struct task_resources *res) {
 	return ((int) desc - (int) res->fds) / sizeof(struct __fd_list);
+}
 
-#if 0
-	int i;
-	for(i = 0; i < ARRAY_SIZE(parent->resources.fds); i ++) {
-		if(parent->resources.fds[i].file == desc->file) {
-			return i;
-		}
-	}
-	return -1;
-#endif
+void* task_idx2desc(int fd, struct task_resources *res) {
+	return res->fds[fd].file;
 }
 
 void fd_list_init(struct task_resources *res) {
-	INIT_LIST_HEAD(&res->fds_free);
-
 	for (int i = 0; i < CONFIG_TASKS_FILE_QUANTITY; i++) {
 		INIT_LIST_HEAD(&res->fds[i].link);
 	}
-}
-
-struct __fd_list *task_fdl_alloc(struct task_resources *res) {
-	struct list_head *next = NULL;
-	if (!list_empty(&res->fds_free)) {
-		next = (res->fds_free.next);
-		list_del_init(next);
-	}
-	return (struct __fd_list *) next;
-}
-
-int task_fdl_free(struct __fd_list *fdl, struct task_resources *res) {
-	int fd = task_desc2idx(fdl, res);
-	if (task_valid_fd(fd)) {
-		list_add_tail(&fdl->link, &res->fds_free);
-		return 0;
-	}
-	return -1;
 }
 
 void task_root_init(struct task *new_task) {
@@ -71,64 +47,61 @@ struct task *task_default_get(void) {
 
 static int tasks_init(void) {
 	FILE* file = diag_device_get();
+	struct task_resources *res = &default_task.resources;
 
 	task_root_init(&default_task);
-
-	__file_opened_fd(0, file, &default_task.resources);
-	__file_opened_fd(1, file, &default_task.resources);
-	__file_opened_fd(2, file, &default_task.resources);
+	task_idx_save_res(0, file, res);
+	task_idx_save_res(1, file, res);
+	task_idx_save_res(2, file, res);
 
 	return 0;
 }
 
-int task_idx_alloc(int type) {
-#if 0
-	struct task *task = task_self();
-	switch(type) {
-	case TASK_IDX_TYPE_FILE:
-		return task->resources.file_idx_cnt++;
-	case TASK_IDX_TYPE_SOCKET:
-		return (TASK_IDX_TYPE_SOCKET << 8) | task->resources.socket_idx_cnt++;
-	default:
-		return -1;
+int task_idx_alloc_res(int type, struct task_resources *res) {
+	for (int i = 0; i < CONFIG_TASKS_FILE_QUANTITY; i++) {
+		if (res->fds[i].file == NULL) {
+			res->fds[i].file = (void *) 1;
+			res->fds[i].type = type;
+			return i;
+		}
 	}
-#endif
-	struct task_resources *res = &task_self()->resources;
-	return task_desc2idx(task_fdl_alloc(res), res);
+
+	return -1;
+}
+
+int task_idx_free_res(int idx, struct task_resources *res) {
+	res->fds[idx].file = NULL;
+	return 0;
+}
+
+int task_idx_alloc(int type) {
+	return task_idx_alloc_res(type, task_get_resources(task_self()));
+}
+
+
+int task_idx_save_res(int fd, void *desc, struct task_resources *res) {
+	res->fds[fd].file = desc;
+	return 0;
+}
+
+void *task_idx_get_res(int fd, struct task_resources *res) {
+	return res->fds[fd].file;
 }
 
 int task_idx_to_type(int fd) {
-	return 0xFF & (fd >> 8);
+	struct task_resources *res = task_get_resources(task_self());
+	return res->fds[fd].type;
 }
 
 int task_idx_save(int fd, void *desc) {
-	struct task *task = task_self();
-	switch(task_idx_to_type(fd)) {
-	case TASK_IDX_TYPE_FILE:
-		//task->resources.socket_fds[fd & 0xFF] = data;
-		return 0;
-	case TASK_IDX_TYPE_SOCKET:
-		task->resources.socket_fds[fd & 0xFF].socket = (struct socket *)desc;
-		return 0;
-	default:
-		return -1;
-	}
+	return task_idx_save_res(fd, desc, task_get_resources(task_self()));
 }
 
 void * task_idx_to_desc(int fd){
-	struct task *task = task_self();
-	switch(task_idx_to_type(fd)) {
-	case TASK_IDX_TYPE_FILE:
-		//task->resources.socket_fds[fd & 0xFF] = data;
-		return NULL;
-	case TASK_IDX_TYPE_SOCKET:
-		return (void *)task->resources.socket_fds[fd & 0xFF].socket;
-
-	default:
-		return NULL;
-	}
+	return task_idx2desc(fd, task_get_resources(task_self()));
 }
 
 int task_idx_release(int idx) {
-	return task_fdl_free(task_idx_to_desc(idx), &task_self()->resources);
+	task_idx_free_res(idx, task_get_resources(task_self()));
+	return 0;
 }

@@ -100,8 +100,12 @@ static void tty_putc_buf(struct tty_buf *tty, char ch) {
 
 static void *thread_handler(void* args) {
 	struct param *p = (struct param *) args;
-#if 0
 	FILE *file = (FILE *) p->file;
+
+	task_idx_save(0, file);
+	task_idx_save(1, file);
+	task_idx_save(2, file);
+#if 0
 	freopen(stdin, file);
 	freopen(stdout, file);
 	freopen(stderr, file);

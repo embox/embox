@@ -15,6 +15,7 @@
 struct __fd_list {
 	struct list_head link; /**< link in opened/free lists. */
 	FILE *file; /** FILE*, for which this fd is corresponding. */
+	int type;
 	//char unchar;
 	//int err;
 };
@@ -30,8 +31,10 @@ struct task_resources {
 	int fds_cnt;
 	int file_idx_cnt;
 	int socket_idx_cnt;
+#if 0
 	struct list_head fds_free;
-//	struct list_head fds_opened;
+	struct list_head fds_opened;
+#endif
 	struct __fd_list fds[CONFIG_TASKS_FILE_QUANTITY];
 	struct idx_desc socket_fds[CONFIG_TASKS_FILE_QUANTITY];
 };
@@ -49,6 +52,9 @@ struct task {
 	int errno;
 };
 
+static inline struct task_resources *task_get_resources(struct task *task) {
+	return &task->resources;
+}
 extern int task_create(struct task **new, struct task *parent);
 
 extern struct task *task_self(void);

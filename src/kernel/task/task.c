@@ -18,18 +18,19 @@ OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
 
 static void task_init(struct task *new_task, struct task *parent) {
 	struct __fd_list *fdl, *par_fdl;
+	struct task_resources *res = task_get_resources(new_task);
 	new_task->parent = parent;
 
 	fd_list_init(&new_task->resources);
 
 	for (int i = 0; i < CONFIG_TASKS_FILE_QUANTITY; i++) {
-		par_fdl = &parent->resources.fds[i];
+		par_fdl = &task_get_resources(parent)->fds[i];
 
 		if (par_fdl->file != NULL) {
 			continue;
 		}
 
-		fdl = task_fdl_alloc(&new_task->resources);
+		fdl = &res->fds[task_idx_alloc_res(TASK_IDX_TYPE_FILE, res)];
 		fdl->file = par_fdl->file;
 		list_add(&fdl->link, &par_fdl->link);
 	}

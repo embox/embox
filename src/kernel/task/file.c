@@ -30,9 +30,9 @@ int __file_opened_fd(int fd, FILE *file, struct task_resources *res) {
 }
 
 int task_file_open(FILE *file, struct task_resources *res) {
-	struct __fd_list *fdl = task_fdl_alloc(res);
-	fdl->file = file;
-	return task_desc2idx(fdl, res);
+	int fd = task_idx_alloc(0);
+	task_idx_save_res(fd, file, res);
+	return fd;
 }
 
 static int attempt_real_close(struct __fd_list *fdl) {
@@ -40,6 +40,7 @@ static int attempt_real_close(struct __fd_list *fdl) {
 		fclose(fdl->file);
 		return 1;
 	}
+	list_del_init(&fdl->link);
 	return 0;
 }
 
@@ -54,13 +55,12 @@ int task_file_close(int fd, struct task_resources *res) {
 	attempt_real_close(fdl);
 
 	fdl->file = NULL;
-	list_move(&fdl->link, &res->fds_free);
 
 	return ENOERR;
 }
 
 int task_file_reopen(int fd, FILE *file){
-	struct __fd_list *fdl = &task_self()->resources.fds[fd];
+	struct __fd_list *fdl = &task_get_resources(task_self())->fds[fd];
 
 	attempt_real_close(fdl);
 
@@ -70,7 +70,7 @@ int task_file_reopen(int fd, FILE *file){
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
-	return fwrite(buf, 1, nbyte, task_self()->resources.fds[fd].file);
+	return fwrite(buf, 1, nbyte, task_get_resources(task_self())->fds[fd].file);
 }
 
 //TODO doesn't handle unchar

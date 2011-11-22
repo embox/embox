@@ -12,11 +12,8 @@ void task_root_init(struct task *new_task);
 
 void fd_list_init(struct task_resources *res);
 
-int desc2idx(struct __fd_list *desc, struct task_resources *res);
-
-struct __fd_list *task_fdl_alloc(struct task_resources *res);
-
-int task_fdl_free(struct __fd_list *fdl, struct task_resources *res);
+int task_idx_save_res(int fd, void *desc, struct task_resources *res);
+int task_idx_alloc_res(int type, struct task_resources *res);
 
 /*
  * Internal function that assign fd with file in task
