@@ -64,11 +64,7 @@ int raw_rcv(sk_buff_t *skb) {
 		}
 	}
 
-	if (need_free) {
-		kfree_skb(skb);
-		return NET_RX_DROP;
-	}
-	return NET_RX_SUCCESS;
+	return (need_free == 1 ? NET_RX_DROP : NET_RX_SUCCESS);
 }
 
 static void raw_close(struct sock *sk, long timeout) {

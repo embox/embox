@@ -31,6 +31,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	unsigned short tmp;
 	unsigned int len;
 	int optlen;
+	int need_free = 1;
 
 	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
 	/**
@@ -105,13 +106,18 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		if (p_netproto->type == iph->proto) {
 			/* if we are here then socket is registered in one of hash tables */
 			p_netproto->handler(skb); // TODO must not free the skb
-			//return NET_RX_SUCCESS; // must be executed for each appropriate handler
+			need_free = 0;
 		}
 	}
 
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol or to socket with concrete protocol */
-	raw_rcv(skb);
+	need_free &= raw_rcv(skb);
+
+	if (need_free) {
+		kfree_skb(skb);
+		return NET_RX_DROP;
+	}
 
 	return NET_RX_SUCCESS;
 }
