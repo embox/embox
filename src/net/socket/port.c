@@ -8,6 +8,7 @@
  */
 #include <types.h>
 #include <net/port.h>
+#include <util/array.h>
 
 #define SYSTEM_PORT_MAX_NUMBER  (1024)
 #define FLAGS_WORD_WIDTH        (32)
@@ -57,6 +58,21 @@ int socket_port_unlock(short port, unsigned short port_type) {
 	flag_offset = port % FLAGS_WORD_WIDTH;
 
 	ports_type[port_type][word_offset] &= ~(1 << flag_offset);
+
+	return 0;
+}
+
+short get_free_port(void) {
+	unsigned short port_type, port_number;
+
+	for(port_type = 0; port_type < 3; port_type++) {
+		for(port_number = 0; port_number <= SYSTEM_PORT_MAX_NUMBER; port_number++) {
+			if (!socket_port_is_busy(port_number, port_type)) {
+				socket_port_lock(port_number, port_type);
+				return port_number;
+			}
+		}
+	}
 
 	return 0;
 }

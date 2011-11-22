@@ -10,8 +10,9 @@ enum port_type {
 	UDP_PORT = 2,
 };
 
-int socket_port_is_busy(short port, unsigned short sock_type);
-int socket_port_lock(short port, unsigned short sock_type);
-int socket_port_unlock(short port, unsigned short sock_type);
+extern int socket_port_is_busy(short port, unsigned short sock_type);
+extern int socket_port_lock(short port, unsigned short sock_type);
+extern int socket_port_unlock(short port, unsigned short sock_type);
+extern short get_free_port(void);
 
 #endif /* _INET_COMMON_H */

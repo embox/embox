@@ -110,12 +110,17 @@ static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 static int udp_rcv(sk_buff_t *skb) {
 	struct sock *sk;
 	struct inet_sock *inet;
+	sk_buff_t *skb_tmp;
+
 	iphdr_t *iph = ip_hdr(skb);
 	udphdr_t *uh = udp_hdr(skb);
 	sk = udp_lookup(iph->daddr, uh->dest);
 	if (sk) {
 		inet = inet_sk(sk);
 		udp_queue_rcv_skb(sk, skb);
+		/*if (!socket_port_is_busy(uh->dest, UDP_PORT)) {
+			return NET_RX_DROP;
+		}*/
 		inet->dport = uh->source;
 		inet->daddr = iph->saddr;
 		if (inet->rcv_saddr == INADDR_ANY) {
@@ -123,7 +128,8 @@ static int udp_rcv(sk_buff_t *skb) {
 			inet->saddr = skb->nh.iph->daddr;
 		}
 	} else {
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
+		skb_tmp = skb_copy(skb, 0);
+		icmp_send(skb_tmp, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
 	}
 	return 0;
 }

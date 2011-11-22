@@ -16,7 +16,9 @@
 #include <net/socket.h>
 #include <stddef.h>
 #include <types.h>
+
 #include <kernel/task.h>
+#include <net/port.h>
 
 #ifndef CONFIG_MAX_KERNEL_SOCKETS
 #define CONFIG_MAX_KERNEL_SOCKETS 0x4
@@ -93,9 +95,10 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	dest_addr = (struct sockaddr_in *)daddr;
 	inet->daddr = dest_addr->sin_addr.s_addr;
 	inet->dport = dest_addr->sin_port;
+	//inet->port_type = dest_addr->port_type;
 	if (inet->sport == 0) {
-		//TODO:
 		inet->sport = 666;
+		//inet->sport = get_free_port();
 	}
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);

@@ -107,13 +107,26 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 
 	inet = inet_sk(sk);
 	addr_in = (struct sockaddr_in *)addr;
-	if (socket_port_is_busy(addr_in->sin_port, addr_in->port_type)) {
-		return EBUSY;
+
+	switch (sock->type) {
+	case SOCK_DGRAM:
+		inet->port_type = UDP_PORT;
+		break;
+	case SOCK_STREAM:
+		inet->port_type = TCP_PORT;
+		break;
+		/* if we want bind raw socket to concrete port */
+	case SOCK_RAW:
+		inet->port_type = addr_in->port_type;
+		break;
 	}
-	socket_port_lock(addr_in->sin_port, addr_in->port_type);
+
+	if (socket_port_is_busy(addr_in->sin_port, inet->port_type)) {
+		return -EBUSY;
+	}
+	socket_port_lock(addr_in->sin_port, inet->port_type);
 	inet->rcv_saddr = inet->saddr = addr_in->sin_addr.s_addr;
 	inet->sport = addr_in->sin_port;
-	inet->port_type = addr_in->port_type;
 	inet->daddr = 0;
 	inet->dport = 0;
 
