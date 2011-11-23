@@ -3,9 +3,9 @@
  * @brief Example demonstrates using of API for allocation fixed size object
  *
  * @details To use pool write in conf/mods-kernel.conf
- *          mod(embox.hal.mm.pool_adapter)
+ *          mod(embox.mem.pool_adapter)
  *          To use slab write in conf/mods-kernel.conf
- *          mod(embox.hal.mm.slab_adapter)
+ *          mod(embox.mem.slab_adapter)
  *
  * @see include/mem/objalloc.h
  * @date 19.07.2011

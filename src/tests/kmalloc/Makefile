@@ -5,4 +5,4 @@ $_PACKAGE := embox.test
 
 $_MODS         += slob
 $_SRCS-slob += slob.c
-$_DEPS-slob += embox.hal.mm.slob
+$_DEPS-slob += embox.mem.slob

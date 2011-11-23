@@ -5,4 +5,4 @@ $_PACKAGE := embox.test
 
 $_MODS += slab
 $_SRCS-slab += slab.c
-$_DEPS-slab += embox.hal.mm.slab
+$_DEPS-slab += embox.mem.slab

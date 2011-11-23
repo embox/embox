@@ -15,7 +15,7 @@ $_SRCS-main += nosys.c
 $_DEPS-main += embox.hal.arch
 
 ifdef CONFIG_MMU_SUPPORT
-$_DEPS-main += embox.hal.mm.mmu
+$_DEPS-main += embox.mem.mmu
 endif
 
 ifdef CONFIG_WATCHDOG

@@ -1,4 +1,4 @@
-$_PACKAGE := embox.hal.mm
+$_PACKAGE := embox.mem
 
 $_CPPFLAGS += -I$(SRC_DIR)/include/posix
 

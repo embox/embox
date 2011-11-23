@@ -5,4 +5,4 @@ $_PACKAGE := embox.test
 
 $_MODS             += mpallocator
 $_SRCS-mpallocator += mpallocator.c
-$_DEPS-mpallocator += embox.hal.mm.mpallocator
+$_DEPS-mpallocator += embox.mem.mpallocator

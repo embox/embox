@@ -1,6 +1,6 @@
 $_MODS += meminfo
 $_SRCS-meminfo += meminfo.c
-$_DEPS-meminfo += embox.hal.mm.slab
+$_DEPS-meminfo += embox.mem.slab
 
 $_BRIEF-meminfo = Write memory statistic for kmalloc or mpallocator
 
