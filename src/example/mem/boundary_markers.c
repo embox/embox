@@ -120,13 +120,13 @@ static void obj_allocation(void) {
 static int run(int argc, char **argv) {
 	void *pool;
 
-	pool = page_alloc(1);
+	pool = page_alloc(10);
 
 	example_heap_init(pool, PAGE_SIZE());
 
 	obj_allocation();
 
-	page_free(pool, 1);
+	page_free(pool, 10);
 
 	return 0;
 }
