@@ -74,14 +74,14 @@ typedef struct inet_sock {
 	in_addr_t      rcv_saddr;
 	struct ip_options *opt;
 	__be16         dport;
+	__be16         sport;
+	__u16          sport_type;
 	__u16          num;
 	in_addr_t      saddr;
 	__s16          uc_ttl;
-	__be16         sport;
 	__u16          id;
 	__u8           tos;
 	__u8           mc_ttl;
-	__u16          port_type;
 } inet_sock_t;
 
 static inline inet_sock_t *inet_sk(const sock_t *sk) {

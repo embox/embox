@@ -84,6 +84,7 @@ typedef struct sock {
 	void (* sk_error_report)(struct sock *sk);
 	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct)(struct sock *sk);
+	int (* get_port)(struct sock *sk, unsigned short num);
 } sock_t;
 
 /** Sock flags */

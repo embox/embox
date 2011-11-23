@@ -105,7 +105,8 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		p_netproto = net_proto_ptr->netproto;
 		if (p_netproto->type == iph->proto) {
 			/* if we are here then socket is registered in one of hash tables */
-			need_free = 0; // TODO must not free the skb
+			p_netproto->handler(skb); // TODO must not free the skb
+			need_free = 0;
 		}
 	}
 

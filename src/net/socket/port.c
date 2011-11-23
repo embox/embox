@@ -9,6 +9,9 @@
 #include <types.h>
 #include <net/port.h>
 #include <util/array.h>
+#include <net/net.h>
+#include <errno.h>
+#include <net/inet_sock.h>
 
 #define SYSTEM_PORT_MAX_NUMBER  (1024)
 #define FLAGS_WORD_WIDTH        (32)
@@ -17,7 +20,7 @@ static uint32_t udp_ports[SYSTEM_PORT_MAX_NUMBER / FLAGS_WORD_WIDTH]; /* busy fl
 static uint32_t tcp_ports[SYSTEM_PORT_MAX_NUMBER / FLAGS_WORD_WIDTH]; /* busy flags */
 static uint32_t sys_ports[SYSTEM_PORT_MAX_NUMBER / FLAGS_WORD_WIDTH]; /* busy flags */
 
-static uint32_t * ports_type[] = {sys_ports, tcp_ports, udp_ports};
+static uint32_t * ports_type[] = { sys_ports, tcp_ports, udp_ports };
 
 int socket_port_is_busy(short port, unsigned short port_type) {
 	int word_offset;
@@ -62,16 +65,29 @@ int socket_port_unlock(short port, unsigned short port_type) {
 	return 0;
 }
 
-short get_free_port(void) {
-	unsigned short port_type, port_number;
+short socket_get_free_port(unsigned short sock_type) {
+	unsigned short port_number;
 
-	for(port_type = 0; port_type < 3; port_type++) {
-		for(port_number = 0; port_number <= SYSTEM_PORT_MAX_NUMBER; port_number++) {
-			if (!socket_port_is_busy(port_number, port_type)) {
-				socket_port_lock(port_number, port_type);
+	if (sock_type != SOCK_RAW) {
+		for (port_number = 0; port_number < SYSTEM_PORT_MAX_NUMBER;
+				port_number++) {
+			if (!socket_port_is_busy(port_number, sock_type)) {
+				socket_port_lock(port_number, sock_type);
 				return port_number;
 			}
 		}
+	}
+
+	return 0;
+}
+
+int socket_set_port_type(struct socket *sock) {
+	struct inet_sock *inet;
+
+	inet = inet_sk(sock->sk);
+
+	if (sock->type != SOCK_RAW) {
+		inet->sport_type = sock->type;
 	}
 
 	return 0;

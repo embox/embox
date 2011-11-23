@@ -83,7 +83,7 @@ void inet_release(struct socket *sock) {
 
 	sk = sock->sk;
 	inet = inet_sk(sk);
-	socket_port_unlock(inet->sport, inet->port_type);
+	socket_port_unlock(inet->sport, inet->sport_type);
 
 	if (sk != NULL) {
 		sk->sk_prot->close(sk, 0);
@@ -108,23 +108,11 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	inet = inet_sk(sk);
 	addr_in = (struct sockaddr_in *)addr;
 
-	switch (sock->type) {
-	case SOCK_DGRAM:
-		inet->port_type = UDP_PORT;
-		break;
-	case SOCK_STREAM:
-		inet->port_type = TCP_PORT;
-		break;
-		/* if we want bind raw socket to concrete port */
-	case SOCK_RAW:
-		inet->port_type = addr_in->port_type;
-		break;
-	}
-
-	if (socket_port_is_busy(addr_in->sin_port, inet->port_type)) {
+	socket_set_port_type(sock);
+	if (socket_port_is_busy(addr_in->sin_port, inet->sport_type)) {
 		return -EBUSY;
 	}
-	socket_port_lock(addr_in->sin_port, inet->port_type);
+	socket_port_lock(addr_in->sin_port, inet->sport_type);
 	inet->rcv_saddr = inet->saddr = addr_in->sin_addr.s_addr;
 	inet->sport = addr_in->sin_port;
 	inet->daddr = 0;
@@ -136,8 +124,14 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 			int addr_len, int flags) {
 	struct sock *sk;
+	struct inet_sock *inet;
 
 	sk = sock->sk;
+	inet = inet_sk(sock->sk);
+	inet->sport = socket_get_free_port(inet->sport_type);
+	socket_set_port_type(sock);
+	socket_port_lock(inet->sport, inet->sport_type);
+
 	return sk->sk_prot->connect(sk, addr, addr_len);
 }
 

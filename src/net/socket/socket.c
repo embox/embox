@@ -95,10 +95,11 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	dest_addr = (struct sockaddr_in *)daddr;
 	inet->daddr = dest_addr->sin_addr.s_addr;
 	inet->dport = dest_addr->sin_port;
-	//inet->port_type = dest_addr->port_type;
+
+	socket_set_port_type(sock);
 	if (inet->sport == 0) {
-		inet->sport = 666;
-		//inet->sport = get_free_port();
+		//inet->sport = 666;
+		inet->sport = socket_get_free_port(inet->sport_type);
 	}
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
