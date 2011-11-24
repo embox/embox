@@ -10,4 +10,4 @@
 #include <net/ip.h>
 #include <embox/net/sock.h>
 
-EMBOX_NET_SOCK(SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, &inet_family_ops);
+EMBOX_NET_SOCK(SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, NULL);

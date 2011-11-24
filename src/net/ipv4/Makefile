@@ -31,7 +31,7 @@ $_DEPS-udp += embox.net.udp_sock
 $_MODS     += tcp
 $_SRCS-tcp += tcp.c
 $_DEPS-tcp += embox.net.socket
-#$_DEPS-tcp += embox.net.tcp_sock
+$_DEPS-tcp += embox.net.tcp_sock
 
 $_MODS          += raw_sock
 $_SRCS-raw_sock += raw_sock.c
