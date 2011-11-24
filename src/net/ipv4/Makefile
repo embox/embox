@@ -21,6 +21,7 @@ $_SRCS-ipv4 += ip_output.c
 
 $_MODS      += icmp
 $_SRCS-icmp += icmp.c
+$_DEPS-icmp += af_inet
 
 $_MODS     += udp
 $_SRCS-udp += udp.c
