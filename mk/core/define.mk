@@ -484,7 +484,7 @@ define __def_inner_handle_substitution_reference
 
 		# ...then it seems to be a substitution reference. Substitutions
 		# are not our friends. Stop handle here and output the value as is.
-		$$$$($1)
+		$$$$($(subst _$$c,$$(\comma),$1))
 	)
 endef
 
