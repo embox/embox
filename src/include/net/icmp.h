@@ -6,28 +6,31 @@
  * @date 14.03.09
  * @author Alexander Batyukov
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
-#ifndef ICMP_H_
-#define ICMP_H_
+#ifndef NET_ICMP_H_
+#define NET_ICMP_H_
 
 #include <net/inet_sock.h>
 
 /* Types */
-#define ICMP_ECHOREPLY          0       /* Echo Reply                   */
-#define ICMP_DEST_UNREACH       3       /* Destination Unreachable      */
-#define ICMP_SOURCE_QUENCH      4       /* Source Quench                */
-#define ICMP_REDIRECT           5       /* Redirect (change route)      */
-#define ICMP_ECHO               8       /* Echo Request                 */
-#define ICMP_TIME_EXCEEDED      11      /* Time Exceeded                */
-#define ICMP_PARAMETERPROB      12      /* Parameter Problem            */
-#define ICMP_TIMESTAMP          13      /* Timestamp Request            */
-#define ICMP_TIMESTAMPREPLY     14      /* Timestamp Reply              */
-#define ICMP_INFO_REQUEST       15      /* Information Request          */
-#define ICMP_INFO_REPLY         16      /* Information Reply            */
-#define ICMP_ADDRESS            17      /* Address Mask Request         */
-#define ICMP_ADDRESSREPLY       18      /* Address Mask Reply           */
-#define NR_ICMP_TYPES           18
+enum {
+	ICMP_ECHOREPLY      = 0,  /* Echo Reply */
+	ICMP_DEST_UNREACH   = 3,  /* Destination Unreachable */
+	ICMP_SOURCE_QUENCH  = 4,  /* Source Quench */
+	ICMP_REDIRECT       = 5,  /* Redirect (change route) */
+	ICMP_ECHO           = 8,  /* Echo Request */
+	ICMP_TIME_EXCEEDED  = 11, /* Time Exceeded */
+	ICMP_PARAMETERPROB  = 12, /* Parameter Problem */
+	ICMP_TIMESTAMP      = 13, /* Timestamp Request */
+	ICMP_TIMESTAMPREPLY = 14, /* Timestamp Reply */
+	ICMP_INFO_REQUEST   = 15, /* Information Request */
+	ICMP_INFO_REPLY     = 16, /* Information Reply */
+	ICMP_ADDRESS        = 17, /* Address Mask Request */
+	ICMP_ADDRESSREPLY   = 18, /* Address Mask Reply */
+	NR_ICMP_TYPES
+};
 
 /* Codes for UNREACH. */
 #define ICMP_NET_UNREACH        0       /* Network Unreachable          */
@@ -100,4 +103,4 @@ static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
  */
 extern void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info);
 
-#endif /* ICMP_H_ */
+#endif /* NET_ICMP_H_ */

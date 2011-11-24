@@ -30,10 +30,8 @@ struct net_device * get_dev_by_idx(int num) {
 static int process_backlog(struct net_device *dev) {
 	struct sk_buff *skb;
 
-	skb = skb_dequeue(&(dev->dev_queue));
-	while (skb != NULL) {
+	while ((skb = skb_dequeue(&(dev->dev_queue))) != NULL) {
 		netif_receive_skb(skb);
-		skb = skb_dequeue(&(dev->dev_queue));
 	}
 
 	return ENOERR;
