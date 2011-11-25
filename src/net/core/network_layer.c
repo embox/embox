@@ -118,6 +118,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 int __netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 	struct packet_type *q = NULL;
+	const struct net_pack *pack;
 
 	if (NULL == skb) {
 		return NET_RX_DROP;
@@ -129,7 +130,8 @@ int __netif_rx(struct sk_buff *skb) {
 	}
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 
-	list_for_each_entry(q, &ptype_base, list) {
+	net_pack_foreach(pack) {
+		q = pack->netpack;
 		if (q->type == skb->protocol) {
 			skb_queue_tail(&(dev->dev_queue), skb);
 			netif_rx_schedule(dev);
@@ -151,6 +153,15 @@ int __netif_receive_skb(sk_buff_t *skb) {
 		}
 	}
 
+#if 0
+
+	net_pack_foreach(
+	list_for_each_entry(q, &ptype_base, list) {
+		if (q->type == skb->protocol) {
+			return q->func(skb, skb->dev, q, NULL);
+		}
+	}
+#endif
 	kfree_skb(skb);
 	return NET_RX_DROP;
 }
