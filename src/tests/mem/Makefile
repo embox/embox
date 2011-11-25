@@ -11,3 +11,6 @@ $_REQUIRES-heap += embox.mem.heap_api
 $_MODS += page
 $_SRCS-page += page.c
 $_REQUIRES-page += embox.mem.page_api
+
+$_MODS += pool
+$_SRCS-pool += pool.c
