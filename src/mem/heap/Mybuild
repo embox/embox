@@ -1,0 +1,11 @@
+package embox.mem;
+
+abstract module heap_api {
+	//option HEAP_SIZE=?
+	//option PAGE_SIZE=?
+}
+
+module heap_bm extends heap_api {
+	source "heap_bm.c";
+	depends page_api;
+}

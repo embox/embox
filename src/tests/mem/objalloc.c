@@ -5,7 +5,6 @@
  * @author Alexandr Kalmuk
  */
 
-#include <stdio.h>
 #include <embox/test.h>
 #include <mem/objalloc.h>
 
