@@ -19,7 +19,7 @@
 extern const struct net_pack __net_pack_registry[];
 
 #define __net_pack_foreach(net_pack_ptr) \
-		array_foreach_ptr(net_ptr, __net_registry, \
-		        ARRAY_SPREAD_SIZE(__net_registry))
+		array_foreach_ptr(net_pack_ptr, __net_pack_registry, \
+		        ARRAY_SPREAD_SIZE(__net_pack_registry))
 
 #endif /* FRAMEWORK_NET_PACK_API_IMPL_H_ */

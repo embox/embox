@@ -19,6 +19,8 @@
 #include <linux/interrupt.h>
 #include <errno.h>
 
+#include <framework/net/pack/api.h>
+
 EMBOX_UNIT_INIT(unit_init);
 
 /*FIXME we must have queue for each netdevice or if we want to use the only
@@ -140,12 +142,15 @@ int __netif_rx(struct sk_buff *skb) {
 
 int __netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
+	const struct net_pack *pack;
 
-	list_for_each_entry(q, &ptype_base, list) {
+	net_pack_foreach(pack) {
+		q = pack->netpack;
 		if (q->type == skb->protocol) {
 			return q->func(skb, skb->dev, q, NULL);
 		}
 	}
+
 	kfree_skb(skb);
 	return NET_RX_DROP;
 }

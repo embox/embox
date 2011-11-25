@@ -26,10 +26,15 @@ static int net_sock_mod_enable(struct mod_info *mod) {
 
 	net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
 	prom_printf("NET: initializing socket %s.%s: ", mod->mod->package->name, mod->mod->name);
-	prom_printf("done\n");
 
 	if (net_proto_family != NULL) {
 		ret = sock_register(net_proto_family);
+	}
+
+	if (ret == 0) {
+		prom_printf("done\n");
+	} else {
+		prom_printf("error: %s\n", strerror(-ret));
 	}
 
 	return ret;

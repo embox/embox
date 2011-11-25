@@ -67,9 +67,11 @@ const struct proto_ops inet_stream_ops = {
 	.owner             = THIS_MODULE,
 	.release           = inet_release,
 	.bind              = inet_bind,
-	.connect           = inet_stream_connect,
-	.socketpair        = sock_no_socketpair,
+	.connect           = inet_dgram_connect,
 	.accept            = inet_accept,
+#endif
+#if 0
+	.socketpair        = sock_no_socketpair,
 	.getname           = inet_getname,
 	.poll              = tcp_poll,
 	.ioctl             = inet_ioctl,

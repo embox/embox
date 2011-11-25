@@ -66,7 +66,7 @@ int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	msg->msg_iov->iov_len = len;
 	return len;
 }
-
+#if 1
 static void udp_lib_hash(struct sock *sk) {
 	size_t i;
 	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
@@ -86,7 +86,7 @@ static void udp_lib_unhash(struct sock *sk) {
 		}
 	}
 }
-
+#endif
 static struct sock *udp_lookup(in_addr_t daddr, __be16 dport) {
 	struct inet_sock *inet;
 	size_t i;
@@ -147,7 +147,6 @@ int udp_disconnect(struct sock *sk, int flags) {
 static void udp_lib_close(struct sock *sk, long timeout) {
 	sk_common_release(sk);
 }
-
 struct proto udp_prot = {
 	.name              = "UDP",
 #if 0
@@ -176,7 +175,7 @@ struct proto udp_prot = {
 	.h.udp_table       = &udp_table,
 #endif
 };
-
+#if 1
 const struct proto_ops inet_dgram_ops = {
 	.family            = PF_INET,
 #if 0
@@ -203,3 +202,4 @@ const struct proto_ops inet_dgram_ops = {
 	.sendpage          = inet_sendpage,
 #endif
 };
+#endif
