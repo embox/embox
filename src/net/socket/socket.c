@@ -16,7 +16,7 @@
 #include <net/socket.h>
 #include <stddef.h>
 #include <types.h>
-
+#include <util/array.h>
 #include <kernel/task.h>
 #include <net/port.h>
 
@@ -25,11 +25,28 @@
 #endif
 /* TODO: remove all below from here */
 
+extern const struct task_res_ops * __task_res_ops[];
+
+static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
+	return recvfrom(fd, (void *) buf, nbyte, 0, NULL, 0);
+}
+
+static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
+	return sendto(fd, buf, nbyte, 0, NULL, 0);
+}
+
+static struct task_res_ops ops = {
+	.type = TASK_IDX_TYPE_SOCKET,
+	.read = this_read,
+	.write = this_write,
+	.close = socket_close
+};
+
+ARRAY_SPREAD_ADD(__task_res_ops, &ops);
+
 static struct socket *idx2sock(int fd) {
 	return task_idx_to_desc(fd);
 }
-
-
 
 int socket(int domain, int type, int protocol) {
 	int fd;

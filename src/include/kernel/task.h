@@ -11,33 +11,7 @@
 
 #include <fs/file.h>
 #include <lib/list.h>
-
-struct __fd_list {
-	struct list_head link; /**< link in opened/free lists. */
-	FILE *file; /** FILE*, for which this fd is corresponding. */
-	int type;
-	//char unchar;
-	//int err;
-};
-
-//TODO rewrite it
-struct idx_desc {
-	struct socket *socket;
-};
-
-#define CONFIG_TASKS_FILE_QUANTITY 16
-
-struct task_resources {
-#if 0
-	int fds_cnt;
-	int file_idx_cnt;
-	int socket_idx_cnt;
-	struct list_head fds_free;
-	struct list_head fds_opened;
-	struct idx_desc socket_fds[CONFIG_TASKS_FILE_QUANTITY];
-#endif
-	struct __fd_list fds[CONFIG_TASKS_FILE_QUANTITY];
-};
+#include <kernel/task_resources.h>
 
 struct task {
 	struct task *parent;
@@ -62,10 +36,6 @@ extern struct task *task_self(void);
 extern struct task *task_default_get(void);
 
 extern int task_file_open(FILE *file, struct task_resources *res);
-
-enum {
-	TASK_IDX_TYPE_FILE = 0, TASK_IDX_TYPE_SOCKET = 1
-};
 
 extern int task_idx_alloc(int type);
 extern int task_idx_release(int idx);
