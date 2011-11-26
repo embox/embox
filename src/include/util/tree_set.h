@@ -102,13 +102,39 @@ extern int tree_set_empty(struct tree_set *tree_set);
  * Find element in the tree_set.
  * Element is considered to be found if result of compare function is zero.
  * @param tree_set Tree, where element is searched
- * @param link Element, equal to which is found.
+ * @param link Element, equal to which is being found.
  * @param compare Compare function
  * @return
  * 	NULL, if there is no such element in tree_set.
  *	Pointer to this element otherwise.
  */
 extern struct tree_set_link *tree_set_find_link(struct tree_set *tree_set,
+		struct tree_set_link *link, tree_set_comparator_t compare);
+
+/**
+ * Find the smallest element, which is greater or equal than specified one.
+ * This means  compare(given, found) <= 0.
+ * @param tree_set Tree, where element is searched
+ * @param link Element, lower_bound of which is being found.
+ * @param compare Compare function
+ * @return
+ * 	NULL, if there is no such element in tree_set.
+ *	Pointer to this element otherwise.
+ */
+extern struct tree_set_link *tree_set_lower_bound(struct tree_set *tree_set,
+		struct tree_set_link *link, tree_set_comparator_t compare);
+
+/**
+ * Find the smallest element, which is strictly greater than specified one.
+ * This means  compare(given, found) < 0.
+ * @param tree_set Tree, where element is searched
+ * @param link Element, upper_bound of which is being found.
+ * @param compare Compare function
+ * @return
+ * 	NULL, if there is no such element in tree_set.
+ *	Pointer to this element otherwise.
+ */
+extern struct tree_set_link *tree_set_upper_bound(struct tree_set *tree_set,
 		struct tree_set_link *link, tree_set_comparator_t compare);
 
 /**

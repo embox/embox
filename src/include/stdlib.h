@@ -65,6 +65,16 @@ extern void *bsearch(const void *key, const void *base,
               size_t nmemb, size_t size,
               int (*compar)(const void *, const void *));
 
+/** Find the smallest element, greater or equals to specified. */
+extern void *lower_bound(const void *key, const void *base,
+              size_t nmemb, size_t size,
+              int (*compar)(const void *, const void *));
+
+/** Find the smallest element, strictly greater than specified. */
+extern void *upper_bound(const void *key, const void *base,
+              size_t nmemb, size_t size,
+              int (*compar)(const void *, const void *));
+
 
 extern int rand(void);
 extern int rand_r(unsigned int *seedp);

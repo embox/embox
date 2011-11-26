@@ -49,6 +49,50 @@ struct tree_set_link *tree_set_find_link(struct tree_set *tree_set,
 	return NULL;
 }
 
+struct tree_set_link *tree_set_lower_bound(struct tree_set *tree_set,
+		struct tree_set_link *link, tree_set_comparator_t compare) {
+	struct tree_set_link *cur;
+	/* We will store current result here. */
+	struct tree_set_link *res = NULL;
+	int comp_res;
+	assert(tree_set != NULL);
+	assert(link != NULL);
+
+	cur = tree_set->root;
+	while (cur) {
+		comp_res = compare(link, cur);
+		if (comp_res >= 0) {
+			res = cur;
+			cur = cur->left;
+		} else {
+			cur = cur->right;
+		}
+	}
+	return res;
+}
+
+struct tree_set_link *tree_set_upper_bound(struct tree_set *tree_set,
+		struct tree_set_link *link, tree_set_comparator_t compare) {
+	struct tree_set_link *cur;
+	/* We will store current result here. */
+	struct tree_set_link *res = NULL;
+	int comp_res;
+	assert(tree_set != NULL);
+	assert(link != NULL);
+
+	cur = tree_set->root;
+	while (cur) {
+		comp_res = compare(link, cur);
+		if (comp_res > 0) {
+			res = cur;
+			cur = cur->left;
+		} else {
+			cur = cur->right;
+		}
+	}
+	return res;
+}
+
 /**
  * Copy tree pointers and color from one link to another
  *         (except pointer from parent node to specified).
