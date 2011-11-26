@@ -18,10 +18,6 @@ ifdef CONFIG_MMU_SUPPORT
 $_DEPS-main += embox.mem.mmu
 endif
 
-ifdef CONFIG_WATCHDOG
-  $_DEPS-main += embox.driver.abstract.watchdog
-endif
-
 ifdef CONFIG_MEASURE
   $_MODS += measure
   $_SRCS-measure += measure.c
