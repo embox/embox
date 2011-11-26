@@ -10,7 +10,7 @@
 #include <hal/measure_unit.h>
 #include <hal/interrupt.h>
 #include <util/math.h>
-#include <kernel/measure.h>
+#include <profiler/measuring/measure.h>
 #include <time.h>
 #include <embox/unit.h>
 

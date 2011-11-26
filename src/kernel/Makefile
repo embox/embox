@@ -18,13 +18,6 @@ ifdef CONFIG_MMU_SUPPORT
 $_DEPS-main += embox.mem.mmu
 endif
 
-ifdef CONFIG_MEASURE
-  $_MODS += measure
-  $_SRCS-measure += measure.c
-  $_DEPS-measure += $(CONFIG_MEASURE) timer
-  $_DEPS-main += measure
-endif
-
 # Include em-files from current directory.
 
 SELFDIR ?= .
