@@ -9,4 +9,4 @@ $_SRCS-bt_control += bt_control.c
 $_DEPS-bt_control += embox.pnet.core
 $_DEPS-bt_control += embox.driver.bluetooth.lego.blue_core
 $_DEPS-bt_control += $(PLATFORM).pnet.node.direct_comm.formation
-$_DEPS-bt_control += $(PLATFORM).pnet.node.direct_comm.executer
+$_DEPS-bt_control += $(PLATFORM).pnet.node.direct_comm.executer_embox

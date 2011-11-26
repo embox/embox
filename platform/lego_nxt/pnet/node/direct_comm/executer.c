@@ -61,14 +61,8 @@ static int sensor_send(uint8_t sensor_id, int *addit_len, uint8_t addit_msg[]) {
 
 static int keep_alive_send(int *addit_len, uint8_t addit_msg[]) {
 	*addit_len = 0;
-#ifdef LEGO_COMPATIBLE
-//	printf("Hi! I'm Lego =(\n");
+	//printf("Hi! I'm Lego =(\n");
 	return 0;
-#else
-	printf("Hi! I'm Embox!\n");
-	return 1;
-#endif
-
 }
 
 static int handle_body(struct lego_dc_msg *msg, int *addit_len, uint8_t addit_msg[]) {
