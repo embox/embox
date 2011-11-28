@@ -117,6 +117,8 @@ typedef struct proto {
 	int (*backlog_rcv)(sock_t *sk, sk_buff_t *skb);
 	void (*hash)(struct sock *sk);
 	void (*unhash)(struct sock *sk);
+	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */
+	void (*sock_free)(sock_t *); /**< must not be NULL if sock_alloc is not NULL */
 	unsigned int obj_size;
 	char name[32];
 } proto_t;

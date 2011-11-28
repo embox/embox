@@ -36,12 +36,16 @@ POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
 /* allocates proto structure for specified protocol*/
 static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		int family) {
-	struct sock *sock;
+	struct sock *sock = NULL;
 	unsigned long flags;
 
 	local_irq_save(flags);
 
-	if((sock = pool_alloc(&socks_pool)) == NULL) {
+	if (prot->sock_alloc != NULL) {
+		sock = prot->sock_alloc();
+	}
+
+	if(sock == NULL && (sock = pool_alloc(&socks_pool)) == NULL) {
 		local_irq_restore(flags);
 		return NULL;
 	}
@@ -57,8 +61,12 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 static void sk_prot_free(struct proto *prot, struct sock *sk) {
 	unsigned long irq_old;
 	local_irq_save(irq_old);
-	pool_free(&socks_pool, sk);
 	prot->unhash(sk);
+	if (prot->sock_free != NULL) {
+		prot->sock_free(sk);
+	} else {
+		pool_free(&socks_pool, sk);
+	}
 	local_irq_restore(irq_old);
 }
 

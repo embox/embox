@@ -11,6 +11,7 @@
 #include <net/tcp.h>
 
 #include <string.h>
+#include <mem/objalloc.h>
 #include <net/inetdevice.h>
 #include <net/ip.h>
 #include <net/icmp.h>
@@ -25,6 +26,16 @@
 EMBOX_NET_PROTO(IPPROTO_TCP, tcp_v4_rcv, NULL);
 
 static tcp_sock_t *tcp_hash[CONFIG_MAX_KERNEL_SOCKETS];
+
+OBJALLOC_DEF(tcp_socks, struct tcp_sock, CONFIG_MAX_KERNEL_SOCKETS);
+
+static sock_t *tcp_v4_sock_alloc(void) {
+	return (sock_t *) objalloc(&tcp_socks);
+}
+
+static void tcp_v4_sock_free(sock_t *sock) {
+	objfree(&tcp_socks, sock);
+}
 
 int tcp_v4_init_sock(sock_t *sk) {
 	sk->sk_state = TCP_CLOSE;
@@ -180,6 +191,8 @@ struct proto tcp_prot = {
 	.unhash                 = tcp_v4_unhash,
 	.sendmsg		= tcp_v4_sendmsg,
 	.recvmsg		= tcp_v4_recvmsg,
+	.sock_alloc		= tcp_v4_sock_alloc,
+	.sock_free		= tcp_v4_sock_free
 #if 0
 	.owner                  = THIS_MODULE,
 	.close                  = tcp_close,
