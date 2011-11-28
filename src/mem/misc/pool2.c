@@ -19,9 +19,6 @@ void *pool2_alloc(struct pool* pool) {
 		return (void *)slist_remove_first_link(&pool->free_blocks);
 	}
 
-//    addr = pool->memory + (pool->bound_free) * pool->obj_size;
-//	if (addr != pool->memory + pool->pool_size) {
-//		++pool->bound_free;
 	if((size_t)pool->bound_free != ((size_t)pool->memory + pool->pool_size)) {
 		addr = (void *)pool->bound_free;
 		pool->bound_free += pool->obj_size;
@@ -31,7 +28,6 @@ void *pool2_alloc(struct pool* pool) {
 }
 
 void pool2_free(struct pool* pool, void* obj) {
-	//struct slist_link* temp;
 	assert(pool);
 
 	assert(obj);

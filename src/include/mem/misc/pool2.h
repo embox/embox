@@ -15,6 +15,7 @@
 #include <util/macro.h>
 #include <util/slist.h>
 
+/* Representation of the pool*/
 struct pool {
 	/* Place in memory for allocation */
 	void * memory;
@@ -31,7 +32,10 @@ struct pool {
 	void * bound_free;
 };
 
-
+/* Macros that initializes an empty pool
+ * @name - name of pool
+ * @object_type - type of elements in the pool
+ * @size - size of pool */
 #define POOL_DEF(name, object_type, size) \
 	static union {                                  \
 		typeof(object_type) object;                 \
@@ -45,8 +49,15 @@ struct pool {
 			.pool_size = sizeof(*name ## _storage) * size, \
 };
 
+/* Function to allocate memory
+ * @pool - pointer to the pool, which memory from allocated
+ *
+ * @return - pointer to the allocated memory */
 extern void *pool2_alloc(struct pool *pool);
 
+/* Procedure remove object from pool
+ * @pool - pointer to the pool
+ * @obj - pointer to the delitable object */
 extern void pool2_free(struct pool *pool, void* obj);
 
 #endif /* MEM_MISC_POOL2_H_ */
