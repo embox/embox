@@ -11,10 +11,10 @@ ifneq ($(filter /**,$(MY_PATH)),)
 $(error /** in MY_PATH)
 endif
 
-MY_FILES := $(call r-wildcard,$(MY_PATH:%=%/Mybuild))
+MY_FILES := $(call r-wildcard,$(MY_PATH:%=%/Mybuild) $(MY_PATH:%=%/*.my))
 EM_FILES := $(call r-wildcard,$(MY_PATH:%=%/Makefile))
 
-# 1. File name.
+# 1. File names.
 # 2. List.
 my_filter = \
 	$(call my_filter_only,$(SRC_DIR)/arch,$1 $(ARCH)/, \
@@ -26,7 +26,7 @@ my_filter = \
 my_filter_only = \
 	$(filter-out $1/%,$3) $(filter $(2:%=$1/%%),$3)
 
-MY_FILES := $(call my_filter,Mybuild,$(MY_FILES))
+MY_FILES := $(call my_filter,Mybuild .my,$(MY_FILES))
 EM_FILES := $(call my_filter,Makefile,$(EM_FILES))
 
 define my_printf_escape
@@ -43,7 +43,9 @@ MKFILES_COPIES := \
 	$(filter-out $(MY_FILES:$(ROOT_DIR)%Mybuild=$(EM_DIR)%Makefile), \
 		$(EM_FILES:$(ROOT_DIR)%=$(EM_DIR)%))
 
-MKFILES_CONVERTED := $(MY_FILES:$(ROOT_DIR)%Mybuild=$(EM_DIR)%Makefile)
+MKFILES_CONVERTED := \
+	$(call filter-patsubst,$(ROOT_DIR)%Mybuild,$(EM_DIR)%Makefile,$(MY_FILES)) \
+	$(call filter-patsubst,$(ROOT_DIR)%.my,$(EM_DIR)%.my.mk,$(MY_FILES))
 
 MKFILES := $(MKFILES_CONVERTED) $(MKFILES_COPIES)
 
@@ -52,8 +54,14 @@ $(MKFILES_COPIES) : \
 	@mkdir -p $(@D); cp $< $@
 
 $(MKFILES_CONVERTED) : mk/mybuild/read.mk mk/mybuild/myfile.mk
-$(MKFILES_CONVERTED) : \
+
+$(filter %Makefile,$(MKFILES_CONVERTED)) : \
 		$(EM_DIR)%Makefile : $(ROOT_DIR)%Mybuild
+	@echo '$< -> $@'
+	@mkdir -p $(@D); $(PRINTF) '%b' '$(call my_printf_escape,$(call gold_parse,myfile,$<))' > $@
+
+$(filter %.my.mk,$(MKFILES_CONVERTED)) : \
+		$(EM_DIR)%.my.mk : $(ROOT_DIR)%.my
 	@echo '$< -> $@'
 	@mkdir -p $(@D); $(PRINTF) '%b' '$(call my_printf_escape,$(call gold_parse,myfile,$<))' > $@
 
