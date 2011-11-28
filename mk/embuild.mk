@@ -278,27 +278,20 @@ symbol_dag_walk = $(foreach u,$1,$u $(call $0,$($2-$u),$2))
 #  2. Set of allowed dependency values
 #  3. tag
 unit_deps_filter = \
-  $(foreach dep, \
-    $(or $(and $(filter-out $2,$1), \
-               $(info $(warning_str) Undefined dependencies [$3] for unit $(unit):: \
-                 $(filter-out $2,$1)) $(filter $2,$1) \
-         ),$1), \
-    $(eval UNIT-$(unit)-DEP-$(dep)-DEFINED := $(dir)) \
-    $(dep) \
-  )
+	$(filter $2,$1)
 
 # Mod deps are curiously enough simple.
 
-# 1. Symbol
+# 1. Symbols
 # 2. Permitted value
 mod_deps_per_directory = \
-  $(call unit_deps_filter,$(call canonize_mod_name,$(call unit_symbol,$1)),$2,$1)
+  $(filter $2,$(foreach 1,$1,$(call canonize_mod_name,$(unit_symbol))))
 
 define define_mod_deps_per_directory
   PROVIDES-$(unit) := $(PROVIDES-$(unit)) \
-                              $(call mod_deps_per_directory,PROVIDES,$(APIS))
+                           $(call mod_deps_per_directory,PROVIDES,$(APIS))
   REQUIRES-$(unit) := $(REQUIRES-$(unit)) \
-                              $(call mod_deps_per_directory,REQUIRES,$(APIS))
+                           $(call mod_deps_per_directory,REQUIRES DEPS,$(APIS))
   DEPS-$(unit) := $(DEPS-$(unit)) $(call mod_deps_per_directory,DEPS,$(MODS))
 endef
 define define_mod_deps
