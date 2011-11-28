@@ -22,7 +22,7 @@ void *pool2_alloc(struct pool* pool) {
 //    addr = pool->memory + (pool->bound_free) * pool->obj_size;
 //	if (addr != pool->memory + pool->pool_size) {
 //		++pool->bound_free;
-	if((size_t)pool->bound_free != pool->pool_size) {
+	if((size_t)pool->bound_free != ((size_t)pool->memory + pool->pool_size)) {
 		addr = (void *)pool->bound_free;
 		pool->bound_free += pool->obj_size;
 		return addr;
