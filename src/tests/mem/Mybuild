@@ -14,3 +14,7 @@ module heap {
 	source "heap.c";
 	depends embox.mem.heap_api;
 }
+
+module pool {
+	source "pool.c";
+}
