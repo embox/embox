@@ -29,8 +29,16 @@ define $(gold_grammar)_produce-Model
 	$(if $1,$1$(\n))
 	$(if $2,$2$(\n))
 	$(if $3,
-		$(if $(findstring $$_APIS,$3),$$_APIS :=$(\n))
-		$(if $(findstring $$_MODS,$3),$$_MODS :=$(\n))
+		$(if $(findstring $$_APIS,$3),
+			ifneq ($$(flavor $$_APIS),simple)$(\n)
+			$$_APIS :=$$(value $$_APIS)$(\n)
+			endif$(\n)
+		)
+		$(if $(findstring $$_MODS,$3),
+			ifneq ($$(flavor $$_MODS),simple)$(\n)
+			$$_MODS :=$$(value $$_MODS)$(\n)
+			endif$(\n)
+		)
 		$(\n)$3$(\n)
 	)
 endef
