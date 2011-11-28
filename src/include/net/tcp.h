@@ -46,22 +46,31 @@ typedef struct tcphdr {
 	__be16  urg_ptr;
 } __attribute__((packed)) tcphdr_t;
 
+#define TCP_V4_HEADER_MIN_SIZE  5
+#define TCP_V4_HEADER_SIZE(hdr) ((((struct tcphdr *) hdr)->doff) * 4)
 enum {
 	TCP_ESTABIL = 1,
 	TCP_SYN_SENT,
 	TCP_SYN_RECV,
 	TCP_LISTEN,
-	TCP_CLOSE
+	TCP_CLOSE,
+	TCP_MAX_STATE
 };
 
 typedef struct tcp_sock {
 	/* inet_sock has to be the first member */
 	struct inet_sock inet;
 	char state;
+	__be32 seq;
+	__be32 seq_unack;
+	__be32 ack_seq;
 } tcp_sock_t;
 
 static inline tcphdr_t *tcp_hdr(const sk_buff_t *skb) {
 	return (tcphdr_t *) skb->h.raw;
 }
+
+#define TCP_INET_SOCK(tcp_sk) ((struct inet_sock *) tcp_sk)
+#define TCP_SOCK(tcp_sk) ((struct sock *) tcp_sk)
 
 #endif /* TCP_H_ */

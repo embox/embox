@@ -5,6 +5,7 @@
  *
  * @date 04.04.10
  * @author Nikolay Korotky
+ * @author Anton Kozlov
  */
 
 #include <net/tcp.h>
@@ -18,23 +19,12 @@
 #include <net/protocol.h>
 #include <net/inet_common.h>
 #include <embox/net/proto.h>
-#include <err.h>
+#include <net/skbuff.h>
+#include <errno.h>
 
 EMBOX_NET_PROTO(IPPROTO_TCP, tcp_v4_rcv, NULL);
 
 static tcp_sock_t *tcp_hash[CONFIG_MAX_KERNEL_SOCKETS];
-
-static int tcp_v4_rcv(sk_buff_t *skb) {
-#if 0
-	struct sock *sk;
-	struct inet_sock *inet;
-	sk_buff_t *skb_tmp;
-
-	iphdr_t *iph = ip_hdr(skb);
-	tcphdr_t *tcph = tcp_hdr(skb);
-#endif
-	return 0;
-}
 
 int tcp_v4_init_sock(sock_t *sk) {
 	sk->sk_state = TCP_CLOSE;
@@ -42,6 +32,60 @@ int tcp_v4_init_sock(sock_t *sk) {
 	return 0;
 }
 
+static int rebuild_tcp_header(sk_buff_t *skb, __be16 source,
+					__be16 dest, size_t len) {
+	tcphdr_t *tcph = tcp_hdr(skb);
+	tcph->source = source;
+	tcph->dest = dest;
+	skb->len = len + TCP_V4_HEADER_MIN_SIZE;
+	tcph->check = 0;
+//	udph->check = ptclbsum((void *) udph, udph->len);
+	return 0;
+}
+
+int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+			size_t len) {
+	struct inet_sock *inet = inet_sk(sk);
+	sk_buff_t *skb;
+	if (sk->sk_state != TCP_ESTABIL) {
+		return -EINVAL;
+	}
+	skb = alloc_skb(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
+				    /*inet->opt->optlen +*/ TCP_V4_HEADER_MIN_SIZE +
+				    msg->msg_iov->iov_len, 0);
+	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+	skb->h.raw = (unsigned char *) skb->nh.raw + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
+	memcpy((void*)((unsigned int)(skb->h.raw + TCP_V4_HEADER_MIN_SIZE)),
+				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
+	/* Fill TCP header */
+	rebuild_tcp_header(skb, inet->sport, inet->dport, len);
+	return ip_send_packet(inet, skb);
+}
+
+int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+			size_t len, int noblock, int flags, int *addr_len) {
+	struct sk_buff *skb;
+
+	if (sk->sk_state != TCP_ESTABIL) {
+		return -EINVAL;
+	}
+
+	skb = skb_recv_datagram(sk, flags, 0, 0);
+	if (skb && skb->len > 0) {
+		struct tcphdr *tcph = tcp_hdr(skb);
+		if (len > (skb->nh.iph->tot_len - TCP_V4_HEADER_SIZE(tcph))) {
+			len = skb->nh.iph->tot_len - TCP_V4_HEADER_SIZE(tcph);
+		}
+		memcpy((void *) msg->msg_iov->iov_base,
+				(void *) (skb->h.raw + TCP_V4_HEADER_SIZE(tcph)), len);
+		kfree_skb(skb);
+	} else {
+		len = 0;
+	}
+	msg->msg_iov->iov_len = len;
+	return len;
+}
+//TODO move to hash table routines
 static void tcp_v4_hash(struct sock *sk) {
 	size_t i;
 	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
@@ -61,12 +105,81 @@ static void tcp_v4_unhash(struct sock *sk) {
 		}
 	}
 }
+static struct tcp_sock *tcp_lookup(in_addr_t daddr, __be16 dport) {
+	struct inet_sock *inet;
+	size_t i;
+	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		inet = inet_sk((struct sock*) tcp_hash[i]);
+		if (inet) {
+			if ((inet->rcv_saddr == INADDR_ANY || inet->rcv_saddr == daddr) &&
+					inet->sport == dport) {
+				return (struct tcp_sock*) inet;
+			}
+		}
+	}
+	return NULL;
+}
+//TODO end of hash table routines
+
+#define TCP_ST_SEND 1
+#define TCP_ST_NO_SEND 1
+
+static void tcp_set_st(struct tcp_sock *tcpsk, char state) {
+	tcpsk->state = state;
+}
+static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
+		tcphdr_t *tcph, tcphdr_t *out_tcph) {
+	if (TCP_SOCK(tcpsk)->sk_state != TCP_LISTEN) {
+		return TCP_ST_NO_SEND;
+	}
+	if (tcph->ack) {
+		// segment RST
+		out_tcph->seq = tcph->ack_seq;
+		out_tcph->rst |= 1;
+		return TCP_ST_SEND;
+	}
+	if (tcph->syn) {
+		tcpsk->seq_unack = out_tcph->seq = 0;
+		out_tcph->ack_seq = tcph->seq;
+		out_tcph->syn |= 1;
+		out_tcph->ack |= 1;
+
+		tcpsk->seq = 1;
+		tcpsk->ack_seq = tcph->seq + 1;
+
+		tcp_set_st(tcpsk, TCP_SYN_RECV);
+
+		return TCP_ST_SEND;
+	}
+	return TCP_ST_NO_SEND;
+}
+static int (*tcp_st_handler[TCP_MAX_STATE])(struct tcp_sock *tcpsk,
+		struct sk_buff *skb, tcphdr_t *tcph, tcphdr_t *out_tcph) = {
+	[TCP_LISTEN] = tcp_st_listen
+};
+
+static int tcp_v4_rcv(sk_buff_t *skb) {
+
+	iphdr_t *iph = ip_hdr(skb);
+	tcphdr_t *tcph = tcp_hdr(skb);
+	struct tcp_sock *sock = tcp_lookup(iph->daddr, tcph->dest);
+
+	char out_iph[TCP_V4_HEADER_MIN_SIZE];
+
+	if (tcp_st_handler[sock->state](sock, skb, tcph,
+				(struct tcphdr *) out_iph) == TCP_ST_SEND) {
+		//send
+	}
+	return 0;
+}
 
 struct proto tcp_prot = {
 	.name                   = "TCP",
 	.init                   = tcp_v4_init_sock,
 	.hash                   = tcp_v4_hash,
 	.unhash                 = tcp_v4_unhash,
+	.sendmsg		= tcp_v4_sendmsg,
+	.recvmsg		= tcp_v4_recvmsg,
 #if 0
 	.owner                  = THIS_MODULE,
 	.close                  = tcp_close,

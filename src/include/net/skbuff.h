@@ -50,9 +50,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	char cb[52];                /* Control buffer (used to store layer-specific info e.g. ip options) */
 	unsigned int len;           /* Length of actual data */
 	union {                     /* Transport layer header */
-#if 0
-		tcphdr *th;
-#endif
+		struct tcphdr *th;
 		struct udphdr *uh;
 		struct icmphdr *icmph;
 #if 0

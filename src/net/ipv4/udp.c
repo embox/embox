@@ -25,7 +25,6 @@ static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 					__be16 dest, size_t len) {
 	udphdr_t *udph = skb->h.uh;
-	udph = skb->h.uh;
 	udph->source = source;
 	udph->dest = dest;
 	udph->len = len + UDP_HEADER_SIZE;

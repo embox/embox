@@ -128,7 +128,6 @@ int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 			int addr_len, int flags) {
 	struct sock *sk;
 	struct inet_sock *inet;
-
 	sk = sock->sk;
 	inet = inet_sk(sock->sk);
 	inet->sport = socket_get_free_port(inet->sport_type);
