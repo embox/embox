@@ -1,0 +1,22 @@
+package embox.driver.diag;
+
+abstract module diag_api {
+}
+
+module no_diag extends diag_api {
+	source "no_diag.c";
+}
+
+module apbuart extends diag_api {
+	source "apbuart.c";
+}
+
+module serial extends diag_api {
+	source "serial.c";
+}
+
+module vga extends diag_api {
+	source "vga.c";
+	depends embox.driver.video.vga, embox.driver.keyboard;
+}
+

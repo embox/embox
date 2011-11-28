@@ -17,6 +17,6 @@ $_PROVIDES-serial  		+= embox.driver.diag.diag_api
 
 $_MODS                  += vga
 $_SRCS-vga	  		    += vga.c
-$_REQUIRES-vga	    	+= embox.hal.driver.vga
-$_DEPS-vga				+= embox.driver.keyboard
 $_PROVIDES-vga  		+= embox.driver.diag.diag_api
+$_REQUIRES-vga	    	+= embox.driver.video.vga
+$_DEPS-vga				+= embox.driver.keyboard
