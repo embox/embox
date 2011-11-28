@@ -77,7 +77,7 @@ static int inet_create(struct socket *sock, int protocol) {
 	return 0;
 }
 
-void inet_release(struct socket *sock) {
+int inet_release(struct socket *sock) {
 	struct sock *sk;
 	struct inet_sock *inet;
 
@@ -85,10 +85,13 @@ void inet_release(struct socket *sock) {
 	inet = inet_sk(sk);
 	socket_port_unlock(inet->sport, inet->sport_type);
 
-	if (sk != NULL) {
-		sk->sk_prot->close(sk, 0);
-		sock->sk = NULL;
+	if (sk == NULL) {
+		return -EINVAL;
 	}
+
+	sk->sk_prot->close(sk, 0);
+	sock->sk = NULL;
+	return ENOERR;
 }
 
 int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
@@ -143,6 +146,11 @@ int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 	return sk->sk_prot->sendmsg(iocb, sk, msg, size);
 }
 
+int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
+			int addr_len, int flags) {
+	return inet_dgram_connect(sock, addr, addr_len, flags);
+}
+
 /* uses for create socket */
 struct net_proto_family inet_family_ops = {
 	.family = PF_INET,
@@ -151,6 +159,61 @@ struct net_proto_family inet_family_ops = {
 	.owner = THIS_MODULE,
 #endif
 };
+
+const struct proto_ops inet_dgram_ops = {
+	.family            = PF_INET,
+#if 0
+	.owner             = THIS_MODULE,
+#endif
+	.release           = inet_release,
+	.bind              = inet_bind,
+	.connect           = inet_dgram_connect,
+#if 0
+	.socketpair        = sock_no_socketpair,
+	.accept            = sock_no_accept,
+	.getname           = inet_getname,
+	.poll              = udp_poll,
+	.ioctl             = inet_ioctl,
+	.listen            = sock_no_listen,
+	.shutdown          = inet_shutdown,
+	.setsockopt        = sock_common_setsockopt,
+	.getsockopt        = sock_common_getsockopt,
+#endif
+	.sendmsg           = inet_sendmsg,
+	.recvmsg           = sock_common_recvmsg,
+#if 0
+	.mmap              = sock_no_mmap,
+	.sendpage          = inet_sendpage,
+#endif
+};
+
+const struct proto_ops inet_stream_ops = {
+	.family            = PF_INET,
+#if 0
+	.owner             = THIS_MODULE,
+#endif
+	.release           = inet_release,
+	.bind              = inet_bind,
+	.connect           = inet_stream_connect,
+//	.accept            = sock_no_accept,
+//	.listen            = sock_no_listen,
+#if 0
+	.socketpair        = sock_no_socketpair,
+	.getname           = inet_getname,
+	.poll              = udp_poll,
+	.ioctl             = inet_ioctl,
+	.shutdown          = inet_shutdown,
+	.setsockopt        = sock_common_setsockopt,
+	.getsockopt        = sock_common_getsockopt,
+#endif
+	.sendmsg           = inet_sendmsg,
+	.recvmsg           = sock_common_recvmsg,
+#if 0
+	.mmap              = sock_no_mmap,
+	.sendpage          = inet_sendpage,
+#endif
+};
+
 
 static int inet_init(void) {
 	return sock_register(&inet_family_ops);

@@ -11,6 +11,8 @@
 
 #include <hal/arch.h>
 
+#include <net/inet_sock.h>
+
 typedef struct tcphdr {
 	__be16  source;
 	__be16  dest;
@@ -43,5 +45,23 @@ typedef struct tcphdr {
 	uint16_t check;
 	__be16  urg_ptr;
 } __attribute__((packed)) tcphdr_t;
+
+enum {
+	TCP_ESTABIL = 1,
+	TCP_SYN_SENT,
+	TCP_SYN_RECV,
+	TCP_LISTEN,
+	TCP_CLOSE
+};
+
+typedef struct tcp_sock {
+	/* inet_sock has to be the first member */
+	struct inet_sock inet;
+	char state;
+} tcp_sock_t;
+
+static inline tcphdr_t *tcp_hdr(const sk_buff_t *skb) {
+	return (tcphdr_t *) skb->h.raw;
+}
 
 #endif /* TCP_H_ */

@@ -7,6 +7,8 @@
  * @author Nikolay Korotky
  */
 
+#include <net/tcp.h>
+
 #include <string.h>
 #include <net/inetdevice.h>
 #include <net/ip.h>
@@ -20,13 +22,51 @@
 
 EMBOX_NET_PROTO(IPPROTO_TCP, tcp_v4_rcv, NULL);
 
+static tcp_sock_t *tcp_hash[CONFIG_MAX_KERNEL_SOCKETS];
+
 static int tcp_v4_rcv(sk_buff_t *skb) {
-	printf("stub: receive tcp packet\n");
+#if 0
+	struct sock *sk;
+	struct inet_sock *inet;
+	sk_buff_t *skb_tmp;
+
+	iphdr_t *iph = ip_hdr(skb);
+	tcphdr_t *tcph = tcp_hdr(skb);
+#endif
 	return 0;
+}
+
+int tcp_v4_init_sock(sock_t *sk) {
+	sk->sk_state = TCP_CLOSE;
+
+	return 0;
+}
+
+static void tcp_v4_hash(struct sock *sk) {
+	size_t i;
+	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		if (tcp_hash[i] == NULL) {
+			tcp_hash[i] = (tcp_sock_t *) sk;
+			break;
+		}
+	}
+}
+
+static void tcp_v4_unhash(struct sock *sk) {
+	size_t i;
+	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		if (tcp_hash[i] == (tcp_sock_t *) sk) {
+			tcp_hash[i] = NULL;
+			break;
+		}
+	}
 }
 
 struct proto tcp_prot = {
 	.name                   = "TCP",
+	.init                   = tcp_v4_init_sock,
+	.hash                   = tcp_v4_hash,
+	.unhash                 = tcp_v4_unhash,
 #if 0
 	.owner                  = THIS_MODULE,
 	.close                  = tcp_close,
@@ -34,15 +74,12 @@ struct proto tcp_prot = {
 	.disconnect             = tcp_disconnect,
 	.accept                 = inet_csk_accept,
 	.ioctl                  = tcp_ioctl,
-	.init                   = tcp_v4_init_sock,
 	.destroy                = tcp_v4_destroy_sock,
 	.shutdown               = tcp_shutdown,
 	.setsockopt             = tcp_setsockopt,
 	.getsockopt             = tcp_getsockopt,
 	.recvmsg                = tcp_recvmsg,
 	.backlog_rcv            = tcp_v4_do_rcv,
-	.hash                   = inet_hash,
-	.unhash                 = inet_unhash,
 	.get_port               = inet_csk_get_port,
 	.enter_memory_pressure  = tcp_enter_memory_pressure,
 	.sockets_allocated      = &tcp_sockets_allocated,
@@ -61,28 +98,3 @@ struct proto tcp_prot = {
 #endif
 };
 
-const struct proto_ops inet_stream_ops = {
-	.family            = PF_INET,
-#if 0
-	.owner             = THIS_MODULE,
-	.release           = inet_release,
-	.bind              = inet_bind,
-	.connect           = inet_dgram_connect,
-	.accept            = inet_accept,
-#endif
-#if 0
-	.socketpair        = sock_no_socketpair,
-	.getname           = inet_getname,
-	.poll              = tcp_poll,
-	.ioctl             = inet_ioctl,
-	.listen            = inet_listen,
-	.shutdown          = inet_shutdown,
-	.setsockopt        = sock_common_setsockopt,
-	.getsockopt        = sock_common_getsockopt,
-	.sendmsg           = tcp_sendmsg,
-	.recvmsg           = sock_common_recvmsg,
-	.mmap              = sock_no_mmap,
-	.sendpage          = tcp_sendpage,
-	.splice_read       = tcp_splice_read,
-#endif
-};
