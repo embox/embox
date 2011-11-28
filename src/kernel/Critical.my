@@ -1,0 +1,5 @@
+package embox.kernel;
+
+module critical {
+	source "critical.c";
+}
