@@ -15,7 +15,7 @@ module sched {
 
 	depends embox.kernel.timer.timer_api; // for timeslices support
 	depends embox.hal.context; // context_switch
-//	depends embox.kernel.critical;
+	depends embox.kernel.critical;
 	depends embox.kernel.thread.sched_policy.api;
 
 }
