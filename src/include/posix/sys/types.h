@@ -17,7 +17,7 @@
 
 #ifndef __size_t_defined
 #define __size_t_defined
-typedef int size_t; /**<Used for sizes of objects*/
+typedef unsigned int size_t; /**<Used for sizes of objects*/
 #endif /* __size_t_defined */
 
 /** Note also that 'size_t' is a typedef required by the ISO C standard
@@ -42,7 +42,7 @@ typedef struct {
 
 typedef long time_t;
 
-typedef int            pid_t;
+typedef int pid_t;
 
 #endif /* __ASSEMBLER__ */
 
