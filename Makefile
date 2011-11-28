@@ -11,11 +11,9 @@ MK_DIR := $(abspath mk)
 
 ifdef __mk_ready
 
-ifeq (1,1)
+MYBUILD=1
+
 include main.mk
-else
-include embuild/core.mk
-endif
 
 else
 
