@@ -50,6 +50,7 @@ char *ctime(const time_t *t, char *buff) {
 		time -= MIN_LENGHT;
 		min++;
 	}
-	sprintf(buff, "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, min, (int)time);
+	sprintf(buff, "%04d-%02d-%02d %02d:%02d:%02d",
+		year, month, day, hour, min, (int) time);
 	return buff;
 }

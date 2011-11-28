@@ -1,9 +1,8 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 13.09.2011
+ * @date 13.09.11
  * @author Anton Bondarev
  */
 
@@ -11,13 +10,12 @@
 #include <sys/utsname.h>
 
 static struct utsname sys_name = {
-		.sysname = "Embox",
-		.nodename = "",
-		.release = "",
-		.version = "",
-		.machine = "Platform"
+	.sysname = "Embox",
+	.nodename = "",
+	.release = "",
+	.version = "",
+	.machine = "Platform"
 };
-
 
 int uname(struct utsname *name) {
 	memcpy(name, &sys_name, sizeof(sys_name));

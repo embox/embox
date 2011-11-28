@@ -110,11 +110,10 @@ static inline void __list_insert_link(struct __list_link *link,
  *   If the @a link is @c NULL.
  */
 #define __list_link_safe_cast(link, type, m_link) \
-	({                                                           \
-		struct list_link *__list_link__ = (link);                \
-		__list_link__                                            \
-				? list_element(__list_link__, type, m_link) \
-				: NULL;                                          \
+	({                                                            \
+		struct list_link *__list_link__ = (link);             \
+		__list_link__ ?                                       \
+		    list_element(__list_link__, type, m_link) : NULL; \
 	})
 
 #endif /* UTIL_LIST_IMPL_H_ */

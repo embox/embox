@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef PANIC_H_
-#define PANIC_H_
+#ifndef KERNEL_PANIC_H_
+#define KERNEL_PANIC_H_
 
 #include <kernel/printk.h>
 #include <hal/arch.h>
@@ -18,4 +18,4 @@
 		arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT); \
 	} while (0)
 
-#endif /* PANIC_H_ */
+#endif /* KERNEL_PANIC_H_ */

@@ -103,7 +103,7 @@ data_t *hashtable_search(hashtable *hash_tab, key_t *key);
  * @hash_tab - pointer to hashtable
  */
 #define hashtable_foreach(element, hash_tab) \
-	for (int i = 0; i < hash_tab->index_of_size; i++) \
+	for (size_t i = 0; i < hash_tab->index_of_size; i++) \
 		list_foreach(element, hash_tab->data[i], lnk)
 
 #endif /* UTIL_HASHTABLE_H_ */

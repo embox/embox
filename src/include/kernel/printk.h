@@ -6,12 +6,12 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef PRINTK_H_
-#define PRINTK_H_
+#ifndef KERNEL_PRINTK_H_
+#define KERNEL_PRINTK_H_
 
 #include <stdio.h>
 
 extern int printk(const char *format, ...) __attribute__ ((format
 				(printf, 1, 2)));
 
-#endif /* PRINTK_H_ */
+#endif /* KERNEL_PRINTK_H_ */

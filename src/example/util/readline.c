@@ -21,7 +21,7 @@ const char *compls[] = { "hell", "hello world" };
 static int compl(char *buf, char *out_buf) {
 	int buf_len = strlen(buf);
 	int ret = 0;
-	for (int i = 0; i < COMPLS_COUNT; i++) {
+	for (size_t i = 0; i < COMPLS_COUNT; i++) {
 		if (strncmp(buf, compls[i], buf_len) == 0) {
 			strcpy(out_buf, compls[i]);
 			out_buf += strlen(compls[i]) + 1;

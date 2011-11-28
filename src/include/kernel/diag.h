@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef DIAG_H_
-#define DIAG_H_
+#ifndef KERNEL_DIAG_H_
+#define KERNEL_DIAG_H_
 
 extern void diag_init(void);
 
@@ -17,4 +17,4 @@ extern void diag_putc(char ch);
 
 extern int diag_has_symbol(void);
 
-#endif /* DIAG_H_ */
+#endif /* KERNEL_DIAG_H_ */

@@ -6,8 +6,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef VFS_H_
-#define VFS_H_
+#ifndef FS_VFS_H_
+#define FS_VFS_H_
 
 #include <fs/node.h>
 
@@ -17,4 +17,4 @@ extern int vfs_del_leaf(node_t *nod);
 extern node_t *vfs_find_child(const char *name, node_t *parrent);
 extern node_t *vfs_find_node(const char *path, node_t *parrent);
 
-#endif /* VFS_H_ */
+#endif /* FS_VFS_H_ */

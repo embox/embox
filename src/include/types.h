@@ -1,13 +1,14 @@
 /**
  * @file
+ * @brief defines primitive system data types
  *
  * @date 12.11.09
  * @author Nikolay Korotky
  * @author Eldar Abusalimov
  */
 
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef TYPES_H_
+#define TYPES_H_
 
 #ifndef __ASSEMBLER__
 
@@ -44,7 +45,6 @@ typedef unsigned long int 	u32_t;
 #define NULL ((void *) 0x0)
 #endif
 
-
 #endif /* __ASSEMBLER__ */
 
-#endif /* TYPES_H */
+#endif /* TYPES_H_ */

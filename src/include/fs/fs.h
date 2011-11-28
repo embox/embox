@@ -5,8 +5,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef FS_H_
-#define FS_H_
+#ifndef FS_FS_H_
+#define FS_FS_H_
 
 #include <lib/list.h>
 #include <fs/file.h>
@@ -31,9 +31,9 @@ typedef struct fsop_desc {
  * our system.
  */
 typedef struct fs_drv {
-	const char          *name;
-	const struct file_operations   *file_op;
-	const fsop_desc_t         *fsop;
+	const char                   *name;
+	const struct file_operations *file_op;
+	const fsop_desc_t            *fsop;
 } fs_drv_t;
 
 
@@ -67,4 +67,4 @@ extern int filesystem_register_drv(fs_drv_t *);
  */
 extern int filesystem_unregister_drv(fs_drv_t *);
 
-#endif /* FS_H_ */
+#endif /* FS_FS_H_ */

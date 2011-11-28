@@ -1,14 +1,13 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 14.09.2011
  * @author Anton Bondarev
  */
 
-#ifndef FILE_DESC_H_
-#define FILE_DESC_H_
+#ifndef FS_FILE_DESC_H_
+#define FS_FILE_DESC_H_
 
 #include <lib/list.h>
 #include <fs/node.h>
@@ -26,4 +25,4 @@ extern struct file_desc *file_desc_alloc(void);
 
 extern void file_desc_free(struct file_desc *desc);
 
-#endif /* FILE_DESC_H_ */
+#endif /* FS_FILE_DESC_H_ */
