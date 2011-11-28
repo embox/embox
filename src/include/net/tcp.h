@@ -60,7 +60,6 @@ enum {
 typedef struct tcp_sock {
 	/* inet_sock has to be the first member */
 	struct inet_sock inet;
-	char state;
 	__be32 seq;
 	__be32 seq_unack;
 	__be32 ack_seq;

@@ -101,6 +101,7 @@ typedef struct proto {
 	void (*close)(sock_t *sk, long timeout);
 	int (*connect)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
 	int (*disconnect)(sock_t *sk, int flags);
+	int (*listen)(sock_t *sk, int backlog);
 	sock_t *(*accept)(sock_t *sk, int flags, int *err);
 	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
 	int (*init)(sock_t *sk);

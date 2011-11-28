@@ -136,7 +136,7 @@ static struct tcp_sock *tcp_lookup(in_addr_t daddr, __be16 dport) {
 #define TCP_ST_NO_SEND 1
 
 static void tcp_set_st(struct tcp_sock *tcpsk, char state) {
-	tcpsk->state = state;
+	TCP_SOCK(tcpsk)->sk_state = state;
 }
 static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcphdr_t *tcph, tcphdr_t *out_tcph) {
@@ -164,22 +164,34 @@ static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
 	}
 	return TCP_ST_NO_SEND;
 }
+
+static int tcp_v4_listen(struct sock *sk, int backlog) {
+	sk->sk_state = TCP_LISTEN;
+	return 0;
+}
+
 static int (*tcp_st_handler[TCP_MAX_STATE])(struct tcp_sock *tcpsk,
 		struct sk_buff *skb, tcphdr_t *tcph, tcphdr_t *out_tcph) = {
 	[TCP_LISTEN] = tcp_st_listen
 };
 
 static int tcp_v4_rcv(sk_buff_t *skb) {
-
 	iphdr_t *iph = ip_hdr(skb);
 	tcphdr_t *tcph = tcp_hdr(skb);
 	struct tcp_sock *sock = tcp_lookup(iph->daddr, tcph->dest);
 
-	char out_iph[TCP_V4_HEADER_MIN_SIZE];
+	char out_tcph_raw[TCP_V4_HEADER_MIN_SIZE];
+	tcphdr_t *out_tcph = (tcphdr_t *) out_tcph_raw;
 
-	if (tcp_st_handler[sock->state](sock, skb, tcph,
-				(struct tcphdr *) out_iph) == TCP_ST_SEND) {
-		//send
+
+	if (tcp_st_handler[TCP_SOCK(sock)->sk_state](sock, skb, tcph, out_tcph)
+			== TCP_ST_SEND) {
+		uint32_t ip_dest = skb->nh.iph->daddr;
+		uint32_t ip_src  = skb->nh.iph->saddr;
+		out_tcph->dest = tcph->source;
+		out_tcph->source = tcph->dest;
+
+		ip_send_reply(NULL, ip_dest, ip_src, skb, skb->len);
 	}
 	return 0;
 }
@@ -189,6 +201,7 @@ struct proto tcp_prot = {
 	.init                   = tcp_v4_init_sock,
 	.hash                   = tcp_v4_hash,
 	.unhash                 = tcp_v4_unhash,
+	.listen			= tcp_v4_listen,
 	.sendmsg		= tcp_v4_sendmsg,
 	.recvmsg		= tcp_v4_recvmsg,
 	.sock_alloc		= tcp_v4_sock_alloc,
