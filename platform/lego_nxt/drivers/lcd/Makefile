@@ -10,4 +10,4 @@ $_SRCS-nxt_lcd += ../../lib/display.c
 $_MODS                  += nxt_diag_lcd
 $_SRCS-nxt_diag_lcd     += diag.c
 $_DEPS-nxt_diag_lcd     += $(PLATFORM).driver.nxt_lcd
-$_PROVIDES-nxt_diag_lcd += embox.hal.diag
+$_PROVIDES-nxt_diag_lcd += embox.driver.diag.diag_api

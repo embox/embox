@@ -1,8 +1,4 @@
 
-PROVIDE(diag_init = nosys);
-PROVIDE(diag_getc = nosys);
-PROVIDE(diag_putc = nosys);
-
 PROVIDE(irq_dispatch = nosys);
 
 PROVIDE(printk = nosys);

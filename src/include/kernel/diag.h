@@ -9,6 +9,8 @@
 #ifndef KERNEL_DIAG_H_
 #define KERNEL_DIAG_H_
 
+
+//TODO here header implementation
 extern void diag_init(void);
 
 extern char diag_getc(void);

@@ -7,7 +7,7 @@ $_CPPFLAGS += -D__HAL__
 
 $_CPPFLAGS += -I$(SRC_DIR)/include/posix
 
-$_APIS += interrupt clock diag watchdog
+$_APIS += interrupt clock watchdog
 
 $_MODS += arch context
 $_MODS += traps

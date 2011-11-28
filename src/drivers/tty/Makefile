@@ -11,7 +11,7 @@ $_DEPS-tty += embox.cmd.esh
 #$_DEPS-tty += embox.kernel.thread.sched
 $_DEPS-tty += tty_common
 $_DEPS-tty += embox.kernel.evdispatch
-$_REQUIRES-tty += embox.hal.diag
+$_REQUIRES-tty += embox.driver.diag.diag_api
 
 $_MODS += tty_one_console
 $_SRCS-tty_one_console += tty_one_console/tty_one_console.c tty_one_console/tty_action_oc.c
@@ -22,7 +22,7 @@ $_USES-tty_one_console += libc.a
 $_DEPS-tty_one_console += embox.driver.terminal
 #$_DEPS-tty_one_console += embox.cmd.esh
 $_DEPS-tty_one_console += tty_common
-$_REQUIRES-tty_one_console += embox.hal.diag
+$_REQUIRES-tty_one_console += embox.driver.diag.diag_api
 
 $_MODS += tty_common
 $_SRCS-tty_common += tty_common/tty_action_common.c tty_common/vconsole.c

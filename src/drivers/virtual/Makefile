@@ -2,7 +2,7 @@ $_PACKAGE = embox.driver.virtual
 
 $_MODS 					+= diag_device
 $_SRCS-diag_device	  	+= diag_device.c
-$_REQUIRES-diag_device	+= embox.hal.diag
+$_REQUIRES-diag_device	+= embox.driver.diag.diag_api
 
 $_MODS 					+= zero
 $_SRCS-zero 			+= zero.c
