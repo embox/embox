@@ -67,8 +67,8 @@ void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 
 	if (dirty && this->string[i] != '\0') {
 		move_cursor_to(this, i);
-		terminal_transmit_va(this->terminal, TERMINAL_TOKEN_ERASE_SCREEN, 1,
-				TERMINAL_TOKEN_PARAM_ERASE_DOWN_RIGHT);
+		terminal_transmit_va(this->terminal, TERMINAL_TOKEN_ERASE_LINE, 1);
+		terminal_transmit_va(this->terminal, TERMINAL_TOKEN_SGR, 0);
 	}
 	this->string[i] = '\0';
 

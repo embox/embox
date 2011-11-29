@@ -212,6 +212,9 @@ static void vga_esc_putc(vga_console_t *con, char c) {
 			break;
 		}
 		break;
+	case 'D':
+		con->x -= 1;
+		break;
 	}
 }
 
