@@ -1,16 +1,13 @@
 /**
  * @file
- * @brief Serial driver for x86 (compatible with 16550)
+ * @brief diag interface for serial port
  *
- * @date 12.04.10
- * @author Nikolay Korotky
+ * @date 08.09.11
+ * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <kernel/diag.h>
 #include <asm/io.h>
-#include <kernel/irq.h>
-#include <stdio.h>
-#include <drivers/serial.h>
 
 /**
  * UART registers
@@ -94,12 +91,7 @@
 
 #define DIVISOR(baud) (115200 / baud)
 
-//static bool serial_inited = 0;
-#if 0
-static int uart_init(void) {
-//	if (serial_inited) {
-//		return 1;
-//	}
+void diag_init(void) {
 	/* Turn off the interrupt */
 	out8(0x0, COM0_PORT + UART_IER);
 	/* Set DLAB */
@@ -113,110 +105,18 @@ static int uart_init(void) {
 	out8(UART_ENABLE_FIFO, COM0_PORT + UART_FCR);
 	/* Uart enable modem (turn on DTR, RTS, and OUT2) */
 	out8(UART_ENABLE_MODEM, COM0_PORT + UART_MCR);
-//	serial_inited = 1;
-	return 0;
 }
 
+char diag_getc(void) {
+	while (!diag_has_symbol());
+	return in8(COM0_PORT + UART_RX);
+}
 
-static void uart_putc(char ch) {
+void diag_putc(char ch) {
 	while (!(in8(COM0_PORT + UART_LSR) & UART_EMPTY_TX));
 	out8((uint8_t) ch, COM0_PORT + UART_TX);
 }
 
-
-static int uart_has_symbol(void) {
-//	if (!serial_inited) {
-//		return EOF;
-//	}
+int diag_has_symbol(void) {
 	return in8(COM0_PORT + UART_LSR) & UART_DATA_READY;
 }
-static char uart_getc(void) {
-	while (!uart_has_symbol());
-	return in8(COM0_PORT + UART_RX);
-}
-#endif
-#ifdef CONFIG_TTY_DEVICE
-static bool handler_was_set = false;
-#define COM0_IRQ_NUM 0x4
-#define UART_IER_RX_ENABLE 0x1
-int uart_set_irq_handler(irq_handler_t pfunc) {
-	/*FIXME x86 uart 4 is number only for first port*/
-	// TODO check return code.
-	irq_attach(COM0_IRQ_NUM, pfunc,0,NULL,"uart");
-	handler_was_set = true;
-	/*enable rx interrupt*/
-	out8(UART_IER_RX_ENABLE, COM0_PORT + UART_IER);
-	return 0;
-}
-
-int uart_remove_irq_handler(void) {
-	out8(UART_DLAB, COM0_PORT + UART_LCR);
-	/*disable all uart interrupts*/
-	out8(0x0, COM0_PORT + UART_IER);
-	if (handler_was_set) {
-		irq_detach(COM0_IRQ_NUM, NULL);
-		handler_was_set = false;
-	}
-
-	return 0;
-}
-
-
-#include <embox/device.h>
-#include <fs/file.h>
-#include <drivers/tty.h>
-
-static tty_device_t tty;
-
-static void *open(struct file_desc *desc);
-static int close(struct file_desc *desc);
-static size_t read(void *buf, size_t size, size_t count, void *file);
-static size_t write(const void *buff, size_t size, size_t count, void *file);
-
-static file_operations_t file_op = {
-		.fread = read,
-		.fopen = open,
-		.fclose = close,
-		.fwrite = write
-};
-
-static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
-	tty_add_char(&tty, uart_getc());
-	return 0;
-}
-
-/*
- * file_operation
- */
-static void *open(struct file_desc *desc) {
-	tty.file_op = &file_op;
-	desc->ops = &file_op;
-	tty_register(&tty);
-	uart_set_irq_handler(irq_handler);
-	return (void *) desc;
-}
-
-static int close(struct file_desc *desc) {
-	tty_unregister(&tty);
-	uart_remove_irq_handler();
-	return 0;
-}
-
-static size_t read(void *buf, size_t size, size_t count, void *file) {
-	//TODO if we havn't irq
-	return 0;
-}
-
-static size_t write(const void *buff, size_t size, size_t count, void *file) {
-	size_t cnt = 0;
-	char *b = (char*) buff;
-
-	while (cnt != count * size) {
-		uart_putc(b[cnt++]);
-	}
-	return 0;
-}
-
-
-EMBOX_DEVICE("uart", &file_op);
-#endif

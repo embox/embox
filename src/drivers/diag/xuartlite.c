@@ -9,14 +9,14 @@
 
 #include <types.h>
 #include <bitops.h>
-#include <kernel/irq.h>
+#include <kernel/diag.h>
 
-typedef struct uart_regs {
+typedef struct diag_regs {
 	uint32_t rx_data;
 	uint32_t tx_data;
 	uint32_t status;
 	uint32_t ctrl;
-} uart_regs_t;
+} diag_regs_t;
 
 /*status registers bit definitions*/
 #define STATUS_PAR_ERROR_BIT          24
@@ -46,7 +46,7 @@ typedef struct uart_regs {
 #define CTRL_RST_TX_FIFO             REVERSE_MASK(CTRL_RST_TX_FIFO_BIT)
 
 /*set registers base*/
-static volatile uart_regs_t *uart = (uart_regs_t *) CONFIG_XILINX_UARTLITE_BASEADDR;
+static volatile diag_regs_t *uart = (diag_regs_t *) CONFIG_XILINX_UARTLITE_BASEADDR;
 
 static inline int is_rx_empty(void) {
 	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
@@ -56,31 +56,21 @@ static inline int can_tx_trans(void) {
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 
-int uart_init(void) {
-	return 0;
+void diag_init(void) {
+
 }
 
-char uart_getc(void) {
+int diag_has_symbol(void) {
+	return !is_rx_empty();
+}
+
+char diag_getc(void) {
 	while (is_rx_empty());
 	return (char) (uart->rx_data & 0xFF);
 }
 
-void uart_putc(char ch) {
+void diag_putc(char ch) {
 	while (!can_tx_trans());
 	uart->tx_data = (unsigned int)ch;
 }
 
-int uart_has_symbol(void) {
-	return !is_rx_empty();
-}
-
-/* TODO uart_set_irq_handler haven't to be used*/
-int uart_set_irq_handler(irq_handler_t pfunc) {
-	// TODO check return code.
-	irq_attach(CONFIG_XILINX_UARTLITE_IRQ_NUM, pfunc, 0, "xil_uartlite", NULL);
-	return 0;
-}
-
-int uart_remove_irq_handler(void) {
-	return 0;
-}

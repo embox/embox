@@ -11,8 +11,16 @@ module apbuart extends diag_api {
 	source "apbuart.c";
 }
 
-module serial extends diag_api {
-	source "serial.c";
+module serial_port extends diag_api {
+	source "serial_port.c";
+}
+
+module at91_uart extends diag_api {
+	source "at91_uart.c";
+}
+
+module xuartlite extends diag_api {
+	source "xuartlite.c";
 }
 
 module vga extends diag_api {

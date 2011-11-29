@@ -8,7 +8,7 @@
 
 #ifndef DRIVERS_SERIAL_H_
 #define DRIVERS_SERIAL_H_
-
+#if 0
 extern int uart_init(void);
 
 extern char uart_getc(void);
@@ -16,5 +16,5 @@ extern char uart_getc(void);
 extern void uart_putc(char c);
 
 extern int uart_has_symbol(void);
-
+#endif
 #endif /* SERIAL_H_ */

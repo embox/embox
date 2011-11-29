@@ -18,9 +18,6 @@
 static void kernel_init(void);
 static int init(void);
 
-// XXX remove from here. -- Eldar
-int uart_init(void);
-
 /**
  * The setup of the system, the run level and execution of the idle function.
  */
@@ -44,8 +41,6 @@ static void kernel_init(void) {
 	arch_init();
 
 	diag_init();
-
-	uart_init(); // XXX
 
 	ipl_init();
 }

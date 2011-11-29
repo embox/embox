@@ -77,7 +77,8 @@ static volatile struct apbuart_regs *dev_regs;
 static int dev_regs_init(void);
 static irq_nr_t irq_num;
 
-int uart_init(void) {
+
+static int uart_init(void) {
 	int err;
 
 	if (NULL != dev_regs) {
@@ -96,13 +97,13 @@ int uart_init(void) {
 	return 0;
 }
 
-void uart_putc(char ch) {
+static void uart_putc(char ch) {
 	while (!(UART_STAT_TE & REG_LOAD(&dev_regs->status))) {
 	}
 	REG_STORE(&dev_regs->data, (uint32_t) ch);
 }
 
-char uart_getc(void) {
+static char uart_getc(void) {
 	while (!(UART_STAT_DR & REG_LOAD(&dev_regs->status))) {
 	}
 	return ((char) REG_LOAD(&dev_regs->data));
@@ -132,26 +133,6 @@ static int dev_regs_init() {
 #endif /* CONFIG_AMBAPP */
 
 
-static bool handler_was_set = false;
-
-int uart_set_irq_handler(irq_handler_t pfunc) {
-	REG_ORIN((&dev_regs->ctrl), UART_CTRL_RI);
-
-	// TODO check return code.
-	irq_attach(irq_num, pfunc,0,NULL,"uart");
-	handler_was_set = true;
-	return 0;
-}
-
-int uart_remove_irq_handler(void) {
-	REG_ANDIN((&dev_regs->ctrl), ~UART_CTRL_RI);
-	if (handler_was_set) {
-		irq_detach(irq_num, NULL);
-		handler_was_set = false;
-	}
-
-	return 0;
-}
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
@@ -171,6 +152,9 @@ static file_operations_t file_op = {
  * file_operation
  */
 static void *apb_open(struct file_desc *desc) {
+	if(NULL == dev_regs) {
+		uart_init();
+	}
 	desc->ops = &file_op;
 	return (void *) desc;
 }

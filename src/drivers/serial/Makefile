@@ -3,7 +3,7 @@ $_PACKAGE := embox.driver.serial
 $_APIS += embox.driver.serial
 
 $_MODS                 += xuartlite
-$_SRCS-xuartlite       += serial_xuartlite.c
+$_SRCS-xuartlite       += xuartlite.c
 $_DEPS-xuartlite       += embox.kernel.irq
 $_PROVIDES-xuartlite   += embox.driver.serial
 

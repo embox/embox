@@ -9,5 +9,6 @@ PROVIDE(timer_close = nosys);
 PROVIDE(timers_off = nosys);
 PROVIDE(usleep = nosys);
 
-/* XXX remove from here. -- Eldar */
+/* XXX remove from here. -- Eldar
 PROVIDE(uart_init = nosys);
+*/

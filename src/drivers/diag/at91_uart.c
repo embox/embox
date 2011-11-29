@@ -1,13 +1,16 @@
 /**
  * @file
- * @brief Implements serial driver for at91 controller
  *
- * @date 07.06.10
- * @author Anton Kozlov
+ * @brief
+ *
+ * @date 29.11.2011
+ * @author Anton Bondarev
  */
 
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
+
+#include <kernel/diag.h>
 
 /* Baudrate=SYS_CLOCK/(8(2-Over)CD) = MCK/16CD = 18432000/(16*30) = 38400
  * CD = SYS_CLOCK / (16 * UART_BAUD_RATE)
@@ -15,7 +18,7 @@
 #define UART_CLOCK_DIVIDER (CONFIG_SYS_CLOCK / (16 * CONFIG_UART_BAUD_RATE))
 #define TTGR_DISABLE 0
 
-int uart_init(void) {
+void diag_init(void) {
 	/* Disabling controling PA5 and PA6 by PIO */
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA5_RXD0 | AT91C_PA6_TXD0);
 	/* Selecting control by USART controller */
@@ -32,23 +35,21 @@ int uart_init(void) {
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_US0);
 	/* enabling RX, TX */
 	REG_STORE(AT91C_US0_CR, AT91C_US_RXEN | AT91C_US_TXEN);
-	return 0;
+
 }
 
-int uart_has_symbol(void) {
+int diag_has_symbol(void) {
 	return (AT91C_US_RXRDY & REG_LOAD(AT91C_US0_CSR));
 }
 
-char uart_getc(void) {
-	while (!uart_has_symbol()) {
+char diag_getc(void) {
+	while (!diag_has_symbol()) {
 	}
 	return (char) REG_LOAD(AT91C_US0_RHR);
 }
 
-void uart_putc(char ch) {
+void diag_putc(char ch) {
 	while (!(AT91C_US_TXRDY & REG_LOAD(AT91C_US0_CSR))) {
 	}
 	REG_STORE(AT91C_US0_THR, (unsigned long) ch);
 }
-
-
