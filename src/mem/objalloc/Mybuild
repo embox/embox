@@ -1,0 +1,14 @@
+package embox.mem;
+
+abstract module objalloc { }
+
+module pool_adapter extends objalloc {
+	source "pool_adapter.c", "pool_adapter.h";
+	depends embox.mem.pool2;
+}
+
+module slab_adapter extends objalloc {
+	source "slab_adapter.c", "slab_adapter.h";
+	depends embox.mem.slab;
+}
+
