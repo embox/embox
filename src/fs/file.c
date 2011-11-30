@@ -41,8 +41,11 @@ FILE *fopen(const char *path, const char *mode) {
 	desc->node = nod;
 
 	drv = nod->fs_type;
-
-	desc->ops = (struct file_operations *) drv->file_op;
+	if(NULL != nod->file_info) {
+		desc->ops = (struct file_operations *)nod->file_info;
+	} else {
+		desc->ops = (struct file_operations *) drv->file_op;
+	}
 
 	if (NULL == drv->file_op->fopen) {
 		errno = -EINVAL;

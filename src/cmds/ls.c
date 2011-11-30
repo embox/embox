@@ -68,7 +68,7 @@ static int exec(int argc, char **argv) {
 
 	int opt;
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
+	while (-1 != (opt = getopt(argc - 1, argv, "Rlh"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
