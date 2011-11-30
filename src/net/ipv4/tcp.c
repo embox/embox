@@ -74,13 +74,14 @@ static inline void rebuild_tcp_header(__be32 ip_src, __be32 ip_dest,
 	tcph->doff = TCP_V4_HEADER_MIN_SIZE >> 2;
 	tcph->window = htons(window);
 
+	tcph->check = 0;
 	tcph->check = tcp_checksum(ip_dest, ip_src, IPPROTO_TCP,
 		       tcph, TCP_V4_HEADER_SIZE(tcph));
 
 }
 
 static int tcp_v4_data_len(struct sk_buff *skb) {
-	return skb->nh.iph->tot_len - TCP_V4_HEADER_SIZE(skb->h.th);
+	return ntohs(skb->nh.iph->tot_len) -IP_HEADER_SIZE(skb->nh.iph) - TCP_V4_HEADER_SIZE(skb->h.th);
 }
 
 int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
