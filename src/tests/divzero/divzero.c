@@ -2,28 +2,29 @@
  * @file
  *
  * @date 26.05.10
- * @author Alexander Batyukov, Anton Kozlov
+ * @author Alexander Batyukov
+ * @author Anton Kozlov
  */
 
-#include <types.h>
 #include <embox/test.h>
+
+#include <types.h>
 #include <hal/env/traps_core.h>
 #include <hal/test/traps_core.h>
 
-EMBOX_TEST(run);
+EMBOX_TEST_SUITE("divzero test");
 
 static volatile uint32_t a = 17;
 static int was_in_trap = 0;
 
 /* MMU data access exception handler */
 static int dfault_handler(uint32_t trap_nr, void *data) {
-	TRACE("\n ]:-> division by zero\n");
 	was_in_trap = 1;
 	/* skip instruction */
 	return 0;
 }
 
-static int run(void) {
+TEST_CASE("division by zero must generate an exception") {
 	volatile uint32_t zero = 0;
 
 	traps_env_t old_env;
@@ -37,7 +38,5 @@ static int run(void) {
 
 	traps_restore_env(&old_env);
 
-	/* TRACE("\t\ta = %d\n", a); */
-
-	return !was_in_trap;
+	test_assert_true(was_in_trap);
 }

@@ -1,13 +1,13 @@
 /**
  * @brief
  *
- * @date 6.07.2011
+ * @date 06.07.11
  * @author Alexandr Kalmuk
  */
 
-#include <stdio.h>
-
 #include <embox/test.h>
+
+#include <stdio.h>
 #include <framework/mod/member/self.h>
 
 EMBOX_TEST_SUITE("simple test for member injection");
@@ -18,7 +18,7 @@ static int flag_member_init(struct mod_member *info) {
 }
 
 static const struct mod_member_ops flag_ops = {
-		.init = &flag_member_init,
+	.init = &flag_member_init,
 };
 
 static int flag = 0;
