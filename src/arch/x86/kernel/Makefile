@@ -3,7 +3,7 @@
 # TODO Suggested renaming package to arch.x86.kernel
 $_PACKAGE := embox.hal
 
-$_MODS_CORE += locore context
+$_MODS += locore context
 
 $_SRCS-locore  += boot.S
 $_SRCS-locore  += idt.c entry.S irq_handler.c

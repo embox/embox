@@ -468,6 +468,7 @@ check_undefined_mods = \
       Undefined mod $(mod)) \
   )
 
+MODS_ENABLE += embox.kernel.main# XXX just for now. -- Eldar
 MODS_ENABLE := $(sort $(filter $(MODS),$(MODS_ENABLE)))
 
 # Prepare the list of mods for the build.

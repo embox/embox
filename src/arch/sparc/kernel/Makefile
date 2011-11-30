@@ -3,7 +3,7 @@
 # TODO Suggested renaming package to arch.sparc.kernel
 $_PACKAGE := embox.hal
 
-$_MODS_CORE += locore
+$_MODS += locore
 
 $_SRCS-locore += head.S
 $_SRCS-locore += sys.c
