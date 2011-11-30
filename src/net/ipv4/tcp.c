@@ -22,6 +22,7 @@
 #include <embox/net/proto.h>
 #include <net/skbuff.h>
 #include <errno.h>
+#include <assert.h>
 
 EMBOX_NET_PROTO(IPPROTO_TCP, tcp_v4_rcv, NULL);
 
@@ -39,7 +40,10 @@ static void tcp_v4_sock_free(sock_t *sock) {
 
 int tcp_v4_init_sock(sock_t *sk) {
 	sk->sk_state = TCP_CLOSE;
-
+#if 0
+	((struct tcp_sock *) sk)->this_wind = 0;
+	((struct tcp_sock *) sk)->rem_wind = 0;
+#endif
 	return 0;
 }
 
@@ -57,20 +61,26 @@ static inline unsigned short tcp_checksum (__be32 saddr, __be32 daddr, __u8 prot
 }
 
 static inline void rebuild_tcp_header(__be32 ip_src, __be32 ip_dest,
-		__be16 source, __be16 dest, __be32 seq, __be32 ack_seq,
+		__be16 source, __be16 dest, /*__be32 seq, __be32 ack_seq, */
 		__be16 window,
-	       	struct tcphdr *tcph) {
-	tcph->dest = source;
-	tcph->source = dest;
+	       	struct sk_buff *skb) {
+	struct tcphdr *tcph = tcp_hdr(skb);
+	tcph->source = source;
+	tcph->dest = dest;
+#if 0
 	tcph->seq = seq;
 	tcph->ack_seq = ack_seq;
-
+#endif
 	tcph->doff = TCP_V4_HEADER_MIN_SIZE >> 2;
 	tcph->window = htons(window);
 
 	tcph->check = tcp_checksum(ip_dest, ip_src, IPPROTO_TCP,
 		       tcph, TCP_V4_HEADER_SIZE(tcph));
 
+}
+
+static int tcp_v4_data_len(struct sk_buff *skb) {
+	return skb->nh.iph->tot_len - TCP_V4_HEADER_SIZE(skb->h.th);
 }
 
 int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
@@ -91,8 +101,8 @@ int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill TCP header */
 	//rebuild_tcp_header(skb, inet->sport, inet->dport, len);
-	rebuild_tcp_header(0, 0, inet->sport, inet->dport, tcpsk->seq, tcpsk->ack_seq,
-		       14200, tcp_hdr(skb));
+	rebuild_tcp_header(0, 0, inet->sport, inet->dport, /*tcpsk->this.seq, tcpsk->rem.seq, */
+		       tcpsk->this.wind, skb);
 	return ip_send_packet(inet, skb);
 }
 
@@ -107,8 +117,8 @@ int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	skb = skb_recv_datagram(sk, flags, 0, 0);
 	if (skb && skb->len > 0) {
 		struct tcphdr *tcph = tcp_hdr(skb);
-		if (len > (skb->nh.iph->tot_len - TCP_V4_HEADER_SIZE(tcph))) {
-			len = skb->nh.iph->tot_len - TCP_V4_HEADER_SIZE(tcph);
+		if (len > tcp_v4_data_len(skb)) {
+			len = tcp_v4_data_len(skb);
 		}
 		memcpy((void *) msg->msg_iov->iov_base,
 				(void *) (skb->h.raw + TCP_V4_HEADER_SIZE(tcph)), len);
@@ -155,8 +165,10 @@ static struct tcp_sock *tcp_lookup(in_addr_t daddr, __be16 dport) {
 }
 //TODO end of hash table routines
 
-#define TCP_ST_SEND 1
-#define TCP_ST_NO_SEND 1
+enum {
+	TCP_ST_NO_SEND = 1,
+	TCP_ST_SEND
+};
 
 static void tcp_set_st(struct tcp_sock *tcpsk, char state) {
 	TCP_SOCK(tcpsk)->sk_state = state;
@@ -181,9 +193,9 @@ static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, str
 #endif
 static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcphdr_t *tcph, tcphdr_t *out_tcph) {
-	if (TCP_SOCK(tcpsk)->sk_state != TCP_LISTEN) {
-		return TCP_ST_NO_SEND;
-	}
+
+	assert(TCP_SOCK(tcpsk)->sk_state == TCP_LISTEN);
+
 	if (tcph->ack) {
 		// segment RST
 		out_tcph->seq = tcph->ack_seq;
@@ -191,10 +203,12 @@ static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		return TCP_ST_SEND;
 	}
 	if (tcph->syn) {
-		tcpsk->seq_unack = 100;
-		tcpsk->seq = tcpsk->seq_unack + 1;
-		tcpsk->ack_seq = ntohl(tcph->seq) + 1;
+		tcpsk->this_unack = 100;
+		tcpsk->this.seq = tcpsk->this_unack + 1;
+		tcpsk->rem.seq = ntohl(tcph->seq) + 1;
 
+		out_tcph->seq = ntohl(tcpsk->this_unack);
+		out_tcph->ack_seq = ntohl(tcpsk->rem.seq);
 		out_tcph->syn |= 1;
 		out_tcph->ack |= 1;
 
@@ -205,14 +219,62 @@ static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
 	return TCP_ST_NO_SEND;
 }
 
-static int tcp_v4_listen(struct sock *sk, int backlog) {
-	sk->sk_state = TCP_LISTEN;
-	return 0;
+static int tcp_st_syn_recv(struct tcp_sock *tcpsk, struct sk_buff *skb,
+		tcphdr_t *tcph, tcphdr_t *out_tcph) {
+	unsigned long seq = ntohl(tcph->seq);
+	unsigned long ack = ntohl(tcph->ack_seq);
+
+	assert(TCP_SOCK(tcpsk)->sk_state == TCP_SYN_RECV);
+
+	if (tcpsk->rem.seq == seq) {
+		//if ! tcph->rst
+		//if ! tcph->syn
+		if (tcph->ack)  {
+			if (ack == tcpsk->this.seq) {
+				//tcpsk->this_unack = tcpsk->this.seq;
+				tcp_set_st(tcpsk, TCP_ESTABIL);
+			} else {
+				if (tcph->fin) {
+				} else {
+				}
+			}
+		}
+	} else if (tcph->rst) {
+		out_tcph->ack |= 1; //CHECK about unack & ack
+		return TCP_ST_SEND;
+	}
+
+	return TCP_ST_NO_SEND;
+}
+
+static int tcp_st_estabil(struct tcp_sock *tcpsk, struct sk_buff *skb,
+		tcphdr_t *tcph, tcphdr_t *out_tcph) {
+	unsigned long seq = ntohl(tcph->seq);
+	unsigned long ack = ntohl(tcph->ack_seq);
+
+	assert(TCP_SOCK(tcpsk)->sk_state == TCP_ESTABIL);
+
+	if (!tcph->rst && !tcph->syn && tcph->ack) {
+		if (tcpsk->this_unack <= ack && ack <= tcpsk->this.seq) {
+			tcpsk->this_unack = ack;
+			if (seq == tcpsk->rem.seq) {
+				tcpsk->rem.seq += tcp_v4_data_len(skb);
+				sock_queue_rcv_skb((struct sock *) tcpsk, skb_copy(skb, 0));
+				out_tcph->seq = htonl(tcpsk->rem.seq);
+				out_tcph->ack_seq = htonl(tcpsk->this_unack);
+				out_tcph->ack |= 1;
+				return TCP_ST_SEND;
+			}
+		}
+	}
+	return TCP_ST_NO_SEND;
 }
 
 static int (*tcp_st_handler[TCP_MAX_STATE])(struct tcp_sock *tcpsk,
 		struct sk_buff *skb, tcphdr_t *tcph, tcphdr_t *out_tcph) = {
-	[TCP_LISTEN] = tcp_st_listen
+	[TCP_LISTEN]   = tcp_st_listen,
+	[TCP_SYN_RECV] = tcp_st_syn_recv,
+	[TCP_ESTABIL]  = tcp_st_estabil
 };
 
 static int tcp_v4_rcv(sk_buff_t *skb) {
@@ -222,26 +284,37 @@ static int tcp_v4_rcv(sk_buff_t *skb) {
 
 	char out_tcph_raw[TCP_V4_HEADER_MIN_SIZE];
 	tcphdr_t *out_tcph = (tcphdr_t *) out_tcph_raw;
+	memset(out_tcph, 0, TCP_V4_HEADER_SIZE(out_tcph));
+	out_tcph->doff = TCP_V4_HEADER_MIN_SIZE >> 2;
 
 	if (sock == NULL) {
 		return -1;
 	}
-	memset(out_tcph, 0, TCP_V4_HEADER_SIZE(out_tcph));
+
 	if (tcp_st_handler[TCP_SOCK(sock)->sk_state](sock, skb, tcph, out_tcph)
 			== TCP_ST_SEND) {
-		uint32_t ip_dest = skb->nh.iph->daddr;
-		uint32_t ip_src  = skb->nh.iph->saddr;
+		uint16_t dest = tcph->dest;
+		uint16_t src  = tcph->source;
 
-		rebuild_tcp_header(ip_dest, ip_src, tcph->source, tcph->dest,
-			       	htonl(sock->seq_unack), htonl(sock->ack_seq),
-				14200, out_tcph);
+		memcpy(tcp_hdr(skb), out_tcph, TCP_V4_HEADER_SIZE(out_tcph));
+		rebuild_tcp_header(skb->nh.iph->daddr, skb->nh.iph->saddr, dest, src,
+			        /* htonl(sock->this.seq), htonl(sock->rem.seq), */
+				htons(sock->this.wind), skb);
 
-		memcpy(tcp_hdr(skb), out_tcph, TCP_V4_HEADER_MIN_SIZE);
 		skb->len = ETH_HEADER_SIZE +
-				IP_HEADER_SIZE(iph) + TCP_V4_HEADER_MIN_SIZE;
-		ip_send_reply(NULL, ip_dest, ip_src, skb, ETH_HEADER_SIZE +
-				IP_HEADER_SIZE(iph) + TCP_V4_HEADER_MIN_SIZE);
+				IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE;
+
+		skb->nh.iph->tot_len = htons(IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE);
+		ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, skb, skb->len);
+	} else {
+		kfree_skb(skb);
 	}
+	return 0;
+}
+
+static int tcp_v4_listen(struct sock *sk, int backlog) {
+	sk->sk_state = TCP_LISTEN;
+	((struct tcp_sock *) sk)->this.wind = 100;
 	return 0;
 }
 

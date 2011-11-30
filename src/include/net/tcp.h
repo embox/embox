@@ -66,12 +66,22 @@ enum {
 	TCP_MAX_STATE
 };
 
+struct tcp_seq_state {
+	unsigned long  seq;
+	unsigned short wind;
+};
+
 typedef struct tcp_sock {
 	/* inet_sock has to be the first member */
 	struct inet_sock inet;
+#if 0
 	__be32 seq;
 	__be32 seq_unack;
 	__be32 ack_seq;
+#endif
+	unsigned long this_unack;
+	struct tcp_seq_state this;
+	struct tcp_seq_state rem;
 	unsigned short mss;
 } tcp_sock_t;
 
