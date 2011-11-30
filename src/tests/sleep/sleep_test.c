@@ -1,9 +1,8 @@
 /**
- * @file sleep_test.c
+ * @file
  * @brief Tests for sleep function
  *
  * @date 06.07.11
- * @author TODO Your name here
  * @author Ilia Vaprol
  */
 
