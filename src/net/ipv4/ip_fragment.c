@@ -99,7 +99,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	int ihlen;
 
 	tmp = buf->next_skbuff;
-
+	//TODO
 	ihlen = (tmp->h.raw - tmp->data) + UDP_HEADER_SIZE;
 	skb = alloc_skb(buf->len + ihlen, 0);
 	memcpy(skb->data, tmp->data, ihlen);
@@ -147,8 +147,8 @@ static struct dgram_buf *buf_create(struct iphdr *iph) {
 }
 
 static void buf_delete(struct dgram_buf *buf) {
-	list_del((struct list_head*)buf);
-	//pool_free(&__dgram_bufs, (void*)buf);
+	list_del(&buf->next_buf);
+	pool_free(&__dgram_bufs, (void*)buf);
 }
 
 struct sk_buff *ip_defrag(struct sk_buff *skb) {
@@ -166,5 +166,5 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 		return build_packet(buf);
 	}
 
-	return skb;
+	return NULL;
 }
