@@ -48,11 +48,13 @@ include mk/gold/engine.mk
 #
 # TODO By default it is assumed that you'll place grammar-related files
 # in the same directory with this one and name them
-# with '-tables', '-symbols' and '-rules' prefixes.
-# Fix the following 'include' directive to override the default behavior.
-include $(addprefix \
-			$(dir $(__gold_grammar_$(gold_grammar)_mk))$(gold_grammar)-, \
-			tables.mk symbols.mk rules.mk)
+# with '-tables', '-symbols' and '-rules' suffixes.
+# Fix the following 'include' directives to override the default behavior.
+include $(basename $(__gold_grammar_$(gold_grammar)_mk))-tables.mk
+
+# Productions and symbols are not mandatory.
+-include $(addprefix $(basename $(__gold_grammar_$(gold_grammar)_mk)), \
+			-symbols.mk -rules.mk)
 
 $(def_all)
 
