@@ -133,9 +133,6 @@ unit_def = \
     $(unit) $(eval UNIT_DEFINED-$(unit) := $(dir)) \
   )
 
-# Mods that are always included to the resulting image
-# (with their dependencies satisfied, of course).
-__MODS_CORE = $(info Listing core mods) $(call mod_collect,MODS_CORE)
 # Regular mods.
 __MODS      = $(info Listing mods) $(call mod_collect,MODS)
 # Interfaces.
@@ -410,8 +407,7 @@ ifdef EMBUILD_DUMP_CREATE
 SUBDIRS_LDFLAGS := $(__LDFLAGS)
 PACKAGES := $(__PACKAGES)
 $(__PACKAGES_PROCESS)
-MODS_CORE := $(__MODS_CORE)
-MODS := $(sort $(__MODS) $(MODS_CORE))# Essential mods are so essential...
+MODS := $(__MODS)
 APIS := $(__APIS)
 LIBS := $(__LIBS)
 $(__UNITS_PROCESS)
@@ -469,10 +465,11 @@ check_undefined_mods = \
   )
 
 MODS_ENABLE += embox.kernel.main# XXX just for now. -- Eldar
+RUNLEVEL-embox.kernel.main := 0
 MODS_ENABLE := $(sort $(filter $(MODS),$(MODS_ENABLE)))
 
 # Prepare the list of mods for the build.
-MODS_BUILD := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE) $(MODS_CORE)))
+MODS_BUILD := $(call MOD_DEPS_DAG,$(sort $(MODS_ENABLE)))
 
 mod_apis = $(foreach u,$2,$($1-$u))
 APIS_BUILD := $(strip $(call mod_apis,PROVIDES,$(MODS_BUILD)))
@@ -512,10 +509,6 @@ $(foreach a,$(APIS_BUILD),$(foreach r,$(filter $(MODS_BUILD),$(PROVIDED-$a)), \
   ${eval IMPL-$a := $r} \
 ))
 
-$(foreach mod,$(MODS_CORE), \
-  $(eval RUNLEVEL-$(mod) := 0)\
-)
-
 # XXX just for now, agrh... -- Eldar
 $(foreach mod,$(MODS_ENABLE),$(if $(RUNLEVEL-$(mod)),, \
   $(eval RUNLEVEL-$(mod) := 2)\
@@ -537,11 +530,9 @@ debug_print_units = \
 debug_print_units += \
   $(info Mods enabled in config: ) \
   $(call __print_units,CONF,$(MODS_ENABLE)) \
-  $(info Essential Mods: ) \
-  $(call __print_units,CORE,$(filter-out $(MODS_ENABLE),$(MODS_CORE))) \
   $(info Mods included to satisfy dependencies: ) \
   $(call __print_units,DEPS,\
-    $(filter-out $(MODS_ENABLE) $(MODS_CORE),$(MODS_BUILD)))
+    $(filter-out $(MODS_ENABLE),$(MODS_BUILD)))
 endif
 
 image_init:
@@ -573,7 +564,6 @@ ifndef EMBUILD_DUMP_CREATE
 else
 	@$(PRINTF) '# Auto-generated EMBuild symbols dump file. Do not edit.\n' > $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var,PACKAGES)) >> $@
-	@$(PRINTF) $(call printf_escape,$(call dump_var,MODS_CORE)) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var,MODS)) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var,APIS)) >> $@
 	@$(PRINTF) $(call printf_escape,$(call dump_var,LIBS)) >> $@
