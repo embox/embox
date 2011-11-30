@@ -10,8 +10,8 @@
 #define LITTLE 0 /* big endian only*/
 #endif
 
-static inline unsigned short ptclbsum(void *addr, int len) {
-	register long sum;
+static inline unsigned long partial_sum(void *addr, int len) {
+	register unsigned long sum;
 	unsigned char oddbyte;
 	unsigned short *ptr = (unsigned short *) addr;
 
@@ -26,11 +26,20 @@ static inline unsigned short ptclbsum(void *addr, int len) {
 		*((unsigned char *) &oddbyte) = *(unsigned char *) ptr;
 		sum += oddbyte;
 	}
+	return sum;
+}
 
+static inline unsigned short fold_short (unsigned long sum) {
 	sum = (sum >> 16) + (sum & 0xffff);
 	sum += (sum >> 16);
+	return (unsigned short) (sum & 0xffff);
+}
 
-	return ~(sum & 0xffff);
+static inline unsigned short ptclbsum(void *addr, int len) {
+	unsigned long sum = partial_sum(addr, len);
+
+
+	return ~fold_short(sum);
 
 /*
 	unsigned long losum, hisum, mdsum, x;

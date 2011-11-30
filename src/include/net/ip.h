@@ -57,17 +57,17 @@
 typedef struct iphdr {
 #if defined(__LITTLE_ENDIAN)
 	__u8 ihl:4,  /* ihl = 5 */
-			version:4; /* version = 4 */
+	version: 4;  /* version = 4 */
 #elif defined (__BIG_ENDIAN)
 	__u8 version:4, /* version = 4 */
-			    ihl:4;    /* ihl = 5 */
+		 ihl:4; /* ihl = 5 */
 #endif
 	__u8        tos;          /**< Type of Services, always 0 */
 	__be16      tot_len;      /**< packet length */
 	__be16      id;           /**< for packet fragmentation */
 	/** ________________________________________________________________
 	 * |15_________________|14___________________|13______|12____________0|
-	 * |MF (more fragments)|DF (don’t fragment)|always 0|fragment offset|
+	 * |MF (more fragments)|DF (don’t fragment)  |always 0|fragment offset|
 	 * |___________________|_____________________|________|_______________|
 	 */
 	__be16      frag_off;     /**< flags + position of the fragment in the data flow */

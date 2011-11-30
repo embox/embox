@@ -92,6 +92,19 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	return kernel_socket_bind(sock, addr, addrlen);
 }
 
+int listen(int sockfd, int backlog) {
+	struct socket *sock;
+
+	if (sockfd < 0) {
+		return -EBADF;
+	}
+	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		return -EBADF;
+	}
+	return kernel_socket_listen(sock, backlog);
+}
+
 static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
 	int res;

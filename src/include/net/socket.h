@@ -150,6 +150,14 @@ extern int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen)
 extern int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
+ * mark socket as accepting connections
+ * @param sockfd socket description
+ * @param backlog limit of outstanding connections in sock queue
+ * @return 0 on success. On error, result < 0.
+ */
+extern int listen(int sockfd, int backlog);
+
+/**
  * send a message on a socket.
  * @param sockfd socket description
  * @param buf pointer on data

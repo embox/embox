@@ -43,20 +43,41 @@ int tcp_v4_init_sock(sock_t *sk) {
 	return 0;
 }
 
-static int rebuild_tcp_header(sk_buff_t *skb, __be16 source,
-					__be16 dest, size_t len) {
-	tcphdr_t *tcph = tcp_hdr(skb);
-	tcph->source = source;
-	tcph->dest = dest;
-	skb->len = len + TCP_V4_HEADER_MIN_SIZE;
-	tcph->check = 0;
-//	udph->check = ptclbsum((void *) udph, udph->len);
-	return 0;
+static inline unsigned short tcp_checksum (__be32 saddr, __be32 daddr, __u8 proto,
+		struct tcphdr *tcph, unsigned short size) {
+	struct tcp_pseudohdr ptcph = {
+		.saddr = saddr,
+		.daddr = daddr,
+		.zero  = 0,
+		.protocol = proto,
+		.tcp_len = htons(size)
+	};
+	return (~fold_short(partial_sum(&ptcph, sizeof(struct tcp_pseudohdr)) +
+			partial_sum(tcph, size)) & 0xffff);
+}
+
+static inline void rebuild_tcp_header(__be32 ip_src, __be32 ip_dest,
+		__be16 source, __be16 dest, __be32 seq, __be32 ack_seq,
+		__be16 window,
+	       	struct tcphdr *tcph) {
+	tcph->dest = source;
+	tcph->source = dest;
+	tcph->seq = seq;
+	tcph->ack_seq = ack_seq;
+
+	tcph->doff = TCP_V4_HEADER_MIN_SIZE >> 2;
+	tcph->window = htons(window);
+
+	tcph->check = tcp_checksum(ip_dest, ip_src, IPPROTO_TCP,
+		       tcph, TCP_V4_HEADER_SIZE(tcph));
+
 }
 
 int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
+	struct tcp_sock *tcpsk = (struct tcp_sock *) sk;
+
 	sk_buff_t *skb;
 	if (sk->sk_state != TCP_ESTABIL) {
 		return -EINVAL;
@@ -69,7 +90,9 @@ int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	memcpy((void*)((unsigned int)(skb->h.raw + TCP_V4_HEADER_MIN_SIZE)),
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill TCP header */
-	rebuild_tcp_header(skb, inet->sport, inet->dport, len);
+	//rebuild_tcp_header(skb, inet->sport, inet->dport, len);
+	rebuild_tcp_header(0, 0, inet->sport, inet->dport, tcpsk->seq, tcpsk->ack_seq,
+		       14200, tcp_hdr(skb));
 	return ip_send_packet(inet, skb);
 }
 
@@ -138,6 +161,24 @@ static struct tcp_sock *tcp_lookup(in_addr_t daddr, __be16 dport) {
 static void tcp_set_st(struct tcp_sock *tcpsk, char state) {
 	TCP_SOCK(tcpsk)->sk_state = state;
 }
+#if 0
+static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, struct tcp_sock *tcpsk) {
+	char *ptr = (char *) &tcph->options;
+	for(;;) {
+		switch(*ptr) {
+		case TCP_OPT_KIND_EOL:
+			return (int) ptr - (int) &tcph->options;
+		case TCP_OPT_KIND_NOP:
+			ptr++;
+			break;
+		case TCP_OPT_KIND_MSS:
+			ptr+=2;
+			tcpsk->mss = ntohs((__be16) *ptr);
+		}
+	}
+	return 0;
+}
+#endif
 static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcphdr_t *tcph, tcphdr_t *out_tcph) {
 	if (TCP_SOCK(tcpsk)->sk_state != TCP_LISTEN) {
@@ -150,13 +191,12 @@ static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		return TCP_ST_SEND;
 	}
 	if (tcph->syn) {
-		tcpsk->seq_unack = out_tcph->seq = 0;
-		out_tcph->ack_seq = tcph->seq;
+		tcpsk->seq_unack = 100;
+		tcpsk->seq = tcpsk->seq_unack + 1;
+		tcpsk->ack_seq = ntohl(tcph->seq) + 1;
+
 		out_tcph->syn |= 1;
 		out_tcph->ack |= 1;
-
-		tcpsk->seq = 1;
-		tcpsk->ack_seq = tcph->seq + 1;
 
 		tcp_set_st(tcpsk, TCP_SYN_RECV);
 
@@ -183,15 +223,24 @@ static int tcp_v4_rcv(sk_buff_t *skb) {
 	char out_tcph_raw[TCP_V4_HEADER_MIN_SIZE];
 	tcphdr_t *out_tcph = (tcphdr_t *) out_tcph_raw;
 
-
+	if (sock == NULL) {
+		return -1;
+	}
+	memset(out_tcph, 0, TCP_V4_HEADER_SIZE(out_tcph));
 	if (tcp_st_handler[TCP_SOCK(sock)->sk_state](sock, skb, tcph, out_tcph)
 			== TCP_ST_SEND) {
 		uint32_t ip_dest = skb->nh.iph->daddr;
 		uint32_t ip_src  = skb->nh.iph->saddr;
-		out_tcph->dest = tcph->source;
-		out_tcph->source = tcph->dest;
 
-		ip_send_reply(NULL, ip_dest, ip_src, skb, skb->len);
+		rebuild_tcp_header(ip_dest, ip_src, tcph->source, tcph->dest,
+			       	htonl(sock->seq_unack), htonl(sock->ack_seq),
+				14200, out_tcph);
+
+		memcpy(tcp_hdr(skb), out_tcph, TCP_V4_HEADER_MIN_SIZE);
+		skb->len = ETH_HEADER_SIZE +
+				IP_HEADER_SIZE(iph) + TCP_V4_HEADER_MIN_SIZE;
+		ip_send_reply(NULL, ip_dest, ip_src, skb, ETH_HEADER_SIZE +
+				IP_HEADER_SIZE(iph) + TCP_V4_HEADER_MIN_SIZE);
 	}
 	return 0;
 }

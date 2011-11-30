@@ -44,9 +44,18 @@ typedef struct tcphdr {
 	__be16  window;
 	uint16_t check;
 	__be16  urg_ptr;
+	__u8	options;
 } __attribute__((packed)) tcphdr_t;
 
-#define TCP_V4_HEADER_MIN_SIZE  5
+struct tcp_pseudohdr {
+	__be32	saddr;
+	__be32	daddr;
+	__u8	zero;
+	__u8	protocol;
+	__be16  tcp_len;
+} __attribute__((packed));
+
+#define TCP_V4_HEADER_MIN_SIZE  40
 #define TCP_V4_HEADER_SIZE(hdr) ((((struct tcphdr *) hdr)->doff) * 4)
 enum {
 	TCP_ESTABIL = 1,
@@ -63,6 +72,7 @@ typedef struct tcp_sock {
 	__be32 seq;
 	__be32 seq_unack;
 	__be32 ack_seq;
+	unsigned short mss;
 } tcp_sock_t;
 
 static inline tcphdr_t *tcp_hdr(const sk_buff_t *skb) {
@@ -71,5 +81,13 @@ static inline tcphdr_t *tcp_hdr(const sk_buff_t *skb) {
 
 #define TCP_INET_SOCK(tcp_sk) ((struct inet_sock *) tcp_sk)
 #define TCP_SOCK(tcp_sk) ((struct sock *) tcp_sk)
+
+enum {
+	TCP_OPT_KIND_EOL,
+	TCP_OPT_KIND_NOP,
+	TCP_OPT_KIND_MSS,
+};
+
+
 
 #endif /* TCP_H_ */
