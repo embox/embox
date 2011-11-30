@@ -1,6 +1,6 @@
 "Name"     = 'MyFile'
 "Author"   = 'Eldar Abusalimov'
-"Version"  = '0.1'
+"Version"  = '0.2'
 "About"    = 'MyBuild file'
 
 "Case Sensitive" = True
@@ -18,6 +18,8 @@
 {ID Head}      = {Letter} + [_]
 {ID Tail}      = {Alphanumeric} + [_]
 
+{Hex Digit}    = {Digit} + [abcdef] + [ABCDEF]
+
 {String Chars} = {Printable} + {HT} - ["\]
 {String Esc}   = [rnt''"\]
 {Non Quote}    = {Printable} + {Whitespace} - [''\]
@@ -32,98 +34,190 @@
 ! Terminals
 ! -------------------------------------------------
 
-Whitespace    = {Whitespace}+
-              | '/*' ( {Non Asterisk} | '*' {Non Slash} )*  '*/'
-              | '//' {Not New Line}* ( {CR}? {LF} )?
+Whitespace     = {Whitespace}+
+               | '/*' ( {Non Asterisk} | '*' {Non Slash} )*  '*/'
+               | '//' {Not New Line}* ( {CR}? {LF} )?
 
-Identifier    = '^'? {ID Head}{ID Tail}*
-StringLiteral = '"' ( {String Chars} | '\' {String Esc} )* '"'
-              | '''''' ( ( ''? '' )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
+Identifier     = '^'? {ID Head}{ID Tail}*
+StringLiteral  = '"' ( {String Chars} | '\' {String Esc} )* '"'
+               | '''''' ( ( ''? '' )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
+
+NumberLiteral  = {Digit}+ ( '.' {Digit}+ )?
+               | '0x' {Hex Digit}+ ( '.' {Hex Digit}+ )?
+
+BooleanLiteral = 'true' | 'false'
 
 ! -------------------------------------------------
 ! Rules
 ! -------------------------------------------------
 
-! The grammar starts below
 <Model>
-        ::= <PackageDecl> <ImportDecls> <ModuleDecls>
+        ::= <Package> <Imports> <Entities>
 
-<PackageDecl>
-        ::= 'package' <QualifiedName> ';'
-          |
+! Package?
+<Package>
+        ::= 'package' <QualifiedName>
+         |
 
-<ImportDecls>
-        ::= <ImportDecl> <ImportDecls>
-          |
-<ImportDecl>
-        ::= 'import' <QualifiedNameWithWildcard> ';'
+! Import*
+<Imports>
+        ::= <Import> <Imports>
+         |
+<Import>
+        ::= 'import' <QualifiedNameWithWildcard>
 
-<ModuleDecls>
-        ::= <ModuleDecl> <ModuleDecls>
-          |
-<ModuleDecl>
-        ::= <ModuleModifiers> 'module' Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
+! Entity*
+<Entities>
+        ::= <Entity> <Entities>
+         |
+<Entity>
+        ::= <Module>
+         |  <Interface>
 
+! -------------------------------------------------
+! Interfaces and features.
+
+! interface Name (extends ...)? { ... }
+<Interface>
+        ::= 'interface' Identifier <SuperInterfaces> '{' <InterfaceAttributes> '}'
+
+! (extends ...)?
+<SuperInterfaces>
+        ::= 'extends' <InterfaceRefList>
+         |
+
+! InterfaceAttribute*
+<InterfaceAttributes>
+        ::= <InterfaceAttribute> <InterfaceAttributes>
+         |
+<InterfaceAttribute>
+        ::= <Feature>
+
+! feature Name (extends ...)?
+<Feature>
+        ::= 'feature' Identifier <SuperFeatures>
+
+! (extends ...)?
+<SuperFeatures>
+        ::= 'extends' <FeatureRefList>
+         |
+
+! -------------------------------------------------
+! Modules.
+
+! (abstract)? module Name (extends ...)? { ... }
+<Module>
+        ::= <ModuleModifiers> 'module' Identifier <SuperModule> '{' <ModuleAttributes> '}'
+
+! ModuleModifier*
 <ModuleModifiers>
         ::= <ModuleModifier> <ModuleModifiers>
-          |
+         |
 <ModuleModifier>
         ::= 'static'
-          | 'abstract'
+         |  'abstract'
 
-<SuperModules>
-        ::= 'extends' <ModuleRefList>
-          |
+! (extends ...)?
+<SuperModule>
+        ::= 'extends' <ModuleRef>
+         |
 
-<ModuleBodyDecls>
-        ::= <ModuleBodyDecl> <ModuleBodyDecls>
-          |
-<ModuleBodyDecl>
-        ::= <SourcesDecl>
-          | <ObjectsDecl>
-          | <CcflagsDecl>
-          | <DependenciesDecl>
+! ModuleAttribute*
+<ModuleAttributes>
+        ::= <ModuleAttribute> <ModuleAttributes>
+         |
+<ModuleAttribute>
+        ::= <Sources>
+         |  <Objects>
+         |  <Depends>
+         |  <Provides>
+         |  <Requires>
+         |  <Flags>
+         |  <Rule>
+         |  <Option>
 
-<CcflagsDecl>
-        ::= 'ccfags' StringLiteral ';'
+<Depends>
+        ::= 'depends' <ModuleRefList>
+<Provides>
+        ::= 'provides' <FeatureRefList>
+<Requires>
+        ::= 'requires' <FeatureRefList>
+<Sources>
+        ::= 'source' <FilenameList>
+<Objects>
+        ::= 'object' <FilenameList>
 
-<DependenciesDecl>
-        ::= 'depends' <ModuleRefList> ';'
+! option Name : ( string | number | boolean ) ( = ...)?
+<Option>
+        ::= 'option' Identifier ':' <OptionTypeWithAssignment>
+<OptionTypeWithAssignment>
+        ::= 'string'  <StringOptionAssignment>
+         |  'number'  <NumberOptionAssignment>
+         |  'boolean' <BooleanOptionAssignment>
 
-<SourcesDecl>
-        ::= 'source' <FileOrTargetList> ';'
+<StringOptionAssignment>
+        ::= '=' StringLiteral
+         |
+<NumberOptionAssignment>
+        ::= '=' NumberLiteral
+         |
+<BooleanOptionAssignment>
+        ::= '=' BooleanLiteral
+         |
 
-<ObjectsDecl>
-        ::= 'object' <FileOrTargetList> ';'
+<Flags>
+        ::= 'make' 'flags' <StringList>
 
-<FileOrTarget>
-        ::= <Filename>
-          | <Filename> ':' <FilenameList> '{' StringLiteral '}'
+! make "target" ( : "prerequisite"...)? ( "recipe"...)?
+<Rule>
+        ::= 'make' <Filename> <Prerequisites> <Recipes>
+<Prerequisites>
+        ::= ':' <FilenameList>
+         |
+<Recipes>
+        ::= '{' <StringList> '}'
+         |
 
-<FileOrTargetList>
-        ::= <FileOrTarget> ',' <FileOrTargetList>
-          | <FileOrTarget>
+! -------------------------------------------------
+! Datatypes.
 
 <Filename>
         ::= StringLiteral
-<FilenameList>
-        ::= <Filename> ',' <FilenameList>
-          | <Filename>
-
+<InterfaceRef>
+        ::= <QualifiedName>
+<FeatureRef>
+        ::= <QualifiedNameWithWildcard>
 <ModuleRef>
         ::= <QualifiedName>
+
+! -------------------------------------------------
+! Comma separated lists.
+
+! Item ( , Item )*
+<InterfaceRefList>
+        ::= <InterfaceRef> ',' <InterfaceRefList>
+         |  <InterfaceRef>
+<FeatureRefList>
+        ::= <FeatureRef> ',' <FeatureRefList>
+         |  <FeatureRef>
 <ModuleRefList>
         ::= <ModuleRef> ',' <ModuleRefList>
-          | <ModuleRef>
+         |  <ModuleRef>
+<FilenameList>
+        ::= <Filename> ',' <FilenameList>
+         |  <Filename>
+<StringList>
+        ::= StringLiteral ',' <StringList>
+         |  StringLiteral
 
+! -------------------------------------------------
 ! Extended identifiers.
 
 <QualifiedName>
         ::= Identifier '.' <QualifiedName>
-          | Identifier
+         |  Identifier
 
 <QualifiedNameWithWildcard>
         ::= <QualifiedName> '.*'
-          | <QualifiedName>
-
+         |  <QualifiedName>
 
