@@ -27,29 +27,33 @@ enum {
 	ICMP_TIMESTAMPREPLY = 14, /* Timestamp Reply */
 	ICMP_INFO_REQUEST   = 15, /* Information Request */
 	ICMP_INFO_REPLY     = 16, /* Information Reply */
-	ICMP_ADDRESS        = 17, /* Address Mask Request */
-	ICMP_ADDRESSREPLY   = 18, /* Address Mask Reply */
+//	ICMP_ADDRESS        = 17, /* Address Mask Request */
+//	ICMP_ADDRESSREPLY   = 18, /* Address Mask Reply */
 	NR_ICMP_TYPES
 };
 
 /* Codes for UNREACH. */
-#define ICMP_NET_UNREACH        0       /* Network Unreachable          */
-#define ICMP_HOST_UNREACH       1       /* Host Unreachable             */
-#define ICMP_PROT_UNREACH       2       /* Protocol Unreachable         */
-#define ICMP_PORT_UNREACH       3       /* Port Unreachable             */
-#define ICMP_FRAG_NEEDED        4       /* Fragmentation Needed/DF set  */
-#define ICMP_SR_FAILED          5       /* Source Route failed          */
-#define ICMP_NET_UNKNOWN        6
-#define ICMP_HOST_UNKNOWN       7
-#define ICMP_HOST_ISOLATED      8
-#define ICMP_NET_ANO            9
-#define ICMP_HOST_ANO           10
-#define ICMP_NET_UNR_TOS        11
-#define ICMP_HOST_UNR_TOS       12
-#define ICMP_PKT_FILTERED       13      /* Packet filtered */
-#define ICMP_PREC_VIOLATION     14      /* Precedence violation */
-#define ICMP_PREC_CUTOFF        15      /* Precedence cut off */
-#define NR_ICMP_UNREACH         15      /* instead of hardcoding immediate value */
+enum {
+	ICMP_NET_UNREACH    = 0, /* Network Unreachable          */
+	ICMP_HOST_UNREACH   = 1, /* Host Unreachable             */
+	ICMP_PROT_UNREACH   = 2, /* Protocol Unreachable         */
+	ICMP_PORT_UNREACH   = 3, /* Port Unreachable             */
+	ICMP_FRAG_NEEDED    = 4, /* Fragmentation Needed/DF set  */
+	ICMP_SR_FAILED      = 5, /* Source Route failed          */
+#if 0
+	ICMP_NET_UNKNOWN    = 6,
+	ICMP_HOST_UNKNOWN   = 7,
+	ICMP_HOST_ISOLATED  = 8,
+	ICMP_NET_ANO        = 9,
+	ICMP_HOST_ANO       = 10,
+	ICMP_NET_UNR_TOS    = 11,
+	ICMP_HOST_UNR_TOS   = 12,
+	ICMP_PKT_FILTERED   = 13, /* Packet filtered */
+	ICMP_PREC_VIOLATION = 14, /* Precedence violation */
+	ICMP_PREC_CUTOFF    = 15, /* Precedence cut off */
+#endif
+	NR_ICMP_UNREACH           /* instead of hardcoding immediate value */
+};
 
 /* Codes for REDIRECT. */
 #define ICMP_REDIR_NET          0       /* Redirect Net          */

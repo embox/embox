@@ -54,7 +54,7 @@ struct icmp_bxm {
  * Packet's handler, corresponding to packet's type. This specifies
  * what to do with each type of ICMP.
  */
-typedef void (*icmp_control)(sk_buff_t *skb);
+typedef int (*icmp_control)(sk_buff_t *skb);
 
 static socket_t *icmp_socket; /* Socket for transmitting ICMP messages */
 
@@ -68,7 +68,7 @@ static icmp_control icmp_handlers[]; /* ICMP control handlers */
  * @param icmp_param
  * @param skb_in
  */
-static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
+static int icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 	sk_buff_t *skb = skb_copy(icmp_param->skb, 0);
 	skb->dev = icmp_param->skb->dev;
 	skb->h.icmph->type = icmp_param->data.icmph.type;
@@ -80,97 +80,87 @@ static void icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
 				icmp_param->skb->nh.iph->saddr, skb, 0);
-//	kfree_skb(skb);
+	return ENOERR;
 }
 
-static void icmp_discard(sk_buff_t *skb) {
+static int icmp_discard(sk_buff_t *skb) {
 	/* nothing to do here */
+	return -1;
 }
 
-/**
- * Handle ICMP_DEST_UNREACH, ICMP_TIME_EXCEED, and ICMP_QUENCH.
- */
-static void icmp_unreach(sk_buff_t *skb) {
+static int icmp_unreach(sk_buff_t *skb) {
+	/* Handle ICMP_DEST_UNREACH, ICMP_TIME_EXCEED, ICMP_PARAMETERPROB and ICMP_QUENCH */
 	iphdr_t *iph;
 	icmphdr_t *icmph;
-	int hash, protocol;
-	uint32_t info = 0;
-	const net_protocol_t *ipprot;
+	net_device_stats_t *stats;
+
+	assert(skb != NULL);
 
 	iph = ip_hdr(skb);
 	icmph = icmp_hdr(skb);
+	stats = skb->dev->netdev_ops->ndo_get_stats(skb->dev);
 
 	assert(iph != NULL);
 	assert(icmph != NULL);
+	assert(stats != NULL);
 
-	protocol = iph->proto;
-	hash = protocol & (MAX_INET_PROTOS - 1);
-	ipprot = inet_protos[hash];
+	switch (icmph->type) {
+	case ICMP_DEST_UNREACH:
+		if (icmph->code >= NR_ICMP_UNREACH) {
+			return -1;
+		}
+		switch (icmph->code) {
+		case ICMP_NET_UNREACH:
+		case ICMP_HOST_UNREACH:
+		case ICMP_PROT_UNREACH:
+		case ICMP_PORT_UNREACH:
+			/* do nothing */
+			break;
+		case ICMP_FRAG_NEEDED: // TODO
+			LOG_WARN("fragmentation needed but DF is set");
+			break;
+		}
+		break;
+	case ICMP_SOURCE_QUENCH:
+	case ICMP_TIME_EXCEEDED:
+		/* do nothing */
+		break;
+	case ICMP_PARAMETERPROB:
+		break;
+	default:
+		return -1;
+	}
 
-	if (icmph->code > NR_ICMP_UNREACH) {
-		return;
-	}
-	if (icmph->type == ICMP_PARAMETERPROB) {
-		info = ntohl(icmph->un.gateway) >> 24;
-	}
-
-	if (ipprot && ipprot->err_handler) {
-		ipprot->err_handler(skb, info);
-	}
+	return ENOERR;
 }
 
-/*
- * Handle ICMP_REDIRECT.
- */
-static void icmp_redirect(sk_buff_t *skb) {
+static int icmp_redirect(sk_buff_t *skb) {
+	/* Handle ICMP_REDIRECT */
 	//TODO: fix ip route before.
-	return;
+	return -1;
 }
 
-/**
- * Handle ICMP_ADDRESS_MASK requests. (RFC950)
- *
- * RFC1122 (3.2.2.9). A host MUST only send replies to
- * ADDRESS_MASK requests if it's been configured as an address mask
- * agent.  Receiving a request doesn't constitute implicit permission to
- * act as one. Of course, implementing this correctly requires (SHOULD)
- * a way to turn the functionality on and off.
- *
- * RFC1812 (4.3.3.9). A router MUST implement it.
- *                    A router SHOULD have switch turning it on/off.
- *                    This switch MUST be ON by default.
- */
-static void icmp_address(struct sk_buff *skb) {
-	//TODO:
-}
+static int icmp_echo(sk_buff_t *skb) {
+	sk_buff_t *skb_reply;
 
-/**
- * RFC1812 (4.3.3.9). A router SHOULD listen all replies, and complain
- *                    loudly if an inconsistency is found.
- */
-static void icmp_address_reply(struct sk_buff *skb) {
-	//TODO:
-}
-
-/**
- * Handle ICMP_ECHO ("ping") requests.
- * RFC 1122: 3.2.2.6 MUST have an echo server that answers ICMP echo
- *                requests.
- * RFC 1122: 3.2.2.6 Data received in the ICMP_ECHO request MUST be
- *                included in the reply.
- * RFC 1812: 4.3.3.6 SHOULD have a config option for silently ignoring
- *                echo requests, MUST have default=NOT.
- */
-static void icmp_echo(sk_buff_t *skb) {
-	struct icmp_bxm icmp_param;
-
-	icmp_param.data.icmph      = *icmp_hdr(skb);
-	icmp_param.data.icmph.type = ICMP_ECHOREPLY;
-	icmp_param.skb             = skb;
-	icmp_param.offset          = 0;
-	icmp_param.data_len        = skb->len;
-	icmp_param.head_len        = sizeof(icmphdr_t);
-	icmp_reply(&icmp_param, skb);
+	skb_reply = skb_copy(skb, 0);
+	skb_reply->dev = skb->dev;
+	skb_reply->h.icmph->type = skb->h.icmph->type;
+	skb_reply->h.icmph->code = skb->h.icmph->code;
+	if (skb_reply->h.icmph->code != 0) {
+		skb_reply->h.icmph->un.echo.sequence = htons(ntohs(skb_reply->h.icmph->un.echo.sequence) + 1);
+	}
+	else {
+		skb_reply->h.icmph->un.echo.id = 0;
+		skb_reply->h.icmph->un.echo.sequence = 0;
+	}
+	/* TODO checksum must be at network byte order */
+	skb_reply->h.icmph->checksum = 0;
+	skb_reply->h.icmph->checksum = ptclbsum(skb_reply->h.raw,
+				htons(skb_reply->nh.iph->tot_len) - IP_HEADER_SIZE(skb_reply->nh.iph));
+	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
+	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, skb_reply, 0);
+	return ENOERR;
 }
 
 /**
@@ -180,7 +170,7 @@ static void icmp_echo(sk_buff_t *skb) {
  *         MUST be accurate to a few minutes.
  *         MUST be updated at least at 15Hz.
  */
-static void icmp_timestamp(sk_buff_t *skb) {
+static int icmp_timestamp(sk_buff_t *skb) {
 	//TODO: we can't work with timestamp now.
 	struct icmp_bxm icmp_param;
 	icmp_param.data.icmph      = *icmp_hdr(skb);
@@ -190,7 +180,7 @@ static void icmp_timestamp(sk_buff_t *skb) {
 	icmp_param.offset          = 0;
 	icmp_param.data_len        = 0;
 	icmp_param.head_len        = sizeof(icmphdr_t) + 12;
-	icmp_reply(&icmp_param, skb);
+	return icmp_reply(&icmp_param, skb);
 }
 
 #define DATA_SIZE(iph) (IP_HEADER_SIZE(iph) + 8)
@@ -256,8 +246,12 @@ static int icmp_init(void) {
 	return ENOERR;
 }
 
-static icmp_control icmp_handlers[NR_ICMP_TYPES + 1] = {
-		[ICMP_ECHOREPLY]      = icmp_discard,
+static int ping_rcv(struct sk_buff *skb) {
+	return -1;
+}
+
+static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
+		[ICMP_ECHOREPLY]      = ping_rcv,
 		[1]                   = icmp_discard,
 		[2]                   = icmp_discard,
 		[ICMP_DEST_UNREACH]   = icmp_unreach,
@@ -273,9 +267,11 @@ static icmp_control icmp_handlers[NR_ICMP_TYPES + 1] = {
 		[ICMP_TIMESTAMP]      = icmp_timestamp,
 		[ICMP_TIMESTAMPREPLY] = icmp_discard,
 		[ICMP_INFO_REQUEST]   = icmp_discard,
-		[ICMP_INFO_REPLY]     = icmp_discard,
+		[ICMP_INFO_REPLY]     = icmp_discard
+#if 0
 		[ICMP_ADDRESS]        = icmp_address,
 		[ICMP_ADDRESSREPLY]   = icmp_address_reply
+#endif
 };
 
 /**
@@ -284,6 +280,7 @@ static icmp_control icmp_handlers[NR_ICMP_TYPES + 1] = {
  * @param skb received packet
  */
 static int icmp_rcv(sk_buff_t *pack) {
+	int res;
 	icmphdr_t *icmph;
 	net_device_stats_t *stats;
 	uint16_t tmp;
@@ -319,11 +316,17 @@ static int icmp_rcv(sk_buff_t *pack) {
 	icmph->checksum = 0;
 	if (tmp != ptclbsum(pack->h.raw, ntohs(pack->nh.iph->tot_len) - IP_HEADER_SIZE(pack->nh.iph))) {
 		LOG_WARN("bad icmp checksum\n");
+		stats->rx_err++;
+		stats->rx_crc_errors++;
 		return -1;
 	}
 
 	assert(icmp_handlers[icmph->type] != NULL);
-	icmp_handlers[icmph->type](pack);
+	res = icmp_handlers[icmph->type](pack);
+	if (res < 0) {
+		stats->rx_err++;
+		return res;
+	}
 
 	return ENOERR;
 }
