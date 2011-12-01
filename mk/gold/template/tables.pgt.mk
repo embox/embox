@@ -38,8 +38,7 @@ define __gold_$(gold_grammar)_parser
 		# 		<Function name>
 		# 	),
 ##SYMBOLS
-			$(gold-symbol %Index%,%Kind%,# %Description%
-				%ID%),
+			$(gold-symbol %Index%,%Kind%,%ID%),
 ##END-SYMBOLS
 		),# Total %Count% symbol(s).
 ##END-SYMBOL-TABLE
@@ -52,8 +51,7 @@ define __gold_$(gold_grammar)_parser
 		# 		<Function name>
 		# 	),
 ##RULES
-			$(gold-rule %Index%,%NonterminalIndex%,%SymbolCount%,# %Description%
-				%ID%),
+			$(gold-rule %Index%,%NonterminalIndex%,%SymbolCount%,%ID%),
 ##END-RULES
 		),# Total %Count% rule(s).
 ##END-RULE-TABLE
@@ -66,8 +64,7 @@ define __gold_$(gold_grammar)_parser
 ##CHAR-SETS
 ##RANGE-CHARS '.'
 ##DELIMITER ';'
-			$(gold-charset %Index%,# %Chars.XML% #
-				%Chars.RangeList%),
+			$(gold-charset %Index%,%Chars.RangeList%),
 ##END-CHAR-SETS
 		),# Total %Count% charset(s).
 ##END-CHAR-SET-TABLE
@@ -81,13 +78,14 @@ define __gold_$(gold_grammar)_parser
 		# 		),
 		# 		...
 		# 	),
+			$(gold-void \
 ##DFA-STATES
-			$(gold-dfa-state %Index%,%AcceptIndex%,
+			),$(gold-dfa-state %Index%,%AcceptIndex%,
 ##DFA-EDGES
 				$(gold-dfa-edge %CharSetIndex%,%Target%),
 ##END-DFA-EDGES
-			),# Total %EdgeCount% edge(s).
 ##END-DFA-STATES
+			)
 		),# Total %Count% DFA state(s).
 ##END-DFA-TABLE
 
@@ -100,13 +98,14 @@ define __gold_$(gold_grammar)_parser
 		# 		),
 		# 		...
 		# 	),
+			$(gold-void \
 ##LALR-STATES
-			$(gold-lalr-state %Index%,
+			),$(gold-lalr-state %Index%,
 ##LALR-ACTIONS
 				$(gold-lalr-action %SymbolIndex%,%Action%,%Value%),
 ##END-LALR-ACTIONS
-			),# Total %ActionCount% action(s).
 ##END-LALR-STATES
+			)
 		)# Total %Count% LALR state(s).
 ##END-LALR-TABLE
 
