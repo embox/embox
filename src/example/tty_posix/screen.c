@@ -6,20 +6,15 @@
  * @author Gerald Hoch
  */
 
-#include <embox/test.h>
+#include <framework/example/self.h>
 #include <embox/runlevel.h>
-extern int tty_posix_console_diag_init(void);
 
-EMBOX_TEST(run);
+extern int tty_posix_kbd_diag_init(void);
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
-static int run(void) {
+EMBOX_EXAMPLE(run);
+
+
+static int run(int argc, char **argv) {
 	int rc;
 	runlevel_nr_t runlevel = runlevel_get_entered();
 

@@ -1,2 +1,2 @@
 
-$_PACKAGE := embox.test.kernel
+$_PACKAGE := embox.test.hal

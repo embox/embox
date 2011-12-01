@@ -1,7 +1,7 @@
 
 # Auto-generated package declaration inherited from parent directory.
 # TODO Suggested renaming package to tests.soft_traps
-$_PACKAGE := embox.test
+$_PACKAGE := embox.test.hal.traps
 
 $_MODS += softtrap_test
 

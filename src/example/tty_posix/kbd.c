@@ -6,20 +6,15 @@
  * @author Gerald Hoch
  */
 
-#include <embox/test.h>
+#include <framework/example/self.h>
 #include <embox/runlevel.h>
+
 extern int tty_posix_kbd_diag_init(void);
 
-EMBOX_TEST(run);
+EMBOX_EXAMPLE(run);
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
-static int run(void) {
+
+static int run(int argc, char **argv) {
 	int rc;
 	runlevel_nr_t runlevel = runlevel_get_entered();
 
@@ -28,7 +23,7 @@ static int run(void) {
 		return 0;
 
 	rc = tty_posix_kbd_diag_init();
-
+/*
 	switch(rc) {
 	case -1:
 		test_fail("timeout");
@@ -37,6 +32,7 @@ static int run(void) {
 	case -3:
 		test_fail("wrong key found");
 	}
+	*/
 
 	return rc;
 }
