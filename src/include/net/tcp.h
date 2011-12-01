@@ -55,7 +55,7 @@ struct tcp_pseudohdr {
 	__be16  tcp_len;
 } __attribute__((packed));
 
-#define TCP_V4_HEADER_MIN_SIZE  40
+#define TCP_V4_HEADER_MIN_SIZE  20
 #define TCP_V4_HEADER_SIZE(hdr) ((((struct tcphdr *) hdr)->doff) * 4)
 enum {
 	TCP_ESTABIL = 1,

@@ -261,8 +261,9 @@ static int tcp_st_estabil(struct tcp_sock *tcpsk, struct sk_buff *skb,
 			if (seq == tcpsk->rem.seq) {
 				tcpsk->rem.seq += tcp_v4_data_len(skb);
 				sock_queue_rcv_skb((struct sock *) tcpsk, skb_copy(skb, 0));
-				out_tcph->seq = htonl(tcpsk->rem.seq);
-				out_tcph->ack_seq = htonl(tcpsk->this_unack);
+
+				out_tcph->ack_seq = htonl(tcpsk->rem.seq);
+				out_tcph->seq = htonl(tcpsk->this_unack);
 				out_tcph->ack |= 1;
 				return TCP_ST_SEND;
 			}
