@@ -1,77 +1,37 @@
 /**
  * @file
- * @brief Object pool allocator implementation.
+ * @brief	Fixed-size pool with fixed size objects
  *
- * @date 27.11.10
- * @author Alexandr Kalmuk
- * @author Kirill Tyushev
- * @author Dmitry Zubarevich
- * @author Eldar Abusalimov
- *          - Rewrite lazy pool initialization to be O(1)
+ * @date	17.11.11
+ * @author	Gleb Efimov
+ *
  */
 
-#include <assert.h>
+#include <types.h>
 #include <mem/misc/pool.h>
-#include <lib/list.h>
 
-static struct pool *pool_init(struct pool *pool) {
-	struct __pool_free_block *block;
-
-	assert(pool);
-
-	block = (struct __pool_free_block *) pool->storage;
-
-	INIT_LIST_HEAD(&pool->free_blocks);
-	INIT_LIST_HEAD(&block->link);
-	list_add(&block->link, &pool->free_blocks);
-
-	block->bytes_free = pool->objects_free * pool->object_sz;
-
-	return pool;
-}
-
-static inline void check_init(struct pool *pool) {
-	// TODO making an assumption about list internals. -- Eldar
-	if (!pool->free_blocks.next) {
-		pool_init(pool);
-	}
-}
-
-void *pool_alloc(struct pool *pool) {
-	struct __pool_free_block *block;
-	size_t bytes_left;
+void *pool_alloc(struct pool* pool) {
+	void * addr;
 
 	assert(pool);
 
-	check_init(pool);
-
-	if (list_empty(&pool->free_blocks)) {
-		return NULL;
+	if (!slist_empty(&pool->free_blocks)) {
+		return (void *)slist_remove_first_link(&pool->free_blocks);
 	}
 
-	block = list_entry(pool->free_blocks.next, struct __pool_free_block, link);
-
-	if ((bytes_left = block->bytes_free - pool->object_sz)) {
-		block->bytes_free = bytes_left;
-	} else {
-		list_del(&block->link);
+	if((size_t)pool->bound_free != ((size_t)pool->memory + pool->pool_size)) {
+		addr = (void *)pool->bound_free;
+		pool->bound_free += pool->obj_size;
+		return addr;
 	}
-
-	--pool->objects_free;
-
-	return (char *) block + bytes_left;
+	return NULL;
 }
 
-void pool_free(struct pool *pool, void *object) {
-	struct __pool_free_block *block;
-
+void pool_free(struct pool* pool, void* obj) {
 	assert(pool);
-	assert(object);
 
-	block = (struct __pool_free_block *) object;
+	assert(obj);
 
-	list_add(&block->link, &pool->free_blocks);
-	block->bytes_free = pool->object_sz;
-
-	++pool->objects_free;
+	obj = slist_link_init((struct slist_link *)obj);
+	slist_add_first_link(obj , &pool->free_blocks);
 }

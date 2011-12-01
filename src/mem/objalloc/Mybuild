@@ -4,7 +4,7 @@ abstract module objalloc { }
 
 module pool_adapter extends objalloc {
 	source "pool_adapter.c", "pool_adapter.h";
-	depends embox.mem.pool2;
+	depends embox.mem.pool;
 }
 
 module slab_adapter extends objalloc {

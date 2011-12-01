@@ -1,5 +1,5 @@
 /**
- * @file	pool2.h
+ * @file
  *
  * @brief	Object pool allocator, new implementation
  *
@@ -8,8 +8,8 @@
  * @author	Gleb Efimov
  */
 
-#ifndef MEM_MISC_POOL2_H_
-#define MEM_MISC_POOL2_H_
+#ifndef MEM_MISC_POOL_H_
+#define MEM_MISC_POOL_H_
 
 #include <types.h>
 #include <util/macro.h>
@@ -28,7 +28,7 @@ struct pool {
 	/* Size of pool */
 	size_t pool_size;
 	/* Boundary, after which begin
-	 * non-allocation memory */
+	 * non-allocated memory */
 	void * bound_free;
 };
 
@@ -40,24 +40,24 @@ struct pool {
 	static union {                                  \
 		typeof(object_type) object;                 \
 		struct slist_link free_link;      \
-	} name ## _storage[size] __attribute__((section(".reserve.pool"))); \
+	} __pool_storage ## name[size] __attribute__((section(".reserve.pool"))); \
 	static struct pool name = { \
-			.memory = name ## _storage, \
-			.bound_free = name ## _storage, \
+			.memory = __pool_storage ## name, \
+			.bound_free = __pool_storage ## name, \
 			.free_blocks = SLIST_INIT(&name.free_blocks),\
-			.obj_size = sizeof(*name ## _storage), \
-			.pool_size = sizeof(*name ## _storage) * size, \
+			.obj_size = sizeof(*__pool_storage ## name), \
+			.pool_size = sizeof(*__pool_storage ## name) * size, \
 };
 
 /* Function to allocate memory
  * @pool - pointer to the pool, which memory from allocated
  *
  * @return - pointer to the allocated memory */
-extern void *pool2_alloc(struct pool *pool);
+extern void *pool_alloc(struct pool *pool);
 
 /* Procedure remove object from pool
  * @pool - pointer to the pool
  * @obj - pointer to the delitable object */
-extern void pool2_free(struct pool *pool, void* obj);
+extern void pool_free(struct pool *pool, void* obj);
 
 #endif /* MEM_MISC_POOL2_H_ */

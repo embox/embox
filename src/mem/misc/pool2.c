@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief	object pool allocator implementation
+ * @brief	Fixed-size pool with fixed size objects
  *
  * @date	17.11.11
  * @author	Gleb Efimov
@@ -8,9 +8,9 @@
  */
 
 #include <types.h>
-#include <mem/misc/pool2.h>
+#include <mem/misc/pool.h>
 
-void *pool2_alloc(struct pool* pool) {
+void *pool_alloc(struct pool* pool) {
 	void * addr;
 
 	assert(pool);
@@ -27,7 +27,7 @@ void *pool2_alloc(struct pool* pool) {
 	return NULL;
 }
 
-void pool2_free(struct pool* pool, void* obj) {
+void pool_free(struct pool* pool, void* obj) {
 	assert(pool);
 
 	assert(obj);

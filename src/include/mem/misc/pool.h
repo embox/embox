@@ -9,9 +9,27 @@
 #ifndef MEM_MISC_UTIL_POOL_H_
 #define MEM_MISC_UTIL_POOL_H_
 
-#include __impl_x(mem/misc/pool_impl.h)
 
-struct pool;
+#include <types.h>
+#include <util/macro.h>
+#include <util/slist.h>
+
+/* Representation of the pool*/
+struct pool {
+	/* Place in memory for allocation */
+	void * memory;
+	/* List of free block
+	 * (this is a block, which was used,
+	 * then was non-used and return to pool) */
+	struct slist free_blocks;
+	/* Size of object in pool (in bytes) */
+	size_t obj_size;
+	/* Size of pool */
+	size_t pool_size;
+	/* Boundary, after which begin
+	 * non-allocated memory */
+	void * bound_free;
+};
 
 /**
  * create cache
@@ -19,10 +37,19 @@ struct pool;
  * @param type of objects in cache
  * @param count of objects in cache
  */
-#define POOL_DEF(pool_nm, object_t, objects_nr) \
-          __POOL_DEF(pool_nm, object_t, objects_nr)
+#define POOL_DEF(name, object_type, size) \
+	static union {                                  \
+		typeof(object_type) object;                 \
+		struct slist_link free_link;      \
+	} __pool_storage ## name[size] __attribute__((section(".reserve.pool"))); \
+	static struct pool name = { \
+			.memory = __pool_storage ## name, \
+			.bound_free = __pool_storage ## name, \
+			.free_blocks = SLIST_INIT(&name.free_blocks),\
+			.obj_size = sizeof(*__pool_storage ## name), \
+			.pool_size = sizeof(*__pool_storage ## name) * size, \
+};
 
-//extern int pool_init(struct pool *pool, size_t obj_size, size_t obj_num);
 
 /**
  * allocate single object from the cache and return it to the caller
