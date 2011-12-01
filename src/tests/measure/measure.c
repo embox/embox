@@ -13,7 +13,7 @@
  */
 
 #include <embox/test.h>
-#include <kernel/measure.h>
+#include <profiler/measuring/measure.h>
 
 EMBOX_TEST(measure_test_run);
 

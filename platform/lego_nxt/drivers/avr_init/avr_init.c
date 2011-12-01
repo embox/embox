@@ -16,7 +16,7 @@
 #include <drivers/nxt/buttons.h>
 #include <drivers/nxt/avr.h>
 #include <drivers/nxt/sensor.h>
-#include <kernel/measure.h>
+#include <profiler/measuring/measure.h>
 
 /* Notify driver of possible buttons change */
 extern void buttons_updated(nxt_buttons_mask_t state);
