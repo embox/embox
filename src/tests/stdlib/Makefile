@@ -6,3 +6,6 @@ $_SRCS-bsearch_test = bsearch_test.c
 $_MODS           += qsort_test
 $_SRCS-qsort_test = qsort_test.c
 
+$_MODS        += setjmp_test
+$_SRCS-setjmp_test += setjmp_test.c
+

@@ -12,6 +12,7 @@
 #include <mem/kmalloc.h>
 #include <lib/list.h>
 #include <mem/pagealloc/mpallocator.h>
+#include <framework/example/self.h>
 
 EMBOX_EXAMPLE(run);
 

@@ -12,20 +12,23 @@
 
 #define TEST_JUMP_VALUE 0xFADE
 
-EMBOX_TEST(run);
+EMBOX_TEST_SUITE("stdlib/setjmp test");
 
-static int run(void) {
+TEST_CASE("Save context with 'setjmp' function than restore with 'longjmp' call") {
 	jmp_buf jb;
 
 	switch (setjmp(jb)) {
 	case 0:
 		longjmp(jb, TEST_JUMP_VALUE);
-		TRACE("longjmp returned\n");
-		return -1;
+		test_assert(false);
+		break;
+
 	case TEST_JUMP_VALUE:
-		return 0;
+		test_assert(true);
+		break;
+
 	default:
-		TRACE("setjmp unexpected return value\n");
-		return -1;
+		test_assert(false);
+		break;
 	}
 }
