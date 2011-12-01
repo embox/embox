@@ -7,11 +7,8 @@ $_PACKAGE := embox.mem
 $_MODS += slab
 
 
-#$_SRCS-libutil.a += pool.c
-
 $_MODS += pool
 $_SRCS-pool += pool.c
-#$_CPPFLAGS += -I$(SRC_DIR)/include/posix
 
 
 $_SRCS-slab += slab.c

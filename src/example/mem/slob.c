@@ -13,7 +13,7 @@
 #include <lib/list.h>
 #include <mem/pagealloc/mpallocator.h>
 
-EMBOX_TEST(run);
+EMBOX_EXAMPLE(run);
 
 /**
  * The test itself.
@@ -29,7 +29,7 @@ struct list {
 
 static LIST_HEAD(int_list);
 
-static int run(void) {
+static int run(int argc, char **argv) {
 	int result = 0;
 
 	int i;

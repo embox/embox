@@ -1,0 +1,10 @@
+package embox.mem;
+
+module slab {
+	source "slab.c", "slab_impl.h";
+	depends embox.mem.mpallocator;
+}
+
+module pool {
+	source "pool.c";
+}

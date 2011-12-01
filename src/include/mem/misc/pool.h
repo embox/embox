@@ -4,6 +4,7 @@
  *
  * @author Kirill Tyushev
  * @author Eldar Abusalimov
+ * @author Gleb Efimov
  */
 
 #ifndef MEM_MISC_UTIL_POOL_H_
