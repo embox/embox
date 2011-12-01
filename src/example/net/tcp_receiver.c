@@ -20,9 +20,11 @@
 EMBOX_EXAMPLE(exec);
 
 static int exec(int argc, char **argv) {
-    int sock;
+    int sock, connect_sock;
     //int sock2;
     struct sockaddr_in addr;
+    struct sockaddr_in dst;
+    int dst_addr_len = 0;
     char buf[1024];
     int bytes_read;
 
@@ -55,13 +57,16 @@ static int exec(int argc, char **argv) {
 
     listen(sock, 1);
 
+    connect_sock = accept(sock, (struct sockaddr *) &dst, &dst_addr_len);
+
     /* write data form socket in buffer buf. And then print buffer data */
     while (1) {
-        if (0 > (bytes_read = recvfrom(sock, buf, 1024, 0, NULL, NULL))) {
+        if (0 > (bytes_read = recvfrom(connect_sock, buf, 1024, 0, NULL, NULL))) {
 		continue;
 	}
         buf[bytes_read] = '\0';
         printf("%s",buf);
+	sendto(sock, buf, bytes_read, 0, NULL, 0);
     }
 
     return 0;

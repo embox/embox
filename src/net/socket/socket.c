@@ -105,6 +105,25 @@ int listen(int sockfd, int backlog) {
 	return kernel_socket_listen(sock, backlog);
 }
 
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
+	struct socket *sock;
+	int res;
+
+	if (sockfd < 0) {
+		return -EBADF;
+	}
+	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		return -EBADF;
+	}
+
+	if ((res = kernel_socket_accept(sock, addr, addrlen)) < 0) {
+
+	}
+
+	return sockfd;
+}
+
 static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
 	int res;

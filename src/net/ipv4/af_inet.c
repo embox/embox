@@ -155,6 +155,13 @@ int inet_listen(struct socket *sock, int backlog) {
 
 	return sk->sk_prot->listen(sk, backlog);
 }
+
+static int inet_accept(socket_t *sock, sockaddr_t *addr, int *addr_len) {
+	struct sock *sk = sock->sk;
+
+	return sk->sk_prot->accept(sk, addr, addr_len);
+}
+
 /* uses for create socket */
 struct net_proto_family inet_family_ops = {
 	.family = PF_INET,
@@ -199,7 +206,7 @@ const struct proto_ops inet_stream_ops = {
 	.release           = inet_release,
 	.bind              = inet_bind,
 	.connect           = inet_stream_connect,
-//	.accept            = sock_no_accept,
+	.accept            = inet_accept,
 	.listen            = inet_listen,
 #if 0
 	.socketpair        = sock_no_socketpair,

@@ -100,7 +100,7 @@ struct proto_ops {
 	int (*connect)(struct socket *sock, struct sockaddr *vaddr,
 			int sockaddr_len, int flags);
 	int (*socketpair)(struct socket *sock1, struct socket *sock2);
-	int (*accept)(struct socket *sock, struct socket *newsock, int flags);
+	int (*accept)(socket_t *sock, sockaddr_t *addr, int *addr_len);
 	int (*getname)(struct socket *sock, struct sockaddr *addr,
 			int *sockaddr_len, int peer);
 #if 0

@@ -158,6 +158,17 @@ extern int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 extern int listen(int sockfd, int backlog);
 
 /**
+ * peek first connection request from queue and return fd of socket associated to
+ * connected stream
+ * @param sockfd socket description
+ * @param addr NULL or pointer of sockaddr struct where addres of connected socket
+ * will be returened
+ * @param addrlen length of addr struct
+ * @return fd on success. On error, result < 0.
+ */
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+
+/**
  * send a message on a socket.
  * @param sockfd socket description
  * @param buf pointer on data

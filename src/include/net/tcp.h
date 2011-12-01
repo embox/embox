@@ -60,6 +60,8 @@ struct tcp_pseudohdr {
 enum {
 	TCP_ESTABIL = 1,
 	TCP_SYN_SENT,
+	TCP_SYN_RECV_PRE,
+	TCP_SYN_RECV_PRE2,
 	TCP_SYN_RECV,
 	TCP_LISTEN,
 	TCP_CLOSE,
@@ -83,6 +85,8 @@ typedef struct tcp_sock {
 	struct tcp_seq_state this;
 	struct tcp_seq_state rem;
 	unsigned short mss;
+
+	struct list_head conn_wait;
 } tcp_sock_t;
 
 static inline tcphdr_t *tcp_hdr(const sk_buff_t *skb) {
@@ -97,7 +101,5 @@ enum {
 	TCP_OPT_KIND_NOP,
 	TCP_OPT_KIND_MSS,
 };
-
-
 
 #endif /* TCP_H_ */

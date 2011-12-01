@@ -95,10 +95,11 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	return sock->ops->listen(sock, backlog);
 }
 
+#if 0
 int kernel_socket_accept(struct socket *sock, struct socket **newsock, int flags) {
 	int res;
 
-	res = sock->ops->accept(sock, *newsock, flags);
+-	res = sock->ops->accept(sock, *newsock, flags);
 	if (res < 0) {
 		return res;
 #if 0
@@ -110,7 +111,11 @@ int kernel_socket_accept(struct socket *sock, struct socket **newsock, int flags
 
 	return res;
 }
+#endif
 
+int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *addrlen) {
+	return sock->ops->accept(sock, addr, addrlen);
+}
 int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	return sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
