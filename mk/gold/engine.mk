@@ -747,16 +747,16 @@ endef
 define __gold_lalr_handle[]
 	$(if $(eq /,$a),
 		# Error.
-		$(__gold_handle_error),
+		$(__gold_lalr_error),
 		# Accept.
-		$(__gold_do_accept)
+		$(__gold_lalr_accept)
 	)
 endef
 
 # Accepting is just removing the suffix.
 #   t. Token, assumed to be EOF.
 #   g. Prefix.
-define __gold_do_accept
+define __gold_lalr_accept
 	$(assert $(eq 0,$(notdir $t)),
 		Only EOF may cause Accept action)
 	$(assert $(singleword $(__gold_stack__)),
@@ -779,7 +779,7 @@ endef
 #       DFA error:  'Start/Chars/Bogus/End/1'
 #       LALR error: 'Start/Chars/End/Type'
 #   g. Prefix.
-define __gold_handle_error
+define __gold_lalr_error
 	$(if $(__gold_state__),
 		${eval \
 			__gold_stack__ := $(if $(t:%/1=),$$(call \
