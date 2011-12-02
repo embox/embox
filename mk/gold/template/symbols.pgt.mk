@@ -63,7 +63,7 @@ endef
 #
 
 ##SYMBOLS
-#$(gold_grammar)_create-%ID% %Col:40%:= %ID%
+#$(gold_grammar)_create-%ID% %Col:41%:= %ID%
 ##END-SYMBOLS
 
 #

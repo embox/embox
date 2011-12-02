@@ -32,11 +32,12 @@ endif # gold_grammar
 define __gold_$(gold_grammar)_parser
 	$(gold-parser \
 ##SYMBOL-TABLE
-		$(gold-symbol-table \
+		# Symbols.
 		# 	$(gold-symbol <ID>,
 		# 		<Type>,
 		# 		<Function name>
 		# 	),
+		$(gold-symbol-table \
 ##SYMBOLS
 			$(gold-symbol %Index%,%Kind%,%ID%),
 ##END-SYMBOLS
@@ -44,12 +45,13 @@ define __gold_$(gold_grammar)_parser
 ##END-SYMBOL-TABLE
 
 ##RULE-TABLE
-		$(gold-rule-table \
+		# Rules.
 		# 	$(gold-rule <ID>,
 		# 		<LHS nonterminal ID>,
 		# 		<RHS total symbols>,
 		# 		<Function name>
 		# 	),
+		$(gold-rule-table \
 ##RULES
 			$(gold-rule %Index%,%NonterminalIndex%,%SymbolCount%,%ID%),
 ##END-RULES
@@ -57,10 +59,11 @@ define __gold_$(gold_grammar)_parser
 ##END-RULE-TABLE
 
 ##CHAR-SET-TABLE
-		$(gold-charset-table \
+		# Charsets.
 		# 	$(gold-charset <ID>,
 		# 		<List of chars>
 		# 	),
+		$(gold-charset-table \
 ##CHAR-SETS
 ##RANGE-CHARS '.'
 ##DELIMITER ';'
@@ -70,15 +73,16 @@ define __gold_$(gold_grammar)_parser
 ##END-CHAR-SET-TABLE
 
 ##DFA-TABLE
-		$(gold-dfa-table %InitialState%,
+		# DFA states.
 		# 	$(gold-dfa-state <ID>,
-		# 		<Accept symbol ID or -1>
+		# 		<Accept symbol ID or -1>,
 		# 		$(gold-dfa-edge <Charset ID>,
 		# 			<Target state ID>
 		# 		),
 		# 		...
 		# 	),
-			$(gold-void \
+		$(gold-dfa-table $(id \
+				%InitialState%# Initial state ID.
 ##DFA-STATES
 			),$(gold-dfa-state %Index%,%AcceptIndex%,
 ##DFA-EDGES
@@ -90,7 +94,7 @@ define __gold_$(gold_grammar)_parser
 ##END-DFA-TABLE
 
 ##LALR-TABLE
-		$(gold-lalr-table %InitialState%,# <- Initial state
+		# LALR states.
 		# 	$(gold-lalr-state <ID>,
 		# 		$(gold-lalr-action <Symbol ID>,
 		# 			<Action>,
@@ -98,7 +102,8 @@ define __gold_$(gold_grammar)_parser
 		# 		),
 		# 		...
 		# 	),
-			$(gold-void \
+		$(gold-lalr-table $(id \
+				%InitialState%# Initial state ID.
 ##LALR-STATES
 			),$(gold-lalr-state %Index%,
 ##LALR-ACTIONS
