@@ -52,15 +52,15 @@ endef
 # Rule: <PackageDecl> ::=
 # Args: 1..0 - Symbols; 0+1 - Location vector.
 define $(gold_grammar)_produce-PackageDecl
-	$(call gold_report,$3,
-		Warning: using default package
+	$(call gold_report_warning,
+		using default package
 	)
 endef
 
 # Rule: <ImportDecls> ::= <ImportDecl> <ImportDecls>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
 define $(gold_grammar)_produce-ImportDecls
-	$(call gold_report,$3,
+	$(call gold_report_warning,
 		Imports are not yet implemented!
 	)
 endef
@@ -119,7 +119,7 @@ endef
 # Rule: <ObjectsDecl> ::= object <FileOrTargetList> ';'
 # Args: 1..3 - Symbols; 3+1 - Location vector.
 define $(gold_grammar)_produce-ObjectsDecl_object_Semi
-	$(call gold_report,$4,
+	$(call gold_report_warning,
 		Objects are not yet implemented!
 	)
 endef
@@ -133,7 +133,7 @@ endef
 # Rule: <FileOrTarget> ::= <Filename> ':' <FilenameList> '{' StringLiteral '}'
 # Args: 1..6 - Symbols; 6+1 - Location vector.
 define $(gold_grammar)_produce-FileOrTarget_Colon_LBrace_StringLiteral_RBrace
-	$(call gold_report,$4,
+	$(call gold_report_warning,
 		Auto-generated files are not yet implemented!
 	)
 endef
@@ -149,7 +149,7 @@ endef
 define $(gold_grammar)_produce-Filename_StringLiteral
 	$(or \
 		$(singleword $1),
-		$(call gold_report,$2,
+		$(call gold_report_warning,
 			File name must be a single word
 		)
 	)
