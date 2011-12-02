@@ -13,15 +13,10 @@
 #include <time.h>
 #include <assert.h>
 
-struct clock_source_head {
-	struct list_head lnk;
-	struct clock_source *clock_source;
-};
-
 #define CLOCK_SOURCE_POOL_SZ 4
 
 POOL_DEF(clock_source_pool, struct clock_source_head, CLOCK_SOURCE_POOL_SZ);
-static LIST_HEAD(clock_source_list);
+LIST_HEAD(clock_source_list);
 
 int clock_source_register(struct clock_source *cs) {
 	struct clock_source_head *csh;
