@@ -27,8 +27,8 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	iphdr_t *hdr = skb->nh.iph;
 	hdr->version = 4;
 	hdr->ihl = IP_MIN_HEADER_SIZE >> 2/* + opt->optlen*/;
-	hdr->saddr = htonl(saddr);
-	hdr->daddr = htonl(daddr);
+	hdr->saddr = saddr; // Changed as in_addr_t is in network-ordered
+	hdr->daddr = daddr;
 	hdr->tot_len = htons(len - ETH_HEADER_SIZE);
 	hdr->ttl = htons(ttl);
 	hdr->id = htons(id);

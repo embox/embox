@@ -59,14 +59,18 @@ static int exec(int argc, char **argv) {
 
     connect_sock = accept(sock, (struct sockaddr *) &dst, &dst_addr_len);
 
-    /* write data form socket in buffer buf. And then print buffer data */
+    if (connect_sock < 0) {
+	    return -1;
+    }
+
+    /* read from sock, print, echo back to sock */
     while (1) {
-        if (0 > (bytes_read = recvfrom(connect_sock, buf, 1024, 0, NULL, NULL))) {
+        if (0 >= (bytes_read = recvfrom(connect_sock, buf, 1024, 0, NULL, NULL))) {
 		continue;
 	}
         buf[bytes_read] = '\0';
         printf("%s",buf);
-	sendto(sock, buf, bytes_read, 0, NULL, 0);
+	sendto(sock, buf, bytes_read, 0, (struct sockaddr *) &dst, sizeof(dst));
     }
 
     return 0;

@@ -49,6 +49,14 @@ int tcp_v4_init_sock(sock_t *sk) {
 	return 0;
 }
 
+static int tcp_v4_data_len(struct sk_buff *skb) {
+	return ntohs(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph) - TCP_V4_HEADER_SIZE(skb->h.th);
+}
+
+static void tcp_set_st(struct tcp_sock *tcpsk, char state) {
+	TCP_SOCK(tcpsk)->sk_state = state;
+}
+
 static inline unsigned short tcp_checksum (__be32 saddr, __be32 daddr, __u8 proto,
 		struct tcphdr *tcph, unsigned short size) {
 	struct tcp_pseudohdr ptcph = {
@@ -72,11 +80,12 @@ static inline void rebuild_tcp_header(__be32 ip_src, __be32 ip_dest,
 	tcph->seq = seq;
 	tcph->ack_seq = ack_seq;
 	tcph->doff = TCP_V4_HEADER_MIN_SIZE >> 2;
-	tcph->window = htons(window);
+	tcph->window = window;
 
 	tcph->check = 0;
-	tcph->check = tcp_checksum(ip_dest, ip_src, IPPROTO_TCP,
-		       tcph, TCP_V4_HEADER_SIZE(tcph));
+	//printf("TCP: sendig %d bytes\n", tcp_v4_data_len(skb));
+	tcph->check = tcp_checksum(ip_src, ip_dest, IPPROTO_TCP,
+		       tcph, TCP_V4_HEADER_SIZE(tcph) + tcp_v4_data_len(skb));
 
 }
 
@@ -99,10 +108,6 @@ static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, str
 }
 #endif
 
-static int tcp_v4_data_len(struct sk_buff *skb) {
-	return ntohs(skb->nh.iph->tot_len) -IP_HEADER_SIZE(skb->nh.iph) - TCP_V4_HEADER_SIZE(skb->h.th);
-}
-
 int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
@@ -116,14 +121,20 @@ int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 				    /*inet->opt->optlen +*/ TCP_V4_HEADER_MIN_SIZE +
 				    msg->msg_iov->iov_len, 0);
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+	skb->nh.iph->ihl = IP_MIN_HEADER_SIZE >> 2;
 	skb->h.raw = (unsigned char *) skb->nh.raw + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
 	memcpy((void*)((unsigned int)(skb->h.raw + TCP_V4_HEADER_MIN_SIZE)),
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill TCP header */
 	tcpsk->this_unack = tcpsk->this.seq;
 	tcpsk->this.seq += len;
+	skb->h.th->psh |= 1;
+	skb->h.th->ack |= 1;
+
+	tcp_set_st(tcpsk, TCP_ESTABIL_ACK_WAIT);
+
 	rebuild_tcp_header(inet->saddr, inet->daddr,
-			inet->sport, inet->dport, tcpsk->this_unack, tcpsk->rem.seq,
+			inet->sport, inet->dport, htonl(tcpsk->this_unack), htonl(tcpsk->rem.seq),
 			tcpsk->this.wind, skb);
 	return ip_send_packet(inet, skb);
 }
@@ -192,10 +203,6 @@ enum {
 	TCP_ST_NO_FREE,
 	TCP_ST_SEND
 };
-
-static void tcp_set_st(struct tcp_sock *tcpsk, char state) {
-	TCP_SOCK(tcpsk)->sk_state = state;
-}
 
 static int tcp_st_listen(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcphdr_t *tcph, tcphdr_t *out_tcph) {
@@ -278,21 +285,33 @@ static int tcp_st_estabil(struct tcp_sock *tcpsk, struct sk_buff *skb,
 	assert(TCP_SOCK(tcpsk)->sk_state == TCP_ESTABIL);
 
 	if (!tcph->rst && !tcph->syn && tcph->ack) {
-		if (tcpsk->this_unack <= ack && ack <= tcpsk->this.seq) {
-			if (seq == tcpsk->rem.seq) {
-				tcpsk->rem.seq += tcp_v4_data_len(skb);
-				sock_queue_rcv_skb((struct sock *) tcpsk, skb_copy(skb, 0));
+		if (ack == tcpsk->this.seq && seq == tcpsk->rem.seq) {
+			tcpsk->rem.seq += tcp_v4_data_len(skb);
+			sock_queue_rcv_skb((struct sock *) tcpsk, skb_copy(skb, 0));
 
-				out_tcph->ack |= 1;
-				return TCP_ST_SEND;
-			}
-			if (ack == tcpsk->this.seq) {
-				//tx ack;
-			}
+			out_tcph->ack |= 1;
+			return TCP_ST_SEND;
 		}
 	}
 	return TCP_ST_NO_SEND;
 }
+
+static int tcp_st_estabil_ack_wait(struct tcp_sock *tcpsk, struct sk_buff *skb,
+		tcphdr_t *tcph, tcphdr_t *out_tcph) {
+	unsigned long seq = ntohl(tcph->seq);
+	unsigned long ack = ntohl(tcph->ack_seq);
+
+	if (!tcph->rst && !tcph->syn && tcph->ack) {
+		if (ack == tcpsk->this.seq && seq == tcpsk->rem.seq) {
+			tcpsk->this_unack = tcpsk->this.seq;
+			tcp_set_st(tcpsk, TCP_ESTABIL);
+		}
+	}
+
+	return TCP_ST_NO_SEND;
+}
+
+
 
 static int (*tcp_st_handler[TCP_MAX_STATE])(struct tcp_sock *tcpsk,
 		struct sk_buff *skb, tcphdr_t *tcph, tcphdr_t *out_tcph) = {
@@ -300,7 +319,8 @@ static int (*tcp_st_handler[TCP_MAX_STATE])(struct tcp_sock *tcpsk,
 	[TCP_SYN_RECV]		= tcp_st_syn_recv,
 	[TCP_SYN_RECV_PRE]	= tcp_st_syn_recv_pre,
 	[TCP_SYN_RECV_PRE2]	= tcp_st_syn_recv_pre2,
-	[TCP_ESTABIL]		= tcp_st_estabil
+	[TCP_ESTABIL]		= tcp_st_estabil,
+	[TCP_ESTABIL_ACK_WAIT]	= tcp_st_estabil_ack_wait
 };
 
 static void tcp_v4_process(struct tcp_sock *tcpsk, sk_buff_t *skb) {
@@ -315,16 +335,17 @@ static void tcp_v4_process(struct tcp_sock *tcpsk, sk_buff_t *skb) {
 		uint16_t dest = skb->h.th->dest;
 		uint16_t src  = skb->h.th->source;
 
-		memcpy(tcp_hdr(skb), out_tcph, TCP_V4_HEADER_SIZE(out_tcph));
-		rebuild_tcp_header(skb->nh.iph->daddr, skb->nh.iph->saddr, dest, src,
-			        htonl(tcpsk->this.seq), htonl(tcpsk->rem.seq),
-				htons(tcpsk->this.wind), skb);
-
 		skb->len = ETH_HEADER_SIZE +
 				IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE;
 
 		skb->nh.iph->tot_len = htons(IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE);
+		memcpy(tcp_hdr(skb), out_tcph, TCP_V4_HEADER_SIZE(out_tcph));
+
+		rebuild_tcp_header(skb->nh.iph->daddr, skb->nh.iph->saddr, dest, src,
+			        htonl(tcpsk->this.seq), htonl(tcpsk->rem.seq),
+				tcpsk->this.wind, skb);
 		ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, skb, skb->len);
+
 	} else if (res < TCP_ST_NO_FREE) {
 		kfree_skb(skb);
 	}
@@ -346,19 +367,25 @@ static int tcp_v4_rcv(sk_buff_t *skb) {
 
 static int tcp_v4_listen(struct sock *sk, int backlog) {
 	sk->sk_state = TCP_LISTEN;
-	((struct tcp_sock *) sk)->this.wind = 100;
+	((struct tcp_sock *) sk)->this.wind = htons(100);
 	return 0;
 }
 
-static int tcp_v4_accept(sock_t *sk, sockaddr_t *addr, int *addr_len) {
+static int tcp_v4_accept(sock_t *sk, sockaddr_t *_addr, int *addr_len) {
 	sk_buff_t *skb;
 	struct tcp_sock *tcpsk = (struct tcp_sock *) sk;
 	while (sk->sk_state != TCP_SYN_RECV_PRE) {
 	}
 
 	if (!list_empty(&tcpsk->conn_wait)) {
-		sk->sk_state = TCP_SYN_RECV_PRE2;
+		struct sockaddr_in *addr = (struct sockaddr_in *) _addr;
 		skb = (sk_buff_t *) tcpsk->conn_wait.next;
+
+		addr->sin_family = AF_INET;
+		addr->sin_port = skb->h.th->source;
+		addr->sin_addr.s_addr = skb->nh.iph->saddr;
+
+		sk->sk_state = TCP_SYN_RECV_PRE2;
 		list_del((struct list_head *) skb);
 		tcp_v4_process(tcpsk, skb);
 		return 0;
