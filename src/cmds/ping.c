@@ -80,7 +80,7 @@ static void sent_resalt(uint32_t timeout, union packet tx_pack ){
 			continue;
 		}
 		if ((rx_pack.hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||
-				(tx_pack.hdr.icmp_hdr.un.echo.sequence != rx_pack.hdr.icmp_hdr.un.echo.sequence) ||
+//				(tx_pack.hdr.icmp_hdr.un.echo.sequence != rx_pack.hdr.icmp_hdr.un.echo.sequence) ||
 				(tx_pack.hdr.ip_hdr.daddr != rx_pack.hdr.ip_hdr.saddr)) {
 			continue;
 		}
