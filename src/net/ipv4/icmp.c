@@ -145,7 +145,7 @@ static int icmp_echo(sk_buff_t *skb) {
 
 	skb_reply = skb_copy(skb, 0);
 	skb_reply->dev = skb->dev;
-	skb_reply->h.icmph->type = skb->h.icmph->type;
+	skb_reply->h.icmph->type = ICMP_ECHOREPLY;
 	skb_reply->h.icmph->code = skb->h.icmph->code;
 	if (skb_reply->h.icmph->code != 0) {
 		skb_reply->h.icmph->un.echo.sequence = htons(ntohs(skb_reply->h.icmph->un.echo.sequence) + 1);
@@ -247,7 +247,8 @@ static int icmp_init(void) {
 }
 
 static int ping_rcv(struct sk_buff *skb) {
-	return -1;
+//	printf("ping_rcv()\n");
+	return 0;
 }
 
 static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
@@ -285,6 +286,7 @@ static int icmp_rcv(sk_buff_t *pack) {
 	net_device_stats_t *stats;
 	uint16_t tmp;
 
+//	printf("icmp_rcv()\n");
 	assert(pack != NULL);
 
 	icmph = pack->h.icmph;
