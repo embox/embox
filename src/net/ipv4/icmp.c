@@ -143,21 +143,10 @@ static int icmp_redirect(sk_buff_t *skb) {
 static int icmp_echo(sk_buff_t *skb) {
 	sk_buff_t *skb_reply;
 
-	/* ICMP type 8, Echo request: The Identifier, sequence number and data fields should be returned to the sender unaltered */
+	/* RFC 796:  The data received in the echo message must be returned in the echo reply message. */
 	skb_reply = skb_copy(skb, 0);
 	skb_reply->dev = skb->dev;
 	skb_reply->h.icmph->type = ICMP_ECHOREPLY;
-	skb_reply->h.icmph->code = skb->h.icmph->code;
-	skb_reply->h.icmph->un.echo.sequence = skb->h.icmph->un.echo.sequence;
-	/* if (skb_reply->h.icmph->code != 0) { */
-
-	/* 	skb_reply->h.icmph->un.echo.sequence = skb_reply->h.icmph->un.echo.sequence; */
-	/* } */
-	/* else { */
-	/* 	skb_reply->h.icmph->un.echo.id = 0; */
-	/* 	skb_reply->h.icmph->un.echo.sequence = 0; */
-	/* } */
-
 
 	/* TODO checksum must be at network byte order */
 	skb_reply->h.icmph->checksum = 0;
@@ -252,7 +241,6 @@ static int icmp_init(void) {
 }
 
 static int ping_rcv(struct sk_buff *skb) {
-//	printf("ping_rcv()\n");
 	return 0;
 }
 
@@ -291,7 +279,6 @@ static int icmp_rcv(sk_buff_t *pack) {
 	net_device_stats_t *stats;
 	uint16_t tmp;
 
-//	printf("icmp_rcv()\n");
 	assert(pack != NULL);
 
 	icmph = pack->h.icmph;

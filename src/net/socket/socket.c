@@ -169,10 +169,10 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
-	struct inet_sock *inet;
+//	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
-	struct sockaddr_in *dest_addr;
+//	struct sockaddr_in *dest_addr;
 
 	if (sock == NULL) {
 		return -EBADF;
@@ -187,10 +187,18 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 		return res;
 	}
 
+#if 0
+	/* FIXME: Error:
+	 * sizeof(struct sock) < sizeof(struct inet_sock), so reinterpret
+	 * sock->sk as pointer to struct inet_sock pointer is incorrect,
+	 * because after that we will use memory of the next field in
+	 * struct socket i.e. const struct proto_ops *ops; --Ilia Vaprol
+	 */
 	inet = inet_sk(sock->sk);
 	dest_addr = (struct sockaddr_in *)daddr;
 	dest_addr->sin_addr.s_addr = inet->daddr;
 	dest_addr->sin_port = inet->dport;
+#endif
 
 	return res;
 }
