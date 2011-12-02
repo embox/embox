@@ -1,0 +1,6 @@
+package embox.example.kernel.x86debugTraps;
+
+module x86debugTraps {
+	source "x86debugTraps.c";
+	depends embox.kernel.thread.core;
+}
