@@ -20,7 +20,7 @@ TEST_CASE("Save context with 'setjmp' function than restore with 'longjmp' call"
 	switch (setjmp(jb)) {
 	case 0:
 		longjmp(jb, TEST_JUMP_VALUE);
-		test_assert(false);
+		test_fail("We passed longjmp call");
 		break;
 
 	case TEST_JUMP_VALUE:
@@ -28,7 +28,7 @@ TEST_CASE("Save context with 'setjmp' function than restore with 'longjmp' call"
 		break;
 
 	default:
-		test_assert(false);
+		test_fail("Setjmp return strange value");
 		break;
 	}
 }
