@@ -75,7 +75,11 @@ int task_idx_free_res(int idx, struct task_resources *res) {
 }
 
 int task_idx_alloc(int type) {
+	//struct task_resources *res = &task_self()->resources;
+	//return task_desc2idx(task_fdl_alloc(res), res);
+
 	return task_idx_alloc_res(type, task_get_resources(task_self()));
+
 }
 
 

@@ -7,10 +7,9 @@
 #include <net/ip_fragment.h>
 #include <net/skbuff.h>
 #include <mem/objalloc.h>
+#include <errno.h>
 #include <string.h>
 #include <kernel/timer.h>
-#include <net/udp.h>
-#include <net/checksum.h>
 
 /**
  * Datagram receive buffer
@@ -27,6 +26,7 @@ struct dgram_buf {
 	int               meat;
 	int               len; /* total length of original datagram	*/
 	struct sys_timer  *timer;
+	int               proto;
 };
 
 static LIST_HEAD(__dgram_buf_list);
@@ -70,10 +70,6 @@ static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb) {
 	offset &= IP_OFFSET;
 	offset <<= 3;
 
-	/* type of transport layer assigned only to first fragment */
-	if(!offset) {
-		buf->len += UDP_HEADER_SIZE;
-	}
 	data_len = skb->len - (skb->h.raw - skb->data);
 	end = offset + data_len;
 
@@ -98,7 +94,6 @@ static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb) {
 	}
 }
 
-//TODO there are two all data coping now. May be it is possible to do only one.
 static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	struct sk_buff *skb;
 	struct sk_buff *tmp;
@@ -106,9 +101,9 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	int ihlen;
 
 	tmp = buf->next_skbuff;
-	//TODO
+
 	ihlen = (tmp->h.raw - tmp->data);
-	skb = alloc_skb(buf->len + ihlen + UDP_HEADER_SIZE, 0);
+	skb = alloc_skb(buf->len + ihlen, 0);
 	memcpy(skb->data, tmp->data, tmp->len);
 
 	skb->h.raw = skb->data + (tmp->h.raw - tmp->data);
@@ -116,7 +111,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	skb->mac.raw = skb->data + (tmp->mac.raw - tmp->data);
 	skb->protocol = tmp->protocol;
 	skb->dev = tmp->dev;
-	//skb->h.uh->len = 4104;
+
 	/* copy and concatenate data */
 	while(!list_empty((struct list_head *)buf)) {
 		memcpy(skb->data + ihlen + offset, tmp->data + ihlen, tmp->len - ihlen);
@@ -128,8 +123,6 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 
 	/* recalculate length */
 	skb->len = buf->len + ihlen;
-	skb->h.uh->len = skb->len - ihlen;
-
 	buf_delete(buf);
 
 	return skb;
@@ -146,6 +139,7 @@ static struct dgram_buf *buf_create(struct iphdr *iph) {
 	INIT_LIST_HEAD((struct list_head *)buf);
 	INIT_LIST_HEAD(&buf->next_buf);
 	list_add_tail(&buf->next_buf, &__dgram_buf_list);
+
 	buf->protocol = iph->proto;
 	buf->id = iph->id;
 	buf->saddr = iph->saddr;
@@ -165,20 +159,34 @@ static void buf_delete(struct dgram_buf *buf) {
 struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	struct dgram_buf *buf;
 	int mf_flag;
-
-	if ((buf = ip_find(skb->nh.iph)) == NULL) {
-		buf = buf_create(skb->nh.iph);
-	}
-
-	ip_frag_dgram_buf(buf, skb);
+	//int df_flag;
+	int offset;
 
 	mf_flag = ntohs(skb->nh.iph->frag_off);
+	//df_flag = mf_flag;
 	mf_flag &= IP_MF;
-	if(buf->uncomplete)
-		buf->uncomplete = mf_flag;
 
-	if (!buf->uncomplete && buf->meat == buf->len) {
-		return build_packet(buf);
+	//df_flag &= IP_DF;
+
+	offset = ntohs(skb->nh.iph->frag_off);
+	offset &= IP_OFFSET;
+	offset <<= 3;
+	/* if it is not complete packet */
+	if(offset || mf_flag) {
+		if ((buf = ip_find(skb->nh.iph)) == NULL) {
+			buf = buf_create(skb->nh.iph);
+		}
+
+		ip_frag_dgram_buf(buf, skb);
+
+		if(buf->uncomplete)
+			buf->uncomplete = mf_flag;
+
+		if (!buf->uncomplete && buf->meat == buf->len) {
+			return build_packet(buf);
+		}
+	} else {
+		return skb;
 	}
 
 	return NULL;

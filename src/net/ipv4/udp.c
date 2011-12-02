@@ -53,8 +53,8 @@ int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	struct sk_buff *skb;
 	skb = skb_recv_datagram(sk, flags, 0, 0);
 	if (skb && skb->len > 0) {
-		if (len > (skb->h.uh->len - UDP_HEADER_SIZE)) {
-			len = skb->h.uh->len - UDP_HEADER_SIZE;
+		if (len > (ntohs(skb->h.uh->len) - UDP_HEADER_SIZE)) {
+			len = ntohs(skb->h.uh->len) - UDP_HEADER_SIZE;
 		}
 		memcpy((void *) msg->msg_iov->iov_base,
 				(void *) (skb->h.raw + UDP_HEADER_SIZE), len);
