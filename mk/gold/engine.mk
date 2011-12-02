@@ -21,6 +21,18 @@ __gold_engine_mk := 1
 #
 # The first two stages are common for all GOLD parser engines, a general
 # overview of them is available at http://www.goldparser.org/.
+# Instead of providing stream-like API, where each token/action is retrieved by
+# a corresponding calls inside a parse loop, this implementation uses another
+# approach. First, we iterate through the whole list of input characters
+# constructing a list of recognized terminals. Then, the resulting list is
+# trasformed into a parse tree, again just by iterating over the tokens.
+#
+# The only stage that involves calling of a user code if the third phase, where
+# the parse tree is interpreted by invoking user-defined functions for each
+# node of the tree.
+# Nodes are tranformed from a leaves upwards to the root: the result of
+# calling a handler for some node is passed as an argument to a handler of its
+# parent node.
 #
 
 include mk/core/common.mk
