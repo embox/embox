@@ -205,8 +205,10 @@ builtin_func-gold-symbol-table :=# Noop.
 # rule (except for zero). These values are used later in LALR reduce handler.
 #
 #	__gold_hook_rule_n$(n) = <proxy function>
+#	__gold_args$(n) = <Space separated arguments from $1 to $(N)>
 #
-# The latters are used by in last parsing phase to redirect expansion hooks.
+# The latters are used by in last parsing phase to redirect expansion hooks
+# and echo a certain number of arguments correspondingly.
 #
 
 # Params:
@@ -391,6 +393,20 @@ builtin_func-gold-charset-table :=# Noop
 #		),
 #		# ...
 #	),
+#
+# Each DFA state is represented by a function which tries to match an input
+# characher by applying charset matchers of its edges one by one. If matching
+# fails the ID of accepted symbol (if any) is returned.
+#
+#	$g_dfa$(id) = ...
+#
+# where:
+#      'id' is the state identifier, and
+#       'g' refers to a namespace of a parser.
+#
+# The main function of the DFA scanner itself is '__gold_lex' which takes
+# a list of decimal char codes and returns result of tokenization.
+#
 
 # Params:
 #   1. Charset
