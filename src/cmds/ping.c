@@ -129,13 +129,13 @@ static int ping(struct ping_info *pinfo) {
 
 	tx_pack.hdr.icmp_hdr.type = ICMP_ECHO;
 	tx_pack.hdr.icmp_hdr.code = 1;
-	tx_pack.hdr.icmp_hdr.un.echo.id = /*TID*/0;
+	tx_pack.hdr.icmp_hdr.un.echo.id = 11; /* TODO: get unique id */
 	tx_pack.hdr.icmp_hdr.un.echo.sequence = 0;
 
 	total = clock();
 	i = 0;
 	for (;;) {
-		tx_pack.hdr.icmp_hdr.un.echo.sequence = htons((unsigned)ntohs(tx_pack.hdr.icmp_hdr.un.echo.sequence) + 1);
+		tx_pack.hdr.icmp_hdr.un.echo.sequence = htons(ntohs(tx_pack.hdr.icmp_hdr.un.echo.sequence) + 1);
 		tx_pack.hdr.icmp_hdr.checksum = 0;
 		/* TODO checksum must be at network byte order */
 		/* XXX linux-0.2.img sends checksum in host byte order,
