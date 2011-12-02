@@ -13,6 +13,7 @@
 #include <util/macro.h>
 
 #define MAX_BUFS_CNT 0x10
+#define MSL          2*60*1000 // 2 minutes
 /**
  *	return skbuff contain complete data
  */

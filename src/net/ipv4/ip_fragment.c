@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <kernel/timer.h>
+#include <util/math.h>
 
 /**
  * Datagram receive buffer
@@ -27,6 +28,7 @@ struct dgram_buf {
 	int               len; /* total length of original datagram	*/
 	struct sys_timer  *timer;
 	int               proto;
+	int               buf_ttl;
 };
 
 static LIST_HEAD(__dgram_buf_list);
@@ -40,10 +42,26 @@ OBJALLOC_DEF(__dgram_bufs, struct dgram_buf, MAX_BUFS_CNT);
 	   ((struct list_head*)skb)!=(struct list_head*)buf; \
 	   skb = skb->next)
 
+#define TIMER_TICK 1000
+
 static struct dgram_buf *buf_create(struct iphdr *iph);
 static void buf_delete(struct dgram_buf *buf);
 static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb);
 static struct sk_buff *build_packet(struct dgram_buf *buf);
+static void ttl_handler(struct sys_timer *timer, void *param);
+
+static void ttl_handler(struct sys_timer *timer, void *param) {
+	struct dgram_buf *buf;
+
+	buf = (struct dgram_buf *)param;
+
+	if(buf->buf_ttl == 0) {
+		buf_delete(buf);
+		timer_close(timer);
+	}else {
+		*(volatile int *)buf->buf_ttl -= 1;
+	}
+}
 
 static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 	struct dgram_buf *buf;
@@ -65,6 +83,8 @@ static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb) {
 	int was_added = 0;
 	int offset, tmp_offset;
 	int data_len, end;
+
+	buf->buf_ttl = max(buf->buf_ttl, ntohs(skb->nh.iph->ttl));
 
 	offset = ntohs(skb->nh.iph->frag_off);
 	offset &= IP_OFFSET;
@@ -130,11 +150,13 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 
 static struct dgram_buf *buf_create(struct iphdr *iph) {
 	struct dgram_buf *buf;
-	//sys_timer_t *timer;
+	sys_timer_t *timer;
 
 	buf = (struct dgram_buf*) objalloc(&__dgram_bufs);
 	if (!buf)
 		return NULL;
+
+	timer_set(&timer, TIMER_TICK , ttl_handler, (void *)buf);
 
 	INIT_LIST_HEAD((struct list_head *)buf);
 	INIT_LIST_HEAD(&buf->next_buf);
@@ -147,11 +169,21 @@ static struct dgram_buf *buf_create(struct iphdr *iph) {
 	buf->len = 0;
 	buf->uncomplete = 1;
 	buf->meat = 0;
+	buf->timer = timer;
+	buf->buf_ttl = MSL;
 
 	return buf;
 }
 
 static void buf_delete(struct dgram_buf *buf) {
+	struct sk_buff *tmp;
+
+	while(!list_empty((struct list_head *)buf)) {
+		list_del((struct list_head*)tmp);
+		kfree_skb(tmp);
+		tmp = buf->next_skbuff;
+	}
+
 	list_del(&buf->next_buf);
 	pool_free(&__dgram_bufs, (void*)buf);
 }
