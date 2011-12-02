@@ -143,17 +143,22 @@ static int icmp_redirect(sk_buff_t *skb) {
 static int icmp_echo(sk_buff_t *skb) {
 	sk_buff_t *skb_reply;
 
+	/* ICMP type 8, Echo request: The Identifier, sequence number and data fields should be returned to the sender unaltered */
 	skb_reply = skb_copy(skb, 0);
 	skb_reply->dev = skb->dev;
 	skb_reply->h.icmph->type = ICMP_ECHOREPLY;
 	skb_reply->h.icmph->code = skb->h.icmph->code;
-	if (skb_reply->h.icmph->code != 0) {
-		skb_reply->h.icmph->un.echo.sequence = htons(ntohs(skb_reply->h.icmph->un.echo.sequence) + 1);
-	}
-	else {
-		skb_reply->h.icmph->un.echo.id = 0;
-		skb_reply->h.icmph->un.echo.sequence = 0;
-	}
+	skb_reply->h.icmph->un.echo.sequence = skb->h.icmph->un.echo.sequence;
+	/* if (skb_reply->h.icmph->code != 0) { */
+
+	/* 	skb_reply->h.icmph->un.echo.sequence = skb_reply->h.icmph->un.echo.sequence; */
+	/* } */
+	/* else { */
+	/* 	skb_reply->h.icmph->un.echo.id = 0; */
+	/* 	skb_reply->h.icmph->un.echo.sequence = 0; */
+	/* } */
+
+
 	/* TODO checksum must be at network byte order */
 	skb_reply->h.icmph->checksum = 0;
 	skb_reply->h.icmph->checksum = ptclbsum(skb_reply->h.raw,

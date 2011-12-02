@@ -80,7 +80,7 @@ static void sent_resalt(uint32_t timeout, union packet tx_pack ){
 			continue;
 		}
 		if ((rx_pack.hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||
-//				(tx_pack.hdr.icmp_hdr.un.echo.sequence != rx_pack.hdr.icmp_hdr.un.echo.sequence) ||
+				(tx_pack.hdr.icmp_hdr.un.echo.sequence != rx_pack.hdr.icmp_hdr.un.echo.sequence) ||
 				(tx_pack.hdr.ip_hdr.daddr != rx_pack.hdr.ip_hdr.saddr)) {
 			continue;
 		}
@@ -115,6 +115,8 @@ static int ping(struct ping_info *pinfo) {
 	tx_pack.hdr.ip_hdr.tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
 	tx_pack.hdr.ip_hdr.ttl = pinfo->ttl;
 	tx_pack.hdr.ip_hdr.proto = IPPROTO_ICMP;
+
+	cnt_resp = 0; cnt_err = 0;
 
 	timeout = pinfo->timeout * 1000;
 	dst_addr_str = inet_ntoa(pinfo->dst);
