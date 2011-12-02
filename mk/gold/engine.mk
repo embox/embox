@@ -826,7 +826,7 @@ define __gold_lalr_error
 
 	$(if $(filter %/1,$t),
 		${eval \
-			__gold_stack__ += $$(call \
+			__gold_stack__ := $$(__gold_stack__)$$(call \
 					$(lambda {dfa,$2,$3,$1,$4}),
 				$(subst /,$(\comma),$t))
 		}
