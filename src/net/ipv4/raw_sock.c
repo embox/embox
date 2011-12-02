@@ -59,7 +59,7 @@ int raw_rcv(sk_buff_t *skb) {
 				 * with few sockets, which are registered
 				 * on the same protocol.
 				 */
-				break; // see above
+				//break; // see above
 			}
 		}
 	}
