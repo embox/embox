@@ -13,6 +13,7 @@ struct context {
 	/* 0x0c */uint32_t esi; /**< TODO */
 	/* 0x10 */uint32_t ebp; /**< TODO */
 	/* 0x14 */uint32_t esp; /**< TODO */
+	/* 0x18 */uint32_t eflags; /**< TODO */
 };
 
 #endif /* __ASSEMBLER__ */
