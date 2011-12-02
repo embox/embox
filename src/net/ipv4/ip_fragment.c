@@ -10,6 +10,7 @@
 #include <string.h>
 #include <kernel/timer.h>
 #include <net/udp.h>
+#include <net/checksum.h>
 
 /**
  * Datagram receive buffer
@@ -22,6 +23,7 @@ struct dgram_buf {
 	in_addr_t         daddr;
 	uint16_t          id;
 	uint8_t           protocol;
+	int               uncomplete;
 	int               meat;
 	int               len; /* total length of original datagram	*/
 	struct sys_timer  *timer;
@@ -47,8 +49,8 @@ static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 	struct dgram_buf *buf;
 
 	dgram_buf_foreach(buf) {
-		if (buf->daddr == iph->saddr
-			&& buf->saddr == iph->daddr
+		if (buf->daddr == iph->daddr
+			&& buf->saddr == iph->saddr
 			&& buf->protocol == iph->proto
 			&& buf->id == iph->id) {
 			return buf;
@@ -67,7 +69,12 @@ static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb) {
 	offset = ntohs(skb->nh.iph->frag_off);
 	offset &= IP_OFFSET;
 	offset <<= 3;
-	data_len = skb->len - (skb->h.raw - skb->data) - UDP_HEADER_SIZE;
+
+	/* type of transport layer assigned only to first fragment */
+	if(!offset) {
+		buf->len += UDP_HEADER_SIZE;
+	}
+	data_len = skb->len - (skb->h.raw - skb->data);
 	end = offset + data_len;
 
 	skbuff_for_each(tmp, buf) {
@@ -100,18 +107,17 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 
 	tmp = buf->next_skbuff;
 	//TODO
-	ihlen = (tmp->h.raw - tmp->data) + UDP_HEADER_SIZE;
-	skb = alloc_skb(buf->len + ihlen, 0);
-	memcpy(skb->data, tmp->data, ihlen);
+	ihlen = (tmp->h.raw - tmp->data);
+	skb = alloc_skb(buf->len + ihlen + UDP_HEADER_SIZE, 0);
+	memcpy(skb->data, tmp->data, tmp->len);
 
 	skb->h.raw = skb->data + (tmp->h.raw - tmp->data);
 	skb->nh.raw = skb->data + (tmp->nh.raw - tmp->data);
 	skb->mac.raw = skb->data + (tmp->mac.raw - tmp->data);
-
 	skb->protocol = tmp->protocol;
 	skb->dev = tmp->dev;
-	skb->len = buf->len + ihlen;
-
+	//skb->h.uh->len = 4104;
+	/* copy and concatenate data */
 	while(!list_empty((struct list_head *)buf)) {
 		memcpy(skb->data + ihlen + offset, tmp->data + ihlen, tmp->len - ihlen);
 		offset += tmp->len - ihlen;
@@ -119,6 +125,10 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 		kfree_skb(tmp);
 		tmp = buf->next_skbuff;
 	}
+
+	/* recalculate length */
+	skb->len = buf->len + ihlen;
+	skb->h.uh->len = skb->len - ihlen;
 
 	buf_delete(buf);
 
@@ -141,6 +151,7 @@ static struct dgram_buf *buf_create(struct iphdr *iph) {
 	buf->saddr = iph->saddr;
 	buf->daddr = iph->daddr;
 	buf->len = 0;
+	buf->uncomplete = 1;
 	buf->meat = 0;
 
 	return buf;
@@ -161,8 +172,12 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 
 	ip_frag_dgram_buf(buf, skb);
 
-	mf_flag = skb->nh.iph->frag_off & IP_MF;
-	if (!mf_flag && buf->meat == buf->len) {
+	mf_flag = ntohs(skb->nh.iph->frag_off);
+	mf_flag &= IP_MF;
+	if(buf->uncomplete)
+		buf->uncomplete = mf_flag;
+
+	if (!buf->uncomplete && buf->meat == buf->len) {
 		return build_packet(buf);
 	}
 
