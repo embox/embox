@@ -1,10 +1,10 @@
-package embox.kernel;
+package embox.kernel
 
 module time {
-	source "time.c";
-	depends clock_source, embox.kernel.timer.timer_api;
+	source "time.c"
+	depends clock_source, embox.kernel.timer.timer_api
 }
 
 module clock_source {
-	source "clock_source.c";
+	source "clock_source.c"
 }

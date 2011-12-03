@@ -1,4 +1,4 @@
-package embox.mem;
+package embox.mem
 
 abstract module heap_api {
 	//option HEAP_SIZE=?
@@ -6,6 +6,6 @@ abstract module heap_api {
 }
 
 module heap_bm extends heap_api {
-	source "heap_bm.c";
-	depends page_api;
+	source "heap_bm.c"
+	depends page_api
 }

@@ -1,25 +1,25 @@
-package embox.kernel.timer;
+package embox.kernel.timer
 
 abstract module sleep_api { }
 abstract module timer_api { }
 
 module timer extends timer_api {
-	source "timer.c";
-	depends embox.kernel.clock_source, embox.hal.clock;
+	source "timer.c"
+	depends embox.kernel.clock_source, embox.hal.clock
 }
 
 module head_timer extends timer_api {
-	source "head_timer.c";
-	depends embox.kernel.clock_source, embox.hal.clock;
+	source "head_timer.c"
+	depends embox.kernel.clock_source, embox.hal.clock
 }
 
 module sleep extends sleep_api {
-	source "sleep.c";
-	depends timer_api, embox.kernel.thread.core;
+	source "sleep.c"
+	depends timer_api, embox.kernel.thread.core
 }
 
 module sleep_nosched extends sleep_api {
-	source "sleep_nosched.c";
-	depends timer_api;
+	source "sleep_nosched.c"
+	depends timer_api
 }
 

@@ -22,7 +22,7 @@
 # call 'gold_default_produce' function.
 #
 
-# Rule: <Model> ::= <PackageDecl> <ImportDecls> <ModuleDecls>
+# Rule: <Model> ::= <Package> <Imports> <Entities>
 # Args: 1..3 - Symbols; 3+1 - Location vector.
 define $(gold_grammar)_produce-Model
 	$(\h) Generated from $(gold_file). Do not edit!$(\n)$(\n)
@@ -43,105 +43,95 @@ define $(gold_grammar)_produce-Model
 	)
 endef
 
-# Rule: <PackageDecl> ::= package <QualifiedName> ';'
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-PackageDecl_package_Semi
+# Rule: <Package> ::= package <QualifiedName>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+define $(gold_grammar)_produce-Package_package
 	$$_PACKAGE := $2$(\n)
 endef
 
-# Rule: <PackageDecl> ::=
+# Rule: <Package> ::=
 # Args: 1..0 - Symbols; 0+1 - Location vector.
-define $(gold_grammar)_produce-PackageDecl
+define $(gold_grammar)_produce-Package
 	$(call gold_report_warning,
-		using default package
+		Using default package
 	)
 endef
 
-# Rule: <ImportDecls> ::= <ImportDecl> <ImportDecls>
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-ImportDecls
+# Rule: <Import> ::= import <ImportFeature> <QualifiedNameWithWildcard>
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_grammar)_produce-Import_import
 	$(call gold_report_warning,
 		Imports are not yet implemented!
 	)
 endef
 
-# Rule: <ModuleDecls> ::= <ModuleDecl> <ModuleDecls>
+# Rule: <Entities> ::= <Entity> <Entities>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-ModuleDecls
+define $(gold_grammar)_produce-Entities
 	$1$2
 endef
 
-# Rule: <ModuleDecl> ::= <ModuleModifiers> module Identifier <SuperModules> '{' <ModuleBodyDecls> '}'
+# Rule: <Module> ::= <ModuleModifiers> module Identifier <SuperModule> '{' <ModuleAttributes> '}'
 # Args: 1..7 - Symbols; 7+1 - Location vector.
-define $(gold_grammar)_produce-ModuleDecl_module_Identifier_LBrace_RBrace
+define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 	m := $3$(\n)
 	$$_$(if $(filter abstract,$1),APIS,MODS) += $$m$(\n)
 	$4
 	$6$(\n)
 endef
 
-# Rule: <SuperModules> ::= extends <ModuleRefList>
+# Rule: <SuperModule> ::= extends <ModuleRef>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-SuperModules_extends
+define $(gold_grammar)_produce-SuperModule_extends
 	$$_PROVIDES-$$m += $2$(\n)
 endef
 
-# Rule: <SuperModules> ::=
-# Args: 1..0 - Symbols; 0+1 - Location vector.
-define $(gold_grammar)_produce-SuperModules
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleBodyDecls> ::= <ModuleBodyDecl> <ModuleBodyDecls>
+# Rule: <ModuleAttributes> ::= <ModuleAttribute> <ModuleAttributes>
 # Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-ModuleBodyDecls
+define $(gold_grammar)_produce-ModuleAttributes
 	$1$2
 endef
 
-# Rule: <CcflagsDecl> ::= ccfags StringLiteral ';'
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-CcflagsDecl_ccfags_StringLiteral_Semi
-	$$_CFLAGS-$$m += $2$(\n)
-endef
-
-# Rule: <DependenciesDecl> ::= depends <ModuleRefList> ';'
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-DependenciesDecl_depends_Semi
+# Rule: <Depends> ::= depends <ModuleRefList>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+define $(gold_grammar)_produce-Depends_depends
 	$$_DEPS-$$m += $2$(\n)
 endef
 
-# Rule: <SourcesDecl> ::= source <FileOrTargetList> ';'
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-SourcesDecl_source_Semi
+# Rule: <Sources> ::= source <FilenameList>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+define $(gold_grammar)_produce-Sources_source
 	$$_SRCS-$$m += $2$(\n)
 endef
 
-# Rule: <ObjectsDecl> ::= object <FileOrTargetList> ';'
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-ObjectsDecl_object_Semi
+# Rule: <Objects> ::= object <FilenameList>
+# Args: 1..2 - Symbols; 2+1 - Location vector.
+define $(gold_grammar)_produce-Objects_object
 	$(call gold_report_warning,
 		Objects are not yet implemented!
 	)
 endef
 
-# Rule: <FileOrTarget> ::= <Filename>
-# Args: 1..1 - Symbols; 1+1 - Location vector.
-define $(gold_grammar)_produce-FileOrTarget
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <FileOrTarget> ::= <Filename> ':' <FilenameList> '{' StringLiteral '}'
-# Args: 1..6 - Symbols; 6+1 - Location vector.
-define $(gold_grammar)_produce-FileOrTarget_Colon_LBrace_StringLiteral_RBrace
+# Rule: <Option> ::= option Identifier ':' <OptionTypeWithAssignment>
+# Args: 1..4 - Symbols; 4+1 - Location vector.
+define $(gold_grammar)_produce-Option_option_Identifier_Colon
 	$(call gold_report_warning,
-		Auto-generated files are not yet implemented!
+		Options are not yet implemented!
 	)
 endef
 
-# Rule: <FileOrTargetList> ::= <FileOrTarget> ',' <FileOrTargetList>
+# Rule: <Flags> ::= make flags <StringList>
 # Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-FileOrTargetList_Comma
-	$1 $3
+define $(gold_grammar)_produce-Flags_make_flags
+	$$_CFLAGS-$$m += $3$(\n)
+endef
+
+# Rule: <Rule> ::= make <Filename> <Prerequisites> <Recipes>
+# Args: 1..4 - Symbols; 4+1 - Location vector.
+define $(gold_grammar)_produce-Rule_make
+	$(call gold_report_warning,
+		Make rules are not yet implemented!
+	)
 endef
 
 # Rule: <Filename> ::= StringLiteral
@@ -155,15 +145,33 @@ define $(gold_grammar)_produce-Filename_StringLiteral
 	)
 endef
 
-# Rule: <FilenameList> ::= <Filename> ',' <FilenameList>
+# Rule: <InterfaceRefList> ::= <InterfaceRef> ',' <InterfaceRefList>
 # Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-FilenameList_Comma
+define $(gold_grammar)_produce-InterfaceRefList_Comma
+	$1 $3
+endef
+
+# Rule: <FeatureRefList> ::= <FeatureRef> ',' <FeatureRefList>
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_grammar)_produce-FeatureRefList_Comma
 	$1 $3
 endef
 
 # Rule: <ModuleRefList> ::= <ModuleRef> ',' <ModuleRefList>
 # Args: 1..3 - Symbols; 3+1 - Location vector.
 define $(gold_grammar)_produce-ModuleRefList_Comma
+	$1 $3
+endef
+
+# Rule: <FilenameList> ::= <Filename> ',' <FilenameList>
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_grammar)_produce-FilenameList_Comma
+	$1 $3
+endef
+
+# Rule: <StringList> ::= StringLiteral ',' <StringList>
+# Args: 1..3 - Symbols; 3+1 - Location vector.
+define $(gold_grammar)_produce-StringList_StringLiteral_Comma
 	$1 $3
 endef
 

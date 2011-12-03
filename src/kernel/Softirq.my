@@ -1,5 +1,5 @@
-package embox.kernel;
+package embox.kernel
 
 module softirq {
-	source "softirq.c";
+	source "softirq.c"
 }

@@ -1,30 +1,30 @@
-package embox.driver.diag;
+package embox.driver.diag
 
 abstract module diag_api {
 }
 
 module no_diag extends diag_api {
-	source "no_diag.c";
+	source "no_diag.c"
 }
 
 module apbuart extends diag_api {
-	source "apbuart.c";
+	source "apbuart.c"
 }
 
 module serial_port extends diag_api {
-	source "serial_port.c";
+	source "serial_port.c"
 }
 
 module at91_uart extends diag_api {
-	source "at91_uart.c";
+	source "at91_uart.c"
 }
 
 module xuartlite extends diag_api {
-	source "xuartlite.c";
+	source "xuartlite.c"
 }
 
 module vga extends diag_api {
-	source "vga.c";
-	depends embox.driver.video.vga, embox.driver.keyboard;
+	source "vga.c"
+	depends embox.driver.video.vga, embox.driver.keyboard
 }
 

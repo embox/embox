@@ -39,6 +39,7 @@ Whitespace     = {Whitespace}+
                | '//' {Not New Line}* ( {CR}? {LF} )?
 
 Identifier     = '^'? {ID Head}{ID Tail}*
+
 StringLiteral  = '"' ( {String Chars} | '\' {String Esc} )* '"'
                | '''''' ( ( ''? '' )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
 
@@ -64,7 +65,11 @@ BooleanLiteral = 'true' | 'false'
         ::= <Import> <Imports>
          |
 <Import>
-        ::= 'import' <QualifiedNameWithWildcard>
+        ::= 'import' <ImportFeature> <QualifiedNameWithWildcard>
+! feature?
+<ImportFeature>
+        ::= 'feature'
+         |
 
 ! Entity*
 <Entities>

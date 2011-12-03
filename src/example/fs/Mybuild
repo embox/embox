@@ -1,7 +1,7 @@
-package embox.example.fs;
+package embox.example.fs
 
 module devfs {
-	source "devfs.c";
-	depends embox.fs.devfs;
-	depends embox.fs.core;
+	source "devfs.c"
+	depends embox.fs.devfs
+	depends embox.fs.core
 }

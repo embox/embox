@@ -28,9 +28,23 @@
 # the default value.
 #
 
+# Symbol: BooleanLiteral
+define $(gold_grammar)_create-BooleanLiteral
+	$(if $(filter true,$(gold_default_create)),1)
+endef
+
 # Symbol: Identifier
 define $(gold_grammar)_create-Identifier
 	$(gold_default_create:^%=%)
+endef
+
+# Symbol: NumberLiteral
+define $(gold_grammar)_create-NumberLiteral
+	$(or \
+		$(filter-out 0x%,$(gold_default_create)),
+		$(call gold_report_warning,
+				NYI: Hex literals)
+	)
 endef
 
 # Symbol: StringLiteral
@@ -63,23 +77,32 @@ endef
 # Optimized contructors for constant terminals (i.e. keywords and punctuation).
 #
 
-$(gold_grammar)_create-Comma           := ,
-$(gold_grammar)_create-Dot             := .
-$(gold_grammar)_create-DotTimes        := .*
-$(gold_grammar)_create-Colon           := :
-$(gold_grammar)_create-Semi            := ;
-$(gold_grammar)_create-LBrace          := {
-$(gold_grammar)_create-RBrace          := }
-$(gold_grammar)_create-abstract        := abstract
-$(gold_grammar)_create-ccfags          := ccfags
-$(gold_grammar)_create-depends         := depends
-$(gold_grammar)_create-extends         := extends
-$(gold_grammar)_create-import          := import
-$(gold_grammar)_create-module          := module
-$(gold_grammar)_create-object          := object
-$(gold_grammar)_create-package         := package
-$(gold_grammar)_create-source          := source
-$(gold_grammar)_create-static          := static
+$(gold_grammar)_create-Comma            := ,
+$(gold_grammar)_create-Dot              := .
+$(gold_grammar)_create-DotTimes         := .*
+$(gold_grammar)_create-Colon            := :
+$(gold_grammar)_create-LBrace           := {
+$(gold_grammar)_create-RBrace           := }
+$(gold_grammar)_create-Eq               := =
+$(gold_grammar)_create-abstract         := abstract
+$(gold_grammar)_create-boolean          := boolean
+$(gold_grammar)_create-depends          := depends
+$(gold_grammar)_create-extends          := extends
+$(gold_grammar)_create-feature          := feature
+$(gold_grammar)_create-flags            := flags
+$(gold_grammar)_create-import           := import
+$(gold_grammar)_create-interface        := interface
+$(gold_grammar)_create-make             := make
+$(gold_grammar)_create-module           := module
+$(gold_grammar)_create-number           := number
+$(gold_grammar)_create-object           := object
+$(gold_grammar)_create-option           := option
+$(gold_grammar)_create-package          := package
+$(gold_grammar)_create-provides         := provides
+$(gold_grammar)_create-requires         := requires
+$(gold_grammar)_create-source           := source
+$(gold_grammar)_create-static           := static
+$(gold_grammar)_create-string           := string
 
 #
 # For each regular terminal we also define a constant with a human-readable
@@ -90,19 +113,30 @@ $(gold_grammar)_name_of-Comma           := ','
 $(gold_grammar)_name_of-Dot             := '.'
 $(gold_grammar)_name_of-DotTimes        := '.*'
 $(gold_grammar)_name_of-Colon           := ':'
-$(gold_grammar)_name_of-Semi            := ';'
 $(gold_grammar)_name_of-LBrace          := '{'
 $(gold_grammar)_name_of-RBrace          := '}'
+$(gold_grammar)_name_of-Eq              := '='
 $(gold_grammar)_name_of-abstract        := abstract
-$(gold_grammar)_name_of-ccfags          := ccfags
+$(gold_grammar)_name_of-boolean         := boolean
+$(gold_grammar)_name_of-BooleanLiteral  := Boolean Literal
 $(gold_grammar)_name_of-depends         := depends
 $(gold_grammar)_name_of-extends         := extends
+$(gold_grammar)_name_of-feature         := feature
+$(gold_grammar)_name_of-flags           := flags
 $(gold_grammar)_name_of-Identifier      := Identifier
 $(gold_grammar)_name_of-import          := import
+$(gold_grammar)_name_of-interface       := interface
+$(gold_grammar)_name_of-make            := make
 $(gold_grammar)_name_of-module          := module
+$(gold_grammar)_name_of-number          := number
+$(gold_grammar)_name_of-NumberLiteral   := Number Literal
 $(gold_grammar)_name_of-object          := object
+$(gold_grammar)_name_of-option          := option
 $(gold_grammar)_name_of-package         := package
+$(gold_grammar)_name_of-provides        := provides
+$(gold_grammar)_name_of-requires        := requires
 $(gold_grammar)_name_of-source          := source
 $(gold_grammar)_name_of-static          := static
+$(gold_grammar)_name_of-string          := string
 $(gold_grammar)_name_of-StringLiteral   := String Literal
 

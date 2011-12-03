@@ -1,20 +1,20 @@
-package embox.test.mem;
+package embox.test.mem
 
 module objalloc {
-	source "objalloc.c";
-	depends embox.mem.objalloc;
+	source "objalloc.c"
+	depends embox.mem.objalloc
 }
 
 module page {
-	source "page.c";
-	depends embox.mem.page_api;
+	source "page.c"
+	depends embox.mem.page_api
 }
 
 module heap {
-	source "heap.c";
-	depends embox.mem.heap_api;
+	source "heap.c"
+	depends embox.mem.heap_api
 }
 
 module pool {
-	source "pool.c";
+	source "pool.c"
 }
