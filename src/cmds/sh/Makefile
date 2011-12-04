@@ -6,6 +6,7 @@ $_APIS += shell_api
 $_MODS += tish
 $_SRCS-tish += tish.c
 $_PROVIDES-tish += shell_api
+$_DEPS-tish += embox.compat.posix
 
 $_MODS += shell_start
 $_SRCS-shell_start += shell_start.c
