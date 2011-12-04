@@ -9,6 +9,7 @@
 #include <types.h>
 #include <mem/page.h>
 #include <string.h>
+#include <util/math.h>
 #include <embox/unit.h>
 
 #include <stdlib.h>
@@ -195,6 +196,19 @@ void free(void* ptr) {
 
 		set_end_size(block);
 	}
+}
+
+void *realloc(void *ptr, size_t size) {
+	struct free_block *block;
+	void *tmp = malloc(size);
+	block = (struct free_block *)((uint32_t *)(ptr) - 1);
+
+	if (ptr == NULL) {
+		return tmp;
+	}
+	memcpy(tmp, ptr, min(size, block->size));
+	free(ptr);
+	return tmp;
 }
 
 static int heap_init(void) {
