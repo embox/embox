@@ -6,3 +6,13 @@ module bitmask extends page_api {
 	source "bitmask.c"
 	//source "../heap.lsd.S"
 }
+
+module buddy extends page_api {
+	source "buddy.c"
+	//source "../heap.lsd.S"
+}
+
+module almostbuddy extends page_api {
+	source "almostbuddy.c"
+	//source "../heap.lsd.S"
+}

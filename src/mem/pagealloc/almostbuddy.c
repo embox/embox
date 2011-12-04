@@ -9,78 +9,46 @@
  */
 
 #include <errno.h>
-#include <mem/pagealloc/mpallocator.h>
+#include <mem/page.h>
+#include <embox/unit.h>
 
-#ifndef EXTENDED_TEST
-extern char _heap_start;
-extern char _heap_end;
-# define HEAP_START_PTR 	(&_heap_start)
-# define HEAP_END_PTR		(&_heap_end)
-#else
+EMBOX_UNIT_INIT(page_alloc_init);
+
 extern char *_heap_start;
 extern char *_heap_end;
 # define HEAP_START_PTR 	_heap_start
 # define HEAP_END_PTR		_heap_end
-#endif
+
 
 #define PAGE_QUANTITY ((((size_t)HEAP_END_PTR - \
 			(size_t)HEAP_START_PTR)) / CONFIG_PAGE_SIZE)
 
 typedef size_t taddr; /* addres in tree */
-char* heap_start;     /* real heap_start */
-size_t sizeofpool;    /* real size of heap */
-int hasinit = 0;
-size_t maxblocksize;
+static char* heap_start;     /* real heap_start */
+static size_t sizeofpool;    /* real size of heap */
+//int hasinit = 0;
+static size_t maxblocksize;
 
 /**
  * bit pack
  */
-void set_bits(taddr addr, char bit) {
+static void set_bits(taddr addr, char bit) {
 	(HEAP_START_PTR)[addr] = bit;
 }
 
-char get_bits(taddr addr) {
+static char get_bits(taddr addr) {
 	return (HEAP_START_PTR)[addr];
 }
 
-#if 0
-void set_bits(taddr addr, char bit) {
-	//char tail = addr && 7;
-	//addr >>= 3;
-	if (bit) {
-		(HEAP_START_PTR)[addr >> 3] |= 1 << (addr & 7);
-	} else {
-		(HEAP_START_PTR)[addr >> 3] &= 255 ^ (1 << (addr & 7));
-	}
-}
-
-char get_bits(taddr addr) {
-	return ((HEAP_START_PTR)[addr >> 3] & (1 << (addr & 7))) ? 1 : 0;
-}
-#endif
 
 /**
  * initialization of tree
  * Mark block if it isn't in heap.
  */
-void rec_init(taddr addr, char *ptr, size_t size) {
+static void rec_init(taddr addr, char *ptr, size_t size) {
 	if ((ptr + (size * CONFIG_PAGE_SIZE)) <= HEAP_END_PTR) {
-
-		#ifdef EXTENDED_TEST_
-		printf("rec_init: \n\taddr:(dec) %ld\n\tbegin:(hex) \t%08x\n\tend:(hex) \t%08x",
-			addr, ptr, (ptr + (size * CONFIG_PAGE_SIZE)));
-		printf("rec_init: set bit 0 on taddr: %ld \n", addr);
-		#endif
-
 		set_bits(addr, 0);
 	} else {
-
-		#ifdef EXTENDED_TEST_
-		printf("rec_init: \n\taddr:(dec) %ld\n\tbegin:(hex) \t%08x\n\tend:(hex) \t%08x",
-			addr, ptr, (ptr + (size * CONFIG_PAGE_SIZE)));
-		printf("rec_init: set bit 1 on taddr: %ld \n", addr);
-		#endif
-
 		set_bits(addr, 1);
 	}
 	if (size > 1) {
@@ -93,21 +61,18 @@ void rec_init(taddr addr, char *ptr, size_t size) {
 /**
  * Check addr in tree or not.
  */
-int taddr_in_tree(taddr addr) {
-	size_t len = 1;
-	for ( ; addr < maxblocksize; addr <<= 1) {
-		len <<= 1;
-	}
-	return len + addr <= sizeofpool; // ?!?!? <= or <
-}
+//static int taddr_in_tree(taddr addr) {
+//	size_t len = 1;
+//	for ( ; addr < maxblocksize; addr <<= 1) {
+//		len <<= 1;
+//	}
+//	return len + addr <= sizeofpool; // ?!?!? <= or <
+//}
 
 /**
  * initialization of allocator
  */
-#ifdef EXTENDED_TEST
-	extern
-#endif
-void multipage_init(void) {
+static int page_alloc_init(void) {
 	int sizeoftree;
 	int qpt;
 
@@ -123,12 +88,13 @@ void multipage_init(void) {
 	sizeofpool = PAGE_QUANTITY - qpt;
 
 	rec_init(1, heap_start, maxblocksize);
+	return 0;
 }
 
 /**
  * convert place in tree to pointer
  */
-void *taddr_to_ptr(taddr addr) {
+static void *taddr_to_ptr(taddr addr) {
 	//taddr saddr = addr;
 	for ( ; addr < maxblocksize; addr *= 2);
 	return heap_start + (addr - maxblocksize) * CONFIG_PAGE_SIZE;
@@ -137,7 +103,7 @@ void *taddr_to_ptr(taddr addr) {
 /**
  * free block by taddr
  */
-void free_addr(taddr addr) {
+static void free_addr(taddr addr) {
 	if (get_bits(addr)) {
 		set_bits(addr, 0);
 	}
@@ -147,7 +113,7 @@ void free_addr(taddr addr) {
 	}
 }
 
-void free_down(taddr addr) {
+static void free_down(taddr addr) {
 	if (addr >= (maxblocksize << 1)) {
 		return;
 	}
@@ -161,7 +127,7 @@ void free_down(taddr addr) {
 /**
  * mark blocks
  */
-void mark_blocks(taddr block) {
+static void mark_blocks(taddr block) {
 	if (block >= 2 * maxblocksize) {
 		return;
 	}
@@ -173,7 +139,7 @@ void mark_blocks(taddr block) {
 /**
  * check, block is available or not
  */
-int avail(taddr block) {
+static int avail(taddr block) {
 	if (block >= maxblocksize) {
 		return !get_bits(block) && (block - maxblocksize < sizeofpool);
 	}
@@ -183,7 +149,7 @@ int avail(taddr block) {
 /**
  * check, block is marked or not
  */
-int marked(taddr block) {
+static int marked(taddr block) {
 	if (block >= maxblocksize) {
 		return get_bits(block) && (block - maxblocksize < sizeofpool);
 	}
@@ -194,7 +160,7 @@ int marked(taddr block) {
  * find first proper block
  * addr is addres of first block needed size
  */
-void *find_block_avail(taddr addr) {
+static void *find_block_avail(taddr addr) {
 	taddr i;
 	// better if 'for' will be from size to 0
 	for (i = 0; (i < addr) && (!avail(addr + i)); ++i);
@@ -209,13 +175,13 @@ void *find_block_avail(taddr addr) {
 /**
  * allocator
  */
-void *mpalloc(size_t size) {
+void *page_alloc(size_t size) {
 	size_t size_fr;
 	void * ptr = NULL;
-	if (!hasinit) {
-		multipage_init();
-		hasinit = 1;
-	}
+//	if (!hasinit) {
+//		multipage_init();
+//		hasinit = 1;
+//	}
 	for (size_fr = 1; (size_fr < size); size_fr <<= 1);
 	for (; (size_fr <= maxblocksize) &&
 	    !(ptr=find_block_avail(maxblocksize/size_fr)); size_fr <<= 1); /* WHY maxblocksize/size_fr ?? */
@@ -227,7 +193,7 @@ void *mpalloc(size_t size) {
 /**
  * find block, that was allocated
  */
-void robin_taddr(void *ptr) {
+static void robin_taddr(void *ptr) {
 	taddr before = 0; /* for no warinings */
 	taddr saddr = ((size_t)ptr - (size_t)heap_start) / CONFIG_PAGE_SIZE;
 	saddr += maxblocksize;
@@ -250,7 +216,7 @@ void robin_taddr(void *ptr) {
 /**
  * free block, that was allocated
  */
-void mpfree(void *ptr) {
+void page_free(void *ptr, size_t size) {
 	if (ptr == NULL) {
 		/* errno = XXX */
 		return;
@@ -258,35 +224,11 @@ void mpfree(void *ptr) {
 	robin_taddr(ptr);
 }
 
+#if 0
 /**
  * return list of free and busy blocks in heap
  */
 void mpget_blocks_info(struct list_head* list) {
 	//TODO:
 }
-
-/**
- * some functions for debug
- */
-#ifdef EXTENDED_TEST
-
-extern void multipage_info(void) {
-	char *ptr;
-	printf("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
-	printf("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
-	printf("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
-	printf("\tpool start: %08x \n\tpool end: %08x \n",(unsigned long) HEAP_START_PTR,
-		(unsigned long) HEAP_END_PTR);
-	printf("\treal heap start (for return): %08x\n",(unsigned long) heap_start);
-	printf("\tmaxblocksize=(dec)%ld\n",maxblocksize);
-	printf("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
-	printf("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
-	printf("\n\tTree:\n\t\t");
-	for (ptr = HEAP_START_PTR; ptr < heap_start; ++ptr) {
-		printf("%ld ", *ptr);
-	}
-	printf("\n");
-	printf("info end\n");
-}
-
 #endif

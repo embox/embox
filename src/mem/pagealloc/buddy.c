@@ -29,21 +29,16 @@
 
 #include <errno.h>
 #include <lib/list.h>
-#include <mem/pagealloc/mpallocator.h>
-#include <stdlib.h>
+#include <mem/page.h>
+#include <embox/unit.h>
 
-#ifndef EXTENDED_TEST
-extern char _heap_start;
-extern char _heap_end;
-# define HEAP_START_PTR 	(&_heap_start)
-# define HEAP_END_PTR		(&_heap_end)
-#else
+EMBOX_UNIT_INIT(page_alloc_init);
+
+
 extern char *_heap_start;
 extern char *_heap_end;
 # define HEAP_START_PTR 	_heap_start
 # define HEAP_END_PTR		_heap_end
-# define printk printf
-#endif
 
 #define PAGE_QUANTITY \
 	( (((size_t) HEAP_END_PTR - (size_t) HEAP_START_PTR) ) / CONFIG_PAGE_SIZE )
@@ -56,16 +51,19 @@ extern char *_heap_end;
 # define ANY_OPTIMIZATION
 #endif
 
-#if 0
-# define MPALLOCATOR_DEBUG
-#endif
+
+typedef struct block_info {
+	struct list_head *next, *prev;
+	size_t size;
+	bool free;
+} block_info_t;
 
 typedef size_t taddr; /* addres in tree */
-char* heap_start; /* real heap_start */
-size_t sizeofpool; /* real size of heap */
-int hasinit = 0;
-size_t maxblocksize; /* size of real max block (may be not root) */
-size_t rootblocksize; /* size of root block */
+static char* heap_start; /* real heap_start */
+static size_t sizeofpool; /* real size of heap */
+//static int hasinit = 0;
+static size_t maxblocksize; /* size of real max block (may be not root) */
+static size_t rootblocksize; /* size of root block */
 
 /**
  * bit pack
@@ -87,7 +85,7 @@ static inline char get_bits(taddr addr) {
  * return 1 if subtree isn't in heap
  * return 0 if node with subtree is in heap
  */
-int dfs_init(taddr addr, char * ptr, size_t size) {
+static int dfs_init(taddr addr, char * ptr, size_t size) {
 	int marked = 0;
 
 	if ((ptr + (size * CONFIG_PAGE_SIZE)) <= HEAP_END_PTR) {
@@ -118,10 +116,7 @@ int dfs_init(taddr addr, char * ptr, size_t size) {
 /**
  * initialization of allocator
  */
-#ifdef EXTENDED_TEST
-extern
-#endif
-void multipage_init(void) {
+static int page_alloc_init(void) {
 	int sizeoftree;
 	int qpt;
 
@@ -141,13 +136,14 @@ void multipage_init(void) {
 			/ 2;
 
 	dfs_init(1, heap_start, rootblocksize);
+	return 0;
 }
 
 /**
  * convert place in tree to pointer
  */
-void * taddr_to_ptr(taddr addr) {
-	//taddr saddr = addr;
+static void * taddr_to_ptr(taddr addr) {
+
 	for (; addr < rootblocksize; addr *= 2)
 		;
 	return heap_start + (addr - rootblocksize) * CONFIG_PAGE_SIZE;
@@ -172,7 +168,7 @@ static inline int in_heap(taddr addr, size_t length) {
  * find first available proper block for reserve.
  * return 0 if same block don't exist.
  */
-taddr dfs_find(taddr lroot, size_t cursize, size_t size) {
+static taddr dfs_find(taddr lroot, size_t cursize, size_t size) {
 	/* must check above that size != 0 */
 	taddr child_return;
 	/* enough codition ( it's reserved or no proper )
@@ -195,14 +191,16 @@ taddr dfs_find(taddr lroot, size_t cursize, size_t size) {
 /**
  * allocator
  */
-void * mpalloc(size_t size) {
+void * page_alloc(size_t size) {
 	taddr block, parent, taddr_fr;
 
 	/* initialization of allocator */
+#if 0
 	if (!hasinit) {
 		multipage_init();
 		hasinit = 1;
 	}
+#endif
 
 	/* find proper block */
 	if (!(block = dfs_find( /* root of tree */1, rootblocksize, size)))
@@ -227,10 +225,7 @@ void * mpalloc(size_t size) {
 /**		TFMBR
  * free block, that was allocated
  */
-void mpfree(void * ptr) {
-#ifdef EXTENDED_TEST
-	if ( ptr == NULL ) return;
-#endif
+void page_free(void * ptr, size_t size) {
 	taddr parent, before, addr;
 	// TODO addr and addr, wtf? -- sikmir, Eldar
 	addr = ((size_t) ptr - (size_t) heap_start) / CONFIG_PAGE_SIZE;
@@ -267,6 +262,8 @@ void mpfree(void * ptr) {
 	}
 }
 
+
+#if 0
 /**
  * convert place in tree to block size
  */
@@ -314,52 +311,4 @@ void mpget_blocks_info(struct list_head* list) {
 
 	dfs_stat(1, list);
 }
-
-#if 0
-void multipage_info(void) {
-	char *ptr;
-	/* initialization of allocator */
-	if (!hasinit) {
-		multipage_init();
-		hasinit = 1;
-	}
-
-#if 0 /* test of bits arifmetics */
-#define VAR (HEAP_START_PTR)[var-1]
-
-	int var = 5;
-	set_bits(var,0);
-	printk("\n");
-
-	printk("%d\n",VAR);
-	SET_BIT1(var,4);
-	printk("%d\n",VAR);
-	SET_BIT1(var,2);
-	printk("%d\n",VAR);
-	if (HAS_BIT(var,4)) {
-		printk("Has bit 4\n");
-	}
-	SET_BIT0(var,4);
-	printk("%d\n",VAR);
-
-#undef VAR
-#endif
-
-	printk("multipage_alloc info\n\tPAGE_QUANTITY=(hex)%16x\n",PAGE_QUANTITY);
-	printk("\tCONFIG_PAGE_SIZE=(hex)%08x\n",CONFIG_PAGE_SIZE);
-	printk("\tPAGE_QUANTITY=(dec)%ld\n",PAGE_QUANTITY);
-	printk("\tpool start: %08x \n\tpool end: %08x \n",(unsigned long) HEAP_START_PTR,
-			(unsigned long) HEAP_END_PTR);
-	printk("\treal heap start (for return): %08x\n",(unsigned long) heap_start);
-	printk("\tmaxblocksize=(dec)%ld\n",maxblocksize);
-	printk("\tsize of pool(real)=(hex)%08x\n",sizeofpool);
-	printk("\tsize of pool(real)=(dec)%ld\n",sizeofpool);
-	printk("\n\tTree:\n\t\t");
-	for (ptr = HEAP_START_PTR; ptr < (HEAP_START_PTR + 2 * rootblocksize - 1); ++ptr) {
-		printk("%ld ", *ptr);
-	}
-	printk("\n");
-	printk("info end\n");
-}
-
 #endif

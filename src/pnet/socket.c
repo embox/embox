@@ -21,32 +21,12 @@ EMBOX_UNIT_INIT(net_socket_init);
 OBJALLOC_DEF(sockets, struct net_socket, NET_SOCKET_CNT);
 
 static int rx_hnd(net_packet_t pack) {
-#if 0
-	net_id_t id = *((net_id_t *) pack->data);
-	pack->data = (void *) (((char *) (pack->data)) + sizeof(net_id_t));
-#endif
 	printf("%d: %s\n", pack->skbuf->len, (char *) pack->skbuf->data);
 	return NET_HND_SUPPRESSED;
 }
 
 static int tx_hnd(net_packet_t pack) {
-#if 0
-	int new_len = pack->len + sizeof(net_id_t);
-	char *new_data = (char *) malloc(new_len);
 
-	net_id_t *data_header = (net_id_t *) new_data;
-
-	*data_header = pack->node->id;
-
-	memcpy(new_data + sizeof(net_id_t), pack->data, pack->len);
-
-	//TODO free old data, like below
-	//free(pack->orig_data);
-
-	pack->data = new_data;
-	pack->orig_data = new_data;
-	pack->len = new_len;
-#endif
 	return NET_HND_DFAULT;
 }
 
