@@ -18,3 +18,8 @@ module heap {
 module pool {
 	source "pool.c"
 }
+
+module slab {
+	source "slab.c"
+	depends embox.mem.slab
+}

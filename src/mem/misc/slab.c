@@ -16,9 +16,9 @@
 
 #include <lib/list.h>
 #include <util/binalign.h>
-#include <kernel/printk.h>
+//#include <kernel/printk.h>
 #include <mem/misc/slab.h>
-#include <mem/pagealloc/mpallocator.h>
+#include <mem/page.h>
 #include <framework/mod/member/ops.h>
 
 /**
@@ -119,7 +119,7 @@ static int cache_member_init(struct mod_member *info) {
  * @param slab_ptr the pointer to slab which must be deleted
  */
 static void cache_slab_destroy(cache_t *cachep, slab_t *slabp) {
-	mpfree(slabp);
+	page_free(slabp, slabp->inuse);
 }
 
 /* init slab descriptor and slab objects */
@@ -146,7 +146,7 @@ static int cache_grow(cache_t *cachep) {
 	slab_t * slabp;
 	size_t slab_size = 1 << cachep->slab_order;
 
-	if (!(slabp = (slab_t*) mpalloc(slab_size)))
+	if (!(slabp = (slab_t*) page_alloc(slab_size)))
 		return 0;
 
 	page = virt_to_page(slabp);
@@ -392,7 +392,8 @@ int cache_shrink(cache_t *cachep) {
 
 	return ret;
 }
-
+#if 0
+mem info
 void sget_blocks_info(struct list_head* list, struct list_head *slabp) {
 	char *slab_begin;
 	char *cur_objp;
@@ -427,3 +428,4 @@ void make_caches_list(struct list_head* list) {
 	list->next = &cache_chain.next;
 	list->prev = cache_chain.next.prev;
 }
+#endif

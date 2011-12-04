@@ -2,7 +2,7 @@ package embox.mem
 
 module slab {
 	source "slab.c", "slab_impl.h"
-	depends embox.mem.mpallocator
+	depends embox.mem.page_api
 }
 
 module pool {
