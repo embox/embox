@@ -8,7 +8,7 @@ $_SRCS-core += core.c
 $_DEPS-core += sched
 $_DEPS-core += sync
 $_DEPS-core += embox.hal.context
-$_REQUIRES-core += embox.kernel.tasks_api
+$_REQUIRES-core += embox.kernel.task_api
 
 $_SRCS-sched += sched.c
 $_REQUIRES-sched += embox.kernel.timer.timer_api

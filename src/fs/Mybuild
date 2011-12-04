@@ -1,0 +1,21 @@
+package embox.fs
+
+module node {
+	source "node.c"
+}
+
+module file_desc {
+	source "file_desc.c"
+}
+
+module rootfs {
+	depends core
+}
+
+module core {
+	source "file.c"
+	source "vfs.c"
+	source "fs.c"
+	depends file_desc
+	depends node
+}

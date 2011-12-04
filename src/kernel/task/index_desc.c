@@ -5,11 +5,11 @@
  * @date 16.09.11
  * @author Anton Kozlov
  */
-
-#include <kernel/task.h>
-#include "task_common.h"
-#include <diag/diag_device.h>
 #include <embox/unit.h>
+#include <kernel/task.h>
+#include <diag/diag_device.h>
+
+#include "index_desc.h"
 
 EMBOX_UNIT_INIT(tasks_init);
 

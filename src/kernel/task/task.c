@@ -12,7 +12,7 @@
 #include <mem/objalloc.h>
 #include <kernel/task.h>
 #include <fs/file.h>
-#include "task_common.h"
+#include "index_desc.h"
 
 OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
 

@@ -3,7 +3,7 @@ package embox.kernel.thread
 module core {
 	source "core.c"
 
-	depends sched, sync, embox.kernel.tasks_api
+	depends sched, sync, embox.kernel.task_api
 
 	depends embox.hal.context
 }

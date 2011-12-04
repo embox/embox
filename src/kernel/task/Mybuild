@@ -1,19 +1,21 @@
 package embox.kernel
 
-abstract module tasks_api { }
+abstract module task_api { }
 
-module task_common {
-	source "task_common.c", "file.c"
-	depends embox.fs.core, embox.fs.rootfs
+module util {
+	source "index_desc.c", "file.c"
+	depends embox.fs.rootfs
 }
 
-module tasks extends tasks_api {
+module multi_task extends task_api {
 	source "task.c"
-	depends embox.driver.virtual.diag_device, task_common
+	depends embox.driver.virtual.diag_device
+	depends util
 	depends embox.kernel.thread.sched
 }
 
-module no_tasks extends tasks_api {
-	source "no_task.c"
-	depends embox.driver.virtual.diag_device, task_common
+module single_task extends task_api {
+	source "single_task.c"
+	depends embox.driver.virtual.diag_device
+	depends util
 }

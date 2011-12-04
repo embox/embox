@@ -16,7 +16,8 @@
 #include <stdio.h>
 #include <kernel/file.h>
 #include <util/array.h>
-#include "task_common.h"
+
+#include "index_desc.h"
 
 extern int task_desc2idx(struct __fd_list *desc, struct task_resources *res);
 

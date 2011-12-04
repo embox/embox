@@ -8,7 +8,7 @@
 
 #include <kernel/task.h>
 #include <kernel/file.h>
-#include "task_common.h"
+#include "index_desc.h"
 
 int task_create(struct task **new, struct task *parent) {
 	*new = parent;
