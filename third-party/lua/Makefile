@@ -1,6 +1,7 @@
 $_PACKAGE := org.lua
 
-$_CPPFLAGS += -I$(SRC_DIR)/include/posix -I$(SRC_DIR)/include/util
+$_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
+$_CPPFLAGS += -I$(SRC_DIR)/include/util
 
 $_MODS += lua_core
 $_SRCS-lua_core += lapi.c lauxlib.c lbaselib.c lcode.c

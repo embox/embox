@@ -13,4 +13,4 @@ $_SRCS-libframework.a += */*/*.c */*.c *.c
 
 $_CPPFLAGS-libframework.a += -D__FRAMEWORK__
 $_CPPFLAGS-libframework.a += -I$(SRC_DIR)/compat/linux/include
-$_CPPFLAGS-libframework.a += -I$(SRC_DIR)/include/posix
+$_CPPFLAGS-libframework.a += -I$(SRC_DIR)/compat/posix/include

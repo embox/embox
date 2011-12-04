@@ -4,7 +4,7 @@ $_PACKAGE := embox.cmd
 SUBDIRS := $(filter-out _template,$(SUBDIRS))
 
 $_CPPFLAGS += -I$(SRC_DIR)/compat/linux/include
-$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+$_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
 
 # Util for adding new command.
 # Usage example: make ac-xxx

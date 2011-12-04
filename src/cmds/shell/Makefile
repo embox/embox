@@ -35,4 +35,5 @@ else # new
 
 endif
 
+$_DEPS-shell += embox.compat.posix
 $_DEPS-shell += embox.driver.terminal

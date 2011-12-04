@@ -1,6 +1,6 @@
 $_PACKAGE := embox.mem
 
-$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+$_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
 
 $_MODS += mmu mpallocator opallocator slab
 

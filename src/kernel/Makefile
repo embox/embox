@@ -5,7 +5,7 @@ $_LDFLAGS  += $($_SELFDIR)/nosys.lds
 
 $(IMAGE): $($_SELFDIR)/nosys.lds
 
-$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+$_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
 
 $_MODS += main
 

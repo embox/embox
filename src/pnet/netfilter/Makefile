@@ -9,7 +9,7 @@ $_SRCS-rules_init += rules_init.c
 $_DEPS-rules_init += match
 $_DEPS-rules_init +=
 
-$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+$_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
 $_CPPFLAGS-rules_init += -I$(CONF_DIR)
 
 

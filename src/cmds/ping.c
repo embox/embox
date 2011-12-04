@@ -87,12 +87,12 @@ static int sent_resalt(int sock, uint32_t timeout, union packet *ptx_pack) {
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack.hdr.ip_hdr.saddr);
 		if (delta < 1) {
 			printf("%d bytes from %s: icmp_seq=%d ttl=%d time <1ms\n",
-					ntohs(rx_pack.hdr.ip_hdr.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE,
+					(int)(ntohs(rx_pack.hdr.ip_hdr.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE),
 					dst_addr_str, ntohs(rx_pack.hdr.icmp_hdr.un.echo.sequence), rx_pack.hdr.ip_hdr.ttl);
 		}
 		else {
 			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%d ms\n",
-					ntohs(rx_pack.hdr.ip_hdr.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE,
+					(int)(ntohs(rx_pack.hdr.ip_hdr.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE),
 					dst_addr_str, ntohs(rx_pack.hdr.icmp_hdr.un.echo.sequence), rx_pack.hdr.ip_hdr.ttl, delta);
 		}
 		return 1;

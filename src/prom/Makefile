@@ -1,4 +1,4 @@
-$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+$_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
 
 $_PACKAGE := embox.prom
 

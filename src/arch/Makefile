@@ -5,7 +5,7 @@ $_PACKAGE := embox.hal
 
 $_CPPFLAGS += -D__HAL__
 
-$_CPPFLAGS += -I$(SRC_DIR)/include/posix
+$_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
 
 $_APIS += interrupt clock watchdog
 
