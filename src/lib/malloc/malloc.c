@@ -8,6 +8,7 @@
 
 #include <err.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define MEM_POOL_SIZE 0x200000
 
@@ -51,7 +52,7 @@ static void _mem_defrag(void) {
 	}
 }
 
-void free(void *ptr) {
+void free_dep(void *ptr) {
 	struct mem_control_block *mcb;
 	mcb = (void *)((char *) ptr - sizeof(struct mem_control_block));
 	mcb->is_available = 1;
@@ -60,7 +61,7 @@ void free(void *ptr) {
 }
 
 /*FIXME ATTENTION: memory size must be aligned!*/
-void *malloc(size_t size) {
+void *malloc_dep(size_t size) {
 	char *current_location;
 	struct mem_control_block *current_location_mcb;
 	char *memory_location = NULL;
@@ -96,13 +97,13 @@ void *malloc(size_t size) {
 	return memory_location;
 }
 
-void *calloc(size_t nmemb, size_t size) {
+void *calloc_dep(size_t nmemb, size_t size) {
 	void *tmp = malloc(nmemb * size);
 	memset(tmp, 0, nmemb * size);
 	return tmp;
 }
 
-void *realloc(void *ptr, size_t size) {
+void *realloc_dep(void *ptr, size_t size) {
 	struct mem_control_block *mcb;
 	char *tmp = malloc(size);
 	if (ptr == NULL) {
