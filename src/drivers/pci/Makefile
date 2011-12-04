@@ -5,4 +5,4 @@ $_PACKAGE := embox.driver
 
 $_MODS         += pci
 $_SRCS-pci     += pci.c pci_repo.c pci_utils.c
-$_CPPFLAGS-pci += -I$(SRC_DIR)/drivers/pci -I$(SRC_DIR)/linux-compat/include
+$_CPPFLAGS-pci += -I$(SRC_DIR)/drivers/pci -I$(SRC_DIR)/compat/linux/include

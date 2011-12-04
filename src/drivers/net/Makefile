@@ -1,7 +1,7 @@
 
 $_PACKAGE := embox.driver.net
 
-$_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
+$_CPPFLAGS += -I$(SRC_DIR)/compat/linux/include
 
 $_MODS           += xemaclite
 $_SRCS-xemaclite += xilinx_emaclite.c

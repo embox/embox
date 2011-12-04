@@ -18,6 +18,6 @@ $_DEPS-net_entry     += embox.pnet.core embox.pnet.core.pack.pack_skbuf
 $_PROVIDES-net_entry += embox.pnet.entry_api embox.net.entry_api
 
 
-$_CPPFLAGS += -I$(SRC_DIR)/linux-compat/include
+$_CPPFLAGS += -I$(SRC_DIR)/compat/linux/include
 $_CPPFLAGS += -I$(SRC_DIR)/include/posix
 
