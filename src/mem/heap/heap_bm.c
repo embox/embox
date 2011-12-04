@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Implementation of heap based on Boundary Markers
  *
  * @date 24.11.2011
@@ -150,46 +149,48 @@ static struct free_block * cut(struct free_block *block, size_t size) {
 void *malloc(size_t size) {
 	struct free_block *block;
 	struct free_block_link *link;
+	size_t sz;
 
-	if(size <= 0) {
+	if (size <= 0) {
 		return NULL;
 	}
 
-	if(size < sizeof(struct free_block)) {
+	if (size < sizeof(struct free_block)) {
 		size = sizeof(struct free_block);
 	}
 
 	size = (size + 3) & ~3;
 
-	for(link = free_blocks.next; link != &free_blocks; link = link->next) {
+	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
 		block = (struct free_block *)(((uint32_t *)link) - 1);
-		if((size <= get_clear_size(block->size) + sizeof(block->size)) &&
-				size >= (get_clear_size(block->size) + sizeof(block->size) + sizeof(struct free_block))) {
+		sz = get_clear_size(block->size) + sizeof(block->size);
+		if (size <= sz && size >= (sz + sizeof(struct free_block))) {
 			block_unlink(block);
 			mark_block(block);
 			mark_next(block);
 			/* we already have size */
 			return (void *)((uint32_t *)(block) + 1);
 		}
-		if(size <= (get_clear_size(block->size) + sizeof(block->size) + sizeof(struct free_block))) {
+		if (size <= (sz + sizeof(struct free_block))) {
 			block = cut(block, size);
 			mark_block(block);
 			mark_next(block);
 			return (void *)((uint32_t *)(block) + 1);
 		}
-
 	}
 	return NULL;
 }
 
-void free(void* ptr) {
-	struct free_block *block = (struct free_block *)((uint32_t *)(ptr) - 1);
-
+void free(void *ptr) {
+	struct free_block *block;
+	if (ptr == NULL) {
+		return;
+	}
+	block = (struct free_block *) ((uint32_t *) (ptr) - 1);
 	block = concatenate_prev(block);
-
 	block = concatenate_next(block);
 
-	if(block_is_busy(block)) {
+	if (block_is_busy(block)) {
 		block_link(block);
 		clear_block(block);
 		clear_next(block);
@@ -201,20 +202,19 @@ void free(void* ptr) {
 void *realloc(void *ptr, size_t size) {
 	struct free_block *block;
 	void *tmp = malloc(size);
-	block = (struct free_block *)((uint32_t *)(ptr) - 1);
+	block = (struct free_block *) ((uint32_t *) (ptr) - 1);
 
-	if (ptr == NULL) {
-		return tmp;
+	if (ptr != NULL) {
+		memcpy(tmp, ptr, min(size, block->size));
+		free(ptr);
 	}
-	memcpy(tmp, ptr, min(size, block->size));
-	free(ptr);
 	return tmp;
 }
 
 static int heap_init(void) {
 	struct free_block *block;
 
-	pool = page_alloc(CONFIG_HEAP_SIZE/CONFIG_PAGE_SIZE);
+	pool = page_alloc(CONFIG_HEAP_SIZE / CONFIG_PAGE_SIZE);
 
 	block = (struct free_block *)pool;
 	block->size = CONFIG_HEAP_SIZE - sizeof(block->size);
