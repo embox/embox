@@ -155,6 +155,9 @@ int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	skb->h.th->psh |= 1;
 	skb->h.th->ack |= 1;
 
+	while (sk->sk_state != TCP_ESTABIL) {
+	}
+
 	tcp_set_st(tcpsk, TCP_ESTABIL_ACK_WAIT);
 
 	return send_from_sock(sk, skb);
@@ -446,7 +449,9 @@ static void tcp_v4_close(sock_t *sk, long timeout) {
 
 	send_from_sock(sk, skb);
 
+	sk_common_release(sk);
 }
+
 struct proto tcp_prot = {
 	.name                   = "TCP",
 	.init                   = tcp_v4_init_sock,
