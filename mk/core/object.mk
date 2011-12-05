@@ -152,24 +152,12 @@ define builtin_func-__class__
 
 	$(foreach c,$(call builtin_tag,__class__),
 		${eval \
-			$c.methods :=$(strip $($c.methods))$(\n)
-			$c.fields  :=$(strip $($c.fields))$(\n)
-			$c.super   :=$(or $(strip $($c.super)),object)
+			$c.methods := $(strip $($c.methods))$(\n)
+			$c.fields  := $(strip $($c.fields))$(\n)
+			$c.super   := $(strip $($c.super))
 		}
 
-#		$(if $(eq $($c.super),object),
-#			# TODO is it really needed?
-#			$$(class-object)$$(\n)
-#		)
-		$(if $(not $(singleword $($c.super))),
-			$(call builtin_error,
-					Multiple inheritance for class '$c': \
-					$($c.super:%='%',))
-		)
-
-		# Invoke super constructor.
-
-		$(builtin_args)
+		$1
 	)
 endef
 $(call def,builtin_func-__class__)
@@ -253,6 +241,10 @@ define builtin_func-super
 			$$(call $c)
 		)
 	)
+
+	${eval \
+		$(call builtin_tag,__class__).fields += $($1.fields)
+	}
 
 	$(foreach m,$($1.methods),
 		$(call __method_def,$(call builtin_tag,__class__),$m,$1.$m)
