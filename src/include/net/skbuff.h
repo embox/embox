@@ -72,6 +72,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		struct ethhdr *ethh;
 		unsigned char *raw;
 	} mac;
+	uint16_t links;             /* Amount pointer, which link to itself */
 #if 0
 	void (*destructor)(struct sk_buff *skb);
 #endif
@@ -84,10 +85,6 @@ typedef struct sk_buff {        /* Socket buffer */
 typedef struct sk_buff_head {
 	struct sk_buff *next;
 	struct sk_buff *prev;
-#if 0
-	uint32_t qlen;
-	spinlock_t lock;
-#endif
 } sk_buff_head_t;
 
 #if 0
@@ -120,13 +117,13 @@ extern struct sk_buff * alloc_skb(unsigned int size, gfp_t priority);
 extern void kfree_skb(struct sk_buff *skb);
 
 #if 0
-extern struct sk_buff * alloc_skb_fclone(sk_buff_t *skb, gfp_t priority);
+extern struct sk_buff * alloc_skb_clone(sk_buff_t *skb, gfp_t priority);
+#endif
 
 /**
  * sk_buff clone it used as we want to queue sk_buff in several queue
  */
 extern struct sk_buff * skb_clone(sk_buff_t *skb, gfp_t priority);
-#endif
 
 /**
  * Create copy of skb
@@ -136,7 +133,7 @@ extern struct sk_buff * skb_copy(const struct sk_buff *skb, gfp_t priority);
 /**
  * Allocate one instance of structure sk_buff_head.
  */
-extern struct sk_buff_head * alloc_skb_queue(int qlen);
+extern struct sk_buff_head * alloc_skb_queue(void);
 
 /**
  * Free sk_buff_head structure with his elements

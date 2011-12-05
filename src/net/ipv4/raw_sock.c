@@ -15,6 +15,7 @@
 #include <net/inet_common.h>
 #include <string.h>
 #include <embox/net/sock.h>
+#include <errno.h>
 
 EMBOX_NET_SOCK(SOCK_RAW, IPPROTO_IP, raw_prot, inet_sockraw_ops, 0, NULL);
 
@@ -43,28 +44,27 @@ static struct sock *raw_lookup(__u8 proto) {
 
 int raw_rcv(sk_buff_t *skb) {
 	size_t i;
-	int need_free;
 	struct sock *sk;
 	iphdr_t *iph;
+	sk_buff_t *own;
 
-	need_free = 1;
 	iph = ip_hdr(skb);
+	skb->links = 0;
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
-		sk = (struct sock*) raw_hash[i];
+		sk = (struct sock *)raw_hash[i];
 		if (sk && sk->sk_protocol == iph->proto) {
-			if (raw_rcv_skb(sk, skb) == NET_RX_SUCCESS) {
-				need_free = 0;
-				/* TODO rwq_rcv_skb changes next and
-				 * prev pointers, so it's works incorrect
-				 * with few sockets, which are registered
-				 * on the same protocol.
-				 */
-				//break; // see above
+			own = skb_clone(skb, 0); // TODO without skb_clone()
+			if (raw_rcv_skb(sk, own) < 0) {
+				kfree_skb(own);
 			}
 		}
 	}
 
-	return (need_free == 1 ? NET_RX_DROP : NET_RX_SUCCESS);
+	if (skb->links == 0) {
+		kfree_skb(skb);
+	}
+
+	return ENOERR;
 }
 
 static void raw_close(struct sock *sk, long timeout) {

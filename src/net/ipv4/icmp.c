@@ -60,6 +60,7 @@ static socket_t *icmp_socket; /* Socket for transmitting ICMP messages */
 
 static icmp_control icmp_handlers[]; /* ICMP control handlers */
 
+#if 0
 /**
  * Driving logic for building and sending ICMP messages.
  * Used by the ICMP protocol to reply to ingress ICMP request messages
@@ -82,6 +83,7 @@ static int icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
 				icmp_param->skb->nh.iph->saddr, skb, 0);
 	return ENOERR;
 }
+#endif
 
 static int icmp_discard(sk_buff_t *skb) {
 	/* nothing to do here */
@@ -141,30 +143,21 @@ static int icmp_redirect(sk_buff_t *skb) {
 }
 
 static int icmp_echo(sk_buff_t *skb) {
-	sk_buff_t *skb_reply;
+	sk_buff_t *reply;
 
 	/* RFC 796:  The data received in the echo message must be returned in the echo reply message. */
-	skb_reply = skb_copy(skb, 0);
-	skb_reply->dev = skb->dev;
-	skb_reply->h.icmph->type = ICMP_ECHOREPLY;
-
+	reply = skb_clone(skb, 0);
+	reply->h.icmph->type = ICMP_ECHOREPLY;
 	/* TODO checksum must be at network byte order */
-	skb_reply->h.icmph->checksum = 0;
-	skb_reply->h.icmph->checksum = ptclbsum(skb_reply->h.raw,
-				htons(skb_reply->nh.iph->tot_len) - IP_HEADER_SIZE(skb_reply->nh.iph));
+	reply->h.icmph->checksum = 0;
+	reply->h.icmph->checksum = ptclbsum(reply->h.raw, htons(reply->nh.iph->tot_len) - IP_HEADER_SIZE(reply->nh.iph));
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
-	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, skb_reply, 0);
+	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
 	return ENOERR;
 }
 
-/**
- * Handle ICMP Timestamp requests.
- * RFC 1122: 3.2.2.8 MAY implement ICMP timestamp requests.
- *         SHOULD be in the kernel for minimum random latency.
- *         MUST be accurate to a few minutes.
- *         MUST be updated at least at 15Hz.
- */
 static int icmp_timestamp(sk_buff_t *skb) {
+#if 0
 	//TODO: we can't work with timestamp now.
 	struct icmp_bxm icmp_param;
 	icmp_param.data.icmph      = *icmp_hdr(skb);
@@ -175,6 +168,8 @@ static int icmp_timestamp(sk_buff_t *skb) {
 	icmp_param.data_len        = 0;
 	icmp_param.head_len        = sizeof(icmphdr_t) + 12;
 	return icmp_reply(&icmp_param, skb);
+#endif
+	return -1;
 }
 
 #define DATA_SIZE(iph) (IP_HEADER_SIZE(iph) + 8)
@@ -241,7 +236,7 @@ static int icmp_init(void) {
 }
 
 static int ping_rcv(struct sk_buff *skb) {
-	return 0;
+	return -1;
 }
 
 static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
@@ -318,6 +313,7 @@ static int icmp_rcv(sk_buff_t *pack) {
 	assert(icmp_handlers[icmph->type] != NULL);
 	res = icmp_handlers[icmph->type](pack);
 	if (res < 0) {
+		/* If function return ENOERR, we shouldn't to free pack */
 		stats->rx_err++;
 		return res;
 	}

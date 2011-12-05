@@ -28,10 +28,6 @@ static int loopback_xmit(sk_buff_t *skb, struct net_device *dev) {
 	}
 
 	lb_stats = &(dev->stats);
-#if 0
-	skb->dev = dev;
-	skb->protocol = ntohs(eth_type_trans(skb, dev));
-#endif
 	if (netif_rx(skb) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
 		lb_stats->tx_bytes += skb->len;

@@ -47,7 +47,7 @@ static void net_buff_free(unsigned char *buff) {
 	ipl_restore(sp);
 }
 
-struct sk_buff_head * alloc_skb_queue(int len) {
+struct sk_buff_head * alloc_skb_queue(void) {
 	ipl_t sp;
 	struct sk_buff_head *queue;
 
@@ -61,9 +61,6 @@ struct sk_buff_head * alloc_skb_queue(int len) {
 	 * we must assignment it
 	 */
 	INIT_LIST_HEAD((struct list_head *)queue);
-#if 0
-	queue->qlen = len;
-#endif
 
 	return queue;
 }
@@ -115,7 +112,6 @@ struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 
 	skb->len = size;
 	skb->mac.raw = skb->data;
-
 	return skb;
 }
 
@@ -129,10 +125,6 @@ void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
 	sp = ipl_save();
 	list_move_tail((struct list_head *)newsk, (struct list_head *)list);
 	ipl_restore(sp);
-
-#if 0
-	list->qlen++;
-#endif
 }
 
 static struct sk_buff * skb_peek(struct sk_buff_head *list) {
@@ -157,9 +149,6 @@ static void skb_unlink(struct sk_buff *skb, struct sk_buff_head *list) {
 		return;
 	}
 
-#if 0
-	list->qlen--;
-#endif
 	next = skb->next;
 	prev = skb->prev;
 	skb->next = skb->prev = skb;
@@ -230,11 +219,21 @@ struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size) {
 	return skb;
 }
 
-#if 0
-struct sk_buff *alloc_skb_clone(struct sk_buff *skb, gfp_t priority) {
-	return NULL;
+struct sk_buff * skb_clone(struct sk_buff *skb, gfp_t priority) {
+	struct sk_buff *clone;
+
+	clone = skb_copy(skb, 0);
+	if (clone == NULL) {
+		return NULL;
+	}
+
+	clone->dev = skb->dev;
+	clone->pkt_type = skb->pkt_type;
+	clone->protocol = skb->protocol;
+	clone->sk = skb->sk;
+
+	return clone;
 }
-#endif
 
 struct sk_buff * skb_copy(const struct sk_buff *skb, gfp_t priority) {
 	struct sk_buff *new_pack;
@@ -249,6 +248,7 @@ struct sk_buff * skb_copy(const struct sk_buff *skb, gfp_t priority) {
 	}
 
 	memcpy(new_pack->data, skb->data, skb->len);
+	new_pack->len = skb->len;
 
 	/*fix references during copy net_pack*/
 	if (skb->h.raw != NULL) {
