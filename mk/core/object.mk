@@ -94,6 +94,80 @@ __object_alloc = \
 # If you change initial value do not forget to modify bootstrap code.
 __object_instance_cnt :=# Initially empty.
 
+#
+# Runtime member access: 'invoke', 'get' and 'set'.
+#
+
+# Params:
+#   1. Member name to parse in form 'member', 'ref->member' or 'obj.member'.
+#      It is assumed that there is no any commas outside parens.
+#   2. Continuation with the following args:
+#       1. Empty in case of referencing a member of 'this',
+#          the target object otherwise.
+#       2. The member being referenced.
+#       3. Optional argument.
+#   3. (optional) Argument to pass to the continuaion.
+# Return:
+#   Result of call to continuation in case of a valid reference,
+#   otherwise it aborts using builtin_error.
+define __object_member_parse
+	$(or \
+		$(__object_member_try_parse),
+		$(call builtin_error,
+			Invalid first argument to '$(builtin_name)' function: '$1'
+		)
+	)
+endef
+$(call def,__object_member_parse)
+
+# Params:
+#   See '__object_member_parse'.
+# Return:
+#   Result of call to continuation in case of a valid reference,
+#   empty otherwise.
+define __object_member_try_parse
+	$(expand $$(call \
+		$(lambda $(or \
+			$(and \
+				$(eq .,$6),$(nolastword $4),$(trim $5),
+				# Invocation on some object.
+				# Escaped reference is in $4. Escaped member name is in $5.
+				$(call $1,
+					# Optimize out explicit dereference of 'this'.
+					$(if $(not $(eq this ->,$(strip $4))),
+						$(call $(if $(eq ->,$(lastword $4)),$(lambda $$($1)),id),
+							$(call $3,$(nolastword $4))
+						)
+					),
+					$(call $3,$5),$2)
+			),
+			$(and \
+				$(eq .,$5),$(trim $4),
+				# Target object is implicitly 'this'.
+				# Escaped member is in $4.
+				$(call $1,,$(call $3,$4),$2)
+			)
+		)),
+
+		# 1 and 2: The continuation with its argument.
+		$$2,$$(value 3),
+
+		# 3: Unescape function which restores '.' and '->' back.
+		$(lambda \
+			$(trim $(subst $(\s).$(\comma),.,$(subst $(\s)->$(\comma),->,$1)))
+		),
+
+		# 4 .. 5: Escaped member name with '.' and '->' repalaced by commas.
+		$(subst .,$(\s).$(\comma),$(subst ->,$(\s)->$(\comma),
+			$(subst $(\comma),$$(\comma),$(subst $$,$$$$,$1))
+		)),
+
+		# 5 or 6: End of args marker.
+		.,
+	))
+endef
+$(call def,__object_member_try_parse)
+
 # Params:
 #   1. Class name.
 define __class_resolve
