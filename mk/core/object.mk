@@ -72,7 +72,6 @@ include mk/core/string.mk
 include mk/core/define.mk
 
 include mk/util/var/assign.mk
-#include mk/util/var/list.mk
 
 #
 # $(new class,args...)
@@ -105,6 +104,22 @@ define __class_resolve
 	)
 endef
 
+# Params:
+#   1. Child class.
+#   2. Ancestor.
+define __class_inherit
+	$(and $(foreach a,fields methods super,
+		${eval \
+			$1.$a += $($2.$a)
+		}
+	),)
+
+	$(if $(filter $1,$($1.super)),
+		$(call builtin_error,
+				Can't inherit class '$1' from '$2' because of a loop)
+	)
+endef
+
 define builtin_tag-__class__
 	$(foreach c,
 		$(or \
@@ -113,26 +128,37 @@ define builtin_tag-__class__
 					Illegal function name for class: '$(__def_var)')
 		),
 
-		$(if $(not $(call __object_name_check,$c)),
+		$(if $(not $(call __class_name_check,$c)),
 			$(call builtin_error,
 					Illegal class name: '$c')
 		)
-
-		${eval \
-			$c.methods :=$(\n)
-			$c.fields  :=$(\n)
-			$c.super   :=
-		}
 
 		$c# Return.
 	)
 endef
 
+#
+# $(__class__ fields/methods/supers...)
+#
+define builtin_func-__class__
+	$(call builtin_check_max_arity,1)
+
+	$(foreach c,$(call builtin_tag,__class__),
+		$(and $(foreach a,fields methods super,
+			${eval \
+				$c.$a := $(strip $(value $c.$a))
+			}
+		),)
+	)
+
+	$1
+endef
+
 # Params:
-#   1. class or member name to check.
+#   1. Class or member name to check.
 # Returns:
 #   The argument if it is a valid name, empty otherwise.
-define __object_name_check
+define __class_name_check
 	$(if $(not \
 			$(or \
 				$(findstring $(\\),$1),
@@ -144,39 +170,28 @@ define __object_name_check
 	)
 endef
 
-#
-# $(__class__ fields,methods,supers...)
-#
-define builtin_func-__class__
-	$(call builtin_check_max_arity,1)
+# Param:
+#   1. Identifier to check.
+#   2. Class attribute to append the identifier to.
+define __class_def_attribute
+	$(assert $(eq __class__,$(builtin_caller)),
+		Function '$(builtin_name)' can be used only within a class definition)
 
-	$(foreach c,$(call builtin_tag,__class__),
-		${eval \
-			$c.methods := $(strip $($c.methods))$(\n)
-			$c.fields  := $(strip $($c.fields))$(\n)
-			$c.super   := $(strip $($c.super))
-		}
-
-		$1
+	$(if $(not $(call __class_name_check,$2)),
+		$(call builtin_error,
+				Illegal name: '$2')
 	)
+
+	${eval \
+		$(call builtin_tag,__class__).$1 += $2
+	}
 endef
-$(call def,builtin_func-__class__)
 
 #
 # $(field name,initializer...)
 #
 define builtin_func-field
-	$(assert $(eq __class__,$(builtin_caller)),
-		Function '$0' can be used only within a class definition)
-
-	$(if $(not $(call __object_name_check,$1)),
-		$(call builtin_error,
-				Illegal field name: '$1')
-	)
-
-	${eval \
-		$(call builtin_tag,__class__).fields += $1
-	}
+	$(call __class_def_attribute,fields,$1)
 
 	# Line feed in output of builtin handler breaks semantics of most other
 	# builtins, but as a special exception...
@@ -198,27 +213,19 @@ endef
 # $(method name,body...)
 #
 define builtin_func-method
-	$(assert $(eq __class__,$(builtin_caller)),
-		Function '$0' can be used only within a class definition)
-
-	$(if $(not $(call __object_name_check,$1)),
-		$(call builtin_error,
-				Illegal method name: '$1')
-	)
+	$(call __class_def_attribute,methods,$1)
 
 	$(call __method_def,$(call builtin_tag,__class__),$(trim $1),
 			$(builtin_nofirstarg))
 endef
 
 # Defines a new method in a specified class.
-# Params;
+# Params:
 #   1. Class.
 #   2. Method name.
 #   3. Method body.
 define __method_def
 	${eval \
-		$1.methods += $2
-		$(\n)
 		$1.$2 = \
 			$(if $(not $(findstring $3x,$(trim $3x))),
 					$$(\0))# Preserve leading whitespaces.
@@ -230,10 +237,7 @@ endef
 # $(super ancestor,args...)
 #
 define builtin_func-super
-	$(if $(not $(call __object_name_check,$1)),
-		$(call builtin_error,
-				Illegal super class name: '$1')
-	)
+	$(call __class_def_attribute,super,$1)
 
 	$(foreach c,$(call __class_resolve,$1),
 		$(if $(multiword $(builtin_args_list)),
@@ -242,9 +246,7 @@ define builtin_func-super
 		)
 	)
 
-	${eval \
-		$(call builtin_tag,__class__).fields += $($1.fields)
-	}
+	$(call __class_inherit,$(call builtin_tag,__class__),$1)
 
 	$(foreach m,$($1.methods),
 		$(call __method_def,$(call builtin_tag,__class__),$m,$1.$m)
