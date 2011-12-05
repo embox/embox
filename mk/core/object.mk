@@ -74,6 +74,49 @@ include mk/core/define.mk
 include mk/util/var/assign.mk
 include mk/util/var/list.mk
 
+define builtin_tag-__class__
+	$(foreach c,
+		$(or \
+			$(filter-patsubst class-%,%,$(__def_var)),
+			$(error \
+					Illegal function name for class: '$(__def_var)')
+		),
+
+		${eval \
+			$c.methods :=$(\n)
+			$c.fields  :=$(\n)
+			$c.super   :=
+		}
+
+		$c# Return.
+	)
+endef
+
+define builtin_func-__class__
+	$(foreach c,$(call builtin_tag,__class__),
+		${eval \
+			$c.methods :=$(strip $($c.methods))$(\n)
+			$c.fields  :=$(strip $($c.fields))$(\n)
+			$c.super   :=$(or $(strip $($c.super)),object)
+		}
+
+#		$(if $(eq $($c.super),object),
+#			# TODO is it really needed?
+#			$$(class-object)$$(\n)
+#		)
+		$(if $(not $(singleword $($c.super))),
+			$(call builtin_error,
+					Multiple inheritance for class '$c': \
+					$($c.super:%='%',))
+		)
+
+		# Invoke super constructor.
+
+		$(builtin_args)
+	)
+endef
+$(call def,builtin_func-__class__)
+
 ##
 # Function: new
 # Creates a new instance of the specified class.
