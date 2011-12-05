@@ -158,8 +158,6 @@ int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	while (sk->sk_state != TCP_ESTABIL) {
 	}
 
-	tcp_set_st(tcpsk, TCP_ESTABIL_ACK_WAIT);
-
 	return send_from_sock(sk, skb);
 }
 
@@ -309,17 +307,23 @@ static int tcp_st_estabil(struct tcp_sock *tcpsk, struct sk_buff *skb,
 	assert(TCP_SOCK(tcpsk)->sk_state == TCP_ESTABIL);
 
 	if (!tcph->rst && !tcph->syn && tcph->ack) {
-		if (ack == tcpsk->this.seq && seq == tcpsk->rem.seq) {
-			tcpsk->rem.seq += tcp_v4_data_len(skb);
-			sock_queue_rcv_skb((struct sock *) tcpsk, skb_copy(skb, 0));
+		if (tcpsk->this_unack <= ack && ack <= tcpsk->this.seq && seq == tcpsk->rem.seq) {
+			int data_len = tcp_v4_data_len(skb);
 
-			out_tcph->ack |= 1;
-			return TCP_ST_SEND;
+			tcpsk->this_unack = ack;
+
+			if (data_len > 0) {
+				tcpsk->rem.seq += data_len;
+				sock_queue_rcv_skb((struct sock *) tcpsk, skb_copy(skb, 0));
+
+				out_tcph->ack |= 1;
+				return TCP_ST_SEND;
+			}
 		}
 	}
 	return TCP_ST_NO_SEND;
 }
-
+#if 0
 static int tcp_st_estabil_ack_wait(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcphdr_t *tcph, tcphdr_t *out_tcph) {
 	unsigned long seq = ntohl(tcph->seq);
@@ -334,7 +338,7 @@ static int tcp_st_estabil_ack_wait(struct tcp_sock *tcpsk, struct sk_buff *skb,
 
 	return TCP_ST_NO_SEND;
 }
-
+#endif
 static int tcp_st_finwait_1(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcphdr_t *tcph, tcphdr_t *out_tcph) {
 
@@ -364,7 +368,7 @@ static int (*tcp_st_handler[TCP_MAX_STATE])(struct tcp_sock *tcpsk,
 	[TCP_SYN_RECV_PRE]	= tcp_st_syn_recv_pre,
 	[TCP_SYN_RECV_PRE2]	= tcp_st_syn_recv_pre2,
 	[TCP_ESTABIL]		= tcp_st_estabil,
-	[TCP_ESTABIL_ACK_WAIT]	= tcp_st_estabil_ack_wait,
+	//[TCP_ESTABIL_ACK_WAIT]	= tcp_st_estabil_ack_wait,
 	[TCP_FINWAIT_1]		= tcp_st_finwait_1,
 	[TCP_FINWAIT_2]		= tcp_st_finwait_2,
 };
