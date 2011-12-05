@@ -10,6 +10,8 @@ $_MODS  += pool
 $_SRCS-pool += pool.c
 $_DEPS-pool += embox.mem.pool
 
+$_MODS += malloc
+$_SRCS-malloc += malloc.c
 
 $_MODS  += page
 $_SRCS-page += page.c

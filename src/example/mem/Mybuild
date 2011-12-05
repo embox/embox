@@ -8,3 +8,7 @@ module page {
 	source "page.c"
 	depends embox.mem.page_api
 }
+
+module malloc {
+	source "malloc.c"
+}
