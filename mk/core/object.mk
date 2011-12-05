@@ -99,9 +99,8 @@ __object_instance_cnt :=# Initially empty.
 #   1. Class name.
 define __class_resolve
 	$(if $(findstring undefined,$(flavor class-$1)),
-		$(error \
-			Class '$1' not found
-		),
+		$(call $(if $(value __def_var),builtin_)error,
+				Class '$1' not found),
 		class-$1
 	)
 endef
@@ -114,6 +113,11 @@ define builtin_tag-__class__
 					Illegal function name for class: '$(__def_var)')
 		),
 
+		$(if $(not $(call __object_name_check,$c)),
+			$(call builtin_error,
+					Illegal class name: '$c')
+		)
+
 		${eval \
 			$c.methods :=$(\n)
 			$c.fields  :=$(\n)
@@ -124,7 +128,28 @@ define builtin_tag-__class__
 	)
 endef
 
+# Params:
+#   1. class or member name to check.
+# Returns:
+#   The argument if it is a valid name, empty otherwise.
+define __object_name_check
+	$(if $(not \
+			$(or \
+				$(findstring $(\\),$1),
+				$(findstring $(\h),$1),
+				$(findstring $$,$1),
+				$(findstring  .,$1)
+			)),
+		$(singleword $1)
+	)
+endef
+
+#
+# $(__class__ fields,methods,supers...)
+#
 define builtin_func-__class__
+	$(call builtin_check_max_arity,1)
+
 	$(foreach c,$(call builtin_tag,__class__),
 		${eval \
 			$c.methods :=$(strip $($c.methods))$(\n)
@@ -156,7 +181,7 @@ define builtin_func-field
 	$(assert $(eq __class__,$(builtin_caller)),
 		Function '$0' can be used only within a class definition)
 
-	$(if $(not $(call __object_member_name_check,$1)),
+	$(if $(not $(call __object_name_check,$1)),
 		$(call builtin_error,
 				Illegal field name: '$1')
 	)
@@ -176,6 +201,7 @@ define builtin_func-field
 			$(not $(findstring $2x,$(trim $2x))),
 			$$(\0)
 		)# Preserve leading whitespaces.
+		# Also escape hashes and backslashes to prevent escaping a new line.
 		$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$(builtin_nofirstarg)))
 	$(\n)# <- LF again.
 endef
@@ -187,37 +213,49 @@ define builtin_func-method
 	$(assert $(eq __class__,$(builtin_caller)),
 		Function '$0' can be used only within a class definition)
 
-	$(if $(not $(call __object_member_name_check,$1)),
+	$(if $(not $(call __object_name_check,$1)),
 		$(call builtin_error,
 				Illegal method name: '$1')
 	)
 
+	$(call __method_def,$(call builtin_tag,__class__),$(trim $1),
+			$(builtin_nofirstarg))
+endef
+
+# Defines a new method in a specified class.
+# Params;
+#   1. Class.
+#   2. Method name.
+#   3. Method body.
+define __method_def
 	${eval \
-		$(call builtin_tag,__class__).methods += $1
+		$1.methods += $2
 		$(\n)
-		$(call builtin_tag,__class__).$(trim $1) = \
-		$(and \
-			$(value 2),
-			$(not $(findstring $2x,$(trim $2x))),
-			$$(\0)
-		)# Preserve leading whitespaces.
-		$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$(builtin_nofirstarg)))
+		$1.$2 = \
+			$(if $(not $(findstring $3x,$(trim $3x))),
+					$$(\0))# Preserve leading whitespaces.
+			$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$3))
 	}
 endef
 
-# Params:
-#   1. Member name to check.
-# Returns:
-#   The argument if it is a valid member name, empty otherwise.
-define __object_member_name_check
-	$(if $(not \
-			$(or \
-				$(findstring $(\\),$1),
-				$(findstring $(\h),$1),
-				$(findstring $$,$1),
-				$(findstring  .,$1)
-			)),
-		$(singleword $1)
+#
+# $(super ancestor,args...)
+#
+define builtin_func-super
+	$(if $(not $(call __object_name_check,$1)),
+		$(call builtin_error,
+				Illegal super class name: '$1')
+	)
+
+	$(foreach c,$(call __class_resolve,$1),
+		$(if $(multiword $(builtin_args_list)),
+			$$(call $c,$(builtin_nofirstarg)),
+			$$(call $c)
+		)
+	)
+
+	$(foreach m,$($1.methods),
+		$(call __method_def,$(call builtin_tag,__class__),$m,$1.$m)
 	)
 endef
 
