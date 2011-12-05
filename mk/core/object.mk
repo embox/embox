@@ -74,6 +74,28 @@ include mk/core/define.mk
 include mk/util/var/assign.mk
 include mk/util/var/list.mk
 
+#
+# $(new class,args...)
+#
+define builtin_func-new
+	$$(foreach this,$$(__object_alloc),
+		$$(eval \
+			$$(call $$(call __class_resolve,$1),$(builtin_nofirstarg))
+		)
+	)
+endef
+
+# Params:
+#   1. Class name.
+define __class_resolve
+	$(if $(findstring undefined,$(flavor class-$1)),
+		$(error \
+			Class '$1' not found.
+		),
+		class-$1
+	)
+endef
+
 define builtin_tag-__class__
 	$(foreach c,
 		$(or \
