@@ -209,6 +209,7 @@ extern int empty_socket(int sockfd);
  * @return 0 on success. On error, result < 0.
  */
 extern int socket_close(int sockfd);
+extern int close(int sockfd);
 
 //TODO not implement now
 extern int socket_shutdown(int socket, int how);

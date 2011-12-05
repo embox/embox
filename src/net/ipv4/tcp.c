@@ -108,23 +108,47 @@ static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, str
 }
 #endif
 
-int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len) {
+static int send_from_sock(struct sock *sk, sk_buff_t *skb) {
 	struct inet_sock *inet = inet_sk(sk);
 	struct tcp_sock *tcpsk = (struct tcp_sock *) sk;
 
+	rebuild_tcp_header(inet->saddr, inet->daddr,
+			inet->sport, inet->dport, htonl(tcpsk->this_unack), htonl(tcpsk->rem.seq),
+			tcpsk->this.wind, skb);
+
+	return ip_send_packet(inet, skb);
+}
+
+static sk_buff_t * alloc_prep_skb(int addit_len) {
 	sk_buff_t *skb;
+
+	skb = alloc_skb(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
+				    /*inet->opt->optlen +*/ TCP_V4_HEADER_MIN_SIZE +
+				    addit_len, 0);
+	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+	skb->nh.iph->ihl = IP_MIN_HEADER_SIZE >> 2;
+	skb->nh.iph->tot_len = htons(IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE + addit_len);
+	skb->h.raw = (unsigned char *) skb->nh.raw + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
+
+	memset(skb->h.raw, 0, TCP_V4_HEADER_MIN_SIZE);
+
+	return skb;
+}
+
+int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+			size_t len) {
+	sk_buff_t *skb;
+	struct tcp_sock *tcpsk = (struct tcp_sock *) sk;
+
 	if (sk->sk_state != TCP_ESTABIL) {
 		return -EINVAL;
 	}
-	skb = alloc_skb(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
-				    /*inet->opt->optlen +*/ TCP_V4_HEADER_MIN_SIZE +
-				    msg->msg_iov->iov_len, 0);
-	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
-	skb->nh.iph->ihl = IP_MIN_HEADER_SIZE >> 2;
-	skb->h.raw = (unsigned char *) skb->nh.raw + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
+
+	skb = alloc_prep_skb(msg->msg_iov->iov_len);
+
 	memcpy((void*)((unsigned int)(skb->h.raw + TCP_V4_HEADER_MIN_SIZE)),
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
+
 	/* Fill TCP header */
 	tcpsk->this_unack = tcpsk->this.seq;
 	tcpsk->this.seq += len;
@@ -133,10 +157,7 @@ int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 
 	tcp_set_st(tcpsk, TCP_ESTABIL_ACK_WAIT);
 
-	rebuild_tcp_header(inet->saddr, inet->daddr,
-			inet->sport, inet->dport, htonl(tcpsk->this_unack), htonl(tcpsk->rem.seq),
-			tcpsk->this.wind, skb);
-	return ip_send_packet(inet, skb);
+	return send_from_sock(sk, skb);
 }
 
 int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
@@ -311,7 +332,27 @@ static int tcp_st_estabil_ack_wait(struct tcp_sock *tcpsk, struct sk_buff *skb,
 	return TCP_ST_NO_SEND;
 }
 
+static int tcp_st_finwait_1(struct tcp_sock *tcpsk, struct sk_buff *skb,
+		tcphdr_t *tcph, tcphdr_t *out_tcph) {
 
+	if (tcph->ack) {
+		tcp_set_st(tcpsk, TCP_FINWAIT_2);
+	}
+
+	return TCP_ST_NO_SEND;
+}
+
+static int tcp_st_finwait_2(struct tcp_sock *tcpsk, struct sk_buff *skb,
+		tcphdr_t *tcph, tcphdr_t *out_tcph) {
+
+	if (tcph->ack) {
+		tcpsk->rem.seq = ntohl(tcph->seq) + 1;
+		out_tcph->ack |= 1;
+		tcp_set_st(tcpsk, TCP_CLOSE);
+	}
+
+	return TCP_ST_NO_SEND;
+}
 
 static int (*tcp_st_handler[TCP_MAX_STATE])(struct tcp_sock *tcpsk,
 		struct sk_buff *skb, tcphdr_t *tcph, tcphdr_t *out_tcph) = {
@@ -320,7 +361,9 @@ static int (*tcp_st_handler[TCP_MAX_STATE])(struct tcp_sock *tcpsk,
 	[TCP_SYN_RECV_PRE]	= tcp_st_syn_recv_pre,
 	[TCP_SYN_RECV_PRE2]	= tcp_st_syn_recv_pre2,
 	[TCP_ESTABIL]		= tcp_st_estabil,
-	[TCP_ESTABIL_ACK_WAIT]	= tcp_st_estabil_ack_wait
+	[TCP_ESTABIL_ACK_WAIT]	= tcp_st_estabil_ack_wait,
+	[TCP_FINWAIT_1]		= tcp_st_finwait_1,
+	[TCP_FINWAIT_2]		= tcp_st_finwait_2,
 };
 
 static void tcp_v4_process(struct tcp_sock *tcpsk, sk_buff_t *skb) {
@@ -394,6 +437,16 @@ static int tcp_v4_accept(sock_t *sk, sockaddr_t *_addr, int *addr_len) {
 	return -1;
 }
 
+static void tcp_v4_close(sock_t *sk, long timeout) {
+	struct sk_buff *skb = alloc_prep_skb(0);
+	tcphdr_t *tcph = tcp_hdr(skb);
+
+	tcph->fin |= 1;
+	tcph->ack |= 1;
+
+	send_from_sock(sk, skb);
+
+}
 struct proto tcp_prot = {
 	.name                   = "TCP",
 	.init                   = tcp_v4_init_sock,
@@ -401,13 +454,13 @@ struct proto tcp_prot = {
 	.unhash                 = tcp_v4_unhash,
 	.listen			= tcp_v4_listen,
 	.accept                 = tcp_v4_accept,
+	.close                  = tcp_v4_close,
 	.sendmsg		= tcp_v4_sendmsg,
 	.recvmsg		= tcp_v4_recvmsg,
 	.sock_alloc		= tcp_v4_sock_alloc,
 	.sock_free		= tcp_v4_sock_free
 #if 0
 	.owner                  = THIS_MODULE,
-	.close                  = tcp_close,
 	.connect                = tcp_v4_connect,
 	.disconnect             = tcp_disconnect,
 	.ioctl                  = tcp_ioctl,

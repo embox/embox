@@ -9,6 +9,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <net/ip.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
@@ -69,9 +70,14 @@ static int exec(int argc, char **argv) {
 		continue;
 	}
         buf[bytes_read] = '\0';
+	if (0 == strncmp(buf, "quit", 4)) {
+		break;
+	}
         printf("%s",buf);
-	sendto(sock, buf, bytes_read, 0, (struct sockaddr *) &dst, sizeof(dst));
+	sendto(connect_sock, buf, bytes_read, 0, (struct sockaddr *) &dst, sizeof(dst));
     }
+
+    close(connect_sock);
 
     return 0;
 }
