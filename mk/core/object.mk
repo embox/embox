@@ -156,12 +156,7 @@ define builtin_func-field
 	$(assert $(eq __class__,$(builtin_caller)),
 		Function '$0' can be used only within a class definition)
 
-	$(if $(or \
-			$(not $(singleword $1)),
-			$(findstring $(\\),$1),
-			$(findstring $(\h),$1),
-			$(findstring $$,$1),
-			$(findstring  .,$1)),
+	$(if $(not $(call __object_member_name_check,$1)),
 		$(call builtin_error,
 				Illegal field name: '$1')
 	)
@@ -183,6 +178,47 @@ define builtin_func-field
 		)# Preserve leading whitespaces.
 		$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$(builtin_nofirstarg)))
 	$(\n)# <- LF again.
+endef
+
+#
+# $(method name,body...)
+#
+define builtin_func-method
+	$(assert $(eq __class__,$(builtin_caller)),
+		Function '$0' can be used only within a class definition)
+
+	$(if $(not $(call __object_member_name_check,$1)),
+		$(call builtin_error,
+				Illegal method name: '$1')
+	)
+
+	${eval \
+		$(call builtin_tag,__class__).methods += $1
+		$(\n)
+		$(call builtin_tag,__class__).$(trim $1) = \
+		$(and \
+			$(value 2),
+			$(not $(findstring $2x,$(trim $2x))),
+			$$(\0)
+		)# Preserve leading whitespaces.
+		$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$(builtin_nofirstarg)))
+	}
+endef
+
+# Params:
+#   1. Member name to check.
+# Returns:
+#   The argument if it is a valid member name, empty otherwise.
+define __object_member_name_check
+	$(if $(not \
+			$(or \
+				$(findstring $(\\),$1),
+				$(findstring $(\h),$1),
+				$(findstring $$,$1),
+				$(findstring  .,$1)
+			)),
+		$(singleword $1)
+	)
 endef
 
 ##
