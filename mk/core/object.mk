@@ -104,21 +104,9 @@ define __class_resolve
 	)
 endef
 
-# Params:
-#   1. Child class.
-#   2. Ancestor.
-define __class_inherit
-	$(and $(foreach a,fields methods super,
-		${eval \
-			$1.$a += $($2.$a)
-		}
-	),)
-
-	$(if $(filter $1,$($1.super)),
-		$(call builtin_error,
-				Can't inherit class '$1' from '$2' because of a loop)
-	)
-endef
+#
+# Class definition.
+#
 
 define builtin_tag-__class__
 	$(foreach c,
@@ -250,6 +238,22 @@ define builtin_func-super
 
 	$(foreach m,$($1.methods),
 		$(call __method_def,$(call builtin_tag,__class__),$m,$1.$m)
+	)
+endef
+
+# Params:
+#   1. Child class.
+#   2. Ancestor.
+define __class_inherit
+	$(and $(foreach a,fields methods super,
+		${eval \
+			$1.$a += $($2.$a)
+		}
+	),)
+
+	$(if $(filter $1,$($1.super)),
+		$(call builtin_error,
+				Can't inherit class '$1' from '$2' because of a loop)
 	)
 endef
 
