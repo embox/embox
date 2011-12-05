@@ -1,7 +1,7 @@
 #
-# Copyright 2008-2011, Mathematics and Mechanics faculty
+# Copyright 2010-2011, Mathematics and Mechanics faculty
 #                   of Saint-Petersburg State University. All rights reserved.
-# Copyright 2008-2011, Lanit-Tercom Inc. All rights reserved.
+# Copyright 2010-2011, Lanit-Tercom Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -67,12 +67,12 @@ __core_object_mk := 1
 #  endef
 #
 
-include core/common.mk
-include core/string.mk
-include core/define.mk
+include mk/core/common.mk
+include mk/core/string.mk
+include mk/core/define.mk
 
-include util/var/assign.mk
-include util/var/list.mk
+include mk/util/var/assign.mk
+include mk/util/var/list.mk
 
 ##
 # Function: new
