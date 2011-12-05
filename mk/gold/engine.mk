@@ -27,12 +27,13 @@ __gold_engine_mk := 1
 # constructing a list of recognized terminals. Then, the resulting list is
 # trasformed into a parse tree, again just by iterating over the tokens.
 #
-# The only stage that involves calling of a user code if the third phase, where
+# The only stage that involves calling of a user code is the third phase, where
 # the parse tree is interpreted by invoking user-defined functions for each
 # node of the tree.
 # Nodes are tranformed from a leaves upwards to the root: the result of
 # calling a handler for some node is passed as an argument to a handler of its
-# parent node.
+# parent node. Finally, the result of transforming the root is returned to the
+# client.
 #
 
 include mk/core/common.mk
@@ -702,7 +703,7 @@ define __gold_lalr_handle[+]
 	${eval \
 		# Push the current token onto the stack.
 		__gold_stack__ += \
-			$$(call $(lambda $1/[$4,$2,$1]),$(subst /,$(\comma),$t))
+			$$(call $(lambda $1/[$2,$1,$4]),$(subst /,$(\comma),$t))
 			$(__gold_state__)
 		$(\n)
 		# Move to a new state.
@@ -916,9 +917,9 @@ __gold_default_symbol_name = \
 	$(fn)
 
 # Params:
-#   1. Symbol Id.
-#   2. Chars.
-#   3. Location.
+#   1. Chars.
+#   2. Location.
+#   3. Symbol Id.
 define __gold_hook_token
 	$(foreach __gold_location__,$3,
 		$(__gold_invoke_create_fn)
@@ -927,19 +928,20 @@ endef
 
 # Calls symbols creation function (if any, otherwise a default one is called).
 # Params:
-#   1. Symbol Id.
-#   2. Chars/Production.
+#   1. Chars/Production.
+#   2. One word location in form 'line:col'.
+#   3. Symbol Id.
 # Context:
-#   '__gold_location__': One word location in form 'line:col'.
+#   '__gold_location__': The same as arg 2.
 define __gold_invoke_create_fn
-	$(foreach __gold_symbol_id,$1,
-		$(call \
+	$(foreach __gold_symbol_id,$3,
+		$(foreach 0,
 			$(or \
 				$(call var_defined,
-						$(gold_grammar)_create-$(__gold_symbol_fn)),
+						$(gold_grammar)_create-$(call __gold_symbol_fn,$3)),
 				gold_default_create
 			),
-			$2,$(__gold_location__)
+			$($0)
 		)
 	)
 endef
@@ -1005,16 +1007,19 @@ __gold_ascii_table := \
 define __gold_hook_rule
 	$(foreach __gold_location__,
 		$(firstword $($(__gold_n$(call __gold_rule_symbols_nr,$r)+1))),
-		$(call __gold_invoke_create_fn,$(call __gold_rule_nonterminal_id,$r),
+		$(call __gold_invoke_create_fn,
 			$(foreach __gold_rule_id,$r,
-				$(# No call to preserve expansion context
+				$(foreach 0,
 					$(or \
 						$(call var_defined,
 							$(gold_grammar)_produce-$(call __gold_rule_fn,$r)),
 						gold_default_produce
-					)
+					),
+					$($0)# No call to preserve expansion context.
 				)
-			)
+			),
+			$(__gold_location__),
+			$(call __gold_rule_nonterminal_id,$r)
 		)
 	)
 endef
