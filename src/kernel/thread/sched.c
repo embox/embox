@@ -286,7 +286,7 @@ static void sched_switch(void) {
 
 		context_switch(&prev->context, &next->context);
 	}
-	out: sched_unlock();
+	out: sched_unlock_noswitch();
 }
 
 struct startq {

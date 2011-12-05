@@ -92,5 +92,4 @@ static void softirq_dispatch(void) {
 	}
 
 	critical_leave(CRITICAL_SOFTIRQ_HANDLER);
-	critical_dispatch_pending();
 }
