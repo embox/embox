@@ -19,6 +19,8 @@
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>
 
+#include <kernel/diag.h>
+
 EMBOX_UNIT_INIT(tty_ng_manager_init);
 
 struct param {
@@ -102,9 +104,9 @@ static void *thread_handler(void* args) {
 	struct param *p = (struct param *) args;
 	FILE *file = (FILE *) p->file;
 
-	task_idx_save(0, file);
-	task_idx_save(1, file);
-	task_idx_save(2, file);
+	task_res_idx_set(task_self_res(), 0, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
+	task_res_idx_set(task_self_res(), 1, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
+	task_res_idx_set(task_self_res(), 2, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
 #if 0
 	freopen(stdin, file);
 	freopen(stdout, file);
@@ -169,8 +171,9 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 	current_tty = &ttys[0];
 	current_tty->make_active(current_tty);
 
-	fioctl(stdin, O_NONBLOCK_SET, NULL);
+	//fioctl(stdin, O_NONBLOCK_SET, NULL);
 	while (1) {
+		//diag_putc('!');
 		while (-EAGAIN == read(0, &ch, 1)) {
 			sleep(0);
 		}

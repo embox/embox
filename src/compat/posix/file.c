@@ -14,44 +14,44 @@
 ARRAY_SPREAD_DEF(struct task_res_ops *, __task_res_ops);
 
 int open(const char *path, int __oflag, ...) {
-	return task_file_open(fopen(path, "rw"), task_get_resources(task_self()));
+	return task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_FILE, fopen(path, "rw"));
+}
+
+static struct task_res_ops *find_res_ops(int fd) {
+	struct idx_desc *idx_desc = task_self_idx_get(fd);
+	int type = task_idx_desc_get_type(idx_desc);
+
+	const struct task_res_ops *res;
+	array_foreach(res, __task_res_ops, ARRAY_SPREAD_SIZE(__task_res_ops)) {
+		if (res->type == type) {
+			return (struct task_res_ops *) res;
+		}
+	}
+	return NULL;
 }
 
 int close(int fd) {
-	int type = task_idx_to_type(fd);
-	const struct task_res_ops *res;
-	array_foreach(res, __task_res_ops, ARRAY_SPREAD_SIZE(__task_res_ops)) {
-		if (res->type == type) {
-			return res->close(fd);
-		}
+	struct task_res_ops *ops = find_res_ops(fd);
+	struct idx_desc *desc = task_self_idx_get(fd);
+	if (--desc->link_count == 0) {
+		return ops->close(fd);
 	}
-	return -1;
+
+	return 0;
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
-	int type = task_idx_to_type(fd);
-	const struct task_res_ops *res;
-	array_foreach(res, __task_res_ops, ARRAY_SPREAD_SIZE(__task_res_ops)) {
-		if (res->type == type) {
-			return res->write(fd, buf, nbyte);
-		}
-	}
-	return -1;
+	struct task_res_ops *ops = find_res_ops(fd);
+	return ops->write(fd, buf, nbyte);
 }
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
-	int type = task_idx_to_type(fd);
-	const struct task_res_ops *res;
-	array_foreach(res, __task_res_ops, ARRAY_SPREAD_SIZE(__task_res_ops)) {
-		if (res->type == type) {
-			return res->read(fd, buf, nbyte);
-		}
-	}
-	return -1;
+	struct task_res_ops *ops = find_res_ops(fd);
+	return ops->read(fd, buf, nbyte);
 }
 
 int ioctl(int fd, int request, va_list args) {
-	return fioctl(task_self()->resources.fds[fd].file, request, args);
+	return fioctl(task_self_idx_get(fd)->file, request, args);
 }
 
 int fsync(int fd) {

@@ -26,28 +26,30 @@ struct task {
 	int errno;
 };
 
+extern int task_create(struct task **new, struct task *parent);
+
 static inline struct task_resources *task_get_resources(struct task *task) {
 	return &task->resources;
 }
-extern int task_create(struct task **new, struct task *parent);
+
+static inline int task_valid_fd(int fd) {
+	return 0 <= fd && fd <= CONFIG_TASKS_RES_QUANTITY;
+}
 
 extern struct task *task_self(void);
 
 extern struct task *task_default_get(void);
 
-extern int task_file_open(FILE *file, struct task_resources *res);
+static inline struct task_resources *task_self_res(void) {
+	return task_get_resources(task_self());
+}
 
-extern int task_idx_alloc(int type);
-extern int task_idx_release(int idx);
+static inline struct idx_desc *task_self_idx_get(int fd) {
+	return task_res_idx_get(task_self_res(), fd);
+}
 
-extern int task_idx_to_type(int idx);
-
-extern int task_idx_save(int idx, void *desc);
-
-extern void * task_idx_to_desc(int idx);
-
-static inline int task_valid_fd(int fd) {
-	return 0 <= fd && fd <= CONFIG_TASKS_FILE_QUANTITY;
+static inline void task_self_idx_set(int fd, struct idx_desc *desc) {
+	task_res_idx_set(task_self_res(), fd, desc);
 }
 
 #endif /* TASK_H_ */

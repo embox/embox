@@ -137,7 +137,7 @@ extern int fstat(const char *path, struct stat *buf);
 
 #include <kernel/task.h>
 /*extern FILE *stdin;*/
-#define stdin (task_self()->resources.fds[0].file)
+#define stdin (task_res_idx_get(task_self_res(), 0)->file)
 
 //TODO: stub
 

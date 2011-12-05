@@ -22,7 +22,7 @@
  * @param a type communication semantics.
  * @param protocol a particular protocol to be used with the socket.
  * @param res pointer to the socket structure
- * @return On success, descriptor for the new socket otherwise result < 0.
+ * @return On success, 0 otherwise result < 0.
  */
 extern int kernel_socket_create(int family, int type, int protocol,
 					struct socket **res);

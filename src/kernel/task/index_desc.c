@@ -8,13 +8,14 @@
 #include <embox/unit.h>
 #include <kernel/task.h>
 #include <diag/diag_device.h>
+#include <mem/objalloc.h>
 
 #include "index_desc.h"
 
 EMBOX_UNIT_INIT(tasks_init);
 
 static struct task default_task;
-
+#if 0
 int task_idx_save_res(int fd, void *desc, struct task_resources *res);
 
 int task_desc2idx(struct __fd_list *desc, struct task_resources *res) {
@@ -24,11 +25,47 @@ int task_desc2idx(struct __fd_list *desc, struct task_resources *res) {
 void* task_idx2desc(int fd, struct task_resources *res) {
 	return res->fds[fd].file;
 }
-
 void fd_list_init(struct task_resources *res) {
 	for (int i = 0; i < CONFIG_TASKS_FILE_QUANTITY; i++) {
 		INIT_LIST_HEAD(&res->fds[i].link);
 	}
+}
+#endif
+
+OBJALLOC_DEF(idx_res_pool, struct idx_desc, CONFIG_TASKS_RES_QUANTITY);
+
+void res_init(struct task_resources *res) {
+	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
+		task_res_idx_set(res, i, NULL);
+	}
+}
+
+struct idx_desc *task_idx_desc_alloc(int type, void *data) {
+	struct idx_desc *desc = objalloc(&idx_res_pool);
+	desc->link_count = 1; //always assigns returned value
+
+	desc->type = type;
+	desc->data = data;
+	return desc;
+}
+
+void task_idx_desc_free(struct idx_desc *desc) {
+	objfree(&idx_res_pool, desc);
+}
+
+int task_res_idx_alloc(struct task_resources *res, int type, void *data) {
+	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
+		if (task_res_idx_get(res, i) == NULL) {
+			task_res_idx_set(res, i, task_idx_desc_alloc(type, data));
+			return i;
+		}
+	}
+	return -1;
+}
+
+void task_res_idx_free(struct task_resources *res, int idx) {
+	task_idx_desc_free(task_res_idx_get(res, idx));
+	task_res_idx_set(res, idx, NULL);
 }
 
 void task_root_init(struct task *new_task) {
@@ -38,7 +75,7 @@ void task_root_init(struct task *new_task) {
 
 	new_task->parent = NULL;
 
-	fd_list_init(&new_task->resources);
+	res_init(task_get_resources(new_task));
 }
 
 struct task *task_default_get(void) {
@@ -47,61 +84,13 @@ struct task *task_default_get(void) {
 
 static int tasks_init(void) {
 	FILE* file = diag_device_get();
-	struct task_resources *res = &default_task.resources;
+	struct task_resources *res = task_get_resources(&default_task);
 
 	task_root_init(&default_task);
-	task_idx_save_res(0, file, res);
-	task_idx_save_res(1, file, res);
-	task_idx_save_res(2, file, res);
+	task_res_idx_set(res, 0, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
+	task_res_idx_set(res, 1, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
+	task_res_idx_set(res, 2, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
 
 	return 0;
 }
 
-int task_idx_alloc_res(int type, struct task_resources *res) {
-	for (int i = 0; i < CONFIG_TASKS_FILE_QUANTITY; i++) {
-		if (res->fds[i].file == NULL) {
-			res->fds[i].file = (void *) 1;
-			res->fds[i].type = type;
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-int task_idx_free_res(int idx, struct task_resources *res) {
-	res->fds[idx].file = NULL;
-	return 0;
-}
-
-int task_idx_alloc(int type) {
-	return task_idx_alloc_res(type, task_get_resources(task_self()));
-}
-
-
-int task_idx_save_res(int fd, void *desc, struct task_resources *res) {
-	res->fds[fd].file = desc;
-	return 0;
-}
-
-void *task_idx_get_res(int fd, struct task_resources *res) {
-	return res->fds[fd].file;
-}
-
-int task_idx_to_type(int fd) {
-	struct task_resources *res = task_get_resources(task_self());
-	return res->fds[fd].type;
-}
-
-int task_idx_save(int fd, void *desc) {
-	return task_idx_save_res(fd, desc, task_get_resources(task_self()));
-}
-
-void * task_idx_to_desc(int fd){
-	return task_idx2desc(fd, task_get_resources(task_self()));
-}
-
-int task_idx_release(int idx) {
-	task_idx_free_res(idx, task_get_resources(task_self()));
-	return 0;
-}

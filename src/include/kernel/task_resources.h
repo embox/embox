@@ -9,11 +9,12 @@
 #ifndef TASK_RESOURCES_H_
 #define TASK_RESOURCES_H_
 
+#define CONFIG_TASKS_RES_QUANTITY 16
+
 enum {
 	TASK_IDX_TYPE_FILE = 0,
 	TASK_IDX_TYPE_SOCKET = 1
 };
-
 
 struct task_res_ops {
 	int	type;
@@ -22,30 +23,46 @@ struct task_res_ops {
 	ssize_t (*write)(int fd, const void *buf, size_t nbyte);
 };
 
-struct __fd_list {
-	struct list_head link; /**< link in opened/free lists. */
-	FILE *file; /** FILE*, for which this fd is corresponding. */
+struct idx_desc {
+	union {
+		struct socket *socket;
+		FILE *file;
+		void *data;
+	};
+	int link_count;
 	int type;
 };
 
-//TODO rewrite it
-struct idx_desc {
-	struct socket *socket;
-};
+static inline void *task_idx_desc_get_res(struct idx_desc *desc) {
+	return desc->data;
+}
 
-#define CONFIG_TASKS_FILE_QUANTITY 16
+static inline int task_idx_desc_get_type(struct idx_desc *desk) {
+	return desk->type;
+}
 
 struct task_resources {
-#if 0
-	int fds_cnt;
-	int file_idx_cnt;
-	int socket_idx_cnt;
-	struct list_head fds_free;
-	struct list_head fds_opened;
-	struct idx_desc socket_fds[CONFIG_TASKS_FILE_QUANTITY];
-#endif
-	struct __fd_list fds[CONFIG_TASKS_FILE_QUANTITY];
+	// heap desc
+	struct idx_desc *idx[CONFIG_TASKS_RES_QUANTITY];
 };
 
+#define TASK_IDX_RES(res, _idx) \
+	(res->idx[_idx])
+
+static inline struct idx_desc *task_res_idx_get(struct task_resources *res, int idx) {
+	return TASK_IDX_RES(res, idx);
+}
+
+static inline void task_res_idx_set(struct task_resources *res, int idx, struct idx_desc *desc) {
+	TASK_IDX_RES(res, idx) = desc;
+}
+
+#undef TASK_IDX_RES
+
+extern struct idx_desc *task_idx_desc_alloc(int type, void *data);
+extern void task_idx_desc_free(struct idx_desc *desc);
+
+extern int task_res_idx_alloc(struct task_resources *res, int type, void *data);
+extern void task_res_idx_free(struct task_resources *res, int idx);
 #endif
 

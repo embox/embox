@@ -45,21 +45,19 @@ static struct task_res_ops ops = {
 ARRAY_SPREAD_ADD(__task_res_ops, &ops);
 
 static struct socket *idx2sock(int fd) {
-	return task_idx_to_desc(fd);
+	return task_res_idx_get(task_self_res(), fd)->socket;
 }
 
 int socket(int domain, int type, int protocol) {
-	int fd;
+	int res;
 	struct socket *sock;
 
-	fd = kernel_socket_create(domain, type, protocol, &sock);
-	if (fd < 0) {
-		return fd; /* return error code */
+	res = kernel_socket_create(domain, type, protocol, &sock);
+	if (res < 0) {
+		return res; /* return error code */
 	}
 
-	task_idx_save(fd, sock);
-
-	return fd;
+	return task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, sock);
 }
 
 int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
@@ -222,7 +220,7 @@ int socket_close(int sockfd) {
 		return -EBADF;
 	}
 
-	task_idx_release(sockfd);
+	task_res_idx_free(task_self_res(), sockfd);
 
 	return kernel_socket_release(sock);
 }

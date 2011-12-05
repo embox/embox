@@ -19,20 +19,21 @@
 
 #include "index_desc.h"
 
-extern int task_desc2idx(struct __fd_list *desc, struct task_resources *res);
-
 extern const struct task_res_ops * __task_res_ops[];
 
 static int this_close(int fd) {
-	return task_file_close(fd, task_get_resources(task_self()));
+	FILE *file = task_res_idx_get(task_self_res(), fd)->file;
+	return fclose(file);
 }
 
 static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
-	return fread((void *) buf, 1, nbyte, task_get_resources(task_self())->fds[fd].file);
+	FILE *file = task_res_idx_get(task_self_res(), fd)->file;
+	return fread((void *) buf, 1, nbyte, file);
 }
 
 static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
-	return fwrite(buf, 1, nbyte, (void *) task_get_resources(task_self())->fds[fd].file);
+	FILE *file = task_res_idx_get(task_self_res(), fd)->file;
+	return fwrite(buf, 1, nbyte, file);
 }
 
 static struct task_res_ops ops = {
@@ -43,33 +44,3 @@ static struct task_res_ops ops = {
 };
 
 ARRAY_SPREAD_ADD(__task_res_ops, &ops);
-
-int task_file_open(FILE *file, struct task_resources *res) {
-	int fd = task_idx_alloc(TASK_IDX_TYPE_FILE);
-	task_idx_save_res(fd, file, res);
-	return fd;
-}
-
-static int attempt_real_close(struct __fd_list *fdl) {
-	if (list_empty(&fdl->link)) {
-		fclose(fdl->file);
-		return 1;
-	}
-	list_del_init(&fdl->link);
-	return 0;
-}
-
-int task_file_close(int fd, struct task_resources *res) {
-	struct __fd_list *fdl = &res->fds[fd];
-
-	if (fdl->file == NULL) {
-		return -EBADF;
-	}
-
-	attempt_real_close(fdl);
-
-	fdl->file = NULL;
-
-	return ENOERR;
-}
-
