@@ -149,6 +149,42 @@ define builtin_func-__class__
 endef
 $(call def,builtin_func-__class__)
 
+#
+# $(field name,initializer...)
+#
+define builtin_func-field
+	$(assert $(eq __class__,$(builtin_caller)),
+		Function '$0' can be used only within a class definition)
+
+	$(if $(or \
+			$(not $(singleword $1)),
+			$(findstring $(\\),$1),
+			$(findstring $(\h),$1),
+			$(findstring $$,$1),
+			$(findstring  .,$1)),
+		$(call builtin_error,
+				Illegal field name: '$1')
+	)
+
+	${eval \
+		$(call builtin_tag,__class__).fields += $1
+	}
+
+	# Line feed in output of builtin handler breaks semantics of most other
+	# builtins, but as a special exception...
+	# We assure that the transformed value will be handled by '__class__'
+	# builtin, that will take a special care about it.
+	$(\n)
+	$$(this).$(trim $1) := \
+		$(and \
+			$(value 2),
+			$(not $(findstring $2x,$(trim $2x))),
+			$$(\0)
+		)# Preserve leading whitespaces.
+		$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$(builtin_nofirstarg)))
+	$(\n)# <- LF again.
+endef
+
 ##
 # Function: new
 # Creates a new instance of the specified class.
