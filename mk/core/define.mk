@@ -81,7 +81,7 @@ def = \
 				$(warning $(\s)$(\t)def: \
 						$(flavor $(__def_var))$(\t)[$(__def_var)])) \
 		$(if $(call var_recursive,$(__def_var)), \
-			$(call var_assign_recursive_sl,$(__def_var),$ \
+			$(call var_assign_recursive,$(__def_var),$ \
 				$(call __def,$(call $(or $(value 2),value),$(__def_var)))), \
 			$(if $(call var_undefined,$(__def_var)), \
 				$(error Function '$(__def_var)' is not defined) \
