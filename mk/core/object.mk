@@ -72,7 +72,7 @@ include mk/core/string.mk
 include mk/core/define.mk
 
 include mk/util/var/assign.mk
-include mk/util/var/list.mk
+#include mk/util/var/list.mk
 
 #
 # $(new class,args...)
@@ -80,17 +80,27 @@ include mk/util/var/list.mk
 define builtin_func-new
 	$$(foreach this,$$(__object_alloc),
 		$$(eval \
-			$$(call $$(call __class_resolve,$1),$(builtin_nofirstarg))
+			$(if $(multiword $(builtin_args_list)),
+				$$(call $$(call __class_resolve,$1),$(builtin_nofirstarg)),
+				$$(call $$(call __class_resolve,$1))
+			)
 		)
+		$$(this)
 	)
 endef
+
+# Return: new object identifier
+__object_alloc = \
+  __obj$(words $(__object_instance_cnt))${eval __object_instance_cnt += x}
+# If you change initial value do not forget to modify bootstrap code.
+__object_instance_cnt :=# Initially empty.
 
 # Params:
 #   1. Class name.
 define __class_resolve
 	$(if $(findstring undefined,$(flavor class-$1)),
 		$(error \
-			Class '$1' not found.
+			Class '$1' not found
 		),
 		class-$1
 	)
@@ -427,6 +437,7 @@ __class_init = \
 # Bootstrap...
 #
 
+ifeq (0,1)
 # The first created object will be the instance of class 'class'.
 # It is not allocated as usual, but we make it so that its descriptor equals
 # to an object which will be allocated by the first call to 'new'.
@@ -445,5 +456,8 @@ $(if $(filter-out \
          $(call new,class,class,$(value __class_class)), \
          $(call __class_object,class)), \
      $(error Something went wrong during bootstrap of object subsystem))
+endif
+
+$(def_all)
 
 endif # __core_object_mk
