@@ -49,7 +49,6 @@ int raw_rcv(sk_buff_t *skb) {
 	sk_buff_t *own;
 
 	iph = ip_hdr(skb);
-	skb->links = 0;
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock *)raw_hash[i];
 		if (sk && sk->sk_protocol == iph->proto) {
@@ -58,10 +57,6 @@ int raw_rcv(sk_buff_t *skb) {
 				kfree_skb(own);
 			}
 		}
-	}
-
-	if (skb->links == 0) {
-		kfree_skb(skb);
 	}
 
 	return ENOERR;
