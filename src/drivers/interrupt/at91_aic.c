@@ -83,12 +83,23 @@ void interrupt_handle(void) {
 	REG_LOAD(AT91C_AIC_IVR);
 	source = REG_LOAD(AT91C_AIC_ISR);
 
-#ifdef CONFIG_NESTED_INTERRUPTS
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
+	critical_enter(CRITICAL_IRQ_HANDLER);
+
+#ifdef CONFIG_NESTED_INTERRUPTS //XXX
 	enable_interrupts();
 #endif
 	irq_dispatch(source);
 #ifdef CONFIG_NESTED_INTERRUPTS
-	disable_interrupts();
+	//disable_interrupts(); //(1) // may be delete
 #endif
+
 	REG_STORE(AT91C_AIC_EOICR, source); /* write anything */
+
+	critical_leave(CRITICAL_IRQ_HANDLER);
+
+	//enable_interrupts(); //(2) pair with (1)
+
+	critical_dispatch_pending();
 }
