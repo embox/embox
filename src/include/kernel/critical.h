@@ -124,8 +124,6 @@
 #ifndef KERNEL_CRITICAL_H_
 #define KERNEL_CRITICAL_H_
 
-#include __impl_x(kernel/critical_impl.h)
-
 /* Critical levels mask. */
 
 #define CRITICAL_IRQ_LOCK         0x0000003f /**< 64 calls depth. */
@@ -155,6 +153,10 @@
  * 10000000 */
 #define __CRITICAL_SOFTER(level) \
 	(~(level) ^ __CRITICAL_HARDER(level))
+
+#ifndef __ASSEMBLER__
+
+#include __impl_x(kernel/critical_impl.h)
 
 typedef __critical_t critical_t;
 
@@ -193,6 +195,8 @@ static inline int critical_pending(struct critical_dispatcher *d) {
 
 extern void critical_request_dispatch(struct critical_dispatcher *d);
 extern void critical_dispatch_pending(void);
+
+#endif /* __ASSEMBLER__ */
 
 /* Self-debugging stuff. */
 

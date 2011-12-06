@@ -12,8 +12,14 @@
 #include <asm/winmacro.h>
 #include <asm/stack.h>
 
+#include <kernel/critical.h>
+
 	.text
 	.align 4
+
+#define t_cptr   t_wim  /**< Pointer to critical counter. */
+#define t_cc     t_pc   /**< Critical counter. */
+#define t_ncc    t_npc  /**< Incremented critical counter. */
 
 /**
  * Generic inerrupt handler.
@@ -26,7 +32,13 @@ interrupt_entry:
 	sll %local, 8, %g1
 	or %temp, %g1, %temp
 	wr %temp, %g0, %psr
-	 WRITE_PAUSE
+	 ! no wait
+
+	set __critical_count, %t_cptr
+	ld [%t_cptr], %t_cc
+	add %t_cc, __CRITICAL_COUNT(CRITICAL_IRQ_HANDLER), %t_ncc
+	st %t_ncc, [%t_cptr]
+
 	wr %temp, PSR_ET, %psr
 	 ! do not wait
 
@@ -36,15 +48,23 @@ interrupt_entry:
 	mov %local, %o0 ! interrupt nr
 	call irq_dispatch
 	 nop
-	! add %sp, STACK_FRAME_SZ, %o1
+
+	/* Restore trap enter-time PIL, traps are on. */
+	wr %t_psr, PSR_ET, %psr
+	 nop;
+
+	call critical_dispatch_pending
+	 st %t_cc, [%t_cptr]
 
 	! TODO maybe traps disable is needed
 	! XXX it is really needed because of possible races with another interrupt
 	! which may occur after RESTORE_ALL and before restoring trap time PSR.
 	! t_wim becomes irrelevant if deep interrupt occurs after reading WIM
 	! XXX clean up and describe these bugs -- Eldar.
+
+	/* Disable traps. */
 	wr %temp, %g0, %psr
-	 WRITE_PAUSE
+	 nop; nop; nop;
 
 	RESTORE_ALL
 
