@@ -220,6 +220,47 @@ endef
 
 $(def_all)
 
+#
+# $(set field,value)
+# $(set obj.field,value)
+# $(set ref->field,value)
+#
+define builtin_func-set
+	$(call builtin_check_min_arity,2)
+	$(call __object_member_parse,$1,
+		# 1. Empty for 'this', target object otherwise.
+		# 2. Referenced field.
+		# 3. Value.
+		$(lambda \
+			$(call __object_member_access_wrap,$1,
+				$$(call var_assign_simple,$$(__this).$2,$3)
+			)
+		),
+		$(builtin_nofirstarg)
+	)
+endef
+
+#
+# $(get field)
+# $(get obj.field)
+# $(get ref->field)
+#
+define builtin_func-get
+	$(call builtin_check_max_arity,1)
+	$(call __object_member_parse,$1,
+		# 1. Empty for 'this', target object otherwise.
+		# 2. Referenced field.
+		$(lambda \
+			$(call __object_member_access_wrap,$1,
+				$$($$(__this).$2)
+			)
+		)
+	)
+endef
+$(call def,builtin_func-get)
+
+$(def_all)
+
 # Params:
 #   1. Class name.
 define __class_resolve
