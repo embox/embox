@@ -77,23 +77,32 @@ include mk/util/var/assign.mk
 # $(new class,args...)
 #
 define builtin_func-new
-	$$(foreach this,$$(__object_alloc),
-		$$(eval \
-			$$(this) := $1
-			$$(\n)
-			$(if $(multiword $(builtin_args_list)),
-				$$(call $$(call __class_resolve,$1),$(builtin_nofirstarg)),
-				$$(call $$(call __class_resolve,$1))
-			)
+	$$(foreach __class__,$$(call __class_resolve,$1),
+		$(if $(multiword $(builtin_args_list)),
+			$$(call __new,$(builtin_nofirstarg)),
+			$$(call __new)
 		)
-		$$(this)
 	)
 endef
 
-# Return: new object identifier
-__object_alloc = \
-  __obj$(words $(__object_instance_cnt))${eval __object_instance_cnt += x}
-# If you change initial value do not forget to modify bootstrap code.
+# Params:
+#   1.. Args...
+# Context:
+#   '__class__'
+# Return:
+#   New object identifier.
+define __new
+	$(foreach this,__obj$(words $(__object_instance_cnt)),
+		${eval \
+			__object_instance_cnt += x
+			$(\n)
+			$(this) := $(__class__:class-%=%)
+			$(\n)
+			$($(__class__))
+		}
+		$(this)
+	)
+endef
 __object_instance_cnt :=# Initially empty.
 
 #
@@ -342,25 +351,35 @@ define __class_def_attribute
 	}
 endef
 
+# Defines a new member (method or field initializer) in a specified class.
+# Params:
+#   1. Class.
+#   2. Member name.
+#   3. Function body.
+define __member_def
+	${eval \
+		$1.$2 = \
+			$(if $(not $(findstring $3x,$(trim $3x))),
+					$$(\0))# Preserve leading whitespaces.
+			$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$3))
+	}
+endef
+
 #
 # $(field name,initializer...)
 #
 define builtin_func-field
 	$(call __class_def_attribute,fields,$1)
 
+	$(call __member_def,$(call builtin_tag,__class__),$(trim $1),
+			$(builtin_nofirstarg))
+
 	# Line feed in output of builtin handler breaks semantics of most other
 	# builtins, but as a special exception...
 	# We assure that the transformed value will be handled by '__class__'
 	# builtin, that will take a special care about it.
-	$(\n)
-	$$(this).$(trim $1) := \
-		$(and \
-			$(value 2),
-			$(not $(findstring $2x,$(trim $2x))),
-			$$(\0)
-		)# Preserve leading whitespaces.
-		# Also escape hashes and backslashes to prevent escaping a new line.
-		$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$(builtin_nofirstarg)))
+	$(\n)# <- LF.
+	$$(this).$(trim $1) := $$(value $(call builtin_tag,__class__).$(trim $1))
 	$(\n)# <- LF again.
 endef
 
@@ -370,22 +389,8 @@ endef
 define builtin_func-method
 	$(call __class_def_attribute,methods,$1)
 
-	$(call __method_def,$(call builtin_tag,__class__),$(trim $1),
+	$(call __member_def,$(call builtin_tag,__class__),$(trim $1),
 			$$(foreach this,$$(__this),$(builtin_nofirstarg)))
-endef
-
-# Defines a new method in a specified class.
-# Params:
-#   1. Class.
-#   2. Method name.
-#   3. Method body.
-define __method_def
-	${eval \
-		$1.$2 = \
-			$(if $(not $(findstring $3x,$(trim $3x))),
-					$$(\0))# Preserve leading whitespaces.
-			$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$3))
-	}
 endef
 
 #
@@ -404,7 +409,7 @@ define builtin_func-super
 	$(call __class_inherit,$(call builtin_tag,__class__),$1)
 
 	$(foreach m,$($1.methods),
-		$(call __method_def,$(call builtin_tag,__class__),$m,$(value $1.$m))
+		$(call __member_def,$(call builtin_tag,__class__),$m,$(value $1.$m))
 	)
 endef
 
