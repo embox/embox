@@ -106,30 +106,30 @@ __def_done   :=
 __def_ignore := $(.VARIABLES) __def_ignore
 
 ##
-# Registers a new value interceptor for a given variable name pattern.
+# Registers a new value provider for variables matching the given name pattern.
 #
 # Params:
 #   1. Pattern.
-#   2. Value interceptor function
+#   2. Value provider function,
 #      which gets the name of a variable and returns its value.
-def_register_interceptor = \
+def_register_value_provider = \
 	$(and \
 		$(call singleword,$1), \
 		$(call singleword,$2), \
 		$(call not,$(findstring /,$2)), \
 		$(call not,$(findstring $$,$1$2)), \
 		$(call var_defined,$(call trim,$2)), \
-		${eval __def_interceptors += $(call trim,$1)/$(call trim,$2)} \
+		${eval __def_value_providers += $(call trim,$1)/$(call trim,$2)} \
 	)
-__def_interceptors :=# Initially nothing.
+__def_value_providers :=# Initially nothing.
 
 # Params:
 #   1. Variable name.
 # Return:
-#   Function registered for the first mathed interception pattern.
-__def_interceptor_for = \
-	$(notdir $(firstword \
-		$(foreach i,$(__def_interceptors),$(if $(filter $(dir $i),$1/),$i))))
+#   Provider registered for the first mathed pattern.
+__def_value_provider_for = \
+	$(notdir $(firstword $(foreach i,$(__def_value_providers), \
+			$(if $(filter $(dir $i),$1/),$i))))
 
 # Provides a value of the specified variable.
 # Params:
@@ -137,8 +137,8 @@ __def_interceptor_for = \
 # Return:
 #   The value.
 __def_var_value = \
-	$(if $(filter-out $(dir $(__def_interceptors)),$1/),$(value $1),$ \
-		$(call $(call __def_interceptor_for,$1),$1))
+	$(if $(filter-out $(dir $(__def_value_providers)),$1/),$(value $1),$ \
+		$(call $(call __def_value_provider_for,$1),$1))
 
 # Params:
 #   1. Code of a function being defined.

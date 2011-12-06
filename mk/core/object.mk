@@ -252,7 +252,7 @@ endef
 # Class definition.
 #
 
-define __class_variable_interceptor
+define __class_variable_value_provider
 	$(assert $(filter class-%,$1))
 
 	$(if $(not $(call __class_name_check,$(1:class-%=%))),
@@ -262,8 +262,8 @@ define __class_variable_interceptor
 
 	$$(__class__ $(value $1))
 endef
-$(call def,__class_variable_interceptor)
-$(call def_register_interceptor,class-%,__class_variable_interceptor)
+$(call def,__class_variable_value_provider)
+$(call def_register_value_provider,class-%,__class_variable_value_provider)
 
 define builtin_tag-__class__
 	$(__def_var:class-%=%)
