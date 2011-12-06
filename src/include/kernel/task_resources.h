@@ -81,9 +81,5 @@ static inline void task_res_idx_unbind(struct task_resources *res, int idx) {
 	task_res_idx_set(res, idx, NULL);
 }
 
-#if 0
-static inline void task_res_idx_unbind_will_free(struct task_resources *res, int idx) {
-	return task_idx_desc_link
-#endif
 #endif
 

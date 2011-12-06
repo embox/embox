@@ -8,14 +8,14 @@ module util {
 }
 
 module multi_task extends task_api {
-	source "task.c"
+	source "multi_task.c", "def_task.c"
 	depends embox.driver.virtual.diag_device
 	depends util
 	depends embox.kernel.thread.sched
 }
 
 module single_task extends task_api {
-	source "single_task.c"
+	source "single_task.c", "def_task2.c"
 	depends embox.driver.virtual.diag_device
 	depends util
 }

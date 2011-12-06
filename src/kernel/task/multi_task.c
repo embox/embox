@@ -7,7 +7,7 @@
  */
 
 #include <errno.h>
-#include <util/array.h>
+//#include <util/array.h>
 #include <kernel/thread/api.h>
 #include <mem/objalloc.h>
 #include <kernel/task.h>
