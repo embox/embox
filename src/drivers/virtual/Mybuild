@@ -1,0 +1,13 @@
+package embox.driver.virtual
+
+module diag_device {
+	source "diag_device.c"
+}
+
+module zero {
+	source "zero.c"
+}
+
+module null {
+	source "null.c"
+}

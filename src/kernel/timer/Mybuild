@@ -5,12 +5,12 @@ abstract module timer_api { }
 
 module timer extends timer_api {
 	source "timer.c"
-	depends embox.kernel.clock_source, embox.hal.clock
+	depends embox.kernel.clock_source, embox.driver.clock.clock_api
 }
 
 module head_timer extends timer_api {
 	source "head_timer.c"
-	depends embox.kernel.clock_source, embox.hal.clock
+	depends embox.kernel.clock_source, embox.driver.clock.clock_api
 }
 
 module sleep extends sleep_api {
