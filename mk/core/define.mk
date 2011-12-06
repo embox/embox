@@ -48,7 +48,7 @@ __core_def_mk := 1
 # TODO more docs. -- Eldar
 #
 ##
-#   include mk/core/def.mk
+#   include mk/core/define.mk
 #
 #   define foo
 #   	$(call bar,
@@ -56,7 +56,7 @@ __core_def_mk := 1
 #   		baz
 #   	)
 #   endef
-#   $(call def,foo)
+#   $(def_all)
 #
 
 include mk/core/common.mk
@@ -72,7 +72,6 @@ include mk/util/var/info.mk
 #
 # Params:
 #   1. Name of the function(s) being defined.
-#   2. (optional) Value interceptor function ('value' by default).
 # Return:
 #   Nothing.
 def = \
@@ -82,7 +81,7 @@ def = \
 						$(flavor $(__def_var))$(\t)[$(__def_var)])) \
 		$(if $(call var_recursive,$(__def_var)), \
 			$(call var_assign_recursive,$(__def_var),$ \
-				$(call __def,$(call $(or $(value 2),value),$(__def_var)))), \
+				$(call __def,$(call __def_var_value,$(__def_var)))), \
 			$(if $(call var_undefined,$(__def_var)), \
 				$(error Function '$(__def_var)' is not defined) \
 			) \
@@ -105,6 +104,41 @@ def_all = \
 
 __def_done   :=
 __def_ignore := $(.VARIABLES) __def_ignore
+
+##
+# Registers a new value interceptor for a given variable name pattern.
+#
+# Params:
+#   1. Pattern.
+#   2. Value interceptor function
+#      which gets the name of a variable and returns its value.
+def_register_interceptor = \
+	$(and \
+		$(call singleword,$1), \
+		$(call singleword,$2), \
+		$(call not,$(findstring /,$2)), \
+		$(call not,$(findstring $$,$1$2)), \
+		$(call var_defined,$(call trim,$2)), \
+		${eval __def_interceptors += $(call trim,$1)/$(call trim,$2)} \
+	)
+__def_interceptors :=# Initially nothing.
+
+# Params:
+#   1. Variable name.
+# Return:
+#   Function registered for the first mathed interception pattern.
+__def_interceptor_for = \
+	$(notdir $(firstword \
+		$(foreach i,$(__def_interceptors),$(if $(filter $(dir $i),$1/),$i))))
+
+# Provides a value of the specified variable.
+# Params:
+#   1. Variable name.
+# Return:
+#   The value.
+__def_var_value = \
+	$(if $(filter-out $(dir $(__def_interceptors)),$1/),$(value $1),$ \
+		$(call $(call __def_interceptor_for,$1),$1))
 
 # Params:
 #   1. Code of a function being defined.
