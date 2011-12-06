@@ -30,7 +30,9 @@ static int loopback_xmit(sk_buff_t *skb, struct net_device *dev) {
 	lb_stats = &(dev->stats);
 	if (netif_rx(skb) == NET_RX_SUCCESS) {
 		lb_stats->tx_packets++;
+		lb_stats->rx_packets++;
 		lb_stats->tx_bytes += skb->len;
+		lb_stats->rx_bytes += skb->len;
 	} else {
 		lb_stats->rx_err++;
 		lb_stats->tx_err++;
