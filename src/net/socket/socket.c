@@ -45,7 +45,7 @@ static struct task_res_ops ops = {
 ARRAY_SPREAD_ADD(__task_res_ops, &ops);
 
 static struct socket *idx2sock(int fd) {
-	return task_res_idx_get(task_self_res(), fd)->socket;
+	return task_self_idx_get(fd)->socket;
 }
 
 int socket(int domain, int type, int protocol) {
@@ -219,8 +219,6 @@ int socket_close(int sockfd) {
 	if (sock == NULL) {
 		return -EBADF;
 	}
-
-	task_res_idx_free(task_self_res(), sockfd);
 
 	return kernel_socket_release(sock);
 }

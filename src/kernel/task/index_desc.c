@@ -55,7 +55,7 @@ void task_idx_desc_free(struct idx_desc *desc) {
 
 int task_res_idx_alloc(struct task_resources *res, int type, void *data) {
 	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
-		if (task_res_idx_get(res, i) == NULL) {
+		if (!task_res_idx_is_binded(res, i)) {
 			task_res_idx_set(res, i, task_idx_desc_alloc(type, data));
 			return i;
 		}
@@ -65,7 +65,8 @@ int task_res_idx_alloc(struct task_resources *res, int type, void *data) {
 
 void task_res_idx_free(struct task_resources *res, int idx) {
 	task_idx_desc_free(task_res_idx_get(res, idx));
-	task_res_idx_set(res, idx, NULL);
+
+	task_res_idx_unbind(res, idx);
 }
 
 void task_root_init(struct task *new_task) {

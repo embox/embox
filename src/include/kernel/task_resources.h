@@ -41,6 +41,14 @@ static inline int task_idx_desc_get_type(struct idx_desc *desk) {
 	return desk->type;
 }
 
+static inline int task_idx_desc_link_count(struct idx_desc *desc) {
+	return desc->link_count;
+}
+
+static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
+	return (desc->link_count += d);
+}
+
 struct task_resources {
 	// heap desc
 	struct idx_desc *idx[CONFIG_TASKS_RES_QUANTITY];
@@ -64,5 +72,18 @@ extern void task_idx_desc_free(struct idx_desc *desc);
 
 extern int task_res_idx_alloc(struct task_resources *res, int type, void *data);
 extern void task_res_idx_free(struct task_resources *res, int idx);
+
+static inline int task_res_idx_is_binded(struct task_resources *res, int idx) {
+	return task_res_idx_get(res, idx) != NULL;
+}
+
+static inline void task_res_idx_unbind(struct task_resources *res, int idx) {
+	task_res_idx_set(res, idx, NULL);
+}
+
+#if 0
+static inline void task_res_idx_unbind_will_free(struct task_resources *res, int idx) {
+	return task_idx_desc_link
+#endif
 #endif
 

@@ -25,11 +25,11 @@ static void task_init(struct task *new_task, struct task *parent) {
 	res_init(res);
 
 	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
-		par_idx_desc = task_res_idx_get(task_get_resources(parent), i);
-
-		if (task_idx_desc_get_res(par_idx_desc) == NULL) {
+		if (!task_res_idx_is_binded(res, i)) {
 			continue;
 		}
+
+		par_idx_desc = task_res_idx_get(task_get_resources(parent), i);
 
 		task_res_idx_set(res, i, par_idx_desc);
 		par_idx_desc->link_count++;

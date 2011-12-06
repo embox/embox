@@ -31,13 +31,15 @@ static struct task_res_ops *find_res_ops(int fd) {
 }
 
 int close(int fd) {
+	int res = 0;
 	struct task_res_ops *ops = find_res_ops(fd);
 	struct idx_desc *desc = task_self_idx_get(fd);
-	if (--desc->link_count == 0) {
-		return ops->close(fd);
+	task_res_idx_unbind(task_self_res(), fd);
+	if (task_idx_desc_link_count_add(desc, -1) == 0) {
+		res = ops->close(fd);
+		task_idx_desc_free(desc);
 	}
-
-	return 0;
+	return res;
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {

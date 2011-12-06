@@ -22,17 +22,17 @@
 extern const struct task_res_ops * __task_res_ops[];
 
 static int this_close(int fd) {
-	FILE *file = task_res_idx_get(task_self_res(), fd)->file;
+	FILE *file = task_self_idx_get(fd)->file;
 	return fclose(file);
 }
 
 static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
-	FILE *file = task_res_idx_get(task_self_res(), fd)->file;
+	FILE *file = task_self_idx_get(fd)->file;
 	return fread((void *) buf, 1, nbyte, file);
 }
 
 static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
-	FILE *file = task_res_idx_get(task_self_res(), fd)->file;
+	FILE *file = task_self_idx_get(fd)->file;
 	return fwrite(buf, 1, nbyte, file);
 }
 
