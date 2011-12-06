@@ -27,9 +27,9 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 	udphdr_t *udph = skb->h.uh;
 	udph->source = source;
 	udph->dest = dest;
-	udph->len = len + UDP_HEADER_SIZE;
+	udph->len = ntohs(len + UDP_HEADER_SIZE);
 	udph->check = 0;
-//	udph->check = ptclbsum((void *) udph, udph->len);
+	//udph->check = ptclbsum((void *) udph, udph->len);
 	return 0;
 }
 
