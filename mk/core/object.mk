@@ -79,6 +79,8 @@ include mk/util/var/assign.mk
 define builtin_func-new
 	$$(foreach this,$$(__object_alloc),
 		$$(eval \
+			$$(this) := $1
+			$$(\n)
 			$(if $(multiword $(builtin_args_list)),
 				$$(call $$(call __class_resolve,$1),$(builtin_nofirstarg)),
 				$$(call $$(call __class_resolve,$1))
@@ -182,6 +184,8 @@ define __object_member_access_wrap
 	)
 endef
 
+$(def_all)
+
 # Params:
 #   1. Object reference.
 # Return:
@@ -193,6 +197,8 @@ define __object_check
 				Invalid object reference: '$1')
 	)
 endef
+
+$(def_all)
 
 # Params:
 #   1. Class name.
@@ -337,7 +343,7 @@ define builtin_func-super
 	$(call __class_inherit,$(call builtin_tag,__class__),$1)
 
 	$(foreach m,$($1.methods),
-		$(call __method_def,$(call builtin_tag,__class__),$m,$1.$m)
+		$(call __method_def,$(call builtin_tag,__class__),$m,$(value $1.$m))
 	)
 endef
 
