@@ -163,6 +163,9 @@ void *malloc(size_t size) {
 
 	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
 		block = (struct free_block *)(((uint32_t *)link) - 1);
+		if(size > get_clear_size(block->size)) {
+			continue;
+		}
 		sz = get_clear_size(block->size) + sizeof(block->size);
 		if (size <= sz && size >= (sz + sizeof(struct free_block))) {
 			block_unlink(block);
@@ -201,13 +204,16 @@ void free(void *ptr) {
 
 void *realloc(void *ptr, size_t size) {
 	struct free_block *block;
-	void *tmp = malloc(size);
+	void *tmp;
+
+	if(NULL == ptr) {
+		return malloc(size);
+	}
+
+	tmp = malloc(size);
 	block = (struct free_block *) ((uint32_t *) (ptr) - 1);
 
-	if (ptr != NULL) {
-		memcpy(tmp, ptr, min(size, block->size));
-		free(ptr);
-	}
+	memcpy(tmp, ptr, min(size, get_clear_size(block->size)));
 	return tmp;
 }
 
@@ -224,7 +230,7 @@ static int heap_init(void) {
 	block_link(block);
 
 	/* last work we mark as persistence busy */
-	block = pool + CONFIG_HEAP_SIZE - sizeof(block->size);
+	block = (void*) ((char *)pool + (CONFIG_HEAP_SIZE - sizeof(block->size)));
 	mark_block(block);
 
 	return 0;
