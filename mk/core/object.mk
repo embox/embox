@@ -174,14 +174,15 @@ endef
 # Return:
 #   The code (wrapped if needed).
 define __object_member_access_wrap
-	$(if $1,
-		# Invocation on another object.
-		$$(foreach this,$$(call __object_check,$1),
+#	$(if $1,
+#		# Invocation on another object.
+		$$(foreach __this,$$(call __object_check,$1),
 			$2
-		),
-		# Target object is 'this'.
-		$2
-	)
+		)
+#		,
+#		# Target object is 'this'.
+#		$2
+#	)
 endef
 
 $(def_all)
@@ -210,7 +211,7 @@ define builtin_func-invoke
 		# 3. Args...
 		$(lambda \
 			$(call __object_member_access_wrap,$1,
-				$$(call $$($$(this)).$2,$3),
+				$$(call $$($$(__this)).$2,$3)
 			)
 		),
 		$(builtin_nofirstarg)
@@ -329,7 +330,7 @@ define builtin_func-method
 	$(call __class_def_attribute,methods,$1)
 
 	$(call __method_def,$(call builtin_tag,__class__),$(trim $1),
-			$(builtin_nofirstarg))
+			$$(foreach this,$$(__this),$(builtin_nofirstarg)))
 endef
 
 # Defines a new method in a specified class.
