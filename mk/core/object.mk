@@ -118,7 +118,6 @@ define __object_member_parse
 		)
 	)
 endef
-$(call def,__object_member_parse)
 
 # Params:
 #   See '__object_member_parse'.
@@ -166,7 +165,34 @@ define __object_member_try_parse
 		.,
 	))
 endef
-$(call def,__object_member_try_parse)
+
+# Params:
+#   1. The target object or empty in case of referencing a member of 'this'.
+#   2. The code to wrap.
+# Return:
+#   The code (wrapped if needed).
+define __object_member_access_wrap
+	$(if $1,
+		# Invocation on another object.
+		$$(foreach this,$$(call __object_check,$1),
+			$2
+		),
+		# Target object is 'this'.
+		$2
+	)
+endef
+
+# Params:
+#   1. Object reference.
+# Return:
+#   The trimmed argument if it is a single word, fails with an error otherwise.
+define __object_check
+	$(or \
+		$(singleword $1),
+		$(error \
+				Invalid object reference: '$1')
+	)
+endef
 
 # Params:
 #   1. Class name.
