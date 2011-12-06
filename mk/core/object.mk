@@ -198,6 +198,25 @@ define __object_check
 	)
 endef
 
+#
+# $(invoke method,args...)
+# $(invoke obj.method,args...)
+# $(invoke ref->method,args...)
+#
+define builtin_func-invoke
+	$(call __object_member_parse,$1,
+		# 1. Empty for 'this', target object otherwise.
+		# 2. Referenced method.
+		# 3. Args...
+		$(lambda \
+			$(call __object_member_access_wrap,$1,
+				$$(call $$($$(this)).$2,$3),
+			)
+		),
+		$(builtin_nofirstarg)
+	)
+endef
+
 $(def_all)
 
 # Params:
