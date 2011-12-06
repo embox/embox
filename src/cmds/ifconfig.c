@@ -97,11 +97,14 @@ static void inet_dev_show_info(void *handler) {
  * Show all eth interfaces (IP/MAC address)
  */
 static void inet_dev_show_all_info(void) {
-	in_device_t * ifdev = inet_dev_get_fist_used();
-	if (NULL != ifdev) {
+	size_t iter;
+	in_device_t *ifdev;
+
+	ifdev = inet_dev_get_fist_used(&iter);
+	if (ifdev != NULL) {
 		inet_dev_show_info(ifdev);
 	}
-	while (NULL != (ifdev = inet_dev_get_next_used())) {
+	while ((ifdev = inet_dev_get_next_used(&iter)) != NULL) {
 		inet_dev_show_info(ifdev);
 	}
 }

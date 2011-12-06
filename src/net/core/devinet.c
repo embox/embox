@@ -7,47 +7,62 @@
  * @author Anton Bondarev
  */
 
+#include <embox/unit.h>
 #include <string.h>
 #include <net/inetdevice.h>
 #include <linux/init.h>
 #include <util/array.h>
 #include <err.h>
+#include <errno.h>
+#include <util/member.h>
+
+EMBOX_UNIT_INIT(devinet_init);
 
 #define IFDEV_CBINFO_QUANTITY 8
 
-typedef struct _CALLBACK_INFO {
+typedef struct callback_info {
 	unsigned short      type;
 	ETH_LISTEN_CALLBACK func;
-} CALLBACK_INFO;
+} callback_info_t;
 
-typedef struct _INETDEV_INFO {
+typedef struct inetdev_info {
 	in_device_t   dev;
-	int           is_busy;
-	CALLBACK_INFO cb_info[IFDEV_CBINFO_QUANTITY];
-} INETDEV_INFO;
+	int is_busy;
+	callback_info_t cb_info[IFDEV_CBINFO_QUANTITY];
+} inetdev_info_t;
 
-static INETDEV_INFO ifs_info[CONFIG_NET_INTERFACES_QUANTITY];
+static inetdev_info_t ifs_info[CONFIG_NET_INTERFACES_QUANTITY];
 
-INETDEV_INFO *find_ifdev_info_entry(in_device_t *in_dev) {
+static inetdev_info_t * find_ifdev_info_entry(in_device_t *in_dev) {
 	size_t i;
-	for (i = 0; i < ARRAY_SIZE(ifs_info); i++) {
-		if (&ifs_info[i].dev == in_dev) {
+
+	for (i = 0; i < ARRAY_SIZE(ifs_info); ++i) {
+		if (ifs_info[i].is_busy && (&ifs_info[i].dev == in_dev)) {
 			return &ifs_info[i];
 		}
 	}
+
 	return NULL;
 }
 
-static in_device_t *find_free_handler(void) {
+static in_device_t * get_free_handler(void) {
 	size_t i;
-	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
-		if (0 == ifs_info[i].is_busy) {
+
+	for (i = 0; i < ARRAY_SIZE(ifs_info); i++) {
+		if (!ifs_info[i].is_busy) {
 			ifs_info[i].is_busy = 1;
 			return &ifs_info[i].dev;
 		}
 	}
+
 	return NULL;
 }
+
+static void free_handler(in_device_t *if_handler) {
+	member_cast_out(if_handler, inetdev_info_t, dev)->is_busy = 0;
+}
+
+
 #if 0
 static int free_handler(in_device_t * handler) {
 	size_t i;
@@ -61,18 +76,22 @@ static int free_handler(in_device_t * handler) {
 	return -1;
 }
 #endif
+
 static int alloc_callback(in_device_t *in_dev, unsigned int type,
 				ETH_LISTEN_CALLBACK callback) {
 	size_t i;
-	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
+	inetdev_info_t *ifdev_info;
+
+	ifdev_info = find_ifdev_info_entry(in_dev);
 	for (i = 0; i < ARRAY_SIZE(ifdev_info->cb_info); i++) {
-		if (0 == ifdev_info->cb_info[i].func) {
+		if (ifdev_info->cb_info[i].func == NULL) {
 			ifdev_info->cb_info[i].type = type;
 			ifdev_info->cb_info[i].func = callback;
-			return i;
+			return ENOERR;
 		}
 	}
-	return -1;
+
+	return -ENOMEM;
 }
 #if 0
 static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
@@ -88,14 +107,14 @@ static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
 }
 #endif
 
-in_device_t *in_dev_get(const net_device_t *dev) {
+in_device_t * in_dev_get(const net_device_t *dev) {
 	return inet_dev_find_by_name(dev->name);
 }
 
 int inet_dev_listen(in_device_t *dev, unsigned short type,
 			ETH_LISTEN_CALLBACK callback) {
-	if (NULL == dev) {
-		return -1;
+	if ((dev == NULL) || (callback == NULL)) {
+		return -EINVAL;
  	}
 	return alloc_callback(dev, type, callback);
 }
@@ -111,20 +130,23 @@ net_device_t *ip_dev_find(in_addr_t addr) {
 	return NULL;
 }
 
-in_device_t *inet_dev_find_by_name(const char *if_name) {
+in_device_t * inet_dev_find_by_name(const char *if_name) {
 	size_t i;
-	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
+
+	for (i = 0; i < ARRAY_SIZE(ifs_info); i++) {
 		if (0 == strncmp(if_name, ifs_info[i].dev.dev->name, IFNAMSIZ)) {
 			return &ifs_info[i].dev;
 		}
 	}
+
 	return NULL;
 }
 
 int inet_dev_set_interface(const char *name, in_addr_t ipaddr, in_addr_t mask,
 				const unsigned char *macaddr) {
 	size_t i;
-	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
+
+	for (i = 0; i < ARRAY_SIZE(ifs_info); i++) {
 		if (0 != strncmp(name, ifs_info[i].dev.dev->name,
 				ARRAY_SIZE(ifs_info[i].dev.dev->name))) {
 			continue;
@@ -132,53 +154,56 @@ int inet_dev_set_interface(const char *name, in_addr_t ipaddr, in_addr_t mask,
 		if ((-1 == inet_dev_set_ipaddr(&ifs_info[i].dev, ipaddr)) ||
 		    (-1 == inet_dev_set_mask(&ifs_info[i].dev, mask)) ||
 		    (-1 == inet_dev_set_macaddr(&ifs_info[i].dev, macaddr))) {
-			return -1;
+			return -EINVAL;
 		}
-		return i;
+		return ENOERR;
 	}
-	return -1;
+	return -ENOMEM;
 }
 
 int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr) {
-	in_device_t *dev;
-	if (NULL == in_dev) {
-		return -1;
+	if (in_dev == NULL) {
+		return -EINVAL;
 	}
-	dev = (in_device_t *) in_dev;
-	dev->ifa_address = ipaddr;
-	return 0;
+
+	in_dev->ifa_address = ipaddr;
+
+	return ENOERR;
 }
 
 int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask) {
-	in_device_t *dev;
 	if (NULL == in_dev) {
-		return -1;
+		return -EINVAL;
 	}
-	dev = (in_device_t *) in_dev;
-	dev->ifa_mask = mask;
-	dev->ifa_broadcast = dev->ifa_address | ~dev->ifa_mask;
-	return 0;
+
+	in_dev->ifa_mask = mask;
+	in_dev->ifa_broadcast = in_dev->ifa_address | ~in_dev->ifa_mask;
+
+	return ENOERR;
 }
 
 int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macaddr) {
 	net_device_t *dev;
-	if (NULL == in_dev || NULL == macaddr) {
-		return -1;
+
+	if ((in_dev == NULL) || (macaddr ==  NULL)) {
+		return -EINVAL;
 	}
- 	dev = in_dev->dev;
+
+	dev = in_dev->dev;
 	if (NULL == dev) {
-		return -1;
+		return -EINVAL;
 	}
-	if (dev->netdev_ops->ndo_set_mac_address) {
-		return dev->netdev_ops->ndo_set_mac_address(dev, (void *) macaddr);
-	} else {
+
+	if (dev->netdev_ops->ndo_set_mac_address == NULL) {
 		/* driver doesn't support setting mac address */
-		return 0;
+		return -ENOSUPP;
 	}
+
+	return dev->netdev_ops->ndo_set_mac_address(dev, (void *) macaddr);
 }
 
 in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev) {
-	return (NULL == in_dev) ? 0 : in_dev->ifa_address;
+	return (in_dev == NULL) ? 0 : in_dev->ifa_address;
 }
 #if 0
 /**
@@ -214,28 +239,24 @@ void ifdev_rx_callback(sk_buff_t *pack) {
 void ifdev_tx_callback(sk_buff_t *pack) {
 }
 #endif
-/* iterator functions */
-static int iterator_cnt;
 
-in_device_t *inet_dev_get_fist_used(void) {
-	for (iterator_cnt = 0;
-			iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY;
-			iterator_cnt++) {
-		if (1 == ifs_info[iterator_cnt].is_busy) {
-			iterator_cnt++;
-			return &ifs_info[iterator_cnt - 1].dev;
+in_device_t * inet_dev_get_fist_used(size_t *iter) {
+	for (*iter = 0; *iter < ARRAY_SIZE(ifs_info); ++(*iter)) {
+		if (ifs_info[*iter].is_busy) {
+			return &ifs_info[*iter].dev;
 		}
 	}
+
 	return NULL;
 }
 
-in_device_t *inet_dev_get_next_used(void) {
-	for (; iterator_cnt < CONFIG_NET_INTERFACES_QUANTITY; iterator_cnt++) {
-		if (1 == ifs_info[iterator_cnt].is_busy) {
-			iterator_cnt++;
-			return &ifs_info[iterator_cnt - 1].dev;
+in_device_t * inet_dev_get_next_used(size_t *iter) {
+	while (++(*iter) < ARRAY_SIZE(ifs_info)) {
+ 		if (ifs_info[*iter].is_busy) {
+			return &ifs_info[*iter].dev;
 		}
 	}
+
 	return NULL;
 }
 
@@ -243,26 +264,32 @@ in_device_t *inet_dev_get_next_used(void) {
      move into ifconfig -- sikmir*/
 int ifdev_up(const char *iname) {
 	in_device_t *ifhandler;
-	if (NULL == (ifhandler = find_free_handler ())) {
+
+	ifhandler = get_free_handler();
+	if (ifhandler == NULL) {
 		LOG_ERROR("ifdev up: can't find find free handler\n");
-		return -1;
+		return -ENOMEM;
 	}
-	if (NULL == (ifhandler->dev = netdev_get_by_name(iname))) {
+	ifhandler->dev = netdev_get_by_name(iname);
+	if (ifhandler->dev == NULL) {
 		LOG_ERROR("ifdev up: can't find net_device with name %s\n", iname);
-		return -1;
+		free_handler(ifhandler);
+		return -ENOENT;
 	}
 	return dev_open(ifhandler->dev);
 }
 
 int ifdev_down(const char *iname) {
 	in_device_t *in_dev;
-	if (NULL == (in_dev = inet_dev_find_by_name(iname))) {
+
+	in_dev = inet_dev_find_by_name(iname);
+	if (in_dev == NULL) {
 		LOG_ERROR("ifdev down: can't find ifdev with name %s\n", iname);
-		return -1;
+		return -ENOENT;
 	}
-	if (NULL == (in_dev->dev)) {
+	if (in_dev->dev == NULL) {
 		LOG_ERROR("ifdev down: can't find net_device with name %s\n", iname);
-		return -1;
+		return -ENOENT;
 	}
 	return dev_close(in_dev->dev);
 }
@@ -273,4 +300,14 @@ int ifdev_set_debug_mode(const char *iname, unsigned int type_filter) {
 
 int ifdev_clear_debug_mode(const char *iname) {
 	return 0;
+}
+
+static int devinet_init(void) {
+	int i;
+
+	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; ++i) {;
+		ifs_info[i].is_busy = 0;
+	}
+
+	return ENOERR;
 }

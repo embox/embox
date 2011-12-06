@@ -24,8 +24,6 @@ typedef struct in_device {
 	unsigned char     ipv4_addr_length;
 } in_device_t;
 
-extern void devinet_init(void);
-
 /**
  * get pointer on in_device struct linked with pointed net_device
  * @param dev
@@ -87,8 +85,8 @@ extern int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macadd
 extern in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev);
 
 /* iterator functions */
-extern in_device_t * inet_dev_get_fist_used(void);
-extern in_device_t * inet_dev_get_next_used(void);
+extern in_device_t * inet_dev_get_fist_used(size_t *iter);
+extern in_device_t * inet_dev_get_next_used(size_t *iter);
 
 /*TODO: deprecated*/
 extern int ifdev_up(const char *iname);
