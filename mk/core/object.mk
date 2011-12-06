@@ -252,21 +252,21 @@ endef
 # Class definition.
 #
 
-define builtin_tag-__class__
-	$(foreach c,
-		$(or \
-			$(filter-patsubst class-%,%,$(__def_var)),
-			$(error \
-					Illegal function name for class: '$(__def_var)')
-		),
+define __class_variable_interceptor
+	$(assert $(filter class-%,$1))
 
-		$(if $(not $(call __class_name_check,$c)),
-			$(call builtin_error,
-					Illegal class name: '$c')
-		)
-
-		$c# Return.
+	$(if $(not $(call __class_name_check,$(1:class-%=%))),
+		$(error \
+				Illegal class name: '$(1:class-%=%)')
 	)
+
+	$$(__class__ $(value $1))
+endef
+$(call def,__class_variable_interceptor)
+$(call def_register_interceptor,class-%,__class_variable_interceptor)
+
+define builtin_tag-__class__
+	$(__def_var:class-%=%)
 endef
 
 #
