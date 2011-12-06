@@ -92,11 +92,14 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 	return ret;
 }
 
+unsigned doursFuckingHackersCounter = 0;
+
 void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_nr_t irq_nr = interrupt_nr;
 
+	if (irq_nr == 0) ++doursFuckingHackersCounter;
+
 	assert(interrupt_nr_valid(interrupt_nr));
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	// TODO there is a little chance that an IRQ with higher priority might
 	// interrupt us before we enter the following critical section.
@@ -104,7 +107,6 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	// being still inside the context of the outer interrupt handler.
 	//  -- Eldar
 
-	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
 		struct irq_action *action;
 		irq_handler_t handler = NULL;
@@ -121,13 +123,11 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 		ipl_restore(ipl);
 
 		if (!action) {
-			goto out_leave;
+			return;
 		}
 
 		assert(handler != NULL);
 		handler(irq_nr, dev_id);
 	}
-	out_leave: critical_leave(CRITICAL_IRQ_HANDLER);
-	critical_dispatch_pending();
 }
 
