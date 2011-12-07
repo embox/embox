@@ -31,7 +31,7 @@
 	mod($(if $(PLATFORM),$(PLATFORM).test.##mod_name), $(or __VA_ARGS__,1))
 
 #define example(mod_name, ...) \
-	mod(embox.example.##mod_name, $(or __VA_ARGS__, 1))
+	mod(embox.example.##mod_name)
 
 #define cmd(mod_name) \
 	mod(embox.cmd.##mod_name)
