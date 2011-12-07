@@ -1,0 +1,16 @@
+package embox.test.kernel.thread
+
+module core_test {
+	source "core_test.c"
+	depends embox.kernel.thread.core
+}
+
+module state_test {
+	source "state_test.c"
+	depends embox.kernel.thread.core
+}
+
+module suspend_resume_test {
+	source "suspend_resume_test.c"
+	depends embox.kernel.thread.core
+}

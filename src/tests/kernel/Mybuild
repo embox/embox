@@ -1,0 +1,16 @@
+package embox.test.kernel
+
+module irq_test {
+	source "irq_test.c"
+	depends embox.kernel.irq
+}
+
+module timer_test {
+	source "timer_test.c"
+	depends embox.kernel.timer.timer_api
+}
+
+module softirq_test {
+	source "softirq_test.c"
+	depends embox.kernel.softirq
+}

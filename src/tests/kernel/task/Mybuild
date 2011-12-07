@@ -1,0 +1,11 @@
+package embox.test.kernel.task
+
+module task_api_test {
+	source "task_api_test.c"
+	depends embox.kernel.task_api
+}
+
+module idx_desc_test {
+	source "idx_desc_test.c"
+	depends embox.kernel.task_api
+}
