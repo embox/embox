@@ -15,7 +15,7 @@ void int0301HandlerHack(irq_nr_t n); // todo: A HACK! See http://code.google.com
 void exception_handler(pt_regs_t *st) {
    if (3 == st -> trapno || 1 == st -> trapno) {
 //          ipl_enable(); // todo: isn't this another hack
-          int0301HandlerHack(st -> trapno);
+//          int0301HandlerHack(st -> trapno);
 //          ipl_disable();
     } else {
 	panic("EXCEPTION [0x%x]:\n"
