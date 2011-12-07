@@ -132,25 +132,26 @@ BooleanLiteral = 'true' | 'false'
         ::= <ModuleAttribute> <ModuleAttributes>
          |
 <ModuleAttribute>
-        ::= <Sources>
-         |  <Objects>
-         |  <Depends>
-         |  <Provides>
-         |  <Requires>
-         |  <Flags>
-         |  <Rule>
+        ::= <Depends>
+         |  <FeatureAttribute>
+         |  <FilenameAttribute>
+         |  <MakeAttribute>
          |  <Option>
 
 <Depends>
         ::= 'depends' <ModuleRefList>
-<Provides>
-        ::= 'provides' <FeatureRefList>
-<Requires>
-        ::= 'requires' <FeatureRefList>
-<Sources>
-        ::= 'source' <FilenameList>
-<Objects>
-        ::= 'object' <FilenameList>
+
+<FeatureAttribute>
+        ::= <FeatureAttributeNature> <FeatureRefList>
+<FeatureAttributeNature>
+        ::= 'provides'
+         |  'requires'
+
+<FilenameAttribute>
+        ::= <FilenameAttributeNature> <FilenameList>
+<FilenameAttributeNature>
+        ::= 'source'
+         |  'object'
 
 ! option Name : ( string | number | boolean ) ( = ...)?
 <Option>
@@ -170,12 +171,18 @@ BooleanLiteral = 'true' | 'false'
         ::= '=' BooleanLiteral
          |
 
-<Flags>
-        ::= 'make' 'flags' <StringList>
+<MakeAttribute>
+        ::= 'make' <Make>
+<Make>
+        ::= <MakeFlags>
+         |  <MakeRule>
+
+<MakeFlags>
+        ::= 'flags' <StringList>
 
 ! make "target" ( : "prerequisite"...)? ( "recipe"...)?
-<Rule>
-        ::= 'make' <Filename> <Prerequisites> <Recipes>
+<MakeRule>
+        ::= <Filename> <Prerequisites> <Recipes>
 <Prerequisites>
         ::= ':' <FilenameList>
          |
