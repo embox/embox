@@ -25,38 +25,7 @@ ifdef error_msg
 $(error $(error_msg))
 endif
 
-ROOT_DIR       := .#
-
-MK_DIR         := $(ROOT_DIR)/mk
-SCRIPTS_DIR    := $(ROOT_DIR)/scripts
-PROJECTS_DIR   := $(ROOT_DIR)/templates
-THIRDPARTY_DIR := $(ROOT_DIR)/third-party
-PLATFORM_DIR   := $(ROOT_DIR)/platform
-SRC_DIR        := $(ROOT_DIR)/src
-DOCS_DIR       := $(ROOT_DIR)/docs
-
-CONF_DIR       := $(ROOT_DIR)/conf
-
-BASE_CONF_DIR  := $(ROOT_DIR)/conf
-PATCH_CONF_DIR := $(ROOT_DIR)/conf/$(PATCH_NAME)
-
-BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
-
-BUILD_DIR     := $(ROOT_DIR)/build/$(if $(PATCH_NAME),patch_$(PATCH_NAME),base)
-
-EMBUILD_DIR    := $(MK_DIR)/embuild
-
-BIN_DIR        := $(BUILD_DIR)/bin
-OBJ_DIR        := $(BUILD_DIR)/obj
-LIB_DIR        := $(BUILD_DIR)/lib
-DOT_DIR        := $(BUILD_DIR)/dot
-DOCS_OUT_DIR   := $(BUILD_DIR)/docs
-CODEGEN_DIR    := $(BUILD_DIR)/codegen
-AUTOCONF_DIR   := $(CODEGEN_DIR)
-ROOTFS_DIR     := $(BUILD_DIR)/rootfs/
-ROOTFS_IMAGE   := $(BUILD_DIR)/rootfs.cpio
-
-EM_DIR         := $(BUILD_DIR)/em
+include dirs.mk
 
 MY_PATH := $(SRC_DIR)/** $(PLATFORM_DIR)/** $(THIRDPARTY_DIR)/**
 
@@ -67,18 +36,6 @@ SHELL  := bash
 MKDIR  := mkdir -p
 LN     := ln -s
 
-TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
-
-ifdef TEMPLATE
-
-ifneq ($(words $(subst /, ,$(TEMPLATE))),2)
-$(error TEMPLATE must be in form PROJECT/PROFILE)
-endif
-
-override PROJECT = $(word 1,$(subst /, ,$(TEMPLATE)))
-override PROFILE = $(word 2,$(subst /, ,$(TEMPLATE)))
-
-endif
 
 include mk/util.mk
 include mk/util/wildcard.mk
@@ -137,7 +94,6 @@ prepare:
 docsgen:
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
 	doxygen
-	#@$(MAKE) -C $(DOCS_DIR)
 	@echo 'Docs generation complete'
 
 dot: $(GRAPH_PS)
@@ -158,6 +114,17 @@ _clean:
 _distclean: _clean
 	@$(RM) -r $(BACKUP_DIR)
 	@$(RM) -r $(CONF_DIR)
+
+
+############ config ############
+
+ifdef TEMPLATE
+ifneq ($(words $(subst /, ,$(TEMPLATE))),2)
+$(error TEMPLATE must be in form PROJECT/PROFILE)
+endif
+override PROJECT = $(word 1,$(subst /, ,$(TEMPLATE)))
+override PROFILE = $(word 2,$(subst /, ,$(TEMPLATE)))
+endif
 
 config: _clean
 ifndef PROFILE
@@ -194,42 +161,22 @@ endif
 	else                              \
 		$(MKDIR) $(CONF_DIR);         \
 	fi;
-ifeq (0,1)
-# That's an old variant of config creating system.
-# It will be removed soon.
-# Just not to search long if smth goes wrong %)
-	@$(foreach dir,$(call __get_subdirs,$(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)), \
-	  $(MKDIR) $(CONF_DIR)/$(dir); \
-	  $(CP) -fv -t $(CONF_DIR)/$(dir) \
-	     $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*); \
-	  $(if $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*), \
-	    $(CP) -fv -t $(CONF_DIR)/$(dir) \
-	       $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/$(dir)/*); \
-	  ) \
-	)
-else
-# That's a new variant.
-ifdef SYMLINK_CONF_DIR
-# We just symlink template dir to conf dir
-	@$(RM) -r $(CONF_DIR)
-	@$(LN) $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE) $(CONF_DIR)
-else
-# We just copy from templates dir to conf dir
 	@$(CP) -fv -R -t $(CONF_DIR) \
 	  $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*);
-endif
-endif
 	@echo 'Config complete'
 
+
+# checking config is needed to uptate, because if it requres we must rebuild whole project
 ifdef PROJECT
 ifdef PROFILE
 
 TEMPLATE_DIR = $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)
-ifneq ($(call d-wildcard,$(TEMPLATE_DIR)),)
 
+ifneq ($(call d-wildcard,$(TEMPLATE_DIR)),)
 __ls_files = $(sort $(patsubst $1/%,%,$(call f-wildcard,$1/*)))
 __conf_files     := $(call __ls_files,$(CONF_DIR))
 __template_files := $(call __ls_files,$(TEMPLATE_DIR))
+
 ifneq ($(call list_equal,$(__conf_files),$(__template_files)),)
 conf_update : $(__conf_files:%=$(CONF_DIR)/%)
 	@echo 'Config is up to date'
@@ -239,8 +186,9 @@ else
 conf_update : config
 endif
 endif
-endif
-endif
+
+endif #PROFILE
+endif #PROJECT
 
 CUR_CONFIG_FILES := $(filter-out $(notdir $(BACKUP_DIR)),\
 						$(notdir $(wildcard $(BASE_CONF_DIR)/*)))
@@ -257,11 +205,6 @@ ifndef PROFILE
 	@echo 'Usage: "make PROJECT=<project> PROFILE=<new profile name> saveconfig"'
 	exit 1
 endif
-#	@if [-d $(BASE_CONF_DIR)];                                           \
-	then                                                                 \
-		echo 'Error: conf - folder not found. No config to be saved.';   \
-		exit 1; \
-	fi;
 	$(if $(CUR_CONFIG_FILES),,\
 		echo 'Error: no config presented in "$(BASE_CONF_DIR)"'; \
 		exit 1; \
@@ -280,6 +223,8 @@ endif
 			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
 	@echo Config was saved.
 
+TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
+
 menuconfig m: PROJECT = $(shell dialog \
                 --stdout --backtitle "Configuration template selection" \
                 --radiolist "Select project to load:" 10 40 \
@@ -295,7 +240,6 @@ menuconfig m: EDIT = $(shell dialog \
                 --radiolist "Select editor:" 20 40 2 "emacs -nw -Q" "" on vim "" off)
 menuconfig m:
 	@$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
-#	@$(EDIT) $(CONF_DIR)/*.conf
 	@$(RM) .tmp
 
 xconfig x: PROJECT = $(shell Xdialog \
@@ -313,6 +257,5 @@ xconfig x: EDIT = $(shell Xdialog \
                 --radiolist "Select editor:" 20 40 2 emacs "" on gvim "" off)
 xconfig x:
 	@$(MAKE) PROFILE=$(PROFILE) PROJECT=$(PROJECT) config
-#	@$(EDIT) $(CONF_DIR)/*.conf
 	@$(RM) .tmp
 
