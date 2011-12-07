@@ -191,6 +191,18 @@ endef
 
 $(def_all)
 
+# Params:
+#   1. Field name.
+# Context:
+#   '__this'
+define __field_check
+	$(if $(findstring simple,$(flavor $(__this).$1)),
+		$1,
+		$(error \
+				Invalid field name: '$1', referenced on object '$(__this)')
+	)
+endef
+
 #
 # $(set field,value)
 # $(set obj.field,value)
@@ -204,11 +216,27 @@ define builtin_func-set
 		# 3. Value.
 		$(lambda \
 			$(call __object_member_access_wrap,$1,
-				$$(call var_assign_simple,$$(__this).$2,$3)
+				$$(call __field_set,$$($$(__this)),$2,$3)
 			)
 		),
 		$(builtin_nofirstarg)
 	)
+endef
+
+# Params:
+#   1. Class.
+#   2. Field name.
+#   3. Field value.
+# Context:
+#   '__this'
+define __field_set
+	${eval \
+		override $(__this).$(call __field_check,$2) := \
+			$(if $(value $1.set.$2),
+				$$(call $1.set.$2,$$3),
+				$$3
+			)
+	}
 endef
 
 #
@@ -223,12 +251,24 @@ define builtin_func-get
 		# 2. Referenced field.
 		$(lambda \
 			$(call __object_member_access_wrap,$1,
-				$$($$(__this).$2)
+				$$(call __field_get,$$($$(__this)),$2,$3)
 			)
 		)
 	)
 endef
 $(call def,builtin_func-get)
+
+# Params:
+#   1. Class.
+#   2. Field name.
+# Context:
+#   '__this'
+define __field_get
+	$(if $(value $1.get.$(call __field_check,$2)),
+		$$(call $1.get.$2,$($(__this).$2)),
+		$($(__this).$2)
+	)
+endef
 
 $(def_all)
 
@@ -296,17 +336,31 @@ define __class_name_check
 	)
 endef
 
+# Params:
+#   1. Class or member name to check.
+# Returns:
+#   The argument if it is a valid name, fails with an error otherwise.
+define __class_name_check_or_die
+	$(or $(__class_name_check),
+		$(call builtin_error,
+				Illegal name: '$1')
+	)
+endef
+
 # Param:
-#   1. Identifier to check.
-#   2. Class attribute to append the identifier to.
+#   1. Class attribute to append the identifier to.
+#   2. Identifier to check.
 define __class_def_attribute
+	# XXX
+
+	$(__class_def_attribute_no_check)
+endef
+
+# Param:
+#   The same as to '__class_def_attributes'.
+define __class_def_attribute_no_check
 	$(assert $(eq __class__,$(builtin_caller)),
 		Function '$(builtin_name)' can be used only within a class definition)
-
-	$(if $(not $(call __class_name_check,$2)),
-		$(call builtin_error,
-				Illegal name: '$2')
-	)
 
 	${eval \
 		$(call builtin_tag,__class__).$1 += $2
@@ -331,18 +385,45 @@ endef
 # $(field name,initializer...)
 #
 define builtin_func-field
-	$(call __class_def_attribute,fields,$1)
+	$(foreach 1,$(call __class_name_check_or_die,$1),
+		# Arg 1 is got trimmed.
 
-	$(call __member_def,$(call builtin_tag,__class__),$(trim $1),
-			$(builtin_nofirstarg))
+		$(call __class_def_attribute,fields,$1)
 
-	# Line feed in output of builtin handler breaks semantics of most other
-	# builtins, but as a special exception...
-	# We assure that the transformed value will be handled by '__class__'
-	# builtin, that will take a special care about it.
-	$(\n)# <- LF.
-	$$(this).$(trim $1) := $$(value $(call builtin_tag,__class__).$(trim $1))
-	$(\n)# <- LF again.
+		$(call __member_def,$(call builtin_tag,__class__),$1,
+				$(builtin_nofirstarg))
+
+		$(foreach x,set get,
+			$(call __class_def_attribute_no_check,methods,$x.$1)
+			$(call __member_def_if_not_yet,$(call builtin_tag,__class__),$x.$1,
+					$$(call __field_$x,$1))
+		)
+
+		# Line feed in output of builtin handler breaks semantics of most other
+		# builtins, but as a special exception...
+		# We assure that the transformed value will be handled by '__class__'
+		# builtin, that will take a special care about it.
+		$(\n)# <- LF.
+		$$(this).$1 := $$(value $(call builtin_tag,__class__).$1)
+		$(\n)# <- LF again.
+	)
+endef
+
+#
+# $(setter name,body...)
+#
+define builtin_func-setter
+	$(call builtin_check_min_arity,2)
+
+	$(if $(not $(call __class_name_check,$1)),
+		$(call builtin_error,
+				Illegal name: '$1')
+	)
+
+	$(call __class_def_attribute_no_check,methods,set.$(trim $1))
+
+	$(call __member_def,$(call builtin_tag,__class__),set.$(trim $1),
+			$$(foreach this,$$(__this),$(builtin_nofirstarg)))
 endef
 
 #
