@@ -46,10 +46,31 @@ include mk/util/var/assign.mk
 #
 define builtin_func-new
 	$$(foreach __class__,$$(call __class_resolve,$1),
-		$(if $(multiword $(builtin_args_list)),
-			$$(call __new,$(builtin_nofirstarg)),
-			$$(call __new)
+		$(def-ifdef OBJ_DEBUG,
+			$$(foreach __obj_debug_args_nr,
+				$(words $(nofirstword $(builtin_args_list))),
+				$$(call __new,$(builtin_nofirstarg))
+			),
+			$(if $(multiword $(builtin_args_list)),
+				$$(call __new,$(builtin_nofirstarg)),
+				$$(call __new)
+			)
 		)
+	)
+endef
+
+# Return:
+#   Human-readable list of args from 1 up to '__obj_debug_args_nr',
+#   or 'no args' if '__obj_debug_args_nr' is 0.
+# Note:
+#   Do not 'call'.
+define __obj_debug_args
+	$(or \
+		$(foreach a,
+			$(wordlist 1,$(__obj_debug_args_nr),1 2 3 4 5 6 7 8 9),
+			$(\t)$$$a='$($a)'
+		),
+#		<no args>
 	)
 endef
 
@@ -61,12 +82,16 @@ endef
 #   New object identifier.
 define __new
 	$(foreach this,__obj$(words $(__object_instance_cnt)),
+		$(def-ifdef OBJ_DEBUG,
+			$(info \
+					$(this): new $(__class__): $(__obj_debug_args))
+		)
 		${eval \
 			__object_instance_cnt += x
 			$(\n)
-			$(this) := $(__class__:class-%=%)
+			$(this) := $(__class__)
 			$(\n)
-			$($(__class__))
+			$(class-$(__class__))
 		}
 		$(this)
 	)
@@ -182,12 +207,36 @@ define builtin_func-invoke
 		# 3. Args...
 		$(lambda \
 			$(call __object_member_access_wrap,$1,
-				$$(call $$($$(__this)).$2,$3)
+				$(def-ifdef OBJ_DEBUG,
+					$$(foreach __args_nr,
+						$(words $(builtin_args_list)),
+						$$(call __method_invoke,$3,$2)
+					),
+					$$(call $$($$(__this)).$2,$3)
+				)
 			)
 		),
 		$(builtin_nofirstarg)
 	)
 endef
+
+# Params:
+#   1..N: Args...
+#   N+1:  Method
+# Context:
+#   '__class__'
+ifdef OBJ_DEBUG
+define __method_invoke
+	$(foreach __obj_debug_args_nr,$(wordlist 2,$(__args_nr),x 1 2 3 4 5 6 7 8 9),
+		$(info \
+				$(__this): invoke $($(__this)).$($(__args_nr)): \
+				$(__obj_debug_args))
+	)
+	$(foreach 0,$($(__this)).$($(__args_nr)),
+		$(expand $(value $0))
+	)
+endef
+endif
 
 $(def_all)
 
@@ -278,7 +327,7 @@ define __class_resolve
 	$(if $(findstring undefined,$(flavor class-$1)),
 		$(call $(if $(value __def_var),builtin_)error,
 				Class '$1' not found),
-		class-$1
+		$1
 	)
 endef
 
@@ -393,12 +442,6 @@ define builtin_func-field
 		$(call __member_def,$(call builtin_tag,__class__),$1,
 				$(builtin_nofirstarg))
 
-		$(foreach x,set get,
-			$(call __class_def_attribute_no_check,methods,$x.$1)
-			$(call __member_def_if_not_yet,$(call builtin_tag,__class__),$x.$1,
-					$$(call __field_$x,$1))
-		)
-
 		# Line feed in output of builtin handler breaks semantics of most other
 		# builtins, but as a special exception...
 		# We assure that the transformed value will be handled by '__class__'
@@ -442,7 +485,7 @@ endef
 define builtin_func-super
 	$(call __class_def_attribute,super,$1)
 
-	$(foreach c,$(call __class_resolve,$1),
+	$(foreach c,class-$(call __class_resolve,$1),
 		$(if $(multiword $(builtin_args_list)),
 			$$(call $c,$(builtin_nofirstarg)),
 			$$(call $c)
