@@ -29,7 +29,7 @@ typedef struct in_device {
  * @param dev
  * @return pointer on in_device struct, NULL if error
  */
-extern in_device_t *in_dev_get(const net_device_t *dev);
+extern in_device_t *in_dev_get(net_device_t *dev);
 
 /**
  * set callback function for all incoming packet throw interface
@@ -85,8 +85,8 @@ extern int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macadd
 extern in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev);
 
 /* iterator functions */
-extern in_device_t * inet_dev_get_fist_used(size_t *iter);
-extern in_device_t * inet_dev_get_next_used(size_t *iter);
+extern in_device_t * inet_dev_get_fist_used(void);
+extern in_device_t * inet_dev_get_next_used(in_device_t *);
 
 /*TODO: deprecated*/
 extern int ifdev_up(const char *iname);

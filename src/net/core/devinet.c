@@ -15,53 +15,40 @@
 #include <err.h>
 #include <errno.h>
 #include <util/member.h>
+#include <mem/misc/pool.h>
+#include <lib/list.h>
 
 EMBOX_UNIT_INIT(devinet_init);
 
-#define IFDEV_CBINFO_QUANTITY 8
-
-typedef struct callback_info {
-	unsigned short      type;
+struct callback_info {
+	struct list_head lnk;
+	unsigned short type;
 	ETH_LISTEN_CALLBACK func;
-} callback_info_t;
+};
 
-typedef struct inetdev_info {
-	in_device_t   dev;
-	int is_busy;
-	callback_info_t cb_info[IFDEV_CBINFO_QUANTITY];
-} inetdev_info_t;
+struct inetdev_info {
+	struct list_head lnk;
+	struct in_device in_dev;
+	struct list_head cb_info_list;
+};
 
-static inetdev_info_t ifs_info[CONFIG_NET_INTERFACES_QUANTITY];
+POOL_DEF(indev_info_pool, struct inetdev_info, CONFIG_NET_INTERFACES_QUANTITY);
+POOL_DEF(callback_info_pool, struct callback_info, CONFIG_NET_CALLBACK_QUANTITY);
+static struct list_head indev_info_list;
 
-static inetdev_info_t * find_ifdev_info_entry(in_device_t *in_dev) {
-	size_t i;
+static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {
+	struct inetdev_info *indev_info;
+	struct list_head *tmp;
 
-	for (i = 0; i < ARRAY_SIZE(ifs_info); ++i) {
-		if (ifs_info[i].is_busy && (&ifs_info[i].dev == in_dev)) {
-			return &ifs_info[i];
+	list_for_each(tmp, &indev_info_list) {
+		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
+		if (&indev_info->in_dev == in_dev) {
+			return indev_info;
 		}
 	}
 
 	return NULL;
 }
-
-static in_device_t * get_free_handler(void) {
-	size_t i;
-
-	for (i = 0; i < ARRAY_SIZE(ifs_info); i++) {
-		if (!ifs_info[i].is_busy) {
-			ifs_info[i].is_busy = 1;
-			return &ifs_info[i].dev;
-		}
-	}
-
-	return NULL;
-}
-
-static void free_handler(in_device_t *if_handler) {
-	member_cast_out(if_handler, inetdev_info_t, dev)->is_busy = 0;
-}
-
 
 #if 0
 static int free_handler(in_device_t * handler) {
@@ -77,91 +64,135 @@ static int free_handler(in_device_t * handler) {
 }
 #endif
 
-static int alloc_callback(in_device_t *in_dev, unsigned int type,
+static int alloc_callback(struct in_device *in_dev, unsigned int type,
 				ETH_LISTEN_CALLBACK callback) {
-	size_t i;
-	inetdev_info_t *ifdev_info;
+	struct inetdev_info *indev_info;
+	struct callback_info *cb_info;
 
-	ifdev_info = find_ifdev_info_entry(in_dev);
-	for (i = 0; i < ARRAY_SIZE(ifdev_info->cb_info); i++) {
-		if (ifdev_info->cb_info[i].func == NULL) {
-			ifdev_info->cb_info[i].type = type;
-			ifdev_info->cb_info[i].func = callback;
+	assert(in_dev != NULL);
+
+	indev_info = find_indev_info_entry(in_dev);
+	if (indev_info == NULL) {
+		return -ENOENT;
+	}
+
+	cb_info = (struct callback_info *)pool_alloc(&callback_info_pool);
+	if (cb_info == NULL) {
+		return -ENOMEM;
+	}
+
+	cb_info->type = type;
+	cb_info->func = callback;
+
+	list_add_tail(&cb_info->lnk, &indev_info->cb_info_list);
+
+	return ENOERR;
+}
+
+/* static */int free_callback(struct in_device *in_dev, ETH_LISTEN_CALLBACK callback) {
+	struct inetdev_info *indev_info;
+	struct callback_info *cb_info;
+	struct list_head *tmp;
+
+	assert(in_dev != NULL);
+
+	indev_info = find_indev_info_entry(in_dev);
+	if (indev_info == NULL) {
+		return -ENOENT;
+	}
+
+	list_for_each(tmp, &indev_info->cb_info_list) {
+		cb_info = member_cast_out(tmp, struct callback_info, lnk);
+		if (cb_info->func == callback) {
+			list_del(&cb_info->lnk);
+			pool_free(&callback_info_pool, cb_info);
 			return ENOERR;
 		}
 	}
 
-	return -ENOMEM;
+	return -ENOENT;
 }
-#if 0
-static int free_callback(in_device_t *in_dev, ETH_LISTEN_CALLBACK callback) {
-	size_t i;
-	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
-	for (i = 0; i < ARRAY_SIZE(ifdev_info->cb_info); i++) {
-		if (callback == ifdev_info->cb_info[i].func) {
-			ifdev_info->cb_info[i].func    = NULL;
-			return i;
-		}
-	}
-	return -1;
-}
-#endif
 
-in_device_t * in_dev_get(const net_device_t *dev) {
+struct in_device * in_dev_get(struct net_device *dev) {
+	assert(dev != NULL);
 	return inet_dev_find_by_name(dev->name);
 }
 
-int inet_dev_listen(in_device_t *dev, unsigned short type,
+int inet_dev_listen(struct in_device *in_dev, unsigned short type,
 			ETH_LISTEN_CALLBACK callback) {
-	if ((dev == NULL) || (callback == NULL)) {
+	if ((in_dev == NULL) || (callback == NULL)) {
 		return -EINVAL;
  	}
-	return alloc_callback(dev, type, callback);
+	return alloc_callback(in_dev, type, callback);
 }
 
-net_device_t *ip_dev_find(in_addr_t addr) {
-	size_t i;
+struct net_device * ip_dev_find(in_addr_t addr) {
+	struct inetdev_info *indev_info;
+	struct list_head *tmp;
 
-	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
-		if (ifs_info[i].dev.ifa_address == addr) {
-			return ifs_info[i].dev.dev;
-		}
-	}
-	return NULL;
-}
-
-in_device_t * inet_dev_find_by_name(const char *if_name) {
-	size_t i;
-
-	for (i = 0; i < ARRAY_SIZE(ifs_info); i++) {
-		if (0 == strncmp(if_name, ifs_info[i].dev.dev->name, IFNAMSIZ)) {
-			return &ifs_info[i].dev;
+	list_for_each(tmp, &indev_info_list) {
+		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
+		if (indev_info->in_dev.ifa_address == addr) {
+			return indev_info->in_dev.dev;
 		}
 	}
 
 	return NULL;
 }
 
-int inet_dev_set_interface(const char *name, in_addr_t ipaddr, in_addr_t mask,
-				const unsigned char *macaddr) {
-	size_t i;
+struct in_device * inet_dev_find_by_name(const char *if_name) {
+	struct inetdev_info *indev_info;
+	struct list_head *tmp;
 
-	for (i = 0; i < ARRAY_SIZE(ifs_info); i++) {
-		if (0 != strncmp(name, ifs_info[i].dev.dev->name,
-				ARRAY_SIZE(ifs_info[i].dev.dev->name))) {
-			continue;
-		}
-		if ((-1 == inet_dev_set_ipaddr(&ifs_info[i].dev, ipaddr)) ||
-		    (-1 == inet_dev_set_mask(&ifs_info[i].dev, mask)) ||
-		    (-1 == inet_dev_set_macaddr(&ifs_info[i].dev, macaddr))) {
-			return -EINVAL;
-		}
-		return ENOERR;
+	if (if_name == NULL) {
+		return NULL;
 	}
-	return -ENOMEM;
+
+	list_for_each(tmp, &indev_info_list) {
+		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
+		if (strncmp(if_name, indev_info->in_dev.dev->name,
+				ARRAY_SIZE(indev_info->in_dev.dev->name)) == 0) {
+			return &indev_info->in_dev;
+		}
+	}
+
+	return NULL;
 }
 
-int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr) {
+int inet_dev_set_interface(const char *if_name, in_addr_t ipaddr,
+		in_addr_t mask, const unsigned char *macaddr) {
+	int res;
+	struct inetdev_info *indev_info;
+	struct list_head *tmp;
+
+	if ((if_name == NULL) || (macaddr == NULL)) {
+		return -EINVAL;
+	}
+
+	list_for_each(tmp, &indev_info_list) {
+		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
+		if (strncmp(if_name, indev_info->in_dev.dev->name,
+				ARRAY_SIZE(indev_info->in_dev.dev->name)) == 0) {
+			res = inet_dev_set_ipaddr(&indev_info->in_dev, ipaddr);
+			if (res < 0) {
+				return res;
+			}
+			res = inet_dev_set_mask(&indev_info->in_dev, mask);
+			if (res < 0) {
+				return res;
+			}
+			res = inet_dev_set_macaddr(&indev_info->in_dev, macaddr);
+			if (res < 0) {
+				return res;
+			}
+			return ENOERR;
+		}
+	}
+
+	return -ENOENT;
+}
+
+int inet_dev_set_ipaddr(struct in_device *in_dev, in_addr_t ipaddr) {
 	if (in_dev == NULL) {
 		return -EINVAL;
 	}
@@ -171,8 +202,8 @@ int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr) {
 	return ENOERR;
 }
 
-int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask) {
-	if (NULL == in_dev) {
+int inet_dev_set_mask(struct in_device *in_dev, in_addr_t mask) {
+	if (in_dev == NULL) {
 		return -EINVAL;
 	}
 
@@ -182,29 +213,29 @@ int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask) {
 	return ENOERR;
 }
 
-int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macaddr) {
-	net_device_t *dev;
+int inet_dev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr) {
+	struct net_device *dev;
 
 	if ((in_dev == NULL) || (macaddr ==  NULL)) {
 		return -EINVAL;
 	}
 
 	dev = in_dev->dev;
-	if (NULL == dev) {
-		return -EINVAL;
-	}
+
+	assert(dev != NULL);
 
 	if (dev->netdev_ops->ndo_set_mac_address == NULL) {
 		/* driver doesn't support setting mac address */
 		return -ENOSUPP;
 	}
 
-	return dev->netdev_ops->ndo_set_mac_address(dev, (void *) macaddr);
+	return dev->netdev_ops->ndo_set_mac_address(dev, (void *)macaddr);
 }
 
-in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev) {
+in_addr_t inet_dev_get_ipaddr(struct in_device *in_dev) {
 	return (in_dev == NULL) ? 0 : in_dev->ifa_address;
 }
+
 #if 0
 /**
  * this function is called by device layer from function "netif_rx"
@@ -240,60 +271,99 @@ void ifdev_tx_callback(sk_buff_t *pack) {
 }
 #endif
 
-in_device_t * inet_dev_get_fist_used(size_t *iter) {
-	for (*iter = 0; *iter < ARRAY_SIZE(ifs_info); ++(*iter)) {
-		if (ifs_info[*iter].is_busy) {
-			return &ifs_info[*iter].dev;
-		}
+struct in_device * inet_dev_get_fist_used(void) {
+	struct inetdev_info *indev_info;
+
+	if (list_empty(&indev_info_list)) {
+		return NULL;
 	}
 
-	return NULL;
+	indev_info = member_cast_out(indev_info_list.next, struct inetdev_info, lnk);
+
+	return &indev_info->in_dev;
 }
 
-in_device_t * inet_dev_get_next_used(size_t *iter) {
-	while (++(*iter) < ARRAY_SIZE(ifs_info)) {
- 		if (ifs_info[*iter].is_busy) {
-			return &ifs_info[*iter].dev;
-		}
-	}
+struct in_device * inet_dev_get_next_used(struct in_device *in_dev) {
+	struct inetdev_info *indev_info;
 
-	return NULL;
+	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
+
+	indev_info = member_cast_out(indev_info->lnk.next, struct inetdev_info, lnk);
+
+	return (&indev_info->lnk == &indev_info_list) ? NULL : &indev_info->in_dev;
 }
 
 /*TODO follow functions either have different interface or move to another place
      move into ifconfig -- sikmir*/
-int ifdev_up(const char *iname) {
-	in_device_t *ifhandler;
+int ifdev_up(const char *if_name) {
+	int res;
+	struct net_device *dev;
+	struct inetdev_info *indev_info;
 
-	ifhandler = get_free_handler();
-	if (ifhandler == NULL) {
+	dev = netdev_get_by_name(if_name);
+	if (dev == NULL) {
+		LOG_ERROR("ifdev up: can't find net_device with name %s\n", if_name);
+		return -ENOENT;
+	}
+
+	indev_info = (struct inetdev_info *)pool_alloc(&indev_info_pool);
+	if (indev_info == NULL) {
 		LOG_ERROR("ifdev up: can't find find free handler\n");
 		return -ENOMEM;
 	}
-	ifhandler->dev = netdev_get_by_name(iname);
-	if (ifhandler->dev == NULL) {
-		LOG_ERROR("ifdev up: can't find net_device with name %s\n", iname);
-		free_handler(ifhandler);
-		return -ENOENT;
+
+	res = dev_open(dev);
+	if (res < 0) {
+		LOG_ERROR("ifdev up: can't open device with name %s\n", if_name);
+		pool_free(&indev_info_pool, indev_info);
+		return res;
 	}
-	return dev_open(ifhandler->dev);
+
+	indev_info->in_dev.dev = dev;
+	INIT_LIST_HEAD(&indev_info->cb_info_list);
+	list_add_tail(&indev_info->lnk, &indev_info_list);
+
+	return ENOERR;
 }
 
-int ifdev_down(const char *iname) {
-	in_device_t *in_dev;
+int ifdev_down(const char *if_name) {
+	int res;
+	struct callback_info *cb_info;
+	struct in_device *in_dev;
+	struct inetdev_info *indev_info;
+	struct list_head *tmp, *safe;
 
-	in_dev = inet_dev_find_by_name(iname);
+	in_dev = inet_dev_find_by_name(if_name);
 	if (in_dev == NULL) {
-		LOG_ERROR("ifdev down: can't find ifdev with name %s\n", iname);
+		LOG_ERROR("ifdev down: can't find in_device with name %s\n", if_name);
 		return -ENOENT;
 	}
-	if (in_dev->dev == NULL) {
-		LOG_ERROR("ifdev down: can't find net_device with name %s\n", iname);
-		return -ENOENT;
+
+	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
+
+	list_del(&indev_info->lnk);
+
+	assert(indev_info->in_dev.dev != NULL);
+
+	res = dev_close(indev_info->in_dev.dev);
+	if (res < 0) {
+		LOG_ERROR("ifdev down: can't close device with name %s\n", if_name);
+		list_add_tail(&indev_info->lnk, &indev_info_list);
+		return res;
 	}
-	return dev_close(in_dev->dev);
+
+	list_for_each_safe(tmp, safe, &indev_info->cb_info_list) {
+		cb_info = member_cast_out(tmp, struct callback_info, lnk);
+		list_del(&cb_info->lnk);
+		pool_free(&callback_info_pool, cb_info);
+	}
+
+	pool_free(&indev_info_pool, indev_info);
+
+	return ENOERR;
 }
 
+#if 0
 int ifdev_set_debug_mode(const char *iname, unsigned int type_filter) {
 	return 0;
 }
@@ -301,13 +371,9 @@ int ifdev_set_debug_mode(const char *iname, unsigned int type_filter) {
 int ifdev_clear_debug_mode(const char *iname) {
 	return 0;
 }
+#endif
 
 static int devinet_init(void) {
-	int i;
-
-	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; ++i) {;
-		ifs_info[i].is_busy = 0;
-	}
-
+	INIT_LIST_HEAD(&indev_info_list);
 	return ENOERR;
 }
