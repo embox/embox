@@ -35,9 +35,9 @@ static irq_nr_t intNo = -1;
 
 static void* threadB(void* args) {
   while (1) {
-    assert(0 == sleep(2));
     sched_sleep(&breakpointHappened);
-    printf("counter = %d\n", counter);
+    if (intNo == 3) printk("int03. counter = %d\n", counter);
+    ++counter;
   }
   return NULL;
 }
@@ -47,11 +47,18 @@ static void setTraceFlagX86(void);
 
 //static irq_return_t int03Handler(irq_nr_t irq_nr, void *dev_id) {
 void int0301HandlerHack(irq_nr_t n) {
+
+  // todo: critical_inside(0xFFFFFFFF) is not a very aesthetical way to say what i want?
+  if (critical_inside(0xFFFFFFFF)) return;  // this debugger doesn't operate inside any kind of a critical context, cause it uses a separate thread
+
+  intNo = n;
+  sched_wake(&breakpointHappened);
+  return;
+
 	// XXX clock_hander is called from arch part
    if (n == 3) {
         printk("int %d\n", n);
 	intNo = n;
-	assert(__cur_ipl == 0);
 	sched_wake(&breakpointHappened);
    } else
 	++ counter;
@@ -67,6 +74,7 @@ static void* threadA(void* args) {
 	asm (".byte 0xCC;");
 //	asm (" int $1; ");
 	assert(0 == sleep(1));
+    printf("counterA = %d\n", counter);
   }
   return NULL;
 }
@@ -80,6 +88,7 @@ static int run(int argc, char **argv) {
 	void *ret;
 	int i;
 
+
 	printf("Start thread's example\n");
 
 //	assert(0 == irq_attach(3, int03Handler, 0, NULL, "int 03 debug handler"));
@@ -87,6 +96,7 @@ static int run(int argc, char **argv) {
 
 	assert(0 == thread_create(&thr[0], 0, threadA, NULL));
 	assert(0 == thread_create(&thr[1], 0, threadB, NULL));
+	assert(0 == thread_set_priority(thr[1], THREAD_PRIORITY_MAX));
 
 	/* waiting until all threads finish and print return value*/
 	for(i = 0; i < 2; i ++) {
