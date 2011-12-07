@@ -162,8 +162,8 @@ endef
 $(HEADERS_BUILD): $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/image.mk $(AUTOCONF_DIR)/mods.mk
 	@$(MKDIR) $(@D) && printf "%b" '$(__header_gen)' > $@
 
-OBJS_ALL := $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit)))
-SRCS_ALL := $(foreach unit,$(MODS) $(LIBS),$(SRCS-$(unit)))
+OBJS_ALL := $(sort $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit))))
+SRCS_ALL := $(sort $(foreach unit,$(MODS) $(LIBS),$(SRCS-$(unit))))
 -include $(OBJS_ALL:.o=.d)
 
 OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))

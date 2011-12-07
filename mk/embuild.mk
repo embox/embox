@@ -187,7 +187,7 @@ unit_srcs_check_warn = \
   $(error Multiple source assignment) \
 
 # Each source file should be assigned for a single unit. Prevent violation.
-unit_srcs_check = \
+#unit_srcs_check = \
   $(foreach src,$1, \
     $(if $(UNIT-$(abspath $(src))), \
       $(if $(filter $(UNIT-$(abspath $(src))),$(unit)), \
@@ -199,6 +199,8 @@ unit_srcs_check = \
       $(src) \
     ) \
   )
+
+unit_srcs_check = $1
 
 define define_unit_symbols_prepare
   SRCS-$(unit)     :=
