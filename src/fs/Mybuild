@@ -9,6 +9,7 @@ module file_desc {
 }
 
 module rootfs {
+	source "rootfs.c"
 	depends core
 }
 
