@@ -115,5 +115,9 @@ void sk_common_release(struct sock *sk) {
 		sk->sk_prot->destroy(sk);
 	}
 	//sk->sk_prot->unhash(sk);
+
+	skb_queue_purge(sk->sk_receive_queue);
+	skb_queue_purge(sk->sk_write_queue);
+
 	sk_free(sk);
 }

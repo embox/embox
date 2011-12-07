@@ -7,6 +7,7 @@
  * @author Ilia Vaprol
  */
 
+#include <stdio.h>
 #include <hal/ipl.h>
 #include <linux/init.h>
 #include <linux/list.h>
@@ -127,7 +128,7 @@ void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
 	ipl_restore(sp);
 }
 
-static struct sk_buff * skb_peek(struct sk_buff_head *list) {
+struct sk_buff * skb_peek(struct sk_buff_head *list) {
 	struct sk_buff *next;
 
 	if (list == NULL) {
@@ -168,6 +169,7 @@ struct sk_buff * skb_dequeue(struct sk_buff_head *list) {
 
 	skb = skb_peek(list);
 	if (skb != NULL) {
+
 		skb_unlink(skb, list);
 	}
 
@@ -264,23 +266,30 @@ struct sk_buff * skb_copy(const struct sk_buff *skb, gfp_t priority) {
 	return new_pack;
 }
 
-struct sk_buff * skb_recv_datagram(struct sock *sk, unsigned flags, int noblock,
+struct sk_buff * skb_peek_datagram(struct sock *sk, unsigned flags, int noblock,
 		int *err) {
-	ipl_t sp;
-	struct sk_buff *skb;
 
 	if ((sk == NULL) || (sk->sk_receive_queue == NULL)) {
 		return NULL;
 	}
 
-	sp = ipl_save();
+	return skb_peek(sk->sk_receive_queue);
+}
 
-	skb = skb_peek(sk->sk_receive_queue);
+
+struct sk_buff * skb_recv_datagram(struct sock *sk, unsigned flags, int noblock,
+		int *err) {
+	ipl_t sp;
+
+	struct sk_buff *skb = skb_peek_datagram(sk, flags, noblock, err);
+
 	if (skb != NULL) {
-		skb_unlink(skb, sk->sk_receive_queue);
-	}
+		sp = ipl_save();
 
-	ipl_restore(sp);
+		skb_unlink(skb, sk->sk_receive_queue);
+
+		ipl_restore(sp);
+	}
 
 	return skb;
 }

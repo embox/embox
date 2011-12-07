@@ -76,7 +76,8 @@ typedef struct sk_buff {        /* Socket buffer */
 #if 0
 	void (*destructor)(struct sk_buff *skb);
 #endif
-	unsigned char *data;
+	unsigned char *data;	   /* Pointer for buffer used to store all skb content */
+	unsigned char *p_data;     /* Pointer for current processing data */
 #if 0
 	unsigned char tries;
 #endif
@@ -146,6 +147,11 @@ extern void skb_queue_purge(struct sk_buff_head *queue);
 extern struct sk_buff * skb_dequeue(struct sk_buff_head *list);
 
 /**
+ * Get sk_buff from list without removing it from list
+ */
+extern struct sk_buff * skb_peek(struct sk_buff_head *list);
+
+/**
  * Move newsk to tail of the list.
  */
 extern void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk);
@@ -155,5 +161,9 @@ extern void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk);
  */
 extern struct sk_buff * skb_recv_datagram(struct sock *sk, unsigned flags,
 					 int noblock, int *err);
-
+/**
+ * Get sk_buff from queue of sock without removing it from sock's queue
+ */
+extern struct sk_buff * skb_peek_datagram(struct sock *sk, unsigned flags,
+					 int noblock, int *err);
 #endif /* NET_SKBUFF_H_ */

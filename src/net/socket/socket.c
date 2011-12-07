@@ -116,7 +116,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	}
 
 	if ((res = kernel_socket_accept(sock, addr, addrlen)) < 0) {
-
+		return res;
 	}
 
 	return sockfd;

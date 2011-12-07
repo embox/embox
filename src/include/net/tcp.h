@@ -65,9 +65,10 @@ enum {
 	TCP_SYN_RECV_PRE2,
 	TCP_SYN_RECV,
 	TCP_LISTEN,
-	TCP_CLOSE,
+	TCP_CLOSE,		// 8
 	TCP_FINWAIT_1,
 	TCP_FINWAIT_2,
+	TCP_CLOSING,
 	TCP_MAX_STATE
 };
 
@@ -89,7 +90,7 @@ typedef struct tcp_sock {
 	struct tcp_seq_state rem;
 	unsigned short mss;
 
-	struct list_head conn_wait;
+	struct sk_buff_head *conn_wait;
 } tcp_sock_t;
 
 static inline tcphdr_t *tcp_hdr(const sk_buff_t *skb) {
