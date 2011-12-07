@@ -34,11 +34,10 @@ int close(int fd) {
 	int res = 0;
 	struct task_res_ops *ops = find_res_ops(fd);
 	struct idx_desc *desc = task_self_idx_get(fd);
-	task_res_idx_unbind(task_self_res(), fd);
 	if (task_idx_desc_link_count_add(desc, -1) == 0) {
 		res = ops->close(fd);
-		task_idx_desc_free(desc);
 	}
+	task_res_idx_free(task_self_res(), fd);
 	return res;
 }
 
