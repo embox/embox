@@ -151,15 +151,9 @@ endef
 # Return:
 #   The code (wrapped if needed).
 define __object_member_access_wrap
-#	$(if $1,
-#		# Invocation on another object.
-		$$(foreach __this,$$(call __object_check,$1),
-			$2
-		)
-#		,
-#		# Target object is 'this'.
-#		$2
-#	)
+	$$(foreach __this,$(if $1,$$(call __object_check,$1),$$(this)),
+		$2
+	)
 endef
 
 $(def_all)
