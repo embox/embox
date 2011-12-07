@@ -805,7 +805,7 @@ builtin_args      = $(foreach args_filter,id         ,$(__builtin_args_expand))
 builtin_firstarg  = $1
 
 # $(f foo,bar,baz) -> 'baz'.
-builtin_lastarg   = $(foreach args_filter,lastword   ,$(__builtin_args_expand))
+builtin_lastarg   = $($(lastword $(builtin_args_list)))
 
 # $(f foo,bar,baz) -> 'bar,baz'.
 builtin_nofirstarg= $(foreach args_filter,nofirstword,$(__builtin_args_expand))
@@ -1159,6 +1159,53 @@ define builtin_func-fx
 endef
 
 __builtin_func-fx_cnt :=# Initially empty.
+
+#
+# Def-time static conditionals.
+#
+
+#
+# Extension: 'def-if' builtin function.
+#
+# Basic static conditional.
+#
+# '$(def-if condition,then[,else])'
+#
+define builtin_func-def-if
+	$(call builtin_check_arity_range,2,3)
+
+	# Use explicit 'call' to shadow builtins context when expanding user code.
+	$(if $(call expand,$1),$2,$(value 3))
+endef
+
+#
+# Extension: 'def-ifdef' builtin function.
+#
+# Variable test conditional.
+#
+# '$(def-ifdef variable,then[,else])'
+#
+# Note:
+#   Semantics is mostly similar to native Make's 'ifdef' conditional.
+#   Particularly, a variable with empty value is considered undefined.
+define builtin_func-def-ifdef
+	$(call builtin_check_arity_range,2,3)
+	$(if $(value $(call expand,$1)),$2,$(value 3))
+endef
+
+#
+# Extension: 'def-ifndef' builtin function.
+#
+# Variable test negated conditional.
+#
+# '$(def-ifndef variable,then[,else])'
+#
+# Note:
+#   See notes to 'def-ifdef'
+define builtin_func-def-ifndef
+	$(call builtin_check_arity_range,2,3)
+	$(if $(value $(call expand,$1)),$(value 3),$2)
+endef
 
 #
 # Builtin to user-defined function call converters.
