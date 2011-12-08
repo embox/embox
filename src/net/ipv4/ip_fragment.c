@@ -11,14 +11,16 @@
 #include <string.h>
 #include <kernel/timer.h>
 #include <util/math.h>
+#include <net/icmp.h>
+#include <net/ip.h>
 
 /**
  * Datagram receive buffer
  */
 struct dgram_buf {
-	struct sk_buff *next_skbuff;
-	struct sk_buff *prev_skbuff;
-	struct list_head next_buf; /* linked list pointers	*/
+	struct sk_buff   *next_skbuff;
+	struct sk_buff   *prev_skbuff;
+	struct list_head  next_buf; /* linked list pointers	*/
 	in_addr_t         saddr;
 	in_addr_t         daddr;
 	uint16_t          id;
@@ -26,7 +28,7 @@ struct dgram_buf {
 	int               uncomplete;
 	int               meat;
 	int               len; /* total length of original datagram	*/
-	struct sys_timer  *timer;
+	struct sys_timer *timer;
 	int               proto;
 	int               buf_ttl;
 };
@@ -55,10 +57,12 @@ static void ttl_handler(struct sys_timer *timer, void *param) {
 
 	buf = (struct dgram_buf *)param;
 
-	if(buf->buf_ttl == 0) {
+	if (buf->buf_ttl == 0) {
+		/* FIXME what skbuff we must send? */
+		/*icmp_send(buf->next_skbuff, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);*/
 		buf_delete(buf);
 		timer_close(timer);
-	}else {
+	} else {
 		*(volatile int *)buf->buf_ttl -= 1;
 	}
 }
@@ -222,4 +226,47 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	}
 
 	return NULL;
+}
+
+struct sk_buff_head *ip_frag(struct sk_buff *skb) {
+	struct sk_buff_head *tx_buf;
+	struct sk_buff *fragment;
+	int offset; /* offset from skb->data */
+	int len;
+	int align_MTU;
+
+	tx_buf = alloc_skb_queue();
+	len = skb->h.raw - skb->data;
+	offset = len;
+
+	/* Note: correct MTU for this packet, because fragment offset must divide on 8*/
+	align_MTU = MTU - (MTU - len) % 8;
+
+	/* copy sk_buff without last fragment. All this fragment have size align_MTU */
+	while(offset < skb->len - align_MTU) {
+		fragment = alloc_skb(align_MTU, 0);
+		memcpy(fragment->data + len, skb->data + offset, align_MTU);
+		fragment->h.raw = fragment->data + len;
+
+		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
+		fragment->nh.iph->frag_off = (offset - len) >> 3; /* data offset */
+		fragment->nh.iph->frag_off |= IP_MF;
+
+		skb_queue_tail(tx_buf, fragment);
+		offset += (align_MTU - len);
+	}
+
+	/* copy last fragment */
+	if(offset < skb->len) {
+		fragment = alloc_skb(skb->len - offset + len, 0);
+		memcpy(fragment->data + len, skb->data + offset, skb->len - offset);
+		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
+		fragment->nh.iph->frag_off = (offset - len) >> 3; /* data offset */
+
+		skb_queue_tail(tx_buf, fragment);
+	}
+
+	kfree_skb(skb);
+
+	return tx_buf;
 }

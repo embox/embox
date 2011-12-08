@@ -1,5 +1,6 @@
 /**
  * @date 25.11.2011
+ * @author Alexander Kalmuk
  */
 
 #ifndef NET_IP_FRAGMENT_H
@@ -12,11 +13,13 @@
 #include <net/skbuff.h>
 #include <util/macro.h>
 
-#define MAX_BUFS_CNT 0x10
-#define MSL          2*60*1000 // 2 minutes
+#define MAX_BUFS_CNT 0x10      /* Maximum uncomplete packets count */
+#define MSL          2*60*1000 /* Maximum Segment Lifetime is 2 minutes */
+#define MTU          1500        /* Maximum Transmission Unit is 1500 bytes */
 /**
- *	return skbuff contain complete data
+ *	return sk_buff containing complete data
  */
 extern struct sk_buff *ip_defrag(struct sk_buff *skb);
+extern struct sk_buff_head *ip_frag(struct sk_buff *skb);
 
 #endif /* NET_IP_FRAGMENT_H */
