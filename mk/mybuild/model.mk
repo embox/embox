@@ -14,11 +14,15 @@ include mk/core/object.mk
 # Constructor args:
 #   1. Resource.
 define class-my_object
-	$(super proxy,# Object is resolved.
+	$(field resource)
+	$(setter resource,
+		$(or $(eq $1,$(get resource)),
+			$(foreach r,$(get resource),$(set- $r.objects,$(this)))
+			$(if $1,$(set+ $1.objects,$(this)))
+			$1
 		)
-
-	$(field resource,
-		$1)
+	)
+	$(set resource,$1)
 
 	$(field container)
 	$(field contents)
@@ -32,13 +36,6 @@ define class-my_object
 	# to reference features.
 	$(method get_reference_features)# Abstract.
 
-endef
-
-# Constructor args:
-#   1. Proxy name.
-define class-my_proxy
-	# Name for unresolved object, empty otherwise.
-	$(field proxy,$1)
 endef
 
 define class-my_resource
