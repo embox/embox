@@ -5,6 +5,7 @@
  * @date 24.11.2011
  * @author Anton Bondarev
  */
+
 #include <types.h>
 #include <mem/page.h>
 #include <string.h>
@@ -27,11 +28,13 @@ struct free_block {
 };
 
 static void *pool;
-static struct free_block_link free_blocks = {&free_blocks,  &free_blocks};
+static struct free_block_link free_blocks = {
+	&free_blocks,
+	&free_blocks
+};
 
-
-#define get_clear_size(size) (size & ~3)
-#define get_flags(size) (size & 3)
+#define get_clear_size(size) ((size) & ~3)
+#define get_flags(size) ((size) & 3)
 
 static int block_is_busy(struct free_block *block) {
 	return block->size & 0x1;
@@ -53,7 +56,6 @@ static void block_unlink(struct free_block *block) {
 	block->link.prev->next = block->link.next;
 }
 
-
 static void mark_block(struct free_block *block) {
 	block->size |= 0x1;
 }
@@ -69,35 +71,33 @@ static void mark_prev(struct free_block *block) {
 static void mark_next(struct free_block *block) {
 	struct free_block *nblock; /* next block */
 
-	nblock = (struct free_block *)((char *)block + get_clear_size(block->size));
-
+	nblock = (struct free_block *) ((char *) block + get_clear_size(block->size));
 	nblock->size |= 0x2;
 }
 
 static void clear_next(struct free_block *block) {
 	struct free_block *nblock; /* next block */
 
-	nblock = (struct free_block *)((char *)block + get_clear_size(block->size));
-
+	nblock = (struct free_block *) ((char *) block + get_clear_size(block->size));
 	nblock->size &= ~0x2;
 }
 
 void set_end_size(struct free_block *block) {
 	size_t size = get_clear_size(block->size);
 
-	*(uint32_t*)((void *)block + size - 4) = size;
+	*(uint32_t *) ((void *) block + size - 4) = size;
 }
 
 static struct free_block * concatenate_prev(struct free_block *block){
 	size_t prev_size, new_size;
 	struct free_block *pblock; /* prev block */
 
-	if(prev_is_busy(block)) {
+	if (prev_is_busy(block)) {
 		return block;
 	}
 
-	prev_size = *((uint32_t *)((uint32_t *)block - 1));
-	pblock = (struct free_block *)((char *)block - get_clear_size(prev_size));
+	prev_size = *((uint32_t *) ((uint32_t *) block - 1));
+	pblock = (struct free_block *) ((char *) block - get_clear_size(prev_size));
 	new_size = get_clear_size(prev_size) + get_clear_size(block->size); /* block->size is clear) */
 	pblock->size = new_size | 0x2; /* prev is busy */
 	set_end_size(pblock);
@@ -109,9 +109,9 @@ static struct free_block * concatenate_next(struct free_block *block) {
 	size_t size;
 	struct free_block *nblock; /* next block */
 
-	nblock = (struct free_block *)((char *)block + get_clear_size(block->size));
+	nblock = (struct free_block *) ((char *) block + get_clear_size(block->size));
 
-	if(block_is_busy(nblock)) {
+	if (block_is_busy(nblock)) {
 		return block;
 	}
 
@@ -130,8 +130,7 @@ static void block_set_size(struct free_block *block, size_t size) {
 
 static struct free_block * cut(struct free_block *block, size_t size) {
 	struct free_block *nblock; /* new block */
-
-	nblock = (struct free_block *)((char *)block + size + sizeof(block->size));
+	nblock = (struct free_block *) ((char *) block + size + sizeof(block->size));
 
 	block_unlink(block);
 	block_link(nblock);
@@ -159,26 +158,26 @@ void *malloc(size_t size) {
 		size = sizeof(struct free_block);
 	}
 
-	size = (size + 3) & ~3;
+	size = get_clear_size(size + 3);
 
 	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
-		block = (struct free_block *)(((uint32_t *)link) - 1);
+		block = (struct free_block *) ((uint32_t *) link - 1);
 		if(size > get_clear_size(block->size)) {
 			continue;
 		}
 		sz = get_clear_size(block->size) + sizeof(block->size);
-		if (size <= sz && size >= (sz + sizeof(struct free_block))) {
+		if (size <= sz && size >= sz + sizeof(struct free_block)) {
 			block_unlink(block);
 			mark_block(block);
 			mark_next(block);
 			/* we already have size */
-			return (void *)((uint32_t *)(block) + 1);
+			return (void *) ((uint32_t *) block + 1);
 		}
-		if (size <= (sz + sizeof(struct free_block))) {
+		if (size <= sz + sizeof(struct free_block)) {
 			block = cut(block, size);
 			mark_block(block);
 			mark_next(block);
-			return (void *)((uint32_t *)(block) + 1);
+			return (void *) ((uint32_t *) block + 1);
 		}
 	}
 	return NULL;
@@ -189,7 +188,7 @@ void free(void *ptr) {
 	if (ptr == NULL) {
 		return;
 	}
-	block = (struct free_block *) ((uint32_t *) (ptr) - 1);
+	block = (struct free_block *) ((uint32_t *) ptr - 1);
 	block = concatenate_prev(block);
 	block = concatenate_next(block);
 
@@ -206,14 +205,22 @@ void *realloc(void *ptr, size_t size) {
 	struct free_block *block;
 	void *tmp;
 
-	if(NULL == ptr) {
+	if (NULL == ptr) {
 		return malloc(size);
 	}
 
 	tmp = malloc(size);
-	block = (struct free_block *) ((uint32_t *) (ptr) - 1);
+	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
 	memcpy(tmp, ptr, min(size, get_clear_size(block->size)));
+	return tmp;
+}
+
+void *calloc(size_t nmemb, size_t size) {
+	void *tmp = malloc(nmemb * size);
+	if (tmp) {
+		memset(tmp, 0, nmemb * size);
+	}
 	return tmp;
 }
 
@@ -222,7 +229,7 @@ static int heap_init(void) {
 
 	pool = page_alloc(CONFIG_HEAP_SIZE / CONFIG_PAGE_SIZE);
 
-	block = (struct free_block *)pool;
+	block = (struct free_block *) pool;
 	block->size = CONFIG_HEAP_SIZE - sizeof(block->size);
 	set_end_size(block);
 
@@ -230,7 +237,7 @@ static int heap_init(void) {
 	block_link(block);
 
 	/* last work we mark as persistence busy */
-	block = (void*) ((char *)pool + (CONFIG_HEAP_SIZE - sizeof(block->size)));
+	block = (void *) ((char *) pool + CONFIG_HEAP_SIZE - sizeof(block->size));
 	mark_block(block);
 
 	return 0;
