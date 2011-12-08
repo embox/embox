@@ -1,0 +1,6 @@
+package embox.fs
+
+module devfs {
+	source "devfs.c"
+	depends embox.fs.rootfs
+}

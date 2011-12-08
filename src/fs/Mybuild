@@ -19,4 +19,5 @@ module core {
 	source "fs.c"
 	depends file_desc
 	depends node
+	depends driver_repo
 }

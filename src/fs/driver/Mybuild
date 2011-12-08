@@ -1,0 +1,5 @@
+package embox.fs
+
+module driver_repo {
+	source "fs_drv.c"
+}

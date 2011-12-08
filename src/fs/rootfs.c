@@ -1,6 +1,6 @@
 /**
  * @file
- * @details realize file operation function in line address space
+ * @details realize file operation function
  *
  * @date 29.06.09
  * @author Anton Bondarev
@@ -10,31 +10,16 @@
 #include <assert.h>
 #include <fs/ramfs.h>
 #include <fs/fs.h>
-#include <linux/init.h>
 #include <fs/node.h>
+#include <fs/driver_registry.h>
 #include <util/array.h>
+#include <embox/unit.h>
 
-static void   *rootfs_open(struct file_desc *desc);
-static int     rootfs_close(struct file_desc *desc);
-static size_t  rootfs_read(void *buf, size_t size, size_t count, void *file);
-static size_t  rootfs_write(const void *buf, size_t size, size_t count, void *file);
-static int     rootfs_seek(void *file, long offset, int whence);
-static int rootfs_ioctl(void *file, int request, va_list args);
-
-static file_operations_t rootfs_fop = {
-	rootfs_open,
-	rootfs_close,
-	rootfs_read,
-	rootfs_write,
-	rootfs_seek,
-	rootfs_ioctl,
-};
+EMBOX_UNIT_INIT(unit_init);
 
 static node_t *root_node;
 
 static int rootfs_init(void * par) {
-	root_node = alloc_node("/");
-
 	return 0;
 }
 
@@ -71,32 +56,15 @@ static fsop_desc_t rootfs_fsop = {
 
 static const fs_drv_t rootfs_drv = {
 	"rootfs",
-	&rootfs_fop,
+	NULL,
 	&rootfs_fsop
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(rootfs_drv);
 
-static void *rootfs_open(struct file_desc *desc) {
-	return NULL;
-}
-
-static int rootfs_close(struct file_desc *desc) {
+static int unit_init(void) {
+	root_node = alloc_node("/");
+	rootfs_mount(NULL);
 	return 0;
 }
 
-static size_t rootfs_read(void *buf, size_t size, size_t count, void *file) {
-	return 0;
-}
-
-static size_t rootfs_write(const void *buf, size_t size, size_t count, void *file) {
-	return 0;
-}
-
-static int rootfs_seek(void *file, long offset, int whence) {
-	return 0;
-}
-
-static int rootfs_ioctl(void *file, int request, va_list args) {
-	return 0;
-}
