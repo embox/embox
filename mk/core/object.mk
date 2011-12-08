@@ -314,8 +314,7 @@ define __field_set+
 		$(if $($(__this).$(call __field_check,$2)),
 			$(if $(value $1.set.$2),
 				override $(__this).$2 := \
-					$$(call $1.set.$2,$$($(__this).$2) $$3),
-					$$3
+					$$(call $1.set.$2,$$($(__this).$2) $$3)
 				,# else
 				override $(__this).$2 += \
 					$$3
@@ -328,6 +327,28 @@ define __field_set+
 				)
 		)
 	}
+endef
+
+#
+# $(set* field,value)
+# $(set* obj.field,value)
+# $(set* ref->field,value)
+#
+define builtin_func-set*
+	$(__builtin_func_set)
+endef
+
+# Params:
+#   1. Class.
+#   2. Field name.
+#   3. Field value.
+# Context:
+#   '__this'
+define __field_set*
+	$(if $(findstring $(\s)$3 , $($(__this).$(call __field_check,$2)) ),
+		,# else
+		$(call __field_set+,$1,$2,$3)
+	)
 endef
 
 #
