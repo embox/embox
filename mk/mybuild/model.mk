@@ -11,41 +11,43 @@ __mybuild_model_mk := 1
 include mk/core/define.mk
 include mk/core/object.mk
 
+# Constructor args:
+#   1. Name of property in container.
+#   1. Name of property in each contained object.
 define class-containment
-	$(field container_property,$1)
-	$(setter container_property,$(error $0 is read-only))
+	$(field property_in_container,$(or $(singleword $1),
+			$(error 'property_in_container' must be a singleword: '$1')))
+	$(setter property_in_container,$(error $0 is read-only))
 
-	$(field contents_property,$2)
-	$(setter contents_property,$(error $0 is read-only))
+	$(field property_in_contents,$(or $(singleword $2),
+			$(error 'property_in_contents' must be a singleword: '$2')))
+	$(setter property_in_contents,$(error $0 is read-only))
 
 	$(field container)
 	$(setter container,
 		$(or $(eq $1,$(get container)),
-			$(foreach c,$(get container),
-					$(set- $c.$(get contents_property),$(this)))
-			$(if $1,$(set+ $1.$(get contents_property),$(this)))
+			$(and $(foreach p,$(get property_in_contents),
+				$(foreach c,$(get container),$(set- $c.$p,$(this)))
+				$(if $1,$(set+ $1.$p,$(this)))
+			),)
 			$1
 		)
 	)
 
 	$(field contents)
 	$(setter contents,
-		$(foreach 1,$1,$(error NIY))
+		$(and $(foreach p,$(get property_in_container),
+			$(foreach c,$(get contents),$(set- $c.$p,$(this)))
+			$(foreach 1,$1,$(set+ $1.$p,$(this)))
+		),)
+		$1
 	)
 endef
 
 # Constructor args:
 #   1. Resource.
 define class-my_object
-	$(field resource,$(new containment))
-	$(setter resource,
-		$(or $(eq $1,$(get resource)),
-			$(foreach r,$(get resource),$(set- $r.objects,$(this)))
-			$(if $1,$(set+ $1.objects,$(this)))
-			$1
-		)
-	)
-	$(set resource,$1)
+	$(field resource)$(new containment,objects,resource)
 
 	$(field container)
 	$(setter container,
