@@ -35,8 +35,10 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	hdr->ttl = htons(ttl);
 	hdr->id = htons(id);
 	hdr->tos = 0;
+	hdr->frag_off = skb->offset;
 	hdr->frag_off |= IP_DF;
-	hdr->frag_off = ntohs(hdr->frag_off);
+	hdr->frag_off = htons(hdr->frag_off);
+	//hdr->frag_off = htons(IP_DF);
 	hdr->proto = proto;
 	ip_send_check(hdr);
 	return 0;
@@ -66,9 +68,10 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	int res;
 
 	res = 0;
+
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 
-	if (skb->len > MTU) {
+	if (skb->len > MTU && !(skb->offset & IP_DF)) {
 		tx_buf = ip_frag(skb);
 		while ((tmp = skb_dequeue(tx_buf)) != NULL) {
 			res += ip_send_packet(sk, tmp);

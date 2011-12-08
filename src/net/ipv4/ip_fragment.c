@@ -239,19 +239,18 @@ struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 	len = skb->h.raw - skb->data;
 	offset = len;
 
-	/* Note: correct MTU for this packet, because fragment offset must divide on 8*/
+	/* Note: correct MTU, because fragment offset must divide on 8*/
 	align_MTU = MTU - (MTU - len) % 8;
 
-	/* copy sk_buff without last fragment. All this fragment have size align_MTU */
+	/* copy sk_buff without last fragment. All this fragment have size MTU */
 	while(offset < skb->len - align_MTU) {
 		fragment = alloc_skb(align_MTU, 0);
 		memcpy(fragment->data + len, skb->data + offset, align_MTU);
 		fragment->h.raw = fragment->data + len;
-
+		//fragment->h.uh->len = htons(MTU - len);
 		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
-		fragment->nh.iph->frag_off = (offset - len) >> 3; /* data offset */
-		fragment->nh.iph->frag_off |= IP_MF;
-
+		fragment->offset = (offset - len) >> 3; /* data offset */
+		fragment->offset |= IP_MF;
 		skb_queue_tail(tx_buf, fragment);
 		offset += (align_MTU - len);
 	}
@@ -261,7 +260,7 @@ struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 		fragment = alloc_skb(skb->len - offset + len, 0);
 		memcpy(fragment->data + len, skb->data + offset, skb->len - offset);
 		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
-		fragment->nh.iph->frag_off = (offset - len) >> 3; /* data offset */
+		fragment->offset = (offset - len) >> 3; /* data offset */
 
 		skb_queue_tail(tx_buf, fragment);
 	}
