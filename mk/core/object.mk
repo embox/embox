@@ -289,6 +289,53 @@ define __field_set
 endef
 
 #
+# $(set+ field,value)
+# $(set+ obj.field,value)
+# $(set+ ref->field,value)
+#
+define builtin_func-set+
+	$(call builtin_check_min_arity,2)
+	$(call __object_member_parse,$1,
+		# 1. Empty for 'this', target object otherwise.
+		# 2. Referenced field.
+		# 3. Value.
+		$(lambda \
+			$(call __object_member_access_wrap,$1,
+				$$(call __field_set+,$$($$(__this)),$2,$3)
+			)
+		),
+		$(builtin_nofirstarg)
+	)
+endef
+
+# Params:
+#   1. Class.
+#   2. Field name.
+#   3. Field value.
+# Context:
+#   '__this'
+define __field_set+
+	${eval \
+		$(if $($(__this).$(call __field_check,$2)),
+			$(if $(value $1.set.$2),
+				override $(__this).$2 := \
+					$$(call $1.set.$2,$$($(__this).$2) $$3),
+					$$3
+				,# else
+				override $(__this).$2 += \
+					$$3
+			)
+			,# else
+			override $(__this).$2 := \
+				$(if $(value $1.set.$2),
+					$$(call $1.set.$2,$$3),
+					$$3
+				)
+		)
+	}
+endef
+
+#
 # $(get field)
 # $(get obj.field)
 # $(get ref->field)
