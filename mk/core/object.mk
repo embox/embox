@@ -352,6 +352,25 @@ define __field_set*
 endef
 
 #
+# $(set- field,value)
+# $(set- obj.field,value)
+# $(set- ref->field,value)
+#
+define builtin_func-set-
+	$(__builtin_func_set)
+endef
+
+# Params:
+#   1. Class.
+#   2. Field name.
+#   3. Field value.
+# Context:
+#   '__this'
+define __field_set-
+	$(call __field_set,$1,$2,$(trim $(subst $(\s)$3 , , $($(__this).$2) )))
+endef
+
+#
 # $(get field)
 # $(get obj.field)
 # $(get ref->field)
