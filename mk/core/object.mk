@@ -91,7 +91,7 @@ define __new
 			$(\n)
 			$(this) := $(__class__)
 			$(\n)
-			$(class-$(__class__))
+			$$(and $(value class-$(__class__)),)
 		}
 		$(this)
 	)
@@ -176,7 +176,10 @@ endef
 # Return:
 #   The code (wrapped if needed).
 define __object_member_access_wrap
-	$$(foreach __this,$(if $1,$$(call __object_check,$1),$$(this)),
+	$$(foreach __this,$(if $1,
+			$$(call __object_check,$1
+					$(def-ifdef OBJ_DEBUG,$(\comma)$(subst $$,$$$$,$1))),
+			$$(this)),
 		$2
 	)
 endef
@@ -185,13 +188,14 @@ $(def_all)
 
 # Params:
 #   1. Object reference.
+#   2. Original code (if OBJ_DEBUG).
 # Return:
 #   The trimmed argument if it is a single word, fails with an error otherwise.
 define __object_check
 	$(or \
 		$(singleword $1),
 		$(error \
-				Invalid object reference: '$1')
+				Invalid object reference: '$1'$(def-ifdef OBJ_DEBUG, ($2)))
 	)
 endef
 
@@ -285,6 +289,7 @@ endef
 # Context:
 #   '__this'
 define __field_set
+	$(def-ifdef OBJ_DEBUG,$(info $(__this): set  $1.$2: '$3'))
 	${eval \
 		override $(__this).$(call __field_check,$2) := \
 			$(if $(value $1.set.$2),
@@ -310,6 +315,7 @@ endef
 # Context:
 #   '__this'
 define __field_set+
+	$(def-ifdef OBJ_DEBUG,$(info $(__this): set+ $1.$2: '$3'))
 	${eval \
 		$(if $($(__this).$(call __field_check,$2)),
 			$(if $(value $1.set.$2),
@@ -345,6 +351,7 @@ endef
 # Context:
 #   '__this'
 define __field_set*
+	$(def-ifdef OBJ_DEBUG,$(info $(__this): set* $1.$2: '$3'))
 	$(if $(findstring $(\s)$3 , $($(__this).$(call __field_check,$2)) ),
 		,# else
 		$(call __field_set+,$1,$2,$3)
@@ -367,6 +374,7 @@ endef
 # Context:
 #   '__this'
 define __field_set-
+	$(def-ifdef OBJ_DEBUG,$(info $(__this): set- $1.$2: '$3'))
 	$(call __field_set,$1,$2,$(trim $(subst $(\s)$3 , , $($(__this).$2) )))
 endef
 
@@ -382,7 +390,7 @@ define builtin_func-get
 		# 2. Referenced field.
 		$(lambda \
 			$(call __object_member_access_wrap,$1,
-				$$(call __field_get,$$($$(__this)),$2,$3)
+				$$(call __field_get,$$($$(__this)),$2)
 			)
 		)
 	)
@@ -524,13 +532,7 @@ define builtin_func-field
 		$(call __member_def,$(call builtin_tag,__class__),$1,
 				$(builtin_nofirstarg))
 
-		# Line feed in output of builtin handler breaks semantics of most other
-		# builtins, but as a special exception...
-		# We assure that the transformed value will be handled by '__class__'
-		# builtin, that will take a special care about it.
-		$(\n)# <- LF.
-		$$(this).$1 := $$(value $(call builtin_tag,__class__).$1)
-		$(\n)# <- LF again.
+		$$(eval $$(this).$1 := $$(value $(call builtin_tag,__class__).$1))
 	)
 endef
 
