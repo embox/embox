@@ -252,12 +252,9 @@ define __field_check
 	)
 endef
 
-#
-# $(set field,value)
-# $(set obj.field,value)
-# $(set ref->field,value)
-#
-define builtin_func-set
+# Context
+#   '__field_set_fn'
+define __builtin_func_set
 	$(call builtin_check_min_arity,2)
 	$(call __object_member_parse,$1,
 		# 1. Empty for 'this', target object otherwise.
@@ -265,11 +262,20 @@ define builtin_func-set
 		# 3. Value.
 		$(lambda \
 			$(call __object_member_access_wrap,$1,
-				$$(call __field_set,$$($$(__this)),$2,$3)
+				$$(call $(__field_set_fn),$$($$(__this)),$2,$3)
 			)
 		),
 		$(builtin_nofirstarg)
 	)
+endef
+
+#
+# $(set field,value)
+# $(set obj.field,value)
+# $(set ref->field,value)
+#
+define builtin_func-set
+	$(foreach __field_set_fn,__field_set,$(__builtin_func_set))
 endef
 
 # Params:
@@ -294,18 +300,7 @@ endef
 # $(set+ ref->field,value)
 #
 define builtin_func-set+
-	$(call builtin_check_min_arity,2)
-	$(call __object_member_parse,$1,
-		# 1. Empty for 'this', target object otherwise.
-		# 2. Referenced field.
-		# 3. Value.
-		$(lambda \
-			$(call __object_member_access_wrap,$1,
-				$$(call __field_set+,$$($$(__this)),$2,$3)
-			)
-		),
-		$(builtin_nofirstarg)
-	)
+	$(foreach __field_set_fn,__field_set+,$(__builtin_func_set))
 endef
 
 # Params:
