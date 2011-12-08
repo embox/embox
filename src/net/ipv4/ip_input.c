@@ -19,6 +19,7 @@
 #include <net/checksum.h>
 #include <net/protocol.h>
 #include <framework/net/proto/api.h>
+#include <net/ip_fragment.h>
 
 
 int ip_rcv(sk_buff_t *skb, net_device_t *dev,
@@ -30,6 +31,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	unsigned short tmp;
 	unsigned int len;
 	int optlen;
+	sk_buff_t *complete_skb;
 
 	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
 	/**
@@ -98,6 +100,13 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		return 0;
 	}
 #endif
+
+	if((complete_skb = ip_defrag(skb)) == NULL) {
+		return NET_RX_SUCCESS;
+	} else {
+		skb = complete_skb;
+		iph = ip_hdr(complete_skb);
+	}
 
 	skb->links = 0;
 

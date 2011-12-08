@@ -18,6 +18,7 @@ $_DEPS-arp += embox.net.neighbour
 $_MODS      += ipv4
 $_SRCS-ipv4 += ip_input.c : ip_options.c
 $_SRCS-ipv4 += ip_output.c
+$_SRCS-ipv4 += ip_fragment.c
 
 $_MODS      += icmp
 $_SRCS-icmp += icmp.c

@@ -14,6 +14,8 @@
 #include <net/route.h>
 #include <net/checksum.h>
 #include <linux/init.h>
+#include <net/ip_fragment.h>
+#include <net/skbuff.h>
 
 /* Generate a checksum for an outgoing IP datagram. */
 static inline void ip_send_check(iphdr_t *iph) {
@@ -26,14 +28,15 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		in_addr_t daddr/*, ip_options_t *opt*/) {
 	iphdr_t *hdr = skb->nh.iph;
 	hdr->version = 4;
-	hdr->ihl = IP_MIN_HEADER_SIZE >> 2/* + opt->optlen*/;
+	hdr->ihl = IP_MIN_HEADER_SIZE >> 2 /* + opt->optlen */;
 	hdr->saddr = saddr; // Changed as in_addr_t is in network-ordered
 	hdr->daddr = daddr;
 	hdr->tot_len = htons(len - ETH_HEADER_SIZE);
 	hdr->ttl = htons(ttl);
 	hdr->id = htons(id);
 	hdr->tos = 0;
-	hdr->frag_off = htons(IP_DF);
+	hdr->frag_off |= IP_DF;
+	hdr->frag_off = ntohs(hdr->frag_off);
 	hdr->proto = proto;
 	ip_send_check(hdr);
 	return 0;
@@ -58,7 +61,22 @@ int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 }
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
+	struct sk_buff_head *tx_buf;
+	struct sk_buff *tmp;
+	int res;
+
+	res = 0;
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+
+	if (skb->len > MTU) {
+		tx_buf = ip_frag(skb);
+		while ((tmp = skb_dequeue(tx_buf)) != NULL) {
+			res += ip_send_packet(sk, tmp);
+		}
+		skb_queue_purge(tx_buf);
+		return res;
+	}
+
 	if (sk->sk.sk_type != SOCK_RAW) {
 		build_ip_packet(sk, skb);
 		//skb->len += IP_HEADER_SIZE;
@@ -72,7 +90,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 }
 
 void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
-			sk_buff_t *skb, unsigned int len) {
+		sk_buff_t *skb, unsigned int len) {
 	skb->nh.iph->saddr = saddr;
 	skb->nh.iph->daddr = daddr;
 	skb->nh.iph->id = htons(ntohs(skb->nh.iph->id) + 1);
