@@ -252,8 +252,8 @@ define __field_check
 	)
 endef
 
-# Context
-#   '__field_set_fn'
+# Expanded from field 'setxxx' builtin context. It will generate a call
+# to '_field_setxxx', where xxx is taken from builtin name.
 define __builtin_func_set
 	$(call builtin_check_min_arity,2)
 	$(call __object_member_parse,$1,
@@ -262,7 +262,7 @@ define __builtin_func_set
 		# 3. Value.
 		$(lambda \
 			$(call __object_member_access_wrap,$1,
-				$$(call $(__field_set_fn),$$($$(__this)),$2,$3)
+				$$(call __field_$(builtin_name),$$($$(__this)),$2,$3)
 			)
 		),
 		$(builtin_nofirstarg)
@@ -275,7 +275,7 @@ endef
 # $(set ref->field,value)
 #
 define builtin_func-set
-	$(foreach __field_set_fn,__field_set,$(__builtin_func_set))
+	$(__builtin_func_set)
 endef
 
 # Params:
@@ -300,7 +300,7 @@ endef
 # $(set+ ref->field,value)
 #
 define builtin_func-set+
-	$(foreach __field_set_fn,__field_set+,$(__builtin_func_set))
+	$(__builtin_func_set)
 endef
 
 # Params:
