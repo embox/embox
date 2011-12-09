@@ -25,7 +25,7 @@ ifdef error_msg
 $(error $(error_msg))
 endif
 
-include dirs.mk
+include mk/dirs.mk
 
 MY_PATH := $(SRC_DIR)/** $(PLATFORM_DIR)/** $(THIRDPARTY_DIR)/**
 
@@ -35,7 +35,6 @@ PRINTF := printf
 SHELL  := bash
 MKDIR  := mkdir -p
 LN     := ln -s
-
 
 include mk/util.mk
 include mk/util/wildcard.mk

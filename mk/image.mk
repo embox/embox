@@ -69,7 +69,7 @@ REAL_CC = $(CC)
 CC     := cgcc
 endif
 
-include flags.mk
+include mk/flags.mk
 
 LDSCRIPT = $(OBJ_DIR)/$(TARGET).lds
 
@@ -82,7 +82,7 @@ include $(MK_DIR)/embuild.mk
 # ...and to build dependency injection model
 include $(MK_DIR)/codegen-di.mk
 
-include headers.mk
+include mk/headers.mk
 
 OBJS_ALL := $(sort $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit))))
 SRCS_ALL := $(sort $(foreach unit,$(MODS) $(LIBS),$(SRCS-$(unit))))
