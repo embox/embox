@@ -375,20 +375,11 @@ static int tcp_st_syn_recv(struct tcp_sock *tcpsk, struct sk_buff *skb,
 	return TCP_ST_NO_SEND;
 }
 
-static int process_ack(struct tcp_sock *tcpsk, struct sk_buff *skb, int seq, int ack) {
+static int process_ack_with_queue(struct tcp_sock *tcpsk, struct sk_buff *skb, int seq, int ack) {
 	struct sock *sk = (struct sock *) tcpsk;
+	struct sk_buff *sent_skb ;
 
-	printf("process_ack: ack %d, this_unack %d, this.seq %d\n", ack, (int) tcpsk->this_unack,
-			(int) tcpsk->this.seq);
-
-	if (tcpsk->this_unack <= ack && ack <= tcpsk->this.seq /*&& seq == tcpsk->rem.seq */) {
-		struct sk_buff *sent_skb = skb_peek(sk->sk_write_queue);
-
-		if (sent_skb == NULL) {
-			printf("process_ack: ack without send\n");
-			return 0;
-		}
-
+	while ((sent_skb = skb_peek(sk->sk_write_queue))) {
 		sent_skb->p_data += (ack - tcpsk->this_unack);
 
 		if (tcpsk->this.seq == ack) {
@@ -401,6 +392,17 @@ static int process_ack(struct tcp_sock *tcpsk, struct sk_buff *skb, int seq, int
 		}
 
 		tcpsk->this_unack = ack;
+	}
+	printf("process_ack: done with queue\n");
+	return 0;
+}
+
+static int process_ack(struct tcp_sock *tcpsk, struct sk_buff *skb, int seq, int ack) {
+	printf("process_ack: ack %d, this_unack %d, this.seq %d\n", ack, (int) tcpsk->this_unack,
+			(int) tcpsk->this.seq);
+
+	if (tcpsk->this_unack <= ack && ack <= tcpsk->this.seq /*&& seq == tcpsk->rem.seq */) {
+		process_ack_with_queue(tcpsk, skb, seq, ack);
 	} else {
 		printf("process_ack: drop\n");
 		return -1;
@@ -485,6 +487,7 @@ static int tcp_st_finwait_1(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcpsk->this.seq = 1 + ntohl(skb->h.th->ack_seq); //FIXME move from here
 		if (tcph->fin) {
 			tcp_set_st(tcpsk, skb, TCP_CLOSE); // TCP_TIMEWAIT
+			tcpsk->rem.seq += 1;
 			return TCP_ST_SEND;
 		} else {
 			tcp_set_st(tcpsk, skb, TCP_FINWAIT_2);
@@ -637,7 +640,7 @@ static void tcp_v4_close(sock_t *sk, long timeout) {
 	tcphdr_t *tcph = tcp_hdr(skb);
 
 	tcph->fin |= 1;
-	//tcph->ack |= 1;
+	tcph->ack |= 1;
 
 	while (skb_peek(sk->sk_write_queue));
 
