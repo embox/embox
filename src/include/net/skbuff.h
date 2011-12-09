@@ -79,6 +79,7 @@ typedef struct sk_buff {        /* Socket buffer */
 #endif
 	unsigned char *data;	   /* Pointer for buffer used to store all skb content */
 	unsigned char *p_data;     /* Pointer for current processing data */
+	char prot_info;		   /* Protocol level additional data, tcp uses for state handling */
 #if 0
 	unsigned char tries;
 #endif

@@ -58,6 +58,7 @@ struct tcp_pseudohdr {
 #define TCP_V4_HEADER_MIN_SIZE  20
 #define TCP_V4_HEADER_SIZE(hdr) ((((struct tcphdr *) hdr)->doff) << 2)
 enum {
+	TCP_NONE_STATE = 0,
 	TCP_ESTABIL = 1,
 	TCP_ESTABIL_ACK_WAIT,
 	TCP_SYN_SENT,
@@ -91,6 +92,8 @@ typedef struct tcp_sock {
 	unsigned short mss;
 
 	struct sk_buff_head *conn_wait;
+
+	struct list_head rexmit_link;
 } tcp_sock_t;
 
 static inline tcphdr_t *tcp_hdr(const sk_buff_t *skb) {
