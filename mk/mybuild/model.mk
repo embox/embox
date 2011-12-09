@@ -15,55 +15,39 @@ include mk/core/object.mk
 #   1. Name of property in each contained object.
 #   2. Name of property in container.
 define class-containment_helper
-	$(field property_in_contents,$(or $(singleword $1),
-			$(error 'property_in_contents' must be a singleword: '$1')))
-	$(setter property_in_contents,$(error $0 is read-only))
+	$(field prop_in_contents,$(or $(singleword $1),
+			$(error 'prop_in_contents' must be a singleword: '$1')))
+	$(setter prop_in_contents,$(error $0 is read-only))
 
-	$(field property_in_container,$(or $(singleword $2),
-			$(error 'property_in_container' must be a singleword: '$2')))
-	$(setter property_in_container,$(error $0 is read-only))
+	$(field prop_in_container,$(or $(singleword $2),
+			$(error 'prop_in_container' must be a singleword: '$2')))
+	$(setter prop_in_container,$(error $0 is read-only))
 
 	# 1. Contained (child) node.
 	# 2. New container (parent).
 	$(method set_container_of,
-		$(or $(eq $1,$(get container)),
-			$(and $(foreach p,$(get property_in_contents),
-				$(foreach c,$(get container),$(set- $c.$p,$(this)))
-				$(if $1,$(set+ $1.$p,$(this)))
-			),)
-			$1
-		)
+		$(foreach parent,$(get prop_in_contents),
+				$(foreach children,$(get prop_in_container),
+			$(or $(eq $2,$(get $1.$(parent))),
+				$(foreach old,$(get $1.$(parent)),$(set- old->$(children),$1))
+				$(set $1.$(parent),$2)
+				$(foreach new,$2,$(set+ new->$(children),$1))
+			)
+		))
 	)
 
-	$(setter set_contents,
-		$(and $(foreach p,$(get property_in_container),
-			$(foreach c,$(get contents),$(set- $c.$p,$(this)))
-			$(foreach 1,$1,$(set+ $1.$p,$(this)))
-		),)
-		$1
-	)
-
-	$(method set)
 endef
+
+create_containment_helper = $(new containment_helper,$1,$2)
 
 # Constructor args:
 #   1. Resource.
-define class-my_object
-	$(field __resource)
-	$(new containment,objects,resource)
+define class-node
+	$(field resource)
+	$(invoke resource_containment_helper->set_container_of,$(this),$1)
 
-	$(field __contents)
-	$(field __container)
-	$(new containment,contents,container)
-
-	$(field container)
-	$(setter container,
-		$(or $(eq $1,$(get container)),
-			$(foreach c,$(get container),$(set- $c.contents,$(this)))
-			$(if $1,$(set+ $1.contents,$(this)))
-			$1
-		)
-	)
+	$(field children)
+	$(field parent)
 
 	# Returns a list of referenced objects.
 	$(method get_references,
@@ -76,11 +60,53 @@ define class-my_object
 
 endef
 
-define class-my_resource
-	$(field objects)
+define class-resource
+	$(field nodes)
 	$(field issues)
 endef
 
+# Constructor args:
+#   1. Resource.
+define class-list
+	$(super node,$1)
+
+	# Adds the given elements to this list.
+	#   1. Elements to add.
+	# Return:
+	#   Element that were newly added.
+	$(method add,
+		$(and $(foreach element,$1,
+			$(invoke node_containment_helper->set_container_of,
+					$(element),$(this))
+		),)
+	)
+
+	# Removes the given elements from this list.
+	# Objects that don't belong to this list are not touched.
+	#   1. Elements to remove.
+	# Return:
+	#   Element that were actually removed.
+	$(method remove,
+		$(and $(foreach element,$(filter $(get children),$1),
+			$(invoke node_containment_helper->set_container_of,
+					$(element),)
+		),)
+	)
+
+	$(method get_elements,
+		$(get children)
+	)
+endef
+
+# Constructor args:
+#   1. Resource.
+define class-model
+	$(super node,$1)
+endef
+
 $(def_all)
+
+resource_containment_helper := $(call create_containment_helper,resource,nodes)
+node_containment_helper := $(call create_containment_helper,parent,children)
 
 endif # __mybuild_model_mk
