@@ -14,6 +14,15 @@
 
 #include <stdlib.h>
 
+#define DEBUG 1
+#if DEBUG
+#include <kernel/printk.h>
+
+#define printd(...) printk(__VA_ARGS__)
+#else
+#define printd(...) do {} while(0);
+#endif
+
 EMBOX_UNIT_INIT(heap_init);
 
 struct free_block_link {
@@ -158,25 +167,25 @@ void *malloc(size_t size) {
 		size = sizeof(struct free_block);
 	}
 
-	size = get_clear_size(size + 3);
+	size = (size + 3) & ~3; /* align by word*/
 
 	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
 		block = (struct free_block *) ((uint32_t *) link - 1);
-		if(size > get_clear_size(block->size)) {
+		sz = get_clear_size(block->size) + sizeof(block->size);
+		if((size + sizeof(block->size)) > get_clear_size(block->size)) {
 			continue;
 		}
-		sz = get_clear_size(block->size) + sizeof(block->size);
-		if (size <= sz && size >= sz + sizeof(struct free_block)) {
+
+		if ((size + sizeof(block->size)) < (get_clear_size(block->size) - sizeof(struct free_block))) {
+			block = cut(block, size);
+			mark_block(block);
+			mark_next(block);
+			return (void *) ((uint32_t *) block + 1);
+		} else {
 			block_unlink(block);
 			mark_block(block);
 			mark_next(block);
 			/* we already have size */
-			return (void *) ((uint32_t *) block + 1);
-		}
-		if (size <= sz + sizeof(struct free_block)) {
-			block = cut(block, size);
-			mark_block(block);
-			mark_next(block);
 			return (void *) ((uint32_t *) block + 1);
 		}
 	}
@@ -206,13 +215,17 @@ void *realloc(void *ptr, size_t size) {
 	void *tmp;
 
 	if (NULL == ptr) {
-		return malloc(size);
+		tmp = malloc(size);
+		printd("addr = 0x%X\n", (uint32_t)tmp);
+
+		return tmp;
 	}
 
 	tmp = malloc(size);
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
 	memcpy(tmp, ptr, min(size, get_clear_size(block->size)));
+	printd("addr = 0x%X\n", (uint32_t)tmp);
 	return tmp;
 }
 
