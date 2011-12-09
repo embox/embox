@@ -157,7 +157,7 @@ static struct free_block * cut(struct free_block *block, size_t size) {
 void *malloc(size_t size) {
 	struct free_block *block;
 	struct free_block_link *link;
-	size_t sz;
+	//size_t sz;
 
 	if (size <= 0) {
 		return NULL;
@@ -171,7 +171,7 @@ void *malloc(size_t size) {
 
 	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
 		block = (struct free_block *) ((uint32_t *) link - 1);
-		sz = get_clear_size(block->size) + sizeof(block->size);
+		//sz = get_clear_size(block->size) + sizeof(block->size);
 		if((size + sizeof(block->size)) > get_clear_size(block->size)) {
 			continue;
 		}
