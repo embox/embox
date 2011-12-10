@@ -730,7 +730,7 @@ define __gold_lalr_handle[+]
 	${eval \
 		# Push the current token onto the stack.
 		__gold_stack__ += \
-			$$(call $(lambda $1/[$2,$1,$4]),$(subst /,$(\comma),$t))
+			$$(call $(lambda $1/[$2,$4,$1]),$(subst /,$(\comma),$t))
 			$(__gold_state__)
 		$(\n)
 		# Move to a new state.
@@ -752,7 +752,7 @@ define __gold_lalr_handle[-]
 		$(if $(findstring $n,0),
 			# Just append a reduction.
 			__gold_stack__ += \
-				$(firstword $(subst /, ,$t))/(0,,$r)$(__gold_state__)
+				$(firstword $(subst /, ,$t))/(0,-,$r)$(__gold_state__)
 
 			,# else
 			$(foreach d,$(words $(__gold_stack__)),
@@ -779,7 +779,7 @@ define __gold_lalr_handle[-]
 						$$(subst $$(\s),$$(\comma),
 							$$(notdir $$(basename $$(__gold_tmp__)))
 						),# 1..N: Symbols.
-						$$(subst / ,.,
+						$$(subst / ,-,
 								$$(dir $$(__gold_tmp__)) ),# N+1: Locations.
 						$r# N+2: Rule Id.
 					)
@@ -945,8 +945,8 @@ __gold_default_symbol_name = \
 
 # Params:
 #   1. Chars.
-#   2. Location.
-#   3. Symbol Id.
+#   2. Symbol Id.
+#   3. Location.
 define __gold_hook_token
 	$(foreach __gold_location__,$3,
 		$(__gold_invoke_create_fn)
@@ -956,16 +956,15 @@ endef
 # Calls symbols creation function (if any, otherwise a default one is called).
 # Params:
 #   1. Chars/Production.
-#   2. One word location in form 'line:col'.
-#   3. Symbol Id.
+#   2. Symbol Id.
 # Context:
-#   '__gold_location__': The same as arg 2.
+#   '__gold_location__'.
 define __gold_invoke_create_fn
-	$(foreach __gold_symbol_id,$3,
+	$(foreach __gold_symbol_id,$2,
 		$(foreach 0,
 			$(or \
 				$(call var_defined,
-						$(gold_grammar)_create-$(call __gold_symbol_fn,$3)),
+						$(gold_grammar)_create-$(call __gold_symbol_fn,$2)),
 				gold_default_create
 			),
 			$($0)
@@ -1027,13 +1026,13 @@ __gold_ascii_table := \
 
 # Called by '__gold_hook_rule_nN' proxy.
 # Context:
-#   r. Rule Id
+#   r. Rule Id.
 # Params:
 #   ... Symbols,
-#   N+1 Location vector.
+#   N+1 Location vector: 'l1-l2-...lN-', or '-' for N=0.
 define __gold_hook_rule
 	$(foreach __gold_location__,
-		$(firstword $($(__gold_n$(call __gold_rule_symbols_nr,$r)+1))),
+		$($(__gold_n$(call __gold_rule_symbols_nr,$r)+1)),
 		$(call __gold_invoke_create_fn,
 			$(foreach __gold_rule_id,$r,
 				$(foreach 0,
@@ -1045,7 +1044,6 @@ define __gold_hook_rule
 					$($0)# No call to preserve expansion context.
 				)
 			),
-			$(__gold_location__),
 			$(call __gold_rule_nonterminal_id,$r)
 		)
 	)
@@ -1065,12 +1063,43 @@ define gold_default_produce
 endef
 
 #
+# Getting location information.
+#
+
+#
+# Retrieves a location in form 'line:col'.
+#
+# When calling from rule production or non-terminal constructor context:
+#   location of the first symbol in the RHS (if any), nothing for empty rule
+# From terminal symbol constructor context:
+#   location of the first character of the token
+#
+# Note:
+#   Rule production handlers can access locations of the rest RHS symbols
+#   using 'gold_location_of' function.
+define gold_location
+	$(call gold_location_of,1)
+endef
+
+#
+# Gets a location of a symbol specified by its number in the RHS of the rule
+# production.
+#
+# Params:
+#   1. The ordinal number of the sought-for symbol in the RHS.
+# Return:
+#   Location in form 'line:col', or empty if there is no such symbol.
+define gold_location_of
+	$(word $1,$(subst -, ,$(__gold_location__)))
+endef
+
+#
 # Error/warning/info reporting.
 #
 
 # 1. Message.
 define gold_report
-	$(call gold_report_at,$(__gold_location__),$1)
+	$(call gold_report_at,$(gold_location),$1)
 endef
 
 # 1. Location.
