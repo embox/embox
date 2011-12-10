@@ -98,6 +98,14 @@ define __new
 endef
 __object_instance_cnt :=# Initially empty.
 
+# Tells whether the argument is a valid object reference.
+#   1. Reference to check.
+# Return:
+#   The argument if true, empty otherwise.
+define is_object
+	$(if $(value class-$(value $(singleword $1))),$1)
+endef
+
 #
 # Runtime member access: 'invoke', 'get' and 'set'.
 #
