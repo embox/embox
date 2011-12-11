@@ -4,98 +4,120 @@
  *
  * @date 30.09.11
  * @author Dmitry Zubarevich
+ * @author Avdyukhin Dmitry
  */
 
 #ifndef UTIL_HASHTABLE_H_
 #define UTIL_HASHTABLE_H_
 
-#include <assert.h>
 #include <util/list.h>
 
-/* standard sizes of hashtables */
-extern int good_sizes[];
+/**
+ * A link which has to be embedded into each element of the hashtable.
+ *
+ * Usage:
+ * @code
+ *  struct my_element {
+ *  	...
+ *  	struct hashtable_link my_link;
+ *  	...
+ *  };
+ * @endcode
+ *
+ */
+struct hashtable_link {
+	struct list_link link;
+};
 
-/* type of key for data */
-typedef char key_t;
-/* type of data in hashtable */
-typedef char data_t;
-/* hash function delegate */
-typedef int (*hash_key) (const key_t *);
-/* compare function delegate */
-typedef int (*compare_keys) (const key_t *, const key_t *);
+/** Hash function delegate. */
+typedef size_t (*hash_t) (const struct hashtable_link *);
 
-//typedef struct hashtable hashtable;
-
-//typedef struct ht_element ht_element;
-
-/* Element of list */
-typedef struct ht_element {
-	key_t* key;
-	data_t* value;
-	struct list_link lnk;
-} ht_element;
+/** Compare function for hashtable. */
+typedef int (*hashtable_comparator_t) (const struct hashtable_link *,
+		const struct hashtable_link *);
+/** Dispose function for hashtable link. */
+typedef int (*hashtable_dispose_t) (struct hashtable_link *);
 
 /* hashtable structure */
-typedef struct hashtable {
-	struct list **data;        /* dynamic array contains lists of data */
-	int count;                 /* count of elements at hashtable */
-	int index_of_size;         /* index of element at GoodSizes[] array */
-	hash_key hash_key;         /* hash function */
-	compare_keys compare_keys; /* key compare function */
-} hashtable;
+struct hashtable {
+	/** Dynamic array contains lists of data */
+	struct list *data;
+	/** Count of elements at hashtable */
+	int count;
+	/** Index of element at GoodSizes[] array */
+	int index_of_size;
+};
 
 /**
- * creation of hashtable
+ * Initialization of hashtable
  * @param index_of_size - index at good_sizes array
- * @param hash - hash function
- * @param compare - compdre function
  * @param key_size - size of key type
  * @param value_size - size of value type
  * @return hashtable
  */
-extern hashtable *hashtable_create(hashtable *hash_tab, int index_of_size,
-		hash_key hash, compare_keys compare);
-
-/**
- * Insert element into hashtable
- * @param hash_tab - hashtable into which will be inserted element
- * @param key - identifier of data
- * @param value - useful information
- */
-extern void hashtable_insert (hashtable *hash_tab, key_t *key, data_t *value);
-
-/**
- * Delete element from hashtable
- * @param hash_tab - hashtable from which will be deleted element
- * @param key - identifier of data in element
- */
-extern void hashtable_remove (hashtable *hash_tab, key_t *key);
+extern struct hashtable *hashtable_init(struct hashtable *hash_tab, size_t size);
 
 /**
  * Getter for info about count of elements into hashtable
  * @param hash_tab - hashtable into which will be element
  */
-extern int hashtable_count (hashtable *hash_tab);
+extern size_t hashtable_count(struct hashtable *hash_tab);
+
+/**
+ * Insert element into hashtable
+ * @param hash_tab - hashtable into which will be inserted element
+ * @param key - identifier of data
+ * @param hash - hash function
+ * @param compare - compare function
+ */
+extern void hashtable_insert(struct hashtable *hash_tab,
+		struct hashtable_link *key, hash_t hash, hashtable_comparator_t compare);
+
+/**
+ * Delete element from hashtable
+ * @param hash_tab - hashtable from which will be deleted element
+ * @param key - identifier of data in element
+ * @param hash - hash function
+ * @param compare - compare function
+ */
+extern void hashtable_remove(struct hashtable *hash_tab,
+		struct hashtable_link *key, hash_t hash, hashtable_comparator_t compare);
 
 /**
  * Copy of hashtable
  * @param from - source hashtable
  * @param to - result hashtable
+ * @param hash - hash function
+ * @param compare - compare function
  */
-extern hashtable *hashtable_copy(hashtable *from, hashtable *to);
+extern struct hashtable *hashtable_copy(struct hashtable *from,
+		struct hashtable *to, hash_t hash, hashtable_comparator_t compare);
 
 /**
- * free memory from hashtable
- * @param hash_tab - finallysed hashtable
+ * Delete all elements from hashtable. Call dispose function for each element.
+ * @param hash_tab - cleared hashtable
+ * @param dispose - function, applyed to each deleted element
  */
-extern void hashtable_destroy(hashtable *hash_tab);
+extern void hashtable_clear(struct hashtable *hash_tab, hashtable_dispose_t dispose);
+
+/**
+ * Delete all elements from hashtable. Call dispose function for each element.
+ * Clear memory from hashtable.
+ * @param hash_tab - cleared hashtable
+ * @param dispose - function, applyed to each deleted element
+ */
+extern void hashtable_destoy(struct hashtable *hash_tab, hashtable_dispose_t dispose);
 
 /**
  * Search of data in hashtable by key
  * @param hash_tab - hashtable at which will be found element
  * @param key - identifier for data of element
+ * @param hash - hash function
+ * @param compare - compare function
  */
-data_t *hashtable_search(hashtable *hash_tab, key_t *key);
+extern struct hashtable_link *hashtable_search(struct hashtable *hash_tab,
+		const struct hashtable_link *key,
+		hash_t hash, hashtable_comparator_t compare);
 
 /**
  * Iterator for all elements of hashtable

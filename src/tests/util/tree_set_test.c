@@ -2,7 +2,7 @@
  * @file
  * @brief Test unit for util/tree_set.
  *
- * @date Oct 8, 2001
+ * @date Oct 8, 2011
  * @author Avdyukhin Dmitry
  */
 
