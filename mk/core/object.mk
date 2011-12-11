@@ -81,7 +81,7 @@ endef
 # Return:
 #   New object identifier.
 define __new
-	$(foreach this,__obj$(words $(__object_instance_cnt)),
+	$(foreach this,__obj__$(words $(__object_instance_cnt)),
 		$(def-ifdef OBJ_DEBUG,
 			$(info \
 					$(this): new $(__class__): $(__obj_debug_args))
@@ -526,6 +526,8 @@ define __member_def
 			$(if $(not $(findstring $3x,$(trim $3x))),
 					$$(\0))# Preserve leading whitespaces.
 			$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$3))
+		$(\n)
+		__def_ignore += $1.$2
 	}
 endef
 
@@ -584,6 +586,8 @@ define builtin_func-super
 	$(call __class_def_attribute,super,$1)
 
 	$(foreach c,class-$(call __class_resolve,$1),
+		$(if $(not $(call def_is_done,$c)),$(call def,$c))
+
 		$(if $(multiword $(builtin_args_list)),
 			$$(call $c,$(builtin_nofirstarg)),
 			$$(call $c)

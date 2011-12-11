@@ -106,6 +106,16 @@ __def_done   :=
 __def_ignore := $(.VARIABLES) __def_ignore
 
 ##
+# Tells whether the specified function has been ever processed using 'def'.
+#
+# Params:
+#   1. Name of function to check.
+# Return:
+#   The argument if answer is true, empty otherwise.
+def_is_done = \
+	$(filter $1,$(__def_done))
+
+##
 # Registers a new value provider for variables matching the given name pattern.
 #
 # Params:
