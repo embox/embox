@@ -12,6 +12,68 @@ include mk/core/define.mk
 include mk/core/object.mk
 
 # Constructor args:
+#   1. (optional) value.
+define class-string
+	$(field value,$(value 1))
+endef
+
+# Constructor args:
+#   1. (optional) value.
+define class-filename
+	$(field name)
+	$(setter name,
+		$(if $(findstring $(\s),$(subst $(\t),$(\s),$(subst $(\n),$(\s),$1))),
+			$(error \
+					Invalid file name: '$1')
+		)
+	)
+
+	# Construct.
+	$(if $(value 1),$(set name,$1))
+endef
+
+# Constructor args:
+#   1. Name representing the crosslink.
+define class-abstract_ref
+	$(field src)
+		$(setter src,
+			$(assert $(if $1,$(call is_object,$1)))$1)
+	$(field dst)
+		$(setter dst,
+			$(assert $(if $1,$(call is_object,$1)))$1)
+
+	$(field link_name,$1)
+
+	$(method get_link_name,$(get link_name))
+
+	$(method get_link_type)
+endef
+
+# Constructor args:
+#   1. Name representing the crosslink.
+define class-module_ref
+	$(super abstract_ref,$1)
+	$(method get_link_type,module)
+endef
+
+# Constructor args:
+#   1. Module name.
+define class-module
+	$(field name,$1)
+
+	$(field modifiers)
+	$(field super_module_ref)
+
+	$(field depends_refs)
+
+	$(field requires_refs)
+	$(field provides_refs)
+
+	$(field sources)
+	$(field objects)
+endef
+
+# Constructor args:
 #   1. Name of property in each contained object.
 #   2. Name of property in container.
 define class-containment_helper

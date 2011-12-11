@@ -21,6 +21,8 @@
 # call 'gold_default_produce' function.
 #
 
+include mk/mybuild/model.mk
+
 # Rule: <Model> ::= <Package> <Imports> <Entities>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-Model
@@ -147,130 +149,54 @@ define $(gold_grammar)_produce-SuperFeatures
 	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <Module> ::= <ModuleModifiers> module Identifier <SuperModule> '{' <ModuleAttributes> '}'
+# Rule: <Module> ::= <ModuleModifiers> module Identifier <SuperModule>
+#                        '{' <ModuleAttributes> '}'
 # Args: 1..7 - Symbols in the RHS.
 define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(foreach m,$(new module,$3),
+		$(set m->modifiers,$1)
+		$(set m->super_module_ref,$4)
+		$(foreach attr,depends_ref requires_ref provides_ref source object,
+			$(set m->$(attr)s,$(filter-patsubst $(attr)/%,%,$6))
+		)
+	)
 endef
 
 # Rule: <ModuleModifiers> ::= <ModuleModifier> <ModuleModifiers>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-ModuleModifiers
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleModifiers> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleModifiers2
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleModifier> ::= static
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleModifier_static
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleModifier> ::= abstract
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleModifier_abstract
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(if $(filter $1,$2),
+		$(call gold_report_error,
+				Duplicate module modifier '$1'),
+		$1 \
+	)
+	$2
 endef
 
 # Rule: <SuperModule> ::= extends <ModuleRef>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-SuperModule_extends
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <SuperModule> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-SuperModule
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleAttributes> ::= <ModuleAttribute> <ModuleAttributes>
-# Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleAttributes
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleAttributes> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleAttributes2
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleAttribute> ::= <Depends>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleAttribute
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleAttribute> ::= <FeatureAttribute>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleAttribute2
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleAttribute> ::= <FilenameAttribute>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleAttribute3
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleAttribute> ::= <MakeAttribute>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleAttribute4
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleAttribute> ::= <Option>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleAttribute5
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$2
 endef
 
 # Rule: <Depends> ::= depends <ModuleRefList>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-Depends_depends
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(2:%=$1_ref/%)
 endef
 
 # Rule: <FeatureAttribute> ::= <FeatureAttributeNature> <FeatureRefList>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-FeatureAttribute
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <FeatureAttributeNature> ::= provides
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-FeatureAttributeNature_provides
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <FeatureAttributeNature> ::= requires
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-FeatureAttributeNature_requires
-	$(gold_default_produce)# TODO Auto-generated stub!
+	# $1 is either 'requires' or 'provides'.
+	$(2:%=$1_ref/%)
 endef
 
 # Rule: <FilenameAttribute> ::= <FilenameAttributeNature> <FilenameList>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-FilenameAttribute
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <FilenameAttributeNature> ::= source
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-FilenameAttributeNature_source
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <FilenameAttributeNature> ::= object
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-FilenameAttributeNature_object
-	$(gold_default_produce)# TODO Auto-generated stub!
+	# $1 is either 'source' or 'object'.
+	$(2:%=$1/%)
 endef
 
 # Rule: <Option> ::= option Identifier ':' <OptionTypeWithAssignment>
@@ -402,103 +328,63 @@ endef
 # Rule: <ModuleRef> ::= <QualifiedName>
 # Args: 1..1 - Symbols in the RHS.
 define $(gold_grammar)_produce-ModuleRef
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(new module_ref,$1)
 endef
 
 # Rule: <Filename> ::= StringLiteral
 # Args: 1..1 - Symbols in the RHS.
 define $(gold_grammar)_produce-Filename_StringLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(new filename,$1)
 endef
 
 # Rule: <String> ::= StringLiteral
 # Args: 1..1 - Symbols in the RHS.
 define $(gold_grammar)_produce-String_StringLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(new string,$1)
 endef
 
 # Rule: <InterfaceRefList> ::= <InterfaceRef> ',' <InterfaceRefList>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-InterfaceRefList_Comma
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <InterfaceRefList> ::= <InterfaceRef>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-InterfaceRefList
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$1 $3
 endef
 
 # Rule: <FeatureRefList> ::= <FeatureRef> ',' <FeatureRefList>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-FeatureRefList_Comma
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <FeatureRefList> ::= <FeatureRef>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-FeatureRefList
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$1 $3
 endef
 
 # Rule: <ModuleRefList> ::= <ModuleRef> ',' <ModuleRefList>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-ModuleRefList_Comma
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <ModuleRefList> ::= <ModuleRef>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleRefList
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$1 $3
 endef
 
 # Rule: <FilenameList> ::= <Filename> ',' <FilenameList>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-FilenameList_Comma
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <FilenameList> ::= <Filename>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-FilenameList
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$1 $3
 endef
 
 # Rule: <StringList> ::= <String> ',' <StringList>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-StringList_Comma
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <StringList> ::= <String>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-StringList
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$1 $3
 endef
 
 # Rule: <QualifiedName> ::= Identifier '.' <QualifiedName>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-QualifiedName_Identifier_Dot
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <QualifiedName> ::= Identifier
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-QualifiedName_Identifier
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$1 $3
 endef
 
 # Rule: <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-QualifiedNameWithWildcard_DotTimes
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$1 *
 endef
 
-# Rule: <QualifiedNameWithWildcard> ::= <QualifiedName>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-QualifiedNameWithWildcard
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
 
+$(def_all)
 
