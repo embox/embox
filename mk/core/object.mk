@@ -41,6 +41,16 @@ include mk/core/define.mk
 
 include mk/util/var/assign.mk
 
+# Creates a new inctance of the specified class.
+# Only a single argument is passed to the constructor.
+#   1. Class name.
+#   2. An (optional) argument to pass to the constructor.
+# Return:
+#   Newly created object instance.
+define new
+	$(new $1,$(value 2))
+endef
+
 #
 # $(new class,args...)
 #
@@ -104,6 +114,15 @@ __object_instance_cnt :=# Initially empty.
 #   The argument if true, empty otherwise.
 define is_object
 	$(if $(value class-$(value $(singleword $1))),$1)
+endef
+
+# Tells whether an object has the specified class.
+#   1. Reference to check.
+#   2. Class name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define instance_of
+	$(and $(is_object),$(filter $2,$($1) $($($1).supers)),$1)
 endef
 
 #
