@@ -717,7 +717,11 @@ define __def_outer_hook_func
 	$(foreach 0,$(builtin_name),
 		$(if $(call var_defined,builtin_func-$0),
 			# There is a special builtin function handler, invoke it.
-			$(builtin_func-$0),
+			${eval \
+				__def_tmp__ := \
+					$$(\0)$(subst $(\h),$$(\h),$(value builtin_func-$0))
+			}
+			$(__def_tmp__),
 
 			# If it is a native function check its arity.
 			$(foreach minimum_args,
@@ -1055,7 +1059,7 @@ define builtin_func-assert
 	$$(if $1,,
 		$$(call __assert_handle_failure,$(__def_var),$(subst $$,$$$$,$1)
 			$(if $(filter 2,$(builtin_args_list)),
-				$(\comma)$(subst $(\comma),$$(\comma),$(builtin_nofirstarg))
+				$(\comma)$$(subst ,,$(builtin_nofirstarg))
 			)
 		)
 	)
