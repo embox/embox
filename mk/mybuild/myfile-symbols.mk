@@ -139,3 +139,6 @@ $(gold_grammar)_name_of-static          := static
 $(gold_grammar)_name_of-string          := string
 $(gold_grammar)_name_of-StringLiteral   := String Literal
 
+
+$(def_all)
+

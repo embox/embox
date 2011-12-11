@@ -29,7 +29,7 @@ include $(basename $(__gold_grammar_$(gold_grammar)_mk))-tables.mk
 
 # Productions and symbols are not mandatory.
 -include $(addprefix $(basename $(__gold_grammar_$(gold_grammar)_mk)), \
-			-symbols.mk -rules.mk)
+			-symbols.mk -rules-new.mk)
 
 $(def_all)
 
