@@ -260,7 +260,8 @@ define __field_check
 	$(if $(findstring simple,$(flavor $(__this).$1)),
 		$1,
 		$(error \
-				Invalid field name: '$1', referenced on object '$(__this)')
+				Invalid field name: '$1', \
+				referenced on object '$(__this)' of type '$($(__this))')
 	)
 endef
 
@@ -568,7 +569,12 @@ define builtin_func-method
 	$(call __class_def_attribute,methods,$1)
 
 	$(call __member_def,$(call builtin_tag,__class__),$(trim $1),
-			$$(foreach this,$$(__this),$(builtin_nofirstarg)))
+		$(if $(multiword $(builtin_args_list)),
+			$$(foreach this,$$(__this),$(builtin_nofirstarg)),
+			$$(error Invoking unimplemented abstract method $0, \
+					declared in class $(call builtin_tag,__class__))
+		)
+	)
 endef
 
 #
