@@ -109,4 +109,7 @@ enum {
 	TCP_OPT_KIND_MSS,
 };
 
+typedef int (*tcp_handler_t)(struct tcp_sock *tcpsk,
+		struct sk_buff *skb, tcphdr_t *tcph, tcphdr_t *out_tcph);
+
 #endif /* TCP_H_ */
