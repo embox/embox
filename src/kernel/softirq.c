@@ -31,6 +31,7 @@ struct softirq_action {
 
 static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
 static uint32_t softirq_pending;
+static uint32_t softirq_handling;
 
 int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *data) {
 	ipl_t ipl;
@@ -68,6 +69,7 @@ int softirq_raise(softirq_nr_t nr) {
  */
 static void softirq_dispatch(void) {
 	uint32_t pending;
+	uint32_t handling;
 	softirq_handler_t handler;
 	void *data;
 
@@ -75,11 +77,13 @@ static void softirq_dispatch(void) {
 
 	while ((pending = softirq_pending)) {
 		softirq_pending = 0;
-
-		for (softirq_nr_t nr = 0; pending; pending >>= 1, ++nr) {
-			if (!(pending & 0x1)) {
+		handling = 0x1;
+		for (softirq_nr_t nr = 0; pending; pending >>= 1, handling <<= 1, ++nr) {
+			if (!(pending & 0x1) || (softirq_handling & handling)) {
 				continue;
 			}
+
+			softirq_handling |= handling;
 
 			if ((handler = softirq_actions[nr].handler)) {
 				data = softirq_actions[nr].data;
@@ -88,6 +92,8 @@ static void softirq_dispatch(void) {
 				handler(nr, data);
 				ipl_disable();
 			}
+
+			softirq_handling &= ~handling;
 		}
 	}
 
