@@ -357,6 +357,8 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 	return 0;
 }
 
+void* thread_get_stack_start(struct thread const* t) { return t -> stack; }
+
 struct thread *thread_lookup(thread_id_t id) {
 	struct thread *t;
 

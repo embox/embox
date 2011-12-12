@@ -10,12 +10,12 @@
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 
-void int0301HandlerHack(irq_nr_t n); // todo: A HACK! See http://code.google.com/p/embox/issues/detail?id=358
+void int0301HandlerHack(pt_regs_t*); // todo: A HACK! See http://code.google.com/p/embox/issues/detail?id=358
 
 void exception_handler(pt_regs_t *st) {
    if (3 == st -> trapno || 1 == st -> trapno) {
 //          ipl_enable(); // todo: isn't this another hack
-//          int0301HandlerHack(st -> trapno);
+          int0301HandlerHack(st);
 //          ipl_disable();
     } else {
 	panic("EXCEPTION [0x%x]:\n"

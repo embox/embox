@@ -19,8 +19,10 @@
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 
-
+#include <asm/traps.h>
 #include <asm/flags.h>
+
+#include <sys/user.h>
 
 /**
  * This macro is used to register this example at the system.
@@ -45,25 +47,68 @@ static void* threadB(void* args) {
 static void setTraceFlagX86(void);
 // static void clearTraceFlagX86(void);
 
+static struct user lastProcessorState;
+
 //static irq_return_t int03Handler(irq_nr_t irq_nr, void *dev_id) {
-void int0301HandlerHack(irq_nr_t n) {
+void int0301HandlerHack(pt_regs_t* regs) {
+  irq_nr_t n = regs -> trapno;
+
+  struct user_regs_struct* r = &(lastProcessorState.regs);
+  struct user* u = &lastProcessorState;
+
+  r -> eflags = regs -> eflags;
+  r -> eip = regs -> eip;
+  r -> orig_eax = regs -> eax; // todo: don't know what does this mean!
+  r -> eax = regs -> eax;
+  r -> ebx = regs -> ebx;
+  r -> ecx = regs -> ecx;
+  r -> edx = regs -> edx;
+  r -> esi = regs -> esi;
+  r -> edi = regs -> edi;
+  r -> ebp = regs -> ebp;
+  r -> esp = regs -> esp2;
+
+  r -> xcs = regs -> cs;
+  r -> xds = regs -> ds;
+  r -> xes = regs -> es;
+  r -> xfs = regs -> fs;
+  r -> xgs = regs -> gs;
+  r -> xss = regs -> ss2;
+
+  u -> signal = 0;
+  u -> start_stack = (unsigned long)(thread_get_stack_start(thread_self()));
 
   // todo: critical_inside(0xFFFFFFFF) is not a very aesthetical way to say what i want?
   if (critical_inside(0xFFFFFFFF)) return;  // this debugger doesn't operate inside any kind of a critical context, cause it uses a separate thread
 
   intNo = n;
   sched_wake(&breakpointHappened);
+
+/* TODO: HACK. Here we suppose that sched_wake doesn't return until the debugger thread wants to continue execution.
+   This assumption may not always be true, though we have set the highest priority for the debug thread
+   */
+
+  regs -> eflags = r -> eflags;
+  regs -> eip = r -> eip;
+  regs -> eax = r -> eax;
+  regs -> ebx = r -> ebx;
+  regs -> ecx = r -> ecx;
+  regs -> edx = r -> edx;
+  regs -> esi = r -> esi;
+  regs -> edi = r -> edi;
+  regs -> ebp = r -> ebp;
+  regs -> esp2 = r -> esp;
+// must be done exactly when protection level is changed on return  regs -> esp = r -> esp;
+
+  regs -> cs = r -> xcs;
+  regs -> ds = r -> xds;
+  regs -> es = r -> xes;
+  regs -> fs = r -> xfs;
+  regs -> gs = r -> xgs;
+// must be done exactly when protection level is changed on return   regs -> ss = r -> xss;
+  regs -> ss2 = r -> xss;
+
   return;
-
-	// XXX clock_hander is called from arch part
-   if (n == 3) {
-        printk("int %d\n", n);
-	intNo = n;
-	sched_wake(&breakpointHappened);
-   } else
-	++ counter;
-
-//	return IRQ_HANDLED;
 }
 
 static void* threadA(void* args) {
@@ -90,6 +135,9 @@ static int run(int argc, char **argv) {
 
 
 	printf("Start thread's example\n");
+
+	asm ( " mov %%cr0, %0 " :  "=r"(i) );
+	printf("cr0 = %08x\n", i);
 
 //	assert(0 == irq_attach(3, int03Handler, 0, NULL, "int 03 debug handler"));
 	event_init(&breakpointHappened, "breakpointHappened");
