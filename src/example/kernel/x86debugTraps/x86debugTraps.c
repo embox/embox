@@ -23,6 +23,99 @@
 #include <asm/flags.h>
 
 #include <sys/user.h>
+#include <sys/ptrace.h>
+
+static struct event breakpointHappened;
+
+long int ptrace (enum __ptrace_request request, thread_id_t thread_id, void *addr, void *data) {
+  struct thread* t = thread_lookup(thread_id);
+
+  if (t == NULL) {
+    errno = ESRCH; // todo: is this the right way?
+    return -1;
+  }
+
+  switch (request) {
+
+    case PTRACE_ATTACH: break;
+    case PTRACE_DETACH: break;
+    case PTRACE_TRACEME: break;
+
+    case PTRACE_PEEKTEXT:
+    case PTRACE_PEEKDATA: {
+      errno = ENOERR; // todo: is this the right way?
+      return *(long int*)(addr);
+    }
+
+    case PTRACE_PEEKUSER:
+    case PTRACE_POKEUSER:
+    {
+      unsigned x = (unsigned)addr;
+      long int* a;
+      if (x >= sizeof(struct user)) {
+        errno = EIO; // todo: is this the right way?
+	return -1;
+      }
+      a = (long int*)((unsigned)thread_get_ptrace_state(t) + (unsigned)addr);
+
+      if (request == PTRACE_PEEKUSER)
+        return *a;
+      else {
+        *a = *(long int*)data;
+        return 0;
+      }
+    }
+
+    case PTRACE_POKETEXT:
+    case PTRACE_POKEDATA: {
+      *(long int*)addr = *(long int*)data;
+      break;
+    }
+
+    case PTRACE_GETREGS: {
+      *(struct user_regs_struct*)data = thread_get_ptrace_state(t) -> regs;
+      break;
+    }
+
+    case PTRACE_SETREGS: {
+      thread_get_ptrace_state(t) -> regs = *(struct user_regs_struct*)data;
+      break;
+    }
+
+    case PTRACE_SETFPREGS:
+    case PTRACE_GETFPREGS: { // todo: no support for fp regs at all!
+      break;
+    }
+
+    case PTRACE_SETSIGINFO:
+    case PTRACE_SETOPTIONS: { // todo: no support
+      break;
+    }
+
+    case PTRACE_CONT: {
+      sched_sleep(&breakpointHappened); // wait for breakpoint/trace event to happen
+      break;
+    }
+
+    case PTRACE_SINGLESTEP: {
+      thread_get_ptrace_state(t) -> regs . eflags |= X86_EFLAGS_TF;
+      sched_sleep(&breakpointHappened); // wait for breakpoint/trace event to happen
+      thread_get_ptrace_state(t) -> regs . eflags &= ~X86_EFLAGS_TF;
+      break;
+    }
+
+    case PTRACE_KILL: {
+      break; // todo: how to kill a process?
+    }
+
+    default : {
+      errno = EINVAL; // todo: is this the right way?
+      return -1;
+    }
+  }
+  errno = ENOERR; // todo: is this the right way?
+  return 0;
+}
 
 /**
  * This macro is used to register this example at the system.
