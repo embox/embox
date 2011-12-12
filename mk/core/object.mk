@@ -672,7 +672,7 @@ define __field_setter_type_check
 			$(error \
 					Attemp to assign value '$1' ($(if $(is-object $1),
 							instance of class $($1),not an object)) \
-					to field $0 of incompatible type $2)
+					to field '$(subst .set.,.,$0)' of incompatible type '$2')
 		)
 	)
 endef
