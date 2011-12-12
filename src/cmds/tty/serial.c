@@ -84,6 +84,11 @@ static int serial_con_manager(int argc, char *argv[]) {
 
 	sscanf(argv[1], "%d", &n);
 
+	if (n <= 0 || n > SERIAL_N_CON) {
+		printf("Invalid parameter\n");
+		return -1;
+	}
+
 	tty_ng_manager(n, tty_serial_init, shell_run);
 
 	return 0;
