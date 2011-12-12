@@ -136,7 +136,7 @@ builtin_func-instance-of = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define has_field
-	$(error NIY)
+	$(and $(is_object),$(call class_has_field,$($1),$2),$1)
 endef
 builtin_func-has-field = \
 	$(foreach builtin_name,has_field,$(builtin_to_function_inline))
@@ -147,7 +147,7 @@ builtin_func-has-field = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define class_has_field
-	$(error NIY)
+	$(if $(filter $2,$(value $1.fields)),$1)
 endef
 builtin_func-class-has-field = \
 	$(foreach builtin_name,class_has_field,$(builtin_to_function_inline))
@@ -158,7 +158,7 @@ builtin_func-class-has-field = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define has_method
-	$(error NIY)
+	$(and $(is_object),$(call class_has_method,$($1),$2),$1)
 endef
 builtin_func-has-method = \
 	$(foreach builtin_name,has_method,$(builtin_to_function_inline))
@@ -169,7 +169,7 @@ builtin_func-has-method = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define class_has_method
-	$(error NIY)
+	$(if $(filter $2,$(value $1.methods)),$1)
 endef
 builtin_func-class-has-method = \
 	$(foreach builtin_name,class_has_method,$(builtin_to_function_inline))
