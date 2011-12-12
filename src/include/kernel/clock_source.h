@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief API for registration of time's device
  *
  * @date 06.07.2011
  * @author Ilia Vaprol
@@ -13,7 +13,7 @@
 #include <lib/list.h>
 
 struct clock_source {
-	uint32_t flags; // periodical or not
+	uint32_t flags; /**< periodical or not */
 	uint32_t precision;
 };
 
@@ -34,7 +34,6 @@ extern uint32_t clock_source_get_precision(void);
 extern useconds_t clock_source_clock_to_usec(clock_t cl);
 
 /* return system timers_list at system (from driver) */
-extern struct list_head * clock_source_get_timers_list(void);
-
+extern struct list_head *clock_source_get_timers_list(void);
 
 #endif /* KERNEL_CLOCK_SOURCE_H_ */
