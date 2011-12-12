@@ -189,13 +189,12 @@ builtin_func-class-has-method = \
 #   3. (optional) Argument to pass to the continuaion.
 # Return:
 #   Result of call to continuation in case of a valid reference,
-#   otherwise it aborts using builtin_error.
+#   otherwise it aborts using 'builtin_error'.
 define __object_member_parse
 	$(or \
 		$(__object_member_try_parse),
 		$(call builtin_error,
-			Invalid first argument to '$(builtin_name)' function: '$1'
-		)
+				Invalid first argument to '$(builtin_name)' function: '$1')
 	)
 endef
 
@@ -546,7 +545,9 @@ define __class_name_check
 				$(findstring $(\\),$1),
 				$(findstring $(\h),$1),
 				$(findstring $$,$1),
-				$(findstring  .,$1)
+				$(findstring  .,$1),
+				$(findstring  -,$1),
+				$(findstring  /,$1)
 			)),
 		$(singleword $1)
 	)
@@ -599,19 +600,80 @@ define __member_def
 	}
 endef
 
+# Params:
+#   1. Field name to parse in form 'name' or 'name/type'.
+#   2. Continuation with the following args:
+#       1. Recognized name.
+#       2. Type if specified, empty otherwise.
+#       3. Optional argument.
+#   3. (optional) Argument to pass to the continuaion.
+# Return:
+#   Result of call to continuation in case of a valid reference,
+#   otherwise it aborts using 'builtin_error'.
+define __field_name_parse
+	$(or \
+		$(with \
+			$(subst /, / ,$1),# Split the argument.
+			$2,$(value 3),# Continuation function with its argument.
+
+			$(foreach name,$(call __class_name_check,$(firstword $1)),
+				$(if $(singleword $1),
+					# No type is specified.
+					$(call $2,$(name),,$3),
+
+					# Expecting to see a type in the third word.
+					$(if $(eq /,$(word 2,$1)),
+						$(foreach type,$(call __class_name_check,$(word 3,$1)),
+							$(call $2,$(name),$(type),$3)
+						)
+					)
+				)
+			)
+		),
+
+		$(call builtin_error,
+				Invalid field name: '$1', should be 'name' or 'name/type')
+	)
+endef
+
 #
 # $(field name,initializer...)
+# $(field name/type,initializer...)
 #
 define builtin_func-field
-	$(foreach 1,$(call __class_name_check_or_die,$1),
-		# Arg 1 is got trimmed.
+	$(call __field_name_parse,$1,
+		# 1. Name.
+		# 2. Type, or empty.
+		# 3. Initializer...
+		$(lambda \
+			$(call __class_def_attribute,fields,$1)
 
-		$(call __class_def_attribute,fields,$1)
+			$(call __member_def,$(call builtin_tag,__class__),$1,$3)
 
-		$(call __member_def,$(call builtin_tag,__class__),$1,
-				$(builtin_nofirstarg))
+			$$(eval $$(this).$1 := $$(value $(call builtin_tag,__class__).$1))
 
-		$$(eval $$(this).$1 := $$(value $(call builtin_tag,__class__).$1))
+			$(and $2,
+				$(call var_undefined,$(call builtin_tag,__class__).set.$1),
+
+				$(call __class_def_attribute_no_check,methods,set.$1)
+				$(call __member_def,$(call builtin_tag,__class__),set.$1,
+						$$(foreach 2,$2,$$(__field_setter_type_check)))
+			)
+		),
+		$(builtin_nofirstarg)
+	)
+endef
+
+# 1. Value being set.
+# 2. Type.
+define __field_setter_type_check
+	$(foreach 1,$1,
+		$(or $(instance-of $1,$2),
+			$(error \
+					Attemp to assign value '$1' ($(if $(is-object $1),
+							instance of class $($1),not an object)) \
+					to field $0 of incompatible type $2)
+		)
 	)
 endef
 
@@ -627,7 +689,6 @@ define builtin_func-setter
 	)
 
 	$(call __class_def_attribute_no_check,methods,set.$(trim $1))
-
 	$(call __member_def,$(call builtin_tag,__class__),set.$(trim $1),
 			$$(foreach this,$$(__this),$(builtin_nofirstarg)))
 endef
