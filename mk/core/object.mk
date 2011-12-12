@@ -119,7 +119,7 @@ endef
 builtin_func-is-object = \
 	$(foreach builtin_name,is_object,$(builtin_to_function_inline))
 
-# Tells whether an object has the specified class.
+# Tells whether a given object is an instance of the specified class.
 #   1. Reference to check.
 #   2. Class name.
 # Return:
@@ -129,6 +129,50 @@ define instance_of
 endef
 builtin_func-instance-of = \
 	$(foreach builtin_name,instance_of,$(builtin_to_function_inline))
+
+# Tells whether a given object has the specified field.
+#   1. Reference to check.
+#   2. Field name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define has_field
+	$(error NIY)
+endef
+builtin_func-has-field = \
+	$(foreach builtin_name,has_field,$(builtin_to_function_inline))
+
+# Tells whether a class has the given field.
+#   1. Name of the class to check.
+#   2. Field name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define class_has_field
+	$(error NIY)
+endef
+builtin_func-class-has-field = \
+	$(foreach builtin_name,class_has_field,$(builtin_to_function_inline))
+
+# Tells whether a given object has the specified method.
+#   1. Reference to check.
+#   2. Method name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define has_method
+	$(error NIY)
+endef
+builtin_func-has-method = \
+	$(foreach builtin_name,has_method,$(builtin_to_function_inline))
+
+# Tells whether a class has the given method.
+#   1. Name of the class to check.
+#   2. Method name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define class_has_method
+	$(error NIY)
+endef
+builtin_func-class-has-method = \
+	$(foreach builtin_name,class_has_method,$(builtin_to_function_inline))
 
 #
 # Runtime member access: 'invoke', 'get' and 'set'.
