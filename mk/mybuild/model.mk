@@ -11,6 +11,8 @@ __mybuild_model_mk := 1
 include mk/core/define.mk
 include mk/core/object.mk
 
+include mk/mybuild/scoping.mk
+
 # Constructor args:
 #   1. (optional) value.
 define class-string
