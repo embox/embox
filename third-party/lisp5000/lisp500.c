@@ -1530,8 +1530,7 @@ X lval fasr(lval * f, lval * p, int pz, lval * s, lval * sp, int sz, lval * c,
 	*ro = y;
 }
 #endif
-void free_dep(void *ptr);
-void *malloc_dep(size_t size);
+
 #ifdef _WIN32
 lval lrp(lval * f, lval * h)
 {
@@ -1552,7 +1551,7 @@ lval lrp(lval * f, lval * h) {
 		waitpid(p, &r, 0);
 	else {
 		int i = 0;
-		char **v = malloc_dep((h - f - 1) * sizeof(char *));
+		char **v = malloc((h - f - 1) * sizeof(char *));
 		for (; i < h - f - 2; i++)
 			v[i] = o2z(f[i + 2]);
 		v[i] = 0;
@@ -1565,13 +1564,16 @@ int lisp5000_main(int argc, char *argv[])
 	lval *g;
 	int i;
 	lval sym;
-	memory_size = 1 * 1024 * 1024;
-	memory = malloc_dep(memory_size);
+	memory_size = 1 * 1024 * 1024 + 0x10;
+	memory = malloc(memory_size);
+
+	memory = (lval *)(((int)memory + 7) & ~7);
+
 	memf = memory;
 	memset(memory, 0, memory_size);
 	memf[0] = 0;
 	memf[1] = memory_size / 4;
-	stack = malloc_dep(256 * 1024);
+	stack = malloc(256 * 1024);
 	memset(stack, 0, 256 * 1024);
 	g = stack + 5;
 	pkg = mkp(g, "CL", "COMMON-LISP");
@@ -1604,8 +1606,8 @@ int lisp5000_main(int argc, char *argv[])
 	do
 		printf("? ");
 	while (ep(g, lread(g)));
-	free_dep(memory);
-	free_dep(stack);
+	free(memory);
+	free(stack);
 	return 0;
 }
 struct symbol_init symi[] = {{"NIL"}, {"T"}, {"&REST"}, {"&BODY"},
