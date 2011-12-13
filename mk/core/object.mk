@@ -769,6 +769,19 @@ define __object_dump_dot
 		$(\n)
 	)
 	$(\n)}
+	$(\n)
 endef
+
+__mk_objects_dump_ps := objects_dump.ps
+
+.PHONY : mk_objects_dump
+.PHONY : $(__mk_objects_dump_ps:.ps=.dot) # Assume it volatile.
+mk_objects_dump : $(__mk_objects_dump_ps)
+
+$(__mk_objects_dump_ps:.ps=.dot) :
+	@printf '%b' '$(call my_printf_escape,$(__object_dump_dot))' > $@
+
+$(__mk_objects_dump_ps) : %.ps : %.dot
+	@dot -Tps $< -o $@
 
 endif # __core_object_mk
