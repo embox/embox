@@ -113,12 +113,12 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 		$(set m->super_module_ref,$4)
 
 		$(silent-foreach attr,
-				depends_ref \
-				requires_ref \
-				provides_ref \
-				source \
-				object,
-			$(set m->$(attr)s,
+				depends_refs \
+#				requires_refs
+#				provides_refs
+				sources \
+				objects,
+			$(invoke m->set_$(attr),
 					$(filter-patsubst $(attr)/%,%,$6))
 		)
 	)
@@ -139,15 +139,15 @@ endef
 $(gold_grammar)_produce-SuperModule_extends = $2
 
 # Rule: <Depends> ::= depends <ModuleRefList>
-$(gold_grammar)_produce-Depends_depends       = $(2:%=$1_ref/%)
+$(gold_grammar)_produce-Depends_depends       = $(2:%=$1_refs/%)
 
-# Rule: <FeatureAttribute> ::=  <FeatureRefList>
+# Rule: <FeatureAttribute> ::= <FeatureAttributeNature> <FeatureRefList>
 # <FeatureAttributeNature> ($1) is either 'requires' or 'provides'.
-$(gold_grammar)_produce-FeatureAttribute      = $(2:%=$1_ref/%)
+$(gold_grammar)_produce-FeatureAttribute      = $(2:%=$1_refs/%)
 
 # Rule: <FilenameAttribute> ::= <FilenameAttributeNature> <FilenameList>
 # <FilenameAttributeNature> ($1) is either 'source' or 'object'.
-$(gold_grammar)_produce-FilenameAttribute     = $(2:%=$1/%)
+$(gold_grammar)_produce-FilenameAttribute     = $(2:%=$1s/%)
 
 # Rule: <Option> ::= option Identifier ':' <OptionTypeWithAssignment>
 # Args: 1..4 - Symbols in the RHS.
