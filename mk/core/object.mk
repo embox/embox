@@ -654,6 +654,7 @@ endef
 
 #
 # $(field name,initializer...)
+# $(field name/*,initializer...)
 # $(field name/type,initializer...)
 #
 define builtin_func-field
@@ -672,8 +673,13 @@ define builtin_func-field
 				$(call var_undefined,$(call builtin_tag,__class__).set.$1),
 
 				$(call __class_def_attribute_no_check,methods,set.$1)
+
 				$(call __member_def,$(call builtin_tag,__class__),set.$1,
-						$$(foreach 2,$2,$$(__field_setter_type_check)))
+					$(if $(eq *,$2),
+						$$(__field_setter_object_check),
+						$$(foreach 2,$2,$$(__field_setter_type_check))
+					)
+				)
 			)
 		),
 		$(builtin_nofirstarg)
@@ -689,6 +695,17 @@ define __field_setter_type_check
 					Attemp to assign value '$1' ($(if $(is-object $1),
 							instance of class $(class $1),not an object)) \
 					to field '$(subst .set.,.,$0)' of incompatible type '$2')
+		)
+	)
+endef
+
+# 1. Value being set.
+define __field_setter_object_check
+	$(foreach 1,$1,
+		$(or $(is-object $1),
+			$(error \
+					Attemp to assign value '$1' which is not a valid object \
+					to field '$(subst .set.,.,$0)')
 		)
 	)
 endef
