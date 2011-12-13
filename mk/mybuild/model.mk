@@ -13,51 +13,92 @@ include mk/core/object.mk
 
 include mk/mybuild/scoping.mk
 
-# A node can have a parent and children.
 define class-node
-	$(method get_parent_node)
-	$(method set_parent_node)
 
-	$(method get_child_nodes)
-	$(method set_child_nodes)
+	$(field container : node)
 
-endef
-
-# Abstract node implementation.
-define class-abstract_node
-	$(field parent_node:*)
-	$(field child_nodes:*)
-
-	$(method get_parent_node,$(get parent_node))
-	$(method set_parent_node,
-		$(if $(eq $1,$(get parent_node)),
-			,# Do nothing.
-			$(assert $(if $1,$(singleword $1)),
-					Assigning more than one parent: '$1')
-			$(foreach old,$(get parent_node),$(set- old->child_nodes,$(this)))
-			$(set parent_node,$1)
-			$(foreach new,$1,$(set+ new->child_nodes,$(this)))
+	# 1. Field of this.
+	# 2. What to add.
+	$(method add_to,
+		$(set+ $1,
+			$(foreach e,$(filter-out $(get $1),$2),$e
+				$(invoke e->inverse_add_to,$(basename $e),$1$(this))
+			)
 		)
 	)
 
-	$(method get_child_nodes,$(get child_nodes))
-	$(method set_child_nodes,
-		$(foreach old,$(filter-out $1,$(get child_nodes)),
-				$(invoke old->set_parent_node,))
-		$(foreach new,$(filter-out $(get child_nodes),$1),
-				$(invoke this->set_parent_node,$(this)))
+	# 1. Field of this.
+	# 2. What to remove.
+	$(method remove_from,
+		$(set- $1,
+			$(foreach e,$(filter $2,$(get $1)),$e
+				$(invoke e->inverse_remove_from,$(basename $e),$1$(this))
+			)
+		)
 	)
 
-endef
+	# 1. Field of this.
+	$(method clear_refs,
+		$(silent-foreach e,$(get $1),
+			$(invoke e->inverse_remove_from,$(basename $e),$1$(this))
+		)
+		$(set $1,)
+	)
 
-define class-named
-	$(method get_name)
-	$(method set_name)
+	# 1. Field of this.
+	# 2. New references.
+	$(method replace_refs,
+		$(invoke clear_refs,$1)
+		$(invoke add_to,$1,$2)
+	)
+
+	# 1. Field of this.
+	# 2. What is being added.
+	$(method inverse_add_to,
+		$(assert $(singleword $2),'$0' handles a single reference at once)
+
+		$(if $1,
+			$(set+ $1,$2),
+
+			$(assert $(not $(multiword $(get container))))
+			$(invoke clear_refs,container)
+			$(set container,$2)
+		)
+	)
+
+	# 1. Field of this.
+	# 2. What is being removed.
+	$(method inverse_remove_from,
+		$(assert $(singleword $2),'$0' handles a single reference at once)
+
+		$(if $1,
+			$(set- $1,$2),
+
+			$(assert $(eq $2,$(get container)))
+			$(set container,)
+		)
+	)
+
+	$(method get_container,
+		$(suffix $(get container)))
+
+	# 1. New container.
+	$(method set_container,
+		$(assert $(not $(multiword $1)),
+			A node can't have more than one container)
+		$(assert $(not $(multiword $(get container))))
+
+		$(if $(not $(eq $1,$(get container))),
+			$(invoke clear_refs,container)
+			$(invoke add_to,container,$1)
+		)
+	)
+
 endef
 
 # Constructor args:
 #   1. Name.
-define class-abstract_named
+define class-named
 	$(field name,$(value 1))
 
 	$(method get_name,$(get name))
@@ -65,62 +106,38 @@ define class-abstract_named
 endef
 
 define class-resource
-	$(field nodes)
+	$(field nodes : node)
 	$(field issues)
-endef
-
-# Constructor args:
-#   1. Resource.
-define class-list
-	$(super node,$1)
-
-	# Adds the given elements to this list.
-	#   1. Elements to add.
-	# Return:
-	#   Element that were newly added.
-	$(method add,
-		$(and $(foreach element,$1,
-			$(invoke node_containment_helper->set_container_of,
-					$(element),$(this))
-		),)
-	)
-
-	# Removes the given elements from this list.
-	# Objects that don't belong to this list are not touched.
-	#   1. Elements to remove.
-	# Return:
-	#   Element that were actually removed.
-	$(method remove,
-		$(and $(foreach element,$(filter $(get children),$1),
-			$(invoke node_containment_helper->set_container_of,
-					$(element),)
-		),)
-	)
-
-	$(method get_elements,
-		$(get children)
-	)
 endef
 
 # Constructor args:
 #   1. Package name.
 define class-model
-	$(super abstract_node)
-	$(super abstract_named,$1)
+	$(super node)
+	$(super named,$1)
 
 	$(field imports)
-	$(field modules:module)
+	$(field modules : module)
+
+	$(method set_imports,
+		$(set imports,$1))
 
 	$(method set_modules,
-		$(set modules,$1)
-	)
+		$(invoke replace_refs,modules,$1))
+
+	$(method add_modules,
+		$(invoke add_to,modules,$1))
+
+	$(method remove_modules,
+		$(invoke remove_from,modules,$1))
+
 endef
 
 # Constructor args:
 #   1. Module name.
 define class-module
-	$(super abstract_node)
-	$(super abstract_named,$1)
+	$(super node)
+	$(super named,$1)
 
 	$(field modifiers)
 	$(field super_module_ref : module_ref)
@@ -132,6 +149,13 @@ define class-module
 
 	$(field sources : filename)
 	$(field objects : filename)
+
+	$(method set_sources,
+		$(invoke replace_refs,sources,$1))
+
+	$(method set_objects,
+		$(invoke replace_refs,objects,$1))
+
 endef
 
 # Constructor args:

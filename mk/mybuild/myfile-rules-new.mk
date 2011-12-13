@@ -30,13 +30,13 @@ include mk/mybuild/model.mk
 #   3. Entities: '<type>/object'
 define $(gold_grammar)_produce-Model
 	$(foreach m,$(new model,$1),$m
-#		$(set m->import_scope,$2)
+		$(invoke m->set_imports,$2)
 
 		$(foreach entity_type,
-				module \
-#				interface
+				modules \
+#				interfaces
 				,
-			$(set m->$(entity_type)s,
+			$(invoke m->set_$(entity_type),
 					$(filter-patsubst $(entity_type)/%,%,$3))
 		)
 	)
@@ -52,26 +52,31 @@ define $(gold_grammar)_produce-Package
 			Using default package)
 endef
 
-# Rule: <Imports> ::= <Import> <Imports>
-# Args:
-#   1. Imported entity or feature: '<type> FQN[.*]'.
-#   2. Import scope.
-define $(gold_grammar)_produce-Imports
-	$(invoke 2->add_imported_$(firstword $1),$(secondword $1))
-endef
-
-# Rule: <Imports> ::=
-define $(gold_grammar)_produce-Imports2
-	$(new import_scope)
-endef
+## Rule: <Imports> ::= <Import> <Imports>
+## Args:
+##   1. Imported entity or feature: '<type> FQN[.*]'.
+##   2. Import scope.
+#define $(gold_grammar)_produce-Imports
+#	$(invoke 2->add_imported_$(firstword $1),$(secondword $1))
+#endef
+#
+## Rule: <Imports> ::=
+#define $(gold_grammar)_produce-Imports2
+#	$(new import_scope)
+#endef
 
 # Rule: <Import> ::= import <ImportFeature> <QualifiedNameWithWildcard>
-$(gold_grammar)_produce-Import_import    = $2 $3
+$(gold_grammar)_produce-Import_import    = $2/$3
 
 # Rule: <ImportFeature> ::= feature
 $(gold_grammar)_produce-ImportFeature_feature     := feature
 # Rule: <ImportFeature> ::=
 $(gold_grammar)_produce-ImportFeature             := entity
+
+# Rule: <Entity> ::= <Module>
+$(gold_grammar)_produce-Entity           = modules/$1
+# Rule: <Entity> ::= <Interface>
+$(gold_grammar)_produce-Entity2          = interfaces/$1
 
 # Rule: <Interface> ::= interface Identifier <SuperInterfaces> '{' <InterfaceAttributes> '}'
 # Args: 1..6 - Symbols in the RHS.
