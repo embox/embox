@@ -92,13 +92,13 @@ endef
 # Return:
 #   New object identifier.
 define __new
-	$(foreach this,__obj__$(words $(__object_instance_cnt)),
+	$(foreach this,__obj__$(words $(__object_instance_cnt) x),
 		$(def-ifdef OBJ_DEBUG,
 			$(info \
 					$(this): new $(__class__): $(__obj_debug_args))
 		)
 		${eval \
-			__object_instance_cnt += x
+			__object_instance_cnt += $(this:__obj__%=%)
 			$(\n)
 			$(this) := $(__class__)
 			$(\n)
@@ -747,5 +747,35 @@ define __class_inherit
 endef
 
 $(def_all)
+
+define __object_dump_dot
+	$(\n)digraph "Make Objects Dump"
+	$(\n){
+	$(\n)	graph[rankdir="LR"];
+	$(\n)	node[shape="record"];
+	$(\n)
+	$(\n)	ratio=compress;
+	$(\n)	size="50,50";
+	$(\n)	concentrate=true;
+	$(\n)	ranksep="1.0 equal";
+	$(\n)	K=1.0;
+	$(\n)	overlap=false;
+	$(\n)
+	$(foreach o,$(__object_instance_cnt:%=__obj__%),
+		$(\n)	$o \
+			[label="<.> $o : $($o)\l $(foreach f,$($($o).fields),
+				| <$f> $f = $(subst ",\",$(subst |,\|,$($o.$f)))\l
+			)"];
+		$(\n)
+		$(foreach f,$($($o).fields),
+			# XXX
+			$(foreach p,$(foreach v,$($o.$f),$(is-object $v)),
+				$(\n)	$o:$f -> $p:".";
+			)
+		)
+		$(\n)
+	)
+	$(\n)}
+endef
 
 endif # __core_object_mk
