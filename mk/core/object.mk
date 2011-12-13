@@ -119,6 +119,16 @@ endef
 builtin_func-is-object = \
 	$(foreach builtin_name,is_object,$(builtin_to_function_inline))
 
+# Tells whether a given class has been defined.
+#   1. Class name.
+# Return:
+#   The argument if true, empty otherwise.
+define class_exists
+	$(if $(value class-$1),$1)
+endef
+builtin_func-class-exists = \
+	$(foreach builtin_name,class_exists,$(builtin_to_function_inline))
+
 # Gets the class of the specified object.
 #   1. Object to inspect.
 # Return:
