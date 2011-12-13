@@ -213,9 +213,8 @@ static int send_from_sock(struct sock *sk, sk_buff_t *skb, int ops) {
 			tcpsk->this.wind, skb);
 	if (ops & SEND_OPS_RELIABLE) {
 		struct sk_buff *c_skb = skb_clone(skb, 0);
-
+		c_skb->p_data = c_skb->h.raw + TCP_V4_HEADER_SIZE(c_skb->h.th);
 		printf("send_from_sock 0x%x, postponded 0x%x\n", (int) skb, (int) c_skb);
-
 		skb_queue_tail(sk->sk_write_queue, c_skb);
 	}
 
@@ -313,7 +312,7 @@ static int process_ack_with_queue(struct tcp_sock *tcpsk, struct sk_buff *skb, i
 		tcpsk->this_unack = ack;
 
 		printf("process_queue: skb 0x%x\n", (int) sent_skb);
-		if (tcpsk->this.seq == ack) {
+		if (tcp_data_last(sent_skb) <= 0) {
 			kfree_skb(sent_skb);
 			printf("process_ack: freeing rexmitting skb 0x%x\n", (int) sent_skb);
 			if (sent_skb->prot_info != TCP_NONE_STATE) {
@@ -339,14 +338,16 @@ static int pre_process(struct tcp_sock *tcpsk, struct sk_buff *skb,
 			(unsigned int) seq, (unsigned int) tcpsk->rem.seq);
 
 	if (tcpsk->this_unack <= ack && ack <= tcpsk->this.seq) {
+		process_ack_with_queue(tcpsk, skb, seq, ack);
 		if (seq == tcpsk->rem.seq) {
-			process_ack_with_queue(tcpsk, skb, seq, ack);
+
 		} else if (seq < tcpsk->rem.seq) {
 			out_tcph->ack |= 1;
 			printf("pre_process: dup\n");
 			return TCP_ST_SEND_ONCE;
 		}
 	} else {
+
 	}
 	printf("pre_process: no_free\n");
 
@@ -417,7 +418,7 @@ static int tcp_st_finwait_1(struct tcp_sock *tcpsk, struct sk_buff *skb,
 	if (tcph->ack) {
 		tcpsk->this.seq = 1 + ntohl(skb->h.th->ack_seq); //FIXME move from here
 		if (tcph->fin) {
-			tcp_set_st(tcpsk, skb, TCP_CLOSE); // TCP_TIMEWAIT
+			tcp_set_st(tcpsk, NULL, TCP_CLOSE); // TCP_TIMEWAIT
 			tcpsk->rem.seq += 1;
 			out_tcph->ack |= 1;
 			return TCP_ST_SEND_ONCE;
@@ -590,6 +591,8 @@ static void tcp_v4_close(sock_t *sk, long timeout) {
 	send_from_sock(sk, skb, SEND_OPS_RELIABLE);
 
 	skb_queue_purge(((struct tcp_sock *) sk)-> conn_wait);
+
+	while (sk->sk_state != TCP_CLOSE);
 
 	sk_common_release(sk);
 }
