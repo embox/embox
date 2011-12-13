@@ -338,7 +338,10 @@ define __method_invoke
 				$(__this): invoke $($(__this)).$($(__args_nr)): \
 				$(__obj_debug_args))
 	)
-	$(foreach 0,$($(__this)).$($(__args_nr)),
+	$(foreach 0,$(or $(call var_recursive,$($(__this)).$($(__args_nr))),
+			$(error \
+					No method '$($(__args_nr))', \
+					invoked on object '$(__this)' of type '$($(__this))')),
 		$(expand $(value $0))
 	)
 endef
@@ -354,7 +357,7 @@ define __field_check
 	$(if $(findstring simple,$(flavor $(__this).$1)),
 		$1,
 		$(error \
-				Invalid field name: '$1', \
+				No field '$1', \
 				referenced on object '$(__this)' of type '$($(__this))')
 	)
 endef
