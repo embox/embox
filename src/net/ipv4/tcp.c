@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of the Transmission Control Protocol(TCP).
+ * @brief Implementation of the Transmission Control Protocol (TCP).
  * @details RFC 768
  *
  * @date 04.04.10
@@ -309,8 +309,6 @@ static int process_ack_with_queue(struct tcp_sock *tcpsk, struct sk_buff *skb, i
 	while ((sent_skb = skb_peek(sk->sk_write_queue))) {
 		sent_skb->p_data += (ack - tcpsk->this_unack);
 
-		tcpsk->this_unack = ack;
-
 		printf("process_queue: skb 0x%x\n", (int) sent_skb);
 		if (tcp_data_last(sent_skb) <= 0) {
 			kfree_skb(sent_skb);
@@ -328,6 +326,16 @@ static int process_ack_with_queue(struct tcp_sock *tcpsk, struct sk_buff *skb, i
 	return 0;
 }
 
+static int process_rst(struct tcp_sock *tcpsk, struct sk_buff *skb, tcphdr_t *tcph) {
+	struct sock *sk = (struct sock *) tcpsk;
+	if (tcph->rst) {
+		tcp_set_st(tcpsk, NULL, TCP_CLOSE);
+		sk_common_release(sk);
+		return 1;
+	}
+	return 0;
+}
+
 static int pre_process(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcphdr_t *tcph, tcphdr_t *out_tcph) {
 	unsigned long seq = ntohl(tcph->seq);
@@ -338,7 +346,14 @@ static int pre_process(struct tcp_sock *tcpsk, struct sk_buff *skb,
 			(unsigned int) seq, (unsigned int) tcpsk->rem.seq);
 
 	if (tcpsk->this_unack <= ack && ack <= tcpsk->this.seq) {
+		if (process_rst(tcpsk, skb, tcph)) {
+			return TCP_ST_DROP;
+		}
+
 		process_ack_with_queue(tcpsk, skb, seq, ack);
+
+		tcpsk->this_unack = ack;
+
 		if (seq == tcpsk->rem.seq) {
 
 		} else if (seq < tcpsk->rem.seq) {
@@ -510,7 +525,7 @@ static int tcp_handle(struct tcp_sock *tcpsk, sk_buff_t *skb, tcp_handler_t hnd)
 static int level = 0;
 static void tcp_v4_process(struct tcp_sock *tcpsk, sk_buff_t *skb) {
 	struct sock *sk = TCP_SOCK(tcpsk);
-	printf("process: start %d\n", level++);
+	printf("===== process: start %d =====\n", level++);
 	if (skb->h.th->ack) {
 		if (tcp_handle(tcpsk, skb, pre_process) < 0) {
 //			return;
@@ -519,10 +534,11 @@ static void tcp_v4_process(struct tcp_sock *tcpsk, sk_buff_t *skb) {
 	}
 
 	if (tcp_rexmit(tcpsk)) {
-		//return;
-		goto leave;
+//		return;
+//		goto leave;
 	}
 
+	printf("process: sock state = %d\n", sk->sk_state);
 	tcp_handle(tcpsk, skb, tcp_st_handler[sk->sk_state]);
 
 leave:	printf("process: done %d\n", --level);
