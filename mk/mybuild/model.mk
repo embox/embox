@@ -25,8 +25,8 @@ endef
 
 # Abstract node implementation.
 define class-abstract_node
-	$(field parent_node/node)
-	$(field child_nodes/node)
+	$(field parent_node:*)
+	$(field child_nodes:*)
 
 	$(method get_parent_node,$(get parent_node))
 	$(method set_parent_node,
@@ -109,7 +109,7 @@ define class-model
 	$(super abstract_named,$1)
 
 	$(field imports)
-	$(field modules/module)
+	$(field modules:module)
 
 	$(method set_modules,
 		$(set modules,$1)
@@ -123,15 +123,15 @@ define class-module
 	$(super abstract_named,$1)
 
 	$(field modifiers)
-	$(field super_module_ref)
+	$(field super_module_ref : module_ref)
 
-	$(field depends_refs)
+	$(field depends_refs : module_ref)
 
 	$(field requires_refs)
 	$(field provides_refs)
 
-	$(field sources)
-	$(field objects)
+	$(field sources : filename)
+	$(field objects : filename)
 endef
 
 # Constructor args:
@@ -158,12 +158,8 @@ endef
 # Constructor args:
 #   1. Name representing the crosslink.
 define class-abstract_ref
-	$(field src)
-		$(setter src,
-			$(assert $(if $1,$(call is_object,$1)))$1)
-	$(field dst)
-		$(setter dst,
-			$(assert $(if $1,$(call is_object,$1)))$1)
+	$(field src : *)
+	$(field dst : *)
 
 	$(field link_name,$1)
 

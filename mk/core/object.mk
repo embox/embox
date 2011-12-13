@@ -617,7 +617,7 @@ define __member_def
 endef
 
 # Params:
-#   1. Field name to parse in form 'name' or 'name/type'.
+#   1. Field name to parse in form 'name' or 'name:type'.
 #   2. Continuation with the following args:
 #       1. Recognized name.
 #       2. Type if specified, empty otherwise.
@@ -629,7 +629,7 @@ endef
 define __field_name_parse
 	$(or \
 		$(with \
-			$(subst /, / ,$1),# Split the argument.
+			$(subst :, : ,$1),# Split the argument.
 			$2,$(value 3),# Continuation function with its argument.
 
 			$(foreach name,$(call __class_name_check,$(firstword $1)),
@@ -638,7 +638,7 @@ define __field_name_parse
 					$(call $2,$(name),,$3),
 
 					# Expecting to see a type in the third word.
-					$(if $(eq /,$(word 2,$1)),
+					$(if $(eq :,$(word 2,$1)),
 						$(foreach type,$(call __class_name_check,$(word 3,$1)),
 							$(call $2,$(name),$(type),$3)
 						)
@@ -648,14 +648,15 @@ define __field_name_parse
 		),
 
 		$(call builtin_error,
-				Invalid field name: '$1', should be 'name' or 'name/type')
+				Invalid field name: '$1'$(\comma) \
+				should be 'name'$(\comma) 'name:type'$(\comma) or 'name:*')
 	)
 endef
 
 #
 # $(field name,initializer...)
-# $(field name/*,initializer...)
-# $(field name/type,initializer...)
+# $(field name:*,initializer...)
+# $(field name:type,initializer...)
 #
 define builtin_func-field
 	$(call __field_name_parse,$1,

@@ -32,9 +32,9 @@ null_scope_instance := $(call new,null_scope)
 define class-abstract_scope
 	$(super scope)
 
-	$(field parent_scope,$(or $1,$(null_scope_instance)))
+	$(field parent_scope : scope,$(or $1,$(null_scope_instance)))
 	$(setter parent_scope,$(error $0 is read-only))
-	$(assert $(call instance_of,$(get parent_scope),scope),
+	$(assert $(instance-of $(get parent_scope),scope),
 			Invalid parent scope: '$(get parent_scope)')
 
 	# 1. Qualified name.
