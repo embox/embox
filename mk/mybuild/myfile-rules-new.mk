@@ -39,7 +39,6 @@ define $(gold_grammar)_produce-Model
 			$(invoke m->set_$(entity_type),
 					$(filter-patsubst $(entity_type)/%,%,$3))
 		)
-		$(invoke m->set_modules,)
 	)
 endef
 
