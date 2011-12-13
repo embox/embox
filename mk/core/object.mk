@@ -163,7 +163,7 @@ builtin_func-has-field = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define class_has_field
-	$(if $(filter $2,$(value $1.fields)),$1)
+	$(if $(filter $2,$(basename $(value $1.fields))),$1)
 endef
 builtin_func-class-has-field = \
 	$(foreach builtin_name,class_has_field,$(builtin_to_function_inline))
@@ -660,28 +660,27 @@ endef
 define builtin_func-field
 	$(call __field_name_parse,$1,
 		# 1. Name.
-		# 2. Type, or empty.
+		# 2. Type, '*', or empty.
 		# 3. Initializer...
-		$(lambda \
-			$(call __class_def_attribute,fields,$1)
+		$(lambda $(foreach c,$(call builtin_tag,__class__),
+			$(call __class_def_attribute,fields,$1$(if $2,.$2))
+			$(call __member_def,$c,$1,$3)
 
-			$(call __member_def,$(call builtin_tag,__class__),$1,$3)
-
-			$$(eval $$(this).$1 := $$(value $(call builtin_tag,__class__).$1))
-
-			$(and $2,
-				$(call var_undefined,$(call builtin_tag,__class__).set.$1),
+			$(and $2,# Define a setter if there is a type specified.
+				$(call var_undefined,$c.set.$1),
 
 				$(call __class_def_attribute_no_check,methods,set.$1)
-
-				$(call __member_def,$(call builtin_tag,__class__),set.$1,
+				$(call __member_def,$c,set.$1,
 					$(if $(eq *,$2),
 						$$(__field_setter_object_check),
 						$$(foreach 2,$2,$$(__field_setter_type_check))
 					)
 				)
 			)
-		),
+
+			# Field initializer.
+			$$(eval $$(this).$1 := $$(value $c.$1))
+		)),
 		$(builtin_nofirstarg)
 	)
 endef
@@ -789,13 +788,12 @@ define __object_dump_dot
 	$(\n)
 	$(foreach o,$(__object_instance_cnt:%=__obj__%),
 		$(\n)	$o \
-			[label="<.> $o : $($o)\l $(foreach f,$($($o).fields),
+			[label="<.> $o : $($o)\l $(foreach f,$(basename $($($o).fields)),
 				| <$f> $f = $(subst ",\",$(subst |,\|,$($o.$f)))\l
 			)"];
 		$(\n)
-		$(foreach f,$($($o).fields),
-			# XXX
-			$(foreach p,$(foreach v,$($o.$f),$(is-object $v)),
+		$(foreach f,$(subst .,,$(basename $($($o).fields:%=.%))),
+			$(foreach p,$($o.$f),
 				$(\n)	$o:$f -> $p:".";
 			)
 		)
