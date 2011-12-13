@@ -92,13 +92,14 @@ endef
 # Return:
 #   New object identifier.
 define __new
-	$(foreach this,__obj__$(words $(__object_instance_cnt) x),
+	# It is mandatory for object references to start with a period.
+	$(foreach this,.obj$(words $(__object_instance_cnt) x),
 		$(def-ifdef OBJ_DEBUG,
 			$(info \
 					$(this): new $(__class__): $(__obj_debug_args))
 		)
 		${eval \
-			__object_instance_cnt += $(this:__obj__%=%)
+			__object_instance_cnt += $(this:.obj%=%)
 			$(\n)
 			$(this) := $(__class__)
 			$(\n)
@@ -114,7 +115,7 @@ __object_instance_cnt :=# Initially empty.
 # Return:
 #   The argument if true, empty otherwise.
 define is_object
-	$(if $(value class-$(value $(notdir $1))),$1)
+	$(if $(value class-$(value $(suffix $1))),$1)
 endef
 builtin_func-is-object = \
 	$(foreach builtin_name,is_object,$(builtin_to_function_inline))
@@ -134,7 +135,7 @@ builtin_func-class-exists = \
 # Return:
 #   The class if the argument is a valid object, empty otherwise.
 define class
-	$(foreach c,$(singleword $(value $(notdir $1))),
+	$(foreach c,$(singleword $(value $(suffix $1))),
 			$(if $(value class-$c),$c))
 endef
 $(call def,class)
@@ -150,7 +151,7 @@ define instance_of
 	#		$(if $(filter $2,$c $($c.super)),$1))
 
 	# Optimized.
-	$(foreach c,$(singleword $(value $(notdir $1))),
+	$(foreach c,$(singleword $(value $(suffix $1))),
 			$(and $(value class-$c),$(filter $2,$c $($c.super)),$1))
 endef
 builtin_func-instance-of = \
@@ -294,7 +295,7 @@ $(def_all)
 #   The trimmed argument if it is a single word, fails with an error otherwise.
 define __object_check
 	$(or \
-		$(notdir $(singleword $1)),
+		$(suffix $(singleword $1)),
 		$(error \
 				Invalid object reference: '$1'$(def-ifdef OBJ_DEBUG, ($2)))
 	)
@@ -797,15 +798,15 @@ define __object_dump_dot
 	$(\n)	graph[rankdir="LR"];
 	$(\n)	node[shape="record"];
 	$(\n)
-	$(foreach o,$(__object_instance_cnt:%=__obj__%),
-		$(\n)	$o \
+	$(foreach o,$(__object_instance_cnt:%=.obj%),
+		$(\n)	"$o" \
 			[label="<.> $o : $($o)\l $(foreach f,$(basename $($($o).fields)),
 				| <$f> $f = $(subst ",\",$(subst |,\|,$($o.$f)))\l
 			)"];
 		$(\n)
 		$(foreach f,$(subst .,,$(basename $($($o).fields:%=.%))),
-			$(foreach p,$($o.$f),
-				$(\n)	$o:$f -> $p:".";
+			$(foreach p,$(suffix $($o.$f)),
+				$(\n)	"$o":$f -> "$p":".";
 			)
 		)
 		$(\n)
