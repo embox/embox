@@ -114,10 +114,21 @@ __object_instance_cnt :=# Initially empty.
 # Return:
 #   The argument if true, empty otherwise.
 define is_object
-	$(if $(value class-$(value $(singleword $1))),$1)
+	$(if $(value class-$(value $(notdir $1))),$1)
 endef
 builtin_func-is-object = \
 	$(foreach builtin_name,is_object,$(builtin_to_function_inline))
+
+# Gets the class of the specified object.
+#   1. Object to inspect.
+# Return:
+#   The class if the argument is a valid object, empty otherwise.
+define class
+	$(foreach c,$(singleword $(value $(notdir $1))),
+			$(if $(value class-$c),$c))
+endef
+$(call def,class)
+builtin_func-class = $(builtin_to_function_inline)
 
 # Tells whether a given object is an instance of the specified class.
 #   1. Reference to check.
@@ -125,7 +136,12 @@ builtin_func-is-object = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define instance_of
-	$(and $(is_object),$(filter $2,$($1) $($($1).super)),$1)
+	#$(foreach c,$(class $1),
+	#		$(if $(filter $2,$c $($c.super)),$1))
+
+	# Optimized.
+	$(foreach c,$(singleword $(value $(notdir $1))),
+			$(and $(value class-$c),$(filter $2,$c $($c.super)),$1))
 endef
 builtin_func-instance-of = \
 	$(foreach builtin_name,instance_of,$(builtin_to_function_inline))
@@ -136,7 +152,7 @@ builtin_func-instance-of = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define has_field
-	$(and $(is_object),$(call class_has_field,$($1),$2),$1)
+	$(if $(call class_has_field,$(class $1),$2),$1)
 endef
 builtin_func-has-field = \
 	$(foreach builtin_name,has_field,$(builtin_to_function_inline))
@@ -158,7 +174,7 @@ builtin_func-class-has-field = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define has_method
-	$(and $(is_object),$(call class_has_method,$($1),$2),$1)
+	$(if $(call class_has_method,$(class $1),$2),$1)
 endef
 builtin_func-has-method = \
 	$(foreach builtin_name,has_method,$(builtin_to_function_inline))
@@ -268,7 +284,7 @@ $(def_all)
 #   The trimmed argument if it is a single word, fails with an error otherwise.
 define __object_check
 	$(or \
-		$(singleword $1),
+		$(notdir $(singleword $1)),
 		$(error \
 				Invalid object reference: '$1'$(def-ifdef OBJ_DEBUG, ($2)))
 	)
@@ -671,7 +687,7 @@ define __field_setter_type_check
 		$(or $(instance-of $1,$2),
 			$(error \
 					Attemp to assign value '$1' ($(if $(is-object $1),
-							instance of class $($1),not an object)) \
+							instance of class $(class $1),not an object)) \
 					to field '$(subst .set.,.,$0)' of incompatible type '$2')
 		)
 	)
