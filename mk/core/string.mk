@@ -260,12 +260,29 @@ builtin_func-prepend = $(builtin_to_function_call)
 #
 # Params:
 #   1. Pattern...
-#   2. Replacement
-#   3. String
+#   2. Replacement.
+#   3. String.
 # Return:
 #   The result of patsubst applied to filtered string.
 filter-patsubst = \
 	$(foreach __fp,$1,$(patsubst $(__fp),$2,$(filter $(__fp),$3)))
 builtin_func-filter-patsubst = $(builtin_to_function_inline)
+
+##
+# Builtin function: silent-foreach
+#
+#      $(silent-foreach var,list,text)
+#
+# A version of 'foreach' that iterates over the list as usual, but suppresses
+# the output of expansions of 'text' and returns nothing.
+#
+# Params:
+#   1. Iteration variable.
+#   2. The list to iterate over.
+#   3. Text to expand for each word in the list.
+# Return:
+#   Empty.
+builtin_func-silent-foreach = \
+	$(call builtin_check_min_arity,3)$$(if $$(foreach $(builtin_args)),)
 
 endif # __core_string_mk
