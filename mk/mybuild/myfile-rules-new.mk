@@ -30,11 +30,12 @@ include mk/mybuild/model.mk
 #   3. Entities: '<type>/object'
 define $(gold_grammar)_produce-Model
 	$(foreach m,$(new model,$1),$m
-		$(set m->import_scope,$2)
+#		$(set m->import_scope,$2)
 
 		$(foreach entity_type,
 				module \
-				interface,
+#				interface
+				,
 			$(set m->$(entity_type)s,
 					$(filter-patsubst $(entity_type)/%,%,$3))
 		)
