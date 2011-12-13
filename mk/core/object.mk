@@ -333,7 +333,7 @@ endef
 #   '__class__'
 ifdef OBJ_DEBUG
 define __method_invoke
-	$(foreach __obj_debug_args_nr,$(wordlist 2,$(__args_nr),x 1 2 3 4 5 6 7 8 9),
+	$(foreach __obj_debug_args_nr,$(word $(__args_nr),0 1 2 3 4 5 6 7 8 9),
 		$(info \
 				$(__this): invoke $($(__this)).$($(__args_nr)): \
 				$(__obj_debug_args))
