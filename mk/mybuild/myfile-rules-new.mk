@@ -32,13 +32,14 @@ define $(gold_grammar)_produce-Model
 	$(foreach m,$(new model,$1),$m
 		$(invoke m->set_imports,$2)
 
-		$(foreach entity_type,
+		$(silent-foreach entity_type,
 				modules \
 #				interfaces
 				,
 			$(invoke m->set_$(entity_type),
 					$(filter-patsubst $(entity_type)/%,%,$3))
 		)
+		$(invoke m->set_modules,)
 	)
 endef
 
@@ -112,7 +113,7 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 		$(set m->modifiers,$1)
 		$(set m->super_module_ref,$4)
 
-		$(foreach attr,
+		$(silent-foreach attr,
 				depends_ref \
 				requires_ref \
 				provides_ref \

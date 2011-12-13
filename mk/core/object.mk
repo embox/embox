@@ -96,7 +96,7 @@ define __new
 	$(foreach this,.obj$(words $(__object_instance_cnt) x),
 		$(def-ifdef OBJ_DEBUG,
 			$(info \
-					$(this): new $(__class__): $(__obj_debug_args))
+					$(this): new    $(__class__): $(__obj_debug_args))
 		)
 		${eval \
 			__object_instance_cnt += $(this:.obj%=%)
@@ -392,7 +392,7 @@ endef
 # Context:
 #   '__this'
 define __field_set
-	$(def-ifdef OBJ_DEBUG,$(info $(__this): set  $1.$2: '$3'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this): set    $1.$2: '$3'))
 	${eval \
 		override $(__this).$(call __field_check,$2) := \
 			$(if $(value $1.set.$2),
@@ -418,7 +418,7 @@ endef
 # Context:
 #   '__this'
 define __field_set+
-	$(def-ifdef OBJ_DEBUG,$(info $(__this): set+ $1.$2: '$3'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this): set+   $1.$2: '$3'))
 	${eval \
 		$(if $($(__this).$(call __field_check,$2)),
 			$(if $(value $1.set.$2),
@@ -454,7 +454,7 @@ endef
 # Context:
 #   '__this'
 define __field_set*
-	$(def-ifdef OBJ_DEBUG,$(info $(__this): set* $1.$2: '$3'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this): set*   $1.$2: '$3'))
 	$(if $(findstring $(\s)$3 , $($(__this).$(call __field_check,$2)) ),
 		,# else
 		$(call __field_set+,$1,$2,$3)
@@ -477,7 +477,7 @@ endef
 # Context:
 #   '__this'
 define __field_set-
-	$(def-ifdef OBJ_DEBUG,$(info $(__this): set- $1.$2: '$3'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this): set-   $1.$2: '$3'))
 	$(call __field_set,$1,$2,$(trim $(subst $(\s)$3 , , $($(__this).$2) )))
 endef
 
