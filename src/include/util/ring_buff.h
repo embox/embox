@@ -1,13 +1,13 @@
 /**
  * @file
- * @brief Circular buffer interface
+ * @brief Ring buffer interface
  *
  * @date 21.10.11
  * @author Anton Kozlov
  */
 
-#ifndef UTIL_CIRCULAR_BUFFER_H_
-#define UTIL_CIRCULAR_BUFFER_H_
+#ifndef UTIL_RING_BUFF_H_
+#define UTIL_RING_BUFF_H_
 
 #include <stddef.h>
 
@@ -44,4 +44,4 @@ extern int c_buf_init(struct c_buf *buf, int count, void *storage);
 #define c_buf_get(name, elem) \
 	__c_buf_get(name, (void *) &elem, sizeof(elem))
 
-#endif /* UTIL_CIRCULAR_BUFFER_H_ */
+#endif /* UTIL_RING_BUFF_H_ */

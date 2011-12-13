@@ -9,7 +9,7 @@
  */
 
 #include <pnet/core.h>
-#include <util/circular_buffer.h>
+#include <util/ring_buff.h>
 #include <kernel/thread/api.h>
 
 #include <embox/unit.h>

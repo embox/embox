@@ -23,3 +23,7 @@ module tree_set_test {
 module math_test {
 	source "math_test.c"
 }
+
+module rbuff_test {
+	source "rbuff_test.c"
+}

@@ -10,7 +10,7 @@
 #include <string.h>
 #include <framework/example/self.h>
 
-#include <util/circular_buffer.h>
+#include <util/ring_buff.h>
 
 EMBOX_EXAMPLE(circular_buffer_ex_run);
 

@@ -22,4 +22,4 @@ $_SRCS-libutil.a += priority_q.c
 $_SRCS-libutil.a += binary_heap.c
 $_USES-libutil.a += libc.a
 
-$_SRCS-libutil.a += circular_buffer.c
+$_SRCS-libutil.a += ring_buff.c

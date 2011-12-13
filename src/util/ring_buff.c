@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Circular buffer realisation
+ * @brief Nonblock ring buffer realization
  *
  * @date 21.10.2011
  * @author Anton Kozlov
@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <util/circular_buffer.h>
+#include <util/ring_buff.h>
 
 int __c_buf_add(struct c_buf *buf, void *elem, size_t elem_size) {
 	char *buf_pool = buf->buf;
