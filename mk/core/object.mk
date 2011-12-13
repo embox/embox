@@ -754,13 +754,6 @@ define __object_dump_dot
 	$(\n)	graph[rankdir="LR"];
 	$(\n)	node[shape="record"];
 	$(\n)
-	$(\n)	ratio=compress;
-	$(\n)	size="50,50";
-	$(\n)	concentrate=true;
-	$(\n)	ranksep="1.0 equal";
-	$(\n)	K=1.0;
-	$(\n)	overlap=false;
-	$(\n)
 	$(foreach o,$(__object_instance_cnt:%=__obj__%),
 		$(\n)	$o \
 			[label="<.> $o : $($o)\l $(foreach f,$($($o).fields),
