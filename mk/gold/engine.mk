@@ -183,7 +183,7 @@ define builtin_func-gold-symbol
 
 	$(if $(filter 4 5 6,$2),
 		$(call builtin_error,
-			Comment terminals are not supported, \
+			Comment terminals are not supported$(\comma) \
 				incorporate them into whitespace terminal
 		)
 	)
