@@ -18,6 +18,7 @@
 #include <embox/net/pack.h>
 #include <errno.h>
 #include <net/neighbour.h>
+#include <time.h>
 
 /*
  * FIXME:
@@ -113,6 +114,8 @@ int arp_resolve(sk_buff_t *pack) {
 	net_device_t *dev;
 	iphdr_t *ip;
 
+	uint32_t start;
+
 	ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
 	if (ipv4_is_loopback(ip->daddr)) {
@@ -134,6 +137,17 @@ int arp_resolve(sk_buff_t *pack) {
 	/* send arp request  */
 	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev, ip->saddr, NULL,
 			dev->dev_addr, NULL);
+	/* give some time for response for an hw address to come back */
+	start = clock();
+	/* TODO: is the ARP_RESOLVE_TIMEOUT value set up correctly? find more appropriate value */
+	while(clock() - start < ARP_RESOLVE_TIMEOUT){
+		hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr); /* did we get reply */
+		if(hw_addr){																						/* if yes fill out missing fields and proceed */
+			memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
+			return 0;
+		}
+	}
+
 	return -1;
 }
 
