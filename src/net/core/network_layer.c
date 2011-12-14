@@ -18,6 +18,7 @@
 #include <kernel/irq.h>
 #include <linux/interrupt.h>
 #include <errno.h>
+#include <net/sock.h>
 
 #include <framework/net/pack/api.h>
 
@@ -97,9 +98,13 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	if (dev->flags & IFF_UP) {
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
-			kfree_skb(skb);
-			stats->tx_err++;
-			return res;
+			while(!skb->sk->is_ready);
+			if(skb->sk->answer < 0) {
+				kfree_skb(skb);
+				stats->tx_err++;
+				return res;
+			} else
+				return skb->sk->answer;
 		}
 		res = ops->ndo_start_xmit(skb, dev);
 		if (res < 0) {
@@ -113,7 +118,6 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	}
 	return ENOERR;
 }
-
 
 int __netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;

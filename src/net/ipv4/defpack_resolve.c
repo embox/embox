@@ -27,13 +27,13 @@ static LIST_HEAD(deff_packet_list);
 void def_process_list(sk_buff_t *arp_pack) {
 	struct deff_packet *pack, *n;
 
-
 	list_for_each_entry_safe(pack, n, &deff_packet_list, link) {
 		if(arp_pack->nh.arph->ar_sip == pack->skb->nh.iph->daddr) {
 			list_del(&pack->link);
 			timer_close(pack->timer);
 			memcpy(pack->skb->mac.ethh->h_dest, arp_pack->mac.ethh->h_source, ETH_ALEN);
-			dev_queue_xmit(pack->skb);
+			pack->skb->sk->answer = dev_queue_xmit(pack->skb);
+			pack->skb->sk->is_ready = 1;
 			pool_free(&__deff_packet_buff, pack);
 		}
 	}
@@ -47,6 +47,8 @@ static void free_packet(struct sys_timer *timer, void *data) {
 	list_del(&deff_pack->link);
 	kfree_skb(deff_pack->skb);
 	timer_close(timer);
+	deff_pack->skb->sk->is_ready = 1;
+	deff_pack->skb->sk->answer = -1;
 	pool_free(&__deff_packet_buff, deff_pack);
 }
 
@@ -61,4 +63,5 @@ void def_add_packet(sk_buff_t *pack) {
 	deff_pack->skb = pack;
 	deff_pack->timer = timer;
 	list_add_tail(&deff_packet_list, &deff_pack->link);
+	deff_pack->skb->sk->is_ready = 0;
 }

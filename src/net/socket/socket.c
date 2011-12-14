@@ -148,7 +148,8 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 		//inet->sport = 666;
 		inet->sport = socket_get_free_port(inet->sport_type);
 	}
-
+	/* socket is ready for packet transmit */
+	sock->sk->is_ready = 1;
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 	if (res < 0) {
 		return (ssize_t)res;
