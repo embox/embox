@@ -793,6 +793,22 @@ define __class_inherit
 	)
 endef
 
+define field_name
+	$(basename $1)
+endef
+
+define field_type
+	$(suffix $1)
+endef
+
+define graphviz_escape
+	$(subst ",\",$(subst |,\|,$1))
+endef
+
+define obj_links
+	$(subst .,,$(basename $($($1).fields:%=.%)))
+endef
+
 $(def_all)
 
 define __object_dump_dot
@@ -803,12 +819,12 @@ define __object_dump_dot
 	$(\n)
 	$(foreach o,$(__object_instance_cnt:%=.obj%),
 		$(\n)	"$o" \
-			[label="<.> $o : $($o)\l $(foreach f,$(basename $($($o).fields)),
-				| <$f> $f = $(subst ",\",$(subst |,\|,$($o.$f)))\l
+			[label="<.> $o : $($o)\l $(foreach f,$(call field_name,$($($o).fields)),
+				| <$f> $f = $(call graphviz_escape,$($o.$f))\l
 			)"];
 		$(\n)
-		$(foreach f,$(subst .,,$(basename $($($o).fields:%=.%))),
-			$(foreach p,$(suffix $($o.$f)),
+		$(foreach f, $(call obj_links,$o),
+			$(foreach p,$(call field_type,$($o.$f)),
 				$(\n)	"$o":$f -> "$p":".";
 			)
 		)
