@@ -21,15 +21,13 @@
 # call 'gold_default_produce' function.
 #
 
-include mk/mybuild/model.mk
-
 # Rule: <MyFile> ::= <Package> <Imports> <Entities>
 # Args:
 #   1. Qualified name of package (if any).
 #   2. Import scope object.
 #   3. Entities: '<type>/object'
 define $(gold_grammar)_produce-MyFile
-	$(foreach m,$(new model,$1),$m
+	$(foreach m,$(new my_file,$1),$m
 		$(invoke m->set_imports,$2)
 
 		$(silent-foreach entity_type,
