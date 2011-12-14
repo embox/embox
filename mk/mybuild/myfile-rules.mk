@@ -22,9 +22,9 @@
 # call 'gold_default_produce' function.
 #
 
-# Rule: <Model> ::= <Package> <Imports> <Entities>
+# Rule: <MyFile> ::= <Package> <Imports> <Entities>
 # Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-Model
+define $(gold_grammar)_produce-MyFile
 	$(\h) Generated from $(gold_file). Do not edit!$(\n)$(\n)
 	$(if $1,$1$(\n))
 	$(if $2,$2$(\n))

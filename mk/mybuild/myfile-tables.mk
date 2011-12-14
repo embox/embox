@@ -80,7 +80,7 @@ define __gold_$(gold_grammar)_parser
 			$(gold-symbol 55,0,MakeAttribute),
 			$(gold-symbol 56,0,MakeFlags),
 			$(gold-symbol 57,0,MakeRule),
-			$(gold-symbol 58,0,Model),
+			$(gold-symbol 58,0,MyFile),
 			$(gold-symbol 59,0,Module2),
 			$(gold-symbol 60,0,ModuleAttribute),
 			$(gold-symbol 61,0,ModuleAttributes),
@@ -111,7 +111,7 @@ define __gold_$(gold_grammar)_parser
 		# 		<Function name>
 		# 	),
 		$(gold-rule-table \
-			$(gold-rule 0,58,3,Model),
+			$(gold-rule 0,58,3,MyFile),
 			$(gold-rule 1,69,2,Package_package),
 			$(gold-rule 2,69,0,Package),
 			$(gold-rule 3,48,2,Imports),

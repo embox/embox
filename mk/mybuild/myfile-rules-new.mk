@@ -23,12 +23,12 @@
 
 include mk/mybuild/model.mk
 
-# Rule: <Model> ::= <Package> <Imports> <Entities>
+# Rule: <MyFile> ::= <Package> <Imports> <Entities>
 # Args:
 #   1. Qualified name of package (if any).
 #   2. Import scope object.
 #   3. Entities: '<type>/object'
-define $(gold_grammar)_produce-Model
+define $(gold_grammar)_produce-MyFile
 	$(foreach m,$(new model,$1),$m
 		$(invoke m->set_imports,$2)
 

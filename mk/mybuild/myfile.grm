@@ -5,7 +5,7 @@
 
 "Case Sensitive" = True
 
-"Start Symbol" = <Model>
+"Start Symbol" = <MyFile>
 
 ! -------------------------------------------------
 ! Character Sets
@@ -52,7 +52,7 @@ BooleanLiteral = 'true' | 'false'
 ! Rules
 ! -------------------------------------------------
 
-<Model>
+<MyFile>
         ::= <Package> <Imports> <Entities>
 
 ! Package?
