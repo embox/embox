@@ -21,6 +21,8 @@
 # call 'gold_default_produce' function.
 #
 
+include mk/core/object.mk
+
 # Rule: <MyFile> ::= <Package> <Imports> <Entities>
 # Args:
 #   1. Qualified name of package (if any).
