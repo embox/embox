@@ -20,9 +20,6 @@
 #include <errno.h>
 
 #include <framework/net/pack/api.h>
-#include <net/ip.h>
-#include <net/neighbour.h>
-#include <kernel/timer.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -34,12 +31,6 @@ EMBOX_UNIT_INIT(unit_init);
 /*paket's types*/
 static LIST_HEAD(ptype_base);
 static LIST_HEAD(ptype_all);
-
-struct deffered_packet {
-	sk_buff_t *pack;
-	int undef_state;
-	int ticks_before_release;
-};
 
 void dev_add_pack(struct packet_type *pt) {
 	if (pt->type == htons(ETH_P_ALL)) {
@@ -85,27 +76,11 @@ static void print_packet (sk_buff_t *skb) {
 }
 #endif
 
-static void check_arp_resp(struct sys_timer *timer, void *data) {
-	struct deffered_packet *deff_pack = (struct deffered_packet *)data;
-
-	deff_pack->ticks_before_release--;
-	if(neighbour_lookup(in_dev_get(deff_pack->pack->dev),
-			deff_pack->pack->nh.iph->daddr) || !deff_pack->ticks_before_release) {
-		deff_pack->undef_state = 0;
-	}
-}
-
 int dev_queue_xmit(struct sk_buff *skb) {
 	int res;
 	net_device_t *dev;
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
-	sys_timer_t *timer;
-	struct deffered_packet state = {
-	    .pack = skb,
-	    .undef_state = 1,
-	    .ticks_before_release = 10,
-	};
 
 	if (skb == NULL) {
 		return -EINVAL;
@@ -122,15 +97,9 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	if (dev->flags & IFF_UP) {
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
-			timer_set(&timer, 10 , check_arp_resp, &state);
-			while(state.undef_state);
-			timer_close(timer);
-			if(!state.ticks_before_release) {
-				kfree_skb(skb);
-				stats->tx_err++;
-				return res;
-			}
-			return dev_queue_xmit(skb);
+			kfree_skb(skb);
+			stats->tx_err++;
+			return res;
 		}
 		res = ops->ndo_start_xmit(skb, dev);
 		if (res < 0) {

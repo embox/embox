@@ -14,6 +14,10 @@ $_DEPS-af_inet += embox.net.raw_sock
 $_MODS     += arp
 $_SRCS-arp += arp.c
 $_DEPS-arp += embox.net.neighbour
+$_DEPS-arp += defpack
+
+$_MODS     += defpack
+$_SRCS-arp += defpack_resolve.c
 
 $_MODS      += ipv4
 $_SRCS-ipv4 += ip_input.c : ip_options.c
