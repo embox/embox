@@ -103,7 +103,6 @@ static struct sock *udp_lookup(in_addr_t daddr, __be16 dport) {
 
 static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	sock_queue_rcv_skb(sk, skb);
-	skb->links++;
 	return 0;
 }
 

@@ -548,7 +548,6 @@ static int tcp_v4_rcv(sk_buff_t *skb) {
 	iphdr_t *iph = ip_hdr(skb);
 	tcphdr_t *tcph = tcp_hdr(skb);
 	struct tcp_sock *tcpsk = tcp_lookup(iph->daddr, tcph->dest);
-	skb->links = 1;
 
 	if (tcpsk == NULL) {
 		return -1;

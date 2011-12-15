@@ -133,6 +133,8 @@ static int icmp_unreach(sk_buff_t *skb) {
 		return -1;
 	}
 
+	kfree_skb(skb);
+
 	return ENOERR;
 }
 
@@ -143,16 +145,12 @@ static int icmp_redirect(sk_buff_t *skb) {
 }
 
 static int icmp_echo(sk_buff_t *skb) {
-	sk_buff_t *reply;
-
-	/* RFC 796:  The data received in the echo message must be returned in the echo reply message. */
-	reply = skb_clone(skb, 0);
-	reply->h.icmph->type = ICMP_ECHOREPLY;
+	skb->h.icmph->type = ICMP_ECHOREPLY;
 	/* TODO checksum must be at network byte order */
-	reply->h.icmph->checksum = 0;
-	reply->h.icmph->checksum = ptclbsum(reply->h.raw, htons(reply->nh.iph->tot_len) - IP_HEADER_SIZE(reply->nh.iph));
+	skb->h.icmph->checksum = 0;
+	skb->h.icmph->checksum = ptclbsum(skb->h.raw, htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
-	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
+	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, skb, 0);
 	return ENOERR;
 }
 
@@ -286,6 +284,7 @@ static int icmp_rcv(sk_buff_t *pack) {
 	if (icmph->type >= NR_ICMP_TYPES) {
 		LOG_WARN("unknown type of ICMP packet\n");
 		stats->rx_err++;
+		kfree_skb(pack);
 		return -1;
 	}
 
@@ -307,14 +306,16 @@ static int icmp_rcv(sk_buff_t *pack) {
 		LOG_WARN("bad icmp checksum\n");
 		stats->rx_err++;
 		stats->rx_crc_errors++;
+		kfree_skb(pack);
 		return -1;
 	}
 
 	assert(icmp_handlers[icmph->type] != NULL);
 	res = icmp_handlers[icmph->type](pack);
 	if (res < 0) {
-		/* If function return ENOERR, we shouldn't to free pack */
+		/* If function return ENOERR, we must free pack */
 		stats->rx_err++;
+		kfree_skb(pack);
 		return res;
 	}
 

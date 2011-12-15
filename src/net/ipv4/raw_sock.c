@@ -46,15 +46,15 @@ int raw_rcv(sk_buff_t *skb) {
 	size_t i;
 	struct sock *sk;
 	iphdr_t *iph;
-	sk_buff_t *own;
+	sk_buff_t *cloned;
 
 	iph = ip_hdr(skb);
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock *)raw_hash[i];
 		if (sk && sk->sk_protocol == iph->proto) {
-			own = skb_clone(skb, 0); // TODO without skb_clone()
-			if (raw_rcv_skb(sk, own) < 0) {
-				kfree_skb(own);
+			cloned = skb_clone(skb, 0);
+			if (raw_rcv_skb(sk, cloned) < 0) {
+				kfree_skb(cloned);
 			}
 		}
 	}

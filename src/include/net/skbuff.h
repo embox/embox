@@ -72,7 +72,6 @@ typedef struct sk_buff {        /* Socket buffer */
 		struct ethhdr *ethh;
 		unsigned char *raw;
 	} mac;
-	uint16_t links;             /* Amount pointer, which link to itself */
 	__be16 offset;              /* Offset information for ip fragmentation*/
 #if 0
 	void (*destructor)(struct sk_buff *skb);
