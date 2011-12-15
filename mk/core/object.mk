@@ -810,25 +810,31 @@ define obj_links
 endef
 
 $(def_all)
+
+#param 1 node
+define get_leaves
+	$(foreach f,$(subst .,,$(basename $($($1).fields:%=.%))),
+		$(foreach p,$(suffix $($1.$f)),$p)
+	)
+endef
+
 #param $1 current object
 #param $2 current marked object list
 define __object_get_list
-	$(info $1 && $2)
-	$(if $(filter $1,$2),$(sort $2),
-		$(foreach f,$(subst .,,$(basename $($($1).fields:%=.%))),
-			$(foreach p,$(suffix $($1.$f)),
-				$(info $1 +++++++ $2 ---- $p)
-				$(call $0,$p,$2 $1)
+	$(foreach f,$(or $(singleword $2),$(error invalid argument in $0: '$2')),
+		$(sort $(with $1,,
+				$(if $(filter $1,$2),$2,
+					$(foreach o,$(call $f,$1),
+						$(call $0,$o,$2 $1)
+					)
+				)
 			)
 		)
 	)
 endef
 
-define __object_get_sort_list
-	$(sort $(call __object_get_list,$1,))
-endef
-
 define __object_dump_dot
+	$(info $(call __object_get_list,.obj7,get_leaves))
 	$(\n)digraph "Make Objects Dump"
 	$(\n){
 	$(\n)	graph[rankdir="LR"];
