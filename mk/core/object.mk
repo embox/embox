@@ -810,6 +810,23 @@ define obj_links
 endef
 
 $(def_all)
+#param $1 current object
+#param $2 current marked object list
+define __object_get_list
+	$(info $1 && $2)
+	$(if $(filter $1,$2),$(sort $2),
+		$(foreach f,$(subst .,,$(basename $($($1).fields:%=.%))),
+			$(foreach p,$(suffix $($1.$f)),
+				$(info $1 +++++++ $2 ---- $p)
+				$(call $0,$p,$2 $1)
+			)
+		)
+	)
+endef
+
+define __object_get_sort_list
+	$(sort $(call __object_get_list,$1,))
+endef
 
 define __object_dump_dot
 	$(\n)digraph "Make Objects Dump"
@@ -833,6 +850,8 @@ define __object_dump_dot
 	$(\n)}
 	$(\n)
 endef
+
+$(def_all)
 
 __mk_objects_dump_ps := objects_dump.ps
 
