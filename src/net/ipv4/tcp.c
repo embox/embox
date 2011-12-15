@@ -211,6 +211,7 @@ static int send_from_sock(struct sock *sk, sk_buff_t *skb, int ops) {
 	rebuild_tcp_header(inet->saddr, inet->daddr,
 			inet->sport, inet->dport, htonl(tcpsk->this_unack), htonl(tcpsk->rem.seq),
 			tcpsk->this.wind, skb);
+	skb->sk = sk;
 	if (ops & SEND_OPS_RELIABLE) {
 		struct sk_buff *c_skb = skb_clone(skb, 0);
 		c_skb->p_data = c_skb->h.raw + TCP_V4_HEADER_SIZE(c_skb->h.th);

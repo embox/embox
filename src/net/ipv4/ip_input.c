@@ -102,6 +102,9 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 #endif
 
 	if((complete_skb = ip_defrag(skb)) == NULL) {
+		if(skb == NULL) {
+			return NET_RX_DROP;
+		}
 		return NET_RX_SUCCESS;
 	} else {
 		skb = complete_skb;
