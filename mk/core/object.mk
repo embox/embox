@@ -35,6 +35,117 @@
 ifndef __core_object_mk
 __core_object_mk := 1
 
+##
+# General overview.
+#
+#   This file provides an object-oriented superstructure for Make.
+#
+# Terminology.
+#
+#   Class
+#     - a prototype of each instance (object), which defines members (fields
+#       and methods) available for instances. Classes can extend another
+#       class, inheriting its members. Multiple inheritance is supported,
+#       tracking an inheritance order and avoiding MI problems (such as
+#       diamond problem) is the responsibility of user.
+#
+#   Object
+#     - an instance of a class. Each object has its own set of values of
+#       fields associated with the class of the object.
+#
+#   Object reference
+#     - a value used to refer an object.
+#
+#   Method
+#     - a function associated with a class, defines runtime behavior of an
+#       instance of the class. Method is evaluated in a special context with
+#      'this' pointing the current object, thus it has as access to other
+#       members of the object.
+#
+#   Field
+#     - a value associated with each object of a certain class, provides a
+#       runtime state of the instance.
+#
+#   Reference field
+#     - a special kind of field, that hold references to other objects.
+#
+#
+# Class definition.
+#
+#   Each variable with name starting with 'class-' is considered as a new class
+#   definition. The name of the class is everything after the dash.
+#
+#   define class-clazz
+#   	...
+#   endef
+#
+#   In the example above, a variable 'class-clazz' defines a new class
+#   named 'clazz'. The name of the class is primarily used for object
+#   instantiation and for class introspection.
+#
+#   So what can class actually define?
+#
+#
+# Field definition.
+#
+#   A field is defined using special 'field' builtin function.
+#
+#   	$(field name [ : { * | type } ] [,initializer...])
+#
+#   The first argument specifies the name of the field and whether the field
+#   is a reference field. In the latter case one can also specify a type of
+#   objects that can be held in this field.
+#
+#   If an initializer is specified in the second argument, it will be called
+#   every time when a new object is created, and its return value will be
+#   assigned to the field. Otherwise, the field gets empty initial value
+#   by default.
+#
+#   	# A simple field for storing an arbitrary data.
+#   	$(field a_field)
+#
+#   	# A field with an initializer. Note the usage of 'this'.
+#   	$(field a_field_with_initializer,
+#   		$(info initializing a field of '$(this)')
+#   		initial value)
+#
+#   	# A field that holds references to any objects.
+#   	$(field a_reference_field : *)
+#
+#   	# A reference fields that enforces the type of referenced objects to
+#   	# be 'some_class'.
+#   	$(field a_reference_field : some_class)
+#
+#
+# Method definition.
+#
+#   As fields methods are defined using special builtin function, which has the
+#   following syntax.
+#
+#   	$(field name [,implementation])
+#
+#   The first argument is the name of the method.
+#
+#   If the second argument is not specified, then the method is considered
+#   abstract. Abstract method are assumed to be implemented in some subclass.
+#   To prevent invocation of an abstract method a special stub ($(error ...))
+#   is assigned as its body.
+#
+#   	# A simple method which always returns 'result' string.
+#   	$(method a_method,result)
+#
+#   	# A method with no implementation (abstract method).
+#   	$(method an_abstract_method)
+#
+#   	# As a usual function method body have an access to all passed
+#   	# arguments ($1 ..). A reference to the current object is available
+#   	# in 'this' variable.
+#   	$(field say_hello,
+#   		$(info Hello from '$(this)', the first argument is '$1'))
+#
+#
+#
+
 include mk/core/common.mk
 include mk/core/string.mk
 include mk/core/define.mk
@@ -109,97 +220,6 @@ define __new
 	)
 endef
 __object_instance_cnt :=# Initially empty.
-
-# Tells whether the argument is a valid object reference.
-#   1. Reference to check.
-# Return:
-#   The argument if true, empty otherwise.
-define is_object
-	$(if $(value class-$(value $(suffix $1))),$1)
-endef
-builtin_func-is-object = \
-	$(foreach builtin_name,is_object,$(builtin_to_function_inline))
-
-# Tells whether a given class has been defined.
-#   1. Class name.
-# Return:
-#   The argument if true, empty otherwise.
-define class_exists
-	$(if $(value class-$1),$1)
-endef
-builtin_func-class-exists = \
-	$(foreach builtin_name,class_exists,$(builtin_to_function_inline))
-
-# Gets the class of the specified object.
-#   1. Object to inspect.
-# Return:
-#   The class if the argument is a valid object, empty otherwise.
-define class
-	$(foreach c,$(singleword $(value $(suffix $1))),
-			$(if $(value class-$c),$c))
-endef
-$(call def,class)
-builtin_func-class = $(builtin_to_function_inline)
-
-# Tells whether a given object is an instance of the specified class.
-#   1. Reference to check.
-#   2. Class name.
-# Return:
-#   The first argument if the answer is true, empty otherwise.
-define instance_of
-	#$(foreach c,$(class $1),
-	#		$(if $(filter $2,$c $($c.super)),$1))
-
-	# Optimized.
-	$(foreach c,$(singleword $(value $(suffix $1))),
-			$(and $(value class-$c),$(filter $2,$c $($c.super)),$1))
-endef
-builtin_func-instance-of = \
-	$(foreach builtin_name,instance_of,$(builtin_to_function_inline))
-
-# Tells whether a given object has the specified field.
-#   1. Reference to check.
-#   2. Field name.
-# Return:
-#   The first argument if the answer is true, empty otherwise.
-define has_field
-	$(if $(call class_has_field,$(class $1),$2),$1)
-endef
-builtin_func-has-field = \
-	$(foreach builtin_name,has_field,$(builtin_to_function_inline))
-
-# Tells whether a class has the given field.
-#   1. Name of the class to check.
-#   2. Field name.
-# Return:
-#   The first argument if the answer is true, empty otherwise.
-define class_has_field
-	$(if $(filter $2,$(basename $(value $1.fields))),$1)
-endef
-builtin_func-class-has-field = \
-	$(foreach builtin_name,class_has_field,$(builtin_to_function_inline))
-
-# Tells whether a given object has the specified method.
-#   1. Reference to check.
-#   2. Method name.
-# Return:
-#   The first argument if the answer is true, empty otherwise.
-define has_method
-	$(if $(call class_has_method,$(class $1),$2),$1)
-endef
-builtin_func-has-method = \
-	$(foreach builtin_name,has_method,$(builtin_to_function_inline))
-
-# Tells whether a class has the given method.
-#   1. Name of the class to check.
-#   2. Method name.
-# Return:
-#   The first argument if the answer is true, empty otherwise.
-define class_has_method
-	$(if $(filter $2,$(value $1.methods)),$1)
-endef
-builtin_func-class-has-method = \
-	$(foreach builtin_name,class_has_method,$(builtin_to_function_inline))
 
 #
 # Runtime member access: 'invoke', 'get' and 'set'.
@@ -526,6 +546,101 @@ define __class_resolve
 		$1
 	)
 endef
+
+#
+# Object/class structure introspection.
+#
+
+# Tells whether the argument is a valid object reference.
+#   1. Reference to check.
+# Return:
+#   The argument if true, empty otherwise.
+define is_object
+	$(if $(value class-$(value $(suffix $1))),$1)
+endef
+builtin_func-is-object = \
+	$(foreach builtin_name,is_object,$(builtin_to_function_inline))
+
+# Tells whether a given class has been defined.
+#   1. Class name.
+# Return:
+#   The argument if true, empty otherwise.
+define class_exists
+	$(if $(value class-$1),$1)
+endef
+builtin_func-class-exists = \
+	$(foreach builtin_name,class_exists,$(builtin_to_function_inline))
+
+# Gets the class of the specified object.
+#   1. Object to inspect.
+# Return:
+#   The class if the argument is a valid object, empty otherwise.
+define class
+	$(foreach c,$(singleword $(value $(suffix $1))),
+			$(if $(value class-$c),$c))
+endef
+$(call def,class)
+builtin_func-class = $(builtin_to_function_inline)
+
+# Tells whether a given object is an instance of the specified class.
+#   1. Reference to check.
+#   2. Class name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define instance_of
+	#$(foreach c,$(class $1),
+	#		$(if $(filter $2,$c $($c.super)),$1))
+
+	# Optimized.
+	$(foreach c,$(singleword $(value $(suffix $1))),
+			$(and $(value class-$c),$(filter $2,$c $($c.super)),$1))
+endef
+builtin_func-instance-of = \
+	$(foreach builtin_name,instance_of,$(builtin_to_function_inline))
+
+# Tells whether a given object has the specified field.
+#   1. Reference to check.
+#   2. Field name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define has_field
+	$(if $(call class_has_field,$(class $1),$2),$1)
+endef
+builtin_func-has-field = \
+	$(foreach builtin_name,has_field,$(builtin_to_function_inline))
+
+# Tells whether a class has the given field.
+#   1. Name of the class to check.
+#   2. Field name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define class_has_field
+	$(if $(filter $2,$(basename $(value $1.fields))),$1)
+endef
+builtin_func-class-has-field = \
+	$(foreach builtin_name,class_has_field,$(builtin_to_function_inline))
+
+# Tells whether a given object has the specified method.
+#   1. Reference to check.
+#   2. Method name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define has_method
+	$(if $(call class_has_method,$(class $1),$2),$1)
+endef
+builtin_func-has-method = \
+	$(foreach builtin_name,has_method,$(builtin_to_function_inline))
+
+# Tells whether a class has the given method.
+#   1. Name of the class to check.
+#   2. Method name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define class_has_method
+	$(if $(filter $2,$(value $1.methods)),$1)
+endef
+builtin_func-class-has-method = \
+	$(foreach builtin_name,class_has_method,$(builtin_to_function_inline))
 
 #
 # Class definition.
