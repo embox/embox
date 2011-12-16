@@ -40,14 +40,12 @@ __core_object_mk := 1
 #
 #   This file provides an object-oriented superstructure for Make.
 #
+##
 # Terminology.
 #
 #   Class
 #     - a prototype of each instance (object), which defines members (fields
-#       and methods) available for instances. Classes can extend another
-#       class, inheriting its members. Multiple inheritance is supported,
-#       tracking an inheritance order and avoiding MI problems (such as
-#       diamond problem) is the responsibility of user.
+#       and methods) available for instances.
 #
 #   Object
 #     - an instance of a class. Each object has its own set of values of
@@ -56,12 +54,6 @@ __core_object_mk := 1
 #   Object reference
 #     - a value used to refer an object.
 #
-#   Method
-#     - a function associated with a class, defines runtime behavior of an
-#       instance of the class. Method is evaluated in a special context with
-#      'this' pointing the current object, thus it has as access to other
-#       members of the object.
-#
 #   Field
 #     - a value associated with each object of a certain class, provides a
 #       runtime state of the instance.
@@ -69,7 +61,13 @@ __core_object_mk := 1
 #   Reference field
 #     - a special kind of field, that hold references to other objects.
 #
+#   Method
+#     - a function associated with a class, defines runtime behavior of an
+#       instance of the class. Method is evaluated in a special context with
+#      'this' pointing the current object, thus it has as access to other
+#       members of the object.
 #
+##
 # Class definition.
 #
 #   Each variable with name starting with 'class-' is considered as a new class
@@ -90,7 +88,7 @@ __core_object_mk := 1
 #
 #   A field is defined using special 'field' builtin function.
 #
-#   	$(field name [ : { * | type } ] [,initializer...])
+#   	$(field name[:{*|type}][,initializer...])
 #
 #   The first argument specifies the name of the field and whether the field
 #   is a reference field. In the latter case one can also specify a type of
@@ -122,7 +120,7 @@ __core_object_mk := 1
 #   As fields methods are defined using special builtin function, which has the
 #   following syntax.
 #
-#   	$(field name [,implementation])
+#   	$(field name[,implementation...])
 #
 #   The first argument is the name of the method.
 #
@@ -143,6 +141,42 @@ __core_object_mk := 1
 #   	$(field say_hello,
 #   		$(info Hello from '$(this)', the first argument is '$1'))
 #
+#
+# Class inheritance.
+#
+#   Class can extend other classes, inheriting their members. Multiple
+#   inheritance is supported, tracking an inheritance order and avoiding
+#   MI issues (such as diamond problem) is the responsibility of user.
+#
+#   	$(super class_name[,arguments...])
+#
+#   The first argument is the name of a class to inherit. The specified class
+#   must have already been defined. Arguments (if any) are passed to a
+#   constructor of the super class.
+#
+##
+# Runtime concepts.
+#
+#   After a class has been defined, one can create objects of such class,
+#   invoke its methods and get/set field values.
+#
+#
+# Object instantiation.
+#
+#   A new object is created using 'new' builtin function.
+#
+#   	$(new class_name[,arguments...])
+#
+#   The first argument specifies the name of a class being instantiated.
+#   Note that this should be the name of the class itself, not the name of a
+#   variable used to define a class. The name of the class defined in
+#   variable 'class-clazz' is 'clazz', and a proper call to 'new' is the
+#   following:
+#
+#   	$(new clazz)
+#
+#   Arguments specified after a class name are passed to the constructor.
+#   As you might notice, class does not have a dedicated constructor. XXX
 #
 #
 
