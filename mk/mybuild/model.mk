@@ -95,10 +95,9 @@ define class-node
 	)
 
 	$(method serialize,
-		$(if $(filter $(this),$1),,
-			$(this) := $($(this))$(\n)
-			$(foreach f,$(call field_name,$($($(this)).fields)),
-				$(this).$f := $($(__this).$f)$(\n))))
+		$(this) := $($(this))$(\n)
+		$(foreach f,$(call field_name,$($($(this)).fields)),
+			$(this).$f := $($(__this).$f)$(\n)))
 
 	$(method deserialize,
 		${eval \
