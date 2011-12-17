@@ -254,6 +254,27 @@ __core_object_mk := 1
 #   	$(foreach object,$(new clazz),
 #   		$(invoke object->some_method))
 #
+#   It is important to note that the latter two forms must include '.' (period)
+#   and '->' (dash with closing angle bracket) literally. Think of them as a
+#   kind of separator, such as ',' (comma) for arguments.
+#
+#
+# A few words about object references.
+#
+#   A reference to an object is a string that is used to identify the object.
+#   For example, 'new' returns a reference, 'this' contains a reference (in
+#   certain contexts, of course: within constructors and methods).
+#
+#   There is, however, a special property of references: prepending an
+#   arbitrary prefix does not corrupt the reference. Moreover, one can extract
+#   a prefix (if any) efficiently using $(basename <ref>) function.
+#   In turn a normalized reference is available through $(suffix <ref>).
+#
+#   So, returning to an example of method invocation, one could modify it as
+#   follows without changing the meaning:
+#
+#   	$(foreach object,foo/bar.baz!$(new clazz),
+#   		$(invoke $(object).some_method))
 #
 #
 
