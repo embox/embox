@@ -171,12 +171,18 @@ __core_object_mk := 1
 #   	define class-clazz
 #   		$(info This is executed first)
 #
-#   		$(super zuper
+#   		$(super zuper,
 #   			Hello from clazz)
 #
-#   		$(field foo,$(info Initializing field 'foo'))
+#   		$(field foo,
+#   			$(info Initializing field 'foo')
+#   			initial value)
 #
-#   		$(info This is the last statement executed during instantiation)
+#   		$(method bar,
+#   			$(info Calling method 'bar')
+#   			hello world)
+#
+#   		$(info End of constructor)
 #   	endef
 #
 #   In this example the following test will be printed during constructing
@@ -185,7 +191,7 @@ __core_object_mk := 1
 #   	This is executed first
 #   	Super constructor with argument 'Hello from clazz'
 #   	Initializing field 'foo'
-#   	This is the last statement executed during instantiation
+#   	End of constructor
 #
 ##
 # Runtime concepts.
@@ -275,6 +281,75 @@ __core_object_mk := 1
 #
 #   	$(foreach object,foo/bar.baz!$(new clazz),
 #   		$(invoke $(object).some_method))
+#
+##
+# Internal representation.
+#
+#   During class definition or a new object instantiation a number of ancillary
+#   variables are created.
+#
+#   Considering the code below as an example, we'll examine what variables
+#   are created and when.
+#
+#   	define class-zuper
+#   		$(info Super constructor with argument '$1')
+#   	endef
+#
+#   After defining class 'zuper' variable 'class-zuper' becomes a part
+#   of its constructor. Also three special variables defined.
+#
+#   	# class-zuper = $(info Super constructor with argument '$1')
+#
+#   	# zuper.super :=
+#   	# zuper.fields :=
+#   	# zuper.methods :=
+#
+#   Lets extend our class as follows:
+#
+#   	define class-clazz
+#   		$(info This is executed first)
+#
+#   		$(super zuper,
+#   			Hello from clazz)
+#
+#   		$(field foo,
+#   			$(info Initializing field 'foo')
+#   			initial value)
+#
+#   		$(method bar,
+#   			$(info Calling method 'bar')
+#   			hello world)
+#
+#   		$(info End of constructor)
+#   	endef
+#
+#   Notice additional two variables for field 'foo' and method 'bar':
+#
+#   	# class-clazz = \
+#   	# 	$(info This is executed first) \
+#   	# 	$(call class-zuper,Hello from clazz) \
+#   	# 	$(eval $(this).foo := $(value clazz.foo)) \
+#   	# 	$(info End of constructor)
+#
+#   	# clazz.super := zuper
+#   	# clazz.fields := foo
+#   	# clazz.methods := bar
+#
+#   	# clazz.foo = \
+#   	# 	$(info Initializing field 'foo')initial value
+#   	# clazz.bar = \
+#   	# 	$(foreach this,$(__this),$(info Calling method 'bar')hello world)
+#
+#   Finally, we will instantiate 'clazz':
+#
+#   	inztance := $(call new,clazz)
+#
+#   And inspect newly defined variables:
+#
+#   	# inztance := .obj1
+#
+#   	# .obj1 := clazz
+#   	# .obj1.foo := initial value
 #
 #
 
@@ -1110,7 +1185,6 @@ endef
 
 
 include mk/util/escape.mk
-include mk/dirs.mk
 
 define objects_to_mk
 	$(foreach o,$(call __object_get_list,.obj7,get_leaves),
