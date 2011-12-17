@@ -1085,11 +1085,29 @@ define __object_dump_dot
 	$(\n)
 endef
 
+
+
+
+include mk/util/escape.mk
+include mk/dirs.mk
+
+define objects_to_mk
+	$(foreach o,$(call __object_get_list,.obj7,get_leaves),
+		$(foreach f,$(call field_name,$($($o).fields)),
+			$o:=$(call escape_makefile,$($o))
+			$(\n)
+			$o.$f:=$(call escape_makefile,$($o.$f))
+			$(\n)
+		)
+	)
+	$(\n)
+endef
+
 $(def_all)
 
 __mk_objects_dump_ps := objects_dump.ps
 
-.PHONY : mk_objects_dump
+.PHONY : mk_objects_dump mk_object_to_mk
 .PHONY : $(__mk_objects_dump_ps:.ps=.dot) # Assume it volatile.
 mk_objects_dump : $(__mk_objects_dump_ps)
 
@@ -1098,5 +1116,8 @@ $(__mk_objects_dump_ps:.ps=.dot) :
 
 $(__mk_objects_dump_ps) : %.ps : %.dot
 	@dot -Tps $< -o $@
+
+mk_object_to_mk:
+	@printf '%b' '$(call escape_printf,$(call objects_to_mk))' > dump.mk
 
 endif # __core_object_mk
