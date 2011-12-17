@@ -73,9 +73,9 @@ __core_object_mk := 1
 #   Each variable with name starting with 'class-' is considered as a new class
 #   definition. The name of the class is everything after the dash.
 #
-#   define class-clazz
-#   	...
-#   endef
+#   	define class-clazz
+#   		...
+#   	endef
 #
 #   In the example above, a variable 'class-clazz' defines a new class
 #   named 'clazz'. The name of the class is primarily used for object
@@ -154,6 +154,39 @@ __core_object_mk := 1
 #   must have already been defined. Arguments (if any) are passed to a
 #   constructor of the super class.
 #
+#
+# Constructor statements.
+#
+#   There is no dedicated structure for a constructor. Instead, the whole
+#   class body is considered as a constructor. That is, you may include an
+#   arbitrary code outside the builtins mentioned above.
+#
+#   Instantiation also involves field initialization and calling super
+#   constructors, in the order they have been defined the class body.
+#
+#   	define class-zuper
+#   		$(info Super constructor with argument '$1')
+#   	endef
+#
+#   	define class-clazz
+#   		$(info This is executed first)
+#
+#   		$(super zuper
+#   			Hello from clazz)
+#
+#   		$(field foo,$(info Initializing field 'foo'))
+#
+#   		$(info This is the last statement executed during instantiation)
+#   	endef
+#
+#   In this example the following test will be printed during constructing
+#   a new object:
+#
+#   	This is executed first
+#   	Super constructor with argument 'Hello from clazz'
+#   	Initializing field 'foo'
+#   	This is the last statement executed during instantiation
+#
 ##
 # Runtime concepts.
 #
@@ -168,6 +201,7 @@ __core_object_mk := 1
 #   	$(new class_name[,arguments...])
 #
 #   The first argument specifies the name of a class being instantiated.
+#
 #   Note that this should be the name of the class itself, not the name of a
 #   variable used to define a class. The name of the class defined in
 #   variable 'class-clazz' is 'clazz', and a proper call to 'new' is the
@@ -176,7 +210,6 @@ __core_object_mk := 1
 #   	$(new clazz)
 #
 #   Arguments specified after a class name are passed to the constructor.
-#   As you might notice, class does not have a dedicated constructor. XXX
 #
 #
 
@@ -675,6 +708,8 @@ define class_has_method
 endef
 builtin_func-class-has-method = \
 	$(foreach builtin_name,class_has_method,$(builtin_to_function_inline))
+
+$(def_all)
 
 #
 # Class definition.
