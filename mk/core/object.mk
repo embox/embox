@@ -211,6 +211,50 @@ __core_object_mk := 1
 #
 #   Arguments specified after a class name are passed to the constructor.
 #
+#  'new' allocates a unique object identifier which acts as the object
+#   reference and is accessible within the constructor through 'this' variable.
+#   This identifier is then returned as the result value of 'new'.
+#
+#
+# Accessing object members.
+#
+#   Member access includes method invocation and getting/setting field values.
+#
+#   	# Calls the method with given arguments and returns the result.
+#   	$(invoke method[,arguments...])
+#
+#   	$(get  field)       # Retrieves the current field value.
+#
+#   	$(set  field,value) # Assigns a new value to the field.
+#   	$(set+ field,value) # Appends a given value to the field.
+#   	$(set* field,value) # Appends a value if the field doesn't contain it.
+#   	$(set- field,value) # Removes any occurrence of a value from the field.
+#
+#   Related builtin functions allows one to specify a target member in three
+#   different forms:
+#
+#   member
+#     - Simple form for referring members of 'this' object.
+#
+#   <object>.member
+#     - Accesses a member of the specified object.
+#
+#   	$(invoke $(new clazz).some_method)
+#
+#   	# A more real world example.
+#   	$(foreach object,$(new clazz),
+#   		$(invoke $(object).some_method))
+#
+#   <variable>->member
+#     - The same as the previous one, but the object reference is computed
+#       by expanding the specified variable. In fact, this form is a shorthand
+#       for '$(<variable>).member'. Thus, the last of the examples above
+#       could rewritten as follows:
+#
+#   	$(foreach object,$(new clazz),
+#   		$(invoke object->some_method))
+#
+#
 #
 
 include mk/core/common.mk
