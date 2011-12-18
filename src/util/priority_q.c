@@ -1,7 +1,8 @@
 /**
+ * @file
  * @brief Implementation of priority queue data structure
  *
- * @date October 25, 2011
+ * @date 25.10.11
  * @author Malkovsky Nikolay
  *
  * @abstract
@@ -28,7 +29,6 @@
  *           /   \     /   \
  *          3     4   5     6
  *
- *
  * Insertion.
  *
  * When we insert the element in the queue, at first, we just place it into
@@ -46,7 +46,6 @@
  * swaps in the following way:
  * while value in current node is greater then any of value in chilren,
  * swap the value with the lower one, starting from the root node.
- *
  */
 
 #include <util/priority_q.h>
@@ -54,49 +53,45 @@
 /**
  * Compares the values stored in cells c and b in queue pq
  */
-#define lss(pq, c, b) (pq->a[c] < pq->a[b])
+#define LSS(pq, c, b) ((pq)->a[c] < (pq)->a[b])
 
-#define swap(a, b) \
-	typeof(a) temp = (a); \
-	a = b; \
-	b = temp;
-
+#define SWAP(a, b) \
+	do {                          \
+		typeof(a) temp = (a); \
+		a = b;                \
+		b = temp;             \
+	} while (0)
 
 void insert(struct priority_q *pq, int value) {
-	int idx;
-	pq->a[pq->size++] = value;
-	for(idx = pq->size - 1; (idx != 0 && lss(pq, idx, (idx - 1) >> 1)); idx = (idx - 1) >> 1) {
-		swap(pq->a[idx], pq->a[(idx - 1) >> 1]);
+	int idx = pq->size++;
+	pq->a[idx] = value;
+	for ( ; idx && LSS(pq, idx, (idx - 1) >> 1); idx = (idx - 1) >> 1) {
+		SWAP(pq->a[idx], pq->a[(idx - 1) >> 1]);
 	}
 }
 
 void pop(struct priority_q *pq) {
-	int idx;
-	if(empty(pq)) {
+	int idx = 0;
+	if (empty(pq)) {
 		return;
 	}
 
 	pq->a[0] = pq->a[--pq->size];
 
-	for(idx = 0; (((idx << 1) + 1 < pq->size && lss(pq, (idx << 1) + 1, idx)) ||
-		((idx << 1) + 2 < pq->size && lss(pq, (idx << 1) + 2, idx))) ; ) {
-		if((idx << 1) + 2 < pq->size) {
-			if(lss(pq, (idx << 1) + 1, (idx << 1) + 2) && lss(pq, (idx << 1) + 1, idx)) {
-				swap(pq->a[idx], pq->a[(idx << 1) + 1])
+	for ( ; ((idx << 1) + 1 < pq->size && LSS(pq, (idx << 1) + 1, idx)) ||
+	     ((idx << 1) + 2 < pq->size && LSS(pq, (idx << 1) + 2, idx)); ) {
+		if ((idx << 1) + 2 < pq->size) {
+			if (LSS(pq, (idx << 1) + 1, (idx << 1) + 2) &&
+			    LSS(pq, (idx << 1) + 1, idx)) {
+				SWAP(pq->a[idx], pq->a[(idx << 1) + 1]);
 				idx = (idx << 1) + 1;
+			} else if (LSS(pq, (idx << 1) + 2, idx)) {
+				SWAP(pq->a[idx], pq->a[(idx << 1) + 2]);
+				idx = (idx << 1) + 2;
 			}
-            else {
-            	if(lss(pq, (idx << 1) + 2, idx)) {
-            		swap(pq->a[idx], pq->a[(idx << 1) + 2])
-            		idx = (idx << 1) + 2;
-            	}
-            }
+		} else if (idx << 1 < pq->size && LSS(pq, (idx << 1) + 1, idx)) {
+			SWAP(pq->a[idx], pq->a[(idx << 1) + 1]);
+			idx = (idx << 1) + 1;
 		}
-		else if((idx << 1) < pq->size) {
-			if(lss(pq, (idx << 1) + 1, idx)) {
-				swap(pq->a[idx], pq->a[(idx << 1) + 1])
-				idx = (idx << 1) + 1;
-			}
-       	}
-    }
+	}
 }
