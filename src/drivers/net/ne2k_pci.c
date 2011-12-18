@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief An implementation of an ne2000 PCI ethernet adapter.
+ * @brief Device driver for PCI NE2000 PCI clones (e.g. RealTek RTL-8029).
  * @details Driver to fool Qemu into sending and receiving
- *          packets for us via it's ne2k_isa emulation
+ *          packets for us via it's model=ne2k_pci emulation
  *          This driver is unlikely to work with real hardware
  *          without substantial modifications and is purely for
  *          helping with the development of network stacks.
@@ -13,7 +13,7 @@
  *         - Initial implementation
  * @author Nikolay Korotky
  * @author Ilia Vaprol
- *         - Adaptation for embox
+ *         - Adaptation for Embox
  */
 
 #include <asm/io.h>
@@ -35,7 +35,7 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-static net_device_stats_t * get_eth_stat(struct net_device *dev);
+static net_device_stats_t *get_eth_stat(struct net_device *dev);
 
 /* The per-packet-header format. */
 struct e8390_pkt_hdr {
@@ -44,6 +44,8 @@ struct e8390_pkt_hdr {
 	uint16_t count; /* header + packet lenght in bytes */
 };
 
+#define DEBUG 0
+#if DEBUG
 /* Debugging routines */
 static inline void show_packet(uint8_t *raw, uint16_t size, char *title) {
 	uint8_t i, val;
@@ -56,13 +58,13 @@ static inline void show_packet(uint8_t *raw, uint16_t size, char *title) {
 		val = *(raw + i);
 		if (val < 0x10) {
 			printf(" 0%X", val);
-		}
-		else {
+		} else {
 			printf(" %X", val);
 		}
 	}
 	printf("\n.\n");
 }
+#endif
 
 static inline void ne2k_get_addr_from_prom(struct net_device *dev) {
 	uint8_t i;
@@ -75,7 +77,7 @@ static inline void ne2k_get_addr_from_prom(struct net_device *dev) {
 
 	/* Get mac-address from prom*/
 	out8(E8390_PAGE0 | E8390_RREAD, dev->base_addr + E8390_CMD);
-	for(i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (i = 0; i < ETHER_ADDR_LEN; i++) {
 		dev->dev_addr[i] = in8(dev->base_addr + NE_DATAPORT);
 	}
 
@@ -113,7 +115,6 @@ static inline void ne2k_config(struct net_device *dev) {
 //	out8(NESM_START_PG_RX, base_addr + EN1_CURPAG); /* set current page */
 }
 
-
 static inline void set_tx_count(uint16_t val, unsigned long base_addr) {
 	/* Set how many bytes we're going to send. */
 	out8(val & 0xff, EN0_TBCR_LO + base_addr);
@@ -130,8 +131,8 @@ static inline void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
 	out8(val >> 8, EN0_RCNTHI + base_addr);
 }
 
-
-static inline void copy_data_to_card(uint16_t dest, uint8_t *src, uint16_t len, unsigned long base_addr) {
+static inline void copy_data_to_card(uint16_t dest, uint8_t *src,
+				uint16_t len, unsigned long base_addr) {
 	out8(E8390_NODMA | E8390_PAGE0, base_addr + NE_CMD); // switch to PAGE0
 	set_rem_address(dest, base_addr);
 	set_rem_byte_count(len, base_addr);
@@ -143,7 +144,8 @@ static inline void copy_data_to_card(uint16_t dest, uint8_t *src, uint16_t len, 
 	while (0 == (in8(base_addr + EN0_ISR) & ENISR_RDC));
 }
 
-static inline void copy_data_from_card(uint16_t src, uint8_t *dest, uint32_t length, unsigned long base_addr) {
+static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
+				uint32_t length, unsigned long base_addr) {
 	out8(E8390_NODMA | E8390_PAGE0, base_addr + NE_CMD);
 	set_rem_address(src, base_addr);
 	set_rem_byte_count(length, base_addr);
@@ -153,7 +155,6 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest, uint32_t len
 		*(dest + length - 1) = in8(base_addr + NE_DATAPORT);
 	}
 }
-
 
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint16_t count;
@@ -180,15 +181,19 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	set_tx_count(count, base_addr);
 	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
 	out8(E8390_TRANS | E8390_NODMA | E8390_START, base_addr + NE_CMD);
-	while (in8(base_addr + NE_CMD) & E8390_TRANS) ; /* Wait for transmission to complete. */
+	/* Wait for transmission to complete. */
+	while (in8(base_addr + NE_CMD) & E8390_TRANS) ;
 
-//	show_packet(skb->data, skb->len, "send"); /* debug */
+#if DEBUG
+	show_packet(skb->data, skb->len, "send");
+#endif
 	kfree_skb(skb); /* free packet */
 
 	return ENOERR;
 }
 
-static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset, struct net_device *dev) {
+static struct sk_buff * get_skb_from_card(uint16_t total_length,
+				uint16_t offset, struct net_device *dev) {
 	struct sk_buff *skb;
 
 	skb = alloc_skb(total_length, 0);
@@ -199,7 +204,9 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length, uint16_t offset
 	skb->dev = dev;
 	copy_data_from_card(offset, skb->data, total_length, dev->base_addr);
 	skb->protocol = ntohs(skb->mac.ethh->h_proto);
-//	show_packet(skb->data, skb->len, "recv"); /* debug */
+#if DEBUG
+	show_packet(skb->data, skb->len, "recv");
+#endif
 
 	return skb;
 }
@@ -241,19 +248,17 @@ static size_t ne2k_receive(struct net_device *dev) {
 	if ((total_length < 60) || (total_length > 1518)) {
 		stat->rx_err++;
 		LOG_WARN("ne2k_receive: bad packet size\n");
-	}
-	else if ((rx_frame.status & 0x0F) == ENRSR_RXOK) {
+	} else if ((rx_frame.status & 0x0F) == ENRSR_RXOK) {
 		skb = get_skb_from_card(total_length, ring_offset + sizeof(struct e8390_pkt_hdr), dev);
 		if (skb) {
 			stat->rx_packets++;
+			stat->rx_bytes += skb->len;
 			netif_rx(skb);
-		}
-		else {
+		} else {
 			stat->rx_dropped++;
 			LOG_WARN("ne2k_receive: couldn't allocate memory for packet\n");
 		}
-	}
-	else {
+	} else {
 		if (rx_frame.status & ENRSR_FO) {
 			stat->rx_fifo_errors++;
 		}
@@ -281,15 +286,17 @@ static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 		while ((in8(base_addr + EN0_ISR) & ENISR_RESET)) ;
 		ne2k_receive(dev_id); /* Remove packets right away. */
 		out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on. */
-	}
-	else if (isr & (ENISR_RX + ENISR_RX_ERR)) {
+	} else if (isr & (ENISR_RX + ENISR_RX_ERR)) {
 		ne2k_receive(dev_id);
 	}
 	if (isr & ENISR_TX) {
 		status = in8(base_addr + EN0_TSR);
-		if (status & ENTSR_COL) { stat->collisions++; }
-		if (status & ENTSR_PTX) { stat->tx_packets++; }
-		else {
+		if (status & ENTSR_COL) {
+			stat->collisions++;
+		}
+		if (status & ENTSR_PTX) {
+			stat->tx_packets++;
+		} else {
 			stat->tx_err++;
 			if (status & ENTSR_ABT) { stat->tx_aborted_errors++; }
 			if (status & ENTSR_CRS) { stat->tx_carrier_errors++; }
@@ -297,8 +304,7 @@ static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 			if (status & ENTSR_CDH) { stat->tx_heartbeat_errors++; }
 			if (status & ENTSR_OWC) { stat->tx_window_errors++; }
 		}
-	}
-	else if (isr & ENISR_COUNTERS) {
+	} else if (isr & ENISR_COUNTERS) {
 		stat->rx_frame_errors += in8(base_addr + EN0_COUNTER0);
 		stat->rx_crc_errors += in8(base_addr + EN0_COUNTER1);
 		stat->rx_missed_errors += in8(base_addr + EN0_COUNTER2);
@@ -368,7 +374,8 @@ static int __init unit_init(void) {
 	struct net_device *nic;
 	struct pci_dev *pci_dev;
 
-	pci_dev = pci_find_dev(0x10EC, 0x8029); //TODO pci ID
+	//TODO: only RealTek RTL-8029 is available
+	pci_dev = pci_find_dev(PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
 	if (pci_dev == NULL) {
 		LOG_WARN("Couldn't find NE2K_PCI device\n");
 		return ENOERR;
