@@ -234,7 +234,7 @@ static int icmp_init(void) {
 }
 
 static int ping_rcv(struct sk_buff *skb) {
-	return -1;
+	return ENOERR;
 }
 
 static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
