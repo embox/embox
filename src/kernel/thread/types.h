@@ -23,6 +23,7 @@ struct context;
 
 struct runq;
 struct sleepq;
+struct event;
 
 struct thread {
 

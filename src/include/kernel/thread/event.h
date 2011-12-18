@@ -17,4 +17,6 @@ extern void event_init(struct event *event, const char *name);
 
 extern const char *event_name(struct event *event);
 
+extern void event_fire(struct event *event);
+
 #endif /* KERNEL_THREAD_EVENT_H_ */

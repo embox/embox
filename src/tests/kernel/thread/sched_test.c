@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief TODO documentation for sched_test.c -- Alina Kramar
+ * @brief testing scheduler calls (sched API). This interface's described in
+ *      sched.h.
  *
  * @date 08.04.11
  * @author Alina Kramar
