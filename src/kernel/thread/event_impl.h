@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief TODO documentation for event_impl.h -- Alina Kramar
+ * @brief Implementation of the event API.
  *
  * @date 08.04.11
  * @author Alina Kramar
@@ -31,9 +31,11 @@ static inline void event_init(struct event *e, const char *name) {
 	e->name = name;
 }
 
+#if 0
 static inline const char *event_name(struct event *e) {
 	return e->name;
 }
+#endif
 
 static inline void event_fire(struct event *e) {
 	sched_wake(e);

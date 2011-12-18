@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief
+ * @brief Tests changing thread's state by event.
  *
  * @date 18.12.2011
  * @author Anton Bondarev
@@ -18,11 +18,12 @@ EMBOX_TEST_SUITE("test for change thread state by events");
 
 static void *thread_run(void *arg) {
 	struct event *event = (struct event *)arg;
+	event_init(event, "test_event");
 	sched_sleep(event);
 	return 0;
 }
 
-TEST_CASE("") {
+TEST_CASE("Create thread waiting event and then finish") {
 	struct event sync_event;
 	struct thread *thread;
 
