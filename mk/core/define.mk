@@ -207,8 +207,7 @@ __def_strip_fold = \
   $(and $(subst _$$h,,$2), \
         $(if $(findstring _$$n,$1),$ \
              $(subst _$$s,_$$n,$(subst _$$t,_$$n,$2)),$ \
-             $(or $(findstring _$$n,$2), \
-                  $(if $1,$2))) \
+             $(if $1,$2,$(findstring _$$n,$2))) \
    )
 
 # Params:
