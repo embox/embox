@@ -20,13 +20,13 @@ define class-my_file
 		$(set imports,$1))
 
 	$(method set_modules,
-		$(invoke replace_refs,modules,$1))
+		$(invoke set_references,modules,$(suffix $1)))
 
 	$(method add_modules,
-		$(invoke add_to,modules,$1))
+		$(invoke add_references,modules,$(suffix $1)))
 
 	$(method remove_modules,
-		$(invoke remove_from,modules,$1))
+		$(invoke remove_references,modules,$(suffix $1)))
 
 endef
 
@@ -40,12 +40,12 @@ define class-module
 	$(field super_module_ref : module_ref)
 
 	$(method set_super_module_ref,
-		$(invoke replace_refs,super_module_ref,$1))
+		$(invoke set_references,super_module_ref,$1))
 
 	$(field depends_refs : module_ref)
 
 	$(method set_depends_refs,
-		$(invoke replace_refs,depends_refs,$1))
+		$(invoke set_references,depends_refs,$1))
 
 	$(field requires_refs)
 	$(field provides_refs)
@@ -54,10 +54,10 @@ define class-module
 	$(field objects : filename)
 
 	$(method set_sources,
-		$(invoke replace_refs,sources,$1))
+		$(invoke set_references,sources,$1))
 
 	$(method set_objects,
-		$(invoke replace_refs,objects,$1))
+		$(invoke set_references,objects,$1))
 
 endef
 

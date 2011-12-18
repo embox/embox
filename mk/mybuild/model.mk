@@ -19,56 +19,56 @@ define class-node
 
 	# 1. Field of this.
 	# 2. What to add.
-	$(method add_to,
+	$(method add_references,
 		$(set+ $1,
 			$(foreach e,$(filter-out $(get $1),$2),$e
-				$(invoke e->inverse_add_to,$(basename $e),$1$(this))
+				$(invoke e->inverse_add_references,$(basename $e),$1$(this))
 			)
 		)
 	)
 
 	# 1. Field of this.
 	# 2. What to remove.
-	$(method remove_from,
+	$(method remove_references,
 		$(set- $1,
 			$(foreach e,$(filter $2,$(get $1)),$e
-				$(invoke e->inverse_remove_from,$(basename $e),$1$(this))
+				$(invoke e->inverse_remove_references,$(basename $e),$1$(this))
 			)
 		)
 	)
 
 	# 1. Field of this.
-	$(method clear_refs,
+	$(method clear_references,
 		$(silent-foreach e,$(get $1),
-			$(invoke e->inverse_remove_from,$(basename $e),$1$(this))
+			$(invoke e->inverse_remove_references,$(basename $e),$1$(this))
 		)
 		$(set $1,)
 	)
 
 	# 1. Field of this.
 	# 2. New references.
-	$(method replace_refs,
-		$(invoke clear_refs,$1)
-		$(invoke add_to,$1,$2)
+	$(method set_references,
+		$(invoke clear_references,$1)
+		$(invoke add_references,$1,$2)
 	)
 
 	# 1. Field of this.
 	# 2. What is being added.
-	$(method inverse_add_to,
+	$(method inverse_add_references,
 		$(assert $(singleword $2),'$0' handles a single reference at once)
 
 		$(if $1,
 			$(set+ $1,$2),
 
 			$(assert $(not $(multiword $(get container))))
-			$(invoke clear_refs,container)
+			$(invoke clear_references,container)
 			$(set container,$2)
 		)
 	)
 
 	# 1. Field of this.
 	# 2. What is being removed.
-	$(method inverse_remove_from,
+	$(method inverse_remove_references,
 		$(assert $(singleword $2),'$0' handles a single reference at once)
 
 		$(if $1,
@@ -89,8 +89,8 @@ define class-node
 		$(assert $(not $(multiword $(get container))))
 
 		$(if $(not $(eq $1,$(get container))),
-			$(invoke clear_refs,container)
-			$(invoke add_to,container,$1)
+			$(invoke clear_references,container)
+			$(invoke add_references,container,$1)
 		)
 	)
 
@@ -105,6 +105,10 @@ define class-node
 		})
 
 
+endef
+
+define class-link
+	$(super node)
 endef
 
 # Constructor args:
