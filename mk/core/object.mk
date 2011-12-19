@@ -1141,49 +1141,37 @@ define field_type
 	$(suffix $1)
 endef
 
-define graphviz_escape
-	$(subst ",\",$(subst |,\|,$1))
-endef
-
 define obj_links
 	$(subst .,,$(basename $($($1).fields:%=.%)))
 endef
 
 $(def_all)
 
-#param 1 node
-define get_leaves
-	$(foreach f,$(subst .,,$(basename $($($1).fields:%=.%))),
-		$(foreach p,$(suffix $($1.$f)),$p)
-	)
-endef
+include mk/util/graph.mk
+include mk/util/escape.mk
 
-#param $1 current object
-#param $2 current marked object list
-define __object_get_list
-	$(foreach f,$(or $(singleword $2),$(error invalid argument in $0: '$2')),
-		$(sort $(with $1,,
-				$(if $(filter $1,$2),$2,
-					$(foreach o,$(call $f,$1),
-						$(call $0,$o,$2 $1)
-					)
-				)
-			)
-		)
-	)
-endef
-
-define __object_dump_dot
-	$(info $(call __object_get_list,.obj7,get_leaves))
+# Serialize objects to .dot file for converting it by graphviz.
+# If $1 exist then graph from this node will be closed and objects from graph will be
+# serialized. Else every object in system will be serialized
+#
+# [param $1] if exist root node for closed graph
+#
+define objects_to_dot
 	$(\n)digraph "Make Objects Dump"
 	$(\n){
 	$(\n)	graph[rankdir="LR"];
 	$(\n)	node[shape="record"];
 	$(\n)
-	$(foreach o,$(__object_instance_cnt:%=.obj%),
+	$(foreach o,
+		$(if $(call value,1),
+			# if root is known then closure graph
+			$(call graph_closure,$1,get_referenced_objects)
+			, # else get all obj% in system
+			$(__object_instance_cnt:%=.obj%)
+		), # foreach
 		$(\n)	"$o" \
 			[label="<.> $o : $($o)\l $(foreach f,$(call field_name,$($($o).fields)),
-				| <$f> $f = $(call graphviz_escape,$($o.$f))\l
+				| <$f> $f = $(call escape_graphviz,$($o.$f))\l
 			)"];
 		$(\n)
 		$(foreach f, $(call obj_links,$o),
@@ -1197,13 +1185,10 @@ define __object_dump_dot
 	$(\n)
 endef
 
-
-
-
-include mk/util/escape.mk
-
+# Serialize all objects in closed graph to makefile
+# param $1 is a root node of graph
 define objects_to_mk
-	$(foreach o,$(call __object_get_list,.obj7,get_leaves),
+	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
 		$(foreach f,$(call field_name,$($($o).fields)),
 			$o:=$(call escape_makefile,$($o))
 			$(\n)
@@ -1223,12 +1208,12 @@ __mk_objects_dump_ps := objects_dump.ps
 mk_objects_dump : $(__mk_objects_dump_ps)
 
 $(__mk_objects_dump_ps:.ps=.dot) :
-	@printf '%b' '$(call my_printf_escape,$(__object_dump_dot))' > $@
+	@printf '%b' '$(call escape_printf,$(call objects_to_dot))' > $@
 
 $(__mk_objects_dump_ps) : %.ps : %.dot
 	@dot -Tps $< -o $@
 
 mk_object_to_mk:
-	@printf '%b' '$(call escape_printf,$(call objects_to_mk))' > dump.mk
+	@printf '%b' '$(call escape_printf,$(call objects_to_mk,.obj7))' > dump.mk
 
 endif # __core_object_mk

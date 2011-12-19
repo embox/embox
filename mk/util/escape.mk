@@ -14,6 +14,9 @@ define escape_makefile
 	)
 endef
 
+# The function escapes following symbols:
+# $(\n), '\'.
+# This function should be used to prepare text for shell printf command.
 define escape_printf
 	$(or \
 		$(subst $(\n),\n,
@@ -21,6 +24,13 @@ define escape_printf
 		),
 		$(error Empty input)
 	)
+endef
+
+# The function escapes following sequence of symbols:
+# ",\"
+# It's used during serialization to dot format
+define escape_graphviz
+	$(subst ",\",$(subst |,\|,$1))
 endef
 
 $(def_all)
