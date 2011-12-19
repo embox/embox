@@ -268,7 +268,7 @@ $(gold_grammar)_produce-InterfaceRef =             = $(call gold_report_error,NI
 # <FeatureRef> ::= <QualifiedNameWithWildcard>
 $(gold_grammar)_produce-FeatureRef                 = $(call gold_report_error,NIY)
 # <ModuleRef> ::= <QualifiedName>
-$(gold_grammar)_produce-ModuleRef                  = $(new module_ref,$1)
+$(gold_grammar)_produce-ModuleRef                  = $(new module_link,$1)
 # <Filename> ::= StringLiteral
 $(gold_grammar)_produce-Filename_StringLiteral     = $(new filename,$1)
 # <String> ::= StringLiteral

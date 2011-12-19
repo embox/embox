@@ -109,6 +109,10 @@ endef
 
 define class-link
 	$(super node)
+
+	$(method get_reference)
+
+	$(method get_type)
 endef
 
 # Constructor args:

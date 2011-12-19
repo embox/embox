@@ -4,3 +4,10 @@ module irq {
 	source "irq.c", "irq_lock.c"
 	depends embox.mem.objalloc, embox.hal.interrupt
 }
+
+module irq_test {
+	depends irq1
+}
+
+module irq1 {
+}
