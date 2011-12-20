@@ -114,7 +114,8 @@ endef
 #
 # The following features are available:
 #   - reference 'superType'
-#   - reference 'attributes'
+#   - reference 'features'
+#   - reference 'subTypes'
 #
 # To instantiate this class use 'MyFileFactory.createInterface'.
 define class-Interface
@@ -127,29 +128,33 @@ define class-Interface
 	#   1. New value.
 	$(method setSuperType)
 
-	# Returns the value of the 'attributes' containment reference.
-	#   1. Optional subtype of InterfaceProperty to filter on:
-	#       'Feature'
-	$(method getAttributes)
-	# Sets the value of the 'attributes' containment reference.
+	# Returns the value of the 'features' containment reference.
+	$(method getFeatures)
+	# Sets the value of the 'features' containment reference.
 	#   1. New value.
-	$(method setAttributes)
-	# Adds new elements to the 'attributes' containment reference.
+	$(method setFeatures)
+	# Adds new elements to the 'features' containment reference.
 	#   1. Elements to add.
-	$(method addAttributes)
-	# Removes elements from the 'attributes' containment reference.
+	$(method addFeatures)
+	# Removes elements from the 'features' containment reference.
 	#   1. Elements to remove.
-	$(method removeAttributes)
-	# Removes all elements from the 'attributes' containment reference.
-	$(method clearAttributes)
-endef
+	$(method removeFeatures)
+	# Removes all elements from the 'features' containment reference.
+	$(method clearFeatures)
 
-#
-# Model object 'InterfaceProperty'.
-#
-# To instantiate this class use 'MyFileFactory.createInterfaceProperty'.
-define class-InterfaceProperty
-	$(super Node)
+	# Returns the value of the 'subTypes' reference.
+	$(method getSubTypes)
+	# Sets the value of the 'subTypes' reference.
+	#   1. New value.
+	$(method setSubTypes)
+	# Adds new elements to the 'subTypes' reference.
+	#   1. Elements to add.
+	$(method addSubTypes)
+	# Removes elements from the 'subTypes' reference.
+	#   1. Elements to remove.
+	$(method removeSubTypes)
+	# Removes all elements from the 'subTypes' reference.
+	$(method clearSubTypes)
 endef
 
 #
@@ -158,11 +163,14 @@ endef
 # The following features are available:
 #   - attribute 'name'
 #   - reference 'superType'
+#   - reference 'interface'
+#   - reference 'providedBy'
+#   - reference 'requiredBy'
+#   - reference 'subTypes'
 #
 # To instantiate this class use 'MyFileFactory.createFeature'.
 define class-Feature
 	$(super Node)
-	$(super InterfaceProperty)
 
 	# Returns the value of the 'name' attribute.
 	$(method getName)
@@ -175,6 +183,54 @@ define class-Feature
 	# Sets the value of the 'superType' reference.
 	#   1. New value.
 	$(method setSuperType)
+
+	# Returns the value of the 'interface' reference.
+	$(method getInterface)
+	# Sets the value of the 'interface' reference.
+	#   1. New value.
+	$(method setInterface)
+
+	# Returns the value of the 'providedBy' reference.
+	$(method getProvidedBy)
+	# Sets the value of the 'providedBy' reference.
+	#   1. New value.
+	$(method setProvidedBy)
+	# Adds new elements to the 'providedBy' reference.
+	#   1. Elements to add.
+	$(method addProvidedBy)
+	# Removes elements from the 'providedBy' reference.
+	#   1. Elements to remove.
+	$(method removeProvidedBy)
+	# Removes all elements from the 'providedBy' reference.
+	$(method clearProvidedBy)
+
+	# Returns the value of the 'requiredBy' reference.
+	$(method getRequiredBy)
+	# Sets the value of the 'requiredBy' reference.
+	#   1. New value.
+	$(method setRequiredBy)
+	# Adds new elements to the 'requiredBy' reference.
+	#   1. Elements to add.
+	$(method addRequiredBy)
+	# Removes elements from the 'requiredBy' reference.
+	#   1. Elements to remove.
+	$(method removeRequiredBy)
+	# Removes all elements from the 'requiredBy' reference.
+	$(method clearRequiredBy)
+
+	# Returns the value of the 'subTypes' reference.
+	$(method getSubTypes)
+	# Sets the value of the 'subTypes' reference.
+	#   1. New value.
+	$(method setSubTypes)
+	# Adds new elements to the 'subTypes' reference.
+	#   1. Elements to add.
+	$(method addSubTypes)
+	# Removes elements from the 'subTypes' reference.
+	#   1. Elements to remove.
+	$(method removeSubTypes)
+	# Removes all elements from the 'subTypes' reference.
+	$(method clearSubTypes)
 endef
 
 #
@@ -185,9 +241,10 @@ endef
 #   - attribute 'abstract'
 #   - reference 'superType'
 #   - reference 'subTypes'
-#   - reference 'attributes'
 #   - reference 'depends'
 #   - reference 'dependent'
+#   - reference 'provides'
+#   - reference 'requires'
 #
 # To instantiate this class use 'MyFileFactory.createModule'.
 define class-Module
@@ -226,28 +283,6 @@ define class-Module
 	# Removes all elements from the 'subTypes' reference.
 	$(method clearSubTypes)
 
-	# Returns the value of the 'attributes' containment reference.
-	#   1. Optional subtype of ModuleProperty to filter on:
-	#       'Depends'
-	#       'FeatureModuleProperty'
-	#       'FilenameModuleProperty'
-	#       'Requires'
-	#       'Provides'
-	#       'Sources'
-	#       'Objects'
-	$(method getAttributes)
-	# Sets the value of the 'attributes' containment reference.
-	#   1. New value.
-	$(method setAttributes)
-	# Adds new elements to the 'attributes' containment reference.
-	#   1. Elements to add.
-	$(method addAttributes)
-	# Removes elements from the 'attributes' containment reference.
-	#   1. Elements to remove.
-	$(method removeAttributes)
-	# Removes all elements from the 'attributes' containment reference.
-	$(method clearAttributes)
-
 	# Returns the value of the 'depends' reference.
 	$(method getDepends)
 	# Sets the value of the 'depends' reference.
@@ -275,92 +310,34 @@ define class-Module
 	$(method removeDependent)
 	# Removes all elements from the 'dependent' reference.
 	$(method clearDependent)
-endef
 
-#
-# Model object 'ModuleProperty'.
-#
-# To instantiate this class use 'MyFileFactory.createModuleProperty'.
-define class-ModuleProperty
-	$(super Node)
-endef
-
-#
-# Model object 'Depends'.
-#
-# The following features are available:
-#   - reference 'modules'
-#
-# To instantiate this class use 'MyFileFactory.createDepends'.
-define class-Depends
-	$(super Node)
-	$(super ModuleProperty)
-
-	# Returns the value of the 'modules' reference.
-	$(method getModules)
-	# Sets the value of the 'modules' reference.
+	# Returns the value of the 'provides' reference.
+	$(method getProvides)
+	# Sets the value of the 'provides' reference.
 	#   1. New value.
-	$(method setModules)
-	# Adds new elements to the 'modules' reference.
+	$(method setProvides)
+	# Adds new elements to the 'provides' reference.
 	#   1. Elements to add.
-	$(method addModules)
-	# Removes elements from the 'modules' reference.
+	$(method addProvides)
+	# Removes elements from the 'provides' reference.
 	#   1. Elements to remove.
-	$(method removeModules)
-	# Removes all elements from the 'modules' reference.
-	$(method clearModules)
-endef
+	$(method removeProvides)
+	# Removes all elements from the 'provides' reference.
+	$(method clearProvides)
 
-#
-# Model object 'FeatureModuleProperty'.
-#
-# The following features are available:
-#   - reference 'features'
-#
-# To instantiate this class use 'MyFileFactory.createFeatureModuleProperty'.
-define class-FeatureModuleProperty
-	$(super Node)
-	$(super ModuleProperty)
-
-	# Returns the value of the 'features' reference.
-	$(method getFeatures)
-	# Sets the value of the 'features' reference.
+	# Returns the value of the 'requires' reference.
+	$(method getRequires)
+	# Sets the value of the 'requires' reference.
 	#   1. New value.
-	$(method setFeatures)
-	# Adds new elements to the 'features' reference.
+	$(method setRequires)
+	# Adds new elements to the 'requires' reference.
 	#   1. Elements to add.
-	$(method addFeatures)
-	# Removes elements from the 'features' reference.
+	$(method addRequires)
+	# Removes elements from the 'requires' reference.
 	#   1. Elements to remove.
-	$(method removeFeatures)
-	# Removes all elements from the 'features' reference.
-	$(method clearFeatures)
-endef
-
-#
-# Model object 'FilenameModuleProperty'.
-#
-# The following features are available:
-#   - reference 'files'
-#
-# To instantiate this class use 'MyFileFactory.createFilenameModuleProperty'.
-define class-FilenameModuleProperty
-	$(super Node)
-	$(super ModuleProperty)
-
-	# Returns the value of the 'files' containment reference.
-	$(method getFiles)
-	# Sets the value of the 'files' containment reference.
-	#   1. New value.
-	$(method setFiles)
-	# Adds new elements to the 'files' containment reference.
-	#   1. Elements to add.
-	$(method addFiles)
-	# Removes elements from the 'files' containment reference.
-	#   1. Elements to remove.
-	$(method removeFiles)
-	# Removes all elements from the 'files' containment reference.
-	$(method clearFiles)
+	$(method removeRequires)
+	# Removes all elements from the 'requires' reference.
+	$(method clearRequires)
 endef
 
 #
@@ -378,42 +355,6 @@ define class-Filename
 	# Sets the value of the 'name' attribute.
 	#   1. New value.
 	$(method setName)
-endef
-
-#
-# Model object 'Requires'.
-#
-# To instantiate this class use 'MyFileFactory.createRequires'.
-define class-Requires
-	$(super Node)
-	$(super FeatureModuleProperty)
-endef
-
-#
-# Model object 'Provides'.
-#
-# To instantiate this class use 'MyFileFactory.createProvides'.
-define class-Provides
-	$(super Node)
-	$(super FeatureModuleProperty)
-endef
-
-#
-# Model object 'Sources'.
-#
-# To instantiate this class use 'MyFileFactory.createSources'.
-define class-Sources
-	$(super Node)
-	$(super FilenameModuleProperty)
-endef
-
-#
-# Model object 'Objects'.
-#
-# To instantiate this class use 'MyFileFactory.createObjects'.
-define class-Objects
-	$(super Node)
-	$(super FilenameModuleProperty)
 endef
 
 $(def_all)

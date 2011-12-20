@@ -28,44 +28,29 @@ define class-MyFileMetaModel
 
 	$(field Interface : MetaClass)
 	$(field Interface_SuperType : MetaReference)
-	$(field Interface_Attributes : MetaReference)
-
-	$(field InterfaceProperty : MetaClass)
+	$(field Interface_Features : MetaReference)
+	$(field Interface_SubTypes : MetaReference)
 
 	$(field Feature : MetaClass)
 	$(field Feature_Name : MetaAttribute)
 	$(field Feature_SuperType : MetaReference)
+	$(field Feature_Interface : MetaReference)
+	$(field Feature_ProvidedBy : MetaReference)
+	$(field Feature_RequiredBy : MetaReference)
+	$(field Feature_SubTypes : MetaReference)
 
 	$(field Module : MetaClass)
 	$(field Module_Static : MetaAttribute)
 	$(field Module_Abstract : MetaAttribute)
 	$(field Module_SuperType : MetaReference)
 	$(field Module_SubTypes : MetaReference)
-	$(field Module_Attributes : MetaReference)
 	$(field Module_Depends : MetaReference)
 	$(field Module_Dependent : MetaReference)
-
-	$(field ModuleProperty : MetaClass)
-
-	$(field Depends : MetaClass)
-	$(field Depends_Modules : MetaReference)
-
-	$(field FeatureModuleProperty : MetaClass)
-	$(field FeatureModuleProperty_Features : MetaReference)
-
-	$(field FilenameModuleProperty : MetaClass)
-	$(field FilenameModuleProperty_Files : MetaReference)
+	$(field Module_Provides : MetaReference)
+	$(field Module_Requires : MetaReference)
 
 	$(field Filename : MetaClass)
 	$(field Filename_Name : MetaAttribute)
-
-	$(field Requires : MetaClass)
-
-	$(field Provides : MetaClass)
-
-	$(field Sources : MetaClass)
-
-	$(field Objects : MetaClass)
 endef
 
 $(def_all)

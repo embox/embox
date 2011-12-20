@@ -30,9 +30,6 @@ define class-MyFileFactory
 	#   1. Optional reference string to set initially.
 	$(method createReferenceToInterface)
 
-	# Creates a new 'InterfaceProperty' model object.
-	$(method createInterfaceProperty)
-
 	# Creates a new 'Feature' model object.
 	$(method createFeature)
 	# Creates a new reference to 'Feature'.
@@ -45,32 +42,8 @@ define class-MyFileFactory
 	#   1. Optional reference string to set initially.
 	$(method createReferenceToModule)
 
-	# Creates a new 'ModuleProperty' model object.
-	$(method createModuleProperty)
-
-	# Creates a new 'Depends' model object.
-	$(method createDepends)
-
-	# Creates a new 'FeatureModuleProperty' model object.
-	$(method createFeatureModuleProperty)
-
-	# Creates a new 'FilenameModuleProperty' model object.
-	$(method createFilenameModuleProperty)
-
 	# Creates a new 'Filename' model object.
 	$(method createFilename)
-
-	# Creates a new 'Requires' model object.
-	$(method createRequires)
-
-	# Creates a new 'Provides' model object.
-	$(method createProvides)
-
-	# Creates a new 'Sources' model object.
-	$(method createSources)
-
-	# Creates a new 'Objects' model object.
-	$(method createObjects)
 endef
 
 $(def_all)

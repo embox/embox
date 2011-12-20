@@ -41,11 +41,10 @@ define class-MyFileMetaModelImpl
 		$(invoke createMetaClass,Interface))
 	$(set Interface_SuperType,
 		$(invoke createMetaReference,superType,$(get Interface)))
-	$(set Interface_Attributes,
-		$(invoke createMetaReference,attributes,$(get Interface)))
-
-	$(set InterfaceProperty,
-		$(invoke createMetaClass,InterfaceProperty))
+	$(set Interface_Features,
+		$(invoke createMetaReference,features,$(get Interface)))
+	$(set Interface_SubTypes,
+		$(invoke createMetaReference,subTypes,$(get Interface)))
 
 	$(set Feature,
 		$(invoke createMetaClass,Feature))
@@ -53,6 +52,14 @@ define class-MyFileMetaModelImpl
 		$(invoke createMetaAttribute,name,$(get Feature)))
 	$(set Feature_SuperType,
 		$(invoke createMetaReference,superType,$(get Feature)))
+	$(set Feature_Interface,
+		$(invoke createMetaReference,interface,$(get Feature)))
+	$(set Feature_ProvidedBy,
+		$(invoke createMetaReference,providedBy,$(get Feature)))
+	$(set Feature_RequiredBy,
+		$(invoke createMetaReference,requiredBy,$(get Feature)))
+	$(set Feature_SubTypes,
+		$(invoke createMetaReference,subTypes,$(get Feature)))
 
 	$(set Module,
 		$(invoke createMetaClass,Module))
@@ -64,47 +71,19 @@ define class-MyFileMetaModelImpl
 		$(invoke createMetaReference,superType,$(get Module)))
 	$(set Module_SubTypes,
 		$(invoke createMetaReference,subTypes,$(get Module)))
-	$(set Module_Attributes,
-		$(invoke createMetaReference,attributes,$(get Module)))
 	$(set Module_Depends,
 		$(invoke createMetaReference,depends,$(get Module)))
 	$(set Module_Dependent,
 		$(invoke createMetaReference,dependent,$(get Module)))
-
-	$(set ModuleProperty,
-		$(invoke createMetaClass,ModuleProperty))
-
-	$(set Depends,
-		$(invoke createMetaClass,Depends))
-	$(set Depends_Modules,
-		$(invoke createMetaReference,modules,$(get Depends)))
-
-	$(set FeatureModuleProperty,
-		$(invoke createMetaClass,FeatureModuleProperty))
-	$(set FeatureModuleProperty_Features,
-		$(invoke createMetaReference,features,$(get FeatureModuleProperty)))
-
-	$(set FilenameModuleProperty,
-		$(invoke createMetaClass,FilenameModuleProperty))
-	$(set FilenameModuleProperty_Files,
-		$(invoke createMetaReference,files,$(get FilenameModuleProperty)))
+	$(set Module_Provides,
+		$(invoke createMetaReference,provides,$(get Module)))
+	$(set Module_Requires,
+		$(invoke createMetaReference,requires,$(get Module)))
 
 	$(set Filename,
 		$(invoke createMetaClass,Filename))
 	$(set Filename_Name,
 		$(invoke createMetaAttribute,name,$(get Filename)))
-
-	$(set Requires,
-		$(invoke createMetaClass,Requires))
-
-	$(set Provides,
-		$(invoke createMetaClass,Provides))
-
-	$(set Sources,
-		$(invoke createMetaClass,Sources))
-
-	$(set Objects,
-		$(invoke createMetaClass,Objects))
 
 	# Initialize.
 
@@ -124,15 +103,17 @@ define class-MyFileMetaModelImpl
 
 	$(invoke initMetaClass,$(get Interface),
 		$(get Entity))
-	$(invoke initMetaReference,$(get Interface_SuperType),$(get Interface),)
-	$(invoke initMetaReference,$(get Interface_Attributes),$(get InterfaceProperty),)
+	$(invoke initMetaReference,$(get Interface_SuperType),$(get Interface),$(get Interface_SubTypes))
+	$(invoke initMetaReference,$(get Interface_Features),$(get Feature),$(get Feature_Interface))
+	$(invoke initMetaReference,$(get Interface_SubTypes),$(get Interface),$(get Interface_SuperType))
 
-	$(invoke initMetaClass,$(get InterfaceProperty),)
-
-	$(invoke initMetaClass,$(get Feature),
-		$(get InterfaceProperty))
+	$(invoke initMetaClass,$(get Feature),)
 	$(invoke initMetaAttribute,$(get Feature_Name),)# NIY.
-	$(invoke initMetaReference,$(get Feature_SuperType),$(get Feature),)
+	$(invoke initMetaReference,$(get Feature_SuperType),$(get Feature),$(get Feature_SubTypes))
+	$(invoke initMetaReference,$(get Feature_Interface),$(get Interface),$(get Interface_Features))
+	$(invoke initMetaReference,$(get Feature_ProvidedBy),$(get Module),$(get Module_Provides))
+	$(invoke initMetaReference,$(get Feature_RequiredBy),$(get Module),$(get Module_Requires))
+	$(invoke initMetaReference,$(get Feature_SubTypes),$(get Feature),$(get Feature_SuperType))
 
 	$(invoke initMetaClass,$(get Module),
 		$(get Entity))
@@ -140,38 +121,13 @@ define class-MyFileMetaModelImpl
 	$(invoke initMetaAttribute,$(get Module_Abstract),)# NIY.
 	$(invoke initMetaReference,$(get Module_SuperType),$(get Module),$(get Module_SubTypes))
 	$(invoke initMetaReference,$(get Module_SubTypes),$(get Module),$(get Module_SuperType))
-	$(invoke initMetaReference,$(get Module_Attributes),$(get ModuleProperty),)
 	$(invoke initMetaReference,$(get Module_Depends),$(get Module),$(get Module_Dependent))
 	$(invoke initMetaReference,$(get Module_Dependent),$(get Module),$(get Module_Depends))
-
-	$(invoke initMetaClass,$(get ModuleProperty),)
-
-	$(invoke initMetaClass,$(get Depends),
-		$(get ModuleProperty))
-	$(invoke initMetaReference,$(get Depends_Modules),$(get Module),)
-
-	$(invoke initMetaClass,$(get FeatureModuleProperty),
-		$(get ModuleProperty))
-	$(invoke initMetaReference,$(get FeatureModuleProperty_Features),$(get Feature),)
-
-	$(invoke initMetaClass,$(get FilenameModuleProperty),
-		$(get ModuleProperty))
-	$(invoke initMetaReference,$(get FilenameModuleProperty_Files),$(get Filename),)
+	$(invoke initMetaReference,$(get Module_Provides),$(get Feature),$(get Feature_ProvidedBy))
+	$(invoke initMetaReference,$(get Module_Requires),$(get Feature),$(get Feature_RequiredBy))
 
 	$(invoke initMetaClass,$(get Filename),)
 	$(invoke initMetaAttribute,$(get Filename_Name),)# NIY.
-
-	$(invoke initMetaClass,$(get Requires),
-		$(get FeatureModuleProperty))
-
-	$(invoke initMetaClass,$(get Provides),
-		$(get FeatureModuleProperty))
-
-	$(invoke initMetaClass,$(get Sources),
-		$(get FilenameModuleProperty))
-
-	$(invoke initMetaClass,$(get Objects),
-		$(get FilenameModuleProperty))
 endef
 
 $(def_all)

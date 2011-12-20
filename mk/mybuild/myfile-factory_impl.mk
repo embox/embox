@@ -28,9 +28,6 @@ define class-MyFileFactoryImpl
 	$(method createReferenceToInterface,
 		$(new ReferenceToInterfaceImpl,$(value 1)))
 
-	$(method createInterfaceProperty,
-		$(new InterfacePropertyImpl))
-
 	$(method createFeature,
 		$(new FeatureImpl))
 	$(method createReferenceToFeature,
@@ -41,32 +38,8 @@ define class-MyFileFactoryImpl
 	$(method createReferenceToModule,
 		$(new ReferenceToModuleImpl,$(value 1)))
 
-	$(method createModuleProperty,
-		$(new ModulePropertyImpl))
-
-	$(method createDepends,
-		$(new DependsImpl))
-
-	$(method createFeatureModuleProperty,
-		$(new FeatureModulePropertyImpl))
-
-	$(method createFilenameModuleProperty,
-		$(new FilenameModulePropertyImpl))
-
 	$(method createFilename,
 		$(new FilenameImpl))
-
-	$(method createRequires,
-		$(new RequiresImpl))
-
-	$(method createProvides,
-		$(new ProvidesImpl))
-
-	$(method createSources,
-		$(new SourcesImpl))
-
-	$(method createObjects,
-		$(new ObjectsImpl))
 endef
 
 $(def_all)

@@ -110,17 +110,29 @@ define class-InterfaceImpl
 	$(method setSuperType,
 		$(invoke setNodeReference,$(get myFileMetaModelInstance->Interface_SuperType)))
 
-	$(field attributes : InterfaceProperty)
-	$(method getAttributes,
-		$(get attributes))
-	$(method setAttributes,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Interface_Attributes)))
-	$(method addAttributes,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Interface_Attributes)))
-	$(method removeAttributes,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Interface_Attributes)))
-	$(method clearAttributes,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Interface_Attributes)))
+	$(field features : Feature)
+	$(method getFeatures,
+		$(get features))
+	$(method setFeatures,
+		$(invoke setNodeReference,$(get myFileMetaModelInstance->Interface_Features)))
+	$(method addFeatures,
+		$(invoke addNodeReference,$(get myFileMetaModelInstance->Interface_Features)))
+	$(method removeFeatures,
+		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Interface_Features)))
+	$(method clearFeatures,
+		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Interface_Features)))
+
+	$(field subTypes : Interface)
+	$(method getSubTypes,
+		$(get subTypes))
+	$(method setSubTypes,
+		$(invoke setNodeReference,$(get myFileMetaModelInstance->Interface_SubTypes)))
+	$(method addSubTypes,
+		$(invoke addNodeReference,$(get myFileMetaModelInstance->Interface_SubTypes)))
+	$(method removeSubTypes,
+		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Interface_SubTypes)))
+	$(method clearSubTypes,
+		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Interface_SubTypes)))
 endef
 
 define class-ReferenceToInterfaceImpl
@@ -130,22 +142,11 @@ define class-ReferenceToInterfaceImpl
 		$(get myFileMetaModelInstance->Interface))
 endef
 
-# Implementation of 'InterfaceProperty' model object .
-define class-InterfacePropertyImpl
-	$(super InterfaceProperty)
-
-	$(super NodeImpl)
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->InterfaceProperty))
-endef
-
 # Implementation of 'Feature' model object .
 define class-FeatureImpl
 	$(super Feature)
 
 	$(super NodeImpl)
-	$(super InterfaceProperty)Impl
 
 	$(method getMetaClass,
 		$(get myFileMetaModelInstance->Feature))
@@ -161,6 +162,48 @@ define class-FeatureImpl
 		$(get superType))
 	$(method setSuperType,
 		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_SuperType)))
+
+	$(field interface : Interface)
+	$(method getInterface,
+		$(get interface))
+	$(method setInterface,
+		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_Interface)))
+
+	$(field providedBy : Module)
+	$(method getProvidedBy,
+		$(get providedBy))
+	$(method setProvidedBy,
+		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_ProvidedBy)))
+	$(method addProvidedBy,
+		$(invoke addNodeReference,$(get myFileMetaModelInstance->Feature_ProvidedBy)))
+	$(method removeProvidedBy,
+		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Feature_ProvidedBy)))
+	$(method clearProvidedBy,
+		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Feature_ProvidedBy)))
+
+	$(field requiredBy : Module)
+	$(method getRequiredBy,
+		$(get requiredBy))
+	$(method setRequiredBy,
+		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_RequiredBy)))
+	$(method addRequiredBy,
+		$(invoke addNodeReference,$(get myFileMetaModelInstance->Feature_RequiredBy)))
+	$(method removeRequiredBy,
+		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Feature_RequiredBy)))
+	$(method clearRequiredBy,
+		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Feature_RequiredBy)))
+
+	$(field subTypes : Feature)
+	$(method getSubTypes,
+		$(get subTypes))
+	$(method setSubTypes,
+		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_SubTypes)))
+	$(method addSubTypes,
+		$(invoke addNodeReference,$(get myFileMetaModelInstance->Feature_SubTypes)))
+	$(method removeSubTypes,
+		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Feature_SubTypes)))
+	$(method clearSubTypes,
+		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Feature_SubTypes)))
 endef
 
 define class-ReferenceToFeatureImpl
@@ -210,18 +253,6 @@ define class-ModuleImpl
 	$(method clearSubTypes,
 		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_SubTypes)))
 
-	$(field attributes : ModuleProperty)
-	$(method getAttributes,
-		$(get attributes))
-	$(method setAttributes,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_Attributes)))
-	$(method addAttributes,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Module_Attributes)))
-	$(method removeAttributes,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_Attributes)))
-	$(method clearAttributes,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_Attributes)))
-
 	$(field depends : Module)
 	$(method getDepends,
 		$(get depends))
@@ -245,6 +276,30 @@ define class-ModuleImpl
 		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_Dependent)))
 	$(method clearDependent,
 		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_Dependent)))
+
+	$(field provides : Feature)
+	$(method getProvides,
+		$(get provides))
+	$(method setProvides,
+		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_Provides)))
+	$(method addProvides,
+		$(invoke addNodeReference,$(get myFileMetaModelInstance->Module_Provides)))
+	$(method removeProvides,
+		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_Provides)))
+	$(method clearProvides,
+		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_Provides)))
+
+	$(field requires : Feature)
+	$(method getRequires,
+		$(get requires))
+	$(method setRequires,
+		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_Requires)))
+	$(method addRequires,
+		$(invoke addNodeReference,$(get myFileMetaModelInstance->Module_Requires)))
+	$(method removeRequires,
+		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_Requires)))
+	$(method clearRequires,
+		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_Requires)))
 endef
 
 define class-ReferenceToModuleImpl
@@ -252,85 +307,6 @@ define class-ReferenceToModuleImpl
 
 	$(method getReferenceMetaClass,
 		$(get myFileMetaModelInstance->Module))
-endef
-
-# Implementation of 'ModuleProperty' model object .
-define class-ModulePropertyImpl
-	$(super ModuleProperty)
-
-	$(super NodeImpl)
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->ModuleProperty))
-endef
-
-# Implementation of 'Depends' model object .
-define class-DependsImpl
-	$(super Depends)
-
-	$(super NodeImpl)
-	$(super ModuleProperty)Impl
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Depends))
-
-	$(field modules : Module)
-	$(method getModules,
-		$(get modules))
-	$(method setModules,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Depends_Modules)))
-	$(method addModules,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Depends_Modules)))
-	$(method removeModules,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Depends_Modules)))
-	$(method clearModules,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Depends_Modules)))
-endef
-
-# Implementation of 'FeatureModuleProperty' model object .
-define class-FeatureModulePropertyImpl
-	$(super FeatureModuleProperty)
-
-	$(super NodeImpl)
-	$(super ModuleProperty)Impl
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->FeatureModuleProperty))
-
-	$(field features : Feature)
-	$(method getFeatures,
-		$(get features))
-	$(method setFeatures,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->FeatureModuleProperty_Features)))
-	$(method addFeatures,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->FeatureModuleProperty_Features)))
-	$(method removeFeatures,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->FeatureModuleProperty_Features)))
-	$(method clearFeatures,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->FeatureModuleProperty_Features)))
-endef
-
-# Implementation of 'FilenameModuleProperty' model object .
-define class-FilenameModulePropertyImpl
-	$(super FilenameModuleProperty)
-
-	$(super NodeImpl)
-	$(super ModuleProperty)Impl
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->FilenameModuleProperty))
-
-	$(field files : Filename)
-	$(method getFiles,
-		$(get files))
-	$(method setFiles,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->FilenameModuleProperty_Files)))
-	$(method addFiles,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->FilenameModuleProperty_Files)))
-	$(method removeFiles,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->FilenameModuleProperty_Files)))
-	$(method clearFiles,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->FilenameModuleProperty_Files)))
 endef
 
 # Implementation of 'Filename' model object .
@@ -347,50 +323,6 @@ define class-FilenameImpl
 		$(get name))
 	$(method setName,
 		$(set name,$1))
-endef
-
-# Implementation of 'Requires' model object .
-define class-RequiresImpl
-	$(super Requires)
-
-	$(super NodeImpl)
-	$(super FeatureModuleProperty)Impl
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Requires))
-endef
-
-# Implementation of 'Provides' model object .
-define class-ProvidesImpl
-	$(super Provides)
-
-	$(super NodeImpl)
-	$(super FeatureModuleProperty)Impl
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Provides))
-endef
-
-# Implementation of 'Sources' model object .
-define class-SourcesImpl
-	$(super Sources)
-
-	$(super NodeImpl)
-	$(super FilenameModuleProperty)Impl
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Sources))
-endef
-
-# Implementation of 'Objects' model object .
-define class-ObjectsImpl
-	$(super Objects)
-
-	$(super NodeImpl)
-	$(super FilenameModuleProperty)Impl
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Objects))
 endef
 
 $(def_all)
