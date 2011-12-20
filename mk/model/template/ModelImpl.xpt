@@ -1,0 +1,65 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+
+«DEFINE main FOR EPackage»«FILE name.toLowerCase() + "-model_impl.mk" -»
+«fileHeader()»
+
+# Model implementation of '«name»' package.
+
+«inclusionGuardBegin("_impl")»
+
+«EXPAND classifier FOREACH eClassifiers -»
+
+$(def_all)
+
+«inclusionGuardEnd("_impl")»
+«ENDFILE»«ENDDEFINE»
+
+«DEFINE classifier FOR EClassifier»
+	«ERROR "Unexpected EClassifier: " + this»
+«ENDDEFINE»
+
+«DEFINE classifier FOR EClass»
+# Implementation of '«name»' model object .
+define class-«name»Impl
+	«mkSuper(name)»
+
+	«mkSuper("NodeImpl")»
+«FOREACH eSuperTypes AS superType -»
+	«mkSuper(superType.name)»Impl
+«ENDFOREACH -»
+
+	«mkMethod(getter("metaClass"),
+		mkGet(ePackage.metaModelInstanceName() + "->" + id()))»
+«EXPAND feature FOREACH eStructuralFeatures -»
+endef
+«ENDDEFINE»
+
+«DEFINE feature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE feature FOR EAttribute»
+	«mkField(name)»
+	«mkMethod(getter(), mkGet(name))»
+	«mkMethod(setter(), mkSet(name,"$1"))»
+«ENDDEFINE»
+
+«DEFINE feature FOR EReference»
+	«mkField(name)»
+	«mkMethod(getter(), mkGet(name))»
+«LET eReferenceType.ePackage.metaModelInstanceName() AS metaInstance -»
+	«mkMethod(setter(),
+		mkInvoke("nodeSetReference",mkGet(metaInstance + "->" + id())))»
+«IF upperBound != 1 -»
+	«mkMethod(xetter("add"),
+		mkInvoke("nodeAddReference",mkGet(metaInstance + "->" + id())))»
+	«mkMethod(xetter("remove"),
+		mkInvoke("nodeRemoveReference",mkGet(metaInstance + "->" + id())))»
+	«mkMethod(xetter("clear"),
+		mkInvoke("nodeClearReference",mkGet(metaInstance + "->" + id())))»
+«ENDIF -»
+«ENDLET -»
+«ENDDEFINE»
+

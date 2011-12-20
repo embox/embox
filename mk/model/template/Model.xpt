@@ -1,0 +1,85 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+
+«DEFINE main FOR EPackage»«FILE name.toLowerCase() + "-model.mk" -»
+«fileHeader()»
+
+# Model of '«name»' package.
+
+«inclusionGuardBegin()»
+
+include $(basename «inclusionGuard()»)_impl.mk
+
+«EXPAND classifier FOREACH eClassifiers -»
+
+$(def_all)
+
+«inclusionGuardEnd()»
+«ENDFILE»«ENDDEFINE»
+
+«DEFINE classifier FOR EClassifier»
+	«ERROR "Unexpected EClassifier: " + this»
+«ENDDEFINE»
+
+«DEFINE classifier FOR EClass»
+#
+# Model object '«name»'.
+#
+«LET eStructuralFeatures AS features»«IF !features.isEmpty -»
+# The following features are available:
+«FOREACH features AS feature -»
+#   - «EReference.isInstance(feature)
+		? "reference"
+		: "attribute"» '«feature.name»'
+«ENDFOREACH -»
+#
+«ENDIF»«ENDLET -»
+# To instantiate this class use '«ePackage.factoryName()».«factoryMethodName()»'.
+define class-«name»
+	«mkSuper("Node")»
+«FOREACH eSuperTypes AS superType -»
+	«mkSuper(superType.name)»
+«ENDFOREACH -»
+«EXPAND feature FOREACH eStructuralFeatures -»
+endef
+«ENDDEFINE»
+
+«DEFINE feature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE feature FOR EAttribute»
+	# Returns the value of the '«name»' attribute.
+	«mkMethod(getter())»
+	# Sets the value of the '«name»' attribute.
+	#   1. New value.
+	«mkMethod(setter())»
+«ENDDEFINE»
+
+«DEFINE feature FOR EReference»
+«LET containment ? "containment " : "" AS flavor -»
+	# Returns the value of the '«name»' «flavor»reference.
+«LET eType.subtypes() AS subtypes»«IF !subtypes.isEmpty -»
+	#   1. Optional subtype of «eType.name» to filter on:
+«FOREACH subtypes AS subtype -»
+	#       '«subtype.name»'
+«ENDFOREACH -»
+«ENDIF»«ENDLET -»
+	«mkMethod(getter())»
+	# Sets the value of the '«name»' «flavor»reference.
+	#   1. New value.
+	«mkMethod(setter())»
+«IF upperBound != 1 -»
+	# Adds new elements to the '«name»' «flavor»reference.
+	#   1. Elements to add.
+	«mkMethod(xetter("add"))»
+	# Removes elements from the '«name»' «flavor»reference.
+	#   1. Elements to remove.
+	«mkMethod(xetter("remove"))»
+	# Removes all elements from the '«name»' «flavor»reference.
+	«mkMethod(xetter("clear"))»
+«ENDIF -»
+«ENDLET -»
+«ENDDEFINE»
+

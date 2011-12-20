@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<workflow>
+	<property name="model" value="org.mybuild.myfile.codegen/src/MyFile.ecore" />
+	<property name="src-gen" value="src-gen" />
+
+	<!-- set up EMF for standalone execution -->
+	<bean class="org.eclipse.emf.mwe.utils.StandaloneSetup" >
+		<platformUri value=".."/>
+	</bean>
+
+	<!-- instantiate metamodel -->
+	<bean id="mm_emf" class="org.eclipse.xtend.typesystem.emf.EmfRegistryMetaModel"/>
+
+	<!-- load model and store it in slot 'model' -->
+	<component class="org.eclipse.emf.mwe.utils.Reader">
+		<uri value="platform:/resource/${model}" />
+		<modelSlot value="model" />
+	</component>
+
+	<!--  generate code -->
+	<component class="org.eclipse.xpand2.Generator">
+		<metaModel idRef="mm_emf"/>
+		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
+		<expand
+			value="template::Model::main FOR model" />
+		<outlet path="${src-gen}" >
+		</outlet>
+	</component>
+
+	<component class="org.eclipse.xpand2.Generator">
+		<metaModel idRef="mm_emf"/>
+		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
+		<expand
+			value="template::ModelImpl::main FOR model" />
+		<outlet path="${src-gen}" >
+		</outlet>
+	</component>
+
+	<component class="org.eclipse.xpand2.Generator">
+		<metaModel idRef="mm_emf"/>
+		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_meta_'"/>
+		<expand
+			value="template::MetaModel::main FOR model" />
+		<outlet path="${src-gen}" >
+		</outlet>
+	</component>
+
+	<component class="org.eclipse.xpand2.Generator">
+		<metaModel idRef="mm_emf"/>
+		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_meta_'"/>
+		<expand
+			value="template::MetaModelImpl::main FOR model" />
+		<outlet path="${src-gen}" >
+		</outlet>
+	</component>
+</workflow>

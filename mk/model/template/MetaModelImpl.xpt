@@ -1,0 +1,77 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+
+«DEFINE main FOR EPackage»«FILE name.toLowerCase() + "-metamodel_impl.mk" -»
+«fileHeader()»
+
+# Metamodel implementation for '«name»' package.
+
+«inclusionGuardBegin("_impl")»
+
+# Creates and initializes contents of '«name»' meta model.
+define class-«metaModelImplName()»
+	«mkSuper(metaModelName())»
+
+	# Create necessary objects.
+«EXPAND createClassifier FOREACH eClassifiers -»
+
+	# Initialize.
+«EXPAND initClassifier FOREACH eClassifiers -»
+endef
+
+«inclusionGuardEnd("_impl")»
+
+«ENDFILE»«ENDDEFINE»
+
+
+«DEFINE createClassifier FOR EClassifier»
+	«ERROR "Unexpected EClassifier: " + this»
+«ENDDEFINE»
+«DEFINE createClassifier FOR EClass»
+	«mkSetWrapped(id(), mkInvoke("createMetaClass", name))»
+	«EXPAND createFeature FOREACH eStructuralFeatures -»
+«ENDDEFINE»
+
+«DEFINE createFeature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE createFeature FOR EAttribute -»
+	«mkSetWrapped(id(),
+		mkInvoke("createMetaAttribute", name + "," +
+			mkGet(eContainingClass.id())))»
+«ENDDEFINE»
+
+«DEFINE createFeature FOR EReference -»
+	«mkSetWrapped(id(),
+		mkInvoke("createMetaReference", name + "," +
+			mkGet(eContainingClass.id())))»
+«ENDDEFINE»
+
+
+«DEFINE initClassifier FOR EClassifier»«ERROR "NIY"»«ENDDEFINE»
+«DEFINE initClassifier FOR EClass»
+	«mkInvoke("initMetaClass",
+		mkGet(id()) + "," +
+		(!eSuperTypes.isEmpty ? "\n\t\t" : "") +
+		eSuperTypes.id().mkGet().toString(" \\\n\t\t"))»
+	«EXPAND initFeature FOREACH eStructuralFeatures -»
+«ENDDEFINE»
+
+«DEFINE initFeature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+
+«DEFINE initFeature FOR EAttribute -»
+	«mkInvoke("initMetaAttribute",
+		mkGet(id()) + ",")»# NIY.
+«ENDDEFINE»
+
+«DEFINE initFeature FOR EReference -»
+	«mkInvoke("initMetaReference",
+		mkGet(id()) + "," +
+		mkGet(eReferenceType.id()) + "," +
+		(eOpposite != null ? mkGet(eOpposite.id()) : ""))»
+«ENDDEFINE»

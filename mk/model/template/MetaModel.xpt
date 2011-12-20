@@ -1,0 +1,47 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+
+«DEFINE main FOR EPackage»«FILE name.toLowerCase() + "-metamodel.mk" -»
+«fileHeader()»
+
+# Meta model for '«name»' package.
+
+«inclusionGuardBegin()»
+
+include $(basename «inclusionGuard()»)_impl.mk
+
+# Provides static access to contents of '«name»' model.
+# See '«metaModelInstanceName()»'.
+define class-«metaModelName()»
+	«mkSuper("MetaModel")»
+	«EXPAND classifier FOREACH eClassifiers -»
+endef
+
+$(def_all)
+
+«metaModelInstanceName()» := $(call new,«metaModelImplName()»)
+
+«inclusionGuardEnd()»
+
+«ENDFILE»«ENDDEFINE»
+
+
+«DEFINE classifier FOR EClassifier»
+	«ERROR "Unexpected EClassifier: " + this»
+«ENDDEFINE»
+«DEFINE classifier FOR EClass»
+	«mkField(id() + " : MetaClass")»
+	«EXPAND feature FOREACH eStructuralFeatures -»
+«ENDDEFINE»
+
+«DEFINE feature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+«DEFINE feature FOR EAttribute -»
+	«mkField(id() + " : MetaAttribute")»
+«ENDDEFINE»
+«DEFINE feature FOR EReference -»
+	«mkField(id() + " : MetaReference")»
+«ENDDEFINE»
+
